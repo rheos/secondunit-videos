@@ -1,4 +1,4 @@
-node_modules/
+node_modules
 out/
 # Hjeron owns the song and lyrics: never commit them
 assets/
