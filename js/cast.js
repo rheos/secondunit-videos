@@ -17,7 +17,7 @@ const LOOK = {
   // verse 2: rock-wall painting on sandstone in hard daylight (#15-17)
   rock: { boil: 6, bloom: 1.1, flowK: .7, strokeK: 1.15, grain: .12, vig: .5, sat: .85, tint: [1, .72, .48], tintK: .2, con: 1.12, lift: .03, scratch: .25, dust: .4, burn: .2, weave: .5, flick: .02 },
   // pre-hook + hook: blazing sunrise / sunset oil (#26)
-  sunset: { boil: 10, bloom: 1.6, flowK: 1.3, strokeK: 1.25, grain: .08, vig: .45, sat: 1.15, con: 1.08, lift: 0, scratch: .05, dust: .1, weave: .4, flick: .02 },
+  sunset: { boil: 10, bloom: 1.2, flowK: 1.3, strokeK: 1.25, grain: .08, vig: .45, sat: 1.15, con: 1.08, lift: 0, scratch: .05, dust: .1, weave: .4, flick: .02 },
   // ending: back to ink, on glowing cracked earth
   cracks: { boil: 8, bloom: 1.8, flowK: 1, grain: .1, vig: .65, etch: .7, sat: .6, con: 1.12, scratch: .12, dust: .4, weave: .6, flick: .04 },
 };
@@ -149,9 +149,9 @@ function wyrd(t, x, y, h, o = {}) {
   // --- the duster: A-line from narrow shoulders to a wide shredded hem at the ankle ---
   // hem strips are the coat's signature: long, uneven, streaming with the wind and the gait
   const hemY = 14, hemW = 21 + Math.abs(wind) * 2;
-  const strip = (i, n, front) => { const k = i / (n - 1) - .5, bx = X(k * hemW * 2 * (front ? 1 : .92)), by = Y(hemY + (front ? 0 : 2));
+  const strip = (i, n, front) => { const k = i / (n - 1) - .5, bx = X(k * hemW * 2 * (front ? 1 : .92) + wind * (6 + 5 * k * Math.sign(wind))), by = Y(hemY + (front ? 0 : 2));
     const len = (6 + 11 * hash(i * 13 + (front ? 5 : 9))) * u, w0 = (2.1 + hash(i * 7) * 1.2) * u;
-    const sway = (wind * (4 + 5 * Math.abs(k)) + snoise(t * .8 + i * .41, front ? 31 : 32) * 2.4 + gait * 3 * k) * u;
+    const sway = (wind * (7 + 7 * Math.abs(k)) + snoise(t * .8 + i * .41, front ? 31 : 32) * 2.6 + gait * 3 * k) * u;
     const c = front ? shade(i % 3 ? P.coat : P.coatShade) : shade(P.coatShade, lit * .4);
     const m = [bx + sway * .45, by + len * .5], e = [bx + sway, by + len];
     taper(g, [bx, by - 2 * u], m, w0, w0 * .7, c); taper(g, m, e, w0 * .7, .35 * u, c); };
@@ -163,9 +163,9 @@ function wyrd(t, x, y, h, o = {}) {
   const sh = 10.5 * (1 - Math.abs(turn) * .15); // half shoulder width (narrower than the brim)
   const flare = hemW + wind * 2;
   const panel = (side, c) => { // one side of the open duster: shoulder, sleeve line, flared hem
-    const top = [X(side * 2.8), Y(neckY - 3)], shp = [X(side * sh), Y(neckY - 4.5)], hip = [X(side * (sh + 3)), Y(50)], hem = [X(side * flare + wind * 3), Y(hemY)], inHem = [X(side * (back ? 0 : 6.5) + wind * 1.5), Y(hemY + 1)];
+    const down = side * wind > 0 ? 1 : 0, top = [X(side * 2.8), Y(neckY - 3)], shp = [X(side * sh), Y(neckY - 4.5)], hip = [X(side * (sh + .5) + wind * 1.5), Y(48)], hem = [X(side * (flare - 3) + wind * (down ? 12 : 4) + side * down * Math.abs(wind) * 6), Y(hemY + down * Math.abs(wind) * 4)], inHem = [X(side * (back ? 0 : 6.5) + wind * 3), Y(hemY + 1)];
     g.fillStyle = c; g.beginPath(); g.moveTo(top[0], top[1]); g.quadraticCurveTo(X(side * (sh - 1)), Y(neckY - 2), shp[0], shp[1]);
-    g.quadraticCurveTo(hip[0], hip[1] + 14 * u, hem[0], hem[1]);
+    g.bezierCurveTo(hip[0], hip[1], hip[0] + side * 1.5 * u + wind * 3 * u, Y(30), hem[0], hem[1]);
     // ragged hem edge between the outer and inner corners
     for (let k = 1; k <= 6; k++) { const q = k / 7; g.lineTo(lerp(hem[0], inHem[0], q), lerp(hem[1], inHem[1], q) + (hash(k * 5 + (side > 0 ? 3 : 0)) - .3) * 2.5 * u); }
     g.lineTo(inHem[0], inHem[1]); g.quadraticCurveTo(X(side * 6), Y(42), X(side * 3.2), Y(neckY - 9)); g.closePath(); g.fill(); };
