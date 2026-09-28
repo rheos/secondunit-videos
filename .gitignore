@@ -1,0 +1,10 @@
+node_modules/
+out/
+output/
+assets/
+js/data.js
+js/assets.js
+*.mp4
+*.png
+*.jpg
+*.wav
