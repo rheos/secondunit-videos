@@ -107,7 +107,7 @@ function reveal(g, key, region, p, dir, fn, n = 160, size = 110) {
 // ---- flame: licking tongues on src (brushed), soft hot light on fx ----
 function flame(x, y, h, w, t, seed, heat = 1, o = {}) {
   if (h < 1 || heat <= 0.01) return;
-  const { lightK = 1, srcK = 1, lean = 0, n = 5 } = o;
+  const { lightK = 1, srcK = 1, lean = 0, n = 5, coreK = 1 } = o;
   const tongue = (g, cx, hh, ww, sway, curl) => {
     const tip = [cx + sway * hh, y - hh];
     g.beginPath(); g.moveTo(cx - ww, y);
@@ -132,7 +132,7 @@ function flame(x, y, h, w, t, seed, heat = 1, o = {}) {
     f.save(); f.globalCompositeOperation = 'lighter'; f.filter = `blur(${Math.max(1, Math.min(6, h * .03))}px)`;
     f.globalAlpha = clamp(lightK * heat * .35); for (const [cx, hh, ww, sw, cu] of L) { tongue(f, cx, hh, ww, sw, cu); f.fillStyle = '#ff5a14'; f.fill(); }
     f.globalAlpha = clamp(lightK * heat * .55); for (const [cx, hh, ww, sw, cu] of L) { tongue(f, cx, hh * .62, ww * .6, sw * .8, cu); f.fillStyle = '#ffa040'; f.fill(); }
-    f.globalAlpha = clamp(lightK * heat * .8); tongue(f, x, h * .38, w * .42, lean, 0); f.fillStyle = '#fff0c0'; f.fill();
+    f.globalAlpha = clamp(lightK * heat * .8 * coreK); tongue(f, x, h * .38, w * .42, lean, 0); f.fillStyle = coreK < 1 ? '#ffd48a' : '#fff0c0'; f.fill();
     f.restore();
   }
   glow(x, y - h * .35, h * 1.4, 'rgba(255,110,36,.5)', .38 * heat * lightK);

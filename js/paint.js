@@ -3,7 +3,7 @@
 // Per frame, scene code draws three Canvas2D layers:
 //   src  (960x540)   flat underpainting. The GPU repaints it with instanced brushstrokes that
 //                    sample its colour and follow its edges.
-//   ink  (1920x1080) full-res linework and the wordmark, laid over the paint unbrushed so fine
+//   ink  (1920x1080) full-res linework, laid over the paint unbrushed so fine
 //                    lines stay crisp. Still graded, grained and weathered with everything else.
 //   fx   (960x540)   additive light (fire, glints), plus a blurred copy for bloom and halation.
 // Changes from the original: strokes render into an FBO, and a finish pass grades the whole frame

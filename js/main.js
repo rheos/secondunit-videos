@@ -4,7 +4,7 @@ Paint.init(canvas);
 const params = new URLSearchParams(location.search);
 window.__frameJPEG = (fr, q = .94) => { renderFrame(fr / FPS, fr); return canvas.toDataURL('image/jpeg', q); };
 window.__frameAt = (t, q = .92) => { const fr = Math.round(t * FPS); renderFrame(t, fr); return canvas.toDataURL('image/jpeg', q); };
-window.__ready = prepWordmark().then(() => true);
+window.__ready = Promise.resolve(true);
 if (!params.has('offline')) {
   const audio = document.getElementById('a');
   window.__ready.then(() => (function loop() { const t = audio.currentTime || 0; renderFrame(Math.min(t, END - .04), Math.floor(t * FPS)); requestAnimationFrame(loop); })());

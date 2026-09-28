@@ -1,4 +1,4 @@
-// MythMaker, "Dream of Fire": the instrumental intro, 0.00 to 25.84 s (first sung word "The").
+// Hjeron (solo), "Dream of Fire": the instrumental intro, 0.00 to 25.84 s (first sung word "The").
 // One continuous shot of a night desert that paints itself. Every cue is a real onset or downbeat
 // from tools/analyze.py; docs/PLAN.md has the table. Downbeats are beat-phase 2 (D0 = 1.08 s).
 
@@ -25,16 +25,15 @@ const CUE = {
   diamond: D(13),                     // 22.04 the diamond ignites
   peak: B(56),                        // 22.84 last full hit before the break
   breath: B(56) + .12,                // pull back into the breakdown
-  scorch: D(14),                      // 23.64 the wordmark scorches in
-  ignite: B(60),                      // 24.43 the wordmark catches
-  gold: D(15),                        // 25.24 full gold
+  scorch: D(14),                      // 23.64 the fire ring flares in the breakdown
+  ignite: B(60),                      // 24.43 the sigil rekindles; smoke begins to rise through it
+  gold: D(15),                        // 25.24 big low hit: the pyre surges and the smoke bends across frame
 };
 
 // ---- world layout (world coords, zoom 1 = the final wide frame) ----
 const HOR = 622;                                     // horizon
 const RING = { x: 960, y: 905, rx: 480, ry: 92 };    // fire circle on the ground
 const EMB = { x: 960, y: 360, R: 250, Rm: 205 };     // ouroboros centreline radius, medallion radius
-const WM = { x: 960, y: 606, w: 1000 };              // wordmark
 const PAL = {
   bone: [226, 208, 172], gold: [246, 188, 64], goldHi: [255, 226, 150], ember: [255, 110, 30], oxblood: [92, 24, 18],
   rust: [140, 52, 26], umber: [40, 20, 14], char: [16, 9, 7], bronze: [120, 78, 38], bronzeD: [58, 36, 18], verd: [52, 70, 56],
@@ -65,7 +64,7 @@ function camera(t) {
     [CUE.runes[0], [960, 372, 1.42], ease.out2],
     [CUE.peak, [960, 362, 1.72], ease.sine],
     [CUE.scorch + .3, [960, 540, 1.0], ease.inOut],
-    [NFRAMES / FPS, [960, 556, 1.075], ease.out2],
+    [NFRAMES / FPS, [960, 505, 1.1], ease.inOut],
   ]);
   const punch = .06 * hit(t, CUE.pyre, 5) + .09 * hit(t, CUE.bite, 4) + .02 * hits(t, CUE.rim, 9) + .03 * hits(t, CUE.runes, 8) + .03 * hit(t, CUE.peak, 5) + .025 * hit(t, CUE.gold, 4);
   const sh = 9 * hit(t, CUE.bite, 5) + 3 * hit(t, CUE.pyre, 6) + 3 * hit(t, CUE.peak, 6);
@@ -269,7 +268,7 @@ function fireCircle(t) {
         const u = (i + .5 * hash(i * 7 + (sd > 0 ? 3 : 0))) / LICK; if (u > fp) break;
         const a = a0 + sd * u * Math.PI, [x, y] = ringPt(a), sc = .6 + .4 * (Math.sin(a) * .5 + .5);
         const age = (fp - u) * (CUE.pyre - CUE.fuse);
-        const hh = (26 + 22 * noise1(i * 1.7 + t * 2.5, sd + 3)) * sc * (1 + .5 * FIRE) * clamp(age * 3 + .15);
+        const hh = (26 + 22 * noise1(i * 1.7 + t * 2.5, sd + 3)) * sc * (1 + .5 * FIRE + 2.4 * hit(t, CUE.scorch, 2.4)) * clamp(age * 3 + .15);
         flame(x, y, hh, 12 * sc, t, i * 13 + (sd > 0 ? 500 : 0), .9, { lightK: .75, srcK: .9, n: 3 });
       }
       if (fp > 0 && fp < 1) { const [x, y] = ringPt(a0 + sd * fp * Math.PI); glow(x, y - 6, 40, 'rgba(255,220,160,1)', .95); glow(x, y, 110, 'rgba(255,120,40,1)', .35); }
@@ -296,9 +295,9 @@ function fireCircle(t) {
       const h = 200 * pp * big * breath * (1 + .25 * F('low', t));
       flame(px - 34, py - 30, h * .72, 42, t, 71, 1, { lean: -.08, lightK: .5 });
       flame(px + 30, py - 30, h * .78, 44, t, 72, 1, { lean: .08, lightK: .5 });
-      flame(px, py - 20, h, 58, t, 73, 1, { n: 7, lightK: .55 });
+      flame(px, py - 20, h, 58, t, 73, 1, { n: 7, lightK: .55, coreK: .5 });
       glow(px, py - h * .4, 420, 'rgba(255,100,36,1)', .2 * pp * breath);
-      glow(px, py - 60, 90, 'rgba(255,240,200,1)', .9 * hit(t, CUE.pyre, 4));
+      glow(px, py - 60, 90, 'rgba(255,190,110,1)', .5 * hit(t, CUE.pyre, 4));
       // a few embers, restrained
       for (let i = 0; i < 18; i++) {
         const life = 2.2 + hash(i * 7) * 1.6, t0 = CUE.pyre + hash(i * 3) * life, age = ((t - t0) % life + life) % life;
@@ -515,78 +514,50 @@ function antlers(t, cx, cy, gp, glowK) {
   }
 }
 
-// ---------------- the wordmark: his own logo-wordmark.png, charred in, then burnt to gold ----------------
-const WMK = { ready: false };
-async function prepWordmark() {
-  const img = new Image(); img.src = ASSETS.wordmark; await img.decode();
-  const w = 1400, h = Math.round(w * img.height / img.width); WMK.w = w; WMK.h = h;
-  const c = document.createElement('canvas'); c.width = w; c.height = h; const g = c.getContext('2d');
-  g.imageSmoothingEnabled = true; g.imageSmoothingQuality = 'high'; g.drawImage(img, 0, 0, w, h);
-  const A = g.getImageData(0, 0, w, h).data;
-  g.clearRect(0, 0, w, h); g.filter = 'blur(7px)'; g.drawImage(img, 0, 0, w, h); g.filter = 'none';
-  const Bl = g.getImageData(0, 0, w, h).data;
-  const n = w * h, M = new Float32Array(n), SH = new Float32Array(n), BM = new Float32Array(n), NZ = new Float32Array(n);
-  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
-    const i = y * w + x, a = A[i * 4 + 3] / 255;
-    M[i] = smooth((a - .38) / .24);    // sharpen the upscaled edge back to a clean contour
-    const bx = (Bl[(i + (x < w - 1 ? 1 : 0)) * 4 + 3] - Bl[(i - (x > 0 ? 1 : 0)) * 4 + 3]) / 255, by = (Bl[(i + (y < h - 1 ? w : 0)) * 4 + 3] - Bl[(i - (y > 0 ? w : 0)) * 4 + 3]) / 255;
-    SH[i] = clamp(.5 + (-bx * .6 - by * 1.0) * 6) * .6 + .4 * clamp(Bl[i * 4 + 3] / 255);  // bevel lit from above
-    NZ[i] = fbm2(x * .018, y * .05, 3, 3) * .7 + noise2(x * .2, y * .2, 9) * .3;          // hammered, brushed metal
-    BM[i] = clamp((x / w) * .72 + (fbm2(x * .006, y * .012, 21, 4) - .5) * .5 + .14);      // burn front: left to right, ragged
-  }
-  Object.assign(WMK, { M, SH, BM, NZ, cv: c, g, img: g.createImageData(w, h), gcv: document.createElement('canvas') });
-  WMK.gcv.width = w / 4; WMK.gcv.height = h / 4; WMK.gg = WMK.gcv.getContext('2d'); WMK.gimg = WMK.gg.createImageData(w / 4, h / 4);
-  WMK.ready = true;
-}
-function wordmark(t) {
-  if (!WMK.ready || t < CUE.scorch - .05) return;
-  const pc = ease.out2(inv(CUE.scorch - .05, CUE.ignite, t)) * 1.1;             // char front
-  const pg = ease.inOut(inv(CUE.ignite, CUE.gold - .02, t)) * 1.12;             // fire front
-  const flick = .92 + .08 * snoise(t * 9, 4) + .12 * hit(t, CUE.gold, 3);
-  const heatGlow = hit(t, CUE.gold, 2.2);
-  const { w, h, M, SH, BM, NZ, img, gimg } = WMK; const d = img.data, gd = gimg.data; gd.fill(0);
-  const gw = w / 4;
-  for (let i = 0, n = w * h; i < n; i++) {
-    const m = M[i]; const o = i * 4;
-    if (m <= 0.01) { d[o + 3] = 0; continue; }
-    const b = BM[i];
-    let r = 0, g = 0, bl = 0, a = 0, em = 0;
-    if (b < pg) {
-      const edge = clamp((pg - b) / .05);                    // 0 at the fire front, 1 behind it
-      const sh = SH[i], nz = NZ[i];
-      const vy = ((i / w) | 0) / h, L = (.42 + .8 * sh) * (.78 + .4 * nz) * flick * (1.12 - .45 * vy);
-      r = 246 * L; g = 158 * L * (.85 + .25 * sh); bl = 34 * L * (.5 + .9 * sh * sh);
-      if (edge < 1) { const e = 1 - edge; r = lerp(r, 255, e); g = lerp(g, 236, e); bl = lerp(bl, 190, e); em = e; }
-      a = m;
-      em = Math.max(em, heatGlow * .5 * sh);
-    } else if (b < pc) {
-      const cool = clamp((pc - b) / .12);
-      const ember = clamp(1 - Math.abs(b - pg) / .03) * (pg > 0 ? 1 : 0);
-      r = lerp(120, 22, cool) + 180 * ember; g = lerp(40, 12, cool) + 90 * ember; bl = 8; a = m * (.55 + .4 * cool);
-      em = (1 - cool) * .25 + ember * .7;
-    } else { d[o + 3] = 0; continue; }
-    d[o] = r; d[o + 1] = g; d[o + 2] = bl; d[o + 3] = a * 255;
-    if (em > 0.02) { const x = i % w, y = (i / w) | 0; if ((x & 3) === 0 && (y & 3) === 0) { const q = ((y >> 2) * gw + (x >> 2)) * 4; gd[q] = 255 * em; gd[q + 1] = 150 * em; gd[q + 2] = 60 * em; gd[q + 3] = 255; } }
-  }
-  WMK.g.putImageData(img, 0, 0); WMK.gg.putImageData(gimg, 0, 0);
-  const ww = WM.w, hh = ww * h / w;
+// ---------------- finale: "the air it bends, the smoke twists" ----------------
+// From 24.43 a twisted column of smoke rises from the pyre through the sigil; on the 25.24 hit the
+// air bends it across the frame, still twisting as the first line starts at 25.84.
+function smokeBend(t) {
+  if (t < CUE.ignite - .05) return;
+  const rise = ease.out(inv(CUE.ignite, CUE.ignite + 1.3, t));
+  const bend = ease.inOut(inv(CUE.gold - .04, CUE.gold + .75, t));
+  const surge = hit(t, CUE.gold, 2.5);
+  const lit = clamp(FIRE / 1.2);
   layer(1, () => {
-    // charred smoke lifting off the scorch, and off the gold once it burns
-    const sm = inv(CUE.scorch, CUE.scorch + 1, t);
-    for (let i = 0; i < 16; i++) { const life = 1.8, age = ((t - CUE.scorch - hash(i * 5) * life) % life + life) % life, u = age / life; const x = WM.x - ww * .45 + hash(i * 3) * ww * .9 + snoise(t + i, 30 + i) * 30, y = WM.y - u * 170; s.fillStyle = rgba([44, 30, 26], .25 * sm * Math.sin(u * Math.PI)); s.beginPath(); s.ellipse(x, y, 40 + u * 60, 26 + u * 30, 0, 0, TAU); s.fill(); }
-    // a dark scorch halo so gold reads against the mesas
-    s.fillStyle = rgrad(s, WM.x, WM.y, 50, ww * .62, [[0, rgba([10, 5, 4], .55 * smooth(pc))], [1, 'rgba(10,5,4,0)']]); s.fillRect(WM.x - ww, WM.y - ww * .6, 2 * ww, ww * 1.2);
-    k.save(); k.globalAlpha = .75 * smooth(pg); k.filter = 'blur(2px) brightness(0)'; k.drawImage(WMK.cv, WM.x - ww / 2 + 5, WM.y - hh / 2 + 7, ww, hh); k.restore();
-    k.drawImage(WMK.cv, WM.x - ww / 2, WM.y - hh / 2, ww, hh);
-    f.save(); f.globalCompositeOperation = 'lighter'; f.filter = 'blur(3px)'; f.globalAlpha = .9; f.drawImage(WMK.gcv, WM.x - ww / 2, WM.y - hh / 2, ww, hh); f.filter = 'none'; f.restore();
-    glow(WM.x, WM.y, ww * .7, 'rgba(255,140,50,1)', (.12 * smooth(pg) + .25 * heatGlow));
+    const baseY = RING.y - 150, L = 1080 * rise;
+    const ribbons = 7;
+    for (let r = 0; r < ribbons; r++) {
+      const ph = r / ribbons * TAU, pts = [];
+      const N = 46;
+      for (let i = 0; i <= N; i++) {
+        const u = i / N; if (u * 1080 > L) break;
+        const y = baseY - u * 1080;
+        const twist = Math.sin(u * 5.2 + t * 2.4 + ph) * (34 + 150 * u);
+        const lean = bend * (1050 * Math.pow(u, 1.4) - 220 * Math.sin(u * Math.PI));   // the column bows left, then the top swings right across frame
+        const drift = snoise(u * 2 + t * .5, 200 + r) * 30 * u;
+        pts.push([RING.x + twist + lean + drift, y + bend * (520 * Math.pow(u, 1.8) + 60 * Math.sin(ph) * u)]);   // and flattens toward horizontal
+      }
+      if (pts.length < 2) continue;
+      const front = Math.cos(ph + t * 2.1) > 0;
+      for (let i = 0; i < pts.length - 1; i++) {
+        const u = i / N, w = 24 + 110 * u + 40 * bend * u;
+        const col = mixc([160, 74, 34], [64, 50, 50], clamp(u * 1.6 + .1));
+        const a = (front ? .42 : .28) * Math.min(1, u * 8) * (1 - .5 * u) * (.8 + .4 * lit);
+        line(s, [pts[i], pts[i + 1]], rgba(col, a), w);
+      }
+      // wispy inked edge on the near ribbons so the twist reads
+      if (front) { k.save(); k.globalAlpha = .38 * rise; inkLine(k, pts.map(([x, y], i) => [x + (10 + 30 * i / N), y]), 'rgba(226,190,150,.8)', 2, 300 + r, { taper: .3, wob: 1.4, dry: .35 }); k.restore(); }
+    }
+    // firelight catching the underside of the column
+    glow(RING.x, baseY - 120, 320, 'rgba(255,120,40,1)', (.12 + .25 * surge) * rise);
   });
 }
 
 // ---------------- emblem state across the breath ----------------
 function emblemState(t) {
   const b = ease.inOut(inv(CUE.breath, CUE.scorch + .4, t));
-  return { sc: lerp(1, .56, b), dy: lerp(0, -118, b), dim: .55 * b };
+  const rek = ease.out(inv(CUE.ignite, CUE.ignite + .45, t));   // the sigil relights on 24.43
+  return { sc: lerp(1, .56, b), dy: lerp(0, -118, b), dim: .55 * b * (1 - .85 * rek) };
 }
 
 // ---------------- frame ----------------
@@ -602,8 +573,9 @@ function renderFrame(t, frame) {
   const em = emblemState(t);
   ouroboros(t, em);
   medallion(t, em);
+  if (t >= CUE.scorch) layer(1, () => { const e = emblemState(t); glow(EMB.x, EMB.y + e.dy, 300 * e.sc, 'rgba(255,170,80,1)', .85 * hit(t, CUE.ignite, 2.6)); glow(RING.x, RING.y - 20, 640, 'rgba(255,110,40,1)', .35 * hit(t, CUE.scorch, 2.4)); });
   fireCircle(t);
-  wordmark(t);
+  smokeBend(t);
   ramSkull(t);
   // black open: nothing painted until the pickups
   const open = 1 - smooth(inv(0, CUE.sky + .3, t));

@@ -1,8 +1,8 @@
 {
-  "name": "mythmaker-painted-myth",
+  "name": "hjeron-painted-myth",
   "private": true,
   "type": "module",
-  "description": "MythMaker 'Dream of Fire' intro (0 to 25.84 s), painted in code. Renderer adapted from functional-emotions-video (MIT).",
+  "description": "Hjeron 'Dream of Fire' intro (0 to 25.84 s), painted in code. Renderer adapted from functional-emotions-video (MIT).",
   "scripts": {
     "check": "node check.mjs",
     "render": "node render.mjs 0 620 output/painted-myth-intro.mp4 3"
