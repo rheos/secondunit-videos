@@ -11,7 +11,7 @@ const tmp = full ? out : fs.mkdtempSync('/tmp/chk_'); fs.mkdirSync(tmp, { recurs
 const b = await chromium.launch({ channel: 'chrome', headless: true, args: ['--use-angle=metal', '--ignore-gpu-blocklist', '--enable-gpu'] });
 const p = await b.newPage({ viewport: { width: VW, height: VH } });
 const errs = []; p.on('console', m => { if (m.type() === 'error') errs.push(m.text()); }); p.on('pageerror', e => errs.push(String(e)));
-await p.goto('file://' + process.cwd() + `/index.html?offline=1&fmt=${FMT}`); await p.evaluate(() => window.__ready);
+await p.goto('file://' + process.cwd() + `/${process.env.PAGE || 'index.html'}?offline=1&fmt=${FMT}`); await p.evaluate(() => window.__ready);
 const files = []; let ms = 0;
 for (const t of times) {
   const t0 = Date.now(); const url = await p.evaluate((t) => window.__frameJPEG(t, .9), t); ms += Date.now() - t0;
@@ -20,6 +20,8 @@ for (const t of times) {
 await b.close();
 console.log(`${times.length} frames, ${(ms / times.length).toFixed(0)} ms/frame`);
 if (!full) {
+  if (files.length === 1) { fs.mkdirSync(path.dirname(out) || '.', { recursive: true }); execSync(`ffmpeg -y -loglevel error -i "${files[0][1]}" -vf scale=${TW}:${TH} -frames:v 1 -q:v 3 "${out}"`); console.log('sheet', out); }
+  else {
   const n = files.length, cols = Math.min(3, n), rows = Math.ceil(n / cols), pad = rows * cols - n;
   let inputs = files.map(([, f]) => `-i "${f}"`).join(' '); let filt = files.map(([t], i) => `[${i}:v]scale=${TW}:${TH}[v${i}];`).join('');
   for (let k = 0; k < pad; k++) { inputs += ` -f lavfi -i color=black:s=${TW}x${TH}:d=1`; filt += `[${n + k}:v]null[v${n + k}];`; }
@@ -27,5 +29,6 @@ if (!full) {
   fs.mkdirSync(path.dirname(out) || '.', { recursive: true });
   execSync(`ffmpeg -y -loglevel error ${inputs} -filter_complex "${filt}${ins}xstack=inputs=${n + pad}:grid=${cols}x${rows}[o]" -map "[o]" -frames:v 1 -q:v 3 "${out}"`);
   console.log('sheet', out);
+  }
 } else console.log('stills in', out);
 if (errs.length) console.log('ERRORS:\n' + [...new Set(errs)].slice(0, 20).join('\n'));
