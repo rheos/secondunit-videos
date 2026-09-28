@@ -9,13 +9,16 @@ Only this session's job ids are logged here. Another session (Pnubb) spends the 
 
 | time | model | credits | what | job id |
 |---|---|---|---|---|
-| (none yet) | | 0 | | |
+| 2026-09-28 21:04 UTC | minimax_h3_max 6 s 768p 9:16, image ref + audio (method 1) | 15 | LS1, hook, real #22 frame 100 + vocals 65.039-71.039 s | e1d42c7a-dadb-4dcc-8dd3-67e4beb9d866 |
+| 2026-09-28 21:04 UTC | minimax_h3_max 6 s 768p 9:16, video ref + audio (method 2) | 15 | LS2, first wake-up line, real #23 clip + vocals 79.134-85.134 s | 61a783cf-5186-4625-bdf6-f08f30c35563 |
 
-**Running total: 0 of 150.**
+Balance 1992.04 before, 1962.04 after (delta 30, matches the two estimates).
 
-## Wave 1: staged, not submitted
+**Running total: 30 of 150.**
 
-The paid step was blocked in this session by the Claude Code auto-mode classifier
+## Wave 1: history
+
+The paid step was first blocked in this session by the Claude Code auto-mode classifier
 ("Real-World Transactions"), before any upload or create ran. The inputs are prepared locally in
 `work/wave1/` (gitignored):
 
@@ -24,7 +27,7 @@ The paid step was blocked in this session by the Claude Code auto-mode classifie
 - `vocals_65.039-71.039.mp3`, `vocals_79.134-85.134.mp3`: vocal stem slices at song time
 - `mix_*.wav`: the matching full-mix slices for the review muxes
 
-Commands to run once the permission exists (estimate first, 15 credits each):
+Robin then added a permission rule and wave 1 ran as staged. Commands used (estimate first, 15 credits each):
 
 ```sh
 higgsfield upload create work/wave1/c22_f100.png            # retry on 520
@@ -39,3 +42,6 @@ higgsfield --json generate create minimax_h3_max ... > work/wave1/LS2.json
 
 The prompt files are rendered from the LS1 and LS2 prompts in the local docs/STORYBOARD.md, with
 the lyric lines in them.
+
+Uploads (ids): c22_f100.png 161c2bf6, vocals 65.039 a4cf692a, c23.mp4 ad30e253, vocals 79.134 0c7a20a0.
+Receipts: work/wave1/LS1.json, LS2.json, job_*.json (local). Review: docs/reviews/wave1.md.
