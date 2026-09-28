@@ -9,12 +9,14 @@ Only this session's job ids are logged here. Another session (Pnubb) spends the 
 
 | time | model | credits | what | job id |
 |---|---|---|---|---|
-| 2026-09-28 21:04 UTC | minimax_h3_max 6 s 768p 9:16, image ref + audio (method 1) | 15 | LS1, hook, real #22 frame 100 + vocals 65.039-71.039 s | e1d42c7a-dadb-4dcc-8dd3-67e4beb9d866 |
-| 2026-09-28 21:04 UTC | minimax_h3_max 6 s 768p 9:16, video ref + audio (method 2) | 15 | LS2, first wake-up line, real #23 clip + vocals 79.134-85.134 s | 61a783cf-5186-4625-bdf6-f08f30c35563 |
+| 2026-09-28 21:04 UTC | minimax_h3_max 6 s 768p 9:16, image ref + audio (method 1) | 15 | LS1, hook, real #22 frame 100 + vocals 65.039-71.039 s. **REJECTED** (Robin: invented beard in profile, not him) | e1d42c7a-dadb-4dcc-8dd3-67e4beb9d866 |
+| 2026-09-28 21:04 UTC | minimax_h3_max 6 s 768p 9:16, video ref + audio (method 2) | 15 | LS2, first wake-up line, real #23 clip + vocals 79.134-85.134 s. **REJECTED** (profile, singing not readable) | 61a783cf-5186-4625-bdf6-f08f30c35563 |
 
 Balance 1992.04 before, 1962.04 after (delta 30, matches the two estimates).
 
-**Running total: 30 of 150.**
+**Running total: 30 of 150.** Production is PAUSED by Robin after wave 1. Next proposed spend,
+not submitted: the LS1b probe (V1 veiled still 4.5 + H3 6 s 15 = 19.5), which needs Robin's go.
+Spent plus the remaining plan is 140 of 150; see STORYBOARD.public.md, Totals.
 
 ## Wave 1: history
 

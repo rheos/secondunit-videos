@@ -25,7 +25,7 @@ onset crops and from watching the takes.
 - **Defects:** the first 2 to 3 frames still carry the source frame's wider hat angle before it
   settles. Around frame 150 (after 71.0 s, past the used span) the beard and hair change shape. Both
   sit outside the planned 31/33 spans.
-- **Verdict: accept** for shots 31 and 33.
+- **My verdict was accept. Robin REJECTED it (2026-09-28):** H3 invented a thick beard in profile, "too clearly not him". No real frame of his face exists, so the singing moves to a veiled still of the character sheet (see the storyboard).
 
 ## LS2, method 2 (video reference, the whole real #23 clip), first wake-up line
 
@@ -39,7 +39,13 @@ onset crops and from watching the takes.
 - **Verdict: reject as a singing shot.** It works as a lightly animated take of #23, but that adds
   nothing to the real clip.
 
-## Decisions for the next waves (need Robin's go, not started)
+## Outcome
+
+Both takes are rejected. Superseded by the veiled-character plan in STORYBOARD.public.md
+(V1/V2 stills from the Wyrd One character sheet, H3 method 1, no profile). The notes below were written
+before Robin's review and are superseded.
+
+## Decisions for the next waves (superseded)
 
 - LS3 uses **method 1** (a frame, not the clip), from a real frame where the profile is clear of flames.
 - Shots 38/40 (L20-L21) need a lipsync. Option: a method-1 retake from a clear-profile #23 frame

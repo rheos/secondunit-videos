@@ -28,10 +28,17 @@ carrying the tape. It ends on his real fire, not on a generated one, fading to b
 - His footage is never restyled. Real shots are cut, trimmed, sped or slowed only, and keep their own
   sepia, grain, torn borders, silver-grey mono or neon fire. Generated shots match a named real clip.
   The one approved conversion is scratchboard (46, 47).
-- Faceless by lighting: brim shadow, low key, one hard source, silhouette. No hair over the face, no
-  dreadlocks, no face paint.
-- Lipsync comes from HIS real guitar clips (Robin, 2026-09-28), never from a generated character.
-  Every singing shot is 2 to 3 s and intercut with real footage.
+- **Canonical character (revised 2026-09-28): "THE WYRD ONE" character sheet**
+  (`hjeron-darkblues-ref/wyrd-one-character-sheet.webp`). The face is masked by a veil of long black
+  cords hanging from the hat brim; layered worn cloak and hooded mantle, leather cargo pants and
+  boots, a green beaded fringe necklace, a black Les Paul. Behaviour: calm, deep rhythmic breathing,
+  accelerating in performance. This supersedes the earlier "faceless by lighting only, nothing over
+  the face" rule for every GENERATED shot. His real footage is untouched and keeps its own look.
+- **Singing direction (Robin):** no profile shots. The head faces camera or three-quarters and
+  barely turns; you know he's singing because the head moves with the phrasing. Lips are only
+  glimpsed through the veil sometimes, NEVER the full face or a beard
+  (counter-example: `hjeron-darkblues-ref/counterexample-too-much-face.webp`).
+- Every singing shot is 2 to 3 s and intercut with real footage.
 - One pull-back BRIDGE only (09). Every other transition comes from his own visual language, built
   locally for free.
 - Generated shots only where the tape can't do it: singing, the moon serpent, the fire ring, the
@@ -53,21 +60,50 @@ residual of its temporal median, looped over the shot); the torn/burned border p
 clip (the temporal median of its edge band, multiplied over the frame); a 1 to 2 px gate weave. Neon
 shots get his flame motion screened back on top if the model froze the overlay.
 
-## Lipsync: two methods, both from his real guitar clips
+## Lipsync (revised after wave 1)
 
-No footage of him singing exists. Both methods feed H3 Max a vocal-stem slice (vocals.wav, cut at
-song time, onsets checked against the stem) and a real piece of his neon guitar footage, where the
-profile silhouette puts the jaw line against a bright sky. That reads much better than the hazy
-grey frame in the augment test (lip_in_look_with_mix.mp4), where the face barely showed.
+Wave 1 settled the method and rejected both takes (`docs/reviews/wave1.md`):
 
-| method | input | cost | best clip | why |
+- **LS1** (job e1d42c7a, method 1 from real #22 frame 100): REJECTED by Robin. H3 invented a thick
+  beard in profile, "too clearly not him". There is no real frame of his face anywhere, so any
+  lipsync built on his own footage has to invent one.
+- **LS2** (job 61a783cf, method 2, the #23 clip as video reference): REJECTED. It kept his real
+  motion and the flames, but the head is in profile and the flames cover it, so it reads as his
+  footage, not singing.
+
+New approach: H3 method 1 (image reference + vocal slice, the one that syncs) on a **veiled
+frontal or 3/4 still of The Wyrd One**, made with GPT Image 2.5 from the character sheet and placed
+in the look of the real shot it sits between. The sheet's own veil panels (frontal and 3/4) are
+only about 135 x 166 px, too small to be the H3 reference directly, so they go in as identity refs
+to the still, and the still is the H3 reference.
+
+| still | framing | built from | look of | used by |
 |---|---|---|---|---|
-| 1, image ref (proven) | `--image` one real frame + `--audio` | 15 / 6 s, 12.5 / 5 s | **#22 frame 100** (hook, LS1); **#26 frame 90** (LS3 default) | #22 is a clean profile silhouette, hat and beard line against the pink sky with the guitar neck in frame; #26 is close on the hat and neck |
-| 2, video ref (untested) | `--video-references` the real clip + `--audio` | 15 / 6 s (same price) | **#23** (LS2) | #23 has the most playing motion and a readable profile; if H3 carries that motion, the singing looks filmed, not animated |
+| **V1** | frontal, medium close, chest up | sheet + frontal veil panel (4x crop) + real #22 frame 100 | #22 neon | LS1b (31, 33) and LS3b (44) |
+| **V2** | three-quarters toward camera, waist up | sheet + 3/4 veil panel (4x crop) + real #23 frame 30 | #23 neon | LS2b (38, 40) |
 
-Not used: the sepia bridge clips (#27-#30) and the spire (#47-#49) are too wide, since his head is
-about 40 px tall in a 1080 frame. #4, #6 and #8 are the hazy double exposures that failed. The
-Dark Blues Ritual videos have a burned-in title and are style reference only.
+The H3 prompt carries a fixed singing paragraph: face the camera or 3/4, head barely turns, the
+head moves with the phrasing, deep rhythmic breathing, the cords sway, lips only glimpsed between
+the cords, never a profile, a beard, a full face or a parted veil.
+
+**Probe (one shot, not submitted): LS1b = V1 still 4.5 + H3 6 s 15 = 19.5 credits** (both from
+`generate cost`, 2026-09-28). Review V1 before paying for the H3 pass: if the veil, frontal angle or
+neon look is wrong, stop at 4.5. Accept the H3 take only if no profile, beard or face shows in any
+frame and the head visibly phrases with the vocal onsets.
+
+## Character sheet reuse for the generated shots
+
+- **Identity ref everywhere:** every GPT Image 2.5 still (A1 moon walker, A3 ember eye, A5 rock
+  wall, A6 cracks, V1, V2) takes the sheet as its identity reference instead of the old refs 2, 5
+  and 9, and the shared character paragraph describes the veil, cloak, mantle, cargo pants and green
+  beaded necklace.
+- **Which panel:** A1 is seen from behind, so the turnaround back and 3/4 back. A3 is a frontal
+  portrait: the frontal veil panel, and the ember now glows BETWEEN the cords of the veil. A5 is a
+  full figure: the turnaround front. A6 is a tiny distant silhouette: the side view.
+- **Wolfdog:** the sheet has no dog. The generated night wolfdog (SB2) is an Omni Edit of real
+  #11, and the tiny dog in A6 takes real #16 frame 0 as its reference, so the dog is always his.
+- **Continuity note:** his real clips don't show the veil (they are silhouettes and shadows). The
+  veil only appears in the generated shots, so it reads as his vision-self. Say so if that's wrong.
 
 ## Transitions
 
@@ -96,7 +132,7 @@ Dark Blues Ritual videos have a burned-in title and are style reference only.
 | # | frames | time (s) | lyric | type | source (clip, exact frames) | viewer sees | cr |
 |---|---|---|---|---|---|---|---|
 | 01 | f0000-f0084 (84) | 0.00-3.50 | instr. | **REAL** | #44 src 0.30-2.40 s at 0.60x | grey smoke drifting on black, fading up from nothing | 0 |
-| 02 | f0084-f0144 (60) | 3.50-6.00 | instr. | **ANIMATION** | generated: GPT Image 2.5 still (refs: inspiration 17, real #37 frame at 2.5 s, char refs 2, 5, 9) then Kling 3.0 i2v 3 s; uses 60 of 72 frames | a tiny walking silhouette in hat and shredded duster crosses low dunes toward a huge full moon; the moon's smoke forms a rattlesnake face whose eyes open on the bar | 9 |
+| 02 | f0084-f0144 (60) | 3.50-6.00 | instr. | **ANIMATION** | generated: GPT Image 2.5 still (refs: inspiration 17, real #37 frame at 2.5 s, the character sheet (turnaround back and 3/4 back)) then Kling 3.0 i2v 3 s; uses 60 of 72 frames | a tiny walking silhouette in hat and frayed cloak crosses low dunes toward a huge full moon; the moon's smoke forms a rattlesnake face whose eyes open on the bar | 9 |
 | 03 | f0144-f0240 (96) | 6.00-10.00 | instr. | **REAL** | #0 src 1.20-3.40 s at 0.55x | the ram skull on the rock pile under a storm sky, silver-grey | 0 |
 | 04 | f0240-f0319 (79) | 10.00-13.29 | instr. | **REAL** | #39 src 0.30-2.93 s at 0.80x | his shadow on red sandstone: hat, coat, fringe | 0 |
 | 05 | f0319-f0395 (76) | 13.29-16.46 | instr. | **REAL** | #3 src 0.00-2.22 s at 0.70x | torn-mask reveal: Hjeron and the wolfdog walking into white smoke (band enters). WOLFDOG | 0 |
@@ -123,26 +159,26 @@ Dark Blues Ritual videos have a burned-in title and are style reference only.
 | 26 | f1355-f1399 (44) | 56.46-58.29 | [L11] | **REAL** | #29 src 1.00-2.83 s at 1.00x | him and the wolfdog on the bridge. WOLFDOG | 0 |
 | 27 | f1399-f1450 (51) | 58.29-60.42 | [L12] | **REAL** | #15 src 1.10-2.16 s at 0.50x | HERO: the real rattlesnake held slow | 0 |
 | 28 | f1450-f1506 (56) | 60.42-62.75 | [L12] / [L13] | **REAL** | #16 src 0.00-0.89 s at 0.38x (the dog is gone after 0.9 s) | the wolfdog walking toward camera, the sun on the horizon behind him. WOLFDOG | 0 |
-| 29 | f1506-f1548 (42) | 62.75-64.50 | [L13] | **ANIMATION** | generated: GPT Image 2.5 still (refs: inspiration 16, real #39 frame at 1.5 s, char refs 2, 9) then Kling 3.0 i2v 3 s; uses 42 of 72 frames | a tight low-angle portrait of him painted on cracked sandstone; the face is black under the brim; on the sung word 'eyes' one eye ignites as an ember and flares | 9 |
+| 29 | f1506-f1548 (42) | 62.75-64.50 | [L13] | **ANIMATION** | generated: GPT Image 2.5 still (refs: inspiration 16, real #39 frame at 1.5 s, the character sheet (front and 3/4 panels)) then Kling 3.0 i2v 3 s; uses 42 of 72 frames | a tight low-angle portrait of him painted on cracked sandstone; the face is hidden by the cord veil; on the sung word 'eyes' one ember point ignites behind the cords and flares | 9 |
 | 30 | f1548-f1561 (13) | 64.50-65.04 | [L13] | **REAL** | #9 src 0.30-0.84 s at 1.00x | his overexposed guitar flash, the hinge into the chorus | 0 |
-| 31 | f1561-f1627 (66) | 65.04-67.79 | [L14] | **LIPSYNC** | H3 Max 6 s, image ref = real #22 frame 100 (src 3.33 s), audio = vocals.wav 65.039-71.039 s; uses song-synced 65.04-67.79 s | his neon profile silhouette, hat and beard line against the pink sky, singing, guitar neck in frame | 15 |
+| 31 | f1561-f1627 (66) | 65.04-67.79 | [L14] | **LIPSYNC** | V1 still (GPT Image 2.5: the veiled figure FRONTAL, medium close, placed in #22's neon, from the character sheet), then H3 Max 6 s image ref = V1 + audio = vocals.wav 65.039-71.039 s; uses 65.04-67.79 s. LS1 (job e1d42c7a) is REJECTED: invented beard in profile | The Wyrd One facing camera in his neon fire, veil of cords over the face, head pushing and lifting with the phrasing, guitar across the body | 19.5 |
 | 32 | f1627-f1640 (13) | 67.79-68.33 | [L15] | **REAL** | #25 src 0.50-1.04 s at 1.00x | HERO hat silhouette in the flames, a half-beat on the breath between lines | 0 |
-| 33 | f1640-f1690 (50) | 68.33-70.42 | [L15] | **LIPSYNC** | LS1 continued, song-synced 68.33-70.42 s (same job) | back on the singing silhouette; the chin lifts on the held last word | 0 |
+| 33 | f1640-f1690 (50) | 68.33-70.42 | [L15] | **LIPSYNC** | LS1b continued, song-synced 68.33-70.42 s (same job) | back on the veiled singer; the head lifts slowly on the held last word, the cords swinging | 0 |
 | 34 | f1690-f1701 (11) | 70.42-70.88 | [L15] | **REAL** | #10 src 0.10-0.21 s at 0.25x | his red burning-sky silhouette, one bright frame then dark | 0 |
 | 35 | f1701-f1778 (77) | 70.88-74.08 | [L16] / [L17] | **ANIMATION** | generated: Kling 3.0 i2v 4 s from real #23 frame 30 (src 1.00 s), uses 77 of 96 frames | a spectral rattlesnake of white smoke rises out of the flames, climbs past his silhouette and coils into a ring around him, then breaks apart into drifting smoke as the world dissolves | 6 |
-| 36 | f1778-f1825 (47) | 74.08-76.04 | [L18] | **ANIMATION** | generated: GPT Image 2.5 still (refs: inspiration 15, real #40 frame at 2.5 s, char refs 2, 9) then Kling 3.0 i2v 3 s; uses 47 of 72 frames | firelight climbs a cracked canyon wall and reveals a painting of him, arms out, with invented glyphs (spiral, zigzag snake, bighorn) around him | 9 |
+| 36 | f1778-f1825 (47) | 74.08-76.04 | [L18] | **ANIMATION** | generated: GPT Image 2.5 still (refs: inspiration 15, real #40 frame at 2.5 s, the character sheet (front and 3/4 panels)) then Kling 3.0 i2v 3 s; uses 47 of 72 frames | firelight climbs a cracked canyon wall and reveals a painting of him, arms out, with invented glyphs (spiral, zigzag snake, bighorn) around him | 9 |
 | 37 | f1825-f1899 (74) | 76.04-79.12 | [L19] | **REAL** | #26 src 1.00-4.08 s at 1.00x | the guitarist's silhouette in fire | 0 |
-| 38 | f1899-f1945 (46) | 79.12-81.04 | [L20] | **LIPSYNC** | H3 Max 6 s, VIDEO ref = real #23 (whole 5 s clip), audio = vocals.wav 79.134-85.134 s; uses 79.13-81.04 s | his neon profile silhouette with the guitar, singing, carrying his real playing motion | 15 |
+| 38 | f1899-f1945 (46) | 79.12-81.04 | [L20] | **LIPSYNC** | V2 still (GPT Image 2.5: the veiled figure 3/4 TOWARD camera, placed in #23's neon), then H3 Max 6 s image ref = V2 + audio = vocals.wav 79.134-85.134 s; uses 79.13-81.04 s. LS2 (job 61a783cf, video ref) is REJECTED: no readable singing, profile | The Wyrd One three-quarters toward camera in the flames, guitar neck rising, the veil swaying as his head pushes on the words | 19.5 |
 | 39 | f1945-f1976 (31) | 81.04-82.33 | [L20] | **REAL** | #27 src 1.50-2.79 s at 1.00x | him walking out onto the stone bridge, sepia | 0 |
-| 40 | f1976-f2022 (46) | 82.33-84.25 | [L21] | **LIPSYNC** | LS2 continued, song-synced 82.33-84.25 s (same job) | back on the singing silhouette | 0 |
+| 40 | f1976-f2022 (46) | 82.33-84.25 | [L21] | **LIPSYNC** | LS2b continued, song-synced 82.33-84.25 s (same job) | back on the veiled singer, the head dropping on the last word | 0 |
 | 41 | f2022-f2052 (30) | 84.25-85.50 | [L21] | **REAL** | #21 src 2.50-3.75 s at 1.00x | flaming rocks, later in the clip | 0 |
 | 42 | f2052-f2093 (41) | 85.50-87.21 | [L22] | **REAL** | #30 src 0.00-1.37 s at 0.80x | him on the bridge with the wolfdog. WOLFDOG | 0 |
 | 43 | f2093-f2124 (31) | 87.21-88.50 | [L23] | **REAL** | #22 src 1.00-2.29 s at 1.00x | his silhouette in the flames | 0 |
-| 44 | f2124-f2164 (40) | 88.50-90.17 | [L23] | **LIPSYNC** | H3 Max 5 s, ref = real #26 frame 90 (method 1) or the #26 clip (method 2), picked at the wave-1 gate; audio = vocals.wav 85.496-90.496 s; uses 88.50-90.17 s | close on his hat and the guitar neck in the flames, singing the last word of the run | 12.5 |
+| 44 | f2124-f2164 (40) | 88.50-90.17 | [L23] | **LIPSYNC** | H3 Max 5 s, image ref = the V1 still (no new still) + audio = vocals.wav 85.496-90.496 s; uses 88.50-90.17 s | The Wyrd One facing camera in the flames, the head lowering slowly on the last held word and holding still | 12.5 |
 | 45 | f2164-f2180 (16) | 90.17-90.83 | [L24] | **REAL** | #37 src 0.00-0.67 s at 1.00x | him tiny on the dune under the printed star field | 0 |
 | 46 | f2180-f2215 (35) | 90.83-92.29 | [L24] | **SCRATCHBOARD** | the approved Kling Omni Edit take scratch.mp4 (job 87b55c41, already paid) of the same #37 clip, src 0.67-2.13 s | the same walk, now a white-on-black scratchboard etching: stippled stars, hatched sand, buttes | 0 |
 | 47 | f2215-f2241 (26) | 92.29-93.38 | [L24] | **SCRATCHBOARD** | Kling 3.0 Omni Edit (std) of real #11 (whole 2.0 s clip), uses 26 frames | the wolfdog lifts its head toward a full moon under a stippled night sky. WOLFDOG (generated) | 7.5 |
-| 48 | f2241-f2291 (50) | 93.38-95.46 | [L25] | **ANIMATION** | generated: GPT Image 2.5 still (refs: real #17 frame 0, ref 3, char refs 2, 9) then Kling 3.0 i2v 3 s; uses 50 of 72 frames | low over cracked earth at night, heat glowing in every crack; the central crack widens toward camera and embers rise; tiny in the distance, the man and the wolfdog | 9 |
+| 48 | f2241-f2291 (50) | 93.38-95.46 | [L25] | **ANIMATION** | generated: GPT Image 2.5 still (refs: real #17 frame 0, ref 3, the character sheet (front and 3/4 panels)) then Kling 3.0 i2v 3 s; uses 50 of 72 frames | low over cracked earth at night, heat glowing in every crack; the central crack widens toward camera and embers rise; tiny in the distance, the man and the wolfdog | 9 |
 | 49 | f2291-f2342 (51) | 95.46-97.58 | [L25] | **REAL** | #17 src 0.00-1.59 s at 0.75x, fade out over the last 30 frames | HERO: his fire rising over the rocks, fading to black | 0 |
 
 ### Shot by shot
@@ -162,20 +198,20 @@ Dark Blues Ritual videos have a burned-in title and are style reference only.
 
 - **Song:** f0084-f0144 (60 frames), 3.500-6.000 s
 - **Lyric:** (instrumental)
-- **Source:** generated: GPT Image 2.5 still (refs: inspiration 17, real #37 frame at 2.5 s, char refs 2, 5, 9) then Kling 3.0 i2v 3 s; uses 60 of 72 frames
-- **Viewer sees:** a tiny walking silhouette in hat and shredded duster crosses low dunes toward a huge full moon; the moon's smoke forms a rattlesnake face whose eyes open on the bar
+- **Source:** generated: GPT Image 2.5 still (refs: inspiration 17, real #37 frame at 2.5 s, the character sheet (turnaround back and 3/4 back)) then Kling 3.0 i2v 3 s; uses 60 of 72 frames
+- **Viewer sees:** a tiny walking silhouette in hat and frayed cloak crosses low dunes toward a huge full moon; the moon's smoke forms a rattlesnake face whose eyes open on the bar
 - **Camera:** locked off, very slow push-in
 - **Look match:** match #37 (sepia dune under the printed star field, torn border); local finish: colour transfer from #37, #37's grain, border plate from #37
 - **Transition in:** cut on the bar line (f0084)
-- **Generation `A1-still`:** `higgsfield generate create gpt_image_2_5 --variant sunburst --quality xhigh --resolution 2k --aspect_ratio 9:16 --image-references <insp17> --image-references <c37_2.5s.png> --image-references <ref2> --image-references <ref5> --image-references <ref9> --prompt @A1-still.txt`  (4.5 credits, from `generate cost`)
+- **Generation `A1-still`:** `higgsfield generate create gpt_image_2_5 --variant sunburst --quality xhigh --resolution 2k --aspect_ratio 9:16 --image-references <insp17> --image-references <c37_2.5s.png> --image-references <wyrd-one-sheet> --prompt @A1-still.txt`  (4.5 credits, from `generate cost`)
 
   ```text
-  Vertical 9:16. A night desert of low wind-rippled dunes under a starry sky. A huge full moon fills the upper half of the frame. In the moon's pale face, drifting smoke forms the head of a rattlesnake: eyes half closed, jaw slightly open, made only of smoke and moonlight (the motif of reference 1, redrawn, not copied). Below it, small at about 25% of frame height in the lower third, a lone man walks away from camera toward the moon: the same man as the references: black wide-brim leather hat with a braided band, long black duster coat with a shredded fringed hem, fingerless black leather gloves, a silver star-compass medallion, a black Les Paul style guitar; long hair behind his shoulders, never over the face; no face paint; the shredded coat hem lifts in the wind. A saguaro and a flat-topped butte in silhouette on the horizon. Seen from behind, so no face. Match reference 2's look exactly: aged sepia film stock, heavy organic grain, dust, fine vertical scratches, soft light leaks, faded warm amber and umber tones, lifted blacks, a torn and burned photo border at the frame edges. The moon is warm cream, not white. No text, no letters, no logos, no watermark, no extra people.
+  Vertical 9:16. A night desert of low wind-rippled dunes under a starry sky. A huge full moon fills the upper half of the frame. In the moon's pale face, drifting smoke forms the head of a rattlesnake: eyes half closed, jaw slightly open, made only of smoke and moonlight (the motif of reference 1, redrawn, not copied). Below it, small at about 25% of frame height in the lower third, a lone man walks away from camera toward the moon: The Wyrd One, exactly as the character sheet: a black wide-brim leather hat with a braided band; from the brim hangs a VEIL of long black cords that covers the whole face down to the chest; a layered dark cloak and hooded mantle, heavily worn, over a dark tunic; worn leather cargo pants and boots; a green beaded fringe necklace with a round beaded medallion; fingerless leather gloves; a black Les Paul style guitar; the frayed cloak hem lifts in the wind. A saguaro and a flat-topped butte in silhouette on the horizon. Seen from behind, so no face. Match the look of the real frame reference exactly: aged sepia film stock, heavy organic grain, dust, fine vertical scratches, soft light leaks, faded warm amber and umber tones, lifted blacks, a torn and burned photo border at the frame edges. The moon is warm cream, not white. No text, no letters, no logos, no watermark, no extra people.
   ```
 - **Generation `A1-anim`:** `higgsfield generate create kling3_0 --mode std --duration 3 --aspect_ratio 9:16 --sound off --start-image <A1-still job id> --prompt @A1-anim.txt`  (4.5 credits, from `generate cost`)
 
   ```text
-  The man keeps walking slowly toward the moon, his coat hem moving in the wind, sand drifting off the dune crest. The smoke in the moon slowly coils, and in the final second the serpent's eyes open. Locked-off camera with a very slow push-in. Keep the exact look of the frame throughout: aged sepia film stock, heavy organic grain, dust, fine vertical scratches, soft light leaks, faded warm amber and umber tones, lifted blacks, a torn and burned photo border at the frame edges. No text, no letters, no logos, no watermark, no extra people.
+  The man keeps walking slowly toward the moon, his cloak hem moving in the wind, sand drifting off the dune crest. The smoke in the moon slowly coils, and in the final second the serpent's eyes open. Locked-off camera with a very slow push-in. Keep the exact look of the frame throughout: aged sepia film stock, heavy organic grain, dust, fine vertical scratches, soft light leaks, faded warm amber and umber tones, lifted blacks, a torn and burned photo border at the frame edges. No text, no letters, no logos, no watermark, no extra people.
   ```
 - **Credits:** 9
 - **Still:** `frames/shot_02.jpg`
@@ -494,19 +530,19 @@ Dark Blues Ritual videos have a burned-in title and are style reference only.
 
 - **Song:** f1506-f1548 (42 frames), 62.750-64.500 s
 - **Lyric:** [L13]
-- **Source:** generated: GPT Image 2.5 still (refs: inspiration 16, real #39 frame at 1.5 s, char refs 2, 9) then Kling 3.0 i2v 3 s; uses 42 of 72 frames
-- **Viewer sees:** a tight low-angle portrait of him painted on cracked sandstone; the face is black under the brim; on the sung word 'eyes' one eye ignites as an ember and flares
+- **Source:** generated: GPT Image 2.5 still (refs: inspiration 16, real #39 frame at 1.5 s, the character sheet (front and 3/4 panels)) then Kling 3.0 i2v 3 s; uses 42 of 72 frames
+- **Viewer sees:** a tight low-angle portrait of him painted on cracked sandstone; the face is hidden by the cord veil; on the sung word 'eyes' one ember point ignites behind the cords and flares
 - **Camera:** slow push-in toward the brim
 - **Look match:** match #39 (sepia red sandstone, torn border); local finish: colour transfer + grain + border from #39. This is an original board-style animation, not a restyle of his footage
-- **Generation `A3-still`:** `higgsfield generate create gpt_image_2_5 --variant sunburst --quality xhigh --resolution 2k --aspect_ratio 9:16 --image-references <insp16> --image-references <c39_1.5s.png> --image-references <ref2> --image-references <ref9> --prompt @A3-still.txt`  (4.5 credits, from `generate cost`)
+- **Generation `A3-still`:** `higgsfield generate create gpt_image_2_5 --variant sunburst --quality xhigh --resolution 2k --aspect_ratio 9:16 --image-references <insp16> --image-references <c39_1.5s.png> --image-references <wyrd-one-sheet> --prompt @A3-still.txt`  (4.5 credits, from `generate cost`)
 
   ```text
-  Vertical 9:16, tight low-angle portrait from the chest up: the same man as the references: black wide-brim leather hat with a braided band, long black duster coat with a shredded fringed hem, fingerless black leather gloves, a silver star-compass medallion, a black Les Paul style guitar; long hair behind his shoulders, never over the face; no face paint, painted onto a wall of cracked red sandstone like an old rock painting, the pigment worn and flaking along real fissures that run through him. his face is hidden by LIGHTING: one hard source, low overall exposure, the face falls into the shadow of the hat brim so no features show, and the neck is no brighter than the face; the face is pure darkness under the brim, and ONE eye shows as a tiny dull ember point in that darkness, not yet glowing. Warm dusk light rakes across the rock from the left. Match reference 2's look exactly: aged sepia film stock, heavy organic grain, dust, fine vertical scratches, soft light leaks, faded warm amber and umber tones, lifted blacks, a torn and burned photo border at the frame edges. No text, no letters, no logos, no watermark, no extra people.
+  Vertical 9:16, tight low-angle portrait from the chest up: The Wyrd One, exactly as the character sheet: a black wide-brim leather hat with a braided band; from the brim hangs a VEIL of long black cords that covers the whole face down to the chest; a layered dark cloak and hooded mantle, heavily worn, over a dark tunic; worn leather cargo pants and boots; a green beaded fringe necklace with a round beaded medallion; fingerless leather gloves; a black Les Paul style guitar, painted onto a wall of cracked red sandstone like an old rock painting, the pigment worn and flaking along real fissures that run through him. The cord veil covers the whole face and no features ever show; behind the cords, where one eye would be, a single tiny dull ember point shows between two cords, not yet glowing. No beard, no skin. Warm dusk light rakes across the rock from the left. Match the look of the real frame reference exactly: aged sepia film stock, heavy organic grain, dust, fine vertical scratches, soft light leaks, faded warm amber and umber tones, lifted blacks, a torn and burned photo border at the frame edges. No text, no letters, no logos, no watermark, no extra people.
   ```
 - **Generation `A3-anim`:** `higgsfield generate create kling3_0 --mode std --duration 3 --aspect_ratio 9:16 --sound off --start-image <A3-still job id> --prompt @A3-anim.txt`  (4.5 credits, from `generate cost`)
 
   ```text
-  Slow push-in toward the dark face under the brim. At about two seconds the single eye ignites into a glowing ember-orange point and flares brighter; a few sparks drift up along the cracks in the rock. The painted figure itself does not move and the face stays dark apart from the eye. Keep the exact look of the frame: aged sepia film stock, heavy organic grain, dust, fine vertical scratches, soft light leaks, faded warm amber and umber tones, lifted blacks, a torn and burned photo border at the frame edges. No text, no letters, no logos, no watermark, no extra people.
+  Slow push-in toward the dark face under the brim. At about two seconds the single ember point behind the veil ignites and flares brighter, its glow spilling through the gaps between the cords; a few sparks drift up along the cracks in the rock. The painted figure itself does not move and the veil stays closed and no face shows. Keep the exact look of the frame: aged sepia film stock, heavy organic grain, dust, fine vertical scratches, soft light leaks, faded warm amber and umber tones, lifted blacks, a torn and burned photo border at the frame edges. No text, no letters, no logos, no watermark, no extra people.
   ```
 - **Credits:** 9
 - **Still:** `frames/shot_29.jpg`
@@ -523,20 +559,25 @@ Dark Blues Ritual videos have a burned-in title and are style reference only.
 - **Credits:** 0
 - **Still:** `frames/shot_30.jpg`
 
-#### 31. LIPSYNC: hook, part 1 (LS1, method 1)
+#### 31. LIPSYNC: hook, part 1 (LS1b, veiled frontal)
 
 - **Song:** f1561-f1627 (66 frames), 65.042-67.792 s
 - **Lyric:** [L14]
-- **Source:** H3 Max 6 s, image ref = real #22 frame 100 (src 3.33 s), audio = vocals.wav 65.039-71.039 s; uses song-synced 65.04-67.79 s
-- **Viewer sees:** his neon profile silhouette, hat and beard line against the pink sky, singing, guitar neck in frame
-- **Camera:** locked, as the source frame
-- **Look match:** the source IS his neon frame; local finish: #22's grain and flame-overlay motion screened on top if the H3 flames stall
-- **Generation `LS1`:** `higgsfield generate create minimax_h3_max --duration 6 --aspect_ratio 9:16 --resolution 768p --image <c22_f100.png> --audio <vocals_65.039-71.039.wav> --prompt @LS1.txt`  (15 credits, from `generate cost`)
+- **Source:** V1 still (GPT Image 2.5: the veiled figure FRONTAL, medium close, placed in #22's neon, from the character sheet), then H3 Max 6 s image ref = V1 + audio = vocals.wav 65.039-71.039 s; uses 65.04-67.79 s. LS1 (job e1d42c7a) is REJECTED: invented beard in profile
+- **Viewer sees:** The Wyrd One facing camera in his neon fire, veil of cords over the face, head pushing and lifting with the phrasing, guitar across the body
+- **Camera:** locked, medium close from the chest up
+- **Look match:** V1 is made in #22's look (pink sky, orange flame overlay, purple-black figure, grain); local finish: #22's grain and flame motion screened on top
+- **Generation `V1-still`:** `higgsfield generate create gpt_image_2_5 --variant sunburst --quality xhigh --resolution 2k --aspect_ratio 9:16 --image-references <wyrd-one-sheet> --image-references <sheet_frontal_x4.png> --image-references <c22_f100.png> --prompt @V1-still.txt`  (4.5 credits, from `generate cost`)
 
   ```text
-  The man in the reference image sings the supplied vocal audio: "[L14] / [L15]", while playing his black electric guitar. He stays a dark silhouette in profile against the pink sky and his face is never lit; the singing reads through the jaw and beard line in silhouette, opening and closing with every syllable and closing in the breath between the lines. His head lifts on the two held words of the first line, and on the long held last word of the second line his chin rises slowly. Small natural playing movements in the hands and shoulders. The flame overlay keeps drifting across the frame as in the reference. Keep the exact look of the reference frame: hot pink and violet sky, orange flame overlays, deep purple-black silhouette, heavy grain. Locked camera, no zoom, no cuts. No text, no extra people.
+  Vertical 9:16, medium close-up from the chest up, the man FACING THE CAMERA straight on, slightly below eye level: The Wyrd One, exactly as the character sheet: a black wide-brim leather hat with a braided band; from the brim hangs a VEIL of long black cords that covers the whole face down to the chest; a layered dark cloak and hooded mantle, heavily worn, over a dark tunic; worn leather cargo pants and boots; a green beaded fringe necklace with a round beaded medallion; fingerless leather gloves; a black Les Paul style guitar; the guitar neck crosses the lower frame. the face is NEVER shown: the cord veil covers it completely; at most a sliver of dark lips is glimpsed between the cords now and then; no beard, no nose, no eyes, no skin of the face ever visible; the veil is never lifted or parted; low-key light, one hard source. Identity and costume from reference 1 and 2 (the character sheet and its frontal veil panel); the veil pattern exactly as there. Place him in the world and look of reference 3 (his real footage frame): his neon fire composite: hot pink and violet sky, orange and yellow flame overlays drifting across the frame, the figure a deep purple-black silhouette, heavy grain; the flames pass in front of the lower body and at the frame edges, never across the veil. No profile, no beard, no visible face. No text, no letters, no logos, no watermark, no extra people.
   ```
-- **Credits:** 15
+- **Generation `LS1b`:** `higgsfield generate create minimax_h3_max --duration 6 --aspect_ratio 9:16 --resolution 768p --image <V1 job id> --audio <vocals_65.039-71.039 id a4cf692a> --prompt @LS1b.txt`  (15 credits, from `generate cost`)
+
+  ```text
+  The veiled man in the reference image sings the supplied vocal audio while playing his black electric guitar. He faces the camera, or three-quarters toward it, and his head barely turns: never a profile, never side-on. You can tell he is singing because his head moves with the phrasing: small forward pushes on stressed words, a slow lift on held notes, a settle in the pauses, and deep rhythmic breathing in the chest and shoulders. The cord veil sways with the head and the breath; through the gaps between cords the dark lips are only glimpsed now and then, opening on the sung syllables. Never show the full face, never show a beard, never lift or part the veil, never turn to profile. His head lifts on the two held words of the first line and rises slowly on the long last word of the second line; he settles and breathes in the gap between the lines. Small natural playing movements in the hands. The flame overlay keeps drifting at the edges as in the reference. Keep the exact look of the reference: his neon fire composite: hot pink and violet sky, orange and yellow flame overlays drifting across the frame, the figure a deep purple-black silhouette, heavy grain. Locked camera, no zoom, no cuts. No text, no letters, no logos, no watermark, no extra people.
+  ```
+- **Credits:** 19.5
 - **Still:** `frames/shot_31.jpg`
 
 #### 32. REAL: breath cutaway
@@ -554,8 +595,8 @@ Dark Blues Ritual videos have a burned-in title and are style reference only.
 
 - **Song:** f1640-f1690 (50 frames), 68.333-70.417 s
 - **Lyric:** [L15]
-- **Source:** LS1 continued, song-synced 68.33-70.42 s (same job)
-- **Viewer sees:** back on the singing silhouette; the chin lifts on the held last word
+- **Source:** LS1b continued, song-synced 68.33-70.42 s (same job)
+- **Viewer sees:** back on the veiled singer; the head lifts slowly on the held last word, the cords swinging
 - **Camera:** locked
 - **Look match:** as 31
 - **Credits:** 0
@@ -593,15 +634,15 @@ Dark Blues Ritual videos have a burned-in title and are style reference only.
 
 - **Song:** f1778-f1825 (47 frames), 74.083-76.042 s
 - **Lyric:** [L18]
-- **Source:** generated: GPT Image 2.5 still (refs: inspiration 15, real #40 frame at 2.5 s, char refs 2, 9) then Kling 3.0 i2v 3 s; uses 47 of 72 frames
+- **Source:** generated: GPT Image 2.5 still (refs: inspiration 15, real #40 frame at 2.5 s, the character sheet (front and 3/4 panels)) then Kling 3.0 i2v 3 s; uses 47 of 72 frames
 - **Viewer sees:** firelight climbs a cracked canyon wall and reveals a painting of him, arms out, with invented glyphs (spiral, zigzag snake, bighorn) around him
 - **Camera:** slow tilt up with the light
 - **Look match:** match #40 (sepia red sandstone and his shadow, torn border); local finish: colour transfer + grain + border from #40
 - **Transition in:** SMOKE WIPE: the serpent's own smoke plus his #46 smoke screened across, f1770-f1786 (local)
-- **Generation `A5-still`:** `higgsfield generate create gpt_image_2_5 --variant sunburst --quality xhigh --resolution 2k --aspect_ratio 9:16 --image-references <insp15> --image-references <c40_2.5s.png> --image-references <ref2> --image-references <ref9> --prompt @A5-still.txt`  (4.5 credits, from `generate cost`)
+- **Generation `A5-still`:** `higgsfield generate create gpt_image_2_5 --variant sunburst --quality xhigh --resolution 2k --aspect_ratio 9:16 --image-references <insp15> --image-references <c40_2.5s.png> --image-references <wyrd-one-sheet> --prompt @A5-still.txt`  (4.5 credits, from `generate cost`)
 
   ```text
-  Vertical 9:16, a tall cracked sandstone canyon wall at night, lit only from below. Painted on the rock in worn ochre, umber and soot black: the same man as the references: black wide-brim leather hat with a braided band, long black duster coat with a shredded fringed hem, fingerless black leather gloves, a silver star-compass medallion, a black Les Paul style guitar; long hair behind his shoulders, never over the face; no face paint, full figure, arms held out from his sides, the duster hem shredded; his face dark under the brim. Around him, smaller painted glyphs of the same age: a spiral, a zigzag snake, two bighorn sheep (invented forms, not copies of any real petroglyph). Real fissures run through the painting. The lower half of the wall is in firelight, the top still dark. Match reference 2's look exactly: aged sepia film stock, heavy organic grain, dust, fine vertical scratches, soft light leaks, faded warm amber and umber tones, lifted blacks, a torn and burned photo border at the frame edges. No text, no letters, no logos, no watermark, no extra people.
+  Vertical 9:16, a tall cracked sandstone canyon wall at night, lit only from below. Painted on the rock in worn ochre, umber and soot black: The Wyrd One, exactly as the character sheet: a black wide-brim leather hat with a braided band; from the brim hangs a VEIL of long black cords that covers the whole face down to the chest; a layered dark cloak and hooded mantle, heavily worn, over a dark tunic; worn leather cargo pants and boots; a green beaded fringe necklace with a round beaded medallion; fingerless leather gloves; a black Les Paul style guitar, full figure, arms held out from his sides, the cloak hem frayed; the cord veil over the face. Around him, smaller painted glyphs of the same age: a spiral, a zigzag snake, two bighorn sheep (invented forms, not copies of any real petroglyph). Real fissures run through the painting. The lower half of the wall is in firelight, the top still dark. Match the look of the real frame reference exactly: aged sepia film stock, heavy organic grain, dust, fine vertical scratches, soft light leaks, faded warm amber and umber tones, lifted blacks, a torn and burned photo border at the frame edges. No text, no letters, no logos, no watermark, no extra people.
   ```
 - **Generation `A5-anim`:** `higgsfield generate create kling3_0 --mode std --duration 3 --aspect_ratio 9:16 --sound off --start-image <A5-still job id> --prompt @A5-anim.txt`  (4.5 credits, from `generate cost`)
 
@@ -622,21 +663,26 @@ Dark Blues Ritual videos have a burned-in title and are style reference only.
 - **Credits:** 0
 - **Still:** `frames/shot_37.jpg`
 
-#### 38. LIPSYNC: wake-up 1 (LS2, method 2)
+#### 38. LIPSYNC: wake-up 1 (LS2b, veiled 3/4)
 
 - **Song:** f1899-f1945 (46 frames), 79.125-81.042 s
 - **Lyric:** [L20]
-- **Source:** H3 Max 6 s, VIDEO ref = real #23 (whole 5 s clip), audio = vocals.wav 79.134-85.134 s; uses 79.13-81.04 s
-- **Viewer sees:** his neon profile silhouette with the guitar, singing, carrying his real playing motion
-- **Camera:** whatever #23's camera does (the point of the test)
-- **Look match:** the source IS his neon clip; local finish: #23 grain
+- **Source:** V2 still (GPT Image 2.5: the veiled figure 3/4 TOWARD camera, placed in #23's neon), then H3 Max 6 s image ref = V2 + audio = vocals.wav 79.134-85.134 s; uses 79.13-81.04 s. LS2 (job 61a783cf, video ref) is REJECTED: no readable singing, profile
+- **Viewer sees:** The Wyrd One three-quarters toward camera in the flames, guitar neck rising, the veil swaying as his head pushes on the words
+- **Camera:** locked, medium shot from the waist up
+- **Look match:** V2 is made in #23's look; local finish: #23 grain and flame motion
 - **Transition in:** EMBER SCATTER: the fire silhouette (37) breaks into rising embers that re-form as the singer, f1889-f1907 (local p5)
-- **Generation `LS2`:** `higgsfield generate create minimax_h3_max --duration 6 --aspect_ratio 9:16 --resolution 768p --video-references <c23.mp4> --audio <vocals_79.134-85.134.wav> --prompt @LS2.txt`  (15 credits, from `generate cost`)
+- **Generation `V2-still`:** `higgsfield generate create gpt_image_2_5 --variant sunburst --quality xhigh --resolution 2k --aspect_ratio 9:16 --image-references <wyrd-one-sheet> --image-references <sheet_threeq_x4.png> --image-references <c23_f030.png> --prompt @V2-still.txt`  (4.5 credits, from `generate cost`)
 
   ```text
-  The man in the reference video sings the supplied vocal audio: "[L20] / [L21]", while he keeps playing his black electric guitar exactly as in the reference video. Keep his real movement, framing and the camera's motion from the reference video. He stays a dark silhouette in profile against the pink sky and his face is never lit; the singing reads through the jaw and beard line in silhouette, opening on each word and closing in the pause between the two lines; his head pushes forward on the held word of the first line and drops on the last word of the second. Keep the exact look of the reference: hot pink and violet sky, orange flame overlays, deep purple-black silhouette, heavy grain. No cuts. No text, no extra people.
+  Vertical 9:16, medium shot from the waist up, the man turned THREE-QUARTERS TOWARD the camera (never profile), the guitar neck rising diagonally through the frame: The Wyrd One, exactly as the character sheet: a black wide-brim leather hat with a braided band; from the brim hangs a VEIL of long black cords that covers the whole face down to the chest; a layered dark cloak and hooded mantle, heavily worn, over a dark tunic; worn leather cargo pants and boots; a green beaded fringe necklace with a round beaded medallion; fingerless leather gloves; a black Les Paul style guitar. the face is NEVER shown: the cord veil covers it completely; at most a sliver of dark lips is glimpsed between the cords now and then; no beard, no nose, no eyes, no skin of the face ever visible; the veil is never lifted or parted; low-key light, one hard source. Identity and costume from references 1 and 2 (the character sheet and its 3/4 veil panel). Place him in the world and look of reference 3 (his real footage frame): his neon fire composite: hot pink and violet sky, orange and yellow flame overlays drifting across the frame, the figure a deep purple-black silhouette, heavy grain; flames rise in front of the guitar body and at the frame edges, never across the veil. No beard, no visible face. No text, no letters, no logos, no watermark, no extra people.
   ```
-- **Credits:** 15
+- **Generation `LS2b`:** `higgsfield generate create minimax_h3_max --duration 6 --aspect_ratio 9:16 --resolution 768p --image <V2 job id> --audio <vocals_79.134-85.134 id 0c7a20a0> --prompt @LS2b.txt`  (15 credits, from `generate cost`)
+
+  ```text
+  The veiled man in the reference image sings the supplied vocal audio while playing his black electric guitar. He faces the camera, or three-quarters toward it, and his head barely turns: never a profile, never side-on. You can tell he is singing because his head moves with the phrasing: small forward pushes on stressed words, a slow lift on held notes, a settle in the pauses, and deep rhythmic breathing in the chest and shoulders. The cord veil sways with the head and the breath; through the gaps between cords the dark lips are only glimpsed now and then, opening on the sung syllables. Never show the full face, never show a beard, never lift or part the veil, never turn to profile. His head pushes forward on the held word of the first line, settles in the pause, and drops on the last word of the second line. Keep the exact look of the reference: his neon fire composite: hot pink and violet sky, orange and yellow flame overlays drifting across the frame, the figure a deep purple-black silhouette, heavy grain. Locked camera, no zoom, no cuts. No text, no letters, no logos, no watermark, no extra people.
+  ```
+- **Credits:** 19.5
 - **Still:** `frames/shot_38.jpg`
 
 #### 39. REAL: the bridge
@@ -654,8 +700,8 @@ Dark Blues Ritual videos have a burned-in title and are style reference only.
 
 - **Song:** f1976-f2022 (46 frames), 82.333-84.250 s
 - **Lyric:** [L21]
-- **Source:** LS2 continued, song-synced 82.33-84.25 s (same job)
-- **Viewer sees:** back on the singing silhouette
+- **Source:** LS2b continued, song-synced 82.33-84.25 s (same job)
+- **Viewer sees:** back on the veiled singer, the head dropping on the last word
 - **Camera:** as 38
 - **Look match:** as 38
 - **Credits:** 0
@@ -695,18 +741,18 @@ Dark Blues Ritual videos have a burned-in title and are style reference only.
 - **Credits:** 0
 - **Still:** `frames/shot_43.jpg`
 
-#### 44. LIPSYNC: wake-up 4 (LS3)
+#### 44. LIPSYNC: wake-up 4 (LS3b, veiled frontal, reuses V1)
 
 - **Song:** f2124-f2164 (40 frames), 88.500-90.167 s
 - **Lyric:** [L23]
-- **Source:** H3 Max 5 s, ref = real #26 frame 90 (method 1) or the #26 clip (method 2), picked at the wave-1 gate; audio = vocals.wav 85.496-90.496 s; uses 88.50-90.17 s
-- **Viewer sees:** close on his hat and the guitar neck in the flames, singing the last word of the run
-- **Camera:** locked (method 1) or #26's own move (method 2)
-- **Look match:** the source IS his neon frame
-- **Generation `LS3`:** `higgsfield generate create minimax_h3_max --duration 5 --aspect_ratio 9:16 --resolution 768p --image <c26_f090.png> (or --video-references <c26.mp4> if method 2 wins) --audio <vocals_85.496-90.496.wav> --prompt @LS3.txt`  (12.5 credits, from `generate cost`)
+- **Source:** H3 Max 5 s, image ref = the V1 still (no new still) + audio = vocals.wav 85.496-90.496 s; uses 88.50-90.17 s
+- **Viewer sees:** The Wyrd One facing camera in the flames, the head lowering slowly on the last held word and holding still
+- **Camera:** locked
+- **Look match:** V1 is in #22's neon, which also matches #26 beside it
+- **Generation `LS3b`:** `higgsfield generate create minimax_h3_max --duration 5 --aspect_ratio 9:16 --resolution 768p --image <V1 job id> --audio <vocals_85.496-90.496.mp3> --prompt @LS3b.txt`  (12.5 credits, from `generate cost`)
 
   ```text
-  The man in the reference sings the supplied vocal audio: "[L22] / [L23]", holding his black electric guitar with the neck rising through the frame. The hat brim and the dark keep his face unlit the whole time; the singing reads through the jaw and beard in shadow and through the head and shoulders, the head lowering slowly on the last held word and holding still after it. Flame overlays keep drifting across the frame. Keep the exact look of the reference: hot pink and violet sky, orange flame overlays, deep purple-black silhouette, heavy grain. Locked camera, no zoom, no cuts. No text, no extra people.
+  The veiled man in the reference image sings the supplied vocal audio, holding his black electric guitar. He faces the camera, or three-quarters toward it, and his head barely turns: never a profile, never side-on. You can tell he is singing because his head moves with the phrasing: small forward pushes on stressed words, a slow lift on held notes, a settle in the pauses, and deep rhythmic breathing in the chest and shoulders. The cord veil sways with the head and the breath; through the gaps between cords the dark lips are only glimpsed now and then, opening on the sung syllables. Never show the full face, never show a beard, never lift or part the veil, never turn to profile. On the last held word his head lowers slowly and then holds still, breathing. Keep the exact look of the reference: his neon fire composite: hot pink and violet sky, orange and yellow flame overlays drifting across the frame, the figure a deep purple-black silhouette, heavy grain. Locked camera, no zoom, no cuts. No text, no letters, no logos, no watermark, no extra people.
   ```
 - **Credits:** 12.5
 - **Still:** `frames/shot_44.jpg`
@@ -759,15 +805,15 @@ Dark Blues Ritual videos have a burned-in title and are style reference only.
 
 - **Song:** f2241-f2291 (50 frames), 93.375-95.458 s
 - **Lyric:** [L25]
-- **Source:** generated: GPT Image 2.5 still (refs: real #17 frame 0, ref 3, char refs 2, 9) then Kling 3.0 i2v 3 s; uses 50 of 72 frames
+- **Source:** generated: GPT Image 2.5 still (refs: real #17 frame 0, ref 3, the character sheet (front and 3/4 panels)) then Kling 3.0 i2v 3 s; uses 50 of 72 frames
 - **Viewer sees:** low over cracked earth at night, heat glowing in every crack; the central crack widens toward camera and embers rise; tiny in the distance, the man and the wolfdog
 - **Camera:** slow push-in low over the ground
 - **Look match:** match #17 (his neon fire), because it cracks open into #17; local finish: colour transfer + grain from #17
 - **Transition in:** cut on the line (f2241) from the scratchboard dog, the night world breaking
-- **Generation `A6-still`:** `higgsfield generate create gpt_image_2_5 --variant sunburst --quality xhigh --resolution 2k --aspect_ratio 9:16 --image-references <c17_f000.png> --image-references <ref3> --image-references <ref2> --image-references <ref9> --prompt @A6-still.txt`  (4.5 credits, from `generate cost`)
+- **Generation `A6-still`:** `higgsfield generate create gpt_image_2_5 --variant sunburst --quality xhigh --resolution 2k --aspect_ratio 9:16 --image-references <c17_f000.png> --image-references <ref3> --image-references <wyrd-one-sheet> --prompt @A6-still.txt`  (4.5 credits, from `generate cost`)
 
   ```text
-  Vertical 9:16, camera low and close to the ground at night: dry cracked desert earth in large polygon plates running to a dark horizon and a butte. Orange-red heat glows deep inside every crack, brightest in one long central crack that runs toward the camera; thin smoke and heat shimmer rise from the fissures. Far away on the horizon, tiny, the silhouette of the man in the wide-brim hat stands beside the wolfdog. Match reference 1's look exactly: his neon fire composite: hot pink and violet sky, orange and yellow flame overlays drifting across the frame, the figure a deep purple-black silhouette, heavy grain. No text, no letters, no logos, no watermark, no extra people.
+  Vertical 9:16, camera low and close to the ground at night: dry cracked desert earth in large polygon plates running to a dark horizon and a butte. Orange-red heat glows deep inside every crack, brightest in one long central crack that runs toward the camera; thin smoke and heat shimmer rise from the fissures. Far away on the horizon, tiny, the silhouette of the man in the wide-brim hat stands beside the wolfdog. Match the look of the real frame reference exactly: his neon fire composite: hot pink and violet sky, orange and yellow flame overlays drifting across the frame, the figure a deep purple-black silhouette, heavy grain. No text, no letters, no logos, no watermark, no extra people.
   ```
 - **Generation `A6-anim`:** `higgsfield generate create kling3_0 --mode std --duration 3 --aspect_ratio 9:16 --sound off --start-image <A6-still job id> --prompt @A6-anim.txt`  (4.5 credits, from `generate cost`)
 
@@ -806,31 +852,33 @@ Dark Blues Ritual videos have a burned-in title and are style reference only.
 
 | job | shot | credits | wave |
 |---|---|---|---|
-| `LS1 H3 6 s, method 1 (image ref)` | 31, 33 | 15 | 1 |
-| `LS2 H3 6 s, method 2 (video ref)` | 38, 40 | 15 | 1 |
-| `BR1 bridge (reuse dd8467ff)` | 09 | 0 | 1 |
+| `LS1b probe: V1 still + H3 6 s (veiled frontal)` | 31, 33 | 19.5 | 1b |
+| `BR1 bridge (reuse dd8467ff)` | 09 | 0 | 1b |
+| `LS2b: V2 still + H3 6 s (veiled 3/4)` | 38, 40 | 19.5 | 2 |
+| `LS3b: H3 5 s from V1` | 44 | 12.5 | 2 |
 | `A3 still + Kling 3 s` | 29 | 9 | 2 |
 | `A4 Kling 4 s from #23` | 35 | 6 | 2 |
 | `A6 still + Kling 3 s` | 48 | 9 | 2 |
-| `LS3 H3 5 s (method from gate)` | 44 | 12.5 | 2 |
 | `A1 still + Kling 3 s` | 02 | 9 | 3 |
 | `A2 Kling 3 s from #0` | 15 | 4.5 | 3 |
 | `A5 still + Kling 3 s` | 36 | 9 | 3 |
 | `SB2 Omni Edit of #11` | 47 | 7.5 | 3 |
 | `C1 Kling 3 s from #3` | 18 | 4.5 | 3 |
 | `SB1 scratchboard (reuse 87b55c41)` | 46 | 0 | 3 |
-| **planned total** | | **101.0** | |
+| **planned total** | | **110.0** | |
 
-**Retry allowance: 40 credits.** That covers one retake of each lipsync method (15 + 12.5), the
-bridge retake (6) and one Kling animation retake (6).
+**Already spent: 30 credits** (wave 1, LS1 and LS2, both rejected; `docs/SPEND.md`).
 
-**HARD CAP: 150 credits** for the whole song. Stop and ask Robin before anything beyond it, and
-log every generate in `secondunit/CREDITS.md`.
+**Remaining planned: 110. Spent plus planned: 140 of the 150 HARD CAP**, so only 10 credits of
+headroom, less than one lipsync retake. Two ways to hold the cap: (a) take the cuts below before
+production (dropping C1 and A2 frees 9, dropping LS3b frees 12.5), or (b) Robin raises the cap to
+about 175 to keep a real retry allowance (35). Robin decides. Nothing is submitted until then. Log
+every generate in `docs/SPEND.md`.
 
 For scale: the four earlier dream-of-fire sections cost 66.5 to 101 each, and the augment tests
-cost 50. This board covers the whole 97.6 s for about 101 planned, because the bridge and the
-scratchboard are takes Robin already approved, two animations start from his own frames (no still
-needed), and every transition is local.
+cost 50. This board covers the whole 97.6 s for 110 more (140 with wave 1), because the bridge
+and the scratchboard are takes Robin already approved, two animations start from his own frames (no
+still needed), V1 serves two singing shots, and every transition is local.
 
 Where to cut if the number has to come down:
 
@@ -845,34 +893,26 @@ Where to cut if the number has to come down:
 
 ## Production order
 
-The same wave discipline as the skill, with the waves sized to the jobs this board has.
+**Wave 1 (done, 30 credits, both rejected):** LS1 method 1 and LS2 method 2. Result: method 1
+syncs, method 2 doesn't read, and real frames can't carry a face that doesn't exist.
 
-**Wave 1, the gate (30 credits, plus the free bridge placement):**
-1. **LS1**, method 1 from #22 frame 100, on the hook. The most important shot in the video: if a
-   neon silhouette can't carry the lipsync, the board changes.
-2. **LS2**, method 2 from the #23 clip, on the first wake-up line. The biggest unknown: does H3 keep
-   his real motion?
-3. Rider, no credits: cut the accepted bridge take into f0524-f0620 at 1.26x and check the landing
-   on #36. Robin wants the bridge in the first wave; it's placed, not generated.
+**Wave 1b, the probe (19.5, needs Robin's go):** the V1 still first (4.5), reviewed against the sheet
+and #22, then LS1b on the hook (15). Gate: no profile, no beard, no face in any frame; the head
+phrases with the vocal onsets; the cords sway naturally; the neon survives.
 
-Gate questions, reviewed at normal speed with audio, then slowed, then as a mouth crop: does the
-jaw line visibly move on the words and close in the breaths? Does the face stay unlit? Does
-method 2 keep his playing motion and look filmed? Does either one invent text or a face? The
-answer picks the method for LS3 and decides whether the hook stays on 31/33.
-
-**Wave 2 (36.5):** A3 ember eye, A4 serpent ring, A6 cracks, LS3. These are the chorus and ending
-peaks.
+**Wave 2 (56):** LS2b (V2 still + H3), LS3b (reuses V1), A3 ember eye, A4 serpent ring, A6 cracks.
 **Wave 3 (34.5):** A1 moon, A2 fire ring, A5 rock wall, SB2 night wolfdog, C1 smoke continue.
 **Then local only:** the 17 transitions, the worn-film finish, and assembly against the unbroken
 song with a frame-count check.
 
 ## Risks
 
-- **Silhouette lipsync may not read.** With the face black by design, the sync lives in the jaw and
-  beard edge in profile. If H3 turns the head toward camera it can light a face or invent features.
-  That is why the gate comes first and why every singing shot is 2 to 3 s long.
-- **Method 2 is untested.** H3 may treat the video only as an identity reference and ignore the
-  motion, or it may copy the flames and drift. It costs the same as method 1, so the test is cheap.
+- **H3 may lift or part the veil** and invent a face or beard, as LS1 invented a beard. The
+  prompt forbids it, but only the probe shows whether the cords hold through 6 s of singing.
+- **Singing may not read through a veil.** With the lips only glimpsed, the head's phrasing has to
+  carry it. If it reads as nodding rather than singing, the fix is framing (closer) and prompt beats.
+- **Veil continuity:** real clips have no veil; the generated shots do (see the character sheet
+  section).
 - **Neon flame overlays under H3 and Kling.** The flames are his post composite, and the models may
   freeze or smear them. The fix is local: screen his real flame motion back over the shot.
 - **Timing.** words.json runs early, so every lipsync slice and the "eyes" flare (29) must be set

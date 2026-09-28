@@ -110,7 +110,10 @@ def still(s):
         im = crop916(video_frame(st[1], st[2]))
         ph = False
     else:  # placeholder from a ref image
-        im = crop916(Image.open(st[1]).convert("RGB"), *(st[2] if len(st) > 2 else (0.5, 0.5)))
+        src = Image.open(st[1]).convert("RGB")
+        if len(st) > 3:
+            src = src.crop(st[3])
+        im = crop916(src, *(st[2] if len(st) > 2 else (0.5, 0.5)))
         ph = True
     top = f"{s['n']:02d}  {s['type']}  f{s['a']:04d}-{s['b']:04d}  {t(s['a']):.2f}s"
     return caption(im, top, s["card"], ph)

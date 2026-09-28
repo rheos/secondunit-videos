@@ -28,10 +28,17 @@ carrying the tape. It ends on his real fire, not on a generated one, fading to b
 - His footage is never restyled. Real shots are cut, trimmed, sped or slowed only, and keep their own
   sepia, grain, torn borders, silver-grey mono or neon fire. Generated shots match a named real clip.
   The one approved conversion is scratchboard (46, 47).
-- Faceless by lighting: brim shadow, low key, one hard source, silhouette. No hair over the face, no
-  dreadlocks, no face paint.
-- Lipsync comes from HIS real guitar clips (Robin, 2026-09-28), never from a generated character.
-  Every singing shot is 2 to 3 s and intercut with real footage.
+- **Canonical character (revised 2026-09-28): "THE WYRD ONE" character sheet**
+  (`hjeron-darkblues-ref/wyrd-one-character-sheet.webp`). The face is masked by a veil of long black
+  cords hanging from the hat brim; layered worn cloak and hooded mantle, leather cargo pants and
+  boots, a green beaded fringe necklace, a black Les Paul. Behaviour: calm, deep rhythmic breathing,
+  accelerating in performance. This supersedes the earlier "faceless by lighting only, nothing over
+  the face" rule for every GENERATED shot. His real footage is untouched and keeps its own look.
+- **Singing direction (Robin):** no profile shots. The head faces camera or three-quarters and
+  barely turns; you know he's singing because the head moves with the phrasing. Lips are only
+  glimpsed through the veil sometimes, NEVER the full face or a beard
+  (counter-example: `hjeron-darkblues-ref/counterexample-too-much-face.webp`).
+- Every singing shot is 2 to 3 s and intercut with real footage.
 - One pull-back BRIDGE only (09). Every other transition comes from his own visual language, built
   locally for free.
 - Generated shots only where the tape can't do it: singing, the moon serpent, the fire ring, the
@@ -53,21 +60,50 @@ residual of its temporal median, looped over the shot); the torn/burned border p
 clip (the temporal median of its edge band, multiplied over the frame); a 1 to 2 px gate weave. Neon
 shots get his flame motion screened back on top if the model froze the overlay.
 
-## Lipsync: two methods, both from his real guitar clips
+## Lipsync (revised after wave 1)
 
-No footage of him singing exists. Both methods feed H3 Max a vocal-stem slice (vocals.wav, cut at
-song time, onsets checked against the stem) and a real piece of his neon guitar footage, where the
-profile silhouette puts the jaw line against a bright sky. That reads much better than the hazy
-grey frame in the augment test (lip_in_look_with_mix.mp4), where the face barely showed.
+Wave 1 settled the method and rejected both takes (`docs/reviews/wave1.md`):
 
-| method | input | cost | best clip | why |
+- **LS1** (job e1d42c7a, method 1 from real #22 frame 100): REJECTED by Robin. H3 invented a thick
+  beard in profile, "too clearly not him". There is no real frame of his face anywhere, so any
+  lipsync built on his own footage has to invent one.
+- **LS2** (job 61a783cf, method 2, the #23 clip as video reference): REJECTED. It kept his real
+  motion and the flames, but the head is in profile and the flames cover it, so it reads as his
+  footage, not singing.
+
+New approach: H3 method 1 (image reference + vocal slice, the one that syncs) on a **veiled
+frontal or 3/4 still of The Wyrd One**, made with GPT Image 2.5 from the character sheet and placed
+in the look of the real shot it sits between. The sheet's own veil panels (frontal and 3/4) are
+only about 135 x 166 px, too small to be the H3 reference directly, so they go in as identity refs
+to the still, and the still is the H3 reference.
+
+| still | framing | built from | look of | used by |
 |---|---|---|---|---|
-| 1, image ref (proven) | `--image` one real frame + `--audio` | 15 / 6 s, 12.5 / 5 s | **#22 frame 100** (hook, LS1); **#26 frame 90** (LS3 default) | #22 is a clean profile silhouette, hat and beard line against the pink sky with the guitar neck in frame; #26 is close on the hat and neck |
-| 2, video ref (untested) | `--video-references` the real clip + `--audio` | 15 / 6 s (same price) | **#23** (LS2) | #23 has the most playing motion and a readable profile; if H3 carries that motion, the singing looks filmed, not animated |
+| **V1** | frontal, medium close, chest up | sheet + frontal veil panel (4x crop) + real #22 frame 100 | #22 neon | LS1b (31, 33) and LS3b (44) |
+| **V2** | three-quarters toward camera, waist up | sheet + 3/4 veil panel (4x crop) + real #23 frame 30 | #23 neon | LS2b (38, 40) |
 
-Not used: the sepia bridge clips (#27-#30) and the spire (#47-#49) are too wide, since his head is
-about 40 px tall in a 1080 frame. #4, #6 and #8 are the hazy double exposures that failed. The
-Dark Blues Ritual videos have a burned-in title and are style reference only.
+The H3 prompt carries a fixed singing paragraph: face the camera or 3/4, head barely turns, the
+head moves with the phrasing, deep rhythmic breathing, the cords sway, lips only glimpsed between
+the cords, never a profile, a beard, a full face or a parted veil.
+
+**Probe (one shot, not submitted): LS1b = V1 still 4.5 + H3 6 s 15 = 19.5 credits** (both from
+`generate cost`, 2026-09-28). Review V1 before paying for the H3 pass: if the veil, frontal angle or
+neon look is wrong, stop at 4.5. Accept the H3 take only if no profile, beard or face shows in any
+frame and the head visibly phrases with the vocal onsets.
+
+## Character sheet reuse for the generated shots
+
+- **Identity ref everywhere:** every GPT Image 2.5 still (A1 moon walker, A3 ember eye, A5 rock
+  wall, A6 cracks, V1, V2) takes the sheet as its identity reference instead of the old refs 2, 5
+  and 9, and the shared character paragraph describes the veil, cloak, mantle, cargo pants and green
+  beaded necklace.
+- **Which panel:** A1 is seen from behind, so the turnaround back and 3/4 back. A3 is a frontal
+  portrait: the frontal veil panel, and the ember now glows BETWEEN the cords of the veil. A5 is a
+  full figure: the turnaround front. A6 is a tiny distant silhouette: the side view.
+- **Wolfdog:** the sheet has no dog. The generated night wolfdog (SB2) is an Omni Edit of real
+  #11, and the tiny dog in A6 takes real #16 frame 0 as its reference, so the dog is always his.
+- **Continuity note:** his real clips don't show the veil (they are silhouettes and shadows). The
+  veil only appears in the generated shots, so it reads as his vision-self. Say so if that's wrong.
 
 ## Transitions
 
@@ -99,16 +135,18 @@ Dark Blues Ritual videos have a burned-in title and are style reference only.
 
 {{TOTALS}}
 
-**Retry allowance: 40 credits.** That covers one retake of each lipsync method (15 + 12.5), the
-bridge retake (6) and one Kling animation retake (6).
+**Already spent: 30 credits** (wave 1, LS1 and LS2, both rejected; `docs/SPEND.md`).
 
-**HARD CAP: 150 credits** for the whole song. Stop and ask Robin before anything beyond it, and
-log every generate in `secondunit/CREDITS.md`.
+**Remaining planned: 110. Spent plus planned: 140 of the 150 HARD CAP**, so only 10 credits of
+headroom, less than one lipsync retake. Two ways to hold the cap: (a) take the cuts below before
+production (dropping C1 and A2 frees 9, dropping LS3b frees 12.5), or (b) Robin raises the cap to
+about 175 to keep a real retry allowance (35). Robin decides. Nothing is submitted until then. Log
+every generate in `docs/SPEND.md`.
 
 For scale: the four earlier dream-of-fire sections cost 66.5 to 101 each, and the augment tests
-cost 50. This board covers the whole 97.6 s for about 101 planned, because the bridge and the
-scratchboard are takes Robin already approved, two animations start from his own frames (no still
-needed), and every transition is local.
+cost 50. This board covers the whole 97.6 s for 110 more (140 with wave 1), because the bridge
+and the scratchboard are takes Robin already approved, two animations start from his own frames (no
+still needed), V1 serves two singing shots, and every transition is local.
 
 Where to cut if the number has to come down:
 
@@ -123,34 +161,26 @@ Where to cut if the number has to come down:
 
 ## Production order
 
-The same wave discipline as the skill, with the waves sized to the jobs this board has.
+**Wave 1 (done, 30 credits, both rejected):** LS1 method 1 and LS2 method 2. Result: method 1
+syncs, method 2 doesn't read, and real frames can't carry a face that doesn't exist.
 
-**Wave 1, the gate (30 credits, plus the free bridge placement):**
-1. **LS1**, method 1 from #22 frame 100, on the hook. The most important shot in the video: if a
-   neon silhouette can't carry the lipsync, the board changes.
-2. **LS2**, method 2 from the #23 clip, on the first wake-up line. The biggest unknown: does H3 keep
-   his real motion?
-3. Rider, no credits: cut the accepted bridge take into f0524-f0620 at 1.26x and check the landing
-   on #36. Robin wants the bridge in the first wave; it's placed, not generated.
+**Wave 1b, the probe (19.5, needs Robin's go):** the V1 still first (4.5), reviewed against the sheet
+and #22, then LS1b on the hook (15). Gate: no profile, no beard, no face in any frame; the head
+phrases with the vocal onsets; the cords sway naturally; the neon survives.
 
-Gate questions, reviewed at normal speed with audio, then slowed, then as a mouth crop: does the
-jaw line visibly move on the words and close in the breaths? Does the face stay unlit? Does
-method 2 keep his playing motion and look filmed? Does either one invent text or a face? The
-answer picks the method for LS3 and decides whether the hook stays on 31/33.
-
-**Wave 2 (36.5):** A3 ember eye, A4 serpent ring, A6 cracks, LS3. These are the chorus and ending
-peaks.
+**Wave 2 (56):** LS2b (V2 still + H3), LS3b (reuses V1), A3 ember eye, A4 serpent ring, A6 cracks.
 **Wave 3 (34.5):** A1 moon, A2 fire ring, A5 rock wall, SB2 night wolfdog, C1 smoke continue.
 **Then local only:** the 17 transitions, the worn-film finish, and assembly against the unbroken
 song with a frame-count check.
 
 ## Risks
 
-- **Silhouette lipsync may not read.** With the face black by design, the sync lives in the jaw and
-  beard edge in profile. If H3 turns the head toward camera it can light a face or invent features.
-  That is why the gate comes first and why every singing shot is 2 to 3 s long.
-- **Method 2 is untested.** H3 may treat the video only as an identity reference and ignore the
-  motion, or it may copy the flames and drift. It costs the same as method 1, so the test is cheap.
+- **H3 may lift or part the veil** and invent a face or beard, as LS1 invented a beard. The
+  prompt forbids it, but only the probe shows whether the cords hold through 6 s of singing.
+- **Singing may not read through a veil.** With the lips only glimpsed, the head's phrasing has to
+  carry it. If it reads as nodding rather than singing, the fix is framing (closer) and prompt beats.
+- **Veil continuity:** real clips have no veil; the generated shots do (see the character sheet
+  section).
 - **Neon flame overlays under H3 and Kling.** The flames are his post composite, and the models may
   freeze or smear them. The fix is local: screen his real flame motion back over the shot.
 - **Timing.** words.json runs early, so every lipsync slice and the "eyes" flare (29) must be set
