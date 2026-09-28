@@ -150,9 +150,9 @@ function wyrd(t, x, y, h, o = {}) {
   // hem strips are the coat's signature: long, uneven, streaming with the wind and the gait
   const hemY = 14, hemW = 21 + Math.abs(wind) * 2;
   const strip = (i, n, front) => { const k = i / (n - 1) - .5, bx = X(k * hemW * 2 * (front ? 1 : .92) + wind * (6 + 5 * k * Math.sign(wind))), by = Y(hemY + (front ? 0 : 2));
-    const len = (6 + 11 * hash(i * 13 + (front ? 5 : 9))) * u, w0 = (2.1 + hash(i * 7) * 1.2) * u;
+    const len = (front ? 6 + 11 * hash(i * 13 + 5) : 4 + 6 * hash(i * 13 + 9)) * u, w0 = (front ? 2.1 + hash(i * 7) * 1.2 : 1.5 + hash(i * 7) * .8) * u;
     const sway = (wind * (7 + 7 * Math.abs(k)) + snoise(t * .8 + i * .41, front ? 31 : 32) * 2.6 + gait * 3 * k) * u;
-    const c = front ? shade(i % 3 ? P.coat : P.coatShade) : shade(P.coatShade, lit * .4);
+    const c = front ? shade(i % 3 ? P.coat : P.coatShade) : shade(P.coat, lit * .7);
     const m = [bx + sway * .45, by + len * .5], e = [bx + sway, by + len];
     taper(g, [bx, by - 2 * u], m, w0, w0 * .7, c); taper(g, m, e, w0 * .7, .35 * u, c); };
   for (let i = 0; i < 10; i++) strip(i, 10, false);
@@ -163,13 +163,13 @@ function wyrd(t, x, y, h, o = {}) {
   const sh = 10.5 * (1 - Math.abs(turn) * .15); // half shoulder width (narrower than the brim)
   const flare = hemW + wind * 2;
   const panel = (side, c) => { // one side of the open duster: shoulder, sleeve line, flared hem
-    const down = side * wind > 0 ? 1 : 0, top = [X(side * 2.8), Y(neckY - 3)], shp = [X(side * sh), Y(neckY - 4.5)], hip = [X(side * (sh + .5) + wind * 1.5), Y(48)], hem = [X(side * (flare - 3) + wind * (down ? 12 : 4) + side * down * Math.abs(wind) * 6), Y(hemY + down * Math.abs(wind) * 4)], inHem = [X(side * (back ? 0 : 6.5) + wind * 3), Y(hemY + 1)];
-    g.fillStyle = c; g.beginPath(); g.moveTo(top[0], top[1]); g.quadraticCurveTo(X(side * (sh - 1)), Y(neckY - 2), shp[0], shp[1]);
+    const down = side * wind > 0 ? 1 : 0, top = [X(side * 2.6), Y(neckY - 1.5)], shp = [X(side * sh), Y(neckY - 8.5)], hip = [X(side * (sh + .5) + wind * 1.5), Y(48)], hem = [X(side * (flare - 3) + wind * (down ? 12 : 4) + side * down * Math.abs(wind) * 6), Y(hemY + down * Math.abs(wind) * 4)], inHem = [X(side * (back ? 0 : 6.5) + wind * 3), Y(hemY + 1)];
+    g.fillStyle = c; g.beginPath(); g.moveTo(top[0], top[1]); g.bezierCurveTo(X(side * 5.5), Y(neckY - 2), X(side * (sh - 1.2)), Y(neckY - 4.5), shp[0], shp[1]);
     g.bezierCurveTo(hip[0], hip[1], hip[0] + side * 1.5 * u + wind * 3 * u, Y(30), hem[0], hem[1]);
     // ragged hem edge between the outer and inner corners
     for (let k = 1; k <= 6; k++) { const q = k / 7; g.lineTo(lerp(hem[0], inHem[0], q), lerp(hem[1], inHem[1], q) + (hash(k * 5 + (side > 0 ? 3 : 0)) - .3) * 2.5 * u); }
     g.lineTo(inHem[0], inHem[1]); g.quadraticCurveTo(X(side * 6), Y(42), X(side * 3.2), Y(neckY - 9)); g.closePath(); g.fill(); };
-  if (!back) { g.fillStyle = shade(P.vest); g.beginPath(); g.moveTo(X(-3.2), Y(neckY - 4)); g.lineTo(X(3.2), Y(neckY - 4)); g.lineTo(X(5), Y(50)); g.lineTo(X(-5), Y(50)); g.fill(); }
+  if (!back) { g.fillStyle = shade(P.vest); g.beginPath(); g.moveTo(X(-3), Y(neckY - 2.5)); g.lineTo(X(3), Y(neckY - 2.5)); g.lineTo(X(5), Y(50)); g.lineTo(X(-5), Y(50)); g.fill(); }
   panel(-1, shade(turn > 0 ? P.coat : P.coatShade, lit)); panel(1, shade(turn > 0 ? P.coatShade : P.coat, lit));
   if (back) { g.fillStyle = shade(P.coat); g.beginPath(); g.moveTo(X(-sh), Y(neckY - 4)); g.quadraticCurveTo(X(0), Y(neckY - 2), X(sh), Y(neckY - 4)); g.lineTo(X(flare), Y(hemY)); g.lineTo(X(-flare), Y(hemY)); g.fill(); }
   for (let i = 0; i < 12; i++) strip(i, 12, true);
@@ -177,7 +177,7 @@ function wyrd(t, x, y, h, o = {}) {
   // sleeves read against the coat only by value: one step lighter, with a thin rim
   const sleeveC = shade(P.coat, lit + .12);
   // --- arms ---
-  const shL = [X(-sh + .5), Y(neckY - 5)], shR = [X(sh - .5), Y(neckY - 5)];
+  const shL = [X(-sh + .8), Y(neckY - 8.5)], shR = [X(sh - .8), Y(neckY - 8.5)];
   let handL, handR;
   if (arms === 'out') { const lift = 6 + br; handL = [X(-sh - 30), Y(neckY - 2 + lift)]; handR = [X(sh + 30), Y(neckY - 2 + lift)];
     for (const [a, b] of [[shL, handL], [shR, handR]]) { const el = [lerp(a[0], b[0], .5), lerp(a[1], b[1], .5) + 1.5 * u]; taper(g, a, el, 3.2 * u, 2.6 * u, sleeveC); taper(g, el, b, 2.6 * u, 1.8 * u, sleeveC); dot(g, b[0], b[1], 1.8 * u, shade(P.skin, lit * .6));
@@ -213,26 +213,40 @@ function wyrd(t, x, y, h, o = {}) {
   const hatTilt = tilt + nod * .025;
   g.save(); g.translate(hc[0], hc[1]); g.rotate(hatTilt); g.scale(1.22, 1.22);
   // the veil: black see-through cloth from the brim to below the chin, its hem stirring with breath and song
-  const vw = 6.8 * u, vTop = -4.5 * u, vBot = (7.5 + vk * .6) * u;
+  const vw = 6.2 * u, vTop = -4.5 * u, vBot = (6.2 + vk * .6) * u;
   const stir = (k) => (snoise(t * 1.3 + k * 2.1, 41) * .5 + vk * snoise(t * 6 + k, 42) * .8 + wind * .6) * u;
-  g.fillStyle = sil ? '#050506' : 'rgba(6,6,8,.97)'; g.beginPath(); g.moveTo(-vw, vTop); g.lineTo(vw, vTop);
-  for (let k = 6; k >= -6; k--) g.lineTo(k / 6 * vw * (1.05 + .05 * Math.abs(k) / 6) + stir(k), vBot + (hash(k + 20) - .5) * 1.4 * u + Math.abs(stir(k)) * .4);
+  // the head under the cloth (never any features), then the veil: black and see-through, so the
+  // backlight glows faintly through its outer edges while the head behind it stays dark
+  if (!sil) { g.fillStyle = '#060607'; g.beginPath(); g.ellipse(0, .6 * u, 4.1 * u, 5.6 * u, 0, 0, TAU); g.fill(); taper(g, [0, 4 * u], [0, 8.5 * u], 2.6 * u, 3 * u, '#060607'); }
+  g.fillStyle = sil ? '#050506' : 'rgba(6,6,8,.82)'; g.beginPath(); g.moveTo(-vw, vTop); g.lineTo(vw, vTop);
+  for (let k = 6; k >= -6; k--) g.lineTo(k / 6 * vw * .86 + stir(k), vBot + (hash(k + 20) - .5) * 1.4 * u + Math.abs(stir(k)) * .4 - Math.abs(k) / 6 * .8 * u);
   g.closePath(); g.fill();
   if (!sil && h > 500) { g.globalAlpha = .35; for (let k = -5; k <= 5; k++) stroke(g, [[k / 5.5 * vw, vTop + u], [k / 5.5 * vw * 1.05 + stir(k) * .8, vBot - u]], '#17161c', .35 * u, 'butt'); g.globalAlpha = 1; }
-  // hat: tall pinched crown (teardrop crease), braided band, brim about shoulder width, curled up at the sides
-  const B = 14;
-  g.fillStyle = shade(P.hat, lit * .8); g.beginPath(); g.moveTo(-5.4 * u, -5 * u); g.bezierCurveTo(-6.6 * u, -11 * u, -4.5 * u, -14.6 * u, -1.2 * u, -13.6 * u); g.quadraticCurveTo(0, -12.6 * u, 1.2 * u, -13.6 * u); g.bezierCurveTo(4.5 * u, -14.6 * u, 6.6 * u, -11 * u, 5.4 * u, -5 * u); g.fill();
-  if (!sil) { stroke(g, [[-5.6 * u, -6.4 * u], [5.6 * u, -6.4 * u]], shade('#3b3026', .7), 1.3 * u); g.globalAlpha = .5; stroke(g, [[0, -13 * u], [0, -9 * u]], shade(P.hatShade, .3), .8 * u); g.globalAlpha = 1; }
-  g.fillStyle = shade(P.hatShade, lit * .7); g.beginPath(); g.ellipse(0, -4.4 * u, B * u, 2.6 * u, 0, 0, TAU); g.fill();
-  g.fillStyle = shade(P.hat, lit * .9); g.beginPath(); g.moveTo(-B * u, -5.6 * u); g.quadraticCurveTo(-B * u, -8.2 * u, -(B - 3) * u, -6.8 * u); g.quadraticCurveTo(0, -3.6 * u, (B - 3) * u, -6.8 * u); g.quadraticCurveTo(B * u, -8.2 * u, B * u, -5.6 * u); g.quadraticCurveTo(0, -1.4 * u, -B * u, -5.6 * u); g.fill();
+  // hat: pinched cattleman crown (tapered sides, a dented top, front pinches), wide brim seen from a
+  // little below: the dark underside shows as a shallow ellipse and the sides curl up
+  const B = 14.5;
+  g.fillStyle = shade(P.hat, lit * .8); g.beginPath();
+  g.moveTo(-6 * u, -5.2 * u); g.lineTo(-4.6 * u, -12.4 * u); g.quadraticCurveTo(-3.1 * u, -14.2 * u, -1 * u, -13.4 * u); g.quadraticCurveTo(0, -12.6 * u, 1 * u, -13.4 * u);
+  g.quadraticCurveTo(3.1 * u, -14.2 * u, 4.6 * u, -12.4 * u); g.lineTo(6 * u, -5.2 * u); g.closePath(); g.fill();
+  if (!sil) { stroke(g, [[-5.8 * u, -6.4 * u], [5.8 * u, -6.4 * u]], shade('#3b3026', .7), 1.1 * u); g.globalAlpha = .45; stroke(g, [[-1.8 * u, -12.8 * u], [-2.6 * u, -8.5 * u]], shade(P.hatShade, .3), .7 * u); stroke(g, [[1.8 * u, -12.8 * u], [2.6 * u, -8.5 * u]], shade(P.hatShade, .3), .7 * u); g.globalAlpha = 1; }
+  // underside (the part you see from below), then the top surface curling up at both sides
+  g.fillStyle = shade(P.hatShade, lit * .5); g.beginPath(); g.ellipse(0, -4.2 * u, B * u, 4.4 * u, 0, 0, TAU); g.fill();
+  g.fillStyle = shade(P.hat, lit * .9); g.beginPath();
+  g.moveTo(-B * u, -6.2 * u); g.quadraticCurveTo(-(B + .3) * u, -8.4 * u, -(B - 3) * u, -7.6 * u); g.quadraticCurveTo(0, -4.8 * u, (B - 3) * u, -7.6 * u);
+  g.quadraticCurveTo((B + .3) * u, -8.4 * u, B * u, -6.2 * u); g.quadraticCurveTo(B * .6 * u, -2.2 * u, 0, -2 * u); g.quadraticCurveTo(-B * .6 * u, -2.2 * u, -B * u, -6.8 * u); g.fill();
   g.restore();
   // rim light on the light layer: hat brim edge + shoulder line, from behind
-  if (rim && g === s) { f.save(); f.globalCompositeOperation = 'lighter'; f.globalAlpha = .5;
+  if (rim && g === s) { f.save(); f.globalCompositeOperation = 'lighter'; f.globalAlpha = .55;
     f.translate(hc[0], hc[1]); f.rotate(hatTilt); f.scale(1.22, 1.22);
-    stroke(f, bez([2 * u, -13.8 * u], [5.2 * u, -14 * u], [6.6 * u, -10 * u], [5.6 * u, -6.6 * u], 10), rim, .45 * u);   // crown edge, light from behind right
-    stroke(f, bez([(B - 5) * u, -6.2 * u], [(B - 2) * u, -7 * u], [B * u, -8 * u], [(B + .2) * u, -5.8 * u], 8), rim, .5 * u);  // brim curl
-    f.restore(); f.save(); f.globalCompositeOperation = 'lighter'; f.globalAlpha = .35;
-    stroke(f, bez([X(sh - .5), Y(neckY - 4.5)], [X(sh + 2), Y(66)], [X(sh + 5), Y(40)], [X(flare), Y(hemY + 2)], 16), rim, .5 * u); f.restore(); }
+    stroke(f, [[4.6 * u, -12.4 * u], [6 * u, -5.4 * u]], rim, .45 * u);                                                   // crown edge, light from behind right
+    stroke(f, bez([(B - 7) * u, -6.2 * u], [(B - 3) * u, -7.8 * u], [(B + .3) * u, -8.4 * u], [B * u, -6.2 * u], 10), rim, .5 * u);  // brim curl
+    for (const [sd, al] of [[1, .16], [-1, .07]]) { const vp = [[sd * vw * .95, vTop + 1.5 * u], [sd * vw * .9 + stir(sd * 6) * .5, (vTop + vBot) / 2], [sd * vw * .82 + stir(sd * 6), vBot - 1.2 * u]]; for (let i = 1; i < vp.length; i++) { f.globalAlpha = al * (1 - i * .3); stroke(f, [vp[i - 1], vp[i]], rim, .22 * u); } }                  // light through the veil's edge
+    f.restore(); f.save(); f.globalCompositeOperation = 'lighter';
+    const sp = bez([X(2.8), Y(neckY - 1.5)], [X(6), Y(neckY - 2)], [X(sh - 1), Y(neckY - 4.5)], [X(sh), Y(neckY - 8.5)], 10);
+    for (let i = 1; i < sp.length; i++) { f.globalAlpha = .45 * (1 - i / sp.length * .5); stroke(f, [sp[i - 1], sp[i]], rim, .45 * u); }
+    const side = bez([X(sh), Y(neckY - 8.5)], [X(sh + 1.5), Y(62)], [X(sh + 2.5), Y(45)], [X(flare - 3), Y(hemY + 6)], 14);
+    for (let i = 1; i < side.length; i++) { f.globalAlpha = .3 * (1 - i / side.length); stroke(f, [side[i - 1], side[i]], rim, .4 * u); }
+    f.restore(); }
   // the one ember eye (Odin): screen-left eye behind the veil
   J.eye = [hc[0] + (-2.3 + turn * 1.2) * u, hc[1] + .6 * u];
   if (eye > 0 && !back) { glow(J.eye[0], J.eye[1], 4.5 * u * eye, `rgba(255,110,30,${.55 * eye})`); dot(f, J.eye[0], J.eye[1], .55 * u, `rgba(255,${190 + 50 * eye | 0},120,${eye})`); }
