@@ -3,3 +3,5 @@ out/
 # Paul (Pnubb) owns the song and lyrics: never commit them
 assets/
 js/data.js
+# quotes the lyrics
+STORYBOARD.md
