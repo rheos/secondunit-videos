@@ -1,0 +1,12 @@
+output/
+work/
+*.mp4
+*.mov
+*.png
+*.jpg
+*.webp
+*.wav
+*.mp3
+*.json
+*.lyrics.txt
+__pycache__/
