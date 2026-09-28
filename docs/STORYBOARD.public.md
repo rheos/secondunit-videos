@@ -11,6 +11,16 @@ Built on the real-footage rough cut in `../hjeron-dark-blues-realcut/` (48 shots
 This board keeps most of that edit and its line cuts (which come from vocal-stem onsets), and
 replaces only the spans that the tape can't cover.
 
+## Production status (2026-09-28)
+
+Built. The assembled cut is `output/dream-of-fire_storyboard-cut_f0000-f2342_24fps_9x16_master.mp4`
+(local), shot list in `docs/EDL.md` (the as-built edit, which supersedes the board below where they
+differ), reviews in `docs/reviews/`, spend in `docs/SPEND.md` (141.5 of 175). Changes from this board
+during production: singing is H3 on frames of Hjeron's real in-character day take (veil down,
+frontal or 3/4), graded locally into his neon; the veil is a black cloth, with one Odin eye at three
+beats only; generated figures wear the long tattered duster of coat-reference.webp; the sand-ripple
+shot became the forced-perspective guitar (inspiration 25); the wolfdog is in 12 shots.
+
 ## Treatment
 
 A man in a black hat walks out of the night toward a moon with a serpent's face in it. In his own
