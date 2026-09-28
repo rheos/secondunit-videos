@@ -31,7 +31,13 @@ npm install
 ../../../viralvision/viralvision-worker/.venv/bin/python tools/build_data.py   # js/data.js
 open index.html                                   # plays from 0:15 (space, arrows, f)
 node check.mjs out/sheet.jpg 15.5 18.6 22.78 26.4 # contact sheet of any times
-node render.mjs 15 29.4 out/hook.mp4 4            # the hook, 1080p30
+node render.mjs 15 29.375 out/mts_painted-hook_f00360-f00705_24fps_composite.mp4 4 24   # the hook, 1080p24
+python3 ../../secondunit-worker/catalog.py stamp out/mts_painted-hook_f00360-f00705_24fps_composite.mp4 \
+  --song mts --take painted-hook --kind composite --start 360 --method "code-painted"            # sidecar
 ```
+
+Render at 24 fps on the song frame grid (start × 24 a whole number) so any cut lines up with the
+other takes, and stamp every output. Names and sidecars follow
+`secondunit-worker/docs/catalog.md`.
 
 Homebrew ffmpeg has no `drawtext`, so contact sheets carry no time labels.

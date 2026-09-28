@@ -5,7 +5,7 @@
   "description": "Mind The Sheep hook, painted in code on the functional-emotions-video renderer (MIT).",
   "scripts": {
     "check": "node check.mjs",
-    "render": "node render.mjs 15 29.4 out/hook.mp4 4"
+    "render": "node render.mjs 15 29.375 out/mts_painted-hook_f00360-f00705_24fps_composite.mp4 4 24"
   },
   "devDependencies": { "playwright": "^1.63.0" }
 }
