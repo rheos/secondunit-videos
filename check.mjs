@@ -1,14 +1,17 @@
-// node check.mjs <out.jpg> t1 t2 t3 ...   renders those times into a 3-column contact sheet (360x640 tiles), prints ms/frame + errors
+// node check.mjs <out.jpg> t1 t2 t3 ...   renders those times into a 3-column contact sheet (tiles sized to the format), prints ms/frame + errors
 // node check.mjs --full <dir> t1 t2 ...   writes full-res stills instead
+// add --fmt 16x9 (first arg) to check the landscape framing
 import { chromium } from 'playwright';
 import fs from 'fs'; import path from 'path'; import { execSync } from 'child_process';
-const args = process.argv.slice(2); const full = args[0] === '--full'; if (full) args.shift();
+const args = process.argv.slice(2); let FMT = '9x16'; if (args[0] === '--fmt') { args.shift(); FMT = args.shift() === '16x9' ? '16x9' : '9x16'; }
+const full = args[0] === '--full'; if (full) args.shift();
+const [VW, VH] = FMT === '16x9' ? [1920, 1080] : [1080, 1920], [TW, TH] = FMT === '16x9' ? [640, 360] : [360, 640];
 const out = args.shift(); const times = args.map(Number);
 const tmp = full ? out : fs.mkdtempSync('/tmp/chk_'); fs.mkdirSync(tmp, { recursive: true });
 const b = await chromium.launch({ channel: 'chrome', headless: true, args: ['--use-angle=metal', '--ignore-gpu-blocklist', '--enable-gpu'] });
-const p = await b.newPage({ viewport: { width: 1080, height: 1920 } });
+const p = await b.newPage({ viewport: { width: VW, height: VH } });
 const errs = []; p.on('console', m => { if (m.type() === 'error') errs.push(m.text()); }); p.on('pageerror', e => errs.push(String(e)));
-await p.goto('file://' + process.cwd() + '/index.html?offline=1'); await p.evaluate(() => window.__ready);
+await p.goto('file://' + process.cwd() + `/index.html?offline=1&fmt=${FMT}`); await p.evaluate(() => window.__ready);
 const files = []; let ms = 0;
 for (const t of times) {
   const t0 = Date.now(); const url = await p.evaluate((t) => window.__frameJPEG(t, .9), t); ms += Date.now() - t0;
@@ -18,8 +21,8 @@ await b.close();
 console.log(`${times.length} frames, ${(ms / times.length).toFixed(0)} ms/frame`);
 if (!full) {
   const n = files.length, cols = Math.min(3, n), rows = Math.ceil(n / cols), pad = rows * cols - n;
-  let inputs = files.map(([, f]) => `-i "${f}"`).join(' '); let filt = files.map(([t], i) => `[${i}:v]scale=360:640[v${i}];`).join('');
-  for (let k = 0; k < pad; k++) { inputs += ` -f lavfi -i color=black:s=360x640:d=1`; filt += `[${n + k}:v]null[v${n + k}];`; }
+  let inputs = files.map(([, f]) => `-i "${f}"`).join(' '); let filt = files.map(([t], i) => `[${i}:v]scale=${TW}:${TH}[v${i}];`).join('');
+  for (let k = 0; k < pad; k++) { inputs += ` -f lavfi -i color=black:s=${TW}x${TH}:d=1`; filt += `[${n + k}:v]null[v${n + k}];`; }
   const ins = [...Array(n + pad).keys()].map(i => `[v${i}]`).join('');
   fs.mkdirSync(path.dirname(out) || '.', { recursive: true });
   execSync(`ffmpeg -y -loglevel error ${inputs} -filter_complex "${filt}${ins}xstack=inputs=${n + pad}:grid=${cols}x${rows}[o]" -map "[o]" -frames:v 1 -q:v 3 "${out}"`);

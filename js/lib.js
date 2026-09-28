@@ -23,7 +23,7 @@ function F(name, t, sm = 0) {
   if (!sm) { const i = Math.floor(f), u = f - i; return lerp(a[clamp(i, 0, a.length - 1)] || 0, a[clamp(i + 1, 0, a.length - 1)] || 0, u); }
   let s = 0, n = 0; const c = Math.round(f); for (let k = -sm; k <= sm; k++) { const v = a[c + k]; if (v !== undefined) { s += v; n++; } } return n ? s / n : 0;
 }
-const B0 = FEAT.beats[0], BEAT = (FEAT.beats[FEAT.beats.length - 1] - B0) / (FEAT.beats.length - 1); // half-time grid, ~73.9 bpm, from tools/build_data.py
+const B0 = FEAT.beats[0], BEAT = (FEAT.beats[FEAT.beats.length - 1] - B0) / (FEAT.beats.length - 1); // half-time grid, ~76 bpm, from tools/build_data.py
 function lastBeat(t) { const b = FEAT.beats; if (t < b[0]) return -1; let lo = 0, hi = b.length - 1; while (lo < hi) { const m = (lo + hi + 1) >> 1; if (b[m] <= t) lo = m; else hi = m - 1; } return lo; }
 function beatPulse(t, decay = 6) { const i = lastBeat(t); return i < 0 ? 0 : Math.exp(-decay * (t - FEAT.beats[i])); }
 const beatPhase = (t) => (((t - B0) / BEAT) % 1 + 1) % 1;
@@ -36,12 +36,18 @@ const LINES = LYRICS;
 const norm = (s) => s.toLowerCase().replace(/[^a-z0-9]/g, '');
 function when(word, after = 0) { const w = norm(word); for (const l of LINES) for (const x of l.words) if (x.s >= after - .01 && norm(x.t) === w) return x.s; throw new Error('no word ' + word + ' after ' + after); }
 
-// ---- palette ----
+// ---- palette (Hjeron's desert; each section's look is a paint + grade preset in cast.js LOOK) ----
 const P = {
-  night0: '#070b1f', night1: '#0e1a45', night2: '#233a7a', dusk: '#4b3f7e', haze: '#6d5a8e',
-  ink: '#0a0d1c', hill: '#10183a', hill2: '#1a2552', city: '#0d1330',
-  ember: '#ff5a1f', amber: '#ffb347', gold: '#ffd98a', cream: '#f3e6c9', coat: '#d8d4c6', coatShade: '#8f91a0',
-  red: '#e0301e', sea: '#0f2a4a', sea2: '#1f4a6e', skin: '#e8b98a',
+  ink: '#07080d', night0: '#070b1a', night1: '#0e1a38', night2: '#22375e', moonlit: '#8a9bb0',
+  sand: '#c9a878', sandShade: '#7d5f3c', rock: '#a0522d', rockShade: '#5a2a18', rockLit: '#d9895a',
+  sage: '#6f7a4f', creosote: '#4d5433', bone: '#e6dcc6', char: '#16100c',
+  ember: '#ff5a1f', amber: '#ffb347', gold: '#ffd98a', cream: '#f3e6c9', fire: '#ff7a1c',
+  sepia0: '#1b140e', sepia1: '#5a4632', sepia2: '#a38b6a', sepia3: '#d8c6a4',
+  sunset0: '#2a0d12', sunset1: '#a8321c', sunset2: '#f06a1e', sunset3: '#ffc24a',
+  // The Wyrd One
+  hat: '#241c17', hatShade: '#140f0c', coat: '#1c1714', coatShade: '#0e0b09', vest: '#15110f',
+  pants: '#2e261d', boot: '#1a1411', veil: '#050506', bead: '#3f9a63', beadDark: '#1f5a3a', medal: '#b9b3a6',
+  guitar: '#0b0b0d', binding: '#e8cf86', hw: '#d7c28a', skin: '#8a6a55',
 };
 
 // ---- drawing helpers (s = src ctx, f = light ctx), all in 1080x1920 (9:16) coords ----

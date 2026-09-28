@@ -3,7 +3,11 @@
 // The GPU then repaints src with instanced brushstrokes that sample its colour and follow its edges,
 // adds fx as glowing light on top, and finishes with canvas weave + vignette.
 
-const W = 1080, H = 1920, SW = 540, SH = 960;
+// Format: ?fmt=9x16 (default, 1080x1920) or ?fmt=16x9 (1920x1080). Shots read VERT / pick() to frame both.
+const FMT = new URLSearchParams(location.search).get('fmt') === '16x9' ? '16x9' : '9x16';
+const VERT = FMT === '9x16';
+const W = VERT ? 1080 : 1920, H = VERT ? 1920 : 1080, SW = W / 2, SH = H / 2;
+const pick = (vert, land) => VERT ? vert : land;
 
 const Paint = (() => {
   const src = document.createElement('canvas'); src.width = SW; src.height = SH;
@@ -11,7 +15,7 @@ const Paint = (() => {
   const fxb = document.createElement('canvas'); fxb.width = SW / 4; fxb.height = SH / 4;
   const sctx = src.getContext('2d'), fctx = fx.getContext('2d'), bctx = fxb.getContext('2d');
 
-  let gl, progStroke, progQuad, progFinish, vaoStroke, layers = [], texSrc, texFx, texFxb, quadVao;
+  let gl, progStroke, progQuad, progFinish, progGrade, fbo, texFrame, vaoStroke, layers = [], texSrc, texFx, texFxb, quadVao;
 
   const VS_STROKE = `#version 300 es
   precision highp float;
@@ -89,6 +93,63 @@ const Paint = (() => {
     o.a = clamp(vig, 0., 1.) * (1. + g*uGrain) * (.94 + .06*weave);
   }`;
 
+  // Look grade: reads the finished painted frame back and applies the section's look. Neutral values
+  // (sat 1, con 1, everything else 0) leave the frame untouched.
+  const FS_GRADE = `#version 300 es
+  precision highp float; in vec2 vUV; uniform sampler2D uImg; uniform vec2 uRes; out vec4 o;
+  uniform float uFr, uSat, uCon, uLift, uTintK, uScratch, uDust, uBurn, uEtch, uWeave, uFlick; uniform vec3 uTint;
+  float h1(float n){ return fract(sin(n)*43758.5453); }
+  float h2(vec2 p){ return fract(sin(dot(p, vec2(12.9898,78.233)))*43758.5453); }
+  float n2(vec2 p){ vec2 i=floor(p), f=fract(p); f=f*f*(3.-2.*f);
+    return mix(mix(h2(i),h2(i+vec2(1,0)),f.x),mix(h2(i+vec2(0,1)),h2(i+vec2(1,1)),f.x),f.y); }
+  float L(vec2 uv){ return dot(texture(uImg, uv).rgb, vec3(.299,.587,.114)); }
+  void main(){
+    vec2 wv = (vec2(h1(uFr*1.31), h1(uFr*2.77)) - .5) * uWeave / uRes;
+    vec2 uv = vUV + wv;
+    vec3 c = texture(uImg, uv).rgb;
+    float l = dot(c, vec3(.299,.587,.114));
+    if (uEtch > .001) {
+      // scratchboard: white edge lines scraped out of black, plus hatching where the paint is light
+      vec2 e = 1.6 / uRes;
+      float gx = L(uv+vec2(e.x,0.)) - L(uv-vec2(e.x,0.)) + .5*(L(uv+vec2(e.x,e.y)) - L(uv-vec2(e.x,-e.y)));
+      float gy = L(uv+vec2(0.,e.y)) - L(uv-vec2(0.,e.y)) + .5*(L(uv+vec2(e.x,e.y)) - L(uv-vec2(-e.x,e.y)));
+      float edge = smoothstep(.04, .16, length(vec2(gx,gy)));
+      vec2 px = gl_FragCoord.xy;
+      float wob = n2(px*.013) * 3.;
+      float hatch = smoothstep(.62, .78, fract((px.x*.62 + px.y) * .11 + wob));
+      float hatch2 = smoothstep(.66, .8, fract((px.x*-.55 + px.y) * .13 + wob*1.3));
+      float tone = smoothstep(.12, .55, l);
+      float v = max(edge, hatch * tone + hatch2 * smoothstep(.45, .85, l));
+      v = max(v, smoothstep(.72, .92, l));
+      vec3 ink = vec3(v) * vec3(.95, .93, .88) + vec3(.012, .014, .02);
+      c = mix(c, ink, uEtch); l = dot(c, vec3(.299,.587,.114));
+    }
+    c = mix(vec3(l), c, uSat);
+    c = mix(c, clamp(l * uTint * 1.3, 0., 1.), uTintK);
+    c = (c - .5) * uCon + .5;
+    c = uLift + c * (1. - uLift);
+    c *= 1. + (h1(uFr*5.13) - .5) * uFlick;
+    float sc = 0.;
+    for (int i = 0; i < 5; i++) {
+      float fi = float(i);
+      float x = h1(floor(uFr/2.)*7.1 + fi*13.7);
+      float on = step(.5, h1(floor(uFr/2.)*3.3 + fi*1.9));
+      float w = (.6 + h1(fi*4.1 + uFr) * 1.4) / uRes.x;
+      sc += on * smoothstep(w, 0., abs(uv.x - x - sin(uv.y*9. + fi)*.002)) * smoothstep(.2, .6, n2(vec2(fi*9., uv.y*14. + uFr*.5)));
+    }
+    c = mix(c, vec3(.92, .86, .74), clamp(sc, 0., 1.) * uScratch * .7);
+    float d = step(.9993, h2(floor(gl_FragCoord.xy/2.5) + uFr*17.3));
+    c = mix(c, vec3(.03), d * uDust);
+    vec2 q = min(uv, 1. - uv) * uRes / min(uRes.x, uRes.y);
+    float dd = min(q.x, q.y);
+    float nb = n2(uv * uRes / min(uRes.x, uRes.y) * 9. + 3.1) * .7 + n2(uv * uRes / min(uRes.x, uRes.y) * 31.) * .3;
+    float edgeIn = smoothstep(.0, .035, dd - .01 - nb * .045);
+    float scorch = smoothstep(.0, .02, dd - .004 - nb * .04);
+    vec3 burnt = mix(vec3(.015, .01, .008), vec3(.32, .16, .05), scorch);
+    c = mix(c, mix(burnt, c * vec3(.8, .62, .42), smoothstep(.0, 1., edgeIn)), uBurn * (1. - edgeIn * edgeIn));
+    o = vec4(clamp(c, 0., 1.), 1.);
+  }`;
+
   function sh(type, s) { const x = gl.createShader(type); gl.shaderSource(x, s); gl.compileShader(x); if (!gl.getShaderParameter(x, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(x) + s); return x; }
   function prog(vs, fs) { const p = gl.createProgram(); gl.attachShader(p, sh(gl.VERTEX_SHADER, vs)); gl.attachShader(p, sh(gl.FRAGMENT_SHADER, fs)); gl.linkProgram(p); if (!gl.getProgramParameter(p, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(p)); return p; }
   function tex() { const t = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, t); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE); return t; }
@@ -102,7 +163,9 @@ const Paint = (() => {
 
   function init(canvas) {
     gl = canvas.getContext('webgl2', { preserveDrawingBuffer: true, antialias: false, premultipliedAlpha: false });
-    progStroke = prog(VS_STROKE, FS_STROKE); progQuad = prog(VS_QUAD, FS_UNDER); progFinish = prog(VS_QUAD, FS_FINISH);
+    progStroke = prog(VS_STROKE, FS_STROKE); progQuad = prog(VS_QUAD, FS_UNDER); progFinish = prog(VS_QUAD, FS_FINISH); progGrade = prog(VS_QUAD, FS_GRADE);
+    texFrame = tex(); gl.bindTexture(gl.TEXTURE_2D, texFrame); gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, W, H, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+    fbo = gl.createFramebuffer(); gl.bindFramebuffer(gl.FRAMEBUFFER, fbo); gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texFrame, 0); gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     texSrc = tex(); texFx = tex(); texFxb = tex();
     // quad
     quadVao = gl.createVertexArray(); gl.bindVertexArray(quadVao);
@@ -131,11 +194,13 @@ const Paint = (() => {
 
   function upload(t, c) { gl.bindTexture(gl.TEXTURE_2D, t); gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false); gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, c); }
 
-  // o: { boil (paint frames per second), grain, vig, bloom, strokeK (size multiplier), layers mask }
+  // o: { boil (paint frames per second), grain, vig, bloom, strokeK (size multiplier), layers mask,
+  //      look: sat, con, lift, tint [r,g,b], tintK, scratch, dust, burn, etch, weave (px), flick }
   function present(t, o = {}) {
     const boilRate = o.boil ?? 8;
     bctx.globalCompositeOperation = 'copy'; bctx.filter = 'blur(5px)'; bctx.drawImage(fx, 0, 0, fxb.width, fxb.height); bctx.filter = 'none';
     upload(texSrc, src); upload(texFx, fx); upload(texFxb, fxb);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
     gl.viewport(0, 0, W, H); gl.disable(gl.DEPTH_TEST);
     // underpainting
     gl.disable(gl.BLEND); gl.useProgram(progQuad); gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, texSrc);
@@ -164,6 +229,16 @@ const Paint = (() => {
     gl.blendFuncSeparate(gl.ZERO, gl.SRC_ALPHA, gl.ZERO, gl.ONE); gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
     // pass 2: dst += light
     gl.blendFuncSeparate(gl.ONE, gl.ONE, gl.ZERO, gl.ONE); gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+    // look grade: frame texture -> canvas
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null); gl.viewport(0, 0, W, H); gl.disable(gl.BLEND);
+    gl.useProgram(progGrade); const G = (n) => gl.getUniformLocation(progGrade, n);
+    gl.activeTexture(gl.TEXTURE3); gl.bindTexture(gl.TEXTURE_2D, texFrame); gl.uniform1i(G('uImg'), 3);
+    gl.uniform2f(G('uRes'), W, H); gl.uniform1f(G('uFr'), Math.floor(t * 24) % 997);
+    const tint = o.tint || [1, .78, .52];
+    gl.uniform3f(G('uTint'), tint[0], tint[1], tint[2]);
+    for (const [u, k, d] of [['uSat', 'sat', 1], ['uCon', 'con', 1], ['uLift', 'lift', 0], ['uTintK', 'tintK', 0], ['uScratch', 'scratch', 0], ['uDust', 'dust', 0], ['uBurn', 'burn', 0], ['uEtch', 'etch', 0], ['uWeave', 'weave', 0], ['uFlick', 'flick', 0]])
+      gl.uniform1f(G(u), o[k] ?? d);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
     gl.activeTexture(gl.TEXTURE0);
   }
 

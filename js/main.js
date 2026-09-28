@@ -2,7 +2,7 @@
 function renderFrame(t) {
   bindCtx();
   for (const g of [s, f]) { g.setTransform(.5, 0, 0, .5, 0, 0); g.globalAlpha = 1; g.globalCompositeOperation = 'source-over'; g.filter = 'none'; }
-  fill(s, P.night0); fill(f, '#000');
+  fill(s, P.ink); fill(f, '#000');
   let paint = {}; PAINT_FRAME = {};
   for (let k = 0; k < SHOTS.length; k++) {
     const sh = SHOTS[k], nx = SHOTS[k + 1];
@@ -13,7 +13,7 @@ function renderFrame(t) {
     try { sh.fn(t, clamp((t - sh.a) / (sh.b - sh.a)), t - sh.a); } catch (e) { console.error(sh.name, e); }
     for (const g of [s, f]) g.restore();
     const pc = typeof sh.o.paint === 'function' ? sh.o.paint(t) : (sh.o.paint || {});
-    paint = a >= 1 ? pc : { ...paint, ...Object.fromEntries(Object.entries(pc).map(([key, v]) => [key, typeof v === 'number' ? lerp(paint[key] ?? v, v, a) : v])) };
+    paint = a >= 1 ? pc : { ...paint, ...Object.fromEntries(Object.entries(pc).map(([key, v]) => [key, typeof v === 'number' ? lerp(paint[key] ?? v, v, a) : Array.isArray(v) && Array.isArray(paint[key]) ? v.map((x, j) => lerp(paint[key][j], x, a)) : v])) };
   }
   Paint.present(t, { ...paint, ...PAINT_FRAME });
 }

@@ -1,14 +1,15 @@
-// node render.mjs <t0> <t1> <out.mp4> [workers] [fps]
+// node render.mjs <t0> <t1> <out.mp4> [workers] [fps] [fmt: 9x16 | 16x9]
 import { chromium } from 'playwright';
 import fs from 'fs'; import { execSync } from 'child_process';
 const [t0, t1] = [Number(process.argv[2]), Number(process.argv[3])]; const out = process.argv[4];
-const WK = Number(process.argv[5] || 6), FPS = Number(process.argv[6] || 30);
-const dir = `out/frames_${t0}_${t1}`; fs.rmSync(dir, { recursive: true, force: true }); fs.mkdirSync(dir, { recursive: true });
+const WK = Number(process.argv[5] || 6), FPS = Number(process.argv[6] || 24), FMT = process.argv[7] === '16x9' ? '16x9' : '9x16';
+const [VW, VH] = FMT === '16x9' ? [1920, 1080] : [1080, 1920];
+const dir = `out/frames_${FMT}_${t0}_${t1}`; fs.rmSync(dir, { recursive: true, force: true }); fs.mkdirSync(dir, { recursive: true });
 const n = Math.round((t1 - t0) * FPS); let done = 0; const start = Date.now();
 const b = await chromium.launch({ channel: 'chrome', headless: true, args: ['--use-angle=metal', '--ignore-gpu-blocklist', '--enable-gpu'] });
 await Promise.all([...Array(WK)].map(async (_, w) => {
-  const p = await b.newPage({ viewport: { width: 1080, height: 1920 } });
-  await p.goto('file://' + process.cwd() + '/index.html?offline=1'); await p.evaluate(() => window.__ready);
+  const p = await b.newPage({ viewport: { width: VW, height: VH } });
+  await p.goto('file://' + process.cwd() + `/index.html?offline=1&fmt=${FMT}`); await p.evaluate(() => window.__ready);
   for (let i = w; i < n; i += WK) {
     const url = await p.evaluate((t) => window.__frameJPEG(t, .92), t0 + i / FPS);
     fs.writeFileSync(`${dir}/f_${String(i).padStart(6, '0')}.jpg`, Buffer.from(url.split(',')[1], 'base64'));
