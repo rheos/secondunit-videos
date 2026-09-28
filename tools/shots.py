@@ -12,19 +12,21 @@ SEPIA = ("aged sepia film stock, heavy organic grain, dust, fine vertical scratc
 NEON = ("his neon fire composite: hot pink and violet sky, orange and yellow flame overlays drifting across "
         "the frame, the figure a deep purple-black silhouette, heavy grain")
 # Canonical look since 2026-09-28: the "THE WYRD ONE" character sheet (hjeron-darkblues-ref/wyrd-one-character-sheet.webp).
+# Veil (Robin 2026-09-28): a black see-through cloth hanging from the brim; he can see out, nobody can see in.
 CHAR = ("The Wyrd One, exactly as the character sheet: a black wide-brim leather hat with a braided band; from the "
-        "brim hangs a VEIL of long black cords that covers the whole face down to the chest; a layered dark cloak "
-        "and hooded mantle, heavily worn, over a dark tunic; worn leather cargo pants and boots; a green beaded "
-        "fringe necklace with a round beaded medallion; fingerless leather gloves; a black Les Paul style guitar")
-FACE = ("the face is NEVER shown: the cord veil covers it completely; at most a sliver of dark lips is glimpsed "
-        "between the cords now and then; no beard, no nose, no eyes, no skin of the face ever visible; the veil is "
-        "never lifted or parted; low-key light, one hard source")
+        "brim hangs a VEIL, a sheer black cloth of fine black cord-mesh, falling over the whole face to the chest; "
+        "a layered dark cloak and hooded mantle, heavily worn, over a dark tunic; worn leather cargo pants and boots; "
+        "a green beaded fringe necklace with a round beaded medallion; fingerless leather gloves; a black Les Paul "
+        "style guitar")
+FACE = ("the face is NEVER visible in any way: behind the black veil there is only darkness; no face, no nose, "
+        "no lips, no mouth, no beard, no eyes, no skin, not even a silhouette of features through the cloth; the "
+        "veil is opaque to the viewer and is never lifted, parted or blown aside; low-key light, one hard source")
 VEILSING = ("He faces the camera, or three-quarters toward it, and his head barely turns: never a profile, never "
-            "side-on. You can tell he is singing because his head moves with the phrasing: small forward pushes on "
-            "stressed words, a slow lift on held notes, a settle in the pauses, and deep rhythmic breathing in the "
-            "chest and shoulders. The cord veil sways with the head and the breath; through the gaps between cords "
-            "the dark lips are only glimpsed now and then, opening on the sung syllables. Never show the full face, "
-            "never show a beard, never lift or part the veil, never turn to profile.")
+            "side-on. You can tell he is singing only from his body: the head moves with the phrasing, small "
+            "forward pushes on stressed words, a slow lift on held notes, a settle in the pauses; deep rhythmic "
+            "breathing lifts the chest and shoulders; and the veil itself stirs and breathes outward on the sung "
+            "phrases, then falls back in the pauses. Behind the veil there is only darkness: never a face, lips, "
+            "mouth or beard, and the veil never lifts, parts or turns sheer.")
 NOTXT = "No text, no letters, no logos, no watermark, no extra people."
 
 S = lambda n, a, b, typ, title, lyric, src, sees, cam, look, still, card, cr=0, pid=None, tin=None: dict(  # noqa: E731
@@ -150,7 +152,7 @@ SHOTS = [
       "as shot, slowed", R, ("clip", 16, 0.6), "the wolfdog, sun on the horizon"),
     S(29, 1506, 1548, "ANIMATION", "the ember eye (A3)", "{L13}",
       "generated: GPT Image 2.5 still (refs: inspiration 16, real #39 frame at 1.5 s, the character sheet (front and 3/4 panels)) then Kling 3.0 i2v 3 s; uses 42 of 72 frames",
-      "a tight low-angle portrait of him painted on cracked sandstone; the face is hidden by the cord veil; on the sung word 'eyes' one ember point ignites behind the cords and flares",
+      "a tight low-angle portrait of him painted on cracked sandstone; the face is hidden by the cord veil; on the sung word 'eyes' one ember point ignites behind the veil and flares",
       "slow push-in toward the brim",
       "match #39 (sepia red sandstone, torn border); local finish: colour transfer + grain + border from #39. This is an original board-style animation, not a restyle of his footage",
       ("ph", REF + "inspiration/16.webp", (0.5, 0.35)), "ember eye under the brim, painted on sandstone; #39's sepia look",
@@ -172,7 +174,7 @@ SHOTS = [
       "as shot", R, ("clip", 25, 0.8), "hat silhouette in the flames"),
     S(33, 1640, 1690, "LIPSYNC", "hook, part 2 (LS1)", "{L15}",
       "LS1b continued, song-synced 68.33-70.42 s (same job)",
-      "back on the veiled singer; the head lifts slowly on the held last word, the cords swinging",
+      "back on the veiled singer; the head lifts slowly on the held last word, the veil breathing out",
       "locked", "as 31", ("ph", SHEET, (0.5, 0.5), FRONTAL), "LS1b continued (same job)",
       cr=0, pid=None),
     S(34, 1690, 1701, "REAL", "burning sky", "{L15}",
@@ -200,7 +202,7 @@ SHOTS = [
     # ---------------- wake-up run L20-L23
     S(38, 1899, 1945, "LIPSYNC", "wake-up 1 (LS2b, veiled 3/4)", "{L20}",
       "V2 still (GPT Image 2.5: the veiled figure 3/4 TOWARD camera, placed in #23's neon), then H3 Max 6 s image ref = V2 + audio = vocals.wav 79.134-85.134 s; uses 79.13-81.04 s. LS2 (job 61a783cf, video ref) is REJECTED: no readable singing, profile",
-      "The Wyrd One three-quarters toward camera in the flames, guitar neck rising, the veil swaying as his head pushes on the words",
+      "The Wyrd One three-quarters toward camera in the flames, guitar neck rising, the veil breathing outward as his head pushes on the words",
       "locked, medium shot from the waist up",
       "V2 is made in #23's look; local finish: #23 grain and flame motion",
       ("ph", SHEET, (0.5, 0.5), THREEQ), "V2 placeholder: sheet 3/4 veil panel; to be re-shot in #23's neon",
@@ -275,9 +277,9 @@ PROMPTS = {
                prompt=f"""Continue this exact shot seamlessly from the given first frame. The man in the black wide-brim hat and the wolfdog keep walking away from camera into the thick white smoke; the smoke rolls toward the camera and closes over them until only the outline of the hat shows, then nothing but smoke. Keep the exact look of the frame throughout: black background, the torn-mask edges, white smoke, grain. {NOTXT}"""),
     "A3-still": dict(cr=4.5, cmd="higgsfield generate create gpt_image_2_5 --variant sunburst --quality xhigh --resolution 2k --aspect_ratio 9:16 "
                                   "--image-references <insp16> --image-references <c39_1.5s.png> --image-references <wyrd-one-sheet> --prompt @A3-still.txt",
-                     prompt=f"""Vertical 9:16, tight low-angle portrait from the chest up: {CHAR}, painted onto a wall of cracked red sandstone like an old rock painting, the pigment worn and flaking along real fissures that run through him. The cord veil covers the whole face and no features ever show; behind the cords, where one eye would be, a single tiny dull ember point shows between two cords, not yet glowing. No beard, no skin. Warm dusk light rakes across the rock from the left. Match the look of the real frame reference exactly: {SEPIA}. {NOTXT}"""),
+                     prompt=f"""Vertical 9:16, tight low-angle portrait from the chest up: {CHAR}, painted onto a wall of cracked red sandstone like an old rock painting, the pigment worn and flaking along real fissures that run through him. The cord veil covers the whole face and no features ever show; behind the veil, where one eye would be, a single tiny dull ember point shows through the black cloth, not yet glowing. No face, no beard, no skin. Warm dusk light rakes across the rock from the left. Match the look of the real frame reference exactly: {SEPIA}. {NOTXT}"""),
     "A3-anim": dict(cr=4.5, cmd="higgsfield generate create kling3_0 --mode std --duration 3 --aspect_ratio 9:16 --sound off --start-image <A3-still job id> --prompt @A3-anim.txt",
-                    prompt=f"""Slow push-in toward the dark face under the brim. At about two seconds the single ember point behind the veil ignites and flares brighter, its glow spilling through the gaps between the cords; a few sparks drift up along the cracks in the rock. The painted figure itself does not move and the veil stays closed and no face shows. Keep the exact look of the frame: {SEPIA}. {NOTXT}"""),
+                    prompt=f"""Slow push-in toward the dark face under the brim. At about two seconds the single ember point behind the veil ignites and flares brighter, its glow bleeding through the black cloth; a few sparks drift up along the cracks in the rock. The painted figure itself does not move and the veil stays closed and no face shows. Keep the exact look of the frame: {SEPIA}. {NOTXT}"""),
     "A4": dict(cr=6, cmd="higgsfield generate create kling3_0 --mode std --duration 4 --aspect_ratio 9:16 --sound off --start-image <c23_f030.png> --prompt @A4.txt",
                prompt=f"""Continue this exact shot. A spectral rattlesnake made of white smoke rises out of the flames at the bottom of the frame, climbs past the man's dark silhouette and coils into a full ring around him, its head meeting its own tail, the rattle raised. Then the ring loosens and breaks apart into drifting smoke that spreads across the whole frame. The man stays a dark silhouette, the hat brim hiding the face. Keep the exact look of the frame: {NEON}. {NOTXT}"""),
     "A5-still": dict(cr=4.5, cmd="higgsfield generate create gpt_image_2_5 --variant sunburst --quality xhigh --resolution 2k --aspect_ratio 9:16 "
@@ -287,12 +289,12 @@ PROMPTS = {
                     prompt=f"""Flames rise at the base of the rock wall and their light sweeps upward across the painting, revealing the painted figure from the feet to the hat; the cracks glow faintly as the light passes. The painting itself does not move, only the firelight flickers. Slow tilt up with the light. Keep the exact look of the frame: {SEPIA}. {NOTXT}"""),
     "V1-still": dict(cr=4.5, cmd="higgsfield generate create gpt_image_2_5 --variant sunburst --quality xhigh --resolution 2k --aspect_ratio 9:16 "
                                   "--image-references <wyrd-one-sheet> --image-references <sheet_frontal_x4.png> --image-references <c22_f100.png> --prompt @V1-still.txt",
-                     prompt=f"""Vertical 9:16, medium close-up from the chest up, the man FACING THE CAMERA straight on, slightly below eye level: {CHAR}; the guitar neck crosses the lower frame. {FACE}. Identity and costume from reference 1 and 2 (the character sheet and its frontal veil panel); the veil pattern exactly as there. Place him in the world and look of reference 3 (his real footage frame): {NEON}; the flames pass in front of the lower body and at the frame edges, never across the veil. No profile, no beard, no visible face. {NOTXT}"""),
+                     prompt=f"""Vertical 9:16, medium close-up from the chest up, the man FACING THE CAMERA straight on, slightly below eye level: {CHAR}; the guitar neck crosses the lower frame. {FACE}. Identity and costume from reference 1 and 2 (the character sheet and its frontal veil panel); the veil exactly as there, as dense, black cloth. Place him in the world and look of reference 3 (his real footage frame): {NEON}; the flames pass in front of the lower body and at the frame edges, never across the veil. No profile, no beard, no face, no lips, nothing of the face showing through the veil. {NOTXT}"""),
     "LS1b": dict(cr=15, cmd="higgsfield generate create minimax_h3_max --duration 6 --aspect_ratio 9:16 --resolution 768p --image <V1 job id> --audio <vocals_65.039-71.039 id a4cf692a> --prompt @LS1b.txt",
                  prompt=f"""The veiled man in the reference image sings the supplied vocal audio while playing his black electric guitar. {VEILSING} His head lifts on the two held words of the first line and rises slowly on the long last word of the second line; he settles and breathes in the gap between the lines. Small natural playing movements in the hands. The flame overlay keeps drifting at the edges as in the reference. Keep the exact look of the reference: {NEON}. Locked camera, no zoom, no cuts. {NOTXT}"""),
     "V2-still": dict(cr=4.5, cmd="higgsfield generate create gpt_image_2_5 --variant sunburst --quality xhigh --resolution 2k --aspect_ratio 9:16 "
                                   "--image-references <wyrd-one-sheet> --image-references <sheet_threeq_x4.png> --image-references <c23_f030.png> --prompt @V2-still.txt",
-                     prompt=f"""Vertical 9:16, medium shot from the waist up, the man turned THREE-QUARTERS TOWARD the camera (never profile), the guitar neck rising diagonally through the frame: {CHAR}. {FACE}. Identity and costume from references 1 and 2 (the character sheet and its 3/4 veil panel). Place him in the world and look of reference 3 (his real footage frame): {NEON}; flames rise in front of the guitar body and at the frame edges, never across the veil. No beard, no visible face. {NOTXT}"""),
+                     prompt=f"""Vertical 9:16, medium shot from the waist up, the man turned THREE-QUARTERS TOWARD the camera (never profile), the guitar neck rising diagonally through the frame: {CHAR}. {FACE}. Identity and costume from references 1 and 2 (the character sheet and its 3/4 veil panel). Place him in the world and look of reference 3 (his real footage frame): {NEON}; flames rise in front of the guitar body and at the frame edges, never across the veil. No beard, no face, no lips, nothing of the face showing through the veil. {NOTXT}"""),
     "LS2b": dict(cr=15, cmd="higgsfield generate create minimax_h3_max --duration 6 --aspect_ratio 9:16 --resolution 768p --image <V2 job id> --audio <vocals_79.134-85.134 id 0c7a20a0> --prompt @LS2b.txt",
                  prompt=f"""The veiled man in the reference image sings the supplied vocal audio while playing his black electric guitar. {VEILSING} His head pushes forward on the held word of the first line, settles in the pause, and drops on the last word of the second line. Keep the exact look of the reference: {NEON}. Locked camera, no zoom, no cuts. {NOTXT}"""),
     "LS3b": dict(cr=12.5, cmd="higgsfield generate create minimax_h3_max --duration 5 --aspect_ratio 9:16 --resolution 768p --image <V1 job id> --audio <vocals_85.496-90.496.mp3> --prompt @LS3b.txt",

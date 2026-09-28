@@ -1,5 +1,7 @@
 # SPEND: dream of fire storyboard (hjeron_dark_blues)
 
+**HARD CAP raised to 175** (Robin, picker, 2026-09-28: "Probe + raise cap to 175"). Step 1 of the probe only: the V1 still. The H3 pass waits for his OK.
+
 Approval: Robin 2026-09-28 (relayed by the coordinator): "ok. let's continue". Covers production
 of the storyboard under a HARD CAP of 150 credits, wave 1 only for now (LS1 and LS2). No toolkit
 project is used, so there is no plan:approve hash; this line is the record.
@@ -14,7 +16,11 @@ Only this session's job ids are logged here. Another session (Pnubb) spends the 
 
 Balance 1992.04 before, 1962.04 after (delta 30, matches the two estimates).
 
-**Running total: 30 of 150.** Production is PAUSED by Robin after wave 1. Next proposed spend,
+| 2026-09-28 21:34 UTC | gpt_image_2_5 sunburst xhigh 2k 9:16 | 4.5 | V1 veiled frontal still (refs: sheet e8a9a2d8, frontal crop b79a988f, real #22 f100 161c2bf6). Made with the PRE-correction prompt (lips may be glimpsed); see review | 8513085f-09f0-4cd4-8cb0-509be585ecf5 |
+
+Balance 1962.04 before, 1957.54 after (delta 4.5).
+
+**Running total: 34.5 of 175.** Production is PAUSED by Robin after wave 1. Next proposed spend,
 not submitted: the LS1b probe (V1 veiled still 4.5 + H3 6 s 15 = 19.5), which needs Robin's go.
 Spent plus the remaining plan is 140 of 150; see STORYBOARD.public.md, Totals.
 

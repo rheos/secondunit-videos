@@ -29,14 +29,14 @@ carrying the tape. It ends on his real fire, not on a generated one, fading to b
   sepia, grain, torn borders, silver-grey mono or neon fire. Generated shots match a named real clip.
   The one approved conversion is scratchboard (46, 47).
 - **Canonical character (revised 2026-09-28): "THE WYRD ONE" character sheet**
-  (`hjeron-darkblues-ref/wyrd-one-character-sheet.webp`). The face is masked by a veil of long black
-  cords hanging from the hat brim; layered worn cloak and hooded mantle, leather cargo pants and
+  (`hjeron-darkblues-ref/wyrd-one-character-sheet.webp`). The face is masked by a veil hanging from the hat
+  brim, a black see-through cloth (the sheet draws it as fine cords): he can see out, you can't see his face at all; layered worn cloak and hooded mantle, leather cargo pants and
   boots, a green beaded fringe necklace, a black Les Paul. Behaviour: calm, deep rhythmic breathing,
   accelerating in performance. This supersedes the earlier "faceless by lighting only, nothing over
   the face" rule for every GENERATED shot. His real footage is untouched and keeps its own look.
 - **Singing direction (Robin):** no profile shots. The head faces camera or three-quarters and
-  barely turns; you know he's singing because the head moves with the phrasing. Lips are only
-  glimpsed through the veil sometimes, NEVER the full face or a beard
+  barely turns; you know he's singing because the head moves with the phrasing. NO face, lips or beard
+  visible at any moment (Robin: "a black cloth that he can see through but you can't see his face at all")
   (counter-example: `hjeron-darkblues-ref/counterexample-too-much-face.webp`).
 - Every singing shot is 2 to 3 s and intercut with real footage.
 - One pull-back BRIDGE only (09). Every other transition comes from his own visual language, built
@@ -83,8 +83,9 @@ to the still, and the still is the H3 reference.
 | **V2** | three-quarters toward camera, waist up | sheet + 3/4 veil panel (4x crop) + real #23 frame 30 | #23 neon | LS2b (38, 40) |
 
 The H3 prompt carries a fixed singing paragraph: face the camera or 3/4, head barely turns, the
-head moves with the phrasing, deep rhythmic breathing, the cords sway, lips only glimpsed between
-the cords, never a profile, a beard, a full face or a parted veil.
+head moves with the phrasing, deep rhythmic breathing lifts the chest and shoulders, the veil
+stirs and breathes outward on the sung phrases; behind it only darkness: never a profile, face, lips,
+beard or a parted veil.
 
 **Probe (one shot, not submitted): LS1b = V1 still 4.5 + H3 6 s 15 = 19.5 credits** (both from
 `generate cost`, 2026-09-28). Review V1 before paying for the H3 pass: if the veil, frontal angle or
@@ -98,7 +99,7 @@ frame and the head visibly phrases with the vocal onsets.
   and 9, and the shared character paragraph describes the veil, cloak, mantle, cargo pants and green
   beaded necklace.
 - **Which panel:** A1 is seen from behind, so the turnaround back and 3/4 back. A3 is a frontal
-  portrait: the frontal veil panel, and the ember now glows BETWEEN the cords of the veil. A5 is a
+  portrait: the frontal veil panel, and the ember now glows through the black veil. A5 is a
   full figure: the turnaround front. A6 is a tiny distant silhouette: the side view.
 - **Wolfdog:** the sheet has no dog. The generated night wolfdog (SB2) is an Omni Edit of real
   #11, and the tiny dog in A6 takes real #16 frame 0 as its reference, so the dog is always his.
@@ -166,7 +167,7 @@ syncs, method 2 doesn't read, and real frames can't carry a face that doesn't ex
 
 **Wave 1b, the probe (19.5, needs Robin's go):** the V1 still first (4.5), reviewed against the sheet
 and #22, then LS1b on the hook (15). Gate: no profile, no beard, no face in any frame; the head
-phrases with the vocal onsets; the cords sway naturally; the neon survives.
+phrases with the vocal onsets; the veil breathes with the phrases and nothing of the face shows through; the neon survives.
 
 **Wave 2 (56):** LS2b (V2 still + H3), LS3b (reuses V1), A3 ember eye, A4 serpent ring, A6 cracks.
 **Wave 3 (34.5):** A1 moon, A2 fire ring, A5 rock wall, SB2 night wolfdog, C1 smoke continue.
@@ -175,10 +176,11 @@ song with a frame-count check.
 
 ## Risks
 
-- **H3 may lift or part the veil** and invent a face or beard, as LS1 invented a beard. The
-  prompt forbids it, but only the probe shows whether the cords hold through 6 s of singing.
-- **Singing may not read through a veil.** With the lips only glimpsed, the head's phrasing has to
-  carry it. If it reads as nodding rather than singing, the fix is framing (closer) and prompt beats.
+- **H3 may lift, part or thin the veil** and show a face or beard, as LS1 invented a beard. The
+  first V1 still already lets a faint nose ridge show through the strands, so the veil must read as
+  dense black cloth.
+- **Singing may not read through a veil.** With no lips at all, the head's phrasing, the breath and
+  the veil's movement have to carry it. If it reads as nodding rather than singing, the fix is framing (closer) and prompt beats.
 - **Veil continuity:** real clips have no veil; the generated shots do (see the character sheet
   section).
 - **Neon flame overlays under H3 and Kling.** The flames are his post composite, and the models may
