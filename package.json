@@ -1,0 +1,11 @@
+{
+  "name": "pnubb-mind-the-sheep-painted",
+  "private": true,
+  "type": "module",
+  "description": "Mind The Sheep hook, painted in code on the functional-emotions-video renderer (MIT).",
+  "scripts": {
+    "check": "node check.mjs",
+    "render": "node render.mjs 15 29.4 out/hook.mp4 4"
+  },
+  "devDependencies": { "playwright": "^1.63.0" }
+}
