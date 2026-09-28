@@ -21,3 +21,14 @@ vids_review2.jpg, *_face.jpg) and `work/checks*.jpg`.
 Known soft spots: the H3 takes are 768p and the reused Kling takes 720p; the ember-scatter
 transition dissolves in blotches; the serpent is a smoke ghost with a still-readable outline.
 The optional "The Wyrd One" title card (inspiration 26) is NOT in the cut; it is an option for Robin.
+
+## Revision v2 (Robin's notes on the v1 cut, 2026-09-28, local only, no spend)
+
+- Shot 11 (29.29-32.75 s): the smoke hold now has his real wolfdog clip #11 walking up through it as
+  a double exposure (screen, 62%), the smoke drifting over the dog. Shot 01 got the same treatment
+  with his real shadow walk #40 at 32% under the fade-in.
+- Shot 29 (62.75-64.50 s): the A3 animation (cord veil, read as a wanted poster) is replaced by his
+  REAL day take from 26.0 s: he plays and sways, the black cloth veil down, a slow push-in with a
+  slight drift, graded sepia toward #16. ONE ember eye is composited behind the veil, tracked to his
+  head by template matching, lighting on the sung word and flaring into the white-out.
+- v1 kept as `output/*_v1.*`. AI share is now 32.2% (shot 29 is real footage).

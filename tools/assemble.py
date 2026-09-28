@@ -33,8 +33,9 @@ CLIPS = [c["path"] for c in json.load(open(FOOT + "manifest.json"))["clips"]]
 W, H = 1080, 1920
 
 
-def R(a, b, clip, inp, sp, why, dog=False, fo=0, fi=0):
-    return dict(kind="REAL", a=a, b=b, clip=clip, inp=inp, sp=sp, why=why, dog=dog, fo=fo, fi=fi)
+def R(a, b, clip, inp, sp, why, dog=False, fo=0, fi=0, over=None):
+    """over = (clip, inp, speed, weight): a second real clip screened in, a double exposure."""
+    return dict(kind="REAL", a=a, b=b, clip=clip, inp=inp, sp=sp, why=why, dog=dog, fo=fo, fi=fi, over=over)
 
 
 def X(a, b, kind, path, off, why, fx=None, sp=1.0, dog=False, job=""):
@@ -42,7 +43,8 @@ def X(a, b, kind, path, off, why, fx=None, sp=1.0, dog=False, job=""):
 
 
 SHOTS = [
-    R(0, 84, 44, 0.30, 0.60, "smoke drifting on black, fade in", fi=24),
+    R(0, 84, 44, 0.30, 0.60, "smoke drifting on black, his shadow walking the rock (#40) double-exposed through it, fade in", fi=24,
+      over=(40, 0.5, 0.9, 0.32)),
     X(84, 144, "ANIMATION", G + "A1_raw.mp4", 13, "A1 moon serpent: he and the wolfdog walk toward the moon, its serpent eyes open",
       fx=dict(grain=37), dog=True, job="d875e005 + A1-anim"),
     R(144, 240, 0, 1.20, 0.55, "ram skull under the storm (match cut from the moon onto the horn curl)"),
@@ -54,7 +56,8 @@ SHOTS = [
     X(524, 620, "BRIDGE", AUG + "t_bridge.mp4", 0, "the pull-back: lifts off the spire, flies the desert, lands on the dune", sp=1.26,
       job="dd8467ff (reused)"),
     R(620, 703, 36, 0.00, 1.00, "him walking the dune, the wolfdog behind", dog=True),
-    R(703, 786, 45, 0.50, 0.80, "storm clouds on black"),
+    R(703, 786, 45, 0.50, 0.80, "storm clouds on black with the wolfdog (#11) walking up through them, double exposure", dog=True,
+      over=(11, 0.0, 0.58, 0.62)),
     R(786, 871, 28, 0.50, 1.00, "him, the Les Paul and the wolfdog on the stone bridge", dog=True),
     R(871, 911, 1, 0.00, 0.80, "storm sky over the skull"),
     R(911, 939, 6, 0.80, 0.80, "ghosted double-exposure guitar"),
@@ -73,8 +76,8 @@ SHOTS = [
     R(1355, 1399, 29, 1.00, 1.00, "him and the wolfdog on the bridge", dog=True),
     R(1399, 1450, 15, 1.10, 0.50, "HERO rattlesnake, slow"),
     R(1450, 1506, 16, 0.00, 0.38, "the wolfdog, sun on the horizon", dog=True),
-    X(1506, 1548, "ANIMATION", G + "A3_raw.mp4", 16, "A3 the Odin eye ignites behind the veil on the sung word", fx=dict(grain=39),
-      job="c8a6b284 + 71a304db"),
+    X(1506, 1548, "DAYTAKE", G + "day29_sepia.mp4", 0, "his real day take (26.0 s on), veil down, playing and swaying, slow push-in, "
+      "graded sepia; ONE ember eye composited behind the veil, flaring on the sung word", fx=dict(gamma=1.45)),
     R(1548, 1561, 9, 0.30, 1.00, "overexposed flash"),
     X(1561, 1627, "LIPSYNC", DT + "LS1c_neon_v.mp4", 0, "LS1c the hook, his day take re-lit into his neon", job="1d50a97d"),
     R(1627, 1640, 25, 0.50, 1.00, "hat silhouette in the flames (breath)"),
@@ -108,7 +111,7 @@ TRANS = [
     ("embers", 1889, 1907, {}), ("torn", 2044, 2058, {}), ("etch", 2168, 2184, {}), ("crack", 2280, 2296, {}),
 ]
 # Odin glint: one ember eye behind the veil, tracked to the head. (take, take frame at peak, x, y in take px)
-GLINTS = {"LS2": (22, 420, 300), "LS3": (104, 590, 250)}
+GLINTS = {"LS2": (22, 420, 300, 3.5, 1.0, 0), "LS3": (104, 590, 250, 3.5, 1.0, 0), "D29": (23, 359, 392, 3.0, 1.8, 1)}
 
 
 # ---------------------------------------------------------------- sources
@@ -213,6 +216,11 @@ def shot_frame(s, k):
         v = vid(FOOT + CLIPS[s["clip"]])
         t = s["inp"] + (k - s["a"]) / FPS * s["sp"]
         img = v.frame(round(t * v.fps)).astype(np.float32)
+        if s.get("over"):
+            oc, oi, osp, ow = s["over"]
+            ov = vid(FOOT + CLIPS[oc])
+            o = ov.frame(round((oi + (k - s["a"]) / FPS * osp) * ov.fps)).astype(np.float32) * ow
+            img = 255 - (255 - img) * (255 - o) / 255  # screen: a double exposure
     else:
         v = vid(s["path"])
         img = v.frame(s["off"] + (k - s["a"]) * s["sp"]).astype(np.float32)
@@ -223,6 +231,8 @@ def shot_frame(s, k):
             img = ghost(img.astype(np.uint8), plate, (k - s["a"]) / FPS)
         if fx.get("etch"):
             img = etch(img.astype(np.uint8), k)
+        if "gamma" in fx:
+            img = 255 * (img / 255) ** fx["gamma"]
         if "grain" in fx:
             gb = grain_of(fx["grain"])
             img = img + gb[k % len(gb)]
@@ -313,7 +323,7 @@ def transition(kind, u, A, B, k, extra):
             out = aged * (u / 0.15) + A * (1 - u / 0.15)
         return out
     if kind == "eyeflash":
-        g = np.exp(-(((xx - W * 0.52) / (W * (0.05 + u)))) ** 2 - ((yy - H * 0.36) / (H * (0.03 + u * 0.8))) ** 2)
+        g = np.exp(-(((xx - W * 0.468) / (W * (0.05 + u)))) ** 2 - ((yy - H * 0.292) / (H * (0.03 + u * 0.8))) ** 2)
         w = g[..., None] * np.array([200, 235, 255], np.float32) * smooth(u) * 1.6
         return np.clip(A + w + smooth(u) ** 3 * 255, 0, 255)
     if kind == "dexp":
@@ -353,8 +363,10 @@ TRACK = {}
 
 
 def glint(name, take_path, tk, img, k_take):
-    peak, x, y = GLINTS[name]
-    amt = np.exp(-((k_take - peak) / 3.5) ** 2)
+    peak, x, y, width, size, hold = GLINTS[name]
+    amt = np.exp(-((k_take - peak) / width) ** 2)
+    if hold and k_take > peak:  # the flare stays lit into the white-out
+        amt = 1.0 + 0.04 * (k_take - peak)
     if amt < 0.02:
         return img
     v = vid(take_path)
@@ -364,7 +376,7 @@ def glint(name, take_path, tk, img, k_take):
         sx, sy = W / 768, H / 1344
         px, py = int(x * sx), int(y * sy)
         tpl = ref[py - 90:py + 90, px - 90:px + 90]
-        for j in range(peak - 12, peak + 13):
+        for j in range(peak - 24, peak + 26):
             g = cv2.cvtColor(v.frame(j).astype(np.uint8), cv2.COLOR_BGR2GRAY)
             y0, x0 = max(py - 170, 0), max(px - 170, 0)
             win = g[y0:py + 170, x0:px + 170]
@@ -374,13 +386,13 @@ def glint(name, take_path, tk, img, k_take):
         TRACK[name] = pts
     px, py = TRACK[name].get(k_take, TRACK[name][peak])
     yy, xx = np.mgrid[0:H, 0:W].astype(np.float32)
-    core = np.exp(-(((xx - px) ** 2 + (yy - py) ** 2) / (2 * 9.0 ** 2)))
-    halo = np.exp(-(((xx - px) ** 2 + (yy - py) ** 2) / (2 * 42.0 ** 2)))
+    core = np.exp(-(((xx - px) ** 2 + (yy - py) ** 2) / (2 * (9.0 * size) ** 2)))
+    halo = np.exp(-(((xx - px) ** 2 + (yy - py) ** 2) / (2 * (42.0 * size) ** 2)))
     col = np.array([60, 150, 255], np.float32)
     return np.clip(img + (core[..., None] * 255 + halo[..., None] * col * 0.7) * amt, 0, 255)
 
 
-GLINT_OF = {"LS2_neon.mp4": "LS2", "LS3_neon.mp4": "LS3"}
+GLINT_OF = {"LS2_neon.mp4": "LS2", "LS3_neon.mp4": "LS3", "day29_sepia.mp4": "D29"}
 
 
 def frame_at(k):
@@ -394,10 +406,14 @@ def frame_at(k):
             if kind in ("leak", "weave", "splice"):
                 return transition(kind, u, None, shot_frame(s, k), k, extra)
             if kind == "eyeflash":
-                return transition(kind, u, shot_frame(SHOTS[j], k), None, k, extra) if s is SHOTS[j] else shot_frame(s, k)
+                return transition(kind, u, with_glint(SHOTS[j], k), None, k, extra) if s is SHOTS[j] else shot_frame(s, k)
             A = shot_frame(SHOTS[j], k)
             B = shot_frame(SHOTS[nxt], k) if nxt is not None else A
             return transition(kind, u, A, B, k, extra)
+    return with_glint(s, k)
+
+
+def with_glint(s, k):
     img = shot_frame(s, k)
     name = GLINT_OF.get(os.path.basename(s.get("path", "")))
     if name:
@@ -457,10 +473,10 @@ def edl():
     for i, s in enumerate(SHOTS):
         n = s["b"] - s["a"]
         if s["kind"] == "REAL":
-            src, off = f"#{s['clip']}", f"{s['inp']:.2f} s"
+            src, off = f"#{s['clip']}" + (f" + #{s['over'][0]} screened" if s.get("over") else ""), f"{s['inp']:.2f} s"
         else:
             src, off = os.path.basename(s["path"]), f"take f{s['off']}"
-            ai += n
+            ai += 0 if s["kind"] == "DAYTAKE" else n
         rows.append(f"| {i + 1:02d} | f{s['a']:04d}-f{s['b']:04d} | {n} | {s['a'] / FPS:.2f}-{s['b'] / FPS:.2f} | {s['kind']} | {src} | {off} | "
                     f"{s['sp']:.2f}x | {s['why']} | {'yes' if s.get('dog') else ''} | {s.get('job', '')} |")
     tr = ["| transition | frames | built |", "|---|---|---|"] + [f"| {k} | f{a}-f{b} | local |" for k, a, b, _ in TRANS]
@@ -478,8 +494,8 @@ Wolfdog on screen in {dogs} shots. Fade in f0000-f0024, fade out over the last 3
 
 """ + "\n".join(rows) + "\n\n## Transitions (all local, free)\n\n" + "\n".join(tr) + """
 
-Odin eye: one ember eye glints through the veil at three beats only: A3 (the "open our eyes" line,
-the full ignition), LS2 (a brief glint on the first held wake-up word) and LS3 (a glint on the
+Odin eye: one ember eye glints through the veil at three beats only: shot 29 (the "open our eyes"
+line: his real day take with the eye composited, flaring into the white-out), LS2 (a brief glint on the first held wake-up word) and LS3 (a glint on the
 last word of the run). Never two eyes, never elsewhere.
 """
     open(os.path.join(PROJ, "docs", "EDL.md"), "w").write(txt)
