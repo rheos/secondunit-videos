@@ -207,14 +207,16 @@ function wyrd(t, x, y, h, o = {}) {
     // hip (screen left), the neck rises steeply to screen right, fretting hand high on the neck.
     const sway = strum ? Math.sin(t * TAU / BEAT) * .03 : 0, ang = -1.02 + sway - turn * .06;
     const body = [X(-3 + turn * 2), Y(44)];
-    drawLesPaul(g, body[0], body[1], 10.5 * u, ang, sil, lit);
     const dir = [Math.cos(ang), Math.sin(ang)];
     handR = [body[0] + dir[0] * 17 * u, body[1] + dir[1] * 17 * u];              // fretting hand (his left, screen right)
     const pick = strum ? Math.sin(t * TAU / (BEAT / 2)) * 1.4 * u * clamp(F('mid', t, 2) * 1.5) : 0;
     handL = [body[0] + 1 * u, body[1] - 1.5 * u + pick];                          // strumming hand (his right, screen left)
     const elL = [X(-sh - 1), Y(55)], elR = [X(sh + 1.5), Y(55)];
-    taper(g, shL, elL, 3.3 * u, 2.8 * u, sleeveC); taper(g, elL, handL, 2.8 * u, 2 * u, sleeveC);
+    // layering like a real player: the fretting arm passes BEHIND the neck, then the guitar,
+    // then the strumming forearm over the body, then both hands (the fretting hand wraps the neck)
     taper(g, shR, elR, 3.3 * u, 2.8 * u, sleeveC); taper(g, elR, handR, 2.8 * u, 2 * u, sleeveC);
+    drawLesPaul(g, body[0], body[1], 10.5 * u, ang, sil, lit);
+    taper(g, shL, elL, 3.3 * u, 2.8 * u, sleeveC); taper(g, elL, handL, 2.8 * u, 2 * u, sleeveC);
     for (const hd of [handL, handR]) { dot(g, hd[0], hd[1], 2 * u, shade('#0d0b0a')); dot(g, hd[0] + .8 * u, hd[1] - .4 * u, .9 * u, shade(P.skin, lit * .7)); }
   }
   J.handL = handL; J.handR = handR;
