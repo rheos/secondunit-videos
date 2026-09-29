@@ -152,11 +152,11 @@ function wyrd(t, x, y, h, o = {}) {
   // breathing + singing phrasing (head tilt / lift) from the vocal stem
   const br = Math.sin(t * TAU / 4.2) * .6 * breath;
   const v = sing > 0 ? F('voc', t, 3) : 0, vk = sing * clamp(v * 1.2);
-  const nod = sing * (snoise(t * 1.7, 21) * .5 + vk * .8) + groove * hunch * bob(t) * .7, tilt = sing * snoise(t * .9, 22) * .06 + turn * .05 + hunch * (playing ? .2 : .04);
+  const nod = sing * (snoise(t * 1.7, 21) * .5 + vk * .8) + groove * hunch * bob(t) * .7, tiltS = sing * snoise(t * .9, 22) * .06 + turn * .05, tilt = tiltS + hunch * (playing ? .16 : .04);
   const gait = walk ? Math.sin(walk * TAU) : 0, bobY = walk ? Math.abs(gait) * -1.2 * u : 0;
   const X = (ux) => x + ux * u, Y = (uy) => y - uy * u + bobY;
   const neckY = 84 + br * .3 + vk * .6 - hunch * 1.2, headY = 90 + br * .35 + vk * 1.1 - nod * .6 - hunch * (playing ? 4 : 2);
-  const hx = turn * 3 + tilt * 30 + hunch * (playing ? .5 : 0); // head x offset (a touch toward the guitar neck when playing)
+  const hx = turn * 3 + tiltS * 30 + hunch * (playing ? .4 : 0); // head x offset (a touch toward the guitar neck when playing)
   const J = {};
   // the whole figure leans as ONE piece, pivoting at the boots (a hip pivot split him in two)
   const hipYw = y + bobY;
@@ -193,7 +193,7 @@ function wyrd(t, x, y, h, o = {}) {
   // sleeves read against the coat only by value: one step lighter, with a thin rim
   const sleeveC = shade(P.coat, lit + .12);
   // --- arms ---
-  const shL = [X(-sh + .8), Y(neckY - 8.5 - (playing ? .8 : 0))], shR = [X(sh - .8), Y(neckY - 8.5 + (playing ? 1.4 : 0))];
+  const shL = [X(-sh + .8), Y(neckY - 8.5)], shR = [X(sh - .8), Y(neckY - 8.5)];
   let handL, handR;
   if (arms === 'out') { const lift = 6 + br; handL = [X(-sh - 30), Y(neckY - 2 + lift)]; handR = [X(sh + 30), Y(neckY - 2 + lift)];
     for (const [a, b] of [[shL, handL], [shR, handR]]) { const el = [lerp(a[0], b[0], .5), lerp(a[1], b[1], .5) + 1.5 * u]; taper(g, a, el, 3.2 * u, 2.6 * u, sleeveC); taper(g, el, b, 2.6 * u, 1.8 * u, sleeveC); dot(g, b[0], b[1], 1.8 * u, shade(P.skin, lit * .6));
@@ -205,14 +205,14 @@ function wyrd(t, x, y, h, o = {}) {
   if (guitar === 'play' && !back) {
     // He plays right-handed (checked against his in-character day take): the body sits at his right
     // hip (screen left), the neck rises steeply to screen right, fretting hand high on the neck.
-    const sway = strum ? Math.sin(t * TAU / BEAT) * .03 : 0, ang = -1.2 + sway - turn * .06;
-    const body = [X(-2 + turn * 2), Y(46)];
+    const sway = strum ? Math.sin(t * TAU / BEAT) * .03 : 0, ang = -1.02 + sway - turn * .06;
+    const body = [X(-3 + turn * 2), Y(44)];
     drawLesPaul(g, body[0], body[1], 10.5 * u, ang, sil, lit);
     const dir = [Math.cos(ang), Math.sin(ang)];
-    handR = [body[0] + dir[0] * 23 * u, body[1] + dir[1] * 23 * u];              // fretting hand (his left, screen right)
+    handR = [body[0] + dir[0] * 17 * u, body[1] + dir[1] * 17 * u];              // fretting hand (his left, screen right)
     const pick = strum ? Math.sin(t * TAU / (BEAT / 2)) * 1.4 * u * clamp(F('mid', t, 2) * 1.5) : 0;
     handL = [body[0] + 1 * u, body[1] - 1.5 * u + pick];                          // strumming hand (his right, screen left)
-    const elL = [X(-sh - 1), Y(57)], elR = [X(sh + 3.5), Y(63)];
+    const elL = [X(-sh - 1), Y(55)], elR = [X(sh + 1.5), Y(55)];
     taper(g, shL, elL, 3.3 * u, 2.8 * u, sleeveC); taper(g, elL, handL, 2.8 * u, 2 * u, sleeveC);
     taper(g, shR, elR, 3.3 * u, 2.8 * u, sleeveC); taper(g, elR, handR, 2.8 * u, 2 * u, sleeveC);
     for (const hd of [handL, handR]) { dot(g, hd[0], hd[1], 2 * u, shade('#0d0b0a')); dot(g, hd[0] + .8 * u, hd[1] - .4 * u, .9 * u, shade(P.skin, lit * .7)); }
@@ -258,7 +258,7 @@ function wyrd(t, x, y, h, o = {}) {
     stroke(f, bez([(B - 7) * u, -6.2 * u], [(B - 3) * u, -7.8 * u], [(B + .3) * u, -8.4 * u], [B * u, -6.2 * u], 10), rim, .5 * u);  // brim curl
     for (const [sd, al] of [[1, .16], [-1, .07]]) { const vp = [[sd * vw * .95, vTop + 1.5 * u], [sd * vw * .9 + stir(sd * 6) * .5, (vTop + vBot) / 2], [sd * vw * .82 + stir(sd * 6), vBot - 1.2 * u]]; for (let i = 1; i < vp.length; i++) { f.globalAlpha = al * (1 - i * .3); stroke(f, [vp[i - 1], vp[i]], rim, .22 * u); } }                  // light through the veil's edge
     f.restore(); f.save(); f.globalCompositeOperation = 'lighter';
-    const sp = bez([X(2.8), Y(neckY - 1.5)], [X(6), Y(neckY - 2)], [X(sh - 1), Y(neckY - 4.5)], [X(sh), Y(neckY - 8.5)], 10);
+    const sp = bez([X(sh - 3.5), Y(neckY - 5.5)], [X(sh - 2), Y(neckY - 6.5)], [X(sh - .6), Y(neckY - 7.5)], [X(sh), Y(neckY - 8.5)], 6);
     for (let i = 1; i < sp.length; i++) { f.globalAlpha = .45 * (1 - i / sp.length * .5); stroke(f, [sp[i - 1], sp[i]], rim, .45 * u); }
     const side = bez([X(sh), Y(neckY - 8.5)], [X(sh + 1.5), Y(62)], [X(sh + 2.5), Y(45)], [X(flare - 3), Y(hemY + 6)], 14);
     for (let i = 1; i < side.length; i++) { f.globalAlpha = .3 * (1 - i / side.length); stroke(f, [side[i - 1], side[i]], rim, .4 * u); }
