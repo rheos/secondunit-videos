@@ -32,3 +32,20 @@ The optional "The Wyrd One" title card (inspiration 26) is NOT in the cut; it is
   slight drift, graded sepia toward #16. ONE ember eye is composited behind the veil, tracked to his
   head by template matching, lighting on the sung word and flaring into the white-out.
 - v1 kept as `output/*_v1.*`. AI share is now 32.2% (shot 29 is real footage).
+
+## Revision v3 (Robin: "the moment the singing starts it should be a cut to a lip sync part")
+
+Two new H3 takes on real day-take frames, both 6 s, 15 credits each (total now 171.5 of 175):
+LSV1 (frame 20.0 s, 3/4, veil down) sings from the first sung word, f0620 = 25.83 s; LSV2 (frame
+40.0 s, 3/4) sings from f1244 = 51.83 s. Each take starts exactly on a song frame, so take frame =
+song frame minus its start; every slice shows the take on the words it was driven with.
+
+Edit: hard cut on the first sung word to LSV1 (line 1), back to his dune walk, LSV1 again on line
+2, then the smoke-and-wolfdog double exposure; in the rattle section LSV2 on both warning lines,
+intercut with the real coiling snake and the bridge pair. The torn-photo transition at f1236 is
+dropped for a hard cut on the line. Review: veil holds in every frame of both takes, no face; LSV1
+is a steep 3/4, LSV2 moves the head a lot with the phrasing and turns away briefly once. Both graded
+sepia locally (refs #36 and #28).
+
+AI screen time rises to 40.1%, above the 30% target, because singing is now spread through the
+verse at Robin's request.

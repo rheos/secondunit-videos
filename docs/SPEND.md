@@ -81,5 +81,9 @@ appended by `tools/gen.py`, which refuses anything that would pass the cap.
 | 2026-09-28 22:19 UTC | kling_video_edit | 4.5 | SB2b: scratchboard night wolfdog, real #11 slowed to 0.5x as input (first try failed uncharged) | a9625334-5461-4911-80ef-ceb938ce10d2 |
 | 2026-09-28 22:15 UTC | kling_video_edit | 0 | SB2 first try on the 2.0 s #11 clip: FAILED, not charged | 956ba16b-4c28-4832-bf9a-8916da08d7e6 |
 
-**Total: 141.5 of the 175 cap** (balance 1992.04 at the start of wave 1, 1850.54 after the last
+**Total after v2: 141.5 of the 175 cap** (balance 1992.04 at the start of wave 1, 1850.54 after the last
 job: delta 141.5, matching this table). No retries were needed beyond the uncharged SB2 failure.
+| 2026-09-29 00:15 UTC | minimax_h3_max | 15.0 | LSV1: verse singing L1-L2, real day-take 20.0 s frame, 3/4 | 1b5fd44f-1520-49c2-82b2-e5b7dfed156e |
+| 2026-09-29 00:15 UTC | minimax_h3_max | 15.0 | LSV2: rattle-section singing L10-L11, real day-take 40.0 s frame, 3/4 | a4e57e94-d18b-40a1-8a01-fd2ae4ddb82a |
+
+**Total after v3: 171.5 of 175** (balance 1850.54 before, 1820.54 after: delta 30).
