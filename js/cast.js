@@ -115,6 +115,11 @@ function wolfdog(t, x, y, sc, o = {}) {
   return { head: hd };
 }
 
+// ---- the Odin eye is RARE (Robin): it shows only in these song windows, never elsewhere ----
+// [start, end] seconds: "open our eyes" into the hook's first line, and each "wake up".
+const EYE_WINDOWS = [[62.0, 66.2], [79.65, 81.5], [86.05, 87.7]];
+function eyeGate(t) { let k = 0; for (const [a, b] of EYE_WINDOWS) k = Math.max(k, smooth(inv(a - .15, a + .1, t)) * (1 - smooth(inv(b - .35, b, t)))); return k; }
+
 // ---- THE WYRD ONE ----
 // The only character. Wide black leather hat with a braided band; a black see-through VEIL hangs from
 // the brim over the whole face (he can see out; you never see face, lips or beard); a LONG TATTERED
@@ -133,19 +138,30 @@ function wolfdog(t, x, y, sc, o = {}) {
 // o.rim: rim-light colour (string) or null. o.lit: 0..1 how much front light reaches the costume.
 // Returns joints { head, eye, neck, chest, hipL, hipR, handL, handR, hem } in world coords.
 function wyrd(t, x, y, h, o = {}) {
-  const { view = 'front', turn = 0, guitar = 'play', arms = 'guitar', sing = 0, eye = 0, wind = .3, walk = 0, rim = 'rgba(255,190,130,.9)', lit = .15, g = s, strum = 1, breath = 1 } = o;
+  const { view = 'front', turn = 0, guitar = 'play', arms = 'guitar', sing = 0, wind = .3, walk = 0, rim = 'rgba(255,190,130,.9)', lit = .15, g = s, strum = 1, breath = 1 } = o;
+  // the eye is rare: only inside EYE_WINDOWS, whatever a shot asks for
+  const eye = (o.eye || 0) * eyeGate(t);
+  const playing = guitar === 'play' && o.view !== 'back';
+  // his stance (from his live takes): hip-shot, the torso rocking with the music, and when he plays,
+  // hunched over a guitar strapped high, head tipped down toward the neck. Never a straight post.
+  const groove = o.groove ?? 1, hunch = o.hunch ?? (playing ? 1 : .4);
+  const leanK = (o.lean ?? (playing ? -.07 : .04)) + groove * (walk ? 0 : sway(t) * .035 + snoise(t * .35, 23) * .02);
   const sil = view === 'sil' || o.sil, back = view === 'back';
   const shade = (c, k = lit) => sil ? '#07070a' : mixHex('#07070a', c, clamp(.35 + k * .65));
   const u = h / 100; // 100 units tall
   // breathing + singing phrasing (head tilt / lift) from the vocal stem
   const br = Math.sin(t * TAU / 4.2) * .6 * breath;
   const v = sing > 0 ? F('voc', t, 3) : 0, vk = sing * clamp(v * 1.2);
-  const nod = sing * (snoise(t * 1.7, 21) * .5 + vk * .8), tilt = sing * snoise(t * .9, 22) * .06 + turn * .05;
+  const nod = sing * (snoise(t * 1.7, 21) * .5 + vk * .8) + groove * hunch * bob(t) * .7, tilt = sing * snoise(t * .9, 22) * .06 + turn * .05 + hunch * (playing ? .2 : .04);
   const gait = walk ? Math.sin(walk * TAU) : 0, bobY = walk ? Math.abs(gait) * -1.2 * u : 0;
   const X = (ux) => x + ux * u, Y = (uy) => y - uy * u + bobY;
-  const neckY = 84 + br * .3 + vk * .6, headY = 90 + br * .35 + vk * 1.1 - nod * .6;
-  const hx = turn * 3 + tilt * 30; // head x offset
+  const neckY = 84 + br * .3 + vk * .6 - hunch * 1.2, headY = 90 + br * .35 + vk * 1.1 - nod * .6 - hunch * (playing ? 4 : 2);
+  const hx = turn * 3 + tilt * 30 + hunch * (playing ? 1.6 : 0); // head x offset (toward the guitar neck when playing)
   const J = {};
+  // hip-shot shear about the hip: the torso leans one way, the legs the other
+  const hipYw = y - 45 * u + bobY;
+  for (const c of [g, f]) { c.save(); c.transform(1, 0, -leanK, 1, leanK * hipYw, 0); }
+  const unshear = (p) => p && [p[0] + leanK * (hipYw - p[1]), p[1]];
   // --- the duster: A-line from narrow shoulders to a wide shredded hem at the ankle ---
   // hem strips are the coat's signature: long, uneven, streaming with the wind and the gait
   const hemY = 14, hemW = 21 + Math.abs(wind) * 2;
@@ -177,7 +193,7 @@ function wyrd(t, x, y, h, o = {}) {
   // sleeves read against the coat only by value: one step lighter, with a thin rim
   const sleeveC = shade(P.coat, lit + .12);
   // --- arms ---
-  const shL = [X(-sh + .8), Y(neckY - 8.5)], shR = [X(sh - .8), Y(neckY - 8.5)];
+  const shL = [X(-sh + .8), Y(neckY - 8.5 - (playing ? .8 : 0))], shR = [X(sh - .8), Y(neckY - 8.5 + (playing ? 1.4 : 0))];
   let handL, handR;
   if (arms === 'out') { const lift = 6 + br; handL = [X(-sh - 30), Y(neckY - 2 + lift)]; handR = [X(sh + 30), Y(neckY - 2 + lift)];
     for (const [a, b] of [[shL, handL], [shR, handR]]) { const el = [lerp(a[0], b[0], .5), lerp(a[1], b[1], .5) + 1.5 * u]; taper(g, a, el, 3.2 * u, 2.6 * u, sleeveC); taper(g, el, b, 2.6 * u, 1.8 * u, sleeveC); dot(g, b[0], b[1], 1.8 * u, shade(P.skin, lit * .6));
@@ -189,14 +205,14 @@ function wyrd(t, x, y, h, o = {}) {
   if (guitar === 'play' && !back) {
     // He plays right-handed (checked against his in-character day take): the body sits at his right
     // hip (screen left), the neck rises steeply to screen right, fretting hand high on the neck.
-    const sway = strum ? Math.sin(t * TAU / BEAT) * .02 : 0, ang = -1.0 + sway - turn * .06;
-    const body = [X(-4.5 + turn * 2), Y(38)];
+    const sway = strum ? Math.sin(t * TAU / BEAT) * .03 : 0, ang = -1.28 + sway - turn * .06;
+    const body = [X(-3.5 + turn * 2), Y(45)];
     drawLesPaul(g, body[0], body[1], 10.5 * u, ang, sil, lit);
     const dir = [Math.cos(ang), Math.sin(ang)];
-    handR = [body[0] + dir[0] * 21 * u, body[1] + dir[1] * 21 * u];              // fretting hand (his left, screen right)
+    handR = [body[0] + dir[0] * 25 * u, body[1] + dir[1] * 25 * u];              // fretting hand (his left, screen right)
     const pick = strum ? Math.sin(t * TAU / (BEAT / 2)) * 1.4 * u * clamp(F('mid', t, 2) * 1.5) : 0;
     handL = [body[0] + 1 * u, body[1] - 1.5 * u + pick];                          // strumming hand (his right, screen left)
-    const elL = [X(-sh - 3), Y(55)], elR = [X(sh + 6), Y(50)];
+    const elL = [X(-sh - 4), Y(55)], elR = [X(sh + 9), Y(66)];
     taper(g, shL, elL, 3.3 * u, 2.8 * u, sleeveC); taper(g, elL, handL, 2.8 * u, 2 * u, sleeveC);
     taper(g, shR, elR, 3.3 * u, 2.8 * u, sleeveC); taper(g, elR, handR, 2.8 * u, 2 * u, sleeveC);
     for (const hd of [handL, handR]) { dot(g, hd[0], hd[1], 2 * u, shade('#0d0b0a')); dot(g, hd[0] + .8 * u, hd[1] - .4 * u, .9 * u, shade(P.skin, lit * .7)); }
@@ -248,8 +264,10 @@ function wyrd(t, x, y, h, o = {}) {
     for (let i = 1; i < side.length; i++) { f.globalAlpha = .3 * (1 - i / side.length); stroke(f, [side[i - 1], side[i]], rim, .4 * u); }
     f.restore(); }
   // the one ember eye (Odin): screen-left eye behind the veil
-  J.eye = [hc[0] + (-2.3 + turn * 1.2) * u, hc[1] + .6 * u];
+  J.eye = [hc[0] + (2.3 + turn * 1.2) * u, hc[1] + .6 * u]; // his LEFT eye = viewer's right when he faces camera
   if (eye > 0 && !back) { glow(J.eye[0], J.eye[1], 4.5 * u * eye, `rgba(255,110,30,${.55 * eye})`); dot(f, J.eye[0], J.eye[1], .55 * u, `rgba(255,${190 + 50 * eye | 0},120,${eye})`); }
+  for (const c of [g, f]) c.restore();
+  for (const k of Object.keys(J)) J[k] = unshear(J[k]);
   return J;
 }
 // black Les Paul: body centre (x, y), sc ~ body half-length, ang = neck direction (radians; body sits at the other end)
