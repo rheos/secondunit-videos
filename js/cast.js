@@ -145,7 +145,7 @@ function wyrd(t, x, y, h, o = {}) {
   // his stance (from his live takes): hip-shot, the torso rocking with the music, and when he plays,
   // hunched over a guitar strapped high, head tipped down toward the neck. Never a straight post.
   const groove = o.groove ?? 1, hunch = o.hunch ?? (playing ? 1 : .4);
-  const leanK = (o.lean ?? (playing ? -.07 : .04)) + groove * (walk ? 0 : sway(t) * .035 + snoise(t * .35, 23) * .02);
+  const leanK = (o.lean ?? (playing ? -.035 : .015)) + groove * (walk ? 0 : sway(t) * .02 + snoise(t * .35, 23) * .012);
   const sil = view === 'sil' || o.sil, back = view === 'back';
   const shade = (c, k = lit) => sil ? '#07070a' : mixHex('#07070a', c, clamp(.35 + k * .65));
   const u = h / 100; // 100 units tall
@@ -156,10 +156,10 @@ function wyrd(t, x, y, h, o = {}) {
   const gait = walk ? Math.sin(walk * TAU) : 0, bobY = walk ? Math.abs(gait) * -1.2 * u : 0;
   const X = (ux) => x + ux * u, Y = (uy) => y - uy * u + bobY;
   const neckY = 84 + br * .3 + vk * .6 - hunch * 1.2, headY = 90 + br * .35 + vk * 1.1 - nod * .6 - hunch * (playing ? 4 : 2);
-  const hx = turn * 3 + tilt * 30 + hunch * (playing ? 1.6 : 0); // head x offset (toward the guitar neck when playing)
+  const hx = turn * 3 + tilt * 30 + hunch * (playing ? .5 : 0); // head x offset (a touch toward the guitar neck when playing)
   const J = {};
-  // hip-shot shear about the hip: the torso leans one way, the legs the other
-  const hipYw = y - 45 * u + bobY;
+  // the whole figure leans as ONE piece, pivoting at the boots (a hip pivot split him in two)
+  const hipYw = y + bobY;
   for (const c of [g, f]) { c.save(); c.transform(1, 0, -leanK, 1, leanK * hipYw, 0); }
   const unshear = (p) => p && [p[0] + leanK * (hipYw - p[1]), p[1]];
   // --- the duster: A-line from narrow shoulders to a wide shredded hem at the ankle ---
@@ -205,14 +205,14 @@ function wyrd(t, x, y, h, o = {}) {
   if (guitar === 'play' && !back) {
     // He plays right-handed (checked against his in-character day take): the body sits at his right
     // hip (screen left), the neck rises steeply to screen right, fretting hand high on the neck.
-    const sway = strum ? Math.sin(t * TAU / BEAT) * .03 : 0, ang = -1.28 + sway - turn * .06;
-    const body = [X(-3.5 + turn * 2), Y(45)];
+    const sway = strum ? Math.sin(t * TAU / BEAT) * .03 : 0, ang = -1.2 + sway - turn * .06;
+    const body = [X(-2 + turn * 2), Y(46)];
     drawLesPaul(g, body[0], body[1], 10.5 * u, ang, sil, lit);
     const dir = [Math.cos(ang), Math.sin(ang)];
-    handR = [body[0] + dir[0] * 25 * u, body[1] + dir[1] * 25 * u];              // fretting hand (his left, screen right)
+    handR = [body[0] + dir[0] * 23 * u, body[1] + dir[1] * 23 * u];              // fretting hand (his left, screen right)
     const pick = strum ? Math.sin(t * TAU / (BEAT / 2)) * 1.4 * u * clamp(F('mid', t, 2) * 1.5) : 0;
     handL = [body[0] + 1 * u, body[1] - 1.5 * u + pick];                          // strumming hand (his right, screen left)
-    const elL = [X(-sh - 4), Y(55)], elR = [X(sh + 9), Y(66)];
+    const elL = [X(-sh - 1), Y(57)], elR = [X(sh + 3.5), Y(63)];
     taper(g, shL, elL, 3.3 * u, 2.8 * u, sleeveC); taper(g, elL, handL, 2.8 * u, 2 * u, sleeveC);
     taper(g, shR, elR, 3.3 * u, 2.8 * u, sleeveC); taper(g, elR, handR, 2.8 * u, 2 * u, sleeveC);
     for (const hd of [handL, handR]) { dot(g, hd[0], hd[1], 2 * u, shade('#0d0b0a')); dot(g, hd[0] + .8 * u, hd[1] - .4 * u, .9 * u, shade(P.skin, lit * .7)); }
