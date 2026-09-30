@@ -103,18 +103,43 @@ function smokeSerpent(t, cx, cy, R, o = {}) {
 // ---- the wolfdog: MEDIUM size, lean, pointed ears, bushy tail. His dog, not a husky or giant wolf. ----
 // (x, y) ground under the middle; sc = body length px; dir 1 faces right; walk = gait phase (t-driven), sil = silhouette
 function wolfdog(t, x, y, sc, o = {}) {
-  const { dir = 1, walk = 0, sil = false, fur = '#8a7a66', dark = '#3a3129', g = s, sit = 0, look = 0 } = o;
-  const c = sil ? '#0c0a09' : fur, cd = sil ? '#0c0a09' : dark, d = dir, h = sc * .55;
-  const leg = (bx, ph, back) => { const sw = Math.sin(walk * TAU + ph) * .35 * (1 - sit); const kx = bx + Math.sin(sw) * h * .45 * d, ky = y - h * .5; taper(g, [bx, y - h * (back ? .95 : .9)], [kx, ky], sc * .06, sc * .045, back ? cd : c); taper(g, [kx, ky], [kx + Math.sin(sw * 1.4) * h * .2 * d, y], sc * .045, sc * .035, back ? cd : c); };
-  leg(x - sc * .32 * d, 0, true); leg(x + sc * .3 * d, Math.PI, true);
-  g.fillStyle = c; g.beginPath(); g.ellipse(x, y - h * 1.05 + sit * h * .2, sc * .45, h * .28, sit * -.35 * d, 0, TAU); g.fill();
-  const tb = [x - sc * .42 * d, y - h * 1.1]; stroke(g, [tb, [tb[0] - sc * .22 * d, tb[1] + h * (.25 + .08 * Math.sin(t * 3))], [tb[0] - sc * .3 * d, tb[1] + h * .6]], c, sc * .09);
-  leg(x - sc * .25 * d, Math.PI, false); leg(x + sc * .36 * d, 0, false);
-  const nk = [x + sc * .38 * d, y - h * 1.25 + sit * h * .1], hd = [x + sc * (.58 + .04 * look) * d, y - h * 1.52 + sit * h * .05];
-  taper(g, nk, hd, sc * .13, sc * .1, c);
-  g.save(); g.translate(hd[0], hd[1]); g.scale(d, 1); g.fillStyle = c;
-  g.beginPath(); g.moveTo(-sc * .08, -sc * .06); g.lineTo(sc * .22, sc * .02); g.lineTo(sc * .2, sc * .07); g.lineTo(-sc * .08, sc * .09); g.fill();
-  poly(g, [[-sc * .06, -sc * .05], [-sc * .02, -sc * .2], [sc * .03, -sc * .04]], c); poly(g, [[sc * .02, -sc * .05], [sc * .07, -sc * .19], [sc * .1, -sc * .03]], c);
+  // MEDIUM wolfdog, lean and long-legged: deep chest, tucked waist, thick ruff at the neck, a wedge
+  // head with a long muzzle and tall pointed ears, back legs with a real hock, a bushy tail carried low.
+  // sc = body length (chest to rump) px; withers height is about 0.62 sc.
+  const { dir = 1, walk = 0, sil = false, fur = '#6f6252', dark = '#2e2720', g = s, sit = 0, look = 0 } = o;
+  const c = sil ? '#0c0a09' : fur, cd = sil ? '#0c0a09' : dark, d = dir, H = sc * .62;
+  const P2 = (fx, fy) => [x + fx * sc * d, y - fy * sc];                   // body-space point (fx forward, fy up)
+  const ph = walk * TAU, sw = (k) => walk ? Math.sin(ph + k) : 0, lift = (k) => walk ? Math.max(0, Math.sin(ph + k)) : 0;
+  const rump = P2(-.42, .55 - sit * .3), chest = P2(.34, .56), withers = P2(.26, .64 - sit * .02), waist = P2(-.08, .5 - sit * .18);
+  // legs: far pair first (darker), near pair after the body
+  const fore = (k, col) => { const sh = P2(.3, .5), el = [sh[0] + sw(k) * .08 * sc * d, y - .28 * sc + lift(k) * .05 * sc], ft = [el[0] + sw(k) * .06 * sc * d, y - lift(k) * .03 * sc];
+    taper(g, sh, el, sc * .07, sc * .045, col); taper(g, el, ft, sc * .04, sc * .032, col); dot(g, ft[0] + .02 * sc * d, ft[1], sc * .035, col); };
+  const hind = (k, col) => { if (sit > .5) { const hp = P2(-.36, .2); g.fillStyle = col; g.beginPath(); g.ellipse(hp[0], hp[1], sc * .2, sc * .16, 0, 0, TAU); g.fill(); dot(g, P2(-.18, .02)[0], y - .02 * sc, sc * .045, col); return; }
+    const hp = P2(-.36, .5), kn = [hp[0] + (.06 + sw(k) * .08) * sc * d, y - .32 * sc], hock = [kn[0] - .1 * sc * d, y - .15 * sc + lift(k) * .05 * sc], ft = [hock[0] + (.04 + sw(k) * .05) * sc * d, y - lift(k) * .03 * sc];
+    taper(g, hp, kn, sc * .1, sc * .055, col); taper(g, kn, hock, sc * .05, sc * .035, col); taper(g, hock, ft, sc * .035, sc * .03, col); dot(g, ft[0] + .02 * sc * d, ft[1], sc * .035, col); };
+  fore(Math.PI, cd); hind(0, cd);
+  // tail: bushy, carried low with a slight curve, swaying
+  const tb = P2(-.46, .55 - sit * .3), tw = snoise(t * 1.2, 51) * .06;
+  const tailPts = bez(tb, P2(-.62, .45 - sit * .3), P2(-.66 + tw, .22 - sit * .2), P2(-.58 + tw, .1 - sit * .1), 10);
+  for (let i = 1; i < tailPts.length; i++) taper(g, tailPts[i - 1], tailPts[i], sc * (.05 + .05 * Math.sin(i / 10 * Math.PI)), sc * (.05 + .05 * Math.sin((i + 1) / 10 * Math.PI)), c);
+  // body: deep chest tapering to a tucked waist and a rounded rump
+  g.fillStyle = c; g.beginPath(); g.moveTo(withers[0], withers[1]);
+  g.bezierCurveTo(P2(.05, .66)[0], P2(.05, .66)[1], P2(-.3, .62 - sit * .2)[0], P2(-.3, .62 - sit * .2)[1], rump[0], rump[1] - .04 * sc);
+  g.bezierCurveTo(P2(-.52, .5 - sit * .3)[0], P2(-.52, .5 - sit * .3)[1], P2(-.46, .36 - sit * .25)[0], P2(-.46, .36 - sit * .25)[1], P2(-.34, .36 - sit * .2)[0], P2(-.34, .36 - sit * .2)[1]);
+  g.quadraticCurveTo(waist[0], waist[1] - .02 * sc, P2(.12, .3)[0], P2(.12, .3)[1]);
+  g.quadraticCurveTo(chest[0] + .06 * sc * d, P2(.3, .33)[1], chest[0], chest[1]); g.closePath(); g.fill();
+  fore(0, c); hind(Math.PI, c);
+  // neck with a thick ruff, then the head
+  const hd = P2(.47 + .03 * look, .74 + sit * .06), nk0 = P2(.24, .6), nk1 = P2(.4, .72);
+  g.fillStyle = c; g.beginPath(); g.moveTo(nk0[0] - .08 * sc * d, nk0[1]); g.quadraticCurveTo(P2(.34, .84)[0], P2(.34, .84)[1], hd[0] - .04 * sc * d, hd[1] - .06 * sc);
+  g.lineTo(hd[0] + .02 * sc * d, hd[1] + .07 * sc); g.quadraticCurveTo(P2(.42, .6)[0], P2(.42, .6)[1], chest[0], chest[1] + .02 * sc); g.closePath(); g.fill();
+  for (let k = 0; k < 5; k++) { const q = at([nk0, nk1], k / 4); taper(g, q, [q[0] + (.03 + .01 * k) * sc * d, q[1] + .06 * sc], sc * .03, sc * .005, c); }
+  g.save(); g.translate(hd[0], hd[1]); g.scale(d * 1.3, 1.3); g.rotate(.18); g.fillStyle = c;
+  // skull + long muzzle (wedge), ears tall and pointed
+  g.beginPath(); g.moveTo(-sc * .07, -sc * .05); g.quadraticCurveTo(sc * .02, -sc * .08, sc * .1, -sc * .03); g.lineTo(sc * .23, sc * .01);
+  g.quadraticCurveTo(sc * .24, sc * .035, sc * .21, sc * .045); g.lineTo(sc * .06, sc * .06); g.quadraticCurveTo(-sc * .06, sc * .07, -sc * .08, sc * .02); g.closePath(); g.fill();
+  poly(g, [[-sc * .055, -sc * .04], [-sc * .03, -sc * .17], [sc * .01, -sc * .045]], c); poly(g, [[sc * .0, -sc * .05], [sc * .035, -sc * .16], [sc * .06, -sc * .04]], cd);
+  if (!sil) dot(g, sc * .06, -sc * .015, sc * .012, '#16110d');
   g.restore();
   return { head: hd };
 }
@@ -206,6 +231,10 @@ function wyrd(t, x, y, h, o = {}) {
   else if (arms === 'down' || guitar !== 'play') { handL = [X(-sh - 2), Y(44)]; handR = [X(sh + 2), Y(44)];
     for (const [a, b, d] of [[shL, handL, -1], [shR, handR, 1]]) { const el = [a[0] + d * 1.5 * u, Y(60)]; taper(g, a, el, 3.2 * u, 2.7 * u, sleeveC); taper(g, el, b, 2.7 * u, 2 * u, sleeveC); dot(g, b[0], b[1], 1.7 * u, shade(P.skin, lit * .6)); } }
   // --- guitar ---
+  // back view: the guitar slung across his back on its strap, neck rising over his right shoulder (screen right)
+  if (back && guitar !== 'none') { const gb = [X(-7), Y(46)];
+    stroke(g, [[X(-sh + 1), Y(neckY - 8)], [X(sh - 2), Y(44)]], shade('#0b0a09', .4), 1.1 * u);
+    drawLesPaul(g, gb[0], gb[1], 10 * u, -1.02, false, lit * .3); }
   if (guitar === 'hang' && !back) { const hb = handR; drawLesPaul(g, hb[0] + 1 * u, hb[1] + 16 * u, 10 * u, -Math.PI / 2 + .12, sil, lit); }
   if (guitar === 'play' && !back) {
     // He plays right-handed (checked against his in-character day take): the body sits at his right
@@ -225,12 +254,17 @@ function wyrd(t, x, y, h, o = {}) {
     for (const hd of [handL, handR]) { dot(g, hd[0], hd[1], 2 * u, shade('#0d0b0a')); dot(g, hd[0] + .8 * u, hd[1] - .4 * u, .9 * u, shade(P.skin, lit * .7)); }
   }
   J.handL = handL; J.handR = handR;
-  // --- necklace: green beaded fringe + silver medallion ---
-  if (!back && !sil) { const cx = X(hx * .2), cy = Y(neckY - 11);
-    stroke(g, bez([X(-3.2), Y(neckY - 2)], [X(-3), Y(neckY - 10)], [X(3), Y(neckY - 10)], [X(3.2), Y(neckY - 2)], 12), shade(P.beadDark, .8), .5 * u);
-    dot(g, cx, cy, 1.25 * u, shade(P.bead, .8)); dot(g, cx, cy, .6 * u, shade(P.beadDark, .8));
-    for (let k = -2; k <= 2; k++) stroke(g, [[cx + k * .45 * u, cy + 1 * u], [cx + k * .5 * u, cy + (2.6 + (k & 1)) * u]], shade(P.bead, .75), .35 * u);
-    dot(g, cx, cy + 4.6 * u, .95 * u, shade(P.medal, .85)); J.chest = [cx, cy]; }
+  // --- necklace: a round green beaded rosette with a wide fringe, and his silver star medallion on its
+  // own chain lower down. Kept wider than tall so it never reads as a tiny figure.
+  if (!back && !sil) { const cx = X(hx * .2), cy = Y(neckY - 10);
+    stroke(g, bez([X(-3.2), Y(neckY - 2)], [X(-3), Y(neckY - 9)], [X(3), Y(neckY - 9)], [X(3.2), Y(neckY - 2)], 12), shade(P.beadDark, .8), .45 * u);
+    for (let k = 0; k < 12; k++) { const a = k / 12 * TAU; dot(g, cx + Math.cos(a) * 1.45 * u, cy + Math.sin(a) * 1.15 * u, .38 * u, shade(k % 2 ? P.bead : P.beadDark, .85)); }
+    dot(g, cx, cy, .7 * u, shade('#1d2a4a', .8));
+    for (let k = -4; k <= 4; k++) stroke(g, [[cx + k * .38 * u, cy + 1.2 * u], [cx + k * .42 * u, cy + (2.2 + .4 * (k & 1)) * u]], shade(k % 2 ? P.bead : P.beadDark, .7), .28 * u);
+    const my = cy + 6.5 * u; stroke(g, [[X(-1.6), Y(neckY - 3)], [cx, my - 1.1 * u], [X(1.6), Y(neckY - 3)]], shade('#8f8a80', .5), .2 * u, 'butt');
+    g.fillStyle = shade(P.medal, .85); g.beginPath(); g.ellipse(cx, my, 1.25 * u, 1.25 * u, 0, 0, TAU); g.fill();
+    for (let k = 0; k < 4; k++) { const a = k / 4 * Math.PI; stroke(g, [[cx + Math.cos(a) * 1 * u, my + Math.sin(a) * 1 * u], [cx - Math.cos(a) * 1 * u, my - Math.sin(a) * 1 * u]], shade('#5a564e', .7), .18 * u); }
+    J.chest = [cx, cy]; }
   // --- head, veil, hat ---
   const hc = [X(hx), Y(headY)]; J.head = hc; J.neck = [X(hx * .4), Y(neckY)];
   const hatTilt = tilt + nod * .025;
