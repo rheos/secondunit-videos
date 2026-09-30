@@ -18,6 +18,10 @@ const LOOK = {
   rock: { boil: 6, bloom: 1.1, flowK: .7, strokeK: 1.15, grain: .12, vig: .5, sat: .85, tint: [1, .72, .48], tintK: .2, con: 1.12, lift: .03, scratch: .25, dust: .4, burn: .2, weave: .5, flick: .02 },
   // pre-hook + hook: blazing sunrise / sunset oil (#26)
   sunset: { boil: 10, bloom: 1.2, flowK: 1.3, strokeK: 1.25, grain: .08, vig: .45, sat: 1.15, con: 1.08, lift: 0, scratch: .05, dust: .1, weave: .4, flick: .02 },
+  // second half: the dream plains, indigo night oil (starlight, deep blue, soft warm accents)
+  dream: { boil: 7, bloom: 1.4, flowK: 1.15, strokeK: 1.1, grain: .1, vig: .6, sat: .9, tint: [.62, .72, 1], tintK: .25, con: 1.1, lift: .04, scratch: .08, dust: .2, weave: .4, flick: .02 },
+  // second half: storm at dawn, silver-grey mono like his storm footage (heavy vignette, grain)
+  storm: { boil: 9, bloom: 1.3, flowK: 1.3, grain: .18, vig: .75, sat: .12, tint: [.9, .92, 1], tintK: .15, con: 1.2, lift: .05, scratch: .35, dust: .6, weave: .8, flick: .06 },
   // ending: back to ink, on glowing cracked earth
   cracks: { boil: 8, bloom: 1.8, flowK: 1, grain: .1, vig: .65, etch: .7, sat: .6, con: 1.12, scratch: .12, dust: .4, weave: .6, flick: .04 },
 };
@@ -117,7 +121,7 @@ function wolfdog(t, x, y, sc, o = {}) {
 
 // ---- the Odin eye is RARE (Robin): it shows only in these song windows, never elsewhere ----
 // [start, end] seconds: "open our eyes" into the hook's first line, and each "wake up".
-const EYE_WINDOWS = [[62.0, 66.2], [79.65, 81.5], [86.05, 87.7]];
+const EYE_WINDOWS = [[62.0, 66.2], [79.65, 81.5], [86.05, 87.7], [166.1, 169.8]]; // + "eyes like gold" (Robin approved 2026-09-30; the second-half "wake up" stays eye-free)
 function eyeGate(t) { let k = 0; for (const [a, b] of EYE_WINDOWS) k = Math.max(k, smooth(inv(a - .15, a + .1, t)) * (1 - smooth(inv(b - .35, b, t)))); return k; }
 
 // ---- THE WYRD ONE ----

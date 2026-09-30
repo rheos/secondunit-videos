@@ -135,8 +135,8 @@ Handoffs: c5's rising embers become c6's stars; c6's stars gather into a fire on
 c7's burning sky breaks into c8's storm clouds; c8's sunrise flares into c9's blaze; c9's flames
 sink to the torches of c10's ring.
 
-**Eye windows, proposed** (added to `EYE_WINDOWS` only if Robin approves): "eyes like gold"
-(166.1-169.8) and the next "wake up" (216.6-220.0). Everything else stays eye-free.
+**Eye windows (Robin, 2026-09-30):** only "eyes like gold" (166.1-169.8) is added to `EYE_WINDOWS`.
+The "wake up" in c10 stays eye-free. The glyphs for "the old ones" are approved.
 
 ### c6 PLAINS OF STARS (97.583 - 116.400, instrumental)
 - c5's ember column scatters upward and the embers settle into stars.
@@ -166,7 +166,7 @@ Cue words: "hands", "embers", "eyes", "gold" / "rattle", "hums", "desert" / "lig
 - The break (153.4-166): storm clouds roll over bare hills; lightning flickers on the drum hits; he
   stands on a ridge, duster whipping.
 - "hands like embers": close on his gloved hands, glowing from inside like embers.
-  "eyes like gold": the one eye opens gold (proposed eye window).
+  "eyes like gold": the one eye opens gold (approved eye window).
 - "a rattle hums": a rattlesnake coiled on a rock shakes its rattle into the wind.
 - "lightning struck the hills at dawn": a strike hits the far hill and the frame flashes.
 - "the fire knew where i belong": the strike's fire runs toward him along the ground and stops at his boots.
@@ -187,7 +187,7 @@ Cue words: "dream", "flame" / "blazing", "name" / "smoke", "rivers", "sky", "fir
 Cue words: "calling", "wake" / "take", "torch" / "stop", "far" / "gone", "long" / "world", "burns" /
 "song" / "dream" / "changing", "seems" / "late".
 - A stone medicine-wheel ring at night, torches around it (his board #20). He stands at its centre.
-- "wake up": singing close-up; the eye opens (proposed eye window).
+- "wake up": singing close-up, NO eye (Robin kept this one eye-free).
 - "take up the torch": he lifts a burning torch from the ring.
 - "stop this, before it's too far ... gone on too long": he holds the torch high; the camera cranes
   back to show fire along the whole horizon.

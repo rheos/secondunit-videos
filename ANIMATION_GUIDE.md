@@ -1,7 +1,7 @@
 # Animation guide: read before painting a chapter
 
-A painted music video for Hjeron's solo song "dream of fire" (97.583 s, ~76 BPM half-time pulse,
-one beat ≈ 0.79 s). Every frame is drawn in code and repainted by a GPU brushstroke renderer (from
+A painted music video for Hjeron's solo song "dream of fire" (the full-length mix, 283.833 s, ~74 BPM
+half-time pulse, one beat ≈ 0.81 s). Every frame is drawn in code and repainted by a GPU brushstroke renderer (from
 functional-emotions-video, MIT). The shot plan is `STORYBOARD.md`: read the whole thing, then your
 chapter. `js/ch/c4.js` (SUNRISE) is the finished reference chapter: read it first and match its
 craft. His visual references: `../../hjeron-darkblues-ref/` (character sheet
@@ -18,6 +18,12 @@ action landing on beats and on sung words, motivated cuts. **Never let a frame s
   person, no crowd, no faces anywhere. Never the old face-paint / fur / horned look.
 - **His face is never seen.** The black veil hangs from the brim over the whole face. No lips,
   beard, eyes, profile. At most ONE ember eye glows through the veil now and then (`eye`), never two.
+- **Robin's notes, now built into `wyrd()` (don't fight them):** by default he stands the way he does
+  in his takes, guitar strapped high with the neck rising steeply, hunched over it, head tipped
+  toward the neck, rocking with the beat (`hunch`, `lean`, `groove`); the lean pivots at the boots
+  as one piece. The fretting arm is drawn BEHIND the neck and only the hand wraps it. The Odin eye is
+  his LEFT eye (viewer's right) and is gated by `EYE_WINDOWS` in cast.js: passing `eye` outside
+  those windows does nothing, so don't rely on it. Never slide his head sideways off his shoulders.
 - **Singing shots:** head frontal or 3/4 (`turn` within ±.5), barely turning, `sing: 1` so the head
   phrases with the vocal; breath and the veil stirring carry it. No profile while singing.
 - **He plays right-handed:** body at his right hip (screen left), neck rising to screen right. Only
@@ -91,7 +97,7 @@ once at the top, then draw the whole frame. `f` starts black each frame. Add you
 ## Paint settings and looks
 
 Each chapter's base paint is its `LOOK` preset (`js/cast.js`): `ink`, `sepia`, `rock`, `sunset`,
-`cracks`. Override per shot with `{ paint: { ...LOOK.x, key: v } }`, or per frame with `paintSet({...})`.
+`cracks`, and for the second half `dream` (indigo night oil) and `storm` (silver-grey mono). Override per shot with `{ paint: { ...LOOK.x, key: v } }`, or per frame with `paintSet({...})`.
 Stroke keys: `boil` (re-rolls/s, 6 to 12), `bloom` (~1 to 2), `flowK` (swirl), `strokeK` (size),
 `grain`, `vig`; **`whip(dx, dy)`** smears strokes for whip pans (~60 = full smear).
 Grade keys: `sat`, `tint` [r,g,b], `tintK`, `con`, `lift`, `scratch`, `dust`, `burn`, `etch`, `weave`
@@ -154,7 +160,9 @@ node check.mjs --fmt 16x9 out/check/<you>_l.jpg 26.0 28.4 30.8                  
 node check.mjs --full out/check/<you>_full 30.2 33.1                              # full-res stills
 ```
 
-Open each sheet with the Read tool and look hard. Check the first and last frame of every shot, a few
+**Look at full-size stills (`--full`) of every shot The Wyrd One is in, read at half size or larger,
+not only the 360 px sheet**: a thumbnail hid a figure that looked like two people twice. Open each
+sheet with the Read tool and look hard. Check the first and last frame of every shot, a few
 between, motion around each hit (every 0.1 to 0.2 s), and your chapter's edges. Iterate until every
 shot is readable, alive, on the music and true to his canon. The GPU and CPU are shared with other
 sessions: use `nice -n 10`, keep sheets small, and never render the whole song.
