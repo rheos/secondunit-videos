@@ -1,5 +1,5 @@
 // Time, audio, rng, drawing helpers, the figure rig, shot registry.
-const DUR = 2342 / 24; // 97.583 s, the dream-of-fire "4a short" mix on the 24 fps song grid
+const DUR = 6812 / 24; // 283.833 s, the full-length dream-of-fire mix on the 24 fps song grid
 const TAU = Math.PI * 2;
 const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
 const lerp = (a, b, t) => a + (b - a) * t;

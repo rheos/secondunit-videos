@@ -26,9 +26,11 @@ import numpy as np
 
 ROOT = Path(__file__).resolve().parents[1]
 SRC = ROOT.parent / "_hjeron-dream-of-fire"
-SONG = SRC / "dream-of-fire.wav"
-VOX = SRC / "stems/htdemucs/dream-of-fire/vocals.wav"
-ALIGNED = SRC / "dream-of-fire.aligned.json"
+# Full-length mix (2026-09-30; unmastered, first 97.567 s sample-aligned to the short mix).
+SONG = SRC / "full-mix/dream-of-fire-full.wav"
+VOX = SRC / "full-mix/stems/htdemucs/dream-of-fire-full/vocals.wav"
+ALIGNED = SRC / "dream-of-fire.aligned.json"                          # first half (short mix)
+ALIGNED2 = SRC / "full-mix/dream-of-fire-full.aligned-second-half.json"  # second half (full mix)
 DOWNBEAT = 1.08
 # Forced alignment stretched the first word back into the intro; its onset in the vocal stem is
 # 25.833 s (song frame 620). (line index, word index) -> corrected start.
@@ -67,7 +69,7 @@ feat = dict(fps=sr / hop, beats=[round(float(b), 3) for b in beats], fast=[round
             high=r3(band(2000, 11000)), perc=r3(perc), cent=r3(cent))
 
 lines = []
-for li, ln in enumerate(json.loads(ALIGNED.read_text())["lines"]):
+for li, ln in enumerate(json.loads(ALIGNED.read_text())["lines"] + json.loads(ALIGNED2.read_text())["lines"]):
     words = [dict(t=w["word"], s=START_FIX.get((li, wi), w["start"]), e=w["end"]) for wi, w in enumerate(ln["words"])]
     lines.append(dict(text=ln["text"], s=words[0]["s"], e=ln["end"], words=words))
 

@@ -2,7 +2,7 @@
 
 Hjeron's solo song, in the persona of **The Wyrd One** (his character sheet and corrections are the
 canon; see the character rules in `ANIMATION_GUIDE.md`). NOT MythMaker: no MythMaker branding, no
-wordmark, no name, no text on screen at all. 97.583 s = 2342 song frames at 24 fps. Every frame is
+wordmark, no name, no text on screen at all. 283.833 s = 6812 song frames at 24 fps (the full-length mix, 2026-09-30; its first 97.567 s are sample-identical to the short mix the first five chapters were cut to). Every frame is
 drawn in code; zero paid generation. Two formats from the same code: 9:16 first, 16:9 later.
 
 Lyrics are Hjeron's and stay out of git: this board names cue words only. The timing source is
@@ -114,4 +114,86 @@ Cue words: "wake" x2, "burn", "down" / "flaming", "dream", "seen" / "night", "wh
 - "night ... whispering": everything hushes toward night: darker, slower, the wolfdog sits by him.
 - "heat ... rising ... cracks beneath": the cracks glow open under his boots and heat and embers rise
   around him in a column. Final wide: him and the dog on the glowing cracks under the stars.
-- Hard stop on the last frame (the mix ends at full level; no fade).
+- **Handoff to c6 (full-length mix):** no hard stop any more. The ember column keeps rising past the top of frame; c6 opens as those embers scatter into a night sky full of stars.
+
+## Second half (the full-length mix, 97.583 - 283.833)
+
+Structure from the mix itself: instrumental 97.6-116.4; verse 3 116.4-153.3; instrumental break
+153.3-166.0; verse 4 166.0-186.2; second chorus 186.2-213.2; the calling 213.2-264.3; instrumental
+tail 264.3 to the end (the mix falls silent about 280.5). Energy stays high to ~164, dips to its
+quietest valley 168-220 (lowest ~220), rebuilds to a peak 244-270.
+
+| ch | file | song time | location | look |
+|---|---|---|---|---|
+| c6 PLAINS OF STARS | `js/ch/c6.js` | 97.583 - 116.400 | open plains under a sky of stars (the dream begins) | `dream` (new: indigo night oil) |
+| c7 THE SERPENT CALLS | `js/ch/c7.js` | 116.400 - 153.400 | a lone campfire on the plains | `dream` -> `sunset` sky at the end |
+| c8 STORM AT DAWN | `js/ch/c8.js` | 153.400 - 186.200 | bare hills in a lightning storm at dawn | `storm` (new: silver-grey mono, his footage's storm look) |
+| c9 ALL A FLAME | `js/ch/c9.js` | 186.200 - 213.200 | a mesa rim above a burning valley | `sunset` |
+| c10 THE CALLING | `js/ch/c10.js` | 213.200 - 283.833 | a stone medicine-wheel ring with torches, night into dawn | `ink` -> `cracks` warmth, fading to black |
+
+Handoffs: c5's rising embers become c6's stars; c6's stars gather into a fire on the ground for c7;
+c7's burning sky breaks into c8's storm clouds; c8's sunrise flares into c9's blaze; c9's flames
+sink to the torches of c10's ring.
+
+**Eye windows, proposed** (added to `EYE_WINDOWS` only if Robin approves): "eyes like gold"
+(166.1-169.8) and the next "wake up" (216.6-220.0). Everything else stays eye-free.
+
+### c6 PLAINS OF STARS (97.583 - 116.400, instrumental)
+- c5's ember column scatters upward and the embers settle into stars.
+- He walks on across the open plains with the wolfdog, small, silhouetted against the Milky Way.
+- The paint drifts: the whole sky slowly wheels. Beats land as shooting stars and dust from his boots.
+- End: the stars in the foreground drift down and gather into a small fire on the ground (c7).
+
+### c7 THE SERPENT CALLS (116.400 - 153.400, verse 3)
+Cue words: "shadows", "danced", "air", "still" / "fire", "called", "will" / "echoes", "tongues" /
+"smoke", "singing" / "dream", "planes" / "blazing" / "serpent", "called", "name" / "said" /
+"smoke", "rivers" / "sky", "flame" / "old", "speaking" / "calling", "name".
+- The campfire throws his shadow huge and doubled across the ground; the shadows dance while he
+  stands still (only HIS shadows: no other figures). On "air stood still" everything freezes except
+  the fire.
+- "echoes ... tongues unknown": ripples of light travel out from the fire across the plain.
+- "smoke was singing": the smoke rises in ribbons that move with the vocal (`F('voc')`).
+- "blazing high": the fire leaps; the smoke serpent rises out of it and turns its head to him on
+  "called my name". Singing close-up (veiled, 3/4) on the serpent's call.
+- "smoke will be like rivers": smoke pours across the plain in rivers. "the sky will be a flame":
+  the sky ignites from the horizon up.
+- "the old ones are speaking": in the burning sky, giant rock-art glyphs (antlered stick figures,
+  spirals, handprints, like his canyon wall) glow like constellations. Glyphs only: no faces, no people.
+
+### c8 STORM AT DAWN (153.400 - 186.200, break + verse 4)
+Cue words: "hands", "embers", "eyes", "gold" / "rattle", "hums", "desert" / "lightning", "hills",
+"dawn" / "fire", "belong" / "footsteps", "vanished", "unspun" / "dreams", "begun".
+- The break (153.4-166): storm clouds roll over bare hills; lightning flickers on the drum hits; he
+  stands on a ridge, duster whipping.
+- "hands like embers": close on his gloved hands, glowing from inside like embers.
+  "eyes like gold": the one eye opens gold (proposed eye window).
+- "a rattle hums": a rattlesnake coiled on a rock shakes its rattle into the wind.
+- "lightning struck the hills at dawn": a strike hits the far hill and the frame flashes.
+- "the fire knew where i belong": the strike's fire runs toward him along the ground and stops at his boots.
+- "footsteps vanished": his footprints in the sand blow away behind him.
+- "dreams won't die, it's just begun": the sun breaks through the storm.
+
+### c9 ALL A FLAME (186.200 - 213.200, second chorus)
+Cue words: "dream", "flame" / "blazing", "name" / "smoke", "rivers", "sky", "fire" / "old", "rise" /
+"calling" (x4), "flame", "same", "changes", "seeing", "name".
+- A mesa rim above a valley that burns end to end; the second chorus answers the first (c4) with a
+  bigger world: he plays on the rim, the valley fire behind him.
+- "smoke like rivers and the sky on fire": smoke rivers run down the valley, the sky burns.
+- "the old ones rise": the rock-art glyphs from c7 rise from the smoke, towering, glowing. Glyphs only.
+- The four "calling" lines: each one throws a wave of light across the valley; singing close-ups
+  between them. "changes": the paint itself swirls (flowK up).
+
+### c10 THE CALLING (213.200 - 283.833, the calling + tail)
+Cue words: "calling", "wake" / "take", "torch" / "stop", "far" / "gone", "long" / "world", "burns" /
+"song" / "dream" / "changing", "seems" / "late".
+- A stone medicine-wheel ring at night, torches around it (his board #20). He stands at its centre.
+- "wake up": singing close-up; the eye opens (proposed eye window).
+- "take up the torch": he lifts a burning torch from the ring.
+- "stop this, before it's too far ... gone on too long": he holds the torch high; the camera cranes
+  back to show fire along the whole horizon.
+- "the world burns": the horizon flares. "just like this song": he plays, torch planted beside him.
+  "just like my dream": the stars return overhead, a callback to c6.
+- "changing before it seems": the ring's stones glow and the ground cracks with light (c5 callback).
+- "too late": every torch goes out at once; only the embers hang in the dark.
+- Tail (264.3 to the end): in the last light he and the wolfdog walk out of the ring toward the
+  first line of dawn; embers drift; fade to black as the mix falls silent (~280.5).
