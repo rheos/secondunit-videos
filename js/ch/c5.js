@@ -308,11 +308,14 @@
     const V = { vx: SC, hz: 1150, F: 1000, hc: kf(lt, [[0, .7], [dur, .86]], ease.inOut), camX: kf(lt, [[0, -.12], [dur, .1]]) };
     const m = place(V, 0, 3.2);
     const z = kf(lt, [[0, 1.02], [dur, .88]], ease.inOut);
-    frame(m.x, kf(lt, [[0, 1110], [dur, 1040]], ease.inOut) + pick(0, 120), pick(z, z * .9));
+    // handoff to c6: over the last ~1.5 s the camera tilts up with the ember column into the night sky
+    const tilt = ease.inOut(inv(Z - 1.55, Z, t)), tiltV = Math.sin(Math.PI * inv(Z - 1.55, Z, t));
+    frame(m.x, kf(lt, [[0, 1110], [dur, 1040]], ease.inOut) + pick(0, 120) - tilt * pick(1700, 1500), pick(z, z * .9) * (1 - .06 * tilt));
     const nk = nightK(t);
     const burst = 1 + .6 * hit(t, tCracks, 2.5) + .5 * hit(t, tBeneath, 2.2) + .35 * hit(t, 97.04, 3);
     const R = kf(t, [[tCracks - .1, 2], [tBeneath + .8, 6], [Z, 8.5]], ease.out);
     skyNight(t, V, nk, .45 + .2 * (burst - 1));
+    if (tilt > 0) stars(t, 78, 360, -1600, 3500, V.hz - 4600, V.hz - 2400, 1); // the sky above the tilt
     plain(t, V, nk, [{ X: 0, D: 3.2, R, w: 2, k: Math.min(1, .6 * burst), fall: 4 }], { pool: [0, 3.25, 900 + 300 * (burst - 1), .75] });
     cracks(t, m.x, m.y + 4, 500, 1, 19, .24);
     // the column of heat: a tall soft glow behind him (occluded by the silhouettes), then embers in front
@@ -323,7 +326,11 @@
     wyrd(t, m.x, m.y, m.h, { turn: .05, wind: .45, lit: .2, guitar: 'play', rim: 'rgba(255,150,80,.9)', eye: .55 });
     emberColumn(t, m.x, m.y, 520, 1500, 150, .85 * Math.min(1.3, burst), 71);
     sparks(t, m.x, m.y + 60, 1800, 700, 50, .5, 72);
+    // the column keeps climbing past the top of frame and fans out as it goes, for c6's embers-into-stars
+    const hi = inv(tBeneath, Z - 1.2, t);
+    if (hi > 0) emberColumn(t, m.x, m.y - 200, 1500, 3600, 220, .9 * hi, 73);
     paintSet({ etch: .42, sat: .95, bloom: 1.7 + .3 * (burst - 1) });
+    if (tiltV > .05) whip(0, 14 * tiltV);
   }
 
   const warm = { ...LOOK.cracks, etch: .5, tint: [1, .76, .52], tintK: .2, lift: .02, sat: .8 };

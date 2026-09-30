@@ -164,7 +164,8 @@ function wyrd(t, x, y, h, o = {}) {
   const J = {};
   // the whole figure leans as ONE piece, pivoting at the boots (a hip pivot split him in two)
   const hipYw = y + bobY;
-  for (const c of [g, f]) { c.save(); c.transform(1, 0, -leanK, 1, leanK * hipYw, 0); }
+  const ctxs = g === f ? [f] : [g, f]; // drawing on the light layer itself: shear it once, not twice
+  for (const c of ctxs) { c.save(); c.transform(1, 0, -leanK, 1, leanK * hipYw, 0); }
   const unshear = (p) => p && [p[0] + leanK * (hipYw - p[1]), p[1]];
   // --- the duster: A-line from narrow shoulders to a wide shredded hem at the ankle ---
   // hem strips are the coat's signature: long, uneven, streaming with the wind and the gait
@@ -272,7 +273,7 @@ function wyrd(t, x, y, h, o = {}) {
   // the one ember eye (Odin): screen-left eye behind the veil
   J.eye = [hc[0] + (2.3 + turn * 1.2) * u, hc[1] + .6 * u]; // his LEFT eye = viewer's right when he faces camera
   if (eye > 0 && !back) { glow(J.eye[0], J.eye[1], 4.5 * u * eye, `rgba(255,110,30,${.55 * eye})`); dot(f, J.eye[0], J.eye[1], .55 * u, `rgba(255,${190 + 50 * eye | 0},120,${eye})`); }
-  for (const c of [g, f]) c.restore();
+  for (const c of ctxs) c.restore();
   for (const k of Object.keys(J)) J[k] = unshear(J[k]);
   return J;
 }
