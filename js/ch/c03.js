@@ -65,7 +65,7 @@
       line(pts, C.umber, 8 + q * 12); line(pts, mix(C.glass, C.cream, e * .7), 3 + q * 6); }
   }
   // a Nouveau river steamer in profile, bow to +x; origin on the waterline, ~760 px long at sc 1
-  function steamer(x, y, sc, t, lit = 1, seed = 0) {
+  function steamer(x, y, sc, t, lit = 1, seed = 0, crew = true) {
     for (const g of [s, f]) { g.save(); g.translate(x, y); g.scale(sc, sc); }
     // smoke first (behind the stacks): ribbons trailing back, curling into spirals
     for (const [sx, i] of [[40, 0], [180, 1]]) { const wb = Math.sin(t * 1.3 + i + seed) * 40;
@@ -83,7 +83,11 @@
     shape(s, circle(-360, -30, 105, 36), C.olive, C.umber, 14);
     for (let i = 0; i < 8; i++) { const a = i / 8 * TAU + t * 3; line([[-360, -30], [-360 + Math.cos(a) * 100, -30 + Math.sin(a) * 100]], C.umber, 12); }
     shape(s, circle(-360, -30, 26, 16), C.gold, C.umber, 8);
+    // a dark wheelhouse on the roof: the value step the crew reads against
+    if (crew) shape(s, [[-270, -205], [-270, -400], [-10, -400], [-10, -205]], mix(C.night, C.plum, .3), C.umber, 14);
     for (const g of [s, f]) g.restore();
+    // the crew at the roof rail, waving white handkerchiefs back toward the shore
+    if (crew && sc * 230 > 50) for (let i = 0; i < 3; i++) sailor(t, x + (-220 + i * 85) * sc, y - 205 * sc, 230 * sc, { seed: seed * 7 + i, facing: -1 });
   }
   // a cream heron: feet at (x, y). fold 0 = wings spread in flight .. 1 = folded; flap = wing phase
   function heron(x, y, sc, fold, flap, legs = 1, rot = 0) {
@@ -172,7 +176,7 @@
     cloud(-60 + d, 520, 1000, 330, 41, mix(C.dusk, C.blush, e1 * .55));
     cloud(1100 - d, 420, 900, 320, 42, mix(mix(C.dusk, C.night, .3), C.blush, e2 * .55));
     shore(1020, 8, e);
-    const sp = ease.out(inv(61.6, 62.4, t)); if (sp > 0) steamer(900, 1030, .2, t, sp, 1);
+    const sp = ease.out(inv(61.6, 62.4, t)); if (sp > 0) steamer(900, 1030, .2, t, sp, 1, false);
     river(1020, t, e, 2.2, 10);
     for (const [x, ee] of [[260, e1], [820, e1], [560, e2]]) for (let i = 0; i < 5; i++) glowAt(x + Math.sin(i * 2.1 + t * 5) * 24, 1100 + i * 120, 120 - i * 10, `rgba(255,220,150,${.5 * ee})`);
     skyFlash(e, .2);
@@ -199,7 +203,7 @@
   // 64.88: close on the last steamer's stern, its wheel churning a wake, then it shrinks away into the rain and mist
   function lastBoat(t, lt, dur) {
     cam(560, 1000, kf(lt, [[0, 1.0], [dur, 1.1]]));
-    const yH = 760, p = ease.inOut(inv(0, dur, lt)), x = lerp(560, 660, p), y = lerp(1300, yH + 40, ease.out(p)), sc = lerp(1.05, .2, ease.out(p));
+    const yH = 760, p = ease.inOut(inv(0, dur, lt)), x = lerp(640, 680, p), y = lerp(1330, yH + 40, ease.out(p)), sc = lerp(1.6, .22, ease.out(p));
     s.fillStyle = vgrad(-200, yH, [[0, '#151d2e'], [1, C.dusk]]); s.fillRect(-W, -H, W * 3, H * 3);
     cloud(400 + t * 12, 260, 1100, 300, 61, mix(C.dusk, C.night, .3));
     shore(yH, 12, 0);
@@ -221,16 +225,16 @@
     // the building: plum stucco, an arched window with leading
     shape(s, [[-400, 1520], [-400, 380], [620, 380], [620, 1520]], C.plum, C.umber, 18);
     shape(s, [[-400, 380], [660, 380], [660, 330], [-400, 330]], C.olive, C.umber, 14);
-    const wx = 130, wy = 640, ww = 380, wh = 640;
+    const wx = 110, wy = 620, ww = 440, wh = 680;
     const arch = [[wx, wy + wh], [wx, wy + ww / 2], ...circle(wx + ww / 2, wy + ww / 2, ww / 2, 40).filter(([, py]) => py <= wy + ww / 2 + .1).sort((a, b) => a[0] - b[0]), [wx + ww, wy + ww / 2], [wx + ww, wy + wh]];
     shape(s, arch, mix(C.deep, C.amber, on), C.umber, 22);
-    // the Galle mushroom lamp in the window
-    shape(s, [[wx + 180, wy + wh], [wx + 175, wy + 420], [wx + 205, wy + 420], [wx + 200, wy + wh]], C.gold, C.umber, 10);
-    shape(s, [...cub([wx + 90, wy + 430], [wx + 100, wy + 300], [wx + 280, wy + 300], [wx + 290, wy + 430], 20)], mix(C.plum, C.rose, .3 + .7 * on), C.umber, 14);
-    for (let i = 0; i < 3; i++) petal(s, wx + 150 + i * 40, wy + 410, -Math.PI / 2 + (i - 1) * .4, 70, 20, mix(C.olive, C.sage, on), null);
-    line([[wx, wy + 420], [wx + ww, wy + 420]], C.umber, 14); line([[wx + ww / 2, wy + 40], [wx + ww / 2, wy + 300]], C.umber, 14);
+    // one in the window: the old passenger with the walrus moustache, looking out at the rain, lit from behind
+    s.save(); P(s, arch); s.closePath(); s.clip();
+    passenger(t, wx + ww * .42, wy + wh + 470, 980, { who: 'old', pose: 'stand', facing: 1, ph: t * .5 });
+    s.restore();
+    line([[wx + ww / 2, wy + 20], [wx + ww / 2, wy + 150]], C.umber, 14);
     shape(s, [[wx - 40, wy + wh], [wx + ww + 40, wy + wh], [wx + ww + 55, wy + wh + 40], [wx - 55, wy + wh + 40]], C.ochre, C.umber, 12);
-    if (on > 0) { glowAt(wx + ww / 2, wy + 400, 420, `rgba(255,180,100,${.45 * on})`); glowAt(wx + 190, wy + 380, 120, `rgba(255,220,170,${.8 * on})`); }
+    if (on > 0) { glowAt(wx + ww / 2, wy + 400, 420, `rgba(255,180,100,${.45 * on})`);  }
     // the quay and the water
     shape(s, [[-400, 1520], [1500, 1520], [1500, 1580], [-400, 1580]], C.ochre, C.umber, 16);
     river(1580, t, 0, 1, 6);
@@ -254,58 +258,44 @@
     rain(t, 170, 37, .5, 2400, .18);
     border(t, 1);
   }
-  // 70.68: on the steamer's deck: a top hat sits on a heap of coal; a shovel bites the heap on the beats and feeds the furnace;
-  // the furnace glow climbs and the camera pushes into its mouth
+  // 70.68: on the steamer's deck the millionaire himself (top hat, monocle, tails) shovels the coal: his blade bites
+  // the heap on each bite beat and throws on the next beat, the furnace flaring; then we push into its mouth
+  function stokePh(t) { const b = beatPhase(t) - lastBeat(BITES[0] + .01), c = Math.floor(b / 2), r = b - c * 2; return c + (r < 1 ? r * .62 : .62 + (r - 1) * .38); }
   function coal(t, lt, dur) {
-    const push = ease.in(inv(73.95, SEC.c2, t));
-    cam(lerp(lerp(420, 700, ease.inOut(inv(70.68, 72.9, t))), 905, push), lerp(1120, 1150, push), lerp(lerp(1.06, 1.0, inv(70.68, 72.9, t)), 4.2, push));
+    const push = ease.in(inv(73.95, SEC.c2, t)), mx = 960, my = 820;
+    // wide on the deck, in close on him for the cue word, back out to the furnace, then into its mouth
+    const cx0 = kf(t, [[70.68, 520], [72.2, 500], [73.0, 540], [73.95, 660]]), cy0 = kf(t, [[70.68, 1150], [72.2, 1040], [73.0, 1060], [73.95, 1000]]), z0 = kf(t, [[70.68, 1.0], [72.1, 1.32], [72.95, 1.3], [73.95, 1.0]]);
+    cam(lerp(cx0, mx, push), lerp(cy0, my, push), lerp(z0, 4.6, push));
     let flare = 0; for (const k of TOSSES) flare = Math.max(flare, hit(t, k, 3.5) * (t >= k ? 1 : 0));
     const heat = lerp(.35, .85, inv(70.68, 74.2, t)) + .4 * flare;
     // night and rain beyond the ironwork railing
-    s.fillStyle = vgrad(-300, 900, [[0, '#151d2e'], [1, C.dusk]]); s.fillRect(-W, -H, W * 3, H * 3);
-    line([[-400, 860], [1500, 860]], C.umber, 30); line([[-400, 860], [1500, 860]], C.olive, 14);
-    for (let i = 0; i < 7; i++) { const x = -160 + i * 230, d = i % 2 ? 1 : -1; vine(s, whip([x, 1010], [x + d * 60, 960], [x - d * 40, 910], [x + d * 50, 880], .6, d, 18), 18, 8, C.olive); line([[x, 860], [x, 1010]], C.umber, 14); }
+    s.fillStyle = vgrad(-300, 1000, [[0, '#151d2e'], [1, C.dusk]]); s.fillRect(-W, -H, W * 3, H * 3);
+    line([[-400, 1000], [1500, 1000]], C.umber, 30); line([[-400, 1000], [1500, 1000]], C.olive, 14);
+    for (let i = 0; i < 7; i++) { const x = -160 + i * 230, d = i % 2 ? 1 : -1; vine(s, whip([x, 1150], [x + d * 60, 1100], [x - d * 40, 1050], [x + d * 50, 1020], .6, d, 18), 18, 8, C.olive); line([[x, 1000], [x, 1150]], C.umber, 14); }
     // the deck: planks in perspective
-    shape(s, [[-400, 1010], [1500, 1010], [1500, 2400], [-400, 2400]], C.ochre, C.umber, 16);
-    for (let i = -6; i <= 12; i++) line([[540 + i * 90, 1010], [540 + i * 260, 2400]], C.umber, 12);
-    // the furnace: a riveted boiler front with an arched mouth, its door swung open
-    shape(s, [[700, 1500], [700, 760], ...circle(940, 760, 240, 40).filter(([, py]) => py <= 760).sort((a, b) => a[0] - b[0]), [1180, 760], [1180, 1500]], C.deep, C.umber, 20);
-    for (let i = 0; i < 8; i++) { shape(s, circle(730, 820 + i * 85, 13, 10), C.olive, C.umber, 6); shape(s, circle(1150, 820 + i * 85, 13, 10), C.olive, C.umber, 6); }
-    const mx = 905, my = 1150, mw = 330, mh = 330;
+    shape(s, [[-400, 1150], [1500, 1150], [1500, 2400], [-400, 2400]], C.ochre, C.umber, 16);
+    for (let i = -6; i <= 12; i++) line([[540 + i * 90, 1150], [540 + i * 260, 2400]], C.umber, 12);
+    // the furnace: a riveted boiler front with an arched mouth up high, its door swung open
+    shape(s, [[760, 1350], [760, 470], ...circle(1000, 470, 240, 40).filter(([, py]) => py <= 470).sort((a, b) => a[0] - b[0]), [1240, 470], [1240, 1350]], C.deep, C.umber, 20);
+    for (let i = 0; i < 10; i++) shape(s, circle(790, 520 + i * 85, 13, 10), C.olive, C.umber, 6);
+    const mw = 300, mh = 300;
     const mouth = [[mx - mw / 2, my + mh / 2], [mx - mw / 2, my - mh / 2 + mw / 2], ...circle(mx, my - mh / 2 + mw / 2, mw / 2, 30).filter(([, py]) => py <= my - mh / 2 + mw / 2 + .1).sort((a, b) => a[0] - b[0]), [mx + mw / 2, my - mh / 2 + mw / 2], [mx + mw / 2, my + mh / 2]];
     shape(s, mouth, mix(C.ruby, C.amber, clamp(heat - .2)), C.umber, 22);
-    for (let i = 0; i < 5; i++) { const fx = mx - 120 + i * 60, fh = 120 + 70 * noise1(t * 4 + i * 3, 2) + 80 * flare; petal(s, fx, my + mh / 2 - 10, -Math.PI / 2 + Math.sin(t * 5 + i) * .15, fh, 30, i % 2 ? C.gold : C.cream, C.umber, 8); }
+    for (let i = 0; i < 5; i++) { const fx = mx - 120 + i * 60, fh = 110 + 70 * noise1(t * 4 + i * 3, 2) + 80 * flare; petal(s, fx, my + mh / 2 - 10, -Math.PI / 2 + Math.sin(t * 5 + i) * .15, fh, 30, i % 2 ? C.gold : C.cream, C.umber, 8); }
     glowAt(mx, my, 520, `rgba(255,140,60,${.4 * heat})`); glowAt(mx, my + 40, 220, `rgba(255,225,160,${.7 * heat})`);
-    shape(s, [[mx - mw / 2 - 10, my + mh / 2], [mx - mw / 2 - 10, my - mh / 2 + 40], [mx - mw / 2 - 120, my - mh / 2 + 70], [mx - mw / 2 - 120, my + mh / 2 + 40]], C.olive, C.umber, 16);
-    shape(s, circle(mx - mw / 2 - 65, my + 20, 34, 18), C.gold, C.umber, 10);
-    // the coal heap, and lumps jumping on each bite
-    shape(s, blobPts(420, 1420, 380, 300, 9, .08, 40), COAL, C.umber, 18);
-    const r = rng(77); for (let i = 0; i < 34; i++) { const a = r() * Math.PI, rr = Math.sqrt(r()), x = 420 + Math.cos(a) * rr * 330 * (r() < .5 ? 1 : -1), y = 1420 - Math.sin(a) * rr * 250; if (y < 1430) lump(x, y, 26 + r() * 18, i); }
-    let bump = 0; BITES.forEach((k, j) => { const l = t - k; if (l < 0 || l > .7) return; bump = Math.max(bump, hit(t, k, 7));
-      const rr = rng(500 + j); for (let i = 0; i < 6; i++) { const vx = (rr() - .3) * 600, vy = -500 - rr() * 400; lump(600 + vx * l, 1260 + vy * l + 1300 * l * l, 16 + rr() * 10, i + 3); } });
-    // the top hat on the summit: it jolts on every bite
-    const hy = 1150 - bump * 40, tilt = Math.sin(t * 2) * .04 + bump * .12;
-    s.save(); s.translate(360, hy); s.rotate(tilt); s.scale(1.25, 1.25);
-    shape(s, [[-70, 0], [-82, -230], [82, -230], [70, 0]], mix(C.night, C.plum, .4), C.umber, 16);
-    shape(s, [[-74, -40], [74, -40], [72, -70], [-72, -70]], C.ruby, C.umber, 10);
-    shape(s, blobPts(0, 2, 140, 26, 4, .02, 30), mix(C.night, C.plum, .4), C.umber, 14);
-    shape(s, blobPts(0, -230, 82, 20, 6, .02, 24), mix(C.night, C.dusk, .5), C.umber, 12);
-    s.restore();
-    // the shovel: keyframed between heap and mouth; it lands exactly on each bite and throws on each toss
-    const keys = [[70.68, [660, 980, 1.0, 0]]];
-    BITES.forEach((k, j) => { keys.push([k - .3, [640, 1040, 1.1, 0]], [k, [610, 1270, 1.3, 0]], [k + .18, [660, 1160, 1.05, 1]], [TOSSES[j], [mx - 40, my - 10, .5, 1]], [TOSSES[j] + .12, [mx - 90, my - 30, .6, 0]]); });
-    const [sx, sy, sa, load] = kf(t, keys, ease.inOut);
-    s.save(); s.translate(sx, sy); s.rotate(sa);
-    vine(s, [[-60, 0], [-400, 0], [-750, 0], [-1100, 0]], 30, 30, C.ochre);
-    shape(s, [[-70, -70], [70, -60], [110, 0], [70, 60], [-70, 70]], C.gold, C.umber, 14);
-    shape(s, [[-60, -40], [-160, -18], [-160, 18], [-60, 40]], C.olive, C.umber, 12);
-    if (load > .5) for (let i = 0; i < 4; i++) lump(-10 + i * 28, -40 + (i % 2) * 30, 22, i + 11);
-    s.restore();
-    // coal flying into the mouth and the sparks it throws
-    TOSSES.forEach((k, j) => { const l = t - k; if (l >= 0 && l < .2) for (let i = 0; i < 4; i++) lump(lerp(mx - 40, mx + 20 * (i - 1.5), l / .2), lerp(my - 10, my - 40 + i * 20, l / .2), 18, i + 21); sparks(t, k + .1, mx, my, 34, 600 + j, 700, .8, 1.6, -Math.PI / 2 - .9, 700); });
+    shape(s, [[mx - mw / 2 - 10, my + mh / 2], [mx - mw / 2 - 10, my - mh / 2 + 40], [mx - mw / 2 - 110, my - mh / 2 + 70], [mx - mw / 2 - 110, my + mh / 2 + 40]], C.olive, C.umber, 16);
+    // the coal heap at his feet
+    shape(s, blobPts(980, 1770, 300, 150, 9, .1, 40), COAL, C.umber, 18);
+    const r = rng(77); for (let i = 0; i < 22; i++) { const a = r() * Math.PI, rr = Math.sqrt(r()), x = 980 + Math.cos(a) * rr * 270 * (r() < .5 ? 1 : -1), y = 1770 - Math.sin(a) * rr * 120; lump(x, y, 22 + r() * 14, i); }
+    // the millionaire, lit from the furnace side
+    const J = millionaire(t, 330, 1760, 1000, { ph: stokePh(t), facing: 1 });
+    glowAt(J.hc[0] + 120, J.hc[1], 260, `rgba(255,150,70,${.22 * heat})`);
+    // a bite kicks up grit at the blade; each throw sends sparks out of the mouth
+    BITES.forEach((k, j) => { if (J.blade && t >= k && t < k + .5) sparks(t, k, J.blade[0], J.blade[1], 14, 500 + j, 450, .5, 1.6, -Math.PI / 2, 900); });
+    TOSSES.forEach((k, j) => sparks(t, k + .08, mx, my, 34, 600 + j, 700, .8, 1.6, -Math.PI / 2 - .9, 700));
     // the glow takes the frame as we push in
     if (push > .3) { s.fillStyle = `rgba(240,176,74,${ease.in(inv(.3, 1, push)) * .85})`; s.fillRect(-W, -H, W * 3, H * 3); glowAt(mx, my, 900, `rgba(255,190,110,${.6 * ease.in(inv(.3, 1, push))})`); }
-    rain(t, 140, 41, .45 * (1 - push), 2400, .18);
+    rain(t, 120, 41, .4 * (1 - push), 2400, .18);
     border(t, 1);
   }
   chapter('c03', SEC.v2, SEC.c2, [

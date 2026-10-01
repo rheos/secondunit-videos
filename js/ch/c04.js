@@ -73,6 +73,11 @@
     for (let i = 0; i < 14; i++) { const a = i / 14 * TAU + .2; sparks(t, k, cx + Math.cos(a) * R * 1.05, cy + Math.sin(a) * R * 1.05, 12, 40 + i, 1600, 1.1, 1.1, a, 800); }
     for (let i = 0; i < 6; i++) { const a = i / 6 * TAU + .65; sparks(t, hk, cx + Math.cos(a) * R * .55, cy + Math.sin(a) * R * .55, 6, 80 + i, 700, .7, 1.2, a, 900); }
     glowAt(cx, cy, 700, `rgba(255,170,90,${.35 * slam})`);
+    // the stoker revealed by the pull-back: the millionaire, hat askew, sweating, still shovelling on the beat
+    const b = beatPhase(t), c = Math.floor(b / 2), r = b - c * 2;
+    const J = millionaire(t, 230, 1960, 760, { ph: c + (r < 1 ? r * .62 : .62 + (r - 1) * .38), facing: 1, style: { hatTilt: -.35 } });
+    for (let i = 0; i < 3; i++) { const u = (t * 1.4 + i / 3) % 1, d = i % 2 ? 1 : -1; petal(s, J.hc[0] + d * (40 + u * 90), J.hc[1] - 40 + u * u * 160 - u * 60, Math.PI / 2 + d * .4, 26, 10, C.cream, C.umber, 7); }
+    glowAt(J.hc[0] + 80, J.hc[1], 200, 'rgba(255,150,70,.25)');
     embers(t, 30, 3, .6);
     border(t, 1);
   }
