@@ -1,6 +1,7 @@
 // c09 · BRIDGE 2 (SEC.b2 - SEC.out). Dawn on the river. The theatre curtain's seam of light turns into the
 // horizon, the sun rises as a gold Mucha halo, dawn sweeps the water and the rain lifts into mist, the
-// band's drum and tuba drift past and go down a whirlpool, and a little rowboat rows up into the sun.
+// Salvation Army band bob past clinging to their drum and tuba and go down a whirlpool, and a little rowboat
+// packed with the whole cast rows up into the sun.
 (() => {
   // ---- private helpers ----
   const rgb = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
@@ -121,27 +122,50 @@
     s.restore();
     glowAt(x + 125 * sc * Math.cos(rot) + 380 * sc * Math.sin(rot), y - 380 * sc * Math.cos(rot), 160 * sc, `rgba(255,220,150,${.35 * k})`);
   }
-  function tambourine(x, y, sc, rot, t, k) {
-    shape(s, ell(x, y, 110 * sc, 42 * sc, 36, rot), C.parch, C.umber, 14);
-    shape(s, ell(x, y - 8 * sc, 82 * sc, 26 * sc, 36, rot), C.cream, C.umber, 10);
-    for (let i = 0; i < 6; i++) { const a = i / 6 * TAU, px = x + Math.cos(a) * 100 * sc, py = y + Math.sin(a) * 38 * sc; shape(s, ell(px, py, 20 * sc, 12 * sc, 12, rot), C.gold, C.umber, 8); glowAt(px, py, 40 * sc, `rgba(255,230,170,${(.3 + .7 * beatPulse(t + i * .07, 7)) * .5 * k})`); }
-  }
-  // the little rowboat seen from behind: hull, the inside, oars that dip on every beat
-  function boat(x, y, sc, t, onWater) {
-    const bi = lastBeat(t), dip = beatPulse(t, 4.5), ph = clamp((t - BEAT(bi)) / .5);
-    s.save(); s.translate(x, y); s.scale(sc, sc); const lw = 16 / sc;
-    for (const d of [-1, 1]) {
-      const a = lerp(-.42, .5, dip), sw = lerp(-.3, .3, ph) * .6, L = 330;
-      const tip = [d * (150 + Math.cos(a) * L), -30 + Math.sin(a) * L + sw * 40];
-      line([[d * 150, -30], tip], C.umber, 24 / sc + 10); line([[d * 150, -30], tip], C.ochre, 24 / sc);
-      petal(s, tip[0] - d * Math.cos(a) * 30, tip[1] - Math.sin(a) * 30, Math.atan2(Math.sin(a), d * Math.cos(a)), 120, 34, C.gold, C.umber, lw * .8);
-    }
-    shape(s, [[-190, -40], ...cub([-190, -40], [-150, 60], [-70, 100], [0, 104], 12), ...cub([0, 104], [70, 100], [150, 60], [190, -40], 12)], C.ochre, C.umber, lw);
-    shape(s, [[-176, -38], ...cub([-176, -38], [-120, -96], [120, -96], [176, -38], 16)], mix(C.umber, C.ochre, .45), C.umber, lw * .8);
-    line([[-150, -10], ...cub([-150, -10], [-80, 40], [80, 40], [150, -10], 12)], C.umber, 12 / sc);
-    shape(s, [[-120, -66], [120, -66], [120, -48], [-120, -48]], C.parch, C.umber, lw * .7);
+  // ---- the cast in the river ----
+  // a bandsman chest-deep in the water: clipped at the waterline wl, bobbing; comic, never in trouble.
+  // kind 'drum' waves (his drum floats beside him), 'tuba' keeps playing, 'tambourine' keeps slapping
+  function swimmer(t, kind, x, wl, sc, facing, seed) {
+    const bob = Math.sin(t * 2.4 + seed * 1.7) * .02 * sc - beatPulse(t + seed * .07, 5) * .03 * sc, w = wl + bob;
+    s.save(); s.beginPath(); s.rect(-3000, -3000, 9000, w + 3000); s.clip();
+    const y = w + .56 * sc;
+    if (kind === 'drum') person(t, x, y, sc, { who: 'drummer', pose: 'wave', ph: t * 1.7 + seed, facing, style: { mouth: 'grin' } });
+    else bandsman(t, x, y, sc, { role: kind, facing, march: 0 });
     s.restore();
-    if (onWater > 0) for (const d of [-1, 1]) { const a = lerp(-.42, .5, dip); if (dip > .3) glowAt(x + d * (150 + Math.cos(a) * 330) * sc, y + (-30 + Math.sin(a) * 330) * sc, 90 * sc, `rgba(255,240,210,${.6 * dip * onWater})`); }
+    for (let i = 0; i < 2; i++) { const r = .22 * sc + i * .1 * sc + Math.sin(t * 4 + i + seed) * .02 * sc, rp = ell(x, w + 4, r, r * .22, 28); rp.push(rp[0]); stroke2(rp, Math.max(4, 9 - i * 3), i ? mix(C.deep, C.sage, .8) : C.parch); }
+    return w;
+  }
+  // a side-view rowboat (bow to the left) packed with the whole cast; (x, y) = waterline under midships, S = scale
+  function hullPts(x, y, S) { return [...cub([x - 570 * S, y - 120 * S], [x - 420 * S, y + 40 * S], [x - 200 * S, y + 70 * S], [x + 80 * S, y + 66 * S], 16), ...cub([x + 80 * S, y + 66 * S], [x + 330 * S, y + 62 * S], [x + 470 * S, y + 30 * S], [x + 500 * S, y - 82 * S], 12), ...cub([x + 500 * S, y - 82 * S], [x + 200 * S, y - 70 * S], [x - 250 * S, y - 75 * S], [x - 570 * S, y - 120 * S], 16)]; }
+  function packedBoat(t, x, y, S, waving = 1) {
+    const g = y - 10 * S, bp = beatPhase(t), F = -1;
+    // the back row, standing, squeezed shoulder to shoulder, hats up, waving
+    const back = [
+      [455, (q) => passenger(t, q.x, g, 330 * S, { who: 'old', pose: 'wave', ph: t * 1.5, facing: F })],
+      [330, (q) => passenger(t, q.x, g, 360 * S, { who: 'tall', pose: 'wave', ph: t * 1.4 + .3, facing: F })],
+      [205, (q) => millionaire(t, q.x, g, 360 * S, { pose: 'stand', facing: F })],
+      [85, (q) => harlemWalker(t, q.x, g, 380 * S, { pose: 'stand', facing: F })],
+      [-45, (q) => knickerbocker(t, q.x, g, 330 * S, { view: 'profile', back: 0, pose: 'stand', facing: F })],
+      [-170, (q) => jacketMan(t, q.x, g, 360 * S, { pose: 'stand', facing: F })],
+      [-300, (q) => passenger(t, q.x, g, 360 * S, { who: 'dandy', pose: 'wave', ph: t * 1.6 + .7, facing: F })],
+    ];
+    for (const [dx, fn] of back) fn({ x: x + dx * S });
+    // the band hauled aboard at the stern, still playing
+    bandsman(t, x + 520 * S, g - 8 * S, 340 * S, { role: 'tuba', ph: bp, march: 0, facing: F });
+    bandsman(t, x + 390 * S, g + 10 * S, 350 * S, { role: 'drum', ph: bp, march: 0, facing: F });
+    bandsman(t, x - 410 * S, g + 6 * S, 340 * S, { role: 'tambourine', ph: bp, march: 0, facing: F });
+    // the rowers face the stern and pull on the beat; the stout passenger wedged between them
+    const thw = y - 60 * S, R = [];
+    for (const [dx, sd, o] of [[-150, 1, 0], [215, 2, .08]]) R.push(rower(t, x + dx * S, thw, 400 * S, { seed: sd, facing: 1, ph: bp / 2 + o, oar: 'later', oarlock: [x + (dx + 120) * S, y - 88 * S], oarLen: 300 * S }));
+    passenger(t, x + 35 * S, thw, 380 * S, { who: 'stout', pose: 'sit', facing: F });
+    // the conductor at the bow with his lantern held out ahead
+    const Jc = conductor(t, x - 500 * S, g, 400 * S, { pose: 'stand', facing: F, lit: 1, swing: .3 * Math.sin(t * 2.6) - .2 });
+    shape(s, hullPts(x, y, S), C.ochre, C.umber, Math.max(8, 18 * S));
+    for (const k of [.35, .65]) line(cub([x - 540 * S, y - 112 * S + 150 * S * k], [x - 300 * S, y - 60 * S + 120 * S * k], [x + 200 * S, y - 60 * S + 120 * S * k], [x + 485 * S, y - 76 * S + 120 * S * k], 14), mix(C.umber, C.ochre, .4), Math.max(5, 9 * S));
+    line(cub([x - 570 * S, y - 120 * S], [x - 250 * S, y - 75 * S], [x + 200 * S, y - 70 * S], [x + 500 * S, y - 82 * S], 16), C.gold, Math.max(5, 12 * S));
+    lily(s, x - 470 * S, y - 50 * S, Math.PI, 70 * S, .7, [C.ruby, C.blush]);
+    for (const r of R) r.drawOar?.();
+    return { Jc, R };
   }
 
   // ---- shots ----
@@ -231,27 +255,29 @@
     rain(t, 40 * (1 - inv(0, 1.2, lt)), 27, .25 * (1 - inv(0, 1.2, lt)));
     border(t, 1);
   }
-  // 173.53: the brass band's bass drum floats past, bobbing on the beats, a tambourine jingling beside it
+  // 173.53: the Salvation Army band, fished out of the hole by the river: chest-deep and cheerful, the
+  // drummer waving beside his floating drum, the tubist still playing, the tambourine still slapping the beat
   function drumShot(t, lt, dur) {
-    cam(kf(lt, [[0, 760], [dur, 380]]), 1060, kf(lt, [[0, 1.1], [dur, 1.16]]));
+    const dx = kf(lt, [[0, 960], [dur, 420]]);
+    cam(dx + 115, 1100, kf(lt, [[0, 1.22], [dur, 1.28]]));
     const yH = 560, k = .92;
     sky(yH, 900, k); clouds(yH, k, t, 3, 31);
-    skyline(yH, k, 8, -800, 1900);
+    skyline(yH, k, 8, -800, 2000);
     water(yH, 2000, k, t, 700, 1);
-    const bob = Math.sin(t * 2.4) * 14 - beatPulse(t, 5) * 22;
-    const dx = kf(lt, [[0, 1200], [dur, 260]]), dy = 1080 + bob;
-    for (let i = 0; i < 3; i++) pad(dx - 420 + i * 380 + 200 * Math.sin(i * 2.1), 1500 + i * 120, 120 + i * 20, 40 + i * 6, i * 1.3, i % 2 ? C.sage : C.olive);
-    const wy = (x) => dy + 150 + Math.sin(x * .03 + t * 4) * 8;
-    s.save(); s.beginPath(); s.moveTo(-1000, -1000); s.lineTo(3000, -1000); for (let x = 3000; x >= -1000; x -= 20) s.lineTo(x, x > dx - 200 && x < dx + 400 ? wy(x) : 3000); s.closePath(); s.clip();
-    drum(dx, dy, .95, Math.sin(t * 1.6) * .06 - .05, k);
-    s.restore();
-    // the waterline round the drum: ripples lapping its lower body
-    for (let i = 0; i < 3; i++) { const yy = dy + 150 + i * 34, w0 = 300 + i * 90, pts = []; for (let x = dx - 160 - w0 * .3; x <= dx + 360 + w0 * .3; x += 24) pts.push([x, yy + Math.sin(x * .03 + t * 4 + i) * 8]); stroke2(pts, 12 - i * 2, i ? mix(C.deep, C.sage, .8) : C.parch); }
-    glowAt(dx + 100, dy + 150, 220, `rgba(255,220,160,${.2 + .2 * beatPulse(t, 5)})`);
-    tambourine(dx - 330, 1290 + Math.sin(t * 2.4 + 1.3) * 10 - beatPulse(t, 6) * 12, 1.1, Math.sin(t * 1.9) * .08, t, k);
+    for (let i = 0; i < 3; i++) pad(dx - 420 + i * 420 + 160 * Math.sin(i * 2.1), 1480 + i * 120, 120 + i * 20, 40 + i * 6, i * 1.3, i % 2 ? C.sage : C.olive);
+    const wl = 1150;
+    swimmer(t, 'tambourine', dx - 190, wl - 10, 560, 1, 1);
+    // the drum floats on its side, the drummer at its far end with an arm over it
+    swimmer(t, 'drum', dx + 240, wl, 640, -1, 2);
+    const bob = Math.sin(t * 2.4) * 12 - beatPulse(t, 5) * 18, dy = wl - 105 + bob;
+    s.save(); s.beginPath(); s.rect(-3000, -3000, 9000, wl + bob + 3000); s.clip(); drum(dx - 10, dy + 20, .6, Math.sin(t * 1.6) * .06 - .05, k); s.restore();
+    for (let i = 0; i < 2; i++) { const pts = []; for (let x = dx - 140 - i * 50; x <= dx + 260 + i * 50; x += 20) pts.push([x, wl + bob + i * 26 + Math.sin(x * .03 + t * 4 + i) * 7]); stroke2(pts, 11 - i * 3, i ? mix(C.deep, C.sage, .8) : C.parch); }
+    swimmer(t, 'tuba', dx + 430, wl + 20, 580, -1, 3);
+    glowAt(dx + 100, wl, 260, `rgba(255,220,160,${.18 + .2 * beatPulse(t, 5)})`);
     border(t, 1);
   }
-  // 175.57: drum and tuba circle a whirlpool and go down the hole; then the water smooths over
+  // 175.57: band, drum and tuba circle a whirlpool and go down the hole together with a splash of light;
+  // then the water smooths over (they turn up again in the boat)
   function whirl(t, lt, dur) {
     cam(540, kf(lt, [[0, 1080], [dur, 1040]]), kf(lt, [[0, 1.0], [1.4, 1.14], [dur, 1.06]], ease.inOut), kf(lt, [[0, 0], [dur, -.08]]));
     const yH = 520, k = .95, cx = 540, cy = 1180, hole = 176.55;
@@ -266,39 +292,64 @@
       stroke2(pts, 16 * clamp(sw, .3, 1), i % 2 ? mix(C.glass, C.parch, .4) : C.sage);
     }
     if (holeR > 1) { shape(s, ell(cx, cy, holeR, holeR * .43), C.deep, C.umber, 14); }
-    // the band goes round and down
-    for (const [kind, ph] of [['drum', 0], ['tuba', Math.PI]]) {
-      const r = kf(t, [[175.567, 520], [hole, 150], [176.9, 0]], ease.in), a = spin * 1.1 + ph, sc = lerp(.12, .52, r / 520);
+    // the band goes round and down, each clinging to an instrument, back half of the orbit first
+    const items = [['drum', 0], ['tuba', TAU / 3], ['tambourine', TAU * 2 / 3]].map(([kind, ph]) => {
+      const r = kf(t, [[175.567, 500], [hole, 150], [176.9, 0]], ease.in), a = spin * 1.1 + ph; return { kind, r, a, y: cy + Math.sin(a) * r * .43 };
+    }).sort((p, q) => p.y - q.y);
+    for (const { kind, r, a, y } of items) {
       if (r < 8) continue;
-      const x = cx + Math.cos(a) * r, y = cy + Math.sin(a) * r * .43 - 60 * sc;
-      if (kind === 'drum') drum(x, y, sc, a * .3, k); else tuba(x, y, sc, Math.sin(a) * .4, k);
+      const sc = lerp(.14, .5, r / 500), x = cx + Math.cos(a) * r;
+      if (kind === 'drum') { swimmer(t, 'drum', x + 170 * sc, y, 820 * sc, -1, 2); drum(x - 40 * sc, y - 90 * sc, sc * .8, a * .3, k); }
+      else if (kind === 'tuba') swimmer(t, 'tuba', x, y, 820 * sc, Math.cos(a) > 0 ? -1 : 1, 3);
+      else swimmer(t, 'tambourine', x, y, 800 * sc, Math.cos(a) > 0 ? -1 : 1, 1);
     }
     // splash of light as they go under, then rings spread
     const sp = hit(t, 176.9, 2.5);
     if (t > 176.9) { glowAt(cx, cy - 40, 260, `rgba(255,236,190,${.7 * sp})`); for (let i = 0; i < 3; i++) { const rr = (t - 176.9) * 380 - i * 90; if (rr > 10) { const rp = ell(cx, cy, rr, rr * .43); rp.push(rp[0]); stroke2(rp, 10, C.parch); } } }
     border(t, 1);
   }
-  // 177.57: the little rowboat rows away up the sun's road on the beats, lifts off the water at the horizon
-  // and rises into the halo; the camera pushes in until the sun is big and centred
-  function rowboat(t, lt, dur) {
-    const z = kf(t, [[177.567, 1.0], [178.9, 1.08], [180.633, 1.6]], ease.inOut);
-    cam(540, kf(t, [[177.567, 1150], [178.9, 1080], [180.633, 720]], ease.inOut), z);
+  // 177.57: the payoff: the little rowboat on the sun road with the whole cast crammed in, hats sticking up,
+  // waving; two rowers pulling on the beat, the conductor at the bow with his lantern, the band at the stern.
+  // The camera tracks along it from stern to bow
+  function packed(t, lt, dur) {
+    const S = 1.35, bx = kf(lt, [[0, 760], [dur, 560]]), by = 1420 + Math.sin(t * 2.2) * 8 - beatPulse(t, 5) * 10;
+    cam(kf(lt, [[0, bx + 330], [dur, 560 - 470]], ease.inOut), kf(lt, [[0, 1080], [dur, 1060]]), kf(lt, [[0, 1.26], [dur, 1.2]]));
+    const yH = 1040, k = 1;
+    sky(yH, 1400, k); clouds(yH, k, t, 4, 43);
+    sun(560, 600, 300, t * .05, .45 + .15 * beatPulse(t, 4), 1.25 + .1 * beatPulse(t, 5));
+    skyline(yH, k, 12, -600, 1900, .55);
+    water(yH, 2400, k, t, 560, 1);
+    const { Jc } = packedBoat(t, bx, by, S);
+    // the lantern's light and the oars' splashes on top
+    if (Jc) glowAt(Jc.farHand[0] - 20, Jc.farHand[1] + 50, 160, 'rgba(255,190,110,.5)');
+    for (const dx of [-30, 335]) { const dip = beatPulse(t, 4.5); glowAt(bx + (dx + 170) * S, by + 30 * S, 120, `rgba(255,240,210,${.5 * dip})`); }
+    // the waterline along the hull
+    for (let i = 0; i < 2; i++) { const pts = []; for (let x = bx - 620 * S; x <= bx + 560 * S; x += 24) pts.push([x, by + 50 * S + i * 30 + Math.sin(x * .02 + t * 5 + i) * 7]); stroke2(pts, 12 - i * 3, i ? mix(C.deep, C.sage, .8) : C.parch); }
+    border(t, 1);
+  }
+  // 179.35: wide: the packed boat lifts off the water and rises into the sun's halo, dripping light; the camera
+  // pushes in until the sun is big and centred (c10 opens on exactly this)
+  function ascend(t, lt, dur) {
+    const z = kf(t, [[179.35, 1.05], [180.633, 1.6]], ease.inOut);
+    cam(540, kf(t, [[179.35, 960], [180.633, 720]], ease.inOut), z);
     const yH = 1100, k = 1;
     sky(yH, 1400, k); clouds(yH, k, t, 4, 41);
     const enter = hit(t, 180.25, 3) * (t > 180.25 ? 1 : 0);
     sun(540, 720, 300, t * .05, .6 + .2 * beatPulse(t, 4) + .5 * enter, 1.25 + .12 * beatPulse(t, 5));
     skyline(yH, k, 10, -600, 1700, .55);
     water(yH, 2500, k, t, 540, 1);
-    // lily pads sliding past as the boat moves out
-    for (let i = 0; i < 4; i++) { const py = 1500 + ((t - 177.5) * 260 + i * 260) % 1100, px = i % 2 ? 180 + i * 40 : 900 - i * 40; pad(px, py, lerp(60, 160, inv(1300, 2500, py)), lerp(20, 54, inv(1300, 2500, py)), i * 1.7, i % 2 ? C.sage : C.olive); if (i % 2 === 0) lily(s, px + 20, py - 10, -Math.PI / 2, lerp(50, 110, inv(1300, 2500, py)), .8, [C.cream, C.blush]); }
-    const u1 = ease.inOut(inv(177.567, 178.9, t)), u2 = ease.inOut(inv(178.85, 180.2, t)), gone = ease.in(inv(180.2, 180.6, t));
-    const bx = 540 + Math.sin(t * 1.4) * 10 * (1 - u2), by = lerp(lerp(1720, 1112, u1), 735, u2), sc = lerp(lerp(.95, .32, u1), .26, u2) * (1 - gone), onW = 1 - inv(178.85, 179.2, t);
-    // the wake behind it on the water
-    if (onW > 0) for (let i = 1; i <= 4; i++) { const yy = by + (40 + i * 90) * sc, hw = (150 + i * 110) * sc, ph = Math.sin(t * 5 - i) * 6 * sc; stroke2(cub([bx - hw, yy - 30 * sc + ph], [bx - hw * .4, yy + 26 * sc], [bx + hw * .4, yy + 26 * sc], [bx + hw, yy - 30 * sc - ph], 12), lerp(12, 7, i / 4) * onW, C.parch); }
-    if (sc > .01) boat(bx, by, sc, t, onW);
-    // the boat in black on the light layer too, so it stays a silhouette against the sun's glow
-    const s0 = s; s = f; f.save(); f.globalAlpha = .9 * inv(178.6, 179.6, t); f.filter = 'brightness(0)'; try { if (f.globalAlpha > 0 && sc > .01) boat(bx, by, sc, t, 0); } finally { f.restore(); s = s0; }
-    if (u2 > 0) { glowAt(bx, by - 40 * sc, 420 * sc + 60, `rgba(255,236,190,${.25 * u2})`); for (let i = 0; i < 6; i++) { const dy = ((t * 400 + i * 120) % 500) * sc * 2; glowAt(bx + (i - 2.5) * 70 * sc, by + 60 * sc + dy, 14, `rgba(220,240,255,${.6 * (1 - u2 * .5)})`); } }
+    const u = ease.inOut(inv(179.35, 180.2, t)), gone = ease.in(inv(180.15, 180.6, t));
+    const bx = lerp(600, 545, u), by = lerp(1150, 790, u), S = lerp(.36, .2, u) * (1 - gone);
+    // rings where it left the water
+    for (let i = 0; i < 3; i++) { const rr = (t - 179.35) * 300 - i * 70; if (rr > 10 && t < 180.1) { const rp = ell(600, 1150, rr, rr * .2); rp.push(rp[0]); stroke2(rp, 8, C.parch); } }
+    if (S > .03) {
+      packedBoat(t, bx, by, S);
+      // a cheap black silhouette on the light layer (hull plus the crowd's outline) so the sun's glow sits behind it
+      f.save(); f.globalAlpha = .85; f.fillStyle = '#000'; P(f, hullPts(bx, by, S)); f.closePath(); f.fill();
+      P(f, [[bx - 560 * S, by - 100 * S], ...cub([bx - 560 * S, by - 300 * S], [bx - 300 * S, by - 560 * S], [bx + 300 * S, by - 560 * S], [bx + 600 * S, by - 300 * S], 20), [bx + 600 * S, by - 80 * S]]); f.closePath(); f.fill(); f.restore();
+    }
+    if (S > .03) for (let i = 0; i < 7; i++) { const dy = ((t * 300 + i * 90) % 400) * S * 2.2; glowAt(bx + (i - 3) * 140 * S, by + 60 * S + dy, 12, 'rgba(220,240,255,.6)'); }
+    glowAt(bx, by - 150 * S, 600 * S + 60, `rgba(255,236,190,${.25 * u})`);
     glowAt(540, 720, 420, `rgba(255,240,200,${.6 * enter})`);
     border(t, 1);
   }
@@ -309,6 +360,7 @@
     [171.5, mist],
     [173.533, drumShot],
     [175.567, whirl],
-    [177.567, rowboat],
+    [177.567, packed],
+    [179.35, ascend],
   ], { fx: PAINT });
 })();
