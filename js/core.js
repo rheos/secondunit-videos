@@ -92,6 +92,32 @@ function handShape(x, y, sc, { dir = 1, rot = 0, spread = .3, curl = 0 } = {}) {
   return { palm, fingers, thumb, cuff };
 }
 
+// ---- a clapping hand, seen from the front: upright, palm facing the other hand, so it reads in profile ----
+// (x, y) = wrist; sc = px per unit (the hand is ~1.9 units tall). dir -1 = the LEFT hand (palm faces +x),
+// dir 1 = the right hand. open = hinge angle at the heel of the palm (0 = flat against the other palm).
+// Returns { body, thumb, cuff, lines, inner } in screen coords; inner is the palm-edge x at the wrist line.
+function clapHand(x, y, sc, { dir = -1, open = 0, cup = 0 } = {}) {
+  const m = -dir, rot = dir * open; // build the left hand, mirror for the right; open swings the fingertips outward
+  // hinge about the heel of the palm on its inner edge, so the wrists stay put while the fingers swing
+  const hx = .15 * m * sc, hy = -.3 * sc;
+  const R = ([px, py]) => { const a = px * m * sc - hx, b = py * sc - hy; return [x + hx + a * Math.cos(rot) - b * Math.sin(rot), y + hy + a * Math.sin(rot) + b * Math.cos(rot)]; };
+  const body = [[-.3, 0], [-.34, -.4], [-.35, -.78], [-.31, -1.0], [-.28, -1.3], [-.21, -1.62], [-.1, -1.84], [.02, -1.88], [.11, -1.8], [.15 - cup * .05, -1.5], [.17 - cup * .08, -1.05], [.17 - cup * .05, -.55], [.14, 0]].map(R);
+  const thumb = [[.02, -.2], [.1, -.5], [.15, -.8], [.21, -1.0], [.27, -.98], [.27, -.86], [.22, -.55], [.17, -.22], [.12, -.08]].map(R);
+  const cuff = [[-.36, .04], [.16, .04], [.2, .55], [-.4, .55]].map(R);
+  // the fingers, stacked behind each other along the back of the hand, and the knuckle crease
+  const lines = [
+    [[-.2, -1.02], [-.14, -1.42], [-.05, -1.7]], [[-.08, -1.04], [-.03, -1.4], [.04, -1.62]], [[.04, -1.06], [.08, -1.36], [.11, -1.5]],
+    [[-.3, -.98], [-.18, -1.05], [-.04, -1.05]],
+  ].map((l) => l.map(R));
+  return { body, thumb, cuff, lines };
+}
+// the hinge angle through a clap at k: swings shut fast, bounces open, settles half open
+function clapOpen(t, k, wide = .5) {
+  const lt = t - k;
+  if (lt < 0) return wide * ease.out(clamp(-lt / .38));
+  return wide * (.55 * ease.out(clamp(lt / .3)) - .1 * ease.inOut(clamp((lt - .3) / 1.2)));
+}
+
 // ---- frame assembly ----
 // With the brushstroke renderer (js/paint.js) loaded, s and f are its half-res underpainting and light
 // layers, drawn in full-res coords; otherwise s is the look's own 2D source canvas.

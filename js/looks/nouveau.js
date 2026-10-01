@@ -63,20 +63,20 @@ const LOOK = { span: [37.7, 56.0] };
       f.strokeStyle = `rgba(200,220,255,${a * (.3 + r() * .7)})`; f.lineWidth = 2 + r() * 3; f.beginPath(); f.moveTo(x, y); f.quadraticCurveTo(x - lean * L * .5 + 6, y - L * .5, x - lean * L, y - L); f.stroke(); }
     f.restore();
   }
-  // a slender Mucha hand: the shared rig, narrowed, cream with a blush shade and a heavy contour
+  // a clapping hand: blush skin, the back of the hand lit, the palm edge in shadow, a teal cuff
   function hand(x, y, sc, o, tone = C.blush) {
-    s.save(); s.translate(x, y); s.scale(.82, 1); s.translate(-x, -y);
-    const h = handShape(x, y, sc, { ...o, spread: .02 }), lw = Math.max(9, sc * .055);
+    const h = clapHand(x, y, sc, o), lw = Math.max(9, sc * .05);
     shape(s, h.cuff, C.teal, C.umber, lw);
-    for (const p of [...h.fingers, h.thumb, h.palm]) shape(s, p, tone, C.umber, lw);
-    s.restore();
+    shape(s, h.body, tone, C.umber, lw);
+    s.lineCap = 'round'; s.lineJoin = 'round';
+    for (const l of h.lines) { s.lineWidth = lw * .7; s.strokeStyle = C.umber; P(s, l); s.stroke(); }
+    shape(s, h.thumb, C.rose, C.umber, lw * .85);
   }
-  function clapPair(t, cx, cy, sc, k, { tilt = .14, tone = C.blush } = {}) {
-    const lt = t - k;
-    const gap = (lt < 0 ? ease.in(clamp(-lt / .45)) : .45 * ease.out(clamp(lt / .6)) * (1 - .3 * ease.inOut(clamp((lt - .6) / 1.4)))) * sc;
-    const sq = hit(t, k, 12) * .08;
-    hand(cx - gap - sc * .5, cy + sc * .9, sc * (1 - sq), { dir: -1, rot: tilt + sq }, tone);
-    hand(cx + gap + sc * .5, cy + sc * .9, sc * (1 - sq), { dir: 1, rot: -tilt - sq }, tone);
+  // two hands clapping: upright, palms together on the hit, hinging open from the heel of the palm
+  function clapPair(t, cx, cy, sc, k, { tone = C.blush, wide = .5 } = {}) {
+    const op = clapOpen(t, k, wide), gap = op * .05 * sc, sq = hit(t, k, 14) * .04;
+    hand(cx - gap - .17 * sc, cy + sc * .95, sc * (1 - sq), { dir: -1, open: op }, tone);
+    hand(cx + gap + .17 * sc, cy + sc * .95, sc * (1 - sq), { dir: 1, open: op }, tone);
   }
   // a Guimard Metro lamp: a whiplash iron stem bending over into a glowing ruby lily-bud lamp
   function guimard(x, y, h, dir, lit, sway = 0) {
@@ -149,10 +149,10 @@ const LOOK = { span: [37.7, 56.0] };
     const k = CLAPS[0], ok = ease.back(inv(k, k + .8, t));
     cam(540, kf(lt, [[0, 900], [dur, 860]]), kf(lt, [[0, 1.12], [.5, 1.0], [dur, .96]], ease.out));
     s.fillStyle = C.deep; s.fillRect(-W, -H, W * 3, H * 3);
-    halo(540, 860, 520, t * .08, .5 * hit(t, k, 1.5) + .2);
+    halo(540, 860, 520, t * .08, .25 * hit(t, k, 1.5) + .1);
     for (let i = 0; i < 8; i++) { const a = i / 8 * TAU + t * .08, R = 560; lily(s, 540 + Math.cos(a) * R, 860 + Math.sin(a) * R, a, 120, ok * (i % 2 ? 1 : ease.back(inv(HANDS[0], HANDS[0] + .8, t))), i % 2 ? [C.cream, C.blush] : [C.gold, C.cream]); }
-    clapPair(t, 540, 820, 240, k);
-    glowAt(540, 900, 380, `rgba(255,230,180,${.35 * hit(t, k, 3)})`);
+    clapPair(t, 540, 760, 300, k);
+    glowAt(540, 1000, 300, `rgba(255,230,180,${.18 * hit(t, k, 3)})`);
     rain(t, 70, 11, .4);
     border(t, 1);
   }
@@ -165,7 +165,7 @@ const LOOK = { span: [37.7, 56.0] };
     // reflections of the lamps in the wet street
     for (const x of [170, 910]) for (let i = 0; i < 7; i++) { s.fillStyle = on ? C.ruby : C.plum; s.fillRect(x - 40 + Math.sin(t * 3 + i) * 14, 1450 + i * 70, 80 - i * 7, 26); if (on) glowAt(x, 1450 + i * 70, 70, `rgba(255,120,60,${.25 * on})`); }
     guimard(80, 1400, 1050, 1, on, Math.sin(t * .8) * 8); guimard(1000, 1400, 1050, -1, on, -Math.sin(t * .8) * 8);
-    clapPair(t, 540, 860, 190, k, { tone: C.cream });
+    clapPair(t, 540, 820, 240, k, { tone: C.cream });
     rain(t, 150, 13, .55);
     border(t, 1);
   }
@@ -177,7 +177,7 @@ const LOOK = { span: [37.7, 56.0] };
     const bi = lastBeat(t), b0 = lastBeat(k);
     const lights = [0, 1, 2, 3].map((i) => t >= k ? clamp(inv(FEAT.beats[b0 + i] || 0, (FEAT.beats[b0 + i] || 0) + .25, t)) * (.8 + .2 * beatPulse(t, 6)) : 0);
     glassPanel(140, 300, 800, 1500, t, lights);
-    clapPair(t, 540, 1400, 150, k, { tone: C.blush });
+    clapPair(t, 540, 1360, 190, k, { tone: C.blush });
     glowAt(540, 1500, 260, `rgba(255,230,180,${.5 * hit(t, k, 3)})`);
     border(t, 1);
   }
@@ -190,7 +190,7 @@ const LOOK = { span: [37.7, 56.0] };
     // tendrils whip out of the ring on the clap and curl
     for (let i = 0; i < 12; i++) { const a = i / 12 * TAU + .13, dir = i % 2 ? 1 : -1, R = (q) => [540 + Math.cos(a + q[1] * dir) * q[0], 860 + Math.sin(a + q[1] * dir) * q[0]];
       vine(s, whip(R([610, 0]), R([720, .12]), R([820, .32]), R([880, .5]), .8, dir, 36), 30, 12, i % 3 ? C.sage : C.gold, u); }
-    clapPair(t, 540, 800, 250, k, { tilt: .12 });
+    clapPair(t, 540, 700, 360, k);
     glowAt(540, 900, 520, `rgba(255,225,170,${.3 * hit(t, k, 3)})`);
     rain(t, 60, 19, .35);
     border(t, 1);
