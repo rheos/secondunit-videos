@@ -87,7 +87,7 @@ ang, sz, open, cols)`, `halo(cx, cy, R, rot, lit)`, `rain(t, n, seed, a)`, `glow
 - **Ornament grows:** vines, tendrils and petals unfurl with the music (`vine(..., u)`, `lily(..., open)`).
 - **Transitions:** set up the next shot in this one (push into an object, an iris through a halo, a
   curtain, a whip of rain). Hand off to the next chapter as your brief says.
-- **Performance:** keep a frame under ~200 ms (`check.mjs` prints ms/frame).
+- **Performance:** aim for a frame under ~200 ms (`check.mjs` prints ms/frame) so renders stay quick. It is a soft guide for local GPU time, not a limit: never trade the look for it on a short stretch.
 
 ## Checking your work
 

@@ -189,10 +189,10 @@
     const open = t < T2 ? .12 : t < T3 ? .6 : 1, lock = t >= T2, y2 = t < T2 ? 40 : t < T3 ? 18 : 0, bob = t < T3 ? 0 : -flap * 40;
     // its shadow, large and soft across the halo behind
     if (t >= T2 && sc > .06) {
-      const sa = .5 * inv(T2, T3 + .1, t) * (1 - inv(195.3, 195.9, t)), ssx = SX + 90 + (bx - SX) * 1.4, ssy = SY + 230 + (by - 690) * 1.5;
+      const sa = .72 * inv(T2, T3 + .1, t) * (1 - inv(195.3, 195.9, t)), ssx = SX + 90 + (bx - SX) * 1.4, ssy = SY + 230 + (by - 690) * 1.5;
       const sh = () => birdHands(ssx, ssy, sc * 1.4, open, lock, flap * 1.05, mix(C.plum, C.umber, .6));
-      s.save(); s.globalAlpha = sa; sh(); s.restore();
-      const s0 = s; s = f; f.save(); f.globalCompositeOperation = 'source-over'; f.globalAlpha = Math.min(1, sa * 1.4); f.filter = 'brightness(0)'; try { sh(); } finally { f.restore(); s = s0; }
+      s.save(); s.globalAlpha = sa; s.filter = 'blur(4px)'; sh(); s.restore();
+      const s0 = s; s = f; f.save(); f.globalCompositeOperation = 'source-over'; f.globalAlpha = Math.min(1, sa * 1.4); f.filter = 'blur(4px) brightness(0)'; try { sh(); } finally { f.restore(); s = s0; }
     }
     if (sc > .06) onBoth(() => birdHands(bx, by + y2 + bob, sc, open, lock, flap), .85);
     // light flares cover the key-drawing swaps; the bird is absorbed into the sun at the end
