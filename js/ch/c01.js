@@ -1,11 +1,12 @@
 // c01 · VERSE 1 (SEC.v1 - 37.7, 26.04 - 37.7) · painter A.
 // Inside a Nouveau night tram rattling through the rain: stained-glass clerestory, brass rails, leather
-// straps, swaying Galle lamps. Cues (vocal-stem onsets): "sane" 26.4 / 27.45 the car lurches and the lamps
-// come on; "insane" 28.2-30.4 straps and lamps swing wildly together; "blind" 30.4-32.15 dark spectacles left
-// on a seat, the light dies on the word; "lame" 32.15-33.75 the conductor's empty booth, cap on a hook,
-// swinging lantern, the cane slips and clatters (33.47); "jacket" 33.75-35.75 a checked jacket swinging on a
-// hook; "hard luck" 35.75-37.7 an upside-down horseshoe over the door slips and spins away, then we push
-// through the door's rain-streaked window into c02's first frame (plum wall, amber arch, halo). No hands.
+// straps, swaying Galle lamps, and the cast (js/cast.js). Cues (vocal-stem onsets): "sane" 26.4 / 27.45 the
+// lamps come on and the car lurches; "insane" 28.2-30.42 the four passengers sway together wildly on the
+// straps; "blind" 30.42-32.15 close on the conductor's dark spectacles, his lantern gutters on the word;
+// "lame" 32.15-33.75 he limps down the car on his cane, stumbles and the cane clatters (33.47); "jacket"
+// 33.75-35.75 the jacket man slumped on a bench, hard luck; 35.75-37.7 an upside-down horseshoe over the
+// door slips and spins away, then we push through the door's rain-streaked window into c02's first frame
+// (plum wall, the window leaner in the lit arch, halo).
 (() => {
   const DARK = '#17110e', WOOD = '#7a5530', BRASS = C.gold;
   function screen(g, fn) { g.save(); g.setTransform(PX, 0, 0, PX, 0, 0); fn(); g.restore(); }
@@ -26,6 +27,9 @@
     for (const [k, a] of JOLTS) th += a * hit(t, k, 2.6) * Math.sin(TAU * (t - k) / 1.0);
     return th;
   }
+  // the passengers rock with the car: their sway peaks on the beats like the straps
+  const swayAmp = (t) => .06 + .36 * kf(t, [[28.15, 0], [28.55, .6], [29.6, .62], [30.5, .1]], (x) => x) + .12 * (hit(t, 26.4, 2.6) + hit(t, 27.45, 2.6));
+  const swayPh = (t) => t - 28.43 + .25;
   const rock = (t) => -.1 * swing(t) + .004 * Math.sin(t * 41) + .003 * snoise(t * 6, 3);
   const shake = (t) => 3 * Math.sin(t * 47) + 2 * snoise(t * 9, 8);
   // the street lamps passing outside, as a 0..1 sweep for window position x
@@ -93,12 +97,17 @@
     }
     // the hanging things, far to near: leather straps on the rails, Galle lamps down the middle
     const items = [];
-    for (let Z = ZF - .5; Z > zn + .15; Z -= .65) for (const sx of [-1, 1]) items.push(['strap', Z, sx]);
+    const ppl = (o.people || []).filter((q) => q.Z > zn + .25);
+    for (let Z = ZF - .5; Z > zn + .15; Z -= .65) for (const sx of [-1, 1]) if (!ppl.some((q) => Math.sign(q.X) === sx && Math.abs(q.Z - Z) < .4)) items.push(['strap', Z, sx]);
+    for (const q of ppl) items.push(['person', q.Z, q]);
     for (const Z of [1.2, 3.1, 4.8]) if (Z > zn + .2) items.push(['lamp', Z, 0]);
     items.sort((a, b) => b[1] - a[1]);
     for (const [kind, Z, sx] of items) {
       const k = K(Z), lw = LW(Z, 18);
-      if (kind === 'strap') {
+      if (kind === 'person') {
+        const q = sx, [gx, gy] = pj(q.X, 1.25, Z);
+        passenger(t, gx, gy, 1.72 * k, { who: q.who, facing: q.facing, ph: swayPh(t) + (q.dph || 0), amp: swayAmp(t), strap: true, strapY: pj(q.X, -.84, Z)[1], flail: q.flail });
+      } else if (kind === 'strap') {
         const a = th * (1 + .08 * Math.sin(Z * 3.1)), L = .34, [x0, y0] = pj(sx * .6, -.84, Z), x1 = x0 + Math.sin(a) * L * k, y1 = y0 + Math.cos(a) * L * k;
         rod([[x0, y0], [x1, y1]], lw * .9, '#8a5a30');
         const rr = .065 * k, cx = x1 + Math.sin(a) * rr, cy = y1 + Math.cos(a) * rr;
@@ -120,132 +129,87 @@
   // 26.04: down the aisle out of the dark; the lamps snap on with the first "sane", the car lurches on both
   function aisle(t, lt, dur) {
     cam(540, 960 + shake(t), kf(lt, [[0, 1.0], [dur, 1.06]]), rock(t));
-    car(t, kf(lt, [[0, -.45], [dur, .35]], (x) => x), lampOn(t));
+    car(t, kf(lt, [[0, -.45], [dur, .35]], (x) => x), lampOn(t), { people: [
+      { who: 'tall', X: .5, Z: 2.7, facing: -1 }, { who: 'stout', X: -.5, Z: 2.1, facing: 1, dph: .03 },
+      { who: 'old', X: .5, Z: 1.5, facing: -1, dph: .05 }, { who: 'dandy', X: -.5, Z: .95, facing: 1, dph: .02 }] });
     veil(kf(t, [[26.04, .85], [26.36, .55], [26.42, 0]], (x) => x));
     border(t, 1);
   }
-  // 28.2: up among the straps and lamps, everything swinging together, wildly, the car rocking crazy
+  // ---- flat side-on interior for the close shots: clerestory, rail, rainy windows, wainscot, floor ----
+  function hangLamp(x, y, a, sz, lamp) {
+    const bx = x + Math.sin(a) * sz * 1.1, by = y + Math.cos(a) * sz * 1.1;
+    rod([[x, y], [bx, by]], 12, BRASS);
+    const R = (px, py) => [bx + (px * Math.cos(a) + py * Math.sin(a)) * sz, by + (-px * Math.sin(a) + py * Math.cos(a)) * sz];
+    shape(s, [...cub([-.1, 0], [-.3, .05], [-.7, .25], [-.72, .7], 10), ...cub([.72, .7], [.7, .25], [.3, .05], [.1, 0], 10)].map(([p, q]) => R(p, q)), lamp > .5 ? C.amber : C.ochre, C.umber, 16);
+    for (const px of [-.35, 0, .35]) line([R(px * .3, .06), R(px, .68)], C.rose, 10);
+    const [gx, gy] = R(0, .8); if (lamp > 0) { glowAt(gx, gy, sz * 4, `rgba(255,190,110,${.36 * lamp})`); glowAt(gx, gy, sz * .7, `rgba(255,240,200,${.9 * lamp})`); }
+  }
+  function sideWall(t, o = {}) {
+    const lamp = o.lamp ?? 1, th = swing(t);
+    s.fillStyle = '#5e4128'; s.fillRect(-W, -H, W * 3, H * 3);
+    shape(s, [[-500, -900], [1580, -900], [1580, 300], [-500, 300]], '#b9a37a', C.umber, 16);
+    for (let i = -3; i < 8; i++) { const x = i * 230 + 30; shape(s, arch(x + 20, 300, 190, 130, 12), [C.amber, C.rose, C.sage, C.gold][(i + 12) % 4], C.umber, 14); glowAt(x + 115, 380, 130, `rgba(255,200,130,${(.18 + .3 * pass(t, i * 1.3)) * lamp})`); }
+    shape(s, [[-500, 440], [1580, 440], [1580, 1040], [-500, 1040]], C.teal, C.umber, 16);
+    for (let i = -2; i < 6; i++) { const x = i * 320 + 70; wetGlass([[x, 500], [x + 250, 500], [x + 250, 980], [x, 980]], x, 500, x + 250, 980, t + i * .31, 120 + i * 5, .9 * lamp); }
+    shape(s, [[-500, 1040], [1580, 1040], [1580, 1480], [-500, 1480]], WOOD, C.umber, 16);
+    for (let i = -2; i < 6; i++) { const x = i * 320 + 70; shape(s, [[x, 1090], [x + 250, 1090], [x + 250, 1430], [x, 1430]], '#94693a', C.umber, 14); }
+    rod([[-500, 450], [1580, 450]], 26, BRASS);
+    if (o.bench) { shape(s, [[-500, o.bench - 60], [1580, o.bench - 60], [1580, o.bench + 10], [-500, o.bench + 10]], C.rose, C.umber, 18); shape(s, [[-500, o.bench + 10], [1580, o.bench + 10], [1580, 1760], [-500, 1760]], C.ochre, C.umber, 18); }
+    shape(s, [[-500, 1760], [1580, 1760], [1580, 2600], [-500, 2600]], '#5e4128', C.umber, 16);
+    shape(s, [[180, 1760], [900, 1760], [1060, 2600], [20, 2600]], C.ruby, C.umber, 14);
+    for (const x of o.lamps || []) hangLamp(x, 300, th * .75, 70, lamp);
+  }
+  const lampFl = (t) => .7 + .3 * (hash(Math.floor(t * 16)) > .3 ? 1 : 0);
+  // 28.2: the passengers on the straps, all four swaying together, wildly; lamps swinging, the car rocking crazy
   function insane(t, lt, dur) {
-    const fl = .7 + .3 * (hash(Math.floor(t * 16)) > .3 ? 1 : 0);
-    cam(540 + 30 * swing(t), 700 + shake(t) * 2, kf(lt, [[0, 1.3], [dur, 1.42]]), rock(t) * 2.2);
-    car(t, kf(lt, [[0, .6], [dur, 1.5]], (x) => x), fl);
+    cam(540 + 24 * swing(t), kf(lt, [[0, 1000], [dur, 970]]) + shake(t) * 2, kf(lt, [[0, .96], [dur, 1.03]]), rock(t) * 2);
+    sideWall(t, { lamp: lampFl(t), lamps: [180, 900] });
+    const ph = swayPh(t), amp = swayAmp(t), sy = 450;
+    // back row first, then the front row, offset so they rock in parallel without tangling
+    passenger(t, 380, 1680, 660, { who: 'old', facing: 1, ph: ph + .02, amp, strap: true, strapY: sy });
+    passenger(t, 800, 1690, 680, { who: 'dandy', facing: -1, ph: ph + .04, amp, strap: true, strapY: sy, flail: 1 });
+    passenger(t, 220, 1880, 900, { who: 'stout', facing: 1, ph, amp, strap: true, strapY: sy });
+    passenger(t, 660, 1900, 920, { who: 'tall', facing: -1, ph: ph + .03, amp, strap: true, strapY: sy });
     border(t, 1);
   }
 
-  // ================= close-ups (shots 3 - 5) =================
-  // 30.4: dark round spectacles left on the velvet seat; passing light glints in them until "blind" (31.5)
-  function specs(t, lt, dur) {
-    const th = swing(t), blind = inv(31.42, 31.56, t) * (1 - .5 * inv(31.95, 32.1, t));
-    cam(kf(lt, [[0, 520], [dur, 545]]), kf(lt, [[0, 1200], [dur, 1340]]) + shake(t), kf(lt, [[0, 1.12], [dur, 1.42]]), rock(t) * .7);
-    s.fillStyle = C.teal; s.fillRect(-W, -H, W * 3, H * 3);
-    // the window behind the seat
-    shape(s, [[40, 80], [1040, 80], [1040, 820], [40, 820]], WOOD, C.umber, 20);
-    wetGlass([[90, 130], [990, 130], [990, 770], [90, 770]], 90, 130, 990, 770, t, 71, 1 - blind * .8);
-    line([[540, 130], [540, 770]], WOOD, 26); line([[540, 130], [540, 770]], C.umber, 10);
-    // the carved backrest
-    shape(s, [[-100, 820], [1180, 820], [1180, 1150], [-100, 1150]], C.ochre, C.umber, 20);
-    for (const sx of [1, -1]) { const x0 = 540 - sx * 40; vine(s, whip([x0, 1110], [x0 - sx * 160, 1100], [x0 - sx * 300, 900], [x0 - sx * 420, 960], .9, -sx, 40), 20, 10, WOOD); }
-    shape(s, circle(540, 985, 50, 30), C.gold, C.umber, 14);
-    // the velvet seat, tufted
-    shape(s, [[-100, 1150], [1180, 1150], [1300, 1760], [-220, 1760]], C.rose, C.umber, 20);
-    for (let i = -6; i <= 6; i++) { line([[540 + i * 150, 1150], [540 + i * 190 + 190, 1760]], '#a8675c', 12); line([[540 + i * 150, 1150], [540 + i * 190 - 190, 1760]], '#a8675c', 12); }
-    for (let j = 0; j < 4; j++) for (let i = -6; i <= 6; i++) { const y = lerp(1150, 1760, (j + .5) / 4), x = 540 + (i + (j % 2 ? .5 : 0)) * lerp(150, 190, (j + .5) / 4); dot(x, y, 11, C.umber); }
-    shape(s, [[-220, 1760], [1300, 1760], [1300, 2200], [-220, 2200]], C.ochre, C.umber, 20);
-    // the spectacles, sliding a little with the car
-    const ox = 540 + 26 * th, oy = 1400, L = [ox - 135, oy], R = [ox + 135, oy];
-    for (const [x, y] of [L, R]) { s.fillStyle = 'rgba(70,30,50,.55)'; s.beginPath(); s.ellipse(x + 24, y + 36, 125, 82, 0, 0, TAU); s.fill(); }
-    rod([[L[0] - 108, oy - 26], [ox + 120, oy - 96], [ox + 170, oy - 84]], 12, BRASS);
-    rod([[R[0] + 108, oy - 26], [ox - 120, oy - 104], [ox - 170, oy - 92]], 12, BRASS);
-    for (const [x, y] of [L, R]) { s.fillStyle = rgrad(x - 30, y - 20, 10, 130, [[0, '#2a3550'], [1, '#121826']]); s.beginPath(); s.ellipse(x, y, 112, 78, 0, 0, TAU); s.fill();
-      for (const [c, w] of [[C.umber, 30], [BRASS, 13]]) { s.lineWidth = w; s.strokeStyle = c; s.beginPath(); s.ellipse(x, y, 112, 78, 0, 0, TAU); s.stroke(); } }
-    rod(cub([L[0] + 100, oy - 24], [ox - 20, oy - 70], [ox + 20, oy - 70], [R[0] - 100, oy - 24], 12), 13, BRASS);
-    // glints: the passing lamps in the lenses (die on "blind")
-    const sw = pass(t, 0) * (1 - blind);
-    for (const [x, y] of [L, R]) { f.save(); f.globalCompositeOperation = 'lighter'; f.lineCap = 'round'; f.strokeStyle = `rgba(255,236,200,${.25 + .7 * sw})`; f.lineWidth = 10; f.beginPath(); f.ellipse(x, y, 82, 52, 0, Math.PI * 1.1, Math.PI * 1.45); f.stroke(); f.restore();
-      glowAt(x - 50, y - 30, 70 + 60 * sw, `rgba(255,220,170,${(.2 + .6 * sw) * (1 - blind)})`); }
-    glowAt(540, 1300, 700, `rgba(255,190,110,${.16 * (1 - blind)})`);
-    veil(.55 * blind);
+  // ================= the conductor (shots 3 - 4), the jacket man (shot 5) =================
+  // 30.42: close on the conductor, five months blind behind his dark round spectacles; the passing lights glint
+  // in them until "blind" (31.5), when his lantern gutters and the car goes dim
+  function blind(t, lt, dur) {
+    const th = swing(t), dim = inv(31.42, 31.56, t) * (1 - .5 * inv(31.95, 32.12, t));
+    cam(kf(lt, [[0, 560], [dur, 590]]), kf(lt, [[0, 1000], [dur, 960]]) + shake(t), kf(lt, [[0, 1.0], [dur, 1.12]]), rock(t) * .6);
+    sideWall(t, { lamp: 1 - .8 * dim, lamps: [900] });
+    const J = conductor(t, 420, 2650, 1800, { pose: 'stand', ph: t * .5, facing: 1, lit: 1 - .85 * dim, swing: th * 1.2 });
+    const sw = pass(t, 0) * (1 - dim), [ex, ey] = [J.hc[0] + .03 * J.h, J.hc[1] + .005 * J.h];
+    glowAt(ex, ey, .03 * J.h + 40 * sw, `rgba(255,236,200,${(.25 + .6 * sw) * (1 - dim)})`);
+    veil(.5 * dim);
     border(t, 1);
   }
-  // 32.15: the conductor's empty booth: his cap on a hook, the cane leaning, a lantern swinging; the cane
-  // slips on "lame" and clatters down (33.47)
-  function booth(t, lt, dur) {
-    const th = swing(t);
-    cam(kf(lt, [[0, 520], [dur, 600]]), 1000 + shake(t), kf(lt, [[0, 1.04], [dur, 1.16]]), rock(t) * .6);
-    s.fillStyle = C.teal; s.fillRect(-W, -H, W * 3, H * 3);
-    // panelled wood booth, the front window on the right
-    shape(s, [[-200, -300], [640, -300], [640, 1760], [-200, 1760]], C.ochre, C.umber, 20);
-    for (const [x, y, w, h] of [[-120, 120, 640, 560], [-120, 760, 640, 360], [-120, 1180, 640, 520]]) shape(s, [[x, y], [x + w, y], [x + w, y + h], [x, y + h]], '#94693a', C.umber, 16);
-    vine(s, whip([-100, 300], [80, 160], [300, 300], [420, 180], .8, 1, 40), 18, 10, WOOD);
-    shape(s, [[640, -300], [1300, -300], [1300, 1760], [640, 1760]], WOOD, C.umber, 20);
-    wetGlass(arch(690, 120, 420, 760, 24), 690, 120, 1110, 880, t, 83, 1);
-    shape(s, [[-200, 1760], [1300, 1760], [1300, 2300], [-200, 2300]], '#5e4128', C.umber, 18);
-    for (let x = -200; x < 1300; x += 170) line([[x, 1760], [x - 120, 2300]], C.umber, 12);
-    // the hook rail
-    rod([[60, 380], [1020, 380]], 20, BRASS);
-    for (const hx of [330, 830]) rod([[hx, 380], [hx, 430], [hx + 26, 446]], 14, BRASS);
-    // the cap, hung by its band: crown, gold piping (no badge), visor
-    withT(() => { s.translate(330, 420); s.rotate(-.12 + th * .3);
-      shape(s, [[-168, 70], ...cub([-168, 70], [-150, 120], [-120, 140], [-112, 160], 10), [112, 160], ...cub([112, 160], [120, 140], [150, 120], [168, 70], 10)], '#2a3550', C.umber, 20);
-      s.fillStyle = '#34416a'; s.beginPath(); s.ellipse(0, 66, 170, 52, 0, 0, TAU); s.fill(); s.lineWidth = 20; s.strokeStyle = C.umber; s.stroke();
-      shape(s, [[-114, 152], [114, 152], [112, 204], [-112, 204]], '#1e2433', C.umber, 16);
-      line([[-108, 160], [108, 160]], BRASS, 10);
-      shape(s, [...cub([-118, 200], [-90, 268], [90, 268], [118, 200], 16), ...cub([118, 200], [60, 226], [-60, 226], [-118, 200], 16)], C.night, C.umber, 18);
-      line(cub([-80, 228], [-40, 246], [20, 248], [60, 236], 8), '#4a5a80', 10);
-      for (const x of [-100, 100]) dot(x, 178, 13, BRASS);
-      shape(s, blobPts(0, 112, 34, 24, 2, .03, 24), BRASS, C.umber, 12); });
-    // the cane: leaning, then slipping on "lame" and clattering to the floor
-    const fall = ease.in(inv(33.0, 33.47, t)), bounce = .07 * hit(t, 33.47, 7) * Math.abs(Math.sin((t - 33.47) * 22));
-    const al = .26 + fall * 1.02 - bounce, foot = [240 - 60 * fall, 1760], Lc = 820, top = [foot[0] + Math.sin(al) * Lc, foot[1] - Math.cos(al) * Lc];
-    const dx = Math.sin(al), dy = -Math.cos(al), nx = Math.cos(al), ny = Math.sin(al);
-    rod([foot, top], 22, '#8a5a32');
-    rod([top, ...cub(top, [top[0] + dx * 70, top[1] + dy * 70], [top[0] + dx * 70 + nx * 130, top[1] + dy * 70 + ny * 130], [top[0] + nx * 130 - dx * 50, top[1] + ny * 130 - dy * 50], 14)], 22, '#8a5a32');
-    rod([[foot[0] + dx * 10, foot[1] + dy * 10], [foot[0] + dx * 60, foot[1] + dy * 60]], 24, BRASS, 6);
-    if (t > 33.47) glowAt(top[0], top[1] + 20, 120, `rgba(255,220,160,${.4 * hit(t, 33.47, 6)})`);
-    // the lantern, swinging on its bail in front of the window
-    withT(() => { s.translate(856, 446); const a = th * 1.25 + .1 * hit(t, 33.47, 5) * Math.sin((t - 33.47) * 14); s.rotate(a);
-      rod(cub([-50, 110], [-50, 10], [50, 10], [50, 110], 14), 10, BRASS);
-      shape(s, [[0, 60], [-80, 130], [80, 130]], BRASS, C.umber, 14);
-      shape(s, [[-70, 130], [70, 130], [70, 330], [-70, 330]], C.amber, C.umber, 18);
-      for (const x of [-24, 24]) line([[x, 134], [x, 326]], C.umber, 12);
-      shape(s, [[-84, 330], [84, 330], [64, 372], [-64, 372]], BRASS, C.umber, 14);
-      const fl = .85 + .15 * snoise(t * 11, 4); f.save(); f.translate(856, 446); f.rotate(a); glowAt(0, 230, 360, `rgba(255,170,80,${.5 * fl})`); glowAt(0, 230, 80, `rgba(255,240,200,${.9 * fl})`); f.restore(); });
+  // 32.15: the conductor limps down the car on his cane, lantern swinging; on "lame" he stumbles and the
+  // cane clatters on the boards (33.47)
+  function lame(t, lt, dur) {
+    const th = swing(t), st = hit(t, 33.47, 4) * Math.sin((t - 33.47) * 14);
+    cam(kf(lt, [[0, 470], [dur, 620]]), 1050 + shake(t), kf(lt, [[0, 1.04], [dur, 1.12]]), rock(t) * .6);
+    sideWall(t, { lamps: [260, 980] });
+    const x = 180 + lt * 230, J = conductor(t, x, 1830, 900, { ph: lt * .9, facing: 1, swing: th * 1.3 + .15, rot: .1 * st + .05 * ease.in(inv(33.2, 33.47, t)) * (1 - inv(33.47, 33.8, t)) });
+    for (const k of [33.0, 33.47]) if (t >= k) { const g = J.ground || [J.hand[0] + .06 * J.h, 1830]; glowAt(J.hand[0] + .06 * J.h, 1820, 140, `rgba(255,220,160,${.5 * hit(t, k, 7)})`); }
     border(t, 1);
   }
-  // 33.75: a loud checked jacket on a hook, empty, swinging with the car; it lurches on "jacket" (34.97)
+  // 33.75: the jacket man in his loud check, slumped on the bench, hard luck; the car rocks him and he
+  // lurches on "jacket" (34.97)
   function jacket(t, lt, dur) {
-    const th = swing(t);
-    cam(kf(lt, [[0, 520], [dur, 560]]), kf(lt, [[0, 980], [dur, 920]]) + shake(t), kf(lt, [[0, 1.0], [dur, 1.12]]), rock(t) * .7);
-    s.fillStyle = C.teal; s.fillRect(-W, -H, W * 3, H * 3);
-    shape(s, [[-200, -300], [1300, -300], [1300, 1240], [-200, 1240]], C.teal, C.umber, 18);
-    for (const x of [-60, 1000]) vine(s, whip([x, 1200], [x + 80, 900], [x - 60, 600], [x + 40, 380], .8, x < 0 ? 1 : -1, 40), 20, 10, C.sage);
-    wetGlass(arch(830, 160, 300, 700, 20), 830, 160, 1130, 860, t, 97, 1);
-    shape(s, [[-200, 1240], [1300, 1240], [1300, 2300], [-200, 2300]], C.ochre, C.umber, 20);
-    for (const x of [-120, 280, 680]) shape(s, [[x, 1320], [x + 340, 1320], [x + 340, 1880], [x, 1880]], '#94693a', C.umber, 16);
-    shape(s, blobPts(480, 330, 56, 40, 3, .02, 30), BRASS, C.umber, 14);
-    const a = th * .95, hook = [480, 360];
-    // its swinging shadow on the wall
-    s.save(); s.translate(hook[0] + 46, hook[1] + 34); s.rotate(a * .9); s.fillStyle = 'rgba(28,52,51,.6)'; P(s, [[-60, 40], [-250, 150], [-300, 300], [-310, 830], [-250, 960], [250, 960], [310, 830], [300, 300], [250, 150], [60, 40]]); s.closePath(); s.fill(); s.restore();
-    withT(() => { s.translate(...hook); s.rotate(a);
-      rod([[0, -10], [0, 40], [16, 52]], 14, BRASS);
-      const body = [[-60, 40], [-240, 150], [-262, 300], [-252, 950], [-20, 980], [20, 980], [252, 950], [262, 300], [240, 150], [60, 40]];
-      const sleeve = (d) => [[d * 236, 150], [d * 292, 300], [d * 304, 830], [d * 196, 840], [d * 190, 310]];
-      const check = (pts) => { shape(s, pts, C.gold, null); s.save(); P(s, pts); s.closePath(); s.clip(); for (let x = -340; x <= 340; x += 84) line([[x, 0], [x, 1000]], C.ruby, 14); for (let y = 60; y <= 1000; y += 84) line([[-340, y], [340, y]], C.deep, 12); s.restore(); shape(s, pts, null, C.umber, 20); };
-      check(body);
-      // the hollow inside: lining shows between the lapels, nothing in it
-      shape(s, [[-60, 40], [60, 40], [0, 560]], C.plum, C.umber, 16);
-      shape(s, [[-60, 40], [-150, 150], [-120, 330], [-6, 560], [-40, 300]], '#d9b25a', C.umber, 16);
-      shape(s, [[60, 40], [150, 150], [120, 330], [6, 560], [40, 300]], '#d9b25a', C.umber, 16);
-      line([[0, 560], [0, 950], [-30, 980]], C.umber, 14);
-      for (const y of [640, 760]) dot(16, y, 16, C.umber);
-      for (const d of [-1, 1]) { shape(s, [[d * 70, 700], [d * 200, 700], [d * 200, 744], [d * 70, 744]], C.ochre, C.umber, 14); check(sleeve(d)); shape(s, [[d * 304, 790], [d * 196, 798], [d * 196, 840], [d * 304, 830]], C.ochre, C.umber, 14); } });
-    glowAt(480, 700, 600, 'rgba(255,190,110,.12)');
+    const th = swing(t), lj = hit(t, 34.97, 3) * Math.sin((t - 34.97) * 9);
+    cam(kf(lt, [[0, 540], [dur, 580]]), kf(lt, [[0, 1080], [dur, 1000]]) + shake(t), kf(lt, [[0, 1.18], [dur, 1.38]]), rock(t) * .7);
+    sideWall(t, { bench: 1340, lamps: [960] });
+    jacketMan(t, 520, 1300, 1050, { pose: 'slump', facing: 1, rot: .05 * th + .12 * lj });
+    glowAt(560, 1000, 600, 'rgba(255,190,110,.12)');
     border(t, 1);
   }
 
   // ================= the door and the push through its window (shot 6) =================
   // c02's first frame, drawn exactly as it opens (cam(540, 900, 1.0)): night sky, halo, plum wall, amber arch,
-  // sill, the Galle bottle, the tendrils at .35
+  // the sill, the window leaner with the Galle bottle (as c02's window_ at lt = 0), the tendrils at .35
   function tenement(t, rainA) {
     s.fillStyle = C.night; s.fillRect(-W, -H, W * 3, H * 3);
     halo(540, 520, 360, t * .05);
@@ -254,13 +218,9 @@
     shape(s, [[wx, wy + wh], [wx, wy + ww / 2], ...circle(wx + ww / 2, wy + ww / 2, ww / 2).filter(([, py]) => py <= wy + ww / 2 + .1).sort((a, b) => a[0] - b[0]), [wx + ww, wy + ww / 2], [wx + ww, wy + wh]], C.amber, C.umber, 24);
     glowAt(540, wy + wh * .55, 520, 'rgba(255,190,110,.4)');
     for (const sx of [1, -1]) { const x0 = sx > 0 ? wx - 10 : wx + ww + 10; vine(s, whip([x0, wy + wh + 60], [x0 - sx * 120, wy + wh * .6], [x0 + sx * 60, wy + wh * .2], [x0 + sx * 150, wy + 40], .9, sx, 50), 26, 10, C.olive, .35); }
-    shape(s, [[wx - 70, wy + wh], [wx + ww + 70, wy + wh], [wx + ww + 90, wy + wh + 60], [wx - 90, wy + wh + 60]], C.ochre, C.umber, 14);
-    const bx = 600, by = wy + wh, bh = 360, fillK = .1;
-    const bottle = [...cub([bx - 30, by - bh], [bx - 40, by - bh * .6], [bx - 120, by - bh * .45], [bx - 90, by], 20), ...cub([bx + 90, by], [bx + 120, by - bh * .45], [bx + 40, by - bh * .6], [bx + 30, by - bh], 20)];
-    shape(s, bottle, C.glass, C.umber, 14);
-    s.save(); P(s, bottle); s.closePath(); s.clip(); shape(s, [[bx - 200, by - bh * .9 * fillK + Math.sin(t * 6) * 6], [bx + 200, by - bh * .9 * fillK - Math.sin(t * 6) * 6], [bx + 200, by], [bx - 200, by]], C.teal, null);
-    lily(s, bx, by - bh * .35, -Math.PI / 2, 90, .6, [C.rose, C.cream]); s.restore();
-    glowAt(bx - 50, by - bh * .5, 60, 'rgba(220,255,240,.35)');
+    shape(s, [[wx - 70, wy + wh], [wx + ww + 70, wy + wh], [wx + ww + 90, wy + wh + 60], [wx - 90, wy + wh + 60]], C.parch, C.umber, 14);
+    const lt = t - 37.7;
+    windowLeaner(t, 400, wy + wh, 1000, { frame: false, facing: 1, fill: .1, lean: .75 + .06 * Math.sin(lt * 2.2) });
     rain(t, 120, 7, rainA);
   }
   // 35.75: the tram door; an upside-down horseshoe over it slips on "luck" and spins away on "day"; the
@@ -308,8 +268,8 @@
   chapter('c01', SEC.v1, 37.7, [
     [SEC.v1, aisle],
     [28.2, insane],
-    [30.42, specs],
-    [32.15, booth],
+    [30.42, blind],
+    [32.15, lame],
     [33.75, jacket],
     [35.75, door],
   ], { fx: PAINT });

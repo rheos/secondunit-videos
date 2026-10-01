@@ -1,7 +1,7 @@
 // c02 · BOTTLE OF RAIN + CHORUS 1 (37.7 - 56.88). The approved look probe, now a chapter.
 (() => {
   // ---- shots ----
-  // 37.7: an arched window wrapped in ironwork tendrils; a Galle glass bottle on the sill fills with rain; vines grow
+  // 37.7: an arched window wrapped in ironwork tendrils; the one hanging out of it holds up a Galle bottle filling with rain; vines grow
   function window_(t, lt, dur) {
     cam(540, kf(lt, [[0, 900], [dur, 1040]]), kf(lt, [[0, 1.0], [dur, 1.3]]));
     s.fillStyle = C.night; s.fillRect(-W, -H, W * 3, H * 3);
@@ -16,14 +16,9 @@
     const gu = inv(0, dur, lt);
     for (const sx of [1, -1]) { const x0 = sx > 0 ? wx - 10 : wx + ww + 10; vine(s, whip([x0, wy + wh + 60], [x0 - sx * 120, wy + wh * .6], [x0 + sx * 60, wy + wh * .2], [x0 + sx * 150, wy + 40], .9, sx, 50), 26, 10, C.olive, .35 + .65 * gu);
       for (let i = 0; i < 4; i++) if (gu > .2 + i * .18) petal(s, x0 - sx * (30 + i * 10), wy + wh - i * 170, Math.PI + sx * (.6 + i * .3) - (sx > 0 ? Math.PI : 0), 80, 26, C.sage); }
-    // sill and the glass bottle (Galle: tall, swelling, floral)
-    shape(s, [[wx - 70, wy + wh], [wx + ww + 70, wy + wh], [wx + ww + 90, wy + wh + 60], [wx - 90, wy + wh + 60]], C.ochre, C.umber, 14);
-    const bx = 600, by = wy + wh, bh = 360, fillK = kf(lt, [[0, .1], [dur - .1, .9]]);
-    const bottle = [...cub([bx - 30, by - bh], [bx - 40, by - bh * .6], [bx - 120, by - bh * .45], [bx - 90, by], 20), ...cub([bx + 90, by], [bx + 120, by - bh * .45], [bx + 40, by - bh * .6], [bx + 30, by - bh], 20)];
-    shape(s, bottle, C.glass, C.umber, 14);
-    s.save(); P(s, bottle); s.closePath(); s.clip(); shape(s, [[bx - 200, by - bh * .9 * fillK + Math.sin(t * 6) * 6], [bx + 200, by - bh * .9 * fillK - Math.sin(t * 6) * 6], [bx + 200, by], [bx - 200, by]], C.teal, null);
-    lily(s, bx, by - bh * .35, -Math.PI / 2, 90, .6, [C.rose, C.cream]); s.restore();
-    glowAt(bx - 50, by - bh * .5, 60, 'rgba(220,255,240,.35)');
+    // the sill, and the one hanging out of the window holding up the Galle bottle as it fills with rain
+    shape(s, [[wx - 70, wy + wh], [wx + ww + 70, wy + wh], [wx + ww + 90, wy + wh + 60], [wx - 90, wy + wh + 60]], C.parch, C.umber, 14);
+    windowLeaner(t, 400, wy + wh, 1000, { frame: false, facing: 1, fill: kf(lt, [[0, .1], [dur - .1, .9]]), lean: .75 + .06 * Math.sin(lt * 2.2) });
     rain(t, 120, 7, .55);
     border(t, gu);
   }
