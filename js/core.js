@@ -59,7 +59,7 @@ function fx(o) { Object.assign(FX, o); }
 
 // ---- drawing on s (the 2D source canvas) ----
 let s;
-function cam(cx = W / 2, cy = H / 2, zoom = 1, rot = 0) { s.translate(W / 2, H / 2); s.rotate(rot); s.scale(zoom, zoom); s.translate(-cx, -cy); }
+function cam(cx = W / 2, cy = H / 2, zoom = 1, rot = 0) { for (const g of f ? [s, f] : [s]) { g.translate(W / 2, H / 2); g.rotate(rot); g.scale(zoom, zoom); g.translate(-cx, -cy); } }
 function fill(c) { s.fillStyle = c; s.fillRect(-W, -H, W * 3, H * 3); }
 function vgrad(y0, y1, stops) { const g = s.createLinearGradient(0, y0, 0, y1); stops.forEach(([o, c]) => g.addColorStop(o, c)); return g; }
 function rgrad(x, y, r0, r1, stops) { const g = s.createRadialGradient(x, y, r0, x, y, r1); stops.forEach(([o, c]) => g.addColorStop(o, c)); return g; }
@@ -93,10 +93,16 @@ function handShape(x, y, sc, { dir = 1, rot = 0, spread = .3, curl = 0 } = {}) {
 }
 
 // ---- frame assembly ----
+// With the brushstroke renderer (js/paint.js) loaded, s and f are its half-res underpainting and light
+// layers, drawn in full-res coords; otherwise s is the look's own 2D source canvas.
+let f = null;
 function renderFrame(t) {
-  s.setTransform(1, 0, 0, 1, 0, 0); s.globalAlpha = 1; s.globalCompositeOperation = 'source-over'; s.filter = 'none';
+  const painted = typeof Paint !== 'undefined';
+  if (painted) { s = Paint.sctx; f = Paint.fctx; }
+  for (const g of painted ? [s, f] : [s]) { g.setTransform(painted ? .5 : 1, 0, 0, painted ? .5 : 1, 0, 0); g.globalAlpha = 1; g.globalCompositeOperation = 'source-over'; g.filter = 'none'; }
+  if (painted) { f.fillStyle = '#000'; f.fillRect(-50, -50, W + 100, H + 100); }
   FX = {};
   const sh = SHOTS.find((x) => t >= x.a && t < x.b) || SHOTS[SHOTS.length - 1];
-  if (sh) { Object.assign(FX, sh.fx); s.save(); try { sh.fn(t, t - sh.a, sh.b - sh.a); } catch (e) { console.error(sh.name, e); } s.restore(); }
+  if (sh) { Object.assign(FX, sh.fx); s.save(); if (f) f.save(); try { sh.fn(t, t - sh.a, sh.b - sh.a); } catch (e) { console.error(sh.name, e); } s.restore(); if (f) f.restore(); }
   Look.present(t, FX);
 }
