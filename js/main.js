@@ -1,6 +1,6 @@
 // Live player + offline hooks (check.mjs / render.mjs call window.__frameJPEG).
 const canvas = document.getElementById('c');
-const Look = typeof Paint !== 'undefined' ? (canvas.width = W, canvas.height = H, Paint.init(canvas), { present: (t, o) => Paint.present(t, o) }) : GL.init(canvas, LOOK.frag, LOOK.uniforms);
+const Look = typeof Paint !== 'undefined' ? (canvas.width = RW, canvas.height = RH, Paint.init(canvas), { present: (t, o) => Paint.present(t, o) }) : GL.init(canvas, LOOK.frag, LOOK.uniforms);
 const params = new URLSearchParams(location.search);
 window.__frameJPEG = (t, q = .92) => { renderFrame(t); return canvas.toDataURL('image/jpeg', q); };
 window.__ready = Promise.resolve(true);

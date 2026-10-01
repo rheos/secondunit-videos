@@ -5,7 +5,7 @@
 // adds fx as glowing light on top, and finishes with canvas weave + vignette.
 
 // 9:16 only here; W and H come from js/core.js (load it first).
-const SW = W / 2, SH = H / 2;
+const RW = Math.round(W * RS), RH = Math.round(H * RS), SW = RW / 2, SH = RH / 2; // output pixels (see RS in core.js)
 
 const Paint = (() => {
   const src = document.createElement('canvas'); src.width = SW; src.height = SH;
@@ -162,7 +162,7 @@ const Paint = (() => {
   function init(canvas) {
     gl = canvas.getContext('webgl2', { preserveDrawingBuffer: true, antialias: false, premultipliedAlpha: false });
     progStroke = prog(VS_STROKE, FS_STROKE); progQuad = prog(VS_QUAD, FS_UNDER); progFinish = prog(VS_QUAD, FS_FINISH); progGrade = prog(VS_QUAD, FS_GRADE);
-    texFrame = tex(); gl.bindTexture(gl.TEXTURE_2D, texFrame); gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, W, H, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+    texFrame = tex(); gl.bindTexture(gl.TEXTURE_2D, texFrame); gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, RW, RH, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
     fbo = gl.createFramebuffer(); gl.bindFramebuffer(gl.FRAMEBUFFER, fbo); gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texFrame, 0); gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     texSrc = tex(); texFx = tex(); texFxb = tex();
     // quad
@@ -170,11 +170,12 @@ const Paint = (() => {
     const qb = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, qb); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
     gl.enableVertexAttribArray(0); gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
     // stroke instances per layer
-    for (const L of LAYERS) {
+    for (const L0 of LAYERS) {
+      const L = { ...L0, cell: L0.cell * RS, len: L0.len * RS, wid: L0.wid * RS }; // stroke sizes follow the output scale
       const vao = gl.createVertexArray(); gl.bindVertexArray(vao);
       gl.bindBuffer(gl.ARRAY_BUFFER, qb); gl.enableVertexAttribArray(0); gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
       const base = []; let k = 0;
-      for (let y = -L.cell; y < H + L.cell; y += L.cell) for (let x = -L.cell; x < W + L.cell; x += L.cell) {
+      for (let y = -L.cell; y < RH + L.cell; y += L.cell) for (let x = -L.cell; x < RW + L.cell; x += L.cell) {
         base.push(x + (y / L.cell % 2) * L.cell * .5, y); k++;
       }
       // shuffle draw order so overlaps don't read as a grid
@@ -196,10 +197,10 @@ const Paint = (() => {
   //      look: sat, con, lift, tint [r,g,b], tintK, scratch, dust, burn, etch, weave (px), flick }
   function present(t, o = {}) {
     const boilRate = o.boil ?? 8;
-    bctx.globalCompositeOperation = 'copy'; bctx.filter = 'blur(5px)'; bctx.drawImage(fx, 0, 0, fxb.width, fxb.height); bctx.filter = 'none';
+    bctx.globalCompositeOperation = 'copy'; bctx.filter = `blur(${5 * RS}px)`; bctx.drawImage(fx, 0, 0, fxb.width, fxb.height); bctx.filter = 'none';
     upload(texSrc, src); upload(texFx, fx); upload(texFxb, fxb);
     gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
-    gl.viewport(0, 0, W, H); gl.disable(gl.DEPTH_TEST);
+    gl.viewport(0, 0, RW, RH); gl.disable(gl.DEPTH_TEST);
     // underpainting
     gl.disable(gl.BLEND); gl.useProgram(progQuad); gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, texSrc);
     gl.uniform1i(gl.getUniformLocation(progQuad, 'uSrc'), 0); gl.bindVertexArray(quadVao); gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
@@ -207,7 +208,7 @@ const Paint = (() => {
     gl.enable(gl.BLEND); gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE);
     gl.useProgram(progStroke);
     const U = (n) => gl.getUniformLocation(progStroke, n);
-    gl.uniform1i(U('uSrc'), 0); gl.uniform2f(U('uRes'), W, H); gl.uniform1f(U('uTime'), t);
+    gl.uniform1i(U('uSrc'), 0); gl.uniform2f(U('uRes'), RW, RH); gl.uniform1f(U('uTime'), t);
     const sk = o.strokeK ?? 1;
     layers.forEach((L, i) => {
       if (o.layers && !o.layers[i]) return;
@@ -228,10 +229,10 @@ const Paint = (() => {
     // pass 2: dst += light
     gl.blendFuncSeparate(gl.ONE, gl.ONE, gl.ZERO, gl.ONE); gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
     // look grade: frame texture -> canvas
-    gl.bindFramebuffer(gl.FRAMEBUFFER, null); gl.viewport(0, 0, W, H); gl.disable(gl.BLEND);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null); gl.viewport(0, 0, RW, RH); gl.disable(gl.BLEND);
     gl.useProgram(progGrade); const G = (n) => gl.getUniformLocation(progGrade, n);
     gl.activeTexture(gl.TEXTURE3); gl.bindTexture(gl.TEXTURE_2D, texFrame); gl.uniform1i(G('uImg'), 3);
-    gl.uniform2f(G('uRes'), W, H); gl.uniform1f(G('uFr'), Math.floor(t * 24) % 997);
+    gl.uniform2f(G('uRes'), RW, RH); gl.uniform1f(G('uFr'), Math.floor(t * 24) % 997);
     const tint = o.tint || [1, .78, .52];
     gl.uniform3f(G('uTint'), tint[0], tint[1], tint[2]);
     for (const [u, k, d] of [['uSat', 'sat', 1], ['uCon', 'con', 1], ['uLift', 'lift', 0], ['uTintK', 'tintK', 0], ['uScratch', 'scratch', 0], ['uDust', 'dust', 0], ['uBurn', 'burn', 0], ['uEtch', 'etch', 0], ['uWeave', 'weave', 0], ['uFlick', 'flick', 0]])

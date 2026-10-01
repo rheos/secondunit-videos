@@ -9,7 +9,7 @@ const tmp = full ? out : fs.mkdtempSync('/tmp/chk_'); fs.mkdirSync(tmp, { recurs
 const b = await chromium.launch({ channel: 'chrome', headless: true, args: ['--use-angle=metal', '--ignore-gpu-blocklist', '--enable-gpu'] });
 const p = await b.newPage({ viewport: { width: 1080, height: 1920 } });
 const errs = []; p.on('console', m => { if (m.type() === 'error') errs.push(m.text()); }); p.on('pageerror', e => errs.push(String(e)));
-await p.goto('file://' + process.cwd() + `/${page}.html?offline=1`); await p.evaluate(() => window.__ready);
+await p.goto('file://' + process.cwd() + `/${page}.html?offline=1&scale=${process.env.SCALE || 1}`); await p.evaluate(() => window.__ready);
 const files = []; let ms = 0;
 for (const t of times) {
   const t0 = Date.now(); const url = await p.evaluate((t) => window.__frameJPEG(t, .9), t); ms += Date.now() - t0;

@@ -3,6 +3,9 @@
 // no state between frames, no Math.random(). A look draws flat shapes onto the 2D canvas `s`
 // (1080 x 1920, 9:16), then its own WebGL shader turns that into the finished frame.
 const W = 1080, H = 1920;
+// ?scale=0.667 renders smaller (drafts at 720x1280): world coords stay 1080x1920, only the pixels shrink.
+const RS = parseFloat(new URLSearchParams(location.search).get('scale')) || 1;
+const PX = .5 * RS; // world coords -> the painted layers' (half-res) pixels
 const DUR = 197.0; // master v2: master t=0 is YouTube 6:41.02 of the set (measured); this ends at 9:58, where Robin hears the song end (talk from 197.7)
 const TAU = Math.PI * 2;
 const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
@@ -129,7 +132,7 @@ let f = null;
 function renderFrame(t) {
   const painted = typeof Paint !== 'undefined';
   if (painted) { s = Paint.sctx; f = Paint.fctx; }
-  for (const g of painted ? [s, f] : [s]) { g.setTransform(painted ? .5 : 1, 0, 0, painted ? .5 : 1, 0, 0); g.globalAlpha = 1; g.globalCompositeOperation = 'source-over'; g.filter = 'none'; }
+  for (const g of painted ? [s, f] : [s]) { g.setTransform(painted ? PX : 1, 0, 0, painted ? PX : 1, 0, 0); g.globalAlpha = 1; g.globalCompositeOperation = 'source-over'; g.filter = 'none'; }
   if (painted) { f.fillStyle = '#000'; f.fillRect(-50, -50, W + 100, H + 100); }
   FX = {};
   const sh = SHOTS.find((x) => t >= x.a && t < x.b) || SHOTS[SHOTS.length - 1];

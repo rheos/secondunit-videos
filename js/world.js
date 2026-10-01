@@ -126,7 +126,7 @@ function glassPanel(x, y, w, h, t, lights) {
 }
 // a Mucha border: double frame with an arched top, corner tendrils
 function border(t, u = 1) {
-  s.save(); s.setTransform(.5, 0, 0, .5, 0, 0);
+  s.save(); s.setTransform(PX, 0, 0, PX, 0, 0);
   const m = 46; s.lineJoin = 'round';
   for (const [lw, c, k] of [[34, C.umber, 0], [20, C.gold, 0], [10, C.umber, 18]]) { s.lineWidth = lw; s.strokeStyle = c; s.beginPath(); s.moveTo(m + k, H - m - k); s.lineTo(m + k, 420); s.arc(W / 2, 420, W / 2 - m - k, Math.PI, 0); s.lineTo(W - m - k, H - m - k); s.closePath(); s.stroke(); }
   for (const sx of [1, -1]) { const x0 = sx > 0 ? m : W - m; vine(s, whip([x0, H - 300], [x0 + sx * 120, H - 420], [x0 + sx * 40, H - 560], [x0 + sx * 180, H - 620], .7, sx, 30), 18, 8, C.sage, u); }

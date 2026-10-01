@@ -27,7 +27,12 @@ uv run --python 3.11 --with 'librosa==0.10.2.post1' --with 'numba==0.60.0' --wit
 open water.html                                    # loops the probe span (space, left arrow)
 node check.mjs water out/check/w.jpg 39.5 41.6 46   # contact sheet
 node render.mjs water 37.708333 56 out/gmc_water-probe_f00905-f01344_24fps_composite.mp4 4 24
+node render.mjs index 11 197 out/gmc-v2_<take>_f00264-f04728_24fps_review-720p.mp4 4 24 1.5 0.6667   # draft: 720p, fade-in, review encode in one go
+node render.mjs index 11 197 out/gmc-v2_<take>_f00264-f04728_24fps_composite.mp4 4 24 1.5           # final: 1080p master (crf 17)
 ```
+
+Drafts render at 720p (`scale` 0.6667): world coordinates stay 1080x1920 and the brushstroke sizes scale
+with the output, so a draft is the same painting with fewer pixels. `SCALE=0.6667 node check.mjs ...` checks at that size.
 
 Whisper mishears this take, so word times are cue handles only. The sung "clap" of each "clap hands"
 is timed from the vocal stem's onsets (`CLAPS` in `js/core.js`).

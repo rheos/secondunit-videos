@@ -8,7 +8,7 @@
 // through the door's rain-streaked window into c02's first frame (plum wall, amber arch, halo). No hands.
 (() => {
   const DARK = '#17110e', WOOD = '#7a5530', BRASS = C.gold;
-  function screen(g, fn) { g.save(); g.setTransform(.5, 0, 0, .5, 0, 0); fn(); g.restore(); }
+  function screen(g, fn) { g.save(); g.setTransform(PX, 0, 0, PX, 0, 0); fn(); g.restore(); }
   function veil(a) {
     if (a <= .003) return;
     screen(s, () => { s.fillStyle = `rgba(16,13,20,${clamp(a)})`; s.fillRect(-10, -10, W + 20, H + 20); });
@@ -274,7 +274,7 @@
     s.save(); f.save();
     cam(540, 900 + sh, zf, rot);
     P(s, win); s.closePath(); s.clip(); P(f, win); f.closePath(); f.clip();
-    s.setTransform(.5, 0, 0, .5, 0, 0); f.setTransform(.5, 0, 0, .5, 0, 0);
+    s.setTransform(PX, 0, 0, PX, 0, 0); f.setTransform(PX, 0, 0, PX, 0, 0);
     cam(540 + ox, 900 + oy, zo, rot);
     tenement(t, .55 * lerp(.6, 1, p));
     s.restore(); f.restore();

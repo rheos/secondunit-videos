@@ -191,8 +191,8 @@
     if (t >= T2 && sc > .06) {
       const sa = .72 * inv(T2, T3 + .1, t) * (1 - inv(195.3, 195.9, t)), ssx = SX + 90 + (bx - SX) * 1.4, ssy = SY + 230 + (by - 690) * 1.5;
       const sh = () => birdHands(ssx, ssy, sc * 1.4, open, lock, flap * 1.05, mix(C.plum, C.umber, .6));
-      s.save(); s.globalAlpha = sa; s.filter = 'blur(4px)'; sh(); s.restore();
-      const s0 = s; s = f; f.save(); f.globalCompositeOperation = 'source-over'; f.globalAlpha = Math.min(1, sa * 1.4); f.filter = 'blur(4px) brightness(0)'; try { sh(); } finally { f.restore(); s = s0; }
+      s.save(); s.globalAlpha = sa; s.filter = `blur(${4 * RS}px)`; sh(); s.restore();
+      const s0 = s; s = f; f.save(); f.globalCompositeOperation = 'source-over'; f.globalAlpha = Math.min(1, sa * 1.4); f.filter = `blur(${4 * RS}px) brightness(0)`; try { sh(); } finally { f.restore(); s = s0; }
     }
     if (sc > .06) onBoth(() => birdHands(bx, by + y2 + bob, sc, open, lock, flap), .85);
     // light flares cover the key-drawing swaps; the bird is absorbed into the sun at the end
@@ -221,10 +221,10 @@
     border(t, 1);
     const p = ease.inOut(inv(195.6, 196.95, t));
     if (p > 0) {
-      s.save(); s.setTransform(.5, 0, 0, .5, 0, 0); s.globalAlpha = p;
+      s.save(); s.setTransform(PX, 0, 0, PX, 0, 0); s.globalAlpha = p;
       s.fillStyle = rgrad(W / 2, H * .42, 80, H * .75, [[0, mix(C.cream, C.parch, .3)], [.6, C.parch], [1, mix(C.parch, C.gold, .6)]]); s.fillRect(0, 0, W, H);
       s.restore();
-      f.save(); f.setTransform(.5, 0, 0, .5, 0, 0); f.globalAlpha = p * .85; f.fillStyle = '#000'; f.fillRect(0, 0, W, H);
+      f.save(); f.setTransform(PX, 0, 0, PX, 0, 0); f.globalAlpha = p * .85; f.fillStyle = '#000'; f.fillRect(0, 0, W, H);
       f.globalAlpha = 1; f.globalCompositeOperation = 'lighter'; const g = f.createRadialGradient(W / 2, H * .42, 0, W / 2, H * .42, H * .7); g.addColorStop(0, `rgba(255,226,170,${.22 * p})`); g.addColorStop(1, `rgba(255,190,110,${.1 * p})`); f.fillStyle = g; f.fillRect(0, 0, W, H);
       f.restore();
     }

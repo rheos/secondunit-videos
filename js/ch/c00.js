@@ -6,7 +6,7 @@
 (() => {
   const DARK = '#17110e', SMOKE = '#9aa0b8';
   // ---- private helpers ----
-  function screen(g, fn) { g.save(); g.setTransform(.5, 0, 0, .5, 0, 0); fn(); g.restore(); }
+  function screen(g, fn) { g.save(); g.setTransform(PX, 0, 0, PX, 0, 0); fn(); g.restore(); }
   // darken the whole frame (underpainting and light) toward night
   function veil(a) {
     if (a <= .003) return;
@@ -19,7 +19,7 @@
     if (u >= 1) return border(t, vu);
     if (u <= 0) return;
     const cx = W / 2, cy = H * .55, a = u * Math.PI, m = 46;
-    s.save(); s.setTransform(.5, 0, 0, .5, 0, 0);
+    s.save(); s.setTransform(PX, 0, 0, PX, 0, 0);
     s.beginPath(); s.moveTo(cx, cy); for (let i = 0; i <= 48; i++) { const th = Math.PI / 2 - a + 2 * a * i / 48; s.lineTo(cx + Math.cos(th) * 3200, cy + Math.sin(th) * 3200); } s.closePath(); s.clip();
     border(t, vu); s.restore();
     // a gold spark at each pen
