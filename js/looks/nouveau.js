@@ -72,11 +72,38 @@ const LOOK = { span: [37.7, 56.0] };
     for (const l of h.lines) { s.lineWidth = lw * .7; s.strokeStyle = C.umber; P(s, l); s.stroke(); }
     shape(s, h.thumb, C.rose, C.umber, lw * .85);
   }
-  // two hands clapping: upright, palms together on the hit, hinging open from the heel of the palm
-  function clapPair(t, cx, cy, sc, k, { tone = C.blush, wide = .5 } = {}) {
-    const op = clapOpen(t, k, wide), gap = op * .05 * sc, sq = hit(t, k, 14) * .04;
-    hand(cx - gap - .17 * sc, cy + sc * .95, sc * (1 - sq), { dir: -1, open: op }, tone);
-    hand(cx + gap + .17 * sc, cy + sc * .95, sc * (1 - sq), { dir: 1, open: op }, tone);
+  // the palm-on hand (key drawings 1 and 2): sx < 1 narrows it into a three-quarter turn toward the other hand
+  function palmHand(x, y, sc, { dir, rot = 0, spread = .12, sx = 1, curl = 0 }, tone = C.blush) {
+    s.save(); s.translate(x, y); s.rotate(rot); s.scale(sx, 1);
+    const h = handShape(0, 0, sc, { dir, spread, curl }), lw = Math.max(9, sc * .05) / Math.max(.6, sx);
+    shape(s, h.cuff, C.teal, C.umber, lw);
+    for (const p of [...h.fingers, h.palm]) shape(s, p, tone, C.umber, lw);
+    shape(s, h.thumb, sx < .8 ? C.rose : tone, C.umber, lw);
+    s.restore();
+  }
+  // a clap as three key drawings, swapped by distance: 1 apart (palms to camera, tilted out),
+  // 2 turning in (three-quarter, fingers closing), 3 contact (profile, palm to palm). Positions move
+  // smoothly; only the drawing swaps. d = 1 apart .. 0 touching.
+  function clapPair(t, cx, cy, sc, k, { tone = C.blush } = {}) {
+    const lt = t - k;
+    const d = lt < 0 ? Math.pow(clamp(-lt / .42), .6) : ease.out(clamp((lt - .06) / .45));   // accelerates into the hit
+    const wy = cy + sc * .95 + beatPulse(t, 8) * sc * .025;
+    if (d <= .14) { // 3: contact, the praying-hands silhouette, a hair open as they bounce
+      const op = lt < 0 ? 0 : .12 * ease.out(clamp(lt / .1)), sq = hit(t, k, 14) * .04;
+      for (const dir of [-1, 1]) { const h = clapHand(cx + dir * (.17 * sc + op * .04 * sc), wy, sc * (1 - sq), { dir, open: op }); hand3(h, sc, tone); }
+    } else if (d <= .58) { // 2: turning in
+      const off = lerp(.3, .6, inv(.14, .58, d)) * sc, sx = lerp(.45, .72, inv(.14, .58, d));
+      for (const dir of [-1, 1]) palmHand(cx + dir * off, wy, sc * .84, { dir, rot: dir * lerp(.03, .1, inv(.14, .58, d)), spread: 0, sx }, tone);
+    } else { // 1: apart, open palms, tilted out, rocking with the beat
+      const off = lerp(.68, .92, inv(.58, 1, d)) * sc, rk = Math.sin((t - k) * Math.PI * 2 / 1.0) * .03;
+      for (const dir of [-1, 1]) palmHand(cx + dir * off, wy, sc * .84, { dir, rot: dir * (.16 + rk), spread: .14 }, tone);
+    }
+  }
+  function hand3(h, sc, tone) {
+    const lw = Math.max(9, sc * .05);
+    shape(s, h.cuff, C.teal, C.umber, lw); shape(s, h.body, tone, C.umber, lw);
+    s.lineCap = 'round'; s.lineJoin = 'round'; for (const l of h.lines) { s.lineWidth = lw * .7; s.strokeStyle = C.umber; P(s, l); s.stroke(); }
+    shape(s, h.thumb, C.rose, C.umber, lw * .85);
   }
   // a Guimard Metro lamp: a whiplash iron stem bending over into a glowing ruby lily-bud lamp
   function guimard(x, y, h, dir, lit, sway = 0) {
