@@ -49,51 +49,48 @@
     const b = FEAT.beats, i = Math.max(0, lastBeat(t)), t0 = b[i], t1 = b[i + 1] || t0 + .5, u = clamp((t - t0) / (t1 - t0));
     return i % 2 === 0 ? { sweep: lerp(1, -1, ease.out(u)), lift: 0, dip: hit(t, t0, 5) } : { sweep: lerp(-1, 1, ease.inOut(u)), lift: Math.sin(Math.PI * u) * .7, dip: 0 };
   }
-  // an empty wooden rowboat, side view, bow to +x; its oars row by themselves; a lantern hangs at the bow
-  function boat(t, x, y, sc, { rot = 0, row = rowPhase(t), lamp = 1 } = {}) {
-    const c = Math.cos(rot), sn = Math.sin(rot), R = ([px, py]) => [x + (px * c - py * sn) * sc, y + (px * sn + py * c) * sc];
-    const lw = Math.max(10, sc * .045);
-    const oar = (side) => { // side 1 = near, -1 = far
-      const lock = [.04 - side * .02, -.12 - (side < 0 ? .05 : 0)], a = Math.PI / 2 - row.sweep * .75;
-      let end = [lock[0] + Math.cos(a) * .66, lock[1] + Math.sin(a) * .66 - row.lift * .3], hdl = [lock[0] - Math.cos(a) * .2, lock[1] - Math.sin(a) * .2 + row.lift * .08];
-      const shaft = [R(hdl), R(lock), R(end)], ang = Math.atan2(shaft[2][1] - shaft[1][1], shaft[2][0] - shaft[1][0]);
-      vine(s, shaft, lw * .9, lw * .8, side > 0 ? C.parch : C.ochre);
-      petal(s, ...shaft[2], ang, sc * .2, sc * .06, side > 0 ? C.gold : C.ochre, C.umber, lw * .8);
-      return [shaft[2][0] + Math.cos(ang) * sc * .2, shaft[2][1] + Math.sin(ang) * sc * .2];
-    };
-    oar(-1);
+  // the little rowboat to heaven, side view, bow to +x: two rowers (cast seeds 1 and 2, the same crew as
+  // c06 and c09) pulling on the beat, and the blind conductor standing at the bow holding up his lantern.
+  // L = hull length in px. phOff shifts the stroke (the catch lands on integers). Returns the near oar tips.
+  function boat(t, x, y, L, { rot = 0, phOff = 0, lamp = 1, swing } = {}) {
+    const c = Math.cos(rot), sn = Math.sin(rot), R = ([px, py]) => [x + (px * c - py * sn) * L, y + (px * sn + py * c) * L];
+    const lw = Math.max(10, L * .022), ph = beatPhase(t) / 2 + phOff;
     // interior (far side of the hull seen from a little above)
-    shape(s, [R([-.5, -.03]), ...cub(R([-.5, -.03]), R([-.2, -.15]), R([.25, -.2]), R([.52, -.2]), 16), ...cub(R([.52, -.2]), R([.25, -.1]), R([-.2, -.04]), R([-.5, -.03]), 16)], '#6b4a2c', C.umber, lw);
+    shape(s, [R([-.5, -.03]), ...cub(R([-.5, -.03]), R([-.2, -.12]), R([.25, -.16]), R([.52, -.2]), 16), ...cub(R([.52, -.2]), R([.25, -.1]), R([-.2, -.04]), R([-.5, -.03]), 16)], '#6b4a2c', C.umber, lw);
+    // the crew, drawn before the hull side so it hides their legs
+    const cond = conductor(t, ...R([.33, .05]), L * .58, { pose: 'stand', facing: 1, rot, lit: lamp, swing: swing ?? (.25 + .12 * Math.sin(t * 2.1)) });
+    const rw = [[-.3, -.02, 1, .04], [-.04, -.04, 2, 0]].map(([px, py, seed, lag]) => rower(t, ...R([px, py]), L * .5, { seed, ph: ph - lag, rot, oar: 'later', oarlock: R([px + .2, py - .05]), oarLen: L * .34 }));
     // hull side
     const hull = [...cub(R([-.5, -.03]), R([-.15, -.06]), R([.3, -.1]), R([.55, -.21]), 18), ...cub(R([.55, -.21]), R([.5, .1]), R([-.1, .2]), R([-.46, .1]), 18), R([-.5, -.03])];
     shape(s, hull, C.ochre, C.umber, lw * 1.2);
-    vine(s, cub(R([-.48, .04]), R([-.1, .03]), R([.3, -.02]), R([.52, -.12]), 20), lw * .9, lw * .6, C.gold);
-    // the prow scroll and the lantern on a hooked pole
+    vine(s, cub(R([-.48, .04]), R([-.1, .03]), R([.3, -.02]), R([.52, -.12]), 20), lw * .9, lw * .6, C.ruby);
+    vine(s, cub(R([-.42, .1]), R([-.05, .13]), R([.3, .06]), R([.48, -.04]), 20), lw * .5, lw * .4, '#7a5426');
+    // the prow scroll
     vine(s, whip(R([.55, -.21]), R([.6, -.3]), R([.66, -.36]), R([.62, -.44]), .5, -1, 20), lw * .9, lw * .5, C.ochre);
-    const pole = cub(R([.4, -.17]), R([.42, -.5]), R([.62, -.62]), R([.72, -.56]), 20); vine(s, pole, lw * .6, lw * .5, C.umber, 1, null);
-    const lx = pole[pole.length - 1][0], ly = pole[pole.length - 1][1] + sc * .1, sw = Math.sin(t * 2.4) * sc * .02;
-    shape(s, blobPts(lx + sw, ly, sc * .045, sc * .07, 4, .02, 20), C.amber, C.umber, lw * .7);
-    if (lamp > 0) { glowAt(lx + sw, ly, sc * .9, `rgba(255,170,80,${.4 * lamp})`); glowAt(lx + sw, ly, sc * .14, `rgba(255,240,200,${.9 * lamp})`); }
-    const tip = oar(1);
-    if (row.dip > .05) { glowAt(tip[0], tip[1], sc * .35 * row.dip + 10, `rgba(220,235,255,${.6 * row.dip})`); }
-    return tip;
+    const tips = rw.map((r) => r.drawOar());
+    // a ripple of starlight where each blade catches
+    const q = ph - Math.floor(ph), dip = q < .4 ? Math.exp(-q * 9) : 0;
+    if (dip > .05) for (const tp of tips) if (tp) glowAt(tp[0], tp[1], L * .16 * dip + 10, `rgba(220,235,255,${.55 * dip})`);
+    return tips;
   }
 
   // ---- shots ----
   // CLAP 9 (127.967): following the little rowboat up into the stars; the stars burst open into lilies of light
   function bloom(t, lt, dur) {
     const k = CLAPS[8], k2 = HANDS[8];
-    const cx = 540 + Math.sin(t * .4) * 20, cy = kf(lt, [[0, 1180], [dur, 820]], ease.out), z = kf(lt, [[0, 1.08], [dur, 1.0]], ease.out);
+    const BL = 820, bx = 500 + Math.sin(t * .6) * 25, by = kf(lt, [[0, 1560], [dur, 1330]], ease.out);
+    // wide on the crew as the stars burst, then push in on the blind conductor and his lantern
+    const pk = ease.inOut(inv(1.7, dur, lt)), cx = lerp(540 + Math.sin(t * .4) * 20, bx + .33 * BL, pk), cy = lerp(kf(lt, [[0, 1260], [dur, 1020]], ease.out), by - .38 * BL, pk), z = lerp(kf(lt, [[0, 1.08], [1.7, 1.0]], ease.out), 1.75, pk);
     cam(cx, cy, z, Math.sin(t * .3) * .015);
     sky(t, cx, cy, -300, 2200, { seed: 5 });
     // the great halo moon, the same one the next shot pushes into
-    halo(700, 420, 300, t * .05, .3 + .2 * hit(t, k, 1.5));
-    rays(700, 420, 24, 320, 560, .1 + .12 * beatPulse(t, 4), t * .05);
+    halo(720, 330, 260, t * .05, .3 + .2 * hit(t, k, 1.5));
+    rays(720, 330, 24, 320, 560, .1 + .12 * beatPulse(t, 4), t * .05);
     // two waves of star-lilies: the clap opens the near ring, the sung "hands" the outer one
     const r = rng(77);
     for (let i = 0; i < 18; i++) {
       const wave = i < 9 ? 0 : 1, a = r() * TAU, d = wave ? 420 + r() * 320 : 210 + r() * 220;
-      const x = 540 + Math.cos(a) * d * 1.1, y = 1000 + Math.sin(a) * d * 1.35 - lt * 40, t0 = (wave ? k2 : k) + r() * .18;
+      const x = 540 + Math.cos(a) * d * 1.15, y = 640 + Math.sin(a) * d * .55 - lt * 40, t0 = (wave ? k2 : k) + r() * .18;
       const op = ease.back(inv(t0, t0 + .55, t)), sz = lerp(28, wave ? 150 : 185, op), rot = -Math.PI / 2 + Math.cos(a) * .5 + Math.sin(t * .7 + i) * .08;
       if (op <= .02) { star(x, y, 26, t * .2 + i, C.cream, .5); continue; }
       glowAt(x, y, sz * 1.7, `rgba(255,224,160,${.1 + .28 * hit(t, t0, 2.5)})`);
@@ -101,7 +98,7 @@
       glowAt(x, y, sz * .35, `rgba(255,248,225,${.3 + .4 * hit(t, t0, 4)})`);
       rays(x, y, 8, sz * .5, sz * 1.7, .4 * hit(t, t0, 3), rot);
     }
-    boat(t, 520 + Math.sin(t * .6) * 30, kf(lt, [[0, 1300], [dur, 1040]], ease.out), 520, { rot: -.05 + Math.sin(t * 1.3) * .04 });
+    boat(t, bx, by, BL, { rot: -.04 + Math.sin(t * 1.3) * .03 });
     glowAt(540, 1000, 700, `rgba(255,230,180,${.15 * hit(t, k, 2)})`);
     border(t, 1);
   }
@@ -131,7 +128,7 @@
     rays(tipX, tipY, 12, 20, 520 * flash + 40, .8 * flash, .2);
     glowAt(cx, cy, R * 1.4, `rgba(255,220,160,${.25 * flash})`);
     // the rowboat crosses the lower rim of the moon after the clap
-    if (t > k2) boat(t, kf(t, [[k2, -260], [k2 + 3.0, 1300]], ease.sine), 1330 + Math.sin(t * 1.4) * 10, 190, { rot: -.04 });
+    if (t > k2) boat(t, kf(t, [[k2, -300], [k2 + 3.0, 1400]], ease.sine), 1400 + Math.sin(t * 1.4) * 10, 340, { rot: -.04 });
     border(t, 1);
   }
   function clockHand(cx, cy, ang, len, col) {
@@ -185,7 +182,7 @@
     pos.forEach(([x, y], i) => star(x, y, i === 0 ? 40 : 28 + (i % 3) * 4, t * .3 + i, i % 4 ? C.cream : C.gold, .5 + .5 * hit(t, k, 3) + .3 * vocP));
     rays(540, 950, 16, 300, 1100, .4 * hit(t, k, 3), t * .05);
     // the boat glides in below, toward the Milky Way
-    if (lt > dur - 1.6) boat(t, kf(lt, [[dur - 1.6, -200], [dur, 380]], ease.out), 1990, 230, { rot: -.08 });
+    if (lt > dur - 1.6) boat(t, kf(lt, [[dur - 1.6, -260], [dur, 360]], ease.out), 2000, 360, { rot: -.06 });
     border(t, 1);
   }
   // CLAP 12 (139.967): the boat on the Milky Way; the oars rise and slap it, light splashes;
@@ -200,8 +197,8 @@
   }
   function milky(t, lt, dur) {
     const k = CLAPS[11], dk = t - k;
-    const cy = kf(t, [[140.4, 1000], [142.3, 1985]], ease.inOut), z = kf(t, [[139.0, 1.04], [140.4, 1.0], [141.4, .9], [142.48, 2.2]], ease.inOut);
-    cam(540, cy, z, kf(t, [[139.0, -.02], [142.48, 0]]));
+    const cy = kf(t, [[139.0, 900], [139.8, 960], [140.4, 1000], [142.3, 1985]], ease.inOut), z = kf(t, [[139.0, 1.45], [139.8, 1.3], [140.4, 1.0], [141.4, .9], [142.48, 2.2]], ease.inOut);
+    cam(kf(t, [[139.0, 470], [140.4, 540]], ease.inOut), cy, z, kf(t, [[139.0, -.02], [142.48, 0]]));
     sky(t, 540, cy, -500, 3000, { seed: 33, ns: 18 });
     // the Milky Way spills down in a falling ribbon into the lantern of a theatre dome far below
     band(FALL, 130, 50, '#4d5c80', C.umber, 18, t); band(FALL, 62, 22, C.glass, C.umber, 12, t + 2); band(FALL, 22, 8, C.cream, C.umber, 8, t + 4);
@@ -214,17 +211,16 @@
       for (let i = 0; i < 260; i++) { const fall = i % 3 === 0, pts = fall ? FALL : RIVER, u = (r() + t * (fall ? .22 : .04)) % 1, p = pts[Math.floor(u * (pts.length - 1))], sp = (r() - .5) * (fall ? 160 : 300);
         const tw = .5 + .5 * Math.sin(t * 3 + i); f.fillStyle = `rgba(235,240,255,${.8 * tw})`; f.beginPath(); f.arc(p[0] + sp * .3, p[1] + sp * .5, 2 + r() * 4, 0, TAU); f.fill(); }
     });
-    // the boat: the oars climb high just before the clap, then slam down onto the river
-    const up = ease.out(inv(k - .55, k - .1, t)), slam = ease.in(inv(k - .1, k, t));
-    const row = t < k - .55 ? rowPhase(t) : t < k ? { sweep: lerp(.2, .6, up), lift: lerp(.3, 1.6, up) * (1 - slam) - .15 * slam, dip: 0 } : { sweep: lerp(.6, -.4, ease.out(clamp(dk / .6))), lift: -.15 * Math.exp(-dk * 4), dip: hit(t, k, 3) };
-    const bx = 470 + lt * 40, rp = riverAt(bx), rq = riverAt(bx + 120), slope = Math.atan2(rq[1] - rp[1], rq[0] - rp[0]) * .5;
-    const by = rp[1] - 110 + Math.sin(t * 1.6) * 8 - 30 * hit(t, k, 5);
-    const tip = boat(t, bx, by, 470, { rot: slope + Math.sin(t * 1.2) * .03 - .06 * hit(t, k, 4), row });
+    // the boat: the stroke is phased so the rowers' catch lands on the clap and the blades slap the river
+    const phOff = Math.ceil(beatPhase(k) / 2) - beatPhase(k) / 2;
+    const bx = 440 + lt * 40, rp = riverAt(bx), rq = riverAt(bx + 120), slope = Math.atan2(rq[1] - rp[1], rq[0] - rp[0]) * .5;
+    const by = rp[1] - 60 + Math.sin(t * 1.6) * 8 - 30 * hit(t, k, 5);
+    const tips = boat(t, bx, by, 820, { rot: slope + Math.sin(t * 1.2) * .03 - .06 * hit(t, k, 4), phOff }), tip = tips[1] || tips[0] || [bx, by + 200];
     // the splash: a crown of light-petals and a spray of star drops
     if (dk > 0) {
       const crown = ease.out(clamp(dk / .35)) * Math.exp(-Math.max(0, dk - .4) * 2.2);
       for (let i = 0; i < 7; i++) { const a = -Math.PI / 2 + (i - 3) * .32; petal(s, tip[0], tip[1] + 10, a, 150 * crown + 1, 30 * crown + 1, i % 2 ? C.cream : C.parch, C.umber, 9); }
-      glowAt(tip[0], tip[1], 320 * hit(t, k, 2) + 40, `rgba(230,240,255,${.5 * hit(t, k, 2.6)})`);
+      glowAt(tip[0], tip[1], 220 * hit(t, k, 2) + 40, `rgba(230,240,255,${.38 * hit(t, k, 3)})`);
       const pr = rng(808);
       lighter(() => {
         for (let i = 0; i < 46; i++) { const vx = (pr() - .5) * 900, vy = -500 - pr() * 900, d = dk, x = tip[0] + vx * d, y = tip[1] + vy * d + 1100 * d * d, a = clamp(1 - d / (1 + pr() * .8));

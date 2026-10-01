@@ -1,7 +1,7 @@
 // c08 · VERSE 3 AGAIN (SEC.v3b 142.48 - SEC.b2 165.0) · an empty Art Nouveau theatre.
 // Opens under the dome's glass oculus (c07 pushed into its lantern), tilts down to the curtain;
 // the curtains part on a painted backdrop of dreams, one spotlight finds the jeans on a costume rail,
-// the helmet with the note on a stool, searches the empty stage, a chair turning; the curtains close.
+// the helmet with the note on a stool, catches Mr. Knickerbocker slipping out, a chair turning; the curtains close.
 // Hand-off: the closed curtain with a seam of light down the middle (x 540).
 (() => {
   // ---- private helpers ----
@@ -60,13 +60,14 @@
   }
   // stage curtains: two velvet panels of folds; open 0 = closed (meeting at x 540) .. 1 = drawn back and tied
   const OX0 = 150, OX1 = 930, OTOP = 370, FLOOR = 1500;
-  function curtains(t, open, seam = 0) {
-    const sway = Math.sin(t * 1.3) * 6 * (1 - open) + Math.sin(t * 4) * 10 * open * (1 - open) * 4;
+  function curtains(t, open, seam = 0, rustle = 0) {
+    const sway0 = Math.sin(t * 1.3) * 6 * (1 - open) + Math.sin(t * 4) * 10 * open * (1 - open) * 4;
     for (const side of [-1, 1]) {
       const outer = side < 0 ? OX0 - 20 : OX1 + 20, inner = (y) => { // inner edge, swept back to a tie point when open
         const u = clamp((y - OTOP) / (FLOOR - OTOP)), tie = Math.exp(-Math.pow((u - .58) / .3, 2));
         const pull = open * lerp(.62, .95, tie) + open * open * .02, xi = lerp(540, outer, pull);
-        return xi + side * (1 - open) * 0 + sway * (u * u) * side;
+        const sway = sway0 + (side > 0 ? rustle * Math.sin(t * 7) * 40 * u : 0);
+        return xi + sway * (u * u) * side;
       };
       const n = 8, ys = [...Array(15)].map((_, j) => lerp(OTOP - 10, FLOOR + 12, j / 14));
       const fold = (i) => ys.map((y, j) => { const xi = inner(y), k = i / n; return [lerp(outer, xi, k) + Math.sin(j * .9 + i * 1.7 + t * .8) * 6 * (1 - Math.abs(.5 - k)), y + (j === 14 ? Math.sin(i * 2.1) * 10 : 0)]; });
@@ -196,30 +197,25 @@
     proscenium(t, 1); curtains(t, open, 0); valance();
     border(t, 1);
   }
-  // 148.65: the spotlight sweeps along a costume rail and finds the jeans, a pistol grip showing from the pocket
-  function jeans(t, lt, dur) {
-    const cx = kf(t, [[148.65, 200], [149.84, 760], [150.9, 820], [152.45, 830]], ease.inOut), cy = kf(t, [[148.65, 900], [150.9, 1100], [152.45, 1120]], ease.inOut);
-    const z = kf(t, [[148.65, 1.0], [149.84, 1.0], [150.9, 1.55], [152.45, 1.65]], ease.inOut);
-    cam(cx, cy, z);
+  // 148.65: the spotlight hunts across the boards and finds the Harlem walker strutting across the stage;
+  // the pistol is only a butt peeking from his back pocket (it glints once)
+  function walker(t, lt, dur) {
+    const SC = 1000, ph = (beatPhase(t) - beatPhase(148.65)) / 2, wx = -60 + ph * walkStride(SC, { who: 'walker', stride: 1.05 });
+    const cx = lerp(380, wx + 120, ease.inOut(inv(148.65, 149.6, t))), z = kf(t, [[148.65, 1.0], [150.9, 1.08], [152.45, 1.0]], ease.inOut);
+    cam(cx, 1080, z);
     s.fillStyle = '#2e2a44'; s.fillRect(-W * 2, -H * 2, W * 5, H * 5);
-    backdrop(t, -700, 2100, -300, 1700, .3);
-    // the backdrop's lower cloud scrolls, dim, behind the rail
-    for (let i = 0; i < 5; i++) shape(s, blobPts(-300 + i * 420, 1500, 300, 170, i + 9, .1, 40), i % 2 ? '#3d3456' : '#463a5c', C.umber, 16);
-    shape(s, [[-800, 1700], [2000, 1700], [2000, 2600], [-800, 2600]], '#5a3f28', C.umber, 16);
-    // the spot: hunts along the rail, locks on the jeans on the sung place-name
-    const sx = kf(t, [[148.65, -200], [149.3, 300], [149.84, 840]], ease.inOut), sy = kf(t, [[148.65, 900], [149.84, 1000]]), on = clamp(inv(148.65, 148.9, t));
-    spotPool(sx, sy, 330, 560, on);
-    // the rail: brass, whiplash finials, on two stands
-    vine(s, [[-500, 520], [1700, 520]], 22, 22, C.gold);
-    for (const x of [-420, 1620]) { vine(s, [[x, 520], [x, 1700]], 24, 24, C.gold); vine(s, whip([x, 520], [x - 40, 440], [x + 60, 400], [x + 40, 470], .8, x < 0 ? -1 : 1, 20), 20, 8, C.gold); }
-    const swing = (i, k0) => Math.sin(t * 2 + i) * .02 + .12 * Math.sin((t - k0) * 9) * hit(t, k0, 2.5);
-    // costumes: a rose gown, a plum cape, the jeans, a gold-trimmed waistcoat
-    hanger(-80, 520, swing(0, 149.0)); costume(-80, 600, swing(0, 149.0), 'gown');
-    hanger(330, 520, swing(1, 149.4)); costume(330, 600, swing(1, 149.4), 'cape');
-    hanger(1260, 520, swing(3, 150.1)); costume(1260, 600, swing(3, 150.1), 'vest');
-    const jsw = swing(2, 151.92) + .06 * Math.sin((t - 151.92) * 7) * hit(t, 151.92, 1.5);
-    hanger(840, 520, jsw); jeansPair(t, 840, 600, jsw);
-    spotLight(1300, -300, sx, sy, 330, 560, on);
+    backdrop(t, -900, 3200, -300, 1600, .3);
+    shape(s, [[-1200, 1600], [3400, 1600], [3400, 2600], [-1200, 2600]], '#5a3f28', C.umber, 16);
+    for (let i = 0; i < 16; i++) line([[-900 + i * 280, 1600], [-1400 + i * 360, 2600]], C.umber, 9);
+    // painted cloud scrolls of the dream backdrop behind him
+    for (let i = 0; i < 6; i++) shape(s, blobPts(-200 + i * 520, 1460, 320, 170, i + 9, .1, 40), i % 2 ? '#3d3456' : '#463a5c', C.umber, 16);
+    // the spot: hunting, then locked on him from the sung place-name
+    const lock = ease.inOut(inv(149.3, 149.84, t)), sx = lerp(kf(t, [[148.65, 900], [149.3, 300]]), wx, lock), on = clamp(inv(148.65, 148.85, t));
+    spotPool(sx, 1300, 420, 700, on);
+    const J = harlemWalker(t, wx, 1720, SC, { ph, facing: 1 });
+    const pk = [J.pel[0] - .075 * J.h, J.pel[1] + .05 * J.h], g = hit(t, 150.9, 3);
+    if (g > .02) glowAt(pk[0], pk[1], 110, `rgba(255,235,190,${.7 * g})`);
+    spotLight(sx + 400, -500, sx, 1300, 420, 700, on);
     border(t, 1);
   }
   function hanger(x, y, rot) {
@@ -236,7 +232,7 @@
     s.restore();
   }
   // a pair of jeans hung by the waistband: two legs, seams, a front pocket with a pistol grip showing (an object, still)
-  function jeansPair(t, x, y, rot) {
+  function jeansPair(t, x, y, rot, glint = true) {
     s.save(); s.translate(x, y); s.rotate(rot);
     const legs = [[-150, 0], [150, 0], [160, 120], [175, 1060], [20, 1060], [0, 300], [-20, 1060], [-175, 1060], [-160, 120]];
     shape(s, legs, DENIM, C.umber, 18);
@@ -252,7 +248,7 @@
     shape(s, circle(132, 40, 12, 14), C.gold, C.umber, 7);
     shape(s, [...cub([40, 140], [70, 230], [140, 230], [160, 140], 14), [160, 150], [40, 150]], DENIM2, C.umber, 12); // pocket lip over the grip
     s.restore();
-    const a = hit(t, 150.9, 3); if (a > .02) glowAt(x + 130 * Math.cos(rot) - 40 * Math.sin(rot), y + 40 * Math.cos(rot) + 130 * Math.sin(rot), 90, `rgba(255,235,190,${.7 * a})`);
+    const a = glint ? hit(t, 150.9, 3) : 0; if (a > .02) glowAt(x + 130 * Math.cos(rot) - 40 * Math.sin(rot), y + 40 * Math.cos(rot) + 130 * Math.sin(rot), 90, `rgba(255,235,190,${.7 * a})`);
   }
   // 152.45: the spot snaps onto a stool: a knight's helmet, a plain green note tucked in its visor
   function helmet(t, lt, dur) {
@@ -302,16 +298,19 @@
     for (let i = 0; i < 3; i++) { const dir = i % 2 ? 1 : -1, L = lerp(160, 420, open) * (1 - i * .18), a = -1.2 + i * .35 + Math.sin(t * 2 + i) * .05;
       vine(s, whip([x, y], [x + Math.cos(a) * L * .4, y + Math.sin(a) * L * .6], [x + Math.cos(a + .5) * L * .8, y + Math.sin(a + .5) * L], [x + Math.cos(a + 1.1) * L, y + Math.sin(a + .9) * L * .8], .8, dir, 30), 70 - i * 14, 14, [C.rose, C.blush, C.ruby][i]); }
   }
-  // 156.1: wide: the spotlight searches the empty stage and comes to rest on a bentwood chair, turning slowly
-  function search(t, lt, dur) {
-    cam(540, kf(lt, [[0, 1020], [dur, 1100]]), kf(lt, [[0, 1.1], [dur, 1.3]], ease.inOut));
+  // 156.1: close on stage right: the spot searches and catches Mr. Knickerbocker from behind just as he
+  // slips out between the curtain and the wing; he is gone, the curtain rustles, the empty spot stays
+  function knicker(t, lt, dur) {
+    cam(kf(lt, [[0, 760], [dur, 820]]), kf(lt, [[0, 1110], [dur, 1090]]), kf(lt, [[0, 1.85], [dur, 2.05]], ease.inOut));
     s.fillStyle = HOUSE; s.fillRect(-W * 2, -H * 2, W * 5, H * 5);
     backdrop(t, OX0, OX1, OTOP - 60, FLOOR - 140, .5); stageFloor(); propsWide(t);
-    const px = kf(t, [[156.1, 300], [156.6, 820], [157.0, 260], [157.35, 540]], ease.inOut) + Math.sin(t * 2.3) * 20 * (t < 157.35 ? 1 : .2), py = kf(t, [[156.1, 1250], [156.6, 1380], [157.0, 1300], [157.35, 1380]], ease.inOut);
-    spotPool(px, py, 190, 130, 1);
-    chair(540, 1340, 130, t * .55, 9);
-    spotLight(1000, 120, px, py, 170, 120, 1);
-    proscenium(t, .5); curtains(t, 1, 0); valance();
+    const px = kf(t, [[156.1, 420], [156.45, 640], [156.75, 760], [157.9, 930], [158.6, 900]], ease.inOut) + Math.sin(t * 2.3) * 12 * (t < 156.75 ? 1 : .3);
+    const py = kf(t, [[156.1, 1420], [156.75, 1440], [157.9, 1400]], ease.inOut);
+    spotPool(px, py - 120, 150, 230, .55);
+    const k = ease.inOut(inv(156.3, 157.9, t));
+    if (k < 1) knickerbocker(t, lerp(690, 1000, k), lerp(1470, 1400, k), lerp(330, 290, k), { ph: t * .8 });
+    spotLight(1000, 120, px, py - 120, 150, 230, 1);
+    proscenium(t, .5); curtains(t, 1, 0, hit(t, 157.6, 1.6) * (t > 157.6 ? 1 : 0)); valance();
     border(t, 1);
   }
   // 158.6: close and low: the empty chair turning in the spot, dust in the beam; the beam narrows
@@ -350,9 +349,9 @@
   chapter('c08', SEC.v3b, SEC.b2, [
     [SEC.v3b, house],
     [145.3, parting],
-    [148.65, jeans],
+    [148.65, walker],
     [152.45, helmet],
-    [156.1, search],
+    [156.1, knicker],
     [158.6, chairClose],
     [161.5, closing],
   ], { fx: PAINT });
