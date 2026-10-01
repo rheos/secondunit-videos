@@ -132,20 +132,45 @@
     for (let i = 0; i <= n; i++) { const th = a - Math.PI / 2 - i / n * Math.PI; o.push([x0 + Math.cos(th) * r, y0 + Math.sin(th) * r]); }
     return o; };
   const rotE = (x, y, rx, ry, rot, n = 32) => [...Array(n)].map((_, i) => { const q = i / n * TAU, px = Math.cos(q) * rx, py = Math.sin(q) * ry; return [x + px * Math.cos(rot) - py * Math.sin(rot), y + px * Math.sin(rot) + py * Math.cos(rot)]; });
+  const lerp2 = (p, q, k) => [lerp(p[0], q[0], k), lerp(p[1], q[1], k)];
   function birdHands(x, y, sc, open, lock, flap, flat = null) {
     s.save(); s.translate(x, y); s.scale(sc, sc);
     const lw = 13, sk = flat || C.blush, ln = flat ? null : C.umber;
     const part = (pts, col, w = lw) => shape(s, pts, flat || col, ln, w);
-    const wing = (d) => {
-      const spread = lerp(.22, 1.12, open) + flap, a = -Math.PI / 2 + d * spread, ux = Math.cos(a), uy = Math.sin(a), nx = -uy * d, ny = ux * d, px = d * 118, py = -40;
-      const L = [250, 292, 282, 232], tips = [], fw = 24, gap = 42;
-      for (let i = 3; i >= 0; i--) { const o = (i - 1.5) * gap, bx = px + nx * o - ux * 22, by = py + ny * o - uy * 22, tx = bx + ux * L[i], ty = by + uy * L[i];
-        part(capsule(bx, by, tx, ty, fw), C.blush, lw * .85); tips.push([tx, ty, bx, by]); }
-      if (!flat) for (const [tx, ty, bx, by] of tips) { petal(s, tx - ux * 52, ty - uy * 52, a, 38, 12, C.parch, C.umber, 7); s.strokeStyle = C.umber; s.lineWidth = 8; s.lineCap = 'round'; s.beginPath(); s.moveTo(bx + ux * 16 - nx * 12, by + uy * 16 - ny * 12); s.quadraticCurveTo(bx + ux * 28, by + uy * 28, bx + ux * 16 + nx * 12, by + uy * 16 + ny * 12); s.stroke(); }
+    // each hand's geometry: the wing direction u, across-the-fingers n, the knuckle pivot
+    const geo = (d) => { const spread = lerp(.22, 1.12, open) + flap, a = -Math.PI / 2 + d * spread, ux = Math.cos(a), uy = Math.sin(a);
+      return { a, ux, uy, nx: -uy * d, ny: ux * d, px: d * 118, py: -40 }; };
+    const L = [250, 292, 282, 232], gap = 42, hw = 21, KN = 26;
+    // the fingers: held together, bases running under the hand-back (no rounded base), tapering to round tips
+    const fingers = (d) => {
+      const { a, ux, uy, nx, ny, px, py } = geo(d), P0 = (o, k) => [px + nx * o + ux * k, py + ny * o + uy * k];
+      // a backing under the four so no background shows between them
+      const mn = Math.min(...L) - 10;
+      shape(s, [P0(-2 * gap, -40), P0(2 * gap, -40), P0(2 * gap, KN + mn), P0(-2 * gap, KN + mn)], sk, null);
+      for (let i = 3; i >= 0; i--) {
+        const o = (i - 1.5) * gap, tipR = hw - 2, tc = KN + L[i] - tipR, pts = [P0(o - hw, -40), P0(o - tipR, tc)];
+        for (let q = 1; q < 10; q++) { const th = Math.PI * q / 10; pts.push(P0(o - Math.cos(th) * tipR, tc + Math.sin(th) * tipR)); }
+        pts.push(P0(o + tipR, tc), P0(o + hw, -40));
+        shape(s, pts, sk, ln, lw * .8);
+        if (!flat) {
+          const [nxp, nyp] = P0(o, KN + L[i] - 50); petal(s, nxp, nyp, a, 36, 11, C.parch, C.umber, 7);
+          const c0 = P0(o - hw * .6, KN + L[i] * .42), c1 = P0(o, KN + L[i] * .42 + 9), c2 = P0(o + hw * .6, KN + L[i] * .42);
+          s.strokeStyle = C.umber; s.lineWidth = 7; s.lineCap = 'round'; s.beginPath(); s.moveTo(...c0); s.quadraticCurveTo(...c1, ...c2); s.stroke();
+        }
+      }
     };
-    // backs of the hands, heels overlapping
-    for (const d of [-1, 1]) { const c = Math.cos(d * .55), sn = Math.sin(d * .55), R = ([u, v]) => [d * 58 + u * c - v * sn, 20 + u * sn + v * c]; part(capsule(0, 70, 0, -70, 72, 10).map(R), sk); }
-    for (const d of [-1, 1]) wing(d);
+    // the back of the hand: one broad shape from the heel out to a scalloped knuckle ridge over the finger bases
+    const back = (d) => {
+      const { ux, uy, nx, ny, px, py } = geo(d), P0 = (o, k) => [px + nx * o + ux * k, py + ny * o + uy * k];
+      const pts = [[-d * 24, 98], [-d * 8, 14], [d * 16, -48]];
+      pts.push(...cub([d * 16, -48], [d * 40, -90], lerp2(P0(-2 * gap, KN), [d * 16, -48], .5), P0(-2 * gap, KN), 8).slice(1));
+      for (let i = 0; i < 4; i++) for (let q = 1; q <= 8; q++) { const v = q / 8, o = (i - 2 + v) * gap; pts.push(P0(o, KN + Math.sin(v * Math.PI) * 15)); }
+      const k3 = P0(2 * gap, KN);
+      pts.push(...cub(k3, [k3[0] - ux * 30 + d * 10, k3[1] - uy * 30 + 40], [d * 90, 130], [d * 46, 122], 10).slice(1));
+      shape(s, pts, sk, ln, lw);
+    };
+    for (const d of [-1, 1]) fingers(d);
+    for (const d of [-1, 1]) back(d);
     // the thumbs: reaching up from the inner edge of each hand; hooked, they cross into the bird's head
     for (const d of [1, -1]) { const tx = lock ? -d * 16 : d * 70, ty = lock ? -226 : -180; part(capsule(d * 30, -40, tx, ty, 27), C.rose, lw * .9); }
     if (lock && !flat) { s.fillStyle = C.umber; s.beginPath(); s.arc(5, -204, 11, 0, TAU); s.fill(); }
@@ -164,10 +189,10 @@
     const open = t < T2 ? .12 : t < T3 ? .6 : 1, lock = t >= T2, y2 = t < T2 ? 40 : t < T3 ? 18 : 0, bob = t < T3 ? 0 : -flap * 40;
     // its shadow, large and soft across the halo behind
     if (t >= T2 && sc > .06) {
-      const sa = .72 * inv(T2, T3 + .1, t) * (1 - inv(195.3, 195.9, t)), ssx = SX + 90 + (bx - SX) * 1.4, ssy = SY + 230 + (by - 690) * 1.5;
+      const sa = .5 * inv(T2, T3 + .1, t) * (1 - inv(195.3, 195.9, t)), ssx = SX + 90 + (bx - SX) * 1.4, ssy = SY + 230 + (by - 690) * 1.5;
       const sh = () => birdHands(ssx, ssy, sc * 1.4, open, lock, flap * 1.05, mix(C.plum, C.umber, .6));
-      s.save(); s.globalAlpha = sa; s.filter = 'blur(4px)'; sh(); s.restore();
-      const s0 = s; s = f; f.save(); f.globalCompositeOperation = 'source-over'; f.globalAlpha = Math.min(1, sa * 1.4); f.filter = 'blur(4px) brightness(0)'; try { sh(); } finally { f.restore(); s = s0; }
+      s.save(); s.globalAlpha = sa; sh(); s.restore();
+      const s0 = s; s = f; f.save(); f.globalCompositeOperation = 'source-over'; f.globalAlpha = Math.min(1, sa * 1.4); f.filter = 'brightness(0)'; try { sh(); } finally { f.restore(); s = s0; }
     }
     if (sc > .06) onBoth(() => birdHands(bx, by + y2 + bob, sc, open, lock, flap), .85);
     // light flares cover the key-drawing swaps; the bird is absorbed into the sun at the end
