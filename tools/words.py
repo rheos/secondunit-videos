@@ -10,7 +10,7 @@ from pathlib import Path
 from faster_whisper import WhisperModel
 
 ROOT = Path(__file__).resolve().parents[1]
-VOX = ROOT / "_in/stems/htdemucs/gemmaluna-tomwaits_master/vocals.wav"
+VOX = ROOT / "_in/stems/htdemucs/gemmaluna-tomwaits_master-v2/vocals.wav"
 m = WhisperModel("small", compute_type="int8")
 segs, _ = m.transcribe(str(VOX), language="en", word_timestamps=True, condition_on_previous_text=False)
 lines = []

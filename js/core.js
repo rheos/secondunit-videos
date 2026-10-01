@@ -3,7 +3,7 @@
 // no state between frames, no Math.random(). A look draws flat shapes onto the 2D canvas `s`
 // (1080 x 1920, 9:16), then its own WebGL shader turns that into the finished frame.
 const W = 1080, H = 1920;
-const DUR = 186; // the master: 6:51 to 9:57 of the Radio Free Winlove set
+const DUR = 197.0; // master v2: master t=0 is YouTube 6:41.02 of the set (measured); this ends at 9:58, where Robin hears the song end (talk from 197.7)
 const TAU = Math.PI * 2;
 const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
 const lerp = (a, b, k) => a + (b - a) * k;
@@ -41,8 +41,8 @@ function lastBeat(t) { const b = FEAT.beats; if (t < b[0]) return -1; let lo = 0
 function beatPulse(t, decay = 7) { const i = lastBeat(t); return i < 0 ? 0 : Math.exp(-decay * (t - FEAT.beats[i])); }
 function beatIndex(t) { return lastBeat(t); }
 // The sung "clap" of every "clap hands", from the vocal stem (Whisper's word times run long here).
-// Chorus 1 (41.6), chorus 2 (74.4), chorus 3 (128.0), and the last one the cut ends inside (180.6).
-const CLAPS = [41.6, 46.0, 50.033, 54.133, 74.433, 78.867, 83.033, 86.8, 127.967, 131.867, 135.9, 139.967, 180.633, 184.967];
+// Chorus 1 (41.6), chorus 2 (74.4), chorus 3 (128.0), and the last chorus (180.6), which ends the song.
+const CLAPS = [41.6, 46.0, 50.033, 54.133, 74.433, 78.867, 83.033, 86.8, 127.967, 131.867, 135.9, 139.967, 180.633, 184.967, 188.867, 192.933];
 const HANDS = CLAPS.map((k) => k + .53); // the sung "hands", about half a second after each clap
 // Sections (seconds): the boundaries every chapter is cut to.
 // The video starts at 11.0: before that is the previous song (Robin, 2026-10-01).

@@ -1,6 +1,6 @@
-// c10 · LAST CLAP (SEC.out - SEC.end). The sun as a giant halo over the dawn river, lilies round it. The
-// last two claps are the only real hands in the video's back half (CLAPS[12], CLAPS[13]); every tendril
-// unfurls on each. The recording cuts mid-chorus at 186.0, so the frame fades into cream-gold light.
+// c10 · LAST CLAPS (SEC.out - SEC.end). The sun as a giant halo over the dawn river, lilies round it. Four
+// claps with hands (CLAPS[12..15]), each a bigger bloom than the last, a new framing per clap; on the last
+// the hands hold together through the held note, then the ring-out fades into cream-gold light.
 (() => {
   // ---- private helpers (the same sky, sun and river as c09, so the cut is invisible) ----
   const rgb = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
@@ -47,20 +47,31 @@
   }
   // the sun on the river, with a ring of lilies and whiplash tendrils that unfurl to u; bloom 0..1
   const SX = 540, SY = 720, SR = 300, YH = 1100;
-  function scene(t, lit, u, bloom) {
+  // lev 0..3 grows the bloom clap by clap: longer tendrils, a second ring of tendrils, bigger and more lilies
+  function scene(t, lit, u, bloom, lev = 0) {
     sky(YH, 1400, 1); clouds(YH, 1, t, 4, 41);
     // tendrils whip out from behind the sun and curl
+    const tl = 1 + .18 * lev;
     for (let i = 0; i < 12; i++) {
       const a = i / 12 * TAU + .13 + t * .03, dir = i % 2 ? 1 : -1, R = (q) => [SX + Math.cos(a + q[1] * dir) * q[0], SY + Math.sin(a + q[1] * dir) * q[0]];
-      vine(s, whip(R([SR * 1.02, 0]), R([SR * 1.3, .14]), R([SR * 1.62, .34]), R([SR * 1.8, .55]), .8, dir, 36), 22, 9, i % 3 ? C.sage : C.gold, u);
+      vine(s, whip(R([SR * 1.02, 0]), R([SR * (1 + .3 * tl), .14]), R([SR * (1 + .62 * tl), .34]), R([SR * (1 + .8 * tl), .55]), .8, dir, 36), 22 + 4 * lev, 9, i % 3 ? C.sage : C.gold, u);
     }
-    sun(SX, SY, SR, t * .05, lit, 1.25 + .12 * beatPulse(t, 5) + .2 * (u - .5));
+    if (lev >= 2) for (let i = 0; i < 12; i++) {
+      const a = (i + .5) / 12 * TAU + .13 - t * .04, dir = i % 2 ? -1 : 1, R = (q) => [SX + Math.cos(a + q[1] * dir) * q[0], SY + Math.sin(a + q[1] * dir) * q[0]];
+      vine(s, whip(R([SR * 1.02, 0]), R([SR * 1.5, .2]), R([SR * 1.95, .45]), R([SR * (2.1 + .3 * (lev - 2)), .75]), .9, dir, 36), 20, 8, i % 2 ? C.rose : C.blush, u);
+    }
+    sun(SX, SY, SR, t * .05, lit, 1.25 + .1 * lev + .12 * beatPulse(t, 5) + .2 * (u - .5));
     skyline(YH, 1, 10, -600, 1700, .55);
     water(YH, 2500, t, SX);
-    // the lily ring round the halo
-    for (let i = 0; i < 10; i++) {
-      const a = i / 10 * TAU - Math.PI / 2 + .31 + t * .04, R = SR * 1.32, sway = Math.sin(t * 2 + i) * .06;
-      lily(s, SX + Math.cos(a) * R, SY + Math.sin(a) * R, a + sway, 78, clamp(bloom * (i % 2 ? 1 : .9) + .05 * beatPulse(t, 6)), i % 2 ? [C.cream, C.blush] : [C.gold, C.cream]);
+    // the lily ring round the halo, and from the third clap an outer ring
+    const n = 10 + 2 * lev;
+    for (let i = 0; i < n; i++) {
+      const a = i / n * TAU - Math.PI / 2 + .31 + t * .04, R = SR * 1.32, sway = Math.sin(t * 2 + i) * .06;
+      lily(s, SX + Math.cos(a) * R, SY + Math.sin(a) * R, a + sway, 78 * (1 + .12 * lev), clamp(bloom * (i % 2 ? 1 : .9) + .05 * beatPulse(t, 6)), i % 2 ? [C.cream, C.blush] : [C.gold, C.cream]);
+    }
+    if (lev >= 2) for (let i = 0; i < 14; i++) {
+      const a = (i + .5) / 14 * TAU - Math.PI / 2 - t * .03, R = SR * (1.95 + .15 * (lev - 2)), sway = Math.sin(t * 1.7 + i) * .08;
+      lily(s, SX + Math.cos(a) * R, SY + Math.sin(a) * R, a + sway, 96 + 16 * (lev - 2), clamp(bloom), i % 2 ? [C.rose, C.cream] : [C.blush, C.gold]);
     }
   }
   // the hands on the light layer in black, so the sun's glow sits behind them instead of washing them out
@@ -84,19 +95,57 @@
     motes(t, 12, .5);
     border(t, 1);
   }
-  // 183.23: closer in on the halo, tilted a touch, the hands open and rocking; the tendrils draw back in, then on the last
-  // clap they unfurl again, the lilies burst, and the whole frame fades into cream-gold light
+  // a clap's bloom: tendrils draw back in before it (from `from`), then unfurl past it; lilies likewise
+  function bloomAt(t, k, from) {
+    const back = ease.inOut(inv(from, k - .35, t)), on = ease.out(inv(k - .05, k + .9, t)), ob = ease.back(inv(k, k + .6, t));
+    return { u: lerp(lerp(1, .3, back), 1, on), bloom: lerp(lerp(.95, .45, back), 1, ob) };
+  }
+  // 183.23: closer in on the halo, tilted a touch, the hands open and rocking; the tendrils draw back in,
+  // then on the second clap they unfurl again and the lilies burst
   function clapB(t, lt, dur) {
-    const k = CLAPS[13], back = ease.inOut(inv(183.233, 184.6, t)), u = lerp(lerp(1, .3, back), 1, ease.out(inv(k - .05, k + .9, t)));
-    const bloom = lerp(lerp(.95, .45, back), 1, ease.back(inv(k, k + .6, t)));
+    const k = CLAPS[13], { u, bloom } = bloomAt(t, k, 183.233);
     cam(540, kf(lt, [[0, 680], [dur, 650]]), kf(lt, [[0, 2.0], [dur, 2.25]], ease.in), kf(lt, [[0, .035], [dur, -.015]]));
-    scene(t, .5 + .15 * beatPulse(t, 4) + .5 * hit(t, k, 2), u, bloom);
+    scene(t, .5 + .15 * beatPulse(t, 4) + .5 * hit(t, k, 2), u, bloom, 1);
     glowAt(SX, SY, 760, `rgba(255,226,170,${.45 * hit(t, k, 3)})`);
     hands(t, SX, 615, 165, k);
     motes(t, 14, .5);
     border(t, 1);
-    // the cut ends mid-chorus: fade to cream-gold light over the final ~0.6 s
-    const p = ease.inOut(inv(185.38, 185.97, t));
+  }
+  // 186.73: wider and lower, the river under the sun again, tilted the other way; the third clap grows an
+  // outer ring of tendrils and lilies
+  function clapC(t, lt, dur) {
+    const k = CLAPS[14], { u, bloom } = bloomAt(t, k, 186.733);
+    cam(kf(lt, [[0, 520], [dur, 560]]), kf(lt, [[0, 820], [dur, 760]]), kf(lt, [[0, 1.2], [dur, 1.36]], ease.inOut), kf(lt, [[0, -.03], [dur, .02]]));
+    scene(t, .5 + .15 * beatPulse(t, 4) + .6 * hit(t, k, 2), u, bloom, 2);
+    glowAt(SX, SY, 900, `rgba(255,226,170,${.5 * hit(t, k, 3)})`);
+    hands(t, SX, 630, 175, k);
+    motes(t, 18, .55);
+    border(t, 1);
+  }
+  // 190.8: push in tight on the hands in the ring for the last clap, the biggest bloom; the hands stay
+  // pressed together through the held note
+  const HOLD0 = CLAPS[15] + .05, HOLD1 = 194.9;
+  const holdT = (t) => t < HOLD0 ? t : t < HOLD1 ? HOLD0 : HOLD0 + (t - HOLD1);   // clapPair's clock, frozen at contact while she holds
+  function clapD(t, lt, dur) {
+    const k = CLAPS[15], { u, bloom } = bloomAt(t, k, 190.8);
+    cam(540, kf(lt, [[0, 700], [dur, 640]]), kf(lt, [[0, 1.75], [2.1, 2.05], [dur, 2.2]], ease.inOut));
+    scene(t, .5 + .15 * beatPulse(t, 4) + .55 * hit(t, k, 1.6), u, bloom, 3);
+    glowAt(SX, SY, 1000, `rgba(255,226,170,${.4 * hit(t, k, 2.5)})`);
+    hands(holdT(t), SX, 615, 170, k);
+    motes(t, 20, .6);
+    border(t, 1);
+  }
+  // 193.83: the held note: pull back slowly from the held hands to the whole sun, every lily open; as the
+  // note ends they part a little, and over the ring-out the frame fades into cream-gold light
+  function hold(t, lt, dur) {
+    const k = CLAPS[15];
+    cam(540, kf(lt, [[0, 640], [dur, 760]]), kf(lt, [[0, 2.2], [dur, 1.3]], ease.inOut));
+    scene(t, .75 + .2 * Math.sin(t * 3) * inv(194.9, 193.8, t) + .15 * beatPulse(t, 4), 1, 1, 3);
+    glowAt(SX, SY, 1100, `rgba(255,226,170,${.12 + .1 * Math.sin(t * 2.4)})`);
+    hands(holdT(t), SX, 615, 170, k);
+    motes(t, 24, .6);
+    border(t, 1);
+    const p = ease.inOut(inv(195.2, 196.9, t));
     if (p > 0) {
       s.save(); s.setTransform(.5, 0, 0, .5, 0, 0); s.globalAlpha = p;
       s.fillStyle = rgrad(W / 2, H * .42, 80, H * .75, [[0, mix(C.cream, C.parch, .3)], [.6, C.parch], [1, mix(C.parch, C.gold, .6)]]); s.fillRect(0, 0, W, H);
@@ -106,5 +155,5 @@
       f.restore();
     }
   }
-  chapter('c10', SEC.out, SEC.end, [[SEC.out, clapA], [183.233, clapB]], { fx: PAINT });
+  chapter('c10', SEC.out, SEC.end, [[SEC.out, clapA], [183.233, clapB], [186.733, clapC], [190.8, clapD], [193.833, hold]], { fx: PAINT });
 })();

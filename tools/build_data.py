@@ -16,8 +16,8 @@ import librosa
 import numpy as np
 
 ROOT = Path(__file__).resolve().parents[1]
-SONG = ROOT / "_in/gemmaluna-tomwaits_master.wav"
-VOX = ROOT / "_in/stems/htdemucs/gemmaluna-tomwaits_master/vocals.wav"
+SONG = ROOT / "_in/gemmaluna-tomwaits_master-v2.wav"
+VOX = ROOT / "_in/stems/htdemucs/gemmaluna-tomwaits_master-v2/vocals.wav"
 WORDS = ROOT / "_in/words.json"
 
 sr, hop = 22050, 735  # 30 fps
