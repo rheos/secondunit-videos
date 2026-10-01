@@ -67,13 +67,13 @@
   // CLAP 4 (54.1): the big one: hands huge in the halo, every tendril in the frame spirals open at once
   function clap4(t, lt, dur) {
     const k = CLAPS[3], u = ease.out(inv(k - .1, k + 1.0, t));
-    cam(540, 900, kf(lt, [[0, 1.0], [dur, 1.16]], ease.in));
+    cam(540, 900, kf(lt, [[0, 1.0], [dur, 1.1]], ease.in));
     s.fillStyle = C.teal; s.fillRect(-W, -H, W * 3, H * 3);
     halo(540, 860, 600, -t * .1, .3 + .4 * hit(t, k, 2));
     // tendrils whip out of the ring on the clap and curl
     for (let i = 0; i < 12; i++) { const a = i / 12 * TAU + .13, dir = i % 2 ? 1 : -1, R = (q) => [540 + Math.cos(a + q[1] * dir) * q[0], 860 + Math.sin(a + q[1] * dir) * q[0]];
       vine(s, whip(R([610, 0]), R([720, .12]), R([820, .32]), R([880, .5]), .8, dir, 36), 30, 12, i % 3 ? C.sage : C.gold, u); }
-    clapPair(t, 540, 700, 360, k);
+    clapPair(t, 540, 760 + 1700 * ease.in(inv(k + .9, k + 1.9, t)), 270, k);   // then the hands drop away, leaving the halo
     glowAt(540, 900, 520, `rgba(255,225,170,${.3 * hit(t, k, 3)})`);
     rain(t, 60, 19, .35);
     border(t, 1);
