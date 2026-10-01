@@ -1,4 +1,4 @@
-// c00 · INTRO (SEC.prevTail - SEC.v1, 0 - 26.04) · painter A.
+// c00 · INTRO (SEC.start - SEC.v1, 11.0 - 26.04) · painter A. The video starts at 11.0 (a fade from black is added at assembly).
 // Harlem rooftops at night, painted as a Mucha poster assembling itself: the border draws itself in, a halo
 // moon rises behind water towers and chimneys, the rain starts with the guitar (7.0), the camera drifts down
 // a facade to a dark Guimard Metro entrance, its lily-bud lamps flicker on (~23-25), and we push into the
@@ -43,11 +43,11 @@
     else line([[x + w * .25, y + h * .75], [x + w * .6, y + h * .35]], '#3d6a68', Math.max(10, lw * .7));
   }
   const winOn = (t, id, p = .4, t0 = 1, t1 = 20) => hash(id * 131 + 7) < p ? clamp((t - (t0 + hash(id * 17 + 3) * (t1 - t0))) / .15) : 0;
-  const rainK = (t) => inv(7.0, 8.4, t);
+  const rainK = (t) => .45 + .55 * inv(11.0, 13.5, t);
 
   // ================= the rooftops (shots 1 - 4) =================
   const HX = 560, HR = 430;
-  const haloY = (t) => lerp(1590, 760, ease.sine(t / 13.4));
+  const haloY = (t) => lerp(1460, 760, ease.sine(inv(11.0, 16.2, t)));
   const BACK = (() => { const r = rng(31), pts = [[-600, 2600], [-600, 1300]]; let x = -600; while (x < 1700) { const w = 150 + r() * 170, h = 1236 + r() * 80;
     if (r() < .3) pts.push(...cub([x, h], [x + w * .12, h - w * .55], [x + w * .88, h - w * .55], [x + w, h], 10)); else { pts.push([x, h], [x + w, h]); } x += w; } pts.push([1700, 2600]); return pts; })();
   const FRONT = [
@@ -75,7 +75,7 @@
     solid(g, [[x - w / 2 - 14, base - h], [x - w / 2 - 14, base - h - 28], [x + w / 2 + 14, base - h - 28], [x + w / 2 + 14, base - h]], C.ochre, 12);
     for (const dx of [-.22, .22]) solid(g, [[x + dx * w - 22, base - h - 28], [x + dx * w - 15, base - h - 92], [x + dx * w + 15, base - h - 92], [x + dx * w + 22, base - h - 28]], C.rose, 12);
   }
-  const CHIM = [[880, 1380, 170, 4.2, 1], [1050, 1380, 130, 6.0, -1], [694, 1330, 110, 8.0, 1]];
+  const CHIM = [[880, 1380, 170, 8.6, 1], [1050, 1380, 130, 9.4, -1], [694, 1330, 110, 11.4, 1]];
   // whiplash smoke: puffs grow out of the pot, rise and curl, and are eaten from the tail
   function smoke(t, x, y, seed, start, dir) {
     if (t < start) return;
@@ -88,16 +88,16 @@
   }
   function roofScene(t) {
     s.fillStyle = vgrad(-400, 1500, [[0, '#101626'], [1, C.night]]); s.fillRect(-W, -H, W * 3, H * 4);
-    stars(t, 26, 5, .5 * inv(.5, 4, t) * (1 - .6 * inv(8, 13, t)));
+    stars(t, 26, 5, .5 * (1 - .6 * inv(12.5, 15, t)));
     const hy = haloY(t);
-    halo(HX, hy, HR, t * .04, .25 + .15 * inv(3, 10, t));
+    halo(HX, hy, HR, t * .04, .25 + .15 * inv(11, 15, t));
     solid(s, BACK, '#2b3150', 14);
     for (const b of FRONT) solid(s, bodyPts(b), b.col, 18);
     // roof details
     for (const b of FRONT) {
       if (b.kind === 'mansard') { shape(s, [[b.x0 + 10, b.top], [b.x0 + 70, b.top - 140], [b.x1 - 70, b.top - 140], [b.x1 - 10, b.top]], '#323a58', C.umber, 16);
-        const mx = (b.x0 + b.x1) / 2; shape(s, circle(mx, b.top - 62, 66, 40), C.ochre, C.umber, 14); win(mx - 40, b.top - 104, 80, 84, inv(2.2, 2.4, t)); }
-      if (b.kind === 'gable') { shape(s, circle(160, b.top - 78, 52, 36), C.ochre, C.umber, 14); shape(s, circle(160, b.top - 78, 34, 30), t > 5.2 ? C.amber : C.deep, C.umber, 12); if (t > 5.2) glowAt(160, b.top - 78, 140, 'rgba(255,180,90,.35)'); }
+        const mx = (b.x0 + b.x1) / 2; shape(s, circle(mx, b.top - 62, 66, 40), C.ochre, C.umber, 14); win(mx - 40, b.top - 104, 80, 84, inv(11.6, 11.8, t)); }
+      if (b.kind === 'gable') { shape(s, circle(160, b.top - 78, 52, 36), C.ochre, C.umber, 14); shape(s, circle(160, b.top - 78, 34, 30), t > 12.4 ? C.amber : C.deep, C.umber, 12); if (t > 12.4) glowAt(160, b.top - 78, 140, 'rgba(255,180,90,.35)'); }
       shape(s, [[b.x0, b.top + 30], [b.x1, b.top + 30], [b.x1, b.top + 62], [b.x0, b.top + 62]], b.kind === 'flat' ? C.ochre : '#8a6a3a', C.umber, 12);
     }
     tower(s, 520, 1330, 1); tower(s, 1230, 1380, .75); tower(s, -40, 1420, .8);
@@ -106,36 +106,29 @@
     solid(f, BACK); for (const b of FRONT) solid(f, bodyPts(b)); tower(f, 520, 1330, 1); tower(f, 1230, 1380, .75); tower(f, -40, 1420, .8); for (const [x, b, h] of CHIM) chimney(f, x, b, h);
     // windows down the walls, lighting up through the night
     let id = 0;
-    for (const b of FRONT) for (let y = b.top + 130; y < 2500; y += 240) for (let x = b.x0 + 60; x < b.x1 - 80; x += 165) { id++; if (x < -260 || x > 1350) continue; win(x, y, 84, 136, winOn(t, id, .48, .8, 10)); }
+    for (const b of FRONT) for (let y = b.top + 130; y < 2500; y += 240) for (let x = b.x0 + 60; x < b.x1 - 80; x += 165) { id++; if (x < -260 || x > 1350) continue; win(x, y, 84, 136, winOn(t, id, .48, 10.6, 15.5)); }
     for (const [x, b, h, st, dir] of CHIM) for (const dx of [-.22, .22]) smoke(t, x + dx * 92, b - h - 92, (x | 0) + (dx > 0 ? 1 : 0), st + (dx > 0 ? 1.9 : 0), dx > 0 ? -dir : dir);
     rain(t, Math.round(150 * rainK(t)), 3, .5 * rainK(t));
   }
-  // 0.0: nearly black; the border starts drawing itself, the halo moon just breaking above the roofs
+  // 11.0, the first frame of the video: rooftops in the rain, the halo moon just over the roofs; the border
+  // draws itself in (11.0 - 14.0) while we push toward the water tower silhouetted on the rising halo
   function sky(t, lt, dur) {
-    cam(540, kf(lt, [[0, 1180], [dur, 1110]]), kf(lt, [[0, 1.06], [dur, 1.02]]));
+    cam(kf(lt, [[0, 540], [dur, 510]]), kf(lt, [[0, 1150], [dur, 1200]]), kf(lt, [[0, 1.0], [dur, 1.32]]));
     roofScene(t);
-    veil(kf(t, [[0, .9], [3.2, .62], [7, .3], [9, 0]], (x) => x));
-    borderIn(t, ease.inOut(inv(.4, 6.4, t)), inv(5.2, 8.4, t));
+    veil(.2 * (1 - inv(11.0, 12.8, t)));
+    borderIn(t, ease.inOut(inv(11.0, 14.0, t)), inv(13.2, 15.0, t));
   }
-  // 3.2: closer: a water tower silhouetted on the rising halo; the first smoke curls up
-  function towers(t, lt, dur) {
-    cam(kf(lt, [[0, 500], [dur, 540]]), kf(lt, [[0, 1230], [dur, 1150]]), kf(lt, [[0, 1.42], [dur, 1.58]]));
-    roofScene(t);
-    veil(kf(t, [[0, .9], [3.2, .62], [7, .3], [9, 0]], (x) => x));
-    borderIn(t, ease.inOut(inv(.4, 6.4, t)), inv(5.2, 8.4, t));
-  }
-  // 7.0 (the guitar): wide over the rooftops, the halo risen, rain begins, smoke from every chimney
+  // 12.83: wide over the rooftops, the halo rising clear, smoke from every chimney, windows lighting
   function rooftops(t, lt, dur) {
-    cam(kf(lt, [[0, 470], [dur, 620]]), kf(lt, [[0, 1080], [dur, 1040]]), kf(lt, [[0, .86], [dur, .92]]));
+    cam(kf(lt, [[0, 470], [dur, 600]]), kf(lt, [[0, 1080], [dur, 1040]]), kf(lt, [[0, .86], [dur, .92]]));
     roofScene(t);
-    veil(kf(t, [[7, .3], [9, 0]], (x) => x));
-    borderIn(t, 1, inv(5.2, 8.4, t));
+    borderIn(t, ease.inOut(inv(11.0, 14.0, t)), inv(13.2, 15.0, t));
   }
-  // 10.23: in close on the chimney pots, whiplash smoke spiralling up across the halo
+  // 14.37: in close on the chimney pots, whiplash smoke spiralling up across the halo
   function chimneys(t, lt, dur) {
     cam(kf(lt, [[0, 860], [dur, 910]]), kf(lt, [[0, 1000], [dur, 900]]), kf(lt, [[0, 1.6], [dur, 1.74]]), kf(lt, [[0, -.02], [dur, .02]]));
     roofScene(t);
-    border(t, 1);
+    borderIn(t, 1, inv(13.2, 15.0, t));
   }
 
   // ================= the facade (shots 5 - 6) =================
@@ -144,14 +137,14 @@
     halo(1080, -160, 430, t * .04, .35);
     // the pediment: a Mucha roundel with a lily over the cornice
     halo(540, 300, 190, -t * .05);
-    lily(s, 540, 330, -Math.PI / 2, 120, .5 + .3 * inv(13.3, 16, t), [C.cream, C.blush]);
+    lily(s, 540, 330, -Math.PI / 2, 120, .5 + .3 * inv(15.9, 18, t), [C.cream, C.blush]);
     shape(s, [[-200, 520], [1280, 520], [1280, 3220], [-200, 3220]], C.teal, C.umber, 18);
     shape(s, [[-200, 380], [1280, 380], [1280, 520], [-200, 520]], C.ochre, C.umber, 18);
     for (let x = -160; x < 1260; x += 120) petal(s, x, 470, Math.PI / 2, 70, 26, C.gold, C.umber, 10);
     line([[-200, 440], [1280, 440]], C.umber, 14);
     let id = 0;
     for (const y0 of [660, 1280, 1900]) for (const xc of [210, 540, 870]) {
-      id++; const w = 230, h = 390, x = xc - w / 2, on = winOn(t, id + 40, .6, 12.6, 18);
+      id++; const w = 230, h = 390, x = xc - w / 2, on = winOn(t, id + 40, .6, 15.4, 19.2);
       shape(s, arch(x - 22, y0 - 22, w + 44, h + 30), C.sage, C.umber, 16);
       win(x, y0, w, h, on, 18);
       // a swelling Guimard balcony: slab and whiplash railing
@@ -161,7 +154,7 @@
     }
     // vines climbing between the windows, growing as we pass
     for (const [vx, i] of [[375, 0], [705, 1], [45, 2], [1035, 3]]) for (const y0 of [2500, 1880, 1260]) {
-      const u = inv(13.4 + i * .3 + (2500 - y0) / 1400, 15.6 + i * .3 + (2500 - y0) / 900, t);
+      const u = inv(15.9 + i * .2 + (2500 - y0) / 2000, 17.4 + i * .2 + (2500 - y0) / 1300, t);
       vine(s, whip([vx, y0], [vx - 50, y0 - 200], [vx + 60, y0 - 400], [vx + (i % 2 ? 40 : -40), y0 - 560], .8, i % 2 ? 1 : -1, 40), 20, 8, C.sage, u);
       if (u > .7) petal(s, vx + (i % 2 ? 40 : -40), y0 - 470, -Math.PI / 2 + (i % 2 ? .5 : -.5), 70 * ease.back(inv(.7, 1, u)), 24, C.sage, C.umber, 10);
     }
@@ -180,13 +173,13 @@
     guimard(1120, 3500, 1000, -1, 0, Math.sin(t * .8) * 6);
     rain(t, 140, 21, .5);
   }
-  // 13.33: tilt down the facade: Mucha pediment, sage-framed arched windows, Guimard balconies, vines growing
+  // 15.93: tilt down the facade: Mucha pediment, sage-framed arched windows, Guimard balconies, vines growing
   function facadeTop(t, lt, dur) {
     cam(540, kf(lt, [[0, 560], [dur, 1560]], ease.inOut), kf(lt, [[0, 1.06], [dur, 1.0]]));
     facade(t, lt);
     border(t, 1);
   }
-  // 16.43: down to the shopfront and the wet street; drift right toward a dark Metro lamp
+  // 17.97: down to the shopfront and the wet street; drift right toward a dark Metro lamp
   function street(t, lt, dur) {
     cam(kf(lt, [[0, 520], [dur, 760]]), kf(lt, [[0, 2380], [dur, 2960]], ease.inOut), kf(lt, [[0, 1.0], [dur, .92]]));
     facade(t, lt);
@@ -249,13 +242,12 @@
     veil(.92 * ease.in(inv(25.45, 26.0, t)));
     border(t, 1);
   }
-  chapter('c00', SEC.prevTail, SEC.v1, [
-    [SEC.prevTail, sky],
-    [3.2, towers],
-    [SEC.intro, rooftops],
-    [10.23, chimneys],
-    [13.33, facadeTop],
-    [16.43, street],
+  chapter('c00', SEC.start, SEC.v1, [
+    [SEC.start, sky],
+    [12.83, rooftops],
+    [14.37, chimneys],
+    [15.93, facadeTop],
+    [17.97, street],
     [19.57, entrance],
     [23.23, descend],
   ], { fx: PAINT });

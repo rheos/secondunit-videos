@@ -1,8 +1,9 @@
-// node render.mjs <page> <t0> <t1> <out.mp4> [workers] [fps]   renders on the song grid, muxes the master audio
+// node render.mjs <page> <t0> <t1> <out.mp4> [workers] [fps] [fadeIn s]   renders on the song grid, muxes the master audio
+// fadeIn fades the PICTURE in from black at t0 (the audio is never touched)
 import { chromium } from 'playwright';
 import fs from 'fs'; import { execSync } from 'child_process';
 const [page, a0, a1, out] = process.argv.slice(2); const t0 = Number(a0), t1 = Number(a1);
-const WK = Number(process.argv[6] || 4), FPS = Number(process.argv[7] || 24);
+const WK = Number(process.argv[6] || 4), FPS = Number(process.argv[7] || 24), FADE = Number(process.argv[8] || 0);
 const dir = `out/frames_${page}_${t0}_${t1}`; fs.rmSync(dir, { recursive: true, force: true }); fs.mkdirSync(dir, { recursive: true });
 const n = Math.round((t1 - t0) * FPS); let done = 0; const start = Date.now();
 const b = await chromium.launch({ channel: 'chrome', headless: true, args: ['--use-angle=metal', '--ignore-gpu-blocklist', '--enable-gpu'] });
@@ -16,5 +17,5 @@ await Promise.all([...Array(WK)].map(async (_, w) => {
   }
 }));
 await b.close();
-execSync(`ffmpeg -y -loglevel error -framerate ${FPS} -i ${dir}/f_%06d.jpg -ss ${t0} -t ${t1 - t0} -i assets/song.wav -c:v libx264 -preset medium -crf 17 -pix_fmt yuv420p -c:a aac -b:a 256k -shortest -movflags +faststart ${out}`);
+execSync(`ffmpeg -y -loglevel error -framerate ${FPS} -i ${dir}/f_%06d.jpg -ss ${t0} -t ${t1 - t0} -i assets/song.wav ${FADE > 0 ? `-vf fade=t=in:st=0:d=${FADE}` : ''} -c:v libx264 -preset medium -crf 17 -pix_fmt yuv420p -c:a aac -b:a 256k -shortest -movflags +faststart ${out}`);
 console.log('wrote', out);

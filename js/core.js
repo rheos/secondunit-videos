@@ -45,7 +45,8 @@ function beatIndex(t) { return lastBeat(t); }
 const CLAPS = [41.6, 46.0, 50.033, 54.133, 74.433, 78.867, 83.033, 86.8, 127.967, 131.867, 135.9, 139.967, 180.633, 184.967];
 const HANDS = CLAPS.map((k) => k + .53); // the sung "hands", about half a second after each clap
 // Sections (seconds): the boundaries every chapter is cut to.
-const SEC = { prevTail: 0, intro: 7.0, v1: 26.04, c1: 41.6, v2: 56.88, c2: 74.433, v3: 89.7, b1: 111.8, c3: 127.967, v3b: 142.48, b2: 165.0, out: 180.633, end: DUR };
+// The video starts at 11.0: before that is the previous song (Robin, 2026-10-01).
+const SEC = { start: 11.0, intro: 11.0, v1: 26.04, c1: 41.6, v2: 56.88, c2: 74.433, v3: 89.7, b1: 111.8, c3: 127.967, v3b: 142.48, b2: 165.0, out: 180.633, end: DUR };
 // words are TIMING ONLY: Whisper mishears this live take, so nothing here is ever drawn
 const norm = (x) => x.toLowerCase().replace(/[^a-z0-9]/g, '');
 function when(word, after = 0) { const w = norm(word); for (const l of LYRICS) for (const x of l.words) if (x.s >= after - .01 && norm(x.t) === w) return x.s; throw new Error('no word ' + word + ' after ' + after); }
