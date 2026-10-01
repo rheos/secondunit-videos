@@ -1,6 +1,7 @@
 // c10 · LAST CLAPS (SEC.out - SEC.end). The sun as a giant halo over the dawn river, lilies round it. Four
-// claps with hands (CLAPS[12..15]), each a bigger bloom than the last, a new framing per clap; on the last
-// the hands hold together through the held note, then the ring-out fades into cream-gold light.
+// claps with hands (CLAPS[12..15]), each a bigger bloom than the last, a new framing per clap; after the last
+// the hands turn into the hand-shadow bird, which beats its wings through the held note and flies off into
+// the sun, then the ring-out fades into cream-gold light.
 (() => {
   // ---- private helpers (the same sky, sun and river as c09, so the cut is invisible) ----
   const rgb = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
@@ -122,30 +123,78 @@
     motes(t, 18, .55);
     border(t, 1);
   }
-  // 190.8: push in tight on the hands in the ring for the last clap, the biggest bloom; the hands stay
-  // pressed together through the held note
-  const HOLD0 = CLAPS[15] + .05, HOLD1 = 194.9;
-  const holdT = (t) => t < HOLD0 ? t : t < HOLD1 ? HOLD0 : HOLD0 + (t - HOLD1);   // clapPair's clock, frozen at contact while she holds
+  // ---- the last clap becomes the hand-shadow bird ----
+  // Two hands, backs to us, overlapping at the heels of the palms; thumbs hooked together pointing up as the
+  // head; each hand's four fingers held together as a wing, hinged at the knuckles. open 0 folded up .. 1
+  // spread; lock: thumbs hooked; flap: extra wing angle (positive = down). flat: one colour, no line (shadow).
+  const capsule = (x0, y0, x1, y1, r, n = 8) => { const a = Math.atan2(y1 - y0, x1 - x0), o = [];
+    for (let i = 0; i <= n; i++) { const th = a + Math.PI / 2 - i / n * Math.PI; o.push([x1 + Math.cos(th) * r, y1 + Math.sin(th) * r]); }
+    for (let i = 0; i <= n; i++) { const th = a - Math.PI / 2 - i / n * Math.PI; o.push([x0 + Math.cos(th) * r, y0 + Math.sin(th) * r]); }
+    return o; };
+  const rotE = (x, y, rx, ry, rot, n = 32) => [...Array(n)].map((_, i) => { const q = i / n * TAU, px = Math.cos(q) * rx, py = Math.sin(q) * ry; return [x + px * Math.cos(rot) - py * Math.sin(rot), y + px * Math.sin(rot) + py * Math.cos(rot)]; });
+  function birdHands(x, y, sc, open, lock, flap, flat = null) {
+    s.save(); s.translate(x, y); s.scale(sc, sc);
+    const lw = 13, sk = flat || C.blush, ln = flat ? null : C.umber;
+    const part = (pts, col, w = lw) => shape(s, pts, flat || col, ln, w);
+    const wing = (d) => {
+      const spread = lerp(.22, 1.12, open) + flap, a = -Math.PI / 2 + d * spread, ux = Math.cos(a), uy = Math.sin(a), nx = -uy * d, ny = ux * d, px = d * 118, py = -40;
+      const L = [250, 292, 282, 232], tips = [], fw = 24, gap = 42;
+      for (let i = 3; i >= 0; i--) { const o = (i - 1.5) * gap, bx = px + nx * o - ux * 22, by = py + ny * o - uy * 22, tx = bx + ux * L[i], ty = by + uy * L[i];
+        part(capsule(bx, by, tx, ty, fw), C.blush, lw * .85); tips.push([tx, ty, bx, by]); }
+      if (!flat) for (const [tx, ty, bx, by] of tips) { petal(s, tx - ux * 52, ty - uy * 52, a, 38, 12, C.parch, C.umber, 7); s.strokeStyle = C.umber; s.lineWidth = 8; s.lineCap = 'round'; s.beginPath(); s.moveTo(bx + ux * 16 - nx * 12, by + uy * 16 - ny * 12); s.quadraticCurveTo(bx + ux * 28, by + uy * 28, bx + ux * 16 + nx * 12, by + uy * 16 + ny * 12); s.stroke(); }
+    };
+    // backs of the hands, heels overlapping
+    for (const d of [-1, 1]) { const c = Math.cos(d * .55), sn = Math.sin(d * .55), R = ([u, v]) => [d * 58 + u * c - v * sn, 20 + u * sn + v * c]; part(capsule(0, 70, 0, -70, 72, 10).map(R), sk); }
+    for (const d of [-1, 1]) wing(d);
+    // the thumbs: reaching up from the inner edge of each hand; hooked, they cross into the bird's head
+    for (const d of [1, -1]) { const tx = lock ? -d * 16 : d * 70, ty = lock ? -226 : -180; part(capsule(d * 30, -40, tx, ty, 27), C.rose, lw * .9); }
+    if (lock && !flat) { s.fillStyle = C.umber; s.beginPath(); s.arc(5, -204, 11, 0, TAU); s.fill(); }
+    s.restore();
+  }
+  // draw on s, then again in black on f so the sun's glow sits behind it
+  function onBoth(fn, a = .85) { fn(); const s0 = s; s = f; f.save(); f.globalCompositeOperation = 'source-over'; f.globalAlpha = a; f.filter = 'brightness(0)'; try { fn(); } finally { f.restore(); s = s0; } }
+  const K15 = CLAPS[15], T1 = 193.2, T2 = 193.4, T3 = 193.6, FLY = 194.9, GONE = 196.0;
+  const holdT = (t) => Math.min(t, K15 + .05);   // clapPair's clock frozen at contact until the turn
+  function birdPhase(t) { const c0 = (FLY - 193.833) / .5, dt = t - FLY; return t < FLY ? (t - 193.833) / .5 : c0 + 2 * dt + 1.3 * dt * dt; }
+  // the end of the last clap: contact, two turning key drawings, the bird beating on the beat, then flying off
+  function lastHands(t) {
+    if (t < T1) { onBoth(() => clapPair(holdT(t), SX, 615, 170, K15)); return; }
+    const fly = ease.in(inv(FLY, GONE, t)), bx = lerp(SX, 570, fly), by = lerp(690, 470, fly), sc = lerp(.68, .05, fly);
+    const A = t < FLY ? .16 : lerp(.16, .42, inv(FLY, FLY + .4, t)), flap = t < T3 ? 0 : A * Math.cos(TAU * birdPhase(t));
+    const open = t < T2 ? .12 : t < T3 ? .6 : 1, lock = t >= T2, y2 = t < T2 ? 40 : t < T3 ? 18 : 0, bob = t < T3 ? 0 : -flap * 40;
+    // its shadow, large and soft across the halo behind
+    if (t >= T2 && sc > .06) {
+      const sa = .72 * inv(T2, T3 + .1, t) * (1 - inv(195.3, 195.9, t)), ssx = SX + 90 + (bx - SX) * 1.4, ssy = SY + 230 + (by - 690) * 1.5;
+      const sh = () => birdHands(ssx, ssy, sc * 1.4, open, lock, flap * 1.05, mix(C.plum, C.umber, .6));
+      s.save(); s.globalAlpha = sa; s.filter = 'blur(4px)'; sh(); s.restore();
+      const s0 = s; s = f; f.save(); f.globalCompositeOperation = 'source-over'; f.globalAlpha = Math.min(1, sa * 1.4); f.filter = 'blur(4px) brightness(0)'; try { sh(); } finally { f.restore(); s = s0; }
+    }
+    if (sc > .06) onBoth(() => birdHands(bx, by + y2 + bob, sc, open, lock, flap), .85);
+    // light flares cover the key-drawing swaps; the bird is absorbed into the sun at the end
+    glowAt(SX, 640, 420, `rgba(255,236,196,${.55 * hit(t, T1, 9) + .35 * hit(t, T2, 9) + .25 * hit(t, T3, 9)})`);
+    if (fly > 0) glowAt(bx, by, 120 + 300 * fly, `rgba(255,236,190,${.6 * fly * (1 - inv(GONE, GONE + .4, t))})`);
+  }
+  // 190.8: push in tight on the hands in the ring for the last clap, the biggest bloom; after the clap the
+  // hands turn into the bird
   function clapD(t, lt, dur) {
     const k = CLAPS[15], { u, bloom } = bloomAt(t, k, 190.8);
     cam(540, kf(lt, [[0, 700], [dur, 640]]), kf(lt, [[0, 1.75], [2.1, 2.05], [dur, 2.2]], ease.inOut));
     scene(t, .5 + .15 * beatPulse(t, 4) + .55 * hit(t, k, 1.6), u, bloom, 3);
     glowAt(SX, SY, 1000, `rgba(255,226,170,${.4 * hit(t, k, 2.5)})`);
-    hands(holdT(t), SX, 615, 170, k);
+    lastHands(t);
     motes(t, 20, .6);
     border(t, 1);
   }
-  // 193.83: the held note: pull back slowly from the held hands to the whole sun, every lily open; as the
-  // note ends they part a little, and over the ring-out the frame fades into cream-gold light
+  // 193.83: her held note: the bird of hands beats its wings on the beat, its shadow huge on the sun; as the
+  // note ends it beats harder and flies up into the sun; then the ring-out fades into cream-gold light
   function hold(t, lt, dur) {
-    const k = CLAPS[15];
-    cam(540, kf(lt, [[0, 640], [dur, 760]]), kf(lt, [[0, 2.2], [dur, 1.3]], ease.inOut));
-    scene(t, .75 + .2 * Math.sin(t * 3) * inv(194.9, 193.8, t) + .15 * beatPulse(t, 4), 1, 1, 3);
+    cam(540, kf(t, [[193.833, 640], [194.4, 720], [FLY, 720], [196.2, 700]]), kf(t, [[193.833, 2.2], [194.4, 1.5], [FLY, 1.42], [196.4, 1.25]], ease.inOut));
+    scene(t, .7 + .15 * beatPulse(t, 4) + .25 * inv(195.3, 196.0, t), 1, 1, 3);
     glowAt(SX, SY, 1100, `rgba(255,226,170,${.12 + .1 * Math.sin(t * 2.4)})`);
-    hands(holdT(t), SX, 615, 170, k);
+    lastHands(t);
     motes(t, 24, .6);
     border(t, 1);
-    const p = ease.inOut(inv(195.2, 196.9, t));
+    const p = ease.inOut(inv(195.6, 196.95, t));
     if (p > 0) {
       s.save(); s.setTransform(.5, 0, 0, .5, 0, 0); s.globalAlpha = p;
       s.fillStyle = rgrad(W / 2, H * .42, 80, H * .75, [[0, mix(C.cream, C.parch, .3)], [.6, C.parch], [1, mix(C.parch, C.gold, .6)]]); s.fillRect(0, 0, W, H);
