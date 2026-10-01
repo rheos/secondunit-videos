@@ -77,7 +77,7 @@
     // hard luck: folded forward on the seat, head hung, hands dangling between the knees
     slump(p, o) { const w = Math.sin(p * TAU); return { sit: 1, lean: .55 + .03 * w, head: .45 + .04 * w, legs: [[1.2, 1.55], [1.5, 1.3]], arms: [[.6, .2], [.5, .25]] }; },
     // leaning out over a sill, looking up into the rain, near arm up with the bottle
-    leanOut(p, o) { const w = Math.sin(p * TAU); return { sit: 1, lean: (o.lean ?? .5) + .03 * w, head: -1.0 - .05 * w, legs: [[.1, 0], [-.1, 0]], arms: [[2.25 + .08 * w, -.2], [1.25, 1.35]] }; },
+    leanOut(p, o) { const w = Math.sin(p * TAU); return { sit: 1, lean: (o.lean ?? .75) + .03 * w, head: -.95 - .05 * w, legs: [[.1, 0], [-.1, 0]], arms: [[1.15, 1.3], [2.3 + .08 * w, -.2]] }; },
     // one shovelful per cycle: 0 bite into the coal, .4 lift, .62 throw (the coal leaves the blade), back
     shovel(p, o) {
       return cycle(p, [
@@ -123,7 +123,7 @@
     stout: { kind: 'dress', coat: C.rose, trousers: C.rose, hat: 'feather', hatC: C.teal, bandC: C.gold, h: .9, body: 1.55, belly: 1.45, bust: 1.5, hips: 1.4, nose: 1.15, chin: .95, mouth: 'grin', hair: '#7a4a2a', bun: 1, head: 1.08, cheek: 1.6 },
     old: { kind: 'coat', coat: C.sage, coatLen: .22, trousers: '#6a5a3a', hat: 'bowler', hatC: '#5a3e26', bandC: C.umber, h: .78, legK: .9, body: 1.1, belly: 1.25, head: 1.15, nose: 1.9, chin: .9, moustache: 'walrus', mC: C.cream, brow: 'up', mouth: 'line', hair: C.cream },
     dandy: { kind: 'tails', coat: C.teal, trousers: C.parch, hat: 'boater', hatC: C.cream, bandC: C.ruby, waistcoat: C.gold, shirt: C.cream, tie: C.ruby, carnation: 1, h: 1.02, body: .82, w: .85, nose: 1.4, chin: 1.3, moustache: 'curl', mouth: 'grin', brow: 'up' },
-    jacket: { kind: 'jacket', coat: C.gold, check: [C.ruby, C.teal], coatLen: .08, trousers: C.olive, hat: 'fedora', hatC: '#6a5636', bandC: C.umber, hatTilt: .12, nose: 1.5, noseC: C.rose, chin: 1.1, mouth: 'glum', brow: 'worry', body: 1.05, belly: 1.15, shirt: C.cream, tie: C.teal },
+    jacket: { kind: 'jacket', coat: C.gold, check: [C.ruby, C.teal], coatLen: .08, trousers: C.olive, hat: 'fedora', hatC: C.dusk, bandC: C.ruby, hatTilt: .12, nose: 1.5, noseC: C.rose, chin: 1.1, mouth: 'glum', brow: 'worry', body: 1.05, belly: 1.15, shirt: C.cream, tie: C.teal },
     leaner: { kind: 'shirt', coat: C.cream, stripes: C.rose, coatLen: .04, trousers: C.cream, hat: 'nightcap', hatC: C.cream, bandC: C.rose, nose: 1.6, chin: 1.2, mouth: 'grin', brow: 'up', body: .95 },
     sailor: { kind: 'shirt', coat: C.cream, stripes: C.dusk, coatLen: .03, trousers: C.dusk, hat: 'sailor', hatC: C.cream, bandC: C.dusk, scarf: C.ruby, nose: 1.3, mouth: 'grin' },
     millionaire: { kind: 'tails', coat: '#43304a', trousers: '#2f2a3a', hat: 'top', hatC: '#2f2634', bandC: C.ruby, waistcoat: C.gold, shirt: C.cream, tie: C.cream, monocle: 1, moustache: 'curl', mC: C.cream, hair: C.cream, h: 1, body: 1.25, belly: 1.6, legK: .95, w: .9, nose: 1.45, chin: .85, mouth: 'line', brow: 'up', watch: 1 },
@@ -215,7 +215,7 @@
       for (let i = -8; i <= 8; i++) line([add(A0(i), J.U, -.6 * h), add(A0(i), J.U, .6 * h)], st.check[1], wl);
       for (let i = -8; i <= 8; i++) line([add(B0(i), J.Fw, -.3 * h), add(B0(i), J.Fw, .3 * h)], st.check[0], wl);
     }
-    if (st.stripes) { const step = .045 * h; for (let i = -10; i <= 10; i++) line([add(add(J.pel, J.U, i * step), J.Fw, -.3 * h), add(add(J.pel, J.U, i * step), J.Fw, .3 * h)], st.stripes, Math.max(9, .02 * h)); }
+    if (st.stripes && det > 0) { const step = .045 * h; for (let i = -10; i <= 10; i++) line([add(add(J.pel, J.U, i * step), J.Fw, -.3 * h), add(add(J.pel, J.U, i * step), J.Fw, .3 * h)], st.stripes, Math.max(9, .02 * h)); }
     if (st.kind === 'tails' || st.shirt) { // shirt front, waistcoat
       if (st.waistcoat) shape(s, spl([TP(.92, .01 * b), TP(.86, .07 * b * st.bust), TP(.5, .075 * b * st.belly), TP(.1, .072 * b * st.belly), TP(.08, .01 * b), TP(.6, -.005)], true, 3), st.waistcoat, UMB, lw * .8);
       shape(s, [TP(1.02, .004), TP(1.0, .06 * b), TP(.8, .066 * b * st.bust), TP(.72, .02 * b)], st.shirt || C.cream, UMB, lw * .7);
@@ -370,7 +370,7 @@
     const A = (POSES[o.pose || 'stand'] || POSES.stand)(ph, { ...o, facing: fx });
     if (o.rot) A.rot = (A.rot || 0) + o.rot;
     const J = rig(x, y, sc, A, st, fx);
-    const lw = clamp(8 + sc * .012, 9, 20), wk = sc < 350 ? lerp(1.5, 1, inv(110, 350, sc)) : 1, det = sc >= 300 ? 2 : sc >= 170 ? 1 : 0;
+    const lw = sc < 220 ? lerp(7, 10, inv(110, 220, sc)) : clamp(8 + sc * .012, 9, 20), wk = sc < 350 ? lerp(1.75, 1, inv(110, 350, sc)) : 1, det = sc >= 300 ? 2 : sc >= 170 ? 1 : 0;
     Object.assign(J, { lw, wk, det, st, A, t, ph });
     const rotd = !!J.rot;
     if (rotd) for (const g of [s, f]) { g.save(); g.translate(x, y); g.rotate(J.rot); g.translate(-x, -y); }
@@ -460,24 +460,28 @@
   // window opening (lit amber unless lit: 0), the figure leaning out over the sill toward `facing`, the sill,
   // and the bottle (fill 0..1). The wall around it is the painter's.
   function windowLeaner(t, x, y, sc, o = {}) {
-    const fx = o.facing ?? 1, ww = .52 * sc, wh = .56 * sc, lit = o.lit ?? 1, lw = clamp(8 + sc * .012, 9, 20);
+    const fx = o.facing ?? 1, ww = .42 * sc, wh = .46 * sc, lit = o.lit ?? 1, lw = clamp(8 + sc * .012, 9, 20);
     const ox = x - ww / 2, oy = y - wh;
     const arch = [[ox, y], [ox, oy + ww / 2], ...circle(ox + ww / 2, oy + ww / 2, ww / 2, 48).filter(([, py]) => py <= oy + ww / 2 + .1).sort((a, b) => a[0] - b[0]), [ox + ww, oy + ww / 2], [ox + ww, y]];
     if (o.frame !== false) { shape(s, arch.map(([px, py]) => [x + (px - x) * 1.12, py - (y - py) * .06 + .0]), C.ochre, UMB, lw); shape(s, arch, lit ? C.amber : C.night, UMB, lw * 1.2); if (lit) glowAt(x, y - wh * .45, wh * .9, `rgba(255,190,110,${.35 * lit})`); }
     s.save(); s.beginPath(); s.rect(-W, -H * 2, W * 3, y - .01 * sc + H * 2); s.clip();
-    const J = person(t, x - fx * .08 * sc, y + .07 * sc, sc, { who: 'leaner', pose: 'leanOut', ph: t * .5, ...o, facing: fx, noFarArm: false });
+    const J = person(t, x - fx * .02 * sc, y + .08 * sc, sc, { who: 'leaner', pose: 'leanOut', ph: t * .5, ...o, facing: fx, noFarArm: false });
     s.restore();
     shape(s, [[x - ww * .62, y - .02 * sc], [x + ww * .62, y - .02 * sc], [x + ww * .66, y + .06 * sc], [x - ww * .66, y + .06 * sc]], C.parch, UMB, lw);
     // the far hand rests on the sill, over it
-    handDraw(J, 1, [J.farHand[0], Math.min(J.farHand[1], y - .02 * sc)]);
-    bottle(J, J.hand, (o.tilt ?? .15) * fx + Math.sin(t * 1.3) * .04, o.fill ?? clamp(.2 + (t % 6) / 7), t);
+    handDraw(J, 0, [J.hand[0], Math.min(J.hand[1], y - .02 * sc)]);
+    bottle({ ...J, arms: [J.arms[1], J.arms[0]] }, J.farHand, (o.tilt ?? .15) * fx + Math.sin(t * 1.3) * .04, o.fill ?? clamp(.2 + (t % 6) / 7), t);
     return J;
   }
   // 5. a sailor (or deck passenger) waving goodbye; reads down to ~150 px. seed varies cap, shirt and timing.
   function sailor(t, x, y, sc, o = {}) {
     const sd = o.seed ?? 0, r = (k) => hash(sd * 31 + k), alt = r(1) > .6;
     const style = alt ? { kind: 'coat', coat: [C.rose, C.sage, C.teal][sd % 3], coatLen: .22, stripes: null, hat: ['bowler', 'boater', 'flatcap'][sd % 3], hatC: [C.ochre, C.cream, C.olive][sd % 3], trousers: C.dusk, scarf: null } : {};
-    return person(t, x, y, sc * (.92 + .16 * r(2)), { who: 'sailor', pose: 'wave', ph: o.ph ?? (t * 1.6 + r(3)), ...o, style: { ...style, ...(o.style || {}) } });
+    return person(t, x, y, sc * (.92 + .16 * r(2)), { who: 'sailor', pose: 'wave', ph: o.ph ?? (t * 1.6 + r(3)), ...o, style: { ...style, ...(o.style || {}) },
+      after: (J) => { if (o.hanky !== false && (o.pose || 'wave') === 'wave') { // the handkerchief, the mark that reads from far off
+        const hd = J.arms[0].wr, d = nrm(sub(J.arms[0].wr, J.arms[0].el)), a = Math.atan2(d[1], d[0]) + .5 * Math.sin(t * 9 + sd);
+        petal(s, hd[0], hd[1], a, .16 * J.h * J.wk, .07 * J.h * J.wk, C.cream, UMB, J.lw * .8); glowAt(hd[0] + Math.cos(a) * .08 * J.h, hd[1] + Math.sin(a) * .08 * J.h, .12 * J.h, 'rgba(255,245,225,.28)'); handDraw(J, 0); }
+        o.after?.(J); } });
   }
   // 6. the millionaire shovelling the coal: top hat, tails, gold waistcoat, monocle, a shovel.
   // pose 'shovel' (one shovelful per cycle; the throw at .62) | 'stand'. coal: false for an empty shovel.
