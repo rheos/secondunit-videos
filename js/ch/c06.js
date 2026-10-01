@@ -143,32 +143,29 @@
     border(t, 1);
   }
 
-  // ---- straight down from the tower ledge: the band's instruments tumble into a hole in the street ----
+  // ---- straight down from the tower ledge: the band tumbles into a hole in the street ----
   const VPX = 540, VPY = 1150, DH = 3000, kD = (d) => 600 / (600 + d);
   const PS = (px, pz, d) => { const k = kD(d); return [VPX + px * k, VPY + pz * k]; };
-  function drum(sc) {
-    shape(s, circle(0, 0, 190), C.ruby, C.umber, 18);
-    s.lineJoin = 'round'; line([...Array(25)].map((_, i) => { const a = i / 24 * TAU, r = i % 2 ? 158 : 184; return [Math.cos(a) * r, Math.sin(a) * r]; }), C.gold, 12);
-    shape(s, circle(0, 0, 150), C.cream, C.umber, 16);
-    lily(s, 0, 30, -Math.PI / 2, 90, .8, [C.rose, C.blush]);
+  // the Salvation Army band on the tower ledge: [role, x, topple start]
+  const BAND = [['drum', 300, 121.2], ['tuba', 610, 121.42], ['tambourine', 900, 121.64]];
+  // 120.46: side-on to the ledge under the glowing clock: the band plays on the beat, then topples off, one by one
+  function ledge(t, lt, dur) {
+    cam(600, kf(lt, [[0, 1330], [dur, 1360]]), kf(lt, [[0, 1.08], [dur, 1.14]]));
+    sky(-200, 2400); stars0(t);
+    // the city far below, past the ledge's end
+    for (let i = 0; i < 14; i++) { const x = -200 + i * 60, y = 2000 + hash(i + 70) * 120; s.fillStyle = '#2c2840'; s.fillRect(x, y, 50, 400); if (hash(i + 90) < .6) glowAt(x + 25, y + 30, 26, 'rgba(255,180,100,.6)'); }
+    at(600, 3830, 1, 0, () => tower(t, .12));
+    for (const [role, x, tk] of BAND) {
+      const k = ease.inOut(inv(tk, tk + .5, t)), slide = (x - 40) * ease.in(clamp((k - .45) / .55)), drop = 2200 * ease.in(inv(tk + .45, tk + 1.0, t));
+      bandsman(t, x - slide, 1650 + drop, 600, { role, ph: beatPhase(t), k, facing: 1 });
+    }
+    rain(t, 30, 79, .2);
+    border(t, 1);
   }
-  function tambourine() {
-    shape(s, circle(0, 0, 110), C.ochre, C.umber, 16);
-    shape(s, circle(0, 0, 80), C.parch, C.umber, 12);
-    for (let i = 0; i < 6; i++) { const a = i / 6 * TAU; shape(s, circle(Math.cos(a) * 96, Math.sin(a) * 96, 20, 12), C.gold, C.umber, 8); }
-    vine(s, whip([90, 60], [160, 140], [120, 220], [200, 260], .5, 1, 20), 18, 8, C.rose);
-  }
-  function tuba(t) {
-    vine(s, [...Array(30)].map((_, i) => { const a = i / 29 * TAU * .9 + 1; return [60 + Math.cos(a) * 110, 40 + Math.sin(a) * 110]; }), 40, 40, C.gold);
-    shape(s, circle(0, 0, 150), C.gold, C.umber, 18);
-    shape(s, circle(0, 0, 112), C.ochre, C.umber, 12);
-    shape(s, circle(0, 0, 62), '#3a2a18', C.umber, 10);
-    for (let i = 0; i < 3; i++) shape(s, circle(130 + i * 36, 150, 18, 12), C.parch, C.umber, 8);
-  }
-  const FALL = [ // [draw, release, start plan x, start plan z, spin]
-    [drum, 120.87, -200, -740, 1.6], [tambourine, 121.34, 220, -730, -3.2], [tuba, 121.87, 20, -800, 2.2],
-  ];
-  const landAt = (tr) => tr + Math.sqrt(2 * (DH + 40) / 2563);
+  const FALL = [['drum', 121.9, -200, -740, 1.6], ['tuba', 122.15, 20, -800, 2.2], ['tambourine', 122.43, 220, -730, -3.2]];
+  const GF = 2 * (DH + 40) / 1.0;   // each falls for exactly one second, landing at release + 1.0
+  const landAt = (tr) => tr + 1.0;
+  // 121.9: straight down from the ledge: the bandsmen tumble one after another into the hole
   function fall(t, lt, dur) {
     cam(540, 880, 1 + lt * .035, Math.sin(t * .7) * .02);
     s.fillStyle = '#232a40'; s.fillRect(-W * 2, -H * 2, W * 5, H * 5);
@@ -206,48 +203,39 @@
     shape(s, [[-400, 395], [1480, 395], [1480, 460], [-400, 460]], C.parch, C.umber, 16);
     for (let i = 0; i < 8; i++) vine(s, whip([-60 + i * 170, 385], [-10 + i * 170, 300], [60 + i * 170, 340], [40 + i * 170, 260], .6, i % 2 ? 1 : -1, 20), 18, 8, C.olive);
     // the instruments: rock on the ledge, tip over the edge, tumble down into the hole
-    const items = FALL.map(([fn, tr, px, pz, spn], i) => {
-      const tip = ease.in(inv(tr - .4, tr, t)), ft = Math.max(0, t - tr), d = -40 + 2563 / 2 * ft * ft;
+    const items = FALL.map(([role, tr, px, pz, spn], i) => {
+      const ft = Math.max(0, t - tr), d = -40 + GF / 2 * ft * ft;
       if (d >= DH) return null;
-      const u = ease.inOut(clamp((d + 40) / (DH + 40))), z0 = lerp(pz, -660, tip);
+      const u = ease.inOut(clamp((d + 40) / (DH + 40))), z0 = lerp(pz, -660, ease.in(inv(tr - .3, tr, t)));
       const [x, y] = PS(lerp(px, 0, u), lerp(z0, 700, u), d), k = kD(d);
-      const rot = spn * ft * 2 + Math.sin(t * 4 + i) * .06 * (1 - tip) + tip * .3 * Math.sign(spn);
-      return [d, x, y, k, rot, fn];
+      return [d, x, y, k, spn * ft * 2.2 + i, role];
     }).filter(Boolean).sort((a, b) => b[0] - a[0]);
-    for (const [, x, y, k, rot, fn] of items) at(x, y, k * .9, rot, () => fn(t));
+    // tumbling bandsmen, instruments and all, shrinking toward the hole
+    for (const [, x, y, k, rot, role] of items) bandsman(t, x, y + 240 * k, 480 * k, { role, ph: beatPhase(t), k: 1, rot, facing: 1 });
     border(t, 1);
   }
 
   // ---- the small rowboat rows up past the lit clock into the sky ----
-  function boat(t, x, y, sc) {
-    const i = lastBeat(t), b0 = FEAT.beats[i] ?? t, b1 = FEAT.beats[i + 1] ?? b0 + .5, p = clamp((t - b0) / (b1 - b0));
-    const pull = p < .4, th = pull ? lerp(.4, 2.75, ease.inOut(p / .4)) : lerp(2.75, .4, ease.inOut((p - .4) / .6)), depth = pull ? 1 : .25;
-    at(x, y, sc, Math.sin(t * 1.7) * .05 - .05 * (pull ? Math.sin(p / .4 * Math.PI) : 0), () => {
-      const oar = (px, py, th, fill) => { const L = 380, ex = px + Math.cos(th) * L, ey = py + Math.sin(th) * L * depth, hx = px - Math.cos(th) * 110, hy = py - Math.sin(th) * 110 * depth;
-        line([[hx, hy], [ex, ey]], C.umber, 26); line([[hx, hy], [ex, ey]], fill, 12);
-        petal(s, ex - Math.cos(Math.atan2(ey - py, ex - px)) * 40, ey - Math.sin(Math.atan2(ey - py, ex - px)) * 40, Math.atan2(ey - py, ex - px), 140, 44, fill, C.umber, 12);
-        return [ex + Math.cos(Math.atan2(ey - py, ex - px)) * 70, ey + Math.sin(Math.atan2(ey - py, ex - px)) * 70]; };
+  // the rowboat and its crew: two rowers (seeds 1 and 2, the same crew as c07 and c09) pulling one stroke
+  // every two beats, and the blind conductor at the bow holding up the boat's lantern
+  const rowPh = (t) => beatPhase(t) / 2;
+  function boat(t, x, y, sc, crewSc = 380) {
+    const ph = rowPh(t), q = ph - Math.floor(ph), pull = q < .4;
+    at(x, y, sc, Math.sin(t * 1.7) * .04 - .04 * (pull ? Math.sin(q / .4 * Math.PI) : 0), () => {
       const hullP = [[-290, -96], ...cub([-290, -96], [-100, -70], [120, -70], [320, -150], 20), ...cub([320, -150], [280, 60], [60, 140], [-180, 130], 24), [-260, 110]];
       shape(f, hullP, '#000', null); // the hull blocks the clock's light behind it
-      oar(70, -100, th + .25, '#8a6a3a'); // far oar, behind the hull
-      // the lantern on its iron crook at the bow
-      vine(s, cub([250, -120], [270, -260], [350, -300], [380, -240], 16), 14, 10, C.olive);
-      shape(s, blobPts(382, -200, 28, 42, 8, .03, 20), C.ruby, C.umber, 10);
-      glowAt(382, -200, 220, 'rgba(255,150,70,.55)'); glowAt(382, -200, 55, 'rgba(255,235,190,.9)');
-      shape(s, [[-200, -96], [-170, -150], [-150, -150], [-150, -96]], '#7a5426', C.umber, 10);
-      const hull = [[-290, -96], ...cub([-290, -96], [-100, -70], [120, -70], [320, -150], 20), ...cub([320, -150], [280, 60], [60, 140], [-180, 130], 24), [-260, 110]];
-      shape(s, hull, C.ochre, C.umber, 20);
+      const rw = [[-150, 1], [40, 2]].map(([rx, seed]) => rower(t, rx, -70, crewSc, { seed, ph: ph - (seed - 1) * .03, oar: 'later', facing: -1 }));
+      conductor(t, 210, -80, crewSc, { pose: 'sit', facing: 1, lit: 1, swing: .25 + .12 * Math.sin(t * 2.6) });
+      shape(s, hullP, C.ochre, C.umber, 20);
       line(cub([-284, -50], [-100, -20], [140, -20], [300, -100], 16), C.ruby, 22);
       line(cub([-270, 20], [-80, 50], [140, 40], [280, -30], 16), '#7a5426', 12);
       line(cub([-262, 80], [-60, 105], [120, 95], [240, 40], 16), '#7a5426', 12);
-      const tip = oar(-10, -92, th, C.parch);
-      if (pull) for (let j = 0; j < 7; j++) { const a = (p / .4) * 1.6 + j * .4; glowAt(tip[0] - j * 26 * Math.cos(a), tip[1] + j * 14, 34 - j * 3, `rgba(220,235,255,${.8 * (1 - j / 7)})`); }
+      rw.forEach((r) => { const tip = r.drawOar(); if (tip && pull) for (let j = 0; j < 6; j++) glowAt(tip[0] + j * 24, tip[1] + j * 10, 30 - j * 3, `rgba(220,235,255,${.7 * (1 - j / 6)})`); });
     });
   }
   function boatY(t) {
-    let y = 1550 - 90 * (t - 123.74);
-    for (let i = lastBeat(123.74) + 1; i < FEAT.beats.length && FEAT.beats[i] <= t; i++) y -= 300 * ease.out(clamp((t - FEAT.beats[i]) / .45));
-    return y;
+    const p0 = rowPh(123.74), p = rowPh(t) - p0, n = Math.floor(p + (p0 - Math.floor(p0))) , q = rowPh(t) - Math.floor(rowPh(t));
+    return 1550 - 90 * (t - 123.74) - 560 * (Math.floor(rowPh(t)) - Math.floor(p0) + ease.out(clamp(q / .45)) - ease.out(clamp((p0 - Math.floor(p0)) / .45)));
   }
   const boatX = (t) => 330 + 70 * Math.sin((t - 123.74) * .8);
   function skyClimb(t, cy, zoom) {
@@ -258,16 +246,17 @@
       const a = clamp(inv(900, -400, y) + hi * .6) * tw; if (a <= .02) continue;
       glowAt(x, y, 10 + 16 * hash(i + 9), `rgba(255,248,225,${.8 * a})`);
       if (i % 9 === 0) for (let j = 0; j < 4; j++) petal(s, x, y, j * Math.PI / 2 + .3, 26, 8, C.cream, C.umber, 5); }
-    at(700, 3120, 1, 0, () => tower(t, 1));
-    rays(700, 520, 12, t * .25, 1500, .12 * (1 - hi));
+    at(700, 3120, 1, 0, () => tower(t, .45));
+    rays(700, 520, 12, t * .25, 1500, .06 * (1 - hi));
+    maskHands(t, 700, 520, 330);
     shape(s, [[-600, 2600], [-600, 1560], [60, 1560], [100, 1420], [140, 1420], [180, 1560], [1600, 1580], [1600, 2600]], '#2c2840', C.umber, 18);
   }
   // 123.74: the boat rises from below, oars pulling on the beat, past the shining face
   function rowboat(t, lt, dur) {
     const cy = 1100 - 520 * lt;
-    cam(470, cy, 1.0);
+    cam(boatX(t) + 10, cy, 1.0);
     skyClimb(t, cy, 1);
-    boat(t, boatX(t), boatY(t), 1.2);
+    boat(t, boatX(t), boatY(t), 1.4);
     rain(t, 40, 77, .22 * (1 - inv(124.5, 125.9, t)));
     border(t, 1);
   }
@@ -276,7 +265,7 @@
     const cy = -60 - 560 * lt, z = lerp(1.0, .74, ease.inOut(lt / dur));
     cam(lerp(470, 500, lt / dur), cy, z);
     skyClimb(t, cy, z);
-    boat(t, boatX(t), boatY(t), 1.2);
+    boat(t, boatX(t), boatY(t), 1.35);
     border(t, 1);
   }
 
@@ -285,7 +274,8 @@
     [113.63, beams],
     [115.94, spin],
     [118.27, blur],
-    [120.46, fall],
+    [120.46, ledge],
+    [121.9, fall],
     [123.74, rowboat],
     [125.97, stars],
   ], { fx: PAINT });

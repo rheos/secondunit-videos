@@ -2,7 +2,7 @@
 // Opens climbing out of a round iron hatch (c04 ends below decks); ends with the clock face filling the
 // frame, exactly where c06 picks up (tower at q 1, face at (540, 520) r 330, cam zoom 2.0).
 (() => {
-  const DENIM = '#4d6585', DENIM_D = '#36486a', STEEL = '#a7aea4', STEEL_D = '#68737a', NOTE = '#6d8c55', NOTE_L = '#93ad78', HAT = '#2e2a3a';
+  const STEEL = '#a7aea4', STEEL_D = '#68737a', NOTE = '#6d8c55', NOTE_L = '#93ad78';
   function at(x, y, k, rot, fn) { for (const g of [s, f]) { g.save(); g.translate(x, y); g.rotate(rot); g.scale(k, k); } fn(); s.restore(); f.restore(); }
   const sky = (y0, y1) => { s.fillStyle = vgrad(y0, y1, [[0, C.night], [.75, '#29355a'], [1, C.dusk]]); s.fillRect(-W * 2, -H * 2, W * 5, H * 5); };
 
@@ -206,85 +206,44 @@
     border(t, 1);
   }
 
-  // ---- the washing line between two balconies, jeans on it, a pistol grip in the back pocket ----
-  function jeans(x, y, sc, sway, t) {
-    at(x, y, sc, sway, () => {
-      const lw = 16, kick = Math.sin(t * 4.3) * 10;
-      shape(s, [[-150, 0], [150, 0], [160, 300], [150 + kick, 840], [22 + kick, 840], [8, 270], [-8, 270], [-22 - kick * .6, 840], [-150 - kick * .6, 840], [-160, 300]], DENIM, C.umber, lw);
-      line([[90, 330], [88 + kick * .5, 820]], DENIM_D, 14); line([[-90, 330], [-88 - kick * .3, 820]], DENIM_D, 14);
-      shape(s, [[-150, 0], [150, 0], [152, 56], [-152, 56]], DENIM_D, C.umber, lw);
-      for (const bx of [-110, -30, 50, 120]) shape(s, [[bx - 9, -4], [bx + 9, -4], [bx + 9, 66], [bx - 9, 66]], DENIM, C.umber, 8);
-      shape(s, [[0, 56], [8, 270], [-8, 270]], DENIM_D, C.umber, 8);
-      const pocketP = (px) => shape(s, [[px * 30, 92], [px * 132, 86], [px * 128, 200], [px * 82, 236], [px * 36, 206]], DENIM_D, C.umber, 12);
-      pocketP(-1);
-      // the pistol grip: a walnut bird's-head butt and the steel hammer above the pocket, still, never handled
-      s.save(); s.translate(104, 72); s.rotate(.18); s.scale(-1.25, 1.25);
-      // steel frame at the pocket mouth: trigger guard loop in front, hammer spur behind
-      for (const [c, w] of [[C.umber, 26], [STEEL, 12]]) { s.lineWidth = w; s.strokeStyle = c; s.beginPath(); s.arc(-44, 14, 32, Math.PI * .95, Math.PI * 2.0); s.stroke(); }
-      shape(s, [[-30, 26], [50, 26], [48, -30], [-26, -36]], STEEL, C.umber, 12);
-      shape(s, [[30, -34], [50, -36], [104, -60], [98, -80], [36, -54]], STEEL, C.umber, 11);
-      // the walnut bird's-head grip, leaning back, its butt hooked forward
-      const grip = [[-24, -32], [-30, -90], [-24, -146], [-40, -184], [-80, -206], [-82, -238], [-40, -262], [20, -262], [62, -232], [72, -176], [60, -104], [46, -32]];
-      shape(s, grip, C.ochre, C.umber, 13);
-      shape(s, [[-10, -50], [-14, -140], [-24, -186], [10, -220], [44, -196], [50, -130], [36, -50]], '#7a5426', null);
-      line([[62, -232], [72, -176], [60, -104], [46, -32]], STEEL, 12);
-      s.restore();
-      pocketP(1);
-      for (const px of [-1, 1]) line([[px * 36, 120], [px * 82, 150], [px * 128, 116]], C.gold, 7);
-      glowAt(50, -60, 60, 'rgba(255,230,190,.2)');
-      for (const px of [-1, 1]) shape(s, [[px * 140 - 16, -50], [px * 140 + 16, -50], [px * 140 + 14, 40], [px * 140 - 14, 40]], C.parch, C.umber, 10);
-    });
-  }
-  function balcony(x, y, w, sd) {
-    shape(s, [[x, y], [x + w * sd, y], [x + w * sd + 20 * sd, y + 50], [x, y + 50]], C.parch, C.umber, 16);
-    shape(s, [[x, y], [x + w * sd, y], [x + w * sd, y - 260], [x, y - 260]], null, C.umber, 30);
-    line([[x, y - 260], [x + w * sd, y - 260]], C.olive, 14);
-    for (let i = 0; i < 3; i++) { const bx = x + w * sd * (i + .5) / 3; vine(s, whip([bx, y], [bx - 50 * sd, y - 90], [bx + 60 * sd, y - 170], [bx + 10 * sd, y - 230], .6, sd, 24), 16, 8, C.olive); }
-  }
-  function lineScene(t) {
-    sky(-200, 1500);
-    // the back façade across the street, its windows lit
-    shape(s, [[100, 1500], [100, 1000], [380, 1000], [540, 900], [700, 1000], [980, 1000], [980, 1500]], '#4a3048', C.umber, 18);
-    for (let r = 0; r < 2; r++) for (let i = 0; i < 6; i++) { const wx = 210 + i * 132, wy = 1080 + r * 200, on = hash(i * 5 + r * 31 + 3) < .5;
-      shape(s, [[wx - 34, wy + 120], [wx - 34, wy + 30], ...circle(wx, wy + 30, 34, 20).filter(([, py]) => py <= wy + 30).sort((a, b) => a[0] - b[0]), [wx + 34, wy + 30], [wx + 34, wy + 120]], on ? C.amber : C.night, C.umber, 12);
-      if (on) glowAt(wx, wy + 70, 110, 'rgba(255,185,100,.3)'); }
-    shape(s, circle(540, 980, 40, 24), C.gold, C.umber, 12);
-    // the two façades and their balconies
-    shape(s, [[-300, -400], [170, -400], [170, 2400], [-300, 2400]], C.plum, C.umber, 22);
-    shape(s, [[910, -400], [1400, -400], [1400, 2400], [910, 2400]], C.teal, C.umber, 22);
-    for (const [x, y, c] of [[20, 1000, C.amber], [990, 1050, C.night], [30, 260, C.night], [1000, 330, C.amber]]) {
-      shape(s, [[x - 80, y + 260], [x - 80, y], ...circle(x, y, 80, 28).filter(([, py]) => py <= y).sort((a, b) => a[0] - b[0]), [x + 80, y], [x + 80, y + 260]], c, C.umber, 18);
-      if (c === C.amber) glowAt(x, y + 120, 260, 'rgba(255,185,100,.35)');
+  // ---- the Harlem walker swaggering up the avenue, the pistol butt peeking from his back pocket ----
+  const WSC = 860, WGY = 1780;
+  const walkPh = (t) => (beatPhase(t) - beatPhase(95.24)) / 2;           // one stride pair every two beats
+  const walkX = (t) => 160 + walkPh(t) * walkStride(WSC, { who: 'walker', stride: 1.05 });
+  function walkScene(t, cx) {
+    sky(-200, 900);
+    // the shopfronts across the pavement, one unit every 540 px, scrolling past as he walks
+    for (let u = Math.floor((cx - 1400) / 540); u <= Math.floor((cx + 1400) / 540); u++) {
+      const x0 = u * 540, lit = hash(u * 7 + 3) < .55, up = hash(u * 11 + 5) < .5;
+      shape(s, [[x0, 200], [x0 + 540, 200], [x0 + 540, WGY], [x0, WGY]], u % 2 ? C.plum : C.teal, C.umber, 20);
+      shape(s, [[x0 + 90, WGY - 40], [x0 + 90, 1060], ...circle(x0 + 270, 1060, 180, 40).filter(([, py]) => py <= 1060).sort((p, q) => p[0] - q[0]), [x0 + 450, 1060], [x0 + 450, WGY - 40]], lit ? C.amber : C.deep, C.umber, 20);
+      if (lit) glowAt(x0 + 270, 1350, 380, 'rgba(255,180,100,.35)');
+      shape(s, [[x0 + 20, 760], [x0 + 520, 760], [x0 + 520, 820], [x0 + 20, 820]], C.gold, C.umber, 12);
+      for (const wx of [x0 + 150, x0 + 390]) { shape(s, [[wx - 60, 640], [wx - 60, 420], ...circle(wx, 420, 60, 24).filter(([, py]) => py <= 420).sort((p, q) => p[0] - q[0]), [wx + 60, 420], [wx + 60, 640]], up ? C.amber : C.night, C.umber, 14); if (up) glowAt(wx, 530, 140, 'rgba(255,190,110,.3)'); }
+      line([[x0, 200], [x0, WGY]], C.ochre, 18);
+      if (u % 3 === 0) guimard(x0 + 20, WGY, 1150, 1, 1, Math.sin(t + u) * 6);
     }
-    balcony(170, 820, 170, 1); balcony(910, 800, 170, -1);
-    // street below: wet, lamplight puddles
-    s.fillStyle = vgrad(1500, 2400, [[0, '#262238'], [1, C.dusk]]); s.fillRect(160, 1500, 760, 900);
-    for (let i = 0; i < 5; i++) { s.fillStyle = C.amber; s.fillRect(300 + i * 110 + Math.sin(t * 3 + i) * 10, 1700 + (i % 2) * 60, 50, 18); glowAt(325 + i * 110, 1710 + (i % 2) * 60, 70, 'rgba(255,180,100,.25)'); }
-    // the line, sagging where the jeans pull it
-    const sway = .06 * Math.sin(t * 2.2) + .05 * beatPulse(t, 3) * Math.sin(t * 9), jx = 560, jy = 760 + Math.sin(t * 2.2) * 8;
-    const pl = [jx - 112 * Math.cos(sway), jy - 112 * Math.sin(sway)], prr = [jx + 112 * Math.cos(sway), jy + 112 * Math.sin(sway)];
-    const ln = [...cub([250, 560], [330, 640], [pl[0] - 120, pl[1] - 40], pl, 16), prr, ...cub(prr, [prr[0] + 120, prr[1] - 40], [760, 620], [830, 560], 16)];
-    line(ln, C.umber, 14); line(ln, C.parch, 5);
-    // a striped towel further along the line
-    const tw = Math.sin(t * 2.5) * 18;
-    shape(s, [[300, 610], [420, 680], [430, 900 + tw], [306, 860 + tw * .7]], C.cream, C.umber, 16);
-    for (const v of [.35, .7]) line([[300 + 6 * v, lerp(610, 860 + tw * .7, v)], [420 + 10 * v, lerp(680, 900 + tw, v)]], C.rose, 18);
-    jeans(jx, jy, .8, sway, t);
+    s.fillStyle = vgrad(WGY, WGY + 600, [[0, '#2c2c48'], [1, C.dusk]]); s.fillRect(cx - 1400, WGY, 2800, 900);
+    line([[cx - 1400, WGY + 6], [cx + 1400, WGY + 6]], C.umber, 16);
+    for (let u = Math.floor((cx - 1400) / 540); u <= Math.floor((cx + 1400) / 540); u++) if (hash(u * 7 + 3) < .55) { s.fillStyle = C.amber; s.fillRect(u * 540 + 180 + Math.sin(t * 3 + u) * 10, WGY + 70, 180, 22); glowAt(u * 540 + 270, WGY + 80, 120, 'rgba(255,180,100,.25)'); }
   }
-  // 95.24: up from the street to the washing line between the balconies; the jeans swing in the wind
-  function lineWide(t, lt, dur) {
-    cam(kf(lt, [[0, 520], [dur, 560]]), kf(lt, [[0, 1350], [dur, 900]]), kf(lt, [[0, .95], [dur, 1.1]]));
-    lineScene(t);
-    // the last few dreams fluttering off upward
-    for (let j = 0; j < 5; j++) { const a = lt + j * .3; bug(200 + j * 170 + Math.sin(a * 3) * 60, 1400 - a * 520, 70, Math.sin(a * 2) * .5, t, j % 2, j + 90); }
-    rain(t, 70, 55, .32);
+  // 95.24: tracking alongside the Harlem walker as he swaggers up the avenue, step on the beat
+  function walker(t, lt, dur) {
+    const x = walkX(t);
+    cam(x + 120, kf(lt, [[0, 1250], [dur, 1180]]), kf(lt, [[0, .98], [dur, 1.04]]));
+    walkScene(t, x);
+    for (let j = 0; j < 4; j++) { const a = lt + j * .35; bug(x - 300 + j * 230 + Math.sin(a * 3) * 60, 900 - a * 260, 70, Math.sin(a * 2) * .5, t, j % 2, j + 90); }
+    harlemWalker(t, x, WGY, WSC, { ph: walkPh(t), facing: 1 });
+    rain(t, 70, 55, .3);
     border(t, 1);
   }
-  // 97.5: close on the back pocket: the pistol grip sits there, still, rain running off it
+  // 97.5: close on his hip as he walks: the pistol butt only peeks from the back pocket, never in hand
   function pocket(t, lt, dur) {
-    cam(kf(lt, [[0, 650], [dur, 620]]), kf(lt, [[0, 800], [dur, 830]]), kf(lt, [[0, 2.1], [dur, 2.35]]), -.05 + Math.sin(t * 1.2) * .01);
-    lineScene(t);
-    for (let i = 0; i < 4; i++) { const ph = ((t * .7 + i * .27) % 1); glowAt(610 + i * 30, 760 + ph * 300, 10, `rgba(220,235,255,${.8 * (1 - ph)})`); }
+    const x = walkX(t);
+    cam(x - .02 * WSC, WGY - .5 * WSC + Math.sin(walkPh(t) * TAU * 2) * 10, kf(lt, [[0, 3.0], [dur, 3.3]]), -.03);
+    walkScene(t, x);
+    harlemWalker(t, x, WGY, WSC, { ph: walkPh(t), facing: 1 });
+    for (let i = 0; i < 4; i++) { const ph = ((t * .7 + i * .27) % 1); glowAt(x - .12 * WSC + i * 26, WGY - .62 * WSC + ph * 200, 10, `rgba(220,235,255,${.8 * (1 - ph)})`); }
     rain(t, 50, 57, .25);
     border(t, 1);
   }
@@ -344,67 +303,71 @@
     border(t, 1);
   }
 
-  // ---- the door ajar, a bowler and a cane on the steps, wet footprints leading away ----
-  // 103.86: push in on the doorway; the door creaks wider on the beat, lamplight spilling on the steps
+  // ---- Mr. Knickerbocker leaves: from inside his doorway we watch him walk off into the rain ----
+  // 103.86: looking out through the open door: he goes down the steps and away, shrinking into the rain,
+  // wet footprints glinting behind him
+  const knickU = (t) => ease.inOut(inv(103.86, 106.1, t));
   function door(t, lt, dur) {
-    cam(kf(lt, [[0, 540], [dur, 600]]), kf(lt, [[0, 1080], [dur, 1240]]), kf(lt, [[0, .95], [dur, 1.25]]));
-    s.fillStyle = C.teal; s.fillRect(-W * 2, -H * 2, W * 5, H * 5);
-    for (let i = 0; i < 8; i++) line([[-200, 200 + i * 260], [1300, 200 + i * 260]], C.deep, 14);
-    // stone surround and the fan transom
-    shape(s, [[200, 1520], [200, 760], ...circle(540, 760, 340, 50).filter(([, py]) => py <= 760).sort((a, b) => a[0] - b[0]), [880, 760], [880, 1520]], C.parch, C.umber, 24);
-    const flick = .85 + .15 * noise1(t * 6, 3);
-    shape(s, [[260, 800], ...circle(540, 800, 280, 50).filter(([, py]) => py <= 800).sort((a, b) => a[0] - b[0]), [820, 800]], C.deep, C.umber, 18);
-    for (let i = 0; i < 6; i++) { const a0 = Math.PI + i / 6 * Math.PI, a1 = a0 + Math.PI / 6;
-      shape(s, [[540, 800], [540 + Math.cos(a0) * 270, 800 + Math.sin(a0) * 270], [540 + Math.cos((a0 + a1) / 2) * 280, 800 + Math.sin((a0 + a1) / 2) * 280], [540 + Math.cos(a1) * 270, 800 + Math.sin(a1) * 270]], [C.amber, C.rose, C.gold, C.amber, C.rose, C.gold][i], C.umber, 14);
-      glowAt(540 + Math.cos((a0 + a1) / 2) * 180, 800 + Math.sin((a0 + a1) / 2) * 180, 140, `rgba(255,190,110,${.35 * flick})`); }
-    shape(s, circle(540, 800, 70, 30), C.gold, C.umber, 14);
-    // the doorway: warm light inside, the leaf swung part open on its left hinge
-    shape(s, [[270, 1500], [270, 820], [810, 820], [810, 1500]], C.amber, C.umber, 18);
-    glowAt(620, 1150, 520, `rgba(255,180,100,${.45 * flick})`);
-    const a = .62 + .16 * ease.back(inv(104.5, 105.1, t)) + .02 * Math.sin(t * 3), x1 = 270 + 540 * Math.cos(a);
-    const leaf = [[270, 820], [x1, 820 - 70 * Math.sin(a)], [x1, 1500 + 60 * Math.sin(a)], [270, 1500]];
-    shape(s, leaf, '#24433f', C.umber, 20);
-    const lx = (u) => lerp(270, x1, u), ly = (u, v) => lerp(lerp(820, 820 - 70 * Math.sin(a), u), lerp(1500, 1500 + 60 * Math.sin(a), u), v);
-    vine(s, [...Array(20)].map((_, i) => [lx(.5 + .25 * Math.sin(i / 19 * 5)), ly(.5, .1 + i / 19 * .8)]), 18, 8, C.sage);
-    shape(s, circle(lx(.88), ly(.88, .55), 20, 14), C.gold, C.umber, 10);
-    // the light spills down the steps
-    f.save(); f.globalCompositeOperation = 'lighter'; P(f, [[x1, 1500], [810, 1500], [930, 1760], [x1 + 40, 1760]]); f.closePath(); f.fillStyle = `rgba(255,170,90,${.22 * flick})`; f.fill(); f.restore();
-    // steps
-    shape(s, [[240, 1500], [840, 1500], [860, 1570], [220, 1570]], C.parch, C.umber, 16);
-    shape(s, [[180, 1570], [900, 1570], [930, 1650], [150, 1650]], C.ochre, C.umber, 16);
-    shape(s, [[110, 1650], [970, 1650], [1010, 1750], [70, 1750]], C.parch, C.umber, 16);
-    s.fillStyle = C.dusk; s.fillRect(-W, 1750, W * 3, 900);
-    // the cane leaning on the jamb
-    line([[760, 1648], [868, 1130]], C.umber, 30); line([[760, 1648], [868, 1130]], C.ochre, 16);
-    const crook = [...Array(16)].map((_, i) => { const th = Math.PI + i / 15 * Math.PI * 1.1; return [904 + Math.cos(th) * 38, 1130 + Math.sin(th) * 38]; });
-    line(crook, C.umber, 32); line(crook, C.gold, 16);
-    // the bowler on the middle step
-    const hx = 560, hy = 1612;
-    shape(s, blobPts(hx, hy, 150, 34, 4, .03, 30), HAT, C.umber, 16);
-    shape(s, [...cub([hx - 95, hy - 4], [hx - 110, hy - 140], [hx + 110, hy - 140], [hx + 95, hy - 4], 24)], HAT, C.umber, 16);
-    shape(s, [[hx - 96, hy - 30], [hx + 96, hy - 30], [hx + 94, hy - 4], [hx - 94, hy - 4]], C.ruby, C.umber, 10);
-    glowAt(hx - 40, hy - 100, 60, 'rgba(255,200,140,.25)');
-    // wet footprints off the steps, glinting
-    for (let i = 0; i < 4; i++) { const px = 330 - i * 70 + (i % 2) * 50, py = 1700 + i * 70; shape(s, blobPts(px, py, 30 + i * 6, 14 + i * 4, i + 20, .1, 20), '#2a2638', null); glowAt(px, py, 40 + i * 8, `rgba(200,220,255,${.4 + .3 * Math.sin(t * 5 + i)})`); }
-    rain(t, 60, 63, .3);
+    cam(540, kf(lt, [[0, 1000], [dur, 960]]), kf(lt, [[0, 1.0], [dur, 1.1]]));
+    // outside: the street at night, the façades opposite, a lamp
+    sky(-200, 1300);
+    shape(s, [[-200, 300], [1300, 300], [1300, 1360], [-200, 1360]], '#4a3048', C.umber, 18);
+    for (let i = 0; i < 5; i++) { const wx = 80 + i * 230, on = hash(i * 9 + 4) < .55;
+      shape(s, [[wx - 60, 1300], [wx - 60, 900], ...circle(wx, 900, 60, 24).filter(([, py]) => py <= 900).sort((p, q) => p[0] - q[0]), [wx + 60, 900], [wx + 60, 1300]], on ? C.amber : C.night, C.umber, 14);
+      if (on) glowAt(wx, 1100, 160, 'rgba(255,185,100,.3)');
+      shape(s, [[wx - 50, 700], [wx - 50, 520], [wx + 50, 520], [wx + 50, 700]], hash(i + 30) < .4 ? C.amber : C.night, C.umber, 12); }
+    s.fillStyle = vgrad(1360, 2100, [[0, '#262238'], [1, C.dusk]]); s.fillRect(-W, 1360, W * 3, 900);
+    guimard(860, 1380, 640, -1, 1, Math.sin(t) * 6);
+    for (let j = 0; j < 6; j++) { s.fillStyle = C.ruby; s.fillRect(660 + Math.sin(t * 3 + j) * 10, 1420 + j * 50, 70 - j * 8, 18); }
+    // the light from the door, spilling down the steps and onto the wet pavement
+    f.save(); f.globalCompositeOperation = 'lighter'; P(f, [[300, 1560], [780, 1560], [1000, 2100], [80, 2100]]); f.closePath(); f.fillStyle = 'rgba(255,170,90,.18)'; f.fill(); f.restore();
+    shape(s, [[180, 1680], [900, 1680], [940, 1760], [140, 1760]], C.parch, C.umber, 16);
+    shape(s, [[120, 1760], [960, 1760], [1010, 1860], [70, 1860]], C.ochre, C.umber, 16);
+    shape(s, [[40, 1860], [1040, 1860], [1100, 1990], [-20, 1990]], C.parch, C.umber, 16);
+    // his footprints, glinting where he has already trodden
+    const u = knickU(t), path = (v) => [lerp(520, 640, v), lerp(1960, 1420, Math.pow(v, .8))];
+    for (let i = 0; i < 9; i++) { const v = .12 + i * .1; if (v > u - .04) break; const [px, py] = path(v), sz = lerp(1, .35, v);
+      shape(s, blobPts(px + (i % 2 ? 26 : -26) * sz, py, 30 * sz, 12 * sz, i + 20, .1, 18), '#5d6f98', C.umber, 8 * sz + 3);
+      glowAt(px, py, 60 * sz, `rgba(200,225,255,${.5 + .3 * Math.sin(t * 5 + i)})`); }
+    // Mr. Knickerbocker, from behind, walking away into the rain
+    const [kx, ky] = path(u);
+    knickerbocker(t, kx, ky, lerp(1000, 380, Math.pow(u, .7)), { ph: lt * 1.0, view: 'back' });
+    rain(t, 90, 63, .4);
+    // the doorway we look out of: dark jambs, the lintel, the open leaf catching the lamplight
+    s.fillStyle = '#2a1e18'; s.fillRect(-W, -H, W + 130, H * 3); s.fillRect(950, -H, W * 2, H * 3); s.fillRect(-W, -H, W * 3, H + 260);
+    shape(s, [[130, 260], [950, 260], [950, 330], [130, 330]], C.ochre, C.umber, 18);
+    for (const x of [130, 950]) { line([[x, 260], [x, 2100]], C.umber, 30); line([[x, 260], [x, 2100]], C.ochre, 14); }
+    shape(s, [[130, 330], [250, 380], [250, 2000], [130, 2100]], '#24433f', C.umber, 18);
+    vine(s, [...Array(14)].map((_, i) => [190 + 20 * Math.sin(i * .7), 500 + i * 100]), 16, 8, C.sage);
+    glowAt(540, 300, 700, 'rgba(255,170,90,.16)');
     border(t, 1);
   }
-  // 106.1: the footprints lead off down the avenue toward the tower, glinting one by one on the beat
+  // 106.1: down the avenue his footprints lead away; far off he turns the corner into a side street and is gone
   function prints(t, lt, dur) {
-    cam(540, kf(lt, [[0, 1600], [dur, 1060]]), kf(lt, [[0, 1.05], [dur, 1.0]]));
-    const zc = 2600 + lt * 160;
+    cam(540, kf(lt, [[0, 1500], [1.1, 1060], [dur, 1040]]), kf(lt, [[0, 1.05], [dur, 1.12]]));
+    const zc = 2600 + lt * 160, path = (z) => 120 * Math.sin(z / 1400) - 40;
+    const kz = lerp(2600 + 2600, 2600 + 3700, ease.out(inv(106.1, 107.5, t)));        // his depth along the avenue
     avenue(t, zc, { towerLit: .35 });
-    const path = (z) => 150 * Math.sin(z / 1400) - 60;
-    for (let i = 0; i < 26; i++) {
-      const z = 2600 + 200 + i * 230, Z = z - zc; if (Z < 140 || Z > ZMAX) continue;
-      const sd = i % 2 ? 1 : -1, cx = path(z) + sd * 55, k = FZ / Z, tr = 106.1 + i * .25;
+    // the side street he turns into: a dark gap in the right-hand wall
+    const g0 = kz + 60, g1 = kz + 420;
+    shape(s, [pr(X0, TOP, g0 - zc), pr(X0, TOP, g1 - zc), pr(X0, GY, g1 - zc), pr(X0, GY, g0 - zc)], '#121624', C.umber, 10);
+    glowAt(...pr(X0 + 300, 0, (g0 + g1) / 2 - zc), 90, 'rgba(255,170,90,.35)');
+    for (let i = 0; i < 40; i++) {
+      const z = 2600 + 200 + i * 230; if (z > kz - 120) break; const Z = z - zc; if (Z < 300 || Z > ZMAX) continue;
+      const sd = i % 2 ? 1 : -1, cx = path(z) + sd * 55, k = FZ / Z, tr = 106.1 + i * .16;
       const sole = [...Array(16)].map((_, j) => { const th = j / 16 * TAU; return pr(cx + Math.cos(th) * 42, GY, Z + Math.sin(th) * 95); });
       const heel = [...Array(12)].map((_, j) => { const th = j / 12 * TAU; return pr(cx + Math.cos(th) * 36, GY, Z - 150 + Math.sin(th) * 38); });
       const on = t >= tr ? .3 + .7 * hit(t, tr, 2.5) : 0;
       for (const p of [sole, heel]) shape(s, p, on ? '#5d6f98' : '#3a4566', C.umber, clamp(14 * k, 3, 18));
-      if (on) { const [gx, gy] = pr(cx, GY, Z - 40); glowAt(gx, gy, 160 * k, `rgba(200,225,255,${on})`); }
+      if (on) glowAt(...pr(cx, GY, Z - 40), 160 * k, `rgba(200,225,255,${on})`);
     }
-    rain(t, 60, 65, .28);
+    // him: back view far down the avenue, then sideways into the gap, clipped by the wall's edge
+    const turn = ease.in(inv(107.45, 108.35, t)), KX = lerp(path(kz), X0 + 260, turn), KZ = kz - zc + 240 * turn, kk = FZ / KZ;
+    const [kx, ky] = pr(KX, GY, KZ), edge = pr(X0, GY, KZ)[0];
+    s.save(); s.beginPath(); s.rect(-W, -H, edge + W, H * 3); s.clip();
+    knickerbocker(t, kx, ky, 1750 * kk, { ph: t * 1.0, view: turn > .05 ? 'profile' : 'back', facing: 1, back: 1 });
+    s.restore();
+    rain(t, 70, 65, .32);
     border(t, 1);
   }
   // 108.6: tilt up over the rooftops to the clock tower and push in until its face fills the frame
@@ -425,7 +388,7 @@
   chapter('c05', SEC.v3, SEC.b1, [
     [SEC.v3, street],
     [92.9, swarm],
-    [95.24, lineWide],
+    [95.24, walker],
     [97.5, pocket],
     [99.57, helm],
     [101.57, visor],
