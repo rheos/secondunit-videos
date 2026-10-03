@@ -1,0 +1,7 @@
+{
+  "name": "bobwiseman-airplane-pinball",
+  "private": true,
+  "type": "module",
+  "description": "Bob Wiseman, Airplane on the Highway (2026), drawn in code: 1970s pinball cel cartoon.",
+  "devDependencies": { "playwright": "^1.55.0" }
+}
