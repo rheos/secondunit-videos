@@ -3,6 +3,26 @@
 // there is sky on every side, until it folds back up and the board says 0004.
 (() => {
   const BG = '#1f201c';
+  // ---- the pinball-cel drawing style (pnc.html). Off: the original flat ink. ----
+  const PN = () => !!window.PNC_ON, KK = () => window.PNCK;
+  // deco dressing for a face-on board frame (x0,y0)-(x1,y1): sunburst crest, stepped corners, stars, bolts
+  function decoFrame(x0, y0, x1, y1, crest) {
+    if (!PN()) return; const K = KK(), w = x1 - x0;
+    K.fan((x0 + x1) / 2, y0, crest, 11, Math.PI, TAU, [BRASS, AMBER, CREAM], 1);
+    const st = w * .025;
+    shape([[x0 - st * 2, y0 + st * 2], [x0 + st, y0 - st], [x1 - st, y0 - st], [x1 + st * 2, y0 + st * 2], [x1 + st * 2, y1 + st], [x0 - st * 2, y1 + st]], BRASS, 2);
+  }
+  function decoBolts(x0, y0, x1, y1, r) {
+    if (!PN()) return; const K = KK();
+    for (const [x, y] of [[x0, y0], [x1, y0], [x0, y1], [x1, y1]]) K.ball(x, y, r, BRASS, 1);
+    K.star(x0 - r * 2.2, (y0 + y1) / 2, r * 1.6, CREAM, 1); K.star(x1 + r * 2.2, (y0 + y1) / 2, r * 1.6, CREAM, 1);
+  }
+  // a gloss over a row of flap cells
+  function gloss(x, y, n, step, cw, ch) {
+    if (!PN()) return;
+    for (let i = 0; i < n; i++) { const cx = x + i * step; const g = s.createLinearGradient(cx, y, cx + cw * .6, y + ch * .5);
+      g.addColorStop(0, 'rgba(255,248,230,.22)'); g.addColorStop(1, 'rgba(255,248,230,0)'); s.fillStyle = g; s.fillRect(cx + 2, y + 2, cw - 4, ch * .46); }
+  }
   // the big board, face on: brass frame, four rows of flaps
   const ROWS = [[110.30, 'WE GOT', '0003'], [111.97, 'WE GOT', ''], [113.07, 'WE GOT', ''], [114.62, 'WE GOT', '']];
   const TIME_AT = 116.97;
@@ -12,6 +32,7 @@
     withT(() => {
       s.translate(W / 2, H / 2 + shake); s.scale(zoom, zoom); s.translate(-W / 2, -H / 2);
       ink([[560, -100], [560, 70]], 4); ink([[1360, -100], [1360, 70]], 4);
+      decoFrame(170, 70, W - 170, 1030, 260);
       shape([[170, 70], [W - 170, 70], [W - 170, 1030], [170, 1030]], BRASS, 5);
       shape([[200, 100], [W - 200, 100], [W - 200, 1000], [200, 1000]], '#33332c', 2.5);
       text('NOW SERVING', W / 2, 168, 52, { font: 'sign', color: AMBER, spacing: 10, max: 1360 });
@@ -23,15 +44,33 @@
         else splitFlap(t, 1e9, '', x0 + 7 * step, y, cell, { cols: 4 });
         // the blank sixth-and-seventh cell between words
         splitFlap(t, 1e9, '', x0 + 6 * step, y, cell, { cols: 1 });
+        gloss(x0, y, 11, step, cw, cell);
       });
+      decoBolts(185, 85, W - 185, 1015, 13);
     });
   }
   const flipHits = (t) => ROWS.reduce((a, r) => a + hit(t, r[0], 9), 0) + hit(t, TIME_AT, 7);
 
   // a seated man from behind whose hat lifts (kit seat() keeps its hat on)
+  function pncSitter(b, k, sy, lift, mine) {
+    const K = KK();
+    K.fig([b[0], b[1]], k, 1, (u) => {
+      const lw = 1.2 * u, top = (sy - b[1]) / k, sh = top - .78;
+      for (const lx of [-.34, .34]) line([[lx, 0], [lx, top]], K.LINE, 2 * u);
+      K.blob([[-.42, top - .06], [.42, top - .06], [.42, top + .02], [-.42, top + .02]], '#5d5a4c', lw, false);
+      K.blob([[-.44, top], [.44, top], [.4, sh + .2], [.25, sh], [-.25, sh], [-.4, sh + .2]], mine ? '#4f4c40' : COAT, lw);
+      K.head(0, sh - .1, lw, { back: true, hat: false });
+      if (lift > .05) K.tube([.32, sh + .15], [.42, sh - .1 - lift * .1], [.2, sh - .3 - lift * .3], .05, .045, COAT, lw);
+      withT(() => { s.translate(0, sh - .1 - lift * .3); s.rotate(lift * .25);
+        K.blob([[-.25, -.09], [.25, -.1], [.27, -.06], [0, -.04], [-.27, -.05]], HAT, lw);
+        K.blob([[-.14, -.1], [.14, -.1], [.13, -.27], [.03, -.24], [-.03, -.28], [-.13, -.26]], HAT, lw);
+        s.fillStyle = K.dark(HAT, .5); s.fillRect(-.135, -.15, .27, .04); });
+    });
+  }
   function sitter(x, z, lift, mine = false) {
     const b = P(x, FL, z), k = b[2], w = .42 * k, sy = P(x, .95, z)[1];
     if (b[1] < -50 || k < 2) return;
+    if (PN()) { pncSitter(b, k, sy, lift, mine); if (mine) restingCase(x + .55, z - .1); return; }
     ink([[b[0] - w * .8, b[1]], [b[0] - w * .8, sy]], 1.6); ink([[b[0] + w * .8, b[1]], [b[0] + w * .8, sy]], 1.6);
     shape([[b[0] - w, sy - .06 * k], [b[0] + w, sy - .06 * k], [b[0] + w, sy + .02 * k], [b[0] - w, sy + .02 * k]], '#5d5a4c', 1.4);
     const sh = sy - .78 * k;
@@ -61,7 +100,9 @@
   function hallBoard(t, l1, l2, z = 52, yo = 0) {
     const a = P(-3, -2.25 + yo, z), b = P(3, -.95 + yo, z);
     ink([[P(-2.2, CE + yo, z)[0], P(-2.2, CE + yo, z)[1]], [P(-2.2, -2.25 + yo, z)[0], a[1]]], 2); ink([[P(2.2, CE + yo, z)[0], P(2.2, CE + yo, z)[1]], [P(2.2, -2.25 + yo, z)[0], a[1]]], 2);
+    if (PN()) KK().fan((a[0] + b[0]) / 2, a[1], (b[0] - a[0]) * .32, 9, Math.PI, TAU, [BRASS, AMBER, CREAM], Math.max(.6, a[2] * .01));
     shape([[a[0], a[1]], [b[0], a[1]], [b[0], b[1]], [a[0], b[1]]], BRASS, 3);
+    if (PN()) for (const [px, py] of [[a[0], a[1]], [b[0], a[1]], [a[0], b[1]], [b[0], b[1]]]) KK().ball(px, py, a[2] * .05, BRASS, Math.max(.6, a[2] * .01));
     const m = 6 * a[2] / 60; shape([[a[0] + m, a[1] + m], [b[0] - m, a[1] + m], [b[0] - m, b[1] - m], [a[0] + m, b[1] - m]], BG, 2);
     text(l1, (a[0] + b[0]) / 2, a[1] + (b[1] - a[1]) * .4, a[2] * .32, { font: 'sign', color: AMBER, max: (b[0] - a[0]) * .84 });
     text(l2, (a[0] + b[0]) / 2, a[1] + (b[1] - a[1]) * .86, a[2] * .5, { font: 'sign', color: AMBER, max: (b[0] - a[0]) * .84 });
@@ -77,6 +118,7 @@
   function pool(t, lt) {
     fill('#5d5a4c');
     s.globalAlpha = .3; for (let y = 0; y < H; y += 90) ink([[0, y], [W, y]], 1.2); s.globalAlpha = 1;
+    if (PN()) { s.globalAlpha = .55; KK().fan(W / 2, H + 40, 1250, 15, Math.PI, TAU, ['#6b6a5a', '#5d5a4c', BRASS], 1); s.globalAlpha = 1; }
     let n = 0; for (const [ws, w] of POOL) { if (t < ws) break; n += Math.min(w.length, Math.floor((t - ws) * 14) + 1); }
     const strike = (() => { for (let i = POOL.length - 1; i >= 0; i--) { const d = t - POOL[i][0]; if (d >= 0) return d * 14 < POOL[i][1].length + .5 ? 1 - (d * 14) % 1 : 0; } return 0; })();
     const tiers = [[3, 440, 400], [5, 750, 270], [6, 1065, 228]];
@@ -147,11 +189,13 @@
     const z = kf(t, [[131, 1.08], [133, 1.0]], ease.out);
     withT(() => { s.translate(W / 2, H / 2); s.scale(z, z); s.translate(-W / 2, -H / 2);
       ink([[700, -100], [700, 220]], 4); ink([[1220, -100], [1220, 220]], 4);
+      decoFrame(380, 220, W - 380, 860, 240);
       shape([[380, 220], [W - 380, 220], [W - 380, 860], [380, 860]], BRASS, 5);
       shape([[410, 250], [W - 410, 250], [W - 410, 830], [410, 830]], '#33332c', 2.5);
       text('NOW SERVING', W / 2, 340, 64, { font: 'sign', color: AMBER, spacing: 10, max: 1000 });
       const cell = 330, cw = cell * .72, step = cw + cell * .08, x0 = W / 2 - (4 * step - cell * .08) / 2;
       splitFlap(t, 131.6, '0004', x0, 420, cell, { prev: 'TIME' });
+      gloss(x0, 420, 4, step, cw, cell); decoBolts(395, 235, W - 395, 845, 14);
     });
   }
 

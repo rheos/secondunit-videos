@@ -13,6 +13,21 @@
     for (let i = words.length - 1; i >= 0; i--) { const [ws, w] = words[i]; if (t >= ws) { const d = t - ws; if (d * cps > w.length + .5) return 0; return 1 - ((d * cps) % 1); } }
     return 0;
   }
+  // ---- the pinball-cel drawing style (pnc.html): soft volumes, fine lines. Off: the original flat ink. ----
+  const PN = () => !!window.PNC_ON, KK = () => window.PNCK;
+  function oval(x, y, rx, ry, rot, c, w = 3) {   // a filled ellipse with an outline
+    s.beginPath(); s.ellipse(x, y, rx, ry, rot, 0, TAU);
+    if (PN()) { const K = KK(); K.soft(c, x - rx, y - ry, x + rx, y + ry); s.lineWidth = Math.max(.8, w * .4); s.strokeStyle = K.dark(c, .55); s.stroke(); }
+    else { s.fillStyle = c; s.fill(); s.lineWidth = w; s.strokeStyle = INK; s.stroke(); }
+  }
+  const knob = (x, y, r, c = INK) => PN() ? KK().ball(x, y, r, c === INK ? '#3a3631' : c, 1) : dot(x, y, r, c);
+  const ringLine = (w) => { s.lineWidth = PN() ? Math.max(.8, w * .4) : w; s.strokeStyle = PN() ? KK().LINE : INK; };
+  // deco corner ornament for frames and plates (only in the pinball style)
+  function decoCorners(x0, y0, x1, y1, r, c = BRASS) {
+    if (!PN()) return; const K = KK();
+    K.fan(x0, y0, r, 4, 0, Math.PI / 2, [c, CREAM], 1); K.fan(x1, y0, r, 4, Math.PI / 2, Math.PI, [c, CREAM], 1);
+    K.fan(x1, y1, r, 4, Math.PI, Math.PI * 1.5, [c, CREAM], 1); K.fan(x0, y1, r, 4, Math.PI * 1.5, TAU, [c, CREAM], 1);
+  }
   const tiled = (c = WALL) => { fill(c); s.globalAlpha = .45; for (let y = 0; y < H + 120; y += 120) for (let x = -240; x < W + 240; x += 240) { ink([[x, y], [x + 240, y]], 1.2); const o = (y / 120) % 2 ? 120 : 0; ink([[x + o, y], [x + o, y + 120]], 1.2); } s.globalAlpha = 1; };
   // a paper plane at screen (x, y), heading angle a, size sc
   function plane(x, y, a, sc) { withT(() => { s.translate(x, y); s.rotate(a); s.scale(sc, sc); shape([[0, 0], [-120, -22], [-90, 0], [-120, 26]], CREAM, 2.5 / Math.max(.3, sc)); ink([[0, 0], [-90, 0]], 1.5 / Math.max(.3, sc)); }); }
@@ -38,17 +53,17 @@
       shape([[520, 60], [260, -40], [200, 90], [520, 230]], SLEEVE, 3);
       hatch([[520, 140], [230, 40], [200, 90], [520, 230]], .9, 9, 1.4, .4);
       shape([[275, -32], [245, -42], [190, 95], [222, 108]], ROSE, 2.5);     // the rose cuff
-      s.beginPath(); s.ellipse(130, 40, 95, 62, .35, 0, TAU); s.fillStyle = SKIN; s.fill(); s.lineWidth = 3; s.strokeStyle = INK; s.stroke();
-      s.beginPath(); s.ellipse(30, 10, 62, 22, .2, 0, TAU); s.fillStyle = SKIN; s.fill(); s.stroke();   // thumb on the paper
+      oval(130, 40, 95, 62, .35, SKIN); oval(30, 10, 62, 22, .2, SKIN);   // mitten and the thumb on the paper
       ink([[110, 70], [60, 60]], 2); ink([[120, 95], [75, 92]], 2);
+      if (PN()) knob(258, 30, 9, CREAM);   // a cuff button
     });
   }
   function hisGlove(sc = 1) {
     withT(() => { s.scale(sc, sc);
       shape([[-520, 60], [-260, -40], [-200, 90], [-520, 230]], COAT, 3);
       hatch([[-520, 140], [-230, 40], [-200, 90], [-520, 230]], .9, 9, 1.4, .45);
-      s.beginPath(); s.ellipse(-130, 40, 105, 75, -.35, 0, TAU); s.fillStyle = GLOVE; s.fill(); s.lineWidth = 3; s.strokeStyle = INK; s.stroke();
-      s.beginPath(); s.ellipse(-30, 10, 66, 26, -.2, 0, TAU); s.fillStyle = GLOVE; s.fill(); s.stroke();
+      oval(-130, 40, 105, 75, -.35, GLOVE); oval(-30, 10, 66, 26, -.2, GLOVE);
+      if (PN()) { s.globalAlpha = .5; oval(-165, 5, 30, 14, -.5, '#8a8576', 1); s.globalAlpha = 1; }   // the shine on the leather
     });
   }
   // her desk sits across the hall, front left, under its own branch of duct
@@ -58,7 +73,7 @@
     const top = P(DX - .2, CE, HZ), bot = P(DX - .2, -.9, HZ), r = .22 * top[2];
     shape([[top[0] - r, top[1]], [top[0] + r, top[1]], [bot[0] + r, bot[1]], [bot[0] - r, bot[1]]], STEEL, 2);
     hatch([[top[0] + r * .2, top[1]], [top[0] + r, top[1]], [bot[0] + r, bot[1]], [bot[0] + r * .2, bot[1]]], .9, 7, 1, .4);
-    for (let y = CE + .4; y < -.9; y += .45) { const p = P(DX - .2, y, HZ); s.lineWidth = 1.6; s.strokeStyle = INK; s.beginPath(); s.ellipse(p[0], p[1], r, r * .3, 0, 0, TAU); s.stroke(); }
+    for (let y = CE + .4; y < -.9; y += .45) { const p = P(DX - .2, y, HZ); ringLine(1.6); s.beginPath(); s.ellipse(p[0], p[1], r, r * .3, 0, 0, TAU); s.stroke(); }
     const m = P(DX - .2, -.9, HZ); shape([[m[0] - r, m[1]], [m[0] + r, m[1]], [m[0] + r * 1.8, m[1] + r * 1.1], [m[0] - r * 1.8, m[1] + r * 1.1]], BRASS, 2);   // bell mouth
     desk(DX, HZ, 1);
     return woman(HX, HZ, { seated: true, face: 1, rose: 1, arm: o.arm || 0, look: o.look || 0 });
@@ -74,7 +89,7 @@
     // the torn ceiling all round the frame
     withT(() => { s.beginPath(); s.rect(-50, -50, W + 100, H + 100);
       for (let i = 0; i <= 44; i++) { const a = i / 44 * TAU, j = 1 + (hash(i * 23 + 5) - .5) * .35, x = W / 2 + Math.cos(a) * 820 * j, y = H / 2 + Math.sin(a) * 470 * j; i ? s.lineTo(x, y) : s.moveTo(x, y); }
-      s.fillStyle = '#3d4140'; s.fill('evenodd'); s.lineWidth = 4; s.strokeStyle = INK; s.stroke(); });
+      s.fillStyle = '#3d4140'; s.fill('evenodd'); ringLine(4); s.stroke(); });
     // the patch: comes in huge and slaps down on 58.2
     const k = ease.in(inv(58.12, 58.2, t)), sc = lerp(1.35, 1, k);
     if (t > 58.12) withT(() => {
@@ -109,7 +124,8 @@
     tiled();
     // the board, soft, upper left (his was upper right)
     withT(() => { s.globalAlpha = .55; shape([[140, 120], [940, 120], [940, 470], [140, 470]], BRASS, 4); shape([[170, 150], [910, 150], [910, 440], [170, 440]], '#1f201c', 2);
-      text('0003', 540, 410, 210, { font: 'sign', color: AMBER, max: 660 }); });
+      text('0003', 540, 410, 210, { font: 'sign', color: AMBER, max: 660 });
+      if (PN()) { KK().fan(540, 120, 230, 9, Math.PI, TAU, [BRASS, AMBER, CREAM], 1); for (const [x, y] of [[140, 120], [940, 120], [140, 470], [940, 470]]) knob(x, y, 14, BRASS); } });
     const k = ease.out(inv(62.85, 63.7, t));
     withT(() => {
       s.translate(1180 + Math.sin(t * 1.2) * 5, 700 + Math.sin(t * 1.9) * 4); s.rotate(.12); s.scale(1.35, 1.35);
@@ -156,7 +172,7 @@
         for (let i = 0; i < 6; i++) withT(() => { s.rotate(i / 6 * TAU + b * .3); s.scale(b, b);
           shape([[0, 0], [70, -90], [0, -240], [-70, -90]], i % 2 ? ROSE : '#d65a6c', 3); ink([[0, -20], [0, -200]], 1.4); });
         for (let i = 0; i < 5; i++) withT(() => { s.rotate(i / 5 * TAU + .6); s.scale(b, b); shape([[0, 0], [45, -55], [0, -130], [-45, -55]], ROSE_L, 2.5); });
-        dot(0, 0, 26 * b, '#a83246');
+        knob(0, 0, 26 * b + .1, '#a83246');
       }
     });
     // his gloved hands come in from both sides on each fold
@@ -174,7 +190,7 @@
     // two vast ducts across the top
     const bigDuct = (y0, h, c) => { shape([[-40, y0], [W + 40, y0], [W + 40, y0 + h], [-40, y0 + h]], c, 3);
       hatch([[-40, y0 + h * .65], [W + 40, y0 + h * .65], [W + 40, y0 + h], [-40, y0 + h]], .9, 8, 1.2, .45);
-      const off = (t * 18) % 140; for (let x = -off; x < W + 140; x += 140) { s.lineWidth = 3; s.strokeStyle = INK; s.beginPath(); s.ellipse(x, y0 + h / 2, 16, h / 2, 0, 0, TAU); s.stroke(); } };
+      const off = (t * 18) % 140; for (let x = -off; x < W + 140; x += 140) { ringLine(3); s.beginPath(); s.ellipse(x, y0 + h / 2, 16, h / 2, 0, 0, TAU); s.stroke(); } };
     bigDuct(-20, 230, STEEL); bigDuct(225, 150, STEEL_D);
     for (let x = 200; x < W; x += 480) { ink([[x, 210], [x, 225]], 6); ink([[x + 30, 375], [x + 30, 440]], 4); }
     // the glass tube
@@ -187,8 +203,9 @@
       shape([[x - tr, ty + 210], [x + tr, ty + 210], [x + tr * 2, ty + 250], [x - tr * 2, ty + 250]], BRASS, 2.5); }
     // the row of seated hats along the floor
     for (let i = 0; i < 26; i++) { const x = 470 + i * 38; if (x > 1420) break; const b = 900;
-      shape([[x - 13, b - 6], [x + 13, b - 6], [x + 11, b - 48], [x - 11, b - 48]], COAT, 1.2); dot(x, b - 56, 8, SKIN);
-      s.beginPath(); s.ellipse(x, b - 62, 15, 3.5, 0, 0, TAU); s.fillStyle = HAT; s.fill(); s.lineWidth = 1.2; s.strokeStyle = INK; s.stroke(); s.fillRect(x - 8, b - 74, 16, 12); }
+      shape([[x - 13, b - 6], [x + 13, b - 6], [x + 11, b - 48], [x - 11, b - 48]], COAT, 1.2);
+      if (PN()) { knob(x, b - 56, 8, SKIN); oval(x, b - 62, 15, 3.5, 0, HAT, 1.2); oval(x, b - 69, 8, 7, 0, HAT, 1.2); }
+      else { dot(x, b - 56, 8, SKIN); s.beginPath(); s.ellipse(x, b - 62, 15, 3.5, 0, 0, TAU); s.fillStyle = HAT; s.fill(); s.lineWidth = 1.2; s.strokeStyle = INK; s.stroke(); s.fillRect(x - 8, b - 74, 16, 12); } }
     s.fillStyle = '#a7a48f'; s.fillRect(-20, 900, W + 40, 200); ink([[-20, 900], [W + 20, 900]], 3);
     // him, reaching up; her at her desk
     man(-5.2, Z, { face: 1, arm: smooth(inv(68.0, 68.5, t)) * (1 - smooth(inv(69.3, 69.8, t))) });
@@ -200,7 +217,8 @@
     else if (t < 70.1) { cx = lerp(ix, ox, across); cy = ty; vert = false; }
     else { cx = ox; cy = lerp(ty, ty + 200, down); }
     if (t > 68.4) withT(() => { s.translate(cx, cy); if (!vert) s.rotate(Math.PI / 2);
-      shape([[-20, -38], [20, -38], [20, 38], [-20, 38]], BRASS, 2.5); dot(0, 0, 11, ROSE);
+      shape([[-20, -38], [20, -38], [20, 38], [-20, 38]], BRASS, 2.5); knob(0, 0, 11, ROSE);
+      if (PN()) { knob(0, -38, 8, BRASS); knob(0, 38, 8, BRASS); }
       if (!vert && across > .05 && across < .99) { s.globalAlpha = .6; for (let i = 0; i < 4; i++) ink([[-14 + i * 9, 50], [-14 + i * 9, 50 + 90 * across]], 2); } });
   }
   // 70.83 at her desk: the canister drops out of the bell, pops, the rose flower is hers, and the
@@ -210,7 +228,7 @@
     fill('#4d5250');
     // the filing wall behind her, flat
     s.fillStyle = WALL; s.fillRect(-20, -20, W + 40, H + 40);
-    for (let y = -40; y < H; y += 150) for (let x = -60; x < W; x += 230) { shape([[x + 8, y + 8], [x + 222, y + 8], [x + 222, y + 142], [x + 8, y + 142]], (hash(x * 3 + y) > .85) ? '#7a8274' : '#8f9886', 1.4); dot(x + 115, y + 75, 6, INK); }
+    for (let y = -40; y < H; y += 150) for (let x = -60; x < W; x += 230) { shape([[x + 8, y + 8], [x + 222, y + 8], [x + 222, y + 142], [x + 8, y + 142]], (hash(x * 3 + y) > .85) ? '#7a8274' : '#8f9886', 1.4); knob(x + 115, y + 75, 6, PN() ? BRASS : INK); }
     const fl = P(0, FL, HZ)[1]; s.fillStyle = '#a7a48f'; s.fillRect(-20, fl, W + 40, H); ink([[-20, fl], [W + 20, fl]], 3);
     const flowerUp = ease.out(inv(72.4, 72.9, t)), reach = smooth(inv(72.6, 73.1, t));
     const me = herCorner(t, { arm: -reach * .55, look: reach });
@@ -226,7 +244,7 @@
       const x = lerp(fx0, hx, reach), y = lerp(fy0 + .2 * k * (1 - flowerUp), hy, reach);
       ink([[x, y], [x + .02 * k, y + .3 * k]], 3);
       for (let i = 0; i < 6; i++) withT(() => { s.translate(x, y); s.rotate(i / 6 * TAU); s.scale(flowerUp * .22, flowerUp * .22); shape([[0, 0], [70, -90], [0, -240], [-70, -90]], i % 2 ? ROSE : '#d65a6c', 10); });
-      dot(x, y, .025 * k * flowerUp, '#a83246'); }
+      knob(x, y, .025 * k * flowerUp + .1, '#a83246'); }
     // ticker tape streams out of the open canister, to the right: BUT I AIN'T CARRYING FLOWERS
     const cx0 = bell[0] + .28 * k, cy0 = deskTop - .3 * k;
     const L = clamp((t - 72.45) * 1300, 0, W - cx0 + 40);
@@ -249,7 +267,9 @@
     const z = kf(t, [[74.32, 1], [79.9, 1.04]], ease.sine);
     withT(() => { s.translate(W / 2, H / 2); s.scale(z, z); s.translate(-W / 2, -H / 2);
       shape([[60, 40], [W - 60, 40], [W - 60, H - 40], [60, H - 40]], CREAM, 3); ink([[80, 60], [W - 80, 60], [W - 80, H - 60], [80, H - 60], [80, 60]], 1.5);
-      text('REGULATION DRESS, PLATE 4', W / 2, 130, 44, { font: 'sign', spacing: 6, max: 1400 });
+      decoCorners(80, 60, W - 80, H - 60, 90);
+      if (PN()) { KK().star(520, 128, 18, BRASS, 1); KK().star(W - 520, 128, 18, BRASS, 1); }
+      text('REGULATION DRESS, PLATE 4', W / 2, 130, 44, { font: 'sign', spacing: 6, max: 680 });
       ink([[560, 150], [W - 560, 150]], 1.5);
       cam({ x: 0, y: 0, z: 0, f: 820, vy: 300 });
       const Z = 2.75, fl = P(0, FL, Z)[1];
@@ -267,12 +287,14 @@
       text('FIG. 1', P(-1.05, 0, Z)[0], fl + 50, 26, { font: 'sign', max: 200 }); text('FIG. 2', P(1.05, 0, Z)[0], fl + 50, 26, { font: 'sign', max: 200 });
       // the typed line
       const n = typed(t, DRESSED), str = DRESSED.map(w => w[1]).join('');
-      text(str.slice(0, n), 160, 980, 58, { align: 'left', spacing: 2, max: 1120, fitTo: str });
+      text(str.slice(0, n), 210, 980, 58, { align: 'left', spacing: 2, max: 1070, fitTo: str });
       stamp(t, 77.32, 1540, 985, 'REGULATION GREY', { size: 44, color: INK, rot: -.07 });
     });
   }
   // 79.90 straight down from the ceiling: the grid of hats, her desk at the edge, the rose flower the
   // only colour. On his line's "I" his hat lifts: the one hat in the room that moves.
+  // a hat seen from straight above: brim and crown (glossy crown in the pinball style)
+  function hatTop() { oval(0, 0, 36, 36, 0, HAT, 1.6); if (PN()) { KK().ball(0, 0, 21, '#3a3731', .8); } else oval(0, 0, 21, 21, 0, '#2f2d28', 1.6); }
   function overhead(t, lt) {
     const zm = kf(t, [[79.9, 1], [87.5, 1.22]], ease.sine);
     fill('#a7a48f');
@@ -290,21 +312,20 @@
       for (let r = 0; r < 8; r++) for (let c = 0; c < cols.length; c++) {
         const x = cols[c], y = 150 + r * 105; const mine = r === 6 && c === 6;
         shape([[x - 40, y + 4], [x + 40, y + 4], [x + 36, y + 40], [x - 36, y + 40]], '#6e6a5a', 1.4);   // chair back
-        s.beginPath(); s.ellipse(x, y - 2, 46, 30, 0, 0, TAU); s.fillStyle = mine ? '#4f4c40' : COAT; s.fill(); s.lineWidth = 1.6; s.strokeStyle = INK; s.stroke();  // shoulders
+        oval(x, y - 2, 46, 30, 0, mine ? '#4f4c40' : COAT, 1.6);  // shoulders
         if (mine) { const lift = ease.out(inv(81.95, 82.4, t)) * (1 - ease.inOut(inv(84.5, 85.2, t)));
-          dot(x, y - 4, 22, SKIN); s.beginPath(); s.arc(x, y - 4, 22, 0, TAU); s.stroke();
-          withT(() => { s.translate(x + lift * 60, y - 4 - lift * 70); s.scale(1 + lift * .35, 1 + lift * .35); s.rotate(-lift * .3);
-            s.beginPath(); s.arc(0, 0, 36, 0, TAU); s.fillStyle = HAT; s.fill(); s.stroke(); s.beginPath(); s.arc(0, 0, 21, 0, TAU); s.fillStyle = '#2f2d28'; s.fill(); s.stroke(); });
+          oval(x, y - 4, 22, 22, 0, SKIN, 1.6);
+          withT(() => { s.translate(x + lift * 60, y - 4 - lift * 70); s.scale(1 + lift * .35, 1 + lift * .35); s.rotate(-lift * .3); hatTop(); });
           guitarCase(x + 66, y + 2, 90, { rot: Math.PI / 2 });   // the case, from above
-        } else { s.beginPath(); s.arc(x, y - 4, 36, 0, TAU); s.fillStyle = HAT; s.fill(); s.stroke(); s.beginPath(); s.arc(x, y - 4, 21, 0, TAU); s.fillStyle = '#2f2d28'; s.fill(); s.stroke(); }
+        } else withT(() => { s.translate(x, y - 4); hatTop(); });
       }
       // her desk, at the left, side on to the rows; the flower on it
       shape([[110, 470], [250, 470], [250, 690], [110, 690]], '#5d5a4c', 2.5);
       shape([[140, 540], [220, 540], [220, 620], [140, 620]], '#2e2d28', 2);
       shape([[150, 525], [210, 525], [210, 545], [150, 545]], CREAM, 1.4);
-      s.beginPath(); s.ellipse(60, 580, 40, 30, 0, 0, TAU); s.fillStyle = '#77756a'; s.fill(); s.lineWidth = 1.6; s.strokeStyle = INK; s.stroke();
-      dot(66, 580, 20, '#2d2a24'); dot(44, 580, 11, '#2d2a24');
-      dot(80, 566, 6, ROSE);
+      oval(60, 580, 40, 30, 0, '#77756a', 1.6);
+      knob(66, 580, 20, '#2d2a24'); knob(44, 580, 11, '#2d2a24');
+      knob(80, 566, 6, ROSE);
       for (let p = 0; p < 6; p++) { const a = p / 6 * TAU + t * .2; dot(190 + Math.cos(a) * 14, 650 + Math.sin(a) * 14, 10, p % 2 ? ROSE : '#d65a6c'); } dot(190, 650, 7, '#a83246');
       // the board along the top wall
       shape([[760, 70], [1160, 70], [1160, 108], [760, 108]], BRASS, 2); s.fillStyle = '#1f201c'; s.fillRect(770, 76, 380, 26);
@@ -316,32 +337,36 @@
     fill(STEEL_D);
     const pull = ease.back(inv(92.43, 92.85, t));
     shape([[90, 220], [W - 90, 220], [W - 90, H + 20], [90, H + 20]], STEEL, 3);
+    if (PN()) { for (const x of [110, W - 110]) for (let y = 250; y < H; y += 180) knob(x, y, 9, BRASS); }
     s.globalAlpha = .35; for (let y = 240; y < H; y += 26) ink([[100, y], [W - 100, y]], 1); s.globalAlpha = 1;
     for (let r = 0; r < 3; r++) for (let c = 0; c < 11; c++) {
       const x = 210 + c * 150, y = 300 + r * 200; if (r === 2 && (c === 4 || c === 5 || c === 6)) continue;
       shape([[x - 14, y], [x + 14, y], [x + 14, y + 110], [x - 14, y + 110]], '#2a2a24', 1.6);
       const down = hash(r * 31 + c * 7) > .7; const ang = down ? .5 : -.5;
-      ink([[x, y + 55], [x + Math.sin(ang) * 80, y + 55 - Math.cos(ang) * 80 * (down ? -1 : 1)]], 7);
-      dot(x + Math.sin(ang) * 80, y + 55 - Math.cos(ang) * 80 * (down ? -1 : 1), 14, INK);
+      const lt = [x + Math.sin(ang) * 80, y + 55 - Math.cos(ang) * 80 * (down ? -1 : 1)];
+      if (PN()) { line([[x, y + 55], lt], KK().LINE, 9); line([[x, y + 55], lt], '#b9b3a0', 6); knob(lt[0], lt[1], 14, '#3a3631'); knob(x, y + 55, 6, BRASS); }
+      else { ink([[x, y + 55], lt], 7); dot(lt[0], lt[1], 14, INK); }
       shape([[x - 42, y + 122], [x + 42, y + 122], [x + 42, y + 156], [x - 42, y + 156]], CREAM, 1.4);
       text(String(1000 + Math.floor(hash(r * 11 + c) * 8999)), x, y + 149, 26, { max: 72 });
     }
     // the clock on top, ticking on the beat until they pull
     const cx = W / 2, cy = 150, R = 120;
-    s.beginPath(); s.arc(cx, cy, R, 0, TAU); s.fillStyle = CREAM; s.fill(); s.lineWidth = 5; s.strokeStyle = INK; s.stroke();
+    if (PN()) { KK().fan(cx, cy, R * 1.55, 12, Math.PI, TAU, [BRASS, CREAM], 1); KK().ball(cx, cy, R * 1.08, BRASS, 1); }
+    oval(cx, cy, R, R, 0, CREAM, 5);
     for (let i = 0; i < 12; i++) { const a = i / 12 * TAU; ink([[cx + Math.cos(a) * R * .8, cy + Math.sin(a) * R * .8], [cx + Math.cos(a) * R * .93, cy + Math.sin(a) * R * .93]], 3); }
     const stopBeat = lastBeat(92.43), b = Math.min(lastBeat(t), stopBeat);
     ink([[cx, cy], [cx + Math.cos(-1.1) * R * .5, cy + Math.sin(-1.1) * R * .5]], 8);
     ink([[cx, cy], [cx + Math.cos(.4) * R * .75, cy + Math.sin(.4) * R * .75]], 5);
     const sa = -Math.PI / 2 + b * TAU / 60 + (t < 92.43 ? 0 : Math.sin((t - 92.43) * 30) * .04 * Math.exp(-(t - 92.43) * 4));
     line([[cx, cy], [cx + Math.cos(sa) * R * .88, cy + Math.sin(sa) * R * .88]], '#8a2a1e', 2.5);
-    dot(cx, cy, 9, INK);
+    knob(cx, cy, 9, PN() ? BRASS : INK);
     // the small lever, its own little frame, no number
     const lx = W / 2, ly = 760;
     shape([[lx - 150, ly - 90], [lx + 150, ly - 90], [lx + 150, ly + 250], [lx - 150, ly + 250]], '#6b6a5a', 3);
     shape([[lx - 12, ly + 10], [lx + 12, ly + 10], [lx + 12, ly + 110], [lx - 12, ly + 110]], '#2a2a24', 1.6);
     const ph = pull * Math.PI, tip = [lx + Math.sin(ph) * 14, ly + 60 - Math.cos(ph) * 120], kr = 16 * (1 + Math.sin(ph) * .5);
-    ink([[lx, ly + 60], tip], 8 * (1 + Math.sin(ph) * .3)); dot(tip[0], tip[1], kr, INK);
+    if (PN()) { line([[lx, ly + 60], tip], KK().LINE, 11 * (1 + Math.sin(ph) * .3)); line([[lx, ly + 60], tip], '#b9b3a0', 8 * (1 + Math.sin(ph) * .3)); knob(tip[0], tip[1], kr, ROSE); }
+    else { ink([[lx, ly + 60], tip], 8 * (1 + Math.sin(ph) * .3)); dot(tip[0], tip[1], kr, INK); }
     shape([[lx - 40, ly + 200], [lx + 40, ly + 200], [lx + 40, ly + 232], [lx - 40, ly + 232]], CREAM, 1.4);
     // hands: his glove from the left, hers from the right; both on the knob by 91.5
     const inL = ease.out(inv(88.3, 90.6, t)), inR = ease.out(inv(89.0, 91.4, t));
@@ -366,7 +391,7 @@
       for (const side of [-1, 1]) { const x = W / 2 + side * 170, y = 845 - (side > 0 ? hop : (1 - hop) * .4) * 18;
         shape([[x + side * 60, y + 20], [x + side * 260, y + 140], [x + side * 220, y + 230], [x + side * 10, y + 80]], SLEEVE, 2.5);
         shape([[x + side * 40, y + 8], [x + side * 80, y + 34], [x + side * 40, y + 96], [x, y + 70]], ROSE, 2);
-        s.beginPath(); s.ellipse(x, y + 20, 58, 36, side * .3, 0, TAU); s.fillStyle = SKIN; s.fill(); s.lineWidth = 2.5; s.strokeStyle = INK; s.stroke(); }
+        oval(x, y + 20, 58, 36, side * .3, SKIN, 2.5); }
     });
   }
   // 102.77 close on the memo itself: IT UP strikes in, letter by letter.
@@ -375,6 +400,7 @@
     const n = typed(t, MAKING);
     withT(() => { s.translate(W / 2 + 20, H / 2 + 30); s.rotate(-.035);
       shape([[-760, -440], [760, -440], [760, 600], [-760, 600]], CREAM, 4);
+      decoCorners(-760, -440, 760, 600, 55, '#c9bf9c');
       text('MEMO', 700, -370, 40, { font: 'sign', align: 'right', spacing: 6, max: 300 });
       text('TO: 7 436 912', -680, -370, 34, { align: 'left', max: 600 });
       s.globalAlpha = .35; for (let l = 0; l < 4; l++) ink([[-680, -150 + l * 240], [680, -150 + l * 240]], 1.6); s.globalAlpha = 1;
