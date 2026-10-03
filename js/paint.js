@@ -117,8 +117,16 @@ const Paint = (() => {
     o = vec4(mix(c, g, uGround * (1. - dm)), 1);
   }`;
   const FS_INK = `#version 300 es
-  precision highp float; in vec2 vUV; uniform sampler2D uInk; out vec4 o;
-  void main(){ o = texture(uInk, vec2(vUV.x, 1.-vUV.y)); }`;
+  precision highp float; in vec2 vUV; uniform sampler2D uInk; uniform float uInkSoft; out vec4 o;
+  float h(vec2 p){ return fract(sin(dot(p, vec2(12.9898,78.233)))*43758.5453); }
+  float n2(vec2 p){ vec2 i=floor(p), f=fract(p); f=f*f*(3.-2.*f); return mix(mix(h(i),h(i+vec2(1,0)),f.x),mix(h(i+vec2(0,1)),h(i+vec2(1,1)),f.x),f.y); }
+  void main(){
+    vec2 px = gl_FragCoord.xy;
+    // inkSoft: wobble the edges a pixel or two and let a little paint breathe through, so the overlay sits in the paint
+    vec2 j = (vec2(n2(px*.09), n2(px*.09 + 17.)) - .5) * 2.2 * uInkSoft / vec2(${W}.0, ${H}.0);
+    vec4 c = texture(uInk, vec2(vUV.x, 1.-vUV.y) + j);
+    c.a *= 1. - uInkSoft * .12 * n2(px*.35);
+    o = c; }`;
   const FS_FINISH = `#version 300 es
   precision highp float; in vec2 vUV; uniform sampler2D uFx, uFxb; uniform float uTime, uGrain, uVig, uBloom, uFrame; out vec4 o;
   float h(vec2 p){ return fract(sin(dot(p, vec2(12.9898,78.233)))*43758.5453); }
@@ -208,7 +216,7 @@ const Paint = (() => {
     });
     // ink over paint, unbrushed
     gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ZERO, gl.ONE);
-    gl.useProgram(progInk); gl.activeTexture(gl.TEXTURE3); gl.bindTexture(gl.TEXTURE_2D, texInk); gl.uniform1i(gl.getUniformLocation(progInk, 'uInk'), 3);
+    gl.useProgram(progInk); gl.activeTexture(gl.TEXTURE3); gl.bindTexture(gl.TEXTURE_2D, texInk); gl.uniform1i(gl.getUniformLocation(progInk, 'uInk'), 3); gl.uniform1f(gl.getUniformLocation(progInk, 'uInkSoft'), o.inkSoft ?? 0);
     gl.bindVertexArray(quadVao); gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
     // light + finish
     gl.useProgram(progFinish); const F = (n) => gl.getUniformLocation(progFinish, n);

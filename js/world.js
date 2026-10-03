@@ -229,6 +229,7 @@ function eye(cx, cy, rx, ry, o, seed) {
   if (lid > .02) { const ly = cy - ry + lid * ry * 2.05; s.save(); eyePath(s, cx, cy, rx * 1.1, ry * 1.1, seed); s.clip(); s.fillStyle = lidCol; s.fillRect(cx - rx * 1.2, cy - ry * 1.3, rx * 2.4, ly - (cy - ry * 1.3)); s.restore(); }
   if (!ink) return;
   const g = ik, lw = Math.max(rx * .1, 1.2);
+  if (o.painted) return paintedEye(g, cx, cy, rx, ry, px, py, pr, lw, o, seed);
   g.save(); eyePath(g, cx, cy, rx, ry, seed); g.fillStyle = PC.eye; g.fill(); g.clip();
   g.fillStyle = 'rgba(169,185,226,.55)'; g.beginPath(); g.ellipse(cx, cy + ry * .55, rx * 1.1, ry * .6, 0, 0, TAU); g.fill(); // lower shade
   dot(g, px, py, pr, PC.pupil); dot(g, px - pr * .32, py - pr * .36, pr * .34, '#fffdf4'); dot(g, px + pr * .3, py + pr * .3, pr * .12, '#fffdf4');
@@ -242,6 +243,32 @@ function eye(cx, cy, rx, ry, o, seed) {
   g.restore();
   g.strokeStyle = PG.indigo; g.lineWidth = lw; g.lineJoin = 'round'; eyePath(g, cx, cy, rx, ry, seed); g.stroke();
   g.save(); g.globalAlpha *= .35; g.lineWidth = lw * .6; eyePath(g, cx + lw * .4, cy + lw * .3, rx * 1.02, ry * 1.02, seed + 3); g.stroke(); g.restore();
+}
+// v2 eye: built like a painted one. Warm-to-lilac white laid in with a few curved strokes, a soft
+// ultramarine pupil, and a contour of uneven ultramarine strokes that matches the body's outline.
+function paintedEye(g, cx, cy, rx, ry, px, py, pr, lw, o, seed) {
+  const { lid = 0, squint = 0, lidCol = PC.body } = o;
+  g.save(); eyePath(g, cx, cy, rx, ry, seed); g.clip();
+  g.fillStyle = rgrad(g, cx - rx * .3, cy - ry * .35, 0, ry * 1.4, [[0, '#fffbef'], [.6, '#f7f0e2'], [1, '#c9c3e6']]); g.fillRect(cx - rx * 1.2, cy - ry * 1.2, rx * 2.4, ry * 2.4);
+  for (let k = 0; k < 5; k++) { // brush marks inside the white
+    const a0 = hash(seed * 31 + k) * TAU, r = .45 + .45 * hash(seed * 17 + k);
+    g.strokeStyle = k % 2 ? 'rgba(255,248,226,.55)' : 'rgba(190,184,228,.35)'; g.lineWidth = rx * (.12 + .1 * hash(seed + k * 3)); g.lineCap = 'round';
+    g.beginPath(); g.ellipse(cx, cy, rx * r, ry * r, 0, a0, a0 + 1.1); g.stroke();
+  }
+  g.fillStyle = rgrad(g, px, py, pr * .2, pr * 1.08, [[0, PG.indigo], [.75, '#26338a'], [1, 'rgba(42,58,158,0)']]); g.beginPath(); g.arc(px, py, pr * 1.08, 0, TAU); g.fill();
+  dot(g, px - pr * .34, py - pr * .38, pr * .3, 'rgba(255,253,244,.95)'); dot(g, px + pr * .32, py + pr * .3, pr * .1, 'rgba(255,253,244,.8)');
+  if (lid > .02) { const ly = cy - ry + lid * ry * 2.05;
+    g.fillStyle = lidCol; g.beginPath(); g.moveTo(cx - rx * 1.2, cy - ry * 1.3); g.lineTo(cx + rx * 1.2, cy - ry * 1.3); g.lineTo(cx + rx * 1.2, ly); g.quadraticCurveTo(cx, ly + ry * .25, cx - rx * 1.2, ly); g.closePath(); g.fill();
+    g.strokeStyle = PG.ultra; g.lineWidth = lw; g.beginPath(); g.moveTo(cx - rx * 1.2, ly); g.quadraticCurveTo(cx, ly + ry * .25, cx + rx * 1.2, ly); g.stroke(); }
+  if (squint > .02) { const sy = cy + ry - squint * ry * .9;
+    g.fillStyle = lidCol; g.beginPath(); g.moveTo(cx - rx * 1.2, cy + ry * 1.3); g.lineTo(cx + rx * 1.2, cy + ry * 1.3); g.lineTo(cx + rx * 1.2, sy); g.quadraticCurveTo(cx, sy - ry * .3, cx - rx * 1.2, sy); g.closePath(); g.fill();
+    g.strokeStyle = PG.ultra; g.lineWidth = lw; g.beginPath(); g.moveTo(cx - rx * 1.2, sy); g.quadraticCurveTo(cx, sy - ry * .3, cx + rx * 1.2, sy); g.stroke(); }
+  g.restore();
+  g.lineCap = 'round'; g.strokeStyle = PG.ultra;
+  for (let k = 0; k < 4; k++) { // uneven contour: four overlapping arcs of different weight
+    const a0 = k * TAU / 4 + hash(seed * 7 + k) * .6 - .3; g.lineWidth = lw * (.9 + .9 * hash(seed * 13 + k));
+    g.beginPath(); g.ellipse(cx, cy, rx * 1.02, ry * 1.02, 0, a0, a0 + TAU / 4 + .5); g.stroke();
+  }
 }
 // mouth: L, R corners, smile (-1..1), open (0..1)
 function mouth(L, R, smile, open, w) {
@@ -275,15 +302,16 @@ const FUSE = [[285, -5], [275, -62], [225, -100], [110, -114], [-30, -112], [-17
 const SCREEN = [[95, -106], [215, -98], [268, -64], [280, -26], [200, -12], [96, -20]];
 const EYES_SIDE = [[148, -60, 34, 40], [226, -56, 37, 43]];
 function planeSide(x, y, sc, rot, o = {}) {
-  const { t = 0, spin = t * 42, look = [.3, .3], lid = 0, squint = 0, smile = .25, open = 0, swing = [0, 0], belt = 0, buckle = 0, chime = 0, C = PC, sil = false } = o;
+  const { t = 0, spin = t * 42, look = [.3, .3], lid = 0, squint = 0, smile = .25, open = 0, swing = [0, 0], belt = 0, buckle = 0, chime = 0, C = PC, sil = false, v2 = false, roll = t * 2, wingLift = 0, sq = 0 } = o;
   if (!sil) { ik.save(); ik.globalCompositeOperation = 'destination-out'; planeSide(x, y, sc, rot, { ...o, sil: true, silG: ik, silCol: '#000' }); ik.restore(); }
   xf(x, y, sc, rot);
   const G = sil ? (o.silG || f) : s; const K = sil ? solid(o.silCol || '#000') : C; const ow = Math.max(11, 5 / sc);
-  // tyres dangling on their struts (behind the body)
-  [[120, 88], [-130, 82]].forEach(([bx, by], i) => {
+  if (sq) for (const g of ALL()) { g.translate(0, 192); g.scale(1 + sq * .4, 1 - sq); g.translate(0, -192); }
+  // tyres on their struts (behind the body); v2 moves the front one forward, clear of the propeller
+  (v2 ? [[168, 82], [-135, 80]] : [[120, 88], [-130, 82]]).forEach(([bx, by], i) => {
     const a = swing[i], L = 72, tx = bx + Math.sin(a) * L, ty = by + Math.cos(a) * L;
     stroke(G, [[bx, by - 10], [tx, ty]], K.strut, 14);
-    tyre(G, tx, ty, 38, K, t * 2 + i);
+    tyre(G, tx, ty, 38, K, roll + i);
   });
   // tail fin and far stabiliser
   blob(G, [[-170, -96], [-250, -252], [-300, -264], [-324, -246], [-318, -60]], K.fin);
@@ -312,17 +340,29 @@ function planeSide(x, y, sc, rot, o = {}) {
     // roof lamps: the seat-belt sign
     for (const lx of [40, 78]) { dot(s, lx, -116, 13, chime > .05 ? mixh('#c98a2c', '#ffd36a', chime) : '#9b5a3a'); }
     if (chime > .02) for (const lx of [40, 78]) { glow(lx, -116, 70, `rgba(255,200,90,${.55 * chime})`); glow(lx, -116, 18, `rgba(255,245,200,${.9 * chime})`); }
-    EYES_SIDE.forEach(([ex, ey, rx, ry], i) => eye(ex, ey, rx, ry, { look, lid, squint, lidCol: C.body }, 11 + i));
+    EYES_SIDE.forEach(([ex, ey, rx, ry], i) => eye(ex, ey, rx, ry, { look, lid, squint, lidCol: C.body, painted: v2 }, 11 + i));
     mouth([210, 54], [266, 50], smile, open, 7);
   }
   // near wing (level, coming toward camera), engine nacelle and propeller
   const WING = [[96, 20], [-104, 26], [-150, 90], [-40, 92]];
+  for (const g of ALL()) g.save();
+  if (wingLift) for (const g of ALL()) { g.translate(40, 28); g.rotate(wingLift * 1.45); g.translate(-40, -28); } // raise the wing: it swings up about its root
   blob(G, WING, K.wing);
   if (!sil) { s.save(); smoothPath(s, WING); s.clip(); stroke(s, [[-170, 92], [-20, 92]], C.wingSh, 22); stroke(s, [[80, 22], [-110, 28]], '#fde38a', 8); s.restore(); contour(s, WING, ow); }
-  blob(G, [[88, 58], [70, 40], [-10, 36], [-70, 46], [-70, 70], [-10, 80], [70, 76]], K.body);
-  if (!sil) contour(s, [[88, 58], [70, 40], [-10, 36], [-70, 46], [-70, 70], [-10, 80], [70, 76]], ow * .8);
-  if (!sil) { stroke(s, [[60, 44], [-50, 48]], C.bodyHi, 7); ell(s, 90, 58, 9, 20, 0, PG.indigo); }
-  if (!sil) propBlur(s, 104, 58, 34, 80, spin * .3, C, 3, true);
+  if (!v2) {
+    blob(G, [[88, 58], [70, 40], [-10, 36], [-70, 46], [-70, 70], [-10, 80], [70, 76]], K.body);
+    if (!sil) contour(s, [[88, 58], [70, 40], [-10, 36], [-70, 46], [-70, 70], [-10, 80], [70, 76]], ow * .8);
+    if (!sil) { stroke(s, [[60, 44], [-50, 48]], C.bodyHi, 7); ell(s, 90, 58, 9, 20, 0, PG.indigo); }
+    if (!sil) propBlur(s, 104, 58, 34, 80, spin * .3, C, 3, true);
+  } else { // v2: the engine hangs under the wing, so its propeller spins below the belly line, not over the face
+    const NAC = [[92, 104], [72, 86], [-10, 82], [-70, 92], [-70, 116], [-10, 126], [72, 122]];
+    blob(G, NAC, K.body);
+    if (!sil) { contour(s, NAC, ow * .8); stroke(s, [[62, 90], [-50, 94]], C.bodyHi, 7); ell(s, 94, 104, 8, 16, 0, PG.indigo); }
+    if (!sil) { propBlur(s, 108, 104, 20, 60, spin * .3, C, 3, false);
+      for (let i = 0; i < 3; i++) { const a = spin * .3 + i * TAU / 3; dot(ik, 108 + Math.cos(a) * 18, 104 + Math.sin(a) * 56, 5.5, PG.lemon); } }
+    else ell(G, 108, 104, 20, 60, 0, K.body);
+  }
+  for (const g of ALL()) g.restore();
   // belt buckle pops on
   if (!sil && buckle > 0) {
     const k = ease.back(buckle);
@@ -336,10 +376,11 @@ function planeSide(x, y, sc, rot, o = {}) {
 // ---- front view from slightly below. (0,0) is the middle of the fuselage.
 const WING_R = [[60, 4], [560, 18], [592, 30], [562, 44], [60, 54]];
 function planeFront(x, y, sc, rot, o = {}) {
-  const { t = 0, spin = t * 40, look = [0, .5], lid = 0, squint = 0, smile = .35, open = 0, swing = [0, 0], C = PC, sil = false, props = true } = o;
+  const { t = 0, spin = t * 40, look = [0, .5], lid = 0, squint = 0, smile = .35, open = 0, swing = [0, 0], C = PC, sil = false, props = true, v2 = false, ground = false, wiper = null, sq = 0 } = o;
   if (!sil) { ik.save(); ik.globalCompositeOperation = 'destination-out'; planeFront(x, y, sc, rot, { ...o, sil: true, silG: ik, silCol: '#000', props: false }); ik.restore(); }
   xf(x, y, sc, rot);
   const G = sil ? (o.silG || f) : s, K = sil ? solid(o.silCol || '#000') : C, ow = Math.max(11, 5 / sc);
+  if (sq) for (const g of ALL()) { g.translate(0, 250); g.scale(1 + sq * .4, 1 - sq); g.translate(0, -250); }
   blob(G, [[-16, -90], [-12, -262], [12, -262], [16, -90]], K.fin);
   blob(G, [[-200, -76], [200, -76], [206, -62], [-206, -62]], K.wing);
   for (const m of [1, -1]) {
@@ -349,7 +390,7 @@ function planeFront(x, y, sc, rot, o = {}) {
   }
   // tyres dangling below the belly
   for (const m of [1, -1]) {
-    const bx = m * 64, by = 108, a = swing[m > 0 ? 0 : 1], tx = bx + Math.sin(a) * 90, ty = by + Math.cos(a) * 90;
+    const bx = m * 64, by = 108, a = ground ? 0 : swing[m > 0 ? 0 : 1], tx = bx + Math.sin(a) * 90 + (ground ? m * 30 : 0), ty = by + Math.cos(a) * 90 + (ground ? 8 : 0);
     stroke(G, [[bx, by - 20], [tx, ty]], K.strut, 16);
     ell(G, tx, ty, 22, 44, 0, K.tyre); if (!sil) ell(s, tx, ty, 9, 22, 0, C.hub);
   }
@@ -365,8 +406,13 @@ function planeFront(x, y, sc, rot, o = {}) {
     blob(s, [[-104, -96], [104, -96], [114, -28], [0, -12], [-114, -28]], C.screen);
     ell(s, -82, 42, 22, 13, 0, rgba(C.cheek, .8)); ell(s, 82, 42, 22, 13, 0, rgba(C.cheek, .8));
     dot(s, 0, 24, 26, C.nose); dot(s, -7, 16, 8, PG.cerulean);
-    eye(-46, -56, 36, 42, { look, lid, squint, lidCol: C.body }, 21); eye(46, -56, 36, 42, { look, lid, squint, lidCol: C.body }, 22);
+    eye(-46, -56, 36, 42, { look, lid, squint, lidCol: C.body, painted: v2 }, 21); eye(46, -56, 36, 42, { look, lid, squint, lidCol: C.body, painted: v2 }, 22);
     mouth([-44, 74], [44, 74], smile, open, 7);
+    if (wiper !== null) { // a windscreen wiper sweeping across his eyes
+      const a = wiper * 1.25, tip = [Math.sin(a) * 124, -12 - Math.cos(a) * 100], mid = [tip[0] * .3, -12 + (tip[1] + 12) * .3];
+      for (const [g, w] of [[s, 14], [ik, 9]]) { stroke(g, [[0, -12], mid], '#3a3468', w * 1.4); stroke(g, [mid, tip], PG.indigo, w); }
+      dot(ik, 0, -12, 9, PG.indigo);
+    }
   }
   if (props && !sil) for (const m of [1, -1]) propBlur(s, m * 280, 50, 128, 128, spin * m + m, C, 3);
   unxf();

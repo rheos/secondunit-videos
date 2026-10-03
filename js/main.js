@@ -27,7 +27,8 @@ window.__ready = Promise.resolve(true);
 
 if (!params.has('offline')) {
   const audio = document.getElementById('a');
-  const T0 = 278, T1 = 298;
+  // ?a=170&b=190 picks the section to loop (default: verse 3); ?t= starts mid-section
+  const T0 = parseFloat(params.get('a') || 170), T1 = parseFloat(params.get('b') || 190);
   audio.currentTime = params.has('t') ? parseFloat(params.get('t')) : T0;
   (function loop() { let t = audio.currentTime || T0; if (t >= T1) { audio.currentTime = T0; t = T0; } renderFrame(t); requestAnimationFrame(loop); })();
   const toggle = () => audio.paused ? audio.play() : audio.pause();
