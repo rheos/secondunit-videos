@@ -54,7 +54,7 @@
       const hx = 960 + sd * 170, hy = 790 - up * 30;
       shape([[hx + sd * 240, 1100], [hx + sd * 330, 1100], [hx + sd * 40, hy + 10], [hx - sd * 20, hy - 20]], '#77756a', 3);
       shape([[hx - sd * 26, hy - 30], [hx + sd * 30, hy - 4], [hx + sd * 50, hy + 22], [hx - sd * 6, hy - 4]], ROSE, 2.5);
-      s.beginPath(); s.ellipse(hx - sd * 40, hy - 40, 46, 26, sd * .5, 0, TAU); s.fillStyle = SKIN; s.fill(); s.lineWidth = 3; s.strokeStyle = INK; s.stroke(); }
+      if (window.PNC_ON) PNCK.ball(hx - sd * 40, hy - 40, 36, SKIN, 1.2); else { s.beginPath(); s.ellipse(hx - sd * 40, hy - 40, 46, 26, sd * .5, 0, TAU); s.fillStyle = SKIN; s.fill(); s.lineWidth = 3; s.strokeStyle = INK; s.stroke(); } }
     void str;
   }
   // 174.95  split screen, mirrored: his blank form, her typed one. On the beat both tear in half.
@@ -85,15 +85,15 @@
         const hx = half * 250, hy = -150;
         if (side < 0) { // gloved fists, coat sleeves
           shape([[hx + half * 40, hy + 30], [hx + half * 200, hy + 600], [hx + half * 330, hy + 600], [hx + half * 90, hy - 20]], COAT, 3);
-          s.beginPath(); s.ellipse(hx, hy, 62, 74, 0, 0, TAU); s.fillStyle = '#3a382f'; s.fill(); s.lineWidth = 3; s.strokeStyle = INK; s.stroke();
+          if (window.PNC_ON) PNCK.ball(hx, hy, 66, '#3a382f', 1.2); else { s.beginPath(); s.ellipse(hx, hy, 62, 74, 0, 0, TAU); s.fillStyle = '#3a382f'; s.fill(); s.lineWidth = 3; s.strokeStyle = INK; s.stroke(); }
         } else { // her hands, rose cuffs
           shape([[hx + half * 40, hy + 40], [hx + half * 200, hy + 600], [hx + half * 320, hy + 600], [hx + half * 80, hy - 10]], '#77756a', 3);
           shape([[hx + half * 30, hy + 20], [hx + half * 100, hy - 20], [hx + half * 120, hy + 30], [hx + half * 50, hy + 70]], ROSE, 2.5);
-          s.beginPath(); s.ellipse(hx, hy, 46, 58, 0, 0, TAU); s.fillStyle = SKIN; s.fill(); s.lineWidth = 3; s.strokeStyle = INK; s.stroke();
+          if (window.PNC_ON) PNCK.ball(hx, hy, 52, SKIN, 1.2); else { s.beginPath(); s.ellipse(hx, hy, 46, 58, 0, 0, TAU); s.fillStyle = SKIN; s.fill(); s.lineWidth = 3; s.strokeStyle = INK; s.stroke(); }
         }
       });
     });
-    line([[W / 2, 0], [W / 2, H]], INK, 10, 'butt');
+    if (window.PNC_ON) { shape([[W / 2 - 9, 0], [W / 2 + 9, 0], [W / 2 + 9, H], [W / 2 - 9, H]], BRASS, 1); for (let y = 90; y < H; y += 180) PNCK.star(W / 2, y, 22, CREAM, 1); } else line([[W / 2, 0], [W / 2, H]], INK, 10, 'butt');
   }
   // 177.00  wide again: the halves on the floor, a look across, a small nod each. Hold.
   function after(t, lt) { across(t, lt, { torn: 1, z0: lerp(1.3, 1.9, ease.sine(lt / 4.5)), nodT: [177.93, 179.47] }); }

@@ -4,6 +4,10 @@
 (() => {
   const SKY_D = '#2a5fa8', CLOUD = '#fbfbf6', CSH = '#a9bfd2', WOOD = '#7a6c56', CLOTH = '#a7ae98';
   const BLUE_INK = '#2d5c9c';
+  // the pinball-cel drawing style (pnc.html): fine brown lines, airbrushed volume, gloss. Off: ink as before.
+  const pn = () => !!window.PNC_ON, PK = () => window.PNCK;
+  const ST = (w) => { s.lineWidth = pn() ? Math.max(.8, w * .4) : w; s.strokeStyle = pn() ? PK().LINE : INK; };
+  const CLINE = '#71808c';
 
   // ---- sky and cloud helpers ----
   function skyFill(y0 = 0, y1 = H, top = SKY_D) {
@@ -14,8 +18,10 @@
     const R = rng(seed), pts = []; let x = -1300 + ((drift % (r * 1.6)) - r * 1.6);
     while (x < W + 1300) { const rr = r * (.7 + R() * .6); pts.push([x, y + (R() - .5) * r * .5, rr]); x += rr * 1.15; }
     withT(() => { s.globalAlpha *= a;
-      s.lineWidth = lw; s.strokeStyle = INK; for (const [px, py, rr] of pts) { s.beginPath(); s.arc(px, py, rr, Math.PI, TAU); s.stroke(); }
-      s.fillStyle = c; for (const [px, py, rr] of pts) { s.beginPath(); s.arc(px, py, rr - lw * .5, 0, TAU); s.fill(); }
+      if (pn()) { s.lineWidth = Math.max(1, lw * .45); s.strokeStyle = CLINE; } else ST(lw);
+      for (const [px, py, rr] of pts) { s.beginPath(); s.arc(px, py, rr, Math.PI, TAU); s.stroke(); }
+      if (pn()) { const g = s.createLinearGradient(0, y - r * 1.2, 0, y + r * 1.4); g.addColorStop(0, '#ffffff'); g.addColorStop(.45, c); g.addColorStop(1, PK().mix(c, CSH, .55)); s.fillStyle = g; } else s.fillStyle = c;
+      for (const [px, py, rr] of pts) { s.beginPath(); s.arc(px, py, rr - lw * .5, 0, TAU); s.fill(); }
       s.fillRect(-1300, y, W + 2600, depth);
       s.globalAlpha *= .22; s.fillStyle = CSH; s.fillRect(-1300, y + r * .55, W + 2600, depth);
     });
@@ -23,28 +29,51 @@
   // a round puffy cloud body centred on (x, y)
   function blob(x, y, r, seed, { c = CLOUD, lw = 5, sq = 1 } = {}) {
     const R = rng(seed), pts = [];
+    if (pn()) { blobPNC(x, y, r, seed, c, lw, sq); return; }
     for (let i = 0; i < 7; i++) { const a = Math.PI + i / 6 * Math.PI; pts.push([x + Math.cos(a) * r * .72, y + Math.sin(a) * r * .5 * sq, r * (.42 + R() * .14)]); }
     for (let i = 0; i < 4; i++) { const u = i / 3 - .5; pts.push([x + u * r * 1.25, y + r * .3 * sq, r * (.4 + R() * .08)]); }
     pts.push([x, y - r * .05, r * .62]);
-    s.lineWidth = lw; s.strokeStyle = INK; for (const [px, py, rr] of pts) { s.beginPath(); s.arc(px, py, rr, 0, TAU); s.stroke(); }
+    ST(lw); for (const [px, py, rr] of pts) { s.beginPath(); s.arc(px, py, rr, 0, TAU); s.stroke(); }
     for (const [px, py, rr] of pts) dot(px, py, rr - lw * .5, c);
     withT(() => { s.beginPath(); for (const [px, py, rr] of pts) { s.moveTo(px + rr - lw * .5, py); s.arc(px, py, rr - lw * .5, 0, TAU); } s.clip();
       s.globalAlpha *= .3; s.beginPath(); for (const [px, py, rr] of pts) { s.moveTo(px + r * .1 + rr, py + rr * .42); s.arc(px + r * .1, py + rr * .42, rr, 0, TAU); } s.fillStyle = CSH; s.fill(); s.globalAlpha /= .3;
       s.globalAlpha *= .3; s.beginPath(); for (const [px, py, rr] of pts) { s.moveTo(px - r * .05 + rr * .55, py - rr * .2); s.arc(px - r * .05, py - rr * .2, rr * .55, 0, TAU); } s.fillStyle = '#ffffff'; s.fill(); });
   }
+  function cloudPts(x, y, r, seed, sq) {
+    const R = rng(seed), pts = [];
+    for (let i = 0; i < 7; i++) { const a = Math.PI + i / 6 * Math.PI; pts.push([x + Math.cos(a) * r * .72, y + Math.sin(a) * r * .5 * sq, r * (.42 + R() * .14)]); }
+    for (let i = 0; i < 4; i++) { const u = i / 3 - .5; pts.push([x + u * r * 1.25, y + r * .3 * sq, r * (.4 + R() * .08)]); }
+    pts.push([x, y - r * .05, r * .62]); return pts;
+  }
+  // a cel cloud: one soft airbrushed body lit from the upper left, a fine blue-grey outline, a gloss
+  function blobPNC(x, y, r, seed, c, lw, sq) {
+    const pts = cloudPts(x, y, r, seed, sq), uni = () => { s.beginPath(); for (const [px, py, rr] of pts) { s.moveTo(px + rr, py); s.arc(px, py, rr, 0, TAU); } };
+    s.lineWidth = Math.max(1.2, lw * .55) * 2; s.strokeStyle = CLINE; for (const [px, py, rr] of pts) { s.beginPath(); s.arc(px, py, rr, 0, TAU); s.stroke(); }
+    uni(); const g = s.createRadialGradient(x - r * .45, y - r * .55, r * .1, x + r * .1, y + r * .1, r * 1.5);
+    g.addColorStop(0, '#ffffff'); g.addColorStop(.45, c); g.addColorStop(1, PK().mix(c, CSH, .8)); s.fillStyle = g; s.fill();
+    withT(() => { uni(); s.clip(); s.globalAlpha *= .35; s.beginPath(); for (const [px, py, rr] of pts.slice(7)) { s.moveTo(px + r * .12 + rr, py + rr * .5); s.arc(px + r * .12, py + rr * .5, rr, 0, TAU); } s.fillStyle = PK().mix(CSH, SKY_T, .25); s.fill(); });
+    if (c[1] !== '8' && c[1] !== '9') withT(() => { s.globalAlpha *= .75; s.beginPath(); s.ellipse(x - r * .38, y - r * .45 * sq, r * .2, r * .1, -.5, 0, TAU); s.fillStyle = '#ffffff'; s.fill(); });
+  }
+  function sunburst(cx, cy, r, len, rot, cols) {
+    const K = PK();
+    for (let i = 0; i < 12; i++) { const a = i / 12 * TAU + rot, L = r * (len + (i % 3 ? 0 : .5)), hw = .085;
+      const pts = [[cx + Math.cos(a - hw) * r * 1.1, cy + Math.sin(a - hw) * r * 1.1], [cx + Math.cos(a) * L, cy + Math.sin(a) * L], [cx + Math.cos(a + hw) * r * 1.1, cy + Math.sin(a + hw) * r * 1.1]];
+      shape(pts, cols[i % 2], 2); K.ball(cx + Math.cos(a) * L, cy + Math.sin(a) * L, r * .045, cols[(i + 1) % 2], 1); }
+    K.fan(cx, cy, r * 1.32, 24, rot, rot + TAU, cols, 1);
+  }
   function fedora(x, y, w, rot = 0) {
     withT(() => { s.translate(x, y); s.rotate(rot);
       shape([[-w * .3, 0], [w * .3, 0], [w * .25, -w * .4], [0, -w * .34], [-w * .25, -w * .4]], HAT, Math.max(1.5, w * .035));
       line([[-w * .3, -w * .08], [w * .3, -w * .08]], '#1c1b18', w * .07, 'butt');
-      s.beginPath(); s.ellipse(0, 0, w * .56, w * .09, 0, 0, TAU); s.fillStyle = HAT; s.fill(); s.lineWidth = Math.max(1.5, w * .035); s.strokeStyle = INK; s.stroke(); });
+      s.beginPath(); s.ellipse(0, 0, w * .56, w * .09, 0, 0, TAU); s.fillStyle = HAT; s.fill(); ST(Math.max(1.5, w * .035)); s.stroke(); });
   }
-  function mitt(x, y, r) { dot(x, y, r, CLOUD); s.lineWidth = Math.max(1.5, r * .3); s.strokeStyle = INK; s.beginPath(); s.arc(x, y, r, 0, TAU); s.stroke(); }
+  function mitt(x, y, r) { if (pn()) { PK().ball(x, y, r, CLOUD, Math.max(.8, r * .12)); return; } dot(x, y, r, CLOUD); ST(Math.max(1.5, r * .3)); s.beginPath(); s.arc(x, y, r, 0, TAU); s.stroke(); }
   // arm from the shoulder; up 0 = hanging, 1 = raised high. side -1 left, 1 right. returns the hand.
   function arm(x, y, r, side, up) {
     const sh = [x + side * r * .78, y + r * .05];
     const hd = [lerp(x + side * r * 1.08, x + side * r * .95, up), lerp(y + r * .6, y - r * 1.3, up)];
     const el = [lerp(sh[0], hd[0], .5) + side * r * .18 * (1 - Math.abs(up - .5) * 2 + .3), lerp(sh[1], hd[1], .5)];
-    ink([sh, el, hd], Math.max(3, r * .075)); return hd;
+    if (pn()) PK().tube(sh, el, hd, r * .045, r * .035, '#e8eef2', Math.max(.8, r * .012)); else ink([sh, el, hd], Math.max(3, r * .075)); return hd;
   }
   // a cloud delegate: no face, all personality in the hat, the lean and the arms.
   // o: seed, lean (rad), up [left, right] arm raise, hat (0 none, 1 on), hatLift (px up), hatRot
@@ -65,7 +94,8 @@
     withT(() => { s.translate(hx, hy); s.rotate(ang);
       ink([[0, 0], [len * .1, -len * .9]], Math.max(3, len * .06));
       withT(() => { s.translate(len * .1, -len * .9); s.rotate(.11); shape([[-len * .32, -len * .13], [len * .32, -len * .13], [len * .32, len * .13], [-len * .32, len * .13]], WOOD, 3);
-        ink([[-len * .22, -len * .13], [-len * .22, len * .13]], 2); ink([[len * .22, -len * .13], [len * .22, len * .13]], 2); }); });
+        ink([[-len * .22, -len * .13], [-len * .22, len * .13]], 2); ink([[len * .22, -len * .13], [len * .22, len * .13]], 2);
+        if (pn()) for (const e of [-1, 1]) PK().ball(e * len * .32, 0, len * .07, BRASS, 1); }); });
   }
   function placard(hx, hy, str, r) {
     const w = Math.max(r * 2.3, textWidth(str, r * .3, 'sign', 2) + r * .5), h = r * .9;
@@ -94,6 +124,7 @@
       ink([[cx - w / 2 + 10, y + 12], [cx + w / 2 - 10, y + 12]], 1.4); ink([[cx - w / 2 + 10, y + h - 12], [cx + w / 2 - 10, y + h - 12]], 1.4);
       text(str, cx, y + h * .5 + sz * .35, sz, { font: 'sign', spacing: 4, max: w - 80 });
     });
+    if (pn() && reveal >= 1) for (const sd of [-1, 1]) PK().star(cx + sd * (w / 2 + 95), y + h / 2, h * .32, CREAM, 1.2);
     if (reveal < 1) for (const sd of [-1, 1]) { const ex = cx + sd * ww / 2; shape([[ex - 16, y - 8], [ex + 16, y - 8], [ex + 16, y + h + 8], [ex - 16, y + h + 8]], '#d8d0b4', 3); }
   }
 
@@ -146,7 +177,7 @@
     for (let k = 0; k < 3; k++) storey(t, -200 - (k + 1) * 380, k);
     // the ceiling slab of the hall with its ducts in section
     shape([[-50, -200], [W + 50, -200], [W + 50, 0], [-50, 0]], '#3d4140', 3); hatch([[-50, -200], [W + 50, -200], [W + 50, -130], [-50, -130]], .8, 14, 1.4, .5);
-    for (const x of [300, 700, 1220, 1620]) { s.beginPath(); s.arc(x, -60, 52, 0, TAU); s.fillStyle = STEEL; s.fill(); s.lineWidth = 3; s.strokeStyle = INK; s.stroke(); s.beginPath(); s.arc(x, -60, 30, 0, TAU); s.stroke(); }
+    for (const x of [300, 700, 1220, 1620]) { s.beginPath(); s.arc(x, -60, 52, 0, TAU); s.fillStyle = STEEL; s.fill(); ST(3); s.stroke(); s.beginPath(); s.arc(x, -60, 30, 0, TAU); s.stroke(); }
     // the hall: tiled wall, the board, the hats
     s.fillStyle = '#8f9886'; s.fillRect(-50, 0, W + 100, 1100);
     withT(() => { s.globalAlpha = .45; for (let y = 0; y < 1100; y += 120) { ink([[0, y], [W, y]], 1.2); for (let x = (y / 120) % 2 ? 120 : 0; x < W; x += 240) ink([[x, y], [x, y + 120]], 1.2); } });
@@ -160,11 +191,11 @@
   function duct2(x0, y0, x1, y1, r) {
     const horiz = y0 === y1;
     if (horiz) { shape([[x0, y0 - r], [x1, y0 - r], [x1, y0 + r], [x0, y0 + r]], STEEL, 2.5); for (let x = x0 + 30; x < x1; x += 46) ink([[x, y0 - r], [x, y0 + r]], 1.4); hatch([[x0, y0 + r * .2], [x1, y0 + r * .2], [x1, y0 + r], [x0, y0 + r]], .9, 7, 1, .4); }
-    else { shape([[x0 - r, y0], [x0 + r, y0], [x0 + r, y1], [x0 - r, y1]], STEEL, 2.5); for (let y = y0 - 30; y > y1; y -= 46) ink([[x0 - r, y], [x0 + r, y]], 1.4); s.beginPath(); s.arc(x0, y1, r, Math.PI, TAU); s.fillStyle = STEEL_D; s.fill(); s.lineWidth = 2.5; s.strokeStyle = INK; s.stroke(); }
+    else { shape([[x0 - r, y0], [x0 + r, y0], [x0 + r, y1], [x0 - r, y1]], STEEL, 2.5); for (let y = y0 - 30; y > y1; y -= 46) ink([[x0 - r, y], [x0 + r, y]], 1.4); s.beginPath(); s.arc(x0, y1, r, Math.PI, TAU); s.fillStyle = STEEL_D; s.fill(); ST(2.5); s.stroke(); }
   }
   function hatBack(x, y, k) {
     shape([[x - 70 * k, y + 120 * k], [x + 70 * k, y + 120 * k], [x + 55 * k, y + 30 * k], [x - 55 * k, y + 30 * k]], COAT, 2);
-    dot(x, y + 12 * k, 26 * k, SKIN); s.lineWidth = 2; s.strokeStyle = INK; s.beginPath(); s.arc(x, y + 12 * k, 26 * k, 0, TAU); s.stroke();
+    dot(x, y + 12 * k, 26 * k, SKIN); ST(2); s.beginPath(); s.arc(x, y + 12 * k, 26 * k, 0, TAU); s.stroke();
     fedora(x, y - 2 * k, 90 * k);
   }
   // one storey of clerks in section: desks, identical men, filing cabinets
@@ -180,7 +211,7 @@
       // clerk side on at his desk, typing on the beat
       const b = beatPulse(t + i * .2) * 4;
       shape([[x - 10, y + 230], [x + 40, y + 230], [x + 46, y + 300], [x - 14, y + 300]], COAT, 2);
-      dot(x + 15, y + 205 - b, 20, SKIN); s.lineWidth = 2; s.strokeStyle = INK; s.beginPath(); s.arc(x + 15, y + 205 - b, 20, 0, TAU); s.stroke();
+      dot(x + 15, y + 205 - b, 20, SKIN); ST(2); s.beginPath(); s.arc(x + 15, y + 205 - b, 20, 0, TAU); s.stroke();
       fedora(x + 15, y + 192 - b, 66);
       shape([[x + 50, y + 255], [x + 170, y + 255], [x + 170, y + 268], [x + 50, y + 268]], '#5d5a4c', 2);
       ink([[x + 60, y + 268], [x + 60, y + 340]], 3); ink([[x + 160, y + 268], [x + 160, y + 340]], 3);
@@ -206,6 +237,7 @@
     bank(780, 90, 6, -t * 9, { c: '#e7eef3', lw: 2.5 });
     // two towering cumulus pillars frame it
     for (const sd of [-1, 1]) for (let i = 0; i < 5; i++) blob(960 + sd * (820 + (i % 2) * 60), 760 - i * 150, 170 - i * 14, 200 + i + (sd > 0 ? 9 : 0), { c: '#f2f5f4', lw: 4 });
+    if (pn()) for (let i = 0; i < 7; i++) PK().star(320 + i * 213 + (i % 2) * 40, 330 + (i % 3) * 50, 14 + (i % 2) * 8, CREAM, 1);
     banner(960, 130, 1250, 110, 'THE CLOUDS ARE HAVING A CONVENTION', ease.inOut(inv(135.5, 138.6, t)), 44);
     const g = gavelAng(t, [138.4]);
     convention(t, 960, 620, 1, { g });
@@ -231,18 +263,19 @@
     // sounding block: a squat drum on the table
     const bx = 1610, by = 800;
     shape([[bx - 95, by], [bx + 95, by], [bx + 95, by + 46], [bx - 95, by + 46]], '#5a4f40', 3);
-    s.beginPath(); s.ellipse(bx, by + 46, 95, 20, 0, 0, Math.PI); s.fillStyle = '#5a4f40'; s.fill(); s.lineWidth = 3; s.strokeStyle = INK; s.stroke();
+    s.beginPath(); s.ellipse(bx, by + 46, 95, 20, 0, 0, Math.PI); s.fillStyle = '#5a4f40'; s.fill(); ST(3); s.stroke();
     s.beginPath(); s.ellipse(bx, by, 95, 20, 0, 0, TAU); s.fillStyle = '#8a7a60'; s.fill(); s.stroke();
     // the chair's arm comes in from the lower right; the gavel pivots in its mitt
     const piv = [1850, 900], L = 250, down = Math.atan2(by - 10 - piv[1], bx - piv[0]);
     const k = gavelAng(t, hits), th = down + clamp((.4 - k) / 1.5) * 1.1;
     withT(() => { s.translate(2010, 1060); blob(0, 0, 210, 81, { lw: 4 }); });
     const hd = [piv[0] + Math.cos(th) * L, piv[1] + Math.sin(th) * L];
-    ink([piv, hd], 16);
+    if (pn()) PK().tube(piv, [(piv[0] + hd[0]) / 2, (piv[1] + hd[1]) / 2], hd, 9, 7, WOOD, 1); else ink([piv, hd], 16);
     withT(() => { s.translate(hd[0], hd[1]); s.rotate(th + Math.PI / 2);
-      shape([[-80, -32], [80, -32], [80, 32], [-80, 32]], WOOD, 4); ink([[-55, -32], [-55, 32]], 3); ink([[55, -32], [55, 32]], 3); });
+      shape([[-80, -32], [80, -32], [80, 32], [-80, 32]], WOOD, 4); ink([[-55, -32], [-55, 32]], 3); ink([[55, -32], [55, 32]], 3);
+      if (pn()) for (const e of [-1, 1]) PK().ball(e * 80, 0, 16, BRASS, 1); });
     mitt(piv[0], piv[1], 34);
-    for (const h of hits) { const q = hit(t, h, 5); if (q > .02) withT(() => { s.globalAlpha = q; for (let i = 0; i < 3; i++) { s.beginPath(); s.ellipse(bx, by, 130 + i * 60 + (1 - q) * 120, 34 + i * 16, 0, Math.PI * 1.05, Math.PI * 1.95); s.lineWidth = 4; s.strokeStyle = INK; s.stroke(); } }); }
+    for (const h of hits) { const q = hit(t, h, 5); if (q > .02) withT(() => { s.globalAlpha = q; for (let i = 0; i < 3; i++) { s.beginPath(); s.ellipse(bx, by, 130 + i * 60 + (1 - q) * 120, 34 + i * 16, 0, Math.PI * 1.05, Math.PI * 1.95); ST(4); s.stroke(); } }); }
   }
   const typed = (t, a, b, str) => str.slice(0, Math.floor(clamp((t - a) / (b - a)) * str.length + (t >= b ? 99 : 0)));
   // 139.76 first "we've got time": typed onto the agenda, gaveled on "time"
@@ -351,7 +384,7 @@
     bank(2400, 120, 91, t * 10, { c: '#c9d6e0', lw: 2.5, a: .8 });
     // the periscope
     shape([[940, 760], [980, 760], [980, tip], [940, tip]], BRASS, 3);
-    for (let y = 820; y < tip; y += 160) ink([[940, y], [980, y]], 2);
+    for (let y = 820; y < tip; y += 160) { ink([[940, y], [980, y]], 2); if (pn()) PK().ball(940, y, 6, BRASS, .8); }
     shape([[928, tip - 6], [992, tip - 6], [992, tip + 34], [928, tip + 34]], '#7a6334', 3);
     // the convention on its cloud floor up top
     convention(t, 960, 610, .8, { g: -.35, lean: .08 * ease.out(inv(155.6, 157, t)) });
@@ -369,9 +402,12 @@
     shape([[1040, 1100], [1120, 1100], [1120, 420], [1040, 420]], BRASS, 4);
     for (let y = 1040; y > 440; y -= 120) ink([[1040, y], [1120, y]], 2.5);
     shape([[870, 340], [1120, 340], [1120, 460], [870, 460]], BRASS, 4);
-    s.beginPath(); s.arc(1120, 420, 80, -Math.PI / 2, 0); s.lineTo(1120, 420); s.closePath(); s.fillStyle = BRASS; s.fill(); s.lineWidth = 4; s.strokeStyle = INK; s.stroke();
+    s.beginPath(); s.arc(1120, 420, 80, -Math.PI / 2, 0); s.lineTo(1120, 420); s.closePath(); s.fillStyle = BRASS; s.fill(); ST(4); s.stroke();
     shape([[820, 360], [872, 352], [872, 448], [820, 440]], '#3a382f', 3);   // the eyepiece hood
     ink([[790, 530], [1040, 530]], 12); dot(790, 530, 16, '#3a382f'); // the handle the chair holds
+    if (pn()) { line([[1056, 1100], [1056, 430]], 'rgba(255,250,235,.55)', 8); line([[880, 356], [1110, 356]], 'rgba(255,250,235,.55)', 7);
+      for (let y = 1040; y > 440; y -= 120) for (const x of [1040, 1120]) PK().ball(x, y, 9, BRASS, 1);
+      PK().ball(790, 530, 18, '#3a382f', 1); PK().ball(1120, 340, 14, BRASS, 1); }
     delegate(610, 470 + Math.sin(t * 2) * 4, 170, { seed: 77, lean: .2, up: [0, .18], hatLift: 18, hatRot: .55 });
     bank(980, 80, 103, t * 12, { c: '#f2f5f6', lw: 3 });
   }
@@ -399,6 +435,9 @@
       if (op > 0) withT(() => { s.globalAlpha = op;
         for (let i = 0; i < 14; i++) { const a = i / 14 * TAU + t * .3; poly([[cx, cy - op * 40], [cx + Math.cos(a) * 900, cy + Math.sin(a) * 900], [cx + Math.cos(a + .12) * 900, cy + Math.sin(a + .12) * 900]], '#fff1c2'); }
         shape([[cx - gw / 2, cy - gh / 2 - op * 50], [cx + gw / 2, cy - gh / 2 - op * 50], [cx + gw / 2 - 20, cy - gh / 2 - op * 50 - 40 * op], [cx - gw / 2 + 20, cy - gh / 2 - op * 50 - 40 * op]], '#fff6d8', 3); });
+      if (pn()) { const o = op * 20, fw = gw / 2 + 18, fh = gh / 2 + 18;   // a stepped deco frame round the SUN drawer
+        shape([[cx - fw, cy - fh + 14 + o], [cx - fw + 14, cy - fh + o], [cx + fw - 14, cy - fh + o], [cx + fw, cy - fh + 14 + o], [cx + fw, cy + fh + o], [cx - fw, cy + fh + o]], BRASS, 2);
+        PK().fan(cx, cy - fh + o, 54, 7, Math.PI, TAU, [BRASS, CREAM], 1); }
       shape([[cx - gw / 2, cy - gh / 2 + op * 20], [cx + gw / 2, cy - gh / 2 + op * 20], [cx + gw / 2, cy + gh / 2 + op * 20], [cx - gw / 2, cy + gh / 2 + op * 20]], GREEN, 3);
       shape([[cx - 50, cy - 40 + op * 20], [cx + 50, cy - 40 + op * 20], [cx + 50, cy + 4 + op * 20], [cx - 50, cy + 4 + op * 20]], CREAM, 2.5);
       text('SUN', cx, cy - 6 + op * 20, 36, { font: 'sign', spacing: 4, max: 86 });
@@ -408,6 +447,7 @@
     withT(() => { s.globalAlpha = .55; ink([[cx - R, cy], [cx - 60, cy]], 2); ink([[cx + 60, cy], [cx + R, cy]], 2); ink([[cx, cy - R], [cx, cy - 60]], 2); ink([[cx, cy + 60], [cx, cy + R]], 2);
       for (let i = -4; i <= 4; i++) if (i) ink([[cx + i * 80, cy - 10], [cx + i * 80, cy + 10]], 2); });
     s.beginPath(); s.arc(cx, cy, R, 0, TAU); s.lineWidth = 16; s.strokeStyle = '#2a2822'; s.stroke(); s.lineWidth = 4; s.strokeStyle = BRASS; s.beginPath(); s.arc(cx, cy, R + 12, 0, TAU); s.stroke();
+    if (pn()) for (let i = 0; i < 8; i++) { const a = i / 8 * TAU; PK().ball(cx + Math.cos(a) * (R + 12), cy + Math.sin(a) * (R + 12), 12, BRASS, 1); }
   }
   // 164.10 "we've got time": the hall clock, ticking and getting nowhere
   const SUNC = [960, 430], SUNR = 270;
@@ -416,8 +456,10 @@
     withT(() => { s.globalAlpha = .45; for (let y = -20; y < H; y += 120) { ink([[0, y], [W, y]], 1.2); for (let x = ((y + 20) / 120) % 2 ? 120 : 0; x < W; x += 240) ink([[x, y], [x, y + 120]], 1.2); } });
     duct2(-60, 900, W + 60, 900, 70);
     const [cx, cy] = SUNC, r = SUNR;
-    s.beginPath(); s.arc(cx, cy, r + 26, 0, TAU); s.fillStyle = '#3e3c35'; s.fill(); s.lineWidth = 4; s.strokeStyle = INK; s.stroke();
-    s.beginPath(); s.arc(cx, cy, r, 0, TAU); s.fillStyle = CREAM; s.fill(); s.lineWidth = 4; s.stroke();
+    if (pn()) { sunburst(cx, cy, r, 1.75, -Math.PI / 2, [BRASS, CREAM]);   // a deco sunburst behind the clock: the sun to come
+      for (const [sx, sy] of [[cx - r * 2.3, cy - r * .6], [cx + r * 2.3, cy - r * .6], [cx - r * 2.1, cy + r * .7], [cx + r * 2.1, cy + r * .7]]) PK().star(sx, sy, 34, CREAM, 1); }
+    s.beginPath(); s.arc(cx, cy, r + 26, 0, TAU); s.fillStyle = '#3e3c35'; s.fill(); ST(4); s.stroke();
+    s.beginPath(); s.arc(cx, cy, r, 0, TAU); s.fillStyle = CREAM; s.fill(); ST(4); s.stroke();
     for (let i = 0; i < 12; i++) { const a = i / 12 * TAU; ink([[cx + Math.cos(a) * r * .78, cy + Math.sin(a) * r * .78], [cx + Math.cos(a) * r * .93, cy + Math.sin(a) * r * .93]], i % 3 ? 4 : 9); }
     text('MINISTRY TIME', cx, cy + r * .42, 26, { font: 'sign', spacing: 4, max: r * 1.1 });
     const bt = lastBeat(t), spin = ease.in(inv(164.9, 165.33, t)) * TAU * 1.5;
@@ -425,7 +467,7 @@
     ink([[cx, cy], [cx + Math.cos(h) * r * .5, cy + Math.sin(h) * r * .5]], 14);
     ink([[cx, cy], [cx + Math.cos(mi) * r * .74, cy + Math.sin(mi) * r * .74]], 9);
     line([[cx - Math.cos(sc) * r * .15, cy - Math.sin(sc) * r * .15], [cx + Math.cos(sc) * r * .86, cy + Math.sin(sc) * r * .86]], '#7a2a1e', 3.5);
-    dot(cx, cy, 14, INK);
+    if (pn()) PK().ball(cx, cy, 18, BRASS, 1); else dot(cx, cy, 14, INK);
   }
   // 165.33 on "time": the clock face is the sun. Twelve rays where the hours were. Pull back to the
   // convention below, every hat in the air.
@@ -434,9 +476,11 @@
     s.translate(SUNC[0], SUNC[1]); s.scale(z, z); s.translate(-SUNC[0], -SUNC[1]);
     skyFill(-900, 1700);
     const [cx, cy] = SUNC, r = SUNR;
-    withT(() => { s.globalAlpha = .55; for (let i = 0; i < 12; i++) { const a = i / 12 * TAU + lt * .06; poly([[cx + Math.cos(a - .09) * r * 1.15, cy + Math.sin(a - .09) * r * 1.15], [cx + Math.cos(a) * r * 3.6, cy + Math.sin(a) * r * 3.6], [cx + Math.cos(a + .09) * r * 1.15, cy + Math.sin(a + .09) * r * 1.15]], '#f6efcf'); } });
+    if (pn()) { sunburst(cx, cy, r, 3.2, -Math.PI / 2 + lt * .06, ['#f3dc95', '#fff6dc']);
+      for (let i = 0; i < 10; i++) { const a = i / 10 * TAU + .3, d = r * (3.6 + (i % 2) * .5); PK().star(cx + Math.cos(a) * d, cy + Math.sin(a) * d * .8, 26 + (i % 3) * 10, CREAM, 1); } }
+    else withT(() => { s.globalAlpha = .55; for (let i = 0; i < 12; i++) { const a = i / 12 * TAU + lt * .06; poly([[cx + Math.cos(a - .09) * r * 1.15, cy + Math.sin(a - .09) * r * 1.15], [cx + Math.cos(a) * r * 3.6, cy + Math.sin(a) * r * 3.6], [cx + Math.cos(a + .09) * r * 1.15, cy + Math.sin(a + .09) * r * 1.15]], '#f6efcf'); } });
     s.beginPath(); s.arc(cx, cy, r * 1.1, 0, TAU); s.fillStyle = '#f3dc95'; s.fill();
-    s.beginPath(); s.arc(cx, cy, r, 0, TAU); s.fillStyle = '#fff6dc'; s.fill(); s.lineWidth = 5; s.strokeStyle = INK; s.stroke();
+    if (pn()) PK().ball(cx, cy, r, '#fff0c4', 1.4); else { s.beginPath(); s.arc(cx, cy, r, 0, TAU); s.fillStyle = '#fff6dc'; s.fill(); ST(5); s.stroke(); }
     for (let i = 0; i < 12; i++) { const a = i / 12 * TAU + lt * .06; ink([[cx + Math.cos(a) * r * 1.14, cy + Math.sin(a) * r * 1.14], [cx + Math.cos(a) * r * (1.32 + (i % 3 ? 0 : .14)), cy + Math.sin(a) * r * (1.32 + (i % 3 ? 0 : .14))]], i % 3 ? 5 : 9); }
     bank(1180, 150, 121, t * 6, { c: '#d8e5ee', lw: 4, depth: 1200 });
     for (const sd of [-1, 1]) for (let i = 0; i < 5; i++) blob(cx + sd * (980 + i * 120), 1300 - i * 170, 240 - i * 20, 500 + i + (sd > 0 ? 5 : 0), { c: '#eef3f5', lw: 4 });
