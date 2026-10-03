@@ -3,7 +3,7 @@
 // the same beat, and trade a small nod. Quiet before the chant.
 (() => {
   const FORM_T = 'COMPLAINT  FORM C-12';
-  const L1 = 'I BET YOU AND I,', L2 = 'WE DON\'T COMPLAIN';
+  const L1 = 'AH BUT YOU AND I,', L2 = 'WE DON\'T COMPLAIN';
   // characters typed by song time, a word at a time on its sung syllable
   const WORDS = [[170.66, 2], [171.64, 6], [171.82, 10], [172.18, 14], [172.62, 16], [174.30, 19], [174.56, 25], [174.82, 33]];
   function typedN(t) { let n = 0, prev = 0; for (const [w, c] of WORDS) { if (t >= w) n = lerp(prev, c, clamp((t - w) / .16)); prev = c; } return n; }

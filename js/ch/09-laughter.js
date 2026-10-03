@@ -344,7 +344,7 @@
       ink([[cb[0] - .2 * ck, cb[1]], [cb[0] - .2 * ck, cs]], .04 * ck); ink([[cb[0] + .18 * ck, cb[1]], [cb[0] + .18 * ck, cs]], .04 * ck);
       ink([[cb[0] - .24 * ck, cs - .55 * ck], [cb[0] - .24 * ck, cb[1]]], .045 * ck);
       shape([[cb[0] - .26 * ck, cs], [cb[0] + .24 * ck, cs], [cb[0] + .24 * ck, cs + .05 * ck], [cb[0] - .26 * ck, cs + .05 * ck]], '#5d5a4c', 1.6); }
-    woman(-3.9, 5.2, { seated: true, face: 1, rose: 1, arm: .25 + laugh * .3 * Math.abs(Math.sin(t * 7)), look: laugh });
+    woman(-3.9, 5.2, { seated: true, face: 1, rose: 1, arm: -.85, look: laugh });   // hands still, forward on the desk: the laugh is in her head and the rings (Bob: the pumping arm misread)
     desk(-3.2, 5.2, 1);
     // the sewing table and machine
     const tb = P(-1.3, FL, 4.7), tk = tb[2], tt = P(-1.3, .85, 4.7)[1];
@@ -363,7 +363,7 @@
     }
     // him: walks in from the right to the machine and feeds it
     const x = kf(t, [[245, 1.6], [246.7, -.5]], (k) => k), walking = t < 246.7;
-    man(x, 4.75, { ph: (t - 245) * 1.1, walk: walking ? 1 : 0, face: -1, arm: walking ? 0 : .22 + run * Math.sin(t * 8) * .04 });
+    man(x, 4.75, { ph: (t - 245) * 1.1, walk: walking ? 1 : 0, face: -1, arm: walking ? 0 : .6 * smooth(inv(246.7, 247.3, t)) });   // reaches out and rests his hand on the machine; no jiggling
     // the laughter rings, from her mouth to the spool
     const hd = P(-3.85, -.05, 5.2), sp = [tb[0] + .05 * tk, tt - .5 * tk];
     laughter(t, [hd[0] + 30, hd[1]], [(hd[0] + sp[0]) / 2, hd[1] - 160], sp, laugh, 42);
