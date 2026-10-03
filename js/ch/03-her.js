@@ -388,10 +388,8 @@
       typewriter(W / 2, 1000, 860, { strike: strikeK(t, MAKING), paper: { lines: LINES(), typed: nl + n2, scroll: lerp(-260, 0, feed) + adv * 34, title: 'MEMO' } });
       // her two hands at the keys, rose cuffs, hopping as she types
       const hop = strikeK(t, MAKING);
-      for (const side of [-1, 1]) { const x = W / 2 + side * 170, y = 845 - (side > 0 ? hop : (1 - hop) * .4) * 18;
-        shape([[x + side * 60, y + 20], [x + side * 260, y + 140], [x + side * 220, y + 230], [x + side * 10, y + 80]], SLEEVE, 2.5);
-        shape([[x + side * 40, y + 8], [x + side * 80, y + 34], [x + side * 40, y + 96], [x, y + 70]], ROSE, 2);
-        oval(x, y + 20, 58, 36, side * .3, SKIN, 2.5); }
+      for (const side of [-1, 1]) { const up = side > 0 ? hop : (1 - hop) * .4;
+        typingHand(W / 2 + side * 175, 850 - up * 12, side, 1.2, { press: up, finger: Math.floor(hash(Math.floor(n) * 5 + (side > 0 ? 2 : 0)) * 4), sleeve: SLEEVE }); }
     });
   }
   // 102.77 close on the memo itself: IT UP strikes in, letter by letter.

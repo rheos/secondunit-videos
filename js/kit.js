@@ -283,7 +283,9 @@ function typewriter(x, y, sc, { strike = 0, paper = null } = {}) {
     dot(kx, ky, 13 * k, '#c9c7bd'); dot(kx, ky, 10 * k, CREAM); s.lineWidth = 1.6; s.strokeStyle = INK; s.beginPath(); s.arc(kx, ky, 13 * k, 0, TAU); s.stroke();
   }
   shape([[x - 110 * k, y - 18 * k], [x + 110 * k, y - 18 * k], [x + 110 * k, y - 6 * k], [x - 110 * k, y - 6 * k]], CREAM, 2); // space bar
-  text('MINISTRY', x, y - 70 * k, 14 * k, { font: 'sign', color: BRASS, spacing: 3 * k });
+  // the maker's name on a brass badge on the hood, above the type basket
+  shape([[x - 62 * k, y - 206 * k], [x + 62 * k, y - 206 * k], [x + 56 * k, y - 186 * k], [x - 56 * k, y - 186 * k]], BRASS, 1.5);
+  text('MINISTRY', x, y - 191 * k, 13 * k, { font: 'sign', color: '#2a261f', spacing: 2 * k, max: 104 * k });
 }
 // her: the typist across the hall. Side on, seated at a desk (seated: true) or standing/walking like man().
 // Hair up in a bun, grey uniform; `rose` 0..1 tints her collar and cheeks (the one warm colour she carries).
@@ -342,3 +344,32 @@ function guitarCase(cx, cy, k, { rot = 0, dir = 1, fore = 1, col = CASE_COL, lin
 function carriedCase(b, k, face, sw = 0) { guitarCase(b[0] - .12 * k * face + sw * .1 * k, b[1] - .45 * k, k, { dir: face }); }
 // set down: standing on its body end, leaning on the chair at (x, z)
 function restingCase(x, z) { const g = P(x, FL, z), k = g[2]; guitarCase(g[0] + .05 * k, g[1] - .5 * k, k, { rot: -Math.PI / 2 + .1 }); }
+
+// ---- a typing hand, seen from above the keyboard (Robin: "can't we figure out some better hands?") ----
+// (x, y) = the back of the hand; side -1 = her left hand, 1 = her right; sc = size (1 is ~a 130 px hand).
+// press 0..1 = how far the pressing finger is down; finger = which of the four (0 = little finger).
+function typingHand(x, y, side, sc = 1, { press = 0, finger = 1, sleeve = '#77756a', cuff = ROSE } = {}) {
+  const R = (px, py, a = -side * .38) => [x + (px * Math.cos(a) - py * Math.sin(a)) * sc, y + (px * Math.sin(a) + py * Math.cos(a)) * sc]; // tilted in toward the other hand
+  const capsule = (x0, y0, x1, y1, w) => { const pts = [], ang = Math.atan2(y1 - y0, x1 - x0);
+    for (let i = 0; i <= 8; i++) { const a = ang - Math.PI / 2 + Math.PI * i / 8; pts.push([x1 + Math.cos(a) * w, y1 + Math.sin(a) * w]); }
+    for (let i = 0; i <= 8; i++) { const a = ang + Math.PI / 2 + Math.PI * i / 8; pts.push([x0 + Math.cos(a) * w, y0 + Math.sin(a) * w]); }
+    return pts.map(([px, py]) => R(px, py)); };
+  const crease = mix_(SKIN, '#3a2a20', .35), shade = mix_(SKIN, '#3a2a20', .18);
+  // the forearm comes up from below along the hand's axis, so it reads as her arm reaching in
+  shape([R(-46, 60), R(46, 60), R(64, 520), R(-64, 520)], sleeve, 2);
+  shape([R(-50, 38), R(50, 38), R(54, 78), R(-54, 78)], cuff, 1.8);
+  // fingers, from the back of the hand, curling down onto the keys: we see the backs, the tips tuck under
+  const lens = [34, 44, 47, 40];
+  for (let i = 0; i < 4; i++) {
+    const fx = (i - 1.5) * 21 * -side, len = lens[side < 0 ? 3 - i : i] * (1 - (i === finger ? press * .3 : 0)), dip = i === finger ? press * 8 : 0;
+    shape(capsule(fx, -6, fx * 1.06, -6 - len + dip, 10.5), SKIN, 1.4);
+    const k1 = R(fx * 1.05, -6 - len * .62 + dip), k2 = R(fx * 1.05 + 7, -6 - len * .62 + dip); line([[k1[0] - 6 * sc, k1[1]], [k2[0], k2[1]]], crease, 1.3 * sc);   // the bend
+    const tip = R(fx * 1.06, -6 - len + dip + 3); s.globalAlpha = .5; dot(tip[0], tip[1], 7 * sc, shade); s.globalAlpha = 1;                      // tip curling away
+  }
+  shape(capsule(-side * 40, 16, -side * 62, 2 + press * 3, 11), SKIN, 1.4);   // thumb, on the inside, toward the space bar
+  const back = []; for (let i = 0; i < 24; i++) { const a = i / 24 * TAU; back.push(R(Math.cos(a) * 46, Math.sin(a) * 36 + 12)); }
+  shape(back, SKIN, 1.6);
+  for (let i = 0; i < 3; i++) { const kx = (i - 1) * 21 * -side; line([R(kx - 5, -12), R(kx + 5, -13)], crease, 1.3 * sc); }   // knuckles
+}
+
+function mix_(c, to, k) { const h = (c) => [1, 3, 5].map((i) => parseInt(c.slice(i, i + 2), 16)); const a = h(c), b = h(to); return `rgb(${a.map((v, i) => Math.round(v + (b[i] - v) * k)).join(',')})`; }

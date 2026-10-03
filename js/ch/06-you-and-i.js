@@ -51,10 +51,7 @@
     typewriter(960, 900, 820, { strike, paper: { lines, typed, title: FORM_T, scroll: n > 17 ? 20 : 0 } });
     // her hands at the keys, rose at the cuffs
     for (const sd of [-1, 1]) { const up = sd < 0 ? strike : beatPulse(t) * .4;
-      const hx = 960 + sd * 170, hy = 790 - up * 30;
-      shape([[hx + sd * 240, 1100], [hx + sd * 330, 1100], [hx + sd * 40, hy + 10], [hx - sd * 20, hy - 20]], '#77756a', 3);
-      shape([[hx - sd * 26, hy - 30], [hx + sd * 30, hy - 4], [hx + sd * 50, hy + 22], [hx - sd * 6, hy - 4]], ROSE, 2.5);
-      if (window.PNC_ON) PNCK.ball(hx - sd * 40, hy - 40, 36, SKIN, 1.2); else { s.beginPath(); s.ellipse(hx - sd * 40, hy - 40, 46, 26, sd * .5, 0, TAU); s.fillStyle = SKIN; s.fill(); s.lineWidth = 3; s.strokeStyle = INK; s.stroke(); } }
+      typingHand(960 + sd * 175, 800 - up * 12, sd, 1.15, { press: up, finger: Math.floor(hash(Math.floor(n) * 7 + (sd > 0 ? 3 : 0)) * 4) }); }
     void str;
   }
   // 174.95  split screen, mirrored: his blank form, her typed one. On the beat both tear in half.
