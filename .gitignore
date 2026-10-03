@@ -1,0 +1,10 @@
+node_modules
+out/
+assets/
+js/data.js
+*.wav
+*.mp3
+words*.json
+*transcript*
+*.lyrics.txt
+.DS_Store
