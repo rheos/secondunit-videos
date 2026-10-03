@@ -11,6 +11,14 @@
   const since = (t) => t - B[Math.max(0, bt(t))];
   const BLACK = '#1d1c19', MID = '#8a8b7e', DARK = '#3d4140', PALE = '#d6cfb4';
   const FUT = 'Futura, "Gill Sans", sans-serif';
+  // the pinball-cel drawing style (pnc.html): rounded, airbrushed, chrome and brass, deco ornament
+  const K = window.PNC_ON ? window.PNCK : null;
+  const glint = (cx, cy, r, a0 = Math.PI * 1.05, a1 = Math.PI * 1.45, w = .06) => { s.beginPath(); s.arc(cx, cy, r, a0, a1); s.lineWidth = Math.max(1, r * w); s.lineCap = 'round'; s.strokeStyle = 'rgba(255,250,235,.6)'; s.stroke(); };
+  // a pinball mushroom bumper seen from above-front: a skirt, a glossy cap and a star
+  function bumper(x, y, r) {
+    K.blob([[x - r * 1.15, y + r * .35], [x + r * 1.15, y + r * .35], [x + r * 1.1, y + r * .7], [x - r * 1.1, y + r * .7]], STEEL_D, 1.2);
+    K.ball(x, y, r, CREAM, 1.2); K.star(x, y + r * .05, r * .45, BRASS, 1);
+  }
 
   // ---- helpers ----
   function bold(str, x, y, size, { color = INK, align = 'center', rot = 0, alpha = 1, spacing = 0, base = 'alphabetic', max = 0 } = {}) {
@@ -27,6 +35,14 @@
         [cx + Math.cos(a + d * .42) * r, cy + Math.sin(a + d * .42) * r], [cx + Math.cos(a + d * .54) * r * .84, cy + Math.sin(a + d * .54) * r * .84]);
     }
     shape(pts, c, Math.max(2, r * .016));
+    if (K) {
+      glint(cx, cy, r * .78);
+      if (!hole) return;
+      s.beginPath(); s.arc(cx, cy, r * .62, 0, TAU); s.lineWidth = Math.max(1, r * .01); s.strokeStyle = K.dark(c, .55); s.stroke();
+      for (let i = 0; i < 5; i++) { const a = rot + i / 5 * TAU, p0 = [cx + Math.cos(a) * r * .2, cy + Math.sin(a) * r * .2], p1 = [cx + Math.cos(a) * r * .62, cy + Math.sin(a) * r * .62];
+        K.tube(p0, [(p0[0] + p1[0]) / 2, (p0[1] + p1[1]) / 2], p1, r * .04, r * .03, K.light(c, .1), 1); }
+      K.ball(cx, cy, r * .2, BRASS, Math.max(1, r * .01)); return;
+    }
     if (!hole) return;
     s.beginPath(); s.arc(cx, cy, r * .62, 0, TAU); s.lineWidth = Math.max(1.5, r * .012); s.strokeStyle = INK; s.stroke();
     for (let i = 0; i < 5; i++) { const a = rot + i / 5 * TAU; ink([[cx + Math.cos(a) * r * .2, cy + Math.sin(a) * r * .2], [cx + Math.cos(a) * r * .62, cy + Math.sin(a) * r * .62]], Math.max(3, r * .07)); }
@@ -66,8 +82,14 @@
   }
   function hub(t, r = 170, inv = false) {
     const p = hit(t, B[Math.max(0, bt(t))], 8), rr = r * (1 + .12 * p);
+    if (K) {
+      K.fan(W / 2, H / 2, rr + 70, 16, 0, TAU, inv ? ['#3a3934', '#55534a'] : [BRASS, CREAM], 1);
+      s.beginPath(); s.arc(W / 2, H / 2, rr, 0, TAU); K.soft(inv ? BLACK : CREAM, W / 2 - rr, H / 2 - rr, W / 2 + rr, H / 2 + rr); s.lineWidth = 1.5; s.strokeStyle = K.LINE; s.stroke();
+      for (let i = 0; i < 12; i++) { const a = i / 12 * TAU; K.ball(W / 2 + Math.cos(a) * (rr - 18), H / 2 + Math.sin(a) * (rr - 18), 7, BRASS, .8); }
+    } else {
     dot(W / 2, H / 2, rr + 18, inv ? CREAM : INK); dot(W / 2, H / 2, rr, inv ? BLACK : CREAM);
     s.beginPath(); s.arc(W / 2, H / 2, rr - 16, 0, TAU); s.lineWidth = 3; s.strokeStyle = inv ? CREAM : INK; s.stroke();
+    }
     const w = word(t);
     bold(w, W / 2, H / 2 + rr * .3, rr * (w.length > 2 ? .72 : .9), { color: inv ? CREAM : INK, max: rr * 1.5 });
   }
@@ -101,7 +123,8 @@
       for (let j = 0; j <= 6; j++) { const a = j / 6 * Math.PI / 2, rr = r * (.75 + .5 * hash(ci * 13 + j)); pts.push([cx + sx * Math.cos(a) * rr * 1.5, cy + sy * Math.sin(a) * rr]); }
       withT(() => { s.beginPath(); pts.forEach(([px, py], j) => j ? s.lineTo(px, py) : s.moveTo(px, py)); s.closePath(); s.fillStyle = sky(); s.fill();
         s.save(); s.clip(); cloud(cx + sx * r * .55, cy + sy * r * .45 + 40, 46 + 20 * big, 90 + ci); s.restore();
-        s.lineWidth = 4; s.strokeStyle = INK; s.stroke(); });
+        s.beginPath(); pts.forEach(([px, py], j) => j ? s.lineTo(px, py) : s.moveTo(px, py)); s.closePath(); // cloud() leaves its own path behind
+        s.lineWidth = window.PNC_ON ? 1.6 : 4; s.strokeStyle = window.PNC_ON ? window.PNCK.LINE : INK; s.stroke(); });
     });
   }
 
@@ -112,7 +135,8 @@
     const bg = inv ? BLACK : CREAM, fg = inv ? CREAM : BLACK;
     fill(bg);
     const cx = W / 2 - sg * 560, cy = 250;
-    for (let i = 0; i < 24; i += 2) { const a = i / 24 * TAU + k * TAU / 48; poly([[cx, cy], [cx + Math.cos(a) * 2600, cy + Math.sin(a) * 2600], [cx + Math.cos(a + TAU / 24) * 2600, cy + Math.sin(a + TAU / 24) * 2600]], inv ? '#2e2d29' : PALE); }
+    if (K) K.fan(cx, cy, 1700, 12, k * TAU / 48, TAU + k * TAU / 48, inv ? ['#2e2d29', '#3a3934'] : [PALE, CREAM], 1.2);
+    else for (let i = 0; i < 24; i += 2) { const a = i / 24 * TAU + k * TAU / 48; poly([[cx, cy], [cx + Math.cos(a) * 2600, cy + Math.sin(a) * 2600], [cx + Math.cos(a + TAU / 24) * 2600, cy + Math.sin(a + TAU / 24) * 2600]], inv ? '#2e2d29' : PALE); }
     gear(cx, cy, 215, 14, k * TAU / 28 + ease.out(pb / .15) * TAU / 28, MID);
     // the thin ticker band, scrolling a word per beat
     withT(() => {
@@ -127,6 +151,7 @@
       shape([[-1500, -175], [1500, -175], [1500, 175], [-1500, 175]], fg, 4);
       // a clerk standing on the band's top edge, upright, tiny against it
       withT(() => { s.translate(-sg * 620, -175); s.rotate(.42 * sg); tinyMan(0, 0, 110, fg, sg); });
+      if (K) for (const sx of [-1150, 1150]) K.star(sx, 0, 70, bg === CREAM ? CREAM : BRASS, 1.2);
       const w = word(t), sc = 1 + .22 * punch;
       s.scale(sc, sc); bold(w, sg * 120, 118, w.length > 2 ? 300 : 330, { color: bg, spacing: 6, max: 1100 });
     });
@@ -158,8 +183,9 @@
       const pv = [S[0] + dx * Rp, S[1] + dy * Rp], r = Rp + Rp * Math.cos(isS ? theta : 0);
       const tip = [S[0] + dx * r, S[1] + dy * r];
       const wdt = isS ? 15 + 10 * Math.sin(theta) : 14;
-      line([pv, tip], INK, wdt + 6); line([pv, tip], isS ? '#b9b7a4' : '#8f8d7d', wdt);
-      dot(pv[0], pv[1], 10, INK);
+      if (K) { K.tube(pv, [(pv[0] + tip[0]) / 2, (pv[1] + tip[1]) / 2], tip, wdt * .55, wdt * .4, isS ? '#c9c7b4' : '#8f8d7d', 1); K.ball(pv[0], pv[1], 10, BRASS, .8); }
+      else { line([pv, tip], INK, wdt + 6); line([pv, tip], isS ? '#b9b7a4' : '#8f8d7d', wdt);
+      dot(pv[0], pv[1], 10, INK); }
       withT(() => { s.translate(tip[0], tip[1]); s.rotate(a - Math.PI / 2); shape([[-16, -10], [16, -10], [16, 22], [-16, 22]], isS ? CREAM : '#c9c2a8', 2);
         text(isS ? word(t)[0] : 'ABCDEFGHIJKLMNOPQRSTUVWXYZ01234'[i], 0, 15, 22, { font: 'sign', max: 26 }); });
     }
@@ -202,7 +228,9 @@
     gear(cx + 330, cy + 40, 100, 9, -step * TAU / 18, BRASS);
     gear(cx + 1000, cy + 140, 120, 10, step * TAU / 20, STEEL_D);
     // a canister flying out along the wedge on each beat
-    const d = 200 + pb * 1500; withT(() => { s.translate(cx, cy); s.rotate(.18);
+    const d = 200 + pb * 1500;
+    if (K) { bumper(cx + 700, cy + 330, 64); bumper(cx + 430, cy + 290, 48); withT(() => { s.translate(cx, cy); s.rotate(.18); K.ball(d + 50, 0, 40, STEEL, 1.2); K.ball(d + 140, 0, 30, STEEL, 1); }); return; }
+    withT(() => { s.translate(cx, cy); s.rotate(.18);
       shape([[d, -26], [d + 120, -26], [d + 120, 26], [d, 26]], BRASS, 3); ink([[d + 30, -26], [d + 30, 26]], 2); ink([[d + 90, -26], [d + 90, 26]], 2); });
   }
   // a sea of hats from above; on each beat a set of rows lifts its hats: a slip under each with the word
@@ -219,11 +247,14 @@
     }
     const draw = ({ x, y, up, empty }) => {
       if (empty) { shape([[x - 60, y - 50], [x + 60, y - 50], [x + 60, y + 50], [x - 60, y + 50]], '#6e6a5a', 2.5); hatch([[x - 60, y - 50], [x + 60, y - 50], [x + 60, y + 50], [x - 60, y + 50]], .8, 10, 1.2, .3); return; }
+      if (K) { s.beginPath(); s.ellipse(x, y + 10, 92, 48, 0, 0, TAU); K.soft(COAT, x - 92, y - 38, x + 92, y + 58); s.lineWidth = 1.2; s.strokeStyle = K.dark(COAT, .55); s.stroke(); K.ball(x, y, 34, SKIN, 1); }
+      else {
       s.beginPath(); s.ellipse(x, y + 10, 92, 48, 0, 0, TAU); s.fillStyle = COAT; s.fill(); s.lineWidth = 2.5; s.strokeStyle = INK; s.stroke();   // shoulders
-      dot(x, y, 34, SKIN); s.beginPath(); s.arc(x, y, 34, 0, TAU); s.stroke();
+      dot(x, y, 34, SKIN); s.beginPath(); s.arc(x, y, 34, 0, TAU); s.stroke(); }
       if (up > .2) withT(() => { s.translate(x, y); s.rotate(-.1); shape([[-38, -16], [38, -16], [38, 16], [-38, 16]], CREAM, 2); text(w, 0, 10, w.length > 2 ? 24 : 28, { font: 'sign', max: 64 }); });
       const hx = x + up * 20, hy = y - up * 95, sc = 1 + up * .3;
       s.globalAlpha = .25 + .1 * up; dot(x + 10 + up * 30, y + 14 + up * 20, 60, INK); s.globalAlpha = 1;
+      if (K) { K.ball(hx, hy, 64 * sc, HAT, 1.2); K.ball(hx, hy, 38 * sc, '#55524a', 1); s.beginPath(); s.arc(hx, hy, 42 * sc, 0, TAU); s.lineWidth = 5; s.strokeStyle = '#2a2924'; s.stroke(); return; }
       s.beginPath(); s.arc(hx, hy, 64 * sc, 0, TAU); s.fillStyle = HAT; s.fill(); s.lineWidth = 3; s.strokeStyle = INK; s.stroke();
       s.beginPath(); s.arc(hx, hy, 38 * sc, 0, TAU); s.fillStyle = '#4c4a41'; s.fill(); s.stroke();
       s.beginPath(); s.arc(hx, hy, 42 * sc, 0, TAU); s.lineWidth = 6; s.strokeStyle = '#2a2924'; s.stroke();
@@ -240,8 +271,10 @@
       const y = 90 + r * 150, dir = r % 2 ? -1 : 1;
       s.globalAlpha = .55; s.fillStyle = '#c7d0cf'; s.fillRect(0, y - 34, W, 68); s.globalAlpha = 1;
       ink([[0, y - 34], [W, y - 34]], 3); ink([[0, y + 34], [W, y + 34]], 3);
+      if (K) line([[0, y - 22], [W, y - 22]], 'rgba(255,250,235,.5)', 5);
       for (let j = k - 2; j <= k; j++) { const lt = t - B[Math.max(0, j)] - r * .04; if (lt < 0) continue;
         let x = lt * 2600 - 200; if (dir < 0) x = W - x; const cw = 150;
+        if (K) { K.ball(x - 30, y, 28, STEEL, 1); K.ball(x + 30, y, 28, STEEL, 1); continue; }
         shape([[x - cw / 2, y - 26], [x + cw / 2, y - 26], [x + cw / 2, y + 26], [x - cw / 2, y + 26]], BRASS, 2.5); ink([[x - cw / 2 + 24, y - 26], [x - cw / 2 + 24, y + 26]], 2); ink([[x + cw / 2 - 24, y - 26], [x + cw / 2 - 24, y + 26]], 2); }
       for (let x = 120; x < W; x += 360) shape([[x - 12, y - 44], [x + 12, y - 44], [x + 12, y + 44], [x - 12, y + 44]], STEEL_D, 2);
     }
@@ -269,7 +302,8 @@
   function flap(t, o = {}) {
     fill(CREAM);
     const k = bt(t), sg = o.flip ? -1 : 1;
-    for (let i = 0; i < 20; i += 2) { const a = Math.PI + i / 40 * Math.PI; poly([[W / 2, 1000], [W / 2 + Math.cos(a) * 2400, 1000 + Math.sin(a) * 2400], [W / 2 + Math.cos(a + Math.PI / 40) * 2400, 1000 + Math.sin(a + Math.PI / 40) * 2400]], PALE); }
+    if (K) K.fan(W / 2, 1000, 1500, 10, Math.PI, TAU, [PALE, CREAM], 1.2);
+    else for (let i = 0; i < 20; i += 2) { const a = Math.PI + i / 40 * Math.PI; poly([[W / 2, 1000], [W / 2 + Math.cos(a) * 2400, 1000 + Math.sin(a) * 2400], [W / 2 + Math.cos(a + Math.PI / 40) * 2400, 1000 + Math.sin(a + Math.PI / 40) * 2400]], PALE); }
     // the duct, sweeping in from the top corner
     withT(() => { s.translate(W / 2, 380); s.rotate(.16 * sg);
       shape([[-1400, -330], [1400, -250], [1400, 250], [-1400, 330]], STEEL, 4);
@@ -277,7 +311,7 @@
       hatch([[-1400, 120], [1400, 90], [1400, 250], [-1400, 330]], .9, 9, 1.4, .5);
       // the panel
       shape([[-430, -210], [430, -210], [430, 210], [-430, 210]], BRASS, 5);
-      for (const [bx, by] of [[-400, -180], [400, -180], [400, 180], [-400, 180]]) dot(bx, by, 9, INK);
+      for (const [bx, by] of [[-400, -180], [400, -180], [400, 180], [-400, 180]]) { if (K) K.ball(bx, by, 12, BRASS, 1); else dot(bx, by, 9, INK); }
       // every cell flips together, early, so the word settles exactly on its beat
       const kf2 = bt(t + .26), w = (word(t + .26) + '   ').slice(0, 3), prev = (word(B[Math.max(0, kf2)] - .05) + '   ').slice(0, 3);
       for (let i = 0; i < 3; i++) splitFlap(t, B[Math.max(0, kf2)] - .26 - i * .03, w[i], -360 + i * 340 * .8, -170, 340, { prev: prev[i] });

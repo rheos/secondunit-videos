@@ -18,6 +18,35 @@
   const tickHit = (t) => { let last = -9; for (const d of DO) if (d <= t) last = d; return t < FREEZE ? hit(t, last, 9) : 0; };
   const BLACK = '#1d1c19', WALL = '#8f9886', CLERK = '#4f4c42';
   const FUT = 'Futura, "Gill Sans", sans-serif';
+  // the pinball-cel drawing style (pnc.html): rounded figures, airbrushed volume, glossy brass, deco dials
+  const K = window.PNC_ON ? window.PNCK : null;
+  const TROUSER = '#4f4b42', SHOE = '#2c2621';
+  const glint = (cx, cy, r, w = .05, a0 = Math.PI * 1.05, a1 = Math.PI * 1.45) => { s.beginPath(); s.arc(cx, cy, r, a0, a1); s.lineWidth = Math.max(1, r * w); s.lineCap = 'round'; s.strokeStyle = 'rgba(255,250,235,.6)'; s.stroke(); };
+  const disc = (cx, cy, r, c, lw = 1.2) => { s.beginPath(); s.arc(cx, cy, r, 0, TAU); K.soft(c, cx - r, cy - r, cx + r, cy + r); s.lineWidth = lw; s.strokeStyle = K.dark(c, .55); s.stroke(); };
+  // PNC: a man seen from the front or back, in local metres (feet at 0,0). st = stride sine.
+  function frontFig(lw, { back = false, mine = false, st = 0, run = 0, hold = false, coat = CLERK } = {}) {
+    const bob = Math.abs(st) * (.03 + run * .04), l1 = Math.max(0, st) * (.1 + run * .12), l2 = Math.max(0, -st) * (.1 + run * .12);
+    for (const [lx, lift] of [[-.1, l1], [.1, l2]]) {
+      K.tube([lx, -.95 - bob], [lx * 1.05, -.5 - lift / 2], [lx, -.06 - lift], .085, .065, TROUSER, lw);
+      K.blob([[lx - .09, -.08 - lift], [lx + .09, -.08 - lift], [lx + .1, -lift], [lx - .1, -lift]], SHOE, lw);
+    }
+    const sh = -1.45 - bob;
+    for (const sg of [-1, 1]) {
+      if (hold && sg < 0) { K.tube([-.2, sh + .1], [-.42, sh - .15], [-.15, sh - .38], .07, .055, coat, lw); K.ball(-.15, sh - .38, .06, SKIN, lw); continue; }
+      const a = st * .35 * sg * (1 + run), hd = [sg * (.3 + Math.abs(a) * .2), sh + .64];
+      K.tube([sg * .2, sh + .1], [sg * .3, sh + .36], hd, .07, .055, coat, lw); K.ball(hd[0], hd[1], .055, SKIN, lw);
+    }
+    K.blob([[-.17, sh - .02], [.17, sh - .02], [.24, sh + .12], [.25, sh + .5], [.33, -.45 - bob], [0, -.42 - bob], [-.33, -.45 - bob], [-.25, sh + .5], [-.24, sh + .12]], coat, lw);
+    if (!back) { K.blob([[-.08, sh - .01], [.08, sh - .01], [0, sh + .16]], CREAM, lw, false); line([[0, sh + .16], [0, -.5 - bob]], K.dark(coat, .5), lw); for (const yy of [sh + .35, sh + .6]) K.ball(.04, yy, .022, K.dark(coat, .3), lw * .6); }
+    const hy = sh - .18;
+    if (back) { K.head(0, hy, lw, { back: true }); return; }
+    K.blob([[-.11, hy - .11], [.11, hy - .11], [.13, hy + .02], [.08, hy + .13], [-.08, hy + .13], [-.13, hy + .02]], SKIN, lw);
+    for (const ex of [-.045, .045]) { s.beginPath(); s.ellipse(ex, hy - .02, .016, .024, 0, 0, TAU); s.fillStyle = '#2a1f1a'; s.fill(); }
+    K.ball(0, hy + .035, .04, K.mix(SKIN, '#c0605a', .25), lw);
+    K.blob([[-.25, hy - .09], [.25, hy - .09], [.27, hy - .05], [0, hy - .03], [-.27, hy - .05]], HAT, lw);
+    K.blob([[-.14, hy - .09], [.14, hy - .09], [.13, hy - .27], [0, hy - .23], [-.13, hy - .27]], HAT, lw);
+    s.fillStyle = K.dark(HAT, .5); s.fillRect(-.135, hy - .14, .27, .035);
+  }
   function bold(str, x, y, size, { color = INK, align = 'center', rot = 0, alpha = 1, outline = 0, max = 0 } = {}) {
     if (max) { s.save(); s.font = `bold ${Math.round(size)}px ${FUT}`; const wd = s.measureText(str).width + outline; s.restore(); if (wd > max) { outline *= max / wd; size *= max / wd; } }
     withT(() => { s.translate(x, y); s.rotate(rot); s.globalAlpha *= alpha; s.textAlign = align; s.textBaseline = 'alphabetic';
@@ -29,6 +58,7 @@
   // ---- props ----
   // a wall clock: every one shows a different time; all the second hands jump on each "do"
   function clockFace(cx, cy, r, seed, t) {
+    if (K) return clockDeco(cx, cy, r, seed, t);
     dot(cx, cy, r * 1.08, INK); dot(cx, cy, r, CREAM);
     for (let i = 0; i < 12; i++) { const a = i / 12 * TAU; ink([[cx + Math.cos(a) * r * .78, cy + Math.sin(a) * r * .78], [cx + Math.cos(a) * r * .9, cy + Math.sin(a) * r * .9]], Math.max(1.2, r * (i % 3 ? .03 : .06))); }
     const tk = ticks(t), h = hash(seed * 7 + 1) * TAU, m = hash(seed * 7 + 2) * TAU + tk * TAU / 240, sc = hash(seed * 7 + 3) * TAU + tk * TAU / 12;
@@ -37,8 +67,38 @@
     line([[cx - Math.sin(sc) * r * .15, cy + Math.cos(sc) * r * .15], [cx + Math.sin(sc) * r * .84, cy - Math.cos(sc) * r * .84]], '#3a2f2a', Math.max(1, r * .025));
     dot(cx, cy, Math.max(2, r * .06), INK);
   }
+  function clockDeco(cx, cy, r, seed, t) {
+    for (let i = 0; i < 12; i++) { const a = i / 12 * TAU, a2 = a + TAU / 24; s.beginPath(); s.moveTo(cx + Math.cos(a) * r, cy + Math.sin(a) * r);
+      s.lineTo(cx + Math.cos(a2 - .13) * r * 1.3, cy + Math.sin(a2 - .13) * r * 1.3); s.lineTo(cx + Math.cos(a2 + .13) * r * 1.3, cy + Math.sin(a2 + .13) * r * 1.3); s.closePath();
+      K.soft(i % 2 ? BRASS : CREAM, cx - r * 1.3, cy - r * 1.3, cx + r * 1.3, cy + r * 1.3); s.lineWidth = .8; s.strokeStyle = K.LINE; s.stroke(); }
+    disc(cx, cy, r * 1.04, BRASS, 1); glint(cx, cy, r * .98, .05); disc(cx, cy, r * .88, CREAM, 1);
+    for (let i = 0; i < 12; i++) { const a = i / 12 * TAU; line([[cx + Math.cos(a) * r * .74, cy + Math.sin(a) * r * .74], [cx + Math.cos(a) * r * .84, cy + Math.sin(a) * r * .84]], K.LINE, Math.max(.8, r * (i % 3 ? .015 : .035))); }
+    if (r > 70) for (const i of [12, 3, 6, 9]) { const a = -Math.PI / 2 + i / 12 * TAU; text(String(i), cx + Math.cos(a) * r * .6, cy + Math.sin(a) * r * .6 + r * .07, r * .2, { font: 'sign', color: K.LINE, max: r * .3 }); }
+    const tk = ticks(t), h = hash(seed * 7 + 1) * TAU, m = hash(seed * 7 + 2) * TAU + tk * TAU / 240, sc = hash(seed * 7 + 3) * TAU + tk * TAU / 12;
+    const hand = (a, L, w, c) => { const tip = [cx + Math.sin(a) * L, cy - Math.cos(a) * L], n = [Math.cos(a) * w, Math.sin(a) * w];
+      s.beginPath(); s.moveTo(cx + n[0], cy + n[1]); s.lineTo(tip[0], tip[1]); s.lineTo(cx - n[0], cy - n[1]); s.closePath(); s.fillStyle = c; s.fill(); };
+    hand(h, r * .46, r * .07, '#3a2e28'); hand(m, r * .7, r * .045, '#3a2e28');
+    line([[cx - Math.sin(sc) * r * .15, cy + Math.cos(sc) * r * .15], [cx + Math.sin(sc) * r * .8, cy - Math.cos(sc) * r * .8]], '#6a3a2c', Math.max(.8, r * .018));
+    K.ball(cx, cy, Math.max(2, r * .08), BRASS, .8);
+  }
   // a clerk, side on, walking (face -1 = to the left), briefcase in the near hand
   function clerk(x, z, ph, face = -1) {
+    if (K) {
+      const b = P(x, FL, z), k = b[2], sw = Math.sin(ph * TAU) * .3, bob = Math.abs(Math.sin(ph * TAU)) * .03;
+      return K.fig(b, k, face, (u) => {
+        const lw = 1.3 * u, hip = [0, -.95];
+        for (const [a, far] of [[-sw, true], [sw, false]]) { const kn = [Math.sin(a) * .5, -.45], ft = [Math.sin(a) * .9 + .04, -.05];
+          K.tube(hip, kn, ft, .1, .07, far ? K.dark(TROUSER, .2) : TROUSER, lw); K.blob([[ft[0] - .07, -.07], [ft[0] + .12, -.08], [ft[0] + .17, -.01], [ft[0] - .08, 0]], SHOE, lw); }
+        const sh = -1.45 + bob;
+        K.blob([[-.15, sh - .02], [.13, sh - .02], [.2, sh + .1], [.18, sh + .5], [.3, -.45], [0, -.43], [-.3, -.45], [-.2, sh + .5], [-.21, sh + .1]], CLERK, lw);
+        K.head(.04, -1.64 + bob, lw);
+        const shp = [.02, sh + .12], ang = -sw * .7, hd = [shp[0] + Math.sin(ang) * .6, shp[1] + Math.cos(ang) * .6];
+        K.tube(shp, [(shp[0] + hd[0]) / 2 + .02, (shp[1] + hd[1]) / 2], hd, .07, .05, CLERK, lw);
+        K.blob([[hd[0] - .18, hd[1] + .03], [hd[0] + .18, hd[1] + .03], [hd[0] + .18, hd[1] + .27], [hd[0] - .18, hd[1] + .27]], '#3a3129', lw, false);
+        s.beginPath(); s.arc(hd[0], hd[1] + .03, .05, Math.PI, TAU); s.lineWidth = .025; s.strokeStyle = '#2a221c'; s.stroke();
+        K.ball(hd[0], hd[1], .055, SKIN, lw);
+      });
+    }
     const b = P(x, FL, z), k = b[2], sw = Math.sin(ph * TAU) * .3, bob = Math.abs(Math.sin(ph * TAU)) * .03 * k;
     const hip = [b[0], b[1] - .95 * k];
     for (const a of [-sw, sw]) ink([hip, [hip[0] + Math.sin(a) * .5 * k * face, hip[1] + .5 * k], [hip[0] + Math.sin(a) * .9 * k * face + .04 * k * face, b[1]]], .12 * k);
@@ -56,6 +116,7 @@
   // a man seen from the front (walking toward us) or the back (back: true); mine: his guitar case
   function walker(x, z, ph, { back = false, mine = false, run = 0 } = {}) {
     const b = P(x, FL, z), k = b[2], st = Math.sin(ph * TAU), bob = Math.abs(st) * (.03 + run * .04) * k;
+    if (K) { if (mine && back) guitarCase(b[0] + .36 * k, b[1] - .45 * k - bob, k, { fore: .4 }); return K.fig(b, k, 1, (u) => frontFig(1.3 * u, { back, mine, st, run, coat: mine ? COAT : CLERK })); }
     const l1 = Math.max(0, st) * (.1 + run * .12) * k, l2 = Math.max(0, -st) * (.1 + run * .12) * k;
     line([[b[0] - .1 * k, b[1] - .95 * k - bob], [b[0] - .1 * k, b[1] - l1]], INK, .13 * k, 'butt');
     line([[b[0] + .1 * k, b[1] - .95 * k - bob], [b[0] + .1 * k, b[1] - l2]], INK, .13 * k, 'butt');
@@ -72,6 +133,14 @@
   }
   // gloved fist and sleeve; (x, y) = knuckles, a = angle the sleeve comes in from
   function glove(x, y, a, sc = 1) {
+    if (K) return withT(() => { s.translate(x, y); s.rotate(a); s.scale(sc, sc);
+      K.blob([[-1400, -110], [-130, -90], [-95, -20], [-100, 100], [-1400, 135]], COAT, 2, false);   // the sleeve runs off frame
+      K.blob([[-150, -100], [-110, -95], [-92, 0], [-105, 105], [-150, 108]], K.dark(COAT, .15), 1.6);       // the cuff
+      K.blob([[-130, -80], [0, -95], [85, -55], [95, 30], [40, 90], [-120, 85]], '#3a382f', 2);              // the mitten fist
+      K.blob([[-10, -100], [55, -110], [80, -80], [40, -60], [-10, -70]], '#46443a', 1.6);                    // thumb over the top
+      for (const fy of [-20, 25]) { s.beginPath(); s.arc(40, fy, 40, -.6, .6); s.lineWidth = 2; s.strokeStyle = '#1f1d18'; s.stroke(); }
+      glint(-30, -10, 70, .06);
+    });
     withT(() => { s.translate(x, y); s.rotate(a); s.scale(sc, sc);
       shape([[-520, -95], [-120, -80], [-90, 95], [-520, 120]], COAT, 3); hatch([[-520, 20], [-110, 20], [-90, 95], [-520, 120]], .9, 9, 1.4, .45);
       s.beginPath(); s.ellipse(-40, 0, 115, 92, 0, 0, TAU); s.fillStyle = '#3a382f'; s.fill(); s.lineWidth = 3; s.strokeStyle = INK; s.stroke();
@@ -188,7 +257,8 @@
       hatch([[820, 40], [1000, 40], [1040, 1100], [860, 1100]], .9, 9, 1.4, .4);
       shape([[330, 60], [970, 60], [970, 470], [330, 470]], STEEL_D, 3);
       const late = t >= chunk;
-      withT(() => { const r = 180, cx = 650, cy = 265; dot(cx, cy, r + 14, BRASS); s.beginPath(); s.arc(cx, cy, r + 14, 0, TAU); s.lineWidth = 3; s.strokeStyle = INK; s.stroke();
+      if (K) { for (const [bx, by] of [[345, 75], [955, 75], [345, 455], [955, 455]]) K.ball(bx, by, 11, BRASS, 1); K.fan(650, 265, 205, 16, 0, TAU, [BRASS, CREAM], 1); }
+      withT(() => { const r = 180, cx = 650, cy = 265; if (K) { disc(cx, cy, r + 14, BRASS); glint(cx, cy, r + 6, .05); } else dot(cx, cy, r + 14, BRASS); s.beginPath(); s.arc(cx, cy, r + 14, 0, TAU); s.lineWidth = 3; s.strokeStyle = INK; s.stroke();
         dot(cx, cy, r, CREAM);
         for (let i = 0; i < 12; i++) { const a = i / 12 * TAU; ink([[cx + Math.cos(a) * r * .8, cy + Math.sin(a) * r * .8], [cx + Math.cos(a) * r * .92, cy + Math.sin(a) * r * .92]], i % 3 ? 2.5 : 5);
           text(String(i ? i : 12), cx + Math.sin(i / 12 * TAU) * r * .66, cy - Math.cos(i / 12 * TAU) * r * .66 + 12, 32, { font: 'sign', max: 50 }); }
@@ -196,13 +266,13 @@
         const hA = (11 + mins / 60) / 12 * TAU, mA = mins / 60 * TAU;
         ink([[cx, cy], [cx + Math.sin(hA) * r * .5, cy - Math.cos(hA) * r * .5]], 12);
         ink([[cx, cy], [cx + Math.sin(mA) * r * .76, cy - Math.cos(mA) * r * .76]], 7);
-        dot(cx, cy, 12, INK); });
+        if (K) K.ball(cx, cy, 14, BRASS, 1); else dot(cx, cy, 12, INK); });
       shape([[400, 520], [900, 520], [900, 600], [400, 600]], BRASS, 3); bold('TIME RECORDER', 650, 576, 44, { max: 460 });
       shape([[440, 690], [860, 690], [860, 716], [440, 716]], BLACK, 3);           // the slot
       // the lever on the side, slammed at the chunk
       const lev = t < chunk - .2 ? 0 : t < chunk ? ease.in(inv(chunk - .2, chunk, t)) : 1 - ease.inOut(inv(chunk + .3, chunk + .8, t));
-      withT(() => { s.translate(1010, 640); s.rotate(-.9 + lev * 1.3); shape([[-14, 0], [14, 0], [10, -260], [-10, -260]], STEEL_D, 3); dot(0, -270, 34, BLACK); s.beginPath(); s.arc(0, -270, 34, 0, TAU); s.lineWidth = 3; s.strokeStyle = INK; s.stroke(); });
-      dot(1010, 640, 22, BRASS);
+      withT(() => { s.translate(1010, 640); s.rotate(-.9 + lev * 1.3); shape([[-14, 0], [14, 0], [10, -260], [-10, -260]], STEEL_D, 3); if (K) K.ball(0, -270, 36, BLACK, 1.2); else { dot(0, -270, 34, BLACK); s.beginPath(); s.arc(0, -270, 34, 0, TAU); s.lineWidth = 3; s.strokeStyle = INK; s.stroke(); } });
+      if (K) K.ball(1010, 640, 24, BRASS, 1); else dot(1010, 640, 22, BRASS);
     });
     // the card: in his hand, into the slot, out again with LATE on it
     const tin = 216.06, tout = 217.55;
@@ -249,17 +319,25 @@
       shape([[-R * .35, 0], [R * .35, 0], [R * .5, -R * 3], [-R * .5, -R * 3]], STEEL, 4);
       for (let y = -R * .3; y > -R * 3; y -= R * .22) { s.beginPath(); s.ellipse(0, y, R * (.37 - y / R * .045), R * .07, 0, 0, TAU); s.lineWidth = 3; s.strokeStyle = INK; s.stroke(); }
       hatch([[R * .1, 0], [R * .35, 0], [R * .5, -R * 3], [R * .15, -R * 3]], .9, 8, 1.3, .45); });
+    if (K) {
+      disc(cx, cy, R, BRASS, 2); glint(cx, cy, R * .95, .035);
+      for (const [f, c] of [[.86, '#8f7640'], [.74, '#6b5a34']]) { disc(cx, cy, R * f, c, 1.5); glint(cx, cy, R * f * .97, .02, Math.PI * 1.1, Math.PI * 1.35); }
+      s.beginPath(); s.arc(cx, cy, R * .62, 0, TAU); s.fillStyle = rgrad(cx, cy, R * .1, R * .62, [[0, '#0e0d0b'], [1, '#2e2b26']]); s.fill();
+    } else {
     dot(cx, cy, R * 1.04, INK); dot(cx, cy, R, BRASS);
     for (const [f, c] of [[.86, '#8f7640'], [.74, '#6b5a34']]) { dot(cx, cy, R * f, c); s.beginPath(); s.arc(cx, cy, R * f, 0, TAU); s.lineWidth = 3; s.strokeStyle = INK; s.stroke(); }
     dot(cx, cy, R * .62, BLACK);
+    }
     // the grille: slats part like a mouth when he yells
     withT(() => { s.beginPath(); s.arc(cx, cy, R * .62, 0, TAU); s.clip();
       for (let i = -5; i <= 5; i++) { const y = cy + i * R * .11 * (1 + open * .5 * (Math.abs(i) / 5)); const gap = i === 0 ? open : 0;
-        if (gap > .1) continue; line([[cx - R * .7, y], [cx + R * .7, y]], STEEL, R * .045); line([[cx - R * .7, y + R * .02], [cx + R * .7, y + R * .02]], INK, R * .008); }
+        if (gap > .1) continue;
+        if (K) { K.tube([cx - R * .7, y], [cx, y], [cx + R * .7, y], R * .024, R * .024, STEEL, Math.max(1, R * .004)); line([[cx - R * .7, y - R * .012], [cx + R * .7, y - R * .012]], 'rgba(255,250,235,.45)', R * .008); continue; }
+        line([[cx - R * .7, y], [cx + R * .7, y]], STEEL, R * .045); line([[cx - R * .7, y + R * .02], [cx + R * .7, y + R * .02]], INK, R * .008); }
       ink([[cx, cy - R * .62], [cx, cy + R * .62]], R * .02);
     });
     s.beginPath(); s.arc(cx, cy, R * .62, 0, TAU); s.lineWidth = R * .02; s.strokeStyle = INK; s.stroke();
-    for (let i = 0; i < 8; i++) { const a = i / 8 * TAU + .2; dot(cx + Math.cos(a) * R * .93, cy + Math.sin(a) * R * .93, R * .025, INK); }
+    for (let i = 0; i < 8; i++) { const a = i / 8 * TAU + .2; if (K) K.ball(cx + Math.cos(a) * R * .93, cy + Math.sin(a) * R * .93, R * .03, BRASS, 1); else dot(cx + Math.cos(a) * R * .93, cy + Math.sin(a) * R * .93, R * .025, INK); }
   }
   function boss(t, lt) {
     fill('#3d4140');
@@ -281,6 +359,7 @@
     withT(() => { const sway = Math.sin(t * 9) * v * 4; s.translate(sway, 0); walkerFlat(W / 2, 1010, 300); });
   }
   function tinyClerk(x, y, h, face) {
+    if (K) return K.fig([x, y], h / 1.8, 1, (u) => frontFig(1.3 * u, {}));
     const k = h / 1.8; poly([[x - .22 * k, y - 1.45 * k], [x + .22 * k, y - 1.45 * k], [x + .3 * k, y - .42 * k], [x - .3 * k, y - .42 * k]], CLERK);
     s.lineWidth = 2; s.strokeStyle = INK; s.stroke();
     line([[x - .08 * k, y - .45 * k], [x - .08 * k, y]], INK, .12 * k, 'butt'); line([[x + .08 * k, y - .45 * k], [x + .08 * k, y]], INK, .12 * k, 'butt');
@@ -291,6 +370,7 @@
   // him from behind, flat (feet at x, y), one hand up holding his hat on
   function walkerFlat(x, y, h) {
     const k = h / 1.8;
+    if (K) { guitarCase(x + .36 * k, y - .45 * k, k, { fore: .4 }); return K.fig([x, y], k, 1, (u) => frontFig(1.3 * u, { back: true, mine: true, hold: true, coat: COAT })); }
     shape([[x + .2 * k, y - 1.2 * k], [x + .44 * k, y - 1.25 * k], [x + .5 * k, y - .3 * k], [x + .26 * k, y - .28 * k]], '#2b2924', 2);
     line([[x - .1 * k, y - .5 * k], [x - .1 * k, y]], INK, .13 * k, 'butt'); line([[x + .1 * k, y - .5 * k], [x + .1 * k, y]], INK, .13 * k, 'butt');
     shape([[x - .24 * k, y - 1.45 * k], [x + .24 * k, y - 1.45 * k], [x + .33 * k, y - .45 * k], [x - .33 * k, y - .45 * k]], COAT, 2.5);
