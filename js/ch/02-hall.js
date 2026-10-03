@@ -86,9 +86,10 @@
     papers(t, 47.9);
     // the paper plane, out of his hand and up through the hole
     if (t >= 51.67) {
-      const lt2 = t - 51.67, b = P(2.2, -.4, 8);
-      const x = b[0] - lt2 * 120 + Math.sin(lt2 * 1.4) * 70, y = b[1] - lt2 * 150 - lt2 * lt2 * 8;
-      withT(() => { s.translate(x, y); s.rotate(-.5 + Math.sin(lt2 * 1.4) * .25); const sc = Math.max(.35, 1 - lt2 * .12);
+      const lt2 = t - 51.67, b = P(2.2, FL, 8), k = b[2], hx = b[0] - .65 * k, hy = b[1] - 1.61 * k; // his hand, arm out to the left
+      const x = hx - lt2 * 120 + Math.sin(lt2 * 1.4) * 70, y = hy - lt2 * 150 - lt2 * lt2 * 8;
+      const vx = -120 + Math.cos(lt2 * 1.4) * 98, vy = -150 - lt2 * 16; // its velocity: the nose points where it's going
+      withT(() => { s.translate(x, y); s.rotate(Math.atan2(vy, vx)); const sc = Math.max(.3, .55 - lt2 * .05); // hand-sized as it leaves him
         s.scale(sc, sc); shape([[0, 0], [-120, -22], [-90, 0], [-120, 26]], CREAM, 2.5); ink([[0, 0], [-90, 0]], 1.5); });
     }
   }
