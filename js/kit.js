@@ -148,7 +148,7 @@ function man(x, z, { ph = 0, walk = 0, face = 1, arm = 0, ticket = false } = {})
   line([[hip[0], hip[1] - .02 * k], [hip[0], b[1] - .05 * k]], 'transparent', 1);
   // coat to the knee
   const sh = b[1] - 1.45 * k, bob = Math.abs(Math.sin(ph * TAU)) * .03 * k * walk;
-  shape([[b[0] - .26 * k, sh + bob], [b[0] + .22 * k, sh + bob], [b[0] + .34 * k * face, b[1] - .45 * k], [b[0] - .34 * k * face, b[1] - .45 * k]], COAT, 2);
+  shape([[b[0] - .24 * k * face, sh + bob], [b[0] + .22 * k * face, sh + bob], [b[0] + .34 * k * face, b[1] - .45 * k], [b[0] - .34 * k * face, b[1] - .45 * k]], COAT, 2);
   hatch([[b[0] - .26 * k * face, sh + bob], [b[0] - .02 * k * face, sh + bob], [b[0] - .04 * k * face, b[1] - .45 * k], [b[0] - .34 * k * face, b[1] - .45 * k]], .9, 6, 1, .4);
   // head and hat
   const hx = b[0] + .04 * k * face, hy = b[1] - H1 + .14 * k + bob;
@@ -244,7 +244,7 @@ function splitFlap(t, t0, str, x, y, cell, { cols = null, color = AMBER, bg = '#
   const n = cols ?? str.length, cw = cell * .72, ch = cell;
   for (let i = 0; i < n; i++) {
     const cx = x + i * (cw + cell * .08), want = str[i] || ' ', from = prev[i] || ' ';
-    const ti = t - t0 - i * .06; const k = clamp(ti / .4);
+    const ti = t - t0 - i * .04; const k = clamp(ti / .22);
     const glyph = ti < 0 ? from : (k >= 1 ? want : 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'[Math.floor(hash(i * 97 + Math.floor(ti * 30)) * 36)]);
     shape([[cx, y], [cx + cw, y], [cx + cw, y + ch], [cx, y + ch]], bg, 1.5);
     line([[cx, y + ch / 2], [cx + cw, y + ch / 2]], '#000', 2);
@@ -256,11 +256,26 @@ function splitFlap(t, t0, str, x, y, cell, { cols = null, color = AMBER, bg = '#
 function typewriter(x, y, sc, { strike = 0, paper = null } = {}) {
   const k = sc / 400;
   if (paper) form(x - 150 * k, y - 330 * k - (paper.scroll || 0) * k, 300 * k, paper.lines, { typed: paper.typed, size: 22 * k, title: paper.title ?? 'FORM WGT-89', h: 260 * k });
-  shape([[x - 200 * k, y - 120 * k], [x + 200 * k, y - 120 * k], [x + 180 * k, y], [x - 180 * k, y]], '#2e2d28', 3);
-  shape([[x - 210 * k, y - 175 * k], [x + 210 * k, y - 175 * k], [x + 200 * k, y - 120 * k], [x - 200 * k, y - 120 * k]], '#3e3c35', 3);
-  s.beginPath(); s.ellipse(x, y - 180 * k, 210 * k, 18 * k, 0, 0, TAU); s.fillStyle = '#1d1c19'; s.fill(); s.lineWidth = 3; s.strokeStyle = INK; s.stroke();
-  for (let r = 0; r < 3; r++) for (let i = 0; i < 9 - r; i++) { const kx = x - 150 * k + (i + r * .5) * 37 * k, ky = y - 95 * k + r * 28 * k; dot(kx, ky, 12 * k, CREAM); s.lineWidth = 2; s.strokeStyle = INK; s.beginPath(); s.arc(kx, ky, 12 * k, 0, TAU); s.stroke(); }
-  if (strike > 0) { const a = -1.4 + strike * 1.2; ink([[x, y - 120 * k], [x + Math.cos(a) * 140 * k, y - 120 * k + Math.sin(a) * 140 * k]], 5 * k); }
+  // platen: a black roller across the top with a knob at each end, the paper feeding out of it
+  shape([[x - 215 * k, y - 236 * k], [x + 215 * k, y - 236 * k], [x + 215 * k, y - 200 * k], [x - 215 * k, y - 200 * k]], '#1b1a17', 3);
+  for (const sx of [-1, 1]) { s.beginPath(); s.ellipse(x + sx * 232 * k, y - 218 * k, 18 * k, 26 * k, 0, 0, TAU); s.fillStyle = '#2e2d28'; s.fill(); s.lineWidth = 3; s.strokeStyle = INK; s.stroke(); }
+  line([[x - 240 * k, y - 250 * k], [x - 300 * k, y - 290 * k]], INK, 7 * k); dot(x - 300 * k, y - 290 * k, 9 * k, STEEL); // return lever
+  // the shell: a rounded hood over the type basket
+  s.beginPath(); s.moveTo(x - 205 * k, y - 60 * k); s.lineTo(x - 190 * k, y - 160 * k); s.quadraticCurveTo(x, y - 215 * k, x + 190 * k, y - 160 * k); s.lineTo(x + 205 * k, y - 60 * k); s.closePath();
+  s.fillStyle = '#26251f'; s.fill(); s.lineWidth = 3; s.strokeStyle = INK; s.stroke();
+  // the type basket window: a fan of bars resting in a half-moon
+  withT(() => { s.beginPath(); s.ellipse(x, y - 160 * k, 120 * k, 42 * k, 0, 0, Math.PI); s.fillStyle = '#111'; s.fill();
+    for (let i = 0; i < 15; i++) { const a = Math.PI * (.08 + .84 * i / 14); ink([[x + Math.cos(a) * 112 * k, y - 160 * k + Math.sin(a) * 38 * k], [x + Math.cos(a) * 40 * k, y - 160 * k + Math.sin(a) * 12 * k]], 2 * k); } });
+  if (strike > 0) { const u = Math.sin(Math.PI * clamp(strike)); ink([[x, y - 150 * k], [x, y - 150 * k - u * 60 * k]], 5 * k); }
+  // the keyboard: four stepped rows of round keys on stalks
+  shape([[x - 205 * k, y - 60 * k], [x + 205 * k, y - 60 * k], [x + 225 * k, y], [x - 225 * k, y]], '#33312a', 3);
+  for (let r = 0; r < 4; r++) for (let i = 0; i < 11 - (r === 3 ? 1 : 0); i++) {
+    const kx = x - 175 * k + (i + (r % 2) * .5) * 34 * k, ky = y - 150 * k + r * 32 * k + 40 * k;
+    ink([[kx, ky], [kx, ky + 14 * k]], 3 * k);
+    dot(kx, ky, 13 * k, '#c9c7bd'); dot(kx, ky, 10 * k, CREAM); s.lineWidth = 1.6; s.strokeStyle = INK; s.beginPath(); s.arc(kx, ky, 13 * k, 0, TAU); s.stroke();
+  }
+  shape([[x - 110 * k, y - 18 * k], [x + 110 * k, y - 18 * k], [x + 110 * k, y - 6 * k], [x - 110 * k, y - 6 * k]], CREAM, 2); // space bar
+  text('MINISTRY', x, y - 70 * k, 14 * k, { font: 'sign', color: BRASS, spacing: 3 * k });
 }
 // her: the typist across the hall. Side on, seated at a desk (seated: true) or standing/walking like man().
 // Hair up in a bun, grey uniform; `rose` 0..1 tints her collar and cheeks (the one warm colour she carries).
