@@ -7,10 +7,61 @@
   // which mile a post passing at song time bt carries
   const mileAt = (bt) => Math.max(1, Math.round(kf(bt, [[290.5, 1], [295.23, 6], [303.0, 49], [310.33, 74], [316.1, 98], [318.6, 100]], (k) => k)));
 
+  // ---- the pinball-cartoon drawing style (pnc.html): same palette, drawn with fine lines, soft volume,
+  // rounded forms and deco ornament. PK is null on the plain path, which then draws exactly as before.
+  const PK = window.PNC_ON ? window.PNCK : null;
+  const OL = (c, k = .55) => PK ? PK.dark(c, k) : INK;               // outline colour for a fill
+  function rr(x, y, w, h, r, c, lw) {                                 // a soft rounded box with a fine outline
+    s.beginPath(); s.roundRect(x, y, w, h, r); PK.soft(c, x, y, x + w, y + h); s.lineWidth = lw; s.strokeStyle = PK.dark(c, .55); s.stroke();
+  }
+  // stacked rolling rainbow hills along a baseline: each hump is a set of concentric arches
+  function hills(y, x0, x1, R, seed, cols = [ROSE_L, AMBER, CREAM, '#7fb59a', SKY_B]) {
+    for (let row = 0; row < 2; row++) {
+      const rr0 = R * (row ? 1 : .72), step = rr0 * 1.55, off = hash(seed + row * 7) * step;
+      for (let x = x0 - off; x < x1 + rr0; x += step) {
+        const cy = y + (row ? 0 : -R * .18);
+        for (let b = 0; b < cols.length; b++) {
+          const r = rr0 * (1 - b * .17), c = cols[(b + row * 2) % cols.length];
+          s.beginPath(); s.arc(x, cy, r, Math.PI, TAU); s.closePath(); PK.soft(c, x - r, cy - r, x + r, cy);
+          s.lineWidth = 1.2; s.strokeStyle = PK.dark(c, .45); s.stroke();
+        }
+      }
+    }
+  }
+  // his new clothes, side on, in the cartoon hand: built on the kit's man() (fig + head + tube + blob)
+  function suitSideP(bx, by, k, { ph = 0, walk = 0, face = 1, t = 0, kase = true } = {}) {
+    const { fig, tube, blob, ball, head, dark, path } = PK;
+    const sw = Math.sin(ph * TAU) * .32 * walk, bob = Math.abs(Math.sin(ph * TAU)) * .03 * walk;
+    if (kase) carriedCase([bx, by], k, face, sw);
+    fig([bx, by], k, face, (u) => {
+      const lw = 1.3 * u, hip = [0, -.95], sh = -1.45 + bob, fl = Math.sin(t * 6) * .04;
+      blob([[-.02, sh + .02], [-.1, sh - .03], [-.52 - .1 * walk, sh + .1 + fl], [-.48 - .1 * walk, sh + .21 + fl]], SCARF, lw, false);
+      for (const [a, far] of [[-sw, true], [sw, false]]) {
+        const kn = [Math.sin(a) * .5, hip[1] + .5], ft = [Math.sin(a) * .9 + .05, -.05];
+        tube(hip, kn, ft, .1, .07, far ? dark(PANTS, .2) : PANTS, lw);
+        s.beginPath(); s.moveTo(...hip); s.quadraticCurveTo(...kn, ...ft); s.lineWidth = .016; s.strokeStyle = AMBER; s.stroke();
+        blob([[ft[0] - .07, -.07], [ft[0] + .12, -.08], [ft[0] + .17, -.01], [ft[0] - .08, 0]], '#2c2621', lw);
+      }
+      const body = [[-.15, sh - .02], [.13, sh - .02], [.2, sh + .1], [.2, hip[1] + .03], [0, hip[1] + .07], [-.21, hip[1] + .03], [-.21, sh + .1]];
+      blob(body, SWEATER, lw);
+      withT(() => { path(body); s.clip(); const zz = []; for (let i = 0; i <= 9; i++) zz.push([-.22 + i * .05, sh + .22 + (i % 2 ? .05 : 0)]);
+        line(zz, ROSE, .035); line(zz.map(([x, y]) => [x, y + .1]), ROSE, .018); s.fillStyle = dark(SWEATER, .22); s.fillRect(-.3, hip[1] - .03, .6, .12); });
+      blob([[-.13, sh - .08], [.13, sh - .08], [.15, sh + .05], [-.14, sh + .05]], SCARF, lw);
+      for (let j = 0; j < 5; j++) { const a = j / 5 * TAU; ball(.13 + Math.cos(a) * .03, sh + .22 + Math.sin(a) * .03, .026, ROSE, lw * .6); }
+      ball(.13, sh + .22, .016, AMBER, lw * .5);
+      const hy = -1.64 + bob; head(.04, hy, lw); s.fillStyle = ROSE; s.fillRect(.04 - .135, hy - .15, .27, .04);
+      const shp = [.02, sh + .12], ang = sw * .8;
+      const el = [shp[0] + Math.sin(ang) * .36, shp[1] + Math.cos(ang) * .36], hd = [el[0] + Math.sin(ang * 1.1) * .34, el[1] + Math.cos(ang * 1.1) * .34];
+      tube(shp, el, hd, .075, .055, SWEATER, lw); ball(hd[0], hd[1], .06, SKIN, lw);
+    });
+  }
+
   // ---- helpers ----
   function sky(top = 0, bot = H) { s.fillStyle = vgrad(top, bot, [[0, SKY_T], [1, SKY_B]]); s.fillRect(-W, -H, W * 3, H * 3); }
   // the man in his new clothes, side on, screen space (bx, by = feet, k = px per metre)
-  function suitSide(bx, by, k, { ph = 0, walk = 0, face = 1, t = 0, kase = true } = {}) {
+  function suitSide(bx, by, k, o = {}) {
+    if (PK) return suitSideP(bx, by, k, o);
+    const { ph = 0, walk = 0, face = 1, t = 0, kase = true } = o;
     const sw = Math.sin(ph * TAU) * .32 * walk, bob = Math.abs(Math.sin(ph * TAU)) * .03 * k * walk;
     const hip = [bx, by - .95 * k - bob], shY = by - 1.45 * k - bob;
     const hand2 = [bx - .05 * k * face - sw * .1 * k, by - .66 * k - bob];
@@ -44,6 +95,14 @@
   // a milepost: white post, black cap, the mile number on a plate. (x, y) = foot, h = height px
   function milepost(x, y, h, n) {
     const w = h * .26;
+    if (PK) { // a rounded post with a glossy cap and a deco plate
+      rr(x - w / 2, y - h, w, h + 2, w * .3, '#f1ede0', 1.2);
+      PK.ball(x, y - h - w * .1, w * .42, '#3a332e', 1.2);
+      rr(x - w * .42, y - h * .82, w * .84, h * .32, w * .14, '#2f6f4a', 1.2);
+      PK.star(x, y - h * .35, w * .16, AMBER, 1);
+      text(String(n), x, y - h * .56, h * .26, { font: 'sign', color: CREAM, max: w * .84 * .82 });
+      return;
+    }
     shape([[x - w / 2, y], [x + w / 2, y], [x + w / 2, y - h], [x - w / 2, y - h]], '#f1ede0', 3);
     shape([[x - w / 2 - 4, y - h - h * .08], [x + w / 2 + 4, y - h - h * .08], [x + w / 2 + 4, y - h], [x - w / 2 - 4, y - h]], INK, 2);
     shape([[x - w * .42, y - h * .82], [x + w * .42, y - h * .82], [x + w * .42, y - h * .5], [x - w * .42, y - h * .5]], '#2f6f4a', 2);
@@ -54,8 +113,8 @@
     cloud(x, y, r, seed);
     for (const sg of [-1, 1]) { const wv = Math.sin(t * 4.5 + seed * 1.7) * r * .25;
       const sh = [x + sg * r * 1.35, y - r * .35], el = [x + sg * r * 1.85, y - r * .55], hd = [x + sg * r * 2.05 + wv * .4 * sg, y - r * 1.05 + Math.abs(wv) * .3];
-      line([sh, el, hd], INK, Math.max(4, r * .1)); line([sh, el, hd], '#fbfbf6', Math.max(2, r * .06));
-      dot(hd[0], hd[1], r * .12, '#fbfbf6'); s.lineWidth = 3; s.strokeStyle = INK; s.beginPath(); s.arc(hd[0], hd[1], r * .12, 0, TAU); s.stroke(); }
+      line([sh, el, hd], OL('#fbfbf6', .5), Math.max(PK ? 3 : 4, r * (PK ? .085 : .1))); line([sh, el, hd], '#fbfbf6', Math.max(2, r * .06));
+      dot(hd[0], hd[1], r * .12, '#fbfbf6'); s.lineWidth = PK ? 1.5 : 3; s.strokeStyle = OL('#fbfbf6', .5); s.beginPath(); s.arc(hd[0], hd[1], r * .12, 0, TAU); s.stroke(); }
     dot(x - r * .3, y - r * .55, r * .06, INK); dot(x + r * .3, y - r * .55, r * .06, INK);
     s.beginPath(); s.arc(x, y - r * .42, r * .2, .2 * Math.PI, .8 * Math.PI); s.lineWidth = 3.5; s.strokeStyle = INK; s.stroke();
   }
@@ -80,6 +139,7 @@
     const zm = kf(t, [[290, 1.25], [295.23, .9]], ease.sine);
     withT(() => {
       s.translate(300, 700); s.scale(zm, zm); s.translate(-300, -700);
+      if (PK) hills(1000, -500, 2600, 210, 41);
       cloudSea(1010, t * 12, 50, 140);
       // the ministry on its clod, ducts dangling like roots, two of them coming loose and falling
       shape([[90, 760], [470, 760], [430, 840], [300, 880], [150, 850]], '#7a6d5a', 3);
@@ -89,17 +149,18 @@
         const loose = (i === 2 || i === 5) ? ease.in(inv(291.5 + i * .3, 294.5 + i * .3, t)) : 0;
         const pts = []; for (let u = 0; u <= 6; u++) pts.push([x0 + Math.sin(u * .8 + t * 1.6 + i) * 18 * u / 6, y0 + u / 6 * L]);
         withT(() => { s.translate(loose * 30, loose * 600); s.rotate(loose * .3);
-          line(pts, INK, 26); line(pts, STEEL, 20); for (let u = 1; u < 6; u++) ink([[pts[u][0] - 11, pts[u][1]], [pts[u][0] + 11, pts[u][1]]], 1.4); });
+          line(pts, OL(STEEL), PK ? 24 : 26); line(pts, STEEL, 20); for (let u = 1; u < 6; u++) ink([[pts[u][0] - 11, pts[u][1]], [pts[u][0] + 11, pts[u][1]]], 1.4); });
       }
       shape([[130, 300], [430, 300], [430, 762], [130, 762]], '#7d8280', 3);
       for (let y = 330; y < 700; y += 70) for (let x = 155; x < 410; x += 70) shape([[x, y], [x + 40, y], [x + 40, y + 42], [x, y + 42]], '#4d5250', 1.6);
-      for (const dx of [190, 370]) { line([[dx, 270], [dx, 762]], INK, 30, 'butt'); line([[dx, 270], [dx, 762]], STEEL, 24, 'butt'); }
+      for (const dx of [190, 370]) { line([[dx, 270], [dx, 762]], OL(STEEL), PK ? 28 : 30, 'butt'); line([[dx, 270], [dx, 762]], STEEL, 24, 'butt'); }
       shape([[245, 680], [315, 680], [315, 762], [245, 762]], '#3d4140', 2);
       // the road
       const roadY = (x) => 762 - Math.pow(Math.max(0, x - 300) / 1800, 1.25) * 640;
       const rd = []; for (let x = 280; x <= 2300; x += 40) rd.push([x, roadY(x)]);
       for (let i = 0; i < 7; i++) { const x = 600 + i * 260; cloud(x, roadY(x) + 60, 50, 500 + i); }
-      line(rd, INK, 52); line(rd, '#8a8778', 44);
+      line(rd, OL('#8a8778'), PK ? 50 : 52); line(rd, '#8a8778', 44);
+      if (PK) line(rd.map(([x, y]) => [x - 6, y - 16]), 'rgba(255,250,235,.3)', 6);
       withT(() => { s.setLineDash([26, 26]); line(rd, CREAM, 4); });
       // mileposts along it; he passes them
       for (let m = 1; m <= 6; m++) { const x = 560 + m * 230; milepost(x, roadY(x) + 2, 90, m); }
@@ -113,6 +174,7 @@
     sky(-200, 900);
     for (let i = 0; i < 6; i++) { const x = ((i * 420 - t * 60) % (W + 600) + W + 600) % (W + 600) - 300; cloud(x, 170 + hash(i * 7) * 300, 55 + 35 * hash(i + 1), 600 + i); }
     const v = 700;
+    if (PK) withT(() => { s.translate(-(t - 295) * 50, 0); hills(860, -300, W + 700, 250, 43); });
     cloudSea(1080, t * 260, 70, 150);
     roadBand(840, 70, 70, t * v);
     const k = 390;
@@ -131,6 +193,7 @@
     sky(-100, 900);
     for (let i = 0; i < 5; i++) { const x = ((i * 480 - t * 25) % (W + 600) + W + 600) % (W + 600) - 300; cloud(x, 160 + hash(i * 13) * 260, 55 + 30 * hash(i + 4), 700 + i); }
     const cx = kf(t, [[306.3, 0], [310.33, 760]], (k) => k);
+    if (PK) withT(() => { s.translate(-cx * .3, 0); hills(805, -300, W + 600, 140, 45); });
     cloudSea(1060, t * 15 + cx * .6, 80, 140);
     roadBand(800, 50, 50, cx);
     withT(() => {
@@ -166,7 +229,7 @@
       for (let i = 0; i <= N; i++) { const u = i / N; pts.push([lerp(300, 1350, u) + Math.sin(u * 5 + .4) * 380 * Math.pow(1 - u, .8), lerp(1180, 430, Math.pow(u, .6)), lerp(330, 8, Math.pow(u, .6))]); }
       for (let i = N; i > 0; i--) { const [x0, y0, w0] = pts[i - 1], [x1, y1, w1] = pts[i];
         poly([[x0 - w0, y0], [x0 + w0, y0], [x1 + w1, y1 - 1], [x1 - w1, y1 - 1]], '#8a8778'); }
-      line(pts.map(([x, y, w]) => [x - w, y]), INK, 3); line(pts.map(([x, y, w]) => [x + w, y]), INK, 3);
+      line(pts.map(([x, y, w]) => [x - w, y]), OL('#8a8778'), PK ? 1.6 : 3); line(pts.map(([x, y, w]) => [x + w, y]), OL('#8a8778'), PK ? 1.6 : 3);
       withT(() => { s.setLineDash([20, 26]); s.lineDashOffset = t * 30; line(pts.map(([x, y]) => [x, y]), CREAM, 4); });
       for (const [j, sg] of [[6, 1], [30, -1], [40, 1], [48, -1]]) { const p = pts[j]; cloud(p[0] + sg * (p[2] * 1.3 + 60), p[1] + 30, 30 + p[2] * .25, 800 + j); }
       { const e = pts[N]; cloud(e[0] + 10, e[1] + 14, 70, 860); }
@@ -183,6 +246,7 @@
     sky(-100, 900);
     for (let i = 0; i < 5; i++) { const x = ((i * 460 - t * 22) % (W + 600) + W + 600) % (W + 600) - 300; cloud(x, 150 + hash(i * 17) * 280, 55 + 30 * hash(i + 6), 900 + i); }
     const stop = 318.6, cx = kf(t, [[316.1, 0], [stop, 560]], (k) => k);
+    if (PK) withT(() => { s.translate(-cx * .3, 0); hills(805, -300, W + 600, 140, 47); });
     cloudSea(1060, cx * .6, 90, 140);
     withT(() => {
       s.translate(-cx, 0);
@@ -193,7 +257,7 @@
       cloud(2140, 900, 130, 950);
       milepost(520, 830, 200, 99);
       const up = ease.back(inv(stop - .2, stop + .3, t));
-      withT(() => { s.beginPath(); s.rect(1700, -100, 400, 932); s.clip(); milepost(1880, 830 + (1 - up) * 340, 320, 100); });
+      withT(() => { s.beginPath(); s.rect(1700, -100, 400, 902); s.clip(); milepost(1880, 830 + (1 - up) * 340, 320, 100); });
       const k = 210, x0 = 900 + cx, walking = t < stop;
       her(x0 + 170, 822, k * .95, { face: 1, walk: walking ? 1 : 0, ph: (t - 316.1) * 1.25, rose: 1, arm: t > stop + .3 ? .7 : 0 });
       suitSide(x0, 822, k, { ph: (t - 316.1) * 1.25, walk: walking ? 1 : 0, face: 1, t });
