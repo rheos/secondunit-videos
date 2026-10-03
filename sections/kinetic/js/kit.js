@@ -168,10 +168,14 @@ const KIT = (() => {
   }
   function stamp(t, t0, x0, y0, rot, w, h, rows, seed = 1) {
     if (t < t0) return; const p = ease.out(inv(t0, t0 + .07, t)), sc = lerp(2.3, 1, p), red = C.pink;
+    // size the box to the text: inner border sits 14 px in, so keep 44 px clear of the outer edge each side
+    const tw = Math.max(...rows.map(([str, sz]) => measure(str, { fam: FAM.g, weight: 900, size: sz, ls: 3 }) - 3));
+    const cap = Math.max(...rows.map(([, sz]) => sz * .74));
+    w = Math.max(w, tw + 2 * 56); h = Math.max(h, cap + 2 * 46);
     withT(() => {
       s.translate(x0, y0); s.rotate(rot); s.scale(sc, sc); s.globalAlpha = .9 * p;
       s.lineWidth = 8; s.strokeStyle = red; s.strokeRect(-w / 2, -h / 2, w, h); s.lineWidth = 3; s.strokeRect(-w / 2 + 14, -h / 2 + 14, w - 28, h - 28);
-      rows.forEach(([str, sz, dy]) => text(str, 0, dy, { fam: FAM.g, weight: 900, size: sz, color: red, align: 'center', ls: 3 }));
+      rows.forEach(([str, sz, dy]) => text(str, 1.5, dy, { fam: FAM.g, weight: 900, size: sz, color: red, align: 'center', ls: 3 }));
       s.fillStyle = C.paper; for (let i = 0; i < 220; i++) { const r = rng(i * 97 + seed); s.globalAlpha = .55 * p; s.fillRect((r() - .5) * w, (r() - .5) * h, 2 + r() * 7, 2 + r() * 4); }
       s.globalAlpha = 1;
     });

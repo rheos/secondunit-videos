@@ -3,3 +3,4 @@ out/
 assets/
 js/data.js
 .DS_Store
+js/stems.js

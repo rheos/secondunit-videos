@@ -166,6 +166,10 @@ function shotSky(t, tt, len) {
     cam(960, 540, 1 + tt * .01, snoise(t * .2, 6) * .03);
     skyGrad(-100, 1180, [[0, hsl(262, 40, 24)], [.5, hsl(222, 36, 36)], [1, hsl(180, 30, 40)]]);
     SKYOBJ.forEach((o) => outlineThing(o, t));
+    // the band appears out of the outlines while its stems play: piano low left, sax on the right
+    const fp = env(t, C2 + .9, C3 - .7, 1.1) * clamp(SEs('piano', t) * 3.5), fs = env(t, C2 + 1.8, C3 - .4, 1.1) * clamp(SEs('other', t) * 3.2);
+    piano(430 + tt * 12 + snoise(t * .2, 61) * 20, 850 + Math.sin(t * .6) * 14, .68, -.08 + snoise(t * .25, 62) * .06, t, fp);
+    sax(1560 + snoise(t * .2, 63) * 25, 520 + Math.sin(t * .5) * 20, .9, t, fs);
     // echoes: earlier positions of him along his loop, outline only, one hue each (no muddy fills)
     const NE = Math.round(ramp * 4);
     const [x, y, a] = skyPath(t);
@@ -180,10 +184,14 @@ function kalSegs(t) { const n = ACID.filter(([o]) => o >= C3 && o <= t).length; 
 function shotFold(t, tt, len) {
   T = t; HAND = HANDS.paint; HUE = tt * 14; REGK = 1 + acidKick(t) * 2;
   const kin = smooth(inv(C3, C3 + .5, t));
-  fx({ warp: 1.4, acid: .6, band: .55, sat: .18, kal: kin, kalN: kalSegs(t), kalR: -tt * .22, kalC: [.5 + snoise(t * .1, 1) * .04, .5 + snoise(t * .1, 2) * .04] });
+  const nD = countBefore(DRUMS, t), lastD = nD ? DRUMS[nD - 1][0] : C3, step = (nD - 1 + ease.out(clamp((t - lastD) / .1))) * .045;
+  const bigHit = recent(DRUMS, t, .5).filter((h) => h.v > .55).reduce((m, h) => m + Math.exp(-h.age * 16), 0);
+  fx({ top: 1, flash: bigHit * .09, warp: 1.4 + hitSum(DRUMS, t, 10) * .8, acid: .6, band: .55, sat: .18, kal: kin, kalN: kalSegs(t), kalR: -tt * .22 + step, kalC: [.5 + snoise(t * .1, 1) * .04, .5 + snoise(t * .1, 2) * .04] });
   withT(() => {
     fill(hsl(280, 30, 30));
     // the world from straight above, drifting backwards (down the screen)
+    const zp = 1 + hitSum(DRUMS, t, 12) * .05;
+    s.translate(960, 540); s.scale(zp, zp); s.translate(-960, -540);
     withT(() => { s.translate(960, 540 - 190 + ((tt * 90) % 380)); s.scale(.32, .32); s.rotate(-.4); drawMap(t, .32, 0, { cols: [[300, 40, 50], [190, 45, 46], [40, 60, 60], [150, 35, 44], [340, 45, 56], [220, 40, 40]] }); });
     // his parts, orbiting
     for (let i = 0; i < 5; i++) { const a = i / 5 * TAU + tt * .3, r = 260 + Math.sin(tt * .5 + i) * 60; PL.prop(960 + Math.cos(a) * r, 540 + Math.sin(a) * r * .8, 80, t * 30 + i, 1); }
@@ -193,6 +201,8 @@ function shotFold(t, tt, len) {
     // the plane top-down silhouette passing through
     withT(() => { s.translate(lerp(-200, 2100, inv(C3 + 2, C4 - 1, t)), 300); s.rotate(.15); s.scale(3, 3); part(PLANE, { fill: PC('body'), shade: PC('bodySh'), shadeShift: [0, 6], seed: 3600, seg: 2, wob: .3, reg: .3 }); part([[44, -2], [-44, -2], [-44, 2], [44, 2]], { fill: PC('red'), seed: 3601, sharp: 20, wob: .2, reg: .2 }); });
   });
+  // the stems, unfolded, on top of the mandala
+  s = TOP2D; s.save(); s.globalAlpha = kin; mandalaTop(t, 960, 540); s.restore(); s = SRC2D;
 }
 
 // ---------------- 5: REFORM (head on, tunnel running backwards) ----------------
@@ -204,7 +214,11 @@ function shotReform(t, tt, len) {
     cam(960, 520, 1 + snap * .05, snoise(t * .3, 6) * .03);
     fill(hsl(250, 30, 20));
     // rings that contract toward the centre: the tunnel flies backwards
-    for (let i = 12; i >= 0; i--) { const R = (i + 1 - ((tt * .8) % 1)) * 120 + 40; part(lump(960, 540, R * 1.35, R, 4000 + i, 18), { fill: hsl(250 + i * 25, 40, 30 + (i % 2) * 14), seed: 4010 + i, inkW: .6, wob: 3, hatch: false }); }
+    const dp = 1 + hitSum(DRUMS, t, 9) * .08;
+    for (let i = 12; i >= 0; i--) { const R = ((i + 1 - ((tt * .8) % 1)) * 120 + 40) * dp; part(lump(960, 540, R * 1.35, R, 4000 + i, 18), { fill: hsl(250 + i * 25, 40, 30 + (i % 2) * 14), seed: 4010 + i, inkW: .6, wob: 3, hatch: false }); }
+    const fg = env(t, C4 + .6, C5 - .3, .8) * clamp(SEs('guitar', t) * 3), fsx = env(t, C4 + 1.4, C5 - .3, .8) * clamp(SEs('other', t) * 3.2);
+    guitar(380 + Math.sin(t * .5) * 30, 260 + Math.sin(t * .7) * 20, .52, -.45 + Math.sin(t * .6) * .1, t, fg);
+    sax(1560 + Math.sin(t * .45) * 30, 300, .55, t, fsx);
     const z = .78 + Math.sin(tt * .4) * .04;
     PL.front(960, 760 + Math.sin(t * 1.2) * 10, z, snoise(t * .3, 4100) * .05, { hang: 1, brow: .5 + snap, open: .2 + snap * .6, look: [snoise(t * .4, 4101), .2], lid: blinkAt(t, 9), split: meltAt(t) * .5 });
   });

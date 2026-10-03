@@ -47,7 +47,7 @@ let FX = {};
 function fx(o) { Object.assign(FX, o); }
 
 // ---- drawing on s ----
-let s, f = null;
+let s, f = null, SRC2D = null, TOP2D = null;
 function fill(c) { s.fillStyle = c; s.fillRect(-W, -H, W * 3, H * 3); }
 function vgrad(y0, y1, stops) { const g = s.createLinearGradient(0, y0, 0, y1); stops.forEach(([o, c]) => g.addColorStop(o, c)); return g; }
 function rgrad(x, y, r0, r1, stops) { const g = s.createRadialGradient(x, y, r0, x, y, r1); stops.forEach(([o, c]) => g.addColorStop(o, c)); return g; }
@@ -59,6 +59,7 @@ function withT(fn) { s.save(); fn(); s.restore(); }
 function renderFrame(t) {
   s.setTransform(RS, 0, 0, RS, 0, 0); s.globalAlpha = 1; s.globalCompositeOperation = 'source-over'; s.filter = 'none';
   FX = {};
+  if (TOP2D) { TOP2D.setTransform(1, 0, 0, 1, 0, 0); TOP2D.clearRect(0, 0, TOP2D.canvas.width, TOP2D.canvas.height); TOP2D.setTransform(RS, 0, 0, RS, 0, 0); TOP2D.globalAlpha = 1; }
   const sh = SHOTS.find((x) => t >= x.a && t < x.b) || SHOTS[SHOTS.length - 1];
   if (sh) { Object.assign(FX, sh.fx); s.save(); try { sh.fn(t, t - sh.a, sh.b - sh.a); } catch (e) { console.error(sh.name, e); } s.restore(); }
   Look.present(t, FX);

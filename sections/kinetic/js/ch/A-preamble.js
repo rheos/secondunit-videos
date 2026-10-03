@@ -96,8 +96,8 @@
       if (t >= GT - .03) {
         const str = L.words[n - 1][0].toUpperCase();
         withT(() => {
-          s.beginPath(); s.rect(0, 0, W, gl + 70); s.clip();
-          letters(str, 960, gl + 70, { fam: FAM.g, weight: 900, size: 330, align: 'center' }, (i) => { const p = slam(t, GT - .03 + i * .015, .1); return { dy: (1 - p) * -700, rot: (hash(i + 3) - .5) * .08 * p, color: C.hot }; });
+          s.beginPath(); s.rect(60, 110, W - 120, gl + 70 - 110); s.clip(); // keep the falling letters inside the frame chrome
+          letters(str, 960, gl + 70, { fam: FAM.g, weight: 900, size: 330, align: 'center' }, (i) => { const p = slam(t, GT - .03 + i * .015, .1); return { dy: (1 - p) * -420, rot: (hash(i + 3) - .5) * .08 * p, color: C.hot }; });
         });
         for (let i = 0; i < 26; i++) { // dust
           const r = rng(i * 41 + 5), a = Math.PI + r() * Math.PI, sp = 300 + r() * 600, e = t - GT;
@@ -130,7 +130,7 @@
     ws.slice(0, 2).forEach((it) => { x += 20 + text(it.w.toUpperCase(), x, 330 + (1 - it.a) * 30, { size: 70, weight: 700, color: C.ink, alpha: clamp(it.a * 2) }); });
     if (t >= AT - .03) {
       const a = slam(t, AT - .03, .14);
-      withT(() => { const sc = lerp(1.4, 1, a); s.translate(1240, 520); s.scale(sc, sc); text(L.words[2][0].toUpperCase(), 0, 0, { fam: FAM.g, weight: 900, size: fitSize(L.words[2][0].toUpperCase(), 600, 200, { fam: FAM.g, weight: 900 }), color: C.hot, alpha: clamp(a * 2) }); });
+      withT(() => { const sc = lerp(1.12, 1, a); s.translate(1240, 520); s.scale(sc, sc); text(L.words[2][0].toUpperCase(), 0, 0, { fam: FAM.g, weight: 900, size: fitSize(L.words[2][0].toUpperCase(), 540, 200, { fam: FAM.g, weight: 900 }), color: C.hot, alpha: clamp(a * 2) }); });
     }
     readout(1240, 640, [['SELF-IDENT', t >= AT ? 'AIRPLANE' : '…', true], ['REGISTERED', 'CAR'], ['STATUS', 'ASLEEP'], ['LOCATION', 'GARAGE']], { col: 190, size: 22 });
     cvr(t, 'A04 · IDENT');
@@ -211,27 +211,27 @@
   // ---------------- a08 maintenance log ----------------
   const PREV = [['03 MAR', 'wingtips scrape guardrail', 'trimmed the hedge'], ['11 MAR', 'overtaken by a bicycle', 'no fault found'], ['19 MAR', 'told to "move over"', 'cannot move over']];
   function techlog(t, lt) {
-    const L = LA.rooms, CT = W0(L, L.words.length - 1);
+    const L = LA.wings, CT = W0(L, L.words.length - 1);
     paper(t, lt, () => {
       logPage(t, PREV, (y) => {
         text('03 APR', 70, y, { size: 22, color: C.pencil });
         let x = 210, yy = y;
         const ws = said(L, t);
-        ws.forEach((it) => {
-          const str = it.w.toUpperCase(), big = /ROOM|CAR/.test(str), sz = big ? 50 : 34, w = measure(str, { size: sz, weight: 700 });
+        ws.forEach((it, wi) => {
+          const str = it.w.toUpperCase(), big = wi === 4 || wi === L.words.length - 1, sz = big ? 50 : 34, w = measure(str, { size: sz, weight: 700 });
           if (x + w > 905) { x = 210; yy += 56; }
           text(str, x, yy + (1 - it.a) * 8, { size: sz, weight: 700, color: C.pencil, alpha: clamp(it.a * 2) });
-          if (/ROOM/.test(str)) line([[x, yy + 10], [x + w * ease.out(inv(it.t, it.t + .3, t)), yy + 10]], C.pink, 4);
+          if (wi === 4) line([[x, yy + 10], [x + w * ease.out(inv(it.t, it.t + .3, t)), yy + 10]], C.pink, 4);
           x += w + 14;
         });
-        if (t > CT + .2) text(typed('counted rooms: 31.', t, CT + .2, 26), 930, y, { size: 24, color: '#2b3a6b' });
+        if (t > CT + .2) text(typed('counted wings: 2.', t, CT + .2, 26), 930, y, { size: 24, color: '#2b3a6b' });
         if (t > CT + .9) text(typed('confirmed: not a car.', t, CT + .9, 26), 930, y + 40, { size: 24, color: '#2b3a6b' });
-        // margin sketch: plan view with rooms
-        withT(() => { s.translate(1180, 760); s.globalAlpha = .9; PL.top(0, 0, .28, t, { lw: 1.6, ink: C.pencil, spin: 0 }); s.globalAlpha = 1; });
-        for (let i = 0; i < 7; i++) line([[1172, 700 + i * 12], [1188, 700 + i * 12]], C.pink, 1.5);
-        text('fig. rooms', 1130, 870, { fam: FAM.s, italic: true, size: 26, color: C.pencil });
+        // margin sketch: plan view, wings ticked
+        withT(() => { s.translate(640, 790); s.globalAlpha = .9; PL.top(0, 0, .28, t, { lw: 1.6, ink: C.pencil, spin: 0 }); s.globalAlpha = 1; });
+        for (const sx of [-1, 1]) { s.beginPath(); s.arc(640 + sx * 120, 792, 22, 0, TAU); s.lineWidth = 2.5; s.strokeStyle = C.pink; s.stroke(); text(sx < 0 ? '1' : '2', 640 + sx * 120, 750, { fam: FAM.s, italic: true, size: 30, color: C.pink, align: 'center' }); }
+        text('fig. wings', 480, 900, { fam: FAM.s, italic: true, size: 26, color: C.pencil });
       });
-      stamp(t, 22.37, 1150, 860, -.12, 460, 140, [['NOT A CAR', 84, 30]], 3);
+      stamp(t, 22.37, 1090, 870, -.12, 460, 140, [['NOT A CAR', 84, 30]], 3);
     }, { shake: 12 * hit(t, 22.37, 16) });
     fx({ paper: 1, flash: .2 * hit(t, 22.37, 18) });
   }
@@ -256,7 +256,7 @@
       text('FASTEN', 420, -55, { size: 52, weight: 700, color: ic, align: 'center', ls: 4 }); text('SEAT BELTS', 420, 10, { size: 52, weight: 700, color: ic, align: 'center', ls: 4 });
     });
     if (on) for (let k = 0; k < 3; k++) { const e = t - ON - k * .12; if (e > 0 && e < 1) { s.beginPath(); s.arc(1290, 330, 130 + e * 500, 0, TAU); s.globalAlpha = (1 - e) * .8; s.lineWidth = 3; s.strokeStyle = C.hot; s.stroke(); s.globalAlpha = 1; } }
-    if (on && t - ON < .8) text('DING', 1290, 160, { size: 30, weight: 700, color: C.hot, align: 'center', ls: 10 });
+    if (on && t - ON < .8) text('DING', 1290, 130, { size: 30, weight: 700, color: C.hot, align: 'center', ls: 10 });
     transcript(L, t, 200, 860, { size: 84, maxW: 1560 });
     fx({ flash: .25 * hit(t, ON, 14) });
     cvr(t, 'A09 · CABIN');
@@ -265,19 +265,55 @@
   // ---------------- a10 babble ----------------
   function babble(t, lt) {
     fill(C.bg);
-    const v = voc(t), [ua, ub] = LYR.A.unk[2];
+    const v = voc(t), L = LA.getin;
     const fr = Math.floor(t * 12);
     for (let c = 0; c < 6; c++) for (let r = 0; r < 7; r++) {
       const sp = (c + 1) * .7, y = wrap(r * 150 + t * 600 * sp, 1050) + 40, x = 140 + c * 290;
       text(scramble(6, t + c * 3.1 + r, c * 9 + r), x, y, { size: 44, weight: 700, color: hash(fr * 7 + c * 13 + r) < .1 + v * .2 ? C.hot : '#3a3530' });
     }
-    frect(0, 380, W, 300, 'rgba(10,9,8,.92)'); line([[0, 380], [W, 380]], C.dim, 1.5); line([[0, 680], [W, 680]], C.dim, 1.5);
-    text('SPEECH RATE', 140, 440, { size: 18, color: C.dim, ls: 4 }); text(`${(6 + v * 8).toFixed(1)} SYL/S`, 140, 490, { size: 40, weight: 700, color: C.ink });
-    text('TRANSCRIBER', 1780, 440, { size: 18, color: C.dim, ls: 4, align: 'right' }); text(blink(t, 4) ? 'OVERLOAD' : '', 1780, 490, { size: 40, weight: 700, color: C.hot, align: 'right' });
-    text(t < ub ? scramble(14, t, 99) : '[UNINTELLIGIBLE]', 960, 620, { size: 96, weight: 700, color: t < ub ? C.ink : C.hot, align: 'center' });
-    wave(140, 900, 1640, 160, t, { span: 2, bar: 5 });
-    fx({ glitch: clamp(v * 1.2) * .6 });
+    frect(0, 540, W, 300, 'rgba(10,9,8,.94)'); line([[0, 540], [W, 540]], C.dim, 1.5); line([[0, 840], [W, 840]], C.dim, 1.5);
+    text('SPEECH RATE', 140, 590, { size: 18, color: C.dim, ls: 4 }); text(`${(6 + v * 8).toFixed(1)} SYL/S`, 140, 636, { size: 36, weight: 700, color: C.ink });
+    text('TRANSCRIBER', 1780, 590, { size: 18, color: C.dim, ls: 4, align: 'right' }); text(blink(t, 4) ? 'OVERLOAD' : '', 1780, 636, { size: 36, weight: 700, color: C.hot, align: 'right' });
+    const uc = L.unclear || [1e9, 1e9], tail = t >= uc[0];
+    const end = transcript(L, t, 140, 780, { size: 72, maxW: 1640, cursor: !tail });
+    if (tail) text('[UNCLEAR]', end.x, 780, { size: 72, weight: 700, color: C.hot, alpha: blink(t, 3) || t > uc[0] + .4 ? 1 : .5 });
+    wave(140, 950, 1640, 110, t, { span: 2, bar: 5 });
+    fx({ glitch: clamp(v * 1.2) * .45 });
     cvr(t, 'A10 · OVERLOAD');
+    boardTimer(t);
+  }
+
+  // the gag: on "5 minutes" a boarding countdown slams on, counts real seconds 5:00 to 4:57, glitches away
+  function boardTimer(t) {
+    const T5 = W0(LA.getin, 4), OUT = T5 + 3.4, END = T5 + 3.65;
+    if (t < T5 - .02 || t >= END) return;
+    const e = t - T5, secs = 300 - Math.max(0, Math.floor(e)), str = `${Math.floor(secs / 60)}:${String(secs % 60).padStart(2, '0')}`;
+    const dsz = 230, lab = 'BOARDING CLOSES IN', lsz = 26;
+    const dw = measure('0:00', { size: dsz, weight: 700 }), lw = measure(lab, { size: lsz, ls: 6 });
+    const bw = Math.max(dw, lw) + 2 * 80, cap = dsz * .74, bh = 50 + lsz + 40 + cap + 60, bx = 960 - bw / 2, by = 90;
+    const draw = () => {
+      frect(bx, by, bw, bh, 'rgba(10,9,8,.95)'); rect(bx, by, bw, bh, C.hot, 3); brackets(bx - 14, by - 14, bw + 28, bh + 28, 28, C.hot, 3);
+      text(lab, 960, by + 50 + lsz * .8, { size: lsz, color: C.ink, align: 'center', ls: 6 });
+      text(str, 960, by + 50 + lsz + 40 + cap, { size: dsz, weight: 700, color: C.hot, align: 'center' });
+      const cs = Math.floor((1 - (e - Math.floor(e))) * 100) % 100;
+      text(`.${String(cs).padStart(2, '0')}`, bx + bw - 24, by + bh - 20, { size: 22, color: C.dim, align: 'right' });
+      text('GATE 3 · AOH-1953', bx + 24, by + bh - 20, { size: 18, color: C.dim, ls: 2 });
+    };
+    const a = slam(t, T5 - .02, .14), sc = lerp(1.18, 1, a);
+    withT(() => {
+      s.translate(960, by + bh / 2); s.scale(sc, sc); s.translate(-960, -(by + bh / 2)); s.globalAlpha = clamp(a * 2);
+      if (t < OUT) draw();
+      else { // glitch out: slices tear sideways and drop out
+        const k = (t - OUT) / (END - OUT), fr = Math.floor(t * 24);
+        for (let i = 0; i < 9; i++) {
+          if (hash(fr * 31 + i * 7) < k * .9) continue;
+          withT(() => { s.beginPath(); s.rect(0, by - 20 + i * (bh + 40) / 9, W, (bh + 40) / 9); s.clip(); s.translate((hash(fr * 13 + i) - .5) * 260 * (.3 + k), 0); draw(); });
+        }
+      }
+      s.globalAlpha = 1;
+    });
+    FX.flash = Math.max(FX.flash || 0, .22 * hit(t, T5, 14));
+    FX.glitch = Math.max(FX.glitch || 0, .35 * hit(t, T5, 9) + (t >= OUT ? .9 : 0) + .25 * (e % 1 < .06 && e > .5 ? 1 : 0));
   }
 
   // ---------------- a11 sleep lab ----------------
@@ -295,6 +331,7 @@
     if (lh) { const [ht, lab] = lh, e = t - ht; brackets(1180, 420, 600, 560, 30, C.hot, 3); text('REM BURST', 1760, 410, { size: 24, weight: 700, color: C.hot, align: 'right', ls: 3, alpha: clamp(1.6 - e) }); caption(lab, 960, 1000, { align: 'center' }); }
     fx({ flash: .25 * hits(t, 16), glitch: .5 * hits(t, 7) });
     cvr(t, 'A11 · SLEEP LAB');
+    boardTimer(t);
   }
 
   // ---------------- a12 REM eyes ----------------
@@ -435,7 +472,7 @@
     const k = 3.6, o = ease.back(inv(0, .12, lt)), h = hit(t, t - lt, 6);
     const look = lt < .6 ? [0, 0] : lt < 1.1 ? [-.8, -.2] : lt < 1.6 ? [.8, -.2] : [0, .3];
     withT(() => { s.translate(snoise(t * 40, 2) * 12 * h, snoise(t * 40, 3) * 12 * h); PL.front(960, 660 + 184 * k, k, t, { lid: lerp(1.6, 0, o), look, mouth: .15 * h, brow: .5 * h, lw: 5, spin: 0 }); });
-    letters('AWAKE', 960, 250, { fam: FAM.g, weight: 900, size: 200, stretch: 'expanded', align: 'center' }, (i) => { const p = slam(t, t - lt + .05 + i * .03, .12); return { dy: (1 - p) * -120, alpha: clamp(p * 2), color: C.hot }; });
+    letters('AWAKE', 960, 270, { fam: FAM.g, weight: 900, size: 200, stretch: 'expanded', align: 'center' }, (i) => { const p = slam(t, t - lt + .05 + i * .03, .12); return { dy: (1 - p) * 70, alpha: clamp(p * 2), color: C.hot }; });
     fx({ flash: .5 * hit(t, t - lt, 12), glitch: .4 * h });
     cvr(t, 'A19 · WAKE', { state: '▶ LIVE' });
   }
@@ -457,7 +494,7 @@
       const na = lerp(a0, a1, v); line([[cx, cy], [cx + Math.cos(na) * (R - 30), cy + Math.sin(na) * (R - 30)]], C.hot, 5); dot(cx, cy, 10, C.ink);
       text(`ENG ${i + 1}`, cx, cy + 70, { size: 22, color: C.dim, align: 'center', ls: 3 }); text(`${Math.round(v * 2600)} RPM`, cx, cy + 110, { size: 28, weight: 700, color: C.ink, align: 'center' });
     }
-    if (k >= 0) { const a = slam(t, bs[k] - .02, .12); withT(() => { const sc = lerp(1.5, 1, a); s.translate(960, 300); s.scale(sc, sc); text(words[k], 0, 0, { fam: FAM.g, weight: 900, size: 150, color: k === 3 ? C.hot : C.ink, align: 'center', alpha: clamp(a * 2) }); }); }
+    if (k >= 0) { const a = slam(t, bs[k] - .02, .12); withT(() => { const sc = lerp(1.2, 1, a); s.translate(960, 300); s.scale(sc, sc); text(words[k], 0, 0, { fam: FAM.g, weight: 900, size: 150, color: k === 3 ? C.hot : C.ink, align: 'center', alpha: clamp(a * 2) }); }); }
     fx({ flash: .15 * beatPulse(t, 14), glitch: .2 * beatPulse(t, 10) });
     cvr(t, 'A20 · START', { state: '▶ LIVE' });
   }

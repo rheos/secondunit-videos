@@ -5,19 +5,24 @@ const GL = {
     canvas.width = Math.round(W * RS); canvas.height = Math.round(H * RS);
     const gl = canvas.getContext('webgl2', { preserveDrawingBuffer: true, antialias: false });
     const src = document.createElement('canvas'); src.width = canvas.width; src.height = canvas.height;
-    s = src.getContext('2d');
+    s = src.getContext('2d'); SRC2D = s;
+    const top = document.createElement('canvas'); top.width = canvas.width; top.height = canvas.height; TOP2D = top.getContext('2d'); // an unfolded layer laid over the finished fold
     const sh = (type, code) => { const o = gl.createShader(type); gl.shaderSource(o, code); gl.compileShader(o); if (!gl.getShaderParameter(o, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(o)); return o; };
     const prog = gl.createProgram();
     gl.attachShader(prog, sh(gl.VERTEX_SHADER, `#version 300 es
 in vec2 p; out vec2 uv; void main(){ uv = p * .5 + .5; uv.y = 1. - uv.y; gl_Position = vec4(p, 0, 1); }`));
     gl.attachShader(prog, sh(gl.FRAGMENT_SHADER, `#version 300 es
-precision highp float; in vec2 uv; out vec4 o; uniform sampler2D src; uniform float t, tq; uniform vec2 res;
+precision highp float; in vec2 uv; out vec4 o; uniform sampler2D src; uniform sampler2D top; uniform float topOn; uniform float t, tq; uniform vec2 res;
 ${GL.NOISE}
 ${frag}`));
     gl.linkProgram(prog); if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(prog));
     gl.useProgram(prog);
     const buf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
     const loc = gl.getAttribLocation(prog, 'p'); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+    const tex2 = gl.createTexture(); gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, tex2);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    for (const k of [gl.TEXTURE_WRAP_S, gl.TEXTURE_WRAP_T]) gl.texParameteri(gl.TEXTURE_2D, k, gl.CLAMP_TO_EDGE);
+    gl.activeTexture(gl.TEXTURE0);
     const tex = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, tex);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
     for (const k of [gl.TEXTURE_WRAP_S, gl.TEXTURE_WRAP_T]) gl.texParameteri(gl.TEXTURE_2D, k, gl.MIRRORED_REPEAT);
@@ -25,7 +30,11 @@ ${frag}`));
     return {
       present(t, fxv) {
         gl.viewport(0, 0, canvas.width, canvas.height);
+        gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, tex);
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, src); gl.generateMipmap(gl.TEXTURE_2D);
+        const useTop = fxv.top ? 1 : 0;
+        if (useTop) { gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, tex2); gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, top); gl.activeTexture(gl.TEXTURE0); }
+        gl.uniform1i(U('top'), 1); gl.uniform1f(U('topOn'), useTop);
         gl.uniform1i(U('src'), 0); gl.uniform1f(U('t'), t); gl.uniform1f(U('tq'), onTwos(t)); gl.uniform2f(U('res'), canvas.width, canvas.height);
         const u = uniforms(t, fxv);
         for (const [k, v] of Object.entries(u)) { const l = U(k); if (!l) continue; if (Array.isArray(v)) gl[`uniform${v.length}f`](l, ...v); else gl.uniform1f(l, v); }

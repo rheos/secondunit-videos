@@ -98,7 +98,7 @@
     const rows = [['WINGS', 'OK'], ['ENGINES', 'OK'], ['ALTITUDE', 'FAIL']];
     rows.forEach(([k, r], i) => { text(`${k.padEnd(10, '.')} ${r}`, 1260, 260 + i * 60, { size: 34, color: r === 'FAIL' ? C.hot : C.ink, weight: r === 'FAIL' ? 700 : 400 }); });
     const L = LK.notright; let y = 560;
-    said(L, t).forEach((it) => { text(it.w.toUpperCase() + (it.t === WL(L) ? '.' : ''), 1260, y + (1 - it.a) * 30, { fam: FAM.g, weight: 900, size: 120, color: C.hot, alpha: clamp(it.a * 2) }); y += 120; });
+    said(L, t).forEach((it) => { text(it.w.toUpperCase() + (it.t === WL(L) ? '.' : ''), 1260, y + (1 - it.a) * 30, { fam: FAM.g, weight: 900, size: 104, color: C.hot, alpha: clamp(it.a * 2) }); y += 110; });
     cvr(t, 'K05 · PARKED', head);
   }
 
@@ -144,25 +144,25 @@
   }
 
   // ---------------- k08 the log again ----------------
-  const PREV = [['03 MAR', 'wingtips scrape guardrail', 'trimmed the hedge'], ['11 MAR', 'overtaken by a bicycle', 'no fault found'], ['19 MAR', 'told to "move over"', 'cannot move over'], ['03 APR', 'TOO MANY ROOMS TO BE A CAR', 'counted rooms: 31. not a car.']];
+  const PREV = [['03 MAR', 'wingtips scrape guardrail', 'trimmed the hedge'], ['11 MAR', 'overtaken by a bicycle', 'no fault found'], ['19 MAR', 'told to "move over"', 'cannot move over'], ['03 APR', () => LYR.A.lines.wings.words.map((w) => w[0]).join(' ').toUpperCase(), 'counted wings: 2. not a car.']];
   function techlog2(t, lt) {
     const A = LK.apologies, L = LK.wings, CT = WL(L);
     paper(t, lt, () => {
-      logPage(t, PREV.slice(0, 3).concat([[PREV[3][0], '', PREV[3][2]]]), (y) => {
-        text('too many rooms to be a car', 210, y - 95, { size: 24, color: C.pencil }); // the earlier entry, in the log's hand
+      logPage(t, PREV.slice(0, 3).concat([[PREV[3][0], PREV[3][1](), PREV[3][2]]]), (y) => {
         text('TODAY', 70, y, { size: 22, color: C.pencil });
         let x = 210, yy = y;
-        const ws = [...said(A, t), ...said(L, t)];
-        ws.forEach((it) => {
-          const str = it.w.toUpperCase() + (it.w === A.words[0][0] ? ',' : ''), big = /WING|CAR/.test(str), sz = big ? 50 : 34, w = measure(str, { size: sz, weight: 700 });
+        const na = said(A, t).length, ws = [...said(A, t), ...said(L, t)];
+        ws.forEach((it, wi) => {
+          const li = wi - na, str = it.w.toUpperCase() + (wi === 0 ? ',' : ''), big = li === 4 || li === L.words.length - 1, sz = big ? 50 : 34, w = measure(str, { size: sz, weight: 700 });
           if (x + w > 905) { x = 210; yy += 56; }
           text(str, x, yy + (1 - it.a) * 8, { size: sz, weight: 700, color: C.pencil, alpha: clamp(it.a * 2) });
-          if (/WING/.test(str)) line([[x, yy + 10], [x + w * ease.out(inv(it.t, it.t + .3, t)), yy + 10]], C.pink, 4);
+          if (li === 4) line([[x, yy + 10], [x + w * ease.out(inv(it.t, it.t + .3, t)), yy + 10]], C.pink, 4);
           x += w + 14;
         });
-        if (t > CT + .15) text(typed('counted wings: 2. too wide.', t, CT + .15, 30), 930, y, { size: 24, color: '#2b3a6b' });
+        if (t > CT + .15) text(typed('counted wings: still 2.', t, CT + .15, 30), 930, y, { size: 24, color: '#2b3a6b' });
+        if (t > CT + .95) text(typed('too wide.', t, CT + .95, 30), 930, y + 40, { size: 24, color: '#2b3a6b' });
       });
-      stamp(t, 363.23 + .2, 1150, 870, .1, 560, 140, [['STILL NOT A CAR', 70, 26]], 7);
+      stamp(t, 363.23 + .2, 1040, 870, .08, 560, 140, [['STILL NOT A CAR', 70, 26]], 7);
     }, { shake: 10 * hit(t, 363.43, 16), zoom: .006 });
     fx({ paper: 1, flash: .15 * hit(t, 363.43, 18) });
   }
@@ -181,10 +181,11 @@
     fill(C.bg);
     brackets(36, 36, W - 72, H - 72, 30, C.dim, 2);
     const a = ease.out(inv(END, END + .25, t));
-    frect(960 - 470, 470, 70 * a, 70, C.hot);
-    text('END OF RECORDING', 960 - 370, 530, { fam: FAM.g, weight: 900, size: 76, color: C.ink, alpha: a, ls: 4 });
-    text(`CVR · AOH-1953 · ${KIT.counter(END - T0)}`, 960 - 370, 590, { size: 20, color: C.hot, alpha: a, ls: 3 });
-    line([[960 - 470, 630], [960 - 470 + 940 * a, 630]], C.hot, 3);
+    const tw = measure('END OF RECORDING', { fam: FAM.g, weight: 900, size: 76, ls: 4 }), bw = 100 + tw, x0 = 960 - bw / 2;
+    frect(x0, 470, 70 * a, 70, C.hot);
+    text('END OF RECORDING', x0 + 100, 530, { fam: FAM.g, weight: 900, size: 76, color: C.ink, alpha: a, ls: 4 });
+    text(`CVR · AOH-1953 · ${KIT.counter(END - T0)}`, x0 + 100, 590, { size: 20, color: C.hot, alpha: a, ls: 3 });
+    line([[x0, 630], [x0 + bw * a, 630]], C.hot, 3);
   }
 
   chapter('K', T0, 8804 / 24, [

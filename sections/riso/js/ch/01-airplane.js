@@ -176,6 +176,9 @@
         for (const tx of [120, -175]) { s.beginPath(); s.arc(tx, -50, 68, Math.PI * 1.02, Math.PI * 1.98); s.arc(tx, -50, 56, Math.PI * 1.98, Math.PI * 1.02, true); s.closePath(); paint(pal.body, { lw: lw * .8 }); }
         shape([[128, -272], [264, -262], [274, -190], [132, -184]], pal.glass, { lw: lw * .8 });
         SEYES.forEach(([ex, ey, rx, ry], i) => eye(ex, ey, rx, ry, o, i, lw * .8, pal.body));
+        if (o.happy) SEYES.forEach(([ex, ey, rx, ry]) => {                                                      // eyes squeezed happy: ^ ^
+          ell(ex, ey, rx + 3, ry + 3, pal.body);
+          stroke([[ex - rx * .85, ey + ry * .25], [ex - rx * .3, ey - ry * .45], [ex + rx * .3, ey - ry * .45], [ex + rx * .85, ey + ry * .25]], pal.key, lw * 1.3); });
         brows(SEYES.map(([a, b, c, d]) => [a, b + 6, c, d]), o.brow?.[0] || 0, o.brow?.[1] || 0, lw * .55, pal);
         mouth(236, -128, 38, open * .9, lw * .8, pal);
         withT(() => { pathPts(FUSE, true); s.clip(); lighten(); s.beginPath(); s.moveTo(250, -246); s.quadraticCurveTo(232, -170, 254, -100); s.lineWidth = 3.5; s.strokeStyle = C(.22, .22, 0); s.stroke(); over(); });   // radome panel line, no ball nose (FACE.md)
@@ -499,9 +502,91 @@
       for (let q = 0; q < 3; q++) { const w = (T - 89.3 - q * .2) / 1.1; if (w < 0 || w >= 1) continue;          // the sigh
         cloud(PLANE_X + 90 + w * 260 + q * 20, PLANE_Y - 280 * .85 - w * 160 - q * 30, (18 + w * 40) * (1 - w * .3), C(0, .45 * (1 - w), 0)); }
     });
-    const e = smooth(inv(90.1, 90.95, t));
-    fx({ off: [-90 * e, 30 * e, 70 * e, -55 * e, 20 * e, 95 * e], fade: .85 * e, jit: 2.4 + 5 * e });
+    fx({ jit: 2.4 });                                                                  // v1: clean frame to the end, hard cut into the woodcut
   }
 
-  chapter('airplane', 71.0, 91.0, [[71.0, poster], [74.86, track], [77.22, headOn], [79.13, mnuh], [LINE2, lane], [SICK, sick]]);
+
+  // ===== v1: the "mnuh nuh nuh" backup bit, sung by the PASSENGERS =====
+  // Syllable onsets from the Demucs vocal stem (energy dips + pitch breaks on the nasal): 79.30 79.45 79.71 80.02,
+  // the last one long and loudest (peak 80.34) with a re-attack at 80.62. Windows sing left to right, one per
+  // syllable; on the last one every window sings, the camera pulls back and he beams.
+  const SYL = [79.30, 79.45, 79.71, 80.02], SYL_RE = 80.62;
+  const NA_END = 81.10;                                      // the backing tail rings on at the same pitch to ~81.10; "I'm" 81.14, "an" ~81.62
+  const CUT2 = 1972 / 24;                                    // 82.167: cut to the lane in the gap before "airplane" (~82.22)
+  const WIN = (i) => [-250 + i * 58, -206];                 // his cabin windows, side view, local units
+  const WR = 22;                                             // windows open up a little for the close-up
+  const PSKIN = [C(.18, 0, .3), C(.3, 0, .45), C(.12, 0, .22), C(0, 0, .5), C(.22, 0, .3), C(.35, 0, .5)];
+  function passenger(i, cx, cy, open, pop, T) {
+    const r = WR, dy = (1 - pop) * r * 1.9, bounce = open > .1 ? -Math.abs(Math.sin(T * 18 + i)) * 1.5 : 0;
+    withT(() => {
+      s.beginPath(); s.arc(cx, cy, r, 0, TAU); s.clip();
+      s.translate(cx, cy + dy + bounce + 3); s.scale(1.3, 1.3);
+      const hr = r * .52, hy = -1, skin = PSKIN[i], lw = 1.6;
+      // shoulders
+      const coat = [PINK, YEL, TEAL, C(0, 0, .0), RED, GREEN][i];
+      if (i !== 3) shape([[-r * .95, r * 1.2], [-r * .8, r * .62], [-r * .3, r * .42], [r * .3, r * .42], [r * .8, r * .62], [r * .95, r * 1.2]], coat, { smooth: true, lw });
+      if (i === 2) { shape([[-4, r * .44], [4, r * .44], [2.5, r * 1.1], [-2.5, r * 1.1]], RED, { lw: 1 }); }        // businessman's tie
+      // head
+      if (i === 3) {                                                                                      // the dog
+        ell(0, hy + 2, hr * 1.05, hr, YEL, { lw });
+        ell(-hr * .95, hy + 2, hr * .32, hr * .7, KEY, { rot: .3 }); ell(hr * .95, hy + 2, hr * .32, hr * .7, KEY, { rot: -.3 });
+        ell(0, hy + hr * .35, hr * .5, hr * .36, PAPER, { lw: 1.2 });
+        ell(0, hy + hr * .12, hr * .16, hr * .11, KEY);
+      } else ell(0, hy, hr * .92, hr, skin, { lw });
+      // hair and hats
+      if (i === 0) { ell(0, hy - hr * .7, hr * .9, hr * .45, PAPER, { lw }); ell(0, hy - hr * 1.15, hr * .38, hr * .32, PAPER, { lw }); }   // grandma's bun
+      if (i === 1) { s.beginPath(); s.arc(0, hy - hr * .2, hr * .95, Math.PI, TAU); s.closePath(); paint(TEAL, { lw });                    // kid: propeller beanie
+        stroke([[0, hy - hr * 1.15], [0, hy - hr * 1.5]], KEY, 1.4); const a = T * 30; stroke([[-Math.cos(a) * hr * .7, hy - hr * 1.5], [Math.cos(a) * hr * .7, hy - hr * 1.5]], PINK, 2.2); }
+      if (i === 2) shape([[-hr * .9, hy - hr * .35], [-hr * .8, hy - hr * 1.02], [hr * .8, hy - hr * 1.02], [hr * .9, hy - hr * .35]], KEY);     // businessman's flat-top
+      if (i === 4) { ell(0, hy - hr * 1.05, hr * .85, hr * .9, PINK, { lw }); }                                                            // beehive
+      if (i === 5) { ell(0, hy - hr * .78, hr * 1.55, hr * .22, YEL, { lw }); shape([[-hr * .6, hy - hr * .8], [-hr * .5, hy - hr * 1.5], [hr * .5, hy - hr * 1.5], [hr * .6, hy - hr * .8]], YEL, { lw }); } // cowboy hat
+      // eyes / glasses
+      const ey = hy - hr * .18, ex = hr * .36;
+      if (i === 0) { for (const sd of [-1, 1]) ell(sd * ex, ey, hr * .27, hr * .27, PAPER, { lw: 1.2 }); stroke([[-ex + hr * .27, ey], [ex - hr * .27, ey]], KEY, 1); }
+      if (i === 4) { for (const sd of [-1, 1]) ell(sd * ex, ey, hr * .32, hr * .22, KEY); stroke([[-ex, ey], [ex, ey]], KEY, 1.4); }       // big sunglasses
+      else { for (const sd of [-1, 1]) { if (open > .15 && i !== 3) stroke([[sd * ex - hr * .14, ey + 1], [sd * ex, ey - hr * .1], [sd * ex + hr * .14, ey + 1]], KEY, 1.3); else ell(sd * ex, ey, hr * .1, hr * .12, KEY); } }
+      if (i === 5) stroke([[-hr * .38, hy + hr * .28], [0, hy + hr * .2], [hr * .38, hy + hr * .28]], KEY, 2.4);                           // cowboy's moustache
+      // mouth: opens on their syllable
+      const my = hy + hr * (i === 3 ? .55 : .5);
+      if (open > .06) { ell(0, my, hr * (.2 + .1 * open), hr * (.08 + .36 * open), KEY); ell(0, my + hr * .2 * open, hr * .13, hr * .09 * open, PINK); }
+      else stroke([[-hr * .22, my - 1], [0, my + 1.5], [hr * .22, my - 1]], KEY, 1.3);
+    });
+  }
+  function cabin(t) {
+    const T = ta(t); FRI = Math.floor(t * 12);
+    const fin = SYL[3], st = base(t), voc = clamp((F('voc', t, 1) - .05) / .4);
+    // the camera: snap close on the windows, pull back on the last syllable to show him beaming
+    const pb = ease.inOut(inv(fin, fin + .5, t));
+    const k = lerp(5.4, 2.35, pb) + .25 * ease.inOut(inv(NA_END, CUT2, t)), lx = lerp(-105, 10, pb) + 30 * ease.inOut(inv(NA_END, CUT2, t)), ly = lerp(-206, -190, pb);
+    sheet(C(.45, 0, 0));
+    rays(960, 540, 26, 2600, T * .3, C(0, 0, .8));
+    const px = 960 - lx * k, py = 540 - ly * k;
+    const happy = t >= fin + .12 && t < NA_END;
+    sidePlane(px, py, k, { ...st, open: t >= NA_END ? st.open : happy ? .25 + .6 * voc : 0, look: t >= NA_END ? [-.6, -.1] : [-.8, -.2], brow: [happy ? .9 : .4, 0], lid: 0, happy, bob: 0, hop: 0 });
+    withT(() => { s.translate(px, py); s.scale(k, k);
+      for (let i = 0; i < 6; i++) {
+        const [wx, wy] = WIN(i), on = i < 3 ? SYL[i] : fin;
+        const pop = ease.back(inv(on - .02, on + .12, t));
+        let open = 0;
+        if (i < 3 && t >= on && t < SYL[i + 1] - .02) open = clamp((t - on) / .035) * (.65 + .35 * Math.exp(-6 * (t - on)));
+        if (t >= fin) open = clamp((t - fin) / .035) * clamp(.35 + voc * .9) + .4 * hit(t, SYL_RE, 8);
+        if (t >= NA_END) open = lerp(open, .14 + .1 * Math.sin(T * 7 + i * 1.1), smooth(inv(NA_END, NA_END + .2, t)));   // soft sway-along under his "I'm an"
+        ell(wx, wy, WR + 2.5, WR + 2.5, C(0, .55, 0), { lw: 2.2 });                                 // the window frame and glass
+        if (t >= on - .02) passenger(i, wx, wy, open, pop, T);
+        withT(() => { s.beginPath(); s.arc(wx, wy, WR, 0, TAU); s.clip(); lighten(); ell(wx - WR * .45, wy - WR * .5, WR * .28, WR * .14, C(0, .25, 0), { rot: -.6 }); over(); });   // glint
+        ell(wx, wy, WR, WR, null, { lw: 2.4 });
+        if (open > .3) for (let q = 0; q < 2; q++) {                                                 // little music notes off each singer
+          const u = wrap((t - on) * 1.4 + q * .5, 1), nx = wx + 10 + u * 26 + q * 6, ny = wy - WR - u * 30;
+          ell(nx, ny, 3.2, 2.5, [PINK, YEL, TEAL][(i + q) % 3], { rot: -.4 }); stroke([[nx + 2.8, ny], [nx + 2.8, ny - 9]], KEY, 1.2);
+        }
+      }
+    });
+    const kick = Math.max(...SYL.map((on, j) => hit(t, on, 9) * (j === 3 ? .9 : .45)), hit(t, SYL_RE, 9) * .4);
+    const n = SYL.filter((on) => t >= on).length;
+    const ap = (m) => (hash(n * 31 + m) - .5) * 2 * kick;
+    fx({ off: [ap(1) * 90, ap(2) * 50, ap(3) * 90, ap(4) * 50, ap(5) * 70, ap(6) * 60],
+      inks: [[INK.pink, INK.teal, INK.yellow], [INK.orange, INK.blue, INK.yellow], [INK.pink, INK.purple, INK.yellow], [INK.red, INK.teal, INK.yellow], [INK.pink, INK.teal, INK.yellow]][n], jit: 2.4 + 3 * kick });
+  }
+
+  chapter('airplane', 71.0, 91.0, [[71.0, poster], [74.86, track], [77.22, headOn], [SYL[0], cabin], [CUT2, lane], [SICK, sick]]);
 })();

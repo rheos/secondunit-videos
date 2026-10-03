@@ -14,12 +14,14 @@ const VON = [...FT.vonsets, ...EDGE].sort((a, b) => a - b);
 const near = (t, lo, hi) => { let best = null; for (const v of VON) if (v >= t + lo && v <= t + hi && (best === null || Math.abs(v - t) < Math.abs(best - t))) best = v; return best; };
 // [key, line index, first word, last word (inclusive)]
 const KEEP = {
-  A: [['sky', 0], ['sky2', 1], ['ground', 2], ['onground', 3], ['airplane', 4], ['notright', 5], ['rooms', 8], ['belts', 9]],
+  A: [['sky', 0], ['sky2', 1], ['ground', 2], ['onground', 3], ['airplane', 4], ['notright', 5], ['rooms', 8], ['belts', 9], ['getin', 10, 0, 5]],
   K: [['sky', 43, 0, 10], ['sky2', 43, 11, 18], ['ground', [[43, 19, 21], [44, 0, 4]]], ['onground', 44, 5, 7], ['airplane', 44, 8, 10], ['notright', 44, 11, 13],
     ['queen', 45], ['apologies', 46, 0, 0], ['wings', 46, 1, 9]],
 };
-const UNK = { A: [6, 7, 10, 14, 15], K: [] };
+const UNK = { A: [6, 7, 14, 15], K: [] };
 const HITS = { A: [11, 12, 13, 16, 17, 18, 19, 20, 21], K: [] };
+// corrections from people who listened (tools/fixes.json, gitignored): word text by index, same timings
+const FIX = fs.existsSync(new URL('./fixes.json', import.meta.url)) ? JSON.parse(fs.readFileSync(new URL('./fixes.json', import.meta.url), 'utf8')) : {};
 const r3 = (x) => Math.round(x * 1000) / 1000;
 const out = {};
 for (const sec of ['A', 'K']) {
@@ -29,7 +31,8 @@ for (const sec of ['A', 'K']) {
     let prev = -1;
     const words = ws.map((w) => { let v = near(w.s, -.1, .3); if (v === null || v < prev + .06) v = Math.max(w.s, prev + .06); prev = v; return [w.t.replace(/[.,]$/, ''), r3(v)]; });
     const e = r3(Math.max(ws[ws.length - 1].e, prev + .2));
-    lines[key] = { text: ws.map((w) => w.t).join(' '), words, e };
+    const fx = FIX[sec]?.[key]; if (fx) { for (const [i, w] of Object.entries(fx.words)) words[i][0] = w; for (const [i, v] of Object.entries(fx.times || {})) words[i][1] = v; }
+    lines[fx?.key || key] = { text: words.map((w) => w[0]).join(' '), words, e, ...(fx?.unclear ? { unclear: fx.unclear } : {}) };
   }
   out[sec] = {
     lines,

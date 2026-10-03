@@ -515,7 +515,156 @@
     return { off: [h(1) * 230 * a * M, h(2) * 140 * a * M, h(3) * 230 * a * M, h(4) * 140 * a * M, h(5) * 230 * a * M, h(6) * 140 * a * M],
       rot: [h(7) * .22 * a * M, h(8) * .22 * a * M, h(9) * .22 * a * M], zm: [1 + h(10) * .2 * a * M, 1 + h(11) * .2 * a * M, 1 + h(12) * .2 * a * M] };
   }
-  const snapA = (t, pw = 1.7) => Math.pow(bPh(t), pw);       // 0 on the beat (slammed home), drifts out until the next beat
+
+  // ---- v2: the stems (Demucs 6-stem, window.STEMS, 24 fps envelopes). "other" is the saxophone. ----
+  // The drum stem lists no onsets in this span, so hits come from envelope rises (they sit on the beat grid).
+  const STM = window.STEMS.stems;
+  const SE = (k, t) => STM[k].env[clamp(Math.round(t * 24), 0, STM[k].env.length - 1)] || 0;
+  const SEs = (k, t, n = 2) => { let a = 0; for (let j = -n; j <= n; j++) a += SE(k, t + j / 24); return a / (2 * n + 1); };
+  function riseHits(k, d = .18, min = .35, gap = 4) {
+    const e = STM[k].env, o = []; let last = -99;
+    for (let i = 3; i < e.length; i++) { const m = Math.min(e[i - 1], e[i - 2], e[i - 3]); if (e[i] - m > d && e[i] > min && i - last >= gap && e[i] >= e[i - 1]) { o.push(i / 24); last = i; } }
+    return o;
+  }
+  const HITS = {
+    drums: riseHits('drums'),
+    piano: [...new Set([...riseHits('piano'), ...STM.piano.onsets].map((x) => Math.round(x * 24)))].sort((a, b) => a - b).map((i) => i / 24),
+    sax: [...new Set([...riseHits('other', .15, .3), ...STM.other.onsets].map((x) => Math.round(x * 24)))].sort((a, b) => a - b).map((i) => i / 24),
+    guitar: riseHits('guitar'), bass: riseHits('bass', .15, .3),
+  };
+  function lastHitI(k, t) { const h = HITS[k]; let lo = 0, hi = h.length - 1; if (!h.length || t < h[0]) return -1; while (lo < hi) { const m = (lo + hi + 1) >> 1; if (h[m] <= t) lo = m; else hi = m - 1; } return lo; }
+  const hitAge = (k, t) => { const i = lastHitI(k, t); return i < 0 ? 99 : t - HITS[k][i]; };
+  const hitPulse = (k, t, dec = 8) => Math.exp(-dec * hitAge(k, t));
+  const dN = (t) => lastHitI('drums', t);
+  const dPh = (t) => { const h = HITS.drums, i = lastHitI('drums', t); if (i < 0 || i + 1 >= h.length) return bPh(t); return clamp((t - h[i]) / Math.min(.6, h[i + 1] - h[i])); };
+  // ---- reactive layer ----
+  function shockwaves(T, cx = 960, cy = 540, o = {}) {           // drum hits fire rings out from the centre
+    const i = lastHitI('drums', T); if (i < 0) return;
+    for (let q = 0; q < 3; q++) { const h = HITS.drums[i - q]; if (h === undefined) continue; const a = T - h; if (a > .9) continue;
+      const r = 60 + a * (o.speed || 2400), w = (o.w || 70) * (1 - a / .9);
+      lighten(); s.strokeStyle = ink((i - q + 3) % 3, .95); s.lineWidth = Math.max(1, w); s.beginPath(); s.arc(cx, cy, r, 0, TAU); s.stroke(); over(); }
+  }
+  function pianoPops(T, n = 7, sc = 1) {                           // piano notes pop small geometry
+    const i = lastHitI('piano', T); if (i < 0) return;
+    for (let q = 0; q < n; q++) { const h = HITS.piano[i - q]; if (h === undefined) continue; const a = T - h; if (a > .7) continue;
+      const r = rng(Math.round(h * 24) * 7 + 3), x = 120 + r() * 1680, y = 100 + r() * 880, kind = Math.floor(r() * 4), z = (26 + r() * 40) * sc * ease.back(clamp(a / .12)) * (1 - clamp((a - .45) / .25));
+      const col = [YEL, PINK, TEAL, RED][Math.floor(r() * 4)];
+      if (z <= .5) continue;
+      withT(() => { s.translate(x, y); s.rotate(r() * TAU + a * 3);
+        if (kind === 0) ell(0, 0, z, z, col, { lw: 4 }); else if (kind === 1) shape([[0, -z], [z * .9, z * .6], [-z * .9, z * .6]], col, { lw: 4 });
+        else if (kind === 2) { s.fillStyle = col; s.fillRect(-z * .7, -z * .7, z * 1.4, z * 1.4); s.lineWidth = 4; s.strokeStyle = KEY; s.strokeRect(-z * .7, -z * .7, z * 1.4, z * 1.4); }
+        else { ringPath(0, 0, z * .55, z); s.fillStyle = col; s.fill('evenodd'); } });
+    }
+  }
+  function saxRibbon(T, o = {}) {                                  // the sax line flows across the frame, width and swing from its envelope
+    const e = SEs('other', T, 3); if (e < .12) return;
+    const y0 = o.y ?? 540, A = 60 + 260 * e, wdt = 18 + 70 * e;
+    for (let b = 0; b < 3; b++) {
+      const pts = []; for (let x = -100; x <= 2020; x += 30) pts.push([x, y0 + b * wdt * .9 + A * Math.sin(x * .0042 - T * 3.1 + b * .5) + A * .4 * Math.sin(x * .011 + T * 1.7)]);
+      lighten(); s.strokeStyle = ink([2, 0, 1][b], b === 1 ? .9 : .75); s.lineWidth = wdt * (b === 1 ? 1 : .5); s.lineCap = 'round'; s.beginPath(); pts.forEach(([x, y], j) => j ? s.lineTo(x, y) : s.moveTo(x, y)); s.stroke(); over();
+    }
+  }
+  const bassK = (T) => 1 + .45 * SEs('bass', T, 3);
+  const snapD = (t, pw = 1.7) => Math.pow(dPh(t), pw);           // 0 on each drum hit (slammed into register), drifts out until the next
+
+  // ---- instrument cameos, drawn as riso poster figures ----
+  // SAX: origin at the middle of the body; it sways on phrases and kicks on onsets; notes and halftone puffs blow out of the bell
+  const SAXC = [[-150, -560], [-95, -540], [-40, -490], [-10, -420], [0, -300], [6, -120], [12, 60], [26, 170], [80, 236], [160, 236], [222, 176], [250, 70], [262, -40]];
+  const SAXW = [10, 14, 20, 26, 34, 42, 50, 58, 66, 70, 82, 112, 160];
+  function sax(x, y, k, T, o = {}) {
+    const e = SEs('other', T, 2), hp = hitPulse('sax', T, 7), si = lastHitI('sax', T);
+    withT(() => {
+      s.translate(x, y); s.scale(k, k); s.rotate((o.rot || 0) + Math.sin(T * 2.2) * .1 * (.3 + e) - .14 * hp); s.scale(1 + .05 * hp, 1 + .05 * hp);
+      const L = [], R = [];
+      for (let i = 0; i < SAXC.length; i++) { const a = SAXC[Math.max(0, i - 1)], b = SAXC[Math.min(SAXC.length - 1, i + 1)], dx = b[0] - a[0], dy = b[1] - a[1], d = Math.hypot(dx, dy) || 1, nx = -dy / d, ny = dx / d, w = SAXW[i] / 2;
+        L.push([SAXC[i][0] + nx * w, SAXC[i][1] + ny * w]); R.push([SAXC[i][0] - nx * w, SAXC[i][1] - ny * w]); }
+      shape([...L, ...R.reverse()], o.body || YEL, { smooth: true, lw: 9 });
+      shape([[-150, -560], [-200, -585], [-212, -570], [-162, -548]], KEY);                              // mouthpiece
+      withT(() => { s.translate(256, -44); s.rotate(-.18); ell(0, 0, 88, 30, C(.55, .55, 0), { lw: 8 }); ell(0, 6, 64, 16, KEY); });   // the bell's mouth
+      for (let i = 0; i < 7; i++) {                                                                      // keys: pressed ones go dark, on each sax note
+        const kx = 4 + i * 2 + (i > 4 ? 8 : 0), ky = -330 + i * 62, pressed = si >= 0 && hash((si * 13 + i) >>> 0) > .45 && e > .2;
+        ell(kx + 26, ky, 19, 19, pressed ? KEY : PAPER, { lw: 6 }); ell(kx + 26, ky, 8, 8, pressed ? PAPER : PINK);
+        stroke([[kx + 6, ky], [kx - 18, ky + 18]], KEY, 6);
+      }
+      stroke([[40, -200], [70, 40], [60, 160]], C(.6, 0, 0), 7);                                         // a highlight seam
+    });
+    // puffs and notes from the bell, one burst per sax onset (positions in screen space)
+    const bx = x + 256 * k, by = y - 44 * k;
+    for (let q = 0; q < 4; q++) { const ii = si - q; if (ii < 0) continue; const a = T - HITS.sax[ii]; if (a > 1.6) continue; const r = rng(ii * 31 + 5);
+      for (let p = 0; p < 4; p++) { const ang = -.9 + r() * .9, sp = (240 + r() * 300) * k * 2, d = a * sp, rr = (30 + a * 120) * k * 1.6 * (.6 + r() * .6);
+        lighten(); ell(bx + Math.cos(ang) * d, by + Math.sin(ang) * d - a * 60, rr, rr, [C(.5, 0, 0), C(0, .45, 0), C(0, 0, .6)][p % 3]); over(); }
+      for (let p = 0; p < 2; p++) { const nx = bx + (60 + a * 380 + p * 90) * k * 1.4, ny = by - (a * 300 + p * 60) * k * 1.4 + Math.sin(a * 9 + p) * 20, z = 22 * k * 1.6;
+        ell(nx, ny, z, z * .75, [PINK, TEAL][p], { rot: -.4, lw: 3 }); stroke([[nx + z * .9, ny], [nx + z * .9, ny - z * 3]], KEY, 5 * k * 1.4); stroke([[nx + z * .9, ny - z * 3], [nx + z * 2, ny - z * 2.2]], KEY, 5 * k * 1.4); }
+    }
+  }
+  // PIANO: an upright seen straight on; the keyboard is the star. Keys go down on piano notes, the lid flaps with the envelope
+  function piano(x, y, k, T, o = {}) {
+    const e = SEs('piano', T, 1), pi = lastHitI('piano', T);
+    withT(() => {
+      s.translate(x, y); s.scale(k, k); s.rotate(o.rot || 0);
+      const lid = .06 * hitPulse('piano', T, 6) + .03 * e;
+      withT(() => { s.translate(-520, -470); s.rotate(-lid); rrect(0, -24, 1040, 44, 12, o.case || RED, { lw: 8 }); });   // lid
+      rrect(-500, -460, 1000, 400, 26, o.case || RED, { lw: 8 });                                          // the case
+      rrect(-420, -420, 840, 240, 16, C(.6, 0, 0), {});
+      for (let i = 0; i < 9; i++) stroke([[-380 + i * 95, -400], [-380 + i * 95, -200]], C(.3, 0, 0), 5);  // the fretwork
+      rrect(-120, -170, 240, 50, 10, YEL, { lw: 5 });                                                       // name plate
+      type('AIRPLANE', 0, -144, 30, KEY, { font: '"Futura"', w: 'bold', ls: 3 });
+      rrect(-520, -70, 1040, 40, 8, KEY);                                                                    // key slip
+      const N = 21, kw = 1000 / N;
+      const down = (i) => { let d = 0; for (let q = 0; q < 3; q++) { const ii = pi - q; if (ii < 0) continue; const a = T - HITS.piano[ii]; if (a > .3) continue;
+        const r = rng(ii * 17 + 1); for (let m = 0; m < 3; m++) if (Math.floor(r() * N) === i) d = Math.max(d, 1 - a / .3); } return d; };
+      for (let i = 0; i < N; i++) { const d = down(i); rrect(-500 + i * kw + 2, -30 + d * 12, kw - 4, 260 - d * 8, 6, d > .05 ? C(0, .3 * d + .1, 0) : PAPER, { lw: 5 }); }
+      for (let i = 0; i < N - 1; i++) { if (![0, 1, 3, 4, 5].includes(i % 7)) continue;
+        const d = down((i + 10) % N); rrect(-500 + (i + 1) * kw - kw * .3, -30 + d * 8, kw * .6, 160 - d * 10, 5, d > .05 ? C(.5, .5, 0) : KEY); }
+      rrect(-520, 230, 1040, 60, 10, o.case || RED, { lw: 8 });
+      for (const sd of [-1, 1]) { rrect(sd * 470 - 22, 290, 44, 160, 8, o.case || RED, { lw: 6 }); ell(sd * 470, 452, 34, 14, YEL, { lw: 4 }); }
+      for (let i = 0; i < 2; i++) ell(-60 + i * 120, 440, 18, 10, YEL, { lw: 3 });                          // pedals
+    });
+  }
+  // DRUM KIT: kick with the cheat-line logo, snare, toms, hi-hat and crash; everything jumps on drum hits
+  function drumkit(x, y, k, T) {
+    const hp = hitPulse('drums', T, 9), di = lastHitI('drums', T), alt = di % 2, gp = hitPulse('guitar', T, 6);
+    withT(() => {
+      s.translate(x, y); s.scale(k, k);
+      // crash cymbal, wobbling
+      const cw = Math.sin(hitAge('drums', T) * 22) * .25 * Math.exp(-3 * hitAge('drums', T));
+      stroke([[560, 260], [560, -330]], KEY, 10);
+      withT(() => { s.translate(560, -340); s.rotate(-.2 + cw); ell(0, 0, 230, 46, YEL, { lw: 7 }); ell(0, -8, 30, 12, C(.6, .6, 0)); });
+      // hi-hat clapping shut on the off hits
+      const gap = alt ? 34 * (1 - hp) + 6 : 40;
+      stroke([[-600, 300], [-600, -160]], KEY, 10);
+      ell(-600, -170 - gap, 150, 30, YEL, { lw: 6 }); ell(-600, -170, 150, 30, YEL, { lw: 6 });
+      // toms
+      for (const [tx, ty, r] of [[-170, -240, 120], [170, -250, 130]]) { const jy = (alt ? 0 : -16 * hp);
+        rrect(tx - r, ty + jy, r * 2, r * 1.1, 20, TEAL, { lw: 7 }); ell(tx, ty + jy, r, r * .3, PAPER, { lw: 7 }); }
+      // snare, jumping on the back beats
+      const sj = alt ? -30 * hp : 0;
+      rrect(-520, 40 + sj, 300, 120, 16, PINK, { lw: 7 }); ell(-370, 40 + sj, 150, 40, PAPER, { lw: 7 });
+      for (let i = 0; i < 5; i++) stroke([[-500 + i * 65, 50 + sj], [-500 + i * 65, 150 + sj]], KEY, 4);
+      // kick drum, pulsing on the down hits
+      const kk = 1 + (alt ? 0 : .07 * hp);
+      withT(() => { s.translate(0, 110); s.scale(kk, kk);
+        ell(0, 0, 330, 330, PINK, { lw: 10 }); ell(0, 0, 290, 290, PAPER, { lw: 6 });
+        withT(() => { s.beginPath(); s.arc(0, 0, 290, 0, TAU); s.clip(); fragCheat(0, 40, 700, -.08, 1); });
+        type('BOB WISEMAN', 0, -90, 62, KEY, { ls: 4 });
+        for (let i = 0; i < 10; i++) { const a = i * TAU / 10; ell(Math.cos(a) * 312, Math.sin(a) * 312, 14, 14, YEL, { lw: 3 }); } });
+      // floor tom
+      rrect(370, 0, 220, 240, 18, TEAL, { lw: 7 }); ell(480, 0, 110, 30, PAPER, { lw: 7 });
+    });
+  }
+  // GUITAR: a flat-top that rings on guitar notes (strings blur, sound hole pulses)
+  function guitar(x, y, k, rot, T) {
+    const gp = hitPulse('guitar', T, 6), e = SEs('guitar', T, 1);
+    withT(() => { s.translate(x, y); s.rotate(rot + Math.sin(T * 3) * .05 * e); s.scale(k, k);
+      rrect(-30, -620, 60, 470, 10, C(0, 0, .55), { lw: 6 }); rrect(-46, -720, 92, 110, 18, KEY);
+      for (let i = 0; i < 6; i++) ell(i < 3 ? -54 : 54, -700 + (i % 3) * 32, 10, 8, YEL);
+      ell(0, -60, 200, 190, ORNG, { lw: 8 }); ell(0, 160, 250, 230, ORNG, { lw: 8 }); shape([[-170, -40], [170, -40], [210, 120], [-210, 120]], ORNG);
+      ell(0, 30, 70 * (1 + .12 * gp), 70 * (1 + .12 * gp), KEY); ell(0, 30, 90, 90, null, { lw: 8, line: PINK });
+      rrect(-90, 220, 180, 34, 8, KEY);
+      for (let i = 0; i < 6; i++) { const sx = -25 + i * 10, wob = gp * 7 * Math.sin(T * 120 + i); stroke([[sx, -700], [sx + wob, 30], [sx, 236]], PAPER, 2.5); }
+    });
+  }
+  const snapA = snapD;                                      // v2: registration slams ride the drum hits, not the beat grid
   const rotScr = (T, k = 1) => [1.309 + T * .21 * k, .262 - T * .17 * k, .785 + T * .12 * k];
   function baseF(t) {
     const T = ta(t), b = beatPulse(T, 7);
@@ -712,6 +861,7 @@
       }
       over();
     }
+    shockwaves(T); pianoPops(T, 6);
     // a propeller disc drifts through the storm
     const u = inv(barT(6), barT(8), T);
     const px = lerp(-320, 2240, u), py = 540 + Math.sin(u * Math.PI * 2) * 210;
@@ -730,6 +880,7 @@
     shape([[x0 - 3400, 760], [x0 + 1260, 746], [x0 + 1500, 790], [x0 + 1260, 834], [x0 - 3400, 820]], RED);
     stroke([[x0 - 3400, 862], [x0 + 1200, 852]], YEL, 12);
     for (let i = 0; i < 16; i++) { const wx = x0 + 1100 - i * 150; ell(wx, 650, 40, 40, TEAL, { lw: 6 }); ell(wx - 12, 638, 10, 10, PAPER); }
+    saxRibbon(T, { y: 960 });
     const open = ease.out(inv(eT, eT + .3, T));
     if (T > eT - .05) {
       let look = [Math.sin(T * 2.3) * .7, Math.cos(T * 1.7) * .3 - .2];
@@ -787,14 +938,15 @@
   }
   function geom(t) {
     const T = ta(t); FRI = Math.floor(t * 12);
-    const n = bN(T), bt = BTS[lastBeat(T)], u = ease.back(inv(bt, bt + .22, T));
+    const n = Math.max(0, dN(T)), bt = HITS.drums[n] ?? BTS[lastBeat(T)], u = ease.back(inv(bt, bt + .22, T)), bk = bassK(T);
     sheet(PAPER);
     const bgk = n % 4;                                                              // a flood behind half the sheet, flipping side per beat
     withT(() => { s.translate(960, 540); s.rotate(bgk * Math.PI / 2 + .3); s.fillStyle = [C(0, 0, .55), C(.35, 0, 0), C(0, .3, 0), C(0, 0, .55)][bgk]; s.fillRect(0, -2000, 2000, 4000); });
     GEO.forEach(([kind, col, sz], i) => {
       const A = lay(n - 1, i), B = lay(n, i);
-      geoDraw(kind, col, sz, lerp(A[0], B[0], u), lerp(A[1], B[1], u), lerp(A[2], B[2], u) * (1 + .08 * beatPulse(T, 8)), lerp(A[3], B[3], u) + T * .15, T);
+      geoDraw(kind, col, sz, lerp(A[0], B[0], u), lerp(A[1], B[1], u), lerp(A[2], B[2], u) * (1 + .1 * hitPulse('drums', T, 8)) * (sz > 200 ? bk : 1), lerp(A[3], B[3], u) + T * .15, T);
     });
+    pianoPops(T, 8);
     fx({ ...apart(snapA(t, 2.2) * .7, n + 80), inks: ISET[T < barT(12) ? 7 : 1], jit: 2.6, cell: [1.6, 1.6, 2], ang: rotScr(t - barT(11), 1) });
   }
 
@@ -814,10 +966,12 @@
   }
   function tunnel(t) {
     const T = ta(t); FRI = Math.floor(t * 12);
-    const n = bN(t), e = En(T), a = snapA(t, 1.4);
-    tunnelDraw(T, a, n, e);
-    for (let q = 0; q < 4; q++) { const bt = beatT(52 + q), d = T - bt; if (d < 0 || d > .5) continue;   // a cheat line streaks out of the tunnel on each beat
-      const ang = q * 1.9 + .5, rr = 120 + d * 3200; fragCheat(960 + Math.cos(ang) * rr, 540 + Math.sin(ang) * rr, 300 + d * 1500, ang, 1); }
+    const n = bN(t), e = Math.max(En(T), SEs('bass', T, 3) * 1.3), a = snapA(t, 1.4);
+    withT(() => { s.translate(960, 540); s.scale(bassK(T), bassK(T)); s.translate(-960, -540); tunnelDraw(T, a, n, e); });
+    shockwaves(T, 960, 540, { w: 40 });
+    const di = lastHitI('drums', T);
+    for (let q = 0; q < 3; q++) { const bt = HITS.drums[di - q] ?? -9, d = T - bt; if (d < 0 || d > .5) continue;   // a cheat line streaks out of the tunnel on each drum hit
+      const ang = (di - q) * 1.9 + .5, rr = 120 + d * 3200; fragCheat(960 + Math.cos(ang) * rr, 540 + Math.sin(ang) * rr, 300 + d * 1500, ang, 1); }
     fx({ ...apart(.35 * a, n + 100), inks: ISET[2], jit: 2.6, cell: [1.4, 1.4, 2.4], ang: rotScr(t - barT(13), 2) });
   }
 
@@ -848,7 +1002,10 @@
     const e = En(T), n = bN(t);
     sheet(C(0, 0, .35));
     spiral(T, e);
+    shockwaves(T, 960, 540, { w: 60 });
+    instStorm(T);
     fragStorm(T, 1 - .25 * inv(barT(14), barT(15), T));
+    pianoPops(T, 5, .8);
     fx({ off: [Math.sin(T * 3) * 40 * e, Math.cos(T * 2.3) * 25, -Math.sin(T * 2.6) * 38 * e, 18, 12, -Math.cos(T * 3.1) * 30], rot: [Math.sin(T * 2) * .1 * e, -Math.sin(T * 2.4) * .1 * e, .05 * Math.sin(T * 3)],
       zm: [1 + .06 * beatPulse(t, 7), 1, 1 - .04 * beatPulse(t, 7)], inks: ISET[(n + 3) % ISET.length], jit: 3, cell: [2, 2, 3.2], ang: rotScr(t - barT(14), 2.5) });
   }
@@ -856,13 +1013,15 @@
   // ===== 163.40 strobe: one bold print per beat, every drum slams in from too big =====
   function strobe(t) {
     const T = ta(t); FRI = Math.floor(t * 12);
-    const n = bN(T), k = ((n % 4) + 4) % 4, bt = BTS[lastBeat(T)], d = T - bt;
+    const n = Math.max(0, dN(T)), k = n % 6, bt = HITS.drums[n] ?? T, d = T - bt;
     sheet(PAPER);
     if (k === 0) { sheet(PINK); ell(960, 540, 430, 430, PAPER); fragProp(960, 540, 400, T * TAU * 2.6, false); }
     else if (k === 1) { sheet(TEAL); shape([[960, 40], [1560, 1040], [360, 1040]], YEL); fragWing(-200, 560, 1.4, -.12, KEY); }
     else if (k === 2) { sheet(YEL); lighten(); s.strokeStyle = PINK; s.lineWidth = 44; for (let r = 60 + wrap(T * 300, 110); r < 1400; r += 110) { s.beginPath(); s.arc(960, 540, r, 0, TAU); s.stroke(); } over();
       ell(960, 540, 230, 250, PAPER); fragEye(960, 540, 200, { look: [0, 0], t: T, body: YEL, lid: tri(d - .3, .07) }); }
-    else { sheet(KEY); for (let i = -4; i < 6; i++) fragCheat(960 + i * 260, 540 + i * 60, 2600, -.42, 1); }
+    else if (k === 3) { sheet(KEY); for (let i = -4; i < 6; i++) fragCheat(960 + i * 260, 540 + i * 60, 2600, -.42, 1); }
+    else if (k === 4) { sheet(YEL); sax(800, 600, 1.1, T, { rot: .1, body: PAPER }); }
+    else { sheet(TEAL); piano(960, 600, 1.15, T, { case: PINK }); }
     const sl = 1 - ease.out(clamp(d / .16));
     const h = (m) => hash((n * 13 + m) >>> 0) * 2 - 1;
     fx({ off: [h(1) * 120 * sl, h(2) * 80 * sl, h(3) * 120 * sl, h(4) * 80 * sl, h(5) * 120 * sl, h(6) * 80 * sl], zm: [1 + .45 * sl, 1 + .3 * sl, 1 + .6 * sl], rot: [h(7) * .2 * sl, h(8) * .2 * sl, h(9) * .2 * sl],
@@ -874,7 +1033,9 @@
     const T = ta(t); FRI = Math.floor(t * 12);
     const n = bN(t), e = Math.max(En(T), .6), a = snapA(t, 1.3);
     tunnelDraw(T, a, n, e, false);
+    shockwaves(T, 960, 540, { w: 80, speed: 3000 });
     fragStorm(T * 1.3, .85 + .35 * inv(165.57, HIT, T), 1.4);
+    pianoPops(T, 6);
     const blow = ease.in(inv(HIT, HIT + .45, t));
     const ap = apart(.5 * a + .4 * hit(t, 165.3, 8), n + 140, 1.2);
     fx({ ...ap, zm: ap.zm.map((z, i) => z * (1 + blow * [2.2, 1.6, 2.8][i])), rot: ap.rot.map((r, i) => r + blow * [.6, -.5, .8][i]),
@@ -903,7 +1064,72 @@
       inks: ISET[0], jit: t < SNAP ? 3 : 1.4, starve: t < SNAP ? 1 : .7 });
   }
 
-  chapter('F', F0, F1, [[F0, party], [barT(1), warhol], [barT(4), cameo], [barT(5), explode], [barT(6), screens], [barT(8), breath],
-    [barT(9), opart], [barT(11), geom], [barT(13), tunnel], [barT(14), vortex], [barT(15), strobe], [barT(16), peak], [barT(17), settle]]);
+
+  // ===== v2 instrument cameos and reactive overlays =====
+  // 145.60 PIANO: the upright prints over the spinning wedge storm; keys go down on every piano note
+  function pianoShot(t) {
+    const T = ta(t); FRI = Math.floor(t * 12);
+    const e = En(T), a = snapD(t), n = dN(t), t0 = barT(7);
+    sheet(PAPER);
+    s.fillStyle = C(0, 0, .4 + .25 * SEs('drums', T, 1)); s.fillRect(-W, -H, W * 3, H * 3);
+    for (let p = 0; p < 2; p++) {
+      const hh = (m) => hash((n * 37 + p * 7 + m) >>> 0) * 2 - 1;
+      const cx = 960 + hh(1) * 300 * a, cy = 300 + hh(2) * 160 * a;
+      const N = [40, 41][p], rot = T * [.3, -.24][p];
+      lighten(); s.fillStyle = ink(p, .9);
+      for (let i = 0; i < N; i++) { const a0 = rot + i * TAU / N, a1 = a0 + TAU / N * (.3 + .2 * e); s.beginPath(); s.moveTo(cx, cy); s.lineTo(cx + Math.cos(a0) * 3200, cy + Math.sin(a0) * 3200); s.lineTo(cx + Math.cos(a1) * 3200, cy + Math.sin(a1) * 3200); s.closePath(); s.fill(); }
+      over();
+    }
+    shockwaves(T, 960, 300, { w: 50 });
+    const rise = ease.back(inv(t0, t0 + .35, T));
+    piano(960, 640 + (1 - rise) * 700, .95, T, { rot: -.05 + .02 * Math.sin(T * 1.3) });
+    pianoPops(T, 8, 1.2);
+    fragCheat(lerp(2400, -700, inv(t0, barT(8), T)), 120, 900, -.06);
+    fx({ ...apart(.3 * a, n + 300), inks: ISET[4], jit: 2.6, cell: [3, 3, 3.8], ang: rotScr(t - t0, 2) });
+  }
+
+  // 150.10 SAX: the alto sways in front of the op-art screens; the waves swing with the sax, notes and puffs on its onsets
+  function saxShot(t) {
+    opart(t);
+    const T = ta(t); FRI = Math.floor(t * 12);
+    const t0 = barT(9), u = ease.back(inv(t0, t0 + .4, T));
+    saxRibbon(T, { y: 900 });
+    const bar2 = T >= barT(10);
+    const sx = bar2 ? 1120 : 860 + 60 * Math.sin(T * .6), sy = 600 + (1 - u) * 1000, mr = 470 * (1 + .06 * hitPulse('sax', T, 6));
+    ell(sx + 60, sy - 60, mr, mr, PAPER, { lw: 14 }); ell(sx + 60, sy - 60, mr - 34, mr - 34, null, { lw: 6, line: PINK });   // a poster medallion so he reads
+    sax(sx, sy, 1.05, T, { rot: bar2 ? .14 : -.1 });
+    pianoPops(T, 5, .8);
+    const n = dN(t);
+    fx({ ...apart(.35 * snapD(t, 2) + .25 * hitPulse('sax', t, 6), n + 400), inks: ISET[bar2 ? 6 : 5], jit: 2.4, ang: rotScr(t - t0, 1.5) });
+  }
+
+  // 156.73 DRUMS: the kit plays itself; every drum hit fires a shockwave and slams the drums into register; the guitar rings at the side
+  function drumShot(t) {
+    const T = ta(t); FRI = Math.floor(t * 12);
+    const t0 = barT(12), n = dN(t), hp = hitPulse('drums', t, 9);
+    sheet(n % 2 ? C(0, 0, .5) : C(.4, 0, 0));
+    rays(960, 520, 24, 2600, T * .2 + n * .13, n % 2 ? C(.45, 0, 0) : C(0, 0, .8));
+    shockwaves(T, 960, 600, { w: 90, speed: 2800 });
+    const u = ease.back(inv(t0, t0 + .3, T));
+    withT(() => { s.translate(960, 620); s.scale(u, u); s.translate(-960, -620); drumkit(960, 600, .82 * (1 + .03 * hp), T); });
+    if (SEs('guitar', T, 2) > .3) guitar(1700, 900, .55, .5, T);
+    fragProp(220, 220, 150, T * TAU * 2.4);
+    const sl = snapD(t, 2.4);
+    fx({ ...apart(.55 * sl, n + 500), zm: [1 + .06 * hp, 1, 1 - .04 * hp], inks: ISET[(Math.floor(n / 2)) % ISET.length], jit: 2.6 + 2 * hp, cell: [1.5, 1.5, 2] });
+  }
+
+  // instruments caught in the vortex alongside the plane parts
+  function instStorm(T) {
+    const list = [['sax', .42, 0, 820], ['piano', .2, 2.1, 760], ['guitar', .32, 4.2, 700]];
+    for (const [kind, sc, a0, R0] of list) {
+      const a = a0 + T * .55, R = R0 * (1 + .1 * Math.sin(T + a0)), x = 960 + Math.cos(a) * R * 1.1, y = 540 + Math.sin(a) * R * .55;
+      if (kind === 'sax' && SEs('other', T, 3) > .2) sax(x, y, sc, T, { rot: a * .5 });
+      if (kind === 'piano' && SEs('piano', T, 3) > .2) piano(x, y, sc, T, { rot: Math.sin(a) * .3 });
+      if (kind === 'guitar' && SEs('guitar', T, 3) > .2) guitar(x, y + 120, sc, a + 1, T);
+    }
+  }
+
+  chapter('F', F0, F1, [[F0, party], [barT(1), warhol], [barT(4), cameo], [barT(5), explode], [barT(6), screens], [barT(7), pianoShot], [barT(8), breath],
+    [barT(9), saxShot], [barT(11), geom], [barT(12), drumShot], [barT(13), tunnel], [barT(14), vortex], [barT(15), strobe], [barT(16), peak], [barT(17), settle]]);
   window.__F = { bars: [...Array(18)].map((_, k) => +barT(k).toFixed(3)), snap: beatT(70), hit: HIT };
 })();

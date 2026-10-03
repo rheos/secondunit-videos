@@ -46,6 +46,7 @@ void main(){
     vec3 g = hueRot(S(q + vec2(.03, -.02) * peel + fbm2(q * 3. + t * .2) * .01 * peel), 2.1);
     c = mix(c, max(c, g), .5 * clamp(peel, 0., 1.));
   }
+  if (topOn > 0.) { vec4 tp = texture(top, uv); c = mix(c, tp.rgb, tp.a); } // the unfolded top layer
   c = hueRot(c, hue + band * sin(q.x * 5.5 - q.y * 3.2 + t * 1.7) * 1.6);
   float lum = dot(c, vec3(.3, .59, .11));
   c = mix(vec3(lum), c, .86 - .1 * wash + sat);

@@ -4,3 +4,4 @@ assets/
 js/data.js
 js/lyrics.js
 .DS_Store
+tools/fixes.json
