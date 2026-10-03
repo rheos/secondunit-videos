@@ -66,8 +66,8 @@
       s.translate(cx + half * k * 70 + half * fall * 60, cy + fall * fall * 900); s.rotate(half * (k * .22 + fall * .8));
       s.beginPath(); if (half < 0) { s.moveTo(-w, -hgt); jag.forEach(([x, y]) => s.lineTo(x, y)); s.lineTo(-w, hgt); } else { s.moveTo(w, -hgt); jag.forEach(([x, y]) => s.lineTo(x, y)); s.lineTo(w, hgt); } s.closePath(); s.clip();
       form(-w / 2, -hgt / 2, w, lines, { typed, title: FORM_T, size: 34, h: hgt });
-      text('COMPLAINT', 0, hgt / 2 - 120, 70, { font: 'sign', spacing: 6 });
-      text('SIGNED ____________', 0, hgt / 2 - 50, 26, { font: 'type' });
+      text('COMPLAINT', 0, hgt / 2 - 120, 70, { font: 'sign', spacing: 6, max: w - 60 });
+      text('SIGNED ____________', 0, hgt / 2 - 50, 26, { font: 'type', max: w - 60 });
       if (k > 0) ink(jag, 2);
       hands(half);
     });

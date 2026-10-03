@@ -68,10 +68,10 @@
         ink([[-len * .22, -len * .13], [-len * .22, len * .13]], 2); ink([[len * .22, -len * .13], [len * .22, len * .13]], 2); }); });
   }
   function placard(hx, hy, str, r) {
-    const w = r * 2.3, h = r * .9;
+    const w = Math.max(r * 2.3, textWidth(str, r * .3, 'sign', 2) + r * .5), h = r * .9;
     ink([[hx, hy + r * .2], [hx, hy - r * .9]], Math.max(4, r * .07));
     shape([[hx - w / 2, hy - r * .9 - h], [hx + w / 2, hy - r * .9 - h], [hx + w / 2, hy - r * .9], [hx - w / 2, hy - r * .9]], CREAM, 3);
-    text(str, hx, hy - r * .9 - h * .32, r * .3, { font: 'sign', spacing: 2 });
+    text(str, hx, hy - r * .9 - h * .32, r * .3, { font: 'sign', spacing: 2, max: w - r * .3 });
   }
   // a long frontal table on the clouds, cloth to the floor
   function table(cx, ty, w, ch = 150) {
@@ -81,9 +81,9 @@
     for (let x = cx - w / 2 + 8; x < cx + w / 2; x += 16) ink([[x, ty + 26 + ch], [x, ty + 38 + ch]], 2);
   }
   function card(x, y, str, sz = 22) {
-    const w = Math.max(sz * 4.2, str.length * sz * .74 + sz * 1.2), h = sz * 1.9;
+    const w = Math.max(sz * 4.2, textWidth(str, sz, 'sign', 1.5) + sz * 1.2), h = sz * 1.9;
     shape([[x - w / 2 + 6, y - h], [x + w / 2 - 6, y - h], [x + w / 2, y], [x - w / 2, y]], CREAM, 2.2);
-    text(str, x, y - h * .3, sz, { font: 'sign', spacing: 1.5 });
+    text(str, x, y - h * .3, sz, { font: 'sign', spacing: 1.5, max: w - sz * .8 });
   }
   function banner(cx, y, w, h, str, reveal = 1, sz = 58) {
     const ww = w * reveal; if (ww < 4) return;
@@ -92,7 +92,7 @@
       s.beginPath(); s.rect(cx - ww / 2 - 60, y - 20, ww + 120, h + 60); s.clip();
       shape([[cx - w / 2 - 50, y], [cx + w / 2 + 50, y], [cx + w / 2 + 10, y + h / 2], [cx + w / 2 + 50, y + h], [cx - w / 2 - 50, y + h], [cx - w / 2 - 10, y + h / 2]], CREAM, 3.5);
       ink([[cx - w / 2 + 10, y + 12], [cx + w / 2 - 10, y + 12]], 1.4); ink([[cx - w / 2 + 10, y + h - 12], [cx + w / 2 - 10, y + h - 12]], 1.4);
-      text(str, cx, y + h * .5 + sz * .35, sz, { font: 'sign', spacing: 4 });
+      text(str, cx, y + h * .5 + sz * .35, sz, { font: 'sign', spacing: 4, max: w - 80 });
     });
     if (reveal < 1) for (const sd of [-1, 1]) { const ex = cx + sd * ww / 2; shape([[ex - 16, y - 8], [ex + 16, y - 8], [ex + 16, y + h + 8], [ex - 16, y + h + 8]], '#d8d0b4', 3); }
   }
@@ -110,9 +110,9 @@
     const r = 145 * sc; const u3 = ups ? ups(3) : [0, 0];
     delegate(cx, ty - r * .5 + Math.sin(t * 1.1) * 4 * sc, r, { seed: 77, up: [u3[0], .55], gavel: g, hatLift: (hats ? hats(3) : 0) * sc });
     table(cx, ty, gap * 7.3, ch * sc);
-    if (cards) for (let i = 0; i < n; i++) card(cx + (i - 3) * gap + (i === 3 ? -70 * sc : 0), ty + 2, NAMES[i], 19 * sc);
     // the sounding block under the gavel
     shape([[cx + 120 * sc, ty - 2], [cx + 200 * sc, ty - 2], [cx + 196 * sc, ty - 16 * sc], [cx + 124 * sc, ty - 16 * sc]], WOOD, 2);
+    if (cards) for (let i = 0; i < n; i++) card(cx + (i - 3) * gap + (i === 3 ? -70 * sc : 0), ty + 2, NAMES[i], 19 * sc);
   }
   // gavel angle: rests raised, slams down at each hit
   function gavelAng(t, hits) {
@@ -152,8 +152,8 @@
     withT(() => { s.globalAlpha = .45; for (let y = 0; y < 1100; y += 120) { ink([[0, y], [W, y]], 1.2); for (let x = (y / 120) % 2 ? 120 : 0; x < W; x += 240) ink([[x, y], [x, y + 120]], 1.2); } });
     ink([[760, 0], [760, 150]], 3); ink([[1160, 0], [1160, 150]], 3);
     shape([[560, 150], [1360, 150], [1360, 520], [560, 520]], BRASS, 5); shape([[595, 185], [1325, 185], [1325, 485], [595, 485]], '#1f201c', 3);
-    text('NOW SERVING', 960, 262, 64, { font: 'sign', color: AMBER, spacing: 6 });
-    text('0004', 960, 450, 170, { font: 'sign', color: AMBER, spacing: 10 });
+    text('NOW SERVING', 960, 262, 64, { font: 'sign', color: AMBER, spacing: 6, max: 660 });
+    text('0004', 960, 450, 170, { font: 'sign', color: AMBER, spacing: 10, max: 660 });
     for (let row = 0; row < 3; row++) for (let i = 0; i < 9; i++) hatBack(150 + i * 202 + (row % 2) * 101, 720 + row * 130, 1 + row * .25);
     tubeV(t, T);
   }
@@ -220,10 +220,10 @@
     withT(() => { s.globalAlpha = .3; for (let i = 0; i < 9; i++) { const y = 400 + i * 75; line([[-40, y], [W + 40, y + Math.sin(i) * 12]], INK, 1.4); } });
     withT(() => { s.translate(960, 640); s.rotate(-.025);
       shape([[-420, -330], [420, -330], [420, 520], [-420, 520]], CREAM, 3);
-      text('CONVENTION OF CLOUDS', 0, -250, 50, { font: 'sign', spacing: 5 });
-      text('AGENDA', 0, -190, 30, { font: 'type', spacing: 8 });
+      text('CONVENTION OF CLOUDS', 0, -250, 50, { font: 'sign', spacing: 5, max: 740 });
+      text('AGENDA', 0, -190, 30, { font: 'type', spacing: 8, max: 740 });
       ink([[-340, -165], [340, -165]], 1.6);
-      lines.forEach((ln, i) => { if (!ln) return; text(ln, -340, -100 + i * 66, 34, { align: 'left' }); });
+      lines.forEach((ln, i) => { if (!ln) return; text(ln, -340, -100 + i * 66, 34, { align: 'left', max: 600, fitTo: AG[i] }); });
       ticks.forEach((tk, i) => { if (tk <= 0) return; const k = clamp(tk); const x0 = 330, y0 = -112 + i * 66; line([[x0 - 30, y0], [x0 - 30 + 18 * Math.min(1, k * 2), y0 + 18 * Math.min(1, k * 2)]].concat(k > .5 ? [[x0 - 12 + 44 * (k - .5) * 2, y0 + 18 - 46 * (k - .5) * 2]] : []), BLUE_INK, 7); });
       if (stampAt) stamp(t, stampAt, 0, 380, 'MOTION CARRIED', { size: 64, color: BLUE_INK, rot: -.08 });
     });
@@ -265,7 +265,7 @@
     // tally on the cloth
     const n = (t > 142.85) + (t > 143.3) + (t > 143.76);
     for (let k = 0; k < n; k++) ink([[880 + k * 26, 800], [880 + k * 26, 870]], 6);
-    text('AYES', 960, 920, 34, { font: 'sign', color: CREAM, spacing: 6 });
+    text('AYES', 960, 920, 34, { font: 'sign', color: CREAM, spacing: 6, max: 400 });
   }
   // 145.90 third: pulled far back. A tiny table in a cathedral of cumulus; the gavel rings the sky.
   function wide(t, lt) {
@@ -316,7 +316,7 @@
       shape([[-120, -40], [80, -40], [70, -64], [-110, -64]], STEEL, 2.5); // the duct on its back
       for (let i = -100; i < 70; i += 28) ink([[i, -40], [i, -64]], 1.3);
       dot(200, 5, 14, INK); const pr = Math.sin(x * .2); ink([[200, 5 - 70 * pr], [200, 5 + 70 * pr]], 6);
-      text('MIN.', -10, 12, 30, { font: 'sign', color: CREAM }); });
+      text('MIN.', -10, 12, 30, { font: 'sign', color: CREAM, max: 100 }); });
   }
   // 149.80 the picket line: delegates crossing the sky with placards
   function picket(t, lt) {
@@ -389,7 +389,7 @@
         if (r === 0 && c === 0) continue;
         shape([[x, y], [x + 210, y], [x + 210, y + 130], [x, y + 130]], GREEN, 3);
         shape([[x + 70, y + 30], [x + 140, y + 30], [x + 140, y + 62], [x + 70, y + 62]], CREAM, 2);
-        text(String(1000 + Math.floor(hash(r * 31 + c * 7 + 400) * 8999)), x + 105, y + 56, 22, { font: 'type' });
+        text(String(1000 + Math.floor(hash(r * 31 + c * 7 + 400) * 8999)), x + 105, y + 56, 22, { font: 'type', max: 60 });
         shape([[x + 85, y + 82], [x + 125, y + 82], [x + 125, y + 96], [x + 85, y + 96]], BRASS, 2);
       }
       // the SUN drawer
@@ -401,7 +401,7 @@
         shape([[cx - gw / 2, cy - gh / 2 - op * 50], [cx + gw / 2, cy - gh / 2 - op * 50], [cx + gw / 2 - 20, cy - gh / 2 - op * 50 - 40 * op], [cx - gw / 2 + 20, cy - gh / 2 - op * 50 - 40 * op]], '#fff6d8', 3); });
       shape([[cx - gw / 2, cy - gh / 2 + op * 20], [cx + gw / 2, cy - gh / 2 + op * 20], [cx + gw / 2, cy + gh / 2 + op * 20], [cx - gw / 2, cy + gh / 2 + op * 20]], GREEN, 3);
       shape([[cx - 50, cy - 40 + op * 20], [cx + 50, cy - 40 + op * 20], [cx + 50, cy + 4 + op * 20], [cx - 50, cy + 4 + op * 20]], CREAM, 2.5);
-      text('SUN', cx, cy - 6 + op * 20, 36, { font: 'sign', spacing: 4 });
+      text('SUN', cx, cy - 6 + op * 20, 36, { font: 'sign', spacing: 4, max: 86 });
       shape([[cx - 26, cy + 30 + op * 20], [cx + 26, cy + 30 + op * 20], [cx + 26, cy + 46 + op * 20], [cx - 26, cy + 46 + op * 20]], BRASS, 2);
     });
     // the lens: reticle and rim
@@ -419,7 +419,7 @@
     s.beginPath(); s.arc(cx, cy, r + 26, 0, TAU); s.fillStyle = '#3e3c35'; s.fill(); s.lineWidth = 4; s.strokeStyle = INK; s.stroke();
     s.beginPath(); s.arc(cx, cy, r, 0, TAU); s.fillStyle = CREAM; s.fill(); s.lineWidth = 4; s.stroke();
     for (let i = 0; i < 12; i++) { const a = i / 12 * TAU; ink([[cx + Math.cos(a) * r * .78, cy + Math.sin(a) * r * .78], [cx + Math.cos(a) * r * .93, cy + Math.sin(a) * r * .93]], i % 3 ? 4 : 9); }
-    text('MINISTRY TIME', cx, cy + r * .42, 26, { font: 'sign', spacing: 4 });
+    text('MINISTRY TIME', cx, cy + r * .42, 26, { font: 'sign', spacing: 4, max: r * 1.1 });
     const bt = lastBeat(t), spin = ease.in(inv(164.9, 165.33, t)) * TAU * 1.5;
     const h = -Math.PI / 2 + .35 + spin * .08, mi = -Math.PI / 2 + 2.2 + spin, sc = -Math.PI / 2 + bt * TAU / 60;
     ink([[cx, cy], [cx + Math.cos(h) * r * .5, cy + Math.sin(h) * r * .5]], 14);
