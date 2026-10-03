@@ -191,4 +191,16 @@ if (PNC) (() => {
   };
   horn = function (t, z = 9) { _horn(t, z); const m = P(-WX + .1, -1.9, z), k = m[2]; ball(m[0] + .1 * k, m[1] - .05 * k, .09 * k, BRASS, 1); };
   ticketBox = function (x = 3.6, z = 5.6) { const top = P(x, -.1, z), k = top[2]; fan(top[0], top[1] - .72 * k, .25 * k, 5, Math.PI, TAU, [BRASS, CREAM], .8); _ticketBox(x, z); ball(top[0], top[1] - .72 * k, .05 * k, AMBER, .8); };
+
+  cloud = function (cx, cy, r, seed) {
+    const R = rng(seed); const puffs = [];
+    for (let i = 0; i < 6; i++) { const u = i / 5 - .5, rr = r * (.42 + .5 * (1 - Math.abs(u) * 1.4) + R() * .15); puffs.push([cx + u * r * 2.6, cy - rr * .55, rr]); }
+    puffs.push([cx - r * .3, cy - r * .95, r * .55], [cx + r * .4, cy - r * 1.0, r * .5]);
+    withT(() => { s.beginPath(); s.rect(cx - r * 4, cy - r * 4, r * 8, r * 4.02); s.clip();
+      s.lineWidth = Math.max(1, r * .025); s.strokeStyle = '#8a9aa8'; for (const [x, y, rr] of puffs) { s.beginPath(); s.arc(x, y, rr, 0, TAU); s.stroke(); }
+      for (const [x, y, rr] of puffs) { s.beginPath(); s.arc(x, y, rr - s.lineWidth / 2, 0, TAU); const g = s.createRadialGradient(x - rr * .35, y - rr * .45, rr * .1, x, y, rr); g.addColorStop(0, '#ffffff'); g.addColorStop(.7, '#f1f1ea'); g.addColorStop(1, '#c9d4dc'); s.fillStyle = g; s.fill(); }
+      s.globalAlpha = .35; const g2 = s.createLinearGradient(0, cy - r * .6, 0, cy); g2.addColorStop(0, 'rgba(150,170,190,0)'); g2.addColorStop(1, 'rgba(150,170,190,1)'); s.fillStyle = g2; s.fillRect(cx - r * 2, cy - r * .6, r * 4, r * .6); s.globalAlpha = 1; });
+  };
+  // the style's helpers, for chapters that draw their own close-ups: use them only when window.PNC_ON
+  window.PNCK = { soft, blob, tube, ball, fan, star, head, fig, mix, dark, light, LINE, path, bbox };
 })();

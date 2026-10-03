@@ -32,6 +32,7 @@
       for (let i = 0; i <= 30; i++) { const u = i / 30, y = BASE - u * (th + 60); pts.push([sx + Math.sin(u * 5 + d * 1.7) * 70 + snoise(u * 3 + t * .05, d) * 20, y]); }
       line(pts, INK, 40 - d % 2 * 12); line(pts, d % 2 ? STEEL_D : STEEL, 34 - d % 2 * 12);
       for (let i = 1; i < 30; i += 2) { const [px, py] = pts[i]; ink([[px - 20 + d % 2 * 6, py], [px + 20 - d % 2 * 6, py]], 2); }
+      if (window.PNC_ON) line(pts.map(([px, py]) => [px - 9 + d % 2 * 3, py]), 'rgba(255,250,235,.5)', 6 - d % 2 * 2);   // chrome highlight
     }
   }
   // the billboard's painted sky, the only blue: a lie standing in front of the real grey sky

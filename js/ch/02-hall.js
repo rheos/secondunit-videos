@@ -42,18 +42,32 @@
         for (let i = 0; i < 9; i++) dot(-40, -125 + i * 30, 6, '#8f9886');   // the perforation
         shape([[-420, 120], [-150, 20], [-100, 260], [-420, 330]], COAT, 3);                  // coat sleeve
         hatch([[-420, 200], [-130, 120], [-100, 260], [-420, 330]], .9, 9, 1.4, .45);
+        if (window.PNC_ON) { const K = window.PNCK;   // a rounded cartoon glove, airbrushed, fine outline
+          K.blob([[-280, 40], [-200, -5], [-90, 15], [-60, 90], [-100, 175], [-230, 190], [-290, 120]], '#3a382f', 1.6);
+          K.blob([[-120, 95], [-30, 95], [10, 118], [-20, 145], [-110, 140]], '#3a382f', 1.6);
+          for (const [y0, y1] of [[60, 50], [105, 98], [148, 145]]) line([[-245, y0], [-130, y1]], K.dark('#3a382f', .5), 1.4);
+        } else {
         s.beginPath(); s.ellipse(-170, 95, 115, 90, -.35, 0, TAU); s.fillStyle = '#3a382f'; s.fill(); s.lineWidth = 3; s.strokeStyle = INK; s.stroke();   // gloved fist
         s.beginPath(); s.ellipse(-55, 120, 58, 26, -.2, 0, TAU); s.fillStyle = '#3a382f'; s.fill(); s.stroke();     // thumb on the ticket
         ink([[-210, 65], [-120, 45]], 2); ink([[-220, 110], [-130, 95]], 2);
+        }
       });
       // up the wall: one small high window, and the sky in it
       withT(() => {
         const wx = 360, wy = -1180, ww = 300, wh = 360;
         s.fillStyle = vgrad(wy, wy + wh, [[0, SKY_T], [1, SKY_B]]); s.fillRect(wx, wy, ww, wh);
         withT(() => { s.beginPath(); s.rect(wx, wy, ww, wh); s.clip(); cloud(wx + 60 + (t - 41) * 22, wy + 170, 60, 4); });
+        if (window.PNC_ON) { const K = window.PNCK;   // a brass deco frame with a sunburst fan over the window
+          K.fan(wx + ww / 2, wy - 6, ww * .55, 7, Math.PI, TAU, [BRASS, CREAM, AMBER], 1.2);
+          for (const [x0, y0, x1, y1] of [[wx - 16, wy - 16, wx + ww + 16, wy], [wx - 16, wy + wh, wx + ww + 16, wy + wh + 16], [wx - 16, wy, wx, wy + wh], [wx + ww, wy, wx + ww + 16, wy + wh]]) shape([[x0, y0], [x1, y0], [x1, y1], [x0, y1]], BRASS, 2);
+          shape([[wx + ww / 2 - 5, wy], [wx + ww / 2 + 5, wy], [wx + ww / 2 + 5, wy + wh], [wx + ww / 2 - 5, wy + wh]], BRASS, 1.5);
+          shape([[wx, wy + wh / 2 - 5], [wx + ww, wy + wh / 2 - 5], [wx + ww, wy + wh / 2 + 5], [wx, wy + wh / 2 + 5]], BRASS, 1.5);
+          for (const [bx, by] of [[wx - 8, wy - 8], [wx + ww + 8, wy - 8], [wx - 8, wy + wh + 8], [wx + ww + 8, wy + wh + 8]]) K.ball(bx, by, 9, BRASS, 1);
+        } else {
         s.lineWidth = 14; s.strokeStyle = INK; s.strokeRect(wx, wy, ww, wh);
         ink([[wx + ww / 2, wy], [wx + ww / 2, wy + wh]], 8);
         ink([[wx, wy + wh / 2], [wx + ww, wy + wh / 2]], 7);
+        }
         shape([[wx - 30, wy + wh], [wx + ww + 30, wy + wh], [wx + ww + 40, wy + wh + 30], [wx - 40, wy + wh + 30]], '#6b6a5a', 3);
       });
     });
