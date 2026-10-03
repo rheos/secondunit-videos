@@ -162,7 +162,7 @@ function man(x, z, { ph = 0, walk = 0, face = 1, arm = 0, ticket = false } = {})
   const ca = [b[0] - .05 * k * face + sw * .1 * k, b[1] - .62 * k];
   shape([[ca[0] - .12 * k, ca[1]], [ca[0] + .9 * k * -face * .1 + .12 * k, ca[1]], [ca[0] + .15 * k, ca[1] + .45 * k], [ca[0] - .15 * k, ca[1] + .45 * k]].map(([px, py]) => [px - .3 * k * face, py]), '#2b2924', 1.6);
   const shp = [b[0] + .02 * k * face, sh + .12 * k + bob];
-  const ang = lerp(sw * .8, -1.9, arm) * face; const el = [shp[0] + Math.sin(ang) * .36 * k * face * face, shp[1] + Math.cos(ang) * .36 * k];
+  const ang = lerp(sw * .8, 1.9, arm) * face; /* arm 1 reaches forward, the way he faces */ const el = [shp[0] + Math.sin(ang) * .36 * k * face * face, shp[1] + Math.cos(ang) * .36 * k];
   const hand = [el[0] + Math.sin(ang * 1.1) * .34 * k * face * face, el[1] + Math.cos(ang * 1.1) * .34 * k];
   ink([shp, el, hand], .1 * k); dot(hand[0], hand[1], .05 * k, SKIN);
   if (ticket) shape([[hand[0], hand[1] - .02 * k], [hand[0] + .14 * k * face, hand[1] - .05 * k], [hand[0] + .15 * k * face, hand[1] + .04 * k], [hand[0] + .01 * k * face, hand[1] + .06 * k]], CREAM, 1.2);

@@ -11,7 +11,7 @@
   // where man()'s near hand lands (mirrors the kit's arm maths), so he can hold a paper
   function manHand(x, z, face, arm) {
     const b = P(x, FL, z), k = b[2], sh = b[1] - 1.45 * k, shp = [b[0] + .02 * k * face, sh + .12 * k];
-    const ang = lerp(0, -1.9, arm) * face, el = [shp[0] + Math.sin(ang) * .36 * k, shp[1] + Math.cos(ang) * .36 * k];
+    const ang = lerp(0, 1.9, arm) * face, el = [shp[0] + Math.sin(ang) * .36 * k, shp[1] + Math.cos(ang) * .36 * k];
     return [[el[0] + Math.sin(ang * 1.1) * .34 * k, el[1] + Math.cos(ang * 1.1) * .34 * k], k];
   }
   // tilt a figure from its feet: a small bow / nod

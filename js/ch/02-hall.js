@@ -19,7 +19,7 @@
     clock(t, -6.95, -1.0, 16); ticketBox();
     if (!sat) {
       const k = inv(28.2, 30.4, t), x = lerp(3.0, 2.2, k), z = lerp(5.6, 7.9, k);
-      man(x, z, { ph: (t - 28.2) * 1.1, walk: t > 28.2 ? 1 : 0, face: -1, arm: t < 28.2 ? 1 - smooth(inv(27.6, 28.2, t)) : 0, ticket: t > 27.8 });
+      man(x, z, { ph: (t - 28.2) * 1.1, walk: t > 28.2 ? 1 : 0, face: t < 28.2 ? 1 : -1, arm: t < 28.2 ? 1 - smooth(inv(27.6, 28.2, t)) : 0, ticket: t > 27.8 });
     }
   }
   // 39.55 "but I can't wait until tomorrow": his ticket against the board, then up to the one high window.
