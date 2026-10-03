@@ -1,0 +1,7 @@
+{
+  "name": "bobwiseman-airplane-woodcut",
+  "private": true,
+  "type": "module",
+  "description": "Bob Wiseman, Airplane on the Highway (2026), drawn in code: woodcut / linocut relief print look test.",
+  "devDependencies": { "playwright": "^1.55.0" }
+}
