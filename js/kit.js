@@ -107,9 +107,10 @@ function clock(t, x, y, z) {
 function ticketBox(x = 3.6, z = 5.6) {
   const b = P(x, FL, z), top = P(x, -.1, z), k = b[2];
   ink([[b[0], b[1]], [top[0], top[1]]], 4);
-  shape([[top[0] - .25 * k, top[1] - .5 * k], [top[0] + .25 * k, top[1] - .5 * k], [top[0] + .25 * k, top[1]], [top[0] - .25 * k, top[1]]], BRASS, 2.5);
-  shape([[top[0] - .12 * k, top[1] - .2 * k], [top[0] + .12 * k, top[1] - .2 * k], [top[0] + .12 * k, top[1] - .16 * k], [top[0] - .12 * k, top[1] - .16 * k]], INK, 1);
-  text('TAKE A NUMBER', top[0], top[1] - .32 * k, k * .09, { font: 'sign', max: .46 * k });
+  shape([[top[0] - .25 * k, top[1] - .72 * k], [top[0] + .25 * k, top[1] - .72 * k], [top[0] + .25 * k, top[1]], [top[0] - .25 * k, top[1]]], BRASS, 2.5);
+  // one word per line so it reads from across the hall
+  ['TAKE', 'A', 'NUMBER'].forEach((w, i) => text(w, top[0], top[1] - (.56 - i * .13) * k, k * .11, { font: 'sign', max: .42 * k, fitTo: 'NUMBER' }));
+  shape([[top[0] - .12 * k, top[1] - .16 * k], [top[0] + .12 * k, top[1] - .16 * k], [top[0] + .12 * k, top[1] - .12 * k], [top[0] - .12 * k, top[1] - .12 * k]], INK, 1);
 }
 
 // ---- people ----
