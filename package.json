@@ -1,0 +1,7 @@
+{
+  "name": "bobwiseman-airplane-scope",
+  "private": true,
+  "type": "module",
+  "description": "Bob Wiseman, Airplane on the Highway (2026), drawn in code: 1960s oscilloscope / vector display.",
+  "devDependencies": { "playwright": "^1.55.0" }
+}
