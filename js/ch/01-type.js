@@ -1,4 +1,4 @@
-// 71.0 - 91.0, verse 2 (both lines + the "mnuh" fill). Kinetic type / FUI. The lyric words are the set;
+// 71.0 - 91.0, verse 2 (both lines + the scat fill). Kinetic type / FUI. The lyric words are the set;
 // the plane is a technical drawing living inside the interface. One idea per shot, cuts on the beat or
 // on the sung word. Word text comes from js/lyrics.js (not in git); times are LYR.w[k][1].
 //   71.00 SH01 tracker   flight-tracker map: a plane blip on a highway, tagged AIRCRAFT ON ROADWAY;
@@ -192,7 +192,7 @@
     dot(cx, cy, 22, C.bg); s.beginPath(); s.arc(cx, cy, 22, 0, TAU); s.lineWidth = 3; s.strokeStyle = C.ink; s.stroke();
     text('STRANGENESS', cx, cy - 150, { size: 22, color: C.dim, align: 'center', ls: 8 });
     text(val.toFixed(1).padStart(5, '0') + '%', cx, cy - 70, { size: 76, weight: 700, color: val > 80 ? C.hot : C.ink, align: 'center' });
-    // and I FEEL so  (as one line, centred)
+    // the line as one centred row, the verb in heavy grotesk
     const parts = [['and1', { fam: FAM.s, italic: true, size: 130, color: C.dim }], ['i1', { fam: FAM.s, italic: true, size: 130, color: C.dim }],
       ['feel', { fam: FAM.g, weight: 900, size: 270, color: C.ink, upper: true }], ['so', { fam: FAM.s, italic: true, size: 190, color: C.hot }]];
     const ws = parts.map(([kk, o]) => measure(o.upper ? up(kk) : word(kk), o)), gap = 34, tot = ws.reduce((a, b) => a + b, 0) + gap * 3;
