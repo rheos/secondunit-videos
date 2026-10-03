@@ -1,0 +1,7 @@
+{
+  "name": "bobwiseman-airplane-kawaii",
+  "private": true,
+  "type": "module",
+  "description": "Bob Wiseman, Airplane on the Highway (2026), drawn in code: kawaii watercolour cartoon.",
+  "devDependencies": { "playwright": "^1.55.0" }
+}
