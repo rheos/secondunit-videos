@@ -371,7 +371,7 @@
   function walkerFlat(x, y, h) {
     const k = h / 1.8;
     if (K) { guitarCase(x + .36 * k, y - .45 * k, k, { fore: .4 }); return K.fig([x, y], k, 1, (u) => frontFig(1.3 * u, { back: true, mine: true, hold: true, coat: COAT })); }
-    shape([[x + .2 * k, y - 1.2 * k], [x + .44 * k, y - 1.25 * k], [x + .5 * k, y - .3 * k], [x + .26 * k, y - .28 * k]], '#2b2924', 2);
+    guitarCase(x + .36 * k, y - .45 * k, k, { fore: .4 });
     line([[x - .1 * k, y - .5 * k], [x - .1 * k, y]], INK, .13 * k, 'butt'); line([[x + .1 * k, y - .5 * k], [x + .1 * k, y]], INK, .13 * k, 'butt');
     shape([[x - .24 * k, y - 1.45 * k], [x + .24 * k, y - 1.45 * k], [x + .33 * k, y - .45 * k], [x - .33 * k, y - .45 * k]], COAT, 2.5);
     hatch([[x - .24 * k, y - 1.45 * k], [x + .24 * k, y - 1.45 * k], [x + .33 * k, y - .45 * k], [x - .33 * k, y - .45 * k]], .9, 7, 1, .3);

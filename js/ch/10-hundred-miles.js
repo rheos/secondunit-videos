@@ -65,7 +65,7 @@
     const sw = Math.sin(ph * TAU) * .32 * walk, bob = Math.abs(Math.sin(ph * TAU)) * .03 * k * walk;
     const hip = [bx, by - .95 * k - bob], shY = by - 1.45 * k - bob;
     const hand2 = [bx - .05 * k * face - sw * .1 * k, by - .66 * k - bob];
-    if (kase) shape([[hand2[0] - .28 * k, hand2[1]], [hand2[0] + .28 * k, hand2[1]], [hand2[0] + .3 * k, hand2[1] + .36 * k], [hand2[0] - .3 * k, hand2[1] + .36 * k]], '#2b2924', 2);
+    if (kase) guitarCase(hand2[0], hand2[1] + .19 * k, k, { dir: face }); // the kit's guitar case, handle in his hand
     for (const a of [sw, -sw]) {
       const p = [hip, [hip[0] + Math.sin(a) * .5 * k * face, hip[1] + .48 * k], [hip[0] + Math.sin(a) * .9 * k * face, by - .05 * k]];
       line(p, INK, .17 * k); line(p, PANTS, .125 * k); line(p, AMBER, .015 * k);

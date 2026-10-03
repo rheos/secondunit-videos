@@ -83,7 +83,7 @@
     withT(() => { s.translate(b[0], hy); s.rotate(tilt);
       s.beginPath(); s.ellipse(0, 0, .25 * k, .06 * k, 0, 0, TAU); s.fillStyle = HAT; s.fill(); s.lineWidth = 1.5; s.strokeStyle = INK; s.stroke();
       shape([[-.14 * k, 0], [.14 * k, 0], [.12 * k, -.18 * k], [-.12 * k, -.18 * k]], HAT, 1.5); });
-    if (mine) { const g = P(x + .5, FL, z - .1); shape([[g[0], g[1]], [g[0] + .18 * k, g[1]], [g[0] + .3 * k, g[1] - .95 * k], [g[0] + .1 * k, g[1] - 1.0 * k]], '#2b2924', 1.6); }
+    if (mine) restingCase(x + .55, z - .1);
   }
   function crowd(t, lift) {
     for (let z = 56; z >= 8; z -= 2.4) for (const x of [-5.5, -4.4, -3.3, -2.2, -1.1, 1.1, 2.2, 3.3, 4.4, 5.5]) {
