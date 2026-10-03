@@ -15,8 +15,8 @@
 //            graphite underdrawing that does not quite match the paint (gouache).
 //   TEXTURE  photocopy grit: toner speckle, drum streaks, uneven coverage, plates a hair off
 //            register. Motion on twos (12 a second); the print/paper re-pulls on threes.
-//   LETTERS  hand-made only, and rare: letters snipped out of paper, a pencil scrawl. Never a font,
-//            never subtitles; words only from Bob's sheet ("song", "true").
+//   LETTERS  hand-made only, and rare: a pencil scrawl. Never a font, never subtitles; words only
+//            from Bob's sheet ("true").
 //   HUMOUR   deadpan. The plane does not mug; he looks at us when something is wrong.
 //
 // ======================= STRUCTURE =======================
@@ -26,7 +26,8 @@
 //     A2 103.542  side on at the ANCHOR framing; "something's wrong": eyes dart, then he looks at us
 //   106.875 - 111.875  WINDOW 1 (f2565 - f2685): "da da da", wood -> collage, both at the ANCHOR
 //   111.875 - 115.750  CUT-OUT COLLAGE, photocopied pieces   (f2685 - f2778)
-//     B1 111.875  ANCHOR; on "singing this song" four hand-cut letters S O N G drop onto the sky
+//     B1 111.875  ANCHOR; on "singing this song" he sings, happy, and a hand-cut paper music note pops
+//                 out of his mouth on each sung syllable and tumbles up into the sky (one of them red)
 //   115.750 - 120.750  WINDOW 2 (f2778 - f2898): the gap after "song", collage -> gouache, ANCHOR
 //   120.750 - 124.875  GOUACHE on paper, after Real Thing   (f2898 - f2997)
 //     C1 120.750  ANCHOR; "true" scrawled in pencil; the camera tilts up into the sky, where on
@@ -58,7 +59,7 @@
     if (T < A2) { st.look = [kf(T, [[99.5, -.3], [101.5, .25], [103, -.2]]), .25]; }
     if (T >= 103.7 && T < 106.1) { const d = [[-.7, -.2], [.8, -.1], [-.2, -.8], [.7, .35]][Math.floor((T - 103.7) / .34) % 4]; st.look = d; st.brow = [.6, -1]; st.lid = Math.max(st.lid, .04); }
     if (T >= 106.1 && T < 108.0) { st.look = [-.12, .3]; st.brow = [1, 0]; st.lid = Math.max(st.lid, .14); }   // "wrong": at us, deadpan
-    if (T >= 113.75 && T < 116.2) { st.look = [.05, -.95]; st.brow = [.6, 0]; }                                // up at the letters
+    if (T >= 113.75 && T < 116.2) { st.look = [.55, -.35]; st.brow = [1.1, -.35]; }  // singing, pleased with himself
     if (T >= 121.5) { const u = smooth(inv(121.5, 122.1, T)); st.look = [lerp(.6, .45, u), lerp(.1, -1, u)]; st.brow = [.9 * u, 0]; }
     if (T >= 123.0) { const gx = ghostX(GHOSTS[0], T); st.look = [clamp((gx - 1000) / 600, -1, 1), -1]; }
     return st;
@@ -163,7 +164,7 @@
     P.push([x + 190 * sc, y + 30 * sc], [x - 190 * sc, y + 30 * sc]);
     CutPen.fill(P, 'white', { seed, smooth: true, shadow: .7 });
   }
-  function cutSide(T, letters = true) {
+  function cutSide(T) {
     const sc = scrollAt(T);
     s.fillStyle = sheet('cream'); s.fillRect(-50, -50, W + 100, H + 100);
     CutPen.fill([[-30, -30], [W + 30, -30], [W + 30, 600], [-30, 610]], 'sky', { seed: 501, amt: 6, seg: 40, shadow: .4, rim: 0 });
@@ -182,27 +183,38 @@
     s.restore();
     strip(T, ROAD[1] - 4, H + 40, 'pink', sc, 610, 6, 1300);
     PLANE.side(CutPen, AX, AY, AK, pose(T));
-    if (letters) cutLetters(T);
+    cutNotes(T);
   }
-  // S O N G, snipped out of four different stocks, dropped onto the sky as he sings it
-  const GLYPH = {
-    S: [[80, 28], [58, 10], [26, 14], [14, 40], [34, 62], [70, 78], [86, 104], [72, 130], [36, 136], [12, 116]],
-    O: circPts(50, 72, 36, 58, 22),
-    N: [[18, 136], [18, 10], [82, 136], [82, 10]],
-    G: [...arcPts(52, 72, 38, 60, -.55, -TAU + .45, 20), [92, 86], [62, 86]],
-  };
-  const LETTERS = [['S', 113.90, 640, 262, -.08, 'toner'], ['O', 114.18, 800, 236, .06, 'red'], ['N', 114.53, 975, 270, -.04, 'pink'], ['G', 114.85, 1140, 244, .1, 'toner']];
-  function cutLetters(T) {
-    for (const [ch, t0, x, y, rot, stock] of LETTERS) {
-      if (T < t0) continue;
-      const u = clamp((T - t0) / .28), e = ease.out(u), wob = Math.sin((T - t0) * 22) * .25 * (1 - u);
-      const yy = y - 420 * (1 - e), r = rot + (1 - e) * .9 * (ch === 'O' ? -1 : 1) + wob, sc = 1.25;
-      withT(() => { s.translate(x + 50 * sc, yy + 70 * sc); s.rotate(r); s.scale(sc, sc); s.translate(-50, -70);
-        const P = GLYPH[ch], closed = ch === 'O';
-        s.save(); s.shadowColor = 'rgba(28,20,12,.45)'; s.shadowBlur = 6 * RS; s.shadowOffsetX = 7 * RS * (1 + (1 - e) * 3); s.shadowOffsetY = 9 * RS * (1 + (1 - e) * 3);
-        pathOn(s, P, false, closed); s.lineWidth = 36; s.lineJoin = 'bevel'; s.lineCap = 'butt'; s.strokeStyle = '#f7f2e6'; s.stroke(); s.restore();
-        pathOn(s, P, false, closed); s.lineWidth = 29; s.lineJoin = 'bevel'; s.lineCap = 'butt'; s.strokeStyle = sheet(stock); s.stroke(); });
-    }
+  // cut-paper music notes: one pops out of his mouth on each sung syllable of "singing this song" and
+  // tumbles up into the sky. Onsets: 113.93 and 114.53 are vocal onsets (FEAT.vonsets); the syllables
+  // between them and the held "song" are timed off the vocal envelope peaks.
+  const NOTES = [[113.93, 'eighth', 'toner'], [114.12, 'pair', 'cream'], [114.30, 'eighth', 'pink'], [114.53, 'pair', 'red'], [114.95, 'eighth', 'toner'], [115.30, 'eighth', 'cream']];
+  const NOTE_LIFE = 3.2;
+  function notePolys(kind) {
+    const head = (x, y) => circPts(x, y, 19, 13, 16).map(([a, b]) => { const c = Math.cos(-.45), d = Math.sin(-.45), u = a - x, v = b - y; return [x + u * c - v * d, y + u * d + v * c]; });
+    const stem = (x, y) => [[x + 14, y - 4], [x + 19, y - 4], [x + 19, y - 92], [x + 14, y - 92]];
+    if (kind === 'eighth') return [head(0, 0), stem(0, 0), [[19, -92], [24, -92], [48, -62], [44, -40], [38, -58], [19, -72]]];
+    return [head(-26, 6), stem(-26, 6), head(30, 0), stem(30, 0), [[-12, -86], [49, -96], [49, -80], [-12, -70]]];
+  }
+  function cutNote(kind, stock, seed) {
+    const polys = notePolys(kind).map((P, i) => chisel(P, seed * 10 + i, 2.5, 30));
+    const add = () => { s.beginPath(); for (const P of polys) { P.forEach(([x, y], i) => i ? s.lineTo(x, y) : s.moveTo(x, y)); s.closePath(); } };
+    const sc = s.getTransform().a / RS;
+    s.save(); s.shadowColor = 'rgba(28,20,12,.42)'; s.shadowBlur = 5 * RS * sc; s.shadowOffsetX = 5 * RS * sc; s.shadowOffsetY = 6 * RS * sc;
+    add(); s.lineJoin = 'round'; s.lineWidth = 9; s.strokeStyle = '#f7f2e6'; s.stroke(); s.fillStyle = '#f7f2e6'; s.fill(); s.restore();
+    add(); s.fillStyle = sheet(stock); s.fill('nonzero');
+    s.lineWidth = 2; s.strokeStyle = 'rgba(32,29,31,.5)'; s.stroke();
+  }
+  function cutNotes(T) {
+    NOTES.forEach(([t0, kind, stock], i) => {
+      const age = T - t0; if (age < 0 || age > NOTE_LIFE) return;
+      const mouthX = AX + 236 * AK, mouthY = AY - 128 * AK;
+      const pop = ease.back(clamp(age / .22)), u = age / NOTE_LIFE;
+      const x = mouthX + 95 + age * (70 + 30 * hash(i * 7)) + Math.sin(age * 2.6 + i * 1.7) * 38 * clamp(age * 2) + [-.9, .7, -.2, 1, -.6, .4][i] * 190 * smooth(age / 1.4);
+      const y = mouthY - 10 - 760 * (1 - Math.pow(1 - u, 1.6)) - age * 40;
+      const rot = Math.sin(age * 2.1 + i) * .45 + (i % 2 ? .25 : -.2) * age;
+      withT(() => { s.translate(x, y); s.rotate(rot); s.scale(pop * (1.35 + .3 * hash(i * 13)), pop * (1.35 + .3 * hash(i * 13))); cutNote(kind, stock, 900 + i); });
+    });
   }
 
   // ======================= GOUACHE =======================
