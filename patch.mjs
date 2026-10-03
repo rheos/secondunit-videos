@@ -4,8 +4,8 @@
 // shots costs seconds of drawing plus one encode, instead of a full render.
 import { chromium } from 'playwright';
 import fs from 'fs'; import { execSync } from 'child_process';
-const FPS = 24, SCALE = 0.6667, T0 = 0, T1 = 341.4583, WK = 4;
-const dir = `out/frames_index_${T0}_${T1}`;
+const FPS = 24, SCALE = 0.6667, T0 = 0, T1 = 341.4583, WK = 4, PAGE = process.env.PAGE || 'index'; // PAGE=pnc for the pinball style
+const dir = `out/frames_${PAGE}_${T0}_${T1}`;
 const [out, ...spans] = process.argv.slice(2);
 if (!out || !spans.length) { console.error('usage: node patch.mjs <out.mp4> <t0-t1> [...]'); process.exit(1); }
 const n = Math.round((T1 - T0) * FPS);
@@ -16,7 +16,7 @@ const list = [...idx].sort((a, b) => a - b); let done = 0; const start = Date.no
 const b = await chromium.launch({ channel: 'chrome', headless: true, args: ['--use-angle=metal', '--ignore-gpu-blocklist', '--enable-gpu'] });
 await Promise.all([...Array(WK)].map(async (_, w) => {
   const p = await b.newPage({ viewport: { width: 1920, height: 1080 } });
-  await p.goto('file://' + process.cwd() + `/index.html?offline=1&scale=${SCALE}`); await p.evaluate(() => window.__ready);
+  await p.goto('file://' + process.cwd() + `/${PAGE}.html?offline=1&scale=${SCALE}`); await p.evaluate(() => window.__ready);
   for (let j = w; j < list.length; j += WK) {
     const i = list[j]; const url = await p.evaluate((t) => window.__frameJPEG(t, .92), T0 + i / FPS);
     fs.writeFileSync(`${dir}/f_${String(i).padStart(6, '0')}.jpg`, Buffer.from(url.split(',')[1], 'base64')); done++;

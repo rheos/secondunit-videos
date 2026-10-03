@@ -6,6 +6,7 @@
 //  - glossy highlights on round things; coloured-pencil grain in the finish
 // Loaded after kit.js. On with ?style=pnc (or window.PNC = true); it replaces kit drawing primitives.
 const PNC = window.PNC || new URLSearchParams(location.search).get('style') === 'pnc';
+if (PNC) window.PNC_ON = true;
 if (PNC) (() => {
   const rgb = (c) => { if (typeof c !== 'string' || c[0] !== '#') return null; const h = c.length === 4 ? c.slice(1).split('').map((x) => x + x).join('') : c.slice(1, 7); return [0, 2, 4].map((i) => parseInt(h.slice(i, i + 2), 16)); };
   const mix = (c, to, k) => { const a = rgb(c); if (!a) return c; const b = rgb(to); return `rgb(${a.map((v, i) => Math.round(v + (b[i] - v) * k)).join(',')})`; };
@@ -109,4 +110,85 @@ if (PNC) (() => {
     });
     if (mine) restingCase(x + .55, z - .1);
   };
+
+  // ---- her, in the same cartoon hand. Joints computed exactly as the kit's woman() so props still land ----
+  woman = function (x, z, { ph = 0, walk = 0, face = -1, seated = false, arm = 0, rose = 0, look = 0 } = {}) {
+    const b = P(x, FL, z), k = b[2], sw = Math.sin(ph * TAU) * .28 * walk, bob = Math.abs(Math.sin(ph * TAU)) * .03 * k * walk;
+    const hipY = seated ? b[1] - .52 * k : b[1] - .92 * k, sh = hipY - .55 * k;
+    const shp = [b[0] + .02 * k * face, sh + .08 * k + bob], ang = lerp(sw * .8, -1.5, arm) * face;
+    const el = [shp[0] + Math.sin(ang) * .3 * k, shp[1] + Math.cos(ang) * .3 * k], hand = [el[0] + Math.sin(ang * 1.1 + (seated ? .9 * face : 0)) * .28 * k, el[1] + Math.cos(ang * 1.1) * .28 * k];
+    const hx = b[0] + .03 * k * face + look * .02 * k * face, hy = sh - .2 * k + bob;
+    const L = ([X, Y]) => [(X - b[0]) / (k * face), (Y - b[1]) / k]; // screen -> her local units
+    const DRESS = '#77756a', HAIR = '#2d2a24';
+    fig(b, k, face, (u) => {
+      const lw = 1.3 * u, hp = [0, (hipY - b[1]) / k], sY = (sh - b[1]) / k + bob / k;
+      if (seated) { tube(hp, [.45, hp[1]], [.48, -.04], .09, .065, '#3a3631', lw); blob([[.42, -.07], [.6, -.08], [.63, -.01], [.42, 0]], SHOE, lw); }
+      else for (const [a, far] of [[-sw, true], [sw, false]]) {
+        const kn = [Math.sin(a) * .5, hp[1] + .48], ft = [Math.sin(a) * .85, -.04];
+        tube(hp, kn, ft, .075, .055, far ? '#4a4540' : '#5a554e', lw); blob([[ft[0] - .05, -.06], [ft[0] + .11, -.07], [ft[0] + .14, -.01], [ft[0] - .06, 0]], SHOE, lw);
+      }
+      // dress: fitted bodice, a skirt that bells to the knee (or over the lap)
+      const skirt = seated ? [[.16, hp[1] - .02], [.55, hp[1] + .02], [.52, hp[1] + .12], [-.3, hp[1] + .12], [-.2, hp[1]]] : [[.15, hp[1]], [.32, hp[1] + .4], [0, hp[1] + .42], [-.32, hp[1] + .4], [-.17, hp[1]]];
+      blob(skirt, DRESS, lw);
+      blob([[-.16, sY], [.14, sY], [.17, sY + .2], [.13, hp[1] + .02], [-.15, hp[1] + .02], [-.19, sY + .2]], DRESS, lw);
+      if (rose > 0) { s.globalAlpha = rose; blob([[-.1, sY], [.12, sY], [0, sY + .12]], ROSE, lw, false); s.globalAlpha = 1; }
+      const [lx, ly] = L([hx, hy]);
+      line([[0, sY], [lx, ly + .08]], SKIN, .09); // neck
+      blob([[lx - .1, ly - .1], [lx + .09, ly - .12], [lx + .13, ly], [lx + .09, ly + .12], [lx - .05, ly + .13], [lx - .12, ly + .02]], SKIN, lw);
+      ball(lx + .125, ly + .015, .035, mix(SKIN, '#c0605a', .2), lw);
+      s.beginPath(); s.ellipse(lx + .06, ly - .03, .016, .024, 0, 0, TAU); s.fillStyle = '#2a1f1a'; s.fill();
+      for (const dx of [.02, .045, .07]) line([[lx + dx, ly - .055], [lx + dx + .008, ly - .072]], '#2a1f1a', .008); // lashes
+      if (rose > 0) { s.globalAlpha = rose * .55; s.beginPath(); s.arc(lx + .05, ly + .04, .035, 0, TAU); s.fillStyle = ROSE; s.fill(); s.globalAlpha = 1; }
+      blob([[lx - .13, ly - .02], [lx - .1, ly - .13], [lx + .02, ly - .15], [lx + .11, ly - .1], [lx + .04, ly - .06], [lx - .06, ly - .03]], HAIR, lw); // hair
+      ball(lx - .13, ly - .1, .07, HAIR, lw); // bun
+      const [sx, sy2] = L(shp), [ex, ey] = L(el), [hx2, hy2] = L(hand);
+      tube([sx, sy2], [ex, ey], [hx2, hy2], .06, .045, DRESS, lw); ball(hx2, hy2, .045, SKIN, lw);
+    });
+    return { hand, head: [hx, hy] };
+  };
+
+  // ---- flourishes: deco ornament and chrome, as in the 70s pinball-cabinet look ----
+  const _board = board, _clock = clock, _duct = duct, _room = room, _horn = horn, _ticketBox = ticketBox;
+  function fan(cx, cy, r, n, a0, a1, cols, lw) { // a scalloped sunburst fan: n petals between angles a0..a1
+    for (let i = n - 1; i >= 0; i--) for (let ring = 0; ring < 3; ring++) {
+      const rr = r * (1 - ring * .28), a = lerp(a0, a1, (i + .5) / n), half = (a1 - a0) / n * .5;
+      s.beginPath(); s.moveTo(cx, cy); s.arc(cx, cy, rr, a - half, a + half); s.closePath();
+      soft(cols[(i + ring) % cols.length], cx - rr, cy - rr, cx + rr, cy + rr); s.lineWidth = lw; s.strokeStyle = dark(cols[(i + ring) % cols.length], .55); s.stroke();
+      if (ring === 0) { s.beginPath(); s.arc(cx + Math.cos(a) * rr, cy + Math.sin(a) * rr, rr * Math.sin(half) * .55, a - Math.PI / 2, a + Math.PI / 2); s.fillStyle = cols[i % cols.length]; s.fill(); s.stroke(); } // scalloped rim
+    }
+  }
+  function star(x, y, r, c, lw) { s.beginPath(); for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, rr = i % 2 ? r * .45 : r; s[i ? 'lineTo' : 'moveTo'](x + Math.cos(a) * rr, y + Math.sin(a) * rr); } s.closePath(); soft(c, x - r, y - r, x + r, y + r); s.lineWidth = lw; s.strokeStyle = dark(c, .5); s.stroke(); }
+  board = function (t, num = '0002', z = 52) {
+    const a = P(-3, -2.25, z), b = P(3, -.95, z), k = a[2], cx = (a[0] + b[0]) / 2, w = b[0] - a[0];
+    fan(cx, a[1], w * .32, 9, Math.PI, TAU, [BRASS, AMBER, CREAM], Math.max(.6, k * .01));                  // sunburst crest
+    shape([[a[0] - w * .06, a[1] + w * .02], [a[0] + w * .02, a[1] - w * .05], [b[0] - w * .02, a[1] - w * .05], [b[0] + w * .06, a[1] + w * .02], [b[0] + w * .06, b[1] + w * .03], [a[0] - w * .06, b[1] + w * .03]], BRASS, 2); // stepped deco frame
+    _board(t, num, z);
+    for (const sx of [a[0] + w * .07, b[0] - w * .07]) star(sx, a[1] + (b[1] - a[1]) * .3, k * .09, CREAM, Math.max(.6, k * .01));
+    for (const [px, py] of [[a[0], a[1]], [b[0], a[1]], [a[0], b[1]], [b[0], b[1]]]) ball(px, py, k * .05, BRASS, Math.max(.6, k * .01)); // bolts
+  };
+  clock = function (t, x, y, z) {
+    const c = P(x, y, z), r = .45 * c[2];
+    for (let i = 0; i < 12; i++) { const a = i / 12 * TAU, a2 = a + TAU / 24; s.beginPath(); s.moveTo(c[0] + Math.cos(a) * r, c[1] + Math.sin(a) * r); s.lineTo(c[0] + Math.cos(a2 - .13) * r * 1.38, c[1] + Math.sin(a2 - .13) * r * 1.38); s.lineTo(c[0] + Math.cos(a2 + .13) * r * 1.38, c[1] + Math.sin(a2 + .13) * r * 1.38); s.closePath(); soft(i % 2 ? BRASS : CREAM, c[0] - r * 1.4, c[1] - r * 1.4, c[0] + r * 1.4, c[1] + r * 1.4); s.lineWidth = .8; s.strokeStyle = LINE; s.stroke(); }
+    _clock(t, x, y, z);
+    for (let i = 1; i <= 12; i++) { const a = -Math.PI / 2 + i / 12 * TAU; text(String(i), c[0] + Math.cos(a) * r * .66, c[1] + Math.sin(a) * r * .66 + r * .08, r * .2, { font: 'sign', color: LINE }); }
+    ball(c[0], c[1], r * .07, BRASS, .8);
+  };
+  duct = function (x, y, r, z0, z1, c = STEEL) {
+    _duct(x, y, r, z0, z1, c);
+    // a chrome highlight running along the top of the duct
+    const pts = []; for (let z = Math.max(z0, C.z + .8); z <= z1; z += .9) pts.push(P(x - r * .25, y - r * .55, z));
+    for (let i = 1; i < pts.length; i++) line([[pts[i - 1][0], pts[i - 1][1]], [pts[i][0], pts[i][1]]], 'rgba(255,250,235,.55)', Math.max(1, r * pts[i][2] * .14));
+  };
+  room = function (t) {
+    _room(t);
+    // a scalloped deco frieze along the top of both walls, and stepped pilasters on the drawer wall
+    for (const wx of [-WX, WX]) for (let z = Math.max(2, Math.ceil((C.z + .6) / 1.3) * 1.3); z < 46; z += 1.3) {
+      const pts = []; for (let i = 0; i <= 8; i++) { const u = i / 8; pts.push(P(wx, CE + .05 + Math.sin(u * Math.PI) * .2, z + u * 1.3)); }
+      const top = [P(wx, CE + .02, z + 1.3), P(wx, CE + .02, z)];
+      shape([...pts.map((p) => [p[0], p[1]]), ...top.map((p) => [p[0], p[1]])], wx < 0 ? BRASS : '#8c8770', 1);
+    }
+    for (let z = 7.8; z < 44; z += 7.8) { const q = [P(-WX, CE + .3, z), P(-WX, CE + .3, z + .4), P(-WX, FL, z + .4), P(-WX, FL, z)].map((p) => [p[0], p[1]]); shape(q, '#9aa290', 1); }
+  };
+  horn = function (t, z = 9) { _horn(t, z); const m = P(-WX + .1, -1.9, z), k = m[2]; ball(m[0] + .1 * k, m[1] - .05 * k, .09 * k, BRASS, 1); };
+  ticketBox = function (x = 3.6, z = 5.6) { const top = P(x, -.1, z), k = top[2]; fan(top[0], top[1] - .72 * k, .25 * k, 5, Math.PI, TAU, [BRASS, CREAM], .8); _ticketBox(x, z); ball(top[0], top[1] - .72 * k, .05 * k, AMBER, .8); };
 })();
