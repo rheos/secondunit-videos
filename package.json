@@ -1,0 +1,7 @@
+{
+  "name": "bobwiseman-airplane-paint",
+  "private": true,
+  "type": "module",
+  "description": "Bob Wiseman, Airplane on the Highway: the take-off passage as a plein-air brushstroke painting, drawn in code on the functional-emotions-video renderer (MIT).",
+  "devDependencies": { "playwright": "^1.55.0" }
+}
