@@ -280,12 +280,23 @@
     }
     // the mouth and its tape
     const mx = 250, my = 520, flare = 1 + .1 * hit(t, B[Math.max(0, k)], 10);
-    const path = (u) => [mx + 90 + u, my + Math.sin(u * .0042 - t * 1.4) * 120 + u * .2];
+    // the tape leaves from the middle of the opening and only starts to wave once it's clear of the pipe
+    const path = (u) => { const free = smooth(u / 520); return [mx + 90 * flare + u, my + (Math.sin(u * .0042 - t * 1.4) * 120 + u * .2) * free]; };
     const L = 2400;
-    const pts = []; for (let u = 0; u <= L; u += 40) pts.push(path(u));
+    // the pipe and its dark opening first, so the tape can come out of it
+    withT(() => { s.translate(mx, my); s.scale(flare, flare);
+      shape([[-200, -120], [90, -150], [90, 150], [-200, 120]], BRASS, K ? 2 : 4);
+      s.beginPath(); s.ellipse(90, 0, 40, 150, 0, 0, TAU); s.fillStyle = '#2a2a24'; s.fill(); s.lineWidth = K ? 2 : 4; s.strokeStyle = K ? K.LINE : INK; s.stroke(); });
+    const pts = []; for (let u = -70; u <= L; u += 20) pts.push(path(u));
     withT(() => { s.lineCap = 'butt'; s.lineJoin = 'round';
-      s.lineWidth = 118; s.strokeStyle = INK; s.beginPath(); pts.forEach(([x, y], i) => i ? s.lineTo(x, y) : s.moveTo(x, y)); s.stroke();
-      s.lineWidth = 110; s.strokeStyle = CREAM; s.stroke(); });
+      // only inside the opening or past it: never over the pipe's outside
+      s.beginPath(); s.rect(mx + 90 * flare, -100, W + 200, H + 200); s.ellipse(mx + 90 * flare, my, 40 * flare, 150 * flare, 0, 0, TAU); s.clip();
+      s.lineWidth = 118; s.strokeStyle = K ? K.LINE : INK; s.beginPath(); pts.forEach(([x, y], i) => i ? s.lineTo(x, y) : s.moveTo(x, y)); s.stroke();
+      s.lineWidth = 110; s.strokeStyle = CREAM; s.stroke();
+      // still inside the pipe: in its shadow
+      s.beginPath(); s.ellipse(mx + 90 * flare, my, 40 * flare, 150 * flare, 0, 0, TAU); s.clip();
+      const g = s.createLinearGradient(mx + 50 * flare, 0, mx + 130 * flare, 0); g.addColorStop(0, 'rgba(20,18,15,.85)'); g.addColorStop(1, 'rgba(20,18,15,0)');
+      s.fillStyle = g; s.fillRect(mx, my - 200, 200 * flare, 400); });
     const speed = 420;
     for (let j = k; j >= Math.max(iWE, k - 14); j--) {
       const u = (t - B[j]) * speed + 120; if (u > L - 60) break;
@@ -293,9 +304,6 @@
       text(wordOf(j), p[0], p[1] + 2, 64, { font: 'type', rot: a, align: 'center', max: 260 });
       withT(() => { s.translate(p[0], p[1]); s.rotate(a); s.globalAlpha = .45; ink([[150, -48], [150, 48]], 1.6); });
     }
-    withT(() => { s.translate(mx, my); s.scale(flare, flare);
-      shape([[-200, -120], [90, -150], [90, 150], [-200, 120]], BRASS, 4);
-      s.beginPath(); s.ellipse(90, 0, 40, 150, 0, 0, TAU); s.fillStyle = '#2a2a24'; s.fill(); s.lineWidth = 4; s.strokeStyle = INK; s.stroke(); });
     void o;
   }
   // low angle: a vast duct over a tiny clerk, and a split-flap panel bolted to the duct flipping the word
