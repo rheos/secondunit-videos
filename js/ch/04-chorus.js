@@ -14,7 +14,7 @@
       ink([[560, -100], [560, 70]], 4); ink([[1360, -100], [1360, 70]], 4);
       shape([[170, 70], [W - 170, 70], [W - 170, 1030], [170, 1030]], BRASS, 5);
       shape([[200, 100], [W - 200, 100], [W - 200, 1000], [200, 1000]], '#33332c', 2.5);
-      text('NOW SERVING', W / 2, 168, 52, { font: 'sign', color: AMBER, spacing: 10 });
+      text('NOW SERVING', W / 2, 168, 52, { font: 'sign', color: AMBER, spacing: 10, max: 1360 });
       const cell = 156, cw = cell * .72, step = cw + cell * .08, x0 = W / 2 - (11 * step - cell * .08) / 2;
       ROWS.forEach(([t0, str, prev], r) => {
         const y = 222 + r * 192;
@@ -63,8 +63,8 @@
     ink([[P(-2.2, CE + yo, z)[0], P(-2.2, CE + yo, z)[1]], [P(-2.2, -2.25 + yo, z)[0], a[1]]], 2); ink([[P(2.2, CE + yo, z)[0], P(2.2, CE + yo, z)[1]], [P(2.2, -2.25 + yo, z)[0], a[1]]], 2);
     shape([[a[0], a[1]], [b[0], a[1]], [b[0], b[1]], [a[0], b[1]]], BRASS, 3);
     const m = 6 * a[2] / 60; shape([[a[0] + m, a[1] + m], [b[0] - m, a[1] + m], [b[0] - m, b[1] - m], [a[0] + m, b[1] - m]], BG, 2);
-    text(l1, (a[0] + b[0]) / 2, a[1] + (b[1] - a[1]) * .4, a[2] * .32, { font: 'sign', color: AMBER });
-    text(l2, (a[0] + b[0]) / 2, a[1] + (b[1] - a[1]) * .86, a[2] * .5, { font: 'sign', color: AMBER });
+    text(l1, (a[0] + b[0]) / 2, a[1] + (b[1] - a[1]) * .4, a[2] * .32, { font: 'sign', color: AMBER, max: (b[0] - a[0]) * .84 });
+    text(l2, (a[0] + b[0]) / 2, a[1] + (b[1] - a[1]) * .86, a[2] * .5, { font: 'sign', color: AMBER, max: (b[0] - a[0]) * .84 });
   }
 
   // ---- shots ----
@@ -79,7 +79,7 @@
     s.globalAlpha = .3; for (let y = 0; y < H; y += 90) ink([[0, y], [W, y]], 1.2); s.globalAlpha = 1;
     let n = 0; for (const [ws, w] of POOL) { if (t < ws) break; n += Math.min(w.length, Math.floor((t - ws) * 14) + 1); }
     const strike = (() => { for (let i = POOL.length - 1; i >= 0; i--) { const d = t - POOL[i][0]; if (d >= 0) return d * 14 < POOL[i][1].length + .5 ? 1 - (d * 14) % 1 : 0; } return 0; })();
-    const tiers = [[3, 440, 420], [5, 750, 340], [6, 1065, 280]];
+    const tiers = [[3, 440, 400], [5, 750, 270], [6, 1065, 228]];
     tiers.forEach(([cnt, y, sc], ti) => {
       const gap = W / cnt;
       for (let i = 0; i < cnt; i++) { const x = gap * (i + .5);
@@ -149,7 +149,7 @@
       ink([[700, -100], [700, 220]], 4); ink([[1220, -100], [1220, 220]], 4);
       shape([[380, 220], [W - 380, 220], [W - 380, 860], [380, 860]], BRASS, 5);
       shape([[410, 250], [W - 410, 250], [W - 410, 830], [410, 830]], '#33332c', 2.5);
-      text('NOW SERVING', W / 2, 340, 64, { font: 'sign', color: AMBER, spacing: 10 });
+      text('NOW SERVING', W / 2, 340, 64, { font: 'sign', color: AMBER, spacing: 10, max: 1000 });
       const cell = 330, cw = cell * .72, step = cw + cell * .08, x0 = W / 2 - (4 * step - cell * .08) / 2;
       splitFlap(t, 131.6, '0004', x0, 420, cell, { prev: 'TIME' });
     });

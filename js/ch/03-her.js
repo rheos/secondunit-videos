@@ -25,7 +25,7 @@
       shape(pts, i % 2 ? '#ddd5bb' : CREAM, 1.6);
       s.globalAlpha = .3 * alpha; for (let l = 1; l < 5; l++) { const a = P(cx - w * .35, CE, cz - d / 2 + l * d / 5), b = P(cx + w * .35, CE, cz - d / 2 + l * d / 5); ink([[a[0], a[1]], [b[0], b[1]]], 1); } s.globalAlpha = alpha;
     });
-    const m = P(0, CE, 22); withT(() => { s.translate(m[0], m[1] + m[2] * .2); s.scale(1, .32); text('ON HOLD', 0, 0, m[2] * 1.6, { font: 'stamp', color: INK, alpha: .8 * alpha }); });
+    const m = P(0, CE, 22); withT(() => { s.translate(m[0], m[1] + m[2] * .2); s.scale(1, .32); text('ON HOLD', 0, 0, m[2] * 1.6, { font: 'stamp', color: INK, alpha: .8 * alpha, max: m[2] * 4.2 }); });
     s.globalAlpha = 1;
   }
   // a seated man with a hat that can lift (kit seat() can't); drawn like the kit's
@@ -81,8 +81,8 @@
       s.translate(W / 2, H / 2); s.rotate(-.04 + (1 - k) * .1); s.scale(sc, sc);
       shape([[-900, -520], [900, -500], [880, 520], [-890, 505]], CREAM, 3);
       s.globalAlpha = .3; for (let l = 0; l < 9; l++) ink([[-760, -330 + l * 85], [760, -330 + l * 85]], 1.4); s.globalAlpha = 1;
-      text('MINISTRY OF WAITING', 820, -440, 40, { font: 'sign', align: 'right' });
-      text('ROOF REPAIR, FORM R-1', -820, -440, 34, { align: 'left' });
+      text('MINISTRY OF WAITING', 740, -410, 40, { font: 'sign', align: 'right', max: 640 });
+      text('ROOF REPAIR, FORM R-1', -740, -410, 34, { align: 'left', max: 640 });
       // tape strips at the corners
       for (const [x, y, r] of [[-880, -500, .7], [870, -490, -.7], [-870, 490, -.7], [860, 500, .7]]) withT(() => { s.translate(x, y); s.rotate(r); s.globalAlpha = .75; shape([[-90, -24], [90, -24], [90, 24], [-90, 24]], '#d8cfa8', 1.5); });
     });
@@ -109,7 +109,7 @@
     tiled();
     // the board, soft, upper left (his was upper right)
     withT(() => { s.globalAlpha = .55; shape([[140, 120], [940, 120], [940, 470], [140, 470]], BRASS, 4); shape([[170, 150], [910, 150], [910, 440], [170, 440]], '#1f201c', 2);
-      text('0003', 540, 410, 210, { font: 'sign', color: AMBER }); });
+      text('0003', 540, 410, 210, { font: 'sign', color: AMBER, max: 660 }); });
     const k = ease.out(inv(62.85, 63.7, t));
     withT(() => {
       s.translate(1180 + Math.sin(t * 1.2) * 5, 700 + Math.sin(t * 1.9) * 4); s.rotate(.12); s.scale(1.35, 1.35);
@@ -118,9 +118,9 @@
         shape([[-200, -160], [190, -140], [175, 150], [-215, 130]], CREAM, 3 / lerp(.12, 1, k));
         if (k > .5) withT(() => { s.globalAlpha = smooth(inv(.5, 1, k));
           s.globalAlpha *= .35; ink([[-200, -160], [175, 150]], 1.5); ink([[190, -140], [-215, 130]], 1.5); ink([[-5, -150], [-20, 140]], 1.5); s.globalAlpha /= .35;
-          text('MINISTRY OF WAITING', -10, -95, 32);
-          text('7 436 912', -10, 20, 88, { font: 'type' });
-          text('PLEASE REMAIN SEATED', -10, 85, 25);
+          text('MINISTRY OF WAITING', -10, -95, 32, { max: 300 });
+          text('7 436 912', -10, 20, 88, { font: 'type', max: 310 });
+          text('PLEASE REMAIN SEATED', -10, 85, 25, { max: 290 });
           for (let i = 0; i < 9; i++) dot(165, -120 + i * 30, 6, WALL); });
       });
       withT(() => { s.translate(20, 90); herHand(.8); });
@@ -144,9 +144,9 @@
       if (shown < 3) s.scale(flip, 1);
       if (shown === 0) {
         shape([[-260, -260], [260, -260], [260, 260], [-260, 260]], CREAM, 3);
-        text('FORM WGT-89', 240, -220, 22, { font: 'sign', align: 'right' });
+        text('FORM WGT-89', 240, -220, 22, { font: 'sign', align: 'right', max: 200 });
         s.globalAlpha = .4; for (let l = 0; l < 7; l++) ink([[-210, -150 + l * 55], [210, -150 + l * 55]], 1.2); s.globalAlpha = 1;
-        text('APPLICATION TO WAIT', -210, -165, 26, { align: 'left' });
+        text('APPLICATION TO WAIT', -210, -165, 26, { align: 'left', max: 420 });
       } else if (shown === 1) {
         shape([[-260, 160], [260, 160], [0, -240]], CREAM, 3); ink([[0, -240], [0, 160]], 1.2);
         s.globalAlpha = .35; for (let l = 0; l < 4; l++) ink([[-150 + l * 30, 100 - l * 70], [150 - l * 30, 100 - l * 70]], 1.2); s.globalAlpha = 1;
@@ -237,8 +237,9 @@
       const top = xs.map(x => [x, y(x) - 34]), bot = xs.map(x => [x, y(x) + 34]).reverse();
       shape([[cx0, cy0 + .12 * k], ...top, ...bot], '#ece5cc', 2);
       s.beginPath(); s.rect(cx0, 0, L, H); s.clip();
-      let x = cx0 + 50; s.font = '46px "American Typewriter", Courier, serif';
-      for (const ch of "BUT I AIN'T CARRYING FLOWERS") { text(ch, x, y(x) + 16, 46, { align: 'left' }); x += s.measureText(ch).width + 4; }
+      const MSG = "BUT I AIN'T CARRYING FLOWERS", sz = fitSize(MSG, 46, W - cx0 - 140 - MSG.length * 4);
+      let x = cx0 + 50;
+      for (const ch of MSG) { text(ch, x, y(x) + sz * .35, sz, { align: 'left' }); x += textWidth(ch, sz) + 4; }
     });
   }
   // 74.32 a tailor's plate from the regulations: him and her, full length, both in grey.
@@ -249,7 +250,7 @@
     const z = kf(t, [[74.32, 1], [79.9, 1.04]], ease.sine);
     withT(() => { s.translate(W / 2, H / 2); s.scale(z, z); s.translate(-W / 2, -H / 2);
       shape([[60, 40], [W - 60, 40], [W - 60, H - 40], [60, H - 40]], CREAM, 3); ink([[80, 60], [W - 80, 60], [W - 80, H - 60], [80, H - 60], [80, 60]], 1.5);
-      text('REGULATION DRESS, PLATE 4', W / 2, 130, 44, { font: 'sign', spacing: 6 });
+      text('REGULATION DRESS, PLATE 4', W / 2, 130, 44, { font: 'sign', spacing: 6, max: 1400 });
       ink([[560, 150], [W - 560, 150]], 1.5);
       cam({ x: 0, y: 0, z: 0, f: 820, vy: 300 });
       const Z = 2.75, fl = P(0, FL, Z)[1];
@@ -258,16 +259,16 @@
       for (const [x, lab, h] of [[430, 'COAT, GREY, 1 EA.', 1.78], [W - 430, 'UNIFORM, GREY, 1 EA.', 1.62]]) {
         const top = P(0, FL - h, Z)[1]; ink([[x, top], [x, fl]], 1.6); ink([[x - 18, top], [x + 18, top]], 1.6); ink([[x - 18, fl], [x + 18, fl]], 1.6);
         for (let i = 1; i < 10; i++) { const y = lerp(top, fl, i / 10); ink([[x - 8, y], [x + 8, y]], 1); }
-        text(lab, x, top - 30, 24);
+        text(lab, x, top - 30, 24, { max: 300 });
       }
       // they each look down at themselves on "dressed"
       const lk = smooth(inv(77.1, 77.6, t));
       man(-1.05, Z, { face: 1, arm: lk * .25 });
       woman(1.05, Z, { face: -1, rose: 1, arm: lk * .25 });
-      text('FIG. 1', P(-1.05, 0, Z)[0], fl + 50, 26, { font: 'sign' }); text('FIG. 2', P(1.05, 0, Z)[0], fl + 50, 26, { font: 'sign' });
+      text('FIG. 1', P(-1.05, 0, Z)[0], fl + 50, 26, { font: 'sign', max: 200 }); text('FIG. 2', P(1.05, 0, Z)[0], fl + 50, 26, { font: 'sign', max: 200 });
       // the typed line
       const n = typed(t, DRESSED), str = DRESSED.map(w => w[1]).join('');
-      text(str.slice(0, n), 300, 980, 58, { align: 'left', spacing: 2 });
+      text(str.slice(0, n), 160, 980, 58, { align: 'left', spacing: 2, max: 1120, fitTo: str });
       stamp(t, 77.32, 1540, 985, 'REGULATION GREY', { size: 44, color: INK, rot: -.07 });
     });
   }
@@ -324,7 +325,7 @@
       ink([[x, y + 55], [x + Math.sin(ang) * 80, y + 55 - Math.cos(ang) * 80 * (down ? -1 : 1)]], 7);
       dot(x + Math.sin(ang) * 80, y + 55 - Math.cos(ang) * 80 * (down ? -1 : 1), 14, INK);
       shape([[x - 42, y + 122], [x + 42, y + 122], [x + 42, y + 156], [x - 42, y + 156]], CREAM, 1.4);
-      text(String(1000 + Math.floor(hash(r * 11 + c) * 8999)), x, y + 149, 26);
+      text(String(1000 + Math.floor(hash(r * 11 + c) * 8999)), x, y + 149, 26, { max: 72 });
     }
     // the clock on top, ticking on the beat until they pull
     const cx = W / 2, cy = 150, R = 120;
@@ -375,16 +376,17 @@
     const n = typed(t, MAKING);
     withT(() => { s.translate(W / 2 + 20, H / 2 + 30); s.rotate(-.035);
       shape([[-760, -440], [760, -440], [760, 600], [-760, 600]], CREAM, 4);
-      text('MEMO', 700, -370, 40, { font: 'sign', align: 'right', spacing: 6 });
-      text('TO: 7 436 912', -680, -370, 34, { align: 'left' });
+      text('MEMO', 700, -370, 40, { font: 'sign', align: 'right', spacing: 6, max: 300 });
+      text('TO: 7 436 912', -680, -370, 34, { align: 'left', max: 600 });
       s.globalAlpha = .35; for (let l = 0; l < 4; l++) ink([[-680, -150 + l * 240], [680, -150 + l * 240]], 1.6); s.globalAlpha = 1;
       const a = "I AIN'T", b = 'MAKING IT UP';
-      text(a.slice(0, Math.min(n, 7)), -680, -180, 150, { align: 'left' });
+      const msz = fitSize(b, 150, 1340);
+      text(a.slice(0, Math.min(n, 7)), -680, -180, msz, { align: 'left' });
       const s2 = b.slice(0, Math.max(0, n - 7));
-      text(s2, -680, 60, 150, { align: 'left' });
+      text(s2, -680, 60, msz, { align: 'left' });
       // the type bar striking at the next letter
       const k = strikeK(t, MAKING);
-      if (k > 0) { s.font = '150px "American Typewriter", Courier, serif'; const x = -680 + s.measureText(s2).width;
+      if (k > 0) { const x = -680 + textWidth(s2, msz);
         withT(() => { s.globalAlpha = k; shape([[x - 18, 70 + (1 - k) * 200], [x + 70, 70 + (1 - k) * 200], [x + 80, 700], [x - 30, 700]], '#2e2d28', 3); }); }
     });
     stamp(t, 105.73, 1350, 860, 'RECEIVED', { size: 90, color: INK, rot: -.14 });
