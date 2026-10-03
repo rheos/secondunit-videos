@@ -18,7 +18,8 @@
   const tickHit = (t) => { let last = -9; for (const d of DO) if (d <= t) last = d; return t < FREEZE ? hit(t, last, 9) : 0; };
   const BLACK = '#1d1c19', WALL = '#8f9886', CLERK = '#4f4c42';
   const FUT = 'Futura, "Gill Sans", sans-serif';
-  function bold(str, x, y, size, { color = INK, align = 'center', rot = 0, alpha = 1, outline = 0 } = {}) {
+  function bold(str, x, y, size, { color = INK, align = 'center', rot = 0, alpha = 1, outline = 0, max = 0 } = {}) {
+    if (max) { s.save(); s.font = `bold ${Math.round(size)}px ${FUT}`; const wd = s.measureText(str).width + outline; s.restore(); if (wd > max) { outline *= max / wd; size *= max / wd; } }
     withT(() => { s.translate(x, y); s.rotate(rot); s.globalAlpha *= alpha; s.textAlign = align; s.textBaseline = 'alphabetic';
       s.font = `bold ${Math.round(size)}px ${FUT}`;
       if (outline) { s.lineJoin = 'round'; s.lineWidth = outline; s.strokeStyle = INK; s.strokeText(str, 0, 0); }
@@ -82,21 +83,22 @@
   const LYR = [['JUST', 212.8], ['TO', 213.16], ['SHOW', 213.6], ['UP', 214.08], ['ON', 214.46], ['TIME', 214.88], ['FOR', 216.06], ['MY', 216.76], ['BOSS', 217.2]];
   function card(t, { late = null, punched = false } = {}) {
     shape([[0, 0], [CARD_W, 0], [CARD_W, CARD_H], [0, CARD_H]], CREAM, 3);
-    bold('TIME CARD', 30, 62, 40, { align: 'left' });
-    text('MINISTRY OF WAITING', CARD_W - 26, 58, 14, { font: 'sign', align: 'right' });
-    text('No. 7 436 912', 30, 118, 34, { align: 'left' });
+    bold('TIME CARD', 30, 62, 40, { align: 'left', max: 230 });
+    text('MINISTRY OF WAITING', CARD_W - 26, 58, 14, { font: 'sign', align: 'right', max: 170 });
+    text('No. 7 436 912', 30, 118, 34, { align: 'left', max: CARD_W - 60 });
     ink([[24, 140], [CARD_W - 24, 140]], 2);
     const shown = LYR.filter(([, tw]) => t >= tw).map(([w]) => w);
-    text(shown.slice(0, 4).join(' '), 30, 196, 38, { align: 'left' });
-    text(shown.slice(4).join(' '), 30, 248, 38, { align: 'left' });
+    const fitLine = 'ON TIME FOR MY BOSS';   // both lines share one size, fitted to the longer
+    text(shown.slice(0, 4).join(' '), 30, 196, 38, { align: 'left', max: CARD_W - 60, fitTo: fitLine });
+    text(shown.slice(4).join(' '), 30, 248, 38, { align: 'left', max: CARD_W - 60, fitTo: fitLine });
     ink([[24, 276], [CARD_W - 24, 276]], 2);
-    text('IN', 150, 312, 22, { font: 'sign' }); text('OUT', 350, 312, 22, { font: 'sign' });
+    text('IN', 175, 312, 22, { font: 'sign', max: 130 }); text('OUT', 350, 312, 22, { font: 'sign', max: 180 });
     const days = ['MON', 'TUE', 'WED', 'THU', 'FRI'], ins = ['08:59', '08:58', '09:00', '08:59'], outs = ['17:01', '17:00', '17:02', '17:00'];
     for (let i = 0; i < 5; i++) {
       const y = 330 + i * 64; s.globalAlpha = .4; ink([[24, y], [CARD_W - 24, y]], 1.2); s.globalAlpha = 1;
-      text(days[i], 60, y + 44, 22, { font: 'sign' });
-      if (i < 4) { text(ins[i], 150, y + 44, 28, { alpha: .8 }); text(outs[i], 350, y + 44, 28, { alpha: .8 }); }
-      else if (punched) text('11:47', 150, y + 44, 30, { color: '#2a2622' });
+      text(days[i], 60, y + 44, 22, { font: 'sign', max: 66 });
+      if (i < 4) { text(ins[i], 175, y + 44, 28, { alpha: .8, max: 130 }); text(outs[i], 350, y + 44, 28, { alpha: .8, max: 180 }); }
+      else if (punched) text('11:47', 175, y + 44, 30, { color: '#2a2622', max: 130 });
     }
     ink([[100, 330], [100, 650]], 1.2); ink([[250, 330], [250, 650]], 1.2);
     if (late !== null) stamp(t, late, 300, 590, 'LATE', { size: 92, color: INK, rot: -.16 });
@@ -124,7 +126,7 @@
       const d0 = P(xi + 1.0, -.75, ZW), d1 = P(xi + 2.2, FL, ZW);
       shape([[d0[0], d0[1]], [d1[0], d0[1]], [d1[0], d1[1]], [d0[0], d1[1]]], '#6b6a5a', 2);
       const g0 = P(xi + 1.15, -.6, ZW), g1 = P(xi + 2.05, .2, ZW); shape([[g0[0], g0[1]], [g1[0], g0[1]], [g1[0], g1[1]], [g0[0], g1[1]]], '#c9c8b0', 1.5);
-      const n = P(xi + 1.6, -.1, ZW); text(String(500 + Math.round(xi / 3.2) * 3), n[0], n[1], n[2] * .26);
+      const n = P(xi + 1.6, -.1, ZW); text(String(500 + Math.round(xi / 3.2) * 3), n[0], n[1], n[2] * .26, { max: (g1[0] - g0[0]) * .8 });
       const c = P(xi - .1, -1.0, ZW); clockFace(c[0], c[1], .45 * c[2], Math.round(xi * 10), t);
     }
     // ducts along the ceiling, with drops into the wall
@@ -189,13 +191,13 @@
       withT(() => { const r = 180, cx = 650, cy = 265; dot(cx, cy, r + 14, BRASS); s.beginPath(); s.arc(cx, cy, r + 14, 0, TAU); s.lineWidth = 3; s.strokeStyle = INK; s.stroke();
         dot(cx, cy, r, CREAM);
         for (let i = 0; i < 12; i++) { const a = i / 12 * TAU; ink([[cx + Math.cos(a) * r * .8, cy + Math.sin(a) * r * .8], [cx + Math.cos(a) * r * .92, cy + Math.sin(a) * r * .92]], i % 3 ? 2.5 : 5);
-          text(String(i ? i : 12), cx + Math.sin(i / 12 * TAU) * r * .66, cy - Math.cos(i / 12 * TAU) * r * .66 + 12, 32, { font: 'sign' }); }
+          text(String(i ? i : 12), cx + Math.sin(i / 12 * TAU) * r * .66, cy - Math.cos(i / 12 * TAU) * r * .66 + 12, 32, { font: 'sign', max: 50 }); }
         const mins = lerp(47 - 6, 47, ease.out(inv(212.8, 216, t))) + (late ? ease.back(inv(chunk, chunk + .25, t)) * 0 : 0);
         const hA = (11 + mins / 60) / 12 * TAU, mA = mins / 60 * TAU;
         ink([[cx, cy], [cx + Math.sin(hA) * r * .5, cy - Math.cos(hA) * r * .5]], 12);
         ink([[cx, cy], [cx + Math.sin(mA) * r * .76, cy - Math.cos(mA) * r * .76]], 7);
         dot(cx, cy, 12, INK); });
-      shape([[400, 520], [900, 520], [900, 600], [400, 600]], BRASS, 3); bold('TIME RECORDER', 650, 576, 44);
+      shape([[400, 520], [900, 520], [900, 600], [400, 600]], BRASS, 3); bold('TIME RECORDER', 650, 576, 44, { max: 460 });
       shape([[440, 690], [860, 690], [860, 716], [440, 716]], BLACK, 3);           // the slot
       // the lever on the side, slammed at the chunk
       const lev = t < chunk - .2 ? 0 : t < chunk ? ease.in(inv(chunk - .2, chunk, t)) : 1 - ease.inOut(inv(chunk + .3, chunk + .8, t));
@@ -311,7 +313,7 @@
       if (t < tw) return;
       const k = ease.back(inv(tw, tw + .16, t)), [, x, y, size, al] = lay[i], sc = lerp(1.5, 1, k);
       withT(() => { s.translate(x, y - size * .35); s.scale(sc, sc); s.rotate((hash(i + 3) - .5) * .08);
-        bold(w, 0, size * .35, size, { color: CREAM, outline: 26, alpha: clamp(k * 3), align: al }); });
+        bold(w, 0, size * .35, size, { color: CREAM, outline: 26, alpha: clamp(k * 3), align: al, max: al === 'center' ? 1760 : 860 }); });
     });
   }
   // 229.9 "do do do": back in the corridor. He has stopped; the crowd parts round him; the letters of the
@@ -414,7 +416,7 @@
     const ty = lerp(430, 175, ease.inOut(inv(241.9, 245.2, t))), tx = W / 2 - 80, sway = Math.sin(t * 1.7) * .05;
     withT(() => { s.translate(tx, ty); s.rotate(-.06 + sway);
       shape([[-430, -38], [430, -38], [430, 38], [-430, 38]], CREAM, 3);
-      text("BUT I DON'T CARE", 0, 20, 54, { font: 'type' });
+      text("BUT I DON'T CARE", 0, 20, 54, { font: 'type', max: 800 });
       for (const ex of [-430, 430]) { ink([[ex, -38], [ex * 1.04, -110]], 2); bird(ex * 1.04, -130, 38, t * 2.6 + (ex > 0 ? .4 : 0), 1); } });
     // his ticket, let go on the last line, flutters up and becomes a bird
     if (t >= 243.68) {

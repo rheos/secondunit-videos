@@ -13,7 +13,8 @@
   const FUT = 'Futura, "Gill Sans", sans-serif';
 
   // ---- helpers ----
-  function bold(str, x, y, size, { color = INK, align = 'center', rot = 0, alpha = 1, spacing = 0, base = 'alphabetic' } = {}) {
+  function bold(str, x, y, size, { color = INK, align = 'center', rot = 0, alpha = 1, spacing = 0, base = 'alphabetic', max = 0 } = {}) {
+    if (max) { s.save(); s.font = `bold ${Math.round(size)}px ${FUT}`; const wd = s.measureText(str).width + spacing * str.length; s.restore(); if (wd > max) { spacing *= max / wd; size *= max / wd; } }
     withT(() => { s.translate(x, y); s.rotate(rot); s.globalAlpha *= alpha; s.fillStyle = color; s.textAlign = align; s.textBaseline = base;
       s.font = `bold ${Math.round(size)}px ${FUT}`; if (spacing) s.letterSpacing = spacing + 'px'; s.fillText(str, 0, 0); });
   }
@@ -68,7 +69,7 @@
     dot(W / 2, H / 2, rr + 18, inv ? CREAM : INK); dot(W / 2, H / 2, rr, inv ? BLACK : CREAM);
     s.beginPath(); s.arc(W / 2, H / 2, rr - 16, 0, TAU); s.lineWidth = 3; s.strokeStyle = inv ? CREAM : INK; s.stroke();
     const w = word(t);
-    bold(w, W / 2, H / 2 + rr * .3, rr * (w.length > 2 ? .72 : .9), { color: inv ? CREAM : INK });
+    bold(w, W / 2, H / 2 + rr * .3, rr * (w.length > 2 ? .72 : .9), { color: inv ? CREAM : INK, max: rr * 1.5 });
   }
   // the grey cracks; sky behind. amt 0..1
   function cracks(t, amt) {
@@ -118,7 +119,7 @@
       s.translate(W / 2, 880); s.rotate(-.42 * sg);
       shape([[-1500, -44], [1500, -44], [1500, 44], [-1500, 44]], inv ? MID : DARK, 3);
       const off = (k + ease.out(pb / .2)) * 230;
-      for (let j = -9; j < 9; j++) bold(wordOf(k - j), -sg * (j * 230 - off % 460 + (k % 2) * 230), 26, 66, { color: CREAM, alpha: .9 });
+      for (let j = -9; j < 9; j++) bold(wordOf(k - j), -sg * (j * 230 - off % 460 + (k % 2) * 230), 26, 66, { color: CREAM, alpha: .9, max: 200 });
     });
     // the big band and the word
     withT(() => {
@@ -127,7 +128,7 @@
       // a clerk standing on the band's top edge, upright, tiny against it
       withT(() => { s.translate(-sg * 620, -175); s.rotate(.42 * sg); tinyMan(0, 0, 110, fg, sg); });
       const w = word(t), sc = 1 + .22 * punch;
-      s.scale(sc, sc); bold(w, sg * 120, 118, w.length > 2 ? 300 : 330, { color: bg, spacing: 6 });
+      s.scale(sc, sc); bold(w, sg * 120, 118, w.length > 2 ? 300 : 330, { color: bg, spacing: 6, max: 1100 });
     });
   }
   // the typebar basket: a fan of bars; one swings up to the platen on each beat and types the word
@@ -138,13 +139,13 @@
     shape([[150, 40], [W - 150, 40], [W - 150, 420], [150, 420]], CREAM, 3);
     s.globalAlpha = .3; for (let y = 120; y < 420; y += 70) ink([[200, y], [W - 200, y]], 1.2); s.globalAlpha = 1;
     const words = []; for (let j = Math.max(iWE, k - 8); j <= k; j++) words.push(wordOf(j));
-    const line1 = words.join(' '), prev = words.slice(0, -1).join(' ');
-    withT(() => { clipRect(150, 40, W - 300, 380);
-      text(prev.slice(-30), W / 2 - 24, 240, 120, { align: 'right', alpha: .9 });
+        withT(() => { clipRect(150, 40, W - 300, 380);
+      let back = '';   // only whole words, as many as fit between the paper's left margin and the strike point
+      for (let j = words.length - 2; j >= 0; j--) { const c = words[j] + (back ? ' ' + back : ''); if (textWidth(c, 120) > W / 2 - 24 - 200) break; back = c; }
+      text(back, W / 2 - 24, 240, 120, { align: 'right', alpha: .9 });
       const fresh = clamp(pb / .1);
       text(words[words.length - 1], W / 2 - 4, 240, 120, { align: 'left', alpha: fresh });
     });
-    void line1;
     shape([[60, 410], [W - 60, 410], [W - 60, 500], [60, 500]], BLACK, 3);                  // the platen roller
     s.globalAlpha = .35; for (let x = 80; x < W - 60; x += 26) ink([[x, 418], [x, 492]], 1.4); s.globalAlpha = 1;
     shape([[S[0] - 90, 440], [S[0] + 90, 440], [S[0] + 90, 474], [S[0] - 90, 474]], '#55534a', 2);   // the ribbon
@@ -160,7 +161,7 @@
       line([pv, tip], INK, wdt + 6); line([pv, tip], isS ? '#b9b7a4' : '#8f8d7d', wdt);
       dot(pv[0], pv[1], 10, INK);
       withT(() => { s.translate(tip[0], tip[1]); s.rotate(a - Math.PI / 2); shape([[-16, -10], [16, -10], [16, 22], [-16, 22]], isS ? CREAM : '#c9c2a8', 2);
-        text(isS ? word(t)[0] : 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123'[i], 0, 15, 22, { font: 'sign' }); });
+        text(isS ? word(t)[0] : 'ABCDEFGHIJKLMNOPQRSTUVWXYZ01234'[i], 0, 15, 22, { font: 'sign', max: 26 }); });
     }
     // the segment that holds the pivots
     s.beginPath(); s.arc(S[0], S[1], Rp, .1, Math.PI - .1); s.lineWidth = 22; s.strokeStyle = INK; s.stroke();
@@ -176,7 +177,7 @@
       s.fillStyle = light ? '#6e6e64' : CREAM; s.fillRect(side * W / 2, 0, W / 2, H);
       const fx0 = side * W / 2 + 90, fw = W / 2 - 180;
       shape([[fx0, 140], [fx0 + fw, 140], [fx0 + fw, 1000], [fx0, 1000]], light ? CREAM : '#a9a898', 3);
-      text('FORM WGT-89', fx0 + fw - 20, 182, 26, { font: 'sign', align: 'right' });
+      text('FORM WGT-89', fx0 + fw - 20, 182, 26, { font: 'sign', align: 'right', max: fw - 40 });
       s.globalAlpha = .3; for (let y = 240; y < 980; y += 64) ink([[fx0 + 30, y], [fx0 + fw - 30, y]], 1.2); s.globalAlpha = 1;
       const want = side === 0 ? 'WE' : 'GOT';
       for (let j = k - 5; j <= k + 1; j++) {
@@ -220,7 +221,7 @@
       if (empty) { shape([[x - 60, y - 50], [x + 60, y - 50], [x + 60, y + 50], [x - 60, y + 50]], '#6e6a5a', 2.5); hatch([[x - 60, y - 50], [x + 60, y - 50], [x + 60, y + 50], [x - 60, y + 50]], .8, 10, 1.2, .3); return; }
       s.beginPath(); s.ellipse(x, y + 10, 92, 48, 0, 0, TAU); s.fillStyle = COAT; s.fill(); s.lineWidth = 2.5; s.strokeStyle = INK; s.stroke();   // shoulders
       dot(x, y, 34, SKIN); s.beginPath(); s.arc(x, y, 34, 0, TAU); s.stroke();
-      if (up > .2) withT(() => { s.translate(x, y); s.rotate(-.1); shape([[-38, -16], [38, -16], [38, 16], [-38, 16]], CREAM, 2); text(w, 0, 10, w.length > 2 ? 24 : 28, { font: 'sign' }); });
+      if (up > .2) withT(() => { s.translate(x, y); s.rotate(-.1); shape([[-38, -16], [38, -16], [38, 16], [-38, 16]], CREAM, 2); text(w, 0, 10, w.length > 2 ? 24 : 28, { font: 'sign', max: 64 }); });
       const hx = x + up * 20, hy = y - up * 95, sc = 1 + up * .3;
       s.globalAlpha = .25 + .1 * up; dot(x + 10 + up * 30, y + 14 + up * 20, 60, INK); s.globalAlpha = 1;
       s.beginPath(); s.arc(hx, hy, 64 * sc, 0, TAU); s.fillStyle = HAT; s.fill(); s.lineWidth = 3; s.strokeStyle = INK; s.stroke();
@@ -256,7 +257,7 @@
     for (let j = k; j >= Math.max(iWE, k - 14); j--) {
       const u = (t - B[j]) * speed + 120; if (u > L - 60) break;
       const p = path(u), q = path(u + 6), a = Math.atan2(q[1] - p[1], q[0] - p[0]);
-      text(wordOf(j), p[0], p[1] + 2, 64, { font: 'type', rot: a, align: 'center' });
+      text(wordOf(j), p[0], p[1] + 2, 64, { font: 'type', rot: a, align: 'center', max: 260 });
       withT(() => { s.translate(p[0], p[1]); s.rotate(a); s.globalAlpha = .45; ink([[150, -48], [150, 48]], 1.6); });
     }
     withT(() => { s.translate(mx, my); s.scale(flare, flare);
@@ -278,8 +279,8 @@
       shape([[-430, -210], [430, -210], [430, 210], [-430, 210]], BRASS, 5);
       for (const [bx, by] of [[-400, -180], [400, -180], [400, 180], [-400, 180]]) dot(bx, by, 9, INK);
       // every cell flips together, early, so the word settles exactly on its beat
-      const kf2 = bt(t + .4), w = (word(t + .4) + '   ').slice(0, 3), prev = (word(B[Math.max(0, kf2)] - .05) + '   ').slice(0, 3);
-      for (let i = 0; i < 3; i++) splitFlap(t, B[Math.max(0, kf2)] - .4 - i * .047, w[i], -360 + i * 340 * .8, -170, 340, { prev: prev[i] });
+      const kf2 = bt(t + .26), w = (word(t + .26) + '   ').slice(0, 3), prev = (word(B[Math.max(0, kf2)] - .05) + '   ').slice(0, 3);
+      for (let i = 0; i < 3; i++) splitFlap(t, B[Math.max(0, kf2)] - .26 - i * .03, w[i], -360 + i * 340 * .8, -170, 340, { prev: prev[i] });
     });
     shape([[-20, 960], [W + 20, 960], [W + 20, H + 20], [-20, H + 20]], BLACK, 3);
     tinyMan(W / 2 - sg * 380, 962, 120, BLACK, sg);
