@@ -71,7 +71,7 @@
       withT(() => { s.globalAlpha = .5; s.fillStyle = rgrad(W / 2, 560, 100, 900, [[0, 'rgba(240,178,58,.35)'], [1, 'rgba(240,178,58,0)']]); s.fillRect(-W, -H, W * 3, H * 3); });
       shape([[260, 230], [1660, 230], [1660, 900], [260, 900]], BRASS, 5);
       shape([[300, 270], [1620, 270], [1620, 860], [300, 860]], '#1f201c', 3);
-      text('NOW SERVING', W / 2, 390, 92, { font: 'sign', color: AMBER, spacing: 8 });
+      text('NOW SERVING', W / 2, 390, 92, { font: 'sign', color: AMBER, spacing: 8, max: 1320 - 120 });
       const cell = 220, cw = cell * .72, gap = cell * .08, n = 7, x0 = W / 2 - (n * (cw + gap) - gap) / 2;
       splitFlap(t, 329.0, HIS, x0, 500, cell, { prev: '   0004' });
     });

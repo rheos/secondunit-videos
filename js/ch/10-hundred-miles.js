@@ -46,9 +46,8 @@
     const w = h * .26;
     shape([[x - w / 2, y], [x + w / 2, y], [x + w / 2, y - h], [x - w / 2, y - h]], '#f1ede0', 3);
     shape([[x - w / 2 - 4, y - h - h * .08], [x + w / 2 + 4, y - h - h * .08], [x + w / 2 + 4, y - h], [x - w / 2 - 4, y - h]], INK, 2);
-    const ps = Math.min(.26, w * .8 / (String(n).length * .6) / h);
     shape([[x - w * .42, y - h * .82], [x + w * .42, y - h * .82], [x + w * .42, y - h * .5], [x - w * .42, y - h * .5]], '#2f6f4a', 2);
-    text(String(n), x, y - h * .56, h * ps, { font: 'sign', color: CREAM });
+    text(String(n), x, y - h * .56, h * .26, { font: 'sign', color: CREAM, max: w * .84 * .82 });
   }
   // a cloud with a face, waving
   function waver(x, y, r, seed, t) {

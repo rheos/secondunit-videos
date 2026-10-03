@@ -211,8 +211,7 @@
     }
     // him: walks in from the right to the machine and feeds it
     const x = kf(t, [[245, 1.6], [246.7, -.5]], (k) => k), walking = t < 246.7;
-    { const mb = P(x, FL, 4.75); // drawn facing right and mirrored, so his coat hangs right facing left
-      withT(() => { s.translate(mb[0] * 2, 0); s.scale(-1, 1); man(x, 4.75, { ph: (t - 245) * 1.1, walk: walking ? 1 : 0, face: 1, arm: walking ? 0 : .22 + run * Math.sin(t * 8) * .04 }); }); }
+    man(x, 4.75, { ph: (t - 245) * 1.1, walk: walking ? 1 : 0, face: -1, arm: walking ? 0 : .22 + run * Math.sin(t * 8) * .04 });
     // the laughter rings, from her mouth to the spool
     const hd = P(-3.85, -.05, 5.2), sp = [tb[0] + .05 * tk, tt - .5 * tk];
     laughter(t, [hd[0] + 30, hd[1]], [(hd[0] + sp[0]) / 2, hd[1] - 160], sp, laugh, 42);
@@ -356,7 +355,7 @@
     shape([[f0[0], f0[1]], [b0[0], b0[1]], [b1[0], b1[1]], [f1[0], f0[1]]], '#4a463d', 3);
     shape([[f0[0], f0[1]], [f1[0], f0[1]], [f1[0], f1[1]], [f0[0], f1[1]]], '#3a382f', 3);
     shape([[f0[0], f1[1] - 12], [f1[0], f1[1] - 12], [f1[0], f1[1]], [f0[0], f1[1]]], ROSE, 2);
-    text('ON HOLD', (f0[0] + f1[0]) / 2, (f0[1] + f1[1]) / 2 + .1 * f1[2], .32 * f1[2], { font: 'stamp', color: CREAM });
+    text('ON HOLD', (f0[0] + f1[0]) / 2, (f0[1] + f1[1]) / 2 + .1 * f1[2], .32 * f1[2], { font: 'stamp', color: CREAM, max: (f1[0] - f0[0]) * .84 });
     const h0 = P(sx - .22, yb - .55, zS), h1 = P(sx + .22, yb - 3.2, zS);
     shape([[h0[0], h0[1]], [h1[0] + (h1[0] - h0[0]) * 0, h0[1]], [h1[0] - 8, h1[1]], [h0[0] + 8, h1[1]]], BRASS, 3);
     const kn = P(sx, yb - 3.6, zS); dot(kn[0], kn[1], .5 * kn[2], BRASS); s.lineWidth = 3; s.strokeStyle = INK; s.beginPath(); s.arc(kn[0], kn[1], .5 * kn[2], 0, TAU); s.stroke();
@@ -426,9 +425,10 @@
     if (up > 0) withT(() => {
       s.translate(1260, 1020); s.rotate((1 - up) * 1.2);
       line([[0, 0], [0, -470]], INK, 22); line([[0, 0], [0, -470]], '#6b6a5a', 15);
-      shape([[-300, -560], [260, -560], [340, -495], [260, -430], [-300, -430]], '#2f6f4a', 4);
-      s.lineWidth = 3; s.strokeStyle = CREAM; s.strokeRect(-286, -548, 538, 106);
-      text('A HUNDRED MILES', -15, -472, 56, { font: 'sign', color: CREAM });
+      const tw = textWidth('A HUNDRED MILES', 56, 'sign'), x0 = -tw / 2 - 50, x1 = tw / 2 + 30;   // the sign is sized to its words
+      shape([[x0, -560], [x1, -560], [x1 + 80, -495], [x1, -430], [x0, -430]], '#2f6f4a', 4);
+      s.lineWidth = 3; s.strokeStyle = CREAM; s.strokeRect(x0 + 14, -548, x1 - x0 - 14, 106);
+      text('A HUNDRED MILES', (x0 + x1) / 2 + 7, -472, 56, { font: 'sign', color: CREAM, max: x1 - x0 - 50 });
     });
     // him: down the steps and onto the road
     const wk = inv(286.6, 290, t), bx = lerp(330, 760, wk), by = lerp(760, 885, smooth(inv(0, .45, wk))) ;
