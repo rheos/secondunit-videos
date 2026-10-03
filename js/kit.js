@@ -49,7 +49,7 @@ function room(t) {
     shape(d, '#6b6a5a', 2);
     const g = [P(WX, -.55, z + .15), P(WX, -.55, z + 1.25), P(WX, .3, z + 1.25), P(WX, .3, z + .15)].map(p => [p[0], p[1]]);
     shape(g, '#c9c8b0', 1.5);
-    const n = P(WX, -.15, z + .7); s.fillStyle = INK; s.font = `${Math.round(n[2] * .28)}px "American Typewriter", Courier, serif`; s.textAlign = 'center'; s.fillText(String(400 + z * 3), n[0], n[1]);
+    const n = P(WX, -.15, z + .7); text(String(400 + z * 3), n[0], n[1], n[2] * .28, { max: Math.abs(g[1][0] - g[0][0]) * .8 });
   }
 }
 
@@ -80,8 +80,9 @@ function board(t, num = '0002', z = 52) {
   shape([[a[0], a[1]], [b[0], a[1]], [b[0], b[1]], [a[0], b[1]]], BRASS, 3);
   const m = 6 * a[2] / 60; shape([[a[0] + m, a[1] + m], [b[0] - m, a[1] + m], [b[0] - m, b[1] - m], [a[0] + m, b[1] - m]], '#1f201c', 2);
   s.textAlign = 'center'; s.fillStyle = AMBER;
-  s.font = `${Math.round(a[2] * .32)}px Futura, "Gill Sans", sans-serif`; s.fillText('NOW SERVING', (a[0] + b[0]) / 2, a[1] + (b[1] - a[1]) * .38);
-  s.font = `bold ${Math.round(a[2] * .62)}px Futura, "Gill Sans", sans-serif`; s.fillText(num, (a[0] + b[0]) / 2, a[1] + (b[1] - a[1]) * .86);
+  const inner = (b[0] - a[0]) - 4 * m;
+  text('NOW SERVING', (a[0] + b[0]) / 2, a[1] + (b[1] - a[1]) * .38, a[2] * .32, { font: 'sign', color: AMBER, max: inner });
+  text(num, (a[0] + b[0]) / 2, a[1] + (b[1] - a[1]) * .86, a[2] * .62, { font: 'sign', color: AMBER, max: inner });
 }
 // the hold-music horn on the left wall; it swells with the voice
 function horn(t, z = 9) {
@@ -108,7 +109,7 @@ function ticketBox(x = 3.6, z = 5.6) {
   ink([[b[0], b[1]], [top[0], top[1]]], 4);
   shape([[top[0] - .25 * k, top[1] - .5 * k], [top[0] + .25 * k, top[1] - .5 * k], [top[0] + .25 * k, top[1]], [top[0] - .25 * k, top[1]]], BRASS, 2.5);
   shape([[top[0] - .12 * k, top[1] - .2 * k], [top[0] + .12 * k, top[1] - .2 * k], [top[0] + .12 * k, top[1] - .16 * k], [top[0] - .12 * k, top[1] - .16 * k]], INK, 1);
-  s.fillStyle = INK; s.font = `${Math.round(k * .09)}px Futura, sans-serif`; s.textAlign = 'center'; s.fillText('TAKE A NUMBER', top[0], top[1] - .32 * k);
+  text('TAKE A NUMBER', top[0], top[1] - .32 * k, k * .09, { font: 'sign', max: .46 * k });
 }
 
 // ---- people ----
@@ -209,32 +210,41 @@ function papers(t, t0, n = 60) {
 // ---- added for the full song ----
 const ROSE = '#c8455a', ROSE_L = '#e7a0a8';
 // set text in the world. font: 'type' (typewriter), 'sign' (Futura), 'stamp' (bold slab)
-function text(str, x, y, size, { font = 'type', color = INK, align = 'center', rot = 0, alpha = 1, spacing = 0 } = {}) {
-  const fam = { type: '"American Typewriter", Courier, serif', sign: 'Futura, "Gill Sans", sans-serif', stamp: '"Rockwell", "American Typewriter", serif' }[font];
-  const weight = font === 'stamp' ? 'bold ' : '';
+const FONTS = { type: '"American Typewriter", Courier, serif', sign: 'Futura, "Gill Sans", sans-serif', stamp: '"Rockwell", "American Typewriter", serif' };
+const fontCss = (font, size) => `${font === 'stamp' ? 'bold ' : ''}${Math.round(size)}px ${FONTS[font]}`;
+// how wide str sets at this size and font (letter spacing included)
+function textWidth(str, size, font = 'type', spacing = 0) { s.save(); s.font = fontCss(font, size); const w = s.measureText(str).width + spacing * Math.max(0, str.length - 1); s.restore(); return w; }
+// the largest size <= size at which str fits in max px
+function fitSize(str, size, max, font = 'type', spacing = 0) { if (!max) return size; const w = textWidth(str, size, font, spacing); return w > max ? size * max / w : size; }
+// set text in the world. font: 'type' (typewriter), 'sign' (Futura), 'stamp' (bold slab).
+// max: the width it must fit in (its paper, sign or card); the size shrinks to fit. fitTo: measure the fit
+// against this longer string instead (so a line being typed out keeps one size as it grows).
+function text(str, x, y, size, { font = 'type', color = INK, align = 'center', rot = 0, alpha = 1, spacing = 0, max = 0, fitTo = null } = {}) {
+  const sz = fitSize(fitTo ?? str, size, max, font, spacing), sp = spacing * sz / size;
   withT(() => { s.translate(x, y); s.rotate(rot); s.globalAlpha *= alpha; s.fillStyle = color; s.textAlign = align; s.textBaseline = 'alphabetic';
-    s.font = `${weight}${Math.round(size)}px ${fam}`; if (spacing) s.letterSpacing = spacing + 'px'; s.fillText(str, 0, 0); });
+    s.font = fontCss(font, sz); if (sp) s.letterSpacing = sp + 'px'; s.fillText(str, 0, 0); });
+  return sz;
 }
 // a typed form: lines[] typed out by `typed` characters so far (Infinity = all). (x, y) top-left, w wide.
 function form(x, y, w, lines, { typed = Infinity, title = 'FORM WGT-89', size = 30, rot = 0, h = null } = {}) {
   const hh = h ?? (size * 1.6 * (lines.length + 2.4));
   withT(() => { s.translate(x, y); s.rotate(rot);
     shape([[0, 0], [w, 0], [w, hh], [0, hh]], CREAM, 2.5);
-    text(title, w - 14, size * .9, size * .55, { font: 'sign', align: 'right' });
+    text(title, w - 14, size * .9, size * .55, { font: 'sign', align: 'right', max: w - 28 });
     s.globalAlpha = .35; for (let i = 0; i < lines.length + 1; i++) ink([[size * .6, size * 2.25 + i * size * 1.6], [w - size * .6, size * 2.25 + i * size * 1.6]], 1); s.globalAlpha = 1;
     let left = typed;
-    lines.forEach((l, i) => { if (left <= 0) return; const shown = l.slice(0, Math.max(0, Math.floor(left))); left -= l.length; text(shown, size * .7, size * 2.05 + i * size * 1.6, size, { align: 'left' }); });
+    lines.forEach((l, i) => { if (left <= 0) return; const shown = l.slice(0, Math.max(0, Math.floor(left))); left -= l.length; text(shown, size * .7, size * 2.05 + i * size * 1.6, size, { align: 'left', max: w - size * 1.4, fitTo: l }); });
   });
 }
 // a rubber stamp: comes down at t0, leaves its ink. (x, y) centre of the imprint.
 function stamp(t, t0, x, y, word, { size = 90, color = ROSE, rot = -.12 } = {}) {
   if (t < t0 - .35) return;
   const down = t < t0 ? ease.in(inv(t0 - .35, t0, t)) : 1, lift = ease.out(inv(t0 + .08, t0 + .45, t));
-  if (t >= t0) withT(() => { s.translate(x, y); s.rotate(rot); s.globalAlpha = .85; const w = s.measureText ? size * word.length * .62 : 0;
+  if (t >= t0) withT(() => { s.translate(x, y); s.rotate(rot); s.globalAlpha = .85; const w = textWidth(word, size, 'stamp');
     s.lineWidth = size * .08; s.strokeStyle = color; s.strokeRect(-w / 2 - size * .3, -size * .95, w + size * .6, size * 1.25);
     text(word, 0, 0, size, { font: 'stamp', color }); });
   const hy = y - size * .6 - (1 - down) * 500 - lift * 600; // the stamp itself, a brass handle
-  if (lift < 1) withT(() => { s.translate(x, hy); s.rotate(rot); const w = size * word.length * .62 + size * .6;
+  if (lift < 1) withT(() => { s.translate(x, hy); s.rotate(rot); const w = textWidth(word, size, 'stamp') + size * .6;
     shape([[-w / 2, 0], [w / 2, 0], [w / 2, -size * .35], [-w / 2, -size * .35]], '#3a382f', 2.5);
     shape([[-size * .25, -size * .35], [size * .25, -size * .35], [size * .18, -size * 1.4], [-size * .18, -size * 1.4]], BRASS, 2.5);
     s.beginPath(); s.arc(0, -size * 1.6, size * .38, 0, TAU); s.fillStyle = BRASS; s.fill(); s.lineWidth = 2.5; s.strokeStyle = INK; s.stroke(); });

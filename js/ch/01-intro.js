@@ -24,7 +24,7 @@
     // the door: revolving, dark, at the foot
     shape([[TX - 90, BASE], [TX + 90, BASE], [TX + 90, BASE - 160], [TX - 90, BASE - 160]], '#2c2e2b', 3);
     const rv = t * .9; for (let i = 0; i < 3; i++) { const a = rv + i * TAU / 3; ink([[TX, BASE - 150], [TX, BASE - 10]], 2); ink([[TX + Math.cos(a) * 80, BASE - 150], [TX + Math.cos(a) * 80, BASE - 10]], 3); }
-    text('MINISTRY', TX, BASE - 178, 34, { font: 'sign', color: CREAM, spacing: 14 });
+    text('MINISTRY', TX, BASE - 178, 34, { font: 'sign', color: CREAM, spacing: 14, max: 300 });
     // ducts climbing the face like ivy: fat ribbed tubes that wander up from the ground
     for (let d = 0; d < 5; d++) {
       if (d === 2) continue; // keep the door and the name clear
@@ -42,7 +42,7 @@
     withT(() => { s.beginPath(); s.rect(x, y, w, h); s.clip(); cloud(x + w * .3 + t * 6, y + h * .55, 46, 3); cloud(x + w * .78 - t * 3, y + h * .35, 32, 8); });
     s.lineWidth = 6; s.strokeStyle = INK; s.strokeRect(x, y, w, h);
     shape([[x, y + h - 54], [x + w, y + h - 54], [x + w, y + h], [x, y + h]], CREAM, 3);
-    text('THE SKY. NOW AVAILABLE.', x + w / 2, y + h - 16, 32, { font: 'sign', spacing: 4 });
+    text('THE SKY. NOW AVAILABLE.', x + w / 2, y + h - 16, 32, { font: 'sign', spacing: 4, max: w - 30 });
   }
 
   function exterior(t, lt) {
@@ -79,7 +79,7 @@
       form(0, 0, 840, ['WE GOT TIME', '', 'BOB WISEMAN'], { typed, title: 'FORM WGT-89  /  REQUEST FOR TIME', size: 58, h: 640 });
       text('APPLICANT', 840 - 40, 590, 20, { font: 'sign', align: 'right', alpha: .6 });
     });
-    stamp(t, 11.3, W / 2 + 240, 700, 'RECEIVED', { size: 70, rot: -.14 });
+    stamp(t, 11.3, W / 2 + 110, 640, 'RECEIVED', { size: 70, rot: -.14 });
     // the pneumatic tube's mouth at the top edge: a canister arrives as the stamp lands
     shape([[1450, -20], [1610, -20], [1600, 90], [1460, 90]], STEEL, 3);
     const c = ease.back(inv(11.6, 12.3, t)); if (t > 11.6) shape([[1490, 40 + c * 120], [1570, 40 + c * 120], [1570, 120 + c * 120], [1490, 120 + c * 120]], BRASS, 2.5);

@@ -36,15 +36,15 @@
       withT(() => {
         s.translate(560 + Math.sin(t * 1.3) * 6, 760 + Math.sin(t * 2.1) * 4); s.rotate(-.12);
         shape([[-60, -150], [330, -170], [345, 120], [-40, 140]], CREAM, 3);
-        s.fillStyle = INK; s.textAlign = 'center'; s.font = '34px "American Typewriter", Courier, serif'; s.fillText('MINISTRY OF WAITING', 140, -95);
-        s.font = 'bold 92px "American Typewriter", Courier, serif'; s.fillText('7 436 912', 140, 20);
-        s.font = '26px "American Typewriter", Courier, serif'; s.fillText('PLEASE REMAIN SEATED', 140, 85);
+        text('MINISTRY OF WAITING', 145, -95, 34, { max: 320 });
+        text('7 436 912', 150, 20, 92, { max: 300 });
+        text('PLEASE REMAIN SEATED', 150, 85, 26, { max: 300 });
         for (let i = 0; i < 9; i++) dot(-40, -125 + i * 30, 6, '#8f9886');   // the perforation
         shape([[-420, 120], [-150, 20], [-100, 260], [-420, 330]], COAT, 3);                  // coat sleeve
         hatch([[-420, 200], [-130, 120], [-100, 260], [-420, 330]], .9, 9, 1.4, .45);
-        s.beginPath(); s.ellipse(-110, 70, 120, 95, -.35, 0, TAU); s.fillStyle = '#3a382f'; s.fill(); s.lineWidth = 3; s.strokeStyle = INK; s.stroke();   // gloved fist
-        s.beginPath(); s.ellipse(-5, 30, 70, 30, -.2, 0, TAU); s.fillStyle = '#3a382f'; s.fill(); s.stroke();     // thumb on the ticket
-        ink([[-150, 40], [-60, 20]], 2); ink([[-160, 85], [-70, 70]], 2);
+        s.beginPath(); s.ellipse(-170, 95, 115, 90, -.35, 0, TAU); s.fillStyle = '#3a382f'; s.fill(); s.lineWidth = 3; s.strokeStyle = INK; s.stroke();   // gloved fist
+        s.beginPath(); s.ellipse(-55, 120, 58, 26, -.2, 0, TAU); s.fillStyle = '#3a382f'; s.fill(); s.stroke();     // thumb on the ticket
+        ink([[-210, 65], [-120, 45]], 2); ink([[-220, 110], [-130, 95]], 2);
       });
       // up the wall: one small high window, and the sky in it
       withT(() => {
