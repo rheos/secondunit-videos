@@ -48,24 +48,8 @@
     room(t); duct(-3.6, -2.1, .5, 0, FAR); duct(2.8, -2.25, .32, 0, FAR, STEEL_D); tube(t); board(t, num); patches();
   }
   // her hand from the right with the rose cuff (local coords: the hand's grip point at 0,0)
-  function herHand(sc = 1) {
-    withT(() => { s.scale(sc, sc);
-      shape([[520, 60], [260, -40], [200, 90], [520, 230]], SLEEVE, 3);
-      hatch([[520, 140], [230, 40], [200, 90], [520, 230]], .9, 9, 1.4, .4);
-      shape([[275, -32], [245, -42], [190, 95], [222, 108]], ROSE, 2.5);     // the rose cuff
-      oval(130, 40, 95, 62, .35, SKIN); oval(30, 10, 62, 22, .2, SKIN);   // mitten and the thumb on the paper
-      ink([[110, 70], [60, 60]], 2); ink([[120, 95], [75, 92]], 2);
-      if (PN()) knob(258, 30, 9, CREAM);   // a cuff button
-    });
-  }
-  function hisGlove(sc = 1) {
-    withT(() => { s.scale(sc, sc);
-      shape([[-520, 60], [-260, -40], [-200, 90], [-520, 230]], COAT, 3);
-      hatch([[-520, 140], [-230, 40], [-200, 90], [-520, 230]], .9, 9, 1.4, .45);
-      oval(-130, 40, 105, 75, -.35, GLOVE); oval(-30, 10, 66, 26, -.2, GLOVE);
-      if (PN()) { s.globalAlpha = .5; oval(-165, 5, 30, 14, -.5, '#8a8576', 1); s.globalAlpha = 1; }   // the shine on the leather
-    });
-  }
+  function herHand(sc = 1) { gripHand(0, 0, Math.PI, sc * 1.05, { sleeve: SLEEVE, cuff: ROSE }); }   // from the right, rose cuff
+  function hisGlove(sc = 1) { gripHand(0, 0, 0, sc * 1.1, { glove: true, sleeve: COAT }); }              // from the left, leather glove
   // her desk sits across the hall, front left, under its own branch of duct
   const HX = -5.55, HZ = 5.6, DX = -4.85;
   function herCorner(t, o = {}) {

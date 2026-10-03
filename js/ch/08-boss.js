@@ -132,21 +132,7 @@
     shape([[b[0] - .13 * k, hy - .08 * k], [b[0] + .13 * k, hy - .08 * k], [b[0] + .11 * k, hy - .27 * k], [b[0] - .11 * k, hy - .27 * k]], HAT, Math.max(1, k * .012));
   }
   // gloved fist and sleeve; (x, y) = knuckles, a = angle the sleeve comes in from
-  function glove(x, y, a, sc = 1) {
-    if (K) return withT(() => { s.translate(x, y); s.rotate(a); s.scale(sc, sc);
-      K.blob([[-1400, -110], [-130, -90], [-95, -20], [-100, 100], [-1400, 135]], COAT, 2, false);   // the sleeve runs off frame
-      K.blob([[-150, -100], [-110, -95], [-92, 0], [-105, 105], [-150, 108]], K.dark(COAT, .15), 1.6);       // the cuff
-      K.blob([[-130, -80], [0, -95], [85, -55], [95, 30], [40, 90], [-120, 85]], '#3a382f', 2);              // the mitten fist
-      K.blob([[-10, -100], [55, -110], [80, -80], [40, -60], [-10, -70]], '#46443a', 1.6);                    // thumb over the top
-      for (const fy of [-20, 25]) { s.beginPath(); s.arc(40, fy, 40, -.6, .6); s.lineWidth = 2; s.strokeStyle = '#1f1d18'; s.stroke(); }
-      glint(-30, -10, 70, .06);
-    });
-    withT(() => { s.translate(x, y); s.rotate(a); s.scale(sc, sc);
-      shape([[-520, -95], [-120, -80], [-90, 95], [-520, 120]], COAT, 3); hatch([[-520, 20], [-110, 20], [-90, 95], [-520, 120]], .9, 9, 1.4, .45);
-      s.beginPath(); s.ellipse(-40, 0, 115, 92, 0, 0, TAU); s.fillStyle = '#3a382f'; s.fill(); s.lineWidth = 3; s.strokeStyle = INK; s.stroke();
-      s.beginPath(); s.ellipse(50, -40, 68, 30, -.3, 0, TAU); s.fillStyle = '#3a382f'; s.fill(); s.stroke();
-      ink([[-60, -30], [20, -20]], 2); ink([[-70, 20], [10, 30]], 2); });
-  }
+  function glove(x, y, a, sc = 1) { gripHand(x, y, a, sc * 1.25, { glove: true, sleeve: COAT }); }
   // his time card, (0,0) top-left, 480 x 680 before sc. words: the line typed so far.
   const CARD_W = 480, CARD_H = 680;
   const LYR = [['JUST', 212.8], ['TO', 213.16], ['SHOW', 213.6], ['UP', 214.08], ['ON', 214.46], ['TIME', 214.88], ['FOR', 216.06], ['MY', 216.76], ['BOSS', 217.2]];

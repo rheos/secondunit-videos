@@ -373,3 +373,32 @@ function typingHand(x, y, side, sc = 1, { press = 0, finger = 1, sleeve = '#7775
 }
 
 function mix_(c, to, k) { const h = (c) => [1, 3, 5].map((i) => parseInt(c.slice(i, i + 2), 16)); const a = h(c), b = h(to); return `rgb(${a.map((v, i) => Math.round(v + (b[i] - v) * k)).join(',')})`; }
+
+// ---- a hand holding paper: thumb on top, fingers curled around behind (Robin: make these hands better) ----
+// (x, y) = the grip point (where the thumb pins the paper). rot = the direction the hand points; the arm
+// comes in from the opposite side. When the hand points leftward the drawing mirrors, so the thumb stays on
+// top. sc 1 is a ~230 px hand. glove: his leather gloves; otherwise skin with a cuff.
+function gripHand(x, y, rot = 0, sc = 1, { glove = false, sleeve = COAT, cuff = null } = {}) {
+  const c = glove ? '#3a382f' : SKIN, crease = glove ? '#22201b' : mix_(SKIN, '#3a2a20', .35);
+  const cap = (x0, y0, x1, y1, w) => { const pts = [], ang = Math.atan2(y1 - y0, x1 - x0);
+    for (let i = 0; i <= 8; i++) { const a = ang - Math.PI / 2 + Math.PI * i / 8; pts.push([x1 + Math.cos(a) * w, y1 + Math.sin(a) * w]); }
+    for (let i = 0; i <= 8; i++) { const a = ang + Math.PI / 2 + Math.PI * i / 8; pts.push([x0 + Math.cos(a) * w, y0 + Math.sin(a) * w]); } return pts; };
+  const smoothPts = (pts, n = 2) => { for (let it = 0; it < n; it++) pts = pts.flatMap((p, i) => { const q = pts[(i + 1) % pts.length]; return [[p[0] * .75 + q[0] * .25, p[1] * .75 + q[1] * .25], [p[0] * .25 + q[0] * .75, p[1] * .25 + q[1] * .75]]; }); return pts; };
+  withT(() => {
+    s.translate(x, y);
+    if (Math.cos(rot) < 0) { s.scale(-1, 1); s.rotate(Math.PI - rot); } else s.rotate(rot);
+    s.scale(sc, sc);
+    shape([[-900, -78], [-150, -60], [-128, 70], [-900, 100]], sleeve, 2.2);                                   // sleeve, running off frame
+    shape([[-170, -66], [-118, -60], [-102, 74], [-152, 80]], cuff ?? mix_(sleeve.startsWith('#') ? sleeve : '#6a6658', '#000000', .2), 1.8); // cuff
+    // four fingers curled round behind the paper: we see the bent knuckles stacked down the near edge
+    [[-6, -22, 23], [4, 8, 25], [0, 38, 24], [-14, 64, 21]].forEach(([fx, fy, r]) => {
+      shape(smoothPts(cap(fx - 40, fy, fx + 6, fy + 4, r)), c, 1.6);
+      line([[fx - 2, fy - r * .55], [fx + 6, fy + r * .45]], crease, 1.4);                                  // the second-joint crease
+    });
+    shape(smoothPts([[-150, -56], [-70, -68], [-18, -44], [-8, 20], [-34, 78], [-142, 72]]), c, 1.8);         // back of the hand
+    for (const ky of [-26, 4, 34]) line([[-46, ky], [-36, ky + 2]], crease, 1.4);                              // knuckle marks
+    shape(smoothPts(cap(-82, -52, 34, -38, 19)), glove ? '#46443a' : c, 1.6);                                   // thumb across the top
+    if (!glove) { const nail = []; for (let i = 0; i < 16; i++) { const a = i / 16 * TAU; nail.push([30 + Math.cos(a) * 11, -40 + Math.sin(a) * 8]); } shape(nail, mix_(SKIN, '#ffffff', .4), 1); }
+    else { s.globalAlpha = .35; shape(smoothPts([[-120, -40], [-70, -50], [-60, -36], [-112, -26]]), '#9a9586', 1); s.globalAlpha = 1; }  // leather shine
+  });
+}

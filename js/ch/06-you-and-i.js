@@ -80,14 +80,9 @@
       const lines = side < 0 ? ['', ''] : [L1, L2];
       tearForm(cx, cy, lines, side < 0 ? 0 : 99, side, t, (half) => {
         const hx = half * 250, hy = -150;
-        if (side < 0) { // gloved fists, coat sleeves
-          shape([[hx + half * 40, hy + 30], [hx + half * 200, hy + 600], [hx + half * 330, hy + 600], [hx + half * 90, hy - 20]], COAT, 3);
-          if (window.PNC_ON) PNCK.ball(hx, hy, 66, '#3a382f', 1.2); else { s.beginPath(); s.ellipse(hx, hy, 62, 74, 0, 0, TAU); s.fillStyle = '#3a382f'; s.fill(); s.lineWidth = 3; s.strokeStyle = INK; s.stroke(); }
-        } else { // her hands, rose cuffs
-          shape([[hx + half * 40, hy + 40], [hx + half * 200, hy + 600], [hx + half * 320, hy + 600], [hx + half * 80, hy - 10]], '#77756a', 3);
-          shape([[hx + half * 30, hy + 20], [hx + half * 100, hy - 20], [hx + half * 120, hy + 30], [hx + half * 50, hy + 70]], ROSE, 2.5);
-          if (window.PNC_ON) PNCK.ball(hx, hy, 52, SKIN, 1.2); else { s.beginPath(); s.ellipse(hx, hy, 46, 58, 0, 0, TAU); s.fillStyle = SKIN; s.fill(); s.lineWidth = 3; s.strokeStyle = INK; s.stroke(); }
-        }
+        const rot = Math.atan2(-600, -half * 250);   // pointing up and in; the arm comes from below, outside
+        if (side < 0) gripHand(hx, hy, rot, .95, { glove: true, sleeve: COAT });   // his gloves
+        else gripHand(hx, hy, rot, .85, { sleeve: '#77756a', cuff: ROSE });          // her hands, rose cuffs
       });
     });
     if (window.PNC_ON) { shape([[W / 2 - 9, 0], [W / 2 + 9, 0], [W / 2 + 9, H], [W / 2 - 9, H]], BRASS, 1); for (let y = 90; y < H; y += 180) PNCK.star(W / 2, y, 22, CREAM, 1); } else line([[W / 2, 0], [W / 2, H]], INK, 10, 'butt');

@@ -40,17 +40,7 @@
         text('7 436 912', 150, 20, 92, { max: 300 });
         text('PLEASE REMAIN SEATED', 150, 85, 26, { max: 300 });
         for (let i = 0; i < 9; i++) dot(-40, -125 + i * 30, 6, '#8f9886');   // the perforation
-        shape([[-420, 120], [-150, 20], [-100, 260], [-420, 330]], COAT, 3);                  // coat sleeve
-        hatch([[-420, 200], [-130, 120], [-100, 260], [-420, 330]], .9, 9, 1.4, .45);
-        if (window.PNC_ON) { const K = window.PNCK;   // a rounded cartoon glove, airbrushed, fine outline
-          K.blob([[-280, 40], [-200, -5], [-90, 15], [-60, 90], [-100, 175], [-230, 190], [-290, 120]], '#3a382f', 1.6);
-          K.blob([[-120, 95], [-30, 95], [10, 118], [-20, 145], [-110, 140]], '#3a382f', 1.6);
-          for (const [y0, y1] of [[60, 50], [105, 98], [148, 145]]) line([[-245, y0], [-130, y1]], K.dark('#3a382f', .5), 1.4);
-        } else {
-        s.beginPath(); s.ellipse(-170, 95, 115, 90, -.35, 0, TAU); s.fillStyle = '#3a382f'; s.fill(); s.lineWidth = 3; s.strokeStyle = INK; s.stroke();   // gloved fist
-        s.beginPath(); s.ellipse(-55, 120, 58, 26, -.2, 0, TAU); s.fillStyle = '#3a382f'; s.fill(); s.stroke();     // thumb on the ticket
-        ink([[-210, 65], [-120, 45]], 2); ink([[-220, 110], [-130, 95]], 2);
-        }
+        gripHand(-30, 95, -.55, .95, { glove: true, sleeve: COAT });   // his gloved hand, from the lower left
       });
       // up the wall: one small high window, and the sky in it
       withT(() => {
