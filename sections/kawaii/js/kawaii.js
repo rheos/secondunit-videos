@@ -77,7 +77,7 @@ function heart(cx, cy, sz, col = PAL.pink, w = 5) { shape(heartPts(cx, cy, sz), 
 // ---- kaomoji face: centred at (x, y), u = half the eye spacing ----
 // eyes: happy ^ ^ | dot | wide | worried | spiral | flat (sly squint, glancing) | heart | squeeze > < | shades | smug
 function face(x, y, u, o = {}) {
-  const { eyes = 'happy', mouth = 'smile', open = 0, look = 0, lookY = 0, t = 0, blush = 1, w = 6, brow = 0, es = 1 } = o;
+  const { eyes = 'happy', mouth = 'smile', open = 0, look = 0, lookY = 0, t = 0, blush = 1, w = 6, brow = 0, es = 1, mouthDy = .55, blushDy = .45, blushX = 1.35, hatch = true, mshape = 'ah', mw0 = 1 } = o;
   const er = u * .32 * es;
   for (const sgn of [-1, 1]) {
     const ex = x + sgn * u, ey = y;
@@ -105,12 +105,17 @@ function face(x, y, u, o = {}) {
   if (eyes === 'shades') ink([[x - u + er * 1.2, y - er * .3], [x + u - er * 1.2, y - er * .3]], false, w * .7);
   if (blush > 0) {
     const ga = s.globalAlpha; s.globalAlpha = ga * .75 * blush;
-    for (const sgn of [-1, 1]) { const bx = x + sgn * u * 1.35, by = y + u * .45; wash(ell(bx, by, u * .32, u * .17), PAL.blush); }
+    for (const sgn of [-1, 1]) { const bx = x + sgn * u * blushX, by = y + u * blushDy; wash(ell(bx, by, u * .32, u * .17), PAL.blush); }
     s.globalAlpha = ga;
-    for (const sgn of [-1, 1]) for (let i = -1; i <= 1; i++) { const bx = x + sgn * u * 1.35 + i * u * .13, by = y + u * .45; ink([[bx + u * .04, by - u * .07], [bx - u * .04, by + u * .07]], false, w * .45); }
+    if (hatch) for (const sgn of [-1, 1]) for (let i = -1; i <= 1; i++) { const bx = x + sgn * u * blushX + i * u * .13, by = y + u * blushDy; ink([[bx + u * .04, by - u * .07], [bx - u * .04, by + u * .07]], false, w * .45); }
   }
-  const my = y + u * .55, mw = u * .42;
-  if (open > .1) {
+  const my = y + u * mouthDy, mw = u * .42 * mw0;
+  if (open > .1 && mshape === 'o') { // a round "oo": small, tall
+    const P = ell(x, my + mw * .3, mw * (.32 + .12 * open), mw * (.3 + .55 * open), 18), sd = ++SEEDC; wash(P, '#7b2b3a', { seed: sd }); ink(P, true, w * .9, { seed: sd });
+  } else if (open > .1 && mshape === 'ee') { // a wide, flat "ee"
+    const hh = mw * (.18 + .4 * open), P = [...quadPts([x - mw * 1.1, my], [x, my - hh * .5], [x + mw * 1.1, my], 8), ...quadPts([x + mw * 1.1, my], [x, my + hh * 1.6], [x - mw * 1.1, my], 8).slice(1)];
+    const sd = ++SEEDC; wash(P, '#7b2b3a', { seed: sd }); ink(P, true, w * .9, { seed: sd });
+  } else if (open > .1) {
     const h = mw * (.4 + 1.3 * open);
     const P = [...quadPts([x - mw, my - mw * .1], [x, my - mw * .35], [x + mw, my - mw * .1], 6), ...quadPts([x + mw, my - mw * .1], [x, my + h * 1.6], [x - mw, my - mw * .1], 10).slice(1)];
     const sd = ++SEEDC; wash(P, '#7b2b3a', { seed: sd });

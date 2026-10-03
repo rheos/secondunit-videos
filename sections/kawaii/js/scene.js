@@ -163,3 +163,119 @@ function carFront(sd, col, duck = 0, eyes = 'shades', t = 0) {
   for (const x of [-150, 150]) shape(ell(x * ws, -100 * hs, 26, 20, 12), '#fff6c8', 4);
   face(0, -98 * hs, 34, { eyes: duck > .4 ? 'squeeze' : eyes, mouth: duck > .4 ? 'o' : 'smirk', w: 5, blush: .8, t });
 }
+
+// ---- v3 SEAM FRAMING: side view, nose right, plane centred at (50%, 58%), body ~45% of the width,
+// the dashed centre line horizontal at 72%. The world scrolls left at SEAMV px/s.
+const SEAMV = 700, SEAM_K = 1.35, SEAM_GY = 1080 * .58 + 170 * SEAM_K, SEAM_LINE = 1080 * .72;
+function seamBackdrop(t, sx, o = {}) { // sx = scroll offset in px
+  const { sky0 = PAL.sky3, sky1 = PAL.sky1, grass = PAL.grass, road = PAL.road, hz = 560, sd = 1200, tint } = o;
+  skyWash(-60, hz, sky0, sky1, sd, tint);
+  for (let i = 0; i < 5; i++) { const x = wrapv(i * 560 - sx * .2, 560 * 5) - 400; hills(hz + 6, [[x, 330, 70 + 30 * hash(i + sd), [PAL.mint, PAL.lilac, '#d9eab0'][i % 3]]], sd + 10 + i); }
+  seedAt(sd + 20); paint([[-400, hz], [W + 400, hz], [W + 400, H + 400], [-400, H + 400]], grass); ink([[-400, hz + 3], [W + 400, hz + 3]], false, 5);
+  seedAt(sd + 21); shape([[-400, 700], [W + 400, 700], [W + 400, 935], [-400, 935]], road, 6);
+  for (let i = 0; i < 9; i++) { const x = wrapv(i * 300 - sx, 300 * 9) - 300; paint(rrect(x, SEAM_LINE - 8, 150, 16, 7), PAL.dash, .95, false); }
+}
+function seamPlane(t, o = {}) { return plane3(960, SEAM_GY - (o.dy || 0), SEAM_K, { t, yaw: 1.25, pitch: .1, persp: 3200, faceU: 74, es: 1.3, ...o }); }
+
+// a watercolour car wash, seen from the side; exitX = screen x of its exit end. Drawn OVER the plane.
+function carWash(exitX, t, sd = 1300) {
+  const x0 = exitX - 1900;
+  seedAt(sd); shape(rrect(x0, 190, 1900, 735, 40, sd), '#cfe6f2', 7);
+  shape([[x0 - 30, 200], [exitX + 30, 200], [exitX - 10, 130], [x0 + 10, 130]], PAL.pink, 6);
+  for (let i = 0; i < 6; i++) { const x = x0 + 120 + i * 290; shape(ell(x + 60, 420, 70, 70, 22), PAL.white, 5); paint(ell(x + 40, 400, 26, 18), '#ffffff', .9, false); for (let j = 0; j < 3; j++) { const bt = wrapv(t * .8 + j * .33 + i * .17, 1); alpha(1 - bt); shape(ell(x + 60 + Math.sin(bt * 6 + j) * 20, 420 - bt * 60, 10 + j * 4, 10 + j * 4, 10), '#ffffff', 2.5); alpha(1); } }
+  for (let i = 0; i < 14; i++) paint(rrect(x0 + i * 140, 600, 70, 300, 30), [PAL.lilac, PAL.mint, PAL.lemon][i % 3], .35, false);
+  // the roof sign: a fat bubble cluster, no words
+  for (const [bx, by, br] of [[exitX - 520, 92, 60], [exitX - 430, 70, 46], [exitX - 600, 66, 40]]) shape(ell(bx, by, br, br, 18), '#ffffff', 5);
+  // the exit curtain: soapy strips that drag over his nose
+  for (let i = 0; i < 9; i++) { const sw = Math.sin(t * 6 + i) * 14; seedAt(sd + 40 + i); shape([[exitX - 8 + i * 4, 205], [exitX + 8 + i * 4, 205], [exitX + 10 + i * 4 + sw, 640 + 30 * hash(i)], [exitX - 6 + i * 4 + sw, 640 + 30 * hash(i)]], [PAL.pink, PAL.blue, PAL.lemon][i % 3], 3.5); }
+  // a spinning roller brush at the exit
+  push(); tr(exitX + 70, 560); seedAt(sd + 60); shape(rrect(-60, -330, 120, 660, 50, sd + 60), PAL.berry, 6);
+  for (let i = 0; i < 12; i++) { const yy = -300 + wrapv(i * 55 + t * 400, 660); ink([[-60, yy], [60, yy + 30]], false, 4); } pop();
+}
+// a billboard printed as a woodcut legend (matches woodcut E's first frame): sawtooth border, a singing
+// sun top right, a flock of little airliners, arc-carved hills; black ink on cream, one red. 16:9 panel.
+const LEG = { pw: 1000, ph: 562, legs: 70 };
+function legendBoard(cx, base, sc0, t, sd = 1400) {
+  const C = '#f1e6cc', K = '#24201c', R = '#c8332b', { pw, ph } = LEG;
+  push(); tr(cx, base); sc(sc0);
+  seedAt(sd); for (const x of [-380, 380]) shape(rrect(x - 22, -LEG.legs - 10, 44, LEG.legs + 10, 8, sd + x), '#8a6a4a', 5);
+  const X0 = -pw / 2, Y0 = -LEG.legs - ph;
+  shape(rrect(X0, Y0, pw, ph, 4, sd + 1), C, 6);
+  // sawtooth border
+  const bw = 34; inkFill([[X0, Y0], [X0 + pw, Y0], [X0 + pw, Y0 + 10], [X0, Y0 + 10]], K); inkFill([[X0, Y0 + ph - 10], [X0 + pw, Y0 + ph - 10], [X0 + pw, Y0 + ph], [X0, Y0 + ph]], K);
+  inkFill([[X0, Y0], [X0 + 10, Y0], [X0 + 10, Y0 + ph], [X0, Y0 + ph]], K); inkFill([[X0 + pw - 10, Y0], [X0 + pw, Y0], [X0 + pw, Y0 + ph], [X0 + pw - 10, Y0 + ph]], K);
+  for (let i = 0; i < 28; i++) { const x = X0 + 10 + i * (pw - 20) / 28, w2 = (pw - 20) / 28; inkFill([[x, Y0 + 10], [x + w2, Y0 + 10], [x + w2 / 2, Y0 + 10 + bw * .6]], K); inkFill([[x, Y0 + ph - 10], [x + w2, Y0 + ph - 10], [x + w2 / 2, Y0 + ph - 10 - bw * .6]], K); }
+  for (let i = 0; i < 16; i++) { const y = Y0 + 10 + i * (ph - 20) / 16, h2 = (ph - 20) / 16; inkFill([[X0 + 10, y], [X0 + 10, y + h2], [X0 + 10 + bw * .6, y + h2 / 2]], K); inkFill([[X0 + pw - 10, y], [X0 + pw - 10, y + h2], [X0 + pw - 10 - bw * .6, y + h2 / 2]], K); }
+  const ix = X0 + 40, iy = Y0 + 40, iw = pw - 80, ih = ph - 80;
+  ink(rrect(ix, iy, iw, ih, 2), true, 4, { col: K });
+  s.save(); k.save(); [s, k].forEach((c) => { c.beginPath(); c.rect(ix, iy, iw, ih); c.clip(); });
+  for (let i = 0; i < 22; i++) { const y = iy + 14 + i * 13, x0 = ix + 20 + 300 * hash(i + 3); ink([[x0, y], [x0 + 60 + 160 * hash(i + 9), y + 2]], false, 2.5, { col: K }); } // carved sky gouges
+  // the singing sun
+  const sx0 = ix + iw * .8, sy0 = iy + ih * .25, sr = 62, mo = .5 + .5 * Math.sin(t * 9);
+  for (let i = 0; i < 24; i++) { const a = i / 24 * TAU, r2 = i % 2 ? sr * 1.55 : sr * 1.85; inkFill([[sx0 + Math.cos(a - .06) * sr * 1.12, sy0 + Math.sin(a - .06) * sr * 1.12], [sx0 + Math.cos(a) * r2, sy0 + Math.sin(a) * r2], [sx0 + Math.cos(a + .06) * sr * 1.12, sy0 + Math.sin(a + .06) * sr * 1.12]], K); }
+  shape(ell(sx0, sy0, sr, sr, 28), C, 5);
+  inkFill(ell(sx0 - 20, sy0 - 12, 5, 7, 10), K); inkFill(ell(sx0 + 20, sy0 - 12, 5, 7, 10), K);
+  inkFill(ell(sx0, sy0 + 22, 10, 6 + 8 * mo, 14), K); paint(ell(sx0 - 34, sy0 + 10, 12, 8), R, .9, false); paint(ell(sx0 + 34, sy0 + 10, 12, 8), R, .9, false);
+  // the flock: little airliners, clearly planes, red cheat lines
+  for (let i = 0; i < 4; i++) {
+    const px = ix + iw * [.22, .4, .58, .34][i], py = iy + ih * [.2, .12, .26, .38][i] + Math.sin(t * 2.4 + i) * 5;
+    push(); tr(px, py);
+    shape([[-50, -12], [40, -14], [56, 0], [40, 12], [-50, 10]], C, 4); paint([[-44, 0], [44, -2], [44, 4], [-44, 6]], R, 1, false);
+    inkFill([[-50, -10], [-64, -36], [-52, -36], [-38, -10]], K); inkFill([[-4, 6], [-22, 26], [-8, 26], [14, 6]], K);
+    for (let j = 0; j < 4; j++) inkFill(ell(-26 + j * 14, -4, 3, 3, 8), K); inkFill(ell(44, -3, 3, 4, 8), K);
+    pop();
+  }
+  // arc-carved hills and the ground
+  for (const [hx, hr] of [[ix + iw * .12, 170], [ix + iw * .42, 210], [ix + iw * .74, 180], [ix + iw * 1.02, 160]]) { const hy = iy + ih * .86; shape([...[...Array(25)].map((_, j) => { const a = Math.PI + j / 24 * Math.PI; return [hx + Math.cos(a) * hr, hy + Math.sin(a) * hr * .45]; })], C, 4); for (let j = 1; j < 5; j++) ink([...Array(17)].map((_, q) => { const a = Math.PI + q / 16 * Math.PI, rr = hr * (1 - j * .18); return [hx + Math.cos(a) * rr, hy + Math.sin(a) * rr * .45]; }), false, 2.5, { col: K }); }
+  inkFill([[ix, iy + ih * .86], [ix + iw, iy + ih * .86], [ix + iw, iy + ih], [ix, iy + ih]], K);
+  s.restore(); k.restore();
+  pop();
+}
+// the jagged tear starting around his nose cone, in screen space (last frames into woodcut E)
+function noseTear(x, y, g, t) {
+  if (g <= 0) return; seedAt(1490); const n = 13, P = [];
+  for (let i = 0; i < n * 2; i++) { const a = i / (n * 2) * TAU, r = (i % 2 ? 1 : .55 + .25 * hash(i + 3)) * 95 * g; P.push([x + Math.cos(a) * r * 1.2, y + Math.sin(a) * r]); }
+  shape(P, '#2c2630', 5);
+  push(); tr(x - 40 * g, y); sc(g); shape(rrect(-60, -62, 120, 124, 50, 1491), PAL.cream, 5); shape(rrect(-40, -54, 80, 40, 16, 1492), GLASS, 4); inkFill(ell(-14, -36, 6, 9, 10)); inkFill(ell(16, -36, 6, 9, 10)); paint(rrect(-56, 12, 112, 14, 6), RED, 1, false); pop();
+}
+// rain streaks (ink layer) and splashes over the whole frame
+function rain(t, amt, sd = 1500) {
+  if (amt <= 0) return; const r = rng(sd), n = Math.round(160 * amt);
+  for (let i = 0; i < n; i++) { const sp = 1400 + r() * 700, x0 = r() * (W + 400) - 200, ph = r(); const y = wrapv(ph * (H + 300) + t * sp, H + 300) - 150, x = x0 - y * .18; k.globalAlpha = .55 * amt; ink([[x, y], [x - 14, y + 70]], false, 3, { col: '#6f7aa8', seed: sd + i, wob: 0 }); k.globalAlpha = 1; }
+  for (let i = 0; i < Math.round(26 * amt); i++) { const x = r() * W, y = 700 + r() * 380, ph = wrapv(t * 2.2 + r(), 1); seedAt(sd + 300 + i); k.globalAlpha = (1 - ph) * .7; ink(ell(x, y, 10 + ph * 46, 3 + ph * 12, 16), true, 2.5, { col: '#6f7aa8' }); k.globalAlpha = 1; }
+}
+// poster lettering on a sign, fitted inside (w x h) with margin; drawn on the ink layer
+function fitText(txt, cx, cy, w, h, col = INK, outline = null, font = '"Arial Rounded MT Bold", "Helvetica Neue", Arial') {
+  k.save(); k.font = `900 100px ${font}`; const m = k.measureText(txt), tw = m.width, th = (m.actualBoundingBoxAscent + m.actualBoundingBoxDescent) || 72;
+  const sz = Math.min(100 * w / tw, 100 * h / th); k.font = `900 ${sz}px ${font}`; k.textAlign = 'center'; k.textBaseline = 'middle';
+  if (outline) { k.lineJoin = 'round'; k.lineWidth = sz * .12; k.strokeStyle = outline; k.strokeText(txt, cx, cy); }
+  k.fillStyle = col; k.fillText(txt, cx, cy); k.restore();
+}
+function propTextBoard(sd, txt, bg, fg, t) {
+  seedAt(sd);
+  for (const x of [-200, 200]) shape(rrect(x - 16, -560, 32, 560, 8, sd + x), '#c9a27e', 5);
+  shape(rrect(-330, -900, 660, 380, 30, sd + 1), PAL.white, 7);
+  shape(rrect(-300, -872, 600, 324, 22, sd + 2), bg, 5);
+  for (let i = 0; i < 5; i++) { const a = i / 5 * TAU + t; paint(ell(-250 + i * 125, -600, 16, 16), fg, .5, false); }
+  fitText(txt, 0, -722, 600 * .82, 324 * .5, fg, INK); // inside the board with a clear margin
+}
+// a toll booth with its gate; flip 0..1 turns the sign over to INSERT COIN
+function tollBooth(x, t, flip, sd = 1600) {
+  seedAt(sd);
+  shape(rrect(x - 140, 380, 280, 330, 26, sd), PAL.peach, 7);              // booth on the far verge
+  shape(rrect(x - 100, 430, 200, 120, 18, sd + 1), GLASS, 5);
+  shape([[x - 180, 390], [x + 180, 390], [x + 150, 330], [x - 150, 330]], PAL.coral, 6);
+  // the gate arm swings across his lane toward us, striped
+  push(); tr(x - 150, 640); seedAt(sd + 2);
+  const arm = [[0, -16], [-40, 230], [-12, 236], [26, -10]]; shape(arm, PAL.white, 6);
+  for (let i = 0; i < 4; i++) { const u0 = .12 + i * .22, u1 = u0 + .1; paint([[lerp(0, -40, u0), lerp(-16, 230, u0)], [lerp(26, -12, u0), lerp(-10, 236, u0)], [lerp(26, -12, u1), lerp(-10, 236, u1)], [lerp(0, -40, u1), lerp(-16, 230, u1)]], RED, 1, false); }
+  pop();
+  // the sign on a pole above the booth: a coin, then it flips over to INSERT COIN
+  shape(rrect(x - 12, 150, 24, 190, 8, sd + 3), '#b9b2c6', 5);
+  const c = Math.cos(flip * Math.PI), show = c < 0;
+  push(); tr(x, 150); sc(1, Math.max(.02, Math.abs(c)));
+  shape(rrect(-260, -90, 520, 180, 24, sd + 4), show ? '#1b1830' : PAL.lemon, 7);
+  if (!show) { shape(ell(0, 0, 62, 62, 24), PAL.gold, 6); ink(ell(0, 0, 42, 42, 20), true, 5); }
+  else { k.save(); k.imageSmoothingEnabled = false; const oc = document.createElement('canvas'); oc.width = 96; oc.height = 16; const o2 = oc.getContext('2d'); o2.fillStyle = '#ffe14a'; o2.font = 'bold 12px monospace'; o2.textAlign = 'center'; o2.textBaseline = 'middle'; o2.fillText('INSERT COIN', 48, 9); const blink = Math.floor(t * 4) % 2 ? .75 : 1; k.globalAlpha = blink; k.drawImage(oc, -224, -40, 448, 75); k.restore(); }
+  pop();
+}

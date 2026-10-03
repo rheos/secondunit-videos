@@ -122,5 +122,34 @@ const PL = (() => {
     });
     SPL = 0; OUT = null;
   }
-  return { side, front, prop: (x, y, R, spin, k = 1) => { K = k; prop(x, y, R, spin, 500); }, eye: (x, y, k, st) => { K = k; withT(() => { s.translate(x, y); s.scale(k, k); eye(0, 0, 60, 46, st, 7); }); } };
+  // from behind (the 16-bit racer's view): tail cone, fin up, tailplane, level wings with props, tyres
+  function back(x, y, k, ang, st = {}) {
+    const { spin = T * 40, hang = 0 } = st, cy = -242;
+    SPL = st.split || 0; K = k; OUT = st.outline || null;
+    withT(() => {
+      s.translate(x, y); s.rotate(ang); s.scale(k, k);
+      for (const sd of [-1, 1]) { line_([[sd * 90, cy + 60], [sd * 90, -100 + hang * 30]], PC('dark'), 10); pp([[sd * 90 - 34, -121 + hang * 30], [sd * 90 + 34, -121 + hang * 30], [sd * 90 + 34, hang * 30], [sd * 90 - 34, hang * 30]], { fill: PC('tyre'), seed: 600 + sd, sharp: 20, iw: .8 }); }
+      for (const sd of [-1, 1]) {
+        pp([[sd * 120, cy + 30], [sd * 618, cy + 40], [sd * 624, cy + 64], [sd * 120, cy + 72]], { fill: PC('body'), shade: PC('bodySh'), shadeShift: [0, -12], seed: 610 + sd, sharp: 40 });
+        pp([[sd * 586, cy + 39], [sd * 622, cy + 40], [sd * 625, cy + 64], [sd * 588, cy + 65]], { fill: PC('red'), seed: 615 + sd, sharp: 15, iw: .5 });
+        for (const [j, ex] of [[0, 310], [1, 470]]) {
+          const cx = sd * ex, ecy = cy + 50;
+          if (!OUT) { s.save(); s.globalAlpha *= .3; dot(cx, ecy, 92, PC('white')); s.restore(); }
+          s.save(); s.globalAlpha *= OUT ? 1 : .45; s.strokeStyle = OUT || PC('dark'); s.lineWidth = 2.5; s.beginPath(); s.arc(cx, ecy, 92, 0, TAU); s.stroke(); s.restore();
+          for (let i = 0; i < 2; i++) { const a = -spin * sd + i * Math.PI + ex, tip = [cx + Math.cos(a) * 90, ecy + Math.sin(a) * 90], nx = -Math.sin(a) * 9, ny = Math.cos(a) * 9; poly_([[cx + nx, ecy + ny], tip, [cx - nx, ecy - ny]], PC('dark', 10)); }
+          pp(ell(cx, ecy, 42, 42, 14), { fill: PC('body'), shade: PC('bodySh'), shadeShift: [0, -8], seed: 620 + j + sd * 5 });
+          pp(ell(cx, ecy, 22, 22, 10), { fill: hsl(25, 70, 45), seed: 630 + j + sd * 5, iw: .5 });   // warm exhaust, like the sprite's glow
+        }
+      }
+      pp([[-10, cy - 70], [10, cy - 70], [8, cy - 290], [-8, cy - 290]], { fill: PC('body'), shade: PC('bodySh'), shadeShift: [6, 0], seed: 640, sharp: 30 });  // fin
+      pp([[-8, cy - 290], [8, cy - 290], [9, cy - 240], [-9, cy - 240]], { fill: PC('red'), seed: 641, sharp: 12, iw: .5 });
+      pp(ell(0, 0, 135, 135, 20).map(([px, py]) => [px, py + cy]), { fill: PC('body'), shade: PC('bodySh'), shadeShift: [16, -18], seed: 650 });
+      pp([[-132, cy - 2], [132, cy - 2], [130, cy + 22], [-130, cy + 22]], { fill: PC('red'), seed: 651, sharp: 30, iw: .6, hatch: false });
+      pp([[-220, cy - 66], [220, cy - 70], [220, cy - 58], [-220, cy - 54]].map(([px, py]) => [px, py]), { fill: PC('body'), shade: PC('bodySh'), shadeShift: [0, -6], seed: 652, sharp: 30 });  // tailplane
+      pp(ell(0, cy - 10, 74, 70, 16), { fill: hsl(215, 18, 72), shade: hsl(220, 18, 58), shadeShift: [10, -10], seed: 653 });              // tail cone, end on
+      pp(ell(0, cy - 10, 30, 28, 12), { fill: hsl(220, 20, 60), seed: 654, iw: .6 });
+    });
+    SPL = 0; OUT = null;
+  }
+  return { side, front, back, prop: (x, y, R, spin, k = 1) => { K = k; prop(x, y, R, spin, 500); }, eye: (x, y, k, st) => { K = k; withT(() => { s.translate(x, y); s.scale(k, k); eye(0, 0, 60, 46, st, 7); }); } };
 })();

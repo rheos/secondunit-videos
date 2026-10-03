@@ -10,7 +10,8 @@
 const env = (t, a, b, r = .3) => smooth(inv(a - r, a, t)) * (1 - smooth(inv(b, b + r, t)));
 const nearBeat = (x) => FEAT.beats.reduce((m, b) => Math.abs(b - x) < Math.abs(m - x) ? b : m, FEAT.beats[0]);
 const T_A = 5267 / 24, T_B = 6690 / 24;
-const C1 = nearBeat(227.0), C2 = nearBeat(235.0), C3 = nearBeat(246.5), C4 = 257.3, C5 = nearBeat(265.2), C6 = nearBeat(274.4);
+// cuts land on strong drum hits (226.71, 234.25, 246.50), the first backmasked swell (257.3), the waltz downbeat (263.97)
+const C1 = 226.7083, C2 = 234.25, C3 = 246.5, C4 = 257.3, C5 = nearBeat(264.0), C6 = nearBeat(274.4);
 // the backmasked swells (grow, then cut dead), read off the waveform: [start, cut]
 const SWELLS = [[257.36, 257.89], [257.99, 258.55], [258.68, 258.8], [259.46, 259.67], [259.83, 260.67], [261.67, 262.48], [263.25, 264.3],
   [266.15, 267.24], [268.2, 269.97], [271.07, 271.44], [271.6, 272.9], [273.28, 273.8], [273.9, 274.43]];
@@ -36,7 +37,7 @@ function dashLift(i) { return 220.2 + hash(i * 13 + 5) * 3.6 + (i % 3) * .2; }
 function rollAt(t) { const w = V / 52; return t < LIFT0 ? w * (t - T_A) : w * (LIFT0 - T_A) + w * (1 - Math.exp(-(t - LIFT0) * .7)) / .7; }
 function riseAt(t) { return Math.pow(smooth(inv(LIFT0 - .2, C1 + 1.2, t)), 1.5) * 520; }
 function drawRoad(t, o = {}) {
-  const tt = t - T_A, rise = riseAt(t), camUp = rise * .62;
+  const tt = (o.tt ?? t - T_A), rise = o.noPlane ? 0 : riseAt(t), camUp = o.camUp ?? rise * .62;
   const scroll = (par) => -(V * tt) * par;
   withT(() => {
     s.translate(0, camUp + snoise(t * .6, 2) * 2);
@@ -75,6 +76,7 @@ function drawRoad(t, o = {}) {
     }
     o.dashesBehind = ds.filter((d) => d.h < 1);
     for (const d of o.dashesBehind) part([[d.x, d.y - 5], [d.x + dLen, d.y - 5], [d.x + dLen - 8, d.y + 6], [d.x - 8, d.y + 6]], { fill: hsl(48, 50, 88), seed: 200 + (d.i % 40), sharp: 30, inkW: .5, wob: .4, reg: .4 });
+    if (o.noPlane) { for (const d of ds.filter((d) => d.h >= 1)) withT(() => { s.translate(d.x + dLen / 2, d.y); s.rotate(d.rot); part([[-dLen / 2, -5], [dLen / 2, -5], [dLen / 2 - 8, 6], [-dLen / 2 - 8, 6]], { fill: hsl(48, 60, 90), seed: 200 + (d.i % 40), sharp: 30, inkW: .5, wob: .4, reg: .4 }); }); return; }
     // his shadow, left on the road
     s.save(); s.globalAlpha = .5 * clamp(1 - rise / 400); part(lump(880, ROADY + 6, 300 * (1 - rise / 900), 16, 90, 12), { fill: hsl(250, 25, 12), seed: 91, ink: false, wob: .5 }); s.restore();
     // him
@@ -87,10 +89,55 @@ function drawRoad(t, o = {}) {
   });
 }
 function blinkAt(t, seed) { const p = 3.4 + hash(seed) * 1.6, ph = ((t + hash(seed + 3) * 5) % p) / p; return ph < .045 ? Math.sin(ph / .045 * Math.PI) : 0; }
+// The take-off from BEHIND, matching the 16-bit racer's framing (crt_start.png): road to a centre vanishing
+// point, horizon at 37.5% height, him low centre, wingspan ~40% of the frame. 218.75-223.75 is replaced by a
+// generative morph, so 223.75 is the anchor frame: same spot and size as the sprite, just leaving the road.
+const VPX = 960, VPY = 405, KZ = 600, RW = 1.06;
+const zY = (z) => VPY + KZ / z, zX = (x, z) => VPX + x * KZ / z;
+function behindDash(lane, i, t) {
+  const sp = 7, gap = 2.6, base = i * gap + 1, z0 = base - ((t - T_A) * sp) % gap;
+  const tl = 220.3 + hash(i * 7 + lane * 3 + 11) * 3.2;
+  let z = z0, h = 0, spin = 0;
+  if (t > tl) { const d = t - tl, zs = base - ((tl - T_A) * sp) % gap; z = zs - d * 1.4; h = Math.pow(d, 1.3) * .5; spin = d * (1 + hash(i + lane * 9)) * (hash(i * 3 + lane) > .5 ? 1 : -1); }
+  return { z, h, spin };
+}
+function liftAt(t) { return Math.pow(smooth(inv(222.9, C1 + .6, t)), 1.3) * 620; }
 function shotRoad(t, tt, len) {
   T = t; HAND = HANDS.clean; HUE = 0; REGK = 1;
   fx({ warp: 1, acid: 0 });
-  withT(() => { cam(960 + tt * 3, 540 - tt * 2, 1.0 + tt * .006, 0); drawRoad(t); });
+  const lift = liftAt(t), camUp = lift * .38, u = smooth(inv(223.2, C1 + .6, t));
+  withT(() => {
+    s.translate(0, camUp + snoise(t * .7, 2) * 2);
+    skyGrad(-500 - camUp, VPY + 10, [[0, hsl(234, 32, 30)], [.55, hsl(296, 24, 52)], [.9, hsl(20, 55, 70)], [1, hsl(34, 65, 78)]]);
+    s.save(); s.globalCompositeOperation = 'screen'; s.fillStyle = rgrad(VPX, VPY - 10, 10, 420, [[0, hsl(40, 90, 80, .55)], [1, hsl(30, 80, 60, 0)]]); s.fillRect(300, -100, 1320, 700); s.restore();
+    for (let i = 0; i < 5; i++) { const r = rng(10 + i), cx = r() * 2200 - 140 + snoise(t * .1, i) * 30, cy = 80 + r() * 200 - camUp * .1; part(lump(cx, cy, 150 + r() * 110, 28 + r() * 16, 11 + i), { fill: hsl(320 + r() * 30, 30, 72, .9), shade: hsl(260, 20, 56, .9), shadeShift: [0, -12], seed: 12 + i, inkW: .6, hatch: false }); }
+    // mountains and a small city at the horizon, like the racer's backdrop
+    part([[-300, VPY], [-60, 290], [180, 360], [420, 270], [640, 350], [900, 300], [1180, 350], [1420, 260], [1700, 340], [2000, 290], [2300, VPY]], { fill: hsl(250, 18, 44), shade: hsl(252, 20, 34), shadeShift: [10, 0], seed: 20, inkW: .8 });
+    for (let i = 0; i < 16; i++) { const r = rng(300 + i), bx = 120 + i * 110 + r() * 40, bw = 50 + r() * 50, bh = 50 + r() * 120; part(rect(bx, VPY - bh, bx + bw, VPY + 2), { fill: hsl(236, 16, 30 + r() * 10), seed: 310 + i, sharp: 30, inkW: .7 }); for (let w = 0; w < 4; w++) dot(bx + 10 + r() * (bw - 20), VPY - bh + 12 + r() * (bh - 24), 2.5, hsl(48, 80, 75, .9)); }
+    part([[-300, VPY], [2300, VPY], [2300, 1700], [-300, 1700]], { fill: hsl(95, 22, 38), shade: hsl(100, 22, 30), shadeShift: [0, -30], seed: 21, sharp: 90, inkW: .8 });
+    // the road to the vanishing point, with its shoulders
+    part([[zX(-.02, 1), VPY], [zX(.02, 1), VPY], [zX(RW, .5), zY(.5)], [zX(-RW, .5), zY(.5)]], { fill: hsl(232, 9, 30), shade: hsl(236, 10, 24), shadeShift: [0, -40], seed: 50, sharp: 70, inkW: 1 });
+    for (const sd of [-1, 1]) stroke([[VPX + sd * 4, VPY], [zX(sd * RW * .97, .9), zY(.9)], [zX(sd * RW * .97, .5), zY(.5)]], 51 + sd, 1.6, { col: hsl(45, 30, 82), force: true });
+    // roadside poles receding
+    for (let i = 0; i < 7; i++) { const z = 1 + ((i * 2.2 - (t - T_A) * 7) % 15.4 + 15.4) % 15.4; for (const sd of [-1, 1]) { const x = zX(sd * 1.6, z), y = zY(z), h = 380 / z; stroke([[x, y], [x, y - h]], 60 + i * 2 + sd, Math.max(.4, 2 / Math.sqrt(z))); } }
+    // dashed lane lines; the dashes peel up off the road and tumble into the sky
+    const D = [];
+    for (const lane of [-.37, .37]) for (let i = 0; i < 14; i++) { const d = behindDash(lane, i, t); if (d.z > .55 && d.z < 40) D.push({ ...d, lane, i }); }
+    D.sort((a, b) => b.z - a.z);
+    const drawDash = (d) => {
+      if (d.h <= 0) { const z1 = d.z, z2 = d.z + .9, w = .025; part([[zX(d.lane - w, z1), zY(z1)], [zX(d.lane - w, z2), zY(z2)], [zX(d.lane + w, z2), zY(z2)], [zX(d.lane + w, z1), zY(z1)]], { fill: hsl(48, 45, 90), seed: 200 + d.i, dense: true, wob: .3, reg: .2 }); return; }
+      const k = KZ / d.z, x = zX(d.lane * (1 + d.h * 4), d.z), y = zY(d.z) - d.h * k * 1.2, L = Math.min(110, Math.max(8, .45 * k)), Wd = Math.min(12, Math.max(3, .025 * k * 1.2));
+      withT(() => { s.translate(x, y); s.rotate(d.spin * .8); part(rect(-Wd, -L, Wd, L), { fill: hsl(48, 55, 90), shade: hsl(40, 30, 72), shadeShift: [Wd * .6, 0], seed: 200 + d.i, sharp: 10, wob: .3, reg: .25 }); });
+    };
+    D.filter((d) => d.h <= 0).forEach(drawDash);
+    // his shadow, left on the road
+    s.save(); s.globalAlpha = .55 * clamp(1 - lift / 300); part(lump(VPX, 1040, 300 * (1 - lift / 1200), 22, 90, 12), { fill: hsl(250, 25, 12), seed: 91, ink: false, wob: .5 }); s.restore();
+    D.filter((d) => d.h > 0 && d.z > 2.2).forEach(drawDash);
+    // him, from behind, low centre (the sprite's spot), climbing away and up
+    const hang = smooth(inv(222.7, 223.6, t)), bounce = t < 222.9 ? Math.abs(Math.sin(t * 11)) * 3 : 0;
+    PL.back(VPX + snoise(t * .4, 92) * 6 * (1 - u), 1035 - lift - bounce - camUp, .62 * (1 - .45 * u), snoise(t * .5, 93) * .03 + Math.sin(t * 1.6) * .03 * hang, { hang });
+    D.filter((d) => d.h > 0 && d.z <= 2.2).forEach(drawDash);
+  });
 }
 
 // ---------------- 2: RISE ----------------
@@ -119,7 +166,8 @@ function shotRise(t, tt, len) {
   const u = tt / len, ac = smooth(inv(232.5, C2, t));
   fx({ warp: 1.15, acid: .25 * ac, band: .14 * ac, sat: .05 * ac });
   withT(() => {
-    cam(960, 540, 1, snoise(t * .2, 6) * .01);
+    const fr = [[960, 540, 1], [920, 480, 1.55], [960, 520, 1.18]][t < 229.625 ? 0 : t < 232.2917 ? 1 : 2]; // reframed on strong drum hits
+    cam(fr[0], fr[1], fr[2], snoise(t * .2, 6) * .01);
     skyGrad(-200, 420, [[0, hsl(250, 26, 40)], [.7, hsl(310, 25, 62)], [1, hsl(25, 50, 76)]]);
     // the map in perspective
     const z = 1.5 * Math.pow(.17, ease.inOut(u * .92 + .04));
@@ -163,8 +211,9 @@ function shotSky(t, tt, len) {
   REGK = 1 + k * 1.2 + ramp * .8;
   fx({ warp: 1.3 + ramp, acid: .7, acidMirror: .45, acidPeel: .5, band: .2 + ramp * .45, sat: .1 + ramp * .1, peel: ramp * .3 });
   withT(() => {
-    cam(960, 540, 1 + tt * .01, snoise(t * .2, 6) * .03);
-    skyGrad(-100, 1180, [[0, hsl(262, 40, 24)], [.5, hsl(222, 36, 36)], [1, hsl(180, 30, 40)]]);
+    const sf = [[960, 540, 1], [1180, 560, 1.32], [760, 680, 1.3], [960, 520, 1.08]][t < 237.7083 ? 0 : t < 240.625 ? 1 : t < 243.5833 ? 2 : 3]; // cuts on strong drum hits
+    cam(sf[0], sf[1], sf[2] + tt * .006, snoise(t * .2, 6) * .03);
+    skyGrad(-600, 1500, [[0, hsl(262, 40, 24)], [.5, hsl(222, 36, 36)], [1, hsl(180, 30, 40)]]);
     SKYOBJ.forEach((o) => outlineThing(o, t));
     // the band appears out of the outlines while its stems play: piano low left, sax on the right
     const fp = env(t, C2 + .9, C3 - .7, 1.1) * clamp(SEs('piano', t) * 3.5), fs = env(t, C2 + 1.8, C3 - .4, 1.1) * clamp(SEs('other', t) * 3.2);
@@ -224,16 +273,45 @@ function shotReform(t, tt, len) {
   });
 }
 
-// ---------------- 6: REPLAY (the take-off backwards, mirrored) ----------------
-function shotReplay(t, tt, len) {
-  HAND = HANDS.scratch; const n = swellsBefore(t), snap = snapAt(t);
-  // run time backwards from just after lift-off; every cut of a swell loops it back up
-  const lastCut = SWELLS.filter(([, b]) => b <= t).map(([, b]) => b).concat([C5]).reduce((a, b) => Math.max(a, b));
-  const tr = 226.4 - (t - lastCut) * 1.6 - (n % 2) * .6;
-  T = tr; HUE = n * 60 + tt * 8; REGK = 1.5 + snap * 4;
-  fx({ warp: 1.4, mirror: 1, hue: n * .7 + tt * .1, band: .45, sat: .15, flash: snap * .15, peel: snap * .5 });
-  withT(() => { cam(1250, 560, 1.05, 0); drawRoad(tr, { split: .2 + snap * .6 }); });
-  T = t;
+// ---------------- 6: WALTZ ----------------
+// The two mirrored planes stop being a mirror and dance. Bars of three beats from FEAT.beats (~0.57 s a beat):
+// bar 1 (263.97) they rise nose to nose and bow; bars 2-3 one full waltz turn; bar 4 a quicker half turn;
+// bar 5 (270.57) the lead dips his partner, landing on bar 6's downbeat (272.37); hold, then release (273.5-274.1).
+const WB = (() => { const b = FEAT.beats.filter((x) => x >= C5 - .01 && x < C6 + .7); const bars = []; for (let i = 0; i + 3 <= b.length; i += 3) bars.push(b[i]); return bars; })();
+function barPhase(t) { for (let i = WB.length - 1; i >= 0; i--) if (t >= WB[i]) { const nx = WB[i + 1] ?? WB[i] + 1.7; return [i, (t - WB[i]) / (nx - WB[i])]; } return [0, 0]; }
+function shotWaltz(t, tt, len) {
+  T = t; HAND = HANDS.clean; const snap = snapAt(t, 9);
+  HUE = tt * 3; REGK = 1;
+  fx({ warp: 1.15, band: .12, sat: .08, hue: (swellsBefore(t) - 7) * .07, flash: snap * .06 });
+  const [bi, ph] = barPhase(t), at = (k) => WB[Math.min(k, WB.length - 1)];
+  withT(() => {
+    cam(960, 540, 1.05, 0);
+    drawRoad(222.6 + tt * .1, { noPlane: true, camUp: 200, tt: 4 + tt * .3 });
+    // a soft spotlight from the moon over the dance floor of air
+    s.save(); s.globalCompositeOperation = 'screen'; s.fillStyle = rgrad(960, 480, 20, 520, [[0, hsl(50, 60, 85, .35)], [1, hsl(50, 60, 70, 0)]]); s.fillRect(300, 0, 1320, 1000); s.restore();
+    const rise = ease.out(inv(C5, at(1), t)), bow = Math.sin(Math.PI * clamp(inv(C5 + .2, at(1) - .1, t))) * .28;
+    // the turn angle: one turn over bars 2-3, half a turn in bar 4
+    const th = ease.inOut(inv(at(1), at(3), t)) * TAU + ease.inOut(inv(at(3), at(4), t)) * Math.PI;
+    const dip = ease.inOut(inv(at(4) + .2, at(5), t)) * (1 - ease.inOut(inv(at(5) + 1.15, C6 - .05, t)));
+    const bob = 18 * Math.cos(TAU * ph) * (t > at(1) && t < at(4) ? 1 : .4), rock = .06 * Math.sin(TAU * ph);
+    const R = lerp(240, 190, dip), cy = 640 - rise * 120 + bob;
+    const P = [-1, 1].map((sd) => { const a = th + (sd > 0 ? 0 : Math.PI); return { sd, x: 960 + Math.cos(a) * R * 1.0, depth: Math.sin(a) }; });
+    P.sort((p, q) => q.depth - p.depth);              // far one first
+    for (const p of P) {
+      const other = P.find((q) => q !== p), face = clamp((other.x - p.x) / (R * 1.2), -1, 1);   // turn like a card to keep facing the partner
+      const sc = .56 * (1 - .12 * p.depth), lead = p.sd < 0;
+      let y = cy + p.depth * 30, ang = rock - bow * Math.sign(face || 1);
+      if (!lead) { y += dip * 150; ang += -dip * .75 * Math.sign(face || 1); }
+      else ang += dip * .3 * Math.sign(face || 1);
+      const x = p.x + (lead ? 0 : -Math.sign(face || 1) * dip * 30);
+      withT(() => {
+        s.translate(x, y); s.scale(Math.abs(face) < .08 ? .08 * Math.sign(face || 1) : face, 1);
+        PL.side(0, 0, sc, ang * Math.sign(face || 1), { hang: 1, look: [.9, lead ? .1 : -.2 + dip * .4], brow: .4 + dip * .6, open: lead ? .15 + dip * .2 : .1 + dip * .5, lid: blinkAt(t, lead ? 21 : 22) });
+      });
+    }
+    // little notes of the waltz drifting off them on each downbeat
+    for (let k = 1; k < WB.length; k++) { const a = t - WB[k]; if (a < 0 || a > 1.6) continue; const f = 1 - a / 1.6; withT(() => { s.globalAlpha = f; const x = 960 + (k % 2 ? -1 : 1) * (80 + a * 120), y = cy - 160 - a * 110; part(lump(x, y, 11, 8, 900 + k, 8), { fill: hsl(48, 70, 86), seed: 900 + k, inkW: .7, wob: .3, reg: .3, hatch: false }); line([[x + 10, y - 2], [x + 10, y - 40]], HAND.inkCol, 2.6); line([[x + 10, y - 40], [x + 22, y - 30]], HAND.inkCol, 2.6); }); }
+  });
 }
 
 // ---------------- 7: GLIDE ----------------
@@ -261,6 +339,6 @@ chapter('I', T_A, T_B, [
   [C2, shotSky],
   [C3, shotFold],
   [C4, shotReform],
-  [C5, shotReplay],
+  [C5, shotWaltz],
   [C6, shotGlide],
 ]);

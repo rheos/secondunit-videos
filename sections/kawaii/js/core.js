@@ -58,6 +58,7 @@ function line(pts, c, w, cap = 'round') { s.lineCap = cap; s.lineJoin = 'round';
 function withT(fn) { s.save(); fn(); s.restore(); }
 
 function renderFrame(t) {
+  if (typeof RAWT !== 'undefined') RAWT = t;
   s.setTransform(RS, 0, 0, RS, 0, 0); s.globalAlpha = 1; s.globalCompositeOperation = 'source-over'; s.filter = 'none';
   k.setTransform(1, 0, 0, 1, 0, 0); k.clearRect(0, 0, k.canvas.width, k.canvas.height); k.setTransform(RS, 0, 0, RS, 0, 0); k.globalAlpha = 1;
   SEEDC = 0;

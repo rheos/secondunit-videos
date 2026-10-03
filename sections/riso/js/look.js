@@ -13,7 +13,7 @@ const LOOK = {
   span: [129.9167, 169.75],
   frag: `
 uniform vec2 offA, offB, offC; uniform vec3 inkA, inkB, inkC; uniform float starve, fade, cell, jitk;
-uniform vec3 rotP, zmP, angP, cellP; uniform float edge;   // edge 0 = mirrored repeat (the test), 1 = bare paper off the sheet   // section F: per-plate rotation + zoom about the centre, screen angle, screen cell multiplier
+uniform vec3 rotP, zmP, angP, cellP; uniform float edge, run;   // run > 0: the inks run downward in drips (v3 rain)   // edge 0 = mirrored repeat (the test), 1 = bare paper off the sheet   // section F: per-plate rotation + zoom about the centre, screen angle, screen cell multiplier
 float CELL;
 float scr(vec2 px, float ang){ float c = cos(ang), s = sin(ang); vec2 p = mat2(c, -s, s, c) * (px - res * .5) / CELL;
   return .5 + .25 * (cos(6.2831853 * p.x) + cos(6.2831853 * p.y)); }
@@ -32,6 +32,7 @@ float plate(float d, vec2 px, float ang, float sd){
 float samp(int ch, vec2 px, float r, float z, vec2 off){
   vec2 p = px - res * .5; float c = cos(r), s = sin(r); p = mat2(c, s, -s, c) * p / z;
   vec2 u = (p + res * .5) / res + off;
+  if (run > 0.) { float c = float(ch); float dr = pow(vn(vec2(px.x * .035 + c * 17.3, c * 3.1)), 3.) + .12 * pow(vn(vec2(px.x * .21 + c * 5.7, 9. + c)), 4.); u.y -= run * dr * .16; }
   float e = .004, inb = edge < .5 ? 1. : step(-e, u.x) * step(u.x, 1. + e) * step(-e, u.y) * step(u.y, 1. + e);
   vec4 v = textureLod(src, u, .5);
   return (ch == 0 ? v.r : ch == 1 ? v.g : v.b) * inb;
@@ -57,6 +58,6 @@ void main(){
     const inks = X.inks || [INK.pink, INK.teal, INK.yellow];
     return { offA: uvo(0), offB: uvo(2), offC: uvo(4), inkA: inks[0], inkB: inks[1], inkC: inks[2],
       starve: X.starve ?? 1, fade: X.fade ?? 0, cell: 1080 * RS / 118, jitk: k % 97,
-      rotP: X.rot || [0, 0, 0], zmP: X.zm || [1, 1, 1], angP: X.ang || [1.309, .262, .785], cellP: X.cell || [1, 1, 1], edge: X.edge ?? LOOK.edge ?? 0 };
+      rotP: X.rot || [0, 0, 0], zmP: X.zm || [1, 1, 1], angP: X.ang || [1.309, .262, .785], cellP: X.cell || [1, 1, 1], edge: X.edge ?? LOOK.edge ?? 0, run: X.run || 0 };
   },
 };

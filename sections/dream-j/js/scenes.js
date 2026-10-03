@@ -86,6 +86,7 @@ function shotDiner(t, tt, len) {
     // napkin dispenser
     part([[300, 760], [420, 756], [424, 900], [296, 904]], { fill: hsl(210, 8, 70), shade: hsl(210, 10, 52), shadeShift: [16, 0], seed: 39, sharp: 25 });
     person({ ...pose, parts: 'arms' });
+    dinerScrawl(t);
   });
 }
 
@@ -176,14 +177,12 @@ function shotFloat(t, tt, len) {
   withT(() => {
     cam(960 + snoise(t * .2, 2) * 12, 560 - rise * .45 - tt * 6, 1.0 + tt * .012, -.03 + snoise(t * .14, 6) * .015);
     s.fillStyle = vgrad(-500, 820, [[0, hsl(232, 30, 30)], [.55, hsl(280, 22, 50)], [.85, hsl(20, 50, 66)], [1, hsl(38, 60, 76)]]); s.fillRect(-400, -700, 2800, 1600);
-    // the plane-shaped cloud forming overhead
-    const pc = smooth(inv(310.0, 312.8, t));
-    withT(() => { s.translate(520 + tt * 22, 150 - rise * .1); s.rotate(-.14); s.scale(4.2, 4.2);
-      // a pale plane silhouette first, then cloud puffs strung along its outline so it reads as both
-      part(PLANE, { fill: hsl(25, 35, 84, .55 * pc), seed: 400, ink: false, seg: 2, wob: .4, reg: .4, hatch: false });
-      const O = spline(PLANE, true, 3), r = rng(401);
-      for (let i = 0; i < O.length; i += 2) { const [px, py] = O[i]; part(lump(px, py, 4.5 + r() * 3, 3.5 + r() * 2.5, 402 + i, 8), { fill: hsl(25, 35, 86, .85 * pc), shade: hsl(300, 18, 66, .7 * pc), shadeShift: [0, -2], seed: 410 + i, inkW: .22, wob: .25, reg: .35, hatch: false, alpha: pc }); }
-    });
+    // one continuous spiral cloud forming overhead, slowly turning, a tiny plane glinting at its centre
+    const pc = smooth(inv(310.0, 312.6, t));
+    withT(() => { s.translate(560 + tt * 18, 190 - rise * .1);
+      spiralCloud(lerp(150, 230, pc), t * .12, pc, 400, { fill: hsl(25, 38, 86, .92), shade: hsl(300, 18, 66, .85) });
+      const g = pc * (.6 + .4 * Math.sin(t * 5)); plane(0, 0, .3, t * .12 + 1.2, { seed: 405, fill: hsl(45, 70, 96), alpha: pc });
+      s.save(); s.globalCompositeOperation = 'screen'; s.fillStyle = rgrad(0, 0, 1, 40, [[0, hsl(45, 90, 90, .7 * g)], [1, hsl(45, 90, 80, 0)]]); s.fillRect(-50, -50, 100, 100); s.restore(); });
     for (let i = 0; i < 3; i++) { const r = rng(420 + i); part(lump(1300 + r() * 600 - tt * 10, 80 + r() * 300, 140, 34, 421 + i), { fill: hsl(300, 20, 64, .7), shade: hsl(260, 18, 48, .7), shadeShift: [0, -10], seed: 425 + i, inkW: .5, hatch: false }); }
     // power lines and poles
     for (const [px, ph] of [[220, 300], [1650, 360]]) { stroke([[px, 830], [px + 4, ph]], 430 + px, 2.4); stroke([[px - 50, ph + 20], [px + 54, ph + 18]], 431 + px, 1.6); }
@@ -248,3 +247,36 @@ function shotQuantum(t, tt, len) {
   });
 }
 
+
+// "Are we fulfilling our destiny?" writes itself onto the diner wall word by word as she says it,
+// in a loose hand, then the letters start to drift and breathe like everything else in the dream.
+const SCRAWL = [['are', 301.08], ['we', 301.64], ['fulfilling', 302.2], ['our', 302.9], ['destiny?', 303.2]];
+function dinerScrawl(t) {
+  if (t < 301.0) return;
+  const box = { x: 780, y: 190, w: 650, h: 230 }, lines = [['are', 'we', 'fulfilling'], ['our', 'destiny?']];
+  const font = (px) => `${px}px "Bradley Hand", "Marker Felt", "Noteworthy", cursive`;
+  // fit: the widest line must sit inside the box with a 10% margin, two lines inside its height
+  s.font = font(100); const wide = Math.max(...lines.map((L) => s.measureText(L.join(' ')).width));
+  const px = Math.min(100 * box.w * .86 / wide, box.h * .8 / 2 / 1.05);
+  s.save(); s.font = font(px); s.textBaseline = 'alphabetic';
+  const sp = s.measureText(' ').width, drift = smooth(inv(303.9, 304.3, t));
+  lines.forEach((L, li) => {
+    const lw = s.measureText(L.join(' ')).width; let x = box.x + (box.w - lw) / 2 - li * px * .25 + li * px * .5;
+    const y = box.y + box.h * .1 + px * (li + 1) * 1.02;
+    L.forEach((word) => {
+      const [, w0] = SCRAWL.find(([w]) => w === word), nxt = SCRAWL[SCRAWL.findIndex(([w]) => w === word) + 1], w1 = Math.min(w0 + .45, nxt ? nxt[1] : 303.76);
+      const k = clamp((t - w0 + .06) / (w1 - w0)); if (k <= 0) { x += s.measureText(word + ' ').width; return; }
+      [...word].forEach((ch, ci) => {
+        const cw = s.measureText(ch).width, ck = clamp(k * word.length - ci); if (ck <= 0) { x += cw; return; }
+        const sd = ci * 13 + li * 101 + word.length * 7;
+        const ws = word.length * 31 + li * 7, jx = snoise(t * .6, 800 + sd) * 1.5 + drift * snoise(t * .4, 900 + ws) * 10, jy = snoise(t * .6, 850 + sd) * 2 - drift * (8 + hash(ws) * 10) + Math.sin(ci * .9 + li) * 2;
+        withT(() => { s.translate(x + jx, y + jy); s.rotate(-.05 + snoise(t * .3, 700 + sd) * .05);
+          s.globalAlpha = ck * .35; s.fillStyle = hsl(205, 30, 40); s.fillText(ch, 3, 2);   // the paint layer, off register
+          s.globalAlpha = ck; s.fillStyle = HAND.inkCol; s.fillText(ch, 0, 0); });
+        x += cw;
+      });
+      x += sp;
+    });
+  });
+  s.restore();
+}

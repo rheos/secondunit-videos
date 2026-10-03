@@ -459,7 +459,8 @@
   const VCAR = 1500;
   function lane(t) {
     const T = ta(t); FRI = Math.floor(t * 12);
-    const tight = T >= 84.24, z = tight ? kf(T, [[84.24, 1.45], [86.6, 1.6]], (x) => x) : kf(T, [[LINE2, 1.0], [84.24, 1.06]], (x) => x);
+    const tight = [82.75, 83.63, 85.0, 85.88].filter((h) => T >= h).length % 2 === 1;   // v3: cut wide/tight on the strong drum hits
+    const z = tight ? kf(T, [[82.75, 1.45], [86.6, 1.6]], (x) => x) : kf(T, [[LINE2, 1.0], [86.6, 1.08]], (x) => x);
     const fcx = tight ? PXS + 120 : W / 2, fcy = tight ? PYS - 240 : H / 2;
     const st = base(t);
     let look = [.6, .2], brow = [0, 0], lid = st.lid, best = null;
@@ -481,7 +482,8 @@
   const VREL = 4.2;
   function sick(t) {
     const T = ta(t); FRI = Math.floor(t * 12);
-    const z = kf(T, [[SICK, 1.12], [91, 1.22]], (x) => x), fcx = PLANE_X + 120, fcy = PLANE_Y - 380;
+    const punch = T >= 87.29 && T < 88.13;                                            // v3: punch in on the drum hit at 87.29, back out on 88.13
+    const z = kf(T, [[SICK, 1.12], [91, 1.22]], (x) => x) * (punch ? 1.3 : 1), fcx = PLANE_X + 120 * (punch ? .3 : 1), fcy = PLANE_Y - 380 - (punch ? 120 : 0);
     const st = base(t);
     let look = [.3, .2], brow = [.2, .4], lid = st.lid;
     const cz = (c) => ZP + VREL * (c[0] - T);
@@ -588,5 +590,68 @@
       inks: [[INK.pink, INK.teal, INK.yellow], [INK.orange, INK.blue, INK.yellow], [INK.pink, INK.purple, INK.yellow], [INK.red, INK.teal, INK.yellow], [INK.pink, INK.teal, INK.yellow]][n], jit: 2.4 + 3 * kick });
   }
 
-  chapter('airplane', 71.0, 91.0, [[71.0, poster], [74.86, track], [77.22, headOn], [SYL[0], cabin], [CUT2, lane], [SICK, sick]]);
+
+  // ---- v3 SEAM FRAMING (STORYBOARD "v3 execution spec"): side view, nose right, plane centred at x 50% / y 58%,
+  // body about 45% of the frame width, the road's dashed centre line horizontal at y 72% (the continuous thread) ----
+  const SEAM = { k: 864 / 638, line: 778 };
+  SEAM.x = 960 + 35 * SEAM.k; SEAM.y = 626 + 183 * SEAM.k;      // plane origin (road contact) so the body centre lands at (960, 626)
+  function seamWorld(T, V, o = {}) {
+    const sc = T * V, rain = o.rain || 0;
+    sheet(PAPER);
+    s.fillStyle = C(.6, 0, 0); s.fillRect(-W, -H, W * 3, H + 120);
+    s.fillStyle = C(.4, 0, 0); s.fillRect(-W, 120, W * 3, 80);
+    s.fillStyle = C(.22, 0, 0); s.fillRect(-W, 200, W * 3, 70);
+    s.fillStyle = C(.1, 0, 0); s.fillRect(-W, 270, W * 3, 60);
+    if (!o.noSun) sun(1460, 380, 170);
+    mountains(600, -wrap(sc * .05, 680) - 300, 240, 340, 41, C(0, .55, 0));
+    mountains(650, -wrap(sc * .14, 520) - 300, 120, 260, 53, C(0, 0, .6), { op: 1 });
+    s.fillStyle = C(0, 0, .35); s.fillRect(-W, 640, W * 3, 70);
+    for (let i = -1; i < 12; i++) { const x = i * 300 - wrap(sc * .3, 300); stroke([[x, 708], [x, 560]], KEY, 7); stroke([[x - 26, 574], [x + 26, 574]], KEY, 6); }
+    if (rain > 0) { lighten(); s.fillStyle = C(.28 * rain, .32 * rain, 0); s.fillRect(-W, -H, W * 3, H + 700 + H); over(); }   // the sky greys over
+    s.fillStyle = TEAL; s.fillRect(-W, 700, W * 3, 260);
+    stroke([[-W, 710], [W * 2, 710]], PAPER, 6); stroke([[-W, 950], [W * 2, 950]], PAPER, 6);
+    for (let i = -1; i < 14; i++) { const x = i * 220 - wrap(sc, 220); s.fillStyle = o.lineCol || PAPER; s.fillRect(x, SEAM.line - 6, 120, 12); }   // the thread
+    s.fillStyle = C(0, 0, .5); s.fillRect(-W, 958, W * 3, 400);
+    for (let i = -1; i < 30; i++) { const x = i * 90 - wrap(sc * 1.3, 90); stroke([[x, 1030], [x + 8, 1005], [x + 16, 1030]], C(.6, 0, .5), 4); }
+  }
+  function rainfall(T, amt, seed = 1) {                            // slanted riso rain, drops on twos
+    if (amt <= 0) return;
+    const n = Math.round(320 * amt); lighten(); s.strokeStyle = C(0, .55, 0); s.lineWidth = 3; s.lineCap = 'round'; s.beginPath();
+    for (let i = 0; i < n; i++) { const r = rng(i * 53 + seed); const x0 = r() * 2400 - 300, y = wrap(r() * 1400 + T * (1500 + r() * 400), 1400) - 160, l = 40 + r() * 50, x = x0 + y * .22;
+      s.moveTo(x, y); s.lineTo(x + l * .22, y + l); }
+    s.stroke(); over();
+    for (let i = 0; i < Math.round(40 * amt); i++) { const r = rng((Math.floor(T * 12) * 97 + i * 13) >>> 0); const x = r() * 1920, y = 715 + r() * 240;   // splashes on the road
+      ell(x, y, 12 + r() * 10, 3 + r() * 2, null, { lw: 2.5, line: PAPER }); }
+  }
+
+  // ===== v3 89.50 tunnel: seam framing, he drives into a road tunnel; the last frames are its dark interior (match cut into woodcut C) =====
+  const TUN0 = 89.5, TUNV = 1260;
+  function tunnelB(t) {
+    const T = ta(t); FRI = Math.floor(t * 12);
+    const xp = 1700 - (T - TUN0) * TUNV;                         // the tunnel face, sliding left as the camera tracks him
+    seamWorld(T, TUNV, {});
+    const st = base(t);
+    const into = clamp((1391 - xp) / 863);
+    sidePlane(SEAM.x, SEAM.y, SEAM.k, { ...st, look: [.9, into > 0 ? -.1 : .2], brow: [.3 + .5 * into, 0], lid: st.lid });
+    // the hill above and the tube: everything right of the face is inside the mountain
+    withT(() => {
+      s.beginPath(); s.rect(xp, -H, W * 3, H * 3); s.clip();
+      s.fillStyle = C(0, .6, 0); s.fillRect(xp, -H, W * 3, H * 3);                                        // the hill
+      for (let i = 0; i < 18; i++) { const r = rng(i * 7 + 2); ell(xp + 80 + r() * 1800, 40 + r() * 200, 30 + r() * 40, 14, C(0, .85, 0)); }
+      s.fillStyle = KEY; s.beginPath(); s.moveTo(xp, 1200); s.lineTo(xp, 400); s.quadraticCurveTo(xp, 250, xp + 160, 250); s.quadraticCurveTo(xp + 210, 250, xp + 260, -60); s.lineTo(xp + W * 3, -60); s.lineTo(xp + W * 3, 1200); s.closePath(); s.fill();   // ceiling opens out of frame: once inside it is all dark   // the dark tube
+      for (let i = -1; i < 14; i++) { const x = i * 220 - wrap(T * TUNV, 220); s.fillStyle = YEL; s.fillRect(x, SEAM.line - 6, 120, 12); }   // the thread runs on inside
+      stroke([[xp, 240], [xp + W * 3, 240]], PAPER, 5); stroke([[xp, 710], [xp + W * 3, 710]], PAPER, 5); stroke([[xp, 950], [xp + W * 3, 950]], PAPER, 5);   // ceiling and road edges (match C's first frame)
+      for (let i = -1; i < 10; i++) { const x = i * 350 - wrap(T * TUNV, 350); ell(x, 272, 50, 12, YEL, { lw: 3 }); lighten(); poly([[x - 30, 280], [x + 30, 280], [x + 70, 420], [x - 70, 420]], C(0, 0, .35)); over(); }   // ceiling lamps, streaking past
+      sidePlane(SEAM.x, SEAM.y, SEAM.k, { ...st, look: [.9, -.1], brow: [.8, 0], lid: st.lid });   // he stays visible inside, lit by the lamps
+    });
+    // the portal face: a stone band edge-on, arched over the road
+    if (xp > -200 && xp < W + 200) {
+      shape([[xp - 70, 960], [xp - 70, 420], [xp - 40, 300], [xp + 20, 230], [xp + 20, 960]], C(0, 0, .45), { lw: 8 });
+      for (let j = 0; j < 9; j++) stroke([[xp - 70, 940 - j * 70], [xp + 20, 940 - j * 70]], KEY, 5);
+      shape([[xp - 110, 250], [xp + 60, 200], [xp + 80, 240], [xp - 90, 290]], YEL, { lw: 6 });                // the lintel
+    }
+    fx({ jit: 2.4 });
+  }
+
+  chapter('airplane', 71.0, 91.0, [[71.0, poster], [74.86, track], [77.22, headOn], [SYL[0], cabin], [CUT2, lane], [SICK, sick], [TUN0, tunnelB]]);
 })();

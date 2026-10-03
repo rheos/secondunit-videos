@@ -611,7 +611,7 @@
       type('AIRPLANE', 0, -144, 30, KEY, { font: '"Futura"', w: 'bold', ls: 3 });
       rrect(-520, -70, 1040, 40, 8, KEY);                                                                    // key slip
       const N = 21, kw = 1000 / N;
-      const down = (i) => { let d = 0; for (let q = 0; q < 3; q++) { const ii = pi - q; if (ii < 0) continue; const a = T - HITS.piano[ii]; if (a > .3) continue;
+      const down = (i) => { if (o.run) { const idx = Math.floor((T - o.run.t0) / .045), jj = o.run.dir > 0 ? idx : N - 1 - idx; return i === jj ? 1 : i === jj - o.run.dir ? .5 : 0; } let d = 0; for (let q = 0; q < 3; q++) { const ii = pi - q; if (ii < 0) continue; const a = T - HITS.piano[ii]; if (a > .3) continue;
         const r = rng(ii * 17 + 1); for (let m = 0; m < 3; m++) if (Math.floor(r() * N) === i) d = Math.max(d, 1 - a / .3); } return d; };
       for (let i = 0; i < N; i++) { const d = down(i); rrect(-500 + i * kw + 2, -30 + d * 12, kw - 4, 260 - d * 8, 6, d > .05 ? C(0, .3 * d + .1, 0) : PAPER, { lw: 5 }); }
       for (let i = 0; i < N - 1; i++) { if (![0, 1, 3, 4, 5].includes(i % 7)) continue;
@@ -646,7 +646,6 @@
       withT(() => { s.translate(0, 110); s.scale(kk, kk);
         ell(0, 0, 330, 330, PINK, { lw: 10 }); ell(0, 0, 290, 290, PAPER, { lw: 6 });
         withT(() => { s.beginPath(); s.arc(0, 0, 290, 0, TAU); s.clip(); fragCheat(0, 40, 700, -.08, 1); });
-        type('BOB WISEMAN', 0, -90, 62, KEY, { ls: 4 });
         for (let i = 0; i < 10; i++) { const a = i * TAU / 10; ell(Math.cos(a) * 312, Math.sin(a) * 312, 14, 14, YEL, { lw: 3 }); } });
       // floor tom
       rrect(370, 0, 220, 240, 18, TEAL, { lw: 7 }); ell(480, 0, 110, 30, PAPER, { lw: 7 });
@@ -679,6 +678,12 @@
       if (o.lw) { s.lineWidth = o.lw; s.strokeStyle = o.line || KEY; s.lineJoin = 'round'; s.strokeText(str, 0, 0); }
       if (o.op) lighten(); s.fillStyle = col; s.fillText(str, 0, 0); over();
     });
+  }
+  // type shrunk to fit maxW (measured, letter spacing included), so it always sits inside its box with margin
+  function fitType(str, x, y, maxW, px, col, o = {}) {
+    s.save(); s.font = `${o.w || ''} ${px}px ${o.font || 'Impact'}`; s.letterSpacing = (o.ls || 0) + 'px';
+    const wd = s.measureText(str).width; s.restore();
+    type(str, x, y, wd > maxW ? px * maxW / wd : px, col, o);
   }
   function star(x, y, r0, r1, n, rot, col, o = {}) {
     const pts = []; for (let i = 0; i < n * 2; i++) { const a = rot + i * Math.PI / n, r = i % 2 ? r0 : r1; pts.push([x + Math.cos(a) * r, y + Math.sin(a) * r]); }
@@ -736,10 +741,10 @@
     const pop = 1 + .05 * bp + .07 * hit(t, 130.06, 6);
     withT(() => { s.translate(960, 245); s.scale(pop, pop); s.translate(-960, -245);
       shape([[190, 150], [1730, 132], [1750, 352], [170, 362]], YEL, { lw: 6 });
-      type('BOB WISEMAN', 960, 252, 190, KEY, { ls: 8 }); });
+      fitType('AIRPLANE ON THE HIGHWAY', 960, 252, 1400, 170, KEY, { ls: 6 }); });
     shape([[460, 380], [1460, 374], [1450, 446], [470, 452]], KEY);
-    type('AIRPLANE ON THE HIGHWAY', 960, 414, 54, YEL, { font: '"Futura"', w: 'bold', ls: 6 });
-    type('LIVE  ·  ONE LANE ONLY', 330, 935, 36, PAPER, { font: '"Futura"', w: 'bold', rot: -.06, ls: 3 });
+    fitType('LIVE  ·  ONE NIGHT ONLY', 960, 414, 900, 54, YEL, { font: '"Futura"', w: 'bold', ls: 6 });
+    fitType('ONE LANE ONLY', 300, 935, 420, 40, PAPER, { font: '"Futura"', w: 'bold', rot: -.06, ls: 3 });
     type('NO PASSING', 1640, 935, 44, YEL, { rot: .07, ls: 4, lw: 10, line: KEY });
     // bunting
     for (let r = 0; r < 2; r++) {
@@ -796,10 +801,10 @@
       const pb = Math.floor((T - barT(2)) / (barT(3) - barT(2))), bp = beatPulse(T, 6);
       withT(() => { s.beginPath(); s.rect(w, h, w, h); s.clip(); sheet(pb % 2 ? YEL : KEY);
         const fg = pb % 2 ? KEY : YEL, ac = PINK;
-        type('BOB', w * 1.5, h + 105, 150 * (1 + .05 * bp), fg, { ls: 10 });
-        type('WISEMAN', w * 1.5, h + 215, 96, fg, { ls: 6 });
+        fitType('NO', w * 1.5, h + 100, (w - 120) / 1.06, 150 * (1 + .05 * bp), fg, { ls: 10 });
+        fitType('PASSING', w * 1.5, h + 210, (w - 100) / 1.06, 104, fg, { ls: 6 });
         shape([[w + 40, h + 270], [w * 2 - 40, h + 266], [w * 2 - 40, h + 320], [w + 40, h + 324]], ac);
-        type('ONE NIGHT ON THE SHOULDER', w * 1.5, h + 296, 28, pb % 2 ? PAPER : KEY, { font: '"Futura"', w: 'bold', ls: 2 }); });
+        fitType('ONE NIGHT ON THE SHOULDER', w * 1.5, h + 296, w - 120, 28, pb % 2 ? PAPER : KEY, { font: '"Futura"', w: 'bold', ls: 2 }); });
     }
     const y2 = hit(t, 135.18, 6);
     const ap = apart(.45 * y2 + .18 * beatPulse(t, 9), 21 + n);
@@ -1069,7 +1074,7 @@
   // 145.60 PIANO: the upright prints over the spinning wedge storm; keys go down on every piano note
   function pianoShot(t) {
     const T = ta(t); FRI = Math.floor(t * 12);
-    const e = En(T), a = snapD(t), n = dN(t), t0 = barT(7);
+    const e = En(T), a = snapD(t), n = dN(t), t0 = barT(9);
     sheet(PAPER);
     s.fillStyle = C(0, 0, .4 + .25 * SEs('drums', T, 1)); s.fillRect(-W, -H, W * 3, H * 3);
     for (let p = 0; p < 2; p++) {
@@ -1084,7 +1089,7 @@
     const rise = ease.back(inv(t0, t0 + .35, T));
     piano(960, 640 + (1 - rise) * 700, .95, T, { rot: -.05 + .02 * Math.sin(T * 1.3) });
     pianoPops(T, 8, 1.2);
-    fragCheat(lerp(2400, -700, inv(t0, barT(8), T)), 120, 900, -.06);
+    fragCheat(lerp(2400, -700, inv(t0, barT(10), T)), 120, 900, -.06);
     fx({ ...apart(.3 * a, n + 300), inks: ISET[4], jit: 2.6, cell: [3, 3, 3.8], ang: rotScr(t - t0, 2) });
   }
 
@@ -1129,7 +1134,141 @@
     }
   }
 
-  chapter('F', F0, F1, [[F0, party], [barT(1), warhol], [barT(4), cameo], [barT(5), explode], [barT(6), screens], [barT(7), pianoShot], [barT(8), breath],
-    [barT(9), saxShot], [barT(11), geom], [barT(12), drumShot], [barT(13), tunnel], [barT(14), vortex], [barT(15), strobe], [barT(16), peak], [barT(17), settle]]);
+
+  // ---- v3 SEAM FRAMING (STORYBOARD "v3 execution spec"): side view, nose right, plane centred at x 50% / y 58%,
+  // body about 45% of the frame width, the road's dashed centre line horizontal at y 72% (the continuous thread) ----
+  const SEAM = { k: 864 / 638, line: 778 };
+  SEAM.x = 960 + 35 * SEAM.k; SEAM.y = 626 + 183 * SEAM.k;      // plane origin (road contact) so the body centre lands at (960, 626)
+  function seamWorld(T, V, o = {}) {
+    const sc = T * V, rain = o.rain || 0;
+    sheet(PAPER);
+    s.fillStyle = C(.6, 0, 0); s.fillRect(-W, -H, W * 3, H + 120);
+    s.fillStyle = C(.4, 0, 0); s.fillRect(-W, 120, W * 3, 80);
+    s.fillStyle = C(.22, 0, 0); s.fillRect(-W, 200, W * 3, 70);
+    s.fillStyle = C(.1, 0, 0); s.fillRect(-W, 270, W * 3, 60);
+    if (!o.noSun) sun(1460, 380, 170);
+    mountains(600, -wrap(sc * .05, 680) - 300, 240, 340, 41, C(0, .55, 0));
+    mountains(650, -wrap(sc * .14, 520) - 300, 120, 260, 53, C(0, 0, .6), { op: 1 });
+    s.fillStyle = C(0, 0, .35); s.fillRect(-W, 640, W * 3, 70);
+    for (let i = -1; i < 12; i++) { const x = i * 300 - wrap(sc * .3, 300); stroke([[x, 708], [x, 560]], KEY, 7); stroke([[x - 26, 574], [x + 26, 574]], KEY, 6); }
+    if (rain > 0) { lighten(); s.fillStyle = C(.28 * rain, .32 * rain, 0); s.fillRect(-W, -H, W * 3, H + 700 + H); over(); }   // the sky greys over
+    s.fillStyle = TEAL; s.fillRect(-W, 700, W * 3, 260);
+    stroke([[-W, 710], [W * 2, 710]], PAPER, 6); stroke([[-W, 950], [W * 2, 950]], PAPER, 6);
+    for (let i = -1; i < 14; i++) { const x = i * 220 - wrap(sc, 220); s.fillStyle = o.lineCol || PAPER; s.fillRect(x, SEAM.line - 6, 120, 12); }   // the thread
+    s.fillStyle = C(0, 0, .5); s.fillRect(-W, 958, W * 3, 400);
+    for (let i = -1; i < 30; i++) { const x = i * 90 - wrap(sc * 1.3, 90); stroke([[x, 1030], [x + 8, 1005], [x + 16, 1030]], C(.6, 0, .5), 4); }
+  }
+  function rainfall(T, amt, seed = 1) {                            // slanted riso rain, drops on twos
+    if (amt <= 0) return;
+    const n = Math.round(320 * amt); lighten(); s.strokeStyle = C(0, .55, 0); s.lineWidth = 3; s.lineCap = 'round'; s.beginPath();
+    for (let i = 0; i < n; i++) { const r = rng(i * 53 + seed); const x0 = r() * 2400 - 300, y = wrap(r() * 1400 + T * (1500 + r() * 400), 1400) - 160, l = 40 + r() * 50, x = x0 + y * .22;
+      s.moveTo(x, y); s.lineTo(x + l * .22, y + l); }
+    s.stroke(); over();
+    s.strokeStyle = PAPER; s.lineWidth = 2.5; s.beginPath();                                       // and paper-white streaks so the rain reads over any ink
+    for (let i = 0; i < Math.round(160 * amt); i++) { const r = rng(i * 71 + seed + 999); const x0 = r() * 2400 - 300, y = wrap(r() * 1400 + T * (1700 + r() * 300), 1400) - 160, l = 30 + r() * 40, x = x0 + y * .22;
+      s.moveTo(x, y); s.lineTo(x + l * .22, y + l); }
+    s.stroke();
+    for (let i = 0; i < Math.round(40 * amt); i++) { const r = rng((Math.floor(T * 12) * 97 + i * 13) >>> 0); const x = r() * 1920, y = 715 + r() * 240;   // splashes on the road
+      ell(x, y, 12 + r() * 10, 3 + r() * 2, null, { lw: 2.5, line: PAPER }); }
+  }
+
+  // ======================= v3 =======================
+  // strong drum hits (envelope rise > .45) for extra cuts
+  const STRONG = (() => { const e = STM.drums.env, o = []; let last = -99;
+    for (let i = 3; i < e.length; i++) { const m = Math.min(e[i - 1], e[i - 2], e[i - 3]); if (e[i] - m > .45 && i - last >= 4 && e[i] >= e[i - 1]) { o.push(i / 24); last = i; } } return o; })();
+  function punch(t, t0, fn) {                                      // cut tight/wide on each strong drum hit inside a shot
+    const n = STRONG.filter((h) => h > t0 && h <= t).length, z = n % 2 ? 1.3 : 1;
+    withT(() => { s.translate(960, 540); s.scale(z, z); s.rotate(n % 2 ? .04 : 0); s.translate(-960, -540); fn(); });
+  }
+
+  // ---- 129.92 PRESS: he comes out of the printing-press rollers freshly printed, seam framing, the inks settle into register ----
+  const PRESS_END = 131.63, PRESS_V = 1300;                        // cut to the poster on the strong drum hit at 131.63
+  // rollers in the same place as woodcut E's last frame: top roller centred (1035, 450) r 405, nip on the road at y 867.
+  // Left of the nip is the unprinted scroll (paper, inked centre line, his outline); right of it the world is printed.
+  const PAL_RAW = { ...PAL0, body: PAPER, glass: PAPER, wing: PAPER, fin: PAPER, tip: PAPER, cheek: PAPER, ring: PAPER };
+  function press(t) {
+    const T = ta(t); FRI = Math.floor(t * 12);
+    const rx = 1035 - (t - F0) * PRESS_V, st = baseF(t), RR = 405;
+    const pl = { ...st, look: [.8, -.1], brow: [.5 + .5 * st.open, 0] };
+    withT(() => { s.beginPath(); s.rect(rx, -H, W * 3, H * 3); s.clip();                                      // printed
+      seamWorld(T, PRESS_V, {}); sidePlane(SEAM.x, SEAM.y, SEAM.k, pl); });
+    if (rx > -RR) withT(() => { s.beginPath(); s.rect(-W, -H, rx + W, H * 3); s.clip();                       // the raw scroll
+      sheet(PAPER); stroke([[-W, 710], [W * 2, 710]], KEY, 5); stroke([[-W, 950], [W * 2, 950]], KEY, 5);
+      for (let i = -1; i < 14; i++) { const x = i * 220 - wrap(T * PRESS_V, 220); s.fillStyle = KEY; s.fillRect(x, SEAM.line - 6, 120, 12); }
+      sidePlane(SEAM.x, SEAM.y, SEAM.k, { ...pl, pal: PAL_RAW }); });
+    if (rx > -RR - 20) {
+      for (const [cy, col, dir] of [[450, PINK, -1], [867 + RR, TEAL, 1]]) {                                   // the two rollers, inked, turning
+        const sp = dir * (t - F0) * PRESS_V / RR;
+        ell(rx, cy, RR, RR, col, { lw: 10 });
+        for (const rr of [.86, .68, .5]) { s.beginPath(); s.arc(rx, cy, RR * rr, sp, sp + 4.6); s.lineWidth = 8; s.strokeStyle = C(.35, .35, 0); s.stroke(); }
+        ell(rx, cy, RR * .2, RR * .2, PAPER, { lw: 8 }); ell(rx, cy, RR * .07, RR * .07, KEY);
+      }
+    }
+    const pl2 = (d) => 1 - ease.out(inv(F0, F0 + d, t));
+    fx({ off: [-60 * pl2(.5), 14 * pl2(.5), 44 * pl2(.9), -20 * pl2(.9), 20 * pl2(1.3), 30 * pl2(1.3)],   // small spread so frame 0 still meets E's rollers
+ inks: ISET[0], jit: 2.4 + 3 * pl2(1.2) });
+  }
+
+  // ---- the SAX REVEAL window: 5.0 s ending on the sax's first phrase onset (other.wav attack at ~145.06) ----
+  const SAX_ON = 3482 / 24, SAX_WIN0 = 3387 / 24;                  // 145.0833 (frame 3482) and 141.125 (frame 3387): starts after the last "yeah"; the 5 s morph is retimed to 95 frames
+  window.SEAMS = [{ a: SAX_WIN0, b: SAX_ON, name: 'sax' }];
+  function explode3(t) {                                           // the window's start frame: the poster blows apart into an ink storm
+    cameo(t, SAX_WIN0 - .03 + (t - SAX_WIN0) * .12);
+    const u = inv(SAX_WIN0, SAX_ON, t), n = bN(t), a = .6 + .5 * snapA(t, 1.5);
+    fx({ ...apart(a, 11 + n, 1.4), inks: ISET[n % ISET.length], jit: 3 + 4 * a,
+      cell: [1.8 + 2 * u, 1.6 + 2 * u, 2 + 2 * u], ang: rotScr(t - SAX_WIN0, 1.5 + 2 * u) });
+  }
+  function saxReveal(t) {                                          // the window's end frame and the shot after it: the sax big where the plane sits in seam framing
+    const T = ta(t); FRI = Math.floor(t * 12);
+    const e = SEs('other', T, 2), n = dN(t), k = .85;
+    sheet(C(0, 0, .45));
+    for (let p = 0; p < 2; p++) {
+      const N = [36, 37][p], rot = T * [.25, -.2][p];
+      lighten(); s.fillStyle = ink(p, .9);
+      for (let i = 0; i < N; i++) { const a0 = rot + i * TAU / N, a1 = a0 + TAU / N * (.3 + .25 * e); s.beginPath(); s.moveTo(960, 626); s.lineTo(960 + Math.cos(a0) * 3200, 626 + Math.sin(a0) * 3200); s.lineTo(960 + Math.cos(a1) * 3200, 626 + Math.sin(a1) * 3200); s.closePath(); s.fill(); }
+      over();
+    }
+    shockwaves(T, 960, 626, { w: 50 });
+    star(960, 626, 470, 580, 18, T * .2, PAPER, { lw: 8 });                                                   // the storm parts
+    for (let i = -1; i < 14; i++) { const x = i * 220 - wrap(T * 300, 220); s.fillStyle = KEY; s.fillRect(x, SEAM.line - 6, 120, 12); }   // the thread
+    sax(960 - 69 * k, 626 + 157 * k, k, T, { rot: 0 });
+    pianoPops(T, 5, .8);
+    fx({ ...apart(.15 * snapD(t, 2), n + 600), inks: ISET[4], jit: 2.4, cell: [2.4, 2.4, 3] });
+  }
+  function opartRib(t) { opart(t); const T = ta(t); saxRibbon(T, { y: 900 }); pianoPops(T, 4); }
+  const tunnelP = (t) => punch(t, barT(13), () => tunnel(t));
+  const vortexP = (t) => punch(t, barT(14), () => vortex(t));
+  function peak3(t) { peak(t); const T = ta(t); rainfall(T, .25 * inv(HIT, 167.5, T), 7); }
+
+  // ---- 167.50 LICK: quick cuts on the piano scale runs, rain begins, the inks start to run; ends rain-soaked in seam framing ----
+  const LK = [167.5, 167.63, 168.08, 168.46, 168.88, 169.17];
+  function lick(t) {
+    const T = ta(t); FRI = Math.floor(t * 12);
+    const j = LK.filter((x) => t >= x).length - 1, c0 = LK[j];
+    const R = lerp(.25, 1, inv(167.5, 169.4, t)), run = lerp(.03, .2, inv(167.6, F1, t)), st = baseF(t);
+    if (j === 0 || j === 5) {                                      // seam framing, rain
+      seamWorld(T, 1100, { rain: j === 0 ? .4 : .85 });
+      sidePlane(SEAM.x, SEAM.y, SEAM.k, { ...st, open: 0, look: j === 0 ? [.3, -.9] : [.6, -.4], brow: [j === 0 ? .9 : .4, j === 0 ? 0 : -.4] });
+      if (j === 5) for (let i = 0; i < 6; i++) { const r = rng(i * 19 + 3); ell(140 + r() * 1640, 990 + r() * 70, 120 + r() * 80, 12, C(0, .4, 0), { op: 1 }); }   // puddles on the verge
+    } else if (j === 1 || j === 3) {                               // the keyboard: a run up, then a run down
+      sheet(j === 1 ? C(0, .35, 0) : C(.35, 0, 0));
+      piano(960, 560, 1.9, T, { rot: j === 1 ? .04 : -.06, run: { t0: c0, dir: j === 1 ? 1 : -1 }, case: j === 1 ? RED : TEAL });
+    } else if (j === 2) {                                          // close on his windscreen, a drop lands
+      seamWorld(T, 1100, { rain: .6, noSun: true });
+      const k = 3.2, px = 960 - 200 * k, py = 540 + 230 * k;
+      sidePlane(px, py, k, { ...st, open: 0, look: [.1, -1], brow: [1, 0] });
+      withT(() => { s.translate(px, py); s.scale(k, k); for (let i = 0; i < 7; i++) { const r = rng(i * 23 + 1), a = t - (c0 + i * .05); if (a < 0) continue;
+        const dx = 140 + r() * 120, dy = -262 + r() * 70 + a * 30; ell(dx, dy, 5 + r() * 4, 6 + r() * 5, PAPER, { lw: 1.6, line: C(0, .6, 0) }); } });
+    } else {                                                       // the centre line close up, rain bouncing off it
+      withT(() => { s.translate(960, 540); s.scale(2.4, 2.4); s.translate(-960, -SEAM.line); seamWorld(T, 500, { rain: .7 }); });
+      for (let i = 0; i < 9; i++) { const r = rng(i * 41 + 7), a = wrap(t * 1.7 + r(), 1); ell(r() * 1920, 700 + r() * 380, 20 + a * 140, 6 + a * 36, null, { lw: 5 * (1 - a), line: PAPER }); }
+    }
+    rainfall(T, R, 3 + j);
+    const kick = hit(t, c0, 10), h = (m) => (hash((j * 31 + m) >>> 0) - .5) * 2 * kick;
+    fx({ off: [h(1) * 60, h(2) * 30, h(3) * 60, h(4) * 30, h(5) * 50, h(6) * 40], inks: ISET[0], jit: 2.4 + 2 * kick, run, starve: 1 + .3 * run });
+  }
+
+  chapter('F', F0, F1, [[F0, press], [PRESS_END, party], [barT(1), warhol], [barT(4), cameo], [SAX_WIN0 - 1e-4, explode3], [SAX_ON - 1e-4, saxReveal], [barT(8), breath],
+    [barT(9), pianoShot], [barT(10), opartRib], [barT(11), geom], [barT(12), drumShot], [barT(13), tunnelP], [barT(14), vortexP], [barT(15), strobe], [barT(16), peak3], [167.5, lick]]);
   window.__F = { bars: [...Array(18)].map((_, k) => +barT(k).toFixed(3)), snap: beatT(70), hit: HIT };
 })();

@@ -164,7 +164,31 @@ function plane(x, y, sc, ang, o = {}) {
   withT(() => { s.translate(x, y); s.rotate(ang); s.scale(sc, sc * (o.flip ? -1 : 1)); part(PLANE, { fill: o.fill || hsl(220, 10, 92), shade: o.shade || hsl(225, 12, 70), shadeShift: [0, -6], seed: o.seed || 77, inkW: o.inkW ?? 1 / sc * 1.2, seg: 2, wob: o.wob ?? .3 / sc, reg: o.reg ?? .3 / sc, alpha: o.alpha }); });
 }
 // Camera: centre (cx,cy) of the 1920x1080 world shown at zoom z, rolled by rot.
-function cam(cx, cy, z = 1, rot = 0) { s.translate(W / 2, H / 2); s.rotate(rot); s.scale(z, z); s.translate(-cx, -cy); }
+// Reframing cuts: a shot can jump to a new framing on a strong drum hit. REFRAME entries are
+// [t0, t1, dx, dy, zoomMul] in world units, applied while the frame's song time T is inside [t0, t1).
+let REFRAME = [];
+function cam(cx, cy, z = 1, rot = 0) {
+  const f = REFRAME.find(([a, b]) => T >= a && T < b); if (f) { cx += f[2]; cy += f[3]; z *= f[4]; }
+  s.translate(W / 2, H / 2); s.rotate(rot); s.scale(z, z); s.translate(-cx, -cy);
+}
+// ONE continuous soft spiral cloud (snail shell / galaxy): a single tapering band, thick outside and
+// wisping to nothing at the centre, no arms, no symmetry, no straight bits. Centre at (0,0) local.
+function spiralCloud(R, rot, alpha, seed, o = {}) {
+  if (alpha <= .01) return;
+  const turns = 2.1, N = 90, C = [], Wd = [];
+  for (let i = 0; i <= N; i++) { const u = i / N, th = rot + u * turns * TAU, r = R * Math.pow(1 - u, 1.15) + R * .02;
+    C.push([Math.cos(th) * r * 1.35, Math.sin(th) * r * .8]); Wd.push(R * .34 * Math.pow(1 - u, 1.3) + 1.5); }
+  const out = [], inn = [];
+  for (let i = 0; i <= N; i++) { const a = C[Math.max(0, i - 1)], b = C[Math.min(N, i + 1)]; let dx = b[0] - a[0], dy = b[1] - a[1]; const l = Math.hypot(dx, dy) || 1; dx /= l; dy /= l;
+    const w = Wd[i] / 2 * (1 + snoise(T * .3 + i * .21, seed) * .12); out.push([C[i][0] - dy * w, C[i][1] + dx * w]); inn.push([C[i][0] + dy * w, C[i][1] - dx * w]); }
+  s.save(); s.globalAlpha *= alpha;
+  const fillC = o.fill || hsl(28, 40, 88, .9), shadeC = o.shade || hsl(300, 18, 68, .85);
+  part([...out, ...inn.reverse()], { fill: fillC, seed, ink: false, dense: true, wob: .8, reg: .6, tone2: false, hatch: false });
+  // soft puffs riding the band, shrinking with it (the cloud texture), every one overlapping the next
+  for (let i = 0; i < N - 6; i += 3) { const w = Wd[i]; part(lump(C[i][0], C[i][1] + w * .08, w * .62, w * .42, seed + 10 + i, 9), { fill: fillC, shade: shadeC, shadeShift: [0, -w * .14], seed: seed + 200 + i, ink: false, wob: .5, reg: .4, tone2: false, hatch: false }); }
+  s.restore();
+  return C[N];
+}
 
 // Draw fn into an offscreen layer, then put the whole layer down at one opacity (optionally tinted).
 // Overlapping parts inside a translucent figure then stay clean instead of muddying each other.

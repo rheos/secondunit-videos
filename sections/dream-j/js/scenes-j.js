@@ -10,6 +10,20 @@
 //   329.6   everyone floats, paint       (instrumental)
 //   335.6   night window, fine pen       the seat-belt sign comes on; it goes black and orange for the reprise
 const QQ = (t) => (a, b) => smooth(inv(a, b, t));
+// Cuts on the strongest drum hits (stems.js drum onsets, envelope >= 0.40), as reframings inside a scene.
+REFRAME = [
+  [282.875, 284.792, 90, -60, 1.28],   // train: in on the puppet ticks
+  [284.792, 286.0, -40, 10, .94],      //   back out wide as the strings snap
+  [287.542, 289.75, 120, -40, 1.32],   // roof: close on him looking up
+  [296.125, 298.0, 90, 40, 1.22],      // living room: closer as she settles and looks out
+  [305.417, 308.417, 200, 40, 1.25],   // car: in on the passenger's waving hand
+  [311.792, 314.1, -10, -60, 1.18],    // float: closer, the spiral overhead
+  [315.958, 318.0, 0, -30, 1.14],      // quantum: tighter as the ghosts appear
+  [320.833, 322.5, 260, 200, 1.4],    // lecture: close on the student's air quotes
+  [323.083, 324.0, -180, -40, 1.3],    // lecturer: in on "very confident"
+  [331.833, 333.167, 0, -40, 1.22],    // float: punch in on the group
+  [337.958, 341.2917, -60, 0, 1.1],    // night: a little closer for the ending
+];
 const mixArm = (A, B, k) => A.map((v, i) => lerp(v, B[i], k));
 const toWorld = (P, p) => [P.x + p[0] * P.sc, P.y + p[1] * P.sc];
 
@@ -104,13 +118,16 @@ function roofSky(t, vort) {
   s.fillStyle = vgrad(-1100, 800, [[0, hsl(218, 34, 44)], [.45, hsl(205, 30, 68)], [.78, hsl(30, 60, 80)], [1, hsl(22, 70, 74)]]); s.fillRect(-500, -1300, 2900, 2200);
   s.save(); s.globalCompositeOperation = 'screen'; s.fillStyle = rgrad(260, 560, 10, 700, [[0, hsl(40, 90, 80, .8)], [1, hsl(30, 80, 60, 0)]]); s.fillRect(-500, -300, 1600, 1200); s.restore();
   const C0 = [980, -420], r = rng(940);
-  for (let i = 0; i < 46; i++) {
-    const arm = i % 3, k = Math.floor(i / 3), rad = 60 + k * 62, ang = arm * TAU / 3 + rad * .0042 + (t - 290) * .22;
+  // loose clouds drift in and gather along ONE continuous spiral band (no separate arms)
+  const N = 40;
+  for (let i = 0; i < N; i++) {
+    const u = (i + .5) / N, th = (t - 290) * .22 + u * 2.1 * TAU, rad = 460 * Math.pow(1 - u, 1.15) + 10;
     const sx = -300 + r() * 2500 + (t - 286) * (8 + r() * 10), sy = -1000 + r() * 1500, sw = 60 + r() * 90;
-    const vx = C0[0] + Math.cos(ang) * rad * 1.5, vy = C0[1] + Math.sin(ang) * rad * .8;
-    const x = lerp(sx, vx, vort), y = lerp(sy, vy, vort), w = lerp(sw, 24 + rad * .12, vort);
+    const vx = C0[0] + Math.cos(th) * rad * 1.35, vy = C0[1] + Math.sin(th) * rad * .8;
+    const x = lerp(sx, vx, vort), y = lerp(sy, vy, vort), w = lerp(sw, 10 + 100 * Math.pow(1 - u, 1.3), vort);
     part(lump(x, y, w, w * .45, 941 + i, 10), { fill: hsl(30 + r() * 15, 45, 90, .9), shade: hsl(330, 25, 74, .85), shadeShift: [0, -w * .14], seed: 950 + i, wob: 1.4 });
   }
+  withT(() => { s.translate(C0[0], C0[1]); spiralCloud(460, (t - 290) * .22, smooth(inv(.55, 1, vort)) * .85, 945, { fill: hsl(32, 45, 90, .9), shade: hsl(330, 25, 74, .85) }); });
   if (vort > .3) withT(() => { s.globalAlpha = smooth(inv(.4, 1, vort)); const a = (t - 290) * .9; plane(C0[0] + Math.cos(a) * 30, C0[1] + Math.sin(a) * 16, .55, a + Math.PI / 2, { seed: 999, fill: hsl(40, 60, 96) }); });
 }
 function shotRoof(t, tt, len) {

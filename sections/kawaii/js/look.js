@@ -8,7 +8,7 @@
 const LOOK = {
   span: [99.5417, 118.75],
   frag: `
-uniform float wet, runs, hue, boil, seed, flash, mottle;
+uniform float wet, runs, hue, boil, seed, flash, mottle, pixR, pixB; uniform vec2 pixC;
 vec3 A(vec3 c){ return -log(max(c, vec3(.03))); }
 vec3 hueRot(vec3 c, float a){
   const vec3 k = vec3(.57735);
@@ -47,7 +47,17 @@ void main(){
   col = mix(col, ic, clamp(ia * 1.05, 0., 1.));
   vec2 v = uv - .5; col *= 1. - dot(v, v) * .22;
   col = mix(col, paper, flash);
+  // INSERT COIN: 16-bit pixels spread out from a point (pixC in 0..1 of the frame, pixR in frame heights, pixB = block px)
+  if (pixR > 0.) {
+    vec2 px = uv * res, bc = (floor(px / pixB) + .5) * pixB, d = (bc / res - pixC) * vec2(res.x / res.y, 1.);
+    if (max(abs(d.x), abs(d.y)) < pixR) {
+      vec2 q2 = bc / res; vec3 pc = textureLod(src, q2, 0.).rgb; vec4 pk = textureLod(ink, q2, 0.);
+      pc = mix(pc, pk.rgb, step(.35, pk.a));
+      pc = floor(pc * 5. + .5) / 5.;
+      col = pc;
+    }
+  }
   o = vec4(col, 1.);
 }`,
-  uniforms: (t, X) => ({ wet: X.wet ?? .35, runs: X.runs ?? 0, hue: X.hue ?? 0, boil: X.boil ?? 1, seed: X.seed ?? 1, flash: X.flash ?? 0, mottle: X.mottle ?? 1 }),
+  uniforms: (t, X) => ({ wet: X.wet ?? .35, runs: X.runs ?? 0, hue: X.hue ?? 0, boil: X.boil ?? 1, seed: X.seed ?? 1, flash: X.flash ?? 0, mottle: X.mottle ?? 1, pixR: X.pixR ?? 0, pixB: X.pixB ?? 14, pixC: X.pixC ?? [.5, .5] }),
 };

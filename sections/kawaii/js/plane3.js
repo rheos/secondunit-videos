@@ -2,6 +2,17 @@
 // real thickness so they never read as a flat bar), and a world camera for scenery in perspective.
 // Units: plane units (the wingspan is 1280; a lane is ~760, so the wings always overhang).
 const RED = '#e5545e'; // the cheat line
+const GLASS = '#d4eaf7';
+let RAWT = 0; // the unquantised frame time (the mouth runs at 24 fps while the drawing boils on twos)
+// mouth from the Demucs vocal stem (js/venv.js, 100 Hz, 0..1 level): closed between words,
+// a round "oo" on each attack, then a vowel shape picked per syllable, open by level.
+function venvAt(t) { for (const [t0, a] of VENV.ranges) { const i = (t - t0) * VENV.hz; if (i >= 0 && i < a.length - 1) { const j = Math.floor(i), u = i - j; return (a[j] + (a[j + 1] - a[j]) * u) / 100; } } return 0; }
+function mouthFor(t) {
+  const TH = .44, L = venvAt(t); if (L < TH) return { open: 0, shape: 'ah' };
+  let on = t; for (let k = 1; k < 80; k++) { if (venvAt(t - k * .01) < TH) break; on = t - k * .01; }
+  const open = clamp((L - TH) / .38), dt = t - on, h = hash(Math.round(on * 100) + 7);
+  return { open: open * (dt < .05 ? .6 : 1), shape: dt < .07 ? 'o' : h < .55 ? 'ah' : h < .8 ? 'o' : 'ee' };
+}
 
 function hull(pts) {
   const p = pts.slice().sort((a, b) => a[0] - b[0] || a[1] - b[1]); if (p.length < 3) return p;
@@ -103,7 +114,7 @@ function plane3(x, y, kk, o) {
     if (side > .12) {
       // cheat line along the flank, portholes above it
       const N = 16, topL = [], botL = [];
-      for (let i = 0; i <= N; i++) { const s0 = i / N, yc = lerp(222, 150, Math.pow(s0, .7)), hh = lerp(8, 15, s0); topL.push(PB(...sideF(s0, () => yc + hh))); botL.push(PB(...sideF(s0, () => yc - hh))); }
+      const smax = side > .9 ? .64 : 1; for (let i = 0; i <= N; i++) { const s0 = i / N * smax, yc = lerp(222, 150, Math.pow(s0, .7)), hh = lerp(8, 15, s0); topL.push(PB(...sideF(s0, () => yc + hh))); botL.push(PB(...sideF(s0, () => yc - hh))); }
       seedAt(9010); shape(topL.concat(botL.reverse()), RED, 4.5);
       for (let i = 0; i < 4; i++) {
         const s0 = .25 + i * .13, c = sideF(s0, () => lerp(222, 150, Math.pow(s0, .7)) + 48);
@@ -114,15 +125,15 @@ function plane3(x, y, kk, o) {
     let F = null;
     if (front && cy > .25) {
       seedAt(9030); shape(fr.map((q) => PB(...q)), PAL.cream, 6.5);
-      paint(rrect(-140, 62, 280, 20, 9, 9031).map(([a, b]) => PB(a, b, ZF + 1)), RED, 1, false); // the cheat line wraps the nose as a bumper stripe
-      ink(rrect(-140, 62, 280, 20, 9, 9031).map(([a, b]) => PB(a, b, ZF + 1)), true, 3.5);
-      seedAt(9035); shape(rrect(-88, 248, 176, 40, 18, 9035).map(([a, b]) => PB(a, b, ZF + 2)), PAL.blue, 5.5);
-      paint(rrect(-72, 270, 42, 10, 4).map(([a, b]) => PB(a, b, ZF + 3)), '#ffffff', .85, false);
-      F = { o: [0, 184, ZF + 2], u: [1, 0, 0] };
+      paint(rrect(-138, 44, 276, 13, 6, 9031).map(([a, b]) => PB(a, b, ZF + 1)), RED, 1, false); // the cheat line wraps the nose as a thin bumper stripe
+      ink(rrect(-138, 44, 276, 13, 6, 9031).map(([a, b]) => PB(a, b, ZF + 1)), true, 3);
+      seedAt(9035); shape(rrect(-114, 194, 228, 96, 34, 9035).map(([a, b]) => PB(a, b, ZF + 2)), GLASS, 5.5); // the windscreen: his eyes live here
+      paint(rrect(-96, 272, 46, 9, 4).map(([a, b]) => PB(a, b, ZF + 3)), '#ffffff', .9, false);
+      F = { o: [0, 240, ZF + 2], u: [1, 0, 0], md: 1.55, bd: .88 };
     }
     if (!F || side > .9) {
-      F = { o: [sx * 151, 186, ZF - 96], u: [0, 0, 1] };
-      seedAt(9040); shape([[ZF - 8, 298], [ZF - 92, 298], [ZF - 120, 262], [ZF - 14, 262]].map(([z, yy]) => PB(sx * 150, yy, z)), PAL.blue, 5); // windscreen on the brow
+      F = { o: [sx * 151, 250, ZF - 94], u: [0, 0, 1], md: 1.5, bd: .85 };
+      seedAt(9040); shape([[ZF - 4, 296], [ZF - 178, 296], [ZF - 192, 208], [ZF - 10, 208]].map(([z, yy]) => PB(sx * 150, yy, z)), GLASS, 5); // the windscreen along the brow, eyes in it
     }
     const O = PB(...F.o), Ux = PB(F.o[0] + F.u[0], F.o[1], F.o[2] + F.u[2]), Vy = PB(F.o[0], F.o[1] - 1, F.o[2]);
     let ax = Ux[0] - O[0], ay = Ux[1] - O[1], bx = Vy[0] - O[0], by = Vy[1] - O[1];
@@ -130,9 +141,10 @@ function plane3(x, y, kk, o) {
     const am = Math.hypot(ax, ay), bm = Math.hypot(bx, by);
     const fx0 = Math.max(.42, am / Math.max(bm, 1e-3)); // keep it readable when foreshortened
     push(); both((c) => c.transform(ax / am * fx0 * bm, ay / am * fx0 * bm, bx, by, O[0], O[1]));
-    face(0, 0, faceU, { ...o, w: o.w || 7, es });
+    const MM = o.sing === false ? { open: 0, shape: 'ah' } : mouthFor(RAWT), oo = o.open || 0;
+    face(0, 0, faceU, { mouthDy: F.md, blushDy: F.bd, hatch: false, mw0: .85, ...o, open: Math.max(oo, MM.open), mshape: oo > MM.open ? 'ah' : MM.shape, w: o.w || 7, es });
     pop();
-    faceAt = [x + kk * O[0], y + kk * O[1]]; mouthAt = [x + kk * (O[0] + bx * faceU * .7), y + kk * (O[1] + by * faceU * .7)];
+    faceAt = [x + kk * O[0], y + kk * O[1]]; mouthAt = [x + kk * (O[0] + bx * faceU * F.md), y + kk * (O[1] + by * faceU * F.md)];
   } });
   parts.sort((a, b) => a.d - b.d).forEach((p) => p.f());
   pop();

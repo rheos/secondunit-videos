@@ -87,7 +87,7 @@
   }
   // ---- the real airplanes of the legend: him minus the car tyres, wings beating ----
   function flier(x, y, k, T, o = {}) {
-    const st = { t: T, open: 0, look: [.8, 0], brow: [.4, 0], lid: 0, spin: T * TAU * 2.6 + x * .01, roll: 0, tyres: false, wingY: .42, ...o };  // near wing flattened so it reads level, not hanging
+    const st = { t: T, open: 0, look: [.8, 0], brow: [.4, 0], lid: 0, spin: T * TAU * 2.6 + x * .01, roll: 0, tyres: false, wingY: .3, ...o };  // near wing flattened so it reads level, not hanging
     drawPlane(x, y, k, st);
   }
 
@@ -101,7 +101,7 @@
     farHills(T, 640, sc * .12, 3);
     nearHills(T, 706, sc * .32, 9);
     poles(T, 706, sc);
-    road(T, 700, 915, sc, 808);
+    road(T, 700, 915, sc, o.dashY || 808);
     verge(T, 915, sc);
   }
   // a four-point carved star
@@ -137,7 +137,7 @@
     // road and verge (the road itself is ink; its cut edges and dashes are what show)
     s.fillStyle = INK; s.fillRect(-50, 700, W + 100, 400);
     taper([[-50, 708], [W + 50, 710]], 6, 6, CUT); taper([[-50, 905], [W + 50, 903]], 5, 5, CUT);
-    for (let x = -wrap(sc, 150) - 150; x < W + 150; x += 150) flick(x, 808, 0, 90, 13);
+    for (let x = -wrap(sc, 150) - 150; x < W + 150; x += 150) flick(x, o.dashY || 808, 0, 90, 13);
     const g = rng(7); for (let i = 0; i < 18; i++) { const x = wrap(g() * 2600 - sc, 2600) - 300, y = lerp(726, 890, g()); flick(x, y, 0, 40 + g() * 70, 3); }
     for (let j = 0; j < 5; j++) for (let x = -wrap(sc, 46) - 46; x < W + 46; x += 46) { const y = 949 + j * 32, xx = x + (j % 2) * 23; flick(xx, y, -1.9, 22, 4); flick(xx + 6, y, -1.25, 22, 4); }
   }
@@ -154,4 +154,78 @@
     withT(() => { s.setTransform(1, 0, 0, 1, 0, 0); s.filter = `drop-shadow(0 0 ${r * RS}px #fff) drop-shadow(0 0 ${r * RS}px #fff)`; s.drawImage(c, 0, 0); });
   }
   window.L = { halo, bphase, flapOf, swallow, curl, vbird, sunFace, panelFrame, flier, worldDay, worldNight, star, starfield, moon, nightHills };
+})();
+
+// ======================= v3 seams (pinball portals) =======================
+// SEAM FRAMING: side view, nose right, plane centred at 50% / 58%, body 45% of frame width, the dashed
+// centre line at 72%. With the plane at world (900, 862) x1.1 that is this camera, and the dashes at
+// world y 788. World-fixed portal objects move at the road speed (820 world px/s) so motion never changes.
+(() => {
+  const SEAM = { z: 1.169, cx: 851.6, cy: 585, dashY: 788, PX: 900, PY: 862, KP: 1.1, V: 820 };
+  const seamCam = () => K.cam(SEAM.z, SEAM.cx, SEAM.cy);
+  const toWorldX = (sx) => (sx - W / 2) / SEAM.z + SEAM.cx;
+  // carved stone tunnel mouth seen side on: dark interior left of xf, the hill over it, a stone portal face
+  function tunnel(T, xf, sc) {
+    s.fillStyle = INK; s.fillRect(xf - 4000, -400, 4000, 1600);
+    // interior: ceiling lamps streaking past, the carved road edges and dashes
+    for (let x = -wrap(sc, 300) - 300; x < xf; x += 300) { s.beginPath(); s.ellipse(x, 360, 34, 12, 0, 0, TAU); s.fillStyle = CUT; s.fill(); for (let q = -1; q <= 1; q++) taper([[x + q * 14, 380], [x + q * 40, 470]], 4, 1, CUT); }
+    taper([[xf - 4000, 330], [xf, 330]], 5, 5, CUT);
+    taper([[xf - 4000, 708], [xf, 710]], 6, 6, CUT); taper([[xf - 4000, 905], [xf, 903]], 5, 5, CUT);
+    for (let x = -wrap(sc, 150) - 150; x < xf - 60; x += 150) flick(x, SEAM.dashY, 0, 90, 13);
+    // the hill above: chevron cuts
+    for (let j = 0; j < 5; j++) for (let x = xf - 1200 + (j % 2) * 18; x < xf - 20; x += 36) { flick(x, 160 + j * 30, -.5, 22, 6); flick(x + 16, 150 + j * 30, .5, 22, 6); }
+    // hill slope falling away right of the face
+    const hs = () => { s.beginPath(); s.moveTo(xf, 120); s.quadraticCurveTo(xf + 260, 160, xf + 420, 700); s.lineTo(xf, 700); s.closePath(); };
+    shape(hs, INK); clipTo(hs, () => { for (let j = 0; j < 9; j++) for (let x = xf + (j % 2) * 18; x < xf + 440; x += 36) flick(x, 200 + j * 56, -1.9, 22, 6); });
+    // portal face: voussoir blocks and a lintel
+    for (let y = 330, i = 0; y < 700; y += 62, i++) { const b = [[xf - 10, y], [xf + 66, y], [xf + 66, y + 58], [xf - 10, y + 58]]; shape(() => pathOf(chisel(b, 900 + i, 3)), CUT, 7); taper([[xf + 4, y + 14], [xf + 50, y + 14]], 2, 2); }
+    shape(() => pathOf(chisel([[xf - 60, 276], [xf + 96, 276], [xf + 96, 334], [xf - 60, 334]], 950, 3)), CUT, 8);
+    dot(xf + 18, 305, 9, RED);
+  }
+  // car wash: entrance face at xc, dark wet interior to its right, spinning carved brushes, suds
+  function carwashBack(T, xc) {
+    withT(() => { s.beginPath(); s.rect(xc, -400, 6000, 1600); s.clip();
+      s.fillStyle = INK; s.fillRect(xc, 330, 6000, 590);
+      for (let x = xc + 60; x < xc + 3000; x += 54) { const ph = wrap(T * 900 + x * 3, 90); for (let y = 360 + ph; y < 900; y += 90) taper([[x, y], [x, y + 36]], 3, 1, CUT); }   // water jets
+      for (const bx of [xc + 260, xc + 760, xc + 1260]) brush(T, bx, 380, 880, 70);
+      taper([[xc, 360], [xc + 6000, 360]], 30, 30, INK);
+    });
+    // roof and gable over the entrance, the striped entrance post, a carved bubble sign (no text)
+    s.fillStyle = INK; s.fillRect(xc - 30, 250, 6000, 80); taper([[xc - 50, 248], [xc + 6000, 248]], 6, 6, CUT);
+    for (let y = 330; y < 915; y += 46) { s.fillStyle = (y / 46 | 0) % 2 ? RED : CUT; s.fillRect(xc - 26, y, 46, 46); }
+    s.lineWidth = 6; s.strokeStyle = INK; s.strokeRect(xc - 26, 330, 46, 585);
+    dot(xc + 120, 180, 62, INK); dot(xc + 120, 180, 50, CUT); for (const [dx, dy, r] of [[-14, 8, 18], [16, -10, 13], [10, 18, 9]]) { s.beginPath(); s.arc(xc + 120 + dx, 180 + dy, r, 0, TAU); s.lineWidth = 5; s.stroke(); }
+    taper([[xc + 120, 242], [xc + 120, 250]], 8, 8);
+  }
+  function brush(T, x, y0, y1, w) {
+    s.fillStyle = INK; s.fillRect(x - w, y0, w * 2, y1 - y0);
+    const ph = wrap(T * 260, 34);
+    for (let y = y0 - 34 + ph; y < y1; y += 34) for (let k = -2; k <= 2; k++) flick(x + k * w * .4, y, -.55 + k * .1, w * .9, 7, CUT);
+    taper([[x, y0 - 30], [x, y1 + 10]], 10, 10, CUT); taper([[x, y0 - 30], [x, y1 + 10]], 4, 4, INK);
+  }
+  function suds(seed, n, x0, y0, x1, y1, rmin = 18, rmax = 60) {
+    const g = rng(seed);
+    for (let i = 0; i < n; i++) { const x = lerp(x0, x1, g()), y = lerp(y0, y1, g()), r = lerp(rmin, rmax, g());
+      dot(x, y, r + 6, INK); dot(x, y, r, CUT); taper(arcPts(x, y, r * .6, r * .6, Math.PI * 1.1, Math.PI * 1.55, 6), 2, 5); }
+  }
+  // printing press: two big carved rollers meeting at the road (the nip), axle at world x xr
+  function pressRollers(T, xr, R = 340) {
+    const top = SEAM.PY - 4 - R, bot = SEAM.PY + 4 + R;
+    // the iron press frame holding both axles
+    taper([[xr, top - R - 200], [xr, bot + R]], 120, 120, CUT); taper([[xr, top - R - 200], [xr, bot + R]], 104, 104, INK);
+    taper([[xr - 10, top - R - 190], [xr - 10, bot + R]], 6, 6, CUT);
+    dot(xr, top - R - 210, 70, INK); taper(arcPts(xr, top - R - 210, 46, 46, -2.6, -1.2, 8), 4, 8, CUT);
+    for (const [cy, dir] of [[top, 1], [bot, -1]]) {
+      dot(xr, cy, R + 12, CUT); dot(xr, cy, R, INK);
+      const a0 = T * 2.6 * dir;
+      // a carved spiral groove that turns with the roller, and grain arcs
+      const sp = []; for (let a = 0; a < TAU * 3.2; a += .12) sp.push([xr + Math.cos(a + a0) * (60 + a * 14), cy + Math.sin(a + a0) * (60 + a * 14)]);
+      taper(sp, 2, 7, CUT);
+      for (let i = 0; i < 5; i++) { const a = a0 + i * TAU / 5; taper(arcPts(xr, cy, R * .9, R * .9, a, a + .9, 10), 2, 9, CUT); }
+      if (dir > 0) { s.beginPath(); s.arc(xr, cy, R - 6, Math.PI * .15, Math.PI * .85); s.lineWidth = 14; s.strokeStyle = RED; s.stroke(); }   // inked face of the top roller
+      dot(xr, cy, 56, CUT); dot(xr, cy, 42, INK); dot(xr, cy, 12, CUT);
+    }
+    taper([[xr - 40, SEAM.PY], [xr + 60, SEAM.PY]], 5, 5, RED);           // the red ink line at the nip
+  }
+  Object.assign(L, { SEAM, seamCam, toWorldX, tunnel, carwashBack, brush, suds, pressRollers });
 })();

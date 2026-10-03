@@ -14,9 +14,9 @@
 //   98.93 flew     back on the road, low and close: he looks up; a tiny flock crosses his sky
 (() => {
   const { drawPlane, scr, cam } = K;
-  const { swallow, curl, halo, vbird, sunFace, panelFrame, flier, worldDay, flapOf } = L;
+  const { swallow, curl, halo, vbird, sunFace, panelFrame, flier, worldDay, flapOf, SEAM, seamCam, toWorldX, tunnel, carwashBack, brush, suds } = L;
   const A = 91.0, B = 2389 / 24;
-  const T_EAR = 93.10, T_OPEN = 94.50, T_ONCE = 95.80, T_AIR = 96.60, T_PLANES = 96.97, T_TILT = 97.50, T_SKY = 98.37, T_FLEW = 98.93;
+  const T_EAR = 93.10, T_OPEN = 94.50, T_ONCE = 95.80, T_AIR = 96.60, T_PLANES = 96.97, T_TILT = 97.50, T_SKY = 98.37, T_FLEW = 98.93, T_DRUM = 94.042, T_WASH = 98.70;
   const PX = 900, PY = 862, KP = 1.1, VP = 820;
   const HEAD = scr(PX, PY, KP, 205, -228);
   const sc = (T) => (T - 71) * VP;                         // same road speed as verse 1
@@ -28,28 +28,30 @@
   }
   const lookAt = (x, y) => { const dx = x - HEAD[0], dy = y - HEAD[1], l = Math.hypot(dx, dy) || 1; return [clamp(dx / l * 1.1, -1, 1), clamp(dy / l * 1.1, -1, 1)]; };
 
-  // the swallow's flight in C1, world coords
+  // the swallow's flight in the opening shot (world coords, seam camera)
   function birdAt(T) {
-    const x = kf(T, [[91.0, 470], [91.7, 860], [92.3, 1370], [93.1, 1345]], ease.sine);
-    const y = kf(T, [[91.0, 330], [91.7, 300], [92.3, 480], [93.1, 465]], ease.sine) + Math.sin(T * 9) * 8 * smooth(inv(92.2, 92.5, T));
-    return [x, y, T < 92.15 ? 1 : -1];
+    const x = kf(T, [[91.6, 300], [92.1, 820], [92.55, 1300], [93.1, 1290]], ease.sine);
+    const y = kf(T, [[91.6, 250], [92.1, 260], [92.55, 520], [93.1, 505]], ease.sine) + Math.sin(T * 9) * 8 * smooth(inv(92.45, 92.7, T));
+    return [x, y, T < 92.4 ? 1 : -1];
   }
+  // 91.00 v3 seam from riso: he exits a carved tunnel mouth into daylight, in seam framing
   function road(t) {
-    const T = step(t);
-    withT(() => { cam(kf(T, [[A, 1.28], [T_EAR, 1.42]]), kf(T, [[A, 1000], [T_EAR, 1060]]), kf(T, [[A, 620], [T_EAR, 640]]));
-      worldDay(T, sc(T));
-      const [bx, by, dir] = birdAt(T), st = hero(T);
-      st.look = lookAt(bx, by); st.brow = [.5 * smooth(inv(91.6, 92.1, T)), 0];
-      drawPlane(PX, PY, KP, st);
-      const hover = T > 92.2;
-      halo(() => swallow(bx, by, .95, { dir, flap: Math.sin(T * (hover ? 30 : 15)), rot: hover ? 0 : dir * -.15 + Math.sin(T * 4) * .1, beak: hover ? Math.max(hit(T, 92.63, 9), hit(T, 92.9, 9)) : 0 }), 4);
-      // the chirps, small curls toward him
-      for (const c of [92.63, 92.9]) { const u = (T - c) / .5; if (u > 0 && u < 1) curl(bx - 100 - u * 60, by - 40 - u * 10, Math.PI + .2, 70, u); }
+    const T = step(t), xf = toWorldX(W + 60) - (T - A) * SEAM.V;
+    withT(() => { seamCam();
+      worldDay(T, sc(T), { dashY: SEAM.dashY });
+      tunnel(T, xf, sc(T));
+      const st = hero(T);
+      if (T >= 91.6) { const [bx, by] = birdAt(T); st.look = lookAt(bx, by); st.brow = [.5 * smooth(inv(91.9, 92.3, T)), 0]; }
+      else { st.look = [.9, -.1]; st.brow = [.8 * smooth(inv(91.1, 91.4, T)), 0]; }       // squinting into the light
+      halo(() => drawPlane(PX, PY, KP, st), 4);
+      if (T >= 91.6) { const [bx, by, dir] = birdAt(T), hover = T > 92.45;
+        halo(() => swallow(bx, by, .95, { dir, flap: Math.sin(T * (hover ? 30 : 15)), rot: hover ? 0 : dir * -.15 + Math.sin(T * 4) * .1, beak: hover ? Math.max(hit(T, 92.63, 9), hit(T, 92.9, 9)) : 0 }), 4);
+        for (const c of [92.63, 92.9]) { const u = (T - c) / .5; if (u > 0 && u < 1) curl(bx - 100 - u * 60, by - 40 - u * 10, Math.PI + .2, 70, u); } }
     });
   }
   // ear: tight on the face, the swallow perched on his nose
-  function earScene(T) {
-    withT(() => { cam(2.25, HEAD[0] + 30, HEAD[1] - 40);
+  function earScene(T, z = 2.25) {
+    withT(() => { if (z > 2.5) cam(z, HEAD[0] + 80, HEAD[1] - 70); else cam(z, HEAD[0] + 30, HEAD[1] - 40);
       worldDay(T, sc(T));
       const st = hero(T), wide = smooth(inv(93.55, 93.8, T));
       st.look = [lerp(.9, .6, wide), lerp(-.5, -.15, wide)]; st.brow = [lerp(.3, 1.2, wide), lerp(-.4, 0, wide)];
@@ -63,6 +65,7 @@
     });
   }
   function ear(t) { earScene(step(t)); }
+  function ear2(t) { earScene(step(t), 3.1); }   // the drum hit at 94.04: tighter on eyes and beak
 
   // ======================= the legend panel =======================
   const P0 = [56, 46], P1 = [W - 56, H - 46];            // panel outer rect
@@ -115,7 +118,7 @@
       const x0 = sd ? W - dw : 0;
       s.beginPath(); s.rect(x0, 0, dw, H); s.clip();
       s.translate(x0, 0); s.scale(dw / (W / 2), 1); if (sd) s.translate(-W / 2, 0);
-      withT(() => { s.beginPath(); s.rect(sd ? W / 2 : 0, 0, W / 2, H); s.clip(); earScene(frozen); });
+      withT(() => { s.beginPath(); s.rect(sd ? W / 2 : 0, 0, W / 2, H); s.clip(); earScene(frozen, 3.1); });
       // the door turning away goes dark in cut rows
       withT(() => { s.beginPath(); s.rect(sd ? W / 2 : 0, 0, W / 2, H); s.clip(); rows(sd ? W / 2 : 0, 0, sd ? W : W / 2, H, Math.PI / 2, 22, () => 22 * p); });
     });
@@ -131,24 +134,29 @@
     const T = step(t);
     legendFrame(T);
     // one plane sweeps out over the frame, close to us
-    const u = inv(T_SKY, T_FLEW, T);
+    const u = inv(T_SKY, T_WASH, T);
     flier(lerp(-250, 2150, u), lerp(1080, -180, u), .95, T, { flap: flapOf(T, .1) * 1.2, rot: -.42, open: voc(T), look: [1, -.6], brow: [1, 0] });
     fx({ flash: .35 * hit(t, T_SKY, 16) });
   }
-  // flew: back on the road; he looks up
-  function flew(t) {
-    const T = step(t);
-    withT(() => { cam(1.85, HEAD[0] - 90, HEAD[1] - 80);
-      worldDay(T, sc(T));
-      for (let i = 0; i < 5; i++) { // a tiny flock crossing his sky (the legend, overhead)
-        const x = lerp(430, 1500, inv(T_FLEW, B, T)) - [0, 40, 40, 80, 80][i], y = 300 + [0, 18, -18, 36, -36][i];
-        withT(() => { s.translate(x, y); s.scale(.11, .11); K.plane(0, 0, 1, { t: T, pass: 'back', tyres: false, flap: flapOf(T, i * .2) }); K.plane(0, 0, 1, { t: T, pass: 'body', tyres: false, look: [1, 0] }); K.plane(0, 0, 1, { t: T, pass: 'wing', tyres: false, flap: flapOf(T, i * .2) }); });
-      }
-      const st = hero(T), u = ease.out(inv(T_FLEW, T_FLEW + .25, T));
-      st.look = [lerp(.7, .15, u), lerp(.15, -1, u)]; st.brow = [1.2 * u, 0]; st.lid = 0;
-      drawPlane(PX, PY, KP, st);
+  // 98.70 v3 seam to kawaii: back on the road in seam framing, he looks up on "flew" and rolls into a
+  // carved car wash; brushes and suds close over him, ending on a soap-white frame
+  function wash(t) {
+    const T = step(t), xc = toWorldX(1333) - (T - T_WASH) * SEAM.V;
+    withT(() => { seamCam();
+      worldDay(T, sc(T), { dashY: SEAM.dashY });
+      carwashBack(T, xc);
+      const st = hero(T), u = ease.out(inv(T_FLEW, T_FLEW + .2, T));
+      st.look = [lerp(.8, .2, u), lerp(.1, -1, u)]; st.brow = [.3 + .9 * u, 0]; st.lid = 0;
+      halo(() => drawPlane(PX, PY, KP, st), 4);
+      withT(() => { s.beginPath(); s.rect(xc, -400, 6000, 1600); s.clip();
+        brush(T, xc + 200, 380, 900, 80);                                    // the front brush passes over him
+        const n = Math.round(lerp(10, 70, inv(T_FLEW, B, T)));
+        suds(5150, n, xc + 40, 420, xc + 1400, 900, 20, 70); });
     });
+    // last frames: the suds fill the frame (soap-white match moment)
+    const fillU = inv(99.36, B - 1 / 24, T);
+    if (fillU > 0) suds(5222, Math.round(240 * fillU), -60, -60, W + 60, H + 60, 50 + 40 * fillU, 120 + 60 * fillU);
   }
 
-  chapter('rumour1', A, B, [[A, road], [T_EAR, ear], [T_OPEN, legend], [T_SKY, soar], [T_FLEW, flew]]);
+  chapter('rumour1', A, B, [[A, road], [T_EAR, ear], [T_DRUM, ear2], [T_OPEN, legend], [T_SKY, soar], [T_WASH, wash]]);
 })();

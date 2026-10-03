@@ -69,7 +69,7 @@
     mp(); s.lineWidth = 6 * scale; s.strokeStyle = INK; s.stroke();
   }
   function plane(x, y, k, o) {
-    const { t, pass, open = 0, brow = [0, 0], bob = 0, hop = 0, roll = t * 3, spin = t * TAU * 2.3, pax = 0, rot = 0, tyres = true, flap = 0, wingY = 1 } = o;
+    const { t, pass, open = 0, brow = [0, 0], bob = 0, hop = 0, roll = t * 3, spin = t * TAU * 2.3, pax = 0, rot = 0, tyres = true, flap = 0, wingY = .3 } = o;   // wingY .3: the near wing reads level with the body (v3), not hanging
     // rot: pitch about the body centre; tyres: false for the legend's real airplanes (gear tucked away);
     // flap: -1..1, the wings beat like a bird's (far wing taller as the near wing shortens)
     withT(() => {
