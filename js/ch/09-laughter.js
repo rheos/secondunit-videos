@@ -31,7 +31,7 @@
     }
     shape([[cx - .19 * k, hipY - .03 * k], [cx + .19 * k, hipY - .03 * k], [cx + .19 * k, hipY + .1 * k], [cx - .19 * k, hipY + .1 * k]], pants > 0 ? PANTS : DARK, 2);
     // the case in his left hand (behind the leg)
-    if (kase) { const hx = cx - .34 * k + sw * .03 * k, hy2 = hipY + .02 * k; shape([[hx - .07 * k, hy2], [hx + .07 * k, hy2], [hx + .09 * k, hy2 + .85 * k], [hx - .09 * k, hy2 + .85 * k]], '#2b2924', 2); }
+    if (kase) guitarCase(cx - .3 * k + sw * .03 * k, hipY + .5 * k, k, { fore: .4 }); // front on: end on
     // torso: a grey shirt, then the sweater knitted up from the hem
     const torso = [[cx - .22 * k, shY], [cx + .22 * k, shY], [cx + .2 * k, hipY + .05 * k], [cx - .2 * k, hipY + .05 * k]];
     shape(torso, SHIRT, 2.5);

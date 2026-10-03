@@ -11,7 +11,7 @@ let C = { x: 0, y: 0, z: 0, f: 820, vy: 470 };
 const cam = (o) => { C = { x: 0, y: 0, z: 0, f: 820, vy: 470, ...o }; };
 const P = (x, y, z) => { const k = C.f / Math.max(.05, z - C.z); return [W / 2 + (x - C.x) * k, C.vy + (y - C.y) * k, k]; };
 const FL = 1.6, CE = -2.6, WX = 7, FAR = 70;
-const ink = (pts, w = 2.5) => line(pts, INK, w);
+function ink(pts, w = 2.5) { line(pts, INK, w); }
 function shape(pts, c, w = 2.5) { poly(pts, c); s.lineJoin = 'round'; s.lineWidth = w; s.strokeStyle = INK; s.stroke(); }
 function hatch(pts, ang = .8, gap = 9, w = 1.4, a = .55) {
   withT(() => { s.beginPath(); pts.forEach(([x, y], i) => i ? s.lineTo(x, y) : s.moveTo(x, y)); s.closePath(); s.clip();
@@ -127,9 +127,7 @@ function seat(x, z, sitter, mine = false) {
   dot(b[0], sh - .1 * k, .13 * k, SKIN); s.lineWidth = 1.5; s.strokeStyle = INK; s.beginPath(); s.arc(b[0], sh - .1 * k, .13 * k, 0, TAU); s.stroke();
   s.beginPath(); s.ellipse(b[0], sh - .2 * k, .25 * k, .06 * k, 0, 0, TAU); s.fillStyle = HAT; s.fill(); s.stroke();
   shape([[b[0] - .14 * k, sh - .2 * k], [b[0] + .14 * k, sh - .2 * k], [b[0] + .12 * k, sh - .38 * k], [b[0] - .12 * k, sh - .38 * k]], HAT, 1.5);
-  if (mine) { // the guitar case leans on his chair
-    const g = P(x + .5, FL, z - .1); shape([[g[0], g[1]], [g[0] + .18 * k, g[1]], [g[0] + .3 * k, g[1] - .95 * k], [g[0] + .1 * k, g[1] - 1.0 * k]], '#2b2924', 1.6);
-  }
+  if (mine) restingCase(x + .55, z - .1); // the guitar case leans on his chair
 }
 function rows(t, skipX = null, skipZ = null, papers = 0) {
   const out = [];
@@ -159,8 +157,7 @@ function man(x, z, { ph = 0, walk = 0, face = 1, arm = 0, ticket = false } = {})
   s.beginPath(); s.ellipse(hx, hy - .09 * k, .24 * k, .045 * k, 0, 0, TAU); s.fillStyle = HAT; s.fill(); s.stroke();
   shape([[hx - .13 * k, hy - .09 * k], [hx + .13 * k, hy - .09 * k], [hx + .11 * k, hy - .27 * k], [hx - .11 * k, hy - .27 * k]], HAT, 1.6);
   // far arm carries the case; near arm swings or reaches
-  const ca = [b[0] - .05 * k * face + sw * .1 * k, b[1] - .62 * k];
-  shape([[ca[0] - .12 * k, ca[1]], [ca[0] + .9 * k * -face * .1 + .12 * k, ca[1]], [ca[0] + .15 * k, ca[1] + .45 * k], [ca[0] - .15 * k, ca[1] + .45 * k]].map(([px, py]) => [px - .3 * k * face, py]), '#2b2924', 1.6);
+  carriedCase(b, k, face, sw);
   const shp = [b[0] + .02 * k * face, sh + .12 * k + bob];
   const ang = lerp(sw * .8, 1.9, arm) * face; /* arm 1 reaches forward, the way he faces */ const el = [shp[0] + Math.sin(ang) * .36 * k * face * face, shp[1] + Math.cos(ang) * .36 * k];
   const hand = [el[0] + Math.sin(ang * 1.1) * .34 * k * face * face, el[1] + Math.cos(ang * 1.1) * .34 * k];
@@ -319,3 +316,29 @@ function desk(x, z, face = -1) {
   shape([[b[0] - .25 * k, top], [b[0] + .25 * k, top], [b[0] + .2 * k, top - .2 * k], [b[0] - .22 * k, top - .2 * k]], '#2e2d28', 1.8);
   shape([[b[0] - .14 * k, top - .2 * k], [b[0] + .14 * k, top - .2 * k], [b[0] + .12 * k, top - .42 * k], [b[0] - .12 * k, top - .42 * k]], CREAM, 1.4);
 }
+
+// ---- his guitar case: ONE shape and size everywhere (Robin, 2026-10-02) ----
+// 1.0 m long, body (lower bout) 0.38 m wide, waist 0.3, upper bout 0.32, neck 0.17. Unit outline below is
+// horizontal with the body at -x and the neck at +x, centred on the origin.
+const CASE_COL = '#2b2924';
+const CASE_PTS = (() => {
+  const top = [[-.5, 0], [-.49, -.12], [-.42, -.19], [-.3, -.19], [-.18, -.15], [-.08, -.16], [.04, -.15], [.14, -.11], [.22, -.085], [.47, -.085], [.5, -.05]];
+  let pts = [...top, ...top.slice().reverse().map(([x, y]) => [x, -y])];
+  for (let it = 0; it < 3; it++) pts = pts.flatMap((p, i) => { const q = pts[(i + 1) % pts.length]; return [[p[0] * .75 + q[0] * .25, p[1] * .75 + q[1] * .25], [p[0] * .25 + q[0] * .75, p[1] * .25 + q[1] * .75]]; }); // smooth (Chaikin)
+  return pts;
+})();
+// (cx, cy) centre in screen px; k = px per metre at its depth; rot = radians (0 horizontal, body behind
+// when dir = 1 means neck toward +x); dir -1 flips it; fore 0..1 foreshortens its length (seen end on);
+// line false fills it as a flat silhouette.
+function guitarCase(cx, cy, k, { rot = 0, dir = 1, fore = 1, col = CASE_COL, line: outline = true } = {}) {
+  const pts = CASE_PTS.map(([x, y]) => { const px = x * dir * fore * k, py = y * k; return [cx + px * Math.cos(rot) - py * Math.sin(rot), cy + px * Math.sin(rot) + py * Math.cos(rot)]; });
+  if (outline) shape(pts, col, Math.max(1, k * .012)); else poly(pts, col);
+  if (outline && fore > .5) { // the handle, on the top edge at the waist
+    const hx = -.1 * dir * fore * k, hy = -.16 * k, h = (x, y) => [cx + x * Math.cos(rot) - y * Math.sin(rot), cy + x * Math.sin(rot) + y * Math.cos(rot)];
+    line([h(hx - .05 * k, hy), h(hx - .04 * k, hy - .05 * k), h(hx + .04 * k, hy - .05 * k), h(hx + .05 * k, hy)], col, Math.max(1.5, k * .018));
+  }
+}
+// carried in the far hand at his side: the handle at the hand, the body trailing behind him
+function carriedCase(b, k, face, sw = 0) { guitarCase(b[0] - .12 * k * face + sw * .1 * k, b[1] - .45 * k, k, { dir: face }); }
+// set down: standing on its body end, leaning on the chair at (x, z)
+function restingCase(x, z) { const g = P(x, FL, z), k = g[2]; guitarCase(g[0] + .05 * k, g[1] - .5 * k, k, { rot: -Math.PI / 2 + .1 }); }

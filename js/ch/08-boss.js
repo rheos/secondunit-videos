@@ -60,7 +60,7 @@
     line([[b[0] - .1 * k, b[1] - .95 * k - bob], [b[0] - .1 * k, b[1] - l1]], INK, .13 * k, 'butt');
     line([[b[0] + .1 * k, b[1] - .95 * k - bob], [b[0] + .1 * k, b[1] - l2]], INK, .13 * k, 'butt');
     const sh = b[1] - 1.45 * k - bob, c = mine ? COAT : CLERK;
-    if (mine && back) shape([[b[0] + .2 * k, sh + .25 * k], [b[0] + .42 * k, sh + .2 * k], [b[0] + .48 * k, b[1] - .3 * k - bob], [b[0] + .26 * k, b[1] - .28 * k - bob]], '#2b2924', Math.max(1, k * .014));
+    if (mine && back) guitarCase(b[0] + .36 * k, b[1] - .45 * k - bob, k, { fore: .4 }); // seen from behind: end on
     for (const sgn of [-1, 1]) { const a = st * .35 * sgn * (1 + run); ink([[b[0] + sgn * .25 * k, sh + .1 * k], [b[0] + sgn * (.3 + Math.abs(a) * .2) * k, sh + .62 * k]], .09 * k); }
     shape([[b[0] - .24 * k, sh], [b[0] + .24 * k, sh], [b[0] + .32 * k, b[1] - .45 * k - bob], [b[0] - .32 * k, b[1] - .45 * k - bob]], c, Math.max(1.2, k * .014));
     if (!back) { ink([[b[0], sh + .05 * k], [b[0], b[1] - .5 * k - bob]], Math.max(1, k * .012)); shape([[b[0] - .1 * k, sh], [b[0] + .1 * k, sh], [b[0], sh + .14 * k]], CREAM, Math.max(1, k * .01)); }

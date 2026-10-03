@@ -40,7 +40,7 @@
     dot(x + .03 * k * face, y - 1.6 * k, .13 * k, c);
     s.beginPath(); s.ellipse(x + .03 * k * face, y - 1.69 * k, .25 * k, .05 * k, 0, 0, TAU); s.fillStyle = c; s.fill();
     poly([[x - .1 * k, y - 1.69 * k], [x + .16 * k, y - 1.69 * k], [x + .14 * k, y - 1.88 * k], [x - .08 * k, y - 1.88 * k]], c);
-    if (cased) poly([[x - .55 * k * face, y - .62 * k], [x - .3 * k * face, y - .62 * k], [x - .28 * k * face, y - .05 * k], [x - .57 * k * face, y - .05 * k]], c);
+    if (cased) guitarCase(x - .12 * k * face, y - .45 * k, k, { dir: face, col: c, line: false });
   }
   // copy the frame into the centre cell of an n x n grid, then mirror that cell into the rest
   function tile(n) {

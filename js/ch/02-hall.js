@@ -8,7 +8,7 @@
     room(t); duct(-3.6, -2.1, .5, 0, FAR); duct(2.8, -2.25, .32, 0, FAR, STEEL_D); tube(t); board(t);
     rows(t, 2.2, 8); horn(t); clock(t, -6.95 + .01, -1.0, 16); ticketBox();
     const x = kf(t, [[13.6, -5.2], [22.8, 3.0]], (k) => k), walking = t < 22.8 && t > 13.6;
-    man(x, 5.6, { ph: (t - 13.6) * .95, walk: walking ? 1 : 0, face: 1, arm: smooth(inv(24.5, 26.2, t)) * (1 - smooth(inv(26.6, 27.3, t))) });
+    man(x, 5.6, { ph: (t - 13.6) * .95, walk: walking ? 1 : 0, face: 1, arm: smooth(inv(24.5, 26.2, t)) }); // still reaching at the cut
   }
   // 27.55 "told me to take a seat": closer. Ticket out, he crosses to the empty chair and becomes one of them.
   function seat1(t, lt) {
@@ -18,8 +18,8 @@
     rows(t, 2.2, 8, 0); if (sat) seat(2.2, 8, 'me', true);
     clock(t, -6.95, -1.0, 16); ticketBox();
     if (!sat) {
-      const k = inv(28.2, 30.4, t), x = lerp(3.0, 2.2, k), z = lerp(5.6, 7.9, k);
-      man(x, z, { ph: (t - 28.2) * 1.1, walk: t > 28.2 ? 1 : 0, face: t < 28.2 ? 1 : -1, arm: t < 28.2 ? 1 - smooth(inv(27.6, 28.2, t)) : 0, ticket: t > 27.8 });
+      const k = inv(28.4, 30.4, t), x = lerp(3.0, 2.2, k), z = lerp(5.6, 7.9, k);
+      man(x, z, { ph: (t - 28.4) * 1.1, walk: t > 28.4 ? 1 : 0, face: t < 28.4 ? 1 : -1, arm: t < 28.4 ? 1 - smooth(inv(27.95, 28.4, t)) : 0, ticket: t > 27.8 });
     }
   }
   // 39.55 "but I can't wait until tomorrow": his ticket against the board, then up to the one high window.

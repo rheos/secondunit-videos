@@ -49,7 +49,7 @@
       };
       fig(gx - 26, false); fig(gx + 26, true);
       ink([[gx - 26 + .2 * k, gy - 1.3 * k], [gx, gy - .82 * k], [gx + 26 - .18 * k, gy - 1.3 * k]], .08 * k);   // their joined hands
-      poly([[gx - 26 - .44 * k, gy - .75 * k], [gx - 26 - .22 * k, gy - .75 * k], [gx - 26 - .22 * k, gy - .4 * k], [gx - 26 - .44 * k, gy - .4 * k]], INK);   // the case
+      guitarCase(gx - 26 - .45 * k, gy - .45 * k, k, { dir: -1, col: INK, line: false });   // the case
     });
   }
   // 326.3 silence. Back inside the grey hall: still waiting, still 0004. His chair is empty.

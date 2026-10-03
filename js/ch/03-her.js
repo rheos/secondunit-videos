@@ -131,9 +131,8 @@
   function fold(t, lt) {
     tiled('#a7a48f');
     withT(() => { s.translate(W / 2, H / 2 + 20); s.rotate(-.03);
-      shape([[-760, -330], [760, -330], [800, -200], [800, 200], [760, 330], [-760, 330], [-800, 200], [-800, -200]], CASE, 4);
-      ink([[-700, -260], [700, -260]], 1.5); ink([[-700, 260], [700, 260]], 1.5);
-      for (const x of [-420, 420]) shape([[x - 40, 320], [x + 40, 320], [x + 40, 352], [x - 40, 352]], BRASS, 2);
+      guitarCase(0, 0, 1700, { col: CASE });   // the lid of the same case, from above, filling the frame
+      for (const x of [-560, 260]) shape([[x - 40, 300], [x + 40, 300], [x + 40, 332], [x - 40, 332]], BRASS, 2);
     });
     const beats = [65.67, 66.40, 67.07], st = beats.filter(b => t >= b).length;
     const last = st ? beats[st - 1] : 64.9, fk = inv(last, last + .22, t), flip = st ? Math.abs(1 - 2 * fk) : 1;
@@ -296,7 +295,7 @@
           dot(x, y - 4, 22, SKIN); s.beginPath(); s.arc(x, y - 4, 22, 0, TAU); s.stroke();
           withT(() => { s.translate(x + lift * 60, y - 4 - lift * 70); s.scale(1 + lift * .35, 1 + lift * .35); s.rotate(-lift * .3);
             s.beginPath(); s.arc(0, 0, 36, 0, TAU); s.fillStyle = HAT; s.fill(); s.stroke(); s.beginPath(); s.arc(0, 0, 21, 0, TAU); s.fillStyle = '#2f2d28'; s.fill(); s.stroke(); });
-          shape([[x + 52, y - 40], [x + 76, y - 40], [x + 80, y + 45], [x + 50, y + 45]], CASE, 1.6);   // the case
+          guitarCase(x + 66, y + 2, 90, { rot: Math.PI / 2 });   // the case, from above
         } else { s.beginPath(); s.arc(x, y - 4, 36, 0, TAU); s.fillStyle = HAT; s.fill(); s.stroke(); s.beginPath(); s.arc(x, y - 4, 21, 0, TAU); s.fillStyle = '#2f2d28'; s.fill(); s.stroke(); }
       }
       // her desk, at the left, side on to the rows; the flower on it
