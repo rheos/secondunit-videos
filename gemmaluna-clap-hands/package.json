@@ -1,0 +1,7 @@
+{
+  "name": "gemmaluna-clap-hands",
+  "private": true,
+  "type": "module",
+  "description": "Gemma Luna's live cover of Tom Waits' Clap Hands, drawn in code. Look exploration first.",
+  "devDependencies": { "playwright": "^1.55.0" }
+}

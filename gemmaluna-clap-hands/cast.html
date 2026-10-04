@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Clap Hands cast</title>
+<style>html,body{margin:0;height:100%;background:#111;overflow:hidden}canvas{width:100vw;height:100vh;object-fit:contain;display:block;cursor:pointer}</style>
+</head><body>
+<canvas id="c"></canvas><audio id="a" src="assets/song.wav" preload="auto"></audio>
+<script src="js/data.js"></script><script src="js/core.js"></script><script src="js/paint.js"></script><script src="js/world.js"></script><script src="js/cast.js"></script>
+<script>
+// The cast turnaround: every character in its poses, in a scene like the one it will stand in.
+// 0 conductor · 2 passengers · 4 jacket man · 6 window leaner · 8 millionaire · 10 Harlem walker ·
+// 12 Mr. Knickerbocker · 14 Salvation Army band (topples from 15) · 16 sailors + rowers · 18 line-up
+(() => {
+  const tram = (t) => {
+    s.fillStyle = C.ochre; s.fillRect(-W, -H, W * 3, H * 3);
+    shape(s, [[-100, 380], [1180, 380], [1180, 1000], [-100, 1000]], C.teal, C.umber, 16);
+    for (let i = 0; i < 4; i++) { const x = 40 + i * 260; shape(s, [[x, 460], [x + 200, 460], [x + 200, 900], [x, 900]], C.night, C.umber, 18);
+      glowAt(x + 100 + ((t * 300 + i * 90) % 400) - 200, 640, 160, 'rgba(255,190,110,.35)'); }
+    shape(s, [[-100, 1000], [1180, 1000], [1180, 1380], [-100, 1380]], '#7a5530', C.umber, 16);
+    shape(s, [[-100, 1380], [1180, 1380], [1180, 2000], [-100, 2000]], '#5e4128', C.umber, 16);
+    shape(s, [[340, 1380], [740, 1380], [900, 2000], [180, 2000]], C.ruby, C.umber, 14);
+    line([[-100, 420], [1180, 420]], C.umber, 30); line([[-100, 420], [1180, 420]], C.gold, 16);
+    rain(t, 40, 3, .3);
+  };
+  const night = (top = C.night, bot = C.dusk) => { s.fillStyle = vgrad(0, H, [[0, top], [1, bot]]); s.fillRect(-W, -H, W * 3, H * 3); };
+  function conductorShot(t, lt, dur) {
+    cam(540, 980, 1.0 + lt * .02); tram(t);
+    shape(s, [[700, 1000], [1100, 1000], [1100, 1380], [700, 1380]], C.rose, C.umber, 16);
+    conductor(t, 300 + lt * 150, 1760, 880, { ph: lt * .62 });
+    border(t, 1);
+  }
+  function passengersShot(t, lt, dur) {
+    cam(540, 1000, 1.0); tram(t);
+    const ph = t * .9, amp = .16;
+    passenger(t, 880, 1760, 820, { who: 'tall', ph, amp, strap: true, strapY: 420, facing: -1 });
+    passenger(t, 650, 1780, 820, { who: 'dandy', ph: ph + .05, amp, strap: true, strapY: 420, facing: -1, flail: 1 });
+    passenger(t, 410, 1790, 820, { who: 'stout', ph: ph + .1, amp, strap: true, strapY: 420 });
+    passenger(t, 170, 1800, 820, { who: 'old', ph: ph + .02, amp, strap: true, strapY: 420 });
+    border(t, 1);
+  }
+  function jacketShot(t, lt, dur) {
+    cam(540, 1000, 1.04 + lt * .02); tram(t);
+    shape(s, [[-100, 1180], [1180, 1180], [1180, 1290], [-100, 1290]], C.rose, C.umber, 18);
+    shape(s, [[-100, 1290], [1180, 1290], [1180, 1700], [-100, 1700]], C.ochre, C.umber, 16);
+    jacketMan(t, 520, 1200, 900, { facing: lt > 1 ? 1 : 1, pose: lt < 1.2 ? 'slump' : 'sit' });
+    border(t, 1);
+  }
+  function leanerShot(t, lt, dur) {
+    cam(540, 1060, 1.0 + lt * .03); night();
+    shape(s, [[-100, 300], [1180, 300], [1180, 2100], [-100, 2100]], C.plum, C.umber, 16);
+    windowLeaner(t, 400, 1350, 900, { fill: lt / dur, lean: .75 + .08 * Math.sin(lt * 2) });
+    rain(t, 160, 9, .55);
+    border(t, 1);
+  }
+  function millionaireShot(t, lt, dur) {
+    cam(560, 1000, 1.0); night();
+    shape(s, [[-100, 1100], [1180, 1100], [1180, 2100], [-100, 2100]], C.ochre, C.umber, 16);
+    for (let i = 0; i < 9; i++) line([[i * 150 - 100, 1100], [i * 190 - 300, 2100]], C.umber, 12);
+    shape(s, [[700, 1100], [700, 760], ...circle(890, 760, 190, 40).filter(([, y]) => y <= 760).sort((a, b) => a[0] - b[0]), [1080, 760], [1080, 1100]], C.deep, C.umber, 18);
+    shape(s, [[760, 1100], [760, 850], ...circle(890, 850, 130, 40).filter(([, y]) => y <= 850).sort((a, b) => a[0] - b[0]), [1020, 850], [1020, 1100]], C.amber, C.umber, 16);
+    glowAt(890, 960, 520, `rgba(255,140,60,${.5 + .2 * Math.sin(t * 9)})`);
+    shape(s, blobPts(160, 1720, 320, 130, 4, .2, 30), '#2e2a38', C.umber, 16);
+    millionaire(t, 430, 1740, 900, { ph: lt * .7 });
+    rain(t, 70, 5, .35);
+    border(t, 1);
+  }
+  const street = (t) => { night(); shape(s, [[-100, 200], [1180, 200], [1180, 1500], [-100, 1500]], C.plum, C.umber, 16);
+    for (let i = 0; i < 3; i++) { const x = 80 + i * 340; shape(s, [[x, 1500], [x, 600], ...circle(x + 120, 600, 120, 40).filter(([, y]) => y <= 600).sort((a, b) => a[0] - b[0]), [x + 240, 600], [x + 240, 1500]], i === 1 ? C.amber : C.night, C.umber, 18); }
+    shape(s, [[-100, 1500], [1180, 1500], [1180, 2100], [-100, 2100]], C.dusk, C.umber, 16); };
+  function walkerShot(t, lt, dur) {
+    cam(540, 1060, 1.0); street(t); guimard(980, 1500, 1000, -1, 1, Math.sin(t) * 6);
+    const ph = lt * .55; harlemWalker(t, 160 + ph * walkStride(900, { who: 'walker', stride: 1.05 }), 1820, 900, { ph });
+    rain(t, 80, 6, .35); border(t, 1);
+  }
+  function knickShot(t, lt, dur) {
+    cam(540, 1060, 1.0); street(t);
+    const ph = lt * .9, k = ease.inOut(lt / dur); knickerbocker(t, lerp(420, 860, k), lerp(1900, 1640, k), lerp(980, 560, k), { ph });
+    shape(s, [[880, 200], [1180, 200], [1180, 2100], [880, 2100]], C.teal, C.umber, 18);   // the corner he disappears round
+    rain(t, 80, 8, .35); border(t, 1);
+  }
+  function bandShot(t, lt, dur) {
+    cam(540, 1060, 1.0); street(t);
+    const ph = beatPhase(t), k = (i) => inv(15.0 + i * .2, 15.7 + i * .2, t);
+    bandsman(t, 830, 1800, 640, { role: 'tambourine', ph, k: k(2) });
+    bandsman(t, 520, 1820, 640, { role: 'tuba', ph, k: k(1) });
+    bandsman(t, 220, 1840, 640, { role: 'drum', ph, k: k(0) });
+    border(t, 1);
+  }
+  function farShot(t, lt, dur) {
+    cam(540, 1000, 1.0); night(C.night, '#2b3a55');
+    for (let i = 0; i < 40; i++) dot(hash(i) * W, hash(i + 50) * 900, 4, C.cream);
+    shape(s, [[-100, 1000], [1180, 1000], [1180, 2100], [-100, 2100]], C.teal, C.umber, 16);
+    // a steamer far off, sailors waving at the rail
+    const sx = 520 - lt * 30;
+    shape(s, [[sx - 380, 880], [sx + 400, 880], [sx + 320, 1000], [sx - 330, 1000]], C.plum, C.umber, 16);
+    shape(s, [[sx - 300, 780], [sx + 260, 780], [sx + 260, 880], [sx - 300, 880]], C.cream, C.umber, 14);
+    for (let i = 0; i < 6; i++) sailor(t, sx - 300 + i * 105, 790, 150, { seed: i, facing: i % 2 ? 1 : -1 });
+    line([[sx - 330, 760], [sx + 300, 760]], C.umber, 14);
+    // the little rowboat, three rowers pulling on the beat
+    const by = 1500, bx = 540, ph = beatPhase(t) / 2;
+    const rw = [0, 1, 2].map((i) => rower(t, bx - 250 + i * 200, by, 280, { seed: i, ph: ph - i * .04, oar: 'later' }));
+    shape(s, [[bx - 400, by + 20], [bx + 420, by + 10], [bx + 300, by + 150], [bx - 300, by + 150]], C.ochre, C.umber, 16);
+    line([[bx - 380, by + 50], [bx + 400, by + 40]], C.ruby, 16);
+    rw.forEach((r) => r.drawOar());
+    border(t, 1);
+  }
+  // the whole cast at one scale, so they can be checked as one family
+  function lineup(t, row) {
+    cam(540, 1000, 1.0); s.fillStyle = C.teal; s.fillRect(-W, -H, W * 3, H * 3);
+    halo(540, 820, 470, t * .05, .2);
+    shape(s, [[-100, 1560], [1180, 1560], [1180, 2100], [-100, 2100]], C.deep, C.umber, 16);
+    const p = t * .5, sc = 640, y = 1700;
+    if (row === 0) {
+      passenger(t, 130, y, sc, { who: 'tall', pose: 'stand', ph: p });
+      conductor(t, 300, y, sc, { pose: 'stand', ph: p, swing: .2 * Math.sin(t * 3) });
+      millionaire(t, 500, y, sc, { pose: 'stand', ph: p });
+      harlemWalker(t, 680, y, sc, { pose: 'stand', ph: p, facing: -1 });
+      knickerbocker(t, 830, y, sc, { pose: 'stand', ph: p, view: 'profile', back: 0, facing: -1 });
+      passenger(t, 970, y, sc, { who: 'dandy', pose: 'stand', ph: p, facing: -1 });
+    } else {
+      passenger(t, 120, y, sc, { who: 'old', pose: 'stand', ph: p });
+      passenger(t, 290, y, sc, { who: 'stout', pose: 'stand', ph: p });
+      bandsman(t, 480, y, sc, { role: 'drum' });
+      bandsman(t, 660, y, sc, { role: 'tuba' });
+      bandsman(t, 830, y, sc, { role: 'tambourine', facing: -1 });
+      shape(s, [[880, 1420], [1100, 1420], [1100, 1480], [880, 1480]], C.rose, C.umber, 12);
+      jacketMan(t, 980, 1440, sc, { facing: -1 });
+    }
+    border(t, 1);
+  }
+  const lineupA = (t) => lineup(t, 0), lineupB = (t) => lineup(t, 1);
+  // close looks: heads at about the size a hero shot would show them
+  function portraitsA(t, lt, dur) {
+    cam(540, 1000, 1.0); s.fillStyle = C.sage; s.fillRect(-W, -H, W * 3, H * 3);
+    conductor(t, 180, 2350, 1500, { pose: 'stand', ph: t * .5, swing: .2 });
+    millionaire(t, 560, 2300, 1400, { pose: 'stand', ph: t * .5 });
+    passenger(t, 900, 2200, 1350, { who: 'tall', pose: 'stand', ph: t * .5, facing: -1 });
+    border(t, 1);
+  }
+  function portraitsB(t, lt, dur) {
+    cam(540, 1000, 1.0); s.fillStyle = C.rose; s.fillRect(-W, -H, W * 3, H * 3);
+    passenger(t, 160, 2250, 1500, { who: 'old', pose: 'stand', ph: t * .5 });
+    passenger(t, 520, 2350, 1400, { who: 'stout', pose: 'stand', ph: t * .5 });
+    jacketMan(t, 900, 2350, 1500, { pose: 'stand', facing: -1 });
+    border(t, 1);
+  }
+  function portraitsC(t, lt, dur) {
+    cam(540, 1000, 1.0); s.fillStyle = C.parch; s.fillRect(-W, -H, W * 3, H * 3);
+    passenger(t, 160, 2350, 1450, { who: 'dandy', pose: 'stand', ph: t * .5 });
+    harlemWalker(t, 540, 2350, 1400, { pose: 'stand', ph: t * .5 });
+    bandsman(t, 900, 2350, 1500, { role: 'tambourine', facing: -1 });
+    border(t, 1);
+  }
+  chapter('cast', 0, 23, [[0, conductorShot], [2, passengersShot], [4, jacketShot], [6, leanerShot], [8, millionaireShot], [10, walkerShot], [12, knickShot], [14, bandShot], [16, farShot], [18, lineupA], [19, lineupB], [20, portraitsA], [21, portraitsB], [22, portraitsC]], { fx: PAINT });
+})();
+</script>
+<script>const LOOK = { span: [0, 23] };</script>
+<script src="js/main.js"></script>
+</body></html>
