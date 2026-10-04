@@ -209,8 +209,8 @@
   const SLAMS = [DO2[6], DO2[8], DO2[9], DO2[10]];
   function B2_stamp(t) {
     backdrop(skyB);
-    put(P.panel, 960, 520, 0, 1, 1, { jit: .4 });
-    const C = [960, 600], cs = 2.3;
+    put(P.panel, 960, 680, 0, 1, 1, { jit: .4 });
+    const C = [960, 650], cs = 2.3;
     put(P.cardMid, C[0], C[1], -.02, 1, 1, { jit: .5 });
     const cw = (xd, yd) => [C[0] + (xd - 100) * cs, C[1] + (yd - 160) * cs];
     const TIMES = ['9:58', '10:21', '10:47'];
@@ -224,8 +224,8 @@
     s.restore();
     // the hammer: up, then down in one drawing, held two, back up in two
     let lift = 1; for (const d of SLAMS) { const k = ev(t, d); if (k >= 0 && k < 5) lift = seq(k, [0, 0, 0, .45, .9]); }
-    const yb = 600 + lift * -470;                                                 // its face lands on the card
-    put(P.stampHead, 960, yb + 40, 0, 1, 1);
+    const yb = 700 - lift * 460;                                                  // its face lands on the card
+    put(P.stampHead, 960, yb, 0, 1.3, 1.3);
     const k = ev(t, lastOf(t, SLAMS));
     fx({ shake: k >= 0 && k < 2 ? (t >= SLAMS[3] ? 1 : .4) : 0, flash: t >= SLAMS[3] && k < 1 ? .18 : 0 });
   }
@@ -249,7 +249,7 @@
   const talking = (t, list, hold = 2) => list.some((d) => { const k = ev(t, d); return k >= 0 && k < hold; });
   function B3_moon(t) {
     backdrop(skyB);
-    const rise = clamp((q(t) - 224.16) / 1.9), Y = 1720 - rise * 710, X = 1240;
+    const rise = clamp((q(t) - 224.16) / 1.9), Y = 1600 - rise * 720, X = 1240;
     const hg = s.createRadialGradient(X, Y - 560, 40, X, Y - 560, 560); hg.addColorStop(0, 'rgba(255,232,180,.45)'); hg.addColorStop(1, 'rgba(255,232,180,0)'); s.fillStyle = hg; s.fillRect(0, 0, W, H);
     boss(t, X, Y, .9, 0, { open: talking(t, WORDS) ? 1 : 0, angry: t > WORDS[4] ? 1 : 0, look: [-.8, .8] });
     put(P.floor, -140, 760, 0, 1, 1, { shadow: 0, jit: .3 });
@@ -343,7 +343,7 @@
       const x = x0 + dir * u * (110 + r() * 120), y = y0 - u * (90 + r() * 70) - Math.sin(u * 3 + i) * 20;
       if (t < BIRD && i < 4) { put(P[qs[i]], x, y, u * 3 * dir, 1.1, 1.1, { k: i }); continue; }
       const flap = Math.floor((t - born) * 8 + i) % 3, wr = [-.9, -.1, .55][flap];
-      at(x, y, -.15 * dir, dir * 1.2, 1.2, () => { put(P['wing' + (i % 4)], 6, -10, wr - .3, 1, 1, { k: i + 50 }); put(P['bird' + (i % 4)], 0, 0, 0, 1, 1, { k: i }); put(P['wing' + (i % 4)], -2, -6, wr, 1, 1, { k: i + 60 }); });
+      at(x, y, -.15 * dir, dir * 1.2, 1.2, () => { put(P['wing' + (i % 4)], 8, -8, wr - .35, .62, .62, { k: i + 50 }); put(P['bird' + (i % 4)], 0, 0, 0, 1, 1, { k: i }); put(P['wing' + (i % 4)], 0, -4, wr, .78, .78, { k: i + 60 }); });
     }
     if (t >= BIRD && ev(t, BIRD) < 2) fx({ flash: .12 });
   }
