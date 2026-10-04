@@ -323,24 +323,24 @@
     fx({ shake: (k1 >= 0 && k1 < 2) || (k2 >= 0 && k2 < 2) ? .5 : 0 });
   }
   // the pieces become birds; he turns and walks the other way, past the queue going in
-  const BIRD = snap(240.1), TURN = snap(240.47), GO = 241.17;
+  const BIRD = snap(240.47), TURN = snap(241.17), GO = 241.9;
   function C3_birds(t) {
     hill(t);
     // the queue on the crest, small, walking right toward the Board
     for (let i = 0; i < 8; i++) { const x = -100 + i * 160 + (q(t) - 239.94) * 70; if (x < 1550) fig(x, 790, .3, { clerk: 1, k: 40 + i, ...walk(t, 1.4, .35, i) }); }
-    clocksLanded(t, (c) => c.y < 900);
     const gone = t >= GO, mx = gone ? 960 - (q(t) - GO) * 150 : 960;
+    clocksLanded(t, (c) => c.y < 900 || gone);                                    // walking off, he steps in front of the pile
     const turned = t >= TURN;
     fig(mx, 900, .92, gone ? { face: -1, ...walk(t, 1.4, .42), head: -.05 } : { face: turned ? -1 : 1, arm: turned ? -.2 : -2.6, backArm: turned ? .1 : -2.4, head: turned ? 0 : -.3 });
-    clocksLanded(t, (c) => c.y >= 900);
+    clocksLanded(t, (c) => c.y >= 900 && !gone);
     // the four pieces fly up from his hands; on BIRD each snaps into a bird
     const qs = ['qTL', 'qTR', 'qBL', 'qBR'];
-    const nb = t >= 241.9 ? 8 : 4;
+    const nb = t >= 242.63 ? 8 : 4;
     for (let i = 0; i < nb; i++) {
-      const r = rng(i * 7 + 1), dir = i % 2 ? 1 : -1, born = i < 4 ? 239.94 : 241.9;
+      const r = rng(i * 7 + 1), dir = i % 2 ? 1 : -1, born = i < 4 ? 239.94 : 242.63;
       const u = q(t) - born; if (u < 0) continue;
-      const x0 = i < 4 ? 960 + dir * 40 : 960 + dir * (200 + r() * 260), y0 = i < 4 ? 420 : 260 + r() * 140;
-      const x = x0 + dir * u * (110 + r() * 120), y = y0 - u * (90 + r() * 70) - Math.sin(u * 3 + i) * 20;
+      const x0 = i < 4 ? 960 + (i - 1.5) * 60 : 960 + dir * (200 + r() * 260), y0 = i < 4 ? 430 - (i % 2) * 40 : 260 + r() * 140;
+      const x = x0 + dir * u * (90 + i * 45 + r() * 60), y = y0 - u * (60 + (3 - i % 4) * 45 + r() * 40) - Math.sin(u * 3 + i) * 20;
       if (t < BIRD && i < 4) { put(P[qs[i]], x, y, u * 3 * dir, 1.1, 1.1, { k: i }); continue; }
       const flap = Math.floor((t - born) * 8 + i) % 3, wr = [-.9, -.1, .55][flap];
       at(x, y, -.15 * dir, dir * 1.2, 1.2, () => { put(P['wing' + (i % 4)], 8, -8, wr - .35, .62, .62, { k: i + 50 }); put(P['bird' + (i % 4)], 0, 0, 0, 1, 1, { k: i }); put(P['wing' + (i % 4)], 0, -4, wr, .78, .78, { k: i + 60 }); });
