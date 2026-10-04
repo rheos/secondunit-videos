@@ -49,7 +49,7 @@ function room(t) {
     shape(d, '#6b6a5a', 2);
     const g = [P(WX, -.55, z + .15), P(WX, -.55, z + 1.25), P(WX, .3, z + 1.25), P(WX, .3, z + .15)].map(p => [p[0], p[1]]);
     shape(g, '#c9c8b0', 1.5);
-    const n = P(WX, -.15, z + .7); text(String(400 + z * 3), n[0], n[1], n[2] * .28, { max: Math.abs(g[1][0] - g[0][0]) * .8 });
+    const n = P(WX, -.15, z + .7); text(String(301 + z * 3), n[0], n[1], n[2] * .28, { max: Math.abs(g[1][0] - g[0][0]) * .8 });
   }
 }
 

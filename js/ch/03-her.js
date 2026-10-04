@@ -81,7 +81,7 @@
       shape([[-900, -520], [900, -500], [880, 520], [-890, 505]], CREAM, 3);
       s.globalAlpha = .3; for (let l = 0; l < 9; l++) ink([[-760, -330 + l * 85], [760, -330 + l * 85]], 1.4); s.globalAlpha = 1;
       text('MINISTRY OF WAITING', 740, -410, 40, { font: 'sign', align: 'right', max: 640 });
-      text('ROOF REPAIR, FORM R-1', -740, -410, 34, { align: 'left', max: 640 });
+      text('ROOF REPAIR, FORM 27B/6', -740, -410, 34, { align: 'left', max: 640 });
       // tape strips at the corners
       for (const [x, y, r] of [[-880, -500, .7], [870, -490, -.7], [-870, 490, -.7], [860, 500, .7]]) withT(() => { s.translate(x, y); s.rotate(r); s.globalAlpha = .75; shape([[-90, -24], [90, -24], [90, 24], [-90, 24]], '#d8cfa8', 1.5); });
     });
