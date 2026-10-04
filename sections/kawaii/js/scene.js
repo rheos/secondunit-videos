@@ -256,8 +256,8 @@ function propTextBoard(sd, txt, bg, fg, t) {
   for (const x of [-200, 200]) shape(rrect(x - 16, -560, 32, 560, 8, sd + x), '#c9a27e', 5);
   shape(rrect(-330, -900, 660, 380, 30, sd + 1), PAL.white, 7);
   shape(rrect(-300, -872, 600, 324, 22, sd + 2), bg, 5);
-  for (let i = 0; i < 5; i++) { const a = i / 5 * TAU + t; paint(ell(-250 + i * 125, -600, 16, 16), fg, .5, false); }
-  fitText(txt, 0, -722, 600 * .82, 324 * .5, fg, INK); // inside the board with a clear margin
+  for (let i = 0; i < 5; i++) paint(ell(-200 + i * 100, -580, 9, 9), fg, .7, false);
+  fitText(txt, 0, -725, 600 * .84, 324 * .56, INK, '#fffaf2'); // dark ink lettering, white edge, inside the board with a clear margin
 }
 // a toll booth with its gate. sign: 'coin' | 'insert' | 'ok'; sq = the sign's vertical scale while it flips;
 // arm 0..1 = the gate lifting; the coin slot is at (x - 150, 560).

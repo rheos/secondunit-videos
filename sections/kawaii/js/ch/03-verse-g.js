@@ -49,7 +49,7 @@
   }
 
   // ------------------------------------------------------------ G2 the roadside parade
-  const V2 = 1700, z2 = (t) => -V2 * (t - 174.45);
+  const V2 = 950, z2 = (t) => -V2 * (t - 174.45);
   function parade(t) {
     t = onTwos(t); TB = Math.floor(t * 12);
     fx({ seed: 8.7, wet: .33 });
@@ -61,9 +61,9 @@
     groundRoad(cam, HZ, { z0: zp - 1300, z1: zp + 50000, grass: '#d8e4b0', road: '#c5bad4', sd: 8730 });
     const items = [];
     const bbZ = z2(177.15) - 250; // the plane billboard is level with him on "highway brings"
-    const row = [['diner', bbZ + 6000], ['BLUE RODEO', bbZ + 4600], ['motel', bbZ + 3500], ['BRYAN ADAMS', bbZ + 2600], ['YOKOHAMA ONO', bbZ + 1300], ['plane', bbZ], ['pie', bbZ - 1500]];
-    row.forEach(([kind, z], i) => items.push({ x: kind === 'diner' || kind === 'motel' ? 2300 : kind === 'plane' ? 1500 : 1250, z, f: (p) => at(p, () => { if (kind === 'plane') sc(1.25);
-      if (kind === 'diner') propDiner(8800 + i, t); else if (kind === 'motel') propMotel(8800 + i, t); else if (/[A-Z]/.test(kind)) { const [bg, fg] = { 'BLUE RODEO': ['#bfe0f4', '#3d6fb6'], 'BRYAN ADAMS': [PAL.lemon, RED], 'YOKOHAMA ONO': [PAL.pink, '#fffaf2'] }[kind]; propTextBoard(8800 + i, kind, bg, fg, t); } else propBillboard(8800 + i, kind, t);
+    const row = [['diner', bbZ + 4200], ['BLUE RODEO', bbZ + 3050], ['motel', bbZ + 2500], ['BRYAN ADAMS', bbZ + 1980], ['YOKO ONO', bbZ + 930], ['plane', bbZ], ['pie', bbZ - 1500]];
+    row.forEach(([kind, z], i) => items.push({ x: kind === 'diner' || kind === 'motel' ? 2300 : kind === 'plane' ? 1500 : 1250, z, f: (p) => at(p, () => { if (kind === 'plane') sc(1.25); else if (/[A-Z]/.test(kind)) sc(1.25);
+      if (kind === 'diner') propDiner(8800 + i, t); else if (kind === 'motel') propMotel(8800 + i, t); else if (/[A-Z]/.test(kind)) { const [bg, fg] = { 'BLUE RODEO': ['#dcefff', '#3d6fb6'], 'BRYAN ADAMS': ['#fff3bf', RED], 'YOKO ONO': ['#fde0e6', PAL.berry] }[kind]; propTextBoard(8800 + i, kind, bg, fg, t); } else propBillboard(8800 + i, kind, t);
     }) }));
     for (let i = -2; i < 16; i++) { const z = Math.floor(zp / 900) * 900 + i * 900; items.push({ x: -800, z, f: (p) => at(p, () => propFence(8900 + (i & 7))) }); }
     const bb = cam(1500, 900, bbZ);

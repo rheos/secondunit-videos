@@ -1,7 +1,7 @@
 import json, subprocess, sys
 plan=json.load(open('v3_plan.json'))
 W='/Users/robin/Code/novadiem/indieagent/secondunit/mv-projects/bobwiseman-airplane-on-the-highway/source/airplane-2026.wav'
-inputs=['-i','base_v3f.mp4']; fc=[]; last='[0:v]'
+inputs=['-i','base_v3g.mp4']; fc=[]; last='[0:v]'
 for k,p in enumerate(plan,1):
     act=p['e']-p['s']+1; win=p['b']-p['a']
     L=min(win,act) if act>=12 else max(act,12)
