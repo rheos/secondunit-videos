@@ -1,0 +1,4 @@
+node_modules/
+out/
+assets/song.wav
+js/data.js
