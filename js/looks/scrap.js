@@ -173,14 +173,18 @@ void main(){
     put('coal', 700, 1940, 560, { sh: 1.2 });
     const ph2 = (() => { const b = beatPhase(t) - lastBeat(BITES[0] + .01), c = Math.floor(b / 2), r = b - c * 2; return r < 1 ? r * .62 : .62 + (r - 1) * .38; })();
     // a puppet's two moves: bend to the heap (bite at 0), swing up and throw (.62)
-    const bend = ph2 < .62 ? 1 - ease.inOut(ph2 / .62) : ease.inOut((ph2 - .62) / .38), lean = lerp(-.06, .26, bend);
+    const bend = ph2 < .62 ? 1 - ease.inOut(ph2 / .62) : ease.inOut((ph2 - .62) / .38);
     const gx = 250, gy = 1900, gw = 400, gh = P.gent ? gw * P.gent.height / P.gent.width : 1520;
-    const hip = [gx, gy - gh * .48];
-    main.save(); main.translate(gx, gy); main.rotate(lean); main.translate(-gx, -gy);
+    // a two-piece puppet hinged at the waist: the legs stay planted, the torso bows over the heap.
+    // (Pinning the shovel at his hips and rocking the whole figure read as a hip thrust.)
+    const wy = gy - gh * .44, bow = lerp(-.04, .5, bend);
+    main.save(); main.beginPath(); main.rect(gx - 600, wy - 4, 1200, 1200); main.clip(); put('gent', gx, gy, gw, { flip: true, sh: 1.2 }); main.restore();
+    main.save(); main.translate(gx, wy); main.rotate(bow); main.translate(-gx, -wy);
+    main.beginPath(); main.rect(gx - 600, wy - 2000, 1200, 2000 + 10); main.clip();
     put('gent', gx, gy, gw, { flip: true, sh: 1.2 });
-    // the shovel, pinned at his hands: down into the heap at the bite, up toward the fire on the throw
-    const sw = 300, srot = lerp(-1.3, -.3, bend);
-    put('shovel', hip[0] + 90, hip[1] + 40, sw, { ax: .45, ay: .08, rot: srot, sh: 1 });
+    // the shovel, held out from his chest: down into the heap at the bite, up toward the fire on the throw
+    const sw = 360, srot = lerp(-1.2, -.3, bend);
+    put('shovel', gx + gw * .22, gy - gh * .66, sw, { ax: .45, ay: .08, rot: srot - bow, sh: 1 });
     main.restore();
     // coal flying into the firebox on each toss, sparks after
     TOSSES.forEach((k, j) => {
