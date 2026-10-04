@@ -26,9 +26,23 @@
     shape([[x0 - 14, bandB], [x0 + tw + 14, bandB], [x0 + tw + 14, bandT], [x0 - 14, bandT]], '#565a55', 3);
     ink([[x0 - 14, bandT + 7], [x0 + tw + 14, bandT + 7]], 1.6); ink([[x0 - 14, bandB - 7], [x0 + tw + 14, bandB - 7]], 1.6);
     text('MINISTRY', TX, bandB - 15, 28, { font: 'sign', color: CREAM, spacing: 14, max: 300 });
-    // the door: revolving, dark, at the foot, under the band
-    shape([[TX - 90, BASE], [TX + 90, BASE], [TX + 90, bandB], [TX - 90, bandB]], '#2c2e2b', 3);
-    const rv = t * .9; for (let i = 0; i < 3; i++) { const a = rv + i * TAU / 3; ink([[TX, bandB + 10], [TX, BASE - 10]], 2); ink([[TX + Math.cos(a) * 80, bandB + 10], [TX + Math.cos(a) * 80, BASE - 10]], 3); }
+    // the door: a revolving door under the band. Dark frame, pale glass drum, a canopy, and four glass
+    // wings on a central post; each wing is drawn at its turned width so the door visibly spins.
+    const dT = bandB + 8, dB = BASE - 4, R = 80;
+    shape([[TX - 96, BASE], [TX + 96, BASE], [TX + 96, bandB], [TX - 96, bandB]], '#2c2e2b', 3);          // frame
+    s.fillStyle = vgrad(dT, dB, [[0, '#cfd8d4'], [1, '#93a19c']]); s.fillRect(TX - R, dT, R * 2, dB - dT);     // glass drum
+    s.globalAlpha = .35; s.fillStyle = CREAM; s.fillRect(TX - R + 10, dT + 6, 14, dB - dT - 12); s.globalAlpha = 1; // drum glint
+    const rv = t * .9;
+    for (let i = 0; i < 4; i++) { const a = rv + i * TAU / 4, x1 = TX + Math.cos(a) * R, front = Math.sin(a) > 0;
+      if (front) continue;                                                                                     // back wings first
+      line([[x1, dT + 4], [x1, dB - 4]], '#6f7b77', 4); }
+    ink([[TX, dT], [TX, dB]], 5);                                                                              // the post
+    for (let i = 0; i < 4; i++) { const a = rv + i * TAU / 4, x1 = TX + Math.cos(a) * R; if (Math.sin(a) <= 0) continue;
+      const xa = Math.min(TX, x1), xb = Math.max(TX, x1);
+      s.globalAlpha = .45; s.fillStyle = '#eef3f0'; s.fillRect(xa, dT + 4, xb - xa, dB - dT - 8); s.globalAlpha = 1; // front wing glass
+      ink([[x1, dT + 4], [x1, dB - 4]], 3); }
+    s.lineWidth = 3; s.strokeStyle = INK; s.strokeRect(TX - R, dT, R * 2, dB - dT);
+    shape([[TX - R - 12, dT + 2], [TX + R + 12, dT + 2], [TX + R + 4, dT - 6], [TX - R - 4, dT - 6]], '#8a8f8a', 2); // canopy lip
     // ducts climbing the face like ivy: fat ribbed tubes that wander up from the ground
     for (let d = 0; d < 5; d++) {
       if (d === 2) continue; // keep the door and the name clear
