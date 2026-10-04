@@ -1,0 +1,7 @@
+{
+  "name": "bobwiseman-airplane-hybrid",
+  "private": true,
+  "type": "module",
+  "description": "Bob Wiseman, Airplane on the Highway (2026), hybrid exploration drawn in code: woodcut, collage and gouache on one shared paper finish.",
+  "devDependencies": { "playwright": "^1.55.0" }
+}
