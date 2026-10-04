@@ -1,0 +1,7 @@
+{
+  "name": "bobwiseman-wgt-submarine",
+  "private": true,
+  "type": "module",
+  "description": "Bob Wiseman, We Got Time (2026 recording), drawn in code. Look test: Yellow Submarine-era pop psychedelia (Edelmann manner), ch05.",
+  "devDependencies": { "playwright": "^1.55.0" }
+}
