@@ -1,0 +1,31 @@
+# One repo for all Second Unit video work. Only listed project folders are tracked:
+# a new look test or video is a new FOLDER here, added below. Never a new repo.
+# Media, lyrics and artist audio stay out (each project has its own .gitignore too).
+/*
+!/.gitignore
+!/README.md
+!/bobwiseman-airplane-16bit/
+!/bobwiseman-airplane-collage/
+!/bobwiseman-airplane-cutout/
+!/bobwiseman-airplane-hybrid/
+!/bobwiseman-airplane-junkyard/
+!/bobwiseman-airplane-kawaii/
+!/bobwiseman-airplane-paint/
+!/bobwiseman-airplane-pinball/
+!/bobwiseman-airplane-riso/
+!/bobwiseman-airplane-scope/
+!/bobwiseman-airplane-silhouette/
+!/bobwiseman-airplane-type/
+!/bobwiseman-airplane-v1/
+!/bobwiseman-airplane-wakinglife/
+!/bobwiseman-airplane-woodcut/
+!/bobwiseman-we-got-time/
+!/bobwiseman-wgt-gilliam/
+!/bobwiseman-wgt-submarine/
+!/gemmaluna-clap-hands/
+!/hjeron-dark-blues-finish/
+!/hjeron-dark-blues-painted/
+!/hjeron-dark-blues-realcut/
+!/hjeron-dark-blues-storyboard/
+!/hjeron-painted-myth/
+!/pnubb-mind-the-sheep-painted/
