@@ -1,0 +1,11 @@
+{
+  "name": "hjeron-dark-blues-painted",
+  "private": true,
+  "type": "module",
+  "description": "Hjeron dream of fire (hjeron_dark_blues), painted in code on the functional-emotions-video renderer (MIT).",
+  "scripts": {
+    "check": "node check.mjs",
+    "render": "node render.mjs 0 97.583 out/dream-of-fire_painted_f00000-f02342_24fps_composite.mp4 4 24"
+  },
+  "devDependencies": { "playwright": "^1.63.0" }
+}
