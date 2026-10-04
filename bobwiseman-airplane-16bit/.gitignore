@@ -1,0 +1,7 @@
+node_modules
+out/
+assets/
+js/data.js
+js/lyrics.js
+*.lyrics.txt
+.DS_Store
