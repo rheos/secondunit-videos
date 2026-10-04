@@ -1,0 +1,36 @@
+# dream of fire v3 finish. Song frames, 24 fps. Restrained: the cut already carries his grain,
+# a real overexposed flash shot (f1548) and a fade out, so no grain, flash or dark cues here.
+# VFX runs on the clean v3; the lyric layer goes on top afterwards so text never blurs
+source: _in/v3_master.mp4
+out: output/dof_v3_vfx.mp4
+lights: tools/p5/examples/lights.js
+cues:
+  # opening: a warm leak drifts across the moon-serpent animation
+  - {fx: leak, f: 84, dur: 56, amt: 0.35, x: 0, color: "#ff8a3d", fade: 12}
+  # the bridge lands and hard-cuts onto the first sung word (f620, 25.83 s)
+  - {fx: whip, f: 620, pre: 3, dur: 3, amt: 0.03, radius: 28, angle: 90}
+  - {fx: glow, f: 623, dur: 14, amt: 0.35, radius: 16}
+  # verse singing returns (line 2)
+  - {fx: punch, f: 703, dur: 6, amt: 0.03}
+  # the fire section lights (ring of fire animation)
+  - {fx: glow, f: 939, dur: 18, amt: 0.3, radius: 20}
+  # both "rattle's warning" lines hard-cut to him singing
+  - {fx: punch, f: 1244, dur: 7, amt: 0.035}
+  - {fx: rgb, f: 1244, dur: 4, amt: 0.004}
+  - {fx: punch, f: 1316, dur: 7, amt: 0.035}
+  - {fx: rgb, f: 1316, dur: 4, amt: 0.004}
+  # after his real overexposed flash shot, bloom settles into the hook
+  - {fx: glow, f: 1551, dur: 12, amt: 0.3, radius: 18}
+  # the hook: "i dream of fire" / second hook line
+  - {fx: punch, f: 1561, dur: 10, amt: 0.055, radius: 3}
+  - {fx: rgb, f: 1561, dur: 5, amt: 0.005}
+  - {fx: punch, f: 1640, dur: 8, amt: 0.045}
+  # wake-up run
+  - {fx: punch, f: 1899, dur: 7, amt: 0.035}
+  - {fx: glow, f: 1901, dur: 16, amt: 0.3, radius: 16}
+  - {fx: shake, f: 1977, dur: 10, amt: 7}
+  - {fx: punch, f: 2124, dur: 7, amt: 0.035}
+  # heat rising from the cracks: the lava ends it
+  - {fx: shake, f: 2241, dur: 16, amt: 4}
+  - {fx: glow, f: 2243, dur: 24, amt: 0.35, radius: 22}
+  - {fx: leak, f: 2250, dur: 60, amt: 0.3, x: 1, color: "#ff5a2a", fade: 14}
