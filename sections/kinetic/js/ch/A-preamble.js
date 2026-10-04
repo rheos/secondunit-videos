@@ -23,7 +23,8 @@
 //  59.00 a19 eyes open    lids snap open on the hit
 //  61.37 a20 engines      props start one per beat, RPM dials
 //  63.67 a21 title        BOB WISEMAN / AIRPLANE ON THE HIGHWAY over the closed garage
-//  68.27 a22 hold short   everything halts: near-empty black, the plane a small still outline, one slow beacon
+//  68.27 a22 door         the door rolls up
+//  69.43 a23 roll-out     plan view: down the driveway and along the highway until "I'm" at 72.0 (v4b: colour waits for the singing)
 (() => {
   const { voc, slam, wrap, said, hitsNear, cvr, wave, transcript, caption, scramble, garage, trace, paper, stamp, logPage } = KIT;
   const LA = LYR.A.lines, HITS = LYR.A.hits;
@@ -514,24 +515,42 @@
     cvr(t, 'A21 · TITLE', { state: '▶ LIVE' });
   }
 
-  // ---------------- a22 hold short (68.27-71.0) ----------------
-  // Everything halts. A near-empty black frame, held: one hairline runway edge, the plane as a small still
-  // plan-view outline holding short of it, one slow orange beacon. No chrome, no counters. B stays this calm
-  // until "airplane" at 72.94, where the colour bursts in.
-  function hold(t, lt) {
+  // ---------------- a22 door ----------------
+  function door(t, lt, dur) {
     fill(C.bg);
-    const cy = 600;
-    line([[0, cy], [W, cy]], '#2a2622', 2);
-    dash([[1060, cy - 40], [1060, cy + 40]], '#3a3530', 2, [6, 8]);
-    PL.top(880, cy, .16, 0, { rot: Math.PI / 2, lw: 2, ink: C.ink, spin: 0 });
-    const b = .5 + .5 * Math.cos(lt * TAU * .5); // one slow breath every 2 s
-    dot(880 - 300 * .16 - 6, cy, 4 + 2 * b, `rgba(255,74,28,${(.35 + .65 * b).toFixed(3)})`);
-    text('HOLD SHORT', 1080, cy + 70, { size: 16, color: '#4a453e', ls: 6 });
+    const open = ease.inOut(inv(.05, 1.0, lt));
+    garage(t, { ext: true, door: open, cx: 960, gy: 960, k: 1.05, spin: t * 30, look: [0, .1], smile: .6, brow: -.2 });
+    if (open > .1) { for (const sx of [-1, 1]) { const x = 960 + sx * 70 * 1.05, y = 960 - 150 * 1.05; dot(x, y + 70, 9, C.hot); } }
+    tag(960 + 330 * 1.05, 960 - 300 * 1.05, 1560, 300, 'DOOR · OPENING', `${Math.round(open * 100)}%`, { size: 24 });
+    cvr(t, 'A22 · DOOR', { state: '▶ LIVE' });
   }
 
-  chapter('A', 0, 71.0, [
+  // ---------------- a23 roll-out (plan view) ----------------
+  function rollout(t, lt, dur) {
+    fill(C.bg); grid(64, '#141210');
+    const u = lt / dur;
+    // highway, horizontal near the bottom; driveway down from the garage top-left
+    const hy0 = 700, hy1 = 940;
+    frect(0, hy0, W, hy1 - hy0, '#100f0d'); line([[0, hy0], [W, hy0]], C.ink, 3); line([[0, hy1], [W, hy1]], C.ink, 3);
+    dash([[0, (hy0 + hy1) / 2], [W, (hy0 + hy1) / 2]], '#5a554d', 4, [50, 40], -t * 300);
+    text('HWY 3 · EASTBOUND', 1700, hy1 + 40, { size: 16, color: C.dim, align: 'right', ls: 3 });
+    rect(650, 120, 220, 240, C.ink, 3); text('GARAGE', 760, 105, { size: 16, color: C.dim, align: 'center', ls: 4 });
+    line([[690, 360], [690, hy0]], C.dim, 2); line([[830, 360], [830, hy0]], C.dim, 2);
+    for (const sx of [-1, 1]) { dot(760 + sx * 110, 236, 9, C.bg); s.beginPath(); s.arc(760 + sx * 110, 236, 9, 0, TAU); s.lineWidth = 2; s.strokeStyle = C.dim; s.stroke(); } // the wing holes he left
+    // cars passing
+    for (let i = 0; i < 3; i++) { const x = wrap(-400 + (t - 69.43) * 1400 + i * 760, W + 600) - 300; withT(() => { s.translate(x, hy1 - 60); s.strokeStyle = C.ink; s.lineWidth = 2.5; s.beginPath(); s.roundRect(-70, -34, 140, 68, 12); s.fillStyle = C.bg; s.fill(); s.stroke(); }); }
+    // path: down the driveway then turn east into the near lane
+    const P = samplePath((v) => { const a = 1 - v; return [a * a * a * 760 + 3 * a * a * v * 760 + 3 * a * v * v * 800 + v * v * v * 1500, a * a * a * 250 + 3 * a * a * v * 760 + 3 * a * v * v * 880 + v * v * v * 880]; }, 300);
+    const d = (ease.sine(u) * .6 + u * .4) * .97 * P.len, [px, py, pa] = atLen(P, d);
+    PL.top(px, py, .26, t, { rot: pa + Math.PI / 2, spin: t * 30, ink: C.hot });
+    brackets(px - 150, py - 110, 300, 220, 18, C.hot, 2);
+    tag(px + (px > 1200 ? -60 : 60), py - 60, px > 1200 ? px - 200 : px + 200, py - 240, u > .6 ? 'ON THE HIGHWAY' : 'ROLLING OUT', `GS ${Math.round(u * 61).toString().padStart(3, '0')} MPH · ALT 0000`, { size: 22, left: px > 1200 });
+    cvr(t, 'A23 · MERGE', { state: '▶ LIVE' });
+  }
+
+  chapter('A', 0, 72.0, [
     [0, playback], [2.40, ladder], [3.75, ground], [6.50, ident], [8.65, checklist], [11.17, enhance], [14.80, cctv], [19.00, techlog],
     [23.50, belts], [26.05, babble], [28.30, sleepLab], [33.33, remEyes], [36.78, decoder], [41.00, tape], [44.40, dreamAlt], [47.23, cctv2],
-    [52.63, montage], [56.67, boot], [59.00, eyesOpen], [61.37, engines], [63.67, title], [68.27, hold],
+    [52.63, montage], [56.67, boot], [59.00, eyesOpen], [61.37, engines], [63.67, title], [68.27, door], [69.43, rollout],
   ]);
 })();

@@ -246,7 +246,7 @@
   // ===== 71.00 poster: a framed print, he drives in small from the left =====
   // v4 (ii): 71.0 to "air-" (vocal stem onset ~72.97, frame 1751) stays minimal and still: a faint single-plate ghost of him
   // on bare paper; the full poster bursts in on "air-plane"
-  const AIR = 1751 / 24;
+  const AIR = 1728 / 24;   // v4b: the colour lands on "I'm" (vocal stem onset 72.00); A's highway runs to here
   const PAL_GHOST = { ...PAL0, body: PAPER, key: C(0, .5, 0), glass: PAPER, wing: PAPER, fin: PAPER, tip: PAPER, cheek: PAPER, ring: C(0, .5, 0) };
   function posterStill(t) {
     FRI = Math.floor(AIR * 12);
