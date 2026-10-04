@@ -6,7 +6,7 @@ const args = process.argv.slice(2); const page = args.shift();
 const full = args[0] === '--full'; if (full) args.shift();
 const out = args.shift(); const times = args.map(Number);
 const tmp = full ? out : fs.mkdtempSync('/tmp/chk_'); fs.mkdirSync(tmp, { recursive: true });
-const b = await chromium.launch({ channel: 'chrome', headless: true, args: ['--use-angle=metal', '--ignore-gpu-blocklist', '--enable-gpu'] });
+const b = await chromium.launch({ channel: 'chrome', headless: true, args: ['--use-angle=metal', '--ignore-gpu-blocklist', '--enable-gpu', '--allow-file-access-from-files'] });
 const p = await b.newPage({ viewport: { width: 1080, height: 1920 } });
 const errs = []; p.on('console', m => { if (m.type() === 'error') errs.push(m.text()); }); p.on('pageerror', e => errs.push(String(e)));
 await p.goto('file://' + process.cwd() + `/${page}.html?offline=1&scale=${process.env.SCALE || 1}`); await p.evaluate(() => window.__ready);
