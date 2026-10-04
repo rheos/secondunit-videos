@@ -108,6 +108,15 @@ function clipping(x, y, w, h, f, seed, o = {}) {
   withT(() => { polyP(pts); s.clip(); halftone(x, y, w, h, o.cell || 11, f, o.ink || K.BLK, o.ang ?? .26); });
 }
 // procedural "photos" for the clippings
+// the ministry clipping cut along its own stepped roofline
+function clippingMinistry(x, y, w, h, seed, o = {}) {
+  const r = rng(seed), top = [];
+  for (let k = 0; k < 7; k++) { const ry = y + (.18 + .2 * hash(k * 7 + 3)) * h - 6; top.push([x + k * w / 7 + (r() - .5) * 6, ry + (r() - .5) * 8], [x + (k + 1) * w / 7 + (r() - .5) * 6, ry + (r() - .5) * 8]); }
+  const pts = [...top, [x + w + (r() - .5) * 8, y + h], [x + (r() - .5) * 8, y + h]];
+  withT(() => { s.translate(12, 14); polyP(pts); s.fillStyle = 'rgba(10,8,20,.45)'; s.fill(); });
+  polyP(pts); s.fillStyle = o.paper || K.CRM; s.fill();
+  withT(() => { polyP(pts); s.clip(); halftone(x, y, w, h, o.cell || 12, photoMinistry, K.BLK); });
+}
 const photoMinistry = (u, v) => {
   const col = Math.floor(u * 7), roof = .18 + .2 * hash(col * 7 + 3);
   if (v < roof) return .06 + .05 * v;
