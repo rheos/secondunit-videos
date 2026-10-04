@@ -1,4 +1,4 @@
-// 206.0 - 245.0  late for the boss. The "do do do"s are clock ticks and footsteps: a wall of clocks, a run
+// 203.57 - 245.0  late for the boss, after one look back at her ("I don't want to leave you babe"). The "do do do"s are clock ticks and footsteps: a wall of clocks, a run
 // against the crowd, the punch clock and his time card, a corridor with the boss at the end of it. The boss
 // is never a person: a loudspeaker horn on a duct with a grille for a mouth, and its words come out as huge
 // type. Then the release: a rose stamp on the card, the card torn twice, confetti that turns into birds,
@@ -213,7 +213,48 @@
   const runner = (x, z, t, face = 1, lean = .13, stride = 2.1) => ({ z, draw: () => withT(() => { const b = P(x, FL, z); s.translate(b[0], b[1]); s.rotate(lean * face); s.translate(-b[0], -b[1]); man(x, z, { walk: 1, ph: t * stride, face }); }) });
 
   // ---- shots ----
-  // 206.0 "do do do": a wall of clocks, every one telling a different time, all ticking on each "do"
+  // 203.57 "I don't want to leave you babe" (Bob's sheet; the vocal stem has it at 203.57-207.2): back in the
+  // hall, closer than ch06. He is on his way out with his case; on "leave" he stops and turns back to her at
+  // her desk; on "you" she looks up from the typewriter; on "babe" a rose ring off her collar. Then the clock
+  // over the way out ticks on the "do"s, he turns away again, and the wall of clocks takes him (207.17).
+  const LEAVE_T = snap(204.30, .12), YOU_T = snap(205.23, .12), BABE_T = 205.76, AWAY_T = snap(206.75, .25);
+  function leaveClock(cx, cy, r, t) {
+    // hands jump only on the "do"s after "babe"; brass deco face as in the clock wall
+    const done = DO.filter((d) => d > 206.6 && d <= t), last = done[done.length - 1];
+    const tk = last === undefined ? 0 : done.length - 1 + ease.back(clamp((t - last) / .12));
+    if (!K) { dot(cx, cy, r, CREAM); s.beginPath(); s.arc(cx, cy, r, 0, TAU); s.lineWidth = 3; s.strokeStyle = INK; s.stroke(); }
+    else { disc(cx, cy, r * 1.08, BRASS, 1.2); glint(cx, cy, r * 1.02, .05); disc(cx, cy, r * .9, CREAM, 1); }
+    for (let i = 0; i < 12; i++) { const a = i / 12 * TAU; line([[cx + Math.cos(a) * r * .72, cy + Math.sin(a) * r * .72], [cx + Math.cos(a) * r * .84, cy + Math.sin(a) * r * .84]], K ? K.LINE : INK, i % 3 ? 1.5 : 3.5); }
+    const hA = (11 + 44 / 60) / 12 * TAU, mA = (44 + tk * .25) / 60 * TAU, sA = tk / 12 * TAU;   // 11:44, and late
+    ink([[cx, cy], [cx + Math.sin(hA) * r * .45, cy - Math.cos(hA) * r * .45]], 9);
+    ink([[cx, cy], [cx + Math.sin(mA) * r * .7, cy - Math.cos(mA) * r * .7]], 6);
+    line([[cx - Math.sin(sA) * r * .14, cy + Math.cos(sA) * r * .14], [cx + Math.sin(sA) * r * .8, cy - Math.cos(sA) * r * .8]], '#8a2a1e', 2);
+    if (K) K.ball(cx, cy, r * .07, BRASS, 1); else dot(cx, cy, 6, INK);
+  }
+  function leave(t, lt) {
+    cam({ x: .1, z: lerp(2.3, 2.75, ease.sine(lt / 3.6)), y: .45, f: 900, vy: 600 });   // a slow push in on the two of them
+    room(t); duct(-3.6, -2.1, .5, 0, FAR); duct(2.8, -2.25, .32, 0, FAR, STEEL_D); tube(t); board(t, '0004');
+    rows(t);
+    // the clock over the way out, hung from the duct on the left; it shakes a little on each tick
+    const sh = tickHit(t) * (t > 206.6 ? 1 : 0), cc = P(-3.0, -1.0, 6.0), cr = .42 * cc[2];
+    ink([[cc[0], cc[1] - cr * 1.08], [cc[0], P(-3.0, -2.15, 6.0)[1]]], 3);
+    withT(() => { s.translate(cc[0], cc[1] - cr); s.rotate(Math.sin((t - 206.6) * 40) * .03 * sh); s.translate(-cc[0], -(cc[1] - cr)); leaveClock(cc[0], cc[1], cr, t); });
+    // her, at her desk; she looks up on "you". Her hands stay still on the keys.
+    desk(1.75, 5.6, -1);
+    const look = smooth(inv(YOU_T - .05, YOU_T + .25, t));
+    woman(2.5, 5.6, { seated: true, face: -1, rose: 1, arm: .35, look });
+    // him: walking out to the left, stops and turns back on "leave", turns away again when the clock calls
+    const back = t >= LEAVE_T && t < AWAY_T;
+    const walk = t < LEAVE_T ? 1 - smooth(inv(LEAVE_T - .3, LEAVE_T, t)) : smooth(inv(AWAY_T, AWAY_T + .25, t));
+    const x = -1.05 - 1.0 * ease.out(inv(203.4, LEAVE_T, t)) - 1.1 * Math.max(0, t - AWAY_T - .1);
+    // on "babe" his near hand reaches out toward her at chest height (once, and held), then drops as he turns away
+    const reach = back ? .65 * smooth(inv(BABE_T - .1, BABE_T + .3, t)) * (1 - smooth(inv(AWAY_T - .3, AWAY_T, t))) : 0;
+    man(x, 5.6, { face: back ? 1 : -1, walk, ph: (t - 203.0) * 1.15, arm: reach });
+    // "babe": one soft rose ring off her collar, and it reaches him
+    const a = hit(t, BABE_T, 2.6);
+    if (t >= BABE_T && a > .03) { const c = P(2.5, -.15, 5.6); s.globalAlpha = a * .9; s.beginPath(); s.arc(c[0], c[1], 40 + (1 - a) * 900, 0, TAU); s.lineWidth = 8 * a + 2; s.strokeStyle = ROSE; s.stroke(); s.globalAlpha = 1; }
+  }
+  // 207.17 "do do do": a wall of clocks, every one telling a different time, all ticking on each "do"
   function clocks(t, lt) {
     fill(WALL);
     const zoom = 1 + lt * .025 + tickHit(t) * .012;
@@ -366,20 +407,47 @@
     s.beginPath(); s.ellipse(x, y - 1.71 * k, .25 * k, .05 * k, 0, 0, TAU); s.fillStyle = HAT; s.fill(); s.stroke();
     shape([[x - .13 * k, y - 1.71 * k], [x + .13 * k, y - 1.71 * k], [x + .11 * k, y - 1.9 * k], [x - .11 * k, y - 1.9 * k]], HAT, 2);
   }
-  // 227.97 "why are you so late?": into the grille; the words blast out as huge type
-  const YELL = [['WHY', snap(228.18)], ['ARE', 228.5], ['YOU', snap(228.64, .06)], ['SO', 228.92], ['LATE?', 229.34]];
+  // 227.97 "why you so late?" (Bob's sheet: no "are"): into the grille; the words blast out as huge type.
+  // Two rows, WHY YOU / SO LATE?, one size for all four words, fitted so every word (outline included) stays
+  // inside the frame with a margin at every frame of its blast, overshoot included: each word scales about
+  // its own centre and its scale is capped to the room it has.
+  const YELL = [['WHY', snap(228.18)], ['YOU', snap(228.64, .06)], ['SO', 228.92], ['LATE?', 229.34]];
+  const YELL_ROWS = [[0, 1], [2, 3]], YELL_GAP = .28, YELL_OUT = 26, YELL_M = 70;   // gap in ems; frame margin px
+  let yellLay = null;
+  function yellLayout() {
+    if (yellLay) return yellLay;
+    s.save(); s.font = `bold 100px ${FUT}`; const m100 = YELL.map(([w]) => s.measureText(w)); s.restore();
+    const w100 = m100.map((m) => m.width), asc = Math.max(...m100.map((m) => m.actualBoundingBoxAscent)) / 100, desc = Math.max(0, ...m100.map((m) => m.actualBoundingBoxDescent)) / 100;
+    // the size at which the wider row fills the frame less the margins, capped so two rows fit the height
+    const rowW = YELL_ROWS.map((r) => r.reduce((a, i) => a + w100[i], 0) + 100 * YELL_GAP);
+    const size = Math.min(330, 100 * (W - 2 * YELL_M - 2 * YELL_OUT) / Math.max(...rowW) * .9);
+    const capH = size * (asc + desc), rowY = [H / 2 - 1.15 * capH + asc * size, H / 2 + .15 * capH + asc * size];   // baselines: two rows a .3 cap gap apart, centred
+    const words = [];
+    YELL_ROWS.forEach((r, ri) => {
+      const tw = r.reduce((a, i) => a + w100[i] * size / 100, 0) + size * YELL_GAP; let x = W / 2 - tw / 2;
+      r.forEach((i) => { const w = w100[i] * size / 100; words[i] = { x0: x, cx: x + w / 2, w, base: rowY[ri], cy: rowY[ri] + (desc - asc) * size / 2 }; x += w + size * YELL_GAP; });
+    });
+    words.forEach((d) => {   // the largest scale at which this word's box (with outline) stays inside the margins
+      const hw = d.w / 2 + YELL_OUT / 2, hh = capH / 2 + YELL_OUT / 2;
+      d.scMax = Math.min((d.cx - YELL_M) / hw, (W - YELL_M - d.cx) / hw, (d.cy - YELL_M) / hh, (H - YELL_M - d.cy) / hh);
+    });
+    return (yellLay = { size, capH, asc, desc, words });
+  }
   function yell(t, lt) {
     fill(BLACK);
     const v = F('voc', t, 2), last = YELL.filter(([, tw]) => t >= tw).pop(), kick = last ? hit(t, last[1], 8) : 0;
-    withT(() => { s.translate((hash(Math.floor(t * 24)) - .5) * 18 * kick, (hash(Math.floor(t * 24) + 5) - .5) * 18 * kick);
+    const shx = (hash(Math.floor(t * 24)) - .5) * 18 * kick, shy = (hash(Math.floor(t * 24) + 5) - .5) * 18 * kick;
+    withT(() => { s.translate(shx, shy);
       const z = 1 + lt * .06; s.translate(W / 2, H / 2); s.scale(z, z); s.translate(-W / 2, -H / 2);
       horn(W / 2, H / 2, 1250, t, clamp(v * 1.4)); });
-    const lay = [[0, 925, 330, 290, 'right'], [0, 995, 330, 290, 'left'], [1, 925, 650, 290, 'right'], [1, 995, 650, 290, 'left'], [2, 960, 1010, 380, 'center']];
+    const L = yellLayout();
     YELL.forEach(([w, tw], i) => {
       if (t < tw) return;
-      const k = ease.back(inv(tw, tw + .16, t)), [, x, y, size, al] = lay[i], sc = lerp(1.5, 1, k);
-      withT(() => { s.translate(x, y - size * .35); s.scale(sc, sc); s.rotate((hash(i + 3) - .5) * .08);
-        bold(w, 0, size * .35, size, { color: CREAM, outline: 26, alpha: clamp(k * 3), align: al, max: al === 'center' ? 1760 : 860 }); });
+      const k = ease.back(inv(tw, tw + .16, t)), d = L.words[i], rot = (hash(i + 3) - .5) * .06;
+      // the shake (<= 9 px) and the small tilt are inside the margin
+      const sc = Math.min(lerp(1.5, 1, k), d.scMax - .03);
+      withT(() => { s.translate(d.cx + shx * .5, d.cy + shy * .5); s.rotate(rot); s.scale(sc, sc);
+        bold(w, 0, d.base - d.cy, L.size, { color: CREAM, outline: YELL_OUT, alpha: clamp(k * 3), align: 'center' }); });
     });
   }
   // 229.9 "do do do": back in the corridor. He has stopped; the crowd parts round him; the letters of the
@@ -388,7 +456,7 @@
     const hx = 15.4, f = lerp(1000, 1250, ease.inOut(inv(229.9, 235.4, t)));
     corridor(t, hx + .3, f);
     // letters raining down and lying on the floor
-    const L = 'WHYAREYOUSOLATE?';
+    const L = 'WHYYOUSOLATE?';
     for (let i = 0; i < L.length; i++) {
       const z = 3.4 + hash(i * 3) * 4.5, x = hx - 6 + hash(i * 5) * 12, t0 = 229.9 + hash(i * 7) * .6;
       const fall = Math.min(1, ((t - t0) * 2.4) ** 2), y = lerp(-3.5, FL, fall), p = P(x, y, z), rot = fall < 1 ? (t - t0) * 6 : (hash(i * 11) - .5) * 1.4;
@@ -433,6 +501,30 @@
       shape([[-sz, -sz * fl], [-sz * .25, -sz * .1], [0, sz * .18], [sz * .25, -sz * .1], [sz, -sz * fl], [sz * .2, sz * .25], [-sz * .2, sz * .25]], CREAM, Math.max(1.5, sz * .07));
       ink([[0, sz * .18], [0, sz * .4]], Math.max(1, sz * .05)); });
   }
+  // "what it costs" (Bob's sheet; sung 240.07 "what it", 240.42 "costs", held to ~245): his pay docket for being
+  // late pops up out of the torn card, and WHAT IT / COSTS are stamped on it in rose, one stamp per sung beat.
+  const DOCK_W = 680, DOCK_H = 486, WHAT_T = snap(240.07, .1), COSTS_T = 240.42;
+  // the largest stamp size <= size0 whose rotated imprint box fits maxW x maxH
+  function stampFit(word, size0, maxW, maxH, rot) {
+    const c = Math.abs(Math.cos(rot)), sn = Math.abs(Math.sin(rot));
+    const ext = (sz) => { const bw = textWidth(word, sz, 'stamp') + sz * .6 + sz * .08, bh = sz * 1.25 + sz * .08; return [bw * c + bh * sn, bw * sn + bh * c]; };
+    const [ew, eh] = ext(size0); return size0 * Math.min(1, maxW / ew, maxH / eh);
+  }
+  function docket(t) {
+    shape([[0, 0], [DOCK_W, 0], [DOCK_W, DOCK_H], [0, DOCK_H]], CREAM, 3);
+    bold('PAY DOCKET', 30, 60, 40, { align: 'left', max: 330 });
+    text('MINISTRY OF WAITING', DOCK_W - 26, 56, 14, { font: 'sign', align: 'right', max: 220 });
+    text('No. 7 436 912', 30, 108, 30, { align: 'left', max: DOCK_W - 60 });
+    ink([[24, 126], [DOCK_W - 24, 126]], 2);
+    text('FRI  IN 11:47  LATE  DOCKED 1 HR', 30, 160, 24, { align: 'left', max: DOCK_W - 60 });
+    s.globalAlpha = .4; ink([[24, 176], [DOCK_W - 24, 176]], 1.2); s.globalAlpha = 1;
+    // two stamp rows in the lower part, each fitted inside its own band with a 30 px margin
+    const BAND = 138, rows = [['WHAT IT', WHAT_T, 180, -.07], ['COSTS', COSTS_T, 180 + BAND, .05]];
+    for (const [w, t0, y0, rot] of rows) {
+      const sz = stampFit(w, 120, DOCK_W - 80, BAND - 18, rot), by = y0 + BAND / 2 + sz * (.95 - .3) / 2;   // imprint box centred in its band
+      stamp(t, t0, DOCK_W / 2, by, w, { size: sz, color: ROSE, rot });
+    }
+  }
   function burst(t, lt) {
     bg(t);
     const t0 = 239.94, m = smooth(inv(240.7, 241.5, t));
@@ -453,10 +545,14 @@
         shape([[-sz * .6, -sz * .4], [sz * .6, -sz * .4], [sz * .6, sz * .4], [-sz * .6, sz * .4]], i % 9 === 0 ? ROSE_L : CREAM, 1.5); });
       if (m > 0) bird(x, y, sz * 1.3, t * 2.4 + hash(i * 17), m);
     }
+    // the docket: up out of the torn card, stamped on the sung words, then it drifts up with the birds
+    const dp = ease.back(inv(239.94, 240.2, t)), drift = Math.max(0, t - 240.9) * 34;
+    if (dp > 0) withT(() => { s.translate(W / 2, 560 - drift); s.rotate(.025); s.scale(.8 + .35 * dp, .8 + .35 * dp); s.globalAlpha = clamp(dp * 4);
+      s.translate(-DOCK_W / 2, -DOCK_H / 2); docket(t); });
     glove(W / 2 - 520 - q * 80, 600 + q * 80, .1 - q * .3, .9); glove(W / 2 + 520 + q * 80, 620 + q * 80, Math.PI - .1 + q * .3, .9);
   }
   // 241.9 wide: he turns and strolls off the way he came, no hurry; the birds go up through a crack of sky,
-  // carrying a ticker tape with the last line; on the last "I don't care" he lets his ticket go too.
+  // carrying a ticker tape with the whole line (BUT I DON'T CARE WHAT IT COSTS); on the last "I don't care" he lets his ticket go too.
   function away(t, lt) {
     const hx = 15.4 - (t - 241.9) * .55, camX = hx - .4;
     const skyHole = () => {
@@ -480,10 +576,11 @@
     }
     // the tape, carried up between two birds
     const ty = lerp(430, 175, ease.inOut(inv(241.9, 245.2, t))), tx = W / 2 - 80, sway = Math.sin(t * 1.7) * .05;
+    const TAPE = "BUT I DON'T CARE WHAT IT COSTS", hw = Math.min(700, textWidth(TAPE, 52, 'type') / 2 + 40);   // the tape is sized to its words
     withT(() => { s.translate(tx, ty); s.rotate(-.06 + sway);
-      shape([[-430, -38], [430, -38], [430, 38], [-430, 38]], CREAM, 3);
-      text("BUT I DON'T CARE", 0, 20, 54, { font: 'type', max: 800 });
-      for (const ex of [-430, 430]) { ink([[ex, -38], [ex * 1.04, -110]], 2); bird(ex * 1.04, -130, 38, t * 2.6 + (ex > 0 ? .4 : 0), 1); } });
+      shape([[-hw, -38], [hw, -38], [hw, 38], [-hw, 38]], CREAM, 3);
+      text(TAPE, 0, 19, 52, { font: 'type', max: 2 * hw - 60 });
+      for (const ex of [-hw, hw]) { ink([[ex, -38], [ex * 1.04, -110]], 2); bird(ex * 1.04, -130, 38, t * 2.6 + (ex > 0 ? .4 : 0), 1); } });
     // his ticket, let go on the last line, flutters up and becomes a bird
     if (t >= 243.68) {
       const l = t - 243.68, b = P(hx - .3, .25, 4.7), m = smooth(inv(.25, .7, l));
@@ -493,8 +590,8 @@
     }
   }
 
-  chapter('boss', 206.0, 245.0, [
-    [206.0, clocks], [208.43, chase], [212.77, punch], [218.3, hallRun], [224.1, boss], [227.97, yell],
+  chapter('boss', 203.57, 245.0, [
+    [203.57, leave], [207.17, clocks], [208.43, chase], [212.77, punch], [218.3, hallRun], [224.1, boss], [227.97, yell],
     [229.9, stand], [235.4, tear], [239.94, burst], [241.9, away],
   ]);
 })();

@@ -1,4 +1,4 @@
-// 181.5 - 206.0  the chant. The ministry as a machine, cut on the beat: constructivist posters, the
+// 181.5 - 203.57  the chant. The ministry as a machine, cut on the beat: constructivist posters, the
 // typebar basket, stamps, gears in a kaleidoscope, a top-down sea of hats, pneumatic tubes and ticker
 // tape. One word per beat (WE / GOT). Panels hold four beats, then three, two, one; from ~199.5 the
 // grey cracks and blue sky leaks in from the edges.
@@ -354,9 +354,12 @@
   const s15flap = C(function (t) { flap(t, { flip: true }); });
   const s16all = C(function (t) { machine(t); kaleido(8); hub(t, 190); });
 
-  chapter('machine', 181.5, 206.0, [
+  // the chant ends at 203.57: "I don't want to leave you babe" is sung there (vocal stem; Bob's sheet), and
+  // ch08 opens on it. s14tile, s15flap and s16all are kept for reference but no longer cut in.
+  void s14tile; void s15flap; void s16all;
+  chapter('machine', 181.5, 203.57, [
     [181.5, s01poster], [184.77, s02typebars], [187.70, s03stamps], [190.63, s04gears], [192.87, s05hats],
     [195.07, s06tubes], [196.53, s07flap], [197.97, s08quad], [199.47, s09hatsK],
-    [200.90, s10poster], [201.57, s11stamps], [202.23, s12gears], [202.90, s13typebars], [203.57, s14tile], [204.30, s15flap], [205.03, s16all],
+    [200.90, s10poster], [201.57, s11stamps], [202.23, s12gears], [202.90, s13typebars],
   ]);
 })();
