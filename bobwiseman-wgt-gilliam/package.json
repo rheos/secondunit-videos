@@ -1,0 +1,7 @@
+{
+  "name": "bobwiseman-wgt-gilliam",
+  "private": true,
+  "type": "module",
+  "description": "Bob Wiseman, We Got Time (2026 recording), ch08 look test: 1970s cut-out animation in the manner of Terry Gilliam, drawn in code.",
+  "devDependencies": { "playwright": "^1.55.0" }
+}
