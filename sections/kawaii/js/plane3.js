@@ -170,3 +170,92 @@ function placePlane(cam, cfg, wx, wz, o) {
   const p = cam(wx, 0, wz), yawP = cfg.yaw + Math.atan2(p.x - cfg.ox, cfg.F);
   return plane3(p.x, p.y, p.k, { ...o, yaw: yawP + (o.dyaw || 0), pitch: o.pitch ?? Math.atan2(cfg.h - 170 - (o.lift || 0), p.d), persp: p.d });
 }
+
+// ---- the SIDE VIEW, drawn as its own 2D figure (the box model read like a bus side-on).
+// Facing right; (x, y) = ground point under his middle; kk = scale. A rounded capsule with a soft taper,
+// his own round nose cone carrying the face, a thin level wing at mid-body whose tip pokes out under the
+// tapered tail section, the far wingtip peeking over his back, a small engine pod set back under the wing.
+function planeSideK(x, y, kk, o) {
+  const { t = 0, hop = 0, lift = 0, squash = 0, tilt = 0, spin = t * 18, roll = t * 8 } = o;
+  push(); tr(x, y); sc(kk);
+  seedAt(3500); paint(ell(-10, -4, 330 / (1 + lift / 200), 22), '#6b5a7a', .2, false);
+  push(); tr(0, -lift);
+  // tyres (behind the body)
+  for (const tx of [-165, 150]) { seedAt(3510 + tx); shape(ell(tx, -52, 52, 52, 24), PAL.tyre, 6); shape(ell(tx, -52, 25, 25, 16), PAL.hub, 4); for (let i = 0; i < 3; i++) { const a = -roll + i * TAU / 3; inkFill(ell(tx + Math.cos(a) * 13, -52 + Math.sin(a) * 13, 4, 4, 8)); } }
+  push(); tr(0, -hop); sc(1 + squash * .5, 1 - squash); rot(tilt);
+  // far wingtip peeking over his back
+  seedAt(3520); shape(rrect(-190, -332, 150, 26, 13, 3520), PAL.wing, 4.5); shape(rrect(-190, -332, 40, 26, 13, 3521), PAL.pink, 4);
+  // tail fin and tailplane
+  seedAt(3530); shape([[-250, -268], [-318, -268], [-352, -420], [-300, -424], [-210, -280]], PAL.teal, 6);
+  push(); tr(-300, -350); heart(0, 0, 20, PAL.pink, 4); pop();
+  seedAt(3535); shape(rrect(-392, -282, 140, 24, 12, 3535), PAL.wing, 5);
+  // the capsule fuselage: hull of a small tail circle, a middle and a big round nose
+  const circ2 = (cx, cy, r, n = 28) => [...Array(n)].map((_, i) => [cx + Math.cos(i / n * TAU) * r, cy + Math.sin(i / n * TAU) * r]);
+  const body = hull([...circ2(-318, -262, 30), ...circ2(-140, -212, 98), ...circ2(60, -200, 108), ...circ2(212, -198, 112)]);
+  seedAt(3540); shape(body, PAL.cream, 7);
+  // cheat line and portholes along the flank
+  const cl = []; for (let i = 0; i <= 16; i++) { const u = i / 16, xx = lerp(-320, 110, u); cl.push([xx, lerp(-262, -205, Math.pow(u, .6)) - 6]); }
+  seedAt(3545); shape([...cl.map(([a, b]) => [a, b - 12]), ...cl.slice().reverse().map(([a, b]) => [a, b + 8])], RED, 4);
+  for (let i = 0; i < 5; i++) { const px = -230 + i * 62, py = lerp(-262, -200, Math.pow((px + 320) / 450, .6)) - 32; seedAt(3550 + i); shape(ell(px, py, 17, 17, 14), PAL.blue, 4.5); paint(ell(px - 5, py - 5, 5, 4), '#ffffff', .85, false); }
+  // the near wing: thin, level, at mid-body behind the cockpit; its tip pokes out under the tail taper
+  seedAt(3560); shape(rrect(-300, -178, 360, 30, 15, 3560), PAL.wing, 5.5); shape(rrect(-300, -178, 58, 30, 15, 3561), PAL.pink, 5);
+  // engine pod under the wing, propeller disc in front of it (well clear of the face)
+  seedAt(3570); shape(rrect(-70, -156, 120, 46, 22, 3570), PAL.cream, 5);
+  paint(ell(62, -133, 12, 62), '#ffffff', .4, false); ink(ell(62, -133, 12, 62, 20), true, 2.5, { col: 'rgba(30,26,29,.3)' });
+  const bl = Math.cos(spin) * 60; shape(rrect(56, -133 - Math.abs(bl), 12, Math.abs(bl) * 2 + 2, 6, 3571), '#9c8fb0', 4);
+  shape(ell(58, -133, 11, 11, 10), PAL.coral, 3.5);
+  // the nose cone: windscreen on its upper curve with the eyes in it, mouth on the lower curve
+  seedAt(3580); const ws = []; for (let i = 0; i <= 12; i++) { const a = -Math.PI * .5 - .62 + i / 12 * 1.25; ws.push([212 + Math.cos(a) * 104, -198 + Math.sin(a) * 104]); } for (let i = 12; i >= 0; i--) { const a = -Math.PI * .5 - .62 + i / 12 * 1.25; ws.push([212 + Math.cos(a) * 44 + 18, -228 + Math.sin(a) * 30]); }
+  const wsb = [[150, -286], [282, -286], [306, -232], [140, -228]].map(([a, b], i) => [a, b]);
+  shape(rrect(144, -296, 160, 68, 30, 3581), GLASS, 5); paint(rrect(160, -286, 40, 8, 4), '#ffffff', .9, false);
+  const MM = o.sing === false ? { open: 0, shape: 'ah' } : mouthFor(RAWT), oo = o.open || 0;
+  face(226, -262, 34, { mouthDy: 3.3, blushDy: 2.3, blushX: .75, hatch: false, mw0: 1.9, es: 1.05, ...o, open: Math.max(oo, MM.open), mshape: oo > MM.open ? 'ah' : MM.shape, w: 6 });
+  pop(); pop();
+  const out = { face: [x + kk * 226, y - kk * (262 + hop + lift)], mouth: [x + kk * 226, y - kk * (150 + hop + lift)], k: kk };
+  pop();
+  return out;
+}
+
+// side-on placement on a world camera (travelling shots): the 2D side figure at his ground point
+function placeSide(cam, wz, o) { const p = cam(0, 0, wz); return planeSideK(p.x, p.y, p.k, o); }
+
+// ---- HEAD-ON, the look test's hand-drawn plane (Bob liked it), corrected per FACE.md: the windscreen
+// grows to hold his eyes, the mouth sits on the lower nose, blush is a flat tint. Tyres are drawn first,
+// under and behind the body, so nothing ever covers the face. Wings split at the root so one can lift.
+// (x, y) = ground point; o: t, hop, lift, squash, tilt, raiseL/raiseR (screen-left/right wing), stall (inner left prop)
+function planeFrontK(x, y, kk, o) {
+  const { t = 0, hop = 0, lift = 0, squash = 0, tilt = 0, spin = t * 18, raiseL = 0, raiseR = 0, stall = 0 } = o;
+  push(); tr(x, y); sc(kk);
+  seedAt(1000); paint(ell(0, -4, 300 / (1 + lift / 220), 26), '#6b5a7a', .22, false);
+  push(); tr(0, -lift);
+  tyreFront(-88, 0, 70, 78, 1001); tyreFront(88, 0, 70, 78, 1003);
+  push(); tr(0, -hop); sc(1 + squash * .5, 1 - squash); rot(tilt);
+  seedAt(1010);
+  shape(rrect(-24, -395, 48, 160, 20, 1010), PAL.teal, 6);                                  // tail fin, behind
+  heart(0, -350, 18, PAL.pink, 4);
+  shape(rrect(-165, -318, 330, 30, 14, 1012), PAL.wing, 6);                                 // tailplane
+  for (const sgn of [-1, 1]) {                                                              // the wings: level, far too long
+    const ra = sgn < 0 ? raiseL : raiseR;
+    push(); tr(sgn * 140, -153); rot(-sgn * ra);
+    seedAt(1020 + sgn); shape(rrect(sgn > 0 ? 0 : -500, -25, 500, 50, 24, 1020 + sgn), PAL.wing, 6);
+    shape(rrect(sgn > 0 ? 420 : -500, -25, 80, 50, 24, 1022 + sgn), PAL.pink, 6);
+    for (const ex of [110, 290]) {
+      seedAt(1030 + sgn * ex); shape(ell(sgn * ex, 0, 48, 46, 24), PAL.cream, 6);
+      const st = (sgn < 0 && ex === 110) ? stall : 0, sp = st > 0 ? lerp(spin * sgn + ex, .4 + Math.sin(t * 30) * .08 * (1 - st), st) : spin * sgn + ex;
+      propFront(sgn * ex, 0, 82, sp, 1040 + sgn * ex);
+    }
+    pop();
+  }
+  seedAt(1100);
+  shape(rrect(-150, -300, 300, 262, 78, 1100), PAL.cream, 7);                               // the body / nose
+  paint(rrect(-132, -66, 264, 12, 6), RED, 1, false); ink(rrect(-132, -66, 264, 12, 6), true, 3); // cheat line as a thin chin stripe
+  shape(rrect(-112, -290, 224, 92, 34, 1101), GLASS, 6);                                    // windscreen: his eyes live here
+  paint(rrect(-96, -280, 44, 9, 4), '#ffffff', .9, false);
+  const MM = o.sing === false ? { open: 0, shape: 'ah' } : mouthFor(RAWT), oo = o.open || 0;
+  face(0, -244, 62, { mouthDy: 1.9, blushDy: 1.1, blushX: 1.6, hatch: false, mw0: 1.05, es: 1.25, ...o, open: Math.max(oo, MM.open), mshape: oo > MM.open ? 'ah' : MM.shape, w: 7 });
+  pop(); pop();
+  const out = { face: [x, y - kk * (244 + hop + lift)], mouth: [x, y - kk * (126 + hop + lift)], k: kk };
+  pop();
+  return out;
+}
+function placeFront(cam, wz, o, wx = 0) { const p = cam(wx, 0, wz); return planeFrontK(p.x, p.y, p.k, o); }

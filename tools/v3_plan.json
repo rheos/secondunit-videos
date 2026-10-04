@@ -1,0 +1,122 @@
+[
+ {
+  "name": "AB",
+  "file": "seams/p/morph_AB.mp4",
+  "a": 1680,
+  "b": 1728,
+  "s": 48,
+  "e": 65
+ },
+ {
+  "name": "BC",
+  "file": "seams/p/w24_BC.mp4",
+  "a": 2160,
+  "b": 2208,
+  "s": 0,
+  "e": 47
+ },
+ {
+  "name": "CD",
+  "file": "seams/p/w24_CD.mp4",
+  "a": 2375,
+  "b": 2423,
+  "s": 0,
+  "e": 47
+ },
+ {
+  "name": "DE",
+  "file": "seams/p/w24_DE.mp4",
+  "a": 2826,
+  "b": 2874,
+  "s": 0,
+  "e": 47
+ },
+ {
+  "name": "EF",
+  "file": "seams/p/w24_EF.mp4",
+  "a": 3094,
+  "b": 3142,
+  "s": 0,
+  "e": 47
+ },
+ {
+  "name": "SAX",
+  "file": "seams/morph_sax.mp4",
+  "a": 3440,
+  "b": 3482,
+  "s": 39,
+  "e": 105
+ },
+ {
+  "name": "FG",
+  "file": "seams/p/w24_FG.mp4",
+  "a": 4062,
+  "b": 4110,
+  "s": 0,
+  "e": 47
+ },
+ {
+  "name": "GH",
+  "file": "seams/p/w24_GH.mp4",
+  "a": 4512,
+  "b": 4560,
+  "s": 0,
+  "e": 47
+ },
+ {
+  "name": "CRT",
+  "file": "seams/morph_crt.mp4",
+  "a": 5250,
+  "b": 5370,
+  "s": 0,
+  "e": 119
+ },
+ {
+  "name": "IJ",
+  "file": "seams/p/morph_IJ.mp4",
+  "a": 6623,
+  "b": 6714,
+  "s": 24,
+  "e": 98
+ },
+ {
+  "name": "J286",
+  "file": "seams/p/morph_J286.mp4",
+  "a": 6840,
+  "b": 6888,
+  "s": 0,
+  "e": 95
+ },
+ {
+  "name": "J298",
+  "file": "seams/p/morph_J298.mp4",
+  "a": 7128,
+  "b": 7176,
+  "s": 20,
+  "e": 100
+ },
+ {
+  "name": "J310",
+  "file": "seams/p/morph_J310.mp4",
+  "a": 7416,
+  "b": 7464,
+  "s": 0,
+  "e": 111
+ },
+ {
+  "name": "J329",
+  "file": "seams/p/morph_J329.mp4",
+  "a": 7862,
+  "b": 7935,
+  "s": 30,
+  "e": 103
+ },
+ {
+  "name": "JK",
+  "file": "seams/p/morph_JK.mp4",
+  "a": 8167,
+  "b": 8215,
+  "s": 33,
+  "e": 77
+ }
+]

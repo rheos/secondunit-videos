@@ -44,7 +44,7 @@
     const yawn = smooth(inv(TIRED - .05, TIRED + .15, t)) * (1 - smooth(inv(DRIV - .05, DRIV + .25, t)));
     const slump = smooth(inv(DRIV, DRIV + .5, t)) * (1 - smooth(inv(IVE + .2, IVE + .6, t)));
     const glance = smooth(1 - Math.abs(t - tc) / .6);
-    items.push({ x: 0, z: zp, f: () => placePlane(cam, cfg, 0, zp, { t, hop: -slump * 22 + Math.sin(t * 2.2) * 5, tilt: Math.sin(t * 1.1) * .02, squash: slump * .05, eyes: yawn > .4 ? 'squeeze' : 'flat', look: -glance * .9, mouth: 'flat', open: Math.max(0 * .8, yawn), faceU: 84, es: 1.35, blush: .6, spin: t * 9 }) });
+    items.push({ x: 0, z: zp, f: () => placeFront(cam, zp, { t, hop: -slump * 22 + Math.sin(t * 2.2) * 5, tilt: Math.sin(t * 1.1) * .02, squash: slump * .05, eyes: yawn > .4 ? 'squeeze' : 'flat', look: -glance * .9, mouth: 'flat', open: Math.max(0 * .8, yawn), faceU: 84, es: 1.35, blush: .6, spin: t * 9 }) });
     drawWorld(cam, items);
   }
 
@@ -54,7 +54,7 @@
     t = onTwos(t); TB = Math.floor(t * 12);
     fx({ seed: 8.7, wet: .33 });
     const zp = z2(t), HZ = 600;
-    const cfg = { x: -1500, z: zp - 1250, h: 240, yaw: .88, F: 1650, hz: HZ, ox: 820 }; const cam = wcam(cfg);
+    const cfg = { x: -2100, z: zp - 520, h: 240, yaw: 1.33, F: 2000, hz: HZ, ox: 900 }; const cam = wcam(cfg);
     skyWash(-60, HZ, '#cdb8e6', '#f8c7a2', 87, DUSK);
     cloud(wrapv(1400 - (t - 174) * 40, 2400) - 200, 120, .8, 8710, true, t);
     hills(HZ + 6, [[300, 560, 90, '#c9b3dd'], [1500, 600, 110, '#e9b8b0']], 8720);
@@ -70,7 +70,7 @@
     let P = null;
     items.push({ x: 0, z: zp, f: () => {
       const gz = smooth(inv(HWY - .9, HWY - .3, t));
-      P = placePlane(cam, cfg, 0, zp, { t, hop: Math.abs(Math.sin(t * 4)) * 6, eyes: gz > .2 ? 'wide' : 'flat', look: gz > .2 ? clamp((bb.x - 960) / 260, -1, 1) : 0, lookY: -gz, mouth: gz > .5 ? 'o' : 'flat', open: 0 * .9, faceU: 76, es: 1.4, blush: .6 + gz * .8 });
+      P = placeSide(cam, zp, { t, hop: Math.abs(Math.sin(t * 4)) * 6, eyes: gz > .2 ? 'wide' : 'flat', look: gz > .2 ? clamp((bb.x - 960) / 260, -1, 1) : 0, lookY: -gz, mouth: gz > .5 ? 'o' : 'flat', open: 0 * .9, faceU: 76, es: 1.4, blush: .6 + gz * .8 });
     } });
     drawWorld(cam, items);
     // sparkles in his eyes while the flying plane goes by
@@ -93,10 +93,10 @@
     for (const a of DOO) sq = Math.max(sq, hit(t, a, 16) * .12);
     const items = [];
     for (let i = -2; i < 18; i++) { const z = Math.floor(zp / 1100) * 1100 + i * 1100; for (const side of [-1, 1]) items.push({ x: side * (1300 + 300 * hash(i & 63)), z: z + side * 300, f: (p) => at(p, () => { sc(1 + sq * .6, 1 - sq * 1.5 + b * .08); propCactus(9400 + (i & 7) + side, 420); }) }); }
-    items.push({ x: 0, z: zp, f: () => placePlane(cam, cfg, 0, zp, { t, lift: b * 95, squash: sq, eyes: 'happy', mouth: 'smile', open: Math.max(0, b * .5), faceU: 86, es: 1.4, tilt: Math.sin(t * 11) * .03 * b }) });
+    items.push({ x: 0, z: zp, f: () => placeFront(cam, zp, { t, lift: b * 95, squash: sq, eyes: 'happy', mouth: 'smile', open: Math.max(0, b * .5), faceU: 86, es: 1.4, tilt: Math.sin(t * 11) * .03 * b }) });
     drawWorld(cam, items);
     const pp = cam(0, 0, zp);
-    DOO.forEach((a, i) => { if (i) dustPuffs(pp.x, pp.y, t, a, pp.k * 1.6, 9500 + i * 10); });
+    DOO.forEach((a, i) => { if (i) dustPuffs(pp.x, pp.y + 30 * pp.k, t, a, pp.k * .8, 9500 + i * 10); });
   }
 
   // ------------------------------------------------------------ G4 sick and tired, VIP cars streaming by
@@ -106,17 +106,18 @@
     fx({ seed: 9.9, wet: .34 });
     const zp = -650 * (t - 179), HZ = 470;
     const pin = t >= 181.708;
-    const cfg = pin ? { x: -900, z: zp - 1050, h: 240, yaw: .62, F: 1900, hz: HZ, ox: 980 } : { x: -1650, z: zp - 1500, h: 240, yaw: .66, F: 1900, hz: HZ, ox: 1020 }; const cam = wcam(cfg);
+    const cfg = pin ? { x: -1600, z: zp - 380, h: 240, yaw: 1.35, F: 2500, hz: HZ, ox: 860 } : { x: -2200, z: zp - 560, h: 240, yaw: 1.33, F: 2000, hz: HZ, ox: 860 }; const cam = wcam(cfg);
     skyWash(-60, HZ, '#c9b0e0', '#f3b9a0', 99, DUSK);
     hills(HZ + 6, [[300, 520, 110, '#c9b3dd'], [1500, 620, 120, '#e9b8b0']], 9920);
-    groundRoad(cam, HZ, { z0: zp - 1400, z1: zp + 50000, passing: true, grass: '#d8e4b0', road: '#c5bad4', sd: 9930 });
+    groundRoad(cam, HZ, { z0: zp - 1400, z1: zp + 50000, grass: '#d8e4b0', road: '#c5bad4', sd: 9930 });
+    seedAt(9931); paint(gstrip(cam, 900, 1700, zp - 1400, zp + 50000, 50), '#c5bad4', 1, false); ink(gline(cam, 900, zp - 1400, zp + 50000, 50), false, 6); ink(gline(cam, 1700, zp - 1400, zp + 50000, 50), false, 6); // the VIP passing lane, beyond him
     const items = [];
     for (let i = -2; i < 20; i++) { const z = Math.floor(zp / 1300) * 1300 + i * 1300; items.push({ x: 1300, z, f: (p) => at(p, () => propPole(9950 + (i & 7))) }); }
     let near = 0;
-    CARS.forEach((c, i) => { const z = zp + 2400 * (c.tc - t) - 250 * (t - 179); const duck = smooth(1 - Math.abs(z - zp) / 650); near = Math.max(near, duck); items.push({ x: -760, z, f: (p) => at(p, () => carFront(9960 + i * 10, c.col, duck, i % 2 ? 'smug' : 'shades', t)) }); });
+    CARS.forEach((c, i) => { const z = zp + 2600 * (c.tc - t); near = Math.max(near, smooth(1 - Math.abs(z - zp) / 900)); items.push({ x: 1300, z, f: (p) => at(p, () => carSide(0, 0, 1.15, { col: c.col, eyes: i % 2 ? 'smug' : 'shades', len: 300, t, sd: 9960 + i * 10 })) }); });
     const sigh = smooth(inv(DRIV2, DRIV2 + .5, t));
     let P = null;
-    items.push({ x: 0, z: zp, f: () => { P = placePlane(cam, cfg, 0, zp, { t, hop: -sigh * 18 + Math.sin(t * 2.2) * 4, eyes: 'flat', look: -.6 - near * .4, brow: 1, mouth: 'flat', open: 0 * .8, faceU: 84, es: 1.35, blush: .5, spin: t * 10 }); } });
+    items.push({ x: 0, z: zp, f: () => { P = placeSide(cam, zp, { t, hop: -sigh * 18 + Math.sin(t * 2.2) * 4, eyes: 'flat', look: .3 + near * .6, brow: 1, mouth: 'flat', open: 0 * .8, faceU: 84, es: 1.35, blush: .5, spin: t * 10 }); } });
     drawWorld(cam, items);
     // a private raincloud from "tired", a sweat drop on the sigh
     const gl = smooth(inv(TIRED2, TIRED2 + .5, t));
@@ -129,19 +130,19 @@
   }
 
   // ------------------------------------------------------------ G5 wings
-  const UP = WINGS + .2, DOWN = 186.15;
+  const UP = WINGS + .2, DOWN = 185.95;
   function wings(t) {
     t = onTwos(t); TB = Math.floor(t * 12);
     fx({ seed: 10.6, wet: .34 });
-    const look2 = smooth(inv(186.35, 186.75, t));
-    const tilt = 230 * ease.inOut(inv(186.3, 187.0, t));
+    const look2 = smooth(inv(185.95, 186.2, t));
+    const tilt = 150 * ease.inOut(inv(185.8, 186.3, t));
     tr(0, tilt);
     const zp = -500 * (t - 183), HZ = 560;
-    const cfg = { x: 950, z: zp - 1550, h: 150, yaw: -.5, F: 2000, hz: HZ, ox: 900 }; const cam = wcam(cfg);
+    const cfg = { x: 0, z: zp - 1750, h: 160, yaw: 0, F: 1900, hz: HZ, ox: 960 }; const cam = wcam(cfg);
     skyWash(-700, HZ, '#bcd3ec', '#f8c7a2', 105, ['#d9c2ea', '#fbe2ae', '#cfe3f3', '#f6b9a4']);
     cloud(260, -60, .9, 10610, true, t); cloud(1500, 60, .7, 10620);
     // the contrail plane overhead, from 186.6
-    const cp = inv(185.5, 187.3, t);
+    const cp = inv(184.9, 186.5, t);
     if (cp > 0) contrailPlane(lerp(-100, 1900, cp), lerp(-60, -150, cp), 1.6, lerp(0, 1500, Math.min(1, cp * 1.6)), 10630);
     hills(HZ + 6, [[250, 560, 120, '#c9b3dd'], [1600, 600, 140, '#e9b8b0']], 10640);
     groundRoad(cam, HZ, { z0: zp - 1500, z1: zp + 50000, grass: '#d8e4b0', road: '#c5bad4', sd: 10650 });
@@ -155,11 +156,11 @@
     const airborne = t > UP && t < DOWN;
     const eyes = t < WOND ? 'flat' : t < WINGS ? 'dot' : airborne ? (t < UP + .5 ? 'wide' : 'happy') : (t < DOWN + .35 ? 'squeeze' : 'dot');
     const look = t < WOND ? 0 : t < WINGS ? 1 : look2 > 0 ? .3 * look2 : 0;
-    items.push({ x: 0, z: zp, f: () => placePlane(cam, cfg, 0, zp, { t, lift, raise, squash: land * .12, tilt: gust * Math.sin(t * 8) * .05, eyes, look, lookY: t >= WOND && t < WINGS ? .4 : -look2, mouth: airborne ? 'o' : 'smile', open: 0, faceU: 86, es: 1.4, spin: t * (airborne ? 30 : 16) }) });
+    items.push({ x: 0, z: zp, f: () => placeFront(cam, zp, { t, lift, raiseR: raise, squash: land * .12, tilt: gust * Math.sin(t * 8) * .05, eyes, look, lookY: t >= WOND && t < WINGS ? .4 : -look2, mouth: airborne ? 'o' : 'smile', open: 0, faceU: 86, es: 1.4, spin: t * (airborne ? 30 : 16) }) });
     drawWorld(cam, items);
-    windSwirls(t, WINGS - .15, 1.6, 100, 700, 10900, 9);
-    if (gust > 0) { const r = rng(10950); for (let i = 0; i < 18; i++) { const ph = wrapv((t - WINGS) * (.5 + r() * .4) + r(), 1.2) - .1, x = lerp(-100, W + 100, ph), y = 200 + r() * 600 + Math.sin(t * 6 + i) * 40; push(); tr(x, y); rot(t * 5 + i); alpha(gust); seedAt(10960 + i); shape(ell(0, 0, 18, 10, 10), [PAL.pink, '#f7b6a8', PAL.lemon, '#a9dcb5'][i % 4], 3); alpha(1); pop(); } }
-    const pp = cam(0, 0, zp); dustPuffs(pp.x, pp.y, t, DOWN, pp.k * 1.5, 10990);
+    windSwirls(t, WINGS - .15, 1.6, 60, 300, 10900, 9);
+    if (gust > 0) { const r = rng(10950); for (let i = 0; i < 18; i++) { const ph = wrapv((t - WINGS) * (.5 + r() * .4) + r(), 1.2) - .1, x = lerp(-100, W + 100, ph), yb = r(), y = (yb < .5 ? 60 + yb * 560 : 820 + (yb - .5) * 400) + Math.sin(t * 6 + i) * 30; push(); tr(x, y); rot(t * 5 + i); alpha(gust); seedAt(10960 + i); shape(ell(0, 0, 18, 10, 10), [PAL.pink, '#f7b6a8', PAL.lemon, '#a9dcb5'][i % 4], 3); alpha(1); pop(); } }
+    const pp = cam(0, 0, zp); dustPuffs(pp.x, pp.y + 30 * pp.k, t, DOWN, pp.k * .8, 10990);
   }
 
   // ------------------------------------------------------------ G0 rain shower (seam from riso F, rain-soaked)
@@ -172,21 +173,35 @@
     if (wetk > 0) { s.save(); s.globalAlpha = .5 * wetk; s.fillStyle = '#8f8aa8'; s.fillRect(-W, -H, W * 3, H * 3); s.restore(); } // grey rain wash, lifting off the colours
     rain(t, rainAmt);
     // drops bouncing off his roof
-    const r = rng(2601); for (let i = 0; i < 10; i++) { const x = 700 + r() * 600, ph = wrapv(t * 3 + r(), 1); seedAt(2610 + i); k.globalAlpha = (1 - ph) * rainAmt; ink([[x, 330 - ph * 40], [x - 18 - ph * 20, 312 - ph * 70]], false, 3, { col: '#6f7aa8' }); ink([[x, 330 - ph * 40], [x + 18 + ph * 20, 312 - ph * 70]], false, 3, { col: '#6f7aa8' }); k.globalAlpha = 1; }
+    const r = rng(2601); for (let i = 0; i < 10; i++) { const x = 640 + r() * 560, ph = wrapv(t * 3 + r(), 1); const RY = 440 + (x - 640) * -.02; seedAt(2610 + i); k.globalAlpha = (1 - ph) * rainAmt; ink([[x, RY - ph * 40], [x - 18 - ph * 20, RY - 18 - ph * 70]], false, 3, { col: '#6f7aa8' }); ink([[x, RY - ph * 40], [x + 18 + ph * 20, RY - 18 - ph * 70]], false, 3, { col: '#6f7aa8' }); k.globalAlpha = 1; }
   }
 
   // ------------------------------------------------------------ G6 the toll booth: INSERT COIN (seam to 16-bit H)
+  // 186.30 he pulls up, gate down, the sign reads INSERT COIN (on screen 186.30-187.50)
+  // 187.00 a coin pops out of a hatch on his side, arcs with a glint, CLINKS into the slot at 187.46 (drum hit)
+  // 187.50 the sign flips to OK!, 187.55-187.90 the gate lifts, he rolls on; 187.90- pixels spread from the slot
+  const TOLL = 186.30, POP = 187.0, CLINK = 187.46;
   function toll(t) {
     t = onTwos(t); TB = Math.floor(t * 12);
-    const T = G1 - 1 / 24, slow = ease.out(inv(187.04, 187.9, t)), x = 2050 - 470 * slow - 20 * inv(187.9, T, t);
-    const flip = ease.inOut(inv(187.7, 188.0, t)), pr = ease.in(inv(188.02, T, t));
-    fx({ seed: 11.2, wet: .33, pixR: pr * 1.25, pixB: 16, pixC: [(x - 150) / W, 640 / H] });
-    seamBackdrop(t, SEAMV * (t - 169) - 300 * slow, { sd: 1270, sky0: '#c9b0e0', sky1: '#f3b9a0', grass: '#d8e4b0', road: '#c5bad4', tint: DUSK });
-    tollBooth(x, t, flip);
-    seamPlane(t, { hop: Math.sin(t * 3) * 3, eyes: flip > .5 ? 'wide' : 'dot', look: .8, lookY: -.5, mouth: flip > .5 ? 'o' : 'smile', open: 0, spin: t * (16 - 10 * slow) });
+    const T = G1 - 1 / 24, stop = ease.out(inv(TOLL, 186.62, t)), go = ease.in(inv(187.85, T, t));
+    const x = 1700 + 320 * (1 - stop) - 260 * go;                       // the booth glides in, stops at his nose, then he rolls on
+    const fl = inv(187.5, 187.66, t), sq = fl > 0 && fl < 1 ? Math.abs(Math.cos(fl * Math.PI)) : 1, sign = t < 187.58 ? 'insert' : 'ok';
+    const arm = ease.inOut(inv(187.55, 187.9, t)), pr = .03 + 1.25 * ease.in(inv(187.9, T, t)) * (t >= 187.9 ? 1 : 0);
+    fx({ seed: 11.2, wet: .33, pixR: t >= 187.9 ? pr : 0, pixB: 16, pixC: [(x - 150) / W, 552 / H] });
+    seamBackdrop(t, SEAMV * (t - 169) + 320 * stop - 260 * go - SEAMV * Math.max(0, Math.min(t, 186.85) - TOLL) * 0, { sd: 1270, sky0: '#c9b0e0', sky1: '#f3b9a0', grass: '#d8e4b0', road: '#c5bad4', tint: DUSK });
+    tollBooth(x, t, sign, sq, arm);
+    const ok = t >= 187.58;
+    const P = seamPlane(t, { hop: Math.sin(t * 3) * 3 + hit(t, CLINK, 8) * 10, eyes: ok ? 'happy' : t > POP ? 'wide' : 'dot', look: .9, lookY: t > POP && !ok ? -.6 : -.2, mouth: ok ? 'smile' : 'o', open: 0, spin: t * (6 + 10 * go) });
+    // the hatch on his flank and the coin's arc (screen space; seam framing keeps him fixed)
+    const hx = 940 + 40 * SEAM_K, hy = SEAM_GY - 236 * SEAM_K, hatch = smooth(inv(POP - .15, POP, t)) * (1 - smooth(inv(CLINK, CLINK + .3, t)));
+    if (hatch > 0) { push(); tr(hx, hy); sc(1, hatch); seedAt(2700); shape(rrect(-30, -20, 60, 40, 8, 2700), '#e9dcc0', 4); inkFill(rrect(-22, -12, 44, 24, 6), '#3b3140'); pop(); }
+    const u = inv(POP, CLINK, t);
+    if (u > 0 && u < 1) { const sx0 = x - 150, sy0 = 552, cx = lerp(hx, sx0, u), cy = lerp(hy, sy0, u) - Math.sin(Math.PI * u) * 260; push(); tr(cx, cy); sc(Math.abs(Math.cos(t * 22)) * .8 + .2, 1); seedAt(2710); shape(ell(0, 0, 38, 38, 20), PAL.gold, 5); ink(ell(0, 0, 24, 24, 14), true, 3.5); pop();
+      if (Math.abs(u - .5) < .2) { seedAt(2720); const g = 1 - Math.abs(u - .5) / .2, st = []; for (let j = 0; j < 8; j++) { const a = j / 8 * TAU, q = j % 2 ? 6 : 30 * g; st.push([cx + 24 + Math.cos(a) * q, cy - 24 + Math.sin(a) * q]); } shape(st, '#fff6c8', 3); } }
+    popRing(x - 150, 552, t, CLINK, 60, PAL.gold, 2730);
   }
 
   chapter('verseG', G0 - .01, G1, [
-    [G0 - .01, rainWash], [171.167, weary], [174.45, parade], [178.00, doos], [179.792, streaming], [183.40, wings], [187.04, toll],
+    [G0 - .01, rainWash], [171.167, weary], [174.45, parade], [178.00, doos], [179.792, streaming], [183.40, wings], [186.30, toll],
   ]);
 })();

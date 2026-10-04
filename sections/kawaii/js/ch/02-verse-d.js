@@ -29,12 +29,12 @@
     t = onTwos(t); TB = Math.floor(t * 12);
     fx({ seed: 5.1, wet: .34 });
     const zp = zAt(t), HZ = 470;
-    const cfg = { x: -700, z: 0, h: 230, yaw: .4, F: 1800, hz: HZ, ox: 900 }; const cam = wcam(cfg);
+    const cfg = { x: 0, z: -420, h: 260, yaw: 0, F: 1800, hz: HZ, ox: 960 }; const cam = wcam(cfg);
     skyWash(-60, HZ, PAL.sky1, PAL.sky2, 51);
     sun(1600, 150, 70, t, 6000);
     cloud(300 + (t - 99) * 8, 140, .9, 6100, true, t); cloud(1080 + (t - 99) * 5, 250, .6, 6110);
     hills(HZ + 8, [[150, 420, 120, PAL.lilac], [900, 380, 80, '#d9eab0'], [1700, 460, 150, PAL.mint]], 6200);
-    groundRoad(cam, HZ, { dashPh: 0, z0: 0, z1: 40000 });
+    groundRoad(cam, HZ, { dashPh: 0, z0: -300, z1: 40000 });
     const items = [];
     const hitZ = zAt(BONK); // the mailbox sits where his near wingtip reaches at "highway"
     for (let i = -4; i < 40; i++) { const z = i * 600; if (Math.abs(z - hitZ) < 300) continue; items.push({ x: -700, z, f: (p) => at(p, () => propFence(7100 + (i & 7))) }); }
@@ -46,7 +46,7 @@
     items.push({ x: -580, z: hitZ, f: (p) => at(p, () => { rot(wob); propMailbox(7400, bt > 0 ? 1 - flag * .3 : 0, lid); }) });
     const wince = bt > 0 && bt < 1.3, sheep = bt >= 1.3;
     items.push({ x: 0, z: zp, f: () => {
-      placePlane(cam, cfg, 0, zp, { t, hop: Math.abs(Math.sin(t * 4.7)) * 8 + hit(t, BONK, 4) * 14, tilt: wob * .25, eyes: wince ? 'squeeze' : 'happy', mouth: sheep ? 'cat' : 'smile', open: 0, faceU: 82, blush: sheep ? 1.4 : 1 });
+      placeFront(cam, zp, { t, hop: Math.abs(Math.sin(t * 4.7)) * 8 + hit(t, BONK, 4) * 14, tilt: wob * .25, eyes: wince ? 'squeeze' : 'happy', mouth: sheep ? 'cat' : 'smile', open: 0, faceU: 82, blush: sheep ? 1.4 : 1 });
     } });
     drawWorld(cam, items);
     if (bt > 0 && bt < 2.6) { // letters flutter out of the mailbox
@@ -60,8 +60,8 @@
   function worry(t) {
     t = onTwos(t); TB = Math.floor(t * 12);
     fx({ seed: 5.7, wet: .36 + .25 * smooth(inv(SOME, WRONG + .5, t)) });
-    const zp = -900 * (t - 99), HZ = 600, dist = t < 105.5 ? lerp(1650, 1500, inv(103.62, 105.5, t)) : lerp(1180, 1080, inv(105.5, 106.85, t)); // punch-in on the drum hit
-    const cfg = { x: 0, z: zp - dist, h: 270, yaw: 0, F: 3600, hz: HZ, ox: 960 }; const cam = wcam(cfg);
+    const zp = -900 * (t - 99), HZ = 420, dist = t < 105.5 ? lerp(1650, 1500, inv(103.62, 105.5, t)) : lerp(1180, 1080, inv(105.5, 106.85, t)); // punch-in on the drum hit
+    const cfg = { x: 0, z: zp - dist, h: 270, yaw: 0, F: 3000, hz: HZ, ox: 960 }; const cam = wcam(cfg);
     const gloom = smooth(inv(SOME - .2, SOME + .6, t));
     skyWash(-60, HZ, PAL.sky1, PAL.sky2, 57);
     sun(1500, 170, 80, t, 6010);
@@ -76,7 +76,7 @@
     const stall = smooth(inv(WRONG, WRONG + .35, t));
     const eyes = t >= SOME ? 'worried' : 'dot';
     const look = t >= KNOW && t < SOME ? Math.sin((t - KNOW) * 6) : 0;
-    const P = placePlane(cam, cfg, 0, zp, { t, hop: -beatPulse(t, 8) * 6, tilt: stall * Math.sin(t * 22) * .015, eyes, look, mouth: 'wavy', open: 0, stall, faceU: 84, es: 1.35 });
+    const P = placeFront(cam, zp, { t, hop: -beatPulse(t, 8) * 6, tilt: stall * Math.sin(t * 22) * .015, eyes, look, mouth: 'wavy', open: 0, stall, faceU: 84, es: 1.35 });
     // the sputter: a smoke puff off the stalled prop, then a sweat drop
     const sp = cam(-260, 152, zp + 140);
     for (let i = 0; i < 4; i++) { const t0 = WRONG + .1 + i * .18, dt = t - t0; if (dt < 0 || dt > 1.4) continue; alpha(clamp(1.4 - dt)); cloud(sp.x - 40 * dt - i * 10, sp.y - 40 - 160 * dt, (.35 + .4 * dt) * sp.k, 6040 + i, false, t, '#a7a1b5'); alpha(1); }
@@ -108,7 +108,7 @@
       popRing(x, yy, t, t0, 130, c, 6600 + i);
       confetti(x, yy, t0, t, 22, 6700 + i, 600, 1.6);
     });
-    plane3(960, 960, 1.3, { t, yaw: Math.sin(t * 2.4) * .12, pitch: .12, hop, squash: sq, eyes: t >= DA[0] - .05 ? 'squeeze' : 'happy', mouth: 'smile', open: 0, faceU: 84, es: 1.4, persp: 3200 });
+    planeFrontK(960, 960, 1.3, { t, tilt: Math.sin(t * 2.4) * .03, hop, squash: sq, eyes: t >= DA[0] - .05 ? 'squeeze' : 'happy', mouth: 'smile', open: 0, faceU: 84, es: 1.4, persp: 3200 });
   }
 
   // ------------------------------------------------------------ D4 side travelling
@@ -116,7 +116,7 @@
     t = onTwos(t); TB = Math.floor(t * 12);
     fx({ seed: 6.9, wet: .32 });
     const zp = -1100 * (t - 99), HZ = 540;
-    const cfg = { x: -1450, z: zp - 1150, h: 230, yaw: .9, F: 1900, hz: HZ, ox: 900 }; const cam = wcam(cfg);
+    const cfg = { x: -2100, z: zp - 420, h: 230, yaw: 1.37, F: 2300, hz: HZ, ox: 960 }; const cam = wcam(cfg);
     skyWash(-60, HZ, PAL.sky3, PAL.sky1, 69);
     cloud(wrapv(1500 - (t - 109) * 30, 2400) - 200, 110, .8, 6900, true, t); cloud(wrapv(500 - (t - 109) * 20, 2400) - 200, 200, .55, 6910);
     hills(HZ + 6, [[200, 520, 100, '#d9eab0'], [1000, 460, 70, PAL.lilac], [1800, 540, 120, PAL.mint]], 6920);
@@ -130,7 +130,7 @@
     for (let i = -1; i < 6; i++) { const z = base + i * 6000; items.push({ x: 4200, z: z + 1500, f: (p) => at(p, () => propBarn(7600 + i)) }); items.push({ x: 3000, z: z + 4200, f: (p) => at(p, () => propWindmill(7650 + i, t)) }); }
     for (let i = -2; i < 14; i++) { const z = Math.floor(zp / 1700) * 1700 + i * 1700; items.push({ x: 3600 + 600 * hash(i * 7 & 255), z, f: (p) => at(p, () => propTree(7700 + (i & 15), [PAL.mint, '#f7b6a8', PAL.lemon, PAL.lilac][(i & 3)], 600)) }); }
     for (let i = -2; i < 18; i++) { const z = Math.floor(zp / 650) * 650 + i * 650; items.push({ x: -820, z, f: (p) => at(p, () => propFence(7800 + (i & 7))) }); if ((i & 3) === 1) items.push({ x: -1100, z: z + 200, f: (p) => at(p, () => propFlowers(7900 + (i & 7), 4)) }); }
-    items.push({ x: 0, z: zp, f: () => placePlane(cam, cfg, 0, zp, { t, hop: -beatPulse(t, 8) * 8 + Math.abs(Math.sin(t * 5)) * 6, eyes: 'happy', mouth: 'smile', open: 0, faceU: 70, es: 1.35 }) });
+    items.push({ x: 0, z: zp, f: () => placeSide(cam, zp, { t, hop: -beatPulse(t, 8) * 8 + Math.abs(Math.sin(t * 5)) * 6, eyes: 'happy', mouth: 'smile', open: 0, faceU: 70, es: 1.35 }) });
     drawWorld(cam, items);
   }
 
@@ -142,14 +142,14 @@
     const tilt = 900 * ease.inOut(inv(115.0, 116.75, t));
     tr(0, tilt);
     const HZ = 720;
-    const cfg = { x: -160, z: -1150, h: 70, yaw: .14, F: 1500, hz: HZ, ox: 960 }; const cam = wcam(cfg);
+    const cfg = { x: 0, z: -1150, h: 70, yaw: 0, F: 1500, hz: HZ, ox: 960 }; const cam = wcam(cfg);
     skyWash(-1600, HZ, '#cfe3f3', PAL.sky1, 75, [PAL.lilac, PAL.peach, '#fff3d8', '#d9ecf8']);
     // high sky the camera tilts up into
     cloud(300, -900, 1.2, 7510, true, t); cloud(1500, -1050, .9, 7520); cloud(1100, -620, .7, 7530); cloud(500, -320, .6, 7540); cloud(1650, -380, .8, 7550, true, t);
     sun(1620, -150, 76, t, 7560);
     hills(HZ + 6, [[250, 520, 90, PAL.mint], [1500, 600, 110, PAL.lilac]], 7570);
     groundRoad(cam, HZ, { z0: -1000, z1: 40000, dashPh: (t - 112) * 400, sd: 360 });
-    const P = placePlane(cam, cfg, 0, 0, { t, hop: -beatPulse(t, 8) * 6, eyes: t >= SING ? 'happy' : 'dot', lookY: -1, mouth: 'smile', open: 0, faceU: 84, es: 1.35, dyaw: -.05 });
+    const P = placeFront(cam, 0, { t, hop: -beatPulse(t, 8) * 6, eyes: t >= SING ? 'happy' : 'dot', lookY: -1, mouth: 'smile', open: 0, faceU: 84, es: 1.35, dyaw: -.05 });
     // music notes from his mouth, up into the sky
     NOTES.forEach((n, i) => {
       const dt = t - n.t0; if (dt < 0) return;

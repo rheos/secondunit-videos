@@ -12,3 +12,6 @@ The rule, in every look:
 Style can change how it's drawn (ink, print, pixels); the construction above stays.
 
 Silhouette and outline-only looks: the outline alone must say "airplane". The silhouette cut-paper test read as a fish or whale (Robin, 2026-10-03): bulbous body, hinged jaw, wings lost in the shape. Show a clear tapered tail fin and tailplane, wings sticking out of the outline, a rounded-pointed nose cone, and no jaw.
+
+Side views in every look (Robin, 2026-10-03, kawaii at 2:50): a 3D box model seen side-on read as a bus: wing as a slab under the body, engine and propeller in front of the face, a flat front panel. Side-on he needs a rounded capsule fuselage, his own rounded nose cone with the face on it, a thin level wing whose tip pokes past the outline, and the engine pod set back under the wing with the propeller clear of his face.
+Nothing overlaps the face from any angle: tyres sit under the fuselage BEHIND the nose cone on short struts; never in front of the mouth (kawaii 3/4 at 3:01, Robin 2026-10-03). Every view is the rounded plane construction, not a box.

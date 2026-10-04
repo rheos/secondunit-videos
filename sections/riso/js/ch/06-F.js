@@ -813,10 +813,11 @@
 
   // ===== 138.87 cameo: the red-carpet passing lane; a limo, flashbulbs, "yeah, yeah, yeah" =====
   const CARS_C = [[139.15, TEAL], [139.95, RED, true], [140.85, YEL]];
-  function cameo(t, slow) {
+  function cameo(t, slow, mt) {
     const T = slow ?? ta(t); FRI = Math.floor(t * 12);
     const z = kf(T, [[barT(4), 1.0], [VAMP_END, 1.14]], (x) => x), fcx = W / 2 + 60, fcy = H / 2 + 20;
     const st = baseF(slow ?? t);
+    if (mt !== undefined) { const sm = baseF(mt); st.open = sm.open * (1 - inv(141.2, 141.5, mt)); st.lid = sm.lid; }   // mouth and blinks stay on the song clock
     let look = [.6, .3], best = null;
     for (const c of CARS_C) { const x = PXS + 250 + (T - c[0]) * VCAR; if (x > -200 && x < W + 300 && (best === null || Math.abs(x - 1100) < Math.abs(best - 1100))) best = x; }
     if (best !== null) look = [clamp((best - (PXS + 250)) / 500, -1, 1), .9];
@@ -1211,7 +1212,7 @@
 
   // ---- the SAX REVEAL window: 5.0 s ending on the sax's first phrase onset (other.wav attack at ~145.06) ----
   const SAX_ON = 3482 / 24, SAX_WIN0 = 3387 / 24;                  // 145.0833 (frame 3482) and 141.125 (frame 3387): starts after the last "yeah"; the 5 s morph is retimed to 95 frames
-  window.SEAMS = [{ a: SAX_WIN0, b: SAX_ON, name: 'sax' }];
+  window.SEAMS = [{ a: 3440 / 24, b: SAX_ON, name: 'sax' }];   // the generated morph's moving part covers 3440-3482
   function explode3(t) {                                           // the window's start frame: the poster blows apart into an ink storm
     cameo(t, SAX_WIN0 - .03 + (t - SAX_WIN0) * .12);
     const u = inv(SAX_WIN0, SAX_ON, t), n = bN(t), a = .6 + .5 * snapA(t, 1.5);
@@ -1234,6 +1235,18 @@
     sax(960 - 69 * k, 626 + 157 * k, k, T, { rot: 0 });
     pianoPops(T, 5, .8);
     fx({ ...apart(.15 * snapD(t, 2), n + 600), inks: ISET[4], jit: 2.4, cell: [2.4, 2.4, 3] });
+  }
+  // v3b: the cameo runs on a smooth time-warp from 138.87 so it glides on through the instrumental downbeat (no freeze),
+  // and the ink blow-apart builds from 141.125, arriving at frame 3440 on exactly the old 141.125 anchor (sax_start.png)
+  const CAM0 = barT(4), BLOW0 = 3387 / 24, BLOW1 = 3440 / 24, WARP = 53 / 24;
+  function cameo4(t) {
+    const sw = smooth(inv(CAM0, BLOW1, t)), tt = t - WARP * sw, c = t - (WARP + .03) * sw;
+    cameo(tt, c, t);
+    if (t < BLOW0) { fx({ inks: ISET[0], jit: 2.4, tl: tt }); return; }
+    const u2 = ease.inOut(inv(BLOW0, BLOW1, t)), n = bN(tt), a = (.6 + .5 * snapA(tt, 1.5)) * u2;
+    const base = [1.8, 1.6, 2];
+    fx({ ...apart(a, 11 + n, 1.4), inks: u2 > .02 ? ISET[n % ISET.length] : ISET[0], jit: 2.4 + (.6 + 4 * a) * u2 + (1 - u2) * 0,
+      cell: base.map((v) => lerp(1, v, u2)), ang: rotScr((tt - BLOW0) * u2, 1.5), tl: tt });
   }
   function opartRib(t) { opart(t); const T = ta(t); saxRibbon(T, { y: 900 }); pianoPops(T, 4); }
   const tunnelP = (t) => punch(t, barT(13), () => tunnel(t));
@@ -1268,7 +1281,7 @@
     fx({ off: [h(1) * 60, h(2) * 30, h(3) * 60, h(4) * 30, h(5) * 50, h(6) * 40], inks: ISET[0], jit: 2.4 + 2 * kick, run, starve: 1 + .3 * run });
   }
 
-  chapter('F', F0, F1, [[F0, press], [PRESS_END, party], [barT(1), warhol], [barT(4), cameo], [SAX_WIN0 - 1e-4, explode3], [SAX_ON - 1e-4, saxReveal], [barT(8), breath],
+  chapter('F', F0, F1, [[F0, press], [PRESS_END, party], [barT(1), warhol], [barT(4), cameo4], [SAX_ON - 1e-4, saxReveal], [barT(8), breath],
     [barT(9), pianoShot], [barT(10), opartRib], [barT(11), geom], [barT(12), drumShot], [barT(13), tunnelP], [barT(14), vortexP], [barT(15), strobe], [barT(16), peak3], [167.5, lick]]);
   window.__F = { bars: [...Array(18)].map((_, k) => +barT(k).toFixed(3)), snap: beatT(70), hit: HIT };
 })();

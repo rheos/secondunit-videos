@@ -175,7 +175,7 @@ function seamBackdrop(t, sx, o = {}) { // sx = scroll offset in px
   seedAt(sd + 21); shape([[-400, 700], [W + 400, 700], [W + 400, 935], [-400, 935]], road, 6);
   for (let i = 0; i < 9; i++) { const x = wrapv(i * 300 - sx, 300 * 9) - 300; paint(rrect(x, SEAM_LINE - 8, 150, 16, 7), PAL.dash, .95, false); }
 }
-function seamPlane(t, o = {}) { return plane3(960, SEAM_GY - (o.dy || 0), SEAM_K, { t, yaw: 1.25, pitch: .1, persp: 3200, faceU: 74, es: 1.3, ...o }); }
+function seamPlane(t, o = {}) { return planeSideK(960 - 20, SEAM_GY - (o.dy || 0), SEAM_K, { t, ...o }); }
 
 // a watercolour car wash, seen from the side; exitX = screen x of its exit end. Drawn OVER the plane.
 function carWash(exitX, t, sd = 1300) {
@@ -259,23 +259,29 @@ function propTextBoard(sd, txt, bg, fg, t) {
   for (let i = 0; i < 5; i++) { const a = i / 5 * TAU + t; paint(ell(-250 + i * 125, -600, 16, 16), fg, .5, false); }
   fitText(txt, 0, -722, 600 * .82, 324 * .5, fg, INK); // inside the board with a clear margin
 }
-// a toll booth with its gate; flip 0..1 turns the sign over to INSERT COIN
-function tollBooth(x, t, flip, sd = 1600) {
+// a toll booth with its gate. sign: 'coin' | 'insert' | 'ok'; sq = the sign's vertical scale while it flips;
+// arm 0..1 = the gate lifting; the coin slot is at (x - 150, 560).
+function pixText(txt, col, w0, h0) { const oc = document.createElement('canvas'); oc.width = w0; oc.height = h0; const o2 = oc.getContext('2d'); o2.fillStyle = col; o2.font = `bold ${h0 - 4}px monospace`; o2.textAlign = 'center'; o2.textBaseline = 'middle'; o2.fillText(txt, w0 / 2, h0 / 2 + 1); return oc; }
+function tollBooth(x, t, sign, sq = 1, arm = 0, sd = 1600) {
   seedAt(sd);
-  shape(rrect(x - 140, 380, 280, 330, 26, sd), PAL.peach, 7);              // booth on the far verge
+  shape(rrect(x - 140, 380, 280, 330, 26, sd), PAL.peach, 7);
   shape(rrect(x - 100, 430, 200, 120, 18, sd + 1), GLASS, 5);
   shape([[x - 180, 390], [x + 180, 390], [x + 150, 330], [x - 150, 330]], PAL.coral, 6);
-  // the gate arm swings across his lane toward us, striped
-  push(); tr(x - 150, 640); seedAt(sd + 2);
-  const arm = [[0, -16], [-40, 230], [-12, 236], [26, -10]]; shape(arm, PAL.white, 6);
+  // the coin box with its slot, on the booth's road side
+  shape(rrect(x - 190, 520, 80, 90, 14, sd + 5), PAL.gold, 5); inkFill(rrect(x - 162, 548, 24, 8, 3));
+  // the gate arm, striped; it swings up out of his way
+  push(); tr(x - 150, 640); rot(-arm * 2.9); seedAt(sd + 2);
+  const P = [[0, -16], [-40, 230], [-12, 236], [26, -10]]; shape(P, PAL.white, 6);
   for (let i = 0; i < 4; i++) { const u0 = .12 + i * .22, u1 = u0 + .1; paint([[lerp(0, -40, u0), lerp(-16, 230, u0)], [lerp(26, -12, u0), lerp(-10, 236, u0)], [lerp(26, -12, u1), lerp(-10, 236, u1)], [lerp(0, -40, u1), lerp(-16, 230, u1)]], RED, 1, false); }
-  pop();
-  // the sign on a pole above the booth: a coin, then it flips over to INSERT COIN
+  pop(); shape(ell(x - 150, 640, 18, 18, 12), '#b9b2c6', 4);
+  // the sign on a pole above the booth
   shape(rrect(x - 12, 150, 24, 190, 8, sd + 3), '#b9b2c6', 5);
-  const c = Math.cos(flip * Math.PI), show = c < 0;
-  push(); tr(x, 150); sc(1, Math.max(.02, Math.abs(c)));
-  shape(rrect(-260, -90, 520, 180, 24, sd + 4), show ? '#1b1830' : PAL.lemon, 7);
-  if (!show) { shape(ell(0, 0, 62, 62, 24), PAL.gold, 6); ink(ell(0, 0, 42, 42, 20), true, 5); }
-  else { k.save(); k.imageSmoothingEnabled = false; const oc = document.createElement('canvas'); oc.width = 96; oc.height = 16; const o2 = oc.getContext('2d'); o2.fillStyle = '#ffe14a'; o2.font = 'bold 12px monospace'; o2.textAlign = 'center'; o2.textBaseline = 'middle'; o2.fillText('INSERT COIN', 48, 9); const blink = Math.floor(t * 4) % 2 ? .75 : 1; k.globalAlpha = blink; k.drawImage(oc, -224, -40, 448, 75); k.restore(); }
+  push(); tr(x - 20, 150); sc(1, Math.max(.02, sq));
+  shape(rrect(-225, -95, 450, 190, 24, sd + 4), sign === 'coin' ? PAL.lemon : '#1b1830', 7);
+  if (sign === 'coin') { shape(ell(0, 0, 62, 62, 24), PAL.gold, 6); ink(ell(0, 0, 42, 42, 20), true, 5); }
+  else { k.save(); k.imageSmoothingEnabled = false; const blink = sign === 'insert' && Math.floor(t * 3) % 2 ? .78 : 1; k.globalAlpha = blink;
+    if (sign === 'insert') k.drawImage(pixText('INSERT COIN', '#ffe14a', 96, 16), -192, -32, 384, 64); // 11 chars in 96 px: a clear margin inside the sign
+    else k.drawImage(pixText('OK!', '#7cf08a', 32, 16), -100, -50, 200, 100);
+    k.restore(); }
   pop();
 }

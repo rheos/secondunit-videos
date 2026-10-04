@@ -52,7 +52,8 @@ void main(){
   o = vec4(col, 1.);
 }`,
   uniforms: (t, X) => {
-    const k = Math.floor(t * 12), j = X.jit ?? 2.4, o = X.off || [0, 0, 0, 0, 0, 0];
+    const k = Math.floor((X.tl ?? t) * 12), j = X.jit ?? 2.4,   // X.tl: a shot can run the plate jitter on its own (warped) clock
+o = X.off || [0, 0, 0, 0, 0, 0];
     const J = (n) => (hash(k * 6 + n + 4000) - .5) * 2 * j;
     const uvo = (i) => [(o[i] + J(i)) / W, (o[i + 1] + J(i + 1)) / H];
     const inks = X.inks || [INK.pink, INK.teal, INK.yellow];
