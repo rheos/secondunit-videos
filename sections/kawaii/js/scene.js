@@ -175,7 +175,7 @@ function seamBackdrop(t, sx, o = {}) { // sx = scroll offset in px
   seedAt(sd + 21); shape([[-400, 700], [W + 400, 700], [W + 400, 935], [-400, 935]], road, 6);
   for (let i = 0; i < 9; i++) { const x = wrapv(i * 300 - sx, 300 * 9) - 300; paint(rrect(x, SEAM_LINE - 8, 150, 16, 7), PAL.dash, .95, false); }
 }
-function seamPlane(t, o = {}) { return planeSideK(960 - 20, SEAM_GY - (o.dy || 0), SEAM_K, { t, ...o }); }
+function seamPlane(t, o = {}) { return plane3(960, SEAM_GY - (o.dy || 0), SEAM_K, { t, yaw: .95, pitch: .05, persp: 3200, faceU: 78, es: 1.3, ...o }); }
 
 // a watercolour car wash, seen from the side; exitX = screen x of its exit end. Drawn OVER the plane.
 function carWash(exitX, t, sd = 1300) {

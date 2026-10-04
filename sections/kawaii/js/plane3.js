@@ -49,9 +49,12 @@ function plane3(x, y, kk, o) {
   // shadow on the road
   if (shadow > 0) { seedAt(1); const sh = 1 / (1 + lift / 160); const S = hull([[-660, 0, -40], [660, 0, -40], [660, 0, 60], [-660, 0, 60], [-150, 0, ZF], [150, 0, ZF], [-90, 0, ZB], [90, 0, ZB]].map(([a, b, c]) => P(a * sh, 0, c * sh))); paint(S, '#6b5a7a', .2 * shadow * sh, false); }
   // ---- tyres
-  for (const [tx, tz] of [[-122, 165], [122, 165], [-112, -170], [112, -170]]) {
+  // v3: in 3/4 and side views the front wheels sit further back and are drawn under the body, so a tyre
+  // never covers his face or mouth; head-on keeps the v1 look
+  const tuck = Math.abs(sy) > .15, ftz = tuck ? 115 : 165;
+  for (const [tx, tz] of [[-122, ftz], [122, ftz], [-112, -170], [112, -170]]) {
     const sg = Math.sign(tx);
-    parts.push({ d: Dp(tx, 52 + lift, tz), f: () => {
+    parts.push({ d: tuck ? -1e9 : Dp(tx, 52 + lift, tz), f: () => {
       seedAt(5000 + tx + tz);
       const C = circ(22), r = 52, inner = C.map(([c, s0]) => T(tx - sg * 24, 52 + s0 * r, tz + c * r)), outer = C.map(([c, s0]) => T(tx + sg * 24, 52 + s0 * r, tz + c * r));
       shape(hull(inner.concat(outer)), PAL.tyre, 6);
@@ -114,7 +117,7 @@ function plane3(x, y, kk, o) {
     if (side > .12) {
       // cheat line along the flank, portholes above it
       const N = 16, topL = [], botL = [];
-      const smax = side > .9 ? .64 : 1; for (let i = 0; i <= N; i++) { const s0 = i / N * smax, yc = lerp(222, 150, Math.pow(s0, .7)), hh = lerp(8, 15, s0); topL.push(PB(...sideF(s0, () => yc + hh))); botL.push(PB(...sideF(s0, () => yc - hh))); }
+      for (let i = 0; i <= N; i++) { const s0 = i / N, yc = lerp(222, 150, Math.pow(s0, .7)), hh = lerp(8, 15, s0); topL.push(PB(...sideF(s0, () => yc + hh))); botL.push(PB(...sideF(s0, () => yc - hh))); }
       seedAt(9010); shape(topL.concat(botL.reverse()), RED, 4.5);
       for (let i = 0; i < 4; i++) {
         const s0 = .25 + i * .13, c = sideF(s0, () => lerp(222, 150, Math.pow(s0, .7)) + 48);
@@ -125,15 +128,15 @@ function plane3(x, y, kk, o) {
     let F = null;
     if (front && cy > .25) {
       seedAt(9030); shape(fr.map((q) => PB(...q)), PAL.cream, 6.5);
-      paint(rrect(-138, 44, 276, 13, 6, 9031).map(([a, b]) => PB(a, b, ZF + 1)), RED, 1, false); // the cheat line wraps the nose as a thin bumper stripe
-      ink(rrect(-138, 44, 276, 13, 6, 9031).map(([a, b]) => PB(a, b, ZF + 1)), true, 3);
-      seedAt(9035); shape(rrect(-114, 194, 228, 96, 34, 9035).map(([a, b]) => PB(a, b, ZF + 2)), GLASS, 5.5); // the windscreen: his eyes live here
-      paint(rrect(-96, 272, 46, 9, 4).map(([a, b]) => PB(a, b, ZF + 3)), '#ffffff', .9, false);
-      F = { o: [0, 240, ZF + 2], u: [1, 0, 0], md: 1.55, bd: .88 };
+      paint(rrect(-140, 62, 280, 20, 9, 9031).map(([a, b]) => PB(a, b, ZF + 1)), RED, 1, false); // the cheat line wraps the nose as a bumper stripe
+      ink(rrect(-140, 62, 280, 20, 9, 9031).map(([a, b]) => PB(a, b, ZF + 1)), true, 3.5);
+      seedAt(9035); shape(rrect(-88, 248, 176, 40, 18, 9035).map(([a, b]) => PB(a, b, ZF + 2)), PAL.blue, 5.5);
+      paint(rrect(-72, 270, 42, 10, 4).map(([a, b]) => PB(a, b, ZF + 3)), '#ffffff', .85, false);
+      F = { o: [0, 184, ZF + 2], u: [1, 0, 0] };
     }
     if (!F || side > .9) {
-      F = { o: [sx * 151, 250, ZF - 94], u: [0, 0, 1], md: 1.5, bd: .85 };
-      seedAt(9040); shape([[ZF - 4, 296], [ZF - 178, 296], [ZF - 192, 208], [ZF - 10, 208]].map(([z, yy]) => PB(sx * 150, yy, z)), GLASS, 5); // the windscreen along the brow, eyes in it
+      F = { o: [sx * 151, 186, ZF - 96], u: [0, 0, 1] };
+      seedAt(9040); shape([[ZF - 8, 298], [ZF - 92, 298], [ZF - 120, 262], [ZF - 14, 262]].map(([z, yy]) => PB(sx * 150, yy, z)), PAL.blue, 5); // windscreen on the brow
     }
     const O = PB(...F.o), Ux = PB(F.o[0] + F.u[0], F.o[1], F.o[2] + F.u[2]), Vy = PB(F.o[0], F.o[1] - 1, F.o[2]);
     let ax = Ux[0] - O[0], ay = Ux[1] - O[1], bx = Vy[0] - O[0], by = Vy[1] - O[1];
@@ -141,10 +144,10 @@ function plane3(x, y, kk, o) {
     const am = Math.hypot(ax, ay), bm = Math.hypot(bx, by);
     const fx0 = Math.max(.42, am / Math.max(bm, 1e-3)); // keep it readable when foreshortened
     push(); both((c) => c.transform(ax / am * fx0 * bm, ay / am * fx0 * bm, bx, by, O[0], O[1]));
-    const MM = o.sing === false ? { open: 0, shape: 'ah' } : mouthFor(RAWT), oo = o.open || 0;
-    face(0, 0, faceU, { mouthDy: F.md, blushDy: F.bd, hatch: false, mw0: .85, ...o, open: Math.max(oo, MM.open), mshape: oo > MM.open ? 'ah' : MM.shape, w: o.w || 7, es });
+    const MM = o.sing === false ? { open: 0, shape: 'ah' } : mouthFor(RAWT), oo = o.open || 0; // v3: mouth from the vocal stem
+    face(0, 0, faceU, { ...o, open: Math.max(oo, MM.open), mshape: oo > MM.open ? 'ah' : MM.shape, w: o.w || 7, es });
     pop();
-    faceAt = [x + kk * O[0], y + kk * O[1]]; mouthAt = [x + kk * (O[0] + bx * faceU * F.md), y + kk * (O[1] + by * faceU * F.md)];
+    faceAt = [x + kk * O[0], y + kk * O[1]]; mouthAt = [x + kk * (O[0] + bx * faceU * .7), y + kk * (O[1] + by * faceU * .7)];
   } });
   parts.sort((a, b) => a.d - b.d).forEach((p) => p.f());
   pop();
@@ -170,92 +173,3 @@ function placePlane(cam, cfg, wx, wz, o) {
   const p = cam(wx, 0, wz), yawP = cfg.yaw + Math.atan2(p.x - cfg.ox, cfg.F);
   return plane3(p.x, p.y, p.k, { ...o, yaw: yawP + (o.dyaw || 0), pitch: o.pitch ?? Math.atan2(cfg.h - 170 - (o.lift || 0), p.d), persp: p.d });
 }
-
-// ---- the SIDE VIEW, drawn as its own 2D figure (the box model read like a bus side-on).
-// Facing right; (x, y) = ground point under his middle; kk = scale. A rounded capsule with a soft taper,
-// his own round nose cone carrying the face, a thin level wing at mid-body whose tip pokes out under the
-// tapered tail section, the far wingtip peeking over his back, a small engine pod set back under the wing.
-function planeSideK(x, y, kk, o) {
-  const { t = 0, hop = 0, lift = 0, squash = 0, tilt = 0, spin = t * 18, roll = t * 8 } = o;
-  push(); tr(x, y); sc(kk);
-  seedAt(3500); paint(ell(-10, -4, 330 / (1 + lift / 200), 22), '#6b5a7a', .2, false);
-  push(); tr(0, -lift);
-  // tyres (behind the body)
-  for (const tx of [-165, 150]) { seedAt(3510 + tx); shape(ell(tx, -52, 52, 52, 24), PAL.tyre, 6); shape(ell(tx, -52, 25, 25, 16), PAL.hub, 4); for (let i = 0; i < 3; i++) { const a = -roll + i * TAU / 3; inkFill(ell(tx + Math.cos(a) * 13, -52 + Math.sin(a) * 13, 4, 4, 8)); } }
-  push(); tr(0, -hop); sc(1 + squash * .5, 1 - squash); rot(tilt);
-  // far wingtip peeking over his back
-  seedAt(3520); shape(rrect(-190, -332, 150, 26, 13, 3520), PAL.wing, 4.5); shape(rrect(-190, -332, 40, 26, 13, 3521), PAL.pink, 4);
-  // tail fin and tailplane
-  seedAt(3530); shape([[-250, -268], [-318, -268], [-352, -420], [-300, -424], [-210, -280]], PAL.teal, 6);
-  push(); tr(-300, -350); heart(0, 0, 20, PAL.pink, 4); pop();
-  seedAt(3535); shape(rrect(-392, -282, 140, 24, 12, 3535), PAL.wing, 5);
-  // the capsule fuselage: hull of a small tail circle, a middle and a big round nose
-  const circ2 = (cx, cy, r, n = 28) => [...Array(n)].map((_, i) => [cx + Math.cos(i / n * TAU) * r, cy + Math.sin(i / n * TAU) * r]);
-  const body = hull([...circ2(-318, -262, 30), ...circ2(-140, -212, 98), ...circ2(60, -200, 108), ...circ2(212, -198, 112)]);
-  seedAt(3540); shape(body, PAL.cream, 7);
-  // cheat line and portholes along the flank
-  const cl = []; for (let i = 0; i <= 16; i++) { const u = i / 16, xx = lerp(-320, 110, u); cl.push([xx, lerp(-262, -205, Math.pow(u, .6)) - 6]); }
-  seedAt(3545); shape([...cl.map(([a, b]) => [a, b - 12]), ...cl.slice().reverse().map(([a, b]) => [a, b + 8])], RED, 4);
-  for (let i = 0; i < 5; i++) { const px = -230 + i * 62, py = lerp(-262, -200, Math.pow((px + 320) / 450, .6)) - 32; seedAt(3550 + i); shape(ell(px, py, 17, 17, 14), PAL.blue, 4.5); paint(ell(px - 5, py - 5, 5, 4), '#ffffff', .85, false); }
-  // the near wing: thin, level, at mid-body behind the cockpit; its tip pokes out under the tail taper
-  seedAt(3560); shape(rrect(-300, -178, 360, 30, 15, 3560), PAL.wing, 5.5); shape(rrect(-300, -178, 58, 30, 15, 3561), PAL.pink, 5);
-  // engine pod under the wing, propeller disc in front of it (well clear of the face)
-  seedAt(3570); shape(rrect(-70, -156, 120, 46, 22, 3570), PAL.cream, 5);
-  paint(ell(62, -133, 12, 62), '#ffffff', .4, false); ink(ell(62, -133, 12, 62, 20), true, 2.5, { col: 'rgba(30,26,29,.3)' });
-  const bl = Math.cos(spin) * 60; shape(rrect(56, -133 - Math.abs(bl), 12, Math.abs(bl) * 2 + 2, 6, 3571), '#9c8fb0', 4);
-  shape(ell(58, -133, 11, 11, 10), PAL.coral, 3.5);
-  // the nose cone: windscreen on its upper curve with the eyes in it, mouth on the lower curve
-  seedAt(3580); const ws = []; for (let i = 0; i <= 12; i++) { const a = -Math.PI * .5 - .62 + i / 12 * 1.25; ws.push([212 + Math.cos(a) * 104, -198 + Math.sin(a) * 104]); } for (let i = 12; i >= 0; i--) { const a = -Math.PI * .5 - .62 + i / 12 * 1.25; ws.push([212 + Math.cos(a) * 44 + 18, -228 + Math.sin(a) * 30]); }
-  const wsb = [[150, -286], [282, -286], [306, -232], [140, -228]].map(([a, b], i) => [a, b]);
-  shape(rrect(144, -296, 160, 68, 30, 3581), GLASS, 5); paint(rrect(160, -286, 40, 8, 4), '#ffffff', .9, false);
-  const MM = o.sing === false ? { open: 0, shape: 'ah' } : mouthFor(RAWT), oo = o.open || 0;
-  face(226, -262, 34, { mouthDy: 3.3, blushDy: 2.3, blushX: .75, hatch: false, mw0: 1.9, es: 1.05, ...o, open: Math.max(oo, MM.open), mshape: oo > MM.open ? 'ah' : MM.shape, w: 6 });
-  pop(); pop();
-  const out = { face: [x + kk * 226, y - kk * (262 + hop + lift)], mouth: [x + kk * 226, y - kk * (150 + hop + lift)], k: kk };
-  pop();
-  return out;
-}
-
-// side-on placement on a world camera (travelling shots): the 2D side figure at his ground point
-function placeSide(cam, wz, o) { const p = cam(0, 0, wz); return planeSideK(p.x, p.y, p.k, o); }
-
-// ---- HEAD-ON, the look test's hand-drawn plane (Bob liked it), corrected per FACE.md: the windscreen
-// grows to hold his eyes, the mouth sits on the lower nose, blush is a flat tint. Tyres are drawn first,
-// under and behind the body, so nothing ever covers the face. Wings split at the root so one can lift.
-// (x, y) = ground point; o: t, hop, lift, squash, tilt, raiseL/raiseR (screen-left/right wing), stall (inner left prop)
-function planeFrontK(x, y, kk, o) {
-  const { t = 0, hop = 0, lift = 0, squash = 0, tilt = 0, spin = t * 18, raiseL = 0, raiseR = 0, stall = 0 } = o;
-  push(); tr(x, y); sc(kk);
-  seedAt(1000); paint(ell(0, -4, 300 / (1 + lift / 220), 26), '#6b5a7a', .22, false);
-  push(); tr(0, -lift);
-  tyreFront(-88, 0, 70, 78, 1001); tyreFront(88, 0, 70, 78, 1003);
-  push(); tr(0, -hop); sc(1 + squash * .5, 1 - squash); rot(tilt);
-  seedAt(1010);
-  shape(rrect(-24, -395, 48, 160, 20, 1010), PAL.teal, 6);                                  // tail fin, behind
-  heart(0, -350, 18, PAL.pink, 4);
-  shape(rrect(-165, -318, 330, 30, 14, 1012), PAL.wing, 6);                                 // tailplane
-  for (const sgn of [-1, 1]) {                                                              // the wings: level, far too long
-    const ra = sgn < 0 ? raiseL : raiseR;
-    push(); tr(sgn * 140, -153); rot(-sgn * ra);
-    seedAt(1020 + sgn); shape(rrect(sgn > 0 ? 0 : -500, -25, 500, 50, 24, 1020 + sgn), PAL.wing, 6);
-    shape(rrect(sgn > 0 ? 420 : -500, -25, 80, 50, 24, 1022 + sgn), PAL.pink, 6);
-    for (const ex of [110, 290]) {
-      seedAt(1030 + sgn * ex); shape(ell(sgn * ex, 0, 48, 46, 24), PAL.cream, 6);
-      const st = (sgn < 0 && ex === 110) ? stall : 0, sp = st > 0 ? lerp(spin * sgn + ex, .4 + Math.sin(t * 30) * .08 * (1 - st), st) : spin * sgn + ex;
-      propFront(sgn * ex, 0, 82, sp, 1040 + sgn * ex);
-    }
-    pop();
-  }
-  seedAt(1100);
-  shape(rrect(-150, -300, 300, 262, 78, 1100), PAL.cream, 7);                               // the body / nose
-  paint(rrect(-132, -66, 264, 12, 6), RED, 1, false); ink(rrect(-132, -66, 264, 12, 6), true, 3); // cheat line as a thin chin stripe
-  shape(rrect(-112, -290, 224, 92, 34, 1101), GLASS, 6);                                    // windscreen: his eyes live here
-  paint(rrect(-96, -280, 44, 9, 4), '#ffffff', .9, false);
-  const MM = o.sing === false ? { open: 0, shape: 'ah' } : mouthFor(RAWT), oo = o.open || 0;
-  face(0, -244, 62, { mouthDy: 1.9, blushDy: 1.1, blushX: 1.6, hatch: false, mw0: 1.05, es: 1.25, ...o, open: Math.max(oo, MM.open), mshape: oo > MM.open ? 'ah' : MM.shape, w: 7 });
-  pop(); pop();
-  const out = { face: [x, y - kk * (244 + hop + lift)], mouth: [x, y - kk * (126 + hop + lift)], k: kk };
-  pop();
-  return out;
-}
-function placeFront(cam, wz, o, wx = 0) { const p = cam(wx, 0, wz); return planeFrontK(p.x, p.y, p.k, o); }

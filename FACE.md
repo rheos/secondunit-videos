@@ -1,9 +1,13 @@
+# NOTE (Robin, 2026-10-04): characters are locked to their worlds. Each look's plane is its own design, changed and approved individually. Nothing below is a global rule. Each note applies only to the look it names.
+
 # His face (Robin, 2026-10-03)
 
 Reference that works: ref/face-reference-generated-cartoon.png (the generated cartoon test).
 What to avoid: ref/face-wrong-chin-and-dog-nose.png (hybrid exploration): a round black ball nose like a cartoon dog (Pluto) and an extra round chin/cheek shape added under it to hold the mouth.
 
-The rule, in every look:
+SCOPE: this rule is for the riso, woodcut, Waking Life, kinetic and 16-bit planes. It does NOT apply to KAWAII. Kawaii is a copied style with its own face: a kaomoji face (^ ^ or dot eyes, a tiny mouth, blush) drawn on the front of a boxy body, as in the reference stills and the approved v1/v2 kawaii plane. In kawaii, the only rule that carries over is that nothing covers the face. (Robin, 2026-10-04: applying this rule to kawaii is what pushed it away from kawaii.)
+
+The rule, in the other looks:
 - Eyes live in the windscreen (as now).
 - The nose is the plane's OWN rounded nose cone, in body colour. At most a subtle radome cap (a slightly darker tint of the body, or a thin panel line), never a black ball or a separate round blob stuck on the front.
 - The mouth is drawn ON the nose cone itself, on its lower curve under the windscreen, following the curve of the fuselage. It opens with the vocal as before.
