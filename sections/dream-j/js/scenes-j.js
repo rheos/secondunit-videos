@@ -21,8 +21,6 @@ REFRAME = [
   [315.958, 318.0, 0, -30, 1.14],      // quantum: tighter as the ghosts appear
   [320.833, 322.5, 260, 200, 1.4],    // lecture: close on the student's air quotes
   [323.083, 324.0, -180, -40, 1.3],    // lecturer: in on "very confident"
-  [331.833, 333.167, 0, -40, 1.22],    // float: punch in on the group
-  [337.958, 341.2917, -60, 0, 1.1],    // night: a little closer for the ending
 ];
 const mixArm = (A, B, k) => A.map((v, i) => lerp(v, B[i], k));
 const toWorld = (P, p) => [P.x + p[0] * P.sc, P.y + p[1] * P.sc];
@@ -155,7 +153,7 @@ function shotRoof(t, tt, len) {
     R = mixArm(R, [.45, -2.3, Math.sin((t - 289.4) * TAU * 2.2) * .4, .9, 1], dep);
     L = mixArm(L, [-.5, 3.15, -.15, .12, 1.05], point);
     const P = {
-      style: CAST.roof, x: 1260 + snoise(t * .25, 980) * 8, y: 1010, sc: 1.5, seed: 1000, light: [14, -8], breath: breathAt(t),
+      style: CAST.commuter, x: 1260 + snoise(t * .25, 980) * 8, y: 1010, sc: 1.5, seed: 1000, light: [14, -8], breath: breathAt(t),
       lean: .03 + snoise(t * .3, 981) * .02 - look * .04 - point * .04, twist: -.1, shrug: dep * 6,
       turn: .3 + snoise(t * .25, 982) * .08 + look * .25 - point * .1, tilt: snoise(t * .35, 983) * .04 - look * .1 - point * .14 + dep * Math.sin((t - 289.4) * TAU * 1.1) * .05,
       nod: snoise(t * .5, 984) * .3 - look * .8 - point * 1, mouth: mouthAt(t), blink: blinkAt(t, 12), brow: .2 + look * .4 + point * .6,
@@ -228,10 +226,10 @@ function shotCabin(t, tt, len) {
     L = mixArm(L, [-.42, .45, 0, .55, .9], reach); R = mixArm(R, [.42, -.45, 0, .55, .9], reach);
     L = mixArm(L, [-.05, 1.32, .15, .3, .85], clip * (1 - reach)); R = mixArm(R, [.05, -1.32, -.15, .3, .85], clip * (1 - reach));
     const P = {
-      style: CAST.nana, x: 1180, y: 860, sc: 1.18, seed: 1300, light: [-12, -6], breath: breathAt(t),
+      style: CAST.commuter, x: 1180, y: 860, sc: 1.18, seed: 1300, light: [-12, -6], breath: breathAt(t),
       lean: snoise(t * .25, 1301) * .02 + reach * .05 - settle * .02, twist: 0, shrug: clip * 4 * (1 - settle),
       turn: snoise(t * .2, 1302) * .06 - win * .45 + look * .1, tilt: snoise(t * .3, 1303) * .03 - look * .12 + reach * .05 - win * .04,
-      nod: -look * 1.2 + reach * .8 + snoise(t * .4, 1304) * .2, mouth: 0, blink: blinkAt(t, 13), brow: .3 + look * .8,
+      nod: -look * 1.2 + reach * .8 + snoise(t * .4, 1304) * .2, mouth: mouthAt(t), blink: blinkAt(t, 13), brow: .3 + look * .8,
       armL: L, armR: R, flipL: true, flipR: false,
     };
     person({ ...P, parts: 'body' });
@@ -295,10 +293,7 @@ function shotLecture(t, tt, len) {
     // the board, filling up with marks as he writes
     part([[530, 140], [1390, 132], [1396, 500], [526, 506]], { fill: hsl(32, 40, 34), seed: 1430, sharp: 40, inkW: 1 });
     part([[550, 156], [1372, 150], [1376, 486], [546, 490]], { fill: hsl(165, 16, 22), shade: hsl(165, 16, 18), shadeShift: [-40, 0], seed: 1431, sharp: 40, ink: false, extra: () => chalkBoard(560, 160, 1366, 484, .35 + inv(318, 322.5, t) * .5, 1440) });
-    // the lecturer, small, writing
-    const wr = Math.sin(t * 6.3) * .12 + Math.sin(t * 9.7) * .06;
-    person({ style: CAST.prof, x: 1180, y: 700, sc: .42, seed: 1450, back: true, light: [-10, -8], breath: breathAt(t), lean: -.03, tilt: -.05 + wr * .2,
-      armR: [.75 + wr * .5, -2.5 + wr * 1.4, 0, .3, 1], armL: [-.1, .15, 0, .3, 1], legs: [.04, 0, -.04, 0], footDown: true });
+    // nobody at the board: the chalk writes itself
     part([[700, 640], [1320, 634], [1330, 770], [690, 776]], { fill: hsl(28, 35, 38), shade: hsl(24, 35, 28), shadeShift: [20, -8], seed: 1460, sharp: 40 });
     // rows of the audience, far to near
     for (let row = 0; row < 4; row++) {
@@ -313,7 +308,7 @@ function shotLecture(t, tt, len) {
     L = mixArm(L, [-.6, 2.75, .4, .15, 1], thumb);
     L = mixArm(L, [-.45, 2.55, -.3, qc, 1], quote); R = mixArm(R, [.45, -2.55, .3, qc, 1], quote);
     R = mixArm(R, [.35, -1.9, Math.sin((t - 321.4) * TAU * 1.3) * .4, .8, 1], rest * (1 - quote));
-    const P = { style: CAST.student, x: 1300 + snoise(t * .25, 1560) * 6, y: 1180, sc: 1.28, seed: 1570, light: [12, -6], breath: breathAt(t), back: !turned,
+    const P = { style: CAST.commuter, x: 1300 + snoise(t * .25, 1560) * 6, y: 1180, sc: 1.28, seed: 1570, light: [12, -6], breath: breathAt(t), back: !turned,
       lean: .02 + snoise(t * .3, 1561) * .02, twist: turned ? .25 : 0, shrug: quote * 8, turn: turned ? lerp(.85, .25, tq) + snoise(t * .25, 1562) * .06 : 0,
       tilt: snoise(t * .3, 1563) * .04 + thumb * .06 - quote * .04, nod: snoise(t * .5, 1564) * .3, mouth: turned ? mouthAt(t) : 0, blink: blinkAt(t, 14), brow: .3 + quote * .9 + thumb * .4,
       armL: turned ? L : null, armR: turned ? R : null, flipL: true, flipR: false };
@@ -367,7 +362,7 @@ function shotProf(t, tt, len) {
     L = mixArm(L, [-.45, 2.9 - fn * .2, -.1, .12, 1], finger);
     R = mixArm(R, [.6, -.9 + Math.sin((t - 325.3) * TAU * 1.4) * .4, -.6, .8, 1], dig);
     L = mixArm(L, [-.08, .2, 0, .4, 1], deflate); R = mixArm(R, [.12, -.25, 0, .4, 1], deflate * (1 - dig));
-    const P = { style: CAST.prof, x: 620 + snoise(t * .2, 1620) * 8, y: 960, sc: 1.55, seed: 1630, light: [12, -6], breath: breathAt(t),
+    const P = { style: CAST.commuter, x: 620 + snoise(t * .2, 1620) * 8, y: 960, sc: 1.55, seed: 1630, light: [12, -6], breath: breathAt(t),
       lean: -.03 * (1 - deflate) + snoise(t * .3, 1621) * .02 + deflate * .05 + sweep * .03, twist: .2, shrug: finger * 6 - deflate * 6,
       turn: .25 + snoise(t * .25, 1622) * .06 + sweep * .25 + q(325.5, 326.0) * .45 * (1 - deflate * .3), tilt: -finger * .06 + snoise(t * .3, 1623) * .03 + deflate * .06,
       nod: snoise(t * .5, 1624) * .3 + fn * .8 - finger * .3, mouth: mouthAt(t), blink: blinkAt(t, 15), brow: .2 + finger * .3 + q(325.6, 326.2) * .9,
@@ -397,9 +392,10 @@ function shotProfClose(t, tt, len) {
       // a chalk mark (a little wave) that opens into a bird's two wings
       stroke([[x - w, y + flap * 10], [x - w * .4, y - 6 * (1 - k) - flap * 4], [x, y], [x + w * .4, y - 6 + 6 * k - flap * 4], [x + w, y + flap * 10 + (1 - k) * 8]], 1730 + i, .55, { force: true, col: hsl(60, 15, 92, .9), wob: .2 });
     }
-    const P = { style: CAST.prof, x: 1080 + snoise(t * .2, 1740) * 12, y: 1720, sc: 3.15, seed: 1750, light: [12, -6], breath: breathAt(t), inkK: .45, wobK: .4, detail: true,
+    const lift = Math.pow(smooth(inv(329.0, 329.6, t)), 1.6) * 260;
+    const P = { style: CAST.commuter, x: 1080 + snoise(t * .2, 1740) * 12, y: 1720 - lift, hem: lift * .05, sc: 3.15, seed: 1750, light: [12, -6], breath: breathAt(t), inkK: .45, wobK: .4, detail: true,
       lean: snoise(t * .3, 1741) * .02 + shrug * .02, twist: .1, shrug: shrug * 16, turn: -.28 + snoise(t * .25, 1742) * .06 + guess * .08, tilt: snoise(t * .3, 1743) * .03 + shrug * .08 - guess * .03,
-      nod: snoise(t * .5, 1744) * .3 + hit(t, 327.66, 6) * .6, mouth: mouthAt(t), blink: blinkAt(t, 16), brow: .2 + guess * .9 + shrug * .5,
+      nod: snoise(t * .5, 1744) * .3 + hit(t, 327.66, 6) * .6 - lift * .004, mouth: mouthAt(t), blink: blinkAt(t, 16), brow: .2 + guess * .9 + shrug * .5 + lift * .003,
       armL: null, armR: null };
     person(P);
   });
@@ -497,7 +493,9 @@ function shotNight(t, tt, len) {
   });
 }
 
-chapter('J', 278.75, 341.2917, [
+// v4: one speaker (the train's grey-bearded anchorman) for the whole monologue; the section ends at 329.6
+// (frame 7911), where the new kawaii segment J2 takes over.
+chapter('J', 278.75, 329.6, [
   [278.75, shotTrain],
   [286.0, shotRoof],
   [293.0, shotCabin],
@@ -508,6 +506,70 @@ chapter('J', 278.75, 341.2917, [
   [318.0, shotLecture],
   [322.5, shotProf],
   [327.6, shotProfClose],
-  [329.6, shotLevitate],
-  [335.6, shotNight],
 ]);
+
+// ---------------- his words, as type that changes face and size phrase by phrase ----------------
+// Bob's corrected wording where he gave it; Whisper timings. Each word: [text, start, emphasis size].
+// box = [x0, y0, x1, y1] in frame pixels (1920x1080): the phrase is sized to fit 86% of it, so the
+// pop-in overshoot stays inside the margin. Nothing shows before 281.04 (the train opening stays identical).
+const TYPE = [
+  { box: [70, 50, 1000, 300], font: '"American Typewriter", "Courier New", monospace', w: [['but', 281.04], ['the', 281.18], ['mechanical', 281.40, 1.6], ['part', 281.82], ['of', 282.40], ['responding', 284.20, 1.3]], end: 286.0 },
+  { box: [80, 70, 1000, 330], font: '"Snell Roundhand", "Apple Chancery", cursive', w: [['like', 286.08], ['our', 286.30], ['story..', 286.64, 1.4]], end: 289.35 },
+  { box: [80, 60, 1080, 430], font: 'Didot, "Bodoni 72", serif', w: [['I', 289.44], ['mean', 289.76], ['it', 289.94], ['depends', 290.04, 1.2], ['whether', 290.40], ['you', 290.56], ['think', 290.70], ['that', 290.98], ['destiny', 291.24, 1.8], ['is', 291.78], ['real', 292.08, 1.4]], end: 293.0 },
+  { box: [120, 880, 1800, 1050], font: 'bold Futura, "Avenir Next", sans-serif', w: [['Please', 293.64], ['fasten', 294.32, 1.15], ['your', 294.66], ['seat', 294.90, 1.3], ['belts.', 295.18, 1.3]], end: 298.0 },
+  { box: [600, 80, 1440, 380], font: '"Bradley Hand", "Marker Felt", cursive', w: [['are', 301.08], ['we', 301.64], ['fulfilling', 302.20, 1.3], ['our', 302.90], ['destiny?', 303.20, 1.6]], end: 304.3 },
+  { box: [140, 860, 1780, 1050], font: 'Rockwell, "American Typewriter", serif', w: [['and', 304.46], ['if', 304.66], ['not,', 305.16, 1.3]], end: 305.85 },
+  { box: [140, 860, 1780, 1050], font: 'italic Baskerville, Georgia, serif', w: [['if', 305.88], ["we're", 306.02], ['creating', 306.26, 1.4], ['our', 306.80], ['destiny,', 307.06, 1.5]], end: 308.05 },
+  { box: [140, 860, 1780, 1050], font: 'Impact, "Haettenschweiler", sans-serif', w: [['how', 308.12], ['different', 308.30, 1.4], ['is', 308.60], ['that', 308.86], ['from', 309.02], ['fulfilling?', 309.22, 1.3]], end: 310.0 },
+  { box: [1300, 100, 1870, 560], font: 'Noteworthy, "Marker Felt", cursive', w: [["it's", 314.16], ['a', 314.72], ['murky', 314.86, 1.5], ['area.', 315.10]], end: 315.42 },
+  { box: [1300, 100, 1870, 560], font: '"Courier New", monospace', w: [['then', 315.46], ['that', 315.84], ['whole', 316.02], ['quantum', 316.24, 1.8], ['thing', 316.52]], end: 316.75 },
+  { box: [1300, 100, 1870, 560], font: '"Marker Felt", cursive', w: [['is', 316.78], ['just', 317.02], ['as', 317.24], ['murky,', 317.44, 1.4], ['right?', 317.82, 1.3]], end: 318.0 },
+  { box: [180, 50, 1520, 360], font: 'Copperplate, "Copperplate Gothic Light", serif', w: [['they,', 319.86], ['scientists', 320.22, 1.4], ['claim', 320.45, 1.2], ['to', 320.64], ['understand', 320.88, 1.4], ['these', 321.32], ['things', 321.62]], end: 321.9 },
+  { box: [180, 50, 1520, 360], font: 'Futura, "Avenir Next", sans-serif', w: [['and', 321.94], ['they', 322.16], ['talk', 322.36, 1.2]], end: 322.5 },
+  { box: [880, 40, 1880, 320], font: '800 "Avenir Next Condensed", "Arial Narrow", sans-serif', w: [['about', 322.58], ['them', 322.74], ['in', 323.02], ['very', 323.64, 1.3], ['confident', 324.14, 2.0], ['terms,', 324.58]], end: 325.0 },
+  { box: [880, 40, 1880, 320], font: 'Georgia, serif', w: [['but', 325.0], ['when', 325.28], ['you', 325.36], ['dig', 325.60, 1.5], ['under', 325.68], ['the', 325.98], ['cover,', 326.20, 1.4]], end: 326.55 },
+  { box: [880, 40, 1880, 320], font: '"Gill Sans", "Trebuchet MS", sans-serif', w: [['they', 326.58], ['actually', 326.76, 1.3], ['are', 327.22]], end: 327.6 },
+  { box: [60, 140, 700, 940], font: '"Chalkboard SE", "Comic Sans MS", cursive', cream: true, w: [['guessing', 327.66, 1.6], ['as', 327.98], ['much', 328.24], ['as', 328.42], ['anybody', 328.58, 1.3], ['else.', 328.94]], end: 329.6 },
+];
+const TYPE_LAYOUT = new Map();
+function layoutType(ph) {
+  if (TYPE_LAYOUT.has(ph)) return TYPE_LAYOUT.get(ph);
+  const [x0, y0, x1, y1] = ph.box, bw = (x1 - x0) * .86, bh = (y1 - y0) * .86, f = (px) => `${ph.font.replace(/^((?:italic |bold |\d00 )*)/, `$1${px.toFixed(1)}px `)}`;
+  let best = null;
+  for (let base = 220; base >= 14; base -= 2) {
+    const toks = ph.w.map(([w, st, e = 1]) => { s.font = f(base * e); return { w, st, e, size: base * e, width: s.measureText(w).width }; });
+    s.font = f(base); const sp = s.measureText(' ').width;
+    const lines = [[]]; let lw = 0;
+    for (const tk of toks) { const add = (lines[lines.length - 1].length ? sp : 0) + tk.width; if (lw + add > bw && lines[lines.length - 1].length) { lines.push([tk]); lw = tk.width; } else { lines[lines.length - 1].push(tk); lw += add; } }
+    if (lines.some((L) => L.reduce((a, tk, i) => a + tk.width + (i ? sp : 0), 0) > bw)) continue;
+    const hts = lines.map((L) => Math.max(...L.map((tk) => tk.size)) * 1.12), H = hts.reduce((a, b) => a + b, 0);
+    if (lines.length <= 3 && H <= bh) { best = { lines, hts, H, sp, base, f }; break; }
+  }
+  TYPE_LAYOUT.set(ph, best); return best;
+}
+function speechText(t) {
+  const ph = TYPE.find((p) => t >= p.w[0][1] - .04 && t < p.end); if (!ph) return;
+  const L = layoutType(ph); if (!L) return;
+  const [x0, y0, x1, y1] = ph.box;
+  s.save(); s.textBaseline = 'alphabetic'; s.lineJoin = 'round';
+  let y = y0 + (y1 - y0 - L.H) / 2;
+  L.lines.forEach((line, li) => {
+    const lw = line.reduce((a, tk, i) => a + tk.width + (i ? L.sp : 0), 0); let x = x0 + (x1 - x0 - lw) / 2; y += L.hts[li] * .86;
+    line.forEach((tk) => {
+      const k = clamp((t - tk.st + .03) / .14);
+      if (k > 0) {
+        const pop = .62 + .38 * ease.back(k), sd = Math.round(tk.st * 100), cx = x + tk.width / 2;
+        withT(() => {
+          s.translate(cx + snoise(t * .5, sd) * 2, y + snoise(t * .5, sd + 7) * 2 - tk.size * .3); s.rotate(snoise(t * .3, sd + 3) * .025); s.scale(pop, pop); s.translate(-tk.width / 2, tk.size * .3);
+          s.font = L.f(tk.size); s.globalAlpha = k;
+          s.lineWidth = Math.max(3, tk.size * .1); s.strokeStyle = ph.cream ? 'rgba(20,16,20,.8)' : 'rgba(250,244,232,.85)'; s.strokeText(tk.w, 0, 0);
+          s.fillStyle = ph.cream ? '#f6efe0' : '#1d1820'; s.fillText(tk.w, 0, 0);
+        });
+      }
+      x += tk.width + L.sp;
+    });
+    y += L.hts[li] * .14;
+  });
+  s.restore();
+}
+for (const sh of SHOTS) { const fn = sh.fn; sh.fn = (t, tt, len) => { fn(t, tt, len); speechText(t); }; }

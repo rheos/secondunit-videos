@@ -24,5 +24,6 @@ await Promise.all([...Array(WK)].map(async (_, w) => {
   }
 }));
 await b.close();
+if (process.env.FRAMES_ONLY) { console.log('frames in', dir, n); process.exit(0); }
 execSync(`ffmpeg -y -loglevel error -framerate ${FPS} -i ${dir}/f_%06d.jpg -ss ${t0} -i assets/song.wav ${FADE > 0 ? `-vf fade=t=in:st=0:d=${FADE}` : ''} -af apad -frames:v ${n} -t ${n / FPS} -c:v libx264 -preset medium -crf ${CRF} -pix_fmt yuv420p -c:a aac -b:a 256k -movflags +faststart ${out}`);
 console.log('wrote', out, n, 'frames');

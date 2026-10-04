@@ -29,7 +29,7 @@ function poseA(t) {
   const roll = env(t, 302.1, 302.95, .2) * Math.sin((t - 302.1) * TAU * 1.4);
   const open = q(302.9, 303.5);                                         // "destiny?": palm opens outward
   return {
-    x: 1130 + snoise(t * .22, 3) * 10, y: 1010, sc: 1.42, seed: 100, light: [12, -6],
+    style: CAST.commuter, x: 1130 + snoise(t * .22, 3) * 10, y: 1010, sc: 1.42, seed: 100, light: [12, -6],
     breath: breathAt(t), lean: .035 + snoise(t * .3, 11) * .025 - raise * .03 + open * .03,
     twist: -.2 + snoise(t * .2, 14) * .2, shrug: open * 10,
     turn: -.38 + snoise(t * .27, 12) * .08 + q(300.9, 301.5) * .12 + open * .14, tilt: snoise(t * .38, 13) * .035 + env(t, 301.0, 302.4, .35) * .07 - open * .05,
@@ -38,7 +38,17 @@ function poseA(t) {
     armR: [.22 + snoise(t * .3, 17) * .03, -1.75 + snoise(t * .25, 18) * .06, -.1, .3, .72],
     flipL: true, flipR: false,
     sky: smooth(inv(303.0, 303.75, t)),
+    det: dinerDet(t),
   };
+}
+// v4: around the diner he pulls his forearms off like a puppet's (clean wooden ball joints, no harm done):
+// the left pops off on a drum hit, then the right; both float and gesture on their own, then click back on.
+function dinerDet(t) {
+  const d = {}, pk = (a, b, c, e) => env(t, a, b, .25) * (t < c ? 1 : 1 - smooth(inv(c, e, t)));
+  const kL = smooth(inv(298.83, 299.2, t)) * (1 - smooth(inv(300.4, 300.8, t))), kR = smooth(inv(299.38, 299.75, t)) * (1 - smooth(inv(300.6, 300.95, t)));
+  if (kL > .001) d.armL = [kL * (-150 + Math.sin(t * 2.3) * 30), kL * (-170 + Math.sin(t * 3.1) * 25), kL * (.9 + Math.sin(t * 2.7) * .5), 1];
+  if (kR > .001) d.armR = [kR * (140 + Math.sin(t * 2.1 + 1) * 30), kR * (-230 + Math.sin(t * 2.9) * 25), kR * (-2.1 + Math.sin(t * 2.4) * .5), 1];
+  return d;
 }
 function shotDiner(t, tt, len) {
   T = t; HAND = HANDS.clean; HUE = Math.sin(t * .11) * 8; REGK = 1;
@@ -86,7 +96,7 @@ function shotDiner(t, tt, len) {
     // napkin dispenser
     part([[300, 760], [420, 756], [424, 900], [296, 904]], { fill: hsl(210, 8, 70), shade: hsl(210, 10, 52), shadeShift: [16, 0], seed: 39, sharp: 25 });
     person({ ...pose, parts: 'arms' });
-    dinerScrawl(t);
+    for (const [a, b, x, y] of [[300.4, 300.8, 0, 0], [300.6, 300.95, 0, 0]]) { const c = hit(t, b, 10); if (t > b && c > .03) { const g = geomOf(pose), e = g.w(a === 300.4 ? g.elL : g.elR); s.save(); s.globalCompositeOperation = 'screen'; s.fillStyle = rgrad(e[0], e[1], 2, 60, [[0, hsl(45, 80, 90, c)], [1, hsl(45, 80, 80, 0)]]); s.fillRect(e[0] - 70, e[1] - 70, 140, 140); s.restore(); } }
   });
 }
 
@@ -152,15 +162,25 @@ function shotCar(t, tt, len) {
       part(lump(0, 0, 44, 58, 112, 12), { fill: hsl(20, 18, 16), shade: hsl(20, 18, 10), shadeShift: [10, -8], seed: 113 });
       part([[-48, 6], [-58, 2], [-60, 18], [-50, 26]], { fill: C('skin', -8), seed: 114, seg: 3 }); });
     part([[420, 500], [640, 496], [650, 590], [410, 596]], { fill: hsl(230, 14, 27), shade: hsl(230, 14, 19), shadeShift: [-10, 0], seed: 115 });
-    // the passenger, from behind, explaining with her raised hand (the arm rises beside her head)
+    // v4: the anchorman, from behind, juggles his own head (still talking), his right forearm and a shoe
     const q = (a, b) => smooth(inv(a, b, t));
-    const g1 = q(304.0, 305.0), wave = Math.sin((t - 305.8) * TAU * .62) * env(t, 305.9, 309.6, .4);
+    const jug = q(304.55, 304.9) * (1 - q(309.55, 309.95)), ph = (t - 304.6) * 1.55;
     const pose = {
-      x: 1340 + snoise(t * .25, 120) * 8, y: 900, sc: 1.32, seed: 300, back: true, light: [-10, -8], breath: breathAt(t),
-      lean: -.04 + snoise(t * .3, 121) * .03 - g1 * .03, tilt: -.06 + snoise(t * .35, 122) * .05 + wave * .04 + env(t, 308.0, 309.7) * .06, twist: 0,
-      armL: [lerp(-1.4, -2.75, g1) + wave * .1, lerp(.3, -.55, g1) + wave * .35, .1 + wave * .4, .6 + .3 * Math.sin(t * 2.1), 1], armR: null, flipL: true,
+      style: CAST.commuter, x: 1340 + snoise(t * .25, 120) * 8, y: 900, sc: 1.32, seed: 300, back: true, light: [-10, -8], breath: breathAt(t),
+      lean: -.04 + snoise(t * .3, 121) * .03, tilt: 0, twist: 0, mouth: mouthAt(t), blink: blinkAt(t, 21), brow: .4, turn: 0, nod: 0,
+      armL: [lerp(-1.4, -1.95, jug), lerp(.3, -.85, jug) + Math.sin(ph * TAU) * .22 * jug, .2, .7, 1], armR: [.3, -.3, 0, .4, 1], flipL: true,
+      det: jug > .01 ? { head: [0, 0, 0, 1, true, false], armR: [0, 0, 0, 1e-3] } : {},
     };
-    person({ ...pose, parts: 'body', armsBehind: true });
+    const J = person({ ...pose, parts: 'body', armsBehind: true });
+    if (jug > .01 && J.armL) {
+      const g = geomOf(pose), hw = g.w(J.armL.wr), neck = g.w(g.hc), items = ['head', 'arm', 'shoe'];
+      items.forEach((it, k) => {
+        let u = ((ph + k / 3) % 1 + 1) % 1, x = hw[0] + Math.sin(u * TAU) * 70, y = hw[1] - 40 - Math.sin(u * Math.PI) * 300, r = u * TAU * (k === 1 ? 1 : .5);
+        if (it === 'head') { const back = 1 - jug; x = lerp(x, neck[0], back); y = lerp(y, neck[1], back); r *= jug; looseHead(x, y, r * .4, pose.sc, { ...pose, back: false, turn: Math.sin(t * 1.3) * .3 }); }
+        else if (it === 'arm') looseForearm(x, y, r + 1, pose.sc * jug + .001, pose, 1, .5 + .5 * Math.sin(t * 6));
+        else withT(() => { s.translate(x, y); s.rotate(r); s.scale(pose.sc * jug, pose.sc * jug); part([[-26, -14], [10, -16], [34, -2], [36, 12], [-26, 12]], { fill: C.call(null, 'shoe'), shade: hsl(20, 18, 10), shadeShift: [4, -4], seed: 340, inkW: .9 }); });
+      });
+    }
     part([[1258, 482], [1418, 476], [1430, 578], [1248, 586]], { fill: hsl(230, 14, 28), shade: hsl(230, 14, 20), shadeShift: [-10, 0], seed: 131, sharp: 30 });
     part([[1230, 1300], [1110, 640], [1150, 580], [1530, 570], [1570, 640], [1490, 1300]], { fill: hsl(255, 12, 33), shade: hsl(250, 12, 25), shadeShift: [-30, 0], seed: 130, hi: hsl(28, 60, 66, .7) });
     s.restore();
@@ -175,7 +195,7 @@ function shotFloat(t, tt, len) {
   fx({ acid: .5, peel: pk * .9, warp: 1.4 + pk });
   const rise = Math.pow(smooth(inv(310.9, 314.4, t)), 1.4) * 330;
   withT(() => {
-    cam(960 + snoise(t * .2, 2) * 12, 560 - rise * .45 - tt * 6, 1.0 + tt * .012, -.03 + snoise(t * .14, 6) * .015);
+    cam(960 + snoise(t * .2, 2) * 12, 600 - rise * .9 - tt * 6, 1.0 + tt * .012, -.03 + snoise(t * .14, 6) * .015);
     s.fillStyle = vgrad(-500, 820, [[0, hsl(232, 30, 30)], [.55, hsl(280, 22, 50)], [.85, hsl(20, 50, 66)], [1, hsl(38, 60, 76)]]); s.fillRect(-400, -700, 2800, 1600);
     // one continuous spiral cloud forming overhead, slowly turning, a tiny plane glinting at its centre
     const pc = smooth(inv(310.0, 312.6, t));
@@ -196,16 +216,18 @@ function shotFloat(t, tt, len) {
     // her shadow, left on the ground
     const fy = 960;
     s.save(); s.globalAlpha = .45 * (1 - rise / 420); part(lump(960, fy + 6, 120 * (1 - rise / 700), 18, 470, 10), { fill: hsl(260, 25, 18), seed: 471, ink: false, hatch: false }); s.restore();
-    const q = (a, b) => smooth(inv(a, b, t)), out = q(310.6, 313.6), hang = q(310.9, 312.4);
-    person({
-      x: 960 + snoise(t * .3, 480) * 10, y: fy - 372 * .66 - rise + Math.sin(t * 1.6) * 3 * hang, sc: .66, seed: 500, light: [-10, -8],
-      breath: breathAt(t), lean: snoise(t * .25, 481) * .03, tilt: snoise(t * .3, 482) * .05 - out * .04, turn: -.15 + snoise(t * .2, 483) * .1,
-      nod: -out * .9, mouth: 0, blink: blinkAt(t, 3), brow: .3 + out * .5, hem: 4 + rise * .1, twist: -.1,
+    const q = (a, b) => smooth(inv(a, b, t)), out = q(310.6, 313.6), hang = q(310.9, 312.4), SC = .95;
+    const FP = {
+      style: CAST.commuter, x: 960 + snoise(t * .3, 480) * 10, y: fy - 372 * SC - rise + Math.sin(t * 1.6) * 3 * hang, sc: SC, seed: 500, light: [-10, -8],
+      breath: breathAt(t), lean: snoise(t * .25, 481) * .03, tilt: snoise(t * .3, 482) * .05 - out * .04, turn: -.1 + snoise(t * .2, 483) * .08,
+      nod: -out * .5, mouth: 0, blink: blinkAt(t, 3), brow: .3 + out * .6 + earBusy(t) * .5, hem: 4 + rise * .1, twist: -.1,
       armL: [lerp(-.12, -.62, out) + snoise(t * .4, 484) * .04, lerp(.12, -.18, out), lerp(0, -.5, out), .3 + out * .5, 1],
       armR: [lerp(.12, .6, out) + snoise(t * .4, 485) * .04, lerp(-.12, .2, out), lerp(0, .5, out), .3 + out * .5, 1], flipL: false, flipR: true,
       legs: [lerp(.04, .08, hang) + snoise(t * .5, 486) * .04 * hang, lerp(0, -.14, hang), lerp(-.04, -.02, hang) + snoise(t * .5, 487) * .05 * hang, lerp(0, -.22, hang)],
       footDown: hang > .5, armsBehind: false,
-    });
+    };
+    FP.det = earDet(t, FP);
+    person(FP);
     // a streetlamp coming on
     stroke([[1780, 840], [1786, 420], [1720, 400]], 490, 2.2);
     s.save(); s.globalCompositeOperation = 'screen'; s.fillStyle = rgrad(1716, 412, 4, 260, [[0, hsl(45, 80, 72, .6)], [1, hsl(40, 80, 60, 0)]]); s.fillRect(1400, 100, 700, 700); s.restore();
@@ -217,7 +239,7 @@ function poseD(t) {
   const q = (a, b) => smooth(inv(a, b, t)), up = q(314.0, 314.7), murk = env(t, 314.7, 315.5, .3), qn = env(t, 315.8, 317.0, .3), right = q(317.6, 318.0);
   const wag = Math.sin((t - 314.7) * TAU * 1.6) * murk;
   return {
-    x: 1000 + snoise(t * .25, 600) * 14, y: 1760, sc: 3.3, seed: 700, light: [12, -6], breath: breathAt(t), inkK: .45, wobK: .4, detail: true,
+    style: CAST.commuter, x: 1000 + snoise(t * .25, 600) * 14, y: 1760, sc: 3.3, seed: 700, light: [12, -6], breath: breathAt(t), inkK: .45, wobK: .4, detail: true,
     lean: .03 + snoise(t * .3, 601) * .03 + qn * .04, tilt: snoise(t * .35, 602) * .05 + murk * .06 - right * .06, turn: -.25 + snoise(t * .25, 603) * .1 + qn * .2 - right * .1,
     nod: snoise(t * .5, 604) * .3, mouth: mouthAt(t), blink: blinkAt(t, 4), brow: .3 + qn * .7 + right * .6, twist: -.15, shrug: right * 12,
     armL: [lerp(-.05, -.45, up), lerp(.5, 3.0, up) + wag * .25 + qn * .3, wag * .5 + qn * .2, .35 + qn * .5, 1], armR: [.1, -.2, 0, .3, 1], flipL: true,
@@ -248,35 +270,23 @@ function shotQuantum(t, tt, len) {
 }
 
 
-// "Are we fulfilling our destiny?" writes itself onto the diner wall word by word as she says it,
-// in a loose hand, then the letters start to drift and breathe like everything else in the dream.
-const SCRAWL = [['are', 301.08], ['we', 301.64], ['fulfilling', 302.2], ['our', 302.9], ['destiny?', 303.2]];
-function dinerScrawl(t) {
-  if (t < 301.0) return;
-  const box = { x: 780, y: 190, w: 650, h: 230 }, lines = [['are', 'we', 'fulfilling'], ['our', 'destiny?']];
-  const font = (px) => `${px}px "Bradley Hand", "Marker Felt", "Noteworthy", cursive`;
-  // fit: the widest line must sit inside the box with a 10% margin, two lines inside its height
-  s.font = font(100); const wide = Math.max(...lines.map((L) => s.measureText(L.join(' ')).width));
-  const px = Math.min(100 * box.w * .86 / wide, box.h * .8 / 2 / 1.05);
-  s.save(); s.font = font(px); s.textBaseline = 'alphabetic';
-  const sp = s.measureText(' ').width, drift = smooth(inv(303.9, 304.3, t));
-  lines.forEach((L, li) => {
-    const lw = s.measureText(L.join(' ')).width; let x = box.x + (box.w - lw) / 2 - li * px * .25 + li * px * .5;
-    const y = box.y + box.h * .1 + px * (li + 1) * 1.02;
-    L.forEach((word) => {
-      const [, w0] = SCRAWL.find(([w]) => w === word), nxt = SCRAWL[SCRAWL.findIndex(([w]) => w === word) + 1], w1 = Math.min(w0 + .45, nxt ? nxt[1] : 303.76);
-      const k = clamp((t - w0 + .06) / (w1 - w0)); if (k <= 0) { x += s.measureText(word + ' ').width; return; }
-      [...word].forEach((ch, ci) => {
-        const cw = s.measureText(ch).width, ck = clamp(k * word.length - ci); if (ck <= 0) { x += cw; return; }
-        const sd = ci * 13 + li * 101 + word.length * 7;
-        const ws = word.length * 31 + li * 7, jx = snoise(t * .6, 800 + sd) * 1.5 + drift * snoise(t * .4, 900 + ws) * 10, jy = snoise(t * .6, 850 + sd) * 2 - drift * (8 + hash(ws) * 10) + Math.sin(ci * .9 + li) * 2;
-        withT(() => { s.translate(x + jx, y + jy); s.rotate(-.05 + snoise(t * .3, 700 + sd) * .05);
-          s.globalAlpha = ck * .35; s.fillStyle = hsl(205, 30, 40); s.fillText(ch, 3, 2);   // the paint layer, off register
-          s.globalAlpha = ck; s.fillStyle = HAND.inkCol; s.fillText(ch, 0, 0); });
-        x += cw;
-      });
-      x += sp;
-    });
-  });
-  s.restore();
+
+// v4 (the lot): his forearms come off and go in one ear and out the other. Each one flies up to an ear
+// (elbow-ball first), shrinks into it, comes out of the other ear growing back, and returns to its elbow.
+const EARRUNS = [{ key: 'armL', t0: 310.55, into: 1 }, { key: 'armR', t0: 311.75, into: -1 }];
+const earBusy = (t) => EARRUNS.reduce((m, r) => Math.max(m, env(t, r.t0, r.t0 + 2.3, .2)), 0);
+function earDet(t, P) {
+  const g = geomOf(P), d = {};
+  for (const r of EARRUNS) {
+    const u = t - r.t0; if (u <= 0 || u >= 2.4) continue;
+    const el = r.key === 'armL' ? g.elL : g.elR, earIn = [g.hc[0] + r.into * 52, g.hc[1] - 4], earOut = [g.hc[0] - r.into * 52, g.hc[1] - 4];
+    const out1 = [earIn[0] + r.into * 150, earIn[1] - 60], out2 = [earOut[0] - r.into * 150, earOut[1] - 40];
+    let p, rot, k;
+    if (u < .8) { const e = ease.inOut(u / .8); p = [lerp(el[0], out1[0], e), lerp(el[1], out1[1], e) - Math.sin(e * Math.PI) * 120]; rot = -r.into * Math.PI / 2 * e; k = 1; }
+    else if (u < 1.2) { const e = ease.in((u - .8) / .4); p = [lerp(out1[0], earIn[0], e), lerp(out1[1], earIn[1], e)]; rot = -r.into * Math.PI / 2; k = lerp(1, .05, e); }
+    else if (u < 1.7) { const e = ease.out((u - 1.2) / .5); p = [lerp(earOut[0], out2[0], e), lerp(earOut[1], out2[1], e)]; rot = r.into * Math.PI / 2; k = lerp(.05, 1, e); }
+    else { const e = ease.inOut((u - 1.7) / .7); p = [lerp(out2[0], el[0], e), lerp(out2[1], el[1], e) - Math.sin(e * Math.PI) * 60]; rot = lerp(r.into * Math.PI / 2, 0, e); k = 1; }
+    d[r.key] = [p[0] - el[0], p[1] - el[1], rot, k];
+  }
+  return d;
 }

@@ -15,7 +15,7 @@ const ACID = (() => { // onset peaks in the section, found once from the data (a
 })();
 const acidKick = (t, decay = 2.2) => ACID.reduce((m, [o, v]) => m + hit(t, o, decay) * v, 0);
 const LOOK = {
-  span: [278.75, 341.2917],
+  span: [278.75, 329.6],
   frag: `
 uniform float hue, mirror, peel, warp, kal, wash, flash, duo, dim;
 vec3 hueRot(vec3 c, float a){ const vec3 k = vec3(.57735); float ca = cos(a); return c * ca + cross(k, c) * sin(a) + k * dot(k, c) * (1. - ca); }

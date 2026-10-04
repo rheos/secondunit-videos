@@ -97,6 +97,9 @@
     drawWorld(cam, items);
     const pp = cam(0, 0, zp);
     DOO.forEach((a, i) => { if (i) dustPuffs(pp.x, pp.y + 30 * pp.k, t, a, pp.k * .8, 9500 + i * 10); });
+    // v4: "doo doo doo doo doo doo doo" as words, one per pulse (the seventh sits under "I'm" at 179.72), bouncing with him
+    const DOOT = [...DOO, 179.72], DP = [[160, 240], [410, 140], [660, 240], [960, 120], [1250, 240], [1750, 330], [1760, 140]], DC = [PAL.pink, PAL.lemon, '#bfe0f4', PAL.mint, PAL.lilac, '#f7b6a8', PAL.peach];
+    DOOT.forEach((a, i) => { const [x, y] = DP[i]; popWord('DOO', x, y - b * 26, 112, DC[i], t, a, 60 + i); });
   }
 
   // ------------------------------------------------------------ G4 sick and tired, VIP cars streaming by

@@ -575,18 +575,30 @@
     const e = SEs('other', T, 2), hp = hitPulse('sax', T, 7), si = lastHitI('sax', T);
     withT(() => {
       s.translate(x, y); s.scale(k, k); s.rotate((o.rot || 0) + Math.sin(T * 2.2) * .1 * (.3 + e) - .14 * hp); s.scale(1 + .05 * hp, 1 + .05 * hp);
+      const M = o.m || 0, PC = M ? SAXC.map((p, i) => [lerp(p[0], o.tgt[i][0], M), lerp(p[1], o.tgt[i][1], M)]) : SAXC;   // v4: the body can morph toward a target shape
       const L = [], R = [];
-      for (let i = 0; i < SAXC.length; i++) { const a = SAXC[Math.max(0, i - 1)], b = SAXC[Math.min(SAXC.length - 1, i + 1)], dx = b[0] - a[0], dy = b[1] - a[1], d = Math.hypot(dx, dy) || 1, nx = -dy / d, ny = dx / d, w = SAXW[i] / 2;
-        L.push([SAXC[i][0] + nx * w, SAXC[i][1] + ny * w]); R.push([SAXC[i][0] - nx * w, SAXC[i][1] - ny * w]); }
+      for (let i = 0; i < PC.length; i++) { const a = PC[Math.max(0, i - 1)], b = PC[Math.min(PC.length - 1, i + 1)], dx = b[0] - a[0], dy = b[1] - a[1], d = Math.hypot(dx, dy) || 1, nx = -dy / d, ny = dx / d, w = SAXW[i] / 2;
+        L.push([PC[i][0] + nx * w, PC[i][1] + ny * w]); R.push([PC[i][0] - nx * w, PC[i][1] - ny * w]); }
       shape([...L, ...R.reverse()], o.body || YEL, { smooth: true, lw: 9 });
-      shape([[-150, -560], [-200, -585], [-212, -570], [-162, -548]], KEY);                              // mouthpiece
-      withT(() => { s.translate(256, -44); s.rotate(-.18); ell(0, 0, 88, 30, C(.55, .55, 0), { lw: 8 }); ell(0, 6, 64, 16, KEY); });   // the bell's mouth
-      for (let i = 0; i < 7; i++) {                                                                      // keys: pressed ones go dark, on each sax note
+      const m0 = [PC[0][0] - SAXC[0][0], PC[0][1] - SAXC[0][1]], m12 = [PC[12][0] - SAXC[12][0], PC[12][1] - SAXC[12][1]];
+      if (!M) shape([[-150, -560], [-200, -585], [-212, -570], [-162, -548]], KEY);                      // mouthpiece
+      else shape([[-150, -560], [-200, -585], [-212, -570], [-162, -548]].map(([a, b]) => [a + m0[0], b + m0[1]]), KEY);
+      withT(() => { s.translate(256 + m12[0], -44 + m12[1]); s.rotate(-.18); ell(0, 0, 88, 30, C(.55, .55, 0), { lw: 8 }); ell(0, 6, 64, 16, KEY); });   // the bell's mouth
+      if (M < .3) for (let i = 0; i < 7; i++) {                                                                      // keys: pressed ones go dark, on each sax note
         const kx = 4 + i * 2 + (i > 4 ? 8 : 0), ky = -330 + i * 62, pressed = si >= 0 && hash((si * 13 + i) >>> 0) > .45 && e > .2;
         ell(kx + 26, ky, 19, 19, pressed ? KEY : PAPER, { lw: 6 }); ell(kx + 26, ky, 8, 8, pressed ? PAPER : PINK);
         stroke([[kx + 6, ky], [kx - 18, ky + 18]], KEY, 6);
       }
-      stroke([[40, -200], [70, 40], [60, 160]], C(.6, 0, 0), 7);                                         // a highlight seam
+      if (M < .3) stroke([[40, -200], [70, 40], [60, 160]], C(.6, 0, 0), 7);                             // a highlight seam
+      if (o.face > 0) withT(() => {                                                                     // v4 (vi): his face, on the bell's bow
+        const fc = [(PC[11][0] + PC[12][0]) / 2 - 8, (PC[11][1] + PC[12][1]) / 2 + 22]; s.translate(fc[0], fc[1]); s.rotate(-.12); s.scale(o.face * 2.1, o.face * 2.1);   // on the bell's flare
+        const puff = clamp(e * 1.4);
+        for (const sd of [-1, 1]) ell(sd * 34, 26, 16 + 6 * puff, 11 + 4 * puff, C(.45, 0, 0), { op: 1 });
+        for (const [i, sd] of [[0, -1], [1, 1]]) eye(sd * 24, -14, 17, 21, { look: o.look || [0, .1], lid: i === 1 ? (o.wink || 0) : (o.lid || 0), pal: PAL0, t: T }, i, 4, o.body || YEL);
+        for (const sd of [-1, 1]) stroke([[sd * 34, -46 - 8 * (o.brow || 0)], [sd * 22, -50 - 10 * (o.brow || 0)], [sd * 10, -45 - 8 * (o.brow || 0)]], KEY, 5);
+        if ((o.grin || 0) > .5) { s.beginPath(); s.moveTo(-22, 24); s.quadraticCurveTo(0, 56, 22, 24); s.closePath(); paint(KEY, {}); }
+        else stroke([[-20, 26], [-8, 36], [8, 36], [20, 26]], KEY, 5);
+      });
     });
     // puffs and notes from the bell, one burst per sax onset (positions in screen space)
     const bx = x + 256 * k, by = y - 44 * k;
@@ -1281,7 +1293,163 @@
     fx({ off: [h(1) * 60, h(2) * 30, h(3) * 60, h(4) * 30, h(5) * 50, h(6) * 40], inks: ISET[0], jit: 2.4 + 2 * kick, run, starve: 1 + .3 * run });
   }
 
-  chapter('F', F0, F1, [[F0, press], [PRESS_END, party], [barT(1), warhol], [barT(4), cameo4], [SAX_ON - 1e-4, saxReveal], [barT(8), breath],
-    [barT(9), pianoShot], [barT(10), opartRib], [barT(11), geom], [barT(12), drumShot], [barT(13), tunnelP], [barT(14), vortexP], [barT(15), strobe], [barT(16), peak3], [167.5, lick]]);
+
+  // ======================= v4 (vi): THE SAX IS THE SOLOIST (145.08-167.5) =======================
+  // A face on his bell, plays to camera, grows, struts, splits into a trio, morphs on the big phrases;
+  // piano and drums play behind him. The reveal frame (145.0833) and the lick from 167.5 are untouched.
+  const MORPH = {
+    loop: SAXC.map((_, i) => { const a = -Math.PI * .95 + i / 12 * TAU * .8; return [40 + Math.cos(a) * 300, -160 + Math.sin(a) * 300]; }),
+    zig: SAXC.map((_, i) => [-200 + i * 38, -150 + (i % 2 ? 110 : -110)]),
+    tall: SAXC.map(([x, y]) => [x * .45, y * 1.35 - 60]),
+    wave: SAXC.map((_, i) => [-260 + i * 45, -100 + Math.sin(i * .9) * 160]),
+  };
+  const MKEYS = Object.keys(MORPH);
+  function phraseMorph(t, t0, t1) {                                // on each sax phrase inside [t0, t1) the body bends into a shape and springs back
+    const i = lastHitI('sax', t); if (i < 0 || HITS.sax[i] < t0 || HITS.sax[i] >= t1) return {};
+    const a = t - HITS.sax[i]; if (a > .7) return {};
+    return { m: Math.sin(Math.PI * clamp(a / .7)) * .85, tgt: MORPH[MKEYS[i % MKEYS.length]] };
+  }
+  const saxAt = (cx, cy, k) => [cx - 69 * k, cy + 157 * k];        // origin that centres the sax (bbox centre) on (cx, cy)
+  function faceFor(t, extra = {}) {
+    const T = ta(t), sp = hitPulse('sax', T, 5);
+    return { face: ease.back(inv(3486 / 24, 3486 / 24 + .16, t)), look: [Math.sin(T * 1.1) * .25, .05], grin: sp > .5 ? 1 : 0, brow: .4 * sp, lid: tri(T - 146.2, .08) + tri(T - 149.6, .08), ...extra };
+  }
+
+  // 145.08 reveal: grows toward camera, the face pops open, he winks
+  function solo1(t) {
+    if (t < 3486 / 24 - 1e-6) return saxReveal(t);                 // unchanged through frame 3485 (the encoded GOP holding the anchors ends there)
+    const T = ta(t); FRI = Math.floor(t * 12);
+    const e = SEs('other', T, 2), n = dN(t), g = ease.inOut(inv(3486 / 24, barT(8), t)), k = .85 * (1 + .5 * g);
+    sheet(C(0, 0, .45));
+    for (let p = 0; p < 2; p++) {
+      const N = [36, 37][p], rot = T * [.25, -.2][p];
+      lighten(); s.fillStyle = ink(p, .9);
+      for (let i = 0; i < N; i++) { const a0 = rot + i * TAU / N, a1 = a0 + TAU / N * (.3 + .25 * e); s.beginPath(); s.moveTo(960, 626); s.lineTo(960 + Math.cos(a0) * 3200, 626 + Math.sin(a0) * 3200); s.lineTo(960 + Math.cos(a1) * 3200, 626 + Math.sin(a1) * 3200); s.closePath(); s.fill(); }
+      over();
+    }
+    shockwaves(T, 960, 626, { w: 50 });
+    star(960, 626, 470 * (1 + .3 * g), 580 * (1 + .3 * g), 18, T * .2, PAPER, { lw: 8 });
+    for (let i = -1; i < 14; i++) { const x = i * 220 - wrap(T * 300, 220); s.fillStyle = KEY; s.fillRect(x, SEAM.line - 6, 120, 12); }
+    const [ox, oy] = saxAt(960, 626 - 80 * g, k);
+    sax(ox, oy, k, T, { rot: 0, ...faceFor(t, { wink: tri(T - 146.75, .12) * 1.2, look: [0, .1] }) });
+    pianoPops(T, 5, .8);
+    fx({ ...apart(.15 * snapD(t, 2), n + 600), inks: ISET[4], jit: 2.4, cell: [2.4, 2.4, 3] });
+  }
+
+  // 147.87 strut: the calm bar; he struts across in front of the plane's window row, hopping on the beats
+  function solo2(t) {
+    breath(t);
+    const T = ta(t), u = inv(barT(8), barT(9), T), hop = Math.abs(Math.sin(Math.PI * bPh(T))) * 40;
+    const [ox, oy] = saxAt(lerp(260, 1660, u), 640 - hop, .55);
+    sax(ox, oy, .55, T, { rot: .1 * Math.sin(T * 5), ...faceFor(t, { look: [.6, -.2] }) });
+  }
+
+  // 150.10 duet: the piano plays back to him from the left; he answers from the right
+  function solo3(t) {
+    const T = ta(t); FRI = Math.floor(t * 12);
+    const e = En(T), a = snapD(t), n = dN(t), t0 = barT(9);
+    sheet(C(0, 0, .4 + .25 * SEs('drums', T, 1)));
+    for (let p = 0; p < 2; p++) {
+      const N = [40, 41][p], rot = T * [.3, -.24][p];
+      lighten(); s.fillStyle = ink(p, .9);
+      for (let i = 0; i < N; i++) { const a0 = rot + i * TAU / N, a1 = a0 + TAU / N * (.3 + .2 * e); s.beginPath(); s.moveTo(960, 300); s.lineTo(960 + Math.cos(a0) * 3200, 300 + Math.sin(a0) * 3200); s.lineTo(960 + Math.cos(a1) * 3200, 300 + Math.sin(a1) * 3200); s.closePath(); s.fill(); }
+      over();
+    }
+    shockwaves(T, 960, 300, { w: 50 });
+    const rise = ease.back(inv(t0, t0 + .35, T));
+    piano(560, 700 + (1 - rise) * 600, .6, T, { rot: .04 });
+    pianoPops(T, 6, 1);
+    const [ox, oy] = saxAt(1360, 560, .95);
+    sax(ox, oy, .95, T, { rot: -.12 + .05 * Math.sin(T * 2), ...faceFor(t, { look: [-.8, .2] }) });
+    fx({ ...apart(.3 * a, n + 300), inks: ISET[4], jit: 2.6, cell: [3, 3, 3.8], ang: rotScr(t - t0, 2) });
+  }
+
+  // 152.30 TRIO: he splits into three, one per drum of ink, swaying in sync over the op-art screens
+  function solo4(t) {
+    opart(t);
+    const T = ta(t), t0 = barT(10), sp = ease.back(inv(t0, t0 + .4, T));
+    saxRibbon(T, { y: 960 });
+    const cols = [PINK, YEL, TEAL];
+    [-1, 0, 1].forEach((d, i) => {
+      const sw = Math.sin(T * 3.4 + i * .9) * .12, bob = Math.abs(Math.sin(Math.PI * bPh(T) + i * .5)) * 24;
+      const cx = 960 + d * 560 * sp, cy = 560 - bob - (d === 0 ? 30 : 0);
+      ell(cx, cy, 255, 255, PAPER, { lw: 10 }); ell(cx, cy, 228, 228, null, { lw: 5, line: cols[i] });   // a medallion each so the trio reads over the op-art
+      const [ox, oy] = saxAt(cx, cy, .6);
+      sax(ox, oy, .6, T, { rot: sw, body: cols[i], ...faceFor(t, { look: [-d * .5, .1], grin: hitPulse('sax', T, 5) > .4 && (lastHitI('sax', T) % 3) === i ? 1 : 0 }) });
+    });
+    pianoPops(T, 4);
+    fx({ ...apart(.12 * hitPulse('drums', t, 8), dN(t) + 60), inks: ISET[6], jit: 2.4, ang: rotScr(t - barT(9), 1.5) });
+  }
+
+  // 154.53 morph: the Swiss kit re-lays on the drums while he bends into shapes on his phrases
+  function solo5(t) {
+    geom(t);
+    const T = ta(t), k = .9;
+    const [ox, oy] = saxAt(960, 560, k);
+    sax(ox, oy, k, T, { ...faceFor(t), ...phraseMorph(t, barT(11), barT(12) + 2) });
+  }
+
+  // 156.73 band: the drum kit backs him up; he bounces on the kick
+  function solo6(t) {
+    const T = ta(t); FRI = Math.floor(t * 12);
+    const t0 = barT(12), n = dN(t), hp = hitPulse('drums', t, 9);
+    sheet(n % 2 ? C(0, 0, .5) : C(.4, 0, 0));
+    rays(960, 520, 24, 2600, T * .2 + n * .13, n % 2 ? C(.45, 0, 0) : C(0, 0, .8));
+    shockwaves(T, 640, 640, { w: 80, speed: 2600 });
+    const u = ease.back(inv(t0, t0 + .3, T));
+    withT(() => { s.translate(640, 680); s.scale(u, u); s.translate(-640, -680); drumkit(640, 680, .55 * (1 + .03 * hp), T); });
+    if (SEs('guitar', T, 2) > .3) guitar(260, 930, .4, .4, T);
+    const [ox, oy] = saxAt(1380, 560 - 50 * hp, .9);
+    sax(ox, oy, .9, T, { rot: -.1 + .08 * hp, ...faceFor(t, { look: [-.5, .3] }), ...phraseMorph(t, t0, barT(13)) });
+    fx({ ...apart(.55 * snapD(t, 2.4), n + 500), zm: [1 + .06 * hp, 1, 1 - .04 * hp], inks: ISET[(Math.floor(n / 2)) % ISET.length], jit: 2.6 + 2 * hp, cell: [1.5, 1.5, 2] });
+  }
+
+  // 158.97 tunnel: he rushes out of the tunnel toward us, growing
+  function solo7(t) {
+    tunnelP(t);
+    const T = ta(t), u = ease.in(inv(barT(13), barT(14), T)), k = lerp(.25, 1.25, u);
+    const [ox, oy] = saxAt(960 + Math.sin(T * 1.7) * 70 * (1 - u), 540 + 40 * u, k);
+    sax(ox, oy, k, T, { rot: Math.sin(T * 2) * .25 * (1 - u), ...faceFor(t, { look: [0, 0], brow: .6 }) });
+  }
+
+  // 161.20 vortex: he spins at the eye of the storm; the piano and guitar orbit him with the plane parts
+  function solo8(t) {
+    punch(t, barT(14), () => {
+      const T = ta(t); FRI = Math.floor(t * 12);
+      const e = En(T), n = dN(t);
+      sheet(C(0, 0, .35));
+      spiral(T, e);
+      shockwaves(T, 960, 540, { w: 60 });
+      const list = [['piano', .2, 2.1, 760], ['guitar', .32, 4.2, 700]];
+      for (const [kind, sc, a0, R0] of list) { const a = a0 + T * .55, R = R0 * (1 + .1 * Math.sin(T + a0)), x = 960 + Math.cos(a) * R * 1.1, y = 540 + Math.sin(a) * R * .55;
+        if (kind === 'piano' && SEs('piano', T, 3) > .2) piano(x, y, sc, T, { rot: Math.sin(a) * .3 }); if (kind === 'guitar' && SEs('guitar', T, 3) > .2) guitar(x, y + 120, sc, a + 1, T); }
+      fragStorm(T, 1 - .25 * inv(barT(14), barT(15), T));
+      const [ox, oy] = saxAt(960, 540, .75);
+      sax(ox, oy, .75, T, { rot: Math.sin(T * 1.3) * .5, ...faceFor(t, { look: [Math.cos(T * 2), Math.sin(T * 2) * .5] }), ...phraseMorph(t, barT(14), barT(15)) });
+      pianoPops(T, 5, .8);
+      fx({ off: [Math.sin(T * 3) * 40 * e, Math.cos(T * 2.3) * 25, -Math.sin(T * 2.6) * 38 * e, 18, 12, -Math.cos(T * 3.1) * 30], rot: [Math.sin(T * 2) * .1 * e, -Math.sin(T * 2.4) * .1 * e, .05 * Math.sin(T * 3)],
+        zm: [1 + .06 * beatPulse(t, 7), 1, 1 - .04 * beatPulse(t, 7)], inks: ISET[(n + 3) % ISET.length], jit: 3, cell: [2, 2, 3.2], ang: rotScr(t - barT(14), 2.5) });
+    });
+  }
+
+  // 163.40 strobe: one bold print per drum hit, every print a new pose of him (every third hit, the trio)
+  function solo9(t) {
+    strobe(t);
+    const T = ta(t), n = Math.max(0, dN(T)), h = (m) => hash((n * 29 + m) >>> 0);
+    if (n % 3 === 2) [-1, 0, 1].forEach((d, i) => { const [ox, oy] = saxAt(960 + d * 520, 560, .55); sax(ox, oy, .55, T, { rot: d * .15, body: [PINK, PAPER, TEAL][i], ...faceFor(t, { grin: 1 }) }); });
+    else { const k = .7 + h(1) * .5, [ox, oy] = saxAt(560 + h(2) * 800, 500 + h(3) * 120, k); sax(ox, oy, k, T, { rot: (h(4) - .5) * .8, body: [PAPER, YEL, PINK][n % 3], ...faceFor(t, { grin: h(5) > .5 ? 1 : 0, look: [h(6) - .5, 0] }) }); }
+  }
+
+  // 165.57 peak: he swells to fill the frame, bell first, then the hit at 167.17 blows him off the sheet with everything else
+  function solo10(t) {
+    peak3(t);
+    const T = ta(t), u = ease.in(inv(barT(16), HIT, T)), k = lerp(.9, 2.3, u), off = ease.in(inv(HIT, HIT + .3, t));
+    if (off >= 1) return;
+    const [ox, oy] = saxAt(960 - 300 * u, 600 + 200 * u - off * 1400, k);
+    sax(ox, oy, k, T, { rot: -.2 * u, ...faceFor(t, { grin: 1, brow: 1, look: [0, 0] }), ...phraseMorph(t, barT(16), HIT) });
+  }
+
+  chapter('F', F0, F1, [[F0, press], [PRESS_END, party], [barT(1), warhol], [barT(4), cameo4], [SAX_ON - 1e-4, solo1], [barT(8), solo2],
+    [barT(9), solo3], [barT(10), solo4], [barT(11), solo5], [barT(12), solo6], [barT(13), solo7], [barT(14), solo8], [barT(15), solo9], [barT(16), solo10], [167.5, lick]]);
   window.__F = { bars: [...Array(18)].map((_, k) => +barT(k).toFixed(3)), snap: beatT(70), hit: HIT };
 })();

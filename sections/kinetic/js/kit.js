@@ -66,6 +66,7 @@ const KIT = (() => {
       const last = i === ws.length - 1 && t - it.t < .5;
       text(str, cx, cy + (1 - it.a) * 18, { size: sz, weight: 700, color: last ? C.hot : (o.color || C.ink), alpha: clamp(it.a * 2) });
       cx += wd + sp;
+      if (o.breakComma && /,$/.test(it.w) && i < L.words.length - 1) { cx = x; cy += lh; }
     });
     if (o.cursor !== false && blink(t)) frect(cx, cy - sz * .78, sz * .5, sz * .9, C.hot);
     return { x: cx, y: cy };

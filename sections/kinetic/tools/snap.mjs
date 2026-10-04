@@ -31,8 +31,8 @@ for (const sec of ['A', 'K']) {
     let prev = -1;
     const words = ws.map((w) => { let v = near(w.s, -.1, .3); if (v === null || v < prev + .06) v = Math.max(w.s, prev + .06); prev = v; return [w.t.replace(/[.,]$/, ''), r3(v)]; });
     const e = r3(Math.max(ws[ws.length - 1].e, prev + .2));
-    const fx = FIX[sec]?.[key]; if (fx) { for (const [i, w] of Object.entries(fx.words)) words[i][0] = w; for (const [i, v] of Object.entries(fx.times || {})) words[i][1] = v; }
-    lines[fx?.key || key] = { text: words.map((w) => w[0]).join(' '), words, e, ...(fx?.unclear ? { unclear: fx.unclear } : {}) };
+    const fx = FIX[sec]?.[key]; if (fx?.replace) words.splice(0, words.length, ...fx.replace.map(([w, t]) => [w, t])); if (fx && !fx.replace) { for (const [i, w] of Object.entries(fx.words)) words[i][0] = w; for (const [i, v] of Object.entries(fx.times || {})) words[i][1] = v; }
+    lines[fx?.key || key] = { text: words.map((w) => w[0]).join(' '), words, e };
   }
   out[sec] = {
     lines,

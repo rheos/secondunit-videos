@@ -113,20 +113,40 @@ function person(P) {
   };
   const neckB = at(tw * 8, chest + 12), headUp = lean + (P.tilt || 0);
   const hc = pt(at(tw * 10, chest + 40), [Math.sin(headUp), -Math.cos(headUp)], 60);
+  // P.det (optional, v4 puppet business): { armL|armR: [dx, dy, rot, scale], head: [dx, dy, rot, scale] } in local
+  // units. A detached part comes off at a clean wooden ball joint (a puppet, never a wound) and is drawn
+  // moved/turned/scaled about its joint; the stump keeps its own ball.
+  const DET = P.det || {};
+  const joint = (p, r, sd) => part(ellipse(p[0], p[1], r, r, 10), { fill: hsl(32, 38, 72), shade: hsl(28, 36, 56), shadeShift: [r * .3, -r * .3], seed: sd, seg: 4, inkW: .7, tone2: false, hatch: false });
+  const detT = (pivot, d, fn) => withT(() => { s.translate(pivot[0] + d[0], pivot[1] + d[1]); s.rotate(d[2] || 0); const k = d[3] ?? 1; s.scale(k, k); s.translate(-pivot[0], -pivot[1]); fn(); });
   const drawHead = () => {
     const nk = [at(-17 + tw * 8, chest + 6), [hc[0] - 15, hc[1] + 20], [hc[0] + 15, hc[1] + 20], at(17 + tw * 8, chest + 6)];
     part(nk, { fill: C('skin'), shade: C('skinSh'), shadeShift: [light[0] * 1.6, 0], seed: seedB + 9, inkW: .9, seg: 3, hatch: false });
-    withT(() => { s.translate(hc[0], hc[1]); s.rotate(headUp); s.scale(1.12, 1.12); P.back ? headBack(P, seedB + 20, light) : headFront(P, seedB + 20, light); });
+    const dh = DET.head;
+    if (dh) { joint([hc[0], hc[1] + 22], 15, seedB + 95); }
+    const drawIt = () => withT(() => { s.translate(hc[0], hc[1]); s.rotate(headUp); s.scale(1.12, 1.12); (P.back && !(dh && dh[4])) ? headBack(P, seedB + 20, light) : headFront(P, seedB + 20, light); });
+    if (dh && dh[5] !== false) detT(hc, dh, () => { joint([hc[0], hc[1] + 62], 13, seedB + 96); drawIt(); }); else if (!dh) drawIt();
   };
   const drawArm = (key, side) => {
     const A = P[key]; if (!A) return;
     const [a1, a2, ha = 0, open = .5, fore = 1] = A, sh = side < 0 ? shL : shR;
     const el = pt(sh, dirv(a1 - lean), 128), wr = pt(el, dirv(a1 + a2 - lean), 116 * fore);
-    part(limb(sh, el, wr, 30, 25, 18), { fill: C('top'), shade: C('topSh'), shadeShift: light, seed: seedB + 60 + side, inkW: 1 });
-    stroke([[el[0] - 12, el[1] - 8], [el[0], el[1] + 4], [el[0] + 12, el[1] - 6]], seedB + 63 + side, .5);
+    const dd = DET[key];
+    if (!dd) {
+      part(limb(sh, el, wr, 30, 25, 18), { fill: C('top'), shade: C('topSh'), shadeShift: light, seed: seedB + 60 + side, inkW: 1 });
+      stroke([[el[0] - 12, el[1] - 8], [el[0], el[1] + 4], [el[0] + 12, el[1] - 6]], seedB + 63 + side, .5);
+    } else { // upper arm with its ball; the forearm floats free about the elbow
+      const m = [(sh[0] + el[0]) / 2, (sh[1] + el[1]) / 2], d = dirv(a1 - lean), e2 = pt(el, d, -8);
+      part(limb(sh, m, e2, 30, 28, 25), { fill: C('top'), shade: C('topSh'), shadeShift: light, seed: seedB + 60 + side, inkW: 1 });
+      joint(el, 17, seedB + 80 + side);
+    }
     const cuff = pt(el, dirv(a1 + a2 - lean), 100 * fore);
-    hand(cuff, a1 + a2 - lean + ha, open, side < 0 ? (P.flipL ?? false) : (P.flipR ?? true), seedB + 70 + side, P.handL ?? 1);
-    J[key] = { el, wr };
+    const fa = () => {
+      if (dd) { const e3 = pt(el, dirv(a1 + a2 - lean), 10); part(limb(e3, pt(el, dirv(a1 + a2 - lean), 60 * fore), wr, 24, 21, 18), { fill: C('top'), shade: C('topSh'), shadeShift: light, seed: seedB + 61 + side, inkW: 1 }); joint(el, 14, seedB + 82 + side); }
+      hand(cuff, a1 + a2 - lean + ha, open, side < 0 ? (P.flipL ?? false) : (P.flipR ?? true), seedB + 70 + side, P.handL ?? 1);
+    };
+    if (dd) detT(el, dd, fa); else fa();
+    J[key] = { el, wr, sh };
   };
   if (parts !== 'arms') {
     drawLegs();
@@ -226,3 +246,25 @@ function headBack(P, sd, light) {
   stroke([[50, -9], [42, -8], [31, -10]], sd + 3, .55, { force: true, wob: .2 });
   stroke([[-30, -50], [-20, -10], [-24, 30]], sd + 4, .4); stroke([[4, -60], [8, -20], [6, 30]], sd + 5, .4);
 }
+
+// Where the joints are, in the person's local units, without drawing (mirrors person()).
+function geomOf(P) {
+  const lean = P.lean || 0, br = P.breath || 0, tw = P.twist || 0, st = P.style || STYLE;
+  const up = [Math.sin(lean), -Math.cos(lean)], sd = [Math.cos(lean), Math.sin(lean)], at = (u, v) => [sd[0] * u + up[0] * v, sd[1] * u + up[1] * v];
+  const chest = 250 + br * 3, sw = (90 + br * 1.5) * (st.build || 1), shr = P.shrug || 0;
+  const shL = at(-sw + 18 + tw * 10, chest - 16 + shr), shR = at(sw - 18 + tw * 10, chest - 16 + shr * .7);
+  const headUp = lean + (P.tilt || 0), hc = pt(at(tw * 10, chest + 40), [Math.sin(headUp), -Math.cos(headUp)], 60);
+  const el = (A, sh) => A ? pt(sh, dirv(A[0] - lean), 128) : sh;
+  return { shL, shR, hc, headUp, elL: el(P.armL, shL), elR: el(P.armR, shR), w: (p) => [P.x + p[0] * P.sc, P.y + p[1] * P.sc] };
+}
+
+// Loose puppet pieces drawn on their own (juggled, flying through ears). Same style rules as person().
+function woodJoint(p, r, sd) { part(ellipse(p[0], p[1], r, r, 10), { fill: hsl(32, 38, 72), shade: hsl(28, 36, 56), shadeShift: [r * .3, -r * .3], seed: sd, seg: 4, inkW: .7, tone2: false, hatch: false }); }
+function withStyle(P, fn) { const k = STYLE, ki = INKK, kw = WOBK; STYLE = P.style || STYLE; INKK = P.inkK ?? INKK; WOBK = P.wobK ?? WOBK; try { fn(); } finally { STYLE = k; INKK = ki; WOBK = kw; } }
+function looseHead(x, y, rot, k, P) { withStyle(P, () => withT(() => { s.translate(x, y); s.rotate(rot); s.scale(k * 1.12, k * 1.12); woodJoint([0, 58], 12, (P.seed || 100) + 96); headFront(P, (P.seed || 100) + 20, P.light || [10, -6]); })); }
+// forearm with its hand, elbow ball at (x,y), pointing along angle a (dirv convention: 0 = down)
+function looseForearm(x, y, a, k, P, side, open = .6) { withStyle(P, () => withT(() => { s.translate(x, y); s.scale(k, k);
+  const d = dirv(a), e3 = [d[0] * 10, d[1] * 10], m = [d[0] * 60, d[1] * 60], wr = [d[0] * 116, d[1] * 116], cuff = [d[0] * 100, d[1] * 100];
+  part(limb(e3, m, wr, 24, 21, 18), { fill: C('top'), shade: C('topSh'), shadeShift: [10, -6], seed: (P.seed || 100) + 61 + side, inkW: 1 });
+  woodJoint([0, 0], 14, (P.seed || 100) + 82 + side);
+  hand(cuff, a, open, side < 0, (P.seed || 100) + 70 + side, 1); })); }

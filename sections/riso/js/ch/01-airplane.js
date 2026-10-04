@@ -140,7 +140,7 @@
       for (const sd of [-1, 1]) ell(sd * 160, -318, 40, 30, pal.cheek, { op: 1 });
       FEYES.forEach(([ex, ey, rx, ry], i) => eye(ex, ey, rx, ry, o, i, lw, pal.body));
       brows(FEYES, o.brow?.[0] || 0, o.brow?.[1] || 0, lw, pal);
-      mouth(0, -330, 78, open, lw, pal);
+      mouth(0, o.mcy ?? -330, 78 * (o.mw || 1), open, lw, pal);
     });
   }
 
@@ -244,7 +244,20 @@
   }
 
   // ===== 71.00 poster: a framed print, he drives in small from the left =====
+  // v4 (ii): 71.0 to "air-" (vocal stem onset ~72.97, frame 1751) stays minimal and still: a faint single-plate ghost of him
+  // on bare paper; the full poster bursts in on "air-plane"
+  const AIR = 1751 / 24;
+  const PAL_GHOST = { ...PAL0, body: PAPER, key: C(0, .5, 0), glass: PAPER, wing: PAPER, fin: PAPER, tip: PAPER, cheek: PAPER, ring: C(0, .5, 0) };
+  function posterStill(t) {
+    FRI = Math.floor(AIR * 12);
+    sheet(PAPER);
+    const px = kf(AIR, [[71.0, -380], [74.86, 1120]], (x) => x);
+    sidePlane(px, 892, .62, { t: AIR, open: 0, bob: 0, sq: 0, lid: 0, spin: 0, roll: 0, look: [.8, .1], brow: [0, 0], pal: PAL_GHOST });
+    for (const [x, y] of [[22, 22], [W - 22, 22], [22, H - 22], [W - 22, H - 22]]) { lighten(); ell(x, y, 10, 10, null, { lw: 2, line: C(0, .5, 0) }); over(); }
+    fx({ jit: 1.2, fade: .55, starve: .6 });
+  }
   function poster(t) {
+    if (t < AIR) return posterStill(t);
     const T = ta(t); FRI = Math.floor(t * 12);
     sheet(PAPER);
     rays(1340, 400, 22, 1700, T * .07, C(.38, 0, 0));
@@ -264,7 +277,7 @@
     sidePlane(px, 892, .62, { ...st, look, brow: [T > 73.3 && T < 74.3 ? .6 : 0, 0] });
     border(44);
     // the print slaps into register
-    const u = 1 - ease.out(inv(71.0, 71.55, t));
+    const u = 1 - ease.out(inv(AIR, AIR + .55, t));
     fx({ off: [-110 * u, 40 * u, 90 * u, -70 * u, 30 * u, 120 * u], jit: 2.4 + 6 * u });
   }
 
@@ -483,7 +496,8 @@
   function sick(t) {
     const T = ta(t); FRI = Math.floor(t * 12);
     const punch = T >= 87.29 && T < 88.13;                                            // v3: punch in on the drum hit at 87.29, back out on 88.13
-    const z = kf(T, [[SICK, 1.12], [91, 1.22]], (x) => x) * (punch ? 1.3 : 1), fcx = PLANE_X + 120 * (punch ? .3 : 1), fcy = PLANE_Y - 380 - (punch ? 120 : 0);
+    const AHH = 2127 / 24, ahh = Math.max(0, Math.min(ease.back(inv(AHH, AHH + .16, t)), 1 - ease.inOut(inv(89.15, 89.45, t))));   // v4 (iv): "ahh" 88.61-89.75 on the stem
+    const z = kf(T, [[SICK, 1.12], [91, 1.22]], (x) => x) * (punch ? 1.3 : 1) * (1 + .45 * ahh), fcx = PLANE_X + 120 * (punch ? .3 : 1 - ahh), fcy = PLANE_Y - 380 - (punch ? 120 : 0) - 10 * ahh;
     const st = base(t);
     let look = [.3, .2], brow = [.2, .4], lid = st.lid;
     const cz = (c) => ZP + VREL * (c[0] - T);
@@ -498,7 +512,8 @@
       const cars = CARS_F.map((c) => [cz(c), c]).filter(([zz]) => zz > .32 && zz < 40).sort((a, b) => b[0] - a[0]);
       carpetPosts(t, false);
       for (const [zz, c] of cars) if (zz > ZP) carFront(gx(.66, zz), gy(zz), FOC / zz / 650 * 1.2, c[1], c[2]);
-      frontPlane(PLANE_X, PLANE_Y, .85, { ...st, look, brow, lid });
+      const ah = ahh > .01 ? { open: .9 * ahh + st.open * (1 - ahh), mw: 1 + .5 * ahh, mcy: -330 - 18 * ahh, look: [0, -.35 * ahh], brow: [1.3 * ahh, 0], lid: 0 } : {};
+      frontPlane(PLANE_X, PLANE_Y, .85, { ...st, look, brow, lid, ...ah });
       carpetPosts(t, true);
       for (const [zz, c] of cars) if (zz <= ZP) carFront(gx(.66, zz), gy(zz), FOC / zz / 650 * 1.2, c[1], c[2]);
       for (let q = 0; q < 3; q++) { const w = (T - 89.3 - q * .2) / 1.1; if (w < 0 || w >= 1) continue;          // the sigh
@@ -554,6 +569,21 @@
       else stroke([[-hr * .22, my - 1], [0, my + 1.5], [hr * .22, my - 1]], KEY, 1.3);
     });
   }
+  // a riso speech bubble: the word measured so it always sits inside with margin; tail points down at the singer
+  function bubble(str, x, y, px, pop, col, maxW = 1e9) {
+    if (pop <= 0) return;
+    withT(() => {
+      s.translate(x, y); s.scale(pop, pop);
+      s.font = `${px}px Impact`; s.letterSpacing = (px * .06) + 'px';
+      let w = s.measureText(str).width; if (w > maxW) { px *= maxW / w; s.font = `${px}px Impact`; s.letterSpacing = (px * .06) + 'px'; w = s.measureText(str).width; }
+      const bw = w + px * .9, bh = px * 1.35;
+      shape([[-px * .25, bh / 2 - 2], [px * .25, bh / 2 - 2], [0, bh / 2 + px * .5]], PAPER, { lw: Math.max(1.2, px * .1) });
+      rrect(-bw / 2, -bh / 2, bw, bh, bh * .35, PAPER, { lw: Math.max(1.2, px * .1) });
+      s.textAlign = 'center'; s.textBaseline = 'middle';
+      s.lineWidth = Math.max(1, px * .07); s.strokeStyle = KEY; s.lineJoin = 'round'; s.strokeText(str, 0, px * .05);
+      s.fillStyle = col; s.fillText(str, 0, px * .05);
+    });
+  }
   function cabin(t) {
     const T = ta(t); FRI = Math.floor(t * 12);
     const fin = SYL[3], st = base(t), voc = clamp((F('voc', t, 1) - .05) / .4);
@@ -577,12 +607,12 @@
         if (t >= on - .02) passenger(i, wx, wy, open, pop, T);
         withT(() => { s.beginPath(); s.arc(wx, wy, WR, 0, TAU); s.clip(); lighten(); ell(wx - WR * .45, wy - WR * .5, WR * .28, WR * .14, C(0, .25, 0), { rot: -.6 }); over(); });   // glint
         ell(wx, wy, WR, WR, null, { lw: 2.4 });
-        if (open > .3) for (let q = 0; q < 2; q++) {                                                 // little music notes off each singer
-          const u = wrap((t - on) * 1.4 + q * .5, 1), nx = wx + 10 + u * 26 + q * 6, ny = wy - WR - u * 30;
-          ell(nx, ny, 3.2, 2.5, [PINK, YEL, TEAL][(i + q) % 3], { rot: -.4 }); stroke([[nx + 2.8, ny], [nx + 2.8, ny - 9]], KEY, 1.2);
-        }
+        if (i < 3 && t >= on && t < SYL[i + 1]) bubble(['MNUH', 'NUH', 'NUH'][i], wx, wy - WR - 18, 17, ease.back(inv(on, on + .1, t)), [YEL, PINK, TEAL][i]);   // v4 (iii): the word on its syllable
       }
     });
+    if (t >= fin && t < NA_END) withT(() => {                                                        // the finale: all of it together
+      const p = ease.back(inv(fin, fin + .14, t)) * (1 + .05 * hit(t, SYL_RE, 8)); s.translate(960, 150); s.scale(p, p);
+      bubble('MNUH NUH NUH', 0, 0, 110, 1, YEL, 1400); });
     const kick = Math.max(...SYL.map((on, j) => hit(t, on, 9) * (j === 3 ? .9 : .45)), hit(t, SYL_RE, 9) * .4);
     const n = SYL.filter((on) => t >= on).length;
     const ap = (m) => (hash(n * 31 + m) - .5) * 2 * kick;

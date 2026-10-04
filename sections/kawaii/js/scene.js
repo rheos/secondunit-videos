@@ -285,3 +285,14 @@ function tollBooth(x, t, sign, sq = 1, arm = 0, sd = 1600) {
     k.restore(); }
   pop();
 }
+// a sung word popping up in kawaii lettering: pastel fill on the paint layer, wobbly-free marker outline
+// on the ink layer, at a fixed size so it never outgrows the frame; pops with an overshoot at t0, then bobs gently
+function popWord(txt, x, y, size, col, t, t0, sd = 0) {
+  const g = ease.back(inv(t0, t0 + .22, t)); if (g <= 0) return;
+  const rot0 = (hash(sd + 3) - .5) * .35, bob = Math.sin((t - t0) * 6 + sd) * 8;
+  const font = `900 ${size}px "Arial Rounded MT Bold", "Helvetica Neue", Arial`;
+  for (const c of [s, k]) { c.save(); c.translate(x, y + bob); c.rotate(rot0 + Math.sin((t - t0) * 4 + sd) * .05); c.scale(g, g); c.font = font; c.textAlign = 'center'; c.textBaseline = 'middle'; c.lineJoin = 'round'; }
+  s.fillStyle = col; s.fillText(txt, 0, 0);
+  k.lineWidth = size * .09; k.strokeStyle = INK; k.strokeText(txt, 0, 0); k.fillStyle = col; k.fillText(txt, 0, 0);
+  s.restore(); k.restore();
+}

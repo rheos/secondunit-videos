@@ -12,3 +12,4 @@ STORYBOARD.md
 **/node_modules
 stems.js
 out/
+*.jpg

@@ -109,6 +109,9 @@
       confetti(x, yy, t0, t, 22, 6700 + i, 600, 1.6);
     });
     plane3(960, 960, 1.3, { t, yaw: Math.sin(t * 2.4) * .12, pitch: .12, hop, squash: sq, eyes: t >= DA[0] - .05 ? 'squeeze' : 'happy', mouth: 'smile', open: 0, faceU: 84, es: 1.4, persp: 3200 });
+    // v4: "na na na na na na" as words, one per syllable, around him (clear of his face and the three pops)
+    const NAP = [[250, 150, PAL.pink], [700, 110, PAL.lemon], [1250, 105, '#bfe0f4'], [1700, 175, PAL.mint], [190, 590, PAL.lilac], [1730, 600, '#f7b6a8']];
+    DA.forEach((a, i) => { const [x, y, c] = NAP[i]; popWord('NA', x, y, 150, c, t, a, 40 + i); });
   }
 
   // ------------------------------------------------------------ D4 side travelling

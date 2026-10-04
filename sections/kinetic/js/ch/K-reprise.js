@@ -20,6 +20,35 @@
     for (let i = 0; i < 5; i++) { const cx = x + wrap(i * 230 - t * sp, w + 200) - 100, cy = y + 60 + (i % 3) * (h / 3.5); for (const [dx, r] of [[-30, 24], [0, 34], [32, 22]]) { s.beginPath(); s.arc(cx + dx, cy, r, Math.PI, TAU); s.lineWidth = 2; s.strokeStyle = '#3a3530'; s.stroke(); } }
   }
 
+  // ---------------- piano run (v4 xi) ----------------
+  // Onsets of the piano run, from librosa onset_detect on the htdemucs_6s piano stem (338-352 s window,
+  // delta .07), kept from K's first frame to 347.5. STEMS.piano.onsets only has two hits here, so these
+  // are measured from the stem itself. Every hit lights a key on a keyboard strip, throws a note tick up
+  // from it and flashes the frame brackets orange.
+  const PIANO = [341.297, 341.831, 342.203, 342.365, 342.574, 342.737, 342.899, 343.062, 343.248, 343.433, 343.619, 343.968, 344.339, 344.571, 344.711, 345.129, 345.5, 345.825, 346.243, 346.591, 346.986, 347.381];
+  function pianoRun(t) {
+    if (t > PIANO[PIANO.length - 1] + .6) return;
+    const NK = 28, kw = 30, x0 = 960 - NK * kw / 2, y0 = 996, kh = 40;
+    const lastI = PIANO.filter((p) => p <= t + .001).length - 1;
+    const keyOf = (i) => (4 + i * 3) % NK; // the run climbs the keyboard
+    withT(() => {
+      frect(x0 - 70, y0 - 6, NK * kw + 76, kh + 12, C.bg);
+      text('PNO', x0 - 60, y0 + 28, { size: 15, color: lastI >= 0 && t - PIANO[lastI] < .15 ? C.hot : C.dim, ls: 2 });
+      for (let k = 0; k < NK; k++) {
+        let g = 0; PIANO.forEach((p, i) => { if (keyOf(i) === k && t >= p - .001) g = Math.max(g, Math.exp(-(t - p) * 9)); });
+        frect(x0 + k * kw + 1, y0, kw - 2, kh, g > .02 ? `rgba(255,74,28,${(.25 + .75 * g).toFixed(3)})` : '#1a1815');
+        rect(x0 + k * kw + 1, y0, kw - 2, kh, '#3a3530', 1);
+        if ([0, 1, 3, 4, 5].includes(k % 7) && k < NK - 1) frect(x0 + k * kw + kw * .68, y0, kw * .64, kh * .58, '#0a0908');
+      }
+      PIANO.forEach((p, i) => { // note ticks rising from the lit key
+        const e = t - p; if (e < 0 || e > .55) return;
+        const x = x0 + keyOf(i) * kw + kw / 2, y = y0 - 10 - e * 220;
+        line([[x, y], [x, y - 18]], C.hot, 3); dot(x - 4, y, 5, C.hot);
+      });
+      if (lastI >= 0) { const g = Math.exp(-(t - PIANO[lastI]) * 14); if (g > .05) { s.globalAlpha = g; brackets(36, 36, W - 72, H - 72, 30, C.hot, 3); s.globalAlpha = 1; } }
+    });
+  }
+
   // ---------------- k01 replay ----------------
   function replay(t, lt) {
     fill(C.bg); grid(60, '#100f0d');
@@ -33,6 +62,7 @@
     text('TRANSCRIPT ▸ AUTO', 110, 640, { size: 16, color: C.dim, ls: 3 }); line([[110, 655], [1810, 655]], '#2a2622', 1.5);
     transcript(LK.sky, t, 110, 770, { size: 92, maxW: 1700 });
     cvr(t, 'K01 · REPLAY', head);
+    pianoRun(t);
   }
 
   // ---------------- k02 glide slope ----------------
@@ -54,6 +84,7 @@
       wx += 22 + text(str, wx, 960 - rise - i * 22 + (1 - it.a) * 30, { size: 50, weight: 700, color: C.ink, alpha: clamp(it.a * 2) });
     });
     cvr(t, 'K02 · APPROACH', head);
+    pianoRun(t);
   }
 
   // ---------------- k03 touchdown ----------------
@@ -72,12 +103,13 @@
         text(it.w.toUpperCase(), 140 + i * 66, 200 + i * 56, { size: 50, weight: 700, color: C.ink, alpha: clamp(it.a * 2) * (t > GT ? .45 : 1) });
       });
       const E = LK.onground; let x = 620;
-      for (const it of said(E, t)) x += 22 + text(it.w.toLowerCase(), x, 980, { fam: FAM.s, italic: true, size: 100, color: C.ink, alpha: clamp(it.a * 2) });
+      for (const it of said(E, t)) x += 22 + text(it.w.toLowerCase(), x, 950, { fam: FAM.s, italic: true, size: 100, color: C.ink, alpha: clamp(it.a * 2) });
     });
     text(alt > 0 ? String(Math.round(alt)) : 'TOUCHDOWN', 1790, 220, { fam: FAM.g, weight: 900, size: alt > 0 ? 160 : 70, color: alt > 0 ? C.ink : C.hot, align: 'right' });
     text('RADIO ALT', 1790, 90 + 40, { size: 18, color: C.dim, align: 'right', ls: 4 });
     fx({ flash: .2 * hit(t, GT, 18), glitch: .35 * h });
     cvr(t, 'K03 · TOUCHDOWN', head);
+    pianoRun(t);
   }
 
   // ---------------- k04 roll-in ----------------
