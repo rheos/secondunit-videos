@@ -1,0 +1,7 @@
+{
+  "name": "bobwiseman-airplane-collage",
+  "private": true,
+  "type": "module",
+  "description": "Bob Wiseman, Airplane on the Highway (2026), drawn in code: sleeve collage + metamorphosis.",
+  "devDependencies": { "playwright": "^1.55.0" }
+}
