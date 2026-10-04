@@ -1,5 +1,5 @@
 // 245.0 - 290.0  dressed in her laughter. Colour arrives: her laughter is sewn into his trousers, her
-// smile knitted into his sweater, the grey coat flies off, a stamp can't stop him, and he walks out of
+// smile knitted into his sweater, the grey coat flies off, no blizzard can stop him, and he walks out of
 // the ministry's front doors to a road sign: A HUNDRED MILES.
 (() => {
   // his new clothes, in real colour (the first colours that aren't sky or her)
@@ -454,6 +454,36 @@
       line([[-330, 0], [330, 0]], INK, 18); line([[-330, 0], [330, 0]], '#c9c2a8', 11);
       dot(sg > 0 ? -340 : 340, 0, 22, ROSE); s.lineWidth = 3; s.strokeStyle = INK; s.beginPath(); s.arc(sg > 0 ? -340 : 340, 0, 22, 0, TAU); s.stroke(); }); });
   }
+  // "ain't no blizzard that can stop me now" (Bob's sheet; sung "ain't no" 273.03, "blizzard" 273.70, "that
+  // can't" 275.63, "stop" 276.37, "now" 277.1): a blizzard of paperwork and snow, blowing right to left in
+  // screen space. amt 0..1 is how much of it is falling. layer: 0 behind him, 1 in front (fewer, bigger).
+  // Every flake is a pure function of t: x runs on a loop wider than the frame, so wraps happen off screen.
+  const BLZ_N = 340, PAPERS = '#efe9d6', FLAKE = '#f7f3e8';
+  function blizzard(t, amt, layer, { gust = 0 } = {}) {
+    if (amt <= 0) return;
+    const span = W + 500;
+    for (let i = 0; i < BLZ_N; i++) {
+      const front = hash(i * 5 + 1) > .78; if (front !== (layer === 1)) continue;
+      if (hash(i * 13 + 2) > amt) continue;
+      const d = front ? 1.2 + hash(i * 3) * .6 : .35 + hash(i * 3) * .75;          // depth scale
+      const vx = 700 + 600 * d, vy = 90 + 140 * d * hash(i * 19);
+      const x = W + 250 - (((t * vx + hash(i * 7) * span) % span) + span) % span;
+      const y = ((hash(i * 11) * (H + 160) + t * vy) % (H + 160)) - 80 + Math.sin(t * 2.3 + i) * 24 * d;
+      if (hash(i * 17) < .5) {                                                       // a sheet of paperwork, tumbling
+        const w = 30 * d, h = 40 * d, flip = .25 + .75 * Math.abs(Math.cos(t * (3 + hash(i * 23) * 4) + i));
+        withT(() => { s.translate(x, y); s.rotate(t * (2 + hash(i * 29) * 5) * (hash(i) > .5 ? 1 : -1)); s.scale(1, flip);
+          shape([[-w / 2, -h / 2], [w / 2, -h / 2], [w / 2, h / 2], [-w / 2, h / 2]], PAPERS, 1.4 * d);
+          if (d > .6) { s.globalAlpha = .45; for (let k = 1; k < 4; k++) line([[-w * .32, -h / 2 + k * h / 4.4], [w * .32, -h / 2 + k * h / 4.4]], '#7a7262', Math.max(.8, d)); s.globalAlpha = 1; } });
+      } else if (PK) PK.star(x, y, (5 + 6 * d), FLAKE, Math.max(.6, .8 * d));            // a snowflake, as a pinball star
+      else dot(x, y, 4 + 4 * d, FLAKE);
+    }
+    // wind streaks
+    // (speeds never change with the gust: x is t * speed, so a changing speed would make flakes jump)
+    withT(() => { s.globalAlpha = (.28 + .25 * gust) * amt * (layer === 1 ? .6 : 1);
+      for (let i = 0; i < 22 + Math.round(gust * 14); i++) { const vx = 1900, L = 120 + hash(i * 41) * 160;
+        const x = W + 300 - (((t * vx + hash(i * 43) * (W + 700)) % (W + 700)) + (W + 700)) % (W + 700), y = hash(i * 47) * H;
+        line([[x, y], [x + L, y - L * .06]], FLAKE, 2); } });
+  }
   // 264.63 the four "we've got time"s: on a tailor's box in front of the drawer wall the coat flies off
   // (265.8), the scarf (268.73), her paper flower (271.87), her rose on the hat band (274.95).
   function dressing(t, lt) {
@@ -490,42 +520,48 @@
     });
     // hit sparkle: a rose ring off each new piece
     for (const h of hits) { const a = hit(t, h, 3.5); if (a < .03) continue; s.globalAlpha = a; s.beginPath(); s.arc(W / 2, 560, 300 + (1 - a) * 400, 0, TAU); s.lineWidth = 10; s.strokeStyle = ROSE; s.stroke(); s.globalAlpha = 1; }
+    // "ain't no blizzard": it starts blowing on "ain't no" (273.03) and is a blizzard by "blizzard" (273.70);
+    // he stands in it, unbothered, and still tips his hat on the last hit
+    if (t >= 273.0) { const amt = .18 * smooth(inv(273.0, 273.4, t)) + .5 * smooth(inv(273.62, 274.1, t)); blizzard(t, amt, 0); blizzard(t, amt, 1); }
   }
-  // 275.53 [image]: he walks across the hall; a giant ON HOLD stamp comes down on him (276.40) and
-  // misses by a step. It leaves her flower printed on the floor.
+  // 275.53 "that can't stop me now": he walks across the hall straight into the blizzard of paperwork. On
+  // "stop" (276.37) the big gust and a drift of forms piled across the aisle: he wades through it without
+  // breaking stride, leaning into the wind, papers kicking up round his legs; by "now" he is through.
+  const DRIFT_X = -1.55, STOP_T = 276.37;
+  function drift(zS, half) {   // a knee-high bank of fallen forms across his path; half -1 = behind him, 1 = in front
+    const R = rng(half > 0 ? 9171 : 9172);
+    for (let j = 0; j < 46; j++) {
+      const dx = (R() - .5) * 1.5, dz = half * (.05 + R() * .55), hgt = (1 - Math.abs(dx) / .75) * .5 * R();
+      const p = P(DRIFT_X + dx, FL - hgt, zS + .3 + dz), k = p[2], rot = (R() - .5) * 1.6, w = .34 * k, h = .44 * k;
+      withT(() => { s.translate(p[0], p[1]); s.rotate(rot); s.scale(1, .55);
+        shape([[-w / 2, -h / 2], [w / 2, -h / 2], [w / 2, h / 2], [-w / 2, h / 2]], j % 7 ? PAPERS : CREAM, 1.2); });
+    }
+  }
   function noStop(t, lt) {
-    fx({ sat: satAt(t) });
+    fx({ sat: satAt(t), flash: hit(t, STOP_T, 5) * .18 });
     cam({ x: -.2, z: 1.5, y: -.35, f: 900, vy: 400 });
     room(t); duct(-3.6, -2.1, .5, 0, FAR); duct(2.8, -2.25, .32, 0, FAR, STEEL_D); tube(t); board(t, '0004');
     rows(t);
-    const zS = 5.2, x = kf(t, [[275.5, -3.2], [278.6, 2.4]], (k) => k), sx = -.75;
-    const hitT = 276.40;
-    // the imprint: her flower, in rose ink on the floor
-    if (t > hitT + .05) {
-      s.globalAlpha = .85; const c = [sx, zS];
-      for (let j = 0; j < 6; j++) { const a = j / 6 * TAU, pts = [];
-        for (let u = 0; u <= 8; u++) { const aa = a - .45 + u / 8 * .9, rr = u === 0 || u === 8 ? .15 : .8 + .15 * Math.sin(u / 8 * Math.PI); pts.push(P(c[0] + Math.cos(aa) * rr, FL, c[1] + Math.sin(aa) * rr * .7)); }
-        poly(pts.map((p) => [p[0], p[1]]), j % 2 ? ROSE : ROSE_L); }
-      const cc = P(sx, FL, zS); s.beginPath(); s.ellipse(cc[0], cc[1], .2 * cc[2], .06 * cc[2], 0, 0, TAU); s.fillStyle = AMBER; s.fill();
-      s.globalAlpha = 1;
-    }
-    // him, walking across
+    const gust = smooth(inv(STOP_T - .15, STOP_T + .1, t)) * (1 - smooth(inv(STOP_T + .5, 277.4, t)));
+    const amt = .8 + .2 * gust - .45 * smooth(inv(277.1, 278.5, t));
+    blizzard(t, amt, 0, { gust });
+    const zS = 5.2, x = kf(t, [[275.5, -3.2], [278.6, 2.4]], (k) => k);
+    drift(zS, -1);
+    // him, walking across at an even pace, leaning a little into the wind at the gust
     const b = P(x, FL, zS + .3);
-    suitSide(b[0], b[1], b[2], { ph: (t - 275.5) * 1.15, walk: 1, face: 1, t });
-    // the stamp: from the ceiling down to the floor, then back up
-    const down = t < hitT ? ease.in(inv(275.75, hitT, t)) : 1 - ease.out(inv(hitT + .15, hitT + .75, t));
-    const yb = lerp(CE - 2.8, FL, down);
-    const f0 = P(sx - 1.1, yb - .55, zS - .7), f1 = P(sx + 1.1, yb, zS - .7), b0 = P(sx - 1.1, yb - .55, zS + .7), b1 = P(sx + 1.1, yb - .55, zS + .7);
-    shape([[f0[0], f0[1]], [b0[0], b0[1]], [b1[0], b1[1]], [f1[0], f0[1]]], '#4a463d', 3);
-    shape([[f0[0], f0[1]], [f1[0], f0[1]], [f1[0], f1[1]], [f0[0], f1[1]]], '#3a382f', 3);
-    shape([[f0[0], f1[1] - 12], [f1[0], f1[1] - 12], [f1[0], f1[1]], [f0[0], f1[1]]], ROSE, 2);
-    text('ON HOLD', (f0[0] + f1[0]) / 2, (f0[1] + f1[1]) / 2 + .1 * f1[2], .32 * f1[2], { font: 'stamp', color: CREAM, max: (f1[0] - f0[0]) * .84 });
-    const h0 = P(sx - .22, yb - .55, zS), h1 = P(sx + .22, yb - 3.2, zS);
-    shape([[h0[0], h0[1]], [h1[0] + (h1[0] - h0[0]) * 0, h0[1]], [h1[0] - 8, h1[1]], [h0[0] + 8, h1[1]]], BRASS, 3);
-    const kn = P(sx, yb - 3.6, zS); dot(kn[0], kn[1], .5 * kn[2], BRASS); s.lineWidth = 3; s.strokeStyle = INK; s.beginPath(); s.arc(kn[0], kn[1], .5 * kn[2], 0, TAU); s.stroke();
-    // the thump
-    const th = hit(t, hitT, 6);
-    if (th > .03) { s.globalAlpha = th; const c = P(sx, FL, zS - .7); for (let i = 0; i < 7; i++) { const dx = (i - 3) * .45 * c[2]; ink([[c[0] + dx, c[1] + 10], [c[0] + dx * 1.4, c[1] + 10 + 60 * th]], 4); } s.globalAlpha = 1; }
+    withT(() => { s.translate(b[0], b[1]); s.rotate(.03 + .05 * gust); s.translate(-b[0], -b[1]);
+      suitSide(b[0], b[1], b[2], { ph: (t - 275.5) * 1.15, walk: 1, face: 1, t }); });
+    drift(zS, 1);
+    // forms kicked up round his legs as he wades the drift
+    const into = inv(DRIFT_X - .8, DRIFT_X + .8, x);
+    if (into > 0 && into < 1 || (x > DRIFT_X + .8 && t < STOP_T + 1.6)) for (let j = 0; j < 14; j++) {
+      const t0 = STOP_T - .55 + j * .08, l = t - t0; if (l < 0 || l > 1.1) continue;
+      const p = P(DRIFT_X - .5 + hash(j * 7) * 1.0, FL - .15, zS + .3), k = p[2];
+      const px = p[0] - l * (260 + hash(j * 3) * 260), py = p[1] - l * (320 + hash(j * 5) * 200) + l * l * 260;
+      withT(() => { s.translate(px, py); s.rotate(l * (4 + hash(j) * 5)); s.scale(1, .3 + .7 * Math.abs(Math.cos(l * 7 + j))); s.globalAlpha = 1 - smooth(inv(.7, 1.1, l));
+        shape([[-.15 * k, -.2 * k], [.15 * k, -.2 * k], [.15 * k, .2 * k], [-.15 * k, .2 * k]], PAPERS, 1.3); });
+    }
+    blizzard(t, amt, 1, { gust });
   }
   // 278.57 "we've got time" x2: from behind, he walks up the aisle to the far doors; each "time" opens them wider.
   function aisle(t, lt) {
