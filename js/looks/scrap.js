@@ -140,9 +140,10 @@ void main(){
     plateCut('dancehouse', [0, 0, im ? im.width : 1, im ? im.height : 1], [dx, dy, dw, dh], { seed: 41, sh: 0, edge: false });
     // the windows light up on the line's first syllable (the etching's own bright marks, washed amber)
     const on = smooth(inv(LIGHT - .05, LIGHT + .35, t)), L = IMG['dancehouse-light'];
-    if (L && on > 0) { lit.save(); lit.setTransform(main.getTransform()); lit.globalCompositeOperation = 'lighter'; lit.globalAlpha = on * (.85 + .1 * Math.sin(t * 9)); lit.drawImage(L, dx, dy, dw, dh); lit.globalAlpha = on * .5; lit.filter = 'blur(14px)'; lit.drawImage(L, dx, dy, dw, dh); lit.restore(); }
+    // (added straight onto the page, so the pieces in front cover it)
+    if (L && on > 0) { const g = main; g.save(); g.globalCompositeOperation = 'lighter'; g.globalAlpha = on * (.8 + .1 * Math.sin(t * 9)); g.drawImage(L, dx, dy, dw, dh); g.globalAlpha = on * .45; g.filter = 'blur(14px)'; g.drawImage(L, dx, dy, dw, dh); g.restore(); }
     // the lamp on the right, its glass lit
-    const lx = 860, ly = 1880, lw = 380, lampH = P.lamp ? lw * P.lamp.height / P.lamp.width : 1400, topY = ly - lampH;
+    const lx = 820, ly = 1900, lw = 210, lampH = P.lamp ? lw * P.lamp.height / P.lamp.width : 1400, topY = ly - lampH;
     put('lamp', lx, ly, lw, { sh: 1 });
     glow(lx, topY + lampH * .1, 260, 'rgba(255,200,120,.45)'); glow(lx, topY + lampH * .1, 70, 'rgba(255,240,200,.8)');
     // the egret: the 1887 photographs swapped like drawings (on threes), gliding in from the left, landing on the lamp on the cue word
@@ -150,10 +151,10 @@ void main(){
     if (t < BIRD) {
       const k = ease.out(inv(BIRD - 2.0, BIRD, t)), x = lerp(-300, perchX - 40, k), y = lerp(260, perchY - 40, k) + Math.sin(k * Math.PI) * -60;
       const cyc = ['egret-2', 'egret-3', 'egret-1', 'egret-3'], fr = k > .82 ? 'egret-4' : cyc[Math.floor(onTwos(t, 8)) % 4];
-      put(fr, x, y, lerp(380, 460, k), { ay: .8, sh: .8, rot: -.05 });
+      put(fr, x, y, lerp(300, 340, k), { ay: .8, sh: .8, rot: -.05 });
     } else {
       const l2 = t - BIRD, fr = l2 < .45 ? 'egret-4' : 'egret-0';
-      put(fr, perchX, perchY + Math.exp(-7 * l2) * 18, 460, { ay: .92, sh: .9 });
+      put(fr, perchX, perchY + Math.exp(-7 * l2) * 18, 340, { ay: .92, sh: .9 });
     }
     main.restore();
     finish();
