@@ -78,8 +78,8 @@
     const k = hit(t, T1, 5);
     withT(() => { s.translate(k * 12 * Math.sin(t * 90), 0);
       if (t >= T1) starburst(bx, by, 120 + k * 50, 280 + k * 140, 12, .2, [K.CRM, K.MUS]);
-      withOL(10, () => { nv(() => rectP(-60, 900, 2040, 400), K.BOR); withT(() => { s.fillStyle = K.ORA; for (let y = 940; y < 1100; y += 44) s.fillRect(-60, y, 2040, 16); }); nv(() => rectP(1320, 856, 230, 50, 10), K.MUS); });
       fig('CHAIR', 760, 1260, 1.35, { t, bounce: .2, lid: t >= T1 ? .05 : .6, mouth: t >= T1 && k > .15 ? 'open' : undefined, look: 1 });
+      withOL(10, () => { nv(() => rectP(-60, 900, 2040, 400), K.BOR); withT(() => { s.fillStyle = K.ORA; for (let y = 940; y < 1100; y += 44) s.fillRect(-60, y, 2040, 16); }); nv(() => rectP(1320, 856, 230, 50, 10), K.MUS); });
       const a = swing(t, T1), hx = 1150, hy = 700;
       withOL(10, () => { armTo(855, 805, hx, hy, 11); gavelAt(hx, hy, a, 300, 210, 116); puffHand(hx, hy, 46, .15, K.WHT, a); });
     });
