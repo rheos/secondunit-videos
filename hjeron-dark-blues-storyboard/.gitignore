@@ -1,0 +1,16 @@
+# media, frames and anything derived from the artist's footage or audio stay local
+frames/
+output/
+work/
+refs/
+*.mp4
+*.mov
+*.png
+*.jpg
+*.webp
+*.wav
+*.mp3
+# the rendered storyboard carries lyric lines: local only
+docs/STORYBOARD.md
+*.lyrics.txt
+__pycache__/
