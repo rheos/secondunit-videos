@@ -1,0 +1,7 @@
+{
+  "name": "bobwiseman-airplane-silhouette",
+  "private": true,
+  "type": "module",
+  "description": "Bob Wiseman, Airplane on the Highway (2026), drawn in code: silhouette cut-paper after Lotte Reiniger.",
+  "devDependencies": { "playwright": "^1.55.0" }
+}
