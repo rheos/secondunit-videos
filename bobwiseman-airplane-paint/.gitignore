@@ -1,0 +1,7 @@
+node_modules
+out/
+assets/
+js/data.js
+.DS_Store
+*.wav
+*.mp3
