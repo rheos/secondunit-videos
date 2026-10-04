@@ -1,0 +1,7 @@
+{
+  "name": "bobwiseman-we-got-time",
+  "private": true,
+  "type": "module",
+  "description": "Bob Wiseman, We Got Time (2026 recording), drawn in code. Look test: Brazil-style bureaucracy.",
+  "devDependencies": { "playwright": "^1.55.0" }
+}
