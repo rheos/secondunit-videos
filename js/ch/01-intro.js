@@ -21,10 +21,14 @@
       shape([[x, y], [x + wx - 16, y], [x + wx - 16, y + wy - 24], [x, y + wy - 24]], on ? AMBER : '#3b3e3b', 1.6);
       if (on) { s.globalAlpha = .25; dot(x + (wx - 16) / 2, y + (wy - 24) / 2, wx * .7, AMBER); s.globalAlpha = 1; }
     }
-    // the door: revolving, dark, at the foot
-    shape([[TX - 90, BASE], [TX + 90, BASE], [TX + 90, BASE - 160], [TX - 90, BASE - 160]], '#2c2e2b', 3);
-    const rv = t * .9; for (let i = 0; i < 3; i++) { const a = rv + i * TAU / 3; ink([[TX, BASE - 150], [TX, BASE - 10]], 2); ink([[TX + Math.cos(a) * 80, BASE - 150], [TX + Math.cos(a) * 80, BASE - 10]], 3); }
-    text('MINISTRY', TX, BASE - 178, 34, { font: 'sign', color: CREAM, spacing: 14, max: 300 });
+    // the name band: a stone fascia across the foot of the facade, between the windows and the door
+    const bandT = BASE - 186, bandB = BASE - 132;
+    shape([[x0 - 14, bandB], [x0 + tw + 14, bandB], [x0 + tw + 14, bandT], [x0 - 14, bandT]], '#565a55', 3);
+    ink([[x0 - 14, bandT + 7], [x0 + tw + 14, bandT + 7]], 1.6); ink([[x0 - 14, bandB - 7], [x0 + tw + 14, bandB - 7]], 1.6);
+    text('MINISTRY', TX, bandB - 15, 28, { font: 'sign', color: CREAM, spacing: 14, max: 300 });
+    // the door: revolving, dark, at the foot, under the band
+    shape([[TX - 90, BASE], [TX + 90, BASE], [TX + 90, bandB], [TX - 90, bandB]], '#2c2e2b', 3);
+    const rv = t * .9; for (let i = 0; i < 3; i++) { const a = rv + i * TAU / 3; ink([[TX, bandB + 10], [TX, BASE - 10]], 2); ink([[TX + Math.cos(a) * 80, bandB + 10], [TX + Math.cos(a) * 80, BASE - 10]], 3); }
     // ducts climbing the face like ivy: fat ribbed tubes that wander up from the ground
     for (let d = 0; d < 5; d++) {
       if (d === 2) continue; // keep the door and the name clear
