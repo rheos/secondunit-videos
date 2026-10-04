@@ -1,0 +1,15 @@
+node_modules/
+out/
+assets/
+**/js/data.js
+**/js/lyrics.js
+STORYBOARD.md
+*.wav
+*.mp3
+*.mp4
+**/out/
+**/frames*/
+**/node_modules
+stems.js
+out/
+*.jpg

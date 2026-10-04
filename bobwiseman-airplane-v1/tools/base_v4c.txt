@@ -1,0 +1,14 @@
+v1_A_f00000-f01704_24fps.mp4 0 1639
+../sections/kinetic/out/frames_kinetic_f1639_f1728 0 89
+../sections/riso/out/frames_verse1_71_73 24 48
+v1_B_f01704-f02184_24fps.mp4 48 480
+v1_C_f02184-f02389_24fps.mp4 0 205
+v1_D_f02389-f02850_24fps.mp4 0 461
+v1_E_f02850-f03118_24fps.mp4 0 268
+v1_F_f03118-f04074_24fps.mp4 0 956
+v1_G_f04074-f04525_24fps.mp4 0 451
+v1_H_f04525-f05267_24fps.mp4 0 742
+v1_I_f05267-f06690_24fps.mp4 0 1423
+v4_J_f06690-f07911_24fps.mp4 0 1221
+v4_J2_f07911-f08191_24fps.mp4 0 280
+v1_K_f08191-f08804_24fps.mp4 0 613

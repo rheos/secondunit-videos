@@ -1,0 +1,7 @@
+{
+  "name": "bobwiseman-airplane-type",
+  "private": true,
+  "type": "module",
+  "description": "Bob Wiseman, Airplane on the Highway (2026), drawn in code: kinetic typography / FUI look test.",
+  "devDependencies": { "playwright": "^1.55.0" }
+}

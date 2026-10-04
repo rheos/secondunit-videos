@@ -1,0 +1,7 @@
+node_modules
+out/
+assets/
+js/data.js
+js/lyrics.js
+.DS_Store
+tools/fixes.json
