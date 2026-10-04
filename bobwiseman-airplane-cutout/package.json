@@ -1,0 +1,7 @@
+{
+  "name": "bobwiseman-airplane-cutout",
+  "private": true,
+  "type": "module",
+  "description": "Bob Wiseman, Airplane on the Highway (2026), drawn in code: Gilliam-style cut-out collage that moves.",
+  "devDependencies": { "playwright": "^1.55.0" }
+}
