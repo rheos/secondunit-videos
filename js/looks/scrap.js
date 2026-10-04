@@ -32,7 +32,7 @@ void main(){
   // a phase that is an integer on every beat (as in js/cast.js, which this page doesn't load)
   function beatPhase(t) { const i = lastBeat(t); if (i < 0) return t / .5; const b0 = FEAT.beats[i], b1 = FEAT.beats[i + 1] ?? b0 + .5; return i + clamp((t - b0) / (b1 - b0)); }
   const NAMES = ['sky-storm.jpg', 'sea-storm.jpg', 'sky-dusk.jpg', 'sea-mezzo.jpg', 'dancehouse.jpg', 'dancehouse-light.png', 'stokehold.jpg',
-    'steamer-erie.png', 'steamer-mayflower.png', 'schooner-iroquois.png', 'clipper.png', 'gent.png', 'shovel.png', 'coal.png', 'lamp.png',
+    'steamer-erie.png', 'steamer-mayflower.png', 'schooner-iroquois.png', 'clipper.png', 'gent.png', 'gent-body.png', 'gent-arm.png', 'shovel.png', 'coal.png', 'lamp.png',
     'bolt-0.png', 'bolt-1.png', 'bolt-2.png', 'egret-0.png', 'egret-1.png', 'egret-2.png', 'egret-3.png', 'egret-4.png', 'smoke.png'];
   const IMG = {}, P = {};   // raw images; cut pieces (paper edge baked in)
 
@@ -174,18 +174,19 @@ void main(){
     const ph2 = (() => { const b = beatPhase(t) - lastBeat(BITES[0] + .01), c = Math.floor(b / 2), r = b - c * 2; return r < 1 ? r * .62 : .62 + (r - 1) * .38; })();
     // a puppet's two moves: bend to the heap (bite at 0), swing up and throw (.62)
     const bend = ph2 < .62 ? 1 - ease.inOut(ph2 / .62) : ease.inOut((ph2 - .62) / .38);
-    const gx = 250, gy = 1900, gw = 400, gh = P.gent ? gw * P.gent.height / P.gent.width : 1520;
-    // a two-piece puppet hinged at the waist: the legs stay planted, the torso bows over the heap.
-    // (Pinning the shovel at his hips and rocking the whole figure read as a hip thrust.)
-    const wy = gy - gh * .44, bow = lerp(-.04, .5, bend);
-    main.save(); main.beginPath(); main.rect(gx - 600, wy - 4, 1200, 1200); main.clip(); put('gent', gx, gy, gw, { flip: true, sh: 1.2 }); main.restore();
-    main.save(); main.translate(gx, wy); main.rotate(bow); main.translate(-gx, -wy);
-    main.beginPath(); main.rect(gx - 600, wy - 2000, 1200, 2000 + 10); main.clip();
-    put('gent', gx, gy, gw, { flip: true, sh: 1.2 });
-    // the shovel, held out from his chest: down into the heap at the bite, up toward the fire on the throw
-    const sw = 360, srot = lerp(-1.2, -.3, bend);
-    put('shovel', gx + gw * .22, gy - gh * .66, sw, { ax: .45, ay: .08, rot: srot - bow, sh: 1 });
-    main.restore();
+    // the gent as a cut-paper puppet: his body stands stiff and still, his arm is a separate piece pinned at
+    // the shoulder, and the shovel is in his hand. (Rocking the whole figure read as a hip thrust; bowing
+    // from the waist read as bending over.) Coordinates of the joints are in gent.png px (583 x 1850).
+    const B = P['gent-body'], pad = 6, gw = 400, sc = B ? gw / B.width : 1, gx = 260, gy = 1900;
+    const SH = [400, 470], HAND = [275, 1060];
+    const S = [gx, gy - ((B ? B.height : 1862) - (SH[1] + pad)) * sc];
+    const anchor = { ax: B ? (SH[0] + pad) / B.width : .5, ay: B ? (SH[1] + pad) / B.height : .5 };
+    put('gent-body', S[0], S[1], gw, { ...anchor, flip: true, sh: 1.2 });
+    const armRot = lerp(-1.3, -.55, bend), hv = [(SH[0] - HAND[0]) * sc, (HAND[1] - SH[1]) * sc];   // flipped: the hand is forward of the shoulder
+    const H = [S[0] + hv[0] * Math.cos(armRot) - hv[1] * Math.sin(armRot), S[1] + hv[0] * Math.sin(armRot) + hv[1] * Math.cos(armRot)];
+    // the shovel in his fist: down into the heap at the bite, up toward the fire on the throw
+    put('shovel', H[0], H[1], 300, { ax: .45, ay: .1, rot: lerp(-1.45, -.4, bend), sh: 1 });
+    put('gent-arm', S[0], S[1], gw, { ...anchor, flip: true, rot: armRot, sh: .8 });
     // coal flying into the firebox on each toss, sparks after
     TOSSES.forEach((k, j) => {
       const l2 = t - k; if (l2 < 0 || l2 > .45) return; const u = l2 / .45;

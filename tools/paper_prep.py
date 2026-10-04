@@ -84,3 +84,26 @@ if want('smoke'):
 if want('dancehouse'):
     im = load(f'{SRC}/06-warehouse-b.jpg', (76, 38, 2292, 3705), 2400)
     lum_key(im, .42, .62, tint=(255, 196, 120), keep=True).save(f'{OUT}/dancehouse-light.png'); print('light dancehouse')
+
+# ---- the gent as a puppet: his near arm (sleeve and pocketed hand) cut off as its own piece, the coat
+# behind it inpainted. Both images keep gent.png's canvas so they line up; polygon in gent.png px.
+ARM = [(300, 430), (470, 410), (540, 550), (560, 730), (520, 820), (420, 910), (350, 1000), (310, 1085), (235, 1090),
+       (232, 910), (330, 870), (420, 790), (430, 680), (360, 550)]
+if want('gent-arm') and os.path.exists(f'{OUT}/gent.png'):
+    import cv2
+    from PIL import ImageDraw
+    g = Image.open(f'{OUT}/gent.png').convert('RGBA'); a = np.asarray(g).copy()
+    m = Image.new('L', g.size, 0); ImageDraw.Draw(m).polygon(ARM, fill=255); m = np.asarray(m.filter(ImageFilter.GaussianBlur(1.2)))
+    arm = a.copy(); arm[..., 3] = (arm[..., 3].astype(np.float32) * m / 255).astype(np.uint8)
+    Image.fromarray(arm, 'RGBA').save(f'{OUT}/gent-arm.png')
+    hole = ((m > 20) & (a[..., 3] > 20)).astype(np.uint8) * 255
+    # fill the hole: inpaint from the surrounding coat and trousers (transparent pixels first set to coat
+    # colour so no black bleeds in from outside the figure), then grain so it isn't a smear
+    coat = a[1080:1260, 330:480, :3].reshape(-1, 3).mean(0)
+    rgb = a[..., :3].copy(); rgb[a[..., 3] < 128] = coat.astype(np.uint8)
+    bgr = cv2.cvtColor(rgb, cv2.COLOR_RGB2BGR)
+    fixed = cv2.cvtColor(cv2.inpaint(bgr, cv2.dilate(hole, np.ones((5, 5), np.uint8)), 15, cv2.INPAINT_TELEA), cv2.COLOR_BGR2RGB)
+    grain = cv2.GaussianBlur(np.random.default_rng(7).normal(0, 14, a.shape[:2]).astype(np.float32), (0, 0), 1.2)[..., None]
+    fixed = np.clip(fixed.astype(np.float32) + grain * (hole[..., None] > 0), 0, 255).astype(np.uint8)
+    body = a.copy(); body[..., :3] = fixed
+    Image.fromarray(body, 'RGBA').save(f'{OUT}/gent-body.png'); print('piece gent-arm, gent-body')
