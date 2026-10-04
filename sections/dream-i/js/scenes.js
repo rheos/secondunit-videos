@@ -230,47 +230,143 @@ function shotSky(t, tt, len) {
 
 // ---------------- 4: FOLD (kaleidoscope of the world and his parts) ----------------
 function kalSegs(t) { const n = ACID.filter(([o]) => o >= C3 && o <= t).length; return [6, 8, 5, 10, 7, 12][n % 6]; }
-function shotFold(t, tt, len) {
-  T = t; HAND = HANDS.paint; HUE = tt * 14; REGK = 1 + acidKick(t) * 2;
-  const kin = smooth(inv(C3, C3 + .5, t));
-  const nD = countBefore(DRUMS, t), lastD = nD ? DRUMS[nD - 1][0] : C3, step = (nD - 1 + ease.out(clamp((t - lastD) / .1))) * .045;
-  const bigHit = recent(DRUMS, t, .5).filter((h) => h.v > .55).reduce((m, h) => m + Math.exp(-h.age * 16), 0);
-  fx({ top: 1, flash: bigHit * .09, warp: 1.4 + hitSum(DRUMS, t, 10) * .8, acid: .6, band: .55, sat: .18, kal: kin, kalN: kalSegs(t), kalR: -tt * .22 + step, kalC: [.5 + snoise(t * .1, 1) * .04, .5 + snoise(t * .1, 2) * .04] });
-  withT(() => {
-    fill(hsl(280, 30, 30));
-    // the world from straight above, drifting backwards (down the screen)
-    const zp = 1 + hitSum(DRUMS, t, 12) * .05;
-    s.translate(960, 540); s.scale(zp, zp); s.translate(-960, -540);
-    withT(() => { s.translate(960, 540 - 190 + ((tt * 90) % 380)); s.scale(.32, .32); s.rotate(-.4); drawMap(t, .32, 0, { cols: [[300, 40, 50], [190, 45, 46], [40, 60, 60], [150, 35, 44], [340, 45, 56], [220, 40, 40]] }); });
-    // his parts, orbiting
-    for (let i = 0; i < 5; i++) { const a = i / 5 * TAU + tt * .3, r = 260 + Math.sin(tt * .5 + i) * 60; PL.prop(960 + Math.cos(a) * r, 540 + Math.sin(a) * r * .8, 80, t * 30 + i, 1); }
-    for (let i = 0; i < 3; i++) { const a = i / 3 * TAU - tt * .2, r = 150; HAND = HANDS.clean; PL.eye(960 + Math.cos(a) * r, 540 + Math.sin(a) * r, .7, { look: [Math.cos(a + 3), Math.sin(a + 3)], lid: blinkAt(t, 40 + i) }); HAND = HANDS.paint; }
-    // the red cheat line, as ribbons
-    for (let i = 0; i < 4; i++) { const P = []; for (let j = 0; j <= 16; j++) { const u = j / 16; P.push([300 + u * 1320, 540 + Math.sin(u * 5 + tt * 1.2 + i) * 120 + (i - 1.5) * 90]); } stroke(P, 3500 + i, 9, { force: true, col: PC('red') }); }
-    // the plane top-down silhouette passing through
-    withT(() => { s.translate(lerp(-200, 2100, inv(C3 + 2, C4 - 1, t)), 300); s.rotate(.15); s.scale(3, 3); part(PLANE, { fill: PC('body'), shade: PC('bodySh'), shadeShift: [0, 6], seed: 3600, seg: 2, wob: .3, reg: .3 }); part([[44, -2], [-44, -2], [-44, 2], [44, 2]], { fill: PC('red'), seed: 3601, sharp: 20, wob: .2, reg: .2 }); });
-  });
-  // the stems, unfolded, on top of the mandala
-  s = TOP2D; s.save(); s.globalAlpha = kin; mandalaTop(t, 960, 540); s.restore(); s = SRC2D;
+// FOLD timeline at its end: he appears small at the centre (255.8), grows head on toward camera, and the
+// mandala opens like petals on the strong drum hit at 257.17, fully open on REFORM's first frame (257.3).
+const EMERGE0 = 255.8, OPEN_HIT = 257.1667, OPEN0 = 256.875, OPEN1 = C4 - 1 / 48;
+function foldParams(t) {
+  const tt = t - C3, nD = countBefore(DRUMS, t), lastD = nD ? DRUMS[nD - 1][0] : C3, step = (nD - 1 + ease.out(clamp((t - lastD) / .1))) * .045;
+  return { N: kalSegs(t), R: -tt * .22 + step, C: [.5 + snoise(t * .1, 1) * .04, .5 + snoise(t * .1, 2) * .04] };
 }
-
-// ---------------- 5: REFORM (head on, tunnel running backwards) ----------------
-function shotReform(t, tt, len) {
-  T = t; HAND = HANDS.clean; const n = swellsBefore(t), snap = snapAt(t);
-  HUE = n * 47 + tt * 5; REGK = 1 + meltAt(t) * 2 + snap * 2;
-  fx({ warp: 1.2 + snap * 2, hue: n * .9, band: .3 + meltAt(t) * .4, sat: .12, melt: meltAt(t), flash: snap * .18, peel: snap * .6 });
+function foldContent(t, tt) {
+  fill(hsl(280, 30, 30));
+  const zp = 1 + hitSum(DRUMS, t, 12) * .05;
+  s.translate(960, 540); s.scale(zp, zp); s.translate(-960, -540);
+  withT(() => { s.translate(960, 540 - 190 + ((tt * 90) % 380)); s.scale(.32, .32); s.rotate(-.4); drawMap(t, .32, 0, { cols: [[300, 40, 50], [190, 45, 46], [40, 60, 60], [150, 35, 44], [340, 45, 56], [220, 40, 40]] }); });
+  for (let i = 0; i < 5; i++) { const a = i / 5 * TAU + tt * .3, r = 260 + Math.sin(tt * .5 + i) * 60; PL.prop(960 + Math.cos(a) * r, 540 + Math.sin(a) * r * .8, 80, t * 30 + i, 1); }
+  for (let i = 0; i < 3; i++) { const a = i / 3 * TAU - tt * .2, r = 150; HAND = HANDS.clean; PL.eye(960 + Math.cos(a) * r, 540 + Math.sin(a) * r, .7, { look: [Math.cos(a + 3), Math.sin(a + 3)], lid: blinkAt(t, 40 + i) }); HAND = HANDS.paint; }
+  for (let i = 0; i < 4; i++) { const P = []; for (let j = 0; j <= 16; j++) { const u = j / 16; P.push([300 + u * 1320, 540 + Math.sin(u * 5 + tt * 1.2 + i) * 120 + (i - 1.5) * 90]); } stroke(P, 3500 + i, 9, { force: true, col: PC('red') }); }
+  withT(() => { s.translate(lerp(-200, 2100, inv(C3 + 2, C4 - 1, t)), 300); s.rotate(.15); s.scale(3, 3); part(PLANE, { fill: PC('body'), shade: PC('bodySh'), shadeShift: [0, 6], seed: 3600, seg: 2, wob: .3, reg: .3 }); part([[44, -2], [-44, -2], [-44, 2], [44, 2]], { fill: PC('red'), seed: 3601, sharp: 20, wob: .2, reg: .2 }); });
+}
+// --- floating dream artifacts over the fold (drawn on the unfolded top layer) ---
+const FLOAT = (() => { const r = rng(9100), kinds = ['dash', 'paper', 'tiny', 'cloud', 'note', 'prop', 'eye', 'sign', 'cup', 'petal', 'dash', 'note', 'petal', 'paper', 'cloud', 'tiny'], out = [];
+  for (let i = 0; i < 30; i++) out.push({ i, kind: kinds[i % kinds.length], mode: i % 3, x: r() * 2200 - 140, y: r() * 1200 - 60, vx: (r() - .5) * 260, vy: (r() - .5) * 140, spin: (r() - .5) * 3, sc: .55 + r() * 1.1, ph: r() * 10, h: r() * 360, life: 3 + r() * 3 });
+  return out; })();
+function artifact(kind, h, sd) {
+  const o = { seed: sd, wob: .5, reg: .5, inkW: .9, hatch: false };
+  if (kind === 'dash') part(rect(-40, -7, 40, 7), { ...o, fill: hsl(48, 60, 90), sharp: 20 });
+  else if (kind === 'paper') { part([[50, 0], [-40, -26], [-24, 0], [-40, 26]], { ...o, fill: hsl(40, 25, 96), sharp: 20 }); stroke([[50, 0], [-24, 0]], sd + 1, .7); }
+  else if (kind === 'tiny') part(PLANE, { ...o, fill: hsl(h, 50, 80), seg: 2, wob: .3, reg: .3 });
+  else if (kind === 'cloud') part(lump(0, 0, 70, 28, sd, 12), { ...o, fill: hsl(35, 30, 96, .95), shade: hsl(260, 20, 80), shadeShift: [0, -8] });
+  else if (kind === 'note') { part(lump(0, 0, 15, 11, sd, 8), { ...o, fill: hsl(h, 70, 75) }); line([[13, -3], [13, -58]], HAND.inkCol, 4); line([[13, -58], [30, -44], [33, -30]], HAND.inkCol, 4); }
+  else if (kind === 'prop') PL.prop(0, 0, 46, T * 25 + sd, 1);
+  else if (kind === 'eye') PL.eye(0, 0, .55, { look: [Math.sin(T + sd), Math.cos(T * .7 + sd)], lid: blinkAt(T, sd) });
+  else if (kind === 'sign') { line([[0, 30], [0, 110]], hsl(210, 8, 60), 6); part([[0, -40], [40, 0], [0, 40], [-40, 0]], { ...o, fill: hsl(48, 90, 56), sharp: 20 }); part(PLANE.map(([x, y]) => [x * .36, y * .36]), { ...o, fill: hsl(240, 10, 15), ink: false, seg: 2, wob: .2, reg: .2 }); }
+  else if (kind === 'cup') { part([[-30, -20], [30, -20], [24, 20], [-24, 20]], { ...o, fill: hsl(190, 40, 86), sharp: 15 }); part([[30, -10], [46, -6], [44, 10], [26, 10], [27, 4], [38, 4], [38, -3], [29, -4]], { ...o, fill: hsl(190, 40, 86), seg: 2 }); part(lump(0, 26, 46, 8, sd, 10), { ...o, fill: hsl(190, 30, 92) }); for (let k = 0; k < 2; k++) { const P = []; for (let j = 0; j < 6; j++) P.push([-8 + k * 14 + Math.sin(j + T * 3 + k) * 5, -26 - j * 9]); stroke(P, sd + k, .5); } }
+  else if (kind === 'petal') part([[0, -34], [16, -10], [10, 18], [0, 26], [-10, 18], [-16, -10]], { ...o, fill: hsl(330 + (h % 40), 70, 80) });
+}
+function floaters(t, alpha) {
+  const pop = hitSum(DRUMS, t, 11) * .3, tt = t - C3;
+  HAND = HANDS.clean;
+  for (const f of FLOAT) {
+    let x, y, rot, sc = f.sc * (1 + pop), a = alpha;
+    if (f.mode === 1) {                                   // spiralling in toward the centre, then born again at the rim
+      const ph = ((tt + f.ph) % f.life) / f.life, r = (1 - ph) * 900 + 30, an = f.ph + ph * 5 + tt * .2;
+      x = 960 + Math.cos(an) * r * 1.3; y = 540 + Math.sin(an) * r; rot = an + Math.PI / 2; sc *= .4 + (1 - ph) * .8; a *= clamp(ph * 8) * clamp((1 - ph) * 6);
+    } else {                                              // tumbling across through the wedges
+      x = ((f.x + f.vx * tt) % 2400 + 2400) % 2400 - 240; y = ((f.y + f.vy * tt + Math.sin(tt + f.ph) * 40) % 1300 + 1300) % 1300 - 110; rot = f.ph + f.spin * tt;
+    }
+    if (a <= .01) continue;
+    withT(() => { s.globalAlpha = a; s.translate(x, y); s.rotate(rot); s.scale(sc, sc); artifact(f.kind, f.h + tt * 30, 9200 + f.i); });
+  }
+  // the band floats through too
+  piano(560 + Math.sin(tt * .4) * 140, 840 + Math.cos(tt * .5) * 40, .34, Math.sin(tt * .6) * .2, t, alpha * (1 + pop * .5));
+  sax(1460 + Math.cos(tt * .35) * 120, 360 + Math.sin(tt * .5) * 50, .5, t, alpha);
+  // every big drum hit pops a ring of petals and dashes out from the centre
+  for (const h of recent(DRUMS, t, .9)) { if (h.v < .55) continue; const r0 = 120 + h.age * 900, k = 1 - h.age / .9;
+    for (let j = 0; j < 8; j++) { const an = j / 8 * TAU + h.i; withT(() => { s.globalAlpha = alpha * k; s.translate(960 + Math.cos(an) * r0 * 1.2, 540 + Math.sin(an) * r0); s.rotate(an + h.age * 4); s.scale(.8, .8); artifact(j % 2 ? 'petal' : 'dash', h.i * 40, 9500 + j); }); } }
+}
+// the REFORM view, drawn into the current layer (so FOLD can draw it behind its opening petals)
+function reformMelt(t) { return meltAt(t) * smooth(inv(C4, C4 + .6, t)); }
+function reformCam(t) { const snap = snapAt(t); cam(960, 520, 1 + snap * .05, snoise(t * .3, 6) * .03); }
+function reformPlane(t) {
+  const tt = t - C4, snap = snapAt(t), z = .78 + Math.sin(tt * .4) * .04;
+  PL.front(960, 760 + Math.sin(t * 1.2) * 10, z, snoise(t * .3, 4100) * .05, { hang: 1, brow: .5 + snap, open: .2 + snap * .6, look: [snoise(t * .4, 4101), .2], lid: blinkAt(t, 9), split: reformMelt(t) * .5 });
+}
+function reformScene(t, withPlane = true) {
+  const tt = t - C4;
   withT(() => {
-    cam(960, 520, 1 + snap * .05, snoise(t * .3, 6) * .03);
+    reformCam(t);
     fill(hsl(250, 30, 20));
-    // rings that contract toward the centre: the tunnel flies backwards
     const dp = 1 + hitSum(DRUMS, t, 9) * .08;
     for (let i = 12; i >= 0; i--) { const R = ((i + 1 - ((tt * .8) % 1)) * 120 + 40) * dp; part(lump(960, 540, R * 1.35, R, 4000 + i, 18), { fill: hsl(250 + i * 25, 40, 30 + (i % 2) * 14), seed: 4010 + i, inkW: .6, wob: 3, hatch: false }); }
     const fg = env(t, C4 + .6, C5 - .3, .8) * clamp(SEs('guitar', t) * 3), fsx = env(t, C4 + 1.4, C5 - .3, .8) * clamp(SEs('other', t) * 3.2);
     guitar(380 + Math.sin(t * .5) * 30, 260 + Math.sin(t * .7) * 20, .52, -.45 + Math.sin(t * .6) * .1, t, fg);
     sax(1560 + Math.sin(t * .45) * 30, 300, .55, t, fsx);
-    const z = .78 + Math.sin(tt * .4) * .04;
-    PL.front(960, 760 + Math.sin(t * 1.2) * 10, z, snoise(t * .3, 4100) * .05, { hang: 1, brow: .5 + snap, open: .2 + snap * .6, look: [snoise(t * .4, 4101), .2], lid: blinkAt(t, 9), split: meltAt(t) * .5 });
+    if (withPlane) reformPlane(t);
   });
+}
+// the shader's kaleidoscope, redone in 2D so each wedge can peel away on its own
+let FOLDCV = null;
+function petals(t, open, fp) {
+  if (!FOLDCV) { FOLDCV = document.createElement('canvas'); FOLDCV.width = Math.round(W * RS); FOLDCV.height = Math.round(H * RS); }
+  const M = FOLDCV.getContext('2d'), keep = s;
+  M.setTransform(1, 0, 0, 1, 0, 0); M.clearRect(0, 0, FOLDCV.width, FOLDCV.height); M.setTransform(RS, 0, 0, RS, 0, 0);
+  s = M; withT(() => { HAND = HANDS.paint; HUE = (t - C3) * 14; REGK = 1 + acidKick(t) * 2; foldContent(t, t - C3); }); s = keep;
+  const w = TAU / fp.N, cx = fp.C[0] * W, cy = fp.C[1] * H, R = 2400;
+  for (let k = 0; k < 2 * fp.N; k++) {
+    const j = Math.floor(k / 2), base = j * w + w / 2 - fp.R, a0 = k * w / 2 - fp.R, bis = a0 + w / 4;
+    const d = ease.in(open) * 1500 + open * 120, sp = (k % 2 ? 1 : -1) * open * 1.1, sc = 1 + open * .6;
+    withT(() => {
+      s.translate(cx + Math.cos(bis) * d, cy + Math.sin(bis) * d); s.rotate(sp); s.scale(sc, sc);
+      s.beginPath(); s.moveTo(0, 0); s.arc(0, 0, R, a0, a0 + w / 2 + .004); s.closePath(); s.clip();
+      s.rotate(base); if (k % 2 === 0) s.scale(1, -1);
+      s.drawImage(FOLDCV, -cx, -cy, W, H);
+      if (open > 0) { s.globalAlpha = .5 * open; s.strokeStyle = hsl(45, 80, 85); s.lineWidth = 3; s.beginPath(); s.moveTo(0, 0); s.lineTo(R, 0); s.stroke(); }
+    });
+  }
+}
+function shotFold(t, tt, len) {
+  T = t; HAND = HANDS.paint; HUE = tt * 14; REGK = 1 + acidKick(t) * 2;
+  const kin = smooth(inv(C3, C3 + .5, t)), fp = foldParams(t), opening = t >= OPEN0;
+  // the petals loosen and start to lift (.25), then burst open on the hit
+  const open = t < OPEN_HIT ? .25 * ease.inOut(inv(OPEN0, OPEN_HIT, t)) : lerp(.25, 1, ease.out(inv(OPEN_HIT, OPEN1, t))), hand = smooth(inv(OPEN0, OPEN1, t));
+  const bigHit = recent(DRUMS, t, .5).filter((h) => h.v > .55).reduce((m, h) => m + Math.exp(-h.age * 16), 0);
+  const F0 = { flash: bigHit * .09, warp: 1.4 + hitSum(DRUMS, t, 10) * .8, acid: .6, band: .55, sat: .18 };
+  const F1 = { flash: 0, warp: 1.2, acid: 0, band: .3, sat: .12 };          // REFORM's opening values
+  const mixF = Object.fromEntries(Object.keys(F0).map((k) => [k, lerp(F0[k], F1[k], hand)]));
+  fx({ top: 1, ...mixF, kal: opening ? 0 : kin, kalN: fp.N, kalR: fp.R, kalC: fp.C });
+  if (!opening) withT(() => foldContent(t, tt));
+  else { T = t; HAND = HANDS.clean; HUE = 0; REGK = 1; reformScene(t, true); }
+  // the unfolded top layer: reactive shapes, floating artifacts, the opening petals, and him
+  s = TOP2D;
+  if (opening) { T = t; petals(t, open, fp); }
+  T = t; HAND = HANDS.paint; HUE = tt * 14; REGK = 1;
+  const fade = kin * (1 - smooth(inv(OPEN0, OPEN_HIT + .05, t)));
+  mandalaTop(t, 960, 540, fade);
+  floaters(t, fade * smooth(inv(C3 + .3, C3 + 1.2, t)));
+  // him: small at the centre, growing head on toward camera into REFORM's pose
+  const g = inv(EMERGE0, OPEN_HIT, t);
+  if (g > 0) {
+    T = t; HAND = HANDS.clean; HUE = (t - C4) * 5; REGK = 1;
+    const e = ease.in(g), tz = .78 + Math.sin((t - C4) * .4) * .04, z = lerp(.04, tz, e);
+    withT(() => {
+      // fly in from the mandala centre to REFORM's camera framing
+      const camK = smooth(inv(EMERGE0 + .4, OPEN_HIT, t));
+      if (camK > 0) { const snap = snapAt(t); s.translate(W / 2, H / 2); s.rotate(snoise(t * .3, 6) * .03 * camK); s.scale(lerp(1, 1 + snap * .05, camK), lerp(1, 1 + snap * .05, camK)); s.translate(-W / 2, -H / 2); s.translate(0, (540 - 520) * camK); }
+      const yBody = lerp(540, 760 + Math.sin(t * 1.2) * 10 - 262 * tz, ease.inOut(g));
+      if (g >= 1) reformPlane(t);
+      else PL.front(960, yBody + 262 * z, z, snoise(t * .3, 4100) * .05 * e, { hang: 1, brow: .5, open: .2 + .3 * Math.sin(g * Math.PI), look: [0, .2], lid: blinkAt(t, 9), split: 0 });
+    });
+  }
+  s = SRC2D;
+}
+
+// ---------------- 5: REFORM (head on, tunnel running backwards) ----------------
+function shotReform(t, tt, len) {
+  T = t; HAND = HANDS.clean; const n = swellsBefore(t), snap = snapAt(t), m = reformMelt(t);
+  HUE = n * 47 + tt * 5; REGK = 1 + m * 2 + snap * 2;
+  fx({ warp: 1.2 + snap * 2, hue: n * .9, band: .3 + m * .4, sat: .12, melt: m, flash: snap * .18, peel: snap * .6 });
+  reformScene(t, true);
 }
 
 // ---------------- 6: WALTZ ----------------

@@ -1,15 +1,15 @@
 import json, subprocess, sys
 plan=json.load(open('v3_plan.json'))
 W='/Users/robin/Code/novadiem/indieagent/secondunit/mv-projects/bobwiseman-airplane-on-the-highway/source/airplane-2026.wav'
-inputs=['-i','base_v3d.mp4']; fc=[]; last='[0:v]'
+inputs=['-i','base_v3f.mp4']; fc=[]; last='[0:v]'
 for k,p in enumerate(plan,1):
     act=p['e']-p['s']+1; win=p['b']-p['a']
     L=min(win,act) if act>=12 else max(act,12)
     start=p['a']+(win-L)//2
-    fd=min(6,L//3)
+    fd=p.get('fd',min(6,L//3)); fdo=max(1,p.get('fdo',fd))
     inputs+=['-i',p['file']]
     fc.append(f"[{k}:v]trim=start_frame={p['s']}:end_frame={p['e']+1},setpts=(PTS-STARTPTS)*{L}/{act},fps=24,trim=end_frame={L},setpts=PTS-STARTPTS,format=yuva420p,"
-              f"fade=t=in:s=0:n={fd}:alpha=1,fade=t=out:s={L-fd}:n={fd}:alpha=1,setpts=PTS+{start}/24/TB[m{k}]")
+              f"fade=t=in:s=0:n={fd}:alpha=1,fade=t=out:s={L-fdo}:n={fdo}:alpha=1,setpts=PTS+{start}/24/TB[m{k}]")
     fc.append(f"{last}[m{k}]overlay=eof_action=pass:repeatlast=0[v{k}]"); last=f'[v{k}]'
     print(p['name'],'overlay frames',start,'-',start+L)
 fc.append(f"{last}format=yuv420p[vout]")

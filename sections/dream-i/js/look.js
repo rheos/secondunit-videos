@@ -24,6 +24,7 @@ vec3 hueRot(vec3 c, float a){ const vec3 k = vec3(.57735); float ca = cos(a); re
 vec3 S(vec2 q){ return texture(src, q).rgb; }
 void main(){
   vec2 q = uv + fbm2(uv * vec2(2.2, 1.5) + t * .06) * .007 * warp;      // the whole frame breathes
+  vec2 q0 = q;
   if (melt > 0.) {                                                       // drips: columns sag by their own amount
     float col = fbm(vec2(q.x * 9., 3.1)) , d = pow(col, 2.) * melt * .22 * smoothstep(-.1, .9, q.y + col * .3);
     q.y -= d; q.x += sin(q.y * 14. + t) * .006 * melt;
@@ -46,7 +47,7 @@ void main(){
     vec3 g = hueRot(S(q + vec2(.03, -.02) * peel + fbm2(q * 3. + t * .2) * .01 * peel), 2.1);
     c = mix(c, max(c, g), .5 * clamp(peel, 0., 1.));
   }
-  if (topOn > 0.) { vec4 tp = texture(top, uv); c = mix(c, tp.rgb, tp.a); } // the unfolded top layer
+  if (topOn > 0.) { vec4 tp = mix(texture(top, q0), textureLod(top, q0, 1.3), .2); c = mix(c, tp.rgb, tp.a); } // the unfolded top layer
   c = hueRot(c, hue + band * sin(q.x * 5.5 - q.y * 3.2 + t * 1.7) * 1.6);
   float lum = dot(c, vec3(.3, .59, .11));
   c = mix(vec3(lum), c, .86 - .1 * wash + sat);

@@ -115,12 +115,14 @@ function guitar(x, y, k, ang, t, form) {
 }
 
 // ---- over the mandala: the stems as timed shapes on the unfolded top layer ----
-function mandalaTop(t, cx, cy) {
+let MTA = 1; // overall alpha for the mandala's reactive layer (its shapes set alpha absolutely)
+function mandalaTop(t, cx, cy, alpha = 1) {
+  MTA = alpha; if (alpha <= .005) return;
   // drums: rings from the centre on every hit, a shockwave and spokes on the big ones
   for (const h of recent(DRUMS, t, .8)) {
     const a = h.age, big = h.v > .55, col = hsl((h.i * 47) % 360, 85, 72);
     const R = 60 + Math.pow(a, .7) * 1100, w = (big ? 46 : 20) * (1 - a / .8);
-    s.save(); s.globalAlpha = clamp(1 - a / .8) * (big ? 1 : .85); s.strokeStyle = col; s.lineWidth = Math.max(1, w);
+    s.save(); s.globalAlpha = MTA * clamp(1 - a / .8) * (big ? 1 : .85); s.strokeStyle = col; s.lineWidth = Math.max(1, w);
     s.beginPath(); s.ellipse(cx, cy, R, R * .92, 0, 0, TAU); s.stroke();
     if (big) {
       s.lineWidth = Math.max(1, w * .4); s.beginPath(); s.ellipse(cx, cy, R * .78, R * .72, 0, 0, TAU); s.stroke();
@@ -134,13 +136,13 @@ function mandalaTop(t, cx, cy) {
   const pt = (u) => { const th = u * .8, r = 470 * Math.cos(2.5 * th) * (.75 + .25 * Math.sin(u * .7)); return [cx + Math.cos(th) * r * 1.25, cy + Math.sin(th) * r]; };
   const CH = 9, per = n / CH; s.lineCap = 'round'; s.lineJoin = 'round';
   for (let c = CH - 1; c >= 0; c--) { // chunks, tail first, each one smooth path (no beading)
-    const k = 1 - c / CH; s.strokeStyle = hsl(40 + c * 25 + t * 30, 85, 66, .35 + .6 * k); s.lineWidth = (8 + env * 50) * k + 2;
+    const k = 1 - c / CH; s.strokeStyle = hsl(40 + c * 25 + t * 30, 85, 66, (.35 + .6 * k) * MTA); s.lineWidth = (8 + env * 50) * k + 2;
     s.beginPath(); for (let j = 0; j <= per; j++) { const u = t * 1.6 - (c * per + j) / n * L, [x, y] = pt(u); j ? s.lineTo(x, y) : s.moveTo(x, y); } s.stroke();
   }
   // guitar: small bursts of sparks where each hit lands
   for (const h of recent(GTR, t, .5)) {
     const r = rng(h.i * 71 + 2), an = r() * TAU, rr = 250 + r() * 220, px = cx + Math.cos(an) * rr * 1.3, py = cy + Math.sin(an) * rr, a = h.age / .5;
-    s.save(); s.globalAlpha = 1 - a; s.strokeStyle = hsl(15 + r() * 30, 95, 66); s.lineWidth = 3; s.lineCap = 'round';
+    s.save(); s.globalAlpha = MTA * (1 - a); s.strokeStyle = hsl(15 + r() * 30, 95, 66); s.lineWidth = 3; s.lineCap = 'round';
     for (let k = 0; k < 10; k++) { const b = k / 10 * TAU + r(), d0 = 10 + a * 70, d1 = d0 + 30 * (1 - a); s.beginPath(); s.moveTo(px + Math.cos(b) * d0, py + Math.sin(b) * d0); s.lineTo(px + Math.cos(b) * d1, py + Math.sin(b) * d1); s.stroke(); }
     dot(px, py, 10 * (1 - a) + 2, hsl(50, 100, 90)); s.restore();
   }
@@ -150,7 +152,7 @@ function mandalaTop(t, cx, cy) {
     for (let j = 0; j < 3; j++) {
       const px = cx + (r() - .5) * 900, py = cy + (r() - .5) * 600, sides = [3, 4, 6][Math.floor(r() * 3)], sz = 14 + 26 * ease.back(Math.min(1, a * 4)) * (1 - a), rot = r() * 6 + a * 3;
       const P = []; for (let q = 0; q < sides; q++) P.push([px + Math.cos(rot + q / sides * TAU) * sz, py + Math.sin(rot + q / sides * TAU) * sz]);
-      s.save(); s.globalAlpha = 1 - a; s.strokeStyle = hsl(180 + r() * 80, 70, 85); s.lineWidth = 3; s.beginPath(); P.forEach(([x, y], q) => q ? s.lineTo(x, y) : s.moveTo(x, y)); s.closePath(); s.stroke(); s.restore();
+      s.save(); s.globalAlpha = MTA * (1 - a); s.strokeStyle = hsl(180 + r() * 80, 70, 85); s.lineWidth = 3; s.beginPath(); P.forEach(([x, y], q) => q ? s.lineTo(x, y) : s.moveTo(x, y)); s.closePath(); s.stroke(); s.restore();
     }
   }
 }
