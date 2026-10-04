@@ -244,7 +244,7 @@
     bank(880, 70, 11, t * 14, { c: '#f4f7f6', lw: 3 });
   }
   // agenda insert: the page on the table, the chair's gavel. Items typed on the words.
-  const AG = ['1.  WE\'VE GOT TIME', '2.  WE\'VE GOT TIME', '3.  WE\'VE GOT TIME', '4.  SICK AND TIRED OF MAKING WAY', '5.  THE SUN'];
+  const AG = ['1.  WE\'VE GOT TIME', '2.  WE\'VE GOT TIME', '3.  WE\'VE GOT TIME', '4.  SICK AND TIRED OF MAKING RAIN', '5.  THE SUN'];
   function agenda(t, lines, ticks, hits, stampAt) {
     skyFill(-300, 520);
     withT(() => { s.globalAlpha = .9; for (let i = 0; i < 5; i++) blob(200 + i * 380, 300 + (i % 2) * 40, 150, 90 + i, { c: '#eef2f3', lw: 3 }); });
@@ -311,7 +311,7 @@
     bank(720, 40, 44, t * 3, { c: '#eef3f5', lw: 2, depth: 400 });
     convention(t, 960, 690, sc, { g: gavelAng(t, [147.3]), cards: false });
   }
-  // 147.78 "they're sick and tired of making way": the ministry's stacks shove up through the clouds,
+  // 147.78 "they're sick and tired of making rain": the ministry's stacks shove up through the clouds,
   // a grey mail plane barges through.
   function shove(t, lt) {
     skyFill(-100, 900);
@@ -355,7 +355,7 @@
   function picket(t, lt) {
     skyFill(-200, 1000);
     bank(860, 120, 71, t * 12, { c: '#dde8f0', lw: 3 });
-    const signs = ['SICK AND TIRED', 'OF MAKING WAY'];
+    const signs = ['SICK AND TIRED', 'OF MAKING RAIN'];
     for (let i = 0; i < 5; i++) {
       const x = -420 + i * 560 + lt * 90, b = beatPulse(t + i * .37, 5);
       if (x < -500 || x > W + 500) continue;
