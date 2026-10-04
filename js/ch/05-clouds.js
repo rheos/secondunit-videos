@@ -122,7 +122,7 @@
     // NIMBUS on the hill raises the placard on "sick"
     const pu = ease.back(inv(SICK - .1, SICK + .5, t)), sc = .72, nx = 1430, ny = 820;
     const hx = nx + (90 + 70) * sc, hy = ny + lerp(-150, -400, ease.back(pu)) * sc;
-    if (pu > 0) { withOL(6, () => { nv(() => rectP(hx - 8, hy - 200, 16, 240, 6), K.BOR); sign(hx, hy - 290, 470, 190, ['SICK AND TIRED', 'OF MAKING WAY'], { bg: K.CRM, cols: [K.RED, K.MAG, K.VIO, K.BOR], rot: Math.sin(onTwos(t) * 7) * .03 }); }); }
+    if (pu > 0) { withOL(6, () => { nv(() => rectP(hx - 8, hy - 200, 16, 240, 6), K.BOR); sign(hx, hy - 290, 470, 190, ['SICK AND TIRED', 'OF MAKING RAIN'], { bg: K.CRM, cols: [K.RED, K.MAG, K.VIO, K.BOR], rot: Math.sin(onTwos(t) * 7) * .03 }); }); }
     fig('NIMBUS', nx, ny, sc, { t, arm: pu, mouth: 'huff', bounce: 0, look2: [-1, -1] });
   }
   // ---------------------------------------------------------------- 150.20 the placard, close; it turns into a bird
@@ -133,7 +133,7 @@
     const sc = 1.05, lh = [520 + 165 * sc, 1180 - 430 * sc + bob], rh = [1400 - 160 * sc, 1180 - 400 * sc - bob];
     withOL(9, () => {
       if (mk < .02) { for (const [x, y] of [lh, rh]) nv(() => rectP(x - 11, 500, 22, y - 480), K.BOR);
-        sign(960, 320 + (lh[1] + rh[1]) / 2 - 740, 1280, 400, ['SICK AND TIRED', 'OF MAKING WAY'], { bg: K.CRM, cols: [K.RED, K.BOR, K.MAG, K.VIO, K.TEAL], border: K.MAG, m: .09, r: 30, t, wob: .015 }); }
+        sign(960, 320 + (lh[1] + rh[1]) / 2 - 740, 1280, 400, ['SICK AND TIRED', 'OF MAKING RAIN'], { bg: K.CRM, cols: [K.RED, K.BOR, K.MAG, K.VIO, K.TEAL], border: K.MAG, m: .09, r: 30, t, wob: .015 }); }
       else { const bx = lerp(960, 1500, fly), by = lerp(330, -120, fly), size = lerp(205, 120, mk);
         const flap = .5 + .5 * Math.sin(onTwos(t) * 30);
         morph(bx, by, size, RS_.rect(640 / size, 200 / size), (a) => RS_.bird(a, flap) * 1.2, mk, K.CRM, 0, OL);
