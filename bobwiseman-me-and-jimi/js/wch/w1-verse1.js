@@ -281,7 +281,7 @@
     beam(lerp(.02, -.62, lift), .1, 1500); beam(lerp(.06, -1.05, lift), .09, 1500);
     if (lift > .9) { for (const [px, py] of [[hx + Math.cos(-.62) * 760, hy + Math.sin(-.62) * 760], [hx + Math.cos(-1.05) * 640, hy + Math.sin(-1.05) * 640]]) {
       shape(() => { s.beginPath(); s.ellipse(px, Math.max(150, py), 80, 34, 0, 0, TAU); }, CUT, 5); } }
-    withT(() => { s.translate(bx, 800 - 22 * .62); s.rotate(rock); schoolBus(0, 0, .62, { t: tt, lights: false, kids: 5, asleep: false }); });
+    withT(() => { s.translate(bx, 800 - 22 * .62); s.rotate(rock); schoolBus(0, 0, .62, { t: tt, lights: false, kids: 5, asleep: false, cry: true }); });
   }
   function busWindows(t, tl) {
     const tt = OT(t);
@@ -297,7 +297,7 @@
       clipTo(win, () => { const r = rng(i + 9); for (let j = 0; j < 6; j++) star(wx + r() * 400, 220 + r() * 120, 5 + r() * 5);
         // the spotlights sweep across the glass
         const sp = wrap(tt * .6 + i * .3, 1.6) - .3; shape(() => pathOf([[wx + sp * 600 - 60, 200], [wx + sp * 600 + 40, 200], [wx + sp * 600 - 60, 640], [wx + sp * 600 - 160, 640]]), CUT);
-        sleepyKid(wx + 200, 700 + (i === 2 ? 10 : 0), 2.15, i + 2, i === 1 ? .75 : .5); });
+        kid(wx + 200, 700 + (i === 2 ? 10 : 0), 2.15, { seed: i + 2, t: tt, cry: true }); });   // all crying (Bob, draft-6 notes)
       shape(win, null, 14, INK);
       taper([[wx + 200, 200], [wx + 200, 230]], 6, 6, CUT);
     }
@@ -327,7 +327,7 @@
         shape(() => pathOf(chisel([[-230, -470], [230, -470], [240, -150], [-240, -150]], 5 + side, 4)), INK);
         clipTo(() => pathOf([[-230, -470], [230, -470], [240, -150], [-240, -150]]), () => { taper([[-220, -450], [220, -450]], 8, 8, CUT); rows(-240, -470, 240, -150, Math.PI / 2, 40, () => 3, CUT); });
         const tilt = side * .22 + Math.sin(tt * 1.4 + z) * .03;
-        withT(() => { s.translate(side * -40, -170); s.rotate(tilt); kid(0, 0, 1.4, { asleep: true, seed: Math.round(z * 3) + side + 4 }); });
+        withT(() => { s.translate(side * -40, -170); s.rotate(tilt); kid(0, 0, 1.4, { cry: true, t: OT(t), seed: Math.round(z * 3) + side + 4 }); });
         shape(() => pathOf(chisel([[-250, -200], [250, -200], [260, 0], [-260, 0]], 9, 4)), INK);
         clipTo(() => pathOf([[-250, -200], [250, -200], [260, 0], [-260, 0]]), () => { taper([[-240, -186], [240, -186]], 6, 6, CUT); });
       });
