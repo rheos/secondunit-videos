@@ -186,22 +186,36 @@ function guitar(x, y, k, ang = -.4, slide = .5, t = 0) {
 
 // ---------- kids in pyjamas (stripes), simple carved figures; asleep or awake ----------
 function kid(x, y, k, o = {}) {
-  const { asleep = false, t = 0, seed = 1, letter = null } = o;
+  const { asleep = false, t = 0, seed = 1, letter = null, cry = false } = o;
   withT(() => { s.translate(x, y); s.scale(k, k);
+    if (cry) { const sob = Math.sin(t * 22 + seed * 1.7); s.translate(sob * 2.5, Math.abs(sob) * -3); }
     const body = () => pathOf(chisel([[-34, -150], [34, -150], [40, 0], [-40, 0]], seed, 3));
     shape(body, CUT, 5); clipTo(body, () => rows(-40, -150, 40, 0, Math.PI / 2, 16, () => 7));
     const hd = () => { s.beginPath(); s.ellipse(0, -186, 32, 36, 0, 0, TAU); }; shape(hd, CUT, 5);
     shape(() => { s.beginPath(); s.ellipse(0, -212, 34, 16, 0, Math.PI, 0); }, INK);
+    if (cry) {
+      // Bob (draft-6 notes): 'the kids on the bus should all be crying, so we feel more sorry for her having that job'
+      // scrunched eyes, brows up in the middle, a wailing mouth that pulses, tears running and dropping
+      for (const sd of [-1, 1]) { taper([[sd * 18, -192], [sd * 8, -187], [sd * 18, -183]], 3, 3); taper([[sd * 20, -204], [sd * 6, -209]], 3, 2); }
+      const wail = .75 + .25 * Math.sin(t * 9 + seed);
+      shape(() => { s.beginPath(); s.ellipse(0, -164, 11, 13 * wail, 0, 0, TAU); }, INK);
+      for (const sd of [-1, 1]) {
+        taper([[sd * 13, -182], [sd * 15, -170], [sd * 17, -156]], 3, 2);
+        const q = ((t * 1.6 + seed * .37 + (sd > 0 ? .5 : 0)) % 1), dy = -152 + q * 60;
+        shape(() => { s.beginPath(); s.moveTo(sd * 18, dy - 8); s.quadraticCurveTo(sd * 24, dy + 4, sd * 18, dy + 6); s.quadraticCurveTo(sd * 12, dy + 4, sd * 18, dy - 8); }, INK);
+      }
+    } else {
     if (asleep) { taper([[-16, -188], [-6, -186]], 3, 3); taper([[6, -186], [16, -188]], 3, 3); }
     else { dot(-11, -188, 4, INK); dot(11, -188, 4, INK); }
     dot(0, -168, asleep ? 4 : 3, INK);
+    }
     if (letter) { shape(() => { s.beginPath(); s.rect(-46, -140, 92, 100); }, CUT, 6); carveText(letter, 0, -90, 80, letter === letter.toLowerCase() ? INK : INK); }
   });
 }
 
 // ---------- the yellow school bus (in woodcut: cut white body, black lines; side view, facing right) ----------
 function schoolBus(x, y, k, o = {}) {
-  const { t = 0, lights = false, driver = 'ellen', kids = 5, asleep = true, doorOpen = false } = o;
+  const { t = 0, lights = false, driver = 'ellen', kids = 5, asleep = true, doorOpen = false, cry = false } = o;
   withT(() => { s.translate(x, y); s.scale(k, k);
     const body = () => pathOf(chisel([[-620, -420], [520, -420], [560, -400], [600, -220], [610, -60], [-620, -60]], 31, 4));
     shape(body, CUT, 8);
@@ -210,7 +224,7 @@ function schoolBus(x, y, k, o = {}) {
     carveText('SCHOOL BUS', -60, -390, 40, INK, { w: 380 });
     for (let i = 0; i < 6; i++) { const wx = -560 + i * 170;
       shape(() => { s.beginPath(); s.rect(wx, -340, 140, 140); }, INK);
-      if (i > 0 && i <= kids) clipTo(() => { s.beginPath(); s.rect(wx, -340, 140, 140); }, () => kid(wx + 70, -190, .7, { asleep, t, seed: i })); }
+      if (i > 0 && i <= kids) clipTo(() => { s.beginPath(); s.rect(wx, -340, 140, 140); }, () => kid(wx + 70, -190, .7, { asleep, t, seed: i, cry })); }
     // the driver's window at the front (right), windscreen
     shape(() => pathOf([[480, -340], [560, -340], [590, -220], [480, -220]]), INK);
     if (driver === 'ellen') clipTo(() => pathOf([[480, -340], [560, -340], [590, -220], [480, -220]]), () => ellen(520, 40, .62, { pose: 'drive', t }));

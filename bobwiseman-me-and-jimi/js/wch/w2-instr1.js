@@ -293,9 +293,20 @@
     const [hx, hy] = [EX + 18 + HW / 2, GY - 434 * EK];
     caseAt(EX - 70);
     harmonica(hx, hy, HW, HH, 0, { t });
-    // the note coming out of her: puffs at her mouth
-    for (let i = 0; i < 3; i++) { const u = ((tt * 3 + i / 3) % 1); taper([[EX + 22, GY - 176 + i * 8], [EX + 22 + 20 * u, GY - 180 + i * 10 - 10 * u]], 3, 1, INK); }
-    tinyEllen(EX, GY, EK, { pose: 'point', t: tt, wind: .1, eyes: 'closed', smile: .2 });
+    // Bob (draft-6 notes): the harmonica blows four separate notes in a row; she hops on each one.
+    // Onsets of the four F blasts, from a pitch track of the no-vocals stem: 49.17, 49.65, 50.23, 50.78.
+    const HOPS = [49.17, 49.65, 50.23, 50.78];
+    let hop = 0, landing = -1;
+    for (const h0 of HOPS) { const u = (t - h0) / .36; if (u >= 0 && u < 1) hop = Math.sin(Math.PI * u); if (t - (h0 + .36) >= 0 && t - (h0 + .36) < .18) landing = h0; }
+    const hy_ = -hop * 300 * EK;
+    // each note puffs out of the harmonica's far end as a carved note
+    HOPS.forEach((h0, i) => { const a = t - h0; if (a < 0 || a > 1.1) return; withT(() => { s.translate(hx + HW / 2 - 40 + a * 160, hy - 60 - a * 220); s.rotate(-.3 + i * .2); s.scale(1.6, 1.6);
+      dot(0, 0, 14, CUT); dot(0, 0, 10, INK); taper([[9, -2], [9, -60]], 6, 6, INK); taper([[9, -60], [30, -40]], 8, 3, INK); }); });
+    withT(() => { s.translate(0, hy_);
+      // the note coming out of her: puffs at her mouth
+      for (let i = 0; i < 3; i++) { const u = ((tt * 3 + i / 3) % 1); taper([[EX + 22, GY - 176 + i * 8], [EX + 22 + 20 * u, GY - 180 + i * 10 - 10 * u]], 3, 1, INK); }
+      tinyEllen(EX, GY, EK, { pose: 'point', t: tt, wind: .1 + .5 * hop, eyes: hop > .05 ? 'open' : 'closed', smile: .2 + .5 * hop }); });
+    if (landing >= 0) for (let j = 0; j < 7; j++) flick(EX - 40 + j * 14, GY - 2, -Math.PI / 2 + (j - 3) * .45, 30, 4, INK);
   }
 
   // ---------- 4. all hair; giant scissors descend in lurches on the beats and snip on 59.43 ----------
