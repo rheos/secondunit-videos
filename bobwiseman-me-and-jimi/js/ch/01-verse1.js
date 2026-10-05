@@ -295,6 +295,8 @@
     });
   }
 
+  window.LP = { wood, rect, rrect, circ, pole, wires, sky, sun, kid, trophy, guitar };   // shared with the outro (05-outro-letter.js)
+
   chapter('verse1', 0, 43.0, [
     [0, shotPole], [4.37, shotDice], [11.53, shotBus], [19.6, shotAward], [24.1, shotHook], [BAND, shotTrain], [42.2, shotWindow],
   ]);

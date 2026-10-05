@@ -31,7 +31,7 @@ void main(){
 (() => {
   const CREAM = 'rgb(240,232,214)';
   const IMG = {}, P = {};
-  const NAMES = ['great-wave.jpg', 'ajikawa.jpg', 'kobe-town.jpg', 'peking.jpg', 'stencil.jpg', 'sunrise.jpg', 'blues-p3.jpg', 'blues-p4.jpg', 'radio.png', 'girl.png', 'guitar.png', 'piano.png'];
+  const NAMES = ['great-wave.jpg', 'ajikawa.jpg', 'kobe-town.jpg', 'peking.jpg', 'stencil.jpg', 'sunrise.jpg', 'blues-p3.jpg', 'blues-p4.jpg', 'radio.png', 'girl.png', 'guitar.png', 'piano.png', 'takanawa.jpg'];
   const mk = (w, h) => { const c = document.createElement('canvas'); c.width = Math.max(1, Math.ceil(w)); c.height = Math.max(1, Math.ceil(h)); return c; };
   const kOf = (img) => IMG[img].width / 1200;            // polygons are written in 1200-wide preview units of each source
   function snip(pts, seed, wob = 1.2) {
@@ -112,6 +112,7 @@ void main(){
       cut('title', 'great-wave', [[58, 52], [112, 52], [112, 232], [58, 232]], 17);
       // sheet-music strips: single staves cut from the St. Louis Blues pages
       for (let i = 0; i < 6; i++) { const y = 120 + i * 230; cut('staff' + i, i % 2 ? 'blues-p4' : 'blues-p3', [[60, y], [1140, y + 4], [1138, y + 120], [62, y + 116]], 40 + i, 8); }
+      cut('train', 'takanawa', [[142, 402], [520, 398], [1000, 396], [1004, 384], [1062, 380], [1095, 372], [1104, 404], [1146, 450], [1146, 552], [142, 552]], 51);
       edged('radio', 'radio'); edged('girl', 'girl'); edged('guitar', 'guitar'); edged('piano', 'piano');
       return true;
     });
@@ -229,6 +230,8 @@ void main(){
     if (tt > 66.6) { put('banner', 925, 66, 1400, 130, 1.0, { rot: -.04 }); label('1963, going east', 1400, 250, .02, 30); }
     fx({ fade: smooth(inv(77.0, 77.6, t)) });
   }
+
+  window.PAPERKIT = { cut, put, backdrop, paperDisc, record, label, IMG, P, kOf, CREAM };   // shared with the outro (05-outro-kobe.js)
 
   chapter('kobe', 43.0, 77.6, [
     [43.0, shotHarbour], [50.2, shotRadio], [54.4, shotPiano], [58.23, shotWave], [66.07, shotCrossing],
