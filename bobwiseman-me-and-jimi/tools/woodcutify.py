@@ -11,7 +11,8 @@ from scipy import ndimage
 ap = argparse.ArgumentParser(); ap.add_argument('src'); ap.add_argument('out')
 ap.add_argument('--crop'); ap.add_argument('--ang', type=float, default=30); ap.add_argument('--gap', type=float, default=9)
 ap.add_argument('--lo', type=float, default=.32); ap.add_argument('--hi', type=float, default=.72); ap.add_argument('--size', type=int, default=1400)
-ap.add_argument('--edge', type=float, default=.18); ap.add_argument('--local', type=float, default=0); ap.add_argument('--blur', type=float, default=1.2); ap.add_argument('--poly', help='scissor path in crop px, "x,y;x,y;..." (overrides rembg)'); ap.add_argument('--nocut', action='store_true')
+ap.add_argument('--edge', type=float, default=.18); ap.add_argument('--local', type=float, default=0); ap.add_argument('--blur', type=float, default=1.2); ap.add_argument('--redpoly', help='print the ink inside this path (crop px) on the RED plate, e.g. her hair'); ap.add_argument('--redhole', help='cx,cy,rx,ry ellipse kept black inside the red path (the face)')
+ap.add_argument('--poly', help='scissor path in crop px, "x,y;x,y;..." (overrides rembg)'); ap.add_argument('--nocut', action='store_true')
 a = ap.parse_args()
 src_im = Image.open(a.src)
 has_alpha = src_im.mode in ('RGBA', 'LA', 'P') and (src_im.mode != 'P' or 'transparency' in src_im.info)
@@ -48,6 +49,14 @@ ink = ndimage.binary_opening(ink, iterations=1)
 out = np.zeros((H, W, 4), np.uint8); out[..., 3] = (ink * (alpha > .5) * 255).astype(np.uint8)
 # a cream "paper" silhouette under it so the figure is cut out of the background as a block
 base = np.zeros((H, W, 4), np.uint8); base[..., :3] = 255; base[..., 3] = ((alpha > .5) * 255).astype(np.uint8)
+if a.redpoly:
+    from PIL import ImageDraw
+    rm = Image.new('L', (W, H), 0); ImageDraw.Draw(rm).polygon([tuple(float(v) * sc for v in q.split(',')) for q in a.redpoly.split(';')], fill=255)
+    red = np.asarray(rm) > 0
+    if a.redhole:
+        cx, cy, rx, ry = (float(v) * sc for v in a.redhole.split(','))
+        red &= ((xx - cx) / rx) ** 2 + ((yy - cy) / ry) ** 2 > 1
+    rr = red & (out[..., 3] > 0); out[rr, 0] = 255     # ink pixels there print red (#f00) instead of black
 comp = Image.alpha_composite(Image.fromarray(base), Image.fromarray(out))
 bb = Image.fromarray(base[..., 3]).getbbox(); comp = comp.crop(bb) if bb else comp
 comp.save(a.out); print('wrote', a.out, comp.size)

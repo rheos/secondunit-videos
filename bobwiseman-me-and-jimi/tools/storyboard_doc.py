@@ -1,0 +1,75 @@
+"""Build the Google Doc storyboard for Bob (same layout as the Airplane one: Still | Time | Lyric | What happens |
+Planned | Bob's ideas), stills pulled from the rendered draft, each time linked to that second of the video.
+Usage: python tools/storyboard_doc.py <draft.mp4> <youtube-url> <out.html>
+Rows come from the six section builds (js/wch/w1..w6) and Bob's own storyboard numbering (his beats 1-31).
+"""
+import base64, html, subprocess, sys, tempfile, os
+
+MP4, URL, OUT = sys.argv[1], sys.argv[2], sys.argv[3]
+
+# (time s, still at s, lyric, what happens, planned)
+ROWS = [
+ (0.0, 1.5, '"Life is hard, life ain\'t nice" (your 1)', 'Ellen walks an endless highway with her guitar case. Giant guitar tuning pegs line the road instead of telephone poles, strings slung between them; the sky is a worn sunburst guitar finish.', ''),
+ (4.37, 7.0, '"Good luck with a career in music" (2)', 'A carnival booth: CAREER IN MUSIC. Prizes swing overhead: gramophone trophies, gold records, grocery coupons (10c OFF EGGS). Nobody running it: an empty stool, a bell, BACK IN 5 MINUTES.', ''),
+ (10.0, 10.9, '"roll the dice" (3)', 'Ellen flings two huge dice across a stage past the amps and players. One lands TALENT, the other LUCK, which cracks in half.', ''),
+ (11.53, 13.2, '"School bus driver" (4)', 'A night concert stage: the bus drives on and stops centre stage; its headlights swing up into the lighting rig as spotlights. Kids in striped pyjamas stare sleepily from the windows.', ''),
+ (16.2, 17.6, '"for kids in their jammies" (5)', 'Down the bus aisle, the kids asleep. Dream balloons pop up on the words: a guitar, a planet, a dinosaur, dancing shoes. Ellen watches in the rear-view mirror and smiles.', ''),
+ (19.6, 21.2, '"should be winning a lifetime achievement award" (6)', 'An absurd awards palace (LIFETIME ACHIEVEMENT, a house-sized gramophone on the dome). The bus pulls up; the red carpet rolls out to Ellen, then two attendants roll it back up. She rolls her eyes.', ''),
+ (22.4, 23.4, '"at the Grammies" (7)', 'The doors open on a hall of gramophone trophies applauding each other. Ellen stands outside on the step holding her slide guitar.', ''),
+ (24.23, 26.5, '"me and Jimi Hendrix" (8)', 'The Number 7 bus stop. Jimi fades in beside her like a ghost, fist up as if hailing the bus. Neither of them reacts.', ''),
+ (27.9, 30.0, '"feel the same about Ellen McIlwaine" (9)', 'Jimi (pointing, the grinning 1968 photo) leans in toward her; a giant glowing red E rises behind her; she rolls her eyes. ELLEN McILWAINE carves in on her name.', ''),
+ (35.0, 40.5, 'instrumental (10)', 'A gigantic harmonica drops out of the sky and lands with absurd weight on the band\'s entry (0:40): the ground cracks, the fence falls over.', ''),
+ (41.95, 44.4, 'instrumental (10)', 'Tiny cut-out Ellen walks in, flips the harmonica up and balances it on one fingertip like it weighs nothing.', ''),
+ (45.45, 52.0, 'instrumental (10)', 'She blows one note: a stream of red hair pours out of the harmonica and keeps coming until it fills the screen.', ''),
+ (56.0, 59.6, 'instrumental (10)', 'Giant scissors come down on the beats and snip it on the big hit (0:59). The cut hair drops and becomes a theatre curtain.', ''),
+ (61.43, 70.0, 'instrumental (10)', 'The curtain opens: Ellen plays slide, her hair blowing flat in a hurricane while nothing else moves. Each slide move sprouts a harmonica from the ground (five of them, buzzing with the harmonica); she slides down and they sink back.', ''),
+ (77.6, 79.0, '"Before Beyonce" (11)', 'Ellen walks past a gigantic Beyonce cut-out under a BEYONCE marquee.', ''),
+ (80.33, 82.0, '"before the Pixies" (12)', 'Past a gigantic Pixies, the four of them, under a PIXIES marquee.', ''),
+ (83.47, 85.0, '"she found her calling" (13)', 'Teenage Ellen\'s black-and-white bedroom: she holds her guitar, the cable trails to a tiny amp.', ''),
+ (85.9, 89.0, '"in the 60s" (13)', 'Close on the amp: she plugs in, and on "sixties" the room explodes into op-art rings, spirals and THE SIXTIES lettering (the one place red goes beyond her hair).', ''),
+ (91.37, 94.5, '"sermons about open tuning fitness" (14)', 'A church: Ellen at the pulpit (OPEN D) holding her guitar up like scripture; the six stained-glass windows light one per beat: D A D F# A D.', ''),
+ (96.4, 98.4, '"plays slide guitar" (15)', 'Extreme close-up down the neck: the glass slide on the strings; the strings turn into six railway tracks.', ''),
+ (99.33, 100.4, '"like none of your business" (16)', 'The slide is now a locomotive racing down the tracks; sparks become notes; Jimi hangs off the back laughing (HA!).', ''),
+ (101.47, 104.5, '"I hope this song helps you" (26)', 'Bob puts a tiny record on a turntable; Ellen\'s school bus drives round the spinning record like driving round the world. (On the record this line comes here, not at the end of verse 3.)', ''),
+ (105.6, 109.5, '"remember her name, Ellen McIlwaine" (27)', 'The kids step off the bus holding letters, scrambled, then hop into place: ELLEN McILWAINE, on her name. Fireworks.', ''),
+ (112.0, 127.0, 'instrumental (19)', 'An enormous black grand piano in an empty Victorian landscape; tiny Ellen walks toward it. Each piano note shoots a key up like a skyscraper until she walks through a city of piano keys.', ''),
+ (130.0, 138.5, 'instrumental (19)', 'A giant Victorian hand comes out of the clouds and plays the city: a fish in spectacles pops out, a boot, a teapot, then a tiny Ellen playing slide, then Ellens everywhere.', ''),
+ (140.0, 143.5, 'instrumental (19)', 'Her hair blows sideways with no wind and stretches into a red musical staff; notes with briefcases walk along it; one trips and falls into the piano.', ''),
+ (146.0, 149.6, 'instrumental (19)', 'The lid opens: inside, an enormous mouth playing harmonica. She closes it (silence), opens it (harmonica), closes, opens; shrugs and leaves it open.', ''),
+ (152.9, 157.6, '"I heard about her in the 80s" (19)', 'Michael Jackson moonwalks in and dances with Ellen under a mirror ball.', ''),
+ (159.47, 161.5, '"I wondered what\'s so special" (20)', 'A record store: tiny Ellen plays furiously in a listening booth; Bob peers through the glass with a magnifying glass, like at an unfamiliar species.', ''),
+ (163.5, 165.0, '"about this lady" (21)', 'Close on the glass: Ellen looks straight at Bob and raises one eyebrow, still playing.', ''),
+ (167.53, 170.5, '"I made no effort to inspect" (22)', 'Bob walks away; the shop stretches impossibly long behind him and Ellen shrinks to a red speck, still playing.', ''),
+ (172.33, 174.4, '"now all I got is the cheque" (23)', 'A big hand opens: a guest check reading AMOUNT DUE: PAY ATTENTION.', ''),
+ (175.2, 176.6, '(25)', 'He tries to pay at a diner till: the cashier is Jimi, who shakes his head. NO SALE.', ''),
+ (177.0, 180.5, '"I\'m ashamed I missed that train" (17)', 'The platform: the ELLEN McILWAINE train is already pulling away, Ellen playing on the back; the station clock has no hands. Bob takes his hat off.', ''),
+ (185.03, 185.9, '"Ellen McIlwaine" (18)', 'The train\'s smoke writes ELLEN McILWAINE across the sky, then the harmonica wind breaks the letters apart.', ''),
+ (187.0, 195.0, 'final instrumental (28)', 'Ellen alone on an enormous empty stage, no audience. She plays anyway.', 'PLANNED: her carved photo (singing at the mic with her guitar, from the picture you sent) for the stage shots.'),
+ (205.23, 222.0, 'final instrumental (29)', 'Slowly we find Jimi in the empty theatre, six rows back, listening intently.', ''),
+ (225.2, 233.0, 'final instrumental (30)', 'She finishes and bows; Jimi stands and applauds. The guitar goes into its case.', ''),
+ (240.33, 247.0, 'final instrumental (30)', 'The theatre fills: the school-bus kids, then musicians (Bob with his accordion, Beyonce, Michael Jackson, the Pixies), then ordinary people; a standing ovation. Ellen has already put her guitar away and walks off.', ''),
+ (262.47, 268.0, 'ending (31)', 'Dawn: Ellen drives the school bus away from the theatre (ELLEN McILWAINE on the marquee).', ''),
+ (271.67, 278.0, 'final image (31)', 'The rear-view mirror: Jimi is in the last seat with his guitar. Ellen notices; small smile on the last sound.', ''),
+]
+
+def ts(t): m, s_ = divmod(t, 60); return f'{int(m)}:{s_:04.1f}'.replace('.0', '') if abs(s_ - round(s_)) < .05 else f'{int(m)}:{s_:04.1f}'
+def still(t):
+    f = tempfile.mktemp(suffix='.jpg')
+    subprocess.run(['ffmpeg', '-v', 'error', '-y', '-ss', f'{t}', '-i', MP4, '-frames:v', '1', '-vf', 'scale=420:-1', '-q:v', '4', f], check=True)
+    b = base64.b64encode(open(f, 'rb').read()).decode(); os.remove(f); return b
+
+rows = []
+for t, st, lyr, what, plan in ROWS:
+    link = f'{URL}?t={int(t)}'
+    rows.append(f'<tr><td><img src="data:image/jpeg;base64,{still(st)}" width="210"></td>'
+                f'<td><a href="{link}">{ts(t)}</a></td><td>{html.escape(lyr)}</td><td>{html.escape(what)}</td>'
+                f'<td>{html.escape(plan)}</td><td></td></tr>')
+doc = f'''<html><head><meta charset="utf-8"></head><body>
+<h1>Me and Jimi: storyboard (woodcut draft 2)</h1>
+<p>Bob Wiseman, Me and Jimi (2026): your storyboard, all woodcut. Current draft: <a href="{URL}">{URL}</a>. Each timestamp links to that moment in the video. The numbers in brackets are your beat numbers from your notes.</p>
+<p>Write your ideas straight into the last column, or anywhere you like. "Planned" notes are changes already on the list.</p>
+<p>One thing to know: on the 2026 recording you sing "I hope this song helps you remember her name" at the end of verse 2 and "I'm ashamed I missed that train" at the end of verse 3 (your notes have them the other way round), so those beats sit where the words are actually sung.</p>
+<table border="1" cellpadding="6"><tr><th>Still</th><th>Time</th><th>Lyric</th><th>What happens</th><th>Planned</th><th>Bob's ideas</th></tr>
+{"".join(rows)}
+</table></body></html>'''
+open(OUT, 'w').write(doc); print('wrote', OUT, len(ROWS), 'rows')

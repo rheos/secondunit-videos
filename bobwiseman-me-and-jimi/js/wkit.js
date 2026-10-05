@@ -11,9 +11,9 @@
 //   mj-1984      Michael Jackson, 1984: white glove up, sequinned jacket, aviators
 //   beyonce      Beyonce, 2023: mic to her mouth, long hair
 //   pixies       the Pixies, the four of them, standing
-//   (ellen-*     when Bob sends a photo of Ellen; until then Ellen is the drawn figure below)
+//   ellen        Ellen McIlwaine singing at the mic with her guitar (old photo from Bob); her hair is on the red plate
 // Every piece also has a carved CUT block behind it, so it reads as cut out of the scene.
-const W_PIECES = ['bob-1989', 'jimi-helsinki', 'jimi-1968', 'mj-1984', 'beyonce', 'pixies'];
+const W_PIECES = ['bob-1989', 'jimi-helsinki', 'jimi-1968', 'mj-1984', 'beyonce', 'pixies', 'ellen'];
 const WP = {};
 window.__woodReady = Promise.all(W_PIECES.map((n) => new Promise((res) => {
   const im = new Image(); im.onload = () => { WP[n] = im; res(); }; im.onerror = () => { console.error('missing assets/wood/' + n + '.png'); res(); }; im.src = 'assets/wood/' + n + '.png';
