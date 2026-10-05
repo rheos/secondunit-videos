@@ -168,3 +168,9 @@ Added 2026-10-05 after the licence rule was dropped (the photos get carved into 
 - Author: unknown, a publicity photo (Wikipedia credits allmusic.com). Date: 1960s. Licence: fair use on en.wikipedia, NOT free. Size 270x369, very small.
 - Frame: head and shoulders, white shirt, dark tie, hand at chin with a cigarette, looking at camera. Light, plain background, easy cut. The face is about 110 px wide, so it only works small or heavily stylised.
 - Alternatives seen, both tiny and watermarked: at the piano, eyes shut, singing (Chuck Stewart, https://www.wirz.de/music/spann/grafik/spann21.jpg, 308x370); at the piano with James Cotton, 1965 (Ray Flerlage, https://www.wirz.de/music/spann/grafik/spann31.jpg, 370x354). Getty has ~49 larger shots (https://www.gettyimages.com/photos/otis-spann), all watermarked.
+
+## 80s line-up, round 2 (2026-10-05)
+
+Robin cut out by hand in Photoshop (transparent PNGs, kept in _in/cutouts/, local): Springsteen (springsteen-1), Madonna (madonna-1), Prince on the Purple Rain motorcycle (prince-01), Cyndi Lauper (lauper-1), David Byrne (byrne-01). Carved with tools/woodcutify.py using their own transparency.
+
+Auto-carved from image-search finds (sources in _in/eighties-sources/SOURCES.md): David Bowie (bowie-1, 1983 Let's Dance session), Boy George (boygeorge-2, 1983 Culture Club poster, left third).
