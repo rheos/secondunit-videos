@@ -8,7 +8,7 @@ const tmp = full ? out : fs.mkdtempSync(path.join(process.cwd(), 'out', 'chk_'))
 const b = await chromium.launch({ channel: 'chrome', headless: true, args: ['--use-angle=metal', '--ignore-gpu-blocklist', '--enable-gpu'] });
 const p = await b.newPage({ viewport: { width: 1920, height: 1080 } });
 const errs = []; p.on('console', m => { if (m.type() === 'error') errs.push(m.text()); }); p.on('pageerror', e => errs.push(String(e)));
-await p.goto('file://' + process.cwd() + '/index.html?offline=1'); await p.evaluate(() => window.__ready);
+await p.goto('file://' + process.cwd() + '/index.html?offline=1' + (process.env.QS ? '&' + process.env.QS : '')); await p.evaluate(() => window.__ready);
 const files = []; let ms = 0;
 for (const t of times) {
   const t0 = Date.now(); const url = await p.evaluate((t) => window.__frameJPEG(t, .9), t); ms += Date.now() - t0;
