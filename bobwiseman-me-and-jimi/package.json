@@ -1,0 +1,7 @@
+{
+  "name": "bobwiseman-me-and-jimi",
+  "private": true,
+  "type": "module",
+  "description": "Bob Wiseman, Me and Jimi (2026), drawn in code. Look test 1: letterpress gig handbill.",
+  "devDependencies": { "playwright": "^1.55.0" }
+}
