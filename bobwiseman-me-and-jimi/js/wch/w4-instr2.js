@@ -199,7 +199,93 @@
     else if (kind === 'boot') boot(x - 18 * sc, oy, sc * .75, t);
     else if (kind === 'teapot') teapot(x, oy, sc * .8, t);
     else if (kind === 'ellen') ellenPlaying(x, oy, .17 * sc, t, t0);
+    else if (kind === 'hat') topHat(x, oy, sc * .8, t);
+    else if (kind === 'watch') pocketWatch(x, oy, sc * .8, t);
+    else if (kind === 'umbrella') umbrella(x, oy, sc * .8, t);
+    else if (kind === 'cage') birdcage(x, oy, sc * .8, t);
   }
+  // Bob (draft-4 notes): 'more eye candy and earlier' -- Victorian curios that pop from the towers before the hand comes
+  function topHat(x, y, k, t) {
+    withT(() => { s.translate(x, y); s.scale(k, k); s.rotate(Math.sin(t * 5.2) * .07);
+      shape(() => { s.beginPath(); s.ellipse(0, -8, 74, 14, 0, 0, TAU); }, INK);
+      const cr = () => pathOf([[-44, -12], [-50, -120], [50, -120], [44, -12]]); shape(cr, INK); clipTo(cr, () => rows(-50, -120, 50, -12, Math.PI / 2, 14, () => 2.2, CUT));
+      shape(() => pathOf([[-46, -30], [46, -30], [45, -46], [-45, -46]]), CUT); });
+  }
+  function pocketWatch(x, y, k, t) {
+    withT(() => { s.translate(x, y); s.scale(k, k);
+      taper([[0, -112], [0, -132]], 10, 10); s.beginPath(); s.arc(0, -142, 12, 0, TAU); s.lineWidth = 6; s.strokeStyle = INK; s.stroke();
+      shape(() => { s.beginPath(); s.arc(0, -56, 58, 0, TAU); }, CUT, 9, INK);
+      for (let i = 0; i < 12; i++) { const a = i * TAU / 12; taper([[Math.cos(a) * 42, -56 + Math.sin(a) * 42], [Math.cos(a) * 50, -56 + Math.sin(a) * 50]], 4, 4); }
+      const a1 = t * 2.4, a2 = t * 9; taper([[0, -56], [Math.cos(a1) * 26, -56 + Math.sin(a1) * 26]], 6, 3); taper([[0, -56], [Math.cos(a2) * 40, -56 + Math.sin(a2) * 40]], 4, 2); dot(0, -56, 6, INK); });
+  }
+  function umbrella(x, y, k, t) {
+    withT(() => { s.translate(x, y); s.scale(k, k); s.rotate(Math.sin(t * 3.7) * .1);
+      taper([[0, 0], [0, -150]], 7, 7); s.beginPath(); s.arc(-14, 0, 14, 0, Math.PI); s.lineWidth = 7; s.strokeStyle = INK; s.stroke();
+      const can = () => { s.beginPath(); s.moveTo(-110, -120); for (let i = 0; i < 4; i++) s.quadraticCurveTo(-110 + i * 55 + 27, -140, -110 + (i + 1) * 55, -120); s.quadraticCurveTo(80, -230, 0, -232); s.quadraticCurveTo(-80, -230, -110, -120); s.closePath(); };
+      shape(can, INK); clipTo(can, () => { for (let i = 0; i < 4; i++) taper([[0, -232], [-110 + i * 55 + 55, -122]], 3, 3, CUT); }); taper([[0, -232], [0, -262]], 6, 4); });
+  }
+  function birdcage(x, y, k, t) {
+    withT(() => { s.translate(x, y); s.scale(k, k);
+      const bars = () => { s.beginPath(); s.moveTo(-60, 0); s.lineTo(-60, -110); s.quadraticCurveTo(0, -200, 60, -110); s.lineTo(60, 0); s.closePath(); };
+      shape(() => { s.beginPath(); s.rect(-70, -10, 140, 14); }, INK);
+      for (let i = 0; i < 7; i++) { const bx = -60 + i * 20; taper([[bx, 0], [bx, -110 - Math.sin(Math.PI * i / 6) * 50]], 3, 3); }
+      bars(); s.lineWidth = 5; s.strokeStyle = INK; s.stroke(); s.beginPath(); s.arc(0, -170, 10, 0, TAU); s.stroke();
+      const hop = Math.abs(Math.sin(t * 9)) * 10;        // the bird hops on its perch, beak open
+      taper([[-40, -50], [40, -50]], 4, 4);
+      withT(() => { s.translate(0, -66 - hop); shape(() => { s.beginPath(); s.ellipse(0, 0, 22, 15, -.2, 0, TAU); }, INK); dot(16, -12, 9, INK); dot(19, -14, 2.5, CUT); shape(() => pathOf([[24, -12], [36, -10], [24, -6]]), INK); taper([[-18, 4], [-36, 14]], 8, 2); }); });
+  }
+
+  // ---------- the sky circus (112-124): balloons, a zeppelin, a flock, a penny-farthing, all on the beats ----------
+  function hotAir(x, y, k, seed) {
+    withT(() => { s.translate(x, y); s.scale(k, k);
+      const env = () => { s.beginPath(); s.moveTo(-34, 60); s.bezierCurveTo(-130, -40, -110, -190, 0, -190); s.bezierCurveTo(110, -190, 130, -40, 34, 60); s.closePath(); };
+      shape(env, seed % 2 ? CUT : INK, 6, INK);
+      clipTo(env, () => { for (let i = -3; i <= 3; i++) taper([[i * 12, 64], [i * 36, -100], [i * 14, -192]], 3, 3, seed % 2 ? INK : CUT); rows(-130, -40, 130, -10, 0, 12, () => 3, seed % 2 ? INK : CUT); });
+      for (const sd of [-1, 1]) taper([[sd * 34, 60], [sd * 22, 110]], 2.5, 2.5);
+      shape(() => pathOf([[-26, 108], [26, 108], [22, 150], [-22, 150]]), INK); taper([[-24, 120], [24, 120]], 2, 2, CUT); });
+  }
+  function zeppelin(x, y, k) {
+    withT(() => { s.translate(x, y); s.scale(k, k);
+      // the banner trails behind (to the right): black cloth, carved words with a margin all round
+      const bw = 560, bh = 70;
+      for (let i = 0; i < 3; i++) taper([[150, -6 + i * 10], [220, -30 + i * 30]], 2, 2);
+      shape(() => pathOf([[220, -40], [220 + bw, -46], [220 + bw - 20, -6 + 2], [220 + bw, bh - 40], [220, bh - 34]]), INK);
+      carveText('ELLEN McILWAINE TONIGHT', 220 + (bw - 30) / 2, -3, 34, CUT, { w: bw - 90 });
+      const body = () => { s.beginPath(); s.ellipse(0, 0, 170, 52, 0, 0, TAU); };
+      shape(body, CUT, 6, INK); clipTo(body, () => { for (let i = -5; i <= 5; i++) taper([[i * 30, -60], [i * 30, 60]], 3, 3); rows(-170, 14, 170, 52, 0, 10, () => 2.5); });
+      shape(() => pathOf([[150, -10], [196, -46], [196, 46], [150, 10]]), INK);
+      shape(() => pathOf([[-40, 50], [40, 50], [30, 74], [-30, 74]]), INK); for (let i = 0; i < 4; i++) dot(-21 + i * 14, 62, 3.5, CUT); });
+  }
+  function bird(x, y, k, ph) {
+    const f = Math.sin(ph) * 16; taper([[x - 22 * k, y - f * k], [x - 6 * k, y + 3 * k], [x, y]], 4 * k, 2 * k); taper([[x, y], [x + 6 * k, y + 3 * k], [x + 22 * k, y - f * k]], 2 * k, 4 * k);
+  }
+  function pennyFarthing(x, y, k, t) {
+    withT(() => { s.translate(x, y); s.scale(-k, k);          // faces left, riding right-to-left
+      const sp = (cx, cy, r, n) => { s.beginPath(); s.arc(cx, cy, r, 0, TAU); s.lineWidth = 8; s.strokeStyle = INK; s.stroke(); const a0 = onTwos(t, 12) * 6;
+        for (let i = 0; i < n; i++) { const a = a0 + i * TAU / n; taper([[cx, cy], [cx + Math.cos(a) * r, cy + Math.sin(a) * r]], 2, 2); } dot(cx, cy, 8, INK); };
+      sp(60, -110, 110, 14); sp(-110, -34, 34, 8);
+      taper([[60, -110], [40, -236], [-20, -230], [-110, -34]], 7, 5);
+      // the rider: top hat, frock coat, legs on the pedals
+      const ph = onTwos(t, 12) * 6;
+      for (const sd of [0, Math.PI]) { const px = 60 + Math.cos(ph + sd) * 26, py = -110 + Math.sin(ph + sd) * 26; taper([[40, -270], [50 + Math.cos(ph + sd) * 10, -190], [px, py]], 16, 12); }
+      shape(() => pathOf(chisel([[18, -360], [70, -360], [66, -262], [12, -262]], 4, 2)), INK);
+      taper([[60, -340], [110, -250], [70, -236]], 12, 10);
+      shape(() => { s.beginPath(); s.ellipse(44, -386, 22, 26, 0, 0, TAU); }, CUT, 5);
+      shape(() => pathOf([[22, -404], [68, -404], [64, -456], [26, -456]]), INK); taper([[14, -404], [76, -404]], 6, 6); });
+  }
+  function skyCircus(t) {
+    const T = onTwos(t, 12);
+    // balloons rise from behind the horizon, one every four beats (113.10, 115.10, 117.23, 119.37)
+    [[113.10, 1300, .8], [115.10, 330, .62], [117.23, 1660, .7], [119.37, 900, .55]].forEach(([t0, x, k], i) => {
+      if (T < t0) return; const u = (T - t0) / 9; hotAir(x + Math.sin(T * .7 + i) * 20, lerp(HZ + 40, -260, u), k, i); });
+    // the zeppelin, right to left across the top
+    const zu = inv(112.6, 123.6, T); if (zu > 0 && zu < 1) zeppelin(lerp(2050, -900, zu), 150 + Math.sin(T * 1.3) * 8, .9);
+    // a flock, flapping on the beats
+    const fu = inv(117.77, 124.13, T); if (fu > 0 && fu < 1) for (let i = 0; i < 11; i++) { const r = rng(i + 70); bird(lerp(-120, 2040, fu) - (i % 4) * 46 - Math.floor(i / 4) * 30, 250 + (i % 4) * 26 + Math.floor(i / 4) * 40 + r() * 20, 1, (T * 14 + i) * 1.0); }
+  }
+  // the piano falls out of the sky and lands on the beat at 112.67
+  const PDROP = 112.67;
+  const pianoDrop = (t) => t >= PDROP ? -Math.abs(Math.sin((t - PDROP) * 18)) * 30 * Math.exp(-(t - PDROP) * 7) : -1150 * Math.pow(1 - inv(112.0, PDROP, t), 2);
   function ellenPlaying(x, y, k, t, seed = 0) {
     const tt = onTwos(t, 12);
     ellen(x, y, k, { pose: 'play', t: tt * 1.4 + seed, slide: .5 + .42 * Math.sin(tt * 26 + seed * 3), wind: .55 * harmK(t), facing: hash(Math.floor(seed * 100)) > .5 ? 1 : -1 });
@@ -256,6 +342,8 @@
   // pick towers by x near targets (far row, top clearly visible above the piano or beside it)
   const pickNear = (tx, row = 0) => { let bi = 0, bd = 1e9; CITY.forEach((c, i) => { if (c.row !== row) return; const d = Math.abs(c.x + c.w / 2 - tx); if (d < bd) { bd = d; bi = i; } }); return bi; };
   const PT = [pickNear(330), pickNear(1550), pickNear(1060), pickNear(190, 1), pickNear(1730, 1)];
+  const EARLY = [[126.23, 'hat', pickNear(760)], [127.27, 'watch', pickNear(1300)], [128.27, 'umbrella', pickNear(1750)], [129.30, 'cage', pickNear(560)]]
+    .filter(([, , ci]) => !PT.includes(ci));
   const GLISS = [137.75, 138.77];
   const towerTopY = (c, t) => c.base - c.h * riseK(c, t);
   function handPose(t) {
@@ -281,6 +369,7 @@
     sky(t, HZ, 3);
     ground(t, HZ, 5);
     victorian(HZ, 0, t < 122 ? 1700 : null);
+    skyCircus(t);
     const hp = handPose(t);
     // press depths per tower
     const pressOf = (ci) => { if (t < 131 || t >= GLISS[0]) return 0; const k = PT.indexOf(ci); return k >= 0 && hp[2] === k ? Math.max(0, hp[3] - 40) : 0; };
@@ -292,12 +381,16 @@
     PRESS.forEach(([tp, kind], k) => { const c = CITY[PT[k]]; (c.row === 0 ? popsFar : popsMid).push([kind, c, tp]); });
     // Ellens everywhere: the glissando pops one from every far-row tower it passes, then the rest at 138.77
     const gl = (c) => GLISS[0] + inv(150, 1750, c.x + c.w / 2) * (GLISS[1] - GLISS[0]);
-    const usedFar = new Set(PT);
+    const usedFar = new Set([...PT, ...EARLY.map((e) => e[2])]);
+    EARLY.forEach(([tp, kind, ci]) => { const c = CITY[ci]; (c.row === 0 ? popsFar : popsMid).push([kind, c, tp]); });
     CITY.forEach((c, i) => { if (!usedFar.has(i) && c.row === 0) popsFar.push(['ellen', c, gl(c) + .04]); if (!usedFar.has(i) && c.row === 1) popsMid.push(['ellen', c, GLISS[1] + .05 + hash(i) * .15]); });
     for (const [kind, c, tp] of popsFar) popAt(kind, c.x + (c.black ? c.w / 2 : c.w * .31), towerTopY(c, t) + 2, t, tp, kind === 'ellen' ? 1.1 : 1.4);
     // the piano: lid lifts a crack while the real harmonica plays, breath gusts out
     const hk = harmK(t), lidA = t > 126 ? (.26 + .1 * Math.sin(onTwos(t, 12) * 14)) * hk : 0;
-    const pp = piano(PO[0], PO[1], PO[2], lidA);
+    const dropY = pianoDrop(onTwos(t, 24));
+    if (t < PDROP + .1) { const sh = 1 - Math.min(1, -dropY / 1150); shape(() => { s.beginPath(); s.ellipse(PO[0] + 450, PO[1] + 10, 520 * sh, 26 * sh, 0, 0, TAU); }, INK); }
+    let pp; withT(() => { s.translate(0, dropY); pp = piano(PO[0], PO[1], PO[2], lidA); });
+    if (t >= PDROP && t < PDROP + .45) { const k = 1 - (t - PDROP) / .45; for (let j = 0; j < 16; j++) flick(PO[0] - 300 + j * 90, PO[1] + 30, -Math.PI / 2 + (j - 7.5) * .12, 90 * k + 20, 6, INK); }
     if (hk > .02) { const e = pp.P(.6, HC + .02, .2); gusts(e[0], e[1] - 30, t, hk, 3); }
     // mid row (in front of the piano)
     CITY.forEach((c, i) => { if (c.row === 1) tower(c.x, c.base, c.w, c.h * riseK(c, t), c.black, i * 13 + 1, pressOf(i)); });
@@ -315,6 +408,8 @@
     // a few Ellens on the ground too, at the end
     if (t > GLISS[1]) [[1000, 1010, .17], [1250, 990, .15], [1450, 1030, .18], [470, 1040, .16], [860, 1060, .19]].forEach(([x, y, k], i) => {
       const u = ease.back(inv(GLISS[1] + .1 + i * .08, GLISS[1] + .35 + i * .08, onTwos(t, 24))); if (u > 0) ellenPlaying(x, y, k * u, t, i + 2); });
+    // the penny-farthing rider wheels past her, right to left
+    const pfu = inv(116.17, 121.5, onTwos(t, 12)); if (pfu > 0 && pfu < 1) pennyFarthing(lerp(2100, -300, pfu), 1080, .62, t);
     // near row: the two huge towers at the edges
     CITY.forEach((c, i) => { if (c.row === 2) tower(c.x, c.base, c.w, c.h * riseK(c, t), c.black, i * 13 + 1); });
     // dust where a tower lands

@@ -121,12 +121,12 @@
   const seatXw = (sd, j) => sd * (175 + j * 150);
   const JIMI = { r: 5, sd: 1, j: 1 };
   const NAMED = { '2,-1,1': 'bob', '3,1,3': 'bey', '6,-1,2': 'mj',     // pixies span row 1, right of the aisle, seats 0-3
-    // Bob's draft-2 notes: 'add more blues artists popping up in seats as did hendrix and me' (Otis Spann: no free photo yet)
-    '2,1,1': 'muddy', '3,-1,0': 'hopkins', '4,1,0': 'richard', '3,-1,2': 'joplin', '4,-1,3': 'berry', '6,1,3': 'tharpe' };
+    // Bob's draft-2 notes: 'add more blues artists popping up in seats as did hendrix and me'
+    '2,1,1': 'muddy', '3,-1,0': 'hopkins', '4,1,0': 'richard', '3,-1,2': 'joplin', '4,-1,3': 'berry', '6,1,3': 'tharpe', '2,-1,3': 'spann' };
   // carved blues pieces: [crop, height at row scale 1]
   const BLUES = { muddy: [[0, 0, 1, .62], 270], hopkins: [[0, 0, 1, .55], 260], richard: [[0, 0, 1, 1], 230], joplin: [[0, 0, .82, .52], 270],
-    berry: [[.04, 0, .82, .5], 270], tharpe: [[0, 0, 1, .42], 260] };
-  const T_BLUES = { muddy: 247.25, hopkins: 247.65, richard: 248.05, joplin: 248.45, berry: 248.85, tharpe: 249.25 };
+    berry: [[.04, 0, .82, .5], 270], tharpe: [[0, 0, 1, .42], 260], spann: [[0, 0, 1, .62], 240] };
+  const T_BLUES = { muddy: 247.25, hopkins: 247.65, richard: 248.05, joplin: 248.45, berry: 248.85, tharpe: 249.25, spann: 249.65 };
   const T_KIDS = [240.4, 244.9], T_MUS = [245.25, 249.5], T_PPL = [249.9, 254.2];
   function who(r, sd, j) {
     const id = r * 40 + (sd > 0 ? 20 : 0) + j, h = hash(id * 977 + 13), h2 = hash(id * 131 + 7);

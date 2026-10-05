@@ -141,6 +141,30 @@
     shape(P, CUT); clipTo(P, () => rows(x - 320, -20, x + 320, 980, Math.atan2(x - xTop, 995) * -1, 26, () => 1.6));
     shape(OV(x, 975, 300, 54), CUT); shape(OV(x, 975, 300, 54), null, 3);
   }
+  // a carved photo piece dancing on the black floor: white rim so it reads, bops and tilts on the beat, spins like a cut-out
+  function dancer(n, x, y, h, rot, spin) {
+    withT(() => { s.translate(x, y); s.rotate(rot); s.scale(Math.abs(spin) < .12 ? .12 * Math.sign(spin || 1) : spin, 1);
+      withT(() => { s.filter = 'brightness(0) invert(1)'; for (let i = 0; i < 10; i++) { const a = i * TAU / 10; put(n, Math.cos(a) * 6, Math.sin(a) * 6, h, { ax: .5, ay: 1 }); } });
+      put(n, 0, 0, h, { ax: .5, ay: 1 }); });
+  }
+  // 156.40  the 80s line-up: a wide shot, nine across the floor; the second wave pops in on the beats
+  //         (Madonna, Prince riding in on the purple bike, Bowie, Boy George, David Byrne), then everyone spins
+  function shotLineup(t) {
+    const T = onTwos(t), bi = lastBeat(T), bt = beatT(T), bop = hit(T, bt, 9);
+    danceFloor(T);
+    spot(960, 960);
+    const spin = T >= 158.53 ? Math.cos(inv(158.53, 159.3, T) * TAU * 2) : 1, tilt = (k) => (bi % 2 ? .05 : -.05) * (k % 2 ? 1 : -1);
+    const LINE = [['lauper', 110, 0, 460], ['madonna', 300, 156.40, 430], ['prince', 600, -1, 400], ['bowie', 820, 156.93, 460],
+      ['ellen', 1000, 0, 0], ['mj', 1180, 0, 0], ['boygeorge', 1370, 157.47, 470], ['springsteen', 1570, 0, 470], ['byrne', 1790, 158.00, 400]];
+    LINE.forEach(([n, x, ta, h], k) => {
+      const y = 1000 - bop * 18;
+      if (n === 'ellen') { pivot(x, y, tilt(k), () => ellen(0, 0, .74, { pose: bi % 2 ? 'point' : 'stand', t: T, smile: .7 }), Math.abs(spin) < .12 ? .12 : spin); return; }
+      if (n === 'mj') { pivot(x, y, tilt(k), () => mjFig(560, { toe: bi % 2, spread: 8 }), Math.abs(spin) < .12 ? .12 * Math.sign(spin || 1) : spin); return; }
+      if (n === 'prince') { const pu = ease.out(inv(156.40, 156.93, T)); if (pu > 0) dancer('prince', lerp(-450, x, pu), y + 8 - (pu < 1 ? Math.abs(Math.sin(T * 30)) * 8 : 0), h, pu < 1 ? .04 : tilt(k) * .5, spin); return; }
+      const pk = ta <= 0 ? 1 : T < ta ? 0 : ease.back(inv(ta, ta + .25, T));
+      if (pk > 0) dancer(n, x, y, h * pk, tilt(k) * pk, spin);
+    });
+  }
   function shotDance(t) {
     const T = onTwos(t), bi = lastBeat(T), bt = beatT(T), hop = hit(T, bt, 9);
     danceFloor(T);
@@ -152,6 +176,11 @@
     else if (T < 157.47) { rM = bi % 2 ? .08 : -.08; rE = bi % 2 ? -.07 : .07; dyM = -hop * 26; dyE = -hop * 22; ePose = bi % 2 ? 'point' : 'stand'; toe = bi % 2 ? 1 : 0; }
     else if (T < 158.53) { const l = ease.out(inv(157.47, 157.85, T)); rM = -.3 * l; rE = .3 * l; ePose = 'point'; }
     else { const u = inv(158.53, 159.3, T); spinM = Math.cos(u * TAU * 2); spinE = Math.cos(u * TAU * 2 + .4); ePose = u >= 1 ? 'point' : 'stand'; }
+    // Bob (draft-4 notes): more of the 80s around MJ: Cyndi Lauper slides in from the left, Springsteen from the right
+    const cyIn = ease.out(inv(153.07, 153.6, T)), brIn = ease.out(inv(155.3, 155.83, T)), bop = hit(T, bt, 9);
+    const spinC = T >= 158.53 ? Math.cos(inv(158.53, 159.3, T) * TAU * 2 + .8) : 1;
+    if (cyIn > 0) { spot(lerp(-300, 250, cyIn), 900); dancer('lauper', lerp(-300, 250, cyIn), 1000 - bop * 24, 640, (bi % 2 ? .06 : -.06), spinC); }
+    if (brIn > 0) { spot(lerp(2250, 1690, brIn), 900); dancer('springsteen', lerp(2250, 1690, brIn), 1000 - bop * 20, 660, (bi % 2 ? -.05 : .05), spinC); }
     pivot(ex, 975 + dyE, rE, () => ellen(0, 0, 1.22, { pose: ePose, t: T, smile: .7, eyes: 'open' }), spinE < 0 ? Math.min(-.12, spinE) : Math.max(.12, spinE));
     pivot(mx, 975 + dyM, rM, () => mjFig(900, { toe, spread: toe >= 0 ? 10 : 0 }), Math.abs(spinM) < .12 ? .12 * Math.sign(spinM || 1) : spinM);
     // the moonwalk leaves glide marks on the floor
@@ -442,6 +471,7 @@
 
   chapter('w5', 152.9, 187.0, [
     [152.9, shotDance],
+    [156.40, shotLineup],
     [159.47, shotBooth],
     [163.5, shotGlass],
     [167.53, shotWalk],
