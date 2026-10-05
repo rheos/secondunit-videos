@@ -13,19 +13,23 @@ ap.add_argument('--crop'); ap.add_argument('--ang', type=float, default=30); ap.
 ap.add_argument('--lo', type=float, default=.32); ap.add_argument('--hi', type=float, default=.72); ap.add_argument('--size', type=int, default=1400)
 ap.add_argument('--edge', type=float, default=.18); ap.add_argument('--local', type=float, default=0); ap.add_argument('--blur', type=float, default=1.2); ap.add_argument('--poly', help='scissor path in crop px, "x,y;x,y;..." (overrides rembg)'); ap.add_argument('--nocut', action='store_true')
 a = ap.parse_args()
-im = Image.open(a.src).convert('RGB')
+src_im = Image.open(a.src)
+has_alpha = src_im.mode in ('RGBA', 'LA', 'P') and (src_im.mode != 'P' or 'transparency' in src_im.info)
+im = src_im.convert('RGBA') if has_alpha else src_im.convert('RGB')
 if a.crop: im = im.crop(tuple(int(v) for v in a.crop.split(',')))
 im.thumbnail((a.size, a.size), Image.LANCZOS)
+im_rgb = Image.alpha_composite(Image.new('RGBA', im.size, (255, 255, 255, 255)), im).convert('RGB') if has_alpha else im
 sc = min(1, a.size / max(Image.open(a.src).crop(tuple(int(v) for v in a.crop.split(','))).size if a.crop else Image.open(a.src).size))
 if a.poly:
     from PIL import ImageDraw
     m = Image.new('L', (im.width, im.height), 0); pts = [tuple(float(v) * sc for v in q.split(',')) for q in a.poly.split(';')]
     ImageDraw.Draw(m).polygon(pts, fill=255); alpha = np.asarray(m, np.float32) / 255
+elif has_alpha: alpha = np.asarray(im.split()[-1], np.float32) / 255     # the source is already cut out
 elif a.nocut: alpha = np.ones((im.height, im.width), np.float32)
 else:
     from rembg import remove, new_session
-    alpha = np.asarray(remove(im, session=new_session('isnet-general-use'), post_process_mask=True).split()[-1], np.float32) / 255
-g = np.asarray(ImageOps.autocontrast(im.convert('L'), cutoff=1).filter(ImageFilter.GaussianBlur(a.blur)), np.float32) / 255
+    alpha = np.asarray(remove(im_rgb, session=new_session('isnet-general-use'), post_process_mask=True).split()[-1], np.float32) / 255
+g = np.asarray(ImageOps.autocontrast(im_rgb.convert('L'), cutoff=1).filter(ImageFilter.GaussianBlur(a.blur)), np.float32) / 255
 if a.local > 0:   # local contrast (CLAHE) so a dark face in a dark photo still carves into features
     from skimage import exposure
     g = exposure.equalize_adapthist(g, kernel_size=max(16, int(min(g.shape) * a.local)), clip_limit=.02).astype(np.float32)
