@@ -67,14 +67,17 @@ function ellenRaw(x, y, k, o = {}) {
     clipTo(mane, () => { for (let i = 0; i < 12; i++) taper([[-34 + i * 7, -500 + i * 2], [lerp(-90 + i * 14, -560 + i * 8, W_) + sway, lerp(-250 + i * 4, -470 + i * 6, W_)]], 2.6, .4, INK); });
     // ---- legs: trousers in ink, carved crease; boots ----
     if (pose !== 'drive') {
+      // plump all the way down (Robin: a round jacket on thin legs read as a skinny person in a fat coat):
+      // a full seat and hips as wide as the jacket's hem, thick thighs tapering to sturdy calves, bigger boots
+      shape(() => pathOf(chisel([[-90, -240], [90, -240], [92, -196], [74, -168], [-74, -168], [-92, -196]], 8, 2.5)), INK);
       const leg = (hx, sw) => {
         const kx = hx + sw * 22, fx = hx + sw * 46;
-        taper([[hx, -255], [kx, -125], [fx, -16]], 60, 40, INK);
-        taper([[hx + 6, -240], [kx + 6, -130]], 2.5, 1, CUT);
-        shape(() => pathOf(chisel([[fx - 24, -26], [fx + 44, -22], [fx + 50, 2], [fx - 26, 2]], 5, 2)), INK);
-        taper([[fx - 18, -6], [fx + 40, -4]], 2, 2, CUT);
+        taper([[hx, -232], [kx, -122], [fx, -16]], 86, 54, INK);
+        taper([[hx + 10, -220], [kx + 8, -128]], 2.5, 1, CUT);
+        shape(() => pathOf(chisel([[fx - 32, -28], [fx + 52, -24], [fx + 58, 2], [fx - 34, 2]], 5, 2)), INK);
+        taper([[fx - 24, -6], [fx + 48, -4]], 2, 2, CUT);
       };
-      leg(-26, st); leg(28, -st);
+      leg(-42, st); leg(44, -st);
     }
     // ---- torso: the bus driver's jacket, black, belted, cut seams, two rows of buttons ----
     const jacket = () => pathOf(chisel([[-64, -398], [-30, -406], [30, -406], [64, -398], [86, -348], [96, -292], [90, -232], [-90, -232], [-96, -292], [-86, -348]], 21, 2.5));   // round: Bob, 'plump her up a wee bit'
@@ -87,15 +90,15 @@ function ellenRaw(x, y, k, o = {}) {
     shape(() => pathOf([[-22, -404], [-4, -374], [14, -404], [4, -412], [-12, -412]]), CUT, 3);   // shirt collar
     // ---- arms: shoulder -> elbow -> hand, jacket sleeve ink, hand as a carved mitt ----
     const arm = (sx, sy, ex, ey, hx, hy) => {
-      taper([[sx, sy], [ex, ey]], 30, 25, INK); taper([[ex, ey], [hx, hy]], 25, 20, INK);
+      taper([[sx, sy], [ex, ey]], 40, 33, INK); taper([[ex, ey], [hx, hy]], 33, 25, INK);
       taper([[sx + 6, sy + 8], [ex + 4, ey]], 2, 1, CUT);
       const a = Math.atan2(hy - ey, hx - ex);
       withT(() => { s.translate(hx, hy); s.rotate(a); shape(() => { s.beginPath(); s.ellipse(10, 0, 17, 12, 0, 0, TAU); }, CUT, 3.5); taper([[2, -6], [18, -8]], 2, 1); });
       return [hx + Math.cos(a) * 20, hy + Math.sin(a) * 20];
     };
     // ---- neck, head, face ----
-    shape(() => pathOf([[-15, -428], [15, -428], [14, -402], [-14, -402]]), CUT, 4);
-    const head = () => { s.beginPath(); s.ellipse(2, -467, 39, 44, 0, 0, TAU); };
+    shape(() => pathOf([[-19, -428], [19, -428], [18, -402], [-18, -402]]), CUT, 4);
+    const head = () => { s.beginPath(); s.ellipse(2, -466, 41, 45, 0, 0, TAU); };   // a fuller face to match
     shape(head, CUT, 5);
     clipTo(head, () => { taper([[30, -500], [34, -440]], 6, 3, INK); });              // the shadow side of her face
     if (eyes === 'closed') { taper([[-18, -474], [-6, -472]], 3, 3); taper([[12, -472], [24, -474]], 3, 3); }
