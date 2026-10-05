@@ -541,8 +541,8 @@
     taper([[1500, -20], [1500, 40]], 20, 20, INK);
     const k = 2.55, x = 640, y = 1690;
     driverSeat(x, y, k);
-    const sm = t < 276.73 ? 0 : t < 277.27 ? .5 : .75;
-    ellen(x, y, k, { pose: 'drive', t: tw(t), wind: .25, eyes: t >= 275.9 && t < 276.73 ? 'brow' : 'open', smile: sm });
+    const sm = t < 275.75 ? 0 : t < 276.0 ? .5 : .75;
+    ellen(x, y, k, { pose: 'drive', t: tw(t), wind: .25, eyes: t >= 275.0 && t < 275.75 ? 'brow' : 'open', smile: sm });
   }
 
   // 278.2  Bob (draft-3 notes): 'at the end could 2 people have the dialogue "that felt great" "i think she would like that" "yeah"'
@@ -568,14 +568,16 @@
     shape(() => pathOf([[sx - 14, hz], [sx + 14, hz], [W + 500, H + 20], [380, H + 20]]), CUT, 4);          // the road to the sun
     for (let i = 0; i < 6; i++) { const q = wrap(T * .25 + i / 6, 1), a = Math.pow(q, 2.2), yy = lerp(hz, H, a), xx = lerp(sx, 1500, a), ww = lerp(2, 40, a);
       shape(() => pathOf([[xx - ww * .3, yy], [xx + ww * .3, yy], [xx + ww * .45, yy + ww * 2], [xx - ww * .45, yy + ww * 2]]), INK); }
-    const u = inv(278.2, 282.5, T), bk_ = lerp(.16, .06, u);                                                  // her bus, small, nearly into the sun
+    const u = inv(276.4, 282.5, T), bk_ = lerp(.16, .06, u);                                                  // her bus, small, nearly into the sun
     schoolBus(sx - 30 + u * 20, hz + 6, bk_, { t: T, kids: 0, driver: 'ellen', lights: true });
     // the pair, at the roadside, from behind: Jimi a ghost, Bob solid
     ghost(.62, () => rimmed('jimi-helsinki', 300, 1110, 640, { ax: .5, ay: 1 }));
     rimmed('bob-1989', 640, 1110, 600, { ax: .5, ay: 1, flip: true });
-    balloon('That felt great.', 900, 300, 690, 560, t, 278.4, 279.65);
-    balloon('I think she would like that.', 760, 200, 330, 520, t, 279.7, 281.35);
-    balloon('Yeah.', 840, 320, 690, 560, t, 281.45, 282.6);
+    // the lines are spoken on the recording; each balloon's words are up as the voice starts (vocal-stem onsets
+    // 276.96 / 278.88 / 280.28) and stay until the next line
+    balloon('That felt great.', 900, 300, 690, 560, t, 276.80, 278.80);
+    balloon('I think she would have liked that.', 800, 200, 330, 520, t, 278.72, 280.20);
+    balloon('Yeah.', 840, 320, 690, 560, t, 280.12, 282.6);
   }
 
   chapter('w6', 187.0, 282.5, [
@@ -597,7 +599,7 @@
     [262.47, busAway],
     [266.1, driving],
     [271.67, mirror],
-    [275.4, smile],
-    [278.2, roadside],
+    [274.6, smile],
+    [276.4, roadside],
   ]);
 })();
