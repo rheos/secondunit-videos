@@ -482,7 +482,7 @@
     const hold = t < TD, hp = hold ? [c[0] - 205, c[1]] : kf(OT(t), [[TD, [c[0] - 205, c[1]]], [TD + .45, [620, 560]]], ease.out);
     taper([[480, 640], [lerp(480, hp[0], .5), Math.max(hp[1], 640) + 60], [hp[0] - 40, hp[1] + 20]], 92, 64, INK);
     clipTo(() => { s.beginPath(); s.rect(380, 500, 1200, 700); }, () => {});
-    bobHead(330, 610, 560, .08 + (hold ? .06 : 0));
+    bobHead(250, 640, 420, .08 + (hold ? .06 : 0));   // smaller and half out of frame: Bob, 'too much bob face'
     recordDisc(c[0], c[1], 210, 80, ang, null);
     // his hand pinching the record's edge
     shape(() => smoothPath([[hp[0] - 70, hp[1] - 40], [hp[0] + 10, hp[1] - 52], [hp[0] + 34, hp[1] - 12], [hp[0] + 30, hp[1] + 30], [hp[0] - 40, hp[1] + 50], [hp[0] - 80, hp[1] + 20]]), CUT, 6);

@@ -203,7 +203,7 @@
       flick(ox + Math.cos(a2) * 20, 320 + i * 60, sd < 0 ? Math.PI + (i - 1.5) * .2 : (i - 1.5) * .2, 60 + 70 * wd, 6, INK); } }
     // Bob studies the species: the 1989 piece, leaning in, with a magnifier on the glass
     const lean = kf(T, [[159.47, 0], [161.5, 1]], ease.out);
-    put('bob-1989', 1560 - lean * 50, 1110, 840, { ax: .5, ay: 1, rot: -.05 - lean * .05, crop: [0, 0, 1, .62] });
+    put('bob-1989', 1640 - lean * 50, 1110, 640, { ax: .5, ay: 1, rot: -.05 - lean * .05, crop: [0, 0, 1, .62] });   // smaller (Bob: too much bob face)
     const lx = 856 + jit, ly = 540, lr = 104;
     taper([[lx + 70, ly + 74], [1070, 800]], 26, 30, INK);
     clipTo(OV(lx, ly, lr, lr), () => withT(() => { s.translate(lx, ly); s.scale(1.7, 1.7); s.translate(-lx, -ly); inside(); }));
@@ -266,9 +266,9 @@
       const z0 = 1.6 + r() * 3, sx = (sd < 0 ? Xl(z0) : Xr(z0)), sy = lerp(Yc(z0), Yf(z0), .2 + r() * .5);
       const x = sx + (vx - sx) * .2 * a + a * (500 + r() * 500) * (r() < .7 ? 1 : -1), y = sy - a * 260 + a * a * 120, sz = (80 + r() * 50) * (1 + a * .8);
       withT(() => { s.translate(x, y); s.rotate(a * (3 + r() * 4) * sd); shape(R(-sz / 2, -sz / 2, sz, sz), CUT, 5); dot(sz * .2, 0, sz * .32, INK); dot(sz * .2, 0, sz * .08, CUT); }); }
-    // Bob walks toward us, not looking back
-    const bi = lastBeat(T), ph = hit(T, beatT(T), 8);
-    put('bob-1989', 1420 - u * 70, 1230 - ph * 22, lerp(880, 1010, ease.inOut(u)), { ax: .5, ay: 1, rot: bi % 2 ? .035 : -.035 });
+    // Bob walks toward us, not looking back: a black silhouette against the lit shop, no face (Bob: too much bob face)
+    const bi = lastBeat(T), ph = hit(T, beatT(T), 8), bxp = 1420 - u * 70, byp = 1230 - ph * 22, bhp = lerp(700, 800, ease.inOut(u)), bo = { ax: .5, ay: 1, rot: bi % 2 ? .035 : -.035 };
+    withT(() => { s.filter = 'brightness(0)'; put('bob-1989', bxp, byp, bhp, bo); });
   }
 
   // ---------------- 172.33 the cheque ("now all I got is the cheque") ----------------

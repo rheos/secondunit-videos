@@ -13,7 +13,7 @@
 //   pixies       the Pixies, the four of them, standing
 //   ellen        Ellen McIlwaine singing at the mic with her guitar (old photo from Bob); her hair is on the red plate
 // Every piece also has a carved CUT block behind it, so it reads as cut out of the scene.
-const W_PIECES = ['bob-1989', 'jimi-helsinki', 'jimi-1968', 'mj-1984', 'beyonce', 'pixies', 'ellen'];
+const W_PIECES = ['bob-1989', 'jimi-helsinki', 'jimi-1968', 'mj-1984', 'beyonce', 'pixies', 'ellen', 'muddy', 'hopkins', 'richard', 'joplin', 'berry', 'tharpe'];
 const WP = {};
 window.__woodReady = Promise.all(W_PIECES.map((n) => new Promise((res) => {
   const im = new Image(); im.onload = () => { WP[n] = im; res(); }; im.onerror = () => { console.error('missing assets/wood/' + n + '.png'); res(); }; im.src = 'assets/wood/' + n + '.png';
@@ -67,35 +67,38 @@ function ellenRaw(x, y, k, o = {}) {
     clipTo(mane, () => { for (let i = 0; i < 12; i++) taper([[-34 + i * 7, -500 + i * 2], [lerp(-90 + i * 14, -560 + i * 8, W_) + sway, lerp(-250 + i * 4, -470 + i * 6, W_)]], 2.6, .4, INK); });
     // ---- legs: trousers in ink, carved crease; boots ----
     if (pose !== 'drive') {
+      // plump all the way down (Robin: a round jacket on thin legs read as a skinny person in a fat coat):
+      // a full seat and hips as wide as the jacket's hem, thick thighs tapering to sturdy calves, bigger boots
+      shape(() => pathOf(chisel([[-90, -240], [90, -240], [92, -196], [74, -168], [-74, -168], [-92, -196]], 8, 2.5)), INK);
       const leg = (hx, sw) => {
         const kx = hx + sw * 22, fx = hx + sw * 46;
-        taper([[hx, -255], [kx, -125], [fx, -16]], 50, 36, INK);
-        taper([[hx + 6, -240], [kx + 6, -130]], 2.5, 1, CUT);
-        shape(() => pathOf(chisel([[fx - 24, -26], [fx + 44, -22], [fx + 50, 2], [fx - 26, 2]], 5, 2)), INK);
-        taper([[fx - 18, -6], [fx + 40, -4]], 2, 2, CUT);
+        taper([[hx, -232], [kx, -122], [fx, -16]], 86, 54, INK);
+        taper([[hx + 10, -220], [kx + 8, -128]], 2.5, 1, CUT);
+        shape(() => pathOf(chisel([[fx - 32, -28], [fx + 52, -24], [fx + 58, 2], [fx - 34, 2]], 5, 2)), INK);
+        taper([[fx - 24, -6], [fx + 48, -4]], 2, 2, CUT);
       };
-      leg(-20, st); leg(22, -st);
+      leg(-42, st); leg(44, -st);
     }
     // ---- torso: the bus driver's jacket, black, belted, cut seams, two rows of buttons ----
-    const jacket = () => pathOf(chisel([[-58, -398], [-30, -404], [30, -404], [58, -398], [72, -340], [62, -300], [66, -232], [-66, -232], [-62, -300], [-72, -340]], 21, 2.5));
+    const jacket = () => pathOf(chisel([[-64, -398], [-30, -406], [30, -406], [64, -398], [86, -348], [96, -292], [90, -232], [-90, -232], [-96, -292], [-86, -348]], 21, 2.5));   // round: Bob, 'plump her up a wee bit'
     shape(jacket, INK);
     clipTo(jacket, () => {
-      taper([[-4, -400], [-4, -236]], 2.5, 2.5, CUT); taper([[-64, -282], [64, -282]], 5, 5, CUT); taper([[-64, -268], [64, -268]], 2, 2, CUT);
+      taper([[-4, -400], [-4, -236]], 2.5, 2.5, CUT); taper([[-98, -282], [98, -282]], 5, 5, CUT); taper([[-98, -268], [98, -268]], 2, 2, CUT);
       for (let i = 0; i < 3; i++) { dot(-18, -380 + i * 30, 4.5, CUT); dot(10, -380 + i * 30, 4.5, CUT); }
-      rows(-72, -404, 72, -232, .3, 20, (u) => .5 + u * 2.2, CUT);
+      rows(-100, -406, 100, -232, .3, 20, (u) => .5 + u * 2.2, CUT);
     });
     shape(() => pathOf([[-22, -404], [-4, -374], [14, -404], [4, -412], [-12, -412]]), CUT, 3);   // shirt collar
     // ---- arms: shoulder -> elbow -> hand, jacket sleeve ink, hand as a carved mitt ----
     const arm = (sx, sy, ex, ey, hx, hy) => {
-      taper([[sx, sy], [ex, ey]], 30, 25, INK); taper([[ex, ey], [hx, hy]], 25, 20, INK);
+      taper([[sx, sy], [ex, ey]], 40, 33, INK); taper([[ex, ey], [hx, hy]], 33, 25, INK);
       taper([[sx + 6, sy + 8], [ex + 4, ey]], 2, 1, CUT);
       const a = Math.atan2(hy - ey, hx - ex);
       withT(() => { s.translate(hx, hy); s.rotate(a); shape(() => { s.beginPath(); s.ellipse(10, 0, 17, 12, 0, 0, TAU); }, CUT, 3.5); taper([[2, -6], [18, -8]], 2, 1); });
       return [hx + Math.cos(a) * 20, hy + Math.sin(a) * 20];
     };
     // ---- neck, head, face ----
-    shape(() => pathOf([[-12, -428], [12, -428], [11, -402], [-11, -402]]), CUT, 4);
-    const head = () => { s.beginPath(); s.ellipse(2, -468, 34, 44, 0, 0, TAU); };
+    shape(() => pathOf([[-19, -428], [19, -428], [18, -402], [-18, -402]]), CUT, 4);
+    const head = () => { s.beginPath(); s.ellipse(2, -466, 41, 45, 0, 0, TAU); };   // a fuller face to match
     shape(head, CUT, 5);
     clipTo(head, () => { taper([[30, -500], [34, -440]], 6, 3, INK); });              // the shadow side of her face
     if (eyes === 'closed') { taper([[-18, -474], [-6, -472]], 3, 3); taper([[12, -472], [24, -474]], 3, 3); }
@@ -117,22 +120,22 @@ function ellenRaw(x, y, k, o = {}) {
     clipTo(locks, () => { for (let i = 0; i < 6; i++) taper([[-30 + i * 12, -530], [-24 + i * 12, -470]], 2, .5, INK); });
     // ---- arms by pose ----
     if (pose === 'walk' || pose === 'stand') {
-      arm(-60, -388, -74 - st * 14, -310, -70 - st * 26, -238);
-      const h = arm(60, -388, 74 + st * 14, -310, 72 + st * 22, -244);
+      arm(-66, -388, -96 - st * 14, -310, -94 - st * 26, -238);
+      const h = arm(66, -388, 96 + st * 14, -310, 96 + st * 22, -244);
       if (case_ && pose === 'walk') guitarCase(h[0] + 2, h[1] + 8, .8, -Math.PI / 2 + st * .05);   // carried by the handle, lying along her side
     } else if (pose === 'play' || pose === 'hold') {
       const ang = pose === 'hold' ? -.95 : -.42;
       guitar(0, -300, .9, ang, slide, t);
-      arm(-60, -388, -62, -318, -26, -292);                                    // picking hand over the soundhole
+      arm(-66, -388, -80, -322, -26, -292);                                    // picking hand over the soundhole
       const nx = Math.cos(ang), ny = Math.sin(ang), d = (110 + slide * 180) * .9;
       const hx = d * nx, hy = -300 + d * ny - 14;
-      arm(60, -388, (60 + hx) / 2 + 30, (-388 + hy) / 2 + 20, hx, hy);         // fretting hand up the neck
+      arm(66, -388, (66 + hx) / 2 + 34, (-388 + hy) / 2 + 22, hx, hy);         // fretting hand up the neck
       shape(() => { s.beginPath(); s.rect(hx - 6, hy - 6, 28, 40); }, CUT, 3.5); // the slide on her finger
       taper([[hx + 2, hy], [hx + 2, hy + 30]], 2, 2, INK);
     } else if (pose === 'drive') {
-      arm(-60, -388, -48, -322, -4, -300); arm(60, -388, 74, -330, 56, -302);
+      arm(-66, -388, -60, -322, -4, -300); arm(66, -388, 88, -330, 62, -302);
     } else if (pose === 'point') {
-      arm(-60, -388, -74, -310, -70, -238); arm(60, -388, 140, -404, 214, -414);
+      arm(-66, -388, -96, -310, -94, -238); arm(66, -388, 146, -404, 220, -414);
     }
   });
 }

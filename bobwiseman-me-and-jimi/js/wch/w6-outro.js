@@ -120,14 +120,20 @@
   const rowZ = (r) => 1 + r * .35, rowY = (r) => 150 + 900 / rowZ(r);
   const seatXw = (sd, j) => sd * (175 + j * 150);
   const JIMI = { r: 5, sd: 1, j: 1 };
-  const NAMED = { '2,-1,1': 'bob', '3,1,3': 'bey', '6,-1,2': 'mj' };   // pixies span row 1, right of the aisle, seats 0-3
+  const NAMED = { '2,-1,1': 'bob', '3,1,3': 'bey', '6,-1,2': 'mj',     // pixies span row 1, right of the aisle, seats 0-3
+    // Bob's draft-2 notes: 'add more blues artists popping up in seats as did hendrix and me' (Otis Spann: no free photo yet)
+    '2,1,1': 'muddy', '3,-1,0': 'hopkins', '4,1,0': 'richard', '3,-1,2': 'joplin', '4,-1,3': 'berry', '6,1,3': 'tharpe' };
+  // carved blues pieces: [crop, height at row scale 1]
+  const BLUES = { muddy: [[0, 0, 1, .62], 270], hopkins: [[0, 0, 1, .55], 260], richard: [[0, 0, 1, 1], 230], joplin: [[0, 0, .82, .52], 270],
+    berry: [[.04, 0, .82, .5], 270], tharpe: [[0, 0, 1, .42], 260] };
+  const T_BLUES = { muddy: 247.25, hopkins: 247.65, richard: 248.05, joplin: 248.45, berry: 248.85, tharpe: 249.25 };
   const T_KIDS = [240.4, 244.9], T_MUS = [245.25, 249.5], T_PPL = [249.9, 254.2];
   function who(r, sd, j) {
     const id = r * 40 + (sd > 0 ? 20 : 0) + j, h = hash(id * 977 + 13), h2 = hash(id * 131 + 7);
     if (r === JIMI.r && sd === JIMI.sd && j === JIMI.j) return null;
     if (r === 1 && sd === 1 && j <= 3) return null;
     const nm = NAMED[`${r},${sd},${j}`];
-    if (nm) return { cat: 'named', nm, ta: { bob: 245.27, bey: 245.80, mj: 246.30 }[nm] };
+    if (nm) return { cat: 'named', nm, ta: BLUES[nm] ? snapBeat(T_BLUES[nm] - .2) : { bob: 245.27, bey: 245.80, mj: 246.30 }[nm] };
     const near = r <= 5 && j <= 4;
     const cat = near ? (h < .45 ? 'kid' : h < .65 ? 'mus' : 'ppl') : (h < .18 ? 'kid' : h < .32 ? 'mus' : 'ppl');
     const win = cat === 'kid' ? T_KIDS : cat === 'mus' ? T_MUS : T_PPL;
@@ -176,6 +182,7 @@
           else if (p.nm === 'bob') piece('bob-1989', x + 6 * k, y + 120 * k, 250 * kk, { crop: [0, 0, 1, .7], ax: .5, ay: 1 });
           else if (p.nm === 'bey') piece('beyonce', x, y + 120 * k, 260 * kk, { crop: [.1, 0, .8, .55], ax: .5, ay: 1 });
           else if (p.nm === 'mj') piece('mj-1984', x, y + 120 * k, 250 * kk, { crop: [0, 0, 1, .6], ax: .5, ay: 1 });
+          else if (BLUES[p.nm]) piece(p.nm, x, y + 120 * k, BLUES[p.nm][1] * kk, { crop: BLUES[p.nm][0], ax: .5, ay: 1 });
           });
         }
         if (r === 1) { const pk = popK(t, 246.83); if (pk > 0) { const z1 = rowZ(1), x0 = 960 + 175 / z1 - 60 / z1, x1 = 960 + 625 / z1 + 60 / z1;
@@ -230,13 +237,16 @@
       flick(x + Math.cos(a) * d, y + Math.sin(a) * d, a, 40 + 50 * p, 5 + 4 * p, CUT); }
   }
   function onStage(t, o = {}) {
-    const { w = 0, ex = 960, ey = 900, ek = .42, pose = 'play', facing = 1, spotOn = true, slide = null, bow = 0, smile = 0 } = o;
+    const { w = 0, ex = 960, ey = 900, ek = .42, pose = 'play', facing = 1, spotOn = true, slide = null, bow = 0, smile = 0, spin = 1, roll = 0, lift = 0 } = o;
     stage({ curtain: 1 });
     flyLines(t, w);
     if (spotOn) spot(ex, ey, 150 * ek / .42);
     curtains(t, w);
     const sl = slide ?? (.45 + .3 * Math.sin(tw(t) * (2 + 6 * harm(t))));
-    withT(() => { s.translate(ex, ey); s.rotate(bow * facing); ellen(0, 0, ek, { pose, t: tw(t), wind: w, facing, slide: sl, smile }); });
+    withT(() => { s.translate(ex, ey - lift * ek); s.rotate(bow * facing);
+      if (roll) { s.translate(0, -260 * ek); s.rotate(roll); s.translate(0, 260 * ek); }    // cartwheel / somersault about her middle
+      s.scale(spin, 1);                                                                    // twirl: a cut-out turning on its pin
+      ellen(0, 0, ek, { pose, t: tw(t), wind: w, facing, slide: sl, smile }); });
   }
   // the stage seen from the back of the house: miniature stage inside the proscenium, seat backs (or heads) in front
   function fromHouse(t, P, o = {}) {
@@ -284,6 +294,9 @@
     shape(ell(sx, sy, sr, sr), CUT);
   }
 
+  // Bob (draft-2 notes): 'could she be twirling, cartwheeling or somersaulting while playing guitar?'
+  // twirl: n full turns over [a, b], held on twos; a cut-out on its pin, so |spin| passes through a sliver
+  const twirl = (t, a, b, n = 1) => { const u = inv(a, b, tw(t)); return u <= 0 || u >= 1 ? 1 : Math.cos(ease.inOut(u) * n * TAU); };
   // ===================== SHOTS =====================
   // 187.0  the enormous empty stage, Ellen tiny in a spot, playing to no one (harmonica 186-189: the wind gets up)
   function emptyStage(t, tl) {
@@ -322,7 +335,7 @@
     const hm = harm(t);
     const z = kf(tw(t), [[210.0, 1.12], [216.2, 1.3]], ease.sine);
     cam(960, 660, z, () => {
-      onStage(t, { w: hm, ex: 960, ey: 900, ek: .42, slide: .4 + .4 * Math.sin(tw(t) * 10) });
+      onStage(t, { w: hm, ex: 960, ey: 900, ek: .42, slide: .4 + .4 * Math.sin(tw(t) * 10), spin: twirl(t, snapBeat(211.0), snapBeat(212.6), 1) * twirl(t, snapBeat(213.6), snapBeat(215.2), 2) });
       for (let i = 0; i < 14; i++) { const u = wrap(tw(t) * .9 + i * .071, 1), yy = 640 + (i * 37) % 260;
         if (hm > .2) flick(lerp(1500, 420, u), yy, Math.PI + .05, 60 * hm, 4, CUT); }
     });
@@ -330,10 +343,23 @@
   }
   // 216.27  slow discovery: the push finds him, Jimi, row six, listening hard (harmonica 224: the fringe stirs, a nod)
   function findJimi(t, tl) {
-    const fx_ = kf(tw(t), [[216.27, 1030], [224.9, 1078]]), fy_ = kf(tw(t), [[216.27, 500], [224.9, 455]]);
-    const z = kf(tw(t), [[216.27, 1.7], [224.9, 4.0]], ease.inOut);
+    const fx_ = kf(tw(t), [[216.27, 1030], [220.6, 1070]]), fy_ = kf(tw(t), [[216.27, 500], [220.6, 470]]);
+    const z = kf(tw(t), [[216.27, 1.6], [220.6, 2.5]], ease.inOut);     // shorter and looser (Bob: too much Jimi)
     const nod = harm(t) * (.5 + .5 * Math.sin(tw(t) * 7));
     cam(fx_, fy_, z, () => house(t, { jimi: { alpha: lerp(.5, .72, inv(216.3, 222, t)), nod, flut: .3 + .7 * harm(t) } }));
+  }
+  // 220.6  back on the boards: she cartwheels across the stage, still playing, and lands a somersault on the harmonica (223.7-224.9)
+  function acrobat(t, tl) {
+    const T = tw(t), c1 = [220.8, 221.9], c2 = [221.9, 223.0], so = [223.7, 224.7];
+    const cw = (a, b) => ease.inOut(inv(a, b, T));
+    const u1 = cw(...c1), u2 = cw(...c2), u3 = cw(...so);
+    const ex = 520 + 380 * u1 + 380 * u2 + 140 * u3;
+    const roll = (u1 + u2) * TAU + u3 * -TAU * 0;                 // two cartwheels (sideways turns)
+    const flip = u3 > 0 && u3 < 1 ? -u3 * TAU : 0;                  // then a forward somersault, tucked
+    const lift = (u3 > 0 && u3 < 1 ? Math.sin(u3 * Math.PI) * 320 : 0) + (Math.sin(u1 * Math.PI) + Math.sin(u2 * Math.PI)) * 60;
+    const z = kf(T, [[220.6, 1.18], [225.2, 1.26]], ease.sine);
+    cam(980, 700, z, () => onStage(t, { w: .3 + .7 * harm(t), ex, ey: 930, ek: .58, roll: roll + flip, lift, slide: .4 + .35 * Math.sin(T * 9) }));
+    if (T >= 224.7 && T < 225.15) for (let i = 0; i < 9; i++) { const a = -Math.PI + i * Math.PI / 8; flick(ex + Math.cos(a) * 170, 935 + Math.sin(a) * 34, a, 60, 6, CUT); }
   }
   // 225.2  she finishes: the last stroke (226.77), the slide comes off, she holds the guitar up; a small bow
   function finish(t, tl) {
@@ -346,9 +372,15 @@
   function jimiClaps(t, tl) {
     const rise = ease.out(inv(230.9, 231.4, tw(t)));
     const clap = rise > .5 ? Math.pow(Math.sin(Math.PI * beatPhase(tw(t))), .7) : 0;
-    const z = kf(tw(t), [[230.37, 3.4], [236.5, 2.8]], ease.sine);
+    const z = kf(tw(t), [[230.37, 2.3], [233.4, 2.0]], ease.sine);     // wider and shorter (Bob: too much Jimi)
     cam(1078, kf(tw(t), [[230.37, 455], [231.5, 420]]), z, () => house(t, { jimi: { alpha: .72, rise, clap, flut: .25 + .9 * harm(t) } }));
     programs(t, 233.0, 236.0, 3, 230);
+  }
+  // 233.4  from the back of the house: one man on his feet in the empty rows; on the far stage she bows again
+  function bowWide(t, tl) {
+    const z = kf(tw(t), [[233.4, 1.0], [236.53, 1.08]], ease.sine), bowA = .14 * tri(tw(t) - 234.6, .8);
+    cam(960, 520, z, () => { fromHouse(t, [600, 150, 720, 405], { w: .2 * harm(t), ek: .42, pose: 'hold', slide: .2, bow: bowA }); backsRows(t, 640, .62, false, 0); });
+    programs(t, 233.6, 236.0, 2, 233);
   }
   // 236.53  meanwhile on the boards: the guitar already lies in its case; the lid comes down (239.07), latches (239.83, 240.33)
   const CASE_P = [[0, 150], [52, 140], [74, 100], [72, 56], [50, 28], [44, 4], [56, -24], [58, -60], [40, -92], [18, -110], [16, -230], [24, -244], [20, -270], [-20, -270], [-24, -244], [-16, -230], [-18, -110], [-40, -92], [-58, -60], [-56, -24], [-44, 4], [-50, 28], [-72, 56], [-74, 100], [-52, 140]];
@@ -521,8 +553,10 @@
     [205.23, darkHouse],
     [210.0, hurricane],
     [216.27, findJimi],
+    [220.6, acrobat],
     [225.2, finish],
     [230.37, jimiClaps],
+    [233.4, bowWide],
     [236.53, caseShut],
     [240.33, kidsCome],
     [245.23, musiciansCome],
