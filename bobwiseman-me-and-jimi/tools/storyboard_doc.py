@@ -53,8 +53,8 @@ ROWS = [
  (240.33, 246.0, 'final instrumental (30)', 'The theatre fills: the school-bus kids, then musicians (Bob with his accordion, Beyonce, Michael Jackson, the Pixies).', ''),
  (247.0, 248.6, 'final instrumental (30)', 'Blues greats pop into the seats: Muddy Waters, Lightnin\' Hopkins, Little Richard, Janis Joplin, Chuck Berry, Sister Rosetta Tharpe. Then ordinary people; a standing ovation. Ellen has already put her guitar away and walks off.', 'DONE (your note): blues artists in the seats. Otis Spann still to come (needs a photo).'),
  (262.47, 268.0, 'ending (31)', 'Dawn: Ellen drives the school bus away from the theatre (ELLEN McILWAINE on the marquee).', ''),
- (271.67, 276.0, 'ending (31)', 'The rear-view mirror: Jimi is in the last seat with his guitar. Ellen notices; small smile on the last sound.', ''),
- (278.2, 280.2, 'final image', 'Dawn at the roadside: you and Jimi, in silhouette, watch her bus drive into the sun. You: "That felt great." Jimi: "I think she would like that." You: "Yeah."', 'DONE (your note): the closing dialogue.'),
+ (271.67, 273.5, 'ending (31)', 'The rear-view mirror: Jimi is in the last seat with his guitar. Ellen notices; small smile.', ''),
+ (276.4, 277.6, 'final image (spoken lines)', 'Dawn at the roadside: you and Jimi, in silhouette, watch her bus drive into the sun. The balloons come up on the spoken lines: you, "That felt great." Jimi, "I think she would have liked that." You, "Yeah."', 'DONE (your note): the closing dialogue, now in sync with the voices on the recording.'),
 ]
 
 def ts(t): m, s_ = divmod(t, 60); return f'{int(m)}:{s_:04.1f}'.replace('.0', '') if abs(s_ - round(s_)) < .05 else f'{int(m)}:{s_:04.1f}'
@@ -70,9 +70,9 @@ for t, st, lyr, what, plan in ROWS:
                 f'<td><a href="{link}">{ts(t)}</a></td><td>{html.escape(lyr)}</td><td>{html.escape(what)}</td>'
                 f'<td>{html.escape(plan)}</td><td></td></tr>')
 doc = f'''<html><head><meta charset="utf-8"></head><body>
-<h1>Me and Jimi: storyboard (woodcut draft 4)</h1>
+<h1>Me and Jimi: storyboard (woodcut draft 5)</h1>
 <p>Bob Wiseman, Me and Jimi (2026): your storyboard, all woodcut. Current draft: <a href="{URL}">{URL}</a>. Each timestamp links to that moment in the video. The numbers in brackets are your beat numbers from your notes.</p>
-<p>Write your ideas straight into the last column, or anywhere you like. "DONE" marks your notes that are in this cut (from drafts 2 and 3); "PLANNED" notes are changes already on the list. Ellen is rounder all the way through, in every shot. New in draft 4: you beside Jimi for "me and Jimi Hendrix feel the same", less Jimi in the theatre, and the closing dialogue. Photos of you at other ages, and one of Otis Spann, are welcome whenever you have them.</p>
+<p>Write your ideas straight into the last column, or anywhere you like. "DONE" marks your notes that are in this cut (from drafts 2 and 3); "PLANNED" notes are changes already on the list. Ellen is rounder all the way through, in every shot. New in draft 5: the closing lines land on the spoken words. Since draft 3: you beside Jimi for "me and Jimi Hendrix feel the same", less Jimi in the theatre, and the closing dialogue. Photos of you at other ages, and one of Otis Spann, are welcome whenever you have them.</p>
 <p>One thing to know: on the 2026 recording you sing "I hope this song helps you remember her name" at the end of verse 2 and "I'm ashamed I missed that train" at the end of verse 3 (your notes have them the other way round), so those beats sit where the words are actually sung.</p>
 <table border="1" cellpadding="6"><tr><th>Still</th><th>Time</th><th>Lyric</th><th>What happens</th><th>Planned</th><th>Bob's ideas</th></tr>
 {"".join(rows)}
