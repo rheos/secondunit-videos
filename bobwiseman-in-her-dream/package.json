@@ -1,0 +1,7 @@
+{
+  "name": "bobwiseman-in-her-dream",
+  "private": true,
+  "type": "module",
+  "description": "Bob Wiseman, In Her Dream: swirling impasto night, drawn in code on the functional-emotions-video brushstroke renderer (MIT) with designed swirl fields.",
+  "devDependencies": { "playwright": "^1.55.0" }
+}
