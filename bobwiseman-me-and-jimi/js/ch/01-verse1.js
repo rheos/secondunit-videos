@@ -161,8 +161,8 @@
         if (i > 0) withT(() => { s.beginPath(); s.rect(wx, -330, 140, 150); s.clip(); kid(wx + 70, -250, i, tt); });
         rect(wx - 8, -338, 156, 10, INK.K()); rect(wx - 8, -188, 156, 10, INK.K());
       }
-      // driver from behind (cap, shoulders), guitar case leaning behind the seat
-      withT(() => { s.beginPath(); s.rect(-560, -330, 140, 150); s.clip(); rect(-540, -280, 30, 120, INK.K()); circ(-470, -250, 34, INK.K()); rect(-512, -290, 84, 22, INK.K()); rect(-512, -215, 84, 60, INK.K()); });
+      // the driver is Ellen (she drove a school bus in Calgary): from behind, guitar case leaning behind the seat
+      withT(() => { s.beginPath(); s.rect(-560, -330, 140, 150); s.clip(); rect(-540, -280, 30, 120, INK.K()); rect(-512, -215, 84, 60, INK.K()); circ(-470, -258, 40, INK.F()); rect(-510, -258, 80, 46, INK.F()); });   // her: a bob of hair from behind, no face
       rect(-640, -330, 40, 190, INK.mix(0, 0, .35));              // windscreen edge at the front
       rect(580, -330, 40, 150, INK.K()); circ(-628, -120, 16, INK.F(.3)); rect(-660, -100, 40, 30, INK.K());
       circ(-420, -40, 70, INK.K()); circ(-420, -40, 30, INK.mix(0, 0, .5)); circ(420, -40, 70, INK.K()); circ(420, -40, 30, INK.mix(0, 0, .5));
@@ -282,7 +282,20 @@
     }
   }
 
-  chapter('verse1', 0, 44.0, [
-    [0, shotPole], [4.37, shotDice], [11.53, shotBus], [19.6, shotAward], [24.1, shotHook], [BAND, shotTrain],
+  // ---------- G: into one window: it grows until the frame is all paper (cut to Kobe at 43.0) ----------
+  function shotWindow(t, l) {
+    const k = ease.in(inv(42.2, 43.0, t)), sc = 1 + k * 9;
+    fx({ fount: .5 });
+    withT(() => {
+      s.translate(W / 2, H / 2); s.scale(sc, sc); s.translate(-W / 2, -H / 2);
+      rect(-W, -H, W * 3, H * 3, INK.F());
+      rect(560, 300, 800, 480, INK.K());
+      rrect(600, 340, 720, 400, 30, INK.PAPER);
+      wood('EXPRESS', W / 2, 860, 600, 90, INK.K());
+    });
+  }
+
+  chapter('verse1', 0, 43.0, [
+    [0, shotPole], [4.37, shotDice], [11.53, shotBus], [19.6, shotAward], [24.1, shotHook], [BAND, shotTrain], [42.2, shotWindow],
   ]);
 })();
