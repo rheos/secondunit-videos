@@ -372,8 +372,8 @@
   function jimiClaps(t, tl) {
     const rise = ease.out(inv(230.9, 231.4, tw(t)));
     const clap = rise > .5 ? Math.pow(Math.sin(Math.PI * beatPhase(tw(t))), .7) : 0;
-    const z = kf(tw(t), [[230.37, 2.3], [233.4, 2.0]], ease.sine);     // wider and shorter (Bob: too much Jimi)
-    cam(1078, kf(tw(t), [[230.37, 455], [231.5, 420]]), z, () => house(t, { jimi: { alpha: .72, rise, clap, flut: .25 + .9 * harm(t) } }));
+    const z = kf(tw(t), [[230.37, 1.35], [233.4, 1.25]], ease.sine);   // the whole house, one small man on his feet (Bob, draft 3: still too much Jimi)
+    cam(1010, kf(tw(t), [[230.37, 520], [231.5, 505]]), z, () => house(t, { jimi: { alpha: .72, rise, clap, flut: .25 + .9 * harm(t) } }));
     programs(t, 233.0, 236.0, 3, 230);
   }
   // 233.4  from the back of the house: one man on his feet in the empty rows; on the far stage she bows again
@@ -545,6 +545,39 @@
     ellen(x, y, k, { pose: 'drive', t: tw(t), wind: .25, eyes: t >= 275.9 && t < 276.73 ? 'brow' : 'open', smile: sm });
   }
 
+  // 278.2  Bob (draft-3 notes): 'at the end could 2 people have the dialogue "that felt great" "i think she would like that" "yeah"'
+  //        The pair from the lyric, Bob and Jimi, on the roadside at dawn, watching her bus go into the sun.
+  //        Bob: "That felt great." Jimi (who played with her in 1966): "I think she would like that." Bob: "Yeah."
+  function rimmed(n, x, y, h, o, ow = 5) {            // a black silhouette with a carved white rim
+    withT(() => { s.filter = 'brightness(0) invert(1)'; for (let i = 0; i < 10; i++) { const a = i * TAU / 10; put(n, x + Math.cos(a) * ow, y + Math.sin(a) * ow, h, o); } });
+    withT(() => { s.filter = 'brightness(0)'; put(n, x, y, h, o); });
+  }
+  function balloon(str, cx, cy, tx, ty, t, ta, tb) {   // speech balloon sized to its words, tail to the speaker
+    const T = tw(t); if (T < ta || T >= tb) return;
+    const pop = ease.back(inv(ta, ta + .2, T)), size = 50;
+    withT(() => { s.font = `900 ${size}px "Superclarendon"`; const m = s.measureText(str).width;
+      const rx = (m / 2 + 56) * pop, ry = 74 * pop; if (rx < 2) return;
+      const mk = () => { s.beginPath(); s.ellipse(cx, cy, rx, ry, 0, 0, TAU); const a = Math.atan2(ty - cy, tx - cx), b0 = a - .22, b1 = a + .22;
+        s.moveTo(cx + Math.cos(b0) * rx * .9, cy + Math.sin(b0) * ry * .9); s.lineTo(lerp(cx, tx, pop), lerp(cy, ty, pop)); s.lineTo(cx + Math.cos(b1) * rx * .9, cy + Math.sin(b1) * ry * .9); };
+      shape(mk, CUT, 7, INK);
+      if (pop > .95) carveText(str, cx, cy + 3, size, INK); });
+  }
+  function roadside(t, tl) {
+    const T = tw(t), hz = 690, sx = 1240, rays = hit(t, 279.3, 1.2) * .6 + hit(t, 280.37, 1.0) * .9;
+    dawn(t, hz, sx, hz, 170, rays);
+    shape(() => pathOf([[sx - 14, hz], [sx + 14, hz], [W + 500, H + 20], [380, H + 20]]), CUT, 4);          // the road to the sun
+    for (let i = 0; i < 6; i++) { const q = wrap(T * .25 + i / 6, 1), a = Math.pow(q, 2.2), yy = lerp(hz, H, a), xx = lerp(sx, 1500, a), ww = lerp(2, 40, a);
+      shape(() => pathOf([[xx - ww * .3, yy], [xx + ww * .3, yy], [xx + ww * .45, yy + ww * 2], [xx - ww * .45, yy + ww * 2]]), INK); }
+    const u = inv(278.2, 282.5, T), bk_ = lerp(.16, .06, u);                                                  // her bus, small, nearly into the sun
+    schoolBus(sx - 30 + u * 20, hz + 6, bk_, { t: T, kids: 0, driver: 'ellen', lights: true });
+    // the pair, at the roadside, from behind: Jimi a ghost, Bob solid
+    ghost(.62, () => rimmed('jimi-helsinki', 300, 1110, 640, { ax: .5, ay: 1 }));
+    rimmed('bob-1989', 640, 1110, 600, { ax: .5, ay: 1, flip: true });
+    balloon('That felt great.', 900, 300, 690, 560, t, 278.4, 279.65);
+    balloon('I think she would like that.', 760, 200, 330, 520, t, 279.7, 281.35);
+    balloon('Yeah.', 840, 320, 690, 560, t, 281.45, 282.6);
+  }
+
   chapter('w6', 187.0, 282.5, [
     [187.0, emptyStage],
     [191.57, emptySeats],
@@ -552,7 +585,6 @@
     [200.93, lowWide],
     [205.23, darkHouse],
     [210.0, hurricane],
-    [216.27, findJimi],
     [220.6, acrobat],
     [225.2, finish],
     [230.37, jimiClaps],
@@ -566,5 +598,6 @@
     [266.1, driving],
     [271.67, mirror],
     [275.4, smile],
+    [278.2, roadside],
   ]);
 })();

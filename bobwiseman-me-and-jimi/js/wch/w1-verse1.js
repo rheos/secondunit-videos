@@ -458,8 +458,12 @@
     guitarCase(1500, 1056 - 150 * 1.05, 1.05, 0);
     ellen(1260, 1060, 1.12, { pose: 'stand', t: tt });
     // Jimi: arrives a little at a time, a ghost (alpha steps on threes), hailing the Number 7
+    // Bob (draft-3 notes): 'me and jimi hendrix feel the same, we should both be visible in the frame'
+    // Bob steps in on 'me' (24.23), solid; Jimi fades in beside him on 'Jimi', a ghost; both smaller than before
+    const bIn = ease.back(inv(24.23, 24.5, tt));
+    if (bIn > 0) put('bob-1989', 700, 1100 + (1 - bIn) * 120, 620, { ax: .5, ay: 1 });
     const a = t < 24.5 ? 0 : t < 24.8 ? .28 : t < 25.1 ? .42 : t < 26.0 ? .55 : .6;
-    if (a > 0) ghost(a, () => put('jimi-helsinki', 600, 1100 + Math.sin(tt * 2.2) * 6, 880, { ax: .5, ay: 1 }));
+    if (a > 0) ghost(a, () => put('jimi-helsinki', 250, 1100 + Math.sin(tt * 2.2) * 6, 700, { ax: .5, ay: 1 }));
   }
 
   // ======================= 9. 27.9-35.0  Jimi points at Ellen; a giant glowing E; she rolls her eyes =======================
@@ -486,7 +490,8 @@
     ellen(1360, 1040, 1.08, { pose: 'stand', t: tt, eyes: t > 30.4 ? 'roll' : 'open' });
     // Jimi (1968 piece: hat, grin, pointing out) swings in on 27.9, leaning toward her, a ghost like at the stop
     const sw = ease.back(inv(27.9, 28.3, OT(t)));
-    ghost(.62, () => put('jimi-1968', lerp(300, 470, sw), 1070 + Math.sin(tt * 2.2) * 5, 940, { ax: .5, ay: 1, rot: lerp(-.05, .1, sw) }));
+    ghost(.62, () => put('jimi-1968', lerp(110, 190, sw), 1070 + Math.sin(tt * 2.2) * 5, 720, { ax: .5, ay: 1, rot: lerp(-.05, .1, sw) }));
+    put('bob-1989', 620, 1080, 640, { ax: .5, ay: 1, rot: .03 * sw });    // Bob beside him, both looking her way
   }
   function nameClose(t, tl) {
     const tt = OT(t), G = 960;
@@ -496,7 +501,8 @@
       glowE(1330, 250, 420, t);
       // Jimi, close, still pointing her way: head and pointing hand from the left edge (ghost)
       // on the night sky the ghost prints white (the block inverted), the same ghost alpha
-      ghost(.62, () => put('jimi-1968', 190, 770 + Math.sin(tt * 2.2) * 5, 660, { ax: .5, ay: 1, rot: .08, crop: [0, 0, 1, .56] }), true);
+      ghost(.62, () => put('jimi-1968', 150, 770 + Math.sin(tt * 2.2) * 5, 520, { ax: .5, ay: 1, rot: .08, crop: [0, 0, 1, .56] }), true);
+      put('bob-1989', 370, 800, 290, { ax: .5, ay: 1, crop: [.18, 0, .56, .44] });   // Bob's head beside Jimi's: the pair of them
       // her name carves itself into the sky: ELLEN (31.8), McILWAINE (32.4)
       if (t >= 31.8) fitText('ELLEN', 790, 470, 540, 190, CUT);
       if (t >= 32.4) fitText('McILWAINE', 790, 640, 600, 150, CUT);
