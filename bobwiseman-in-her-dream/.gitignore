@@ -1,0 +1,12 @@
+source/
+lyrics-draft.txt
+work/
+output/
+out/
+tmp/
+node_modules
+assets/song.wav
+js/data.js
+STORYBOARD.md
+_in/
+assets/paper/
