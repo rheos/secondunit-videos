@@ -13,7 +13,7 @@
 //   pixies       the Pixies, the four of them, standing
 //   ellen        Ellen McIlwaine singing at the mic with her guitar (old photo from Bob); her hair is on the red plate
 // Every piece also has a carved CUT block behind it, so it reads as cut out of the scene.
-const W_PIECES = ['bob-1989', 'jimi-helsinki', 'jimi-1968', 'mj-1984', 'beyonce', 'pixies', 'ellen', 'muddy', 'hopkins', 'richard', 'joplin', 'berry', 'tharpe'];
+const W_PIECES = ['bob-1989', 'jimi-helsinki', 'jimi-1968', 'mj-1984', 'beyonce', 'pixies', 'ellen', 'muddy', 'hopkins', 'richard', 'joplin', 'berry', 'tharpe', 'spann', 'lauper', 'springsteen'];
 const WP = {};
 window.__woodReady = Promise.all(W_PIECES.map((n) => new Promise((res) => {
   const im = new Image(); im.onload = () => { WP[n] = im; res(); }; im.onerror = () => { console.error('missing assets/wood/' + n + '.png'); res(); }; im.src = 'assets/wood/' + n + '.png';
