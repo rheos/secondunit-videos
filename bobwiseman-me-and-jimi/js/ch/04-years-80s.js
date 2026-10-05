@@ -10,7 +10,8 @@
 //   152.9  copier    "I heard about her in the 80s": her flyer comes out of a photocopier, gets stapled to a pole
 //   159.5  shrug     "wondered what's so special": the man in the hat stops, looks, shrugs
 //   167.5  away      "made no effort": he walks off, back to it
-//   172.3  gone      rain, then the flyer peels and blows away; an empty pole of staples
+//   172.3  cheque    rain; the flyer peels off and under it is a cheque stapled to the pole, MEMO: ME AND JIMI
+//                    (lands on "cheque", 176.42)
 //   177.0  platform  "I'm ashamed I missed that train": a platform, the train's tail lights going; he holds a
 //                    torn scrap of the flyer
 //   185.0  name      the scrap fills the frame: ELLEN McILWAINE in pink
@@ -115,6 +116,16 @@
     rectk(-w / 2 + 30, -h / 2 + 560, w - 60, 54, Pk(.9)); txt('QUEEN ST W  $5 AT THE DOOR', 0, -h / 2 + 598, 28, K(), 'Helvetica Neue', '900', 'center');
     s.restore();
   }
+  function cheque(x, y, t, at) {
+    const k = (1 + hit(t, at, 12) * .12) * .58;   // narrower than the flyer, so it stays hidden until the peel
+    s.save(); s.translate(x, y); s.rotate(-.04); s.scale(k, k);
+    rectk(-330, -150, 660, 300, K(.05)); rectk(-330, -150, 660, 14, K(.5));
+    txt('PAY TO THE ORDER OF', -300, -70, 26, K(), 'Courier New', '700'); rectk(-20, -76, 300, 3, K(.8));
+    rectk(150, -20, 150, 56, Pk(.9)); txt('$', 170, 20, 36, K(), 'Helvetica Neue', '900');
+    txt('MEMO: ME AND JIMI', -300, 90, 26, K(), 'Courier New', '700'); rectk(60, 100, 230, 3, K(.8));
+    for (let i = 0; i < 4; i++) rectk(-14 + i * 10, -160, 6, 26, Pk(.9));      // staples
+    s.restore();
+  }
   function man(x, y, sc, walk, t, turn = 0) {
     s.save(); s.translate(x, y); s.scale(sc * (turn ? -1 : 1), sc);
     const a = Math.sin(t * 9) * .55 * walk;
@@ -150,8 +161,10 @@
     fx({ gen: .45, bar: -1 });
     const rain = smooth(inv(172.3, 173.5, tt));
     street(tt, rain);
-    pole(1240, tt > 175.8 ? 9 : 0);
-    const peel = ease.in(inv(174.6, 176.6, tt));
+    pole(1240, 0);
+    // "now all I got is the cheque": the flyer peels off in the rain and under it, stapled to the pole, a cheque
+    const peel = ease.in(inv(174.4, 175.9, tt)), CHQ = 176.42;
+    if (tt > 174.3) cheque(1240, 470, tt, CHQ);
     if (peel < 1) flyer(1240, 470, 420, 640, .02 + Math.sin(tt * 3) * .01 * rain, peel);
     // the staple-gun hit when it goes up
     if (tt < 159.6) { const k = hit(tt, 158.6, 10); if (k > .05) rectk(1220, 160, 40, 30, K(k)); }
