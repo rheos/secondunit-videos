@@ -25,39 +25,47 @@
   }
 
   // ---------------- props ----------------
-  // a giant guitar tuning peg standing in for a telephone pole: pole, gear housing, the oval key, the string post
+  // a giant guitar tuning machine planted on the verge (Bob: pegs instead of telephone poles). Drawn squat and chrome so
+  // it can't read as a fence post (Bob, draft 9: the old poles + sagging wires looked like a camp fence): a gear plate on
+  // the ground, the string post with the string wound round it, a pearl key out to the side. No pole, no wires.
   function peg(x, yb, h, side, seed) {
-    const w = Math.max(4, h * .05);
-    taper([[x, yb], [x, yb - h * .86]], w * 1.2, w * .8, INK);
-    const hy = yb - h * .9;
-    shape(() => pathOf(chisel([[x - h * .07, hy - h * .06], [x + h * .07, hy - h * .06], [x + h * .07, hy + h * .06], [x - h * .07, hy + h * .06]], seed, Math.max(1, h * .01))), INK);
-    dot(x, hy, Math.max(2, h * .018), CUT);
-    // shaft and the key (the wing you turn), on the side away from the road
-    const kx = x + side * h * .2;
-    taper([[x + side * h * .06, hy], [kx - side * h * .06, hy]], h * .035, h * .03, INK);
-    const key = () => { s.beginPath(); s.ellipse(kx, hy, h * .085, h * .055, 0, 0, TAU); };
-    shape(key, CUT, Math.max(2.5, h * .012));
-    if (h > 120) clipTo(key, () => rows(kx - h * .09, hy - h * .06, kx + h * .09, hy + h * .06, Math.PI / 2, Math.max(5, h * .022), () => Math.max(1.5, h * .006)));
-    // the string post on top, a string wound round it
-    shape(box(x - h * .018, hy - h * .16, h * .036, h * .1), CUT, Math.max(2, h * .008));
-    for (let i = 0; i < 3; i++) taper([[x - h * .022, hy - h * .08 - i * h * .02], [x + h * .022, hy - h * .09 - i * h * .02]], Math.max(2, h * .008), Math.max(2, h * .008), INK);
-    return [x, hy - h * .14];
+    const lw = Math.max(2, h * .012);
+    // gear housing: a rounded plate sitting on the ground
+    const gw = h * .34, gh = h * .3;
+    shape(() => { s.beginPath(); s.roundRect(x - gw / 2, yb - gh, gw, gh, gh * .25); }, INK, lw * 1.4, CUT);
+    if (h > 90) { dot(x - gw * .28, yb - gh * .5, h * .025, CUT); dot(x + gw * .28, yb - gh * .5, h * .025, CUT); }   // the two screws
+    // the string post: a chrome cylinder, white with a carved highlight, the string wound round it
+    const pw = h * .16, ph = h * .62, py = yb - gh - ph;
+    shape(() => { s.beginPath(); s.roundRect(x - pw / 2, py, pw, ph + 4, pw * .3); }, CUT, lw * 1.4, INK);
+    taper([[x - pw * .22, py + ph * .1], [x - pw * .22, py + ph * .92]], pw * .1, pw * .1, INK);
+    for (let i = 0; i < 6; i++) { const yy = py + ph * (.28 + i * .07); taper([[x - pw * .55, yy + h * .02], [x + pw * .55, yy - h * .02]], Math.max(2, h * .018), Math.max(2, h * .018), INK); }
+    shape(() => { s.beginPath(); s.ellipse(x, py, pw / 2, pw * .2, 0, 0, TAU); }, CUT, lw * 1.2, INK);   // top of the post
+    dot(x, py, Math.max(1.5, pw * .1), INK);                                                            // the string hole
+    // the shaft and the pearl key, on the side away from the road
+    const ky = yb - gh * .5, kx = x + side * (gw / 2 + h * .24);
+    taper([[x + side * gw / 2, ky], [kx - side * h * .08, ky]], h * .05, h * .045, INK);
+    const key = () => { s.beginPath(); s.ellipse(kx, ky, h * .14, h * .2, 0, 0, TAU); };
+    shape(key, CUT, lw * 1.4, INK);
+    if (h > 60) taper([[kx - side * h * .05, ky - h * .12], [kx - side * h * .07, ky - h * .02]], Math.max(2, h * .02), Math.max(1.5, h * .012), INK);   // the pearl's sheen
+    if (h > 120) clipTo(key, () => rows(kx - h * .12, ky - h * .16, kx + h * .12, ky + h * .16, .5, Math.max(5, h * .03), () => Math.max(1.5, h * .006)));
+    return [x, py];
   }
-  // the sky is the worn finish of an old sunburst guitar: dark rim, pale centre, grain, worn-through patches
+  // the sky is the worn finish of an old sunburst guitar: a pale gold centre burning out to a dark rim, as RAYS of grain
+  // fanning out from the centre (no rings closing over the road: those read as a cage)
   function sunburst(cx, cy, y1, seed = 3) {
     clipTo(box(-20, -20, W + 40, y1 + 20), () => {
-      bg(INK);
-      for (let r = 1500; r > 0; r -= 24) { const u = r / 1150; const w = clamp((1 - u) * 2.1, 0, 1) * 24; if (w < 1) continue;
-        s.beginPath(); s.ellipse(cx, cy, r * 1.25, r, 0, 0, TAU); s.lineWidth = w; s.strokeStyle = CUT; s.stroke(); }
-      dot(cx, cy, 160, CUT);
-      // wood grain through the finish
-      for (let i = 0; i < 26; i++) { const y = cy - 560 + i * 24, pts = []; for (let x = -40; x <= W + 40; x += 60) pts.push([x, y + Math.sin(x * .004 + i * .9) * 14 + snoise(x * .003 + i, seed) * 10]); taper(pts, 2.5, 3.5, INK); }
-      // player wear: patches rubbed through to bare wood (cut), with grain inside
-      const r = rng(seed * 17);
-      for (let i = 0; i < 4; i++) { const px = lerp(140, W - 140, r()), py = lerp(60, Math.max(80, cy - 300), r()), pr = 50 + r() * 70;
+      bg(CUT);
+      // the dark rim: ink rays that thicken toward the edge of the guitar
+      const r = rng(seed * 31);
+      for (let i = 0; i < 120; i++) { const a = Math.PI + (i + .5) / 120 * Math.PI, j = (r() - .5) * .02, r0 = 230 + r() * 140;
+        const pts = []; for (let q = 0; q <= 1.001; q += .1) { const rr = lerp(r0, 2000, q); pts.push([cx + Math.cos(a + j) * rr * 1.4, cy + Math.sin(a + j) * rr]); }
+        taper(pts, .5, 30 + r() * 10, INK); }
+      // wood grain under the finish, faint, running across
+      for (let i = 0; i < 9; i++) { const y = cy - 520 + i * 56, pts = []; for (let x = -40; x <= W + 40; x += 60) pts.push([x, y + Math.sin(x * .004 + i * .9) * 14 + snoise(x * .003 + i, seed) * 10]); taper(pts, 1.5, 2.2, INK); }
+      // player wear rubbed through to bare wood
+      for (let i = 0; i < 3; i++) { const px = lerp(160, W - 160, r()), py = lerp(60, Math.max(80, cy - 360), r()), pr = 40 + r() * 50;
         const pts = []; for (let k = 0; k < 9; k++) { const a = k / 9 * TAU; pts.push([px + Math.cos(a) * pr * (.7 + .5 * r()) * 1.6, py + Math.sin(a) * pr * (.6 + .4 * r())]); }
         const mk = () => smoothPath(pts); shape(mk, CUT); clipTo(mk, () => rows(px - 200, py - 120, px + 200, py + 120, .05, 13, () => 2.5, INK, 4, i)); }
-      flicks(0, 0, W, cy - 200, 40, .1, 40, 2.5, seed + 5);
     });
   }
   function star(x, y, r) { taper([[x - r, y], [x + r, y]], r * .35, r * .35, CUT); taper([[x, y - r], [x, y + r]], r * .35, r * .35, CUT); }
@@ -135,26 +143,26 @@
   const VX = 1060, VY = 560;
   function highway(t, k, dzRate, seed) {
     sunburst(VX, VY - 40, VY, seed);
-    // ground: ink rows thickening toward us
-    shape(box(-20, VY, W + 40, H - VY + 20), CUT);
-    clipTo(box(-20, VY, W + 40, H - VY + 20), () => { for (let i = 1; i < 40; i++) { const y = VY + Math.pow(i / 40, 2.2) * 540; taper([[-20, y], [W + 20, y]], 1 + i * .25, 1 + i * .25, INK); } });
-    // road: paper, ink edges, dashes that stream toward us
-    const road = () => pathOf([[VX - 8, VY], [VX + 8, VY], [VX + 1500, H + 20], [VX - 1500, H + 20]]);
-    shape(road, CUT);
-    taper([[VX - 6, VY], [VX - 1500, H + 20]], 2, 26, INK); taper([[VX + 6, VY], [VX + 1500, H + 20]], 2, 26, INK);
     const tt = OT(t), ph = tt * dzRate;
-    for (let i = 0; i < 14; i++) { const z0 = .7 + wrap(i - ph, 14) * .9, z1 = z0 + .35;
-      if (z0 < .55) continue; const ya = VY + 520 / z1, yb = VY + 520 / z0; const wa = 30 / z1, wb = 30 / z0;
-      shape(() => pathOf([[VX - wa, ya], [VX + wa, ya], [VX + wb, yb], [VX - wb, yb]]), INK); }
-    // tuning pegs both sides, with strings slung between them like wires
+    // the fields: the guitar's top, grain curving like the body's edge, thickening toward us
+    shape(box(-20, VY, W + 40, H - VY + 20), CUT);
+    clipTo(box(-20, VY, W + 40, H - VY + 20), () => { for (let i = 1; i < 30; i++) { const y = VY + Math.pow(i / 30, 2.0) * 540, pts = [];
+      for (let x = -40; x <= W + 40; x += 80) pts.push([x, y + Math.pow(Math.abs(x - VX) / 1100, 2) * -18 * (i / 30) + Math.sin(x * .006 + i) * 3]); taper(pts, .8 + i * .22, .8 + i * .22, INK); } });
+    // the road is the guitar's neck: dark rosewood, frets streaming toward us, six strings running to the horizon
+    const road = () => pathOf([[VX - 8, VY], [VX + 8, VY], [VX + 1500, H + 20], [VX - 1500, H + 20]]);
+    shape(road, INK);
+    clipTo(road, () => {
+      for (let i = 0; i < 16; i++) { const z = .55 + wrap(i - ph, 16) * .8, y = VY + 520 / z; if (y > H + 30) continue;
+        const half = 1500 * (y - VY) / (H + 20 - VY);
+        taper([[VX - half, y], [VX + half, y]], Math.max(2, 14 / z), Math.max(2, 14 / z), CUT);                  // a fret
+        if (i % 3 === 1) { const y2 = VY + 520 / (z + .4), ym = (y + y2) / 2; dot(VX, ym, Math.max(2, 22 / z), CUT); } }   // fret marker
+      for (let j = 0; j < 6; j++) { const u = (j - 2.5) / 2.5; taper([[VX + u * 5, VY], [VX + u * 980, H + 20]], 1, 4 + (5 - j) * 1.6, CUT); }   // strings, bass side thicker
+    });
+    taper([[VX - 6, VY], [VX - 1500, H + 20]], 2, 26, CUT); taper([[VX + 6, VY], [VX + 1500, H + 20]], 2, 26, CUT);   // the neck's bound edges
+    // tuning machines on both verges, receding to the horizon
     for (const side of [-1, 1]) {
-      const tops = [];
-      const N = 12; for (let i = N - 1; i >= 0; i--) { const z = .55 + wrap(i - ph * .5 + (side > 0 ? .5 : 0), N) * 1.25;
-        const x = VX + side * 1150 / z, yb = VY + 520 / z, h = 1300 / z; tops.push([x, yb - h * .86, z]); peg(x, yb, h, side, seed + i * 7); }
-      tops.sort((a, b) => b[2] - a[2]);
-      for (let i = 0; i + 1 < tops.length; i++) { const [x0, y0, z0] = tops[i], [x1, y1] = tops[i + 1]; const sag = 60 / z0;
-        const pts = []; for (let u = 0; u <= 1.001; u += .1) pts.push([lerp(x0, x1, u), lerp(y0, y1, u) + Math.sin(u * Math.PI) * sag]);
-        for (let j = 0; j < 2; j++) taper(pts.map(([a, b]) => [a, b + j * 10 / z0]), Math.max(2.4, 3 / z0), Math.max(2.4, 3 / z0), INK); }
+      const N = 10; for (let i = N - 1; i >= 0; i--) { const z = .6 + wrap(i - ph * .5 + (side > 0 ? .5 : 0), N) * 1.3;
+        const x = VX + side * 1250 / z, yb = VY + 520 / z, h = 560 / z; peg(x, yb, h, side, seed + i * 7); }
     }
   }
   function roadWide(t) {
@@ -281,7 +289,7 @@
     beam(lerp(.02, -.62, lift), .1, 1500); beam(lerp(.06, -1.05, lift), .09, 1500);
     if (lift > .9) { for (const [px, py] of [[hx + Math.cos(-.62) * 760, hy + Math.sin(-.62) * 760], [hx + Math.cos(-1.05) * 640, hy + Math.sin(-1.05) * 640]]) {
       shape(() => { s.beginPath(); s.ellipse(px, Math.max(150, py), 80, 34, 0, 0, TAU); }, CUT, 5); } }
-    withT(() => { s.translate(bx, 800 - 22 * .62); s.rotate(rock); schoolBus(0, 0, .62, { t: tt, lights: false, kids: 5, asleep: false, cry: true }); });
+    withT(() => { s.translate(bx, 800 - 22 * .62); s.rotate(rock); schoolBus(0, 0, .62, { t: tt, lights: false, kids: 5, asleep: false, cry: true, crowd: 3 }); });
   }
   function busWindows(t, tl) {
     const tt = OT(t);
@@ -297,7 +305,8 @@
       clipTo(win, () => { const r = rng(i + 9); for (let j = 0; j < 6; j++) star(wx + r() * 400, 220 + r() * 120, 5 + r() * 5);
         // the spotlights sweep across the glass
         const sp = wrap(tt * .6 + i * .3, 1.6) - .3; shape(() => pathOf([[wx + sp * 600 - 60, 200], [wx + sp * 600 + 40, 200], [wx + sp * 600 - 60, 640], [wx + sp * 600 - 160, 640]]), CUT);
-        kid(wx + 200, 700 + (i === 2 ? 10 : 0), 2.15, { seed: i + 2, t: tt, cry: true }); });   // all crying (Bob, draft-6 notes)
+        // all crying (Bob, draft-6 notes), three to a window (draft-9 notes: two or three times as many kids)
+        for (const [ox, oy, kk] of [[-118, -30, 1.35], [118, -24, 1.35], [0, 0, 1.5]]) kid(wx + 200 + ox, 700 + oy + (i === 2 ? 10 : 0), kk, { seed: i * 3 + 2 + ox, t: tt, cry: true }); });
       shape(win, null, 14, INK);
       taper([[wx + 200, 200], [wx + 200, 230]], 6, 6, CUT);
     }
@@ -327,7 +336,8 @@
         shape(() => pathOf(chisel([[-230, -470], [230, -470], [240, -150], [-240, -150]], 5 + side, 4)), INK);
         clipTo(() => pathOf([[-230, -470], [230, -470], [240, -150], [-240, -150]]), () => { taper([[-220, -450], [220, -450]], 8, 8, CUT); rows(-240, -470, 240, -150, Math.PI / 2, 40, () => 3, CUT); });
         const tilt = side * .22 + Math.sin(tt * 1.4 + z) * .03;
-        withT(() => { s.translate(side * -40, -170); s.rotate(tilt); kid(0, 0, 1.4, { cry: true, t: OT(t), seed: Math.round(z * 3) + side + 4 }); });
+        // three crying kids squeezed onto every seat (Bob, draft-9 notes: two or three times as many)
+        for (const [ox, kk] of [[-150, 1.12], [150, 1.12], [0, 1.22]]) withT(() => { s.translate(side * -20 + ox, -170); s.rotate(tilt + ox * .0008); kid(0, 0, kk, { cry: true, t: OT(t), seed: Math.round(z * 3) + side + 4 + ox }); });
         shape(() => pathOf(chisel([[-250, -200], [250, -200], [260, 0], [-260, 0]], 9, 4)), INK);
         clipTo(() => pathOf([[-250, -200], [250, -200], [260, 0], [-260, 0]]), () => { taper([[-240, -186], [240, -186]], 6, 6, CUT); });
       });

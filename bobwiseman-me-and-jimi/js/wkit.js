@@ -215,7 +215,7 @@ function kid(x, y, k, o = {}) {
 
 // ---------- the yellow school bus (in woodcut: cut white body, black lines; side view, facing right) ----------
 function schoolBus(x, y, k, o = {}) {
-  const { t = 0, lights = false, driver = 'ellen', kids = 5, asleep = true, doorOpen = false, cry = false } = o;
+  const { t = 0, lights = false, driver = 'ellen', kids = 5, asleep = true, doorOpen = false, cry = false, crowd = 1 } = o;
   withT(() => { s.translate(x, y); s.scale(k, k);
     const body = () => pathOf(chisel([[-620, -420], [520, -420], [560, -400], [600, -220], [610, -60], [-620, -60]], 31, 4));
     shape(body, CUT, 8);
@@ -224,7 +224,9 @@ function schoolBus(x, y, k, o = {}) {
     carveText('SCHOOL BUS', -60, -390, 40, INK, { w: 380 });
     for (let i = 0; i < 6; i++) { const wx = -560 + i * 170;
       shape(() => { s.beginPath(); s.rect(wx, -340, 140, 140); }, INK);
-      if (i > 0 && i <= kids) clipTo(() => { s.beginPath(); s.rect(wx, -340, 140, 140); }, () => kid(wx + 70, -190, .7, { asleep, t, seed: i, cry })); }
+      // crowd > 1 packs that many kids into each window (Bob, draft-9 notes: two or three times as many crying kids)
+      if (i > 0 && i <= kids) clipTo(() => { s.beginPath(); s.rect(wx, -340, 140, 140); }, () => { if (crowd <= 1) kid(wx + 70, -190, .7, { asleep, t, seed: i, cry });
+        else for (let c = 0; c < crowd; c++) { const u = crowd === 1 ? .5 : c / (crowd - 1); kid(wx + 22 + u * 96, -200 + (c % 2) * 14, .5, { asleep, t, seed: i * 5 + c, cry }); } }); }
     // the driver's window at the front (right), windscreen
     shape(() => pathOf([[480, -340], [560, -340], [590, -220], [480, -220]]), INK);
     if (driver === 'ellen') clipTo(() => pathOf([[480, -340], [560, -340], [590, -220], [480, -220]]), () => ellen(520, 40, .62, { pose: 'drive', t }));
