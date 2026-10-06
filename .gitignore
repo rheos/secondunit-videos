@@ -3,6 +3,8 @@
 # Media, lyrics and artist audio stay out (each project has its own .gitignore too).
 /*
 !/.gitignore
+!/.githooks/
+!/.github/
 !/README.md
 !/bobwiseman-airplane-16bit/
 !/bobwiseman-airplane-collage/
@@ -31,3 +33,12 @@
 !/hjeron-dark-blues-storyboard/
 !/hjeron-painted-myth/
 !/pnubb-mind-the-sheep-painted/
+
+# Local data at any depth, as folders OR symlinks (a trailing slash only matches folders; that gap let four
+# symlinks in on 2026-10-06 and a pull then deleted the folders' contents). Tracked files are unaffected.
+**/out
+**/_in
+**/source
+**/work
+**/output
+**/tmp
