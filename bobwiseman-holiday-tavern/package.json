@@ -1,0 +1,7 @@
+{
+  "name": "bobwiseman-holiday-tavern",
+  "private": true,
+  "type": "module",
+  "description": "Bob Wiseman, After The Holiday Tavern: look tests drawn in code, one page per look under looks/.",
+  "devDependencies": { "playwright": "^1.55.0" }
+}
