@@ -841,8 +841,17 @@
   // 240.3  Bob: 'She's back on stage the crowd loves her, she's a big star now.' From the back of a full house on its
   //        feet: a giant star behind her, her name in lights flown in, flowers thrown on the beats; blues greats and
   //        80s stars lean out of the boxes; Jimi, small, applauds from one of them
+  // Bob (draft-8 notes): the piano plays nine of the same chord in a row right after the train; she jumps on all nine,
+  // high in the air. Onsets from the no-vocals stem (harmonic part, the one G chord on eighths): 240.30 ... 242.27
+  const NINE = [240.30, 240.58, 240.82, 241.03, 241.36, 241.54, 241.78, 242.04, 242.27];
+  function nineJumps(T) {
+    let up = 0, landed = false;
+    NINE.forEach((h0, i) => { const d = Math.min(.3, (NINE[i + 1] ?? h0 + .5) - h0 - .01), u = (T - h0) / d;
+      if (u >= 0 && u < 1) up = flight(u); if (T - h0 - d >= 0 && T - h0 - d < .09) landed = true; });
+    return [up, landed];
+  }
   function bigStar(t) {
-    const T = tw(t), bi = lastBeat(T), bp = beatPulse(T, 7);
+    const T = tw(t), bi = lastBeat(T), [jump, landed] = nineJumps(T), bp = T < 242.6 ? 0 : beatPulse(T, 7);
     const FL = []; for (let i = 0; i < 16; i++) { const ta = 240.6 + i * .19, x0 = 160 + hash(i * 11 + 3) * 1600; const [x1, y1] = toScreen(960 + (hash(i * 3 + 5) - .5) * 1000, 935 + hash(i * 5 + 2) * 110); FL.push([ta, x0, 960, x1, y1, i]); }
     bk(INK);
     const z = kf(T, [[240.3, 1.05], [243.7, 1.0]], ease.sine);
@@ -850,7 +859,8 @@
       clipTo(rect(...SP), () => withT(() => { s.translate(SP[0], SP[1]); s.scale(SP[2] / W, SP[3] / H);
         stage({ curtain: 1 }); flyLines(t, .2); starBack(T); spot(960, 905, 300); curtains(t, .2 + .5 * harm(t));
         nameInLights(T, ease.back(inv(240.3, 240.75, T)));
-        ellenFig(t, 960, 905, .78, { smile: .95, lift: bp * 30 / .78, bow: bi % 2 ? .04 : -.04, w: .2 + .5 * harm(t) });
+        ellenFig(t, 960, 905, .78, { smile: .95, lift: (bp * 30 + jump * 420) / .78, bow: jump > 0 ? 0 : bi % 2 ? .04 : -.04, w: .2 + .5 * harm(t) + .5 * jump });
+        if (landed) for (let j = 0; j < 7; j++) flick(915 + j * 15, 907, -Math.PI / 2 + (j - 3) * .45, 40, 6, CUT);
       }));
       for (const f of FL) thrown(t, f[0], f[1], f[2], f[3], f[4], .9, .42, .8, f[5], 240, 'down');
       procFrame();
@@ -954,6 +964,7 @@
       shape(rect(vx - w * .16, vy - h * .16, w * .32, h * .3), CUT, 5);                                      // rear window
       clipTo(rect(vx - w * .16, vy - h * .16, w * .32, h * .3), () => rows(vx - w * .16, vy - h * .16, vx + w * .16, vy + h * .14, 0, 9, (u) => u * 4, INK));
       shape(rect(vx - w * .2, vy + h * .12, w * .4, h * .1), INK, 5, CUT);                                    // the back bench
+      for (let i = 0; i < 7; i++) flower(vx - w * .15 + i * w * .05, vy + h * (.11 + (i % 2) * .02), h / 1500, i * .9);   // her flowers from the show
       if (jimiA > .01) ghost(jimiA, () => withT(() => {
         clipTo(rect(x, y, w, vy + h * .2 - y), () => {
           const jh = h * (small ? .62 : .62);
@@ -997,14 +1008,14 @@
     taper([[1300, -20], [1300, 70]], 18, 18, INK); mirrorScene(t, 1130, 60, 360, 130, 0, true);
     if (harm(t) > .2) for (let i = 0; i < 10; i++) { const u = wrap(tw(t) * 1.6 + i * .1, 1); flick(lerp(1000, -100, u), 200 + (i * 53) % 380, Math.PI, 70 * harm(t), 4, CUT); }
   }
-  // 271.67  the mirror, close: the bus behind her is empty... then it isn't. Jimi, last seat, his guitar. (near-silence)
+  // 271.67  the mirror, close: the empty bus behind her, the show's flowers piled on the back bench (near-silence).
+  //         No Jimi here (Bob, draft-8 notes: 'we've seen him too much')
   function mirror(t, tl) {
     bk(INK);
     windscreen(t, -20, 600, 1940, 1100, .3);
     taper([[960, -20], [960, 150]], 40, 40, INK);
     const jit = (snoise(tw(t) * 6, 3)) * 3;
-    const a = [0, .3, .6, .85][Math.floor(clamp(inv(272.4, 273.9, tw(t))) * 3.999)] * (tw(t) >= 272.4 ? 1 : 0);
-    withT(() => { s.translate(0, jit); mirrorScene(t, 200, 130, 1520, 600, a, false); });
+    withT(() => { s.translate(0, jit); mirrorScene(t, 200, 130, 1520, 600, 0, false); });
   }
   // 275.4  Ellen notices (one eyebrow up)... and on the last sound, 276.73, the small smile; the sun breaks on 279.3, 280.37
   function smile(t, tl) {
@@ -1012,7 +1023,7 @@
     const rays = hit(t, 279.3, 1.2) * .6 + hit(t, 280.37, 1.0) * .9;
     windscreen(t, 980, -20, 1940, 1100, .5 + rays);
     taper([[980, -20], [980, 1100]], 50, 60, INK); taper([[980, -20], [980, 1100]], 6, 6, CUT);
-    mirrorScene(t, 1220, 40, 560, 200, .85, true);
+    mirrorScene(t, 1220, 40, 560, 200, 0, true);
     taper([[1500, -20], [1500, 40]], 20, 20, INK);
     const k = 2.55, x = 640, y = 1690;
     driverSeat(x, y, k);
@@ -1045,9 +1056,9 @@
       shape(() => pathOf([[xx - ww * .3, yy], [xx + ww * .3, yy], [xx + ww * .45, yy + ww * 2], [xx - ww * .45, yy + ww * 2]]), INK); }
     const u = inv(276.4, 282.5, T), bk_ = lerp(.16, .06, u);                                                  // her bus, small, nearly into the sun
     schoolBus(sx - 30 + u * 20, hz + 6, bk_, { t: T, kids: 0, driver: 'ellen', lights: true });
-    // the pair, at the roadside, from behind: Jimi a ghost, Bob solid
-    ghost(.62, () => rimmed('jimi-helsinki', 300, 1110, 640, { ax: .5, ay: 1 }));
-    rimmed('bob-1989', 640, 1110, 600, { ax: .5, ay: 1, flip: true });
+    // the pair at the roadside, clearly Bob and Jimi (Bob, draft-8 notes): their carved photos, faces to us, not silhouettes
+    piece('jimi-helsinki', 330, 1110, 700, { ax: .5, ay: 1 }, 5);
+    piece('bob-1989', 680, 1110, 640, { ax: .5, ay: 1, flip: true }, 5);
     // the lines are spoken on the recording; each balloon's words are up as the voice starts (vocal-stem onsets
     // 276.96 / 278.88 / 280.28) and stay until the next line
     balloon('That felt great.', 900, 300, 690, 560, t, 276.80, 278.80);
