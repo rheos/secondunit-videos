@@ -565,10 +565,10 @@ function drawVerse(g, t) {
 }
 
 // ================= INSTRUMENTAL 1 (35.5-65.5): abstract, in the look's own materials =================
-// Bob's scene: the weep scene drains off the page to reveal an enormous empty crayon room with one elderly
-// tortoise. On the drums it makes one painfully slow dance step; then a rabbit, two flamingos, a dog,
-// chickens, an elephant and a mouse arrive, each wanting more movement than the last, and from 52 s everyone
-// dances at once. The last ~3 s drain to sepia and close an iris on the customer in the doorway, on the
+// Bob's scene: the weep scene drains off the page to reveal an enormous crayon room and six elders (the same six
+// who return in cut paper in instrumental 2). On the drums they break into unexpected coordinated gymnastics,
+// escalating every bar, while their shadows are their bendier younger selves. A clock drops in (hands left
+// alone: the cane payoff is saved for 2:29); they glance and carry on, then form geometric designs seen from above. The last ~3 s drain to sepia and close an iris on the customer in the doorway, on the
 // rubber-hose diner's opening iris.
 const INS = (() => {
   let drop = 37.5;
@@ -629,6 +629,7 @@ function camRoom(t) {
   let cx = 960, cy = 540, s = 1;
   const push = ease.inOut(inv(INS.bar(1), INS.bar(8), t)); s = lerp(1, 1.32, push); cy = lerp(540, 745, push);
   if (t > INS.bar(8)) s += .012 * beatPulse(t, 7);
+  { const fp = fbeat(t), up = ease.inOut(inv(11.4, 12.6, fp)) * (1 - ease.inOut(inv(15.4, 16.6, fp))); cy -= 190 * up; s -= .12 * up; }
   // the elephant's stomps shake the room
   const f = fbeat(t); if (f > 26 && f < 32) { const k = Math.floor(f); cy += 9 * hit(t, bt(k), 9) * Math.sin((t - bt(k)) * 60); }
   // the final push onto the customer in the doorway, landing on the diner's iris centre
@@ -652,165 +653,239 @@ function part(c, T, pts, fill, line, seed, sc, o = {}) {
 function line2(c, T, pts, col, w, seed, sc) { const k = Math.sqrt(sc * cam.s); crayon(c, pts.map((p) => T(p[0], p[1])), { col, w: w * k, seed, jit: 1.2 * k, gap: .03, passes: 2 }); }
 function dotT(c, T, x, y, r, col, seed, sc) { const [X, Y] = T(x, y); dot(c, X, Y, r * Math.sqrt(sc * cam.s) * 1.15, col, seed); }
 
-// ---- the cast (a child's crayon drawings) ----
-function tortoise(c, x, y, sz, lift, look = 0) {
-  const s = sz * ps(y), T = TF(x, y, s, 1, -lift * .07), L = '#2d5a20';
-  line2(c, T, [[-14, -14], [-15, 0]], '#7f965f', 13, 2001, s); line2(c, T, [[22, -14], [24, 0]], '#7f965f', 13, 2002, s);
-  line2(c, T, [[-32, -14], [-35, 0]], '#93ab72', 14, 2003, s);
-  line2(c, T, [[36, -14], [40 + lift * 16, -lift * 30]], '#93ab72', 14, 2004, s); // the dancing foot
-  const shell = []; for (let i = 0; i <= 16; i++) { const a = Math.PI + i / 16 * Math.PI; shell.push([Math.cos(a) * 52, -14 + Math.sin(a) * 40]); }
-  part(c, T, shell, '#5c9a3e', L, 2010, s, { w: 6 });
-  line2(c, T, [[-36, -18], [-24, -40], [0, -48], [24, -40], [36, -18]], L, 4, 2012, s);
-  line2(c, T, [[-6, -48], [-10, -18]], L, 4, 2013, s); line2(c, T, [[14, -46], [12, -18]], L, 4, 2014, s);
-  line2(c, T, [[-52, -14], [-60, -8]], '#93ab72', 8, 2015, s);
-  line2(c, T, [[46, -22], [56, -30]], '#a3b884', 13, 2016, s);
-  part(c, T, eli(64, -32, 15, 13), '#a8bd88', '#4c6234', 2020, s, { sp: 6 });
-  dotT(c, T, 68 + look * 2, -35, 2.6, COL.ink, 2022, s);
-  crayon(c, eli(68 + look * 2, -35, 6.5, 6.5, 12).map((p) => T(p[0], p[1])), { col: COL.ink, w: 1.8 * Math.sqrt(s * cam.s), seed: 2023, closed: true, gap: 0, passes: 1, jit: .5 }); // spectacles
-  line2(c, T, [[62, -44], [72, -45]], '#f2f2f2', 3, 2024, s); // white eyebrow
-  line2(c, T, [[71, -26], [77, -27]], COL.ink, 2.4, 2025, s);
+// ---- the six elders (the same six who come back in cut paper in instrumental 2), as a child draws them ----
+const ELDERS = [
+  { name: 'Edna', body: '#f49ab6', skirt: '#e4422b', legs: '#f3c3a4', skin: '#f3c3a4', hair: 'bun', hairC: '#f1ede4', glasses: true, young: 'pony' },
+  { name: 'Walt', body: '#2553c9', legs: '#5b4a3c', skin: '#e7ad88', hair: 'tufts', hairC: '#f1ede4', hat: 'flatcap', hatC: '#7a5a3a', bushy: true, mous: true, young: 'quiff' },
+  { name: 'Rosa', body: '#3c9a3d', skirt: '#2f8a36', legs: '#c98a62', skin: '#c98a62', hair: 'curly', hairC: '#c9c7d2', hat: 'cloche', hatC: '#f7d01c', young: 'curls' },
+  { name: 'Bert', body: '#e4422b', legs: '#3d4a6b', skin: '#f6d2bc', hair: 'tufts', hairC: '#f1ede4', glasses: true, cane: true, young: 'full' },
+  { name: 'June', body: '#2553c9', skirt: '#1d3fa0', legs: '#a8714f', skin: '#a8714f', hair: 'bob', hairC: '#d4d5e0', hat: 'beret', hatC: '#f49ab6', pearls: true, young: 'bob' },
+  { name: 'Sam', body: '#f7d01c', legs: '#2f3a2f', skin: '#f0bfa0', hair: 'side', hairC: '#bdbdc4', glasses: true, cane: true, young: 'afro' },
+];
+const DIM_OLD = { tor: 92, shw: 30, hipw: 20, ua: 46, fa: 42, th: 56, sh: 54, hr: 31 };
+const DIM_YNG = { tor: 102, shw: 28, hipw: 17, ua: 56, fa: 52, th: 70, sh: 68, hr: 26 };
+const SHADOW_COL = '#2b2557';
+const R2 = (x, y, a) => [x * Math.cos(a) - y * Math.sin(a), x * Math.sin(a) + y * Math.cos(a)];
+const STANDP = () => ({ aL: .14, aR: .14, eL: 0, eR: 0, lL: .05, lR: .05, kL: 0, kR: 0, lean: 0, rot: 0, lift: 0, dx: 0, dy: 0, look: [0, 0], brow: 0, smile: .4, cane: 0 });
+function mixP(A, B, u) { if (u <= 0) return A; if (u >= 1) return B; const o = {}; for (const k in A) { const a = A[k], b = B[k] ?? a; o[k] = Array.isArray(a) ? a.map((v, j) => lerp(v, b[j], u)) : typeof a === 'number' ? lerp(a, b, u) : (u < .5 ? a : b); } return o; }
+// the skeleton: returns world points. Grounded figures sit their lowest point on groundY; others are placed by hip.
+function rig(P, x, groundY, sz, young, grounded = true) {
+  const D = young ? DIM_YNG : DIM_OLD, L = P.lean, rot = P.rot;
+  const bf = (vx, vy) => R2(vx, vy, L);
+  const N = bf(0, -D.tor), SR = [N[0] + bf(D.shw, 6)[0], N[1] + bf(D.shw, 6)[1]], SL = [N[0] + bf(-D.shw, 6)[0], N[1] + bf(-D.shw, 6)[1]];
+  const head = [N[0] + bf(0, -(D.hr + 6))[0], N[1] + bf(0, -(D.hr + 6))[1]];
+  const arm = (S, s, a, e) => { const d1 = bf(s * Math.sin(a), Math.cos(a)), d2 = bf(s * Math.sin(a + e), Math.cos(a + e)); const E = [S[0] + d1[0] * D.ua, S[1] + d1[1] * D.ua]; return [E, [E[0] + d2[0] * D.fa, E[1] + d2[1] * D.fa]]; };
+  const [ER, HR] = arm(SR, 1, P.aR, P.eR), [EL, HL] = arm(SL, -1, P.aL, P.eL);
+  const leg = (hx, s, l, k) => { const K = [hx + s * Math.sin(l) * D.th, Math.cos(l) * D.th]; return [K, [K[0] + s * Math.sin(l - k) * D.sh, K[1] + Math.cos(l - k) * D.sh]]; };
+  const [KR, FR] = leg(D.hipw, 1, P.lR, P.kR), [KL, FL] = leg(-D.hipw, -1, P.lL, P.kL);
+  const loc = { H: [0, 0], N, SR, SL, head, ER, HR, EL, HL, hR: [D.hipw, 0], hL: [-D.hipw, 0], KR, FR, KL, FL };
+  // rotate the whole body about mid-torso, scale
+  const piv = [0, -D.tor * .5], W = {};
+  for (const k in loc) { const r = R2(loc[k][0] - piv[0], loc[k][1] - piv[1], rot); W[k] = [r[0] * sz, r[1] * sz]; }
+  let oy;
+  if (grounded) { let my = -1e9; for (const k of ['FR', 'FL', 'HR', 'HL', 'KR', 'KL']) my = Math.max(my, W[k][1]); my = Math.max(my, W.head[1] + D.hr * sz); oy = groundY - my - P.lift * sz; }
+  else oy = groundY;
+  for (const k in W) W[k] = [W[k][0] + x + P.dx * sz, W[k][1] + oy + P.dy * sz];
+  W.ang = L + rot; W.sz = sz; W.D = D;
+  return W;
 }
-function rabbit(c, x, y, sz, dir, o = {}) {
-  const s = sz * ps(y), T = TF(x, y - (o.hop || 0) * s, s, dir), G = '#6b665f', F = '#cfc9c0';
-  part(c, T, eli(-6, -5, 18, 6), F, G, 2101, s, { sp: 6 });
-  part(c, T, eli(-26, -32, 10, 10, 12), '#f3f1ec', G, 2102, s, { sp: 5 });
-  part(c, T, eli(0, -40, 26, 32), F, G, 2103, s);
-  const tap = o.tap || 0, lift = o.lift || 0, ft = eli(18, -4, 18, 6).map(([px, py]) => { const a = -tap * .55, dx = px - 2, dy = py + 2; return [2 + dx * Math.cos(a) - dy * Math.sin(a) + lift * 10, -2 + dx * Math.sin(a) + dy * Math.cos(a) - lift * 26]; });
-  part(c, T, ft, F, G, 2104, s, { sp: 6 });
-  const ear = (o.ear || 0) * .25;
-  part(c, T, eli(4, -124, 7, 27, 14, -.18 - ear), F, G, 2105, s, { sp: 5 }); part(c, T, eli(22, -122, 7, 27, 14, .2 + ear), F, G, 2106, s, { sp: 5 });
-  line2(c, T, [[4, -140], [5, -112]], '#f29bb3', 3.5, 2107, s); line2(c, T, [[22, -138], [21, -110]], '#f29bb3', 3.5, 2108, s);
-  part(c, T, eli(14, -86, 20, 19), F, G, 2109, s);
-  dotT(c, T, 22, -90, 2.8, COL.ink, 2110, s); dotT(c, T, 33, -84, 2.6, '#e86f93', 2111, s);
-  line2(c, T, [[30, -80], [44, -82]], G, 1.6, 2112, s); line2(c, T, [[30, -78], [43, -74]], G, 1.6, 2113, s);
-  line2(c, T, [[4, -60], [22, -54], [8, -48]], G, 4, 2114, s); // arms folded high on the chest, still
-}
-function flamingo(c, x, y, sz, dir, o = {}) {
-  const s = sz * ps(y), T = TF(x, y - (o.bob || 0) * s, s, dir, o.rot || 0, o.sx ?? 1), P = '#f48fb6', D = '#c0457a', LG = '#e2779e';
-  line2(c, T, [[0, 0], [3, -46], [0, -92]], LG, 5, 2201, s); line2(c, T, [[-6, 0], [10, 0]], LG, 4, 2202, s);
-  const k = o.kick || 0, tuck = [[0, -92], [16, -72], [4, -60]], kick = [[0, -92], [36, -86], [72, -96]];
-  line2(c, T, tuck.map((p, i) => [lerp(p[0], kick[i][0], k), lerp(p[1], kick[i][1], k)]), LG, 5, 2203, s);
-  part(c, T, eli(0, -112, 40, 22, 18, -.15), P, D, 2204, s);
-  const f = o.flap || 0;
-  part(c, T, [[-14, -118], [-34 + f * 6, -122 - f * 46], [12, -124]], '#f7b3cd', D, 2205, s, { sp: 5 });
-  const w = o.sway || 0, neck = [[28, -120], [38 + w * 8, -146], [22 + w * 18, -172], [30 + w * 24, -196]];
-  line2(c, T, neck, P, 9, 2206, s); line2(c, T, neck, D, 2.2, 2207, s);
-  part(c, T, eli(40 + w * 26, -200, 11, 10), P, D, 2208, s, { sp: 5 });
-  line2(c, T, [[48 + w * 26, -202], [60 + w * 26, -192], [55 + w * 26, -184]], COL.ink, 5, 2209, s);
-  dotT(c, T, 42 + w * 26, -203, 2.2, COL.ink, 2210, s);
-}
-function dog(c, x, y, sz, dir, o = {}) {
-  const s = sz * ps(y), T = TF(x, y - (o.jump || 0) * s, s, dir, o.rot || 0), B = '#c98d4f', D = '#6e4520', la = o.legs || [0, 0, 0, 0];
-  [[-30, -24], [30, -24], [-22, -24], [38, -24]].forEach(([hx, hy], i) => line2(c, T, [[hx, hy], [hx + Math.sin(la[i]) * 20, hy + Math.cos(la[i]) * 24]], i < 2 ? '#a8733c' : B, 9, 2301 + i, s));
-  const wag = o.wag || 0; line2(c, T, [[-42, -46], [-56, -58], [-60 + wag * 14, -76]], B, 7, 2306, s);
-  part(c, T, eli(0, -42, 44, 22), B, D, 2307, s);
-  dotT(c, T, -12, -48, 6, D, 2308, s); dotT(c, T, 14, -36, 5, D, 2309, s);
-  part(c, T, eli(46, -66, 20, 19), B, D, 2310, s);
-  part(c, T, eli(36, -58, 8, 16, 12, .5 + wag * .2), '#7a4a22', D, 2311, s, { sp: 5 });
-  dotT(c, T, 54, -72, 2.8, COL.ink, 2312, s); dotT(c, T, 66, -66, 4, COL.ink, 2313, s);
-  if (o.tongue) part(c, T, eli(58, -50, 5, 9, 10), '#ef6f8f', '#b23a5a', 2314, s, { sp: 4, noSil: true });
-}
-function chicken(c, x, y, sz, dir, o = {}, seed = 0) {
-  const s = sz * ps(y), T = TF(x, y - (o.bob || 0) * s, s, dir), Y = '#e0a21a', G = '#7a756c';
-  const leg = (hx, k, sd) => { const a = k * 1.35; const fx = hx + Math.sin(a) * 18, fy = -14 + Math.cos(a) * 14; line2(c, T, [[hx, -14], [fx, fy]], Y, 4, sd, s); line2(c, T, [[fx - 5, fy], [fx + 7, fy - (k > .3 ? 4 : 0)]], Y, 3, sd + 50, s); };
-  leg(-6, o.kickL || 0, 2401 + seed); leg(6, o.kickR || 0, 2402 + seed);
-  line2(c, T, [[-20, -40], [-32, -56]], G, 3, 2403 + seed, s); line2(c, T, [[-22, -36], [-36, -46]], G, 3, 2404 + seed, s);
-  part(c, T, eli(0, -34, 24, 19), '#e2ddd3', G, 2405 + seed, s, { sp: 6 });
-  part(c, T, eli(-2, -36, 12, 7, 12, -(o.wing || 0) * .9), '#d2ccc1', G, 2406 + seed, s, { sp: 4 });
-  const hb = o.peck || 0;
-  part(c, T, eli(16 + hb * 4, -58 + hb * 8, 11, 11), '#e2ddd3', G, 2407 + seed, s, { sp: 5 });
-  for (const [cx, cy] of [[12, -70], [17, -72], [22, -70]]) dotT(c, T, cx + hb * 4, cy + hb * 8, 3.4, '#d8402f', 2408 + seed, s);
-  part(c, T, [[26 + hb * 4, -60 + hb * 8], [35 + hb * 4, -56 + hb * 8], [26 + hb * 4, -53 + hb * 8]], Y, '#a8740c', 2409 + seed, s, { sp: 3, noSil: true });
-  dotT(c, T, 25 + hb * 4, -50 + hb * 8, 3, '#d8402f', 2410 + seed, s); dotT(c, T, 19 + hb * 4, -61 + hb * 8, 2.2, COL.ink, 2411 + seed, s);
-}
-function elephantT(x, y, sz, dir, o = {}) { const s = sz * ps(y); return { s, T: TF(x, y, s, dir, o.tilt || 0, o.sx ?? 1) }; }
-function elephant(c, x, y, sz, dir, o = {}) {
-  const { s, T } = elephantT(x, y, sz, dir, o), G = '#a3a9b0', D = '#4f555c', ll = o.legLift || 0, bl = o.backLift || 0;
-  line2(c, T, [[-38, -40], [-38, 0]], '#8a9098', 24, 2501, s); line2(c, T, [[42, -40], [42, 0]], '#8a9098', 24, 2502, s);
-  line2(c, T, [[-78, -84], [-92, -62]], D, 4, 2503, s);
-  part(c, T, eli(0, -80, 78, 52), G, D, 2504, s, { sp: 9 });
-  line2(c, T, [[-56, -40], [-56 - bl * 46, -bl * 40]], G, 26, 2505, s);
-  line2(c, T, [[56, -40], [56 + ll * 26, -ll * 40]], G, 26, 2506, s);
-  if (o.tutu > 0) { const tt = []; for (let i = 0; i < 28; i++) { const a = i / 28 * TAU, r = 1 + .14 * (i % 2); tt.push([Math.cos(a) * 96 * r * o.tutu, -52 + Math.sin(a) * 18 * r * o.tutu]); } part(c, T, tt, '#f6a6c8', '#d0568e', 2507, s, { sp: 6 }); }
-  part(c, T, eli(48, -104, 26, 36, 16, -.1), '#8e949c', D, 2508, s, { sp: 7 });
-  part(c, T, eli(74, -110, 38, 36), G, D, 2509, s, { sp: 8 });
-  const tr = o.trunk || 0, trunk = [[104, -100], [120, -74 - tr * 30], [118 + tr * 10, -46 - tr * 60], [130 + tr * 6, -34 - tr * 80]];
-  line2(c, T, trunk, D, 20, 2510, s); line2(c, T, trunk, G, 13, 2511, s);
-  line2(c, T, [[100, -90], [112, -82]], '#fbf8ee', 5, 2512, s);
-  dotT(c, T, 88, -120, 3.4, COL.ink, 2513, s);
-}
-function mouse(c, x, y, sz, dir, o = {}) {
-  const s = sz * ps(o.py ?? y), T = TF(x, y - (o.hop || 0) * s, s, dir), G = '#9b968f', D = '#4d4a46';
-  line2(c, T, [[-12, -6], [-24, -2], [-30, -12]], D, 2.5, 2601, s);
-  part(c, T, eli(0, -9, 13, 9), G, D, 2602, s, { sp: 4 });
-  part(c, T, [[9, -14], [24, -9], [9, -3]], G, D, 2603, s, { sp: 3 });
-  part(c, T, eli(7, -18, 6, 6, 10), '#f2a7bd', D, 2604, s, { sp: 3 });
-  dotT(c, T, 16, -10, 1.8, COL.ink, 2605, s); dotT(c, T, 24, -9, 1.8, '#e86f93', 2606, s);
+function drawElder(c, i, P, x, groundY, sz, o = {}) {
+  const E = ELDERS[i], young = !!o.shadow, W = rig(P, x, groundY, sz, young, o.grounded !== false), D = W.D;
+  const pr = o.proj || ((p) => p), Tw = (px, py) => S(...pr([px, py]));
+  const col = (q) => (young ? SHADOW_COL : q), sc = sz;
+  const lw = (w) => w * (young ? .95 : 1);
+  if (young) AMUL = o.alpha ?? .5;
+  // legs (and shoes)
+  for (const [h, K, F] of [[W.hL, W.KL, W.FL], [W.hR, W.KR, W.FR]]) { line2(c, Tw, [h, K, F], col(E.legs), lw(15), 4001 + i * 20 + (h === W.hL ? 0 : 1), sc); if (!young) { const [fx, fy] = Tw(...F); dot(c, fx, fy, 8 * Math.sqrt(sc * cam.s), COL.ink, 4005 + i * 20); } }
+  // skirt / torso
+  const up = R2(0, -1, W.ang), rt = R2(1, 0, W.ang);
+  const at = (p, a, b) => [p[0] + rt[0] * a * sz + up[0] * b * sz, p[1] + rt[1] * a * sz + up[1] * b * sz];
+  if (E.skirt) { const sk = [at(W.H, -D.hipw - 6, 8), at(W.H, D.hipw + 6, 8), at(W.H, D.hipw + 34, -52), at(W.H, -D.hipw - 34, -52)]; part(c, Tw, sk, col(E.skirt), young ? null : shade(E.skirt), 4010 + i * 20, sc, { sp: 7, noSil: young }); }
+  const torso = [W.SL, W.SR, at(W.H, D.hipw + 8, -2), at(W.H, -D.hipw - 8, -2)];
+  part(c, Tw, torso, col(E.body), young ? null : shade(E.body), 4012 + i * 20, sc, { sp: 7, noSil: young });
+  if (!young && !E.skirt) for (let k = 0; k < 3; k++) { const b = at(W.H, 0, 20 + k * 22); const [bx, by] = Tw(...b); dot(c, bx, by, 3 * Math.sqrt(sc * cam.s), '#fbf6ea', 4014 + i * 20 + k); }
+  // arms (sleeves) and hands
+  for (const [S0, El, Hd, s] of [[W.SL, W.EL, W.HL, 0], [W.SR, W.ER, W.HR, 1]]) { line2(c, Tw, [S0, El, Hd], col(E.body), lw(13), 4016 + i * 20 + s, sc); if (!young) { const [hx, hy] = Tw(...Hd); dot(c, hx, hy, 7 * Math.sqrt(sc * cam.s), E.skin, 4018 + i * 20 + s); } }
+  // cane: held in the right hand, along the forearm, unless it is planted as a vault pole
+  if (E.cane && !young) { const dir = [W.HR[0] - W.ER[0], W.HR[1] - W.ER[1]], l = Math.hypot(...dir) || 1, cl = (o.caneLen || 1) * 120 * sz;
+    const tip = o.caneTip || [W.HR[0] + dir[0] / l * cl, W.HR[1] + dir[1] / l * cl];
+    line2(c, Tw, [[W.HR[0] - dir[0] / l * 14 * sz, W.HR[1] - dir[1] / l * 14 * sz], tip], '#6b4226', 7, 4019 + i * 20, sc); }
+  // head (child style), in head-local units (radius 31)
+  const hs = sz * D.hr / 31, HT = (lx, ly) => { const r = R2(lx, ly, W.ang); return Tw(W.head[0] + r[0] * hs, W.head[1] + r[1] * hs); };
+  const hairKey = young ? E.young : E.hair, HC = col(E.hairC), HL = young ? null : '#8c8a86';
+  if (hairKey === 'bun') part(c, HT, eli(0, -38, 14, 12, 12), HC, HL, 4030 + i, hs, { sp: 4, noSil: young });
+  if (hairKey === 'pony') part(c, HT, eli(30, -20, 10, 26, 12, .5), HC, null, 4031 + i, hs, { sp: 4, noSil: true });
+  if (hairKey === 'bob') part(c, HT, [[-38, 18], [-40, -14], [-26, -38], [26, -38], [40, -14], [38, 18]], HC, HL, 4032 + i, hs, { sp: 5, noSil: young });
+  if (hairKey === 'afro' || hairKey === 'curls') part(c, HT, eli(0, -8, 44, 42, 16), HC, null, 4033 + i, hs, { sp: 6, noSil: true });
+  part(c, HT, eli(0, 0, 31, 32, 18), col(E.skin), young ? null : shade(E.skin), 4034 + i * 3, hs, { sp: 5, noSil: young });
+  if (!young) {
+    const [ex, ey] = P.look || [0, 0];
+    for (const s of [-1, 1]) { const [qx, qy] = HT(s * 11 + ex * 3, -2 + ey * 3); dot(c, qx, qy, 3.2 * Math.sqrt(hs * cam.s), COL.ink, 4040 + i * 3 + s); }
+    if (E.glasses) for (const s of [-1, 1]) crayon(c, eli(s * 11, -2, 8, 8, 12).map((p) => HT(...p)), { col: COL.ink, w: 2.2 * Math.sqrt(hs * cam.s), seed: 4045 + i * 3 + s, closed: true, gap: 0, passes: 1, jit: .4 });
+    const bw = E.bushy ? 4.5 : 2.2, bc = E.bushy ? '#ffffff' : '#7d7676', br = P.brow || 0;
+    for (const s of [-1, 1]) line2(c, HT, [[s * 5, -14 - br * 6], [s * 17, -15 - br * 6]], bc, bw, 4050 + i * 3 + s, hs);
+    for (const s of [-1, 1]) { const [qx, qy] = HT(s * 19, 9); dot(c, qx, qy, 4 * Math.sqrt(hs * cam.s), '#f19a9a', 4055 + i * 3 + s); }
+    if (E.mous) { line2(c, HT, [[-14, 14], [-2, 11]], '#ffffff', 6, 4060, hs); line2(c, HT, [[2, 11], [14, 14]], '#ffffff', 6, 4061, hs); }
+    const sm = P.smile ?? .4; line2(c, HT, [[-7, 19], [0, 19 + sm * 5], [7, 19]], COL.ink, 2.4, 4062 + i, hs);
+    if (E.pearls) for (let k = 0; k < 7; k++) { const [qx, qy] = HT(-18 + k * 6, 40 + Math.sin(k / 6 * Math.PI) * 6); dot(c, qx, qy, 2.4 * Math.sqrt(hs * cam.s), '#fbf6ea', 4070 + k); }
+  }
+  if (hairKey === 'bun' || hairKey === 'side' || hairKey === 'bob' || hairKey === 'pony' || hairKey === 'full') part(c, HT, [[-32, -4], [-30, -22], [-14, -34], [14, -34], [30, -22], [32, -4], [20, -18], [hairKey === 'side' ? -4 : 0, -24], [-20, -16]], HC, HL, 4080 + i, hs, { sp: 4, noSil: young });
+  if (hairKey === 'tufts') for (const s of [-1, 1]) part(c, HT, eli(s * 30, -6, 7, 10, 10), HC, HL, 4082 + i + s, hs, { sp: 3, noSil: young });
+  if (hairKey === 'curly' || hairKey === 'curls') for (let q = 0; q < 5; q++) { const a = Math.PI * (1.08 + .84 * q / 4); const [qx, qy] = HT(Math.cos(a) * 31, Math.sin(a) * 31); dot(c, qx, qy, 8 * Math.sqrt(hs * cam.s), HC, 4085 + q); }
+  if (hairKey === 'quiff') part(c, HT, [[-30, -10], [-26, -32], [0, -48], [28, -38], [30, -10], [12, -24], [-12, -20]], HC, null, 4090 + i, hs, { sp: 4, noSil: true });
+  if (E.hat === 'flatcap' && !young) part(c, HT, [[-36, -16], [-32, -30], [-18, -38], [8, -40], [30, -32], [46, -20], [36, -14]], col(E.hatC), '#4a3622', 4092, hs, { sp: 4 });
+  if (E.hat === 'cloche' && !young) { part(c, HT, [[-38, -2], [-34, -22], [-18, -38], [18, -38], [34, -22], [38, -2]], col(E.hatC), '#b8950c', 4094, hs, { sp: 4 }); line2(c, HT, [[-36, -8], [36, -8]], '#e4422b', 4, 4095, hs); }
+  if (E.hat === 'beret' && !young) { part(c, HT, eli(6, -30, 32, 11, 14, .18), col(E.hatC), '#c0457a', 4096, hs, { sp: 4 }); line2(c, HT, [[8, -40], [10, -48]], E.hatC, 3, 4097, hs); }
+  AMUL = 1;
+  return W;
 }
 
-// ---- who is where, and doing what (pure functions of t) ----
-const POS = { tort: [960, 800], rab: [775, 845], fl1: [1150, 752], fl2: [1270, 752], dog: [400, 935], ch: [[1165, 965], [1290, 965], [1415, 965]], ele: [610, 726] };
-const MAG = 1.6;
-const stepIn = (f, f0, n, a, b) => { const u = (f - f0), k = Math.floor(u), fr = u - k; return lerp(a, b, clamp((Math.min(k, n - 1) + ease.inOut(k >= n ? 1 : fr)) / n)); };
-function castAt(t) {
-  const f = fbeat(t), fr = f - Math.floor(f), fl = Math.floor(f), A = [];
-  // tortoise: one slow step on the drop (2 beats up, 2 beats down); in the big dance it repeats, twice as slow
-  let lift = f >= 0 && f < 4 ? (f < 2 ? ease.inOut(f / 2) : 1 - ease.inOut((f - 2) / 2)) : 0;
-  if (f >= 32) lift = Math.sin(Math.PI * ((f - 32) % 8) / 8);
-  A.push({ y: POS.tort[1], d: (c) => tortoise(c, POS.tort[0], POS.tort[1], 1.4 * MAG, lift, f > 4 && f < 32 ? Math.sin(f * .3) : 0) });
-  // rabbit: hops in (bar 1), copies the step (2 beats), then taps its foot impatiently
-  if (f >= 4) { const enter = f < 8, x = enter ? stepIn(f, 4, 4, -140, POS.rab[0]) : POS.rab[0];
-    const o = { hop: enter ? Math.sin(Math.PI * fr) * 70 : 0 };
-    if (f >= 8 && f < 10) o.lift = Math.sin(Math.PI * (f - 8) / 2);
-    if (f >= 10) { o.tap = Math.abs(Math.sin(Math.PI * 2 * fr)); o.ear = Math.sin(f * Math.PI); }
-    if (f >= 32) o.hop = (fl % 2 ? Math.sin(Math.PI * fr) * 34 : 0);
-    A.push({ y: POS.rab[1], d: (c) => rabbit(c, x, POS.rab[1], MAG, 1, o) }); }
-  // two flamingos: high-step in from the right, then one synchronized routine
-  if (f >= 10) [POS.fl1, POS.fl2].forEach((P, i) => {
-    const enter = f < 14, x = enter ? stepIn(f, 10, 4, 2060 + i * 120, P[0]) : P[0], o = {};
-    if (enter) { o.kick = Math.sin(Math.PI * fr) * .55; o.bob = Math.sin(Math.PI * fr) * 6; }
-    else if (f < 32) { o.sway = Math.sin(Math.PI * f / 2); o.flap = fl % 4 === 0 ? Math.sin(Math.PI * fr) : 0; }
-    else { const m = fl % 4; o.sway = Math.sin(Math.PI * f / 2); o.kick = m === 0 || m === 2 ? Math.sin(Math.PI * fr) : 0; o.flap = m === 3 ? Math.sin(Math.PI * fr) : .15; o.rot = m === 1 ? -.15 * Math.sin(Math.PI * fr) : 0; }
-    let dir = -1; if (f >= 32) { const bar = Math.floor((f - 32) / 4); dir = bar % 2 ? 1 : -1; const into = (f - 32) % 4; if (into < .5) o.sx = Math.max(.15, Math.sin(Math.PI / 2 * into / .5)); }
-    A.push({ y: P[1], d: (c) => flamingo(c, x, P[1], MAG, dir, o) }); });
-  // dog: bounds in, then jumps about; in the big dance, ecstatic and with no technique at all
-  if (f >= 18) { const enter = f < 22; let x = enter ? stepIn(f, 18, 4, -170, POS.dog[0]) : POS.dog[0] + (f < 32 ? Math.sin(f * Math.PI / 2) * 60 : 0);
-    const o = { wag: Math.sin(f * Math.PI * 4), legs: [Math.sin(f * 9) * .6, -Math.sin(f * 9) * .6, Math.cos(f * 9) * .6, -Math.cos(f * 9) * .6] };
-    let dir = 1;
-    if (enter || f < 32) o.jump = Math.sin(Math.PI * fr) * (enter ? 55 : 40);
-    else { const h = hash(fl * 13 + 5); o.jump = Math.sin(Math.PI * fr) * (60 + h * 50); o.rot = (h - .5) * 1.4 * Math.sin(Math.PI * fr); dir = hash(fl * 7 + 1) > .5 ? 1 : -1; o.tongue = 1;
-      const hb = Math.floor(f * 2); o.legs = [0, 1, 2, 3].map((i) => (hash2(hb, i, 3) - .5) * 2.6); x += (hash(fl * 3) - .5) * 90; }
-    A.push({ y: POS.dog[1], d: (c) => dog(c, x, POS.dog[1], 1.05 * MAG, dir, o) }); }
-  // chickens: trot in single file, peck on the beat, then a chorus-line kick line
-  if (f >= 22) POS.ch.forEach((P, j) => {
-    const enter = f < 26, x = enter ? stepIn(f, 22, 4, 2080 + j * 140, P[0]) : P[0] + (f >= 32 ? Math.sin(Math.PI * (f - 32) / 4) * 40 : 0), o = {};
-    if (enter) { o.bob = Math.abs(Math.sin(Math.PI * 2 * fr)) * 8; o.kickL = Math.max(0, Math.sin(Math.PI * 2 * fr)) * .5; o.kickR = Math.max(0, -Math.sin(Math.PI * 2 * fr)) * .5; }
-    else if (f < 32) { o.peck = fl % 2 ? Math.sin(Math.PI * fr) : 0; o.kickR = fl % 2 ? 0 : Math.sin(Math.PI * fr) * .7; }
-    else { const k = Math.sin(Math.PI * fr); if (fl % 2) o.kickL = k * 1.15; else o.kickR = k * 1.15; o.wing = .7; }
-    A.push({ y: P[1], d: (c) => chicken(c, x, P[1], .9 * MAG, -1, o, j * 20) }); });
-  // elephant: stomps in (the room shakes), stomps in place, then attempts ballet in a tutu
-  let ele = null;
-  if (f >= 26) { const enter = f < 30, x = enter ? stepIn(f, 26, 4, -340, POS.ele[0]) : POS.ele[0], o = { trunk: 0 };
-    if (f < 32) { o.legLift = fl % 2 ? Math.sin(Math.PI * fr) * .8 : 0; o.backLift = fl % 2 ? 0 : Math.sin(Math.PI * fr) * .5; if (!enter) o.trunk = Math.sin(Math.PI * fr) * .8; }
-    else { o.tutu = ease.back(inv(INS.bar(8), INS.bar(8) + .4, t)); const bar = Math.floor((f - 32) / 4), into = (f - 32) % 4;
-      if (bar % 2 === 0) { o.tilt = -.2 * ease.out(Math.min(1, into)) + Math.sin(t * 9) * .05; o.backLift = ease.out(Math.min(1, into)); o.trunk = .9; }
-      else { const sp = ease.inOut(Math.min(1, into / 2)); o.sx = Math.cos(sp * TAU); o.tilt = Math.sin(t * 11) * .07; o.legLift = .6; o.trunk = .5 + .5 * Math.sin(f * Math.PI); } }
-    if (o.sx !== undefined && Math.abs(o.sx) < .12) o.sx = .12 * (Math.sign(o.sx) || 1);
-    ele = { x, y: POS.ele[1], o };
-    A.push({ y: POS.ele[1], d: (c) => elephant(c, x, POS.ele[1], 1.45 * 1.3, 1, o) }); }
-  // mouse: scurries in, leaps onto the elephant's head and spins there
-  if (f >= 30) { let x, y, dir = -1; const o = { py: 990 };
-    const head = ele ? elephantT(ele.x, ele.y, 1.45 * 1.3, 1, ele.o).T(74, -150) : S(700, 600);
-    const W = [(head[0] - 960) / cam.s + cam.cx, (head[1] - 540) / cam.s + cam.cy];
-    if (f < 32.5) { x = stepIn(f, 30, 10, 2010, 700); y = 990; o.hop = Math.abs(Math.sin(Math.PI * 4 * fr)) * 6; }
-    else if (f < 33.5) { const u = ease.inOut(f - 32.5); x = lerp(700, W[0], u); y = lerp(990, W[1], u) - Math.sin(Math.PI * u) * 200; }
-    else { x = W[0]; y = W[1]; dir = Math.floor(f * 2) % 2 ? 1 : -1; o.hop = Math.sin(Math.PI * ((f * 2) % 1)) * 10; }
-    A.push({ y: f < 32.5 ? 990 : POS.ele[1] + .5, d: (c) => mouse(c, x, y, 1.15 * MAG, dir, o) }); }
-  return A.sort((a, b) => a.y - b.y);
+// ---- what they do: unexpected coordinated gymnastics, in unison, escalating every bar ----
+const LINEY = 835, LINEX = (i) => 330 + i * 214, ESZ = () => 1.12 * ps(LINEY);
+const ARMSEQ = [Math.PI * .96, Math.PI / 2, Math.PI * .96, .15];
+function elderPose(i, f, t) {
+  let P = STANDP(); const fl = Math.floor(f), fr = f - fl, bar = Math.floor(f / 4), q = ((f % 4) + 4) % 4;
+  let x = LINEX(i), gy = LINEY, grounded = true, caneTip = null;
+  if (f < 0) return { P, x, gy, grounded };
+  const ez = (u) => ease.inOut(clamp(u));
+  if (bar === 0) { // synchronised arm sweeps, heels up on the beat
+    const k = Math.floor(q), from = k ? ARMSEQ[k - 1] : .14, a = lerp(from, ARMSEQ[k], ez(fr * 2.2));
+    P.aL = P.aR = a; P.lift = 6 * Math.sin(Math.PI * fr); P.smile = .6;
+  } else if (bar === 1) { // the group lunge: right, then left
+    const side = q < 2 ? 1 : -1, u = ez((q % 2) * 1.0 + fr * 2.2);
+    const L = { ...STANDP(), lR: side > 0 ? .75 : .3, kR: side > 0 ? .78 : 0, lL: side > 0 ? .3 : .75, kL: side > 0 ? 0 : .78, aR: side > 0 ? 2.5 : 1.45, aL: side > 0 ? 1.45 : 2.5, lean: side * .12, smile: .8 };
+    P = mixP(STANDP(), L, q % 2 < 1 ? ez(fr * 2.5) : 1);
+  } else if (bar === 2) { // a cartwheel passed down the line
+    const s0 = 8 + i * .5, u = (f - s0) / 1.3;
+    P.aL = P.aR = Math.PI / 2 + .35 * Math.sin(f * Math.PI); P.smile = .7;
+    if (u > 0 && u < 1) { const e = ez(u); P = { ...STANDP(), rot: TAU * e, aL: Math.PI * .92, aR: Math.PI * .92, lL: .62, lR: .62, lift: 20 * Math.sin(Math.PI * u), dx: 80 * e, smile: 1 }; }
+    else if (u >= 1) { P.dx = 80 * (1 - ez((f - 11.6) / .4)); P.aL = P.aR = 2.4; }
+  } else if (bar === 3) { // human pyramid, with a wobble
+    const ROLE = [[960, 2], [760, 0], [860, 1], [960, 0], [1060, 1], [1160, 0]]; // Edna on top, Rosa+June middle, Walt+Bert+Sam below
+    const [px, row] = ROLE[i], S = ESZ(), lvl = 188 * S;
+    const inU = ez((f - 12) / .9), outU = ez((f - 15.4) / .6), u = inU * (1 - outU);
+    const wob = Math.sin(f * Math.PI * 1.5) * (row + 1) * .035 * u;
+    x = lerp(LINEX(i), px, u) + wob * 300 * row; gy = LINEY - lvl * row * u - Math.sin(Math.PI * inU) * (row ? 60 : 0) * (1 - outU);
+    P.lean = wob; P.aL = P.aR = row === 2 ? lerp(.14, q >= 2 ? 2.6 : 1.6, u) : row === 1 ? lerp(.14, 1.55, u) : lerp(.14, 2.9, u * .5); P.lL = P.lR = row === 2 ? .1 : lerp(.05, .5, u); P.kL = P.kR = row === 2 ? 0 : lerp(0, .95, u); P.smile = .5 + .5 * u; P.brow = row === 0 ? .5 * u : 0;
+  } else if (bar === 4) { // Bert's cane becomes a vault pole
+    P.aL = P.aR = lerp(.14, 2.7, ez(fr * 2)) * (fl % 2 ? 1 : .6); P.smile = .7;
+    if (i === 3) { const u = clamp((f - 16.5) / 2.2), plant = [LINEX(3) + 110, LINEY];
+      if (f >= 16 && f < 16.5) { P.aR = 2.2; P.aL = .5; }
+      if (u > 0 && u < 1) { const e = ez(u); grounded = false; x = lerp(LINEX(3), LINEX(4) + 130, e); gy = LINEY - 120 * ESZ() - Math.sin(Math.PI * e) * 300; P.rot = -Math.PI / 2 * Math.sin(Math.PI * e); P.aR = P.aL = Math.PI; P.lL = P.lR = .15; caneTip = plant; }
+      else if (u >= 1) { x = lerp(LINEX(4) + 130, LINEX(3), ez((f - 18.7) / 1.2)); }
+    }
+    if (i === 4 && f > 17.2 && f < 18.6) P.lean = .55 * Math.sin(Math.PI * (f - 17.2) / 1.4); // June ducks
+    if (i !== 3 && f > 16.6 && f < 19) P.look = [clamp((f - 16.6) - 1, -1, 1), -.6];
+  } else if (bar === 5) { // the kick line, arms linked
+    const kick = Math.sin(Math.PI * fr) * 1.35; if (fl % 2) P.lR = kick; else P.lL = kick; P.aL = P.aR = Math.PI / 2 + .05; P.smile = 1;
+  } else if (bar === 6) { // star jumps; the clock lands on beat 3; they glance, then carry on
+    const glance = f >= 26 && f < 27.4;
+    if (!glance) { const u = Math.sin(Math.PI * fr); P.aL = P.aR = lerp(.14, Math.PI * .8, u); P.lL = P.lR = lerp(.05, .5, u); P.lift = 40 * u; P.smile = .9; }
+    else { const g = ez((f - 26) / .3); P.look = [-1 * g, -.4 * g]; P.brow = g; P.smile = 0; P.lean = -.06 * g; }
+  } else if (bar === 7) { // handstands, then a walkover
+    const u = ez((f - 28) / 1), hold = f >= 29 && f < 30.5, w = ez((f - 30.5) / 1);
+    P.rot = Math.PI * u + Math.PI * w; P.aL = P.aR = Math.PI * .95 * Math.sin(Math.PI * Math.min(1, u + w) / 1) + .14; if (hold) { P.aL = P.aR = Math.PI * .97; P.lL = .25 + .1 * Math.sin(f * 7 + i); P.lR = .25 + .1 * Math.sin(f * 7 + i + 2); }
+    if (f >= 31.5) { P.rot = 0; P.aL = P.aR = 2.5; P.smile = 1; }
+  } else if (f >= 52) { // back in the room: a final "ta-da" line, shifted clear of the doorway
+    x = 300 + i * 165; P.aL = P.aR = lerp(.14, 2.5, ez((f - 52) / .5)); P.smile = 1;
+  }
+  return { P, x, gy, grounded, caneTip };
+}
+// the young shadow: the same move, bigger and bendier
+function youngPose(P, f) {
+  const Y = { ...P, look: [0, 0] };
+  const amp = (a, k) => .14 + (a - .14) * k;
+  Y.aL = Math.min(Math.PI * 1.05, amp(P.aL, 1.15)); Y.aR = Math.min(Math.PI * 1.05, amp(P.aR, 1.15));
+  Y.lL = Math.min(1.57, P.lL * 1.9 + (P.kL > .3 ? .5 : 0)); Y.lR = Math.min(1.57, P.lR * 1.9 + (P.kR > .3 ? .5 : 0)); Y.kL = 0; Y.kR = 0;
+  Y.lean = P.lean * 2.2 - .25 * Math.max(0, Math.sin(Math.PI * (f % 2) / 2)) * (f > 0 ? 1 : 0); // a little back-bend on the beat
+  Y.lift = P.lift * 1.6;
+  return Y;
+}
+// the clock: drops in on beat 26 (bar 6, beat 3), crashes, bounces; nobody touches the hands
+const CLOCK = { x: 960, y: 450, r: 140 };
+function clockState(t) { const tl = bt(26); if (t < tl - .55) return null;
+  if (t < tl) { const u = (t - (tl - .55)) / .55; return { y: lerp(-500, CLOCK.y, u * u), sq: 1 }; }
+  const a = t - tl; return { y: CLOCK.y - Math.abs(Math.sin(a * 9)) * 70 * Math.exp(-a * 4.5), sq: 1 - .18 * Math.exp(-a * 14) }; }
+function drawClockC(c, t) {
+  const cs = clockState(t); if (!cs) return;
+  const { x, r } = CLOCK, y = cs.y, rr = r * cs.sq;
+  // legs it stands on
+  line2(c, (a, b) => S(a, b), [[x - r * .55, y + r * .8], [x - r * .7, y + r * 1.12]], '#2a3f9a', 10, 4200, 1); line2(c, (a, b) => S(a, b), [[x + r * .55, y + r * .8], [x + r * .7, y + r * 1.12]], '#2a3f9a', 10, 4201, 1);
+  const rim = SP(eli(x, y, r * 1.08, rr * 1.08, 30)); scribble(c, rim, { col: '#2553c9', sp: 12 * cam.s ** .5, ang: .6, seed: 4202, alpha: .9 });
+  const face = SP(eli(x, y, r * .9, rr * .9, 30)); erase(c, [face]); scribble(c, face, { col: '#fbf6ea', sp: 9, ang: 1.1, seed: 4203, alpha: .9 }); crayon(c, face, { col: '#1a2a6a', w: 6 * cam.s ** .4, seed: 4204, closed: true });
+  SIL.push(rim);
+  for (let k = 0; k < 12; k++) { const a = k / 12 * TAU, l = k % 3 ? .12 : .2; crayon(c, SP([[x + Math.sin(a) * r * .84, y - Math.cos(a) * rr * .84], [x + Math.sin(a) * r * (.84 - l), y - Math.cos(a) * rr * (.84 - l)]]), { col: COL.ink, w: (k % 3 ? 4 : 7) * cam.s ** .4, seed: 4210 + k, passes: 1, gap: 0 }); }
+  const sk = beatIndex(t) + ease.back(clamp(beatPhase(t) * 5)), sa = sk / 60 * TAU * 2;
+  const hand = (a, l, w, col, sd) => crayon(c, SP([[x, y], [x + Math.sin(a) * r * l, y - Math.cos(a) * rr * l]]), { col, w: w * cam.s ** .4, seed: sd, passes: 2, gap: 0 });
+  hand(-1.2, .45, 9, COL.ink, 4230); hand(.55, .72, 6, COL.ink, 4231); hand(sa, .78, 3, '#e4422b', 4232); // hour, minute (untouched), second ticking on the beat
+  dot(c, ...S(x, y), 7 * cam.s, COL.ink, 4233);
+  // crash lines on landing
+  const a = t - bt(26); if (a > 0 && a < .6) for (let k = 0; k < 9; k++) { const ang = Math.PI * (.9 + k / 8 * 1.2), d0 = r * 1.2, d1 = r * (1.35 + a * 1.4); crayon(c, SP([[x + Math.cos(ang) * d0, y + r * 1.1 + Math.sin(ang) * d0 * .25 - 10], [x + Math.cos(ang) * d1, y + r * 1.1 + Math.sin(ang) * d1 * .25 - 10]]), { col: COL.ink, w: 5, seed: 4240 + k, passes: 1, gap: 0, alpha: 1 - a / .6 }); }
 }
 
-// ---- gouache: the room floods with colour on the drop, splashes on each arrival, bursts on every beat ----
-const ARRIVE = [[4, 'tear', [775, 850], 150], [10, 'verm', [1210, 755], 190], [18, 'gold', [400, 935], 230], [22, 'willow', [1290, 965], 270], [26, 'indigo', [610, 730], 320], [30, 'verm', [700, 995], 150]];
+// ---- the overhead kaleidoscope (52.3 - 61.5): lying on the floor, seen from above, a new design every bar ----
+const KC = [960, 540];
+function formation(f) { // returns per-elder {x, y, rot, P} on the floor, and the design radius
+  const bar = Math.floor((f - 32) / 4), q = (f - 32) % 4, fr = f - Math.floor(f), fl = Math.floor(f), out = [];
+  const spin = (f - 32) * Math.PI / 16, open = Math.sin(Math.PI * fr);
+  const mk = (b, i) => { const P = STANDP(); let x, y, rot, R;
+    if (b === 0) { const a = i / 6 * TAU + spin; R = 330; x = KC[0] + Math.cos(a) * 170; y = KC[1] + Math.sin(a) * 170; rot = a - Math.PI / 2 + Math.PI; P.aL = P.aR = Math.PI * .97; const k = fl % 2 ? open : 0; P.lL = P.lR = .1 + .55 * k; }
+    else if (b === 1) { const a = i / 6 * TAU - spin * 1.4; R = 360; x = KC[0] + Math.cos(a) * 250; y = KC[1] + Math.sin(a) * 250; rot = a + Math.PI; P.aL = P.aR = Math.PI / 2; const k = (fl + i) % 2 ? open : 0; P.lL = .1 + .7 * k; P.lR = .1 + .7 * (open - k); }
+    else if (b === 2) { const V = [[0, -300], [260, 0], [0, 300], [-260, 0]], e = i < 4 ? i : i - 4, mid = i >= 4; const A = V[mid ? e * 2 % 4 : e], B = V[mid ? (e * 2 + 1) % 4 : (e + 1) % 4];
+      const u = mid ? .5 : .5; x = KC[0] + lerp(A[0], B[0], mid ? .5 : .5); y = KC[1] + lerp(A[1], B[1], u); if (!mid) { x = KC[0] + A[0] * .55 + B[0] * .45; y = KC[1] + A[1] * .55 + B[1] * .45; }
+      rot = Math.atan2(B[1] - A[1], B[0] - A[0]) + Math.PI / 2; R = 330; P.aL = P.aR = Math.PI * .99; P.lL = P.lR = .05 + .3 * open; }
+    else if (b === 3) { const a = i * 1.05 + spin * 2.2, rr = 70 + i * 40; R = 330; x = KC[0] + Math.cos(a) * rr; y = KC[1] + Math.sin(a) * rr; rot = a + .3; P.aL = Math.PI * .8; P.aR = .6 + .8 * open; P.lL = .6; P.lR = .1 + .6 * open; P.lean = .3 * Math.sin(f * Math.PI); }
+    else { const a = i / 6 * TAU - spin; R = 380; x = KC[0] + Math.cos(a) * 250; y = KC[1] + Math.sin(a) * 250; rot = a - Math.PI / 2; P.aL = P.aR = Math.PI / 2 + .4 * open; P.lL = P.lR = .08 + .25 * open; }
+    P.smile = 1; return { x, y, rot, P, R }; };
+  for (let i = 0; i < 6; i++) { const cur = mk(bar, i); if (bar > 0 && q < .6) { const pv = mk(bar - 1, i), u = ease.inOut(q / .6); let dr = cur.rot - pv.rot; dr = Math.atan2(Math.sin(dr), Math.cos(dr));
+      out.push({ x: lerp(pv.x, cur.x, u), y: lerp(pv.y, cur.y, u), rot: pv.rot + dr * u, P: mixP(pv.P, cur.P, u), R: lerp(pv.R, cur.R, u) }); } else out.push(cur); }
+  return out;
+}
+const KALE_PIGS = ['verm', 'gold', 'water', 'willow', 'tear', 'indigo'];
+function drawOverhead(g, t) {
+  cam = { cx: 960, cy: 540, s: 1, sn: 1 }; BOIL = 3000 + beatIndex(t) * 2 + (beatPhase(t) > .5 ? 1 : 0); SIL = [];
+  const base = [K, 0, 0, K, 0, 0], f = fbeat(t), F = formation(f).map((e) => ({ ...e, x: KC[0] + (e.x - KC[0]) * 1.3, y: KC[1] + (e.y - KC[1]) * 1.3, R: e.R * 1.3 })), sz = 1.5;
+  g.setTransform(1, 0, 0, 1, 0, 0); g.drawImage(paperTex, 0, 0); g.setTransform(...base);
+  const c = cC; c.setTransform(1, 0, 0, 1, 0, 0); c.clearRect(0, 0, CW, CH); c.setTransform(...base);
+  // the floor from above: boards
+  scribble(c, [[-20, -20], [1940, -20], [1940, 1100], [-20, 1100]], { col: '#c08a52', sp: 24, ang: .02, seed: 4301, alpha: .4 });
+  for (let y = 40, k = 0; y < 1080; y += 78, k++) crayon(c, [[-20, y], [1940, y + 4]], { col: '#8a5a2e', w: 4, seed: 4310 + k, alpha: .7, passes: 2, gap: .12 });
+  for (let k = 0; k < 40; k++) { const y = 40 + (k % 13) * 78, x = (hash(k * 7) * 1900); crayon(c, [[x, y], [x + 2, y + 78]], { col: '#8a5a2e', w: 3, seed: 4360 + k, alpha: .5, passes: 1 }); }
+  // shadows first: their young selves, offset and bendier
+  const proj = (p) => [p[0] + 34, p[1] + 26];
+  F.forEach((e, i) => drawElder(c, i, { ...youngPose(e.P, f), rot: e.rot }, e.x, e.y, sz * 1.1, { shadow: true, grounded: false, proj, alpha: .42 }));
+  F.forEach((e, i) => drawElder(c, i, { ...e.P, rot: e.rot }, e.x, e.y, sz, { grounded: false }));
+  c.setTransform(1, 0, 0, 1, 0, 0); c.globalCompositeOperation = 'destination-out'; c.globalAlpha = .92; c.drawImage(grainTex, 0, 0);
+  c.globalCompositeOperation = 'source-over'; c.globalAlpha = 1;
+  g.setTransform(1, 0, 0, 1, 0, 0); g.drawImage(layerC, 0, 0);
+  // gouache colours the design on every beat: a centre bloom plus a six-fold ring of blooms (kaleidoscope)
+  const w = cW; w.setTransform(1, 0, 0, 1, 0, 0); w.clearRect(0, 0, CW, CH); w.setTransform(...base);
+  w.fillStyle = PIG.trunk[2]; w.globalAlpha = .28; w.fillRect(0, 0, 1920, 1080); w.globalAlpha = 1;
+  const last = Math.floor(f);
+  for (let k = Math.max(32, last - 5); k <= last; k++) { const old = last - k, fade = old >= 4 ? 1 - (old - 3) * .45 : 1, pig = KALE_PIGS[k % 6], R = F[0].R;
+    flood(w, t, { t0: bt(k), dur: .4, origin: KC, R: R * (.55 + .1 * (k % 3)), ry: 1, seed: k % 10, pig, alpha: .55, fade, blooms: [] });
+    for (let j = 0; j < 6; j++) { const a = j / 6 * TAU + k * .5 + (f - 32) * Math.PI / 16; flood(w, t, { t0: bt(k) + .05, dur: .35, origin: [KC[0] + Math.cos(a) * R * .95, KC[1] + Math.sin(a) * R * .95], R: 70 + 30 * (k % 2), ry: 1, seed: (k + j) % 10, pig: KALE_PIGS[(k + 3) % 6], alpha: .7, fade, blooms: [] }); } }
+  w.save(); w.globalCompositeOperation = 'destination-out'; w.fillStyle = '#000'; for (const p of SIL) { w.beginPath(); polyPath(w, p); w.fill(); } w.restore();
+  w.setTransform(1, 0, 0, 1, 0, 0);
+  w.globalCompositeOperation = 'source-atop'; w.globalAlpha = .16; w.drawImage(grainTex, 0, 0);
+  w.globalCompositeOperation = 'destination-out'; w.globalAlpha = .82; w.drawImage(layerC, 0, 0);
+  w.globalCompositeOperation = 'source-over'; w.globalAlpha = 1;
+  g.drawImage(layerW, 0, 0);
+  g.globalCompositeOperation = 'multiply'; g.globalAlpha = .45; g.drawImage(paperTex, 0, 0);
+  g.globalCompositeOperation = 'source-over'; g.globalAlpha = 1;
+  g.setTransform(...base);
+}
+function drawEldersRoom(c, t) {
+  const f = fbeat(t), S0 = ESZ();
+  const shear = (F) => (p) => [p[0] + (F[1] - p[1]) * .42, F[1] - (F[1] - p[1]) * .78];
+  const st = ELDERS.map((_, i) => elderPose(i, f, t));
+  // shadows on the floor and up the back wall: their younger, bendier selves (attached at the feet)
+  st.forEach((s, i) => { const F = [s.x + (s.P.dx || 0) * S0, s.gy]; drawElder(c, i, youngPose(s.P, f), s.x, s.gy, S0 * 1.05, { shadow: true, grounded: s.grounded, proj: shear(F), alpha: .45 }); });
+  // draw order: lower rows (bigger y) last so the pyramid stacks right
+  st.map((s, i) => [s, i]).sort((a, b) => a[0].gy - b[0].gy).forEach(([s, i]) => drawElder(c, i, s.P, s.x, s.gy, S0, { grounded: s.grounded, caneTip: s.caneTip, caneLen: s.caneTip ? 2 : 1 }));
+}
+
+// ---- gouache: the room floods with colour on the drop, a splash every bar, the clock's crash, bursts at the end ----
 const BURSTP = ['verm', 'gold', 'water', 'willow', 'tear', 'indigo'];
 function roomWash(w, t) {
   const f = fbeat(t), reg = (k) => SP(ROOM[k]);
@@ -823,9 +898,12 @@ function roomWash(w, t) {
   if (lg > 0) { w.fillStyle = PIG.gold[2]; w.globalAlpha = .32 * lg;
     for (const wx of [790, 960, 1130]) { const fx = 960 + (wx - 960) * 1.6; w.beginPath(); polyPath(w, SP([[wx - 34, 600], [wx + 34, 600], [fx + 80, 1000], [fx - 80, 1000]])); w.fill(); }
     w.globalAlpha = 1; }
-  for (const [b, pig, P, R] of ARRIVE) if (f >= b) flood(w, t, { t0: bt(b), dur: .6, origin: P, R, ry: .45, seed: b % 10, pig, alpha: .62, blooms: [[P[0] + 40, P[1], R * .3]] });
+  // a splash behind the line on every bar downbeat, bigger each bar
+  for (let b = 0; b < 8; b++) if (f >= b * 4) flood(w, t, { t0: bt(b * 4), dur: .55, origin: [960 + (b % 2 ? 260 : -260), 860], R: 170 + b * 45, ry: .4, seed: b % 10, pig: BURSTP[b % BURSTP.length], alpha: .6, blooms: [[960, 870, 50]] });
+  // the clock's crash splash
+  if (t >= bt(26)) flood(w, t, { t0: bt(26), dur: .45, origin: [CLOCK.x, CLOCK.y + CLOCK.r * 1.1], R: 260, ry: .35, seed: 7, pig: 'indigo', alpha: .7, blooms: [[CLOCK.x + 60, CLOCK.y + 140, 50]] });
   // the big dance: a burst on every beat (fading after ten)
-  if (f >= 32) { const last = Math.min(Math.floor(f), 60);
+  if (f >= 52) { const last = Math.min(Math.floor(f), 60);
     for (let k = Math.max(32, last - 9); k <= last; k++) { const old = last - k, x = 960 + 620 * Math.sin(k * .77 + .4), y = 760 + 200 * Math.sin(k * 1.31 + 1);
       flood(w, t, { t0: bt(k), dur: .45, origin: [x, y], R: (150 + 90 * hash(k)) * ps(y) * 1.3, ry: .55, seed: k % 10, pig: BURSTP[k % BURSTP.length], alpha: .7, fade: old >= 7 ? 1 - (old - 6) * .28 : 1, blooms: [[x, y, 40]] }); } }
 }
@@ -861,9 +939,10 @@ function drawRoomScene(g, t) {
     crayon(c, SP([[960, -200], top, [bx, by]]), { col: COL.ink, w: 3, seed: 3140, passes: 1, gap: 0 });
     const bulb = SP(eli(bx, by + 14, 11, 14, 14)); scribble(c, bulb, { col: '#f7e27a', sp: 5, seed: 3141, alpha: .9 }); crayon(c, bulb, { col: '#c79a1a', w: 3, seed: 3142, closed: true }); }
   // the cast, back to front
-  for (const a of castAt(t)) a.d(c);
+  drawClockC(c, t);
+  drawEldersRoom(c, t);
   // the customer watches from the doorway (bar 10 on), faintly satisfied at the end
-  const cIn = inv(INS.bar(10), INS.bar(10) + .5, t);
+  const cIn = inv(INS.bar(5), INS.bar(5) + .5, t);
   if (cIn > 0) { const st = { x: lerp(1395, 1325, ease.out(cIn)), y: 652, k: .62, mouth: 'flat', look: [-1, 0], brow: 0, nod: 0, sink: 0, tear: 0, squash: .02 * beatPulse(t, 9) };
     const u = t - INS.bar(13) - .2; if (u > 0 && u < 2.4) { st.brow = ease.out(u / .2) * (1 - inv(2, 2.4, u)); if (u < .5) st.nod = Math.sin(Math.PI * u / .5) * 8; }
     if (t > INS.drain) st.look = [0, 0];
@@ -888,6 +967,7 @@ function drawRoomScene(g, t) {
 }
 // 35.5 to the drop: the weep scene runs off the page in wet strips, uncovering the room
 function drawRoom(g, t) {
+  const fb = fbeat(t); if (fb >= 32 && fb < 52) { drawOverhead(g, t); return; }
   if (t >= INS.drop) { drawRoomScene(g, t); return; }
   if (!TMP) TMP = mkCanvas(CW, CH);
   const tc = TMP.getContext('2d'); drawVerse(tc, t);
