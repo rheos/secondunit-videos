@@ -117,7 +117,8 @@
       taper([[-30, 0], [-62, -120]], 7, 4, CUT); taper([[30, 0], [62, -120]], 7, 4, CUT); dot(-62, -120, 6, CUT); dot(62, -120, 6, CUT); });
   }
 
-  // a school-bus kid, happy this time (in verse 1 they cried): a grin, arms that go up, can tumble
+  // a school-bus kid at the show: arms that go up, can tumble, and STILL crying the whole time (Bob, draft-9 notes:
+  // 'when they dance with her at the end, maybe they still should be crying at the same time. sort of Southpark')
   // (x, y) = between the feet; o.up 0..1 arms up; o.roll turns about the middle; o.spin cut-out turn
   function happyKid(x, y, k, o = {}) {
     const { seed = 1, t = 0, up = 0, roll = 0, spin = 1 } = o;
@@ -128,8 +129,7 @@
         taper([[sd * 26, -136], [mx, my], [ax, ay]], 30, 24, CUT); taper([[sd * 26, -136], [mx, my], [ax, ay]], 20, 15, INK);
         shape(ell(ax, ay, 13, 13), CUT, 4);
       }
-      kid(0, 0, 1, { seed, t });
-      shape(() => { s.beginPath(); s.ellipse(0, -171, 12, 10, 0, 0, Math.PI); s.closePath(); }, INK);   // the grin
+      kid(0, 0, 1, { seed, t, cry: true });
     });
   }
   // a fist with the thumb up (CUT, carved creases), sleeve below; (x, y) = the fist
