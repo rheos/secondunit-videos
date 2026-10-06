@@ -19,11 +19,12 @@ await b.close();
 console.log(`${times.length} frames, ${(ms / times.length).toFixed(0)} ms/frame`);
 if (!full) {
   const n = files.length, cols = Math.min(3, n), rows = Math.ceil(n / cols), pad = rows * cols - n;
-  let inputs = files.map((f) => `-i "${f}"`).join(' '); let filt = files.map((_, i) => `[${i}:v]scale=640:360[v${i}];`).join('');
-  for (let k = 0; k < pad; k++) { inputs += ` -f lavfi -i color=black:s=640x360:d=1`; filt += `[${n + k}:v]null[v${n + k}];`; }
+  let inputs = files.map((f) => `-i "${f}"`).join(' '); const TW = process.env.PORTRAIT ? 360 : 640, TH = process.env.PORTRAIT ? 640 : 360;   // PORTRAIT=1 for the 9:16 pages
+  let filt = files.map((_, i) => `[${i}:v]scale=${TW}:${TH}[v${i}];`).join('');
+  for (let k = 0; k < pad; k++) { inputs += ` -f lavfi -i color=black:s=${TW}x${TH}:d=1`; filt += `[${n + k}:v]null[v${n + k}];`; }
   const ins = [...Array(n + pad).keys()].map(i => `[v${i}]`).join('');
   fs.mkdirSync(path.dirname(out) || '.', { recursive: true });
-  const fc = n === 1 ? `[0:v]scale=640:360[o]` : `${filt}${ins}xstack=inputs=${n + pad}:grid=${cols}x${rows}[o]`;
+  const fc = n === 1 ? `[0:v]scale=${TW}:${TH}[o]` : `${filt}${ins}xstack=inputs=${n + pad}:grid=${cols}x${rows}[o]`;
   execSync(`ffmpeg -y -loglevel error ${inputs} -filter_complex "${fc}" -map "[o]" -frames:v 1 -q:v 3 "${out}"`);
   console.log('sheet', out);
 } else console.log('stills in', out);

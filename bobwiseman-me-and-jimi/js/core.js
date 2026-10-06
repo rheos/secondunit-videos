@@ -1,8 +1,10 @@
 // Core: time, audio features, rng, keyframes, shot registry, frame assembly.
 // Every frame is a pure function of song time t (frames render in parallel and out of order):
-// no state between frames, no Math.random(). A shot draws onto the 2D canvas `s` (1920 x 1080, 16:9),
+// no state between frames, no Math.random(). A shot draws onto the 2D canvas `s` (1920 x 1080, 16:9; or 1080 x 1920,
+// 9:16, when the page sets window.PORTRAIT before loading this file),
 // then the look's WebGL shader turns that into the finished frame.
-const W = 1920, H = 1080;
+const PORTRAIT = !!window.PORTRAIT;
+const W = PORTRAIT ? 1080 : 1920, H = PORTRAIT ? 1920 : 1080;
 const RS = parseFloat(new URLSearchParams(location.search).get('scale')) || 1;
 const DUR = 282.54; // Me and Jimi, 2026 recording
 const TAU = Math.PI * 2;

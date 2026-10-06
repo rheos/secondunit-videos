@@ -14,7 +14,7 @@ const LOOK = {
   frag: `
 uniform float inv, flash, tb3, frame;
 void main(){
-  vec2 D = vec2(1920., 1080.);
+  vec2 D = vec2(${W}., ${H}.);
   vec2 P = uv * D;                                                        // design pixels at any render scale
   vec2 d = fbm2(P * .011 + tb3 * 7.3) * 1.1 + fbm2(P * .05 + tb3 * 3.1) * .55;
   vec2 q = uv + d / D;                                                    // the cut wobbles a hair on every pull
