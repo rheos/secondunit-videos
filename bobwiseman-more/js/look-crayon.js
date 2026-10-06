@@ -89,6 +89,7 @@ function buildTextures() {
   const tint = (m, col) => { const c = mkCanvas(MW, MH), x = c.getContext('2d'); x.drawImage(m, 0, 0); x.globalCompositeOperation = 'source-in'; x.fillStyle = col; x.fillRect(0, 0, MW, MH); return c; };
   for (const k in PIG) MOT[k] = { dk: tint(mA, PIG[k][1]), lt: tint(mB, PIG[k][2]) };
   // deformed polygons (Tyler Hobbs style recursive midpoint displacement)
+  DEF.length = 0;
   for (let s = 0; s < 10; s++) {
     const R = rng(100 + s); let pts = [];
     for (let i = 0; i < 12; i++) { const a = i / 12 * TAU; pts.push([Math.cos(a), Math.sin(a), .9 + R() * .5]); }
@@ -104,7 +105,10 @@ function buildTextures() {
   layerC = mkCanvas(CW, CH); cC = layerC.getContext('2d');
   layerW = mkCanvas(CW, CH); cW = layerW.getContext('2d');
 }
-window.LOOK_READY = new Promise((res) => setTimeout(() => { buildTextures(); res(); }, 0));
+// Build only after main.js has sized the canvas. A setTimeout(0) can fire while the parser is still between
+// scripts (data.js is big), which built every texture at the default 300x150 canvas: a tiny picture top-left.
+window.LOOK_READY = new Promise((res) => { const go = () => { buildTextures(); res(); };
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', go, { once: true }); else go(); });
 
 // ---------------- camera ----------------
 let cam = { cx: 960, cy: 540, s: 1, sn: 1 };
@@ -999,6 +1003,7 @@ function finish(g, t) {
   }
 }
 function drawFrame(g, t) {
+  if (g.canvas.width !== CW || g.canvas.height !== CH) { buildTextures(); TMP = null; } // never draw with textures built for another size
   if (t < INS.t0) drawVerse(g, t); else drawRoom(g, t);
   finish(g, t);
 }

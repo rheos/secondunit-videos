@@ -12,6 +12,9 @@ for p in "$@"; do
   [[ -n $prev && $a != $prev ]] && { echo "gap/overlap: $prev -> $a at $p"; exit 1; }
   n=$(ffprobe -v error -count_frames -select_streams v -show_entries stream=nb_read_frames -of default=nw=1:nk=1 $p)
   (( n == b - a )) || { echo "$p has $n frames, expected $((b - a))"; exit 1; }
+  # a render worker that draws mis-scaled frames (tiny picture in the corner on black) must not get into a draft
+  bad=$(~/Code/novadiem/indieagent/viralvision/viralvision-worker/.venv/bin/python tools/badframes.py $p | awk '{print $1}' | cut -d/ -f1)
+  (( bad == 0 )) || { echo "$p has $bad corner/black frames (tools/badframes.py)"; exit 1; }
   ins+=(-i $p); filt+="[$i:v]fps=24,setsar=1[v$i];"; prev=$b; i=$((i + 1))
 done
 labels=$(for k in $(seq 0 $((i - 1))); do printf "[v$k]"; done)
