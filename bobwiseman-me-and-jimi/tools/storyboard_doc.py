@@ -47,14 +47,15 @@ ROWS = [
  (175.2, 176.6, '(25)', 'He tries to pay at a diner till: the cashier is Jimi, who shakes his head. NO SALE.', ''),
  (177.0, 180.5, '"I\'m ashamed I missed that train" (17)', 'The platform: the ELLEN McILWAINE train is already pulling away, Ellen playing on the back; the station clock has no hands. Bob takes his hat off.', ''),
  (185.03, 185.9, '"Ellen McIlwaine" (18)', 'The train\'s smoke writes ELLEN McILWAINE across the sky, then the harmonica wind breaks the letters apart.', ''),
- (187.0, 195.0, 'final instrumental (28)', 'Ellen alone on an enormous empty stage, no audience. She plays anyway.', 'PLANNED: her carved photo (singing at the mic with her guitar, from the picture you sent) for the stage shots.'),
- (205.23, 207.5, 'final instrumental (29)', 'Her eyeline: the dark empty house. Somebody is sitting six rows back: Jimi, small, listening.', 'DONE (your note): less Jimi: no push-in on him any more.'),
- (210.0, 213.0, 'final instrumental', 'The harmonica hurricane: Ellen twirls while she plays, hair flying, and keeps going.', 'DONE (your note): acrobatics.'),
- (220.6, 223.0, 'final instrumental', 'Cartwheels and a somersault across the stage, still playing.', 'DONE (your note): acrobatics.'),
- (225.2, 228.0, 'final instrumental (30)', 'She finishes and bows.', ''),
- (230.4, 232.0, 'final instrumental (30)', 'Jimi stands and applauds, one small figure in the whole empty house; then a wide bow from the back of the house. The guitar goes into its case.', 'DONE (your notes): less Jimi: a short, wide ovation.'),
- (240.33, 246.0, 'final instrumental (30)', 'The theatre fills: the school-bus kids, then musicians (Bob with his accordion, Beyonce, Michael Jackson, the Pixies).', ''),
- (247.0, 248.6, 'final instrumental (30)', 'Blues greats pop into the seats: Muddy Waters, Lightnin\' Hopkins, Little Richard, Janis Joplin, Chuck Berry, Sister Rosetta Tharpe, Otis Spann. Then ordinary people; a standing ovation. Ellen has already put her guitar away and walks off.', 'DONE (your note): blues artists in the seats, Otis Spann included.'),
+ (187.0, 199.0, 'final instrumental (28)', 'Ellen plays and the house fills behind her: the bus kids pop into the seats, then the blues greats (Muddy Waters, Lightnin\' Hopkins, Little Richard, Janis Joplin, Chuck Berry, Sister Rosetta Tharpe, Otis Spann), nodding along; Muddy and Chuck give her a thumbs-up.', 'DONE (your note).', 'We see the audience becoming populated with kids and famous blues players approving.'),
+ (205.2, 207.6, 'final instrumental (29)', 'Extravagant acrobatics: a cartwheel, a double back somersault with a twist, a triple layout, each landing on the beat, the house throwing its arms up.', 'DONE (your note).', 'The acrobatics start and they are extravagant. Flips, somersaults'),
+ (210.0, 216.5, 'final instrumental', 'The guitar flips over and its neck grows a spring and a rubber foot: a pogo stick. She bounces higher on every beat, twirling and flipping up into the fly loft, hair streaming in the harmonica wind.', 'DONE (your note).', 'Then the neck of he guitar becomes a pogo stick, she can fly/ twirl in the air'),
+ (220.6, 222.3, 'final instrumental', 'The bus kids jump up onto the stage and dance with her, cartwheeling in pairs; on the harmonica everyone does one big somersault together.', 'DONE (your note).', 'The kids from the bus are on stage, dancing with her, doing acrobatics with her'),
+ (225.2, 228.5, 'final instrumental (30)', 'The giant harmonica crashes down again, same as at 0:40: cracks, dust, everyone scatters. The school bus bursts in from the wing and shoves it off the stage.', 'DONE (your note).', 'The harmonica comes crashing down again like earlier and the school bus from nowhere pushes it away'),
+ (230.4, 237.5, 'final instrumental (30)', 'The kids and the 80s stars (Springsteen, Cyndi Lauper, Madonna, Bowie, Michael Jackson, Boy George, David Byrne, Prince on his bike) push the bus away; the train steams through, Ellen leaps and grabs the back and rides it laughing, exactly the way Jimi did in verse 2.', 'DONE (your note).', 'The kids and 80s stars push away the school bus and the train comes through and ellen is holding on to the back of it as hendrix did earlier'),
+ (240.3, 242.0, 'final instrumental (30)', 'Back on stage, a big star: a giant carved star behind her, her name in lights, flowers thrown on the beats, the full house on its feet (kids, blues greats, the 80s stars, you, Beyonce, the Pixies); ghost Jimi claps from a box.', 'DONE (your note).', "She's back on stage the crowd loves her, she's a big star now"),
+ (247.0, 247.3, 'final instrumental (30)', 'She hops on the four harmonica notes, like at 0:49, a carved note popping out on each, then keeps bopping on every beat to the roaring house.', 'DONE (your note).', 'She bops like she did earlier to harmonica'),
+ (254.6, 256.0, 'final instrumental (30)', 'She walks off with her guitar case.', '', ''),
  (262.47, 268.0, 'ending (31)', 'Dawn: Ellen drives the school bus away from the theatre (ELLEN McILWAINE on the marquee).', ''),
  (271.67, 273.5, 'ending (31)', 'The rear-view mirror: Jimi is in the last seat with his guitar. Ellen notices; small smile.', ''),
  (276.4, 277.6, 'final image (spoken lines)', 'Dawn at the roadside: you and Jimi, in silhouette, watch her bus drive into the sun. The balloons come up on the spoken lines: you, "That felt great." Jimi, "I think she would have liked that." You, "Yeah."', 'DONE (your note): the closing dialogue, now in sync with the voices on the recording.'),
@@ -67,15 +68,16 @@ def still(t):
     b = base64.b64encode(open(f, 'rb').read()).decode(); os.remove(f); return b
 
 rows = []
-for t, st, lyr, what, plan in ROWS:
+for row in ROWS:
+    t, st, lyr, what, plan = row[:5]; bob = row[5] if len(row) > 5 else ''
     link = f'{URL}?t={int(t)}'
     rows.append(f'<tr><td><img src="data:image/jpeg;base64,{still(st)}" width="210"></td>'
                 f'<td><a href="{link}">{ts(t)}</a></td><td>{html.escape(lyr)}</td><td>{html.escape(what)}</td>'
-                f'<td>{html.escape(plan)}</td><td></td></tr>')
+                f'<td>{html.escape(plan)}</td><td>{html.escape(bob)}</td></tr>')
 doc = f'''<html><head><meta charset="utf-8"></head><body>
-<h1>Me and Jimi: storyboard (woodcut draft 7)</h1>
+<h1>Me and Jimi: storyboard (woodcut draft 8)</h1>
 <p>Bob Wiseman, Me and Jimi (2026): your storyboard, all woodcut. Current draft: <a href="{URL}">{URL}</a>. Each timestamp links to that moment in the video. The numbers in brackets are your beat numbers from your notes.</p>
-<p>Write your ideas straight into the last column, or anywhere you like. "DONE" marks your notes that are in this cut (from all your rounds so far); "PLANNED" notes are changes already on the list. Ellen is rounder all the way through, in every shot. New in draft 7: the kids on the bus all crying, and Ellen hopping on the four harmonica notes. Draft 6: the piano section is busy from its first beat, and the 80s dance is a crowd (Cyndi Lauper, Springsteen, Madonna, Prince, Bowie, Boy George, David Byrne). Since draft 3: the closing lines land on the spoken words, you beside Jimi for "me and Jimi Hendrix feel the same", less Jimi in the theatre, and the closing dialogue. Photos of you at other ages are welcome whenever you have them.</p>
+<p>Write your ideas straight into the last column, or anywhere you like. "DONE" marks your notes that are in this cut (from all your rounds so far); "PLANNED" notes are changes already on the list. New in draft 8: your eight notes on the final instrumental, all built (your words are still in your column, marked DONE): the house fills with kids and blues greats, the flips, the pogo-stick guitar, the kids dancing with her, the harmonica crash and the bus, the train ride, her star turn, and the hops. Draft 7: the kids on the bus all crying, and Ellen hopping on the four harmonica notes. Draft 6: the piano section is busy from its first beat, and the 80s dance is a crowd (Cyndi Lauper, Springsteen, Madonna, Prince, Bowie, Boy George, David Byrne). Since draft 3: the closing lines land on the spoken words, you beside Jimi for "me and Jimi Hendrix feel the same", less Jimi in the theatre, and the closing dialogue. Photos of you at other ages are welcome whenever you have them.</p>
 <p>One thing to know: on the 2026 recording you sing "I hope this song helps you remember her name" at the end of verse 2 and "I'm ashamed I missed that train" at the end of verse 3 (your notes have them the other way round), so those beats sit where the words are actually sung.</p>
 <table border="1" cellpadding="6"><tr><th>Still</th><th>Time</th><th>Lyric</th><th>What happens</th><th>Planned</th><th>Bob's ideas</th></tr>
 {"".join(rows)}
