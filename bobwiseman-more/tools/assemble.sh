@@ -15,8 +15,10 @@ for p in "$@"; do
   ins+=(-i $p); filt+="[$i:v]fps=24,setsar=1[v$i];"; prev=$b; i=$((i + 1))
 done
 labels=$(for k in $(seq 0 $((i - 1))); do printf "[v$k]"; done)
+# a span that runs past the song's end (a silent hold after the last word) gets silence padded on,
+# the master audio itself is never stretched or altered
 ffmpeg -v error -y ${ins[@]} -ss $((first / 24.0)) -t $(((prev - first) / 24.0)) -i assets/song.wav \
-  -filter_complex "${filt}${labels}concat=n=$i:v=1:a=0[v]" -map "[v]" -map ${i}:a \
+  -filter_complex "${filt}${labels}concat=n=$i:v=1:a=0[v];[${i}:a]apad[a]" -map "[v]" -map "[a]" \
   -c:v libx264 -preset medium -crf 23 -maxrate 4.5M -bufsize 9M -pix_fmt yuv420p -c:a aac -b:a 256k \
   -t $(((prev - first) / 24.0)) -movflags +faststart $out
 n=$(ffprobe -v error -count_frames -select_streams v -show_entries stream=nb_read_frames -of default=nw=1:nk=1 $out)

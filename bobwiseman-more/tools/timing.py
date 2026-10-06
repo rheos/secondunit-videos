@@ -19,7 +19,9 @@ ORDER = [0, 1, 2, 3, 2]
 SECTION = ['verse1', 'verse2', 'chorus1', 'verse3', 'chorus2']
 # hand-checked against the vocal stem: Whisper hears one "more" where Bob sings
 # "...I want more / more stars" across the verse 3 -> chorus 2 seam. (line, word) -> seconds
-OVERRIDES = {(15, 5): 186.5, (16, 0): 188.9}
+# Bob 2026-10-06: "I don't want to argue" must start on the sung words, not on the tail of "midnight"
+# (the unmatched "I" was interpolated to 164.39; Bob sings "I don't" at ~167.5).
+OVERRIDES = {(15, 5): 186.5, (16, 0): 188.9, (12, 0): 167.45, (12, 1): 167.74}
 
 assert hashlib.sha256(open(SONG, 'rb').read()).hexdigest() == SHA, 'song changed'
 norm = lambda w: re.sub(r"[^a-z']", '', w.lower().replace('’', "'"))

@@ -737,8 +737,12 @@
       fillParts(g, [{ p: VB.night, col: '#121a4f' }], 2);
       pinAt(g, 76, 66, C.lemon); pinAt(g, 1850, 60, C.lemon);
       const ms = slap(t, V.midnight + .25);
-      if (ms) { g.save(); g.translate(1450, 250); g.scale(ms.s * ms.sx, ms.s * ms.sy); fillParts(g, [{ p: VB.moon, col: '#f4e7a1' }], ms.lift); [[-50, -30, 0], [40, 50, 1], [55, -45, 2]].forEach(([x, y, k]) => { g.save(); g.translate(x, y); fillParts(g, [{ p: VB.crater[k], col: '#e2d184' }], .5); g.restore(); }); g.restore(); }
-      for (const s of VB.stars) slapDraw(g, { ...s, parts: [{ p: s.p, col: s.col }] }, t, false, Math.sin(t * 2 + s.x) * .05);
+      const hold = t > V.midnight + .4 && t < V.l2 ? 1 - smooth(inv(V.l2 - .3, V.l2, t)) : 0, mb = 1 + .035 * beatPulse(t, 5) * hold;
+      if (ms) { g.save(); g.translate(1450, 250); g.scale(ms.s * ms.sx * mb, ms.s * ms.sy * mb); fillParts(g, [{ p: VB.moon, col: '#f4e7a1' }], ms.lift); [[-50, -30, 0], [40, 50, 1], [55, -45, 2]].forEach(([x, y, k]) => { g.save(); g.translate(x, y); fillParts(g, [{ p: VB.crater[k], col: '#e2d184' }], .5); g.restore(); }); g.restore(); }
+      for (const s of VB.stars) {
+        if (hold > 0 && t > s.t + .3) { const tw = 1 + .22 * hold * beatPulse(t - (s.x % 3) * .0, 6) * ((Math.floor(s.x) + lastBeat(t)) % 2 ? 1 : .35); g.save(); g.translate(s.x, s.y); g.scale(tw, tw); g.translate(-s.x, -s.y); slapDraw(g, { ...s, parts: [{ p: s.p, col: s.col }] }, t, false, Math.sin(t * 2 + s.x) * .05); g.restore(); }
+        else slapDraw(g, { ...s, parts: [{ p: s.p, col: s.col }] }, t, false, Math.sin(t * 2 + s.x) * .05);
+      }
       g.restore();
     }
     // the ring drops in on "fight", ropes twang on the beat, gone at the next line
@@ -798,11 +802,11 @@
       g.restore();
     }
     // bickering bubbles
-    if (t >= V.l2 - .13 && t < V.fight + .6) {
+    if (t >= V.l2 && t < V.fight + .6) {
       const fa = t - V.fight;
       for (const sd of [-1, 1]) {
         const isA = (sd < 0) === (active === 0);
-        const st = slap(t, isA ? BEATS[lastBeat(t)] : V.l2) || { s: 1, sx: 1, sy: 1, lift: 1, r: 0 };
+        const st = slap(t, Math.max(isA ? BEATS[lastBeat(t)] : 0, V.l2 + .13)) || { s: 1, sx: 1, sy: 1, lift: 1, r: 0 };
         const big = t > V.argue ? 1.2 : 1, sc = (isA ? 1 : .86) * big;
         const shake = t > V.argue ? Math.sin(t * 43 + sd) * 4 : 0;
         g.save(); g.translate(960 + sd * 410 + shake + (fa > 0 ? sd * 1500 * ease.in(fa / .55) : 0), 330 - (fa > 0 ? 500 * fa : 0)); g.rotate(fa > 0 ? sd * fa * 6 : sd * .05); g.scale(sc * st.sx * st.s, sc * st.sy * st.s);
@@ -937,6 +941,33 @@
       const sq = starU >= 1 ? 1 + .25 * Math.exp(-9 * (t - END.starLand)) * Math.cos((t - END.starLand) * 30) : 1;
       SOFT = true; g.save(); g.translate(sx, sy); g.rotate(starU < 1 ? Math.sin(starU * Math.PI * 3) * .7 : 0); g.scale(sq, 2 - sq); fillParts(g, [{ p: CB.tiny, col: C.lemon }], starU < 1 ? 3 : 1); g.restore();
     }
+    drawNice(g, t, S);
+  }
+  const NICE = 225.0;
+  let NB = null;
+  function drawNice(g, t, S) {
+    if (t < NICE) return;
+    if (!NB) {
+      const lobes = [[0, 0, 120], [-118, 22, 82], [118, 18, 86], [-62, -62, 84], [64, -66, 88], [-150, -26, 56], [156, -30, 58], [0, 70, 80], [-80, 66, 64], [84, 64, 66]];
+      const o = []; for (let q = 0; q < 72; q++) { const a = q / 72 * TAU2; let best = 0; for (const [lx, ly, lr] of lobes) { const dx = Math.cos(a), dy = Math.sin(a), b = lx * dx + ly * dy, c = lx * lx + ly * ly - lr * lr, disc = b * b - c; if (disc >= 0) best = Math.max(best, b + Math.sqrt(disc)); } o.push([Math.cos(a) * best, Math.sin(a) * best * .78]); }
+      NB = { cloud: cutPath(o, 66000001, 26, 1.2), dots: [disk(13, 66000002), disk(21, 66000003), disk(30, 66000004)] };
+    }
+    const hx = S.x, hy = S.fy - 404 + S.nod * 9, cx = hx + 330, cy = hy - 250;
+    const settle = (t0) => { const a = t - t0; return a < 0 ? 0 : ease.back(a / .2) * (1 + .03 * Math.exp(-4 * a) * Math.sin(a * 14)); };
+    SOFT = true;
+    [[hx + 70, hy - 68, 0], [hx + 104, hy - 102, 1], [hx + 152, hy - 146, 2]].forEach(([x, y, k], q) => { const s = settle(NICE + q * .05); if (s > 0) { g.save(); g.translate(x, y); g.scale(s, s); fillParts(g, [{ p: NB.dots[k], col: C.white }], 1.2); g.restore(); } });
+    const s = settle(NICE + .15); if (s <= 0) return;
+    g.save(); g.translate(cx, cy); g.scale(s, s);
+    fillParts(g, [{ p: NB.cloud, col: C.white }], 1.4);
+    // the word: cut-paper letters, sized to fit the cloud's inner box with margin (measured)
+    const ts = settle(NICE + .2); if (ts > 0) {
+      const boxW = 300, boxH = 120; let fs = 130; g.font = `${fs}px "Arial Rounded MT Bold", "Arial Rounded", Arial, sans-serif`;
+      let wd = g.measureText('nice').width; fs = Math.min(fs, fs * boxW / wd, boxH / .75); g.font = `${fs}px "Arial Rounded MT Bold", "Arial Rounded", Arial, sans-serif`; wd = g.measureText('nice').width;
+      g.textBaseline = 'alphabetic'; g.scale(ts, ts);
+      let x = -wd / 2; const cols = [C.verm, C.verm, C.verm, C.verm]; // one colour: never a blue-red-green sequence
+      [...'nice'].forEach((ch, q) => { const w = g.measureText(ch).width; g.save(); g.translate(x + w / 2, fs * .32); g.rotate((hash(q + 77) - .5) * .14); shadowOn(g, .9); g.fillStyle = cols[q]; g.fillText(ch, -w / 2, 0); shadowOff(g); g.restore(); x += w; });
+    }
+    g.restore();
   }
   // breakdown-time leftovers from verse 3's "more": blown off as the first giant lands
   function drawVerseFillBlown(g, t) {
