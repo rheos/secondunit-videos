@@ -1,4 +1,4 @@
-// p2-instr1: INSTRUMENTAL 1, first part (35.0 - 59.5), recomposed for the 9:16 page (wood-p.html, 1080 x 1920).
+// p2-instr1: INSTRUMENTAL 1, first part (35.0 - 59.5), recomposed for the 9:16 page (wood-9x16.html, 1080 x 1920).
 // Same beats and hit times as js/wch/w2-instr1.js, re-staged for the tall frame. The 16:9 notes follow.
 // The giant harmonica drops (lands on the band entry 40.37), tiny cut-out Ellen lifts it like nothing and blows
 // (45.45): a stream of red hair pours until it fills the screen; scissors cut it on the 59.43 hit; the severed

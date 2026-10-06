@@ -19,7 +19,7 @@ await b.close();
 console.log(`${times.length} frames, ${(ms / times.length).toFixed(0)} ms/frame`);
 if (!full) {
   const n = files.length, cols = Math.min(3, n), rows = Math.ceil(n / cols), pad = rows * cols - n;
-  let inputs = files.map((f) => `-i "${f}"`).join(' '); const TW = process.env.PORTRAIT ? 360 : 640, TH = process.env.PORTRAIT ? 640 : 360;   // PORTRAIT=1 for the 9:16 pages
+  let inputs = files.map((f) => `-i "${f}"`).join(' '); const TALL = process.env.PORTRAIT || /9x16/.test(page), TW = TALL ? 360 : 640, TH = TALL ? 640 : 360;   // tall tiles for the 9:16 pages
   let filt = files.map((_, i) => `[${i}:v]scale=${TW}:${TH}[v${i}];`).join('');
   for (let k = 0; k < pad; k++) { inputs += ` -f lavfi -i color=black:s=${TW}x${TH}:d=1`; filt += `[${n + k}:v]null[v${n + k}];`; }
   const ins = [...Array(n + pad).keys()].map(i => `[v${i}]`).join('');
