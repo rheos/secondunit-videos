@@ -322,6 +322,7 @@
     const gx = kf(t, [[106.6, 0], [107.4, 0], [107.7, -40], [108.3, -40], [108.5, 70], [109.4, 70], [109.6, 0]]) + Math.sin(t * 1.3) * 6;
     const gy = kf(t, [[106.6, 0], [107.4, 0], [107.7, 50], [108.3, 50], [108.5, 30], [109.4, 30], [109.6, 0]]);
     g.save(); g.translate(p.x, p.y); g.scale(st.s * st.sx, st.s * st.sy);
+    if (open < .12) { drawClosedLid(g, w, h, st.lift, 8300); if (t > p.t) { pinAt(g, -w / 2 - 6, 0, C.lemon); pinAt(g, w / 2 + 6, 0, C.lemon); } g.restore(); return; }
     fillParts(g, [{ p: E.lid, col: C.pink }], st.lift);
     if (open > .02) {
       g.save(); g.scale(1, open); g.clip(E.white); g.scale(1, 1 / open);
@@ -353,26 +354,48 @@
     g.restore();
   }
 
-  // coil spring: zigzag strips, compresses on each beat and throws its topper up
+  // closed eye: a pink lid dome over a downward lid line with lashes hanging from it
+  const LIDC = new Map();
+  function drawClosedLid(g, w, h, lift, seed) {
+    if (!LIDC.has(seed)) {
+      const dome = [], line = [];
+      for (let i = 0; i <= 20; i++) { const u = i / 20; dome.push([lerp(-w / 2 - 20, w / 2 + 20, u), -Math.sin(u * Math.PI) * (h + 46) * .42]); }
+      for (let i = 19; i > 0; i--) { const u = i / 20; dome.push([lerp(-w / 2 - 20, w / 2 + 20, u), Math.sin(u * Math.PI) * h * .14]); }
+      for (let i = 0; i <= 20; i++) { const u = i / 20; line.push([lerp(-w / 2 - 14, w / 2 + 14, u), Math.sin(u * Math.PI) * h * .14 - 6]); }
+      for (let i = 20; i >= 0; i--) { const u = i / 20; line.push([lerp(-w / 2 - 14, w / 2 + 14, u), Math.sin(u * Math.PI) * h * .14 + 6]); }
+      LIDC.set(seed, { dome: cutPath(dome, seed, 34, 1.5), line: cutPath(line, seed + 1, 30, .8), lash: cutPath(rectPts(-w * .011, 0, w * .011, w * .085), seed + 2, 99, 1) });
+    }
+    const L = LIDC.get(seed);
+    fillParts(g, [{ p: L.dome, col: C.pink }, { p: L.line, col: C.black }], lift);
+    g.fillStyle = C.black;
+    for (let i = 0; i < 9; i++) {
+      const u = (i + .5) / 9, x = lerp(-w / 2, w / 2, u), y = Math.sin(u * Math.PI) * h * .14 + 2;
+      g.save(); g.translate(x, y); g.rotate(-(u - .5) * 1.1); fillParts(g, [{ p: L.lash, col: C.black }], .6); g.restore();
+    }
+  }
+
+  // coil spring: stacked paper coils (back halves darker, front halves bright), compresses on each beat
+  const COILC = new Map();
+  function coilParts(rx, ry, th, seed) {
+    const k = seed; if (COILC.has(k)) return COILC.get(k);
+    const half = (sgn) => { const o = []; for (let i = 0; i <= 12; i++) { const a = i / 12 * Math.PI; o.push([Math.cos(a) * (rx + th / 2), sgn * Math.sin(a) * (ry + th / 2)]); } for (let i = 12; i >= 0; i--) { const a = i / 12 * Math.PI; o.push([Math.cos(a) * (rx - th / 2), sgn * Math.sin(a) * (ry - th / 2)]); } return cutPath(o, seed + (sgn > 0 ? 1 : 2), 40, .9); };
+    const v = { back: half(-1), front: half(1), base: cutPath(rectPts(-rx - 20, -14, rx + 20, 8), seed + 3, 50, 1.2), cap: cutPath(rectPts(-rx * .55, -8, rx * .55, 8), seed + 4, 50, 1) };
+    COILC.set(k, v); return v;
+  }
   function drawSpring(g, p, t) {
     const st = slap(t, p.t); if (!st) return;
     const a = t - BEATS[Math.max(0, lastBeat(t))]; const on = t > p.t + .15 ? 1 : 0;
     const comp = on * Math.exp(-5 * a) * Math.cos(a * 15);
-    const h = p.h0 * (1 - .32 * comp) * st.sy; const n = 7, wd = 120;
+    const sz = p.sz || 1, h = (p.h0 * 1.25) * (1 - .32 * comp) * st.sy, n = 7, rx = 74 * sz, ry = 19 * sz;
+    const Cp = coilParts(rx, ry, 13 * sz, 60000000 + p.seed * 7);
     g.save(); g.translate(p.x, p.y); g.rotate(st.r);
-    const base = cutPathCached(p.seed * 3 + 1, () => rectPts(-80, -16, 80, 6));
-    fillParts(g, [{ p: base, col: C.black }], st.lift);
-    let prev = [-wd / 2, -12];
-    for (let i = 1; i <= n; i++) {
-      const y = -12 - h * i / n, x = i % 2 ? wd / 2 : -wd / 2; const [px, py] = prev;
-      const L = Math.hypot(x - px, y - py), ang = Math.atan2(y - py, x - px);
-      g.save(); g.translate(px, py); g.rotate(ang);
-      fillParts(g, [{ p: cutPathCached(p.seed * 100 + i, () => rectPts(-6, -9, L + 6, 9)), col: i % 2 ? shade(p.col, .72) : p.col }], st.lift);
-      g.restore(); prev = [x, y];
-    }
-    const jump = on * Math.max(0, comp) * 0;
-    const up = on * Math.max(0, -comp) * 60;
-    g.translate(0, -12 - h - 40 - up - jump); g.rotate(on * comp * .2);
+    fillParts(g, [{ p: Cp.base, col: C.black }], st.lift);
+    const yy = (i) => -18 - ry - (h - 2 * ry) * i / (n - 1);
+    for (let i = 0; i < n; i++) { g.save(); g.translate(0, yy(i)); g.rotate(-.13); fillParts(g, [{ p: Cp.back, col: shade(p.col, .62) }], st.lift); g.restore(); }
+    for (let i = 0; i < n; i++) { g.save(); g.translate(0, yy(i)); g.rotate(-.13); fillParts(g, [{ p: Cp.front, col: p.col }], st.lift); g.restore(); }
+    g.save(); g.translate(0, yy(n - 1) - ry - 4); fillParts(g, [{ p: Cp.cap, col: C.black }], st.lift); g.restore();
+    const up = on * Math.max(0, -comp) * 70;
+    g.translate(0, yy(n - 1) - ry - 48 * sz - up); g.rotate(on * comp * .2); g.scale(sz, sz);
     fillParts(g, p.top, st.lift + up / 30);
     g.restore();
   }
@@ -439,15 +462,25 @@
   }
   function drawRaisedArm(g, t, S) {
     const P = custParts();
+    if (S.gloves > 0) return;
     g.save(); g.translate(112, -300);
-    const ang = lerp(-.06, Math.PI + .2, S.raise) + (S.raise > .9 ? Math.sin(t * 8.2) * .03 : 0);
+    const ang = lerp(-.06, Math.PI + .6, S.raise) + (S.raise > .9 ? Math.sin(t * 8.2) * .03 : 0);
     g.rotate(ang);
     if (S.raise > .3) {
-      g.save(); g.translate(2, 214); g.rotate(Math.PI);
-      fillParts(g, [{ p: P.hand, col: C.peach }], 1);
-      g.save(); g.translate(-19, -22); g.rotate(-.1 + Math.sin((t - T.moreE) * TAU2 * 123 / 120) * .1 * (t > T.moreE + .3 ? 1 : 0)); fillParts(g, [{ p: P.finger, col: C.peach }], 1); g.restore();
-      g.save(); g.translate(0, -2); fillParts(g, [{ p: P.thumb, col: shade(C.peach, .9) }], .6); g.restore();
-      for (const kx of [0, 15]) { g.save(); g.translate(kx, 0); g.fillStyle = 'rgba(150,80,60,0.45)'; g.fill(P.knuck); g.restore(); }
+      // "one more": palm to camera, index finger up on the thumb side (toward his head), thumb out, three fingers curled down
+      g.save(); g.translate(2, 226); g.rotate(Math.PI - .42); g.scale(1.36, 1.36);
+      if (!P.palm) {
+        P.palm = cutPath([[-24, -24], [28, -24], [31, 0], [26, 34], [-18, 36], [-26, 6]], 9031, 99, .8);
+        P.idx = cutPath([[-11, 4], [11, 4], [11, -60], [6, -69], [-6, -69], [-11, -60]], 9032, 99, .6);
+        P.curl = cutPath([[-5.5, 9], [-5.5, -5], [-3, -9], [3, -9], [5.5, -5], [5.5, 9]], 9033, 99, .4);
+        P.thumb2 = cutPath([[-20, 26], [-46, 2], [-56, -14], [-48, -22], [-34, -12], [-12, 10]], 9034, 99, .6);
+      }
+      const wag = -.08 + Math.sin((t - S.raiseT) * TAU2 * 123 / 120) * .08 * (t > S.raiseT + .3 ? 1 : 0);
+      fillParts(g, [{ p: P.palm, col: C.peach }], 1);
+      g.save(); g.translate(-13, -22); g.rotate(wag); fillParts(g, [{ p: P.idx, col: C.peach }], 1); g.restore();
+      for (const cx of [2, 13, 24]) { g.save(); g.translate(cx, -12); fillParts(g, [{ p: P.curl, col: shade(C.peach, .86) }], .5); g.restore(); }
+      fillParts(g, [{ p: P.thumb2, col: shade(C.peach, .95) }], .8);
+      g.strokeStyle = 'rgba(150,80,60,0.35)'; g.lineWidth = 2; g.beginPath(); g.moveTo(-14, 12); g.quadraticCurveTo(4, 2, 24, 10); g.stroke();
       g.restore();
     }
     fillParts(g, [{ p: P.sleeve, col: C.coatD }, { p: P.cuff, col: shade(C.coat, .7) }], 1);
@@ -455,18 +488,24 @@
   }
   // pass 'body' is drawn under the pile; pass 'top' (head + the raised arm) rides on top of it
   function drawCustomer(g, t, pass) {
+    const S = custState(t); S.x = CUST.x; S.raiseT = T.moreE; S.armTop = t > T.just + .5;
+    drawCustS(g, S, t, pass);
+  }
+  // S: { x, fy, brow, nod, lookUp, lookX, blink, raise, raiseT, armTop, bp, [rot, sc, gloves, jab] }
+  function drawCustS(g, S, t, pass) {
     SOFT = true;
-    const P = custParts(); const S = custState(t);
-    g.save(); g.translate(CUST.x, S.fy); g.scale(1 + S.bp, 1 - S.bp);
+    const P = custParts();
+    g.save(); g.translate(S.x, S.fy); if (S.rot) g.rotate(S.rot); if (S.sc) g.scale(S.sc, S.sc); g.scale(1 + S.bp, 1 - S.bp);
     if (pass === 'body') {
       fillParts(g, [{ p: P.legL, col: C.black }, { p: P.legR, col: C.black }, { p: P.shoeL, col: C.black }, { p: P.shoeR, col: C.black }], 1);
       fillParts(g, [{ p: P.coat, col: C.coat }, { p: P.flap, col: C.coatD }, { p: P.lapL, col: C.coatL }, { p: P.lapR, col: C.coatL }, { p: P.pocket, col: C.coatD }, { p: P.pocket2, col: C.coatD }], 1);
       g.save(); g.translate(14, -205); fillParts(g, [{ p: P.btn, col: C.lemon }], 1); g.translate(0, 62); fillParts(g, [{ p: P.btn, col: C.lemon }], 1); g.restore();
-      g.save(); g.translate(-112, -300); g.rotate(.07); fillParts(g, [{ p: P.sleeve, col: C.coatD }, { p: P.cuff, col: shade(C.coat, .7) }], 1); g.restore();
+      if (S.gloves > 0) drawGloves(g, t, S);
+      else { g.save(); g.translate(-112, -300); g.rotate(.07); fillParts(g, [{ p: P.sleeve, col: C.coatD }, { p: P.cuff, col: shade(C.coat, .7) }], 1); g.restore(); }
       drawRaisedArm(g, t, S);
     } else {
       // the raised arm again, only the part above his shoulders, so it pokes out of the pile
-      if (S.raise > .3 && t > T.just + .5) { g.save(); g.beginPath(); g.rect(-400, -1200, 800, 1200 - 345); g.clip(); drawRaisedArm(g, t, S); g.restore(); }
+      if (S.raise > .3 && S.armTop) { g.save(); g.beginPath(); g.rect(-400, -1200, 800, 1200 - 345); g.clip(); drawRaisedArm(g, t, S); g.restore(); }
       g.save(); g.translate(0, -404 + S.nod * 9); g.rotate(S.nod * .05);
       g.save(); g.translate(-70, 2); fillParts(g, [{ p: P.earL, col: shade(C.peach, .93) }], 1); g.restore();
       g.save(); g.translate(70, 2); fillParts(g, [{ p: P.earR, col: shade(C.peach, .93) }], 1); g.restore();
@@ -484,9 +523,446 @@
     g.restore();
   }
 
+  // =====================================================================================
+  // v2: the rest of the song. Chorus 1 above stays as approved; everything below starts at the burst.
+  // =====================================================================================
+  const TB = BEATS.find((b) => b >= 129.3);        // the downbeat after chorus 1 settles: the pile bursts
+  const BI0 = lastBeat(TB);
+  const bt = (k) => BEATS[BI0 + k];
+  const FS = [TB, bt(4), bt(16), bt(28), bt(40)];  // burst, rosette, spiral, stripes, mandala
+  const SWEEP = bt(52);                            // the broom: scraps swept off, sheet left clean
+  const V = {
+    start: 158.2, don: line('verse3', 0).t0, evening: wordTime('verse3', 0, 'evening'), midnight: wordTime('verse3', 0, 'midnight'),
+    l2: line('verse3', 1).t0, argue: wordTime('verse3', 1, 'argue'), fight: wordTime('verse3', 1, 'fight'),
+    l3: line('verse3', 2).t0, show: wordTime('verse3', 2, 'show'), outside: wordTime('verse3', 2, 'outside'), heart: wordTime('verse3', 2, 'heart'),
+    core: wordTime('verse3', 3, 'core'), l5: line('verse3', 4).t0, less: wordTime('verse3', 4, 'less'), more: wordTime('verse3', 4, 'more'),
+  };
+  const C2 = {
+    more0: line('chorus2', 0).t0, stars: wordTime('chorus2', 0, 'stars'), sun: wordTime('chorus2', 0, 'sun'), truthMore: line('chorus2', 0).words[4].t,
+    truth: wordTime('chorus2', 0, 'truth'), love: wordTime('chorus2', 0, 'love'), kisses: wordTime('chorus2', 1, 'kisses'), spring: wordTime('chorus2', 1, 'spring'),
+    just: line('chorus2', 2).t0, moreE: wordTime('chorus2', 2, 'more'), every: wordTime('chorus2', 2, 'everything'), end: line('chorus2', 2).t1,
+  };
+  C2.back = BEATS.find((b) => b >= 205.4);          // band back in after the breakdown
+  const END = { drift: 219.45, settle: 221.6, starLand: 222.9, nod: 223.1 };
+  const PAL = [C.lemon, C.verm, C.pink, C.white, C.leaf, C.orange];
+  const PAL2 = [C.cobalt, C.lemon, C.verm, C.leaf, C.pink, C.orange]; // chorus-2 pile: neighbours never share a colour
+
+  function react(t, cues) {
+    let brow = 0, nod = 0;
+    for (const c of cues) { const a = t - c; if (a > 0 && a < 1.1) brow = Math.max(brow, a < .1 ? a / .1 : 1 - inv(.7, 1.1, a)); if (a > .15 && a < .65) nod = Math.max(nod, Math.sin((a - .15) / .5 * Math.PI)); }
+    return { brow, nod };
+  }
+  const blinkAt = (t) => ((t + .37) % 3.3) < .1;
+
+  // ---------- boxing gloves (verse 3, "fight") ----------
+  let GLV = null;
+  function drawGloves(g, t, S) {
+    const P = custParts();
+    if (!GLV) GLV = { mitt: ell(54, 48, 61000001), thumb: ell(20, 28, 61000002), cuff: cutPath(rectPts(-40, 30, 40, 52), 61000003, 99, 1), lace: cutPath(rectPts(-3, 30, 3, 52), 61000004, 99, .5) };
+    const k = ease.back(S.gloves);
+    for (const sd of [-1, 1]) {
+      g.save(); g.translate(sd * 112, -300); g.rotate(sd * -.95); g.scale(1, .42); fillParts(g, [{ p: P.sleeve, col: C.coatD }], 1); g.restore();
+      const jab = S.jab && ((lastBeat(t) % 2 === 0) === (sd < 0)) ? beatPulse(t, 7) : 0;
+      g.save(); g.translate(sd * 56, -262 - jab * 30); g.scale(1.3 * k * (1 + jab * .12) * sd, 1.3 * k * (1 + jab * .12)); g.rotate(-.15);
+      fillParts(g, [{ p: GLV.cuff, col: C.white }, { p: GLV.mitt, col: C.verm }], 1);
+      g.save(); g.translate(-38, 8); g.rotate(.5); fillParts(g, [{ p: GLV.thumb, col: shade(C.verm, .88) }], .7); g.restore();
+      g.fillStyle = 'rgba(255,255,255,0.35)'; g.beginPath(); g.ellipse(16, -18, 16, 9, -.5, 0, TAU2); g.fill();
+      g.restore();
+    }
+  }
+
+  // ---------- generic white-bordered piece (chorus 2: outlines keep the pile readable) ----------
+  function fillPartsB(g, parts, lift) {
+    for (const q of parts) {
+      if (q.noShadow) continue;
+      g.lineJoin = 'round'; g.lineWidth = 13; g.strokeStyle = C.white;
+      if (SOFT || lift > 1.05) { shadowOn(g, lift); g.stroke(q.p); shadowOff(g); }
+      else { g.save(); g.strokeStyle = 'rgba(30,15,5,0.24)'; g.translate(3.5, 6); g.stroke(q.p); g.restore(); g.stroke(q.p); }
+    }
+    for (const q of parts) { g.fillStyle = q.col; g.fill(q.p); }
+  }
+
+  // ---------- instrumental 2: scraps ----------
+  const NS = 210; const SCR = [];
+  const RING = []; // rosette ring assignment
+  function buildScraps() {
+    const R = rng(129300);
+    const ringN = [6, 12, 18, 24, 30, 36, 42]; let k = 0, j = 0;
+    for (let i = 0; i < NS; i++) {
+      const s = 26 + hash(Math.floor(i / 8) * 977 + 5) * 30, kind = Math.floor(i / 8) % 7; R(); let pts;
+      if (kind === 0) pts = almondPts(s * 1.7, s * .7, 8);
+      else if (kind === 1) pts = ellPts(s * .55, s * .55, 62000000 + i, 14);
+      else if (kind === 2) pts = starPts(s * .75);
+      else if (kind === 3) pts = rectPts(-s, -s * .2, s, s * .2);
+      else if (kind === 4) pts = [[0, -s * .7], [s * .62, s * .45], [-s * .62, s * .45]];
+      else if (kind === 5) pts = heartPts(s * .62);
+      else { pts = []; for (let q = 0; q <= 8; q++) { const a = Math.PI + q / 8 * Math.PI; pts.push([Math.cos(a) * s * .6, Math.sin(a) * s * .6 + s * .2]); } }
+      const ang = R() * TAU2;
+      SCR.push({ p: cutPath(pts, 62100000 + i * 3, 30, 1.1), x0: lerp(120, 1800, R()), y0: lerp(260, 1040, R()), ang, d: 250 + R() * 520, spin: (R() - .5) * 6, r0: R() * TAU2, col0: PAL[(i * 5) % 6], st: ((i * .618034) % 1) * .6 });
+      RING.push([k, j, ringN[k] || (NS - 168)]); j++; if (k < ringN.length && j >= ringN[k]) { k++; j = 0; }
+    }
+  }
+  const stepB = (t) => (lastBeat(t) - BI0) + ease.out(clamp(beatPhase(t) * 1.8));
+  const grow = (t) => lerp(.85, 1.12, inv(TB, SWEEP, t));
+  const FORMS = [
+    (i, t) => { const S = SCR[i], a = t - TB, d = S.d * ease.out(a / 1.6); return [S.x0 + Math.cos(S.ang) * d, S.y0 + Math.sin(S.ang) * d + 90 * a * a, S.r0 + S.spin * a, ease.back(a / .25), S.col0, 1]; },
+    (i, t) => { const [k, j, n] = RING[i], dir = k % 2 ? 1 : -1, ang = j / n * TAU2 + dir * stepB(t) * .2; const r = (50 + k * 68) * (1 + .05 * beatPulse(t, 5)) * grow(t); return [960 + Math.cos(ang) * r, 540 + Math.sin(ang) * r, ang + Math.PI / 2, 1, PAL[k % 6], 1]; },
+    (i, t) => { const A = 7, arm = i % A, s = (Math.floor(i / A) + .5) / (NS / A); const r = (40 + 610 * Math.pow(s, .85)) * grow(t), ang = arm * TAU2 / A + s * 4.2 + stepB(t) * .22; return [960 + Math.cos(ang) * r, 540 + Math.sin(ang) * r * .92, ang + 1.2, .7 + .7 * s, PAL[arm % 6], 1]; },
+    (i, t) => { const B = 9, b = i % B, j = Math.floor(i / B), dir = b % 2 ? 1 : -1; const u = (((j * 115 + dir * stepB(t) * 58) % 2760) + 2760) % 2760 - 1380, v = (b - (B - 1) / 2) * 128; const th = -.3; return [960 + u * Math.cos(th) - v * Math.sin(th), 540 + u * Math.sin(th) + v * Math.cos(th), th + (hash(i) - .5) * .4, 1.15, PAL[b % 6], 1]; },
+    // mandala: 8 mirrored wedges; the same shape and colour sits at the same place in every wedge
+    (i, t) => { const w = i % 8, l = Math.floor(i / 8), ri = Math.floor(l / 3), si = l % 3; const r = (70 + ri * 66) * (1 + .06 * beatPulse(t, 5) * (ri % 2 ? 1 : -1)) * grow(t); const al = (si + .5) / 3 * Math.PI / 4; const mir = w % 2 ? -1 : 1; const ang = w * Math.PI / 4 + (w % 2 ? Math.PI / 4 - al : al) + (ri % 2 ? 1 : -1) * stepB(t) * .1; return [960 + Math.cos(ang) * r, 540 + Math.sin(ang) * r, ang + mir * (si - 1) * .6 + Math.PI / 2, .85 + ri * .06, PAL[(ri * 2 + si) % 6], mir]; },
+  ];
+  function scrapPose(i, t) {
+    let k = 0; while (k < FS.length - 1 && t >= FS[k + 1]) k++;
+    let P = FORMS[k](i, t), flip = 1, col = P[4];
+    if (k > 0) {
+      const u = ease.inOut(inv(FS[k] + SCR[i].st, FS[k] + SCR[i].st + .8, t));
+      if (u < 1) {
+        const A = FORMS[k - 1](i, t), sw = Math.sin(u * Math.PI) * 90;
+        const dx = P[0] - A[0], dy = P[1] - A[1], L = Math.hypot(dx, dy) || 1;
+        P = [lerp(A[0], P[0], u) - dy / L * sw, lerp(A[1], P[1], u) + dx / L * sw, lerp(A[2], P[2], u) + Math.sin(u * Math.PI) * 2, lerp(A[3], P[3], u), u < .5 ? A[4] : P[4], u < .5 ? A[5] : P[5]];
+        flip = Math.max(.06, Math.abs(Math.cos(u * Math.PI))); col = P[4];
+      }
+    }
+    if (t >= SWEEP) { const f = lerp(-300, 2400, inv(SWEEP, SWEEP + 2.3, t)); if (f > P[0]) { const d = f - P[0]; P[0] += d * 1.5; P[1] -= d * .2 * Math.sin(i); P[2] += d * .01; } }
+    return [P[0], P[1], P[2], P[3], col, P[5] * flip];
+  }
+  let CAPP = null;
+  function drawCapAt(g, x, y, rot, sc) {
+    const P = custParts(); SOFT = true;
+    g.save(); g.translate(x, y); g.rotate(rot); g.scale(sc, sc);
+    fillParts(g, [{ p: P.cap, col: C.cap }, { p: P.brim, col: shade(C.cap, .78) }], 1.6); g.translate(-6, -40); fillParts(g, [{ p: P.capBtn, col: shade(C.cap, .78) }], .5);
+    g.restore();
+  }
+  function drawInstr(g, t) {
+    const a = t - TB;
+    // the chorus-1 pile blows apart, everything past the camera
+    if (a < 1.7) {
+      for (const p of PIECES) {
+        const dx = p.x - 960, dy = p.y - 640, L = Math.hypot(dx, dy) || 1, sp = 1300 + hash(p.seed + 5) * 1100;
+        const d = sp * ease.out(a / 1.4), rr = (hash(p.seed + 6) - .5) * 4 * a, sc = 1 + .5 * a;
+        g.save(); g.translate(p.x + dx / L * d, p.y + dy / L * d - 200 * a); g.rotate(rr); g.scale(sc, sc); g.translate(-p.x, -p.y);
+        drawPiece(g, p, 129.3); g.restore();
+      }
+      const S = custState(129.3); S.x = CUST.x; S.raiseT = T.moreE; S.armTop = true; S.fy = FEET_END - 2400 * ease.in(a / .9); S.rot = a * 1.5;
+      if (a < .9) { drawCustS(g, S, t, 'body'); drawCustS(g, S, t, 'top'); }
+    }
+    for (let i = 0; i < NS; i++) {
+      const [x, y, rot, sc, col, fx] = scrapPose(i, t);
+      if (x < -150 || x > 2070 || y < -150 || y > 1230 || sc <= 0) continue;
+      SOFT = a < .6;
+      g.save(); g.translate(x, y); g.rotate(rot); g.scale(sc * fx, sc); fillParts(g, [{ p: SCR[i].p, col }], 1); g.restore();
+    }
+    // his cap, the one fragment of him left, tumbles through on the stripes
+    const cu = inv(FS[3] + .5, FS[3] + 6.5, t);
+    if (cu > 0 && cu < 1) drawCapAt(g, lerp(-200, 2120, cu), 430 + Math.sin(cu * Math.PI * 3) * 140 - Math.sin(cu * Math.PI) * 120, cu * Math.PI * 5, 2.6);
+  }
+
+  // ---------- verse 3 ----------
+  const VB = {};
+  function buildVerse3() {
+    const R = rng(158700);
+    // dusk: stacked paper bands with gentle wavy cut edges
+    const cols = ['#b6bce6', '#cfb4dc', '#efb5c6', '#f8c9a6', '#f5dcb2'];
+    VB.dusk = cols.map((c, k) => { const y0 = 40 + k * 175, o = []; for (let i = 0; i <= 24; i++) { const x = lerp(30, 1890, i / 24); o.push([x, y0 + Math.sin(i * .9 + k) * 14 + (R() - .5) * 6]); } o.push([1890, 1070], [30, 1070]); return { p: cutPath(o, 63000000 + k, 50, 1.5), col: c }; });
+    VB.duskSun = cutPath(ellPts(150, 150, 63000100).filter(([x, y]) => y < 10).concat([[150, 10], [-150, 10]]), 63000101, 40, 1.2);
+    VB.hill = (() => { const o = []; for (let i = 0; i <= 20; i++) { const x = lerp(30, 1890, i / 20); o.push([x, 900 - Math.sin(i / 20 * Math.PI) * 120 + Math.sin(i * 1.7) * 18]); } o.push([1890, 1070], [30, 1070]); return cutPath(o, 63000102, 50, 1.5); })();
+    VB.early = cutPath(starPts(28), 63000103, 30, 1);
+    VB.night = cutPath([[48, 40], [1876, 34], [1882, 1050], [42, 1058]], 63000104, 60, 2.5);
+    VB.moon = disk(150, 63000105); VB.crater = [disk(28, 63000106), disk(18, 63000107), disk(36, 63000108)];
+    VB.stars = beatsAfter(V.midnight + .4, 8).flatMap((b) => [b, b + .245]).map((tt, i) => {
+      let x, y; for (let q = 0; q < 200; q++) { x = lerp(120, 1800, R()); y = lerp(90, 560, R()); if (Math.hypot(x - 1450, y - 250) > 220 && Math.abs(x - 960) > 230 && !(x > 380 && x < 740 && y > 400)) break; }
+      return { t: tt, x, y, rot: R(), p: cutPath(starPts(18 + R() * 26), 63000200 + i, 30, 1), col: i % 3 ? C.white : C.lemon };
+    });
+    // bubbles
+    const bub = (sd) => [{ p: ell(185, 122, 63000300 + sd), col: sd < 0 ? C.white : C.pink }, { p: cutPath([[sd * -30, 90], [sd * -100, 70], [sd * -250, 200]], 63000310 + sd, 99, 1), col: sd < 0 ? C.white : C.pink }];
+    VB.bubL = bub(-1); VB.bubR = bub(1);
+    // ring
+    VB.floor = cutPath([[150, 930], [1770, 930], [1840, 1070], [80, 1070]], 63000400, 60, 2);
+    VB.apron = cutPath([[146, 922], [1774, 922], [1778, 948], [142, 948]], 63000401, 60, 1.2);
+    VB.postL = cutPath(rectPts(230, 470, 274, 1000), 63000402, 40, 1.2); VB.postR = cutPath(rectPts(1646, 470, 1690, 1000), 63000403, 40, 1.2);
+    VB.pad = cutPath(rectPts(-30, -26, 30, 26), 63000404, 99, 1);
+    // heart layers
+    VB.hs = [1, .78, .58, .4, .25]; VB.hcol = [C.verm, C.pink, C.orange, C.lemon, '#fff4d2'];
+    VB.hearts = VB.hs.map((s, k) => cutPath(heartPts(300 * s), 63000500 + k, 40, 1.4));
+    VB.rays = [...Array(14)].map((_, i) => cutPath([[-16, 0], [16, 0], [4, -150], [-4, -150]], 63000520 + i, 40, 1));
+    VB.halo = [disk(170, 63000540), disk(120, 63000541)];
+    VB.lift = beatsAfter(V.core, 4);
+    VB.reveal = VB.lift[3] + .35;
+    // "less" / "more": the sheet starts filling again
+    VB.less = { t: V.less, x: 1190, y: 330, rot: .2, parts: [{ p: cutPath(starPts(26), 63000600, 30, 1), col: C.lemon }] };
+    VB.fill = subdiv(V.more, C2.more0 - .05, 4).map((tt, i) => {
+      const ang = (i * .618034 % 1) * TAU2, rr = 1, x = 960 + Math.cos(ang) * (520 + R() * 380), y = 540 + Math.sin(ang) * (330 + R() * 160), r = 55 + R() * 55;
+      return { t: tt, x: clamp(x, 110, 1810), y: clamp(y, 110, 980), rot: (R() - .5) * 1.2, r, parts: mixParts(i, r, 63000700 + i * 13, PAL2[i % 6], PAL2[(i + 2) % 6]) };
+    });
+  }
+  function mixParts(i, r, seed, col, col2) {
+    const k = i % 6;
+    if (k === 0) return mkStar(r, seed, col);
+    if (k === 1) return mkHeart(r * .9, seed, col === C.cobalt ? C.verm : col);
+    if (k === 2) return mkLips(r * .9, seed, C.verm, '#ff6a4f');
+    if (k === 3) return mkFlower(r * .8, seed, col, col2);
+    if (k === 4) return mkSmallSun(r * .5, seed, C.lemon, C.verm);
+    return [{ p: disk(r * .75, seed), col }];
+  }
+  function slapDraw(g, q, t, border, extraRot = 0) {
+    const st = slap(t, q.t); if (!st) return;
+    SOFT = t - q.t < .6;
+    g.save(); g.translate(q.x, q.y); g.rotate(q.rot + st.r + extraRot); g.scale(st.s * st.sx, st.s * st.sy);
+    if (border) fillPartsB(g, q.parts, st.lift); else fillParts(g, q.parts, st.lift);
+    g.restore();
+  }
+  function zigzag(g, seed, w, amp) {
+    const Rz = rng(seed); let px = -w / 2, py = 0; g.fillStyle = C.black;
+    for (let i = 1; i <= 8; i++) {
+      const x = lerp(-w / 2, w / 2, i / 8), y = (i % 2 ? -1 : 1) * amp * (.6 + Rz() * .6), L = Math.hypot(x - px, y - py);
+      g.save(); g.translate(px, py); g.rotate(Math.atan2(y - py, x - px)); g.fillRect(-4, -5, L + 8, 10); g.restore(); px = x; py = y;
+    }
+  }
+  function drawVerse3(g, t) {
+    const sheetIn = ease.out(inv(V.start, V.start + .5, t));
+    // dusk
+    if (t < V.midnight + .4) {
+      g.save(); g.translate(0, -1150 * (1 - sheetIn)); SOFT = true;
+      for (let k = 0; k < VB.dusk.length; k++) { fillParts(g, [VB.dusk[k]], 1); if (k === 3) { g.save(); g.translate(1320, 905); fillParts(g, [{ p: VB.duskSun, col: C.orange }], 1); g.restore(); } }
+      fillParts(g, [{ p: VB.hill, col: '#6c6aa8' }], 1.2);
+      const tw = 1 + .25 * beatPulse(t, 6);
+      g.save(); g.translate(1520, 190); g.scale(tw, tw); fillParts(g, [{ p: VB.early, col: C.white }], 1); g.restore();
+      g.restore();
+    }
+    // midnight: a black-blue sheet slaps over, then the moon and the stars
+    const nIn = ease.out(inv(V.midnight - .05, V.midnight + .28, t)), nOut = ease.in(inv(V.l5, V.l5 + .55, t));
+    if (nIn > 0 && nOut < 1) {
+      g.save(); g.translate(0, -1150 * (1 - nIn) - 1150 * nOut); SOFT = true;
+      fillParts(g, [{ p: VB.night, col: '#121a4f' }], 2);
+      pinAt(g, 76, 66, C.lemon); pinAt(g, 1850, 60, C.lemon);
+      const ms = slap(t, V.midnight + .25);
+      if (ms) { g.save(); g.translate(1450, 250); g.scale(ms.s * ms.sx, ms.s * ms.sy); fillParts(g, [{ p: VB.moon, col: '#f4e7a1' }], ms.lift); [[-50, -30, 0], [40, 50, 1], [55, -45, 2]].forEach(([x, y, k]) => { g.save(); g.translate(x, y); fillParts(g, [{ p: VB.crater[k], col: '#e2d184' }], .5); g.restore(); }); g.restore(); }
+      for (const s of VB.stars) slapDraw(g, { ...s, parts: [{ p: s.p, col: s.col }] }, t, false, Math.sin(t * 2 + s.x) * .05);
+      g.restore();
+    }
+    // the ring drops in on "fight", ropes twang on the beat, gone at the next line
+    const rIn = inv(V.fight - .12, V.fight + .2, t), rOut = ease.in(inv(V.l3, V.l3 + .45, t));
+    const ringOn = rIn > 0 && rOut < 1, ringDy = -1200 * (1 - ease.back(rIn)) + 1300 * rOut;
+    if (ringOn) {
+      g.save(); g.translate(0, ringDy); SOFT = true;
+      fillParts(g, [{ p: VB.floor, col: C.cobalt }, { p: VB.apron, col: C.white }, { p: VB.postL, col: C.verm }, { p: VB.postR, col: C.cobalt }], 1.3);
+      for (const x of [252, 1668]) { g.save(); g.translate(x, 470); fillParts(g, [{ p: VB.pad, col: C.lemon }], 1); g.restore(); }
+      g.restore();
+    }
+    // the heart (outside), then cut down layer by layer to its glowing core
+    const hIn = slap(t, V.show), hOut = ease.in(inv(V.l5, V.l5 + .5, t));
+    if (hIn && hOut < 1) {
+      const pulse = 1 + .08 * (hit(t, V.outside, 6) + hit(t, V.heart, 6)) + .03 * beatPulse(t, 6);
+      g.save(); g.translate(1250, 540 + 1300 * hOut); g.scale(hIn.s * hIn.sx * pulse, hIn.s * hIn.sy * pulse);
+      const rv = inv(VB.reveal, VB.reveal + .5, t);
+      if (rv > 0) { // core glow: vellum halo + rays
+        g.save(); g.rotate(t * .25); g.scale(ease.back(rv), ease.back(rv)); SOFT = false;
+        VB.rays.forEach((rp, i) => { g.save(); g.rotate(i / 14 * TAU2); g.translate(0, -90); g.scale(1, 1 + .2 * beatPulse(t, 5)); fillParts(g, [{ p: rp, col: i % 2 ? C.white : C.lemon }], 1); g.restore(); });
+        g.restore();
+        g.fillStyle = 'rgba(255,248,220,0.28)'; g.fill(VB.halo[0]); g.fillStyle = 'rgba(255,248,220,0.35)'; g.fill(VB.halo[1]);
+      }
+      SOFT = true;
+      const cp = 1 + .08 * beatPulse(t, 6) * (rv > 0 ? 1 : 0);
+      g.save(); g.scale(cp, cp); fillParts(g, [{ p: VB.hearts[4], col: VB.hcol[4] }], 1); g.restore();
+      for (let k = 3; k >= 0; k--) {
+        const a = t - VB.lift[k]; // outer layer (k=0) lifts first
+        if (a < 0) { fillParts(g, [{ p: VB.hearts[k], col: VB.hcol[k] }], 1); continue; }
+        if (a > 1.2) continue;
+        const phi = Math.PI * .92 * ease.inOut(a / .45), top = -300 * VB.hs[k] * .8;
+        g.save(); g.translate(260 * ease.in((a - .3) / .9), top - 1200 * ease.in((a - .3) / .9)); g.rotate(.6 * ease.in((a - .2) / .9)); g.scale(1, Math.cos(phi)); g.translate(0, -top);
+        fillParts(g, [{ p: VB.hearts[k], col: Math.cos(phi) < 0 ? '#fbeee2' : VB.hcol[k] }], 1 + Math.sin(phi) * 3);
+        g.restore();
+      }
+      g.restore();
+    }
+    // the customer
+    const cx = kf(t, [[V.l3 - .05, 960], [V.l3 + .5, 560], [V.l5, 560], [V.l5 + .5, 960]]);
+    const hop = Math.max(Math.sin(Math.PI * inv(V.l3 - .05, V.l3 + .5, t)), Math.sin(Math.PI * inv(V.l5, V.l5 + .5, t)));
+    const drop = 1 - ease.back(inv(V.start + .25, V.start + .65, t));
+    const rc = react(t, [V.midnight, V.fight, VB.reveal, V.more]);
+    const bi = lastBeat(t) - lastBeat(V.l2), active = bi % 2;
+    const lookX = t > V.l2 && t < V.fight ? (active ? 7 : -7) : t > V.l3 && t < V.l5 ? 7 : Math.sin(t * .9) * 3;
+    const lookUp = kf(t, [[V.midnight, 0], [V.midnight + .3, 1], [V.l2 - .1, 1], [V.l2 + .3, 0]]);
+    const gl = t >= V.fight && t < V.l3 ? inv(V.fight, V.fight + .3, t) : 0;
+    const S = { x: cx, fy: 1000 - 90 * hop - 1300 * drop, brow: rc.brow, nod: rc.nod, lookUp, lookX, blink: blinkAt(t), raise: 0, raiseT: 0, armTop: false, bp: beatPulse(t, 8) * .025, gloves: gl, jab: t > V.fight + .5 };
+    drawCustS(g, S, t, 'body'); drawCustS(g, S, t, 'top');
+    // ropes in front of him
+    if (ringOn) {
+      g.save(); g.translate(0, ringDy); SOFT = false;
+      [[700, C.white], [790, C.pink], [875, C.white]].forEach(([y, col], k) => {
+        const tw = Math.sin((t - V.fight) * 22 + k) * 14 * Math.exp(-3 * Math.max(0, t - V.fight)) + 10 * beatPulse(t, 6), o = [], ob = [];
+        for (let i = 0; i <= 16; i++) { const u = i / 16, x = lerp(252, 1668, u), yy = y + Math.sin(u * Math.PI) * (16 + tw); o.push([x, yy - 8]); ob.unshift([x, yy + 8]); }
+        fillParts(g, [{ p: cutPath(o.concat(ob), 63000800 + k, 80, .8), col }], 1);
+      });
+      g.restore();
+    }
+    // bickering bubbles
+    if (t >= V.l2 - .13 && t < V.fight + .6) {
+      const fa = t - V.fight;
+      for (const sd of [-1, 1]) {
+        const isA = (sd < 0) === (active === 0);
+        const st = slap(t, isA ? BEATS[lastBeat(t)] : V.l2) || { s: 1, sx: 1, sy: 1, lift: 1, r: 0 };
+        const big = t > V.argue ? 1.2 : 1, sc = (isA ? 1 : .86) * big;
+        const shake = t > V.argue ? Math.sin(t * 43 + sd) * 4 : 0;
+        g.save(); g.translate(960 + sd * 410 + shake + (fa > 0 ? sd * 1500 * ease.in(fa / .55) : 0), 330 - (fa > 0 ? 500 * fa : 0)); g.rotate(fa > 0 ? sd * fa * 6 : sd * .05); g.scale(sc * st.sx * st.s, sc * st.sy * st.s);
+        SOFT = true; fillParts(g, sd < 0 ? VB.bubL : VB.bubR, st.lift);
+        const zs = 63000900 + Math.max(0, bi) * 7 + (sd > 0 ? 3 : 0);
+        g.save(); g.translate(0, t > V.argue ? -24 : 0); zigzag(g, zs, 230, 30); g.restore();
+        if (t > V.argue) { g.save(); g.translate(0, 30); zigzag(g, zs + 1, 200, 22); g.restore(); }
+        g.restore();
+      }
+    }
+    // "less": one tiny star. "more": it starts filling again
+    if (t >= V.less - .2) slapDraw(g, VB.less, t, true);
+    for (const q of VB.fill) slapDraw(g, q, t, true);
+  }
+
+  // ---------- chorus 2 + ending ----------
+  const CB = {}; const P2 = [];
+  function buildChorus2() {
+    const R = rng(188900);
+    // the giants (breakdown): one huge shape per sung item, each replacing the last
+    const sunParts = [];
+    for (let i = 0; i < 16; i++) { const a = i / 16 * TAU2, L = i % 2 ? 760 : 900, w = i % 2 ? 70 : 110; const pts = [[-w / 2, -320], [w / 2, -320], [w * .1, -L], [-w * .1, -L]].map(([x, y]) => [x * Math.cos(a) - y * Math.sin(a), x * Math.sin(a) + y * Math.cos(a)]); sunParts.push({ p: cutPath(pts, 64000000 + i, 40, 2), col: i % 2 ? C.orange : C.verm }); }
+    sunParts.push({ p: disk(330, 64000020), col: C.lemon });
+    CB.giants = [
+      { kind: 'star', t: C2.stars, parts: [{ p: cutPath(starPts(540, .46), 64000030, 40, 2.4), col: C.lemon }] },
+      { kind: 'sun', t: C2.sun, parts: sunParts },
+      { kind: 'eye', t: C2.truthMore },
+      { kind: 'heart', t: C2.love, parts: [{ p: cutPath(heartPts(500), 64000040, 44, 2.2), col: C.verm }] },
+      { kind: 'lips', t: C2.kisses, parts: mkLips(560, 64000050, C.verm, '#ff6a4f') },
+    ];
+    // the pile (band back in): bigger pieces, white-bordered, neighbouring colours always differ
+    let ci = 0; const nextCol = () => PAL2[(ci++ * 7) % 6];
+    const add = (o) => { const p = { rot: 0, seed: 900000 + P2.length * 31, border: true, front: true, ...o }; P2.push(p); return p; };
+    // slam: the earlier items come back round the edges
+    const slamPos = [[230, 230], [1690, 230], [170, 640], [1750, 640], [560, 160], [1360, 160], [420, 560], [1500, 560], [300, 930], [1620, 930], [760, 120], [1160, 120]];
+    slamPos.forEach(([x, y], i) => { const r = 120 + R() * 60, k = i % 4; const parts = k === 0 ? mkStar(r, 64100000 + i, C.lemon) : k === 1 ? mkSmallSun(r * .55, 64100000 + i, C.lemon, C.verm) : k === 2 ? mkHeart(r, 64100000 + i, i % 3 ? C.pink : C.verm) : [{ p: disk(r * .7, 64100000 + i), col: C.cobalt }];
+      add({ kind: 'p', t: C2.back + (i % 4) * .06 + Math.floor(i / 4) * .245, x, y, rot: (R() - .5) * .8, parts, front: false }); });
+    // kisses: lips two per beat after the giant pair
+    beatsAfter(C2.kisses + .2, 8).flatMap((b) => [b, b + .245]).filter((tt) => tt < C2.spring - .1).forEach((tt, i) => {
+      const r = 95 + R() * 55, x = 160 + ((i * .618) % 1) * 1600, y = 700 + R() * 300;
+      add({ kind: 'p', t: tt, x: Math.abs(x - 960) < 220 ? x + (x < 960 ? -260 : 260) : x, y, rot: (R() - .5) * .5, parts: mkLips(r, 64200000 + i, [C.verm, C.pink, '#c8243a'][i % 3], ['#ff6a4f', '#ffb4c8', C.verm][i % 3]), pucker: true });
+    });
+    // spring: big flowers sprout + big coil springs
+    [140, 1780, 470, 1450, 760, 1160].forEach((x, i) => {
+      const h = 260 + R() * 220, r = 95 + R() * 30, pc = [C.pink, C.lemon, C.white, C.verm, C.cobalt, C.lemon][i];
+      add({ kind: 'flower', t: C2.spring + i * .122, x, y: 1095, stemH: h, r, rot: (R() - .5) * .3, parts: mkFlower(r, 64300000 + i * 21, pc, pc === C.lemon ? C.verm : C.lemon),
+        stem: cutPath(rectPts(-10, -h, 10, 0), 64300100 + i, 40, 1.2), leafA: mkLeaf(100 + R() * 40, 64300200 + i, C.leaf), leafB: mkLeaf(90 + R() * 40, 64300300 + i, '#2f8a36') });
+    });
+    beatsAfter(C2.spring + .25, 3).forEach((tt, i) => add({ kind: 'spring', t: tt, x: [330, 1600, 1230][i], y: [1040, 1030, 1050][i], col: [C.cobalt, C.lemon, C.pink][i], sz: 1.3, h0: 250, top: [mkStar(52, 64400000 + i, C.lemon), mkHeart(50, 64400010 + i, C.verm), mkStar(46, 64400020 + i, C.white)][i], border: false }));
+    // just want more of everything: 16th-note slots, bottom-up, bigger than chorus 1
+    const eT = subdiv(C2.just, C2.every + .7, 4); const NE = eT.length;
+    const wave = [[230, 110], [600, 80], [1320, 80], [1690, 110], [110, 420], [1810, 420], [420, 250], [1500, 250]].map(([x, y], i) => [C2.every + i * .03, x, y, false, 200]);
+    subdiv(C2.every + .2, C2.end, 2).forEach((tt, i) => { const a = Math.PI * (-.3 + 1.6 * ((i * .618) % 1)), rr = 165 + R() * 70; wave.push([tt, 960 - Math.cos(a) * rr * 1.2, 330 + Math.sin(a) * rr * .75, true, 70]); });
+    subdiv(C2.moreE, C2.every + .5, 2).forEach((tt, i, arr) => { wave.push([tt, 960 + (((i * .618) % 1) - .5) * 330, lerp(680, 360, i / arr.length) + (R() - .5) * 60, true, 80]); });
+    wave.push([C2.every + .45, 846, 172, true, 60], [C2.every + .7, 1050, 150, true, 60]);
+    const all = eT.map((tt, i) => [tt, null, null, false, 0, i]).concat(wave);
+    all.forEach(([tt, wx, wy, ring, rb, ii], i) => {
+      const u = ii != null ? ii / NE : 1;
+      const r = rb ? rb + R() * 45 : 95 + R() * 85;
+      let y = wy ?? lerp(1050, 70, Math.pow(u, .8)) + (R() - .5) * 120, x = wx ?? 90 + ((i * .618034) % 1) * 1740 + (R() - .5) * 60;
+      if (!ring && Math.abs(x - 960) < 200 && y < 215) x = x < 960 ? 760 - R() * 140 : 1160 + R() * 140;
+      const c1 = nextCol(), c2 = PAL2[(PAL2.indexOf(c1) + 3) % 6];
+      add({ kind: 'p', t: tt, x, y, rot: (R() - .5) * 1.2, r, parts: mixParts(Math.floor(R() * 6), r, 64500000 + i * 13, c1, c2), pucker: false, beatScale: false });
+    });
+  }
+  const c2Feet = (t) => {
+    if (t < C2.just) return CUST.feet;
+    const i0 = lastBeat(C2.just), i = lastBeat(t), n = Math.max(0, i - i0) + ease.out(beatPhase(t) * 2.2);
+    const up = lerp(CUST.feet, FEET_END, clamp(n / 9));
+    return lerp(up, CUST.feet, ease.inOut(inv(END.drift + .2, END.settle, t)));
+  };
+  let EYE2 = null;
+  function drawGiantEye(g, t, lift) {
+    const w = 1500, h = 700;
+    let open = ease.back(inv(C2.truth - .05, C2.truth + .3, t));
+    const bl = Math.abs(t - 201.9); if (bl < .14) open *= bl / .14;
+    if (open < .12) { drawClosedLid(g, w, h, lift, 64600000); return; }
+    if (!EYE2) EYE2 = { white: cutPath(almondPts(w, h, 22), 64600010, 40, 2), lid: cutPath(almondPts(w + 70, h + 80, 22), 64600011, 40, 2), ring: disk(h * .47, 64600012), iris: disk(h * .43, 64600013), pupil: disk(h * .2, 64600014), hi: disk(h * .07, 64600015) };
+    const gx = kf(t, [[200.3, 0], [200.6, -60], [201.3, -60], [201.6, 120], [202.2, 0]]), gy = kf(t, [[200.3, 0], [200.6, 140], [201.3, 140], [201.6, 40], [202.2, 0]]);
+    fillParts(g, [{ p: EYE2.lid, col: C.pink }], lift);
+    g.save(); g.scale(1, open); g.clip(EYE2.white); g.scale(1, 1 / open); shadowOff(g); g.fillStyle = C.white; g.fill(EYE2.white);
+    g.translate(gx, gy); fillParts(g, [{ p: EYE2.ring, col: C.black }, { p: EYE2.iris, col: C.cobalt }, { p: EYE2.pupil, col: C.black }], 1); g.fillStyle = C.white; g.translate(-h * .11, -h * .12); g.fill(EYE2.hi); g.restore();
+    g.beginPath(); for (let i = 0; i <= 30; i++) { const u = i / 30; g.lineTo(lerp(-w / 2, w / 2, u), -Math.sin(u * Math.PI) * h / 2 * open); }
+    g.lineWidth = 18; g.lineJoin = 'round'; g.strokeStyle = C.black; g.stroke();
+  }
+  function drawChorus2(g, t) {
+    // the giants: each lands on its word and the one before slides out from under it
+    const GS = CB.giants;
+    for (let k = 0; k < GS.length; k++) {
+      const G = GS[k], nx = GS[k + 1], st = slap(t, G.t); if (!st) continue;
+      let dy = 0; if (nx) { const a = t - (nx.t + .1); if (a > .5) continue; if (a > 0) dy = 1300 * ease.in(a / .5); }
+      if (t > END.drift) { const a = t - END.drift; if (a > 1.8) continue; dy = 1400 * ease.in(a / 1.8); }
+      SOFT = true; const pul = 1 + .03 * beatPulse(t, 6);
+      g.save(); g.translate(960, 470 + dy); g.rotate(st.r + (G.kind === 'star' || G.kind === 'sun' ? (t - G.t) * .05 : 0)); g.scale(st.s * st.sx * pul, st.s * st.sy * pul);
+      if (G.kind === 'lips' && t > G.t + .3) { const bp = beatPulse(t, 7); g.scale(1 - .1 * bp, 1 + .08 * bp); }
+      if (G.kind === 'eye') drawGiantEye(g, t, st.lift); else fillParts(g, G.parts, st.lift);
+      g.restore();
+    }
+    // the pile, with his body under it and his head on top
+    const raise = ease.back(inv(C2.moreE - .18, C2.moreE + .12, t)) * (1 - smooth(inv(220.6, 221.3, t)));
+    const rc = react(t, [C2.stars, C2.sun, C2.truth, C2.love, C2.kisses, C2.spring, C2.moreE, C2.every]);
+    const nodE = Math.sin(Math.PI * inv(END.nod, END.nod + .55, t)); const browE = Math.sin(Math.PI * inv(END.nod - .1, END.nod + .9, t)) * .7;
+    const starU = inv(END.settle, END.starLand, t);
+    const lookUp = t < C2.truth + .5 ? (t > C2.stars + .1 ? 1 : 0) * (1 - inv(C2.love - .5, C2.love, t)) : t > END.settle - .2 && t < END.starLand ? smooth(inv(END.settle - .2, END.settle + .3, t)) : 0;
+    const S = { x: 960, fy: c2Feet(t), brow: Math.max(rc.brow, browE), nod: Math.max(rc.nod, nodE), lookUp, lookX: t > END.settle ? lerp(4, 0, starU) : Math.sin(t * .9) * 3,
+      blink: blinkAt(t) && t < END.starLand, raise, raiseT: C2.moreE, armTop: t > C2.just + .5 && t < 221.3, bp: beatPulse(t, 8) * .025 * (t < 214 ? 1 : 0) };
+    drawCustS(g, S, t, 'body');
+    const settle = t > 214 ? clamp(1 - (t - 214) / 2) : 1; // band stops: the flutter dies away
+    for (const p of P2) {
+      let dx = 0, dy = 0, dr = 0;
+      if (t > END.drift) { const s0 = END.drift + hash(p.seed + 9) * 1.5, a = t - s0; if (a > 1.4) continue; if (a > 0) { const k = ease.in(a / 1.4); dy = 1300 * k; dx = Math.sin(a * 3 + p.seed) * 60 * k; dr = (hash(p.seed + 3) - .5) * 2 * k; } }
+      if (t < C2.more0 + .7 && p.t > t + .2) continue;
+      g.save(); g.translate(dx, dy);
+      if (dr) { g.translate(p.x, p.y); g.rotate(dr); g.translate(-p.x, -p.y); }
+      if (p.kind === 'flower' || p.kind === 'spring') drawPiece(g, p, t);
+      else {
+        const st = slap(t, p.t); if (st) {
+          SOFT = t - p.t < .6;
+          const flut = beatPulse(t, 7) * .03 * (hash(p.seed) - .5) * settle;
+          g.translate(p.x, p.y); g.rotate(p.rot + st.r + flut); g.scale(st.s * st.sx, st.s * st.sy);
+          if (p.pucker && t > p.t + .3) { const bp = beatPulse(t, 7) * settle; g.scale(1 - .12 * bp, 1 + .09 * bp); }
+          fillPartsB(g, p.parts, st.lift);
+        }
+      }
+      g.restore();
+    }
+    drawCustS(g, S, t, 'top');
+    // the last thing: one tiny star floats down onto his cap
+    if (starU > 0) {
+      const capY = S.fy - 404 - 106 + S.nod * 9, sx = lerp(1260, 958, starU) + Math.sin(starU * Math.PI * 3) * 110 * (1 - starU), sy = lerp(-60, capY, ease.inOut(starU) * .3 + starU * .7);
+      if (!CB.tiny) CB.tiny = cutPath(starPts(22), 64700000, 30, .8);
+      const sq = starU >= 1 ? 1 + .25 * Math.exp(-9 * (t - END.starLand)) * Math.cos((t - END.starLand) * 30) : 1;
+      SOFT = true; g.save(); g.translate(sx, sy); g.rotate(starU < 1 ? Math.sin(starU * Math.PI * 3) * .7 : 0); g.scale(sq, 2 - sq); fillParts(g, [{ p: CB.tiny, col: C.lemon }], starU < 1 ? 3 : 1); g.restore();
+    }
+  }
+  // breakdown-time leftovers from verse 3's "more": blown off as the first giant lands
+  function drawVerseFillBlown(g, t) {
+    const a = t - C2.more0; if (a > .7) return;
+    for (const q of VB.fill) { const dx = q.x - 960, dy = q.y - 540, L = Math.hypot(dx, dy) || 1, d = 1900 * ease.in(a / .6); g.save(); g.translate(dx / L * d, dy / L * d); slapDraw(g, q, t, true, a * 3); g.restore(); }
+  }
+
   // ---------- sheet + frame ----------
   let SHEET = null;
   function drawFrame(g, t) {
+    if (t < TB) return drawChorus1Frame(g, t);
+    K = g.canvas.width / 1920;
+    g.fillStyle = C.ground; g.fillRect(0, 0, W, H);
+    const energy = clamp(F('vocals', t) * .6 + F('drums', t) * .6);
+    const push = (1.02 + .012 * Math.sin(t * .23)) * (1 + .01 * beatPulse(t, 7) * (.3 + energy * (t < 214 ? 1.2 : 0)));
+    g.save(); g.translate(960, 540); g.scale(push, push); g.rotate(Math.sin(t * .7) * .003); g.translate(-960, -540);
+    if (!SHEET) SHEET = cutPath([[52, 44], [1872, 30], [1880, 1046], [44, 1056]], 77, 60, 2.5);
+    SOFT = true; fillParts(g, [{ p: SHEET, col: C.ultra }], 1.4);
+    pinAt(g, 80, 70, C.lemon); pinAt(g, 1846, 58, C.verm); pinAt(g, 1852, 1020, C.lemon); pinAt(g, 74, 1028, C.pink);
+    if (t < V.start) drawInstr(g, t);
+    else if (t < C2.more0) drawVerse3(g, t);
+    else { drawVerseFillBlown(g, t); drawChorus2(g, t); }
+    g.restore();
+    if (TEX) { g.globalCompositeOperation = 'overlay'; g.globalAlpha = .55; g.drawImage(TEX, 0, 0, W, H); g.globalAlpha = 1; g.globalCompositeOperation = 'source-over'; }
+  }
+  function drawChorus1Frame(g, t) {
     K = g.canvas.width / 1920;
     g.fillStyle = C.ground; g.fillRect(0, 0, W, H);
     const energy = clamp(F('vocals', t) * 1.1);
@@ -508,5 +984,5 @@
   }
 
   window.drawFrame = drawFrame;
-  window.LOOK_READY = new Promise((res) => { makeTexture(); build(); res(); });
+  window.LOOK_READY = new Promise((res) => { makeTexture(); build(); buildScraps(); buildVerse3(); buildChorus2(); res(); });
 })();
