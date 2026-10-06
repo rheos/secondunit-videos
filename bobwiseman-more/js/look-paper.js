@@ -790,7 +790,17 @@
     const lookUp = kf(t, [[V.midnight, 0], [V.midnight + .3, 1], [V.l2 - .1, 1], [V.l2 + .3, 0]]);
     const gl = t >= V.fight && t < V.l3 ? inv(V.fight, V.fight + .3, t) : 0;
     const S = { x: cx, fy: 1000 - 90 * hop - 1300 * drop, brow: rc.brow, nod: rc.nod, lookUp, lookX, blink: blinkAt(t), raise: 0, raiseT: 0, armTop: false, bp: beatPulse(t, 8) * .025, gloves: gl, jab: t > V.fight + .5 };
-    drawCustS(g, S, t, 'body'); drawCustS(g, S, t, 'top');
+    // a tame, dull evening (the lesser thing): he settles into an armchair set, small and muted; on "midnight" he flings it all off
+    const evOn = t >= EVE.t0 && t < V.midnight + EVE.fl;
+    if (evOn) {
+      const kU = smooth(inv(EVE.t0, EVE.t0 + .7, t)), fl = clamp((t - V.midnight) / EVE.fl), keep = 1 - fl;
+      S.sc = 1 - .22 * kU * (1 - smooth(fl)); S.fy += 30 * kU * keep; S.bp *= 1 - kU * keep;
+      drawEveningBack(g, t, S, kU, fl);
+      drawCustS(g, S, t, 'body');
+      drawEveningFront(g, t, S, kU, fl);
+      drawCustS(g, S, t, 'top');
+      drawEveningPipe(g, t, S, fl);
+    } else { drawCustS(g, S, t, 'body'); drawCustS(g, S, t, 'top'); }
     // ropes in front of him
     if (ringOn) {
       g.save(); g.translate(0, ringDy); SOFT = false;
@@ -820,6 +830,81 @@
     // "less": one tiny star. "more": it starts filling again
     if (t >= V.less - .2) slapDraw(g, VB.less, t, true);
     for (const q of VB.fill) slapDraw(g, q, t, true);
+  }
+
+  // ---------- the evening set (verse 3, line 1) ----------
+  const EVE = { t0: 158.95, dress: 160.2, fl: .2 };
+  const EVC = { chair: '#9a8797', chairD: '#7f6d7d', lamp: '#c9b48a', pole: '#6d6258', jacket: '#7a3a44', satin: '#3a2328', sash: '#b39a5c', slip: '#86605a', wine: '#6e1f2a' };
+  let EVP = null;
+  function eveParts() {
+    if (EVP) return EVP;
+    EVP = {
+      back: cutPath([[-215, -60], [-225, -360], [-170, -440], [0, -462], [170, -440], [225, -360], [215, -60]], 67000001, 40, 1.6),
+      armL: cutPath([[-262, -40], [-266, -250], [-236, -280], [-176, -268], [-170, -40]], 67000002, 40, 1.2),
+      armR: cutPath([[262, -40], [266, -250], [236, -280], [176, -268], [170, -40]], 67000003, 40, 1.2),
+      cush: cutPath([[-200, -150], [200, -150], [206, -86], [-206, -86]], 67000004, 40, 1.2),
+      base: cutPath([[-250, -92], [250, -92], [246, -36], [-246, -36]], 67000005, 50, 1.2),
+      foot: cutPath(rectPts(-10, -38, 10, -4), 67000006, 99, .6),
+      pole: cutPath(rectPts(-7, -560, 7, -10), 67000010, 60, .8), lbase: ell(48, 12, 67000011),
+      shade: cutPath([[-62, -540], [62, -540], [86, -440], [-86, -440]], 67000012, 40, 1),
+      jacket: cutPath([[-45, -350], [-98, -334], [-126, -300], [-138, -150], [-142, -96], [142, -96], [138, -150], [126, -300], [98, -334], [45, -350]], 67000020, 34, 1.6),
+      collar: cutPath([[-46, -352], [-12, -196], [12, -196], [46, -352], [28, -352], [0, -232], [-28, -352]], 67000021, 99, .8),
+      sash: cutPath(rectPts(-138, -186, 138, -166), 67000022, 60, .8), tail: cutPath([[-6, -176], [8, -176], [22, -110], [6, -106]], 67000023, 99, .6),
+      jsleeve: cutPath([[-24, -8], [26, -8], [36, 205], [-30, 212]], 67000024, 40, 1.5),
+      slip: cutPath([[-64, 2], [-4, 2], [-4, -26], [-34, -32], [-62, -22]], 67000030, 99, .8),
+      glass: cutPath([[-17, -40], [17, -40], [13, -16], [0, -8], [-13, -16]], 67000040, 99, .5), winef: cutPath([[-14, -30], [14, -30], [11, -16], [0, -10], [-11, -16]], 67000041, 99, .4),
+      stem: cutPath(rectPts(-2, -9, 2, 14), 67000042, 99, .3), gfoot: ell(11, 3.5, 67000043), palm: ell(15, 13, 67000044), finger: cutPath(rectPts(-15, -3.5, 13, 3.5), 67000045, 99, .4),
+      pipeS: cutPath([[0, -3], [34, -6], [36, 1], [0, 3]], 67000050, 99, .4), bowl: cutPath([[30, -20], [46, -20], [44, 2], [32, 2]], 67000051, 99, .5), puff: ell(10, 7, 67000052),
+    };
+    return EVP;
+  }
+  // everything in the set lives in his local frame (feet at 0), so it shrinks and sits with him
+  function eveFrame(g, S, fx = 0, fy = 0, rot = 0) { g.translate(S.x + fx, S.fy + fy); if (rot) g.rotate(rot); g.scale(S.sc, S.sc); }
+  function drawEveningBack(g, t, S, kU, fl) {
+    const P = eveParts(), slide = (1 - kU) * 1150, fo = ease.in(fl); SOFT = true;
+    g.save(); eveFrame(g, S, slide + 1500 * fo, -30 * fo + 0, .4 * fo);
+    // standard lamp beside the chair, unlit-dim: a dull evening
+    g.save(); g.translate(370, 0); fillParts(g, [{ p: P.lbase, col: EVC.pole }, { p: P.pole, col: EVC.pole }, { p: P.shade, col: EVC.lamp }], 1); g.restore();
+    fillParts(g, [{ p: P.back, col: EVC.chair }], 1);
+    g.restore();
+  }
+  function drawEveningFront(g, t, S, kU, fl) {
+    const P = eveParts(), dU = smooth(inv(EVE.dress, EVE.dress + .6, t)), fo = ease.in(fl); SOFT = true;
+    // jacket, sleeves, sash: settle onto him gently on "evening"; flung up and away on "midnight"
+    if (dU > 0) {
+      g.save(); eveFrame(g, S, -900 * fo, -700 * fo, -.8 * fo); g.translate(0, -24 * (1 - dU)); g.globalAlpha = 1;
+      g.save(); g.translate(-112, -300); g.rotate(.07); fillParts(g, [{ p: P.jsleeve, col: EVC.jacket }], 1); g.restore();
+      g.save(); g.translate(112, -300); g.rotate(-.06); fillParts(g, [{ p: P.jsleeve, col: EVC.jacket }], 1); g.restore();
+      fillParts(g, [{ p: P.jacket, col: EVC.jacket }, { p: P.collar, col: EVC.satin }, { p: P.sash, col: EVC.sash }, { p: P.tail, col: EVC.sash }], 1);
+      g.restore();
+    }
+    // the chair's cushion, arms and base in front of him
+    g.save(); eveFrame(g, S, (1 - kU) * 1150 + 1500 * fo, -30 * fo, .4 * fo);
+    fillParts(g, [{ p: P.cush, col: EVC.chairD }, { p: P.armL, col: EVC.chair }, { p: P.armR, col: EVC.chair }, { p: P.base, col: EVC.chairD }], 1);
+    for (const x of [-210, 210]) { g.save(); g.translate(x, 0); fillParts(g, [{ p: P.foot, col: EVC.pole }], .6); g.restore(); }
+    g.restore();
+    if (dU > 0) {
+      // slippers over his shoes
+      g.save(); eveFrame(g, S, -300 * fo, 500 * fo); g.translate(0, -8 * (1 - dU));
+      for (const sd of [-1, 1]) { g.save(); g.scale(sd, 1); fillParts(g, [{ p: P.slip, col: EVC.slip }], .8); g.restore(); }
+      g.restore();
+      // a small glass of red wine, held calmly by the stem, palm toward us, resting by the chair arm
+      g.save(); eveFrame(g, S, 700 * fo, -600 * fo, 1.2 * fo); g.translate(150, -196 - 10 * (1 - dU));
+      fillParts(g, [{ p: P.gfoot, col: '#e9e4f0' }], .5); g.save(); g.translate(0, -10); fillParts(g, [{ p: P.stem, col: '#e9e4f0' }], .4); g.restore();
+      g.save(); g.translate(0, -14); fillParts(g, [{ p: P.glass, col: 'rgba(235,232,245,0.95)' }, { p: P.winef, col: EVC.wine }], .6); g.restore();
+      g.save(); g.translate(4, 2); fillParts(g, [{ p: P.palm, col: C.peach }], .6); g.restore();
+      g.save(); g.translate(2, -3); fillParts(g, [{ p: P.finger, col: shade(C.peach, .93) }], .3); g.restore();
+      g.restore();
+    }
+  }
+  function drawEveningPipe(g, t, S, fl) {
+    const P = eveParts(), dU = smooth(inv(EVE.dress + .2, EVE.dress + .8, t)), fo = ease.in(fl); if (dU <= 0) return; SOFT = true;
+    g.save(); eveFrame(g, S, 500 * fo, -500 * fo, 2 * fo); g.scale(1 + S.bp, 1 - S.bp); g.translate(0, -404 + S.nod * 9); g.rotate(S.nod * .05);
+    g.translate(6, 40);
+    fillParts(g, [{ p: P.pipeS, col: '#4a3328' }, { p: P.bowl, col: '#6b4630' }], .6);
+    // a thin wisp of smoke drifting up, slow, not on the beat
+    if (fl < .05) for (let q = 0; q < 3; q++) { const ph = fracK((t - EVE.dress) * .45 + q / 3), y = -30 - ph * 150, x = 40 + Math.sin(ph * 6 + q) * 14; g.save(); g.translate(x, y); g.scale(dU * (.6 + ph * .9), dU * (.6 + ph * .9)); g.globalAlpha = .75 * (1 - ph); fillParts(g, [{ p: P.puff, col: '#d9d4dc' }], .2); g.restore(); }
+    g.globalAlpha = 1; g.restore();
   }
 
   // ---------- chorus 2 + ending ----------
