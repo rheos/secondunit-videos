@@ -1,0 +1,7 @@
+{
+  "name": "bobwiseman-more",
+  "private": true,
+  "type": "module",
+  "description": "Bob Wiseman, More: code-drawn look tests on a plain 2D canvas, timed to the song.",
+  "devDependencies": { "playwright": "^1.55.0" }
+}
