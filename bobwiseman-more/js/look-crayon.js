@@ -565,9 +565,11 @@ function drawVerse(g, t) {
 }
 
 // ================= INSTRUMENTAL 1 (35.5-65.5): abstract, in the look's own materials =================
-// No singing: the weep streams and drips run wild when the band comes in, then wet colour blooms chase
-// across a fresh page on the beat, crayon loops go wild, the page gets smudged, inked and torn. The last
-// ~3 s drain to two-tone sepia + grain and close to a black iris on the rubber-hose diner's opening iris.
+// Bob's scene: the weep scene drains off the page to reveal an enormous empty crayon room with one elderly
+// tortoise. On the drums it makes one painfully slow dance step; then a rabbit, two flamingos, a dog,
+// chickens, an elephant and a mouse arrive, each wanting more movement than the last, and from 52 s everyone
+// dances at once. The last ~3 s drain to sepia and close an iris on the customer in the doorway, on the
+// rubber-hose diner's opening iris.
 const INS = (() => {
   let drop = 37.5;
   for (let f = Math.round(35.5 * FEAT.fps); f < FEAT.drums.length; f++) if (FEAT.drums[f] > .3) { drop = nearBeat(f / FEAT.fps); break; }
@@ -577,26 +579,6 @@ const INS = (() => {
 })();
 PIG.verm = ['#d9472b', '#8e2412', '#f39a6c'];
 PIG.gold = ['#e3b21f', '#9a6a08', '#f7da7a'];
-const BPIGS = ['indigo', 'gold', 'water', 'verm', 'willow', 'tear'];
-const CRAYS = [COL.red, COL.blue, '#f08a1c', COL.hill, '#8e44ad', COL.sun, COL.ink, '#e0559a'];
-const energy = (t) => clamp(.3 + .7 * smooth(inv(INS.sceneEnd, INS.bar(11), t)));
-
-// spawn lists (pure: depend only on the beat grid)
-const BLOOMS = [], LOOPS = [], SMUDGES = [], INKS = [];
-(() => {
-  const B = FEAT.beats, bi0 = lastBeat(INS.sceneEnd + .01), stop = INS.bar(14);
-  let n = 0;
-  for (let i = bi0; i < B.length - 1 && B[i] < stop; i++) {
-    const b = B[i], d = B[i + 1] - b, subs = b >= INS.bar(11) ? 3 : b >= INS.bar(4) ? 2 : 1;
-    for (let q = 0; q < subs; q++) BLOOMS.push({ t: b + q * d / subs, n: n++ });
-    if (b >= INS.bar(6)) SMUDGES.push({ t: b + d * .5, n: i });
-    if (b >= INS.bar(8) && (i - INS.di) % 2 === 0) INKS.push({ t: b, n: i });
-  }
-  for (let j = 1; j < 14; j++) { const m = j < 4 ? 1 : j < 11 ? 2 : 3;
-    for (let q = 0; q < m; q++) LOOPS.push({ t0: INS.bar(j) + q * .12, t1: INS.bar(j + 1), tEnd: INS.bar(Math.min(j + 2, 15)) || INS.end, n: j * 3 + q }); }
-})();
-const bloomPos = (n) => [960 + 800 * Math.sin(n * .61 + 1), 540 + 400 * Math.sin(n * .97 + 2)];
-
 // the sheet of paint that pours out of him on the drop and later slides off the page
 let TMP = null;
 function wildDrips(c, t) { sheet(c, t, 0); }
@@ -627,114 +609,298 @@ function sheet(c, t, dy) {
   c.globalAlpha = 1; c.restore();
 }
 
-function crayonLoop(c, t, L) {
-  const R = rng(L.n * 7919 + 3), e = energy(L.t0);
-  const side = R() < .5, A = side ? [-150, 100 + R() * 880] : [2070, 100 + R() * 880], B = side ? [2070, 100 + R() * 880] : [-150, 100 + R() * 880];
-  const loops = 5 + Math.floor(R() * 5), r0 = (80 + R() * 120) * (.7 + .6 * e), ph = R() * TAU, wav = 120 + R() * 200;
-  const pts = []; const N = 300;
-  for (let i = 0; i <= N; i++) { const s = i / N, th = s * TAU * loops + ph, r = r0 * (.75 + .35 * Math.sin(s * 9 + ph));
-    pts.push([lerp(A[0], B[0], s) + Math.cos(th) * r, lerp(A[1], B[1], s) + Math.sin(s * Math.PI * 2 + ph) * wav + Math.sin(th) * r * .75]); }
-  // the pen races on each beat inside its bar
-  const bi = lastBeat(t), b0 = lastBeat(L.t0 + .01), k = bi - b0, rev = clamp((k + ease.out(beatPhase(t) * 1.6)) / 4);
-  crayon(c, pts, { col: CRAYS[L.n % CRAYS.length], w: (11 + R() * 8) * (1 + .3 * beatPulse(t, 6)), seed: 1200 + L.n, reveal: t >= L.t1 ? 1 : rev, jit: 5, step: 7 });
-}
-function smudge(c, t, S0) {
-  const age = t - S0.t; if (age < 0 || age > 3.2) return;
-  const R = rng(S0.n * 131 + 9), [x, y] = [100 + R() * 1720, 80 + R() * 920], a = R() * TAU, L = (260 + R() * 300) * ease.out(age / .35), w = 60 + R() * 50;
-  const dx = Math.cos(a), dy = Math.sin(a), fade = 1 - inv(2.2, 3.2, age);
-  c.fillStyle = '#2b2333';
-  for (let k = 0; k < 7; k++) { const o = (k - 3) * w * .16, ww = w * (1 - Math.abs(k - 3) * .18);
-    c.globalAlpha = .07 * fade; c.beginPath(); c.moveTo(x - dy * o, y + dx * o);
-    c.lineTo(x - dy * o + dx * L, y + dx * o + dy * L); c.lineWidth = ww; c.strokeStyle = '#2b2333'; c.lineCap = 'round'; c.stroke(); }
-  // a fingerprint whorl at the start of the smear
-  c.globalAlpha = .12 * fade; c.lineWidth = 3;
-  for (let k = 1; k < 7; k++) { c.beginPath(); c.ellipse(x, y, k * 7, k * 9, a, 0, TAU * .85); c.stroke(); }
-  c.globalAlpha = 1;
-}
-function inkPool(c, t, I) {
-  const age = t - I.t; if (age < 0 || age > 6) return;
-  const R = rng(I.n * 977 + 5), [x, y] = [160 + R() * 1600, 120 + R() * 840], r = (70 + R() * 90) * ease.out(age / .3) * (1 + .12 * Math.min(1, age / 2));
-  const fade = 1 - inv(5, 6, age), p = defPath(I.n % 10, x, y, r, r * (.75 + R() * .4), R() * 90);
-  c.globalAlpha = .92 * fade; c.fillStyle = '#120f16'; c.fill(p);
-  c.globalAlpha = .5 * fade; c.strokeStyle = '#000'; c.lineWidth = 6; c.stroke(p);
-  c.globalAlpha = .28 * fade; c.strokeStyle = '#fff'; c.lineWidth = 5; c.beginPath(); c.arc(x - r * .2, y - r * .25, r * .45, Math.PI * 1.1, Math.PI * 1.5); c.stroke();
-  c.fillStyle = '#120f16';
-  for (let k = 0; k < 7; k++) { const a = R() * TAU, d = r * (1.2 + R() * 1.4), s = 4 + R() * 12; c.globalAlpha = .9 * fade * clamp(age / .12); c.beginPath(); c.arc(x + Math.cos(a) * d, y + Math.sin(a) * d, s, 0, TAU); c.fill(); }
-  c.globalAlpha = 1;
-}
-// torn paper: a jagged tear that runs in, the torn-off part shows the dark board underneath
-function tearPts(seed, A, B, n = 70) { const R = rng(seed), p = []; for (let i = 0; i <= n; i++) { const s = i / n, j = (R() - .5) * 18 + snoise(s * 9, seed) * 34 + snoise(s * 31, seed + 3) * 10; p.push([lerp(A[0], B[0], s) - (B[1] - A[1]) / 1000 * j, lerp(A[1], B[1], s) + (B[0] - A[0]) / 1000 * j]); } return p; }
-const TEARS = [{ seed: 5, A: [1180, -30], B: [1960, 660], corner: [1960, -30], t: () => [INS.bar(9), INS.bar(10)] },
-  { seed: 9, A: [-30, 470], B: [820, 1110], corner: [-30, 1110], t: () => [INS.bar(11), INS.bar(12)] }];
-function drawTears(c, t) {
-  for (const T of TEARS) {
-    const [a, b] = T.t(); if (t < a) continue;
-    // rips in jerks on each beat
-    const bi = lastBeat(t), k = bi - lastBeat(a + .01), p = clamp((k + ease.out(beatPhase(t) * 2.5)) / 4);
-    const L = tearPts(T.seed, T.A, T.B), m = Math.max(2, Math.ceil(L.length * p)), part = L.slice(0, m);
-    const poly = part.concat([T.corner]);
-    c.globalAlpha = 1; c.fillStyle = '#1d1610'; c.beginPath(); polyPath(c, poly); c.fill();
-    // white fibrous torn edge
-    crayon(c, part, { col: '#f7f1e3', w: 12, seed: T.seed * 13, jit: 2, gap: 0, passes: 3, alpha: 1 });
-    c.strokeStyle = '#f7f1e3'; c.lineWidth = 1.5; c.globalAlpha = .8;
-    for (let i = 0; i < part.length - 1; i++) for (let f = 0; f < 3; f++) { const h = hash2(i, f, T.seed), [x, y] = part[i]; c.beginPath(); c.moveTo(x, y); c.lineTo(x + (h - .5) * 18, y + (hash2(f, i, T.seed) - .5) * 18); c.stroke(); }
-    c.globalAlpha = 1;
-  }
-}
-const CAPFLY = () => [INS.bar(10), INS.bar(11)];
-function drawCapFly(c, t) {
-  const [a, b] = CAPFLY(); if (t < a || t > b) return;
-  const u = inv(a, b, t), x = lerp(-250, 2170, u), y = 640 - Math.sin(u * Math.PI) * 420;
-  const bi = lastBeat(t), rot = (bi + ease.back(beatPhase(t) * 2)) * Math.PI / 2, k = 2.6;
-  const pts = CAP.map(([px, py]) => { const X = px * k, Y = (py + 280) * k; return [x + X * Math.cos(rot) - Y * Math.sin(rot), y + X * Math.sin(rot) + Y * Math.cos(rot)]; });
-  scribble(c, pts, { col: COL.cap, sp: 12, ang: .2, seed: 340, alpha: .9 });
-  crayon(c, pts, { col: COL.ink, w: 10, seed: 341, closed: true });
-}
-const FINAL_ST = () => ({ x: INS.IRIS[0], y: INS.IRIS[1] + 236 * 2.3 - 30, k: 2.3, mouth: 'flat', look: [0, 0], brow: 0, nod: 0, sink: 0, tear: 0, squash: 0 });
+// ---------------- the enormous room ----------------
+const VP = [960, 425], RTL = [700, 250], RTR = [1220, 250], RBL = [700, 600], RBR = [1220, 600];
+const rdir = (P, k) => [VP[0] + (P[0] - VP[0]) * k, VP[1] + (P[1] - VP[1]) * k];
+// a point on a side wall: k = distance multiplier out from the back corner (1 = back corner), h = 0 floor .. 1 ceiling
+const wallPt = (right, k, h) => { const b = rdir(right ? RBR : RBL, k), u = rdir(right ? RTR : RTL, k); return [lerp(b[0], u[0], h), lerp(b[1], u[1], h)]; };
+const ROOM = {
+  ceil: [rdir(RTL, 7), rdir(RTR, 7), RTR, RTL], back: [RTL, RTR, RBR, RBL],
+  left: [RTL, RBL, rdir(RBL, 7), rdir(RTL, 7)], right: [RTR, rdir(RTR, 7), rdir(RBR, 7), RBR],
+  floor: [RBL, RBR, rdir(RBR, 7), rdir(RBL, 7)],
+};
+const DOOR = [wallPt(true, 1.16, 0), wallPt(true, 1.16, .56), wallPt(true, 1.55, .56), wallPt(true, 1.55, 0)];
+const ps = (y) => clamp((y - VP[1]) / 375, .3, 2.2); // perspective scale on the floor (1 at y = 800)
+const fbeat = (t) => lastBeat(t) + beatPhase(t) - INS.di; // beats since the drop (fractional)
+const bt = (i) => FEAT.beats[INS.di + i];
+let SIL = [];
 
-function drawInstr(g, t) {
-  cam = { cx: 960, cy: 540, s: 1, sn: 2.3 };
-  BOIL = 1000 + beatIndex(t) * 2 + (beatPhase(t) > .5 ? 1 : 0);
-  const base = [K, 0, 0, K, 0, 0], e = energy(t);
+function camRoom(t) {
+  let cx = 960, cy = 540, s = 1;
+  const push = ease.inOut(inv(INS.bar(1), INS.bar(8), t)); s = lerp(1, 1.32, push); cy = lerp(540, 745, push);
+  if (t > INS.bar(8)) s += .012 * beatPulse(t, 7);
+  // the elephant's stomps shake the room
+  const f = fbeat(t); if (f > 26 && f < 32) { const k = Math.floor(f); cy += 9 * hit(t, bt(k), 9) * Math.sin((t - bt(k)) * 60); }
+  // the final push onto the customer in the doorway, landing on the diner's iris centre
+  const u = ease.inOut(inv(INS.drain, INS.irisB, t));
+  if (u > 0) { const sF = 1.9, W = [1312, 497]; const cxF = W[0] - (INS.IRIS[0] - 960) / sF, cyF = W[1] - (INS.IRIS[1] - 540) / sF;
+    cx = lerp(cx, cxF, u); cy = lerp(cy, cyF, u); s = lerp(s, sF, u); }
+  return { cx, cy, s, sn: 1 };
+}
+
+// local -> screen for a drawn creature: feet at (ax, ay), size s, facing dir, tilt rot, x-squash sx (spins)
+function TF(ax, ay, s, dir = 1, rot = 0, sx = 1) { const c = Math.cos(rot * dir), n = Math.sin(rot * dir);
+  return (lx, ly) => { const x = lx * sx * dir, y = ly; return S(ax + (x * c - y * n) * s, ay + (x * n + y * c) * s); }; }
+const eli = (cx, cy, rx, ry, n = 18, rot = 0) => { const p = []; for (let i = 0; i < n; i++) { const a = i / n * TAU; const x = Math.cos(a) * rx, y = Math.sin(a) * ry; p.push([cx + x * Math.cos(rot) - y * Math.sin(rot), cy + x * Math.sin(rot) + y * Math.cos(rot)]); } return p; };
+function part(c, T, pts, fill, line, seed, sc, o = {}) {
+  const sp = pts.map((p) => T(p[0], p[1])), k = Math.sqrt(sc * cam.s);
+  if (fill) scribble(c, sp, { col: fill, sp: (o.sp || 7) * k, ang: o.ang ?? .4 + (seed % 5) * .5, seed, alpha: o.alpha ?? .9, w: (o.sp || 7) * k * 1.05 });
+  if (line) crayon(c, sp, { col: line, w: (o.w || 5) * k, seed: seed + 1, closed: true, jit: 1.3 * k, gap: .04, passes: 2 });
+  if (!o.noSil) SIL.push(sp);
+  return sp;
+}
+function line2(c, T, pts, col, w, seed, sc) { const k = Math.sqrt(sc * cam.s); crayon(c, pts.map((p) => T(p[0], p[1])), { col, w: w * k, seed, jit: 1.2 * k, gap: .03, passes: 2 }); }
+function dotT(c, T, x, y, r, col, seed, sc) { const [X, Y] = T(x, y); dot(c, X, Y, r * Math.sqrt(sc * cam.s) * 1.15, col, seed); }
+
+// ---- the cast (a child's crayon drawings) ----
+function tortoise(c, x, y, sz, lift, look = 0) {
+  const s = sz * ps(y), T = TF(x, y, s, 1, -lift * .07), L = '#2d5a20';
+  line2(c, T, [[-14, -14], [-15, 0]], '#7f965f', 13, 2001, s); line2(c, T, [[22, -14], [24, 0]], '#7f965f', 13, 2002, s);
+  line2(c, T, [[-32, -14], [-35, 0]], '#93ab72', 14, 2003, s);
+  line2(c, T, [[36, -14], [40 + lift * 16, -lift * 30]], '#93ab72', 14, 2004, s); // the dancing foot
+  const shell = []; for (let i = 0; i <= 16; i++) { const a = Math.PI + i / 16 * Math.PI; shell.push([Math.cos(a) * 52, -14 + Math.sin(a) * 40]); }
+  part(c, T, shell, '#5c9a3e', L, 2010, s, { w: 6 });
+  line2(c, T, [[-36, -18], [-24, -40], [0, -48], [24, -40], [36, -18]], L, 4, 2012, s);
+  line2(c, T, [[-6, -48], [-10, -18]], L, 4, 2013, s); line2(c, T, [[14, -46], [12, -18]], L, 4, 2014, s);
+  line2(c, T, [[-52, -14], [-60, -8]], '#93ab72', 8, 2015, s);
+  line2(c, T, [[46, -22], [56, -30]], '#a3b884', 13, 2016, s);
+  part(c, T, eli(64, -32, 15, 13), '#a8bd88', '#4c6234', 2020, s, { sp: 6 });
+  dotT(c, T, 68 + look * 2, -35, 2.6, COL.ink, 2022, s);
+  crayon(c, eli(68 + look * 2, -35, 6.5, 6.5, 12).map((p) => T(p[0], p[1])), { col: COL.ink, w: 1.8 * Math.sqrt(s * cam.s), seed: 2023, closed: true, gap: 0, passes: 1, jit: .5 }); // spectacles
+  line2(c, T, [[62, -44], [72, -45]], '#f2f2f2', 3, 2024, s); // white eyebrow
+  line2(c, T, [[71, -26], [77, -27]], COL.ink, 2.4, 2025, s);
+}
+function rabbit(c, x, y, sz, dir, o = {}) {
+  const s = sz * ps(y), T = TF(x, y - (o.hop || 0) * s, s, dir), G = '#6b665f', F = '#cfc9c0';
+  part(c, T, eli(-6, -5, 18, 6), F, G, 2101, s, { sp: 6 });
+  part(c, T, eli(-26, -32, 10, 10, 12), '#f3f1ec', G, 2102, s, { sp: 5 });
+  part(c, T, eli(0, -40, 26, 32), F, G, 2103, s);
+  const tap = o.tap || 0, lift = o.lift || 0, ft = eli(18, -4, 18, 6).map(([px, py]) => { const a = -tap * .55, dx = px - 2, dy = py + 2; return [2 + dx * Math.cos(a) - dy * Math.sin(a) + lift * 10, -2 + dx * Math.sin(a) + dy * Math.cos(a) - lift * 26]; });
+  part(c, T, ft, F, G, 2104, s, { sp: 6 });
+  const ear = (o.ear || 0) * .25;
+  part(c, T, eli(4, -124, 7, 27, 14, -.18 - ear), F, G, 2105, s, { sp: 5 }); part(c, T, eli(22, -122, 7, 27, 14, .2 + ear), F, G, 2106, s, { sp: 5 });
+  line2(c, T, [[4, -140], [5, -112]], '#f29bb3', 3.5, 2107, s); line2(c, T, [[22, -138], [21, -110]], '#f29bb3', 3.5, 2108, s);
+  part(c, T, eli(14, -86, 20, 19), F, G, 2109, s);
+  dotT(c, T, 22, -90, 2.8, COL.ink, 2110, s); dotT(c, T, 33, -84, 2.6, '#e86f93', 2111, s);
+  line2(c, T, [[30, -80], [44, -82]], G, 1.6, 2112, s); line2(c, T, [[30, -78], [43, -74]], G, 1.6, 2113, s);
+  line2(c, T, [[4, -60], [22, -54], [8, -48]], G, 4, 2114, s); // arms folded high on the chest, still
+}
+function flamingo(c, x, y, sz, dir, o = {}) {
+  const s = sz * ps(y), T = TF(x, y - (o.bob || 0) * s, s, dir, o.rot || 0, o.sx ?? 1), P = '#f48fb6', D = '#c0457a', LG = '#e2779e';
+  line2(c, T, [[0, 0], [3, -46], [0, -92]], LG, 5, 2201, s); line2(c, T, [[-6, 0], [10, 0]], LG, 4, 2202, s);
+  const k = o.kick || 0, tuck = [[0, -92], [16, -72], [4, -60]], kick = [[0, -92], [36, -86], [72, -96]];
+  line2(c, T, tuck.map((p, i) => [lerp(p[0], kick[i][0], k), lerp(p[1], kick[i][1], k)]), LG, 5, 2203, s);
+  part(c, T, eli(0, -112, 40, 22, 18, -.15), P, D, 2204, s);
+  const f = o.flap || 0;
+  part(c, T, [[-14, -118], [-34 + f * 6, -122 - f * 46], [12, -124]], '#f7b3cd', D, 2205, s, { sp: 5 });
+  const w = o.sway || 0, neck = [[28, -120], [38 + w * 8, -146], [22 + w * 18, -172], [30 + w * 24, -196]];
+  line2(c, T, neck, P, 9, 2206, s); line2(c, T, neck, D, 2.2, 2207, s);
+  part(c, T, eli(40 + w * 26, -200, 11, 10), P, D, 2208, s, { sp: 5 });
+  line2(c, T, [[48 + w * 26, -202], [60 + w * 26, -192], [55 + w * 26, -184]], COL.ink, 5, 2209, s);
+  dotT(c, T, 42 + w * 26, -203, 2.2, COL.ink, 2210, s);
+}
+function dog(c, x, y, sz, dir, o = {}) {
+  const s = sz * ps(y), T = TF(x, y - (o.jump || 0) * s, s, dir, o.rot || 0), B = '#c98d4f', D = '#6e4520', la = o.legs || [0, 0, 0, 0];
+  [[-30, -24], [30, -24], [-22, -24], [38, -24]].forEach(([hx, hy], i) => line2(c, T, [[hx, hy], [hx + Math.sin(la[i]) * 20, hy + Math.cos(la[i]) * 24]], i < 2 ? '#a8733c' : B, 9, 2301 + i, s));
+  const wag = o.wag || 0; line2(c, T, [[-42, -46], [-56, -58], [-60 + wag * 14, -76]], B, 7, 2306, s);
+  part(c, T, eli(0, -42, 44, 22), B, D, 2307, s);
+  dotT(c, T, -12, -48, 6, D, 2308, s); dotT(c, T, 14, -36, 5, D, 2309, s);
+  part(c, T, eli(46, -66, 20, 19), B, D, 2310, s);
+  part(c, T, eli(36, -58, 8, 16, 12, .5 + wag * .2), '#7a4a22', D, 2311, s, { sp: 5 });
+  dotT(c, T, 54, -72, 2.8, COL.ink, 2312, s); dotT(c, T, 66, -66, 4, COL.ink, 2313, s);
+  if (o.tongue) part(c, T, eli(58, -50, 5, 9, 10), '#ef6f8f', '#b23a5a', 2314, s, { sp: 4, noSil: true });
+}
+function chicken(c, x, y, sz, dir, o = {}, seed = 0) {
+  const s = sz * ps(y), T = TF(x, y - (o.bob || 0) * s, s, dir), Y = '#e0a21a', G = '#7a756c';
+  const leg = (hx, k, sd) => { const a = k * 1.35; const fx = hx + Math.sin(a) * 18, fy = -14 + Math.cos(a) * 14; line2(c, T, [[hx, -14], [fx, fy]], Y, 4, sd, s); line2(c, T, [[fx - 5, fy], [fx + 7, fy - (k > .3 ? 4 : 0)]], Y, 3, sd + 50, s); };
+  leg(-6, o.kickL || 0, 2401 + seed); leg(6, o.kickR || 0, 2402 + seed);
+  line2(c, T, [[-20, -40], [-32, -56]], G, 3, 2403 + seed, s); line2(c, T, [[-22, -36], [-36, -46]], G, 3, 2404 + seed, s);
+  part(c, T, eli(0, -34, 24, 19), '#e2ddd3', G, 2405 + seed, s, { sp: 6 });
+  part(c, T, eli(-2, -36, 12, 7, 12, -(o.wing || 0) * .9), '#d2ccc1', G, 2406 + seed, s, { sp: 4 });
+  const hb = o.peck || 0;
+  part(c, T, eli(16 + hb * 4, -58 + hb * 8, 11, 11), '#e2ddd3', G, 2407 + seed, s, { sp: 5 });
+  for (const [cx, cy] of [[12, -70], [17, -72], [22, -70]]) dotT(c, T, cx + hb * 4, cy + hb * 8, 3.4, '#d8402f', 2408 + seed, s);
+  part(c, T, [[26 + hb * 4, -60 + hb * 8], [35 + hb * 4, -56 + hb * 8], [26 + hb * 4, -53 + hb * 8]], Y, '#a8740c', 2409 + seed, s, { sp: 3, noSil: true });
+  dotT(c, T, 25 + hb * 4, -50 + hb * 8, 3, '#d8402f', 2410 + seed, s); dotT(c, T, 19 + hb * 4, -61 + hb * 8, 2.2, COL.ink, 2411 + seed, s);
+}
+function elephantT(x, y, sz, dir, o = {}) { const s = sz * ps(y); return { s, T: TF(x, y, s, dir, o.tilt || 0, o.sx ?? 1) }; }
+function elephant(c, x, y, sz, dir, o = {}) {
+  const { s, T } = elephantT(x, y, sz, dir, o), G = '#a3a9b0', D = '#4f555c', ll = o.legLift || 0, bl = o.backLift || 0;
+  line2(c, T, [[-38, -40], [-38, 0]], '#8a9098', 24, 2501, s); line2(c, T, [[42, -40], [42, 0]], '#8a9098', 24, 2502, s);
+  line2(c, T, [[-78, -84], [-92, -62]], D, 4, 2503, s);
+  part(c, T, eli(0, -80, 78, 52), G, D, 2504, s, { sp: 9 });
+  line2(c, T, [[-56, -40], [-56 - bl * 46, -bl * 40]], G, 26, 2505, s);
+  line2(c, T, [[56, -40], [56 + ll * 26, -ll * 40]], G, 26, 2506, s);
+  if (o.tutu > 0) { const tt = []; for (let i = 0; i < 28; i++) { const a = i / 28 * TAU, r = 1 + .14 * (i % 2); tt.push([Math.cos(a) * 96 * r * o.tutu, -52 + Math.sin(a) * 18 * r * o.tutu]); } part(c, T, tt, '#f6a6c8', '#d0568e', 2507, s, { sp: 6 }); }
+  part(c, T, eli(48, -104, 26, 36, 16, -.1), '#8e949c', D, 2508, s, { sp: 7 });
+  part(c, T, eli(74, -110, 38, 36), G, D, 2509, s, { sp: 8 });
+  const tr = o.trunk || 0, trunk = [[104, -100], [120, -74 - tr * 30], [118 + tr * 10, -46 - tr * 60], [130 + tr * 6, -34 - tr * 80]];
+  line2(c, T, trunk, D, 20, 2510, s); line2(c, T, trunk, G, 13, 2511, s);
+  line2(c, T, [[100, -90], [112, -82]], '#fbf8ee', 5, 2512, s);
+  dotT(c, T, 88, -120, 3.4, COL.ink, 2513, s);
+}
+function mouse(c, x, y, sz, dir, o = {}) {
+  const s = sz * ps(o.py ?? y), T = TF(x, y - (o.hop || 0) * s, s, dir), G = '#9b968f', D = '#4d4a46';
+  line2(c, T, [[-12, -6], [-24, -2], [-30, -12]], D, 2.5, 2601, s);
+  part(c, T, eli(0, -9, 13, 9), G, D, 2602, s, { sp: 4 });
+  part(c, T, [[9, -14], [24, -9], [9, -3]], G, D, 2603, s, { sp: 3 });
+  part(c, T, eli(7, -18, 6, 6, 10), '#f2a7bd', D, 2604, s, { sp: 3 });
+  dotT(c, T, 16, -10, 1.8, COL.ink, 2605, s); dotT(c, T, 24, -9, 1.8, '#e86f93', 2606, s);
+}
+
+// ---- who is where, and doing what (pure functions of t) ----
+const POS = { tort: [960, 800], rab: [775, 845], fl1: [1150, 752], fl2: [1270, 752], dog: [400, 935], ch: [[1165, 965], [1290, 965], [1415, 965]], ele: [610, 726] };
+const MAG = 1.6;
+const stepIn = (f, f0, n, a, b) => { const u = (f - f0), k = Math.floor(u), fr = u - k; return lerp(a, b, clamp((Math.min(k, n - 1) + ease.inOut(k >= n ? 1 : fr)) / n)); };
+function castAt(t) {
+  const f = fbeat(t), fr = f - Math.floor(f), fl = Math.floor(f), A = [];
+  // tortoise: one slow step on the drop (2 beats up, 2 beats down); in the big dance it repeats, twice as slow
+  let lift = f >= 0 && f < 4 ? (f < 2 ? ease.inOut(f / 2) : 1 - ease.inOut((f - 2) / 2)) : 0;
+  if (f >= 32) lift = Math.sin(Math.PI * ((f - 32) % 8) / 8);
+  A.push({ y: POS.tort[1], d: (c) => tortoise(c, POS.tort[0], POS.tort[1], 1.4 * MAG, lift, f > 4 && f < 32 ? Math.sin(f * .3) : 0) });
+  // rabbit: hops in (bar 1), copies the step (2 beats), then taps its foot impatiently
+  if (f >= 4) { const enter = f < 8, x = enter ? stepIn(f, 4, 4, -140, POS.rab[0]) : POS.rab[0];
+    const o = { hop: enter ? Math.sin(Math.PI * fr) * 70 : 0 };
+    if (f >= 8 && f < 10) o.lift = Math.sin(Math.PI * (f - 8) / 2);
+    if (f >= 10) { o.tap = Math.abs(Math.sin(Math.PI * 2 * fr)); o.ear = Math.sin(f * Math.PI); }
+    if (f >= 32) o.hop = (fl % 2 ? Math.sin(Math.PI * fr) * 34 : 0);
+    A.push({ y: POS.rab[1], d: (c) => rabbit(c, x, POS.rab[1], MAG, 1, o) }); }
+  // two flamingos: high-step in from the right, then one synchronized routine
+  if (f >= 10) [POS.fl1, POS.fl2].forEach((P, i) => {
+    const enter = f < 14, x = enter ? stepIn(f, 10, 4, 2060 + i * 120, P[0]) : P[0], o = {};
+    if (enter) { o.kick = Math.sin(Math.PI * fr) * .55; o.bob = Math.sin(Math.PI * fr) * 6; }
+    else if (f < 32) { o.sway = Math.sin(Math.PI * f / 2); o.flap = fl % 4 === 0 ? Math.sin(Math.PI * fr) : 0; }
+    else { const m = fl % 4; o.sway = Math.sin(Math.PI * f / 2); o.kick = m === 0 || m === 2 ? Math.sin(Math.PI * fr) : 0; o.flap = m === 3 ? Math.sin(Math.PI * fr) : .15; o.rot = m === 1 ? -.15 * Math.sin(Math.PI * fr) : 0; }
+    let dir = -1; if (f >= 32) { const bar = Math.floor((f - 32) / 4); dir = bar % 2 ? 1 : -1; const into = (f - 32) % 4; if (into < .5) o.sx = Math.max(.15, Math.sin(Math.PI / 2 * into / .5)); }
+    A.push({ y: P[1], d: (c) => flamingo(c, x, P[1], MAG, dir, o) }); });
+  // dog: bounds in, then jumps about; in the big dance, ecstatic and with no technique at all
+  if (f >= 18) { const enter = f < 22; let x = enter ? stepIn(f, 18, 4, -170, POS.dog[0]) : POS.dog[0] + (f < 32 ? Math.sin(f * Math.PI / 2) * 60 : 0);
+    const o = { wag: Math.sin(f * Math.PI * 4), legs: [Math.sin(f * 9) * .6, -Math.sin(f * 9) * .6, Math.cos(f * 9) * .6, -Math.cos(f * 9) * .6] };
+    let dir = 1;
+    if (enter || f < 32) o.jump = Math.sin(Math.PI * fr) * (enter ? 55 : 40);
+    else { const h = hash(fl * 13 + 5); o.jump = Math.sin(Math.PI * fr) * (60 + h * 50); o.rot = (h - .5) * 1.4 * Math.sin(Math.PI * fr); dir = hash(fl * 7 + 1) > .5 ? 1 : -1; o.tongue = 1;
+      const hb = Math.floor(f * 2); o.legs = [0, 1, 2, 3].map((i) => (hash2(hb, i, 3) - .5) * 2.6); x += (hash(fl * 3) - .5) * 90; }
+    A.push({ y: POS.dog[1], d: (c) => dog(c, x, POS.dog[1], 1.05 * MAG, dir, o) }); }
+  // chickens: trot in single file, peck on the beat, then a chorus-line kick line
+  if (f >= 22) POS.ch.forEach((P, j) => {
+    const enter = f < 26, x = enter ? stepIn(f, 22, 4, 2080 + j * 140, P[0]) : P[0] + (f >= 32 ? Math.sin(Math.PI * (f - 32) / 4) * 40 : 0), o = {};
+    if (enter) { o.bob = Math.abs(Math.sin(Math.PI * 2 * fr)) * 8; o.kickL = Math.max(0, Math.sin(Math.PI * 2 * fr)) * .5; o.kickR = Math.max(0, -Math.sin(Math.PI * 2 * fr)) * .5; }
+    else if (f < 32) { o.peck = fl % 2 ? Math.sin(Math.PI * fr) : 0; o.kickR = fl % 2 ? 0 : Math.sin(Math.PI * fr) * .7; }
+    else { const k = Math.sin(Math.PI * fr); if (fl % 2) o.kickL = k * 1.15; else o.kickR = k * 1.15; o.wing = .7; }
+    A.push({ y: P[1], d: (c) => chicken(c, x, P[1], .9 * MAG, -1, o, j * 20) }); });
+  // elephant: stomps in (the room shakes), stomps in place, then attempts ballet in a tutu
+  let ele = null;
+  if (f >= 26) { const enter = f < 30, x = enter ? stepIn(f, 26, 4, -340, POS.ele[0]) : POS.ele[0], o = { trunk: 0 };
+    if (f < 32) { o.legLift = fl % 2 ? Math.sin(Math.PI * fr) * .8 : 0; o.backLift = fl % 2 ? 0 : Math.sin(Math.PI * fr) * .5; if (!enter) o.trunk = Math.sin(Math.PI * fr) * .8; }
+    else { o.tutu = ease.back(inv(INS.bar(8), INS.bar(8) + .4, t)); const bar = Math.floor((f - 32) / 4), into = (f - 32) % 4;
+      if (bar % 2 === 0) { o.tilt = -.2 * ease.out(Math.min(1, into)) + Math.sin(t * 9) * .05; o.backLift = ease.out(Math.min(1, into)); o.trunk = .9; }
+      else { const sp = ease.inOut(Math.min(1, into / 2)); o.sx = Math.cos(sp * TAU); o.tilt = Math.sin(t * 11) * .07; o.legLift = .6; o.trunk = .5 + .5 * Math.sin(f * Math.PI); } }
+    if (o.sx !== undefined && Math.abs(o.sx) < .12) o.sx = .12 * (Math.sign(o.sx) || 1);
+    ele = { x, y: POS.ele[1], o };
+    A.push({ y: POS.ele[1], d: (c) => elephant(c, x, POS.ele[1], 1.45 * 1.3, 1, o) }); }
+  // mouse: scurries in, leaps onto the elephant's head and spins there
+  if (f >= 30) { let x, y, dir = -1; const o = { py: 990 };
+    const head = ele ? elephantT(ele.x, ele.y, 1.45 * 1.3, 1, ele.o).T(74, -150) : S(700, 600);
+    const W = [(head[0] - 960) / cam.s + cam.cx, (head[1] - 540) / cam.s + cam.cy];
+    if (f < 32.5) { x = stepIn(f, 30, 10, 2010, 700); y = 990; o.hop = Math.abs(Math.sin(Math.PI * 4 * fr)) * 6; }
+    else if (f < 33.5) { const u = ease.inOut(f - 32.5); x = lerp(700, W[0], u); y = lerp(990, W[1], u) - Math.sin(Math.PI * u) * 200; }
+    else { x = W[0]; y = W[1]; dir = Math.floor(f * 2) % 2 ? 1 : -1; o.hop = Math.sin(Math.PI * ((f * 2) % 1)) * 10; }
+    A.push({ y: f < 32.5 ? 990 : POS.ele[1] + .5, d: (c) => mouse(c, x, y, 1.15 * MAG, dir, o) }); }
+  return A.sort((a, b) => a.y - b.y);
+}
+
+// ---- gouache: the room floods with colour on the drop, splashes on each arrival, bursts on every beat ----
+const ARRIVE = [[4, 'tear', [775, 850], 150], [10, 'verm', [1210, 755], 190], [18, 'gold', [400, 935], 230], [22, 'willow', [1290, 965], 270], [26, 'indigo', [610, 730], 320], [30, 'verm', [700, 995], 150]];
+const BURSTP = ['verm', 'gold', 'water', 'willow', 'tear', 'indigo'];
+function roomWash(w, t) {
+  const f = fbeat(t), reg = (k) => SP(ROOM[k]);
+  flood(w, t, { t0: INS.drop, dur: 1.6, origin: [960, 425], R: 900, ry: .7, seed: 2, pig: 'water', alpha: .55, region: reg('back'), blooms: [[820, 330, 60], [1120, 520, 50]] });
+  flood(w, t, { t0: INS.drop + .23, dur: 1.7, origin: [350, 420], R: 1300, ry: .9, seed: 6, pig: 'gold', alpha: .5, region: reg('left'), blooms: [[300, 300, 90]] });
+  flood(w, t, { t0: INS.drop + .47, dur: 1.7, origin: [1570, 420], R: 1300, ry: .9, seed: 8, pig: 'gold', alpha: .5, region: reg('right'), blooms: [[1650, 600, 80]] });
+  flood(w, t, { t0: INS.drop + .7, dur: 1.9, origin: [960, 760], R: 1500, ry: .5, seed: 3, pig: 'trunk', alpha: .42, region: reg('floor'), blooms: [[600, 980, 90], [1400, 860, 70]] });
+  // window light falling on the floor
+  const lg = ease.out(inv(INS.drop + 1.2, INS.drop + 2.6, t));
+  if (lg > 0) { w.fillStyle = PIG.gold[2]; w.globalAlpha = .32 * lg;
+    for (const wx of [790, 960, 1130]) { const fx = 960 + (wx - 960) * 1.6; w.beginPath(); polyPath(w, SP([[wx - 34, 600], [wx + 34, 600], [fx + 80, 1000], [fx - 80, 1000]])); w.fill(); }
+    w.globalAlpha = 1; }
+  for (const [b, pig, P, R] of ARRIVE) if (f >= b) flood(w, t, { t0: bt(b), dur: .6, origin: P, R, ry: .45, seed: b % 10, pig, alpha: .62, blooms: [[P[0] + 40, P[1], R * .3]] });
+  // the big dance: a burst on every beat (fading after ten)
+  if (f >= 32) { const last = Math.min(Math.floor(f), 60);
+    for (let k = Math.max(32, last - 9); k <= last; k++) { const old = last - k, x = 960 + 620 * Math.sin(k * .77 + .4), y = 760 + 200 * Math.sin(k * 1.31 + 1);
+      flood(w, t, { t0: bt(k), dur: .45, origin: [x, y], R: (150 + 90 * hash(k)) * ps(y) * 1.3, ry: .55, seed: k % 10, pig: BURSTP[k % BURSTP.length], alpha: .7, fade: old >= 7 ? 1 - (old - 6) * .28 : 1, blooms: [[x, y, 40]] }); } }
+}
+
+function drawRoomScene(g, t) {
+  cam = camRoom(t); BOIL = 2000 + beatIndex(t) * (t >= INS.bar(8) ? 2 : 1) + (t >= INS.bar(8) && beatPhase(t) > .5 ? 1 : 0); SIL = [];
+  const base = [K, 0, 0, K, 0, 0];
   g.setTransform(1, 0, 0, 1, 0, 0); g.drawImage(paperTex, 0, 0); g.setTransform(...base);
-  // ---- crayon ----
   const c = cC; c.setTransform(1, 0, 0, 1, 0, 0); c.clearRect(0, 0, CW, CH); c.setTransform(...base);
-  cam.sn = 1;
-  for (const L of LOOPS) if (t >= L.t0 && t < L.tEnd) crayonLoop(c, t, L);
-  drawCapFly(c, t);
-  // starbursts: the old crayon stars come back as sparks on every beat
-  { const bi = beatIndex(t), bp = beatPulse(t, 5);
-    for (let i = 0; i < 6 + Math.floor(e * 10); i++) { const h = hash2(bi, i, 77), [x, y] = [hash2(bi, i, 78) * 1920, hash2(bi, i, 79) * 1080], r = (14 + h * 26) * (1 + .5 * bp), pts = [];
-      for (let k = 0; k < 10; k++) { const a = h * 3 + k / 10 * TAU, rr = k % 2 ? r * .45 : r; pts.push([x + Math.cos(a) * rr, y + Math.sin(a) * rr]); }
-      crayon(c, pts, { col: i % 2 ? COL.star : CRAYS[i % CRAYS.length], w: 7, seed: 1500 + i, closed: true, passes: 2, gap: .05 }); } }
-  const fin = t >= INS.drain ? ease.out(inv(INS.drain + .45, INS.sepia1, t)) : 0;
-  if (fin > 0) { cam.sn = 2.3; const st = FINAL_ST(); erase(c, custSil(st), fin); AMUL = fin; drawCustomer(c, t, st); AMUL = 1; cam.sn = 1; }
+  // room in crayon
+  scribble(c, SP(ROOM.ceil), { col: '#e8dcbc', sp: 30, ang: .1, seed: 3001, alpha: .4 });
+  scribble(c, SP(ROOM.left), { col: '#e2c98e', sp: 26, ang: 1.45, seed: 3002, alpha: .45 });
+  scribble(c, SP(ROOM.right), { col: '#e2c98e', sp: 26, ang: 1.7, seed: 3003, alpha: .45 });
+  scribble(c, SP(ROOM.back), { col: '#cfdcc6', sp: 20, ang: 1.3, seed: 3004, alpha: .5 });
+  scribble(c, SP(ROOM.floor), { col: '#c08a52', sp: 22, ang: .05, seed: 3005, alpha: .5 });
+  for (let x = 700, i = 0; x <= 1220; x += 26, i++) crayon(c, SP([[x, 600], rdir([x, 600], 6)]), { col: '#8a5a2e', w: 4.5, seed: 3010 + i, alpha: .75, passes: 2, gap: .1 });
+  for (const k of [1.12, 1.3, 1.6, 2.1]) crayon(c, SP([rdir(RBL, k), rdir(RBR, k)]), { col: '#8a5a2e', w: 3.5, seed: 3040 + k * 10, alpha: .5, passes: 1, gap: .25 });
+  const edge = '#6b4a2a';
+  for (const [a, b] of [[RTL, RTR], [RTR, RBR], [RBR, RBL], [RBL, RTL], [RTL, rdir(RTL, 7)], [RTR, rdir(RTR, 7)], [RBL, rdir(RBL, 7)], [RBR, rdir(RBR, 7)]]) crayon(c, SP([a, b]), { col: edge, w: 7, seed: 3060 + a[0] + b[1], passes: 2 });
+  crayon(c, SP([wallPt(false, 6, .2), wallPt(false, 1, .2), wallPt(true, 1, .2), wallPt(true, 6, .2)]), { col: '#9a6a3a', w: 5, seed: 3070, passes: 2 }); // dado rail
+  // tall arched windows on the back wall, tall panes on the side walls
+  [790, 960, 1130].forEach((wx, i) => { const win = [[wx - 38, 520]]; for (let k = 0; k <= 10; k++) { const a = Math.PI + k / 10 * Math.PI; win.push([wx + Math.cos(a) * 38, 330 + Math.sin(a) * 38]); } win.push([wx + 38, 520]);
+    const sw = SP(win); scribble(c, sw, { col: '#9fd0f0', sp: 9, ang: 1, seed: 3080 + i, alpha: .8 }); crayon(c, sw, { col: '#7a5a3a', w: 6, seed: 3085 + i, closed: true });
+    crayon(c, SP([[wx, 296], [wx, 520]]), { col: '#7a5a3a', w: 4, seed: 3090 + i }); crayon(c, SP([[wx - 38, 420], [wx + 38, 420]]), { col: '#7a5a3a', w: 4, seed: 3093 + i }); });
+  for (const right of [false, true]) for (const [k0, k1, j] of [[1.3, 1.7, 0], [2.2, 3.0, 1]]) { if (right && j === 0) continue;
+    const q = [wallPt(right, k0, .22), wallPt(right, k0, .86), wallPt(right, k1, .86), wallPt(right, k1, .22)], sq = SP(q), sd = 3100 + j + (right ? 5 : 0);
+    scribble(c, sq, { col: '#9fd0f0', sp: 12, ang: right ? 1.9 : 1.2, seed: sd, alpha: .75 }); crayon(c, sq, { col: '#7a5a3a', w: 7, seed: sd + 10, closed: true });
+    const km = (k0 + k1) / 2; crayon(c, SP([wallPt(right, km, .22), wallPt(right, km, .86)]), { col: '#7a5a3a', w: 5, seed: sd + 20 }); }
+  // the doorway (right wall), a lit hallway beyond
+  const sdr = SP(DOOR); scribble(c, sdr, { col: '#f3df8a', sp: 10, ang: 1.5, seed: 3130, alpha: .85 }); crayon(c, sdr, { col: '#6b4a2a', w: 7, seed: 3131, closed: true }); SIL.push(sdr);
+  // a lone light bulb hanging from the far ceiling, swinging on the beat
+  { const sw = Math.sin((beatIndex(t) + ease.inOut(beatPhase(t))) * Math.PI) * .12, top = [960, 120], L = 150, bx = top[0] + Math.sin(sw) * L, by = top[1] + Math.cos(sw) * L;
+    crayon(c, SP([[960, -200], top, [bx, by]]), { col: COL.ink, w: 3, seed: 3140, passes: 1, gap: 0 });
+    const bulb = SP(eli(bx, by + 14, 11, 14, 14)); scribble(c, bulb, { col: '#f7e27a', sp: 5, seed: 3141, alpha: .9 }); crayon(c, bulb, { col: '#c79a1a', w: 3, seed: 3142, closed: true }); }
+  // the cast, back to front
+  for (const a of castAt(t)) a.d(c);
+  // the customer watches from the doorway (bar 10 on), faintly satisfied at the end
+  const cIn = inv(INS.bar(10), INS.bar(10) + .5, t);
+  if (cIn > 0) { const st = { x: lerp(1395, 1325, ease.out(cIn)), y: 652, k: .62, mouth: 'flat', look: [-1, 0], brow: 0, nod: 0, sink: 0, tear: 0, squash: .02 * beatPulse(t, 9) };
+    const u = t - INS.bar(13) - .2; if (u > 0 && u < 2.4) { st.brow = ease.out(u / .2) * (1 - inv(2, 2.4, u)); if (u < .5) st.nod = Math.sin(Math.PI * u / .5) * 8; }
+    if (t > INS.drain) st.look = [0, 0];
+    c.save(); c.beginPath(); polyPath(c, sdr); c.clip(); const sn = cam.sn; cam.sn = .75 * cam.s; drawCustomer(c, t, st); cam.sn = sn; c.restore(); }
   c.setTransform(1, 0, 0, 1, 0, 0); c.globalCompositeOperation = 'destination-out'; c.globalAlpha = .92; c.drawImage(grainTex, 0, 0);
   c.globalCompositeOperation = 'source-over'; c.globalAlpha = 1;
   g.setTransform(1, 0, 0, 1, 0, 0); g.drawImage(layerC, 0, 0);
-  // ---- paint ----
+  // gouache
   const w = cW; w.setTransform(1, 0, 0, 1, 0, 0); w.clearRect(0, 0, CW, CH); w.setTransform(...base);
-  const live = BLOOMS.filter((B) => B.t <= t).slice(-12);
-  live.forEach((B, i) => {
-    const R = rng(B.n * 31 + 7), [x, y] = bloomPos(B.n), old = live.length - 1 - i;
-    const fade = old >= 9 ? 1 - (old - 8) * .3 : 1;
-    flood(w, t, { t0: B.t, dur: .5, origin: [x, y], R: (170 + 270 * energy(B.t) + R() * 90) * (1 + .08 * beatPulse(t, 7)), ry: .7 + R() * .45, rot: R() * 180,
-      seed: B.n % 10, pig: BPIGS[B.n % BPIGS.length], alpha: .8, fade, blooms: [[x + (R() - .5) * 120, y + (R() - .5) * 90, 50 + R() * 40]] });
-  });
-  if (fin > 0) { w.save(); w.globalCompositeOperation = 'destination-out'; w.globalAlpha = fin; for (const pc of custSil(FINAL_ST())) { w.beginPath(); polyPath(w, pc); w.fill(); } w.restore(); }
-  w.setTransform(1, 0, 0, 1, 0, 0);
-  w.globalCompositeOperation = 'source-atop'; w.globalAlpha = .16; w.drawImage(grainTex, 0, 0);
-  w.globalCompositeOperation = 'destination-out'; w.globalAlpha = .82; w.drawImage(layerC, 0, 0);
-  w.globalCompositeOperation = 'source-over'; w.globalAlpha = 1; w.setTransform(...base);
-  // on top of the wax: smudges, ink, and the sheet of paint sliding off the page
-  for (const S0 of SMUDGES) smudge(w, t, S0);
-  for (const I of INKS) inkPool(w, t, I);
-  sheet(w, t, 1300 * ease.in(inv(INS.sceneEnd, INS.sceneEnd + 1.5, t)));
-  w.setTransform(1, 0, 0, 1, 0, 0); g.setTransform(1, 0, 0, 1, 0, 0); g.drawImage(layerW, 0, 0);
+  if (t >= INS.drop) {
+    roomWash(w, t);
+    w.save(); w.globalCompositeOperation = 'destination-out'; w.fillStyle = '#000'; for (const p of SIL) { w.beginPath(); polyPath(w, p); w.fill(); } w.restore();
+    w.setTransform(1, 0, 0, 1, 0, 0);
+    w.globalCompositeOperation = 'source-atop'; w.globalAlpha = .16; w.drawImage(grainTex, 0, 0);
+    w.globalCompositeOperation = 'destination-out'; w.globalAlpha = .82; w.drawImage(layerC, 0, 0);
+    w.globalCompositeOperation = 'source-over'; w.globalAlpha = 1;
+    g.drawImage(layerW, 0, 0);
+  }
   g.globalCompositeOperation = 'multiply'; g.globalAlpha = .45; g.drawImage(paperTex, 0, 0);
   g.globalCompositeOperation = 'source-over'; g.globalAlpha = 1;
   g.setTransform(...base);
-  drawTears(g, t);
+}
+// 35.5 to the drop: the weep scene runs off the page in wet strips, uncovering the room
+function drawRoom(g, t) {
+  if (t >= INS.drop) { drawRoomScene(g, t); return; }
+  if (!TMP) TMP = mkCanvas(CW, CH);
+  const tc = TMP.getContext('2d'); drawVerse(tc, t);
+  drawRoomScene(g, t);
+  g.save(); g.setTransform(1, 0, 0, 1, 0, 0);
+  const N = 40, sw = CW / N;
+  for (let i = 0; i < N; i++) {
+    const d = hash(i * 17 + 3) * .75 + Math.abs(i - N * .35) / N * .5, u = ease.in(inv(INS.t0 + d * .9, INS.drop - .25 + d * .2, t)), dy = u * CH * 1.25;
+    if (dy >= CH) continue;
+    g.drawImage(TMP, i * sw, 0, sw + 1, CH - dy, i * sw, dy, sw + 1, CH - dy);
+    if (dy > 2) { g.globalAlpha = .55; g.fillStyle = i % 3 ? PIG.indigo[0] : PIG.tear[0]; const tw = sw * (.35 + .4 * hash(i)); const L = 160 * K * u; g.fillRect(i * sw + (sw - tw) / 2, Math.max(0, dy - L), tw, Math.min(dy, L)); g.globalAlpha = 1; }
+  }
+  g.restore();
 }
 // drain to two-tone sepia + grain, then the iris closes onto the diner's opening iris
 function finish(g, t) {
@@ -753,6 +919,6 @@ function finish(g, t) {
   }
 }
 function drawFrame(g, t) {
-  if (t < INS.sceneEnd) drawVerse(g, t); else drawInstr(g, t);
+  if (t < INS.t0) drawVerse(g, t); else drawRoom(g, t);
   finish(g, t);
 }

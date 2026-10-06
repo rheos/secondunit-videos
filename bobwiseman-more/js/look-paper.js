@@ -944,6 +944,325 @@
     for (const q of VB.fill) { const dx = q.x - 960, dy = q.y - 540, L = Math.hypot(dx, dy) || 1, d = 1900 * ease.in(a / .6); g.save(); g.translate(dx / L * d, dy / L * d); slapDraw(g, q, t, true, a * 3); g.restore(); }
   }
 
+  // =====================================================================================
+  // v4 instrumental 2 (129.5-158.7): Bob's scene. A room of elderly people, a clock ticking on the beat.
+  // They stir, stand and dance; their shadows peel off as their twenty-year-old selves; a challenge;
+  // a giant clock comes down, one woman pulls off its minute hand and walks off with it as her cane.
+  // Everything is a function of kb = beats since the burst (continuous), so it stays pure and on the grid.
+  // =====================================================================================
+  const kbAt = (t) => (lastBeat(t) - BI0) + beatPhase(t);
+  const FLOOR = 888, WALLB = 768, SHCOL = '#2b2557';
+  const fracK = (k) => k - Math.floor(k);
+  const pulK = (k, d = 6) => Math.exp(-d * .49 * fracK(k));
+  const DE = { tor: 150, shW: 50, hipW: 30, ua: 82, fa: 72, th: 112, sh: 148, hr: 46, aw: 26, lw: 30, bw: 64 };
+  const DYG = { tor: 172, shW: 52, hipW: 27, ua: 94, fa: 84, th: 132, sh: 172, hr: 40, aw: 22, lw: 25, bw: 52 };
+  const dimsAt = (y) => { const o = {}; for (const k in DE) o[k] = lerp(DE[k], DYG[k], y); return o; };
+  const ELD = [
+    { x: 330, skin: '#f3c3a4', body: C.pink, legs: '#efe2d0', skirt: C.verm, hair: 'bun', hairC: '#f4f1ea', glasses: true, chair: C.cobalt, young: 'pony' },
+    { x: 570, skin: '#e7ad88', body: C.cobalt, legs: '#5b4a3c', hair: 'tufts', hairC: '#f1efe8', hat: 'flatcap', hatC: '#7a5a3a', bushy: true, mous: true, chair: C.lemon, young: 'quiff' },
+    { x: 800, skin: '#c98a62', body: C.leaf, legs: '#8a5a3c', skirt: '#2f8a36', hair: 'curly', hairC: '#d4d2da', hat: 'cloche', hatC: C.lemon, chair: C.verm, young: 'curls' },
+    { x: 1120, skin: '#f6d2bc', body: C.verm, legs: '#3d4a6b', hair: 'bald', hairC: '#f4f1ea', glasses: true, cane: true, chair: C.leaf, young: 'full' },
+    { x: 1360, skin: '#a8714f', body: C.cobalt, legs: '#6b4a34', skirt: '#1d3fa0', hair: 'bob', hairC: '#dcdde6', hat: 'beret', hatC: C.pink, pearls: true, chair: C.lemon, young: 'bob' },
+    { x: 1600, skin: '#f0bfa0', body: C.lemon, legs: '#2f3a2f', hair: 'side', hairC: '#c9c9cf', glasses: true, cane: true, chair: C.pink, young: 'afro' },
+  ];
+  const SHX = [215, 470, 735, 1185, 1450, 1705];       // where each young shadow dances on the wall
+  const SEAT = (i) => ({ x: ELD[i].x, y: 700, lean: 0, sx: 1, hd: 0, hdx: 0, aL: [.18, -1.15], aR: [.18, -1.15], lL: [.1, -.1, 0], lR: [.1, -.1, 0], tk: .33, brow: 0, browL: -1, browR: -1, eyeX: 0, eyeY: 0, smile: 0, shL: 0, shR: 0, finger: 0, caneRot: 0, minute: 0, minAng: 0 });
+  const STAND = (i, D, ground = FLOOR) => ({ ...SEAT(i), y: ground - 12 - (D.th + D.sh), aL: [.14, -.05], aR: [.14, -.05], lL: [.06, 0, 0], lR: [.06, 0, 0], tk: 1 });
+  function mixPose(A, B, u) {
+    if (u <= 0) return A; if (u >= 1) return B;
+    const o = {}; for (const k in A) { const a = A[k], b = B[k]; o[k] = Array.isArray(a) ? a.map((v, j) => lerp(v, b[j], u)) : typeof a === 'number' ? lerp(a, b, u) : (u < .5 ? a : b); } return o;
+  }
+  // the elders' own moves, by beat count
+  const STANDK = { 0: 6, 3: 8, 5: 9 };
+  function elderRaw(i, k) {
+    const F = ELD[i];
+    const su = STANDK[i] != null ? smooth(inv(STANDK[i], STANDK[i] + 1.4, k)) : 0;
+    let p = mixPose(SEAT(i), STAND(i, DE), su);
+    p = { ...p, aL: [...p.aL], aR: [...p.aR], lL: [...p.lL], lR: [...p.lR] };
+    const pb = pulK(k, 7);
+    // the stir: a foot, a finger, a shoulder, then Edna stands
+    if (i === 3 && k >= 2 && k < 8) p.lR[2] = pb;
+    if (i === 1 && k >= 3) { p.finger = smooth(inv(3, 3.3, k)) * (k < 28 ? 1 : 0); if (k < 8) p.aR[1] = -1.15 - .45 * pb; }
+    if (i === 4 && k >= 4 && k < 8) p.shR = pb;
+    // the dance
+    const d = smooth(inv(8, 8.6, k)) * (1 - smooth(inv(15.4, 16, k)));
+    if (d > 0) {
+      const sb = Math.sin(Math.PI * k);
+      if (i === 0) { p.lean = .14 * sb * d; p.x += 18 * sb * d; p.aL = [lerp(.14, 2.5 + .25 * sb, d), .35 * d]; p.aR = [lerp(.14, 2.5 - .25 * sb, d), .35 * d]; p.y += 8 * pb * d; p.smile = .6 * d; }
+      if (i === 1) { // eyebrows and hands only
+        const hL = d * (.5 + .5 * sb), hR = d * (.5 - .5 * sb);
+        p.aL = [lerp(.18, 1.05, hL), lerp(-1.15, -2.4, hL)]; p.aR = [lerp(.18, 1.05, hR), lerp(-1.15, -2.4, hR)];
+        p.browL = d * (Math.floor(k) % 2 ? 1 : .15) * (.6 + .4 * pb); p.browR = d * (Math.floor(k) % 2 ? .15 : 1) * (.6 + .4 * pb); p.eyeX = 4 * Math.sin(Math.PI * k / 2) * d;
+      }
+      if (i === 2 || i === 4) { // chairs slide across the floor, one beat at a time
+        const st = Math.floor(k - 8) + ease.inOut(Math.min(1, fracK(k) * 2.2)), off = 115 * Math.sin(Math.PI / 2 * st) * d;
+        p.x += i === 2 ? off : -off; p.aL = [lerp(.18, 1.35, d), -.25 * d]; p.aR = [lerp(.18, 1.35, d), -.25 * d];
+        p.lean = (i === 2 ? -1 : 1) * .12 * Math.cos(Math.PI / 2 * st) * d;
+        if (i === 4) { p.shL = d * Math.max(0, Math.sin(TAU2 * k)); p.shR = d * Math.max(0, -Math.sin(TAU2 * k)); }
+      }
+      if (i === 3 || i === 5) { // the cane is the partner
+        const sd = i === 3 ? 1 : -1, arm = [lerp(.14, 1.25, d), .1 * d], hug = [lerp(.14, .95, d), lerp(-.05, -1.45, d)];
+        if (sd > 0) { p.aR = arm; p.aL = hug; } else { p.aL = arm; p.aR = hug; }
+        if (i === 3) p.sx = d > .5 ? Math.cos(TAU2 * clamp(fracK(k / 4) * 4 - 3)) : 1; // twirls round it on the last beat of each bar
+        else { p.lean = -.22 * Math.max(0, Math.sin(Math.PI / 2 * (k - 9))) * d; p.x += 22 * sb * d; }
+        p.y += 6 * pb * d; p.smile = .5 * d;
+      }
+    }
+    // they notice their shadows, and watch them
+    const n = smooth(inv(16.3, 17, k)) * (1 - smooth(inv(39.5, 40, k)));
+    if (n > 0 && k < 28) { p.hd = (i < 3 ? .3 : -.3) * n + .06 * Math.sin(k * 1.3) * n; p.eyeX = (i < 3 ? 6 : -6) * n; p.eyeY = -5 * n; p.brow = Math.max(p.brow, n * (k < 19 ? 1 : .4)); if (k > 18) p.y += (su > .5 ? 5 : 2) * pb; }
+    // the challenge: smaller, stranger, funnier
+    const a = smooth(inv(28, 28.6, k));
+    if (a > 0) {
+      const s2 = Math.sin(TAU2 * k), sq = Math.floor(2 * k) % 2;
+      p.hd = 0; p.eyeX = 0; p.eyeY = 0; p.smile = .7 * a;
+      if (i === 0) { p.aL = [.95 * a + .14, -2.25 * a]; p.aR = [.95 * a + .14, -2.25 * a]; p.x += 11 * s2 * a; p.lean = -.09 * s2 * a; }
+      if (i === 1) { p.browL = .5 + .5 * s2; p.browR = .5 - .5 * s2; p.finger = 1; p.aR = [.3, -1.6 - .3 * pulK(k * 2, 8)]; }
+      if (i === 2) { p.aL = [.4, -1.5 - .5 * sq]; p.aR = [.4, -1.5 - .5 * (1 - sq)]; p.hd = .08 * s2; }
+      if (i === 3) { p.lR[2] = pulK(k * 2, 8); p.caneRot = TAU2 * fracK(k / 2) * a; p.aR = [.7, -.2]; }
+      if (i === 4) { p.hdx = 11 * s2 * a; p.aL = [.55, -2.45]; p.aR = [.55, -2.45]; }
+      if (i === 5) { const q = Math.floor(k) % 4, T4 = [[.2, -1.6, 1.2, 0], [1.4, 0, .2, -1.6], [1.4, -1.5, 1.4, -1.5], [.3, 0, .3, 0]][q]; p.aL = [T4[0], T4[1]]; p.aR = [T4[2], T4[3]]; p.lean = (q % 2 ? .05 : -.05); }
+    }
+    return p;
+  }
+  const B = (k) => bt(k);
+  function elderPose(i, k) {
+    if (k < 40) return elderRaw(i, k);
+    let p = elderRaw(i, 39.97); p = { ...p, aL: [...p.aL], aR: [...p.aR], lL: [...p.lL], lR: [...p.lR] };
+    // freeze: everyone looks at the clock
+    const L = smooth(inv(40, 40.5, k));
+    const cx = 960; p.hd = (ELD[i].x < cx ? .22 : -.22) * L; p.eyeY = -6 * L; p.eyeX = (ELD[i].x < cx ? 5 : -5) * L; p.brow = Math.max(L * (k < 42 ? 1 : .3), 0);
+    p.smile = 0; p.browL = -1; p.browR = -1; p.caneRot = 0; p.hdx = 0;
+    if (i !== 0 && k > 42) { const ex = edna(k).x; p.eyeX = clamp((ex - ELD[i].x) / 60, -6, 6); p.hd = clamp((ex - ELD[i].x) / 2000, -.25, .25); p.eyeY = k > 50 ? 0 : -3; }
+    if (i === 0) { const e = edna(k); return e.p; }
+    return p;
+  }
+  // Edna's walk to the clock, the pull, the walk off with her new cane
+  const MIN = { ang: 255 / 180 * Math.PI, L: 260 };
+  function edna(k) {
+    let p = elderRaw(0, 39.97); p = { ...p, aL: [.14, -.05], aR: [.14, -.05], lL: [.06, 0, 0], lR: [.06, 0, 0], lean: 0, smile: 0, browL: -1, browR: -1, hdx: 0 };
+    p.y = STAND(0, DE).y;
+    const walk = (k0, k1, x0, x1) => { const u = inv(k0, k1, k), w = u > 0 && u < 1 ? 1 : 0, ph = Math.PI * k; p.x = lerp(x0, x1, u); p.lL = [.28 * Math.sin(ph) * w + .06, 0, 0]; p.lR = [-.28 * Math.sin(ph) * w + .06, 0, 0]; p.y -= 7 * Math.abs(Math.sin(ph)) * w; return w; };
+    let x = 330;
+    const frozen = { ...elderRaw(0, 39.97), hd: .22 * smooth(inv(40, 40.5, k)), eyeY: -6 * smooth(inv(40, 40.5, k)), brow: smooth(inv(40, 40.3, k)), smile: 0, browL: -1, browR: -1, hdx: 0 };
+    if (k < 42) return { x: frozen.x, p: frozen };
+    const res = ednaMove(k, p);
+    return { x: res.p.x, p: mixPose(frozen, res.p, smooth(inv(42, 42.5, k))) };
+  }
+  function ednaMove(k, p) {
+    const walk = (k0, k1, x0, x1) => { const u = inv(k0, k1, k), w = u > 0 && u < 1 ? 1 : 0, ph = Math.PI * k; p.x = lerp(x0, x1, u); p.lL = [.28 * Math.sin(ph) * w + .06, 0, 0]; p.lR = [-.28 * Math.sin(ph) * w + .06, 0, 0]; p.y -= 7 * Math.abs(Math.sin(ph)) * w; return w; };
+    if (k < 46.2) { walk(42, 46, 330, 512); p.hd = .15; p.eyeY = -5; p.eyeX = 4; return { x: p.x, p }; }
+    p.x = 512;
+    if (k < 47) { const u = smooth(inv(46.2, 46.6, k)); p.aR = [lerp(.14, 1.3, u), lerp(-.05, .15, u)]; p.lean = -.1 * smooth(inv(46.6, 47, k)) + .03 * Math.sin(k * 40) * (k > 46.6 ? 1 : 0); p.hd = .1; p.eyeY = -4; return { x: 512, p }; }
+    // got it: swing it down and plant it as a cane
+    const u = smooth(inv(47, 48.4, k));
+    p.aR = [lerp(1.3, .32, u), lerp(.15, -.12, u)]; p.minute = 1; p.minAng = lerp(-1.83, 0, u);
+    p.lean = -.1 * (1 - smooth(inv(47, 47.5, k)));
+    const nod = Math.sin(Math.PI * inv(48.6, 49.4, k)); p.hd = .08 * nod; p.y += 6 * nod; p.brow = Math.sin(Math.PI * inv(48.4, 49.8, k)); p.smile = smooth(inv(48.4, 49, k)) * .8;
+    if (k >= 50) { walk(50, 56.5, 512, -260); p.hd = -.12; p.eyeX = -5; p.smile = .8; p.minAng = .08 * Math.sin(Math.PI * k); }
+    return { x: p.x, p };
+  }
+  // the shadows: attached copies until the peel, then their young selves
+  function youngPose(i, k, D) {
+    const ground = WALLB;
+    const p = STAND(i, D, ground); p.x = SHX[i];
+    const bar = Math.floor(k / 4), ph = fracK(k), sb = Math.sin(Math.PI * k), m = (bar + i) % 4;
+    const show = k >= 28 && k < 32;
+    if (show) { p.y -= 120 * Math.sin(Math.PI * ph); p.sx = Math.cos(TAU2 * fracK(k / 2)); p.lL = [1.15, .2, 0]; p.lR = [1.15, .2, 0]; p.aL = [2.7, .2]; p.aR = [2.7, .2]; return p; }
+    if (m === 0) { p.lean = .16 * sb; p.aL = [1.4 + .3 * sb, .8]; p.aR = [1.4 - .3 * sb, .8]; p.lL = [.3, -.2, 0]; p.lR = [.3, -.2, 0]; p.y += 18; }
+    if (m === 1) { const kL = Math.floor(k) % 2 ? pulK(k, 4) : 0, kR = Math.floor(k) % 2 ? 0 : pulK(k, 4); p.lL = [.06 + 1.4 * kL, -.2 * kL, 0]; p.lR = [.06 + 1.4 * kR, -.2 * kR, 0]; p.aL = [2.2, .3]; p.aR = [2.2, .3]; }
+    if (m === 2) { p.aL = [2.6 + .25 * Math.sin(TAU2 * k), .45]; p.aR = [2.6 - .25 * Math.sin(TAU2 * k), .45]; p.lean = .1 * sb; p.x += 20 * sb; }
+    if (m === 3) { p.y -= 75 * Math.sin(Math.PI * ph); const sp = Math.sin(Math.PI * ph); p.lL = [.9 * sp, .3 * sp, 0]; p.lR = [.9 * sp, .3 * sp, 0]; p.aL = [1.8, -.2]; p.aR = [1.8, -.2]; }
+    return p;
+  }
+  function shadowState(i, k) {
+    // returns { p, y (youngness), dx, dy } : pose in world space
+    const off = [34, -20];
+    const own = (kk) => { const o = elderPose(i, kk); return { ...o, x: o.x + off[0], y: o.y + off[1] }; };
+    if (k < 16) return { p: own(k), y: 0 };
+    const D = dimsAt(1);
+    let yp;
+    if (k < 32) yp = youngPose(i, k, D);
+    else { // copying the elders' answers: same move, young body, on the wall
+      const e = elderRaw(i, Math.min(k, 39.97)), base = STAND(i, D, WALLB), seated = e.tk < .6;
+      yp = { ...e, x: SHX[i] + (e.x - elderRaw(i, 31.9).x), y: seated ? base.y + 40 : base.y + (e.y - STAND(i, DE).y), tk: seated ? .33 : 1, sx: e.sx };
+      if (k >= 40) yp = { ...yp };
+    }
+    let u = smooth(inv(16, 17.6, k));
+    if (k > 40) u *= 1 - smooth(inv(50, 55, k)); // after the clock they drift home to their owners
+    const back = k > 40 ? own(k) : own(Math.min(k, 16));
+    return { p: mixPose(back, yp, u), y: u };
+  }
+
+  // ---------- drawing the people ----------
+  const RMC = new Map();
+  const rc = (key, f) => { if (!RMC.has(key)) RMC.set(key, f()); return RMC.get(key); };
+  const LIMB = (s) => rc('limb' + s, () => cutPath(rectPts(-50, -5, 50, 105), 65000000 + s, 26, 1.6));
+  function limb(g, x, y, ang, w, L, col, seed, lift) { g.save(); g.translate(x, y); g.rotate(ang); g.scale(w / 100, L / 100); fillParts(g, [{ p: LIMB(seed), col }], lift); g.restore(); }
+  const pin = (g, x, y) => { g.fillStyle = '#c9a43a'; g.beginPath(); g.arc(x, y, 3.2, 0, TAU2); g.fill(); };
+  function drawCane(g, top, bot, col, seed, minute) {
+    const dx = bot[0] - top[0], dy = bot[1] - top[1], L = Math.hypot(dx, dy), ang = Math.atan2(-dx, dy);
+    g.save(); g.translate(top[0], top[1]); g.rotate(ang);
+    if (minute) { // the clock's minute hand: hub at the top, arrow at the floor
+      fillParts(g, [{ p: rc('minS', () => cutPath([[-9, 0], [9, 0], [9, 225], [22, 225], [0, 262], [-22, 225], [-9, 225]], 65100001, 40, 1)), col: C.black }, { p: rc('minH', () => disk(18, 65100002)), col: C.black }], 1);
+      g.fillStyle = C.lemon; g.beginPath(); g.arc(0, 0, 6, 0, TAU2); g.fill();
+    } else {
+      g.scale(1, L / 240);
+      fillParts(g, [{ p: rc('cane' + seed, () => cutPath(rectPts(-6, 0, 6, 240), 65100010 + seed, 40, 1)), col }, { p: rc('crook' + seed, () => { const o = []; for (let q = 0; q <= 8; q++) { const a = Math.PI * q / 8; o.push([-22 + Math.cos(a) * 22 * 1.0 + 0, -Math.sin(a) * 20]); } for (let q = 8; q >= 0; q--) { const a = Math.PI * q / 8; o.push([-22 + Math.cos(a) * 10, -Math.sin(a) * 8]); } return cutPath(o, 65100020 + seed, 40, .8); }), col }], 1);
+    }
+    g.restore();
+  }
+  function drawFig(g, i, p, yng, shadow) {
+    const F = ELD[i], D = dimsAt(yng), sc = (q) => (shadow ? SHCOL : q), lift = shadow ? .5 : 1;
+    const sd = 7000 + i * 50;
+    g.save(); g.translate(p.x, p.y); g.scale(p.sx || 1, 1);
+    // kinematics in hip space (y down)
+    const sl = p.lean, scx = Math.sin(sl) * D.tor, scy = -Math.cos(sl) * D.tor, px = Math.cos(sl), py = Math.sin(sl);
+    const sh = (s) => [scx + s * px * D.shW, scy + s * py * D.shW - (s < 0 ? p.shL : p.shR) * 14];
+    const arm = (s, a) => { const [x0, y0] = sh(s), f1 = sl - s * a[0], e = [x0 - Math.sin(f1) * D.ua, y0 + Math.cos(f1) * D.ua], f2 = f1 - s * a[1]; return { s0: [x0, y0], f1, e, f2, h: [e[0] - Math.sin(f2) * D.fa, e[1] + Math.cos(f2) * D.fa] }; };
+    const leg = (s, l) => { const h = [s * D.hipW, 0], f1 = -s * l[0], kn = [h[0] - Math.sin(f1) * D.th * p.tk, h[1] + Math.cos(f1) * D.th * p.tk], f2 = f1 - s * l[1], L2 = D.sh * (1 - .22 * (l[2] || 0)); return { h, f1, kn, f2, L2, ft: [kn[0] - Math.sin(f2) * L2, kn[1] + Math.cos(f2) * L2] }; };
+    const AL = arm(-1, p.aL), AR = arm(1, p.aR), LL = leg(-1, p.lL), LR = leg(1, p.lR);
+    // legs + shoes
+    for (const [Lg, s] of [[LL, -1], [LR, 1]]) {
+      limb(g, Lg.h[0], Lg.h[1], Lg.f1, D.lw, D.th * p.tk + 4, sc(F.legs), sd + 1 + (s > 0), lift);
+      limb(g, Lg.kn[0], Lg.kn[1], Lg.f2, D.lw * .9, Lg.L2, sc(F.legs), sd + 3 + (s > 0), lift);
+      g.save(); g.translate(Lg.ft[0], Lg.ft[1]); g.scale(s, 1); fillParts(g, [{ p: rc('shoe', () => cutPath([[-12, 2], [-12, -10], [10, -12], [30, -6], [32, 4]], 65200001, 99, 1)), col: sc('#2a2220') }], lift); g.restore();
+      if (!shadow) pin(g, Lg.kn[0], Lg.kn[1]);
+    }
+    // skirt
+    if (F.skirt && !(shadow && yng > .5 && false)) { const ln = D.th * p.tk + 26; g.save(); g.scale(1, ln / 100); fillParts(g, [{ p: rc('skirt' + i, () => cutPath([[-60, -20], [60, -20], [78, 100], [-78, 100]], 65200010 + i, 40, 1.4)), col: sc(F.skirt) }], lift); g.restore(); }
+    // torso
+    g.save(); g.rotate(sl); g.scale(D.bw / 64, D.tor / 150); fillParts(g, [{ p: rc('tor' + i, () => cutPath([[-40, 6], [40, 6], [58, -132], [44, -152], [-44, -152], [-58, -132]], 65200020 + i, 34, 1.6)), col: sc(F.body) }], lift);
+    if (!shadow) {
+      fillParts(g, [{ p: rc('plk' + i, () => cutPath(rectPts(-3, -150, 3, 4), 65200030 + i, 99, .5)), col: shade(F.body, .78) }], .3);
+      for (const by of [-110, -70, -30]) { g.fillStyle = C.white; g.beginPath(); g.arc(9, by, 4.5, 0, TAU2); g.fill(); }
+      if (F.pearls) for (let q = 0; q < 9; q++) { const a = Math.PI * (.15 + .7 * q / 8); g.fillStyle = C.white; g.beginPath(); g.arc(Math.cos(a) * 34, -150 + Math.sin(a) * 26, 5, 0, TAU2); g.fill(); }
+    }
+    g.restore();
+    // arms + hands (+ props)
+    const caneOn = F.cane && !(shadow && yng > .3);
+    for (const [A, s] of [[AL, -1], [AR, 1]]) {
+      limb(g, A.s0[0], A.s0[1], A.f1, D.aw, D.ua + 4, sc(shade(F.body, .9)), sd + 5 + (s > 0), lift);
+      limb(g, A.e[0], A.e[1], A.f2, D.aw * .9, D.fa, sc(shade(F.body, .9)), sd + 7 + (s > 0), lift);
+      g.save(); g.translate(A.h[0], A.h[1]); fillParts(g, [{ p: rc('hand', () => disk(14, 65200040)), col: sc(F.skin) }], lift);
+      if (s > 0 && p.finger > .05 && !shadow) { g.rotate(A.f2); g.scale(1, p.finger); fillParts(g, [{ p: rc('fing', () => cutPath(rectPts(-4.5, 6, 4.5, 34), 65200041, 99, .5)), col: F.skin }], .6); }
+      g.restore();
+      if (!shadow) { pin(g, A.s0[0], A.s0[1]); pin(g, A.e[0], A.e[1]); }
+    }
+    // the hand drawn twice above is cheap; props in the hand
+    if (caneOn) {
+      const s = i === 3 ? 1 : -1, A = s > 0 ? AR : AL, standing = p.tk > .6;
+      const top = standing ? A.h : [s * 80, -20], bot = standing ? [A.h[0] + s * 34, FLOOR - p.y] : [s * 100, FLOOR - p.y];
+      if (p.caneRot) { g.save(); g.translate(top[0], top[1]); g.rotate(p.caneRot); g.translate(-top[0], -top[1]); drawCane(g, top, [top[0], top[1] + 200], sc('#6b4226'), i, false); g.restore(); }
+      else drawCane(g, top, bot, sc('#6b4226'), i, false);
+    }
+    if (p.minute > .5) drawCane(g, AR.h, [AR.h[0] + Math.sin(p.minAng) * -260, AR.h[1] + Math.cos(p.minAng) * 260], C.black, 9, true);
+    // head
+    const nk = [scx, scy], ha = sl + p.hd, hc = [nk[0] + Math.sin(ha) * (D.hr + 8) + (p.hdx || 0), nk[1] - Math.cos(ha) * (D.hr + 8)];
+    g.save(); g.translate(hc[0], hc[1]); g.rotate(ha); const r = D.hr; g.scale(r / 46, r / 46);
+    const hairKey = shadow && yng > .5 ? F.young : F.hair, HC = sc(F.hairC);
+    // hair behind
+    if (hairKey === 'bun') { g.save(); g.translate(0, -50); fillParts(g, [{ p: rc('bun', () => disk(20, 65300001)), col: HC }], lift); g.restore(); }
+    if (hairKey === 'bob') fillParts(g, [{ p: rc('bobH', () => cutPath([[-56, 26], [-58, -20], [-36, -54], [36, -54], [58, -20], [56, 26]], 65300002, 30, 1)), col: HC }], lift);
+    if (hairKey === 'pony') { g.save(); g.translate(40, -30); g.rotate(.5); fillParts(g, [{ p: rc('pony', () => ell(16, 42, 65300003)), col: HC }], lift); g.restore(); }
+    if (hairKey === 'afro' || hairKey === 'curls') fillParts(g, [{ p: rc('afro', () => disk(64, 65300004)), col: HC }], lift);
+    fillParts(g, [{ p: rc('head', () => ell(46, 48, 65300010)), col: sc(F.skin) }], lift);
+    if (!shadow) { // face
+      const ex = p.eyeX || 0, ey = p.eyeY || 0;
+      for (const s of [-1, 1]) { g.fillStyle = C.black; g.beginPath(); g.arc(s * 16 + ex, -2 + ey, 4.6, 0, TAU2); g.fill(); }
+      if (F.glasses) { g.strokeStyle = C.black; g.lineWidth = 2.6; for (const s of [-1, 1]) { g.beginPath(); g.arc(s * 16, -2, 11, 0, TAU2); g.stroke(); } g.beginPath(); g.moveTo(-5, -3); g.lineTo(5, -3); g.stroke(); }
+      for (const s of [-1, 1]) { const b = (s < 0 ? p.browL : p.browR) >= 0 ? (s < 0 ? p.browL : p.browR) : p.brow; g.save(); g.translate(s * 16, -20 - b * 9); g.rotate(-s * .12 * b); g.fillStyle = F.bushy ? C.white : '#7d7676'; const bw = F.bushy ? 15 : 10, bh = F.bushy ? 9 : 4; g.fillRect(-bw, -bh / 2, bw * 2, bh); if (F.bushy) { g.strokeStyle = 'rgba(0,0,0,.25)'; g.lineWidth = 1; g.strokeRect(-bw, -bh / 2, bw * 2, bh); } g.restore(); }
+      g.fillStyle = shade(F.skin, .86); g.beginPath(); g.arc(0, 10, 6, 0, TAU2); g.fill();
+      g.fillStyle = 'rgba(240,110,110,.28)'; for (const s of [-1, 1]) { g.beginPath(); g.arc(s * 27, 14, 7, 0, TAU2); g.fill(); }
+      if (F.mous) { g.fillStyle = C.white; g.beginPath(); g.ellipse(-9, 20, 11, 5, .2, 0, TAU2); g.ellipse(9, 20, 11, 5, -.2, 0, TAU2); g.fill(); }
+      g.strokeStyle = C.black; g.lineWidth = 3.2; g.lineCap = 'round'; g.beginPath(); const sm = p.smile || 0; g.moveTo(-9, 27); g.quadraticCurveTo(0, 27 + sm * 7, 9, 27); g.stroke(); g.lineCap = 'butt';
+    }
+    // hair in front / hats
+    if (hairKey === 'bun' || hairKey === 'side' || hairKey === 'bob' || hairKey === 'full' || hairKey === 'pony') fillParts(g, [{ p: rc('cap' + hairKey, () => cutPath([[-48, -8], [-44, -34], [-20, -52], [18, -52], [44, -34], [48, -8], [30, -26], [hairKey === 'side' ? -6 : 0, -34], [-30, -24]], 65300020 + hairKey.length, 30, 1)), col: HC }], lift);
+    if (hairKey === 'tufts' || hairKey === 'bald') for (const s of [-1, 1]) { g.save(); g.translate(s * 44, -10); fillParts(g, [{ p: rc('tuft', () => ell(10, 15, 65300030)), col: HC }], lift); g.restore(); }
+    if (hairKey === 'curly' || hairKey === 'curls') for (let q = 0; q < 7; q++) { const a = Math.PI * (1.05 + .9 * q / 6); g.save(); g.translate(Math.cos(a) * 44, Math.sin(a) * 44); fillParts(g, [{ p: rc('curl', () => disk(15, 65300031)), col: HC }], lift); g.restore(); }
+    if (hairKey === 'quiff') fillParts(g, [{ p: rc('quiff', () => cutPath([[-46, -14], [-40, -46], [0, -70], [40, -56], [46, -14], [20, -34], [-20, -30]], 65300032, 30, 1)), col: HC }], lift);
+    if (F.hat === 'flatcap') { g.save(); g.translate(0, -36); fillParts(g, [{ p: rc('fcap', () => cutPath([[-54, 6], [-50, -12], [-30, -26], [10, -30], [44, -20], [56, 4]], 65300040, 30, 1)), col: sc(F.hatC) }, { p: rc('fbrim', () => cutPath([[-42, 0], [42, 0], [36, 12], [-36, 12]], 65300041, 99, 1)), col: sc(shade(F.hatC, .8)) }], lift); g.restore(); }
+    if (F.hat === 'cloche') { g.save(); g.translate(0, -26); fillParts(g, [{ p: rc('cloche', () => cutPath([[-58, 14], [-50, -18], [-26, -40], [26, -40], [50, -18], [58, 14]], 65300042, 30, 1.2)), col: sc(F.hatC) }, { p: rc('cband', () => cutPath(rectPts(-52, -4, 52, 6), 65300043, 99, .8)), col: sc(C.verm) }], lift); g.restore(); }
+    if (F.hat === 'beret') { g.save(); g.translate(8, -44); g.rotate(.18); fillParts(g, [{ p: rc('beret', () => ell(50, 17, 65300044)), col: sc(F.hatC) }, { p: rc('stalk', () => cutPath(rectPts(-3, -26, 3, -14), 65300045, 99, .5)), col: sc(F.hatC) }], lift); g.restore(); }
+    g.restore();
+    if (!shadow) pin(g, 0, 0);
+    g.restore();
+  }
+  function drawChair(g, i, x, col) {
+    g.save(); g.translate(x, 0);
+    fillParts(g, [{ p: rc('cback', () => cutPath(rectPts(-66, 525, 66, 712), 65400001, 40, 1.4)), col: shade(col, .85) }, { p: rc('cleg1', () => cutPath(rectPts(-70, 712, -56, FLOOR), 65400002, 40, 1)), col: shade(col, .7) }, { p: rc('cleg2', () => cutPath(rectPts(56, 712, 70, FLOOR), 65400003, 40, 1)), col: shade(col, .7) }, { p: rc('cseat', () => cutPath(rectPts(-80, 700, 80, 726), 65400004, 40, 1.2)), col }], 1);
+    g.restore();
+  }
+  // ---------- the room ----------
+  function drawClock(g, cx, cy, r, k, minuteOn) {
+    SOFT = true;
+    g.save(); g.translate(cx, cy); g.scale(r / 100, r / 100);
+    fillParts(g, [{ p: rc('crim', () => disk(108, 65500001)), col: C.cobalt }, { p: rc('cface', () => disk(92, 65500002)), col: C.white }], 1.2);
+    for (let q = 0; q < 12; q++) { g.save(); g.rotate(q / 12 * TAU2); fillParts(g, [{ p: rc('tick' + (q % 3 ? 's' : 'b'), () => cutPath(rectPts(q % 3 ? -2.5 : -4.5, -86, q % 3 ? 2.5 : 4.5, q % 3 ? -74 : -66), 65500010 + (q % 3 ? 1 : 2), 99, .4)), col: C.black }], .4); g.restore(); }
+    // second hand steps once per beat
+    const sk = Math.floor(k) + ease.back(clamp(fracK(k) * 5)), sa = sk / 60 * TAU2 * 2;
+    g.save(); g.rotate(-1.2); fillParts(g, [{ p: rc('hhr', () => cutPath([[-6, 6], [6, 6], [4, -46], [-4, -46]], 65500020, 99, .5)), col: C.black }], .6); g.restore();
+    if (minuteOn) { g.save(); g.rotate(MIN.ang + sk * .003); fillParts(g, [{ p: rc('mhr', () => cutPath([[-4.5, 8], [4.5, 8], [3, -78], [-3, -78]], 65500021, 99, .5)), col: C.black }], .6); g.restore(); }
+    g.save(); g.rotate(sa); fillParts(g, [{ p: rc('shr', () => cutPath([[-1.6, 14], [1.6, 14], [1.2, -82], [-1.2, -82]], 65500022, 99, .3)), col: C.verm }], .5); g.restore();
+    g.fillStyle = C.black; g.beginPath(); g.arc(0, 0, 7, 0, TAU2); g.fill();
+    g.restore();
+  }
+  function drawBigClock(g, k) {
+    const u = inv(40, 41.6, k); if (u <= 0) return;
+    const cy = lerp(-420, 420, ease.back(u)), r = 300, cx = 960;
+    SOFT = true;
+    for (const s of [-1, 1]) { g.save(); g.fillStyle = '#3a3030'; g.fillRect(cx + s * 120 - 5, -40, 10, cy - r * .8 + 40); g.restore(); }
+    g.save(); g.translate(cx, cy); g.scale(r / 100, r / 100);
+    fillParts(g, [{ p: rc('crim', () => disk(108, 65500001)), col: C.verm }, { p: rc('cface', () => disk(92, 65500002)), col: '#fff8e8' }], 2);
+    for (let q = 0; q < 12; q++) { g.save(); g.rotate(q / 12 * TAU2); fillParts(g, [{ p: rc('tick' + (q % 3 ? 's' : 'b'), () => null), col: C.black }], .3); g.restore(); }
+    g.save(); g.rotate(.9); fillParts(g, [{ p: rc('hhr', () => null), col: C.black }], .5); g.restore();
+    // the minute hand, until she takes it (drawn here at clock scale: 260 px long = 86.7 units)
+    if (k < 47) { const j = k > 46.6 ? .05 * Math.sin(k * 45) : 0; g.save(); g.rotate(MIN.ang + Math.PI + j); g.scale(100 / r, 100 / r); drawCane(g, [0, 0], [0, 260], C.black, 9, true); g.restore(); }
+    g.fillStyle = C.black; g.beginPath(); g.arc(0, 0, 6, 0, TAU2); g.fill();
+    g.restore();
+  }
+  let ROOM = null;
+  function drawRoomScene(g, t) {
+    const k = kbAt(t);
+    if (!ROOM) ROOM = {
+      wall: cutPath([[48, 40], [1876, 34], [1882, WALLB + 8], [42, WALLB + 10]], 65600001, 60, 2),
+      floor: cutPath([[42, WALLB], [1882, WALLB], [1882, 1058], [42, 1058]], 65600002, 60, 2),
+      planks: [0, 1, 2, 3, 4].map((q) => cutPath(rectPts(42, WALLB + 22 + q * 56, 1882, WALLB + 26 + q * 56), 65600010 + q, 80, 1)),
+      skirt: cutPath(rectPts(42, WALLB - 14, 1882, WALLB + 6), 65600003, 60, 1),
+      rug: cutPath(ellPts(820, 70, 65600004, 40).map(([x, y]) => [x + 960, y + 900]), 65600005, 60, 2),
+      frames: [[180, 170, C.leaf], [1740, 160, C.lemon]].map(([x, y, c], q) => ({ x, y, c, p: cutPath(rectPts(-62, -78, 62, 78), 65600020 + q, 40, 1.2), in: cutPath(rectPts(-46, -62, 46, 62), 65600030 + q, 40, 1) })),
+    };
+    SOFT = true;
+    fillParts(g, [{ p: ROOM.wall, col: '#f6e4c6' }, { p: ROOM.floor, col: '#d88a4c' }], 1);
+    for (const pl of ROOM.planks) fillParts(g, [{ p: pl, col: '#b86f38' }], .3);
+    fillParts(g, [{ p: ROOM.skirt, col: C.white }, { p: ROOM.rug, col: C.pink }], 1);
+    for (const f of ROOM.frames) { g.save(); g.translate(f.x, f.y); fillParts(g, [{ p: f.p, col: f.c }, { p: f.in, col: '#fff8e8' }], 1); g.restore(); pinAt(g, f.x, f.y - 70, C.verm); }
+    drawClock(g, 960, 190, 92 * (1 + .04 * pulK(k, 9)), k, true);
+    // shadows on the wall
+    for (let i = 0; i < 6; i++) { if (i === 0 && k > 56.5) continue; const S = shadowState(i, k); SOFT = false; const ss = lerp(1, .8, S.y); g.save(); g.translate(S.p.x, WALLB); g.scale(ss, ss); g.translate(-S.p.x, -WALLB); drawFig(g, i, S.p, S.y, true); g.restore(); }
+    drawBigClock(g, k);
+    // chairs + people
+    for (let i = 0; i < 6; i++) { const p = elderPose(i, k), seated = p.tk < .6; drawChair(g, i, seated ? p.x : ELD[i].x, ELD[i].chair); }
+    const order = k >= 42 ? [1, 2, 3, 4, 5, 0] : [0, 1, 2, 3, 4, 5]; // once Edna is up and walking she passes in front
+    for (const i of order) { const p = elderPose(i, k); if (p.x < -200) continue; SOFT = true; drawFig(g, i, p, 0, false); }
+  }
+  function drawInstr2(g, t) {
+    const a = t - TB;
+    drawRoomScene(g, t);
+    // the chorus-1 pile clears in about a second, past the camera
+    if (a < 1.05) {
+      for (const p of PIECES) {
+        const dx = p.x - 960, dy = p.y - 640, L = Math.hypot(dx, dy) || 1, sp = 1500 + hash(p.seed + 5) * 1100;
+        const d = sp * ease.in(a / .9) + 40 * a, rr = (hash(p.seed + 6) - .5) * 3 * a, sc = 1 + .5 * a;
+        g.save(); g.translate(p.x + dx / L * d, p.y + dy / L * d); g.rotate(rr); g.scale(sc, sc); g.translate(-p.x, -p.y);
+        drawPiece(g, p, 129.3); g.restore();
+      }
+      const S = custState(129.3); S.x = CUST.x; S.raiseT = T.moreE; S.armTop = true; S.fy = FEET_END - 2400 * ease.in(a / .8); S.rot = a * 1.5;
+      if (a < .8) { drawCustS(g, S, t, 'body'); drawCustS(g, S, t, 'top'); }
+    }
+  }
+
   // ---------- sheet + frame ----------
   let SHEET = null;
   function drawFrame(g, t) {
@@ -956,8 +1275,8 @@
     if (!SHEET) SHEET = cutPath([[52, 44], [1872, 30], [1880, 1046], [44, 1056]], 77, 60, 2.5);
     SOFT = true; fillParts(g, [{ p: SHEET, col: C.ultra }], 1.4);
     pinAt(g, 80, 70, C.lemon); pinAt(g, 1846, 58, C.verm); pinAt(g, 1852, 1020, C.lemon); pinAt(g, 74, 1028, C.pink);
-    if (t < V.start) drawInstr(g, t);
-    else if (t < C2.more0) drawVerse3(g, t);
+    if (t < V.start) drawInstr2(g, t);
+    else if (t < C2.more0) { if (t < V.start + .5) drawRoomScene(g, t); drawVerse3(g, t); } // the room stays under the dusk sheet as it comes down
     else { drawVerseFillBlown(g, t); drawChorus2(g, t); }
     g.restore();
     if (TEX) { g.globalCompositeOperation = 'overlay'; g.globalAlpha = .55; g.drawImage(TEX, 0, 0, W, H); g.globalAlpha = 1; g.globalCompositeOperation = 'source-over'; }
