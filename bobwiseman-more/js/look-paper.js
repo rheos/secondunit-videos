@@ -1037,22 +1037,20 @@
       const o = []; for (let q = 0; q < 72; q++) { const a = q / 72 * TAU2; let best = 0; for (const [lx, ly, lr] of lobes) { const dx = Math.cos(a), dy = Math.sin(a), b = lx * dx + ly * dy, c = lx * lx + ly * ly - lr * lr, disc = b * b - c; if (disc >= 0) best = Math.max(best, b + Math.sqrt(disc)); } o.push([Math.cos(a) * best, Math.sin(a) * best * .78]); }
       NB = { cloud: cutPath(o, 66000001, 26, 1.2), dots: [disk(13, 66000002), disk(21, 66000003), disk(30, 66000004)] };
     }
-    const hx = S.x, hy = S.fy - 404 + S.nod * 9, cx = hx + 330, cy = hy - 250;
-    const settle = (t0) => { const a = t - t0; return a < 0 ? 0 : ease.back(a / .2) * (1 + .03 * Math.exp(-4 * a) * Math.sin(a * 14)); };
+    // understated, like the barely heard voice: a small cloud by his head, soft in, gone by 227.0
+    if (t >= NICE + 2) return;
+    const hx = S.x, hy = S.fy - 404 + S.nod * 9, cx = hx + 168, cy = hy - 142, SC = .36;
+    const soft = (t0) => smooth(inv(t0, t0 + .35, t)), out = 1 - smooth(inv(NICE + 1.65, NICE + 2, t)), drift = -6 * (1 - out);
     SOFT = true;
-    [[hx + 70, hy - 68, 0], [hx + 104, hy - 102, 1], [hx + 152, hy - 146, 2]].forEach(([x, y, k], q) => { const s = settle(NICE + q * .05); if (s > 0) { g.save(); g.translate(x, y); g.scale(s, s); fillParts(g, [{ p: NB.dots[k], col: C.white }], 1.2); g.restore(); } });
-    const s = settle(NICE + .15); if (s <= 0) return;
-    g.save(); g.translate(cx, cy); g.scale(s, s);
-    fillParts(g, [{ p: NB.cloud, col: C.white }], 1.4);
-    // the word: cut-paper letters, sized to fit the cloud's inner box with margin (measured)
-    const ts = settle(NICE + .2); if (ts > 0) {
-      const boxW = 300, boxH = 120; let fs = 130; g.font = `${fs}px "Arial Rounded MT Bold", "Arial Rounded", Arial, sans-serif`;
-      let wd = g.measureText('nice').width; fs = Math.min(fs, fs * boxW / wd, boxH / .75); g.font = `${fs}px "Arial Rounded MT Bold", "Arial Rounded", Arial, sans-serif`; wd = g.measureText('nice').width;
-      g.textBaseline = 'alphabetic'; g.scale(ts, ts);
-      let x = -wd / 2; const cols = [C.verm, C.verm, C.verm, C.verm]; // one colour: never a blue-red-green sequence
-      [...'nice'].forEach((ch, q) => { const w = g.measureText(ch).width; g.save(); g.translate(x + w / 2, fs * .32); g.rotate((hash(q + 77) - .5) * .14); shadowOn(g, .9); g.fillStyle = cols[q]; g.fillText(ch, -w / 2, 0); shadowOff(g); g.restore(); x += w; });
-    }
-    g.restore();
+    [[hx + 72, hy - 80, 3.5], [hx + 92, hy - 98, 5.5]].forEach(([x, y, r], q) => { const a = soft(NICE + q * .06) * out; if (a > 0) { g.save(); g.globalAlpha = a * .95; g.translate(x, y + drift); g.scale(r / 13, r / 13); fillParts(g, [{ p: NB.dots[0], col: C.white }], .7); g.restore(); } });
+    const a = soft(NICE + .12) * out; if (a <= 0) { g.globalAlpha = 1; return; }
+    g.save(); g.globalAlpha = a * .95; g.translate(cx, cy + drift); g.scale(SC * (.94 + .06 * a), SC * (.94 + .06 * a));
+    fillParts(g, [{ p: NB.cloud, col: C.white }], 1);
+    // the word: small and quiet, sized to fit the cloud's inner box with margin (measured)
+    const boxW = 300, boxH = 120; let fs = 130; g.font = `${fs}px "Arial Rounded MT Bold", "Arial Rounded", Arial, sans-serif`;
+    let wd = g.measureText('nice').width; fs = Math.min(fs, fs * boxW / wd, boxH / .75); g.font = `${fs}px "Arial Rounded MT Bold", "Arial Rounded", Arial, sans-serif`; wd = g.measureText('nice').width;
+    g.textBaseline = 'alphabetic'; g.fillStyle = '#c4675c'; g.fillText('nice', -wd / 2, fs * .32);
+    g.restore(); g.globalAlpha = 1;
   }
   // breakdown-time leftovers from verse 3's "more": blown off as the first giant lands
   function drawVerseFillBlown(g, t) {
