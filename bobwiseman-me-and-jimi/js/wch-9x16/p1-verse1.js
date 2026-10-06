@@ -330,11 +330,13 @@
   function inside(t, tl) {
     const tt = OT(t), vx = 540, vy = 860, D = 1000, LAT = 410, SK = .9;
     bg(CUT);
-    // ceiling ribs and the side walls with night windows
-    shape(() => pathOf([[-20, -20], [W + 20, -20], [vx + 140, vy - 260], [vx - 140, vy - 260]]), INK);
-    for (let i = 0; i < 9; i++) { const u = i / 8; taper([[lerp(-20, W + 20, u), -20], [lerp(vx - 140, vx + 140, u), vy - 260]], 6, 2, CUT); }
+    // the bus ends: its back wall stands at depth ZB (Robin: the aisle ran on like an endless hall)
+    const ZB = 5, BL = vx - 600 / ZB, BR = vx + 600 / ZB, BT = vy - 700 / ZB, BB = vy + D / ZB;
+    // ceiling ribs and the side walls with night windows, all ending at the back wall
+    shape(() => pathOf([[-20, -20], [W + 20, -20], [BR, BT], [BL, BT]]), INK);
+    for (let i = 0; i < 9; i++) { const u = i / 8; taper([[lerp(-20, W + 20, u), -20], [lerp(BL, BR, u), BT]], 6, 2, CUT); }
     for (const side of [-1, 1]) {
-      for (let z = 1; z < 7; z += .9) { const z2 = z + .5, xa = vx + side * 600 / z, xb = vx + side * 600 / z2, ya = vy - 700 / z, yb = vy - 700 / z2;
+      for (let z = 1; z + .5 <= ZB; z += .9) { const z2 = z + .5, xa = vx + side * 600 / z, xb = vx + side * 600 / z2, ya = vy - 700 / z, yb = vy - 700 / z2;
         shape(() => pathOf([[xa, ya + 60 / z], [xb, yb + 60 / z2], [xb, vy - 80 / z2], [xa, vy - 80 / z]]), INK);
         star((xa + xb) / 2, (ya + vy) / 2, 10 / z); }
     }
@@ -342,6 +344,14 @@
     const aisle = () => pathOf([[vx - 26, vy + 30], [vx + 26, vy + 30], [vx + 250, H + 20], [vx - 250, H + 20]]);
     shape(aisle, CUT, 4);
     clipTo(aisle, () => { for (let i = 1; i < 18; i++) { const y = vy + 30 + Math.pow(i / 18, 2) * (H - vy); taper([[0, y], [W, y]], 2 + i * .2, 2 + i * .2, INK); } });
+    // the back of the bus, drawn as the end of the video draws it (w6 mirrorScene): a black wall, the wide rear
+    // window (night here: dark with stars), the back bench across under it
+    shape(() => pathOf([[BL, BT], [BR, BT], [BR, BB], [BL, BB]]), INK, 6, CUT);
+    const RW = (BR - BL) * .64, RH = (BB - BT) * .34, RX = vx - RW / 2, RY = BT + (BB - BT) * .12;
+    shape(box(RX, RY, RW, RH), INK, 5, CUT);                                                  // the rear window
+    clipTo(box(RX, RY, RW, RH), () => rows(RX, RY, RX + RW, RY + RH, 0, 9, (u) => (1 - u) * 2.5, CUT));
+    star(vx - RW * .22, RY + RH * .35, 5); star(vx + RW * .25, RY + RH * .3, 4);
+    shape(box(vx - (BR - BL) * .4, BB - (BB - BT) * .34, (BR - BL) * .8, (BB - BT) * .2), INK, 5, CUT);   // the back bench
     // seats back to front, three crying kids on each, their dreams floating up
     const rowsZ = [4.2, 3.0, 2.2, 1.6, 1.0];
     for (const z of rowsZ) for (const side of [-1, 1]) {

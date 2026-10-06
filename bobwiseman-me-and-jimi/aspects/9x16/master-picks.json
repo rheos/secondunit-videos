@@ -1,0 +1,12 @@
+{
+ "note": "9:16 master = the full redrawn render (wood-9x16.html) with these shots swapped for pan-and-scan. Frames are song frames on the 24 fps grid, [start, end). source: v1 = out/9x16/maj_vertical-v1_f0-f1428 (panscan-plan-v1.json, starts at frame 0); the others start at their plan's t0 frame. Picked 2026-10-06: Robin chose pan for the road, the booth, the bus stop and Ellen under the E; I picked the harmonica drop, the locomotive, the 80s line-up and the bus push (redraw too small or crowded there).",
+ "base": "out/9x16/maj_redrawn-v2_f0-f6780_24fps_9x16.mp4",
+ "swaps": [
+  {"frames": [0, 240], "what": "road + booth", "source": "out/9x16/maj_vertical-v1_f0-f1428_24fps_9x16.mp4", "source_start": 0},
+  {"frames": [582, 764], "what": "bus stop + Ellen under the E", "source": "out/9x16/maj_vertical-v1_f0-f1428_24fps_9x16.mp4", "source_start": 0},
+  {"frames": [840, 1007], "what": "harmonica drop", "source": "out/9x16/maj_vertical-v1_f0-f1428_24fps_9x16.mp4", "source_start": 0},
+  {"frames": [2384, 2436], "what": "locomotive with Jimi", "source": "out/9x16/maj_panscan-loco_9x16.mp4", "source_start": 2383},
+  {"frames": [3754, 3828], "what": "80s line-up", "source": "out/9x16/maj_panscan-lineup_9x16.mp4", "source_start": 3753},
+  {"frames": [5530, 5604], "what": "stars and kids push the bus", "source": "out/9x16/maj_panscan-pushbus-v2_9x16.mp4", "source_start": 5529}
+ ]
+}
