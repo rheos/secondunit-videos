@@ -193,7 +193,7 @@
       SPRINGS.push(add({ kind: 'spring', t: spT[i], x, y, col, top, h0: 210 + i * 25, front: true, z: 5.5 }));
     });
 
-    // --- "just want more of everything": everything at once, piling bottom-up to fill the frame
+    // --- chorus1 line 3 (the finale line): everything at once, piling bottom-up to fill the frame
     // 16th-note slots; two pieces per slot until the line ends, then one every other slot as the pile settles
     const eT = subdiv(T.just, 129.35, 4).flatMap((t, j) => t < T.end + .3 ? [[t, 0], [t, 1]] : j % 2 ? [] : [[t, 0]]);
     // the "everything" wave: six big pieces slam the top edge at once
