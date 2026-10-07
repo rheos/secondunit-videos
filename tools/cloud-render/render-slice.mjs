@@ -11,9 +11,11 @@ const errs = [];
 await Promise.all([...Array(wk)].map(async (_, w) => {
   const p = await br.newPage({ viewport: { width: 1920, height: 1080 } });
   p.on('pageerror', e => errs.push(String(e)));
+  // some looks precompute for seconds at load (neon: ~7 s on a Mac, far longer on a 2-core runner without a GPU)
+  p.setDefaultTimeout(600000);
   // domcontentloaded, not load: the page's <audio> points at the song, which is never packaged, and the load
   // event can stall on it. The page signals readiness itself through window.__ready.
-  await p.goto('file://' + process.cwd() + '/' + page + '?offline=1', { waitUntil: 'domcontentloaded' }); await p.evaluate(() => window.__ready);
+  await p.goto('file://' + process.cwd() + '/' + page + '?offline=1', { waitUntil: 'domcontentloaded', timeout: 600000 }); await p.evaluate(() => window.__ready);
   for (let i = a + w; i < b; i += wk) {
     const url = await p.evaluate((t) => window.__frameJPEG(t, .93), t0 + i / fps);
     fs.writeFileSync(`frames/f_${String(i).padStart(6, '0')}.jpg`, Buffer.from(url.split(',')[1], 'base64'));
