@@ -49,6 +49,14 @@ def entry_span(e, cuts):
     return shot_span(cuts, e['at'])
 
 
+def upgraded(path):
+    """The newest-style version of a still, if the style pass has made one (keyframes_v2/<flattened name>)."""
+    if path.startswith('keyframes_v2/'):
+        return path
+    name = re.sub(r'^(\.\./)+', '', path).replace('keyframes/', '').replace('/', '__')
+    return f'keyframes_v2/{name}' if os.path.exists(os.path.join(HERE, 'keyframes_v2', name)) else path
+
+
 def still_segment(path, n, focus, out):
     """n frames of a slow push-in on a still, cover-cropped to 16:9."""
     fx, fy = focus
@@ -73,15 +81,18 @@ def main():
     for i, e in enumerate(man['entries']):
         s, t = entry_span(e, cuts)
         if 'still' in e:
+            if man.get('use_upgrades'):
+                e['still'] = upgraded(e['still'])
             seg = os.path.join(tmp, f'{i:03d}_{os.path.splitext(os.path.basename(e["still"]))[0]}.mp4')
             still_segment(os.path.join(HERE, e['still']), t - s, e.get('focus', [0.5, 0.5]), seg)
         else:
             seg = os.path.join(HERE, e['clip'])
         placed.append((s, t, seg, e.get('still') or e.get('clip')))
-    placed.sort()
-    for (s1, t1, _, n1), (s2, t2, _, n2) in zip(placed, placed[1:]):
-        if s2 < t1:
-            print(f'note: {n2} starts at f{s2} inside {n1} (ends f{t1}); the later entry wins', file=sys.stderr)
+    # overlays stack in manifest order, so where entries overlap the one listed LATER wins
+    for i, (s1, t1, _, n1) in enumerate(placed):
+        for s2, t2, _, n2 in placed[i + 1:]:
+            if s2 < t1 and s1 < t2:
+                print(f'note: {n2} overlaps {n1} (f{max(s1, s2)}-f{min(t1, t2)}); {n2} wins (listed later)', file=sys.stderr)
 
     # overlay every segment on the base at its song frames; the base's audio is the song
     args = ['ffmpeg', '-y', '-loglevel', 'error', '-i', BASE]
@@ -96,9 +107,9 @@ def main():
     args += ['-filter_complex', ';'.join(chains), '-map', f'[{last}]', '-map', '0:a', '-frames:v', str(TOTAL),
              '-c:v', 'libx264', '-crf', '22', '-preset', 'medium', '-pix_fmt', 'yuv420p', '-c:a', 'copy', '-movflags', '+faststart', out]
     subprocess.run(args, check=True)
-    covered = sum(t - s for s, t, _, _ in placed)
+    covered = len({f for s, t, _, _ in placed for f in range(s, t)})
     print(f'wrote {out}\n{len(placed)} entries, {covered} of {TOTAL} frames new ({100 * covered / TOTAL:.0f}%)')
-    for s, t, _, n in placed:
+    for s, t, _, n in sorted(placed):
         print(f'  f{s:05d}-f{t:05d}  {s / FPS:7.2f}-{t / FPS:7.2f}s  {n}')
 
 

@@ -21,3 +21,13 @@ where colour arrives; the sky chapters (5, 10) are blue.
 "But I don't care what it costs" he runs back for her; her laughter dresses them both; they run out of the
 ministry hand in hand while the clerks rise like wedding guests; they walk the hundred miles together.
 Those beats are in `keyframes/escape/` (`ch09_both_dressed_dupe.png` is the version with a duplicated her).
+
+**New style (2026-10-07):** the cinematic painted look from the other session (`../gpt/sky-cabs`, `../mj/14-15`).
+`style2/` holds the restyled plates 5-8, the guitar-case prop sheet (ISSUE ITEM 27B) and the style references.
+`upgrade_one.sh` repaints a still into `keyframes_v2/` (style ref by setting: ministry interiors, city
+exteriors, sky); `new_beat.sh` paints a new beat straight in the new style (`keyframes_v2/beats.tsv`).
+With `use_upgrades` in the manifest, `animatic.py` uses a still's `keyframes_v2` version when one exists, and
+entries listed later win where they overlap. World logic: waiting is his job (he's an employee of the
+Ministry of Waiting; 7 436 912 is his employee number); pneumatic tubes are realistic, hand-width; the flower
+goes by mail (his row's mail column, ceiling tubes, her desk bell). Files ending `_widetube`, `_lumpycase`,
+`_allcases` are the rejected versions, kept for comparison.
