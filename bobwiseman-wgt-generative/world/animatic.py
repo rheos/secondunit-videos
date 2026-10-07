@@ -52,9 +52,14 @@ def entry_span(e, cuts):
 def upgraded(path):
     """The newest-style version of a still, if the style pass has made one (keyframes_v2/<flattened name>)."""
     if path.startswith('keyframes_v2/'):
-        return path
+        nm = os.path.join(HERE, 'keyframes_nm', path.split('/', 1)[1])
+        return 'keyframes_nm/' + path.split('/', 1)[1] if os.path.exists(nm) else path
     name = re.sub(r'^(\.\./)+', '', path).replace('keyframes/', '').replace('/', '__')
-    return f'keyframes_v2/{name}' if os.path.exists(os.path.join(HERE, 'keyframes_v2', name)) else path
+    # nightmare-world versions (flat, cold) win over the cinematic style pass
+    for d in ('keyframes_nm', 'keyframes_v2'):
+        if os.path.exists(os.path.join(HERE, d, name)):
+            return f'{d}/{name}'
+    return path
 
 
 def still_segment(path, n, focus, out):

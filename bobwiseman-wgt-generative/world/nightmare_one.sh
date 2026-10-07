@@ -1,0 +1,6 @@
+#!/bin/zsh
+# nightmare_one.sh <current still path> <out name>: repaint a still as his nightmare hall (flat, cold, symmetrical)
+W=${0:A:h}; G=$W/..; C=$W/characters; out=$W/keyframes_nm/$2
+[[ -f $out ]] && exit 0
+P="Repaint image 1 as his waking nightmare, in the FLAT gouache illustration style of image 2 (take ONLY its painting handling: flat colour shapes, soft painted texture; image 2 is a character sheet, do not copy its layout). Composition comes ONLY from image 1. Style notes: flat colour shapes, soft painted texture, simple geometry, strict symmetry where the layout allows, cold grey-teal palette, colder and emptier than reality; brass tubes and ducts. Keep image 1's composition, story moment and every piece of text exactly as written. The clerks in the nightmare have NO BODIES: each is only a black hat on a blank pale head resting on the top of a chair back, rows of them, as if waiting has turned them into chairs. If the man appears draw him exactly as image 3, if the woman appears draw her exactly as image 4 (flat style, real proportions). Any guitar case is a clean hard-shell case. Sky and daylight, where image 1 has them, stay blue and bright."
+$G/gpt/gptimg -o $out -r $W/$1 -r $C/him_turnaround.png -r $C/him_turnaround.png -r $C/her_turnaround.png "$P" > $W/keyframes_nm/${2:r}.log 2>&1
