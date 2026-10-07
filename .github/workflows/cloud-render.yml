@@ -1,0 +1,66 @@
+# Render a code-drawn look in parallel slices. Started by tools/cloud-render.sh, which uploads the project's
+# page code as a draft release asset (it can quote lyrics, so it never enters git) and deletes it afterwards.
+# No audio comes here: each slice returns silent video and the song is muxed on the Mac.
+name: cloud-render
+run-name: "cloud-render ${{ inputs.label }}"
+on:
+  workflow_dispatch:
+    inputs:
+      label: { description: "run label, matches the release tag", required: true }
+      asset_id: { description: "release asset id of the project package", required: true }
+      page: { description: "page inside the package, e.g. looks/charcoal.html", required: true }
+      t0: { description: "song time of frame 0, seconds", required: true }
+      frames: { description: "total frames", required: true }
+      slices: { description: "parallel slices (max 20)", required: true, default: "20" }
+      fps: { description: "frames per second", required: true, default: "24" }
+      width: { description: "encoded width", required: true, default: "1280" }
+      height: { description: "encoded height", required: true, default: "720" }
+permissions:
+  contents: write   # a draft release (the package) is only visible with write access
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.m.outputs.matrix }}
+    steps:
+      - id: m
+        run: echo "matrix=$(seq 0 $(( ${{ inputs.slices }} - 1 )) | jq -cs .)" >> "$GITHUB_OUTPUT"
+  slice:
+    needs: plan
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        n: ${{ fromJSON(needs.plan.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v4
+        with: { sparse-checkout: tools/cloud-render }
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - name: Fetch package
+        env: { GH_TOKEN: "${{ secrets.GITHUB_TOKEN }}" }
+        run: |
+          gh api -H "Accept: application/octet-stream" repos/${{ github.repository }}/releases/assets/${{ inputs.asset_id }} > pkg.tgz
+          mkdir pkg && tar xzf pkg.tgz -C pkg
+          cp tools/cloud-render/render-slice.mjs pkg/
+      - name: Install
+        working-directory: pkg
+        run: |
+          sudo apt-get -qq update && sudo apt-get -qq install -y --no-install-recommends ffmpeg > /dev/null
+          npm init -y > /dev/null && npm install --silent playwright@1.55.0 && npx playwright install --with-deps chromium > /dev/null
+      - name: Render and encode
+        working-directory: pkg
+        run: |
+          N=${{ inputs.frames }}; S=${{ inputs.slices }}; n=${{ matrix.n }}
+          a=$(( n * N / S )); b=$(( (n + 1) * N / S ))
+          node render-slice.mjs "${{ inputs.page }}" ${{ inputs.t0 }} ${{ inputs.fps }} $a $b 2
+          mkdir -p out
+          ffmpeg -y -loglevel error -framerate ${{ inputs.fps }} -start_number $a -i frames/f_%06d.jpg -frames:v $(( b - a )) \
+            -vf scale=${{ inputs.width }}:${{ inputs.height }}:flags=lanczos -c:v libx264 -preset medium -crf 18 -pix_fmt yuv420p \
+            out/slice_$(printf %03d $n)_f$(printf %06d $a)-f$(printf %06d $b).mp4
+      - uses: actions/upload-artifact@v4
+        with:
+          name: slice-${{ matrix.n }}
+          path: pkg/out/
+          retention-days: 2
+          compression-level: 0
