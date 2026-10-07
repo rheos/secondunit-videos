@@ -1,0 +1,162 @@
+[
+ {
+  "act": "TWO PIANOS NO RODEO",
+  "with": "Bob Wiseman & Mike Boguski",
+  "dow": "TUE",
+  "date": "OCT 20",
+  "city": "Wolfville, NS",
+  "venue": "Al Whittle Theatre",
+  "slug": "oct-20-wolfville",
+  "iso": "2026-10-20"
+ },
+ {
+  "act": "TWO PIANOS NO RODEO",
+  "with": "Bob Wiseman & Mike Boguski",
+  "dow": "WED",
+  "date": "OCT 21",
+  "city": "Fredericton, NB",
+  "venue": "Charlotte Street Arts Centre",
+  "slug": "oct-21-fredericton",
+  "iso": "2026-10-21"
+ },
+ {
+  "act": "TWO PIANOS NO RODEO",
+  "with": "Bob Wiseman & Mike Boguski",
+  "dow": "THU",
+  "date": "OCT 22",
+  "city": "Saint John, NB",
+  "venue": "Venue TBA",
+  "slug": "oct-22-saint-john",
+  "iso": "2026-10-22"
+ },
+ {
+  "act": "TWO PIANOS NO RODEO",
+  "with": "Bob Wiseman & Mike Boguski",
+  "dow": "FRI",
+  "date": "OCT 23",
+  "city": "Miramichi, NB",
+  "venue": "Water Street Dinner Theatre",
+  "slug": "oct-23-miramichi",
+  "iso": "2026-10-23"
+ },
+ {
+  "act": "TWO PIANOS NO RODEO",
+  "with": "Bob Wiseman & Mike Boguski",
+  "dow": "SAT",
+  "date": "OCT 24",
+  "city": "Souris, PEI",
+  "venue": "Souris Show Hall",
+  "slug": "oct-24-souris",
+  "iso": "2026-10-24"
+ },
+ {
+  "act": "TWO PIANOS NO RODEO",
+  "with": "Bob Wiseman & Mike Boguski",
+  "dow": "SUN",
+  "date": "OCT 25",
+  "city": "Truro, NS",
+  "venue": "Marigold Centre",
+  "slug": "oct-25-truro",
+  "iso": "2026-10-25"
+ },
+ {
+  "act": "TWO PIANOS NO RODEO",
+  "with": "Bob Wiseman & Mike Boguski",
+  "dow": "TUE",
+  "date": "OCT 27",
+  "city": "Annapolis Valley, NS",
+  "venue": "Lower Granville Hall",
+  "slug": "oct-27-annapolis-valley",
+  "iso": "2026-10-27"
+ },
+ {
+  "act": "TWO PIANOS NO RODEO",
+  "with": "Bob Wiseman & Mike Boguski",
+  "dow": "WED",
+  "date": "OCT 28",
+  "city": "Sackville, NB",
+  "venue": "Greenslades",
+  "slug": "oct-28-sackville",
+  "iso": "2026-10-28"
+ },
+ {
+  "act": "TWO PIANOS NO RODEO",
+  "with": "Bob Wiseman & Mike Boguski",
+  "dow": "THU",
+  "date": "OCT 29",
+  "city": "Dartmouth, NS",
+  "venue": "Sanctuary Arts Centre",
+  "slug": "oct-29-dartmouth",
+  "iso": "2026-10-29"
+ },
+ {
+  "act": "TWO PIANOS NO RODEO",
+  "with": "Bob Wiseman & Mike Boguski",
+  "dow": "FRI",
+  "date": "OCT 30",
+  "city": "Charlottetown, PEI",
+  "venue": "PEI Brewing Company",
+  "slug": "oct-30-charlottetown",
+  "iso": "2026-10-30"
+ },
+ {
+  "act": "TWO PIANOS NO RODEO",
+  "with": "Bob Wiseman & Mike Boguski",
+  "dow": "SAT",
+  "date": "OCT 31",
+  "city": "Margaretsville, NS",
+  "venue": "Evergreen Theatre",
+  "slug": "oct-31-margaretsville",
+  "iso": "2026-10-31"
+ },
+ {
+  "act": "BOB WISEMAN",
+  "with": "special guest Thunderclap",
+  "dow": "SAT",
+  "date": "NOV 7",
+  "city": "Welland, ON",
+  "venue": "The Bank Art House",
+  "slug": "nov-7-welland",
+  "iso": "2026-11-07"
+ },
+ {
+  "act": "BOB WISEMAN",
+  "with": "solo",
+  "dow": "SUN",
+  "date": "NOV 8",
+  "city": "Oakville, ON",
+  "venue": "Moonshine Cafe",
+  "slug": "nov-8-oakville",
+  "iso": "2026-11-08"
+ },
+ {
+  "act": "BOB WISEMAN",
+  "with": "with Danny Greaves",
+  "dow": "SAT",
+  "date": "NOV 14",
+  "city": "Picton, ON",
+  "venue": "The Andrew",
+  "slug": "nov-14-picton",
+  "iso": "2026-11-14"
+ },
+ {
+  "act": "BOB WISEMAN",
+  "with": "with special guest Joshua Marc Séguin",
+  "dow": "SUN",
+  "date": "NOV 22",
+  "city": "Montreal, QC",
+  "venue": "La Sala Rossa",
+  "slug": "nov-22-montreal",
+  "iso": "2026-11-22"
+ },
+ {
+  "act": "BOB WISEMAN",
+  "with": "solo",
+  "dow": "FRI",
+  "date": "DEC 4",
+  "city": "Toronto, ON",
+  "venue": "Venue TBA",
+  "slug": "dec-4-toronto",
+  "iso": "2026-12-04"
+ }
+]
