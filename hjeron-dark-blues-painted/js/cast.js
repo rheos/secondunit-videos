@@ -71,6 +71,27 @@ function fireRing(t, x, y, sc, lit = 1, seed = 3) {
     glow(x, y - sc * .3, sc * 3.2 * lit, `rgba(255,120,40,${.22 * lit})`); glow(x, y - sc * .2, sc * .9 * lit, `rgba(255,220,150,${.6 * lit})`);
   }
 }
+// one painted flame tongue, shared by every chapter's fire. The old tongue was a rigid cone that only
+// swung its tip, and at phone size the walls read as crystals or teeth (Robin's polish pass, 2026-10-06).
+// This one has a spine that writhes with a wave travelling up it, a bulb low down that narrows to a
+// curling tip, and now and then a lick that tears off above. (x, y) = base, h = height, w = outer half
+// width, k = this layer's share of the outer width (1 outer .. .15 core), c = fill colour.
+function flameShape(t, x, y, h, w, k, c, seed, lean = 0, g = s) {
+  const hh = h * (1 - (1 - k) * .3), n = 12, L = [], R = [];
+  for (let i = 0; i <= n; i++) { const q = i / n, yy = y - hh * q;
+    const cx = x + (snoise(t * 2.3 - q * 2.6 + seed, 71) * .8 + snoise(t * 4.4 - q * 5 + seed * 1.7, 72) * .3) * w * (.12 + .9 * q * q) + lean * h * q;
+    const prof = q < .2 ? lerp(.82, 1, q / .2) : Math.pow(1 - (q - .2) / .8, 1.25);
+    const wq = w * k * prof * (1 + .12 * snoise(t * 3 - q * 4 + seed, 73));
+    L.push([cx - wq, yy]); R.push([cx + wq, yy]); }
+  const pts = [...L, ...R.reverse().slice(1)];
+  g.fillStyle = c; g.beginPath(); g.moveTo(pts[0][0], pts[0][1]);
+  for (let i = 1; i < pts.length - 1; i++) { const m = [(pts[i][0] + pts[i + 1][0]) / 2, (pts[i][1] + pts[i + 1][1]) / 2]; g.quadraticCurveTo(pts[i][0], pts[i][1], m[0], m[1]); }
+  g.lineTo(pts[pts.length - 1][0], pts[pts.length - 1][1]); g.closePath(); g.fill();
+  if (k > .5 && h > 20) { // a lick tearing off the tip and rising away
+    const ph = ((t * (.9 + hash(seed * 3) * .6) + hash(seed)) % 1), tip = L[n];
+    if (ph < .55) { const fade = 1 - ph / .55, ly = tip[1] - hh * (.02 + ph * .3);
+      flameShape(t, tip[0] + snoise(t * 3 + seed, 74) * w * .3, ly, hh * .16 * fade, w * .5 * fade, .5, c, seed + 17, 0, g); } }
+}
 // rising sparks from a source point (pure function of t)
 function sparks(t, x, y, spread, rise, n, a = 1, seed = 5) { for (let i = 0; i < n; i++) { const ph = (t * (.25 + hash(i * 3 + seed) * .35) + hash(i * 7 + seed)) % 1, px = x + (hash(i * 11 + seed) - .5) * spread + Math.sin(t * 2 + i) * 18 * ph, py = y - ph * rise; dot(f, px, py, 1.4 + 2 * (1 - ph), `rgba(255,${150 + 80 * (1 - ph) | 0},70,${a * (1 - ph) * .9})`); } }
 // glowing cracks radiating from (x, y) across ground; open 0..1 grows them
@@ -167,24 +188,28 @@ function eyeGate(t) { let k = 0; for (const [a, b] of EYE_WINDOWS) k = Math.max(
 // o.rim: rim-light colour (string) or null. o.lit: 0..1 how much front light reaches the costume.
 // Returns joints { head, eye, neck, chest, hipL, hipR, handL, handR, hem } in world coords.
 function wyrd(t, x, y, h, o = {}) {
-  const { view = 'front', turn = 0, guitar = 'play', arms = 'guitar', sing = 0, wind = .3, walk = 0, rim = 'rgba(255,190,130,.9)', lit = .15, g = s, strum = 1, breath = 1 } = o;
+  const { view = 'front', turn: turn0 = 0, guitar = 'play', arms = 'guitar', sing = 0, wind = .3, walk = 0, rim = 'rgba(255,190,130,.9)', lit = .15, g = s, strum = 1, breath = 1 } = o;
+  // singing without the guitar (the veiled close-ups): never a post. He hunches into the phrase, the head
+  // drifts a little side to side and lifts with the vocal, the shoulders rise on each line (Robin, 2026-10-06)
+  const croon = sing > 0 && guitar !== 'play' && arms === 'down' && view !== 'back' && view !== 'sil' && !o.sil && !walk ? sing : 0;
+  const turn = clamp(turn0 + croon * snoise(t * .4, 24) * .14, -.5, .5);
   // the eye is rare: only inside EYE_WINDOWS, whatever a shot asks for
   const eye = (o.eye || 0) * eyeGate(t);
   const playing = guitar === 'play' && o.view !== 'back';
   // his stance (from his live takes): hip-shot, the torso rocking with the music, and when he plays,
   // hunched over a guitar strapped high, head tipped down toward the neck. Never a straight post.
-  const groove = o.groove ?? 1, hunch = o.hunch ?? (playing ? 1 : .4);
-  const leanK = (o.lean ?? (playing ? -.035 : .015)) + groove * (walk ? 0 : sway(t) * .02 + snoise(t * .35, 23) * .012);
+  const groove = o.groove ?? 1, hunch = o.hunch ?? (playing ? 1 : .4 + .45 * croon);
+  const leanK = (o.lean ?? (playing ? -.035 : .015)) + groove * (walk ? 0 : sway(t) * (.02 + .012 * croon) + snoise(t * .35, 23) * (.012 + .012 * croon));
   const sil = view === 'sil' || o.sil, back = view === 'back';
   const shade = (c, k = lit) => sil ? '#07070a' : mixHex('#07070a', c, clamp(.35 + k * .65));
   const u = h / 100; // 100 units tall
   // breathing + singing phrasing (head tilt / lift) from the vocal stem
   const br = Math.sin(t * TAU / 4.2) * .6 * breath;
   const v = sing > 0 ? F('voc', t, 3) : 0, vk = sing * clamp(v * 1.2);
-  const nod = sing * (snoise(t * 1.7, 21) * .5 + vk * .8) + groove * hunch * bob(t) * .7, tiltS = sing * snoise(t * .9, 22) * .06 + turn * .05, tilt = tiltS + hunch * (playing ? .16 : .04);
+  const nod = sing * (snoise(t * 1.7, 21) * .5 + vk * (.8 + .6 * croon)) + groove * hunch * bob(t) * .7, tiltS = sing * snoise(t * .9, 22) * (.06 + .05 * croon) + turn * .05, tilt = tiltS + hunch * (playing ? .16 : .04);
   const gait = walk ? Math.sin(walk * TAU) : 0, bobY = walk ? Math.abs(gait) * -1.2 * u : 0;
   const X = (ux) => x + ux * u, Y = (uy) => y - uy * u + bobY;
-  const neckY = 84 + br * .3 + vk * .6 - hunch * 1.2, headY = 90 + br * .35 + vk * 1.1 - nod * .6 - hunch * (playing ? 4 : 2);
+  const neckY = 84 + br * .3 + vk * (.6 + .9 * croon) - hunch * 1.2, headY = 90 + br * .35 + vk * 1.1 - nod * .6 - hunch * (playing ? 4 : 2);
   const hx = turn * 3 + tiltS * 30 + hunch * (playing ? .4 : 0); // head x offset (a touch toward the guitar neck when playing)
   const J = {};
   // the whole figure leans as ONE piece, pivoting at the boots (a hip pivot split him in two)
@@ -228,6 +253,9 @@ function wyrd(t, x, y, h, o = {}) {
   if (arms === 'out') { const lift = 6 + br; handL = [X(-sh - 30), Y(neckY - 2 + lift)]; handR = [X(sh + 30), Y(neckY - 2 + lift)];
     for (const [a, b] of [[shL, handL], [shR, handR]]) { const el = [lerp(a[0], b[0], .5), lerp(a[1], b[1], .5) + 1.5 * u]; taper(g, a, el, 3.2 * u, 2.6 * u, sleeveC); taper(g, el, b, 2.6 * u, 1.8 * u, sleeveC); dot(g, b[0], b[1], 1.8 * u, shade(P.skin, lit * .6));
       for (let k = 0; k < 4; k++) taper(g, [el[0] + (k - 1.5) * u, el[1] + 2 * u], [el[0] + (k - 1.5 + wind * 3) * u, el[1] + (7 + k) * u], 1 * u, .3 * u, shade(P.coatShade)); } }
+  else if (croon) { // thumbs hooked at his hips inside the open coat, elbows out: no hanging stub hands at the frame edge
+    handL = [X(-sh + 1.2), Y(49)]; handR = [X(sh - 1.2), Y(49)];
+    for (const [a, b, d] of [[shL, handL, -1], [shR, handR, 1]]) { const el = [X(d * (sh + 3.2)) + d * vk * .4 * u, Y(61 + br * .4)]; taper(g, a, el, 3.2 * u, 2.8 * u, sleeveC); taper(g, el, b, 2.8 * u, 2.2 * u, sleeveC); dot(g, b[0], b[1], 1.9 * u, shade('#0d0b0a')); } }
   else if (arms === 'down' || guitar !== 'play') { handL = [X(-sh - 2), Y(44)]; handR = [X(sh + 2), Y(44)];
     for (const [a, b, d] of [[shL, handL, -1], [shR, handR, 1]]) { const el = [a[0] + d * 1.5 * u, Y(60)]; taper(g, a, el, 3.2 * u, 2.7 * u, sleeveC); taper(g, el, b, 2.7 * u, 2 * u, sleeveC); dot(g, b[0], b[1], 1.7 * u, shade(P.skin, lit * .6)); } }
   // --- guitar ---

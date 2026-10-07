@@ -181,15 +181,15 @@
   //     rises out of the plains and, small at its foot, he and the dog walk on across it
   function reveal(t, lt, dur) {
     const HZ = 1450;
-    const cy = kf(lt, [[0, 260], [2.4, pick(1080, 1180)], [dur, pick(1110, 1200)]], ease.out);
+    const cy = kf(lt, [[0, 420], [1.6, pick(1080, 1180)], [dur, pick(1110, 1200)]], ease.out); // a quicker crane: less empty sky before he's found
     const z = kf(lt, [[0, 1.05], [dur, pick(1.1, .98)]], ease.inOut);
     frame(SC + kf(lt, [[0, 80], [dur, -20]]), cy, z, kf(lt, [[0, .03], [dur, -.01]]));
     nightSky(HZ);
     heavens(t, { hz: HZ, pole: [SC - 900, -1200], q: [SC + 180, HZ - 200], ang: -1.35, core: -250 });
     plain(HZ, SC);
     const x = SC - 280 + (t - T1) * 22, wx = x;
-    hound(t, wx + 80, HZ + 9, 52, { k: .7 });
-    walker(t, wx, HZ + 12, 118, { k: .8 });
+    hound(t, wx + 120, HZ + 12, 80, { k: .7 });
+    walker(t, wx, HZ + 16, 180, { k: .8 }); // big enough to read on a phone, still small under the sky
     for (const b of BEATS) dust(t, b, SC - 280 + (b - T1) * 22 + 11, HZ + 12, 20, .8);
     const wv = 1 - inv(0, .35, lt);
     if (wv > 0) whip(0, 30 * ease.out(wv));
@@ -253,8 +253,8 @@
     heavens(t, { hz: HZ, trail: tr, pole: [SC - 100, 200], rot: skyRot(t) * 3, q: [SC + 200, HZ - 250], ang: -1.3, core: -200, band: .85 });
     plain(HZ, SC, { streak: .8 });
     const x = SC - 60 + (t - T4) * 24;
-    hound(t, x + 70, HZ + 8, 44, { k: .7 });
-    walker(t, x, HZ + 10, 98, { k: .8 });
+    hound(t, x + 95, HZ + 10, 60, { k: .7 });
+    walker(t, x, HZ + 12, 135, { k: .8 });
     for (const b of BEATS) dust(t, b, SC - 60 + (b - T4) * 24 + 9, HZ + 10, 18, .8);
     meteor(t, 109.07, [SC - 560, 320], [SC + 60, 820], .45);
     meteor(t, 109.47, [SC + 640, 180], [SC + 160, 620], .4, .7);

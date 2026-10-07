@@ -47,8 +47,7 @@
   // ---- painted fire (after c4) ----
   function tongue(t, x, y, h, w, seed, hot = 1) {
     if (h < 4) return;
-    const sw = snoise(t * 1.6 + seed, 71) * w * .9 + snoise(t * 3.1 + seed, 72) * w * .35, tip = [x + sw, y - h];
-    const shape = (k, c) => { s.fillStyle = c; s.beginPath(); s.moveTo(x - w * k, y); s.bezierCurveTo(x - w * k, y - h * .45, tip[0] - w * .3 * k, y - h * .7, tip[0], y - h * (1 - (1 - k) * .35)); s.bezierCurveTo(tip[0] + w * .3 * k, y - h * .7, x + w * k, y - h * .45, x + w * k, y); s.fill(); };
+    const shape = (k, c) => flameShape(t, x, y, h, w, k, c, seed, 0);
     shape(1, '#7a1a0c'); shape(.7, '#c8431b'); if (hot > .3) shape(.4, '#f28a2c'); if (hot > .6) shape(.18, '#ffc05a');
   }
   function flameWall(t, y0, height, k, x0 = -300, x1 = STAGE + 300, seed = 7) {
@@ -109,9 +108,14 @@
     // the first line of dawn, off to the right where they'll walk
     if (dawn > .01) {
       s.save(); s.translate(SC + 520, hz); s.scale(1, .11); s.globalAlpha = clamp(dawn);
-      s.fillStyle = rgrad(s, 0, 0, 0, 2600, [[0, '#b8a488'], [.35, '#6d7486'], [1, 'rgba(40,46,64,0)']]); s.fillRect(-2600, -2600, 5200, 2600); s.restore();
-      glow(SC + 520, hz - 8, 900, `rgba(255,205,160,${.12 * dawn})`);
-      stroke(f, [[SC - 700, hz - 5], [SC + 1800, hz - 5]], `rgba(255,215,170,${.12 * dawn})`, 5);
+      s.fillStyle = rgrad(s, 0, 0, 0, 2600, [[0, '#f0b47a'], [.22, '#c47a5a'], [.5, '#6d6a86'], [1, 'rgba(40,46,64,0)']]); s.fillRect(-2600, -2600, 5200, 2600); s.restore();
+      glow(SC + 520, hz - 8, 1300, `rgba(255,190,130,${.2 * dawn})`);
+      stroke(f, [[SC - 900, hz - 5], [SC + 2000, hz - 5]], `rgba(255,205,150,${.3 * dawn})`, 6);
+      // the first rim of the sun cresting the horizon: the dream of fire ends in a real sunrise
+      const rimK = ease.inOut(inv(274, 278.5, t));
+      if (rimK > .01) { const R = 140, sx = SC + 300; f.save(); f.beginPath(); f.rect(sx - 2 * R, hz - 2 * R, 4 * R, 2 * R - 2); f.clip();
+        dot(f, sx, hz + R * (1 - .35 * rimK), R, `rgba(255,225,170,${.9 * rimK})`); f.restore();
+        glow(sx, hz - 20, 700, `rgba(255,170,90,${.35 * rimK})`); }
     }
     // the far land: low mesas along the horizon
     mesas(hz + 4, 60, mx('#0b090b', '#1a1418', dawn * .6), 1071, x0, x1);
@@ -230,9 +234,11 @@
     const warmAt = (X, Zw) => { let w = 0; for (const L of lights) w += L.lit * Math.exp(-Math.hypot(X - L.X, Zw - L.Z) / 1.5); return clamp(w * .6); };
     const items = [];
     const add = (Zw, fn) => { const D = Zw - V.cz; if (D > .3) items.push({ D, fn }); };
-    for (const b of SCRUB) add(b.Z, () => { const p = P3(V, b.X, b.Z); if (p.k * b.sz > 1.5) bush(p.x, p.y, b.sz * p.k, '#100c0b', b.seed); });
-    for (const st of STONES) add(st.Z, () => { const p = P3(V, st.X, st.Z); drawStone(V, p, st.sz, warmAt(st.X, st.Z), stoneGlow(t, st)); });
-    add(WHEEL.Z, () => drawWheel(t, V, fk, stoneGlow(t, { u: .5, spoke: 0 }) * .8, warmAt(WHEEL.X, WHEEL.Z) * .6));
+    const near = (X, Zw) => o.cull && Zw - V.cz < o.cull && Math.abs(X - V.cx) < 3.5;
+    for (const b of SCRUB) if (!near(b.X, b.Z)) add(b.Z, () => { const p = P3(V, b.X, b.Z); if (p.k * b.sz > 1.5) bush(p.x, p.y, b.sz * p.k, '#100c0b', b.seed); });
+    for (const st of STONES) if (!near(st.X, st.Z)) add(st.Z, () => { const p = P3(V, st.X, st.Z); drawStone(V, p, st.sz, warmAt(st.X, st.Z), stoneGlow(t, st)); });
+    const wa = 1 - (o.wheelFade || 0);
+    if (wa > .01) add(WHEEL.Z, () => { s.save(); s.globalAlpha = wa; f.save(); f.globalAlpha = wa; drawWheel(t, V, fk, stoneGlow(t, { u: .5, spoke: 0 }) * .8, warmAt(WHEEL.X, WHEEL.Z) * .6); s.restore(); f.restore(); });
     for (const q of TORCHES) add(q.Z, () => { const b = P3(V, q.X, q.Z), h = P3(V, q.X, q.Z, 1.55); drawTorch(t, b.x, b.y, h.x, h.y, b.k, flick(q.i), q.i * 5 + 3, emb, clamp(b.D / 1.5)); });
     if (o.planted) add(PLANT.Z, () => { const b = P3(V, PLANT.X, PLANT.Z), h = P3(V, PLANT.X, PLANT.Z, 1.55); drawTorch(t, b.x, b.y, h.x, h.y, b.k, plantLit * 1.05, 91, emb, clamp(b.D / 1.2)); });
     if (o.dog) { const d = o.dog; add(d.Z, () => { const p = P3(V, d.X, d.Z), sc = DOGL * p.k;
@@ -274,12 +280,14 @@
   // ---- the look: ink warming toward cracks, then back to a darker ink after the torches die ----
   const L0 = { ...LOOK.ink, etch: .56, sat: .32, tint: [1, .8, .62], tintK: .14, bloom: 1.45 };
   const L1 = { ...LOOK.cracks, etch: .42, sat: .82, tint: [1, .76, .52], tintK: .2, lift: .02 };
+  const LW = { ...LOOK.cracks, etch: .3, sat: .6, tint: [1, .8, .62], tintK: .2, bloom: 1.6, lift: .03 }; // first light
   const LD = { ...LOOK.ink, etch: .55, sat: .4, tint: [.88, .86, .84], tintK: .08, bloom: 1.5, lift: .01 };
   const mixL = (a, b, k) => { const o = {}; for (const key of new Set([...Object.keys(a), ...Object.keys(b)])) { const va = a[key] ?? b[key], vb = b[key] ?? a[key];
     o[key] = Array.isArray(va) ? va.map((v, j) => lerp(v, vb[j], k)) : lerp(va, vb, k); } return o; };
   function look(t) {
     let L = mixL(L0, L1, smooth(inv(A + 4, tSeems + 3, t)));
     L = mixL(L, LD, smooth(inv(tOut - .1, tOut + 1.6, t)));
+    L = mixL(L, LW, .85 * smooth(inv(266.5, 276, t)));
     const fin = smooth(inv(276, SILENT, t));
     return { ...L, scratch: L.scratch * (1 - fin), dust: L.dust * (1 - fin), lift: L.lift * (1 - fin), flick: L.flick * (1 - fin), burn: 0 };
   }
@@ -409,7 +417,7 @@
     const V = { cx: kf(lt, [[0, -.25], [dur, .1]]), cz: kf(lt, [[0, -6.6], [dur, -6.1]]), ch: .9, hz: 1150, F: 1400 };
     const p = P3(V, 0, 0), up = ease.inOut(inv(tJust2 + .15, tDream + 1.6, t)), upV = Math.sin(Math.PI * up);
     const pan = ease.inOut(inv(tDream + 1, 255.44, t));
-    frame(SC + pan * pick(260, 420), lerp(p.y - MAN * p.k * .6, V.hz - pick(1150, 1250), up), pick(1.1, .82) * lerp(1, .88, up) * (1 + .04 * pan), pan * .05);
+    frame(SC + pan * pick(260, 420), lerp(p.y - MAN * p.k * .6, V.hz - pick(760, 900), up), pick(1.1, .82) * lerp(1, .88, up) * (1 + .04 * pan), pan * .05);
     scene(t, V, { man: MANC({ o: { guitar: 'play', turn: .1, sing: .7, wind: .5, lit: .35, rim: 'rgba(255,160,90,.6)' } }), dog: { X: -.95, Z: .3 }, planted: true });
     if (upV > .05) whip(0, 10 * upV * (up < 1 ? 1 : 0));
     // shooting stars on the beats once the sky is back (the c6 plains)
@@ -473,7 +481,7 @@
     const p = P3(V, mX, mZ);
     frame(lerp(p.x, SC + 60, .5) + pick(0, 60), p.y - MAN * p.k * pick(1.05, .6), pick(1.05, .8));
     const going = t >= 266.2;
-    scene(t, V, { man: { X: mX, Z: mZ, o: { view: 'back', sil: true, walk: going ? (t - 266.2) * .85 : 0, wind: .55, rim: 'rgba(200,180,160,.35)' } }, dog: { X: mX - .75, Z: mZ - .15, walk: going ? t * 1.25 : 0, dir: 1 }, planted: true, stars: .55 });
+    scene(t, V, { man: { X: mX, Z: mZ, o: { view: 'back', sil: true, walk: going ? (t - 266.2) * .85 : 0, wind: .55, rim: 'rgba(200,180,160,.35)' } }, dog: { X: mX - 1.05, Z: mZ + .25, walk: going ? t * 1.25 : 0, dir: 1 }, planted: true, stars: .55, cull: 3, wheelFade: ease.inOut(inv(266.4, 268.6, t)) });
     driftEmbers(t, SC, 950, 3000, 2600, 60, .5 * afterOut(t) + .08);
   }
   // 17 · far behind them now and craning slowly up, the camera settling as they walk on toward the dawn line;
@@ -482,9 +490,9 @@
     const [mX, mZ] = walkPos(t), e = ease.out(inv(0, SILENT - 272.53 + 1, lt));
     const V = { cx: lerp(1.2, 3.4, e), cz: lerp(-3.4, .8, e), ch: lerp(1.05, 1.7, e), hz: lerp(1000, 960, e), F: 1450 };
     frame(SC + pick(40, 120), lerp(830, 800, e), pick(1.02, .8) * lerp(1, .95, e));
-    scene(t, V, { man: { X: mX, Z: mZ, o: { view: 'back', sil: true, walk: (t - 266.2) * .85, wind: .6, rim: 'rgba(210,190,170,.3)' } }, dog: { X: mX - .75, Z: mZ - .15, walk: t * 1.25, dir: 1 }, planted: true, stars: .5 });
+    scene(t, V, { man: { X: mX, Z: mZ, o: { view: 'back', sil: true, walk: (t - 266.2) * .85, wind: .6, rim: 'rgba(210,190,170,.3)' } }, dog: { X: mX - 1.05, Z: mZ + .25, walk: t * 1.25, dir: 1 }, planted: true, stars: .5, cull: 4, wheelFade: 1 });
     driftEmbers(t, SC, 950, 3000, 2600, 50, .4 * afterOut(t) + .06);
-    blackout(ease.inOut(inv(277.2, SILENT, t)));
+    blackout(ease.inOut(inv(278.4, SILENT, t)));
   }
 
   chapter('calling', A, Z, [
