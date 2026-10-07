@@ -1,6 +1,6 @@
 {
- "version": 2,
- "note": "Living animatic: entries cover the old pinball cut for their span. Times are song seconds. See animatic.py.",
+ "version": 3,
+ "note": "Living animatic: entries cover the old pinball cut for their span. Times are song seconds. See animatic.py. v3 (2026-10-07): the Graduate escape (he runs back for her, they leave together) and colour plates 7/8.",
  "entries": [
   {
    "still": "keyframes/ch01_ministry_tower.png",
@@ -8,13 +8,6 @@
    "focus": [
     0.5,
     0.75
-   ]
-  },
-  {
-   "still": "../gpt/typist-contender-1/env_hall_ducts_tubes.png",
-   "span": [
-    13.0,
-    33.0
    ]
   },
   {
@@ -64,20 +57,6 @@
    "span": [
     252.75,
     264.625
-   ]
-  },
-  {
-   "still": "keyframes/ch09_dressed_in_colour.png",
-   "span": [
-    283.958,
-    290.0
-   ]
-  },
-  {
-   "still": "keyframes/ch10_a_hundred_miles.png",
-   "span": [
-    290.0,
-    305.0
    ]
   },
   {
@@ -431,27 +410,6 @@
    ]
   },
   {
-   "still": "keyframes/gap/f05936.png",
-   "span": [
-    241.9167,
-    252.75
-   ]
-  },
-  {
-   "still": "keyframes/gap/f06482.png",
-   "span": [
-    264.625,
-    275.5417
-   ]
-  },
-  {
-   "still": "keyframes/gap/f06714.png",
-   "span": [
-    275.5417,
-    283.9583
-   ]
-  },
-  {
    "still": "keyframes/gap/f07756.png",
    "span": [
     320.0,
@@ -470,6 +428,69 @@
    "span": [
     328.625,
     332.625
+   ]
+  },
+  {
+   "still": "keyframes/escape/ch02_takes_a_number.png",
+   "span": [
+    13.0,
+    27.55
+   ]
+  },
+  {
+   "still": "../gpt/typist-contender-1/env_hall_ducts_tubes.png",
+   "span": [
+    27.55,
+    33.0
+   ]
+  },
+  {
+   "still": "keyframes/escape/ch08_runs_back.png",
+   "span": [
+    241.917,
+    246.5
+   ]
+  },
+  {
+   "still": "keyframes/escape/ch09_at_her_desk.png",
+   "span": [
+    246.5,
+    252.75
+   ]
+  },
+  {
+   "still": "keyframes/escape/ch09_both_dressed.png",
+   "span": [
+    264.625,
+    273.0
+   ]
+  },
+  {
+   "still": "keyframes/escape/ch09_blizzard.png",
+   "span": [
+    273.0,
+    275.542
+   ]
+  },
+  {
+   "still": "keyframes/escape/ch09_down_the_aisle.png",
+   "span": [
+    275.542,
+    283.958
+   ]
+  },
+  {
+   "still": "keyframes/escape/ch09_escape_doors.png",
+   "span": [
+    283.958,
+    290.0
+   ]
+  },
+  {
+   "still": "keyframes/escape/ch10_together_mile30.png",
+   "span": [
+    290.0,
+    305.0
    ]
   }
  ]
