@@ -1,6 +1,6 @@
 {
- "version": 8,
- "note": "Living animatic: entries cover the old pinball cut for their span. Times are song seconds. See animatic.py. v3 (2026-10-07): the Graduate escape (he runs back for her, they leave together) and colour plates 7/8. v4 (2026-10-07): no ministry plumbing in the sky (the escape); road figures match plates 7/8. v5 (2026-10-07): first stills in the new cinematic painted style (style2/, keyframes_v2/). v6: use_upgrades swaps in keyframes_v2 versions wherever the style pass has made one. v7: long-hold beats and the realistic flower-by-mail sequence (keyframes_v2/beat_*), listed last so they win. v8: case clear of his coat, single hats, settled flap words.",
+ "version": 9,
+ "note": "Living animatic: entries cover the old pinball cut for their span. Times are song seconds. See animatic.py. v3 (2026-10-07): the Graduate escape (he runs back for her, they leave together) and colour plates 7/8. v4 (2026-10-07): no ministry plumbing in the sky (the escape); road figures match plates 7/8. v5 (2026-10-07): first stills in the new cinematic painted style (style2/, keyframes_v2/). v6: use_upgrades swaps in keyframes_v2 versions wherever the style pass has made one. v7: long-hold beats and the realistic flower-by-mail sequence (keyframes_v2/beat_*), listed last so they win. v8: case clear of his coat, single hats, settled flap words. v9: eight more long-hold beats (beats2.tsv).",
  "entries": [
   {
    "still": "keyframes/ch01_ministry_tower.png",
@@ -582,6 +582,62 @@
    "span": [
     70.833,
     74.333
+   ]
+  },
+  {
+   "still": "keyframes_v2/beat_ch03_typing_intent.png",
+   "span": [
+    98.75,
+    102.79
+   ]
+  },
+  {
+   "still": "keyframes_v2/beat_ch08_late_run.png",
+   "span": [
+    218.33,
+    224.16
+   ]
+  },
+  {
+   "still": "keyframes_v2/beat_ch08_card_birds.png",
+   "span": [
+    238.71,
+    241.92
+   ]
+  },
+  {
+   "still": "keyframes_v2/beat_ch09_sewing_pants.png",
+   "span": [
+    249.6,
+    252.75
+   ]
+  },
+  {
+   "still": "keyframes_v2/beat_ch09_colour_spreads.png",
+   "span": [
+    267.79,
+    273.0
+   ]
+  },
+  {
+   "still": "keyframes_v2/beat_ch09_hands.png",
+   "span": [
+    279.79,
+    283.96
+   ]
+  },
+  {
+   "still": "keyframes_v2/beat_ch10_clouds_wave.png",
+   "span": [
+    293.75,
+    297.5
+   ]
+  },
+  {
+   "still": "keyframes_v2/beat_ch10_faces.png",
+   "span": [
+    308.75,
+    312.5
    ]
   }
  ],
