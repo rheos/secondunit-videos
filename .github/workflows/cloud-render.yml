@@ -1,6 +1,7 @@
-# Render a code-drawn look in parallel slices. Started by tools/cloud-render.sh, which uploads the project's
-# page code as a draft release asset (it can quote lyrics, so it never enters git) and deletes it afterwards.
-# No audio comes here: each slice returns silent video and the song is muxed on the Mac.
+# Render a code-drawn look in parallel slices. Started by tools/cloud-render/cloud-render.sh, which uploads the
+# project's page code as a draft release asset (it can quote lyrics, so it never enters git) and deletes it
+# afterwards. No audio comes here: each slice returns silent video and the song is muxed on the Mac.
+# Inputs reach shell scripts only through environment variables, and numbers are validated first.
 name: cloud-render
 run-name: "cloud-render ${{ inputs.label }}"
 on:
@@ -11,7 +12,7 @@ on:
       page: { description: "page inside the package, e.g. looks/charcoal.html", required: true }
       t0: { description: "song time of frame 0, seconds", required: true }
       frames: { description: "total frames", required: true }
-      slices: { description: "parallel slices (max 20)", required: true, default: "20" }
+      slices: { description: "parallel slices (1-20, at most frames)", required: true, default: "20" }
       fps: { description: "frames per second", required: true, default: "24" }
       width: { description: "encoded width", required: true, default: "1280" }
       height: { description: "encoded height", required: true, default: "720" }
@@ -24,7 +25,24 @@ jobs:
       matrix: ${{ steps.m.outputs.matrix }}
     steps:
       - id: m
-        run: echo "matrix=$(seq 0 $(( ${{ inputs.slices }} - 1 )) | jq -cs .)" >> "$GITHUB_OUTPUT"
+        env:
+          FRAMES: ${{ inputs.frames }}
+          SLICES: ${{ inputs.slices }}
+          FPS: ${{ inputs.fps }}
+          WIDTH: ${{ inputs.width }}
+          HEIGHT: ${{ inputs.height }}
+          ASSET: ${{ inputs.asset_id }}
+          T0: ${{ inputs.t0 }}
+          PAGE: ${{ inputs.page }}
+        run: |
+          for v in "$FRAMES" "$SLICES" "$FPS" "$WIDTH" "$HEIGHT" "$ASSET"; do
+            [[ "$v" =~ ^[0-9]+$ ]] || { echo "not a whole number: $v"; exit 1; }
+          done
+          [[ "$T0" =~ ^[0-9]+(\.[0-9]+)?$ ]] || { echo "bad t0: $T0"; exit 1; }
+          [[ "$PAGE" =~ ^[A-Za-z0-9._/-]+\.html$ && "$PAGE" != *..* ]] || { echo "bad page: $PAGE"; exit 1; }
+          max=$(( FRAMES < 20 ? FRAMES : 20 ))
+          (( FRAMES > 0 && SLICES >= 1 && SLICES <= max )) || { echo "need frames > 0 and 1 <= slices <= $max"; exit 1; }
+          echo "matrix=$(seq 0 $(( SLICES - 1 )) | jq -cs .)" >> "$GITHUB_OUTPUT"
   slice:
     needs: plan
     runs-on: ubuntu-latest
@@ -32,15 +50,29 @@ jobs:
       fail-fast: false
       matrix:
         n: ${{ fromJSON(needs.plan.outputs.matrix) }}
+    env:
+      ASSET: ${{ inputs.asset_id }}
+      PAGE: ${{ inputs.page }}
+      T0: ${{ inputs.t0 }}
+      FRAMES: ${{ inputs.frames }}
+      SLICES: ${{ inputs.slices }}
+      FPS: ${{ inputs.fps }}
+      WIDTH: ${{ inputs.width }}
+      HEIGHT: ${{ inputs.height }}
+      N: ${{ matrix.n }}
     steps:
       - uses: actions/checkout@v4
-        with: { sparse-checkout: tools/cloud-render }
+        with:
+          sparse-checkout: tools/cloud-render
+          persist-credentials: false
       - uses: actions/setup-node@v4
         with: { node-version: 22 }
       - name: Fetch package
-        env: { GH_TOKEN: "${{ secrets.GITHUB_TOKEN }}" }
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
         run: |
-          gh api -H "Accept: application/octet-stream" repos/${{ github.repository }}/releases/assets/${{ inputs.asset_id }} > pkg.tgz
+          gh api -H "Accept: application/octet-stream" "repos/$REPO/releases/assets/$ASSET" > pkg.tgz
           mkdir pkg && tar xzf pkg.tgz -C pkg
           cp tools/cloud-render/render-slice.mjs pkg/
       - name: Install
@@ -51,13 +83,12 @@ jobs:
       - name: Render and encode
         working-directory: pkg
         run: |
-          N=${{ inputs.frames }}; S=${{ inputs.slices }}; n=${{ matrix.n }}
-          a=$(( n * N / S )); b=$(( (n + 1) * N / S ))
-          node render-slice.mjs "${{ inputs.page }}" ${{ inputs.t0 }} ${{ inputs.fps }} $a $b 2
+          a=$(( N * FRAMES / SLICES )); b=$(( (N + 1) * FRAMES / SLICES ))
+          node render-slice.mjs "$PAGE" "$T0" "$FPS" "$a" "$b" 2
           mkdir -p out
-          ffmpeg -y -loglevel error -framerate ${{ inputs.fps }} -start_number $a -i frames/f_%06d.jpg -frames:v $(( b - a )) \
-            -vf scale=${{ inputs.width }}:${{ inputs.height }}:flags=lanczos -c:v libx264 -preset medium -crf 18 -pix_fmt yuv420p \
-            out/slice_$(printf %03d $n)_f$(printf %06d $a)-f$(printf %06d $b).mp4
+          ffmpeg -y -loglevel error -framerate "$FPS" -start_number "$a" -i frames/f_%06d.jpg -frames:v $(( b - a )) \
+            -vf "scale=${WIDTH}:${HEIGHT}:flags=lanczos" -c:v libx264 -preset medium -crf 18 -pix_fmt yuv420p \
+            "out/slice_$(printf %03d "$N")_f$(printf %06d "$a")-f$(printf %06d "$b").mp4"
       - uses: actions/upload-artifact@v4
         with:
           name: slice-${{ matrix.n }}

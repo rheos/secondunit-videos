@@ -19,25 +19,45 @@ pdir=$root/$proj; [[ -f $pdir/$page ]] || { echo "no page $pdir/$page"; exit 2; 
 song=$pdir/assets/song.wav; [[ -f $song ]] || { echo "no $song (the song clock)"; exit 2; }
 fps=24; width=$(( height * 16 / 9 ))
 frames=$(python3 -c "print(round(($t1 - $t0) * $fps))")
+[[ $slices == <-> ]] || { echo "slices must be a whole number"; exit 2; }
+max=$(( frames < 20 ? frames : 20 ))
+(( frames > 0 && slices >= 1 && slices <= max )) || { echo "need t1 > t0 and 1 <= slices <= $max"; exit 2; }
+# the frame scanner needs numpy: $PY, else the ViralVision venv, else python3 if it has numpy
+py=${PY:-~/Code/novadiem/indieagent/viralvision/viralvision-worker/.venv/bin/python}
+[[ -x $py ]] || py=python3
+$py -c 'import numpy' 2>/dev/null || { echo "no python with numpy for the frame scan (set PY=...)"; exit 2; }
 slug=${${page:t}:r}
 out=${5:-$pdir/out/${slug}_cloud_${t0}-${t1}.mp4}
 label="${proj}-${slug}-$(date +%Y%m%d-%H%M%S)"
 tmp=$(mktemp -d); trap 'rm -rf $tmp' EXIT
 echo "== $label: $frames frames in $slices slices at ${width}x${height}"
 
-# 1. package (code + images only)
-tar czf $tmp/pkg.tgz -C $pdir \
-  --exclude='./out' --exclude='./source' --exclude='./_in' --exclude='./work' --exclude='./tmp' --exclude='./output' \
-  --exclude='./node_modules' --exclude='./.git' \
-  --exclude='*.wav' --exclude='*.mp3' --exclude='*.m4a' --exclude='*.flac' --exclude='*.aif*' \
-  --exclude='*.mp4' --exclude='*.mov' --exclude='*.webm' --exclude='*.mkv' .
+# 1. package: an ALLOWLIST of code, styles, data, images and fonts, never audio, video, secrets or data folders
+(cd $pdir && find . \( -path ./out -o -path ./source -o -path ./_in -o -path ./work -o -path ./tmp -o -path ./output \
+    -o -path ./node_modules -o -path ./.git \) -prune -o -type f \( -iname '*.html' -o -iname '*.js' -o -iname '*.mjs' \
+    -o -iname '*.css' -o -iname '*.json' -o -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.webp' \
+    -o -iname '*.gif' -o -iname '*.svg' -o -iname '*.woff' -o -iname '*.woff2' -o -iname '*.ttf' -o -iname '*.otf' \) \
+    ! -name 'package-lock.json' -print) | sort > $tmp/list
+tar czf $tmp/pkg.tgz -C $pdir -T $tmp/list
+# belt and braces: refuse if anything outside the allowlist got in
+tar tzf $tmp/pkg.tgz | grep -viE '/$|\.(html|m?js|css|json|png|jpe?g|webp|gif|svg|woff2?|ttf|otf)$' && { echo "refusing: unexpected files in package"; exit 1; }
 echo "package $(du -h $tmp/pkg.tgz | cut -f1)"
 tag="cr-$label"
 gh release create $tag --repo $REPO --draft --title "tmp cloud-render $label (deleted after the run)" \
   --notes "Temporary package for tools/cloud-render. Deleted when the render is done." $tmp/pkg.tgz > /dev/null
-cleanup_release() { gh api repos/$REPO/releases --jq ".[] | select(.tag_name==\"$tag\") | .id" | while read -r rid; do gh api -X DELETE repos/$REPO/releases/$rid; done; }
+release_id() { gh api --paginate repos/$REPO/releases --jq ".[] | select(.tag_name==\"$tag\") | .id" | head -1; }
+cleanup_release() {
+  local rid
+  for try in 1 2 3 4; do
+    rid=$(release_id 2>/dev/null) || rid="?"
+    [[ -z $rid ]] && { echo "package release deleted"; return 0; }
+    [[ $rid != "?" ]] && gh api -X DELETE repos/$REPO/releases/$rid > /dev/null 2>&1
+    sleep 3
+  done
+  echo "WARNING: could not delete draft release $tag. Delete it by hand: https://github.com/$REPO/releases"
+}
 trap 'cleanup_release; rm -rf $tmp' EXIT
-asset=$(gh api repos/$REPO/releases --jq ".[] | select(.tag_name==\"$tag\") | .assets[0].id")
+asset=$(gh api --paginate repos/$REPO/releases --jq ".[] | select(.tag_name==\"$tag\") | .assets[0].id" | head -1)
 [[ -n $asset ]] || { echo "release asset not found"; exit 1; }
 
 # 2. run
@@ -77,6 +97,5 @@ got=$(ffprobe -v error -count_frames -select_streams v:0 -show_entries stream=nb
 (( got == frames )) || { echo "joined video has $got frames, want $frames"; exit 1; }
 
 # 4. scan
-py=~/Code/novadiem/indieagent/viralvision/viralvision-worker/.venv/bin/python
-[[ -x $py ]] && $py $here/badframes.py $out || echo "(badframes skipped: no numpy python)"
+$py $here/badframes.py $out
 echo "wrote $out"
