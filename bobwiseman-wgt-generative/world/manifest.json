@@ -1,6 +1,6 @@
 {
- "version": 3,
- "note": "Living animatic: entries cover the old pinball cut for their span. Times are song seconds. See animatic.py. v3 (2026-10-07): the Graduate escape (he runs back for her, they leave together) and colour plates 7/8.",
+ "version": 4,
+ "note": "Living animatic: entries cover the old pinball cut for their span. Times are song seconds. See animatic.py. v3 (2026-10-07): the Graduate escape (he runs back for her, they leave together) and colour plates 7/8. v4 (2026-10-07): no ministry plumbing in the sky (the escape); road figures match plates 7/8.",
  "entries": [
   {
    "still": "keyframes/ch01_ministry_tower.png",
@@ -60,7 +60,7 @@
    ]
   },
   {
-   "still": "keyframes/ch10_road_through_sky.png",
+   "still": "keyframes/ch10_road_through_sky_v2.png",
    "span": [
     305.0,
     320.0
@@ -200,42 +200,42 @@
    ]
   },
   {
-   "still": "keyframes/gap/f03303.png",
+   "still": "keyframes/gap/f03303_sky.png",
    "span": [
     135.5,
     139.7917
    ]
   },
   {
-   "still": "keyframes/gap/f03391.png",
+   "still": "keyframes/gap/f03391_sky.png",
    "span": [
     139.7917,
     142.8333
    ]
   },
   {
-   "still": "keyframes/gap/f03465.png",
+   "still": "keyframes/gap/f03465_sky.png",
    "span": [
     142.8333,
     145.9167
    ]
   },
   {
-   "still": "keyframes/gap/f03524.png",
+   "still": "keyframes/gap/f03524_sky.png",
    "span": [
     145.9167,
     147.7917
    ]
   },
   {
-   "still": "keyframes/gap/f03691.png",
+   "still": "keyframes/gap/f03691_sky.png",
    "span": [
     152.125,
     155.5
    ]
   },
   {
-   "still": "keyframes/gap/f03780.png",
+   "still": "keyframes/gap/f03780_sky.png",
    "span": [
     155.5,
     159.5417
@@ -256,7 +256,7 @@
    ]
   },
   {
-   "still": "keyframes/gap/f04024.png",
+   "still": "keyframes/gap/f04024_sky.png",
    "span": [
     165.3333,
     170.0
@@ -410,7 +410,7 @@
    ]
   },
   {
-   "still": "keyframes/gap/f07756.png",
+   "still": "keyframes/gap/f07756_sky.png",
    "span": [
     320.0,
     326.3333
