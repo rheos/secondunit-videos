@@ -5,6 +5,7 @@
 !/.gitignore
 !/.githooks/
 !/.github/
+!/tools/
 !/README.md
 !/bobwiseman-airplane-16bit/
 !/bobwiseman-airplane-collage/
