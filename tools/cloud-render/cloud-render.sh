@@ -60,7 +60,7 @@ mkdir -p $tmp/slices
 for n in $(seq 0 $(( slices - 1 ))); do
   for try in 1 2 3 4; do gh run download $run --repo $REPO -n slice-$n -D $tmp/slices > /dev/null 2>&1 && break; sleep 3; done
 done
-files=($tmp/slices/slice_*.mp4(Non))
+files=($(ls $tmp/slices/slice_*.mp4 2>/dev/null | sort))
 (( ${#files} == slices )) || { echo "got ${#files} of $slices slices"; exit 1; }
 ins=(); filt=""; k=0
 for f in $files; do
