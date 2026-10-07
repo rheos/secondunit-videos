@@ -1,5 +1,6 @@
 #!/bin/zsh
 # gptimg: one GPT Image generation through Codex CLI, prompt passed verbatim.
+# Model pinned to gpt-6-astra (works on a ChatGPT-plan login; gpt-6.1-sol does not). Override: GPTIMG_MODEL=...
 # usage: [GPTIMG_CROP169=1] gptimg -o out.png [-r ref.jpg]... "prompt"  (refs: image 1, image 2... in order)
 set -e
 out=""; size="1536x1024"; refs=()
@@ -20,7 +21,7 @@ meta+=" Then copy the generated file to ${outabs} and print only that path.
 PROMPT>>>
 ${prompt}
 <<<PROMPT"
-print -r -- "$meta" | codex exec --skip-git-repo-check --sandbox workspace-write -C ${outabs:h} ${refs[@]} - 2>&1 | tail -3
+print -r -- "$meta" | codex exec -m "${GPTIMG_MODEL:-gpt-6-astra}" --skip-git-repo-check --sandbox workspace-write -C ${outabs:h} ${refs[@]} - 2>&1 | tail -3
 [[ -f $outabs ]] && file $outabs || { echo "NO FILE WRITTEN"; exit 1; }
 # GPTIMG_CROP169=1: centre-crop the 3:2 output to 16:9 beside the original
 if [[ -n $GPTIMG_CROP169 ]]; then
