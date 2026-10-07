@@ -195,14 +195,17 @@
     ['antler', [SC + 20, 330, 260], [SC + 60, 580, 220], tSpeak + 1.05, 1, 5],
     ['snake', [SC + 270, 1235, 220], [SC - 520, 1200, 320], tSpeak + .85, .8, 6],
   ];
+  // c7's old ones speak as CONSTELLATIONS: faint threads of light joining star points in the burning sky.
+  // c9 then raises them as towering glyphs of fire, so the second time pays the first off instead of
+  // repeating it (Robin's polish pass, 2026-10-06)
   function glyph(t, kind, cx, cy, sc, k, seed = 1) {
     if (k <= .01) return;
-    const tw = .85 + .15 * Math.sin(t * 3 + seed), lines = GLYPH[kind];
+    const lines = GLYPH[kind];
     for (const ln of lines) { const pts = ln.map(([x, y]) => [cx + x * sc, cy + y * sc]);
-      s.globalAlpha = .4 * k; stroke(s, pts, '#ffd08a', sc * .035); s.globalAlpha = 1;
-      stroke(f, pts, `rgba(255,190,110,${.1 * k})`, sc * .09); stroke(f, pts, `rgba(255,225,170,${.5 * k * tw})`, sc * .018);
-      for (let i = 0; i < pts.length; i += kind === 'spiral' || kind === 'rings' || kind === 'snake' || ln.length > 12 ? 6 : 1) {
-        const p = pts[i]; dot(f, p[0], p[1], sc * .014 + 2, `rgba(255,245,225,${k * (.6 + .4 * Math.sin(t * 4 + i + seed))})`); glow(p[0], p[1], sc * .06, `rgba(255,200,130,${.35 * k})`); } }
+      stroke(f, pts, `rgba(200,215,255,${.07 * k})`, sc * .03); stroke(f, pts, `rgba(240,244,255,${.32 * k})`, Math.max(1.5, sc * .007));
+      const step = kind === 'spiral' || kind === 'rings' || kind === 'snake' || ln.length > 12 ? 4 : 1;
+      for (let i = 0; i < pts.length; i += step) { const p = pts[i], tw = .55 + .45 * Math.sin(t * (2.2 + hash(i + seed * 7) * 3) + i + seed), big = hash(i * 3 + seed) > .7;
+        dot(f, p[0], p[1], (big ? sc * .016 : sc * .009) + 1.5, `rgba(250,250,255,${k * tw})`); glow(p[0], p[1], sc * (big ? .07 : .04), `rgba(190,205,255,${.3 * k * tw})`); } }
   }
 
   // ---------- storm clouds breaking the burning sky (c8 handoff) ----------

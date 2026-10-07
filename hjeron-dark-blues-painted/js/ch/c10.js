@@ -417,7 +417,7 @@
     const V = { cx: kf(lt, [[0, -.25], [dur, .1]]), cz: kf(lt, [[0, -6.6], [dur, -6.1]]), ch: .9, hz: 1150, F: 1400 };
     const p = P3(V, 0, 0), up = ease.inOut(inv(tJust2 + .15, tDream + 1.6, t)), upV = Math.sin(Math.PI * up);
     const pan = ease.inOut(inv(tDream + 1, 255.44, t));
-    frame(SC + pan * pick(260, 420), lerp(p.y - MAN * p.k * .6, V.hz - pick(1150, 1250), up), pick(1.1, .82) * lerp(1, .88, up) * (1 + .04 * pan), pan * .05);
+    frame(SC + pan * pick(260, 420), lerp(p.y - MAN * p.k * .6, V.hz - pick(760, 900), up), pick(1.1, .82) * lerp(1, .88, up) * (1 + .04 * pan), pan * .05);
     scene(t, V, { man: MANC({ o: { guitar: 'play', turn: .1, sing: .7, wind: .5, lit: .35, rim: 'rgba(255,160,90,.6)' } }), dog: { X: -.95, Z: .3 }, planted: true });
     if (upV > .05) whip(0, 10 * upV * (up < 1 ? 1 : 0));
     // shooting stars on the beats once the sky is back (the c6 plains)
