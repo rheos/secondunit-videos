@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "note": "Living animatic: entries cover the old pinball cut for their span. Times are song seconds. See animatic.py.",
+  "entries": [
+    {"still": "keyframes/ch01_ministry_tower.png", "at": 3.0, "focus": [0.5, 0.75]},
+    {"still": "../gpt/typist-contender-1/env_hall_ducts_tubes.png", "span": [13.0, 33.0]},
+    {"clip": "../hybrid-proof/out/wgt_hybrid-proof-v1_f00792-f00912_24fps_composite.mp4"},
+    {"still": "keyframes/ch02_roof_tears_open.png", "at": 50.0},
+    {"clip": "../desk-shot/out/wgt_desk-shot-v2_f01432-f01558_24fps_composite.mp4"},
+    {"still": "keyframes/ch03_pneumatic_crosssection.png", "at": 68.5},
+    {"still": "keyframes/ch04_now_serving_we_got_time.png", "at": 112.0},
+    {"still": "keyframes/ch05_clouds_on_strike.png", "at": 150.0},
+    {"still": "keyframes/ch05_sun_in_a_drawer.png", "at": 162.0},
+    {"still": "keyframes/ch06_complaints_torn.png", "at": 172.0},
+    {"still": "keyframes/ch07_the_machine.png", "at": 192.0},
+    {"still": "keyframes/ch08_late_corridor_horn.png", "at": 225.0},
+    {"still": "keyframes/ch08_time_card_torn.png", "at": 238.0},
+    {"still": "keyframes/ch09_her_laughter.png", "span": [252.75, 264.625]},
+    {"still": "keyframes/ch09_dressed_in_colour.png", "span": [283.958, 290.0]},
+    {"still": "keyframes/ch10_a_hundred_miles.png", "span": [290.0, 305.0]},
+    {"still": "keyframes/ch10_road_through_sky.png", "span": [305.0, 320.0]},
+    {"still": "keyframes/ch11_now_serving_7436912.png", "at": 333.0}
+  ]
+}
