@@ -1,6 +1,6 @@
 {
- "version": 13,
- "note": "Living animatic: entries cover the old pinball cut for their span. Times are song seconds. See animatic.py. v3 (2026-10-07): the Graduate escape (he runs back for her, they leave together) and colour plates 7/8. v4 (2026-10-07): no ministry plumbing in the sky (the escape); road figures match plates 7/8. v5 (2026-10-07): first stills in the new cinematic painted style (style2/, keyframes_v2/). v6: use_upgrades swaps in keyframes_v2 versions wherever the style pass has made one. v7: long-hold beats and the realistic flower-by-mail sequence (keyframes_v2/beat_*), listed last so they win. v8: case clear of his coat, single hats, settled flap words. v9: eight more long-hold beats (beats2.tsv). v10: consistency pass on the early stills (leads redrawn from the plates), settled 2QWI flap. v11: switchboard reach/meet, full-size case carried horizontally, one case at 0:51. v12: two worlds (real office vs his nightmare waiting hall); reality beats moved into the office. v13: nightmare pass (keyframes_nm wins over keyframes_v2), snap back to reality at 58.9, single case at 1:17.",
+ "version": 15,
+ "note": "Living animatic: entries cover the old pinball cut for their span. Times are song seconds. See animatic.py. v3 (2026-10-07): the Graduate escape (he runs back for her, they leave together) and colour plates 7/8. v4 (2026-10-07): no ministry plumbing in the sky (the escape); road figures match plates 7/8. v5 (2026-10-07): first stills in the new cinematic painted style (style2/, keyframes_v2/). v6: use_upgrades swaps in keyframes_v2 versions wherever the style pass has made one. v7: long-hold beats and the realistic flower-by-mail sequence (keyframes_v2/beat_*), listed last so they win. v8: case clear of his coat, single hats, settled flap words. v9: eight more long-hold beats (beats2.tsv). v10: consistency pass on the early stills (leads redrawn from the plates), settled 2QWI flap. v11: switchboard reach/meet, full-size case carried horizontally, one case at 0:51. v12: two worlds (real office vs his nightmare waiting hall); reality beats moved into the office. v13: nightmare pass (keyframes_nm wins over keyframes_v2), snap back to reality at 58.9, single case at 1:17. v14: the flower is folded from the pink carbon copy at his real desk (replaces the guitar-case fold). v15: both run the same way in the hands shot.",
  "entries": [
   {
    "still": "keyframes/ch01_ministry_tower.png",
@@ -659,6 +659,20 @@
    "span": [
     58.9,
     59.667
+   ]
+  },
+  {
+   "still": "keyframes_v2/beat_ch03_tears_pink_copy.png",
+   "span": [
+    64.917,
+    66.4
+   ]
+  },
+  {
+   "still": "keyframes_v2/beat_ch03_folds_flower.png",
+   "span": [
+    66.4,
+    67.917
    ]
   }
  ],
