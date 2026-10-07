@@ -33,10 +33,10 @@ const inv = (a, b, t) => clamp01((t - a) / (b - a));
 
 let A = {};
 window.__ready = (async () => {
-  const names = ['desk_plate', 'her_a', 'her_b', 'plane', 'insert_a', 'insert_b'];
+  const names = ['desk_plate', 'her_a', 'her_b', 'her_c', 'plane', 'insert_a', 'insert_b'];
   const imgs = await Promise.all(names.map((n) => load(`assets/${n}.png`)));
   names.forEach((n, i) => (A[n] = imgs[i]));
-  A.bA = bounds(A.her_a); A.bB = bounds(A.her_b); A.bP = bounds(A.plane);
+  A.bA = bounds(A.her_a); A.bB = bounds(A.her_b); A.bC = bounds(A.her_c); A.bP = bounds(A.plane);
   return true;
 })();
 
@@ -51,9 +51,13 @@ function cam(t, dur, fx, fy, amount) {
 function drawHer(pose, c, breathe) {
   const a = A.bA;
   ctx.save(); ctx.translate(c.ox, c.oy); ctx.scale(c.s, c.s);
-  if (pose === 'a') {
+  if (pose === 'a' || pose === 'c') {
+    // pose C is an edit of pose A on the same canvas; nudge it so the feet and the chair's right
+    // edge sit exactly on pose A's (GPT drifted them a few px)
+    const img = pose === 'a' ? A.her_a : A.her_c, b = pose === 'a' ? a : A.bC;
+    const dx = (a.x + a.w) - (b.x + b.w), dy = (a.y + a.h) - (b.y + b.h);
     ctx.translate(a.x + a.w / 2, a.y + a.h); ctx.scale(1, 1 + breathe); ctx.translate(-(a.x + a.w / 2), -(a.y + a.h));
-    ctx.drawImage(A.her_a, 0, 0);
+    ctx.drawImage(img, dx, dy);
   } else {
     const b = A.bB, k = a.h / b.h, w = b.w * k;
     const right = a.x + a.w;                       // keep her chair where pose A's chair is
@@ -65,15 +69,15 @@ function drawHer(pose, c, breathe) {
 
 // the plane: comes in from the upper left over the lamp, glides down onto the clear end of the
 // desk (under where her reaching hand goes), skids a little and stops
-const LAND = { x: 700, y: 574 };
+const LAND = { x: 585, y: 566 };
 function planeAt(t) {
   if (t < 59.9) return null;
   const u = inv(59.9, T_LAND, t), e = 1 - Math.pow(1 - u, 1.4);
   const q = (a, b, c, v) => (1 - v) * (1 - v) * a + 2 * (1 - v) * v * b + v * v * c;
-  const p0 = { x: -80, y: 140 }, p1 = { x: 380, y: 40 }, p2 = { x: 640, y: 560 };
+  const p0 = { x: -80, y: 140 }, p1 = { x: 380, y: 40 }, p2 = { x: 540, y: 552 };
   let x = q(p0.x, p1.x, p2.x, e), y = q(p0.y, p1.y, p2.y, e);
   const landed = t >= T_LAND;
-  if (landed) { const s = ease(inv(T_LAND, T_LAND + 0.25, t)); x = 640 + (LAND.x - 640) * s; y = 560 + (LAND.y - 560) * s; }
+  if (landed) { const s = ease(inv(T_LAND, T_LAND + 0.25, t)); x = 540 + (LAND.x - 540) * s; y = 552 + (LAND.y - 552) * s; }
   const len = 150 - 40 * (1 - e);                 // close to camera throughout; a little smaller far left
   // heading follows the curve's tangent while flying (nose right); flat on the desk once landed
   const dx = 2 * (1 - e) * (p1.x - p0.x) + 2 * e * (p2.x - p1.x), dy = 2 * (1 - e) * (p1.y - p0.y) + 2 * e * (p2.y - p1.y);
@@ -105,7 +109,7 @@ function frame(songT) {
   if (songT < T_INSERT) {
     const t = songT - T0, c = cam(t, T_INSERT - T0, 760, 330, 0.06);
     ctx.drawImage(A.desk_plate, c.ox, c.oy, 1536 * c.s, 1024 * c.s);
-    const pose = songT >= T_LAND + 0.04 ? 'b' : 'a';
+    const pose = songT >= T_LAND + 0.04 ? 'c' : 'a';   // pose C (2026-10-06) replaces the mirrored pose B
     drawPlane(songT, c);
     drawHer(pose, c, 0.004 * Math.sin(songT * 2.4));
   } else {

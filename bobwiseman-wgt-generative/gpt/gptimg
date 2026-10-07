@@ -1,6 +1,7 @@
 #!/bin/zsh
 # gptimg: one GPT Image generation through Codex CLI, prompt passed verbatim.
-# Model pinned to gpt-6-astra (works on a ChatGPT-plan login; gpt-6.1-sol does not). Override: GPTIMG_MODEL=...
+# Uses your Codex default model (GPTIMG_MODEL=... to override). If the default is refused
+# ("not supported when using Codex with a ChatGPT account", seen on an old CLI), retries on gpt-6-astra.
 # usage: [GPTIMG_CROP169=1] gptimg -o out.png [-r ref.jpg]... "prompt"  (refs: image 1, image 2... in order)
 set -e
 out=""; size="1536x1024"; refs=()
@@ -21,7 +22,11 @@ meta+=" Then copy the generated file to ${outabs} and print only that path.
 PROMPT>>>
 ${prompt}
 <<<PROMPT"
-print -r -- "$meta" | codex exec -m "${GPTIMG_MODEL:-gpt-6-astra}" --skip-git-repo-check --sandbox workspace-write -C ${outabs:h} ${refs[@]} - 2>&1 | tail -3
+mflag=(); [[ -n $GPTIMG_MODEL ]] && mflag=(-m "$GPTIMG_MODEL")
+run() { print -r -- "$meta" | codex exec "$@" --skip-git-repo-check --sandbox workspace-write -C ${outabs:h} ${refs[@]} - 2>&1 }
+log=$(run ${mflag[@]})
+if [[ $log == *"not supported when using Codex"* ]]; then echo "default model refused; retrying on gpt-6-astra"; log=$(run -m gpt-6-astra); fi
+print -r -- "$log" | tail -3
 [[ -f $outabs ]] && file $outabs || { echo "NO FILE WRITTEN"; exit 1; }
 # GPTIMG_CROP169=1: centre-crop the 3:2 output to 16:9 beside the original
 if [[ -n $GPTIMG_CROP169 ]]; then
