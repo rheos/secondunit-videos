@@ -3,7 +3,7 @@
 The goal (Robin): build the world and the stills that a full animation will be made from. This
 folder holds the world bible and a **living animatic** that shows where everything sits in the song.
 
-- `characters/`: plates 7 and 8 (AMENDED) are him and her in colour, for chapter 9 on. REGULATION DRESS plates 5 (him: front, 3/4, side, back) and 6 (her, plus five
+- `characters/`: REGULATION DRESS plates 5 (him: front, 3/4, side, back) and 6 (her, plus five
   expressions). Both match typist contender 1 (`../gpt/typist-contender-1/`).
 - `keyframes/chNN_*.png`: one or two stills per chapter of `../../bobwiseman-we-got-time/STORYBOARD.md`,
   most repainted from pinball-cut frames in `src/` (layout) with the locked style references.
@@ -17,17 +17,26 @@ World rules so far: faceless crowd, painted leads; more ducting and brass pneuma
 indoors; the ministry stays grey-teal with her rose collar as the only warm colour until chapter 9,
 where colour arrives; the sky chapters (5, 10) are blue.
 
-**Storyboard change (Robin, 2026-10-07), the Graduate escape:** he no longer meets her on the road. On
-"But I don't care what it costs" he runs back for her; her laughter dresses them both; they run out of the
-ministry hand in hand while the clerks rise like wedding guests; they walk the hundred miles together.
-Those beats are in `keyframes/escape/` (`ch09_both_dressed_dupe.png` is the version with a duplicated her).
+## Two worlds (Robin, 2026-10-07)
 
-**New style (2026-10-07):** the cinematic painted look from the other session (`../gpt/sky-cabs`, `../mj/14-15`).
-`style2/` holds the restyled plates 5-8, the guitar-case prop sheet (ISSUE ITEM 27B) and the style references.
-`upgrade_one.sh` repaints a still into `keyframes_v2/` (style ref by setting: ministry interiors, city
-exteriors, sky); `new_beat.sh` paints a new beat straight in the new style (`keyframes_v2/beats.tsv`).
-With `use_upgrades` in the manifest, `animatic.py` uses a still's `keyframes_v2` version when one exists, and
-entries listed later win where they overlap. World logic: waiting is his job (he's an employee of the
-Ministry of Waiting; 7 436 912 is his employee number); pneumatic tubes are realistic, hand-width; the flower
-goes by mail (his row's mail column, ceiling tubes, her desk bell). Files ending `_widetube`, `_lumpycase`,
-`_allcases` are the rejected versions, kept for comparison.
+- **Reality:** the multi-level ministry office (`locations/room2_typing_pool.png`), cinematic style. He and she are
+  clerks there; the boss, the time clock and the tube mail are real. Its people have bodies.
+- **His waking nightmare:** the endless waiting hall of bodiless chair-heads facing the NOW SERVING board. The
+  bodiless clerks are intentional (people turned into chairs by waiting). Daydreams (the roof tearing open, the
+  walls folding, the clouds' convention) happen inside it.
+- What crosses between them carries the story: the paper plane from his hall lands on her real desk. The escape runs
+  out of the real building; the sky road belongs to them.
+
+| Song | World |
+|---|---|
+| 0:00-0:13 | reality: tower, revolving door |
+| 0:13-0:58 | nightmare hall ("put me on hold"), roof daydream |
+| 0:58-1:50 | reality: ON HOLD snaps him back; her desk, the flower by tube, the levers |
+| 1:50-2:50 | nightmare into daydream: WE GOT TIME, walls fold, clouds' convention |
+| 2:50-3:01 | reality: complaints torn across the office |
+| 3:01-3:23 | nightmare: the machine montage |
+| 3:23-4:05 | reality, with the boss as the nightmare horn |
+| 4:05-4:50 | reality: he runs back for her, dressed in colour, out the real front doors |
+| 4:50-5:41 | theirs: the sky road; then the empty nightmare hall, his chair the only empty one |
+
+`*_nightmarehall.png` files are the earlier versions of reality beats that were set in the hall.
