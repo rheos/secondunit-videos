@@ -9,7 +9,7 @@ const n = Math.round((t1 - t0) * FPS); let done = 0; const start = Date.now();
 const b = await chromium.launch({ channel: 'chrome', headless: true, args: ['--use-angle=metal', '--ignore-gpu-blocklist', '--enable-gpu'] });
 await Promise.all([...Array(WK)].map(async (_, w) => {
   const p = await b.newPage({ viewport: { width: VW, height: VH } });
-  await p.goto('file://' + process.cwd() + `/index.html?offline=1&fmt=${FMT}`); await p.evaluate(() => window.__ready);
+  await p.goto('file://' + process.cwd() + `/index.html?offline=1&fmt=${FMT}${process.env.LOOK ? '&look=' + process.env.LOOK : ''}`); await p.evaluate(() => window.__ready);
   for (let i = w; i < n; i += WK) {
     const url = await p.evaluate((t) => window.__frameJPEG(t, .92), t0 + i / FPS);
     fs.writeFileSync(`${dir}/f_${String(i).padStart(6, '0')}.jpg`, Buffer.from(url.split(',')[1], 'base64'));

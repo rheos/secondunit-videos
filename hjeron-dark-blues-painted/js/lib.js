@@ -1,3 +1,5 @@
+// ?look=engrave renders the whole film as Hjeron's scratchboard silhouette reference (2026-10-07)
+const LOOK_MODE = new URLSearchParams(location.search).get('look') || '';
 // Time, audio, rng, drawing helpers, the figure rig, shot registry.
 const DUR = 6812 / 24; // 283.833 s, the full-length dream-of-fire mix on the 24 fps song grid
 const TAU = Math.PI * 2;

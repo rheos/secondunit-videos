@@ -15,7 +15,10 @@ function renderFrame(t) {
     const pc = typeof sh.o.paint === 'function' ? sh.o.paint(t) : (sh.o.paint || {});
     paint = a >= 1 ? pc : { ...paint, ...Object.fromEntries(Object.entries(pc).map(([key, v]) => [key, typeof v === 'number' ? lerp(paint[key] ?? v, v, a) : Array.isArray(v) && Array.isArray(paint[key]) ? v.map((x, j) => lerp(paint[key][j], x, a)) : v])) };
   }
-  Paint.present(t, { ...paint, ...PAINT_FRAME });
+  const fr = { ...paint, ...PAINT_FRAME };
+  // the engraving look: no brushstrokes (they blur the line work), no colour, the scratchboard pass on
+  if (LOOK_MODE === 'engrave') Object.assign(fr, { layers: [0, 0, 0], etch: 0, engrave: 1, sat: 0, tintK: 0, burn: 0, scratch: .04, dust: 0, lift: 0, con: 1.08, flick: 0, weave: .4, grain: .04, vig: .45, bloom: Math.min(fr.bloom ?? 1.2, 1.1) });
+  Paint.present(t, fr);
 }
 
 const canvas = document.getElementById('c'); canvas.width = W; canvas.height = H;
