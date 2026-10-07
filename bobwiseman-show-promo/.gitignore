@@ -1,0 +1,5 @@
+renders/
+*.wav
+snapshots/
+node_modules/
+test-rows.json

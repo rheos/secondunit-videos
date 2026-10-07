@@ -1,0 +1,277 @@
+<!doctype html>
+<html
+  lang="en"
+  data-resolution="portrait"
+  data-composition-variables='[
+    {"id":"act","type":"string","label":"Act","default":"TWO PIANOS NO RODEO"},
+    {"id":"with","type":"string","label":"Who","default":"Bob Wiseman & Mike Boguski"},
+    {"id":"dow","type":"string","label":"Weekday","default":"TUE"},
+    {"id":"date","type":"string","label":"Date","default":"OCT 20"},
+    {"id":"city","type":"string","label":"City","default":"Wolfville, NS"},
+    {"id":"venue","type":"string","label":"Venue","default":"Al Whittle Theatre"},
+    {"id":"slug","type":"string","label":"File slug","default":"oct-20-wolfville"}
+  ]'
+>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script src="assets/plane-rig.js"></script>
+    <script src="assets/voc.js"></script>
+    <style>
+      @font-face {
+        font-family: "Archivo Black";
+        src: url("assets/ArchivoBlack.ttf") format("truetype");
+      }
+      @font-face {
+        font-family: "Permanent Marker";
+        src: url("assets/PermanentMarker.ttf") format("truetype");
+      }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 1080px; height: 1920px; overflow: hidden; background: #f3ead7; }
+      #root { position: relative; width: 100%; height: 100%; overflow: hidden; background: #f3ead7; }
+
+      /* riso inks */
+      :root { --pink: #ff4f8b; --blue: #2f5bd3; --paper: #f3ead7; --ink: #1d1a33; }
+      .ink { mix-blend-mode: multiply; }
+      .layer { position: absolute; inset: 0; }
+
+      /* scene A: the hook */
+      #hook { position: absolute; left: 70px; right: 70px; top: 170px; }
+      .word {
+        display: block; position: relative;
+        font-family: "Archivo Black", sans-serif; text-transform: uppercase;
+        line-height: 0.9; letter-spacing: -2px;
+      }
+      .word .p, .word .b { display: block; }
+      .word .b { position: absolute; left: 0; top: 0; }
+      .word .p { color: #e6477d; }
+      .word .b { color: var(--blue); }
+      #w1 { font-size: 150px; }
+      #w2 { font-size: 168px; }
+      #w3 { font-size: 150px; }
+      #w4 { font-size: 176px; }
+      #strange {
+        position: absolute; left: 90px; top: 1010px; width: 900px;
+        font-family: "Permanent Marker", cursive; font-size: 76px; color: var(--ink);
+        transform-origin: left center;
+      }
+
+      /* the road */
+      #road { position: absolute; left: 0; top: 1290px; width: 1080px; height: 330px; }
+
+      /* scene B: the show card */
+      #wipe { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; background: var(--blue); }
+      #card { position: absolute; inset: 0; color: var(--paper); }
+      #act {
+        position: absolute; left: 70px; right: 70px; top: 150px;
+        font-family: "Archivo Black", sans-serif; font-size: 128px; line-height: 0.92;
+        letter-spacing: -2px; color: var(--paper); text-shadow: 8px 6px 0 var(--pink);
+      }
+      #with {
+        position: absolute; left: 74px; right: 70px; top: 560px;
+        font-family: "Permanent Marker", cursive; font-size: 58px; color: var(--paper);
+      }
+      #datebox {
+        position: absolute; left: 70px; top: 720px; width: 940px; height: 430px;
+        background: var(--paper); color: var(--blue);
+      }
+      #dow {
+        position: absolute; left: 44px; top: 34px;
+        font-family: "Archivo Black", sans-serif; font-size: 70px; letter-spacing: 6px;
+      }
+      #date {
+        position: absolute; left: 36px; right: 36px; top: 110px;
+        font-family: "Archivo Black", sans-serif; font-size: 205px; line-height: 1; letter-spacing: -4px;
+      }
+      #city {
+        position: absolute; left: 70px; right: 70px; top: 1200px;
+        font-family: "Archivo Black", sans-serif; font-size: 92px; line-height: 1; color: var(--paper);
+      }
+      #venue {
+        position: absolute; left: 74px; right: 70px; top: 1320px;
+        font-family: "Permanent Marker", cursive; font-size: 64px; color: var(--paper); text-decoration: underline 6px var(--pink); text-underline-offset: 12px;
+      }
+      #site {
+        position: absolute; left: 0; right: 0; top: 1760px; text-align: center;
+        font-family: "Archivo Black", sans-serif; font-size: 46px; letter-spacing: 4px; color: var(--paper);
+      }
+      #rig { position: absolute; inset: 0; width: 1080px; height: 1920px; }
+
+      #grain { position: absolute; inset: 0; opacity: 0.22; pointer-events: none; }
+    </style>
+  </head>
+  <body>
+    <div
+      id="root"
+      data-composition-id="main"
+      data-start="0"
+      data-duration="15.2"
+      data-width="1080"
+      data-height="1920"
+    >
+      <!-- Scene A: the sung hook -->
+      <div id="sceneA" class="clip layer" data-start="0" data-duration="9.2" data-track-index="1">
+        <div id="hook" data-layout-allow-overlap>
+          <div class="word" id="w1" data-layout-allow-overlap><span class="p ink" data-layout-allow-overlap>I'm an</span><span class="b ink" data-layout-allow-overlap>I'm an</span></div>
+          <div class="word" id="w2" data-layout-allow-overlap><span class="p ink" data-layout-allow-overlap>airplane</span><span class="b ink" data-layout-allow-overlap>airplane</span></div>
+          <div class="word" id="w3" data-layout-allow-overlap><span class="p ink" data-layout-allow-overlap>on the</span><span class="b ink" data-layout-allow-overlap>on the</span></div>
+          <div class="word" id="w4" data-layout-allow-overlap><span class="p ink" data-layout-allow-overlap>highway</span><span class="b ink" data-layout-allow-overlap>highway</span></div>
+        </div>
+        <div id="strange">and I feel so strange.</div>
+
+        <svg id="road" viewBox="0 0 1080 330">
+          <rect x="0" y="40" width="1080" height="250" fill="#1d1a33" opacity="0.88" class="ink" />
+          <g id="dashes">
+            <rect x="20" y="158" width="110" height="16" fill="#f3ead7" />
+            <rect x="250" y="158" width="110" height="16" fill="#f3ead7" />
+            <rect x="480" y="158" width="110" height="16" fill="#f3ead7" />
+            <rect x="710" y="158" width="110" height="16" fill="#f3ead7" />
+            <rect x="940" y="158" width="110" height="16" fill="#f3ead7" />
+            <rect x="1170" y="158" width="110" height="16" fill="#f3ead7" />
+          </g>
+          <rect x="0" y="40" width="1080" height="10" fill="#ff4f8b" class="ink" />
+          <rect x="0" y="280" width="1080" height="10" fill="#ff4f8b" class="ink" />
+        </svg>
+      </div>
+
+      <!-- Scene B: the show -->
+      <div id="sceneB" class="clip layer" data-start="8.6" data-duration="6.6" data-track-index="2">
+        <div id="wipe"></div>
+        <div id="card">
+          <div id="act" data-var-text="act">TWO PIANOS NO RODEO</div>
+          <div id="with" data-var-text="with">Bob Wiseman &amp; Mike Boguski</div>
+          <div id="datebox">
+            <div id="dow" data-var-text="dow">TUE</div>
+            <div id="date" data-var-text="date">OCT 20</div>
+          </div>
+          <div id="city" data-var-text="city">Wolfville, NS</div>
+          <div id="venue" data-var-text="venue">Al Whittle Theatre</div>
+          <div id="site">BOBWISEMAN.CA</div>
+        </div>
+      </div>
+
+      <!-- the drawn layer: the Airplane-type plane rig, redrawn every frame from the timeline -->
+      <canvas id="rig" class="clip" data-layout-ignore width="1080" height="1920" data-start="0" data-duration="15.2" data-track-index="3"></canvas>
+
+      <!-- paper grain over everything (static, seeded) -->
+      <svg id="grain" class="clip" data-start="0" data-duration="15.2" data-track-index="5" viewBox="0 0 1080 1920">
+        <filter id="n"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="7" /><feColorMatrix type="saturate" values="0" /></filter>
+        <rect width="1080" height="1920" filter="url(#n)" />
+      </svg>
+
+      <audio
+        id="song"
+        src="assets/airplane-hook.wav"
+        data-start="0"
+        data-duration="15.2"
+        data-track-index="4"
+        data-volume="1"
+      ></audio>
+    </div>
+
+    <script>
+      // one-line fields shrink to fit, so long city or guest names never wrap into the next block
+      const v = window.__hyperframes.getVariables();
+      ["act", "with", "dow", "date", "city", "venue"].forEach((k) => {
+        if (v[k] != null) document.getElementById(k).textContent = v[k];
+      });
+      function fit(id) {
+        const el = document.getElementById(id);
+        el.style.whiteSpace = "nowrap";
+        let fs = parseFloat(getComputedStyle(el).fontSize);
+        while (el.scrollWidth > el.clientWidth && fs > 24) {
+          fs -= 2;
+          el.style.fontSize = fs + "px";
+        }
+      }
+
+      document.fonts.ready.then(() => {
+      ["with", "city", "venue", "date"].forEach(fit);
+      const tl = gsap.timeline({ paused: true });
+
+      // misregistration: the blue plate sits a few px off the pink
+      gsap.set(".word .b", { x: 7, y: 5, opacity: 0.85 });
+
+      // words land on the sung syllables (song time = clip time + 70.8 s)
+      const slam = (sel, t) =>
+        tl.fromTo(sel, { scale: 1.5, opacity: 0, rotation: -4 },
+          { scale: 1, opacity: 1, rotation: 0, duration: 0.22, ease: "back.out(2.2)", transformOrigin: "left center" }, t);
+      slam("#w1", 0.78);
+      slam("#w2", 2.08);
+      slam("#w3", 3.16);
+      slam("#w4", 4.0);
+      // the plates jitter apart on "highway"
+      tl.fromTo("#w4 .b", { x: 7 }, { x: 18, duration: 0.12, yoyo: true, repeat: 3, ease: "none" }, 4.05);
+
+      // the road scrolls, the plane drives
+      tl.fromTo("#dashes", { x: 0 }, { x: -460, duration: 9.2, ease: "none" }, 0);
+
+      // "and I feel so strange": scrawled on, plane wobbles
+      tl.fromTo("#strange", { clipPath: "inset(0 100% 0 0)" },
+        { clipPath: "inset(0 0% 0 0)", duration: 1.6, ease: "none" }, 6.1);
+
+      // Scene B: blue ink rolls up over the page
+      tl.fromTo("#wipe", { yPercent: 100 }, { yPercent: 0, duration: 0.6, ease: "power3.inOut" }, 8.6);
+      tl.fromTo("#act", { y: 60, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease: "power3.out" }, 9.0);
+      tl.fromTo("#with", { opacity: 0 }, { opacity: 1, duration: 0.4 }, 9.4);
+      tl.fromTo("#datebox", { scaleY: 0 }, { scaleY: 1, duration: 0.35, ease: "power3.out", transformOrigin: "top" }, 10.0);
+      tl.fromTo("#dow", { opacity: 0 }, { opacity: 1, duration: 0.2 }, 10.2);
+      tl.fromTo("#date", { scale: 1.4, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.25, ease: "back.out(2)", transformOrigin: "left center" }, 11.0);
+      tl.fromTo("#city", { x: -80, opacity: 0 }, { x: 0, opacity: 1, duration: 0.35, ease: "power3.out" }, 11.9);
+      tl.fromTo("#venue", { opacity: 0, x: -30 }, { opacity: 1, x: 0, duration: 0.35, ease: "power2.out" }, 12.4);
+      tl.fromTo("#site", { opacity: 0 }, { opacity: 1, duration: 0.3 }, 12.9);
+
+
+
+      // ---- the rig: one pure function of time, so any frame can be drawn on a seek ----
+      const ctx = document.getElementById("rig").getContext("2d");
+      PL.use(ctx);
+      const cl = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
+      const inv = (a, b, x) => cl((x - a) / (b - a));
+      const outQ = (u) => 1 - (1 - u) * (1 - u);
+      const inQ = (u) => u * u;
+      const voc = (t) => { const f = t * VOC.fps, i = Math.floor(f), u = f - i, a = VOC.v;
+        return (a[cl(i, 0, a.length - 1)] * (1 - u) + a[cl(i + 1, 0, a.length - 1)] * u); };
+      const INKS_A = { bg: "#f3ead7", ink: "#1d1a33", dim: "#8a8398", hot: "#e6477d" };
+      const INKS_B = { bg: "#2f5bd3", ink: "#f3ead7", dim: "#9db2ec", hot: "#ff4f8b" };
+
+      function draw(t) {
+        ctx.clearRect(0, 0, 1080, 1920);
+        if (t < 8.9) {
+          Object.assign(PL.C, INKS_A);
+          // rolls in, sits under the words, wobbles on "strange", then floors it out before the wipe
+          const x = -520 + 1060 * outQ(inv(0, 1.4, t)) + 1300 * inQ(inv(8.1, 8.9, t));
+          const bump = Math.abs(Math.sin(t * 9)) * 4;
+          const wob = Math.sin((t - 6.4) * 9) * 0.07 * (inv(6.4, 6.7, t) - inv(7.9, 8.1, t));
+          const looking = t > 0.7 && t < 5.6; // eyes up at each word as it lands
+          const blink = t > 5.2 && t < 5.35 ? 1 : 0;
+          PL.side(x, 1500 - bump, 1.05, t, {
+            lw: 5, mouth: cl(voc(t) * 1.5), rot: wob, spin: t * 14,
+            look: looking ? [-0.55, -0.9] : [0.7, 0.1],
+            lid: blink || (t > 6.2 && t < 7.5 ? 0.35 : 0), frown: t > 6.2 && t < 7.5 ? 0.6 : 0,
+            spiral: t > 7.55 && t < 8.6 ? t * 7 : 0, smile: t > 7.5 ? -0.2 : 0.3,
+          });
+        } else if (t > 10.7) {
+          Object.assign(PL.C, INKS_B);
+          // drives along the bottom of the card singing; on "highway" it looks up at the sky it can't reach
+          // and keeps rolling off the right edge, wheels on the ground (it never takes off)
+          const x = -260 + 1500 * inv(10.7, 15.2, t);
+          const bump = Math.abs(Math.sin(t * 9)) * 2;
+          const longing = inv(13.44, 13.8, t);
+          PL.side(x, 1700 - bump, 0.5, t, {
+            lw: 4, mouth: cl(voc(t) * 1.5), spin: t * 14,
+            look: longing > 0 ? [0.3, -0.95] : [0.7, 0], smile: longing > 0 ? -0.25 : 0.3,
+            lid: longing * 0.3, frown: longing * 0.5,
+          });
+        }
+      }
+      draw(0);
+      const P = { t: 0 };
+      tl.fromTo(P, { t: 0 }, { t: 15.2, duration: 15.2, ease: "none", onUpdate: () => draw(P.t) }, 0);
+
+      window.__timelines["main"] = tl;
+      });
+    </script>
+  </body>
+</html>
