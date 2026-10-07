@@ -189,12 +189,16 @@
   function ik(S, H, L1, L2, bend) {
     let dx = H[0] - S[0], dy = H[1] - S[1], d = Math.hypot(dx, dy) || 1; const dm = (L1 + L2) * .995;
     if (d > dm) { H = [S[0] + dx / d * dm, S[1] + dy / d * dm]; d = dm; }
-    const a = Math.atan2(dy, dx), b = Math.acos(clamp((L1 * L1 + d * d - L2 * L2) / (2 * L1 * d), -1, 1)), ea = a + bend * b;
-    return { E: [S[0] + Math.cos(ea) * L1, S[1] + Math.sin(ea) * L1], H };
+    const a = Math.atan2(dy, dx), b = Math.acos(clamp((L1 * L1 + d * d - L2 * L2) / (2 * L1 * d), -1, 1));
+    const E1 = [S[0] + Math.cos(a + b) * L1, S[1] + Math.sin(a + b) * L1], E2 = [S[0] + Math.cos(a - b) * L1, S[1] + Math.sin(a - b) * L1];
+    // a fixed bend sign pointed the elbow up or in toward his head (Robin, 3:42). A real elbow hangs out and
+    // down: bend = +1 takes the elbow lying further toward screen right + down (his right arm), -1 the other
+    const od = (E) => (E[0] - S[0]) + (E[1] - S[1]);
+    return { E: (od(E1) > od(E2)) === (bend > 0) ? E1 : E2, H };
   }
   const shoulderR = (J, u, turn = 0) => [J.neck[0] + (10.5 * (1 - Math.abs(turn) * .15) - 1.2) * u, J.neck[1] + 8.5 * u];
   function drawArm(g, S, H, u, c, wind = .4, t = 0, rimA = 0) {
-    const { E, H: h2 } = ik(S, H, 15 * u, 14.5 * u, -1);
+    const { E, H: h2 } = ik(S, H, 15 * u, 14.5 * u, 1);
     taper(g, S, E, 3.3 * u, 2.7 * u, c); taper(g, E, h2, 2.7 * u, 2 * u, c); dot(g, h2[0], h2[1], 2.2 * u, c);
     if (g === s && rimA > 0) { // the torch above catches the top edge of the sleeve, so the black arm reads against the night
       const side = (a, b, w) => { const dx = b[0] - a[0], dy = b[1] - a[1], L = Math.hypot(dx, dy) || 1; let nx = -dy / L, ny = dx / L; if (ny > 0) { nx = -nx; ny = -ny; } return [[a[0] + nx * w, a[1] + ny * w], [b[0] + nx * w * .8, b[1] + ny * w * .8]]; };
