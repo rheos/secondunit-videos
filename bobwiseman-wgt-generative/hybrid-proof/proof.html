@@ -1,0 +1,139 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>WGT hybrid proof: painted hall + code motion</title>
+<style>html,body{margin:0;background:#000}canvas{display:block;width:100vw;height:auto}</style>
+<canvas id="c"></canvas>
+<script>
+// Hybrid proof (2026-10-06): GPT-painted stills (assets/), all motion drawn here.
+// Song time 33.0-38.0 s of We Got Time (ch02 hall). Plate coords are the raw 1536x1024 GPT plate.
+const T0 = 33.0;
+const params = new URLSearchParams(location.search);
+const W = Math.round(1920 * Number(params.get('scale') || 1)), H = Math.round(W * 9 / 16);
+const cv = document.getElementById('c'); cv.width = W; cv.height = H;
+const ctx = cv.getContext('2d');
+
+const CROP_Y = 40;                 // 16:9 window of the 3:2 plate: rows 40..904
+const VP = { x: 768, y: 430 };     // vanishing point, plate coords
+const HORIZON = 430;               // figure height is proportional to (feetY - HORIZON)
+
+const load = (src) => new Promise((ok) => { const i = new Image(); i.onload = () => ok(i); i.src = src; });
+
+// tight alpha bounds, so cut-outs are placed by their pixels, not their canvas
+function bounds(img) {
+  const c = document.createElement('canvas'); c.width = img.width; c.height = img.height;
+  const g = c.getContext('2d'); g.drawImage(img, 0, 0);
+  const d = g.getImageData(0, 0, c.width, c.height).data;
+  let x0 = c.width, y0 = c.height, x1 = 0, y1 = 0;
+  for (let y = 0; y < c.height; y++) for (let x = 0; x < c.width; x++) {
+    if (d[(y * c.width + x) * 4 + 3] > 24) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
+  }
+  return { x: x0, y: y0, w: x1 - x0 + 1, h: y1 - y0 + 1 };
+}
+
+const ease = (u) => u <= 0 ? 0 : u >= 1 ? 1 : u * u * (3 - 2 * u);
+const easeOut = (u) => u <= 0 ? 0 : u >= 1 ? 1 : 1 - Math.pow(1 - u, 2.2);
+
+let A = {};
+window.__ready = (async () => {
+  const [plate, wa, wb, cap] = await Promise.all(['assets/plate_raw.png', 'assets/him_walk_a.png', 'assets/him_walk_b.png', 'assets/capsule.png'].map(load));
+  A = { plate, wa, wb, cap, ba: bounds(wa), bb: bounds(wb), bc: bounds(cap) };
+  return true;
+})();
+
+// camera: plate coords -> canvas, with a slow push toward the vanishing point
+function camera(t) {
+  const base = W / 1536, s = base * (1 + 0.05 * ease(t / 5));
+  // the VP stays where it sits in the unzoomed 16:9 window
+  return { s, ox: VP.x * base - VP.x * s, oy: (VP.y - CROP_Y) * base - VP.y * s };
+}
+
+// ---- him ----
+const WALK_END = 3.5;
+function himAt(t) {
+  const u = easeOut(Math.min(t / WALK_END, 1));
+  const feetY = 1010 + (770 - 1010) * u;                 // plate y of his feet
+  const feetX = VP.x + (feetY - HORIZON) * 0.17;         // on a line to the VP, right of centre
+  const h = 0.92 * (feetY - HORIZON);                    // figure height in plate px
+  const walking = t < WALK_END - 0.15;
+  const step = Math.floor(t / 0.3);                      // a step every 0.3 s
+  const pose = walking ? (step % 2 ? 'b' : 'a') : 'a';
+  const bob = walking ? -Math.abs(Math.sin(t / 0.3 * Math.PI)) * 0.012 * h : 0;
+  return { feetX, feetY, h, pose, bob };
+}
+
+function drawHim(t, cam) {
+  const m = himAt(t);
+  const img = m.pose === 'a' ? A.wa : A.wb, b = m.pose === 'a' ? A.ba : A.bb;
+  const k = m.h / b.h;                                   // plate px per source px
+  const w = b.w * k;
+  const X = (px) => cam.ox + px * cam.s, Y = (py) => cam.oy + py * cam.s;
+  const left = m.feetX - w / 2, top = m.feetY - m.h + m.bob;
+
+  // floor reflection: flipped, faint, fading with distance from the feet
+  const rc = document.createElement('canvas'); rc.width = Math.ceil(w * cam.s); rc.height = Math.ceil(m.h * 0.5 * cam.s);
+  const rg = rc.getContext('2d');
+  rg.save(); rg.scale(1, -1); rg.drawImage(img, b.x, b.y, b.w, b.h, 0, -m.h * cam.s, w * cam.s, m.h * cam.s); rg.restore();
+  rg.globalCompositeOperation = 'destination-in';
+  const gr = rg.createLinearGradient(0, 0, 0, rc.height); gr.addColorStop(0, 'rgba(0,0,0,.22)'); gr.addColorStop(1, 'rgba(0,0,0,0)');
+  rg.fillStyle = gr; rg.fillRect(0, 0, rc.width, rc.height);
+  ctx.drawImage(rc, X(left), Y(m.feetY + 2));
+
+  // contact shadow
+  ctx.save(); ctx.filter = `blur(${Math.max(2, m.h * 0.02 * cam.s)}px)`;
+  ctx.fillStyle = 'rgba(8,20,22,.45)';
+  ctx.beginPath(); ctx.ellipse(X(m.feetX), Y(m.feetY), w * 0.38 * cam.s, m.h * 0.025 * cam.s, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.restore();
+
+  ctx.save(); ctx.filter = "brightness(0.9) saturate(0.9)";
+  ctx.drawImage(img, b.x, b.y, b.w, b.h, X(left), Y(top), w * cam.s, m.h * cam.s);
+  ctx.restore();
+}
+
+// ---- capsules: glass runs in the plate, start/end hidden by the brass sockets ----
+const RUNS = [
+  { x0: 482, y0: 112, x1: 800, y1: 106, len: 70 },      // top glass tube, left to right
+  { x0: 1148, y0: 170, x1: 822, y1: 166, len: 70 },     // second glass tube, right to left
+  { x0: 1496, y0: 600, x1: 1496, y1: 20, len: 78 },     // tall glass column, rising
+];
+const SHOTS = [                                         // [run, start s, duration s]
+  [0, 0.55, 0.45], [2, 1.35, 0.6], [1, 2.25, 0.45], [0, 3.3, 0.45], [2, 4.15, 0.6],
+];
+function drawCapsules(t, cam) {
+  for (const [r, st, du] of SHOTS) {
+    const run = RUNS[r]; const u = (t - st) / du;
+    if (u < 0 || u > 1) continue;
+    const ang = Math.atan2(run.y1 - run.y0, run.x1 - run.x0);
+    const lenPx = run.len, hgt = lenPx * A.bc.h / A.bc.w;
+    for (let g = 2; g >= 0; g--) {                        // two ghosts behind = motion smear
+      const v = u - g * 0.035; if (v < 0) continue;
+      const px = run.x0 + (run.x1 - run.x0) * v, py = run.y0 + (run.y1 - run.y0) * v;
+      ctx.save();
+      // clip to the glass run: its length exactly, padded only across the tube
+      const pad = 18, vert = Math.abs(run.x1 - run.x0) < 1;
+      const x0 = Math.min(run.x0, run.x1) - (vert ? pad : 0), x1 = Math.max(run.x0, run.x1) + (vert ? pad : 0);
+      const y0 = Math.min(run.y0, run.y1) - (vert ? 0 : pad), y1 = Math.max(run.y0, run.y1) + (vert ? 0 : pad);
+      ctx.beginPath(); ctx.rect(cam.ox + x0 * cam.s, cam.oy + y0 * cam.s, (x1 - x0) * cam.s, (y1 - y0) * cam.s); ctx.clip();
+      ctx.globalAlpha = g ? 0.25 / g : 0.95;
+      ctx.translate(cam.ox + px * cam.s, cam.oy + py * cam.s); ctx.rotate(ang);
+      ctx.drawImage(A.cap, A.bc.x, A.bc.y, A.bc.w, A.bc.h, -lenPx / 2 * cam.s, -hgt / 2 * cam.s, lenPx * cam.s, hgt * cam.s);
+      ctx.restore();
+    }
+  }
+}
+
+function frame(songT) {
+  const t = songT - T0;
+  const cam = camera(t);
+  ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H);
+  ctx.drawImage(A.plate, cam.ox, cam.oy, 1536 * cam.s, 1024 * cam.s);
+  drawCapsules(t, cam);
+  drawHim(t, cam);
+  // gentle vignette so the cut-out and plate share one light
+  const v = ctx.createRadialGradient(W / 2, H * 0.55, H * 0.3, W / 2, H * 0.55, H * 0.95);
+  v.addColorStop(0, 'rgba(0,0,0,0)'); v.addColorStop(1, 'rgba(4,14,16,.35)');
+  ctx.fillStyle = v; ctx.fillRect(0, 0, W, H);
+}
+
+window.__frameJPEG = (songT, q) => { frame(songT); return cv.toDataURL('image/jpeg', q); };
+window.__ready.then(() => { if (!params.get('offline')) { const s = performance.now(); const loop = () => { frame(T0 + ((performance.now() - s) / 1000) % 5); requestAnimationFrame(loop); }; loop(); } });
+</script>
