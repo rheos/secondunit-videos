@@ -12,6 +12,8 @@ the stills; `desk.html` animates them.
 - Motion: slow push-in; the plane comes in over the lamp, lands at 61.85 s and skids; she swaps to pose
   B on the landing; at 62.667 the insert, and the ticket opens at 63.25 with a paper flash.
 
-Known flaws: on the swap she shifts slightly right and the form she was writing on disappears.
+v2: `assets/her_c.png` replaces the mirrored pose B. It was made as an edit of pose A with a context frame
+(`src/context_pose_a_plane.png`), so the chair, legs and form stay put; the page nudges it onto pose A's feet
+and chair edge. The plane now lands on the paper stack, under her hand. `her_b.png` is kept for the record.
 Render: `PAGE_DIR=<this dir> PAGE=desk node render_page.mjs video 59.6666667 64.9166667 out/<name>.mp4`
 (fix the playwright import and audio paths at the top).
