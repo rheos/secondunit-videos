@@ -1,24 +1,476 @@
 {
-  "version": 1,
-  "note": "Living animatic: entries cover the old pinball cut for their span. Times are song seconds. See animatic.py.",
-  "entries": [
-    {"still": "keyframes/ch01_ministry_tower.png", "at": 3.0, "focus": [0.5, 0.75]},
-    {"still": "../gpt/typist-contender-1/env_hall_ducts_tubes.png", "span": [13.0, 33.0]},
-    {"clip": "../hybrid-proof/out/wgt_hybrid-proof-v1_f00792-f00912_24fps_composite.mp4"},
-    {"still": "keyframes/ch02_roof_tears_open.png", "at": 50.0},
-    {"clip": "../desk-shot/out/wgt_desk-shot-v2_f01432-f01558_24fps_composite.mp4"},
-    {"still": "keyframes/ch03_pneumatic_crosssection.png", "at": 68.5},
-    {"still": "keyframes/ch04_now_serving_we_got_time.png", "at": 112.0},
-    {"still": "keyframes/ch05_clouds_on_strike.png", "at": 150.0},
-    {"still": "keyframes/ch05_sun_in_a_drawer.png", "at": 162.0},
-    {"still": "keyframes/ch06_complaints_torn.png", "at": 172.0},
-    {"still": "keyframes/ch07_the_machine.png", "at": 192.0},
-    {"still": "keyframes/ch08_late_corridor_horn.png", "at": 225.0},
-    {"still": "keyframes/ch08_time_card_torn.png", "at": 238.0},
-    {"still": "keyframes/ch09_her_laughter.png", "span": [252.75, 264.625]},
-    {"still": "keyframes/ch09_dressed_in_colour.png", "span": [283.958, 290.0]},
-    {"still": "keyframes/ch10_a_hundred_miles.png", "span": [290.0, 305.0]},
-    {"still": "keyframes/ch10_road_through_sky.png", "span": [305.0, 320.0]},
-    {"still": "keyframes/ch11_now_serving_7436912.png", "at": 333.0}
-  ]
+ "version": 2,
+ "note": "Living animatic: entries cover the old pinball cut for their span. Times are song seconds. See animatic.py.",
+ "entries": [
+  {
+   "still": "keyframes/ch01_ministry_tower.png",
+   "at": 3.0,
+   "focus": [
+    0.5,
+    0.75
+   ]
+  },
+  {
+   "still": "../gpt/typist-contender-1/env_hall_ducts_tubes.png",
+   "span": [
+    13.0,
+    33.0
+   ]
+  },
+  {
+   "clip": "../hybrid-proof/out/wgt_hybrid-proof-v1_f00792-f00912_24fps_composite.mp4"
+  },
+  {
+   "still": "keyframes/ch02_roof_tears_open.png",
+   "at": 50.0
+  },
+  {
+   "clip": "../desk-shot/out/wgt_desk-shot-v2_f01432-f01558_24fps_composite.mp4"
+  },
+  {
+   "still": "keyframes/ch03_pneumatic_crosssection.png",
+   "at": 68.5
+  },
+  {
+   "still": "keyframes/ch04_now_serving_we_got_time.png",
+   "at": 112.0
+  },
+  {
+   "still": "keyframes/ch05_clouds_on_strike.png",
+   "at": 150.0
+  },
+  {
+   "still": "keyframes/ch05_sun_in_a_drawer.png",
+   "at": 162.0
+  },
+  {
+   "still": "keyframes/ch06_complaints_torn.png",
+   "at": 172.0
+  },
+  {
+   "still": "keyframes/ch07_the_machine.png",
+   "at": 192.0
+  },
+  {
+   "still": "keyframes/ch08_late_corridor_horn.png",
+   "at": 225.0
+  },
+  {
+   "still": "keyframes/ch08_time_card_torn.png",
+   "at": 238.0
+  },
+  {
+   "still": "keyframes/ch09_her_laughter.png",
+   "span": [
+    252.75,
+    264.625
+   ]
+  },
+  {
+   "still": "keyframes/ch09_dressed_in_colour.png",
+   "span": [
+    283.958,
+    290.0
+   ]
+  },
+  {
+   "still": "keyframes/ch10_a_hundred_miles.png",
+   "span": [
+    290.0,
+    305.0
+   ]
+  },
+  {
+   "still": "keyframes/ch10_road_through_sky.png",
+   "span": [
+    305.0,
+    320.0
+   ]
+  },
+  {
+   "still": "keyframes/ch11_empty_hall_board.png",
+   "span": [
+    332.625,
+    336.5
+   ]
+  },
+  {
+   "still": "keyframes/ch11_his_empty_seat.png",
+   "span": [
+    336.5,
+    341.417
+   ]
+  },
+  {
+   "still": "keyframes/gap/f00238.png",
+   "span": [
+    6.8333,
+    13.0
+   ]
+  },
+  {
+   "still": "keyframes/gap/f00931.png",
+   "span": [
+    38.0,
+    39.5833
+   ]
+  },
+  {
+   "still": "keyframes/gap/f01000.png",
+   "span": [
+    39.5833,
+    43.75
+   ]
+  },
+  {
+   "still": "keyframes/gap/f01414.png",
+   "span": [
+    58.2083,
+    59.6667
+   ]
+  },
+  {
+   "still": "keyframes/gap/f01594.png",
+   "span": [
+    64.9167,
+    67.9167
+   ]
+  },
+  {
+   "still": "keyframes/gap/f01851.png",
+   "span": [
+    74.3333,
+    79.9167
+   ]
+  },
+  {
+   "still": "keyframes/gap/f02009.png",
+   "span": [
+    79.9167,
+    87.5417
+   ]
+  },
+  {
+   "still": "keyframes/gap/f02191.png",
+   "span": [
+    87.5417,
+    95.0417
+   ]
+  },
+  {
+   "still": "keyframes/gap/f02374.png",
+   "span": [
+    95.0417,
+    102.7917
+   ]
+  },
+  {
+   "still": "keyframes/gap/f02511.png",
+   "span": [
+    102.7917,
+    106.5
+   ]
+  },
+  {
+   "still": "keyframes/gap/f02598.png",
+   "span": [
+    106.5,
+    110.0
+   ]
+  },
+  {
+   "still": "keyframes/gap/f02770.png",
+   "span": [
+    113.9583,
+    116.875
+   ]
+  },
+  {
+   "still": "keyframes/gap/f02811.png",
+   "span": [
+    116.875,
+    117.375
+   ]
+  },
+  {
+   "still": "keyframes/gap/f02829.png",
+   "span": [
+    117.375,
+    118.4167
+   ]
+  },
+  {
+   "still": "keyframes/gap/f02993.png",
+   "span": [
+    118.4167,
+    131.0
+   ]
+  },
+  {
+   "still": "keyframes/gap/f03168.png",
+   "span": [
+    131.0,
+    133.0
+   ]
+  },
+  {
+   "still": "keyframes/gap/f03222.png",
+   "span": [
+    133.0,
+    135.5
+   ]
+  },
+  {
+   "still": "keyframes/gap/f03303.png",
+   "span": [
+    135.5,
+    139.7917
+   ]
+  },
+  {
+   "still": "keyframes/gap/f03391.png",
+   "span": [
+    139.7917,
+    142.8333
+   ]
+  },
+  {
+   "still": "keyframes/gap/f03465.png",
+   "span": [
+    142.8333,
+    145.9167
+   ]
+  },
+  {
+   "still": "keyframes/gap/f03524.png",
+   "span": [
+    145.9167,
+    147.7917
+   ]
+  },
+  {
+   "still": "keyframes/gap/f03691.png",
+   "span": [
+    152.125,
+    155.5
+   ]
+  },
+  {
+   "still": "keyframes/gap/f03780.png",
+   "span": [
+    155.5,
+    159.5417
+   ]
+  },
+  {
+   "still": "keyframes/gap/f03851.png",
+   "span": [
+    159.5417,
+    161.4167
+   ]
+  },
+  {
+   "still": "keyframes/gap/f03953.png",
+   "span": [
+    164.125,
+    165.3333
+   ]
+  },
+  {
+   "still": "keyframes/gap/f04024.png",
+   "span": [
+    165.3333,
+    170.0
+   ]
+  },
+  {
+   "still": "keyframes/gap/f04097.png",
+   "span": [
+    170.0,
+    171.4167
+   ]
+  },
+  {
+   "still": "keyframes/gap/f04223.png",
+   "span": [
+    174.9583,
+    177.0
+   ]
+  },
+  {
+   "still": "keyframes/gap/f04302.png",
+   "span": [
+    177.0,
+    181.5
+   ]
+  },
+  {
+   "still": "keyframes/gap/f04395.png",
+   "span": [
+    181.5,
+    184.7917
+   ]
+  },
+  {
+   "still": "keyframes/gap/f04470.png",
+   "span": [
+    184.7917,
+    187.7083
+   ]
+  },
+  {
+   "still": "keyframes/gap/f04540.png",
+   "span": [
+    187.7083,
+    190.6667
+   ]
+  },
+  {
+   "still": "keyframes/gap/f04655.png",
+   "span": [
+    192.875,
+    195.0833
+   ]
+  },
+  {
+   "still": "keyframes/gap/f04699.png",
+   "span": [
+    195.0833,
+    196.5417
+   ]
+  },
+  {
+   "still": "keyframes/gap/f04734.png",
+   "span": [
+    196.5417,
+    198.0
+   ]
+  },
+  {
+   "still": "keyframes/gap/f04770.png",
+   "span": [
+    198.0,
+    199.5
+   ]
+  },
+  {
+   "still": "keyframes/gap/f04805.png",
+   "span": [
+    199.5,
+    200.9167
+   ]
+  },
+  {
+   "still": "keyframes/gap/f04830.png",
+   "span": [
+    200.9167,
+    201.5833
+   ]
+  },
+  {
+   "still": "keyframes/gap/f04846.png",
+   "span": [
+    201.5833,
+    202.25
+   ]
+  },
+  {
+   "still": "keyframes/gap/f04862.png",
+   "span": [
+    202.25,
+    202.9167
+   ]
+  },
+  {
+   "still": "keyframes/gap/f04878.png",
+   "span": [
+    202.9167,
+    203.5833
+   ]
+  },
+  {
+   "still": "keyframes/gap/f04929.png",
+   "span": [
+    203.5833,
+    207.2083
+   ]
+  },
+  {
+   "still": "keyframes/gap/f04988.png",
+   "span": [
+    207.2083,
+    208.4583
+   ]
+  },
+  {
+   "still": "keyframes/gap/f05055.png",
+   "span": [
+    208.4583,
+    212.7917
+   ]
+  },
+  {
+   "still": "keyframes/gap/f05173.png",
+   "span": [
+    212.7917,
+    218.3333
+   ]
+  },
+  {
+   "still": "keyframes/gap/f05495.png",
+   "span": [
+    228.0,
+    229.9167
+   ]
+  },
+  {
+   "still": "keyframes/gap/f05584.png",
+   "span": [
+    229.9167,
+    235.4167
+   ]
+  },
+  {
+   "still": "keyframes/gap/f05936.png",
+   "span": [
+    241.9167,
+    252.75
+   ]
+  },
+  {
+   "still": "keyframes/gap/f06482.png",
+   "span": [
+    264.625,
+    275.5417
+   ]
+  },
+  {
+   "still": "keyframes/gap/f06714.png",
+   "span": [
+    275.5417,
+    283.9583
+   ]
+  },
+  {
+   "still": "keyframes/gap/f07756.png",
+   "span": [
+    320.0,
+    326.3333
+   ]
+  },
+  {
+   "still": "keyframes/gap/f07859.png",
+   "span": [
+    326.3333,
+    328.625
+   ]
+  },
+  {
+   "still": "keyframes/gap/f07935.png",
+   "span": [
+    328.625,
+    332.625
+   ]
+  }
+ ]
 }
