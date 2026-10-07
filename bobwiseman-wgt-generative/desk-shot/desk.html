@@ -1,0 +1,126 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>WGT desk shot: her desk + the ticket</title>
+<style>html,body{margin:0;background:#000}canvas{display:block;width:100vw;height:auto}</style>
+<canvas id="c"></canvas>
+<script>
+// Desk shot (2026-10-06): GPT-painted stills (assets/), all motion drawn here.
+// Song 59.667-64.917 s (frames 1432-1558), after ch03 of the pinball cut:
+//   59.67 the plane glides down the hall onto her desk; she reacts on the landing.
+//   62.67 insert: her hand holds it up folded, then it opens: his ticket.
+// Plate coords are the raw 1536x1024 GPT frames, cropped to 16:9 at rows CROP_Y..CROP_Y+864.
+const T0 = 1432 / 24, T_INSERT = 62.667, T_UNFOLD = 63.25, T_LAND = 61.85;
+const params = new URLSearchParams(location.search);
+const W = Math.round(1920 * Number(params.get('scale') || 1)), H = Math.round(W * 9 / 16);
+const cv = document.getElementById('c'); cv.width = W; cv.height = H;
+const ctx = cv.getContext('2d');
+const CROP_Y = 0;
+
+const load = (src) => new Promise((ok) => { const i = new Image(); i.onload = () => ok(i); i.src = src; });
+function bounds(img) {
+  const c = document.createElement('canvas'); c.width = img.width; c.height = img.height;
+  const g = c.getContext('2d'); g.drawImage(img, 0, 0);
+  const d = g.getImageData(0, 0, c.width, c.height).data;
+  let x0 = c.width, y0 = c.height, x1 = 0, y1 = 0;
+  for (let y = 0; y < c.height; y++) for (let x = 0; x < c.width; x++) {
+    if (d[(y * c.width + x) * 4 + 3] > 24) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
+  }
+  return { x: x0, y: y0, w: x1 - x0 + 1, h: y1 - y0 + 1 };
+}
+const clamp01 = (u) => Math.max(0, Math.min(1, u));
+const ease = (u) => { u = clamp01(u); return u * u * (3 - 2 * u); };
+const inv = (a, b, t) => clamp01((t - a) / (b - a));
+
+let A = {};
+window.__ready = (async () => {
+  const names = ['desk_plate', 'her_a', 'her_b', 'plane', 'insert_a', 'insert_b'];
+  const imgs = await Promise.all(names.map((n) => load(`assets/${n}.png`)));
+  names.forEach((n, i) => (A[n] = imgs[i]));
+  A.bA = bounds(A.her_a); A.bB = bounds(A.her_b); A.bP = bounds(A.plane);
+  return true;
+})();
+
+// camera on a 1536x1024 frame: slow push toward (fx, fy), 16:9 window from CROP_Y
+function cam(t, dur, fx, fy, amount) {
+  const base = W / 1536, s = base * (1 + amount * ease(t / dur));
+  return { s, ox: fx * base - fx * s, oy: (fy - CROP_Y) * base - fy * s };
+}
+
+// her pose B is a separate crop facing the other way: mirror it and fit it to pose A's bounds
+// (same height, same feet line, same chair-side edge)
+function drawHer(pose, c, breathe) {
+  const a = A.bA;
+  ctx.save(); ctx.translate(c.ox, c.oy); ctx.scale(c.s, c.s);
+  if (pose === 'a') {
+    ctx.translate(a.x + a.w / 2, a.y + a.h); ctx.scale(1, 1 + breathe); ctx.translate(-(a.x + a.w / 2), -(a.y + a.h));
+    ctx.drawImage(A.her_a, 0, 0);
+  } else {
+    const b = A.bB, k = a.h / b.h, w = b.w * k;
+    const right = a.x + a.w;                       // keep her chair where pose A's chair is
+    ctx.translate(right, a.y + a.h); ctx.scale(-1, 1 + breathe);   // mirror: she now faces the desk
+    ctx.drawImage(A.her_b, b.x, b.y, b.w, b.h, 0, -a.h, w, a.h);
+  }
+  ctx.restore();
+}
+
+// the plane: comes in from the upper left over the lamp, glides down onto the clear end of the
+// desk (under where her reaching hand goes), skids a little and stops
+const LAND = { x: 700, y: 574 };
+function planeAt(t) {
+  if (t < 59.9) return null;
+  const u = inv(59.9, T_LAND, t), e = 1 - Math.pow(1 - u, 1.4);
+  const q = (a, b, c, v) => (1 - v) * (1 - v) * a + 2 * (1 - v) * v * b + v * v * c;
+  const p0 = { x: -80, y: 140 }, p1 = { x: 380, y: 40 }, p2 = { x: 640, y: 560 };
+  let x = q(p0.x, p1.x, p2.x, e), y = q(p0.y, p1.y, p2.y, e);
+  const landed = t >= T_LAND;
+  if (landed) { const s = ease(inv(T_LAND, T_LAND + 0.25, t)); x = 640 + (LAND.x - 640) * s; y = 560 + (LAND.y - 560) * s; }
+  const len = 150 - 40 * (1 - e);                 // close to camera throughout; a little smaller far left
+  // heading follows the curve's tangent while flying (nose right); flat on the desk once landed
+  const dx = 2 * (1 - e) * (p1.x - p0.x) + 2 * e * (p2.x - p1.x), dy = 2 * (1 - e) * (p1.y - p0.y) + 2 * e * (p2.y - p1.y);
+  const ang = landed ? 0.04 : Math.atan2(dy, dx) * 0.6 + Math.sin(t * 7) * 0.1;
+  const bank = landed ? 1 : 0.75 + 0.25 * Math.sin(t * 5);
+  return { x, y, len, ang, bank, landed };
+}
+function drawPlane(t, c) {
+  const p = planeAt(t); if (!p) return;
+  const b = A.bP, h = p.len * b.h / b.w;
+  ctx.save(); ctx.translate(c.ox + p.x * c.s, c.oy + p.y * c.s);
+  if (p.landed) {                                 // contact shadow on the desk
+    ctx.fillStyle = 'rgba(10,22,24,.35)'; ctx.beginPath();
+    ctx.ellipse(0, h * 0.25 * c.s, p.len * 0.45 * c.s, h * 0.18 * c.s, 0, 0, Math.PI * 2); ctx.fill();
+  }
+  ctx.rotate(p.ang); ctx.scale(1, p.bank);
+  ctx.drawImage(A.plane, b.x, b.y, b.w, b.h, -p.len / 2 * c.s, -h / 2 * c.s, p.len * c.s, h * c.s);
+  ctx.restore();
+}
+
+function vignette() {
+  const v = ctx.createRadialGradient(W / 2, H * 0.55, H * 0.3, W / 2, H * 0.55, H * 0.95);
+  v.addColorStop(0, 'rgba(0,0,0,0)'); v.addColorStop(1, 'rgba(4,14,16,.35)');
+  ctx.fillStyle = v; ctx.fillRect(0, 0, W, H);
+}
+
+function frame(songT) {
+  ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H);
+  if (songT < T_INSERT) {
+    const t = songT - T0, c = cam(t, T_INSERT - T0, 760, 330, 0.06);
+    ctx.drawImage(A.desk_plate, c.ox, c.oy, 1536 * c.s, 1024 * c.s);
+    const pose = songT >= T_LAND + 0.04 ? 'b' : 'a';
+    drawPlane(songT, c);
+    drawHer(pose, c, 0.004 * Math.sin(songT * 2.4));
+  } else {
+    // insert: folded paper, then on the unfold it opens to the ticket (a quick paper flip)
+    const t = songT - T_INSERT, c = cam(t, 64.917 - T_INSERT, 900, 520, 0.05);
+    const k = inv(T_UNFOLD, T_UNFOLD + 0.125, songT);
+    ctx.drawImage(A.insert_a, c.ox, c.oy, 1536 * c.s, 1024 * c.s);
+    if (k > 0) { ctx.save(); ctx.globalAlpha = k; ctx.drawImage(A.insert_b, c.ox, c.oy, 1536 * c.s, 1024 * c.s); ctx.restore(); }
+    // a pale flash as the paper opens
+    const fl = Math.max(0, 1 - Math.abs(songT - (T_UNFOLD + 0.06)) / 0.08) * 0.18;
+    if (fl > 0) { ctx.fillStyle = `rgba(240,236,220,${fl})`; ctx.fillRect(0, 0, W, H); }
+  }
+  vignette();
+}
+
+window.__frameJPEG = (songT, q) => { frame(songT); return cv.toDataURL('image/jpeg', q); };
+window.__ready.then(() => { if (!params.get('offline')) { const s = performance.now(); const loop = () => { frame(T0 + ((performance.now() - s) / 1000) % 5.25); requestAnimationFrame(loop); }; loop(); } });
+</script>
