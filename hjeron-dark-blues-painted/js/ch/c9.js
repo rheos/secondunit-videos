@@ -57,8 +57,7 @@
   // ---- flame tongues (as c4's): deep red roots, orange bodies, amber tips ----
   function tongue(t, x, y, h, w, seed, lean = 0) {
     if (h < 3) return;
-    const sw = snoise(t * 1.6 + seed, 71) * w * .9 + snoise(t * 3.1 + seed, 72) * w * .35 + lean * h, tip = [x + sw, y - h];
-    const shape = (k, c) => { s.fillStyle = c; s.beginPath(); s.moveTo(x - w * k, y); s.bezierCurveTo(x - w * k, y - h * .45, tip[0] - w * .3 * k, y - h * .7, tip[0], y - h * (1 - (1 - k) * .35)); s.bezierCurveTo(tip[0] + w * .3 * k, y - h * .7, x + w * k, y - h * .45, x + w * k, y); s.fill(); };
+    const shape = (k, c) => flameShape(t, x, y, h, w, k, c, seed, lean);
     shape(1, '#7a1a0c'); shape(.7, '#c8431b'); shape(.4, '#f28a2c'); if (h > 14) shape(.18, '#ffc05a');
   }
   // a wall of tall tongues (the valley fire rising behind the rim in the close shots)

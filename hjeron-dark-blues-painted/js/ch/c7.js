@@ -75,8 +75,7 @@
   // painted flame tongue (from c4) with a lean: the flames reach toward him when the fire calls
   function tongue(t, x, y, h, w, seed, lean = 0, dim = false) {
     if (h < 4) return;
-    const sw = snoise(t * 1.6 + seed, 71) * w * .9 + snoise(t * 3.1 + seed, 72) * w * .35 + lean * h, tip = [x + sw, y - h];
-    const shape = (k, c) => { s.fillStyle = c; s.beginPath(); s.moveTo(x - w * k, y); s.bezierCurveTo(x - w * k + lean * h * .15, y - h * .45, tip[0] - w * .3 * k, y - h * .7, tip[0], y - h * (1 - (1 - k) * .35)); s.bezierCurveTo(tip[0] + w * .3 * k, y - h * .7, x + w * k + lean * h * .15, y - h * .45, x + w * k, y); s.fill(); };
+    const shape = (k, c) => flameShape(t, x, y, h, w, k, c, seed, lean);
     if (dim) { shape(1, '#8f2a17'); shape(.55, '#e0662a'); return; }
     shape(1, '#7a1a0c'); shape(.7, '#c8431b'); shape(.4, '#f28a2c'); shape(.18, '#ffc05a');
   }

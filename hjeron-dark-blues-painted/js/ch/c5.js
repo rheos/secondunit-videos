@@ -81,8 +81,7 @@
   // painted flame tongues (after c4's): deep red roots, orange bodies, amber tips
   function tongue(t, x, y, h, w, seed, hot = 1) {
     if (h < 4) return;
-    const sw = snoise(t * 1.6 + seed, 71) * w * .9 + snoise(t * 3.1 + seed, 72) * w * .35, tip = [x + sw, y - h];
-    const shape = (k, c) => { s.fillStyle = c; s.beginPath(); s.moveTo(x - w * k, y); s.bezierCurveTo(x - w * k, y - h * .45, tip[0] - w * .3 * k, y - h * .7, tip[0], y - h * (1 - (1 - k) * .35)); s.bezierCurveTo(tip[0] + w * .3 * k, y - h * .7, x + w * k, y - h * .45, x + w * k, y); s.fill(); };
+    const shape = (k, c) => flameShape(t, x, y, h, w, k, c, seed, 0);
     shape(1, '#6a160b'); shape(.68, '#b53a17'); if (hot > .3) shape(.4, '#e87a28'); if (hot > .7) shape(.16, '#ffb24e');
   }
   // the line of fire across the plain at depth D: it ignites at xA on "burn" and races to xB by "down"

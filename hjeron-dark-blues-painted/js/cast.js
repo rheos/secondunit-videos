@@ -71,6 +71,27 @@ function fireRing(t, x, y, sc, lit = 1, seed = 3) {
     glow(x, y - sc * .3, sc * 3.2 * lit, `rgba(255,120,40,${.22 * lit})`); glow(x, y - sc * .2, sc * .9 * lit, `rgba(255,220,150,${.6 * lit})`);
   }
 }
+// one painted flame tongue, shared by every chapter's fire. The old tongue was a rigid cone that only
+// swung its tip, and at phone size the walls read as crystals or teeth (Robin's polish pass, 2026-10-06).
+// This one has a spine that writhes with a wave travelling up it, a bulb low down that narrows to a
+// curling tip, and now and then a lick that tears off above. (x, y) = base, h = height, w = outer half
+// width, k = this layer's share of the outer width (1 outer .. .15 core), c = fill colour.
+function flameShape(t, x, y, h, w, k, c, seed, lean = 0, g = s) {
+  const hh = h * (1 - (1 - k) * .3), n = 12, L = [], R = [];
+  for (let i = 0; i <= n; i++) { const q = i / n, yy = y - hh * q;
+    const cx = x + (snoise(t * 2.3 - q * 2.6 + seed, 71) * .8 + snoise(t * 4.4 - q * 5 + seed * 1.7, 72) * .3) * w * (.12 + .9 * q * q) + lean * h * q;
+    const prof = q < .2 ? lerp(.82, 1, q / .2) : Math.pow(1 - (q - .2) / .8, 1.25);
+    const wq = w * k * prof * (1 + .12 * snoise(t * 3 - q * 4 + seed, 73));
+    L.push([cx - wq, yy]); R.push([cx + wq, yy]); }
+  const pts = [...L, ...R.reverse().slice(1)];
+  g.fillStyle = c; g.beginPath(); g.moveTo(pts[0][0], pts[0][1]);
+  for (let i = 1; i < pts.length - 1; i++) { const m = [(pts[i][0] + pts[i + 1][0]) / 2, (pts[i][1] + pts[i + 1][1]) / 2]; g.quadraticCurveTo(pts[i][0], pts[i][1], m[0], m[1]); }
+  g.lineTo(pts[pts.length - 1][0], pts[pts.length - 1][1]); g.closePath(); g.fill();
+  if (k > .5 && h > 20) { // a lick tearing off the tip and rising away
+    const ph = ((t * (.9 + hash(seed * 3) * .6) + hash(seed)) % 1), tip = L[n];
+    if (ph < .55) { const fade = 1 - ph / .55, ly = tip[1] - hh * (.02 + ph * .3);
+      flameShape(t, tip[0] + snoise(t * 3 + seed, 74) * w * .3, ly, hh * .16 * fade, w * .5 * fade, .5, c, seed + 17, 0, g); } }
+}
 // rising sparks from a source point (pure function of t)
 function sparks(t, x, y, spread, rise, n, a = 1, seed = 5) { for (let i = 0; i < n; i++) { const ph = (t * (.25 + hash(i * 3 + seed) * .35) + hash(i * 7 + seed)) % 1, px = x + (hash(i * 11 + seed) - .5) * spread + Math.sin(t * 2 + i) * 18 * ph, py = y - ph * rise; dot(f, px, py, 1.4 + 2 * (1 - ph), `rgba(255,${150 + 80 * (1 - ph) | 0},70,${a * (1 - ph) * .9})`); } }
 // glowing cracks radiating from (x, y) across ground; open 0..1 grows them
