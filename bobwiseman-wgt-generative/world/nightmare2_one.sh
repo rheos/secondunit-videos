@@ -1,0 +1,6 @@
+#!/bin/zsh
+# nightmare2_one.sh <current still path> <out name>: the hard nightmare look (v2)
+W=${0:A:h}; G=$W/..; C=$W/characters; out=$W/keyframes_nm2/$2
+[[ -f $out ]] && exit 0
+P="Repaint image 1 as his NIGHTMARE of waiting. Keep its composition, story moment and every piece of text exactly as written, but transform the look completely: STRICT one-point symmetry, everything mirrored left to right where the layout allows; flat graphic shapes like a 1950s propaganda poster or a de Chirico dream, almost no texture; NEAR-MONOCHROME cold grey and pale teal, the ONLY colour is the amber glow of the NOW SERVING board (and the rose-red of her collar if she appears); endless identical repetition fading into pale fog in the distance; no clutter, no screens, no lamps, no galleries, just vast empty geometry; long hard shadows; uncanny stillness. The waiting clerks have NO BODIES: each is only a black hat on a blank pale head resting on top of an identical chair back. If the man appears, draw him simply but exactly as image 2 (flat, real proportions); if the woman appears, as image 3. Where image 1 shows sky through a hole, that sky stays vivid blue: the only escape."
+$G/gpt/gptimg -o $out -r $W/$1 -r $C/him_turnaround.png -r $C/her_turnaround.png "$P" > $W/keyframes_nm2/${2:r}.log 2>&1
