@@ -1,0 +1,11 @@
+Use your image_generation tool exactly once, with the five attached images as references (in the order given below). Pass the image prompt below VERBATIM, do not rewrite or embellish it. Then copy the generated file into the current folder as wyrd_sheet_scratchboard_v2.png. Do nothing else.
+
+IMAGE PROMPT:
+Edit the first attached image, a character model sheet. Keep its layout, the nine figures, their poses, framing and positions exactly. Change only the following.
+
+1. The veil. Remove the curtain of cords or dreadlocks over the face. Instead a sheer black cloth veil hangs from under the hat brim down over the whole face to the chin, like the real person in attached images 2 and 3. The face behind it is completely hidden in shadow: no eyes, nose, lips or beard ever show. In the last head study keep ONE small glowing ember eye showing through the veil on the viewer's right, nothing else.
+2. The hair. He has long dark wavy hair, like the real person in attached images 2 and 3: it falls from under the hat, past the shoulders and down the back, loose and wavy, never dreadlocks and never in front of the face.
+3. The coat. A long open dark leather duster over a vest, ankle length, the hem shredded into ragged strips, like attached image 4 (use image 4 for the coat only; ignore its face). Not a hooded cloak.
+4. The rendering. Match attached image 5 exactly: two-tone scratchboard, pure white scraped lines and fine stippling on solid black, no grey tones at all. The figures are mostly black silhouettes lit by one hard light from behind and to the side, so only a scraped rim, the hair, the coat fringe and the guitar binding catch white lines.
+
+Keep the black Les Paul with cream binding, the wide hat with the braided band and the medallion necklace. Plain black background. No text, no labels, no signature.

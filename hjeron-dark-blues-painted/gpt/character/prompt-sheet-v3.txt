@@ -1,0 +1,9 @@
+Use your image_generation tool exactly once, with the three attached images as references (in the order given below). Pass the image prompt below VERBATIM, do not rewrite or embellish it. Then copy the generated file into the current folder as wyrd_sheet_scratchboard_v3.png. Do nothing else.
+
+IMAGE PROMPT:
+Edit the first attached image, a character model sheet. Keep its layout, the nine figures, their poses, framing, hair, coat, guitar and rendering exactly. Change only these two things.
+
+1. The veil. Replace the sheer cloth veil over the face with a veil of many fine black strings hanging straight down from under the hat brim to below the chin, like the strings on the faces in the second attached image. The strings cover the whole face; nothing of the face shows through. His own long wavy hair stays as it is, behind and around the veil, falling past the shoulders: the strings are a veil, not hair, and never dreadlocks. In the last head study keep ONE small glowing ember eye showing between the strings on the viewer's right.
+2. The necklace. Replace the silver medallion everywhere it appears with the amulet in the third attached image: a round beaded rosette of fine green beads with a dark centre bead and a darker beaded rim, hanging on a beaded cord, with a fringe of long bead strands below it in green and black bands. Same size on the chest as the current medallion, drawn in the same scratchboard rendering as the rest of the sheet.
+
+No text, no labels, no signature.

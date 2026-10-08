@@ -1,0 +1,4 @@
+Use your image_generation tool exactly once, with the attached image as the reference. Pass the image prompt below VERBATIM, do not rewrite or embellish it. Then copy the generated file into the current folder as wyrd_sheet_scratchboard_v4.png. Do nothing else.
+
+IMAGE PROMPT:
+Edit the attached character model sheet. Repaint ONLY the back of the head of the fourth full-body figure in the top row (the back view, with the guitar slung on his back). Remove the veil strings from the back of his head there: the string veil only hangs over the FACE, so from directly behind you see no strings at all, only his long dark wavy hair falling from under the hat brim down over his shoulders and back, exactly like the hair in the side view and the profile head study. Keep everything else in the image exactly as it is: every other figure, the hat, the coat, the guitar, the strap, the layout, the rendering and the black background. No text, no labels, no signature.
