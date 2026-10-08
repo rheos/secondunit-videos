@@ -13,8 +13,10 @@ in `prompt-sheet-v1.txt` to `prompt-sheet-v4.txt`.
 5. v5 (2026-10-08): the amulet in Hjeron's muted greens, the only colour in the image (Robin: everything
    black and white except that one thing, some green, not super bright). The green was composited from a
    Codex repaint onto v4, so nothing else changed (the repaint alone had dropped the ember eye).
+6. v6 (2026-10-08): the veil strings dark, black on black with only faint glints; they had turned into
+   bright silver bead chains. Veil areas composited from a repaint, so the eye and amulet stayed as locked.
 
-What it fixes about him: string veil over the face only, never a face; long dark wavy hair, never
+What it fixes about him: string veil over the face only, dark black strings with faint glints (never silver beads), never a face; long dark wavy hair, never
 dreadlocks; wide black hat with a braided band; long open duster over a vest with a shredded
 ankle-length hem; the green beaded rosette amulet with its fringe; black Les Paul with cream binding;
 one ember eye at most, on the viewer's right. The amulet is the only colour: muted green.
