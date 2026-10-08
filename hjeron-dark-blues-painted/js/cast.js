@@ -188,6 +188,7 @@ function eyeGate(t) { let k = 0; for (const [a, b] of EYE_WINDOWS) k = Math.max(
 // o.rim: rim-light colour (string) or null. o.lit: 0..1 how much front light reaches the costume.
 // Returns joints { head, eye, neck, chest, hipL, hipR, handL, handR, hem } in world coords.
 function wyrd(t, x, y, h, o = {}) {
+  if (LOOK_MODE === 'engrave') return wyrdEng(t, x, y, h, o); // the scratchboard figure after the locked model sheet
   const { view = 'front', turn: turn0 = 0, guitar = 'play', arms = 'guitar', sing = 0, wind = .3, walk = 0, rim = 'rgba(255,190,130,.9)', lit = .15, g = s, strum = 1, breath = 1 } = o;
   // singing without the guitar (the veiled close-ups): never a post. He hunches into the phrase, the head
   // drifts a little side to side and lifts with the vocal, the shoulders rise on each line (Robin, 2026-10-06)
