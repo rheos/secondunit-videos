@@ -1,6 +1,13 @@
 # The Wyrd One, scratchboard model sheet (LOCKED 2026-10-07)
 
-`wyrd-one-scratchboard-sheet-LOCKED.png` is the character reference for the scratchboard version of
+**FINAL (2026-10-08):** `wyrd-one-scratchboard-sheet-FINAL-6144.jpg` (6144x4096) is the master. It was drawn fresh in one
+pass from the original references (v7 as the design guide, his scratchboard picture, the fringe photo, the
+amulet close-up, his hair photo; `prompt-sheet-final.txt`), so none of the edit-on-edit softening of v1-v7
+carries over, then upscaled 4x with Topaz High Fidelity V2 on Fal (~$0.25). The lossless PNG is local in
+`secondunit/hjeron-darkblues-ref/`. `wyrd-one-scratchboard-sheet-LOCKED.png` is the same sheet at 1536x1024 for
+prompting.
+
+Earlier: `wyrd-one-scratchboard-sheet-LOCKED.png` was the character reference for the scratchboard version of
 "dream of fire". Robin locked it on 2026-10-07. Every new pose, plate or close-up starts from it.
 
 Made with GPT Image through `codex exec` (ChatGPT plan, no credits), in four passes. The prompts are

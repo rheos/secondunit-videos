@@ -1,0 +1,19 @@
+Use your image_generation tool exactly once, with the five attached images as references (in the order given below), at the highest quality and largest landscape size the tool allows. Pass the image prompt below VERBATIM, do not rewrite or embellish it. Then copy the generated file into the current folder as wyrd_sheet_final_raw.png. Do nothing else.
+
+IMAGE PROMPT:
+A brand-new, clean, crisp character model sheet of THE WYRD ONE, drawn fresh at full detail. Wide 3:2, plain solid black background.
+
+Attached references, in order:
+1. design.png: the approved design and layout. Match its layout, the nine poses and every costume detail exactly, but redraw everything cleanly and sharply from scratch; do not copy its softness or artefacts.
+2. style.png: the MEDIUM only. Two-tone scratchboard: crisp pure-white scraped lines and fine stippling on solid black, no grey wash, every tone built from parallel scratches and dots. Do not copy its composition.
+3. fringe.png: the VEIL material. A dense curtain of black chainette cord fringe, like the fringe on the sleeves of a western jacket: fine twisted cords packed tight, hanging from under the hat brim to below the chin, uneven ragged ends, a few tangled strands. It hides the face completely, almost solid black with thin highlights along some cords on the lit side. Not beads, not sparse strings.
+4. amulet.png: the AMULET, the only colour in the whole image. A round beaded rosette of fine pale-green and mid-green beads with a dark centre bead and a darker bronze-brown beaded rim, on a beaded cord, with a fringe of bead strands banded in pale green and black. Muted green, not bright.
+5. hair.png: the HAIR only. His own long dark wavy hair falling from under the hat past the shoulders; never dreadlocks.
+
+Character: a long open dark leather duster over a vest, ankle length, the hem shredded into long ragged strips (as in design.png). Wide black hat with a low domed crown, a thick braided rope band, and a brim that droops at the sides. The cord-fringe veil covers the face only; from directly behind you see only his wavy hair, no fringe. No eyes, nose, lips or beard ever. Black Les Paul with cream binding, played right-handed (body at his right hip, neck rising to the viewer's right). Fingerless black leather gloves, worn cargo trousers, laced boots.
+
+Layout:
+- Top row: four full-body standing views, evenly spaced: front and three-quarter (both holding the Les Paul), side profile, back (the Les Paul slung on his back by its strap, arms at his sides).
+- Bottom row: five head-and-shoulders studies of the veiled head: frontal, three-quarter, profile, head bowed toward the guitar neck, and frontal with ONE small glowing ember eye showing between the fringe cords on the viewer's right (only one eye, never two, orange-white glow).
+Lit by one hard light from behind and to the side, so the figures are mostly black with a crisp scraped rim.
+No text, no labels, no signature, no colour anywhere except the muted green amulet and the single ember eye.
