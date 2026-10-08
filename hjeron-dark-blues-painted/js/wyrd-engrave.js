@@ -47,9 +47,9 @@ function wyrdEng(t, x, y, h, o = {}) {
     for (let i = 0; i <= n; i++) { const k = i / n; pts.push([X(headX + side * (4.6 + 3.2 * k) + wind * 3 * k + Math.sin(k * 7 + t * .8 + side) * .5 * k), Y(headY + 3 - k * 21)]); }
     for (let i = n; i >= 0; i--) { const k = i / n; pts.push([X(headX + side * (1.5 + 1.2 * k) + wind * 2 * k), Y(headY + 3 - k * 23)]); }
     return pts; };
-  const hairStrands = (side, n, a) => { for (let j = 0; j < n; j++) { const off = 1.8 + j * 3.6 / n, len = 15 + 7 * hash(j * 7 + (side > 0 ? 3 : 1));
+  const hairStrands = (side, n, a) => { for (let j = 0; j < n; j++) { const off = (back ? 1.8 : 4.4) + j * (back ? 3.6 : 2.6) / n, len = (back ? 15 : 11) + 7 * hash(j * 7 + (side > 0 ? 3 : 1)), y0 = back ? headY + 2 : headY - 2.4; // from the front the hair shows below the brim, outside the veil
     const fq = 10 + 6 * hash(j * 5 + 1), am = .7 + .8 * hash(j * 9 + 4), pts = [];
-    for (let i = 0; i <= 24; i++) { const k = i / 24; pts.push([X(headX + side * (off + 1.8 * k) + wind * 3 * k + Math.sin(k * fq + j * 1.7 + t * .9) * am * (.4 + k)), Y(headY + 2 - k * len)]); }
+    for (let i = 0; i <= 24; i++) { const k = i / 24; pts.push([X(headX + side * (off + 1.8 * k) + wind * 3 * k + Math.sin(k * fq + j * 1.7 + t * .9) * am * (.4 + k)), Y(y0 - k * len)]); }
     const aa = (side === L || back) ? a * (.55 + .45 * hash(j * 13)) : a * .3;
     const cut = 6 + Math.floor(hash(j * 17) * 10); scr(pts.slice(0, cut), aa, .15); scr(pts.slice(cut + 2), aa * .85, .15); } };
   if (back) { ink([...hairMass(-1), ...hairMass(1).reverse()]); }
@@ -141,23 +141,52 @@ function wyrdEng(t, x, y, h, o = {}) {
   dot(g, hc[0], hc[1], 4.2 * u, INK);
   if (!back) { // the veil: fine strings from under the brim to below the chin, swaying with breath and song
     const vw = 4.6, top = headY + 4.2, bot = headY - 8 - vk * .5;
-    ink([[X(headX - vw), Y(top)], [X(headX + vw), Y(top)], [X(headX + vw * .95), Y(bot)], [X(headX - vw * .95), Y(bot)]]);
+    ink([[X(headX - vw - .6), Y(top)], [X(headX + vw + .6), Y(top)], [X(headX + vw + .3), Y(bot)], [X(headX - vw - .3), Y(bot)]]); // overlaps the brim lobes, so no sliver of sky shows between
     // strings at uneven spacing and lengths, each a faint thread with beads catching the light now and then
     if (!occl) for (let k = 0; k < 15; k++) { const kx = -vw + (k + .5 + (hash(k * 3 + 1) - .5) * .7) * (2 * vw / 15), stir = snoise(t * 1.3 + k * 2.1, 41) * .45 + vk * snoise(t * 6 + k, 42) * .6 + wind * .4;
       const lit = (kx * L > 0 ? .5 : .22) * (.5 + .5 * hash(k * 5)), sb = bot - 1.4 * hash(k * 7 + 2), n = 26, pts = [];
       for (let j = 0; j < n; j++) { const q = j / (n - 1); pts.push([X(headX + kx + stir * q * q + Math.sin(q * 5 + k) * .12), Y(top - .6 - q * (top - sb - .4))]); }
       stroke(g, pts, sc(lit * .45), lw(.07));
       for (let j = 0; j < n; j += 2 + (hash(k * 13 + j) > .6 ? 1 : 0)) if (hash(k * 31 + j * 7) > .35) dot(g, pts[j][0], pts[j][1], Math.max(.5, (.1 + .1 * hash(k + j * 3)) * u), sc(lit * (1 - .35 * j / n))); } }
-  // hat: a pinched crown and a wide brim, seen from a little below
-  const B = 13.5, hy = headY + 4.6;
-  ink([[X(headX - 5.2), Y(hy + 1)], [X(headX - 4.2), Y(hy + 9)], [X(headX - 1), Y(hy + 10)], [X(headX), Y(hy + 9.3)], [X(headX + 1), Y(hy + 10)], [X(headX + 4.2), Y(hy + 9)], [X(headX + 5.2), Y(hy + 1)]]);
-  g.fillStyle = INK; g.beginPath(); g.ellipse(X(headX), Y(hy + .4), B * u, 2.6 * u, 0, 0, TAU); g.fill();
-  ink([[X(headX - B), Y(hy + 1)], [X(headX - B - .6), Y(hy + 3.2)], [X(headX - B + 3), Y(hy + 2)], [X(headX + B - 3), Y(hy + 2)], [X(headX + B + .6), Y(hy + 3.2)], [X(headX + B), Y(hy + 1)]]);
-  if (!occl) { // the braided band, the brim's top edge and the lit side of the crown
-    for (let k = 0; k < 14; k++) { const bx = headX - 4.8 + k * 9.6 / 13; stroke(g, [[X(bx - .3), Y(hy + 2.9)], [X(bx + .3), Y(hy + 1.9)]], sc(.6 * (bx * L > 0 ? 1 : .55)), lw(.22)); }
-    scr(bez([X(headX - B - .6), Y(hy + 3.2)], [X(headX - B + 4), Y(hy + 1.6)], [X(headX + B - 4), Y(hy + 1.6)], [X(headX + B + .6), Y(hy + 3.2)], 18), .5, .2);
-    scr([[X(headX + L * 4.2), Y(hy + 9)], [X(headX + L * 5.2), Y(hy + 1.6)]], .55, .22);
-    scr([[X(headX + L * (B - 2)), Y(hy - .4)], [X(headX + L * (B + .6)), Y(hy + 3.2)]], .4, .18); }
+  // hat, as on the locked sheet: a low wide crown with a soft top, a thick braided rope band, and a brim
+  // that is a thin band across the front (just under the hat band) and droops at both sides into deep lobes
+  // whose lower edges sweep down to the edges of the veil (the classic outback droop)
+  const B = 14.5, hy = headY + 4.2, cx0 = headX, inner = .31;
+  const brimTop = (q) => hy + 2.3 - .6 * q * q;                                       // nearly level, a touch lower at the tips
+  const lobe = (aq) => { const k = clamp((1 - aq) / (1 - inner)); return brimTop(1) - .5 - 5.6 * Math.sqrt(1 - (1 - k) * (1 - k)); }; // a rounded lobe: steep at the tip, easing in toward the veil
+  const brimLow = (q) => { const aq = Math.abs(q); return aq < inner ? hy - .4 - .9 * (1 - (aq / inner) ** 2) : lobe(aq); }; // the front edge dips a little at the centre
+  const brimPts = [];
+  for (let i = 0; i <= 40; i++) { const q = -1 + i / 20; brimPts.push([X(cx0 + q * B), Y(brimTop(q))]); }
+  for (let i = 1; i < 8; i++) { const a = Math.PI / 2 - i / 8 * Math.PI, r = .5; brimPts.push([X(cx0 + B + Math.cos(a) * r), Y(brimTop(1) - .3 + Math.sin(a) * r)]); }
+  for (let i = 40; i >= 0; i--) { const q = -1 + i / 20; brimPts.push([X(cx0 + q * B), Y(brimLow(q))]); }
+  for (let i = 1; i < 8; i++) { const a = -Math.PI / 2 - i / 8 * Math.PI, r = .5; brimPts.push([X(cx0 - B + Math.cos(a) * r), Y(brimTop(1) - .3 + Math.sin(a) * r)]); }
+  ink(brimPts);
+  const cw0 = 6.5, cw1 = 5.1, ch = 5.6, rr = 2.7, cb = hy + 2.2, ctop = cb + 1.4 + ch;   // the crown sits on the band
+  const crown = [[X(cx0 - cw0), Y(cb)], [X(cx0 - cw1 - .2), Y(ctop - rr)]];
+  for (let i = 1; i <= 6; i++) { const a = Math.PI - i / 6 * Math.PI / 2; crown.push([X(cx0 - cw1 + rr + Math.cos(a) * rr), Y(ctop - rr + Math.sin(a) * rr)]); }
+  for (let i = 1; i < 8; i++) { const q = -1 + i / 4; crown.push([X(cx0 + q * (cw1 - rr)), Y(ctop + .5 - .9 * Math.abs(q) - .35 * Math.cos(q * Math.PI / 2))]); }
+  for (let i = 0; i <= 6; i++) { const a = Math.PI / 2 - i / 6 * Math.PI / 2; crown.push([X(cx0 + cw1 - rr + Math.cos(a) * rr), Y(ctop - rr + Math.sin(a) * rr)]); }
+  crown.push([X(cx0 + cw1 + .2), Y(ctop - rr)], [X(cx0 + cw0), Y(cb)]);
+  ink(crown);
+  if (!occl) {
+    const lit = (px) => ((px - X(cx0)) * L > 0 ? 1 : .5);
+    // the brim's bright rolled edges: along the top, round each tip and down each lobe, and the thin front lip
+    const topE = []; for (let i = 0; i <= 40; i++) { const q = -1 + i / 20; if (Math.abs(q) > .42) topE.push([X(cx0 + q * B), Y(brimTop(q))]); else if (topE.length && topE[topE.length - 1] !== null) topE.push(null); }
+    let seg = []; for (const p2 of topE) { if (p2) seg.push(p2); else { if (seg.length > 1) stroke(g, seg, sc(.8 * lit(seg[0][0])), lw(.26)); seg = []; } } if (seg.length > 1) stroke(g, seg, sc(.8 * lit(seg[0][0])), lw(.26));
+    for (const sd of [-1, 1]) { const pts = []; for (let i = 0; i <= 13; i++) { const aq = 1 - i / 20 * (1 - inner); pts.push([X(cx0 + sd * aq * B), Y(lobe(aq))]); } stroke(g, pts, sc(.8 * (sd * L > 0 ? 1 : .5)), lw(.26)); // the lobe's edge fades out before it reaches the veil (shadow and hair there)
+      for (let r = 1; r <= 4; r++) { const kk = r / 5, p3 = []; for (let i = 0; i <= 14; i++) { const aq = 1 - i / 14 * (1 - inner) * .95; p3.push([X(cx0 + sd * aq * B * (1 - kk * .04)), Y(lerp(lobe(aq), brimTop(aq), kk))]); }
+        for (let i = 0; i < p3.length - 1; i += 2) if (hash(r * 31 + i + (sd > 0 ? 7 : 0)) > .3) stroke(g, [p3[i], p3[i + 1]], sc(.35 * (sd * L > 0 ? 1.2 : .5)), lw(.1)); } }
+    { const fp = []; for (let i = 0; i <= 12; i++) { const q = -inner + i / 12 * 2 * inner; fp.push([X(cx0 + q * B), Y(brimLow(q))]); } stroke(g, fp, sc(.8), lw(.26)); }
+    for (let k = 0; k < 9; k++) { const q = -inner + (k + .5) * 2 * inner / 9; if (hash(k * 5) > .35) stroke(g, [[X(cx0 + q * B - .4), Y(hy + .5 + (hash(k) - .5) * .6)], [X(cx0 + q * B + .4), Y(hy + .5 + (hash(k + 9) - .5) * .6)]], sc(.4), lw(.1)); }
+    // the crown: etched strokes following its curve, brighter toward the light, and a rim down the lit side
+    for (let k = 0; k < 15; k++) { const q = -1 + (k + .5) / 7.5, a = sc(.3 * lit(X(cx0 + q * cw1)) * (.5 + .5 * hash(k * 7)));
+      const pts = []; for (let i = 0; i <= 8; i++) { const v2 = i / 8, w2 = lerp(cw0 - .4, cw1 - .6, v2); pts.push([X(cx0 + q * w2 * (1 - .15 * v2 * v2)), Y(cb + 1.6 + v2 * (ch - .6) - .9 * Math.abs(q) * v2 * v2)]); }
+      if (hash(k * 13) > .2) stroke(g, pts.slice(Math.floor(hash(k * 3) * 3)), a, lw(.1)); }
+    scr([[X(cx0 + L * cw0), Y(cb + 1.4)], [X(cx0 + L * (cw1 + .2)), Y(ctop - rr)], [X(cx0 + L * (cw1 - rr * .3)), Y(ctop - rr * .3)], [X(cx0 + L * (cw1 - rr)), Y(ctop - .05)]], .65, .24);
+    // the thick braided rope band: two rows of plaited twists
+    for (let row = 0; row < 2; row++) for (let k = 0; k < 18; k++) { const q = -1 + (k + .5 + row * .5) / 9, bx = cx0 + q * (cw0 - .3), by = cb + .35 + row * .7 + .2 * (1 - q * q);
+      stroke(g, [[X(bx - .35), Y(by - .25)], [X(bx), Y(by + .1)], [X(bx + .35), Y(by + .3)]], sc(.75 * lit(X(bx))), lw(.2)); }
+    stroke(g, [[X(cx0 - cw0), Y(cb + 1.45)], [X(cx0 + cw0), Y(cb + 1.45)]], sc(.4), lw(.12)); }
   for (const c of ctxs) c.restore();
   // the one ember eye (Odin): his LEFT eye = viewer's right, glimpsed through the strings
   const eye = (o.eye || 0) * eyeGate(t);
