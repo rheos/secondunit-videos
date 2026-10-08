@@ -97,7 +97,7 @@ const Paint = (() => {
   // (sat 1, con 1, everything else 0) leave the frame untouched.
   const FS_GRADE = `#version 300 es
   precision highp float; in vec2 vUV; uniform sampler2D uImg; uniform vec2 uRes; out vec4 o;
-  uniform float uFr, uSat, uCon, uLift, uTintK, uScratch, uDust, uBurn, uEtch, uWeave, uFlick; uniform vec3 uTint;
+  uniform float uFr, uSat, uCon, uLift, uTintK, uScratch, uDust, uBurn, uEtch, uWeave, uFlick, uEngrave; uniform vec3 uTint;
   float h1(float n){ return fract(sin(n)*43758.5453); }
   float h2(vec2 p){ return fract(sin(dot(p, vec2(12.9898,78.233)))*43758.5453); }
   float n2(vec2 p){ vec2 i=floor(p), f=fract(p); f=f*f*(3.-2.*f);
@@ -123,6 +123,26 @@ const Paint = (() => {
       v = max(v, smoothstep(.72, .92, l));
       vec3 ink = vec3(v) * vec3(.95, .93, .88) + vec3(.012, .014, .02);
       c = mix(c, ink, uEtch); l = dot(c, vec3(.299,.587,.114));
+    }
+    if (uEngrave > .001) {
+      // engraving after Hjeron's scratchboard reference: dark tones are fine stipple (the sky), lit tones
+      // are broken scratches that run along the form (horizontal on flat ground, vertical up a mesa face),
+      // edges are thin scraped lines, and the hottest lights burn to white. Boils every 3 frames.
+      vec2 px = gl_FragCoord.xy; float bo = floor(uFr / 3.);
+      vec2 e1 = 1.2 / uRes, e2 = 9. / uRes;
+      float la = L(uv+vec2(e1.x,0.)), lb = L(uv-vec2(e1.x,0.)), lc = L(uv+vec2(0.,e1.y)), ld = L(uv-vec2(0.,e1.y));
+      // an edge is scraped only where light is next to it: a silhouette against the dark sky gets no outline
+      float edge = smoothstep(.07, .16, length(vec2(la - lb, lc - ld))) * smoothstep(.18, .5, max(max(la, lb), max(lc, ld)));
+      vec2 g = vec2(L(uv+vec2(e2.x,0.)) - L(uv-vec2(e2.x,0.)), L(uv+vec2(0.,e2.y)) - L(uv-vec2(0.,e2.y))); float gm = length(g);
+      vec2 nrm = normalize(mix(vec2(.04, 1.), g / max(gm, 1e-4), smoothstep(.09, .26, gm)));
+      float u = dot(px, nrm) * .27 + n2(px * .012 + bo * .7) * .7, along = dot(px, vec2(-nrm.y, nrm.x));
+      float tri = 1. - abs(fract(u) - .5) * 2., wid = .8 * pow(smoothstep(.07, .8, l), .8);
+      float lines = smoothstep(1. - wid, 1. - wid + .18, tri) * step(.001, wid);
+      lines *= mix(1., smoothstep(.3, .5, n2(vec2(along * .045 + bo * 3.1, floor(u) * 1.7))), .75);
+      float stK = 1. - smoothstep(.1, .3, l);
+      float st = step(1. - .3 * pow(smoothstep(.085, .3, l), 1.7) * (.55 + .9 * n2(px * .006 + 4.)), h2(floor(px / 2.4) + bo * 1.37));
+      float v = max(max(lines * (1. - .4 * stK), st * stK), max(edge * .95, smoothstep(.82, .97, l)));
+      c = mix(c, vec3(v) * vec3(.96, .95, .92) + vec3(.008), uEngrave); l = dot(c, vec3(.299,.587,.114));
     }
     c = mix(vec3(l), c, uSat);
     c = mix(c, clamp(l * uTint * 1.3, 0., 1.), uTintK);
@@ -236,7 +256,7 @@ const Paint = (() => {
     gl.uniform2f(G('uRes'), W, H); gl.uniform1f(G('uFr'), Math.floor(t * 24) % 997);
     const tint = o.tint || [1, .78, .52];
     gl.uniform3f(G('uTint'), tint[0], tint[1], tint[2]);
-    for (const [u, k, d] of [['uSat', 'sat', 1], ['uCon', 'con', 1], ['uLift', 'lift', 0], ['uTintK', 'tintK', 0], ['uScratch', 'scratch', 0], ['uDust', 'dust', 0], ['uBurn', 'burn', 0], ['uEtch', 'etch', 0], ['uWeave', 'weave', 0], ['uFlick', 'flick', 0]])
+    for (const [u, k, d] of [['uSat', 'sat', 1], ['uCon', 'con', 1], ['uLift', 'lift', 0], ['uTintK', 'tintK', 0], ['uScratch', 'scratch', 0], ['uDust', 'dust', 0], ['uBurn', 'burn', 0], ['uEtch', 'etch', 0], ['uEngrave', 'engrave', 0], ['uWeave', 'weave', 0], ['uFlick', 'flick', 0]])
       gl.uniform1f(G(u), o[k] ?? d);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
     gl.activeTexture(gl.TEXTURE0);

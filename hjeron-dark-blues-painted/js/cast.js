@@ -200,7 +200,7 @@ function wyrd(t, x, y, h, o = {}) {
   // hunched over a guitar strapped high, head tipped down toward the neck. Never a straight post.
   const groove = o.groove ?? 1, hunch = o.hunch ?? (playing ? 1 : .4 + .45 * croon);
   const leanK = (o.lean ?? (playing ? -.035 : .015)) + groove * (walk ? 0 : sway(t) * (.02 + .012 * croon) + snoise(t * .35, 23) * (.012 + .012 * croon));
-  const sil = view === 'sil' || o.sil, back = view === 'back';
+  const sil = view === 'sil' || o.sil || LOOK_MODE === 'engrave', back = view === 'back'; // the engraving is all silhouette
   const shade = (c, k = lit) => sil ? '#07070a' : mixHex('#07070a', c, clamp(.35 + k * .65));
   const u = h / 100; // 100 units tall
   // breathing + singing phrasing (head tilt / lift) from the vocal stem

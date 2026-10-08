@@ -1,0 +1,14 @@
+Use your image_generation tool exactly once, with the three attached images as references (in the order given below). Pass the image prompt below VERBATIM, do not rewrite or embellish it. Then copy the generated file into the current folder as wyrd_sheet_scratchboard_v1.png. Do nothing else.
+
+IMAGE PROMPT:
+Attached references, in order:
+1. ref_wyrd_turnaround.png: the character's canonical design (front and 3/4 views). Use it for the hat, the veil, the green beaded fringe necklace and the black Les Paul guitar.
+2. ref_coat.png: the canonical COAT ONLY. A long dark leather duster, open, ankle length, over a vest, its hem shredded into ragged strips. Ignore this image's face and glowing eye completely.
+3. ref_scratchboard.png: the STYLE ONLY. Copy its medium exactly: two-tone scratchboard, pure white scraped lines and fine stippling on solid black, no grey shading, every tone built from parallel scratches and dots. Do NOT copy its composition, landscape or pose.
+
+The character is The Wyrd One. His face is never visible: a black see-through veil of cords hangs from the hat brim over the whole face, and the face behind it falls into deep shadow under the brim. No eyes, lips, nose or beard anywhere. Wide brimmed black hat with a braided band. Long tattered ankle-length duster with a shredded hem. Black Les Paul with cream binding. Lean, grounded posture. Lit by one hard light from behind and to one side, so the figure is mostly black with a bright scraped rim.
+
+Layout like a classic animation model sheet, wide 3:2, plain black background:
+- Top row: four full-body views of the same character standing, evenly spaced: front, three-quarter, side profile, back. In the front and three-quarter views he holds the Les Paul; in the back view it is slung on his back.
+- Bottom row: five head-and-shoulders studies of the veiled head: frontal, three-quarter, profile, head bowed toward the guitar neck, and frontal with ONE small glowing ember eye showing through the veil on the viewer's right side (only one eye, never two).
+No text, no labels, no signature anywhere on the image.
