@@ -178,6 +178,42 @@ function drawCardB(t) {
   if (quadFacing(bTL, bTR, bBL)) drawQuad(g, TEX.cardBack, bTL, bTR, bBL, 10, 8);
   else drawQuad(g, TEX.cardOrgan, P(-45, -30), P(45, -30), P(-45, 30), 10, 8);
 }
+function pianoFrame(ps) {
+  const c = Math.cos(ps.yaw), s = Math.sin(ps.yaw), j = ps.jolt;
+  return (u, v, w) => { w *= ps.pop; const vv = v * Math.cos(j) - w * Math.sin(j), ww = v * Math.sin(j) + w * Math.cos(j); return [ps.x + u * c - vv * s, ps.y + u * s + vv * c, ps.z + 3 * ps.pop + ww]; };
+}
+function drawPiano(ps) {
+  const L = pianoFrame(ps), T = TEX.piano;
+  shadowBlob(g, ps.x + 3, ps.y + 4, ps.z, 25 * ps.pop, 15 * ps.pop, .45, ps.yaw);
+  // caster wheels
+  for (const [u, v] of [[-15, -5], [15, -5], [-15, 5], [15, 5]]) { const q = L(u, v, -1.6), r = 1.7 * CAM.f / Math.max(q[2], 5); if (q[2] < 5) continue; g.fillStyle = '#1c1a18'; g.beginPath(); g.arc(q[0], q[1], r * ps.pop, 0, TAU); g.fill(); g.fillStyle = 'rgba(255,255,255,.25)'; g.beginPath(); g.arc(q[0] - r * .3, q[1] - r * .3, r * .35 * ps.pop, 0, TAU); g.fill(); }
+  const faces = [
+    { q: [L(-18, -7, 30), L(18, -7, 30), L(-18, -7, 0)], img: T.front },
+    { q: [L(18, 7, 30), L(-18, 7, 30), L(18, 7, 0)], img: T.back },
+    { q: [L(18, -7, 30), L(18, 7, 30), L(18, -7, 0)], img: T.side, sh: .2 },
+    { q: [L(-18, 7, 30), L(-18, -7, 30), L(-18, 7, 0)], img: T.side, sh: .3 },
+    { q: [L(-18, 7, 30), L(18, 7, 30), L(-18, -7, 30)], img: T.top, sh: -.1 },
+    { q: [L(-16, -7, 15), L(16, -7, 15), L(-16, -13, 15)], img: T.keys },
+    { q: [L(-16, -13, 15), L(16, -13, 15), L(-16, -13, 12)], img: T.slab, sh: .1 },
+  ];
+  const vis = faces.filter((f) => quadFacing(...f.q)).map((f) => { const m = [(f.q[1][0] + f.q[2][0]) / 2, (f.q[1][1] + f.q[2][1]) / 2, (f.q[1][2] + f.q[2][2]) / 2]; return { ...f, d: depthOf(...m) }; });
+  vis.sort((a, b) => b.d - a.d);
+  for (const f of vis) {
+    drawQuad(g, f.img, ...f.q, 4, 4);
+    if (f.sh) { const q4 = [f.q[1][0] + f.q[2][0] - f.q[0][0], f.q[1][1] + f.q[2][1] - f.q[0][1], f.q[1][2] + f.q[2][2] - f.q[0][2]]; g.globalAlpha = Math.abs(f.sh); fillQuad(g, [f.q[0], f.q[1], q4, f.q[2]], f.sh > 0 ? '#120804' : '#ffe8c8'); g.globalAlpha = 1; }
+  }
+}
+function drawRope(pp, ps) {
+  const L = pianoFrame(ps), a = [pp.x + pp.ax[0] * 12, pp.y + pp.ax[1] * 12, pp.z + pp.ax[2] * 12], b = L(18, 0, 18);
+  const hd = Math.hypot(a[0] - b[0], a[1] - b[1]), sag = Math.max(0, PIANO.L + 14 - hd) * .55;
+  g.save(); g.lineCap = 'round'; g.lineJoin = 'round';
+  const pts = []; for (let i = 0; i <= 16; i++) { const u = i / 16; const z = lerp(a[2], b[2], u) - sag * 4 * u * (1 - u); const fl = FLOOR(lerp(a[0], b[0], u), lerp(a[1], b[1], u)); pts.push(proj(lerp(a[0], b[0], u), lerp(a[1], b[1], u), Math.max(z, fl + .4))); }
+  if (pts.some((p) => p[2] < 5)) { g.restore(); return; }
+  const w = Math.max(1.3, .8 * CAM.f / pts[8][2]);
+  g.strokeStyle = 'rgba(40,25,10,.55)'; g.lineWidth = w + 1; g.beginPath(); pts.forEach((p, i) => i ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1])); g.stroke();
+  g.strokeStyle = '#e9dfc6'; g.lineWidth = w; g.stroke();
+  g.restore();
+}
 function drawTarotCard(t) {
   const c = cardPose5(t); const cf = Math.cos(c.flip), sf = Math.sin(c.flip), cr = Math.cos(c.rot), sr = Math.sin(c.rot);
   const w = TCARD[0] / 2, h = TCARD[1] / 2;
@@ -283,6 +319,7 @@ function renderFrame(t) {
     items.push({ d: depthOf(CARDPOS.x, CARDPOS.y, 5), fn: () => M5 ? drawTarotCard(t) : MB ? drawCardB(t) : drawTopCard(t), flat: (M5 ? cardPose5(t) : MB ? cardPoseB(t) : cardPose(t)).z < 6.5 });
   }
   const pp = MB ? dancePose(0, t) : M5 ? pawnPose5(t) : pawnPose(t);
+  if (M5 && pp) { const ps = pianoState(t); if (ps) { items.push({ d: depthOf(ps.x, ps.y, 15), fn: () => drawPiano(ps) }); items.push({ d: depthOf((ps.x + pp.x) / 2, (ps.y + pp.y) / 2, 10) + 1, fn: () => drawRope(pp, ps) }); } }
   if (MB) for (let i = 1; i < 6; i++) { const q = dancePose(i, t); items.push({ d: depthOf(q.x, q.y, q.z + 15), fn: () => { pawnShadow(g, q, 1); drawPawn(g, q, PCOL[i]); } }); }
   if (pp) items.push({ d: depthOf(pp.x, pp.y, pp.z + 15), pawn: true, fn: () => { pawnShadow(g, pp, 1 - .3 * wl); const k = 1 + .35 * wl; drawPawn(g, pp, [178 * k, 42 * k * 1.05, 34 * k]); } });
   // flat things first (z order), then the rest by depth

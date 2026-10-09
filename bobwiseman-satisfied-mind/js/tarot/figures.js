@@ -166,3 +166,38 @@ function bird(x, y, s, dir, open, seed = 400) {
   lineP(chain(m, T(30, -18), Rm(-oa)), [[0, 0], [12, 2]], 3, seed + 6, false);
   lineP(chain(m, T(30, -16), Rm(oa)), [[0, 0], [11, 1]], 3, seed + 7, false);
 }
+
+// where a person's hand is (which: 0 back arm, 1 front arm), in the space person() was drawn in
+function handPos(o, which = 0) {
+  const s = o.s || 1, dir = o.dir || 1, sitDrop = (o.sit ? 104 : 0) - (o.platform && !o.skirt ? 24 : 0);
+  const armA = o.armA || [.08, .08], sh = which ? [20, -230] : [-22, -230];
+  const h = ap1(Rm(-armA[which]), 0, 104);
+  return ap1(chain(T(o.x, o.y), Sm(s * dir, s), T(0, sitDrop)), sh[0] + h[0], sh[1] + h[1]);
+}
+// a small upright piano on casters, front on to us; (x, y) is the road under its wheels.
+// tilt follows the road; returns the rope hook on the side facing hookDir (+1 right, -1 left)
+function piano(x, y, s, tilt, hookDir = 1, seed = 1800) {
+  const m = chain(T(x, y), Rm(tilt), Sm(s));
+  for (const wx of [-60, 60]) { part(m, circ(wx, -9, 9, 10), { fill: 'black', seed: seed + wx, line: 2.4 }); lineP(m, [[wx, -18], [wx, -24]], 3, seed + wx + 1, false); }
+  part(m, rectP(-80, -176, 160, 152), { fill: 'brown', seed: seed + 1, line: 4.2, smooth: false, step: 20 });
+  part(m, rectP(-88, -190, 176, 16), { fill: 'brown', seed: seed + 2, line: 3.6, smooth: false, step: 20 });
+  hatch(m, rectP(-76, -172, 18, 144), 1.4, 7, 1.4, seed + 3, .9); hatch(m, rectP(58, -172, 18, 144), 1.4, 7, 1.4, seed + 4, .9);
+  // a stencilled panel above the keys with a cut scroll
+  part(m, rectP(-56, -160, 112, 46), { fill: 'yellow', seed: seed + 5, line: 2.8, smooth: false, step: 16 });
+  lineP(m, [[-40, -134], [-24, -150], [-6, -134], [10, -150], [28, -134], [42, -146]], 2.2, seed + 6);
+  // keyboard: white keys with black keys in twos and threes
+  part(m, rectP(-84, -104, 168, 22), { fill: 'white', seed: seed + 7, line: 3, smooth: false, step: 14 });
+  for (let k = 1; k < 14; k++) lineP(m, [[-84 + k * 12, -104], [-84 + k * 12, -83]], 1.3, seed + 10 + k, false);
+  for (let k = 0; k < 13; k++) { const n = k % 7; if (n === 2 || n === 6) continue; const bx = -84 + (k + 1) * 12 - 3.5; inkFill(ap(m, rectP(bx, -104, 7, 12))); }
+  part(m, rectP(-80, -82, 160, 8), { fill: 'brown', seed: seed + 8, line: 2.4, smooth: false, step: 20 });
+  // the lower door and two brass pedals
+  part(m, rectP(-60, -66, 120, 34), { fill: 'brown', seed: seed + 9, line: 2.4, smooth: false, step: 20 });
+  for (const px of [-12, 12]) part(m, rectP(px - 5, -32, 10, 6), { fill: 'yellow', seed: seed + 30 + px, line: 1.6, smooth: false });
+  const hk = [hookDir * 84, -70];
+  part(m, circ(hk[0], hk[1], 6, 8), { line: 2.4, seed: seed + 40 });
+  return ap1(m, hk[0], hk[1]);
+}
+function rope(a, b, sag = 22, seed = 1850) {
+  const pts = []; for (let k = 0; k <= 8; k++) { const u = k / 8; pts.push([lerp(a[0], b[0], u), lerp(a[1], b[1], u) + Math.sin(Math.PI * u) * sag]); }
+  pline(ap(I, rough(pts, seed, 1)), 3.4, seed, false);
+}
