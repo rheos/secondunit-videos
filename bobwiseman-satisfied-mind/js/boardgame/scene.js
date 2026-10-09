@@ -164,8 +164,9 @@ function drawPawn(g, pose, col = [178, 42, 34]) {
   if (rl < .2) { rx = -ax[1] * ax[0]; ry = 1 - ax[1] * ax[1]; rz = -ax[1] * ax[2]; rl = Math.hypot(rx, ry, rz); }
   rx /= rl; ry /= rl; rz /= rl;
   const qx = ax[1] * rz - ax[2] * ry, qy = ax[2] * rx - ax[0] * rz, qz = ax[0] * ry - ax[1] * rx;
-  for (const [h, ph, cr] of [[1.7, 3.6, 1.5], [2.4, 5.2, 1.0], [11, 3.9, 1.1], [26.6, 4.4, 1.3], [18.7, 3.2, .9], [30, 2.6, .8]]) {
-    const r = pawnR(h), dx = Math.cos(ph) * rx + Math.sin(ph) * qx, dy = Math.cos(ph) * ry + Math.sin(ph) * qy, dz = Math.cos(ph) * rz + Math.sin(ph) * qz;
+  const spn = pose.spin || 0;
+  for (const [h, ph0, cr] of [[1.7, 3.6, 1.5], [2.4, 5.2, 1.0], [11, 3.9, 1.1], [26.6, 4.4, 1.3], [18.7, 3.2, .9], [30, 2.6, .8]]) {
+    const ph = ph0 + spn, r = pawnR(h), dx = Math.cos(ph) * rx + Math.sin(ph) * qx, dy = Math.cos(ph) * ry + Math.sin(ph) * qy, dz = Math.cos(ph) * rz + Math.sin(ph) * qz;
     const px = pose.x + ax[0] * h + dx * r, py = pose.y + ax[1] * h + dy * r, pz = pose.z + ax[2] * h + dz * r;
     const ex = CAM.x - px, ey = CAM.y - py, ez = CAM.z - pz, el = Math.hypot(ex, ey, ez); const face = (dx * ex + dy * ey + dz * ez) / el;
     if (face < .15) continue;

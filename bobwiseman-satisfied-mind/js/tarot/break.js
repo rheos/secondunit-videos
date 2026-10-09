@@ -97,9 +97,12 @@ const FLIPS = (() => { const on = onsIn(200.55, 203.42).map((o) => o[0]), out = 
 const RISE = (() => { const on = onsIn(203.45, 204.62).map((o) => o[0]), out = {}; SEGS.forEach((sg, k) => { out[sg] = on[Math.floor(k * on.length / SEGS.length)] + (k % 3) * .045; }); return out; })();
 const RING = 43.9, CW = 5.6, CH = 9.6; // card size on the sampler, in stitch cells
 
+// 198.0 is crossstitch's last frame (y -5, 6.8 px per cell); push in on the CHANCE card, ease back out for the ring
+const SCAM = [[198.0, 0, -5, 6.8], [198.3, 0, -4, 7.0], [199.45, 0, 4, 14.6], [200.3, 0, 4, 15.4], [201.05, 0, 0, 9.8], [203.4, 0, 0, 10.6]];
 function samplerCam(t) {
-  const u = ease(t, 198.0, 203.4), x = 0, y = lerp(-5, 0, u), s = Math.exp(lerp(Math.log(6.8), Math.log(10.6), u * .85 + smooth(lin(t, 199.4, 203.4)) * .15));
-  return { x, y, s: s * (1 + .03 * ease(t, 203.4, 204.75)) };
+  let i = SCAM.findIndex((k) => k[0] > t); if (i < 0) i = SCAM.length - 1; if (i === 0) i = 1;
+  const a = SCAM[i - 1], b = SCAM[i], u = smooth(clamp((t - a[0]) / (b[0] - a[0])));
+  return { x: lerp(a[1], b[1], u), y: lerp(a[2], b[2], u), s: Math.exp(lerp(Math.log(a[3]), Math.log(b[3]), u)) * (1 + .03 * ease(t, 203.4, 204.75)) };
 }
 function drawSpriteAt(g, spr, x, y, rot, w, h, fx = 1, shadow = 0) {
   g.save(); g.translate(x, y); g.rotate(rot);
@@ -131,6 +134,7 @@ function renderSampler(t) {
     if (t >= tr) { flying.push({ sg, a, cx, cy, tr }); continue; }
     drawSpriteAt(g, spr, cx, cy - hop, a + Math.PI / 2, w, h, fx, .35 + hop * .6);
   }
+  drawChance(g, t);
   // rising toward the lens: screen-space growth about the centre, tumbling
   g.setTransform(1, 0, 0, 1, 0, 0);
   flying.sort((p, q) => p.tr - q.tr);

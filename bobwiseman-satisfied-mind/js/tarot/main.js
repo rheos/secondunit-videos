@@ -13,7 +13,7 @@ const PAT = {
 const CS = 0.36; // card units -> table units
 const REST = [[-580, -110, -.02], [-290, -110, .015], [0, -110, -.012], [290, -110, .02], [580, -110, -.015]];
 const DEAL = [[213.0, 213.85], [215.0, 215.75], [224.8, 225.6], [225.5, 226.3], [241.4, 242.15]];
-const FLIP = [[214.2, 214.85], [222.15, 222.7], [226.95, 227.55], [235.06, 235.6], [244.0, 245.4]];
+const FLIP = [[214.2, 214.85], [222.15, 222.7], [226.95, 227.55], [238.76, 239.2], [244.0, 245.4]];
 const DECK = [-600, 380, .12];
 const MAT = 820; // the green cloth is a square mat, x and y in -MAT..MAT, lying on a light oak table
 function cardState(i, t) {
@@ -36,14 +36,15 @@ const CAM = [
   Ck(221.95, 0, 350, 600, 900), Ck(222.2, 0, 350, 600, 900),
   Ck(222.2001, 1, 350, 600, 1360), Ck(224.1, 1, 350, 600, 1210),
   Wk(225.9, -150, -60, 1250), Wk(226.6, -110, -80, 1180),
-  Ck(227.9, 2, 350, 620, 1100), Ck(229.0, 2, 250, 660, 820), Ck(230.6, 2, 230, 660, 800), Ck(231.7, 2, 470, 660, 820),
-  Ck(233.8, 2, 420, 650, 860), Ck(235.04, 2, 360, 640, 900),
-  Ck(235.0401, 3, 350, 600, 1360), Ck(236.4, 3, 300, 640, 860), Ck(238.0, 3, 470, 630, 860), Ck(239.8, 3, 700, 630, 900),
-  Wk(241.4, 180, -110, 1300), Wk(242.32, 300, -110, 1250),
+  Ck(227.9, 2, 350, 620, 1100), Ck(229.0, 2, 170, 660, 820), Ck(230.6, 2, 190, 660, 800), Ck(231.7, 2, 400, 660, 820),
+  Ck(233.8, 2, 330, 650, 860), Ck(235.04, 2, 420, 640, 880),
+  Ck(236.2, 2, 470, 640, 860), Ck(237.6, 2, 620, 640, 860), Ck(238.7, 2, 780, 640, 900),
+  Ck(238.7401, 3, 350, 600, 1360), Ck(239.25, 3, 350, 600, 1300), Ck(239.9, 3, 330, 700, 900), Ck(240.9, 3, 360, 680, 920),
+  Wk(241.9, 300, -110, 1300), Wk(242.32, 300, -110, 1250),
   Ck(242.3201, 4, 350, 640, 1750), Ck(244.0, 4, 350, 620, 1600), Ck(245.4, 4, 350, 610, 1480), Ck(247.5, 4, 350, 610, 1380),
-  Ck(249.6, 4, 260, 640, 920), Ck(252.3, 4, 320, 620, 900), Ck(254.0, 4, 430, 560, 780), Ck(257.8, 4, 460, 600, 800),
-  Ck(259.6, 4, 430, 640, 840), Ck(261.6, 4, 420, 570, 960), Ck(264.8, 4, 405, 575, 970), Ck(266.6, 4, 400, 580, 975),
-  Ck(268.9, 4, 350, 600, 1500), Wk(271.3, 0, -30, 1750), Wk(272.4, 0, 0, 1900), Wk(273.2, 0, 0, 1900),
+  Ck(249.6, 4, 230, 700, 920), Ck(252.3, 4, 330, 680, 900), Ck(254.0, 4, 390, 660, 860), Ck(257.8, 4, 460, 640, 880),
+  Ck(260.5, 4, 520, 600, 920), Ck(263.6, 4, 560, 580, 940), Ck(266.6, 4, 560, 560, 960), Ck(267.8, 4, 580, 560, 990),
+  Ck(269.8, 4, 350, 600, 1500), Wk(271.4, 0, -30, 1750), Wk(272.4, 0, 0, 1900), Wk(273.2, 0, 0, 1900),
 ];
 function keyWorld(k) {
   if (k.card == null) return { x: k.x, y: k.y, lz: Math.log(H / k.vh), r: 0 };
@@ -153,7 +154,7 @@ function drawTable(CM, t) {
   const rg = g.createRadialGradient(0, -30, 150, 0, -30, 1900);
   rg.addColorStop(0, 'rgba(255,225,160,.10)'); rg.addColorStop(.55, 'rgba(0,0,0,0)'); rg.addColorStop(1, 'rgba(0,0,0,.42)');
   g.fillStyle = rg; g.fillRect(bx, by, bw, bh);
-  // starlight spills onto the cloth around THE STAR at the end
+  // sunrise light spills onto the cloth around THE FOOL at the end
   const sl = ease(t, 266.6, 270.5) * .55;
   if (sl > 0) {
     g.globalCompositeOperation = 'screen';
@@ -199,7 +200,7 @@ function renderFrame(t) {
 
 const params = new URLSearchParams(location.search);
 window.__frameJPEG = (t, q = .93) => { renderFrame(t); return out.toDataURL('image/jpeg', q); };
-window.__ready = (async () => { try { await document.fonts.load(`64px ${FONT}`); } catch (e) {} return true; })();
+window.__ready = (async () => { try { await Promise.all([`64px ${FONT}`, '900 64px "Superclarendon"', 'bold 64px "Rockwell"'].map((f) => document.fonts.load(f))); } catch (e) {} return true; })();
 
 if (!params.has('offline')) {
   const audio = document.getElementById('a');

@@ -19,6 +19,7 @@ function mkCanvas(w = W, h = H) { const c = document.createElement('canvas'); c.
 const COL = {
   red: '#c8392b', yellow: '#eab52e', blue: '#4f7dbd', navy: '#22408a', flesh: '#f1c29a',
   green: '#5c9a4f', white: '#ffffff', ink: '#1a1410', pale: '#cfe0ee', brown: '#a8673a',
+  black: '#2e2733', purple: '#6c4188', ghost: '#f6efe6', plum: '#5a1f3c', grey: '#9a9692', orange: '#e57f2c',
 };
 const FONT = '"Big Caslon", "Times New Roman", serif';
 
@@ -197,4 +198,39 @@ function ptext(str, cx, cy, bw, bh, seed = 3, maxSize = 62) {
   }
   g.restore();
   return { size: sz, width: tw };
+}
+
+// ---------- light oak table: the board game look's plank algorithm (copied from js/boardgame/art.js buildTable) ----------
+// 0.5 px per table unit; planks run along x, 680 units wide; one canvas covers x -3072..3072, y -2048..2048.
+let OAK, OAKR;
+function buildOak() {
+  const R = mulberry(7), NS = 512, nd = new Float32Array(NS * NS);
+  const grid = (n) => { const a = []; for (let i = 0; i < (n + 1) * (n + 1); i++) a.push(R()); return a; };
+  const oct = [[8, .5], [32, .3], [128, .2]].map(([n, w]) => ({ n, w, a: grid(n) }));
+  for (let y = 0; y < NS; y++) for (let x = 0; x < NS; x++) {
+    let v = 0;
+    for (const o of oct) {
+      const fx = x / NS * o.n, fy = y / NS * o.n, ix = Math.floor(fx), iy = Math.floor(fy), ux = smooth(fx - ix), uy = smooth(fy - iy);
+      const A = (i, j) => o.a[(j % o.n) * (o.n + 1) + (i % o.n)];
+      v += o.w * lerp(lerp(A(ix, iy), A(ix + 1, iy), ux), lerp(A(ix, iy + 1), A(ix + 1, iy + 1), ux), uy);
+    }
+    nd[y * NS + x] = v;
+  }
+  const N = (x, y) => nd[(((y | 0) & 511) * 512 + ((x | 0) & 511))];
+  const w = 3072, h = 2048, c = mkCanvas(w, h), g = c.getContext('2d'), id = g.createImageData(w, h), d = id.data;
+  const plank = 340;
+  for (let y = 0; y < h; y++) {
+    const pi = Math.floor(y / plank), py = y - pi * plank, tone = rnd(pi, 4) * .16 - .08, off = rnd(pi, 5) * 3000;
+    const seam = py < 2 ? .55 : py < 4 ? .85 : 1;
+    for (let x = 0; x < w; x++) {
+      const warp = N(x * .08 + off, y * .5 + pi * 37) * 26 + N(x * .015 + off, y * .03) * 60;
+      const gr = Math.sin((py + warp) * .09 + Math.sin(x * .004 + pi) * 2.2);
+      const fine = N(x * 1.3 + off, y * 4.1) - .5;
+      let v = .78 + tone + gr * .06 + fine * .12 + (gr > .82 ? -.12 * (gr - .82) / .18 : 0);
+      const pore = N(x * 2.7, y * 9.3 + pi * 11) > .83 ? -.08 : 0; v = (v + pore) * seam;
+      const k = (y * w + x) * 4; d[k] = 196 * v + 18; d[k + 1] = 140 * v + 10; d[k + 2] = 82 * v + 4; d[k + 3] = 255;
+    }
+  }
+  g.putImageData(id, 0, 0);
+  OAK = c; OAKR = { x0: -3072, y0: -2048, w: 6144, h: 4096 };
 }

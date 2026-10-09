@@ -65,7 +65,7 @@ function drawBox(t) {
   drawDie(g, 162, 386, 16.1, 16, .35, 4, 2, 6);
   drawDie(g, 203, 374, 16.1, 16, -.6, 1, 5, 3);
   // spare pawns
-  for (const sp of [{ x: -170, y: 360, col: [42, 86, 172] }, { x: -112, y: 345, col: [226, 178, 36] }, { x: -54, y: 362, col: [44, 132, 70] }]) {
+  if (!MB) for (const sp of [{ x: -170, y: 360, col: [42, 86, 172] }, { x: -112, y: 345, col: [226, 178, 36] }, { x: -54, y: 362, col: [44, 132, 70] }]) {
     const pose = { x: sp.x, y: sp.y, z: 8, floor: 8, ax: [0, 0, 1] }; pawnShadow(g, pose, .7); drawPawn(g, pose, sp.col);
   }
   const outer = [
@@ -170,6 +170,14 @@ function drawTopCard(t) {
   if (quadFacing(bTL, bTR, bBL)) drawQuad(g, TEX.cardBack, bTL, bTR, bBL, 6, 4);
   else drawQuad(g, TEX.cardFront, P(-45, -30), P(45, -30), P(-45, 30), 6, 4);
 }
+function drawCardB(t) {
+  const c = cardPoseB(t); const cf = Math.cos(c.flip), sf = Math.sin(c.flip), cr = Math.cos(c.rot), sr = Math.sin(c.rot);
+  const P = (u, v) => { const vy = v * cf, vz = v * sf; return [c.x + u * cr - vy * sr, c.y + u * sr + vy * cr, c.z + vz]; };
+  shadowBlob(g, c.x + Math.max(0, c.z - 5) * .35 + 2, c.y + Math.max(0, c.z - 5) * .5 + 3, 3.1, 50 * (.5 + .5 * Math.abs(cf)), 34, .35 * clamp(1 - c.z / 120));
+  const bTL = P(-45, 30), bTR = P(45, 30), bBL = P(-45, -30);
+  if (quadFacing(bTL, bTR, bBL)) drawQuad(g, TEX.cardBack, bTL, bTR, bBL, 10, 8);
+  else drawQuad(g, TEX.cardOrgan, P(-45, -30), P(45, -30), P(-45, 30), 10, 8);
+}
 function drawTarotCard(t) {
   const c = cardPose5(t); const cf = Math.cos(c.flip), sf = Math.sin(c.flip), cr = Math.cos(c.rot), sr = Math.sin(c.rot);
   const w = TCARD[0] / 2, h = TCARD[1] / 2;
@@ -200,7 +208,7 @@ function drawTableProps5(t) {
   drawGround(g, EXT.sampler, S.x - S.w / 2, S.x + S.w / 2, S.y - S.h / 2, S.y + S.h / 2, 1.2, { noOverlap: true });
 }
 function drawSpinner(t) {
-  const th = M5 ? spinAngle5(t) : spinAngle(t), d = [Math.cos(th), Math.sin(th)], n = [-Math.sin(th), Math.cos(th)];
+  const th = M5 ? spinAngle5(t) : MB ? spinAngleB(t) : spinAngle(t), d = [Math.cos(th), Math.sin(th)], n = [-Math.sin(th), Math.cos(th)];
   const P = (along, across, z) => [SPIN.x + d[0] * along + n[0] * across, SPIN.y + d[1] * along + n[1] * across, z];
   g.globalAlpha = .35; drawQuad(g, TEX.arrowSh, P(-44 + 1.5, 11 - 2, 3.05), P(66 + 1.5, 11 - 2, 3.05), P(-44 + 1.5, -11 - 2, 3.05), 2, 2); g.globalAlpha = 1;
   drawQuad(g, TEX.arrow, P(-44, 11, 4.2), P(66, 11, 4.2), P(-44, -11, 4.2), 3, 2);
@@ -233,10 +241,10 @@ function applyDOF(zf, A) {
   g.drawImage(BL, 0, 0);
 }
 
-let M5 = false;
+let M5 = false, MB = false;
 function renderFrame(t) {
-  M5 = t >= V5 - 1e-6;
-  const sh = M5 ? shotAt5(t) : shotAt(t); setCamera(sh.cam(t));
+  M5 = t >= V5 - 1e-6; MB = t >= B1.a - 1e-6 && t < B1.b - 1e-6;
+  const sh = M5 ? shotAt5(t) : MB ? shotAtB(t) : shotAt(t); setCamera(sh.cam(t));
   g.setTransform(1, 0, 0, 1, 0, 0); g.globalAlpha = 1; g.globalCompositeOperation = 'source-over'; g.filter = 'none';
   const bg = g.createLinearGradient(0, 0, 0, H); bg.addColorStop(0, '#2a1f17'); bg.addColorStop(1, '#120d09'); g.fillStyle = bg; g.fillRect(0, 0, W, H);
   // soft room glow above the horizon in low shots
@@ -251,15 +259,15 @@ function renderFrame(t) {
     g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
   }
   if (M5) drawTableProps5(t);
-  else { const dp = divePose(t); if (dp) { shadowBlob(g, dp.x + 3, dp.y + 4, 0, 60, 30, .3, dp.rot); noteQuad(EXT.note2, dp.x, dp.y, dp.z, dp.rot, 0, DIVE.w, DIVE.h, 8); } }
+  else if (!MB) { const dp = divePose(t); if (dp) { shadowBlob(g, dp.x + 3, dp.y + 4, 0, 60, 30, .3, dp.rot); noteQuad(EXT.note2, dp.x, dp.y, dp.z, dp.rot, 0, DIVE.w, DIVE.h, 8); } }
   // box shadow, box
   softRectGround(-250, 268, 292, 572, 0, .55);
   drawBox(t);
   drawBoard(t);
   const intro = t < 7.9;
-  const NOTESX = M5 ? NOTES5 : NOTES, PRIZESX = M5 ? PRIZES5 : PRIZES, nPose = M5 ? notePose5 : notePose;
+  const NOTESX = MB ? [] : M5 ? NOTES5 : NOTES, PRIZESX = MB ? [] : M5 ? PRIZES5 : PRIZES, nPose = M5 ? notePose5 : notePose;
   if (!intro) {
-    const s = M5 ? spotOn5(t) : spotOn(t);
+    const s = MB ? 0 : M5 ? spotOn5(t) : spotOn(t);
     if (s > 0 && !params.has("noglow")) glowBlob(g, SPOT.x, SPOT.y, 3.1, 82, 66, '255,226,170', .5 * s);
     drawSpinner(t);
     drawCardStack(t);
@@ -272,9 +280,10 @@ function renderFrame(t) {
   if (!intro) {
     for (const nt of NOTESX) { const q = nPose(nt, t); if (!q) continue; items.push({ d: depthOf(q.x, q.y, q.z), z: q.z, flat: q.z < 8 && !q.tilt, fn: () => M5 ? noteQuad(nt.d ? EXT.note2 : EXT.note1, q.x, q.y, q.z, q.rot, q.tilt, NOTE_MM[0], NOTE_MM[1], 4) : noteQuad(TEX.notes[nt.d], q.x, q.y, q.z, q.rot, q.tilt) }); }
     for (const p of PRIZESX) { const a = prizeAngle(p, t); if (a === null) continue; items.push({ d: depthOf(p.x, p.y, 10), fn: () => drawPrize(p, t, 'card'), prize: true }); }
-    items.push({ d: depthOf(CARDPOS.x, CARDPOS.y, 5), fn: () => M5 ? drawTarotCard(t) : drawTopCard(t), flat: (M5 ? cardPose5(t) : cardPose(t)).z < 6.5 });
+    items.push({ d: depthOf(CARDPOS.x, CARDPOS.y, 5), fn: () => M5 ? drawTarotCard(t) : MB ? drawCardB(t) : drawTopCard(t), flat: (M5 ? cardPose5(t) : MB ? cardPoseB(t) : cardPose(t)).z < 6.5 });
   }
-  const pp = M5 ? pawnPose5(t) : pawnPose(t);
+  const pp = MB ? dancePose(0, t) : M5 ? pawnPose5(t) : pawnPose(t);
+  if (MB) for (let i = 1; i < 6; i++) { const q = dancePose(i, t); items.push({ d: depthOf(q.x, q.y, q.z + 15), fn: () => { pawnShadow(g, q, 1); drawPawn(g, q, PCOL[i]); } }); }
   if (pp) items.push({ d: depthOf(pp.x, pp.y, pp.z + 15), pawn: true, fn: () => { pawnShadow(g, pp, 1 - .3 * wl); const k = 1 + .35 * wl; drawPawn(g, pp, [178 * k, 42 * k * 1.05, 34 * k]); } });
   // flat things first (z order), then the rest by depth
   const flats = items.filter((i) => i.flat).sort((a, b) => (a.z || 0) - (b.z || 0));
@@ -290,7 +299,7 @@ function renderFrame(t) {
   // (volumetric beam dropped: it smeared across the frame in low shots)
   if (t < 5.3) drawLid(t);
   // spotlight falloff: the rest of the table dims while the light is on
-  const s = !intro && !params.has("nodark") ? (M5 ? spotOn5(t) : spotOn(t)) : 0;
+  const s = !intro && !MB && !params.has("nodark") ? (M5 ? spotOn5(t) : spotOn(t)) : 0;
   if (s > 0) {
     const c = proj(SPOT.x, SPOT.y, 3); const rad = Math.max(260, CAM.f * 150 / Math.max(c[2], 50));
     const onScreen = c[0] > -400 && c[0] < W + 400 && c[1] > -400 && c[1] < H + 400 ? 1 : .35;
@@ -302,13 +311,30 @@ function renderFrame(t) {
   octx.setTransform(1, 0, 0, 1, 0, 0); octx.fillStyle = '#000'; octx.fillRect(0, 0, W, H);
   const rl = CAM.roll; const sc = 1 + Math.abs(Math.sin(rl)) * 1.2;
   octx.translate(W / 2, H / 2); octx.rotate(rl); octx.scale(sc, sc); octx.drawImage(SC, -W / 2, -H / 2); octx.setTransform(1, 0, 0, 1, 0, 0);
+  // the banknote break's last second, played back frame for frame (lands on the cross-stitch opening)
+  if (MB && t >= B1.play && PB.img) { octx.globalAlpha = smooth(lin(t, B1.play, 136.62)); octx.drawImage(PB.img, 0, 0, W, H); octx.globalAlpha = 1; }
+  if (MB && t >= 137.05 && PB.xs) { octx.globalAlpha = smooth(lin(t, 137.05, 137.45)); octx.drawImage(PB.xs, 0, 0, W, H); octx.globalAlpha = 1; }
+}
+const PB = { k: -1, img: null };
+async function loadPlayback(t) {
+  const k = clamp(Math.round(t * 24), 3272, 3299);
+  if (PB.k === k) return;
+  const src = (window.BREAK_FRAMES || {})[k]; if (!src) { console.error('missing break frame ' + k + ' (run node js/boardgame/capture.mjs)'); PB.img = null; return; }
+  const im = new Image(); im.src = src; await im.decode(); PB.img = im; PB.k = k;
+  if (!PB.xs && window.BREAK_FRAMES.xs0) { const x = new Image(); x.src = window.BREAK_FRAMES.xs0; await x.decode(); PB.xs = x; }
 }
 
 function grade(t) {
   const warm = M5 ? Math.max(window5(t), evening5(t)) : windowLight(t), dim = M5 ? 0 : smooth(lin(t, 43.6, 44.4)) * (1 - smooth(lin(t, 46.5, 47.3)));
   if (M5) {
     const ev = evening5(t);
-    if (ev > 0) { g.globalCompositeOperation = 'multiply'; g.fillStyle = `rgba(255,${200 - 40 * ev},${150 - 70 * ev},${.45 * ev})`; g.fillRect(0, 0, W, H); }
+    if (ev > 0) {
+      g.globalCompositeOperation = 'multiply'; g.fillStyle = `rgba(255,${200 - 40 * ev},${150 - 70 * ev},${.45 * ev})`; g.fillRect(0, 0, W, H);
+      // a small warm pool of lamplight stays on him while the rest of the table goes to evening
+      const pp = pawnPose5(t); if (pp) { const c = proj(pp.x, pp.y, pp.z + 10), r = Math.max(70, CAM.f * 85 / Math.max(c[2], 30));
+        g.globalCompositeOperation = 'source-over'; const vg = g.createRadialGradient(c[0], c[1], r * .5, c[0], c[1], r * 3.2); vg.addColorStop(0, 'rgba(15,8,2,0)'); vg.addColorStop(1, `rgba(15,8,2,${.5 * ev})`); g.fillStyle = vg; g.fillRect(0, 0, W, H);
+        g.globalCompositeOperation = 'screen'; const lg = g.createRadialGradient(c[0], c[1], 0, c[0], c[1], r * 1.4); lg.addColorStop(0, `rgba(255,190,110,${.32 * ev})`); lg.addColorStop(1, 'rgba(255,190,110,0)'); g.fillStyle = lg; g.fillRect(0, 0, W, H); }
+    }
   }
   g.globalCompositeOperation = 'soft-light'; g.fillStyle = `rgba(255,${170 + 20 * (1 - warm)},${100},${.18 + .3 * warm})`; g.fillRect(0, 0, W, H);
   if (dim > 0) { g.globalCompositeOperation = 'multiply'; g.fillStyle = `rgba(${200},${205},${225},${dim * .6})`; g.fillRect(0, 0, W, H); }
@@ -322,7 +348,10 @@ function grade(t) {
 
 buildArt(); buildExtras();
 const params = new URLSearchParams(location.search);
-window.__frameJPEG = (t, q = .93) => { renderFrame(t); return out.toDataURL('image/jpeg', q); };
+window.__frameJPEG = (t, q = .93) => {
+  if (t >= B1.play && t < B1.b) return loadPlayback(t).then(() => { renderFrame(t); return out.toDataURL('image/jpeg', q); });
+  renderFrame(t); return out.toDataURL('image/jpeg', q);
+};
 const EXT = {};
 window.__ready = (async () => {
   const src = window.EXT_TEX || {};
@@ -331,6 +360,7 @@ window.__ready = (async () => {
     const im = new Image(); im.src = src[k]; await im.decode();
     const c = mkCanvas(im.width, im.height), cg = c.getContext('2d');
     if (['wheel', 'hourglass', 'company', 'fool', 'star', 'back'].includes(k)) { cg.beginPath(); cg.roundRect(0, 0, im.width, im.height, im.width * 30 / 700); cg.clip(); }
+    if (k === 'mat') { cg.beginPath(); cg.roundRect(0, 0, im.width, im.height, im.width * 26 / 1640); cg.clip(); }
     cg.drawImage(im, 0, 0); EXT[k] = c;
   }
   return true;

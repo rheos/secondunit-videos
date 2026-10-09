@@ -144,7 +144,7 @@ let paperPat = null;
 
 // ---------- frame ----------
 const outC = document.getElementById('c'); outC.width = W; outC.height = H; const oc = outC.getContext('2d');
-function beginFrame() { K.under = []; K.over = []; K.screen = []; K.period = 6; K.warp = 2.2; K.rev = 1e9; K.revJit = 0; K.revDir = 0; K.fade = 1; K.ink = INK; K.tMul = 1; K.noVig = false; K.clip = null; beginTone(); }
+function beginFrame() { K.under = []; K.over = []; K.screen = []; K.period = 6; K.warp = 2.2; K.rev = 1e9; K.revJit = 0; K.revDir = 0; K.fade = 1; K.ink = INK; K.tMul = 1; K.noVig = false; K.clip = null; K.stretch = 1; beginTone(); }
 function present() {
   if (!paperPat) paperPat = oc.createPattern(paperTile, 'repeat');
   oc.setTransform(1, 0, 0, 1, 0, 0); oc.globalAlpha = 1; oc.filter = 'none';
@@ -158,6 +158,10 @@ function present() {
   for (const f of K.over) { oc.save(); oc.setTransform(...camT()); f(oc); oc.restore(); }
   for (const f of K.screen) { oc.save(); oc.setTransform(1, 0, 0, 1, 0, 0); f(oc); oc.restore(); }
   // a soft edge falloff, like a print under a lamp
+  if (K.stretch && Math.abs(K.stretch - 1) > 1e-4) { // horizontal stretch about the centre (matches a neighbouring look's framing)
+    if (!K.tmpC) K.tmpC = mk(W, H); const tg = K.tmpC.getContext('2d'); tg.setTransform(1, 0, 0, 1, 0, 0); tg.drawImage(outC, 0, 0);
+    oc.setTransform(K.stretch, 0, 0, 1, W / 2 * (1 - K.stretch), 0); oc.drawImage(K.tmpC, 0, 0); oc.setTransform(1, 0, 0, 1, 0, 0);
+  }
   if (K.noVig) return;
   oc.setTransform(1, 0, 0, 1, 0, 0);
   const vg = oc.createRadialGradient(W / 2, H / 2, H * .45, W / 2, H / 2, H * 1.05); vg.addColorStop(0, 'rgba(60,45,20,0)'); vg.addColorStop(1, 'rgba(60,45,20,.16)');
