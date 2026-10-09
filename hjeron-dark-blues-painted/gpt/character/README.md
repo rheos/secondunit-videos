@@ -67,6 +67,6 @@ walking; running; head front, three-quarter, profile; beside the Wyrd One for sc
 
 `wolfdog-sheet-6144.jpg` (6144x4096; lossless PNG in `secondunit/hjeron-darkblues-ref/`), 1536 copy
 `wolfdog-sheet.png`. His real dog: a medium, lean, pale cream husky-type wolfdog, upright ears, a darker cream
-saddle, a silver chain collar; ice-blue eyes are its only colour. Solid, no spirit effects. Views: sitting,
+saddle; no collar (Robin); ice-blue eyes are its only colour. Solid, no spirit effects. Views: sitting,
 standing side, front, back; walking; trotting; head front, three-quarter, profile; sitting at his feet (head about
 knee height). Codex GPT Image from his photo (`hand-headstock-wolfdog-real.webp`, cropped to the dog), Topaz 4x.
