@@ -201,3 +201,33 @@ function rope(a, b, sag = 22, seed = 1850) {
   const pts = []; for (let k = 0; k <= 8; k++) { const u = k / 8; pts.push([lerp(a[0], b[0], u), lerp(a[1], b[1], u) + Math.sin(Math.PI * u) * sag]); }
   pline(ap(I, rough(pts, seed, 1)), 3.4, seed, false);
 }
+
+// a Juno statuette: a slim gold figure, arms raised, on a little stepped base. (x, y) = ground under its base.
+function juno(x, y, s, rot, seed = 1900) {
+  const m = chain(T(x, y), Rm(rot), Sm(s));
+  part(m, rectP(-16, -10, 32, 10), { fill: 'black', seed: seed + 1, line: 2.2, smooth: false, step: 10 });
+  part(m, rectP(-11, -18, 22, 8), { fill: 'black', seed: seed + 2, line: 2, smooth: false, step: 8 });
+  // body tapering up, arms in a V, small head
+  part(m, [[-5, -18], [5, -18], [4, -46], [16, -78], [11, -80], [3, -56], [0, -60], [-3, -56], [-11, -80], [-16, -78], [-4, -46]], { fill: 'gold', seed: seed + 3, line: 2.2, smooth: false, step: 8, famp: 1 });
+  part(m, circ(0, -66, 5.5, 8), { fill: 'gold', seed: seed + 4, line: 2, famp: .6 });
+  lineP(m, [[-2, -40], [-3, -24]], 1.2, seed + 5, false);
+}
+// two or three statuettes on strings behind the piano, like cans behind a wedding car.
+// back: tie point on the piano; gx(i) -> [x, y, scale] for each on the ground; moving: clatter; hop: extra lift
+function junoTrail(back, gx, t, moving, hop = 0, seed = 1950, n = 3) {
+  const step = Math.floor(t * 8 + 1e-6);
+  for (let i = 0; i < n; i++) {
+    const [x, y, s] = gx(i);
+    const k = step + i * 3;
+    const rot = moving ? [.0, .5, -.4, 1.1, -.9, .25][k % 6] * (i % 2 ? -1 : 1) : [1.45, -1.4, 1.5][i];
+    const lift = (moving && k % 2 ? 9 + (i % 2) * 5 : 0) + hop * (1 - i * .15);
+    juno(x, y - lift * s, s, rot, seed + i * 10);
+    // string from the piano to the base of the statuette
+    const tie = ap1(chain(T(x, y - lift * s), Rm(rot), Sm(s)), 0, -14);
+    const pts = []; for (let k2 = 0; k2 <= 6; k2++) { const u = k2 / 6; pts.push([lerp(back[0], tie[0], u), lerp(back[1], tie[1], u) + Math.sin(Math.PI * u) * 10 * s]); }
+    pline(rough(pts, seed + i, .6), 1.8, seed + 5 + i, false);
+    // clank marks on the bounces
+    if (moving && k % 2) for (let c = 0; c < 3; c++) { const a = -1.9 + c * .5; lineP(I, [[x + Math.cos(a) * 22 * s, y - 10 * s + Math.sin(a) * 22 * s], [x + Math.cos(a) * 34 * s, y - 10 * s + Math.sin(a) * 34 * s]], 1.8, seed + 40 + c + i, false); }
+  }
+}
+const pianoBack = (x, y, s, tilt, hookDir = 1) => ap1(chain(T(x, y), Rm(tilt), Sm(s)), -hookDir * 80, -16);

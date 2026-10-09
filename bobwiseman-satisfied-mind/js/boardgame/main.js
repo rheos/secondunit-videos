@@ -135,6 +135,7 @@ function drawPrize(p, t, phase) {
   const st = TEX.st[p.k]; const w = st.w, h = st.h; const ar = a * DEG;
   let sw = null, dx = 0, dy = 0, dz = 0;
   if (M5) { const r = slideRest(t, p.sweep, p.seed * 13, p.x, p.y, 1.7); if (r) { sw = r; dx = r.x - p.x; dy = r.y - p.y; dz = r.y < -251 ? -3 : 0; } }
+  else if (p.k === 'mansion' && t >= p.sweep) { const u = lin(t, p.sweep, p.sweep + 1.6), e = 1 - Math.pow(1 - u, 2.2); sw = { done: u >= 1 }; dx = -40 * e; dy = (-335 - p.y) * e; dz = p.y + dy < -251 ? -3 : 0; }
   else { sw = sweepOffset(t, p.sweep, p.seed * 13, p.y); if (sw) { dx = sw.dx; dy = sw.dy; dz = sw.dz + (p.y + sw.dy < -251 ? -3 : 0); if (dz < -500) return; } }
   const x = p.x + dx, y = p.y + dy, z0 = 3 + dz + (a > 85 ? .3 : 0);
   if (phase === 'shadow') {
@@ -147,6 +148,7 @@ function drawPrize(p, t, phase) {
   const TL = [x - w / 2, y + h * Math.sin(ar), z0 + h * Math.cos(ar)], TR = [x + w / 2, y + h * Math.sin(ar), z0 + h * Math.cos(ar)], BLq = [x - w / 2, y, z0];
   if (quadFacing(TL, TR, BLq)) {
     drawQuad(g, st.tex, TL, TR, BLq, 3, 3);
+    if (!M5 && !MB && p.k === 'mansion') { const ch = charLevel(t); if (ch > 0) { g.globalAlpha = ch; drawQuad(g, TEX.mansionChar, TL, TR, BLq, 3, 3); g.globalAlpha = 1; } }
     // a little light falloff toward the bottom of the card when standing
     if (a < 60) { g.globalAlpha = .12; drawQuad(g, st.sh, TL, TR, BLq, 1, 1); g.globalAlpha = 1; }
   } else { g.globalAlpha = .9; drawQuad(g, silhouette ? st.sh : st.sh, TR, TL, [TR[0], BLq[1], BLq[2]], 2, 2); g.globalAlpha = 1; }
@@ -154,6 +156,31 @@ function drawPrize(p, t, phase) {
     fillQuad(g, [[x - 9, y - 4, 9], [x + 9, y - 4, 9], [x + 9, y - 4, 3], [x - 9, y - 4, 3]], '#26272b');
     fillQuad(g, [[x - 9, y - 4, 9], [x + 9, y - 4, 9], [x + 9, y + 4, 9], [x - 9, y + 4, 9]], '#4a4c52');
   }
+  // verse 1: printed cardboard flames pop up on the house and swap shapes to flicker
+  if (!M5 && !MB && p.k === 'mansion' && !sw) {
+    const fl = fireLevel(t); if (fl <= 0) return;
+    const ca = Math.cos(ar), sa = Math.sin(ar);
+    FLAMES.forEach(([fx, hz, sc, tp], k) => {
+      if (t < tp) return;
+      const u = (t - tp) / .32, pop = u < 1 ? 1 - Math.pow(1 - u, 2) * Math.cos(u * 8) : 1 + .04 * Math.sin((t - tp) * 13 + k);
+      const s = sc * clamp(pop, 0, 1.25) * fl; if (s <= .02) return;
+      const tex = TEX.flames[(Math.floor(t * 9 + k * 1.7) + k) % 3];
+      const fw = tex.w * s, fh = tex.h * s, bx = x + fx, by = y - 1.2 + hz * sa, bz = z0 + hz * ca;
+      const lean = .12 * Math.sin(t * 7 + k * 2);
+      const top = [bx + fh * lean, by + fh * sa, bz + fh * ca];
+      drawQuad(g, tex.tex, [top[0] - fw / 2, top[1], top[2]], [top[0] + fw / 2, top[1], top[2]], [bx - fw / 2, by, bz], 2, 2);
+    });
+  }
+}
+function drawSmoke(t, k) {
+  const sm = SMOKE[k], age = t - sm.t0, life = 2.3; if (age < 0 || age > life) return;
+  const p = PRIZES[0], a = prizeAngle(p, t) || 0, ar = a * DEG, hz = 52 * Math.cos(ar);
+  const u = age / life, s = sm.s * (.5 + u * 1.1) * (1 - smooth(lin(u, .7, 1)) * .4);
+  const tex = TEX.smoke[sm.i], w = tex.w * s, h = tex.h * s;
+  const x = p.x + sm.dx * .4 + sm.drift * u, y = p.y + 6 + 30 * u, z = 3 + hz + 70 * u;
+  g.globalAlpha = .85 * (1 - smooth(lin(u, .55, 1)));
+  drawQuad(g, tex.tex, [x - w / 2, y, z + h], [x + w / 2, y, z + h], [x - w / 2, y, z], 2, 2);
+  g.globalAlpha = 1;
 }
 
 function drawCardStack(t) {
@@ -319,6 +346,7 @@ function renderFrame(t) {
     items.push({ d: depthOf(CARDPOS.x, CARDPOS.y, 5), fn: () => M5 ? drawTarotCard(t) : MB ? drawCardB(t) : drawTopCard(t), flat: (M5 ? cardPose5(t) : MB ? cardPoseB(t) : cardPose(t)).z < 6.5 });
   }
   const pp = MB ? dancePose(0, t) : M5 ? pawnPose5(t) : pawnPose(t);
+  if (!M5 && !MB && t > 36.3 && t < 45) SMOKE.forEach((sm, k) => { if (t >= sm.t0 && t < sm.t0 + 2.3) items.push({ d: depthOf(PRIZES[0].x, PRIZES[0].y + 10, 60) + 2, fn: () => drawSmoke(t, k) }); });
   if (M5 && pp) { const ps = pianoState(t); if (ps) { items.push({ d: depthOf(ps.x, ps.y, 15), fn: () => drawPiano(ps) }); items.push({ d: depthOf((ps.x + pp.x) / 2, (ps.y + pp.y) / 2, 10) + 1, fn: () => drawRope(pp, ps) }); } }
   if (MB) for (let i = 1; i < 6; i++) { const q = dancePose(i, t); items.push({ d: depthOf(q.x, q.y, q.z + 15), fn: () => { pawnShadow(g, q, 1); drawPawn(g, q, PCOL[i]); } }); }
   if (pp) items.push({ d: depthOf(pp.x, pp.y, pp.z + 15), pawn: true, fn: () => { pawnShadow(g, pp, 1 - .3 * wl); const k = 1 + .35 * wl; drawPawn(g, pp, [178 * k, 42 * k * 1.05, 34 * k]); } });

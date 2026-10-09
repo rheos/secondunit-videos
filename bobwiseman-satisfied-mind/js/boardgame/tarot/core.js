@@ -19,7 +19,7 @@ function mkCanvas(w = W, h = H) { const c = document.createElement('canvas'); c.
 const COL = {
   red: '#c8392b', yellow: '#eab52e', blue: '#4f7dbd', navy: '#22408a', flesh: '#f1c29a',
   green: '#5c9a4f', white: '#ffffff', ink: '#1a1410', pale: '#cfe0ee', brown: '#a8673a',
-  black: '#2e2733', purple: '#6c4188', ghost: '#f6efe6', plum: '#5a1f3c', grey: '#9a9692', orange: '#e57f2c',
+  black: '#2e2733', gold: '#d6a632', purple: '#6c4188', ghost: '#f6efe6', plum: '#5a1f3c', grey: '#9a9692', orange: '#e57f2c',
 };
 const FONT = '"Big Caslon", "Times New Roman", serif';
 
