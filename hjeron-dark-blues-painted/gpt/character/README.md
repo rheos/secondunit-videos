@@ -5,7 +5,8 @@ pass from the original references (v7 as the design guide, his scratchboard pict
 amulet close-up, his hair photo; `prompt-sheet-final.txt`), so none of the edit-on-edit softening of v1-v7
 carries over, then upscaled 4x with Topaz High Fidelity V2 on Fal (~$0.25). The lossless PNG is local in
 `secondunit/hjeron-darkblues-ref/`. `wyrd-one-scratchboard-sheet-LOCKED.png` is the same sheet at 1536x1024 for
-prompting.
+prompting. 2026-10-09: the eye turned white by a direct pixel edit (orange pixels around the eye only), so
+no regeneration and no quality loss.
 
 Earlier: `wyrd-one-scratchboard-sheet-LOCKED.png` was the character reference for the scratchboard version of
 "dream of fire". Robin locked it on 2026-10-07. Every new pose, plate or close-up starts from it.
@@ -29,7 +30,7 @@ in `prompt-sheet-v1.txt` to `prompt-sheet-v4.txt`.
 What it fixes about him: string veil over the face only, a dense curtain of black cord fringe (strings, not beads), never a face; long dark wavy hair, never
 dreadlocks; wide black hat with a braided band; long open duster over a vest with a shredded
 ankle-length hem; the green beaded rosette amulet with its fringe; black Les Paul with cream binding;
-one ember eye at most, on the viewer's right. The amulet is the only colour: muted green.
+one glowing eye at most, on the viewer's right, WHITE (Hjeron, 2026-10-09; it was orange). The amulet is the only colour: muted green.
 
 Still open: the rendering is grey-toned. Hjeron's reference is pure two-tone (white scratches on
 black); a style pass on this sheet comes next if wanted.
