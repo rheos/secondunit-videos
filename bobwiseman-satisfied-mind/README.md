@@ -4,6 +4,7 @@ Bob asked for this one next (2026-10-08). Issue: rheos/secondunit-videos#83.
 
 - Song: "Satisfied Mind" (Joe "Red" Hayes / Jack Rhodes, 1954), Bob's 2026 recording (Indie Pool, YouTube yiGJlWxSHNU, released 2026-09-18).
 - Clock: `source/satisfied-mind-2026.wav`, 48 kHz stereo, 341.240 s, sha256 `7bfd0fa4f370b48248fbcca9ec30da8cedd5dea844b8fb4f4ea16eabed0875b1`. 24 fps grid, 8190 song frames. From the YouTube audio stream; ask Bob for the WAV.
+- Stems: Demucs htdemucs_6s in `source/stems/` (vocals stem for snapping hits to syllable onsets).
 - Whisper medium words in `source/words-whisper-medium.json` (timing only; it mishears several lines). Words come from Bob's text in `source/satisfied-mind.lyrics.txt`.
 - Audio, stems, lyrics and anything quoting them stay out of git.
 
