@@ -35,3 +35,15 @@ one glowing eye at most, on the viewer's right, WHITE (Hjeron, 2026-10-09; it wa
 
 Still open: the rendering is grey-toned. Hjeron's reference is pure two-tone (white scratches on
 black); a style pass on this sheet comes next if wanted.
+
+## Guitar prop sheet (2026-10-09, awaiting Robin's review)
+
+`wyrd-one-guitar-sheet-6144.jpg` (6144x4096; lossless PNG local in `secondunit/hjeron-darkblues-ref/`) and the
+1536 `wyrd-one-guitar-sheet.png`. Every later style board copies the guitar from it. Front, back and side; a
+headstock close-up (the white howling antlered wolf only, no ring, no wordmark; gold split-diamond inlays; gold
+tuners; cream binding); the body (matte black single-cut, cream binding, black pickups, white block inlays); and
+how he holds it (right-handed, body at his right hip, neck to the viewer's right, strap over his left shoulder,
+black nails with the middle nail gold). Colour allowed: the gold tuners and diamond inlays, the gold middle nail,
+the green amulet. Made with Codex from his headstock and guitar photos (cropped to the guitar, no face), the
+MythMaker wolf (wolf only) and the locked sheet; the gold nail was painted in by hand; Topaz 4x on Fal.
+The bridge and tailpiece came out gold too, as on his real guitar; left for Robin to decide.

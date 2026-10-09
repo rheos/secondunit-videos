@@ -1,0 +1,19 @@
+Use your image_generation tool exactly once, with the four attached images as references (in the order given below), at the highest quality and largest landscape size the tool allows. Pass the image prompt below VERBATIM, do not rewrite or embellish it. Then copy the generated file into the current folder as wyrd_guitar_sheet_raw.png. Do nothing else.
+
+IMAGE PROMPT:
+A clean prop model sheet of ONE electric guitar, the black Les Paul of The Wyrd One, drawn fresh and crisp. Wide 3:2, plain solid black background.
+
+Attached references, in order:
+1. ref_sheet.png: the STYLE and the character. Draw everything in exactly this two-tone scratchboard look: crisp white scraped lines and fine stippling on solid black. The guitar must look like the same guitar he holds in this sheet.
+2. ref_headstock.png: the real headstock. Copy its shape and layout: a black headstock with cream binding, three gold tuners on each side, a white howling wolf inlay at the top, and below it gold split-diamond inlays (long thin pointed diamond shapes in a fan).
+3. ref_guitar.png: the real guitar body and neck: a matte black single-cut body, cream binding round the body and the neck, two black pickups, white block inlays on a dark fretboard, black control knobs.
+4. ref_wolf.png: the WOLF only. The headstock inlay is this howling wolf with antlers and a long curling tail, sitting, head thrown back; white. Copy only the wolf: no ring, no circle, no border, no lettering.
+
+Layout:
+- Top row: the whole guitar three times, upright and the same size: front, back (plain black back with the cream binding edge) and side (thin edge-on view).
+- Bottom left: a large close-up of the headstock: the white antlered howling wolf at the top, the gold split-diamond inlays below it, the gold tuners, the cream binding. No logo, no signature, no text.
+- Bottom middle: a close-up of the body: the single cutaway, the black pickups, the cream binding, the knobs, the block inlays at the end of the fretboard.
+- Bottom right: how he holds it: The Wyrd One from the chest down to the hips, as in the first reference (dark duster, fingerless black leather gloves, a dense black cord-fringe veil just visible at the top), playing it right-handed: the body at his right hip, the neck rising to the viewer's right, the strap over his left shoulder, his fretting hand on the neck. The bare fingertips past the gloves show black nail polish, and the middle finger's nail is gold.
+
+Colour: everything is white scratches on black EXCEPT these, in muted real colour: the gold tuners and the gold split-diamond inlays (muted gold), and the gold middle-finger nail. The green beaded amulet may show at the top of the holding view. Nothing else has colour.
+No text, no labels, no letters, no signature anywhere.
