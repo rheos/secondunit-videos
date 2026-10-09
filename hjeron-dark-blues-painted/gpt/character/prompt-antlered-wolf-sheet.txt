@@ -1,10 +1,14 @@
-Use your image_generation tool exactly once, with the two attached images as references, at the highest quality and largest landscape size the tool allows. Pass the image prompt below VERBATIM, do not rewrite or embellish it. Then copy the generated file into the current folder as wolf_sheet_raw.png. Do nothing else.
+Use your image_generation tool exactly once, with the three attached images as references, at the highest quality and largest landscape size the tool allows. Pass the image prompt below VERBATIM, do not rewrite or embellish it. Then copy the generated file into the current folder as wolf2_raw.png. Do nothing else.
 
 IMAGE PROMPT:
-A character model sheet of THE ANTLERED WOLF, a spirit wolf that appears in visions. Wide 3:2, plain solid black background. Draw it in exactly the same two-tone scratchboard rendering as the second attached image (white scraped lines and fine stippling on solid black), so it belongs on the same set as that character sheet.
-The wolf's design is exactly the one in the first attached image: a lean pure-white wolf, two slender antlers sweeping back from its head, and a huge crescent-shaped tail. ICE-BLUE glowing eyes are its only colour.
-Spirit treatment: its body is solid and clearly drawn, but its edges dissolve into thin wisps of white smoke, mostly trailing from the tail tip, the antler tips and the paws, with a very faint cold glow around the outline.
+A character model sheet of THE ANTLERED WOLF, a spirit wolf. Wide 3:2, plain solid black background, drawn in exactly the same two-tone scratchboard rendering as the third attached image (white scraped lines and fine stippling on solid black).
+The design is EXACTLY the creature in the first attached image (front view), and it is the same creature as in the second attached image (seen howling side-on). Match it in every view:
+- ANTLERS: two slender, smooth, silver-grey antlers rising almost straight up from between the ears, curving gently outward, each with ONE small tine near the base pointing forward and up. Not big branched deer antlers, not long swept-back horns. When the head tips up to howl they lie back along the neck, the same antler seen side-on.
+- HEAD AND BODY: slim and fox-like; very large pointed ears with dark inner edges; a narrow muzzle; a black nose; almond-shaped ICE-BLUE eyes with a dark rim; a thick white ruff on the chest; long thin legs.
+- TAIL: ONE big, bushy, crescent-shaped tail, the SAME shape in every view, curling up at its side like the second image.
+- Pure white fur. The ice-blue eyes are its only colour.
+- Spirit treatment: a solid, clearly drawn body whose outer edges dissolve into thin wisps of white smoke at the tail tip, antler tips and paws, with a very faint cold glow.
 Layout:
-- Top row: four full-body views: sitting and howling with its muzzle pointed straight up, exactly the pose of the first image, its crescent tail sweeping up behind it; standing side view; standing front view; standing back view.
-- Bottom row: walking (side view, mid-stride); running (side view, full gallop, tail streaming); three head close-ups: front, three-quarter, profile, each showing the antlers and the ice-blue eyes; and a small scale view of the wolf standing beside a tall man in a wide black hat and long black coat (seen from behind, as a dark silhouette), the wolf's back reaching about his hip.
-No text, no labels, no signature, no colour except the ice-blue eyes.
+- Top row: sitting upright front view (exactly the first image's pose); sitting and howling side view (exactly the second image's pose, muzzle straight up, crescent tail sweeping up behind); standing side view; standing back view.
+- Bottom row: walking (side view); running (side view, tail streaming); three head close-ups: front, three-quarter, profile; and a small scale view of it standing beside a tall man in a wide black hat and long black coat seen from behind as a dark silhouette, its back reaching about his hip.
+No key, no objects. No text, no labels, no signature. No colour except the ice-blue eyes.
