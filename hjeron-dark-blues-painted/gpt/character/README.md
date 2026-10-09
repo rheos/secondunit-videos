@@ -62,3 +62,11 @@ logo (`antlered-wolf-clean.webp`): pure white, two swept antlers, the crescent t
 colour. Spirit treatment (proposed): a solid body whose edges dissolve into wisps of white smoke (tail tip, antler
 tips, paws) with a faint cold glow. Views: the logo howl (the logo itself mapped in), standing side, front, back;
 walking; running; head front, three-quarter, profile; beside the Wyrd One for scale. Codex GPT Image, Topaz 4x.
+
+## The wolfdog sheet (2026-10-09, awaiting Robin's review)
+
+`wolfdog-sheet-6144.jpg` (6144x4096; lossless PNG in `secondunit/hjeron-darkblues-ref/`), 1536 copy
+`wolfdog-sheet.png`. His real dog: a medium, lean, pale cream husky-type wolfdog, upright ears, a darker cream
+saddle, a silver chain collar; ice-blue eyes are its only colour. Solid, no spirit effects. Views: sitting,
+standing side, front, back; walking; trotting; head front, three-quarter, profile; sitting at his feet (head about
+knee height). Codex GPT Image from his photo (`hand-headstock-wolfdog-real.webp`, cropped to the dog), Topaz 4x.

@@ -1,0 +1,9 @@
+Use your image_generation tool exactly once, with the two attached images as references, at the highest quality and largest landscape size the tool allows. Pass the image prompt below VERBATIM, do not rewrite or embellish it. Then copy the generated file into the current folder as dog_sheet_raw.png. Do nothing else.
+
+IMAGE PROMPT:
+A character model sheet of THE WYRD ONE'S WOLFDOG, his real dog and companion on the road. Wide 3:2, plain solid black background. Draw it in exactly the same two-tone scratchboard rendering as the second attached image (white scraped lines and fine stippling on solid black), so it belongs on the same set.
+The dog is exactly the one in the first attached photo: a medium-size, lean, pale cream husky-type wolfdog with upright pointed ears, a pale face with a darker cream saddle on the back, ICE-BLUE eyes, and a silver chain collar. A real, solid animal: no smoke, no glow. Its ice-blue eyes are its only colour.
+Layout:
+- Top row: four full-body views: sitting calmly (front three-quarter); standing side view; standing front view; standing back view.
+- Bottom row: walking (side view, mid-stride); running (side view, trotting fast); three head close-ups: front, three-quarter, profile, showing the ice-blue eyes and the chain collar; sitting at the feet of a tall man in a wide black hat and long black coat (the man as a dark silhouette from the knees down to the boots), the dog's head reaching about his knee, looking up.
+No text, no labels, no signature, no colour except the ice-blue eyes.
