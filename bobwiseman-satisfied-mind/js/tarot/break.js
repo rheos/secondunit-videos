@@ -93,12 +93,12 @@ function strokeStitch(g, p, col, alpha = 1) {
 
 // ---------- the 24 border motifs: when each turns over (on the piano/organ onsets 200.6-203.4) ----------
 const SEGS = Object.keys(SSEG).map(Number).sort((a, b) => ((a - 54 + 72) % 72) - ((b - 54 + 72) % 72)); // clockwise from the top
-const FLIPS = (() => { const on = onsIn(200.55, 203.42).map((o) => o[0]), out = {}; SEGS.forEach((sg, k) => { out[sg] = on[Math.min(on.length - 1, Math.floor(k * on.length / SEGS.length))] + (k % 2) * .07; }); return out; })();
+const FLIPS = (() => { const on = onsIn(201.3, 203.42).map((o) => o[0]), out = {}; SEGS.forEach((sg, k) => { out[sg] = on[Math.min(on.length - 1, Math.floor(k * on.length / SEGS.length))] + (k % 2) * .07; }); return out; })();
 const RISE = (() => { const on = onsIn(203.45, 204.62).map((o) => o[0]), out = {}; SEGS.forEach((sg, k) => { out[sg] = on[Math.floor(k * on.length / SEGS.length)] + (k % 3) * .045; }); return out; })();
 const RING = 43.9, CW = 5.6, CH = 9.6; // card size on the sampler, in stitch cells
 
 // 198.0 is crossstitch's last frame (y -5, 6.8 px per cell); push in on the CHANCE card, ease back out for the ring
-const SCAM = [[198.0, 0, -5, 6.8], [198.3, 0, -4, 7.0], [199.45, 0, 4, 14.6], [200.3, 0, 4, 15.4], [201.05, 0, 0, 9.8], [203.4, 0, 0, 10.6]];
+const SCAM = [[198.0, 0, -5, 6.8], [198.3, 0, -4, 7.0], [199.45, 0, 4, 21.0], [200.95, 0, 4, 22.0], [201.65, 0, 0, 9.8], [203.4, 0, 0, 10.6]];
 function samplerCam(t) {
   let i = SCAM.findIndex((k) => k[0] > t); if (i < 0) i = SCAM.length - 1; if (i === 0) i = 1;
   const a = SCAM[i - 1], b = SCAM[i], u = smooth(clamp((t - a[0]) / (b[0] - a[0])));

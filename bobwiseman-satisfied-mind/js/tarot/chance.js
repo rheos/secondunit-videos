@@ -47,16 +47,19 @@ function buildChance() {
   }, 21);
   const front = bgPrint(w, h, '#f1e7cd', [{ name: 'orange', color: BG_INK.orange, off: [0, 0] }, { name: 'red', color: BG_INK.red, off: [3, -2] }, { name: 'black', color: BG_INK.black, off: [-3, 2] }], (g, ink) => {
     if (ink === 'orange') { g.fillRect(M(4), M(4), w - M(8), M(12)); g.globalCompositeOperation = 'destination-out'; bgFitText(g, 'CHANCE', M(45), M(10), M(44), M(7.5), BG_FONT.slab, 'bold'); g.globalCompositeOperation = 'source-over'; }
-    // Bob's wording, fitted in the organ card's headline box (76 x 13 mm on a 90 mm card), centred in the space below the band
-    if (ink === 'red') bgFitText(g, 'BETTER SOLO', M(45), M(36), M(76), M(13), BG_FONT.clar, '900');
-    if (ink === 'black') { g.lineWidth = M(.6); g.strokeRect(M(4), M(4), w - M(8), h - M(8)); }
+    // Bob's wording (2026-10-09), laid out like the ORGAN SOLO card: headline in red, one small-print line in black
+    if (ink === 'red') bgFitText(g, 'DO NOT PASS GO', M(45), M(30), M(76), M(12), BG_FONT.clar, '900');
+    if (ink === 'black') {
+      g.lineWidth = M(.6); g.strokeRect(M(4), M(4), w - M(8), h - M(8));
+      bgFitText(g, 'Repeat instrumental until next verse starts.', M(45), M(46.5), M(72), M(5.2), BG_FONT.slab, 'bold');
+    }
   }, 24);
   const bad = CHANCE_FIT.filter((f) => !f.ok); if (bad.length) console.error('chance text overflow', JSON.stringify(bad));
   CHANCE = { back, front };
 }
 // pose on the sampler (stitch cells): drops in, lands, lifts and flips on the 199.44 piano note, then slides away
 function chancePose(t) {
-  if (t >= 200.75) return null;
+  if (t >= 201.45) return null;
   const land = 198.62;
   let x = 0, y = 4, rot = -.05, sc = 1, fx = 1, face = false, lift = 0;
   if (t < land) { const u = smooth(lin(t, 198.0, land)); sc = lerp(1.9, 1, u); x = lerp(40, 0, u); y = lerp(-175, 4, u); rot = lerp(.6, -.05, u); lift = (1 - u) * 6; }
@@ -64,7 +67,7 @@ function chancePose(t) {
   const f = lin(t, 199.0, 199.438);
   if (f > 0) { fx = Math.cos(Math.PI * f); face = f >= .5; sc *= 1 + .1 * Math.sin(Math.PI * f); lift = 1.6 * Math.sin(Math.PI * f); if (t >= 199.438) { fx = 1; face = true; } }
   if (t >= 199.438 && t < 199.6) sc *= 1 + .02 * Math.sin(Math.PI * (t - 199.438) / .16);
-  const e = smooth(lin(t, 200.3, 200.72)); x += e * 95; y -= e * 18; rot += e * .35;
+  const e = smooth(lin(t, 200.98, 201.4)); x += e * 95; y -= e * 18; rot += e * .35;
   return { x, y, rot, sc, fx, face, lift };
 }
 function drawChance(g, t) {
