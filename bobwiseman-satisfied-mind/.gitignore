@@ -1,0 +1,10 @@
+source/
+work/
+out/
+output/
+tmp/
+node_modules
+STORYBOARD.md
+_in/
+*.lyrics.txt
+assets/song.wav
