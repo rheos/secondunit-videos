@@ -1,0 +1,10 @@
+Use your image_generation tool exactly once, with the two attached images as references, at the highest quality and largest landscape size the tool allows. Pass the image prompt below VERBATIM, do not rewrite or embellish it. Then copy the generated file into the current folder as wolf_sheet_raw.png. Do nothing else.
+
+IMAGE PROMPT:
+A character model sheet of THE ANTLERED WOLF, a spirit wolf that appears in visions. Wide 3:2, plain solid black background. Draw it in exactly the same two-tone scratchboard rendering as the second attached image (white scraped lines and fine stippling on solid black), so it belongs on the same set as that character sheet.
+The wolf's design is exactly the one in the first attached image: a lean pure-white wolf, two slender antlers sweeping back from its head, and a huge crescent-shaped tail. ICE-BLUE glowing eyes are its only colour.
+Spirit treatment: its body is solid and clearly drawn, but its edges dissolve into thin wisps of white smoke, mostly trailing from the tail tip, the antler tips and the paws, with a very faint cold glow around the outline.
+Layout:
+- Top row: four full-body views: sitting and howling with its muzzle pointed straight up, exactly the pose of the first image, its crescent tail sweeping up behind it; standing side view; standing front view; standing back view.
+- Bottom row: walking (side view, mid-stride); running (side view, full gallop, tail streaming); three head close-ups: front, three-quarter, profile, each showing the antlers and the ice-blue eyes; and a small scale view of the wolf standing beside a tall man in a wide black hat and long black coat (seen from behind, as a dark silhouette), the wolf's back reaching about his hip.
+No text, no labels, no signature, no colour except the ice-blue eyes.

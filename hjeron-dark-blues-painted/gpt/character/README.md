@@ -53,3 +53,12 @@ The bridge and tailpiece came out gold too, as on his real guitar; left for Robi
 shoulder to his right hip, headstock past his left side on the viewer's left, a glimpse of the body at his
 right hip). The back view's guitar hangs upside down, as when swung round to the back on its strap, and is
 the guitar sheet's front view mapped (rotated, not mirrored).
+
+## The Antlered Wolf (spirit wolf) sheet (2026-10-09, awaiting Robin's review)
+
+`antlered-wolf-sheet-6144.jpg` (6144x4096; lossless PNG in `secondunit/hjeron-darkblues-ref/`), 1536 copy
+`antlered-wolf-sheet.png`. A spirit that appears in visions, separate from his real wolfdog. Design from Hjeron's
+logo (`antlered-wolf-clean.webp`): pure white, two swept antlers, the crescent tail; ice-blue eyes are its only
+colour. Spirit treatment (proposed): a solid body whose edges dissolve into wisps of white smoke (tail tip, antler
+tips, paws) with a faint cold glow. Views: the logo howl (the logo itself mapped in), standing side, front, back;
+walking; running; head front, three-quarter, profile; beside the Wyrd One for scale. Codex GPT Image, Topaz 4x.
