@@ -42,18 +42,51 @@ function drawGround(g, img, x0, x1, y0, y1, zp, o = {}) {
 }
 
 // textured quad through world points: TL, TR, BL are the texture's top-left, top-right, bottom-left corners
+// Textured quad through world points: TL, TR, BL are the texture's top-left, top-right, bottom-left corners.
+// Seamless: the quad is cut into a grid sized from its projected size and perspective (finer when close and steep),
+// each cell into two triangles, and every triangle gets the exact affine map of its own three projected corners,
+// so neighbouring triangles agree along shared edges. Each is clipped to itself grown by ~0.7 px (no hairline gaps).
+// Nearly affine quads (small depth range) are drawn in one exact piece.
 function drawQuad(g, img, TL, TR, BL, n = 6, m = 6, sub) {
   const sx0 = sub ? sub[0] : 0, sy0 = sub ? sub[1] : 0, sw = sub ? sub[2] : img.width, sh = sub ? sub[3] : img.height;
+  const BR = [TR[0] + BL[0] - TL[0], TR[1] + BL[1] - TL[1], TR[2] + BL[2] - TL[2]];
+  const c4 = [TL, TR, BL, BR].map((w) => proj(w[0], w[1], w[2]));
+  const dmin = Math.min(...c4.map((p) => p[2])), dmax = Math.max(...c4.map((p) => p[2]));
+  if (dmax < 15) return;
+  const L = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1]);
+  if (dmin >= 15 && dmax / dmin < 1.012) {
+    const [p00, p10, p01] = c4;
+    g.setTransform((p10[0] - p00[0]) / sw, (p10[1] - p00[1]) / sw, (p01[0] - p00[0]) / sh, (p01[1] - p00[1]) / sh, p00[0], p00[1]);
+    g.drawImage(img, sx0, sy0, sw, sh, 0, 0, sw, sh); g.setTransform(1, 0, 0, 1, 0, 0); return;
+  }
+  const persp = clamp((dmax / Math.max(dmin, 15) - 1) * 6, .25, 1);
+  const su = Math.max(L(c4[0], c4[1]), L(c4[2], c4[3])), sv = Math.max(L(c4[0], c4[2]), L(c4[1], c4[3]));
+  n = Math.max(2, Math.min(32, Math.ceil(su / 28 * persp))); m = Math.max(2, Math.min(32, Math.ceil(sv / 28 * persp)));
   const P = (u, v) => [TL[0] + (TR[0] - TL[0]) * u + (BL[0] - TL[0]) * v, TL[1] + (TR[1] - TL[1]) * u + (BL[1] - TL[1]) * v, TL[2] + (TR[2] - TL[2]) * u + (BL[2] - TL[2]) * v];
   const pts = [];
   for (let j = 0; j <= m; j++) { const row = []; for (let i = 0; i <= n; i++) { const w = P(i / n, j / m); row.push(proj(w[0], w[1], w[2])); } pts.push(row); }
   const cw = sw / n, ch = sh / m;
+  const tri = (d0, d1, d2, s0, s1, s2, bx, by, bw, bh) => {
+    // affine taking source (texture px) to screen
+    const ux = s1[0] - s0[0], uy = s1[1] - s0[1], vx = s2[0] - s0[0], vy = s2[1] - s0[1], det = ux * vy - vx * uy; if (Math.abs(det) < 1e-9) return;
+    const ax = d1[0] - d0[0], ay = d1[1] - d0[1], bx2 = d2[0] - d0[0], by2 = d2[1] - d0[1];
+    const a = (ax * vy - bx2 * uy) / det, b = (ay * vy - by2 * uy) / det, c = (bx2 * ux - ax * vx) / det, d = (by2 * ux - ay * vx) / det;
+    const e = d0[0] - a * s0[0] - c * s0[1], f = d0[1] - b * s0[0] - d * s0[1];
+    const cx = (d0[0] + d1[0] + d2[0]) / 3, cy = (d0[1] + d1[1] + d2[1]) / 3;
+    const grow = (p) => { const dx = p[0] - cx, dy = p[1] - cy, l = Math.hypot(dx, dy) || 1; return [p[0] + dx / l * .75, p[1] + dy / l * .75]; };
+    const q0 = grow(d0), q1 = grow(d1), q2 = grow(d2);
+    g.save(); g.setTransform(1, 0, 0, 1, 0, 0); g.beginPath(); g.moveTo(q0[0], q0[1]); g.lineTo(q1[0], q1[1]); g.lineTo(q2[0], q2[1]); g.closePath(); g.clip();
+    g.setTransform(a, b, c, d, e, f);
+    const x0 = Math.max(0, bx - 2), y0 = Math.max(0, by - 2), x1 = Math.min(img.width, bx + bw + 2), y1 = Math.min(img.height, by + bh + 2);
+    g.drawImage(img, x0, y0, x1 - x0, y1 - y0, x0, y0, x1 - x0, y1 - y0);
+    g.restore();
+  };
   for (let j = 0; j < m; j++) for (let i = 0; i < n; i++) {
-    const p00 = pts[j][i], p10 = pts[j][i + 1], p01 = pts[j + 1][i];
-    if (p00[2] < 15 || p10[2] < 15 || p01[2] < 15 || pts[j + 1][i + 1][2] < 15) continue;
-    g.setTransform((p10[0] - p00[0]) / cw, (p10[1] - p00[1]) / cw, (p01[0] - p00[0]) / ch, (p01[1] - p00[1]) / ch, p00[0], p00[1]);
-    const ov = 1.2;
-    g.drawImage(img, sx0 + i * cw, sy0 + j * ch, Math.min(cw + ov, sw - i * cw), Math.min(ch + ov, sh - j * ch), 0, 0, Math.min(cw + ov, sw - i * cw), Math.min(ch + ov, sh - j * ch));
+    const p00 = pts[j][i], p10 = pts[j][i + 1], p01 = pts[j + 1][i], p11 = pts[j + 1][i + 1];
+    if (p00[2] < 15 || p10[2] < 15 || p01[2] < 15 || p11[2] < 15) continue;
+    const s00 = [sx0 + i * cw, sy0 + j * ch], s10 = [s00[0] + cw, s00[1]], s01 = [s00[0], s00[1] + ch], s11 = [s00[0] + cw, s00[1] + ch];
+    tri(p00, p10, p01, s00, s10, s01, s00[0], s00[1], cw, ch);
+    tri(p10, p11, p01, s10, s11, s01, s00[0], s00[1], cw, ch);
   }
   g.setTransform(1, 0, 0, 1, 0, 0);
 }
