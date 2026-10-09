@@ -47,3 +47,9 @@ black nails with the middle nail gold). Colour allowed: the gold tuners and diam
 the green amulet. Made with Codex from his headstock and guitar photos (cropped to the guitar, no face), the
 MythMaker wolf (wolf only) and the locked sheet; the gold nail was painted in by hand; Topaz 4x on Fal.
 The bridge and tailpiece came out gold too, as on his real guitar; left for Robin to decide.
+
+2026-10-09: the sheet is now 7728x4096 (the "6144" file name is kept so links don't break; the LOCKED copy is
+1932x1024). A fifth top-row view was added on the right: from behind while playing (strap from his left
+shoulder to his right hip, headstock past his left side on the viewer's left, a glimpse of the body at his
+right hip). The back view's guitar hangs upside down, as when swung round to the back on its strap, and is
+the guitar sheet's front view mapped (rotated, not mirrored).
