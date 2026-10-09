@@ -34,10 +34,10 @@ function softRectGround(x0, x1, y0, y1, z, a) {
   g.globalAlpha = a; drawGround(g, TEX.softRect, x0 - mx, x1 + mx, y0 - my, y1 + my, z, { noOverlap: true }); g.globalAlpha = 1;
 }
 
-function noteQuad(img, x, y, z, rot, tilt, w = 64, h = 32) {
+function noteQuad(img, x, y, z, rot, tilt, w = 64, h = 32, n = 2) {
   const c = Math.cos(rot), s = Math.sin(rot), ct = Math.cos(tilt), st = Math.sin(tilt);
   const P = (u, v) => { const vy = v * ct, vz = v * st; return [x + u * c - vy * s, y + u * s + vy * c, z + vz]; };
-  drawQuad(g, img, P(-w / 2, h / 2), P(w / 2, h / 2), P(-w / 2, -h / 2), 2, 2);
+  drawQuad(g, img, P(-w / 2, h / 2), P(w / 2, h / 2), P(-w / 2, -h / 2), n * 2, n);
 }
 
 function drawBox(t) {
@@ -133,8 +133,9 @@ function drawBoard(t) {
 function drawPrize(p, t, phase) {
   const a = prizeAngle(p, t); if (a === null) return;
   const st = TEX.st[p.k]; const w = st.w, h = st.h; const ar = a * DEG;
-  const sw = sweepOffset(t, p.sweep, p.seed * 13, p.y);
-  let dx = 0, dy = 0, dz = 0; if (sw) { dx = sw.dx; dy = sw.dy; dz = sw.dz + (p.y + sw.dy < -251 ? -3 : 0); if (dz < -500) return; }
+  let sw = null, dx = 0, dy = 0, dz = 0;
+  if (M5) { const r = slideRest(t, p.sweep, p.seed * 13, p.x, p.y, 1.7); if (r) { sw = r; dx = r.x - p.x; dy = r.y - p.y; dz = r.y < -251 ? -3 : 0; } }
+  else { sw = sweepOffset(t, p.sweep, p.seed * 13, p.y); if (sw) { dx = sw.dx; dy = sw.dy; dz = sw.dz + (p.y + sw.dy < -251 ? -3 : 0); if (dz < -500) return; } }
   const x = p.x + dx, y = p.y + dy, z0 = 3 + dz + (a > 85 ? .3 : 0);
   if (phase === 'shadow') {
     if (sw) return; const k = Math.cos(ar);
@@ -169,8 +170,37 @@ function drawTopCard(t) {
   if (quadFacing(bTL, bTR, bBL)) drawQuad(g, TEX.cardBack, bTL, bTR, bBL, 6, 4);
   else drawQuad(g, TEX.cardFront, P(-45, -30), P(45, -30), P(-45, 30), 6, 4);
 }
+function drawTarotCard(t) {
+  const c = cardPose5(t); const cf = Math.cos(c.flip), sf = Math.sin(c.flip), cr = Math.cos(c.rot), sr = Math.sin(c.rot);
+  const w = TCARD[0] / 2, h = TCARD[1] / 2;
+  const P = (u, v) => { const vy = v * cf, vz = v * sf; return [c.x + u * cr - vy * sr, c.y + u * sr + vy * cr, c.z + vz]; };
+  shadowBlob(g, c.x + 2 + Math.max(0, c.z - 5) * .35, c.y + 3 + Math.max(0, c.z - 5) * .5, 5, 40 * (.5 + .5 * Math.abs(cf)), 62, .35 * clamp(1 - c.z / 120));
+  const bTL = P(-w, h), bTR = P(w, h), bBL = P(-w, -h);
+  if (quadFacing(bTL, bTR, bBL)) drawQuad(g, EXT.back, bTL, bTR, bBL, 10, 16);
+  else drawQuad(g, EXT.wheel, P(-w, -h), P(w, -h), P(-w, h), 10, 16);
+}
+function tarotQuad(img, tx, ty, rot, z) {
+  const [x, y] = tarotToWorld(tx, ty), a = -rot, c = Math.cos(a), s = Math.sin(a), w = TCARD[0] / 2, h = TCARD[1] / 2;
+  const P = (u, v) => [x + u * c - v * s, y + u * s + v * c, z];
+  shadowBlob(g, x + 2, y - 3, z - .5, 40, 64, .3, a);
+  drawQuad(g, img, P(-w, h), P(w, h), P(-w, -h), 3, 4);
+}
+function drawTableProps5(t) {
+  const hm = MAT_MM / 2;
+  softRectGround(MAT.x - hm + 5, MAT.x + hm + 8, MAT.y - hm - 6, MAT.y + hm - 2, 0, .5);
+  drawGround(g, EXT.mat, MAT.x - hm, MAT.x + hm, MAT.y - hm, MAT.y + hm, .8, { noOverlap: true });
+  // the thin felt edge, near side
+  fillQuad(g, [[MAT.x - hm, MAT.y - hm, .8], [MAT.x + hm, MAT.y - hm, .8], [MAT.x + hm, MAT.y - hm, 0], [MAT.x - hm, MAT.y - hm, 0]], '#0f2219');
+  const SPR = JSON.parse(window.EXT_TEX.spread);
+  tarotQuad(EXT.back, SPR.DECK[0] - 9.6, SPR.DECK[1] - 13.2, SPR.DECK[2], 3.2);
+  ['wheel', 'hourglass', 'company', 'fool', 'star'].forEach((k, i) => { const R = SPR.REST[i]; tarotQuad(EXT[k], R[0], R[1], R[2], 1.4); });
+  // the finished sampler, lying on the oak
+  const S = SAMPLER;
+  softRectGround(S.x - S.w / 2 + 3, S.x + S.w / 2 + 6, S.y - S.h / 2 - 5, S.y + S.h / 2 - 2, 0, .4);
+  drawGround(g, EXT.sampler, S.x - S.w / 2, S.x + S.w / 2, S.y - S.h / 2, S.y + S.h / 2, 1.2, { noOverlap: true });
+}
 function drawSpinner(t) {
-  const th = spinAngle(t), d = [Math.cos(th), Math.sin(th)], n = [-Math.sin(th), Math.cos(th)];
+  const th = M5 ? spinAngle5(t) : spinAngle(t), d = [Math.cos(th), Math.sin(th)], n = [-Math.sin(th), Math.cos(th)];
   const P = (along, across, z) => [SPIN.x + d[0] * along + n[0] * across, SPIN.y + d[1] * along + n[1] * across, z];
   g.globalAlpha = .35; drawQuad(g, TEX.arrowSh, P(-44 + 1.5, 11 - 2, 3.05), P(66 + 1.5, 11 - 2, 3.05), P(-44 + 1.5, -11 - 2, 3.05), 2, 2); g.globalAlpha = 1;
   drawQuad(g, TEX.arrow, P(-44, 11, 4.2), P(66, 11, 4.2), P(-44, -11, 4.2), 3, 2);
@@ -203,39 +233,48 @@ function applyDOF(zf, A) {
   g.drawImage(BL, 0, 0);
 }
 
+let M5 = false;
 function renderFrame(t) {
-  const sh = shotAt(t); setCamera(sh.cam(t));
+  M5 = t >= V5 - 1e-6;
+  const sh = M5 ? shotAt5(t) : shotAt(t); setCamera(sh.cam(t));
   g.setTransform(1, 0, 0, 1, 0, 0); g.globalAlpha = 1; g.globalCompositeOperation = 'source-over'; g.filter = 'none';
   const bg = g.createLinearGradient(0, 0, 0, H); bg.addColorStop(0, '#2a1f17'); bg.addColorStop(1, '#120d09'); g.fillStyle = bg; g.fillRect(0, 0, W, H);
   // soft room glow above the horizon in low shots
   if (CAM.phi < 25 * DEG) { const hz = H / 2 - CAM.f * Math.tan(CAM.phi); const rg = g.createRadialGradient(W * .25, hz - 200, 20, W * .25, hz - 200, 900); rg.addColorStop(0, 'rgba(120,92,60,.5)'); rg.addColorStop(1, 'rgba(120,92,60,0)'); g.fillStyle = rg; g.fillRect(0, 0, W, H); }
   const TR = TEX.tableRect;
   drawGround(g, TEX.table, TR.x0, TR.x1, TR.y0, TR.y1, 0);
-  if (quadFacing([-900, -400, 0], [900, -400, 0], [-900, -400, -40])) drawQuad(g, TEX.tableEdge, [-900, -400, 0], [900, -400, 0], [-900, -400, -40], 12, 1);
-  const wl = windowLight(t);
-  if (wl > 0) { g.globalCompositeOperation = 'screen'; g.globalAlpha = .62 * wl; drawGround(g, TEX.windowWarm, 225, 535, -395, -135, 0.1, { noOverlap: true }); g.globalAlpha = 1; g.globalCompositeOperation = 'source-over'; }
+  if (quadFacing([-900, -400, 0], [1500, -400, 0], [-900, -400, -40])) drawQuad(g, TEX.tableEdge, [-900, -400, 0], [1500, -400, 0], [-900, -400, -40], 14, 1);
+  const wl = M5 ? window5(t) : windowLight(t);
+  if (wl > 0) {
+    g.globalCompositeOperation = 'screen'; g.globalAlpha = .62 * wl;
+    if (M5) drawGround(g, TEX.windowWarm, 960, 1450, -420, 40, 0.1, { noOverlap: true }); else drawGround(g, TEX.windowWarm, 225, 535, -395, -135, 0.1, { noOverlap: true });
+    g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
+  }
+  if (M5) drawTableProps5(t);
+  else { const dp = divePose(t); if (dp) { shadowBlob(g, dp.x + 3, dp.y + 4, 0, 60, 30, .3, dp.rot); noteQuad(EXT.note2, dp.x, dp.y, dp.z, dp.rot, 0, DIVE.w, DIVE.h, 8); } }
   // box shadow, box
   softRectGround(-250, 268, 292, 572, 0, .55);
   drawBox(t);
   drawBoard(t);
   const intro = t < 7.9;
+  const NOTESX = M5 ? NOTES5 : NOTES, PRIZESX = M5 ? PRIZES5 : PRIZES, nPose = M5 ? notePose5 : notePose;
   if (!intro) {
-    const s = spotOn(t);
+    const s = M5 ? spotOn5(t) : spotOn(t);
     if (s > 0 && !params.has("noglow")) glowBlob(g, SPOT.x, SPOT.y, 3.1, 82, 66, '255,226,170', .5 * s);
     drawSpinner(t);
     drawCardStack(t);
     // money piles: shadows then notes in z order (landed and sliding)
-    for (const p of PILES) { const n = NOTES.filter((nt) => nt.p === PILES.indexOf(p) && t >= nt.tl && t < nt.sw).length; if (n) shadowBlob(g, p[0] + 3, p[1] + 4, 3, 40, 30, Math.min(.35, n * .03)); }
-    if (!params.has('noprsh')) for (const p of PRIZES) drawPrize(p, t, 'shadow');
+    for (const p of PILES) { const n = NOTESX.filter((nt) => nt.p === PILES.indexOf(p) && t >= nt.tl && t < nt.sw).length; if (n) shadowBlob(g, p[0] + 3, p[1] + 4, 3, 40, 30, Math.min(.35, n * .03)); }
+    if (!params.has('noprsh')) for (const p of PRIZESX) drawPrize(p, t, 'shadow');
   }
   // uprights and flying things, sorted far to near
   const items = [];
   if (!intro) {
-    for (const nt of NOTES) { const q = notePose(nt, t); if (!q) continue; items.push({ d: depthOf(q.x, q.y, q.z), z: q.z, flat: q.z < 8 && !q.tilt, fn: () => noteQuad(TEX.notes[nt.d], q.x, q.y, q.z, q.rot, q.tilt) }); }
-    for (const p of PRIZES) { const a = prizeAngle(p, t); if (a === null) continue; items.push({ d: depthOf(p.x, p.y, 10), fn: () => drawPrize(p, t, 'card'), prize: true }); }
-    items.push({ d: depthOf(CARDPOS.x, CARDPOS.y, 5), fn: () => drawTopCard(t), flat: cardPose(t).z < 6 });
+    for (const nt of NOTESX) { const q = nPose(nt, t); if (!q) continue; items.push({ d: depthOf(q.x, q.y, q.z), z: q.z, flat: q.z < 8 && !q.tilt, fn: () => M5 ? noteQuad(nt.d ? EXT.note2 : EXT.note1, q.x, q.y, q.z, q.rot, q.tilt, NOTE_MM[0], NOTE_MM[1], 4) : noteQuad(TEX.notes[nt.d], q.x, q.y, q.z, q.rot, q.tilt) }); }
+    for (const p of PRIZESX) { const a = prizeAngle(p, t); if (a === null) continue; items.push({ d: depthOf(p.x, p.y, 10), fn: () => drawPrize(p, t, 'card'), prize: true }); }
+    items.push({ d: depthOf(CARDPOS.x, CARDPOS.y, 5), fn: () => M5 ? drawTarotCard(t) : drawTopCard(t), flat: (M5 ? cardPose5(t) : cardPose(t)).z < 6.5 });
   }
-  const pp = pawnPose(t);
+  const pp = M5 ? pawnPose5(t) : pawnPose(t);
   if (pp) items.push({ d: depthOf(pp.x, pp.y, pp.z + 15), pawn: true, fn: () => { pawnShadow(g, pp, 1 - .3 * wl); const k = 1 + .35 * wl; drawPawn(g, pp, [178 * k, 42 * k * 1.05, 34 * k]); } });
   // flat things first (z order), then the rest by depth
   const flats = items.filter((i) => i.flat).sort((a, b) => (a.z || 0) - (b.z || 0));
@@ -251,7 +290,7 @@ function renderFrame(t) {
   // (volumetric beam dropped: it smeared across the frame in low shots)
   if (t < 5.3) drawLid(t);
   // spotlight falloff: the rest of the table dims while the light is on
-  const s = !intro && !params.has("nodark") ? spotOn(t) : 0;
+  const s = !intro && !params.has("nodark") ? (M5 ? spotOn5(t) : spotOn(t)) : 0;
   if (s > 0) {
     const c = proj(SPOT.x, SPOT.y, 3); const rad = Math.max(260, CAM.f * 150 / Math.max(c[2], 50));
     const onScreen = c[0] > -400 && c[0] < W + 400 && c[1] > -400 && c[1] < H + 400 ? 1 : .35;
@@ -266,7 +305,11 @@ function renderFrame(t) {
 }
 
 function grade(t) {
-  const warm = windowLight(t), dim = smooth(lin(t, 43.6, 44.4)) * (1 - smooth(lin(t, 46.5, 47.3)));
+  const warm = M5 ? Math.max(window5(t), evening5(t)) : windowLight(t), dim = M5 ? 0 : smooth(lin(t, 43.6, 44.4)) * (1 - smooth(lin(t, 46.5, 47.3)));
+  if (M5) {
+    const ev = evening5(t);
+    if (ev > 0) { g.globalCompositeOperation = 'multiply'; g.fillStyle = `rgba(255,${200 - 40 * ev},${150 - 70 * ev},${.45 * ev})`; g.fillRect(0, 0, W, H); }
+  }
   g.globalCompositeOperation = 'soft-light'; g.fillStyle = `rgba(255,${170 + 20 * (1 - warm)},${100},${.18 + .3 * warm})`; g.fillRect(0, 0, W, H);
   if (dim > 0) { g.globalCompositeOperation = 'multiply'; g.fillStyle = `rgba(${200},${205},${225},${dim * .6})`; g.fillRect(0, 0, W, H); }
   g.globalCompositeOperation = 'source-over';
@@ -274,12 +317,24 @@ function grade(t) {
   g.fillStyle = vg; g.fillRect(0, 0, W, H);
   const fi = Math.round(t * 24); g.globalCompositeOperation = 'overlay'; g.globalAlpha = .07;
   g.drawImage(GRAIN[fi % 4], (fi * 37) % 40 - 40, (fi * 53) % 30 - 30, W + 80, H + 60); g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
+  if (M5) { const lo = lightsOut5(t); if (lo > 0) { g.globalCompositeOperation = 'multiply'; g.fillStyle = `rgba(${lerp(255, 22, lo)},${lerp(255, 26, lo)},${lerp(255, 40, lo)},1)`; g.fillRect(0, 0, W, H); g.globalCompositeOperation = 'source-over'; } }
 }
 
 buildArt(); buildExtras();
 const params = new URLSearchParams(location.search);
 window.__frameJPEG = (t, q = .93) => { renderFrame(t); return out.toDataURL('image/jpeg', q); };
-window.__ready = Promise.resolve(true);
+const EXT = {};
+window.__ready = (async () => {
+  const src = window.EXT_TEX || {};
+  for (const k of ['mat', 'wheel', 'hourglass', 'company', 'fool', 'star', 'back', 'note1', 'note2', 'sampler']) {
+    if (!src[k]) { console.error('missing texture ' + k + ' (run node js/boardgame/capture.mjs)'); EXT[k] = mkCanvas(8, 8); continue; }
+    const im = new Image(); im.src = src[k]; await im.decode();
+    const c = mkCanvas(im.width, im.height), cg = c.getContext('2d');
+    if (['wheel', 'hourglass', 'company', 'fool', 'star', 'back'].includes(k)) { cg.beginPath(); cg.roundRect(0, 0, im.width, im.height, im.width * 30 / 700); cg.clip(); }
+    cg.drawImage(im, 0, 0); EXT[k] = c;
+  }
+  return true;
+})();
 if (!params.has('offline')) {
   const audio = document.getElementById('a');
   const T0 = parseFloat(params.get('a') || 0), T1 = parseFloat(params.get('b') || 62.5);

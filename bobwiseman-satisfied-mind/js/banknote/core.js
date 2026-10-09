@@ -210,6 +210,34 @@ function rosette(c, cx, cy, R, o = {}) {
     c.stroke();
   }
 }
+// the rosette relaxes into a tight coil (one long spiral), then unrolls from its bottom like thread off a spool.
+// relax 0..1, ell = length already unrolled (runs left along y = cy + R0). World units.
+const COIL = { n: 30, k: 11, inner: .42, m: 4 };
+function coilR0(R) { return R * (1 + COIL.inner) / 2; }
+function coil(c, cx, cy, R, o = {}) {
+  const { n, k, inner, m } = COIL, relax = o.relax ?? 1, ell = o.ell ?? 0, R0 = coilR0(R), sp = o.sp ?? R * .036, TAU2 = Math.PI * 2;
+  const rs = (Th) => Math.max(R * .12, R0 - sp * Th / TAU2), lineY = cy + R0;
+  c.strokeStyle = o.col ?? inkA(.88); c.lineJoin = 'round'; c.lineCap = 'round';
+  c.lineWidth = lerp(o.lw ?? 1, o.lineW ?? 2.4, ss(.3, 1, relax));
+  if (ell <= 0) {
+    for (let j = 0; j < n; j++) {
+      const ph = j / n * TAU2 / k; c.beginPath();
+      for (let i = 0; i <= 360; i++) {
+        const th = i / 360 * TAU2; let rr = (inner + (1 - inner) * (.5 + .5 * Math.sin(k * th + ph * k))) * (1 - .07 * (1 - Math.cos(m * th))) * R;
+        const r = lerp(rr, rs(th + TAU2 * j), relax), a = Math.PI / 2 - th - (o.spin ?? 0);
+        const x = cx + Math.cos(a) * r, y = cy + Math.sin(a) * r; i ? c.lineTo(x, y) : c.moveTo(x, y);
+      }
+      c.stroke();
+    }
+    return;
+  }
+  // unrolled length -> spiral parameter where the coil now starts
+  const Thmax = TAU2 * n; let thp = 0, acc = 0; while (thp < Thmax && acc < ell) { acc += rs(thp) * .02; thp += .02; }
+  const ccy = lineY - rs(thp);
+  c.beginPath(); c.moveTo(cx - ell, lineY); c.lineTo(cx, lineY);
+  for (let Th = thp; Th <= Thmax; Th += .05) { const a = Math.PI / 2 - (Th - thp), r = rs(Th); c.lineTo(cx + Math.cos(a) * r, ccy + Math.sin(a) * r); }
+  c.stroke();
+}
 // spirograph (hypotrochoid) flower
 function spiro(c, cx, cy, R, r, d, o = {}) {
   const turns = o.turns ?? 1, prog = o.prog ?? 1, N = o.pts ?? 1600;
@@ -236,6 +264,14 @@ function band(c, x0, y0, x1, y1, B, o = {}) {
     c.stroke();
   }
   if (o.edges !== false) { c.lineWidth = (o.lw ?? .9) * 1.4; c.beginPath(); for (const sg of [-1, 1]) { c.moveTo(x0 + nx * sg * B * .62, y0 + ny * sg * B * .62); c.lineTo(x0 + ux * Lp + nx * sg * B * .62, y0 + uy * Lp + ny * sg * B * .62); } c.stroke(); }
+}
+// band along a polyline (for bowed borders)
+function bandPath(c, pts, B, o = {}) {
+  const n = o.n ?? 6, lam = o.lam ?? 26, prog = o.prog ?? 1; c.strokeStyle = o.col ?? inkA(.8); c.lineWidth = o.lw ?? .9;
+  const cum = [0]; for (let i = 1; i < pts.length; i++) cum.push(cum[i - 1] + Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]));
+  const Lp = cum[cum.length - 1] * prog, at = (d) => { let i = 1; while (i < cum.length - 1 && cum[i] < d) i++; const u = (d - cum[i - 1]) / ((cum[i] - cum[i - 1]) || 1), a = pts[i - 1], b = pts[i], L = Math.hypot(b[0] - a[0], b[1] - a[1]) || 1; return [lerp(a[0], b[0], u), lerp(a[1], b[1], u), -(b[1] - a[1]) / L, (b[0] - a[0]) / L]; };
+  for (let j = 0; j < n; j++) { c.beginPath(); for (let d = 0; d <= Lp; d += 3) { const [x, y, nx, ny] = at(d), a = B / 2 * Math.sin(d / lam * Math.PI * 2 + j / n * Math.PI * 2); d ? c.lineTo(x + nx * a, y + ny * a) : c.moveTo(x + nx * a, y + ny * a); } c.stroke(); }
+  c.lineWidth = (o.lw ?? .9) * 1.4; for (const sg of [-1, 1]) { c.beginPath(); for (let d = 0; d <= Lp; d += 6) { const [x, y, nx, ny] = at(d); d ? c.lineTo(x + nx * sg * B * .62, y + ny * sg * B * .62) : c.moveTo(x + nx * sg * B * .62, y + ny * sg * B * .62); } c.stroke(); }
 }
 // band around a closed ellipse (oval frame)
 function ovalBand(c, cx, cy, rx, ry, B, o = {}) {

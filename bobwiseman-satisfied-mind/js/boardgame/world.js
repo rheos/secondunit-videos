@@ -208,7 +208,14 @@ const SHOTS = [
   { a: 46.76, b: 54.6, cam: (t) => { const u = smooth(lin(t, 46.76, 54.6)); return C(lerp(226, 236, u), lerp(-430, -405, u), lerp(34, 30, u), 5, 2000); }, dof: () => ({ zf: 225, A: 1.2 }), sharp: 90 },
   { a: 54.6, b: 62.6, cam: (t) => {
       const A = C(262, -465, 24, 3, 2000), B = C(300, -565, 95, 14, 2000);
-      const u = smooth(lin(t, 58.4, 62.5)); const c = lerpCam(A, B, u); c.z = lerp(A.z, B.z, Math.pow(u, 1.4)); return c;
-    }, dof: (t) => ({ zf: 0, A: 1.1 + .6 * lin(t, 57.5, 61) }), sharp: 120, trackPawn: true },
+      const u = smooth(lin(t, 58.4, 60.9)); const c = lerpCam(A, B, u); c.z = lerp(A.z, B.z, Math.pow(u, 1.4));
+      if (t < 60.9) return c;
+      // dive into the engraved note that has slid in beside him: keep it centred, end straight down on its portrait
+      const o = diveOval(), tx = o[0] + 7 * Math.cos(DIVE.rot), ty = o[1] + 7 * Math.sin(DIVE.rot);
+      const v = lin(t, 60.9, 62.5), e = smooth(v) * .4 + Math.pow(v, 1.5) * .6;
+      const x = lerp(c.x, tx, e), y = lerp(c.y, ty, Math.pow(e, .8)), z = Math.exp(lerp(Math.log(c.z), Math.log(62), e));
+      const look = Math.atan2(z, Math.max(ty - y, 1e-3)) / DEG; const phi = lerp(c.phi, look, smooth(lin(v, 0, .25)));
+      return C(x, y, z, Math.min(90, phi), 2000, 0);
+    }, dof: (t) => ({ zf: 0, A: (1.1 + .6 * lin(t, 57.5, 60)) * (1 - smooth(lin(t, 60.9, 61.8))) }), sharp: 120, trackPawn: true },
 ];
 function shotAt(t) { for (const s of SHOTS) if (t >= s.a && t < s.b) return s; return t < 0 ? SHOTS[0] : SHOTS[SHOTS.length - 1]; }

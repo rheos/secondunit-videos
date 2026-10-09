@@ -68,19 +68,19 @@ function headInk(c, p) {
   if ((p.puff || 0) > .3) { c.lineWidth = 1.1; for (const e of [-1, 1]) { c.beginPath(); c.arc(e * 46 * sx + look * 8, 24, 12, e > 0 ? 2.4 : -.6, e > 0 ? 3.6 : .6); c.stroke(); } }
 }
 function bust(x, y, s, p = {}) {
-  const puff = p.puff || 0, cw = 150 * (1 + puff * .4), chest = 1 + puff * .6, hy = -(p.chinUp || 0) * 14 - puff * 10, L = (path) => xf(path, x, y, s), W2 = (lx, ly) => [x + lx * s, y + ly * s];
+  const puff = p.puff || 0, cw = 150 * (1 + puff * .38), chest = 1 + Math.min(puff, 2) * .3, hy = Math.max(-26, -(p.chinUp || 0) * 10 - puff * 6), hk = 1 + puff * .13, L = (path) => xf(path, x, y, s), W2 = (lx, ly) => [x + lx * s, y + ly * s];
   T(L(blob([[-cw - 20, 330], [-cw, 160], [-cw * .78, 118], [-38, 98], [0, 112], [38, 98], [cw * .78, 118], [cw, 160], [cw + 20, 330]])), (c) => { const [a1, b1] = W2(-cw, 0), [a2, b2] = W2(cw, 0), g = c.createLinearGradient(a1, b1, a2, b2); g.addColorStop(0, grey(p.coat ?? .5)); g.addColorStop(1, grey(Math.min(.95, (p.coat ?? .5) + .32))); return g; }, 68, 1);
-  T(L(blob([[-34, 98], [-40 * chest, 160], [0, 200 + puff * 40], [40 * chest, 160], [34, 98], [0, 118]])), .05, 0, .9);
+  T(L(blob([[-34, 98], [-40 * chest, 160], [0, 200 + Math.min(puff, 2) * 22], [40 * chest, 160], [34, 98], [0, 118]])), .05, 0, .9);
   if (p.tie !== false) T(L(poly([[-9, 104], [9, 104], [13, 172], [0, 190], [-13, 172]])), .82, 125, 1);
   T(L(blob([[-30, 30], [30, 30], [34, 108], [0, 116], [-34, 108]])), (c) => { const [a1, b1] = W2(0, 40), [a2, b2] = W2(0, 108), g = c.createLinearGradient(a1, b1, a2, b2); g.addColorStop(0, grey(.62)); g.addColorStop(1, grey(.3)); return g; }, 92, .8);
-  headTone(x, y + hy * s, s, p);
+  headTone(x, y + hy * s, s * hk, p);
   over((c) => {
     c.translate(x, y); c.scale(s, s);
     c.strokeStyle = inkA(.85); c.lineWidth = 1.5; c.lineCap = 'round';
     c.beginPath(); c.moveTo(-34, 98); c.lineTo(-10, 150 + puff * 30); c.moveTo(34, 98); c.lineTo(10, 150 + puff * 30); c.stroke(); // lapels
     c.beginPath(); c.moveTo(-cw * .78, 118); c.quadraticCurveTo(-cw, 130, -cw, 170); c.moveTo(cw * .78, 118); c.quadraticCurveTo(cw, 130, cw, 170); c.stroke();
     if (puff > .2) { c.lineWidth = 1.4; for (let i = 0; i < 3; i++) { c.beginPath(); c.arc(0, 260, 60 + i * 18 + puff * 30, -2.4, -.75); c.stroke(); } }
-    c.translate(0, hy); headInk(c, p);
+    c.translate(0, hy); c.scale(hk, hk); headInk(c, p);
   });
 }
 
@@ -154,7 +154,7 @@ function serialStr(n) { const L = 'ABCDEFGHJKLMNPQRSTUVWXYZ', r = rng(n * 7 + 3)
 // o: portrait params, prog (0..1 draw-on of line work), serial string, rosette opts, noPortrait
 function bill(x, y, s, o = {}) {
   const L = (path) => xf(path, x, y, s), prog = o.prog ?? 1, pp = o.portrait || {};
-  const ovx = -360, ovy = 0, orx = 215 * (o.ovalK ?? 1), ory = 255 * (o.ovalK ?? 1);
+  const ovx = -360, ovy = 0, orx = 215 * (o.ovalK ?? 1) * (o.ovalSX ?? 1), ory = 255 * (o.ovalK ?? 1);
   const tm0 = K.tMul; K.tMul = tm0 * (o.tMul ?? 1);
   // light tint panels
   T(L(rect(-130, -282, 700, 76)), .5, 0, 0);
@@ -188,19 +188,28 @@ function bill(x, y, s, o = {}) {
   });
   over((c) => {
     c.translate(x, y); c.scale(s, s);
-    // border bands
-    const bp = clamp(prog * 1.2);
-    band(c, -720, -306, 720, -306, 22, { prog: bp, n: 5, lam: 30, lw: .9 }); band(c, 720, 306, -720, 306, 22, { prog: bp, n: 5, lam: 30, lw: .9 });
-    band(c, -720, 306, -720, -306, 22, { prog: bp, n: 5, lam: 30, lw: .9 }); band(c, 720, -306, 720, 306, 22, { prog: bp, n: 5, lam: 30, lw: .9 });
-    c.strokeStyle = inkA(.9); c.lineWidth = 2.2; if (prog > .2) c.strokeRect(-742, -328, 1484, 656);
+    // border bands (they bow outward when the portrait strains against them)
+    const bp = clamp(prog * 1.2), st = o.strain || 0;
+    const bul = (x) => st * 95 * Math.exp(-Math.pow((x - ovx) / 300, 2));
+    const top = [], bot = []; for (let x = -720; x <= 720; x += 12) { top.push([x, -306 - bul(x)]); bot.push([x, 306 + bul(x)]); }
+    bandPath(c, top, 22, { prog: bp, n: 5, lam: 30, lw: .9 }); bandPath(c, bot.slice().reverse(), 22, { prog: bp, n: 5, lam: 30, lw: .9 });
+    const sideBul = st * 40;
+    const lft = [], rgt = []; for (let y = -306; y <= 306; y += 12) { lft.push([-720 - sideBul * Math.cos(y / 306 * Math.PI / 2), y]); rgt.push([720, y]); }
+    bandPath(c, lft.slice().reverse(), 22, { prog: bp, n: 5, lam: 30, lw: .9 }); bandPath(c, rgt, 22, { prog: bp, n: 5, lam: 30, lw: .9 });
+    c.strokeStyle = inkA(.9); c.lineWidth = 2.2;
+    if (prog > .2) { c.beginPath(); for (let x = -742; x <= 742; x += 12) { const y = -328 - bul(x) * 1.05; x > -742 ? c.lineTo(x, y) : c.moveTo(x, y); }
+      for (let y = -328; y <= 328; y += 12) c.lineTo(742, y);
+      for (let x = 742; x >= -742; x -= 12) c.lineTo(x, 328 + bul(x) * 1.05);
+      for (let y = 328; y >= -328; y -= 12) c.lineTo(-742 - sideBul * 1.05 * Math.cos(y / 328 * Math.PI / 2), y);
+      c.closePath(); c.stroke(); }
     // oval frame
-    ovalBand(c, ovx, ovy, orx + 14, ory + 14, 22, { prog: o.ovalProg ?? clamp(prog * 1.3 - .1), n: 6, waves: 72, lw: .9 });
+    c.globalAlpha = o.ovalA ?? 1; ovalBand(c, ovx, ovy, orx + 14, ory + 14, 22, { prog: o.ovalProg ?? clamp(prog * 1.3 - .1), n: 6, waves: 72, lw: .9 }); c.globalAlpha = 1;
     // corner rosettes
     for (const [cx, cy] of [[-660, -250], [660, -250], [-660, 250], [660, 250]]) rosette(c, cx, cy, 74, { n: 14, k: 12, inner: .78, prog: clamp(prog * 1.4 - .2), lw: .8, pts: 400 });
     // the big rosette
     const ro = o.rosette || {};
-    rosette(c, 430, 30, 165, Object.assign({ n: 30, k: 11, inner: .42, m: 4, prog: clamp(prog * 1.2 - .1), lw: .9 }, ro));
-    if (!ro.unwind && !ro.noSpiro) spiro(c, 430, 30, 90, 33, 52, { prog: clamp(prog * 1.3 - .3), lw: .8, scale: .78 });
+    if (!ro.hide) rosette(c, 430, 30, 165, Object.assign({ n: 30, k: 11, inner: .42, m: 4, prog: clamp(prog * 1.2 - .1), lw: .9 }, ro));
+    if (!ro.unwind && !ro.noSpiro && !ro.hide) spiro(c, 430, 30, 90, 33, 52, { prog: clamp(prog * 1.3 - .3), lw: .8, scale: .78 });
     if (o.serial) { c.globalAlpha = o.serialA ?? 1; for (const [sx, sy] of [[90, -165], [420, 262]]) fitText(c, o.serial, sx, sy, 260, 34, { fam: MONO, wt: 'bold', col: inkA(.9, INK2) }); c.globalAlpha = 1; }
   });
 }

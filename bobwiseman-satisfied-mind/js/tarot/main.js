@@ -3,7 +3,7 @@ const out = document.getElementById('c'); out.width = W; out.height = H;
 const octx = out.getContext('2d');
 const LC = mkCanvas(), LL = mkCanvas();
 PR.c = LC.getContext('2d'); PR.l = LL.getContext('2d');
-buildTextures();
+buildTextures(); buildOak();
 const PAT = {
   stock: octx.createPattern(STOCK, 'repeat'), cloth: octx.createPattern(CLOTH, 'repeat'),
   mottle: PR.c.createPattern(MOTTLE, 'repeat'), tooth: PR.l.createPattern(TOOTH, 'repeat'),
@@ -11,10 +11,11 @@ const PAT = {
 
 // ---------- the deal ----------
 const CS = 0.36; // card units -> table units
-const REST = [[-580, -30, -.02], [-290, -30, .015], [0, -30, -.012], [290, -30, .02], [580, -30, -.015]];
+const REST = [[-580, -110, -.02], [-290, -110, .015], [0, -110, -.012], [290, -110, .02], [580, -110, -.015]];
 const DEAL = [[213.0, 213.85], [215.0, 215.75], [224.8, 225.6], [225.5, 226.3], [241.4, 242.15]];
 const FLIP = [[214.2, 214.85], [222.15, 222.7], [226.95, 227.55], [235.06, 235.6], [244.0, 245.4]];
-const DECK = [-860, 330, .12];
+const DECK = [-600, 380, .12];
+const MAT = 820; // the green cloth is a square mat, x and y in -MAT..MAT, lying on a light oak table
 function cardState(i, t) {
   if (t < DEAL[i][0]) return null;
   const u = ease(t, DEAL[i][0], DEAL[i][1]), r = REST[i];
@@ -30,19 +31,19 @@ function cardState(i, t) {
 const Wk = (t, x, y, vh) => ({ t, x, y, vh });
 const Ck = (t, card, cx, cy, vh) => ({ t, card, cx, cy, vh });
 const CAM = [
-  Wk(213.0, -150, -20, 1500), Wk(214.2, -430, -30, 1150),
+  Wk(213.0, -300, 100, 1500), Wk(214.2, -470, -60, 1150),
   Ck(215.4, 0, 350, 600, 1350), Ck(217.3, 0, 350, 560, 820), Ck(221.9, 0, 350, 600, 900),
   Ck(221.95, 0, 350, 600, 900), Ck(222.2, 0, 350, 600, 900),
   Ck(222.2001, 1, 350, 600, 1360), Ck(224.1, 1, 350, 600, 1210),
-  Wk(225.9, -150, -30, 1250), Wk(226.6, -110, -30, 1180),
+  Wk(225.9, -150, -60, 1250), Wk(226.6, -110, -80, 1180),
   Ck(227.9, 2, 350, 620, 1100), Ck(229.0, 2, 250, 660, 820), Ck(230.6, 2, 230, 660, 800), Ck(231.7, 2, 470, 660, 820),
   Ck(233.8, 2, 420, 650, 860), Ck(235.04, 2, 360, 640, 900),
   Ck(235.0401, 3, 350, 600, 1360), Ck(236.4, 3, 300, 640, 860), Ck(238.0, 3, 470, 630, 860), Ck(239.8, 3, 700, 630, 900),
-  Wk(241.4, 180, -30, 1300), Wk(242.32, 300, -30, 1250),
+  Wk(241.4, 180, -110, 1300), Wk(242.32, 300, -110, 1250),
   Ck(242.3201, 4, 350, 640, 1750), Ck(244.0, 4, 350, 620, 1600), Ck(245.4, 4, 350, 610, 1480), Ck(247.5, 4, 350, 610, 1380),
   Ck(249.6, 4, 260, 640, 920), Ck(252.3, 4, 320, 620, 900), Ck(254.0, 4, 430, 560, 780), Ck(257.8, 4, 460, 600, 800),
-  Ck(259.6, 4, 430, 640, 840), Ck(263.4, 4, 380, 420, 900), Ck(264.8, 4, 350, 330, 820), Ck(266.8, 4, 350, 360, 860),
-  Ck(269.2, 4, 350, 600, 1500), Wk(271.8, 0, -30, 1450), Wk(273.2, 0, -30, 1420),
+  Ck(259.6, 4, 430, 640, 840), Ck(261.6, 4, 420, 570, 960), Ck(264.8, 4, 405, 575, 970), Ck(266.6, 4, 400, 580, 975),
+  Ck(268.9, 4, 350, 600, 1500), Wk(271.3, 0, -30, 1750), Wk(272.4, 0, 0, 1900), Wk(273.2, 0, 0, 1900),
 ];
 function keyWorld(k) {
   if (k.card == null) return { x: k.x, y: k.y, lz: Math.log(H / k.vh), r: 0 };
@@ -96,19 +97,22 @@ function drawCard(card, st, CM, t, open) {
   const e = open > 0 ? Math.pow(open, 1.6) * 3000 : 0;
   if (open > 0) g.rect(WIN.x0 - e, WIN.y0 - e, WIN.x1 - WIN.x0 + 2 * e, WIN.y1 - WIN.y0 + 2 * e);
   PAT.stock.setTransform(new DOMMatrix().scale(1.5)); g.fillStyle = PAT.stock; g.fill('nonzero');
-  g.save(); g.beginPath(); rr(g, 0, 0, 700, 1200, 30); g.clip(); g.globalAlpha = 1 - open;
+  g.save(); g.beginPath(); rr(g, 0, 0, 700, 1200, 30); g.clip();
   g.strokeStyle = 'rgba(140,90,40,.22)'; g.lineWidth = 46; g.beginPath(); rr(g, 0, 0, 700, 1200, 30); g.stroke();
   g.strokeStyle = 'rgba(120,75,30,.25)'; g.lineWidth = 12; g.beginPath(); rr(g, 0, 0, 700, 1200, 30); g.stroke();
   g.restore();
+  if (e > 0) { g.beginPath(); g.rect(WIN.x0 - e, WIN.y0 - e, WIN.x1 - WIN.x0 + 2 * e, WIN.y1 - WIN.y0 + 2 * e); g.fillStyle = PAT.stock; g.fill(); }
   // print: colour stencils and key block on their own layers
   const C = PR.c, L = PR.l;
   for (const x of [C, L]) { x.setTransform(1, 0, 0, 1, 0, 0); x.clearRect(...bb); x.setTransform(M); }
   PR.off = card ? card.off : { red: [3, -3], blue: [-3, 3], yellow: [2, 3] };
   if (card) {
+    // the frame and banners are printed first; an opening picture grows over them and wipes them away
+    drawFrameAndBanners(card, 1);
+    if (e > 6) for (const x of [C, L]) { x.save(); x.globalCompositeOperation = 'destination-out'; x.fillStyle = '#000'; x.fillRect(WIN.x0 - e + 4, WIN.y0 - e + 4, WIN.x1 - WIN.x0 + 2 * e - 8, WIN.y1 - WIN.y0 + 2 * e - 8); x.restore(); }
     for (const x of [C, L]) { x.save(); x.beginPath(); x.rect(WIN.x0 - e, WIN.y0 - e, WIN.x1 - WIN.x0 + 2 * e, WIN.y1 - WIN.y0 + 2 * e); x.clip(); }
     try { card.scene(t); } catch (err) { console.error(err); }
     C.restore(); L.restore();
-    drawFrameAndBanners(card, 1 - open);
   } else drawBack();
   // ink starvation and paper tooth, in card space so they scale with the card
   for (const [x, p] of [[C, PAT.mottle], [L, PAT.tooth]]) {
@@ -128,16 +132,26 @@ function drawTable(CM, t) {
   const c2 = inv.transformPoint(new DOMPoint(W, 0)), c3 = inv.transformPoint(new DOMPoint(0, H));
   const xs = [c0.x, c1.x, c2.x, c3.x], ys = [c0.y, c1.y, c2.y, c3.y];
   const bx = Math.min(...xs) - 10, by = Math.min(...ys) - 10, bw = Math.max(...xs) - bx + 20, bh = Math.max(...ys) - by + 20;
+  // light oak tabletop (the board game's table), then the square green mat lying on it
+  if (bx < -MAT - 10 || by < -MAT - 10 || bx + bw > MAT + 10 || by + bh > MAT + 10) {
+    g.drawImage(OAK, OAKR.x0, OAKR.y0, OAKR.w, OAKR.h);
+    g.fillStyle = 'rgba(20,10,2,.10)'; for (const k of [34, 22, 12]) { g.beginPath(); rr(g, -MAT - k + 14, -MAT - k + 22, 2 * MAT + 2 * k, 2 * MAT + 2 * k, 30 + k); g.fill(); }
+  }
+  g.save(); g.beginPath(); rr(g, -MAT, -MAT, 2 * MAT, 2 * MAT, 26); g.clip();
   PAT.cloth.setTransform(new DOMMatrix().scale(1.4)); g.fillStyle = PAT.cloth; g.fillRect(bx, by, bw, bh);
   // soft folds in the cloth
-  for (const [x, y, a, w] of [[-700, 200, .4, 260], [500, -400, -.3, 320], [900, 380, .2, 200]]) {
+  for (const [x, y, a, w] of [[-700, 200, .4, 260], [500, -400, -.3, 320], [700, 480, .2, 200]]) {
     const gr = g.createLinearGradient(x - w * Math.cos(a), y - w * Math.sin(a), x + w * Math.cos(a), y + w * Math.sin(a));
     gr.addColorStop(0, 'rgba(0,0,0,0)'); gr.addColorStop(.45, 'rgba(255,255,230,.05)'); gr.addColorStop(.55, 'rgba(0,0,0,.12)'); gr.addColorStop(1, 'rgba(0,0,0,0)');
     g.fillStyle = gr; g.fillRect(bx, by, bw, bh);
   }
+  // bound edge: a darker cloth band with a running stitch
+  g.strokeStyle = 'rgba(8,22,14,.55)'; g.lineWidth = 44; g.beginPath(); rr(g, -MAT, -MAT, 2 * MAT, 2 * MAT, 26); g.stroke();
+  g.strokeStyle = 'rgba(205,190,140,.55)'; g.lineWidth = 4; g.setLineDash([22, 16]); g.beginPath(); rr(g, -MAT + 34, -MAT + 34, 2 * MAT - 68, 2 * MAT - 68, 14); g.stroke(); g.setLineDash([]);
+  g.restore();
   // a lamp pool over the spread
-  const rg = g.createRadialGradient(0, -30, 150, 0, -30, 1500);
-  rg.addColorStop(0, 'rgba(255,225,160,.10)'); rg.addColorStop(.55, 'rgba(0,0,0,0)'); rg.addColorStop(1, 'rgba(0,0,0,.5)');
+  const rg = g.createRadialGradient(0, -30, 150, 0, -30, 1900);
+  rg.addColorStop(0, 'rgba(255,225,160,.10)'); rg.addColorStop(.55, 'rgba(0,0,0,0)'); rg.addColorStop(1, 'rgba(0,0,0,.42)');
   g.fillStyle = rg; g.fillRect(bx, by, bw, bh);
   // starlight spills onto the cloth around THE STAR at the end
   const sl = ease(t, 266.6, 270.5) * .55;
@@ -161,6 +175,7 @@ function drawDeck(CM, t) {
 }
 
 function renderFrame(t) {
+  if (t < 213.0) return renderBreak(t);
   const cam = camAt(t);
   const CM = new DOMMatrix().translate(W / 2, H / 2).scale(cam.z).rotate(-cam.r * 180 / Math.PI).translate(-cam.x, -cam.y);
   octx.setTransform(1, 0, 0, 1, 0, 0); octx.globalCompositeOperation = 'source-over'; octx.globalAlpha = 1;

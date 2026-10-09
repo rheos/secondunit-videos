@@ -179,41 +179,86 @@ function threadCurve(g, pts, col, w = .24, alpha = 1) { // pts: [[x,y]...] smoot
 function holeDot(g, x, y, a = .5) { g.fillStyle = `rgba(40,28,15,${a})`; g.beginPath(); g.arc(x, y, .17, 0, TAU); g.fill(); }
 
 // ---------------- needle ----------------
-// p: pierce point; ang: direction from the point toward the eye; vis: visible length (cells); lift: hovering height
-function drawNeedle(g, px, py, ang, vis, lift, threadCol, threadEnd) {
-  const Ln = 17, ca = Math.cos(ang), sa = Math.sin(ang);
-  const tipVis = vis >= Ln - .01; // whole needle above the cloth
-  const ex = px + ca * vis, ey = py + sa * vis; // eye end
-  const sx = .55 + lift * 1.6, sy = .8 + lift * 2.2; // shadow offset
-  // shadow
-  g.lineCap = 'round';
-  g.strokeStyle = `rgba(30,20,10,${.22 / (1 + lift)})`; g.lineWidth = .7 + lift * .4;
-  g.beginPath(); g.moveTo(px + sx, py + sy); g.lineTo(ex + sx, ey + sy); g.stroke();
-  // thread from the eye, sagging off toward threadEnd
-  if (threadCol) {
-    const tx = threadEnd[0], ty = threadEnd[1];
-    const mx = (ex + tx) / 2 + 3, my = (ey + ty) / 2 + 9;
-    const pts = []; for (let k = 0; k <= 12; k++) { const u = k / 12; pts.push([(1 - u) * (1 - u) * ex + 2 * u * (1 - u) * mx + u * u * tx, (1 - u) * (1 - u) * ey + 2 * u * (1 - u) * my + u * u * ty]); }
-    threadCurve(g, pts, threadCol, .3);
-  }
-  // shaft: steel, tapering to the point
-  g.save(); g.translate(px, py); g.rotate(ang);
-  const x0 = tipVis ? 0 : 0, x1 = vis;
-  const grd = g.createLinearGradient(0, -.32, 0, .32);
-  grd.addColorStop(0, '#5e6266'); grd.addColorStop(.3, '#f4f6f8'); grd.addColorStop(.55, '#a9adb2'); grd.addColorStop(1, '#3d4044');
-  g.fillStyle = grd;
+// A tapestry needle: blunt-ish taper, long eye, polished steel. p = where it pierces the cloth (or the tip, when it is
+// wholly above it); the eye sits vis cells along ang. The working thread comes up out of the hole at origin and runs
+// to the eye with weight: it lies on the cloth near the hole and lifts toward the needle; it trails behind motion (lag).
+const NEEDLE_L = 17, NEEDLE_HW = .3;
+function needlePath(g, x0) { // needle coordinates (0 = tip, NEEDLE_L = head), shifted by x0
+  const L = NEEDLE_L, hw = NEEDLE_HW, tp = 4.2;
   g.beginPath();
-  if (tipVis) { g.moveTo(0, 0); g.lineTo(2.2, -.27); } else { g.moveTo(0, -.27); }
-  g.lineTo(x1 - .9, -.3); g.quadraticCurveTo(x1, -.32, x1, 0); g.quadraticCurveTo(x1, .32, x1 - .9, .3);
-  if (tipVis) { g.lineTo(2.2, .27); g.closePath(); } else { g.lineTo(0, .27); g.closePath(); }
-  g.fill();
-  // eye slot
-  g.fillStyle = 'rgba(40,40,44,.9)'; g.beginPath(); g.ellipse(x1 - 1.3, 0, .55, .09, 0, 0, TAU); g.fill();
+  g.moveTo(x0 + 0, 0);
+  g.bezierCurveTo(x0 + tp * .25, -hw * .25, x0 + tp * .6, -hw * .9, x0 + tp, -hw);
+  g.lineTo(x0 + L - 2.6, -hw);
+  g.bezierCurveTo(x0 + L - 1.9, -hw * 1.25, x0 + L - .3, -hw * 1.2, x0 + L, -hw * .45);
+  g.quadraticCurveTo(x0 + L + .12, 0, x0 + L, hw * .45);
+  g.bezierCurveTo(x0 + L - .3, hw * 1.2, x0 + L - 1.9, hw * 1.25, x0 + L - 2.6, hw);
+  g.lineTo(x0 + tp, hw);
+  g.bezierCurveTo(x0 + tp * .6, hw * .9, x0 + tp * .25, hw * .25, x0 + 0, 0);
+  g.closePath();
+  // the eye: a long slot cut right through
+  const ec = x0 + L - 1.15;
+  g.moveTo(ec + .62, 0); g.bezierCurveTo(ec + .62, -.11, ec - .62, -.11, ec - .62, 0); g.bezierCurveTo(ec - .62, .11, ec + .62, .11, ec + .62, 0); g.closePath();
+}
+function drawNeedle(g, px, py, ang, vis, lift, threadCol, origin, lagD, taut = 0) {
+  const L = NEEDLE_L, ca = Math.cos(ang), sa = Math.sin(ang);
+  const tipVis = vis >= L - .01;
+  const x0 = vis - L; // needle coordinate of the pierce point is -x0
+  const eyeC = vis - 1.15, ex = px + ca * eyeC, ey = py + sa * eyeC;
+  const shx = .5 + lift * 1.5, shy = .75 + lift * 2.1;
+  // working thread: hole -> eye, a quadratic that sags with slack and swings behind the motion
+  if (threadCol && origin) {
+    const [ox, oy] = origin, dx = ex - ox, dy = ey - oy, dist = Math.hypot(dx, dy) || 1;
+    const slack = (1 - taut) * Math.min(4, .18 * dist + .6);
+    const nxp = -dy / dist, nyp = dx / dist, side = nyp > 0 ? 1 : -1; // bow toward screen-down: thread weight
+    let cx = (ox + ex) / 2 + nxp * side * slack + lagD[0] * .5 * (1 - taut), cy = (oy + ey) / 2 + nyp * side * slack + lagD[1] * .5 * (1 - taut);
+    const pts = [], sh = [];
+    for (let k = 0; k <= 16; k++) {
+      const u = k / 16, x = (1 - u) * (1 - u) * ox + 2 * u * (1 - u) * cx + u * u * ex, y = (1 - u) * (1 - u) * oy + 2 * u * (1 - u) * cy + u * u * ey;
+      pts.push([x, y]); const h = Math.pow(u, 1.6) * (1 + lift * 1.5) * (taut ? 1.3 : 1); sh.push([x + .15 + h * .45, y + .2 + h * .65]);
+    }
+    threadHang(g, pts, sh, threadCol, .28, taut);
+    // the short tail through the eye, lying back along the shaft
+    const tail = [[ex, ey], [ex + ca * .9 - sa * .35, ey + sa * .9 + ca * .35], [ex + ca * 1.8 - sa * .9 + lagD[0] * .3, ey + sa * 1.8 + ca * .9 + lagD[1] * .3], [ex + ca * 2.3 - sa * 1.6 + lagD[0] * .5, ey + sa * 2.3 + ca * 1.6 + lagD[1] * .5]];
+    const tsh = tail.map(([x, y], k) => [x + .4 + lift * 1.5, y + .6 + lift * 2]);
+    threadHang(g, tail, tsh, threadCol, .26, 0);
+  }
+  g.save(); g.translate(px, py); g.rotate(ang);
+  if (!tipVis) { g.beginPath(); g.rect(0, -2, L + 2, 4); g.clip(); }
+  // soft shadow on the cloth (two passes), offset by height
+  g.save(); g.rotate(-ang); g.translate(shx, shy); g.rotate(ang);
+  g.fillStyle = `rgba(30,20,10,${.16 / (1 + lift * .6)})`; g.lineWidth = .35; g.strokeStyle = g.fillStyle;
+  needlePath(g, x0); g.fill('evenodd'); g.stroke();
   g.restore();
-  if (!tipVis) { // where it enters the cloth: a little dimple
+  // polished steel: dark edges, a hard specular line, warm reflected light from the linen underneath
+  const grd = g.createLinearGradient(0, -NEEDLE_HW * 1.2, 0, NEEDLE_HW * 1.2);
+  grd.addColorStop(0, '#3c3f44'); grd.addColorStop(.18, '#9aa0a7'); grd.addColorStop(.32, '#ffffff'); grd.addColorStop(.42, '#cfd3d8');
+  grd.addColorStop(.7, '#7a7f86'); grd.addColorStop(.88, '#b9ab93'); grd.addColorStop(1, '#2f3236');
+  g.fillStyle = grd; needlePath(g, x0); g.fill('evenodd');
+  g.strokeStyle = 'rgba(25,27,30,.6)'; g.lineWidth = .045; g.stroke();
+  // glints that slide as the needle moves
+  const gl = x0 + 6 + ((px * .7 + py * .3) % 6 + 6) % 6;
+  const gg = g.createRadialGradient(gl, -NEEDLE_HW * .35, 0, gl, -NEEDLE_HW * .35, 1.6);
+  gg.addColorStop(0, 'rgba(255,255,255,.9)'); gg.addColorStop(1, 'rgba(255,255,255,0)');
+  g.fillStyle = gg; g.fillRect(gl - 1.6, -NEEDLE_HW, 3.2, NEEDLE_HW * .9);
+  g.strokeStyle = 'rgba(255,255,255,.55)'; g.lineWidth = .035;
+  g.beginPath(); g.moveTo(x0 + 4.4, -NEEDLE_HW * .42); g.lineTo(x0 + L - 2.8, -NEEDLE_HW * .42); g.stroke();
+  g.restore();
+  if (!tipVis) { // where it enters the cloth: a dimple
     const dg = g.createRadialGradient(px, py, 0, px, py, .6); dg.addColorStop(0, 'rgba(40,28,15,.55)'); dg.addColorStop(1, 'rgba(40,28,15,0)');
     g.fillStyle = dg; g.beginPath(); g.arc(px, py, .6, 0, TAU); g.fill();
   }
+}
+function threadHang(g, pts, sh, col, w, taut) {
+  const base = hex(PAL[col] || col), dark = mix(base, [20, 12, 8], .45), light = mix(base, [255, 252, 245], .5);
+  const path = (P) => { g.beginPath(); g.moveTo(P[0][0], P[0][1]); for (let k = 1; k < P.length; k++) g.lineTo(P[k][0], P[k][1]); };
+  g.lineCap = 'round'; g.lineJoin = 'round';
+  path(sh); g.strokeStyle = 'rgba(30,20,10,.2)'; g.lineWidth = w * 1.5; g.stroke();
+  path(pts); g.strokeStyle = rgb(dark); g.lineWidth = w; g.stroke();
+  g.strokeStyle = rgb(base); g.lineWidth = w * .64; g.stroke();
+  g.save(); g.translate(-w * .12, -w * .12); path(pts); g.strokeStyle = rgb(light, .45 + .35 * taut); g.lineWidth = w * .18; g.stroke(); g.restore();
+  // ply twist ticks
+  g.strokeStyle = rgb(dark, .5); g.lineWidth = w * .12;
+  for (let k = 0; k < pts.length - 1; k++) { const [x0, y0] = pts[k], [x1, y1] = pts[k + 1], d = Math.hypot(x1 - x0, y1 - y0) || 1, n = Math.floor(d / (w * .9)); for (let q = 0; q < n; q++) { const u = (q + .5) / n, x = lerp(x0, x1, u), y = lerp(y0, y1, u), tx = (x1 - x0) / d, ty = (y1 - y0) / d; g.beginPath(); g.moveTo(x - ty * w * .45 - tx * w * .2, y + tx * w * .45 - ty * w * .2); g.lineTo(x + ty * w * .45 + tx * w * .2, y - tx * w * .45 + ty * w * .2); g.stroke(); } }
 }
 
 // ---------------- coins ----------------

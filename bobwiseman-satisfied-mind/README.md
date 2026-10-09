@@ -17,12 +17,12 @@ Frames are song frames, half-open `[start, end)`. Sung sections carry the story;
 | 0 | Intro | 0.0-5.1 | 0-122 | instrumental | (with verse 1) |
 | 1 | Verse 1: fortune lost | 5.1-62.5 | 122-1500 | sung | board game |
 | 2 | Verse 2: if I had their money | 62.5-124.0 | 1500-2976 | sung | banknote engraving |
-| 3 | Break 1 | 124.0-137.5 | 2976-3300 | instrumental | |
+| 3 | Break 1: guitar solo | 124.0-137.5 | 2976-3300 | instrumental | the engraved line plays the solo, paper turns to linen |
 | 4 | Verse 3: money can't buy | 137.5-198.0 | 3300-4752 | sung | cross-stitch sampler |
-| 5 | Break 2 | 198.0-213.0 | 4752-5112 | instrumental | |
+| 5 | Break 2: piano/organ | 198.0-213.0 | 4752-5112 | instrumental | sampler motifs flip into tarot card backs, card-magic shuffle |
 | 6 | Verse 4: when my life is over | 213.0-273.0 | 5112-6552 | sung | tarot / wheel of fortune |
-| 7 | Verse 5 (= verse 1) | 273.0-328.0 | 6552-7872 | sung | |
-| 8 | Outro | 328.0-341.2 | 7872-8190 | instrumental | |
+| 7 | Verse 5 (= verse 1) | 273.0-328.0 | 6552-7872 | sung | board game again, with every verse's objects in the game |
+| 8 | Outro | 328.0-341.25 | 7872-8190 | instrumental | overhead of the whole table, light out on the last hit (~337) |
 
 ## Running a look
 

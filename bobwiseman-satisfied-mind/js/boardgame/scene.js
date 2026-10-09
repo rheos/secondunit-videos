@@ -149,6 +149,33 @@ function drawPawn(g, pose, col = [178, 42, 34]) {
     g.fillStyle = grads[sl.lvl]; g.beginPath(); g.arc(0, 0, 1, 0, TAU); g.fill();
   }
   g.setTransform(1, 0, 0, 1, 0, 0);
+  // turned-wood rings showing faintly through the paint, on the camera-facing half of the body
+  const sgn = (wx * vx + wy * vy + wz * vz) > 0 ? 1 : -1;
+  g.lineCap = 'round';
+  for (const sl of S) {
+    if (sl.c[2] < 3 || sl.r < 2 || rnd(sl.i, 71) > .45) continue;
+    const sc = CAM.f / sl.c[2]; const lw = .22 * sc; if (lw < .35) continue;
+    g.setTransform(sl.pu[0] - sl.c[0], sl.pu[1] - sl.c[1], sl.pw[0] - sl.c[0], sl.pw[1] - sl.c[1], sl.c[0], sl.c[1]);
+    g.beginPath(); const a0 = sgn > 0 ? .25 : Math.PI + .25, a1 = a0 + Math.PI - .5; g.arc(0, 0, 1, a0, a1);
+    g.setTransform(1, 0, 0, 1, 0, 0); g.lineWidth = lw; g.strokeStyle = `rgba(70,14,8,${.1 + rnd(sl.i, 72) * .12})`; g.stroke();
+  }
+  // a few paint chips showing raw wood, fixed on the piece (seen only when they face the camera)
+  let rx = 1 - ax[0] * ax[0], ry = -ax[0] * ax[1], rz = -ax[0] * ax[2]; let rl = Math.hypot(rx, ry, rz);
+  if (rl < .2) { rx = -ax[1] * ax[0]; ry = 1 - ax[1] * ax[1]; rz = -ax[1] * ax[2]; rl = Math.hypot(rx, ry, rz); }
+  rx /= rl; ry /= rl; rz /= rl;
+  const qx = ax[1] * rz - ax[2] * ry, qy = ax[2] * rx - ax[0] * rz, qz = ax[0] * ry - ax[1] * rx;
+  for (const [h, ph, cr] of [[1.7, 3.6, 1.5], [2.4, 5.2, 1.0], [11, 3.9, 1.1], [26.6, 4.4, 1.3], [18.7, 3.2, .9], [30, 2.6, .8]]) {
+    const r = pawnR(h), dx = Math.cos(ph) * rx + Math.sin(ph) * qx, dy = Math.cos(ph) * ry + Math.sin(ph) * qy, dz = Math.cos(ph) * rz + Math.sin(ph) * qz;
+    const px = pose.x + ax[0] * h + dx * r, py = pose.y + ax[1] * h + dy * r, pz = pose.z + ax[2] * h + dz * r;
+    const ex = CAM.x - px, ey = CAM.y - py, ez = CAM.z - pz, el = Math.hypot(ex, ey, ez); const face = (dx * ex + dy * ey + dz * ez) / el;
+    if (face < .15) continue;
+    const c = proj(px, py, pz); if (c[2] < 3) continue; const sc = CAM.f / c[2];
+    const tq = proj(px + ax[0], py + ax[1], pz + ax[2]); let ang = Math.atan2(tq[1] - c[1], tq[0] - c[0]);
+    g.save(); g.translate(c[0], c[1]); g.rotate(ang);
+    g.fillStyle = `rgba(206,168,120,${.85 * Math.min(1, face * 1.6)})`; g.beginPath();
+    for (let k = 0; k < 9; k++) { const a = k / 9 * TAU, rr2 = cr * sc * (.7 + .5 * rnd(h, k)); g.lineTo(Math.cos(a) * rr2 * .8, Math.sin(a) * rr2 * Math.max(.3, face)); }
+    g.closePath(); g.fill(); g.strokeStyle = 'rgba(90,30,15,.35)'; g.lineWidth = Math.max(.5, .15 * sc); g.stroke(); g.restore();
+  }
   const hh = 28.6, hx = pose.x + ax[0] * hh, hy = pose.y + ax[1] * hh, hz = pose.z + ax[2] * hh;
   const hp = proj(hx - ux * 2.6 * flip + wx * 1.2, hy - uy * 2.6 * flip + wy * 1.2, hz - uz * 2.6 * flip + wz * 1.2), sc = CAM.f / Math.max(hp[2], 3);
   if (hp[2] > 3) {
