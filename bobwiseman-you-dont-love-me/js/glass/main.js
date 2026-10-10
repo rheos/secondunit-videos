@@ -1,12 +1,12 @@
-// Look: stained glass, verse 3 (151.0-214.0, rendered 149.5-215.0). Pure function of song time t.
-// One place, the window, moving forward: floor -> L0 (spell) -> L1 (heart) -> L2 (desert) -> L3 (king) -> pull back.
+// Look: stained glass, verse 3 + outro (151.0-233.04). Pure function of song time t.
+// One place, the window, moving forward: out of the teacup roundel (v3-portal.js) -> L0 (spell) -> L1 (heart)
+// -> L2 (desert) -> L3 (king) -> pull back -> night -> still image, fade to black.
 const out = document.getElementById('c'); out.width = W; out.height = H;
 const g = out.getContext('2d');
 
 // Camera keys: [t, x, y, scale]; eased between consecutive keys.
 const CAM = [
-  [149.5, lcx(0), 2330, 1.0],
-  [151.6, lcx(0), 1010, 1.5],
+  [PORTAL.t1, lcx(0), 1010, 1.5], // before this the pull-back out of the teacup roundel (camAt)
   [153.8, lcx(0), 1040, 1.58],
   [156.9, lcx(0), 1080, 1.66],
   [159.3, lcx(0) + 60, 1090, 1.64],
@@ -22,8 +22,14 @@ const CAM = [
   [191.6, lcx(3) - 30, 1290, 1.5],
   [199.0, WIN_W / 2, 1560, .385],
   [215.0, WIN_W / 2, 1600, .37],
+  [B.still, WIN_W / 2, 1630, .352], // outro: a last slow drift back, then rest
 ];
 function camAt(t) {
+  if (t < PORTAL.t1) { // pull back out of the roundel: fast at the cut, easing onto her (reverse of verse 2's push)
+    const k = CAM[0], u = lin(t, PORTAL.t0, PORTAL.t1), v = 1 - u, e = 1 - v * v * (2.2 - 1.2 * v);
+    const s = Math.exp(lerp(Math.log(RC.sF), Math.log(k[3]), e)), f = (k[3] / s) * e;
+    return { x: RC.x + (k[1] - RC.x) * f, y: RC.y + (k[2] - RC.y) * f, s };
+  }
   let i = 0; while (i + 2 < CAM.length && CAM[i + 1][0] <= t) i++;
   const a = CAM[i], b = CAM[i + 1], u = ease(t, a[0], b[0]);
   // scale eased in log space so pull-backs feel even
@@ -41,7 +47,7 @@ function lancetLit(i, t) {
   const [a, b] = ACTIVE[i], on = ease(t, a - 1, a + .4) * (1 - ease(t, b - .3, b + 1.0));
   return Math.max(.42 + .58 * on, ease(t, 191.6, 195.5));
 }
-const TOD = [[0, [255, 252, 244], 1], [194.5, [255, 252, 244], 1], [199.5, [255, 196, 128], .95], [204.5, [210, 100, 120], .68], [209.5, [70, 84, 150], .3], [215, [60, 72, 140], .24]];
+const TOD = [[0, [255, 252, 244], 1], [194.5, [255, 252, 244], 1], [199.5, [255, 196, 128], .95], [204.5, [210, 100, 120], .68], [209.5, [70, 84, 150], .3], [215, [60, 72, 140], .24], [217.2, [76, 90, 166], .3]]; // outro: a little moonlight (world time stops near 217.2)
 function todAt(t) {
   let i = 0; while (i + 2 < TOD.length && TOD[i + 1][0] <= t) i++;
   const a = TOD[i], b = TOD[i + 1], u = smooth(lin(t, a[0], b[0]));
@@ -122,9 +128,9 @@ function drawPool(g, view, tod, t) {
   g.save(); g.clip(fl); g.globalCompositeOperation = 'multiply'; g.fillStyle = rgb(tod.col); g.fillRect(view.x0, FLOOR_Y, view.x1 - view.x0, view.y1 - FLOOR_Y); g.restore();
 }
 // Light shafts from the window toward us in the close shots: soft diagonal bands with dust in them.
-function drawShafts(g, t, tod) {
+function drawShafts(g, t, tod, fade = 1) {
   g.save(); g.setTransform(1, 0, 0, 1, 0, 0); g.globalCompositeOperation = 'screen';
-  const L = tod.I * (1 - tod.night);
+  const L = tod.I * (1 - tod.night) * fade;
   for (let k = 0; k < 3; k++) {
     const x = 300 + k * 620 + Math.sin(t * .2 + k) * 80, w = 160 + 80 * rnd(k, 91);
     const lg = g.createLinearGradient(x, 0, x + 700, H); lg.addColorStop(0, `rgba(255,240,215,${.06 * L})`); lg.addColorStop(1, 'rgba(255,240,215,0)');
@@ -148,15 +154,18 @@ function bloom(g, amt) {
 }
 
 // ---------------- the daisy roundel (the running device) ----------------
-// A small leaded suncatcher hanging in front of the window: 12 white petals, 4 gone before verse 3,
-// one more drops on every backing "you don't love me"; the last (12th) falls on "loves me not".
-const NPET = 12, PREGONE = 4;
-function drawDaisy(g, t, tod) {
-  const ax = 1800, ay = -10, len = 238 + 4 * Math.sin(t * .9);
-  const sw = .05 * Math.sin(t * .8) + .03 * Math.sin(t * 1.9 + 1) + DROPS.reduce((s, d) => s + (t > d ? .05 * Math.exp(-(t - d) * 2.2) * Math.sin((t - d) * 9) : 0), 0);
-  g.save(); g.setTransform(1, 0, 0, 1, 0, 0); g.translate(ax, ay); g.rotate(sw);
+// Same design and screen place as verse 1 and 2 (v2-main.js): 27 thin ray petals (39 x 6.2 at radius 64, lead 4.5),
+// dropped clockwise from the top. 19 are gone before verse 3; 20-27 drop here, the 27th on the held phrase's "me".
+// At the cut it swings down into frame from where verse 2's push-in sent it (top right), as the camera pulls back past it.
+const NPET = 27, PREGONE = 19;
+function drawDaisy(g, t, tod, rt) { // t = world time (slowed in the outro), rt = real song time
+  const pass = 1 - smooth(lin(rt, PORTAL.t0, PORTAL.t0 + .8));
+  const ax = 1800 + 520 * pass, ay = -10 - 900 * pass * pass, sc = 1 + 1.4 * pass;
+  const calm = 1 - ease(rt, B.tail, B.still); // the outro: the roundel stops swaying
+  const len = 238 + 4 * Math.sin(t * .9) * calm;
+  const sw = calm * (.05 * Math.sin(t * .8) + .03 * Math.sin(t * 1.9 + 1)) + DROPS.reduce((s, d) => s + (t > d ? .05 * Math.exp(-(t - d) * 2.2) * Math.sin((t - d) * 9) : 0), 0);
+  g.save(); g.setTransform(1, 0, 0, 1, 0, 0); g.globalAlpha = lin(rt, PORTAL.t0 + .03, PORTAL.t0 + .3); g.translate(ax, ay); g.scale(sc, sc); g.rotate(sw);
   const L = .35 + .65 * tod.I;
-  // chain
   g.strokeStyle = '#1a1612'; g.lineWidth = 4;
   for (let y = 0; y < len - 120; y += 22) { g.beginPath(); g.ellipse(0, y + 11, (y / 22) % 2 ? 3 : 7, 10, 0, 0, TAU); g.stroke(); }
   g.translate(0, len);
@@ -164,19 +173,18 @@ function drawDaisy(g, t, tod) {
   pane(g, circPath(0, 0, 118), lit(C.gold), 1, { ew: 12, lw: 7 });
   pane(g, circPath(0, 0, 104), lit([120, 170, 214]), 2, { ew: 30, lw: 7 });
   for (let k = 0; k < NPET; k++) {
-    const a = -Math.PI / 2 + k * TAU / NPET, p = ellPath(Math.cos(a) * 62, Math.sin(a) * 62, 40, 15, a);
-    const di = k - PREGONE, dt = di >= 0 ? t - DROPS[di] : 99;
-    if (dt < 0) { pane(g, p, lit(C.white), 10 + k, { ew: 10, lw: 6, amt: .4 }); continue; }
-    // the hole the petal leaves: dark, leaded, a glint as it goes
-    g.fillStyle = 'rgba(16,18,28,.92)'; g.fill(p); lead(g, p, 6);
+    const a = -Math.PI / 2 + k * TAU / NPET, p = ellPath(Math.cos(a) * 64, Math.sin(a) * 64, 39, 6.2, a);
+    const di = k - PREGONE, dt = di < 0 ? 99 : di < DROPS.length ? t - DROPS[di] : -1;
+    if (dt < 0) { pane(g, p, lit(C.white), 10 + k, { ew: 6, lw: 4.5, amt: .4 }); continue; }
+    g.fillStyle = 'rgba(16,18,28,.92)'; g.fill(p); lead(g, p, 4.5);
     if (dt < .5) { g.fillStyle = `rgba(255,250,220,${.8 * (1 - dt / .5)})`; g.fill(p); }
-    if (dt < 1.9) { // the petal falls
-      const rx = Math.cos(a) * 62, ry = Math.sin(a) * 62;
-      g.save(); g.rotate(-sw); // fall straight down on screen
+    if (dt < 1.9) {
+      const rx = Math.cos(a) * 64, ry = Math.sin(a) * 64;
+      g.save(); g.rotate(-sw);
       const [wx, wy] = [rx * Math.cos(sw) - ry * Math.sin(sw), rx * Math.sin(sw) + ry * Math.cos(sw)];
       g.translate(wx + Math.cos(a) * 30 * Math.min(dt * 4, 1) + Math.sin(dt * 5 + k) * 26, wy + 520 * dt * dt);
-      g.rotate(a + sw + dt * (k % 2 ? 2.6 : -2.2)); g.globalAlpha = 1 - lin(dt, 1.3, 1.9);
-      pane(g, ellPath(0, 0, 40, 15), lit(C.white), 10 + k, { ew: 10, lw: 6, amt: .4 });
+      g.rotate(a + sw + dt * (k % 2 ? 2.6 : -2.2)); g.globalAlpha *= 1 - lin(dt, 1.3, 1.9);
+      pane(g, ellPath(0, 0, 39, 6.2), lit(C.white), 10 + k, { ew: 6, lw: 4.5, amt: .4 });
       g.restore();
     }
   }
@@ -185,23 +193,33 @@ function drawDaisy(g, t, tod) {
   g.restore();
 }
 
+// World time: real time until the tail, then it slows to a stop (the window, the scenes, the daisy freeze into a
+// still image by ~224) while the grain keeps running.
+function worldT(t) { const a = 215.0, T = 2.2; return t <= a ? t : a + T * (1 - Math.exp(-(t - a) / T)); }
+
 function renderFrame(t) {
   g.setTransform(1, 0, 0, 1, 0, 0); g.globalAlpha = 1; g.globalCompositeOperation = 'source-over'; g.filter = 'none';
   g.fillStyle = '#000'; g.fillRect(0, 0, W, H);
-  const cam = camAt(t);
+  const rt = t; t = worldT(rt);
+  const cam = camAt(rt);
   const { view, tod } = drawGlassWorld(g, t, cam);
   const wallL = .55 * tod.I + .1;
   drawWall(g, view, wallL);
   drawFloor(g, view, wallL, tod);
   drawPool(g, view, tod, t);
-  bloom(g, tod.I);
-  drawShafts(g, t, tod);
-  drawDaisy(g, t, tod);
+  // the church light comes back as we leave the roundel (the bridge's frame is flat: no bloom, shafts, vignette)
+  const fin = 1 - smooth(lin(rt, PORTAL.t0, PORTAL.t0 + .75));
+  bloom(g, tod.I * (1 - .7 * fin));
+  drawShafts(g, t, tod, 1 - fin);
+  drawDaisy(g, t, tod, rt);
   // vignette + grain
   g.setTransform(1, 0, 0, 1, 0, 0); g.globalCompositeOperation = 'source-over';
-  const vg = g.createRadialGradient(W / 2, H / 2, H * .45, W / 2, H / 2, W * .65); vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(0,0,0,.5)');
+  const vg = g.createRadialGradient(W / 2, H / 2, H * .45, W / 2, H / 2, W * .65); vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, `rgba(0,0,0,${.5 * (1 - fin)})`);
   g.fillStyle = vg; g.fillRect(0, 0, W, H);
-  drawGrain(g, t, .12);
+  drawGrain(g, rt, .12 * (1 - .5 * fin));
+  // the end: a slow fade to black, fully black on the last frame
+  const fade = smooth(lin(rt, B.fade0, B.fade1));
+  if (fade > 0) { g.setTransform(1, 0, 0, 1, 0, 0); g.globalAlpha = 1; g.fillStyle = `rgba(0,0,0,${fade})`; g.fillRect(0, 0, W, H); }
   g.setTransform(1, 0, 0, 1, 0, 0); g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
 }
 
