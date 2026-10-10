@@ -1,0 +1,7 @@
+Use your image_generation tool exactly once, with the three attached images as references. Pass the image prompt below VERBATIM, do not rewrite or embellish it. Keep the same landscape image proportions. Then copy the generated file into the current folder as wolf_v3.png. Do nothing else.
+
+IMAGE PROMPT:
+Edit the first attached black-and-white scratchboard sheet. Change ONLY the antlers.
+1. The howling wolf (top row, second from left, muzzle pointing straight up) must clearly HAVE two antlers, exactly like the wolf in the second attached image: two slender antlers sweeping back from the top of its head, behind the ears, along the back of the neck, clearly visible as two separate bright antlers, each with one small tine.
+2. In EVERY view, each antler is one slender smooth beam curving gently outward with exactly ONE small tine near the base, like the third attached image. Remove all extra branches and forks at the tips: no antler may end in two or three points.
+Draw them as clean white engraved lines on black. Keep everything else exactly as it is: pure black and white only, no grey, no colour. No text.
