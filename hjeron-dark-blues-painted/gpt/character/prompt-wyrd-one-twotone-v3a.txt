@@ -1,0 +1,7 @@
+Use your image_generation tool exactly once, with the attached image as the reference. Pass the image prompt below VERBATIM, do not rewrite or embellish it. Keep the same landscape image proportions. Then copy the generated file into the current folder as wyrd_v3.png. Do nothing else.
+
+IMAGE PROMPT:
+Edit the attached strict black-and-white scratchboard character sheet. Change ONLY two things:
+1. On every guitar where the front of the body shows, draw BOTH Les Paul pickups: the neck pickup (just below where the neck joins the body) AND the bridge pickup (near the bridge), two separate rectangular humbuckers with the strings running over them, drawn in the same white engraved lines.
+2. Every guitar strap is plain: remove all marks, letters, symbols or patterns on the straps, leaving a plain black strap edged with a thin white line.
+Keep everything else exactly as it is: figures, poses, hands, veils, hats, coats, headstocks, layout. Pure black and white only, no grey, no colour. No text.
