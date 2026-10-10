@@ -1,0 +1,7 @@
+{
+  "name": "bobwiseman-you-dont-love-me",
+  "private": true,
+  "type": "module",
+  "description": "Bob Wiseman, You Don't Love Me: look tests drawn in code, one page per look under looks/.",
+  "devDependencies": { "playwright": "^1.55.0" }
+}
