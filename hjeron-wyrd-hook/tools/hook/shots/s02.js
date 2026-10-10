@@ -24,8 +24,8 @@ Anim.sketch({
       sparks(f, 700, 1150, { spread: 900, rate: 3, burst: 8, speed: 9, life: 70, seed: 17 });
       standAt(this.him, this.him.frame(f), 1060, 1130, 1150);
     });
-    // SECRETS on "secrets" (68.76 s -> f16), scratched away at the end of "told"
-    carve(this.f.caslon, "SECRETS", 330, 250, 125, f, 16, 58);
+    // SECRETS on "secrets" (68.76 s -> f16), in the black above the hat brim; scratched away after "told"
+    carve(this.f.caslon, "SECRETS", 330, 120, 105, f, 16, 58);
     twoTone();
   }
 });

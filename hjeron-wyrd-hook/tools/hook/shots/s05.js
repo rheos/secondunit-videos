@@ -5,6 +5,7 @@ Anim.sketch({
     this.plate = await new Promise((r) => loadImage("/output/s01/02_kf_camp.png", r));
     this.him = await Anim.clip("back_late");
     this.wolf = await Anim.clip("sit_k");
+    this.fire = await Anim.clip("fire");
   },
   draw(t, f) {
     background(0);
@@ -12,7 +13,7 @@ Anim.sketch({
     cam(f, lerp(1.06, 1.0, smooth(f / 78)), 0, 0, 0.02, () => {
       const cv = cover(this.plate, 1.0, 0.5, 0.55);
       const fx = 1500, fy = 880;
-      fire(fx, fy, 300 * (1 - 0.5 * sink), 380, t, { seed: 3, n: 110, power: 1 - 0.8 * sink });
+      fireSprite(this.fire, f, fx, fy, 470 * (1 - 0.65 * sink));
       sparks(f, fx, fy - 20, { spread: 120, rate: Math.round(4 * (1 - sink)) + 1, burst: Math.round(14 * (1 - sink)), seed: 31 });
       standAt(this.him, this.him.frame(f * 0.75), W * 0.40, H + 30, 980);
       standAt(this.wolf, this.wolf.frame(f), W * 0.58, H + 20, 520);

@@ -4,6 +4,7 @@ Anim.sketch({
   async load() {
     this.plate = await new Promise((r) => loadImage("/output/s01/02_kf_camp.png", r));
     this.him = await Anim.clip("play_k");
+    this.fire = await Anim.clip("fire");
     this.f = await hookFonts({ caslon: "Bodoni72SmallcapsBook-clean.ttf" });
   },
   draw(t, f) {
@@ -14,7 +15,7 @@ Anim.sketch({
       // the fire in the left foreground, him to the right of it
       const fx = 560, fy = 1010;
       sparks(f, fx, fy - 120, { spread: 140, rate: 5, burst: 22 });
-      fire(fx, fy, 460, 520, t, { seed: 3, n: 150, power: 1 + 0.25 * punch(f) });
+      fireSprite(this.fire, f, fx, fy, 640 * (1 + 0.06 * punch(f)));
       standAt(this.him, this.him.frame(f), 1340, 1110, 1000);
       sparks(f, fx, fy - 200, { spread: 220, rate: 2, burst: 10, seed: 41, speed: 12 });
     });

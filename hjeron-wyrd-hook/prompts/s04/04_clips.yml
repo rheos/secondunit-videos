@@ -1,14 +1,44 @@
+---
 - name: wolf_walk
   image: wolf
   seconds: 5
   key: green
-  prompt: "Same Antlered Wolf, same design and two-tone scratchboard style. It walks steadily straight toward camera, head low, eyes forward, smoke streaming back off the antler tips and tail; after about four seconds it stops and lifts its head. Antlers keep their exact shape, one tine each. Locked camera, no camera movement, no zoom, the whole figure stays inside the frame, perfectly flat chroma green #00B140 throughout, no shadows on the background, no floor, no text, no extra characters, preserve the exact two-tone white-line-on-black scratchboard style, no grey, no colour."
+  prompt: 'Same Antlered Wolf, same design and two-tone scratchboard style. It walks
+    steadily straight toward camera, head low, eyes forward, smoke streaming back
+    off the antler tips and tail; after about four seconds it stops and lifts its
+    head. Antlers keep their exact shape, one tine each. Locked camera, no camera
+    movement, no zoom, the whole figure stays inside the frame, perfectly flat chroma
+    green #00B140 throughout, no shadows on the background, no floor, no text, no
+    extra characters, preserve the exact two-tone white-line-on-black scratchboard
+    style, no grey, no colour.'
 - name: wolf_walk_k
   image: wolf
   seconds: 5
   key: green
   engine: kling
   elements:
-    - frontal: refs/wolf-front.png
-      refs: [refs/wolf-side.png, refs/wolf-head.png, refs/wolf-back.png]
-  prompt: "@Element1, the Antlered Wolf, exactly as its reference sheet: slender antlers with one tine each, thick smoke-tipped tail, white engraved fur, white eyes. Starting from the first frame, it walks steadily straight toward camera, head low, eyes forward, thin smoke streaming back off the antler tips and tail; after about four seconds it stops close to camera and lifts its head. Its antlers, tail and face keep exactly the sheet's shape the whole time. Locked camera, no camera movement, no zoom, the whole wolf stays inside the frame, perfectly flat chroma green #00B140 background throughout, no shadows, no floor, no ground line, no text, no other animals or people. Keep the exact two-tone style of @Element1: white engraved lines on pure black, no grey, no colour."
+  - frontal: refs/wolf-front.png
+    refs:
+    - refs/wolf-side.png
+    - refs/wolf-head.png
+    - refs/wolf-back.png
+  prompt: "@Element1, the Antlered Wolf, exactly as its reference sheet: slender antlers
+    with one tine each, thick smoke-tipped tail, white engraved fur, white eyes. Starting
+    from the first frame, it walks steadily straight toward camera, head low, eyes
+    forward, thin smoke streaming back off the antler tips and tail; after about four
+    seconds it stops close to camera and lifts its head. Its antlers, tail and face
+    keep exactly the sheet's shape the whole time. Locked camera, no camera movement,
+    no zoom, the whole wolf stays inside the frame, perfectly flat chroma green #00B140
+    background throughout, no shadows, no floor, no ground line, no text, no other
+    animals or people. Keep the exact two-tone style of @Element1: white engraved
+    lines on pure black, no grey, no colour."
+- name: fire
+  image: firesprite
+  seconds: 5
+  key: green
+  prompt: 'The same engraved campfire burns steadily: the tongues of flame lick, sway
+    and flicker upward, a few sparks lift off the top and drift away, the logs stay
+    still. White engraved lines on black, exactly the same two-tone scratchboard style,
+    no grey, no colour, no smoke filling the frame. Locked camera, no camera movement,
+    no zoom, the whole fire stays inside the frame, perfectly flat chroma green #00B140
+    background throughout, no ground, no shadow, no text.'

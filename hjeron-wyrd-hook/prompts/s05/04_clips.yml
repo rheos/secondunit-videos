@@ -23,3 +23,6 @@
   source: output/s03/04_clip_back_k.mp4
   key: green
   start: 40
+- name: fire
+  source: output/s04/04_clip_fire.mp4
+  key: green

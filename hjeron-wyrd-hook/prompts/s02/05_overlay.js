@@ -55,7 +55,7 @@ function fire(x, y, w, h, t, { n = 90, seed = 1, split = 0, power = 1, logs = tr
   noFill(); stroke(255);
   for (let i = 0; i < n; i++) {
     const u = r() * 2 - 1, core = 1 - Math.pow(Math.abs(u), 1.4), side = Math.sign(u) || 1, ph = r() * 10;
-    const bx = x + u * w * 0.5 + side * split * w * 0.85;
+    const bx = x + u * w * 0.5 + side * split * w * 0.85, by = y + (r() - 0.3) * h * 0.08 * (0.4 + Math.abs(u));
     const len = h * power * (0.12 + 0.88 * core * core) * (0.45 + 0.75 * noise(i * 0.37, t * 3.2));
     strokeWeight(0.9 + 2.6 * core * (0.4 + 0.6 * r()));
     beginShape();
@@ -63,15 +63,15 @@ function fire(x, y, w, h, t, { n = 90, seed = 1, split = 0, power = 1, logs = tr
       const v = k / 16, conv = 0.85 * (1 - split);
       const cx = lerp(bx, x + side * split * w * 0.85, Math.pow(v, 0.8) * conv);
       const wav = Math.sin(v * 7 + t * 11 + ph) * (3 + 44 * v * v) * (0.4 + core) + (noise(ph, t * 2.5, v * 2) - 0.5) * 90 * v * v;
-      vertex(cx + wav + side * split * w * 0.25 * v, y - v * len);
+      vertex(cx + wav + side * split * w * 0.25 * v, by - v * len);
     }
     endShape();
   }
   // embers glowing in the bed
   stroke(255); strokeWeight(2);
   for (let i = 0; i < 26; i++) {
-    const ex = x + (r() - 0.5) * w * (1 + split * 1.8), ey = y + (r() - 0.3) * h * 0.05;
-    if (noise(i, t * 4) > 0.45) line(ex, ey, ex + 6 + r() * 10, ey);
+    const eu = (r() - 0.5), es = Math.sign(eu) || 1, ex = x + eu * w * 0.7 + es * split * w * 0.85, ey = y + (r() - 0.2) * h * 0.06;
+    if (noise(i, t * 4) > 0.45) point(ex, ey);
   }
 }
 
@@ -156,6 +156,21 @@ async function hookFonts(map) {
   return out;
 }
 
+// The generated engraved campfire (s04 "fire" clip, cut out), looped. Its logs sit near the bottom of its frame:
+// (x, y) is the base of the fire, h the full sprite height. split (0..1) cuts it down the middle and slides the halves apart.
+function fireSprite(clip, f, x, y, h, { split = 0, alpha = 1 } = {}) {
+  const img = clip.frame(f, { loop: true }), w = (h * img.width) / img.height, top = y - h * 0.94;
+  push(); drawingContext.globalAlpha = alpha; imageMode(CORNER);
+  if (split <= 0) image(img, x - w / 2, top, w, h);
+  else {
+    // two whole fires (mirrored so they don't repeat) start overlapped as one blaze and slide apart: no cut edges
+    const dx = split * w * 0.42, k = 1 - 0.18 * split;
+    image(img, x - dx - (w * k) / 2, y - h * k * 0.94, w * k, h * k);
+    push(); translate(x + dx, 0); scale(-1, 1); image(img, -(w * k) / 2, y - h * k * 0.94, w * k, h * k); pop();
+  }
+  pop();
+}
+
 const START = 1634;
 Anim.sketch({
   async load() {
@@ -181,8 +196,8 @@ Anim.sketch({
       sparks(f, 700, 1150, { spread: 900, rate: 3, burst: 8, speed: 9, life: 70, seed: 17 });
       standAt(this.him, this.him.frame(f), 1060, 1130, 1150);
     });
-    // SECRETS on "secrets" (68.76 s -> f16), scratched away at the end of "told"
-    carve(this.f.caslon, "SECRETS", 330, 250, 125, f, 16, 58);
+    // SECRETS on "secrets" (68.76 s -> f16), in the black above the hat brim; scratched away after "told"
+    carve(this.f.caslon, "SECRETS", 330, 120, 105, f, 16, 58);
     twoTone();
   }
 });

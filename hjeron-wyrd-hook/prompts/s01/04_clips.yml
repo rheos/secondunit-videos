@@ -22,3 +22,6 @@
     inside the frame, perfectly flat chroma green #00B140 background throughout, no
     shadows, no floor, no ground line, no text, no other figures. Keep the exact two-tone
     style of @Element1: white engraved lines on pure black, no grey, no colour."
+- name: fire
+  source: output/s04/04_clip_fire.mp4
+  key: green
