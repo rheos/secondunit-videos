@@ -90,7 +90,7 @@ try {
   tab.on("response", (r) => r.status() >= 400 && errors.push(`${r.status()} ${r.url()}`));
   await tab.setViewport({ width: cfg.width, height: cfg.height, deviceScaleFactor: 1 });
   await tab.goto(`http://127.0.0.1:${server.address().port}/__anim__.html`);
-  await tab.waitForFunction("window.ANIM.ready || window.ANIM.error", { timeout: 60_000 }).catch(() => {});
+  await tab.waitForFunction("window.ANIM.ready || window.ANIM.error", { timeout: 300_000 }).catch(() => {});
   const state = await tab.evaluate(() => ({ ready: ANIM.ready, error: ANIM.error }));
   if (!state.ready) throw new Error(`sketch did not start: ${state.error || errors.join("\n") || "timeout"}`);
 

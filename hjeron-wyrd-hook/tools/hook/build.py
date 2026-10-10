@@ -2,7 +2,7 @@
 import pathlib
 root = pathlib.Path(__file__).resolve().parents[2]
 common = (root / "tools/hook/common.js").read_text()
-for shot in sorted((root / "tools/hook/shots").glob("s0*.js")):
+for shot in sorted((root / "tools/hook/shots").glob("*.js")):
     out = root / "prompts" / shot.stem / "05_overlay.js"
     body = shot.read_text()
     # START must be defined before common.js uses it at draw time; both are plain scripts, order is fine at runtime

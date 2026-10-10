@@ -171,6 +171,55 @@ function fireSprite(clip, f, x, y, h, { split = 0, alpha = 1 } = {}) {
   pop();
 }
 
+// Scratch-in: the shot is cut out of the black like a scratchboard tool working left to right, over `dur` frames.
+function scratchIn(f, dur = 9, seed = 3) {
+  const u = easeOut(f / dur); if (u >= 1) return;
+  const r = Anim.rng(seed); noStroke(); fill(0);
+  for (let y = 0; y < H; y += 14) {
+    const edge = W * (u * 1.25 - 0.12) + (r() - 0.5) * 220;
+    rect(Math.max(0, edge), y, W, 15);
+  }
+  // the tool's white burr along the edge
+  stroke(255); strokeWeight(2); const r2 = Anim.rng(seed + 1);
+  for (let y = 0; y < H; y += 14) { const edge = W * (u * 1.25 - 0.12) + (r2() - 0.5) * 220; line(edge, y + 7, edge - 30 - r2() * 40, y + 7); }
+}
+
+// A carved word that then cracks: a jagged black split runs down through it and the halves drift apart.
+function carveCrack(font, word, x, y, size, f, onF, crackF, goneF = 1e9) {
+  const c = smooth((f - crackF) / 10), gone = smooth((f - goneF) / 6);
+  if (c <= 0) { carve(font, word, x, y, size, f, onF); return; }
+  if (gone >= 1) return;
+  for (const side of [-1, 1]) {
+    push(); drawingContext.save(); drawingContext.beginPath();
+    const r = Anim.rng(41);
+    if (side < 0) { drawingContext.moveTo(-W, -H); drawingContext.lineTo(x, -H); for (let k = 0; k <= 10; k++) drawingContext.lineTo(x + (r() - 0.5) * 50, y - size + (2 * size * k) / 10); drawingContext.lineTo(x, H * 2); drawingContext.lineTo(-W, H * 2); }
+    else { drawingContext.moveTo(W * 2, -H); drawingContext.lineTo(x, -H); for (let k = 0; k <= 10; k++) drawingContext.lineTo(x + (r() - 0.5) * 50, y - size + (2 * size * k) / 10); drawingContext.lineTo(x, H * 2); drawingContext.lineTo(W * 2, H * 2); }
+    drawingContext.closePath(); drawingContext.clip();
+    translate(side * c * 70, 0); rotate(side * c * 0.03);
+    drawingContext.globalAlpha = 1 - gone;
+    carve(font, word, x, y, size, 1e4, onF);
+    drawingContext.restore(); pop();
+  }
+}
+
+// Glowing cracks opening outward from (x, y) across the ground: white branching fissures, grown by u (0..1).
+function cracks(x, y, u, t, seed = 8) {
+  const r = Anim.rng(seed), segs = [];
+  const grow = (x0, y0, ang, len, depth, born) => {
+    const k = clamp((u - born) / 0.4); if (k <= 0 || depth > 3) return;
+    let px = x0, py = y0; const steps = 10, L = len * k;
+    for (let i = 1; i <= steps; i++) {
+      const a = ang + (r() - 0.5) * 0.6, nx = px + Math.cos(a) * (L / steps), ny = py + Math.sin(a) * (L / steps) * 0.32;
+      segs.push([px, py, nx, ny, depth]); px = nx; py = ny;
+      if (r() < 0.25) grow(px, py, a + (r() < 0.5 ? -0.7 : 0.7), len * 0.5, depth + 1, born + 0.1);
+    }
+  };
+  for (let i = 0; i < 11; i++) grow(x, y, (i / 11) * Math.PI * 2 + r() * 0.25, 900 + r() * 500, 0, r() * 0.2);
+  // black lips, then the white-hot core of each fissure
+  for (const [ax, ay, bx, by, d] of segs) { stroke(0); strokeWeight(22 - d * 5); line(ax, ay, bx, by); }
+  for (const [ax, ay, bx, by, d] of segs) { stroke(255); strokeWeight((12 - d * 3) * (0.85 + 0.15 * Math.sin(t * 9 + ax))); line(ax, ay, bx, by); }
+}
+
 const START = 1554;
 Anim.sketch({
   async load() {
