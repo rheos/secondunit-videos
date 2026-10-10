@@ -1,0 +1,19 @@
+output/
+tmp/
+specs/
+node_modules/
+.venv/
+tools/vfx/.build/
+.bundle/
+audio/
+.env
+
+**/__pycache__/
+*.pyc
+**/prompts/e2e-*/
+**/prompts/live-vfx-*/
+
+# fonts are copied from macOS per machine, never committed
+tools/p5/fonts/
+refs/*.ttf
+logs/
