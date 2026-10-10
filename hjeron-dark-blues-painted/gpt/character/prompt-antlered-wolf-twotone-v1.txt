@@ -1,0 +1,7 @@
+Use your image_generation tool exactly once, with the two attached images as references, at the highest quality and largest landscape size the tool allows. Pass the image prompt below VERBATIM, do not rewrite or embellish it. Then copy the generated file into the current folder as wolf_tt.png. Do nothing else.
+
+IMAGE PROMPT:
+Redraw the first attached character model sheet of the Antlered Wolf as a TRUE TWO-TONE SCRATCHBOARD sheet in exactly the style of the second attached image: pure black ground, the animal carved out in WHITE ENGRAVED LINES ONLY. Exactly two tones: no greys, no gradients, no airbrush, no rendered shading. The white fur is drawn as confident white strokes following the form, with the shadow side left as solid black so each silhouette reads instantly; far fewer details than the first image. The smoke wisps become a few thin white scratched curls.
+Keep the first image's layout and every view exactly (same poses, positions and sizes): sitting front, sitting howl, standing side, standing back, walking, running, three head close-ups, and beside the man for scale (the man as a solid black silhouette edged with a few white scratches).
+Design: slim fox-like wolf, very large pointed ears, narrow muzzle, slender antlers rising almost straight up, each with exactly ONE small tine near the base, one big crescent tail.
+Spot colour, the ONLY colour: its eyes in ICE-BLUE. Everything else pure black and white. No text, no labels, no signature.
