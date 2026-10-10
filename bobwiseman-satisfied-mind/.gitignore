@@ -8,3 +8,4 @@ STORYBOARD.md
 _in/
 *.lyrics.txt
 assets/song.wav
+gen/
