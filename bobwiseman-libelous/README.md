@@ -14,7 +14,7 @@ Robin (2026-10-11): the words are hard to make out, so the whole song is caption
 
 How the timing was made (work/align.py, work/build_lines.py): Whisper on the full mix falls apart after 4:00 (it hallucinates a repeating verse), which proves Robin's point. So Bob's own text is force-aligned to the vocal stem with torchaudio MMS_FA (CTC), in windows where the global pass drifted (70.6-95.9, 261.3-272.25, 271.8-296.6). Line starts were checked against Whisper word times on the stem; they agree within about 0.4 s. Lines marked `"approx": true` (2 at 4:25-4:32 and the 8-line outro from 296.4) are spread by hand from Whisper anchors: check them by ear before a final.
 
-The record's outro (after "making a fuss") is: "It's people like you that are Libelous" and two repeats, a held shout of "Libelous", two more repeats, a last "Libelous". Whisper hears it badly, so the exact count is an ear-check item.
+The record's outro repeats the last line of the sheet: three times, a held shout of the title, twice more, the title once more. Whisper hears it badly, so the exact count is an ear-check item.
 
 ## What the song is about
 
@@ -36,7 +36,7 @@ Frames are song frames, half-open `[start, end)`. The song is sung almost wall t
 | 5 | Farmers evicted, cattle, poison, the forest | 75.42-95.92 | 1810-2302 |
 | 6 | Rapunzel, the clown ad, the children's party | 95.92-123.13 | 2302-2955 |
 | 7 | Tons of ink: the "Nutritional Facts" book | 123.13-165.08 | 2955-3962 |
-| 8 | "Happy little slaves": the workers | 165.08-198.13 | 3962-4755 |
+| 8 | The workers | 165.08-198.13 | 3962-4755 |
 | 9 | Factory farms | 198.13-213.46 | 4755-5123 |
 | 10 | The couple and their fact sheet | 213.46-240.92 | 5123-5782 |
 | 11 | One Tuesday: the king's legal teams | 240.92-261.5 | 5782-6276 |

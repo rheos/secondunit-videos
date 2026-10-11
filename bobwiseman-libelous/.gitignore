@@ -10,3 +10,4 @@ _in/
 assets/song.wav
 gen/
 *.sung.txt
+js/*/NOTES.md
