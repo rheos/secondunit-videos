@@ -72,19 +72,31 @@
     return [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)];
   }
   const size = (g) => [g.canvas.width, g.canvas.height];
+  const extra = (g, o) => ({
+    keep: !!o.keep, margin: o.margin ?? null,
+    container: o.inScreen ? [o.inScreen[0], o.inScreen[1], o.inScreen[0] + o.inScreen[2], o.inScreen[1] + o.inScreen[3]] : o.in ? screenBox(g, ...o.in) : null,
+  });
 
   const probe = {
     get on() { return on(); },
-    // A drawn thing's box. keep: true means it must stay inside the frame's safe area.
-    box(g, name, x, y, w, h, o = {}) { if (on()) rec({ kind: 'box', name, box: screenBox(g, x, y, w, h), frame: size(g), keep: !!o.keep }); },
-    // Text drawn with g's current font, alignment and baseline at (x, y), and the container it must fit
-    // inside ([x, y, w, h] in the same local coordinates). Call it next to the fillText.
-    text(g, name, str, x, y, container) {
+    // Options for box and text:
+    //   keep: true       it must stay inside the frame's safe area
+    //   in: [x, y, w, h]  the container it must fit inside, in the same local coordinates
+    //   inScreen: [...]  the container in canvas pixels instead (when the container was drawn
+    //                    under a different transform)
+    //   margin: px       the margin inside the container, in canvas pixels (default: the audit's --margin)
+    box(g, name, x, y, w, h, o = {}) {
+      if (on()) rec({ kind: 'box', name, box: screenBox(g, x, y, w, h), frame: size(g), ...extra(g, o) });
+    },
+    // Text drawn with g's current font, alignment and baseline at (x, y). The sixth argument is either
+    // the container as [x, y, w, h] in local coordinates or the options. Call it next to the fillText.
+    text(g, name, str, x, y, container, o = {}) {
       if (!on()) return;
+      if (container && !Array.isArray(container)) { o = container; container = null; } // text(g, name, str, x, y, { keep })
       const m = g.measureText(str);
       const box = screenBox(g, x - m.actualBoundingBoxLeft, y - m.actualBoundingBoxAscent,
         m.actualBoundingBoxLeft + m.actualBoundingBoxRight, m.actualBoundingBoxAscent + m.actualBoundingBoxDescent);
-      rec({ kind: 'text', name, str, box, container: container ? screenBox(g, ...container) : null, frame: size(g) });
+      rec({ kind: 'text', name, str, box, frame: size(g), ...extra(g, container ? { ...o, in: container } : o) });
     },
     // Something that happens on this frame (a landing, a cut, a label lighting). Call it on the frame only.
     event(name) { rec({ kind: 'event', name }); },
