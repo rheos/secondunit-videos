@@ -36,6 +36,17 @@ function drawGrain(g, t, alpha = .18, mode = 'overlay') {
 // Text that must fit a box: shrinks the font until the measured width fits (see text-fits-container).
 function fitText(g, txt, maxW, size, font) { let s = size; g.font = font.replace('{s}', s); while (s > 6 && g.measureText(txt).width > maxW) { s -= 1; g.font = font.replace('{s}', s); } return s; }
 
+// motion-lab probes (rheos/secondunit-videos tools/motion-lab): the audit injects ML; everywhere else, cloud
+// renders included, these do nothing. probeDrops fires 'petal#<n>' as each daisy petal starts to fall (song-wide
+// index) and records how many petals are still on; gate(t) maps song time to the time the daisy is drawn at.
+const PROBE = (typeof ML !== 'undefined' && ML.probe) || { on: false, text() {}, box() {}, event() {}, edge() {}, value() {} };
+function probeDrops(t, drops, first, pregone, gate = (x) => x) {
+  if (!PROBE.on) return;
+  const now = gate(t), before = gate(ML.prevT(t));
+  drops.forEach((d, n) => PROBE.edge(`petal#${first + n}`, now >= d, before >= d));
+  PROBE.value('petals left', 27 - pregone - drops.filter((d) => now >= d).length);
+}
+
 // Page harness: offline hooks for check.mjs / render.mjs, and a live player (click or space) for T0..T1.
 function startPage(out, renderFrame, T0, T1, ready = Promise.resolve(true)) {
   const params = new URLSearchParams(location.search);

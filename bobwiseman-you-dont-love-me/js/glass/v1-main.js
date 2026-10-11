@@ -226,6 +226,7 @@ function v1Daisy(g, t, tod) {
       g.restore();
     }
   }
+  probeDrops(t, V1_DROPS, 0, 0);
   pane(g, circPath(0, 0, 25), lit(C.gold), 3, { ew: 10, lw: 7 });
   g.fillStyle = 'rgba(60,30,10,.7)'; for (let k = 0; k < 7; k++) { const a = k * TAU / 7; g.beginPath(); g.arc(Math.cos(a) * 12, Math.sin(a) * 12, 2.6, 0, TAU); g.fill(); }
   g.restore();
