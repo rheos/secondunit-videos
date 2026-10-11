@@ -159,13 +159,22 @@ function dynLoom(s, t, sh) {
   }
 }
 
+// Rubbed panelling: a smooth rubbed tone first (fills the tooth), then a few firm vertical strokes and
+// panel seams on top. Light diagonal hatching over the blue paper read as rain/static (v1), so none here.
+function panelWall(s, x0, y0, x1, y1, col = C.oak, n = 3) {
+  const R = rectPoly(x0, y0, x1, y1);
+  s.smudge(R, col, .62);
+  s.hatch(R, 1.57, 46, 20, col, .78, PASS.LAYIN, .05);
+  for (let k = 1; k < n; k++) { const px = lerp(x0, x1, k / n); s.line([[px, y0], [px + 3, y1]], 4, C.oakD, .55); }
+}
+
 // ---------- F. the public gallery fills (275.54, line start) ----------
 function buildGallery(s, sh) {
   s.at(sh.t - PRE, BUILD);
-  s.plane(0); s.hatch(rectPoly(0, 0, W, 330), 1.3, 30, 26, C.oakD, .5, PASS.LAYIN, .2);
+  s.plane(0); panelWall(s, 0, 0, W, 330, C.oakD, 8);
   s.plane(2); woodFront(s, -10, 320, W + 10, 420, 10, { col: C.oakL }); // the gallery rail
   for (let k = 0; k < 24; k++) { const px = 40 + k * 80; s.line([[px, 330], [px, 410]], 5, C.oakD, .6); } // balusters
-  s.ground(rectPoly(0, 420, W, 760), C.oakD, .35);
+  s.smudge(rectPoly(0, 420, W, 760), C.oakD, .5); // the floor below the rail, rubbed
 }
 function dynGallery(s, t, sh) {
   s.at(sh.t - PRE, BUILD);
@@ -258,8 +267,8 @@ function buildJudgeClose(s, sh) {
   s.plane(0);
   s.ground([[600, 0], [1320, 0], [1340, 560], [580, 560]], C.greenD, .7);
   s.hatch([[600, 0], [1320, 0], [1340, 560], [580, 560]], 1.45, 22, 26, C.green, .75);
-  s.hatch(rectPoly(0, 0, 600, 760), 1.3, 40, 24, C.oak, .45, PASS.LAYIN, .3);
-  s.hatch(rectPoly(1320, 0, W, 760), 1.3, 40, 24, C.oak, .45, PASS.LAYIN, .3);
+  panelWall(s, 0, 0, 600, 760);
+  panelWall(s, 1320, 0, W, 760);
   s.plane(1); judge(s, 960, 250, 116, { turn: .15 });
   s.plane(2); woodFront(s, 300, 610, 1620, 800, 5, { edge: C.oakL });
   gesture(s, [[560, 640], [1360, 630]], C.white, .3);
@@ -357,8 +366,8 @@ function buildGavelBase(s, sh) {
   s.plane(0);
   s.ground([[700, 0], [1220, 0], [1240, 520], [680, 520]], C.greenD, .7);
   s.hatch([[700, 0], [1220, 0], [1240, 520], [680, 520]], 1.45, 22, 26, C.green, .75);
-  s.hatch(rectPoly(0, 0, 680, 760), 1.3, 40, 24, C.oak, .45, PASS.LAYIN, .3);
-  s.hatch(rectPoly(1240, 0, W, 760), 1.3, 40, 24, C.oak, .45, PASS.LAYIN, .3);
+  panelWall(s, 0, 0, 680, 760);
+  panelWall(s, 1240, 0, W, 760);
   s.plane(1); judge(s, 960, 230, 92, { turn: .1, mouth: 'down' });
   s.plane(2); woodFront(s, 200, 610, 1720, 800, 6, { edge: C.oakL });
   s.plane(3); s.ground(ovalPoly(1480, 612, 96, 24), C.oakD, .95); s.line([[1386, 612], [1576, 612]], 4, C.ochre, .6, PASS.LIGHT); // the block
