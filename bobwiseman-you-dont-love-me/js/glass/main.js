@@ -1,6 +1,7 @@
 // Look: stained glass, verse 3 + outro (151.0-233.04). Pure function of song time t.
 // One place, the window, moving forward: out of the teacup roundel (v3-portal.js) -> L0 (spell) -> L1 (heart)
-// -> L2 (desert) -> L3 (king) -> pull back -> night -> still image, fade to black.
+// -> L2 (desert) -> L3 (king) -> pull back -> night -> still image; Bob from Satisfied Mind walks across the nave
+// floor with his piano and Junos (outro-bob.js), then a short fade to black.
 const out = document.getElementById('c'); out.width = W; out.height = H;
 const g = out.getContext('2d');
 
@@ -207,6 +208,8 @@ function renderFrame(t) {
   drawWall(g, view, wallL);
   drawFloor(g, view, wallL, tod);
   drawPool(g, view, tod, t);
+  // the outro cameo: moonlight on the floor and Bob crossing it (nothing is drawn before OB.in)
+  if (rt >= OB.in) { OUTRO_BOB.drawPool(g, view, rt); OUTRO_BOB.draw(g, rt, cam); }
   // the church light comes back as we leave the roundel (the bridge's frame is flat: no bloom, shafts, vignette)
   const fin = 1 - smooth(lin(rt, PORTAL.t0, PORTAL.t0 + .75));
   bloom(g, tod.I * (1 - .7 * fin));
@@ -217,7 +220,7 @@ function renderFrame(t) {
   const vg = g.createRadialGradient(W / 2, H / 2, H * .45, W / 2, H / 2, W * .65); vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, `rgba(0,0,0,${.5 * (1 - fin)})`);
   g.fillStyle = vg; g.fillRect(0, 0, W, H);
   drawGrain(g, rt, .12 * (1 - .5 * fin));
-  // the end: a slow fade to black, fully black on the last frame
+  // the end: once the last Juno has rattled out of frame, a short fade to black, black to the last frame
   const fade = smooth(lin(rt, B.fade0, B.fade1));
   if (fade > 0) { g.setTransform(1, 0, 0, 1, 0, 0); g.globalAlpha = 1; g.fillStyle = `rgba(0,0,0,${fade})`; g.fillRect(0, 0, W, H); }
   g.setTransform(1, 0, 0, 1, 0, 0); g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
