@@ -107,7 +107,11 @@ export const blurFrame = (p, t, fps, n, q = 0.92) => (n > 1 ? average(p, shutter
 export function args(argv, defaults) {
   const pos = [], o = { ...defaults };
   for (let i = 0; i < argv.length; i++) {
-    if (argv[i].startsWith('--')) { const k = argv[i].slice(2); const v = argv[i + 1]; o[k] = typeof defaults[k] === 'number' ? Number(v) : v; i++; } else pos.push(argv[i]);
+    if (!argv[i].startsWith('--')) { pos.push(argv[i]); continue; }
+    const k = argv[i].slice(2), v = argv[++i];
+    if (v === undefined || v.startsWith('--')) { console.error(`--${k} needs a value`); process.exit(2); }
+    if (typeof defaults[k] === 'number' && !Number.isFinite(Number(v))) { console.error(`--${k} must be a number, got "${v}"`); process.exit(2); }
+    o[k] = typeof defaults[k] === 'number' ? Number(v) : v;
   }
   return [pos, o];
 }

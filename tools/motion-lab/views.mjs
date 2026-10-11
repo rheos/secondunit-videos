@@ -14,6 +14,8 @@ import { execFileSync } from 'child_process';
 import { launch, openLook, strobe, probe, jpegBuffer, args } from './frames.mjs';
 
 const [[mode, ...pos], o] = args(process.argv.slice(2), { fps: 24, step: 2, crop: '', width: 1920, height: 1080 });
+const need = { onion: 4, speed: 5 }[mode];
+if (!need || pos.length < need) { console.log('usage: views.mjs onion <page> <out.jpg> <t0> <t1> | speed <page> <box-name> <out.png> <t0> <t1>'); process.exit(2); }
 const browser = await launch();
 const { p, errors } = await openLook(browser, pos[0], o);
 
@@ -77,8 +79,6 @@ if (mode === 'onion') {
   fs.writeFileSync(out, jpegBuffer(png));
   console.log(`speed graph of "${name}" frames ${f0}-${f1} -> ${out}`);
   console.log(findings.length ? findings.join('\n') : 'no dead stops, dead starts or linear runs');
-} else {
-  console.log('usage: views.mjs onion|speed ...  (see the header of this file)'); process.exit(2);
 }
 await browser.close();
 if (errors.length) { console.log('PAGE ERRORS\n' + [...new Set(errors)].slice(0, 10).join('\n')); process.exit(1); }

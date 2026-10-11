@@ -28,7 +28,10 @@ const logs = new Map(); const errors = [];
 const start = Date.now();
 await Promise.all([...Array(Math.min(o.workers, frames.length))].map(async (_, w) => {
   const { p, errors: e } = await openLook(browser, page, o);
-  for (let i = w; i < frames.length; i += o.workers) logs.set(frames[i], await probe(p, frames[i] / o.fps));
+  for (let i = w; i < frames.length; i += o.workers) {
+    // a frame that throws is a failure of that frame, not the end of the audit
+    try { logs.set(frames[i], await probe(p, frames[i] / o.fps)); } catch (err) { errors.push(`frame ${frames[i]}: ${err.message.split('\n')[0]}`); }
+  }
   errors.push(...e);
 }));
 await browser.close();
