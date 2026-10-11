@@ -88,10 +88,11 @@
     box(g, name, x, y, w, h, o = {}) {
       if (on()) rec({ kind: 'box', name, box: screenBox(g, x, y, w, h), frame: size(g), ...extra(g, o) });
     },
-    // Text drawn with g's current font, alignment and baseline at (x, y). The container may also be
-    // passed as the sixth argument, as [x, y, w, h] in local coordinates. Call it next to the fillText.
+    // Text drawn with g's current font, alignment and baseline at (x, y). The sixth argument is either
+    // the container as [x, y, w, h] in local coordinates or the options. Call it next to the fillText.
     text(g, name, str, x, y, container, o = {}) {
       if (!on()) return;
+      if (container && !Array.isArray(container)) { o = container; container = null; } // text(g, name, str, x, y, { keep })
       const m = g.measureText(str);
       const box = screenBox(g, x - m.actualBoundingBoxLeft, y - m.actualBoundingBoxAscent,
         m.actualBoundingBoxLeft + m.actualBoundingBoxRight, m.actualBoundingBoxAscent + m.actualBoundingBoxDescent);
