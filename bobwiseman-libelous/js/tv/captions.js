@@ -42,7 +42,7 @@ const CC_BLOCKS = [];
 function initCC() {
   const mk = (lines, until, top) => {
     const rows = [];
-    for (const li of lines) for (const r of splitBalanced(LN[li].words.map(w => ({ w: w.w.toUpperCase(), s: w.s })), s => s.length, CC.maxCh)) rows.push({ words: r, s: r[0].s, line: li });
+    for (const li of lines) for (const r of splitBalanced(LN[li].words.map((w, k) => ({ w: w.w.toUpperCase(), s: w.s, li, k })), s => s.length, CC.maxCh)) rows.push({ words: r, s: r[0].s, line: li });
     return { rows, until, top };
   };
   CC_BLOCKS.push(mk([41, 42, 43], readUntil(43) + 0.05, (t) => t >= B.adStart));
@@ -68,7 +68,7 @@ function ccLayout(t) {
       const slot = 2 - (vis.length - 1 - k);
       const y = yTop + slot * CC.rowH - scroll;
       const txt = r.words.filter(w => w.s <= t + 0.021).map(w => w.w).join(' ');
-      out.push({ y, txt, yTop, clip: [yTop, yTop + 3 * CC.rowH] });
+      out.push({ y, txt, yTop, clip: [yTop, yTop + 3 * CC.rowH], ws: r.words.filter(w => w.s <= t + 0.021) });
     });
   }
   return out;
@@ -81,6 +81,10 @@ function drawCC(g, t) {
     g.fillStyle = '#000'; g.fillRect(CC.x0 - CC.cell, r.y, w, CC.rowH);
     g.fillStyle = '#f4f4ee'; ccText(g, r.txt, CC.x0, r.y + CC.dotH);
     g.restore();
+    if (PROBE.on) { // audit: each word on its onset; a settled row (not rolling) inside the tube's safe area
+      for (const w of r.ws) probeWord(t, w.li, w.k, (tt) => w.s <= tt + 0.021);
+      if (r.y >= r.clip[0] - 0.5 && r.y + CC.rowH <= r.clip[1] + 0.5) PROBE.box(g, 'closed caption', CC.x0 - CC.cell, r.y, w, CC.rowH, { keep: true });
+    }
   }
 }
 
@@ -98,7 +102,7 @@ function initSA(g) {
   SA.desc = Math.max(...['g', 'y', 'p', ','].map(c => g.measureText(c).actualBoundingBoxDescent));
   const maxW = 800, measure = s => { g.font = SA.font; return g.measureText(s).width; };
   for (const li of SA.lines) {
-    const rows = splitBalanced(LN[li].words.map(w => ({ w: w.w, s: w.s })), measure, maxW);
+    const rows = splitBalanced(LN[li].words.map((w, k) => ({ w: w.w, s: w.s, k })), measure, maxW);
     const L = { li, rows: [], s: LN[li].s, rd: readUntil(li) };
     rows.forEach((ws, ri) => {
       const txt = ws.map(w => w.w).join(' '), rw = measure(txt), x0 = 480 - rw / 2;
@@ -239,6 +243,10 @@ function drawSA(g, t) {
         const k = 1 - smooth(clamp((t - w.s) / 0.16)), popX = 1 + 0.05 * k, popY = 1 - 0.12 * k;
         const nextS = nextOnset(row.L, w);
         const isCur = t < nextS + 0.02 && w === cur;
+        if (PROBE.on) { // audit: each word on its onset, inside the band, on the tube
+          probeWord(t, row.L.li, w.k, (tt) => w.s <= tt + 0.021 && tt >= row.L.s - 0.021);
+          g.font = SA.font; PROBE.text(g, 'sing-along', w.w, w.x, row.base, null, { keep: true, inScreen: [bd.x, by, bd.w, bd.h], margin: 6 });
+        }
         g.save(); g.translate(w.x + w.w_ / 2, row.base); g.scale(popX, popY);
         g.font = SA.font; g.fillStyle = isCur ? '#b0154f' : '#1b1530'; g.fillText(w.w, -w.w_ / 2, 0);
         g.restore();
@@ -246,6 +254,7 @@ function drawSA(g, t) {
     } else {
       g.save(); g.globalAlpha = row.a; g.translate(row.x0, row.base); g.scale(row.k, row.k);
       g.font = SA.font; g.fillStyle = '#1b1530'; g.fillText(row.ws.map(w => w.w).join(' '), 0, 0);
+      if (PROBE.on) { const wm = Math.max(...row.L.rows.map(r => r.w)) * SA.tab.k + 44; PROBE.text(g, 'sing-along tab', row.ws.map(w => w.w).join(' '), 0, 0, null, { keep: true, inScreen: [480 - wm / 2, SA.tab.y, wm, SA.tab.h], margin: 4 }); }
       g.restore();
     }
   }

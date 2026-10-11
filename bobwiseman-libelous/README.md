@@ -52,3 +52,17 @@ Frames are song frames, half-open `[start, end)`. The song is sung almost wall t
 | tv: 1970s Saturday-morning TV | 6 | 95.92-123.13 | 2302-2955 | the kids' show caption strip, then a bouncing-ball sing-along for the jingle |
 | leaflet: photocopied fact sheet | 10 | 213.46-240.92 | 5123-5782 | typed onto the leaflet as it's made, copied, handed out |
 | court: courtroom sketch artist | 12 + first refrain line | 261.5-302.75 | 6276-7266 | the court transcript, line-numbered, with speaker labels |
+
+## Caption audit (motion-lab)
+
+Every look reports each sung word's first frame (`word#<line>.<word>`) and its box against its container
+through `PROBE` (js/common/core.js; does nothing outside an audit). `audit.spec.mjs` builds the brief from
+`source/lines.json`: every word on its onset frame, at most 2 frames early and 1 late. Run one look's range
+from a folder that has Playwright, with rheos/secondunit-videos `tools/motion-lab/`:
+
+    node <tools>/motion-lab/audit.mjs looks/court.html 261.5 302.75 --spec audit.spec.mjs
+
+2026-10-11, all five looks: 453 of 453 words on their onsets, every caption inside its page, band, strip,
+window or sheet. Two "in frame" flags, both by design: the sing-along band carries its last line off the
+tube as it slides out (frames 2841-2844), and the school strips sit about 29 px from the bottom, 1 to 3 px
+inside a 3% safe line. Use `--safe 0.05` for tv (the tube crops 3% a side).

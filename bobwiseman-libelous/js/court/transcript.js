@@ -112,6 +112,10 @@ function drawTranscript(g, t) {
       if (t < wd.s - lead) return;
       const p = ly.pos[wi], fresh = clamp(1 - (t - (wd.s - lead)) / (3 / 24));
       const bx = p.col * lay.adv, by = p.r * TR.BIG * TR.lead + TR.BIG * .86;
+      if (PROBE.on) { // audit: each word on its onset, inside the visible sheet
+        probeWord(t, L.i, wi, (tt) => tt >= wd.s - lead);
+        PROBE.text(g, 'transcript', wd.w, bx, by, null, { keep: true, inScreen: [TR.x0, top + 3, TR.x1 - TR.x0, H - top - 3], margin: 6 });
+      }
       for (let ci = 0; ci < wd.w.length; ci++) {
         const ch = wd.w[ci], jr = rnd(L.i, wi * 31 + ci), jy = (rnd(L.i, wi * 31 + ci, 2) - .5) * 2.4;
         const ink = .84 + jr * .16;

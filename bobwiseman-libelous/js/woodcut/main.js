@@ -168,6 +168,13 @@ function drawRuns(L, R, li, A, Bl, u, t, live, toCol = false) {
     const x = lerp(ra.x, rb.x, ux), y = lerp(ra.y, rb.y, uy), size = lerp(ra.size, rb.size, ux);
     const kk = live ? Math.max(0, strike(t, w.s)) : 0;
     const C = ra.red ? R : L;
+    if (PROBE.on) { // audit: on its onset, inside the page's inner border, and the sung line on screen
+      probeWord(t, LYR[li].i, ra.wi, (tt) => wordOn(tt, w.s));
+      C.font = `${size}px "Big Caslon"`; C.textAlign = 'left'; C.textBaseline = 'alphabetic';
+      // on screen only once the camera has settled: a whip to the next page carries the line off with its page
+      const c0 = camAt(t - 1 / 96), c1 = camAt(t + 1 / 96), settled = Math.abs((c1.x - c0.x) * c1.s) < 3 && Math.abs(c1.s - c0.s) < 1e-3;
+      PROBE.text(C, 'woodcut caption', ra.txt, x, y, [40, 40, 1840, 1000], { keep: li === curLine(t) && settled, margin: 4 });
+    }
     C.save(); C.translate(x, y); C.scale(1 + kk * .06, 1 + kk * .06);
     PR.typeText(C, ra.txt, 0, 0, size, ra.red ? { color: PR.RED } : {});
     if (kk > .3 && !ra.red) PR.typeText(C, ra.txt, 0, 0, size);

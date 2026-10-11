@@ -36,6 +36,12 @@ function drawGrain(g, t, alpha = .18, mode = 'overlay') {
 // Text that must fit a box: shrinks the font until the measured width fits (see text-fits-container).
 function fitText(g, txt, maxW, size, font) { let s = size; g.font = font.replace('{s}', s); while (s > 6 && g.measureText(txt).width > maxW) { s -= 1; g.font = font.replace('{s}', s); } return s; }
 
+// motion-lab probes (rheos/secondunit-videos tools/motion-lab): the audit injects ML; everywhere else, cloud
+// renders included, these do nothing. probeWord fires 'word#<line>.<word>' on the first frame a sung word is
+// drawn; gate(t) is the same test the drawing code uses, so the previous frame is checked the same way.
+const PROBE = (typeof ML !== 'undefined' && ML.probe) || { on: false, text() {}, box() {}, event() {}, edge() {}, value() {} };
+function probeWord(t, li, wi, gate) { if (PROBE.on) PROBE.edge(`word#${li}.${wi}`, true, gate(ML.prevT(t))); }
+
 // Page harness: offline hooks for check.mjs / render.mjs, and a live player (click or space) for T0..T1.
 function startPage(out, renderFrame, T0, T1, ready = Promise.resolve(true)) {
   const params = new URLSearchParams(location.search);

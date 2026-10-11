@@ -51,7 +51,7 @@ function layoutRows(m) {
   const maxC = Math.floor((TW.right - TW.x) / ADV);
   ROWS = []; let r = 0;
   for (const l of LINES) {
-    const words = l.words.map(w => ({ w: w.w, s: w.s, e: w.e }));
+    const words = l.words.map((w, k) => ({ w: w.w, s: w.s, e: w.e, k }));
     const total = words.reduce((a, w) => a + w.w.length, 0) + words.length - 1;
     let breaks = [];
     if (total > maxC) { // two rows, balanced: the break that makes the longer row shortest
@@ -86,6 +86,10 @@ function drawTyped(m, t) {
     const slot = row.r - sp; if (slot < -1.05 || slot > 3.05 || t < row.s - EARLY) continue;
     const y = TW.base + slot * TW.pitch;
     for (const w of row.words) {
+      if (PROBE.on && t >= w.s - EARLY) { // audit: first letter on its onset; a settled row's word inside the typed window
+        probeWord(t, row.line, w.k, (tt) => tt >= w.s - EARLY && tt >= row.s - EARLY);
+        if (slot > -0.01 && slot < 3.01) { m.font = TYPE_FONT.replace('{s}', FS); m.textAlign = 'left'; PROBE.text(m, "typed caption", w.w, TW.x + w.col * ADV, y, [TW.x - 40, TW.y, TW.right - TW.x + 80, TW.h], { margin: 2 }); }
+      }
       for (let j = 0; j < w.w.length; j++) {
         if (t < w.s + j * w.dt - EARLY) break;
         strike(m, w.w[j], TW.x + (w.col + j) * ADV, y, FS, row.r * 101 + w.col + j);

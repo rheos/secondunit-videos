@@ -134,6 +134,12 @@ function drawCaptions(g, t) {
     g.fillStyle = INK; ribbon(g, crPath(boilPts(pts, L.i * 13, b, 1.6), true, 3), true, 5.5, L.i * 13, b);
     // the words
     const shown = [];
+    // audit: the strip on screen, and each word (pop included) inside its strip
+    let SB = null;
+    if (PROBE.on) {
+      if (!gone) PROBE.box(g, 'caption strip', -L.w / 2, -L.h / 2, L.w, L.h, { keep: true });
+      const b4 = ML.screenBox(g, -L.w / 2, -L.h / 2, L.w, L.h); SB = [b4[0], b4[1], b4[2] - b4[0], b4[3] - b4[1]];
+    }
     for (const w of L.words) {
       const p = popAt(since(t, w.s - CAPT.lead));
       if (!p) continue;
@@ -142,6 +148,10 @@ function drawCaptions(g, t) {
       const ax = w.x + w.width / 2, ay = by - CAPT.cap * .5;
       g.save(); g.translate(ax, ay + p[2]); g.scale(p[0], p[1]);
       g.drawImage(w.vars[b], -w.width / 2 - w.pad, CAPT.cap * .5 - w.base, w.cw, w.ch);
+      if (PROBE.on) {
+        probeWord(t, L.i, w.k, (tt) => !!popAt(since(tt, w.s - CAPT.lead)) && tt >= L.s - CAPT.lead);
+        PROBE.box(g, 'caption word', -w.width / 2, -CAPT.cap * .5, w.width, CAPT.cap * 1.25, { inScreen: SB, margin: 2 });
+      }
       g.restore();
     }
     g.restore();
