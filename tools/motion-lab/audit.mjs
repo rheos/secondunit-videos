@@ -5,11 +5,13 @@
 //
 // Draws song frames round(t0*fps) .. round(t1*fps)-1 and reads what the look's ML.probe calls recorded.
 // Built-in checks, on every frame:
-//   text fits    every probe.text with a container sits inside it, inset by --margin x its shorter side
-//   in frame     every probe.box with keep: true sits inside the frame, inset by --safe x each side
+//   fits         every probe.text / probe.box with a container sits inside it, inset by its margin
+//                (default --margin x the container's shorter side)
+//   in frame     every probe with keep: true sits inside the frame, inset by --safe x each side
 // From the spec module (optional), song frames on the 24 fps grid unless --fps says otherwise:
 //   export const events = { land: [105, 165, 225] }      each event fires on exactly those frames
-//   export const tolerance = 0                            frames of slack for events
+//   export const tolerance = 0                            frames of slack either way, or [early, late]
+//   events named 'word#12.3' (one per word) report together under 'event: word'
 //   export const checks = [{ name, test: (log, { t, frame }) => true | 'what is wrong' }]
 // Exits 1 when anything fails. Your eye still judges the look; this judges the numbers.
 import path from 'path';
@@ -48,13 +50,13 @@ for (const fr of frames) {
   const log = logs.get(fr) || [];
   recorded += log.length;
   for (const r of log) {
-    if (r.kind === 'text' && r.container) {
+    if ((r.kind === 'text' || r.kind === 'box') && r.container) {
       const [x0, y0, x1, y1] = r.box, [c0, d0, c1, d1] = r.container;
-      const m = o.margin * Math.min(c1 - c0, d1 - d0);
+      const m = r.margin ?? o.margin * Math.min(c1 - c0, d1 - d0);
       const over = Math.max(c0 + m - x0, x1 - (c1 - m), d0 + m - y0, y1 - (d1 - m));
-      note(`text fits: ${r.name}`, fr, over <= 0 || `"${r.str}" crosses its margin by ${fmt(over)} px`);
+      note(`fits: ${r.name}`, fr, over <= 0 || `${r.str ? `"${r.str}"` : 'box'} crosses its container's margin by ${fmt(over)} px`);
     }
-    if (r.kind === 'box' && r.keep) {
+    if ((r.kind === 'text' || r.kind === 'box') && r.keep) {
       const [x0, y0, x1, y1] = r.box, [W, H] = r.frame, sx = o.safe * W, sy = o.safe * H;
       const over = Math.max(sx - x0, x1 - (W - sx), sy - y0, y1 - (H - sy));
       note(`in frame: ${r.name}`, fr, over <= 0 || `${fmt(over)} px outside the safe area`);
@@ -66,15 +68,19 @@ for (const fr of frames) {
     note(c.name, fr, res);
   }
 }
-const tol = spec.tolerance ?? 0;
+// tolerance: frames either way, or [early, late]. Events named 'word#12.3' report together as 'event: word'.
+const [early, late] = Array.isArray(spec.tolerance) ? spec.tolerance : [spec.tolerance ?? 0, spec.tolerance ?? 0];
+const ok = (g, w) => g - w >= -early && g - w <= late;
 for (const [name, want] of Object.entries(spec.events || {})) {
-  const got = fired[name] || [];
-  for (const w of want.filter((w) => w >= f0 && w < f1)) {
+  const got = fired[name] || [], group = `event: ${name.split('#')[0]}`, tag = name.includes('#') ? `${name}: ` : '';
+  // only expect what the range can show: an early event needs its early frames inside the range
+  for (const w of want.filter((w) => w - early >= f0 && w + late < f1)) {
     const near = got.reduce((best, g) => (Math.abs(g - w) < Math.abs(best - w) ? g : best), Infinity);
-    note(`event: ${name}`, w, Math.abs(near - w) <= tol || (near === Infinity ? 'never fired' : `fired on ${near} (${near > w ? '+' : ''}${near - w} frames)`));
+    note(group, w, ok(near, w) || tag + (near === Infinity ? 'never fired' : `fired on ${near} (${near > w ? '+' : ''}${near - w} frames)`));
   }
-  for (const g of got) if (!want.some((w) => Math.abs(g - w) <= tol)) note(`event: ${name}`, g, 'fired where the brief has none');
+  for (const g of new Set(got)) if (!want.some((w) => ok(g, w))) note(group, g, `${tag}fired where the brief has none`);
 }
+for (const name of Object.keys(fired)) if (!(spec.events || {})[name] && name.includes('#') && Object.keys(spec.events || {}).some((k) => k.startsWith(name.split('#')[0] + '#'))) note(`event: ${name.split('#')[0]}`, fired[name][0], `${name}: fired but not in the brief`);
 
 console.log(`audit ${page}  frames ${f0}-${f1 - 1} at ${o.fps} fps  ${((Date.now() - start) / 1000).toFixed(0)} s  ${recorded} probe records`);
 if (!recorded) console.log('  no probe records: the look never calls ML.probe, so only spec checks ran');

@@ -37,7 +37,20 @@ ML.probe.value('squash', sy);                                  // anything a spe
 ```
 
 Boxes go through the context's current transform, so call them inside the same `save`/`translate`/`scale`
-as the drawing. Fire events from the geometry, not from the time the code meant to use: that is how a
+as the drawing. Both `box` and `text` take options: `keep`, `in: [x, y, w, h]` (container, local),
+`inScreen: [...]` (container in canvas pixels, when it was drawn under another transform) and `margin`
+(canvas pixels).
+
+The audit injects `motion.js` into the page itself, so a look needs no path to this folder (cloud renders
+don't package it). Give the look a fallback that does nothing when `ML` is absent:
+
+```js
+const PROBE = (typeof ML !== 'undefined' && ML.probe) || { on: false, text() {}, box() {}, event() {}, edge() {}, value() {} };
+```
+
+One event per word (`word#<line>.<word>`) lets a spec built from `lines.json` check that every sung word
+appears on its onset; those report together as `event: word`. `tolerance: [2, 1]` allows a word up to
+2 frames early and 1 late. Fire events from the geometry, not from the time the code meant to use: that is how a
 late landing gets caught. Use `ML.prevT(t)` for the previous frame, never `t - 1/24` (it lands a hair
 early and the event fires twice). A spec is a small module (see `example/spec.mjs`):
 `events` (song frames), `tolerance`, and `checks` with a `test(log, { t, frame })`.

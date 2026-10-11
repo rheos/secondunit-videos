@@ -26,6 +26,8 @@ export async function launch() {
 
 export async function openLook(browser, page, { width = 1920, height = 1080 } = {}) {
   const p = await browser.newPage({ viewport: { width, height } });
+  // every look gets ML (motion.js) before its own scripts, so a look only needs a no-op fallback of its own
+  await p.addInitScript({ path: path.join(path.dirname(fileURLToPath(import.meta.url)), 'motion.js') });
   const errors = [];
   p.on('pageerror', (e) => errors.push(String(e)));
   p.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });
