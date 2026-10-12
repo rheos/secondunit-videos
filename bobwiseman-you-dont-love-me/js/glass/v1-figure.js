@@ -56,9 +56,12 @@ function drawWomanV1(g, o) {
   g.beginPath(); g.moveTo(-3, -20); g.quadraticCurveTo(4, 10, 5, 26); g.quadraticCurveTo(0, 32, -8, 28); g.stroke();
   const m = clamp(o.mouth || 0), pk = clamp(o.pucker || 0);
   if (pk > .05) { // lips pushed out: a small round rosebud, ruby glass, leaded
-    const r = lerp(8, 14, pk);
-    pane(g, ellPath(0, 52, r * 1.15, r), [196, 60, 70], sd + 9, { ew: 6, lw: 4, shade: .3, amt: .3 });
-    paint(g, 2.5, .9); g.beginPath(); g.ellipse(0, 52, r * .45, r * .3, 0, 0, TAU); g.stroke();
+    // smack 0..1: a kiss on the beat. Squeezed, the bud is narrower, taller and further out; released, it relaxes
+    // wider with the lips parted a little.
+    const sm = clamp(o.smack || 0), r = lerp(8, 14, pk), rx = r * lerp(1.3, .9, sm), ry = r * lerp(.85, 1.3, sm);
+    pane(g, ellPath(0, 52 + 2 * sm, rx, ry), [196, 60, 70], sd + 9, { ew: 6, lw: 4, shade: .3, amt: .3 });
+    if (sm < .5 && pk > .5) { g.fillStyle = 'rgba(60,20,16,.85)'; g.beginPath(); g.ellipse(0, 52, rx * .38, ry * .18 * (1 - sm * 2) + 1, 0, 0, TAU); g.fill(); }
+    paint(g, 2.5, .9); g.beginPath(); g.ellipse(0, 52 + 2 * sm, rx * .4, ry * .3, 0, 0, TAU); g.stroke();
   } else if (m > .05) { g.fillStyle = 'rgba(60,20,16,.88)'; g.beginPath(); g.ellipse(0, 51 + m * 3, 11 - m * 2, 2 + m * 10, 0, 0, TAU); g.fill(); }
   else { g.beginPath(); g.moveTo(-17, 50); g.lineTo(17, 50); g.stroke(); g.lineWidth = 2.5; g.beginPath(); g.moveTo(-17, 50); g.lineTo(-20, 53); g.moveTo(17, 50); g.lineTo(20, 53); g.stroke(); }
   g.lineWidth = 2.5; g.beginPath(); g.moveTo(-10, 66); g.quadraticCurveTo(0, 70, 10, 66); g.stroke();

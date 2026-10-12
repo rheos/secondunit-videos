@@ -244,6 +244,7 @@ function v1Render(t) {
   v1Pool(g, view, tod, t);
   v1Bloom(g, tod.I);
   v1Shafts(g, t, tod);
+  drawIntroPips(g, t, cam); // the intro cameo (v1-pips.js), behind the passing pillars
   v1Pillars(g, t, cam, tod);
   v1Daisy(g, t, tod);
   g.setTransform(1, 0, 0, 1, 0, 0); g.globalCompositeOperation = 'source-over';
