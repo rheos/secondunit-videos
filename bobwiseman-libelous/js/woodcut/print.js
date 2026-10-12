@@ -104,5 +104,5 @@ const PR = (() => {
     pt.setTransform(new DOMMatrix([k, 0, 0, k, (0 - cam.x) * cam.s * .6, (0 - cam.y) * cam.s * .6]));
     return pt;
   }
-  return { PAPER, INK, RED, TL, TLg, RL, RLg, beginType, endType, typeText, ornament, paperPattern, woodPattern };
+  return { PAPER, INK, RED, TL, TLg, RL, RLg, beginType, endType, typeText, ornament, paperPattern, woodPattern, speck }; // speck: round 2 (story.js)
 })();

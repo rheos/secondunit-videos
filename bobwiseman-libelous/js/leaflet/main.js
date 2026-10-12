@@ -1,4 +1,5 @@
 // Look 3: the photocopied fact sheet (the couple), song 213.458333-240.916667, frames f5123-f5782.
+// Round 2 adds the workers and farms pages before it (js/leaflet/early.js), so the page runs from 165.083333 (f3962).
 // Every frame: draw the master paste-up (typed copy, rub-down heading, fineliner pictures) for song time t,
 // copy it G(t) times through the xerox passes, print the last copy on coloured paper and look at it.
 // Pure function of t: no Math.random, no Date, nothing carried between frames.
@@ -364,7 +365,7 @@ function camAt(t) { const [c, , i] = shotAt(CAMS, t - EARLY * 0); const nx = (CA
 // the stack under the top copy: earlier copies, each lying a bit off
 const UNDER_SHEETS = [{ dx: -70, dy: 34, r: -.024 }, { dx: 62, dy: -30, r: .018 }, { dx: -34, dy: -50, r: .012 }, { dx: 80, dy: 44, r: -.015 }, { dx: -48, dy: 58, r: .026 }];
 
-function renderFrame(t) {
+function renderStanza10(t) { // round 1: the stanza-10 page, unchanged (round 2 put renderFrame at the bottom)
   const f = Math.round(t * 24);
   buildXerox();
   drawMaster(t);
@@ -431,6 +432,7 @@ function drawStamp(g, t) {
 const READY = (async () => {
   try { await Promise.all([document.fonts.load('100px "LetraBC"'), document.fonts.load('100px "Courier New"'), document.fonts.load('64px "Marker Felt"')]); } catch (e) { }
   layoutRows(mkCanvas(10, 10).getContext('2d'));
+  layoutEarly(mkCanvas(10, 10).getContext('2d')); // round 2: the workers and farms pages (early.js)
   buildXerox();
   return true;
 })();
@@ -463,4 +465,6 @@ window.__audit = () => {
   return { bad: bad.slice(0, 30), nBad: bad.length, minCap: +minCap.toFixed(1), minMargin: Math.round(minMargin) };
 };
 window.__rows = () => ROWS.map(r => ({ r: r.r, line: r.line, s: r.s, text: r.words.map(w => w.w).join(' '), FS, ADV }));
-startPage(out, renderFrame, T0, T1, READY);
+// Round 2: the page now opens on stanzas 8 and 9 (early.js), 165.083333 s (f3962); stanza 10 is untouched from T0.
+function renderFrame(t) { if (t < T0) renderEarly(t); else renderStanza10(t); }
+startPage(out, renderFrame, T8, T1, READY);

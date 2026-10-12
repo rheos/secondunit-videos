@@ -1,5 +1,7 @@
 // Beat times for the woodcut, read off the word onsets in lines.json (via gen/lyrics.js). Nothing retyped.
-const T0 = 0, T1 = 34.416667;
+// T_CHAIN: end of the round-1 span (intro + stanza 1), kept pixel-identical. T1: end of stanzas 2-5 (round 2).
+// Both are exact frame starts (826/24, 2302/24): a frame at f/24 must land on the right side of the seam.
+const T0 = 0, T1 = 2302 / 24, T_CHAIN = 826 / 24, NCHAIN = 11;
 const wordAt = (li, w, nth = 0) => { const L = LYR[li].words.filter(x => x.w === w); if (!L[nth]) throw new Error(`no word ${w} in line ${li}`); return L[nth].s; };
 const B = {
   l0: LYR[0].s, king: wordAt(0, 'king'),
@@ -22,5 +24,9 @@ B.coinStep = (B.believing - .12 - (B.l10 + .05)) / 24;     // 24 coins land befo
 B.thump = 1.48;
 B.orn = [2.51, 3.16, 3.81, 4.46, 5.10, 5.75, 6.41, 7.05, 7.71, 8.36, 9.01, 9.65, 10.30, 10.96, 11.61, 12.26, 12.90];
 B.blockDown = B.l0 - .07; // the inked king block meets the paper
-// which page (block) each line is on; lines 5-7 share the meeting hall
-const PAGE_OF = [0, 1, 2, 3, 4, 5, 5, 5, 6, 7, 8];
+// which page (block) each line is on; lines 5-7 share the meeting hall. Lines 11-40 (stanzas 2-5) are on pages 9-28.
+const PAGE_OF = [0, 1, 2, 3, 4, 5, 5, 5, 6, 7, 8,
+  9, 9, 10, 10, 11, 12,          // 2 the dictators' ball
+  13, 13, 14, 15, 15, 16,        // 3 the land deal
+  17, 18, 18, 19, 20, 20, 21, 21, // 4 the king breathes easy
+  22, 22, 23, 23, 24, 24, 25, 26, 27, 28]; // 5 farmers, cattle, poison, forest

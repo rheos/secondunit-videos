@@ -1,4 +1,5 @@
-// Look 2 (tv): 1970s Saturday-morning TV, song 95.916667-123.125 (f2302-f2955). Pure function of song time t.
+// Look 2 (tv): 1970s Saturday-morning TV, song 95.916667-123.125 (f2302-f2955), plus round 2's stanzas 7 and 11
+// (123.125-165.083 and 240.917-261.5, js/tv/r2_*.js, lesson.js, news.js). Pure function of song time t.
 // Program (960x720) -> signal (vertical roll, closed captions) -> CRT (WebGL) -> living room composite.
 const out = document.getElementById('c'); out.width = W; out.height = H;
 const g = out.getContext('2d');
@@ -68,6 +69,7 @@ function avgColor() {
   const n = d.length / 4; return [r / n, gg / n, b / n];
 }
 function renderFrame(t) {
+  if (t >= T1 - 1e-6) { renderR2(t); return; }   // round 2: stanzas 7 and 11 (js/tv/r2_main.js)
   const cam = cameraAt(t);
   program(t);
   signal(t);
@@ -90,6 +92,7 @@ function renderFrame(t) {
 
 const READY = document.fonts.load('bold 48px "Cooper Lt BT"').then(() => {
   initCC(); initShow(); initAd(); initRoom(); initSA(pg); checkBall();
+  initR2();
   return true;
 });
-startPage(out, renderFrame, T0, T1, READY);
+startPage(out, renderFrame, PAGE_T0, PAGE_T1, READY);

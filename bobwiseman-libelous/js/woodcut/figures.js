@@ -46,6 +46,7 @@ function drawKing(g, P, x, y, sc, o = {}) {
   // hands (mittens) resting on the belly
   const hands = o.hands || 'belly';
   for (const s of [-1, 1]) {
+    if (s > 0 && o.armOut) continue; // round 2: his right arm is drawn by the caller (holding the plan)
     let hx = s * 52, hy = -14;
     if (hands === 'knees') { hx = s * 64; hy = 12; }
     ell(g, s * 74, hy - 8, 20, 15, s * .5); ermineFill(g, 8 + s, 14, s * 74 - 24, hy - 26, s * 74 + 24, hy + 10); ink(g, 3);
@@ -72,8 +73,11 @@ function drawKing(g, P, x, y, sc, o = {}) {
   g.beginPath(); g.moveTo(-3, hy - 2); g.quadraticCurveTo(-6, hy + 12, -10, hy + 18); g.quadraticCurveTo(0, hy + 26, 10, hy + 18); ink(g, 3.5);
   // eyes and brows
   for (const s of [-1, 1]) {
-    ell(g, s * 18, hy - 6, 6, 7); fillWith(g, Cw(0));
-    ell(g, s * 18 - 2, hy - 8, 1.8, 1.8); fillWith(g, Cw(1));
+    if (o.eyesClosed) { g.beginPath(); g.moveTo(s * 10, hy - 6); g.quadraticCurveTo(s * 18, hy, s * 26, hy - 6); ink(g, 4); } // round 2: eyes shut, at ease
+    else {
+      ell(g, s * 18, hy - 6, 6, 7); fillWith(g, Cw(0));
+      ell(g, s * 18 - 2, hy - 8, 1.8, 1.8); fillWith(g, Cw(1));
+    }
     g.beginPath(); g.moveTo(s * 8, hy - 18); g.quadraticCurveTo(s * 18, hy - 26, s * 30, hy - 18); ink(g, 4.5);
   }
   // crown: the red accent

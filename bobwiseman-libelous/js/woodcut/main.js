@@ -17,13 +17,14 @@ const FONT = 92, FONT_LAST = 120;      // caption sizes (Big Caslon cap height =
 // Moving to the next block: a whip pan that lands as the new line starts. Where the old line's key word is sung
 // too close to the change (mouth, smiled) there is no time to pan, so it is a straight cut forward on the line.
 const PANS = [];
-for (let i = 1; i < LYR.length; i++) if (PAGE_OF[i] !== PAGE_OF[i - 1]) {
+for (let i = 1; i < NCHAIN; i++) if (PAGE_OF[i] !== PAGE_OF[i - 1]) {
   const lastWord = LYR[i - 1].words[LYR[i - 1].words.length - 1].s, b = LYR[i].s;
   PANS.push({ b, from: PAGE_OF[i - 1], to: PAGE_OF[i], cut: b - lastWord < .45, a: b - .3 });
 }
 const smoother = (x) => { x = clamp(x); return x * x * x * (x * (x * 6 - 15) + 10); };
-const PULL = { a: 33.45, b: T1 - .08, s: .56, dx: -640 };
+const PULL = { a: 33.45, b: 34.416667 - .08, s: .56, dx: -640 }; // round-1 numbers, kept exactly
 function camAt(t) {
+  if (t >= T_CHAIN) return camStory(t); // stanzas 2-5 (story.js)
   let s = 1, cx = 960, cy = 540;
   if (t < B.l0) {
     s = t < B.thump ? .84 : lerp(.84, .88, ease(t, B.thump, 10.9));
@@ -63,7 +64,7 @@ function rowW(words, size, iniScale) { const sp = mw(' ', size); return mw(words
 function layBig(li) {
   const key = 'B' + li; if (LAY[key]) return LAY[key];
   const words = LYR[li].words.map(w => w.w), maxW = 1700;
-  let size = li === LYR.length - 1 ? FONT_LAST : FONT;
+  let size = li === NCHAIN - 1 ? FONT_LAST : FONT;
   let R;
   if (rowW(words, size, 1.62) <= maxW) { const w = rowW(words, size, 1.62); R = runsRow(words, size, 960 - w / 2, SLOT.bigBase, 1.62); }
   else {
@@ -208,14 +209,16 @@ function drawScene(t, dst) {
   dst.save(); dst.shadowColor = 'rgba(0,0,0,.55)'; dst.shadowBlur = 30 * s; dst.shadowOffsetY = 8 * s;
   dst.fillStyle = PR.paperPattern(dst, cam);
   dst.beginPath();
-  const nE = 60;
-  for (let k = 0; k <= nE; k++) { const x = lerp(SHEET.x0, SHEET.x1, k / nE); const y = SHEET.y0 + rnd(k, 1) * 6; k ? dst.lineTo(sx(x), sy(y)) : dst.moveTo(sx(x), sy(y)); }
-  for (let k = nE; k >= 0; k--) { const x = lerp(SHEET.x0, SHEET.x1, k / nE); dst.lineTo(sx(x), sy(SHEET.y1 - rnd(k, 2) * 6)); }
+  const story = t >= T_CHAIN, SH = story ? SHEET_STORY : SHEET; // the sheet runs on for stanzas 2-5
+  const nE = story ? 600 : 60;
+  for (let k = 0; k <= nE; k++) { const x = lerp(SH.x0, SH.x1, k / nE); const y = SH.y0 + rnd(k, 1) * 6; k ? dst.lineTo(sx(x), sy(y)) : dst.moveTo(sx(x), sy(y)); }
+  for (let k = nE; k >= 0; k--) { const x = lerp(SH.x0, SH.x1, k / nE); dst.lineTo(sx(x), sy(SH.y1 - rnd(k, 2) * 6)); }
   dst.closePath(); dst.fill(); dst.restore();
 
   const vis0 = cam.x - W / 2 / s, vis1 = cam.x + W / 2 / s;
-  PR.beginType();
-  for (let p = 0; p < NPAGES; p++) {
+  const TY = story ? STYPE : PR; // story frames set type on CPU layers (story.js)
+  TY.beginType();
+  for (let p = story ? NPAGES : 0; p < (story ? NPAGES_ALL : NPAGES); p++) {
     const px = p * PW; if (px + 1920 < vis0 || px > vis1) continue;
     const ox = sx(px), oy = sy(0);
     // the woodblock
@@ -229,12 +232,13 @@ function drawScene(t, dst) {
       const e = (1 - u) * 26 * s; dst.fillRect(bx - e, by - e, BW * s + 2 * e, BH * s + 2 * e); dst.restore();
     }
     // type: frame, column, caption
-    for (const L of [PR.TLg, PR.RLg]) L.setTransform(s, 0, 0, s, ox, oy);
-    pageFrame(PR.TLg, p, t);
+    for (const L of [TY.TLg, TY.RLg]) L.setTransform(s, 0, 0, s, ox, oy);
+    pageFrame(TY.TLg, p, t);
     if (p === 0 && t < B.l0 - F1) continue;
-    pageType(PR.TLg, PR.RLg, p, t);
+    if (p >= NPAGES) { storyPageType(TY.TLg, TY.RLg, p, t); continue; }
+    pageType(TY.TLg, TY.RLg, p, t);
   }
-  PR.endType(dst, cam);
+  TY.endType(dst, cam);
 
   // the press: the platen's shadow comes down, thumps, lifts
   if (t < 2.4) {

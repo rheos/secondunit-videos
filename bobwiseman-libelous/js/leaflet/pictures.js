@@ -50,6 +50,10 @@ function person(g, o, prog, seed) {
   if (o.mouth === 'frown') items.push({ p: quad([mx - r * .3, my + r * .08], [mx, my - r * .18], [mx + r * .3, my + r * .08], 8), w: 4 });
   else if (o.mouth === 'o') items.push({ p: ell(mx, my + r * .02, r * .17, r * .2), w: 4 });
   else if (o.mouth === 'smile') items.push({ p: quad([mx - r * .3, my - r * .05], [mx, my + r * .2], [mx + r * .3, my - r * .05], 8), w: 4 });
+  else if (o.mouth === 'grin') { // a fixed, too-wide grin: a D on its back with a row of teeth (round 2: the workers)
+    items.push({ p: seg(mx - r * .5, my - r * .08, mx + r * .5, my - r * .08, 4), w: 4 }, { p: quad([mx - r * .5, my - r * .08], [mx, my + r * .55], [mx + r * .5, my - r * .08], 12), w: 4 });
+    items.push({ p: seg(mx - r * .4, my + r * .1, mx + r * .4, my + r * .1, 4), w: 2.5 });
+  } else if (o.mouth === 'none') { /* no mouth */ }
   else items.push({ p: seg(mx - r * .22, my, mx + r * .22, my, 3), w: 4 });
   // hair
   if (o.bald) { items.push({ p: quad([hx - r * 1.02, hy - r * .1], [hx - r * 1.15, hy - r * .5], [hx - r * .8, hy - r * .55], 6), w: 3.5 }, { p: quad([hx + r * 1.02, hy - r * .1], [hx + r * 1.15, hy - r * .5], [hx + r * .8, hy - r * .55], 6), w: 3.5 }); }
@@ -58,10 +62,19 @@ function person(g, o, prog, seed) {
     items.push({ p: quad([hx + r * .2, hy - r * 1.15], [hx + r * 1.6, hy - r * 1.3], [hx + r * 1.05, hy + r * 1.2], 18), w: 5 });
     items.push({ p: quad([hx - r * .85, hy - r * .55], [hx - r * .1, hy - r * .35], [hx + r * .55, hy - r * .85], 10), w: 4 });
     if (o.bun) items.push({ p: ell(hx + r * .1, hy - r * 1.25, r * .45, r * .38), w: 4.5 });
+    if (o.pony) items.push({ p: quad([hx + r * 1.0, hy - r * .6], [hx + r * 2.0, hy - r * .4], [hx + r * 1.55, hy + r * 1.1], 12), w: 5 }, { p: quad([hx + r * 1.05, hy - r * .35], [hx + r * 1.7, hy + r * .1], [hx + r * 1.35, hy + r * 1.0], 10), w: 3.5 });
   } else {
     items.push({ p: quad([hx - r * 1.02, hy - r * .05], [hx - r * .9, hy - r * 1.45], [hx + r * .3, hy - r * 1.12], 12), w: 5 });
     items.push({ p: quad([hx + r * .3, hy - r * 1.12], [hx + r * 1.1, hy - r * .95], [hx + r * 1.02, hy - r * .05], 10), w: 5 });
     for (let k = 0; k < 4; k++) items.push({ p: seg(hx - r * .6 + k * r * .38, hy - r * .95 - (k % 2) * 4, hx - r * .45 + k * r * .38, hy - r * .62, 3), w: 3.5 });
+  }
+  if (o.cap) { // paper counter cap (round 2: the workers)
+    items.push({ p: poly([[hx - r * 1.08, hy - r * .5], [hx - r * .85, hy - r * 1.32], [hx + r * .85, hy - r * 1.32], [hx + r * 1.08, hy - r * .5]], true), w: 4.5, white: true });
+    items.push({ p: seg(hx - r * 1.0, hy - r * .78, hx + r * 1.0, hy - r * .78, 4), w: 3 });
+  }
+  if (o.tophat) { // the boss: a tall hat
+    items.push({ p: seg(hx - r * 1.5, hy - r * .78, hx + r * 1.5, hy - r * .78, 4), w: 6 });
+    items.push({ p: poly([[hx - r * .9, hy - r * .8], [hx - r * .95, hy - r * 2.5], [hx + r * .95, hy - r * 2.5], [hx + r * .9, hy - r * .8]], true), fill: true, w: 5 });
   }
   // body: coat as a trapezoid, collar, buttons or belt
   const sy = hy + r * 1.25, sw = h * .13, hemY = y - h * .3, hw = o.woman ? h * .19 : h * .16;
@@ -71,6 +84,7 @@ function person(g, o, prog, seed) {
   items.push({ p: poly([[hx - sw * .4, sy], [hx, sy + h * .12], [hx + sw * .4, sy]]), w: 4 });
   if (o.woman) items.push({ p: seg(x - hw * .82, y - h * .45, x + hw * .82, y - h * .45, 6), w: 4 });
   else for (let k = 0; k < 3; k++) items.push({ p: [[hx + (x - hx) * (k / 3), sy + h * (.17 + k * .085)]], dot: 3 });
+  if (o.apron) items.push({ p: poly([[x - hw * .62, y - h * .52], [x + hw * .62, y - h * .52], [x + hw * .7, hemY + h * .02], [x - hw * .7, hemY + h * .02]], true), w: 4, white: true }, { p: seg(x - hw * .62, y - h * .52, hx - sw * .7, sy + h * .06, 3), w: 3 }, { p: seg(x + hw * .62, y - h * .52, hx + sw * .7, sy + h * .06, 3), w: 3 });
   if (o.cardigan) items.push({ p: seg(hx, sy + h * .12, x, hemY, 6), w: 4 });
   if (o.scarf) {
     items.push({ p: ell(hx, sy + h * .005, r * .95, r * .32), w: 6 });
