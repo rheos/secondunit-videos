@@ -13,6 +13,9 @@ const TRIO = {
   // instrumental beats in the gap between the two runs (no_vocals stem, 86 bpm)
   beats: [142.48, 143.16, 143.85, 144.54, 145.24],
   spin: [141.42, 141.98],
+  // Bob (2026-10-11): "could the Pips enter and exit off the top of the video?" The whole stage drops in from
+  // above over the teacup, landing on the first hit, and flies back out of the top after the second held note.
+  drop: [139.84, 140.24], lift: [148.0, 148.42],
 };
 
 // ---- the figure ----
@@ -274,4 +277,30 @@ function drawTrio(g, t) {
   g.fillStyle = vg; g.fillRect(0, 0, W, H);
   drawGrain(g, t, .06);
   g.setTransform(1, 0, 0, 1, 0, 0); g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
+}
+
+// Where the stage hangs: 0 covers the frame, -H is just out of the top; null when it is not in shot.
+function trioY(t) {
+  if (t < TRIO.drop[0] || t >= TRIO.lift[1]) return null;
+  if (t < TRIO.drop[1]) { const u = lin(t, TRIO.drop[0], TRIO.drop[1]); return -H * Math.pow(1 - u, 3); }
+  if (t >= TRIO.lift[0]) { const u = lin(t, TRIO.lift[0], TRIO.lift[1]); return -H * u * u * u; }
+  return 0;
+}
+const TRIO_C = mkCanvas(W, H), trioCx = TRIO_C.getContext('2d');
+let trioBase = false;
+// Called at the top of the bridge's renderFrame: draws the stage (and, while it moves, the bridge under it).
+// Returns true when it has drawn the frame.
+function trioFrame(t, renderBase) {
+  if (trioBase) return false;
+  const y = trioY(t); if (y === null) return false;
+  drawTrio(g, t);
+  if (y === 0) return true;
+  trioCx.clearRect(0, 0, W, H); trioCx.drawImage(out, 0, 0);
+  trioBase = true; renderBase(t); trioBase = false;
+  g.setTransform(1, 0, 0, 1, 0, 0); g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
+  const sh = g.createLinearGradient(0, H + y, 0, H + y + 60); sh.addColorStop(0, 'rgba(0,0,0,.55)'); sh.addColorStop(1, 'rgba(0,0,0,0)');
+  g.fillStyle = sh; g.fillRect(0, H + y, W, 60); // its shadow on the scene below
+  g.drawImage(TRIO_C, 0, y);
+  g.fillStyle = LEAD; g.fillRect(0, H + y - 14, W, 14); g.fillStyle = rgb(C.gold); g.fillRect(0, H + y - 11, W, 6); // the bottom bar of its frame
+  return true;
 }
