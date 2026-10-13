@@ -9,10 +9,10 @@
 const LEAK_T0 = 272, LEAK_T1 = 392;
 function leak(a) {
   if (a <= 0) return; const r = M32(4040 + DSEED * 13);
-  for (let i = 0; i < 9; i++) {
+  for (let i = 0; i < 5; i++) {
     // holes keep to the edges of frame so the subject stays readable; they grow and multiply as the merge takes over
     let x = r() * W, y = r() * H; const dx = (x - W / 2) / (W * .46), dy = (y - H / 2) / (H * .46), d = Math.hypot(dx, dy); if (d < 1) { x = W / 2 + dx / (d || 1) * W * .46; y = H / 2 + dy / (d || 1) * H * .46; }
-    const R0 = (50 + r() * 150) * cl(a * 1.8 - i * .14), sd = r(); if (R0 < 5) continue;
+    const R0 = (34 + r() * 100) * cl(a * 1.5 - i * .2), sd = r(); if (R0 < 5) continue;
     const pts = []; for (let k = 0; k < 28; k++) { const an = k / 28 * TAU, rr = R0 * (.78 + .22 * Math.sin(an * 3 + i * 1.7) + .12 * Math.sin(an * 7 + sd * 9)); pts.push([x + Math.cos(an) * rr, y + Math.sin(an) * rr]); }
     const hp = PP(pts);
     X.save(); X.clip(PE(x, y, R0 * 1.3, R0 * 1.3)); hatch(PE(x, y, R0 * 1.3, R0 * 1.3), x, y, R0 * 1.3, .9 + i, 4, C.dark, 1, .45); X.restore(); // scorch
@@ -52,14 +52,14 @@ SU.roadCarpet = { mode: 'ill', f(q, p, a, T) { // the road rolls itself up behin
 SU.stampWorld = { mode: 'ill', f(q, p, a, T) { // a giant rubber stamp comes down on the landscape
   const hit = .34, shake = p > hit && p < hit + .12 ? 1 : 0;
   stripes(C.paper, '#e6d9b8', 140, -.62, 0, C.tan); cam(960 + jit(14 * shake), 540 + jit(14 * shake), 1);
-  const hz = 560; const h1 = PE(600, hz + 280, 1000, 300); fillP(h1, C.sage); hatch(h1, 600, hz + 100, 1000, .5, 8, C.ink, .9, .35, [40, 30]); iE(600, hz + 280, 1000, 300, 0, C.ink, 2.2, 1, true, 1, Math.PI, TAU);
-  const h2 = PE(1500, hz + 320, 800, 300); fillP(h2, '#b9b98a'); hatch(h2, 1500, hz + 120, 800, -.5, 7, C.ink, .9, .35, [-40, 30]); iE(1500, hz + 320, 800, 300, 0, C.ink, 2.2, 1, true, 1, Math.PI, TAU);
-  const g = PR(-200, hz + 140, W + 400, 500); fillP(g, '#a8a878'); hatch(g, 960, hz + 400, 1400, -.2, 9, C.ink, .8, .3);
+  const hz = 700; // a small town seen across the street, rooftops in rows (not the hills of the rolling-road shot)
+  for (let row = 0; row < 3; row++) for (let i = 0; i < 9; i++) { const w2 = 150 + ((i * 37 + row * 11) % 60), x = -60 + i * 230 + row * 70, hh = 140 + ((i * 53 + row * 29) % 120), y = 420 + row * 120; const b = PR(x, y - hh, w2, hh + 40); fillP(b, [C.brick, C.tan, C.sage, C.ochre, C.rose][(i + row) % 5]); shade(b, x + w2 / 2, y - hh / 2, hh, [w2 * .25, 0], .9, 5); iBox(x, y - hh, w2, hh + 40, C.ink, 2); const rf = PP([[x - 10, y - hh], [x + w2 / 2, y - hh - 60], [x + w2 + 10, y - hh]]); fillP(rf, '#7a4a2a'); hatch(rf, x + w2 / 2, y - hh - 30, w2, .4, 4, C.ink, .9, .55); iP([[x - 10, y - hh], [x + w2 / 2, y - hh - 60], [x + w2 + 10, y - hh]], true, C.ink, 2); for (let k = 0; k < 2; k++) { const wn = PR(x + 20 + k * (w2 / 2), y - hh + 30, 30, 40); fillP(wn, C.cream); iBox(x + 20 + k * (w2 / 2), y - hh + 30, 30, 40, C.ink, 1.4); } }
+  const g = PR(-200, hz + 140, W + 400, 500); fillP(g, '#b9a98a'); hatch(g, 960, hz + 300, 1400, .15, 9, C.ink, .8, .35); iline(-200, hz + 140, W + 200, hz + 140, C.ink, 2.6);
   traveller(330, 1040, .9, { look: 1, mouth: sing(T) }); cloud(330, 620, .5, { rain: true }); kioskMini(1600, 1000, .55);
-  if (p > hit) stampMark(1000, 720, 360, a.mark || 'URGENT', C.brick, -.12, .92);
+  if (p > hit) stampMark(1000, 560, 380, a.mark || 'URGENT', C.brick, -.12, .92);
   const sy = p < hit ? lerp(-900, 380, eo(p / hit)) : lerp(380, -900, eo((p - hit - .12) / .5)), sx = 1000;
   if (sy > -880) { const b = PR(sx - 380, sy, 760, 120); fillP(b, '#3b2a22'); iBox(sx - 380, sy, 760, 120, C.ink, 3); const nk = PR(sx - 70, sy - 380, 140, 380); fillP(nk, '#8a5530'); shade(nk, sx, sy - 190, 200, [20, 0], .9, 5); iBox(sx - 70, sy - 380, 140, 380, C.ink, 3); const kb = PE(sx, sy - 430, 190, 110); fillP(kb, '#a5703f'); shade(kb, sx, sy - 430, 200, [30, -20], .7, 5); iE(sx, sy - 430, 190, 110, 0, C.ink, 3); }
-  if (shake) for (let i = 0; i < 4; i++) gc(1000, 760, 400 + i * 70 + (p - hit) * 900, C.orange, .8, 3, null, Math.PI, TAU);
+  if (shake) for (let i = 0; i < 4; i++) gc(1000, 600, 400 + i * 70 + (p - hit) * 900, C.orange, .8, 3, null, Math.PI, TAU);
   consL([[0, hz + 140, W, hz + 140], [1000, 0, 1000, H]]);
 } };
 function kioskMini(x, y, s) { X.save(); X.translate(x, y); X.scale(s, s); agent(0, 0, 1, { look: -.7 }); desk(0, 0, 360, 1); iline(150, 0, 150, -330, C.ink, 5); const can = PP([[-140, -330], [440, -330], [150, -460]]); fillP(can, C.orange); iP([[-140, -330], [440, -330], [150, -460]], true, C.ink, 2.4); X.restore(); }

@@ -629,7 +629,7 @@ SU.sEnd = { mode: 'sch', f(q, p, a, T) {
   gc(960, 540, 300, C.mag, 1, 3, null, -Math.PI / 2, -Math.PI / 2 + eo(p * 1.1) * TAU);
   if (p > .85) star(960, 240, 7, C.mag, 1);
   traveller(960, 640, .5, { sch: 1, col: C.lav, case: true });
-  lab(960, 700, 'BACK AT THE DESK', C.lav, .7, 13, 'center');
+  lab(960, 700, 'LAP ∞ · EXIT: NONE', C.lav, .7, 13, 'center');
 } };
 
 // The cut list lives in story.js.

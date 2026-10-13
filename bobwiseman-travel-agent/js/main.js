@@ -2,6 +2,7 @@
 // On twos: the drawing is held for 2 song frames (seeded by the even frame index), grain changes every frame.
 // SHOTS (from shots.js) is the cut list: [{t0, t1, mode:'ill'|'sch', draw(p, lt, sh)}], p = 0..1 across the shot.
 'use strict';
+const SHOTS = buildShots();
 const out = document.getElementById('c'); out.width = W; out.height = H; const O = out.getContext('2d');
 const buf = document.createElement('canvas'); buf.width = W; buf.height = H; X = buf.getContext('2d');
 const GP = [0, 1, 2, 3].map((i) => grainCanvas(11 + i, false)), GD = [0, 1, 2, 3].map((i) => grainCanvas(91 + i, true));
