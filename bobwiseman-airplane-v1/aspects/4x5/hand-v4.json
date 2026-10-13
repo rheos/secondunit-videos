@@ -2,7 +2,7 @@
  "7642": {
   "width": 1200,
   "centre": 0.44,
-  "why": "the THEY, SCIENTISTS CLAIM TO line (0.15-0.73) lands in the last frames; OCR's fast pass missed it"
+  "why": "the 5:18 subtitle line (0.15-0.73) lands in the last frames; OCR's fast pass missed it"
  },
  "8469": {
   "width": 1536,
@@ -26,6 +26,6 @@
  "7331": {
   "width": 1536,
   "centre": 0.5,
-  "why": "the next subtitle and its mirrored ghost land in the last frames (0.13-0.87); 1200 cut the ghost and left 16 px at 'how'"
+  "why": "the next subtitle and its mirrored ghost land in the last frames (0.13-0.87); 1200 cut the ghost and left 16 px at its first word"
  }
 }
