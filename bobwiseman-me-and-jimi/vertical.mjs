@@ -9,7 +9,7 @@ const [page, planFile, out] = process.argv.slice(2); const WK = Number(process.a
 const P = JSON.parse(fs.readFileSync(planFile, 'utf8')); const { t0, t1, fadeOut = 0 } = P;
 const FPS = 24, SCALE = 1920 / 1080, BW = Math.round(1920 * SCALE), CW = 1080;
 const dir = `out/frames_vertical${page === 'wood' ? '' : '_' + page}_${t0}_${t1}`; fs.mkdirSync(dir, { recursive: true });
-const n = Math.round((t1 - t0) * FPS); let done = 0; const start = Date.now();
+const n = Math.round((t1 - t0) * FPS), F0 = Math.round(t0 * FPS); let done = 0; const start = Date.now(); // frame times from integer song frames (see render.mjs)
 const keys = P.keys.slice().sort((a, b) => a[0] - b[0]);
 const ss = (u) => u * u * (3 - 2 * u);
 function cxAt(t) {
@@ -26,7 +26,7 @@ await Promise.all([...Array(WK)].map(async (_, w) => {
   await p.goto('file://' + process.cwd() + `/${page}.html?offline=1&scale=${SCALE}`); await p.evaluate(() => window.__ready);
   for (let j = w; j < todo.length; j += WK) { const i = todo[j];
     // __capCx: the window centre, so a lyric layer (js/lyrics.js) sets its label inside the tall crop
-    const url = await p.evaluate(([t, cx]) => { window.__capCx = cx; return window.__frameJPEG(t, .92); }, [t0 + i / FPS, cxAt(t0 + i / FPS)]);
+    const url = await p.evaluate(([t, cx]) => { window.__capCx = cx; return window.__frameJPEG(t, .92); }, [(F0 + i) / FPS, cxAt((F0 + i) / FPS)]);
     fs.writeFileSync(`${dir}/f_${String(i).padStart(6, '0')}.jpg`, Buffer.from(url.split(',')[1], 'base64'));
     if (++done % 120 === 0) console.log(`${done}/${todo.length} ${((Date.now() - start) / 1000).toFixed(0)}s`);
   }
