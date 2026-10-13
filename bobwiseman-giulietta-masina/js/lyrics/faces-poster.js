@@ -2,7 +2,7 @@
 // Faces are painted into the baked sheets, so they are reported from the layout (js/poster/layout.js) while their
 // sheet is up, through the camera (main.js camAt). paintHead34 heads are 2 r tall; boxes include the hair.
 // 9:16: the crying close (f1040-1077) is all face in the tall window, so it plays with no caption; "crying" printed 1.3 s
-// before the cut and "played" (onset f1077) prints on f1078, the cut back, 1 frame late (audit tolerance 2 early / 1 late)
+// before the cut, and "played" (onset f1076) prints on f1078, the cut back: 2 frames late, the one word the audit flags
 CAP_GAPS.tall = [[1040, 1078]];
 const capHead = (x, y, r) => [x - 1.05 * r, y - 1.2 * r, x + 1.05 * r, y + 1.1 * r];
 const CAP_PHEADS = (() => {

@@ -144,8 +144,9 @@ function capDraw(g, t, key) {
   CPROBE.box(g, 'lyric block', x0, y0, lay.w, lay.h, { keep: true });
   capRec({ kind: 'box', name: 'lyric block', box: [x0, y0, x0 + lay.w, y0 + lay.h], frame: [g.canvas.width, g.canvas.height] });
   if (CAP_KIND === 'poster') {
-    // the snipe drops open from its top edge over 4 frames when the line comes up (or when it moves), then holds
-    const fIn = f - Math.max(Math.floor(L.a * CAP_F + 1e-6), f0 ?? -1e9), u = clamp((fIn + 1) / 4);
+    // the snipe drops open from its top edge over 4 frames when the line first comes up, then holds; when it moves on a
+    // cut it is simply there in the new framing (re-dropping hid the words for 3 frames)
+    const fIn = f - Math.floor(L.a * CAP_F + 1e-6), u = clamp((fIn + 1) / 4);
     g.save();
     g.fillStyle = 'rgba(10,6,18,.3)'; g.fillRect(x0 + 4, y0 + 5, lay.w, lay.h * u);
     g.beginPath(); g.rect(x0, y0, lay.w, lay.h * u); g.clip();
@@ -157,7 +158,8 @@ function capDraw(g, t, key) {
   g.save(); g.textAlign = 'left'; g.textBaseline = 'alphabetic'; g.lineJoin = 'round';
   for (const R of lay.runs) {
     const W_ = L.words[R.i], x = cx + R.x, y = base + R.r * lay.lh, on = capOn(t, W_.s);
-    CPROBE.edge(`word#${li}.${R.i}`, on, capOn(capPrev(t), W_.s));
+    // fires on the first frame the word is DRAWN (a caption gap holds it back; the audit then reports it late)
+    CPROBE.edge(`word#${li}.${R.i}`, on, capOn(capPrev(t), W_.s) && !capGap(capPrev(t)) && capLine(capPrev(t)) === li);
     if (!on) continue;
     if (CAP_KIND === 'poster') {
       // brushed on left to right over 3 frames
