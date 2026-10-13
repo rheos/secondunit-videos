@@ -141,6 +141,146 @@ def derive(args):
     print(f'{n} frames, {len(shots)} shots, {nf} fit, {len(shots) - nf} crop -> {args.plan45}')
 
 
+BIG = 0.03     # Vision line-box height (0-1 of frame height) from which a word must sit wholly inside the window
+SMALL = 0.011  # below this a box is ignored (HUD micro text Vision half-reads)
+MARGIN = 24 / 1920
+LADDER = [864, 936, 1008, 1080, 1200, 1350, 1536, 1728, 1920]
+
+
+def load_ocr(paths):
+    """Sampled frames -> word boxes [x0, y0, x1, y1, conf, text, kind], filtered to readable words seen in a
+    neighbouring sample too (a one-sample read is usually texture). kind: 'big' must sit inside the window,
+    'chrome' (static HUD in the top or bottom band) and 'small' may fall outside but never be sliced."""
+    S = {}
+    for p in paths:
+        for line in open(p):
+            try: d = json.loads(line)
+            except ValueError: continue  # a line still being written
+            S[d['f']] = [w for w in d['w'] if w[4] >= .5 and any(ch.isalnum() for ch in w[5])
+                                               and w[3] - w[1] >= SMALL and (len(w[5]) > 1 or w[3] - w[1] >= BIG)]
+    fs = sorted(S); step = int(min(np.diff(fs))) if len(fs) > 1 else 6
+
+    def near(w, g, tol=.06):  # a box of similar size and place in sample g
+        for v in S.get(g, []):
+            if abs((v[0] + v[2]) - (w[0] + w[2])) < tol and abs((v[1] + v[3]) - (w[1] + w[3])) < tol \
+                    and abs((v[3] - v[1]) - (w[3] - w[1])) < .3 * (w[3] - w[1]): return True
+        return False
+    out = {}
+    for f in fs:
+        keep = []
+        for w in S[f]:
+            if not (near(w, f - step) or near(w, f + step)): continue
+            h = w[3] - w[1]
+            band = w[3] < .13 or w[1] > .87
+            nb = [f + k * step for k in range(-6, 7) if k and f + k * step in S]
+            static = len(nb) >= 4 and sum(near(w, g, .02) for g in nb) >= .6 * len(nb)
+            corner = len(w[5].strip('_|[]•.-')) <= 2 and (w[0] < .05 or w[2] > .95)  # frame brackets read as L, 7, _J
+            kind = 'chrome' if band and h < .05 and static else ('big' if h >= BIG and not corner else 'small')
+            keep.append(w[:6] + [kind])
+        out[f] = keep
+    return out
+
+
+def text_ok(words, c, hw):
+    """None if the window [c-hw, c+hw] keeps every big word inside and slices no word; else the first offender.
+    A word the master frame already cuts at its own edge is held to the no-slice rule only."""
+    x0, x1 = c - hw, c + hw
+    for w in words:
+        inside = w[0] >= x0 + MARGIN * .5 and w[2] <= x1 - MARGIN * .5
+        if inside: continue
+        if w[0] >= x0 - .002 and w[2] <= x1 + .002: continue  # flush with a frame edge the window shares
+        outside = w[2] <= x0 or w[0] >= x1
+        if not outside: return w
+        if w[6] == 'big' and .004 < w[0] and w[2] < .996: return w
+    return None
+
+
+def path_for(samples, width, move=6.0):
+    """Least-cost centre path over a shot's sampled frames [(frame, words, target)]: the text rules are hard,
+    the pull to the target is soft, and moving costs. None if no path keeps the text rules."""
+    hw = width / 1920 / 2
+    grid = np.arange(hw, 1 - hw + 1e-9, .0025) if hw < .5 - 1e-9 else np.array([.5])
+    gap = max(1, np.median(np.diff([q[0] for q in samples]))) if len(samples) > 1 else 6
+    cap = gap / 24 / 4  # at most a quarter of the frame width per second
+    INF = 1e9; acc = None; back = []
+    for f, words, t in samples:
+        ok = np.array([text_ok(words, c, hw) is None for c in grid])
+        cost = np.where(ok, np.abs(grid - t), INF)
+        if acc is None:
+            acc = cost; back.append(None); continue
+        d = np.abs(grid[:, None] - grid[None, :])
+        trans = acc[None, :] + move * d + np.where(d > cap + 1e-9, INF, 0)
+        j = trans.argmin(axis=1); acc = cost + trans[np.arange(len(grid)), j]; back.append(j)
+    if acc.min() >= INF: return None
+    k = int(acc.argmin()); ks = [k]
+    for j in reversed(back[1:]):
+        k = int(j[k]); ks.append(k)
+    return grid[np.array(ks[::-1])]
+
+
+def textfit(args):
+    """Plan v2 from plan v1 + OCR. Per shot, the narrowest width on LADDER (from a floor) whose best path keeps
+    every big word inside and slices no word, pulled to v1's centre, which follows the 9:16 tracking.
+    v1 widths taken from the extent of kinetic line art are dropped; v1 widths for a wide subject stay as floors."""
+    P = json.load(open(args.plan)); O = load_ocr(args.ocr); hand = json.load(open(args.hand)) if args.hand else {}
+    c1 = np.array(P['centre']); n = P['frames']; centre = c1.copy(); shots = []
+    fs = np.array(sorted(O))
+    for s1 in P['shots']:
+        s, e = s1['start'], s1['end']; L = e - s
+        ins = fs[(fs >= s) & (fs < e)]
+        if len(ins) == 0: ins = np.array([fs[np.abs(fs - (s + e) // 2).argmin()]])
+        samples = [(int(f), O[int(f)], float(c1[min(int(f), n - 1)])) for f in ins]
+        rec = {'start': s, 'end': e, 'mode916': s1['mode916'], 'v1': s1['mode'] + (f" {s1['width']}" if 'width' in s1 else '')}
+        kinetic = s1.get('why', '').startswith('kinetic type')
+        floor = 864
+        if not kinetic and s1['mode'] == 'fit': floor = 1920
+        if not kinetic and s1['mode'] == 'wide': floor = s1['width']
+        h = hand.get(str(s), {})
+        if 'width' in h: floor = int(h['width'])
+        if h.get('mode') == 'fit': floor = 1920
+        why = h.get('why') or ('' if kinetic else s1.get('why', ''))
+        for wd in [x for x in LADDER if x >= floor] or [1920]:
+            path = path_for(samples, wd)
+            if path is not None: break
+        if path is None: wd, path = 1920, np.full(len(samples), .5)
+        if 'centre' in h and wd < 1920: path = np.full(len(samples), float(h['centre']))
+        hw = wd / 1920 / 2
+        t = np.arange(s, e); xs = [q[0] for q in samples]
+        c = np.interp(t, xs, path) if len(xs) > 1 else np.full(L, path[0])
+        if np.ptp(c) < .004: c = np.full(L, float(np.median(c)))
+        c = np.clip(c, hw, 1 - hw)
+        centre[s:e] = c
+        rec.update({'mode': 'crop' if wd == 864 else ('fit' if wd == 1920 else 'wide'), 'width': wd,
+                    'moves': bool(np.ptp(c) > 0), 'text': sum(len(q[1]) for q in samples)})
+        if why: rec['why'] = why
+        shots.append(rec)
+    out = {k: P[k] for k in ('video', 'ratio', 'frames', 'cuts')}
+    out.update({'from': 'aspects/4x5/panscan-plan-v1.json + OCR word boxes (tools/ocr_frames.swift)',
+                'rules': f'big text (box >= {BIG} of height) wholly inside with {MARGIN * 1920:.0f} px margin; no word sliced by an edge',
+                'shots': shots, 'centre': [round(float(x), 4) for x in centre]})
+    json.dump(out, open(args.out, 'w'), indent=0)
+    secs = {}
+    for r in shots: secs[r['mode']] = secs.get(r['mode'], 0) + (r['end'] - r['start']) / 24
+    print(f"{len(shots)} shots ->", {k: round(v, 1) for k, v in secs.items()}, 'seconds;', args.out)
+
+
+def audit(args):
+    """Every OCR'd frame against a plan's window: words sliced by an edge, big words left outside."""
+    P = json.load(open(args.plan)); O = load_ocr(args.ocr); c = P['centre']
+    width = np.full(P['frames'], 864)
+    for s in P['shots']:
+        width[s['start']:s['end']] = s.get('width', 1920 if s['mode'] == 'fit' else 864)
+    bad = []
+    for f in sorted(O):
+        if f >= P['frames']: continue
+        hw = width[f] / 1920 / 2
+        for w in O[f]:
+            if text_ok([w], c[f], hw) is not None: bad.append((f, int(width[f]), w[6], w[5], round(w[0], 3), round(w[2], 3), round(w[3] - w[1], 3)))
+    json.dump(bad, open(args.report, 'w'))
+    print(f'{len(O)} frames checked, {len(bad)} word problems in {len(set(b[0] for b in bad))} frames')
+    for b in bad[:args.show]: print(b)
+
+
 def sheet(args):
     P = json.load(open(args.plan)); W, H = probe(args.video); sw = args.w; sh = round(sw * H / W)
     cw = sh * RATIO[0] / RATIO[1]
@@ -177,13 +317,13 @@ def render(args):
     """crop: an 864x1080 window, as is. wide/fit: a window <width> px wide (fit = 1920), scaled to 864 wide and
     centred on a blurred, darkened copy of the same window, so nothing inside it is cut."""
     from PIL import Image, ImageFilter, ImageEnhance
-    P = json.load(open(args.plan)); W, H = probe(args.video)
+    P = json.load(open(args.plan)); W, H = probe(args.video)  # P['frames'] pins the length to the song grid
     cw = int(round(H * RATIO[0] / RATIO[1] / 2) * 2)  # 864
     ow, oh = map(int, args.size.split('x'))
     enc = subprocess.Popen(['ffmpeg', '-v', 'error', '-y', '-f', 'rawvideo', '-pix_fmt', 'rgb24', '-s', f'{cw}x{H}', '-r', '24',
                             '-i', '-', '-i', args.video, '-map', '0:v', '-map', '1:a', '-vf', f'scale={ow}:{oh}:flags=lanczos',
                             '-c:v', 'libx264', '-preset', 'medium', '-crf', str(args.crf), '-pix_fmt', 'yuv420p',
-                            '-c:a', 'copy', '-shortest', '-movflags', '+faststart', args.out], stdin=subprocess.PIPE)
+                            '-c:a', 'copy', '-frames:v', str(P['frames']), '-movflags', '+faststart', args.out], stdin=subprocess.PIPE)
     c = P['centre']; width = np.full(P['frames'] + 1, cw)
     for s in P['shots']:
         if s['mode'] != 'crop': width[s['start']:s['end']] = W if s['mode'] == 'fit' else s['width']
@@ -228,9 +368,13 @@ if __name__ == '__main__':
     p = sp.add_parser('analyse'); p.add_argument('video'); p.add_argument('cache')
     p = sp.add_parser('derive'); p.add_argument('plan916'); p.add_argument('cache'); p.add_argument('plan45')
     p.add_argument('--hand'); p.add_argument('--fit-below', type=float, default=.6)
+    p = sp.add_parser('textfit'); p.add_argument('plan'); p.add_argument('out'); p.add_argument('--ocr', nargs='+', required=True)
+    p.add_argument('--hand')
+    p = sp.add_parser('audit'); p.add_argument('plan'); p.add_argument('report'); p.add_argument('--ocr', nargs='+', required=True)
+    p.add_argument('--show', type=int, default=30)
     p = sp.add_parser('sheet'); p.add_argument('video'); p.add_argument('plan'); p.add_argument('out')
     p.add_argument('--at', default='mid'); p.add_argument('--w', type=int, default=480); p.add_argument('--chunk', type=int, default=0)
     p = sp.add_parser('render'); p.add_argument('video'); p.add_argument('plan'); p.add_argument('out')
     p.add_argument('--size', default='864x1080'); p.add_argument('--crf', type=int, default=20)
     p = sp.add_parser('scan'); p.add_argument('video'); p.add_argument('report')
-    a = ap.parse_args(); {'analyse': analyse, 'derive': derive, 'sheet': sheet, 'render': render, 'scan': scan}[a.cmd](a)
+    a = ap.parse_args(); {'analyse': analyse, 'derive': derive, 'textfit': textfit, 'audit': audit, 'sheet': sheet, 'render': render, 'scan': scan}[a.cmd](a)
