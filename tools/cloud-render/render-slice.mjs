@@ -1,9 +1,12 @@
 // node render-slice.mjs <page> <t0> <fps> <first> <last> <workers>
-// Draws frames [first, last) of a look page at song time t0 + i/fps into frames/f_NNNNNN.jpg (1920x1080).
+// Draws frames [first, last) of a look page into frames/f_NNNNNN.jpg (1920x1080). Frame i is song frame
+// round(t0 * fps) + i, drawn at that integer over fps: t0 + i / fps can land a hair under an exact frame time
+// when t0 is off the grid (77.333333), and looks that step on twos then draw the previous pose.
 // The page must define window.__frameJPEG(t, q) and window.__ready, like every look under mv-projects.
 import { chromium } from 'playwright';
 import fs from 'fs';
 const [page, t0, fps, a, b, wk] = [process.argv[2], ...process.argv.slice(3).map(Number)];
+const F0 = Math.round(t0 * fps);
 fs.mkdirSync('frames', { recursive: true });
 // CR_CHANNEL=chrome uses the installed Chrome (for local tests); runners use Playwright's Chromium
 const br = await chromium.launch({ headless: true, ...(process.env.CR_CHANNEL ? { channel: process.env.CR_CHANNEL } : {}) });
@@ -17,7 +20,7 @@ await Promise.all([...Array(wk)].map(async (_, w) => {
   // event can stall on it. The page signals readiness itself through window.__ready.
   await p.goto('file://' + process.cwd() + '/' + page + '?offline=1', { waitUntil: 'domcontentloaded', timeout: 600000 }); await p.evaluate(() => window.__ready);
   for (let i = a + w; i < b; i += wk) {
-    const url = await p.evaluate((t) => window.__frameJPEG(t, .93), t0 + i / fps);
+    const url = await p.evaluate((t) => window.__frameJPEG(t, .93), (F0 + i) / fps);
     fs.writeFileSync(`frames/f_${String(i).padStart(6, '0')}.jpg`, Buffer.from(url.split(',')[1], 'base64'));
   }
 }));

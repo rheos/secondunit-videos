@@ -19,6 +19,8 @@ pdir=$root/$proj; [[ -f $pdir/$page ]] || { echo "no page $pdir/$page"; exit 2; 
 song=$pdir/assets/song.wav; [[ -f $song ]] || { echo "no $song (the song clock)"; exit 2; }
 fps=24; width=$(( height * 16 / 9 ))
 frames=$(python3 -c "print(round(($t1 - $t0) * $fps))")
+# render-slice draws song frame round(t0 * fps) + i, so the song starts there too
+a0=$(python3 -c "print(round($t0 * $fps) / $fps)")
 [[ $slices == <-> ]] || { echo "slices must be a whole number"; exit 2; }
 max=$(( frames < 20 ? frames : 20 ))
 (( frames > 0 && slices >= 1 && slices <= max )) || { echo "need t1 > t0 and 1 <= slices <= $max"; exit 2; }
@@ -91,7 +93,7 @@ for f in $files; do
 done
 cat=""; for ((j = 0; j < k; j++)); do cat+="[v${j}]"; done
 mkdir -p ${out:h}
-ffmpeg -y -loglevel error ${ins[@]} -ss $t0 -t $(( t1 - t0 )) -i $song -filter_complex "${filt}${cat}concat=n=${k}:v=1:a=0[v]" \
+ffmpeg -y -loglevel error ${ins[@]} -ss $a0 -t $(( frames / ${fps}.0 )) -i $song -filter_complex "${filt}${cat}concat=n=${k}:v=1:a=0[v]" \
   -map "[v]" -map "${k}:a" -c:v libx264 -preset medium -crf 18 -pix_fmt yuv420p -c:a aac -b:a 256k -movflags +faststart $out
 got=$(ffprobe -v error -count_frames -select_streams v:0 -show_entries stream=nb_read_frames -of csv=p=0 $out | tr -d ',')
 (( got == frames )) || { echo "joined video has $got frames, want $frames"; exit 1; }
