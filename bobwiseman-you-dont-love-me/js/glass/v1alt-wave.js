@@ -57,15 +57,29 @@ function v1aWaveSpine(S) {
 function v1aWaveAt(sp, i, f) { const w = lerp(-sp.Wd[i], sp.Wd[i], f); return [sp.P[i][0] + sp.N[i][0] * w, sp.P[i][1] + sp.N[i][1] * w]; }
 
 // ---------------- her, and where her face is ----------------
+// Bob (2026-10-12): "could she pucker more than once? start stop start stop." From V1.waiting she puckers and lets
+// go again and again, on the vocal: [start, hold]. Eyes shut on each pucker, open between them. The fourth lands on
+// V1.kissed and holds through the near miss; one last hopeful pucker as the wave falls apart, eyes kept shut to V1.bk5.
+const V1AWAVE_PUCKERS = [[V1.waiting + .03, .34], [(V1.waiting + V1.tobe) / 2, .3], [V1.tobe + .02, .36], [V1.kissed - .04, .46], [V1.kissed + .76, .24]];
+function v1aWaveKiss(t) {
+  let pk = 0, shut = 0, sm = 0;
+  V1AWAVE_PUCKERS.forEach(([a, h], i) => {
+    const last = i === V1AWAVE_PUCKERS.length - 1;
+    pk = Math.max(pk, ease(t, a - .04, a + .06) * (1 - ease(t, a + h, a + h + .14)));
+    const sh = last ? ease(t, V1.bk5 - .1, V1.bk5 + .15) : ease(t, a + h + .06, a + h + .18);
+    shut = Math.max(shut, ease(t, a - .08, a + .02) * (1 - sh));
+    if (t >= a) { const u = (t - a) / .7; sm = Math.max(sm, u < .1 ? u / .1 : Math.exp(-(u - .1) * 6)); } // the smack
+  });
+  return { pk, shut, sm: sm * pk };
+}
 function v1aWavePose(t) {
-  const k = ease(t, V1.tobe - .1, V1.kissed - .05);
-  const lean = k * (1 - ease(t, V1.kissed + 1.2, V1.kissed + 1.9));
-  const open = ease(t, V1.bk5 - .1, V1.bk5 + .15);
+  const k = ease(t, V1.tobe - .1, V1.kissed - .05), K = v1aWaveKiss(t);
+  const lean = Math.max(k, .35 * ease(t, V1.waiting - .1, V1.waiting + .3)) * (1 - ease(t, V1.kissed + 1.2, V1.kissed + 1.9));
   const give = ease(t, V1.giveUp, V1.giveUp + .5) * (1 - lin(t, V1.l4 - 1, V1.l4));
   const glance = ease(t, V1.steep - .2, V1.steep + .1) * (1 - ease(t, V1.tobe - .4, V1.tobe - .1));
   const watch = ease(t, V1.bk5 + .2, V1.bk5 + .5) * (1 - ease(t, V1.giveUp - .2, V1.giveUp + .1));
   const hd = [V1AWAVE_KISSHD[0] * lean, V1AWAVE_KISSHD[1] * lean + 9 * give, V1AWAVE_KISSHD[2] * lean + .07 * give];
-  return { k, shut: k * (1 - open), pucker: k * (1 - ease(t, V1.bk5 - .3, V1.bk5)), hd, look: glance + .9 * watch - .45 * give, give };
+  return { k, shut: K.shut, pucker: K.pk, smack: K.sm, hd, look: glance * (1 - K.shut) + .9 * watch - .45 * give, give };
 }
 function v1aWaveHeadPt(hd, p) { // head-local point -> world
   const c = Math.cos(hd[2]), s = Math.sin(hd[2]), F = V1AWAVE_F;
@@ -284,7 +298,7 @@ function sceneV1AltWave(g, t, view) {
   const Q = v1aWavePose(t), F = V1AWAVE_F;
   g.save(); g.translate(F.x, F.y); g.scale(F.s, F.s);
   drawWomanV1(g, {
-    dress: C.purple, mantle: [30, 110, 120], seed: 7600, mouth: Q.pucker > .3 || Q.shut > .5 ? 0 : v1Mouth(t), shut: Q.shut, pucker: Q.pucker,
+    dress: C.purple, mantle: [30, 110, 120], seed: 7600, mouth: Q.pucker > .3 || Q.shut > .5 ? 0 : v1Mouth(t), shut: Q.shut, pucker: Q.pucker, smack: Q.smack,
     head: Q.hd, look: Q.look,
     hands: [[-100, 470 + 14 * Q.give, .5], [100, 470 + 14 * Q.give, .5]], elbows: [[-210, 400 + 8 * Q.give], [210, 400 + 8 * Q.give]],
   });

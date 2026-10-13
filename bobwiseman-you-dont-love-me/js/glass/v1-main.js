@@ -212,16 +212,15 @@ function v1Daisy(g, t, tod) {
   pane(g, circPath(0, 0, 104), lit([120, 170, 214]), 2, { ew: 30, lw: 7 });
   const dropAt = {}; V1_DROPS.forEach((d, n) => { dropAt[V1PET_ORDER[n]] = d; });
   for (let k = 0; k < V1NPET; k++) {
-    const a = -Math.PI / 2 + k * TAU / V1NPET, rx = Math.cos(a) * 64, ry = Math.sin(a) * 64, p = ellPath(rx, ry, 39, 6.2, a);
+    const a = -Math.PI / 2 + k * TAU / V1NPET, p = ellPath(Math.cos(a) * 64, Math.sin(a) * 64, 39, 6.2, a);
     const dt = dropAt[k] !== undefined ? t - dropAt[k] : -1;
     if (dt < 0) { pane(g, p, lit(C.white), 10 + k, { ew: 6, lw: 4.5, amt: .4 }); continue; }
     g.fillStyle = 'rgba(16,18,28,.92)'; g.fill(p); lead(g, p, 4.5);
     if (dt < .5) { g.fillStyle = `rgba(255,250,220,${.8 * (1 - dt / .5)})`; g.fill(p); }
-    if (dt < 1.9) {
-      g.save(); g.rotate(-sw);
-      const [wx, wy] = [rx * Math.cos(sw) - ry * Math.sin(sw), rx * Math.sin(sw) + ry * Math.cos(sw)];
-      g.translate(wx + Math.cos(a) * 30 * Math.min(dt * 4, 1) + Math.sin(dt * 5 + k) * 26, wy + 520 * dt * dt);
-      g.rotate(a + sw + dt * (k % 2 ? 2.6 : -2.2)); g.globalAlpha = 1 - lin(dt, 1.3, 1.9);
+    if (dt < 1.9) { // the fall starts in its slot, where the Pip's fingers hold it (pip-plucker.js)
+      const [fx, fy, fr] = plkFall(k, a, sw, dt);
+      g.save(); g.rotate(-sw); g.translate(fx, fy);
+      g.rotate(fr); g.globalAlpha = 1 - lin(dt, 1.3, 1.9);
       pane(g, ellPath(0, 0, 39, 6.2), lit(C.white), 10 + k, { ew: 6, lw: 4.5, amt: .4 });
       g.restore();
     }
@@ -229,6 +228,7 @@ function v1Daisy(g, t, tod) {
   probeDrops(t, V1_DROPS, 0, 0);
   pane(g, circPath(0, 0, 25), lit(C.gold), 3, { ew: 10, lw: 7 });
   g.fillStyle = 'rgba(60,30,10,.7)'; for (let k = 0; k < 7; k++) { const a = k * TAU / 7; g.beginPath(); g.arc(Math.cos(a) * 12, Math.sin(a) * 12, 2.6, 0, TAU); g.fill(); }
+  drawPipPlucker(g, t, sw, tod, V1_DROPS, 0); // the Pip who plucks them (pip-plucker.js)
   g.restore();
 }
 

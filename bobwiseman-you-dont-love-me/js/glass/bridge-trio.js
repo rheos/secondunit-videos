@@ -175,13 +175,13 @@ function drawSinger(g, s, k, t, pose) {
   const hy = FIG.shY - FIG.neck - FIG.headR * s.face + 6;
   pane(g, polyPath([[-15, FIG.shY + 2], [-14, FIG.shY - FIG.neck - 6], [14, FIG.shY - FIG.neck - 6], [15, FIG.shY + 2]]), s.skin, s.seed + 50, { ew: 8, shade: .3, lw: 5 });
   g.save(); g.translate(0, hy); g.rotate(P.tilt + (back ? 0 : .04 * hitPulse(t)));
-  drawSingerHead(g, s, t, back);
+  drawSingerHead(g, s, t, back, P.mouth);
   g.restore();
   g.restore();
 }
 function blobPts(cx, cy, rx, ry, seed, n = 9) { return [...Array(n)].map((_, i) => { const a = i / n * TAU, w = 1 + .1 * n1(seed, i); return [cx + Math.cos(a) * rx * w, cy + Math.sin(a) * ry * w]; }); }
 
-function drawSingerHead(g, s, t, back) {
+function drawSingerHead(g, s, t, back, mo) { // mo: mouth 0..1 to use instead of the bridge's backing hits
   const R = FIG.headR, f = s.face, rx = R * .86 * f, ry = R * 1.06 * f;
   const face = ellPath(0, 0, rx, ry, 0);
   if (back) { pane(g, face, s.hair, s.seed + 60, { ew: 20, shade: .3, lw: 7 }); return; }
@@ -193,7 +193,7 @@ function drawSingerHead(g, s, t, back) {
   pane(g, smoothPath(cap), s.hair, s.seed + 63, { ew: 12, shade: .2, lw: 6 });
   if (s.part) { g.strokeStyle = 'rgba(200,190,170,.5)'; g.lineWidth = 2.5; g.beginPath(); g.moveTo(-rx * .45, -ry * .98); g.lineTo(-rx * .38, -ry * .64); g.stroke(); }
   // grisaille: brows, eyes, nose, mouth
-  const m = trioMouthAt(t);
+  const m = mo !== undefined ? mo : trioMouthAt(t);
   paint(g, 4, .9);
   for (const sd of [-1, 1]) { // brows lift when singing
     g.beginPath(); g.moveTo(sd * rx * .18, -ry * .3 - m * 4); g.quadraticCurveTo(sd * rx * .42, -ry * .42 - m * 6, sd * rx * .64, -ry * .3 - m * 3); g.stroke();
