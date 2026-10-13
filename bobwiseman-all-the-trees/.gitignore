@@ -1,0 +1,6 @@
+source/
+work/
+_in/
+out/
+*.lyrics*.txt
+node_modules
