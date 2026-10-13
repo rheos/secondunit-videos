@@ -165,6 +165,7 @@ function cloud(x, y, s, o = {}) {
   const k = 1 / s, S = sty(o, k); X.save(); X.translate(x, y); X.scale(s, s);
   const bl = [[-80, 0, 52], [-30, -30, 64], [30, -22, 58], [80, 4, 46], [0, 12, 60]]; const u = new Path2D(); bl.forEach(([a, b, r]) => u.addPath(PE(a, b, r, r * .82)));
   if (o.rain) { X.beginPath(); for (let i = 0; i < 26; i++) { const rx = -110 + R() * 220, ry = 40 + R() * 40, L = 40 + R() * 70; X.moveTo(rx, ry); X.lineTo(rx - L * .18, ry + L); } stroke(S.sch ? S.col : C.teal, 1.6 * k, .85); }
+  if (o.rain && !S.sch && typeof NOTES !== 'undefined' && NOTES > 0 && typeof noteRain === 'function') noteRain(-110, 60, 220, 110, NOTES);
   S.F(u, '#8d93a8'); S.SH(u, 0, 0, 150, [10, -22], .6, 5);
   bl.forEach(([a, b, r]) => iE(a, b, r, r * .82, 0, S.INK, (S.sch ? 1.1 : 2.2) * k, S.sch ? .8 : 1, false, .8 * k, Math.PI * .95, Math.PI * 2.05));
   X.restore();
