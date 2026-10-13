@@ -144,6 +144,7 @@ def derive(args):
 BIG = 0.03     # Vision line-box height (0-1 of frame height) from which a word must sit wholly inside the window
 SMALL = 0.011  # below this a box is ignored (HUD micro text Vision half-reads)
 MARGIN = 32 / 1920
+PAD = .12      # horizontal padding on each word box, as a fraction of its height
 LADDER = [864, 936, 1008, 1080, 1200, 1350, 1536, 1728, 1920]
 
 
@@ -158,7 +159,9 @@ def load_ocr(paths):
             except ValueError: continue  # a line still being written
             S[d['f']] = [w for w in d['w'] if w[4] >= .5 and any(ch.isalnum() for ch in w[5])
                                                and w[3] - w[1] >= SMALL and (len(w[5]) > 1 or w[3] - w[1] >= BIG)]
-    fs = sorted(S); step = int(min(np.diff(fs))) if len(fs) > 1 else 6
+    fs = sorted(S)
+    nbr = {f: [g for g in (fs[k - 1] if k else None, fs[k + 1] if k + 1 < len(fs) else None)
+               if g is not None and abs(g - f) <= 6] for k, f in enumerate(fs)}  # samples are every 6th frame, denser in text shots
 
     def near(w, g, tol=.06):  # a box of similar size and place in sample g
         for v in S.get(g, []):
@@ -169,14 +172,15 @@ def load_ocr(paths):
     for f in fs:
         keep = []
         for w in S[f]:
-            if not (near(w, f - step) or near(w, f + step)): continue
+            if not any(near(w, g) for g in nbr[f]): continue
             h = w[3] - w[1]
             band = w[3] <= .10 or w[1] >= .915  # this video's HUD rows; its sound captions end by 0.90
             if 4462 <= f < 5340:  # 16-bit racer: the game HUD (timer, position, speed, TURBO) sits in the corners, bigger
                 band = band or ((w[2] < .2 or w[0] > .78) and (w[3] < .2 or w[1] > .78))
             corner = len(w[5].strip('_|[]•.-')) <= 2 and (w[0] < .05 or w[2] > .95)  # frame brackets read as L, 7, _J
             kind = 'chrome' if band and h < (.12 if 4462 <= f < 5340 else .06) else ('big' if h >= BIG and not corner else 'small')
-            keep.append(w[:6] + [kind])
+            pad = PAD * h * 1080 / 1920  # Vision's boxes run inside heavy display type (AWAKE lost its A's)
+            keep.append([max(0., w[0] - pad), w[1], min(1., w[2] + pad)] + w[3:6] + [kind])
         out[f] = keep
     return out
 
@@ -200,15 +204,15 @@ def path_for(samples, width, move=6.0):
     the pull to the target is soft, and moving costs. None if no path keeps the text rules."""
     hw = width / 1920 / 2
     grid = np.arange(hw, 1 - hw + 1e-9, .0025) if hw < .5 - 1e-9 else np.array([.5])
-    gap = max(1, np.median(np.diff([q[0] for q in samples]))) if len(samples) > 1 else 6
-    cap = gap / 24 / 4  # at most a quarter of the frame width per second
-    INF = 1e9; acc = None; back = []
+    INF = 1e9; acc = None; back = []; prev_f = None
+    d = np.abs(grid[:, None] - grid[None, :])
     for f, words, t in samples:
         ok = np.array([text_ok(words, c, hw) is None for c in grid])
         cost = np.where(ok, np.abs(grid - t), INF)
         if acc is None:
-            acc = cost; back.append(None); continue
-        d = np.abs(grid[:, None] - grid[None, :])
+            acc = cost; back.append(None); prev_f = f; continue
+        cap = max(f - prev_f, 1) / 24 / 4 + .0025  # at most a quarter of the frame width per second
+        prev_f = f
         trans = acc[None, :] + move * d + np.where(d > cap + 1e-9, INF, 0)
         j = trans.argmin(axis=1); acc = cost + trans[np.arange(len(grid)), j]; back.append(j)
     if acc.min() >= INF: return None
@@ -223,6 +227,12 @@ def textfit(args):
     every big word inside and slices no word, pulled to v1's centre, which follows the 9:16 tracking.
     v1 widths taken from the extent of kinetic line art are dropped; v1 widths for a wide subject stay as floors."""
     P = json.load(open(args.plan)); O = load_ocr(args.ocr); hand = json.load(open(args.hand)) if args.hand else {}
+    for mv in args.move_cut or []:  # 'old:new' where the 9:16 cut list is off the master's real cut
+        a, b = map(int, mv.split(':'))
+        P['cuts'] = [b if x == a else x for x in P['cuts']]
+        for r in P['shots']:
+            if r['end'] == a: r['end'] = b
+            if r['start'] == a: r['start'] = b
     c1 = np.array(P['centre']); n = P['frames']; centre = c1.copy(); shots = []
     fs = np.array(sorted(O))
     for s1 in P['shots']:
@@ -268,7 +278,8 @@ def textfit(args):
 
 
 def audit(args):
-    """Every OCR'd frame against a plan's window: words sliced by an edge, big words left outside."""
+    """Every OCR'd frame against a plan's window: words sliced by an edge, big words left outside.
+    The report holds frame, width, kind, word length and box; the words themselves only with --with-text."""
     P = json.load(open(args.plan)); O = load_ocr(args.ocr); c = P['centre']
     width = np.full(P['frames'], 864)
     for s in P['shots']:
@@ -278,7 +289,7 @@ def audit(args):
         if f >= P['frames']: continue
         hw = width[f] / 1920 / 2
         for w in O[f]:
-            if text_ok([w], c[f], hw) is not None: bad.append((f, int(width[f]), w[6], w[5], round(w[0], 3), round(w[2], 3), round(w[3] - w[1], 3)))
+            if text_ok([w], c[f], hw) is not None: bad.append((f, int(width[f]), w[6], w[5] if args.with_text else len(w[5]), round(w[0], 3), round(w[2], 3), round(w[3] - w[1], 3)))
     json.dump(bad, open(args.report, 'w'))
     print(f'{len(O)} frames checked, {len(bad)} word problems in {len(set(b[0] for b in bad))} frames')
     for b in bad[:args.show]: print(b)
@@ -372,9 +383,10 @@ if __name__ == '__main__':
     p = sp.add_parser('derive'); p.add_argument('plan916'); p.add_argument('cache'); p.add_argument('plan45')
     p.add_argument('--hand'); p.add_argument('--fit-below', type=float, default=.6)
     p = sp.add_parser('textfit'); p.add_argument('plan'); p.add_argument('out'); p.add_argument('--ocr', nargs='+', required=True)
-    p.add_argument('--hand')
+    p.add_argument('--hand'); p.add_argument('--move-cut', nargs='*', help="old:new, e.g. 681:680 where a cut is a frame off")
     p = sp.add_parser('audit'); p.add_argument('plan'); p.add_argument('report'); p.add_argument('--ocr', nargs='+', required=True)
     p.add_argument('--show', type=int, default=30)
+    p.add_argument('--with-text', action='store_true', help='put the words in the report (lyrics: keep such reports out of git)')
     p = sp.add_parser('sheet'); p.add_argument('video'); p.add_argument('plan'); p.add_argument('out')
     p.add_argument('--at', default='mid'); p.add_argument('--w', type=int, default=480); p.add_argument('--chunk', type=int, default=0)
     p = sp.add_parser('render'); p.add_argument('video'); p.add_argument('plan'); p.add_argument('out')
