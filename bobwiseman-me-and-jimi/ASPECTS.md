@@ -10,6 +10,7 @@ The 16:9 video is the master. Every other ratio is ADDED beside it; nothing of t
 | master = redraw + picked pan shots | `out/maj_woodcut-v12_...master1080.mp4` | `aspects/9x16/master-picks.json` -> `out/9x16/maj_master9x16-v3_...` |
 | renders | `out/` | `out/9x16/` |
 | builder brief | `docs/WOODCUT_BUILD.md` | `docs/PORTRAIT_BUILD.md` |
+| with on-screen lyrics (docs/LYRICS.md) | `wood-cap.html` -> `out/maj_woodcut-v13-lyrics_...master1080.mp4` | `wood-9x16-cap.html` -> `out/9x16/verses/` (the three verse clips) |
 
 Shared by every aspect, read-only for aspect work: `assets/`, `source/`, `_in/`, the kit (`js/wood.js`, `js/wkit.js`),
 the look. `js/core.js` reads the canvas size from the page (W x H); the look shader uses W/H.
