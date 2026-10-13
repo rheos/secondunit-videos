@@ -187,7 +187,8 @@ function schFrame(n, t, sub, col = C.lav) {
   for (const [x, y] of [[46, 46], [W - 46, 46], [46, H - 46], [W - 46, H - 46]]) { X.beginPath(); X.moveTo(x - 13, y); X.lineTo(x + 13, y); X.moveTo(x, y - 13); X.lineTo(x, y + 13); stroke(col, 1, .6); gc(x, y, 6, col, .5); }
   if (t) lab(80, 72, n + '  ' + t, C.white, .9, 16); if (sub) lab(80, 96, sub, col, .6, 12); lab(W - 80, H - 62, 'FIG. ' + n, col, .45, 11, 'right');
 }
-function cam(cx, cy, z, rot = 0) { X.translate(W / 2, H / 2); X.scale(z, z); X.rotate(rot); X.translate(-cx, -cy); }
+let CAMO = null; // per-cut framing override {fx, fy, fz}: re-frames any set-up without touching it
+function cam(cx, cy, z, rot = 0) { if (CAMO) { if (CAMO.fx !== undefined) cx = CAMO.fx; if (CAMO.fy !== undefined) cy = CAMO.fy; if (CAMO.fz !== undefined) z *= CAMO.fz; } X.translate(W / 2, H / 2); X.scale(z, z); X.rotate(rot); X.translate(-cx, -cy); }
 function screen() { X.setTransform(1, 0, 0, 1, 0, 0); }
 function bz(a, b, c, d, t) { const u = 1 - t; return [u * u * u * a[0] + 3 * u * u * t * b[0] + 3 * u * t * t * c[0] + t * t * t * d[0], u * u * u * a[1] + 3 * u * u * t * b[1] + 3 * u * t * t * c[1] + t * t * t * d[1]]; }
 function bzPts(a, b, c, d, t0, t1, n = 60) { const o = []; for (let i = 0; i <= n; i++) o.push(bz(a, b, c, d, lerp(t0, t1, i / n))); return o; }

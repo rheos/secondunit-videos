@@ -30,7 +30,7 @@ function traveller(x, y, s, o = {}) {
   const k = 1 / s, S = sty(o, k);
   X.save(); X.translate(x, y); X.scale(o.flip ? -s : s, s);
   const ph = o.legs ?? null, sw = ph === null ? 0 : Math.sin(ph) * .42;
-  const coat = S.sch ? C.navy : C.teal, trouser = '#4a3b33';
+  const coat = S.sch ? C.navy : (o.coat || C.teal), trouser = o.trouser || '#4a3b33';
   // legs (seated: thighs forward)
   if (o.sit) { limb([[-14, -150], [52, -150], [56, -70], [60, -2]], 15, o, k, trouser); limb([[10, -150], [72, -146], [80, -70], [84, -2]], 15, o, k, trouser); }
   else {
@@ -41,7 +41,7 @@ function traveller(x, y, s, o = {}) {
   const fx1 = o.sit ? 60 : -12 + Math.sin(-sw) * 150, fx2 = o.sit ? 84 : 12 + Math.sin(sw) * 150;
   for (const fx of [fx1, fx2]) { const sp = PE(fx + 12, -6, 22, 9); S.F(sp, '#2b1d14'); S.OL(fx + 12, -6, 22, 9, 0, 2); }
   // back arm
-  const aL = o.armL || [.15, -.2]; limb(arm(-26, -262, aL[0], aL[1]), 13, o, k, '#356c69');
+  const aL = o.armL || [.15, -.2]; limb(arm(-26, -262, aL[0], aL[1]), 13, o, k, o.sleeve || '#356c69');
   // coat
   const cp = [[-34, -276], [34, -276], [46, -130], [50, -118], [-50, -118], [-46, -130]];
   const cpath = PP(cp); S.F(cpath, coat); S.SH(cpath, 0, -200, 110, [16, -6], .9, 5.5); S.OP(dens(cp, 26, true));
@@ -63,7 +63,7 @@ function traveller(x, y, s, o = {}) {
     X.beginPath(); wP([[lk - 25, -338], [lk + 25, -338]], false, .4 * k); stroke(S.sch ? S.col : C.ochre, 4 * k, .9);
   }
   // front arm + suitcase
-  const aR = o.armR || [-.12, .25]; const ap = arm(26, -262, aR[0], aR[1]); limb(ap, 13, o, k, '#3a7a76');
+  const aR = o.armR || [-.12, .25]; const ap = arm(26, -262, aR[0], aR[1]); limb(ap, 13, o, k, o.sleeve || '#3a7a76');
   const hx = ap[2][0], hy = ap[2][1];
   fillP(PE(hx, hy + 4, 8, 9), S.sch ? C.navy : '#efd9b9'); S.OL(hx, hy + 4, 8, 9, 0, 1.6);
   if (o.case) suitcase(hx, hy + 10, 1, { ...o, flip: false, handle: true }, k);

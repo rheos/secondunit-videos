@@ -158,7 +158,7 @@ SU.beach = { mode: 'ill', f(q, p, a, T) {
   const sea = PR(-200, 640, W + 400, 140); fillP(sea, C.teal); hatch(sea, 960, 710, 1400, .05, 7, C.ink, .9, .5); X.beginPath(); for (let i = 0; i < 40; i++) { const wx = (i * 97 + T * 30) % (W + 200) - 100, wy = 660 + (i * 37) % 110; X.moveTo(wx, wy); X.quadraticCurveTo(wx + 20, wy - 8, wx + 40, wy); } stroke(C.cream, 2, .8); iline(-200, 640, W + 200, 640, C.ink, 2.4);
   const sand = PR(-200, 780, W + 400, 400); fillP(sand, C.tan); stipRect(-200, 780, W + 400, 400, 3000, C.ink, .5, 2); iline(-200, 780, W + 200, 780, C.ink, 2.2);
   palm(330, 860, 1.4, { sway: Math.sin(T) });
-  traveller(1000, 980, 1.3, { look: 1, mouth: sing(T), armR: [2.2, -3.77], armL: [.2, -.2], case: false });
+  traveller(1000, 980, 1.3, { look: 1, mouth: sing(T), armR: [2.2, -3.77], armL: [.2, -.2], case: false, hat: !a.hatOff });
   consL([[0, 640, W, 640], [1420, 0, 1420, H], [1000, 0, 1000, H]]); consC([[1420, 290, 260]]);
   for (let i = 0; i < 3; i++) { const rr = 40 + ((FD * 4 + i * 26) % 80); gc(1050, 580, rr, C.teal, .8 * (1 - rr / 120), 2, null, -1.4, .2); }
 } };
@@ -197,13 +197,22 @@ SU.mule = { mode: 'ill', f(q, p, a, T) {
   cam(960, 560, a.z || 1);
   const gy = 930, gr = PR(-200, gy, W + 400, 300); fillP(gr, '#c4ae84'); hatch(gr, 960, gy + 80, 1400, .2, 8, C.ink, .8, .3); iline(-200, gy, W + 200, gy, C.ink, 2.6);
   X.beginPath(); const off = (T * 220) % 90; for (let x = -off; x < W + 90; x += 90) { X.moveTo(x, gy + 10); X.lineTo(x - 30, gy + 60); } stroke(C.ink, 1.2, .5);
-  const s = 1.25, tx = 760; traveller(tx, gy + 10, s, { legs: walkPh() * 1.4, case: false, look: 1, mouth: sing(T), armR: [-.6, .9], armL: [.4, -.3] });
-  const hatX = tx + 10, hatY = gy + 10 - 360 * s, px = tx + 560, py = hatY - 90;
-  iline(hatX, hatY, px, py, C.ink, 5); iline(hatX, hatY, px, py, C.ochre, 2.4, 1, false);
-  const sw = Math.sin(T * 2.4) * .18, L = 330, cxr = px + Math.sin(sw) * L, cyr = py + Math.cos(sw) * L;
-  iline(px, py, cxr, cyr, C.ink, 1.6, 1, false); carrot(cxr, cyr, 1.1, -sw);
-  gl(px, py, cxr, cyr, C.orange, .9, 2.2); gc(cxr, cyr + 60, 90, C.teal, .8, 1.8); gc(px, py, L, C.orange, .5, 1.4, [4, 8], Math.PI / 2 - .3, Math.PI / 2 + .3);
-  gl(tx + 30, gy + 10 - 310 * s, cxr - 10, cyr + 40, C.teal, .8, 1.6, [8, 8]);
+  const s = 1.25, tx = 760;
+  // the queue of other mules behind him (a.line): each chasing his own carrot
+  if (a.line) for (let i = 3; i >= 1; i--) { const qx = tx - i * 300, qs = s * (1 - i * .12), qy = gy + 10 - i * 4; traveller(qx, qy, qs, { legs: walkPh() * 1.4 + i, look: 1, armR: [-.6, .9], coat: [C.plum, C.sage, C.ochre][i - 1] }); const hx2 = qx + 10, hy2 = qy - 360 * qs; iline(hx2, hy2, hx2 + 300 * qs, hy2 - 60 * qs, C.ink, 3); iline(hx2 + 300 * qs, hy2 - 60 * qs, hx2 + 300 * qs, hy2 + 140 * qs, C.ink, 1.2, 1, false); carrot(hx2 + 300 * qs, hy2 + 140 * qs, .7 * qs); }
+  traveller(tx, gy + 10, s, { legs: walkPh() * 1.4, case: false, look: 1, mouth: sing(T), armR: a.pocket ? [.3, .2] : a.pull ? [2.4, -.3] : [-.6, .9], armL: a.talent ? [2.9, .3] : [.4, -.3], hat: true });
+  if (a.talent) { X.save(); X.translate(tx, gy + 10 - 395 * s); X.rotate(Math.sin(T * 5) * .12); suitcase(0, -60, s * .8); X.restore(); gc(tx, gy + 10 - 470 * s, 70, C.orange, .7, 1.8, null, Math.PI, TAU); }
+  const hatX = tx + 10, hatY = gy + 10 - 360 * s, reach = a.pull ? 760 : 560, px = tx + reach, py = hatY - 90;
+  if (!a.pocket) {
+    iline(hatX, hatY, px, py, C.ink, 5); iline(hatX, hatY, px, py, C.ochre, 2.4, 1, false);
+    const sw = Math.sin(T * 2.4) * .18, L = 330, cxr = px + Math.sin(sw) * L, cyr = py + Math.cos(sw) * L;
+    iline(px, py, cxr, cyr, C.ink, 1.6, 1, false);
+    if (a.cardboard) { X.save(); X.translate(cxr, cyr); X.scale(.12 + Math.abs(Math.sin(T * 3)) * .9, 1); carrot(0, 0, 1.1, -sw); X.restore(); iline(cxr - 3, cyr + 10, cxr - 3, cyr + 120, C.ink, 1, .6, false); lab(cxr + 70, cyr + 60, 'CARDBOARD', C.brick, .9, 15, 'left', 'alphabetic', 'bold'); const bite = PE(cxr + 12, cyr + 40, 14, 12); fillP(bite, '#e6d3a8'); }
+    else carrot(cxr, cyr, 1.1, -sw);
+    gl(px, py, cxr, cyr, C.orange, .9, 2.2); gc(cxr, cyr + 60, 90, C.teal, .8, 1.8); gc(px, py, L, C.orange, .5, 1.4, [4, 8], Math.PI / 2 - .3, Math.PI / 2 + .3);
+    gl(tx + 30, gy + 10 - 310 * s, cxr - 10, cyr + 40, C.teal, .8, 1.6, [8, 8]);
+    if (a.pull) { bracket(tx + 40, gy + 40, cxr, gy + 40, C.ink, .8); lab((tx + cxr) / 2, gy + 90, 'GAP · UNCHANGED', C.ink, .85, 14, 'center'); }
+  } else { carrot(tx + 70, gy - 260, .8, 1.2); gc(tx + 70, gy - 240, 70, C.orange, .8, 2); }
   consL([[0, gy, W, gy], [tx, 0, tx, H], [px, 0, px, H]]);
 } };
 
@@ -241,7 +250,8 @@ SU.corridor = { mode: 'ill', f(q, p, a, T) {
   const cp2 = PP([[0, 0], [W, 0], [1140, 360], [780, 360]]); fillP(cp2, '#efe9d8'); for (let k = 0; k < 4; k++) { const t = (k + 1) / 5, y = lerp(0, 360, t), w2 = lerp(W, 360, t); fillP(PR(vx - w2 * .08, y - 6, w2 * .16, 10), C.cream); iBox(vx - w2 * .08, y - 6, w2 * .16, 10, C.ink, 1.2); }
   for (const s of [-1, 1]) for (let k = 0; k < 3; k++) { const t = .25 + k * .22, x1 = s < 0 ? lerp(0, 780, t) : lerp(W, 1140, t), x2 = s < 0 ? lerp(0, 780, t + .1) : lerp(W, 1140, t + .1), y1t = lerp(0, 360, t) + lerp(220, 80, t), y2t = lerp(0, 360, t + .1) + lerp(220, 80, t + .1), y1b = lerp(H, 600, t), y2b = lerp(H, 600, t + .1); const dp = PP([[x1, y1t], [x2, y2t], [x2, y2b], [x1, y1b]]); fillP(dp, C.sage); shade(dp, (x1 + x2) / 2, (y1t + y1b) / 2, 200, [s * 20, 0], .9, 5); iP([[x1, y1t], [x2, y2t], [x2, y2b], [x1, y1b]], true, C.ink, 2); }
   consL([[0, 0, vx, vy], [W, 0, vx, vy], [0, H, vx, vy], [W, H, vx, vy]], .12);
-  const walk = q, d = lerp(1.0, .5, walk), y = lerp(1000, 760, walk), x = 960;
+  if (a.empty) return;
+  const walk = a.walkAt ?? q, d = lerp(1.0, .5, walk), y = lerp(1000, 760, walk), x = 960;
   traveller(x - 150 * d, y, 1.1 * d, { hat: false, look: 0, legs: walkPh(), armL: [.1, 0], armR: [-.6, .5] });
   traveller(x, y + 10, 1.12 * d, { hat: false, look: 0, legs: walkPh() + 1, armL: [.15, 0], armR: [-.1, .1] });
   traveller(x + 150 * d, y, 1.1 * d, { hat: false, look: 0, legs: walkPh() + 2, armL: [.6, -.5], armR: [-.1, 0] });
@@ -311,7 +321,7 @@ SU.planeSky = { mode: 'ill', f(q, p, a, T) {
   for (let i = 0; i < 4; i++) cloud(((i * 620 - T * 260) % (W + 600) + W + 600) % (W + 600) - 300, 200 + (i % 2) * 520, .9);
   const A = [-200, 900], B = [500, 700], Cc = [1200, 200], D = [2200, 120], u = lerp(.25, .7, a.byP ? p : q);
   path(bzPts(A, B, Cc, D, 0, u), C.orange, 2.4, .95, [14, 10]); path(bzPts(A, B, Cc, D, u, 1), C.orange, 1.2, .4, [2, 10]);
-  const [px, py] = bz(A, B, Cc, D, u), [nx, ny] = bz(A, B, Cc, D, u + .01); plane(px, py, a.s || 1.1, Math.atan2(ny - py, nx - px));
+  const [px, py] = bz(A, B, Cc, D, u), [nx, ny] = bz(A, B, Cc, D, u + .01); if (a.cloud) { const [cx2, cy2] = bz(A, B, Cc, D, Math.max(0, u - .12)); cloud(cx2, cy2 - 150, .8, { rain: true }); gl(cx2, cy2 - 150, px, py, C.teal, .7, 1.6, [8, 8]); } plane(px, py, a.s || 1.1, Math.atan2(ny - py, nx - px));
   for (let i = 0; i < 3; i++) gc(px - 300, py + 80, 40 + i * 30 + ((FD * 5) % 30), C.teal, .5, 1.6);
   consL([[0, 540, W, 540], [px, 0, px, H]]);
 } };
@@ -331,11 +341,11 @@ SU.cage = { mode: 'ill', f(q, p, a, T) {
   const cx = 960, by = 900, ry = 600, rx = 330, open = a.open ? eo(seg(q, .1, .6)) : 0;
   const base = PE(cx, by, rx + 30, 50); fillP(base, '#7a4a2a'); shade(base, cx, by, rx + 40, [0, -14], .3, 5); iE(cx, by, rx + 30, 50, 0, C.ink, 2.6);
   iline(cx, by - ry - 70, cx, by - ry, C.ink, 3); iE(cx, by - ry - 90, 24, 24, 0, C.ink, 3, 1, true);
-  const flyX = a.open ? lerp(cx, cx + 700, eo(seg(q, .5, 1))) : cx, flyY = a.open ? lerp(by - 180, by - 520, eo(seg(q, .5, 1))) : by - 180;
-  bird(flyX, flyY, 1.3, a.open && q > .4 ? flap() : 0);
+  const flyX = a.fly ? lerp(cx, cx + 700, eo(seg(q, .5, 1))) : cx, flyY = a.fly ? lerp(by - 180, by - 520, eo(seg(q, .5, 1))) : by - 180;
+  bird(flyX, flyY, 1.3, a.fly && q > .4 ? flap() : 0);
   X.beginPath(); const n = 15; for (let i = 0; i <= n; i++) { const t = i / n, xx = cx - rx + t * 2 * rx; if (a.open && t > .62 && t < .88 && open > .1) continue; const top = by - ry + (1 - Math.sin(Math.PI * t)) * 240; X.moveTo(xx + jit(1), by); X.lineTo(xx + jit(1), top + 120); X.quadraticCurveTo(xx, top, cx + (xx - cx) * .1, by - ry); } stroke(C.ink, 2.6, 1);
   for (const yy of [by - 200, by - 420]) iE(cx, yy, rx, 30, 0, C.ink, 2.2, 1, false, 1, 0, Math.PI);
-  if (a.open) { const dx = cx + rx * .5, dy = by - 300; X.save(); X.translate(dx, dy); X.scale(Math.cos(open * 1.4), 1); iBox(0, -120, 120, 220, C.ink, 2.4); X.restore(); for (let i = 0; i < 3; i++) gc(flyX, flyY, 90 + i * 30 + ((FD * 6) % 30), C.orange, .7, 2); }
+  if (a.open) { const dx = cx + rx * .5, dy = by - 300; X.save(); X.translate(dx, dy); X.scale(Math.cos(open * 1.4), 1); iBox(0, -120, 120, 220, C.ink, 2.4); X.restore(); gl(flyX + 60, flyY - 20, dx + 60, dy - 20, C.teal, .8, 1.6, [8, 8]); lab(dx + 140, dy - 150, 'DOOR · OPEN', C.ink, .9, 15); lab(flyX - 60, flyY + 110, 'WINGS · CLIPPED', C.brick, .9, 15, 'left', 'alphabetic', 'bold'); }
   consL([[0, by, W, by], [cx, 0, cx, H]]); consC([[cx, by - 300, 420]]);
 } };
 
@@ -622,50 +632,4 @@ SU.sEnd = { mode: 'sch', f(q, p, a, T) {
   lab(960, 700, 'BACK AT THE DESK', C.lav, .7, 13, 'center');
 } };
 
-// ---------- cut list ----------
-const SECS = [
-  [0, 31.0, [['shop', { walk: [-200, 1250], z: 1, push: 1.04 }], ['sGlobe', {}], ['cloudWalk', {}], ['sTraveller', {}], ['shop', { walk: [-200, 1250], z: 1.5, cx: 900, cy: 760 }], ['sBoard', {}], ['shop', { walk: [-200, 1250], z: 1.2, cx: 1100, cy: 700, ring: 1 }], ['sPlan', {}]]],
-  [31.0, 44.4, [['desk', { agentTalk: 0 }], ['sBoard', {}], ['desk', { z: 1.6, cx: 1180, cy: 470, agentTalk: 1 }], ['sGlobe', { title: 'NEWS', sub: 'ROUTES OUT' }]]],
-  [44.4, 58.8, [['globeSpin', { fast: 1 }], ['sGlobe', { anti: 1, title: 'FARTHEST POINT', sub: 'FROM THESE BLUES' }], ['globeSpin', { cloud: 1, far: 1 }], ['cloudWalk', { s: 1.4 }]]],
-  [58.8, 73.4, [['beach', {}], ['sSound', {}], ['beach', { z: 1.5 }], ['sSound', {}]]],
-  [73.4, 90.5, [['road', {}], ['sMap', {}], ['road', {}], ['planeSky', {}]]],
-  [90.5, 104.0, [['desk', { agentTalk: 1 }], ['sPlan', {}], ['desk', { z: 1.45, cx: 700, cy: 520 }], ['sPlan', { rot: .05 }]]],
-  [104.0, 116.4, [['stampT', { mark: 'URGENT' }], ['sClock', { fast: 1 }], ['desk', { stamp: 1, z: 1.3, cx: 1250, cy: 520 }], ['sClock', { fast: 1 }]]],
-  [116.4, 130.9, [['sLoop', {}], ['ring', {}], ['sLoop', {}], ['ring', {}]]],
-  [130.9, 159.9, [['mule', {}], ['sCarrot', {}], ['mule', { z: 1.25 }], ['sCarrot', {}], ['sLoop', {}]]],
-  [159.9, 174.3, [['diner', {}], ['sSetting', {}], ['diner', { z: 1.5, cx: 860, cy: 680 }], ['sSetting', {}]]],
-  [174.3, 188.4, [['diner', { cork: 1 }], ['sBottle', { pop: 1 }], ['diner', { cork: 1, z: 1.4, cx: 1000, cy: 400 }], ['sBottle', { pop: 1 }]]],
-  [188.4, 203.1, [['corridor', {}], ['sWard', {}], ['corridor', {}], ['sWard', {}]]],
-  [203.1, 220.3, [['sHead', {}], ['pills', {}], ['sHead', {}], ['pills', {}]]],
-  [220.3, 247.0, [['desk', { agentTalk: 1, rain: 1 }], ['sPlaneW', {}], ['window', {}], ['sBoard', {}], ['desk', { point: 1, z: 1.3 }]]],
-  [247.0, 262.4, [['cinema', {}], ['sProjector', {}], ['cinema', { z: 1.4, cx: 1400, cy: 380 }], ['sProjector', {}]]],
-  [262.4, 275.7, [['sFilm', {}], ['cinema', { crooks: 0, z: 1.6, cx: 1440, cy: 370 }], ['sFilm', {}], ['cinema', { crooks: 1, z: 1.6, cx: 1440, cy: 370 }]]],
-  [275.7, 280.2, [['sThinkFeel', {}], ['thinker', {}], ['sThinkFeel', {}]]],
-  [280.2, 293.5, [['sThinkFeel', { feel: 1 }], ['thinker', { fast: 1 }], ['sThinkFeel', { feel: 1 }]]],
-  [293.5, 306.5, [['desk', { agentTalk: 1 }], ['sPlan', {}], ['desk', { z: 1.6, cx: 1180, cy: 470, agentTalk: 1 }], ['sGlobe', {}]]],
-  [306.5, 319.3, [['stampT', { mark: 'BOOKED', to: 'TOUR' }], ['sBoard', {}], ['stampT', { mark: 'BOOKED', to: 'TOUR' }], ['sBoard', {}]]],
-  [319.3, 334.2, [['planeSky', {}], ['sMap', { half: 1 }], ['cloudWalk', {}], ['sMap', { half: 1 }]]],
-  [334.2, 349.2, [['cage', {}], ['sCage', {}], ['cage', { z: 1.4 }], ['sCage', {}]]],
-  [349.2, 365.3, [['cage', { open: 1 }], ['sCage', { wings: 1 }], ['cage', { open: 1 }], ['sCage', { wings: 1 }]]],
-  [365.3, 379.1, [['desk', { agentTalk: 1 }], ['sPlan', {}], ['desk', { spin: 1, z: 1.5, cx: 905, cy: 560 }], ['sLoop', {}]]],
-  [379.1, 391.9, [['globeSpin', { fast: 1 }], ['sGlobe', { title: 'QUERY', sub: 'DESTINATION UNKNOWN' }], ['desk', { point: 1 }], ['sGlobe', {}]]],
-  [391.9, 400.0, [['snowGlobe', { blow: 1 }], ['sSnow', {}], ['snowGlobe', { blow: 1 }]]],
-  [400.0, 402.0, [['shop', { snow: 1, closed: 1, z: 1, push: 1.03 }]]],
-  [402.0, 403.4, [['sEnd', {}]]],
-];
-
-function snapBeat(t) { let best = t, bd = .3; for (const b of BEATS) { const d = Math.abs(b - t); if (d < bd) { bd = d; best = b; } if (b > t + .3) break; } return best; }
-function buildShots() {
-  const shots = [], lens = [2.1, 1.5, 2.4, 1.3, 1.9, 1.6, 2.3, 1.2, 2.0, 1.7];
-  SECS.forEach(([s0, s1, list], si) => {
-    let t = s0, k = 0;
-    while (t < s1 - .01) {
-      let te = snapBeat(t + lens[(k + si * 3) % lens.length]); if (te < t + .9) te = t + .9; if (s1 - te < 1.0) te = s1;
-      const [key, args] = list[k % list.length], su = SU[key];
-      shots.push({ t0: t, t1: te, mode: su.mode, key, draw: (p, lt) => { const T = t + lt; su.f(cl((T - s0) / (s1 - s0)), p, args, T); } });
-      t = te; k++;
-    }
-  });
-  return shots;
-}
-const SHOTS = buildShots();
+// The cut list lives in story.js.
