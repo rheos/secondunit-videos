@@ -2,7 +2,8 @@
 # Render a look on GitHub Actions in parallel and bring back one video with the song on it.
 #
 #   tools/cloud-render/cloud-render.sh [--draft] <project> <page> <t0> <t1> [out.mp4] [slices=20] [height=720]
-#   --draft (or CR_DRAFT=1): review quality, crf 23 and a veryfast join on GitHub. Masters (no flag): crf 18 / medium.
+#   --draft (or CR_DRAFT=1): review quality: slices at crf 26, joined on GitHub by stream copy (no second encode,
+#   smallest download). Masters (no flag): crf 18, joined with the concat filter at preset medium.
 #   Either way GitHub joins the slices and the Mac downloads one file and only muxes the song (stream copy).
 #   CR_REF=<branch> runs the workflow file from that branch (to test workflow changes before merging).
 #   e.g. tools/cloud-render/cloud-render.sh bobwiseman-holiday-tavern looks/charcoal.html 24 130
@@ -15,7 +16,7 @@
 # 4. Runs badframes, then deletes the release. Uses about 3 Actions minutes per slice.
 set -e -o pipefail
 draft=${CR_DRAFT:-0}; [[ $1 == --draft ]] && { draft=1; shift; }
-(( draft )) && crf=23 || crf=18
+(( draft )) && crf=26 || crf=18
 REPO=rheos/secondunit-videos
 here=${0:A:h}; root=${here:h:h}
 proj=$1; page=$2; t0=$3; t1=$4; slices=${6:-20}; height=${7:-720}

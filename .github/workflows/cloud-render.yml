@@ -117,7 +117,6 @@ jobs:
       - name: Join
         run: |
           sudo apt-get -qq update && sudo apt-get -qq install -y --no-install-recommends ffmpeg > /dev/null
-          preset=medium; (( CRF > 18 )) && preset=veryfast   # draft joins fast, masters keep medium
           mapfile -t files < <(ls slices/slice_*.mp4 | sort)
           (( ${#files[@]} == SLICES )) || { echo "got ${#files[@]} of $SLICES slices"; exit 1; }
           ins=(); filt=""; cat=""; k=0
@@ -128,10 +127,28 @@ jobs:
             ins+=(-i "$f"); filt+="[${k}:v]setpts=PTS-STARTPTS[v${k}];"; cat+="[v${k}]"; k=$(( k + 1 ))
           done
           mkdir -p film
-          ffmpeg -y -loglevel error "${ins[@]}" -filter_complex "${filt}${cat}concat=n=${k}:v=1:a=0[v]" -map "[v]" \
-            -c:v libx264 -preset $preset -crf "$CRF" -pix_fmt yuv420p -movflags +faststart film/film.mp4
+          if (( CRF > 18 )); then
+            # draft: copy the slices' video streams end to end (seconds, no second encode, smallest file). The
+            # Airplane freeze came from the concat demuxer WITH an fps filter; here nothing is retimed, and the
+            # frozen-run scan below would catch a freeze anyway.
+            for f in "${files[@]}"; do echo "file '$PWD/$f'"; done > list.txt
+            ffmpeg -y -loglevel error -f concat -safe 0 -i list.txt -c copy -movflags +faststart film/film.mp4
+          else
+            ffmpeg -y -loglevel error "${ins[@]}" -filter_complex "${filt}${cat}concat=n=${k}:v=1:a=0[v]" -map "[v]" \
+              -c:v libx264 -preset medium -crf "$CRF" -pix_fmt yuv420p -movflags +faststart film/film.mp4
+          fi
           got=$(ffprobe -v error -count_frames -select_streams v:0 -show_entries stream=nb_read_frames -of csv=p=0 film/film.mp4 | tr -d ',')
           (( got == FRAMES )) || { echo "joined video has $got frames, want $FRAMES"; exit 1; }
+          # frozen-run scan: no run of identical frames longer than 2 s
+          python3 -c "import numpy" 2>/dev/null || pip install -q numpy
+          python3 - <<'PY'
+          import subprocess, numpy as np
+          raw = subprocess.run(['ffmpeg','-v','error','-i','film/film.mp4','-vf','scale=64:36,format=gray','-f','rawvideo','-'], capture_output=True).stdout
+          a = np.frombuffer(raw, np.uint8).reshape(-1, 36, 64).astype(np.int16); d = np.abs(np.diff(a, axis=0)).mean(axis=(1, 2))
+          run = best = 0
+          for v in d: run = run + 1 if v < .05 else 0; best = max(best, run)
+          print(f"longest identical run: {best} frames"); assert best <= 48, "frozen run longer than 2 s"
+          PY
           echo "joined $got frames, $(du -h film/film.mp4 | cut -f1)"
       - uses: actions/upload-artifact@v4
         with:
