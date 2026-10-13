@@ -15,7 +15,9 @@ await Promise.all([...Array(WK)].map(async (_, w) => {
   p.on('console', m => { if (m.type() === 'error') errs.push(m.text()); }); p.on('pageerror', e => errs.push(String(e)));
   await p.goto('file://' + process.cwd() + '/' + (process.env.PAGE || 'index.html') + '?offline=1' + (process.env.QS ? '&' + process.env.QS : '')); await p.evaluate(() => window.__ready);
   for (let i = w; i < n; i += WK) {
-    const url = await p.evaluate((t) => window.__frameJPEG(t, .93), t0 + i / FPS);
+    // the frame's time from its integer song frame: t0 + i / FPS with a rounded t0 lands a hair under some frames, and
+    // on-twos animation then draws the previous pose (2026-10-13, Me and Jimi lyric patches)
+    const url = await p.evaluate((t) => window.__frameJPEG(t, .93), (Math.round(t0 * FPS) + i) / FPS);
     fs.writeFileSync(`${dir}/f_${String(i).padStart(6, '0')}.jpg`, Buffer.from(url.split(',')[1], 'base64'));
     if (++done % 96 === 0) console.log(`${done}/${n} ${((Date.now() - start) / 1000).toFixed(0)}s`);
   }
