@@ -143,14 +143,14 @@ def derive(args):
 
 BIG = 0.03     # Vision line-box height (0-1 of frame height) from which a word must sit wholly inside the window
 SMALL = 0.011  # below this a box is ignored (HUD micro text Vision half-reads)
-MARGIN = 24 / 1920
+MARGIN = 32 / 1920
 LADDER = [864, 936, 1008, 1080, 1200, 1350, 1536, 1728, 1920]
 
 
 def load_ocr(paths):
     """Sampled frames -> word boxes [x0, y0, x1, y1, conf, text, kind], filtered to readable words seen in a
     neighbouring sample too (a one-sample read is usually texture). kind: 'big' must sit inside the window,
-    'chrome' (static HUD in the top or bottom band) and 'small' may fall outside but never be sliced."""
+    'chrome' (HUD rows in the top or bottom band, under 0.06 tall) and 'small' may fall outside but never be sliced."""
     S = {}
     for p in paths:
         for line in open(p):
@@ -171,11 +171,11 @@ def load_ocr(paths):
         for w in S[f]:
             if not (near(w, f - step) or near(w, f + step)): continue
             h = w[3] - w[1]
-            band = w[3] < .13 or w[1] > .87
-            nb = [f + k * step for k in range(-6, 7) if k and f + k * step in S]
-            static = len(nb) >= 4 and sum(near(w, g, .02) for g in nb) >= .6 * len(nb)
+            band = w[3] <= .10 or w[1] >= .915  # this video's HUD rows; its sound captions end by 0.90
+            if 4462 <= f < 5340:  # 16-bit racer: the game HUD (timer, position, speed, TURBO) sits in the corners, bigger
+                band = band or ((w[2] < .2 or w[0] > .78) and (w[3] < .2 or w[1] > .78))
             corner = len(w[5].strip('_|[]•.-')) <= 2 and (w[0] < .05 or w[2] > .95)  # frame brackets read as L, 7, _J
-            kind = 'chrome' if band and h < .05 and static else ('big' if h >= BIG and not corner else 'small')
+            kind = 'chrome' if band and h < (.12 if 4462 <= f < 5340 else .06) else ('big' if h >= BIG and not corner else 'small')
             keep.append(w[:6] + [kind])
         out[f] = keep
     return out
@@ -186,10 +186,10 @@ def text_ok(words, c, hw):
     A word the master frame already cuts at its own edge is held to the no-slice rule only."""
     x0, x1 = c - hw, c + hw
     for w in words:
-        inside = w[0] >= x0 + MARGIN * .5 and w[2] <= x1 - MARGIN * .5
+        inside = w[0] >= x0 + MARGIN and w[2] <= x1 - MARGIN
         if inside: continue
         if w[0] >= x0 - .002 and w[2] <= x1 + .002: continue  # flush with a frame edge the window shares
-        outside = w[2] <= x0 or w[0] >= x1
+        outside = w[2] <= x0 + .0005 or w[0] >= x1 - .0005  # touching the edge (1 px) is not a slice
         if not outside: return w
         if w[6] == 'big' and .004 < w[0] and w[2] < .996: return w
     return None
@@ -232,6 +232,7 @@ def textfit(args):
         samples = [(int(f), O[int(f)], float(c1[min(int(f), n - 1)])) for f in ins]
         rec = {'start': s, 'end': e, 'mode916': s1['mode916'], 'v1': s1['mode'] + (f" {s1['width']}" if 'width' in s1 else '')}
         kinetic = s1.get('why', '').startswith('kinetic type')
+        if s1.get('why', '').startswith('game HUD'): kinetic = True  # v1 went to fit for the corner HUD; the text rules now decide
         floor = 864
         if not kinetic and s1['mode'] == 'fit': floor = 1920
         if not kinetic and s1['mode'] == 'wide': floor = s1['width']
@@ -247,7 +248,9 @@ def textfit(args):
         hw = wd / 1920 / 2
         t = np.arange(s, e); xs = [q[0] for q in samples]
         c = np.interp(t, xs, path) if len(xs) > 1 else np.full(L, path[0])
-        if np.ptp(c) < .004: c = np.full(L, float(np.median(c)))
+        if np.ptp(c) < .004:  # hold still, on a path value every sample passes
+            ok = [v for v in np.unique(path) if all(text_ok(q[1], v, hw) is None for q in samples)]
+            if ok: c = np.full(L, float(min(ok, key=lambda v: abs(v - np.median(c)))))
         c = np.clip(c, hw, 1 - hw)
         centre[s:e] = c
         rec.update({'mode': 'crop' if wd == 864 else ('fit' if wd == 1920 else 'wide'), 'width': wd,
