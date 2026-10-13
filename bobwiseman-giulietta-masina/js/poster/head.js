@@ -166,17 +166,18 @@ function paintHair34(g, F, xf, R) {
   outer.push([-.66, .14], [-.6, .16]);
   const pts = [...outer, ...inner.slice().reverse()].map(([x, y]) => xf(x, y));
   const lit = (lx, ly) => (lx * F.L[0] * (F.facing || 1) * 0 + lx * F.L[0] - ly * .5) > .1;
-  g.fillStyle = rgb(hex('#20161a')); g.fill(polyPathA(pts));
-  paintArea(g, pts, { R, base: hex('#20161a'), shade: () => mix(hex('#20161a'), hex('#33221e'), R()), dir: (x, y) => R() * TAU, step: r * .06, len: r * .1, w: r * .04, wob: 3, dry: .4, alpha: .6, edgeW: r * .035, edgeStep: r * .06, edgeDry: .5 });
+  // warm platinum blonde (Bob 2026-10-12: she is not dark haired); same strokes and seeds as before, new colours
+  g.fillStyle = rgb(hex('#d2ae66')); g.fill(polyPathA(pts));
+  paintArea(g, pts, { R, base: hex('#d2ae66'), shade: () => mix(hex('#c49c58'), hex('#e4c684'), R()), dir: (x, y) => R() * TAU, step: r * .06, len: r * .1, w: r * .04, wob: 3, dry: .4, alpha: .6, edgeW: r * .035, edgeStep: r * .06, edgeDry: .5 });
   // curls as crisp lit crescents on the key side, dark separations elsewhere
   g.save(); g.clip(polyPathA(pts));
   const inv = headInv(F);
   for (let i = 0; i < 46; i++) { // curls as clumps: a mid-tone lump, a dark underside, a lit rim on the key side
     const lx = -.68 + R() * 1.06, ly = -1.04 + R() * 1.0, [x, y] = xf(lx, ly), cr = r * (.06 + R() * .035);
     const isLit = (lx * F.L[0] - ly * .4 - .1) > 0, k = F.L[0] * (F.facing || 1) > 0 ? 1 : -1;
-    g.fillStyle = rgb(isLit ? hex('#4a2e24') : hex('#2a1c1c')); g.beginPath(); g.ellipse(x, y, cr, cr * .8, R(), 0, TAU); g.fill();
-    g.strokeStyle = rgb(hex('#140c10'), .9); g.lineWidth = cr * .28; g.lineCap = 'round'; g.beginPath(); g.arc(x, y, cr * .85, .3, 2.6); g.stroke();
-    if (isLit) { g.strokeStyle = rgb(mix(hex('#a0643c'), hex('#d09060'), R())); g.lineWidth = cr * .3; g.beginPath(); g.arc(x, y, cr * .7, k > 0 ? -1.6 : Math.PI + .2, k > 0 ? -.2 : Math.PI + 1.6); g.stroke(); }
+    g.fillStyle = rgb(isLit ? hex('#f0d898') : hex('#b89050')); g.beginPath(); g.ellipse(x, y, cr, cr * .8, R(), 0, TAU); g.fill();
+    g.strokeStyle = rgb(hex('#6e4a2a'), .85); g.lineWidth = cr * .28; g.lineCap = 'round'; g.beginPath(); g.arc(x, y, cr * .85, .3, 2.6); g.stroke();
+    if (isLit) { g.strokeStyle = rgb(mix(hex('#fff0c4'), hex('#fffbea'), R())); g.lineWidth = cr * .3; g.beginPath(); g.arc(x, y, cr * .7, k > 0 ? -1.6 : Math.PI + .2, k > 0 ? -.2 : Math.PI + 1.6); g.stroke(); }
   }
   g.restore();
 }

@@ -20,10 +20,12 @@ function drawHead(g, x, y, r, o = {}) {
     g.beginPath(); g.moveTo(-.95 + back * .12, .55); g.bezierCurveTo(-1.18 + back * .15, -.2, -.9, -1.12, back * .1, -1.12);
     g.bezierCurveTo(.9, -1.12, 1.18 + back * .15, -.2, .95 + back * .12, .55); g.quadraticCurveTo(back * .1, .7, -.95 + back * .12, .55); g.fill();
   } else if (st === 'woman') {
-    g.fillStyle = radG(g, back * .2, -.35, .1, 1.25, [[0, hair + .14], [.7, hair], [1, hair * .6]], L[0] * .4, L[1] * .4);
+    const lightH = hair > .5; // light hair (her, Bob 2026-10-12): pale all over, shade side no darker than ~.7, a soft darker rim
+    g.fillStyle = radG(g, back * .2, -.35, .1, 1.25, lightH ? [[0, Math.min(1, hair + .12)], [.7, hair], [1, hair - .14]] : [[0, hair + .14], [.7, hair], [1, hair * .6]], L[0] * .4, L[1] * .4);
     g.beginPath();
     for (let i = 0; i <= 18; i++) { const a = Math.PI * (.92 + i / 18 * 1.16), rr = 1.08 + .07 * Math.sin(i * 2.6); g.lineTo(back * .16 + Math.cos(a) * rr * .98, -.22 + Math.sin(a) * rr); }
     g.lineTo(.86 + back * .15, .2); g.quadraticCurveTo(back * .2, .05, -.86 + back * .15, .2); g.fill();
+    if (lightH) { g.strokeStyle = gv(hair - .3, .45); g.lineWidth = .03; g.stroke(); }
   }
   // neck
   g.fillStyle = linG(g, -.3, 0, .3, 0, [[0, skin - .02], [1, skin - .2]]);
@@ -72,7 +74,7 @@ function drawHead(g, x, y, r, o = {}) {
     }
     // brow
     const bl = o.brows || 0;
-    g.strokeStyle = gv(st === 'old' ? .85 : hair + .04, .85); g.lineWidth = st === 'old' ? .07 : st === 'boy' ? .055 : .04;
+    g.strokeStyle = gv(st === 'old' ? .85 : Math.min(hair + .04, .36), .85); g.lineWidth = st === 'old' ? .07 : st === 'boy' ? .055 : .04; // light hair keeps darker brows
     g.beginPath(); g.moveTo(ex - w * 1.15, ey - .2 + (side < 0 ? 0 : -bl * .06)); g.quadraticCurveTo(ex, ey - .3 - bl * .05, ex + w * 1.15, ey - .2 + (side > 0 ? 0 : -bl * .06)); g.stroke();
   }
   // nose: shade on the side away from the light, a soft tip highlight
@@ -107,12 +109,13 @@ function drawHead(g, x, y, r, o = {}) {
     g.beginPath(); g.moveTo(-.86 + back * .1, -.15); g.bezierCurveTo(-.98, -1.0, -.4, -1.2, back * .1, -1.18); g.bezierCurveTo(.5, -1.2, .98, -1.0, .86 + back * .1, -.15);
     g.lineTo(.62, -.5); g.lineTo(.35, -.62); g.lineTo(.1, -.55); g.lineTo(-.18, -.66); g.lineTo(-.45, -.58); g.lineTo(-.65, -.48); g.closePath(); g.fill();
   } else if (st === 'woman') {
-    g.fillStyle = radG(g, back * .1, -.75, .05, 1, [[0, hair + .2], [1, hair]], L[0] * .3, L[1] * .3);
+    g.fillStyle = radG(g, back * .1, -.75, .05, 1, hair > .5 ? [[0, 1], [1, hair]] : [[0, hair + .2], [1, hair]], L[0] * .3, L[1] * .3);
     g.beginPath(); g.moveTo(-.88, -.1); g.bezierCurveTo(-.98, -1.0, -.4, -1.24, back * .05, -1.2); g.bezierCurveTo(.5, -1.22, .98, -1.0, .88, -.1);
     for (let i = 0; i <= 6; i++) { const u = 1 - i / 6, xx = lerp(-.72, .72, u) + turn * .12; g.quadraticCurveTo(xx + .1, -.5 - (i % 2) * .1, xx, -.62 + (i % 2) * .06); }
     g.closePath(); g.fill();
+    if (hair > .5) { g.strokeStyle = gv(hair - .3, .45); g.lineWidth = .03; g.stroke(); }
     // curls catching the light
-    g.strokeStyle = gv(hair + .35, .4); g.lineWidth = .035;
+    g.strokeStyle = hair > .5 ? gv(hair - .36, .5) : gv(hair + .35, .4); g.lineWidth = .035; // light hair: dark separations
     for (let i = 0; i < 5; i++) { g.beginPath(); g.arc(-.6 + i * .3 + turn * .1, -.86 + (i % 2) * .08, .12, Math.PI * .9, Math.PI * 1.9); g.stroke(); }
   } else if (st === 'old') {
     g.fillStyle = radG(g, back * .1, -.85, .05, 1, [[0, hair + .2], [1, hair]], L[0] * .3, L[1] * .3);
@@ -238,7 +241,7 @@ function drawRider(g, x, y, k, o = {}) {
   return [x + hx * k, y + hy * k]; // where the rope leaves the hand (screen)
 }
 
-// ---------- the woman in white (Masina stand-in): small, short dark hair, big eyes, a belted white coat ----------
+// ---------- the woman in white (Masina stand-in): small, short platinum curls (Bob 2026-10-12), big eyes, a belted white coat ----------
 // Origin at her feet, k = px per metre, facing the viewer's left. o: up (0..1 face lifted to the sky),
 // hand (0..1 near hand up to shade her eyes), gust (0..1 wind), tt (time)
 function drawWoman(g, x, y, k, o = {}) {
@@ -271,7 +274,7 @@ function drawWoman(g, x, y, k, o = {}) {
   g.beginPath(); g.moveTo(.14, -1.29); g.quadraticCurveTo(.2, -1.05, .18, -.82); g.stroke();
   g.fillStyle = gv(.82); ell(g, .18, -.78, .03, .042); g.fill();
   // head, tipped back to look up into the sky (she faces left, so tipping back turns her face up)
-  drawHead(g, -.01 - up * .03, -1.47, .105, { turn: -.55, tilt: .1 + up * .5, lift: up * 1.2, skin: .86, hair: .06, style: 'woman', eyes: 1, look: [-.35, -.75 * up - .1], L: [-.6, -.8], la: .45, brows: .7, mouth: 0 });
+  drawHead(g, -.01 - up * .03, -1.47, .105, { turn: -.55, tilt: .1 + up * .5, lift: up * 1.2, skin: .86, hair: .84, style: 'woman', eyes: 1, look: [-.35, -.75 * up - .1], L: [-.6, -.8], la: .45, brows: .7, mouth: 0 });
   // near arm: down by her side, rising to shade her eyes
   const sx = -.14, sy = -1.29, ex = lerp(-.19, -.3, hand), ey = lerp(-1.05, -1.38, hand), hx = lerp(-.17, -.14, hand), hy = lerp(-.82, -1.58 - up * .02, hand);
   g.strokeStyle = linG(g, -.3, -1.5, -.1, -.9, [[0, .98], [1, .8]]); g.lineWidth = .075;

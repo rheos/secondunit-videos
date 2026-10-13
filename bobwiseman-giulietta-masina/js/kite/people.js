@@ -26,16 +26,17 @@ function herFace(g, x, y, r, o = {}) {
   }
   // the head tips back and to the left as she looks up; a face tipped back foreshortens a little
   g.rotate(-.06 - up * .3); g.scale(1, 1 - .1 * up);
-  // hair, the back mass: short dark curls, close at the nape, a soft bumpy outline
+  // hair, the back mass: short platinum curls (Bob 2026-10-12: she is not dark haired), close at the nape, a soft bumpy outline
   const HP = [];
   for (let i = 0; i < 30; i++) {
     const a = Math.PI * (.75 + i / 29 * 1.55), rr = 1.0 + .045 * Math.sin(i * 2.7 + .5) + .015 * Math.sin(hairT * 2 + i);
     HP.push([.12 + Math.cos(a) * rr * .96, -.24 + Math.sin(a) * rr * .9]);
   }
   HP.push([.62, .42], [.44, .5], [.3, .1], [-.4, -.5]);
-  blob(HP); g.fillStyle = radG(g, -.25, -.75, .05, 1.35, [[0, .26], [.4, .13], [1, .05]]); g.fill();
+  blob(HP); g.fillStyle = radG(g, -.25, -.75, .05, 1.35, [[0, .98], [.4, .88], [1, .72]]); g.fill();
+  sf(.02, () => { g.strokeStyle = gv(.5, .45); g.lineWidth = .025; blob(HP); g.stroke(); }); // pale hair: a soft darker rim
   g.save(); blob(HP); g.clip();
-  sf(.06, () => { const R = mulberry(31); for (let i = 0; i < 26; i++) { const a = Math.PI * (.9 + R() * 1.3), rr = .55 + R() * .42; g.fillStyle = gv(.5, .1 + .16 * R() * (Math.sin(a) < -.3 ? 1.6 : .6)); ell(g, .12 + Math.cos(a) * rr, -.24 + Math.sin(a) * rr * .9, .07, .05, a); g.fill(); } });
+  sf(.06, () => { const R = mulberry(31); for (let i = 0; i < 26; i++) { const a = Math.PI * (.9 + R() * 1.3), rr = .55 + R() * .42; g.fillStyle = gv(.5, .12 + .16 * R() * (Math.sin(a) < -.3 ? .6 : 1.6)); ell(g, .12 + Math.cos(a) * rr, -.24 + Math.sin(a) * rr * .9, .07, .05, a); g.fill(); } });
   g.restore();
   // ear, half under the hair
   g.fillStyle = radG(g, .5, .08, .01, .17, [[0, sk - .04], [1, sk - .3]], -.05, -.04); ell(g, .5, .1, .095, .16, .15); g.fill();
@@ -114,9 +115,10 @@ function herFace(g, x, y, r, o = {}) {
   // front hair: a short curled fringe swept off the forehead
   const FP = [[-.7, -.3], [-.74, -.62], [-.6, -.92], [-.3, -1.1], [.05, -1.12], [.32, -1.02], [.5, -.8], [.5, -.58], [.36, -.66], [.24, -.58], [.08, -.7], [-.08, -.62], [-.24, -.72], [-.4, -.6], [-.55, -.66], [-.62, -.46]];
   FP.forEach((p, i) => { p[1] += .012 * Math.sin(hairT * 2.3 + i); });
-  blob(FP); g.fillStyle = radG(g, -.3, -.9, .02, .75, [[0, .3], [.6, .15], [1, .06]]); g.fill();
+  blob(FP); g.fillStyle = radG(g, -.3, -.9, .02, .75, [[0, 1], [.6, .92], [1, .76]]); g.fill();
   g.save(); blob(FP); g.clip();
-  sf(.05, () => { const R = mulberry(57); for (let i = 0; i < 14; i++) { const cx = -.62 + R() * 1.05, cy = -1.05 + R() * .4; g.fillStyle = gv(.55, .12 + .14 * R()); ell(g, cx, cy, .08, .05, R() * 3); g.fill(); } });
+  sf(.02, () => { g.strokeStyle = gv(.5, .45); g.lineWidth = .025; blob(FP); g.stroke(); }); // light hair: a soft rim where the fringe meets the forehead
+  sf(.05, () => { const R = mulberry(57); for (let i = 0; i < 14; i++) { const cx = -.62 + R() * 1.05, cy = -1.05 + R() * .4; g.fillStyle = gv(.52, .16 + .14 * R()); ell(g, cx, cy, .08, .05, R() * 3); g.fill(); } });
   g.restore();
   // tears: a thin glistening track down the near cheek, a small bead at its front
   const tear = (p, path) => {
@@ -156,12 +158,13 @@ function herBack(g, x, y, r, o = {}) {
   g.quadraticCurveTo(1.0, .35, .86, .55); g.quadraticCurveTo(.7, .72, .45, .7); g.lineTo(.35, .1); g.closePath(); g.fill();
   g.strokeStyle = gv(.1, .9); g.lineWidth = .025; g.lineCap = 'round'; g.beginPath(); g.moveTo(.97, -.27); g.lineTo(1.04, -.33); g.moveTo(.98, -.24); g.lineTo(1.06, -.27); g.stroke(); // lashes
   sf(.04, () => { g.fillStyle = gv(0, .25); ell(g, .7, .5, .25, .1, -.5); g.fill(); });
-  // hair: short dark curls, the crown lit by the sky
+  // hair: short platinum curls, the crown lit by the sky
   const HP = [];
   for (let i = 0; i < 34; i++) { const a = Math.PI * (.62 + i / 34 * 2), rr = .98 + .045 * Math.sin(i * 2.9); HP.push([Math.cos(a) * rr * .92, -.12 + Math.sin(a) * rr * (Math.sin(a) > 0 ? .7 : 1)]); }
-  blob(HP); g.fillStyle = radG(g, -.15, -.75, .05, 1.3, [[0, .36], [.45, .17], [1, .06]]); g.fill();
+  blob(HP); g.fillStyle = radG(g, -.15, -.75, .05, 1.3, [[0, 1], [.45, .89], [1, .72]]); g.fill();
+  sf(.02, () => { g.strokeStyle = gv(.52, .45); g.lineWidth = .025; blob(HP); g.stroke(); }); // pale hair: a soft darker rim
   g.save(); blob(HP); g.clip();
-  sf(.05, () => { const R = mulberry(77); for (let i = 0; i < 44; i++) { const a = R() * TAU, rr = R() * .9; g.fillStyle = gv(.6, .1 + .22 * R() * (Math.sin(a) < 0 ? 1.5 : .5)); ell(g, Math.cos(a) * rr, -.12 + Math.sin(a) * rr, .08, .055, a); g.fill(); } });
+  sf(.05, () => { const R = mulberry(77); for (let i = 0; i < 44; i++) { const a = R() * TAU, rr = R() * .9; g.fillStyle = gv(.5, .1 + .18 * R() * (Math.sin(a) < 0 ? .5 : 1.5)); ell(g, Math.cos(a) * rr, -.12 + Math.sin(a) * rr, .08, .055, a); g.fill(); } });
   g.restore();
   g.fillStyle = radG(g, .55, .1, .01, .16, [[0, .74], [1, .48]], -.03, -.03); ell(g, .56, .12, .085, .15, .25); g.fill(); // ear
   g.strokeStyle = gv(.4, .5); g.lineWidth = .018; g.beginPath(); g.arc(.56, .1, .05, -1.4, 1.3); g.stroke();

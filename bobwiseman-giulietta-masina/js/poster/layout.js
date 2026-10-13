@@ -161,36 +161,40 @@ function buildGlow() {
 }
 
 // ---------------- the men: one per sheet, lit from below, sly ----------------
+// v5 (2026-10-12, Bob: "she is a small woman ... the 3 creepy men should be larger than her"): the men are a head and
+// more taller than her. Bigger heads (r 104 vs her 75) and a longer body (ts stretches the body below the collar, Yb), feet
+// a little in front of hers (world y ~1192 vs 1150), so their chins sit at her crown and they lean in over her. Their
+// sheets run up past the poster's top edge onto the wall. reach/hand are sheet coords.
 const MEN = [
-  { id: 'm1', x: 640, y: 330, w: 250, h: 820, head: [136, 150, 82], tilt: .14, facing: 1, hat: '#5a4030', coat: '#2e2e3a', reach: [[150, 330], [210, 360], [250, 390]], hand: [246, 392, .2], brow: [-.05, .2], mustache: true },
-  { id: 'm2', x: 1140, y: 466, w: 260, h: 720, head: [140, 140, 82], tilt: -.12, facing: -1, hat: '#4e525a', coat: '#232836', reach: [[120, 300], [60, 300], [6, 312]], hand: [6, 312, Math.PI], brow: [-.1, .25], mustache: false },
-  { id: 'm3', x: 1420, y: 466, w: 290, h: 740, head: [150, 150, 84], tilt: -.2, facing: -1, hat: '#1a1a20', coat: '#3e2e2a', reach: null, brow: [0, .3], mustache: true },
+  { id: 'm1', x: 585, y: 115, w: 345, h: 1110, head: [150, 165, 104], ts: 1.346, tilt: .14, facing: 1, hat: '#5a4030', coat: '#2e2e3a', reach: [[167, 440], [262, 500], [322, 546]], hand: [318, 548, .2], brow: [-.05, .2], mustache: true },
+  { id: 'm2', x: 1140, y: 107, w: 320, h: 1110, head: [150, 165, 104], ts: 1.346, tilt: -.12, facing: -1, hat: '#4e525a', coat: '#232836', reach: [[125, 420], [70, 530], [14, 632]], hand: [14, 632, 2.1], brow: [-.1, .25], mustache: false },
+  { id: 'm3', x: 1450, y: 123, w: 330, h: 1110, head: [165, 165, 104], ts: 1.346, tilt: -.2, facing: -1, hat: '#1a1a20', coat: '#3e2e2a', reach: null, brow: [0, .3], mustache: true },
 ];
 function buildMan(M, k) {
   const [c, g] = sheetCanvas(M.w, M.h), R = mulberry(401 + k * 17);
   paintFlat2(g, 0, 0, M.w, M.h, hex(['#1e2a6c', '#22286a', '#1a2462'][k]), R, { step: 36 });
   // a warm uplight on the sheet's ground, from the lamp pool below
   const gr = g.createLinearGradient(0, M.h, 0, M.h * .4); gr.addColorStop(0, 'rgba(200,150,90,.35)'); gr.addColorStop(1, 'rgba(200,150,90,0)'); g.fillStyle = gr; g.fillRect(0, 0, M.w, M.h);
-  const [hx, hy, r] = M.head, q = r / 72, col = hex(M.coat), side = M.facing;
+  const [hx, hy, r] = M.head, q = r / 72, qb = q * (M.ts || 1), Yb = (n) => hy + n * q + Math.max(0, n - 100) * (qb - q), col = hex(M.coat), side = M.facing, hs = q / (82 / 72); // hs: hand scale vs v4
   const cs = (x, y) => (x - hx) * side > (50 - (y - hy) * .08) * q ? mix(col, [230, 170, 110], .38) : ((x - hx) * side > (30 - (y - hy) * .08) * q ? mix(col, [120, 80, 60], .25) : mix(col, [8, 6, 16], .4));
-  g.save(); g.translate(hx, hy + 486 * q); g.rotate(side * .07); g.translate(-hx, -(hy + 486 * q)); // leaning in toward her
-  const sh = [[hx - 74 * q, hy + 86 * q], [hx - 22 * q, hy + 70 * q], [hx + 22 * q, hy + 70 * q], [hx + 74 * q, hy + 86 * q], [hx + 92 * q, hy + 140 * q], [hx + 96 * q, hy + 340 * q], [hx - 96 * q, hy + 340 * q], [hx - 92 * q, hy + 140 * q]];
+  g.save(); g.translate(hx, Yb(486)); g.rotate(side * .07); g.translate(-hx, -(Yb(486))); // leaning in toward her
+  const sh = [[hx - 74 * q, Yb(86)], [hx - 22 * q, Yb(70)], [hx + 22 * q, Yb(70)], [hx + 74 * q, Yb(86)], [hx + 92 * q, Yb(140)], [hx + 96 * q, Yb(340)], [hx - 96 * q, Yb(340)], [hx - 92 * q, Yb(140)]];
   for (const sx of [-1, 1]) {
-    paintArea(g, [[hx + sx * 10 * q, hy + 330 * q], [hx + sx * 52 * q, hy + 330 * q], [hx + sx * 50 * q, hy + 478 * q], [hx + sx * 14 * q, hy + 478 * q]], { R, base: mix(col, [20, 20, 30], .4), shade: (x) => (x - hx) * side > 0 ? mix(col, [230, 170, 110], .25) : mix(col, [8, 6, 16], .5), dir: () => Math.PI / 2, step: 7, len: 30, w: 9, edgeW: 4, edgeStep: 9 });
-    paintArea(g, ellipsePts(hx + sx * 38 * q, hy + 486 * q, 30 * q, 12 * q, 16), { R, base: hex('#16121a'), shade: (x, y) => y > hy + 486 * q ? hex('#6a5450') : hex('#0e0a10'), dir: () => 0, step: 4, len: 14, w: 5, edgeW: 3, edgeStep: 6 });
+    paintArea(g, [[hx + sx * 10 * q, Yb(330)], [hx + sx * 52 * q, Yb(330)], [hx + sx * 50 * q, Yb(478)], [hx + sx * 14 * q, Yb(478)]], { R, base: mix(col, [20, 20, 30], .4), shade: (x) => (x - hx) * side > 0 ? mix(col, [230, 170, 110], .25) : mix(col, [8, 6, 16], .5), dir: () => Math.PI / 2, step: 7, len: 30, w: 9, edgeW: 4, edgeStep: 9 });
+    paintArea(g, ellipsePts(hx + sx * 38 * q, Yb(486), 30 * q, 12 * q, 16), { R, base: hex('#16121a'), shade: (x, y) => y > Yb(486) ? hex('#6a5450') : hex('#0e0a10'), dir: () => 0, step: 4, len: 14, w: 5, edgeW: 3, edgeStep: 6 });
   }
   paintArea(g, sh, { R, base: col, shade: cs, dir: () => Math.PI / 2, step: 8, len: 34, w: 10, edgeW: 5, edgeStep: 10, jit: 6 });
-  brushLine(g, [[hx - 20 * q, hy + 90 * q], [hx - 44 * q, hy + 220 * q]], 5, mix(col, [10, 10, 20], .6), R); brushLine(g, [[hx + 20 * q, hy + 90 * q], [hx + 44 * q, hy + 220 * q]], 5, mix(col, [10, 10, 20], .6), R);
-  paintArea(g, [[hx - 8 * q, hy + 92 * q], [hx + 8 * q, hy + 92 * q], [hx + 12 * q, hy + 200 * q], [hx, hy + 214 * q], [hx - 12 * q, hy + 200 * q]], { R, base: hex(k === 1 ? '#8a2a2a' : '#2a5a4a'), shade: () => hex(k === 1 ? '#a83630' : '#347060'), step: 4, len: 14, w: 5, edgeW: 2, edgeStep: 5 });
-  bstroke(g, [[hx - 24 * q, hy + 86 * q], [hx, hy + 100 * q], [hx + 24 * q, hy + 86 * q]], 9 * q, hex('#eae0d0'), R, { dry: .1 });
+  brushLine(g, [[hx - 20 * q, Yb(90)], [hx - 44 * q, Yb(220)]], 5, mix(col, [10, 10, 20], .6), R); brushLine(g, [[hx + 20 * q, Yb(90)], [hx + 44 * q, Yb(220)]], 5, mix(col, [10, 10, 20], .6), R);
+  paintArea(g, [[hx - 8 * q, Yb(92)], [hx + 8 * q, Yb(92)], [hx + 12 * q, Yb(200)], [hx, Yb(214)], [hx - 12 * q, Yb(200)]], { R, base: hex(k === 1 ? '#8a2a2a' : '#2a5a4a'), shade: () => hex(k === 1 ? '#a83630' : '#347060'), step: 4, len: 14, w: 5, edgeW: 2, edgeStep: 5 });
+  bstroke(g, [[hx - 24 * q, Yb(86)], [hx, Yb(100)], [hx + 24 * q, Yb(86)]], 9 * q, hex('#eae0d0'), R, { dry: .1 });
   paintHead34(g, { x: hx, y: hy, r, tilt: M.tilt, facing: M.facing, L: UPLIGHT, kind: 'man', seed: 450 + k, gaze: [.85, .05], lid: .38, brow: M.brow, mustache: M.mustache });
   paintHat(g, hx - side * r * .08, hy - r * .02, r, M.tilt, hex(M.hat), R);
   // the brim's underside catches the uplight
   { g.save(); g.translate(hx - side * r * .08, hy - r * .02); g.rotate(M.tilt); bstroke(g, quadPts(-1.3 * r, -.5 * r, 1.3 * r, -.5 * r, .12 * r, 14), r * .07, mix(hex(M.hat), [240, 180, 110], .45), R, { dry: .4, alpha: .8 }); g.restore(); }
   if (M.reach) {
     bstroke(g, M.reach, 34 * q * .8, mix(col, [230, 170, 110], .2), R, { dry: .1 });
-    const [ax, ay, aa] = M.hand; bstroke(g, [[ax - Math.cos(aa) * 22, ay - Math.sin(aa) * 22], [ax, ay]], 30, hex('#eae0d0'), R, { taper: false });
-    paintMitten(g, ax + Math.cos(aa) * 16, ay + Math.sin(aa) * 16, aa, 26, R, SKIN_M, 1);
+    const [ax, ay, aa] = M.hand; bstroke(g, [[ax - Math.cos(aa) * 22 * hs, ay - Math.sin(aa) * 22 * hs], [ax, ay]], 30 * hs, hex('#eae0d0'), R, { taper: false });
+    paintMitten(g, ax + Math.cos(aa) * 16 * hs, ay + Math.sin(aa) * 16 * hs, aa, 26 * hs, R, SKIN_M, 1);
   }
   g.restore();
   paperize(g, c.width, c.height, .8);

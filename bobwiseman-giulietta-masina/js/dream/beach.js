@@ -468,7 +468,7 @@ function danceAt(t) {
     grin: .6 + .4 * arms, turn: .12 * st, tilt: .06 * Math.sin(Math.PI * ph * .5), tt: t };
 }
 
-// ---------- the small woman in white (Masina stand-in), modelled: short dark hair, big eyes, a belted white coat ----------
+// ---------- the small woman in white (Masina stand-in), modelled: short platinum curls (Bob 2026-10-12), big eyes, a belted white coat ----------
 // Origin at her feet, k = px per metre, facing the viewer's left. o: up (face lifted to the sky), hand (near hand up
 // to shade her eyes), gust (wind), tt
 function drawGiulietta(g, x, y, k, o = {}) {
@@ -506,7 +506,7 @@ function drawGiulietta(g, x, y, k, o = {}) {
   limb(g, [.14, -1.29], [.18, -.84], .04, .034, .8, .8, .4);
   mitten(g, .18, -.79, .032, .8);
   // head, tipped back to look up into the sky
-  drawHead(g, -.01 - up * .03, -1.47, .105, { turn: -.55, tilt: .1 + up * .5, lift: up * 1.2, skin: .86, hair: .06, style: 'woman', eyes: 1, look: [-.35, -.75 * up - .1], L: SUN, la: .75, brows: .7, mouth: 0 });
+  drawHead(g, -.01 - up * .03, -1.47, .105, { turn: -.55, tilt: .1 + up * .5, lift: up * 1.2, skin: .86, hair: .84, style: 'woman', eyes: 1, look: [-.35, -.75 * up - .1], L: SUN, la: .75, brows: .7, mouth: 0 });
   // near arm: down by her side, rising to shade her eyes
   const sx = -.14, sy = -1.29, ex = lerp(-.19, -.3, hand), ey = lerp(-1.05, -1.38, hand), hx = lerp(-.17, -.19, hand), hy = lerp(-.82, -1.52 - up * .02, hand);
   limb(g, [sx, sy], [ex, ey], .042, .036, .9, .9, .5);
