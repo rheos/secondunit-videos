@@ -22,6 +22,17 @@ function limb(pts, w, o, k, col) { // a tapered limb: thick ink stroke + inner c
   if (!S.sch) { X.beginPath(); wP(pts, false, .4 * k); stroke(col, w * k, 1); X.beginPath(); wP(pts.map(([a, b]) => [a + 2 * k, b + 1.5 * k]), false, .5 * k); stroke(C.ink, 1 * k, .35); }
   else { X.beginPath(); wP(pts, false, .4 * k); stroke(C.navy, w * k, .95); }
 }
+// Two-bone IK: keep the hand where the pose puts it and choose the elbow that bends naturally (down and outward),
+// so a raised hand never gets a forearm hanging from an elbow above it.
+function ik(sx, sy, hx, hy, side, L1 = 70, L2 = 66) {
+  let dx = hx - sx, dy = hy - sy, d = Math.hypot(dx, dy); const dmax = L1 + L2 - .5;
+  if (d > dmax) { hx = sx + dx / d * dmax; hy = sy + dy / d * dmax; dx = hx - sx; dy = hy - sy; d = dmax; }
+  d = Math.max(d, Math.abs(L1 - L2) + 1);
+  const a = (L1 * L1 - L2 * L2 + d * d) / (2 * d), h = Math.sqrt(Math.max(0, L1 * L1 - a * a)), mx = sx + dx / d * a, my = sy + dy / d * a, nx = -dy / d, ny = dx / d;
+  const e1 = [mx + nx * h, my + ny * h], e2 = [mx - nx * h, my - ny * h], sc = (e) => e[1] + .35 * side * e[0];
+  return [[sx, sy], sc(e1) >= sc(e2) ? e1 : e2, [hx, hy]];
+}
+const armIK = (sx, sy, a1, a2, side, target) => { const fk = arm(sx, sy, a1, a2); const hnd = target || fk[2]; return ik(sx, sy, hnd[0], hnd[1], side); };
 const arm = (sx, sy, a1, a2, L1 = 70, L2 = 66) => { const ex = sx + Math.sin(a1) * L1, ey = sy + Math.cos(a1) * L1; return [[sx, sy], [ex, ey], [ex + Math.sin(a1 + a2) * L2, ey + Math.cos(a1 + a2) * L2]]; };
 
 // The traveller: a deadpan everyman in a fedora and long coat. NOT Bob's likeness.
@@ -41,7 +52,7 @@ function traveller(x, y, s, o = {}) {
   const fx1 = o.sit ? 60 : -12 + Math.sin(-sw) * 150, fx2 = o.sit ? 84 : 12 + Math.sin(sw) * 150;
   for (const fx of [fx1, fx2]) { const sp = PE(fx + 12, -6, 22, 9); S.F(sp, '#2b1d14'); S.OL(fx + 12, -6, 22, 9, 0, 2); }
   // back arm
-  const aL = o.armL || [.15, -.2]; limb(arm(-26, -262, aL[0], aL[1]), 13, o, k, o.sleeve || '#356c69');
+  const aL = o.armL || [.15, -.2]; limb(armIK(-26, -262, aL[0], aL[1], -1), 13, o, k, o.sleeve || '#356c69');
   // coat
   const cp = [[-34, -276], [34, -276], [46, -130], [50, -118], [-50, -118], [-46, -130]];
   const cpath = PP(cp); S.F(cpath, coat); S.SH(cpath, 0, -200, 110, [16, -6], .9, 5.5); S.OP(dens(cp, 26, true));
@@ -63,7 +74,12 @@ function traveller(x, y, s, o = {}) {
     X.beginPath(); wP([[lk - 25, -338], [lk + 25, -338]], false, .4 * k); stroke(S.sch ? S.col : C.ochre, 4 * k, .9);
   }
   // front arm + suitcase
-  const aR = o.armR || [-.12, .25]; const ap = arm(26, -262, aR[0], aR[1]); limb(ap, 13, o, k, o.sleeve || '#3a7a76');
+  const aR = o.armR || [-.12, .25];
+  // o.phone: 'handset' (a payphone receiver) or 'mobile' held against his right ear, his hand on it
+  const ear = o.phone ? [lk + 36, -300] : null;
+  const ap = armIK(26, -262, aR[0], aR[1], 1, ear ? [ear[0] + 6, ear[1] + 8] : null); limb(ap, 13, o, k, o.sleeve || '#3a7a76');
+  if (o.phone === 'handset') { const top = [lk + 36, -328], bot = [lk + 30, -272]; X.beginPath(); X.moveTo(top[0], top[1]); X.lineTo(bot[0], bot[1]); stroke(S.INK, 11 * k / k, 1); for (const [cx, cy] of [top, bot]) { const cup = PE(cx + 4, cy, 9, 7, .2); S.F(cup, '#2b2420'); S.OL(cx + 4, cy, 9, 7, .2, 1.8); } }
+  if (o.phone === 'mobile') { const mp = PP([[lk + 26, -326], [lk + 44, -324], [lk + 42, -284], [lk + 24, -286]]); S.F(mp, '#2b2420'); S.OP([[lk + 26, -326], [lk + 44, -324], [lk + 42, -284], [lk + 24, -286]], true, 1.8); if (!S.sch) fillP(PP([[lk + 28, -322], [lk + 41, -320], [lk + 40, -290], [lk + 27, -292]]), '#cfe6e2', .9); }
   const hx = ap[2][0], hy = ap[2][1];
   fillP(PE(hx, hy + 4, 8, 9), S.sch ? C.navy : '#efd9b9'); S.OL(hx, hy + 4, 8, 9, 0, 1.6);
   if (o.case) suitcase(hx, hy + 10, 1, { ...o, flip: false, handle: true }, k);

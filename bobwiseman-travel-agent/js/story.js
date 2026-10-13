@@ -223,7 +223,7 @@ const POST = {
 // [time, set-up, args, post]. The world gets stranger act by act; the agent's form evolves:
 // shop desk (31) -> roadside payphone (90.8) -> on hold in the endless corridor (220.5) -> the app (293.7)
 // -> her inside the phone, the phone a cage (365.5) -> typing dots (379.3) -> the agency closed, for lease (400).
-POST.holdPhone = (q, p, T) => { traveller(960, 980, .9, { look: 0, mouth: sing(T), armR: [2.75, -2.1] }); phoneBody(990, 690, .12, -.3, (w, h) => appScreen(w, h, T, 'hold')); cloud(960, 980 - 420, .5, { rain: true }); for (let i = 0; i < 8; i++) { const t2 = (T * .3 + i / 8) % 1; X.save(); X.translate(960 + Math.sin(i * 2) * 300 * (1 - t2), lerp(470, 900, t2)); X.scale(lerp(.3, 1.4, t2), lerp(.3, 1.4, t2)); fillP(PE(0, 0, 8, 6, -.4), C.teal); iline(7, 0, 7, -26, C.teal, 2, 1, false); X.restore(); } };
+POST.holdPhone = (q, p, T) => { traveller(960, 980, .9, { look: 0, mouth: sing(T), phone: 'mobile' }); cloud(960, 980 - 420, .5, { rain: true }); for (let i = 0; i < 8; i++) { const t2 = (T * .3 + i / 8) % 1; X.save(); X.translate(960 + Math.sin(i * 2) * 300 * (1 - t2), lerp(470, 900, t2)); X.scale(lerp(.3, 1.4, t2), lerp(.3, 1.4, t2)); fillP(PE(0, 0, 8, 6, -.4), C.teal); iline(7, 0, 7, -26, C.teal, 2, 1, false); X.restore(); } };
 var NOTES = 0;
 // Cuts live in js/acts/act-*.js (CUTS_A..CUTS_E); buildShots() concatenates them in time order.
 const SEC_T = [0, 31.1, 44.7, 59.0, 73.7, 90.8, 104.2, 116.6, 131.2, 160.1, 174.6, 188.7, 203.3, 220.5, 247.3, 262.6, 276.0, 293.7, 319.5, 334.4, 365.5, 392.1, 400.0, 403.42];

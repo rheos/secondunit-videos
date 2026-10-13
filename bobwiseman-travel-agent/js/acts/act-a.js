@@ -413,8 +413,8 @@ SU.a_payphone = { mode: 'ill', f(q, p, a, T) {
   const dial = PE(px, top + 170, 60, 60); fillP(dial, C.cream); iE(px, top + 170, 60, 60, 0, C.ink, 2.2); for (let i = 0; i < 10; i++) { const an = -2.2 + i * .42; iE(px + Math.cos(an) * 40, top + 170 + Math.sin(an) * 40, 8, 8, 0, C.ink, 1.4, 1, false); }
   fillP(PR(px + 50, top + 80, 30, 8), C.ink); lab(px - 80, top + 280, 'PLEASE DEPOSIT 25¢', C.ink, .8, 11);
   // him, receiver to his ear, the cord coiling to the box
-  const tx = 560, ty = 1000, ts = 1.35; traveller(tx, ty, ts, { look: .8, mouth: sing(T), armR: [2.75, -2.1], case: false });
-  const ex = tx + 10 * ts, ey = ty - 330 * ts; const rcv = PE(ex + 10, ey + 10, 18, 46, .4); fillP(rcv, C.ink); iE(ex + 10, ey + 10, 18, 46, .4, C.ink, 2);
+  const tx = 560, ty = 1000, ts = 1.35; traveller(tx, ty, ts, { look: .8, mouth: sing(T), phone: 'handset', case: false });
+  const ex = tx + (4.8 + 24) * ts, ey = ty - 300 * ts; // the handset's mouthpiece end
   X.beginPath(); for (let i = 0; i <= 40; i++) { const t = i / 40, xx = lerp(ex + 20, px - 100, t), yy = lerp(ey + 50, top + 230, t) + Math.sin(t * Math.PI) * 120; X.lineTo(xx + Math.cos(i * 1.6) * 10, yy + Math.sin(i * 1.6) * 10); } stroke(C.ink, 2.2, 1);
   suitcase(380, 900, .9);
   cloud(tx, ty - 520 * ts + 40, .72, { rain: true });
@@ -431,7 +431,7 @@ SU.a_sWire = { mode: 'sch', f(q, p, a, T) {
   const px = 820, top = 360;
   X.strokeStyle = C.lav; X.lineWidth = 1.2; X.strokeRect(px - 180, top - 30, 360, 360); X.strokeRect(px - 100, top + 50, 200, 250); gc(px, top + 170, 60, C.white, .9, 1.4); ticks(px, top + 170, 60, 10, 10, C.white, .7, 1.2);
   gl(px, top + 300, px, 1000, C.lav, .7, 1.4); lab(px + 200, top - 4, 'TELEPHONE · ROADSIDE', C.white, .9, 14); lab(px + 200, top + 20, 'COIN · 25¢', C.lav, .7, 12);
-  traveller(560, 1000, 1.35, { sch: 1, col: C.lav, armR: [2.75, -2.1], case: false, look: .8 });
+  traveller(560, 1000, 1.35, { sch: 1, col: C.lav, phone: 'handset', case: false, look: .8 });
   const poles = []; for (let i = 0; i < 9; i++) { const t = i / 8, x = lerp(1180, 1880, Math.pow(t, .6)), s = lerp(1, .18, Math.pow(t, .6)), y = lerp(1000, 706, Math.pow(t, .6)); gl(x, y, x, y - 620 * s, C.lav, .7, 1.2); gl(x - 120 * s, y - 590 * s, x + 120 * s, y - 590 * s, C.lav, .7, 1); poles.push([x, y - 604 * s]); }
   const pts = [[px + 100, top + 120], ...poles, [2200, 690]];
   path(pts, C.cyan, 1.4, .8);
@@ -493,8 +493,8 @@ SU.a_rushRoad = { mode: 'ill', f(q, p, a, T) {
   // him running, receiver at his ear, the cord pulled taut and coiling all the way back
   const tx = lerp(1000, 1300, eo(p)), ty = 980, ts = 1.3, ph = FD * 1.3;
   X.beginPath(); for (let i = 0; i < 6; i++) { X.moveTo(tx - 120 - i * 30, ty - 120 - i * 40); X.lineTo(tx - 260 - i * 50, ty - 120 - i * 40); } stroke(C.ink, 2, .6);
-  traveller(tx, ty, ts, { legs: ph * 1.6, look: 1, mouth: sing(T), armR: [2.75, -2.1], armL: [-.9, .4], case: false });
-  const ex = tx + 10 * ts, ey = ty - 330 * ts; const rcv = PE(ex + 10, ey + 10, 18, 46, .4); fillP(rcv, C.ink); iE(ex + 10, ey + 10, 18, 46, .4, C.ink, 2);
+  traveller(tx, ty, ts, { legs: ph * 1.6, look: 1, mouth: sing(T), phone: 'handset', armL: [-.9, .4], case: false });
+  const ex = tx + 30 * ts, ey = ty - 300 * ts; // the handset's mouthpiece end
   X.beginPath(); for (let i = 0; i <= 160; i++) { const t = i / 160, xx = lerp(ex, fx, t), yy = lerp(ey + 40, fy - 180 * fs * 2, t) + Math.sin(t * Math.PI) * 140; const amp = 10 * (1 - t) + 2; X.lineTo(xx + Math.cos(i * 1.4) * amp, yy + Math.sin(i * 1.4) * amp); } stroke(C.ink, 2.2, 1);
   // suitcase flying out behind on its handle
   X.save(); X.translate(tx - 170, ty - 260); X.rotate(-.5 + Math.sin(T * 9) * .15); suitcase(0, 0, .9); X.restore();

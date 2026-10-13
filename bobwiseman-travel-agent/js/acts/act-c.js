@@ -219,8 +219,7 @@ function c_loopPt(s) { // arc-length along the corridor floor -> [x, y, nx, ny] 
 const C_LOOPLEN = (C_LOOP.cx - C_LOOP.x0) + TAU * C_LOOP.r + (C_LOOP.ex - C_LOOP.cx);
 function c_holdMan(x, y, s, rot, T, flipLook) {
   X.save(); X.translate(x, y); X.rotate(rot);
-  traveller(0, 0, s, { look: flipLook || 0, mouth: sing(T), armR: [2.75, -2.1], case: false });
-  phoneBody(33 * s, -322 * s, .13 * s, -.3, (w, h) => appScreen(w, h, T, 'hold'));
+  traveller(0, 0, s, { look: flipLook || 0, mouth: sing(T), phone: 'mobile', case: false });
   X.restore();
 }
 SU.c_corridorLoop = { mode: 'ill', f(q, p, a, T) {

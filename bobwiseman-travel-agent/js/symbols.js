@@ -32,8 +32,8 @@ SU.phoneBooth = { mode: 'ill', f(q, p, a, T) { // chorus 1: a payphone by the em
   SU.road.f(q, p, {}, T);
   const bx = 520, by = 1060, bw = 300, bh = 640, bp = PR(bx - bw / 2, by - bh, bw, bh);
   fillP(PR(bx - bw / 2 - 20, by - bh - 70, bw + 40, 70), C.brick); iBox(bx - bw / 2 - 20, by - bh - 70, bw + 40, 70, C.ink, 2.6); lab(bx, by - bh - 25, 'TELEPHONE', C.cream, 1, 22, 'center', 'alphabetic', 'bold');
-  fillP(bp, '#dfe6dd', .55); traveller(bx, by - 10, 1.0, { look: 1, mouth: sing(T), armR: [2.75, -2.1], case: false });
-  const rx = bx + 40, ry = by - 360; fillP(PE(rx, ry, 16, 36, .4), C.ink); X.beginPath(); for (let i = 0; i <= 20; i++) { const t = i / 20; X.lineTo(lerp(rx, bx + 120, t) + Math.sin(t * 30) * 8, lerp(ry + 30, by - 330, t)); } stroke(C.ink, 2, 1); fillP(PR(bx + 100, by - 400, 44, 90), '#5a5a5a'); iBox(bx + 100, by - 400, 44, 90, C.ink, 2);
+  fillP(bp, '#dfe6dd', .55); traveller(bx, by - 10, 1.0, { look: 1, mouth: sing(T), phone: 'handset', case: false });
+  const rx = bx + 30, ry = by - 10 - 300; X.beginPath(); for (let i = 0; i <= 20; i++) { const t = i / 20; X.lineTo(lerp(rx, bx + 120, t) + Math.sin(t * 30) * 8, lerp(ry + 30, by - 330, t)); } stroke(C.ink, 2, 1); fillP(PR(bx + 100, by - 400, 44, 90), '#5a5a5a'); iBox(bx + 100, by - 400, 44, 90, C.ink, 2);
   X.beginPath(); for (let i = 0; i <= 6; i++) { X.moveTo(bx - bw / 2 + i * bw / 6, by - bh); X.lineTo(bx - bw / 2 + i * bw / 6, by); } for (let j = 0; j <= 8; j++) { X.moveTo(bx - bw / 2, by - bh + j * bh / 8); X.lineTo(bx + bw / 2, by - bh + j * bh / 8); } stroke(C.brick, 6, 1); iBox(bx - bw / 2, by - bh, bw, bh, C.ink, 3);
   cloud(bx, by - bh - 180, .7, { rain: true }); noteRain(bx - 120, by - bh - 130, 240, 120, 6);
   if (a.split) { const sp = PP([[1150, 0], [W, 0], [W, H], [1350, H]]); X.save(); X.clip(sp); stripes(C.paper, '#ead6a6', 120, -.62, 0, C.ochre); desk(1560, 760, 520); agent(1560, 760, 1.2, { talk: Math.abs(Math.sin(T * 9)) * .9, look: -.7 }); fillP(PE(1640, 520, 14, 30, -.3), C.ink); X.restore(); iP([[1150, 0], [1350, H]], false, C.ink, 4); }
