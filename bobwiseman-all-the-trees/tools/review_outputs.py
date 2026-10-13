@@ -16,7 +16,7 @@ try:font=ImageFont.truetype('/System/Library/Fonts/Menlo.ttc',14)
 except OSError:font=ImageFont.load_default()
 for i,f in enumerate(frames):
  x=i%3*480;y=i//3*300;sheet.paste(Image.fromarray(f),(x,y));d.text((x+12,y+278),f'{start+i*2.5:05.1f}s  /  f{1128+i*60:05d}',font=font,fill=(39,38,29))
-strip=out/'att_alchemy-v1_strip.jpg';sheet.save(strip,quality=94)
+strip=out/(movie.stem.split('_f')[0]+'_strip.jpg');sheet.save(strip,quality=94)
 # Include trailing freezes too, unlike the inherited scanner's open-run edge case.
 r=subprocess.check_output(['ffmpeg','-v','error','-i',str(movie),'-vf','scale=64:36,format=gray','-f','rawvideo','-'])
 z=np.frombuffer(r,np.uint8).reshape(-1,36,64).astype(float);delta=np.abs(np.diff(z,axis=0)).mean(axis=(1,2));runs=[];begin=None
@@ -27,4 +27,4 @@ for i,val in enumerate(np.r_[delta,999]):
   begin=None
 bad=int((z[:,18:,32:].mean(axis=(1,2))<12).sum());dark=int((z.mean(axis=(1,2))<14).sum());assert not runs and bad==0 and dark==0
 report={'duration':float(info['format']['duration']),'size':[v['width'],v['height']],'fps':v['r_frame_rate'],'frames':int(v['nb_frames']),'audioCodec':a['codec_name'],'audioChannels':a['channels'],'badCornerFrames':bad,'darkFrames':dark,'frozenOver2Seconds':runs,'contactSheet':strip.name,'contactSheetSongTimes':[47+i*2.5 for i in range(13)]}
-(out/'alchemy-encoded-audit.json').write_text(json.dumps(report,indent=2)+'\n');print(json.dumps(report,indent=2))
+(out/(movie.stem.split('_f')[0]+'_encoded-audit.json')).write_text(json.dumps(report,indent=2)+'\n');print(json.dumps(report,indent=2))
