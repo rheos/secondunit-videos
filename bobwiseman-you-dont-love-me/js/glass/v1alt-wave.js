@@ -1,9 +1,11 @@
 // Verse 1 alternative for lancet 2 (line V1.l3): the wave that almost kisses her.
 // She stands at the cliff edge. A great curling wave rises out of the sea in leaded blue and teal bands with
-// claw-like foam at the crest, climbs on V1.steep and V1.waiting, towers and curls toward her by V1.tobe, and on
-// V1.kissed its foam fingers stop a hair short of her pushed-out lips. Then it falls apart into round clear glass
-// beads that rain past her; one lands on her cheek and rolls down like a tear (through V1.bk5). She opens her eyes,
-// the sea goes flat and sulky by V1.bk6, and on V1.giveUp she droops.
+// small claw-like foam at the crest, climbs on V1.steep and V1.waiting, towers and curls over above her by V1.tobe,
+// and holds there through V1.kissed: nothing reaches toward her face. Draft 6 (Bob, 2026-10-13: the foam hand "morphs
+// into a white attachment I find peculiar. It distracts from the kissy face"): the foam hand is gone, and after the
+// near miss the wave drops away in about a third of a second with a short spill of beads, so the close framing is
+// all hers. One bead lands on her cheek and rolls down like a tear (through V1.bk5). She opens her eyes, the sea goes
+// flat and sulky by V1.bk6, and on V1.giveUp she droops.
 // Swaps in as V1SCENES[2]; all top-level names are prefixed v1aWave / V1AWAVE / sceneV1AltWave.
 
 const V1AWAVE_TOP = V1_TRANSOM + 22;                  // nothing of the picture is drawn above this (tracery stays)
@@ -30,12 +32,11 @@ if (typeof document !== 'undefined') document.addEventListener('DOMContentLoaded
 function v1aWaveState(t) {
   const h = .3 * ease(t, V1.l3, V1.l3 + 1) + .4 * ease(t, V1.steep - .1, V1.steep + .4) + .3 * ease(t, V1.waiting - .05, V1.waiting + .6);
   const c = .15 * ease(t, V1.l3 + .35, V1.l3 + 1.35) + .2 * ease(t, V1.steep, V1.steep + .7) + .5 * ease(t, V1.waiting + .3, V1.tobe + .05) + .15 * ease(t, V1.tobe + .05, V1.kissed - .2);
-  const fall = lin(t, V1.kissed + .5, V1.kissed + 1.1);              // eaten from the lip back to the sea
-  const sink = ease(t, V1.kissed + .75, V1.kissed + 1.5);           // what is left drops back into the sea
+  const fall = lin(t, V1.kissed + .45, V1.kissed + .65);            // eaten from the lip back to the sea
+  const sink = ease(t, V1.kissed + .45, V1.kissed + .8);            // what is left drops back into the sea
   const sway = .025 * Math.sin(t * 2.1) * (1 - ease(t, V1.tobe, V1.kissed));
   return { h: h * (1 - sink), c, uCut: 1 - fall, sway };
 }
-function v1aWaveReach(t) { const x = lin(t, V1.kissed - .3, V1.kissed + .06); return 1 - Math.pow(1 - x, 3); }
 
 // Spine: integrate a heading that turns harder toward the tip, then pull the tip onto the kiss point.
 function v1aWaveSpine(S) {
@@ -86,14 +87,14 @@ function v1aWaveHeadPt(hd, p) { // head-local point -> world
   return [F.x + F.s * (hd[0] + c * p[0] - s * p[1]), F.y + F.s * (hd[1] + s * p[0] + c * p[1])];
 }
 const v1aWaveLips = (hd) => v1aWaveHeadPt(hd, [0, 52]);
-function v1aWaveTipTarget() { const L = v1aWaveLips(V1AWAVE_KISSHD); return [L[0] + 118, L[1] - 92]; }
+function v1aWaveTipTarget() { const L = v1aWaveLips(V1AWAVE_KISSHD); return [L[0] + 70, L[1] - 170]; } // over her head, not at her face
 
 // ---------------- sea, sky, cliff ----------------
 const V1AWAVE_SEA = [];
 for (let j = 0; j < 9; j++) V1AWAVE_SEA.push({ y: V1AWAVE_HZ + j * 118 + (j ? rnd(j, 71) * 26 : 0), col: [[52, 96, 170], [38, 92, 180], [26, 110, 160], C.blue2, [44, 120, 190], [30, 80, 160], C.blue2, [26, 100, 150], [40, 86, 176]][j], seed: 7100 + j });
 function v1aWaveSulk(t) { return ease(t, V1.bk5 + .4, V1.bk6); }
 function v1aWaveSwell(t) { // sea surface amplitude: stirred by the wave, then flat
-  const stir = ease(t, V1.l3, V1.waiting) * (1 - ease(t, V1.kissed + 1.2, V1.bk5 + .8));
+  const stir = ease(t, V1.l3, V1.waiting) * (1 - ease(t, V1.kissed + .45, V1.kissed + .9));
   return (1 + 1.3 * stir) * (1 - .9 * v1aWaveSulk(t));
 }
 function v1aWaveSeaBands(g, t, from, to) {
@@ -141,6 +142,7 @@ const V1AWAVE_STRIPS = [0, .3, .55, .78, 1];
 const V1AWAVE_CUTS = [[0, 9, 17, 25, 31, 37, 42, 47], [0, 6, 13, 21, 28, 34, 39, 44, 47], [0, 11, 19, 26, 32, 38, 43, 47], [0, 8, 16, 23, 30, 35, 40, 45, 47]];
 const V1AWAVE_COLS = [[14, 34, 112], [24, 64, 162], [22, 106, 150], [64, 156, 178]];
 const V1AWAVE_FOAM = [236, 244, 248];
+const V1AWAVE_ILIP = 41; // as the curl closes the ribbon stops here, a clean lip over her head (past it the spine winds too tight)
 function v1aWaveF(k, i) { // band edge k at sample i, with a gentle ripple (the outer and inner edges stay put)
   const f = V1AWAVE_STRIPS[k]; return k === 0 || k === 4 ? f : f + .045 * Math.sin(i * .45 + k * 2.1);
 }
@@ -154,9 +156,9 @@ function v1aWaveClaw(g, x, y, ang, len, w, bend, seed) { // a hooked foam claw, 
   pane(g, smoothPath(limbPts(sp, [w * .45, w * .28, 1.2]), true), V1AWAVE_FOAM, seed + 1, { ew: 6, lw: 4, amt: .2, shade: .14 });
 }
 function v1aWaveBody(g, t, S, sp) {
-  const n = V1AWAVE_N, iCut = Math.min(Math.floor(S.uCut * (n - 1)), S.c > .7 && S.uCut > .999 ? V1AWAVE_ILIP : n);
+  const n = V1AWAVE_N, iCut = Math.min(Math.floor(S.uCut * (n - 1)), V1AWAVE_ILIP + Math.round((n - 1 - V1AWAVE_ILIP) * (1 - ease(S.c, .55, .75))));
   if (iCut < 2 || S.h < .01) return;
-  const foamFrom = lerp(.97, .52, S.c), drop = 900 * Math.pow(ease(t, V1.kissed + .5, V1.kissed + 1.2), 2);
+  const foamFrom = lerp(.97, .52, S.c), drop = 900 * Math.pow(ease(t, V1.kissed + .45, V1.kissed + .8), 2);
   g.save(); g.translate(0, drop);
   for (let k = 0; k < 4; k++) {
     const cuts = V1AWAVE_CUTS[k];
@@ -172,8 +174,8 @@ function v1aWaveBody(g, t, S, sp) {
       pane(g, polyPath(pts), col, 7300 + s * 10 + k, { ew: 28, shade: sh });
     }
   }
-  if (iCut < n - 1) for (let q = 0; q < 6; q++) { // the breaking edge: a row of beads where the wave comes apart
-    const p = v1aWaveAt(sp, iCut, (q + .5) / 6); v1aWaveBead(g, p[0] + 8 * Math.sin(q * 2.3 + t * 9), p[1], sp.Wd[iCut] / 6 + 4, 7480 + q);
+  if (iCut < n - 1) for (let q = 0; q < 6; q++) { // the lip, and the breaking edge as it comes apart: a row of foam beads
+    const p = v1aWaveAt(sp, iCut, (q + .5) / 6), jit = S.uCut < .999 ? 8 * Math.sin(q * 2.3 + t * 9) : 0; v1aWaveBead(g, p[0] + jit, p[1], sp.Wd[iCut] / 6 + 4, 7480 + q);
   }
   // grisaille flow lines along each band, like brush strokes in the water
   paint(g, 3, .3);
@@ -188,70 +190,36 @@ function v1aWaveBody(g, t, S, sp) {
   // foam claws along the crest, pointing forward along the curl
   const claw = ease(S.c, .12, .7);
   if (claw > 0) for (let q = 0; q < 9; q++) {
-    const u = lerp(.5, .94, q / 8), i = Math.round(u * (n - 1)); if (i >= iCut - 1) continue;
+    const u = lerp(.5, .84, q / 8), i = Math.round(u * (n - 1)); if (i >= iCut - 1) continue;
     const [x, y] = v1aWaveAt(sp, i, 1), tx = sp.P[i + 1][0] - sp.P[i - 1][0], ty = sp.P[i + 1][1] - sp.P[i - 1][1], tl = Math.hypot(tx, ty);
     const ang = Math.atan2(ty / tl * .8 + sp.N[i][1] * .75, tx / tl * .8 + sp.N[i][0] * .75);
-    v1aWaveClaw(g, x, y, ang, (70 + 34 * rnd(q, 81)) * claw * (1 - .4 * (q / 8)), 30 - q * 1.6, -.38, 7400 + q * 3);
+    v1aWaveClaw(g, x, y, ang, .7 * (70 + 34 * rnd(q, 81)) * claw * (1 - .4 * (q / 8)), .8 * (30 - q * 1.6), -.38, 7400 + q * 3); // small foam, crest only
   }
   g.restore();
 }
-// The foam hand: the crest's lip curls down beside her face into a soft hand of rounded foam fingertips (leaded
-// beads) that reach toward her pushed-out lips and stop. Laid out in her head-local units so it follows her lean;
-// every piece stays right of V1AWAVE_HANDX, which clears the right edge of her hair (x 91 at lip height, plus its lead),
-// so the foam never overlaps her face or hair. Returns the nearest fingertip centre (world).
-const V1AWAVE_HANDX = 120;
-const V1AWAVE_ILIP = 42; // the ribbon stops here and the hand's wrist takes over (while the hand is out)
-const V1AWAVE_TIPS = [[0, 26], [-.62, 23], [.6, 22], [-1.2, 19]]; // [angle offset round the palm, radius], nearest first // [dx, dy, radius] from the nearest tip
-function v1aWaveFingers(g, t, S, sp, hd, draw = true) {
-  const n = V1AWAVE_N; if (S.uCut < .999 || S.c < .7) return null;
-  const r = v1aWaveReach(t), amt = ease(S.c, .7, 1);
-  const hold = r >= 1 ? 1 - lin(t, V1.kissed + .45, V1.kissed + .5) : 0, shiver = 1.6 * Math.sin(t * 41) * hold;
-  const ox = lerp(80, 0, r) + shiver, oy = lerp(-50, 0, r);                        // reach in from up and right
-  const H = (p) => v1aWaveHeadPt(hd, [p[0] + ox, p[1] + oy]);
-  const tip0 = [V1AWAVE_HANDX + V1AWAVE_TIPS[0][1], 52], palm = [V1AWAVE_HANDX + 82, 40];
-  if (!draw) return H(tip0);
-  const Pw = H(palm), s = V1AWAVE_F.s, iL = V1AWAVE_ILIP, E = v1aWaveAt(sp, iL, .5), wL = sp.Wd[iL];
-  // wrist: the lip of the curl carries on as foam, bowing out to the right and down to the palm
-  const E2 = sp.P[n - 1], mid = [lerp(E2[0], Pw[0], .45) + 18, lerp(E2[1], Pw[1], .45)];
-  const gw = .45 + .55 * amt; g.save(); // the hand swells out of the lip as the curl completes
-  pane(g, smoothPath(limbPts([v1aWaveAt(sp, iL - 2, .5), E, mid, Pw], [wL * 1.7, wL * 1.4, 26 * gw, 32 * gw]), true), V1AWAVE_FOAM, 7455, { ew: 10, lw: 5, amt: .2, shade: .14 });
-  pane(g, circPath(Pw[0], Pw[1], 52 * s * gw), V1AWAVE_FOAM, 7456, { ew: 12, lw: 5, amt: .2, shade: .16 });
-  const a0 = Math.atan2(tip0[1] - palm[1], tip0[0] - palm[0]), R0 = Math.hypot(tip0[0] - palm[0], tip0[1] - palm[1]);
-  for (let k = V1AWAVE_TIPS.length - 1; k >= 0; k--) { // soft rounded fingertips (foam beads) round the palm's edge
-    const [da, rr] = V1AWAVE_TIPS[k], R = R0 - (26 - rr) * .8, tw = H([palm[0] + Math.cos(a0 + da) * R, palm[1] + Math.sin(a0 + da) * R]);
-    if (amt < .05) continue;
-    pane(g, circPath(tw[0], tw[1], rr * s * amt), V1AWAVE_FOAM, 7466 + k, { ew: 6, lw: 4.5, amt: .25, shade: .2 });
-    g.strokeStyle = 'rgba(255,255,255,.9)'; g.lineWidth = 2; g.beginPath(); g.arc(tw[0] - rr * s * .15 * amt, tw[1] - rr * s * .15 * amt, rr * s * .55 * amt, Math.PI * 1.05, Math.PI * 1.45); g.stroke();
-  }
-  g.restore();
-  const L = v1aWaveLips(hd), rb = 14 * 1.15 * s, T0 = H(tip0);
-  PROBE.value('wave fingertip gap', Math.hypot(T0[0] - L[0], T0[1] - L[1]) - rb - V1AWAVE_TIPS[0][1] * s);
-  return T0;
-}
-
 // ---------------- the shower of beads and the tear ----------------
 const V1AWAVE_BEADS = [];
-for (let j = 0; j < 84; j++) {
-  const u = Math.pow(rnd(j, 91), .7) * .98, f = rnd(j, 92);
-  V1AWAVE_BEADS.push({ u, f, tr: V1.kissed + .5 + (1 - u) * .6 + rnd(j, 93) * .05, vx: -60 - 160 * rnd(j, 94), vy: -120 + 160 * rnd(j, 95), r: 8 + 11 * rnd(j, 96), seed: 7500 + j, back: true });
+for (let j = 0; j < 22; j++) { // a short spill as it drops: let go within 0.12 s, falling fast, out of frame in ~0.4 s
+  const u = .55 + .43 * rnd(j, 91), f = rnd(j, 92);
+  V1AWAVE_BEADS.push({ u, f, tr: V1.kissed + .45 + (1 - u) * .2 + rnd(j, 93) * .03, vx: 40 - 80 * rnd(j, 94), vy: 260 + 220 * rnd(j, 95), r: 8 + 9 * rnd(j, 96), seed: 7500 + j, back: true });
 }
-const V1AWAVE_G = 2300;
+const V1AWAVE_G = 2300, V1AWAVE_GS = 3400; // the tear's gravity, the spill's
 function v1aWaveBead(g, x, y, r, seed) {
   pane(g, circPath(x, y, r), [212, 232, 238], seed, { ew: Math.max(4, r * .6), lw: Math.max(3, r * .32), shade: .28, amt: .35 });
   g.strokeStyle = 'rgba(255,255,255,.85)'; g.lineWidth = Math.max(1.5, r * .18); g.lineCap = 'round';
   g.beginPath(); g.arc(x - r * .1, y - r * .1, r * .55, Math.PI * 1.05, Math.PI * 1.45); g.stroke();
 }
 function v1aWaveShower(g, t, back) {
-  if (t < V1.kissed + .45 || t > V1.kissed + 4) return;
+  if (t < V1.kissed + .45 || t > V1.kissed + 2) return;
   for (const B of V1AWAVE_BEADS) {
     if (B.back !== back) continue;
     const dt = t - B.tr; if (dt < 0) continue;
     const S = v1aWaveState(B.tr), sp = v1aWaveSpine({ ...S, uCut: 1 }), i = Math.round(B.u * (V1AWAVE_N - 1));
-    const [x0, y0] = v1aWaveAt(sp, i, B.f), y = y0 + B.vy * dt + .5 * V1AWAVE_G * dt * dt; if (y > YB + 60) continue;
+    const [x0, y0] = v1aWaveAt(sp, i, B.f), y = y0 + B.vy * dt + .5 * V1AWAVE_GS * dt * dt; if (y > YB + 60) continue;
     v1aWaveBead(g, x0 + B.vx * dt, y, B.r, B.seed);
   }
 }
-// The tear: let go from the centre fingertip as the wave breaks, lands on her right cheek, rolls down, drips off.
+// The tear: let go from the lip of the curl as the wave breaks, lands on her right cheek, rolls down, drips off.
 const V1AWAVE_TEAR = { rel: V1.kissed + .5, land: V1.kissed + .8, rollA: V1.kissed + .85, rollB: V1.bk6 - 1.4, path: [[36, 36], [37, 50], [33, 63], [27, 73]], r: 12 };
 function v1aWaveTearLocal(t) { // head-local position along the cheek path while it rolls
   const T = V1AWAVE_TEAR, P = T.path, u = ease(t, T.rollA, T.rollB) * (P.length - 1), k = Math.min(P.length - 2, Math.floor(u)), f = u - k;
@@ -304,7 +272,6 @@ function sceneV1AltWave(g, t, view) {
   });
   g.restore();
   v1aWaveTear(g, t);
-  v1aWaveFingers(g, t, S, sp, Q.hd);
   v1aWaveShower(g, t, false);
   g.restore();
 }

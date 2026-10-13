@@ -3,7 +3,9 @@
 // o: { dress, mantle, hands: [[x,y,rot],[x,y,rot]], elbows: [[x,y],[x,y]], mouth 0..1, grey 0..1, seed,
 //      under(g) drawn after the body and before the arms (things she holds against her chest),
 //      held(g) drawn after the hands (things in front of her fingers),
-//      up 0..1 tips her face back to the sky, as a singer does reaching for a high note (default 0: unchanged) }
+//      up 0..1 tips her face back to the sky, as a singer does reaching for a high note (default 0: unchanged),
+//      turn -1..1 pivots her head toward her right (-) or left (+): the features slide across the face and narrow,
+//      the face tilts a little the same way (default 0: unchanged) }
 function drawWoman(g, o) {
   const sd = o.seed || 0;
   const hairCol = mix(C.hair, [210, 210, 204], o.grey || 0);
@@ -30,8 +32,8 @@ function drawWoman(g, o) {
   const col = new Path2D(); col.moveTo(-74, 124); col.quadraticCurveTo(0, 196, 74, 124); col.quadraticCurveTo(0, 158, -74, 124); col.closePath();
   pane(g, col, C.gold, sd + 6, { ew: 12 });
   // face (up > 0: the head tips back and a little to her right; the jaw's underside shows, the features ride up)
-  const up = clamp(o.up || 0);
-  g.save(); g.translate(0, -16 * up); g.rotate(-.17 * up);
+  const up = clamp(o.up || 0), tn = clamp(o.turn || 0, -1, 1);
+  g.save(); g.translate(5 * tn, -16 * up); g.rotate(-.17 * up + .1 * tn);
   const face = ellPath(0, 0, 62, 80);
   pane(g, face, C.flesh, sd + 7, { ew: 20, shade: .22, amt: .35, lead: 0 });
   g.save(); g.clip(face);
@@ -44,7 +46,7 @@ function drawWoman(g, o) {
     paint(g, 3, .55 * up); g.beginPath(); g.ellipse(0, 50, 54, 8 * up, 0, 0, Math.PI); g.stroke();
   }
   lead(g, face, 9);
-  g.save(); g.translate(0, -34 * up); g.scale(1, 1 - .42 * up); // features and fringe foreshorten up the face
+  g.save(); g.translate(20 * tn, -34 * up); g.scale(1 - .2 * Math.abs(tn), 1 - .42 * up); // features and fringe foreshorten up the face (and across it as she turns)
   // features, deadpan: flat brows, heavy half-closed lids, long nose, level mouth
   paint(g, 4.5);
   for (const s of [-1, 1]) {
@@ -59,7 +61,8 @@ function drawWoman(g, o) {
   if (m > .05) { g.fillStyle = 'rgba(60,20,16,.88)'; g.beginPath(); g.ellipse(0, 51 + m * 3, 11 - m * 2, 2 + m * 10, 0, 0, TAU); g.fill(); }
   else { g.beginPath(); g.moveTo(-17, 50); g.lineTo(17, 50); g.stroke(); g.lineWidth = 2.5; g.beginPath(); g.moveTo(-17, 50); g.lineTo(-20, 53); g.moveTo(17, 50); g.lineTo(20, 53); g.stroke(); }
   g.lineWidth = 2.5; g.beginPath(); g.moveTo(-10, 66); g.quadraticCurveTo(0, 70, 10, 66); g.stroke();
-  // fringe
+  // fringe (it rides half as far across as the features when she turns, so it stays on her head)
+  if (tn) g.translate(-10 * tn, 0);
   pane(g, smoothPath([[-66, -18], [-62, -66], [-26, -104], [22, -104], [62, -66], [66, -18], [46, -46], [16, -40], [-18, -50], [-48, -38]]), hairCol, sd + 8, { ew: 20, amt: .5 });
   paint(g, 3, .5); for (const x of [-40, -10, 22, 46]) { g.beginPath(); g.moveTo(x * .5, -98); g.quadraticCurveTo(x, -80, x * 1.05, -52); g.stroke(); }
   g.restore(); g.restore();

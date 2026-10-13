@@ -13,6 +13,8 @@ const TRIO = {
   // instrumental beats in the gap between the two runs (no_vocals stem, 86 bpm)
   beats: [142.48, 143.16, 143.85, 144.54, 145.24],
   spin: [141.42, 141.98],
+  roll: [[140.39, 140.70], [142.48, 143.55]], // hand rolls (draft 6): the second "ba", then the Temptations walk
+  chick: [141.98, 142.45],                     // chicken elbows through the end of the first held note
   // Bob (2026-10-11): "could the Pips enter and exit off the top of the video?" The whole stage drops in from
   // above over the teacup, landing on the first hit, and flies back out of the top after the second held note.
   drop: [139.84, 140.24], lift: [148.0, 148.42],
@@ -44,6 +46,20 @@ const POSE = {
   lowR:   { L: [-.6, .4], R: [2.2, 2.0], lL: [-.55, .35], lR: [.55, -.1], x: 0, lean: -.1, tilt: -.14, dip: 64 },
   lowL:   { L: [-2.2, -2.0], R: [.6, -.4], lL: [-.55, .1], lR: [.55, -.35], x: 0, lean: .1, tilt: .14, dip: 64 },
 };
+// Draft 6 (Bob, 2026-10-13: "could they also roll their hand or make a chicken dance w elbows or a hora. I want it
+// funnier by virtue of activity. just Google the temptations"): the Temptations walk, a hat tip, a hora line.
+const POSE6 = {
+  chick:  { L: [-1.3, 1.85], R: [1.3, -1.85], lL: [-.12, -.04], lR: [.12, .04], x: 0, lean: 0, tilt: .06, dip: 24 },   // hands in the armpits
+  walkL:  { L: [-.25, .95], R: [.25, -.95], lL: [-.32, -.14], lR: [.04, .1], x: -70, lean: .1, tilt: .1, dip: 14 },    // the Temptations walk:
+  touchL: { L: [-.25, .95], R: [.25, -.95], lL: [-.06, -.02], lR: [-.16, -.28], x: -88, lean: .04, tilt: .12, dip: 8 }, // step, then touch
+  walkR:  { L: [-.25, .95], R: [.25, -.95], lL: [-.04, -.1], lR: [.32, .14], x: 70, lean: -.1, tilt: -.1, dip: 14 },
+  touchR: { L: [-.25, .95], R: [.25, -.95], lL: [.16, .28], lR: [.06, .02], x: 88, lean: -.04, tilt: -.12, dip: 8 },
+  salute: { L: [-.25, .95], R: [2.3, -1.65], lL: [-.05, -.02], lR: [.05, .02], x: 0, lean: -.04, tilt: -.1, dip: 8 },   // fingers to the hat brim
+  flick:  { L: [-.25, .95], R: [2.1, 1.9], lL: [-.05, -.02], lR: [.05, .02], x: 0, lean: .05, tilt: .08, dip: 4 },      // and tip it out
+  // the hora: hands joined with the neighbours at shoulder height, kicking out together, the line rocking
+  horaR:  { L: [-1.0, -2.65], R: [1.0, 2.65], lL: [-.04, -.02], lR: [.95, .5], x: -24, lean: -.08, tilt: -.08, dip: 2 },
+  horaL:  { L: [-1.0, -2.65], R: [1.0, 2.65], lL: [-.95, -.5], lR: [.04, .02], x: 24, lean: .08, tilt: .08, dip: 2 },
+};
 const BEAT = 60 / 86;
 // The last held note: a staggered "ta-da", low, middle, high (singer 0, 1, 2).
 const FINAL = [
@@ -53,21 +69,25 @@ const FINAL = [
 ];
 
 // Timeline: [arrive time, pose, transition length]. Each move lands on its hit with a little overshoot.
+// Draft 6: a new move every half beat to a beat. Run 1: palm, a hand roll, point, the spin, then chicken elbows
+// flapping through the end of the held note. Gap: the Temptations walk left and right with hand rolls, a unison hat
+// tip on b[2] that flicks out into the rippling spin, a hora kick line on b[3] and b[4]. Run 2: vee, chest, sky,
+// point, the ta-da, and a last hat tip as they fly out.
+const H6 = BEAT / 2;
+const trioTip = (P, R) => ({ ...P, R });
 function trioKeys(k) {
-  const h = BR.hits, b = TRIO.beats;
+  const h = BR.hits, b = TRIO.beats, F = FINAL[k];
   return [
     [TRIO.in, POSE.idle, .01],
     [h[0], POSE.palm, .1], [h[1] + .04, POSE.roll, .12], [h[2], POSE.point, .14],
     [h[3] + .02, POSE.wide, .3],                       // the spin carries them round into it (TRIO.spin)
-    // slide left and kick, slide right and kick, a spin that ripples down the line (singer 0 first),
-    // a knee drop pointing right then left, and up into the second run
-    [b[0], POSE.slideL, .22], [b[0] + BEAT / 2, POSE.kickR, .14],
-    [b[1], POSE.slideR, .22], [b[1] + BEAT / 2, POSE.kickL, .14],
-    [b[2] + .1 + k * .12, POSE.wide, .3],
-    [b[3] + k * .06, POSE.lowR, .2], [b[3] + BEAT / 2 + k * .06, POSE.lowL, .16],
-    [b[4] + .1, POSE.idle, .3],
-    [h[4], POSE.vee, .1], [h[5] + .04, POSE.chest, .1], [h[6], POSE.sky, .14],
-    [h[7] + .04, FINAL[k], .26],
+    [142.04, POSE6.chick, .1],                         // chicken elbows on the shimmy (TRIO.chick)
+    [b[0], POSE6.walkL, .16], [b[0] + H6, POSE6.touchL, .12], [b[1], POSE6.walkR, .16], [b[1] + H6, POSE6.touchR, .12],
+    [b[2] - .1, POSE6.salute, .12], [b[2], POSE6.flick, .1], // then the spin ripples down the line (drawSinger)
+    [b[3], POSE6.horaR, .14], [b[3] + H6, POSE6.horaL, .12], [b[4], POSE6.horaR, .12], [b[4] + H6, POSE6.horaL, .12],
+    [h[4], POSE.vee, .1], [h[5] + .04, POSE.chest, .1], [h[6], POSE.sky, .14], [h[6] + .33, POSE.point, .12],
+    [h[7] + .04, F, .26],
+    [147.5, trioTip(F, POSE6.salute.R), .16], [147.8, trioTip(F, POSE6.flick.R), .12], // goodbye, as the stage lifts
   ];
 }
 const TRIO_KEYS = [0, 1, 2].map(trioKeys);
@@ -83,6 +103,25 @@ function poseAt(k, t) {
   const [ta, P, d] = K[i], u = easeOutBack(clamp((t - (ta - d)) / d), 1.2);
   return mixPose(K[i - 1][1], P, u);
 }
+// Moves on top of the keyed poses, faded in and out at the window's edges (0.05 s):
+// a hand roll (forearms circling each other in front of the belt, two turns a beat) and the chicken's flapping
+// elbows (four flaps a beat, knees bouncing with them).
+function trioMoves(t, P) {
+  const env = (a, b) => ease(t, a - .05, a + .03) * (1 - ease(t, b - .05, b + .03));
+  for (const [a, b] of TRIO.roll) {
+    const w = env(a, b); if (w <= 0) continue;
+    const ph = TAU * (t - a) / H6, s1 = Math.sin(ph), c1 = Math.cos(ph);
+    const L = [-.42 + .2 * s1, 1.5 + .5 * c1], R = [.42 + .2 * s1, -1.5 + .5 * c1]; // R runs half a turn behind L
+    P = { ...P, L: P.L.map((v, i) => lerp(v, L[i], w)), R: P.R.map((v, i) => lerp(v, R[i], w)) };
+  }
+  { const [a, b] = TRIO.chick, w = env(a, b);
+    if (w > 0) {
+      const f = .5 + .5 * Math.sin(TAU * (t - a) / (BEAT / 4) - Math.PI / 2);
+      P = { ...P, L: [P.L[0] - .5 * f * w, P.L[1]], R: [P.R[0] + .5 * f * w, P.R[1]], dip: P.dip + 12 * f * w, tilt: P.tilt + .1 * Math.sin(TAU * (t - a) / (BEAT / 2)) * w };
+    } }
+  return P;
+}
+const trioPoseAt = (k, t) => trioMoves(t, poseAt(k, t));
 const voicedAt = (t) => TRIO.voiced.find(([a, b]) => t >= a && t < b);
 function trioMouthAt(t) { // 0 shut, 1 wide: opens on each sung hit, closes to an "m" at its end
   const v = voicedAt(t); if (!v) return .08;
@@ -118,7 +157,7 @@ function limb(g, pts, w0, w1, col, seed) {
 // pose (optional): draw this pose instead of the bridge timeline (the intro walk-on uses it); no spin then
 function drawSinger(g, s, k, t, pose) {
   const gs = TRIO.beats[2] + k * .12; // the gap spin, one singer after the other
-  const P = pose || poseAt(k, t), spinU = pose ? 0 : ease(t, TRIO.spin[0], TRIO.spin[1]) + ease(t, gs, gs + .5), phi = spinU * TAU, cs = Math.cos(phi);
+  const P = pose || trioPoseAt(k, t), spinU = pose ? 0 : ease(t, TRIO.spin[0], TRIO.spin[1]) + ease(t, gs, gs + .5), phi = spinU * TAU, cs = Math.cos(phi);
   const back = cs < 0, sx = Math.max(.12, Math.abs(cs));
   const shim = (t > 141.98 && t < 142.6) ? Math.sin(t * TAU * 8) * 7 * (1 - ease(t, 142.4, 142.6)) : 0;
   const bob = 5 * beatPulse(t) + 4 * hitPulse(t);
