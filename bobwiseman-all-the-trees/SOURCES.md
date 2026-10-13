@@ -32,3 +32,7 @@ python tools/review_outputs.py out/att_alchemy-v1_f01128-f01908_24fps_draft.mp4
 ```
 
 The audio analysis script uses NumPy, SciPy, SoundFile and Pillow. It saves a diagnostic spectrogram and onset candidates under `out/`. HPSS plus band limiting reduces drums and vocals but does not isolate trumpet from other harmonic instruments; the cue list therefore remains explicitly labelled as candidates pending an ear check.
+
+## Extended rough cut v3
+
+The added people reuse the same disclosed clothed source figures, with code-applied robe colours and independent poses. The heart, stem, soil lip, extended roots and musical ribbons are original code drawing. The heart’s solar ring reuses only an annulus of the existing emblem-30 sun head, with its central face masked out. No new generated or downloaded media was introduced for this extension.

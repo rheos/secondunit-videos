@@ -1,6 +1,6 @@
 # All The Trees — alchemical engraving look test
 
-Issue #119; song clock 47.000–79.500 s, 24 fps, 780 frames. This is a look approval cut, not approval for a complete film.
+Issue #119. V1/v2 established song time 47.000–79.500 s (780 frames). Robin then requested a longer rough preview: v3 extends 47.000–153.083333 s (2546 frames at 24 fps), through the end of the source audio. The opening spoken section is not part of this cut. Exact visual cue timing and final look approval remain open.
 
 The key image is two engraved people whose hands become boughs and whose roots join below ground. Above the soil they remain distinct; below it their relationship becomes visible. The sun and moon are faces, not decorations attached to faces. This takes Mark Von Ulrich's bodily metaphor and physical relationships into the emblem tradition; his early-Mac rendering is not used here.
 
@@ -13,3 +13,5 @@ The motion clock is deterministic song time. Character poses update on twos; the
 Protect: the joined-root thesis, source faces, fine linework, bright colour, continuous brass presence. Reject: generic Victorian collage, doll proportions, rigid motion with locked arms and head, brown-on-brown grading, cartoon vector people, early-Mac pixels, unreadable details.
 
 Delivery: local 720p MP4, 2.5-second contact strip and full-resolution figure checks; source and generated media remain ignored. Keep PR #115 draft until Robin approves the look. Do not contact Bob or upload the video.
+
+Extended progression: the original pair becomes a four-person community, a heart rises out of the root junction and gains an engraved sun ring, the cloud trumpeters take over an abstract passage, and an eight-person grove returns for the final chorus. The new cast keeps its original engraved heads in front of crossing branches. A soil lip covers the roots while the people retreat during the instrumental. See STORYBOARD-extended.md for chapter boundaries and the protect list.

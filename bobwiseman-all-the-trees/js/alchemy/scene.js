@@ -32,9 +32,9 @@
  // The approximate dance pulse is choreography, not a verified beat transcription.
  const pulse=t=>(t-48.073)*(145/60)*Math.PI;
  const rotate=(p,o,a)=>[o[0]+Math.cos(a)*(p[0]-o[0])-Math.sin(a)*(p[1]-o[1]),o[1]+Math.sin(a)*(p[0]-o[0])+Math.cos(a)*(p[1]-o[1])];
- function personPose(which,t){const moon=which==='luna',x=moon?1220:690,foot=797,s=.485,ox=moon?1030:325;
+ function personPose(which,t,phase=0){const moon=which==='luna',x=moon?1220:690,foot=797,s=.485,ox=moon?1030:325;
   const appear=moon?smooth(60.375,60.75,t):smooth(49.083,49.45,t),lift=moon?smooth(60.5,62.3,t):smooth(55.9,57.6,t);
-  const q=pulse(t)+(moon?Math.PI*.64:0),dance=smooth(moon?60.5:49.4,moon?61.5:50.4,t);
+  const q=pulse(t)+(moon?Math.PI*.64:0)+phase,dance=smooth(moon?60.5:49.4,moon?61.5:50.4,t);
   const lean=.085*Math.sin(q)*dance,stretch=1-.024*(.5+.5*Math.sin(q*2-.5))*dance;
   const left=(moon?-.29:.44)*lift+.24*Math.sin(q-.38)*dance;
   const right=(moon?-.26:-.38)*lift-.22*Math.sin(q+.34)*dance;
@@ -57,7 +57,7 @@
  }
  function boughSpec(p,side,t){const seed=p.moon?(side?52:39):(side?15:3),dir=side?1:-1;
   const open=smooth(p.moon?60.5:52.6,p.moon?62.1:54.1,t),leaves=smooth(p.moon?60.5:57.583,p.moon?61.2:58.4,t);
-  return {hand:p.hands[side],angle:p.boughAngles[side],dir,seed,leaves,nodes:boughGeometry(open,t,seed)};
+  return {hand:p.hands[side],angle:p.boughAngles[side],dir,seed,leaves:leaves*(A.leafSeason?A.leafSeason(t):1),nodes:boughGeometry(open,t,seed)};
  }
  function bough(spec){const {hand,angle,dir,seed,leaves,nodes}=spec;g.save();g.translate(...hand);g.rotate(angle);g.scale(dir,1);
   for(const {px,py,ex,ey,cx,cy,aa,depth,id} of nodes){
@@ -67,9 +67,10 @@
   }
   g.restore();
  }
- function person(which,t){const p=personPose(which,t),{moon,x,foot,s,ox,appear,left,right,elbow,head,lean,stretch}=p;if(!appear)return;
-  const color=moon?C.rose:C.blue,wash=moon?smooth(60.375,61.05,t):smooth(49.083,50.7,t);
+ function person(which,t,style={}){const p=personPose(which,t,style.phase||0),{moon,x,foot,s,ox,appear,left,right,elbow,head,lean,stretch}=p;if(!appear)return;
+  const color=style.color||(moon?C.rose:C.blue),wash=moon?smooth(60.375,61.05,t):smooth(49.083,50.7,t);
   g.save();g.translate(x,foot+28*(1-appear));g.rotate(lean);g.scale(s,s*stretch);g.translate(-ox,-1200);g.globalAlpha=appear;
+  if(style.headOnly){joint(moon?994:332,290,head,()=>piece(which+'-head',moon?'#bdc9d3':C.gold,wash));g.restore();return}
   if(moon){joint(892,355,left,()=>piece('luna-arm-l',color,wash));joint(1089,358,right,()=>{piece('luna-upper',color,wash);joint(1100,512,elbow,()=>piece('luna-fore',color,wash))})}
   else {joint(426,349,right,()=>piece('sol-arm-r',color,wash));joint(230,344,left,()=>{piece('sol-upper',color,wash);joint(140,471,elbow,()=>piece('sol-fore',color,wash))})}
   piece(which+'-body',color,wash); // Torso covers shoulder seams; the front forearm remains independent.
@@ -100,7 +101,7 @@
  }
  function birds(t){if(t<64.666)return;for(let i=0;i<3;i++){
   const enter=smooth(64.666+i*.17,68.5+i*.12,t),landing=smooth(68.45,69.3,t),exit=smooth(75.292,76.6,t);
-  const ret=i===0?smooth(77.708,78.6,t):0,gone=exit*(1-ret),target=perch(i===1?'luna':'sol',i===0?0:1,t);
+  const ret=i===0?smooth(77.708,78.6,t):0,gone=Math.max(exit*(1-ret),smooth(80.1,81.5,t)),target=perch(i===1?'luna':'sol',i===0?0:1,t);
   const dir=i%2?-1:1,x=mix(210+i*670,target[0],enter)+gone*(i%2?440:-600);
   const y=mix(220+i*45,target[1],enter)-Math.sin(enter*Math.PI)*110-gone*460;
   // Source foot point (280,418), rather than the body centre, meets the living bough.
@@ -116,6 +117,7 @@
  stroke('M75 760Q480 746 960 761T1845 760',C.ink,2);rootNetwork(t)}
  function sky(){g.save();g.beginPath();g.rect(76,70,1768,690);g.clip();g.fillStyle=C.azure;g.fillRect(76,70,1768,690);g.globalAlpha=.12;g.drawImage(A.paper,0,0);g.globalAlpha=.37;
  for(let i=0;i<125;i++){let y=76+i*5.5;stroke(`M77 ${y}Q490 ${y-3} 966 ${y+1}T1844 ${y}`,C.ink,.7)}g.restore()}
+ A.scene={sky,ground,person,herald,bird,birds,roundel,woodyRoot,personPose,pulse};
  A.draw=(raw)=>{const frame=Math.round(raw*24),t=Math.floor(frame/2)/12;g.setTransform(1,0,0,1,0,0);g.globalAlpha=1;g.drawImage(A.paper,0,0);g.save();g.translate(960,540);const zoom=1+.032*smooth(47,79.5,raw);g.scale(zoom,zoom);g.translate(-960+2*Math.sin(raw*.14),-540);sky();
   // Rear cloud layer has its own slow parallax; paper-coloured silhouettes occlude the sky hatch.
   for(let i=0;i<5;i++)cloud(160+i*400+Math.sin(raw*.15+i)*22,140+(i%2)*-25,.72+(i%2)*.15,i%2?-1:1);
