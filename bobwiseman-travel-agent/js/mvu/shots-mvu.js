@@ -42,17 +42,29 @@ SU.mvu_dialFace = { mode: 'ill', f(q, p, a, T) {
   consC([[fx, fy, 330]]); consL([[0, fy, W, fy], [fx, 0, fx, H]]);
 } };
 
-// ---------- 252.02 the cinema screen opens onto the pixel world; he climbs in and turns to pixels ----------
+// ---------- 252.02 the cinema screen is a sepia print of the beach; he climbs in and turns to film ----------
+// (Robin on draft 7: cinema screens are projected film, not the pixel world. Von Ulrich stays in the thinking: the sun
+// as an emblem with a hatched burst behind it, square to the screen, and the man made of the medium he enters.)
+function cineBeach(sx, sy, sw, sh, T) {
+  const k = sw / 840, hz = sy + sh * .56, sand = sy + sh * .76;
+  fillP(PR(sx - 20, sy - 20, sw + 40, hz - sy + 20), '#f1e3c2'); hatch(PR(sx - 20, sy - 20, sw + 40, hz - sy + 20), sx + sw / 2, sy + sh * .3, sw * .7, -.9, 13 * k, '#b89a6a', 1.1, .4);
+  const sx0 = sx + sw * .74, sy0 = sy + sh * .3; ngoBurst(sx0, sy0, sh * .15, sh * .3, 22, pxStep(T, 6) * .03, '#e8c886', '#f3e2bc'); sunIll(sx0, sy0, sh * .12, '#e2b86a');
+  for (let i = 0; i < 4; i++) { const gx = sx + sw * ((.28 + i * .12 + T * .012 * (1 + i * .3)) % 1), gy = sy + sh * (.12 + (i % 2) * .08); X.beginPath(); X.moveTo(gx - 12 * k, gy - 6 * k); X.quadraticCurveTo(gx - 5 * k, gy - 9 * k, gx, gy); X.quadraticCurveTo(gx + 5 * k, gy - 9 * k, gx + 12 * k, gy - 6 * k); stroke(C.ink, 1.8, .9); }
+  for (let i = 0; i < 5; i++) { const y0 = hz + i * (sand - hz) / 5, band = PR(sx - 20, y0, sw + 40, (sand - hz) / 5 + 1); fillP(band, i % 2 ? '#9fb3ae' : '#b5c4bb'); hatch(band, sx + sw / 2, y0 + 8, sw * .7, .02, 5 * k, C.ink, .8, .35);
+    X.beginPath(); for (let x2 = sx - 20; x2 <= sx + sw + 20; x2 += 18 * k) { const yy = y0 + 4 + Math.sin(x2 * .05 / k + T * (1.2 + i * .4)) * 3 * k; x2 === sx - 20 ? X.moveTo(x2, yy) : X.lineTo(x2, yy); } stroke(C.ink, 1.2, .55); }
+  const sd = PR(sx - 20, sand, sw + 40, sy + sh - sand + 20); fillP(sd, '#e3cb98'); hatch(sd, sx + sw / 2, sand + 40, sw * .7, .1, 7 * k, C.ink, .8, .3); stipRect(sx, sand, sw, sy + sh - sand, 500, C.ink, .35, 2); iline(sx - 20, sand, sx + sw + 20, sand, C.ink, 1.8);
+  palm(sx + sw * .16, sy + sh * .9, .58 * k, { sway: Math.sin(T * 1.3) });
+}
 SU.mvu_cinema = { mode: 'ill', f(q, p, a, T) {
   stripes('#e2d2c4', '#d4bfae', 140, -.62, 0, C.plum); cam(1180, 520, lerp(1.12, 1.2, eo(p)));
-  const sx = 860, sy = 120, sw = 840, sh = 480, PW = 210, PH = 120;
+  const sx = 860, sy = 120, sw = 840, sh = 480;
   fillP(PR(sx - 50, sy - 50, 50, sh + 100), '#7a2a3a'); fillP(PR(sx + sw, sy - 50, 50, sh + 100), '#7a2a3a');
   hatch(PR(sx - 50, sy - 50, 50, sh + 100), sx - 25, sy + sh / 2, 320, 1.57, 8, C.ink, 1, .5); hatch(PR(sx + sw, sy - 50, 50, sh + 100), sx + sw + 25, sy + sh / 2, 320, 1.57, 8, C.ink, 1, .5);
   // his path: up over the seat backs, head first through the bottom edge of the screen, then on into the world
   const u = eo(cl(p * 1.15)), x = lerp(760, 1180, u), y = lerp(980, sy + sh * .9, u), s = lerp(1.0, .62, u);
-  const px = (x - sx) / sw * PW, py = (y - sy) / sh * PH, ps = 365 * s / 280;
-  const world = pixWorld('cine', PW, PH, (g, w, h) => { pxBeach(g, w, h, T); if (y - 360 * s < sy + sh) pxTraveller(g, px, py, ps, T, { walk: true, case: true, cloud: false }); });
-  blitPix(world, sx, sy, sw, sh); iBox(sx, sy, sw, sh, C.ink, 4);
+  // inside the frame he is on the print: same drawing, same place, sepia and weaving with the film
+  filmScreen(sx, sy, sw, sh, T, () => { cineBeach(sx, sy, sw, sh, T); if (y - 360 * s < sy + sh) traveller(x, y, s, { look: 1, legs: walkPh(), case: true, mouth: 0 }); }, { tone: 'sepia' });
+  iBox(sx, sy, sw, sh, C.ink, 4);
   for (let r2 = 0; r2 < 2; r2++) for (let i = 0; i < 9; i++) { const x2 = 420 + i * 200 + r2 * 60, y2 = 700 + r2 * 120, st = PP([[x2, y2], [x2 + 170, y2], [x2 + 180, y2 + 140], [x2 - 10, y2 + 140]]); fillP(st, '#8a3a3a'); shade(st, x2 + 85, y2 + 70, 110, [10, -10], .8, 5); iP([[x2, y2], [x2 + 170, y2], [x2 + 180, y2 + 140], [x2 - 10, y2 + 140]], true, C.ink, 2); }
   // the Ngo part of him is whatever is still on this side of the screen
   X.save(); const outside = new Path2D(); outside.rect(-W, -H, 3 * W, 3 * H); outside.rect(sx, sy, sw, sh); X.clip(outside, 'evenodd');

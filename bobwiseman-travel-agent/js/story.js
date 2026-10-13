@@ -251,3 +251,31 @@ function buildShots() {
     return { t0, t1, mode: su.mode, key, draw: (p, lt) => { const T = t0 + lt, q = cl((T - s0) / (s1 - s0)); TNOW = T; NOTES = T < 59 ? 0 : Math.round(lerp(2, 10, cl((T - 59) / 250))); CAMO = frame; su.f(q, p, args, T); if (post) post(q, p, T); CAMO = null; if (su.mode === 'ill' && key !== 'shopClosed' && key !== 'droste' && key !== 'e_droste' && key !== 'mvu_droste' && key !== 'e_fromInside' && T > LEAK_T0) { screen(); const lp = Math.pow(cl((T - LEAK_T0) / (LEAK_T1 - LEAK_T0)), 1.6); leak(key === 'snowSettle' ? 1 - eo(cl(p * 1.25)) : lp, LEAK_CLEAR[key]); } } };
   });
 }
+
+// ---------- projected film (Robin on draft 7: the cinema screens are FILM, not the pixel world) ----------
+// The screen content is drawn in the same Ngo hand as everything else, then treated as a print on a projector:
+// gate weave (the whole picture shifts a few px per drawing), one flat tone (sepia or silver; no gradients),
+// a flicker of the lamp, dust and hair that change every drawing, a couple of long scratches that run for a second,
+// hatched burn-off in the corners, and an optional cue dot. drawFn(sx, sy, sw, sh) draws the scene, unclipped by us
+// beyond the screen rect. o.tone: 'sepia' | 'silver'; o.base: the colour under the picture; o.cue: [t0, t1] pairs.
+function filmScreen(sx, sy, sw, sh, T, drawFn, o = {}) {
+  const tone = o.tone || 'sepia', r = M32(FD * 29 + 11), k = sw / 860;
+  X.save(); X.clip(PR(sx, sy, sw, sh));
+  fillP(PR(sx, sy, sw, sh), o.base || (tone === 'silver' ? '#2a2724' : '#e6d8b8'));
+  X.save(); X.translate((r() - .5) * 5 * k, (r() - .5) * 7 * k); drawFn(sx, sy, sw, sh); X.restore();
+  // one flat tone over the lot, keeping each mark's light and dark
+  X.globalCompositeOperation = 'color'; fillP(PR(sx, sy, sw, sh), tone === 'silver' ? '#8a8884' : '#a4794a');
+  X.globalCompositeOperation = 'source-over';
+  fillP(PR(sx, sy, sw, sh), tone === 'silver' ? '#f2eee4' : '#f4e6c4', .04 + r() * .07);   // the lamp breathing
+  // burn-off: the corners fall away in hatching, as the beam does on old prints
+  X.save(); const vg = new Path2D(); vg.rect(sx, sy, sw, sh); vg.addPath(PE(sx + sw / 2, sy + sh / 2, sw * .6, sh * .66)); X.clip(vg, 'evenodd');
+  hatch(PR(sx, sy, sw, sh), sx + sw / 2, sy + sh / 2, sw * .8, .7, 7 * k, C.ink, 1.1, .5); hatch(PR(sx, sy, sw, sh), sx + sw / 2, sy + sh / 2, sw * .8, -.7, 9 * k, C.ink, 1, .3); X.restore();
+  // scratches: each lives about a second, wandering a little; the hair and dust change every drawing
+  const sec = Math.floor(T); for (let i = 0; i < 2; i++) { const rs = M32(sec * 7 + i * 131), xx = sx + rs() * sw, wob = (r() - .5) * 3;
+    if (rs() < .7) { X.beginPath(); X.moveTo(xx + wob, sy); X.bezierCurveTo(xx + wob + 4, sy + sh * .3, xx - 3, sy + sh * .7, xx + wob, sy + sh); stroke(tone === 'silver' ? '#eeeae0' : C.cream, 1.4, .55); } }
+  for (let i = 0; i < 9; i++) { const dx = sx + r() * sw, dy = sy + r() * sh, d = (1 + r() * 3.5) * k; fillP(PE(dx, dy, d, d * (.6 + r() * .6), r() * 3), r() < .6 ? C.ink : C.cream, .7); }
+  if (r() < .5) { const hx = sx + r() * sw, hy = sy + r() * sh; X.beginPath(); X.moveTo(hx, hy); X.bezierCurveTo(hx + 20 * k, hy - 14 * k, hx + 34 * k, hy + 18 * k, hx + 52 * k, hy + 4 * k); stroke(C.ink, 1.2, .6); }
+  // a cue dot top right, a ring with a dark core, only on the times given
+  for (const [c0, c1] of (o.cue || [])) if (T >= c0 && T < c1) { const cx = sx + sw * .91, cy = sy + sh * .1, cr = 16 * k; fillP(PE(cx, cy, cr, cr), C.ink, .85); iE(cx, cy, cr * 1.25, cr * 1.25, 0, C.cream, 2, .8, false); }
+  X.restore();
+}

@@ -547,30 +547,22 @@ function c_backView(x, y, s, noHat) { // him from behind in a seat: hat, back of
   for (const ex of [-31, 31]) { fillP(PE(ex, -114, 6, 11), '#efd9b9'); iE(ex, -114, 6, 11, 0, C.ink, 1.6 * k); }
   X.restore(); if (!noHat) c_hat(x, y - 140 * s, s);
 }
-// the movie: the flight he missed, climbing away in sepia; then a small pixel sun burns through the film where the
-// beach's sun will be (screen-relative .74, .3, as in mvu_cinema): the world behind the glass glints before it opens
+// the movie: the flight he missed, climbing away on an old sepia print; then the sun comes up on the film where the
+// beach's sun will be (screen-relative .74, .3, as in mvu_cinema), so the film he climbs into is already rising
 function c_filmSky(sx, sy, sw, sh, zs, p, T) {
-  const k = sw / 860; X.save(); X.clip(PR(sx, sy, sw, sh));
-  fillP(PR(sx, sy, sw, sh), '#efe4cc'); hatch(PR(sx, sy, sw, sh), sx + sw / 2, sy + sh / 2, sw, -.9, 12 * k, '#b89a6a', 1.2, .45);
-  const hz = sy + sh * .8, fd = PR(sx, hz, sw, sh * .2); fillP(fd, '#d8c49c'); hatch(fd, sx + sw / 2, hz + sh * .1, sw, .05, 6 * k, C.ink, .8, .4); iline(sx, hz, sx + sw, hz, C.ink, 1.6);
+  const k = sw / 860;
+  fillP(PR(sx - 20, sy - 20, sw + 40, sh + 40), '#efe4cc'); hatch(PR(sx - 20, sy - 20, sw + 40, sh + 40), sx + sw / 2, sy + sh / 2, sw, -.9, 12 * k, '#b89a6a', 1.2, .45);
+  const gl2 = eo(seg(p, .4, 1)); if (gl2 > 0) { const r0 = 64 * k * gl2, cx = sx + sw * .74, cy = sy + sh * (.42 - .12 * gl2); sunIll(cx, cy, r0, '#e8c27a'); }
+  const hz = sy + sh * .8, fd = PR(sx - 20, hz, sw + 40, sh * .2 + 20); fillP(fd, '#d8c49c'); hatch(fd, sx + sw / 2, hz + sh * .1, sw, .05, 6 * k, C.ink, .8, .4); iline(sx - 20, hz, sx + sw + 20, hz, C.ink, 1.6);
   for (let i = 0; i < 3; i++) { const cx = sx + sw * ((i * .37 + .1 + T * .01) % 1), cy = sy + sh * (.18 + i * .16); const cl2 = new Path2D(); for (const [dx, r] of [[-30, 22], [0, 30], [32, 20]]) cl2.addPath(PE(cx + dx * k, cy, r * k, r * .7 * k)); fillP(cl2, '#d9c8a6'); hatch(cl2, cx, cy, 60 * k, .6, 4 * k, C.ink, .7, .45); }
   plane(sx + sw * lerp(.12, .6, p), sy + sh * lerp(.66, .36, p), .36 * k, -.32);
-  const r = M32(FD * 13 + 5); X.beginPath(); for (let i = 0; i < 5; i++) { const xx = sx + r() * sw; X.moveTo(xx, sy); X.lineTo(xx + (r() - .5) * 8, sy + sh); } stroke(C.cream, 1.2, .55);
-  fillP(PE(sx + r() * sw, sy + r() * sh, 3, 3), C.ink, .6);
-  X.restore();
-}
-function c_glint(sx, sy, sw, sh, zs, p, T) {
-  const gl2 = eo(seg(p, .4, 1)); if (gl2 > 0) {
-    const st = pxStep(T), S = 112 * zs, glint = pixWorld('c_glint', 28, 28, (g, w, h) => { pBurst(g, 14, 14, 3 + 3 * gl2, 5 + 8 * gl2, 14, st * .07, PX.y, PX.o); pRings(g, 14, 14, [3 + 2.6 * gl2, 2 + 1.6 * gl2, 1 + .8 * gl2], [PX.r, PX.o, PX.y]); });
-    blitPix(glint, sx + sw * .74 - S / 2, sy + sh * .3 - S / 2, S, S);
-  }
 }
 SU.c_seatsStretch = { mode: 'ill', f(q, p, a, T) {
   stripes('#dccbbf', '#cdb6a8', 140, -.62, 0, C.plum); cam(960, 540, 1);
   const zs = lerp(1, .5, eo(p)), sw = 860 * zs, sh = 470 * zs, sx = 960 - sw / 2, sy = 300 - sh / 2;
   fillP(PR(sx - 60 * zs, sy - 50 * zs, 60 * zs, sh + 100 * zs), '#7a2a3a'); fillP(PR(sx + sw, sy - 50 * zs, 60 * zs, sh + 100 * zs), '#7a2a3a');
   hatch(PR(sx - 60 * zs, sy - 50 * zs, 60 * zs, sh + 100 * zs), sx - 30 * zs, sy + sh / 2, sh, 1.57, 7, C.ink, 1, .55); hatch(PR(sx + sw, sy - 50 * zs, 60 * zs, sh + 100 * zs), sx + sw + 30 * zs, sy + sh / 2, sh, 1.57, 7, C.ink, 1, .55);
-  c_filmSky(sx, sy, sw, sh, zs, p, T); hatch(PR(sx, sy, sw, sh), 960, sy + sh / 2, sw, .7, 14, C.cream, 3, .3); c_glint(sx, sy, sw, sh, zs, p, T); iBox(sx, sy, sw, sh, C.ink, 3);
+  filmScreen(sx, sy, sw, sh, T, () => c_filmSky(sx, sy, sw, sh, zs, p, T), { tone: 'sepia' }); hatch(PR(sx, sy, sw, sh), 960, sy + sh / 2, sw, .7, 14, C.cream, 3, .3); iBox(sx, sy, sw, sh, C.ink, 3);
   X.save(); for (let i = 0; i < 22; i++) { const t = i / 21; X.beginPath(); X.moveTo(960 + (t - .5) * 160, -60); X.lineTo(sx + t * sw, sy + sh); stroke(C.cream, 2, .35); } X.restore();
   const floorY = sy + sh + 30 * zs; fillP(PR(-200, floorY, W + 400, H), '#a8735a'); hatch(PR(-200, floorY, W + 400, H), 960, 900, 1300, .1, 7, C.ink, .8, .35);
   // rows: more of them each second, packed toward the retreating screen
@@ -611,7 +603,7 @@ SU.c_reelSpill = { mode: 'ill', f(q, p, a, T) {
 } };
 
 // ---------- 268.78-276.0 "but the crooks are real", one continuous shot, square-on to the screen (no seats).
-// The movie is the world behind the glass now: three pixel crooks on a night street. On "crooks" the outer two step
+// The movie is an old silver print now: three crooks on a night street. On "crooks" the outer two step
 // out of the film and are drawn men, standing either side of him like brackets; on "real" the middle one's arm comes
 // out of the screen and lifts his hat. Then it lets go, and the hat drops back onto his head (into act D he has it).
 // One costume on screen and off: dark pinstripe coat, black hat, a bandit's mask. ----------
@@ -630,45 +622,47 @@ function c_crook(x, y, s, o = {}) { // the traveller's build in the crooks' cost
   const mk = PP([[lk - 30, -318], [lk + 30, -318], [lk + 27, -302], [lk - 27, -302]]); fillP(mk, '#16110f'); for (const ex of [-9, 9]) fillP(PE(lk + ex + lk * .4, -310, 3.4, 3), C.cream);
   X.restore(); c_darkHat(x + lk * s, y - 330 * s, s);
 }
-function c_pxCrook(g, x, y, s, T, o = {}) { // the same crook behind the glass
-  const st = pxStep(T), a2 = o.walk ? (st % 2 ? 3 : -3) : 0;
-  const parts = [[-6 + a2 * .3, -18, 4, 18], [2 - a2 * .3, -18, 4, 18]];
-  if (o.hole) { for (const [dx, dy, w, h] of [[-12, -46, 24, 30], [-7, -60, 14, 14], [-12, -64, 24, 4], [-7, -72, 14, 8], [-6, -18, 12, 18]]) pR(g, x + (dx - 1) * s, y + (dy - 1) * s, (w + 2) * s, (h + 2) * s, PX.w);
-    for (const [dx, dy, w, h] of [[-12, -46, 24, 30], [-7, -60, 14, 14], [-12, -64, 24, 4], [-7, -72, 14, 8], [-6, -18, 12, 18]]) pR(g, x + dx * s, y + dy * s, w * s, h * s, PX.k); return; }
-  for (const [dx, dy, w, h] of parts) pR(g, x + dx * s, y + dy * s, w * s, h * s, PX.k);
-  pP(g, [[x - 10 * s, y - 47 * s], [x + 10 * s, y - 47 * s], [x + 13 * s, y - 15 * s], [x - 13 * s, y - 15 * s]], PX.b); pP(g, [[x - 9 * s, y - 46 * s], [x + 9 * s, y - 46 * s], [x + 12 * s, y - 16 * s], [x - 12 * s, y - 16 * s]], PX.k);
-  for (let i = -3; i <= 3; i++) pR(g, x + i * 3 * s, y - 44 * s, 1, 27 * s, PX.w);
-  pR(g, x - 6 * s, y - 60 * s, 12 * s, 14 * s, PX.f); pR(g, x - 7 * s, y - 56 * s, 14 * s, 4 * s, PX.k); pR(g, x - 3.5 * s, y - 55 * s, 1.4 * s, 1.4 * s, PX.w); pR(g, x + 2.5 * s, y - 55 * s, 1.4 * s, 1.4 * s, PX.w);
-  pR(g, x - 12 * s, y - 64 * s, 24 * s, 3 * s, PX.k); pR(g, x - 7 * s, y - 72 * s, 12 * s, 8 * s, PX.k); pR(g, x - 13 * s, y - 65 * s, 26 * s, 1.5 * s, PX.b); pR(g, x - 7 * s, y - 66 * s, 12 * s, 1.5 * s, PX.n);
-  if (o.reach) { pR(g, x + 6 * s, y - 44 * s, 6 * s, 14 * s, PX.w); pR(g, x + 7 * s, y - 43 * s, 4 * s, 12 * s, PX.k); pR(g, x + 6 * s, y - 31 * s, 6 * s, 4 * s, PX.w); }
-  else { pL(g, [[x - 10 * s, y - 42 * s], [x - 13 * s, y - 20 * s]], PX.b, 3 * s); pL(g, [[x + 10 * s, y - 42 * s], [x + 13 * s, y - 20 * s]], PX.b, 3 * s); }
-}
-function c_pxStreet(g, w, h, T, holes, reach) { // a night street behind the glass; holes = which outer crooks have stepped out
-  const st = pxStep(T); pR(g, 0, 0, w, h, PX.k); pDots(g, 1, 1, w, h * .6, 4, PX.n, 2);
-  pC(g, w * .86, h * .2, 9, PX.f); pC(g, w * .86 + 3, h * .2 - 2, 7, PX.k);
-  for (let i = 0; i < 9; i++) { const bx = i * w / 9, bh = h * (.3 + ((i * 37) % 5) * .06); pR(g, bx, h * .78 - bh, w / 9 - 2, bh, i % 2 ? PX.n : PX.b); for (let r = 0; r < 5; r++) for (let c = 0; c < 3; c++) if ((i * 7 + r * 3 + c + (st >> 2)) % 5 === 0) pR(g, bx + 4 + c * 8, h * .78 - bh + 5 + r * 9, 3, 4, PX.y); }
-  pR(g, 0, h * .78, w, h * .22, PX.u); pZig(g, 0, h * .8, w, 1, 6, PX.o, 1, st); pDots(g, 0, h * .84, w, h * .16, 3, PX.k, 1);
-  const s = 1.2, fy = h * .9; c_pxCrook(g, w * .28, fy, s, T, { hole: holes[0] }); c_pxCrook(g, w * .72, fy, s, T, { hole: holes[1] }); c_pxCrook(g, w * .5, fy, s, T, { reach });
+// the movie behind them: a night street on a silver print, square to the screen (Von Ulrich's frontal emblem framing:
+// the moon centred over the middle crook, the street running straight back between mirrored buildings, a lamp each side)
+function c_noirStreet(sx, sy, sw, sh, T, gone, reach) {
+  const cx = sx + sw / 2, hz = sy + sh * .64, k = sw / 1320;
+  const sky = PR(sx - 20, sy - 20, sw + 40, hz - sy + 20); fillP(sky, '#3b3632'); hatch(sky, cx, sy + sh * .3, sw * .7, .7, 9 * k, C.ink, 1, .55); hatch(sky, cx, sy + sh * .3, sw * .7, -.7, 12 * k, C.ink, .9, .35);
+  const my = sy + sh * .17; fillP(PE(cx, my, 54 * k, 54 * k), '#ece6d6'); hatch(PE(cx, my, 54 * k, 54 * k), cx, my, 54 * k, .8, 5 * k, C.ink, .9, .5, [16 * k, -10 * k]); iE(cx, my, 54 * k, 54 * k, 0, C.ink, 2);
+  for (let i = 0; i < 3; i++) gc(cx, my, 80 * k + i * 26 * k, '#ece6d6', .35 - i * .1, 1.6);
+  // the buildings, mirrored about the centre line, with a few lit windows that change on the beat of the drawings
+  for (const sd of [-1, 1]) for (let i = 0; i < 5; i++) { const bw = 132 * k, x0 = cx + sd * (110 * k + i * bw) - (sd < 0 ? bw : 0), bh = sh * (.2 + ((i * 37) % 5) * .055 + i * .03), y0 = hz - bh, bp = PR(x0, y0, bw - 6 * k, bh);
+    fillP(bp, i % 2 ? '#57504a' : '#4a443f'); hatch(bp, x0 + bw / 2, y0 + bh / 2, bh, sd * .9, 6 * k, C.ink, .9, .5, [sd * 14 * k, 0]); iP(dens([[x0, hz], [x0, y0], [x0 + bw - 6 * k, y0], [x0 + bw - 6 * k, hz]], 30), false, C.ink, 1.6);
+    for (let r = 0; r < 6; r++) for (let c = 0; c < 3; c++) { const wy = y0 + 14 * k + r * 26 * k; if (wy > hz - 18 * k) continue; if ((i * 7 + r * 3 + c + (sd > 0 ? 1 : 0) + (FD >> 4)) % 4 === 0) fillP(PR(x0 + 16 * k + c * 36 * k, wy, 16 * k, 14 * k), '#efe4c8', .9); } }
+  // the street, one-point, straight back to the centre
+  const st = PP([[cx - 26 * k, hz], [cx + 26 * k, hz], [sx + sw + 200, sy + sh + 20], [sx - 200, sy + sh + 20]]); fillP(st, '#6b645c'); hatch(st, cx, sy + sh * .85, sw * .6, .03, 6 * k, C.ink, .8, .4);
+  const pv = PR(sx - 20, hz, sw + 40, sy + sh - hz + 20); X.save(); X.clip(pv); for (const sd of [-1, 1]) { const sw2 = PP([[cx + sd * 26 * k, hz], [cx + sd * 60 * k, hz], [cx + sd * (sw * .5 + 260), sy + sh + 20], [cx + sd * (sw * .5 + 200), sy + sh + 20]]); fillP(sw2, '#8a8278'); hatch(sw2, cx + sd * sw * .3, sy + sh * .85, sw * .4, sd * 1.2, 7 * k, C.ink, .8, .4); } X.restore();
+  iline(cx - 26 * k, hz, sx - 200, sy + sh + 20, C.ink, 1.8); iline(cx + 26 * k, hz, sx + sw + 200, sy + sh + 20, C.ink, 1.8);
+  for (let i = 0; i < 6; i++) { const t = Math.pow((i + ((T * .8) % 1)) / 6, 2), y2 = lerp(hz, sy + sh, t), w2 = lerp(2, 18, t) * k; fillP(PR(cx - w2 / 2, y2, w2, lerp(3, 30, t) * k), '#d9d2c2', .8); }
+  // a lamp each side, its light a hatched cone (no gradient)
+  for (const sd of [-1, 1]) { const lx = cx + sd * sw * .4, ly = sy + sh * .3; iline(lx, ly, lx, sy + sh * .92, C.ink, 4); fillP(PE(lx, ly, 14 * k, 10 * k), '#f3ecd8'); iE(lx, ly, 14 * k, 10 * k, 0, C.ink, 1.6);
+    const cone = PP([[lx - 10 * k, ly + 8 * k], [lx + 10 * k, ly + 8 * k], [lx + 120 * k, sy + sh * .92], [lx - 120 * k, sy + sh * .92]]); fillP(cone, '#efe6cf', .22); hatch(cone, lx, sy + sh * .6, sh * .4, 1.57, 8 * k, '#efe6cf', 1, .35); }
+  // the three of them on the print; the outer two leave it (they are drawn men in the room now), the middle one reaches out
+  const fy = sy + sh * .9; if (!gone[0]) c_crook(sx + sw * .28, fy, 1.15); if (!gone[1]) c_crook(sx + sw * .72, fy, 1.15);
+  c_crook(cx, fy, 1.15); // his hanging hand is where the drawn arm comes out of the screen (ox, oy below)
 }
 SU.c_crookReal = { mode: 'ill', f(q, p, a, T) {
   stripes('#e2d2c4', '#d4bfae', 140, -.62, 0, C.plum); cam(960, 540, lerp(1, 1.03, eo(p)));
-  const sx = 300, sy = 40, sw = 1320, sh = 660, PW = 264, PH = 132;
+  const sx = 300, sy = 40, sw = 1320, sh = 660;
   for (const cx0 of [sx - 80, sx + sw]) { const cu = PR(cx0, sy - 80, 80, sh + 150); fillP(cu, '#7a2a3a'); hatch(cu, cx0 + 40, sy + sh / 2, sh, 1.57, 8, C.ink, 1, .5); X.beginPath(); for (let i = 1; i < 4; i++) { X.moveTo(cx0 + i * 20, sy - 80); X.lineTo(cx0 + i * 20 + Math.sin(i) * 6, sy + sh + 70); } stroke(C.ink, 1.4, .6); }
   const stg = PR(-200, sy + sh, W + 400, 80); fillP(stg, '#5a3a22'); hatch(stg, 960, sy + sh + 40, 1200, .05, 6, C.ink, .9, .5); iline(-200, sy + sh + 80, W + 200, sy + sh + 80, C.ink, 2.4);
   const e1 = eo(seg(T, 270.42, 271.05)), e2 = eo(seg(T, 270.74, 271.37)), reach = eo(seg(T, 271.8, 272.45)), lift = eo(seg(T, 272.45, 273.15)), back = eo(seg(T, 274.8, 275.9)); // assembler: the crook KEEPS the hat and pulls it back into the screen; act D drops it back onto his head on camera at ~278
   const armOut = T >= 271.8 && back < 1;
-  const scr = pixWorld('c_crooks', PW, PH, (g, w, h) => c_pxStreet(g, w, h, T, [e1 > 0, e2 > 0], armOut));
-  blitPix(scr, sx, sy, sw, sh); iBox(sx, sy, sw, sh, C.ink, 4);
+  filmScreen(sx, sy, sw, sh, T, () => c_noirStreet(sx, sy, sw, sh, T, [e1 > 0, e2 > 0], armOut), { tone: 'silver', cue: [[275.5, 275.75]] }); iBox(sx, sy, sw, sh, C.ink, 4);
   for (let i = 0; i < 3; i++) gc(960, sy + sh / 2, 700 + i * 40 + ((FD * 6) % 40), C.orange, .3, 1.6, null, Math.PI * 1.1, Math.PI * 1.9);
   // the two that step out, drawn now, growing as they come forward to flank him
-  const fy0 = sy + PH * .9 * (sh / PH);
+  const fy0 = sy + sh * .9;
   for (const [e, side, x0] of [[e1, -1, sx + sw * .28], [e2, 1, sx + sw * .72]]) { if (e <= 0) continue;
     if (e < .6) for (let i = 0; i < 4; i++) iE(x0, fy0 - 210, 90 + i * 34 + e * 120, 230 + i * 30 + e * 120, 0, i % 2 ? C.orange : C.ink, 1.8, (.8 - i * .15) * (1 - e / .6), false);
     c_crook(lerp(x0, 960 + side * 560, e), lerp(fy0, 1270, e), lerp(1.15, 2.2, e), { look: -side, legs: e < 1 ? walkPh() : null, armL: [.2, -.1], armR: [-.1, .2] }); }
   // him from behind, front and centre
   c_backView(960, 1150, 2.5, true); cloud(700, 690, .42, { rain: true });
   // the middle crook's arm: out through the screen, down to the hat, up with it, then back in without it
-  const ox = 990, oy = 430, onHead = [960, 800], up = [1015, 560];
+  const ox = 990, oy = 486, onHead = [960, 800], up = [1015, 560];
   let hand = [ox, oy]; if (armOut) { if (T < 272.45) hand = [lerp(ox, onHead[0] + 10, reach), lerp(oy, onHead[1] - 40, reach)]; else if (T < 274.5) hand = [lerp(onHead[0] + 10, up[0], lift), lerp(onHead[1] - 40, up[1], lift)]; else hand = [lerp(up[0], ox, back), lerp(up[1], oy, back)]; }
   if (armOut && Math.hypot(hand[0] - ox, hand[1] - oy) > 8) {
     const el = [lerp(ox, hand[0], .5) + 110, lerp(oy, hand[1], .5) - 10];
@@ -706,11 +700,11 @@ var CUTS_C = [
   [239.3, 'c_lifebuoy', {}],
   [242.3, 'c_stairs', {}],                    // the boarding stairs keep growing; the plane climbs away
   [244.9, 'sPlaneW', {}],
-  [247.3, 'c_seatsStretch', {}],              // "I'm watching this movie": the film is the plane he missed; a pixel sun glints through
+  [247.3, 'c_seatsStretch', {}],              // "I'm watching this movie": the film is the plane he missed; the sun comes up on the print
   [250.02, 'sProjector', {}],                 // "movie" (nudged onto its onset)
   [252.02, 'mvu_cinema', {}],                 // LOCKED
   [256.7, 'c_reelSpill', {}],
   [262.64, 'f_heroFlat', {}],
   [266.7, 'sFilm', {}],
-  [268.78, 'c_crookReal', {}],                // one continuous shot to 276.0: pixel crooks step out of the screen as drawn men; the hat comes back
+  [268.78, 'c_crookReal', {}],                // one continuous shot to 276.0: crooks on film step out of the screen as drawn men; the hat comes back
 ];
