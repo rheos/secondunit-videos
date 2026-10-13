@@ -19,6 +19,32 @@ window.__woodReady = Promise.all(W_PIECES.map((n) => new Promise((res) => {
   const im = new Image(); im.onload = () => { WP[n] = im; res(); }; im.onerror = () => { console.error('missing assets/wood/' + n + '.png'); res(); }; im.src = 'assets/wood/' + n + '.png';
 })));
 
+// ---------- faces: every drawn head reports its box, so the lyric labels (js/lyrics.js) can keep off them ----------
+// FACES holds this frame's head boxes in design px [x0, y0, x1, y1] (js/lyrics.js reads and clears it after the shot);
+// under a motion-lab audit each one is also probed as 'face'. Boxes are generous: hair, hats and brims included.
+const FACES = [], SIGNS = [];
+let _faceOff = 0;                                                   // >0 while a figure is drawn on an offscreen canvas
+function _boxOnScreen(x, y, w, h) {
+  const m = s.getTransform(), k = 1 / RS;
+  const P = [[x, y], [x + w, y], [x, y + h], [x + w, y + h]].map(([a, b]) => [(m.a * a + m.c * b + m.e) * k, (m.b * a + m.d * b + m.f) * k]);
+  const xs = P.map((p) => p[0]), ys = P.map((p) => p[1]);
+  return [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)];
+}
+function faceBox(x, y, w, h) {                                      // local coords, under the current transform of s
+  if (_faceOff) return;
+  FACES.push(_boxOnScreen(x, y, w, h));
+  if (typeof ML !== 'undefined' && ML.probe.on) ML.probe.box(s, 'face', x, y, w, h);
+}
+function signBox(x, y, w, h) { if (!_faceOff) SIGNS.push(_boxOnScreen(x, y, w, h)); }
+// face regions of the carved pieces, fractions of the whole piece [x0, y0, x1, y1] (read off the carvings 2026-10-13)
+const PIECE_FACES = {
+  'bob-1989': [[.15, 0, .65, .27]], 'jimi-helsinki': [[.18, .08, .62, .34]], 'jimi-1968': [[.4, 0, 1, .2]], 'mj-1984': [[.33, 0, .75, .22]],
+  beyonce: [[.28, 0, .75, .27]], pixies: [[.08, 0, .27, .27], [.27, 0, .47, .25], [.62, 0, .82, .28], [.78, .03, .97, .32]],
+  ellen: [[.15, 0, .62, .22]], muddy: [[.3, 0, .82, .42]], hopkins: [[0, 0, .95, .42]], richard: [[.05, 0, .95, .95]], joplin: [[0, 0, .6, .37]],
+  berry: [[.08, 0, .5, .27]], tharpe: [[.03, 0, .42, .22]], spann: [[0, 0, 1, .6]], lauper: [[.25, 0, 1, .27]], springsteen: [[.2, .08, .6, .37]],
+  prince: [[.65, 0, .97, .22]], madonna: [[0, 0, .42, .27]], bowie: [[.28, 0, .8, .28]], boygeorge: [[0, 0, 1, .17]], byrne: [[.2, 0, .7, .24]],
+};
+
 // draw piece n with its anchor (ax, ay: fractions of the piece) at (x, y), h px tall; optional source crop
 // [sx, sy, sw, sh] in fractions of the piece (e.g. Jimi's head only), rot, flip (mirror), alpha (ghost)
 function put(n, x, y, h, o = {}) {
@@ -27,7 +53,12 @@ function put(n, x, y, h, o = {}) {
   const [cx, cy, cw, ch] = crop || [0, 0, 1, 1];
   const sw = im.width * cw, sh = im.height * ch, w = h * sw / sh;
   withT(() => { s.globalAlpha = alpha; s.translate(x, y); s.rotate(rot); s.scale(flip ? -1 : 1, 1);
-    s.drawImage(im, im.width * cx, im.height * cy, sw, sh, -w * ax, -h * ay, w, h); });
+    s.drawImage(im, im.width * cx, im.height * cy, sw, sh, -w * ax, -h * ay, w, h);
+    for (const [f0, g0, f1, g1] of PIECE_FACES[n] || []) {          // the face, mapped through the crop
+      const u0 = Math.max(0, (f0 - cx) / cw), u1 = Math.min(1, (f1 - cx) / cw), v0 = Math.max(0, (g0 - cy) / ch), v1 = Math.min(1, (g1 - cy) / ch);
+      if (u1 > u0 && v1 > v0) faceBox(-w * ax + u0 * w, -h * ay + v0 * h, (u1 - u0) * w, (v1 - v0) * h);
+    }
+  });
 }
 
 // ---------- carved type: chunky letters, edges roughened by the print ----------
@@ -35,6 +66,7 @@ function carveText(str, x, y, size, c = INK, o = {}) {
   const { align = 'center', font = 'Superclarendon', weight = '900', w = null, rot = 0 } = o;
   withT(() => { s.translate(x, y); s.rotate(rot); s.font = `${weight} ${size}px "${font}"`; s.textAlign = align; s.textBaseline = 'middle';
     if (w) { const m = s.measureText(str).width; s.scale(w / m, 1); }
+    { const m = s.measureText(str); const a = align === 'center' ? m.width / 2 : align === 'right' ? m.width : 0; signBox(-a, -size * .45, m.width, size * .9); }
     s.fillStyle = c; s.fillText(str, 0, 0); });
 }
 
@@ -49,6 +81,7 @@ function ellenRaw(x, y, k, o = {}) {
   const { pose = 'stand', t = 0, wind = 0, facing = 1, slide = .5, eyes = 'open', smile = 0, case_ = true } = o;
   withT(() => {
     s.translate(x, y); s.scale(k * facing, k);
+    faceBox(-50, -560, 102, 148);                                   // head, fringe and chin (walk bob included)
     const ph = t * 6.5, st = pose === 'walk' ? Math.sin(ph) : 0, bob = pose === 'walk' ? -Math.abs(Math.cos(ph)) * 7 : 0;
     s.translate(0, bob);
     const sway = Math.sin(t * 1.6) * 5 * (1 - wind) + wind * (Math.sin(t * 9.3) * 14 + Math.sin(t * 5.1) * 8), W_ = wind;   // in full wind the mane whips, it never freezes
@@ -148,7 +181,8 @@ function ellen(x, y, k, o = {}) {
   for (const key of ['a', 'b']) { if (!_E[key] || _E[key].width < bw || _E[key].height < bh) { _E[key] = document.createElement('canvas'); _E[key].width = bw; _E[key].height = bh; } }
   const A = _E.a, B = _E.b, ga = A.getContext('2d'), gb = B.getContext('2d');
   ga.setTransform(1, 0, 0, 1, 0, 0); ga.clearRect(0, 0, A.width, A.height); gb.setTransform(1, 0, 0, 1, 0, 0); gb.clearRect(0, 0, B.width, B.height);
-  const keep = s; s = ga; try { ellenRaw(ox, oy, k, o); } finally { s = keep; }
+  withT(() => { s.translate(x, y); s.scale(k * (o.facing ?? 1), k); faceBox(-50, -560, 102, 148); });
+  const keep = s; s = ga; _faceOff++; try { ellenRaw(ox, oy, k, o); } finally { s = keep; _faceOff--; }
   gb.drawImage(A, 0, 0); gb.globalCompositeOperation = 'source-in'; gb.fillStyle = CUT; gb.fillRect(0, 0, B.width, B.height); gb.globalCompositeOperation = 'source-over';
   withT(() => { for (let i = 0; i < 12; i++) { const a2 = i / 12 * TAU; s.drawImage(B, x - ox + Math.cos(a2) * ew, y - oy + Math.sin(a2) * ew); } s.drawImage(A, x - ox, y - oy); });
 }
@@ -189,6 +223,7 @@ function kid(x, y, k, o = {}) {
   const { asleep = false, t = 0, seed = 1, letter = null, cry = false } = o;
   withT(() => { s.translate(x, y); s.scale(k, k);
     if (cry) { const sob = Math.sin(t * 22 + seed * 1.7); s.translate(sob * 2.5, Math.abs(sob) * -3); }
+    faceBox(-40, -234, 80, 90);
     const body = () => pathOf(chisel([[-34, -150], [34, -150], [40, 0], [-40, 0]], seed, 3));
     shape(body, CUT, 5); clipTo(body, () => rows(-40, -150, 40, 0, Math.PI / 2, 16, () => 7));
     const hd = () => { s.beginPath(); s.ellipse(0, -186, 32, 36, 0, 0, TAU); }; shape(hd, CUT, 5);
