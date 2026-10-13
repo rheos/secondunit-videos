@@ -71,7 +71,7 @@ gh workflow run cloud-render.yml --repo $REPO ${CR_REF:+--ref=$CR_REF} -f crf=$c
   -f frames=$frames -f slices=$slices -f fps=$fps -f width=$width -f height=$height
 run=""
 for i in {1..30}; do
-  run=$(gh run list --repo $REPO --workflow cloud-render.yml --limit 10 --json databaseId,displayTitle \
+  run=$(gh run list --repo $REPO --workflow cloud-render.yml ${CR_REF:+--branch=$CR_REF} --limit 10 --json databaseId,displayTitle \
     --jq ".[] | select(.displayTitle==\"cloud-render $label\") | .databaseId" | head -1)
   [[ -n $run ]] && break; sleep 2
 done
