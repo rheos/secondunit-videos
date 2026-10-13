@@ -7,26 +7,40 @@ Code-drawn music video, 0 credits. Started 2026-10-12 at Robin's request.
 - Timing: Whisper medium (`source/words-whisper-medium.json`) and librosa beats (`source/beats.json`), exported without lyric text to `js/data.js`. Bob's lyric sheet is still needed: no lyrics are printed on screen until it arrives, only diagram labels.
 - Audio, lyrics and `STORYBOARD.md` (it quotes them) stay out of git.
 
+## Status (2026-10-13)
+
+Draft 7 (draft 6 + the early-Mac pixel engine) on branch `travel-agent-6`, draft PR rheos/secondunit-videos#113.
+Draft 5 was merged as #103. The full handoff, rules and history are in `NEXT-SESSION.md` (gitignored, quotes lyrics);
+the art direction in `MVU-DIRECTION.md`; the draft 5 audit in `AUDIT-v5.md`.
+
 ## Look
 
-An educational field-guide short in two modes, cut hard every 1.2 to 2.5 s on the beat:
+An educational field-guide short in two modes, cut hard on the beat: **illustrated** (Kevin Ngo manner: cream paper with
+grain, irregular doubled ink, hatching only, muted warm palette, wide diagonal stripe grounds, construction lines, thin
+coloured motion arcs) and **schematic** (navy blueprint, pale linework, hex lattices, stipple, glowing nuclei, brackets,
+magenta for change). Drawn on twos; every mark is canvas code.
 
-- **Illustrated**: cream paper with grain, irregular doubled ink, shading by directional hatching only, flat muted warm palette, wide diagonal stripe grounds, construction lines running past the forms, thin coloured motion-graphic arcs.
-- **Schematic**: navy blueprint, pale lavender/cyan linework, hex lattices, stipple fills, glowing nuclei with radial ticks, brackets and ticks everywhere, magenta saved for change.
+Mark Von Ulrich, an illustrator Robin loves (he died about ten years ago), is guest art director from draft 6: his
+thinking shapes the drawn shots (device-as-body, frontal emblem framing, nesting, scale as meaning), and his world
+lives only inside device screens as early-Mac illustration (72-dpi stepped edges, the 216-colour cube with ordered
+dither, 1-px outlines, indigo gradient grounds). Schematics are never pixelated; none of his pieces is reproduced.
 
-Drawn on twos (each drawing held 2 frames, lines boil between drawings), grain changes every frame. Every mark is canvas code: no images, fonts or libraries.
-
-Concept: the life of a getaway. A deadpan traveller (fedora, teal coat, suitcase, a blues cloud that follows him; a generic figure, not Bob's likeness) asks a travel agent for the farthest place from his blues. Every route in the diagrams loops back to her desk, and the film ends where it began, at the shopfront, now in snow.
+Concept: the life of a getaway. A generic traveller (never Bob's likeness) with a rain cloud asks a travel agent for the
+farthest place from his blues. The world gets more surreal act by act; the agent becomes a payphone, a hold queue, an
+app, then a woman inside his phone; the blueprint burns through the paper in the last third; the snow heals it and the
+film ends at the closed agency, FOR LEASE, with little Bob passing.
 
 ## Files
 
-- `js/kit.js` drawing primitives for both modes, grain, dressing layers
-- `js/props.js` cast and props (traveller, agent, desk, globe, plane, cloud, sun, palm, ticket, suitcase)
-- `js/shots.js` ~30 set-ups (illustrated + schematic) and the section/cut list (`SECS`, `buildShots`)
+- `looks/film.html` the film; `looks/test-act-<x>.html` one act each; `looks/mvu.html` the look-test page
+- `js/kit.js js/props.js js/shots.js js/surreal.js js/symbols.js js/story.js` shared drawing, cast, older set-ups,
+  the burn-through, the colour arc, overlays and the shot builder
+- `js/acts/act-a.js .. act-e.js` the five acts (cut lists + set-ups), `js/acts/act-fix.js` shared replacements
+- `js/mvu/pixel.js` the screen-world engine, `js/mvu/shots-mvu.js` the signed-off Von Ulrich shots
 - `js/main.js` frame driver: `window.__frameJPEG(t)`, held drawings on twos, preview player
-- `looks/film.html` the page; open it in a browser to play with the song (click), arrows scrub, `?t=SECONDS`
 
 ## Running
 
-`PAGE=looks/film.html node check.mjs out/sheet.jpg t1 t2 ...` for a contact sheet.
-`PAGE=looks/film.html node render.mjs 0 403.4 out/<name>.mp4 4 24 0.6667` for the 720p draft (always on the song grid).
+`PAGE=looks/film.html node check.mjs out/sheet.jpg t1 t2 ...` for a contact sheet. Drafts render on GitHub with
+`tools/cloud-render/cloud-render.sh --draft` (see NEXT-SESSION.md for the recipe); short tests locally with
+`PAGE=looks/film.html node render.mjs t0 t1 out/<name>.mp4 4 24 0.6667`.
