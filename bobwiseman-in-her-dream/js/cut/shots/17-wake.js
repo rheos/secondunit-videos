@@ -1,8 +1,12 @@
-// 268.4-300.1 (outro; "In her dream" ~276.2, again ~284-291). The WAKING kitchen of 01, exactly:
-// the reunion's last warm circle is the lamp bulb. She is asleep on her arms; she lifts her head (~272),
-// the chairs are empty, the bills are still there. On the refrain she notices the one paper orange on the
-// table, the only colour in the room; she picks it up, holds it, tilts her head and smiles.
-// Slow push in; the lamp warms a little; main.js fades the film to black from 291.
+// 268.4-300.1 (outro; "In her dream" 276.2-283.8, again 284.8-291). The WAKING kitchen of 01, exactly:
+// the reunion's last warm circle is the lamp bulb. She is asleep, head down on her folded arms, as 01
+// ends; her cupped hands are closed over something. She lifts her head (~272) and looks along the
+// table at each empty chair on the beats (273.36, 274.8). On "In" her hands open: the one paper orange,
+// the only colour in the room; on "dream" (277.1) she looks down at it and the lamp warms. She picks it
+// up and holds it to the light, tilts her head and smiles (the knowing crescent eye, the dream's joy
+// sign, the one exception in the waking world). Second refrain: she draws it in to her cheek, landing
+// on its "dream" (286.7), and the lamp blooms once. The camera pushes in to her hands and the orange
+// (~2.5x by 291) and keeps creeping to the end; main.js fades to black as the mix dies (290.5-295.4).
 // The set geometry and the seated rig are copied from 01-kitchen.js (keep them in step with it).
 (() => {
 // ---------- set geometry (from 01-kitchen.js) ----------
@@ -15,23 +19,44 @@ const GY = LSY + 150;
 const hx = (c) => [1, 3, 5].map((i) => parseInt(c.slice(i, i + 2), 16));
 const mix = (a, b, k) => { k = clamp(k); const A = hx(a), B = hx(b); return `rgb(${A.map((v, i) => Math.round(lerp(v, B[i], k))).join(',')})`; };
 
-// her seated body (from 01), plus an optional closed-eye crescent drawn on the head
+// a smooth monotone curve through keys [[t, v], ...] (Fritsch-Carlson), flat outside: camera moves
+// that never stop dead between keys
+function curve(keys) {
+  const n = keys.length, d = [], m = [];
+  for (let i = 0; i < n - 1; i++) d.push((keys[i + 1][1] - keys[i][1]) / (keys[i + 1][0] - keys[i][0]));
+  for (let i = 0; i < n; i++) m.push(i === 0 || i === n - 1 ? 0 : (d[i - 1] * d[i] <= 0 ? 0 : (d[i - 1] + d[i]) / 2));
+  for (let i = 0; i < n - 1; i++) { if (d[i] === 0) { m[i] = m[i + 1] = 0; continue; }
+    const a = m[i] / d[i], b = m[i + 1] / d[i], s = a * a + b * b; if (s > 9) { const k = 3 / Math.sqrt(s); m[i] = k * a * d[i]; m[i + 1] = k * b * d[i]; } }
+  return (t) => {
+    if (t <= keys[0][0]) return keys[0][1]; if (t >= keys[n - 1][0]) return keys[n - 1][1];
+    let i = 0; while (t > keys[i + 1][0]) i++;
+    const h = keys[i + 1][0] - keys[i][0], u = (t - keys[i][0]) / h, u2 = u * u, u3 = u2 * u;
+    return (2 * u3 - 3 * u2 + 1) * keys[i][1] + (u3 - 2 * u2 + u) * h * m[i] + (-2 * u3 + 3 * u2) * keys[i + 1][1] + (u3 - u2) * h * m[i + 1];
+  };
+}
+
+// her seated body and rig (from 01, incl. the far arm laid over the tabletop when farFront)
 const BODICE = blob([[0, -806], [-24, -804], [-50, -790], [-62, -768], [-64, -730], [-62, -680], [-52, -620], [-46, -580],
-  [-60, -530], [-70, -480], [-56, -440], [30, -440], [58, -500], [44, -580], [52, -630], [70, -676], [68, -712], [56, -750], [40, -784], [22, -804]]
+  [-60, -540], [-48, -510], [36, -510], [56, -545], [44, -580], [52, -630], [70, -676], [68, -712], [56, -750], [40, -784], [22, -804]]
   .map(([x, y]) => [x, y + 540]), .45);
-const LAP = blob([[-62, -80], [10, -78], [70, -58], [160, -44], [262, -40], [300, -6], [304, 80], [300, 158], [262, 168], [214, 162],
-  [150, 96], [60, 64], [-40, 56], [-74, 20]], .5);
+const LAP = blob([[-52, -74], [10, -78], [70, -58], [160, -44], [262, -40], [300, -6], [304, 80], [300, 158], [262, 168], [214, 162],
+  [150, 96], [60, 64], [-30, 54], [-60, 18]], .5);
 function sitter(x, y, s, col, p, layer) {
   g.save(); g.translate(x, y); g.scale(s, s);
   if (layer !== 'front') {
     g.save(); g.translate(-8, 0); leg(1.5, 1.42, col, null, false); g.restore();
     g.save(); g.translate(8, 0); leg(1.56, 1.5, col, null, false); g.restore();
-    g.save(); g.rotate(p.lean); g.translate(-8, -212); arm(p.far[0], p.far[1], col, p.holdFar); g.restore();
+    if (!p.farFront) { g.save(); g.rotate(p.lean); g.translate(-8, -212); arm(p.far[0], p.far[1], col, p.holdFar); g.restore(); }
     cut(LAP, col, { sh: .6, grain: .26, lift: .2 });
     g.save(); g.rotate(p.lean); cut(BODICE, col, { sh: .6, grain: .26, lift: .2 }); g.restore();
   }
   if (layer !== 'back') {
     g.save(); g.rotate(p.lean);
+    if (p.farFront) {      // 17: the far arm never shows in front of the oilcloth's hanging front (it is behind it)
+      g.save(); g.rotate(-p.lean); g.scale(1 / s, 1 / s); g.translate(-x, -y);
+      const cl = new Path2D(); cl.rect(-3000, -3000, 9000, 9000); cl.rect(TX0 - 6, TY - 1, TX1 - TX0, 400); g.clip(cl, 'evenodd');
+      g.translate(x, y); g.scale(s, s); g.rotate(p.lean); g.translate(-8, -212); arm(p.far[0], p.far[1], col, p.holdFar); g.restore(); }
+    if (p.postFar) { g.save(); g.rotate(-p.lean); g.scale(1 / s, 1 / s); g.translate(-x, -y); p.postFar(); g.restore(); }
     g.save(); g.translate(10, -250); head('her', null, col, .265, p.head || 0, 0);
     if (p.eye > 0) {        // a small closed, smiling eye cut out of the head (the 04 crescent)
       g.rotate(-(p.head || 0) * .9); g.scale(.265, .265); g.translate(-580, -800);
@@ -39,9 +64,38 @@ function sitter(x, y, s, col, p, layer) {
       g.beginPath(); g.arc(690, 436, 34, Math.PI * .14, Math.PI * .86); g.stroke();
     }
     g.restore();
+    if (p.preNear) { g.save(); g.rotate(-p.lean); g.scale(1 / s, 1 / s); g.translate(-x, -y); p.preNear(); g.restore(); }
     g.translate(8, -212); arm(p.near[0], p.near[1], col, p.holdNear);
     g.restore();
   }
+  g.restore();
+}
+// world point of a hip-local point for a lean
+const W_ = (lean, x, y) => [HX + (x * Math.cos(lean) - y * Math.sin(lean)) * S, HY + (x * Math.sin(lean) + y * Math.cos(lean)) * S];
+// an arm pose [sh, el] that puts the hand point (01's handAt) at a world point; side = 8 near, -8 far
+function reachTo(lean, wx, wy, side = 8, neg = false) {
+  const ux = (wx - HX) / S, uy = (wy - HY) / S;
+  const lx = ux * Math.cos(-lean) - uy * Math.sin(-lean) - side, ly = ux * Math.sin(-lean) + uy * Math.cos(-lean) + 212;
+  const a1 = 168, a2 = 182; const d = clamp(Math.hypot(lx, ly), 30, a1 + a2 - .5), th = Math.atan2(lx, ly);
+  const E = Math.acos(clamp((d * d - a1 * a1 - a2 * a2) / (2 * a1 * a2), -1, 1));
+  return neg ? [th + Math.atan2(a2 * Math.sin(E), a1 + a2 * Math.cos(E)), -E] : [th - Math.atan2(a2 * Math.sin(E), a1 + a2 * Math.cos(E)), E];
+}
+const lerp2 = (a, b, k) => [lerp(a[0], b[0], k), lerp(a[1], b[1], k)];
+// her hand closed over the orange: a cupped palm with the knuckles of curled fingers on the far side
+// and the thumb tucked along the top; k = 1 closed, 0 lifted open (it hinges up at the wrist)
+function cupHand(cx, cy, k, col) {
+  if (k <= 0) return;
+  const wx = cx - 40, wy = cy + 16;                    // wrist pivot
+  g.save(); g.translate(wx, wy); g.rotate(-(1 - k) * 1.1); g.scale(lerp(.6, 1, k), lerp(.6, 1, k)); g.translate(-wx, -wy);
+  const p = new Path2D();
+  p.addPath(blob([[cx - 44, cy + 26], [cx - 46, cy + 4], [cx - 30, cy - 22], [cx - 6, cy - 35], [cx + 18, cy - 33], [cx + 34, cy - 20],
+    [cx + 40, cy + 2], [cx + 36, cy + 24], [cx + 18, cy + 32], [cx - 20, cy + 32]], .55));
+  [[24, -26, 11], [36, -8, 10.5], [37, 12, 10], [28, 27, 9]].forEach(([dx, dy, r]) => p.addPath(circle(cx + dx, cy + dy, r)));
+  cut(p, col, { sh: .55, grain: .2, lift: .15 });
+  // the gaps between the curled fingers: three short cut lines
+  g.save(); g.strokeStyle = 'rgba(20,16,30,.35)'; g.lineWidth = 2.2; g.lineCap = 'round';
+  [[30, -18, 22, -12], [38, 2, 28, 3], [33, 20, 24, 17]].forEach(([a, b2, c, d]) => { g.beginPath(); g.moveTo(cx + a, cy + b2); g.lineTo(cx + c, cy + d); g.stroke(); });
+  g.restore();
   g.restore();
 }
 function chair(x, col, face = 1) {
@@ -54,11 +108,14 @@ function chair(x, col, face = 1) {
   cut(cutRect(x - 100, y - 8, 190, 18, 45, 1.5), col, { sh: .7 });
   g.restore();
 }
-function bill(w, h, col, line) {
-  cut(cutRect(-w / 2, -h / 2, w, h, w * 3.1, 1.2), col, { sh: .45, grain: .12 });
-  g.save(); g.strokeStyle = line; g.lineWidth = 2.4; g.lineCap = 'round';
-  for (let i = 0; i < 3; i++) { g.beginPath(); g.moveTo(-w / 2 + 8, -h / 2 + 10 + i * 8); g.lineTo(-w / 2 + 8 + (w - 16) * (i === 2 ? .5 : .85), -h / 2 + 10 + i * 8); g.stroke(); }
-  g.beginPath(); g.moveTo(w / 2 - 22, h / 2 - 9); g.lineTo(w / 2 - 8, h / 2 - 9); g.stroke();
+// one bill (01's billHard): a sheet with grey lines (no readable text) and a hard little shadow
+function billHard(w, h, col, line, sh = 1) {
+  const p = cutRect(-w / 2, -h / 2, w, h, w * 3.1, 1.2);
+  if (sh > 0) { g.save(); g.translate(4, 5); g.fillStyle = `rgba(20,16,30,${.34 * sh})`; g.fill(p); g.restore(); }
+  cut(p, col, { sh: .3, grain: .12 });
+  g.save(); g.strokeStyle = line; g.lineWidth = 3; g.lineCap = 'round';
+  for (let i = 0; i < 4; i++) { const y = -h / 2 + 12 + i * 11; g.beginPath(); g.moveTo(-w / 2 + 10, y); g.lineTo(-w / 2 + 10 + (w - 20) * (i === 3 ? .45 : i === 0 ? .6 : .85), y); g.stroke(); }
+  g.lineWidth = 5; g.beginPath(); g.moveTo(w / 2 - 30, h / 2 - 12); g.lineTo(w / 2 - 10, h / 2 - 12); g.stroke();
   g.restore();
 }
 function drawing(x, y, paper, ink, sun) {
@@ -92,97 +149,126 @@ function room() {
   cut(cutRect(wx - 40, wy + wh + 18, ww + 80, 22, 23, 2), C.w3, { sh: .7, lift: .2 });
   drawing(486, 214, C.w4, C.w2, C.w2);
 }
-// her near hand in world space for a lean and arm pose (from 01), and the inverse: an arm pose that
-// puts the near hand at a world point (two-link IK in the seated rig's arm space)
-function handAt(lean, sh, el) {
-  const x = 8 + Math.sin(sh) * 168 + Math.sin(sh + el) * 182, y = -212 + Math.cos(sh) * 168 + Math.cos(sh + el) * 182;
-  return [HX + (x * Math.cos(lean) - y * Math.sin(lean)) * S, HY + (x * Math.sin(lean) + y * Math.cos(lean)) * S];
+// where 01 left the bill piles (01's handAt for its two sorting poses)
+function handAt(lean, sh, el, side = 8) {
+  const x = side + Math.sin(sh) * 168 + Math.sin(sh + el) * 182, y = -212 + Math.cos(sh) * 168 + Math.cos(sh + el) * 182;
+  return W_(lean, x, y);
 }
-function reachTo(lean, wx, wy) {
-  const ux = (wx - HX) / S, uy = (wy - HY) / S;
-  const lx = ux * Math.cos(-lean) - uy * Math.sin(-lean) - 8, ly = ux * Math.sin(-lean) + uy * Math.cos(-lean) + 212;
-  const a1 = 168, a2 = 182; const d = clamp(Math.hypot(lx, ly), 30, a1 + a2 - .5), th = Math.atan2(lx, ly);
-  const E = Math.acos(clamp((d * d - a1 * a1 - a2 * a2) / (2 * a1 * a2), -1, 1));
-  return [th - Math.atan2(a2 * Math.sin(E), a1 + a2 * Math.cos(E)), E];
-}
-const PA = [.12, 1.06, .62], PB = [.3, 1.42, .24];
-const pileA = handAt(...PA), pileB = handAt(...PB);
+const pileA = handAt(.12, 1.06, .62), pileB = handAt(.3, 1.42, .24);
 
 // ---------- the moments ----------
-const T = { a: 268.4, lift0: 271.5, lift1: 273.3, look: 274.2, notice: 276.2, reach: 277.4, grab: 278.55, raise: 280.3,
-  smile: 281.4, refrain2: 284.1 };
-const ORANGE = { x: 1030, y: TY - 52, r: 30 };          // on the oilcloth in the lamp's pool, by the bills
+const T = { a: 268.4, slide0: 271.35, slide1: 272.1, lift0: 272.0, lift1: 272.95, chair1: 273.36, chair2: 274.8, open: 276.2, dream: 277.1,
+  reach: 277.75, grab: 278.6, raise: 280.3, smile: 281.4, in2: 284.8, dream2: 286.7, end: 300.1 };
+const OR = 30;                                       // the orange's radius
+// the orange lies at the back of the oilcloth in the lamp's pool, hidden under her head while she sleeps
+const ORANGE = { x: 895, y: TY - TB - 4 };
+const RAISED = [900, 548], CHEEK = [802, 612];       // held up to the light; drawn in to her cheek
+// 01's doze (01-kitchen.js DOZE): head down on forearms folded on the TOP of the table, far arm over the top
+const DOZE = { lean: .66, head: -.85, near: [2.0, 3.15], far: [2.2, 2.9 - Math.PI * 2] };
+const UP = { lean: .1, head: -.1 }, FAR0 = [1.0, .62];
+const COVER = [ORANGE.x - 30, ORANGE.y + 18];        // her far hand inside the cupped palm
+const FREST = [ORANGE.x - 64, TY - 50];             // where the far hand slides back to on "In"
+const REST = [ORANGE.x + 4, TY - 12];                 // her near hand, resting on the table edge once she sits up
+const HELD = [-4, OR * .82];                         // hand point relative to the orange's centre while held
 
-// her pose through the outro: [t, lean, head, near arm(or 'reach'), far arm]
-const SLEEP = { lean: .62, head: -.55, near: [1.56, .52], far: [1.5, .58] };
-const UP = { lean: .1, head: -.12, near: [.55, 1.45], far: [1.0, .62] };   // awake: forearm on the table, hand pulled in
+// the camera: hold 01's framing through the seam, drift, then a real push in to her hands and the orange
+const camZ = curve([[270, 1], [276.2, 1.07], [282.5, 1.3], [287, 1.85], [291, 2.5], [300, 2.72]]);
+const camX = curve([[270, 960], [276.2, 952], [282.5, 887], [287, 872], [291, 866], [300, 862]]);
+const camY = curve([[270, 540], [276.2, 548], [282.5, 557], [287, 580], [289, 596], [291, 600], [300, 604]]);
 
-SHOT(T.a, 300.1, 'wake', (t) => {
+SHOT(T.a, T.end, 'wake', (t) => {
   const A0 = g.globalAlpha;
-  // camera: from 01's framing, a slow push in toward her and the orange
-  const cz = eio((t - 270) / 21), Z = lerp(1, 1.42, cz), FX = lerp(960, 860, cz), FY = lerp(540, 560, cz);
+  const Z = camZ(t), FX = camX(t), FY = camY(t);
   g.save(); g.translate(W / 2, H / 2); g.scale(Z, Z); g.translate(-FX, -FY);
 
-  const warm = ss(T.notice, 288, t);                       // the lamp warms a little once she has it
+  // the lamp: warms on "dream" (a step with a little overshoot), blooms once on the second "dream"
+  const warm = .55 * pop(t, T.dream, .7) + .45 * ss(T.dream2 - .2, T.dream2 + 2.5, t);
+  const bloom = bump(t, T.dream2 - .08, 1.6) * (t < T.dream2 + .3 ? 1 : 1) + .6 * bump(t, T.dream - .05, .9);
   room();
 
-  // the lamp's warm light on the wall, a little stronger as she smiles
-  const glowR = lerp(300, 360, warm);
-  g.save(); g.globalAlpha = A0 * lerp(.5, .66, warm);
+  // the lamp's warm light on the wall
+  const glowR = lerp(300, 370, warm) + 60 * bloom;
+  g.save(); g.globalAlpha = A0 * clamp(lerp(.5, .68, warm) + .2 * bloom);
   const gr = g.createRadialGradient(LX, GY, 20, LX, GY, glowR);
   gr.addColorStop(0, 'rgba(243,217,160,.85)'); gr.addColorStop(.55, 'rgba(243,217,160,.3)'); gr.addColorStop(1, 'rgba(243,217,160,0)');
   g.fillStyle = gr; g.fill(circle(LX, GY, glowR)); g.restore();
-  // cord and shade, the bulb
+  // cord and shade, the bulb (same place and size as draft 1: 16's collapse lands on it)
   g.save(); g.translate(LX, -60); g.rotate(Math.sin(t * .9) * .012); g.translate(-LX, 60);
   cut(cutRect(LX - 3, -200, 6, LSY + 200, 31, .8), C.w0, { sh: .4, grain: 0 });
   cut(poly([[LX - 32, LSY], [LX + 32, LSY], [LX + 100, LSY + 76], [LX - 100, LSY + 76]]), C.w0, { sh: .9, lift: .4 });
-  cut(ellipse(LX, LSY + 78, 34, 14), mix(C.lamp, C.lampDeep, warm * .5), { sh: 0, grain: .1 });
+  cut(ellipse(LX, LSY + 78, 34, 14), mix(C.lamp, '#fbe7b8', clamp(warm * .6 + bloom * .5)), { sh: 0, grain: .1 });
   g.restore();
   // the light cone onto the table
-  g.save(); g.globalAlpha = A0 * lerp(.2, .27, warm);
+  g.save(); g.globalAlpha = A0 * clamp(lerp(.2, .29, warm) + .08 * bloom);
   const cg = g.createLinearGradient(0, LSY + 78, 0, TY);
   cg.addColorStop(0, 'rgba(243,217,160,.95)'); cg.addColorStop(1, 'rgba(243,217,160,.3)');
   g.fillStyle = cg; g.fill(poly([[LX - 92, LSY + 76], [LX + 92, LSY + 76], [LX + 300, TY], [LX - 300, TY - TB * .2]])); g.restore();
 
   // ---- her pose ----
   const lift = eio((t - T.lift0) / (T.lift1 - T.lift0));
-  let lean = lerp(SLEEP.lean, UP.lean, lift), headA = lerp(SLEEP.head, UP.head, lift);
-  let near = [lerp(SLEEP.near[0], UP.near[0], lift), lerp(SLEEP.near[1], UP.near[1], lift)];
-  let far = [lerp(SLEEP.far[0], UP.far[0], lift), lerp(SLEEP.far[1], UP.far[1], lift)];
-  // asleep: breathing
-  const breath = Math.sin((t - T.a) * Math.PI * 2 / 4.2) * .012 * (1 - lift);
-  lean += breath; headA -= breath * .5;
-  // awake: she looks up along the empty table, then down to the orange on "In her dream"
-  headA += .1 * ss(T.look, T.look + 1, t) * (1 - ss(T.notice - .3, T.notice + .5, t));
-  const lookDown = ss(T.notice - .1, T.notice + .7, t);
-  headA -= .2 * lookDown; lean += .06 * lookDown;
-  // the reach, the pick-up and the raise: near hand follows a path in world space
-  const reachK = eio((t - T.reach) / (T.grab - T.reach)), raiseK = eio((t - T.grab - .25) / (T.raise - T.grab - .25));
-  const rest = handAt(lean, near[0], near[1]);
-  let hxw = lerp(rest[0], ORANGE.x + 4, reachK), hyw = lerp(rest[1], ORANGE.y + 10, reachK);
-  hxw = lerp(hxw, 892, raiseK); hyw = lerp(hyw, 548, raiseK) - Math.sin(raiseK * Math.PI) * 26;
-  lean = lean + .3 * bump(t, T.reach, T.grab + .5 - T.reach) - .08 * raiseK;
-  if (t > T.reach) near = reachTo(lean, hxw, hyw);
-  // holding it: she looks at it, her head tilts, she smiles
-  const look = ss(T.raise - .6, T.raise + .4, t);
-  headA = lerp(headA, -.06, look);
-  const tilt = ss(T.smile, T.smile + 1.4, t);
-  headA += .12 * tilt + Math.sin((t - T.smile) * 1.1) * .015 * tilt;
-  lean -= .03 * tilt;
-  // second refrain: she draws it in toward her
-  const draw = eio((t - T.refrain2) / 3.2);
-  if (t > T.refrain2) near = reachTo(lean, lerp(892, 860, draw), lerp(548, 590, draw));
-  const eye = ss(T.smile + .2, T.smile + 1.2, t);
+  const headUp = eio((t - T.lift0 - .22) / (T.lift1 - T.lift0));       // the head comes up last
+  let lean = lerp(DOZE.lean, UP.lean, lift), headA = lerp(DOZE.head, UP.head, headUp);
+  // breathing, always: slow and deep asleep (01's compensation keeps head and arms on the table), small awake
+  const sleepK = 1 - lift;
+  const breath = Math.sin((t - T.a) * Math.PI * 2 / lerp(4.2, 3.4, lift)) * lerp(.006, .014, sleepK);
+  lean += breath; headA -= breath * lerp(.5, 1.1, sleepK);
+  // she looks along the table at the empty chairs, on the beats; then back, and down to her hands
+  const ch1 = pop(t, T.chair1, .45), ch2 = pop(t, T.chair2, .45), back2 = ss(T.open - .35, T.open + .1, t);
+  headA += (-.1 * ch1 + .17 * ch2) * (1 - back2);                       // chair 1 nearer (eyes down the table), chair 2 farther
+  lean += (.04 * ch1 - .05 * ch2) * (1 - back2);
+  const look = pop(t, T.dream, .45);                                     // "dream": she sees it
+  headA -= .28 * look * (1 - ss(T.raise - .7, T.raise + .4, t)); lean += .07 * look;
 
-  // the orange: on the table, then in her hand (drawn at the hand, kept upright)
-  const held = t >= T.grab;
-  const holdNear = held ? () => {
-    g.save(); g.rotate(near[0] + near[1] - lean); g.scale(1 / S, 1 / S); g.translate(-4, -10);
-    orange(0, 0, ORANGE.r); g.restore();
-  } : null;
+  // ---- the hands (world targets) ----
+  // asleep, the orange lies under her head; as she wakes her far hand slides over it and closes on it, and
+  // stays there while she sits up and looks round; on "In" it slides off (the reveal); the near hand picks it up
+  const open = eio((t - T.open) / .45);
+  const reachK = eio((t - T.reach) / (T.grab - T.reach));
+  let nearT = lerp2(REST, [ORANGE.x + HELD[0], ORANGE.y + HELD[1]], reachK); nearT[1] -= 24 * Math.sin(reachK * Math.PI);
+  lean += .05 * bump(t, T.reach, T.grab + .4 - T.reach);
+  let op = [ORANGE.x, ORANGE.y];
+  if (t >= T.grab) {
+    const raiseK = eio((t - T.grab - .15) / (T.raise - T.grab - .15));
+    const q = [lerp(ORANGE.x, RAISED[0], raiseK), lerp(ORANGE.y, RAISED[1], raiseK) - Math.sin(raiseK * Math.PI) * 24];
+    // second refrain: she draws it in to her cheek, landing on its "dream"
+    if (t > T.dream2 - 1.4) { const k = back((t - (T.dream2 - 1.4)) / 1.4); q[0] = lerp(RAISED[0], CHEEK[0], k); q[1] = lerp(RAISED[1], CHEEK[1], k); }
+    // she holds it lightly: it rides her breathing and, at the end, the slow sway of her head
+    const sway = Math.sin((t - T.dream2) * 1.1) * ss(T.dream2 + .3, T.dream2 + 2, t);
+    q[0] += sway * 6; q[1] += Math.sin((t - T.a) * Math.PI * 2 / 3.4) * 2.2 + sway * 2;
+    op = q; nearT = [q[0] + HELD[0], q[1] + HELD[1]];
+  }
+  // holding it: she looks at it, her head tilts, she smiles; on the second refrain her head leans to it
+  const lookUp = ss(T.raise - .7, T.raise + .4, t);
+  headA = lerp(headA, -.06, lookUp);
+  const tilt = ss(T.smile, T.smile + 1.4, t);
+  headA += .12 * tilt; lean -= .03 * tilt;
+  const toCheek = ss(T.dream2 - 1.2, T.dream2 + .1, t);
+  headA -= .2 * toCheek; lean += .06 * toCheek;
+  headA += Math.sin((t - T.smile) * 1.05) * .022 * tilt * (1 - toCheek) + Math.sin((t - T.dream2) * 1.1) * .035 * ss(T.dream2 + .3, T.dream2 + 2, t);
+  const eye = ss(T.smile + .2, T.smile + 1.2, t);
+  const eyeCol = mix(C.w3, C.lamp, .45 + .3 * warm);
+
+  // arm angles: 01's doze angles, then targets
+  const dn = [DOZE.near[0] - breath * .9 * sleepK, DOZE.near[1]];
+  const nearArmK = eio((t - T.lift0) / (T.lift1 - T.lift0 - .2));
+  const near = nearArmK <= 0 ? dn : nearArmK < 1 ? lerp2(dn, reachTo(lean, REST[0], REST[1]), nearArmK) : reachTo(lean, nearT[0], nearT[1]);
+  const df = [DOZE.far[0] - breath * .9 * sleepK, DOZE.far[1]];
+  const slide = eio((t - T.slide0) / (T.slide1 - T.slide0));
+  let far = df;
+  if (slide > 0) {
+    let fT = COVER.slice();
+    fT = lerp2(fT, FREST, open); fT[1] -= 14 * Math.sin(open * Math.PI);
+    const fUp = ss(T.dream2 - 1, T.dream2 + .15, t);                     // second refrain: it cups the orange too
+    if (fUp > 0) fT = lerp2(fT, [op[0] + 14, op[1] + OR * .9], fUp);
+    far = reachTo(lean, fT[0], fT[1], -8);
+    if (slide < 1) far = lerp2(df, far, slide);   // angle blend from the doze (01 winds the far elbow -2pi so it swings down, not up)
+  }
+  const farFront = true;
+  const cupK = ss(T.slide0, T.slide0 + .3, t) * (1 - ss(T.open, T.open + .35, t));
+  const postFar = () => cupHand(ORANGE.x, ORANGE.y + 2, cupK, C.w1);
 
   chair(HX, C.w0);
-  sitter(HX, HY, S, C.w1, { lean, head: headA, near, far }, 'back');
+  sitter(HX, HY, S, C.w1, { lean, head: headA, near, far, farFront }, 'back');
 
   // the table and oilcloth (01)
   cut(cutRect(TX0 + 40, TY, 30, FLOOR - TY, 51), C.w0, { sh: .5 });
@@ -193,14 +279,17 @@ SHOT(T.a, 300.1, 'wake', (t) => {
   chair(1400, C.w0, -1); chair(1700, C.w0, -1);
 
   // the bills where she left them at the end of 01, and the cold cup
-  const flat = (x, y, r) => { g.save(); g.translate(x, y); g.rotate(r); g.scale(1, .42); bill(70, 50, C.w4, C.w3); g.restore(); };
-  flat(pileA[0] - 14, TY - 22, .05); flat(pileA[0] - 6, TY - 27, -.07); flat(pileA[0] + 34, TY - 18, .1);
-  flat(pileB[0] + 30, TY - 30, .04); flat(pileB[0] + 30, TY - 34, (hash(4) - .5) * .2); flat(pileB[0] + 34, TY - 37, (hash(5) - .5) * .2);
+  // exactly where 01 leaves them: two sorted each side, two carried across, the last one by itself
+  const flat = (x, y, r) => { g.save(); g.translate(x, y); g.rotate(r); g.scale(1, .42); billHard(96, 68, C.w4, C.w3, .8); g.restore(); };
+  flat(pileA[0] - 14, TY - 22, .05); flat(pileA[0] - 6, TY - 27, -.07); flat(pileB[0] + 30, TY - 30, .04);
+  flat(pileB[0] + 30, TY - 34, (hash(4) - .5) * .2); flat(pileB[0] + 34, TY - 37, (hash(5) - .5) * .2); flat(pileA[0] + 86, TY - 16, .1);
   cup(1300, TY - 26, 1.3, C.w3);
-  if (!held) orange(ORANGE.x, ORANGE.y, ORANGE.r);
 
-  const eyeCol = mix(C.w3, C.lamp, .45);
-  sitter(HX, HY, S, C.w1, { lean, head: headA, near, far, holdNear, eye, eyeCol }, 'front');
+  // the orange: one layer, world space, under her head and her near hand (no jump, no swap at the pick-up)
+  // before the pick-up it lies under her head and arms; once held it is drawn after her head and under
+  // her near hand (at her cheek it sits in front of her face); it never overlaps anything at the switch
+  if (t < T.grab) orange(op[0], op[1], OR);
+  sitter(HX, HY, S, C.w1, { lean, head: headA, near, far, farFront, eye, eyeCol, postFar, preNear: t >= T.grab ? () => orange(op[0], op[1], OR) : null }, 'front');
   g.restore();
 
   // the room comes up out of the dark around the lamp (the reunion's last warm circle)

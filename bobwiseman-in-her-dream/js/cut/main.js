@@ -56,7 +56,7 @@ function frame(t) {
   out.fillStyle = v; out.fillRect(0, 0, W, H);
   out.globalCompositeOperation = 'source-over';
   // head and tail of the film
-  const fin = clamp(t / 1.2), fout = 1 - clamp((t - 291) / 9);
+  const fin = clamp(t / 1.2), fout = 1 - ss(290.5, 295.4, t);   // eased: black as the mix dies (silent from 295.4)
   if (fin * fout < 1) { out.globalAlpha = 1 - fin * fout; out.fillStyle = '#000'; out.fillRect(0, 0, W, H); out.globalAlpha = 1; }
 }
 

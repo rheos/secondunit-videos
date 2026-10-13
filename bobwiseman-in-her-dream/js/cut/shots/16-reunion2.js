@@ -49,7 +49,7 @@ const PAL = {
 // ---------------- the camera ----------------
 // Zc: how big the medallion is drawn. Line 1 a full image with margin; each new tier pushes the old ones out
 // while we pull back a little; by ~255 the disc runs >8% past every edge; the peak 261-266 sits inside it.
-const ZK = [[236.6, .74], [248.5, .79], [249.7, .62], [255.4, 1.04], [260.55, 1.08], [261.6, .8], [263.75, .86], [264.45, .97],
+const ZK = [[236.6, .72], [243.4, .73], [248.7, .79], [249.7, .62], [255.4, 1.04], [260.55, 1.08], [261.6, .8], [263.75, .86], [264.45, .97],
   [265.6, .93], [267.2, .86]];
 function Zc(t) {
   if (t <= ZK[0][0]) return ZK[0][1];
@@ -306,6 +306,10 @@ function ringOf(N, rot, radius, scale, at) {
 const UPW = [[T.big1 - .1, T.ru1 + 2.1], [T.come1 - .05, T.come1 + 1.3], [T.big2 - .1, T.ru2 + 2.0], [T.come2 - .1, T.come2 + .7],
   [T.in3 + .05, 265.75]];
 const upEnv = (t, ph = 0) => { let u = 0; for (const [a, b] of UPW) u = Math.max(u, eo((t - a - ph) / .32) * (1 - ei((t - b - ph) / .4))); return u; };
+// the crown's houses light up one after another round the ring, a beat at a time, through the held "come"
+// (all lit by ~248.5: nobody's gotta say goodnight)
+const LIT0 = B0 + Math.ceil(beatX(T.come1)) * P, LITN = 14;
+const litAt = (i) => LIT0 + Math.floor(i * LITN / 40) * P;
 const hop = (t, I = 1) => (hit(sinceBeat(t), .11) + .8 * hit(sinceBar(t), .14)) * I;
 
 SHOT(T.a, T.end, 'reunion2', (t) => {
@@ -371,8 +375,11 @@ SHOT(T.a, T.end, 'reunion2', (t) => {
     g.save(); shadowOn(.8);
     ringOf(40, rot, B * 1.835, hs, (i) => ({ spr: S_H, k: pop(t, BORN[0][0] + .35 + i * .008, .35),
       after: () => { shadowOff(); for (let w = 0; w < 3; w++) { const [wx, wy, ww, wh] = HOUSE_WIN[w];
-        const on = (hash(i * 3 + w + bar * .37) > .3) ? 1 : .25;
-        g.fillStyle = mixc(C.gold, '#fff6dc', flash * on); g.globalAlpha = A0 * (.45 + .55 * on); g.fillRect(wx, wy, ww, wh); }
+        const base = i % 5 === 0 && w !== 2;
+        const lt = litAt(i), lit = base || t >= lt;
+        if (!lit) { g.fillStyle = '#0b1029'; g.fillRect(wx, wy, ww, wh); continue; }
+        const fresh = base ? 0 : hit(t - lt, .25);
+        g.fillStyle = mixc(C.gold, '#fff6dc', Math.max(flash, fresh)); g.fillRect(wx, wy, ww, wh); }
         g.globalAlpha = A0; shadowOn(.8); } }));
     shadowOff(); g.restore();
     // friends and doctors, holding hands, standing out from the lavender band
@@ -423,7 +430,7 @@ SHOT(T.a, T.end, 'reunion2', (t) => {
     g.save(); shadowOn();
     ringOf(RK.N, rotP * 1.4 + su * 1.3, B * RK.feet, RK.hk * B / 1000, (i) => {
       const up = eo((t - T.theres3 - (i >> 1) / (RK.N / 2) * .35) / .3) * (1 - .5 * bump(t, T.big3 - .05, .4));
-      return { spr: kidSprite(i % 4, Math.round(up * 2)), k: pop(t, T.dream3 + .15 + (((i >> 1) * 5) % (RK.N / 2)) / (RK.N / 2) * .55, .42),
+      return { spr: kidSprite(i % 4, Math.round(up * 2)), k: pop(t, 260.95 + (((i >> 1) * 5) % (RK.N / 2)) / (RK.N / 2) * .3, .42),
         bob: -hop(t) * 40, flip: i % 2 === 1 };
     });
     shadowOff(); g.restore();
