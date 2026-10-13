@@ -1,0 +1,44 @@
+WHAT WOULD MARK ADD?
+An agent brief for symbolic direction, informed by Mark Von Ulrich
+Updated 2026-10-13
+
+PURPOSE
+Use this as a creative question: how could the scene make its idea more bodily, strange, theatrical, and immediately readable? Preserve the project's chosen visual medium unless a change is requested. These are working inferences from the reference collection, not a reconstruction of Mark's private thoughts or instructions in his voice.
+
+CORE PRINCIPLE
+Give the idea a body. Make the body's construction, scale, or relationship to another object express the argument.
+
+READ THE IDEA BEFORE CHOOSING SYMBOLS
+Write one sentence saying what the scene claims, including its tension: someone wants X, but Y complicates it. Find the operative verb: listen, translate, constrain, carry, compare, filter, connect, simplify. A subject such as “technology” is too broad; “the interface takes over the user's senses” gives you something to stage.
+
+TRY ONE OR TWO OF THESE MOVES
+1. Enlarge the relevant faculty. Make an ear the size of a monument so listening governs the scene. Scale expresses importance or power.
+2. Give one thing another thing's function. A hand acquires eyes; action and perception become one character. The substitution must help explain the claim.
+3. Build the person from their tools. A screen, controls, and headphones become anatomy. Ask who controls whom, where information enters, and what happens to it.
+4. Make the relationship physical. Put something inside, between, above, attached to, or out of reach of something else. Position and contact should carry meaning.
+5. Hold a character constant and change one structure. A familiar face with different arrangements above it can compare approaches without introducing a new cast.
+6. Add a useful contradiction. A commanding figure may visibly depend on help. Let the appealing first reading meet the complication in the brief.
+7. Stage the focal object. A platform, frame, burst, or surrounding pattern can make an everyday object feel consequential. Keep the central relationship legible.
+
+FAST REFERENCE ANCHORS
+U06: a huge ear with a tiny figure, beside advice about candid communication. Inference: attention becomes a physical environment.
+U08: a hand with eyes and a face, beside “Trusting Your Intuition.” Inference: knowing and doing share a body.
+U03: a VR player assembled from sensory/interface elements. Inference: the system becomes the user's anatomy.
+U09–U13: recurring faces and different head structures in a chart comparing kinds of simplicity. Inference: use controlled variation to make an argument.
+See index.html#U06 etc. for pictures and sources; director-guide.html for fuller reasoning.
+
+HOW MUCH TO ADD
+Accent: change one existing prop, feature, or scale relationship.
+Construction: rebuild the focal subject around one metaphor.
+Scene: make the whole setting participate in the metaphor.
+Default to the smallest change that strengthens the idea. These degrees are our production framework, not Mark's documented method.
+
+RETURN A CONCRETE DIRECTION
+State the scene's claim; describe the proposed image in two sentences; explain how the altered form or relationship expresses that claim; name the reference and the inferred principle; specify what to change and what existing visual choices to retain. Propose two options and recommend one. If motion is requested, add one action that reveals or changes the symbolic relationship. Treat all proposed motion as a new extension of the still illustrations.
+
+CHECK BEFORE ADDING MORE
+Can someone identify the main relationship at thumbnail size? Can you explain the metaphor without mentioning color, pixels, or Mark's name? Does the odd detail sharpen this particular idea? Would the proposal work in pencil, clay, collage, or clean vector? If it relies only on a collection of eyes, hands, zigzags, and bursts, revisit the relationship.
+
+EVIDENCE AND RENDERING
+Use the article to anchor interpretation. Eyes, hands, rays, and patterns have no verified universal meanings; the two original JPEGs have unknown article contexts. Don't invent spiritual or psychedelic intent. Most verified images here come from two articles, so repetition is not proof of a career-wide rule.
+For Robin's early Mac raster treatment, also load STYLE-BRIEF.txt: fixed 256-color system palette, stable ordered dithering, fine pixel edges, no ASCII or chunky sprite rendering. Symbolic direction can be used independently of that treatment.
