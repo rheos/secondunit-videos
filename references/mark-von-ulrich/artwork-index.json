@@ -1,0 +1,400 @@
+{
+  "updated": "2026-10-13",
+  "reading_rule": "Documented source and observed forms are separated from inferred meanings. Archive submission titles and dates are not assumed to be printed article titles or issue dates.",
+  "sources": {
+    "leadership": {
+      "publication": "Think:Act 23 — The Complexity Issue",
+      "title": "Even Superheroes Need Help",
+      "author": "Bennett Voyles",
+      "url": "https://www.rolandberger.com/publications/publication_pdf/roland_berger_ta_complexity_en.pdf#page=14",
+      "local_pdf": "sources/think-act-23-complexity.pdf",
+      "article_pages": "14–19; cover-story opening spread on 12–13",
+      "basis": "The article credits Mark Von Ulrich; image placement verified in the downloaded PDF.",
+      "context": "Advice on navigating complexity through help, candid communication, listening, and informed intuition."
+    },
+    "simplicity": {
+      "publication": "Think:Act 23 — The Complexity Issue",
+      "title": "Keep It Simple, Smarty-Pants",
+      "author": "Gunter Dueck",
+      "url": "https://www.rolandberger.com/publications/publication_pdf/roland_berger_ta_complexity_en.pdf#page=50",
+      "local_pdf": "sources/think-act-23-complexity.pdf",
+      "article_pages": "50–51",
+      "basis": "The article credits Mark Von Ulrich; chart labels and image placement verified in the downloaded PDF.",
+      "context": "Distinguishes thoughtful simplification from shortcuts and organizational compromise."
+    },
+    "vr": {
+      "publication": "Playboy",
+      "title": "Lets Get Physical",
+      "title_status": "AI-AP submission title; exact printed article title not independently verified",
+      "date": "July 2015, as recorded by AI-AP; issue date not independently verified",
+      "url": "https://www.ai-ap.com/slideshow/ai/35/",
+      "basis": "American Illustration 35 credits Mark Von Ulrich, Riley Illustration and Playboy, and describes the commission. Full article not recovered.",
+      "context": "A virtual-reality tool lets players physically control a game."
+    },
+    "chapman": {
+      "publication": "Progression",
+      "title": "Innovate Bravely and Carry a Big Stick",
+      "title_status": "AI-AP submission title; exact printed article title not independently verified",
+      "date": "April 2016, as recorded by AI-AP; issue date not independently verified",
+      "url": "https://www.ai-ap.com/slideshow/AI/36/?status=selected",
+      "basis": "American Illustration 36 credits Mark Von Ulrich, Riley Illustration and Progression, and identifies the portrait subject. Full article not recovered.",
+      "context": "Portrait of Emmett Chapman, inventor of the Chapman Stick."
+    },
+    "unknown": {
+      "publication": null,
+      "title": null,
+      "basis": "User-provided image; no article, publication date, or published title recovered. The files have no useful EXIF attribution; JPEG metadata records 72 dpi and an AppleMark comment.",
+      "context": "Original editorial context remains unknown."
+    }
+  },
+  "artworks": [
+    {
+      "id": "U01",
+      "file": "artwork/machine elves.jpg",
+      "label": "Factory, screen and two operators",
+      "source_id": "unknown",
+      "page": null,
+      "source_status": "unresolved",
+      "observed_symbols": [
+        "Three smoking factory structures",
+        "A central framed black screen with a pale branching motif",
+        "Two figures operating matching control panels",
+        "Yellow radiating spikes"
+      ],
+      "interpretation": "Possible human–machine mediation or industrial information processing. The branching screen motif is too ambiguous to identify confidently. Without the original article, no specific editorial argument can be assigned.",
+      "tags": [
+        "factory",
+        "screen",
+        "controls",
+        "radiance"
+      ],
+      "interpretation_limit": "The filename is a personal reference label, not evidence of a published title or DMT subject. Attribution follows Robin’s identification; no independent publication match recovered.",
+      "dimensions": [
+        360,
+        262
+      ],
+      "preview": "previews/U01.jpg"
+    },
+    {
+      "id": "U02",
+      "file": "artwork/thisgoesintothis.jpg",
+      "label": "Raised-arm figure beneath a house",
+      "source_id": "unknown",
+      "page": null,
+      "source_status": "unresolved",
+      "observed_symbols": [
+        "A suspended house with windows and a doorway",
+        "A cube-like head topped with upright candle-like forms",
+        "Raised hands on sharply bent striped limbs",
+        "Yellow burst and dense wire-like lines"
+      ],
+      "interpretation": "The arrangement invites a reading of structures being nested, transferred or assembled, but the house, head and connection between them could mean different things in different articles.",
+      "tags": [
+        "house",
+        "body-machine",
+        "right-angle-limbs",
+        "radiance"
+      ],
+      "interpretation_limit": "The filename is not a verified title. Do not assume the candle-like forms are a ritual or that the image depicts a psychedelic experience.",
+      "dimensions": [
+        270,
+        360
+      ],
+      "preview": "previews/U02.jpg"
+    },
+    {
+      "id": "U03",
+      "file": "artwork/lets-get-physical-2015.jpg",
+      "label": "Body becomes a game interface",
+      "source_id": "vr",
+      "page": null,
+      "source_status": "commission_verified",
+      "observed_symbols": [
+        "Headphones around a head-sized screen displaying one huge eye",
+        "Glove-like hand and a waist ring",
+        "Bent limbs, raised foot and diagonal lines",
+        "Exaggerated tongue and open mouth"
+      ],
+      "interpretation": "The person is constructed from input/output devices, making physical participation in a digital game visible. The pose conveys action; the oversized eye foregrounds mediated vision. The waist ring might refer to equipment, but its model is unverified.",
+      "tags": [
+        "eye",
+        "screen",
+        "body-machine",
+        "right-angle-limbs",
+        "motion"
+      ],
+      "interpretation_limit": "Interpretation from image and editorial context; no artist explanation of these symbols recovered.",
+      "dimensions": [
+        648,
+        1000
+      ],
+      "preview": "previews/U03.jpg"
+    },
+    {
+      "id": "U04",
+      "file": "artwork/innovate-bravely-emmett-chapman-2016.jpg",
+      "label": "Emmett Chapman as musical construction",
+      "source_id": "chapman",
+      "page": null,
+      "source_status": "commission_verified",
+      "observed_symbols": [
+        "Split geometric portrait with glasses, long hair and beard",
+        "Hands on a vertically held stringed instrument",
+        "Musical notes, clef-like marks and radiating lines",
+        "Alternating dark and colored facial sections"
+      ],
+      "interpretation": "The portrait combines recognizable features with the musician’s instrument and musical notation. The instrument supports the commission directly; fragmentation and bursts plausibly communicate invention and musical energy, rather than a documented claim about psychology.",
+      "tags": [
+        "portrait",
+        "music",
+        "hands",
+        "radiance",
+        "fragmentation"
+      ],
+      "interpretation_limit": "Interpretation from image and editorial context; no artist explanation of these symbols recovered.",
+      "dimensions": [
+        750,
+        1000
+      ],
+      "preview": "previews/U04.jpg"
+    },
+    {
+      "id": "U05",
+      "file": "artwork/think-act-page-14-image-01.jp2",
+      "label": "Superhero needs help",
+      "source_id": "leadership",
+      "page": 14,
+      "source_status": "article_verified",
+      "observed_symbols": [
+        "Muscular costumed figure on a pedestal",
+        "Skull-like head",
+        "Rope-like lines held or hanging around the figure",
+        "Radiating yellow burst"
+      ],
+      "interpretation": "Superhero imagery connects directly to the title and opening account of Marvel leadership. The commanding pose creates tension with the article’s insistence on asking others for help. The skull-like face adds strangeness, but its precise meaning is unverified.",
+      "tags": [
+        "superhero",
+        "radiance",
+        "hands"
+      ],
+      "interpretation_limit": "Interpretation from image and editorial context; no artist explanation of these symbols recovered.",
+      "dimensions": [
+        491,
+        751
+      ],
+      "preview": "previews/U05.jpg"
+    },
+    {
+      "id": "U06",
+      "file": "artwork/think-act-page-15-image-01.jpg",
+      "label": "Ear as leadership tool",
+      "source_id": "leadership",
+      "page": 15,
+      "source_status": "article_verified",
+      "observed_symbols": [
+        "Oversized ear made of nested colored bands",
+        "Radiating lines and fine zigzags",
+        "Small geometric figure at the base"
+      ],
+      "interpretation": "The scale makes listening the dominant action. Its placement beside the section on candid communication links the sensory organ to receptive leadership. Layered bands can suggest incoming signals, but are also a repeated visual treatment.",
+      "tags": [
+        "ear",
+        "listening",
+        "signal",
+        "radiance"
+      ],
+      "interpretation_limit": "Interpretation from image and editorial context; no artist explanation of these symbols recovered.",
+      "dimensions": [
+        498,
+        652
+      ],
+      "preview": "previews/U06.jpg"
+    },
+    {
+      "id": "U07",
+      "file": "artwork/think-act-page-16-image-02.jpg",
+      "label": "Two speakers and a shared signal field",
+      "source_id": "leadership",
+      "page": 16,
+      "source_status": "article_verified",
+      "observed_symbols": [
+        "Two facing blue silhouettes",
+        "Different internal arc patterns",
+        "Zigzags running through a shared space",
+        "Lightbulb, geometric objects, numbers and framed imagery above"
+      ],
+      "interpretation": "A shared conversation produces a dense field of ideas, yet the differently patterned figures suggest different ways of understanding. This fits the adjacent discussion of communication across cultures and checking what words mean. The lightbulb is a familiar idea symbol; individual objects have no verified one-to-one meanings.",
+      "tags": [
+        "dialogue",
+        "signal",
+        "lightbulb",
+        "pattern",
+        "translation"
+      ],
+      "interpretation_limit": "Interpretation from image and editorial context; no artist explanation of these symbols recovered.",
+      "dimensions": [
+        538,
+        679
+      ],
+      "preview": "previews/U07.jpg"
+    },
+    {
+      "id": "U08",
+      "file": "artwork/think-act-page-17-image-02.jpg",
+      "label": "A hand that sees",
+      "source_id": "leadership",
+      "page": 17,
+      "source_status": "article_verified",
+      "observed_symbols": [
+        "Raised hand carrying eye-like circles",
+        "A spiral at a fingertip",
+        "Curved cable-like extensions",
+        "Yellow-green rays around a red panel"
+      ],
+      "interpretation": "Vision is displaced from the head onto a hand, joining perception with action. Placement beside “Trusting Your Intuition” supports a reading of knowing or sensing through the body. The image is not evidence that the artist intended a religious hand symbol.",
+      "tags": [
+        "hands",
+        "eye",
+        "intuition",
+        "radiance"
+      ],
+      "interpretation_limit": "Interpretation from image and editorial context; no artist explanation of these symbols recovered.",
+      "dimensions": [
+        563,
+        694
+      ],
+      "preview": "previews/U08.jpg"
+    },
+    {
+      "id": "U09",
+      "file": "artwork/think-act-page-50-image-02.jp2",
+      "label": "Dumbing it down",
+      "source_id": "simplicity",
+      "page": 50,
+      "source_status": "article_verified",
+      "observed_symbols": [
+        "Repeated yellow face with symmetric blunt hair",
+        "Downturned mouth",
+        "Patterned clothing and offset diagonal lines"
+      ],
+      "interpretation": "The published chart labels this position “Dumbing It Down.” A restrained hairstyle and unhappy expression become the visual representative of simplistic reduction. The label anchors the reading more firmly than the face alone.",
+      "tags": [
+        "portrait",
+        "hair",
+        "simplification",
+        "pattern"
+      ],
+      "interpretation_limit": "Interpretation from image and editorial context; no artist explanation of these symbols recovered.",
+      "dimensions": [
+        181,
+        198
+      ],
+      "preview": "previews/U09.jpg"
+    },
+    {
+      "id": "U10",
+      "file": "artwork/think-act-page-50-image-03.jp2",
+      "label": "Careless simplicity",
+      "source_id": "simplicity",
+      "page": 50,
+      "source_status": "article_verified",
+      "observed_symbols": [
+        "Same basic face with a different mouth expression",
+        "Two angular projections from the hair",
+        "Repeated facial pattern and diagonal marks"
+      ],
+      "interpretation": "The chart explicitly labels this figure “Careless Simplicity.” Changing the hair while retaining the face allows a comparison between approaches. Calling the projections devil horns would go beyond what the caption establishes.",
+      "tags": [
+        "portrait",
+        "hair",
+        "simplification",
+        "pattern"
+      ],
+      "interpretation_limit": "Interpretation from image and editorial context; no artist explanation of these symbols recovered.",
+      "dimensions": [
+        185,
+        207
+      ],
+      "preview": "previews/U10.jpg"
+    },
+    {
+      "id": "U11",
+      "file": "artwork/think-act-page-51-image-03.jp2",
+      "label": "Perfect, but cumbersome",
+      "source_id": "simplicity",
+      "page": 51,
+      "source_status": "article_verified",
+      "observed_symbols": [
+        "Stack of rounded green bands above the face",
+        "Same large eyes and downturned mouth",
+        "Dense repeated marks"
+      ],
+      "interpretation": "The published label is “Perfect, But Cumbersome.” The physically stacked headwear supplies a plausible metaphor for accumulated layers and unwieldiness. Its meaning as a named solution category is documented; interpreting the bands as bureaucracy is a further inference.",
+      "tags": [
+        "portrait",
+        "hair",
+        "stacking",
+        "complexity"
+      ],
+      "interpretation_limit": "Interpretation from image and editorial context; no artist explanation of these symbols recovered.",
+      "dimensions": [
+        184,
+        193
+      ],
+      "preview": "previews/U11.jpg"
+    },
+    {
+      "id": "U12",
+      "file": "artwork/think-act-page-51-image-04.jp2",
+      "label": "Smart and thoughtful",
+      "source_id": "simplicity",
+      "page": 51,
+      "source_status": "article_verified",
+      "observed_symbols": [
+        "Sweeping asymmetric blue hair covering part of one eye",
+        "Same yellow face and red mouth",
+        "Orderly striped clothing"
+      ],
+      "interpretation": "The chart names this position “Smart and Thoughtful.” A flowing, organized contour offers a visual contrast with the stack and blunt symmetric hair. The hair as an elegant path through complexity is an interpretation, not an artist statement.",
+      "tags": [
+        "portrait",
+        "hair",
+        "elegance",
+        "pattern"
+      ],
+      "interpretation_limit": "Interpretation from image and editorial context; no artist explanation of these symbols recovered.",
+      "dimensions": [
+        186,
+        190
+      ],
+      "preview": "previews/U12.jpg"
+    },
+    {
+      "id": "U13",
+      "file": "artwork/think-act-page-51-image-05.jp2",
+      "label": "Simply genius",
+      "source_id": "simplicity",
+      "page": 51,
+      "source_status": "article_verified",
+      "observed_symbols": [
+        "Bare rounded head with a bright gradient",
+        "Thin radiating strokes",
+        "Same eye and mouth vocabulary",
+        "Zigzag-patterned clothing"
+      ],
+      "interpretation": "The chart labels it “Simply Genius.” Removing the elaborate head structures while retaining luminosity provides a clear visual reduction. Radiating strokes suggest insight, though they need not imply spiritual illumination.",
+      "tags": [
+        "portrait",
+        "radiance",
+        "simplification",
+        "pattern"
+      ],
+      "interpretation_limit": "Interpretation from image and editorial context; no artist explanation of these symbols recovered.",
+      "dimensions": [
+        213,
+        202
+      ],
+      "preview": "previews/U13.jpg"
+    }
+  ]
+}

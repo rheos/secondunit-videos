@@ -1,0 +1,46 @@
+[
+  {
+    "url": "https://s3.amazonaws.com/media.ai-ap.com/images/cfe/AI35/jury/137095.JPG",
+    "file": "artwork/lets-get-physical-2015.jpg",
+    "ok": true,
+    "bytes": 308505,
+    "sha256": "efc78fdf780396ff16c46e6f54cafdce48ba794f3ff8316d1b1db9ccd04dfa84"
+  },
+  {
+    "url": "https://s3.amazonaws.com/media.ai-ap.com/images/cfe/AI36/jury/169328.jpg",
+    "file": "artwork/innovate-bravely-emmett-chapman-2016.jpg",
+    "ok": true,
+    "bytes": 429350,
+    "sha256": "cceac0dff14574d2c79ac9e0c86a7b97cd57b7428b7d1893be1e82352b4acf09"
+  },
+  {
+    "url": "https://www.rolandberger.com/publications/publication_pdf/roland_berger_ta_complexity_en.pdf",
+    "file": "sources/think-act-23-complexity.pdf",
+    "ok": true,
+    "bytes": 9533218,
+    "sha256": "222b27a71bf28cb24c8f23c3226a80cf67abe2cc85553e40597564011aabb9e2"
+  },
+  {
+    "url": "https://thesis.ncad.ie/T1192_Surrealistic%20Image%20Manipulation%20In%20The%20Field%20Of%20Visual%20Communication_NC00205923.pdf",
+    "file": "sources/surrealistic-image-manipulation-thesis.pdf",
+    "ok": true,
+    "bytes": 35171324,
+    "sha256": "4f5b05a7de37eefc9e2e76f1920977fa87a418e9817caa95c0adbc907aedcd8c"
+  },
+  {
+    "source": "User-provided reference image",
+    "source_path": "/Users/robin/Desktop/machine elves.jpg",
+    "file": "artwork/machine elves.jpg",
+    "ok": true,
+    "bytes": 78326,
+    "sha256": "36092fb44787bad9d52f824a4bf928d1458b5377c05fe551e2f581110f3b4a2a"
+  },
+  {
+    "source": "User-provided reference image",
+    "source_path": "/Users/robin/Desktop/thisgoesintothis.jpg",
+    "file": "artwork/thisgoesintothis.jpg",
+    "ok": true,
+    "bytes": 84232,
+    "sha256": "f49592851cdb6fcb96d1c5d5362d02b24daed6c0b80c764ce3dae252bd54fff5"
+  }
+]
