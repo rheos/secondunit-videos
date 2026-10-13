@@ -394,9 +394,14 @@ SU.d_birdSwap = { mode: 'ill', f(q, p, a, T) {
 // the hat at the swap), the bars are in front of him, and his arm reaches up through a gap between two bars ----------
 SU.d_featherFall = { mode: 'ill', f(q, p, a, T) {
   stripes('#e9e4d0', '#d7e2d0', 150, -.62, 0, C.sage); cam(960, 540, lerp(1, 1.05, eo(p)));
-  const bfx = lerp(1500, 1820, p), bfy = lerp(220, 110, p); bird(bfx, bfy, .25, d_wing3()); d_fedora(bfx + 12, bfy - 12, .25);
+  const bfx = lerp(1500, 1820, p), bfy = lerp(220, 110, p); bird(bfx, bfy, .25, d_wing3());
+  // assembler (continuity into act E, where he wears it): once he has the feather, the bird lets the hat go and it drops
+  // through the bars onto his head
+  const hatU = eo(cl((T - 362.0) / .9)), hatOn = T >= 362.9;
+  if (T < 362.0) d_fedora(bfx + 12, bfy - 12, .25);
+  else if (!hatOn) { const hxx = lerp(bfx + 12, 520 + 6, hatU), hyy = lerp(bfy - 12, 1560 - 335 * 2.5, hatU); d_fedora(hxx, hyy, lerp(.25, 2.5, hatU)); gl(bfx + 12, bfy - 12, hxx, hyy, C.orange, .6, 2, [6, 8]); }
   const fs = 2.5, fx = 520, fy = 1560, aR = [2.9, .1];
-  traveller(fx, fy, fs, { look: 1, mouth: sing(T), case: false, hat: false, armR: aR });
+  traveller(fx, fy, fs, { look: 1, mouth: sing(T), case: false, hat: hatOn, armR: aR });
   const ap = armIK(26, -262, aR[0], aR[1], 1), hx = fx + ap[2][0] * fs, hy = fy + (ap[2][1] + 4) * fs;
   const bars = [140, 420, 760, 1060, 1360, 1660, 1900];
   for (const x of bars) { const b = PR(x - 13, -100, 26, H + 200); fillP(b, '#5a3a22'); hatch(b, x, 540, 700, .2, 4, C.ink, .9, .6, [6, 0]); iline(x - 13, -100, x - 13, H + 100, C.ink, 2.4); iline(x + 13, -100, x + 13, H + 100, C.ink, 2.4); }
