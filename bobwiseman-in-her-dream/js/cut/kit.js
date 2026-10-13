@@ -57,6 +57,7 @@ const MOTTLE = (() => { const c = document.createElement('canvas'); c.width = W;
 // cut(path, fill, opts): one layer of cut paper. sh = shadow strength, lift = height above the layer
 // below (bigger, softer shadow), grain = how much paper texture shows on it.
 function cut(path, fill, { sh = 1, grain = .22, lift = 0, alpha = 1, rule = 'nonzero' } = {}) {
+  { const m = g.getTransform(); if (Math.abs(m.a * m.d - m.b * m.c) < 1e-6) return; }   // a shape scaled to nothing draws nothing
   g.save();
   if (alpha < 1) g.globalAlpha *= alpha;
   if (sh > 0) { g.shadowColor = `rgba(20,16,30,${.32 * sh})`; g.shadowBlur = 16 + lift * 12; g.shadowOffsetX = 4 + lift * 4; g.shadowOffsetY = 7 + lift * 6; }
@@ -151,7 +152,8 @@ function cloud(x, y, w, h, seed = 0) {
 // a five-petal paper flower
 function flowerPath(x, y, r, petals = 5, rot = 0) {
   const p = new Path2D();
-  for (let i = 0; i < petals; i++) { const a = rot + Math.PI * 2 * i / petals; p.ellipse(x + Math.cos(a) * r * .55, y + Math.sin(a) * r * .55, r * .5, r * .3, a, 0, Math.PI * 2); }
+  for (let i = 0; i < petals; i++) { const a = rot + Math.PI * 2 * i / petals; const ex = x + Math.cos(a) * r * .55, ey = y + Math.sin(a) * r * .55;
+    p.moveTo(ex + Math.cos(a) * r * .5, ey + Math.sin(a) * r * .5); p.ellipse(x + Math.cos(a) * r * .55, y + Math.sin(a) * r * .55, r * .5, r * .3, a, 0, Math.PI * 2); }
   return p;
 }
 function flower(x, y, r, col, centre = C.gold, rot = 0, opts = {}) { cut(flowerPath(x, y, r, 5, rot), col, { sh: .6, ...opts }); cut(circle(x, y, r * .26), centre, { sh: .3, grain: .1 }); }
