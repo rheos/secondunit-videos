@@ -4,3 +4,4 @@ _in/
 out/
 *.lyrics*.txt
 node_modules
+assets/alchemy/
