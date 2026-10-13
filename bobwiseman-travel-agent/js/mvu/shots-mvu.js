@@ -128,12 +128,4 @@ SU.mvu_droste = { mode: 'ill', f(q, p, a, T) {
   while (depth-- > 0) X.restore();
 } };
 
-// ---------- drop the five into their slots ----------
-(function () {
-  const swap = (list, t, key) => { const c = list && list.find((x) => Math.abs(x[0] - t) < .01); if (c) { c[1] = key; c[2] = {}; c[3] = undefined; } };
-  swap(window.CUTS_A, 107.8, 'mvu_dialFace');
-  swap(window.CUTS_C, 252.02, 'mvu_cinema');
-  swap(window.CUTS_D, 293.72, 'mvu_app');
-  swap(window.CUTS_D, 302.6, 'mvu_sChart');
-  swap(window.CUTS_E, 375.08, 'mvu_droste');
-})();
+// (slots now live directly in the act cut lists; see js/acts/act-*.js)

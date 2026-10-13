@@ -58,11 +58,4 @@ SU.f_dotStones = { mode: 'ill', f(q, p, a, T) {
   consL([[0, 600, W, 600]]);
 } };
 
-// patch the cut lists
-(function () {
-  const swap = (list, t, key, args, post) => { const c = list.find((x) => Math.abs(x[0] - t) < .01); if (c) { c[1] = key; c[2] = args; c[3] = post; } };
-  if (window.CUTS_B) swap(CUTS_B, 146.22, 'f_knot', {});
-  if (window.CUTS_C) swap(CUTS_C, 262.64, 'f_heroFlat', {});
-  if (window.CUTS_D) swap(CUTS_D, 336.78, 'f_hatCage', {});
-  if (window.CUTS_E) swap(CUTS_E, 379.3, 'f_dotStones', {});
-})();
+// (slots now live directly in the act cut lists; see js/acts/act-*.js)

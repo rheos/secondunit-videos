@@ -390,7 +390,7 @@ var CUTS_B = [
   [136.18, 'b_sLoad', {}],                        // mule: load test, centre of mass outside the base, still standing
   [138.96, 'puppetHand', {}],                     // I see the string: up to a hand in the sky
   [141.36, 'b_sMarionette', {}],                  // string: the rigging, and a second bar above held by nobody
-  [146.22, 'mule', { pull: 1 }],                  // tied to: he pushes the stick further, gap unchanged
+  [146.22, 'f_knot', {}],                  // tied to: he pushes the stick further, gap unchanged
   [149.12, 'sCarrot', {}],                        // carrot: the motivation diagram
   [151.14, 'b_balloons', {}],                     // dangling: carrots dangle UP like balloons and lift him off the road
   [155.14, 'muleCircle', {}],                     // the queue closes into a ring of mules

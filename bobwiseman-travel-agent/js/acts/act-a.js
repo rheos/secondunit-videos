@@ -545,7 +545,7 @@ var CUTS_A = [
   [100.0, 'sHold', {}],
   // "help me quick"
   [104.2, 'stampWorld', { mark: 'URGENT' }],
-  [107.8, 'stampT', { mark: 'RUSH', to: 'AWAY' }],
+  [107.8, 'mvu_dialFace', {}],
   [109.95, 'sTicket', { note: 'DEPARTS: NOW' }],
   [112.25, 'a_rushRoad', {}],
 ];

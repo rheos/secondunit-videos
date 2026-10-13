@@ -272,8 +272,8 @@ var CUTS_E = [
   [365.5, 'appInside', {}],                               // "Travel agent": she is tiny inside his phone, the screen's bars a cage
   [368.28, 'e_sPhoneCage', {}],                           // blueprint: signal bars = cage bars, her voice bounces back
   [371.88, 'e_fromInside', {}],                           // "travel agent": her side of the glass, his giant face, his finger taps
-  [375.08, 'e_droste', { loops: 1.5 }],                   // instrumental: him over his phone / her over her monitor, forever
-  [379.3, 'phoneApp', { screen: 'chat', z0: 1.12, z1: 1.3, fy: 440 }], // "Travel agent": the chat, her typing dots
+  [375.08, 'mvu_droste', {}],                   // instrumental: him over his phone / her over her monitor, forever
+  [379.3, 'f_dotStones', {}], // "Travel agent": the chat, her typing dots
   [382.46, 'e_sTyping', {}],                              // "I've got to know": blueprint of the typing dots
   [385.18, 'e_answerHome', {}],                           // "know": her reply is a map; the pin lands on the shop he started from
   [387.84, 'e_freeze', {}],                               // instrumental: the world un-draws, his notes freeze into snow

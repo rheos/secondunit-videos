@@ -425,10 +425,10 @@ var CUTS_D = [
   [284.4, 'sSeesaw', {}],                                  // the balance, drawn
   [286.3, 'd_heartGiant', {}],                             // the heart is a hill he stands on; pull out
   [290.4, 'd_mirror', {}],                                 // his reflection scans into her, in his hat
-  [293.72, 'phoneApp', { screen: 'cards' }],               // CHORUS 3 "Travel agent": she is the app now
+  [293.72, 'mvu_app', {}],               // CHORUS 3 "Travel agent": she is the app now
   [297.0, 'd_appTower', {}],                               // the app is a tower; he is tiny at its foot
   [300.1, 'd_sApp', {}],                                   // "travel agent": the tower drawn, the agent's four forms
-  [302.6, 'd_homeIcons', {}],                              // every icon his face, flipping to hers
+  [302.6, 'mvu_sChart', {}],                              // every icon his face, flipping to hers
   [306.7, 'd_bigButton', {}],                              // "Travel agent, book me": he and his own thumb go for BOOK
   [310.06, 'phoneApp', { popup: 1 }],                      // "book me a tour": the pop-up book
   [313.6, 'd_ticketPrint', {}],                            // the tour prints like a receipt; torn off at 316.0
@@ -437,7 +437,7 @@ var CUTS_D = [
   [325.5, 'treadmill', {}],                                // "half the cure"
   [329.6, 'd_dolls', {}],                                  // instrumental: him inside his suitcase inside him...
   [334.42, 'worldCage', {}],                               // "A bird in a cage"
-  [336.78, 'cage', {}, POST.d_hatBird],                    // "cage": the bird in his hat, under his cloud
+  [336.78, 'f_hatCage', {}],                    // "cage": the bird in his hat, under his cloud
   [339.8, 'd_ribCage', {}],                                // "doesn't": the cage is in his chest
   [343.98, 'sCage', {}],                                   // "sing": OUTPUT: SILENCE
   [346.6, 'd_staveCage', {}],                              // the held note: staves as bars, notes pile up inside
