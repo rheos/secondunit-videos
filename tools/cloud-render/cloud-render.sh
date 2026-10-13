@@ -66,7 +66,7 @@ asset=$(gh api --paginate repos/$REPO/releases --jq ".[] | select(.tag_name==\"$
 [[ -n $asset ]] || { echo "release asset not found"; exit 1; }
 
 # 2. run
-gh workflow run cloud-render.yml --repo $REPO ${CR_REF:+--ref $CR_REF} -f crf=$crf -f label=$label -f asset_id=$asset -f page=$page -f t0=$t0 \
+gh workflow run cloud-render.yml --repo $REPO ${CR_REF:+--ref=$CR_REF} -f crf=$crf -f label=$label -f asset_id=$asset -f page=$page -f t0=$t0 \
   -f frames=$frames -f slices=$slices -f fps=$fps -f width=$width -f height=$height
 run=""
 for i in {1..30}; do
