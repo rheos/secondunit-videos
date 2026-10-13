@@ -1,0 +1,7 @@
+{
+  "name": "bobwiseman-travel-agent",
+  "private": true,
+  "type": "module",
+  "description": "Bob Wiseman, Travel Agent: illustrated + schematic procedural film, every frame drawn in canvas code.",
+  "devDependencies": { "playwright": "^1.55.0" }
+}
