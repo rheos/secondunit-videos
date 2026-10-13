@@ -232,6 +232,14 @@ const LEAK_CLEAR = {
   d_featherFall: [[480, 810, 170]],
   e_appInside: [['rect', 700, 20, 1250, 1000], [246, 690, 130]],
   e_dotHenge: [[360, 990, 120], [570, 440, 200], [975, 420, 200], [1371, 440, 200]],
+  e_answerHome: [[300, 780, 230], ['rect', 600, 120, 1820, 980]],
+  e_freeze: [['rect', 760, 220, 1080, 1000]],
+  e_globeBlow: [[972, 600, 440]], snowGlobe: [[972, 600, 440]],
+  e_mindSnow: [[830, 600, 420], [1250, 260, 220]],
+  d_birdSwap: [[600, 520, 200], [1360, 480, 260], [390, 760, 150]],
+  d_staveCage: [['rect', 780, 40, 1720, 1040], [400, 700, 180]],
+  d_wingFrame: [['rect', 460, 60, 1420, 800], [260, 620, 200]],
+  d_coatWings: [[940, 540, 300]],
 };
 function buildShots() {
   const CUTS = [].concat(...['A', 'B', 'C', 'D', 'E'].map((k) => window['CUTS_' + k] || [])).sort((a, b) => a[0] - b[0]);
