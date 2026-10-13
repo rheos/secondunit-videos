@@ -73,13 +73,26 @@ SU.appInside = { mode: 'ill', f(q, p, a, T) { // chorus 4: she is inside his pho
   traveller(300, 1180, 1.6, { look: 1, mouth: sing(T), case: false }); cloud(300, 1180 - 720, .9, { rain: true }); noteRain(160, 520, 280, 300, 10);
   bird(1500, 220, .9, flap()); gc(1500, 220, 120, C.orange, .6, 1.6);
 } };
-SU.shopClosed = { mode: 'ill', f(q, p, a, T) { // the agency closed, for lease; he stands outside in the snow, on his phone; little Bob passes
+SU.shopClosed = { mode: 'ill', f(q, p, a, T) { // the ending (Robin's call: end on the shop): the agency closed, for lease, at dusk in
+  // settled snow; he stands under the lamp reading his phone, turns his head as little Bob passes with piano and Junos
   SU.shop.f(q, p, { snow: 1, closed: 1, z: 1, push: 1.03 }, T);
+  const fx = 380, fy = 150, fw = 1160, fh = 760;
+  // the lamp is lit: a flat hatched pool of light, no gradient
+  const cone = PP([[300, 150], [130, fy + fh + 90], [480, fy + fh + 90]]); fillP(cone, '#f0d27a', .32); hatch(cone, 300, 600, 480, 1.4, 9, C.ochre, 1, .35); fillP(PE(300, 140, 24, 18), '#ffe9a8'); iE(300, 140, 26, 20, 0, C.ink, 2.2);
   const wx = 470, wy = 490, ww = 620, wh = 360; fillP(PR(wx, wy, ww, wh), '#cbc3b0'); hatch(PR(wx, wy, ww, wh), wx + ww / 2, wy + wh / 2, 420, .8, 10, C.ink, .9, .45); iBox(wx, wy, ww, wh, C.ink, 3); iline(wx + ww / 2, wy, wx + ww / 2, wy + wh, C.ink, 3);
   const sg = PR(wx + 160, wy + 110, 300, 140); fillP(sg, C.cream); iBox(wx + 160, wy + 110, 300, 140, C.ink, 2.4); lab(wx + 310, wy + 175, 'FOR LEASE', C.brick, 1, 30, 'center', 'alphabetic', 'bold'); lab(wx + 310, wy + 215, 'ENQUIRE ONLINE', C.ink, .8, 13, 'center');
   souvenirsOn(wx + 30, wy + wh - 6, T, .6);
-  traveller(1360, 1010, .7, { look: -.2, armR: [2.6, -1.9], hat: true }); phoneBody(1385, 760, .14, -.2, (w, h) => appScreen(w, h, T, 'chat')); cloud(1360, 680, .45, {});
-  littleBob(lerp(-250, 2300, seg(T, 400.0, 402.3)), 1040, .62, T);
+  // settled snow: on the sign, the awning, the sill, and drifts along the pavement
+  const drift = (x0, x1, y, th, seed) => { const r = M32(seed), top = []; for (let x = x0; x <= x1; x += 24) top.push([x, y - th * (.6 + r() * .5)]); const pts = top.concat([[x1, y + 4], [x0, y + 4]]); fillP(PP(pts), '#fbfbf6'); hatch(PP(pts), (x0 + x1) / 2, y, (x1 - x0) / 2, .2, 9, C.sky, .8, .25); iP(top, false, C.ink, 1.8, 1, false, .6); };
+  drift(fx + 130, fx + fw - 130, fy + 36, 16, 71); drift(fx + 60, fx + fw - 60, fy + 190, 20, 72); drift(wx, wx + ww, wy + wh, 14, 73); drift(-40, W + 40, fy + fh + 6, 26, 74);
+  const pv = PP([[-200, fy + fh + 40], [W + 200, fy + fh + 40], [W + 200, H + 40], [-200, H + 40]]); fillP(pv, '#f4f4ee', .75); hatch(pv, 960, 1000, 1100, .1, 14, C.sky, .8, .3);
+  // little Bob crosses the whole frame, on screen from the cut, at a walk (Bob's standing request)
+  const bx = lerp(930, 1880, seg(T, 400.0, 403.42));
+  // the traveller under the lamp: reading his phone, then his head turns to watch little Bob go by
+  const tx = 330, ty = 1010, ts = .78, look = lerp(-.3, 1, eo(seg(bx, 960, 1250)));
+  traveller(tx, ty, ts, { look, armR: [2.6, -1.9], hat: true }); const [hx, hy] = handAt(tx, ty, ts, [2.6, -1.9]);
+  phoneBody(hx + 6, hy - 20, .14, -.2, (w, h) => appScreen(w, h, T, 'chat')); cloud(tx, ty - 520 * ts, .45, {});
+  littleBob(bx, 1050, .8, T);
 } };
 SU.forkRoad = { mode: 'ill', f(q, p, a, T) { // "didn't use a fork": a fork in the road, and he goes straight between the branches
   stripes(C.paper, '#e0cfd6', 140, -.62, 0, C.plum); cam(960, 540, lerp(1.05, 1, eo(p)));

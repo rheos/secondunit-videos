@@ -52,7 +52,7 @@ SU.f_dotStones = { mode: 'ill', f(q, p, a, T) {
   stripes('#ebe6da', '#dcd6c6', 150, -.62, 0, C.sky); cam(960, 560, lerp(1.08, 1, eo(p)));
   const g = PR(-200, 760, W + 400, 400); fillP(g, '#fbfbf6'); hatch(g, 960, 900, 1300, .1, 12, C.ink, .8, .2); iline(-200, 760, W + 200, 760, C.ink, 2.4);
   for (let i = 0; i < 3; i++) { const ph = ((T * 2.2) - i * .5), lift = Math.max(0, Math.sin(ph)) * 90, x = 620 + i * 340, y = 600 - lift, st = PE(x, y, 130, 130); fillP(PE(x, 770, 130 - lift * .4, 26), C.ink, .25); fillP(st, '#9a9692'); shade(st, x, y, 140, [26, -26], .7, 5); iE(x, y, 130, 130, 0, C.ink, 3.4); stip(st, x, y, 130, 300, C.ink, .4, 2); }
-  traveller(300, 1000, 1.05, { look: 1, mouth: sing(T), armR: [2.6, -1.9] }); phoneBody(325, 640, .12, -.2, (w, h) => appScreen(w, h, T, 'chat')); cloud(300, 470, .55, { rain: true });
+  traveller(300, 1000, 1.05, { look: 1, mouth: sing(T), armR: [2.6, -1.9] }); { const [hx, hy] = handAt(300, 1000, 1.05, [2.6, -1.9]); phoneBody(hx + 6, hy - 22, .12, -.2, (w, h) => appScreen(w, h, T, 'chat')); } cloud(300, 470, .55, { rain: true });
   snowFlakes(300, T, '#ffffff', .9, 3);
   lab(960, 960, 'SHE IS TYPING', C.ink, .8, 18, 'center', 'alphabetic', 'bold'); lab(960, 990, 'T+ ' + Math.max(0, T - 379.3).toFixed(1) + ' S', C.brick, .9, 15, 'center');
   consL([[0, 600, W, 600]]);

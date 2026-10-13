@@ -6,25 +6,33 @@
 'use strict';
 
 // ---------- the merge: the blueprint burns through the paper (ill shots, last third) ----------
-const LEAK_T0 = 272, LEAK_T1 = 392;
+const LEAK_T0 = 272, LEAK_T1 = 392; // the eased progress reaches ~1 (about a third of the frame) at LEAK_T1
+// Robin 2026-10-13 (draft 6): the paper should really BURN, to about a third of the frame by ~392 s, then the snow
+// heals it. Holes are fixed in SCREEN space (same place in every shot, so they read as the paper itself burning),
+// each born at its own moment and growing; edges torn and charred with an ember line; the frame centre is kept
+// clearer so faces stay readable. a = 0..1 progress (story.js: eased from LEAK_T0 to LEAK_T1; healing in snowSettle).
+const LEAK_HOLES = (() => { const r = M32(9191), out = [];
+  for (let i = 0; i < 16; i++) { let x = r() * W, y = r() * H; const dx = (x - W / 2) / (W * .5), dy = (y - H / 2) / (H * .5), d = Math.hypot(dx, dy);
+    if (d < .7) { x = W / 2 + dx / (d || 1) * W * .5 * .76; y = H / 2 + dy / (d || 1) * H * .5 * .76; }
+    const born = Math.min(.7, i * .045 + r() * .08), Rmax = 92 + r() * 138, shape = [], ph = r() * TAU; for (let k = 0; k < 56; k++) { const t = k / 56 * TAU; shape.push(.86 + .12 * Math.sin(t * 2 + ph) + .07 * Math.sin(t * 5 + i) + (r() - .5) * .09); }
+    out.push({ x, y, born, Rmax, shape, rot: r() * TAU }); } return out; })();
 function leak(a) {
-  if (a <= 0) return; const r = M32(4040 + DSEED * 13);
-  for (let i = 0; i < 5; i++) {
-    // holes keep to the edges of frame so the subject stays readable; they grow and multiply as the merge takes over
-    let x = r() * W, y = r() * H; const dx = (x - W / 2) / (W * .46), dy = (y - H / 2) / (H * .46), d = Math.hypot(dx, dy); if (d < 1) { x = W / 2 + dx / (d || 1) * W * .46; y = H / 2 + dy / (d || 1) * H * .46; }
-    const R0 = (34 + r() * 100) * cl(a * 1.5 - i * .2), sd = r(); if (R0 < 5) continue;
-    const pts = []; for (let k = 0; k < 28; k++) { const an = k / 28 * TAU, rr = R0 * (.78 + .22 * Math.sin(an * 3 + i * 1.7) + .12 * Math.sin(an * 7 + sd * 9)); pts.push([x + Math.cos(an) * rr, y + Math.sin(an) * rr]); }
-    const hp = PP(pts);
-    X.save(); X.clip(PE(x, y, R0 * 1.3, R0 * 1.3)); hatch(PE(x, y, R0 * 1.3, R0 * 1.3), x, y, R0 * 1.3, .9 + i, 4, C.dark, 1, .45); X.restore(); // scorch
-    X.save(); X.clip(hp); X.fillStyle = C.navy; X.fillRect(x - R0 * 1.4, y - R0 * 1.4, R0 * 2.8, R0 * 2.8);
-    lattice(x, y, 24, Math.ceil(R0 / 32) + 1, C.lav, .35); stip(null, x, y, R0, R0 * 4, C.lav, .55, 1.3); if (R0 > 60) star(x + R0 * .2, y - R0 * .1, 3 + R0 * .02, C.white, .8); gc(x, y, R0 * .6, C.lav, .3, 1, [3, 6]); X.restore();
-    iP(pts, true, C.ink, 3, 1, true, 1.4);
+  if (a <= 0) return;
+  for (const h of LEAK_HOLES) {
+    const g = cl((a - h.born) / (1 - h.born)); if (g <= 0) continue;
+    const R0 = h.Rmax * Math.pow(g, .8); if (R0 < 4) continue;
+    const pts = h.shape.map((m, k) => { const an = h.rot + k / h.shape.length * TAU, rr = R0 * m * (1 + jit(.03)); return [h.x + Math.cos(an) * rr, h.y + Math.sin(an) * rr]; });
+    const hp = PP(pts), scorch = PP(pts.map(([x, y]) => [h.x + (x - h.x) * 1.16, h.y + (y - h.y) * 1.16]));
+    X.save(); X.clip(scorch); hatch(scorch, h.x, h.y, R0 * 1.25, h.rot + .9, 3.5, C.dark, 1.2, .6); hatch(scorch, h.x, h.y, R0 * 1.25, h.rot - .6, 5, '#2b1d14', 1, .4); X.restore();
+    X.save(); X.clip(hp); X.fillStyle = C.navy; X.fillRect(h.x - R0 * 1.5, h.y - R0 * 1.5, R0 * 3, R0 * 3);
+    graticule(W / 2, H / 2, W * 1.2, H * 1.2, 40, C.lav, .14);               // one blueprint grid behind every hole: they read as one sheet underneath
+    lattice(h.x, h.y, 26, Math.ceil(R0 / 34) + 1, C.lav, .3); stip(null, h.x, h.y, R0, R0 * 5, C.lav, .55, 1.3);
+    if (R0 > 70) { star(h.x + R0 * .15, h.y - R0 * .1, 3 + R0 * .02, C.white, .85); gc(h.x, h.y, R0 * .55, C.lav, .3, 1, [3, 6]); ticks(h.x, h.y, R0 * .55, 36, 5, C.lav, .35, 1, 6); }
+    X.restore();
+    X.beginPath(); wP(pts, true, 1.6); stroke(C.orange, 3, .85); X.beginPath(); wP(pts, true, 1.2); stroke('#2b1d14', 1.6, 1);
+    for (let k = 0; k < 6; k++) { const q = pts[(k * 7 + (FD >> 1)) % pts.length]; fillP(PE(q[0] + jit(6), q[1] + jit(6), 2.4, 2.4), C.orange, .9); } // embers
   }
-  X.beginPath(); for (let i = 0; i < 7; i++) { const y = r() * H, L = W * cl(a * 1.5 - i * .1), dy = (r() - .5) * 400; X.moveTo(0, y); X.lineTo(L, y + dy * L / W); } stroke(C.lav, 1.4, .55 * cl(a * 2));
-  for (let i = 0; i < 4; i++) { const x = r() * W, y = r() * H; gc(x, y, (160 + r() * 360) * cl(a * 1.4 - i * .1), C.lav, .45 * cl(a * 2), 1.2, [4, 6]); }
-  for (let i = 0; i < 5; i++) { const x = r() * W, y = r() * H; if (a > .3 + i * .1) { X.beginPath(); X.moveTo(x - 12, y); X.lineTo(x + 12, y); X.moveTo(x, y - 12); X.lineTo(x, y + 12); stroke(C.lav, 1.2, .7); } }
 }
-
 // ---------- act 2: one impossible thing ----------
 SU.roadCarpet = { mode: 'ill', f(q, p, a, T) { // the road rolls itself up behind the car
   stripes(C.paper, '#e6d9b8', 140, -.62, 0, C.tan); cam(960, 540, lerp(1.05, 1, eo(p)));

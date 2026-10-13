@@ -32,6 +32,8 @@ function ik(sx, sy, hx, hy, side, L1 = 70, L2 = 66) {
   const e1 = [mx + nx * h, my + ny * h], e2 = [mx - nx * h, my - ny * h], sc = (e) => e[1] + .35 * side * e[0];
   return [[sx, sy], sc(e1) >= sc(e2) ? e1 : e2, [hx, hy]];
 }
+// Screen position of the traveller's FRONT hand for a pose: place held props (phones, tickets) here so they stay in his hand.
+function handAt(x, y, s, armR = [-.12, .25], o = {}) { const hd = ik(26, -262, ...arm(26, -262, armR[0], armR[1])[2], 1)[2]; return [x + (o.flip ? -1 : 1) * hd[0] * s, y + hd[1] * s]; }
 const armIK = (sx, sy, a1, a2, side, target) => { const fk = arm(sx, sy, a1, a2); const hnd = target || fk[2]; return ik(sx, sy, hnd[0], hnd[1], side); };
 const arm = (sx, sy, a1, a2, L1 = 70, L2 = 66) => { const ex = sx + Math.sin(a1) * L1, ey = sy + Math.cos(a1) * L1; return [[sx, sy], [ex, ey], [ex + Math.sin(a1 + a2) * L2, ey + Math.cos(a1 + a2) * L2]]; };
 

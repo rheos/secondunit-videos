@@ -234,6 +234,6 @@ function buildShots() {
     const frame = (args.fx !== undefined || args.fy !== undefined || args.fz !== undefined) ? { fx: args.fx, fy: args.fy, fz: args.fz } : null;
     // q runs across the sung section this cut sits in, so a scene keeps moving over its returns
     const k = SEC_T.findIndex((t) => t > t0 + 1e-6), s0 = SEC_T[Math.max(0, k - 1)], s1 = SEC_T[k] ?? 403.42;
-    return { t0, t1, mode: su.mode, key, draw: (p, lt) => { const T = t0 + lt, q = cl((T - s0) / (s1 - s0)); NOTES = T < 59 ? 0 : Math.round(lerp(2, 10, cl((T - 59) / 250))); CAMO = frame; su.f(q, p, args, T); if (post) post(q, p, T); CAMO = null; if (su.mode === 'ill' && key !== 'shopClosed' && key !== 'snowSettle' && key !== 'droste' && key !== 'e_droste' && key !== 'mvu_droste' && T > LEAK_T0) { screen(); leak(cl((T - LEAK_T0) / (LEAK_T1 - LEAK_T0))); } } };
+    return { t0, t1, mode: su.mode, key, draw: (p, lt) => { const T = t0 + lt, q = cl((T - s0) / (s1 - s0)); TNOW = T; NOTES = T < 59 ? 0 : Math.round(lerp(2, 10, cl((T - 59) / 250))); CAMO = frame; su.f(q, p, args, T); if (post) post(q, p, T); CAMO = null; if (su.mode === 'ill' && key !== 'shopClosed' && key !== 'droste' && key !== 'e_droste' && key !== 'mvu_droste' && T > LEAK_T0) { screen(); const lp = Math.pow(cl((T - LEAK_T0) / (LEAK_T1 - LEAK_T0)), 1.6); leak(key === 'snowSettle' ? 1 - eo(cl(p * 1.25)) : lp); } } };
   });
 }
