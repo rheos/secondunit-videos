@@ -1,6 +1,6 @@
 # All The Trees — alchemical engraving look test
 
-Issue #119. V1/v2 established song time 47.000–79.500 s (780 frames). Robin then requested a longer rough preview: v3 extends 47.000–153.083333 s (2546 frames at 24 fps), through the end of the source audio. The opening spoken section is not part of this cut. Exact visual cue timing and final look approval remain open.
+Issue #119. V1/v2 established song time 47.000–79.500 s; v3 extended through the end. Robin then asked for the lead-in before 47 s. V4 now covers the complete source: 0–153.083333 s, song frames [0,3674) at 24 fps. The spoken opening is included. Exact visual cue timing and final look approval remain open.
 
 The key image is two engraved people whose hands become boughs and whose roots join below ground. Above the soil they remain distinct; below it their relationship becomes visible. The sun and moon are faces, not decorations attached to faces. This takes Mark Von Ulrich's bodily metaphor and physical relationships into the emblem tradition; his early-Mac rendering is not used here.
 
@@ -15,3 +15,5 @@ Protect: the joined-root thesis, source faces, fine linework, bright colour, con
 Delivery: local 720p MP4, 2.5-second contact strip and full-resolution figure checks; source and generated media remain ignored. Keep PR #115 draft until Robin approves the look. Do not contact Bob or upload the video.
 
 Extended progression: the original pair becomes a four-person community, a heart rises out of the root junction and gains an engraved sun ring, the cloud trumpeters take over an abstract passage, and an eight-person grove returns for the final chorus. The new cast keeps its original engraved heads in front of crossing branches. A soil lip covers the roots while the people retreat during the instrumental. See STORYBOARD-extended.md for chapter boundaries and the protect list.
+
+Opening progression: a line inscribes the blank plate, one historical face accumulates into a chart of six emblem-bearing portraits, and colour plus cloud heralds enter with the brass. The chart contracts into two trees. A substantial branching root network is revealed beneath the soil, retracts, and the trees sink to prepare the existing first chorus. Emblem changes are provisional phrase-level choreography, not a verified name-by-name transcription.

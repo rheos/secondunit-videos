@@ -1,4 +1,23 @@
-# All The Trees: extended rough cut v3
+# All The Trees: full rough cut v4
+
+Robin requested more of the lead-in before the original 47-second start. V4 adds the complete opening and retains the longer sequence through the end. The target file is `out/att_alchemy-v4-full_f00000-f03674_24fps_draft.mp4`: song frames [0,3674), 0–153.083333 seconds, 153.083333 seconds at 24 fps, 1280×720. The pinned source ends at 153.066 seconds, within the final picture frame. Prior MP4s are preserved.
+
+The new opening inscribes a border on cream paper, turns one engraved face into a six-portrait chart with changing emblems, brings in colour and heralds with the brass, then reveals two trees joined by substantial branching roots. The roots retract before the trees sink, leaving the existing stage ready for the first person. No new source images or paid generation are used.
+
+Two independent read-only critics reviewed opening stills/code and the overall progression against the v3 contact strip. Root offshoots were added to avoid a cable-like connection, and root retreat was separated from the sinking trees to avoid clipped stubs. The initial portrait now starts closer, moves into the chart and retains gentle motion before the brass. Entering clouds are clipped to the plate. A brief empty-stage breath before the first person remains a nonblocking polish point; preserving the existing chorus choreography took priority.
+
+## Verification for v4
+
+The random-access audit covers the 3674-frame song/pose mapping and 26 sampled timestamps, including the opening and handoff. It verifies opaque output, no resource/JavaScript errors, deterministic out-of-order seeks, and four unchanged v2 chorus samples. The encoded export and audio checks are pending completion of this render.
+
+The added 118 harmonic onset candidates bring the total to 456. The first four portrait entrances use rough opening phrase estimates; the later entrances are editorial staging, not verified spoken-name alignment. All visual word/brass timing remains provisional. Neither still/code review nor audio correlation is a playback/listening assessment.
+
+Keep PR #115 draft. Do not upload the video or contact Bob. No scans, song, stems, lyrics or rendered media are committed.
+
+---
+
+## Prior v3 review record
+
 
 Current local preview: `out/att_alchemy-v3-long_f01128-f03674_24fps_draft.mp4`. Song time 47.000–153.083333 seconds, end exclusive; frames [1128,3674), 2546 frames at 24 fps. The pinned audio ends at 153.066 seconds, inside the last picture frame. This is a 106.083-second rough cut through the rest of the song. The opening spoken section is not included.
 

@@ -10,7 +10,7 @@ info=json.loads(subprocess.check_output(['ffprobe','-v','error','-show_streams',
 v=next(x for x in info['streams'] if x['codec_type']=='video'); a=next(x for x in info['streams'] if x['codec_type']=='audio')
 assert (v['width'],v['height'],v['r_frame_rate'],int(v['nb_frames']))==(1280,720,'24/1',count)
 assert abs(float(info['format']['duration'])-duration)<.05
-# Fixed frame indices, not fps-filter sampling: song time 47 + i*2.5 exactly.
+# Fixed frame indices, not fps-filter sampling: song time start + i*2.5 exactly.
 raw=subprocess.check_output(['ffmpeg','-v','error','-i',str(movie),'-vf',"select='not(mod(n,60))',scale=480:270",'-fps_mode','vfr','-f','rawvideo','-pix_fmt','rgb24','-'])
 frames=np.frombuffer(raw,np.uint8).reshape(-1,270,480,3);assert len(frames)==math.ceil(count/60)
 cols=4 if len(frames)>18 else 3; rows=math.ceil(len(frames)/cols)
@@ -29,5 +29,5 @@ for i,val in enumerate(np.r_[delta,999]):
   if i-begin>48:runs.append([round(start+begin/24,3),round(start+i/24,3)])
   begin=None
 bad=int((z[:,18:,32:].mean(axis=(1,2))<12).sum());dark=int((z.mean(axis=(1,2))<14).sum());assert not runs and bad==0 and dark==0
-report={'duration':float(info['format']['duration']),'size':[v['width'],v['height']],'fps':v['r_frame_rate'],'frames':int(v['nb_frames']),'audioCodec':a['codec_name'],'audioChannels':a['channels'],'badCornerFrames':bad,'darkFrames':dark,'frozenOver2Seconds':runs,'contactSheet':strip.name,'contactSheetSongTimes':[47+i*2.5 for i in range(len(frames))]}
+report={'duration':float(info['format']['duration']),'size':[v['width'],v['height']],'fps':v['r_frame_rate'],'frames':int(v['nb_frames']),'audioCodec':a['codec_name'],'audioChannels':a['channels'],'badCornerFrames':bad,'darkFrames':dark,'frozenOver2Seconds':runs,'contactSheet':strip.name,'contactSheetSongTimes':[start+i*2.5 for i in range(len(frames))]}
 (out/(movie.stem.split('_f')[0]+'_encoded-audit.json')).write_text(json.dumps(report,indent=2)+'\n');print(json.dumps(report,indent=2))
