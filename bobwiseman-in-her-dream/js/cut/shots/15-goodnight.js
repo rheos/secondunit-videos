@@ -1,7 +1,10 @@
 // 225.86-236.6  "She's alright because nobody's gotta say goodnight".
 // A street at night seen across. On "She's" one big kitchen window lights: she and her kids are dancing
 // in it. Then window after window comes ON instead of off, the last of them exactly on "goodnight".
-// The crescent moon sinks behind her roof as if to say goodnight, and refuses: it pops back up and stays.
+// The crescent moon sinks to the rooftops as if to say goodnight, and refuses: on "goodnight" it bobs back
+// up and stays. Draft 2: a push in to her lit window on "alright" (and back out before the ripple of windows
+// fills the street), a bigger moon that clearly dips onto the roofs, and flat paper glows instead of the
+// muddy radial halos. The last ~0.8 s is framed exactly as draft 1 (16's iris-in starts from it).
 (() => {
 const T = { shes: 226.48, alright: 226.96, because: 228.9, nobody: 229.48, say: 231.0, goodnight: 231.3, end: 236.6 };
 const BEATS = [225.76, 226.52, 227.29, 228.03, 228.8, 229.54, 230.31, 231.03, 231.75, 232.52, 233.31, 234.05, 234.77, 235.51, 236.25, 237.0];
@@ -87,8 +90,10 @@ function family(t, A0) {
 
 SHOT(225.86, 236.6, 'goodnight', (t) => {
   const A0 = g.globalAlpha;
-  // camera: a slow push toward her window
-  const z = 1 + .06 * ss(225.9, T.goodnight, t) + .2 * eio((t - T.goodnight - 1.6) / (T.end - T.goodnight - 1.4));
+  // camera: a slow push toward her window (draft 1), plus a push in to the window on "alright" that is
+  // fully out again by 229.6, so the end framing (232.9 on) is draft 1's exactly
+  const push = eio((t - 226.5) / .95) * (1 - eio((t - 228.4) / 1.2));
+  const z = (1 + .06 * ss(225.9, T.goodnight, t) + .2 * eio((t - T.goodnight - 1.6) / (T.end - T.goodnight - 1.4))) * (1 + 1.05 * push);
   g.save(); g.translate(FX, FY); g.scale(z, z); g.translate(-FX, -FY);
 
   // night sky: one soft gradient, then the paper grain
@@ -103,16 +108,16 @@ SHOT(225.86, 236.6, 'goodnight', (t) => {
     g.save(); g.globalAlpha = A0 * .9; cut(star4(sx, sy, (hash(i * 2.2) > .75 ? 13 : 7) * tw), C.cream, { sh: 0, grain: .1 }); g.restore();
   }
 
-  // ---- the moon: sinks to say goodnight, ducks behind her roof, then refuses and pops back up ----
-  const sink = ss(225.9, T.goodnight + .3, t);
-  const refuse = clamp((t - (T.goodnight + .9)) / 1.1);
-  const peek = bump(t, T.goodnight + .5, .6) * 40;
-  let my = lerp(210, 560, Math.pow(sink, 1.6)) - peek;
-  if (refuse > 0) my = lerp(560, 246, back(refuse)) + Math.sin((t - T.goodnight) * 3.2) * 6 * refuse;
+  // ---- the moon: sinks onto the rooftops to say goodnight, sits there, then refuses and bobs back up ----
+  const MR = 84;
+  const sink = lerp(0, .14, ss(225.9, 229.0, t)) + .86 * eio((t - 229.2) / 1.75);
+  const refuse = clamp((t - T.goodnight) / .8);
+  let my = lerp(210, 352, sink) + bump(t, T.say, .3) * 8;
+  if (refuse > 0) my = lerp(352, 226, back(refuse)) + Math.sin((t - T.goodnight - .8) * 3.2) * 7 * ss(T.goodnight + .4, T.goodnight + 1.2, t);
   const mx = MOON_X + Math.sin(t * .6) * 6;
-  { g.save(); g.globalAlpha = A0 * .5; const gr = g.createRadialGradient(mx, my, 20, mx, my, 220);
-    gr.addColorStop(0, 'rgba(247,210,126,.55)'); gr.addColorStop(1, 'rgba(247,210,126,0)'); g.fillStyle = gr; g.fill(circle(mx, my, 220)); g.restore(); }
-  cut(crescent(mx, my, 64, .36, -.35 + Math.sin(t * 1.1) * .05), C.goldPale, { sh: .6, lift: .4, grain: .2 });
+  { g.save(); g.globalAlpha = A0 * .42; g.globalCompositeOperation = 'screen'; const gr = g.createRadialGradient(mx, my, 30, mx, my, 250);
+    gr.addColorStop(0, 'rgba(120,96,150,.9)'); gr.addColorStop(1, 'rgba(120,96,150,0)'); g.fillStyle = gr; g.fill(circle(mx, my, 250)); g.restore(); }
+  cut(crescent(mx, my, MR, .36, -.35 + Math.sin(t * 1.1) * .05 - bump(t, T.goodnight, .9) * .25), C.goldPale, { sh: .6, lift: .4, grain: .2 });
 
   // ---- back row ----
   cut(BACK, C.sky1, { sh: .6, grain: .2 });
@@ -127,15 +132,28 @@ SHOT(225.86, 236.6, 'goodnight', (t) => {
     if (!Hs.hers) { const cols = Math.max(2, Math.floor(Hs.w / 110)); const dx = Hs.x + Hs.w / cols / 2 - 32;
       cut(rrect(dx, BASE - 148, 64, 148, [28, 28, 0, 0]), C.ink, { sh: .4 }); }
   });
+  const kOn = t >= T.shes, kfl = 1 - clamp((t - T.shes) / .6);
+  if (kOn) {
+    // stepped paper glow: two flat sheets behind the frame, then a light warm screen bloom (no muddy haze)
+    const cx = KW.x + KW.w / 2, cy = KW.y + KW.h / 2, gk = back(clamp((t - T.shes) / .45));
+    [[96, '#292e6c'], [44, '#30357a']].forEach(([m, col]) => {
+      const mm = m * gk; cut(ellipse(cx, cy, (KW.w / 2 + mm) * 1.12 * gk, (KW.h / 2 + mm) * 1.12 * gk), col, { sh: .3, grain: .18 }); });
+    g.save(); g.globalAlpha = A0 * (.22 + kfl * .35); g.globalCompositeOperation = 'screen';
+    const gr = g.createRadialGradient(cx, cy, 60, cx, cy, 300); gr.addColorStop(0, 'rgba(240,180,110,.8)'); gr.addColorStop(1, 'rgba(240,180,110,0)');
+    g.fillStyle = gr; g.fill(circle(cx, cy, 300)); g.restore();
+  }
   // windows: dark until their moment, then ON with a little flash of glow
   WINS.forEach((wn, i) => {
     const on = t >= wn.on;
     cut(rect(wn.x, wn.y, wn.w, wn.h), C.ink, { sh: 0, grain: .1 });
     if (on) {
-      const fl = 1 - clamp((t - wn.on) / .5);
-      g.save(); g.globalAlpha = A0 * (.12 + fl * .5); const cx = wn.x + wn.w / 2, cy = wn.y + wn.h / 2;
-      const gr = g.createRadialGradient(cx, cy, 10, cx, cy, 90 + fl * 40); gr.addColorStop(0, 'rgba(247,210,126,.8)'); gr.addColorStop(1, 'rgba(247,210,126,0)');
-      g.fillStyle = gr; g.fill(circle(cx, cy, 130)); g.restore();
+      // a flat paper glow (a lighter sheet behind the pane) instead of a radial haze; a brief clean flash as it lights
+      const fl = 1 - clamp((t - wn.on) / .5), cx = wn.x + wn.w / 2, cy = wn.y + wn.h / 2;
+      const gk = back(clamp((t - wn.on) / .3));
+      cut(rrect(cx - (wn.w / 2 + 11) * gk, cy - (wn.h / 2 + 11) * gk, (wn.w + 22) * gk, (wn.h + 22) * gk, 11), '#2f3478', { sh: .25, grain: .15 });
+      if (fl > 0) { g.save(); g.globalAlpha = A0 * fl * .5; g.globalCompositeOperation = 'screen';
+        const gr = g.createRadialGradient(cx, cy, 10, cx, cy, 110); gr.addColorStop(0, 'rgba(247,200,120,.9)'); gr.addColorStop(1, 'rgba(247,200,120,0)');
+        g.fillStyle = gr; g.fill(circle(cx, cy, 110)); g.restore(); }
       const pk = back(clamp((t - wn.on) / .25));
       g.save(); g.translate(cx, cy); g.scale(lerp(.9, 1, pk), lerp(.9, 1, pk)); g.translate(-cx, -cy);
       cut(rect(wn.x, wn.y, wn.w, wn.h), hash(i * 1.9) > .4 ? C.gold : C.goldPale, { sh: 0, grain: .2 });
@@ -146,13 +164,7 @@ SHOT(225.86, 236.6, 'goodnight', (t) => {
     cut(rect(wn.x - 6, wn.y + wn.h - 2, wn.w + 12, 8), C.cream, { sh: .3, grain: .1, alpha: .85 });
   });
 
-  // ---- her kitchen window ----
-  const kOn = t >= T.shes, kfl = 1 - clamp((t - T.shes) / .6);
-  if (kOn) {
-    g.save(); g.globalAlpha = A0 * (.4 + kfl * .4); const cx = KW.x + KW.w / 2, cy = KW.y + KW.h / 2;
-    const gr = g.createRadialGradient(cx, cy, 40, cx, cy, 330); gr.addColorStop(0, 'rgba(247,210,126,.75)'); gr.addColorStop(1, 'rgba(247,210,126,0)');
-    g.fillStyle = gr; g.fill(circle(cx, cy, 340)); g.restore();
-  }
+  // ---- her kitchen window (its glow is drawn behind the other windows, above) ----
   g.save(); const kwin = rect(KW.x, KW.y, KW.w, KW.h);
   cut(kwin, kOn ? C.goldPale : C.ink, { sh: 0, grain: .2 });
   if (kOn) { g.clip(kwin);
