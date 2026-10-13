@@ -39,6 +39,18 @@ function a_fields(hz, col1 = '#b9b98a', col2 = C.sage) { // flat farmland to a l
   for (let i = 0; i < 5; i++) { const y = hz + 20 + i * i * 26, band = PR(-300, y, W + 600, 10 + i * 6); fillP(band, i % 2 ? col2 : C.ochre, .55); }
   iline(-300, hz, W + 300, hz, C.ink, 2.2);
 }
+// draft 6: the arm angles that put the traveller's hand at (hx, hy) in his own local units (side 1 = front arm, -1 = back)
+function a_armTo(side, hx, hy) { const sx = side * 26, sy = -262, [, e, h] = ik(sx, sy, hx, hy, side), a1 = Math.atan2(e[0] - sx, e[1] - sy); return [a1, Math.atan2(h[0] - e[0], h[1] - e[1]) - a1]; }
+// his fedora on its own, brim centre at (0,0) in the current transform, crown up, local units as traveller()
+function a_fedora(s = 1) {
+  const k = 1 / s; X.save(); X.scale(s, s);
+  const cr = [[-26, 0], [-22, -34], [0, -28], [22, -34], [26, 0]], crp = PP(cr); fillP(crp, '#4b3426'); shade(crp, 0, -15, 34, [6, -4], .7, 4 * k); iP(cr, true, C.ink, 2.2 * k, 1, true, .8 * k);
+  X.beginPath(); wP([[-25, -8], [25, -8]], false, .4 * k); stroke(C.ochre, 4 * k, .9);
+  const hb = PE(0, 0, 46, 8); fillP(hb, '#3d2a1f'); iE(0, 0, 46, 8, 0, C.ink, 2 * k, 1, true, .8 * k);
+  X.restore();
+}
+// a hand blob for the traveller's back arm, which traveller() draws without one
+function a_backHand(x, y, s) { fillP(PE(x, y + 4 * s, 8 * s, 9 * s), '#efd9b9'); iE(x, y + 4 * s, 8 * s, 9 * s, 0, C.ink, 1.8); }
 
 // ---------- 0.0 the street: a row of other shops; he walks in small under his cloud ----------
 SU.a_street = { mode: 'ill', f(q, p, a, T) {
@@ -171,7 +183,10 @@ SU.a_interior = { mode: 'ill', f(q, p, a, T) {
   // him on the mat, hat in hand, dripping; his cloud presses on the ceiling
   const mat = PP([[420, 990], [760, 990], [800, 1060], [380, 1060]]); fillP(mat, '#b9925f'); hatch(mat, 590, 1020, 240, 1.57, 5, C.ink, .9, .45); iP([[420, 990], [760, 990], [800, 1060], [380, 1060]], true, C.ink, 2.2);
   const pd = PE(600, 1040, 150, 16); fillP(pd, C.sky, .9); iE(600, 1040, 150, 16, 0, C.ink, 1.4, 1, false);
-  traveller(600, 1040, 1.3, { look: .9, hat: false, armR: [1.0, -.4], case: false }); const hx = 600 + 70 * 1.3, hy = 1040 - 300 * 1.3; const hbm = PE(hx + 30, hy, 46, 10); fillP(hbm, '#3d2a1f'); iE(hx + 30, hy, 46, 10, 0, C.ink, 2.2);
+  // hat in hand: he holds it by the brim at his side, crown out, dripping onto the mat
+  const HA = a_armTo(1, 58, -150); traveller(600, 1040, 1.3, { look: .9, hat: false, armR: HA, case: false });
+  { const [hx, hy] = handAt(600, 1040, 1.3, HA); X.save(); X.translate(hx, hy + 8); X.rotate(1.3); X.translate(40 * 1.3, 0); a_fedora(1.3); X.restore(); a_backHand(hx, hy, 1.3);
+    for (let i = 0; i < 3; i++) { const d2 = ((T * 1.6 + i / 3) % 1); fillP(PE(hx + 6 + i * 6, lerp(hy + 100, 1030, d2), 3, 6), C.teal); } }
   suitcase(430, 950, .9);
   cloud(600, 120, .62, { rain: true });
   for (let i = 0; i < 6; i++) { const dy2 = ((T * 2 + i / 6) % 1); fillP(PE(560 + i * 14, lerp(780, 1030, dy2), 3, 6), C.teal); }
@@ -184,9 +199,10 @@ SU.a_newspaper = { mode: 'ill', f(q, p, a, T) {
   stripes(C.paper, '#ead6a6', 120, -.62, 0, C.ochre);
   cam(960, 550, lerp(1, 1.08, eo(p)));
   // her head behind the paper: bun, pencil, glasses over the top edge
-  X.save(); X.translate(960, 220); X.scale(2.2, 2.2); const hd = PE(0, -10, 30, 34); fillP(hd, '#e7c9a2'); shade(hd, 0, -10, 40, [-8, -6], .5, 4); iE(0, -10, 30, 34, 0, C.ink, 1.2);
+  X.save(); X.translate(960, 262); X.scale(2.2, 2.2); const hd = PE(0, -10, 30, 34); fillP(hd, '#e7c9a2'); shade(hd, 0, -10, 40, [-8, -6], .5, 4); iE(0, -10, 30, 34, 0, C.ink, 1.2);
   const hr = PE(0, -36, 32, 16); fillP(hr, '#3b2a22'); hatch(hr, 0, -36, 36, .3, 2.4, C.ink, .6, .6); iE(0, -36, 32, 16, 0, C.ink, 1); const bn = PE(-6, -64, 18, 15); fillP(bn, '#3b2a22'); hatch(bn, -6, -64, 20, .3, 2.4, C.ink, .6, .6); iE(-6, -64, 18, 15, 0, C.ink, 1);
-  iline(-30, -80, 20, -52, C.ink, 2.4, 1, false); for (const sx of [-1, 1]) { const gx = sx * 13; X.beginPath(); X.moveTo(gx - 10, -6); X.quadraticCurveTo(gx - 10, -18, gx + sx * 14, -20); X.quadraticCurveTo(gx + 10, -4, gx - 10, -6); stroke(C.ink, 1.2, 1); fillP(PE(gx, -10, 1.6, 1.6), C.ink); }
+  iline(-30, -80, 20, -52, C.ink, 2.4, 1, false); iline(-3, -10, 3, -10, C.ink, 1, 1, false); // round reading glasses, brows up: she reads, she doesn't glare
+  for (const sx of [-1, 1]) { const gx = sx * 12; fillP(PE(gx, -10, 9, 7), '#f3ebd6', .6); iE(gx, -10, 9, 7, 0, C.ink, 1.2, 1, false, .3); fillP(PE(gx, -9, 1.7, 1.7), C.ink); X.beginPath(); X.moveTo(gx - 7, -23); X.quadraticCurveTo(gx, -27, gx + 7, -23); stroke(C.ink, 1.1, .9); }
   X.restore();
   // the paper unfolds out from the fold
   const op = eo(seg(p, 0, .3)), x0 = 460, x1 = 1460, y0 = 300, y1 = 1000, cx = 960;
@@ -271,7 +287,16 @@ SU.a_pin = { mode: 'ill', f(q, p, a, T) {
   const er = PP([[tail[0] + nx, tail[1] + ny], [tail[0] - ux * 40 + nx, tail[1] - uy * 40 + ny], [tail[0] - ux * 40 - nx, tail[1] - uy * 40 - ny], [tail[0] - nx, tail[1] - ny]]); fillP(er, C.rose); iP([[tail[0] + nx, tail[1] + ny], [tail[0] - ux * 40 + nx, tail[1] - uy * 40 + ny], [tail[0] - ux * 40 - nx, tail[1] - uy * 40 - ny], [tail[0] - nx, tail[1] - ny]], true, C.ink, 2);
   X.restore();
   // her hand on the pencil
-  const hp = [tail[0] + ux * 160, tail[1] + uy * 160]; limb([[hp[0] - 380, hp[1] - 40], [hp[0] - 180, hp[1] + 30], [hp[0], hp[1]]], 34, {}, 1, '#b8766b'); const hh = PE(hp[0], hp[1], 34, 26, ang); fillP(hh, '#e7c9a2'); shade(hh, hp[0], hp[1], 36, [-6, -6], .6, 4); iE(hp[0], hp[1], 34, 26, ang, C.ink, 2.4);
+  // her arm comes in from a shoulder fixed off frame left; the fist closes round the shaft (fingers over, thumb along it)
+  const hp = [tail[0] + ux * 160, tail[1] + uy * 160], root = [-420, 80], wr = [hp[0] - ux * 34 + uy * 6, hp[1] - uy * 34 - ux * 6];
+  const dx0 = wr[0] - root[0], dy0 = wr[1] - root[1], d0 = Math.hypot(dx0, dy0), bend = Math.sqrt(Math.max(0, 680 * 680 - d0 * d0 / 4)), nx0 = -dy0 / d0, ny0 = dx0 / d0, sg = ny0 < 0 ? 1 : -1;
+  const el = [root[0] + dx0 / 2 + nx0 * bend * sg, root[1] + dy0 / 2 + ny0 * bend * sg]; // the elbow bends up, out of frame
+  limb([root, el, wr], 40, {}, 1, '#b8766b');
+  X.save(); X.translate(hp[0], hp[1]); X.rotate(ang);
+  const fist = PE(0, 8, 44, 34); fillP(fist, '#e7c9a2'); shade(fist, 0, 8, 46, [-6, 8], .6, 4); iE(0, 8, 44, 34, 0, C.ink, 2.6);
+  for (let i = 0; i < 4; i++) { const fx2 = -27 + i * 18; X.beginPath(); X.moveTo(fx2, -14); X.quadraticCurveTo(fx2 + 6, 6, fx2 + 2, 30); stroke(C.ink, 1.8, .9); } // knuckles wrapped over the shaft
+  const th = PE(6, -18, 30, 9, -.05); fillP(th, '#e7c9a2'); iE(6, -18, 30, 9, -.05, C.ink, 2.2); fillP(PE(30, -19, 5, 4), C.cream);
+  X.restore();
   // where it comes out: a little flag
   if (push > .82) { const k = seg(push, .82, 1); gc(anti[0], anti[1], 20 + 120 * k, C.orange, .9 * (1 - k * .5), 2.4); lab(anti[0] + 40, anti[1] + 70, 'THE OTHER SIDE', C.brick, .95, 18, 'left', 'alphabetic', 'bold'); }
   gl(home[0], home[1], anti[0], anti[1], C.teal, .5, 1.6, [6, 8]);
@@ -322,10 +347,14 @@ SU.a_sunHorn = { mode: 'ill', f(q, p, a, T) {
   const sand = PR(-200, 870, W + 400, 400); fillP(sand, C.tan); stipRect(-200, 870, W + 400, 400, 2600, C.ink, .5, 2); iline(-200, 870, W + 200, 870, C.ink, 2.2);
   X.beginPath(); for (let i = 0; i < 9; i++) { const y = 900 + i * 22; X.moveTo(-200, y); for (let x = -200; x < W + 200; x += 40) X.lineTo(x + 40, y + Math.sin(x * .02 + T * 6 + i) * 6); } stroke(C.ink, 1.2, .45);
   palm(260, 950, 1.1, { sway: -3 - pump * 2 });
-  // him: braced, hat held on with both hands, coat tail flapping out behind
-  const tx = 1360, ty = 1030, ts = 1.05;
+  // him: braced, both hands clamped on his hat brim, leaning into the blast; coat tail flapping out behind
+  const tx = 1360, ty = 1030, ts = 1.05, lk = -.6 * 6, lean = -.14 - pump * .03;
   X.beginPath(); for (let i = 0; i < 5; i++) { X.moveTo(tx + 30, ty - 140 - i * 30); X.lineTo(tx + 120 + i * 14 + jit(10), ty - 150 - i * 30 + jit(6)); } stroke(C.ink, 2, .8);
-  traveller(tx, ty, ts, { look: -.6, armR: [2.7, -1.0], armL: [2.9, .9], mouth: sing(T), case: false });
+  X.save(); X.translate(tx, ty); X.rotate(lean);
+  const coatTail = [[30, -150], [120 + pump * 30, -120 + jit(6)], [90 + pump * 20, -60], [44, -122]]; fillP(PP(coatTail.map(([x2, y2]) => [x2 * ts, y2 * ts])), C.teal); iP(coatTail.map(([x2, y2]) => [x2 * ts, y2 * ts]), true, C.ink, 2.2);
+  traveller(0, 0, ts, { look: -.6, armR: a_armTo(1, lk + 40, -336), armL: a_armTo(-1, lk - 42, -336), mouth: sing(T), case: false, legs: .5 });
+  a_backHand((lk - 42) * ts, -336 * ts, ts);
+  X.restore();
   suitcase(tx + 150, ty - 100, .7);
   cloud(tx + 80, ty - 520, .5, { rain: true });
   for (let i = 0; i < 4; i++) { const t2 = (T * .9 + i / 4) % 1; X.beginPath(); X.moveTo(tx + 60 + t2 * 400, ty - 400 + i * 70); X.lineTo(tx + 120 + t2 * 400, ty - 400 + i * 70); stroke(C.ink, 2, 1 - t2); }
@@ -344,20 +373,20 @@ SU.a_shell = { mode: 'ill', f(q, p, a, T) {
   const s = 3.0, x = 760, y = 420 + 306 * s, A = [2.0, 2.2];
   traveller(x, y, s, { look: .2, armR: A, case: false, mouth: 0 });
   const hand = arm(26, -262, A[0], A[1])[2], hx = x + hand[0] * s, hy = y + hand[1] * s;
-  // the conch, opening to camera
-  const shx = hx + 70, shy = hy - 40;
+  // the conch, opening to camera; the sun inside pumps on every sung syllable (and keeps a pulse on the beat after the line)
+  const shx = hx + 70, shy = hy - 40, pl = Math.max(sing(T), .32 * Math.abs(Math.sin(T * 7.4)));
   X.save(); X.translate(shx, shy); X.rotate(-.35);
   const sp = PP([[-160, 40], [-120, -100], [0, -170], [150, -110], [220, 10], [140, 110], [0, 140], [-100, 110]]); fillP(sp, '#f1d3b8'); shade(sp, 0, 0, 230, [-24, -18], .7, 5);
   X.beginPath(); for (let k = 0; k < 7; k++) { X.moveTo(-160 + k * 50, 50 - k * 6); X.quadraticCurveTo(-100 + k * 50, -120 + k * 10, -40 + k * 54, -150 + k * 20); } stroke(C.ink, 1.6, .55);
   iP(dens([[-160, 40], [-120, -100], [0, -170], [150, -110], [220, 10], [140, 110], [0, 140], [-100, 110]], 24, true), true, C.ink, 3);
   for (let i = 0; i < 6; i++) { const an = -2.6 + i * .5; const kn = PP([[-160 + i * 60, -80 - i * 14], [-140 + i * 60, -150 - i * 10], [-120 + i * 60, -84 - i * 14]]); fillP(kn, '#e3b998'); iP([[-160 + i * 60, -80 - i * 14], [-140 + i * 60, -150 - i * 10], [-120 + i * 60, -84 - i * 14]], false, C.ink, 2); }
   const mouth = PE(40, 10, 120, 80, -.2); fillP(mouth, C.rose);
-  X.save(); X.clip(mouth); const glow = PE(40, 10, 120, 80, -.2); hatch(glow, 40, 10, 130, .8, 5, C.ink, .9, .35, [20, 20]); sunIll(40, 10, 44 + Math.abs(Math.sin(T * 7)) * 6, C.orange, 1); X.restore();
+  X.save(); X.clip(mouth); const glow = PE(40, 10, 120, 80, -.2); hatch(glow, 40, 10, 130, .8, 5, C.ink, .9, .35, [20, 20]); sunIll(40, 10, 38 + pl * 26, C.orange, pl); X.restore();
   iE(40, 10, 120, 80, -.2, C.ink, 2.8);
   X.restore();
   // the sun's sound coming out of the shell into his ear, as rings and rays
-  for (let i = 0; i < 6; i++) { const rr = 30 + ((FD * 6 + i * 40) % 240); gc(shx + 40, shy, rr, i % 2 ? C.orange : C.teal, cl(1 - rr / 260) * .95, 2.6, null, -2.2, 1.0); }
-  X.beginPath(); for (let i = 0; i < 12; i++) { const an = -1.4 + i * .22, r1 = 150, r2 = 210 + (i % 3) * 30; X.moveTo(shx + 40 + Math.cos(an) * r1, shy + Math.sin(an) * r1); X.lineTo(shx + 40 + Math.cos(an) * r2, shy + Math.sin(an) * r2); } stroke(C.orange, 2.4, .9);
+  for (let i = 0; i < 6; i++) { const rr = 30 + ((FD * 6 + i * 40) % 240) * (.6 + pl * .6); gc(shx + 40, shy, rr, i % 2 ? C.orange : C.teal, cl(1 - rr / 300) * (.35 + pl * .65), 2 + pl * 2, null, -2.2, 1.0); }
+  X.beginPath(); for (let i = 0; i < 12; i++) { const an = -1.4 + i * .22, r1 = 150, r2 = 180 + pl * 90 + (i % 3) * 30; X.moveTo(shx + 40 + Math.cos(an) * r1, shy + Math.sin(an) * r1); X.lineTo(shx + 40 + Math.cos(an) * r2, shy + Math.sin(an) * r2); } stroke(C.orange, 1.6 + pl * 1.6, .9);
   cloud(x - 380, 160, .8, { rain: true });
   consL([[0, 760, W, 760], [shx, 0, shx, H]]); consC([[shx + 40, shy, 300]]);
 } };
@@ -478,31 +507,213 @@ SU.a_poleDesk = { mode: 'ill', f(q, p, a, T) {
   consL([[0, 560, W, 560], [px, 0, px, H], [0, ay, W, ay]]);
 } };
 
-// ---------- 112.2 help me quick: he runs off down the road still holding the receiver; the cord stretches back to the box ----------
+// ---------- 112.2 help me quick: he runs off along a sea causeway still holding the receiver; the cord stretches back to the box ----------
+// draft 6: off the prairie (the poles were the third time in 26 s); legs on walkPh, scroll matched to the stride
 SU.a_rushRoad = { mode: 'ill', f(q, p, a, T) {
-  stripes('#ece2c6', '#e0d4b2', 140, -.62, T * 300, C.tan);
+  const sp = 470, off = T * sp, hz = 560;
+  stripes('#e6e7dc', '#d5ddd3', 150, -.62, T * 90, C.sky);
   cam(960, 540, 1);
-  const hz = 600, off = (T * 900) % 520;
-  a_fields(hz, '#c9b77a', C.sage);
-  // poles flash past
-  for (let x = -off - 200; x < W + 520; x += 520) { iline(x, 1000, x, 160, C.ink, 9); iline(x - 100, 200, x + 100, 200, C.ink, 5); X.beginPath(); X.moveTo(x - 20, 300); X.lineTo(x - 260, 300); stroke(C.ink, 1.6, .25); }
-  X.beginPath(); for (let i = 0; i < 4; i++) { X.moveTo(-200, 190 + i * 8); X.lineTo(W + 200, 190 + i * 8); } stroke(C.ink, 1.4, .8);
-  const rd = PR(-200, 960, W + 400, 200); fillP(rd, '#8a8172'); hatch(rd, 960, 1020, 1400, .05, 6, C.ink, .9, .45); iline(-200, 960, W + 200, 960, C.ink, 2.6); for (let x = -((T * 900) % 300) - 200; x < W + 300; x += 300) fillP(PR(x, 1020, 150, 10), C.cream);
-  // the payphone, tiny and far back at the left horizon, getting smaller
-  const fx = lerp(260, 80, p), fy = hz + 10, fs = lerp(.4, .2, p); iline(fx, fy, fx, fy - 140 * fs * 2, C.ink, 2); const hd = PR(fx - 30 * fs * 2, fy - 200 * fs * 2, 60 * fs * 2, 70 * fs * 2); fillP(hd, C.brick); iBox(fx - 30 * fs * 2, fy - 200 * fs * 2, 60 * fs * 2, 70 * fs * 2, C.ink, 1.4);
-  // him running, receiver at his ear, the cord pulled taut and coiling all the way back
-  const tx = lerp(1000, 1300, eo(p)), ty = 980, ts = 1.3, ph = FD * 1.3;
+  // gulls hanging in the wind
+  for (let i = 0; i < 4; i++) { const gx = ((1700 - i * 380 - T * 60) % 2200 + 2200) % 2200 - 140, gy = 180 + (i % 2) * 90, w2 = flap() ? 14 : 8; X.beginPath(); X.moveTo(gx - 26, gy - w2); X.quadraticCurveTo(gx - 12, gy - 4, gx, gy); X.quadraticCurveTo(gx + 12, gy - 4, gx + 26, gy - w2); stroke(C.ink, 2.2, .9); }
+  // the grey sea, waves sliding past slower than the deck
+  const sea = PR(-200, hz, W + 400, H); fillP(sea, '#86aaa4'); hatch(sea, 960, 800, 1400, .03, 7, C.ink, .8, .32);
+  X.beginPath(); for (let i = 0; i < 46; i++) { const r2 = M32(i * 13 + 5), wy = hz + 16 + Math.pow(r2(), 1.4) * 330, wx = ((r2() * (W + 300) - off * (.15 + (wy - hz) / 900)) % (W + 300) + W + 300) % (W + 300) - 150, L = 20 + (wy - hz) * .12; X.moveTo(wx, wy); X.quadraticCurveTo(wx + L / 2, wy - 6, wx + L, wy); } stroke(C.cream, 2, .85);
+  iline(-200, hz, W + 200, hz, C.ink, 2.2);
+  // a freighter far out, and a buoy
+  { const shx = 1500 - T * 8, sb = PP([[shx - 90, hz - 4], [shx + 90, hz - 4], [shx + 70, hz + 14], [shx - 80, hz + 14]]); fillP(sb, '#5a5048'); iP([[shx - 90, hz - 4], [shx + 90, hz - 4], [shx + 70, hz + 14], [shx - 80, hz + 14]], true, C.ink, 1.6); fillP(PR(shx + 20, hz - 34, 30, 30), C.cream); iBox(shx + 20, hz - 34, 30, 30, C.ink, 1.4); iline(shx + 40, hz - 34, shx + 40, hz - 60, C.ink, 3); }
+  // the far shore behind him: a spit of land with the payphone on it, shrinking
+  const fx = lerp(330, 150, p), fs = lerp(.4, .22, p), fy = hz + 4;
+  const spit = PE(fx - 80, hz + 6, 260, 20); fillP(spit, C.sage); hatch(spit, fx - 80, hz, 260, .3, 5, C.ink, .8, .5); iE(fx - 80, hz + 6, 260, 20, 0, C.ink, 1.6, 1, false, .6, Math.PI, TAU);
+  iline(fx, fy, fx, fy - 140 * fs * 2, C.ink, 2); const hd = PR(fx - 30 * fs * 2, fy - 200 * fs * 2, 60 * fs * 2, 70 * fs * 2); fillP(hd, C.brick); iBox(fx - 30 * fs * 2, fy - 200 * fs * 2, 60 * fs * 2, 70 * fs * 2, C.ink, 1.4);
+  // the causeway: the far railing behind him, the deck, the truss under it, all sliding past
+  const dk = 930, pitch = 240, o2 = off % pitch;
+  X.beginPath(); for (let x = -o2 - pitch; x < W + pitch; x += pitch) { X.moveTo(x, dk); X.lineTo(x, dk - 120); } stroke(C.ink, 5, 1);
+  X.beginPath(); for (const ry of [dk - 120, dk - 62]) { X.moveTo(-200, ry); X.lineTo(W + 200, ry); } stroke(C.ink, 3, 1);
+  const rl = PR(-200, dk - 124, W + 400, 8); fillP(rl, '#7a5634');
+  const deck = PR(-200, dk, W + 400, 46); fillP(deck, '#a5835a'); hatch(deck, 960, dk + 23, 1400, 0, 5, C.ink, .8, .4); X.beginPath(); for (let x = -(off % 60) - 60; x < W + 60; x += 60) { X.moveTo(x, dk); X.lineTo(x - 8, dk + 46); } stroke(C.ink, 1.2, .55); iline(-200, dk, W + 200, dk, C.ink, 2.6); iline(-200, dk + 46, W + 200, dk + 46, C.ink, 2.6);
+  const tr = PR(-200, dk + 46, W + 400, 120); fillP(tr, '#6f6458', .25);
+  X.beginPath(); for (let x = -o2 - pitch; x < W + pitch; x += pitch) { X.moveTo(x, dk + 46); X.lineTo(x + pitch, H + 10); X.moveTo(x + pitch, dk + 46); X.lineTo(x, H + 10); X.moveTo(x, dk + 46); X.lineTo(x, H + 10); } stroke(C.ink, 4, .9);
+  // him running, receiver at his ear, the cord pulled taut and coiling all the way back over the rail to the shore
+  const tx = lerp(1000, 1260, eo(p)), ty = dk, ts = 1.3;
   X.beginPath(); for (let i = 0; i < 6; i++) { X.moveTo(tx - 120 - i * 30, ty - 120 - i * 40); X.lineTo(tx - 260 - i * 50, ty - 120 - i * 40); } stroke(C.ink, 2, .6);
-  traveller(tx, ty, ts, { legs: ph * 1.6, look: 1, mouth: sing(T), phone: 'handset', armL: [-.9, .4], case: false });
-  const ex = tx + 30 * ts, ey = ty - 300 * ts; // the handset's mouthpiece end
-  X.beginPath(); for (let i = 0; i <= 160; i++) { const t = i / 160, xx = lerp(ex, fx, t), yy = lerp(ey + 40, fy - 180 * fs * 2, t) + Math.sin(t * Math.PI) * 140; const amp = 10 * (1 - t) + 2; X.lineTo(xx + Math.cos(i * 1.4) * amp, yy + Math.sin(i * 1.4) * amp); } stroke(C.ink, 2.2, 1);
-  // suitcase flying out behind on its handle
+  const ex = tx + 30 * ts, ey = ty - 300 * ts;
+  traveller(tx, ty, ts, { legs: walkPh() * 1.3, look: 1, mouth: sing(T), phone: 'handset', armL: [-.9 + Math.sin(walkPh() * 1.3) * .5, .4], case: false });
+  X.beginPath(); for (let i = 0; i <= 160; i++) { const t = i / 160, xx = lerp(ex, fx, t), yy = lerp(ey + 40, fy - 180 * fs * 2, t) + Math.sin(t * Math.PI) * 60; const amp = 10 * (1 - t) + 2; X.lineTo(xx + Math.cos(i * 1.4) * amp, yy + Math.sin(i * 1.4) * amp); } stroke(C.ink, 2.2, 1);
+  for (let i = 0; i < 3; i++) gc(ex + 10, ey + 10, 40 + i * 30 + ((FD * 6) % 30), C.orange, .85, 2, null, -1.1, .7); // it is still ringing at her end
   X.save(); X.translate(tx - 170, ty - 260); X.rotate(-.5 + Math.sin(T * 9) * .15); suitcase(0, 0, .9); X.restore();
   cloud(tx - 140, ty - 560, .62, { rain: true }); X.beginPath(); for (let i = 0; i < 5; i++) { X.moveTo(tx - 260, ty - 600 + i * 22); X.lineTo(tx - 420 - i * 30, ty - 600 + i * 22); } stroke(C.teal, 2, .7);
-  // dust from his heels
-  for (let i = 0; i < 5; i++) { const t2 = ((T * 3 + i / 5) % 1); iE(tx - 60 - t2 * 300, ty - 10 - t2 * 30, 20 + t2 * 40, 10 + t2 * 18, 0, C.ink, 1.4, .7 * (1 - t2), false); }
+  for (let i = 0; i < 4; i++) { const t2 = ((T * 3 + i / 4) % 1); iE(tx - 60 - t2 * 260, ty - 8 - t2 * 26, 16 + t2 * 30, 8 + t2 * 12, 0, C.ink, 1.4, .7 * (1 - t2), false); }
   for (let i = 0; i < 3; i++) gc(tx, ty - 200, 260 + i * 26, C.orange, .8, 2.2, null, Math.PI * .7 + i * .1, Math.PI * 1.1 + i * .1);
-  consL([[0, hz, W, hz], [0, 960, W, 960], [tx, -100, tx, H + 100]]);
+  consL([[0, hz, W, hz], [0, dk, W, dk], [tx, -100, tx, H + 100]]);
+} };
+
+// ---------- draft 6 re-stagings (each replaces a shared set-up in this act's slot, with its audit fix) ----------
+
+// 17.6 the poster through the shop glass: frame in frame in frame; his rain runs down the glass over the sun
+SU.a_posterCU = { mode: 'ill', f(q, p, a, T) {
+  stripes('#d7dfd2', '#cbd5c6', 120, -.62, 0, C.teal); cam(960, 540, lerp(1.02, 1.1, eo(p)));
+  const wx = 330, wy = -10, ww = 1260, wh = 1060, win = PR(wx, wy, ww, wh);
+  // brick around the window
+  const br = new Path2D(); br.rect(-300, -300, W + 600, H + 600); br.rect(wx - 40, wy - 40, ww + 80, wh + 80); X.save(); X.clip(br, 'evenodd'); fillP(PR(-300, -300, W + 600, H + 600), C.brick); X.beginPath(); for (let y = -300; y < H + 300; y += 26) { X.moveTo(-300, y); X.lineTo(W + 300, y); const o = (y / 26) % 2 ? 0 : 32; for (let x = -300 + o; x < W + 300; x += 64) { X.moveTo(x, y); X.lineTo(x, y + 26); } } stroke(C.ink, 1, .3); hatch(PR(-300, -300, W + 600, H + 600), 960, 540, 1300, .8, 7, C.ink, .8, .2); X.restore();
+  const fr = new Path2D(); fr.rect(wx - 40, wy - 40, ww + 80, wh + 80); fr.rect(wx, wy, ww, wh); fillP(fr, '#7a5634'); X.save(); X.clip(fr, 'evenodd'); hatch(PR(wx - 40, wy - 40, ww + 80, wh + 80), 960, 540, 900, 1.2, 6, C.ink, .8, .5); X.restore();
+  // behind the glass: the shop's back wall and the poster
+  fillP(win, '#e3e6d8'); X.save(); X.clip(win); hatch(win, 960, 540, 800, 1.57, 22, C.ink, .8, .12);
+  poster(560, 40, 800, 1000, 'palm');
+  // the sun on the poster, its rings dimming as the water sheets over it
+  const sx = 1104, sy = 240, dim = eo(seg(p, .15, 1));
+  for (let i = 0; i < 4; i++) gc(sx, sy, 150 + i * 40 + ((FD * 5) % 40), C.orange, .6 * (1 - dim * .85), 2);
+  { const sd = PE(sx, sy, 130, 130); X.save(); X.clip(sd); X.beginPath(); for (let x = sx - 140; x < sx + 140; x += 9) { X.moveTo(x, sy - 140); for (let y = sy - 140; y < sy + 140; y += 10) X.lineTo(x + Math.sin(y * .05 + x) * 4 * dim, y); } stroke(C.cream, 3, .6 * dim); X.restore(); } // the sun, smeared by the water
+  // the rain on the glass: drops start, then run down in wandering rivulets
+  for (let i = 0; i < 22; i++) {
+    const r2 = M32(i * 41 + 9), near = i < 10, x0 = near ? sx - 170 + r2() * 340 : wx + 30 + r2() * (ww - 60), t0 = r2() * .6, spd = 700 + r2() * 1100, y0 = wy + 20 + r2() * (near ? 120 : 500);
+    const run = Math.max(0, p - t0) * spd, yE = Math.min(wy + wh, y0 + run);
+    if (p < t0) { fillP(PE(x0, y0, 5, 6), C.cream, .9); iE(x0, y0, 5, 6, 0, C.ink, 1, .6, false, .3); continue; }
+    const pts = []; for (let y = y0; y <= yE; y += 14) pts.push([x0 + Math.sin(y * .021 + i * 2.1) * 9 + Math.sin(y * .067 + i) * 3, y]); pts.push([x0 + Math.sin(yE * .021 + i * 2.1) * 9, yE]);
+    path(pts, '#9fbcb8', near ? 5 : 3, near ? .75 : .45); path(pts.map(([x2, y2]) => [x2 + 2, y2]), C.ink, 1, near ? .45 : .25); const hb = pts[pts.length - 1]; fillP(PE(hb[0], hb[1], 9, 12), C.cream, .95); iE(hb[0], hb[1], 9, 12, 0, C.ink, 1.4, .8, false, .3);
+  }
+  // reflections on the glass
+  hatch(win, 960, 540, 1100, -.95, 18, C.cream, 3, .28, null, .3); X.restore();
+  iBox(wx, wy, ww, wh, C.ink, 3);
+  cloud(300, 300, 1, { rain: true }); traveller(250, 1240, 1.6, { look: 1, mouth: 0 });
+  consL([[0, 660, W, 660], [960, 0, 960, H], [sx, 0, sx, H]]); consC([[sx, sy, 220]]);
+} };
+
+// 59.0 "where can I hear the sun": square-on emblem; he stands dead centre, hands cupped behind his ears, palms either
+// side as brackets; the sun is a silent hatched burst, and his own cloud sits between him and it
+SU.a_beach = { mode: 'ill', f(q, p, a, T) {
+  stripes('#f1e1bd', '#ead197', 150, -.62, 0, C.ochre);
+  cam(960, 540, lerp(1, 1.06, eo(p)));
+  const sx = 960, sy = 300;
+  ngoBurst(sx, sy, 158, 300 + Math.sin(T * 1.2) * 6, 26, p * .12, '#e8b25a', C.cream);
+  const sun = PE(sx, sy, 146, 146); fillP(sun, C.orange); hatch(sun, sx, sy, 146, .8, 5, C.ink, 1, .55, [-30, -30]); iE(sx, sy, 146, 146, 0, C.ink, 3);
+  // sea + sand, square to camera
+  const hz = 600, sea = PR(-200, hz, W + 400, 130); fillP(sea, C.teal); hatch(sea, 960, hz + 65, 1400, .05, 7, C.ink, .9, .5); X.beginPath(); for (let i = 0; i < 40; i++) { const wx = (i * 97 + T * 30) % (W + 200) - 100, wy = hz + 16 + (i * 37) % 100; X.moveTo(wx, wy); X.quadraticCurveTo(wx + 20, wy - 8, wx + 40, wy); } stroke(C.cream, 2, .8); iline(-200, hz, W + 200, hz, C.ink, 2.4);
+  const sand = PR(-200, hz + 130, W + 400, 500); fillP(sand, C.tan); stipRect(-200, hz + 130, W + 400, 500, 3200, C.ink, .5, 2); iline(-200, hz + 130, W + 200, hz + 130, C.ink, 2.2);
+  // his footprints, straight up the middle from the bottom edge
+  for (let i = 0; i < 7; i++) { const fy = 1080 - i * 22 - i * i * 1.2, fx = 960 + (i % 2 ? 22 : -22) * (1 - i * .06); fillP(PE(fx, fy, 9 - i * .6, 5 - i * .3), '#a98a5c'); iE(fx, fy, 9 - i * .6, 5 - i * .3, 0, C.ink, 1, .6, false, .3); }
+  // palms as matching brackets
+  palm(300, 960, 1.3, { sway: Math.sin(T) }); X.save(); X.translate(W, 0); X.scale(-1, 1); palm(300, 960, 1.3, { sway: Math.sin(T + 1) }); X.restore();
+  // him, square-on, listening
+  const tx = 960, ty = 960, ts = 1.2;
+  suitcase(tx + 150, ty - 96, .78);
+  traveller(tx, ty, ts, { look: 0, mouth: sing(T), armR: a_armTo(1, 36, -314), armL: a_armTo(-1, -36, -314), case: false });
+  a_backHand(tx - 36 * ts, ty - 314 * ts, ts);
+  // what he listens for runs up toward the sun and stops dead at the underside of his cloud
+  for (const sd of [-1, 1]) for (let i = 0; i < 3; i++) { const rr = 40 + i * 34 + ((FD * 4) % 34); gc(tx + sd * 44 * ts, ty - 314 * ts, rr, C.teal, .8 * (1 - i * .25), 2, [6, 6], sd > 0 ? -1.5 : Math.PI + .2, sd > 0 ? -.2 : Math.PI + 1.5); }
+  cloud(tx, ty - 470 * ts - 40, .78, { rain: true });
+  consL([[0, hz, W, hz], [sx, 0, sx, H]]); consC([[sx, sy, 330]]);
+} };
+
+// 66.3 SCH acoustics (label moved off the level bars)
+SU.a_sSound = { mode: 'sch', f(q, p, a, T) {
+  schBG(); cam(960, 540, lerp(1, 1.1, eo(p)));
+  graticule(960, 540, 1900, 1100, 60, C.lav, .05); gl(0, 540, W, 540, C.lav, .3);
+  const sx = 420, sy = 540; star(sx, sy, 14, C.white, 1); gc(sx, sy, 110, C.white, .7, 1.4); ticks(sx, sy, 120, 48, 8, C.white, .6, 1, 4);
+  for (let i = 0; i < 9; i++) { const base = 140 + i * 110 + ((T * 90) % 110); X.beginPath(); for (let k = 0; k <= 120; k++) { const an = -.7 + k / 120 * 1.4, rr = base + Math.sin(an * 22 + T * 6) * 7; const x = sx + Math.cos(an) * rr, y = sy + Math.sin(an) * rr; k ? X.lineTo(x, y) : X.moveTo(x, y); } stroke(i % 3 === 0 ? C.mag : C.cyan, 1.4, cl(1 - base / 1200)); }
+  const ex2 = 1460, ey = 540; X.beginPath(); for (let k = 0; k < 300; k++) { const th = k / 300 * 6 * Math.PI, rr = 8 + th * 12; const x = ex2 + Math.cos(th) * rr, y = ey + Math.sin(th) * rr * .8; k ? X.lineTo(x, y) : X.moveTo(x, y); } stroke(singing(T) ? C.mag : C.lav, 1.6, .95);
+  stip(PE(ex2, ey, 230, 190), ex2, ey, 240, 900, C.lav, .45, 1.4);
+  bracket(sx, 880, ex2, 880, C.cyan, .8, '149,600,000 KM'); lab(sx, 380, 'SOURCE', C.white, .9, 14, 'center'); lab(ex2, 300, 'RECEIVER', C.white, .9, 14, 'center');
+  X.beginPath(); for (let i = 0; i < 40; i++) { const h = 10 + Math.abs(Math.sin(i * .7 + T * 8)) * 60 * (singing(T) ? 1 : .3); X.moveTo(760 + i * 10, 260); X.lineTo(760 + i * 10, 260 - h); } stroke(C.cyan, 3, .8);
+  gl(750, 268, 1160, 268, C.lav, .6, 1); lab(955, 300, 'SUN · VOLUME', C.mag, .95, 16, 'center');
+  screen(); schFrame('07', 'ACOUSTICS', 'THE SUN, OUT LOUD');
+} };
+
+// 78.3 SCH terrain under the land ship (neutral labels; the marker moves once across the shot)
+SU.a_sContour = { mode: 'sch', f(q, p, a, T) {
+  schBG(); cam(960, 540, lerp(1.1, 1, eo(p)));
+  for (const [cx, cy, n] of [[600, 420, 9], [1350, 640, 11], [1000, 200, 6]]) for (let i = 1; i <= n; i++) { X.beginPath(); for (let k = 0; k <= 60; k++) { const an = k / 60 * TAU, rr = i * 36 * (1 + .18 * Math.sin(an * 3 + i + cx) + .08 * Math.sin(an * 7)); const x = cx + Math.cos(an) * rr * 1.3, y = cy + Math.sin(an) * rr; k ? X.lineTo(x, y) : X.moveTo(x, y); } stroke(i % 5 === 0 ? C.white : C.lav, i % 5 === 0 ? 1.4 : 1, i % 5 === 0 ? .7 : .4); if (i % 3 === 0) lab(cx + i * 46, cy, String(i * 100), C.lav, .5, 10); }
+  const rd = []; for (let i = 0; i <= 40; i++) { const t = i / 40; rd.push([lerp(0, W, t), 900 - Math.sin(t * 3) * 120 - t * 200]); } path(rd, C.white, 2, .8, [12, 8]);
+  const cu = lerp(.18, .62, eio(p)), ci = Math.floor(cu * 40), fr = cu * 40 - ci, cp = [lerp(rd[ci][0], rd[ci + 1][0], fr), lerp(rd[ci][1], rd[ci + 1][1], fr)];
+  path(rd.slice(0, ci + 1).concat([cp]), C.mag, 2.2, .9); star(cp[0], cp[1], 5, C.mag, 1); gl(cp[0], cp[1], cp[0], cp[1] - 150, C.mag, .8, 1.4); { const sl = [[cp[0] + 4, cp[1] - 146], [cp[0] + 4, cp[1] - 24], [cp[0] + 96, cp[1] - 24]]; stip(PP(sl), cp[0] + 40, cp[1] - 60, 90, 260, C.mag, .55, 1.3); iP(sl, true, C.mag, 1.2, .85, false, .2); lab(cp[0] + 50, cp[1] - 160, 'SAIL', C.lav, .7, 10, 'center'); }
+  lab(cp[0] + 20, cp[1] - 16, 'HULL 01', C.mag, .9, 13); lab(cp[0] + 20, cp[1] + 6, 'WIND 4 KN', C.lav, .7, 11);
+  star(rd[40][0] - 40, rd[40][1], 4, C.white, .7); lab(1500, 760, 'NEAREST WATER: 412 KM', C.cyan, .9, 14);
+  screen(); schFrame('08', 'TERRAIN', 'CONTOUR 100 M');
+} };
+
+// 80.1 the road rolls itself up toward us like a carpet; the roll keeps turning and growing, the car keeps just ahead of it
+SU.a_roadCarpet = { mode: 'ill', f(q, p, a, T) {
+  stripes(C.paper, '#e6d9b8', 140, -.62, 0, C.tan); cam(960, 540, lerp(1.05, 1, eo(p)));
+  const hz = 520, u = lerp(.04, .9, p);
+  const h1 = PE(500, hz + 260, 900, 280); fillP(h1, '#b9b98a'); hatch(h1, 500, hz + 100, 900, .5, 8, C.ink, .9, .35, [40, 30]); iE(500, hz + 260, 900, 280, 0, C.ink, 2.2, 1, true, 1, Math.PI, TAU);
+  const h2 = PE(1500, hz + 300, 800, 300); fillP(h2, C.sage); hatch(h2, 1500, hz + 100, 800, -.5, 7, C.ink, .9, .35, [-40, 30]); iE(1500, hz + 300, 800, 300, 0, C.ink, 2.2, 1, true, 1, Math.PI, TAU);
+  const gnd = PR(-200, hz + 120, W + 400, 600); fillP(gnd, '#a8a878'); hatch(gnd, 960, hz + 400, 1400, -.2, 9, C.ink, .8, .3);
+  const yAt = (t) => lerp(hz + 120, H + 40, t), xl = (y) => lerp(930, 420, (y - hz - 120) / (H + 40 - hz - 120)), xr = (y) => lerp(990, 1500, (y - hz - 120) / (H + 40 - hz - 120));
+  const ry = lerp(hz + 150, 880, u), lx = xl(ry), rx = xr(ry), rr = lerp(22, 105, u);
+  // bare paper where the road was: just its construction lines
+  fillP(PP([[930, hz + 120], [990, hz + 120], [rx, ry], [lx, ry]]), C.paper, .9);
+  X.setLineDash([6, 8]); X.beginPath(); X.moveTo(930, hz + 120); X.lineTo(lx, ry); X.moveTo(990, hz + 120); X.lineTo(rx, ry); X.moveTo(960, hz + 120); X.lineTo(960, ry); stroke(C.ink, 1.2, .5); X.setLineDash([]);
+  // the road still down, ahead of the roll
+  const rd = PP([[lx, ry], [rx, ry], [1500, H + 40], [420, H + 40]]); fillP(rd, '#8a8172'); hatch(rd, 960, 900, 600, .1, 6, C.ink, .9, .5); iP([[lx, ry], [420, H + 40]], false); iP([[rx, ry], [1500, H + 40]], false);
+  for (let i = 0; i < 9; i++) { const t2 = i / 9, y = yAt(t2 * t2); if (y < ry + 6) continue; fillP(PR(958 - 6 * t2, y, 4 + 14 * t2, 8 + 40 * t2), C.cream); }
+  // the roll: asphalt face turning toward us, the dashes and edge lines wrapping round it, spirals at both ends
+  const cy = ry - rr, spin = T * 5.5, face = PR(lx - 6, ry - 2 * rr, rx - lx + 12, 2 * rr); fillP(face, '#7d7466'); hatch(face, 960, cy, rx - lx, 0, 4, C.ink, .9, .5); hatch(face, 960, cy, rx - lx, .2, 7, C.ink, .8, .35, [0, -rr * .5]);
+  X.save(); X.clip(face);
+  for (let k = 0; k < 8; k++) { const th = ((k / 8 * TAU + spin) % TAU) - Math.PI; if (Math.abs(th) > Math.PI / 2) continue; const y = cy + Math.sin(th) * rr, fh = Math.cos(th) * rr * .35; fillP(PR(952, y - fh / 2, 16, fh), C.cream); iline(lx - 6, y, rx + 6, y, C.ink, 1.2, .55, false); }
+  for (const ex2 of [lx + 14, rx - 18]) fillP(PR(ex2, ry - 2 * rr, 4, 2 * rr), C.cream, .9);
+  X.restore(); iBox(lx - 6, ry - 2 * rr, rx - lx + 12, 2 * rr, C.ink, 2.6);
+  for (const [ex3, dir] of [[lx - 6, 1], [rx + 6, -1]]) {
+    const cap = PE(ex3, cy, rr * .38, rr); fillP(cap, '#9a9080'); iE(ex3, cy, rr * .38, rr, 0, C.ink, 2.4);
+    const turns = 2.5 + u * 4; X.beginPath(); for (let k = 0; k <= 120; k++) { const t2 = k / 120, th = t2 * turns * TAU * dir + spin * dir, r3 = t2 * rr * .95; k ? X.lineTo(ex3 + Math.cos(th) * r3 * .38, cy + Math.sin(th) * r3) : X.moveTo(ex3, cy); } stroke(C.ink, 1.4, .85);
+  }
+  for (let i = 0; i < 3; i++) gc(960, cy, rr * 2 + 50 + i * 30, C.orange, .6, 1.8, null, Math.PI * 1.15 + spin * .02, Math.PI * 1.85 + spin * .02);
+  // the car keeps just ahead of it, always in frame
+  const ccy = Math.min(1010, ry + 70 + rr * .6), cs = lerp(.45, 1.45, cl((ccy - hz - 120) / (1010 - hz - 120)));
+  for (let i = 0; i < 3; i++) { const t2 = ((T * 2.4 + i / 3) % 1); iE(940 - 120 * cs - t2 * 30, ccy - 20 - t2 * 40, 14 + t2 * 30, 10 + t2 * 20, 0, C.ink, 1.4, .7 * (1 - t2), false); }
+  car(940, ccy, cs);
+  traveller(260, 1060, 1.15, { look: 1, mouth: sing(T) }); cloud(260, 520, .62, { rain: true });
+  consL([[0, hz + 120, W, hz + 120], [960, hz + 120, 0, H], [960, hz + 120, W, H]]);
+} };
+
+// 84.7 SCH: the route, drawn once across the shot; the road behind the marker is rolled up
+SU.a_sMap = { mode: 'sch', f(q, p, a, T) {
+  schBG(); cam(960, 540, lerp(1.15, 1, eo(p)));
+  graticule(960, 540, 2000, 1200, 80, C.lav, .15);
+  const land = PP(COAST); stip(land, 900, 560, 800, 9000, C.lav, .5, 1.6); iP(COAST, true, C.lav, 1.3, .9, false, .4);
+  for (let k = 1; k < 4; k++) iP(COAST.map(([x, y]) => [900 + (x - 900) * (1 - k * .12), 560 + (y - 560) * (1 - k * .12)]), true, C.lav, 1, .25, false, .3);
+  const A = [420, 760], B = [700, 300], Cc = [1200, 820], D = [1500, 380], u = lerp(.02, 1, eio(seg(p, .04, .94)));
+  path(bzPts(A, B, Cc, D, 0, Math.max(0, u - .12)), C.lav, 1.2, .5, [2, 9]); path(bzPts(A, B, Cc, D, Math.max(0, u - .12), u), C.mag, 2.6, .95); path(bzPts(A, B, Cc, D, u, 1), C.white, 1.2, .55, [4, 8]);
+  star(A[0], A[1], 5, C.white, .9); star(D[0], D[1], 5, C.white, .7); const [px, py] = bz(A, B, Cc, D, u); star(px, py, 6, C.mag, 1);
+  const [bx, by] = bz(A, B, Cc, D, Math.max(0, u - .12)); gc(bx, by, 16, C.cyan, .9, 1.4); gl(bx, by, bx - 60, by + 90, C.cyan, .6); lab(bx - 64, by + 108, 'ROAD BEHIND: ROLLED UP', C.cyan, .9, 12, 'right');
+  lab(A[0] - 20, A[1] + 34, 'HOME', C.white, .9, 13, 'right'); lab(D[0] + 20, D[1] - 16, '?', C.white, .9, 18);
+  const rx = 1700, ry = 190; gc(rx, ry, 70, C.lav, .8, 1.2); ticks(rx, ry, 70, 32, 6, C.lav, .7, 1, 4); gl(rx, ry - 100, rx, ry + 100, C.lav, .7); gl(rx - 100, ry, rx + 100, ry, C.lav, .7); lab(rx, ry - 112, 'N', C.white, .95, 16, 'center');
+  bracket(180, 980, 480, 980, C.cyan, .85, '0 — 100 KM'); lab(1240, 930, 'WAY BACK: 0 KM', C.mag, .95, 15);
+  screen(); schFrame('08', 'ROUTE', 'ONE WAY ONLY');
+} };
+
+// 100.0 SCH on hold: the queue number only ever goes up, slowly
+SU.a_sHold = { mode: 'sch', f(q, p, a, T) {
+  schBG(); cam(960, 540, lerp(1.05, 1, eo(p)));
+  lattice(960, 540, 70, 12, C.lav, .06); gl(0, 540, W, 540, C.lav, .3);
+  X.beginPath(); for (let x = 0; x <= W; x += 6) { const y = 540 + Math.sin(x * .02 + T * 6) * 60 * Math.sin(x * .003 + T); x ? X.lineTo(x, y) : X.moveTo(x, y); } stroke(C.cyan, 1.6, .9);
+  const n = 47 + Math.floor(Math.max(0, T - 100.6) * 1.2); lab(960, 330, 'POSITION IN QUEUE', C.lav, .8, 16, 'center'); lab(960, 420, String(n), C.mag, 1, 90, 'center', 'alphabetic', 'bold');
+  if (T > 100.6) { star(1150, 360, 5, C.mag, .9); lab(1180, 366, '▲ ' + (n - 47), C.mag, .9, 18); }
+  for (let i = 0; i < 12; i++) { const t2 = (T * .4 + i / 12) % 1; const x = lerp(1900, 20, t2); fillP(PE(x, 760, 9, 7, -.4), C.cyan); gl(x + 8, 760, x + 8, 730, C.cyan, .9, 1.6); }
+  lab(960, 860, 'HOLD MUSIC · ' + Math.floor(T / 60) + ':' + String(Math.floor(T % 60)).padStart(2, '0') + ' ELAPSED', C.lav, .7, 14, 'center');
+  screen(); schFrame('21', 'ON HOLD', 'YOUR CALL IS IMPORTANT');
+} };
+
+// 104.2 the giant rubber stamp on the town: URGENT in dark oxblood on a cream knockout, so it reads over the red roofs
+SU.a_stampWorld = { mode: 'ill', f(q, p, a, T) {
+  const hit = .34, shake = p > hit && p < hit + .12 ? 1 : 0, INK2 = '#5e1c19';
+  stripes(C.paper, '#e6d9b8', 140, -.62, 0, C.tan); cam(960 + jit(14 * shake), 540 + jit(14 * shake), 1);
+  const hz = 700;
+  for (let row = 0; row < 3; row++) for (let i = 0; i < 9; i++) { const w2 = 150 + ((i * 37 + row * 11) % 60), x = -60 + i * 230 + row * 70, hh = 140 + ((i * 53 + row * 29) % 120), y = 420 + row * 120; const b = PR(x, y - hh, w2, hh + 40); fillP(b, [C.brick, C.tan, C.sage, C.ochre, C.rose][(i + row) % 5]); shade(b, x + w2 / 2, y - hh / 2, hh, [w2 * .25, 0], .9, 5); iBox(x, y - hh, w2, hh + 40, C.ink, 2); const rf = PP([[x - 10, y - hh], [x + w2 / 2, y - hh - 60], [x + w2 + 10, y - hh]]); fillP(rf, '#7a4a2a'); hatch(rf, x + w2 / 2, y - hh - 30, w2, .4, 4, C.ink, .9, .55); iP([[x - 10, y - hh], [x + w2 / 2, y - hh - 60], [x + w2 + 10, y - hh]], true, C.ink, 2); for (let k = 0; k < 2; k++) { const wn = PR(x + 20 + k * (w2 / 2), y - hh + 30, 30, 40); fillP(wn, C.cream); iBox(x + 20 + k * (w2 / 2), y - hh + 30, 30, 40, C.ink, 1.4); } }
+  const g = PR(-200, hz + 140, W + 400, 500); fillP(g, '#b9a98a'); hatch(g, 960, hz + 300, 1400, .15, 9, C.ink, .8, .35); iline(-200, hz + 140, W + 200, hz + 140, C.ink, 2.6);
+  traveller(330, 1040, .9, { look: 1, mouth: sing(T) }); cloud(330, 620, .5, { rain: true }); kioskMini(1600, 1000, .55);
+  if (p > hit) { X.save(); X.translate(1000, 560); X.rotate(-.12); const kn = [[-350, -70], [350, -78], [356, 72], [-344, 80]]; fillP(PP(kn), C.cream, .92); iP(kn, true, INK2, 2, .7, false, 2); X.restore(); stampMark(1000, 560, 380, a.mark || 'URGENT', INK2, -.12, .95); }
+  const sy = p < hit ? lerp(-900, 380, eo(p / hit)) : lerp(380, -900, eo((p - hit - .12) / .5)), sx = 1000;
+  if (sy > -880) { const b = PR(sx - 380, sy, 760, 120); fillP(b, '#3b2a22'); iBox(sx - 380, sy, 760, 120, C.ink, 3); const nk = PR(sx - 70, sy - 380, 140, 380); fillP(nk, '#8a5530'); shade(nk, sx, sy - 190, 200, [20, 0], .9, 5); iBox(sx - 70, sy - 380, 140, 380, C.ink, 3); const kb = PE(sx, sy - 430, 190, 110); fillP(kb, '#a5703f'); shade(kb, sx, sy - 430, 200, [30, -20], .7, 5); iE(sx, sy - 430, 190, 110, 0, C.ink, 3); }
+  if (shake) for (let i = 0; i < 4; i++) gc(1000, 600, 400 + i * 70 + (p - hit) * 900, C.orange, .8, 3, null, Math.PI, TAU);
+  consL([[0, hz + 140, W, hz + 140], [1000, 0, 1000, H]]);
+} };
+
+// 109.95 SCH ticket: the note sits inside the stub, under the band
+SU.a_sTicket = { mode: 'sch', f(q, p, a, T) {
+  schBG(); cam(960, 540, lerp(1.1, 1, eo(p)));
+  lattice(960, 540, 70, 10, C.lav, .06); ticket(960, 540, 2, -.05, { sch: 1, col: C.lav, to: a.to || 'AWAY' });
+  X.save(); X.translate(960, 540); X.rotate(-.05); star(500, -96, 5, C.mag, 1); lab(320, -82, a.note || 'RETURN: INCLUDED', C.mag, .95, 14); X.restore();
+  bracket(400, 860, 1520, 860, C.cyan, .8, '1 WAY');
+  screen(); schFrame('05', 'TICKET', 'CLASS: ECONOMY');
 } };
 
 // ---------- the cut list: 0 - 116.6 ----------
@@ -513,7 +724,7 @@ var CUTS_A = [
   [7.57, 'sTraveller', {}],
   [10.82, 'a_puddle', {}],
   [13.56, 'shop', { walk: [-120, 1300], byP: 1, ring: 1 }],
-  [17.6, 'posterCU', { kind: 'palm' }],
+  [17.6, 'a_posterCU', {}],
   [22.55, 'a_doorBell', {}],
   [25.29, 'sPlan', {}],
   [27.59, 'a_interior', {}],
@@ -529,23 +740,23 @@ var CUTS_A = [
   [50.69, 'a_pin', {}],
   [53.85, 'a_sPin', {}],
   // from here: one impossible thing per scene. "hear the sun out loud"
-  [59.0, 'beach', {}],
+  [59.0, 'a_beach', {}],
   [61.7, 'a_sunHorn', {}],
-  [66.28, 'sSound', {}],
-  [68.98, 'a_shell', {}],
+  [66.28, 'a_sSound', {}],
+  [68.70, 'a_shell', {}],
   // "the car on a land"
   [73.7, 'a_landShip', {}],
-  [78.3, 'sContour', {}],
-  [80.13, 'roadCarpet', { from: 0, to: 1 }],
-  [84.66, 'sMap', {}],
+  [78.3, 'a_sContour', {}],
+  [80.13, 'a_roadCarpet', {}],
+  [84.66, 'a_sMap', {}],
   // chorus 1: a roadside payphone; she answers somewhere else
   [90.8, 'a_payphone', {}],
   [93.69, 'a_sWire', {}],
   [95.48, 'a_poleDesk', {}],
-  [100.0, 'sHold', {}],
+  [100.0, 'a_sHold', {}],
   // "help me quick"
-  [104.2, 'stampWorld', { mark: 'URGENT' }],
+  [104.2, 'a_stampWorld', { mark: 'URGENT' }],
   [107.8, 'mvu_dialFace', {}],
-  [109.95, 'sTicket', { note: 'DEPARTS: NOW' }],
+  [109.95, 'a_sTicket', { note: 'DEPARTS: NOW' }],
   [112.25, 'a_rushRoad', {}],
 ];
