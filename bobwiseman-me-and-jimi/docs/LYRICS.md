@@ -56,3 +56,11 @@ Then `zsh tools/lyrics_deliver.sh` lays the spans over the master frame for fram
 | verse 3 | 153.13-187.00 | lead-in on the beat at 153.13 ("I" at 153.91); ends on the cut to the outro |
 
 Audio fades: 0.15 s in (0.02 s on verse 1), 0.35-0.45 s out. No title cards.
+
+## Checks (2026-10-13)
+
+`tools/lyrics_check.py` compares each output with its master outside the label rows (16:9 rows 20-78 %, 9:16 rows
+0-53 % and 76-100 %): no blank frames, frame counts 6780 / 823 / 831 / 813, every frame within encode noise of the
+master (16:9 max 2.1 levels of 255; 9:16 max 3.6). The first pass caught verse 2 drawing the previous on-twos pose on
+alternate frames: render.mjs had drawn `t0 + i / 24` from a rounded t0 (77.333333). render.mjs and vertical.mjs now
+draw `(round(t0 * 24) + i) / 24`, and verse 2 / verse 3 were rendered again.
