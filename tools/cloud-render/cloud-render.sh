@@ -1,7 +1,10 @@
 #!/bin/zsh
 # Render a look on GitHub Actions in parallel and bring back one video with the song on it.
 #
-#   tools/cloud-render/cloud-render.sh <project> <page> <t0> <t1> [out.mp4] [slices=20] [height=720]
+#   tools/cloud-render/cloud-render.sh [--draft] <project> <page> <t0> <t1> [out.mp4] [slices=20] [height=720]
+#   --draft (or CR_DRAFT=1): review quality. Slices at crf 23, parallel downloads, a veryfast crf 23 join.
+#   About 4x less to download and a much faster join; masters (no flag) are unchanged at crf 18 / medium.
+#   CR_REF=<branch> runs the workflow file from that branch (to test workflow changes before merging).
 #   e.g. tools/cloud-render/cloud-render.sh bobwiseman-holiday-tavern looks/charcoal.html 24 130
 #
 # 1. Packages the project's code and assets (never audio, video, source/, _in/, out/, work/) and uploads it
@@ -11,6 +14,8 @@
 #    concat filter, and muxes the project's assets/song.wav for t0..t1 on this Mac.
 # 4. Runs badframes, then deletes the release. Uses about 3 Actions minutes per slice.
 set -e -o pipefail
+draft=${CR_DRAFT:-0}; [[ $1 == --draft ]] && { draft=1; shift; }
+if (( draft )); then crf=23; jpreset=veryfast; else crf=18; jpreset=medium; fi
 REPO=rheos/secondunit-videos
 here=${0:A:h}; root=${here:h:h}
 proj=$1; page=$2; t0=$3; t1=$4; slices=${6:-20}; height=${7:-720}
@@ -30,7 +35,7 @@ slug=${${page:t}:r}
 out=${5:-$pdir/out/${slug}_cloud_${t0}-${t1}.mp4}
 label="${proj}-${slug}-$(date +%Y%m%d-%H%M%S)"
 tmp=$(mktemp -d); trap 'rm -rf $tmp' EXIT
-echo "== $label: $frames frames in $slices slices at ${width}x${height}"
+echo "== $label: $frames frames in $slices slices at ${width}x${height}$( (( draft )) && echo ", draft")"
 
 # 1. package: an ALLOWLIST of code, styles, data, images and fonts, never audio, video, secrets or data folders
 (cd $pdir && find . \( -path ./out -o -path ./source -o -path ./_in -o -path ./work -o -path ./tmp -o -path ./output \
@@ -61,7 +66,7 @@ asset=$(gh api --paginate repos/$REPO/releases --jq ".[] | select(.tag_name==\"$
 [[ -n $asset ]] || { echo "release asset not found"; exit 1; }
 
 # 2. run
-gh workflow run cloud-render.yml --repo $REPO -f label=$label -f asset_id=$asset -f page=$page -f t0=$t0 \
+gh workflow run cloud-render.yml --repo $REPO ${CR_REF:+--ref $CR_REF} -f crf=$crf -f label=$label -f asset_id=$asset -f page=$page -f t0=$t0 \
   -f frames=$frames -f slices=$slices -f fps=$fps -f width=$width -f height=$height
 run=""
 for i in {1..30}; do
@@ -77,9 +82,13 @@ echo "rendered in $(( $(date +%s) - t_start )) s"
 
 # 3. download, check, join, mux
 mkdir -p $tmp/slices
+fetch() { for try in 1 2 3 4; do gh run download $run --repo $REPO -n slice-$1 -D $tmp/slices > /dev/null 2>&1 && return 0; sleep 3; done; }
+t_dl=$(date +%s)
 for n in $(seq 0 $(( slices - 1 ))); do
-  for try in 1 2 3 4; do gh run download $run --repo $REPO -n slice-$n -D $tmp/slices > /dev/null 2>&1 && break; sleep 3; done
-done
+  fetch $n &
+  (( (n + 1) % 4 == 0 )) && wait   # four at a time: parallel, but one timeout can't abort the batch
+done; wait
+echo "downloaded in $(( $(date +%s) - t_dl )) s"
 files=($(ls $tmp/slices/slice_*.mp4 2>/dev/null | sort))
 (( ${#files} == slices )) || { echo "got ${#files} of $slices slices"; exit 1; }
 ins=(); filt=""; k=0
@@ -92,7 +101,7 @@ done
 cat=""; for ((j = 0; j < k; j++)); do cat+="[v${j}]"; done
 mkdir -p ${out:h}
 ffmpeg -y -loglevel error ${ins[@]} -ss $t0 -t $(( t1 - t0 )) -i $song -filter_complex "${filt}${cat}concat=n=${k}:v=1:a=0[v]" \
-  -map "[v]" -map "${k}:a" -c:v libx264 -preset medium -crf 18 -pix_fmt yuv420p -c:a aac -b:a 256k -movflags +faststart $out
+  -map "[v]" -map "${k}:a" -c:v libx264 -preset $jpreset -crf $crf -pix_fmt yuv420p -c:a aac -b:a 256k -movflags +faststart $out
 got=$(ffprobe -v error -count_frames -select_streams v:0 -show_entries stream=nb_read_frames -of csv=p=0 $out | tr -d ',')
 (( got == frames )) || { echo "joined video has $got frames, want $frames"; exit 1; }
 

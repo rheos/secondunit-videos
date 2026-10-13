@@ -16,6 +16,7 @@ on:
       fps: { description: "frames per second", required: true, default: "24" }
       width: { description: "encoded width", required: true, default: "1280" }
       height: { description: "encoded height", required: true, default: "720" }
+      crf: { description: "x264 crf for the slices (18 master, 23 draft)", required: false, default: "18" }
 permissions:
   contents: write   # a draft release (the package) is only visible with write access
 jobs:
@@ -59,6 +60,7 @@ jobs:
       FPS: ${{ inputs.fps }}
       WIDTH: ${{ inputs.width }}
       HEIGHT: ${{ inputs.height }}
+      CRF: ${{ inputs.crf || '18' }}
       N: ${{ matrix.n }}
     steps:
       - uses: actions/checkout@v4
@@ -87,7 +89,7 @@ jobs:
           node render-slice.mjs "$PAGE" "$T0" "$FPS" "$a" "$b" 2
           mkdir -p out
           ffmpeg -y -loglevel error -framerate "$FPS" -start_number "$a" -i frames/f_%06d.jpg -frames:v $(( b - a )) \
-            -vf "scale=${WIDTH}:${HEIGHT}:flags=lanczos" -c:v libx264 -preset medium -crf 18 -pix_fmt yuv420p \
+            -vf "scale=${WIDTH}:${HEIGHT}:flags=lanczos" -c:v libx264 -preset medium -crf "$CRF" -pix_fmt yuv420p \
             "out/slice_$(printf %03d "$N")_f$(printf %06d "$a")-f$(printf %06d "$b").mp4"
       - uses: actions/upload-artifact@v4
         with:
