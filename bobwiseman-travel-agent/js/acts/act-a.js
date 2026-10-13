@@ -371,24 +371,28 @@ SU.a_shell = { mode: 'ill', f(q, p, a, T) {
   const rs = PE(1600, 640, 70, 70); fillP(rs, C.ochre, .9); hatch(rs, 1600, 640, 70, .8, 5, C.ink, .9, .45, [-14, -14]); iE(1600, 640, 70, 70, 0, C.ink, 2); lab(1600, 560, 'MUTE', C.ink, .7, 14, 'center', 'alphabetic', 'bold');
   // him, big: head and shoulders
   const s = 3.0, x = 760, y = 420 + 306 * s, A = [2.0, 2.2];
-  traveller(x, y, s, { look: .2, armR: A, case: false, mouth: 0 });
+  traveller(x, y, s, { look: .2, armR: A, case: false, mouth: 0, handTo: [62, -278] }); // his hand under the shell
   const hand = arm(26, -262, A[0], A[1])[2], hx = x + hand[0] * s, hy = y + hand[1] * s;
-  // the conch, opening to camera; the sun inside pumps on every sung syllable (and keeps a pulse on the beat after the line)
-  const shx = hx + 70, shy = hy - 40, pl = Math.max(sing(T), .32 * Math.abs(Math.sin(T * 7.4)));
-  X.save(); X.translate(shx, shy); X.rotate(-.35);
-  const sp = PP([[-160, 40], [-120, -100], [0, -170], [150, -110], [220, 10], [140, 110], [0, 140], [-100, 110]]); fillP(sp, '#f1d3b8'); shade(sp, 0, 0, 230, [-24, -18], .7, 5);
-  X.beginPath(); for (let k = 0; k < 7; k++) { X.moveTo(-160 + k * 50, 50 - k * 6); X.quadraticCurveTo(-100 + k * 50, -120 + k * 10, -40 + k * 54, -150 + k * 20); } stroke(C.ink, 1.6, .55);
-  iP(dens([[-160, 40], [-120, -100], [0, -170], [150, -110], [220, 10], [140, 110], [0, 140], [-100, 110]], 24, true), true, C.ink, 3);
-  for (let i = 0; i < 6; i++) { const an = -2.6 + i * .5; const kn = PP([[-160 + i * 60, -80 - i * 14], [-140 + i * 60, -150 - i * 10], [-120 + i * 60, -84 - i * 14]]); fillP(kn, '#e3b998'); iP([[-160 + i * 60, -80 - i * 14], [-140 + i * 60, -150 - i * 10], [-120 + i * 60, -84 - i * 14]], false, C.ink, 2); }
-  const mouth = PE(40, 10, 120, 80, -.2); fillP(mouth, C.rose);
-  X.save(); X.clip(mouth); const glow = PE(40, 10, 120, 80, -.2); hatch(glow, 40, 10, 130, .8, 5, C.ink, .9, .35, [20, 20]); sunIll(40, 10, 38 + pl * 26, C.orange, pl); X.restore();
-  iE(40, 10, 120, 80, -.2, C.ink, 2.8);
+  // the shell, pressed to his ear, seen from its back so the spiral shows (Robin on draft 8: the opening-to-camera conch
+  // with the sun inside read as a giant eyeball, and a wedge conch read as a crab claw). A logarithmic spiral, each
+  // turn .45 of the last, ribbed between the whorls, a brown band along each whorl; its opening (the ray at angle
+  // pi from the centre) is against his ear. The sun is heard, not seen: light at the lip, short rays off the shell.
+  const pl = Math.max(sing(T), .32 * Math.abs(Math.sin(T * 7.4))), ex = x + 36 * s, ey = y - 300 * s, SR = 96, sb = Math.log(1 / .45) / TAU;
+  const scx = ex + SR * .7, scy = ey - 6, rr0 = (th) => SR * Math.exp(sb * (th - Math.PI)), spt = (th, f = 1) => [scx + Math.cos(th) * rr0(th) * f, scy + Math.sin(th) * rr0(th) * f * .92];
+  for (let i = 0; i < 4; i++) { const rr = 30 + ((FD * 5 + i * 26) % 100); gc(ex + 4, ey, rr, i % 2 ? C.orange : C.teal, cl(1 - rr / 140) * (.35 + pl * .6), 2 + pl * 1.4, null, 1.9, 4.4); }
+  X.beginPath(); for (let i = 0; i < 11; i++) { const an = -1.5 + i * .3, r1 = SR + 18, r2 = SR + 34 + pl * 30 + (i % 3) * 10; X.moveTo(scx + Math.cos(an) * r1, scy + Math.sin(an) * r1); X.lineTo(scx + Math.cos(an) * r2, scy + Math.sin(an) * r2); } stroke(C.orange, 1.5 + pl * 1.5, .9);
+  const outer = []; for (let th = Math.PI - TAU; th <= Math.PI + 1e-6; th += .08) outer.push(spt(th)); const shellP = PP(outer.concat([spt(Math.PI - TAU)]));
+  fillP(shellP, '#f1d8bc'); shade(shellP, scx, scy, SR * 1.1, [14, 16], .8, 4.5);
+  X.save(); X.clip(shellP);
+  X.beginPath(); for (let th = Math.PI - 3 * TAU; th <= Math.PI; th += .06) { const q = spt(th, .78); th === Math.PI - 3 * TAU ? X.moveTo(q[0], q[1]) : X.lineTo(q[0], q[1]); } stroke('#c98a5a', 5, .8);
+  X.beginPath(); for (let th = Math.PI - 3 * TAU; th <= Math.PI; th += .2) { const [a0, a1] = spt(th - TAU), [b0, b1] = spt(th); X.moveTo(a0, a1); X.lineTo(b0, b1); } stroke(C.ink, 1.3, .55);
   X.restore();
-  // the sun's sound coming out of the shell into his ear, as rings and rays
-  for (let i = 0; i < 6; i++) { const rr = 30 + ((FD * 6 + i * 40) % 240) * (.6 + pl * .6); gc(shx + 40, shy, rr, i % 2 ? C.orange : C.teal, cl(1 - rr / 300) * (.35 + pl * .65), 2 + pl * 2, null, -2.2, 1.0); }
-  X.beginPath(); for (let i = 0; i < 12; i++) { const an = -1.4 + i * .22, r1 = 150, r2 = 180 + pl * 90 + (i % 3) * 30; X.moveTo(shx + 40 + Math.cos(an) * r1, shy + Math.sin(an) * r1); X.lineTo(shx + 40 + Math.cos(an) * r2, shy + Math.sin(an) * r2); } stroke(C.orange, 1.6 + pl * 1.6, .9);
+  X.beginPath(); for (let th = Math.PI - 3.4 * TAU; th <= Math.PI; th += .05) { const q = spt(th); th === Math.PI - 3.4 * TAU ? X.moveTo(q[0], q[1]) : X.lineTo(q[0], q[1]); } stroke(C.ink, 2.4, 1);
+  X.beginPath(); { const [a0, a1] = spt(Math.PI - TAU), [b0, b1] = spt(Math.PI); X.moveTo(a0, a1); X.lineTo(b0, b1); } stroke(C.ink, 2.6, 1);
+  // (the opening is edge-on against his ear, so it is only the closing ink line; the sound rings carry the glow)
+  
   cloud(x - 380, 160, .8, { rain: true });
-  consL([[0, 760, W, 760], [shx, 0, shx, H]]); consC([[shx + 40, shy, 300]]);
+  consL([[0, 760, W, 760], [scx, 0, scx, H]]); consC([[scx, scy, SR * 1.6]]);
 } };
 
 // ---------- 73.7 the land ship: a car with a mast and sail crosses a wheat field, leaving a wake ----------

@@ -79,7 +79,7 @@ function traveller(x, y, s, o = {}) {
   const aR = o.armR || [-.12, .25];
   // o.phone: 'handset' (a payphone receiver) or 'mobile' held against his right ear, his hand on it
   const ear = o.phone ? [lk + 36, -300] : null;
-  const ap = armIK(26, -262, aR[0], aR[1], 1, ear ? [ear[0] + 6, ear[1] + 8] : null); limb(ap, 13, o, k, o.sleeve || '#3a7a76');
+  const ap = armIK(26, -262, aR[0], aR[1], 1, ear ? [ear[0] + 6, ear[1] + 8] : (o.handTo || null)); limb(ap, 13, o, k, o.sleeve || '#3a7a76'); // o.handTo: a local hand target for a held prop
   if (o.phone === 'handset') { const top = [lk + 36, -328], bot = [lk + 30, -272]; X.beginPath(); X.moveTo(top[0], top[1]); X.lineTo(bot[0], bot[1]); stroke(S.INK, 11 * k / k, 1); for (const [cx, cy] of [top, bot]) { const cup = PE(cx + 4, cy, 9, 7, .2); S.F(cup, '#2b2420'); S.OL(cx + 4, cy, 9, 7, .2, 1.8); } }
   if (o.phone === 'mobile') { const mp = PP([[lk + 26, -326], [lk + 44, -324], [lk + 42, -284], [lk + 24, -286]]); S.F(mp, '#2b2420'); S.OP([[lk + 26, -326], [lk + 44, -324], [lk + 42, -284], [lk + 24, -286]], true, 1.8); if (!S.sch) fillP(PP([[lk + 28, -322], [lk + 41, -320], [lk + 40, -290], [lk + 27, -292]]), '#cfe6e2', .9); }
   const hx = ap[2][0], hy = ap[2][1];
