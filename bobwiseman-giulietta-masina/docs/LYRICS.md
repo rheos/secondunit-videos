@@ -77,3 +77,23 @@ Audio fades 0.05-0.12 s in, 0.25-0.5 s out. No title cards.
 
 `tools/lyrics_check.py <master> <lyric cut>` compares the two frame by frame: anything that differs must be one
 caption-sized region, and nothing may differ where no caption shows.
+
+## Outputs and checks (2026-10-13)
+
+| File | Size | Frames |
+|---|---|---|
+| `out/gm_looks-v4-lyrics-v1_f00000-f03337_24fps_draft.mp4` | 1280x720 | 3337 |
+| `out/9x16/verses/gm_verse1-lyrics-v1_f00109-f00786_24fps_9x16.mp4` | 720x1280 | 677 (28.2 s) |
+| `out/9x16/verses/gm_verse2-lyrics-v1_f00786-f01440_24fps_9x16.mp4` | 720x1280 | 654 (27.25 s) |
+| `out/9x16/verses/gm_verse3-lyrics-v1_f02150-f03108_24fps_9x16.mp4` | 720x1280 | 958 (39.9 s) |
+
+- The v4 master's sha256 is unchanged after delivery.
+- `tools/lyrics_check.py`: 0 suspect frames. Every difference from the master is one caption-sized region, and nothing
+  differs where no caption shows, the ten span seams included. (Per-pixel, the patches differ from the master by encode
+  noise on grain and edges: the master is two encode generations deep, the patches one.)
+- `tools/badframes.py`: the 16:9 cut flags the same 118 frames as the master (the designed blacks); the clips flag only
+  the kite's fade to black (verse 2, f809-815), the poster tearing into the dark (f1432) and the dream's cut to black
+  into the leader (verse 3, f2216-2224).
+- `flashcheck.py`: the three clips pass. The 16:9 cut fails at 131.88 s (4.5 flashes in a second, the flapping leader
+  tail in the outro), exactly as the approved v4 master does, outside every caption span.
+- 1:1 caption crops at 720p in both aspects: every word inside its block with margin.
