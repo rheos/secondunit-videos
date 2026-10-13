@@ -148,6 +148,11 @@ PAD = .12      # horizontal padding on each word box, as a fraction of its heigh
 LADDER = [864, 936, 1008, 1080, 1200, 1350, 1536, 1728, 1920]
 
 
+def pattern(t):
+    """Pixel-art rows (coins, road dashes) that the fast pass reads as 'xxxxxxxx' or '.+.+.+'."""
+    return (len(t) >= 6 and len(set(t)) <= 3) or sum(ch.isalnum() for ch in t) < .5 * len(t)
+
+
 def load_ocr(paths):
     """Sampled frames -> word boxes [x0, y0, x1, y1, conf, text, kind], filtered to readable words seen in a
     neighbouring sample too (a one-sample read is usually texture). kind: 'big' must sit inside the window,
@@ -157,16 +162,17 @@ def load_ocr(paths):
         for line in open(p):
             try: d = json.loads(line)
             except ValueError: continue  # a line still being written
-            S[d['f']] = [w for w in d['w'] if w[4] >= .5 and any(ch.isalnum() for ch in w[5])
+            S[d['f']] = [w for w in d['w'] if w[4] >= .5 and any(ch.isalnum() for ch in w[5]) and not pattern(w[5])
                                                and w[3] - w[1] >= SMALL and (len(w[5]) > 1 or w[3] - w[1] >= BIG)]
     fs = sorted(S)
     nbr = {f: [g for g in (fs[k - 1] if k else None, fs[k + 1] if k + 1 < len(fs) else None)
                if g is not None and abs(g - f) <= 6] for k, f in enumerate(fs)}  # samples are every 6th frame, denser in text shots
 
-    def near(w, g, tol=.06):  # a box of similar size and place in sample g
+    def near(w, g):  # sample g has a box overlapping this one at a similar height (the fast pass reads 'AW' for AWAKE)
+        h = w[3] - w[1]
         for v in S.get(g, []):
-            if abs((v[0] + v[2]) - (w[0] + w[2])) < tol and abs((v[1] + v[3]) - (w[1] + w[3])) < tol \
-                    and abs((v[3] - v[1]) - (w[3] - w[1])) < .3 * (w[3] - w[1]): return True
+            if min(v[2], w[2]) > max(v[0], w[0]) and abs((v[1] + v[3]) - (w[1] + w[3])) < h \
+                    and abs((v[3] - v[1]) - h) < .35 * h: return True
         return False
     out = {}
     for f in fs:
