@@ -63,5 +63,6 @@ function renderFrame(t) {
   FX = {};
   const sh = SHOTS.find((x) => t >= x.a && t < x.b) || SHOTS[SHOTS.length - 1];
   if (sh) { Object.assign(FX, sh.fx); s.save(); try { sh.fn(t, t - sh.a, sh.b - sh.a); } catch (e) { console.error(sh.name, e); } s.restore(); }
+  if (typeof OVERLAY === 'function') { s.save(); OVERLAY(t); s.restore(); }   // on-screen lyrics (js/lyrics.js), above every shot
   Look.present(t, FX);
 }
