@@ -1,6 +1,7 @@
 # Render a code-drawn look in parallel slices. Started by tools/cloud-render/cloud-render.sh, which uploads the
 # project's page code as a draft release asset (it can quote lyrics, so it never enters git) and deletes it
-# afterwards. No audio comes here: each slice returns silent video and the song is muxed on the Mac.
+# afterwards. No audio comes here: the slices are joined here into ONE silent video (artifact "film"), and the
+# Mac only muxes the song onto it with the video stream copied (no encode on the Mac).
 # Inputs reach shell scripts only through environment variables, and numbers are validated first.
 name: cloud-render
 run-name: "cloud-render ${{ inputs.label }}"
@@ -35,8 +36,9 @@ jobs:
           ASSET: ${{ inputs.asset_id }}
           T0: ${{ inputs.t0 }}
           PAGE: ${{ inputs.page }}
+          CRF: ${{ inputs.crf || '18' }}
         run: |
-          for v in "$FRAMES" "$SLICES" "$FPS" "$WIDTH" "$HEIGHT" "$ASSET"; do
+          for v in "$FRAMES" "$SLICES" "$FPS" "$WIDTH" "$HEIGHT" "$ASSET" "$CRF"; do
             [[ "$v" =~ ^[0-9]+$ ]] || { echo "not a whole number: $v"; exit 1; }
           done
           [[ "$T0" =~ ^[0-9]+(\.[0-9]+)?$ ]] || { echo "bad t0: $T0"; exit 1; }
@@ -95,5 +97,45 @@ jobs:
         with:
           name: slice-${{ matrix.n }}
           path: pkg/out/
+          retention-days: 2
+          compression-level: 0
+  join:
+    # Join the slices here so the Mac downloads one file. Same concat FILTER the Mac used (the concat demuxer
+    # froze frames on Airplane v4), each slice's frame count checked first, the joined count checked after.
+    needs: [plan, slice]
+    runs-on: ubuntu-latest
+    env:
+      FRAMES: ${{ inputs.frames }}
+      SLICES: ${{ inputs.slices }}
+      CRF: ${{ inputs.crf || '18' }}
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: slice-*
+          path: slices
+          merge-multiple: true
+      - name: Join
+        run: |
+          sudo apt-get -qq update && sudo apt-get -qq install -y --no-install-recommends ffmpeg > /dev/null
+          preset=medium; (( CRF > 18 )) && preset=veryfast   # draft joins fast, masters keep medium
+          mapfile -t files < <(ls slices/slice_*.mp4 | sort)
+          (( ${#files[@]} == SLICES )) || { echo "got ${#files[@]} of $SLICES slices"; exit 1; }
+          ins=(); filt=""; cat=""; k=0
+          for f in "${files[@]}"; do
+            n=${f##*/}; a=${n#*_f}; a=${a%%-*}; b=${n##*-f}; b=${b%.mp4}; want=$(( 10#$b - 10#$a ))
+            have=$(ffprobe -v error -count_frames -select_streams v:0 -show_entries stream=nb_read_frames -of csv=p=0 "$f" | tr -d ',')
+            (( have == want )) || { echo "$n: $have frames, want $want"; exit 1; }
+            ins+=(-i "$f"); filt+="[${k}:v]setpts=PTS-STARTPTS[v${k}];"; cat+="[v${k}]"; k=$(( k + 1 ))
+          done
+          mkdir -p film
+          ffmpeg -y -loglevel error "${ins[@]}" -filter_complex "${filt}${cat}concat=n=${k}:v=1:a=0[v]" -map "[v]" \
+            -c:v libx264 -preset $preset -crf "$CRF" -pix_fmt yuv420p -movflags +faststart film/film.mp4
+          got=$(ffprobe -v error -count_frames -select_streams v:0 -show_entries stream=nb_read_frames -of csv=p=0 film/film.mp4 | tr -d ',')
+          (( got == FRAMES )) || { echo "joined video has $got frames, want $FRAMES"; exit 1; }
+          echo "joined $got frames, $(du -h film/film.mp4 | cut -f1)"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: film
+          path: film/film.mp4
           retention-days: 2
           compression-level: 0

@@ -2,20 +2,20 @@
 # Render a look on GitHub Actions in parallel and bring back one video with the song on it.
 #
 #   tools/cloud-render/cloud-render.sh [--draft] <project> <page> <t0> <t1> [out.mp4] [slices=20] [height=720]
-#   --draft (or CR_DRAFT=1): review quality. Slices at crf 23, parallel downloads, a veryfast crf 23 join.
-#   About 4x less to download and a much faster join; masters (no flag) are unchanged at crf 18 / medium.
+#   --draft (or CR_DRAFT=1): review quality, crf 23 and a veryfast join on GitHub. Masters (no flag): crf 18 / medium.
+#   Either way GitHub joins the slices and the Mac downloads one file and only muxes the song (stream copy).
 #   CR_REF=<branch> runs the workflow file from that branch (to test workflow changes before merging).
 #   e.g. tools/cloud-render/cloud-render.sh bobwiseman-holiday-tavern looks/charcoal.html 24 130
 #
 # 1. Packages the project's code and assets (never audio, video, source/, _in/, out/, work/) and uploads it
 #    as a DRAFT release asset, because page code can quote lyrics and lyrics stay out of git.
 # 2. Starts .github/workflows/cloud-render.yml: N runners each draw their frames and encode a silent slice.
-# 3. Downloads the slices (one at a time, with retries), checks each frame count, joins them with the
-#    concat filter, and muxes the project's assets/song.wav for t0..t1 on this Mac.
+# 3. The workflow's join job checks each slice's frame count and joins them with the concat filter; this Mac
+#    downloads that one video and muxes the project's assets/song.wav for t0..t1 onto it (video copied, no encode).
 # 4. Runs badframes, then deletes the release. Uses about 3 Actions minutes per slice.
 set -e -o pipefail
 draft=${CR_DRAFT:-0}; [[ $1 == --draft ]] && { draft=1; shift; }
-if (( draft )); then crf=23; jpreset=veryfast; else crf=18; jpreset=medium; fi
+(( draft )) && crf=23 || crf=18
 REPO=rheos/secondunit-videos
 here=${0:A:h}; root=${here:h:h}
 proj=$1; page=$2; t0=$3; t1=$4; slices=${6:-20}; height=${7:-720}
@@ -80,30 +80,17 @@ t_start=$(date +%s)
 gh run watch $run --repo $REPO --exit-status --interval 15 > /dev/null || { echo "run FAILED"; gh run view $run --repo $REPO --log-failed | tail -20; exit 1; }
 echo "rendered in $(( $(date +%s) - t_start )) s"
 
-# 3. download, check, join, mux
-mkdir -p $tmp/slices
-fetch() { for try in 1 2 3 4; do gh run download $run --repo $REPO -n slice-$1 -D $tmp/slices > /dev/null 2>&1 && return 0; sleep 3; done; }
+# 3. download the ONE joined video (the workflow's join job checked every slice's frame count), mux the song
+#    with the video stream copied: no encode on the Mac
 t_dl=$(date +%s)
-for n in $(seq 0 $(( slices - 1 ))); do
-  fetch $n &
-  (( (n + 1) % 4 == 0 )) && wait   # four at a time: parallel, but one timeout can't abort the batch
-done; wait
-echo "downloaded in $(( $(date +%s) - t_dl )) s"
-files=($(ls $tmp/slices/slice_*.mp4 2>/dev/null | sort))
-(( ${#files} == slices )) || { echo "got ${#files} of $slices slices"; exit 1; }
-ins=(); filt=""; k=0
-for f in $files; do
-  a=${${f:t}#*_f}; a=${a%%-*}; b=${${f:t}##*-f}; b=${b%.mp4}; want=$(( 10#$b - 10#$a ))
-  have=$(ffprobe -v error -count_frames -select_streams v:0 -show_entries stream=nb_read_frames -of csv=p=0 $f | tr -d ',')
-  (( have == want )) || { echo "${f:t}: $have frames, want $want"; exit 1; }
-  ins+=(-i $f); filt+="[${k}:v]setpts=PTS-STARTPTS[v${k}];"; k=$(( k + 1 ))
-done
-cat=""; for ((j = 0; j < k; j++)); do cat+="[v${j}]"; done
+for try in 1 2 3 4 5; do gh run download $run --repo $REPO -n film -D $tmp/film > /dev/null 2>&1 && break; sleep 5; done
+[[ -f $tmp/film/film.mp4 ]] || { echo "could not download the joined film"; exit 1; }
+echo "downloaded $(du -h $tmp/film/film.mp4 | cut -f1) in $(( $(date +%s) - t_dl )) s"
 mkdir -p ${out:h}
-ffmpeg -y -loglevel error ${ins[@]} -ss $t0 -t $(( t1 - t0 )) -i $song -filter_complex "${filt}${cat}concat=n=${k}:v=1:a=0[v]" \
-  -map "[v]" -map "${k}:a" -c:v libx264 -preset $jpreset -crf $crf -pix_fmt yuv420p -c:a aac -b:a 256k -movflags +faststart $out
+ffmpeg -y -loglevel error -i $tmp/film/film.mp4 -ss $t0 -t $(( t1 - t0 )) -i $song -map 0:v -map 1:a \
+  -c:v copy -c:a aac -b:a 256k -t $(( t1 - t0 )) -movflags +faststart $out
 got=$(ffprobe -v error -count_frames -select_streams v:0 -show_entries stream=nb_read_frames -of csv=p=0 $out | tr -d ',')
-(( got == frames )) || { echo "joined video has $got frames, want $frames"; exit 1; }
+(( got == frames )) || { echo "video has $got frames, want $frames"; exit 1; }
 
 # 4. scan
 $py $here/badframes.py $out
