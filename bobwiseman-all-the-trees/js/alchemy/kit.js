@@ -25,7 +25,7 @@ window.Alchemy = (() => {
  function joint(x,y,angle,fn){g.save();g.translate(x,y);g.rotate(angle);g.translate(-x,-y);fn();g.restore()}
  function rays(x,y,r,n,length,p,angle=0,spread=Math.PI*2){if(p<=0)return;g.save();g.translate(x,y);g.rotate(angle);g.globalAlpha=clamp(p);for(let j=0;j<n;j++){const a=-spread/2+spread*j/(n-1),l=length*(.65+.35*noise(j+81))*p;line(Math.cos(a)*r,Math.sin(a)*r,Math.cos(a)*(r+l),Math.sin(a)*(r+l),j%4===0?'#b38327':C.ink,.65)}g.restore()}
  function brass(t){let v=0;for(const n of ALCHEMY_CUES.brass){const d=t-n.time;if(d>=0&&d<.65)v=Math.max(v,Math.exp(-d*6.5)*(.5+n.strength*.5))}return v}
- function cloud(x,y,s,flip=1){g.save();g.translate(x,y);g.scale(s*flip,s);g.translate(-740,-430);piece('cloud',C.cream);g.restore()}
+ function cloud(x,y,s,flip=1){g.save();g.translate(x,y);g.scale(s*flip*.14,s*.14);g.translate(-1086,-362);piece('cloud',C.cream);g.restore()}
  // Paper is stable in plate space. No animated grain shimmer.
  const paper=canvas(W,H), pg=paper.getContext('2d',{willReadFrequently:true});pg.fillStyle=C.paper;pg.fillRect(0,0,W,H);for(let i=0;i<65000;i++){const a=noise(i+237);pg.globalAlpha=.03+a*.07;pg.fillStyle=i%3?'#87794c':'#fff9ed';pg.fillRect(noise(i+812)*W,noise(i+522)*H,1+a*2,1)}pg.globalAlpha=1;
  return {W,H,c,g,C,clamp,smooth,mix,noise,canvas,assets,load,stroke,fill,line,ellipse,piece,joint,rays,brass,cloud,paper};

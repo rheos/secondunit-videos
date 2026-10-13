@@ -11,6 +11,8 @@ The historical artwork below is public domain. Downloaded scans, the AI repair, 
 
 `clean-robes.png` is a second AI repair of the same clothed pair: the hands crossing the fronts of the robes were removed and robe folds restored. The original hands remain in separate animated limb layers. This avoids duplicate hands behind a moving arm. Only the torso masks use this repair.
 
+`cloud-clean.png` is an AI-assisted cleanup and extension of emblem XXX’s engraved clouds. It reconstructs a complete organic silhouette and removes the surrounding sky hatching. This is a source-based contemporary derivative, not an untouched scan.
+
 `tools/prepare_alchemy.py` records the cut-out polygons and deterministic levels conversion. It writes a separate brown-black alpha ink image and silhouette mask for each piece. Code applies warm paper and irregular colour washes below that ink. `js/alchemy/pieces.js` contains the crop registration, so the established file-URL renderer needs no network or fetch calls.
 
 The branching boughs, leaves, roots, miniature bird trumpets, ray fans and roundel motion are original code-drawn elements, not claimed to be extracted from historical scans. Their fine strokes and hatching are designed to sit with the source linework. Palette and animation are new, not historical colour evidence.
@@ -19,12 +21,14 @@ The unchanged song and Demucs stems are the existing pinned local project inputs
 
 ## Rebuild
 
-Place the five media files above in `source/alchemy/`, retaining the repaired PNG (the AI repair is not reproducible byte for byte from a prompt). With Pillow and NumPy installed:
+Place the six media files above in `source/alchemy/`, retaining the repaired PNG (the AI repair is not reproducible byte for byte from a prompt). With Pillow and NumPy installed:
 
 ```sh
 python tools/prepare_alchemy.py source/alchemy
+node tools/audit-alchemy.mjs
 PAGE=alchemy.html node check.mjs --full out/alchemy-full 50 58.5 64 69.5 74.5 78.5
 PAGE=alchemy.html node render.mjs 47 79.5 out/att_alchemy-v1_f01128-f01908_24fps_draft.mp4 4 24 0.6667
+python tools/review_outputs.py out/att_alchemy-v1_f01128-f01908_24fps_draft.mp4
 ```
 
 The audio analysis script uses NumPy, SciPy, SoundFile and Pillow. It saves a diagnostic spectrogram and onset candidates under `out/`. HPSS plus band limiting reduces drums and vocals but does not isolate trumpet from other harmonic instruments; the cue list therefore remains explicitly labelled as candidates pending an ear check.
