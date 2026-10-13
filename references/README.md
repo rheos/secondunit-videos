@@ -1,0 +1,50 @@
+# Reference profiles
+
+A library of people whose ideas Robin wants to call on, visually or philosophically. Each profile
+turns one person's work into something an agent can use on a brief: what they did, what we infer
+from it, and a short pass that asks "what would they add here?"
+
+These are studies, not imitations. A profile borrows a way of thinking or a rendering method; a
+video stays in its own look unless Robin asks for the profile's surface too.
+
+## Profiles
+
+| Profile | Calls on | Start with | Used in |
+|---|---|---|---|
+| [Mark Von Ulrich](mark-von-ulrich/) | Symbolic construction: give the idea a body (giant ear = listening, person built from their tools, one face compared across structures). Visually: early colour Mac raster, 256-colour system palette, ordered dither. | `AGENT-DIRECTION.txt` (symbolic pass); add `STYLE-BRIEF.txt` only for the raster look | Travel Agent draft 6 (`bobwiseman-travel-agent/MVU-DIRECTION.md`) |
+
+## Calling on a profile
+
+Give the agent the profile's `AGENT-DIRECTION.txt` plus the shot or section brief and ask for its
+pass ("what would Mark add to 1:14-1:31?"). The direction file says what to return: the scene's claim,
+two options, a recommendation, and what to keep. Add the style brief only when the profile's surface
+is wanted. Record the outcome in the project (a `<INITIALS>-DIRECTION.md` there, like Travel Agent's),
+and add the project to the "Used in" column above.
+
+## Building a new profile
+
+One folder per person: `references/<first-last>/`. Mark's folder is the worked example; copy its
+shape. Only `README.md` and `AGENT-DIRECTION.txt` are required.
+
+| File | What it holds |
+|---|---|
+| `README.md` | Who, what's in the folder, sources, and what is fact versus inference. |
+| `AGENT-DIRECTION.txt` | The working tool, about one page: core principle, 5-7 moves, reference anchors by ID, how much to add, what to return, checks. |
+| `STYLE-BRIEF.txt` | Optional. Rendering spec when the visual surface is wanted (palette, edges, motion rules, rejects, acceptance check). |
+| `index.html` + `artwork-index.json` | Catalogue of works with stable IDs (U01, U02...), source links, observed symbols, cautious readings. |
+| `director-guide.html` | Optional. Illustrated reasoning and worked concepts. |
+| `biography.html` / `.json` | Optional. Sourced life facts, each tied to a source id. |
+| `artwork/`, `previews/`, `pages/` | Images (committed). Large PDFs stay local under `sources/`, listed with URL and SHA-256 in `sources/download-manifest.json`. |
+| `STUDY-<project>.md` | Optional. How the profile bears on one project. |
+
+Rules that keep profiles useful and honest:
+
+- Every claim about the person cites a source; anything we read into the work is labelled as inference.
+  Never write in their voice or invent their intent.
+- Anchor ideas to specific works by ID, so an agent can look at the picture.
+- Separate the thinking (works in any medium) from the surface (palette, texture, technique).
+- Private correspondence is summarised, not copied in.
+- Credit the work to its maker; rights stay with them. The repo is private and the collection is for study.
+
+The same shape works for a philosopher or writer: swap the artwork catalogue for a catalogue of
+passages or ideas with IDs, keep the direction file.
