@@ -1,0 +1,31 @@
+{
+ "7642": {
+  "width": 1200,
+  "centre": 0.44,
+  "why": "the THEY, SCIENTISTS CLAIM TO line (0.15-0.73) lands in the last frames; OCR's fast pass missed it"
+ },
+ "8469": {
+  "width": 1536,
+  "centre": 0.49,
+  "why": "the rotated NOTED stamp (0.61-0.85) lands late; OCR can't read the rotated stamp"
+ },
+ "8602": {
+  "width": 1728,
+  "centre": 0.5,
+  "why": "the STILL NOT A CAR stamp box (0.44-0.87) lands in the last frames"
+ },
+ "8727": {
+  "width": 1080,
+  "why": "END OF RECORDING: OCR's box stops short of the final G"
+ },
+ "1416": {
+  "width": 1200,
+  "centre": 0.5,
+  "why": "AWAKE (0.24-0.76) builds letter by letter; 1080 left 14 px at the A"
+ },
+ "7331": {
+  "width": 1536,
+  "centre": 0.5,
+  "why": "the next subtitle and its mirrored ghost land in the last frames (0.13-0.87); 1200 cut the ghost and left 16 px at 'how'"
+ }
+}

@@ -8,7 +8,7 @@ The project's `out/` lives on the external drive Bertha: `/Volumes/Bertha/second
 |---|---|---|---|---|---|
 | 16:9 | master | n/a | `out/` | 1920x1080 (+ 720p) | signed off 2026-10-04 |
 | 9:16 | pan and scan of the master (`bobwiseman-more/tools/panscan.py`) | `aspects/9x16/panscan-plan-v1.json` | `out/9x16/aoh_panscan-v1_..._9x16.mp4` | 720x1280 | on Bob's page 2026-10-08 |
-| 4:5 | pan and scan of the master, windows fitted to the burned-in text (`tools/panscan_4x5.py`, #101) | `aspects/4x5/panscan-plan-v3.json` | `out/4x5/aoh_panscan-v3_f00000-f08804_24fps_review-864x1080_4x5.mp4` | 864x1080 review | review cut 2026-10-13; recompose proposal in `aspects/4x5/RECOMPOSE.md` |
+| 4:5 | pan and scan of the master, windows fitted to the burned-in text (`tools/panscan_4x5.py`, #101) | `aspects/4x5/panscan-plan-v4.json` | `out/4x5/aoh_panscan-v4_f00000-f08804_24fps_review-864x1080_4x5.mp4` | 864x1080 review | review cut 2026-10-13; recompose proposal in `aspects/4x5/RECOMPOSE.md` |
 
 ## 4:5, how it is made
 
@@ -17,10 +17,10 @@ swiftc -O tools/ocr_frames.swift -o /tmp/ocr_frames
 /tmp/ocr_frames <master> ocr_a.jsonl 6 0 4403          # Vision word boxes, every 6th frame (two halves in parallel)
 /tmp/ocr_frames <master> ocr_b.jsonl 6 4404 8803
 /tmp/ocr_frames <master> ocr_dense.jsonl --frames <list> --fast   # every 2nd frame + shot ends, in non-fit shots with text
-python tools/panscan_4x5.py textfit aspects/4x5/panscan-plan-v1.json aspects/4x5/panscan-plan-v3.json \
-    --ocr ocr_*.jsonl --move-cut 681:680 3936:3934
-python tools/panscan_4x5.py audit aspects/4x5/panscan-plan-v3.json aspects/4x5/audit-v3.json --ocr ocr_*.jsonl
-python tools/panscan_4x5.py render <master> aspects/4x5/panscan-plan-v3.json out/4x5/<name>_4x5.mp4 --size 864x1080
+python tools/panscan_4x5.py textfit aspects/4x5/panscan-plan-v1.json aspects/4x5/panscan-plan-v4.json \
+    --ocr ocr_*.jsonl --hand aspects/4x5/hand-v4.json --move-cut 681:680 3936:3934
+python tools/panscan_4x5.py audit aspects/4x5/panscan-plan-v4.json aspects/4x5/audit-v4.json --ocr ocr_*.jsonl
+python tools/panscan_4x5.py render <master> aspects/4x5/panscan-plan-v4.json out/4x5/<name>_4x5.mp4 --size 864x1080
 python tools/panscan_4x5.py scan out/4x5/<name>_4x5.mp4 scan.json
 ```
 
@@ -32,6 +32,10 @@ The OCR files hold Bob's lyrics as read off the screen: keep them out of git (au
   1200, 1350, 1536, 1728, 1920) whose least-cost path keeps every big word (lyrics, signs, stamps, subtitles) wholly
   inside with 32 px clear, slices no word, and lets HUD rows fall outside. Two cuts moved where the 9:16 cut list was
   late (681 -> 680, 3936 -> 3934). 0 word problems on 3125 OCR'd frames.
+- **Plan v4** = v3 plus six by-eye overrides (`aspects/4x5/hand-v4.json`) where the OCR could not see the text that
+  matters: the rotated NOTED stamp, STILL NOT A CAR, END OF RECORDING's final G, AWAKE building letter by letter, a
+  subtitle sliding in late, and a mirrored subtitle ghost. Each was measured on a full-res master frame. The review
+  cut renders v4.
 - **crop** = an 864x1080 window. **wide** = a wider window scaled to 864 wide over a blurred copy of itself.
   **fit** = the whole 16:9 frame over blur.
 
@@ -49,7 +53,7 @@ The OCR files hold Bob's lyrics as read off the screen: keep them out of git (au
 | J monologue | 7.9 | 25.3 | 16.6 |
 | J2 kawaii | 8.7 | 0.0 | 0.0 |
 | K kinetic | 2.8 | 11.2 | 11.5 |
-| **all** | **127.2** | **112.9** | **126.7** |
+| **all (v3; v4 widens six of these shots)** | **127.2** | **112.9** | **126.7** |
 
 Recompose (per-ratio shot code under the schema in `secondunit/CLAUDE.md`) is proposed for the kinetic type, the
 monologue subtitles, the riso sax/piano two-shot and the 16-bit dialogue box; see `aspects/4x5/RECOMPOSE.md`.
