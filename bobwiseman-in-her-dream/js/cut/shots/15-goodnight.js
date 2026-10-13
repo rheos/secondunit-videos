@@ -88,6 +88,17 @@ function family(t, A0) {
   puppet(g3x, FLOORY, S, turn, CAST.girl3, { bob: -lift * 20, arms: [[2.7, .2 + lift * .3], [2.4, .3]], head: .12, legs: [[.15 * lift, .3 * lift], [0, .05]] });
 }
 
+// joy rings: full concentric gold rings spreading from the family, clipped to the window opening
+function ringsIn(t, at, n, life, reach) {
+  const cx = KW.x + KW.w / 2 + 6, cy = KW.y + KW.h * .55;
+  for (let r = 0; r < n; r++) {
+    const d = t - at - r * .18; if (d < 0 || d > life) continue;
+    const k = d / life;
+    g.save(); g.globalAlpha *= (1 - k) * .9; g.strokeStyle = C.orange; g.lineWidth = lerp(12, 4, k);
+    g.beginPath(); g.ellipse(cx, cy, 24 + k * reach * 1.25, 18 + k * reach, 0, 0, Math.PI * 2); g.stroke(); g.restore();
+  }
+}
+
 SHOT(225.86, 236.6, 'goodnight', (t) => {
   const A0 = g.globalAlpha;
   // camera: a slow push toward her window (draft 1), plus a push in to the window on "alright" that is
@@ -170,6 +181,7 @@ SHOT(225.86, 236.6, 'goodnight', (t) => {
   if (kOn) { g.clip(kwin);
     // the back wall of the kitchen: a warmer band, and the family dancing
     cut(rect(KW.x, KW.y + KW.h * .62, KW.w, KW.h), C.gold, { sh: 0, grain: .2, alpha: .55 });
+    ringsIn(t, T.alright, 3, 1.8, 230); ringsIn(t, T.goodnight, 4, 2.2, 260);
     family(t, A0);
     // curtains tied back at each side
     cut(blob([[KW.x - 4, KW.y - 4], [KW.x + 34, KW.y - 4], [KW.x + 14, KW.y + 90], [KW.x + 22, KW.y + KW.h + 4], [KW.x - 4, KW.y + KW.h + 4]], .5), C.cream, { sh: .6, grain: .2 });
@@ -180,8 +192,7 @@ SHOT(225.86, 236.6, 'goodnight', (t) => {
   { const fr = new Path2D(); fr.rect(KW.x - 12, KW.y - 12, KW.w + 24, KW.h + 24); fr.rect(KW.x, KW.y, KW.w, KW.h);
     cut(fr, C.ink, { sh: .5, rule: 'evenodd' }); cut(cutRect(KW.x - 26, KW.y + KW.h + 6, KW.w + 52, 16, 61, 1.5), C.cream, { sh: .5, grain: .1 }); }
   // joy leaving the window on "alright" and "goodnight"
-  laughRings(t, KW.x + KW.w / 2, KW.y - 30, T.alright, { n: 3, dir: -Math.PI / 2, spread: .7, reach: 260, life: 1.8, w0: 10 });
-  laughRings(t, KW.x + KW.w / 2, KW.y - 30, T.goodnight, { n: 4, dir: -Math.PI / 2, spread: .8, reach: 340, life: 2.2, w0: 11 });
+  // (the joy rings are full circles inside the window, drawn behind the family: see ringsIn)
 
   // pavement and kerb
   cut(cutRect(-200, BASE, W + 400, 300, 71, 3), C.ink, { sh: .7, lift: .3 });

@@ -40,12 +40,13 @@ function sitter(x, y, s, col, p, layer) {
   if (layer !== 'front') {
     g.save(); g.translate(-8, 0); leg(1.5, 1.42, col, null, false); g.restore();
     g.save(); g.translate(8, 0); leg(1.56, 1.5, col, null, false); g.restore();
-    g.save(); g.rotate(p.lean); g.translate(-8, -212); arm(p.far[0], p.far[1], col, p.holdFar); g.restore();
+    if (!p.farFront) { g.save(); g.rotate(p.lean); g.translate(-8, -212); arm(p.far[0], p.far[1], col, p.holdFar); g.restore(); }
     cut(LAP, col, { sh: .6, grain: .26, lift: .2 });
     g.save(); g.rotate(p.lean); cut(BODICE, col, { sh: .6, grain: .26, lift: .2 }); g.restore();
   }
   if (layer !== 'back') {
     g.save(); g.rotate(p.lean);
+    if (p.farFront) { g.save(); g.translate(-8, -212); arm(p.far[0], p.far[1], col, p.holdFar); g.restore(); }
     g.save(); g.translate(10, -250); head('her', null, col, .265, p.head || 0, 0); g.restore();
     g.translate(8, -212); arm(p.near[0], p.near[1], col, p.holdNear);
     g.restore();
@@ -110,7 +111,18 @@ function handAt(lean, sh, el) {
   return [HX + (x * Math.cos(lean) - y * Math.sin(lean)) * S, HY + (x * Math.sin(lean) + y * Math.cos(lean)) * S];
 }
 const pileA = handAt(.12, 1.06, .62), pileB = handAt(.3, 1.42, .24);
-const BW = 70, BH = 50;
+const BW = 96, BH = 68;
+function billHard(w, h, col, line, sh = 1) {
+  const p = cutRect(-w / 2, -h / 2, w, h, w * 3.1, 1.2);
+  if (sh > 0) { g.save(); g.translate(4, 5); g.fillStyle = `rgba(20,16,30,${.34 * sh})`; g.fill(p); g.restore(); }
+  cut(p, col, { sh: .3, grain: .12 });
+  g.save(); g.strokeStyle = line; g.lineWidth = 3; g.lineCap = 'round';
+  for (let i = 0; i < 4; i++) { const y = -h / 2 + 12 + i * 11; g.beginPath(); g.moveTo(-w / 2 + 10, y); g.lineTo(-w / 2 + 10 + (w - 20) * (i === 3 ? .45 : i === 0 ? .6 : .85), y); g.stroke(); }
+  g.lineWidth = 5; g.beginPath(); g.moveTo(w / 2 - 30, h / 2 - 12); g.lineTo(w / 2 - 10, h / 2 - 12); g.stroke();
+  g.restore();
+}
+// her doze pose at the end of 01 (see out/d2/notes/doze-pose.md)
+const DOZE = { lean: .66, head: -.85, near: [2.0, 3.15], far: [2.2, 2.9 - Math.PI * 2] };
 // the six bills exactly where 01 left them: [x, y, rot]
 const BILLS = [[pileA[0] - 14, TY - 22, .05], [pileA[0] - 6, TY - 27, -.07], [pileB[0] + 30, TY - 30, .04],
   [pileB[0] + 30, TY - 34, (hash(4) - .5) * .2], [pileB[0] + 34, TY - 37, (hash(5) - .5) * .2], [pileA[0] + 86, TY - 16, .1]];
@@ -121,12 +133,15 @@ const T = { dream: W_('dream'), kids: W_('kids'), laughing: W_('laughing'), crow
 // "crowded" more kids squeeze in from both sides; "table" everyone slaps the table.
 
 // a scalloped dream tablecloth with a row of punched lace holes above the hem
-function scallopCloth(x0, x1, y, drop, col) {
-  const hem = y + drop, r = 22, p = new Path2D();
-  p.moveTo(x0, y); p.lineTo(x1, y); p.lineTo(x1, hem);
-  for (let x = x1; x > x0 + 1; x -= 2 * r) p.arc(x - r, hem, r, 0, Math.PI, false);
+// swag 0..1: the corner at her end is drawn up like a theatre curtain, so her knees and shins show
+function scallopCloth(x0, x1, y, drop, col, swag = 0) {
+  const r = 22, p = new Path2D(), lowest = y + drop, top = y + 98;
+  const hem = (x) => lowest - swag * Math.max(0, lowest - top) * Math.pow(Math.max(0, 1 - (x - x0) / 430), 1.6);
+  p.moveTo(x0, y); p.lineTo(x1, y); p.lineTo(x1, hem(x1));
+  for (let x = x1; x > x0 + 1; x -= 2 * r) { const xm = x - r, xa = x - 2 * r; const ya = hem(x), yb = hem(Math.max(x0, xa)), ym = hem(xm);
+    p.quadraticCurveTo(xm, ym + r * 1.9, Math.max(x0, xa), yb); }
   p.lineTo(x0, y); p.closePath();
-  if (drop > 70) for (let x = x0 + r; x < x1; x += 2 * r) { p.moveTo(x + 6, hem - 22); p.arc(x, hem - 22, 6, 0, Math.PI * 2); }
+  if (drop > 70) for (let x = x0 + r; x < x1; x += 2 * r) { const hy = hem(x) - 22; p.moveTo(x + 6, hy); p.arc(x, hy, 6, 0, Math.PI * 2); }
   cut(p, col, { sh: .8, lift: .3, rule: 'evenodd' });
 }
 // an origami bird (the bills fold into these): a long folded body, two triangle wings that flap
@@ -141,17 +156,18 @@ function paperBird(x, y, s, ph, col, under) {
 // the kids: [spec, final x, facing, pop time, entry] ; entry: 'pop' rises from behind the table,
 // 'R' slides in along the slot from the right, 'L' rises behind her chair
 const KF = FLOOR - 36;   // they stand behind the table
+const KA = '#c96c3f', KB = '#cf9324';   // the friends' kids: two tints of one warm family (the fruit stays the only true orange)
 const KIDS = [
   { spec: CAST.girl11, x0: 1150, x: 1012, dir: -1, at: T.kids, entry: 'pop' },
   { spec: CAST.boy8, x0: 1372, x: 1140, dir: -1, at: T.kids + .22, entry: 'pop' },
   { spec: CAST.girl3, x0: 1590, x: 1262, dir: -1, at: T.kids + .44, entry: 'pop', lift: 118 },
-  { spec: { col: C.orange, kind: 'shirt', head: 'child', hair: 'curls', height: .66, headK: .3 }, x: 1384, dir: -1, at: T.crowded + .05, entry: 'R' },
-  { spec: { col: C.red, kind: 'dressShort', head: 'child', hair: 'bob', height: .72, headK: .3 }, x: 1494, dir: 1, at: T.crowded + .2, entry: 'R' },
-  { spec: { col: C.gold, kind: 'shirt', head: 'child', hair: 'cap', height: .6, headK: .31 }, x: 1598, dir: -1, at: T.crowded + .35, entry: 'R', lift: 30 },
-  { spec: { col: C.orange, kind: 'dressShort', head: 'child', hair: 'pony', height: .7, headK: .3 }, x: 1702, dir: -1, at: T.crowded + .5, entry: 'R' },
-  { spec: { col: C.red, kind: 'shirt', head: 'child', hair: null, height: .64, headK: .31 }, x: 1810, dir: 1, at: T.crowded + .65, entry: 'R' },
-  { spec: { col: C.gold, kind: 'dressShort', head: 'child', hair: 'pigtail', height: .58, headK: .36 }, x: 1912, dir: -1, at: T.crowded + .8, entry: 'R', lift: 40 },
-  { spec: { col: C.orange, kind: 'dressShort', head: 'child', hair: 'bob', height: .62, headK: .32 }, x: 560, dir: 1, at: T.crowded + .3, entry: 'L', floor: FLOOR - 4 },
+  { spec: { col: KA, kind: 'shirt', head: 'child', hair: 'curls', height: .66, headK: .3 }, x: 1376, dir: -1, at: T.crowded + .05, entry: 'R' },
+  { spec: { col: KB, kind: 'dressShort', head: 'child', hair: 'bob', height: .72, headK: .3 }, x: 1470, dir: -1, at: T.crowded + .2, entry: 'R' },
+  { spec: { col: KA, kind: 'shirt', head: 'child', hair: 'cap', height: .6, headK: .31 }, x: 1560, dir: -1, at: T.crowded + .35, entry: 'R', lift: 30 },
+  { spec: { col: KB, kind: 'dressShort', head: 'child', hair: 'pony', height: .7, headK: .3 }, x: 1652, dir: -1, at: T.crowded + .5, entry: 'R' },
+  { spec: { col: KA, kind: 'shirt', head: 'child', hair: null, height: .64, headK: .31 }, x: 1744, dir: -1, at: T.crowded + .65, entry: 'R' },
+  { spec: { col: KB, kind: 'dressShort', head: 'child', hair: 'pigtail', height: .58, headK: .36 }, x: 1830, dir: -1, at: T.crowded + .8, entry: 'R', lift: 40 },
+  { spec: { col: KA, kind: 'dressShort', head: 'child', hair: 'bob', height: .62, headK: .32 }, x: 560, dir: 1, at: T.crowded + .3, entry: 'L', floor: FLOOR - 4 },
 ];
 
 KIDS.forEach((kd) => {
@@ -159,10 +175,32 @@ KIDS.forEach((kd) => {
   kd.reach = kd.entry === 'L' ? .3 : Math.acos(clamp((TY - TB * .5 - sh) / len, -1, 1)) * .85;
 });
 
+// thick deep-gold laugh rings (they read on the cream halo); same motion as kit laughRings
+const DG = '#d38a1c';
+function rings(t, x, y, at, { n = 3, dir = -.35, spread = .7, reach = 300, life = 1.6, w0 = 14 } = {}) {
+  for (let r = 0; r < n; r++) {
+    const d = t - at - r * .14; if (d < 0 || d > life) continue;
+    const k = d / life;
+    g.save(); g.translate(x, y); g.rotate(dir);
+    g.globalAlpha *= (1 - k * k); g.strokeStyle = r % 2 ? C.gold : DG; g.lineWidth = lerp(w0, 4, k); g.lineCap = 'round';
+    g.beginPath(); g.arc(0, 0, 18 + k * reach, -spread, spread); g.stroke();
+    g.restore();
+  }
+}
+// where each figure sits along the row, for the laugh ripple (her first, then outward)
+const ROW = [1, 2, 3, 4, 5, 6, 7, 8, 9, .5];
+const HALF = .3935 / 2;
+const tipAt = (t, idx) => { const t0 = T.laughing + idx * HALF; return bump(t, t0, .5) + .8 * bump(t, t0 + .787, .5); };
+// raised over .3 s, held through the crane into 03 (their hands come back down there, carrying the dishes)
+const cheerK = (t, d = 0) => eio(ss(T.table - .3 + d, T.table + d, t));
+
 SHOT(18.5, 31.5, 'table', (t) => {
   const A0 = g.globalAlpha;
-  // camera: holds on 01's last frame, then pulls back to the whole table
-  const cz = eio(ss(20.4, 25.2, t)), Z = lerp(1.13, .98, cz), FX = lerp(900, 1010, cz), FY = lerp(585, 545, cz);
+  // camera: holds on 01's last frame, pulls back to the whole table, then at the end cranes in onto the
+  // table top so the cloth band lands exactly where 03's still life sits
+  const cz = eio(ss(20.4, 25.2, t));
+  const cr = eio(ss(30.95, 32.0, t));
+  const Z = lerp(lerp(1.13, .98, cz), 2.29, cr), FX = lerp(lerp(900, 1010, cz), 1250, cr), FY = lerp(lerp(585, 545, cz), 551, cr);
   g.save(); g.translate(W / 2, H / 2); g.scale(Z, Z); g.translate(-FX, -FY);
 
   room(1);
@@ -172,30 +210,48 @@ SHOT(18.5, 31.5, 'table', (t) => {
   const thump = bump(t, T.table, .5) * 10;
   cut(circle(hxk, hyk, hr + 28 + thump), C.goldPale, { sh: .5, grain: .25 });
   cut(circle(hxk, hyk, hr + thump * .6), C.sun, { sh: .6, grain: .25 });
+  // the pendant lamp stays where it hung in 01, now dream paper, inside the sun
+  g.save(); g.translate(LX, -60); g.rotate(Math.sin(t * .9) * .012); g.translate(-LX, 60);
+  cut(cutRect(LX - 3, -200, 6, LSY + 200, 31, .8), C.roseDark, { sh: .4, grain: 0 });
+  cut(poly([[LX - 32, LSY], [LX + 32, LSY], [LX + 100, LSY + 76], [LX - 100, LSY + 76]]), C.roseDark, { sh: .9, lift: .4 });
+  cut(ellipse(LX, LSY + 78, 34, 14), C.lamp, { sh: 0, grain: .1 });
+  g.restore();
 
-  // ---- her ----
-  const up = ss(T.dream - .1, T.dream + 1.1, t);                       // she lifts her head on "dream"
-  const breath = Math.sin((t - 9.9) * Math.PI * 2 / 4.2) * .012 * (1 - up);
+  // the cup's steam: behind the figures (drawn before them), the cup itself sits on the table later
+  const jump = bump(t, T.table, .32) * 18;
+  const steamK = ss(T.dream + .6, T.dream + 2, t);
+  if (steamK > 0) for (let i = 0; i < 2; i++) {
+    const pts = []; for (let j = 0; j <= 10; j++) { const u = j / 10; pts.push([1300 + i * 14 - 6 + Math.sin(u * 5 + t * 2.2 + i * 2) * 10, TY - 84 - jump - u * 110 * steamK]); }
+    g.save(); g.globalAlpha *= steamK * .85; cut(ribbonAlong(pts, 12), C.white, { sh: .3, grain: .1 }); g.restore();
+  }
+
+  // ---- her: she lifts her head from the doze on "dream" ----
+  const up = ss(T.dream - .1, T.dream + 1.1, t);
+  const breath = Math.sin((t - 10.2) * Math.PI * 2 / 4.2) * .014 * (1 - up);
   const lk = ss(T.laughing - .1, T.laughing + .3, t);
   const lb = lk * Math.abs(Math.sin((t - T.laughing) * 7.6)) * (1 - ss(T.table + .6, T.table + 1.4, t) * .6);
-  const slap = ss(T.table - .45, T.table - .15, t) * (1 - ss(T.table - .12, T.table, t));
-  let lean = lerp(.85, .06, up) + breath - lb * .04;
-  let headA = lerp(-.3, .02, up) - breath * .5 + lk * .2 + lb * .14;
-  let near = [lerp(2.12, 1.02, up), lerp(.38, .62, up)], far = [lerp(2.05, .98, up), lerp(.42, .6, up)];
-  near = [lerp(near[0], 2.5, slap), lerp(near[1], .5, slap)]; far = [lerp(far[0], 2.4, slap), lerp(far[1], .5, slap)];
+  const tipH = tipAt(t, 0), cu = cheerK(t);
+  let lean = lerp(DOZE.lean + breath, .06, up) - lb * .03 - tipH * .05 - cu * .05;
+  let headA = lerp(DOZE.head - breath * 1.1, .02, up) + lk * .12 + lb * .08 + tipH * .3 + cu * .32;
+  let near = [lerp(DOZE.near[0] - breath * .9, 1.02, up), lerp(DOZE.near[1], .62, up)];
+  let far = [lerp(DOZE.far[0] - breath * .9, .98, up), lerp(DOZE.far[1], .6, up)];
+  near = [lerp(near[0], 2.92, cu), lerp(near[1], .14, cu)]; far = [lerp(far[0], 2.7, cu), lerp(far[1], .24, cu)];
+  const farFront = up < .55;
 
   // kids behind her chair and behind the table (drawn before the table top hides their lower halves)
   const packK = ss(T.crowded - .1, T.crowded + .9, t);
   const kidPose = (i, kd) => {
     const la = ss(T.laughing + .14 * (i + 1) - .1, T.laughing + .14 * (i + 1) + .25, t);
     const ph = t * 7.4 + i * 1.3;
-    const bobv = Math.abs(Math.sin(ph)) * la;
-    const sl = ss(T.table - .45 + i * .02, T.table - .15, t) * (1 - ss(T.table - .1, T.table + .05, t));
+    const bobv = Math.abs(Math.sin(ph)) * la * .6;
+    const tip = tipAt(t, ROW[i]);
+    const c = cheerK(t, i * .03);
     const swayK = bump(t, T.around - .1, 1.4) * Math.sin((t - T.around) * 5.2);
+    const rest = [[.32, .3], [.22, .24]];
     return {
-      head: .03 + la * .16 + bobv * .08 + (hash(i * 3) - .5) * .06, laugh: la * .8, bob: -bobv * 14 * la,
-      lean: -.03 * la + swayK * .05 * kd.dir,
-      arms: [[lerp(kd.reach, 2.75, sl), lerp(kd.reach * .45, .3, sl)], [lerp(kd.reach * .85, 2.6, sl), lerp(kd.reach * .5, .3, sl)]],
+      head: .03 + la * .08 + tip * .34 + c * .22 + (hash(i * 3) - .5) * .06, laugh: la * .5 + tip * .5, bob: -bobv * 10 - tip * 8,
+      lean: -.03 * la - tip * .03 + swayK * .05 * kd.dir,
+      arms: [[lerp(rest[0][0], 2.95, c), lerp(rest[0][1], .12, c)], [lerp(rest[1][0], 2.78, c), lerp(rest[1][1], .2, c)]],
     };
   };
   const drawKid = (kd, i) => {
@@ -206,7 +262,8 @@ SHOT(18.5, 31.5, 'table', (t) => {
     else if (kd.entry === 'R') { const e = eo(k / .75); x = lerp(2250, kd.x, e); y -= Math.abs(Math.sin(k * 11)) * 16 * (1 - e); }
     else if (kd.entry === 'L') { const e = eo(k / .75); x = lerp(-320, kd.x, e); y -= Math.abs(Math.sin(k * 11)) * 16 * (1 - e); }
     const pose = kidPose(i, kd);
-    if (kd.entry === 'L') { const hk = ss(kd.at + .6, kd.at + 1.1, t); pose.arms = [[lerp(.2, 1.42, hk), lerp(.1, .55, hk)], [.1, .15]]; }
+    if (kd.entry === 'L') { const hk = ss(kd.at + .6, kd.at + 1.1, t); const c = cheerK(t, .06);
+      pose.arms = [[lerp(.2, 1.42, hk), lerp(.1, .55, hk)], [lerp(.1, 2.8, c), lerp(.15, .2, c)]]; }
     puppet(x, y, s, kd.dir, kd.spec, pose);
     return [x, y, pose];
   };
@@ -217,23 +274,17 @@ SHOT(18.5, 31.5, 'table', (t) => {
   placed[KIDS.length - 1] = placedL;
   chair(C.navy);
 
-  sitter(HX, HY, S, C.navy, { lean, head: headA, near, far }, 'back');
+  sitter(HX, HY, S, C.navy, { lean, head: headA, near, far, farFront }, 'back');
 
-  // the table: the top band and the cloth, which unrolls to the floor in scallops
+  // the table: the top band and the cloth, which unrolls toward the floor in scallops; the corner at her
+  // end is drawn up like a theatre curtain so her knees and shins stay in view
   const unroll = eo(ss(BEAT_(42.6), BEAT_(45), t));
-  if (t < BEAT_(44)) cut(cutRect(TX0 + 40, TY, 30, FLOOR - TY, 51), C.roseDark, { sh: .5 });
+  cut(cutRect(TX0 + 40, TY, 30, FLOOR - TY, 51), C.roseDark, { sh: .5 });
   cut(poly([[TX0 + 30, TY - TB], [TX1, TY - TB], [TX1, TY], [TX0, TY]]), C.creamDeep, { sh: .5, grain: .2 });
   if (t < BEAT_(42.6)) cut(cutRect(TX0 - 6, TY - 2, TX1 - TX0, 118, 52, 1.5), C.cream, { sh: .8, lift: .3 });
-  else scallopCloth(TX0 - 6, TX1, TY - 2, lerp(118, FLOOR - TY - 6, unroll), C.cream);
+  else scallopCloth(TX0 - 6, TX1, TY - 2, lerp(118, FLOOR - TY - 6, unroll), C.cream, 1);
 
-  // the cup: its tea is warm now
-  const jump = bump(t, T.table, .32) * 18;
   cup(1300, TY - 26 - jump, 1.3, C.cream);
-  const steamK = ss(T.dream + .6, T.dream + 2, t);
-  if (steamK > 0) for (let i = 0; i < 2; i++) {
-    const pts = []; for (let j = 0; j <= 10; j++) { const u = j / 10; pts.push([1300 + i * 14 - 6 + Math.sin(u * 5 + t * 2.2 + i * 2) * 10, TY - 84 - jump - u * 110 * steamK]); }
-    g.save(); g.globalAlpha *= steamK * .85; cut(ribbonAlong(pts, 12), C.white, { sh: .3, grain: .1 }); g.restore();
-  }
   // one orange arrives where the bills were (it comes back at the very end of the film)
   const oa = pop(t, BEAT_(53.1), .45);
   if (oa > 0) { g.save(); g.translate(pileA[0] + 30, TY - 38); g.scale(oa, oa); orange(0, 0, 24); g.restore(); }
@@ -241,34 +292,34 @@ SHOT(18.5, 31.5, 'table', (t) => {
   // the bills lift, fold into paper birds and fly off on "dream"
   BILLS.forEach(([bx, by, br], i) => {
     const t0 = T.dream + .05 + i * .16, d = t - t0;
-    if (d < 0) { g.save(); g.translate(bx, by); g.rotate(br); g.scale(1, .42); bill(BW, BH, C.white, C.creamDeep); g.restore(); return; }
+    if (d < 0) { g.save(); g.translate(bx, by); g.rotate(br); g.scale(1, .42); billHard(BW, BH, C.white, C.creamDeep, .8); g.restore(); return; }
     const fold = ss(0, .35, d), fly = Math.max(0, d - .3);
     const x = bx + fly * (120 + i * 95) + fly * fly * 80, y = by - 30 * fold - fly * (360 - i * 28) - fly * fly * 70;
     if (y < -400) return;
     g.save(); g.translate(x, y);
-    if (fold < 1) { g.save(); g.globalAlpha *= 1 - fold; g.rotate(br * (1 - fold)); g.scale(1 - fold * .4, lerp(.42, .9, fold)); bill(BW, BH, C.white, C.creamDeep); g.restore(); }
+    if (fold < 1) { g.save(); g.globalAlpha *= 1 - fold; g.rotate(br * (1 - fold)); g.scale(1 - fold * .4, lerp(.42, .9, fold)); billHard(BW, BH, C.white, C.creamDeep, .8 * (1 - fold)); g.restore(); }
     if (fold > 0) { g.globalAlpha *= fold; paperBird(0, 0, 1.1 * fold, t * 11 + i * 1.7, C.white, C.creamDeep); }
     g.restore();
   });
 
   // her near arm and head go over the table
-  sitter(HX, HY, S, C.navy, { lean, head: headA, near, far }, 'front');
+  sitter(HX, HY, S, C.navy, { lean, head: headA, near, far, farFront }, 'front');
 
-  // laughter: gold rings from her, then from each kid in a ripple
+  // laughter: deep gold rings from her, then from each kid as the ripple reaches them, on the beats
   if (t > T.laughing - .1) {
     const fx = HX + (Math.sin(lean) * 270 + 120) * S, fy = HY - Math.cos(lean) * 300 * S;
-    for (const w of [T.laughing, T.laughing + .78, T.crowded + 1.0, T.table + .1]) laughRings(t, fx + 20, fy + 10, w, { n: 2, dir: -.55, reach: 300, life: 1.6, w0: 9, scale: .9 });
+    for (const w of [T.laughing, T.laughing + .787, T.crowded + 1.0, T.table + .05]) rings(t, fx + 20, fy + 10, w, { n: 3, dir: -.5, reach: 300, life: 1.5, w0: 15 });
     placed.forEach((p, i) => {
       if (!p) return; const kd = KIDS[i]; const sc = S * kd.spec.height;
       // rings rise off the crown, tipped toward the way the kid faces
       const mx = p[0] + kd.dir * 30 * sc, my = p[1] + p[2].bob * sc - 1010 * sc;
-      const a0 = -Math.PI / 2 + kd.dir * .35;
-      for (const w of [T.laughing + .14 * (i + 1), T.crowded + 1.1 + i * .09, T.table + .12 + i * .04]) laughRings(t, mx, my, w, { n: 2, dir: a0, spread: .6, reach: 150, life: 1.1, w0: 7, scale: .7 });
+      const a0 = -Math.PI / 2 + kd.dir * .35, t0 = T.laughing + ROW[i] * HALF;
+      for (const w of [t0, t0 + .787, T.crowded + 1.1 + i * .09, T.table + .1 + i * .04]) rings(t, mx, my, w, { n: 2, dir: a0, spread: .6, reach: 160, life: 1.1, w0: 11 });
     });
   }
-  // the table slap: a gold ring runs along the table top
+  // "table": a gold ring runs along the table top
   const sd = t - T.table;
-  if (sd > 0 && sd < .9) { g.save(); g.clip(rect(TX0 + 30, TY - TB - 90, 3000, TB + 92)); g.globalAlpha *= (1 - sd / .9) * .9; g.strokeStyle = C.gold; g.lineWidth = lerp(10, 3, sd / .9); g.lineCap = 'round';
+  if (sd > 0 && sd < .9) { g.save(); g.clip(rect(TX0 + 30, TY - TB - 90, 3000, TB + 92)); g.globalAlpha *= (1 - sd / .9) * .9; g.strokeStyle = C.gold; g.lineWidth = lerp(12, 4, sd / .9); g.lineCap = 'round';
     g.beginPath(); g.ellipse(1300, TY - TB / 2, 60 + sd * 760, 12 + sd * 50, 0, Math.PI * 1.05, Math.PI * 1.95); g.stroke(); g.restore(); }
 
   g.restore();

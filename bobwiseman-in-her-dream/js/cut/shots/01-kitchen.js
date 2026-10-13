@@ -30,12 +30,13 @@ function sitter(x, y, s, col, p, layer) {
   if (layer !== 'front') {
     g.save(); g.translate(-8, 0); leg(1.5, 1.42, col, null, false); g.restore();
     g.save(); g.translate(8, 0); leg(1.56, 1.5, col, null, false); g.restore();
-    g.save(); g.rotate(p.lean); g.translate(-8, -212); arm(p.far[0], p.far[1], col, p.holdFar); g.restore();
+    if (!p.farFront) { g.save(); g.rotate(p.lean); g.translate(-8, -212); arm(p.far[0], p.far[1], col, p.holdFar); g.restore(); }
     cut(LAP, col, { sh: .6, grain: .26, lift: .2 });
     g.save(); g.rotate(p.lean); cut(BODICE, col, { sh: .6, grain: .26, lift: .2 }); g.restore();
   }
   if (layer !== 'back') {
     g.save(); g.rotate(p.lean);
+    if (p.farFront) { g.save(); g.translate(-8, -212); arm(p.far[0], p.far[1], col, p.holdFar); g.restore(); }
     g.save(); g.translate(10, -250); head('her', null, col, .265, p.head || 0, 0); g.restore();
     g.translate(8, -212); arm(p.near[0], p.near[1], col, p.holdNear);
     g.restore();
@@ -100,17 +101,50 @@ function handAt(lean, sh, el) {
   const x = 8 + Math.sin(sh) * 168 + Math.sin(sh + el) * 182, y = -212 + Math.cos(sh) * 168 + Math.cos(sh + el) * 182;
   return [HX + (x * Math.cos(lean) - y * Math.sin(lean)) * S, HY + (x * Math.sin(lean) + y * Math.cos(lean)) * S];
 }
-// her pose keyframes through the intro: [time, lean, head, [nearSh, nearEl]]
-// sorting (the hand moves on the beat), a bill held up to read, rubbing her eyes, folding down to sleep
+// her pose keyframes through the intro: [time, lean, head, [nearSh, nearEl], [farSh, farEl]]
+// sorting (the hand moves on the beat), a bill held up into the lamp to read, rubbing her eyes, then the
+// doze: forearms folded on the TOP of the table, head down resting on them (17-wake opens on this pose).
 const PA = [.12, 1.06, .62], PB = [.3, 1.42, .24], PL = [.2, 1.32, 1.0];
+const FAR0 = [1.0, .62];
+const DOZE = { lean: .66, head: -.85, near: [2.0, 3.15], far: [2.2, 2.9 - Math.PI * 2] };   // far elbow wound the other way so it never swings up
 const POSES = [
-  [0, PA[0], -.22, PA.slice(1)], [BEAT(0), PA[0], -.22, PA.slice(1)], [BEAT(1), PL[0], -.14, PL.slice(1)], [BEAT(2), PB[0], -.2, PB.slice(1)],
-  [BEAT(3), PA[0], -.22, PA.slice(1)], [BEAT(4), PL[0], -.14, PL.slice(1)], [BEAT(5), PB[0], -.2, PB.slice(1)],
-  [BEAT(6), PA[0], -.22, PA.slice(1)], [BEAT(7.4), .02, .04, [.62, 1.78]], [5.9, .02, .04, [.62, 1.78]],
-  [6.5, .12, -.2, PA.slice(1)], [7.1, .06, -.2, [1.3, 2.55]], [8.4, .08, -.16, [1.3, 2.55]],
-  [9.0, .4, -.3, [1.25, .72]], [9.9, .85, -.3, [2.12, .38]],
+  [0, PA[0], -.22, PA.slice(1), FAR0], [BEAT(0), PA[0], -.22, PA.slice(1), FAR0], [BEAT(1), PL[0], -.14, PL.slice(1), FAR0], [BEAT(2), PB[0], -.2, PB.slice(1), FAR0],
+  [BEAT(3), PA[0], -.22, PA.slice(1), FAR0], [BEAT(4), PL[0], -.14, PL.slice(1), FAR0], [BEAT(5), PB[0], -.2, PB.slice(1), FAR0],
+  [BEAT(6), PA[0], -.22, PA.slice(1), FAR0],
+  [BEAT(7.4), -.02, .1, [1.95, 1.0], FAR0], [5.9, -.02, .12, [1.95, 1.0], FAR0],          // the last bill up in the lamp's light
+  [6.5, .12, -.2, PA.slice(1), FAR0], [7.1, .06, -.2, [1.3, 2.55], FAR0], [8.5, .08, -.16, [1.3, 2.55], FAR0],
+  [9.25, .26, -.24, [1.42, 3.55], [1.5, 3.4 - Math.PI * 2]], [10.2, DOZE.lean, DOZE.head, DOZE.near, DOZE.far],
 ];
 const pileA = handAt(...PA), pileB = handAt(...PB);
+
+// the dream arrives as cut sheets: scalloped rose discs, each one popped in on a downbeat, stepping
+// outward from behind her (the newest sheet goes BEHIND the last, so the edges read as rings, like the
+// laugh rings); the ring shadows flatten out as the room settles into the dream
+const WARM = { x: 860, y: 600 };
+const STEPS = [[BEAT(23), 330], [BEAT(25), 640], [BEAT(27), 1020], [BEAT(29), 1700]];
+function scallopDisc(cx, cy, r, seed) {
+  const n = Math.max(14, Math.round(Math.PI * 2 * r / 64)), p = new Path2D();
+  for (let i = 0; i <= n; i++) {
+    const a = i / n * Math.PI * 2 + seed, rr = r + (hash(seed * 7 + i) - .5) * 5;
+    const x = cx + Math.cos(a) * rr, y = cy + Math.sin(a) * rr;
+    if (i === 0) { p.moveTo(x, y); continue; }
+    const am = (i - .5) / n * Math.PI * 2 + seed, rc = r + 26 + (hash(seed * 3 + i) - .5) * 8;
+    p.quadraticCurveTo(cx + Math.cos(am) * rc, cy + Math.sin(am) * rc, x, y);
+  }
+  p.closePath(); return p;
+}
+function stepR(t, i) { const [t0, R] = STEPS[i]; if (t < t0 - .17) return 0; const k = back((t - (t0 - .17)) / .34); return lerp(i ? STEPS[i - 1][1] : 230, R, k); }
+
+// one bill: a sheet with grey lines (no readable text); a hard little shadow so it reads as paper on paper
+function billHard(w, h, col, line, sh = 1) {
+  const p = cutRect(-w / 2, -h / 2, w, h, w * 3.1, 1.2);
+  if (sh > 0) { g.save(); g.translate(4, 5); g.fillStyle = `rgba(20,16,30,${.34 * sh})`; g.fill(p); g.restore(); }
+  cut(p, col, { sh: .3, grain: .12 });
+  g.save(); g.strokeStyle = line; g.lineWidth = 3; g.lineCap = 'round';
+  for (let i = 0; i < 4; i++) { const y = -h / 2 + 12 + i * 11; g.beginPath(); g.moveTo(-w / 2 + 10, y); g.lineTo(-w / 2 + 10 + (w - 20) * (i === 3 ? .45 : i === 0 ? .6 : .85), y); g.stroke(); }
+  g.lineWidth = 5; g.beginPath(); g.moveTo(w / 2 - 30, h / 2 - 12); g.lineTo(w / 2 - 10, h / 2 - 12); g.stroke();
+  g.restore();
+}
 
 SHOT(0, 18.5, 'kitchen', (t) => {
   const A0 = g.globalAlpha;
@@ -119,40 +153,48 @@ SHOT(0, 18.5, 'kitchen', (t) => {
   g.save(); g.translate(W / 2, H / 2); g.scale(Z, Z); g.translate(-FX, -FY);
 
   // the drift: everything below is 0 = waking, 1 = dream
-  const warmR = 2400 * Math.pow(ss(10.8, 17.6, t), 1.35);              // the rose spreading from behind her
-  const haloK = ss(10.2, 16.2, t);                                       // warm circle -> paper sun
+  const haloK = ss(10.5, 14.4, t);                                       // warm circle -> paper sun
   const navyK = ss(13.6, 17.8, t);                                       // her paper, the table
-  const lampUp = ei(ss(12.4, 15.4, t));                                  // the lamp is drawn up out of the frame
 
-  // ---- the room, waking, then the dream room cut out of a growing hand-torn circle ----
+  // ---- the room, waking, then the dream room on the stepped sheets ----
   room(0);
-  if (warmR > 1) {
-    g.save();
-    const cx = 860, cy = 600, pts = [];
-    for (let i = 0; i < 30; i++) { const a = i / 30 * Math.PI * 2; const rr = warmR * (1 + (hash(i * 5.3) - .5) * .07 + Math.sin(a * 3 + t * .4) * .025); pts.push([cx + Math.cos(a) * rr, cy + Math.sin(a) * rr]); }
-    const torn = blob(pts, .8);
-    g.save(); g.shadowColor = 'rgba(20,16,30,.26)'; g.shadowBlur = 18; g.shadowOffsetX = 4; g.shadowOffsetY = 7; g.fillStyle = C.rose; g.fill(torn); g.restore();
-    g.clip(torn); room(1);
+  const rs = STEPS.map((_, i) => stepR(t, i));
+  const top = rs.reduce((m, r, i) => r > 0 ? i : m, -1);
+  if (top >= 0) {
+    const ringSh = 1 - ss(15.6, 17.6, t);
+    const discs = rs.map((r, i) => r > 0 ? scallopDisc(WARM.x, WARM.y, r, i * 1.7 + .3) : null);
+    // the outermost sheet lies on the grey room with a cut shadow; the dream room is printed on it
+    const outer = discs[top];
+    g.save(); g.shadowColor = 'rgba(20,16,30,.3)'; g.shadowBlur = 18; g.shadowOffsetX = 5; g.shadowOffsetY = 8; g.fillStyle = C.rose; g.fill(outer); g.restore();
+    g.save(); g.clip(outer); room(1);
+    // the inner sheets' edges: their shadows on the sheet behind them
+    if (ringSh > 0) for (let i = top - 1; i >= 0; i--) {
+      g.save(); const outside = new Path2D(); outside.rect(-3000, -3000, 9000, 9000); outside.addPath(discs[i]);
+      g.clip(outside, 'evenodd');
+      g.shadowColor = `rgba(20,16,30,${.26 * ringSh})`; g.shadowBlur = 14; g.shadowOffsetX = 4; g.shadowOffsetY = 7;
+      g.fillStyle = C.rose; g.fill(discs[i]); g.restore();
+    }
     g.restore();
   }
 
   // ---- the lamp's warm light on the wall, which becomes the sun halo ----
   const GY = LSY + 150;
-  const glowR = lerp(300, 400, haloK);
-  g.save(); g.globalAlpha = A0 * .5 * (1 - haloK);
+  const glowR = lerp(300, 380, haloK);
+  g.save(); g.globalAlpha = A0 * .5 * (1 - ss(10.4, 12.6, t));
   const gr = g.createRadialGradient(LX, GY, 20, LX, GY, glowR);
   gr.addColorStop(0, 'rgba(243,217,160,.85)'); gr.addColorStop(.55, 'rgba(243,217,160,.3)'); gr.addColorStop(1, 'rgba(243,217,160,0)');
   g.fillStyle = gr; g.fill(circle(LX, GY, glowR)); g.restore();
-  if (haloK > 0) {
-    const r = lerp(110, HALO.r, eo(haloK)) + Math.sin(t * .5) * 3;
-    const hxk = lerp(LX, HALO.x, haloK), hyk = lerp(GY, HALO.y, haloK);
-    cut(circle(hxk, hyk, r + 28), C.goldPale, { sh: .5, grain: .25, alpha: ss(11.8, 15.2, t) });
-    cut(circle(hxk, hyk, r), C.sun, { sh: .6, grain: .25, alpha: ss(10.2, 13.2, t) });
+  if (t >= 10.5) {
+    // opaque paper from its first frame: it pops in small inside the glow, then grows and settles
+    const r = lerp(70, HALO.r, eo(haloK)) * (t < 11 ? back((t - 10.5) / .5) : 1) + Math.sin(t * .5) * 3;
+    const hxk = lerp(LX, HALO.x, eio(haloK)), hyk = lerp(GY, HALO.y, eio(haloK));
+    cut(circle(hxk, hyk, r + lerp(14, 28, haloK)), C.goldPale, { sh: .5, grain: .25 });
+    cut(circle(hxk, hyk, r), mix(C.lamp, C.sun, haloK), { sh: .6, grain: .25 });
   }
-  // the pendant lamp, cord and shade; it is drawn up out of the frame as the sun arrives
+  // the pendant lamp, cord and shade: it stays where it hangs, inside the sun
   g.save();
-  const sway = Math.sin(t * .9) * .012 * (1 - lampUp);
-  g.translate(LX, -60 - lampUp * 560); g.rotate(sway); g.translate(-LX, 60);
+  const sway = Math.sin(t * .9) * .012;
+  g.translate(LX, -60); g.rotate(sway); g.translate(-LX, 60);
   cut(cutRect(LX - 3, -200, 6, LSY + 200, 31, .8), mix(C.w0, C.roseDark, navyK), { sh: .4, grain: 0 });
   cut(poly([[LX - 32, LSY], [LX + 32, LSY], [LX + 100, LSY + 76], [LX - 100, LSY + 76]]), mix(C.w0, C.roseDark, navyK), { sh: .9, lift: .4 });
   cut(ellipse(LX, LSY + 78, 34, 14), C.lamp, { sh: 0, grain: .1 });
@@ -169,27 +211,32 @@ SHOT(0, 18.5, 'kitchen', (t) => {
   const e = P1 === P0 ? 1 : eio((t - P0[0]) / (P1[0] - P0[0]));
   let lean = lerp(P0[1], P1[1], e), headA = lerp(P0[2], P1[2], e);
   let near = [lerp(P0[3][0], P1[3][0], e), lerp(P0[3][1], P1[3][1], e)];
+  const far = [lerp(P0[4][0], P1[4][0], e), lerp(P0[4][1], P1[4][1], e)];
   if (t > 7.1 && t < 8.4) near[1] += Math.sin((t - 7.1) * 15) * .06 * bump(t, 7.1, 1.3);     // rubbing her eyes
-  const breath = Math.sin((t - 9.9) * Math.PI * 2 / 4.2) * .012 * ss(9.9, 10.8, t);
-  lean += breath; headA -= breath * .5;
-  const far = [lerp(1.0, 2.05, ss(9.0, 9.9, t)), lerp(.62, .42, ss(9.0, 9.9, t))];
+  // asleep: she breathes; the back rises and falls, the head stays down on her arms
+  const breath = Math.sin((t - 10.2) * Math.PI * 2 / 4.2) * .014 * ss(10.2, 11, t);
+  lean += breath; headA -= breath * 1.1; near[0] -= breath * .9; far[0] -= breath * .9;
+  const farFront = t > 9.25;
   const herCol = mix(C.w1, C.navy, navyK);
   const tableCol = mix(C.w0, C.roseDark, navyK), clothCol = mix(C.w3, C.cream, navyK), topCol = mix(C.w4, C.creamDeep, navyK);
-  const billCol = mix(C.w4, C.white, navyK), billInk = mix(C.w3, C.creamDeep, navyK);
+  const billCol = mix(C.w4, C.white, navyK), billInk = mix(C.w2, C.creamDeep, navyK);
 
-  // bills: three travel from the near pile to the far pile in her hand, on the beat
-  const BW = 70, BH = 50;
+  // bills: three travel from the near pile to the far pile in her hand, on the beat; the last one she
+  // holds up into the lamp's light to read
+  const BW = 96, BH = 68;
   const bills = [
     { pick: BEAT(.75), place: BEAT(2) },
     { pick: BEAT(3.75), place: BEAT(5) },
     { pick: BEAT(6.75), place: 6.5, last: true },
   ];
   let held = null;
-  const holdNear = () => { if (!held) return; g.save(); g.rotate(near[0] + near[1] - lean - (held.last && t < 5.9 ? 1.2 : .25)); g.scale(1 / S, 1 / S); g.translate(4, -18); bill(BW, BH, billCol, billInk); g.restore(); };
-  const flat = (x, y, r, k = 0) => { g.save(); g.translate(x, y); g.rotate(r); g.scale(1, .42); bill(BW, BH, billCol, billInk); g.restore(); };
+  const lit = bump(t, BEAT(7.2), 6.0 - BEAT(7.2) + .3);
+  const holdNear = () => { if (!held) return; g.save(); g.rotate(near[0] + near[1] - lean - (held.last && t < 6.1 ? .55 : .25)); g.scale(1 / S, 1 / S); g.translate(4, -24);
+    billHard(BW, BH, held.last ? mix(C.w4, C.lamp, lit * .7) : billCol, billInk); g.restore(); };
+  const flat = (x, y, r, k = 0) => { g.save(); g.translate(x, y); g.rotate(r); g.scale(1, .42); billHard(BW, BH, billCol, billInk, .8); g.restore(); };
 
   chair(mix(C.w0, C.navy, navyK));
-  sitter(HX, HY, S, herCol, { lean, head: headA, near, far }, 'back');
+  sitter(HX, HY, S, herCol, { lean, head: headA, near, far, farFront }, 'back');
 
   // the table: a leg, the top band (naive perspective), the oilcloth
   cut(cutRect(TX0 + 40, TY, 30, FLOOR - TY, 51), tableCol, { sh: .5 });
@@ -207,7 +254,7 @@ SHOT(0, 18.5, 'kitchen', (t) => {
   });
   cup(1300, TY - 26, 1.3, mix(C.w3, C.cream, navyK));
 
-  sitter(HX, HY, S, herCol, { lean, head: headA, near, far, holdNear }, 'front');
+  sitter(HX, HY, S, herCol, { lean, head: headA, near, far, holdNear, farFront }, 'front');
   g.restore();
 });
 })();

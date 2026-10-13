@@ -11,6 +11,7 @@ const W_ = (w, n = 0) => wordAt(w, n, 31);
 const T = { nobody: W_("nobody's"), hungry: W_('hungry'), babies: W_('babies'), rocking: W_('rocking'), cradles: W_('cradles') };
 const BAND = 728, FRONT = 838;            // the table top band (naive perspective) and its front edge
 const SIT = 792;                          // things stand on this line in the band
+const KA = '#c96c3f', KB = '#cf9324';     // the friends' kids' paper (as in 02); navy = her kids
 
 // ---- local paper props ----
 // a bowl: rim at y, half-disc body below; the foot is a small flat strip
@@ -90,6 +91,34 @@ function cradle(r, eye = 0) {
   g.bezierCurveTo(.04 * r, 0, .1 * r, .03 * r, .14 * r, .08 * r); g.stroke(); g.restore();
 }
 
+// ---- the crowd from 02, still standing behind the table: 02's crane ends on exactly this framing
+// (02 world -> 03 screen: x' = 960 + (x - 1250) * 2.29, y' = 540 + (y - 551) * 2.29). Their own arms set the dishes down.
+const CZ = 2.29, toS = (x, y) => [960 + (x - 1250) * CZ, 540 + (y - 551) * CZ];
+const KF2 = 964, S2 = .78;
+const CROWD = [
+  { spec: CAST.girl11, x: 1012 }, { spec: CAST.boy8, x: 1140 }, { spec: CAST.girl3, x: 1262, lift: 118 },
+  { spec: { col: KA, kind: 'shirt', head: 'child', hair: 'curls', height: .66, headK: .3 }, x: 1376 },
+  { spec: { col: KB, kind: 'dressShort', head: 'child', hair: 'bob', height: .72, headK: .3 }, x: 1470 },
+  { spec: { col: KA, kind: 'shirt', head: 'child', hair: 'cap', height: .6, headK: .31 }, x: 1560, lift: 30 },
+  { spec: { col: KB, kind: 'dressShort', head: 'child', hair: 'pony', height: .7, headK: .3 }, x: 1652 },
+  { spec: { col: KA, kind: 'shirt', head: 'child', hair: null, height: .64, headK: .31 }, x: 1744 },
+];
+CROWD.forEach((k) => { const [x, y] = toS(k.x, KF2 - (k.lift || 0)); k.sx = x; k.sy = y; k.sc = S2 * CZ * k.spec.height; });
+// still life (world) -> screen
+const SL = (x, y) => [960 + (x - 960) * 1.5, 900 + (y - SIT) * 1.5];
+// two-bone reach: angles [shoulder, elbow] (kit arm() convention) that put the hand at screen P
+function reach(k, side, P) {
+  const shx = k.sx + side * 8 * k.sc * -1, shy = k.sy - 752 * k.sc;           // dir -1: local +x is screen -x
+  let vx = -(P[0] - shx) / k.sc, vy = (P[1] - shy) / k.sc;                      // local units, forward = toward her
+  const a = 168, b = 182; let d = Math.hypot(vx, vy); const dm = a + b - 2; if (d > dm) { vx *= dm / d; vy *= dm / d; d = dm; }
+  const th = Math.atan2(vx, vy), al = Math.acos(clamp((a * a + d * d - b * b) / (2 * a * d), -1, 1)), be = Math.acos(clamp((b * b + d * d - a * a) / (2 * b * d), -1, 1));
+  // of the two elbow solutions take the lower one, so a close reach drops the elbow instead of jutting it out
+  const lo = (th - al), hi = (th + al);
+  const ey = (u) => Math.cos(u);
+  return ey(lo) >= ey(hi) ? [lo, al + be] : [hi, -(al + be)];
+}
+const RAISED = [[2.95, .12], [2.78, .2]];
+
 SHOT(31.5, 44.9, 'hungry', (t, k, d) => {
   const A0 = g.globalAlpha;
   // ---- the camera follows the steam up into the night ----
@@ -109,8 +138,62 @@ SHOT(31.5, 44.9, 'hungry', (t, k, d) => {
   const tear = []; tear.push([-40, 1200]); for (let x = -40; x <= W + 40; x += 48) tear.push([x, -120 + (hash(x * .37) - .5) * 26 + Math.sin(x / 210) * 14]); tear.push([W + 40, 1200]);
   cut(poly(tear), C.rose, { sh: 1, lift: .6 });
 
-  // ---- the table: a close still life, scaled up from the table line ----
-  g.save(); g.translate(960, 598); g.scale(1.4, 1.4); g.translate(-960, -SIT);
+  // ---- the crowd behind the table (bodies; their reaching arms are drawn again over the table top) ----
+  const B = (i) => BEATS[i];
+  // deliveries: [kid, arm (0 near, 1 far), beat time, what, world anchor x, y]
+  const ORS1 = [[-58, -16], [10, -20], [70, -12], [-28, -66], [40, -68]];
+  const ORS3 = [[-40, -14], [32, -16], [-6, -58]];
+  const B1 = { x: 702, r: 124 }, rim1 = SIT - B1.r * .7 + 6, B2 = { x: 1122, r: 104 }, rim2 = SIT - B2.r * .7 + 6, B3 = { x: 1318, r: 96 }, rim3 = SIT - B3.r * .7 + 6;
+  const PX = 500;
+  const DEL = [
+    [0, 0, B(2), 'plate', PX, SIT + 2 - 13], [0, 1, B(5), 'plate', PX, SIT + 2 - 26],
+    [1, 0, B(1), 'or1', 0], [1, 1, B(3), 'or1', 1], [1, 0, B(4), 'or1', 2], [1, 1, B(6), 'or1', 3], [1, 0, B(8), 'or1', 4],
+    [2, 0, B(7), 'board'],
+    [5, 0, B(9), 'or3', 0], [5, 1, B(11), 'or3', 1], [5, 0, T.nobody, 'or3', 2],
+    [6, 0, B(10), 'long'],
+  ];
+  // the hand's target (screen) and the item's resting anchor (world) for a delivery
+  const anchor = (d) => {
+    if (d[3] === 'plate') return { w: [d[4], d[5]], h: [d[4] + 30, d[5] - 14] };
+    if (d[3] === 'or1') { const [ox, oy] = ORS1[d[4]]; const w = [B1.x + ox, rim1 + oy]; return { w, h: [w[0] + 4, w[1] - 30] }; }
+    if (d[3] === 'or3') { const [ox, oy] = ORS3[d[4]]; const w = [B3.x + ox, rim3 + oy]; return { w, h: [w[0] + 4, w[1] - 28] }; }
+    if (d[3] === 'board') return { w: [924, SIT + 2], h: [950, SIT - 128] };
+    return { w: [1500, SIT + 2], h: [1510, SIT - 74] };
+  };
+  // per arm: angles at t and, if it is carrying something, what and where (world)
+  const armState = (ki, side) => {
+    const k = CROWD[ki], R = 350 * k.sc;
+    const shx = k.sx - side * 8 * k.sc, shy = k.sy - 752 * k.sc;
+    const H0 = [shx - .3 * R, shy + .34 * R], REST = [shx - .06 * R, shy + .9 * R], RET = [shx - .14 * R, shy + .5 * R];
+    const mine = DEL.filter((d) => d[0] === ki && d[1] === side).sort((p, q) => p[2] - q[2]);
+    const restA = reach(k, side, REST);
+    // kids with nothing to carry keep cheering, a slow wave of the raised arm
+    const wave = Math.sin(t * 3.2 + ki * 1.3 + side * 2) * .12;
+    if (!mine.length) return { A: [RAISED[side][0] + wave, RAISED[side][1] + Math.abs(wave)] };
+    // the others bring the raised arm down folded at the elbow (never sweeping out into a neighbour)
+    const t0 = mine[0][2];
+    if (t < t0 - .55) { const e = ss(t0 - 1.15, t0 - .55, t), a0 = reach(k, side, H0), F = [2.0, 2.7];
+      if (e <= 0) return { A: [RAISED[side][0] + wave, RAISED[side][1] + Math.abs(wave)] };
+      return { A: e < .5 ? [lerp(RAISED[side][0], F[0], eio(e * 2)), lerp(RAISED[side][1], F[1], eio(e * 2))] : [lerp(F[0], a0[0], eio(e * 2 - 1)), lerp(F[1], a0[1], eio(e * 2 - 1))] }; }
+    let P = REST, carry = null;
+    for (const d of mine) {
+      const tb = d[2], an = anchor(d), T_ = SL(...an.h);
+      if (t >= tb - .75 && t < tb - .55) { P = [lerp(REST[0], H0[0], eio((t - (tb - .75)) / .2)), lerp(REST[1], H0[1], eio((t - (tb - .75)) / .2))]; break; }
+      if (t >= tb - .55 && t < tb) { const e = eio((t - (tb - .55)) / .55); P = [lerp(H0[0], T_[0], e), lerp(H0[1], T_[1], e) - Math.sin(e * Math.PI) * 40];
+        carry = { d, an, P, pop: back((t - (tb - .55)) / .18) }; break; }
+      if (t >= tb && t < tb + .3) { const e = eio((t - tb) / .3); P = [lerp(T_[0], RET[0], e), lerp(T_[1], RET[1], e)]; break; }
+      if (t >= tb + .3 && t < tb + .6) { const e = eio((t - tb - .3) / .3); P = [lerp(RET[0], REST[0], e), lerp(RET[1], REST[1], e)]; break; }
+    }
+    return { A: reach(k, side, P), carry };
+  };
+  const ARM = CROWD.map((_, ki) => [armState(ki, 0), armState(ki, 1)]);
+  const kPose = (ki) => { const la = Math.abs(Math.sin(t * 3.8 + ki * 1.7)); return { head: .04 + la * .05 + (hash(ki * 3) - .5) * .06, laugh: .25 * la, bob: -la * 5, arms: [ARM[ki][0].A, ARM[ki][1].A] }; };
+  const drawArm = (ki, side) => { const k = CROWD[ki], p = kPose(ki), A = ARM[ki][side].A;
+    g.save(); g.translate(k.sx, k.sy + p.bob * S2 * CZ); g.scale(-k.sc, k.sc); g.translate(side ? -8 : 8, -752); arm(A[0], A[1], k.spec.armCol || k.spec.col); g.restore(); };
+  CROWD.forEach((k, ki) => puppet(k.sx, k.sy, S2 * CZ, -1, k.spec, kPose(ki)));
+
+  // ---- the table: a close still life on the lower third ----
+  g.save(); g.translate(960, 900); g.scale(1.5, 1.5); g.translate(-960, -SIT);
   cut(poly([[-40, BAND], [W + 40, BAND], [W + 40, FRONT], [-40, FRONT]]), C.creamDeep, { sh: .6, grain: .2 });
   // the cloth front, with the scallops and lace holes of 02 just showing at the bottom
   const cl = new Path2D(); const hem = 1150, r = 26;
@@ -118,50 +201,51 @@ SHOT(31.5, 44.9, 'hungry', (t, k, d) => {
   for (let x = W + 40; x > -40; x -= 2 * r) cl.arc(x - r, hem, r, 0, Math.PI, false);
   cl.closePath(); for (let x = -40 + r; x < W + 40; x += 2 * r) { cl.moveTo(x + 7, hem - 26); cl.arc(x, hem - 26, 7, 0, Math.PI * 2); }
   cut(cl, C.cream, { sh: .9, lift: .3, rule: 'evenodd' });
+  // the reaching arms come over the table top (far arms first)
+  g.save(); g.translate(960, SIT); g.scale(1 / 1.5, 1 / 1.5); g.translate(-960, -900);
+  for (const side of [1, 0]) CROWD.forEach((_, ki) => { if (DEL.some((d) => d[0] === ki && d[1] === side && t > d[2] - .6 && t < d[2] + .3)) drawArm(ki, side); });
+  g.restore();
 
-  // a drop: 0 before it falls, falls for .3 s and lands ON the beat with a little paper bounce
-  const drop = (tb, fromY = -260) => { const f = (t - (tb - .3)) / .3; if (f < 0) return null; if (f < 1) return { y: lerp(fromY, 0, ei(f)), sq: 1 };
-    const b = t - tb; return { y: -Math.sin(Math.min(b, .22) / .22 * Math.PI) * 12 * Math.exp(-b * 3), sq: 1 - bump(t, tb, .16) * .12 }; };
-  const B = (i) => BEATS[i];
+  // an item: resting (landed on its beat with a little paper bounce) or carried in a hand
+  const landed = (tb) => { const b = t - tb; return { y: -Math.sin(Math.min(b, .2) / .2 * Math.PI) * 8 * Math.exp(-b * 3), sq: 1 - bump(t, tb, .16) * .1 }; };
+  const where = (d) => {             // world position of the item's anchor, its squash, a pop scale; null if not yet in a hand
+    const an = anchor(d), tb = d[2];
+    if (t >= tb) { const l = landed(tb); return { x: an.w[0], y: an.w[1] + l.y, sq: l.sq, s: 1 }; }
+    const st = ARM[d[0]][d[1]]; if (!st.carry || st.carry.d !== d) return null;
+    const hw = [960 + (st.carry.P[0] - 960) / 1.5, SIT + (st.carry.P[1] - 900) / 1.5];
+    return { x: hw[0] - (an.h[0] - an.w[0]), y: hw[1] - (an.h[1] - an.w[1]), sq: 1, s: clamp(st.carry.pop, 0, 1.2) };
+  };
+  const scaled = (w, f) => { g.save(); g.translate(w.x, w.y); g.scale(w.s / w.sq, w.s * w.sq); f(); g.restore(); };
+  const D = (what, n) => DEL.find((d) => d[3] === what && (n === undefined || d[4] === n || d[3] === 'plate' && DEL.filter((q) => q[3] === 'plate').indexOf(d) === n));
 
   // plates, stacking on the left
-  const PX = 512;
-  for (let i = 0; i < 5; i++) {
-    const at = [0, B(4), B(6), B(10), B(13)][i];
-    const dd = i === 0 ? { y: 0 } : drop(at); if (!dd) continue;
-    plateAt(PX + (hash(i * 3) - .5) * 8, SIT + 2 - i * 13 + dd.y, 190);
-  }
+  plateAt(PX, SIT + 2, 170);
+  DEL.filter((d) => d[3] === 'plate').forEach((d) => { const w = where(d); if (w) scaled(w, () => plateAt(0, 0, 170)); });
   // bowl 1 heaped with oranges
-  const B1 = { x: 731, r: 148 }, rim1 = SIT - B1.r * .7 + 6;
-  const ORS1 = [[-70, -18, B(1)], [10, -22, B(2)], [84, -14, B(5)], [-34, -78, B(7)], [46, -80, B(9)], [8, -138, B(11)]];
-  ORS1.forEach(([ox, oy, at], i) => { const dd = drop(at); if (!dd) return; orangeAt(B1.x + ox, rim1 + oy + dd.y, 40, (hash(i) - .5)); });
+  DEL.filter((d) => d[3] === 'or1').forEach((d, i) => { const w = where(d); if (w) scaled(w, () => orangeAt(0, 0, 36, hash(i) - .5)); });
   bowlAt(B1.x, rim1, B1.r, C.sky1);
-  // a round loaf
-  { const dd = drop(B(3)); if (dd) { g.save(); g.translate(935, SIT + 2 + dd.y); g.scale(1 / dd.sq, dd.sq); loafAt(0, 0, 230, 150); g.restore(); } }
-  // the soup bowl: fills on "nobody's"
-  const B2 = { x: 1135, r: 118 }, rim2 = SIT - B2.r * .7 + 6;
-  const fill = eo(ss(T.nobody - .05, T.nobody + .7, t));
-  if (fill > 0) { cut(ellipse(B2.x, rim2 - 2 + (1 - fill) * 50, B2.r * .96, 16 + fill * 8), C.orange, { sh: .3, grain: .2 }); }
+  // a bread board with a round loaf
+  { const w = where(D('board')); if (w) scaled(w, () => { cut(cutRect(-104, -14, 208, 16, 71, 1.2), C.roseDark, { sh: .7, lift: .2 }); loafAt(0, -14, 180, 120); }); }
+  // the soup bowl: fills on "hungry"
+  const fill = eo(ss(T.hungry - .12, T.hungry + .5, t)) * (1 + bump(t, T.hungry + .2, .4) * .06);
+  if (fill > 0) cut(ellipse(B2.x, rim2 - 2 + (1 - fill) * 44, B2.r * .95, 14 + fill * 7), C.orange, { sh: .3, grain: .2 });
   bowlAt(B2.x, rim2, B2.r, C.sky1);
-  // a long loaf leaning, and bowl 2 of oranges
-  { const dd = drop(B(8)); if (dd) loafAt(1318, SIT + dd.y, 230, 84, 0, true); }
-  const B3 = { x: 1488, r: 104 }, rim3 = SIT - B3.r * .7 + 6;
-  const ORS3 = [[-46, -16, B(12)], [34, -18, B(14)], [-6, -66, B(15)]];
-  ORS3.forEach(([ox, oy, at], i) => { const dd = drop(at); if (!dd) return; orangeAt(B3.x + ox, rim3 + oy + dd.y, 36, (hash(i + 9) - .5)); });
+  // bowl 3 of oranges: its last orange lands on "nobody's"
+  DEL.filter((d) => d[3] === 'or3').forEach((d, i) => { const w = where(d); if (w) scaled(w, () => orangeAt(0, 0, 33, hash(i + 9) - .5)); });
   bowlAt(B3.x, rim3, B3.r, C.sky1);
-  // a last orange lands on "nobody's" in front of everything, rolling to a stop
-  { const dd = drop(T.nobody); if (dd) { const roll = eo(clamp((t - T.nobody) / 1.2)); orangeAt(1020 + roll * 26, SIT + 30 - 34 + dd.y, 34, roll * 2.4); } }
+  // a long loaf on its own board
+  { const w = where(D('long')); if (w) scaled(w, () => { cut(cutRect(-86, -12, 172, 14, 73, 1.2), C.roseDark, { sh: .7, lift: .2 }); loafAt(0, -12, 150, 66, 0, true); }); }
 
   // ---- "hungry": steam rises from everything and leads the eye up ----
   const H0 = T.hungry - .12;
-  steam(t, H0, B2.x - 34, rim2 - 14, 0, { w: 17 }); steam(t, H0 + .27, B2.x + 36, rim2 - 14, 1, { w: 17 });
-  steam(t, H0 + .14, 912, SIT - 156, 2); steam(t, H0 + .36, B1.x + 8, rim1 - 186, 3, { w: 13 });
-  steam(t, H0 + .22, B3.x - 6, rim3 - 110, 4, { w: 13 }); steam(t, H0 + .45, PX, SIT - 80, 5, { w: 12 });
+  steam(t, H0, B2.x - 30, rim2 - 14, 0, { w: 17 }); steam(t, H0 + .27, B2.x + 32, rim2 - 14, 1, { w: 17 });
+  steam(t, H0 + .14, 924, SIT - 140, 2); steam(t, H0 + .36, B1.x + 8, rim1 - 110, 3, { w: 13 });
+  steam(t, H0 + .22, B3.x - 6, rim3 - 92, 4, { w: 13 }); steam(t, H0 + .45, 1500, SIT - 80, 5, { w: 12 });
   g.restore();
   g.restore();
 
   // ---- the night: crescent-moon cradles (drawn in screen space; they arrive as the camera reaches them) ----
-  const rockAmp = lerp(.07, .3, ss(T.rocking - .15, T.rocking + .3, t));
+  const rockAmp = lerp(.07, .5, ss(T.rocking - .15, T.rocking + .3, t));
   const rockPh = (t - T.rocking) / (2 * .3935) * Math.PI;          // one swing every two beats
   const CR = [
     { x: 470, y: 330, r: 120, at: T.babies, ph: 0 },
@@ -169,25 +253,28 @@ SHOT(31.5, 44.9, 'hungry', (t, k, d) => {
     { x: 960, y: 560, r: 160, at: T.babies + .76, ph: .0, hero: true },
   ];
   const forward = ss(T.cradles - .05, T.cradles + 1.5, t);           // "cradles": the middle one swings toward us
-  // the paper sun halo grows behind it (04 opens on this halo)
-  const HX = 1080, HY = 462;
+  // the paper sun halo grows concentrically behind it and lands exactly on 04's opening halo
+  // (04: centre (470,470) in her frame, zoom 1.3, ox 470, oy -150, with the same paper wobble)
+  const HX = 1081 + jit(t, 3), HY = 461 + jit(t, 4), R04 = 1.3 * (400 + Math.sin(t * .5) * 4);
+  const hero = CR[2], he = eio(forward);
+  const hx0 = lerp(hero.x, HX, he), hy0 = lerp(hero.y, HY + 40, he);
   if (forward > 0) {
-    const hr = 470 * back(forward / .55) * lerp(.2, 1, ss(0, .2, forward));
-    cut(circle(HX, HY, hr + 34), C.goldPale, { sh: .5, grain: .25 });
-    cut(circle(HX, HY, hr), C.sun, { sh: .6, grain: .25 });
+    const hr = lerp(hero.r * 1.25, R04, eio(ss(0, .85, forward))) * lerp(.9, 1, Math.min(1, back(forward / .2)));
+    const cx = lerp(hx0, HX, ss(0, .85, forward)), cy = lerp(hy0 - 20, HY, ss(0, .85, forward));
+    cut(circle(cx, cy, hr + 1.3 * 34 * hr / R04), C.goldPale, { sh: .5, grain: .25 });
+    cut(circle(cx, cy, hr), C.sun, { sh: .6, grain: .25 });
   }
   CR.forEach((c, i) => {
     const a = pop(t, c.at, .55); if (a <= 0) return;
     const comeIn = (1 - eo(ss(c.at - .3, c.at + .5, t))) * 260;     // they rise into place with the camera
     let x = c.x, y = c.y + comeIn, s = a;
     let rot = Math.sin(rockPh + c.ph) * rockAmp + Math.sin(t * 1.3 + i) * .03;
-    let alpha = 1;
-    if (c.hero) { const e = eio(forward); x = lerp(c.x, HX, e); y = lerp(c.y, HY + 40, e); s *= lerp(1, 2.3, e); rot *= lerp(1, .55, e); }
+    if (c.hero) { x = hx0; y = hy0 + comeIn * (1 - he); s *= lerp(1, 2.3, he); rot *= lerp(1, .45, he); }
     else { s *= 1 - eio(ss(.1, .6, forward)); y -= forward * 120; x += (c.x - 960) * forward * .5; }   // they shrink away into the stars
     if (s <= .01) return;
-    g.save(); g.globalAlpha *= alpha; g.translate(x, y); g.rotate(rot); g.scale(s, s);
+    g.save(); g.translate(x, y); g.rotate(rot); g.scale(s, s);
     cradle(c.r, c.hero ? ss(.3, .8, forward) : 0);
     g.restore();
   });
-}, { xin: .8, tr: 'rise' });
+}, { xin: .5, tr: 'fade' });
 })();

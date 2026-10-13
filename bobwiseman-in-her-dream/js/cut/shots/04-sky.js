@@ -44,19 +44,26 @@ SHOT(44.9, 73.28, 'sky', (t) => {
   hill(900, 26, 1.2, '#d9877f'); hill(975, 18, 3.4, '#c9746f');
 
   // ---- HER ----
-  const enter = eo((t - (T.dream - .6)) / 3.2);                 // she slides in from the left
+  // draft 2: the halo is fixed from the first frame (03's cradle halo lands exactly on it, a match cut) and
+  // she rises into it from below; draft 1 slid her in from the left with the halo
+  const rise = eo((t - 44.75) / 2.0);
   const laughK = ss(T.smile - .25, T.smile + .25, t) * (1 - ss(T.love + 1.2, T.love + 2.6, t) * .75);
   // laughing bobs on each word of "smile out loud"
   let bob = 0; for (const w of [T.smile, T.out, T.loud]) { const d = t - w; if (d > 0 && d < .7) bob += Math.sin(d / .7 * Math.PI) * 9; }
   const tilt = -ss(T.she, T.smile, t) * .07 - bob * .004 + ss(T.love + 1, T.sky + 2, t) * .05 + ss(T.ok, T.ok + 3, t) * .03;
   const zoom = lerp(1.3, 1.22, ss(T.love, T.clouds, t));
   const her = HEADS.her;
-  const ox = lerp(-900, 0, enter) + 470 + jit(t, 3), oy = -150 - bob * .6 + jit(t, 4);
-
-  const toHer = () => { g.translate(ox, oy); g.scale(zoom, zoom); g.translate(560, 900); g.rotate(tilt); g.translate(-560, -900); };
+  const ox = 470 + jit(t, 3), oy = -150 - bob * .6 + jit(t, 4);
+  // her own layer: rises in, a slow ~5% push toward her through the section, tiny head tilts on "smile"
+  // and "She's OK" (both gone well before the last second, which 05's transition picks up from)
+  const push = 1 + .05 * eio(ss(45.6, 73.3, t));
+  const nod = -bump(t, T.smile - .05, .9) * .05 + bump(t, T.ok, 1.0) * .06;
+  const toHalo = () => { g.translate(ox, oy); g.scale(zoom, zoom); g.translate(560, 900); g.rotate(tilt); g.translate(-560, -900); };
+  const toHer = () => { g.translate(1060, 560); g.scale(push, push); g.translate(-1060, -560);
+    g.translate(ox, oy + (1 - rise) * 760); g.scale(zoom, zoom); g.translate(560, 900); g.rotate(tilt + nod); g.translate(-560, -900); };
 
   // the sun is a halo behind her head, two rings of cream and gold paper
-  g.save(); toHer();
+  g.save(); toHalo();
   const sunR = 400 + Math.sin(t * .5) * 4;
   cut(circle(470, 470, sunR + 34), C.goldPale, { sh: .5, grain: .25 });
   cut(circle(470, 470, sunR), C.sun, { sh: .6, grain: .25 });
@@ -70,8 +77,14 @@ SHOT(44.9, 73.28, 'sky', (t) => {
     g.save(); toHer(); g.clip(her);
     const m = g.getTransform();
     g.setTransform(1, 0, 0, 1, 0, 0);
-    const top = lerp(-200, 0, 1), reveal = lerp(0, H + 200, skyK);
-    g.beginPath(); g.rect(0, -10, W, reveal + Math.sin(t * 3) * 0); g.clip();
+    const reveal = lerp(-30, H + 200, skyK);
+    // a torn-paper edge (as 03's night band), with a pale fibrous core along the tear
+    const torn = new Path2D(); torn.moveTo(-20, -20);
+    const edge = []; for (let x = -20; x <= W + 20; x += 36) edge.push([x, reveal + (hash(x * .31 + 7) - .5) * 30 + Math.sin(x / 170) * 9]);
+    edge.forEach(([x, y]) => torn.lineTo(x, y)); torn.lineTo(W + 20, -20); torn.closePath();
+    g.save(); g.shadowColor = 'rgba(8,6,20,.55)'; g.shadowBlur = 14; g.shadowOffsetY = 8; g.fillStyle = C.sky0; g.fill(torn); g.restore();
+    if (skyK < 1) { g.save(); g.strokeStyle = 'rgba(244,234,214,.55)'; g.lineWidth = 3; g.lineJoin = 'round'; g.beginPath(); edge.forEach(([x, y], i) => i ? g.lineTo(x, y + 2) : g.moveTo(x, y + 2)); g.stroke(); g.restore(); }
+    g.clip(torn);
     const gr = g.createLinearGradient(0, 0, 0, H); gr.addColorStop(0, C.sky0); gr.addColorStop(.45, C.sky1); gr.addColorStop(.8, C.sky2); gr.addColorStop(1, C.sky3);
     g.fillStyle = gr; g.fillRect(0, 0, W, H);
     g.globalAlpha = .18; g.globalCompositeOperation = 'soft-light'; g.drawImage(GRAIN, 0, 0); g.globalCompositeOperation = 'source-over'; g.globalAlpha = A0;
@@ -101,15 +114,16 @@ SHOT(44.9, 73.28, 'sky', (t) => {
     const rest = [{ x: 560, y: 320 }, { x: 600, y: 480 }, { x: 520, y: 640 }];  // nestled toward her face
     kids.forEach((kd, i) => {
       if (t < kd.at - .05) return;
-      const arr = back((t - kd.at) / 1.6);
+      // draft 2: they pop in already inside her (opaque paper from the first frame) instead of sliding in
+      const arr = clamp(back((t - kd.at) / .7), 0, 1.2);
       const drift = Math.sin(t * .9 + i * 2.1) * 8;
-      let x = lerp(kd.x - 420, kd.x, arr) + drift, y = kd.y + Math.cos(t * .7 + i) * 6;
-      x += wind * (70 + i * 20) + Math.sin(t * 19 + i) * 4 * wind;   // the wind pushes; her edge holds them
-      const settle = ss(T.away + .2, T.away + 2.6, t);
+      let x = lerp(kd.x - 70, kd.x, eo((t - kd.at) / .7)) + drift, y = kd.y + Math.cos(t * .7 + i) * 6;
+      // the wind pulls them back toward the edge of her head, they stretch, her edge holds them
+      x -= wind * (95 + i * 30) + Math.sin(t * 19 + i) * 5 * wind;
+      const settle = clamp(back(clamp((t - T.away + .05) / .8)), 0, 1.15);
       x = lerp(x, rest[i].x + drift * .5, settle); y = lerp(y, rest[i].y, settle);
-      const sq = 1 - wind * .12;
-      g.save(); g.translate(x, y); g.scale(kd.s / sq, kd.s * sq); g.translate(-100, -64);
-      g.globalAlpha = A0 * clamp((t - kd.at) / .3);
+      const sq = 1 - wind * .2;
+      g.save(); g.translate(x, y); g.scale(arr * kd.s / sq, arr * kd.s * sq); g.translate(-100, -64);
       cut(KIDS[kd.k], C.cream, { sh: .9, grain: .22, lift: .6 });
       g.strokeStyle = C.sky1; g.lineWidth = 2.6; g.lineCap = 'round';
       g.beginPath(); g.arc(178, 56, 6, Math.PI * .15, Math.PI * .85); g.stroke();
@@ -144,11 +158,11 @@ SHOT(44.9, 73.28, 'sky', (t) => {
   // wind ribbons: torn pale paper streaming across, "nobody's gotta go away"
   const windOn = ss(T.nobody - .6, T.go - .2, t) * (1 - ss(T.away, T.away + 1.4, t));
   if (windOn > 0) {
-    for (let i = 0; i < 4; i++) {
-      const y = 200 + i * 190 + hash(i) * 50, sp = 1400 + hash(i * 3) * 600;
-      const x0 = -900 + ((t - T.nobody) * sp + hash(i * 5) * 1600) % 3400 - 400;
-      g.globalAlpha = A0 * Math.min(1, windOn * 1.4);
-      cut(ribbon(x0, x0 + 620 + hash(i * 7) * 300, y, 26 + hash(i * 9) * 14, i * 1.7), i % 2 ? C.mint : C.cream, { sh: .7, grain: .2 });
+    for (let i = 0; i < 5; i++) {
+      const y = 170 + i * 170 + hash(i) * 50, sp = 1500 + hash(i * 3) * 700;
+      const x0 = W + 500 - ((t - T.nobody + .6) * sp + hash(i * 5) * 1600) % 3600;
+      g.globalAlpha = A0 * Math.min(1, windOn * 1.6);
+      cut(ribbon(x0, x0 + 560 + hash(i * 7) * 320, y, 44 + hash(i * 9) * 22, i * 1.7, 30), i === 2 ? C.goldPale : C.cream, { sh: 1, lift: .4, grain: .2 });
     }
     g.globalAlpha = A0;
   }
@@ -162,5 +176,5 @@ SHOT(44.9, 73.28, 'sky', (t) => {
     const p = new Path2D(); p.ellipse(0, 0, 14, 6, 0, 0, Math.PI * 2); cut(p, i % 3 ? C.gold : C.cream, { sh: .5, grain: 0 }); g.restore();
   }
 
-}, { xin: .9, tr: 'slide' });
+}, { xin: 1.0, tr: 'fade' });
 })();
