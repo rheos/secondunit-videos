@@ -81,20 +81,23 @@ function reachTo(lean, wx, wy, side = 8, neg = false) {
   return neg ? [th + Math.atan2(a2 * Math.sin(E), a1 + a2 * Math.cos(E)), -E] : [th - Math.atan2(a2 * Math.sin(E), a1 + a2 * Math.cos(E)), E];
 }
 const lerp2 = (a, b, k) => [lerp(a[0], b[0], k), lerp(a[1], b[1], k)];
-// her hand closed over the orange: a cupped palm with the knuckles of curled fingers on the far side
-// and the thumb tucked along the top; k = 1 closed, 0 lifted open (it hinges up at the wrist)
-function cupHand(cx, cy, k, col) {
-  if (k <= 0) return;
-  const wx = cx - 40, wy = cy + 16;                    // wrist pivot
-  g.save(); g.translate(wx, wy); g.rotate(-(1 - k) * 1.1); g.scale(lerp(.6, 1, k), lerp(.6, 1, k)); g.translate(-wx, -wy);
-  const p = new Path2D();
-  p.addPath(blob([[cx - 44, cy + 26], [cx - 46, cy + 4], [cx - 30, cy - 22], [cx - 6, cy - 35], [cx + 18, cy - 33], [cx + 34, cy - 20],
-    [cx + 40, cy + 2], [cx + 36, cy + 24], [cx + 18, cy + 32], [cx - 20, cy + 32]], .55));
-  [[24, -26, 11], [36, -8, 10.5], [37, 12, 10], [28, 27, 9]].forEach(([dx, dy, r]) => p.addPath(circle(cx + dx, cy + dy, r)));
-  cut(p, col, { sh: .55, grain: .2, lift: .15 });
-  // the gaps between the curled fingers: three short cut lines
-  g.save(); g.strokeStyle = 'rgba(20,16,30,.35)'; g.lineWidth = 2.2; g.lineCap = 'round';
-  [[30, -18, 22, -12], [38, 2, 28, 3], [33, 20, 24, 17]].forEach(([a, b2, c, d]) => { g.beginPath(); g.moveTo(cx + a, cy + b2); g.lineTo(cx + c, cy + d); g.stroke(); });
+// one more bill, tented over the orange (01's bills became birds in the dream; this one hides what the
+// dream left behind). k = 0 tented on the table, 1 lying flat; drawn about its centre-bottom (x, y)
+function tentBill(x, y, k, rot) {
+  g.save(); g.translate(x, y); g.rotate(rot);
+  // a soft dome: the top follows the orange's curve, the sides fall slack to the table, a little wave at the hem
+  const f = lerp(1, .12, k), R = 35, cy = -66 + R;    // 66 = 1.1x the orange's height
+  const pts = [[-66, 2], [-58, -3], [-50, -1], [-43, -9]];
+  for (let i = 0; i <= 8; i++) { const a = Math.PI * (1.12 + i * .76 / 8); pts.push([4 + Math.cos(a) * (R + 2), cy + Math.sin(a) * (R + 2)]); }
+  pts.push([47, -9], [54, -2], [61, -4], [68, 2], [34, 6], [0, 4], [-34, 6]);
+  const p = blob(pts.map(([px, py]) => [px * lerp(1, .85, k), py * f]), .5);
+  g.save(); g.translate(4, 6); g.fillStyle = 'rgba(20,16,30,.3)'; g.fill(p); g.restore();
+  cut(p, C.w4, { sh: .45, grain: .14, lift: .1 });
+  // the printed lines bend over the dome; a soft shadow on its far flank
+  g.save(); g.clip(p); g.scale(lerp(1, .85, k), f); g.strokeStyle = C.w3; g.lineWidth = 3; g.lineCap = 'round';
+  // rows of print like billHard's, left-aligned and only slightly bowed by the dome (concentric arcs read as a wifi sign)
+  [[-46, 34, 4], [-34, 50, 5], [-22, 58, 4], [-10, 30, 3]].forEach(([ly, len, bow]) => { const x0 = -30; g.beginPath(); g.moveTo(x0, ly + bow * .4); g.quadraticCurveTo(x0 + len / 2, ly - bow, x0 + len, ly + bow * .2); g.stroke(); });
+  g.globalAlpha *= .15 * (1 - k); g.fillStyle = '#141c3d'; g.beginPath(); g.ellipse(26, -16, 30, 22, -.6, 0, Math.PI * 2); g.fill();
   g.restore();
   g.restore();
 }
@@ -166,9 +169,11 @@ const RAISED = [900, 548], CHEEK = [802, 612];       // held up to the light; dr
 // 01's doze (01-kitchen.js DOZE): head down on forearms folded on the TOP of the table, far arm over the top
 const DOZE = { lean: .66, head: -.85, near: [2.0, 3.15], far: [2.2, 2.9 - Math.PI * 2] };
 const UP = { lean: .1, head: -.1 }, FAR0 = [1.0, .62];
-const COVER = [ORANGE.x - 30, ORANGE.y + 18];        // her far hand inside the cupped palm
-const FREST = [ORANGE.x - 64, TY - 50];             // where the far hand slides back to on "In"
-const REST = [ORANGE.x + 4, TY - 12];                 // her near hand, resting on the table edge once she sits up
+const FHAND = [ORANGE.x - 84, TY - 10];             // her far forearm at an angle, hand curled loosely at the table edge
+const FREST = [ORANGE.x - 64, TY - 50];             // where it settles after moving the bill
+const BILLGO = [ORANGE.x + 128, TY - 30];           // where the lifted bill drops, flat
+const REST = [ORANGE.x + 4, TY - 12];                 // her near hand once the bill is off (drawn in toward the orange)
+const NREST = [ORANGE.x + 76, TY - 28];               // before that: resting flat near the bills (01's sorting reach)
 const HELD = [-4, OR * .82];                         // hand point relative to the orange's centre while held
 
 // the camera: hold 01's framing through the seam, drift, then a real push in to her hands and the orange
@@ -224,7 +229,7 @@ SHOT(T.a, T.end, 'wake', (t) => {
   // stays there while she sits up and looks round; on "In" it slides off (the reveal); the near hand picks it up
   const open = eio((t - T.open) / .45);
   const reachK = eio((t - T.reach) / (T.grab - T.reach));
-  let nearT = lerp2(REST, [ORANGE.x + HELD[0], ORANGE.y + HELD[1]], reachK); nearT[1] -= 24 * Math.sin(reachK * Math.PI);
+  let nearT = lerp2(lerp2(NREST, REST, ss(T.open + .1, T.open + .65, t)), [ORANGE.x + HELD[0], ORANGE.y + HELD[1]], reachK); nearT[1] -= 24 * Math.sin(reachK * Math.PI);
   lean += .05 * bump(t, T.reach, T.grab + .4 - T.reach);
   let op = [ORANGE.x, ORANGE.y];
   if (t >= T.grab) {
@@ -251,21 +256,24 @@ SHOT(T.a, T.end, 'wake', (t) => {
   // arm angles: 01's doze angles, then targets
   const dn = [DOZE.near[0] - breath * .9 * sleepK, DOZE.near[1]];
   const nearArmK = eio((t - T.lift0) / (T.lift1 - T.lift0 - .2));
-  const near = nearArmK <= 0 ? dn : nearArmK < 1 ? lerp2(dn, reachTo(lean, REST[0], REST[1]), nearArmK) : reachTo(lean, nearT[0], nearT[1]);
+  const near = nearArmK <= 0 ? dn : nearArmK < 1 ? lerp2(dn, reachTo(lean, NREST[0], NREST[1]), nearArmK) : reachTo(lean, nearT[0], nearT[1]);
   const df = [DOZE.far[0] - breath * .9 * sleepK, DOZE.far[1]];
   const slide = eio((t - T.slide0) / (T.slide1 - T.slide0));
+  const billK = eio((t - T.open - .12) / .55);
+  const billP = [lerp(ORANGE.x, BILLGO[0], billK), lerp(TY - 46, BILLGO[1], billK) - 58 * Math.sin(billK * Math.PI)];
   let far = df;
   if (slide > 0) {
-    let fT = COVER.slice();
-    fT = lerp2(fT, FREST, open); fT[1] -= 14 * Math.sin(open * Math.PI);
+    // "In": she takes the bill's near edge, lifts it off the orange and lays it aside, then her hand settles
+    const grabE = [ORANGE.x - 56, TY - 40];
+    let fT = lerp2(FHAND, grabE, ss(T.open, T.open + .15, t));
+    if (billK > 0) fT = [billP[0] - 56, billP[1] - 10];
+    fT = lerp2(fT, FREST, ss(T.open + .65, T.open + 1.1, t));
     const fUp = ss(T.dream2 - 1, T.dream2 + .15, t);                     // second refrain: it cups the orange too
     if (fUp > 0) fT = lerp2(fT, [op[0] + 14, op[1] + OR * .9], fUp);
     far = reachTo(lean, fT[0], fT[1], -8);
     if (slide < 1) far = lerp2(df, far, slide);   // angle blend from the doze (01 winds the far elbow -2pi so it swings down, not up)
   }
   const farFront = true;
-  const cupK = ss(T.slide0, T.slide0 + .3, t) * (1 - ss(T.open, T.open + .35, t));
-  const postFar = () => cupHand(ORANGE.x, ORANGE.y + 2, cupK, C.w1);
 
   chair(HX, C.w0);
   sitter(HX, HY, S, C.w1, { lean, head: headA, near, far, farFront }, 'back');
@@ -289,7 +297,8 @@ SHOT(T.a, T.end, 'wake', (t) => {
   // before the pick-up it lies under her head and arms; once held it is drawn after her head and under
   // her near hand (at her cheek it sits in front of her face); it never overlaps anything at the switch
   if (t < T.grab) orange(op[0], op[1], OR);
-  sitter(HX, HY, S, C.w1, { lean, head: headA, near, far, farFront, eye, eyeCol, postFar, preNear: t >= T.grab ? () => orange(op[0], op[1], OR) : null }, 'front');
+  tentBill(billP[0], billP[1], billK, -.5 * Math.sin(billK * Math.PI) + .06 * billK);
+  sitter(HX, HY, S, C.w1, { lean, head: headA, near, far, farFront, eye, eyeCol, preNear: t >= T.grab ? () => orange(op[0], op[1], OR) : null }, 'front');
   g.restore();
 
   // the room comes up out of the dark around the lamp (the reunion's last warm circle)
