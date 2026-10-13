@@ -227,6 +227,12 @@ POST.holdPhone = (q, p, T) => { traveller(960, 980, .9, { look: 0, mouth: sing(T
 var NOTES = 0;
 // Cuts live in js/acts/act-*.js (CUTS_A..CUTS_E); buildShots() concatenates them in time order.
 const SEC_T = [0, 31.1, 44.7, 59.0, 73.7, 90.8, 104.2, 116.6, 131.2, 160.1, 174.6, 188.7, 203.3, 220.5, 247.3, 262.6, 276.0, 293.7, 319.5, 334.4, 365.5, 392.1, 400.0, 403.42];
+// where the burn-through must not reach, per set-up (screen coords; see leak() in surreal.js)
+const LEAK_CLEAR = {
+  d_featherFall: [[480, 810, 170]],
+  e_appInside: [['rect', 700, 20, 1250, 1000], [246, 690, 130]],
+  e_dotHenge: [[360, 990, 120], [570, 440, 200], [975, 420, 200], [1371, 440, 200]],
+};
 function buildShots() {
   const CUTS = [].concat(...['A', 'B', 'C', 'D', 'E'].map((k) => window['CUTS_' + k] || [])).sort((a, b) => a[0] - b[0]);
   return CUTS.map(([t0, key, args, post], i) => {
@@ -234,6 +240,6 @@ function buildShots() {
     const frame = (args.fx !== undefined || args.fy !== undefined || args.fz !== undefined) ? { fx: args.fx, fy: args.fy, fz: args.fz } : null;
     // q runs across the sung section this cut sits in, so a scene keeps moving over its returns
     const k = SEC_T.findIndex((t) => t > t0 + 1e-6), s0 = SEC_T[Math.max(0, k - 1)], s1 = SEC_T[k] ?? 403.42;
-    return { t0, t1, mode: su.mode, key, draw: (p, lt) => { const T = t0 + lt, q = cl((T - s0) / (s1 - s0)); TNOW = T; NOTES = T < 59 ? 0 : Math.round(lerp(2, 10, cl((T - 59) / 250))); CAMO = frame; su.f(q, p, args, T); if (post) post(q, p, T); CAMO = null; if (su.mode === 'ill' && key !== 'shopClosed' && key !== 'droste' && key !== 'e_droste' && key !== 'mvu_droste' && key !== 'e_fromInside' && T > LEAK_T0) { screen(); const lp = Math.pow(cl((T - LEAK_T0) / (LEAK_T1 - LEAK_T0)), 1.6); leak(key === 'snowSettle' ? 1 - eo(cl(p * 1.25)) : lp); } } };
+    return { t0, t1, mode: su.mode, key, draw: (p, lt) => { const T = t0 + lt, q = cl((T - s0) / (s1 - s0)); TNOW = T; NOTES = T < 59 ? 0 : Math.round(lerp(2, 10, cl((T - 59) / 250))); CAMO = frame; su.f(q, p, args, T); if (post) post(q, p, T); CAMO = null; if (su.mode === 'ill' && key !== 'shopClosed' && key !== 'droste' && key !== 'e_droste' && key !== 'mvu_droste' && key !== 'e_fromInside' && T > LEAK_T0) { screen(); const lp = Math.pow(cl((T - LEAK_T0) / (LEAK_T1 - LEAK_T0)), 1.6); leak(key === 'snowSettle' ? 1 - eo(cl(p * 1.25)) : lp, LEAK_CLEAR[key]); } } };
   });
 }

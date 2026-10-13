@@ -16,11 +16,21 @@ const LEAK_HOLES = (() => { const r = M32(9191), out = [];
     if (d < .7) { x = W / 2 + dx / (d || 1) * W * .5 * .76; y = H / 2 + dy / (d || 1) * H * .5 * .76; }
     const born = Math.min(.7, i * .045 + r() * .08), Rmax = 92 + r() * 138, shape = [], ph = r() * TAU; for (let k = 0; k < 56; k++) { const t = k / 56 * TAU; shape.push(.86 + .12 * Math.sin(t * 2 + ph) + .07 * Math.sin(t * 5 + i) + (r() - .5) * .09); }
     out.push({ x, y, born, Rmax, shape, rot: r() * TAU }); } return out; })();
-function leak(a) {
+// clear: per-shot zones the burn must not eat (faces, pixel screens, tiny figures): [x, y, r] circles or
+// ['rect', x0, y0, x1, y1], screen coords. A hole near one is shrunk so its edge stops short of it.
+function leakRoom(h, clear) {
+  let room = 1e9;
+  for (const z of clear || []) {
+    if (z[0] === 'rect') { const dx = Math.max(z[1] - h.x, 0, h.x - z[3]), dy = Math.max(z[2] - h.y, 0, h.y - z[4]); room = Math.min(room, Math.hypot(dx, dy) - 14); }
+    else room = Math.min(room, Math.hypot(h.x - z[0], h.y - z[1]) - z[2] - 14);
+  }
+  return Math.max(0, room / 1.2);
+}
+function leak(a, clear) {
   if (a <= 0) return;
   for (const h of LEAK_HOLES) {
     const g = cl((a - h.born) / (1 - h.born)); if (g <= 0) continue;
-    const R0 = h.Rmax * Math.pow(g, .8); if (R0 < 4) continue;
+    const R0 = Math.min(h.Rmax * Math.pow(g, .8), leakRoom(h, clear)); if (R0 < 4) continue;
     const pts = h.shape.map((m, k) => { const an = h.rot + k / h.shape.length * TAU, rr = R0 * m * (1 + jit(.03)); return [h.x + Math.cos(an) * rr, h.y + Math.sin(an) * rr]; });
     const hp = PP(pts), scorch = PP(pts.map(([x, y]) => [h.x + (x - h.x) * 1.16, h.y + (y - h.y) * 1.16]));
     X.save(); X.clip(scorch); hatch(scorch, h.x, h.y, R0 * 1.25, h.rot + .9, 3.5, C.dark, 1.2, .6); hatch(scorch, h.x, h.y, R0 * 1.25, h.rot - .6, 5, '#2b1d14', 1, .4); X.restore();
