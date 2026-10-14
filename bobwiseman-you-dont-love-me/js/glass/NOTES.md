@@ -43,3 +43,21 @@ Files: `glass.js` (palette, glass texture, pane/lead/grisaille), `window.js` (la
 border, wall, floor, falling panes), `figure.js` (the woman), `scenes.js` (the four lancets), `v3-portal.js` (the
 teacup roundel at the head of lancet 1, drawn in place of its rosette), `main.js` (camera, light, floor pool, shafts,
 bloom, daisy, outro), `outro-bob.js` (the Satisfied Mind cameo in the outro).
+
+## Draft 8: the light holds through Bob's walk (Bob's note on draft 7, 2026-10-14)
+
+Bob: "we sit with the ending too long, with the darkness of the video ending before cartoon bob walks across...i
+wish we still saw some action or delayed the dimming of the light." The table above is draft 7. In draft 8:
+
+- Light (`TOD` in `main.js`): day to golden at 199.5 as before, then a late golden afternoon (I 0.92 to 0.88)
+  instead of dusk at 204.5 and night at 209.5. Dusk and night come only at `TOD_DIM` = 229.3-231.75, after Bob has
+  walked out of the right edge and while the piano and Junos trail out; the fade to black is unchanged (231.75-232.45).
+  The light runs on real time (`drawGlassWorld(..., { rt })`), the night stars and the moon pool only with the night.
+- World time runs on until 229.3 (draft 7 slowed it to a still image from 215), so the dust in the shafts, the
+  sunbeam hotspots and the scenes keep moving while he walks. The camera still comes to rest at 223 and the daisy
+  still stops swaying for him.
+- Bob is lit by the window's warm light while it is day (`OUTRO_BOB.draw(g, t, cam, tod)`), moonlight once night
+  comes. He crosses the floor through the window's coloured light pools.
+- Falling panes (203.75-211) now show daylight through the holes instead of night sky.
+
+Frames before 199.5 are unchanged.

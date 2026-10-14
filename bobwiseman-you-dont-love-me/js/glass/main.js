@@ -48,11 +48,16 @@ function lancetLit(i, t) {
   const [a, b] = ACTIVE[i], on = ease(t, a - 1, a + .4) * (1 - ease(t, b - .3, b + 1.0));
   return Math.max(.42 + .58 * on, ease(t, 191.6, 195.5));
 }
-const TOD = [[0, [255, 252, 244], 1], [194.5, [255, 252, 244], 1], [199.5, [255, 196, 128], .95], [204.5, [210, 100, 120], .68], [209.5, [70, 84, 150], .3], [215, [60, 72, 140], .24], [217.2, [76, 90, 166], .3]]; // outro: a little moonlight (world time stops near 217.2)
-function todAt(t) {
+// Draft 8 (Bob, 2026-10-14: "we sit with the ending too long, with the darkness of the video ending before cartoon bob
+// walks across...i wish we still saw some action or delayed the dimming of the light"): the light now stays warm,
+// late golden afternoon, through his walk, and dusk and night come only as he leaves (TOD_DIM), before the fade.
+// Draft 7 went day -> golden 199.5 -> dusk 204.5 -> night 209.5, then a little moonlight from 215.
+const TOD_DIM = [229.3, 231.75];
+const TOD = [[0, [255, 252, 244], 1], [194.5, [255, 252, 244], 1], [199.5, [255, 196, 128], .95], [206, [255, 186, 132], .92], [TOD_DIM[0], [250, 168, 124], .88], [230.7, [210, 100, 120], .62], [TOD_DIM[1], [70, 84, 150], .3]];
+function todAt(t) { // t: real song time (the world slows in the outro, the light does not)
   let i = 0; while (i + 2 < TOD.length && TOD[i + 1][0] <= t) i++;
   const a = TOD[i], b = TOD[i + 1], u = smooth(lin(t, a[0], b[0]));
-  return { col: mix(a[1], b[1], u), I: lerp(a[2], b[2], u), night: smooth(lin(t, 203, 210)) };
+  return { col: mix(a[1], b[1], u), I: lerp(a[2], b[2], u), night: smooth(lin(t, TOD_DIM[0] + .9, TOD_DIM[1])) };
 }
 
 // Backdrop behind the glass (seen where panes have fallen out): daylight, then a night sky with a few stars.
@@ -74,7 +79,7 @@ function drawGlassWorld(g, t, cam, opts = {}) {
   const s = cam.s;
   g.setTransform(s, 0, 0, s, W / 2 - cam.x * s, H / 2 - cam.y * s);
   const view = { x0: cam.x - W / 2 / s, x1: cam.x + W / 2 / s, y0: cam.y - H / 2 / s, y1: cam.y + H / 2 / s };
-  const tod = todAt(t);
+  const tod = todAt(opts.rt !== undefined ? opts.rt : t);
   for (let i = 0; i < NL; i++) if (lx(i) + LW > view.x0 && lx(i) < view.x1) drawLancet(g, i, t, view, tod);
   // glass texture (world-anchored), then the light through each lancet
   const all = new Path2D(); for (let i = 0; i < NL; i++) all.addPath(GEO[i].open);
@@ -194,22 +199,22 @@ function drawDaisy(g, t, tod, rt) { // t = world time (slowed in the outro), rt 
   g.restore();
 }
 
-// World time: real time until the tail, then it slows to a stop (the window, the scenes, the daisy freeze into a
-// still image by ~224) while the grain keeps running.
-function worldT(t) { const a = 215.0, T = 2.2; return t <= a ? t : a + T * (1 - Math.exp(-(t - a) / T)); }
+// World time: real time until the light starts to go (draft 8; draft 7 slowed it from 215 to a still image by ~224),
+// then it slows to a stop as the music dies away, while the grain keeps running.
+function worldT(t) { const a = TOD_DIM[0], T = 2.2; return t <= a ? t : a + T * (1 - Math.exp(-(t - a) / T)); }
 
 function renderFrame(t) {
   g.setTransform(1, 0, 0, 1, 0, 0); g.globalAlpha = 1; g.globalCompositeOperation = 'source-over'; g.filter = 'none';
   g.fillStyle = '#000'; g.fillRect(0, 0, W, H);
   const rt = t; t = worldT(rt);
   const cam = camAt(rt);
-  const { view, tod } = drawGlassWorld(g, t, cam);
+  const { view, tod } = drawGlassWorld(g, t, cam, { rt });
   const wallL = .55 * tod.I + .1;
   drawWall(g, view, wallL);
   drawFloor(g, view, wallL, tod);
   drawPool(g, view, tod, t);
-  // the outro cameo: moonlight on the floor and Bob crossing it (nothing is drawn before OB.in)
-  if (rt >= OB.in) { OUTRO_BOB.drawPool(g, view, rt); OUTRO_BOB.draw(g, rt, cam); }
+  // the outro cameo: Bob crossing the floor in the window's late light (moonlight once night comes) (nothing is drawn before OB.in)
+  if (rt >= OB.in) { OUTRO_BOB.drawPool(g, view, rt, tod); OUTRO_BOB.draw(g, rt, cam, tod); }
   // the church light comes back as we leave the roundel (the bridge's frame is flat: no bloom, shafts, vignette)
   const fin = 1 - smooth(lin(rt, PORTAL.t0, PORTAL.t0 + .75));
   bloom(g, tod.I * (1 - .7 * fin));

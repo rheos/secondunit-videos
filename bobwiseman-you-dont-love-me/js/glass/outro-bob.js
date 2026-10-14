@@ -338,10 +338,11 @@ const OUTRO_BOB = (() => {
     return { mx, px, jx: [0, 1, 2].map(jx), walking };
   }
 
-  // moonlight on the floor: a broad soft pool in front of the window that comes up as he walks in (world space, screen blend)
+  // moonlight on the floor: a broad soft pool in front of the window that comes up as he walks in (world space, screen blend).
+  // Draft 8: the window's late daylight lasts through his walk now, so the moon pool only comes up with the night.
   function poolAmt(t) { return ease(t, OB.in, OB.in + 3.5); }
-  function drawPool(g, view, t) {
-    const a = poolAmt(t); if (a <= 0 || view.y1 < FLOOR_Y) return;
+  function drawPool(g, view, t, tod) {
+    const a = poolAmt(t) * (tod ? tod.night : 1); if (a <= 0 || view.y1 < FLOOR_Y) return;
     g.save();
     const fl = new Path2D(); fl.rect(view.x0 - 50, FLOOR_Y + 10, view.x1 - view.x0 + 100, view.y1 - FLOOR_Y + 50); g.clip(fl);
     g.globalCompositeOperation = 'screen';
@@ -353,7 +354,7 @@ const OUTRO_BOB = (() => {
   }
 
   // print the scene onto the layers, cut it out on its card stock, light it by the moon, composite under the camera
-  function draw(g, t, cam) {
+  function draw(g, t, cam, tod) {
     if (!active(t)) return;
     build();
     const k = cam.s * BS, M = new DOMMatrix([k, 0, 0, k, W / 2 - cam.x * cam.s, H / 2 - cam.y * cam.s]);
@@ -384,7 +385,12 @@ const OUTRO_BOB = (() => {
     const f = (.82 + .18 * pa) * (.88 + .12 * inPool);
     const top = M.transformPoint(new DOMPoint(0, GY - 340)).y, bot = M.transformPoint(new DOMPoint(0, GY + 10)).y;
     const lg = kg.createLinearGradient(0, top, 0, bot);
-    lg.addColorStop(0, rgb([214 * f, 222 * f, 255 * f])); lg.addColorStop(1, rgb([150 * f, 160 * f, 214 * f]));
+    let cTop = [214 * f, 222 * f, 255 * f], cLow = [150 * f, 160 * f, 214 * f];
+    if (tod) { // draft 8: lit by the window's late warm light until night comes, then the moon as before
+      const day = 1 - tod.night, w = mix([255, 250, 240], tod.col, .4), k = .84 + .16 * tod.I;
+      cTop = mix(cTop, w.map((v) => v * k), day); cLow = mix(cLow, w.map((v) => v * k * .8), day);
+    }
+    lg.addColorStop(0, rgb(cTop)); lg.addColorStop(1, rgb(cLow));
     kg.fillStyle = lg; kg.fillRect(0, 0, W, H);
     kg.globalCompositeOperation = 'destination-in'; kg.drawImage(SIL, 0, 0);
     kg.globalCompositeOperation = 'source-over';
