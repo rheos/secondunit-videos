@@ -81,16 +81,17 @@ function e_pxInside(g, w, h, T, p, tap, tx, ty) {
   for (let i = 0; i < 4; i++) pR(g, w - 38 - i * 4, 9 - (i + 1) * 1.6, 3, (i + 1) * 1.6, PX.w);
   // a faint pixel grid on the inside of the glass: the screen seen from behind
   pDots(g, 4, 30, w, 116, 12, PX.c, 6);
+  // Reverse view: glass, bars and touch ripples are beyond her, on the far wall.
+  // Draw them before the room and foreground occupants; bars meet the floor plane.
+  const fy = 147;
+  e_pxBars(g, 7, w, 25, 25, fy);
+  if (tap > 0) for (let i = 0; i < 4; i++) { const r = ((st * .9 + i * 5) % 20) + 4 + tap * 6; e_pxRing(g, tx, ty, r, i % 2 ? PX.y : PX.c, 1); }
   // her floor and the lines of her room
-  const fy = 147; pR(g, 0, fy, w, h - fy, PX.u); pDots(g, 0, fy + 3, w, h - fy, 3, PX.o, 1); pR(g, 0, fy, w, 1, PX.k);
+  pR(g, 0, fy, w, h - fy, PX.u); pDots(g, 0, fy + 3, w, h - fy, 3, PX.o, 1); pR(g, 0, fy, w, 1, PX.k);
   for (let x = -40; x < w + 40; x += 25) pL(g, [[x, fy], [lerp(x, w / 2, -.6), h + 4]], PX.k, 1);
   // her lamp
   pR(g, 191, 118, 1.5, 28, PX.k); pP(g, [[185, 118], [198, 118], [195, 110], [188, 110]], PX.y); pR(g, 186, 145, 11, 3, PX.k);
   pxAgent(g, w / 2, 142, .8, T, { talk: true, burst: false }); // no halo here: on her own side she is just a woman at a desk
-  // the bars of his phone's screen, from inside
-  e_pxBars(g, 7, w, 25, 25, 150);
-  // where his finger meets the glass, the screen answers in pixels
-  if (tap > 0) for (let i = 0; i < 4; i++) { const r = ((st * .9 + i * 5) % 20) + 4 + tap * 6; e_pxRing(g, tx, ty, r, i % 2 ? PX.y : PX.c, 1); }
 }
 SU.e_fromInside = { mode: 'ill', f(q, p, a, T) {
   stripes('#dfe6dd', '#d0dbcf', 150, -.62, 0, C.teal); cam(960, 540, lerp(1, 1.07, eo(p)));

@@ -9,7 +9,7 @@ Code-drawn music video, 0 credits. Started 2026-10-12 at Robin's request.
 
 ## Status (2026-10-13)
 
-Draft 8g continues the work in draft PR rheos/secondunit-videos#113 (issues #112 and #120).
+Draft 8h continues the work in draft PR rheos/secondunit-videos#113 (issues #112 and #120).
 The 73.7–90.8 s passage now follows the corrected lyric: the car is turned away at a village and on the moon,
 then the traveller leaves it and continues on foot to a payphone. In the last minute, the navy ruptures grow
 and merge beyond the earlier one-third ceiling, preserving focal subjects and the protected phone recursion.
@@ -24,7 +24,11 @@ blueprint is drawn inside the last monitor, and that monitor grows to fill the v
 cue. The descent never reverses; the incoming scene continues from the same composition. The final
 1.4 seconds ease into this fourth level. The original audio and subsequent cuts keep their timing.
 
-Draft 8f remains the comparison baseline for this transition. Review exports and verification evidence stay local under `out/`;
+Draft 8h corrects the reverse view inside the phone (371.88–373.48 s): the bars and glass-touch
+ripples sit behind the agent, desk and lamp, with the bars ending at the far floor line. The subsequent
+nested-screen transition is unchanged.
+
+Draft 8g remains the comparison baseline for the layering correction. Review exports and verification evidence stay local under `out/`;
 no final master or new upload is implied. The current handoff and detailed direction are in `NEXT-SESSION.md`
 and `MVU-DIRECTION.md` (local, gitignored).
 
