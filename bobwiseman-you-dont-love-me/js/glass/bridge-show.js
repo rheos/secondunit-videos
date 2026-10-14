@@ -156,9 +156,12 @@ function hostState(t) {
     inPL: t > SH.pocket + .05 && t < 120.12, mouth: (t > SH.rise && t < SH.rise + .35 ? .6 : 0),
   };
 }
-function drawHost(g, t) {
-  const H = hostState(t), M = hostXf(t);
+// H, M: pose and transform (default: this bridge's); o.only = 'R' draws just the right arm, o.noR leaves it out,
+// o.noHat / o.noStars leave those out, o.onHead(g) draws on top of his head (head-local), o.pocketDy moves the pockets up
+function drawHost(g, t, H = hostState(t), M = hostXf(t), o = {}) {
   g.save(); g.setTransform(g.getTransform().multiply(M));
+  const L = ik([-HOST.shX, HOST.shY], H.lh, HOST.up, HOST.lo, -1), R = ik([HOST.shX, HOST.shY], H.rh, HOST.up, HOST.lo, 1);
+  if (o.only === 'R') { g.rotate(H.lean); seg(g, R, 48, 38, COAT, 9780); drawHostHand(g, R, 9790); g.restore(); return; }
   // shoes and trousers
   for (const sd of [-1, 1]) {
     seg(g, [[sd * 34, -230], [sd * 36, -130], [sd * 38, -26]], 60, 54, TROUS, 9740 + sd * 3);
@@ -174,21 +177,22 @@ function drawHost(g, t) {
   pane(g, polyPath([[26, -588], [0, -576], [26, -562]]), C.ruby, 9756, { ew: 6, shade: .2, lw: 4 });
   pane(g, circPath(0, -576, 7), C.ruby2, 9757, { ew: 4, shade: .2, lw: 3 });
   for (const y of [-430, -360, -300]) pane(g, circPath(-10, y, 10), C.gold, 9758 + y, { ew: 5, shade: .25, lw: 4 });
-  drawPocket(g, -1, 9760); drawPocket(g, 1, 9765);
+  const pdy = o.pocketDy || 0;
+  g.translate(0, pdy); drawPocket(g, -1, 9760); drawPocket(g, 1, 9765); g.translate(0, -pdy);
   // arms: sleeves, cuffs, hands; a hand in a pocket goes behind the pocket's front
-  const L = ik([-HOST.shX, HOST.shY], H.lh, HOST.up, HOST.lo, -1), R = ik([HOST.shX, HOST.shY], H.rh, HOST.up, HOST.lo, 1);
-  for (const [pts, sd] of [[L, -1], [R, 1]]) { seg(g, pts, 48, 38, COAT, 9770 + sd * 10); drawHostHand(g, pts, 9780 + sd * 10); }
-  if (H.inPL) drawPocket(g, -1, 9760);
+  for (const [pts, sd] of [[L, -1], [R, 1]]) { if (sd > 0 && o.noR) continue; seg(g, pts, 48, 38, COAT, 9770 + sd * 10); drawHostHand(g, pts, 9780 + sd * 10); }
+  if (H.inPL) { g.translate(0, pdy); drawPocket(g, -1, 9760); g.translate(0, -pdy); }
   // neck and head
   pane(g, polyPath([[-16, -586], [-15, -606], [15, -606], [16, -586]]), HSKIN, 9790, { ew: 8, shade: .3, lw: 4 });
   g.translate(0, HOST.headY); g.rotate(H.tilt);
   hostHead(g, t, H);
-  const hs = hatState(t);
+  if (o.onHead) o.onHead(g);
+  const hs = o.noHat ? null : hatState(t);
   if (hs && !hs.world) { g.save(); g.translate(0, hs.y); g.rotate(hs.r); hatShape(g, 9800); g.restore(); }
   g.restore();
   if (hs && hs.world) { g.save(); g.translate(hs.x, hs.y); g.rotate(hs.r); hatShape(g, 9800); g.restore(); }
   // a ring of little gold stars round his head after each bonk
-  for (const h of SH.drops) {
+  if (!o.noStars) for (const h of SH.drops) {
     const u = lin(t, h, h + .75); if (u <= 0 || u >= 1) continue;
     const [hx, hy] = headTop(t);
     for (let k = 0; k < 5; k++) { const a = k / 5 * TAU + u * 7; pane(g, starPath(hx + Math.cos(a) * 92, hy + 10 + Math.sin(a) * 22, 13 * Math.sin(Math.PI * u)), C.gold, 9810 + k, { ew: 5, shade: .2, lw: 3 }); }
@@ -309,11 +313,11 @@ function drawCord(g, t) {
   pane(g, smoothPath([[CORD.x - 9, y1], [CORD.x + 9, y1], [CORD.x + 16, y1 + 42], [CORD.x - 16, y1 + 42]]), C.gold, 9960, { ew: 6, shade: .25, lw: 4 });
   pane(g, circPath(CORD.x, y1, 10), C.amber, 9961, { ew: 5, shade: .2, lw: 4 });
 }
-function drawOwl(g, t) {
+function drawOwl(g, t, look) {
   const up = owlUp(t); if (up <= .001) return;
   const nod = (t > SH.talk && t < SH.talkEnd ? 8 * Math.abs(Math.sin((t - SH.talk) * 5)) : 0) + 6 * pulse(t, SH.owlLands, 6);
   const x = OWL.x, y = lerp(OWL.top + 260, OWL.top, up) + nod;
-  const lookAt = t < 124.0 ? [-1, .2] : t < SH.wake ? (SH.drops.some((h) => t > h + .05 && t < h + .45) ? [0, 0] : [-1, .3]) : t < SH.lookUp ? [-1, .4] : [0, -1];
+  const lookAt = look || (t < 124.0 ? [-1, .2] : t < SH.wake ? (SH.drops.some((h) => t > h + .05 && t < h + .45) ? [0, 0] : [-1, .3]) : t < SH.lookUp ? [-1, .4] : [0, -1]);
   // body sack, paler belly with feather scallops
   pane(g, smoothPath([[x - 66, y + 230], [x - 70, y + 90], [x - 52, y + 18], [x - 30, y - 4], [x, y - 2], [x + 30, y - 4], [x + 52, y + 18], [x + 70, y + 90], [x + 66, y + 230]]), [126, 96, 74], 9970, { ew: 22, shade: .32, lw: 6 });
   pane(g, smoothPath([[x - 40, y + 230], [x - 44, y + 120], [x, y + 92], [x + 44, y + 120], [x + 40, y + 230]]), [222, 196, 158], 9971, { ew: 12, shade: .2, lw: 5 });
@@ -360,8 +364,7 @@ function teapotState(t) {
   const turn = ease(t, SH.talk - .1, SH.talk + .2) * (1 - ease(t, SH.lookUp, SH.lookUp + .2));
   return { awake, peer, flap, pop, turn, look: t < SH.peer - .3 ? [-.6, 0] : peer > .5 ? [.9, .9] : turn > .5 ? [-1, -.1] : t > SH.lookUp ? [0, -1] : [0, 0] };
 }
-function drawTeapot(g, t) {
-  const S = teapotState(t);
+function drawTeapot(g, t, S = teapotState(t)) {
   g.save(); g.translate(TPOT.x + 96, TPOT.y); g.rotate(.42 * S.peer); g.translate(-96, 0); // tips toward the cup about its front foot
   g.translate(0, -12 * Math.sin(Math.PI * clamp((t - SH.wake) / .3)) * (t > SH.wake && t < SH.wake + .3 ? 1 : 0)); // a little hop as it wakes
   const body = smoothPath([[-108, -20], [-112, -92], [-84, -158], [0, -184], [84, -158], [112, -92], [108, -20], [70, -2], [-70, -2]]);

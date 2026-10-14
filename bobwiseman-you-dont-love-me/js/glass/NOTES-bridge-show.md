@@ -1,13 +1,23 @@
-# Stained glass, bridge, draft 7: the morning show (notes)
+# Stained glass, bridge, draft 7: the morning show, versions A and B (notes)
 
 Bob on draft 6 (2026-10-14): he still did not like the fortune teller, and asked for something more surreal, in
-the manner of the old children's morning shows. So the bridge's first 22 seconds (118.333-140.24) leave the tea
-leaf reader's alcove for a kids' TV set in leaded glass, played deadpan. The Pips (140.24-148.42) and the cup tail
+the manner of the old children's morning shows. Two readings of that went to Bob side by side (Robin, 2026-10-14):
+
+- **A** (Robin's reading, `looks/glass-bridge-d7a.html`, `bridge-show-a.js`): draft 6's bridge as it was, the tea
+  leaves making every picture, with only the reader recast. The sibyl, her midnight alcove, crystal ball and candle
+  become the host on his TV set behind the tea table, with the owl where the ball was and the sleepy teapot where
+  the candle was. His hand turns the cup and taps the rim exactly where hers did, he says his piece deadpan, and a
+  teabag drops on his head at 139.13 (an instrumental onset in the close-up on his face). Changed frames: 3228-3366.
+- **B** (`looks/glass-bridge-d7b.html`, `bridge-show.js`): the bridge's first 22 seconds (118.333-140.24) leave the
+  cup for the kids' TV set and the host acts out every line, as below. Changed frames: 2840-3366.
+
+The rest of this file describes B; A reuses B's host, owl, teapot, backdrop and valance. The Pips (140.24-148.42) and the cup tail
 that dives into verse 3 are draft 6's, frame for frame. The spirit of those shows is the brief (a gentle host, a
 coat with pockets too big, a set where things talk back, puppet sidekicks, things dropping on his head on cue);
 none of any show's own characters or names are used.
 
-Files: `js/glass/bridge-show.js` (everything new), loaded by the local page `looks/glass-bridge-d7.html`. The
+Files: `js/glass/bridge-show.js` (B, and the cast both versions use), loaded by the local page `looks/glass-bridge-d7b.html`;
+`js/glass/bridge-show-a.js` (A) loads after the bridge's main file on `looks/glass-bridge-d7a.html` and replaces the reader's draw functions. The
 bridge's main file calls `showFrame(t)` after the Pips' check, only when bridge-show.js is on the page, so draft 6's
 page `looks/glass-bridge.html` renders exactly as before.
 
