@@ -3,6 +3,8 @@ import {chromium} from 'playwright';
 import assert from 'node:assert/strict';
 import crypto from 'node:crypto';
 import fs from 'node:fs';
+const tag=process.argv[2]||'v6';
+assert.match(tag,/^v[0-9]+$/);
 const browser=await chromium.launch({channel:'chrome',headless:true,args:['--use-angle=metal']});
 try {
  const page=await browser.newPage({viewport:{width:1920,height:1080}}),errors=[];
@@ -31,6 +33,17 @@ try {
   return {faults,firstBranchFrames:first,treeCount:full.trees.length,depthRows:new Set(full.trees.map(x=>x.row)).size,cameraY:camera,checkedSongFrames:3674};
  });
  assert.deepEqual(geometry.faults,[]);
+ const acting=await page.evaluate(()=>{
+  const c=ALCHEMY_CUES.performance,errors=[],states={},contact=[];let active=0;
+  for(let f=0;f<3674;f++){const t=f/24,h=Alchemy.scene.heraldPose(290,294,-1,t,t);states[h.cue.state]=(states[h.cue.state]||0)+1;
+   if(f<c.firstReveal&&(h.cue.visible||h.cue.attack))errors.push('early horn '+f);
+   if(f===c.firstReveal&&(!h.cue.visible||h.cue.attack!==1))errors.push('missed reveal');
+   if(h.cue.attack>0)active++;
+   if(!h.bell.every(Number.isFinite)||!h.grip.every(Number.isFinite))errors.push('invalid anchors '+f);
+   if(f>=1656&&f<=1806)for(let i=0;i<3;i++){const p=Alchemy.scene.birdPose(i,t),err=Math.hypot(p.foot[0]-p.target[0],p.foot[1]-p.target[1]);if(err>4.5)errors.push('bird contact '+f);contact.push(err)}
+  }
+  return {errors,states,rayActivePercent:active/3674*100,maxBirdContactError:Math.max(...contact)};
+ });assert.deepEqual(acting.errors,[]);assert.ok(acting.states.rest>0);assert.ok(acting.rayActivePercent<25);
  // A changed cue must change the rendered image, not just a disconnected debug label.
  const cueWiring=await page.evaluate(()=>{
   const f=ALCHEMY_CUES.chorus.solBranches[1],t=f/24;
@@ -39,11 +52,11 @@ try {
   Alchemy.draw(t);const after=Alchemy.c.toDataURL();ALCHEMY_CUES.chorus.solBranches=saved;
   return before!==after;
  });assert.ok(cueWiring,'Cue edits must affect the real canvas');
- const samples=[30,32.9,33.5,34.5,36.5,38.5,40.75,44,46.5,47,49.5,54,56.708333,57.6,59.2,60.5,64.75,69.5,85,116,130,152.5],hashes={};
- fs.mkdirSync('out/v5-cue-stills',{recursive:true});
- for(const t of samples){const url=await page.evaluate(t=>window.__frameJPEG(t),t),bytes=Buffer.from(url.split(',')[1],'base64');hashes[t]=crypto.createHash('sha256').update(bytes).digest('hex');fs.writeFileSync(`out/v5-cue-stills/${t}.jpg`,bytes)}
+ const samples=[8,9.5,11.375,11.416667,11.6,12,16.6,17.3,30,32.9,33.5,34.5,36.5,38.5,40.75,44,46.5,47,49.5,54,56.708333,57.6,59.2,60.5,64.75,66.1,68.5,69.5,72.5,74.8,78.5,78.958333,85,96.5,101,102.3,102.625,106.6,106.958333,108.5,116,130,134,137,152.5],hashes={};
+ fs.mkdirSync(`out/${tag}-cue-stills`,{recursive:true});
+ for(const t of samples){const url=await page.evaluate(t=>window.__frameJPEG(t),t),bytes=Buffer.from(url.split(',')[1],'base64');hashes[t]=crypto.createHash('sha256').update(bytes).digest('hex');fs.writeFileSync(`out/${tag}-cue-stills/${t}.jpg`,bytes)}
  for(const t of [...samples].reverse()){const url=await page.evaluate(t=>window.__frameJPEG(t),t);assert.equal(crypto.createHash('sha256').update(Buffer.from(url.split(',')[1],'base64')).digest('hex'),hashes[t])}
  assert.deepEqual(errors,[]);
- const result={passed:true,...geometry,cueWiring,deterministicSampleCount:samples.length,errors};
- fs.writeFileSync('out/alchemy-v5-cues-audit.json',JSON.stringify(result,null,2)+'\n');console.log(JSON.stringify(result,null,2));
+ const result={passed:true,...geometry,acting,cueWiring,deterministicSampleCount:samples.length,errors};
+ fs.writeFileSync(`out/alchemy-${tag}-cues-audit.json`,JSON.stringify(result,null,2)+'\n');console.log(JSON.stringify(result,null,2));
 } finally {await browser.close()}

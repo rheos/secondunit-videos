@@ -14,6 +14,7 @@
  function crown(kind,t){const q=S.pulse(t);
   if(kind===0){cloud(0,-124,.28);for(let j=0;j<3;j++)stroke(`M${-38+j*27} -105q-12 21 0 33`,C.blue,1.5)}
   if(kind===1){stroke('M0-90V-163M0-111L-29-140M0-129L29-155',C.ink,3);leaf(-29,-140,-.7,.6);leaf(29,-155,.5,.65)}
+  if(kind===2&&!A.performance.horn(t).visible){cloud(0,-130,.30);return}
   if(kind===2){g.save();g.translate(0,-125);g.rotate(.12*Math.sin(q));fill('M-49 3L20-6L49-24L54 21L22 4L-49 9Z',C.gold);stroke('M-49 3L20-6L49-24L54 21L22 4L-49 9Z');ellipse(51,-1,5,23,null,C.ink);A.rays(57,-1,4,19,45,A.brass(t),0,.9);g.restore()}
   if(kind===3)S.bird(18,-115,.15,t,1,0,0);
   if(kind===4){ellipse(0,-134,24,24,C.gold,C.ink);A.rays(0,-134,28,27,23,.7+.15*Math.sin(t*2),t*.05)}
@@ -55,12 +56,12 @@
  function opening(raw){const t=Math.floor(Math.round(raw*24)/2)/12;
   g.setTransform(1,0,0,1,0,0);g.globalAlpha=1;g.drawImage(A.paper,0,0);
   g.save();g.translate(2*Math.sin(raw*.14),0);
-  const sky=smooth(12.5,18.5,raw),ground=smooth(30.5,33,raw),cameraY=A.grove.state(raw).cameraY;
+  const sky=smooth(7.25,11.4,raw),ground=smooth(30.5,33,raw),cameraY=A.grove.state(raw).cameraY;
   if(sky){g.save();g.beginPath();g.rect(76,70,1768*sky,690);g.clip();S.sky();g.restore()}
   g.save();g.beginPath();g.rect(58,51,1804,958);g.clip();g.translate(0,cameraY);
   for(let i=0;i<5;i++){const p=smooth(11.7+i*.5,14.2+i*.5,raw);if(!p)continue;
    cloud(160+i*400+Math.sin(raw*.15+i)*22,140+(i%2)*-25-210*(1-p),.72+(i%2)*.15,i%2?-1:1)}
-  const arrive=smooth(12.5,15.5,raw);
+  const arrive=smooth(7.25,9.25,raw);
   if(arrive){g.save();g.translate(-500*(1-arrive),0);S.herald(290,294,-1,t,raw);g.restore();g.save();g.translate(500*(1-arrive),0);S.herald(1635,294,1,t,raw);g.restore()}
   g.restore();
   g.save();g.beginPath();g.rect(76,70,1768,935);g.clip();g.translate(0,cameraY);

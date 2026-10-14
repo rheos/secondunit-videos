@@ -1,4 +1,4 @@
-// Absolute song seconds; action cues are provisional, not a lyric transcript.
+// Absolute song time. Instrumental and phrase cues retain their provisional provenance.
 window.ALCHEMY_CUES = {
   "fps": 24,
   "range": [
@@ -1834,22 +1834,55 @@ window.ALCHEMY_CUES = {
   "brassStatus": "Harmonic onset candidates; not a verified isolated-trumpet transcription",
   "chorus": {
     "status": "Phrase estimates snapped to the song grid; awaiting listening review",
-    "sharedArrival": [1178, 1188],
-    "dance": [1188, 1210],
-    "wash": [1178, 1217],
-    "solBranches": [1362, 1382],
-    "lunaBranches": [1422, 1450],
-    "solLeaves": [1382, 1402],
-    "lunaLeaves": [1450, 1469]
+    "sharedArrival": [
+      1178,
+      1188
+    ],
+    "dance": [
+      1188,
+      1210
+    ],
+    "wash": [
+      1178,
+      1217
+    ],
+    "solBranches": [
+      1362,
+      1382
+    ],
+    "lunaBranches": [
+      1422,
+      1450
+    ],
+    "solLeaves": [
+      1382,
+      1402
+    ],
+    "lunaLeaves": [
+      1450,
+      1469
+    ]
   },
   "grove": {
-    "land": [760, 790],
+    "land": [
+      760,
+      790
+    ],
     "firstTree": 790,
-    "cameraDown": [876, 924],
-    "cameraUp": [1038, 1082],
+    "cameraDown": [
+      876,
+      924
+    ],
+    "cameraUp": [
+      1038,
+      1082
+    ],
     "depthDelay": 12,
     "popDuration": 15,
-    "retreat": [1085, 1127]
+    "retreat": [
+      1085,
+      1127
+    ]
   },
   "beats": {
     "solAccent": 50.708333,
@@ -1879,5 +1912,175 @@ window.ALCHEMY_CUES = {
     "hiddenRoots": 37,
     "rootRevelation": 40.75,
     "chorusHandoff": 47
+  },
+  "performance": {
+    "status": "Signal-supported first instrumental rise; sparse harmonic accents are choreography candidates, not an isolated trumpet score",
+    "firstReveal": 274,
+    "prepare": 264,
+    "attacks": [
+      274,
+      303,
+      397,
+      408,
+      448,
+      458,
+      469,
+      479,
+      498,
+      513,
+      528,
+      553,
+      566,
+      593,
+      608,
+      647,
+      668,
+      706,
+      717,
+      740,
+      752,
+      796,
+      806,
+      816,
+      826,
+      837,
+      847,
+      856,
+      867,
+      876,
+      887,
+      897,
+      906,
+      916,
+      926,
+      936,
+      946,
+      956,
+      966,
+      976,
+      984,
+      996,
+      1006,
+      1016,
+      1025,
+      1035,
+      1043,
+      1055,
+      1065,
+      1075,
+      1085,
+      1095,
+      1105,
+      1115,
+      1124,
+      1132,
+      1144,
+      1154,
+      1204,
+      1224,
+      1243,
+      1383,
+      1443,
+      1472,
+      1516,
+      1551,
+      1601,
+      1641,
+      1670,
+      1681,
+      1701,
+      1721,
+      1731,
+      1741,
+      1761,
+      1770,
+      1781,
+      1790,
+      1800,
+      1819,
+      1829,
+      1840,
+      1849,
+      1860,
+      1890,
+      1908,
+      1929,
+      1989,
+      2079,
+      2165,
+      2306,
+      2323,
+      2343,
+      2362,
+      2377,
+      2387,
+      2482,
+      2561,
+      2576,
+      2586,
+      2601,
+      2615,
+      2699,
+      2805,
+      3039,
+      3153,
+      3178,
+      3192,
+      3222,
+      3460,
+      3538
+    ],
+    "attackDecayFrames": 4,
+    "playFrames": 9,
+    "recoverFrames": 9,
+    "rootExchange": [
+      1536,
+      1584
+    ],
+    "birdContact": [
+      1644,
+      1650,
+      1656
+    ],
+    "wind": [
+      1725,
+      1742,
+      1762
+    ],
+    "warmth": [
+      1750,
+      1764,
+      1776
+    ],
+    "shelter": [
+      1770,
+      1805,
+      1875
+    ],
+    "carePulses": [
+      {
+        "start": 2406,
+        "end": 2454,
+        "x": 285
+      },
+      {
+        "start": 2510,
+        "end": 2558,
+        "x": 1635
+      },
+      {
+        "start": 2592,
+        "end": 2638,
+        "x": 285
+      }
+    ],
+    "finalRelay": [
+      3120,
+      3144,
+      3168,
+      3192,
+      3216,
+      3240
+    ]
   }
 };

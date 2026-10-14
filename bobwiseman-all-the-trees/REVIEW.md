@@ -1,3 +1,27 @@
+# V6 full-song directing review
+
+Robin approved the v5 direction and asked to keep developing the spirit of Mark Von Ulrich with stronger video production. V6 carries the accepted fifty-tree landscape, underground camera move, shared arrival and separate branch reveals through the full 153.083-second film. The current local player is REVIEW-v6.html; the movie is `out/att_alchemy-v6-full_f00000-f03674_24fps_draft.mp4`, song frames [0,3674) at 24 fps. V5 and earlier encoded cuts remain available for comparison.
+
+The directing principle is a visible exchange with a consequence. A gold impulse follows the existing woody roots from the sun figure to the moon figure; the recipient reacts when it arrives. Birds wait outside the central exchange, then land on the same moving geometry used to draw the branches. Landing and return interrupt the host's dance with a load and recovery. Wind leans the pair; winter brings their boughs together as shelter. The heart compresses and sends three packets down its physical stem and through the wider root network. Recipients keep gold buds; a final relay accumulates that change across the ensemble. Listener, carrier and caretaker roles turn their heads, lower/recover boughs and open/hold a canopy respectively. This is an inference from Mark's use of bodily metaphor and physical relationships, not a claim about his actual process or an imitation of his rendering.
+
+Cloud heralds enter with instruments hidden under textured folded robes. Prepare, play, lower and rest are separate performance states. The first reveal unfolds from the shoulder over four frames, with an opaque reveal instead of a transparent arm. Later attacks get seven frames of preparation. Instrumental ribbons originate at the moving trumpet bells. Short emissions replace the previously almost continuous ray activity. The picture stays within its plate during camera moves, and the closer heart passage keeps the heralds inside the frame.
+
+The first trumpet reveal is provisionally f274 (11.4167 s), supported by an instrumental-stem energy rise around 11.4 s. Other accents are a sparse selection of harmonic onset candidates; they are not a trumpet-only transcription. No listening-confirmed onset or word synchronization is claimed. The original song remains one continuous pinned source track. Robin's playback judgment remains necessary for preferred phrasing.
+
+## Independent artistic review
+
+Three read-only critics reviewed the opening, partner/ensemble interactions and full-film progression using code and rendered stills. Their findings led to arm preparation, opaque cloak/reveal treatment, returning-bird load, different recipient actions, persistent buds, delayed bird approach and safer framing during the heart push. Follow-up reviews confirmed the action and progression changes; the final framing correction was inspected by the author. These were still/sequence and code reviews, not continuous playback with listening. Exact phrase timing and whether every reaction reads at speed remain open.
+
+## V6 validation
+
+All 3674 song frames pass the shared-arrival, separate-branch, leaf and frame-grid checks. The grove has fifty trees across six depths and the root camera returns to its original offset. A changed branch cue changes the actual canvas. Forty-five rendered samples repeat exactly after reverse seeks; no resource or JavaScript errors. The herald score contains concealed, preparation, playing, recovery and rest states; emissions occupy 12.08% of the song frames. Perched bird feet have zero geometry error against their branch anchors over the checked contact interval.
+
+The final H.264/AAC export is 1280×720, 24 fps, 3674 frames and 153.083333 seconds, with stereo audio. Encoded inspection finds no bad/dark frames or freeze longer than two seconds. A 62-image contact strip samples the movie at exact 2.5-second intervals; action strips cover the reveal, root exchange and heart deliveries. The final encoded sequence and affected full-resolution stills were visually inspected. Source audio and its render copy retain the pinned hash. Decoded ten-second windows at 0, 76.541667 and 142.983333 seconds have 0 ms measured offset and correlations 0.999918, 0.999706 and 0.999517. The motion-lab general-luminance flash check passes (worst 0.5 flashes in one second; saturated-red flashes are outside that tool's coverage).
+
+The browser review loaded the complete 153.083333-second movie; its root-exchange button sought to 63.7 seconds and playback advanced with no media error. This verifies player operation, not an auditory review. JavaScript syntax checks pass. Code and notes are tracked in draft PR #115; song, scans, stems and renders remain local and ignored. No artist contact or upload occurred.
+
+---
+
 # V5 focused review: grove, camera and branch reveals
 
 Robin asked for an expansive receding grove in the spoken opening, a move down and back up to show the underground connection, both principal people arriving together, and each person's branches withheld until their own declaration. This pass implements those notes in the existing engraving treatment. It does not close the larger v4 brass/performance audit below.
