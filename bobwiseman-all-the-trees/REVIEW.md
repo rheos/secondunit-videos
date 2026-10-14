@@ -1,3 +1,29 @@
+# V7 review: continuity, readable exchange and an answering ensemble
+
+Robin requested another improvement pass on v6. Three independent read-only critics examined the opening, physical interactions and film progression using the frozen v6 JPEG frames and code at commit `470d115`. No critic built or edited this revision, and no audio-listening approval is claimed. V6's movie and frame cache remain preserved; the new complete local cut and chapter player are `out/att_alchemy-v7-full_f00000-f03674_24fps_draft.mp4` and REVIEW-v7.html.
+
+## Findings and changes
+
+- 43.5–45.1 s, high continuity: opening roots were retracting into separated stubs. The complete connected geometry now stays in place beneath an increasingly opaque earth layer while the existing camera returns above ground.
+- 47–49.1 s, medium transition: the centre cleared too early. Trees now retreat at f1130–1162; the ground remains beneath them, then settles at f1162–1177. Both people still arrive at f1178. A first candidate exposed floating distant foliage; separating tree retreat from ground retreat fixed that regression.
+- Separate personal reveals, medium readability: the smallest bare twigs now use a modestly stronger wood silhouette and ink line until leaves arrive. Canopy topology, leafy scale and cue times remain.
+- 62.7–67.7 s, high framing: the first root exchange competed with the entire wide tableau. A deterministic five-keyframe camera move now follows the root packet and resolves on Moon's reaction, then returns wide before the first landings.
+- 110–123 s, medium continuity: a narrow soil strip exposed blunt root ends below the retreating cast. Foreground earth now covers the whole root section; the physical heart stem and instrument-bell ribbons remain continuous. The group retreat is still the chosen staging, not a new heart-driven transformation.
+- 136–140 s, high progression: the supporting ensemble received but never answered. The smallest rightmost figure now launches a larger reply through its root. At the junction it branches to Moon, then Sun. Both principals react and retain changed bough poses; the heart grows. Birds wait for this exchange to finish.
+- 143–148 s, medium contact/readability: the caretaker's bird used to disappear behind its neighbour. It now lands on the raised outer bough, draws after the cast, and produces a dedicated receiving dip and residual load from the same pose geometry. The Sun roundel also shares one height across the 79.5-second section boundary, removing a small position jump.
+
+The opening critic confirmed the intact roots, grounded retreat and clearer bare twigs; its remaining one-frame ground seam was repaired by sharing the chorus soil drawing for the end of the opening. Follow-up film-level inspection found the root framing, reciprocal reply and complete soil cover resolved the identified problems without a blocking regression. The acting critic confirmed the visible bird-to-branch-to-hand connection and shared load response. These were sampled still/code reviews, not a judgment of comic timing during continuous playback with sound.
+
+## V7 validation
+
+All 3674 song frames pass the shared-arrival, separate branch/leaf, frame-grid and acting checks. The fifty trees, six depths and opening camera return remain. The ground stays under the retreating grove; the exchange camera returns to identity; reply packets reach the actual principal roots. Original bird/perch geometry has zero contact error; the late caretaker contact differs by only floating-point rounding (1.14e-13 px). Seventy rendered samples reproduce exactly after reverse seeks, actual cue-to-canvas wiring passes, and no resource or JavaScript errors are reported.
+
+The final H.264/AAC movie is 1280×720, 24 fps, 3674 frames and 153.083333 seconds, with stereo audio. Encoded inspection finds zero bad/dark frames and no freeze longer than two seconds. The final 62-image encoded contact strip and detailed handoff, root-camera, reply-reaction and perch samples were inspected. The general-luminance flash check passes (worst 1 flash in one second at 47.75 s; saturated-red flashes are outside its coverage).
+
+Source audio and its render copy retain the pinned hash. Three decoded ten-second windows at 0, 76.541667 and 142.983333 seconds measure 0 ms offset with correlations 0.999918, 0.999706 and 0.999517. The v7 browser player loads the complete duration, seeks to the root exchange and advances without a media error. JavaScript syntax checks pass. These results establish deterministic rendering and file/player integrity; musical phrasing remains provisional for listening review. Code and notes are recorded in the existing draft PR #115; all media stays local and ignored.
+
+---
+
 # V6 full-song directing review
 
 Robin approved the v5 direction and asked to keep developing the spirit of Mark Von Ulrich with stronger video production. V6 carries the accepted fifty-tree landscape, underground camera move, shared arrival and separate branch reveals through the full 153.083-second film. The current local player is REVIEW-v6.html; the movie is `out/att_alchemy-v6-full_f00000-f03674_24fps_draft.mp4`, song frames [0,3674) at 24 fps. V5 and earlier encoded cuts remain available for comparison.

@@ -12,7 +12,7 @@
  function state(t){const c=ALCHEMY_CUES.grove,f=t*24,exit=smooth(...c.retreat,f);
   const down=smooth(...c.cameraDown,f),up=smooth(...c.cameraUp,f);
   const cameraY=110*smooth(...c.land,f)*(1-down)-135*down*(1-up);
-  return {cameraY,land:smooth(...c.land,f)*(1-exit),trees:trees.map(tree=>{
+  return {cameraY,land:smooth(...c.land,f)*(1-smooth(...c.landRetreat,f)),trees:trees.map(tree=>{
    const p=clamp((f-tree.start())/c.popDuration),grow=smooth(0,1,p);
    return {...tree,start:tree.start(),grow:grow*(1-exit),pop:p,exit};
   })};

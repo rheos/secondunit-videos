@@ -14,7 +14,7 @@
  A.leafSeason=t=>1-.82*smooth(107.96,109.5,t)+.82*smooth(122.7,125.3,t);
  function actor(c,t,headOnly=false){const p=smooth(c.on,c.on+1.25,t);if(!p)return;
   g.save();g.translate(c.x,797);g.scale(c.k*(.86+.14*p),c.k*p);g.translate(-(c.which==='luna'?1220:690),-797);
-  const receive=A.performance.reaction(t,ALCHEMY_CUES.performance.finalRelay[cast.indexOf(c)])+ALCHEMY_CUES.performance.carePulses.filter(p=>p.x===c.x).reduce((v,p)=>v+A.performance.reaction(t,p.end),0);
+  const receive=(c.role==='mischief'?A.performance.reaction(t,ALCHEMY_CUES.performance.reply.launch,1.55):0)+A.performance.reaction(t,ALCHEMY_CUES.performance.finalRelay[cast.indexOf(c)])+ALCHEMY_CUES.performance.carePulses.filter(p=>p.x===c.x).reduce((v,p)=>v+A.performance.reaction(t,p.end),0);
   const bloom=t*24>=ALCHEMY_CUES.performance.finalRelay[cast.indexOf(c)]||ALCHEMY_CUES.performance.carePulses.some(p=>p.x===c.x&&t*24>=p.end)?1:0;
   S.person(c.which,t,{phase:c.phase,color:c.color,headOnly,role:c.role,receive,bloom});g.restore();
  }
@@ -27,9 +27,10 @@
  }}
  function heart(t,a,raysOnly=false){const birth=smooth(96.3,97.4,t);if(!birth)return;
   const rise=smooth(96.3,100.1,t),sun=smooth(104.55,105.5,t),final=smooth(122.7,128,t);
-  const x=950,y=mix(929,mix(348,412,a),rise)-final*34;
+  const reply=smooth(ALCHEMY_CUES.performance.reply.sol,ALCHEMY_CUES.performance.reply.settle,t*24);
+  const x=950,y=mix(929,mix(348,412,a),rise)-final*34-reply*30;
   const effort=ALCHEMY_CUES.performance.carePulses.reduce((v,p)=>Math.max(v,A.performance.reaction(t,p.start)),0);
-  const radius=mix(18,118,rise)*(1+a*.55)*(1+.018*Math.sin(S.pulse(t)*2)-.13*effort);
+  const radius=mix(18,118,rise)*(1+a*.55+reply*.28)*(1+.018*Math.sin(S.pulse(t)*2)-.13*effort);
   if(raysOnly){if(sun){g.save();g.translate(x,y);g.scale(birth,birth);rays(0,0,radius*1.1,84,115+final*90,.45+sun*.25+A.brass(t)*.18,t*.018);g.restore()}return}
   // The heart is attached to the same root junction; it does not arrive as a floating icon.
   const stem=`M960 936C936 759 990 ${y+210} ${x} ${y+radius*.7}`;
@@ -87,12 +88,28 @@
    g.restore();
   }
  }
- function orbitBirds(t){const p=smooth(136,137.5,t);if(!p)return;
-  for(let i=0;i<5;i++){const angle=(t-136)*.34+i*Math.PI*2/5,x=960+Math.cos(angle)*640,y=200+Math.sin(angle)*90;
-   if(i===0){const host=cast[2],local=S.perch(host.which,1,t,host.role,0,host.phase,1),base=host.which==='luna'?1220:690,target=[host.x+(local[0]-base)*host.k,797+(local[1]-797)*host.k],land=smooth(136,138.5,t);S.bird(mix(x,target[0],land),mix(y,target[1]-58*.15,land),.15*p,t,1,land,1)}
-   else S.bird(x,y,.18*p,t,Math.sin(angle)>0?1:-1,0,1);
+ function finalBirdPose(t){const cue=ALCHEMY_CUES.performance.reply,host=cast[2],start=cue.birdApproach/24,contact=cue.birdContact/24;
+  const visible=smooth(start,start+1.5,t),angle=(t-start)*.34,land=smooth(start,contact,t);
+  const local=S.perch(host.which,0,t,host.role,0,host.phase,1),base=host.which==='luna'?1220:690;
+  const target=[host.x+(local[0]-base)*host.k,797+(local[1]-797)*host.k];
+  const x=mix(960+Math.cos(angle)*640,target[0],land),y=mix(200+Math.sin(angle)*90,target[1]-58*.15,land);
+  return {x,y,visible,land,target,foot:[x,y+58*.15*visible]};
+ }
+ function orbitBirds(t,front=false){const start=ALCHEMY_CUES.performance.reply.birdApproach/24,p=smooth(start,start+1.5,t);if(!p)return;
+  if(front){const b=finalBirdPose(t);S.bird(b.x,b.y,.15*p,t,1,b.land,1);return}
+  for(let i=1;i<5;i++){const angle=(t-start)*.34+i*Math.PI*2/5,x=960+Math.cos(angle)*640,y=200+Math.sin(angle)*90;
+   S.bird(x,y,.18*p,t,Math.sin(angle)>0?1:-1,0,1);
   }
  }
+ function replyPackets(t){const f=t*24,c=ALCHEMY_CUES.performance.reply,source=widerRootCurve(cast[5],5),junction=S.bez(source,1),packets=[];
+  if(f>=c.launch&&f<c.junction)packets.push(S.bez(source,(f-c.launch)/(c.junction-c.launch)));
+  for(const [name,index] of [['luna',7],['sol',2]])if(f>=c.junction&&f<=c[name]){
+   const u=(f-c.junction)/(c[name]-c.junction),root=S.roots[index],join=S.bez(root,1);
+   packets.push(u<.12?[mix(junction[0],join[0],u/.12),mix(junction[1],join[1],u/.12)]:S.bez(root,1-(u-.12)/.88));
+  }
+  return packets;
+ }
+ function returnReply(t){for(const q of replyPackets(t)){ellipse(q[0],q[1],21,14,C.gold,C.ink);for(let j=0;j<5;j++)line(q[0]-8+j*4,q[1]-7,q[0]-11+j*4,q[1]+6,C.ink,1.1)}}
  function border(){g.strokeStyle=C.ink;g.lineWidth=1.4;g.strokeRect(57,50,1806,970);g.lineWidth=.6;g.strokeRect(63,56,1794,958);
   for(const x of [57,1863])for(const y of [50,1020]){line(x-7,y,x+7,y,C.ink,.8);line(x,y-7,x,y+7,C.ink,.8)}
  }
@@ -103,19 +120,22 @@
   const zoom=1.032-.032*smooth(79.5,85,raw)+.12*close-.06*smooth(140,149,raw);
   g.save();g.beginPath();g.rect(76,70,1768,935);g.clip();g.translate(960,540);g.scale(zoom,zoom);g.translate(-960+2*Math.sin(raw*.14),-540);S.sky();
   for(let i=0;i<5;i++)cloud(160+i*400+Math.sin(raw*.15+i)*22,140+(i%2)*-25,.72+(i%2)*.15,i%2?-1:1);
-  S.ground(t);widerRoots(t);careFlow(t);finalRelay(t);
-  if(a){g.save();g.globalAlpha=a;fill('M75 758Q480 746 960 760T1845 759V828Q1460 803 960 829T75 828Z','#d9c99f');for(let i=0;i<210;i++){const x=80+noise(i+722)*1760,y=772+noise(i+185)*40;line(x,y,x+8,y-3,'#9b8a62',.8)}stroke('M75 828Q510 815 960 829T1845 828','#b6a578',1);g.restore()}
+  S.ground(t);widerRoots(t);careFlow(t);finalRelay(t);returnReply(t);
   orbitBirds(t);heart(t,a,true);
   for(const flip of [-1,1]){const h=heraldPosition(flip,t);g.save();g.translate(h.x,h.y);g.scale(h.scale,h.scale);const oldX=flip<0?290:1635;g.translate(-oldX,-294);S.herald(oldX,294,flip,t,raw);g.restore()}
   // The cast retreats below the soil while its musical emblem occupies the sky.
   g.save();g.beginPath();g.rect(76,70,1768,731);g.clip();g.translate(0,a*620);
   for(const c of cast)actor(c,t);
-  S.person('sol',t);S.person('luna',t);for(const c of cast)actor(c,t,true);if(t<82)S.birds(t);g.restore();fallingLeaves(t);heart(t,a);brassRibbons(t,raw);
+  S.person('sol',t);S.person('luna',t);for(const c of cast)actor(c,t,true);if(t<82)S.birds(t);g.restore();
+  // Foreground earth occludes the retreating bodies and the entire root section together.
+  if(a){g.save();g.globalAlpha=a;S.ground(t,false);g.restore()}
+  fallingLeaves(t);heart(t,a);brassRibbons(t,raw);orbitBirds(t,true);
   // Last verse roundels physically leave their row before the next chorus builds its cast.
-  if(t<81.3){g.save();g.translate(0,-330*smooth(79.5,81.3,t));S.roundel(820,163,63,t,'wind',71.875);S.roundel(960,135,64,t,'sun',72.875);S.roundel(1100,163,63,t,'winter',73.75);g.restore()}
+  if(t<81.3){g.save();g.translate(0,-330*smooth(79.5,81.3,t));S.roundel(820,163,63,t,'wind',71.875);S.roundel(960,156,64,t,'sun',72.875);S.roundel(1100,163,63,t,'winter',73.75);g.restore()}
   g.restore();border();
   const fade=smooth(148.6,153.066,raw);if(fade){g.save();g.globalAlpha=fade;g.drawImage(A.paper,0,0);g.restore()}
  }
  A.draw=raw=>raw<79.5?lookTest(raw):extended(raw);
+ A.ensemble={finalBirdPose,replyPackets};
  A.extendedState=t=>({chapter:t<79.5?'look-test':t<96.3?'community':t<110?'heart-sun':t<122.7?'brass':t<136?'grove':'outro',cast:2+cast.filter(c=>t>=c.on+1.25).length,abstract:abstract(t),foliage:A.leafSeason(t)});
 })();

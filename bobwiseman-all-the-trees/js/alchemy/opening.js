@@ -36,12 +36,12 @@
   g.save();g.beginPath();g.rect(76,760,1768,245);g.clip();
   // The flanking trees join the same living system as the central pair.
   for(const [x,dir,seed] of [[230,1,54],[1690,-1,67]]){
-   const p=clamp(reveal*1.1-.08)*(1-cover);
+   const p=clamp(reveal*1.1-.08);
    S.woodyRoot([x,756,x+dir*25,845,x+dir*390,979,960,939],p,36,14,seed);
    S.woodyRoot([x,756,x-dir*15,808,x-dir*55,844,x-dir*94,879],p,24,3,seed+2);
   }
   for(let side=0;side<2;side++)for(let j=0;j<3;j++){
-   const x=side?1220:690,end=940+j*19,dir=side?-1:1,phase=clamp(reveal*1.12-j*.055)*(1-cover);
+   const x=side?1220:690,end=940+j*19,dir=side?-1:1,phase=clamp(reveal*1.12-j*.055);
    // Unequal, tapering offshoots make the shared bundle read as wood rather than cable.
    if(j<2){const ox=x-dir*(28+j*19),oy=802+j*31;
     S.woodyRoot([x+(j-1)*10,756,x-dir*35,788,ox,oy,ox-dir*(77+j*29),oy+51+j*19],phase,24-j*4,3,side*7+j);
@@ -50,7 +50,9 @@
    S.woodyRoot([x+(j-1)*10,756,x+dir*(35+j*20),856,end-dir*(130+j*17),971+j*8,end,926+j*8],phase,38-j*3,13+j,side*3+j);
   }
   // A visible central join is the thesis of the cross-section.
-  if(reveal>.95&&cover<.05){ellipse(960,939,18,10,C.gold,C.ink);for(let j=0;j<7;j++)line(947+j*4,933,941+j*4,943,C.ink,.7)}
+  if(reveal>.95){ellipse(960,939,18,10,C.gold,C.ink);for(let j=0;j<7;j++)line(947+j*4,933,941+j*4,943,C.ink,.7)}
+  // Soil closes the cross-section across the whole network; no root is severed.
+  if(cover){g.save();g.globalAlpha=cover;S.ground(t,false);g.restore()}
   g.restore();
  }
  function opening(raw){const t=Math.floor(Math.round(raw*24)/2)/12;
@@ -65,7 +67,8 @@
   if(arrive){g.save();g.translate(-500*(1-arrive),0);S.herald(290,294,-1,t,raw);g.restore();g.save();g.translate(500*(1-arrive),0);S.herald(1635,294,1,t,raw);g.restore()}
   g.restore();
   g.save();g.beginPath();g.rect(76,70,1768,935);g.clip();g.translate(0,cameraY);
-  if(ground){g.save();g.beginPath();g.rect(75,760,1770,610*ground);g.clip();
+  if(ground&&raw>=ALCHEMY_CUES.grove.landRetreat[0]/24)S.ground(t,false);
+  else if(ground){g.save();g.beginPath();g.rect(75,760,1770,610*ground);g.clip();
    fill('M75 760H1845V1370H75Z','#d9c99f');
    for(let i=0;i<190;i++){const x=85+i*9.25,y=765+noise(i+17)*10;line(x,y,x+6,y-2,C.ink,.7)}
    for(let i=0;i<1750;i++){const x=85+noise(i+66)*1750,y=785+noise(i+925)*585;line(x,y,x+3+noise(i)*6,y-2,'#a59872',.55)}g.restore()}
@@ -75,6 +78,6 @@
   const marks=smooth(44,46.8,raw);g.save();g.globalAlpha=marks;
   for(const x of [57,1863])for(const y of [50,1020]){line(x-7,y,x+7,y,C.ink,.8);line(x,y-7,x,y+7,C.ink,.8)}g.restore();
  }
- A.draw=raw=>raw<47?opening(raw):later(raw);
+ A.draw=raw=>raw<ALCHEMY_CUES.chorus.sharedArrival[0]/24?opening(raw):later(raw);
  A.openingState=t=>({chapter:t<12.5?'spoken-chart':t<32.9?'brass-chart':t<47?'hidden-roots':'later-cut',portraits:portraits.filter(s=>s<=t).length});
 })();

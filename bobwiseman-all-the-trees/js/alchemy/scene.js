@@ -54,7 +54,7 @@
   const lh=moon?rotate([712,695],[892,355],left):rotate(rotate([242,418],[140,471],elbow),[230,344],left);
   const rh=moon?rotate(rotate([944,402],[1100,512],elbow),[1089,358],right):rotate([490,590],[426,349],right);
   return {moon,x,foot,s,ox,appear,cueTime,act,left,right,elbow,head,lean,stretch,world,
-   hands:[world(lh),world(rh)],boughAngles:[lean+.12*Math.sin(q-.7)*dance-.17*act.birdLoad,lean-.12*Math.sin(q+.1)*dance+.17*act.birdLoad]};
+   hands:[world(lh),world(rh)],boughAngles:[lean+.12*Math.sin(q-.7)*dance-.17*act.birdLoad+.65*act.caretakerLift+.10*act.shelterReply,lean-.12*Math.sin(q+.1)*dance+.17*act.birdLoad-.10*act.shelterReply]};
  }
  function boughGeometry(open,t,seed){const nodes=[];
   function grow(px,py,angle,len,depth,id,path){const stage=clamp(open*4-(4-depth)*.58);if(stage<=0)return;
@@ -71,7 +71,7 @@
  }
  function bough(spec){const {hand,angle,dir,seed,leaves,nodes,vitality=0}=spec;g.save();g.translate(...hand);g.rotate(angle);g.scale(dir,1);
   for(const {px,py,ex,ey,cx,cy,aa,depth,id} of nodes){
-   const path=`M${px} ${py}Q${cx} ${cy} ${ex} ${ey}`;stroke(path,'#c6ac70',Math.max(1,depth*2));stroke(path,C.ink,Math.max(.65,depth*.45));
+   const path=`M${px} ${py}Q${cx} ${cy} ${ex} ${ey}`;stroke(path,'#c6ac70',Math.max(leaves<.5?3.1:2,depth*2));stroke(path,C.ink,Math.max(leaves<.5?1.1:.65,depth*.45));
    if(depth<3){const q=clamp(leaves*1.5-noise(id+seed)*.4);leaf(ex,ey,aa+1.7,.42+noise(id+18)*.25,q);leaf(mix(px,ex,.6),mix(py,ey,.6),aa-.5,.35+noise(id+52)*.16,q)}
    if(depth===2&&vitality>.01){g.save();g.globalAlpha=vitality;ellipse(ex,ey,9*vitality,6*vitality,C.gold,C.ink);g.restore()}
    for(let h=1;h<depth*3;h++){const u=h/(depth*3),xx=(1-u)*(1-u)*px+2*(1-u)*u*cx+u*u*ex,yy=(1-u)*(1-u)*py+2*(1-u)*u*cy+u*u*ey;line(xx-2,yy+1,xx+2,yy-1,C.ink,.5)}
@@ -136,9 +136,10 @@
   if(type==='wind'){g.globalAlpha=.8;for(let i=0;i<8;i++){let z=(t*23+i*20)%155-88;stroke(`M${z} ${-38+i*11}q35-10 66-1q17 4 28-5`,C.ink,1)}cloud(-39,12,.16);}
   if(type==='winter'){stroke('M0 66V-31M0 12L-24-16M0-12L22-36M0 34L31 2M-24-16L-40-21M22-36L33-39',C.ink,2.6);for(let i=0;i<14;i++){const xx=noise(i+5)*130-65,yy=(t*14+noise(i+18)*125)%125-65;line(xx-2,yy,xx+2,yy,'#fff7df',2);line(xx,yy-2,xx,yy+2,'#fff7df',2)}}
   g.restore();g.restore();}
- function ground(t){fill('M75 760Q480 746 960 761T1845 760V1005H75Z','#d9c99f');for(let i=0;i<190;i++){const x=85+i*9.25,y=765+noise(i+17)*10;line(x,y,x+6,y-2,C.ink,.7)}
+ function ground(t,showRoots=true){fill('M75 760Q480 746 960 761T1845 760V1370H75Z','#d9c99f');for(let i=0;i<190;i++){const x=85+i*9.25,y=765+noise(i+17)*10;line(x,y,x+6,y-2,C.ink,.7)}
  for(let i=0;i<1300;i++){const x=85+noise(i+66)*1750,y=790+noise(i+925)*205;line(x,y,x+3+noise(i)*6,y-2,'#a59872',.55)}
- stroke('M75 760Q480 746 960 761T1845 760',C.ink,2);rootNetwork(t);rootSignal(t)}
+ for(let i=0;i<400;i++){const x=85+noise(i+466)*1750,y=1006+noise(i+1225)*355;line(x,y,x+3+noise(i)*6,y-2,'#a59872',.55)}
+ stroke('M75 760Q480 746 960 761T1845 760',C.ink,2);if(showRoots){rootNetwork(t);rootSignal(t)}}
  function sky(){g.save();g.beginPath();g.rect(76,70,1768,690);g.clip();g.fillStyle=C.azure;g.fillRect(76,70,1768,690);g.globalAlpha=.12;g.drawImage(A.paper,0,0);g.globalAlpha=.37;
  for(let i=0;i<125;i++){let y=76+i*5.5;stroke(`M77 ${y}Q490 ${y-3} 966 ${y+1}T1844 ${y}`,C.ink,.7)}g.restore()}
  function weather(t){const c=ALCHEMY_CUES.performance,f=t*24,w=A.performance.bump(...c.wind,f),winter=smooth(c.shelter[0],c.shelter[1],f)*(1-smooth(1802,1820,f));
@@ -147,7 +148,7 @@
  }
  function chorusState(raw){const t=Math.floor(Math.round(raw*24)/2)/12;return Object.fromEntries(['sol','luna'].map(which=>{const p=personPose(which,t,0,raw),boughs=[0,1].map(side=>boughSpec(p,side,t));return [which,{appear:p.appear,hands:p.hands,branchNodes:boughs.map(b=>b.nodes.length),leaves:boughs.map(b=>b.leaves)}]}))}
  A.scene={chorusState,birdPose,perch,bez,roots,heraldPose,sky,ground,person,herald,bird,birds,roundel,woodyRoot,personPose,pulse};
- A.draw=(raw)=>{const frame=Math.round(raw*24),t=Math.floor(frame/2)/12;g.setTransform(1,0,0,1,0,0);g.globalAlpha=1;g.drawImage(A.paper,0,0);g.save();g.beginPath();g.rect(76,70,1768,935);g.clip();g.translate(960,540);const zoom=1+.032*smooth(47,79.5,raw);g.scale(zoom,zoom);g.translate(-960+2*Math.sin(raw*.14),-540);sky();
+ A.draw=(raw)=>{const frame=Math.round(raw*24),t=Math.floor(frame/2)/12;g.setTransform(1,0,0,1,0,0);g.globalAlpha=1;g.drawImage(A.paper,0,0);g.save();g.beginPath();g.rect(76,70,1768,935);g.clip();g.translate(960,540);const camera=A.performance.rootCamera(raw),zoom=(1+.032*smooth(47,79.5,raw))*camera.z;g.scale(zoom,zoom);g.translate(-camera.x+2*Math.sin(raw*.14),-camera.y);sky();
   // Rear cloud layer has its own slow parallax; paper-coloured silhouettes occlude the sky hatch.
   for(let i=0;i<5;i++)cloud(160+i*400+Math.sin(raw*.15+i)*22,140+(i%2)*-25,.72+(i%2)*.15,i%2?-1:1);
   ground(t);herald(290,294,-1,t,raw);herald(1635,294,1,t,raw);
