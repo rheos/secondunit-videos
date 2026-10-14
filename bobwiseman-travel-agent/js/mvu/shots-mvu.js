@@ -127,8 +127,18 @@ function pxDrLayer(g, w, h, T) {
   for (let i = 0; i < 3; i++) pC(g, ox + ow - 6 - i * 7, oy + oh + 12, 1.6, [PX.r, PX.g, PX.y][i]);
   g.fillStyle = PX.k; for (let x = 4; x < w; x += 11) g.fillRect(x, 0, 2, h);   // the phone's bars: she is caged in it
 }
+// Widen the field of view at the vocal pickup without restarting the nested image.
+// Hermite tangents preserve the incoming descent, then settle the pull-back at the cut.
+function mvuDrosteLevel(p, a) {
+  const loops = a.loops || 1.5;
+  if (a.widenAt === undefined || p <= a.widenAt) return p * loops;
+  const span = 1 - a.widenAt, u = cl((p - a.widenAt) / span), u2 = u * u, u3 = u2 * u;
+  return (2 * u3 - 3 * u2 + 1) * a.widenAt * loops
+    + (u3 - 2 * u2 + u) * span * loops
+    + (-2 * u3 + 3 * u2) * a.widenTo;
+}
 SU.mvu_droste = { mode: 'ill', f(q, p, a, T) {
-  const L = p * (a.loops || 1.5), start = Math.floor(L), zz = Math.pow(EDK, L - start); let depth = 0;
+  const L = mvuDrosteLevel(p, a), start = Math.floor(L), zz = Math.pow(EDK, L - start); let depth = 0;
   const pix = pixWorld('drost', 320, 180, (g, w, h) => pxDrLayer(g, w, h, T));
   for (let i = 0; i < 4; i++) {
     const s = zz / Math.pow(EDK, i); if (s * W < 6) break;

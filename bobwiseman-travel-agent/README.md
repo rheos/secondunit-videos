@@ -9,7 +9,7 @@ Code-drawn music video, 0 credits. Started 2026-10-12 at Robin's request.
 
 ## Status (2026-10-13)
 
-Draft 8e continues the work in draft PR rheos/secondunit-videos#113 (issues #112 and #120).
+Draft 8f continues the work in draft PR rheos/secondunit-videos#113 (issues #112 and #120).
 The 73.7–90.8 s passage now follows the corrected lyric: the car is turned away at a village and on the moon,
 then the traveller leaves it and continues on foot to a payphone. In the last minute, the navy ruptures grow
 and merge beyond the earlier one-third ceiling, preserving focal subjects and the protected phone recursion.
@@ -19,7 +19,11 @@ Draft 8e extends the nested-screen zoom from 373.48 to 382.46 s (8.98 s instead 
 traversing 3.5 screen levels instead of 1.5. It starts 1.6 s earlier, continues through the former
 standing-stones shot, and cuts to the typing-dots blueprint at its original cue.
 
-Approved draft 8d remains the comparison baseline. Review exports and verification evidence stay local under `out/`;
+Draft 8f adds a 0.56 s widening lens pull-back at the end of the descent, revealing the traveller
+before the hard cut on the transcribed onset of “I’ve” at 382.46 s. The lens move uses the same
+nested artwork and settles at the cut; subsequent vocal cues and the soundtrack keep their timing.
+
+Draft 8e remains the comparison baseline for this transition. Review exports and verification evidence stay local under `out/`;
 no final master or new upload is implied. The current handoff and detailed direction are in `NEXT-SESSION.md`
 and `MVU-DIRECTION.md` (local, gitignored).
 
