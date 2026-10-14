@@ -3,26 +3,24 @@
  const A=Alchemy,S=A.scene,{g,C,smooth,clamp,mix,noise,stroke,fill,line,ellipse,rays,cloud}=A;
  const lookTest=A.draw;
  const cast=[
-  {id:'west',role:'listener',which:'luna',x:285,k:.65,on:81.22,phase:1.4,color:'#739d77'},
-  {id:'east',role:'carrier',which:'sol',x:1635,k:.65,on:91.56,phase:3.8,color:C.gold},
-  {id:'far-west',role:'caretaker',which:'sol',x:165,k:.46,on:123.5,phase:2.5,color:C.rose},
-  {id:'inner-west',role:'listener',which:'luna',x:475,k:.70,on:125.0,phase:4.4,color:C.blue},
-  {id:'inner-east',role:'carrier',which:'sol',x:1440,k:.70,on:127.0,phase:.8,color:'#739d77'},
-  {id:'far-east',role:'mischief',which:'luna',x:1765,k:.46,on:129.0,phase:5.7,color:C.gold}
+  {id:'west',sprite:'owl',index:0,role:'listener',which:'luna',x:330,k:.60,on:81.22,phase:1.4,color:'#739d77'},
+  {id:'east',sprite:'keeper',index:1,role:'carrier',which:'sol',x:1635,k:.65,on:91.56,phase:3.8,color:C.gold},
+  {id:'far-west',sprite:'moth',index:2,role:'caretaker',which:'sol',x:165,k:.40,on:123.5,phase:2.5,color:C.rose},
+  {id:'inner-west',sprite:'fox',index:3,role:'listener',which:'luna',x:500,k:.66,on:84.5,phase:4.4,color:C.blue},
+  {id:'inner-east',sprite:'fish',index:4,role:'carrier',which:'sol',x:1440,k:.70,on:93.2,phase:.8,color:'#739d77'},
+  {id:'far-east',sprite:'hare',index:5,role:'mischief',which:'luna',x:1765,k:.46,on:126.0,phase:5.7,color:C.gold}
  ];
  const abstract=t=>smooth(109.7,112,t)*(1-smooth(120.5,122.7,t));
  A.leafSeason=t=>1-.82*smooth(107.96,109.5,t)+.82*smooth(122.7,125.3,t);
- function actor(c,t,headOnly=false){const p=smooth(c.on,c.on+1.25,t);if(!p)return;
-  g.save();g.translate(c.x,797);g.scale(c.k*(.86+.14*p),c.k*p);g.translate(-(c.which==='luna'?1220:690),-797);
-  const receive=(c.role==='mischief'?A.performance.reaction(t,ALCHEMY_CUES.performance.reply.launch,1.55):0)+A.performance.reaction(t,ALCHEMY_CUES.performance.finalRelay[cast.indexOf(c)])+ALCHEMY_CUES.performance.carePulses.filter(p=>p.x===c.x).reduce((v,p)=>v+A.performance.reaction(t,p.end),0);
-  const bloom=t*24>=ALCHEMY_CUES.performance.finalRelay[cast.indexOf(c)]||ALCHEMY_CUES.performance.carePulses.some(p=>p.x===c.x&&t*24>=p.end)?1:0;
-  S.person(c.which,t,{phase:c.phase,color:c.color,headOnly,role:c.role,receive,bloom});g.restore();
+ function actor(c,t,headOnly=false){
+  const receive=ALCHEMY_CUES.performance.carePulses.filter(p=>p.x===({0:285,1:1635,3:475,4:1440}[c.index]??c.x)).reduce((v,p)=>v+A.performance.reaction(t,p.end),0)+A.performance.reaction(t,ALCHEMY_CUES.performance.finalRelay[c.index]);
+  A.puppets.draw(c,t,receive,headOnly);
  }
- function widerRootCurve(a,c,j=1){const end=910+j*51,side=a.x<960?1:-1;return [a.x+(j-1)*9,784,a.x+(j-1)*37,848+j*16,end-side*(70+c*8),988-j*14,end,922+j*13]}
+ function widerRootCurve(a,c,j=1,t=0){const end=910+j*51,side=a.x<960?1:-1,p=A.puppets.pose(a,t),foot=p.feet[j===2?1:0];return [foot[0],foot[1]-4,foot[0]+(j-1)*37,848+j*16,end-side*(70+c*8),988-j*14,end,922+j*13]}
  function widerRoots(t){for(let c=0;c<cast.length;c++){const a=cast[c],p=smooth(a.on+.6,a.on+3.0,t);if(!p)continue;
   for(let j=0;j<3;j++){const end=910+j*51,side=a.x<960?1:-1;
-   const b=widerRootCurve(a,c,j);
-   S.woodyRoot(b,clamp(p*1.1-j*.04),22*a.k+5,7+j,c+j);
+   const b=widerRootCurve(a,c,j,t);
+   g.save();g.globalAlpha=p;S.woodyRoot(b,1,22*a.k+5,7+j,c+j);g.restore();
   }
  }}
  function heart(t,a,raysOnly=false){const birth=smooth(96.3,97.4,t);if(!birth)return;
@@ -63,16 +61,16 @@
  function bellPoint(x,y,flip,t,raw){return S.heraldPose(x,y,flip,t,raw).bell}
  function careFlow(t){const f=t*24;
   for(const pulse of ALCHEMY_CUES.performance.carePulses){
-   if(f<pulse.start||f>pulse.end)continue;const u=(f-pulse.start)/(pulse.end-pulse.start),idx=cast.findIndex(c=>c.x===pulse.x),c=cast[idx];
+   if(f<pulse.start||f>pulse.end)continue;const u=(f-pulse.start)/(pulse.end-pulse.start),idx=cast.findIndex(c=>({0:285,1:1635,3:475,4:1440}[c.index]??c.x)===pulse.x),c=cast[idx];
    // A pump stroke moves down its stem, then follows the receiver's actual root.
    const a=abstract(t),y=mix(929,mix(348,412,a),smooth(96.3,100.1,t));
-   const point=u<.35?S.bez([950,y+80,990,y+210,936,759,960,936],u/.35):S.bez(widerRootCurve(c,idx),(1-u)/.65);
+   const point=u<.35?S.bez([950,y+80,990,y+210,936,759,960,936],u/.35):S.bez(widerRootCurve(c,idx,1,t),(1-u)/.65);
    ellipse(point[0],point[1],16,11,C.gold,C.ink);for(let j=0;j<5;j++)line(point[0]-7+j*4,point[1]-6,point[0]-10+j*4,point[1]+5,C.ink,.9);
   }
  }
  function finalRelay(t){const f=t*24,starts=ALCHEMY_CUES.performance.finalRelay;
   for(let i=0;i<cast.length;i++){const start=starts[i],u=clamp((f-start+20)/20);if(f<start-20||f>start+8)continue;
-   const q=S.bez(widerRootCurve(cast[i],i),1-u);ellipse(q[0],q[1],12,8,C.gold,C.ink);
+   const q=S.bez(widerRootCurve(cast[i],i,1,t),1-u);ellipse(q[0],q[1],12,8,C.gold,C.ink);
   }
  }
  function brassRibbons(t,raw){const a=abstract(t);if(!a)return;const performance=A.performance.horn(raw),p=A.brass(raw);if(!performance.play)return;
@@ -90,8 +88,7 @@
  }
  function finalBirdPose(t){const cue=ALCHEMY_CUES.performance.reply,host=cast[2],start=cue.birdApproach/24,contact=cue.birdContact/24;
   const visible=smooth(start,start+1.5,t),angle=(t-start)*.34,land=smooth(start,contact,t);
-  const local=S.perch(host.which,0,t,host.role,0,host.phase,1),base=host.which==='luna'?1220:690;
-  const target=[host.x+(local[0]-base)*host.k,797+(local[1]-797)*host.k];
+  const target=A.puppets.perch(host,t);
   const x=mix(960+Math.cos(angle)*640,target[0],land),y=mix(200+Math.sin(angle)*90,target[1]-58*.15,land);
   return {x,y,visible,land,target,foot:[x,y+58*.15*visible]};
  }
@@ -101,7 +98,7 @@
    S.bird(x,y,.18*p,t,Math.sin(angle)>0?1:-1,0,1);
   }
  }
- function replyPackets(t){const f=t*24,c=ALCHEMY_CUES.performance.reply,source=widerRootCurve(cast[5],5),junction=S.bez(source,1),packets=[];
+ function replyPackets(t){const f=t*24,c=ALCHEMY_CUES.performance.reply,source=widerRootCurve(cast[5],5,1,t),junction=S.bez(source,1),packets=[];
   if(f>=c.launch&&f<c.junction)packets.push(S.bez(source,(f-c.launch)/(c.junction-c.launch)));
   for(const [name,index] of [['luna',7],['sol',2]])if(f>=c.junction&&f<=c[name]){
    const u=(f-c.junction)/(c[name]-c.junction),root=S.roots[index],join=S.bez(root,1);
@@ -136,6 +133,6 @@
   const fade=smooth(148.6,153.066,raw);if(fade){g.save();g.globalAlpha=fade;g.drawImage(A.paper,0,0);g.restore()}
  }
  A.draw=raw=>raw<79.5?lookTest(raw):extended(raw);
- A.ensemble={finalBirdPose,replyPackets};
+ A.ensemble={finalBirdPose,replyPackets,widerRootCurve,cast};
  A.extendedState=t=>({chapter:t<79.5?'look-test':t<96.3?'community':t<110?'heart-sun':t<122.7?'brass':t<136?'grove':'outro',cast:2+cast.filter(c=>t>=c.on+1.25).length,abstract:abstract(t),foliage:A.leafSeason(t)});
 })();

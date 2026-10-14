@@ -36,3 +36,7 @@ The audio analysis script uses NumPy, SciPy, SoundFile and Pillow. It saves a di
 ## Extended rough cut v3
 
 The added people reuse the same disclosed clothed source figures, with code-applied robe colours and independent poses. The heart, stem, soil lip, extended roots and musical ribbons are original code drawing. The heart’s solar ring reuses only an annulus of the existing emblem-30 sun head, with its central face masked out. No new generated or downloaded media was introduced for this extension.
+
+## V8 generated ensemble
+
+V8 replaces the earlier cloned supporting pair with six original engraved puppets generated through builtin imagegen. The unchanged transparent atlas is `assets/alchemy/ensemble-v8.png`; `ENSEMBLE-v8-PROMPT.txt` preserves the full prompt. The existing `source/alchemy/clothed-pair.png` supplied the visual reference. Runtime mesh deformation animates the owl, keeper, moth, fox, fish and hare. See `REVISION-v8.md` for provenance and the explicit limits of the trumpet analysis. These local media and audio-derived assets are not committed.

@@ -1,6 +1,7 @@
 /* Original allegory assembled from disclosed historical cut-outs. All geometry is song-time pure. */
 (() => {
- const A=Alchemy,{g,C,smooth,clamp,mix,noise,stroke,fill,line,ellipse,piece,joint,rays,brass,cloud}=A;
+ const A=Alchemy,{g,C,smooth,clamp,mix,noise,stroke,fill,line,ellipse,piece,joint,rays,cloud}=A;
+ const brass=t=>A.brass(t);
  const roots=[];
  function rootCurve(s,i){const x=s?1220:690,sign=s?-1:1,end=900+i*31;return [x+(i-2)*10,782,x+(i-2)*31,863+i*9,end-sign*(83+(i%2)*28),965+(i%3)*16,end,916+[0,26,46,15,38][i]]}
  for(let s=0;s<2;s++)for(let i=0;i<5;i++)roots.push(rootCurve(s,i));
@@ -23,7 +24,7 @@
   ellipse(p[0],p[1],14,9,C.gold,C.ink);for(let j=0;j<4;j++)line(p[0]-6+j*4,p[1]-5,p[0]-10+j*4,p[1]+4,C.ink,.8);
  }
  function rootNetwork(t){const p=smooth(61,63.75,t);if(!p)return;
-  for(let j=0;j<roots.length;j++){const b=roots[j],phase=clamp(p*1.18-(j%5)*.018);
+  for(let j=0;j<roots.length;j++){const ch=A.performance.choreography(j<5?'sol':'luna',t),b=roots[j].slice();b[0]+=ch.x;b[1]-=ch.hop;b[2]+=ch.x*.7;const phase=clamp(p*1.18-(j%5)*.018);
    // A staggered woody fork sits behind each parent root.
    for(const u of [.34+noise(j+21)*.33]){if(phase<=u)continue;const {q,n}=rootSection(b,u,1),side=j%2?1:-1;
     woodyRoot([q[0],q[1],q[0]+n[0]*side*25,q[1]+20,q[0]+n[0]*side*38,q[1]+41,q[0]+n[0]*side*48,q[1]+48],clamp((phase-u)*4),10,1.6,j);
@@ -38,22 +39,23 @@
  const rotate=(p,o,a)=>[o[0]+Math.cos(a)*(p[0]-o[0])-Math.sin(a)*(p[1]-o[1]),o[1]+Math.sin(a)*(p[0]-o[0])+Math.cos(a)*(p[1]-o[1])];
  const cueProgress=(key,t)=>{const [a,b]=ALCHEMY_CUES.chorus[key];return smooth(a,b,t*ALCHEMY_CUES.fps)};
  function personPose(which,t,phase=0,cueTime=t,role='',receive=0,bloom=0){const moon=which==='luna',x=moon?1220:690,foot=797,s=.485,ox=moon?1030:325;
-  const appear=cueProgress('sharedArrival',cueTime),lift=cueProgress(moon?'lunaBranches':'solBranches',cueTime);
+  const chore=role?{x:0,hop:0,left:0,right:0,elbow:0,lean:0,head:0,stretch:1}:A.performance.choreography(which,cueTime);
+  const appear=cueProgress('sharedArrival',cueTime),lift=cueProgress(moon?'lunaBranches':'solBranches',cueTime)*A.performance.branchPresence(which,cueTime);
   const act=A.performance.actor(which,cueTime,role);act.extra=receive;act.bloom=role?bloom:(cueTime*24>=ALCHEMY_CUES.performance.rootExchange[moon?1:0]?1:0);
   if(role==='listener'){act.head+=(moon?-.34:.34)*receive;act.lean+=(moon?.055:-.055)*receive}
   else if(role==='carrier'){act.arms+=(moon?-.34:.34)*receive;act.stretch-=.035*receive}
   else if(role==='caretaker'){act.canopy+=.45*Math.max(receive,bloom);act.arms+=(moon?-.16:.16)*Math.max(receive,bloom)}
   else {act.lean+=(moon?-.16:.16)*receive;act.stretch-=.09*receive;act.head+=(moon?.20:-.20)*receive;act.canopy+=.18*receive}
   const q=pulse(t)+(moon?Math.PI*.64:0)+phase,dance=cueProgress('dance',cueTime)*act.dance;
-  const lean=.085*Math.sin(q)*dance+act.lean,stretch=(1-.024*(.5+.5*Math.sin(q*2-.5))*dance)*act.stretch;
-  const left=(moon?-.29:.44)*lift+.24*Math.sin(q-.38)*dance+act.arms-(moon?.02:.12)*act.birdLoad;
-  const right=(moon?-.26:-.38)*lift-.22*Math.sin(q+.34)*dance+act.arms+(moon?.12:.02)*act.birdLoad;
-  const elbow=(moon?.23:-.26)*lift+.28*Math.sin(q-.9)*dance;
-  const head=-lean*.6+.028*Math.sin(q-1)*dance+act.head;
-  const world=p=>{const v=rotate([(p[0]-ox)*s,(p[1]-1200)*s*stretch],[0,0],lean);return [x+v[0],foot+28*(1-appear)+v[1]]};
+  const lean=.085*Math.sin(q)*dance+act.lean+chore.lean,stretch=(1-.024*(.5+.5*Math.sin(q*2-.5))*dance)*act.stretch*chore.stretch;
+  const left=(moon?-.29:.44)*lift+.24*Math.sin(q-.38)*dance+act.arms-(moon?.02:.12)*act.birdLoad+chore.left;
+  const right=(moon?-.26:-.38)*lift-.22*Math.sin(q+.34)*dance+act.arms+(moon?.12:.02)*act.birdLoad+chore.right;
+  const elbow=(moon?.23:-.26)*lift+.28*Math.sin(q-.9)*dance+chore.elbow;
+  const head=-lean*.6+.028*Math.sin(q-1)*dance+act.head+chore.head;
+  const world=p=>{const v=rotate([(p[0]-ox)*s,(p[1]-1200)*s*stretch],[0,0],lean);return [x+chore.x+v[0],foot-chore.hop+28*(1-appear)+v[1]]};
   const lh=moon?rotate([712,695],[892,355],left):rotate(rotate([242,418],[140,471],elbow),[230,344],left);
   const rh=moon?rotate(rotate([944,402],[1100,512],elbow),[1089,358],right):rotate([490,590],[426,349],right);
-  return {moon,x,foot,s,ox,appear,cueTime,act,left,right,elbow,head,lean,stretch,world,
+  return {moon,x:x+chore.x,foot:foot-chore.hop,s,ox,appear,cueTime,act,left,right,elbow,head,lean,stretch,world,
    hands:[world(lh),world(rh)],boughAngles:[lean+.12*Math.sin(q-.7)*dance-.17*act.birdLoad+.65*act.caretakerLift+.10*act.shelterReply,lean-.12*Math.sin(q+.1)*dance+.17*act.birdLoad-.10*act.shelterReply]};
  }
  function boughGeometry(open,t,seed){const nodes=[];
@@ -66,7 +68,7 @@
   grow(0,0,-.62,91,4,seed+1,'');return nodes;
  }
  function boughSpec(p,side,t){const seed=p.moon?(side?52:39):(side?15:3),dir=side?1:-1;
-  const open=cueProgress(p.moon?'lunaBranches':'solBranches',p.cueTime),leaves=cueProgress(p.moon?'lunaLeaves':'solLeaves',p.cueTime);
+  const open=cueProgress(p.moon?'lunaBranches':'solBranches',p.cueTime)*A.performance.branchPresence(p.moon?'luna':'sol',p.cueTime),leaves=cueProgress(p.moon?'lunaLeaves':'solLeaves',p.cueTime);
   return {hand:p.hands[side],angle:p.boughAngles[side],dir,seed,vitality:Math.max(p.act.extra,p.act.bloom),leaves:leaves*(A.leafSeason?A.leafSeason(t):1),nodes:boughGeometry(open,t,seed).map(n=>({...n,px:n.px*p.act.canopy,ex:n.ex*p.act.canopy,cx:n.cx*p.act.canopy}))};
  }
  function bough(spec){const {hand,angle,dir,seed,leaves,nodes,vitality=0}=spec;g.save();g.translate(...hand);g.rotate(angle);g.scale(dir,1);
@@ -82,6 +84,8 @@
   const color=style.color||(moon?C.rose:C.blue),wash=cueProgress('wash',p.cueTime);
   g.save();g.translate(x,foot+28*(1-appear));g.rotate(lean);g.scale(s,s*stretch);g.translate(-ox,-1200);g.globalAlpha=appear;
   if(style.headOnly){joint(moon?994:332,290,head,()=>{g.save();g.translate(moon?994:332,290);g.scale(p.act.headScale,p.act.headScale);g.translate(-(moon?994:332),-290);piece(which+'-head',moon?'#bdc9d3':C.gold,wash);g.restore()});g.restore();return}
+  // A hand emerges from the previously closed sleeve once the free-arm dance begins.
+  if(!moon&&p.cueTime>=79.5)joint(426,349,right,()=>{g.save();g.translate(490,590);g.rotate(-.35);g.scale(-.83,.83);g.translate(-712,-695);g.beginPath();g.moveTo(689,725);g.lineTo(696,667);g.lineTo(725,635);g.lineTo(787,639);g.lineTo(785,680);g.lineTo(749,709);g.closePath();g.clip();piece('luna-arm-l','#e3bb90',wash);g.restore()});
   if(moon){joint(892,355,left,()=>piece('luna-arm-l',color,wash));joint(1089,358,right,()=>{piece('luna-upper',color,wash);joint(1100,512,elbow,()=>piece('luna-fore',color,wash))})}
   else {joint(426,349,right,()=>piece('sol-arm-r',color,wash));joint(230,344,left,()=>{piece('sol-upper',color,wash);joint(140,471,elbow,()=>piece('sol-fore',color,wash))})}
   piece(which+'-body',color,wash); // Torso covers shoulder seams; the front forearm remains independent.

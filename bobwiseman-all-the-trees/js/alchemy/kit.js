@@ -1,16 +1,19 @@
 /* Deterministic ink-and-wash kit. Real engraved ink is separate from its colour mask. */
 window.Alchemy = (() => {
  const W=1920,H=1080, c=document.getElementById('c'), g=c.getContext('2d',{willReadFrequently:true});
+
  const C={paper:'#f3e7c8',ink:'#27261d',azure:'#558dab',blue:'#537ac0',rose:'#cb6770',green:'#5d9446',gold:'#e5af33',earth:'#c6b384',cream:'#fff1d3'};
  const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v)); const smooth=(a,b,t)=>{let q=clamp((t-a)/(b-a));return q*q*(3-2*q)};
  const mix=(a,b,p)=>a+(b-a)*p;const noise=n=>{let x=Math.sin(n*127.1+311.7)*43758.5453;return x-Math.floor(x)};
  const canvas=(w,h)=>Object.assign(document.createElement('canvas'),{width:w,height:h});
  const assets={},tints=new Map();
+
  const loadImage=url=>new Promise((resolve,reject)=>{const im=new Image();im.onload=()=>resolve(im);im.onerror=()=>reject(new Error('Missing alchemy asset: '+url));im.src=url});
  async function load(){
    // Classic scripts also work under file:// for the established project renderer.
    const names=['sol-body','sol-upper','sol-fore','sol-arm-r','sol-head','luna-body','luna-arm-l','luna-upper','luna-fore','luna-head','cloud','bird-body','bird-wing','bird-rear','fame-body','fame-arm','fame-wing','fame-drape'];
    await Promise.all(names.map(async n=>{const [ink,mask]=await Promise.all(['ink','mask'].map(k=>loadImage(ALCHEMY_MEDIA[n+'-'+k])));assets[n]={ink,mask,box:ALCHEMY_PIECES[n].box}}));
+   assets.ensemble=await loadImage(ALCHEMY_ENSEMBLE_IMAGE);
  }
  function stroke(path,color=C.ink,width=1.5){g.strokeStyle=color;g.lineWidth=width;g.stroke(new Path2D(path))}
  function fill(path,color){g.fillStyle=color;g.fill(new Path2D(path))}

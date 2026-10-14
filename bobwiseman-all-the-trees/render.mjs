@@ -9,7 +9,7 @@ const cacheTag=process.env.FRAME_TAG || '';
 if(cacheTag && !/^[a-zA-Z0-9_-]+$/.test(cacheTag))throw new Error('Invalid FRAME_TAG');
 const dir = cacheTag ? `out/frames_${cacheTag}` : `out/frames_${t0}_${t1}`; fs.rmSync(dir, { recursive: true, force: true }); fs.mkdirSync(dir, { recursive: true });
 const n = Math.round((t1 - t0) * FPS); let done = 0; const start = Date.now();
-const b = await chromium.launch({ channel: 'chrome', headless: true, args: ['--use-angle=metal', '--ignore-gpu-blocklist', '--enable-gpu'] });
+const b = await chromium.launch({ channel: 'chrome', headless: true, args: ['--disable-gpu','--disable-accelerated-2d-canvas'] });
 const errs = [];
 await Promise.all([...Array(WK)].map(async (_, w) => {
   const p = await b.newPage({ viewport: { width: 1920, height: 1080 } });
