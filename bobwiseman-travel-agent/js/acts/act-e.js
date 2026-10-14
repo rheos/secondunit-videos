@@ -379,7 +379,7 @@ var CUTS_E = [
   [365.5, 'e_appInside', {}],                             // "Travel agent": she is inside his phone, in her pixel world; the screen's bars a cage, her voice bounces back
   [368.28, 'e_sPhoneCage', {}],                           // blueprint: signal bars = cage bars, her voice reflected
   [371.88, 'e_fromInside', {}],                           // "travel agent": her side of the glass is the pixel world; his giant drawn face beyond it
-  [373.48, 'mvu_droste', { loops: 3.5, widenAt: 1 - .56 / 8.98, widenTo: 2 }], // widen from 381.90, cut on "I've"
+  [373.48, 'mvu_droste', { loops: 3.5, exitAt: 1 - 1.4 / 8.98, exitEnd: (382 + 10 / 24 - 373.48) / 8.98, exitLevel: 4, exitScene: 'e_sTyping', exitCue: 382.46 }], // enter the final screen on "I've"
   [382.46, 'e_sTyping', {}],                              // "I've got to know": blueprint of the typing dots
   [385.18, 'e_answerHome', {}],                           // "know": her reply is a map; the pin lands on the shop he started from
   [387.84, 'e_freeze', {}],                               // instrumental: the world un-draws, his notes freeze into snow

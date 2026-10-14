@@ -127,24 +127,40 @@ function pxDrLayer(g, w, h, T) {
   for (let i = 0; i < 3; i++) pC(g, ox + ow - 6 - i * 7, oy + oh + 12, 1.6, [PX.r, PX.g, PX.y][i]);
   g.fillStyle = PX.k; for (let x = 4; x < w; x += 11) g.fillRect(x, 0, 2, h);   // the phone's bars: she is caged in it
 }
-// Widen the field of view at the vocal pickup without restarting the nested image.
-// Hermite tangents preserve the incoming descent, then settle the pull-back at the cut.
+// The destination is a real scene inside the last monitor, not an overlay or a pull-back.
+// Keep descending, then ease the final monitor up to viewport size at the vocal pickup.
 function mvuDrosteLevel(p, a) {
   const loops = a.loops || 1.5;
-  if (a.widenAt === undefined || p <= a.widenAt) return p * loops;
-  const span = 1 - a.widenAt, u = cl((p - a.widenAt) / span), u2 = u * u, u3 = u2 * u;
-  return (2 * u3 - 3 * u2 + 1) * a.widenAt * loops
+  if (a.exitAt === undefined || p <= a.exitAt) return p * loops;
+  const span = a.exitEnd - a.exitAt, u = cl((p - a.exitAt) / span), u2 = u * u, u3 = u2 * u;
+  return (2 * u3 - 3 * u2 + 1) * a.exitAt * loops
     + (u3 - 2 * u2 + u) * span * loops
-    + (-2 * u3 + 3 * u2) * a.widenTo;
+    + (-2 * u3 + 3 * u2) * a.exitLevel;
+}
+let mvuExitCanvas;
+function mvuDrosteDestination(a, T) {
+  if (!mvuExitCanvas) { mvuExitCanvas = document.createElement('canvas'); mvuExitCanvas.width = W; mvuExitCanvas.height = H; }
+  const previous = { X, R, DSEED, CAMO };
+  try {
+    X = mvuExitCanvas.getContext('2d'); X.save();
+    X.setTransform(1, 0, 0, 1, 0, 0); X.globalAlpha = 1; X.globalCompositeOperation = 'source-over'; X.setLineDash([]);
+    DSEED = Math.round(a.exitCue * 97) + 1; R = M32((FD * 9301 + DSEED) >>> 0); CAMO = null;
+    SU[a.exitScene].f(0, 0, {}, T);
+  } finally { X.restore(); X = previous.X; R = previous.R; DSEED = previous.DSEED; CAMO = previous.CAMO; }
+  return mvuExitCanvas;
 }
 SU.mvu_droste = { mode: 'ill', f(q, p, a, T) {
   const L = mvuDrosteLevel(p, a), start = Math.floor(L), zz = Math.pow(EDK, L - start); let depth = 0;
   const pix = pixWorld('drost', 320, 180, (g, w, h) => pxDrLayer(g, w, h, T));
-  for (let i = 0; i < 4; i++) {
+  const destination = a.exitScene ? mvuDrosteDestination(a, T) : null;
+  for (let i = 0; i < (destination ? 5 : 4); i++) {
     const s = zz / Math.pow(EDK, i); if (s * W < 6) break;
     X.save(); X.translate(W / 2, H / 2); X.scale(s, s); X.translate(-W / 2, -H / 2);
-    if ((start + i) % 2 === 0) e_drLayer(0, T); else blitPix(pix, 0, 0, W, H);
+    const atDestination = destination && start + i === a.exitLevel;
+    if (atDestination) X.drawImage(destination, 0, 0, W, H);
+    else if ((start + i) % 2 === 0) e_drLayer(0, T); else blitPix(pix, 0, 0, W, H);
     X.restore();
+    if (atDestination) break;
     const ow = W / EDK * s, oh = H / EDK * s; X.save(); depth++; X.beginPath(); X.rect(W / 2 - ow / 2, H / 2 - oh / 2, ow, oh); X.clip();
   }
   while (depth-- > 0) X.restore();
