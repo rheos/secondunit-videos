@@ -8,7 +8,7 @@ The project's `out/` lives on the external drive Bertha: `/Volumes/Bertha/second
 |---|---|---|---|---|---|
 | 16:9 | master | n/a | `out/` | 1920x1080 (+ 720p) | signed off 2026-10-04 |
 | 9:16 | pan and scan of the master (`bobwiseman-more/tools/panscan.py`) | `aspects/9x16/panscan-plan-v1.json` | `out/9x16/aoh_panscan-v1_..._9x16.mp4` | 720x1280 | on Bob's page 2026-10-08 |
-| 4:5 | pan and scan of the master, windows fitted to the burned-in text (`tools/panscan_4x5.py`, #101) | `aspects/4x5/panscan-plan-v4.json` | `out/4x5/aoh_panscan-v4_f00000-f08804_24fps_review-864x1080_4x5.mp4` | 864x1080 review | review cut 2026-10-13; recompose proposal in `aspects/4x5/RECOMPOSE.md` |
+| 4:5 | kinetic sections A + K redrawn (`sections/kinetic/kinetic-4x5.html`, `sections/kinetic/js/ch-4x5/`), the rest pan and scan of the master with windows fitted to the burned-in text (`tools/panscan_4x5.py`), joined by `tools/compose_4x5.py` (#101) | `aspects/4x5/panscan-plan-v4.json` | `out/4x5/aoh_recompose-v5_f00000-f08804_24fps_review-864x1080_4x5.mp4` (v4 = pan and scan only) | 864x1080 (Robin 2026-10-13: final size) | v5 review cut 2026-10-13; v4 on Bob's page + YouTube |
 
 ## 4:5, how it is made
 
@@ -55,6 +55,20 @@ The OCR files hold Bob's lyrics as read off the screen: keep them out of git (au
 | K kinetic | 2.8 | 11.2 | 11.5 |
 | **all (v3; v4 widens six of these shots)** | **127.2** | **112.9** | **126.7** |
 
-Recompose (per-ratio shot code under the schema in `secondunit/CLAUDE.md`) is proposed for the kinetic type, the
-monologue subtitles, the riso sax/piano two-shot and the 16-bit dialogue box; see `aspects/4x5/RECOMPOSE.md`.
-Final size (864x1080 like the phone rule, or 1080x1350) is Robin's call before a final.
+## 4:5 recompose (v5)
+
+Robin (2026-10-13): redraw the kinetic type only; 864x1080 is the final size. Sections A (frames 0-1728) and K
+(8191-8804) are drawn natively at 864x1080 by `sections/kinetic/kinetic-4x5.html` (sets `window.CANVAS`; `js/core.js`
+reads W/H from it, size-neutral for the master), shots in `js/ch-4x5/A1.js A2.js A3.js K.js`, portrait paper and tech
+log in `js/kit-4x5.js`, brief in `sections/kinetic/BRIEF-4x5.md`. Render frames, then compose:
+
+```
+cd sections/kinetic   # needs js/data.js + js/lyrics.js (gitignored; copy from the main checkout, never symlink)
+FRAMES_ONLY=1 node render.mjs kinetic-4x5 f0 f1728 out/none.mp4 3
+FRAMES_ONLY=1 node render.mjs kinetic-4x5 f8191 f8804 out/none.mp4 3
+python tools/compose_4x5.py out/4x5/<v4 pan and scan>.mp4 <A frames> <K frames> out/4x5/<new>_4x5.mp4
+```
+
+The J2 -> K bridge dissolves over frames 8191-8215 in the master, so the compose crossfades the pan and scan into the
+redrawn K over those 24 frames. With A and K native, about 207 s of the 367 is a true 4:5 picture; the monologue
+subtitles, riso sax/piano and the 16-bit dialogue box stay pan and scan (wide/fit) by Robin's call.

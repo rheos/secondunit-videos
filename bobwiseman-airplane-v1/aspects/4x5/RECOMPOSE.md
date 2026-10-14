@@ -1,4 +1,6 @@
-# 4:5 recompose proposal (not started; waiting on Robin)
+# 4:5 recompose proposal
+
+**Status (2026-10-13):** Robin chose rows 1 and 2 (kinetic type) only; both are redrawn and composed into the v5 review cut (see ASPECTS.md). Rows 3-5 stay pan and scan.
 
 Plan v3 (`panscan-plan-v3.json`) holds 127 s of the 367 s as a true 864x1080 crop. The rest is shown as a
 wider window scaled into the 4:5 frame over a blurred copy ("wide", 113 s) or as the whole 16:9 frame over blur
