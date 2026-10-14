@@ -379,8 +379,7 @@ var CUTS_E = [
   [365.5, 'e_appInside', {}],                             // "Travel agent": she is inside his phone, in her pixel world; the screen's bars a cage, her voice bounces back
   [368.28, 'e_sPhoneCage', {}],                           // blueprint: signal bars = cage bars, her voice reflected
   [371.88, 'e_fromInside', {}],                           // "travel agent": her side of the glass is the pixel world; his giant drawn face beyond it
-  [375.08, 'mvu_droste', {}],                             // LOCKED. instrumental: him over his phone / her over her monitor, forever
-  [379.3, 'e_dotHenge', {}],                              // "Travel agent": the typing dots are standing stones; his footprints are the bubble
+  [373.48, 'mvu_droste', { loops: 3.5 }],                 // Robin's extension: two more screen levels through 382.46; enter 1.6 s earlier
   [382.46, 'e_sTyping', {}],                              // "I've got to know": blueprint of the typing dots
   [385.18, 'e_answerHome', {}],                           // "know": her reply is a map; the pin lands on the shop he started from
   [387.84, 'e_freeze', {}],                               // instrumental: the world un-draws, his notes freeze into snow
