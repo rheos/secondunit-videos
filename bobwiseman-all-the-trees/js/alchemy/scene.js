@@ -32,9 +32,10 @@
  // The approximate dance pulse is choreography, not a verified beat transcription.
  const pulse=t=>(t-48.073)*(145/60)*Math.PI;
  const rotate=(p,o,a)=>[o[0]+Math.cos(a)*(p[0]-o[0])-Math.sin(a)*(p[1]-o[1]),o[1]+Math.sin(a)*(p[0]-o[0])+Math.cos(a)*(p[1]-o[1])];
- function personPose(which,t,phase=0){const moon=which==='luna',x=moon?1220:690,foot=797,s=.485,ox=moon?1030:325;
-  const appear=moon?smooth(60.375,60.75,t):smooth(49.083,49.45,t),lift=moon?smooth(60.5,62.3,t):smooth(55.9,57.6,t);
-  const q=pulse(t)+(moon?Math.PI*.64:0)+phase,dance=smooth(moon?60.5:49.4,moon?61.5:50.4,t);
+ const cueProgress=(key,t)=>{const [a,b]=ALCHEMY_CUES.chorus[key];return smooth(a,b,t*ALCHEMY_CUES.fps)};
+ function personPose(which,t,phase=0,cueTime=t){const moon=which==='luna',x=moon?1220:690,foot=797,s=.485,ox=moon?1030:325;
+  const appear=cueProgress('sharedArrival',cueTime),lift=cueProgress(moon?'lunaBranches':'solBranches',cueTime);
+  const q=pulse(t)+(moon?Math.PI*.64:0)+phase,dance=cueProgress('dance',cueTime);
   const lean=.085*Math.sin(q)*dance,stretch=1-.024*(.5+.5*Math.sin(q*2-.5))*dance;
   const left=(moon?-.29:.44)*lift+.24*Math.sin(q-.38)*dance;
   const right=(moon?-.26:-.38)*lift-.22*Math.sin(q+.34)*dance;
@@ -43,7 +44,7 @@
   const world=p=>{const v=rotate([(p[0]-ox)*s,(p[1]-1200)*s*stretch],[0,0],lean);return [x+v[0],foot+28*(1-appear)+v[1]]};
   const lh=moon?rotate([712,695],[892,355],left):rotate(rotate([242,418],[140,471],elbow),[230,344],left);
   const rh=moon?rotate(rotate([944,402],[1100,512],elbow),[1089,358],right):rotate([490,590],[426,349],right);
-  return {moon,x,foot,s,ox,appear,left,right,elbow,head,lean,stretch,world,
+  return {moon,x,foot,s,ox,appear,cueTime,left,right,elbow,head,lean,stretch,world,
    hands:[world(lh),world(rh)],boughAngles:[lean+.12*Math.sin(q-.7)*dance,lean-.12*Math.sin(q+.1)*dance]};
  }
  function boughGeometry(open,t,seed){const nodes=[];
@@ -56,7 +57,7 @@
   grow(0,0,-.62,91,4,seed+1,'');return nodes;
  }
  function boughSpec(p,side,t){const seed=p.moon?(side?52:39):(side?15:3),dir=side?1:-1;
-  const open=smooth(p.moon?60.5:52.6,p.moon?62.1:54.1,t),leaves=smooth(p.moon?60.5:57.583,p.moon?61.2:58.4,t);
+  const open=cueProgress(p.moon?'lunaBranches':'solBranches',p.cueTime),leaves=cueProgress(p.moon?'lunaLeaves':'solLeaves',p.cueTime);
   return {hand:p.hands[side],angle:p.boughAngles[side],dir,seed,leaves:leaves*(A.leafSeason?A.leafSeason(t):1),nodes:boughGeometry(open,t,seed)};
  }
  function bough(spec){const {hand,angle,dir,seed,leaves,nodes}=spec;g.save();g.translate(...hand);g.rotate(angle);g.scale(dir,1);
@@ -67,8 +68,8 @@
   }
   g.restore();
  }
- function person(which,t,style={}){const p=personPose(which,t,style.phase||0),{moon,x,foot,s,ox,appear,left,right,elbow,head,lean,stretch}=p;if(!appear)return;
-  const color=style.color||(moon?C.rose:C.blue),wash=moon?smooth(60.375,61.05,t):smooth(49.083,50.7,t);
+ function person(which,t,style={}){const p=personPose(which,t,style.phase||0,style.songTime??t),{moon,x,foot,s,ox,appear,left,right,elbow,head,lean,stretch}=p;if(!appear)return;
+  const color=style.color||(moon?C.rose:C.blue),wash=cueProgress('wash',p.cueTime);
   g.save();g.translate(x,foot+28*(1-appear));g.rotate(lean);g.scale(s,s*stretch);g.translate(-ox,-1200);g.globalAlpha=appear;
   if(style.headOnly){joint(moon?994:332,290,head,()=>piece(which+'-head',moon?'#bdc9d3':C.gold,wash));g.restore();return}
   if(moon){joint(892,355,left,()=>piece('luna-arm-l',color,wash));joint(1089,358,right,()=>{piece('luna-upper',color,wash);joint(1100,512,elbow,()=>piece('luna-fore',color,wash))})}
@@ -79,7 +80,8 @@
   function fore(name,cx,cy,rx,ry){piece(name,color,wash);g.save();g.beginPath();g.ellipse(cx,cy,rx,ry,0,0,Math.PI*2);g.clip();piece(name,'#e3bb90',wash);g.restore()}
   if(moon)joint(1089,358,right,()=>joint(1100,512,elbow,()=>fore('luna-fore',954,420,38,50)));
   else joint(230,344,left,()=>joint(140,471,elbow,()=>fore('sol-fore',246,443,36,55)));
-  const oh=moon?smooth(60.375,60.6,t)*(1-smooth(60.7,61.2,t)):smooth(49.083,49.25,t)*(1-smooth(49.4,50,t));
+  const arrival=ALCHEMY_CUES.chorus.sharedArrival[0]/ALCHEMY_CUES.fps;
+  const oh=smooth(arrival,arrival+.17,p.cueTime)*(1-smooth(arrival+.32,arrival+.92,p.cueTime));
   joint(moon?994:332,290,head,()=>{piece(which+'-head',moon?'#bdc9d3':C.gold,wash);rays(moon?992:333,164,174,83,32,.15+oh*.75+Math.exp(-Math.max(0,t-50.708)*8)*(t>=50.708&&t<51.5?.75:0)+brass(t)*.14)});
   g.restore();bough(boughSpec(p,0,t));bough(boughSpec(p,1,t));
  }
@@ -96,7 +98,7 @@
   // Small long-bell instrument in the bird's beak; original engraving stays the body language.
   g.save();g.translate(84,298);g.rotate(-.1-brass(t)*.06);fill('M0-4L-126-12L-165-33L-167 23L-126 5L0 4Z',C.gold);stroke('M0-4L-126-12L-165-33L-167 23L-126 5L0 4Z',C.ink,2.5);ellipse(-166,-5,7,28,C.earth,C.ink);rays(-175,-5,9,25,135,brass(t),Math.PI,.7);g.restore();g.restore()}
  function perch(which,side,t){const spec=boughSpec(personPose(which,t),side,t);
-  const node=spec.nodes.find(n=>n.path===(which==='luna'?'RL':'L')),v=rotate([node.ex*spec.dir,node.ey],[0,0],spec.angle);
+  const node=spec.nodes.find(n=>n.path===(which==='luna'?'RL':'L')),v=rotate([node?node.ex*spec.dir:0,node?node.ey:0],[0,0],spec.angle);
   return [spec.hand[0]+v[0],spec.hand[1]+v[1]];
  }
  function birds(t){if(t<64.666)return;for(let i=0;i<3;i++){
@@ -117,12 +119,13 @@
  stroke('M75 760Q480 746 960 761T1845 760',C.ink,2);rootNetwork(t)}
  function sky(){g.save();g.beginPath();g.rect(76,70,1768,690);g.clip();g.fillStyle=C.azure;g.fillRect(76,70,1768,690);g.globalAlpha=.12;g.drawImage(A.paper,0,0);g.globalAlpha=.37;
  for(let i=0;i<125;i++){let y=76+i*5.5;stroke(`M77 ${y}Q490 ${y-3} 966 ${y+1}T1844 ${y}`,C.ink,.7)}g.restore()}
- A.scene={sky,ground,person,herald,bird,birds,roundel,woodyRoot,personPose,pulse};
+ function chorusState(raw){const t=Math.floor(Math.round(raw*24)/2)/12;return Object.fromEntries(['sol','luna'].map(which=>{const p=personPose(which,t,0,raw),boughs=[0,1].map(side=>boughSpec(p,side,t));return [which,{appear:p.appear,hands:p.hands,branchNodes:boughs.map(b=>b.nodes.length),leaves:boughs.map(b=>b.leaves)}]}))}
+ A.scene={chorusState,sky,ground,person,herald,bird,birds,roundel,woodyRoot,personPose,pulse};
  A.draw=(raw)=>{const frame=Math.round(raw*24),t=Math.floor(frame/2)/12;g.setTransform(1,0,0,1,0,0);g.globalAlpha=1;g.drawImage(A.paper,0,0);g.save();g.translate(960,540);const zoom=1+.032*smooth(47,79.5,raw);g.scale(zoom,zoom);g.translate(-960+2*Math.sin(raw*.14),-540);sky();
   // Rear cloud layer has its own slow parallax; paper-coloured silhouettes occlude the sky hatch.
   for(let i=0;i<5;i++)cloud(160+i*400+Math.sin(raw*.15+i)*22,140+(i%2)*-25,.72+(i%2)*.15,i%2?-1:1);
   ground(t);herald(290,294,-1,t,raw);herald(1635,294,1,t,raw);
-  person('sol',t);person('luna',t);birds(t);
+  person('sol',t,{songTime:raw});person('luna',t,{songTime:raw});birds(t);
   roundel(820,163,63,t,'wind',71.875);roundel(960,135,64,t,'sun',72.875);roundel(1100,163,63,t,'winter',73.75);
   g.restore();g.strokeStyle=C.ink;g.lineWidth=1.4;g.strokeRect(57,50,1806,970);g.lineWidth=.6;g.strokeRect(63,56,1794,958);
   // Tiny print registration ornaments belong to the plate, not to an overlay UI.

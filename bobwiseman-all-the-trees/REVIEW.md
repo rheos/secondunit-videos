@@ -1,3 +1,15 @@
+# V5 focused review: grove, camera and branch reveals
+
+Robin asked for an expansive receding grove in the spoken opening, a move down and back up to show the underground connection, both principal people arriving together, and each person's branches withheld until their own declaration. This pass implements those notes in the existing engraving treatment. It does not close the larger v4 brass/performance audit below.
+
+Local review: `REVIEW-v5.html`, with seek buttons and the 40-second excerpt `out/att_alchemy-v5-grove-cues_f00720-f01680_24fps_draft.mp4`. Song 30–70 s; frames [720,1680). Fifty trees populate six depths in a stagger travelling toward the horizon. The four nearest trees connect below ground. The camera begins in a surface framing, moves down over f876–924, then returns over f1038–1082. Both principal people begin arriving at f1178. Sun branch growth spans f1362–1382; moon growth spans f1422–1450, with the first nonzero geometry one frame after each start. Leaves follow those reveals. These phrase estimates need Robin's playback judgment; no listening-confirmed word alignment is claimed.
+
+Validation: the renderer and tests consume the same frame cue block. Every song frame is checked for shared arrival, no premature branch/leaf geometry, and the song/held-pose mapping. Changing a branch cue changes the actual canvas. The full grove contains fifty trees; the camera returns to its original offset; 22 rendered samples repeat exactly after reverse seeks. No resource or JavaScript errors. Visual checks cover the six-depth landscape, root connections, both empty-handed people, each reveal and later-section regression samples. A narrow sky gap at the soil edge was removed before the final render.
+
+The encoded excerpt has 960 frames at 1280×720/24 fps, stereo AAC, no bad/dark frames and no freeze above two seconds. Its 16-image contact strip samples the encoded file every 2.5 seconds. The source audio remains SHA-pinned; decoded windows at song 30, 50 and 59.9 s measure 0 ms offset, with correlations above 0.9997. The motion-lab flash check passes. These checks establish file integrity and deterministic cue behavior, not approval of the staging or musical interpretation. Earlier renders remain preserved. PR #115 remains draft; local-only video, no artist contact.
+
+---
+
 # Latest review: v4 needs a directing revision
 
 Robin’s feedback on 2026-10-13: the film still feels boring and dominated by two characters; he wants a richer ensemble, Mark-informed symbolic action, tighter musical staging, and trumpets concealed before their entrance.

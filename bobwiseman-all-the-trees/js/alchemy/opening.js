@@ -31,19 +31,14 @@
    crown(i,t);g.restore();
   }
  }
- function tree(x,seed,t){const grow=smooth(32.25,34.1,t),exit=smooth(45.2,47,t);if(!grow||exit>=1)return;
-  g.save();g.beginPath();g.rect(76,70,1768,690);g.clip();g.translate(x,760+430*exit);g.rotate(.025*Math.sin(t*1.8+seed));g.scale(grow,grow);
-  S.woodyRoot([0,0,-12,-90,20,-203,0,-303],1,43,15,seed);
-  function branch(px,py,angle,length,depth,id){const ex=px+Math.cos(angle)*length,ey=py+Math.sin(angle)*length;
-   S.woodyRoot([px,py,px+Math.cos(angle+.12)*length*.35,py+Math.sin(angle+.12)*length*.35,ex-12,ey+24,ex,ey],1,depth*4+2,depth*2,id);
-   if(depth>1){branch(ex,ey,angle-.5,length*.72,depth-1,id*2);branch(ex,ey,angle+.57,length*.73,depth-1,id*2+1)}
-   else {leaf(ex,ey,angle+1.7,.62);leaf(ex-8,ey+13,angle-.6,.52)}
-  }
-  branch(0,-153,-2.38,96,3,seed);branch(2,-202,-.81,109,3,seed+20);branch(0,-293,-1.61,76,3,seed+40);
-  g.restore();
- }
  function roots(t){const reveal=smooth(37,40.75,t),cover=smooth(43.5,45.1,t);if(!reveal||cover>=1)return;
   g.save();g.beginPath();g.rect(76,760,1768,245);g.clip();
+  // The flanking trees join the same living system as the central pair.
+  for(const [x,dir,seed] of [[230,1,54],[1690,-1,67]]){
+   const p=clamp(reveal*1.1-.08)*(1-cover);
+   S.woodyRoot([x,756,x+dir*25,845,x+dir*390,979,960,939],p,36,14,seed);
+   S.woodyRoot([x,756,x-dir*15,808,x-dir*55,844,x-dir*94,879],p,24,3,seed+2);
+  }
   for(let side=0;side<2;side++)for(let j=0;j<3;j++){
    const x=side?1220:690,end=940+j*19,dir=side?-1:1,phase=clamp(reveal*1.12-j*.055)*(1-cover);
    // Unequal, tapering offshoots make the shared bundle read as wood rather than cable.
@@ -60,17 +55,22 @@
  function opening(raw){const t=Math.floor(Math.round(raw*24)/2)/12;
   g.setTransform(1,0,0,1,0,0);g.globalAlpha=1;g.drawImage(A.paper,0,0);
   g.save();g.translate(2*Math.sin(raw*.14),0);
-  const sky=smooth(12.5,18.5,raw),ground=smooth(30.5,33,raw);
+  const sky=smooth(12.5,18.5,raw),ground=smooth(30.5,33,raw),cameraY=A.grove.state(raw).cameraY;
   if(sky){g.save();g.beginPath();g.rect(76,70,1768*sky,690);g.clip();S.sky();g.restore()}
-  if(ground){g.save();g.beginPath();g.rect(75,760,1770,245*ground);g.clip();S.ground(t);g.restore()}
-  g.save();g.beginPath();g.rect(58,51,1804,958);g.clip();
+  g.save();g.beginPath();g.rect(58,51,1804,958);g.clip();g.translate(0,cameraY);
   for(let i=0;i<5;i++){const p=smooth(11.7+i*.5,14.2+i*.5,raw);if(!p)continue;
    cloud(160+i*400+Math.sin(raw*.15+i)*22,140+(i%2)*-25-210*(1-p),.72+(i%2)*.15,i%2?-1:1)}
   const arrive=smooth(12.5,15.5,raw);
   if(arrive){g.save();g.translate(-500*(1-arrive),0);S.herald(290,294,-1,t,raw);g.restore();g.save();g.translate(500*(1-arrive),0);S.herald(1635,294,1,t,raw);g.restore()}
-  g.restore();chart(t);roots(t);tree(690,3,t);tree(1220,19,t);
+  g.restore();
+  g.save();g.beginPath();g.rect(76,70,1768,935);g.clip();g.translate(0,cameraY);
+  if(ground){g.save();g.beginPath();g.rect(75,760,1770,610*ground);g.clip();
+   fill('M75 760H1845V1370H75Z','#d9c99f');
+   for(let i=0;i<190;i++){const x=85+i*9.25,y=765+noise(i+17)*10;line(x,y,x+6,y-2,C.ink,.7)}
+   for(let i=0;i<1750;i++){const x=85+noise(i+66)*1750,y=785+noise(i+925)*585;line(x,y,x+3+noise(i)*6,y-2,'#a59872',.55)}g.restore()}
+  A.grove.draw(raw);roots(t);g.restore();chart(t);
   g.restore();border(raw);
-  // The full registration ornaments arrive before the unmodified chorus scene.
+  // The full registration ornaments arrive before the first chorus scene.
   const marks=smooth(44,46.8,raw);g.save();g.globalAlpha=marks;
   for(const x of [57,1863])for(const y of [50,1020]){line(x-7,y,x+7,y,C.ink,.8);line(x,y-7,x,y+7,C.ink,.8)}g.restore();
  }

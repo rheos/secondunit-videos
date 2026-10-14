@@ -1832,13 +1832,27 @@ window.ALCHEMY_CUES = {
     }
   ],
   "brassStatus": "Harmonic onset candidates; not a verified isolated-trumpet transcription",
+  "chorus": {
+    "status": "Phrase estimates snapped to the song grid; awaiting listening review",
+    "sharedArrival": [1178, 1188],
+    "dance": [1188, 1210],
+    "wash": [1178, 1217],
+    "solBranches": [1362, 1382],
+    "lunaBranches": [1422, 1450],
+    "solLeaves": [1382, 1402],
+    "lunaLeaves": [1450, 1469]
+  },
+  "grove": {
+    "land": [760, 790],
+    "firstTree": 790,
+    "cameraDown": [876, 924],
+    "cameraUp": [1038, 1082],
+    "depthDelay": 12,
+    "popDuration": 15,
+    "retreat": [1085, 1127]
+  },
   "beats": {
-    "solArrival": 49.083333,
     "solAccent": 50.708333,
-    "bareBoughs": 53.0,
-    "armsRise": 55.916667,
-    "leafWash": 57.583333,
-    "lunaArrival": 60.416667,
     "rootsJoin": 63.75,
     "birdArrival": 64.708333,
     "halos": 65.833333,
