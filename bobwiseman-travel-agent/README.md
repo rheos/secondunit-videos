@@ -9,9 +9,15 @@ Code-drawn music video, 0 credits. Started 2026-10-12 at Robin's request.
 
 ## Status (2026-10-13)
 
-Draft 7 (draft 6 + the early-Mac pixel engine) on branch `travel-agent-6`, draft PR rheos/secondunit-videos#113.
-Draft 5 was merged as #103. The full handoff, rules and history are in `NEXT-SESSION.md` (gitignored, quotes lyrics);
-the art direction in `MVU-DIRECTION.md`; the draft 5 audit in `AUDIT-v5.md`.
+Draft 8d continues the work in draft PR rheos/secondunit-videos#113 (issues #112 and #120).
+The 73.7–90.8 s passage now follows the corrected lyric: the car is turned away at a village and on the moon,
+then the traveller leaves it and continues on foot to a payphone. In the last minute, the navy ruptures grow
+and merge beyond the earlier one-third ceiling, preserving focal subjects and the protected phone recursion.
+The snow restores the paper before the unchanged closed-shop ending.
+
+Draft 8c remains the comparison baseline. Review exports and verification evidence stay local under `out/`;
+no final master or new upload is implied. The current handoff and detailed direction are in `NEXT-SESSION.md`
+and `MVU-DIRECTION.md` (local, gitignored).
 
 ## Look
 

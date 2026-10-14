@@ -6,7 +6,7 @@
 'use strict';
 
 // ---------- the merge: the blueprint burns through the paper (ill shots, last third) ----------
-const LEAK_T0 = 272, LEAK_T1 = 392; // the eased progress reaches ~1 (about a third of the frame) at LEAK_T1
+const LEAK_T0 = 272, LEAK_T1 = 392; // original growth timing; the late surge now continues to LEAK_PEAK
 // Robin 2026-10-13 (draft 6): the paper should really BURN, to about a third of the frame by ~392 s, then the snow
 // heals it. Holes are fixed in SCREEN space (same place in every shot, so they read as the paper itself burning),
 // each born at its own moment and growing; edges torn and charred with an ember line; the frame centre is kept
@@ -26,7 +26,7 @@ function leakRoom(h, clear) {
   }
   return Math.max(0, room / 1.2);
 }
-function leak(a, clear) {
+function leakOriginal(a, clear) {
   if (a <= 0) return;
   for (const h of LEAK_HOLES) {
     const g = cl((a - h.born) / (1 - h.born)); if (g <= 0) continue;
@@ -42,6 +42,68 @@ function leak(a, clear) {
     X.beginPath(); wP(pts, true, 1.6); stroke(C.orange, 3, .85); X.beginPath(); wP(pts, true, 1.2); stroke('#2b1d14', 1.6, 1);
     for (let k = 0; k < 6; k++) { const q = pts[(k * 7 + (FD >> 1)) % pts.length]; fillP(PE(q[0] + jit(6), q[1] + jit(6), 2.4, 2.4), C.orange, .9); } // embers
   }
+}
+// Robin: keep the takeover developing beyond the old one-third ceiling.
+// Growth starts on the cage-section cut at 334.42 s; the same holes coalesce, rather than spawning a new pattern.
+const LEAK_SURGE_START = 334.42, LEAK_PEAK = 398.76;
+function leakProgress(T) {
+  return Math.pow(cl((T - LEAK_T0) / (LEAK_T1 - LEAK_T0)), 1.6)
+    + 1.15 * Math.pow(cl((T - LEAK_SURGE_START) / (LEAK_PEAK - LEAK_SURGE_START)), 1.35);
+}
+function leak(a, clear, T = TNOW) {
+  if (T <= LEAK_SURGE_START) { leakOriginal(a, clear); return; }
+  if (a <= 0) return;
+  const joined = new Path2D(), edges = [];
+  const release = cl((T - LEAK_SURGE_START) / 20);
+  for (const h of LEAK_HOLES) {
+    const g = Math.max(0, (a - h.born) / (1 - h.born));
+    const radius = h.Rmax * Math.pow(g, .8);
+    const R0 = lerp(Math.min(radius, leakRoom(h, clear)), radius, release);
+    if (R0 < 4) continue;
+    const pts = h.shape.map((m, k) => {
+      const an = h.rot + k / h.shape.length * TAU;
+      // Fixed geometry: only its size changes, so the paper edge never swims.
+      return [h.x + Math.cos(an) * R0 * m, h.y + Math.sin(an) * R0 * m];
+    });
+    const path = PP(pts); joined.addPath(path); edges.push({ h, R0, pts, path });
+  }
+  X.save();
+  // Clip around subjects instead of shrinking whole holes: nearby openings can join.
+  // Sequential exclusions also work when protection zones overlap.
+  for (const z of clear || []) {
+    const keep = new Path2D(); keep.rect(-40, -40, W + 80, H + 80);
+    const rect = z[0] === 'rect', cx = rect ? (z[1] + z[3]) / 2 : z[0], cy = rect ? (z[2] + z[4]) / 2 : z[1];
+    const rx = rect ? (z[3] - z[1]) / 2 + 32 : z[2] + 24, ry = rect ? (z[4] - z[2]) / 2 + 32 : z[2] + 24;
+    const edge = [];
+    for (let k = 0; k < 80; k++) {
+      const th = k / 80 * TAU, c = Math.cos(th), s = Math.sin(th);
+      const tear = 1 + .025 * Math.sin(th * 11 + cx) + .014 * Math.cos(th * 23 + cy);
+      // Ragged rounded paper islands, never a hard rectangular viewport around a subject.
+      const power = rect ? .55 : 1;
+      edge.push([cx + Math.sign(c) * Math.pow(Math.abs(c), power) * rx * tear,
+        cy + Math.sign(s) * Math.pow(Math.abs(s), power) * ry * tear]);
+    }
+    keep.addPath(PP(edge));
+    X.clip(keep, 'evenodd');
+  }
+  // Draw rims first, then fill the union; overlapping holes have no internal rings.
+  for (const { h, R0, path } of edges) {
+    X.strokeStyle = '#2b1d14'; X.lineWidth = 14; X.globalAlpha = .65; X.stroke(path);
+    X.strokeStyle = C.orange; X.lineWidth = 5; X.globalAlpha = .9; X.stroke(path);
+  }
+  X.globalAlpha = 1;
+  X.save(); X.clip(joined); X.fillStyle = C.navy; X.fillRect(0, 0, W, H);
+  graticule(W / 2, H / 2, W * 1.2, H * 1.2, 40, C.lav, .2);
+  // One continuous sheet under all openings, with stable drafting geometry.
+  lattice(W / 2, H / 2, 42, 27, C.lav, .2);
+  for (let i = 0; i < 7; i++) {
+    const x = 170 + i * 270, y = 240 + (i % 3) * 270;
+    gc(x, y, 105 + (i % 2) * 45, C.lav, .35, 1.3, [4, 7]);
+    gl(x - 140, y, x + 140, y, C.cyan, .3, 1);
+    gl(x, y - 140, x, y + 140, C.cyan, .3, 1);
+    star(x, y, 4, C.white, .8);
+  }
+  X.restore(); X.restore();
 }
 // ---------- act 2: one impossible thing ----------
 SU.roadCarpet = { mode: 'ill', f(q, p, a, T) { // the road rolls itself up behind the car

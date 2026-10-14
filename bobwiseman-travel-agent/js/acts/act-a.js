@@ -1,6 +1,6 @@
 // Act A (0 - 116.6 s): grounded, then one impossible thing per scene.
 // Intro: the street, the shop, the posters, in through the door. Verse: the old-fashioned office, the news, the globe.
-// From 59: the sun as a loudspeaker, the sun in a shell, a car that sails on land, the road rolling up.
+// From 59: the sun as a loudspeaker, the sun in a shell, a car refused everywhere, then a footpath.
 // Chorus 1: the agent is a voice on a roadside payphone; she answers from a desk on top of a telephone pole.
 // Every cut is a new picture; each SCH insert diagrams the ILL shot just before it.
 'use strict';
@@ -720,6 +720,113 @@ SU.a_sTicket = { mode: 'sch', f(q, p, a, T) {
   screen(); schFrame('05', 'TICKET', 'CLASS: ECONOMY');
 } };
 
+// ---------- issue 120: turned away everywhere (73.7–90.8) ----------
+// A spring rises once, settles, and stays put. Absolute song time makes random seeks safe.
+function a_signRise(dt) {
+  if (dt <= 0) return 0;
+  return dt >= .75 ? 1 : 1 - Math.exp(-7 * dt) * Math.cos(12 * dt);
+}
+function a_noCarsSign(x, ground, rise, s = 1) {
+  if (rise <= 0) return;
+  X.save(); X.beginPath(); X.rect(x - 170 * s, ground - 650 * s, 340 * s, 650 * s); X.clip();
+  const y = ground - 440 * s * rise, r = 112 * s;
+  const post = PR(x - 9 * s, y, 18 * s, ground - y); fillP(post, C.tan);
+  hatch(post, x, (y + ground) / 2, 500 * s, .8, 5, C.ink, 1, .5); iBox(x - 9 * s, y, 18 * s, ground - y, C.ink, 2);
+  fillP(PE(x, y, r, r), C.cream); iE(x, y, r, r, 0, C.brick, 13 * s);
+  car(x, y + 25 * s, .64 * s); iline(x - 73 * s, y + 75 * s, x + 73 * s, y - 75 * s, C.brick, 13 * s, 1, false);
+  X.restore();
+}
+function a_carDriver(x, y, s, hatLift = 0) {
+  car(x, y, s);
+  X.save(); X.translate(x, y); X.scale(s, s);
+  X.save(); X.clip(PP([[-40, -52], [-20, -82], [46, -82], [64, -52]]));
+  traveller(7, 48, .4, { sit: 1, case: false, look: 1, hat: false, handTo: [55, -245] }); X.restore();
+  X.save(); X.translate(9, -84 - hatLift); a_fedora(.4); X.restore();
+  X.restore();
+}
+function a_openCarDoor(x, y, s, amount) {
+  if (amount <= 0) return;
+  X.save(); X.translate(x, y); X.scale(s, s);
+  const angle = amount * 1.15, dx = -78 * Math.cos(angle), dy = 32 * Math.sin(angle);
+  const lower = [[52,-49],[52+dx,-49+dy],[52+dx,-12+dy],[52,-12]];
+  const panel = PP(lower); fillP(panel,C.ochre); hatch(panel,20,-25,90,.6,4,C.ink,.8,.45); iP(lower,true,C.ink,1.4);
+  iP([[52,-49],[52,-82],[52+dx,-82+dy],[52+dx,-49+dy]],false,C.ink,1.5);
+  iline(52+dx+8,-37+dy,52+dx+20,-37+dy,C.ink,2,1,false);
+  X.restore();
+}
+SU.a_noCarVillage = { mode: 'ill', f(q, p, a, T) {
+  const dt = T - 73.7, stop = cl(dt / 2.48), cx = lerp(-270, 660, 1 - Math.pow(1 - stop, 2)), cy = 860;
+  stripes('#e9e2cc', '#d8dcc6', 150, -.62, 0, C.sage); cam(960, 540, 1);
+  const hill = PP([[980, 790], [1100, 630], [1330, 520], [1480, 490], [1640, 550], [1880, 720], [2050, 820]]);
+  fillP(hill, C.sage); hatch(hill, 1500, 700, 740, .4, 12, C.ink, .8, .35); iP([[980,790],[1100,630],[1330,520],[1480,490],[1640,550],[1880,720]], false, C.ink, 2);
+  // A frontal, balanced village; no previously used beach or wheat-field composition.
+  for (const [hx, hh, col] of [[1190,190,C.rose],[1350,220,C.ochre],[1540,220,C.ochre],[1700,190,C.rose]]) {
+    const hp = PR(hx, 630-hh, 135, hh); fillP(hp,col); hatch(hp,hx+67,630-hh/2,220,.7,7,C.ink,.8,.4); iBox(hx,630-hh,135,hh,C.ink,2);
+    fillP(PP([[hx-10,630-hh],[hx+67,565-hh],[hx+145,630-hh]]),C.brick); iP([[hx-10,630-hh],[hx+67,565-hh],[hx+145,630-hh]],true,C.ink,2);
+    for(const wx of [hx+25,hx+85]) { fillP(PR(wx,660-hh,25,45),C.cream); iBox(wx,660-hh,25,45,C.ink,1.5); }
+    fillP(PR(hx+52,570,30,60),C.teal);
+  }
+  fillP(PR(1460,310,50,320),C.cream); iBox(1460,310,50,320,C.ink,2);
+  fillP(PP([[1448,310],[1485,210],[1522,310]]),C.brick); iP([[1448,310],[1485,210],[1522,310]],true,C.ink,2);
+  const road=PR(-50,895,2020,200); fillP(road,'#938675'); hatch(road,960,990,1200,.1,8,C.ink,.8,.4); iline(0,895,W,895,C.ink,3);
+  for(let x=0;x<W;x+=200) fillP(PR(x,1010,95,8),C.cream);
+  const hit=Math.max(0,T-76.18), bounce=T>=76.18?Math.exp(-hit*5)*Math.sin(hit*13):0;
+  a_noCarsSign(1040,895,a_signRise(T-76.18),.85);
+  // Nose dip precedes the delayed hat/cloud response.
+  X.save(); X.translate(cx,cy); X.rotate(.045*bounce); a_carDriver(0,0,2.15,Math.max(0,Math.sin(hit*8))*Math.exp(-hit*3)*20); X.restore();
+  cloud(cx-100+70*Math.sin(cl((T-76.18)/.7)*Math.PI),410,.62,{rain:true});
+  if(T>75.7) for(let i=0;i<3;i++) iline(cx-290-i*50,895+i*8,cx-180-i*20,895+i*8,C.ink,2,.75,false);
+  consL([[0,895,W,895],[1040,160,1040,1040]]);
+} };
+SU.a_sNoCar = { mode: 'sch', f(q,p,a,T) {
+  schBG(); cam(960,540,1); graticule(960,540,1800,950,80,C.lav,.1);
+  car(550,600,2.8,{sch:true,col:C.white}); bracket(245,760,870,760,C.cyan,.9,'VEHICLE 01');
+  lab(1230,265,'PERMITTED',C.white,1,34,'center');
+  const places=['BEACH','ISLAND','VILLAGE','MOUNTAIN','MOON'];
+  places.forEach((name,i)=>{const y=370+i*95; lab(1060,y,name,C.white,.95,31);
+    const u=cl((T-78.3-.13-i*.22)/.16); if(u>0) gl(1040,y-12,1040+390*u,y-12,C.mag,1,4);
+  });
+  screen(); schFrame('08A','ACCESS','NO ENTRY');
+} };
+SU.a_carMoon = { mode: 'ill', f(q,p,a,T) {
+  const dt=T-80.13;
+  stripes('#59616d','#68717a',180,-.62,0,C.cream); cam(960,540,1);
+  for(let i=0;i<28;i++){const r=M32(960+i),x=80+r()*1760,y=90+r()*500,sz=3+r()*4;iline(x-sz,y,x+sz,y,C.cream,1.7,.8,false);iline(x,y-sz,x,y+sz,C.cream,1.7,.8,false);}
+  // Earth is a globe with continents, never an opening with a pupil-like centre.
+  const earth=PE(1600,235,130,130); fillP(earth,C.sky); X.save(); X.clip(earth);
+  fillP(PP([[1470,150],[1540,120],[1580,170],[1560,210],[1620,240],[1580,300],[1530,285],[1510,230]]),C.sage);
+  hatch(earth,1600,235,150,.5,8,C.ink,.8,.35); X.restore(); iE(1600,235,130,130,0,C.ink,2);
+  const ground=PP([[-100,860],[350,815],[850,845],[1360,780],[2020,820],[2020,1150],[-100,1150]]);
+  fillP(ground,'#d2c9b4'); hatch(ground,960,940,1250,.12,9,C.ink,.9,.4); iP([[-100,860],[350,815],[850,845],[1360,780],[2020,820]],false,C.ink,2);
+  for(const [x,y,rx,ry] of [[220,970,130,26],[1080,920,150,32],[1680,1000,200,38]]) {
+    const cr=PE(x,y,rx,ry);fillP(cr,'#aaa596');hatch(cr,x,y,rx,0,5,C.ink,1,.6);iE(x,y,rx,ry,0,C.ink,2);
+  }
+  a_noCarsSign(830,860,a_signRise(T-80.4),.68);
+  const exit=cl((dt-.85)/.65), hopTime=Math.max(0,dt-1.5), hop=hopTime/1.05, hx=hop-Math.floor(hop);
+  const tx=exit<1?lerp(522.6,890,exit):890+hopTime*250, ty=exit<1?lerp(941.4,1015,exit):1015-110*4*hx*(1-hx);
+  if(exit===0) a_carDriver(510,855,1.8); else {
+    car(510,855,1.8);
+    traveller(tx,ty,.72,{case:true,look:1,sit:exit<.45,legs:exit<1?exit*Math.PI:hx*Math.PI*2});
+    for(let i=0;i<Math.floor(hop)+1;i++) { const fx=890+i*262; if(fx<tx){fillP(PE(fx,1023,17,5,.2),C.ink,.5);fillP(PE(fx+33,1033,17,5,.2),C.ink,.5);} }
+  }
+  a_openCarDoor(510,855,1.8,eo(cl((dt-.55)/.5)));
+  cloud(lerp(490,tx-20,cl(exit)),exit===0?450:ty-430,.58,{rain:true});
+  consL([[0,1045,W,1045]]);
+} };
+SU.a_sFootpath = { mode:'sch', f(q,p,a,T) {
+  schBG(); cam(960,540,1); graticule(960,540,2000,1200,80,C.lav,.12);
+  const land=PP(COAST); stip(land,900,560,800,3500,C.lav,.35,1.3); iP(COAST,true,C.lav,1.6,.8,false,.4);
+  const A=[400,730],B=[660,240],Cc=[1080,850],D=[1500,420],u=cl((T-84.9)/4.5);
+  path(bzPts(A,B,Cc,D,0,1),C.lav,2,.5,[4,9]); path(bzPts(A,B,Cc,D,0,u),C.cyan,4,1);
+  for(let i=0;i<24;i++){const v=i/24;if(v>u)break;const [x,y]=bz(A,B,Cc,D,v);fillP(PE(x,y+(i%2?10:-10),7,3,-.3),C.white,.9);}
+  car(350,800,.65,{sch:true,col:C.white});gl(265,820,430,690,C.mag,1,4);lab(350,870,'CAR LEFT HERE',C.white,1,23,'center');
+  iBox(1435,285,130,200,C.white,3);lab(1500,325,'TEL',C.white,1,24,'center');
+  gl(1470,355,1470,425,C.cyan,1,7);gc(1485,355,16,C.cyan,1,4);gc(1485,425,16,C.cyan,1,4);
+  lab(1500,545,'ON FOOT',C.white,1,27,'center');
+  const ring=T-89.7;if(ring>=0&&ring<=.8)for(let i=0;i<3;i++){const r=90+i*36+ring*70;gc(1500,385,r,C.mag,1-ring/.95,3,null,-.7,.7);gc(1500,385,r,C.mag,1-ring/.95,3,null,Math.PI-.7,Math.PI+.7);}
+  screen();schFrame('08B','FOOTPATH','NEXT: TELEPHONE');
+} };
+
 // ---------- the cut list: 0 - 116.6 ----------
 var CUTS_A = [
   // intro, wordless: the street, the shop, in through the door
@@ -748,11 +855,11 @@ var CUTS_A = [
   [61.7, 'a_sunHorn', {}],
   [66.28, 'a_sSound', {}],
   [68.70, 'a_shell', {}],
-  // "the car on a land"
-  [73.7, 'a_landShip', {}],
-  [78.3, 'a_sContour', {}],
-  [80.13, 'a_roadCarpet', {}],
-  [84.66, 'a_sMap', {}],
+  // Cars are not allowed: turned away everywhere, then onward on foot.
+  [73.7, 'a_noCarVillage', {}],
+  [78.3, 'a_sNoCar', {}],
+  [80.13, 'a_carMoon', {}],
+  [84.66, 'a_sFootpath', {}],
   // chorus 1: a roadside payphone; she answers somewhere else
   [90.8, 'a_payphone', {}],
   [93.69, 'a_sWire', {}],
