@@ -195,7 +195,7 @@ function drawHost(g, t) {
   }
 }
 
-// ---------------- the sandy path: a runner of sand glass from his pocket ----------------
+// ---------------- the sand runner: a strip of sand glass from his pocket ----------------
 function pathCurve(s) { const x0 = HX0 - 110, P0 = [x0, 922], P1 = [x0 - 380, 940], P2 = [-160, 1040], u = 1 - s; return [u * u * P0[0] + 2 * u * s * P1[0] + s * s * P2[0], u * u * P0[1] + 2 * u * s * P1[1] + s * s * P2[1]]; }
 function pathOpen(t) {
   if (t < SH.pathOut || t > SH.rolledUp) return 0;
