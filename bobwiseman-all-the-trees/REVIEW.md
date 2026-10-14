@@ -1,3 +1,15 @@
+# Latest review: v4 needs a directing revision
+
+Robin’s feedback on 2026-10-13: the film still feels boring and dominated by two characters; he wants a richer ensemble, Mark-informed symbolic action, tighter musical staging, and trumpets concealed before their entrance.
+
+The resulting audit is in AUDIT-v4.html (interactive video-linked findings) and AUDIT-v4.json (structured direction and acceptance checks). Three independent critics reviewed source, actual encoded frames, contact sheets and cue/audio-signal evidence. This was not a continuous playback/listening review. The exact first trumpet onset remains to be verified against the master; neither 12.5 s nor the harmonic detector’s first candidate proves it.
+
+The core failures are continuous playing poses, a nearly always-active synthetic brass envelope, duplicate rigs with identical jobs, repeated sine dancing, little interaction, and one dominant wide framing. Named beat cues are not consumed by the drawing code, so cue validation can pass without moving the visible event. The existing no-freeze and audio-offset passes remain valid as file checks; they do not constitute approval of musical timing, acting or interest.
+
+Recommended direction: the connected grove as a physical comedy. Prove a concealed horn, phrase-led reveal, listener reaction and transferred consequence in approximately 8–32 seconds; verify the true brass entrance first. Then build an enduring root-to-person handoff and partner/bird contact actions. V4 is preserved. No v5 animation has been rendered in this audit pass.
+
+---
+
 # All The Trees: full rough cut v4
 
 Robin requested more of the lead-in before the original 47-second start. V4 adds the complete opening and retains the longer sequence through the end. The local file is `out/att_alchemy-v4-full_f00000-f03674_24fps_draft.mp4`: song frames [0,3674), 0–153.083333 seconds, 153.083333 seconds at 24 fps, 1280×720. The pinned source ends at 153.066 seconds, within the final picture frame. Prior MP4s are preserved.
