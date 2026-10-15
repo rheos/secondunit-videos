@@ -7,7 +7,7 @@
 (() => {
  const A=Alchemy,S=A.scene,{g,C,smooth,clamp,mix,noise,line,stroke,fill,ellipse}=A;
  const base=A.draw,W=1920,H=1080,X0=76,X1=1844,Y0=70,Y1=1005,CB=932;
- const T={staticEnd:2.25,heraldIn:[1.2,2.1],dial:11.5,heraldOut:[11.6,12.45],singerIn:[12.3,13.1],open:[13.35,16.5],singerOut:[16.5,17.5],clear:[16.55,18.3],floorOut:[30.5,33.0]};
+ const T={staticEnd:2.25,heraldIn:[1.2,2.1],dial:11.5,heraldOut:[11.6,12.45],singerIn:[12.3,13.1],open:[13.35,16.5],singerOut:[16.5,17.5],clear:[17.3,18.6],floorOut:[29.6,33.0]};
  const img={};
  const oldLoad=A.load;
  A.load=async()=>{await oldLoad();const M=window.ALCHEMY_OPENING_MEDIA||{};
@@ -29,13 +29,13 @@
   for(let i=0;i<N;i++){const xa=mix(outer,inner,i/N),xb=mix(outer,inner,(i+1)/N);
    const band=new Path2D();band.moveTo(xa+wob(top,i),top);for(let y=top;y<=CB+12;y+=22)band.lineTo(xa+wob(y,i),y);
    for(let y=CB+12;y>=top;y-=22)band.lineTo(xb+wob(y,i+1),y);band.closePath();
-   const gr=g.createLinearGradient(xa,0,xb,0);gr.addColorStop(0,'#3e0f15');gr.addColorStop(.22,'#7a2230');gr.addColorStop(.52,'#b3404b');gr.addColorStop(.66,'#d26a6c');gr.addColorStop(.8,'#9a3340');gr.addColorStop(1,'#4a1219');
+   const gr=g.createLinearGradient(xa,0,xb,0);gr.addColorStop(0,'#1e0609');gr.addColorStop(.25,'#5a1621');gr.addColorStop(.55,'#8f2a37');gr.addColorStop(.68,'#a2384a');gr.addColorStop(.82,'#6e1b28');gr.addColorStop(1,'#22070b');
    g.fillStyle=gr;g.fill(band);
-   const hatch=new Path2D();for(let k=0;k<8;k++){const u=k/8*.3,xx=mix(xa,xb,u);hatch.moveTo(xx+wob(top,i),top);for(let y=top;y<=CB+12;y+=22)hatch.lineTo(xx+mix(wob(y,i),wob(y,i+1),u),y)}
+   const hatch=new Path2D();for(let k=0;k<14;k++){const u=k/14*.42,xx=mix(xa,xb,u);hatch.moveTo(xx+wob(top,i),top);for(let y=top;y<=CB+12;y+=22)hatch.lineTo(xx+mix(wob(y,i),wob(y,i+1),u),y)}
    for(let k=0;k<5;k++){const u=.86+k*.03,xx=mix(xa,xb,u);hatch.moveTo(xx+wob(top,i+1),top);for(let y=top;y<=CB+12;y+=22)hatch.lineTo(xx+mix(wob(y,i),wob(y,i+1),u),y)}
    g.strokeStyle='rgba(24,8,8,.5)';g.lineWidth=.8;g.stroke(hatch);
    const crest=new Path2D(),cu=.6;crest.moveTo(mix(xa,xb,cu)+wob(top,i),top);for(let y=top;y<=CB+12;y+=22)crest.lineTo(mix(xa,xb,cu)+mix(wob(y,i),wob(y,i+1),cu),y);
-   g.strokeStyle='rgba(248,196,180,.55)';g.lineWidth=1.6;g.stroke(crest)}
+   g.strokeStyle='rgba(230,150,150,.18)';g.lineWidth=7;g.stroke(crest)}
   g.restore();
   g.strokeStyle=C.ink;g.lineWidth=2;g.stroke(path);
   // gold fringe along the hem
@@ -69,10 +69,11 @@
    A.glow(x,y-14,30*fl,.55);fill(`M${x-4} ${y}Q${x-5} ${y-12} ${x} ${y-24*fl}Q${x+5} ${y-12} ${x+4} ${y}Z`,C.gold);stroke(`M${x-4} ${y}Q${x-5} ${y-12} ${x} ${y-24*fl}Q${x+5} ${y-12} ${x+4} ${y}Z`,C.ink,.8)}
   g.restore()}
  // ---- aether: engraved interference across the plate (radio static, the dial turning) ----
- function aether(a,t){if(a<=0)return;g.save();g.globalAlpha=a*.55;const step=Math.floor(t*12);
-  for(let k=0;k<26;k++){const y=Y0+30+k*36+8*noise(step*7+k),amp=6+10*noise(step+k*3),f=.02+.03*noise(k+step*.3);let d=`M${X0} ${y}`;
-   for(let x=X0;x<=X1;x+=14)d+=`L${x} ${y+amp*Math.sin(x*f+step*1.7+k)*(noise(Math.floor(x/120)+k*11+step)>.35?1:.15)}`;stroke(d,k%3?C.ink:'#c9962e',k%3?.7:1.3)}
-  g.restore()}
+ // v16 (audit A9): radio static as broken engraved snow that changes every frame, over the whole picture.
+ function aether(a,t){if(a<=0)return;g.save();g.globalAlpha=Math.min(1,a);const step=Math.round(t*24),P=new Path2D(),Q=new Path2D();
+  for(let k=0;k<1400;k++){const x=X0+noise(step*13.1+k*1.7)*(X1-X0),y=Y0+noise(step*7.3+k*2.9)*(Y1-Y0),l=3+9*noise(k+step);(k%4?P:Q).moveTo(x,y);(k%4?P:Q).lineTo(x+l,y+(noise(k*3+step)-.5)*2)}
+  for(let k=0;k<6;k++){const y=Y0+noise(step*3.7+k)*(Y1-Y0);P.moveTo(X0,y);for(let x=X0;x<=X1;x+=40)P.lineTo(x,y+(noise(x+step+k)-.5)*5)}
+  g.strokeStyle=C.ink;g.lineWidth=1.1;g.stroke(P);g.strokeStyle='#f3e7c8';g.lineWidth=1.6;g.stroke(Q);g.restore()}
  // ---- performers: registered open/closed mouth cut-outs ----
  function performer(name,x,feet,h,flip,f,lean=0,squash=1){const o=img[name+'-open'],c=img[name+'-closed'];if(!o)return;
   const im=mouth(f)?o:(c||o),box=window.ALCHEMY_OPENING_BOX?.[name]||[0,0,o.width,o.height],k=h/(box[3]-box[1]);
@@ -84,20 +85,24 @@
   base(raw);
   const open=smooth(...T.open,raw),clear=smooth(...T.clear,raw),ripple=A.performance.bump(11.4,11.8,13.4,raw)+.25*A.performance.bump(0,.3,2.3,raw);
   g.save();g.beginPath();g.rect(X0,Y0,X1-X0,Y1-Y0);g.clip();
-  const groundUp=smooth(30.5,33,raw);floor(groundUp>=1?0:1,t,groundUp?760+610*groundUp:0);
+  floor(1-smooth(29.6,30.6,raw),t); // v16 (audit A13): the boards go before the soil rises
   if(clear<1){const slide=clear*1;for(const side of [-1,1]){g.save();g.translate(side*slide*240,0);panel(side,open,t,ripple);g.restore()}}
   // the playbill medallions hang in front of the curtain from the herald's names on
   if(raw<16.6&&A.openingChart){g.save();g.translate(2*Math.sin(raw*.14),0);A.openingChart(t);g.restore()}
-  aether(1-smooth(1.8,2.3,raw)+A.performance.bump(11.45,11.6,12.5,raw),t);
+  aether((raw<2.2?1:0)+(raw>=11.5&&raw<12.4?1:0),t); // hard on/off, like a dial
   // the herald (the DJ): walks in, reads, is spun off by the dial turn
   if(raw>=T.heraldIn[0]&&raw<T.heraldOut[1]){const inP=smooth(...T.heraldIn,raw),outP=smooth(...T.heraldOut,raw);
    const walk=Math.abs(Math.sin(t*9))*(inP<1||outP>0?8:0),spin=smooth(11.55,11.8,raw);
    const x=mix(2020,1545,inP)+outP*560,flip=raw<11.55?1:Math.cos(spin*Math.PI)>=0?1:-1,sq=raw>11.55&&raw<11.8?Math.abs(Math.cos(spin*Math.PI))*.9+.1:1;
-   performer('herald',x,Y1-6-walk-5*voice(f),640,flip*sq,raw<11.55?f:0,.03*voice(f)-.02)}
+   // v16 (audit A11): she points the scroll toward each coin as it lands and shifts her weight between names.
+   const coin=[2.62,4.88,8.85,9.7,10.45,11.5].reduce((v,c)=>Math.max(v,A.performance.bump(c-.15,c+.1,c+.9,raw)),0),sway=.025*Math.sin(t*1.7);
+   performer('herald',x-18*coin,Y1-6-walk-5*voice(f)-6*coin,640,flip*sq,raw<11.55?f:0,.03*voice(f)-.02-.09*coin+sway)}
   // the troubadour (the French station): steps in, sings as the curtains open, bows and leaves
-  if(raw>=T.singerIn[0]&&raw<T.singerOut[1]){const inP=smooth(...T.singerIn,raw),outP=smooth(...T.singerOut,raw),bow=A.performance.bump(16.45,16.7,17.0,raw);
-   const walk=Math.abs(Math.sin(t*9))*(inP<1||outP>0?8:0),sing=raw>13.1&&raw<16.5;
-   performer('singer',mix(-260,380,inP)-outP*700,Y1-6-walk,650,-1,sing?f:0,sing?-.05*voice(f)+.015*Math.sin(t*6):.12*bow,1-.05*bow);
+  if(raw>=T.singerIn[0]&&raw<17.7){const inP=smooth(...T.singerIn,raw),outP=smooth(16.95,17.6,raw),bow=A.performance.bump(16.45,16.7,16.95,raw);
+   const walk=Math.abs(Math.sin(t*9))*(inP<1||outP>0?8:0),sing=raw>13.1&&raw<16.45;
+   // v16 (audit A6): a forward bow toward the audience, then he walks off behind the left curtain.
+   g.save();if(outP>0){g.beginPath();g.rect(X0+130,Y0,X1,Y1);g.clip()}
+   performer('singer',mix(-260,380,inP)-outP*420,Y1-6-walk,650,-1,sing?f:0,sing?-.05*voice(f)+.015*Math.sin(t*6):-.26*bow,1-.04*bow);g.restore();
    if(sing)notes(f,t)}
   g.restore();
   valance(clear*260,t);

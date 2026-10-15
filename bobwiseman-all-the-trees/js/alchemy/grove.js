@@ -4,7 +4,7 @@
  const horizon={x:1040,y:455},depths=[1,.65,.40,.23,.125,.055],counts=[4,6,8,10,10,12];
  const trees=depths.flatMap((depth,row)=>Array.from({length:counts[row]},(_,i)=>{
   const seed=37+row*71+i*17;
-  const x=row===0?[230,690,1220,1690][i]:horizon.x+mix(-1170,1170,i/(counts[row]-1))*depth+(noise(seed)-.5)*95*depth;
+  const x=row===0?[400,690,1220,1520][i]:horizon.x+mix(-1170,1170,i/(counts[row]-1))*depth+(noise(seed)-.5)*95*depth;
   return {id:`${row}-${i}`,row,seed,x,y:horizon.y+305*depth,depth,
    size:depth*(row===0&&[1,2].includes(i)?1:.85+noise(seed+2)*.2),
    start:()=>ALCHEMY_CUES.grove.firstTree+row*ALCHEMY_CUES.grove.depthDelay+(i%3)*3};

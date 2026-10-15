@@ -25,7 +25,7 @@
   const gap=prior&&next&&!current?next[0]-prior[1]:Infinity,breathing=gap<=36;
   const inhale=breathing?Math.sin(Math.PI*clamp((f-prior[1])/gap)):0;
   // v11: the dip scales with the gap; a 3-5 frame catch-breath keeps the bell at the lips (audit A3).
-  const depth=gap<6?.07:gap<8?.2:.42;
+  const depth=gap<6?.07:gap<8?.3:.45;
   if(breathing)return {visible,state:'breath',play:0,lift:1-depth*inhale,uncover:1,attack:0,prepare:0,inhale:inhale*(gap<6?.45:1),frame:Math.round(f)};
   return {visible,state:current?'play':recover>0?'recover':visible?'rest':f>=first-6?'prepare':'concealed',play,lift:Math.max(play,recover,prep),uncover:visible?1:0,attack:current?Math.max(.22,1-(f-note)/7):0,prepare:f<first?prep:0,inhale:0,frame:Math.round(f)};
  }
@@ -50,8 +50,9 @@
  // Branches are a phrase-sized transformation; hands are free between declarations.
  function branchPresence(which,t){const f=t*24,moon=which==='luna';
   const initial=1-smooth(1908,1937,f);
-  const second=smooth(moon?2194:2132,moon?2210:2148,f)*(1-smooth(2258,2282,f));
-  const third=smooth(moon?2952:2890,moon?2972:2908,f)*(1-smooth(3012,3036,f));
+  // v16 (audit #7): once grown, branches stay (no retraction to bare sticks; the climax keeps its sprigs).
+  const second=smooth(moon?2194:2132,moon?2210:2148,f)*(1-smooth(2630,2652,f));
+  const third=smooth(moon?2952:2890,moon?2972:2908,f);
   const finale=smooth(3212,3240,f);
   return Math.max(initial,second,third,finale);
  }
@@ -70,12 +71,12 @@
  function flow(t){const f=t*24,[start,end]=c.rootExchange;return {active:f>=start&&f<=end,u:clamp((f-start)/(end-start)),from:'sol',to:'luna'}}
  // v11: the root dip is one continuous eased move (down, along the join, back up), 61.25-64.5 s, so the
  // birds launch on "birds" (audit B4, B5). The old keyframes stalled twice and ended in a whip.
- function rootCamera(t){const f=t*24;if(f<=1470||f>=1548)return {z:1,x:960,y:540};const u=smooth(1470,1548,f),s=Math.sin(Math.PI*u);
+ function rootCamera(t){const f=t*24;if(f<=1470||f>=1532)return {z:1,x:960,y:540};const u=smooth(1470,1532,f),s=Math.sin(Math.PI*Math.pow(u,.85));
   return {z:1+.55*s,x:960+s*(-80+290*u),y:540+250*s}}
  // v11: one push-in or reframe per key sung word, and into the climax (audit F1, D5, D6). [in, held, release, out, zoom, x, y]
- const pushes=[[50.35,50.85,52.4,53.4,1.32,960,360],[81.9,82.4,83.5,84.4,1.24,960,360], // v12: no push on "you"; the root toward the viewer takes that word
-  
-  [111,116,120.4,122.6,1.22,950,430],[125.6,131,134.6,136.4,1.16,960,470]];
+ // v16 (audit v15 #1): every push is frame-safe: heralds and cast stay at least 40 px inside the plate. The climax gets
+ // its size from the heart itself, not a camera push, so no newcomer is cut off while their sprigs flower.
+ const pushes=[[50.35,50.85,52.4,53.4,1.1,960,470],[81.9,82.4,83.5,84.4,1.08,960,480],[111,116,120.4,122.6,1.08,950,470]];
  // v12: keep the view inside the plate (sky 70-760, ground to 1005, x 76-1844) whatever the zoom.
  function frameIn(cx,cy,zoom){const hw=884/zoom,hh=467.5/zoom;return [Math.min(Math.max(cx,76+hw),1844-hw),Math.min(Math.max(cy,70+hh),1005-hh)]}
  function push(t){let best={z:1,x:960,y:540,w:0};for(const [a,b,d,e,z,x,y] of pushes){const w=smooth(a,b,t)*(1-smooth(d,e,t));if(w>best.w)best={z:1+(z-1)*w,x,y,w}}return best}

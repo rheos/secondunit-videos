@@ -3,12 +3,12 @@
  const A=Alchemy,S=A.scene,{g,C,smooth,clamp,mix,noise,stroke,fill,line,ellipse,rays,cloud}=A;
  const lookTest=A.draw;
  const cast=[
-  {id:'west',sprite:'owl',index:0,role:'listener',which:'luna',x:300,k:.60,on:81.22,phase:1.4,color:'#739d77'},
-  {id:'east',sprite:'keeper',index:1,role:'carrier',which:'sol',x:1590,k:.65,on:91.56,phase:3.8,color:C.gold},
-  {id:'far-west',sprite:'moth',index:2,role:'caretaker',which:'sol',x:180,k:.40,on:123.5,phase:2.5,color:C.rose},
-  {id:'inner-west',sprite:'fox',index:3,role:'listener',which:'luna',x:452,k:.66,on:84.5,phase:4.4,color:C.blue},
-  {id:'inner-east',sprite:'fish',index:4,role:'carrier',which:'sol',x:1415,k:.70,on:93.2,phase:.8,color:'#739d77'},
-  {id:'far-east',sprite:'hare',index:5,role:'mischief',which:'luna',x:1760,k:.46,on:126.0,phase:5.7,color:C.gold}
+  {id:'west',sprite:'owl',index:0,role:'listener',which:'luna',x:335,k:.60,on:81.22,phase:1.4,color:'#739d77'},
+  {id:'east',sprite:'keeper',index:1,role:'carrier',which:'sol',x:1595,k:.65,on:91.56,phase:3.8,color:C.gold},
+  {id:'far-west',sprite:'moth',index:2,role:'caretaker',which:'sol',x:220,k:.40,on:123.5,phase:2.5,color:C.rose},
+  {id:'inner-west',sprite:'fox',index:3,role:'listener',which:'luna',x:470,k:.66,on:84.5,phase:4.4,color:C.blue},
+  {id:'inner-east',sprite:'fish',index:4,role:'carrier',which:'sol',x:1440,k:.70,on:93.2,phase:.8,color:'#739d77'},
+  {id:'far-east',sprite:'hare',index:5,role:'mischief',which:'luna',x:1735,k:.46,on:126.0,phase:5.7,color:C.gold}
  ];
  const abstract=t=>smooth(109.7,112,t)*(1-smooth(120.5,122.7,t));
  A.leafSeason=t=>1-.82*smooth(107.96,109.5,t)+.82*smooth(122.7,125.3,t);
@@ -34,7 +34,7 @@
   for(let j=0;j<3;j++){const end=910+j*51,side=a.x<960?1:-1;
    const b=widerRootCurve(a,c,j,t);
    const rb=[b[6],b[7],b[4],b[5],b[2],b[3],b[0],b[1]];S.woodyRoot(rb,clamp(p*1.15-j*.07),5+j,20*a.k+6,c+j,{rootlets:4,rootletLen:64});
-   if(p<1){const e=S.bez(rb,clamp(p*1.15-j*.07));A.glow(e[0],e[1],22)}
+
   }
  }}
  // v9: the heart grows on its own young tree out of the shared root junction, cradled by two leafy
@@ -42,9 +42,11 @@
  // final chorus it rises and its rays reach across the whole sky.
  function heartGeom(t,a){const rise=smooth(96.3,100.1,t),final=smooth(122.7,128,t),climax=smooth(128,136,t),love=A.performance.bump(99.95,100.15,101,t)+A.performance.bump(103.33,103.53,104.4,t);
   const reply=smooth(ALCHEMY_CUES.performance.reply.sol,ALCHEMY_CUES.performance.reply.settle,t*24);
-  const x=950,y=mix(929,mix(348,412,a),rise)-final*70-reply*20;
+  const x=950,y=mix(929,mix(348,412,a),rise)-final*20-reply*10;
   const effort=ALCHEMY_CUES.performance.carePulses.reduce((v,p)=>Math.max(v,A.performance.reaction(t,p.start)),0);
-  const radius=mix(18,112,rise)*(1+a*.55+final*.22+climax*.08)*(1+.018*Math.sin(S.pulse(t)*2)-.13*effort+.12*love);
+  // v16 (audit #12): smaller in the instrumental, largest on the last "so are you"; swells a quarter on each "love".
+  const peak=A.performance.bump(135.1,135.6,138.4,t);
+  const radius=Math.min(190,mix(18,112,rise)*(1+a*.32+final*.38+climax*.1+.14*peak)*(1+.018*Math.sin(S.pulse(t)*2)-.13*effort+.24*love));
   return {rise,final,climax,x,y,radius,sun:smooth(104.35,104.8,t)}; // v11: swells on each "love"; the sun lands on "sun" (audit C9, C10)
  }
  function flame(h,w,ph){const sw=w*.9*Math.sin(ph),tongue=(k,col,lw)=>{const H=h*k,W=w*k,d=`M${-W} 0C${-W*1.5} ${-H*.32} ${W*.9+sw*k} ${-H*.5} ${sw*1.9*k} ${-H}C${-W*.35+sw*k} ${-H*.62} ${W*1.6} ${-H*.36} ${W} 0Q0 ${H*.12} ${-W} 0Z`;fill(d,col);if(lw)stroke(d,C.ink,lw);return d};
@@ -61,10 +63,16 @@
   // The young tree: same path the care packets ride, now with real wood and two cradling branches.
   // v11: the trunk always runs the full way from the junction to the heart, so the heart never floats (audit C1).
   const trunk=[960,936,mix(960,936,rise),mix(936,759,rise),mix(960,990,rise),Math.min(936,y+210),x,y+radius*.7];
-  S.woodyRoot(trunk,1,mix(16,44,rise),mix(7,20,rise),77,{});
+  // v16 (audit #2): a forked young tree, not a pole: root flare at the junction, a lower pair of leafy branches.
+  for(const s2 of [-1,0,1])S.woodyRoot([960,930,960+s2*20,950,960+s2*45,968,960+s2*70+(s2?0:8),990],rise,18,3,70+s2,{});
+  if(rise>.45){const g2=smooth(.45,.9,rise),season=Math.max(.45,A.leafSeason?A.leafSeason(t):1);
+   for(const side of [-1,1]){const p0=S.bez(trunk,.52),b=[p0[0],p0[1],p0[0]+side*40,p0[1]-30,p0[0]+side*85,p0[1]-75,p0[0]+side*110,p0[1]-120];
+    S.woodyRoot(b,g2,14,3,60+side,{});for(let k=0;k<6;k++){const u=.3+k*.12;if(u>g2)continue;const q=S.bez(b,u),q2=S.bez(b,Math.min(1,u+.03)),ang=Math.atan2(q2[1]-q[1],q2[0]-q[0]);S.leaf(q[0],q[1],ang+(k%2?1.8:-1.3)*side,.6,clamp((g2-u)*5)*season)}}}
+  S.woodyRoot(trunk,1,mix(16,56,rise),mix(7,24,rise),77,{});
   // v12: their roots feed the heart: sap runs from each partner's root into the junction and up the trunk (audit C3).
   if(t>98.5&&t<108.8){for(const [k,root] of [[0,S.roots[2]],[1,S.roots[7]]]){const q=((t-98.5)/1.7+k*.5)%1,u=q<.62?q/.62:(q-.62)/.38;
    const p=q<.62?S.bez(root,u):S.bez(trunk,u);A.glow(p[0],p[1],28*(1-smooth(108.2,108.8,t)))}}
+  if(t>111&&t<122.7){const sc=window.ALCHEMY_TRUMPET_SCORE;for(const [a2] of sc.intervals){const u=(t*24-a2)/20;if(u>=0&&u<1){const p=S.bez(trunk,u);A.glow(p[0],p[1],34*(1-u*.4))}}}
   // The emblem sun sits behind; the branches hold the heart in front of it.
   if(sun){g.save();g.translate(x,y);g.scale(birth,birth);g.globalAlpha=sun;ellipse(0,0,radius*1.1,radius*1.1,C.gold,C.ink);
    for(const k of [1.02,.93,.86])ellipse(0,0,radius*k,radius*k,null,'#8f5f1e');
@@ -77,6 +85,8 @@
   }
   g.save();g.translate(x,y);g.scale(birth,birth);
   const path=new Path2D('M0 1C-.18 .85-1 .25-.86-.3C-.78-.78-.2-.8 0-.36C.22-.82.85-.74.9-.22C1 .23.25 .76 0 1Z');
+  // v16: green sepals cup the bud, then open back as it flowers (audit C4).
+  const sep=1-smooth(98.6,99.6,t);if(sep>0){const open=smooth(97.2,99.4,t);for(const s3 of [-1,0,1]){g.save();g.translate(0,radius*.9);g.rotate(s3*(.35+.9*open)+Math.PI);g.globalAlpha=sep;S.leaf(0,0,0,radius*.016*(1.1-.2*Math.abs(s3)),1);g.restore()}}
   // A closed bud on the trunk's tip that opens as it rises (audit C1); engraving strong enough for 720p (C2).
   const bud=mix(.42,1,smooth(96.6,98.8,t));
   g.save();g.scale(radius*bud,radius);g.fillStyle=C.rose;g.fill(path);g.strokeStyle=C.ink;g.lineWidth=2.2/radius;g.stroke(path);g.clip(path);
@@ -86,21 +96,26 @@
   g.globalAlpha=.36;for(let j=0;j<17;j++){const yy=.12+j*.045;stroke(`M.05 ${yy}Q.67 ${yy-.25} .96 ${yy-.72}`,C.ink,.012)}
   g.globalAlpha=1;
   for(let j=0;j<17;j++){const xx=-.92+j*.11;stroke(`M${xx} .93Q${xx+.15} .1 ${xx+.3}-.9`,'#864c43',.0035)}
+  // v16 (audit #2): modelled like the engravings: a dark rim, contour hatching on the shadow side, a soft highlight.
+  const rim=g.createRadialGradient(-.15,-.2,.1,0,0,1.05);rim.addColorStop(0,'rgba(0,0,0,0)');rim.addColorStop(.6,'rgba(60,10,20,.08)');rim.addColorStop(1,'rgba(40,6,14,.55)');g.fillStyle=rim;g.fillRect(-1.1,-1,2.2,2.1);
+  g.save();g.beginPath();g.rect(-.05,-1,1.2,2.1);g.clip();for(const k of [.92,.82,.72,.62,.52]){g.save();g.scale(k,k);g.translate(0,.06/k);g.strokeStyle='rgba(40,8,14,.55)';g.lineWidth=.014/k;g.stroke(path);g.restore()}g.restore();
+  g.globalAlpha=.4;ellipse(-.48,-.42,.22,.13,'#f6d8c8',null);g.globalAlpha=1;
   g.restore();
   // Love's fire: flames rise from the cleft on "sun" and flicker on twos, drawn over the heart.
   if(sun){const ph=Math.floor(t*12)*1.7,h=radius*(.9+.12*Math.sin(ph))*sun,w=radius*.11;
-   for(const [fx,fy,rot,k,o] of [[-.42,-.74,-.25,.62,2.4],[.42,-.7,.22,.6,4.1],[0,-.36,0,1,1]]){g.save();g.translate(fx*radius,fy*radius);g.rotate(rot);flame(h*k,w*(k>.9?1.15:.9),ph+o);g.restore()}}
+   for(const [fx,fy,rot,k,o] of [[-.4,-.72,-.3,.42,2.4],[.4,-.68,.28,.4,4.1],[0,-.36,0,1.4,1]]){g.save();g.translate(fx*radius,fy*radius);g.rotate(rot);flame(h*k,w*(k>.9?1.6:.8),ph+o);g.restore()}} // v16: one large flame from the cleft (audit C12)
   g.restore();
  }
  // v12: chorus 2's own move on "tree too" (89.0 s, audit C4/F10): a gold pulse runs every newcomer's root into the
  // pair's knot, bursts there, and the pair's roots light up.
- function treeToo(t){if(t<88.9||t>92.4)return;
-  cast.forEach((c,i)=>{if(t<c.on+1.2)return;const u=smooth(89.0,89.85,t);if(u<=0||u>=1)return;const q=S.bez(widerRootCurve(c,i,1,t),u);A.glow(q[0],q[1],30)});
+ function treeToo(t){if(t<88.9||t>92.4)return;const fillG=A.performance.bump(88.95,89.15,91.6,t);
+  if(fillG)cast.forEach((c,i)=>{if(t<c.on+1.2)return;g.save();g.globalAlpha=fillG;for(let j=0;j<3;j++){const b=widerRootCurve(c,i,j,t);g.beginPath();for(let k=0;k<=30;k++){const q=S.bez(b,k/30);k?g.lineTo(q[0],q[1]):g.moveTo(q[0],q[1])}g.strokeStyle='rgba(250,200,80,.5)';g.lineWidth=14;g.stroke();g.strokeStyle=C.gold;g.lineWidth=4;g.stroke()}g.restore()});
   const burst=A.performance.bump(89.8,89.95,90.9,t);if(burst)A.glow(958,936,140*burst,burst);
   const lit=A.performance.bump(89.9,90.3,92.3,t);if(lit){g.save();g.globalAlpha=lit;for(const b of S.roots){g.beginPath();for(let k=0;k<=30;k++){const q=S.bez(b,k/30);k?g.lineTo(q[0],q[1]):g.moveTo(q[0],q[1])}g.strokeStyle=C.gold;g.lineWidth=3.5;g.stroke()}g.restore()}
  }
- function fallingLeaves(t){if(t<107.96||t>111.6)return;
-  for(let i=0;i<22;i++){const u=clamp((t-107.96-noise(i+18)*.9)/2.5);if(!u||u>=1)continue;
+ function fallingLeaves(t){if(t<107.85||t>111.6)return;
+  for(let i=0;i<40;i++){const sx=noise(i+801)*1768+76,sy=70+((t-107.9)*90+noise(i+802)*700)%700;g.save();g.translate(sx,sy);for(let a=0;a<3;a++){g.rotate(Math.PI/3);line(-4,0,4,0,'#fffbf0',1.6)}g.restore()}
+  for(let i=0;i<22;i++){const u=clamp((t-107.9-noise(i+18)*.25)/2.5);if(!u||u>=1)continue;
    const x=780+noise(i+39)*380+Math.sin(u*5+i)*32,y=355+noise(i+52)*140+u*330;
    g.save();g.translate(x,y);g.rotate(u*6+i);g.scale(1-u*.5,1-u*.5);fill('M0 0Q-15-20 0-36Q17-17 0 0','#bf9638');stroke('M0 0Q-15-20 0-36Q17-17 0 0',C.ink,1);line(0,0,0,-31,C.ink,.7);g.restore();
   }
@@ -189,7 +204,7 @@
  function upperHeralds(t,raw){const p=smooth(122.7,125.6,t);if(!p)return;
   // v10b: low enough that the whole figure stays in frame (Robin: heads were cropped), outside the sun and moon heads.
   for(const flip of [-1,1]){const x=960+flip*(335+10*Math.sin(t*.4+flip)),y=mix(132,178,p)+6*Math.sin(t*.55+flip*2);
-   g.save();g.globalAlpha=p;g.translate(x,y);g.scale(.52,.52);const oldX=flip<0?290:1635;g.translate(-oldX,-294);S.herald(oldX,294,flip,t+.21*flip,raw+.21*flip);g.restore()}}
+   g.save();g.globalAlpha=smooth(122.7,123.1,t);g.translate(x,y);g.scale(.52,.52);const oldX=flip<0?290:1635;g.translate(-oldX,-294);S.herald(oldX,294,flip,t+.21*flip,raw+.21*flip);g.restore()}}
  function medallion(x,y,r,kind,p,t){if(p<=0)return;g.save();g.translate(x,y);g.scale(p,p);ellipse(0,0,r+9,r+9,C.paper,C.ink);ellipse(0,0,r,r,kind==='moon'?'#a9bccb':kind==='tree'?'#b9cf95':C.gold,C.ink);
   g.save();g.beginPath();g.arc(0,0,r-3,0,Math.PI*2);g.clip();
   if(kind==='sun'){g.scale(r/165,r/165);g.translate(-332,-170);A.piece('sol-head',C.gold)}
@@ -212,12 +227,12 @@
  function extended(raw){const frame=Math.round(raw*24),t=Math.floor(frame/2)/12,a=abstract(t);
   g.setTransform(1,0,0,1,0,0);g.globalAlpha=1;g.drawImage(A.paper,0,0);
   // A continuous widening from the existing look test, then a final pull-back to the whole plate.
-  const close=smooth(96.3,100.1,raw)*(1-smooth(108.0,110.0,raw));
+  const close=.5*smooth(96.3,100.1,raw)*(1-smooth(108.0,110.0,raw)); // v16: half the bridge push, wings stay in (audit C14)
   const fr=smooth(136.5,146.6,raw),fk=1-.14*fr,pb=A.performance.push(raw),zoom=(1.032-.032*smooth(79.5,85,raw)+.12*close)*fk*pb.z; // v11: the pull-back lands on the last phrase (audit D7)
   g.save();g.beginPath();g.rect(960-884*fk,537.5-467.5*fk,1768*fk,935*fk);g.clip();g.translate(960,540);g.scale(zoom,zoom);const view=pb.w&&zoom>1?A.performance.frameIn(960+(pb.x-960)*pb.w,540+(pb.y-540)*pb.w,zoom):[960+(pb.x-960)*pb.w,540+(pb.y-540)*pb.w];g.translate(-view[0]+2*Math.sin(raw*.14),-view[1]);S.sky(raw);warmSky(t,a);
   for(let i=0;i<5;i++)cloud(160+i*400+Math.sin(raw*.15+i)*22,140+(i%2)*-25,.72+(i%2)*.15,i%2?-1:1);
   horizonForest(t);S.ground(t);widerRoots(t);treeToo(t);goldenRoots(t);careFlow(t);finalRelay(t);returnReply(t);S.turf();
-  orbitBirds(t);heart(t,a,true);
+  orbitBirds(t);g.save();g.beginPath();g.rect(76,70,1768,690);g.clip();heart(t,a,true);g.restore(); // v16: rays stay in the sky (audit D7)
   upperHeralds(t,raw);
   for(const flip of [-1,1]){const h=heraldPosition(flip,t);g.save();g.translate(h.x,h.y);g.scale(h.scale,h.scale);const oldX=flip<0?290:1635;g.translate(-oldX,-294);S.herald(oldX,294,flip,t,raw);g.restore()}
   // The cast retreats below the soil while its musical emblem occupies the sky.
@@ -228,9 +243,9 @@
   if(a){g.save();g.globalAlpha=Math.min(1,a*3.3);S.ground(t,false);g.restore()} // v11: no see-through feet (audit C14)
   fallingLeaves(t);heart(t,a);brassRibbons(t,raw);orbitBirds(t,true);
   // Last verse roundels physically leave their row before the next chorus builds its cast.
-  if(t<81.3){g.save();g.translate(0,-330*smooth(79.5,81.3,t));S.roundel(820,163,63,t,'wind',71.875);S.roundel(960,156,64,t,'sun',72.875);S.roundel(1100,163,63,t,'winter',73.75);g.restore()}
+  if(t<79.6){g.save();g.translate(0,-330*smooth(78.4,79.5,t));S.roundel(820,163,63,t,'wind',71.875);S.roundel(960,156,64,t,'sun',72.875);S.roundel(1100,163,63,t,'winter',73.75);g.restore()}
   g.restore();emblemFrame(fr,fk,t);border();
-  const fade=smooth(146.9,150.2,raw); // v11: lands with the music, which is silent by 148 s (audit D8)
+  const fade=smooth(146.7,148.6,raw); // v11: lands with the music, which is silent by 148 s (audit D8)
   if(fade){g.save();g.globalAlpha=fade;g.drawImage(A.paper,0,0);g.restore()}
  }
  A.draw=raw=>raw<79.5?lookTest(raw):extended(raw);

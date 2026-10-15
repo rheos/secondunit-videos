@@ -61,7 +61,8 @@
   if(c.sprite==='fish'){lean+=.08*stumble;angles[0]-=.3*stumble} // v11: stumbles away from her (audit C6)
   if(c.sprite==='keeper'){lean+=.18*steady;angles[0]-=.45*steady}
   const world=p=>{const v=turn([(p[0]-200)*scale,(p[1]-d.height)*scale],[0,0],lean+bow);return [x+v[0],footY+v[1]]};
-  const p={d,enter,q,scale,footY,x,lean:lean+bow,angles,receive,lift,bird,world,head:(c.sprite==='owl'?.16:.07)*Math.sin(q*.25)+.12*receive,leg:.11*beat*active*(c.sprite==='fox'||c.sprite==='hare'?1.5:1)};
+  const look=A.performance.bump(99.4,100.4,108.8,t)*(c.x<960?.22:-.22);
+  const p={d,enter,q,scale,footY,x,lean:lean+bow,angles,receive,lift,bird,world,head:(c.sprite==='owl'?.16:.07)*Math.sin(q*.25)+.12*receive+look,leg:.11*beat*active*(c.sprite==='fox'||c.sprite==='hare'?1.5:1)};
   p.hands=d.hands.map(v=>world(deform(v,p)));p.feet=d.feet.map(v=>world(deform(v,p)));return p;
  }
  function draw(c,t,receive=0,headOnly=false){const p=pose(c,t,receive),d=p.d;if(!p.enter||headOnly)return;

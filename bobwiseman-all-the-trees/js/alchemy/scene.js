@@ -54,14 +54,15 @@
  }
  // v12: "so are you" (audit F4). On each "you" a new root grows out of the shared junction down through the
  // soil to the bottom edge, widening as it comes toward the viewer; each is bigger, the last one gold. They stay.
- const youBeats=[[60.4,30,-150],[91.56,46,165],[123.5,62,-95],[135.4,86,35]];
- function towardYou(t){youBeats.forEach(([w,width,dx],i)=>{const p=smooth(w-.3,w+.5,t);if(!p)return;
-   const b=[960,930,960+dx*.15,968,960+dx*.75,1012,960+dx,1082];
+ // v16 (audit #4): each ends inside the plate, swelling at the bottom edge toward the viewer, with a gold flare.
+ const youBeats=[[60.4,48,-150],[91.56,70,165],[123.5,92,-95],[135.4,124,35]];
+ function towardYou(t){youBeats.forEach(([w,width,dx],i)=>{const p=smooth(w-.14,w+.32,t);if(!p)return;
+   const b=[960,930,960+dx*.2,955,960+dx*.7,1010,960+dx,1135]; // its widest end always runs out past the frame edge
    woodyRoot(b,p,9,width,90+i,{rootlets:3,rootletLen:50});
-   const lit=i===3?smooth(w+.2,w+1.2,t):.55*A.performance.bump(w+.2,w+.6,w+2.2,t);
+   const lit=i===3?smooth(w,w+.8,t):.8*A.performance.bump(w,w+.35,w+2.4,t);
    if(lit){g.save();g.globalAlpha=lit;g.beginPath();for(let k=0;k<=30;k++){const q=bez(b,k/30*p);k?g.lineTo(q[0],q[1]):g.moveTo(q[0],q[1])}
     g.strokeStyle='rgba(250,200,80,.5)';g.lineWidth=width*.55;g.stroke();g.strokeStyle=C.gold;g.lineWidth=Math.max(3,width*.18);g.stroke();g.restore();
-    const e=bez(b,Math.min(p,.93));A.glow(e[0],e[1],width*1.6,lit)}});
+    const e=bez(b,Math.min(p,.96));A.glow(e[0],e[1],width*2.2,lit)}});
  }
  function rootNetwork(t){const p=smooth(61,63.75,t);if(!p)return;
   for(let j=0;j<roots.length;j++){const ch=A.performance.choreography(j<5?'sol':'luna',t),b=roots[j].slice();b[0]+=ch.x+spread(j>=5,t);b[1]-=ch.hop;b[2]+=ch.x*.7;const phase=clamp(p*1.18-(j%5)*.018);
@@ -69,7 +70,7 @@
    for(const u of [.34+noise(j+21)*.33]){if(phase<=u)continue;const {q,n}=rootSection(b,u,1),side=j%2?1:-1;
     woodyRoot([q[0],q[1],q[0]+n[0]*side*25,q[1]+20,q[0]+n[0]*side*38,q[1]+41,q[0]+n[0]*side*48,q[1]+48],clamp((phase-u)*4),10,1.6,j);
    }
-   woodyRoot(b,phase,30+(j%5)*3,9+(j%3)*2,j,{rootlets:6,neck:true});
+   woodyRoot(b,phase,[38,22,31,16,27][j%5],[10,3,7,2,5][j%5],j,{rootlets:6,neck:true}); // v16: varied strands, not parallel strips (audit B8)
    const u=((t-61)*.075+j*.053)%1;if(u<phase){const v=bez(b,u);ellipse(v[0],v[1],4,2,C.gold)}
   }
  }
@@ -90,12 +91,13 @@
   const q=pulse(t)+(moon?Math.PI*.64:0)+phase,dance=cueProgress('dance',cueTime)*act.dance;
   const meet=role?0:A.performance.bump(50.45,50.85,52.6,t)+A.performance.bump(96.9,97.4,108.8,t),step2=role?0:A.performance.bump(53.4,53.75,54.6,t);
   // v12: in the love bridge they turn in on "love" and reach their inner arms to the heart's cradle on "keeps us" (audit C3).
-  const reach=role?0:A.performance.bump(98.2,98.75,108.6,t);
+  const reach=role?0:1.6*A.performance.bump(98.2,98.6,108.6,t);
+  const lift2=role?0:A.performance.bump(68.3,68.7,71.5,t),call=role?0:A.performance.bump(75.1,75.5,77.4,t),turnYou=role?0:(moon?A.performance.bump(60.2,60.6,62.5,t):0);
   const lean=.085*Math.sin(q)*dance+act.lean+chore.lean+(moon?-.07:.07)*meet,stretch=(1-.024*(.5+.5*Math.sin(q*2-.5))*dance)*act.stretch*chore.stretch;
-  const left=(moon?-.29:.44)*lift+.24*Math.sin(q-.38)*dance+act.arms-(moon?.02:.12)*act.birdLoad+chore.left+(moon?.6:0)*reach;
-  const right=(moon?-.26:-.38)*lift-.22*Math.sin(q+.34)*dance+act.arms+(moon?.12:.02)*act.birdLoad+chore.right-(moon?0:.6)*reach;
+  const left=(moon?-.29:.44)*lift+.24*Math.sin(q-.38)*dance+act.arms-(moon?.02:.12)*act.birdLoad+chore.left+(moon?.6:0)*reach+(moon?-.35:.35)*lift2+(moon?0:.45)*call;
+  const right=(moon?-.26:-.38)*lift-.22*Math.sin(q+.34)*dance+act.arms+(moon?.12:.02)*act.birdLoad+chore.right-(moon?0:.6)*reach-(moon?.35:-.35)*lift2-(moon?.45:0)*call;
   const elbow=(moon?.23:-.26)*lift+.28*Math.sin(q-.9)*dance+chore.elbow;
-  const head=-lean*.6+.028*Math.sin(q-1)*dance+act.head+chore.head+(moon?-.16:.16)*meet;
+  const head=-lean*.6+.028*Math.sin(q-1)*dance+act.head+chore.head+(moon?-.16:.16)*meet-.3*turnYou+(moon?-.12:.12)*call;
   const world=p=>{const v=rotate([(p[0]-ox)*s,(p[1]-1200)*s*stretch],[0,0],lean);return [x+chore.x+(moon?-22:22)*step2+v[0],foot-chore.hop-10*step2+28*(1-appear)+v[1]]};
   const lh=moon?rotate([712,695],[892,355],left):rotate(rotate([242,418],[140,471],elbow),[230,344],left);
   const rh=moon?rotate(rotate([944,402],[1100,512],elbow),[1089,358],right):rotate([490,590],[426,349],right);
@@ -159,7 +161,7 @@
   if(!cue.visible||cue.lift<.3||cue.uncover<1){const robe=x<960?'#c96560':'#739d77';fill('M787 488Q828 520 868 514Q906 548 914 629L851 682L728 632Q749 553 787 488Z',robe);g.save();g.clip(new Path2D('M787 488Q828 520 868 514Q906 548 914 629L851 682L728 632Q749 553 787 488Z'));g.translate(-35,-160);piece('fame-body',robe);g.restore();stroke('M787 488Q828 520 868 514Q906 548 914 629L851 682L728 632Q749 553 787 488Z',C.ink,2);for(let i=0;i<22;i++)stroke(`M${786-i*1.7} ${510+i*5}q55 ${15+i*.8} ${109-i*1.4} ${7+i*.25}`,C.ink,.7);stroke('M794 510Q778 567 745 621M852 525Q846 590 883 637',C.ink,2.2)}
   g.save();g.beginPath();g.ellipse(844,460,76,61,-.2,0,Math.PI*2);g.clip();piece('fame-body','#e4bd90');g.restore();
   if(cue.visible&&cue.lift>=.5)instrument();
-  g.restore();cloud(x+10,y+120+bob*.4,1.45,flip);
+  g.restore();cloud(x+10,y+120+bob*.4,1.15,flip); // v16: smaller clouds clear the newcomers' heads (audit C5)
  }
  function bird(x,y,scale,t,dir=1,land=0,halo=1,ph=0){g.save();g.translate(x,y);g.scale(scale*dir,scale);g.translate(-280,-360);joint(267,233,.11*Math.sin(t*9+ph)*(1-land),()=>piece('bird-rear','#d7ad47'));piece('bird-body','#e9c986');joint(329,275,Math.sin(t*9+ph)*.4*(1-land)+.15*land,()=>piece('bird-wing','#f2e6bd'));if(halo){g.globalAlpha=halo;ellipse(152,185,69,19,null,'#b88c29');ellipse(152,185,61,13,null,C.ink);g.globalAlpha=1}
   // Small long-bell instrument in the bird's beak; original engraving stays the body language.
@@ -169,9 +171,9 @@
   return [spec.hand[0]+v[0],spec.hand[1]+v[1]];
  }
  function birdPose(i,t){
-  const contact=ALCHEMY_CUES.performance.birdContact[i]/24,enter=smooth(64.75+i*.12,contact,t),landing=smooth(contact-.35,contact,t),exit=smooth(75.292,76.6,t);
+  const contact=ALCHEMY_CUES.performance.birdContact[i]/24,enter=smooth(64.55+i*.12,contact,t),landing=smooth(contact-.35,contact,t),exit=smooth(75.292,76.6,t);
   const ret=i===0?smooth(77.15,77.7,t):0,gone=Math.max(exit*(1-ret),smooth(80.1,81.5,t)),target=perch(i===1?'luna':'sol',i===0&&t<77.708?0:1,t);
-  const dir=i%2?-1:1,x=mix([-90,2010,-140][i],target[0],enter)+gone*(i%2?440:-600);
+  const dir=i%2?-1:1,x=mix([330,1600,380][i],target[0],enter)+gone*(i%2?440:-600);
   const y=mix([330,360,410][i],target[1],enter)-Math.sin(enter*Math.PI)*110-gone*460;
   const anchorY=y-58*.22+(1-landing)*Math.sin(t*4+i)*14;
   return {x,y:anchorY,dir,landing:landing*(1-gone),target,foot:[x,anchorY+58*.22]};
