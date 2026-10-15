@@ -166,8 +166,9 @@ function v1aGownDraw(g, G, t) {
     g.restore();
   }
   lead(g, body, 10);
-  // a glint on every change of pattern
-  if (ft > 0 && t - ft < .14) { g.save(); g.clip(body); g.globalCompositeOperation = 'lighter'; g.fillStyle = `rgba(255,250,220,${.55 * (1 - (t - ft) / .14)})`; g.fill(body); g.restore(); }
+  // one glint, when it settles on V1.dress. The quick flips are clean cuts: a glint on each of the five
+  // (0.175 s apart) failed flashcheck.py at 36.67 s (4.5-5 flashes a second, drafts 7a and 8).
+  if (ft === V1.dress && t - ft < .14) { g.save(); g.clip(body); g.globalCompositeOperation = 'lighter'; g.fillStyle = `rgba(255,250,220,${.55 * (1 - (t - ft) / .14)})`; g.fill(body); g.restore(); }
 }
 
 function sceneV1AltGown(g, t, view) {
