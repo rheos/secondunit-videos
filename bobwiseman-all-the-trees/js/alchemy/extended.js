@@ -56,15 +56,16 @@
  function glintToHeart(t){if(t<95.2||t>97.8)return;const u=smooth(95.2,96.2,t),sw=A.performance.bump(96.0,96.35,97.6,t);
   if(u<1)for(const b of [S.roots[2],S.roots[7]]){const q=S.bez(b,1-u);A.glow(q[0],q[1],30)}
   if(sw)A.glow(958,930,70*sw+20,sw)}
- // v27 (Robin): at 1:51 the heart tree does "the wave" with its two cradling branch arms, in time with the music:
+ // v27/v28 (Robin): at 1:51 the heart tree does "the wave" with its two outstretched lower branch arms, in time with the music:
  // a ripple runs from one arm's tip, through the fork, out to the other tip, one bar per pass, then back again.
  // s runs 0 (left tip) to 1 (fork) to 2 (right tip); bars at 145 bpm from the beat grid S.pulse uses (bar at 110.97 s).
  const WAVE={t0:110.97,bar:4*60/145,end:122.6};
- function armWave(b,side,t,radius,cx,cy){if(t<WAVE.t0-.2||t>WAVE.end+.3)return null;
+ function armWave(b,side,t){if(t<WAVE.t0-.2||t>WAVE.end+.3)return null;
   const env=smooth(WAVE.t0-.2,WAVE.t0+.25,t)*(1-smooth(WAVE.end-.35,WAVE.end+.3,t)),ph=(t-WAVE.t0)/WAVE.bar,k=Math.floor(ph),f=ph-k;
   const sw=-.3+2.6*(k%2?1-f:f); /* starts off the left tip, exits past the right tip, then comes back */
-  // u runs fork (0) to tip (1); the bump pushes the wood outward from the heart, so the ring ripples
-  return u=>{const sp=side<0?1-u:1+u,G=env*Math.exp(-(((sp-sw)/.2)**2)),q=S.bez(b,u),dx=q[0]-cx,dy=q[1]-cy,l=Math.hypot(dx,dy)||1,A2=radius*.3*G;return [dx/l*A2,dy/l*A2]}}
+  // u runs fork (0) to tip (1); the bump lifts the wood across its own line, up and in, like a raised arm
+  const dx=b[6]-b[0],dy=b[7]-b[1],l=Math.hypot(dx,dy),n=[dy/l*side,-dx/l*side];
+  return u=>{const sp=side<0?1-u:1+u,G=env*Math.exp(-(((sp-sw)/.22)**2))*Math.min(1,u*4);return [n[0]*36*G,n[1]*36*G]}}
  function heart(t,a,raysOnly=false){if(!raysOnly)glintToHeart(t);const birth=smooth(96.3,97.4,t);if(!birth)return;
   const {rise,final,climax,x,y,radius,sun}=heartGeom(t,a);
   if(raysOnly){if(!sun)return;g.save();g.translate(x,y);g.scale(birth,birth);g.rotate(t*.02);
@@ -81,7 +82,8 @@
   for(const s2 of [-1,0,1])S.woodyRoot([960,930,960+s2*20,950,960+s2*45,968,960+s2*70+(s2?0:8),990],rise,18,3,70+s2,{});
   if(rise>.45){const g2=smooth(.45,.9,rise),season=Math.max(.45,A.leafSeason?A.leafSeason(t):1);
    for(const side of [-1,1]){const p0=S.bez(trunk,.52),b=[p0[0],p0[1],p0[0]+side*40,p0[1]-30,p0[0]+side*85,p0[1]-75,p0[0]+side*110,p0[1]-120];
-    S.woodyRoot(b,g2,14,3,60+side,{});for(let k=0;k<6;k++){const u=.3+k*.12;if(u>g2)continue;const q=S.bez(b,u),q2=S.bez(b,Math.min(1,u+.03)),ang=Math.atan2(q2[1]-q[1],q2[0]-q[0]);S.leaf(q[0],q[1],ang+(k%2?1.8:-1.3)*side,.6,clamp((g2-u)*5)*season)}}}
+    const warp=armWave(b,side,t),wq=u=>{const q=S.bez(b,u);if(!warp)return q;const w=warp(u);return [q[0]+w[0],q[1]+w[1]]};
+    S.woodyRoot(b,g2,14,3,60+side,warp?{warp}:{});for(let k=0;k<6;k++){const u=.3+k*.12;if(u>g2)continue;const q=wq(u),q2=wq(Math.min(1,u+.03)),ang=Math.atan2(q2[1]-q[1],q2[0]-q[0]);S.leaf(q[0],q[1],ang+(k%2?1.8:-1.3)*side,.6,clamp((g2-u)*5)*season)}}}
   S.woodyRoot(trunk,1,mix(16,56,rise),mix(7,24,rise),77,{});
   // v12: their roots feed the heart: sap runs from each partner's root into the junction and up the trunk (audit C3).
   if(t>98.5&&t<108.8){for(const [k,root] of [[0,S.roots[2]],[1,S.roots[7]]]){const q=((t-98.5)/1.7+k*.5)%1,u=q<.62?q/.62:(q-.62)/.38;
@@ -93,9 +95,8 @@
    g.save();g.beginPath();g.arc(0,0,radius*1.08,0,Math.PI*2);g.clip();for(let j=0;j<60;j++){const ang=j/60*Math.PI*2;line(Math.cos(ang)*radius*.86,Math.sin(ang)*radius*.86,Math.cos(ang)*radius*1.08,Math.sin(ang)*radius*1.08,'#8f5f1e',.7)}g.restore();g.restore()}
   if(rise>.6){const grow=smooth(.6,1,rise),season=Math.max(.55,A.leafSeason?A.leafSeason(t):1);
    for(const side of [-1,1]){const p0=S.bez(trunk,.8),b=[p0[0],p0[1],p0[0]+side*radius*.7,p0[1]+radius*.05,x+side*radius*1.3,y+radius*.45,x+side*radius*.8,y-radius*.3]; // v11: ends under the heart's edge so it holds it (audit C2)
-    const warp=armWave(b,side,t,radius,x,y),wq=u=>{const q=S.bez(b,u);if(!warp)return q;const w=warp(u);return [q[0]+w[0],q[1]+w[1]]};
-    S.woodyRoot(b,grow,18,4,80+side,warp?{warp}:{});
-    for(let k=0;k<8;k++){const u=.22+k*.1;if(u>grow)continue;const q=wq(u),q2=wq(Math.min(1,u+.02));const ang=Math.atan2(q2[1]-q[1],q2[0]-q[0]);
+    S.woodyRoot(b,grow,18,4,80+side,{});
+    for(let k=0;k<8;k++){const u=.22+k*.1;if(u>grow)continue;const q=S.bez(b,u),q2=S.bez(b,Math.min(1,u+.02));const ang=Math.atan2(q2[1]-q[1],q2[0]-q[0]);
      S.leaf(q[0],q[1],ang+(k%2?1.9:-1.2)*side,.62+.18*noise(k+side*9),clamp((grow-u)*5)*season)}}
   }
   g.save();g.translate(x,y);g.scale(birth,birth);
