@@ -119,10 +119,14 @@
   g.save();g.beginPath();g.rect(X0,Y0,X1-X0,Y1-Y0);g.clip();
   if(close>0)for(const side of [-1,1])panel(side,1-close,t,.2*A.performance.bump(145.4,146.2,147.8,raw));
   floor(smooth(146.6,147.4,raw),t,0);
-  const call=smooth(147.0,147.5,raw),bow=A.performance.bump(147.7,148.0,148.5,raw);
+  const call=smooth(147.0,147.5,raw),bow=A.performance.bump(148.1,148.4,148.9,raw);
   if(call>0){performer('herald',mix(1990,1500,call),Y1-6,600,1,0,-.22*bow);performer('singer',mix(-130,420,call),Y1-6,610,-1,0,.22*bow)}
+  // v24 (Robin): little Bob with his toy piano and Junos crosses the apron in front of the closed curtain, stops centre
+  // to lift his hat to us between the two bowing performers, and walks off right. Card-stock print, warmed to the plate.
+  LITTLE_BOB.draw(g,raw,{tIn:146.8,tOut:150.6,y:996,h:200,stop:{t0:147.95,t1:148.75},beats:[],
+   grade:kg=>{kg.globalCompositeOperation='multiply';kg.fillStyle='#ead6a8';kg.fillRect(0,0,1920,1080)}});
   g.restore();valance(260*(1-drop),t);
-  const fade=smooth(148.2,149.4,raw);if(fade){g.save();g.globalAlpha=fade;g.drawImage(A.paper,0,0);g.restore()}}
+  const fade=smooth(150.2,151.4,raw);if(fade){g.save();g.globalAlpha=fade;g.drawImage(A.paper,0,0);g.restore()}}
  // v21 (Robin): "which we cannot see" - an old searcher with a lantern and a magnifying glass (Diogenes looking in
  // daylight) comes looking for the roots just as they vanish, peers, scratches his head ("where did they go?"), jumps
  // back on "Oh" as they rush back and the machine starts, then studies it through his glass and leaves for chorus 1.

@@ -102,32 +102,34 @@
   sites.forEach(([x,y,r,teeth,dir,crank],i)=>{const k=k0*smooth(0,.6,grow*1.6-i*.08)*(1+.12*works);gear(x,y,r,teeth,dir*run*(46/r)+i*.3,k,crank)});
 
  }
- // v21 (Robin's pick for "exactly", 44.54 s): the geometer's dividers from the emblem books walk along the roots, stepping
- // over on alternating points, and land astride the gold knot exactly on the word, with a gold spark and a measured arc.
- function dividers(t){const on=smooth(43.75,44.0,t),off=smooth(45.0,45.7,t);if(on<=0||off>=1)return;
-  // v23 (Robin): small and underground, walking the roots, not a giant instrument dropping from the sky.
-  const S2=170,Y=950,L=130,steps=[[535,705],[705,875],[875,1045]],at=[44.05,44.3,44.54];
-  let a=steps[0][0],b=steps[0][1];
-  if(t>=at[0]){const k=t<at[1]?0:1,u=smooth(at[k]-.25+.0,at[k],t)*(t<at[k]?1:1);const pivot=steps[k][1],phi=Math.PI*(1-smooth(at[k]-.25,at[k],t));
-   a=pivot;b=pivot+S2*Math.cos(phi);var by=Y-S2*Math.sin(phi)*.55;if(t>=at[1]&&t>=at[2]){a=steps[2][0];b=steps[2][1];by=Y}}
-  if(by===undefined)var by=Y;
-  // a: planted tip, (b,by): swinging tip; the hinge sits above their midpoint, legs rigid
-  const mx=(a+b)/2,my=(Y+by)/2,dx=b-a,dy=by-Y,d=Math.hypot(dx,dy)||1,h=Math.sqrt(Math.max(0,L*L-(d/2)*(d/2)));
-  let nx=-dy/d,ny=dx/d;if(ny>0){nx=-nx;ny=-ny}
-  const fold=off*.85,hx=mx+nx*h,hy=my+ny*h;const tipA=[mix(a,mx,fold),Y],tipB=[mix(b,mx,fold),mix(by,Y,fold)];g.save();g.globalAlpha=on*(1-off);
-  const leg=(tx,ty)=>{const ux=tx-hx,uy=ty-hy,l=Math.hypot(ux,uy),px=-uy/l,py=ux/l,P=`M${hx+px*9} ${hy+py*9}L${tx+px*1.5} ${ty+py*1.5}L${tx} ${ty}L${tx-px*1.5} ${ty-py*1.5}L${hx-px*9} ${hy-py*9}Z`;
-   fill(P,'#6f7177');g.save();g.clip(new Path2D(P));for(let k=0;k<l;k+=3.2)line(hx+ux*k/l+px*9,hy+uy*k/l+py*9,hx+ux*(k+5)/l-px*2,hy+uy*(k+5)/l-py*2,'#25262b',.7);line(hx-px*3,hy-py*3,tx-px*.4,ty-py*.4,'#d9dbe0',1.2);g.restore();stroke(P,C.ink,1.8)};
-  leg(...tipA);leg(...tipB);
-  // the quadrant bar between the legs, and the hinge
-  const q=.32;stroke(`M${hx+(tipA[0]-hx)*q} ${hy+(tipA[1]-hy)*q}Q${hx} ${hy+(Math.max(tipA[1],tipB[1])-hy)*.42} ${hx+(tipB[0]-hx)*q} ${hy+(tipB[1]-hy)*q}`,C.ink,3);
-  ellipse(hx,hy,20,20,'#e0b13e',C.ink);ellipse(hx,hy,13,13,null,'#8f5f1e');ellipse(hx,hy,6,6,C.ink,null);line(hx,hy-20,hx,hy-46,C.ink,4);ellipse(hx,hy-50,8,8,'#e0b13e',C.ink);
-  // exactly: sparks on both points and an engraved measuring arc between them
-  const hit=A.performance.bump(44.42,44.5,45.25,t);if(hit){A.glow(tipA[0],tipA[1],90*hit,hit);A.glow(tipB[0],tipB[1],90*hit,hit);A.glow(hx,hy,60*hit,hit*.8);
-   g.save();g.globalAlpha=hit;stroke(`M${tipA[0]} ${tipA[1]+16}Q${(tipA[0]+tipB[0])/2} ${tipA[1]+70} ${tipB[0]} ${tipB[1]+16}`,C.gold,3);stroke(`M${tipA[0]} ${tipA[1]+16}Q${(tipA[0]+tipB[0])/2} ${tipA[1]+70} ${tipB[0]} ${tipB[1]+16}`,C.ink,1);
-   for(const x of [tipA[0],tipB[0]])line(x,tipA[1]+4,x,tipA[1]+28,C.ink,1.6);A.rays(960,939,40,24,60*hit,hit,0);g.restore()}
+ // v24 (Robin): ONE compass, set to the lower left of the big gear so it never touches it. It stands closed, opens and
+ // takes the measurement exactly on "exactly" (44.54 s, sparks on both points), swings round on one point drawing a
+ // blueprint arc while construction lines are ruled to the gear and the roots, then tips over and falls away.
+ function compassLeg(hx,hy,tx,ty){const ux=tx-hx,uy=ty-hy,l=Math.hypot(ux,uy)||1,px=-uy/l,py=ux/l,P=`M${hx+px*8} ${hy+py*8}L${tx+px*1.4} ${ty+py*1.4}L${tx} ${ty}L${tx-px*1.4} ${ty-py*1.4}L${hx-px*8} ${hy-py*8}Z`;
+  fill(P,'#6f7177');g.save();g.clip(new Path2D(P));for(let k=0;k<l;k+=3.2)line(hx+ux*k/l+px*8,hy+uy*k/l+py*8,hx+ux*(k+5)/l-px*2,hy+uy*(k+5)/l-py*2,'#25262b',.7);line(hx-px*3,hy-py*3,tx-px*.4,ty-py*.4,'#d9dbe0',1.2);g.restore();stroke(P,C.ink,1.6)}
+ function compassAt(ax,ay,bx,by,L,flip=1){const mx=(ax+bx)/2,my=(ay+by)/2,dx=bx-ax,dy=by-ay,d=Math.hypot(dx,dy)||1,h=Math.sqrt(Math.max(0,L*L-(d/2)*(d/2)));
+  let nx=dy/d*flip,ny=-dx/d*flip;if(ny>0){nx=-nx;ny=-ny}const hx=mx+nx*h,hy=my+ny*h; // the hinge always stays upcompassLeg(hx,hy,ax,ay);compassLeg(hx,hy,bx,by);
+  stroke(`M${hx+(ax-hx)*.32} ${hy+(ay-hy)*.32}Q${hx+((ax+bx)/2-hx)*.5} ${hy+((ay+by)/2-hy)*.5} ${hx+(bx-hx)*.32} ${hy+(by-hy)*.32}`,C.ink,2.4);
+  ellipse(hx,hy,15,15,'#e0b13e',C.ink);ellipse(hx,hy,5,5,C.ink,null);const ex=hx+nx*28,ey=hy+ny*28;line(hx+nx*15,hy+ny*15,ex,ey,C.ink,3);ellipse(ex,ey,6,6,'#e0b13e',C.ink);return [hx,hy]}
+ function dividers(t){const on=smooth(43.85,44.1,t),fall=smooth(45.45,46.0,t),lines=smooth(44.55,45.5,t),fade=1-smooth(46.05,46.6,t);if(on<=0||fade<=0)return;
+  const A0=[765,1078],R=92,L=112; // clear soil to the lower left of the big gear
+  // opening: the free point travels out from the fixed one to the measured span, landing on the word
+  const open=smooth(44.12,44.5,t),sweep=Math.PI*smooth(44.6,45.35,t);
+  const span=mix(14,R,open),ang=-sweep,bx=A0[0]+Math.cos(ang)*span,by=A0[1]+Math.sin(ang)*span;
+  g.save();g.globalAlpha=fade;
+  // blueprint: the arc it has drawn so far, the measured span, and construction lines ruled to the gear and the roots
+  if(sweep>0){g.save();g.setLineDash([]);g.beginPath();g.arc(A0[0],A0[1],R,0,-sweep,true);g.strokeStyle='#f2e7c8';g.lineWidth=3.2;g.stroke();g.strokeStyle=C.ink;g.lineWidth=1.1;g.stroke();g.restore()}
+  if(lines>0){g.save();g.globalAlpha=fade*lines;g.setLineDash([7,6]);g.strokeStyle=C.ink;g.lineWidth=1.1;
+   const tgt=[[960,939],[690,812],[1220,812],[400,812]];for(const [x,y] of tgt){const k=lines;g.beginPath();g.moveTo(A0[0],A0[1]);g.lineTo(mix(A0[0],x,k),mix(A0[1],y,k));g.stroke()}
+   g.setLineDash([]);const y=A0[1]+34;line(A0[0],y,A0[0]+R,y,C.ink,1.2);for(const x of [A0[0],A0[0]+R]){line(x,y-9,x,y+9,C.ink,1.2)}
+   stroke(`M${A0[0]+8} ${y-5}L${A0[0]} ${y}L${A0[0]+8} ${y+5}M${A0[0]+R-8} ${y-5}L${A0[0]+R} ${y}L${A0[0]+R-8} ${y+5}`,C.ink,1.2);
+   ellipse(A0[0],A0[1],4,4,C.ink,null);ellipse(A0[0],A0[1],R*.08,R*.08,null,C.ink);g.restore()}
+  // the compass itself, then it tips over and drops away into the earth
+  g.save();g.globalAlpha=fade*on*(1-fall);g.translate(A0[0],A0[1]+fall*fall*420);g.rotate(fall*1.4);g.translate(-A0[0],-A0[1]);
+  const [hx,hy]=compassAt(A0[0],A0[1],bx,by,L,1);g.restore();
+  const hit=A.performance.bump(44.42,44.5,45.2,t);if(hit){A.glow(A0[0],A0[1],70*hit,hit);A.glow(bx,by,70*hit,hit)}
   g.restore();
  }
- // v21 (Robin): on "which we cannot see" the roots draw back out of sight (a searcher looks for them), and rush back on "Oh".
  function roots(t){const cover=smooth(46.1,46.9,t),gone=smooth(41.15,41.85,t)*(1-smooth(43.2,43.5,t)),reveal=smooth(37,40.75,t)*(1-cover)*(1-gone);if(!reveal||cover>=1)return;
   g.save();g.beginPath();g.rect(76,760,1768,245);g.clip();
   // The flanking trees join the same living system as the central pair.
