@@ -2,17 +2,17 @@
 # Spike S1 job (throwaway). MODE: check | stills | ref | perf. Prints counts and sha-named paths only.
 set -euo pipefail
 MODE=$1
-IMG=mcr.microsoft.com/playwright@sha256:d9e3d94f347b3c479789a9fefdfc43b755a0b22d6b9d98139873d354f981ef19
+TAG=mcr.microsoft.com/playwright:v1.55.0-noble
 W=/srv/ar/work
 OUT=$RUNNER_TEMP/out; IN=$RUNNER_TEMP/in; PKG=$RUNNER_TEMP/pkg
 mkdir -p "$OUT" "$IN" "$PKG"
 echo "cores: $(nproc)"
 
 gh api -H "Accept: application/octet-stream" "repos/$REPO/releases/assets/$PAGE_ASSET" > "$IN/page.tgz"
-tar xzf "$IN/page.tgz" -C "$PKG"; rm "$IN/page.tgz"
+tar xzf "$IN/page.tgz" --warning=no-unknown-keyword -C "$PKG"; rm "$IN/page.tgz"
 echo "page files: $(find "$PKG" -type f | wc -l)"
-docker pull -q "$IMG" > /dev/null
-DIGEST=$(docker image inspect --format '{{index .RepoDigests 0}}' "$IMG")
+docker pull -q "$TAG" > /dev/null
+DIGEST=$(docker image inspect --format '{{index .RepoDigests 0}}' "$TAG"); IMG=$DIGEST
 echo "image: $DIGEST"
 npm i --prefix tools/motion-lab --no-save --no-audit --no-fund --silent playwright@1.55.0 > /dev/null 2>&1
 echo "playwright module: $(node -p "require('./tools/motion-lab/node_modules/playwright/package.json').version")"
@@ -21,7 +21,7 @@ FONTARGS=()
 if [[ $MODE != ref ]]; then
   sudo mkdir -p "$W/fonts"; sudo chown -R "$(id -u):$(id -g)" "$W"; chmod 700 "$W/fonts"
   gh api -H "Accept: application/octet-stream" "repos/$REPO/releases/assets/$FONT_ASSET" > "$IN/f.tar"
-  tar xf "$IN/f.tar" -C "$W/fonts"; rm "$IN/f.tar"
+  tar xf "$IN/f.tar" --warning=no-unknown-keyword -C "$W/fonts"; rm "$IN/f.tar"
   n=0
   for f in "$W"/fonts/*; do b=$(basename "$f")
     [[ "$(sha256sum "$f" | cut -c1-64)" == "${b%.*}" ]] || { echo "sha mismatch: $b"; exit 1; }; n=$((n + 1)); done
