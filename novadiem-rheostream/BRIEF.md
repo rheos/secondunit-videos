@@ -24,9 +24,9 @@ rheo.stream's colours. Music only. Diagrams draw themselves; the building assemb
 ## Decisions (Robin, 2026-10-15)
 
 - Palette: rheo.stream brand (teal ground, mint lines).
-- Music: a generated bed. Plan: a `drafting-table-rheostream` style in the score library with a
-  fixed plan, one section per plate. Generated only after the storyboard is approved
-  (estimate ~1,400 ElevenLabs credits for 102.5 s, from the Cold Read's 1,306 for 95 s).
+- Music: a generated bed, `drafting-table-rheostream` take-01 in the score library (fixed plan, one
+  section per plate), generated after the storyboard was approved. ~1,409 ElevenLabs credits (the
+  balance moved 2,715, of which 1,306 was a Cold Read take in the same window). rheos/indieagent-workspace#7.
 - First cut: developer, 90 to 120 s.
 - Flow: automation chosen. Built with the series' hand-built-plate method on the shared kit rather
   than the faceless-explainer preset pipeline, so it matches its siblings.
