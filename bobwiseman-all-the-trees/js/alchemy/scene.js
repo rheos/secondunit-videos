@@ -127,7 +127,7 @@
   g.restore();bough(boughSpec(p,0,t));bough(boughSpec(p,1,t));
  }
  function heraldPose(x,y,flip,t,raw){const cue=A.performance.horn(raw),q=pulse(t)+(flip<0?0:Math.PI*.6);
-  const bob=3*Math.sin(q*2-.5)+cue.prepare*6,rock=.04*Math.sin(q)+cue.attack*.09+(flip<0?-.045:.045)*cue.prepare;
+  const inh=cue.inhale||0,bob=3*Math.sin(q*2-.5)+cue.prepare*6-9*inh,rock=.04*Math.sin(q)+cue.attack*.09+(flip<0?-.045:.045)*cue.prepare-(flip<0?-.06:.06)*inh;
   const arm=-1.28*(1-cue.lift)+.035*Math.sin(q-.4)*cue.lift;
   const world=point=>{const a=rotate(point,[878,575],arm),v=rotate([(a[0]-795)*.315*flip,(a[1]-805)*.315-112],[0,0],rock);return [x+v[0],y+112+bob+v[1]]};
   return {cue,q,bob,rock,arm,bell:world([390,305]),grip:world([550,362])};

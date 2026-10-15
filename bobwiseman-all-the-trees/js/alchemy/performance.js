@@ -19,7 +19,12 @@
   const prep=next?smooth(next[0]-6,next[0],f):0,play=current?1:0;
   // Each note inside a held passage re-strikes the bell; the passage start is always a note.
   const notes=score.notes||[],note=current?notes.filter(n=>n>=current[0]&&n<=f).at(-1)??current[0]:null;
-  return {visible,state:current?'play':recover>0?'recover':visible?'rest':f>=first-6?'prepare':'concealed',play,lift:Math.max(play,recover,prep),uncover:visible?1:0,attack:current?Math.max(.22,1-(f-note)/7):0,prepare:visible?0:prep,frame:Math.round(f)};
+  // A breath: a short gap between phrases (under 1.5 s). The bell dips part way and the player inhales,
+  // then comes back up for the next phrase; longer gaps are real rests.
+  const gap=prior&&next&&!current?next[0]-prior[1]:Infinity,breathing=gap<=36;
+  const inhale=breathing?Math.sin(Math.PI*clamp((f-prior[1])/gap)):0;
+  if(breathing)return {visible,state:'breath',play:0,lift:1-.42*inhale,uncover:1,attack:0,prepare:0,inhale,frame:Math.round(f)};
+  return {visible,state:current?'play':recover>0?'recover':visible?'rest':f>=first-6?'prepare':'concealed',play,lift:Math.max(play,recover,prep),uncover:visible?1:0,attack:current?Math.max(.22,1-(f-note)/7):0,prepare:visible?0:prep,inhale:0,frame:Math.round(f)};
  }
  function reaction(t,at,amount=1){const f=t*24,d=f-at;if(d<0||d>32)return 0;return amount*Math.sin(Math.min(1,d/9)*Math.PI/2)*Math.exp(-Math.max(0,d-9)/9)}
  function actor(which,t,role=''){const f=t*24,moon=which==='luna',exchange=c.rootExchange;
