@@ -91,7 +91,7 @@
       <div id="sIII" class="scene clip" data-start="22.5" data-duration="15" data-track-index="1">
         <svg id="gIII" viewBox="0 0 1920 1080"></svg>
         <div class="chapter">Plate III &middot; Your Chat</div>
-        <div class="headline" style="font-size: 48px"><span id="hIII1">In your own ChatGPT.</span> <span id="hIII2" class="accent">Only you can change your dates.</span></div>
+        <div class="headline" style="font-size: 46px"><span id="hIII1">In your own ChatGPT.</span> <span id="hIII2" class="accent">You choose who else can change your dates.</span></div>
       </div>
 
       <div id="sIV" class="scene clip" data-start="37.5" data-duration="15" data-track-index="1">
@@ -289,14 +289,22 @@
       txt("someone else", { class: "label", x: 960, y: 200, "font-size": 14, "text-anchor": "middle" }, other);
       const otherTk = el("g", {}, gIII);
       el("path", { d: ticketPath(0, 0, 44, 24, 32, 4), fill: "var(--card)", stroke: "var(--line)", "stroke-width": 1.2, "stroke-dasharray": "3 3" }, otherTk);
-      // the lock sits over the conduit
+      // someone the artist invited (a manager, a bandmate) comes up from below and gets in
+      const mgr = el("g", {}, gIII);
+      el("path", { class: "dash", d: "M960,506 V716" }, mgr);
+      txt("your manager", { class: "label", x: 960, y: 744, "font-size": 14, "text-anchor": "middle" }, mgr);
+      txt("invited", { class: "label", x: 960, y: 764, "font-size": 12, "text-anchor": "middle" }, mgr);
+      const mgrTk = el("g", {}, gIII);
+      el("path", { d: ticketPath(0, 0, 44, 24, 32, 4), fill: "var(--card)", stroke: "var(--ink)", "stroke-width": 1.4 }, mgrTk);
+      // the lock sits over the conduit and over every ticket passing through it
       const lock = el("g", {}, gIII);
       el("path", { class: "line", d: "M942,446 V430 A18 18 0 0 1 978,430 V446", "stroke-width": 2.2 }, lock);
       el("rect", { x: 926, y: 444, width: 68, height: 52, rx: 7, fill: "var(--card)", stroke: "var(--ink)", "stroke-width": 2 }, lock);
       el("circle", { cx: 960, cy: 464, r: 5, fill: "var(--ink)" }, lock);
       el("path", { d: "M960,466 V480", stroke: "var(--ink)", "stroke-width": 3, "stroke-linecap": "round" }, lock);
-      const lockLbl = txt("signed in as you", { class: "label", x: 960, y: 534, "font-size": 15, "text-anchor": "middle" }, gIII);
+      const lockLbl = txt("signed in", { class: "label", x: 904, y: 528, "font-size": 15, "text-anchor": "end" }, gIII);
       const check = el("path", { d: "M1004,420 l8,9 l17,-20", fill: "none", stroke: "var(--ink)", "stroke-width": 3, "stroke-linecap": "round", "stroke-linejoin": "round" }, gIII);
+      const check2 = el("path", { d: "M1004,514 l8,9 l17,-20", fill: "none", stroke: "var(--ink)", "stroke-width": 3, "stroke-linecap": "round", "stroke-linejoin": "round" }, gIII);
       const cross = el("path", { d: "M948,374 l24,24 m0,-24 l-24,24", fill: "none", stroke: "var(--accent)", "stroke-width": 3.2, "stroke-linecap": "round" }, gIII);
 
       /* ---------------- Plate IV: the ticket (the approved style test) ---------------- */
@@ -520,13 +528,23 @@
       tl.to(newMini, { opacity: 1, duration: 0.4 }, at("III", 6.0));
       tl.from(newMini, { y: -14, duration: 0.4, ease: "power2.out" }, at("III", 6.0));
       head("#hIII1", onBeat("III", 6.4));
-      tl.from(other, { opacity: 0, duration: 0.6 }, at("III", 7.2));
+      // someone uninvited is stopped at the lock
+      tl.from(other, { opacity: 0, duration: 0.6 }, at("III", 7.0));
       gsap.set(otherTk, { x: 938, y: 214, opacity: 0 });
-      tl.to(otherTk, { opacity: 1, duration: 0.3 }, at("III", 7.6));
-      tl.to(otherTk, { y: 326, duration: 1.0, ease: "power1.in" }, at("III", 7.6));
-      tl.from(cross, { opacity: 0, scale: 0.5, transformOrigin: "50% 50%", duration: 0.3 }, at("III", 8.6));
-      tl.to(otherTk, { y: 290, opacity: 0, duration: 0.6, ease: "power2.out" }, at("III", 8.8));
-      head("#hIII2", onBeat("III", 9.4));
+      tl.to(otherTk, { opacity: 1, duration: 0.3 }, at("III", 7.2));
+      tl.to(otherTk, { y: 326, duration: 0.9, ease: "power1.in" }, at("III", 7.2));
+      tl.from(cross, { opacity: 0, scale: 0.5, transformOrigin: "50% 50%", duration: 0.3 }, onBeat("III", 8.1));
+      tl.to(otherTk, { y: 290, opacity: 0, duration: 0.6, ease: "power2.out" }, at("III", 8.4));
+      // the artist's invited manager gets in and goes through to the tour
+      tl.from(mgr, { opacity: 0, duration: 0.6 }, at("III", 8.6));
+      gsap.set(mgrTk, { x: 938, y: 716, opacity: 0 });
+      tl.to(mgrTk, { opacity: 1, duration: 0.3 }, at("III", 8.8));
+      tl.to(mgrTk, { y: 508, duration: 0.9, ease: "power1.inOut" }, at("III", 8.8));
+      tl.from(check2, { opacity: 0, scale: 0.6, transformOrigin: "50% 50%", duration: 0.35 }, onBeat("III", 9.8));
+      tl.to(mgrTk, { y: 443, duration: 0.4, ease: "power1.inOut" }, at("III", 10.1));
+      tl.to(mgrTk, { x: 1240, duration: 0.9, ease: "power1.inOut" }, at("III", 10.5));
+      tl.to(mgrTk, { opacity: 0, duration: 0.25 }, at("III", 11.3));
+      head("#hIII2", onBeat("III", 11.0));
 
       // Plate IV (36-50): the approved style test, shifted
       tl.to(ghosts, { opacity: 1, duration: 0.2, stagger: 3.4 / 52 }, at("IV", 1.4));
