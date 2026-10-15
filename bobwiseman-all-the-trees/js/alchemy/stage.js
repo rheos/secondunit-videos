@@ -8,7 +8,7 @@
  const A=Alchemy,S=A.scene,{g,C,smooth,clamp,mix,noise,line,stroke,fill,ellipse}=A;
  const base=A.draw,W=1920,H=1080,X0=76,X1=1844,Y0=70,Y1=1005,CB=932;
  const T={staticEnd:2.25,heraldIn:[1.2,2.1],dial:11.5,heraldOut:[11.6,12.45],singerIn:[12.3,13.1],open:[13.35,16.5],singerOut:[16.5,17.5],clear:[17.3,18.6],floorOut:[29.6,33.0]};
- const img={};
+ const img={};A.openingImg=img;
  const oldLoad=A.load;
  A.load=async()=>{await oldLoad();const M=window.ALCHEMY_OPENING_MEDIA||{};
   await Promise.all(Object.keys(M).map(k=>new Promise((res,rej)=>{const im=new Image();im.onload=()=>{img[k]=im;res()};im.onerror=()=>rej(new Error('Missing opening asset '+k));im.src=M[k]})))};

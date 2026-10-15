@@ -244,6 +244,8 @@
   g.save();g.beginPath();g.rect(76,70,1768,731);g.clip();g.translate(0,a*620);
   for(const c of cast)actor(c,t);
   S.person('sol',t);S.person('luna',t);for(const c of cast)actor(c,t,true);if(t<82)S.birds(t);g.restore();
+  S.cloudHand(raw); /* v25: "Oh, it is true" in chorus 2 */
+ 
   // Foreground earth occludes the retreating bodies and the entire root section together.
   if(a){g.save();g.globalAlpha=Math.min(1,a*3.3);S.ground(t,false);g.restore()} // v11: no see-through feet (audit C14)
   fallingLeaves(t);heart(t,a);brassRibbons(t,raw);orbitBirds(t,true);

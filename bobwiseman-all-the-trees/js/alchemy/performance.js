@@ -76,7 +76,7 @@
  // v11: one push-in or reframe per key sung word, and into the climax (audit F1, D5, D6). [in, held, release, out, zoom, x, y]
  // v16 (audit v15 #1): every push is frame-safe: heralds and cast stay at least 40 px inside the plate. The climax gets
  // its size from the heart itself, not a camera push, so no newcomer is cut off while their sprigs flower.
- const pushes=[[50.35,50.85,52.4,53.4,1.1,960,470],[80.4,81.6,84.2,85.6,1.32,760,800],[111,116,120.4,122.6,1.08,950,470]];
+ const pushes=[[50.35,50.85,52.4,53.4,1.1,960,470],[82.55,83.45,85.6,86.6,1.32,760,800],[111,116,120.4,122.6,1.08,950,470]];
  // v12: keep the view inside the plate (sky 70-760, ground to 1005, x 76-1844) whatever the zoom.
  // the sky has a hard top; the earth runs on below the plate, so a push may look down but never above the sky
  function frameIn(cx,cy,zoom){const hw=884/zoom,hh=467.5/zoom;return [Math.min(Math.max(cx,76+hw),1844-hw),Math.min(Math.max(cy,70+hh),1360-hh)]}

@@ -94,14 +94,18 @@
   const reach=role?0:1.6*A.performance.bump(98.2,98.6,108.6,t);
   const lift2=role?0:A.performance.bump(68.3,68.7,71.5,t),call=role?0:A.performance.bump(75.1,75.5,77.4,t),turnYou=role?0:(moon?A.performance.bump(60.2,60.6,62.5,t):0);
   const lean=.085*Math.sin(q)*dance+act.lean+chore.lean+(moon?-.07:.07)*meet,stretch=(1-.024*(.5+.5*Math.sin(q*2-.5))*dance)*act.stretch*chore.stretch;
-  const left=(moon?-.29:.44)*lift+.24*Math.sin(q-.38)*dance+act.arms-(moon?.02:.12)*act.birdLoad+chore.left+(moon?.6:0)*reach+(moon?-.35:.35)*lift2+(moon?0:.45)*call;
+  // v25 (Robin): "I know" (52.98 s) like the 'smart' meme: the sun man taps his temple with a knowing tilt.
+  const know=(role||moon)?0:smooth(52.8,53.1,t)*(1-smooth(54.15,54.55,t)); // held through the tap, then a quick drop
+  let left=(moon?-.29:.44)*lift+.24*Math.sin(q-.38)*dance+act.arms-(moon?.02:.12)*act.birdLoad+chore.left+(moon?.6:0)*reach+(moon?-.35:.35)*lift2+(moon?0:.45)*call;
+  left=mix(left,1.42,know);
   const right=(moon?-.26:-.38)*lift-.22*Math.sin(q+.34)*dance+act.arms+(moon?.12:.02)*act.birdLoad+chore.right-(moon?0:.6)*reach-(moon?.35:-.35)*lift2-(moon?.45:0)*call;
-  const elbow=(moon?.23:-.26)*lift+.28*Math.sin(q-.9)*dance+chore.elbow;
-  const head=-lean*.6+.028*Math.sin(q-1)*dance+act.head+chore.head+(moon?-.16:.16)*meet-.3*turnYou+(moon?-.12:.12)*call;
+  let elbow=(moon?.23:-.26)*lift+.28*Math.sin(q-.9)*dance+chore.elbow;
+  elbow=mix(elbow,-1.48,know);
+  const head=.12*know*Math.sin(Math.min(1,Math.max(0,(t-53.1)/.5))*Math.PI)-lean*.6+.028*Math.sin(q-1)*dance+act.head+chore.head+(moon?-.16:.16)*meet-.3*turnYou+(moon?-.12:.12)*call;
   const world=p=>{const v=rotate([(p[0]-ox)*s,(p[1]-1200)*s*stretch],[0,0],lean);return [x+chore.x+(moon?-22:22)*step2+v[0],foot-chore.hop-10*step2+28*(1-appear)+v[1]]};
   const lh=moon?rotate([712,695],[892,355],left):rotate(rotate([242,418],[140,471],elbow),[230,344],left);
   const rh=moon?rotate(rotate([944,402],[1100,512],elbow),[1089,358],right):rotate([490,590],[426,349],right);
-  return {moon,x:x+chore.x,foot:foot-chore.hop,s,ox,appear,cueTime,act,left,right,elbow,head,lean,stretch,world,
+  return {know,moon,x:x+chore.x,foot:foot-chore.hop,s,ox,appear,cueTime,act,left,right,elbow,head,lean,stretch,world,
    hands:[world(lh),world(rh)],boughAngles:[lean+.12*Math.sin(q-.7)*dance-.17*act.birdLoad+.65*act.caretakerLift+.10*act.shelterReply,lean-.12*Math.sin(q+.1)*dance+.17*act.birdLoad-.10*act.shelterReply]};
  }
  function boughGeometry(open,t,seed){const nodes=[];
@@ -138,12 +142,21 @@
   piece(which+'-body',color,wash); // Torso covers shoulder seams; the front forearm remains independent.
   // The low hands also pass in front when a dance swing crosses the robe.
   joint(moon?892:426,moon?355:349,moon?left:right,()=>{g.save();g.beginPath();g.rect(moon?650:380,moon?520:480,moon?330:220,260);g.clip();piece(moon?'luna-arm-l':'sol-arm-r',color,wash);g.restore()});
-  function fore(name,cx,cy,rx,ry){piece(name,color,wash);g.save();g.beginPath();g.ellipse(cx,cy,rx,ry,0,0,Math.PI*2);g.clip();piece(name,'#e3bb90',wash);g.restore()}
+  function fore(name,cx,cy,rx,ry,sleeveOnly){if(sleeveOnly){g.save();g.beginPath();g.rect(-400,-400,2400,2400);g.ellipse(cx,cy+4,rx+8,ry+10,0,0,Math.PI*2);g.clip('evenodd');piece(name,color,wash);g.restore();return}piece(name,color,wash);g.save();g.beginPath();g.ellipse(cx,cy,rx,ry,0,0,Math.PI*2);g.clip();piece(name,'#e3bb90',wash);g.restore()}
+  const tapping=!moon&&p.know>.6&&A.openingImg&&A.openingImg.pointhand;
   if(moon)joint(1089,358,right,()=>joint(1100,512,elbow,()=>fore('luna-fore',954,420,38,50)));
-  else joint(230,344,left,()=>joint(140,471,elbow,()=>fore('sol-fore',246,443,36,55)));
+  else joint(230,344,left,()=>joint(140,471,elbow,()=>fore('sol-fore',246,443,36,55,tapping)));
   const arrival=ALCHEMY_CUES.chorus.sharedArrival[0]/ALCHEMY_CUES.fps;
   const oh=smooth(arrival,arrival+.17,p.cueTime)*(1-smooth(arrival+.32,arrival+.92,p.cueTime));
   joint(moon?994:332,290,head-.12*im,()=>{g.save();g.translate(moon?994:332,290);g.scale(p.act.headScale*(1+.14*im),p.act.headScale*(1+.14*im));g.translate(-(moon?994:332),-290);piece(which+'-head',moon?'#bdc9d3':C.gold,wash);if(moon){g.save();g.beginPath();g.arc(994,176,150,0,Math.PI*2);g.clip();g.beginPath();g.rect(700,-120,600,600);g.arc(1052,150,140,0,Math.PI*2);g.clip('evenodd');g.fillStyle='rgba(44,58,92,.30)';g.fillRect(800,-20,400,380);for(let k=-200;k<220;k+=7)line(860+k,0,860+k+120,340,'#2a3550',.7);g.restore()}rays(moon?992:333,164,174,83,32+70*im,.15+im+oh*.75+Math.exp(-Math.max(0,t-50.708)*8)*(t>=50.708&&t<51.5?.75:0)+brass(t)*.14);g.restore()});
+  // v25 "I know": the open palm swaps for an engraved pointing hand, wrist in his sleeve, fingertip on the temple of his sun face.
+  if(tapping){let W,T,k=1;joint(230,344,left,()=>joint(140,471,elbow,()=>{const m=g.getTransform();W=m.transformPoint(new DOMPoint(240,478));k=Math.hypot(m.a,m.b)}));
+   joint(332,290,head-.12*im,()=>{g.save();g.translate(332,290);g.scale(p.act.headScale,p.act.headScale);g.translate(-332,-290);T=g.getTransform().transformPoint(new DOMPoint(272,150));g.restore()});
+   const H=A.openingImg.pointhand,B=window.ALCHEMY_OPENING_BOX.pointhand,dx=B.tip[0]-B.wrist[0],dy=B.tip[1]-B.wrist[1],len=Math.hypot(dx,dy);
+   const tap=1-.06*Math.max(0,Math.sin((t-53.25)*Math.PI*2/.5))*(t>53.25&&t<54.0?1:0),sc=135*k/len*tap;
+   const ang=Math.atan2(T.y-W.y,T.x-W.x)-Math.atan2(dy,dx);
+   g.save();g.setTransform(1,0,0,1,0,0);g.globalAlpha=appear;g.translate(W.x,W.y);g.rotate(ang);g.scale(sc,sc);g.translate(-B.wrist[0],-B.wrist[1]);g.drawImage(H,0,0);g.restore();
+   joint(230,344,left,()=>joint(140,471,elbow,()=>fore('sol-fore',246,443,36,55,true)))}
   g.restore();bough(boughSpec(p,0,t));bough(boughSpec(p,1,t));
  }
  function heraldPose(x,y,flip,t,raw){const cue=A.performance.horn(raw),q=pulse(t)+(flip<0?0:Math.PI*.6);
@@ -245,12 +258,34 @@
   if(winter){g.save();g.globalAlpha=winter;for(let i=0;i<24;i++){const x=670+noise(i+38)*640,y=210+((t-73.75)*120+noise(i)*270)%390;line(x-3,y,x+3,y,C.cream,2);line(x,y-3,x,y+3,C.cream,2)}g.restore()}
  }
  function chorusState(raw){const t=Math.floor(Math.round(raw*24)/2)/12;return Object.fromEntries(['sol','luna'].map(which=>{const p=personPose(which,t,0,raw),boughs=[0,1].map(side=>boughSpec(p,side,t));return [which,{appear:p.appear,hands:p.hands,branchNodes:boughs.map(b=>b.nodes.length),leaves:boughs.map(b=>b.leaves)}]}))}
- A.scene={skyColor,turf,leaf,chorusState,birdPose,perch,bez,roots,heraldPose,sky,ground,person,herald,bird,birds,roundel,woodyRoot,personPose,pulse};
+
+ // v25 (Robin): "Oh, it's true". A cloud gathers over the pair and parts; an engraved hand reaches down and points
+ // between them, and on "true" a gold ray drops from the fingertip onto both heads. Chorus 1 and chorus 2.
+ const HAND_BEATS=[[49.09,50.71,51.75],[81.22,82.15,82.95]];
+ function cloudHand(raw){const H=A.openingImg&&A.openingImg.cloudhand,B=window.ALCHEMY_OPENING_BOX&&window.ALCHEMY_OPENING_BOX.cloudhand;if(!H||!B)return;
+  for(const [oh,tru,out] of HAND_BEATS){if(raw<oh-.7||raw>out+.8)continue;const t=Math.floor(Math.round(raw*24)/2)/12;
+   const gather=smooth(oh-.7,oh-.15,raw)*(1-smooth(out+.15,out+.75,raw)),part=smooth(oh-.2,oh+.35,raw)*(1-smooth(out+.05,out+.6,raw));
+   const reach=smooth(oh-.05,oh+.75,raw)*(1-smooth(out-.15,out+.4,raw)),tr=A.performance.bump(tru-.03,tru+.06,tru+1.05,raw);
+   const sol=personPose('sol',t,0,raw).world([333,164]),luna=personPose('luna',t,0,raw).world([992,176]);
+   const cx=(sol[0]+luna[0])/2,cy=112,tipX=cx+3*Math.sin(raw*2.1),tipY=mix(cy-30,(sol[1]+luna[1])/2+40,reach)+(tr>0?6*tr:0),sc=.86;
+   // the hand, clipped below the cloud's middle so the sleeve always comes out of it
+   if(reach>0){g.save();g.beginPath();g.rect(cx-200,cy-6,400,700);g.clip();g.translate(tipX,tipY);g.rotate(.03*Math.sin(raw*1.3));g.scale(sc,sc);g.translate(-B.tip[0],-B.tip[1]);g.drawImage(H,0,0);g.restore()}
+   if(tr>0){g.save();
+    for(const hc of [sol,luna]){let dx=hc[0]-tipX,dy=hc[1]-tipY;const L=Math.hypot(dx,dy),nx=-dy/L,ny=dx/L,w=22*tr,h=[tipX+dx*(1-62/L),tipY+dy*(1-62/L)];
+     g.globalAlpha=.32*tr;g.fillStyle=C.gold;g.beginPath();g.moveTo(tipX,tipY+2);g.lineTo(h[0]+nx*w,h[1]+ny*w);g.lineTo(h[0]-nx*w,h[1]-ny*w);g.closePath();g.fill();
+     g.globalAlpha=Math.min(1,tr*1.4);for(let k=-3;k<=3;k++){const e=k/3;line(tipX,tipY+2,h[0]+nx*w*e,h[1]+ny*w*e,k%2?C.ink:'#b38327',k%2?.5:.9)}}
+    g.restore();rays(tipX,tipY+4,7,22,46*tr,tr)}
+   // two cloud halves gather, then part around the reaching arm
+   if(gather>0){const gap=8+58*part,sw=.82*Math.sqrt(gather); /* paper clouds puff in and out by size; alpha would ghost them */
+    cloud(cx-gap-58,cy+10+4*Math.sin(raw*.9),sw,1);cloud(cx+gap+58,cy+10+4*Math.sin(raw*.9+1),sw,-1);cloud(cx+4,cy-10,.74*Math.sqrt(gather),1)} /* the top cloud hides where the arm comes out */
+  }
+ }
+ A.scene={cloudHand,skyColor,turf,leaf,chorusState,birdPose,perch,bez,roots,heraldPose,sky,ground,person,herald,bird,birds,roundel,woodyRoot,personPose,pulse};
  A.draw=(raw)=>{const frame=Math.round(raw*24),t=Math.floor(frame/2)/12;g.setTransform(1,0,0,1,0,0);g.globalAlpha=1;g.drawImage(A.paper,0,0);g.save();g.beginPath();g.rect(76,70,1768,935);g.clip();g.translate(960,540);const camera=A.performance.rootCamera(raw),pb=A.performance.push(raw),zoom=(1+.032*smooth(47,79.5,raw))*camera.z*pb.z;g.scale(zoom,zoom);const view=pb.w?A.performance.frameIn(camera.x+(pb.x-960)*pb.w,camera.y+(pb.y-540)*pb.w,zoom):[camera.x,camera.y];g.translate(-view[0]+2*Math.sin(raw*.14),-view[1]);sky(raw);
   // Rear cloud layer has its own slow parallax; paper-coloured silhouettes occlude the sky hatch.
   for(let i=0;i<5;i++)cloud(160+i*400+Math.sin(raw*.15+i)*22,140+(i%2)*-25,.72+(i%2)*.15,i%2?-1:1);
   ground(t);herald(290,294,-1,t,raw);herald(1635,294,1,t,raw);
-  person('sol',t,{songTime:raw});person('luna',t,{songTime:raw});birds(t);weather(t);
+  person('sol',t,{songTime:raw});person('luna',t,{songTime:raw});birds(t);weather(t);cloudHand(raw);
   roundel(820,163,63,t,'wind',71.875);roundel(960,156,64,t,'sun',72.875);roundel(1100,163,63,t,'winter',73.75);
   g.restore();g.strokeStyle=C.ink;g.lineWidth=1.4;g.strokeRect(57,50,1806,970);g.lineWidth=.6;g.strokeRect(63,56,1794,958);
   // Tiny print registration ornaments belong to the plate, not to an overlay UI.
