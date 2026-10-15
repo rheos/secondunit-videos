@@ -1,6 +1,8 @@
-// LOOK TEST ONLY (draft 11, Robin: "look test first"): Mary Margaret O'Hara's wordless stretches get one recurring
+// Signed off by Robin 2026-10-15 ("The O'Hara echo works"), in the film from draft 12: Mary Margaret O'Hara's wordless
+// stretches get one recurring
 // image. While she sings, a pale second him comes loose from the traveller and drifts away, then settles back: her voice
-// as the echo of his inner strife (Bob's words). Loaded only by looks/film-echo.html; the film page never loads it.
+// as the echo of his inner strife (Bob's words). Loaded by looks/film.html (and film-echo.html). It shows only where the
+// traveller is drawn: schematics, the plane loop and the locked nested-phone shot are untouched.
 'use strict';
 const OHARA = [[89.7, 90.5], [219.4, 220.05], [286.6, 289.8], [292.0, 293.45], [305.55, 306.4], [329.4, 330.45],
   [360.4, 362.35], [363.85, 365.2], [375.4, 378.3]];
