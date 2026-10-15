@@ -74,13 +74,13 @@
         <div id="counter"><span id="count">00</span> / 53</div>
       </div>
 
-      <div id="sI" class="scene clip" data-start="0" data-duration="12" data-track-index="1">
+      <div id="sI" class="scene clip" data-start="0" data-duration="12.5" data-track-index="1">
         <svg id="gI" viewBox="0 0 1920 1080"></svg>
         <div class="chapter">Plate I &middot; Five Copies</div>
         <div class="headline" style="font-size: 46px"><span id="hI1">You've typed this date five times.</span> <span id="hI2" class="accent">Four of them are wrong.</span></div>
       </div>
 
-      <div id="sII" class="scene clip" data-start="12" data-duration="10" data-track-index="1">
+      <div id="sII" class="scene clip" data-start="12.5" data-duration="10" data-track-index="1">
         <svg id="gII" viewBox="0 0 1920 1080">
           <defs><clipPath id="type-II"><rect id="rvII" x="596" y="260" width="0" height="70" /></clipPath></defs>
         </svg>
@@ -88,13 +88,13 @@
         <div class="headline"><span id="hII">Say it once, the way you'd say it.</span></div>
       </div>
 
-      <div id="sIII" class="scene clip" data-start="22" data-duration="14" data-track-index="1">
+      <div id="sIII" class="scene clip" data-start="22.5" data-duration="15" data-track-index="1">
         <svg id="gIII" viewBox="0 0 1920 1080"></svg>
         <div class="chapter">Plate III &middot; Your Chat</div>
         <div class="headline" style="font-size: 48px"><span id="hIII1">In your own ChatGPT.</span> <span id="hIII2" class="accent">Only you can change your dates.</span></div>
       </div>
 
-      <div id="sIV" class="scene clip" data-start="36" data-duration="14" data-track-index="1">
+      <div id="sIV" class="scene clip" data-start="37.5" data-duration="15" data-track-index="1">
         <svg id="gIV" viewBox="0 0 1920 1080">
           <defs>
             <clipPath id="reveal-date"><rect id="rv-date" x="440" y="330" width="0" height="70" /></clipPath>
@@ -109,7 +109,7 @@
         <div class="headline"><span id="hIV">One show, written down <span class="accent">once.</span></span></div>
       </div>
 
-      <div id="sV" class="scene clip" data-start="50" data-duration="22" data-track-index="1">
+      <div id="sV" class="scene clip" data-start="52.5" data-duration="20" data-track-index="1">
         <svg id="gV" viewBox="0 0 1920 1080">
           <defs>
             <clipPath id="rvV-site"><rect id="rvV1" x="286" y="600" width="0" height="34" /></clipPath>
@@ -121,11 +121,14 @@
         <div class="headline"><span id="hV1">Your site.</span> <span id="hV2">Your promo.</span> <span id="hV3">Your listings.</span></div>
       </div>
 
-      <div id="sVI" class="scene clip" data-start="72" data-duration="13" data-track-index="1">
+      <div id="sVI" class="scene clip" data-start="72.5" data-duration="12.5" data-track-index="1">
         <svg id="gVI" viewBox="0 0 1920 1080"></svg>
         <div class="chapter">Plate VI &middot; The Road</div>
         <div class="headline"><span id="hVI1">53 shows.</span> <span id="hVI2" class="accent">Not one typed twice.</span></div>
       </div>
+
+      <!-- score: drafting-table take-01 (score library), 96 BPM; its 61 ms lead is trimmed so beat k is at k * 0.625 s -->
+      <audio id="score" src="assets/score.mp3" data-start="0" data-duration="90" data-media-start="0.061" data-track-index="2"></audio>
 
       <div id="sC" class="scene clip" data-start="85" data-duration="5" data-track-index="1">
         <svg id="gC" viewBox="0 0 1920 1080"></svg>
@@ -148,9 +151,16 @@
       // JetBrains Mono advances 0.6 em, so character columns can be measured without layout
       const CW = (fs) => 0.6 * fs;
 
-      // scene start times (s) and lengths; the film is 90 s
-      const T = { I: 0, II: 12, III: 22, IV: 36, V: 50, VI: 72, C: 85 };
-      const D = { I: 12, II: 10, III: 14, IV: 14, V: 22, VI: 13, C: 5 };
+      // scene start times (s) and lengths; the film is 90 s. Each scene is one section of the score,
+      // and every section starts on a downbeat (a bar is 2.5 s at 96 BPM).
+      const T = { I: 0, II: 12.5, III: 22.5, IV: 37.5, V: 52.5, VI: 72.5, C: 85 };
+      const D = { I: 12.5, II: 10, III: 15, IV: 15, V: 20, VI: 12.5, C: 5 };
+      // scene timings were drafted silent; F stretches each to its section, then times snap to the score
+      const BEAT = 0.625;
+      const F = { I: 12.5 / 12, II: 1, III: 15 / 14, IV: 15 / 14, V: 20 / 22, VI: 12.5 / 13, C: 1 };
+      const snap = (t, step) => Math.round(t / step) * step;
+      const at = (k, x) => T[k] + snap(x * F[k], BEAT / 2); // motion on the eighth-note grid
+      const onBeat = (k, x) => T[k] + snap(x * F[k], BEAT); // headlines and hits on the beat
 
       /* ---------------- chrome: shows-booked scale + time cursor ---------------- */
       const scale = $("#scale");
@@ -481,72 +491,68 @@
         tl.from(sc.querySelector(".chapter"), { opacity: 0, x: -16, duration: 0.7, ease: "power2.out" }, t0 + 0.3);
       });
 
-      // Plate I (0-12)
-      tl.to(docs.map((g) => g.querySelector("rect.draw")), { strokeDashoffset: 0, duration: 0.8, ease: "power2.inOut", stagger: 0.45 }, 0.6);
-      tl.from(docs.map((g) => g.querySelector(".docbody")), { opacity: 0, duration: 0.6, stagger: 0.45 }, 1.1);
-      head("#hI1", 4.0);
-      tl.to(rings, { strokeDashoffset: 0, duration: 0.5, ease: "power2.out", stagger: 0.45 }, 5.4);
-      head("#hI2", 7.6);
+      // Plate I (0-12.5): one document per beat, one circled mistake per beat
+      tl.to(docs.map((g) => g.querySelector("rect.draw")), { strokeDashoffset: 0, duration: 0.8, ease: "power2.inOut", stagger: BEAT }, at("I", 0.6));
+      tl.from(docs.map((g) => g.querySelector(".docbody")), { opacity: 0, duration: 0.6, stagger: BEAT }, at("I", 1.1));
+      head("#hI1", onBeat("I", 4.0));
+      tl.to(rings, { strokeDashoffset: 0, duration: 0.5, ease: "power2.out", stagger: BEAT }, onBeat("I", 5.4));
+      head("#hI2", onBeat("I", 7.9));
 
       // Plate II (12-22)
-      const t2 = T.II;
-      tl.to(Array.from(gII.children).filter((n) => n.classList.contains("draw")), { strokeDashoffset: 0, duration: 0.8, ease: "power2.inOut" }, t2 + 0.4);
-      tl.to("#rvII", { attr: { width: S2.length * cw2 + 12 }, duration: 2.0, ease: `steps(${S2.length})` }, t2 + 1.2);
-      tl.to(draws(g2b).concat(draws(g2l)), { strokeDashoffset: 0, duration: 0.7, ease: "power2.inOut", stagger: 0.2 }, t2 + 3.6);
-      fadeIn(Array.from(document.querySelectorAll("#gII .dash")), t2 + 4.0, 0.6);
-      tl.from(Array.from(document.querySelectorAll("#gII .box")), { opacity: 0, y: 10, duration: 0.5, stagger: 0.25 }, t2 + 4.6);
-      tl.from(workedOut, { opacity: 0, duration: 0.5 }, t2 + 5.4);
-      head("#hII", t2 + 6.6);
+      tl.to(Array.from(gII.children).filter((n) => n.classList.contains("draw")), { strokeDashoffset: 0, duration: 0.8, ease: "power2.inOut" }, at("II", 0.4));
+      tl.to("#rvII", { attr: { width: S2.length * cw2 + 12 }, duration: 2.0, ease: `steps(${S2.length})` }, at("II", 1.2));
+      tl.to(draws(g2b).concat(draws(g2l)), { strokeDashoffset: 0, duration: 0.7, ease: "power2.inOut", stagger: 0.2 }, at("II", 3.6));
+      fadeIn(Array.from(document.querySelectorAll("#gII .dash")), at("II", 4.0), 0.6);
+      tl.from(Array.from(document.querySelectorAll("#gII .box")), { opacity: 0, y: 10, duration: 0.5, stagger: 0.25 }, at("II", 4.6));
+      tl.from(workedOut, { opacity: 0, duration: 0.5 }, at("II", 5.4));
+      head("#hII", onBeat("II", 6.6));
 
       // Plate III (22-36)
-      const t3 = T.III;
-      tl.to([...draws(chatWin), ...draws(tourWin)], { strokeDashoffset: 0, duration: 1.0, ease: "power2.inOut", stagger: 0.1 }, t3 + 0.3);
-      tl.to(draws(gC3), { strokeDashoffset: 0, duration: 1.0, ease: "power2.inOut", stagger: 0.2 }, t3 + 1.5);
-      tl.from([lock, lockLbl], { opacity: 0, y: -8, duration: 0.6, stagger: 0.2 }, t3 + 2.4);
+      tl.to([...draws(chatWin), ...draws(tourWin)], { strokeDashoffset: 0, duration: 1.0, ease: "power2.inOut", stagger: 0.1 }, at("III", 0.3));
+      tl.to(draws(gC3), { strokeDashoffset: 0, duration: 1.0, ease: "power2.inOut", stagger: 0.2 }, at("III", 1.5));
+      tl.from([lock, lockLbl], { opacity: 0, y: -8, duration: 0.6, stagger: 0.2 }, at("III", 2.4));
       gsap.set(packet, { x: 630, y: 443, opacity: 0 });
-      tl.to(packet, { opacity: 1, duration: 0.3 }, t3 + 3.2);
-      tl.to(packet, { x: 870, duration: 1.2, ease: "power1.inOut" }, t3 + 3.2);
-      tl.from(check, { opacity: 0, scale: 0.6, transformOrigin: "50% 50%", duration: 0.35 }, t3 + 4.6);
-      tl.to(packet, { x: 1240, duration: 1.0, ease: "power1.inOut" }, t3 + 5.0);
-      tl.to(packet, { opacity: 0, duration: 0.25 }, t3 + 5.9);
-      tl.to(newMini, { opacity: 1, duration: 0.4 }, t3 + 6.0);
-      tl.from(newMini, { y: -14, duration: 0.4, ease: "power2.out" }, t3 + 6.0);
-      head("#hIII1", t3 + 6.4);
-      tl.from(other, { opacity: 0, duration: 0.6 }, t3 + 7.2);
+      tl.to(packet, { opacity: 1, duration: 0.3 }, at("III", 3.2));
+      tl.to(packet, { x: 870, duration: 1.2, ease: "power1.inOut" }, at("III", 3.2));
+      tl.from(check, { opacity: 0, scale: 0.6, transformOrigin: "50% 50%", duration: 0.35 }, at("III", 4.6));
+      tl.to(packet, { x: 1240, duration: 1.0, ease: "power1.inOut" }, at("III", 5.0));
+      tl.to(packet, { opacity: 0, duration: 0.25 }, at("III", 5.9));
+      tl.to(newMini, { opacity: 1, duration: 0.4 }, at("III", 6.0));
+      tl.from(newMini, { y: -14, duration: 0.4, ease: "power2.out" }, at("III", 6.0));
+      head("#hIII1", onBeat("III", 6.4));
+      tl.from(other, { opacity: 0, duration: 0.6 }, at("III", 7.2));
       gsap.set(otherTk, { x: 938, y: 214, opacity: 0 });
-      tl.to(otherTk, { opacity: 1, duration: 0.3 }, t3 + 7.6);
-      tl.to(otherTk, { y: 326, duration: 1.0, ease: "power1.in" }, t3 + 7.6);
-      tl.from(cross, { opacity: 0, scale: 0.5, transformOrigin: "50% 50%", duration: 0.3 }, t3 + 8.6);
-      tl.to(otherTk, { y: 290, opacity: 0, duration: 0.6, ease: "power2.out" }, t3 + 8.8);
-      head("#hIII2", t3 + 9.4);
+      tl.to(otherTk, { opacity: 1, duration: 0.3 }, at("III", 7.6));
+      tl.to(otherTk, { y: 326, duration: 1.0, ease: "power1.in" }, at("III", 7.6));
+      tl.from(cross, { opacity: 0, scale: 0.5, transformOrigin: "50% 50%", duration: 0.3 }, at("III", 8.6));
+      tl.to(otherTk, { y: 290, opacity: 0, duration: 0.6, ease: "power2.out" }, at("III", 8.8));
+      head("#hIII2", onBeat("III", 9.4));
 
       // Plate IV (36-50): the approved style test, shifted
-      const t4 = T.IV;
-      tl.to(ghosts, { opacity: 1, duration: 0.2, stagger: 3.4 / 52 }, t4 + 1.4);
-      tl.to(ticks.slice(0, 52), { opacity: 1, duration: 0.2, stagger: 3.4 / 52 }, t4 + 1.4);
-      tl.to(fill, { strokeDashoffset: fillLen * (1 - 52 / 53), duration: 3.6, ease: "none" }, t4 + 1.4);
-      tl.to(count, { n: 52, duration: 3.6, ease: "none", onUpdate: showCount }, t4 + 1.4);
-      tl.fromTo(".card-fill", { opacity: 0 }, { opacity: 1, duration: 0.5 }, t4 + 5.0);
-      tl.to(outline, { strokeDashoffset: 0, duration: 1.3, ease: "power2.inOut" }, t4 + 5.0);
-      tl.from([perf, inner], { opacity: 0, duration: 0.6, stagger: 0.2 }, t4 + 5.9);
-      tl.from(admit, { opacity: 0, duration: 0.5 }, t4 + 6.2);
-      tl.to("#rv-date", { attr: { width: 760 }, duration: 0.7, ease: "steps(22)" }, t4 + 6.4);
-      tl.to("#rv-city", { attr: { width: 760 }, duration: 0.6, ease: "power2.out" }, t4 + 7.0);
-      tl.to("#rv-venue", { attr: { width: 760 }, duration: 0.5, ease: "power2.out" }, t4 + 7.5);
-      tl.to(draws(co), { strokeDashoffset: 0, duration: 0.7, ease: "power2.inOut", stagger: 0.12 }, t4 + 6.6);
-      tl.from("#iv-callouts text, #iv-callouts .dot", { opacity: 0, duration: 0.5, stagger: 0.1 }, t4 + 6.9);
-      tl.from(noLbl, { opacity: 0, duration: 0.4 }, t4 + 8.4);
-      tl.from(serial, { opacity: 0, y: 10, duration: 0.5, ease: "power2.out" }, t4 + 8.6);
-      tl.to(ticks[52], { opacity: 1, stroke: "var(--accent)", duration: 0.2 }, t4 + 8.8);
-      tl.to(fill, { strokeDashoffset: 0, duration: 0.4, ease: "power2.out" }, t4 + 8.7);
-      tl.to(count, { n: 53, duration: 0.3, onUpdate: showCount }, t4 + 8.8);
-      head("#hIV", t4 + 9.8);
+      tl.to(ghosts, { opacity: 1, duration: 0.2, stagger: 3.4 / 52 }, at("IV", 1.4));
+      tl.to(ticks.slice(0, 52), { opacity: 1, duration: 0.2, stagger: 3.4 / 52 }, at("IV", 1.4));
+      tl.to(fill, { strokeDashoffset: fillLen * (1 - 52 / 53), duration: 3.6, ease: "none" }, at("IV", 1.4));
+      tl.to(count, { n: 52, duration: 3.6, ease: "none", onUpdate: showCount }, at("IV", 1.4));
+      tl.fromTo(".card-fill", { opacity: 0 }, { opacity: 1, duration: 0.5 }, at("IV", 5.0));
+      tl.to(outline, { strokeDashoffset: 0, duration: 1.3, ease: "power2.inOut" }, at("IV", 5.0));
+      tl.from([perf, inner], { opacity: 0, duration: 0.6, stagger: 0.2 }, at("IV", 5.9));
+      tl.from(admit, { opacity: 0, duration: 0.5 }, at("IV", 6.2));
+      tl.to("#rv-date", { attr: { width: 760 }, duration: 0.7, ease: "steps(22)" }, at("IV", 6.4));
+      tl.to("#rv-city", { attr: { width: 760 }, duration: 0.6, ease: "power2.out" }, at("IV", 7.0));
+      tl.to("#rv-venue", { attr: { width: 760 }, duration: 0.5, ease: "power2.out" }, at("IV", 7.5));
+      tl.to(draws(co), { strokeDashoffset: 0, duration: 0.7, ease: "power2.inOut", stagger: 0.12 }, at("IV", 6.6));
+      tl.from("#iv-callouts text, #iv-callouts .dot", { opacity: 0, duration: 0.5, stagger: 0.1 }, at("IV", 6.9));
+      tl.from(noLbl, { opacity: 0, duration: 0.4 }, at("IV", 8.4));
+      tl.from(serial, { opacity: 0, y: 10, duration: 0.5, ease: "power2.out" }, at("IV", 8.6));
+      tl.to(ticks[52], { opacity: 1, stroke: "var(--accent)", duration: 0.2 }, at("IV", 8.8));
+      tl.to(fill, { strokeDashoffset: 0, duration: 0.4, ease: "power2.out" }, at("IV", 8.7));
+      tl.to(count, { n: 53, duration: 0.3, onUpdate: showCount }, at("IV", 8.8));
+      head("#hIV", onBeat("IV", 9.8));
 
       // Plate V (50-72)
-      const t5 = T.V;
-      tl.to([...draws(vBody), ...draws(vStub)], { strokeDashoffset: 0, duration: 1.0, ease: "power2.inOut" }, t5 + 0.3);
-      tl.from([...vBody.querySelectorAll("text:not(.red)"), ...vStub.querySelectorAll("text")], { opacity: 0, duration: 0.6, stagger: 0.1 }, t5 + 1.0);
-      tl.to(vStub, { x: 22, y: 6, rotation: 7, svgOrigin: "1140 240", duration: 0.8, ease: "back.out(1.6)" }, t5 + 2.4);
+      tl.to([...draws(vBody), ...draws(vStub)], { strokeDashoffset: 0, duration: 1.0, ease: "power2.inOut" }, at("V", 0.3));
+      tl.from([...vBody.querySelectorAll("text:not(.red)"), ...vStub.querySelectorAll("text")], { opacity: 0, duration: 0.6, stagger: 0.1 }, at("V", 1.0));
+      tl.to(vStub, { x: 22, y: 6, rotation: 7, svgOrigin: "1140 240", duration: 0.8, ease: "back.out(1.6)" }, at("V", 2.4));
       const output = (i, g, innerG, rv, rvAttr, t) => {
         fadeIn(rays[i], t, 0.6);
         tl.from(g.querySelector("rect.card"), { opacity: 0, duration: 0.5 }, t + 0.5);
@@ -554,38 +560,36 @@
         tl.from(innerG, { opacity: 0, duration: 0.6 }, t + 1.1);
         tl.to(rv, { attr: rvAttr, duration: 0.7, ease: "power2.out" }, t + 2.2);
       };
-      output(0, site, siteIn, "#rvV1", { width: 460 }, t5 + 3.4);
-      tl.from(siteUnder, { opacity: 0, duration: 0.4 }, t5 + 6.0);
-      head("#hV1", t5 + 6.4);
-      output(1, promo, promoIn, "#rvV2", { y: 520, height: 140 }, t5 + 7.4);
-      head("#hV2", t5 + 10.4);
-      output(2, list, listIn, "#rvV3", { width: 440 }, t5 + 11.4);
-      head("#hV3", t5 + 14.4);
+      output(0, site, siteIn, "#rvV1", { width: 460 }, at("V", 3.4));
+      tl.from(siteUnder, { opacity: 0, duration: 0.4 }, at("V", 6.0));
+      head("#hV1", onBeat("V", 6.4));
+      output(1, promo, promoIn, "#rvV2", { y: 520, height: 140 }, at("V", 7.4));
+      head("#hV2", onBeat("V", 10.4));
+      output(2, list, listIn, "#rvV3", { width: 440 }, at("V", 11.4));
+      head("#hV3", onBeat("V", 14.4));
       // the date moves once, and all three follow
-      tl.to(vDate, { opacity: 0, duration: 0.4 }, t5 + 16.2);
-      tl.to(vDate2, { opacity: 1, duration: 0.4 }, t5 + 16.4);
-      tl.to(pulses, { strokeDashoffset: 0, duration: 0.7, ease: "power2.in", stagger: 0.08 }, t5 + 17.0);
-      tl.to(pulses, { opacity: 0, duration: 0.5 }, t5 + 18.0);
-      tl.to([siteDate, promoDate, listDay], { opacity: 0, duration: 0.3 }, t5 + 17.8);
-      tl.to([siteDate2, promoDate2, listDay2], { opacity: 1, duration: 0.3 }, t5 + 17.9);
+      tl.to(vDate, { opacity: 0, duration: 0.4 }, at("V", 16.2));
+      tl.to(vDate2, { opacity: 1, duration: 0.4 }, at("V", 16.4));
+      tl.to(pulses, { strokeDashoffset: 0, duration: 0.7, ease: "power2.in", stagger: 0.08 }, at("V", 17.0));
+      tl.to(pulses, { opacity: 0, duration: 0.5 }, at("V", 18.0));
+      tl.to([siteDate, promoDate, listDay], { opacity: 0, duration: 0.3 }, at("V", 17.8));
+      tl.to([siteDate2, promoDate2, listDay2], { opacity: 1, duration: 0.3 }, at("V", 17.9));
 
       // Plate VI (72-85)
-      const t6 = T.VI;
-      fadeIn(Array.from(contours.children), t6 + 0.4, 1.2, 0.2);
-      fadeIn(roadBed, t6 + 0.6, 0.8);
-      tl.from(rose, { opacity: 0, duration: 0.8 }, t6 + 0.6);
-      tl.from(legend, { opacity: 0, duration: 0.6 }, t6 + 1.2);
-      tl.to(route, { strokeDashoffset: 0, duration: 6.4, ease: "none" }, t6 + 1.0);
-      tl.to(stopDots, { opacity: 1, duration: 0.15, stagger: 6.4 / 52 }, t6 + 1.0);
-      tl.to(nelson, { opacity: 1, duration: 0.4 }, t6 + 7.5);
-      head("#hVI1", t6 + 7.6);
-      head("#hVI2", t6 + 8.6);
+      fadeIn(Array.from(contours.children), at("VI", 0.4), 1.2, 0.2);
+      fadeIn(roadBed, at("VI", 0.6), 0.8);
+      tl.from(rose, { opacity: 0, duration: 0.8 }, at("VI", 0.6));
+      tl.from(legend, { opacity: 0, duration: 0.6 }, at("VI", 1.2));
+      tl.to(route, { strokeDashoffset: 0, duration: 6.4, ease: "none" }, at("VI", 1.0));
+      tl.to(stopDots, { opacity: 1, duration: 0.15, stagger: 6.4 / 52 }, at("VI", 1.0));
+      tl.to(nelson, { opacity: 1, duration: 0.4 }, at("VI", 7.5));
+      head("#hVI1", onBeat("VI", 7.6));
+      head("#hVI2", onBeat("VI", 8.6));
 
       // Colophon (85-90)
-      const tc = T.C;
-      tl.from(mark, { opacity: 0, y: 14, duration: 0.8, ease: "power2.out" }, tc + 0.3);
-      tl.to(rule, { strokeDashoffset: 0, duration: 0.7, ease: "power2.inOut" }, tc + 0.9);
-      tl.from(sign, { opacity: 0, y: 10, duration: 0.7, ease: "power2.out" }, tc + 1.5);
+      tl.from(mark, { opacity: 0, y: 14, duration: 0.8, ease: "power2.out" }, onBeat("C", 0));
+      tl.to(rule, { strokeDashoffset: 0, duration: 0.7, ease: "power2.inOut" }, at("C", 0.9));
+      tl.from(sign, { opacity: 0, y: 10, duration: 0.7, ease: "power2.out" }, at("C", 1.5));
       tl.to({}, { duration: 0.01 }, 89.99);
 
       window.__timelines["main"] = tl;
