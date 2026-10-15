@@ -218,7 +218,8 @@
   // Last verse roundels physically leave their row before the next chorus builds its cast.
   if(t<81.3){g.save();g.translate(0,-330*smooth(79.5,81.3,t));S.roundel(820,163,63,t,'wind',71.875);S.roundel(960,156,64,t,'sun',72.875);S.roundel(1100,163,63,t,'winter',73.75);g.restore()}
   g.restore();emblemFrame(fr,fk,t);border();
-  const fade=smooth(146.9,150.2,raw); // v11: lands with the music, which is silent by 148 s (audit D8)if(fade){g.save();g.globalAlpha=fade;g.drawImage(A.paper,0,0);g.restore()}
+  const fade=smooth(146.9,150.2,raw); // v11: lands with the music, which is silent by 148 s (audit D8)
+  if(fade){g.save();g.globalAlpha=fade;g.drawImage(A.paper,0,0);g.restore()}
  }
  A.draw=raw=>raw<79.5?lookTest(raw):extended(raw);
  A.ensemble={finalBirdPose,replyPackets,widerRootCurve,cast};
