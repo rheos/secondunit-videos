@@ -1,4 +1,4 @@
-# Clap Hands, cut-paper peacock: where it stands (paused 2026-10-15)
+# Clap Hands, cut-paper peacock: where it stands (2026-10-15)
 
 Read this first, then `STORYBOARD-peacock.md` (local only, gitignored) for the look bible, the four-chorus arc
 and every hand-off.
@@ -16,20 +16,13 @@ and every hand-off.
 - Code pushed to branch `clap-hands-peacock`, draft PR rheos/secondunit-videos#141 (issue #140). The commit
   worktree is in this session's scratchpad (`.../scratchpad/wt-gmc`); make a fresh one if it's gone.
 
-## In progress when paused
+## Full draft 1 (2026-10-15)
 
-Two fixes are in the code (in the main checkout, NOT yet pushed and NOT yet in the v1 mp4):
-1. `s05-avenue.js`: the avenue renders smooth (it judders on twos during the fast pans) and the pans are a bit longer.
-2. `s08-theatre.js`: the spotlight breathes and drifts, dust turns in the beam, the jeans and helmet move a
-   little (the jeans and helmet holds were frozen for ~2.4 s each).
-
-The patch render was stopped before splicing. To finish: re-render only frames 1889-2419 (avenue) and
-3156-3706 (theatre, through dawn's 0.4 s fade-in), copy them into `out/frames_peacock_11_197/` at those
-indexes, re-encode the whole frame set with the song (same ffmpeg line as `render-peacock.mjs`: scale 720:1280,
-crf 23, maxrate 4.5M, bufsize 9M, audio `-ss 11 -t 186` from assets/song.wav), name it `...full-v2...`, scan,
-watch the hand-offs, then upload unlisted with `secondunit-worker/yt_upload.py` (run it through
-`uv run --with google-api-python-client --with google-auth-oauthlib --with requests python ...`) and push
-the two files to the branch.
+`out/peacock/gmc-v2_peacock-cutpaper-full-v2_f00264-f04728_24fps_review-720p.mp4` = v1 with the avenue (smooth
+pans) and theatre (living spotlight) spans re-rendered and spliced in. Scanned: no bad frames besides the fade
+from black, no frozen runs, seamless splices; all 14 hand-offs checked on a contact sheet. Uploaded unlisted as
+"Clap Hands, cut paper peacock, full draft 1": https://youtu.be/GGcq57B5QZM (link sent to Telegram).
+Waiting on Robin's notes.
 
 ## Still open
 
