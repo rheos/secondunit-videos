@@ -125,6 +125,15 @@ SU.desk = { mode: 'ill', f(q, p, a, T) {
   X.setLineDash([10, 9]); X.beginPath(); X.moveTo(600, 520); X.quadraticCurveTo(900, 330, 1165, 470); stroke(C.teal, 1.8, .8); X.setLineDash([]);
 } };
 
+// Nakamura (draft 10): "which way is the farthest away": a procession of hims walks the globe's rim, standing out
+// from it like figures round a medallion, away from a tiny shop, upside down at the antipode, and back to the shop.
+function globeRoute(cx, cy, r, T) {
+  const sh = Math.atan2(230 - cy, 330 - cx); // the shop sits where his cloud's dashed line meets the globe
+  const at = (an, sc, f) => { X.save(); X.translate(cx + Math.cos(an) * r, cy + Math.sin(an) * r); X.rotate(an + Math.PI / 2); f(sc); X.restore(); };
+  at(sh, 1, () => { fillP(PR(-30, -46, 60, 46), C.brick); iBox(-30, -46, 60, 46, C.ink, 2); fillP(PR(-36, -56, 72, 11), C.cream); iBox(-36, -56, 72, 11, C.ink, 1.6); fillP(PR(8, -28, 12, 28), C.teal); iBox(8, -28, 12, 28, C.ink, 1.2); fillP(PR(-22, -36, 22, 16), '#cfe0da'); iBox(-22, -36, 22, 16, C.ink, 1.2); });
+  for (let i = 0; i < 9; i++) { const an = sh + .32 + ((i / 9 + T * .045) % 1) * (TAU - .64);
+    at(an, .13, (sc) => { traveller(0, 0, sc, { legs: walkPh() + i * 1.3, case: true, look: 1 }); cloud(0, -470 * sc, .5 * sc, { rain: true, band: false }); }); }
+}
 SU.globeSpin = { mode: 'ill', f(q, p, a, T) {
   stripes(C.paper, '#dfe3cc', 160, -.62, 0, C.sage);
   cam(960, 560, lerp(a.z || 1, (a.z || 1) * 1.12, eo(p)));
@@ -133,6 +142,7 @@ SU.globeSpin = { mode: 'ill', f(q, p, a, T) {
   iline(960, 980, 960, 1040, C.ink, 6); const b = PE(960, 1050, 200, 34); fillP(b, '#6b4a2e'); shade(b, 960, 1050, 210, [0, -10], .4, 5); iE(960, 1050, 200, 34, 0, C.ink, 2.4);
   globe(960, 560, 400, (a.fast ? 4 : 1.4) * T);
   for (let i = 0; i < 3; i++) { const a0 = -2.4 + i * .9 + T * 2; gc(960, 560, 470 + i * 26, C.orange, .85, 2.2, null, a0, a0 + .7); }
+  if (a.route) globeRoute(960, 560, 400, T);
   if (a.cloud) { cloud(330, 230, .7, { rain: true }); gl(330, 260, 960, 560, C.teal, .7, 1.6, [8, 8]); }
   if (a.far) { const [hx, hy] = [960 - 160, 560 - 120]; fillP(PE(hx, hy, 12, 12), C.brick); iE(hx, hy, 12, 12, 0, C.ink, 2); gc(hx, hy, 30 + 60 * eo(p), C.orange, .9, 2); lab(hx + 24, hy - 20, 'YOU ARE HERE', C.ink, .9, 15, 'left', 'alphabetic', 'bold'); }
 } };

@@ -231,6 +231,23 @@ SU.a_newspaper = { mode: 'ill', f(q, p, a, T) {
 
 // ---------- 39.8 the rolodex: cards flip past, every destination on file ----------
 const A_DEST = ['LISBON', 'REYKJAVIK', 'TIMBUKTU', 'ULAANBAATAR', 'KATHMANDU', 'TIERRA DEL FUEGO', 'ANYWHERE', 'NOT HERE'];
+// Nakamura (draft 10): every card is a tiny inhabited place, its resident waving as it comes up; NOT HERE is empty.
+function a_cardWorld(name, x, y, w, h, T) {
+  const i = A_DEST.indexOf(name), gy = y + h, wv = (FD >> 1) % 2; X.save(); const fr = PR(x, y, w, h); X.clip(fr);
+  fillP(fr, i === 7 ? '#efe4c8' : '#dfe7e0'); hatch(fr, x + w / 2, y + h / 2, w, -.9, 7, C.ink, .7, .15);
+  if (i !== 7) { const gr = PR(x, gy - 22, w, 22); fillP(gr, i === 2 ? C.ochre : i === 1 || i === 5 ? '#f4f4ef' : C.sage); iline(x, gy - 22, x + w, gy - 22, C.ink, 1.4, 1, false); }
+  const cx = x + w * .55;
+  if (i === 0) { for (let k = 0; k < 4; k++) { const hx = x + 12 + k * 34, hh = 30 + (k % 2) * 14; fillP(PR(hx, gy - 22 - hh, 28, hh), [C.brick, C.cream, C.ochre, C.rose][k]); iBox(hx, gy - 22 - hh, 28, hh, C.ink, 1.2); } }
+  else if (i === 1) { const v = PP([[cx - 50, gy - 22], [cx - 10, gy - 70], [cx + 10, gy - 70], [cx + 50, gy - 22]]); fillP(v, '#7c8794'); iP([[cx - 50, gy - 22], [cx - 10, gy - 70], [cx + 10, gy - 70], [cx + 50, gy - 22]], true, C.ink, 1.4); fillP(PE(cx, gy - 84, 14, 8), '#c9ccd2'); }
+  else if (i === 2) { const d = PE(cx, gy - 22, 70, 26); fillP(d, '#d9a46a'); iE(cx, gy - 22, 70, 26, 0, C.ink, 1.4, 1, false, 1, Math.PI, TAU); fillP(PR(cx - 18, gy - 72, 36, 26), '#c08a50'); iBox(cx - 18, gy - 72, 36, 26, C.ink, 1.2); }
+  else if (i === 3) { const yt = PP([[cx - 34, gy - 22], [cx - 34, gy - 46], [cx, gy - 66], [cx + 34, gy - 46], [cx + 34, gy - 22]]); fillP(yt, C.cream); iP([[cx - 34, gy - 22], [cx - 34, gy - 46], [cx, gy - 66], [cx + 34, gy - 46], [cx + 34, gy - 22]], true, C.ink, 1.4); fillP(PR(cx - 8, gy - 40, 16, 18), C.brick); }
+  else if (i === 4) { iP([[x + 10, gy - 22], [cx - 10, gy - 92], [cx + 20, gy - 60], [x + w - 10, gy - 22]], false, C.ink, 1.6); fillP(PP([[cx - 24, gy - 70], [cx - 10, gy - 92], [cx + 4, gy - 72]]), '#ffffff'); }
+  else if (i === 5) { fillP(PR(cx - 8, gy - 82, 16, 60), C.cream); hatch(PR(cx - 8, gy - 82, 16, 60), cx, gy - 52, 30, 0, 14, C.brick, 6, .9); iBox(cx - 8, gy - 82, 16, 60, C.ink, 1.2); for (let k = 0; k < 2; k++) gl(cx, gy - 78, cx + (k ? 60 : -60), gy - 90, C.ochre, wv ? .9 : .4, 2); }
+  else if (i === 6) { fillP(PE(cx, gy - 24, 44, 10), C.ochre); iline(cx, gy - 26, cx + 6, gy - 74, C.ink, 2, 1, false); fillP(PE(cx + 6, gy - 76, 22, 8, .3), C.sage); }
+  if (i !== 7) { const rx = x + w * .2, ry = gy - 22; fillP(PE(rx, ry - 12, 4, 12), C.ink); fillP(PE(rx, ry - 28, 4, 4), '#e7c9a2'); iline(rx + 2, ry - 20, rx + 10, ry - (wv ? 34 : 28), C.ink, 1.6, 1, false); }
+  else lab(x + w / 2, y + h / 2 + 4, '(EMPTY)', C.ink, .35, 11, 'center');
+  X.restore(); iBox(x, y, w, h, C.ink, 1.6);
+}
 SU.a_rolodex = { mode: 'ill', f(q, p, a, T) {
   stripes(C.paper, '#e6d3a8', 130, -.62, 0, C.ochre);
   cam(960, 560, lerp(1.04, 1, eo(p)));
@@ -251,7 +268,7 @@ SU.a_rolodex = { mode: 'ill', f(q, p, a, T) {
   for (let i = 18; i >= 1; i--) cardAt(-.12 - i * .07, i, false);
   const thF = lerp(-.1, 1.45, eio(flip)), d0 = A_DEST[step % A_DEST.length], d1 = A_DEST[(step + 1) % A_DEST.length];
   // the card behind the flipping one, revealed
-  const t1 = cardAt(-.12, 0, false); lab(730, t1 + 52, flip > .5 ? d1 : A_DEST[(step + 2) % A_DEST.length], C.ink, flip > .5 ? 1 : .35, 30, 'left', 'alphabetic', 'bold');
+  const t1 = cardAt(-.12, 0, false), dB = flip > .5 ? d1 : A_DEST[(step + 2) % A_DEST.length]; lab(730, t1 + 52, dB, C.ink, flip > .5 ? 1 : .35, 30, 'left', 'alphabetic', 'bold'); a_cardWorld(dB, 1010, t1 + 74, 190, 130, T);
   // the lying-forward pile
   for (let i = 1; i <= 8; i++) cardAt(1.2 + i * .04, i, true);
   // the flipping card
@@ -846,7 +863,7 @@ var CUTS_A = [
   [39.78, 'a_rolodex', {}],
   [42.38, 'sBoard', {}],
   // "farthest away from these blues": the globe, the antipode
-  [44.7, 'globeSpin', { fast: 1, cloud: 1 }],
+  [44.7, 'globeSpin', { fast: 1, cloud: 1, route: 1 }],
   [47.07, 'sGlobe', { anti: 1, title: 'FARTHEST POINT', sub: 'FROM THESE BLUES' }],
   [50.69, 'a_pin', {}],
   [53.85, 'a_sPin', {}],

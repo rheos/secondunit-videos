@@ -258,7 +258,14 @@ SU.b_whisper = { mode: 'ill', f(q, p, a, T) {
   const rib = []; for (let k = 0; k < nodes.length - 1; k += 1) { const [x1, y1] = nodes[k], [x2, y2] = nodes[k + 1]; if (k === 1 || k === 3) { rib.push([x2, y2]); continue; } for (let i = 0; i <= 40; i++) { const t = i / 40, lp = Math.sin(t * Math.PI) * (170 + k * 30), an = t * TAU * (k === 4 ? 2 : 1); rib.push([lerp(x1, x2, t) + Math.sin(an) * lp * .7, lerp(y1, y2, t) - lp - Math.cos(an) * lp * .4 + lp * .4]); } }
   const m = Math.max(2, Math.floor(rib.length * cl(p * 1.25)));
   path(rib.slice(0, m), C.ink, 10, .95); path(rib.slice(0, m), C.orange, 6, 1);
-  const [ex2, ey2] = rib[m - 1]; for (let i = 0; i < 3; i++) gc(ex2, ey2, 14 + i * 14, C.orange, .8 - i * .2, 1.8);
+  // Nakamura (draft 10): the rumour has a body, a little winged mouth flying the ribbon, a size bigger at each telling
+  const [ex2, ey2] = rib[m - 1], tell = 1.3 + (m / rib.length) * 1.5, wf = (FD >> 1) % 2;
+  X.save(); X.translate(ex2, ey2); X.scale(tell, tell); const lw = 1 / tell;
+  for (const sd of [-1, 1]) for (let f = 0; f < 3; f++) { const a0 = (wf ? -.9 : -.4) - f * .32, L = 34 - f * 5, fx = sd * 16, fea = PE(fx + sd * Math.cos(a0) * L * .5, -4 + Math.sin(a0) * L * .5, L * .5, 6, sd > 0 ? a0 : Math.PI - a0); fillP(fea, C.cream); hatch(fea, fx + sd * 14, -10, 20, .9, 3.5, C.ink, .8, .45); X.lineWidth = 1.6 * lw; X.strokeStyle = C.ink; X.stroke(fea); }
+  const mo = wf ? 7 : 3; fillP(PE(0, 2, 15, mo), '#3a1f1a'); fillP(PR(-8, 2 - mo + 1, 16, 3), '#f4f1e8');
+  const up = PP([[-20, 2], [-8, -9], [0, -5], [8, -9], [20, 2], [0, 2 - mo + 1]]), dn = PP([[-20, 2], [0, 2 + mo + 6], [20, 2], [0, 2 + mo]]);
+  fillP(up, C.brick); fillP(dn, '#b5523f'); X.lineWidth = 2 * lw; X.strokeStyle = C.ink; X.stroke(up); X.stroke(dn);
+  X.restore();
   if (p > .75) { gc(bx - 20, by - 40, 120, C.teal, .9, 2.4); }
   consL([[0, 560, W, 560], [0, 930, W, 930]]);
 } };

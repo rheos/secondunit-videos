@@ -186,7 +186,25 @@ function cloud(x, y, s, o = {}) {
   if (o.rain && !S.sch && typeof NOTES !== 'undefined' && NOTES > 0 && typeof noteRain === 'function') noteRain(-110, 60, 220, 110, NOTES);
   S.F(u, '#8d93a8'); S.SH(u, 0, 0, 150, [10, -22], .6, 5);
   bl.forEach(([a, b, r]) => iE(a, b, r, r * .82, 0, S.INK, (S.sch ? 1.1 : 2.2) * k, S.sch ? .8 : 1, false, .8 * k, Math.PI * .95, Math.PI * 2.05));
+  if (!S.sch && o.band !== false) cloudBand(k);
   X.restore();
+}
+// Nakamura (assistant director, draft 10): the blues has a band. A small opening in the cloud's belly shows a tiny
+// trio whose playing is the notes that rain on him. Drawn only when the cloud is big on screen, so it is a second-look
+// reward and never clutters the usual small cloud. Local cloud coords; k = 1 / s keeps line weights constant.
+function cloudBand(k) {
+  const m = X.getTransform(), eff = Math.hypot(m.a, m.b), vis = cl((eff - .8) / .25); if (vis <= 0) return;
+  const st = (FD >> 1) % 2, win = PE(0, 18, 74, 30);
+  X.save(); X.globalAlpha = vis; fillP(win, '#5d6380', vis); X.clip(win);
+  fillP(PR(-80, 34, 160, 20), '#4a4f68', vis); // the little stage
+  const fig = (x, h, col) => { fillP(PE(x, 40 - h * .55, 7, h * .45), C.ink, vis); fillP(PE(x, 40 - h - 4, 6, 6), '#e7d3b4', vis); fillP(PR(x - 7, 40 - h - 12, 14, 4), C.ink, vis); };
+  // upright bass, swaying
+  X.save(); X.translate(-44, 40); X.rotate(st ? .06 : -.06); const bass = PE(0, -18, 9, 17); fillP(bass, '#9b6a3f', vis); iline(0, -40, 0, 2, C.ink, 1.4 * k, vis, false); X.restore(); fig(-30, 34);
+  // horn, bell up, bobbing on the beat
+  const hy = st ? -2 : 0; fig(2, 36 + hy); X.beginPath(); X.moveTo(8, 6 + hy); X.lineTo(20, -10 + hy); stroke(C.ochre, 3 * k, vis); fillP(PE(21, -12 + hy, 5, 3, -.6), C.ochre, vis);
+  // drums
+  fig(40, 30); fillP(PE(46, 30, 12, 6), C.cream, vis); iE(46, 30, 12, 6, 0, C.ink, 1.2 * k, vis, false); iline(32, st ? 14 : 20, 44, 26, C.ink, 1.2 * k, vis, false);
+  X.restore(); iE(0, 18, 74, 30, 0, C.ink, 1.8 * k, vis, false);
 }
 function sunIll(x, y, r, col = C.ochre, loud = 0) {
   const p = PE(x, y, r, r); fillP(p, col, .95); hatch(p, x, y, r, .8, 5, C.ink, 1, .55, [-r * .2, -r * .2]); iE(x, y, r, r, 0, C.ink, 2.4);
