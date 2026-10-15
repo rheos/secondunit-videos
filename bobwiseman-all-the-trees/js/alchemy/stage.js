@@ -127,12 +127,18 @@
  // daylight) comes looking for the roots just as they vanish, peers, scratches his head ("where did they go?"), jumps
  // back on "Oh" as they rush back and the machine starts, then studies it through his glass and leaves for chorus 1.
  function searcher(raw){const t=Math.floor(Math.round(raw*24)/2)/12,cam=A.grove.state(raw).cameraY;
-  const inP=smooth(40.6,41.4,raw),outP=smooth(46.5,47.4,raw);if(inP<=0||outP>=1)return;
-  const pose=raw<42.15?'peer':raw<43.27?'shrug':raw<44.3?'surprise':'peer';
-  const walking=(inP<1)||(outP>0)||(raw>44.3&&raw<44.9),walk=walking?Math.abs(Math.sin(t*9))*7:0;
-  const jump=A.performance.bump(43.27,43.45,43.9,raw),x=mix(-220,640,inP)-40*jump+mix(0,90,smooth(44.3,44.9,raw))-outP*900;
-  const scratch=pose==='shrug'?.03*Math.sin(t*14):0,peer=pose==='peer'?.04*Math.sin(t*3):0;
+  const inP=smooth(40.6,41.4,raw),outP=smooth(47.3,47.4,raw);if(inP<=0||outP>=1)return;
+  // v22 (Robin's reference: the confused look-around): straightens on "we cannot" and looks over one shoulder, turns to
+  // look the other way on "see", then faces us palm up ("where did it go?") until "Oh". Turns are paper-puppet flips.
+  // v22: he never sees it (Robin: the surprised pose looked like he saw something). On "Oh" the machine starts under his
+  // feet while he is still palm up and puzzled; then he wanders off the wrong way, peering at the ground with his glass.
+  const pose=raw<41.45?'peer':raw<42.45?'look':raw<44.0?'palms':'peer';
+  let dir=raw>=41.95&&raw<42.45?-1:raw>=44.0?-1:1;
+  const turnAt=[41.45,41.95,42.45,44.0],flipK=turnAt.reduce((v,a)=>Math.min(v,Math.min(1,Math.abs(raw-a)/.09)),1);
+  const leave=smooth(44.1,47.4,raw),walking=(inP<1)||raw>44.1,walk=walking?Math.abs(Math.sin(t*(raw>44.1?6:9)))*6:0;
+  const x=mix(-220,640,inP)-leave*900;
+  const sway=pose==='look'?.025*Math.sin(t*3):pose==='palms'?.02*Math.sin(t*4):0,peer=pose==='peer'?.04*Math.sin(t*3):0;
   g.save();g.beginPath();g.rect(X0,Y0,X1-X0,Y1-Y0);g.clip();g.translate(0,cam);
-  performer('searcher-'+pose,x,766-walk-60*jump,330,outP>0?-1:1,0,peer+scratch-.08*jump);g.restore()} // turns round to leave
+  performer('searcher-'+pose,x,766-walk,330,dir*(.15+.85*flipK),0,peer+sway);g.restore()} // walks off the wrong way
  A.draw=raw=>{if(raw<T.floorOut[1])return stage(raw);if(raw>=144.6)return finale(raw);base(raw);if(raw>40.5&&raw<47.5)searcher(raw)};
 })();

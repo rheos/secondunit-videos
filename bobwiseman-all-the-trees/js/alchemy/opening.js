@@ -155,6 +155,8 @@
   g.restore();
   machine(t,cover); // over the knot and outside the roots' clip, so the big gear and its crank are whole
  }
+ function drawHeralds(raw,t){const arrive=smooth(7.25,9.25,raw);if(!arrive)return;
+  g.save();g.translate(-500*(1-arrive),0);S.herald(290,294,-1,t,raw);g.restore();g.save();g.translate(500*(1-arrive),0);S.herald(1635,294,1,t,raw);g.restore()}
  function opening(raw){const t=Math.floor(Math.round(raw*24)/2)/12;
   g.setTransform(1,0,0,1,0,0);g.globalAlpha=1;g.drawImage(A.paper,0,0);
   g.save();g.translate(2*Math.sin(raw*.14),0);
@@ -170,11 +172,12 @@
   if(ground&&raw>=ALCHEMY_CUES.grove.landRetreat[0]/24){fill('M75 754H1845V775H75Z','#dcd09c');S.ground(t,false)}
   else if(ground){g.save();g.beginPath();g.rect(75,760,1770,610*ground);g.clip();
    fill('M75 754H1845V775H75Z','#dcd09c');S.ground(t,false);g.restore()} // v9: the same engraved soil section as the rest of the film
-  A.grove.draw(raw);roots(t);if(ground)S.turf();dividers(t); // over the turf: the hinge stands above groundg.restore();
+  // v22 (Robin): the angels and their clouds sit between the land and the trees, so the trees stay in front of them.
+  const heraldsBehind=A.grove.draw(raw,()=>{g.save();g.translate(0,-cameraY*.7);drawHeralds(raw,t);g.restore()});
+  roots(t);if(ground)S.turf();dividers(t); // dividers over the turf: the hinge stands above ground
+  g.restore();
   // v11: heralds stand in front of the grove and move at 0.3x the camera dip, so their heads stay in the plate.
-  const arrive=smooth(7.25,9.25,raw);
-  if(arrive){g.save();g.beginPath();g.rect(76,70,1768,935);g.clip();g.translate(0,cameraY*.3);
-   g.save();g.translate(-500*(1-arrive),0);S.herald(290,294,-1,t,raw);g.restore();g.save();g.translate(500*(1-arrive),0);S.herald(1635,294,1,t,raw);g.restore();g.restore()}
+  if(!heraldsBehind){g.save();g.beginPath();g.rect(76,70,1768,935);g.clip();g.translate(0,cameraY*.3);drawHeralds(raw,t);g.restore()}
   chart(t);
   g.restore();border(raw);
   // The full registration ornaments arrive before the first chorus scene.

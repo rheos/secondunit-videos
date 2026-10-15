@@ -33,7 +33,7 @@
   branch(0,-153,-2.38+bend,96,fork,seed);branch(2,-202,-.81+bend,109,fork,seed+20);branch(0,-293,-1.61+bend,76,fork,seed+40);
   S.woodyRoot([0,0,-12,-90,20,-203,0,-303],1,43,15,seed);
  }
- function draw(raw){const st=state(raw);if(!st.land)return;const t=Math.floor(Math.round(raw*24)/2)/12;
+ function draw(raw,between){const st=state(raw);if(!st.land)return false;const t=Math.floor(Math.round(raw*24)/2)/12;
   g.save();g.beginPath();g.rect(76,70,1768,690);g.clip();
   const edge=mix(760,horizon.y,st.land);
   fill(`M76 ${edge+6}Q500 ${edge-9} 1040 ${edge}T1844 ${edge+3}V761H76Z`,'#e6d49c');
@@ -47,6 +47,7 @@
   fill(`M865 760Q967 640 1010 ${edge+48}L1040 ${edge}Q1038 ${edge+59} 1047 ${edge+104}Q1032 659 1034 760Z`,'#f4e4b4');
   for(let i=0;i<170;i++){const d=noise(i+10),y=edge+(760-edge)*d*d,x=80+noise(i+207)*1760;line(x,y,x+2+12*d,y-1,'#b29b69',.55)}
   g.restore();
+  if(between)between();
   for(const tree of [...st.trees].reverse()){
    if(tree.grow<=0)continue;
    const {x,y,size,seed,depth,pop,exit}=tree,settle=1+.14*Math.sin(pop*Math.PI*2)*(1-pop),k=tree.grow*settle;
@@ -57,7 +58,7 @@
    g.translate(x,y+400*size*exit);g.scale(size*(.97+.03*k)*k,size*k);
    g.rotate(.025*Math.sin(t*1.8+seed));treeShape(seed,t,depth);g.restore();
   }
-  g.restore();
+  g.restore();return true;
  }
  A.grove={draw,state,treeShape};
 })();

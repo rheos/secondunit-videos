@@ -9,7 +9,7 @@ from PIL import Image
 src = Path('source/alchemy/opening'); out = Path('assets/alchemy/opening-media.js')
 media, boxes = {}, {}
 MOUTH = {'singer': (610, 165, 40, 28)}  # mouth centre and radii in the 1024x1536 source; others are found automatically
-for name, kinds in [('herald', ['open', 'closed']), ('singer', ['open', 'closed']), ('searcher', ['peer', 'shrug', 'surprise'])]:
+for name, kinds in [('herald', ['open', 'closed']), ('singer', ['open', 'closed']), ('searcher', ['peer', 'shrug', 'surprise', 'look', 'palms'])]:
     ims = {k: Image.open(src / f'{name}-{k}.png').convert('RGBA') for k in kinds if (src / f'{name}-{k}.png').exists()}
     if not ims: continue
     arrs = {k: np.asarray(v).copy() for k, v in ims.items()}
