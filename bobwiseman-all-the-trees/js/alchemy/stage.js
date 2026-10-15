@@ -107,5 +107,16 @@
   g.restore();
   valance(clear*260,t);
  }
- A.draw=raw=>raw<T.floorOut[1]?stage(raw):base(raw);
+ // v17 (rethink 14): the bookend. The valance drops back in, the curtains close over the emblem as the last phrase
+ // ends, the herald and the troubadour step out in front for a curtain call, and the picture fades to paper.
+ function finale(raw){const t=Math.floor(Math.round(raw*24)/2)/12;A.noFade=true;base(raw);A.noFade=false;
+  const close=smooth(145.4,147.6,raw),drop=smooth(144.6,145.8,raw);
+  g.save();g.beginPath();g.rect(X0,Y0,X1-X0,Y1-Y0);g.clip();
+  if(close>0)for(const side of [-1,1])panel(side,1-close,t,.2*A.performance.bump(145.4,146.2,147.8,raw));
+  floor(smooth(146.6,147.4,raw),t,0);
+  const call=smooth(147.0,147.5,raw),bow=A.performance.bump(147.7,148.0,148.5,raw);
+  if(call>0){performer('herald',mix(1990,1500,call),Y1-6,600,1,0,-.22*bow);performer('singer',mix(-130,420,call),Y1-6,610,-1,0,.22*bow)}
+  g.restore();valance(260*(1-drop),t);
+  const fade=smooth(148.2,149.4,raw);if(fade){g.save();g.globalAlpha=fade;g.drawImage(A.paper,0,0);g.restore()}}
+ A.draw=raw=>raw<T.floorOut[1]?stage(raw):raw>=144.6?finale(raw):base(raw);
 })();

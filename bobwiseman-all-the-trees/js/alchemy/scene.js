@@ -57,7 +57,7 @@
  // v16 (audit #4): each ends inside the plate, swelling at the bottom edge toward the viewer, with a gold flare.
  const youBeats=[[60.4,48,-150],[91.56,70,165],[123.5,92,-95],[135.4,124,35]];
  function towardYou(t){youBeats.forEach(([w,width,dx],i)=>{const p=smooth(w-.14,w+.32,t);if(!p)return;
-   const b=[960,930,960+dx*.2,955,960+dx*.7,1010,960+dx,1135]; // its widest end always runs out past the frame edge
+   const b=[960,930,960+dx*.2,955,960+dx*.75,1040,960+dx*1.15,1330]; // its widest end always runs out past the frame edge
    woodyRoot(b,p,9,width,90+i,{rootlets:3,rootletLen:50});
    const lit=i===3?smooth(w,w+.8,t):.8*A.performance.bump(w,w+.35,w+2.4,t);
    if(lit){g.save();g.globalAlpha=lit;g.beginPath();for(let k=0;k<=30;k++){const q=bez(b,k/30*p);k?g.lineTo(q[0],q[1]):g.moveTo(q[0],q[1])}
@@ -129,7 +129,8 @@
  function person(which,t,style={}){const p=personPose(which,t,style.phase||0,style.songTime??t,style.role||'',style.receive||0,style.bloom||0),{moon,x,foot,s,ox,appear,left,right,elbow,head,lean,stretch}=p;if(!appear)return;
   const color=style.color||(moon?C.rose:C.blue),wash=cueProgress('wash',p.cueTime);
   g.save();g.translate(x,foot+28*(1-appear));g.rotate(lean);g.scale(s,s*stretch);g.translate(-ox,-1200);g.globalAlpha=appear;
-  if(style.headOnly){joint(moon?994:332,290,head,()=>{g.save();g.translate(moon?994:332,290);g.scale(p.act.headScale,p.act.headScale);g.translate(-(moon?994:332),-290);piece(which+'-head',moon?'#bdc9d3':C.gold,wash);g.restore()});g.restore();return}
+  const im=moon?0:[56.74,87.62,132.71].reduce((v,w)=>Math.max(v,A.performance.bump(w-.05,w+.12,w+1.1,p.cueTime)),0); // v17 (rethink 18): a beat on every "I'm"
+  if(style.headOnly){joint(moon?994:332,290,head,()=>{g.save();g.translate(moon?994:332,290);g.scale(p.act.headScale*(1+.14*im),p.act.headScale*(1+.14*im));g.translate(-(moon?994:332),-290);piece(which+'-head',moon?'#bdc9d3':C.gold,wash);g.restore()});g.restore();return}
   // A hand emerges from the previously closed sleeve once the free-arm dance begins.
   if(!moon&&p.cueTime>=79.5)joint(426,349,right,()=>{g.save();g.translate(490,590);g.rotate(-.35);g.scale(-.83,.83);g.translate(-712,-695);g.beginPath();g.moveTo(689,725);g.lineTo(696,667);g.lineTo(725,635);g.lineTo(787,639);g.lineTo(785,680);g.lineTo(749,709);g.closePath();g.clip();piece('luna-arm-l','#e3bb90',wash);g.restore()});
   if(moon){joint(892,355,left,()=>piece('luna-arm-l',color,wash));joint(1089,358,right,()=>{piece('luna-upper',color,wash);joint(1100,512,elbow,()=>piece('luna-fore',color,wash))})}
@@ -142,7 +143,7 @@
   else joint(230,344,left,()=>joint(140,471,elbow,()=>fore('sol-fore',246,443,36,55)));
   const arrival=ALCHEMY_CUES.chorus.sharedArrival[0]/ALCHEMY_CUES.fps;
   const oh=smooth(arrival,arrival+.17,p.cueTime)*(1-smooth(arrival+.32,arrival+.92,p.cueTime));
-  joint(moon?994:332,290,head,()=>{g.save();g.translate(moon?994:332,290);g.scale(p.act.headScale,p.act.headScale);g.translate(-(moon?994:332),-290);piece(which+'-head',moon?'#bdc9d3':C.gold,wash);if(moon){g.save();g.beginPath();g.arc(994,176,150,0,Math.PI*2);g.clip();g.beginPath();g.rect(700,-120,600,600);g.arc(1052,150,140,0,Math.PI*2);g.clip('evenodd');g.fillStyle='rgba(44,58,92,.30)';g.fillRect(800,-20,400,380);for(let k=-200;k<220;k+=7)line(860+k,0,860+k+120,340,'#2a3550',.7);g.restore()}rays(moon?992:333,164,174,83,32,.15+oh*.75+Math.exp(-Math.max(0,t-50.708)*8)*(t>=50.708&&t<51.5?.75:0)+brass(t)*.14);g.restore()});
+  joint(moon?994:332,290,head-.12*im,()=>{g.save();g.translate(moon?994:332,290);g.scale(p.act.headScale*(1+.14*im),p.act.headScale*(1+.14*im));g.translate(-(moon?994:332),-290);piece(which+'-head',moon?'#bdc9d3':C.gold,wash);if(moon){g.save();g.beginPath();g.arc(994,176,150,0,Math.PI*2);g.clip();g.beginPath();g.rect(700,-120,600,600);g.arc(1052,150,140,0,Math.PI*2);g.clip('evenodd');g.fillStyle='rgba(44,58,92,.30)';g.fillRect(800,-20,400,380);for(let k=-200;k<220;k+=7)line(860+k,0,860+k+120,340,'#2a3550',.7);g.restore()}rays(moon?992:333,164,174,83,32+70*im,.15+im+oh*.75+Math.exp(-Math.max(0,t-50.708)*8)*(t>=50.708&&t<51.5?.75:0)+brass(t)*.14);g.restore()});
   g.restore();bough(boughSpec(p,0,t));bough(boughSpec(p,1,t));
  }
  function heraldPose(x,y,flip,t,raw){const cue=A.performance.horn(raw),q=pulse(t)+(flip<0?0:Math.PI*.6);
@@ -151,7 +152,10 @@
   const world=point=>{const a=rotate(point,[878,575],arm),v=rotate([(a[0]-795)*.315*flip,(a[1]-805)*.315-112],[0,0],rock);return [x+v[0],y+112+bob+v[1]]};
   return {cue,q,bob,rock,arm,bell:world([390,305]),grip:world([550,362])};
  }
- function herald(x,y,flip,t,raw){const h=heraldPose(x,y,flip,t,raw),{cue,q,bob,rock,arm}=h;
+ // v17 (rethink 20): without brass the angels sink behind their clouds (spoken thesis, verse, bridge) and rise on the trumpets.
+ const hideAt=r=>Math.max(smooth(33.2,34.2,r)*(1-smooth(46.3,47.5,r)),smooth(64.7,65.7,r)*(1-smooth(78.3,79.3,r)),smooth(96.3,97.3,r)*(1-smooth(110.1,110.9,r)));
+ function herald(x,y,flip,t,raw){const h=heraldPose(x,y,flip,t,raw),{cue,q,bob,rock,arm}=h,hide=hideAt(raw);
+  g.save();g.beginPath();g.rect(x-700,y-900,1400,900+150+bob*.4);g.clip();g.translate(0,250*hide*hide);
   g.save();g.translate(x,y+112+bob);g.rotate(rock);g.translate(0,-112);g.scale(.315*flip,.315);g.translate(-795,-805);
   joint(900,570,.10*Math.sin(q-.9)-cue.attack*.16,()=>piece('fame-wing',C.cream));
   // At rest, the lowered instrument passes behind the body and cloud support.
@@ -161,7 +165,7 @@
   if(!cue.visible||cue.lift<.3||cue.uncover<1){const robe=x<960?'#c96560':'#739d77';fill('M787 488Q828 520 868 514Q906 548 914 629L851 682L728 632Q749 553 787 488Z',robe);g.save();g.clip(new Path2D('M787 488Q828 520 868 514Q906 548 914 629L851 682L728 632Q749 553 787 488Z'));g.translate(-35,-160);piece('fame-body',robe);g.restore();stroke('M787 488Q828 520 868 514Q906 548 914 629L851 682L728 632Q749 553 787 488Z',C.ink,2);for(let i=0;i<22;i++)stroke(`M${786-i*1.7} ${510+i*5}q55 ${15+i*.8} ${109-i*1.4} ${7+i*.25}`,C.ink,.7);stroke('M794 510Q778 567 745 621M852 525Q846 590 883 637',C.ink,2.2)}
   g.save();g.beginPath();g.ellipse(844,460,76,61,-.2,0,Math.PI*2);g.clip();piece('fame-body','#e4bd90');g.restore();
   if(cue.visible&&cue.lift>=.5)instrument();
-  g.restore();cloud(x+10,y+120+bob*.4,1.15,flip); // v16: smaller clouds clear the newcomers' heads (audit C5)
+  g.restore();g.restore();cloud(x+10,y+120+bob*.4,1.15,flip); // v16: smaller clouds clear the newcomers' heads (audit C5)
  }
  function bird(x,y,scale,t,dir=1,land=0,halo=1,ph=0){g.save();g.translate(x,y);g.scale(scale*dir,scale);g.translate(-280,-360);joint(267,233,.11*Math.sin(t*9+ph)*(1-land),()=>piece('bird-rear','#d7ad47'));piece('bird-body','#e9c986');joint(329,275,Math.sin(t*9+ph)*.4*(1-land)+.15*land,()=>piece('bird-wing','#f2e6bd'));if(halo){g.globalAlpha=halo;ellipse(152,185,69,19,null,'#b88c29');ellipse(152,185,61,13,null,C.ink);g.globalAlpha=1}
   // Small long-bell instrument in the bird's beak; original engraving stays the body language.
@@ -227,8 +231,10 @@
  stroke('M75 760Q480 746 960 761T1845 760',C.ink,2);if(showRoots){rootNetwork(t);rootSignal(t);towardYou(t);turf()}}
  // v12: one designed light arc (audit F6). Cool slate before dawn, lifting through each chorus, a cool dip on
  // each "winter", warming when the heart becomes a sun; the gold dawn (extended.js warmSky) finishes it.
- const skyKeys=[[0,'#4f6a86'],[11,'#4f6a86'],[16.6,'#55789a'],[32,'#5a84a5'],[47,'#558dab'],[72.8,'#5a93b2'],[73.8,'#7690a2'],[76.5,'#5a93b2'],
-  [79.5,'#5d98b8'],[96,'#63a0bd'],[104.3,'#68a3bd'],[105,'#86a9b6'],[106.6,'#7898ab'],[108.6,'#86a8b6'],[110,'#84a9b9'],[122,'#88adbb'],[125,'#92b2bb']];
+ // v17 (rethink 21, stronger): first light when the grove is born, a step warmer at each chorus, colder winter dips,
+ // so the gold dawn reads as the sun arriving, not a jump.
+ const skyKeys=[[0,'#465c78'],[11,'#465c78'],[16.6,'#4f6d8e'],[30.5,'#5d7f9c'],[33.5,'#9fb0b4'],[40,'#86a3b2'],[47,'#6f99b3'],[72.8,'#79a2b8'],[73.8,'#5a7489'],[76.5,'#7aa2b7'],
+  [79.5,'#8aaebd'],[96,'#97b4bd'],[104.3,'#a1b6b8'],[105,'#c1bea6'],[106.6,'#7a8f9f'],[108.6,'#b5b6a2'],[110,'#b8b6a0'],[122,'#c2b996'],[125,'#cdbd8c']];
  const hex=h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16));
  function skyColor(t){let i=skyKeys.findIndex(k=>k[0]>t);if(i<0)return skyKeys.at(-1)[1];if(i===0)return skyKeys[0][1];const [t0,c0]=skyKeys[i-1],[t1,c1]=skyKeys[i],u=smooth(t0,t1,t),a=hex(c0),b=hex(c1);
   return 'rgb('+a.map((v,k)=>Math.round(mix(v,b[k],u))).join(',')+')'}

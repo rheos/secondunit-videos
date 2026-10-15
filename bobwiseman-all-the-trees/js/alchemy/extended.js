@@ -51,7 +51,12 @@
  }
  function flame(h,w,ph){const sw=w*.9*Math.sin(ph),tongue=(k,col,lw)=>{const H=h*k,W=w*k,d=`M${-W} 0C${-W*1.5} ${-H*.32} ${W*.9+sw*k} ${-H*.5} ${sw*1.9*k} ${-H}C${-W*.35+sw*k} ${-H*.62} ${W*1.6} ${-H*.36} ${W} 0Q0 ${H*.12} ${-W} 0Z`;fill(d,col);if(lw)stroke(d,C.ink,lw);return d};
   const d=tongue(1,C.gold,1.5);g.save();g.clip(new Path2D(d));for(let k=0;k<6;k++)stroke(`M${-w+k*w*.4} 0Q${sw*.8} ${-h*.5} ${sw*1.9} ${-h}`,'#a8681f',.8);g.restore();tongue(.55,'#d0583a',0)}
- function heart(t,a,raysOnly=false){const birth=smooth(96.3,97.4,t);if(!birth)return;
+ // v17 (rethink 16): the gold glint seen in the roots (41, 62.5, 90 s) comes back: it runs along both partners' roots
+ // into the junction, swells, and the heart's bud grows out of it.
+ function glintToHeart(t){if(t<95.2||t>97.8)return;const u=smooth(95.2,96.2,t),sw=A.performance.bump(96.0,96.35,97.6,t);
+  if(u<1)for(const b of [S.roots[2],S.roots[7]]){const q=S.bez(b,1-u);A.glow(q[0],q[1],30)}
+  if(sw)A.glow(958,930,70*sw+20,sw)}
+ function heart(t,a,raysOnly=false){if(!raysOnly)glintToHeart(t);const birth=smooth(96.3,97.4,t);if(!birth)return;
   const {rise,final,climax,x,y,radius,sun}=heartGeom(t,a);
   if(raysOnly){if(!sun)return;g.save();g.translate(x,y);g.scale(birth,birth);g.rotate(t*.02);
    const n=40,inner=radius*1.12,len=(120+final*330+climax*260)*(.9+.1*Math.sin(S.pulse(t))),glow=.5+sun*.25+A.brass(t)*.2;
@@ -245,7 +250,7 @@
   // Last verse roundels physically leave their row before the next chorus builds its cast.
   if(t<79.6){g.save();g.translate(0,-330*smooth(78.4,79.5,t));S.roundel(820,163,63,t,'wind',71.875);S.roundel(960,156,64,t,'sun',72.875);S.roundel(1100,163,63,t,'winter',73.75);g.restore()}
   g.restore();emblemFrame(fr,fk,t);border();
-  const fade=smooth(146.7,148.6,raw); // v11: lands with the music, which is silent by 148 s (audit D8)
+  const fade=A.noFade?0:smooth(146.7,148.6,raw); // v11: lands with the music, which is silent by 148 s (audit D8)
   if(fade){g.save();g.globalAlpha=fade;g.drawImage(A.paper,0,0);g.restore()}
  }
  A.draw=raw=>raw<79.5?lookTest(raw):extended(raw);
