@@ -279,7 +279,9 @@ function c_lvl(r, lvl, T, p) { // draw level lvl (0 diner, 1 road, 2 sky) fillin
   } else { // the sky: clouds and the plane crossing it
     fillP(PR(x, y, w, h), '#cfe0da'); hatch(PR(x, y, w, h), x + w / 2, y + h / 2, w, -.95, 16 * k, C.cream, 3 * k, .4);
     cloud(x + w * .2, y + h * .28, .45 * k, {}); cloud(x + w * .84, y + h * .7, .38 * k, {});
-    const pp = seg(p, .6, 1); plane(x + w * lerp(.05, .9, pp), y + h * lerp(.62, .42, pp), .45 * k, -.12);
+    // draft 9: on the wordless vocal (219.4-220.05) the plane loops the loop once
+    const pp = seg(p, .6, 1), lu = eio(cl((T - 219.35) / .75)), lr = h * .09, la = TAU * lu;
+    plane(x + w * lerp(.05, .9, pp) + lr * Math.sin(la), y + h * lerp(.62, .42, pp) - lr * (1 - Math.cos(la)), .45 * k, -.12 - la);
     for (let i = 0; i < 3; i++) gc(x + w * lerp(.05, .9, pp) - 200 * k, y + h * .6, (40 + i * 30 + ((FD * 5) % 30)) * k * .5, C.teal, .5, 1.6);
   }
   X.restore();

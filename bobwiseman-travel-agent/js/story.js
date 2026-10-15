@@ -124,7 +124,9 @@ SU.seesaw = { mode: 'ill', f(q, p, a, T) {
 } };
 SU.sSeesaw = { mode: 'sch', f(q, p, a, T) {
   schBG(); cam(960, 540, lerp(1.05, 1, eo(p)));
-  const flip = cl((T - 283.6) / .25), ang = lerp(-.28, .36, eo(flip));
+  // Draft 9: the beam no longer sits still; it keeps getting re-weighed, kicking back toward THINK and settling to FEEL.
+  const flip = cl((T - 283.6) / .25), tt = Math.max(0, T - 284.4), kick = .62 * Math.exp(-tt * 1.3) * Math.abs(Math.sin(tt * 3.4));
+  const ang = lerp(-.28, .36, eo(flip)) - kick;
   X.save(); X.translate(960, 700); X.rotate(ang); gl(-640, 0, 640, 0, C.white, .9, 2); stip(PR(-560, -190, 260, 186), -430, -100, 200, 1500, C.cyan, .6, 1.4); X.strokeStyle = C.cyan; X.lineWidth = 1.2; X.strokeRect(-560, -190, 260, 186);
   star(450, -60, 8, C.mag, 1); gc(450, -60, 40, C.mag, .8, 1.4);
   for (const [x2, col, L] of [[-430, C.cyan, flip ? 80 : 220], [450, C.mag, flip ? 260 : 60]]) { gl(x2, 10, x2, 10 + L, col, .9, 2.2); X.beginPath(); X.moveTo(x2 - 9, L - 4); X.lineTo(x2, 10 + L); X.lineTo(x2 + 9, L - 4); stroke(col, 2.2, .9); }
@@ -145,7 +147,10 @@ SU.sPassport = { mode: 'sch', f(q, p, a, T) {
     if (sh === 'ellipse') { gc(0, 0, 90, col, .95, 2); gc(0, 0, 74, col, .6, 1); } else if (sh === 'hex') iP(hexPts(0, 0, 90), true, col, 2, .95, false, .3); else { X.strokeStyle = col; X.lineWidth = 2; X.strokeRect(-110, -60, 220, 120); X.strokeRect(-100, -50, 200, 100); }
     stip(PE(0, 0, 80, 60), 0, 0, 90, 300, col, .5, 1.4); lab(0, 6, name, col, .95, 18, 'center', 'middle', 'bold'); X.restore();
   }
-  lab(1000, 850, 'DISTANCE FROM BLUES: 0 KM', C.mag, .95, 15);
+  // Draft 9: the distance climbs while the stamp lands, then snaps back to zero: every visa leads to the same place.
+  const km = p < .78 ? Math.round(eio(seg(p, .1, .74)) * 4800 / 10) * 10 : 0, snap = seg(p, .78, .9);
+  if (snap > 0 && snap < 1) { X.globalAlpha = .25 * (1 - snap); X.fillStyle = C.mag; X.fillRect(980, 830, 520, 34); X.globalAlpha = 1; }
+  lab(1000, 850, 'DISTANCE FROM BLUES: ' + km.toLocaleString('en-US') + ' KM', km ? C.cyan : C.mag, .95, 15);
   screen(); schFrame('20', 'PASSPORT', 'VISA ' + (n + 1) + ' OF ∞');
 } };
 SU.sNews = { mode: 'sch', f(q, p, a, T) {
@@ -248,7 +253,7 @@ function buildShots() {
     const frame = (args.fx !== undefined || args.fy !== undefined || args.fz !== undefined) ? { fx: args.fx, fy: args.fy, fz: args.fz } : null;
     // q runs across the sung section this cut sits in, so a scene keeps moving over its returns
     const k = SEC_T.findIndex((t) => t > t0 + 1e-6), s0 = SEC_T[Math.max(0, k - 1)], s1 = SEC_T[k] ?? 403.42;
-    return { t0, t1, mode: su.mode, key, draw: (p, lt) => { const T = t0 + lt, q = cl((T - s0) / (s1 - s0)); TNOW = T; NOTES = T < 59 ? 0 : Math.round(lerp(2, 10, cl((T - 59) / 250))); CAMO = frame; su.f(q, p, args, T); if (post) post(q, p, T); CAMO = null; if (su.mode === 'ill' && key !== 'shopClosed' && key !== 'droste' && key !== 'e_droste' && key !== 'mvu_droste' && key !== 'e_fromInside' && T > LEAK_T0) { screen(); const lp = leakProgress(T); leak(key === 'snowSettle' ? leakProgress(LEAK_PEAK) * (1 - eo(cl(p * 1.25))) : lp, LEAK_CLEAR[key], T); } } };
+    return { t0, t1, mode: su.mode, key, draw: (p, lt) => { const T = t0 + lt, q = cl((T - s0) / (s1 - s0)); TNOW = T; NOTES = T < 59 ? 0 : Math.round(lerp(2, 10, cl((T - 59) / 250))); CAMO = frame; su.f(q, p, args, T); if (post) post(q, p, T); CAMO = null; if (su.mode === 'ill' && key !== 'shopClosed' && key !== 'droste' && key !== 'e_droste' && key !== 'mvu_droste' && key !== 'e_fromInside' && T > LEAK_T0) { screen(); const lp = leakProgress(T); leak(lp, LEAK_CLEAR[key], T); } } };
   });
 }
 

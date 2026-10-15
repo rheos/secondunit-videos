@@ -541,7 +541,9 @@ SU.sHead = { mode: 'sch', f(q, p, a, T) {
   schBG(); cam(960, 540, lerp(1.12, 1, eo(p)));
   gc(900, 500, 430, C.lav, .15); gl(0, 500, W, 500, C.lav, .15);
   const hp = PROFILE.map(([x, y]) => [900 + x * 1.6, 520 + y * 1.6]), hpp = PP(hp);
-  fillP(hpp, C.navy); X.save(); X.clip(PE(890, 330, 230, 170)); lattice(890, 330, 22, 10, C.lav, .55); X.restore(); iP(hp, true, C.white, 1.6, .9, false, .3);
+  fillP(hpp, C.navy); X.save(); X.clip(PE(890, 330, 230, 170)); lattice(890, 330, 22, 10, C.lav, .55);
+  { const by = lerp(150, 510, (T * .9) % 1); X.globalAlpha = .22; X.fillStyle = C.mag; X.fillRect(640, by - 26, 520, 52); X.globalAlpha = 1; gl(640, by, 1160, by, C.mag, .7, 1.4); } // draft 9: the scan sweeps the cells
+  X.restore(); iP(hp, true, C.white, 1.6, .9, false, .3);
   stip(hpp, 900, 600, 300, 900, C.lav, .35, 1.4);
   const zap = (FD >> 1) % 4 === 0 && q > .2; for (const ex2 of [[1120, 360], [700, 360]]) { gc(ex2[0], ex2[1], 18, C.mag, .95, 2); }
   if (zap) { X.beginPath(); X.moveTo(1120, 360); for (let i = 1; i <= 10; i++) X.lineTo(lerp(1120, 700, i / 10), 360 + jit(26)); stroke(C.mag, 2.4, 1); star(890, 330, 8, C.mag, 1); }

@@ -251,13 +251,20 @@ SU.e_sTyping = { mode: 'sch', f(q, p, a, T) {
   X.beginPath(); X.roundRect(420, 250, 1080, 440, 90); X.moveTo(560, 690); X.lineTo(470, 800); X.lineTo(680, 690); stroke(C.lav, 1.6, .9);
   X.save(); X.beginPath(); X.roundRect(420, 250, 1080, 440, 90); X.clip(); graticule(960, 470, 1080, 440, 30, C.lav, .1); X.restore();
   const act = Math.floor(T * 3.2) % 3;
+  // Draft 9 payoff: after three seconds of waiting the dots stop, slide together and become the pin that lands
+  // on the map in the next shot (e_answerHome), so the reply is born here instead of the blueprint just idling.
+  const mg = eo(seg(p, .7, .86)), pinK = eo(seg(p, .84, 1));
   for (let i = 0; i < 3; i++) {
-    const x = 740 + i * 220, on = act === i, y = 470 - (on ? 34 : 0);
+    const x = lerp(740 + i * 220, 960, mg), on = act === i && mg < .05, y = 470 - (on ? 34 : 0);
+    if (pinK > 0 && i !== 1) continue;
     gc(x, 470, 74, C.lav, .45, 1, [3, 5]); ticks(x, 470, 80, 36, 6, C.lav, .45, 1, 9);
     star(x, y, on ? 10 : 6, on ? C.mag : C.white, 1); gl(x, 470, x, y, C.mag, on ? .8 : 0, 1.4);
     X.beginPath(); for (let k = 0; k <= 60; k++) { const xx = x - 90 + k * 3, yy = 620 + Math.sin(k * .5 + T * 9 + i * 2) * (on ? 26 : 6); k ? X.lineTo(xx, yy) : X.moveTo(xx, yy); } stroke(on ? C.mag : C.cyan, 1.4, .85);
   }
-  lab(960, 330, 'TYPING …', C.white, .9, 22, 'center'); lab(960, 362, 'SHE IS WRITING BACK', C.lav, .6, 12, 'center');
+  if (pinK > 0) { const py = 480, h = 112 * pinK, pin = new Path2D(); pin.moveTo(960, py); pin.bezierCurveTo(900, py - h * .5, 910, py - h, 960, py - h); pin.bezierCurveTo(1010, py - h, 1020, py - h * .5, 960, py);
+    X.lineWidth = 2.4; X.strokeStyle = C.mag; X.globalAlpha = .95; X.stroke(pin); X.globalAlpha = 1; gc(960, py - h * .68, 16 * pinK, C.white, .9, 1.6);
+    gl(960, py, 960, py + 60 * pinK, C.mag, .6, 1, [4, 5]); ticks(960, py + 60 * pinK, 40, 24, 6, C.lav, .5 * pinK, 1, 6); }
+  lab(960, 330, pinK > 0 ? 'REPLY' : 'TYPING …', C.white, .9, 22, 'center'); if (!pinK) lab(960, 362, 'SHE IS WRITING BACK', C.lav, .6, 12, 'center');
   const el = Math.max(0, T - 379.3); lab(470, 880, 'T+ ' + el.toFixed(1) + ' S', C.cyan, .9, 18); bracket(470, 920, lerp(480, 1450, eo(p)), 920, C.cyan, .7, 'WAIT');
   const nx = 1600, ny = 880, an = -Math.PI + eo(p) * Math.PI * .97; gc(nx, ny, 130, C.lav, .5, 1, null, -Math.PI, 0); ticks(nx, ny, 130, 20, 8, C.lav, .6, 1, 5, -Math.PI, 0);
   gl(nx, ny, nx + Math.cos(an) * 120, ny + Math.sin(an) * 120, C.mag, 1, 2.4); lab(nx, ny + 34, 'REPLY ETA', C.lav, .7, 12, 'center');

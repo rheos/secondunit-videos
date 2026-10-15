@@ -50,22 +50,28 @@ function leakProgress(T) {
   return Math.pow(cl((T - LEAK_T0) / (LEAK_T1 - LEAK_T0)), 1.6)
     + 1.15 * Math.pow(cl((T - LEAK_SURGE_START) / (LEAK_PEAK - LEAK_SURGE_START)), 1.35);
 }
+// Draft 9: the snow heals the burn hole by hole from inside the snow globe (393.5) until the shop draws back (~398.9),
+// last-born first, each hole filling with settling flakes as it closes, instead of one ~1 s uniform shrink.
+const LEAK_HEAL0 = 393.5, LEAK_HEAL_STAGGER = .25, LEAK_HEAL_DUR = 1.6;
+const LEAK_HEAL_ORDER = LEAK_HOLES.map((h, i) => i).sort((i, j) => LEAK_HOLES[j].born - LEAK_HOLES[i].born);
+function leakHeal(i, T) { const k = LEAK_HEAL_ORDER.indexOf(i); return eio(cl((T - LEAK_HEAL0 - k * LEAK_HEAL_STAGGER) / LEAK_HEAL_DUR)); }
 function leak(a, clear, T = TNOW) {
   if (T <= LEAK_SURGE_START) { leakOriginal(a, clear); return; }
   if (a <= 0) return;
   const joined = new Path2D(), edges = [];
   const release = cl((T - LEAK_SURGE_START) / 20);
-  for (const h of LEAK_HOLES) {
+  for (const [i, h] of LEAK_HOLES.entries()) {
     const g = Math.max(0, (a - h.born) / (1 - h.born));
     const radius = h.Rmax * Math.pow(g, .8);
-    const R0 = lerp(Math.min(radius, leakRoom(h, clear)), radius, release);
+    const heal = leakHeal(i, T);
+    const R0 = lerp(Math.min(radius, leakRoom(h, clear)), radius, release) * (1 - heal);
     if (R0 < 4) continue;
     const pts = h.shape.map((m, k) => {
       const an = h.rot + k / h.shape.length * TAU;
       // Fixed geometry: only its size changes, so the paper edge never swims.
       return [h.x + Math.cos(an) * R0 * m, h.y + Math.sin(an) * R0 * m];
     });
-    const path = PP(pts); joined.addPath(path); edges.push({ h, R0, pts, path });
+    const path = PP(pts); joined.addPath(path); edges.push({ h, R0, pts, path, heal });
   }
   X.save();
   // Clip around subjects instead of shrinking whole holes: nearby openings can join.
@@ -87,9 +93,9 @@ function leak(a, clear, T = TNOW) {
     X.clip(keep, 'evenodd');
   }
   // Draw rims first, then fill the union; overlapping holes have no internal rings.
-  for (const { h, R0, path } of edges) {
-    X.strokeStyle = '#2b1d14'; X.lineWidth = 14; X.globalAlpha = .65; X.stroke(path);
-    X.strokeStyle = C.orange; X.lineWidth = 5; X.globalAlpha = .9; X.stroke(path);
+  for (const { h, R0, path, heal } of edges) { // a healing rim cools from ember to snow
+    X.strokeStyle = '#2b1d14'; X.lineWidth = 14; X.globalAlpha = .65 * (1 - heal); X.stroke(path);
+    X.strokeStyle = heal > 0 ? C.white : C.orange; X.lineWidth = 5 + heal * 4; X.globalAlpha = .9; X.stroke(path);
   }
   X.globalAlpha = 1;
   X.save(); X.clip(joined); X.fillStyle = C.navy; X.fillRect(0, 0, W, H);
@@ -102,6 +108,10 @@ function leak(a, clear, T = TNOW) {
     gl(x - 140, y, x + 140, y, C.cyan, .3, 1);
     gl(x, y - 140, x, y + 140, C.cyan, .3, 1);
     star(x, y, 4, C.white, .8);
+  }
+  for (const { h, R0, heal } of edges) { // snow settling into a hole that is closing, drawn on twos
+    if (heal <= 0) continue; const r = M32(4000 + Math.round(h.x) + FD), n = Math.round(10 + heal * 60);
+    for (let k = 0; k < n; k++) { const an = r() * TAU, d = Math.sqrt(r()) * R0 * 1.05; fillP(PE(h.x + Math.cos(an) * d, h.y + Math.sin(an) * d, 2 + r() * 3, 2 + r() * 3), C.white, .55 + heal * .4); }
   }
   X.restore(); X.restore();
 }
