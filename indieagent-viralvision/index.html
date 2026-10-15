@@ -1,0 +1,405 @@
+<!doctype html>
+<html lang="en" data-resolution="landscape">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;800&family=JetBrains+Mono:wght@400;500&display=block"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      :root {
+        /* the IndieAgent explainer system: warm paper, indieagent.ai type, its light-theme red as the one accent */
+        --paper: #F2EADB;
+        --paper-edge: #E2D4BA;
+        --line: #8A7350;
+        --ink: #1E1A14;
+        --label: #5E4E33;
+        --accent: #C8341E;
+        --accent-text: #A82B18;
+        --card: #F5EEE1;
+      }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 1920px; height: 1080px; overflow: hidden; background: var(--paper); }
+      #root {
+        position: relative; width: 100%; height: 100%;
+        background: radial-gradient(ellipse at 50% 45%, var(--paper) 55%, var(--paper-edge) 100%);
+      }
+      .scene, .chrome { position: absolute; inset: 0; }
+      svg { position: absolute; inset: 0; }
+      .line { fill: none; stroke: var(--line); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+      .hair { fill: none; stroke: var(--line); stroke-width: 1; }
+      .faint { fill: none; stroke: var(--line); stroke-width: 1; stroke-opacity: 0.45; }
+      .dash { fill: none; stroke: var(--line); stroke-width: 1.2; stroke-dasharray: 5 6; }
+      .card { fill: var(--card); }
+      .label { font-family: "Archivo", sans-serif; font-weight: 600; text-transform: uppercase; fill: var(--label); letter-spacing: 0.16em; }
+      .mono { font-family: "JetBrains Mono", monospace; fill: var(--ink); }
+      .big { font-family: "Archivo", sans-serif; font-weight: 800; fill: var(--ink); }
+      .red { fill: var(--accent-text); }
+      .chapter { position: absolute; left: 120px; top: 96px; font: 600 20px "Archivo", sans-serif; letter-spacing: 0.22em; text-transform: uppercase; color: var(--label); }
+      .headline {
+        position: absolute; left: 0; right: 0; top: 868px; text-align: center;
+        font: 800 52px "Archivo", sans-serif; letter-spacing: -0.01em; color: var(--ink);
+      }
+      .headline span { display: inline-block; }
+      .headline .accent { color: var(--accent-text); }
+      #counter { position: absolute; right: 120px; top: 942px; font: 500 22px "JetBrains Mono", monospace; color: var(--ink); letter-spacing: 0.08em; }
+      #counter b { font: 600 16px "Archivo", sans-serif; letter-spacing: 0.2em; text-transform: uppercase; color: var(--label); margin-right: 12px; }
+      #barlabel { position: absolute; left: 120px; top: 946px; font: 600 16px "Archivo", sans-serif; letter-spacing: 0.2em; text-transform: uppercase; color: var(--label); }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="60" data-width="1920" data-height="1080">
+      <!-- chrome: plate border and the song scale (a tick a beat, a playhead on the music), on for the whole film -->
+      <div id="chrome" class="chrome clip" data-start="0" data-duration="60" data-track-index="0">
+        <svg id="gChrome" viewBox="0 0 1920 1080">
+          <defs>
+            <filter id="grain" x="0" y="0" width="100%" height="100%">
+              <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" seed="7" />
+              <feColorMatrix values="0 0 0 0 0.30  0 0 0 0 0.24  0 0 0 0 0.14  0 0 0 0.07 0" />
+            </filter>
+          </defs>
+          <rect width="1920" height="1080" filter="url(#grain)" />
+          <g id="border">
+            <rect class="hair draw" x="60" y="56" width="1800" height="968" />
+            <rect class="hair draw" x="72" y="68" width="1776" height="944" />
+            <path class="line draw" d="M40 56 H84 M60 36 V80 M1836 56 H1880 M1860 36 V80 M40 1024 H84 M60 1004 V1048 M1836 1024 H1880 M1860 1004 V1048" />
+          </g>
+          <g id="scale"></g>
+        </svg>
+        <div id="barlabel">Your song</div>
+        <div id="counter"><b>Clips</b><span id="count">00</span></div>
+      </div>
+
+      <div id="sI" class="scene clip" data-start="0" data-duration="10" data-track-index="1">
+        <svg id="gI" viewBox="0 0 1920 1080"></svg>
+        <div class="chapter">Plate I &middot; The Footage</div>
+        <div class="headline"><span id="hI1">You filmed the whole tour.</span> <span id="hI2" class="accent">You posted none of it.</span></div>
+      </div>
+
+      <div id="sII" class="scene clip" data-start="10" data-duration="12.5" data-track-index="1">
+        <svg id="gII" viewBox="0 0 1920 1080"></svg>
+        <div class="chapter">Plate II &middot; The Library</div>
+        <div class="headline"><span id="hII1">It watches your footage</span> <span id="hII2" class="accent">so you don't have to.</span></div>
+      </div>
+
+      <div id="sIII" class="scene clip" data-start="22.5" data-duration="10" data-track-index="1">
+        <svg id="gIII" viewBox="0 0 1920 1080"></svg>
+        <div class="chapter">Plate III &middot; The Beat</div>
+        <div class="headline"><span id="hIII" class="accent">Every cut lands on the beat.</span></div>
+      </div>
+
+      <div id="sIV" class="scene clip" data-start="32.5" data-duration="12.5" data-track-index="1">
+        <svg id="gIV" viewBox="0 0 1920 1080"></svg>
+        <div class="chapter">Plate IV &middot; The Cut</div>
+        <div class="headline"><span id="hIV1">Your song.</span> <span id="hIV2">Your footage.</span> <span id="hIV3" class="accent">Your words.</span></div>
+      </div>
+
+      <div id="sV" class="scene clip" data-start="45" data-duration="10" data-track-index="1">
+        <svg id="gV" viewBox="0 0 1920 1080"></svg>
+        <div class="chapter">Plate V &middot; The Batch</div>
+        <div class="headline"><span id="hV1">Three different clips.</span> <span id="hV2" class="accent">One song.</span></div>
+      </div>
+
+      <!-- score: drafting-table-viralvision take-01 (score library), 96 BPM; its 55 ms lead is trimmed so beat k is at k * 0.625 s -->
+      <audio id="score" src="assets/score.mp3" data-start="0" data-duration="59.94" data-media-start="0.055" data-track-index="2"></audio>
+
+      <div id="sC" class="scene clip" data-start="55" data-duration="5" data-track-index="1">
+        <svg id="gC" viewBox="0 0 1920 1080"></svg>
+        <div class="chapter">Colophon</div>
+      </div>
+    </div>
+    <script>
+      const NS = "http://www.w3.org/2000/svg";
+      const $ = (s) => document.querySelector(s);
+      const el = (tag, attrs, parent) => {
+        const n = document.createElementNS(NS, tag);
+        for (const k in attrs) n.setAttribute(k, attrs[k]);
+        parent.appendChild(n);
+        return n;
+      };
+      const txt = (s, attrs, parent) => { const n = el("text", attrs, parent); n.textContent = s; return n; };
+
+      // Plates are sections of the score, each starting on a downbeat (a bar is 2.5 s at 96 BPM).
+      // The score is one steady build from the pulse at 5 s to the resolve at 55 s.
+      const T = { I: 0, II: 10, III: 22.5, IV: 32.5, V: 45, C: 55 };
+      const D = { I: 10, II: 12.5, III: 10, IV: 12.5, V: 10, C: 5 };
+      const BEAT = 0.625;
+      const snap = (t, step) => Math.round(t / step) * step;
+      const at = (k, x) => T[k] + snap(x, BEAT / 2);
+      const onBeat = (k, x) => T[k] + snap(x, BEAT);
+
+      // A tour clip, drawn small: stage, crowd, van, close-up (a guitar) or road
+      const KINDS = ["stage", "crowd", "van", "close-up", "road"];
+      const glyph = (kind, x, y, w, h, parent, sw = 1.2) => {
+        const g = el("g", {}, parent);
+        const s = { fill: "none", stroke: "var(--line)", "stroke-width": sw, "stroke-linecap": "round", "stroke-linejoin": "round" };
+        const P = (d) => el("path", Object.assign({ d }, s), g);
+        const C = (cx, cy, r, fill) => el("circle", Object.assign({ cx, cy, r }, s, fill ? { fill, stroke: "none" } : {}), g);
+        if (kind === "stage") {
+          P(`M${x + w * 0.08},${y + h * 0.72} H${x + w * 0.92}`);
+          [0.25, 0.5, 0.75].forEach((f) => { C(x + w * f, y + h * 0.18, w * 0.06); P(`M${x + w * f},${y + h * 0.24} L${x + w * (f - 0.12)},${y + h * 0.7} M${x + w * f},${y + h * 0.24} L${x + w * (f + 0.12)},${y + h * 0.7}`); });
+        } else if (kind === "crowd") {
+          // four heads and shoulders, two with an arm up
+          for (let i = 0; i < 4; i++) {
+            const cx = x + w * (0.17 + i * 0.22), hy = y + h * (0.6 + (i % 2) * 0.05);
+            C(cx, hy, w * 0.075);
+            P(`M${cx - w * 0.11},${hy + h * 0.2} Q${cx},${hy + h * 0.06} ${cx + w * 0.11},${hy + h * 0.2}`);
+            if (i === 1 || i === 3) P(`M${cx + w * 0.08},${hy + h * 0.1} L${cx + w * 0.13},${hy - h * 0.16}`);
+          }
+        } else if (kind === "van") {
+          P(`M${x + w * 0.12},${y + h * 0.66} V${y + h * 0.46} Q${x + w * 0.12},${y + h * 0.4} ${x + w * 0.2},${y + h * 0.4} H${x + w * 0.7} L${x + w * 0.88},${y + h * 0.52} V${y + h * 0.66} Z`);
+          P(`M${x + w * 0.62},${y + h * 0.42} V${y + h * 0.52} H${x + w * 0.84}`);
+          C(x + w * 0.3, y + h * 0.68, w * 0.07); C(x + w * 0.72, y + h * 0.68, w * 0.07);
+        } else if (kind === "close-up") {
+          // a guitar: lower and upper bouts, sound hole, neck, headstock
+          const gx = x + w * 0.5;
+          P(`M${gx},${y + h * 0.42} C${gx - w * 0.2},${y + h * 0.42} ${gx - w * 0.16},${y + h * 0.56} ${gx - w * 0.1},${y + h * 0.6} C${gx - w * 0.3},${y + h * 0.66} ${gx - w * 0.26},${y + h * 0.9} ${gx},${y + h * 0.9} C${gx + w * 0.26},${y + h * 0.9} ${gx + w * 0.3},${y + h * 0.66} ${gx + w * 0.1},${y + h * 0.6} C${gx + w * 0.16},${y + h * 0.56} ${gx + w * 0.2},${y + h * 0.42} ${gx},${y + h * 0.42} Z`);
+          C(gx, y + h * 0.66, w * 0.06);
+          P(`M${gx - w * 0.035},${y + h * 0.44} V${y + h * 0.13} M${gx + w * 0.035},${y + h * 0.44} V${y + h * 0.13}`);
+          P(`M${gx - w * 0.06},${y + h * 0.13} V${y + h * 0.05} H${gx + w * 0.06} V${y + h * 0.13} Z`);
+        } else {
+          P(`M${x + w * 0.08},${y + h * 0.92} L${x + w * 0.46},${y + h * 0.38} M${x + w * 0.92},${y + h * 0.92} L${x + w * 0.54},${y + h * 0.38}`);
+          P(`M${x + w * 0.04},${y + h * 0.38} H${x + w * 0.96}`);
+          el("path", Object.assign({ d: `M${x + w * 0.5},${y + h * 0.9} V${y + h * 0.44}` }, s, { "stroke-dasharray": `${h * 0.05} ${h * 0.05}` }), g);
+        }
+        return g;
+      };
+      const thumb = (kind, x, y, w, h, parent) => {
+        const g = el("g", {}, parent);
+        el("rect", { class: "card", x, y, width: w, height: h, rx: 6 }, g);
+        el("rect", { class: "hair", x, y, width: w, height: h, rx: 6 }, g);
+        glyph(kind, x + 4, y + 4, w - 8, h - 8, g, 1.1);
+        return g;
+      };
+
+      /* ---------------- chrome: the song scale, a tick a beat ---------------- */
+      const scale = $("#scale");
+      el("path", { class: "hair draw", d: "M120 992 H1800" }, scale);
+      const ticksG = el("g", {}, scale);
+      for (let b = 0; b <= 96; b++) {
+        const x = 120 + (b * 1680) / 96;
+        el("path", { class: b % 4 === 0 ? "line" : "faint", d: `M${x} 992 V${b % 4 === 0 ? 982 : 987}` }, ticksG);
+      }
+      const cursor = el("path", { d: "M-6,1003 L0,994 L6,1003 Z", fill: "var(--accent)" }, scale);
+
+      /* ---------------- Plate I: the whole tour, never posted ---------------- */
+      const gI = $("#gI");
+      const pile = [];
+      for (let i = 0; i < 40; i++) {
+        const c = i % 10, r = Math.floor(i / 10);
+        const x = 300 + c * 132 + 14 * Math.sin(i * 2.3), y = 236 + r * 140 + 10 * Math.sin(i * 1.7);
+        pile.push(thumb(KINDS[(i * 3 + r) % 5], x, y, 64, 114, gI));
+      }
+      const count = txt("312 clips · 4 h 51 min", { class: "label", x: 300, y: 206, "font-size": 15 }, gI);
+
+      /* ---------------- Plate II: one long video, split and labelled ---------------- */
+      const gII = $("#gII");
+      txt("one long video", { class: "label", x: 300, y: 196, "font-size": 14 }, gII);
+      const strip = el("g", {}, gII);
+      el("rect", { class: "card", x: 300, y: 210, width: 1320, height: 80 }, strip);
+      el("rect", { class: "line draw", x: 300, y: 210, width: 1320, height: 80 }, strip);
+      for (let x = 312; x < 1610; x += 36) { el("rect", { class: "hair", x, y: 216, width: 14, height: 9, rx: 2 }, strip); el("rect", { class: "hair", x, y: 275, width: 14, height: 9, rx: 2 }, strip); }
+      const CUTF = [0.08, 0.17, 0.25, 0.36, 0.44, 0.53, 0.61, 0.7, 0.79, 0.88, 0.95];
+      const cuts = CUTF.map((f) => el("path", { d: `M${300 + 1320 * f},202 V298`, stroke: "var(--accent)", "stroke-width": 2.4, opacity: 0 }, gII));
+      const scenesLbl = txt("split into scenes", { class: "label", x: 1620, y: 196, "font-size": 14, "text-anchor": "end", style: "fill: var(--accent-text)" }, gII);
+      const ROWS = ["stage", "crowd", "van", "close-up"];
+      const rowsG = ROWS.map((kind, r) => {
+        const y = 350 + r * 116, g = el("g", {}, gII);
+        txt(kind, { class: "label", x: 520, y: y + 56, "font-size": 14, "text-anchor": "end" }, g);
+        const items = [];
+        for (let i = 0; i < 9; i++) items.push(thumb(kind, 560 + i * 74, y, 56, 100, g));
+        return { g, label: g.firstChild, items };
+      });
+
+      /* ---------------- Plate III: the beat grid, cuts snap to it ---------------- */
+      const gIII = $("#gIII");
+      const WX = 200, WB = 95; // 16 beats across, 95 px a beat
+      const wave = el("g", {}, gIII);
+      let wd = "";
+      for (let x = WX; x <= WX + 16 * WB; x += 6) {
+        const a = 18 + 70 * Math.abs(Math.sin(x / 37)) * (0.45 + 0.55 * Math.abs(Math.sin(x / 211))) * (((x - WX) % WB) < 18 ? 1.25 : 0.8);
+        wd += `M${x},${420 - a} V${420 + a} `;
+      }
+      el("path", { d: wd, stroke: "var(--line)", "stroke-width": 2.6, "stroke-opacity": 0.55, fill: "none" }, wave);
+      const beatLines = [];
+      for (let b = 0; b <= 16; b++) {
+        beatLines.push(el("path", { d: `M${WX + b * WB},316 V524`, stroke: "var(--line)", "stroke-width": b % 4 === 0 ? 1.6 : 1, "stroke-dasharray": "4 5", fill: "none" }, gIII));
+        if (b % 4 === 0 && b < 16) txt(String(b / 4 + 1), { class: "label", x: WX + b * WB + 8, y: 310, "font-size": 13 }, gIII);
+      }
+      txt("bar", { class: "label", x: WX - 10, y: 310, "font-size": 11, "text-anchor": "end" }, gIII);
+      // cut points along a slot row: they start a little off the beat, then snap to it
+      const CUTB = [0, 2, 4, 5, 6, 8, 10, 12, 13, 14, 16];
+      el("path", { class: "line", d: `M${WX},590 H${WX + 16 * WB}` }, gIII);
+      const slotTicks = CUTB.map((b, i) => {
+        const t = el("path", { d: `M${WX + b * WB},562 V618`, stroke: "var(--ink)", "stroke-width": 3, "stroke-linecap": "round", fill: "none" }, gIII);
+        gsap.set(t, { x: (i === 0 || i === CUTB.length - 1) ? 0 : 22 * Math.sin(i * 2.1) + (i % 2 ? 12 : -12) });
+        return t;
+      });
+      txt("cuts", { class: "label", x: WX - 10, y: 595, "font-size": 11, "text-anchor": "end" }, gIII);
+      const offLbl = txt("0 ms off the beat", { class: "mono", x: WX + 16 * WB, y: 652, "font-size": 18, "text-anchor": "end" }, gIII);
+      const play3 = el("path", { d: `M0,300 V636`, stroke: "var(--accent)", "stroke-width": 2.4, fill: "none" }, gIII);
+
+      /* ---------------- Plate IV: clips drop into the beat slots, the caption follows ---------------- */
+      const gIV = $("#gIV");
+      const SB = 52, SX = 200, SY = 418; // slot strip: 16 beats, 52 px a beat
+      const SLOTS = [[0, 2, "stage"], [2, 4, "crowd"], [4, 5, "close-up"], [5, 6, "crowd"], [6, 8, "van"], [8, 10, "road"], [10, 12, "stage"], [12, 13, "close-up"], [13, 14, "crowd"], [14, 16, "stage"]];
+      txt("your clip · 16 beats", { class: "label", x: SX, y: SY - 18, "font-size": 13 }, gIV);
+      el("rect", { class: "hair", x: SX, y: SY, width: 16 * SB, height: 96 }, gIV);
+      const slotTiles = SLOTS.map(([a, b, kind]) => {
+        const g = el("g", {}, gIV);
+        el("rect", { class: "card", x: SX + a * SB + 2, y: SY + 2, width: (b - a) * SB - 4, height: 92 }, g);
+        el("rect", { class: "hair", x: SX + a * SB + 2, y: SY + 2, width: (b - a) * SB - 4, height: 92 }, g);
+        glyph(kind, SX + a * SB + 6, SY + 8, (b - a) * SB - 12, 80, g, 1.1);
+        return g;
+      });
+      for (let b = 0; b <= 16; b++) el("path", { class: "faint", d: `M${SX + b * SB},${SY + 104} V${SY + 116}` }, gIV);
+      const play4 = el("path", { d: `M0,${SY - 8} V${SY + 120}`, stroke: "var(--accent)", "stroke-width": 2.4, fill: "none" }, gIV);
+      // the phone: 9:16, the current clip large, the caption underneath it
+      const PX = 1240, PY = 200, PW = 300, PH = 533;
+      el("rect", { class: "card", x: PX, y: PY, width: PW, height: PH, rx: 26 }, gIV);
+      const phoneLine = el("rect", { class: "line", x: PX, y: PY, width: PW, height: PH, rx: 26, "stroke-width": 2 }, gIV);
+      el("path", { class: "hair", d: `M${PX + 120},${PY + 18} H${PX + 180}` }, gIV);
+      const big = {};
+      KINDS.forEach((kind) => { big[kind] = glyph(kind, PX + 30, PY + 50, PW - 60, 300, gIV, 2.2); big[kind].setAttribute("opacity", 0); });
+      txt("9:16", { class: "label", x: PX + PW + 24, y: PY + PH / 2, "font-size": 15 }, gIV);
+      el("path", { class: "hair", d: `M${PX + PW + 12},${PY} V${PY + PH} M${PX + PW + 6},${PY} H${PX + PW + 18} M${PX + PW + 6},${PY + PH} H${PX + PW + 18}` }, gIV);
+      // karaoke caption, one word a beat (an invented line); JetBrains Mono is 0.6 em a character
+      const CAP = [["WE", "DROVE", "ALL", "NIGHT"], ["TO", "PLAY", "FOR", "YOU"], ["AND", "YOU", "SANG", "IT"], ["EVERY", "WORD", "BACK"]];
+      const CF = 24, CCW = CF * 0.6;
+      const capLines = CAP.map((words, li) => {
+        const line = words.join(" "), x0 = PX + PW / 2 - (line.length * CCW) / 2, y = PY + 420 + (li % 2) * 38;
+        const g = el("g", { opacity: 0 }, gIV);
+        let off = 0;
+        const ws = words.map((w) => { const t = txt(w, { class: "mono", x: x0 + off * CCW, y, "font-size": CF, style: "fill: #1E1A14" }, g); off += w.length + 1; return t; });
+        return { g, ws };
+      });
+
+      /* ---------------- Plate V: three clips from one song ---------------- */
+      const gV = $("#gV");
+      const HOOKS = [["DROVE ALL", "NIGHT FOR THIS"], ["ONE MORE", "SONG"], ["SEE YOU ON", "THE ROAD"]];
+      const LOOKS = [["crowd", "stage"], ["close-up", "van"], ["road", "crowd"]];
+      const batch = HOOKS.map((hook, i) => {
+        const x = 330 + i * 500, y = 200, w = 260, h = 462;
+        const g = el("g", {}, gV);
+        el("rect", { class: "card", x, y, width: w, height: h, rx: 22 }, g);
+        el("rect", { class: "line", x, y, width: w, height: h, rx: 22, "stroke-width": 2 }, g);
+        el("path", { class: "hair", d: `M${x + 100},${y + 16} H${x + 160}` }, g);
+        glyph(LOOKS[i][0], x + 26, y + 46, w - 52, 250, g, 2);
+        hook.forEach((ln, k) => txt(ln, { class: "mono", x: x + w / 2, y: y + 340 + k * 32, "font-size": 20, "text-anchor": "middle", style: k === 1 ? "fill: var(--accent-text)" : "" }, g));
+        el("path", { class: "faint", d: `M${x + 24},${y + h - 30} H${x + w - 24}` }, g);
+        el("path", { d: `M${x + 24},${y + h - 30} H${x + 24 + (w - 48) * (0.3 + i * 0.2)}`, stroke: "var(--accent)", "stroke-width": 3, fill: "none" }, g);
+        txt(`clip ${i + 1} · 0:30`, { class: "label", x: x + w / 2, y: y + h + 34, "font-size": 13, "text-anchor": "middle" }, g);
+        return g;
+      });
+
+      /* ---------------- Colophon ---------------- */
+      const gC = $("#gC");
+      const mark = txt("ViralVision", { class: "big", x: 960, y: 500, "font-size": 132, "text-anchor": "middle", "letter-spacing": "-0.02em" }, gC);
+      const rule = el("path", { class: "line", d: "M760,550 H1160" }, gC);
+      const sign = txt("Post the tour you already filmed.", { class: "big red", x: 960, y: 624, "font-size": 44, "text-anchor": "middle" }, gC);
+      const suite = txt("private beta · indieagent", { class: "label", x: 960, y: 700, "font-size": 15, "text-anchor": "middle" }, gC);
+
+      /* ---------------- stroke drawing setup ---------------- */
+      const prep = (n) => { const L = n.getTotalLength(); n.style.strokeDasharray = L; n.style.strokeDashoffset = L; return n; };
+      document.querySelectorAll(".draw").forEach(prep);
+      [phoneLine, rule].forEach(prep);
+      const draws = (root) => Array.from(root.querySelectorAll(".draw"));
+
+      /* ---------------- timeline ---------------- */
+      const tl = gsap.timeline({ paused: true });
+      const countEl = $("#count");
+      const head = (sel, t) => tl.from(sel, { opacity: 0, y: 12, duration: 0.7, ease: "power2.out" }, t);
+
+      // chrome: the playhead rides the score from the first beat to the last
+      tl.to("#border .draw", { strokeDashoffset: 0, duration: 1.4, ease: "power2.inOut", stagger: 0.1 }, 0);
+      tl.from("#barlabel, #counter", { opacity: 0, duration: 0.6 }, 0.8);
+      tl.to("#scale .draw", { strokeDashoffset: 0, duration: 1.2, ease: "power2.inOut" }, 0.6);
+      tl.from(ticksG, { opacity: 0, duration: 0.8 }, 1.0);
+      tl.fromTo(cursor, { x: 120 }, { x: 1800, duration: 60, ease: "none" }, 0);
+
+      Object.keys(T).forEach((k) => {
+        const sc = document.getElementById("s" + k), t0 = T[k];
+        tl.fromTo(sc, { opacity: 0 }, { opacity: 1, duration: 0.4 }, t0);
+        if (k !== "C") tl.to(sc, { opacity: 0, duration: 0.4 }, t0 + D[k] - 0.45);
+        tl.from(sc.querySelector(".chapter"), { opacity: 0, x: -16, duration: 0.7, ease: "power2.out" }, t0 + 0.3);
+      });
+
+      // Plate I (0-10)
+      tl.from(pile, { opacity: 0, y: 8, duration: 0.25, stagger: 0.04 }, at("I", 0.6));
+      tl.from(count, { opacity: 0, duration: 0.4 }, at("I", 2.5));
+      head("#hI1", onBeat("I", 3.75));
+      head("#hI2", onBeat("I", 6.25));
+
+      // Plate II (10-22.5): split on the half-beats, then the rows fill, one row a beat
+      tl.to(draws(gII), { strokeDashoffset: 0, duration: 0.8, ease: "power2.inOut" }, at("II", 0.4));
+      tl.from(gII.querySelector("text"), { opacity: 0, duration: 0.4 }, at("II", 0.6));
+      cuts.forEach((c, i) => tl.to(c, { opacity: 1, duration: 0.08 }, at("II", 1.25 + i * BEAT / 2)));
+      tl.from(scenesLbl, { opacity: 0, duration: 0.4 }, onBeat("II", 5.0));
+      rowsG.forEach(({ label, items }, r) => {
+        tl.from(label, { opacity: 0, duration: 0.3 }, onBeat("II", 5.625 + r * BEAT));
+        tl.from(items, { opacity: 0, x: -8, duration: 0.25, stagger: 0.05 }, at("II", 5.625 + r * BEAT));
+      });
+      head("#hII1", onBeat("II", 8.125));
+      head("#hII2", onBeat("II", 9.375));
+
+      // Plate III (22.5-32.5): the playhead crosses one beat line per beat; the cuts snap on beat 6
+      tl.from([wave, ...beatLines], { opacity: 0, duration: 0.5, stagger: 0.03 }, at("III", 0.3));
+      tl.from(gIII.querySelectorAll("text.label"), { opacity: 0, duration: 0.4 }, at("III", 0.6));
+      tl.from(slotTicks, { opacity: 0, duration: 0.3, stagger: 0.05 }, at("III", 1.875));
+      tl.fromTo(play3, { x: WX }, { x: WX + 16 * WB, duration: 16 * BEAT, ease: "none" }, onBeat("III", 0));
+      beatLines.forEach((ln, b) => {
+        tl.to(ln, { stroke: "#C8341E", duration: 0.05 }, onBeat("III", b * BEAT));
+        tl.to(ln, { stroke: "#8A7350", duration: 0.35 }, onBeat("III", b * BEAT) + 0.1);
+      });
+      tl.to(slotTicks, { x: 0, duration: 0.25, ease: "back.out(2.5)" }, onBeat("III", 3.75));
+      tl.from(offLbl, { opacity: 0, duration: 0.3 }, at("III", 4.375));
+      head("#hIII", onBeat("III", 5.0));
+
+      // Plate IV (32.5-45): slot tiles drop in, the playhead plays the clip, the phone shows the slot under it
+      tl.from(slotTiles, { opacity: 0, y: -16, duration: 0.3, stagger: BEAT / 2 }, at("IV", 0.3));
+      tl.to(phoneLine, { strokeDashoffset: 0, duration: 0.8, ease: "power2.inOut" }, at("IV", 0.3));
+      const t4 = onBeat("IV", 1.875); // the clip starts here and runs 16 beats
+      tl.fromTo(play4, { x: SX }, { x: SX + 16 * SB, duration: 16 * BEAT, ease: "none" }, t4);
+      SLOTS.forEach(([a, b, kind]) => {
+        tl.set(big[kind], { opacity: 1 }, t4 + a * BEAT);
+        tl.set(big[kind], { opacity: 0 }, t4 + b * BEAT);
+      });
+      let w = 0;
+      capLines.forEach(({ g, ws }, li) => {
+        const start = t4 + w * BEAT;
+        tl.set(g, { opacity: 1 }, li % 2 === 0 ? start : t4 + (w - CAP[li - 1].length) * BEAT);
+        ws.forEach((t, j) => {
+          tl.to(t, { fill: "#C8341E", duration: 0.05 }, t4 + (w + j) * BEAT);
+          tl.to(t, { fill: "#1E1A14", duration: 0.05 }, t4 + (w + j + 1) * BEAT);
+        });
+        w += ws.length;
+        if (li % 2 === 1 && li < CAP.length - 1) tl.set([capLines[li - 1].g, g], { opacity: 0 }, t4 + w * BEAT);
+      });
+      head("#hIV1", onBeat("IV", 3.125));
+      head("#hIV2", onBeat("IV", 5.625));
+      head("#hIV3", onBeat("IV", 8.125));
+
+      // Plate V (45-55): one clip a bar, the count follows
+      const clips = { n: 0 };
+      batch.forEach((g, i) => {
+        tl.from(g, { opacity: 0, y: 16, duration: 0.5, ease: "power2.out" }, onBeat("V", 0.625 + i * 2.5));
+        tl.to(clips, { n: i + 1, duration: 0.05, onUpdate: () => (countEl.textContent = String(Math.round(clips.n)).padStart(2, "0")) }, onBeat("V", 0.625 + i * 2.5));
+      });
+      head("#hV1", onBeat("V", 6.25));
+      head("#hV2", onBeat("V", 7.5));
+
+      // Colophon (55-60): on the resolve
+      tl.from(mark, { opacity: 0, y: 14, duration: 0.8, ease: "power2.out" }, onBeat("C", 0));
+      tl.to(rule, { strokeDashoffset: 0, duration: 0.7, ease: "power2.inOut" }, at("C", 0.9));
+      tl.from(sign, { opacity: 0, y: 10, duration: 0.7, ease: "power2.out" }, at("C", 1.5));
+      tl.from(suite, { opacity: 0, duration: 0.6 }, at("C", 2.2));
+      tl.to({}, { duration: 0.01 }, 59.99);
+
+      window.__timelines["main"] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>
