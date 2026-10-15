@@ -51,7 +51,30 @@ The split itself, from the project folder (the 900 MB model downloads on first u
 Check by ear before a final: the split between LIB and EL is a vowel change on a held pitch, so it is the softest
 of the three boundaries.
 
-## Look test (woodcut, occurrences 2 and 3), 2026-10-14
+## Look test on TV news (occurrences 2 and 3), 2026-10-14
+
+Robin picked the TV-news version for the test (after the woodcut test below was built; the woodcut one is set aside).
+
+- Page `looks/tv-r3c-bv.html` = `tv-r3c.html` plus `js/common/bv-onsets.js` and `js/tv/bv-r3c.js`. No existing file is
+  edited: bv-r3c.js wraps `r3cProgram`, so her box is part of the bulletin picture and goes through the CRT like it.
+- Each time she sings, a second inset box wipes on at the top right of the picture (the over-the-shoulder box's
+  navy frame and pale rim), 0.32 s before LIB: her in a studio at a chrome microphone, eyes shut on the held note,
+  the mouth shaped to each vowel and closing for a moment on each consonant. Under her, a navy caption band in the
+  bulletin's own caption-generator type (white Futura, as on the calendar box): LIB, EL, OUS come up on her onsets,
+  left to right, each flaring bright for 3 frames; a white bar grows after LIB and EL while she holds them, and an
+  underline under OUS to her end. The box wipes off 0.7 s after her note.
+- Second voice: white Futura in her own box at the top right, against the lead's black Courier on the canary
+  teleprinter at the bottom. The type is about 27 program px cap (the wire copy's is 36).
+- Audit (`node work/motion-lab/audit.mjs looks/tv-r3c-bv.html 308 331 --spec js/tv/bv-audit.spec.mjs --safe 0.05`,
+  552 frames): her 6 syllables and the lead's 18 words on their onsets; syllables, hold bars and wire copy inside
+  their containers and the 5% safe area; her box covers no bulletin face (12 heads a frame recorded) and never
+  touches the wire copy; her syllables on no face; the wire copy off her face. All pass.
+- Outside her spans the page renders byte-identical to `tv-r3c.html` (308.5, 317, 320.5, 330.8 checked).
+- Review clip: `out/lib_tvnews-bvtest-v1_f07392-f07944_24fps_draft.mp4` (308-331 s, 720p, 0 bad frames, flash check pass).
+
+Not done until Robin picks the treatment: occurrence 1 (the intro, on `tv-r3a.html`).
+
+## Look test (woodcut, occurrences 2 and 3), 2026-10-14 (set aside: Robin chose TV news)
 
 Woodcut, the default: its outro page already prints the held "Libelous" big, so it is the hardest place to add a
 second voice without a collision, and the chapbook has the two tools a second voice needs (a red second plate and
@@ -74,5 +97,3 @@ roundel vignettes, as on the five-views page).
 - Outside her spans the page renders byte-identical to `woodcut-end.html` (308.5, 317, 320.5, 330.8 checked).
 - Review clip: `out/lib_woodcut-bvtest-v1_f07392-f07944_24fps_draft.mp4` (308-331 s, 720p, 0 bad frames, flash check pass).
 
-Not done until Robin picks the treatment: occurrence 1 (the intro, on `woodcut.html`'s blank sheet before the king,
-where the scroll could sit anywhere), and the fact-sheet and TV-news versions.
