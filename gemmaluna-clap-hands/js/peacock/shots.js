@@ -1,9 +1,5 @@
 // Look test: verse 1 + chorus 1 (26.04 to 56.88) in cut paper, peacock palette.
 // Cues from STORYBOARD.md c01/c02 (word times are Whisper, ~0.3 s slop; claps are exact).
-const CLAPS = [41.6, 46.0, 50.033, 54.133];
-// keyframes on song time with eased in-between: kf3(t, [[t0, v0], [t1, v1], ...])
-const kf3 = (t, ks) => { if (t <= ks[0][0]) return ks[0][1]; for (let i = 1; i < ks.length; i++) if (t < ks[i][0]) return lerp(ks[i - 1][1], ks[i][1], eio((t - ks[i - 1][0]) / (ks[i][0] - ks[i - 1][0]))); return ks[ks.length - 1][1]; };
-const cam = (cx, cy, z = 1, rot = 0) => { g.translate(W / 2, H / 2); g.rotate(rot); g.scale(z, z); g.translate(-cx, -cy); };
 
 // ---- the tram car: clerestory of stained glass, brass rail, swinging straps, lily lamps ----
 function tramCar(t, wild, swayK = 1) {
@@ -53,9 +49,11 @@ function tramCar(t, wild, swayK = 1) {
 }
 
 // 26.04 "sane, sane" / 28.44 "all insane" (the straps go wild) / 29.44 "five months blind" (spectacles on the seat)
+// opens zoomed into its right lily lamp: the intro's Metro lamp bud became it
 SHOT(26.04, 31.94, 'tram', (t, k, d) => {
   const wild = bump(t, 28.4, 1.2);
-  g.save(); cam(540, lerp(980, 1100, eio(k)), lerp(1.0, 1.12, eio(k)), Math.sin(t * 2.3) * .012 + wild * Math.sin(t * 13) * .025);
+  const u = eio(clamp((t - 26.04) / 1.3)), zEnd = lerp(1.0, 1.12, eio(k));
+  g.save(); cam(lerp(810, 540, u), lerp(490, lerp(980, 1100, eio(k)), u), Math.exp(lerp(Math.log(6), Math.log(zEnd), u)), (Math.sin(t * 2.3) * .012 + wild * Math.sin(t * 13) * .025) * u);
   tramCar(t, wild);
   // spectacles left on the seat
   const p = pop(t, 29.5, .45);
@@ -67,6 +65,7 @@ SHOT(26.04, 31.94, 'tram', (t, k, d) => {
     g.restore();
   }
   g.restore();
+  sheet(C.goldPale, .75 * (1 - ss(26.04, 26.6, t)));
 });
 
 // 31.94 "the conductor is lame": his empty booth, cap on a hook, a cane, a lantern swinging
@@ -132,7 +131,7 @@ SHOT(33.76, 36.44, 'jacket', (t, k, d) => {
 
 // 36.44 "hard luck day": the horseshoe over the door hangs upside down; it slips and spins away
 SHOT(36.44, 37.7, 'horseshoe', (t, k, d) => {
-  g.save(); cam(540, 900, 1.05);
+  g.save(); cam(540, kf3(t, [[36.44, 900], [37.1, 900], [37.7, 1037]]), kf3(t, [[36.44, 1.05], [37.1, 1.05], [37.7, 1.156]]));
   sheet(C.plumDeep);
   cut(cutRect(200, 520, 680, 1500, 41), C.plum, { sh: 1, lift: .3 });
   cut(archPath(270, 700, 540, 1300), C.tealDeep, { sh: 0 });
@@ -194,8 +193,8 @@ const flare = (t, k) => t < k ? 0 : Math.exp(-3 * (t - k)) * .5;
 SHOT(37.7, 49.4, 'tenement', (t, k, d) => {
   const k1 = CLAPS[0], k2 = CLAPS[1];
   g.save();
-  const z = kf3(t, [[37.7, 2.6], [41.0, 2.75], [42.7, 2.75], [45.3, 1.0], [49.4, 1.05]]);
-  const cy = kf3(t, [[37.7, 1190], [42.7, 1190], [45.3, 1010], [49.4, 990]]);
+  const z = kf3(t, [[37.7, 2.6], [41.0, 2.75], [42.7, 2.75], [45.3, 1.0], [48.0, 1.02], [49.4, 1.25]]);
+  const cy = kf3(t, [[37.7, 1190], [42.7, 1190], [45.3, 1010], [48.0, 1000], [49.4, 380]]);
   cam(540, cy, z);
   sheet(C.tealInk);
   // the moon-halo over the roofs; its lilies open on clap 1
@@ -244,7 +243,7 @@ SHOT(37.7, 49.4, 'tenement', (t, k, d) => {
   for (let i = 0; i < 2; i++) clapRings(t, 540, 1150, [k1, k2][i], .6);
   g.restore();
   rain(t, lerp(80, 40, ss(42.7, 45.3, t)), 2, .45, .1);
-}, { xin: .45, tr: 'rise', smooth: true });
+}, { xin: .3, tr: 'fade', smooth: true }); // the door's arch becomes the window's arch
 
 // clap 3 (50.033): a ring of six pairs grows out from under the halo, clapping as one; then peacock
 // feathers open in the gaps and the ring turns on without them
@@ -264,7 +263,7 @@ SHOT(49.4, 53.5, 'ring', (t, k, d) => {
   halo(540, 960, 250, t * .06, 1);
   clapRings(t, 540, 960, kk);
   g.restore();
-}, { xin: .5, tr: 'iris', ix: 540, iy: 960, smooth: true });
+}, { xin: .35, tr: 'fade', smooth: true }); // the moon-halo becomes the ring's halo
 
 // clap 4 (54.133): everyone. A crowd of raised arms rises from the bottom, three rows deep, and claps
 // once; the great halo bursts open, the brightest image of the chorus; they sink and we push in
@@ -274,7 +273,7 @@ const CROWD = (() => { const out = []; const rows = [[1230, 56, 8], [1420, 80, 6
   return out; })();
 SHOT(53.5, 56.88, 'everyone', (t, k, d) => {
   const kk = CLAPS[3], burst = back(clamp((t - kk) / .9));
-  g.save(); cam(540, 900, lerp(1.0, 1.16, ss(55.2, 56.88, t)));
+  g.save(); cam(540, kf3(t, [[53.5, 760], [54.05, 900]]), kf3(t, [[53.5, .818], [54.05, 1.0], [55.2, 1.0], [56.88, 1.16]]));
   sheet(C.teal);
   glow(540, 760, 1100, '250,215,140', .55 * ss(kk - .05, kk + .3, t) * (1 - .4 * ss(kk + .5, kk + 2.5, t)));
   rays(540, 760, 420, 1500, 36, t * .04, C.tealLight);
@@ -287,4 +286,4 @@ SHOT(53.5, 56.88, 'everyone', (t, k, d) => {
   for (const h of CROWD) visitClap(t, h.x, h.y, h.sc, kk + h.j, { dy: 1100, pre: h.pre, post: 1.5 + h.r * .15, sleeveLen: 16, sleeveCol: h.p[0], cuffCol: h.p[1] });
   clapRings(t, 540, 760, kk, 1.3);
   g.restore();
-}, { xin: .45, tr: 'fade', smooth: true });
+}, { xin: .3, tr: 'fade', smooth: true }); // the ring's halo becomes the crowd's

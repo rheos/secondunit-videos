@@ -56,8 +56,8 @@ function frame(t) {
   out.fillStyle = v; out.fillRect(0, 0, W, H);
   out.globalCompositeOperation = 'source-over';
   posterBorder(out);
-  // head of the look test: up from black
-  const fin = clamp((t - 26.04) / .6); if (fin < 1) { out.globalAlpha = 1 - fin; out.fillStyle = '#000'; out.fillRect(0, 0, W, H); out.globalAlpha = 1; }
+  // head of the film: the picture fades up from black over 1.5 s (the audio is untouched)
+  const fin = clamp((t - START) / 1.5); if (fin < 1) { out.globalAlpha = 1 - fin; out.fillStyle = '#000'; out.fillRect(0, 0, W, H); out.globalAlpha = 1; }
 }
 
 window.__frameJPEG = (t, q = .93) => { frame(t); return cv.toDataURL('image/jpeg', q); };
@@ -65,7 +65,7 @@ window.__ready = Promise.resolve(true);
 const params = new URLSearchParams(location.search);
 if (!params.has('offline')) {
   const audio = document.getElementById('a');
-  const T0 = parseFloat(params.get('a') || 26.04), T1 = parseFloat(params.get('b') || 56.88);
+  const T0 = parseFloat(params.get('a') || START), T1 = parseFloat(params.get('b') || END);
   audio.currentTime = params.has('t') ? parseFloat(params.get('t')) : T0;
   (function loop() { let t = audio.currentTime || T0; if (t >= T1) { audio.currentTime = T0; t = T0; } frame(t); requestAnimationFrame(loop); })();
   const toggle = () => audio.paused ? audio.play() : audio.pause();

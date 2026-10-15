@@ -152,26 +152,35 @@ function cuff(sc, col = C.gold) { // a scalloped gold cuff below the wrist (Nouv
   pts.push([.48, .7], [-.48, .7]);
   cut(poly(pts), col, { sh: .6, lift: .2 });
 }
-function palmHand(x, y, sc, { dir = -1, rot = 0, spread = .14, sx = 1, cuffCol = C.gold } = {}) {
+// Skins: what the hands are made of. fill, the thumb's shade, the pencil lines. print = a soot print on the palm.
+const SKIN = {
+  cream: { fill: C.cream, shade: C.creamDeep, line: C.plumLight },
+  glove: { fill: C.white, shade: C.cream, line: C.creamDeep },          // the millionaire's white gloves
+  soot: { fill: C.plumDeep, shade: C.tealInk, line: C.plumLight },       // the stoker's hands
+  brass: { fill: C.gold, shade: C.goldDeep, line: C.goldDeep },          // the engine's hands
+};
+function palmHand(x, y, sc, { dir = -1, rot = 0, spread = .14, sx = 1, cuffCol = C.gold, skin = SKIN.cream, print = 0 } = {}) {
   g.save(); g.translate(x, y); g.rotate(rot); g.scale(sc * sx, sc);
-  g.lineWidth = .02;
-  cut(palmPath(spread, dir), C.cream, { sh: .8, lift: .4 });
-  // palm creases, light plum pencil
-  g.save(); g.globalAlpha *= .45 * sx; g.strokeStyle = C.plumLight; g.lineWidth = .025; g.lineCap = 'round';
+  const pp = palmPath(spread, dir);
+  cut(pp, skin.fill, { sh: .8, lift: .4 });
+  if (print > 0) { g.save(); g.clip(pp); g.globalAlpha *= print * .8; cut(blob([[-.32, -.95], [-.1, -.6], [.3, -.85], [.28, -.3], [0, -.12], [-.3, -.35]], .7), C.plumDeep, { sh: 0, grain: .5 });
+    for (let i = 0; i < 4; i++) cut(ellipse(-.28 + i * .19, -1.35 + Math.abs(i - 1.5) * .08, .07, .16), C.plumDeep, { sh: 0, grain: .5 }); g.restore(); }
+  // palm creases in pencil
+  g.save(); g.globalAlpha *= .45 * sx; g.strokeStyle = skin.line; g.lineWidth = .025; g.lineCap = 'round';
   g.beginPath(); g.moveTo(-.3, -.72); g.quadraticCurveTo(0, -.6, .32, -.75); g.moveTo(dir * .05, -.12); g.quadraticCurveTo(dir * .2, -.4, dir * .02, -.6); g.stroke(); g.restore();
   cuff(sc, cuffCol);
   g.restore();
 }
 // drawing 3: the hand in profile, upright, palm facing the other hand; fingers stacked behind
-function profileHand(x, y, sc, dir, open = 0, cuffCol = C.gold) {
+function profileHand(x, y, sc, dir, open = 0, cuffCol = C.gold, skin = SKIN.cream) {
   const m = -dir;
   g.save(); g.translate(x, y); g.translate(.15 * m * sc, -.3 * sc); g.rotate(dir * open); g.translate(-.15 * m * sc, .3 * sc); g.scale(sc * m, sc);
   const body = [[-.3, 0], [-.34, -.4], [-.35, -.78], [-.31, -1.0], [-.28, -1.3], [-.21, -1.62], [-.1, -1.84], [.02, -1.88], [.11, -1.8], [.15, -1.5], [.17, -1.05], [.17, -.55], [.14, 0]];
-  cut(blob(body, .4), C.cream, { sh: .8, lift: .4 });
-  g.save(); g.globalAlpha *= .5; g.strokeStyle = C.plumLight; g.lineWidth = .022; g.lineCap = 'round';
+  cut(blob(body, .4), skin.fill, { sh: .8, lift: .4 });
+  g.save(); g.globalAlpha *= .5; g.strokeStyle = skin.line; g.lineWidth = .022; g.lineCap = 'round';
   for (const l of [[[-.2, -1.02], [-.14, -1.42], [-.05, -1.7]], [[-.08, -1.04], [-.03, -1.4], [.04, -1.62]], [[.04, -1.06], [.08, -1.36], [.11, -1.5]]]) { g.beginPath(); g.moveTo(...l[0]); g.quadraticCurveTo(...l[1], ...l[2]); g.stroke(); }
   g.restore();
-  cut(blob([[.02, -.2], [.1, -.5], [.15, -.8], [.21, -1.0], [.27, -.98], [.27, -.86], [.22, -.55], [.17, -.22], [.12, -.08]], .5), C.creamDeep, { sh: .5 });
+  cut(blob([[.02, -.2], [.1, -.5], [.15, -.8], [.21, -1.0], [.27, -.98], [.27, -.86], [.22, -.55], [.17, -.22], [.12, -.08]], .5), skin.shade, { sh: .5 });
   g.translate(-.08, 0); g.scale(.62, 1); cuff(sc, cuffCol);
   g.restore();
 }
@@ -189,8 +198,11 @@ function sleeve(wx, wy, sc, dir, len, col) {
 }
 // the pair, centred at cx, wrists at cy. The approach accelerates into the hit (d = u^0.6), so
 // contact lands on the sung "clap", not early. drift (0..1) lets them float open after the last clap.
-// cuffCol / sleeveCol give each person their own paper; sleeveLen 0 = no arms.
-function clapPair(t, cx, cy, sc, k, { drift = 0, cuffCol = C.gold, sleeveCol = C.plumLight, sleeveLen = 0 } = {}) {
+// cuffCol / sleeveCol / skin give each person their own paper; sleeveLen 0 = no arms.
+// L and R override any of those for one hand (the glove and the sooty hand meeting).
+function clapPair(t, cx, cy, sc, k, { drift = 0, L = {}, R = {}, ...o } = {}) {
+  const base = { cuffCol: C.gold, sleeveCol: C.plumLight, sleeveLen: 0, skin: SKIN.cream, print: 0, ...o };
+  const side = (dir) => ({ ...base, ...(dir < 0 ? L : R) });
   const lt = t - k;
   let d = lt < 0 ? Math.pow(clamp(-lt / .42), .6) : eo(clamp((lt - .06) / .45));
   d = Math.max(d, drift);
@@ -199,15 +211,15 @@ function clapPair(t, cx, cy, sc, k, { drift = 0, cuffCol = C.gold, sleeveCol = C
   let off, draw;
   if (d <= .14) {
     const op = lt < 0 ? 0 : .12 * eo(clamp(lt / .1)), sq = (lt < 0 ? 0 : Math.exp(-14 * lt)) * .04;
-    off = .17 * sc + op * .04 * sc; draw = (dir, x) => profileHand(x, wy, sc * (1 - sq), dir, op, cuffCol);
+    off = .17 * sc + op * .04 * sc; draw = (dir, x) => { const h = side(dir); profileHand(x, wy, sc * (1 - sq), dir, op, h.cuffCol, h.skin); };
   } else if (d <= .58) {
     const q = (d - .14) / .44, sx = lerp(.45, .72, q); off = lerp(.3, .6, q) * sc;
-    draw = (dir, x) => palmHand(x, wy, sc * .84, { dir, rot: dir * lerp(.03, .1, q), spread: 0, sx, cuffCol });
+    draw = (dir, x) => { const h = side(dir); palmHand(x, wy, sc * .84, { dir, rot: dir * lerp(.03, .1, q), spread: 0, sx, cuffCol: h.cuffCol, skin: h.skin, print: h.print }); };
   } else {
     const q = (d - .58) / .42, rk = Math.sin(lt * Math.PI * 2) * .03; off = lerp(.68, .92, q) * sc;
-    draw = (dir, x) => palmHand(x, wy, sc * .84, { dir, rot: dir * (.16 + rk), spread: .14, cuffCol });
+    draw = (dir, x) => { const h = side(dir); palmHand(x, wy, sc * .84, { dir, rot: dir * (.16 + rk), spread: .14, cuffCol: h.cuffCol, skin: h.skin, print: h.print }); };
   }
-  if (sleeveLen > 0) for (const [dir, x] of xs(off)) sleeve(x, wy, sc, dir, sleeveLen, sleeveCol);
+  for (const [dir, x] of xs(off)) { const h = side(dir); if (h.sleeveLen > 0) sleeve(x, wy, sc, dir, h.sleeveLen, h.sleeveCol); }
   for (const [dir, x] of xs(off)) draw(dir, x);
 }
 // A clap that visits (Robin, look test v1: no hands hanging on screen between claps). The pair comes
