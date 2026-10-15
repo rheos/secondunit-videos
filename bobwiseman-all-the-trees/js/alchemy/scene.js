@@ -11,13 +11,40 @@
   const dx=z[0]-a[0],dy=z[1]-a[1],len=Math.hypot(dx,dy)||1;
   return {q,n:[-dy/len,dx/len],r:width};
  }
- function woodyRoot(b,phase,base,tip,seed){if(phase<=0)return;const sections=[];
-  for(let i=0;i<=64;i++){const u=i/64*phase,r=mix(base,tip,u)*(1+.055*Math.sin(u*29+seed));sections.push(rootSection(b,u,r/2))}
+ // v9: engraved wood. Organic swelling, shading hatched across the grain on the shadow side
+ // (no long parallel lines, which read as planks), and for roots, tapering rootlets and hair at the tip.
+ function woodyRoot(b,phase,base,tip,seed,opts={}){if(phase<=0)return;const sections=[];
+  // Section spacing follows arc length, so the hatching is engraving-tight (about 3 px) on long roots too.
+  let arc=0;for(let i=1,pv=bez(b,0);i<=16;i++){const q=bez(b,i/16*phase);arc+=Math.hypot(q[0]-pv[0],q[1]-pv[1]);pv=q}
+  const N=opts.n||Math.round(clamp(arc/3.1,12,260));
+  for(let i=0;i<=N;i++){const u=i/N*phase,taper=Math.pow(u,.8),r=mix(base,tip,taper)*(1+.11*Math.sin(u*17+seed)+.06*Math.sin(u*43+seed*2.3));sections.push(rootSection(b,u,r/2))}
   g.beginPath();for(let i=0;i<sections.length;i++){const {q,n,r}=sections[i];i?g.lineTo(q[0]+n[0]*r,q[1]+n[1]*r):g.moveTo(q[0]+n[0]*r,q[1]+n[1]*r)}
   for(const {q,n,r} of sections.slice().reverse())g.lineTo(q[0]-n[0]*r,q[1]-n[1]*r);
-  g.closePath();g.fillStyle=seed%2?'#c3a572':'#d2b780';g.fill();g.strokeStyle=C.ink;g.lineWidth=1.6;g.stroke();
-  for(let i=2;i<sections.length-1;i+=2){const {q,n,r}=sections[i];line(q[0]-n[0]*r*.8,q[1]-n[1]*r*.8,q[0]+n[0]*r*.45+2,q[1]+n[1]*r*.45-2,'#75613b',.7)}
-  for(const side of [-.55,.45]){g.beginPath();sections.forEach(({q,n,r},i)=>{const x=q[0]+n[0]*r*side,y=q[1]+n[1]*r*side;i?g.lineTo(x,y):g.moveTo(x,y)});g.strokeStyle=side<0?'#ecd3a0':'#78613d';g.lineWidth=1.2;g.stroke()}
+  g.closePath();g.fillStyle=opts.fill||(seed%2?'#d6bd88':'#e2c995');g.fill();g.strokeStyle=C.ink;g.lineWidth=opts.outline||1.8;g.stroke();
+  // Shadow half: a darker wash, then wrapping hatch lines that fade toward the lit core.
+  g.beginPath();sections.forEach(({q,n,r},i)=>{const x=q[0]+n[0]*r*.12,y=q[1]+n[1]*r*.12;i?g.lineTo(x,y):g.moveTo(x,y)});
+  for(const {q,n,r} of sections.slice().reverse())g.lineTo(q[0]+n[0]*r*.98,q[1]+n[1]*r*.98);g.closePath();g.fillStyle='rgba(120,88,44,.42)';g.fill();
+  const ink=new Path2D(),fine=new Path2D();
+  sections.forEach(({q,n,r},i)=>{if(i<1||i>=sections.length-1||r<1.6)return;const t=sections[i+1].q,dx=t[0]-q[0],dy=t[1]-q[1],l=Math.hypot(dx,dy)||1,tx=dx/l,ty=dy/l;
+   const from=.22+.18*noise(seed*7+i);
+   ink.moveTo(q[0]+n[0]*r*from,q[1]+n[1]*r*from);ink.quadraticCurveTo(q[0]+n[0]*r*.62+tx*r*.18,q[1]+n[1]*r*.62+ty*r*.18,q[0]+n[0]*r*.97,q[1]+n[1]*r*.97);
+   if(i%2===0){fine.moveTo(q[0]+n[0]*r*.62-tx*r*.3,q[1]+n[1]*r*.62-ty*r*.3);fine.lineTo(q[0]+n[0]*r*.96+tx*r*.3,q[1]+n[1]*r*.96+ty*r*.3)}
+   // Broken bark flecks along the lit side.
+   if(i%4===(seed%4)&&r>4){const o=-.3-.4*noise(seed+i),k=4+5*noise(seed+i*3);fine.moveTo(q[0]+n[0]*r*o-tx*k,q[1]+n[1]*r*o-ty*k);fine.lineTo(q[0]+n[0]*r*o+tx*k,q[1]+n[1]*r*o+ty*k)}
+  });
+  g.strokeStyle=C.ink;g.lineWidth=.7;g.stroke(ink);g.strokeStyle='#4a3a22';g.lineWidth=.5;g.stroke(fine);
+  if(!opts.rootlets)return;
+  // Rootlets leave the side of the root and curl downward into the soil; hair splays from the tip.
+  for(let k=0;k<opts.rootlets;k++){const u=.18+.72*noise(seed*13+k*7.1);if(u>phase)continue;
+   const {q,n,r}=rootSection(b,u,mix(base,tip,Math.pow(u,.8))/2),side=noise(seed+k*3.7)>.5?1:-1;
+   const len=(opts.rootletLen||84)*(.55+.75*noise(seed+k*5.3))*(1-u*.35),p0=[q[0]+n[0]*side*r*.7,q[1]+n[1]*side*r*.7];
+   const d=[n[0]*side*.8,n[1]*side*.8+.55],dl=Math.hypot(...d)||1,dx=d[0]/dl,dy=d[1]/dl,curl=(noise(seed+k)-.5)*1.6;
+   const end=[p0[0]+dx*len+dy*len*curl,p0[1]+dy*len-dx*len*curl*.5];
+   woodyRoot([p0[0],p0[1],p0[0]+dx*len*.35,p0[1]+dy*len*.35,end[0]-dx*len*.25+dy*len*curl*.4,end[1]-dy*len*.2,end[0],end[1]],clamp((phase-u)*4),Math.max(2.6,r*.34),.7,seed+k*11,{outline:1,fill:opts.fill});
+  }
+  if(phase>=.98){const e=bez(b,1),a=bez(b,.97),ax=e[0]-a[0],ay=e[1]-a[1],al=Math.hypot(ax,ay)||1,hair=new Path2D();
+   for(let k=0;k<5;k++){const s=(k-2)*.38,cx=ax/al*Math.cos(s)-ay/al*Math.sin(s),cy=ax/al*Math.sin(s)+ay/al*Math.cos(s),l=10+12*noise(seed+k*2);hair.moveTo(e[0],e[1]);hair.quadraticCurveTo(e[0]+cx*l*.6+3,e[1]+cy*l*.6+3,e[0]+cx*l,e[1]+cy*l+4)}
+   g.strokeStyle=C.ink;g.lineWidth=.7;g.stroke(hair)}
  }
  function rootSignal(t){const flow=A.performance.flow(t);if(!flow.active)return;
   const left=roots[2],right=roots[7],p=flow.u<.5?bez(left,flow.u*2):bez(right,(1-flow.u)*2);
@@ -29,7 +56,7 @@
    for(const u of [.34+noise(j+21)*.33]){if(phase<=u)continue;const {q,n}=rootSection(b,u,1),side=j%2?1:-1;
     woodyRoot([q[0],q[1],q[0]+n[0]*side*25,q[1]+20,q[0]+n[0]*side*38,q[1]+41,q[0]+n[0]*side*48,q[1]+48],clamp((phase-u)*4),10,1.6,j);
    }
-   woodyRoot(b,phase,32+(j%5)*3,11+(j%3)*2,j);
+   woodyRoot(b,phase,30+(j%5)*3,9+(j%3)*2,j,{rootlets:6});
    const u=((t-61)*.075+j*.053)%1;if(u<phase){const v=bez(b,u);ellipse(v[0],v[1],4,2,C.gold)}
   }
  }
@@ -140,9 +167,35 @@
   if(type==='wind'){g.globalAlpha=.8;for(let i=0;i<8;i++){let z=(t*23+i*20)%155-88;stroke(`M${z} ${-38+i*11}q35-10 66-1q17 4 28-5`,C.ink,1)}cloud(-39,12,.16);}
   if(type==='winter'){stroke('M0 66V-31M0 12L-24-16M0-12L22-36M0 34L31 2M-24-16L-40-21M22-36L33-39',C.ink,2.6);for(let i=0;i<14;i++){const xx=noise(i+5)*130-65,yy=(t*14+noise(i+18)*125)%125-65;line(xx-2,yy,xx+2,yy,'#fff7df',2);line(xx,yy-2,xx,yy+2,'#fff7df',2)}}
   g.restore();g.restore();}
- function ground(t,showRoots=true){fill('M75 760Q480 746 960 761T1845 760V1370H75Z','#d9c99f');for(let i=0;i<190;i++){const x=85+i*9.25,y=765+noise(i+17)*10;line(x,y,x+6,y-2,C.ink,.7)}
- for(let i=0;i<1300;i++){const x=85+noise(i+66)*1750,y=790+noise(i+925)*205;line(x,y,x+3+noise(i)*6,y-2,'#a59872',.55)}
- for(let i=0;i<400;i++){const x=85+noise(i+466)*1750,y=1006+noise(i+1225)*355;line(x,y,x+3+noise(i)*6,y-2,'#a59872',.55)}
+ // v9: an engraved cross-section. A grassy field where feet stand, a cut edge, then soil strata with
+ // hatching and stones, so the shared roots run through visible earth instead of blank paper.
+ const groundArt=(()=>{const o=A.canvas(1920,700),q=o.getContext('2d');q.translate(0,-700);const P=s=>new Path2D(s);
+  const edge=x=>806+5*Math.sin(x*.011)+3*Math.sin(x*.037+1);
+  const band=(y0,amp,ph)=>x=>y0+amp*Math.sin(x*.006+ph)+amp*.5*Math.sin(x*.019+ph*2);
+  const strata=[[edge,'#c9a974'],[band(868,7,1),'#b8945f'],[band(935,9,2.4),'#a6814f'],[band(1005,8,4),'#946f43']];
+  const outline=f=>{let d=`M60 ${f(60)}`;for(let x=60;x<=1860;x+=12)d+=`L${x} ${f(x)}`;return d};
+  for(const [f,col] of strata){q.fillStyle=col;q.fill(P(outline(f)+'L1860 1400L60 1400Z'))}
+  // Horizontal engraved hatching, closer and darker with depth.
+  for(let y=812;y<1400;y+=y<870?7:y<940?5.5:4.5){let d=`M60 ${y}`;for(let x=60;x<=1860;x+=40)d+=`L${x} ${y+1.6*Math.sin(x*.013+y*.21)}`;q.strokeStyle='#3b2f1d';q.globalAlpha=y<870?.22:y<940?.3:.38;q.lineWidth=.7;q.stroke(P(d))}
+  q.globalAlpha=1;for(const [f] of strata.slice(1)){q.strokeStyle=C.ink;q.lineWidth=1;q.stroke(P(outline(f)))}
+  // Stones and pebbles, shaded on their lower right like the plates.
+  for(let i=0;i<75;i++){const x=80+noise(i+301)*1760,y=835+noise(i+77)*520,rx=5+noise(i+9)*16*(y>900?1.2:.7),ry=rx*(.55+.3*noise(i+4)),a=noise(i+12)*.8-.4;
+   q.save();q.translate(x,y);q.rotate(a);q.beginPath();for(let k=0;k<9;k++){const th=k/9*Math.PI*2,rr=1+.13*Math.sin(k*2.3+i);q.lineTo(Math.cos(th)*rx*rr,Math.sin(th)*ry*rr)}q.closePath();
+   q.fillStyle='#d9ccac';q.fill();q.save();q.clip();q.strokeStyle=C.ink;q.lineWidth=.6;for(let k=-rx;k<rx;k+=2.6){q.beginPath();q.moveTo(k+rx*.25,ry);q.lineTo(k+rx*.7,-ry*.1);q.stroke()}q.restore();q.strokeStyle=C.ink;q.lineWidth=1.1;q.stroke();q.restore()}
+  // Worm burrows and a few seed husks, small enough to be texture.
+  for(let i=0;i<14;i++){const x=120+noise(i+501)*1680,y=880+noise(i+502)*420;q.strokeStyle='#3b2f1d';q.lineWidth=1.3;q.beginPath();q.moveTo(x,y);q.bezierCurveTo(x+12,y-9,x+22,y+11,x+34,y+2);q.stroke()}
+  // The cut face: a dark ink edge with grass and turf hanging over it.
+  q.strokeStyle=C.ink;q.lineWidth=2.2;q.stroke(P(outline(edge)));
+  for(let x=64;x<1858;x+=5){const y=edge(x),h=4+6*noise(x*.7);q.strokeStyle=C.ink;q.lineWidth=.8;q.beginPath();q.moveTo(x,y-1);q.lineTo(x+1.5,y+h);q.stroke()}
+  return o})();
+ function ground(t,showRoots=true){fill('M75 760Q480 746 960 761T1845 760V1370H75Z','#dcd09c');
+ // The field plane between the horizon and the cut, hatched in perspective, with grass tufts.
+ g.save();g.globalAlpha=.55;fill('M75 760Q480 746 960 761T1845 760V812H75Z','#c7cf8e');g.restore();
+ for(let i=0;i<190;i++){const x=85+i*9.25,y=765+noise(i+17)*10;line(x,y,x+6,y-2,C.ink,.7)}
+ for(let i=0;i<520;i++){const x=85+noise(i+66)*1750,y=772+noise(i+925)*32;line(x,y,x+3+noise(i)*6,y-2,'#7f8150',.6)}
+ const tufts=new Path2D();for(let i=0;i<150;i++){const x=90+noise(i+611)*1740,y=776+noise(i+612)*28;for(let k=-1;k<=1;k++){tufts.moveTo(x+k*2,y);tufts.lineTo(x+k*4+noise(i+k)*2,y-5-4*noise(i+k+9))}}
+ g.strokeStyle='#3d4425';g.lineWidth=.8;g.stroke(tufts);
+ g.drawImage(groundArt,0,700);
  stroke('M75 760Q480 746 960 761T1845 760',C.ink,2);if(showRoots){rootNetwork(t);rootSignal(t)}}
  function sky(){g.save();g.beginPath();g.rect(76,70,1768,690);g.clip();g.fillStyle=C.azure;g.fillRect(76,70,1768,690);g.globalAlpha=.12;g.drawImage(A.paper,0,0);g.globalAlpha=.37;
  for(let i=0;i<125;i++){let y=76+i*5.5;stroke(`M77 ${y}Q490 ${y-3} 966 ${y+1}T1844 ${y}`,C.ink,.7)}g.restore()}
@@ -151,7 +204,7 @@
   if(winter){g.save();g.globalAlpha=winter;for(let i=0;i<24;i++){const x=670+noise(i+38)*640,y=210+((t-73.75)*120+noise(i)*270)%390;line(x-3,y,x+3,y,C.cream,2);line(x,y-3,x,y+3,C.cream,2)}g.restore()}
  }
  function chorusState(raw){const t=Math.floor(Math.round(raw*24)/2)/12;return Object.fromEntries(['sol','luna'].map(which=>{const p=personPose(which,t,0,raw),boughs=[0,1].map(side=>boughSpec(p,side,t));return [which,{appear:p.appear,hands:p.hands,branchNodes:boughs.map(b=>b.nodes.length),leaves:boughs.map(b=>b.leaves)}]}))}
- A.scene={chorusState,birdPose,perch,bez,roots,heraldPose,sky,ground,person,herald,bird,birds,roundel,woodyRoot,personPose,pulse};
+ A.scene={leaf,chorusState,birdPose,perch,bez,roots,heraldPose,sky,ground,person,herald,bird,birds,roundel,woodyRoot,personPose,pulse};
  A.draw=(raw)=>{const frame=Math.round(raw*24),t=Math.floor(frame/2)/12;g.setTransform(1,0,0,1,0,0);g.globalAlpha=1;g.drawImage(A.paper,0,0);g.save();g.beginPath();g.rect(76,70,1768,935);g.clip();g.translate(960,540);const camera=A.performance.rootCamera(raw),zoom=(1+.032*smooth(47,79.5,raw))*camera.z;g.scale(zoom,zoom);g.translate(-camera.x+2*Math.sin(raw*.14),-camera.y);sky();
   // Rear cloud layer has its own slow parallax; paper-coloured silhouettes occlude the sky hatch.
   for(let i=0;i<5;i++)cloud(160+i*400+Math.sin(raw*.15+i)*22,140+(i%2)*-25,.72+(i%2)*.15,i%2?-1:1);

@@ -67,11 +67,9 @@
   if(arrive){g.save();g.translate(-500*(1-arrive),0);S.herald(290,294,-1,t,raw);g.restore();g.save();g.translate(500*(1-arrive),0);S.herald(1635,294,1,t,raw);g.restore()}
   g.restore();
   g.save();g.beginPath();g.rect(76,70,1768,935);g.clip();g.translate(0,cameraY);
-  if(ground&&raw>=ALCHEMY_CUES.grove.landRetreat[0]/24)S.ground(t,false);
+  if(ground&&raw>=ALCHEMY_CUES.grove.landRetreat[0]/24){fill('M75 754H1845V775H75Z','#dcd09c');S.ground(t,false)}
   else if(ground){g.save();g.beginPath();g.rect(75,760,1770,610*ground);g.clip();
-   fill('M75 760H1845V1370H75Z','#d9c99f');
-   for(let i=0;i<190;i++){const x=85+i*9.25,y=765+noise(i+17)*10;line(x,y,x+6,y-2,C.ink,.7)}
-   for(let i=0;i<1750;i++){const x=85+noise(i+66)*1750,y=785+noise(i+925)*585;line(x,y,x+3+noise(i)*6,y-2,'#a59872',.55)}g.restore()}
+   fill('M75 754H1845V775H75Z','#dcd09c');S.ground(t,false);g.restore()} // v9: the same engraved soil section as the rest of the film
   A.grove.draw(raw);roots(t);g.restore();chart(t);
   g.restore();border(raw);
   // The full registration ornaments arrive before the first chorus scene.
