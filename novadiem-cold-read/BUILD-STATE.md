@@ -3,6 +3,15 @@
 Robin approved the beat 4 look test (https://youtu.be/0KMfTCTauI0) and asked for beats 1-7 on the
 full score, same look, then draft 1. Paused mid-build for session quota. Resume from here.
 
+## Read before writing beats (added 2026-10-15)
+
+- Pacing rules and this film's accuracy limit: `~/Code/novadiem/assistant/ideas/bureau-series.md`
+  (filed from Codex's Bureau series attempt; this film is that series' pilot). Key ones: something
+  new on screen every 3 to 6 s, at least three visible events per ~15 s, words appear where the
+  event happens. Check each beat below against that before building it.
+- Open with Robin: "No shared assumptions." may become "No shared conversation." Build it as
+  written unless he has answered (see `assistant/ideas/cold-read-video.md`, Open decisions).
+
 ## Done
 
 - `index.html` rewritten as a thin root: shared CSS (all look classes), `window.CR` helpers
