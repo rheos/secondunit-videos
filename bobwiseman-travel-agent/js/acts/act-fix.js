@@ -18,14 +18,15 @@ SU.f_knot = { mode: 'ill', f(q, p, a, T) {
 
 // "Heroes just make believe": the hero from behind, a cardboard flat on braces, labelled as a prop
 SU.f_heroFlat = { mode: 'ill', f(q, p, a, T) {
-  stripes('#e2d2c4', '#d4bfae', 140, -.62, 0, C.plum); cam(960, 540, lerp(1.1, 1, eo(p)));
-  const turn = eo(cl(p / .6)), sx = Math.cos(turn * Math.PI);
+  stripes('#e2d2c4', '#d4bfae', 140, -.62, 0, C.plum); cam(960, 560, lerp(1.03, 1, eo(p)));
+  // draft 11: the hero holds until "make" and turns edge-on on "believe" (265.86); he used to read for only .6 s
+  const turn = eio(seg(T, 265.45, 266.15)), sx = Math.cos(turn * Math.PI);
   fillP(PR(-200, 900, W + 400, 300), '#8a6a4a'); hatch(PR(-200, 900, W + 400, 300), 960, 1000, 1300, .1, 9, C.ink, .8, .4); iline(-200, 900, W + 200, 900, C.ink, 2.6);
   X.save(); X.translate(960, 900); X.scale(sx, 1);
-  if (sx > 0) { const cape = PP([[-120, -620], [120, -620], [300, -80], [-300, -80]]); fillP(cape, C.orange); shade(cape, 0, -350, 300, [20, -20], .8, 6); iP([[-120, -620], [120, -620], [300, -80], [-300, -80]], true, C.ink, 3); traveller(0, 0, 2.2, { hat: false, look: 0, armR: [2.8, 0], armL: [-2.8, 0] }); }
+  if (sx > 0) { const cape = PP([[-100, -520], [100, -520], [260, -80], [-260, -80]]); fillP(cape, C.orange); shade(cape, 0, -350, 300, [20, -20], .8, 6); iP([[-100, -520], [100, -520], [260, -80], [-260, -80]], true, C.ink, 3); traveller(0, 0, 1.75, { hat: false, look: 0, armR: [2.8, 0], armL: [-2.8, 0] }); }
   else { const back = PP([[-300, -900], [300, -900], [300, -40], [-300, -40]]); fillP(back, '#c9a978'); hatch(back, 0, -470, 520, .05, 14, C.brown || '#8a6a4a', 2, .5); hatch(back, 0, -470, 520, Math.PI / 2, 40, C.ink, 1.4, .25); iP(dens([[-300, -900], [300, -900], [300, -40], [-300, -40]], 40, true), true, C.ink, 3);
     for (const bx of [-200, 200]) { const br = PP([[bx, -600], [bx + 20, -600], [bx + 220 * Math.sign(-bx), 0], [bx + 190 * Math.sign(-bx), 0]]); fillP(br, '#8a5530'); iP([[bx, -600], [bx + 20, -600], [bx + 220 * Math.sign(-bx), 0], [bx + 190 * Math.sign(-bx), 0]], true, C.ink, 2.4); fillP(PR(bx - 60, -40, 140, 40), '#5a3a22'); iBox(bx - 60, -40, 140, 40, C.ink, 2); }
-    X.scale(-1, 1); const tag = PR(-150, -520, 300, 120); fillP(tag, C.cream); iBox(-150, -520, 300, 120, C.ink, 2.4); lab(0, -470, 'HERO', C.ink, 1, 40, 'center', 'alphabetic', 'bold'); lab(0, -430, 'PROP NO. 12 · CARDBOARD', C.brick, .9, 14, 'center'); }
+    X.scale(-1, 1); const tag = PR(-150, -520, 300, 120); fillP(tag, C.cream); iBox(-150, -520, 300, 120, C.ink, 2.4); lab(0, -478, 'HERO', C.ink, 1, 40, 'center', 'alphabetic', 'bold'); lab(0, -428, 'PROP NO. 12', C.brick, .95, 28, 'center', 'alphabetic', 'bold'); }
   X.restore();
   traveller(330, 1000, 1.1, { look: 1, mouth: sing(T) }); cloud(330, 440, .6, { rain: true });
   for (let i = 0; i < 4; i++) gc(960, 450, 360 + i * 40 + ((FD * 6) % 40), C.teal, .35, 1.6);

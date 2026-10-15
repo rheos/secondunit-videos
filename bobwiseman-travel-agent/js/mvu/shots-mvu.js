@@ -70,7 +70,7 @@ SU.mvu_cinema = { mode: 'ill', f(q, p, a, T) {
   X.save(); const outside = new Path2D(); outside.rect(-W, -H, 3 * W, 3 * H); outside.rect(sx, sy, sw, sh); X.clip(outside, 'evenodd');
   traveller(x, y, s, { look: 1, legs: walkPh(), case: true, mouth: 0 }); X.restore();
   if (u < .98) for (let i = 0; i < 3; i++) gc(x, sy + sh, 40 + i * 30 + ((FD * 6) % 30), C.orange, .8, 2, null, Math.PI, TAU);
-  cloud(x - 40, Math.min(y - 470 * s, sy - 60), .5, { rain: true });
+  cloud(x - 40, Math.max(90, Math.min(y - 470 * s, sy - 60)), .5, { rain: true }); // draft 11: never cut by the top edge
   for (let i = 0; i < 26; i++) { const t2 = i / 25; X.beginPath(); X.moveTo(240, 240); X.lineTo(sx, sy + t2 * sh); stroke(C.cream, 2, .25); }
   consL([[0, sy + sh, W, sy + sh], [sx, 0, sx, H]]);
 } };
@@ -164,6 +164,10 @@ SU.mvu_droste = { mode: 'ill', f(q, p, a, T) {
     const ow = W / EDK * s, oh = H / EDK * s; X.save(); depth++; X.beginPath(); X.rect(W / 2 - ow / 2, H / 2 - oh / 2, ow, oh); X.clip();
   }
   while (depth-- > 0) X.restore();
+  // Draft 11 (Robin: a light-only lift, nothing else changes): the climax gets brighter level by level as we go in,
+  // a warm screen-blend over the whole frame, so the film's peak is also its light. Off on the destination frames.
+  const fade = destination ? 1 - eio(cl((p - a.exitAt) / (a.exitEnd - a.exitAt))) : 1, lift = (.06 + .26 * eio(cl(L / (a.exitLevel || 3.5)))) * fade;
+  X.save(); screen(); X.globalCompositeOperation = 'screen'; X.globalAlpha = lift; X.fillStyle = '#ffe2a8'; X.fillRect(0, 0, W, H); X.restore();
 } };
 
 // (slots now live directly in the act cut lists; see js/acts/act-*.js)

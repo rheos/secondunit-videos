@@ -106,7 +106,8 @@ SU.posterCU = { mode: 'ill', f(q, p, a, T) {
 } };
 SU.seesaw = { mode: 'ill', f(q, p, a, T) {
   stripes(C.paper, '#e8d0c4', 130, -.62, 0, C.rose); cam(960, 560, lerp(1, 1.06, eo(p)));
-  const flip = cl((T - 283.6) / .25), ang = lerp(-.28, .36, eo(flip)) + (flip >= 1 ? Math.sin((T - 283.8) * 18) * .04 * Math.max(0, 1 - (T - 283.8)) : 0);
+  // draft 11: the board's ends rest on the ground (pivot 140 above it, half-length 640: asin(140/640) = .22)
+  const flip = cl((T - 283.6) / .25), ang = Math.min(.22, lerp(-.22, .22, eo(flip)) + (flip >= 1 ? -Math.abs(Math.sin((T - 283.8) * 18)) * .05 * Math.max(0, 1 - (T - 283.8)) : 0));
   const fl = PP([[900, 900], [1020, 900], [960, 760]]); fillP(fl, '#7a4a2a'); shade(fl, 960, 840, 80, [10, 0], .9, 4); iP([[900, 900], [1020, 900], [960, 760]], true, C.ink, 2.6);
   iline(-200, 900, W + 200, 900, C.ink, 2.6); fillP(PR(-200, 900, W + 400, 300), '#c4ae84');
   X.save(); X.translate(960, 760); X.rotate(ang);
@@ -119,7 +120,7 @@ SU.seesaw = { mode: 'ill', f(q, p, a, T) {
   lab(450, -160, 'FEEL', C.ink, .95, 30, 'center', 'alphabetic', 'bold');
   X.restore();
   if (flip > 0 && flip < 1 || (T > 283.8 && T < 284.6)) for (let i = 0; i < 3; i++) gc(960 + 540, 760 + 230, 60 + i * 40 + (T - 283.8) * 200, C.orange, .8, 2.4);
-  traveller(300, 1000, 1.1, { look: 1, mouth: sing(T), hat: true }); cloud(300, 480, .6, { rain: true });
+  traveller(170, 1000, 1.1, { look: 1, mouth: sing(T), hat: true }); cloud(170, 480, .6, { rain: true }); // draft 11: clear of the raised board end
   consL([[0, 760, W, 760], [960, 0, 960, H]]); consC([[960, 760, 640]]);
 } };
 SU.sSeesaw = { mode: 'sch', f(q, p, a, T) {
@@ -133,7 +134,7 @@ SU.sSeesaw = { mode: 'sch', f(q, p, a, T) {
   X.restore(); X.beginPath(); X.moveTo(900, 840); X.lineTo(1020, 840); X.lineTo(960, 700); X.closePath(); stroke(C.lav, 1.4, .9);
   gc(960, 700, 220, C.lav, .5, 1, [3, 6], -Math.PI, 0); lab(1180, 640, 'θ = ' + (ang * 57.3).toFixed(0) + '°', C.white, .9, 16);
   lab(530, 300, 'm(THINK) = 41 YR', C.cyan, .9, 14); lab(1300, 300, 'm(FEEL) = 0.2 S', C.mag, .9, 14);
-  screen(); schFrame('17', 'BALANCE', 'THINK vs FEEL');
+  screen(); schFrame('D1B', 'BALANCE', 'THINK vs FEEL');
 } };
 const STAMPS = [['HOME', 'ellipse'], ['ROADSIDE', 'rect'], ['WARD 3', 'hex'], ['BOX OFFICE', 'rect'], ['THE CAGE', 'ellipse']];
 SU.sPassport = { mode: 'sch', f(q, p, a, T) {
@@ -149,8 +150,8 @@ SU.sPassport = { mode: 'sch', f(q, p, a, T) {
   }
   // Draft 9: the distance climbs while the stamp lands, then snaps back to zero: every visa leads to the same place.
   const km = p < .78 ? Math.round(eio(seg(p, .1, .74)) * 4800 / 10) * 10 : 0, snap = seg(p, .78, .9);
-  if (snap > 0 && snap < 1) { X.globalAlpha = .25 * (1 - snap); X.fillStyle = C.mag; X.fillRect(980, 830, 520, 34); X.globalAlpha = 1; }
-  lab(1000, 850, 'DISTANCE FROM BLUES: ' + km.toLocaleString('en-US') + ' KM', km ? C.cyan : C.mag, .95, 15);
+  if (snap > 0 && snap < 1) { X.globalAlpha = .25 * (1 - snap); X.fillStyle = C.mag; X.fillRect(984, 822, 492, 46); X.globalAlpha = 1; }
+  lab(1005, 856, 'FROM BLUES: ' + km.toLocaleString('en-US') + ' KM', km ? C.cyan : C.mag, .95, 28, 'left', 'alphabetic', 'bold');
   screen(); schFrame('20', 'PASSPORT', 'VISA ' + (n + 1) + ' OF ∞');
 } };
 SU.sNews = { mode: 'sch', f(q, p, a, T) {
@@ -234,17 +235,19 @@ var NOTES = 0;
 const SEC_T = [0, 31.1, 44.7, 59.0, 73.7, 90.8, 104.2, 116.6, 131.2, 160.1, 174.6, 188.7, 203.3, 220.5, 247.3, 262.6, 276.0, 293.7, 319.5, 334.4, 365.5, 392.1, 400.0, 403.42];
 // where the burn-through must not reach, per set-up (screen coords; see leak() in surreal.js)
 const LEAK_CLEAR = {
-  d_featherFall: [[480, 810, 170]],
-  e_appInside: [['rect', 700, 20, 1250, 1000], ['rect', 155, 540, 355, 1080]],
+  d_featherFall: [['rect', 820, 300, 1320, 580], ['rect', 990, 0, 1210, 300]], // draft 11: restaged, cage from outside
+  e_appInside: [['rect', 700, 20, 1250, 1000], ['rect', 155, 540, 355, 1080], [300, 440, 130]],
   e_dotHenge: [[360, 990, 120], [570, 440, 200], [975, 420, 200], [1371, 440, 200]],
-  e_answerHome: [[300, 780, 230], ['rect', 600, 120, 1820, 980]],
-  e_freeze: [['rect', 760, 220, 1080, 1000]],
+  e_answerHome: [[300, 780, 230], [330, 412, 120], ['rect', 600, 120, 1820, 980]],
+  e_freeze: [['rect', 760, 220, 1080, 1000], ['rect', 1400, 400, 1670, 500]],
   e_globeBlow: [[972, 600, 440]], snowGlobe: [[972, 600, 440]],
   e_mindSnow: [[830, 600, 420], [1250, 260, 220]],
-  d_birdSwap: [[600, 520, 200], [1360, 480, 260], [390, 760, 150]],
+  // the zone follows the bird out of frame (it used to be left behind as a ghost disc); path from act-d.js d_birdSwap
+  d_birdSwap: (T) => { const lift = eio(seg((T - 354.6) / 3.8, .4, 1)), bx = lerp(600, -300, lift), by = lerp(730, -260, lift);
+    return [[bx + 10, by - 50, 250], [1360, 480, 260]]; },
   d_staveCage: [['rect', 780, 40, 1720, 1040], [400, 700, 180]],
   d_wingFrame: [['rect', 460, 60, 1420, 800], [260, 620, 200]],
-  d_coatWings: [[940, 540, 300]],
+  d_coatWings: [['rect', 960, 100, 1480, 790]], // draft 11: restaged from behind on a parapet
 };
 function buildShots() {
   const CUTS = [].concat(...['A', 'B', 'C', 'D', 'E'].map((k) => window['CUTS_' + k] || [])).sort((a, b) => a[0] - b[0]);
@@ -253,7 +256,7 @@ function buildShots() {
     const frame = (args.fx !== undefined || args.fy !== undefined || args.fz !== undefined) ? { fx: args.fx, fy: args.fy, fz: args.fz } : null;
     // q runs across the sung section this cut sits in, so a scene keeps moving over its returns
     const k = SEC_T.findIndex((t) => t > t0 + 1e-6), s0 = SEC_T[Math.max(0, k - 1)], s1 = SEC_T[k] ?? 403.42;
-    return { t0, t1, mode: su.mode, key, draw: (p, lt) => { const T = t0 + lt, q = cl((T - s0) / (s1 - s0)); TNOW = T; NOTES = T < 59 ? 0 : Math.round(lerp(2, 10, cl((T - 59) / 250))); CAMO = frame; su.f(q, p, args, T); if (post) post(q, p, T); CAMO = null; if (su.mode === 'ill' && key !== 'shopClosed' && key !== 'droste' && key !== 'e_droste' && key !== 'mvu_droste' && key !== 'e_fromInside' && T > LEAK_T0) { screen(); const lp = leakProgress(T); leak(lp, LEAK_CLEAR[key], T); } } };
+    return { t0, t1, mode: su.mode, key, draw: (p, lt) => { const T = t0 + lt, q = cl((T - s0) / (s1 - s0)); TNOW = T; NOTES = T < 59 ? 0 : Math.round(lerp(2, 10, cl((T - 59) / 250))); CAMO = frame; su.f(q, p, args, T); if (post) post(q, p, T); CAMO = null; if (su.mode === 'ill' && key !== 'shopClosed' && key !== 'droste' && key !== 'e_droste' && key !== 'mvu_droste' && key !== 'e_fromInside' && T > LEAK_T0) { screen(); const lp = leakProgress(T); leak(lp, typeof LEAK_CLEAR[key] === 'function' ? LEAK_CLEAR[key](T) : LEAK_CLEAR[key], T); } } };
   });
 }
 

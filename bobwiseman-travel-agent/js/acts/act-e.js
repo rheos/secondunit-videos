@@ -13,6 +13,27 @@ function e_flake(x, y, r, rot = 0, a = 1) { // a six-armed ink snowflake (ILL)
   X.strokeStyle = '#ffffff'; X.lineWidth = Math.max(1.6, r * .28); X.globalAlpha = a; X.lineCap = 'round'; X.stroke();
   X.strokeStyle = C.ink; X.lineWidth = Math.max(.8, r * .08); X.globalAlpha = a * .8; X.stroke(); X.globalAlpha = 1; X.restore();
 }
+// Draft 11: snow on the paper is drawn, never pixel squares. A hatched dot: white disc, an ink rim on its shadow side,
+// one hatch stroke across it.
+function e_dot(x, y, r, a = 1) {
+  X.globalAlpha = a; X.fillStyle = '#ffffff'; X.beginPath(); X.arc(x, y, r, 0, TAU); X.fill();
+  X.strokeStyle = C.ink; X.lineWidth = .9; X.lineCap = 'round'; X.globalAlpha = a * .55; X.beginPath(); X.arc(x, y, r, -.3, Math.PI * .8); X.stroke();
+  X.globalAlpha = a * .4; X.beginPath(); X.moveTo(x - r * .15, y + r * .6); X.lineTo(x + r * .6, y - r * .15); X.stroke(); X.globalAlpha = 1;
+}
+// falling snow in a box, dots and small flakes (replaces the kit's square snowFlakes inside act E's paper shots)
+function e_fall(n, T, x0, y0, w, h, seed = 77, sz = 3) {
+  const r = M32(seed);
+  for (let i = 0; i < n; i++) { const xx = x0 + r() * w, sp = 40 + r() * 80, y = y0 + ((r() * h + T * sp) % (h + 40)) - 20, x = xx + Math.sin(T * 1.3 + i) * 20, s = sz * (.5 + r());
+    if (i % 5 === 0) e_flake(x, y, s * 1.6, T * .4 + i); else e_dot(x, y, s * .6); }
+}
+// a fedora at the traveller's own scale (his local hat geometry), for a hat that has left his head
+function e_hat(x, y, s, rot) {
+  X.save(); X.translate(x, y); X.rotate(rot); X.scale(s, s); const k = 1 / s;
+  const hb = PE(0, 0, 46, 8); fillP(hb, '#3d2a1f'); iE(0, 0, 46, 8, 0, C.ink, 2 * k);
+  const cr = [[-26, 0], [-22, -34], [0, -28], [22, -34], [26, 0]], crp = PP(cr); fillP(crp, '#4b3426'); shade(crp, 0, -15, 34, [6, -4], .7, 4); iP(cr, true, C.ink, 2.4 * k, 1, true, .9 * k);
+  X.beginPath(); wP([[-25, -8], [25, -8]], false, .4 * k); stroke(C.ochre, 4 * k, .9);
+  X.restore();
+}
 function e_note(x, y, s = 1, col = '#3f5f8f') { X.save(); X.translate(x, y); X.scale(s, s); X.rotate(.15); fillP(PE(0, 0, 7, 5.4, -.4), col); iline(6, -1, 6, -24, col, 1.8 / s, 1, false); iline(6, -24, 14, -18, col, 1.8 / s, 1, false); X.restore(); }
 function e_bars(x0, x1, sp, y0, y1, w = 10) { // straight cage bars, ink with a cream glint
   X.beginPath(); for (let x = x0; x <= x1; x += sp) wl(x, y0, x, y1, 1.2, 12); stroke(C.ink, w, 1);
@@ -58,7 +79,9 @@ function e_pxCell(g, w, h, T, p) {
   const mx = w / 2, my = h * .64 - 31 * w / 122;
   for (let i = 0; i < 3; i++) { const ph = (p * 3.2 + i / 3) % 1, out = ph < .5, r = 31 + (out ? ph * 2 : (1 - ph) * 2) * 16; e_pxRing(g, mx, my, r, out ? PX.c : PX.m, 1); }
   pxAgent(g, w / 2, h * .64, w / 122, T, { talk: true });
-  e_pxBars(g, 2, w, 12, 8, h, 1);
+  // draft 11: four bars (the blueprint's BARS: 4), spaced so the two middle ones frame her TRAVEL sign
+  // (sign 22.6-41.5, lettering ~24.8-39.2) instead of crossing its first and last letters
+  e_pxBars(g, 5.5, w, 17, 8, h, 1);
 }
 SU.e_appInside = { mode: 'ill', f(q, p, a, T) { // chorus 4: she is inside his phone, in her own world; the screen's bars are her cage
   stripes(C.paper, '#d9e0cf', 130, -.62, 0, C.sage); cam(960, 520, lerp(1, 1.08, eo(p)));
@@ -143,7 +166,7 @@ SU.e_sPhoneCage = { mode: 'sch', f(q, p, a, T) {
   X.restore();
   // the signal glyph, enlarged; leaders run from its bars down to the cage bars
   const gx = 1400, gy = 330; for (let i = 0; i < 4; i++) { const h2 = 40 + i * 40, x0 = gx + i * 56; const b = PR(x0, gy - h2, 40, h2); stip(b, x0 + 20, gy - h2 / 2, h2, h2 * 6, C.cyan, .8, 1.3); X.strokeStyle = C.cyan; X.lineWidth = 1.2; X.strokeRect(x0, gy - h2, 40, h2); gl(x0 + 20, gy, lerp(780, 1140, i / 3), 120, C.cyan, .35, 1, [3, 6]); }
-  lab(gx, gy + 34, 'SIGNAL  ▮▮▮▮', C.cyan, .9, 13); lab(gx, gy + 56, 'BARS: 4  ·  EXITS: 0', C.mag, .95, 13);
+  lab(gx, gy + 34, 'SIGNAL  ▮▮▮▮', C.cyan, .9, 13); lab(gx, gy + 84, 'BARS: 4 · EXITS: 0', C.mag, .95, 28, 'left', 'alphabetic', 'bold'); // punchline label (draft 11)
   bracket(752, 980, 1192, 960, C.cyan, .75, 'W 71.5 MM'); bracket(1250, 70, 1214, 940, C.cyan, .75, 'H 146.7 MM');
   lab(260, 360, 'OCCUPANT', C.lav, .7, 12); lab(260, 384, '1 AGENT · SCALE 1:48', C.white, .9, 15); gl(470, 378, 880, 640, C.lav, .45, 1, [2, 5]); gc(890, 650, 26, C.lav, .6);
   lab(260, 600, 'VOICE OUT', C.mag, .9, 13); lab(260, 622, 'REFLECTED 100%', C.mag, .7, 12);
@@ -305,7 +328,7 @@ SU.e_answerHome = { mode: 'ill', f(q, p, a, T) {
   if (p > .66) {
     const d = eo(seg(p, .66, .8)), py = lerp(140, 400, d); const pin = new Path2D(); pin.moveTo(1180, py); pin.bezierCurveTo(1120, py - 60, 1130, py - 120, 1180, py - 120); pin.bezierCurveTo(1230, py - 120, 1240, py - 60, 1180, py);
     fillP(pin, C.brick); hatch(pin, 1180, py - 70, 70, .7, 4, C.ink, 1, .55, [10, -6]); X.lineWidth = 3; X.strokeStyle = C.ink; X.stroke(pin); fillP(PE(1180, py - 82, 14, 14), C.cream); iE(1180, py - 82, 14, 14, 0, C.ink, 2);
-    if (d >= 1) { for (let i = 0; i < 3; i++) gc(1180, 440, 50 + i * 40 + ((FD * 6) % 40), C.orange, .8 - i * .2, 2.4); const tg = PR(1060, 486, 240, 40); fillP(tg, C.cream); iBox(1060, 486, 240, 40, C.ink, 2); lab(1180, 514, 'YOU ARE HERE', C.brick, 1, 18, 'center', 'alphabetic', 'bold'); }
+    if (d >= 1) { for (let i = 0; i < 3; i++) gc(1180, 440, 50 + i * 40 + ((FD * 6) % 40), C.orange, .8 - i * .2, 2.4); const tg = PR(1020, 480, 320, 54); fillP(tg, C.cream); iBox(1020, 480, 320, 54, C.ink, 2); lab(1182, 517, 'YOU ARE HERE', C.brick, 1, 28, 'center', 'alphabetic', 'bold'); } // punchline label, 28 bold (draft 11)
   }
   X.restore();
   X.lineWidth = 3; X.strokeStyle = C.ink; X.stroke(bub); iline(620, 636, 620, 714, C.cream, 7, 1, false, .3); iP([[622, 630], [ax, ay], [622, 720]], false, C.ink, 3);
@@ -322,26 +345,49 @@ const E_WORLD = [
   [[330, 400], [200, 440], [330, 400], [430, 380], [330, 400], [260, 330], [330, 400], [420, 470]],
   [[-100, 620], [500, 600], [700, 520], [1200, 540], [1500, 600], [2100, 610]],
 ];
+// the top edge of cloud()'s blob union in its local coords (x -132..132), for a snow cap that sits ON the cloud
+const E_CLOUD_BL = [[-80, 0, 52], [-30, -30, 64], [30, -22, 58], [80, 4, 46], [0, 12, 60]];
+function e_cloudTop(x) { let y = 1e9; for (const [a, b, r] of E_CLOUD_BL) { const d = (x - a) / r; if (Math.abs(d) < 1) y = Math.min(y, b - r * .82 * Math.sqrt(1 - d * d)); } return y; }
+function e_cloudCap(x, y, s, k) { // k 0..1: how much snow has settled on top
+  if (k <= .02) return;
+  const top = [], bot = [], xr = 118;
+  for (let i = 0; i <= 28; i++) { const lx = lerp(-xr, xr, i / 28), yt = e_cloudTop(lx), th = 24 * k * Math.sqrt(Math.max(0, 1 - Math.pow(lx / xr, 2))) + 2 * Math.sin(i * 1.9);
+    top.push([x + lx * s, y + (yt - Math.max(0, th)) * s]); bot.push([x + lx * s, y + (yt + 5) * s]); }
+  const cap = PP(top.concat(bot.reverse())); fillP(cap, '#ffffff'); hatch(cap, x, y - 60 * s, 130 * s, .25, 6, C.sky, 1, .45, [0, 14 * s]);
+  iP(top, false, C.ink, 1.8, 1, false, .5);
+}
+const E_FZ_LEN = 392.08 - 387.84; // e_freeze's length, so the fall can be integrated from the shot's own clock
 SU.e_freeze = { mode: 'ill', f(q, p, a, T) {
-  paperOnly('#efe8d6'); illDress(); cam(960, 560, lerp(1.04, 1, eo(p)));
+  // draft 11: the camera tilts up with the freeze line to the cloud, so this and e_globeBlow are not 7.6 s of one layout
+  paperOnly('#efe8d6'); illDress(); const tu = eio(seg(p, .4, 1)); cam(lerp(960, 900, tu), lerp(560, 470, tu), lerp(1.02, 1.32, tu));
   // what is left of the world, shrinking into him
   const rr = lerp(1500, 260, eo(seg(p, 0, .8)));
   X.save(); X.clip(PE(900, 640, rr * 1.35, rr)); stripes(C.paper, '#d9dccb', 130, -.62, 0, C.sage); X.restore();
   iE(900, 640, rr * 1.35, rr, 0, C.ink, 2, .7, false, 3);
   const keep = 1 - eo(seg(p, .05, .85));
   for (const l of E_WORLD) { const d = dens(l, 14), n = Math.floor(d.length * keep); if (n > 1) { iP(d.slice(0, n), false, C.ink, 2.6, 1, true, 1.2); const [x, y] = d[n - 1]; star(x, y, 3, C.orange, .8); } }
-  if (keep > .3) { X.globalAlpha = keep; lab(1535, 462, 'ANYWHERE', C.ink, 1, 22, 'center', 'alphabetic', 'bold'); X.globalAlpha = 1; }
+  if (keep > .3) { X.globalAlpha = keep; lab(1537, 461, 'ANYWHERE', C.ink, 1, 28, 'center', 'alphabetic', 'bold'); X.globalAlpha = 1; } // punchline label (draft 11), inside its sign board 1430-1640 x 420-480
   // him, his cloud, and the freeze line climbing from the ground to the cloud
   const s = 1.25, tx = 900, ty = 1000, cy = ty - 520 * s;
   traveller(tx, ty, s, { look: 0, case: true, mouth: 0 });
   souvenirsOn(tx + 130, ty, T, .8);
-  const fz = lerp(1060, cy + 40, eo(seg(p, .1, .9))), sp = lerp(260, 50, eo(p)), r = M32(919);
+  // draft 11: the fall is integrated from the shot's clock (T * a changing speed made the notes jump every drawing),
+  // and a note crossing the freeze line visibly turns into a flake: it shrinks and tips, a frost ring flashes, the
+  // flake's arms grow out of it over the next ~110 px
+  const lt = p * E_FZ_LEN, fall = 210 * lt - 16 * lt * lt, BAND = 110;
+  const fz = lerp(1060, cy + 40, eo(seg(p, .1, .9))), r = M32(919);
   for (let i = 0; i < 46; i++) {
-    const x = tx - 230 + r() * 460, y0 = cy + 50, y = y0 + ((r() * 640 + T * sp * (.8 + r() * .4)) % 640), wob = Math.sin(T * 2 + i) * 10;
-    if (y < fz) e_note(x + wob, y, 1.2); else e_flake(x + wob, y, 9 + r() * 6, T * .5 + i);
+    const x = tx - 230 + r() * 460, y0 = cy + 50, v = .8 + r() * .4, fr = 9 + r() * 6, y = y0 + ((r() * 640 + fall * v) % 640), wob = Math.sin(T * 2 + i) * 10, xx = x + wob;
+    const m = (y - fz) / BAND;
+    if (m < 0) e_note(xx, y, 1.3);
+    else if (m < 1) {
+      const nk = 1 - eo(cl(m * 1.6)); if (nk > .02) { X.save(); X.translate(xx, y); X.rotate(m * 1.4); e_note(0, 0, 1.3 * nk, '#6f8fb8'); X.restore(); }
+      if (m > .15 && m < .7) { const rk = (m - .15) / .55; gc(xx, y - 6, 8 + rk * 22, C.sky, .9 * (1 - rk), 2.2); ticks(xx, y - 6, 6 + rk * 16, 6, 4 + rk * 5, C.ink, .55 * (1 - rk), 1.2); }
+      e_flake(xx, y, fr * eo(cl((m - .1) / .9)), T * .5 + i);
+    } else e_flake(xx, y, fr, T * .5 + i);
   }
   cloud(tx, cy, .9, {});
-  if (p > .45) { const k = eo(seg(p, .45, .9)); const mnd = PE(tx, ty - 334 * s, 50 * s, 10 * k * s); fillP(mnd, '#ffffff'); iE(tx, ty - 334 * s, 50 * s, 10 * k * s, 0, C.ink, 1.6, 1, false, .5, Math.PI, TAU); const cm = PE(tx, cy - 40, 150, 26 * k); fillP(cm, '#ffffff'); iE(tx, cy - 40, 150, 26 * k, 0, C.ink, 1.6, 1, false, .5, Math.PI, TAU); }
+  if (p > .45) { const k = eo(seg(p, .45, .9)); const mnd = PE(tx, ty - 334 * s, 50 * s, 10 * k * s); fillP(mnd, '#ffffff'); iE(tx, ty - 334 * s, 50 * s, 10 * k * s, 0, C.ink, 1.6, 1, false, .5, Math.PI, TAU); e_cloudCap(tx, cy, .9, k); }
   gl(tx - 420, fz, tx + 420, fz, C.teal, .8, 1.6, [8, 8]); lab(tx + 430, fz + 6, '0 °C', C.teal, .9, 16);
   consL([[0, 1000, W, 1000], [tx, 0, tx, H]]); consC([[tx, 640, 600]]);
 } };
@@ -359,10 +405,12 @@ SU.e_mindSnow = { mode: 'ill', f(q, p, a, T) {
   fillP(PE(ox, oy + 100, 320, 90), '#ffffff'); iE(ox, oy + 100, 320, 90, 0, C.ink, 1.6, .8, false);
   for (const [px, ph] of [[ox - 170, 70], [ox - 120, 50], [ox + 150, 80], [ox + 200, 56]]) { const tr = PP([[px - ph * .35, oy + 40], [px + ph * .35, oy + 40], [px, oy + 40 - ph]]); fillP(tr, C.sage); hatch(tr, px, oy + 10, ph, .7, 3, C.ink, .8, .5); iP([[px - ph * .35, oy + 40], [px + ph * .35, oy + 40], [px, oy + 40 - ph]], true, C.ink, 1.4, 1, false, .3); }
   traveller(lerp(ox - 80, ox + 60, p), oy + 40, .16, { legs: walkPh(), case: true, look: 1 });
-  snowFlakes(60, T, '#ffffff', .95, 3);
+  e_fall(60, T, ox - orx, oy - ory, orx * 2, ory * 2, 77, 3);
   X.restore(); iE(ox, oy, orx, ory, 0, C.ink, 3.5);
-  // the hat lifts off like a lid
-  const lift = eo(seg(p, 0, .4)); X.save(); X.translate(ox + lift * 260, oy - 40 - lift * 200); X.rotate(-.1 - lift * .5);
+  // the hat lifts off like a lid, then rides the plume up and out of frame to the right (draft 11: it used to park
+  // with its crown cut by the top edge, a dark wedge for 1.5 s)
+  const lift = eo(seg(p, 0, .62)), [hX, hY] = bz([ox, oy - 40], [ox + 60, oy - 230], [ox + 640, oy - 230], [W + 520, oy - 120], lift), hs = lerp(1, .62, lift);
+  X.save(); X.translate(hX, hY); X.rotate(-.1 - lift * 1.1); X.scale(hs, hs);
   const brim = PE(0, 0, 330, 44); fillP(brim, '#3d2a1f'); iE(0, 0, 330, 44, 0, C.ink, 3.5);
   const cr = [[-180, 0], [-160, -170], [0, -140], [160, -170], [180, 0]], crp = PP(cr); fillP(crp, '#4b3426'); shade(crp, 0, -80, 200, [30, -20], .7, 5); iP(cr, true, C.ink, 3.5); iline(-176, -34, 176, -34, C.ochre, 16, 1, false);
   X.restore();
@@ -372,7 +420,7 @@ SU.e_mindSnow = { mode: 'ill', f(q, p, a, T) {
     const t = r(), sp2 = r() - .5, sz = 5 + r() * 7; if (t > reach) continue;
     const [bx, by] = bz([ox, oy - 40], [ox + 120, oy - 300], [ox + 700, oy - 280], [W + 100, oy + 120], t);
     const x = bx + sp2 * t * 700 + Math.sin(T * 2 + i) * 14, y = by + sp2 * t * 360 + ((T * 40 + i * 7) % 30);
-    if (i % 9 === 0) e_flake(x, y, sz * 2.2, T + i); else { X.fillStyle = '#ffffff'; X.fillRect(x, y, sz, sz); X.strokeStyle = C.ink; X.globalAlpha = .45; X.lineWidth = .8; X.strokeRect(x, y, sz, sz); X.globalAlpha = 1; }
+    if (i % 9 === 0) e_flake(x, y, sz * 2.2, T + i); else if (i % 3 === 0) e_flake(x, y, sz * 1.1, T * .7 + i); else e_dot(x, y, sz * .55 + .8); // draft 11: drawn flakes and hatched dots, no squares
   }
   for (let i = 0; i < 3; i++) gc(ox, oy, orx + 40 + i * 50 + ((FD * 6) % 50), C.teal, .55, 1.6, null, Math.PI * 1.05, Math.PI * 1.95);
   consL([[0, oy, W, oy], [hx, 0, hx, H]]); consC([[ox, oy, 420]]);
@@ -380,7 +428,42 @@ SU.e_mindSnow = { mode: 'ill', f(q, p, a, T) {
 
 // ---------- 392.08 "I feel like I'm naked": the snow globe, given room; the hat now blows off on camera ----------
 // (snowGlobe drives the blow from q, which is already 1 at this cut, so in draft 5 the hat was gone from the first frame)
-SU.e_globeBlow = { mode: 'ill', f(q, p, a, T) { SU.snowGlobe.f(lerp(0, .95, p), p, { blow: 1 }, T); } };
+// Draft 11: its own drawing (snowGlobe in shots.js is shared). The camera pushes in on him so the hat and his coat
+// read at 720p; the beat is tight: a gust (0.4 s), the hat tumbles up and out of frame (1.1 s), his hand goes to his
+// bare head (0.7 s), held into "naked". Snow is drawn flakes and hatched dots, no squares.
+SU.e_globeBlow = { mode: 'ill', f(q, p, a, T) {
+  stripes('#e6e0d0', '#d8d0bd', 140, -.62, 0, C.sky);
+  const pz = eio(seg(p, 0, .45)); cam(960, lerp(540, 600, pz), lerp(1.12, 2.1, pz));
+  const cx = 960, cy = 470, r = 380, ball = PE(cx, cy, r, r), gx = cx, gy = cy + 300, s = .95;
+  const bs = PP([[cx - 300, cy + 300], [cx + 300, cy + 300], [cx + 360, cy + 520], [cx - 360, cy + 520]]); fillP(bs, '#6b4a2e'); shade(bs, cx, cy + 410, 400, [30, -10], .8, 5); iP([[cx - 300, cy + 300], [cx + 300, cy + 300], [cx + 360, cy + 520], [cx - 360, cy + 520]], true, C.ink, 2.6);
+  fillP(ball, '#dfe8e6'); X.save(); X.clip(ball);
+  fillP(PE(cx, cy + 300, 360, 90), '#fbfbf6'); iE(cx, cy + 300, 360, 90, 0, C.ink, 1.6, .8, false);
+  const gust = eo(seg(p, .1, .3)), off = eio(seg(p, .22, .6)), reach = eio(seg(p, .56, .76));
+  // the wind: a few ink streaks crossing the globe left to right, moving on twos
+  if (gust > 0) { X.setLineDash([46, 34]); X.lineDashOffset = -FD * 14; for (const [yy, bend] of [[400, -40], [520, 30], [610, -20], [700, 24]]) { X.beginPath(); X.moveTo(cx - 400, yy); X.quadraticCurveTo(cx, yy + bend, cx + 400, yy - 30); stroke(C.ink, 2, .32 * gust); } X.setLineDash([]); X.lineDashOffset = 0; }
+  // the snow, swirling harder in the gust: flakes behind him, small dots in front
+  const snow = (front) => { const rr = M32(9);
+    for (let i = 0; i < 260; i++) { const ang = rr() * TAU + T * (.3 + rr() * .5) + gust * rr() * 1.4, rad = rr() * r * .9, x = cx + Math.cos(ang) * rad, y = cy + Math.sin(ang) * rad * .8 + ((T * 30 + i) % 40), sz = 3 + rr() * 4;
+      if ((i % 3 === 0) === front) continue; if (front) e_dot(x, y, sz * .45); else if (i % 2) e_flake(x, y, sz * 1.5, T * .6 + i); else e_dot(x, y, sz * .55); } };
+  snow(false);
+  // him: hat on until the gust takes it; then his hand goes up to his bare head
+  const rest = arm(26, -262, -.3, -.1)[2], top = [4, -342];
+  traveller(gx, gy, s, { hat: off <= 0, look: 0, mouth: sing(T), armL: [.3, .1], armR: [-.3, -.1], handTo: reach > 0 ? [lerp(rest[0], top[0], reach), lerp(rest[1], top[1], reach)] : null, case: false });
+  // his coat tail streams out to the right in the gust (a slow flutter tied to FD, never a two-drawing flip)
+  if (gust > 0) {
+    const fl = gust * (34 + 16 * Math.sin(FD * .35)), lf = gust * (10 + 8 * Math.sin(FD * .35 + 1.3));
+    const fp = [[34, -196], [50, -118], [50 + fl * 1.15, -104 - lf], [44 + fl * .8, -140 - lf * .6], [40 + fl * .35, -176]].map(([x, y]) => [gx + x * s, gy + y * s]);
+    const fpp = PP(fp); fillP(fpp, C.teal); shade(fpp, gx + 60 * s, gy - 140 * s, 60, [-8, -6], .9, 5); iP(fp, true, C.ink, 2.2, 1, true, .8);
+  }
+  // the hat, at his own hat's size, is torn off his head, tumbles one turn on the wind and lands in the snow beside
+  // him, where it stays (it keeps inside the globe's burn-clear zone; a hat flying out of frame went under the holes)
+  if (off > 0) { const [hX, hY] = bz([gx, gy - 330 * s], [gx + 90, gy - 350], [gx + 190, gy - 200], [gx + 125, gy - 8], off); e_hat(hX, hY, s, off * TAU); }
+  snow(true); // in front of him: dots only, so his face and the hat stay readable
+  X.restore();
+  hatch(ball, cx, cy, r, .8, 7, C.ink, .9, .35, [r * .2, -r * .2]); iE(cx, cy, r, r, 0, C.ink, 3); X.beginPath(); wE(cx - 120, cy - 150, 160, 120, -.6, 1, 30, Math.PI * 1.1, Math.PI * 1.5); stroke(C.cream, 8, .7);
+  consL([[0, cy, W, cy], [cx, 0, cx, H]]); consC([[cx, cy, r + 80]]);
+  gc(cx, cy, r + 40, C.teal, .7, 1.6, null, -1, -1 + eo(p) * 2.4);
+} };
 
 // ---------- the cut list ----------
 var CUTS_E = [

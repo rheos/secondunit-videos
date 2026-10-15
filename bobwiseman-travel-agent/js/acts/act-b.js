@@ -70,9 +70,9 @@ SU.b_groove = { mode: 'ill', f(q, p, a, T) {
   const pl = PP([[-60, 600], [1980, 600], [2060, 1200], [-140, 1200]]); fillP(pl, '#8a5530'); shade(pl, 960, 900, 1200, [0, -60], .1, 6); iP(dens([[-60, 600], [1980, 600], [2060, 1200], [-140, 1200]], 40, true), true, C.ink, 2.6);
   fillP(PE(cx, cy + 22, RX + 30, (RX + 30) * k), '#2b2017');
   const rec = PE(cx, cy, RX, RX * k); fillP(rec, '#2a2320');
-  // grooves: fine rings, a sheen wedge turning with the record
+  // grooves: fine rings, and two sheen wedges that stay put in screen space (the light is fixed; the record turns under it)
   for (let r0 = 180; r0 < RX - 10; r0 += 19) iE(cx, cy, r0, r0 * k, 0, '#8a7a66', 1, .55, false, .6);
-  X.save(); X.clip(rec); for (const w0 of [0, Math.PI]) { const a0 = spin + w0; const wedge = PP([[cx, cy], [cx + Math.cos(a0) * 1000, cy + Math.sin(a0) * 1000 * k], [cx + Math.cos(a0 + .45) * 1000, cy + Math.sin(a0 + .45) * 1000 * k]]); hatch(wedge, cx, cy, 1000, a0 + .2, 7, C.cream, 1.2, .45); } X.restore();
+  X.save(); X.clip(rec); for (const w0 of [0, Math.PI]) { const a0 = -2.5 + w0; const wedge = PP([[cx, cy], [cx + Math.cos(a0) * 1000, cy + Math.sin(a0) * 1000 * k], [cx + Math.cos(a0 + .45) * 1000, cy + Math.sin(a0 + .45) * 1000 * k]]); hatch(wedge, cx, cy, 1000, a0 + .2, 7, C.cream, 1.2, .45); } X.restore();
   iE(cx, cy, RX, RX * k, 0, C.ink, 3);
   // label + spindle
   const lb = PE(cx, cy, 170, 170 * k); fillP(lb, C.orange); hatch(lb, cx, cy, 180, .8, 5, C.ink, .9, .45, [30, -8]); iE(cx, cy, 170, 170 * k, 0, C.ink, 2.4);
@@ -113,7 +113,7 @@ SU.b_sGroove = { mode: 'sch', f(q, p, a, T) {
   bracket(cx, cy + 300, cx + lerp(450, 110, u), cy + 300, C.cyan, .85, 'r = ' + Math.round(lerp(450, 110, u)) + ' MM');
   ticks(cx, cy, 480, 72, 6, C.lav, .5, 1, 6);
   lab(hx + 40, hy - 20, 'TRAVELLER', C.mag, .95, 13); lab(cx, cy + 6, 'BLUES', C.white, .9, 16, 'center', 'middle', 'bold');
-  lab(220, 900, '33⅓ RPM', C.white, .8, 16); lab(220, 925, 'WALK SPEED = SPIN SPEED', C.lav, .7, 12); lab(220, 948, 'NET DISTANCE: 0', C.mag, .9, 12);
+  lab(220, 872, '33⅓ RPM', C.white, .8, 16); lab(220, 898, 'WALK SPEED = SPIN SPEED', C.lav, .7, 12); lab(220, 944, 'NET DISTANCE: 0', C.mag, .95, 28, 'left', 'alphabetic', 'bold');
   screen(); schFrame('B1', 'THE GROOVE', 'RADIUS ONLY DECREASES');
 } };
 
@@ -136,7 +136,7 @@ SU.b_luggage = { mode: 'ill', f(q, p, a, T) {
   X.setLineDash([8, 8]); X.beginPath(); X.moveTo(tx + cm[0], top + cm[1]); X.lineTo(tx + cm[0], gy); stroke(C.orange, 2.4, .9); X.setLineDash([]);
   gc(tx + cm[0], top + cm[1], 26, C.orange, .95, 2.4); fillP(PE(tx + cm[0], top + cm[1], 6, 6), C.orange);
   iline(tx - 60, gy + 14, tx + 60, gy + 14, C.teal, 3, .9, false); lab(tx, gy + 48, 'BASE', C.teal, .9, 14, 'center', 'alphabetic', 'bold');
-  if (cm[0] > 60) lab(tx + cm[0] + 16, gy - 20, 'STILL STANDING', C.brick, .9, 15, 'left', 'alphabetic', 'bold');
+  if (cm[0] > 60) lab(tx + cm[0] + 16, gy - 20, 'STILL STANDING', C.brick, .95, 28, 'left', 'alphabetic', 'bold');
   for (let i = 0; i < 4; i++) gc(tx, top - 40, 120 + i * 40 + ((FD * 6) % 40), C.teal, .5 - i * .1, 1.6, null, Math.PI * 1.1, Math.PI * 1.9);
   cloud(tx - 330, 230, .62, { rain: true });
   consL([[tx, 0, tx, H], [0, top, W, top]]);
@@ -154,7 +154,7 @@ SU.b_sLoad = { mode: 'sch', f(q, p, a, T) {
   bracket(tx - 60, gy + 40, tx + 60, gy + 40, C.cyan, .9, 'BASE 120'); bracket(tx + 60, gy + 90, mx, gy + 90, C.mag, .9, 'OFFSET ' + Math.round(mx - tx - 60));
   lab(mx + 60, my - 10, 'C.O.M. OUTSIDE BASE', C.mag, .95, 15); lab(mx + 60, my + 14, 'STATUS: STANDING', C.white, .85, 13);
   gl(1450, 300, 1450, 420, C.cyan, .9, 2); X.beginPath(); X.moveTo(1440, 404); X.lineTo(1450, 420); X.lineTo(1460, 404); stroke(C.cyan, 2, .9); lab(1470, 360, 'g', C.cyan, .9, 18);
-  lab(1500, 860, 'MULE LOAD: 0 KG', C.lav, .8, 13); lab(1500, 884, 'HIS LOAD: 12 CASES', C.white, .9, 13);
+  lab(1440, 850, 'MULE LOAD: 0 KG', C.mag, .95, 28, 'left', 'alphabetic', 'bold'); lab(1440, 884, 'HIS LOAD: 12 CASES', C.white, .9, 13);
   screen(); schFrame('B2', 'LOAD TEST', 'TALENT: CARRIES ANYTHING');
 } };
 
@@ -162,23 +162,37 @@ SU.b_sLoad = { mode: 'sch', f(q, p, a, T) {
 SU.b_sMarionette = { mode: 'sch', f(q, p, a, T) {
   schBG(); cam(960, 540, lerp(1, 1.1, eo(p)));
   lattice(960, 540, 66, 11, C.lav, .05);
-  const sw = Math.sin(T * 1.8) * 24, bx = 900 + sw, by = 230, fx = 820, fy = 960, s = 1.25;
+  // d11: one in-shot action. Part way through, as he sees it, the string to his right hand goes slack and the arm drops.
+  const slack = eo(seg(p, .4, .56)), sw = Math.sin(T * 1.8) * 24, bx = 900 + sw, by = 230, fx = 820, fy = 960, s = 1.25;
   // the control bar he sees, and the bar above it that nobody sees
   X.save(); X.translate(bx, by); X.rotate(Math.sin(T * 1.8) * .06); X.strokeStyle = C.white; X.lineWidth = 1.6; X.strokeRect(-180, -10, 360, 20); X.strokeRect(-12, -70, 24, 140); X.restore();
   const bx2 = 960 + sw * .5, by2 = -40 - (1 - eo(p)) * 40; X.setLineDash([5, 7]); X.strokeStyle = C.lav; X.lineWidth = 1.2; X.strokeRect(bx2 - 180, by2 - 10, 360, 20); X.setLineDash([]);
-  gl(bx - 150, by, bx2 - 150, by2, C.lav, .5, 1, [4, 6]); gl(bx + 150, by, bx2 + 150, by2, C.lav, .5, 1, [4, 6]); lab(bx2 + 210, by2 + 40 + 40 * eo(p), 'BAR 2 · HELD BY ?', C.lav, .8, 13);
-  traveller(fx, fy, s, { sch: 1, col: C.lav, armR: [-.5 + sw * .01, .9], armL: [.4, -.3], legs: Math.sin(T * 1.8) });
-  const joints = [[fx, fy - 364 * s, 'HAT'], [fx + 70 * s, fy - 150 * s, 'HAND R'], [fx - 50 * s, fy - 160 * s, 'HAND L'], [fx - 20 * s, fy - 80 * s, 'KNEE L'], [fx + 26 * s, fy - 80 * s, 'KNEE R']];
+  gl(bx - 150, by, bx2 - 150, by2, C.lav, .5, 1, [4, 6]); gl(bx + 150, by, bx2 + 150, by2, C.lav, .5, 1, [4, 6]); lab(bx2 + 200, 150, 'BAR 2 · HELD BY ?', C.lav, .95, 28, 'left', 'alphabetic', 'bold');
+  const aR = [lerp(-.5 + sw * .01, -.08, slack), lerp(.9, .05, slack)];
+  traveller(fx, fy, s, { sch: 1, col: C.lav, armR: aR, armL: [.4, -.3], legs: Math.sin(T * 1.8) });
+  const hR = b_hand(fx, fy, s, aR[0], aR[1]);
+  const joints = [[fx, fy - 364 * s, 'HAT'], [hR[0], hR[1], 'HAND R'], [fx - 50 * s, fy - 160 * s, 'HAND L'], [fx - 20 * s, fy - 80 * s, 'KNEE L'], [fx + 26 * s, fy - 80 * s, 'KNEE R']];
   // d6: each label sits on its joint's own side, the knees staggered in y so they never overprint
   const LP = [[-24, -12, 'right'], [24, -12, 'left'], [-24, -12, 'right'], [-30, 10, 'right'], [30, 34, 'left']];
-  joints.forEach(([jx, jy, nm], i) => { const ax = bx - 160 + i * 80; gl(ax, by + 10, jx, jy, i ? C.white : C.mag, .75, 1.2); gc(jx, jy, 9, C.white, .8, 1.2); lab(jx + LP[i][0], jy + LP[i][1], nm + ' T=' + (3 + Math.abs(Math.sin(T * 2 + i)) * 4).toFixed(1), C.lav, .8, 11, LP[i][2]); });
+  joints.forEach(([jx, jy, nm], i) => {
+    const ax = bx - 160 + i * 80, loose = i === 1 && slack > 0;
+    if (loose) { // the slack string: a sagging curve, a little sway once it has dropped
+      const dy = jy - by - 10, wv = Math.sin(T * 2.6) * 18 * slack;
+      X.beginPath(); X.moveTo(ax, by + 10); X.bezierCurveTo(ax + 40 * slack, by + 10 + dy * .7, jx + (200 + wv) * slack, jy + 40 * slack, jx, jy); stroke(C.mag, 1.6, .9);
+    } else gl(ax, by + 10, jx, jy, i ? C.white : C.mag, .75, 1.2);
+    gc(jx, jy, 9, loose ? C.mag : C.white, .8, 1.2);
+    const tn = loose ? lerp(3 + Math.abs(Math.sin(T * 2 + i)) * 4, 0, slack) : 3 + Math.abs(Math.sin(T * 2 + i)) * 4;
+    const lp = loose ? [lerp(LP[i][0], 16, slack), lerp(LP[i][1], 40, slack), 'left'] : LP[i]; // the slack loop swings through the old label spot
+    lab(jx + lp[0], jy + lp[1], nm + ' T=' + tn.toFixed(1), loose ? C.mag : C.lav, .8, 11, lp[2]);
+  });
+  if (slack > 0 && slack < 1) for (let k = 0; k < 3; k++) gc(hR[0], hR[1], 20 + k * 16 + slack * 30, C.mag, (1 - slack) * (.8 - k * .2), 1.4);
   // string six: from the bar out along his stick to the carrot
   const cx2 = 1420 + sw * 1.4, cy2 = 640; gl(bx + 180, by, cx2, cy2 - 120, C.white, .8, 1.2); gl(fx + 10, fy - 364 * s, cx2, cy2 - 120, C.cyan, .8, 1.6);
   const cp = PP([[cx2 - 14, cy2 - 120], [cx2 + 14, cy2 - 120], [cx2, cy2 - 20]]); stip(cp, cx2, cy2 - 70, 60, 300, C.mag, .9, 1.4); iP([[cx2 - 14, cy2 - 120], [cx2 + 14, cy2 - 120], [cx2, cy2 - 20]], true, C.mag, 1.4, .95, false, .3);
   lab(cx2 + 30, cy2 - 70, 'STRING 6 · CARROT', C.mag, .95, 14);
   bracket(1700, by, 1700, fy, C.cyan, .7, 'DRAW 730');
   star(bx, by, 5, C.white, .9); lab(bx + 200, by + 6, 'BAR 1 · SEEN', C.white, .9, 14);
-  screen(); schFrame('B3', 'RIGGING', 'I SEE THE STRING');
+  screen(); schFrame('B3', 'RIGGING', slack > .5 ? 'STRINGS: 6 · SLACK: 1' : 'STRINGS: 6 · SLACK: 0');
 } };
 
 // ---------- 151.14: dangling, upward ----------
@@ -200,7 +214,7 @@ SU.b_balloons = { mode: 'ill', f(q, p, a, T) {
   X.beginPath(); X.moveTo(hnd[0], hnd[1]); X.quadraticCurveTo(hnd[0] + 10, (hnd[1] + cyr) / 2, cxr, cyr + 6); stroke(C.ink, 1.8, 1);
   carrot(cxr, cyr + 6, 1.3, Math.PI + sw);
   traveller(tx, ty, s, { look: .3, mouth: sing(T), case: false, armR: [2.95, .1], armL: [.5 + lift * .001, -.4], legs: lift > 20 ? Math.sin(T * 3) * .3 : null });
-  if (lift > 10) { X.setLineDash([6, 8]); X.beginPath(); X.moveTo(tx, gy); X.lineTo(tx, ty + 6); stroke(C.orange, 2.2, .9); X.setLineDash([]); fillP(PE(tx, gy + 6, 90 - lift * .12, 12), C.ink, .25); lab(tx + 30, (gy + ty) / 2, Math.round(lift / 30) + ' FT', C.brick, .9, 16, 'left', 'alphabetic', 'bold'); }
+  if (lift > 10) { X.setLineDash([6, 8]); X.beginPath(); X.moveTo(tx, gy); X.lineTo(tx, ty + 6); stroke(C.orange, 2.2, .9); X.setLineDash([]); fillP(PE(tx, gy + 6, 90 - lift * .12, 12), C.ink, .25); const fy2 = (gy + ty) / 2 + 10, tg2 = PR(tx + 18, fy2 - 32, 104, 44); fillP(tg2, C.cream); iBox(tx + 18, fy2 - 32, 104, 44, C.ink, 1.8); lab(tx + 30, fy2, Math.round(lift / 30) + ' FT', C.brick, .95, 28, 'left', 'alphabetic', 'bold'); }
   cloud(tx - 300, ty - 520, .6, { rain: true });
   for (let i = 0; i < 4; i++) { const yy = cyr + 120 + i * 50; gl(cxr - 70, yy, cxr - 40, yy - 30, C.teal, .8, 2); gl(cxr + 70, yy, cxr + 40, yy - 30, C.teal, .8, 2); }
   for (let i = 0; i < 3; i++) gc(cxr, cyr - 40, 80 + i * 36, C.orange, .6, 1.8, null, Math.PI * 1.15, Math.PI * 1.85);
@@ -208,25 +222,55 @@ SU.b_balloons = { mode: 'ill', f(q, p, a, T) {
 } };
 
 // ---------- 157.4: he takes the carrot (158.0) ----------
+// d11: re-staged as an over-the-shoulder close-up (the rig was a side-on full figure, a look-alike of puppetHand).
+// We stand behind his hat; the carrot hangs big in front of him; his hand comes in from frame left and takes it.
+// The string snaps at the stick tip and curls away, and the stick whips back up.
 SU.b_grab = { mode: 'ill', f(q, p, a, T) {
-  stripes(C.paper, '#e6d3a8', 120, -.62, 0, C.ochre); cam(1000, 470, lerp(1, 1.04, eo(p)));
-  const gy = 1080, tx = 700, s = 1.75, g = cl((T - 158.0) / .25);
-  const hatX = tx + 10 * s, hatY = gy - 360 * s;
-  // the stick: before the grab it reaches out; after, it whips back up, bent like a rod
-  const bendA = g > 0 ? Math.sin((T - 158.0) * 22) * Math.exp(-(T - 158.0) * 3) * .5 : 0, L = 560;
-  const px = hatX + Math.cos(-.18 - bendA) * L, py = hatY + Math.sin(-.18 - bendA) * L;
-  X.beginPath(); X.moveTo(hatX, hatY); X.quadraticCurveTo(hatX + L * .5, hatY - 40 - bendA * 200, px, py); stroke(C.ink, 7, 1); X.beginPath(); X.moveTo(hatX, hatY); X.quadraticCurveTo(hatX + L * .5, hatY - 40 - bendA * 200, px, py); stroke(C.ochre, 3.4, 1);
-  const reach = eo(cl(p / .22)), a1 = lerp(.6, 2.35, reach), a2 = lerp(.6, -.2, reach), hnd = b_hand(tx, gy, s, a1, a2);
-  if (g <= 0) { const cxr = px + 30, cyr = py + 260; iline(px, py, cxr, cyr, C.ink, 1.6, 1, false); carrot(cxr, cyr, 1.2, -.1); gl(hnd[0], hnd[1], cxr, cyr + 40, C.orange, .9, 2, [8, 8]); }
-  else {
-    // the string snaps and curls up into the air
-    X.beginPath(); for (let i = 0; i <= 30; i++) { const t = i / 30, r1 = 60 * (1 - t) + 10, an = t * 9 + T * 3; const x = px + Math.cos(an) * r1 * t, y = py + 40 - t * 60 * g + Math.sin(an) * r1 * t; i ? X.lineTo(x, y) : X.moveTo(x, y); } stroke(C.ink, 1.6, 1);
-    for (let i = 0; i < 4; i++) gc(px, py, 40 + i * 30 + g * 40, C.orange, (1 - g * .4) * .8, 2, null, -1.2, .6);
+  stripes(C.paper, '#e6d3a8', 120, -.62, 0, C.ochre); cam(900, 540, lerp(1, 1.05, eo(p)));
+  const tg = 158.0, dt = T - tg, g = cl(dt / .25);
+  // the far road under a low horizon, small: we are close behind him
+  const hz = 720, vx = 860, gr = PR(-200, hz, W + 400, 500); fillP(gr, '#c4ae84'); hatch(gr, 960, hz + 160, 1300, .15, 9, C.ink, .8, .28); iline(-200, hz, W + 200, hz, C.ink, 2.4);
+  const rd = PP([[vx - 8, hz], [vx + 8, hz], [vx + 520, H + 40], [vx - 520, H + 40]]); fillP(rd, '#a59478'); hatch(rd, vx, hz + 200, 500, 1.57, 14, C.ink, .8, .25); iP([[vx - 8, hz], [vx - 520, H + 40]], false, C.ink, 2); iP([[vx + 8, hz], [vx + 520, H + 40]], false, C.ink, 2);
+  for (const [px, ph] of [[1520, 40], [1610, 52], [1760, 34]]) { const tr = PE(px, hz - ph * .6, 11, ph * .6); fillP(tr, C.sage); hatch(tr, px, hz - ph * .6, ph, 1.2, 4, C.ink, .8, .5, [4, -2]); iE(px, hz - ph * .6, 11, ph * .6, 0, C.ink, 1.6); }
+  // the stick: from his hat crown up and away into depth; after the grab it whips back up and settles (slow enough for twos)
+  const bA = dt > 0 ? Math.sin(dt * 9) * Math.exp(-dt * 2.2) * .32 + (1 - Math.exp(-dt * 4)) * .1 : 0;
+  const sb = [330, 420], L = 1040, an0 = -.2 - bA, tip = [sb[0] + Math.cos(an0) * L, sb[1] + Math.sin(an0) * L];
+  const sm = [sb[0] + Math.cos(an0) * L * .5, sb[1] + Math.sin(an0) * L * .5 - 30 - bA * 260];
+  X.beginPath(); X.moveTo(sb[0], sb[1]); X.quadraticCurveTo(sm[0], sm[1], tip[0], tip[1]); stroke(C.ink, 10, 1);
+  X.beginPath(); X.moveTo(sb[0], sb[1]); X.quadraticCurveTo(sm[0], sm[1], tip[0], tip[1]); stroke(C.ochre, 5, 1);
+  X.beginPath(); X.moveTo(sb[0] + 2, sb[1] + 3); X.quadraticCurveTo(sm[0] + 2, sm[1] + 3, tip[0] + 2, tip[1] + 3); stroke(C.ink, 1, .35);
+  // the hand: wrist placed so the pinch (thumb and index) lands on the carrot's shoulder
+  const cTop = [1240, 470], th = 1.0, hs = 1.2, ca = Math.cos(th), sa = Math.sin(th), pin = [-62 * hs, -172 * hs];
+  const dir = [sa, -ca], reach = eo(cl((T - 157.4) / (tg - 157.4))), pull = eo(cl(dt / .6)) * 110;
+  const tgt = [cTop[0] + 6, cTop[1] + 60], wr0 = [tgt[0] - (pin[0] * ca - pin[1] * sa), tgt[1] - (pin[0] * sa + pin[1] * ca)];
+  const back = (1 - reach) * 640 + pull, wr = [wr0[0] - dir[0] * back, wr0[1] - dir[1] * back];
+  const hp = [wr[0] + pin[0] * ca - pin[1] * sa, wr[1] + pin[0] * sa + pin[1] * ca];
+  // the carrot: hangs from the string and sways before; after, it rides in his hand
+  if (g <= 0) {
+    const swg = Math.sin(T * 2.2) * .07, ct = [cTop[0] + Math.sin(swg) * 300, cTop[1]];
+    iline(tip[0], tip[1], ct[0], ct[1] - 2, C.ink, 2, 1, false); carrot(ct[0], ct[1], 3, swg);
+    gl(hp[0], hp[1], ct[0], ct[1] + 70, C.orange, .9, 2.4, [10, 10]);
+  } else {
+    // the snapped string curls up and away from the tip
+    X.beginPath(); for (let i = 0; i <= 30; i++) { const t = i / 30, r1 = 70 * (1 - t) + 12, an = t * 9 + dt * 3; const x = tip[0] + Math.cos(an) * r1 * t, y = tip[1] + 40 - t * 70 * g + Math.sin(an) * r1 * t; i ? X.lineTo(x, y) : X.moveTo(x, y); } stroke(C.ink, 2, 1);
+    for (let i = 0; i < 4; i++) gc(tip[0], tip[1], 40 + i * 30 + g * 40, C.orange, (1 - g * .4) * .8, 2.2, null, -1.6, .4);
+    carrot(hp[0] + 4, hp[1] - 58, 3, th - 1.15 + .12 * Math.exp(-dt * 3) * Math.sin(dt * 8));
   }
-  traveller(tx, gy, s, { look: 1, mouth: g > 0 ? .9 : sing(T), case: false, armR: [a1, a2], armL: [.3, -.3] });
-  if (g > 0) { carrot(hnd[0] + 10, hnd[1] - 40, 1.15, .2); for (let i = 0; i < 3; i++) gc(hnd[0], hnd[1] + 10, 70 + i * 26, C.teal, .9 - i * .25, 2.2); lab(hnd[0] + 100, hnd[1] - 110, 'GOT IT', C.brick, .95, 26, 'left', 'alphabetic', 'bold'); }
-  cloud(tx - 280, 220, .75, { rain: true });
-  consL([[0, hatY, W, hatY], [tx, 0, tx, H]]); consC([[hatX, hatY, L]]);
+  b_handTop(wr[0], wr[1], hs, th, { pose: g > 0 || reach > .9 ? 'pinch' : null, sleeve: '#3a7a76' });
+  if (g > 0) { for (let i = 0; i < 3; i++) gc(hp[0], hp[1] + 20, 90 + i * 30, C.teal, .9 - i * .25, 2.4); lab(hp[0] + 150, hp[1] - 150, 'GOT IT', C.brick, .95, 32, 'left', 'alphabetic', 'bold'); }
+  // him, from behind: coat shoulders (the arm comes out from under the right one), the back of the head, the hat
+  const cp = [[-160, H + 60], [-90, 900], [120, 800], [250, 790], [380, 800], [600, 880], [700, H + 60]];
+  fillP(PP(cp), C.teal); shade(PP(cp), 260, 960, 420, [-60, -40], .9, 6); iP(dens(cp, 30), false, C.ink, 3);
+  X.beginPath(); wP([[250, 790], [256, 900], [246, 1080]], false, 1); stroke(C.ink, 2, .8);
+  const nk = PP([[180, 800], [210, 740], [300, 740], [330, 800]]); fillP(nk, B_SKIN); iP([[180, 800], [210, 740], [300, 740], [330, 800]], false, C.ink, 2.2);
+  const cl2 = PP([[110, 808], [200, 770], [255, 818], [310, 770], [400, 808], [380, 846], [130, 846]]); fillP(cl2, '#2f6663'); iP([[110, 808], [200, 770], [255, 818], [310, 770], [400, 808]], false, C.ink, 2.4);
+  const hd = PE(255, 640, 112, 128); fillP(hd, B_SKIN); hatch(hd, 255, 640, 130, .9, 6, C.ink, .9, .45, [-50, 10]); iE(255, 640, 112, 128, 0, C.ink, 3);
+  const er = PE(372, 640, 18, 34, .15); fillP(er, B_SKIN); iE(372, 640, 18, 34, .15, C.ink, 2.2); iE(372, 642, 8, 18, .15, C.ink, 1.2, .7, false);
+  const br = PE(255, 520, 250, 58); fillP(br, '#3d2a1f'); hatch(br, 255, 520, 250, .2, 7, C.cream, .9, .2); iE(255, 520, 250, 58, 0, C.ink, 3);
+  const cr = [[110, 512], [140, 370], [255, 392], [370, 370], [400, 512]], crp = PP(cr); fillP(crp, '#4b3426'); shade(crp, 255, 440, 160, [40, -20], .7, 5); iP(dens(cr, 24), false, C.ink, 3);
+  X.beginPath(); wP([[118, 478], [255, 486], [392, 478]], false, 1); stroke(C.ochre, 14, .95); X.beginPath(); wP([[118, 470], [392, 470]], false, 1); stroke(C.ink, 1.6, .7); X.beginPath(); wP([[118, 488], [392, 488]], false, 1); stroke(C.ink, 1.6, .7);
+  cloud(250, 120, 1.05, { rain: true });
+  consL([[0, hz, W, hz], [vx, 0, vx, H], [0, cTop[1], W, cTop[1]]]); consC([[sb[0], sb[1], L]]);
 } };
 
 // ---------- 160.14: did you hear about the man ----------
@@ -254,19 +298,20 @@ SU.b_whisper = { mode: 'ill', f(q, p, a, T) {
   const tb = PR(bx - 40, by + 40, 200, 20); fillP(tb, C.cream); iBox(bx - 40, by + 40, 200, 20, C.ink, 2); iline(bx + 60, by + 60, bx + 60, by + 230, C.ink, 4);
   // the rumour: mouth -> ear -> mouth -> ear -> the booth, looping like a dropped ribbon
   const mouthOf = (x, lk) => [x + lk * 6 * s, fy - 283 * s - 150 * s * 0], earOf = (x, lk) => [x - lk * 24 * s, fy - 306 * s];
-  const nodes = [mouthOf(260, 1), earOf(620, -1), mouthOf(620, -1), earOf(980, 1), mouthOf(980, 1), [bx - 20, by - 40]];
+  // d11: the last leg ends beside the plum man's ear (his head is at about (1620, 700), facing right), never over his face
+  const nodes = [mouthOf(260, 1), earOf(620, -1), mouthOf(620, -1), earOf(980, 1), mouthOf(980, 1), [bx - 134, by - 66]];
   const rib = []; for (let k = 0; k < nodes.length - 1; k += 1) { const [x1, y1] = nodes[k], [x2, y2] = nodes[k + 1]; if (k === 1 || k === 3) { rib.push([x2, y2]); continue; } for (let i = 0; i <= 40; i++) { const t = i / 40, lp = Math.sin(t * Math.PI) * (170 + k * 30), an = t * TAU * (k === 4 ? 2 : 1); rib.push([lerp(x1, x2, t) + Math.sin(an) * lp * .7, lerp(y1, y2, t) - lp - Math.cos(an) * lp * .4 + lp * .4]); } }
   const m = Math.max(2, Math.floor(rib.length * cl(p * 1.25)));
   path(rib.slice(0, m), C.ink, 10, .95); path(rib.slice(0, m), C.orange, 6, 1);
   // Nakamura (draft 10): the rumour has a body, a little winged mouth flying the ribbon, a size bigger at each telling
-  const [ex2, ey2] = rib[m - 1], tell = 1.3 + (m / rib.length) * 1.5, wf = (FD >> 1) % 2;
+  const [ex2, ey2] = rib[m - 1], tell = 1.3 + (m / rib.length) * .75, wf = (FD >> 1) % 2;
   X.save(); X.translate(ex2, ey2); X.scale(tell, tell); const lw = 1 / tell;
   for (const sd of [-1, 1]) for (let f = 0; f < 3; f++) { const a0 = (wf ? -.9 : -.4) - f * .32, L = 34 - f * 5, fx = sd * 16, fea = PE(fx + sd * Math.cos(a0) * L * .5, -4 + Math.sin(a0) * L * .5, L * .5, 6, sd > 0 ? a0 : Math.PI - a0); fillP(fea, C.cream); hatch(fea, fx + sd * 14, -10, 20, .9, 3.5, C.ink, .8, .45); X.lineWidth = 1.6 * lw; X.strokeStyle = C.ink; X.stroke(fea); }
   const mo = wf ? 7 : 3; fillP(PE(0, 2, 15, mo), '#3a1f1a'); fillP(PR(-8, 2 - mo + 1, 16, 3), '#f4f1e8');
   const up = PP([[-20, 2], [-8, -9], [0, -5], [8, -9], [20, 2], [0, 2 - mo + 1]]), dn = PP([[-20, 2], [0, 2 + mo + 6], [20, 2], [0, 2 + mo]]);
   fillP(up, C.brick); fillP(dn, '#b5523f'); X.lineWidth = 2 * lw; X.strokeStyle = C.ink; X.stroke(up); X.stroke(dn);
   X.restore();
-  if (p > .75) { gc(bx - 20, by - 40, 120, C.teal, .9, 2.4); }
+  if (p > .75) { for (let k = 0; k < 2; k++) gc(bx - 40, by - 60, 34 + k * 20, C.teal, .9 - k * .3, 2.2, null, Math.PI * .55, Math.PI * 1.45); } // rings at his ear
   consL([[0, 560, W, 560], [0, 930, W, 930]]);
 } };
 
@@ -346,7 +391,7 @@ SU.b_sOuroboros = { mode: 'sch', f(q, p, a, T) {
   const [nx, ny] = Pt(L * .86, 14); fillP(PE(nx, ny, 2.5, 2.5), C.white, .9);
   gc(tip[0], tip[1], 54, C.mag, .9, 1.6, [4, 5]); lab(tip[0] + vx * 90, tip[1] + vy * 90, 'BITE = TAIL', C.mag, .95, 13, 'center', 'middle');
   const st = ['BLUES', 'TRAVEL AGENT', 'TICKET', 'AWAY', 'HOME']; st.forEach((s2, i) => { const an = th + (i + .5) / 5 * span; lab(cx + Math.cos(an) * (R0 + 96), cy + Math.sin(an) * (R0 + 96), s2, i === 0 ? C.mag : C.white, .9, 14, 'center', 'middle'); });
-  traveller(960, 640, .42, { sch: 1, col: C.lav, legs: walkPh() * 1.3, case: true }); lab(960, 690, 'LAP ' + (Math.floor(q * 4) + 1), C.mag, .9, 18, 'center');
+  traveller(960, 640, .42, { sch: 1, col: C.lav, legs: walkPh() * 1.3, case: true }); lab(960, 700, 'LAP ' + (Math.floor(q * 4) + 1), C.mag, .95, 28, 'center', 'alphabetic', 'bold');
   screen(); schFrame('06', 'THE LOOP', 'OUROBOROS · EXIT: NONE');
 } };
 
@@ -380,7 +425,7 @@ SU.b_tied = { mode: 'ill', f(q, p, a, T) {
     for (let k = 0; k < 3; k++) gc(bx, by, 60 + k * 26 + (1 - bow) * 80, C.orange, .85 - k * .22, 2.2);
   }
   cloud(330, 210, .82, { rain: true });
-  const tg = PR(1340, 274, 300, 66); fillP(tg, C.cream); iBox(1340, 274, 300, 66, C.ink, 2); lab(1360, 300, 'STAKE · 1 CARROT', C.ink, .9, 18, 'left', 'alphabetic', 'bold'); lab(1360, 328, 'TURNS: ' + nc + (bow >= 1 ? ' + BOW' : ''), C.brick, .9, 15);
+  const tg = PR(1340, 270, 410, 92); fillP(tg, C.cream); iBox(1340, 270, 410, 92, C.ink, 2); lab(1360, 312, 'STAKE · 1 CARROT', C.ink, .95, 28, 'left', 'alphabetic', 'bold'); lab(1360, 344, 'TURNS: ' + nc + (bow >= 1 ? ' + BOW' : ''), C.brick, .9, 15);
   gl(1340, 306, cx + hw * .7, top + 60, C.ink, .7, 1.4);
   consL([[0, gy, W, gy], [cx, 0, cx, H], [0, top, W, top]]); consC([[cx, 560, 820]]);
 } };
@@ -420,7 +465,7 @@ SU.b_diner = { mode: 'ill', f(q, p, a, T) {
   lab(70, -250, '?', C.cream, .95, 46, 'center', 'middle', 'bold');
   X.restore();
   b_handTop(lx, ly, ls, lr, { pose: 'pinch', sleeve: '#6a4a5a', flip: true });
-  lab(1560, 400, 'PEAS 11', C.brick, .9, 18, 'left', 'alphabetic', 'bold'); lab(1560, 428, 'CAUGHT 0', C.ink, .85, 15);
+  lab(1560, 400, 'PEAS 11', C.brick, .9, 18, 'left', 'alphabetic', 'bold'); lab(1560, 444, 'CAUGHT 0', C.ink, .95, 28, 'left', 'alphabetic', 'bold');
   consL([[0, pc[1], W, pc[1]], [pc[0], 0, pc[0], H]]); consC([[pc[0], pc[1], 300]]);
 } };
 
@@ -450,9 +495,9 @@ SU.b_forkRoad = { mode: 'ill', f(q, p, a, T) {
   for (let k = 0; k < 6; k++) { const yy = hz - 20 - k * 52, st = PE(960 + (k % 2 ? 22 : -22), yy, 18, 6); fillP(st, C.cream); iE(960 + (k % 2 ? 22 : -22), yy, 18, 6, 0, C.ink, 1.4); }
   const u = p, y = u < .62 ? lerp(1010, hz + 10, u / .62) : lerp(hz + 10, yTop + 70, (u - .62) / .38), s = y > hz ? Math.max(.24, 1.16 * (y - hz) / D) : lerp(.24, .19, (hz - y) / (hz - yTop));
   traveller(960, y, s, { hat: false, coat: C.plum, sleeve: '#6a4a5a', legs: walkPh(), look: 0 });
-  cloud(960, y - 470 * s, .62 * s, { rain: true });
+  // d11: no rain cloud here; the walker is the plum diner man, and the cloud is the traveller's
   if (y < hz) for (let k = 0; k < 3; k++) gc(960, y, 30 + k * 18 + ((FD * 4) % 18), C.teal, .8 - k * .2, 1.6, null, 0, Math.PI);
-  lab(990, yTop + 6, 'STRAIGHT ON', C.orange, .95, 16, 'left', 'alphabetic', 'bold');
+  lab(990, yTop + 12, 'STRAIGHT ON', C.orange, .95, 28, 'left', 'alphabetic', 'bold');
   consL([[0, hz, W, hz], [960, 0, 960, H]]); consC([[960, hz, 520]]);
 } };
 
@@ -474,11 +519,20 @@ SU.b_sBottle = { mode: 'sch', f(q, p, a, T) {
   // labels stay upright (screen coordinates)
   const kX = 740 - pop * 380, kY = 540 - pop * 150;
   bracket(740, 400, 860, 400, C.cyan, .8, '24 MM'); lab(kX - 70, kY - 70, 'F', C.mag, .95, 20);
-  bracket(860, 680, 1420, 680, C.cyan, .8, 'NECK 68 → 8 CM'); lab(1180, 400, 'VIN · 750 ML', C.lav, .8, 13);
+  bracket(860, 680, 1420, 680, C.cyan, .8); lab(1140, 726, 'NECK 68 → 8 CM', C.cyan, .95, 28, 'center', 'middle', 'bold'); lab(1180, 400, 'VIN · 750 ML', C.lav, .8, 13);
   lab(kX - 20, kY + 90, 'CORK', C.mag, .9, 13, 'center');
-  screen(); schFrame('11', 'EXTRACTION', 'TOOL: TEETH');
+  screen(); schFrame('11', 'EXTRACTION', 'CORKSCREW: NONE');
 } };
 
+// a soft burst: short doubled hatch ticks in a ring, staggered in radius and length, no fill (d11, b_corkMoon)
+function b_tickBurst(cx, cy, r0, len, n, rot, a) {
+  X.beginPath();
+  for (let i = 0; i < n; i++) {
+    const an = rot + i / n * TAU, rr = r0 + (i % 3) * len * .3, l = len * (i % 2 ? .5 : 1);
+    for (const d of [-.016, .016]) { const a2 = an + d; X.moveTo(cx + Math.cos(a2) * rr, cy + Math.sin(a2) * rr); X.lineTo(cx + Math.cos(a2) * (rr + l), cy + Math.sin(a2) * (rr + l)); }
+  }
+  stroke(C.ink, 1.5, a);
+}
 // ---------- 181.88 "cork": it flies up and becomes the moon (corkMoon, re-staged for draft 6) ----------
 // The drifting cloud no longer crosses the moon; both men stand clear of the bottom edge, the diner man in plum
 // sleeves; a hatched burst marks the change from cork to moon.
@@ -487,7 +541,8 @@ SU.b_corkMoon = { mode: 'ill', f(q, p, a, T) {
   for (let i = 0; i < 60; i++) { const r2 = M32(i + 3), x = r2() * W, y = r2() * 600; fillP(PE(x, y, 2.2, 2.2), C.ink, .7); }
   cloud(lerp(140, 470, p), 250, .75, {}); // a far cloud, kept left of x 700, behind everything
   const u = eo(p), up = cl(p / .45), cx = lerp(1000, 960, u), cy = lerp(940, 330, eo(up)), sz = lerp(20, 210, eo(cl((p - .25) / .6))), face = cl((p - .3) / .4);
-  if (face > .1 && face < 1) { const r0 = sz * .5 + face * sz * .5 + 16, r1 = r0 * (1.06 + .3 * Math.sin(face * Math.PI)); ngoBurst(cx, cy, r0, r1, 40, T * .05, '#e6dcc4', C.cream); } // the change, then a plain moon
+  // d11: the change is a soft ring of short hatched ticks (the filled sawtooth burst read as a sun), then a plain moon
+  if (face > .1 && face < 1) { const k = Math.sin(face * Math.PI), r0 = sz * .5 + face * sz * .5 + 14; b_tickBurst(cx, cy, r0, 12 + 16 * k, 30, T * .05, .15 + .38 * k); }
   X.save(); X.translate(cx, cy); X.rotate((1 - face) * T * 5);
   if (face < 1) { const c = PR(-sz * .5, -sz * .7 * (1 - face) - sz * .02, sz, sz * 1.4 * (1 - face) + 4); fillP(c, C.tan); shade(c, 0, 0, sz, [sz * .2, -sz * .2], .6, 4); iBox(-sz * .5, -sz * .7 * (1 - face) - sz * .02, sz, sz * 1.4 * (1 - face) + 4, C.ink, 2.4); }
   const mr = sz * .5 + face * sz * .5, m = PE(0, 0, mr, mr); fillP(m, '#e9d9a8'); hatch(m, 0, 0, sz, .8, 5, C.ink, .9, .55, [sz * .3 * face, -sz * .3 * face]);
@@ -497,7 +552,7 @@ SU.b_corkMoon = { mode: 'ill', f(q, p, a, T) {
   path(bzPts([1000, 940], [1040, 680], [960, 580], [cx, cy], 0, 1, 30), C.orange, 2, .8, [8, 8]);
   const fy = 1040, tb = PR(560, 860, 800, 40); fillP(tb, C.cream); hatch(tb, 960, 880, 420, 0, 14, C.brick, 3, .35); iBox(560, 860, 800, 40, C.ink, 2); iline(640, 900, 640, fy, C.ink, 4); iline(1280, 900, 1280, fy, C.ink, 4);
   traveller(820, fy, .55, { hat: false, look: 1, coat: C.plum, sleeve: '#6a4a5a', armR: [2.9, -.2] }); traveller(1180, fy, .55, { look: -1, mouth: sing(T) }); cloud(1180, fy - 470 * .55, .32, { rain: true });
-  if (face > .9) lab(cx + mr + 50, cy + 10, 'CORK · 384,400 KM', C.ink, .9, 16, 'left', 'alphabetic', 'bold');
+  if (face > .9) lab(cx + mr + 50, cy + 10, 'CORK · 384,400 KM', C.ink, .95, 28, 'left', 'alphabetic', 'bold');
   consC([[cx, cy, 300]]); consL([[0, fy, W, fy]]);
 } };
 
@@ -516,7 +571,8 @@ SU.b_peas = { mode: 'ill', f(q, p, a, T) {
   // plate, peas rising off it on curling paths into his mouth
   const plx = 1100, ply = 880, pl = PE(plx, ply, 220, 60); fillP(pl, '#ffffff'); hatch(pl, plx, ply, 220, .2, 9, C.ink, .8, .2, [0, -18]); iE(plx, ply, 220, 60, 0, C.ink, 2.4); iE(plx, ply, 150, 40, 0, C.ink, 1.4, .8, false);
   for (let i = 0; i < 16; i++) {
-    const t = cl(p * 1.5 - i * .05 + ((T * .2) % .3)), sx = plx - 100 + (i * 37 % 200), sy = ply - 10 + (i * 13 % 30);
+    // d11: no wrap term, so a pea never pops back onto the plate; departures spread so the last arrives near the cut
+    const t = cl((p - .02 - i * .052) / .17), sx = plx - 100 + (i * 37 % 200), sy = ply - 10 + (i * 13 % 30);
     const c1 = [sx + 120, sy - 500], c2 = [mx + 400, my - 300 + (i % 3) * 60];
     if (i < 5) path(bzPts([sx, sy], c1, c2, [mx + 30, my], 0, 1, 30), C.orange, 1.6, .55, [6, 8]);
     if (t >= 1) continue; const [px2, py2] = t > 0 ? bz([sx, sy], c1, c2, [mx + 30, my], eio(t)) : [sx, sy];
@@ -524,9 +580,12 @@ SU.b_peas = { mode: 'ill', f(q, p, a, T) {
   }
   // the water leaves its glass too, as a wobbling ball; the salt rises in a column
   const gx = 1500, gyy = 860; X.save(); X.translate(gx, gyy); const gl2 = PP([[-50, -170], [50, -170], [40, 0], [-40, 0]]); fillP(gl2, '#e3ece6'); hatch(gl2, 0, -80, 100, -.9, 12, C.cream, 3, .5); iP([[-50, -170], [-40, 0], [40, 0], [50, -170]], false, C.ink, 2.2); X.restore();
-  const wy = gyy - 240 - eo(p) * 160, wb = PE(gx + Math.sin(T * 2) * 10, wy, 56 + Math.sin(T * 6) * 6, 44 - Math.sin(T * 6) * 6); fillP(wb, C.sky); hatch(wb, gx, wy, 60, .7, 4, C.ink, .9, .5, [10, -8]); iE(gx + Math.sin(T * 2) * 10, wy, 56 + Math.sin(T * 6) * 6, 44 - Math.sin(T * 6) * 6, 0, C.ink, 2.2);
+  // d11: the ball rises out of the glass and stops short of the window (sill at 470), still wobbling, with a highlight
+  const wy = gyy - 200 - eo(seg(p, 0, .7)) * 125 + Math.sin(T * 2.4) * 7 * eo(seg(p, .5, .8)), wxx = gx + Math.sin(T * 2) * 10, wrx = 56 + Math.sin(T * 6) * 6, wry = 44 - Math.sin(T * 6) * 6, wb = PE(wxx, wy, wrx, wry);
+  fillP(wb, C.sky); hatch(wb, wxx, wy, 60, .7, 4, C.ink, .9, .5, [10, -8]); iE(wxx, wy, wrx, wry, 0, C.ink, 2.2);
+  fillP(PE(wxx - wrx * .38, wy - wry * .42, wrx * .26, wry * .16, -.5), C.cream, .95); fillP(PE(wxx - wrx * .12, wy - wry * .62, 4, 3), C.cream, .95);
   const sxx = 1700, sh = PP([[sxx - 26, 860], [sxx + 26, 860], [sxx + 20, 760], [sxx - 20, 760]]); fillP(sh, '#f4f1e8'); shade(sh, sxx, 810, 40, [8, 0], .8, 3.5); iP([[sxx - 26, 860], [sxx + 26, 860], [sxx + 20, 760], [sxx - 20, 760]], true, C.ink, 2); stipRect(sxx - 16, 760 - 300 * eo(p), 32, 300 * eo(p), 260, C.ink, .7, 2);
-  X.setLineDash([5, 8]); iBox(820, 760, 40, 170, C.brick, 2, .9, false); X.setLineDash([]); lab(840, 960, 'FORK?', C.brick, .9, 16, 'center', 'alphabetic', 'bold');
+  X.setLineDash([5, 8]); iBox(820, 760, 40, 170, C.brick, 2, .9, false); X.setLineDash([]); lab(840, 968, 'FORK?', C.brick, .95, 28, 'center', 'alphabetic', 'bold');
   consL([[0, 700, W, 700], [plx, 0, plx, H]]); consC([[plx, ply - 300, 360]]);
 } };
 
@@ -537,17 +596,20 @@ SU.b_order = { mode: 'ill', f(q, p, a, T) {
   b_dinerWall(60, 620, T);
   const fl = PR(-200, 960, W + 400, 300); fillP(fl, '#d6c7a6'); hatch(fl, 960, 1000, 1300, 0, 30, C.ink, 1, .2); hatch(fl, 960, 1000, 1300, Math.PI / 2, 60, C.ink, 1, .2); iline(-200, 960, W + 200, 960, C.ink, 2.4);
   // his table and chair
-  chair(420, 1000, 1); const tb = PP([[200, 700], [900, 700], [950, 760], [150, 760]]); fillP(tb, C.cream); hatch(tb, 550, 730, 400, 0, 30, C.brick, 5, .35); hatch(tb, 550, 730, 400, Math.PI / 2, 30, C.brick, 5, .35); iP([[200, 700], [900, 700], [950, 760], [150, 760]], true, C.ink, 2.4); iline(550, 760, 550, 990, C.ink, 7); iline(470, 990, 630, 990, C.ink, 4);
-  traveller(440, 1000, 1.3, { sit: 1, hat: false, coat: C.plum, sleeve: '#6a4a5a', look: 1, mouth: singing(T) ? .5 : 0, armR: [2.7, -.15], armL: [.4, .6] });
-  const fing = b_hand(440, 1000, 1.3, 2.7, -.15); for (let i = 0; i < 3; i++) gc(fing[0], fing[1], 30 + i * 22 + ((FD * 3) % 22), C.orange, .8 - i * .2, 2);
-  const pl = PE(640, 700, 90, 22); fillP(pl, '#ffffff'); iE(640, 700, 90, 22, 0, C.ink, 2);
+  // d11: he sits at the table's near end, his knees under its edge, instead of in front of it
+  const mx0 = 250; chair(mx0 - 20, 1000, 1);
+  traveller(mx0, 1000, 1.3, { sit: 1, hat: false, coat: C.plum, sleeve: '#6a4a5a', look: 1, mouth: singing(T) ? .5 : 0, armR: [2.7, -.15], armL: [.4, .6] });
+  const tq = [[340, 700], [960, 700], [1000, 760], [306, 760]], tb = PP(tq); fillP(tb, C.cream); hatch(tb, 650, 730, 400, 0, 30, C.brick, 5, .35); hatch(tb, 650, 730, 400, Math.PI / 2, 30, C.brick, 5, .35); iP(tq, true, C.ink, 2.4); iline(690, 760, 690, 990, C.ink, 7); iline(610, 990, 770, 990, C.ink, 4);
+  const fing = b_hand(mx0, 1000, 1.3, 2.7, -.15); for (let i = 0; i < 3; i++) gc(fing[0], fing[1], 30 + i * 22 + ((FD * 3) % 22), C.orange, .8 - i * .2, 2);
+  const pl = PE(520, 700, 90, 22); fillP(pl, '#ffffff'); iE(520, 700, 90, 22, 0, C.ink, 2);
   // the waiter walks in, tray up, tray tilting
   const wx = lerp(1900, 1300, eo(seg(p, 0, .55))), ws = 1.35, tilt = -lerp(0, 1.05, eo(seg(p, .3, .9)));
   // d6: the traveller watches from a real far table on the floor (was skewered on a plank half-way up the wall)
-  X.save(); X.translate(1800, 0); X.scale(-1, 1); chair(-20, 990, .8); X.restore();
-  traveller(1780, 990, .8, { sit: 1, flip: true, look: .4, mouth: 0 }); cloud(1780, 990 - 470 * .8, .42, { rain: true });
-  const t2 = PP([[1520, 770], [1700, 770], [1712, 790], [1508, 790]]); fillP(t2, C.cream); hatch(t2, 1610, 780, 120, 0, 18, C.brick, 3, .35); iP([[1520, 770], [1700, 770], [1712, 790], [1508, 790]], true, C.ink, 2); iline(1610, 790, 1610, 988, C.ink, 5); iline(1550, 988, 1670, 988, C.ink, 3);
-  const cup = PR(1560, 742, 26, 28); fillP(cup, '#ffffff'); iBox(1560, 742, 26, 28, C.ink, 1.6);
+  // d11: his far table moved in from the right edge, so nothing crowds it
+  const fo = -130; X.save(); X.translate(1800 + fo, 0); X.scale(-1, 1); chair(-20, 990, .8); X.restore();
+  traveller(1780 + fo, 990, .8, { sit: 1, flip: true, look: .4, mouth: 0 }); cloud(1780 + fo, 990 - 470 * .8, .42, { rain: true });
+  const t2q = [[1520 + fo, 770], [1700 + fo, 770], [1712 + fo, 790], [1508 + fo, 790]], t2 = PP(t2q); fillP(t2, C.cream); hatch(t2, 1610 + fo, 780, 120, 0, 18, C.brick, 3, .35); iP(t2q, true, C.ink, 2); iline(1610 + fo, 790, 1610 + fo, 988, C.ink, 5); iline(1550 + fo, 988, 1670 + fo, 988, C.ink, 3);
+  const cup = PR(1560 + fo, 742, 26, 28); fillP(cup, '#ffffff'); iBox(1560 + fo, 742, 26, 28, C.ink, 1.6);
   traveller(wx, 1000, ws, { hat: false, coat: '#f4f1e8', sleeve: '#f4f1e8', look: -1, flip: true, armR: [2.5, .5], legs: p < .55 ? walkPh() : null });
   const th = b_hand(wx, 1000, ws, 2.5, .5, true);
   X.save(); X.translate(th[0], th[1] - 6); X.rotate(tilt);
@@ -556,7 +618,7 @@ SU.b_order = { mode: 'ill', f(q, p, a, T) {
   // the gravity that should apply: ghost arrows straight down, in the tray's frame they point off sideways
   X.restore();
   for (const [ox, oy] of [[-50, -110], [70, -70]]) { const c = Math.cos(tilt), s2 = Math.sin(tilt), gx = th[0] + ox * c - oy * s2, gy = th[1] - 6 + ox * s2 + oy * c; X.setLineDash([6, 6]); X.beginPath(); X.moveTo(gx, gy); X.lineTo(gx, gy + 200); stroke(C.orange, 2.2, .85); X.setLineDash([]); X.beginPath(); X.moveTo(gx - 9, gy + 186); X.lineTo(gx, gy + 202); X.lineTo(gx + 9, gy + 186); stroke(C.orange, 2.2, .85); }
-  if (tilt < -.3) { gc(th[0], th[1], 220, C.teal, .7, 1.6, [4, 6], -Math.PI / 2 + tilt, -Math.PI / 2); lab(th[0] + 30, th[1] - 240, Math.round(-tilt * 57.3) + '°', C.brick, .95, 22, 'left', 'alphabetic', 'bold'); }
+  if (tilt < -.3) { gc(th[0], th[1], 220, C.teal, .7, 1.6, [4, 6], -Math.PI / 2 + tilt, -Math.PI / 2); lab(th[0] + 30, th[1] - 240, Math.round(-tilt * 57.3) + '°', C.brick, .95, 30, 'left', 'alphabetic', 'bold'); }
   consL([[0, 700, W, 700], [th[0], 0, th[0], H]]);
 } };
 
@@ -585,7 +647,7 @@ SU.b_teeth = { mode: 'ill', f(q, p, a, T) {
   limb([[2100, by + 60], [1900, by + 40], [1790, by - 10]], 30, {}, 1, '#f4f1e8'); fillP(PE(1780, by - 20, 34, 28), '#efd9b9'); iE(1780, by - 20, 34, 28, 0, C.ink, 2.4);
   // stretch marks and the tension
   for (let i = 0; i < 5; i++) { const xx = lerp(kx + 120, bx - 180, i / 4), yy = lerp(ky, ky + (by - ky) * .2, i / 4); gl(xx - 30, yy - 50, xx + 30, yy - 50, C.orange, .9, 2.4); gl(xx - 30, yy + 50, xx + 30, yy + 50, C.orange, .9, 2.4); }
-  bracket(kx + 56, ky - 110, bx - 120, ky - 110 + (by - ky) * .2, C.ink, .8, 'NECK ' + Math.round(8 + pull * 70) + ' CM');
+  bracket(kx + 56, ky - 110, bx - 120, ky - 110 + (by - ky) * .2, C.ink, .8); lab((kx + 56 + bx - 120) / 2, ky - 110 + (by - ky) * .1 + 44, 'NECK ' + Math.round(8 + pull * 70) + ' CM', C.ink, .95, 28, 'center', 'middle', 'bold');
   consL([[0, ky, W, ky], [kx, 0, kx, H]]);
 } };
 
@@ -594,7 +656,7 @@ SU.b_corkCatch = { mode: 'ill', f(q, p, a, T) {
   stripes('#d9cbb2', '#c9b79a', 150, -.62, 0, C.plum); cam(960, 540, lerp(1, 1.04, eo(p)));
   for (let i = 0; i < 70; i++) { const r2 = M32(i + 41), x = r2() * W, y = r2() * 560; fillP(PE(x, y, 2.4, 2.4), C.ink, .7); if (i % 7 === 0) { iline(x - 8, y, x + 8, y, C.ink, 1, .6, false); iline(x, y - 8, x, y + 8, C.ink, 1, .6, false); } }
   // the empty place in the sky where the moon was
-  X.setLineDash([10, 10]); iE(1300, 230, 150, 150, 0, C.ink, 2, .8, false); X.setLineDash([]); lab(1300, 236, 'VACANT', C.ink, .7, 22, 'center', 'middle', 'bold');
+  X.setLineDash([10, 10]); iE(1300, 230, 150, 150, 0, C.ink, 2, .8, false); X.setLineDash([]); lab(1300, 236, 'VACANT', C.ink, .8, 30, 'center', 'middle', 'bold');
   // street: kerb, lamp, his suitcase down beside him
   const gy = 920, st = PR(-200, gy, W + 400, 300); fillP(st, '#8a8172'); hatch(st, 960, gy + 100, 1300, .1, 7, C.ink, .9, .45); iline(-200, gy, W + 200, gy, C.ink, 2.6);
   const kb = PR(-200, gy - 30, W + 400, 30); fillP(kb, '#b9b09a'); hatch(kb, 960, gy - 15, 1300, 1.2, 9, C.ink, .8, .4); iBox(-200, gy - 30, W + 400, 30, C.ink, 2);

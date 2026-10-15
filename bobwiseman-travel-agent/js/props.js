@@ -186,7 +186,7 @@ function cloud(x, y, s, o = {}) {
   if (o.rain && !S.sch && typeof NOTES !== 'undefined' && NOTES > 0 && typeof noteRain === 'function') noteRain(-110, 60, 220, 110, NOTES);
   S.F(u, '#8d93a8'); S.SH(u, 0, 0, 150, [10, -22], .6, 5);
   bl.forEach(([a, b, r]) => iE(a, b, r, r * .82, 0, S.INK, (S.sch ? 1.1 : 2.2) * k, S.sch ? .8 : 1, false, .8 * k, Math.PI * .95, Math.PI * 2.05));
-  if (!S.sch && o.band !== false) cloudBand(k);
+  if (!S.sch && o.rain && o.band !== false) cloudBand(k); // only his rain cloud has the band (draft 11)
   X.restore();
 }
 // Nakamura (assistant director, draft 10): the blues has a band. A small opening in the cloud's belly shows a tiny

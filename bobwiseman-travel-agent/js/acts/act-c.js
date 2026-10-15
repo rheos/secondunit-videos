@@ -14,6 +14,19 @@ function c_hat(x, y, s, rot = 0) { // a lone fedora, brim centre at (x,y)
   const cr = [[-26, 0], [-22, -34], [0, -28], [22, -34], [26, 0]], crp = PP(cr); fillP(crp, '#4b3426'); hatch(crp, 0, -15, 34, .7, 4 * k, C.ink, .9 * k, .7, [6, -4]); iP(cr, true, C.ink, 2 * k);
   X.beginPath(); wP([[-25, -8], [25, -8]], false, .4 * k); stroke(C.ochre, 4 * k, .9); X.restore();
 }
+// draft 11: legs driven by the distance walked, so the planted foot stays put on the floor (no skating). d = how far the
+// hips have travelled in screen px, s = figure scale, F = the foot's excursion either side of the hip (half a step, px).
+// A triangle wave puts the foot exactly under the ground speed; the swing foot slides forward at twice it.
+function c_stride(d, s, F) {
+  const u = d / (2 * F), fr = ((u % 2) + 2) % 2, tri = fr < 1 ? 1 - 2 * fr : -3 + 2 * fr;
+  const sw = Math.asin(cl(F * tri / (150 * s), -1, 1)); return Math.asin(cl(sw / .42, -1, 1));
+}
+// a punchline label at phone size: bold, tight tracking so it fits its box (lab() spaces letters at .16 em)
+function c_big(x, y, t, col, sz = 28, al = 'center', bl = 'alphabetic', a = .95) {
+  X.font = `bold ${sz}px ${MONO}`; try { X.letterSpacing = '1px'; } catch (e) {}
+  X.textAlign = al; X.textBaseline = bl; X.globalAlpha = a; X.fillStyle = col; X.fillText(t, x, y); X.globalAlpha = 1;
+  try { X.letterSpacing = '0px'; } catch (e) {}
+}
 function c_bottle(x, y, s) { // wine bottle, base at (x,y)
   X.save(); X.translate(x, y); X.scale(s, s); const k = 1 / s;
   const pts = [[-34, 0], [-34, -170], [-14, -210], [-14, -270], [14, -270], [14, -210], [34, -170], [34, 0]], bt = PP(pts);
@@ -94,9 +107,11 @@ SU.c_shadowStay = { mode: 'ill', f(q, p, a, T) {
     lab(dx + 75, 318, 'W3·' + (i + 1), C.ink, .7, 13, 'center'); fillP(PR(dx + 30, wtop + 4, 90, 12), C.cream); iBox(dx + 30, wtop + 4, 90, 12, C.ink, 1.2); }
   // the diner door at the far left: checks in its porthole
   const dd = PR(40, 300, 200, wb - 300); fillP(dd, '#c98478'); shade(dd, 140, 540, 260, [16, 0], .9, 5); iBox(40, 300, 200, wb - 300, C.ink, 2.6);
-  const pw = PE(140, 400, 56, 56); fillP(pw, C.cream); X.save(); X.clip(pw); hatch(pw, 140, 400, 60, 0, 14, C.brick, 5, .5); hatch(pw, 140, 400, 60, Math.PI / 2, 14, C.brick, 5, .5); X.restore(); iE(140, 400, 56, 56, 0, C.ink, 2.6); lab(140, 500, 'DINER', C.ink, .85, 16, 'center', 'alphabetic', 'bold');
-  // the group walks right
-  const gx = lerp(1060, 1340, p);
+  const pw = PE(140, 400, 56, 56); fillP(pw, C.cream); X.save(); X.clip(pw); hatch(pw, 140, 400, 60, 0, 14, C.brick, 5, .5); hatch(pw, 140, 400, 60, Math.PI / 2, 14, C.brick, 5, .5); X.restore(); iE(140, 400, 56, 56, 0, C.ink, 2.6);
+  fillP(PR(62, 478, 156, 44), C.cream, .9); iBox(62, 478, 156, 44, C.ink, 1.8); c_big(140, 510, 'DINER', C.ink, 28);
+  // the group walks right at a slow, steady hospital pace; draft 11: the legs are driven by the distance walked, so
+  // the feet stay planted (draft 10's trio skated: 66 px/s on legs pacing 600 px/s)
+  const gx0 = 1000, gx = lerp(gx0, 1500, p), wd = gx - gx0, F = 39;
   // shadow: a long band from his heels back along the floor, rising into a seated figure at the diner door
   const sh = new Path2D(); sh.addPath(PP([[gx - 30, 1006], [gx + 20, 994], [470, 792], [300, 800]]));
   sh.addPath(PE(330, 470, 30, 36)); sh.addPath(PP([[316, 500], [346, 500], [348, 512], [390, 530], [404, 640], [480, 652], [486, 790], [462, 790], [452, 690], [300, 690], [292, 560], [300, 528], [316, 512]]));
@@ -104,9 +119,9 @@ SU.c_shadowStay = { mode: 'ill', f(q, p, a, T) {
   X.save(); X.globalCompositeOperation = 'multiply'; fillP(sh, '#a89c86', .95); X.restore();
   hatch(sh, 600, 700, 900, .75, 3.4, C.ink, 1, .8); hatch(sh, 600, 700, 900, -.6, 5, C.ink, .9, .6);
   iE(330, 470, 30, 36, 0, C.ink, 1.4, .6, false);
-  c_ord(gx - 200, 1000, 1.2, { look: .7, legs: walkPh(), armR: [1.35, .3] });
-  c_man(gx, 1004, 1.2, { look: -.8, legs: walkPh() + 1.5, armL: [.1, 0], armR: [-.15, .1] });
-  c_ord(gx + 200, 1000, 1.2, { look: .9, legs: walkPh() + 3, armL: [-.2, .1] });
+  c_ord(gx - 200, 1000, 1.2, { look: .7, legs: c_stride(wd, 1.2, F), armR: [1.35, .3] });
+  c_man(gx, 1004, 1.2, { look: -.8, legs: c_stride(wd + F * .9, 1.2, F), armL: [.1, 0], armR: [-.15, .1] });
+  c_ord(gx + 200, 1000, 1.2, { look: .9, legs: c_stride(wd + F * 1.7, 1.2, F), armL: [-.2, .1] });
   X.setLineDash([3, 10]); X.beginPath(); X.moveTo(gx - 40, 600); X.quadraticCurveTo((gx + 360) / 2, 300, 380, 440); stroke(C.orange, 3, .9); X.setLineDash([]);
   gc(340, 560, 120, C.orange, .7, 2);
   consL([[0, wb, W, wb], [0, 590, W, 590], [300, 0, 300, H]]);
@@ -130,15 +145,17 @@ SU.c_profile = { mode: 'ill', f(q, p, a, T) {
   // shoulders: the plum coat
   const sh = [[620, 1120], [660, 840], [780, 790], [1080, 790], [1180, 850], [1230, 1120]]; fillP(PP(sh), C.plum); shade(PP(sh), 920, 960, 360, [40, -20], .9, 5.5); iP(dens(sh, 30), false, C.ink, 2.6);
   iP([[870, 790], [930, 900], [1000, 800]], false, C.ink, 2); iP([[930, 900], [920, 1100]], false, C.ink, 1.8);
-  // head: the same profile the treatment diagram uses
-  const hp = PROFILE.map(([x, y]) => [900 + x * 1.6, 520 + y * 1.6]), hpp = PP(hp);
+  // head: the treatment diagram's face (brow to neck); draft 11: bald, with a round skull, like him everywhere else in
+  // the verse (draft 10 gave him dark hair here only)
+  const hp = C_HEADP.map(([x, y]) => [900 + x * 1.6, 520 + y * 1.6]), hpp = PP(hp);
   fillP(hpp, '#efd9b9'); shade(hpp, 900, 520, 320, [-34, -10], .7, 5.5);
-  X.save(); X.clip(hpp); const hr = PP([[560, 60], [1080, 60], [1070, 240], [990, 230], [930, 300], [860, 330], [800, 460], [560, 620]]); fillP(hr, '#4a3a2e'); hatch(hr, 820, 330, 360, .5, 3.6, C.ink, 1, .8); hatch(hr, 820, 330, 360, -.9, 5, C.ink, .9, .5); X.restore();
+  X.save(); X.clip(hpp); const crn = PP([[560, 40], [900, 40], [830, 200], [790, 330], [770, 470], [560, 620]]); hatch(crn, 760, 300, 360, .5, 5, C.ink, .9, .4); hatch(crn, 700, 380, 260, -.9, 7, C.ink, .8, .25);
+  X.beginPath(); X.ellipse(950, 190, 70, 30, -.35, Math.PI * 1.05, Math.PI * 1.75); stroke(C.cream, 6, .55); X.restore();
   iP(dens(hp, 26, true), true, C.ink, 3);
   iE(884, 430, 26, 40, 0, C.ink, 2.4); X.beginPath(); X.arc(888, 432, 14, -1.4, 1.8); stroke(C.ink, 1.8, .9); fillP(PE(890, 432, 26, 40), '#efd9b9', 0);
   fillP(PE(1062, 340, 7, 6), C.ink); iline(1040, 316, 1084, 312, C.ink, 2.4, 1, false); iline(1050, 352, 1076, 350, C.ink, 1.2, .7, false);
   // draft 6: the machine stands at the right; its cord runs up to a ceiling rail and hangs straight down to the pad,
-  // which settles on the temple just under the hairline. The cord only ever crosses the background and his hair.
+  // which settles on the temple. The cord only ever crosses the background and the top of his head.
   const cx2 = 965, py2 = lerp(-40, 292, d) + Math.sin(T * 2) * 3 * (1 - d);
   X.beginPath(); X.moveTo(1580, 424); X.lineTo(1582, 52); X.quadraticCurveTo(1582, 40, 1570, 40); X.lineTo(cx2 + 12, 40); X.quadraticCurveTo(cx2, 40, cx2, 54);
   for (let i = 1; i <= 24; i++) { const t2 = i / 24; X.lineTo(cx2 + Math.sin(t2 * 9 + T) * 2 * (1 - d), lerp(54, py2 - 18, t2)); } stroke(C.ink, 2.6, 1);
@@ -148,6 +165,8 @@ SU.c_profile = { mode: 'ill', f(q, p, a, T) {
   if (d > .6) for (let i = 0; i < 3; i++) gc(cx2, py2, 40 + i * 20 + ((FD * 4) % 20), C.orange, .55 * (d - .5) * 2, 1.6, null, -.6, .9);
   consL([[0, 520, W, 520], [900, 0, 900, H]]); consC([[890, 330, 240]]);
 } };
+// the profile with a round cranium: PROFILE's face from brow to the back of the neck, then an arc over the top
+const C_HEADP = PROFILE.slice(3, 16).concat(Array.from({ length: 24 }, (_, i) => { const a = -3.6 + i / 24 * 3.24; return [-5 + 160 * Math.cos(a), -95 + 160 * Math.sin(a)]; }));
 // the treatment machine: a hatched cabinet on castors, three dials, a calm paper trace; d = how far the pad has come down
 function c_machine(x, y, d) {
   X.save();
@@ -213,10 +232,14 @@ SU.c_pills = { mode: 'ill', f(q, p, a, T) {
   const push = eo(seg(p, .05, .5)), hold = seg(p, .5, 1), bx = 640 - 50 * push + Math.sin(T * 30) * 2 * hold;
   const bt = PR(bx - 110, 360, 220, 360); fillP(bt, '#c86b2c'); shade(bt, bx, 540, 250, [30, 0], .9, 5); hatch(bt, bx, 540, 250, -.8, 18, C.cream, 3, .25); iBox(bx - 110, 360, 220, 360, C.ink, 2.6);
   const cap = PR(bx - 124, 300, 248, 70); fillP(cap, C.cream); X.beginPath(); for (let i = 0; i < 26; i++) { X.moveTo(bx - 120 + i * 9.5, 304); X.lineTo(bx - 120 + i * 9.5, 366); } stroke(C.ink, 1, .6); iBox(bx - 124, 300, 248, 70, C.ink, 2.4);
-  const lb = PR(bx - 90, 440, 180, 180); fillP(lb, C.cream); iBox(bx - 90, 440, 180, 180, C.ink, 1.8); lab(bx, 486, 'TAKE', C.ink, .9, 18, 'center', 'middle', 'bold'); lab(bx, 520, '3 × DAILY', C.ink, .8, 14, 'center', 'middle'); for (let i = 0; i < 4; i++) iline(bx - 70, 548 + i * 16, bx + 70 - (i % 2) * 40, 548 + i * 16, C.ink, 1, .5, false);
+  // draft 11: the dose is the label's one big line (phone size), set above the orderly's fingers; no "TAKE" (sung word)
+  const lb = PR(bx - 100, 392, 200, 228); fillP(lb, C.cream); iBox(bx - 100, 392, 200, 228, C.ink, 1.8); c_big(bx, 446, '3 × DAILY', C.ink, 28); iline(bx - 84, 462, bx + 84, 462, C.ink, 1.4, .7, false);
+  lab(bx + 82, 500, '℞', C.ink, .85, 22, 'right', 'alphabetic', 'bold'); for (let i = 0; i < 5; i++) iline(bx - 80, 528 + i * 18, bx + 80 - (i % 2) * 40, 528 + i * 18, C.ink, 1, .5, false);
   fillP(PE(bx, 724, 130, 10), C.ink, .25);
-  // left: the orderly's arm comes up from below, white sleeve; the hand grips the bottle's edge and shoves
-  c_sleeve(dens([[-420, 1260], [160, 1010], [bx - 228, 600]], 40), 150, 92, C_WHITE); c_gripHand(bx - 110, 560, 1.15, 1, '#d9e3e0');
+  // left: the orderly's arm comes up from below, white sleeve; the hand grips the bottle's edge and shoves.
+  // draft 11: the forearm now runs level into the shirt cuff (draft 10's sleeve ended below it, so the cuff floated)
+  const cfx = bx - 110 - 104 * 1.15, cfy = 560 + 6 * 1.15; // the cuff's centre
+  c_sleeve(dens([[-420, 1300], [20, 760], [cfx - 150, cfy + 10], [cfx - 6, cfy]], 30), 150, 118, C_WHITE); c_gripHand(bx - 110, 560, 1.15, 1, '#d9e3e0');
   // right: his arm, plum sleeve, bent; the hand flat against the other side, holding it off
   c_sleeve(dens([[1720, 1260], [1160, 1020], [bx + 136, 690]], 40), 150, 80, C_PLUM2); c_sideHand(bx + 136, 640, 1.5, -1, C_WHITE);
   // the pills that were in the cup roll off the edge, away from him
@@ -231,8 +254,8 @@ SU.c_sDose = { mode: 'sch', f(q, p, a, T) {
   schBG(); cam(960, 540, lerp(1.06, 1, eo(p)));
   const bx = 640; X.strokeStyle = C.white; X.lineWidth = 1.4; X.globalAlpha = .9; X.strokeRect(bx - 110, 360, 220, 360); X.strokeRect(bx - 124, 300, 248, 70); X.globalAlpha = 1;
   X.beginPath(); for (let i = 0; i < 26; i++) { X.moveTo(bx - 120 + i * 9.5, 304); X.lineTo(bx - 120 + i * 9.5, 366); } stroke(C.lav, 1, .5);
-  stip(PR(bx - 110, 470, 220, 250), bx, 600, 200, 900, C.lav, .45, 1.3); X.strokeStyle = C.lav; X.strokeRect(bx - 90, 440, 180, 180);
-  lab(bx, 486, 'TAKE', C.white, .9, 18, 'center', 'middle', 'bold'); lab(bx, 520, '3 × DAILY', C.lav, .8, 13, 'center', 'middle');
+  stip(PR(bx - 110, 470, 220, 250), bx, 600, 200, 900, C.lav, .45, 1.3); X.strokeStyle = C.lav; X.strokeRect(bx - 100, 392, 200, 228);
+  lab(bx, 446, '3 × DAILY', C.white, .85, 15, 'center', 'alphabetic', 'bold'); lab(bx + 82, 500, '℞', C.lav, .8, 16, 'right');
   bracket(bx - 160, 300, bx - 160, 720, C.cyan, .8, 'H 420'); bracket(bx - 124, 760, bx + 124, 760, C.cyan, .7, 'Ø 248');
   gl(-50, 720, 860, 720, C.lav, .5, 1.2);
   const g0 = 900, g1 = 1860, cw = 130, gy = 260, ch = 150, sc = (q * 6 + p * 2) * cw, d0 = Math.floor(sc / cw);
@@ -244,7 +267,7 @@ SU.c_sDose = { mode: 'sch', f(q, p, a, T) {
   X.restore();
   for (const [r, t] of [[0, 'MORN'], [1, 'NOON'], [2, 'NIGHT']]) lab(g0 - 14, gy + ch * r + ch / 2 + 4, t, C.lav, .7, 11, 'right');
   gl(1660, 840, 1840, 840, C.mag, .9, 1.6); lab(1850, 846, '∞', C.mag, .95, 22);
-  lab(1000, 880, 'END DATE: NONE GIVEN', C.cyan, .85, 14);
+  c_big(1000, 892, 'END DATE: NONE GIVEN', C.cyan, 30, 'left'); // draft 11: the punchline at phone size
   gl(bx + 124, 330, g0, gy, C.lav, .25, 1, [3, 6]); gl(bx + 110, 720, g0, gy + ch * 3, C.lav, .25, 1, [3, 6]);
   screen(); schFrame('31', 'DOSAGE', '3 × DAILY · NO END DATE');
 } };
@@ -358,19 +381,41 @@ SU.c_corridorLoop = { mode: 'ill', f(q, p, a, T) {
   consL([[0, C_LOOP.y, W, C_LOOP.y], [C_LOOP.cx, 0, C_LOOP.cx, H]]); consC([[C_LOOP.cx, C_LOOP.cy, C_LOOP.r]]);
 } };
 
-// ---------- 223.4 SCH: the queue is a spiral; position 47 rides it outward ----------
+// ---------- 223.4 SCH: the hold music as a waveform. Draft 11: no longer a spiral (it rhymed with the corridor loop
+// before it and the waiting room after it, three round centred pictures in a row). The track is the same bar four times
+// over; the playhead (him, position 47) runs the first bar and jumps back to its start. The agent waits at the far end.
+function c_wave(u) { // the hold tune's amplitude at u (0..1 across one bar): four plucked notes, the same every bar
+  const n = Math.floor(u * 4), v = u * 4 - n, env = Math.min(1, v * 14) * Math.exp(-v * 3.2), hz = [5, 7, 6, 9][n];
+  return env * (.55 + .45 * Math.abs(Math.sin(v * hz * 6.3))) * [1, .8, .9, .7][n];
+}
 SU.c_sQueue = { mode: 'sch', f(q, p, a, T) {
-  schBG(); cam(1000, 540, lerp(1.05, 1, eo(p)));
-  const cx = C_LOOP.cx, cy = C_LOOP.cy, rot = T * .5, sp = (th) => [cx + Math.cos(th + rot) * (30 + th * 24), cy + Math.sin(th + rot) * (30 + th * 24)];
-  lattice(cx, cy, 64, 9, C.lav, .05); gc(cx, cy, C_LOOP.r, C.lav, .3, 1, [3, 6]); ticks(cx, cy, C_LOOP.r, 72, 6, C.lav, .4, 1, 6);
-  const pts = []; for (let th = 0; th < 17; th += .05) pts.push(sp(th)); path(pts, C.cyan, 1.4, .8);
-  for (let n = 1; n <= 52; n++) { const th = Math.sqrt(n) * 2.3; if (th > 17) break; const [x, y] = sp(th); gc(x, y, 6, C.lav, .7, 1); if (n % 5 === 0) lab(x + 10, y - 8, String(n), C.lav, .55, 10); }
-  star(cx, cy, 6, C.white, .9); lab(cx + 18, cy + 30, 'AGENT', C.white, .85, 12);
-  const th47 = Math.sqrt(47) * 2.3, [hx, hy] = sp(th47); star(hx, hy, 6, C.mag, 1); gc(hx, hy, 30, C.mag, .9, 1.4); lab(hx + 36, hy + 4, 'YOU · 47', C.mag, .95, 14, 'left', 'alphabetic', 'bold');
-  gl(-60, C_LOOP.y, cx, C_LOOP.y, C.lav, .6, 1.4); gl(-60, C_LOOP.y - 230, cx - 120, C_LOOP.y - 230, C.lav, .4, 1, [4, 6]); lab(80, C_LOOP.y - 14, 'ENTRY', C.lav, .7, 12);
-  star(420, C_LOOP.y - 160, 4, C.white, .8); gl(420, C_LOOP.y - 160, hx, hy, C.mag, .5, 1, [4, 6]);
-  bracket(cx - C_LOOP.r, C_LOOP.y + 60, cx + C_LOOP.r, C_LOOP.y + 60, C.cyan, .7, 'R 370 · ONE LAP = NO PROGRESS');
-  lab(160, 300, 'EST. WAIT', C.lav, .7, 13); lab(160, 350, '∞ MIN', C.cyan, .95, 34, 'left', 'alphabetic', 'bold');
+  schBG(); cam(960, 540, lerp(1.04, 1, eo(p)));
+  const x0 = 160, BAR = 380, NB = 4, x1 = x0 + BAR * NB, wy = 520, amp = 150;
+  graticule(x0 + BAR * NB / 2, wy, BAR * NB, amp * 2 + 40, 40, C.lav, .07);
+  gl(x0, wy, x1, wy, C.lav, .45, 1.2); gl(x0, wy - amp - 20, x1, wy - amp - 20, C.lav, .3, 1); gl(x0, wy + amp + 20, x1, wy + amp + 20, C.lav, .3, 1);
+  // the bars: identical copies, so the track reads as one bar repeated
+  for (let b = 0; b < NB; b++) {
+    const bx0 = x0 + b * BAR; X.beginPath();
+    for (let i = 0; i < BAR; i += 5) { const h = c_wave(i / BAR) * amp; X.moveTo(bx0 + i, wy - h); X.lineTo(bx0 + i, wy + h); }
+    stroke(b === 0 ? C.cyan : C.lav, 2, b === 0 ? .85 : .45);
+    const env = []; for (let i = 0; i <= BAR; i += 4) env.push([bx0 + i, wy - c_wave(i / BAR) * amp - 3]); path(env, C.white, 1.4, b === 0 ? .6 : .3);
+    gl(bx0, wy - amp - 40, bx0, wy + amp + 40, C.lav, .55, 1.4, [5, 6]); lab(bx0 + 30, wy - amp - 30, 'A', C.lav, .7, 13, 'left', 'alphabetic', 'bold');
+  }
+  gl(x1, wy - amp - 40, x1, wy + amp + 40, C.lav, .55, 1.4, [5, 6]);
+  // the agent, at the far end of the track
+  star(x1 + 70, wy, 7, C.white, .95); lab(x1 + 70, wy + 52, 'AGENT', C.white, .85, 12, 'center');
+  gl(x0 + BAR, wy + amp + 70, x1 + 70, wy + amp + 70, C.lav, .35, 1.2, [3, 8]); gl(x1 + 70, wy + 30, x1 + 70, wy + amp + 70, C.lav, .35, 1.2, [3, 8]);
+  // the playhead: him, riding bar 1 and jumping back to its start (on twos, about 1.2 loops a second)
+  const ph = ((T - 223.38) * 1.25) % 1, hx = x0 + ph * BAR;
+  X.save(); X.beginPath(); X.rect(x0, wy - amp - 20, hx - x0, amp * 2 + 40); X.clip(); stip(PR(x0, wy - amp - 20, BAR, amp * 2 + 40), x0 + BAR / 2, wy, BAR, 700, C.mag, .4, 1.2); X.restore();
+  gl(hx, wy - amp - 60, hx, wy + amp + 40, C.mag, .95, 2.4); star(hx, wy - c_wave(ph) * amp, 5, C.mag, 1);
+  X.beginPath(); X.moveTo(hx - 12, wy - amp - 74); X.lineTo(hx + 12, wy - amp - 74); X.lineTo(hx, wy - amp - 58); X.closePath(); X.fillStyle = C.mag; X.globalAlpha = .95; X.fill(); X.globalAlpha = 1;
+  lab(hx + 16, wy + amp + 36, 'YOU · 47', C.mag, .95, 14, 'left', 'alphabetic', 'bold');
+  // the loop back: square-cornered, from the end of bar 1 over the top to its start
+  const ly = wy - amp - 110; X.beginPath(); X.moveTo(x0 + BAR - 6, wy - amp - 24); X.lineTo(x0 + BAR - 6, ly); X.lineTo(x0 + 6, ly); X.lineTo(x0 + 6, wy - amp - 24); X.setLineDash([10, 7]); stroke(C.mag, 2.2, .9); X.setLineDash([]);
+  X.beginPath(); X.moveTo(x0 - 6, wy - amp - 40); X.lineTo(x0 + 6, wy - amp - 24); X.lineTo(x0 + 18, wy - amp - 40); stroke(C.mag, 2.2, .9);
+  c_big(x0 + BAR / 2, ly - 18, 'REPEAT ∞', C.mag, 32); // the punchline
+  bracket(x0, wy + amp + 70, x0 + BAR, wy + amp + 70, C.cyan, .7, 'ONE BAR · 0:48');
   screen(); schFrame('32', 'THE QUEUE', 'YOUR CALL IS IMPORTANT TO US');
 } };
 
@@ -416,7 +461,7 @@ SU.c_holdSpiral = { mode: 'ill', f(q, p, a, T) {
   c_topSeat(hx, hy, ha, { coat: C.teal, hat: true });
   X.save(); X.translate(hx, hy); X.rotate(ha); const cs = PR(-30, 34, 60, 34); fillP(cs, '#9a5a34'); shade(cs, 0, 51, 40, [-6, -4], .8, 4); iBox(-30, 34, 60, 34, C.ink, 1.8); X.restore();
   for (let i = 0; i < 3; i++) gc(hx, hy, 56 + i * 18 + ((FD * 4) % 18), C.orange, .75, 2.2);
-  lab(hx + (cx - hx) * .14, hy + (cy - hy) * .14 + 6, '47', C.brick, .95, 22, 'center', 'alphabetic', 'bold');
+  c_big(hx + (cx - hx) * .14, hy + (cy - hy) * .14 + 10, '47', C.brick, 30); // draft 11: phone size
   cloud(hx - 30, hy - 120, .6, {});
   const scr = pixWorld('c_hold', 48, 95, (g, w, h) => c_pxHold(g, w, h, T));
   phoneBody(cx, cy, .62, 0, (w, h) => blitPix(scr, 0, 0, w, h));
@@ -444,7 +489,7 @@ SU.c_bellFar = { mode: 'ill', f(q, p, a, T) {
   const tx = 1520, ty = 1070; traveller(tx, ty, 1.25, { look: -.9, mouth: sing(T), armR: [-1.9, .2], armL: [-.4, .3], case: false });
   const hx = tx - 106 * 1.25, hy = ty - 293 * 1.25; X.save(); X.translate(hx - 20, hy - 18); X.rotate(-.25); const pp = PR(-30, -40, 60, 80); fillP(pp, C.teal); hatch(pp, 0, 0, 50, .7, 4, C.ink, .8, .5, [6, -6]); iBox(-30, -40, 60, 80, C.ink, 2); iE(0, -6, 14, 14, 0, C.ochre, 2, 1, false); lab(0, 26, 'PASS', C.ochre, 1, 10, 'center', 'alphabetic', 'bold'); X.restore();
   cloud(tx, ty - 470 * 1.25, .7, { rain: true }); noteRain(tx - 110, ty - 470 * 1.25 + 60, 220, 120, 5);
-  path([[hx - 60, hy - 30], [bx + 60 * bs, by - 30 * bs]], C.orange, 2, .8, [10, 8]); lab((hx + bx) / 2, Math.min(hy, by) - 60, 'REACH ' + Math.round(lerp(1.2, 9.8, st) * 10) / 10 + ' M', C.brick, .9, 15, 'center', 'alphabetic', 'bold');
+  path([[hx - 60, hy - 30], [bx + 60 * bs, by - 30 * bs]], C.orange, 2, .8, [10, 8]); c_big((hx + bx) / 2, Math.min(hy, by) - 60, 'REACH ' + (Math.round(lerp(1.2, 9.8, st) * 10) / 10).toFixed(1) + ' M', C.brick, 30); // draft 11: phone size
   consL([[0, vy, W, vy], [vx, 0, vx, H], [vx, vy, 0, 0], [vx, vy, 0, H]]);
 } };
 
@@ -472,7 +517,7 @@ SU.c_holdSky = { mode: 'ill', f(q, p, a, T) {
   // his piece: wall behind him, the floor under the hold-phone figure
   c_slab(960, 994, 620, 0, { wh: 420, dx: 210 });
   X.beginPath(); for (let i = 0; i <= 40; i++) { const t = i / 40, xx = lerp(1010, dx - 60, t), yy = lerp(680, dy - 120, t) - Math.sin(t * Math.PI) * 140 + Math.sin(t * 30 + T * 6) * 6; i ? X.lineTo(xx, yy) : X.moveTo(xx, yy); } X.setLineDash([10, 9]); stroke(C.orange, 2.2, .85); X.setLineDash([]);
-  bracket(1100, 160, dx - 120, 160, C.brick, .8, Math.round(lerp(40, 95, eo(p))) + ' M AND RISING');
+  bracket(1020, 236, dx - 120, 236, C.brick, .8); c_big((1020 + dx - 120) / 2, 214, Math.round(lerp(40, 95, eo(p))) + ' M AND RISING', C.brick, 28); // draft 11: phone size, inside the bracket's span
   consC([[960, 994, 700]]);
 } };
 
@@ -493,7 +538,8 @@ SU.c_lifebuoy = { mode: 'ill', f(q, p, a, T) {
   const ring = new Path2D(); ring.ellipse(0, 0, 76, 76, 0, 0, TAU); ring.ellipse(0, 0, 40, 40, 0, 0, TAU); fillP(ring, C.cream);
   X.save(); X.clip(ring, 'evenodd'); for (let i = 0; i < 4; i++) fillP(PP([[0, 0], [Math.cos(i * Math.PI / 2) * 120, Math.sin(i * Math.PI / 2) * 120], [Math.cos(i * Math.PI / 2 + .7) * 120, Math.sin(i * Math.PI / 2 + .7) * 120]]), C.orange); X.restore();
   X.save(); X.clip(ring, 'evenodd'); hatch(PR(-80, -80, 160, 160), 0, 0, 80, .7, 4, C.ink, .9, .55, [14, -14]); X.restore(); iE(0, 0, 76, 76, 0, C.ink, 2.6); iE(0, 0, 40, 40, 0, C.ink, 2.2); X.restore();
-  bracket(end[0] - 40, end[1] + 160, 560, 560, C.brick, .85, 'SHORT BY ' + Math.round(lerp(4, 22, gap)) + ' FT');
+  { const rc = [end[0], end[1] + 70], hd = [500, 470], rl = Math.hypot(hd[0] - rc[0], hd[1] - rc[1]), b0 = [rc[0] + (hd[0] - rc[0]) / rl * 90, rc[1] + (hd[1] - rc[1]) / rl * 90], b1 = hd, an = Math.atan2(b1[1] - b0[1], b1[0] - b0[0]) + Math.PI, nx = Math.sin(an), ny = -Math.cos(an); bracket(b0[0], b0[1], b1[0], b1[1], C.brick, .85);
+    X.save(); X.translate((b0[0] + b1[0]) / 2 + nx * 30, (b0[1] + b1[1]) / 2 + ny * 30); X.rotate(an); c_big(0, 0, Math.round(lerp(4, 22, gap)) + ' FT SHORT', C.brick, 28, 'center', 'middle'); X.restore(); } // draft 11: phone size
   for (let i = 0; i < 3; i++) gc(end[0], end[1] + 70, 100 + i * 26 + ((FD * 5) % 26), C.orange, .5, 1.6);
   consL([[0, 930, W, 930], [hx0, 0, hx0, H]]);
 } };
@@ -617,12 +663,12 @@ function c_darkHat(x, y, s, rot = 0) { // a crook's fedora, brim centre at (x,y)
   X.beginPath(); wP([[-25, -8], [25, -8]], false, .4 * k); stroke('#0f0c0b', 4 * k, 1); X.restore();
 }
 function c_crook(x, y, s, o = {}) { // the traveller's build in the crooks' costume (never his teal coat or brown hat)
-  traveller(x, y, s, { hat: false, coat: C_CROOK, sleeve: C_CROOK2, trouser: '#2b2420', look: o.look || 0, legs: o.legs ?? null, armR: o.armR, armL: o.armL, case: false });
-  const lk = (o.look || 0) * 6;
-  X.save(); X.translate(x, y); X.scale(s, s); const k = 1 / s;
+  traveller(x, y, s, { hat: false, coat: C_CROOK, sleeve: C_CROOK2, trouser: '#2b2420', look: o.look || 0, legs: o.legs ?? null, armR: o.armR, armL: o.armL, handTo: o.handTo, flip: o.flip, case: false });
+  const fl = o.flip ? -1 : 1, lk = (o.look || 0) * 6;
+  X.save(); X.translate(x, y); X.scale(fl * s, s); const k = 1 / s;
   const cp = PP([[-34, -276], [34, -276], [46, -130], [50, -118], [-50, -118], [-46, -130]]); X.save(); X.clip(cp); X.beginPath(); for (let i = -6; i <= 6; i++) { X.moveTo(i * 9, -280); X.lineTo(i * 9 * 1.25, -110); } stroke(C.cream, 1.1 * k, .55); X.restore();
   const mk = PP([[lk - 30, -318], [lk + 30, -318], [lk + 27, -302], [lk - 27, -302]]); fillP(mk, '#16110f'); for (const ex of [-9, 9]) fillP(PE(lk + ex + lk * .4, -310, 3.4, 3), C.cream);
-  X.restore(); c_darkHat(x + lk * s, y - 330 * s, s);
+  X.restore(); c_darkHat(x + fl * lk * s, y - 330 * s, s);
 }
 // the movie behind them: a night street on a silver print, square to the screen (Von Ulrich's frontal emblem framing:
 // the moon centred over the middle crook, the street running straight back between mirrored buildings, a lamp each side)
@@ -652,6 +698,10 @@ SU.c_crookReal = { mode: 'ill', f(q, p, a, T) {
   const sx = 300, sy = 40, sw = 1320, sh = 660;
   for (const cx0 of [sx - 80, sx + sw]) { const cu = PR(cx0, sy - 80, 80, sh + 150); fillP(cu, '#7a2a3a'); hatch(cu, cx0 + 40, sy + sh / 2, sh, 1.57, 8, C.ink, 1, .5); X.beginPath(); for (let i = 1; i < 4; i++) { X.moveTo(cx0 + i * 20, sy - 80); X.lineTo(cx0 + i * 20 + Math.sin(i) * 6, sy + sh + 70); } stroke(C.ink, 1.4, .6); }
   const stg = PR(-200, sy + sh, W + 400, 80); fillP(stg, '#5a3a22'); hatch(stg, 960, sy + sh + 40, 1200, .05, 6, C.ink, .9, .5); iline(-200, sy + sh + 80, W + 200, sy + sh + 80, C.ink, 2.4);
+  // draft 11: the room's floor, so the two who step out stand on something (draft 10's legs ran off the bottom)
+  const FLY = 1010, flr = PR(-200, FLY, W + 400, 400); fillP(flr, '#b08a68'); hatch(flr, 960, FLY + 120, 1300, .04, 7, C.ink, .8, .4);
+  X.beginPath(); for (let i = -12; i <= 12; i++) { X.moveTo(960 + i * 70, FLY); X.lineTo(960 + i * 260, FLY + 400); } stroke(C.ink, 1, .3); iline(-200, FLY, W + 200, FLY, C.ink, 2.6);
+  c_big(1270, sy + sh + 52, 'NOT IN THE PICTURE', C.cream, 28, 'center', 'alphabetic', .9); // draft 11: phone size, on the stage lip
   const e1 = eo(seg(T, 270.42, 271.05)), e2 = eo(seg(T, 270.74, 271.37)), reach = eo(seg(T, 271.8, 272.45)), lift = eo(seg(T, 272.45, 273.15)), back = eo(seg(T, 274.8, 275.9)); // assembler: the crook KEEPS the hat and pulls it back into the screen; act D drops it back onto his head on camera at ~278
   const armOut = T >= 271.8 && back < 1;
   filmScreen(sx, sy, sw, sh, T, () => c_noirStreet(sx, sy, sw, sh, T, [e1 > 0, e2 > 0], armOut), { tone: 'silver', cue: [[275.5, 275.75]] }); iBox(sx, sy, sw, sh, C.ink, 4);
@@ -660,12 +710,20 @@ SU.c_crookReal = { mode: 'ill', f(q, p, a, T) {
   const fy0 = sy + sh * .9;
   for (const [e, side, x0] of [[e1, -1, sx + sw * .28], [e2, 1, sx + sw * .72]]) { if (e <= 0) continue;
     if (e < .6) for (let i = 0; i < 4; i++) iE(x0, fy0 - 210, 90 + i * 34 + e * 120, 230 + i * 30 + e * 120, 0, i % 2 ? C.orange : C.ink, 1.8, (.8 - i * .15) * (1 - e / .6), false);
-    c_crook(lerp(x0, 960 + side * 560, e), lerp(fy0, 1270, e), lerp(1.15, 2.2, e), { look: -side, legs: e < 1 ? walkPh() : null, armL: [.2, -.1], armR: [-.1, .2] }); }
+    // draft 11: they land on the floor line, feet in shot; legs driven by the distance walked (no skating); the left
+    // one walks left, so he is drawn facing left. Through the hold they tip their own hats, then turn to face us.
+    const cx1 = lerp(x0, 960 + side * 560, e), cy1 = lerp(fy0, FLY + 6, e), cs = lerp(1.15, 1.5, e), wdist = Math.hypot(cx1 - x0, (cy1 - fy0) * .5);
+    const tip = eio(seg(T, 273.2, 274.1)) * (1 - eio(seg(T, 274.7, 275.5))), lookE = lerp(-1, -.15, eio(seg(T, 275.15, 275.95)));
+    if (e > .5) fillP(PE(cx1 + side * 10, cy1 + 4, 70 * cs, 9 * cs), C.ink, .22 * seg(e, .5, 1));
+    c_crook(cx1, cy1, cs, { look: lookE, flip: side < 0, legs: e < 1 ? c_stride(wdist, cs, 60 * cs) : null, armL: [.2, -.1], armR: [-.1, .2], handTo: tip > .01 ? [lerp(25.6, 32, tip), lerp(-126.6, -326, tip)] : undefined }); }
   // him from behind, front and centre
   c_backView(960, 1150, 2.5, true); cloud(700, 690, .42, { rain: true });
   // the middle crook's arm: out through the screen, down to the hat, up with it, then back in without it
   const ox = 990, oy = 486, onHead = [960, 800], up = [1015, 560];
-  let hand = [ox, oy]; if (armOut) { if (T < 272.45) hand = [lerp(ox, onHead[0] + 10, reach), lerp(oy, onHead[1] - 40, reach)]; else if (T < 274.5) hand = [lerp(onHead[0] + 10, up[0], lift), lerp(onHead[1] - 40, up[1], lift)]; else hand = [lerp(up[0], ox, back), lerp(up[1], oy, back)]; }
+  // draft 11: no dead hold once the hat is up: the hand keeps drawing it slowly toward the screen, turning it over
+  const creep = eio(seg(T, 273.15, 274.8)), up2 = [1050, 512], sway = Math.sin(T * 3.1) * creep * (1 - back);
+  const held = [lerp(up[0], up2[0], creep) + sway * 6, lerp(up[1], up2[1], creep) + sway * 3];
+  let hand = [ox, oy]; if (armOut) { if (T < 272.45) hand = [lerp(ox, onHead[0] + 10, reach), lerp(oy, onHead[1] - 40, reach)]; else if (T < 274.8) hand = [lerp(onHead[0] + 10, held[0], lift), lerp(onHead[1] - 40, held[1], lift)]; else hand = [lerp(held[0], ox, back), lerp(held[1], oy, back)]; }
   if (armOut && Math.hypot(hand[0] - ox, hand[1] - oy) > 8) {
     const el = [lerp(ox, hand[0], .5) + 110, lerp(oy, hand[1], .5) - 10];
     for (let i = 0; i < 4; i++) iE(ox, oy, 26 + i * 22 + ((FD * 3) % 22), 18 + i * 14, -.2, i % 2 ? C.orange : C.ink, 1.8, .85 - i * .15, false);
@@ -675,11 +733,10 @@ SU.c_crookReal = { mode: 'ill', f(q, p, a, T) {
   }
   // the hat: on him; lifted; held; dropped back
   let hx = onHead[0], hy = onHead[1], hr = 0;
-  if (T >= 272.2) { hx = hand[0] - 10; hy = hand[1] + 40; hr = -.25 * lift; }
+  if (T >= 272.2) { hx = hand[0] - 10; hy = hand[1] + 40; hr = -.25 * lift - .4 * creep + .08 * sway; }
   if (back < .97) c_hat(hx, hy, 2.5 * (1 - .5 * back), hr);
   if (armOut && T >= 272.2 && back < .97) { fillP(PE(hand[0] + 6, hand[1] - 6, 26, 20), '#e7c9a2'); iE(hand[0] + 6, hand[1] - 6, 26, 20, 0, C.ink, 2); }
   if (T >= 272.2 && T < 275.3) { X.setLineDash([3, 10]); X.beginPath(); X.moveTo(960, 760); X.quadraticCurveTo(1100, 700, hx + 20, hy + 20); stroke(C.orange, 3, .9); X.setLineDash([]); }
-  lab(1880, 1052, 'NOT IN THE PICTURE', C.brick, .9, 16, 'right', 'alphabetic', 'bold');
   consL([[0, sy + sh, W, sy + sh], [960, 0, 960, H]]);
 } };
 

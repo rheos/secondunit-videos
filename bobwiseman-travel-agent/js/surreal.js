@@ -59,12 +59,13 @@ function leak(a, clear, T = TNOW) {
   if (T <= LEAK_SURGE_START) { leakOriginal(a, clear); return; }
   if (a <= 0) return;
   const joined = new Path2D(), edges = [];
-  const release = cl((T - LEAK_SURGE_START) / 20);
   for (const [i, h] of LEAK_HOLES.entries()) {
     const g = Math.max(0, (a - h.born) / (1 - h.born));
     const radius = h.Rmax * Math.pow(g, .8);
     const heal = leakHeal(i, T);
-    const R0 = lerp(Math.min(radius, leakRoom(h, clear)), radius, release) * (1 - heal);
+    // Draft 11: a hole stops short of a clear zone instead of being carved by it. Carving left navy crescents hugging a
+    // head (d_featherFall) and cream ghost discs with charred rims (e_answerHome, d_birdSwap).
+    const R0 = Math.min(radius, leakRoom(h, clear)) * (1 - heal);
     if (R0 < 4) continue;
     const pts = h.shape.map((m, k) => {
       const an = h.rot + k / h.shape.length * TAU;
@@ -74,24 +75,6 @@ function leak(a, clear, T = TNOW) {
     const path = PP(pts); joined.addPath(path); edges.push({ h, R0, pts, path, heal });
   }
   X.save();
-  // Clip around subjects instead of shrinking whole holes: nearby openings can join.
-  // Sequential exclusions also work when protection zones overlap.
-  for (const z of clear || []) {
-    const keep = new Path2D(); keep.rect(-40, -40, W + 80, H + 80);
-    const rect = z[0] === 'rect', cx = rect ? (z[1] + z[3]) / 2 : z[0], cy = rect ? (z[2] + z[4]) / 2 : z[1];
-    const rx = rect ? (z[3] - z[1]) / 2 + 32 : z[2] + 24, ry = rect ? (z[4] - z[2]) / 2 + 32 : z[2] + 24;
-    const edge = [];
-    for (let k = 0; k < 80; k++) {
-      const th = k / 80 * TAU, c = Math.cos(th), s = Math.sin(th);
-      const tear = 1 + .025 * Math.sin(th * 11 + cx) + .014 * Math.cos(th * 23 + cy);
-      // Ragged rounded paper islands, never a hard rectangular viewport around a subject.
-      const power = rect ? .55 : 1;
-      edge.push([cx + Math.sign(c) * Math.pow(Math.abs(c), power) * rx * tear,
-        cy + Math.sign(s) * Math.pow(Math.abs(s), power) * ry * tear]);
-    }
-    keep.addPath(PP(edge));
-    X.clip(keep, 'evenodd');
-  }
   // Draw rims first, then fill the union; overlapping holes have no internal rings.
   for (const { h, R0, path, heal } of edges) { // a healing rim cools from ember to snow
     X.strokeStyle = '#2b1d14'; X.lineWidth = 14; X.globalAlpha = .65 * (1 - heal); X.stroke(path);
@@ -164,7 +147,7 @@ SU.tinyPlanet = { mode: 'ill', f(q, p, a, T) { // he walks on a planet the size 
   const onRim = (ang, fn) => { const an = ((ang % TAU) + TAU) % TAU, d = an > Math.PI ? an - TAU : an; if (Math.abs(d) > 1.35) return; X.save(); X.translate(cx, cy); X.rotate(d); X.translate(0, -r + 6); fn(); X.restore(); };
   onRim(-rot + 1.0, () => kioskMini(0, 0, .42));
   onRim(-rot + 2.2, () => palm(0, 0, .7));
-  onRim(-rot + 3.4, () => { iline(0, 0, 0, -260, C.ink, 5); iE(40, -250, 18, 14, 0, C.ink, 2); });
+  onRim(-rot + 3.4, () => { iline(0, 0, 0, -260, C.ink, 5); const sg = PR(-46, -300, 92, 60); fillP(sg, C.cream); iBox(-46, -300, 92, 60, C.ink, 2.2); lab(0, -262, 'BUS', C.ink, .95, 24, 'center', 'alphabetic', 'bold'); }); // draft 11: a bus stop (read as a fishing rod)
   onRim(-rot + 4.6, () => { const b = PR(-110, -180, 220, 180); fillP(b, C.brick); iBox(-110, -180, 220, 180, C.ink, 2.4); lab(0, -150, 'TRAVEL', C.cream, 1, 22, 'center', 'alphabetic', 'bold'); });
   onRim(-rot + 5.6, () => car(0, 0, .6));
   traveller(cx, cy - r + 8, .95, { legs: walkPh() * 1.3, case: true, look: 1, mouth: sing(T) });
@@ -186,7 +169,7 @@ SU.muleCircle = { mode: 'ill', f(q, p, a, T) { // the queue of mules closes into
     iline(hx, hy, px, py, C.ink, 3 * s + 1); iline(px, py, px, py + 120 * s, C.ink, 1.2, 1, false); carrot(px, py + 120 * s, .6 * s);
     if (me) gc(x, y - 200 * s, 230 * s, C.orange, .8, 2);
   }
-  lab(cx, cy + ry + 120, 'NO ONE IS FIRST', C.brick, .9, 18, 'center', 'alphabetic', 'bold');
+  lab(cx, cy + ry + 120, 'NO ONE IS FIRST', C.brick, .95, 30, 'center', 'alphabetic', 'bold');
   consL([[0, cy, W, cy], [cx, 0, cx, H]]);
 } };
 SU.corkMoon = { mode: 'ill', f(q, p, a, T) { // the cork leaves the diner and becomes the moon
@@ -202,7 +185,7 @@ SU.corkMoon = { mode: 'ill', f(q, p, a, T) { // the cork leaves the diner and be
   path(bzPts([1000, 980], [1040, 700], [960, 600], [cx, cy], 0, 1, 30), C.orange, 2, .8, [8, 8]);
   const tb = PR(560, 900, 800, 40); fillP(tb, C.cream); iBox(560, 900, 800, 40, C.ink, 2); traveller(820, 1080, .55, { hat: false, look: 1, sit: 0, coat: C.plum }); traveller(1180, 1080, .55, { look: -1, mouth: sing(T) }); cloud(1180, 800, .3, {});
   cloud(lerp(-200, 2100, (T * .03) % 1), 260, .9, {});
-  if (face > .9) lab(cx + 260, cy + 10, 'CORK · 384,400 KM', C.ink, .9, 16, 'left', 'alphabetic', 'bold');
+  if (face > .9) lab(cx + 260, cy + 10, 'CORK · 384,400 KM', C.ink, .95, 28, 'left', 'alphabetic', 'bold');
   consC([[cx, cy, 300]]);
 } };
 
@@ -315,6 +298,13 @@ SU.snowSettle = { mode: 'ill', f(q, p, a, T) { // the snow settles and draws the
   const all = lines.map((l) => dens(l, 12)), tot = all.reduce((s2, l) => s2 + l.length, 0), show = Math.floor(tot * eo(p * 1.15)); let used = 0;
   for (const l of all) { const n = Math.max(0, Math.min(l.length, show - used)); used += l.length; if (n > 1) iP(l.slice(0, n), false, C.ink, 2.6, 1, true, 1.2); if (n > 1 && n < l.length) { const [x, y] = l[n - 1]; star(x, y, 3, C.orange, .8); } }
   if (p > .6) { X.globalAlpha = eo((p - .6) / .4); X.font = 'bold 86px Georgia, serif'; X.textAlign = 'center'; X.textBaseline = 'middle'; X.fillStyle = C.ink; X.fillText('TRAVEL  AGENT', 960, fy + 98); X.globalAlpha = 1; }
-  const mound = PE(960, H + 60, 1300, 120 + 120 * p); fillP(mound, '#fbfbf6'); iE(960, H + 60, 1300, 120 + 120 * p, 0, C.ink, 2, 1, false, 1, Math.PI, TAU);
+  // Draft 11: one continuous heal. As the snow settles, the finished shop (the next shot, frame for frame) fills in from
+  // the bottom up behind a ragged snowline, so the cut to shopClosed at 400.0 is invisible instead of a pop.
+  const fill = eio(seg(p, .3, 1)), sy = lerp(H + 60, -140, fill);
+  if (fill > 0) { const edge = []; for (let x = -40; x <= W + 40; x += 30) edge.push([x, sy + Math.sin(x * .013 + 2) * 26 + Math.sin(x * .041) * 10]);
+    const rv = PP(edge.concat([[W + 40, H + 80], [-40, H + 80]]));
+    X.save(); screen(); X.clip(rv); SU.shopClosed.f(0, 0, {}, Math.max(T, 400)); X.restore();
+    X.save(); screen(); X.beginPath(); wP(edge, false, 1.2); stroke('#ffffff', 10, .95); X.beginPath(); wP(edge, false, 1.2); stroke(C.ink, 1.6, .6); X.restore(); }
+  if (fill < 1) { const mound = PE(960, H + 60, 1300, 120 + 120 * p); fillP(mound, '#fbfbf6', 1 - fill); }
   snowFlakes(700, T, '#ffffff', .95, 4); X.fillStyle = C.ink; X.globalAlpha = .35; const r = M32(77); for (let i = 0; i < 700; i++) { const x0 = r() * W, sp = 40 + r() * 80, y = ((r() * H + T * sp) % (H + 40)) - 20; X.fillRect(x0 + Math.sin(T * 1.3 + i) * 20 - .5, y - .5, 1, 1); } X.globalAlpha = 1;
 } };
