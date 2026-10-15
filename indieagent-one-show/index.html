@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="en" data-resolution="landscape">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cormorant+SC:wght@500;600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@600;700&display=block"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      :root {
+        --paper: #ece0c2;
+        --paper-edge: #d9c69a;
+        --gold: #8f6d22;
+        --gold-faint: rgba(143, 109, 34, 0.32);
+        --ink: #1e1910;
+        --red: #a8231b;
+        --gold-text: #6a5018;
+        --red-text: #8a1c15;
+      }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 1920px; height: 1080px; overflow: hidden; background: var(--paper); }
+      #root {
+        position: relative; width: 100%; height: 100%;
+        background: radial-gradient(ellipse at 50% 45%, var(--paper) 55%, var(--paper-edge) 100%);
+      }
+      svg { position: absolute; inset: 0; }
+      .line { fill: none; stroke: var(--gold); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+      .hair { fill: none; stroke: var(--gold); stroke-width: 1; }
+      .faint { fill: none; stroke: var(--gold-faint); stroke-width: 1; stroke-dasharray: 4 6; }
+      .label { font-family: "Cormorant SC", serif; font-weight: 600; fill: var(--gold-text); letter-spacing: 0.14em; }
+      .mono { font-family: "IBM Plex Mono", monospace; fill: var(--ink); }
+      #chapter { position: absolute; left: 120px; top: 92px; font: 600 26px "Cormorant SC", serif; letter-spacing: 0.22em; color: var(--gold-text); }
+      #headline {
+        position: absolute; left: 0; right: 0; top: 862px; text-align: center;
+        font: 700 52px "IBM Plex Sans", sans-serif; letter-spacing: -0.01em; color: var(--ink);
+      }
+      #headline .red { color: var(--red); }
+      #counter { position: absolute; right: 120px; top: 958px; font: 500 22px "IBM Plex Mono", monospace; color: var(--ink); letter-spacing: 0.08em; }
+      #barlabel { position: absolute; left: 120px; top: 958px; font: 600 22px "Cormorant SC", serif; letter-spacing: 0.2em; color: var(--gold-text); }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="12" data-width="1920" data-height="1080">
+      <svg id="plate" class="clip" data-start="0" data-duration="12" data-track-index="0" viewBox="0 0 1920 1080">
+        <defs>
+          <filter id="grain" x="0" y="0" width="100%" height="100%">
+            <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" seed="7" />
+            <feColorMatrix values="0 0 0 0 0.35  0 0 0 0 0.27  0 0 0 0 0.12  0 0 0 0.10 0" />
+          </filter>
+        </defs>
+        <rect width="1920" height="1080" filter="url(#grain)" />
+        <!-- plate border: double hairline + corner registration -->
+        <g id="border">
+          <rect class="hair draw" x="60" y="56" width="1800" height="968" />
+          <rect class="hair draw" x="72" y="68" width="1776" height="944" />
+          <path class="line draw" d="M40 56 H84 M60 36 V80 M1836 56 H1880 M1860 36 V80 M40 1024 H84 M60 1004 V1048 M1836 1024 H1880 M1860 1004 V1048" />
+        </g>
+        <g id="db"></g>
+        <g id="ghosts"></g>
+        <g id="newrow"></g>
+        <!-- progress scale -->
+        <g id="scale"></g>
+      </svg>
+      <div id="chapter" class="clip" data-start="0" data-duration="12" data-track-index="1">Plate IV &middot; The Record</div>
+      <div id="headline" class="clip" data-start="0" data-duration="12" data-track-index="2">One row. <span class="red">One source of truth.</span></div>
+      <div id="barlabel" class="clip" data-start="0" data-duration="12" data-track-index="3">Shows placed</div>
+      <div id="counter" class="clip" data-start="0" data-duration="12" data-track-index="4"><span id="count">00</span> / 53</div>
+    </div>
+    <script>
+      const NS = "http://www.w3.org/2000/svg";
+      const el = (tag, attrs, parent) => {
+        const n = document.createElementNS(NS, tag);
+        for (const k in attrs) n.setAttribute(k, attrs[k]);
+        parent.appendChild(n);
+        return n;
+      };
+
+      // Exploded isometric stack: workspace / engagement / performance
+      const CX = 860, W = 250, H = 96, T = 30;
+      const slabs = [
+        { cy: 270, name: "workspace", note: "bob-wiseman · id 6" },
+        { cy: 460, name: "engagement", note: "status · billing" },
+        { cy: 650, name: "performance", note: "date · venue · city" },
+      ];
+      const db = document.getElementById("db");
+      const corner = (cy) => ({ N: [CX, cy - H], E: [CX + W, cy], S: [CX, cy + H], Wp: [CX - W, cy] });
+      const layers = [];
+      slabs.forEach((s, i) => {
+        const c = corner(s.cy);
+        const g = el("g", { class: "slab" }, db);
+        layers.push(g);
+        // paper fills give hidden-line occlusion: lower slabs vanish behind upper ones
+        el("path", { d: `M${c.Wp} V${s.cy + T} L${CX},${s.cy + H + T} L${CX + W},${s.cy + T} V${s.cy} L${c.N} Z`, fill: "#e8dcbc", stroke: "none", class: "occ" }, g);
+        el("path", { class: "line draw", d: `M${c.N} L${c.E} L${c.S} L${c.Wp} Z` }, g);
+        el("path", { class: "line draw", d: `M${c.Wp} V${s.cy + T} L${CX},${s.cy + H + T} L${CX + W},${s.cy + T} V${s.cy} M${CX},${s.cy + H} V${s.cy + H + T}` }, g);
+        // leader + label
+        el("path", { class: "hair draw", d: `M${CX + W + 14},${s.cy} H${CX + W + 120}` }, g);
+        el("text", { class: "label fade", x: CX + W + 132, y: s.cy - 4, "font-size": 30 }, g).textContent = s.name;
+        el("text", { class: "mono fade", x: CX + W + 132, y: s.cy + 26, "font-size": 18, opacity: 0.75 }, g).textContent = s.note;
+        if (i < slabs.length - 1) {
+          const nxt = slabs[i + 1].cy;
+          el("path", { class: "faint draw", d: `M${CX - W},${s.cy + T} V${nxt} M${CX + W},${s.cy + T} V${nxt} M${CX},${s.cy + H + T} V${nxt + H}` }, db);
+        }
+      });
+      // paint order bottom-up; the records sit on the performance face, under the upper slabs
+      const ghostsG = document.getElementById("ghosts"), newrowG = document.getElementById("newrow");
+      const plate = document.getElementById("plate");
+      plate.insertBefore(layers[2], ghostsG);
+      plate.insertBefore(layers[1], newrowG);
+      plate.insertBefore(layers[0], newrowG);
+      // dimension mark on the left
+      el("path", { class: "hair draw", d: `M${CX - W - 70},${270 - H} V${650 + H + T} M${CX - W - 80},${270 - H} H${CX - W - 60} M${CX - W - 80},${650 + H + T} H${CX - W - 60}` }, db);
+      el("text", { class: "label fade", x: CX - W - 92, y: 460, "font-size": 20, "text-anchor": "end" }, db).textContent = "org db";
+
+      // 53 record lines on the performance slab top face
+      const P = corner(650);
+      const lerp = (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t];
+      const ghosts = document.getElementById("ghosts");
+      const rec = (i, cls, parent) => {
+        const v = 0.06 + (i / 52) * 0.88;
+        const a = lerp(lerp(P.N, P.Wp, v), lerp(P.E, P.S, v), 0.1);
+        const b = lerp(lerp(P.N, P.Wp, v), lerp(P.E, P.S, v), 0.9);
+        return el("path", { class: cls, d: `M${a} L${b}` }, parent);
+      };
+      for (let i = 0; i < 52; i++) rec(i, "hair ghost", ghosts).setAttribute("opacity", 0);
+      const newrow = document.getElementById("newrow");
+      const target = rec(52, "line target", newrow);
+      target.setAttribute("stroke", "var(--red)");
+      target.setAttribute("stroke-width", "3.4");
+
+      // incoming record card, travels down a leader into the slab
+      const card = el("g", { id: "card" }, newrow);
+      el("rect", { x: 1290, y: 700, width: 470, height: 104, fill: "var(--paper)", stroke: "var(--red)", "stroke-width": 1.6 }, card);
+      el("text", { class: "label", x: 1310, y: 732, "font-size": 20, fill: "var(--red-text)" }, card).textContent = "add_show";
+      el("text", { class: "mono", x: 1310, y: 764, "font-size": 19 }, card).textContent = "2026-11-12 · Nelson, BC";
+      el("text", { class: "mono", x: 1310, y: 790, "font-size": 19 }, card).textContent = "The Royal · booked";
+      const lead = el("path", { class: "hair", d: `M1290,752 L${lerp(P.E, P.S, 0.97)}`, stroke: "var(--red)" }, newrow);
+
+      // bottom scale: 53 ticks
+      const scale = document.getElementById("scale");
+      el("path", { class: "hair draw", d: "M120 1000 H1800" }, scale);
+      const ticks = [];
+      for (let i = 0; i < 53; i++) {
+        const x = 120 + (i * 1680) / 52;
+        ticks.push(el("path", { class: "line", d: `M${x} 1000 V${i % 10 === 0 ? 982 : 990}`, opacity: 0 }, scale));
+      }
+      const fill = el("path", { d: "M120 1000 H1800", stroke: "var(--gold)", "stroke-width": 4, fill: "none" }, scale);
+
+      // prepare stroke drawing
+      const prep = (n) => { const L = n.getTotalLength(); n.style.strokeDasharray = L; n.style.strokeDashoffset = L; return n; };
+      document.querySelectorAll(".draw").forEach((n) => { if (!n.classList.contains("faint")) prep(n); });
+      [target, lead].forEach(prep);
+      const fillLen = 1680; fill.style.strokeDasharray = fillLen; fill.style.strokeDashoffset = fillLen;
+
+      const tl = gsap.timeline({ paused: true });
+      // 0-1.6 border + chapter
+      tl.to("#border .draw", { strokeDashoffset: 0, duration: 1.4, ease: "power2.inOut", stagger: 0.1 }, 0);
+      tl.from("#chapter", { opacity: 0, x: -16, duration: 0.8, ease: "power2.out" }, 0.5);
+      tl.from("#barlabel, #counter", { opacity: 0, duration: 0.6 }, 0.8);
+      tl.to("#scale .draw", { strokeDashoffset: 0, duration: 1.2, ease: "power2.inOut" }, 0.6);
+      // 1.4-4.6 the stack draws itself, top to bottom
+      tl.to(".slab .draw", { strokeDashoffset: 0, duration: 1.1, ease: "power2.inOut", stagger: 0.18 }, 1.4);
+      // hidden-line pass: each slab turns opaque once drawn (DOM order is bottom-up)
+      tl.fromTo(".occ", { opacity: 0 }, { opacity: 1, duration: 0.4, stagger: 0.5 }, 2.7);
+      tl.from(".faint", { opacity: 0, duration: 0.8, stagger: 0.1 }, 2.6);
+      tl.to("#db > .draw", { strokeDashoffset: 0, duration: 1.0, ease: "power1.inOut" }, 3.0);
+      tl.from(".fade", { opacity: 0, duration: 0.6, stagger: 0.12 }, 2.4);
+      // 4.6-8.4 the 52 existing shows settle in, counter follows
+      const count = { n: 0 };
+      const countEl = document.getElementById("count");
+      tl.to("#ghosts path", { opacity: 0.85, duration: 0.25, stagger: 3.4 / 52 }, 4.6);
+      tl.to(ticks.slice(0, 52), { opacity: 1, duration: 0.2, stagger: 3.4 / 52 }, 4.6);
+      tl.to(fill, { strokeDashoffset: fillLen * (1 - 52 / 53), duration: 3.6, ease: "none" }, 4.6);
+      tl.to(count, { n: 52, duration: 3.6, ease: "none", onUpdate: () => (countEl.textContent = String(Math.round(count.n)).padStart(2, "0")) }, 4.6);
+      // 8.0-10.2 the new show arrives
+      tl.from("#card", { opacity: 0, y: -24, duration: 0.6, ease: "power2.out" }, 8.0);
+      tl.to(lead, { strokeDashoffset: 0, duration: 0.7, ease: "power2.inOut" }, 8.6);
+      tl.to(target, { strokeDashoffset: 0, duration: 0.6, ease: "power2.out" }, 9.3);
+      tl.to(ticks[52], { opacity: 1, stroke: "var(--red)", duration: 0.2 }, 9.7);
+      tl.to(fill, { strokeDashoffset: 0, duration: 0.4, ease: "power2.out" }, 9.6);
+      tl.to(count, { n: 53, duration: 0.3, onUpdate: () => (countEl.textContent = String(Math.round(count.n)).padStart(2, "0")) }, 9.7);
+      // 10.2-12 headline
+      tl.from("#headline", { opacity: 0, y: 14, duration: 0.8, ease: "power2.out" }, 10.1);
+      tl.to({}, { duration: 0.01 }, 11.99);
+
+      window.__timelines["main"] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>
