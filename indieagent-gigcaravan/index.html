@@ -1,0 +1,491 @@
+<!doctype html>
+<html lang="en" data-resolution="landscape">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;800&family=JetBrains+Mono:wght@400;500&display=block"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      :root {
+        /* the IndieAgent explainer system: warm paper, indieagent.ai type, its light-theme red as the one accent */
+        --paper: #F2EADB;
+        --paper-edge: #E2D4BA;
+        --line: #8A7350;
+        --ink: #1E1A14;
+        --label: #5E4E33;
+        --accent: #C8341E;
+        --accent-text: #A82B18;
+        --card: #F5EEE1;
+      }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 1920px; height: 1080px; overflow: hidden; background: var(--paper); }
+      #root {
+        position: relative; width: 100%; height: 100%;
+        background: radial-gradient(ellipse at 50% 45%, var(--paper) 55%, var(--paper-edge) 100%);
+      }
+      .scene, .chrome { position: absolute; inset: 0; }
+      svg { position: absolute; inset: 0; }
+      .line { fill: none; stroke: var(--line); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+      .hair { fill: none; stroke: var(--line); stroke-width: 1; }
+      .faint { fill: none; stroke: var(--line); stroke-width: 1; stroke-opacity: 0.45; }
+      .dash { fill: none; stroke: var(--line); stroke-width: 1.2; stroke-dasharray: 5 6; }
+      .card { fill: var(--card); }
+      .label { font-family: "Archivo", sans-serif; font-weight: 600; text-transform: uppercase; fill: var(--label); letter-spacing: 0.16em; }
+      .mono { font-family: "JetBrains Mono", monospace; fill: var(--ink); }
+      .big { font-family: "Archivo", sans-serif; font-weight: 800; fill: var(--ink); }
+      .name { font-family: "Archivo", sans-serif; font-weight: 600; fill: var(--ink); }
+      .red { fill: var(--accent-text); }
+      .chapter { position: absolute; left: 120px; top: 96px; font: 600 20px "Archivo", sans-serif; letter-spacing: 0.22em; text-transform: uppercase; color: var(--label); }
+      .headline {
+        position: absolute; left: 0; right: 0; top: 868px; text-align: center;
+        font: 800 52px "Archivo", sans-serif; letter-spacing: -0.01em; color: var(--ink);
+      }
+      .headline span { display: inline-block; }
+      .headline .accent { color: var(--accent-text); }
+      #counter { position: absolute; right: 120px; top: 942px; font: 500 22px "JetBrains Mono", monospace; color: var(--ink); letter-spacing: 0.08em; }
+      #counter b { font: 600 16px "Archivo", sans-serif; letter-spacing: 0.2em; text-transform: uppercase; color: var(--label); margin-right: 12px; }
+      #barlabel { position: absolute; left: 120px; top: 946px; font: 600 16px "Archivo", sans-serif; letter-spacing: 0.2em; text-transform: uppercase; color: var(--label); }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="90" data-width="1920" data-height="1080">
+      <!-- chrome: plate border and the season scale (months, deadlines, the booking), on for the whole film -->
+      <div id="chrome" class="chrome clip" data-start="0" data-duration="90" data-track-index="0">
+        <svg id="gChrome" viewBox="0 0 1920 1080">
+          <defs>
+            <filter id="grain" x="0" y="0" width="100%" height="100%">
+              <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" seed="7" />
+              <feColorMatrix values="0 0 0 0 0.30  0 0 0 0 0.24  0 0 0 0 0.14  0 0 0 0.07 0" />
+            </filter>
+          </defs>
+          <rect width="1920" height="1080" filter="url(#grain)" />
+          <g id="border">
+            <rect class="hair draw" x="60" y="56" width="1800" height="968" />
+            <rect class="hair draw" x="72" y="68" width="1776" height="944" />
+            <path class="line draw" d="M40 56 H84 M60 36 V80 M1836 56 H1880 M1860 36 V80 M40 1024 H84 M60 1004 V1048 M1836 1024 H1880 M1860 1004 V1048" />
+          </g>
+          <g id="scale"></g>
+        </svg>
+        <div id="barlabel">Season 2027</div>
+        <div id="counter"><b>Booked</b><span id="count">00</span></div>
+      </div>
+
+      <div id="sI" class="scene clip" data-start="0" data-duration="10" data-track-index="1">
+        <svg id="gI" viewBox="0 0 1920 1080"></svg>
+        <div class="chapter">Plate I &middot; The Hunt</div>
+        <div class="headline" style="font-size: 50px"><span id="hI1">Every festival has its own form.</span> <span id="hI2" class="accent">You missed one already.</span></div>
+      </div>
+
+      <div id="sII" class="scene clip" data-start="10" data-duration="15" data-track-index="1">
+        <svg id="gII" viewBox="0 0 1920 1080">
+          <defs><clipPath id="type-II"><rect id="rvII" x="636" y="200" width="0" height="56" /></clipPath></defs>
+        </svg>
+        <div class="chapter">Plate II &middot; The Catalog</div>
+        <div class="headline"><span id="hII1">One catalog.</span> <span id="hII2" class="accent">Every festival worth playing.</span></div>
+      </div>
+
+      <div id="sIII" class="scene clip" data-start="25" data-duration="10" data-track-index="1">
+        <svg id="gIII" viewBox="0 0 1920 1080"></svg>
+        <div class="chapter">Plate III &middot; The Watchlist</div>
+        <div class="headline"><span id="hIII">Keep the ones you want.</span></div>
+      </div>
+
+      <div id="sIV" class="scene clip" data-start="35" data-duration="22.5" data-track-index="1">
+        <svg id="gIV" viewBox="0 0 1920 1080"></svg>
+        <div class="chapter">Plate IV &middot; The Road</div>
+        <div class="headline"><span id="hIV1">Every application on one road.</span> <span id="hIV2" class="accent">Every deadline in sight.</span></div>
+      </div>
+
+      <div id="sV" class="scene clip" data-start="57.5" data-duration="15" data-track-index="1">
+        <svg id="gV" viewBox="0 0 1920 1080"></svg>
+        <div class="chapter">Plate V &middot; The Stamp</div>
+        <div class="headline"><span id="hV1">Booked.</span> <span id="hV2" class="accent">It's already on your tour.</span></div>
+      </div>
+
+      <div id="sVI" class="scene clip" data-start="72.5" data-duration="12.5" data-track-index="1">
+        <svg id="gVI" viewBox="0 0 1920 1080">
+          <defs>
+            <clipPath id="note-0"><rect id="rvN0" x="1050" y="350" width="0" height="34" /></clipPath>
+            <clipPath id="note-1"><rect id="rvN1" x="1050" y="410" width="0" height="34" /></clipPath>
+            <clipPath id="note-2"><rect id="rvN2" x="1050" y="470" width="0" height="34" /></clipPath>
+            <clipPath id="note-3"><rect id="rvN3" x="1050" y="530" width="0" height="34" /></clipPath>
+          </defs>
+        </svg>
+        <div class="chapter">Plate VI &middot; Your Notes</div>
+        <div class="headline"><span id="hVI1">The list is shared.</span> <span id="hVI2" class="accent">Your notes are yours.</span></div>
+      </div>
+
+      <!-- score: drafting-table-gigcaravan take-01 (score library), 96 BPM; its 64 ms lead is trimmed so bar n starts at n * 2.5 s -->
+      <audio id="score" src="assets/score.mp3" data-start="0" data-duration="89.93" data-media-start="0.064" data-track-index="2"></audio>
+
+      <div id="sC" class="scene clip" data-start="85" data-duration="5" data-track-index="1">
+        <svg id="gC" viewBox="0 0 1920 1080"></svg>
+        <div class="chapter">Colophon</div>
+      </div>
+    </div>
+    <script>
+      const NS = "http://www.w3.org/2000/svg";
+      const $ = (s) => document.querySelector(s);
+      const el = (tag, attrs, parent) => {
+        const n = document.createElementNS(NS, tag);
+        for (const k in attrs) n.setAttribute(k, attrs[k]);
+        parent.appendChild(n);
+        return n;
+      };
+      const txt = (s, attrs, parent) => { const n = el("text", attrs, parent); n.textContent = s; return n; };
+      const ticketPath = (x, y, w, h, px, r) =>
+        `M${x},${y} H${px - r} A${r} ${r} 0 0 0 ${px + r},${y} H${x + w} V${y + h} H${px + r} A${r} ${r} 0 0 0 ${px - r},${y + h} H${x} Z`;
+      const MONTHS = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+      const fmt = ([m, d]) => `${MONTHS[m]} ${String(d).padStart(2, "0")}`;
+
+      // Each plate is one section of the score; every plate starts on a downbeat (a bar is 2.5 s at 96 BPM).
+      // The score's real first change (the bass entering) is at bar 4, so Plate I is four bars long.
+      const T = { I: 0, II: 10, III: 25, IV: 35, V: 57.5, VI: 72.5, C: 85 };
+      const D = { I: 10, II: 15, III: 10, IV: 22.5, V: 15, VI: 12.5, C: 5 };
+      const BEAT = 0.625;
+      const snap = (t, step) => Math.round(t / step) * step;
+      const at = (k, x) => T[k] + snap(x, BEAT / 2); // motion on the eighth-note grid
+      const onBeat = (k, x) => T[k] + snap(x, BEAT); // headlines and hits on the beat
+
+      // Fictional festivals (the catalog GigCaravan searches is real; these names are made up)
+      const FEST = {
+        klf: { name: "Kootenay Lake Folk Fest", short: "Kootenay Lake", town: "Nelson, BC", tag: "folk", dl: [1, 28] },
+        ssr: { name: "Salt Spring Roots", short: "Salt Spring Roots", town: "Salt Spring, BC", tag: "roots", dl: [2, 1] },
+        pl: { name: "Prairie Lights Festival", town: "Regina, SK", tag: "indie", dl: [0, 15] },
+        hs: { name: "Harbour Song Festival", town: "Halifax, NS", tag: "folk", dl: [1, 15] },
+        orf: { name: "Okanagan Riverfest", short: "Okanagan Riverfest", town: "Penticton, BC", tag: "folk", dl: [2, 15] },
+        nlj: { name: "Northern Lights Jazz", town: "Whitehorse, YT", tag: "jazz", dl: [3, 30] },
+        crf: { name: "Coast Range Folk", town: "Squamish, BC", tag: "folk", dl: [2, 20] },
+        sbf: { name: "Stonewall Blues Fest", town: "Winnipeg, MB", tag: "blues", dl: [1, 1] },
+        fvf: { name: "Fraser Valley Fiddle", town: "Abbotsford, BC", tag: "folk", dl: [3, 10] },
+        isc: { name: "Island Song Circle", short: "Island Song Circle", town: "Victoria, BC", tag: "folk", dl: [1, 20] },
+        rr: { name: "Rideau Roots", town: "Ottawa, ON", tag: "roots", dl: [2, 5] },
+        khm: { name: "Kicking Horse Days", town: "Golden, BC", tag: "rock", dl: [2, 10] },
+      };
+
+      /* ---------------- chrome: the season scale ---------------- */
+      const scale = $("#scale");
+      const X0 = 120, MW = 140; // the season runs 120..1800, 140 px a month
+      const dateX = ([m, d]) => X0 + MW * (m + (d - 1) / 31);
+      el("path", { class: "hair draw", d: "M120 992 H1800" }, scale);
+      const monthG = el("g", {}, scale);
+      // month names sit under the line, deadlines stand on it
+      for (let m = 0; m <= 12; m++) el("path", { class: "line", d: `M${X0 + m * MW} 992 V${m % 3 === 0 ? 982 : 986}` }, monthG);
+      MONTHS.forEach((mn, m) => txt(mn, { class: "label", x: X0 + m * MW + MW / 2, y: 1006, "font-size": 10, "text-anchor": "middle", opacity: 0.75 }, monthG));
+      const marker = (dl) => el("path", { d: `M${dateX(dl) - 5},991 L${dateX(dl)},982 L${dateX(dl) + 5},991 Z`, fill: "var(--accent)", opacity: 0 }, scale);
+      const deadlineMarks = {};
+      ["pl", "sbf", "klf", "ssr", "orf", "isc"].forEach((k) => (deadlineMarks[k] = marker(FEST[k].dl)));
+      const missedX = el("path", { d: `M${dateX(FEST.pl.dl) - 5},969 l10,10 m0,-10 l-10,10`, stroke: "var(--accent)", "stroke-width": 2.2, fill: "none", opacity: 0 }, scale);
+      const bookedDot = el("circle", { cx: dateX([6, 24]), cy: 992, r: 7, fill: "var(--accent)", stroke: "var(--card)", "stroke-width": 2, opacity: 0 }, scale);
+
+      /* ---------------- Plate I: every festival its own form ---------------- */
+      const gI = $("#gI");
+      const forms = [];
+      ["pl", "sbf", "klf", "ssr", "orf"].forEach((k, i) => {
+        const f = FEST[k];
+        const x0 = 150 + i * 330, y0 = 230 + (i % 2) * 60, w = 300, h = 310;
+        const g = el("g", {}, gI);
+        el("rect", { class: "card", x: x0, y: y0, width: w, height: h }, g);
+        el("rect", { class: "line draw", x: x0, y: y0, width: w, height: h }, g);
+        const body = el("g", {}, g);
+        el("path", { class: "hair", d: `M${x0},${y0 + 32} H${x0 + w}` }, body);
+        [16, 30, 44].forEach((dx) => el("circle", { cx: x0 + dx, cy: y0 + 16, r: 4.5, class: "hair" }, body));
+        txt(f.name, { class: "name", x: x0 + 20, y: y0 + 70, "font-size": 19 }, body);
+        txt("artist application", { class: "label", x: x0 + 20, y: y0 + 94, "font-size": 11 }, body);
+        // every form is laid out differently
+        const fields = [[2, 1, 0], [0, 2, 1], [3, 0, 0], [1, 1, 1], [2, 0, 1]][i];
+        let y = y0 + 112;
+        for (let n = 0; n < fields[0]; n++) { el("rect", { class: "hair", x: x0 + 20, y, width: 260, height: 22 }, body); y += 30; }
+        for (let n = 0; n < fields[1]; n++) { el("rect", { class: "hair", x: x0 + 20, y, width: 260, height: 44 }, body); y += 52; }
+        if (fields[2]) { el("rect", { class: "dash", x: x0 + 20, y, width: 120, height: 40 }, body); txt("upload EPK", { class: "label", x: x0 + 30, y: y + 25, "font-size": 10 }, body); }
+        txt("apply by", { class: "label", x: x0 + 20, y: y0 + 270, "font-size": 11 }, body);
+        const dt = txt(fmt(f.dl), { class: "mono", x: x0 + 20, y: y0 + 294, "font-size": 18 }, body);
+        forms.push({ g, body, k, x0, y0, dt });
+      });
+      const pl = forms[0];
+      const strike = el("path", { d: `M${pl.x0 + 16},${pl.y0 + 288} H${pl.x0 + 92}`, stroke: "var(--accent)", "stroke-width": 2.6, fill: "none" }, gI);
+      const closed = txt("closed", { class: "label", x: pl.x0 + 110, y: pl.y0 + 294, "font-size": 15, style: "fill: var(--accent-text)" }, gI);
+
+      /* ---------------- Plate II: one catalog, searched ---------------- */
+      const gII = $("#gII");
+      txt("the catalog · festivals and venues", { class: "label", x: 600, y: 186, "font-size": 14 }, gII);
+      el("rect", { class: "card", x: 600, y: 200, width: 720, height: 56, rx: 28 }, gII);
+      el("rect", { class: "line draw", x: 600, y: 200, width: 720, height: 56, rx: 28 }, gII);
+      el("circle", { cx: 622, cy: 226, r: 8, class: "hair" }, gII);
+      el("path", { class: "hair", d: "M628,232 L634,238" }, gII);
+      const QUERY = "folk · BC · apply by April";
+      const query = txt(QUERY, { class: "mono", x: 648, y: 236, "font-size": 22 }, gII);
+      query.setAttribute("clip-path", "url(#type-II)");
+      const ORDER = ["klf", "hs", "orf", "sbf", "nlj", "ssr", "khm", "crf", "pl", "isc", "rr", "fvf"];
+      const match = (f) => (f.tag === "folk" || f.tag === "roots") && f.town.endsWith("BC") && f.dl[0] <= 2;
+      const cards2 = ORDER.map((k, i) => {
+        const f = FEST[k], c = i % 4, r = Math.floor(i / 4);
+        const x = 260 + c * 360, y = 300 + r * 170;
+        const g = el("g", {}, gII);
+        el("rect", { class: "card", x, y, width: 320, height: 140 }, g);
+        const frame = el("rect", { class: "hair", x, y, width: 320, height: 140 }, g);
+        txt("festival", { class: "label", x: x + 20, y: y + 30, "font-size": 11 }, g);
+        el("rect", { class: "hair", x: x + 236, y: y + 16, width: 66, height: 22, rx: 11 }, g);
+        txt(f.tag, { class: "label", x: x + 269, y: y + 31, "font-size": 10, "text-anchor": "middle" }, g);
+        txt(f.name, { class: "name", x: x + 20, y: y + 64, "font-size": 19 }, g);
+        txt(f.town, { class: "mono", x: x + 20, y: y + 90, "font-size": 14 }, g);
+        txt("apply by " + fmt(f.dl), { class: "mono", x: x + 20, y: y + 118, "font-size": 14 }, g);
+        return { g, frame, hit: match(f) };
+      });
+
+      /* ---------------- Plate III: keep the ones you want ---------------- */
+      const gIII = $("#gIII");
+      const KEEP = ["klf", "ssr", "orf", "isc"];
+      const board = el("g", {}, gIII);
+      el("rect", { class: "card", x: 1180, y: 200, width: 340, height: 620 }, board);
+      el("rect", { class: "line draw", x: 1180, y: 200, width: 340, height: 620 }, board);
+      txt("your watchlist", { class: "label", x: 1200, y: 232, "font-size": 14 }, board);
+      el("path", { class: "hair", d: "M1180,246 H1520" }, board);
+      const SLOT = (n) => [1200, 262 + n * 135];
+      KEEP.forEach((k, n) => { const [sx, sy] = SLOT(n); el("rect", { class: "dash", x: sx, y: sy, width: 300, height: 120 }, board); });
+      const POS3 = { klf: [200, 230], ssr: [540, 230], orf: [200, 400], isc: [540, 400], crf: [200, 570] };
+      const cards3 = {};
+      Object.keys(POS3).forEach((k) => {
+        const f = FEST[k], [x, y] = POS3[k];
+        const g = el("g", {}, gIII);
+        el("rect", { class: "card", x, y, width: 300, height: 120 }, g);
+        el("rect", { class: "line", x, y, width: 300, height: 120 }, g);
+        txt(f.name, { class: "name", x: x + 20, y: y + 44, "font-size": 18 }, g);
+        txt(f.town, { class: "mono", x: x + 20, y: y + 72, "font-size": 14 }, g);
+        txt("apply by " + fmt(f.dl), { class: "mono", x: x + 20, y: y + 98, "font-size": 14 }, g);
+        // a pin in the corner marks the ones kept
+        const pin = el("g", { opacity: 0 }, g);
+        el("circle", { cx: x + 274, cy: y + 26, r: 9, fill: "var(--accent)" }, pin);
+        el("path", { d: `M${x + 274},${y + 35} V${y + 48}`, stroke: "var(--accent)", "stroke-width": 2.4 }, pin);
+        cards3[k] = { g, pin, x, y };
+      });
+
+      /* ---------------- Plate IV: the road from prospect to booked ---------------- */
+      const gIV = $("#gIV");
+      const STATIONS = ["prospect", "drafting", "submitted", "responded", "negotiating", "booked"];
+      const SX = (s) => 230 + s * 290;
+      const road = el("g", {}, gIV);
+      el("rect", { x: 180, y: 530, width: 1560, height: 60, fill: "var(--line)", "fill-opacity": 0.08 }, road);
+      el("path", { class: "line draw", d: "M180,530 H1740 M180,590 H1740" }, road);
+      const centre = el("path", { class: "dash", d: "M180,560 H1740", "stroke-dasharray": "14 12" }, road);
+      const posts = STATIONS.map((s, i) => {
+        const g = el("g", {}, gIV);
+        el("path", { class: "line", d: `M${SX(i)},522 V598`, "stroke-width": 2 }, g);
+        el("circle", { cx: SX(i), cy: 560, r: 6, fill: i === 5 ? "var(--accent)" : "var(--card)", stroke: i === 5 ? "var(--accent)" : "var(--ink)", "stroke-width": 1.8 }, g);
+        txt(s, { class: "label", x: SX(i), y: 630, "font-size": 13, "text-anchor": "middle", style: i === 5 ? "fill: var(--accent-text)" : "" }, g);
+        return g;
+      });
+      const LANE = { klf: 350, ssr: 432, orf: 670, isc: 752 };
+      const mini = {};
+      ["klf", "ssr", "orf", "isc"].forEach((k) => {
+        const f = FEST[k], y = LANE[k];
+        const g = el("g", {}, gIV);
+        const frame = el("rect", { x: 0, y, width: 200, height: 62, fill: "var(--card)", stroke: "var(--ink)", "stroke-width": 1.4 }, g);
+        txt(f.short, { class: "name", x: 14, y: y + 26, "font-size": 15 }, g);
+        txt("apply by " + fmt(f.dl), { class: "mono", x: 14, y: y + 48, "font-size": 12 }, g);
+        const ok = el("path", { d: `M176,${y + 42} l5,6 l11,-13`, fill: "none", stroke: "var(--ink)", "stroke-width": 2.2, "stroke-linecap": "round", opacity: 0 }, g);
+        gsap.set(g, { x: SX(0) - 100, opacity: 0 });
+        mini[k] = { g, frame, ok };
+      });
+      const noteBox = (x, y, s) => {
+        const g = el("g", { opacity: 0 }, gIV);
+        el("path", { class: "hair", d: `M${x - 12},${y + 31} H${x}` }, g);
+        el("rect", { x, y: y + 14, width: s.length * 7.2 + 20, height: 34, rx: 6, fill: "var(--card)", stroke: "var(--line)", "stroke-width": 1 }, g);
+        txt(s, { class: "mono", x: x + 10, y: y + 36, "font-size": 12 }, g);
+        return g;
+      };
+      const noteIsc = noteBox(SX(1) + 112, LANE.isc, "next: finish the form · FEB 18");
+      const noteKlf = noteBox(SX(4) + 112, LANE.klf, "next: confirm the fee");
+
+      /* ---------------- Plate V: the stamp, and the booking becomes a show ---------------- */
+      const gV = $("#gV");
+      const cardV = el("g", {}, gV);
+      el("rect", { class: "card", x: 460, y: 230, width: 1000, height: 420 }, cardV);
+      const cardLine = el("rect", { class: "line draw", x: 460, y: 230, width: 1000, height: 420, "stroke-width": 2 }, cardV);
+      const fieldsV = el("g", {}, cardV);
+      txt("application", { class: "label", x: 500, y: 276, "font-size": 14 }, fieldsV);
+      el("path", { class: "hair", d: "M460,296 H1460" }, fieldsV);
+      const fv = (lab, val, x, y, size, cls) => { txt(lab, { class: "label", x, y: y - 30, "font-size": 12 }, fieldsV); txt(val, { class: cls || "mono", x, y, "font-size": size }, fieldsV); };
+      fv("festival", "Kootenay Lake Folk Fest", 500, 366, 34, "name");
+      fv("where", "Nelson, BC", 500, 450, 22);
+      fv("when", "JUL 23–25, 2027", 960, 450, 22);
+      fv("stage", "Lakeside Stage", 500, 530, 22);
+      fv("fee", "$1,200 + travel", 960, 530, 22);
+      const stamp = el("g", { opacity: 0 }, gV);
+      el("rect", { x: 1010, y: 552, width: 380, height: 86, rx: 3, fill: "none", stroke: "var(--accent)", "stroke-width": 4 }, stamp);
+      el("rect", { x: 1018, y: 560, width: 364, height: 70, rx: 2, fill: "none", stroke: "var(--accent)", "stroke-width": 1.2 }, stamp);
+      txt("CONFIRMED", { class: "big", x: 1200, y: 614, "font-size": 50, "text-anchor": "middle", "letter-spacing": "0.12em", style: "fill: var(--accent)" }, stamp);
+      // the same booking, now a show on the tour: One Show's ticket
+      const tk = el("g", { opacity: 0 }, gV);
+      el("path", { d: ticketPath(460, 230, 1000, 420, 1200, 16), fill: "var(--card)", stroke: "var(--line)", "stroke-width": 2 }, tk);
+      el("path", { d: "M1200,254 V626", fill: "none", stroke: "var(--line)", "stroke-width": 1.6, "stroke-dasharray": "2 9", "stroke-linecap": "round" }, tk);
+      el("rect", { class: "hair", x: 478, y: 248, width: 690, height: 384 }, tk);
+      // 2027-07-24 falls on a Saturday
+      txt("SAT · JUL 24 · 2027", { class: "mono", x: 510, y: 330, "font-size": 30 }, tk);
+      txt("NELSON, BC", { class: "big", x: 510, y: 440, "font-size": 84 }, tk);
+      txt("KOOTENAY LAKE FOLK FEST", { class: "name", x: 510, y: 512, "font-size": 30, "letter-spacing": "0.04em" }, tk);
+      txt("ADMIT ONE", { class: "label", x: 1240, y: 300, "font-size": 18 }, tk);
+      txt("NO.", { class: "label", x: 1240, y: 430, "font-size": 18 }, tk);
+      txt("054", { class: "mono", x: 1238, y: 500, "font-size": 64, style: "fill: var(--accent-text)" }, tk);
+      const onTour = txt("on your tour", { class: "label", x: 960, y: 700, "font-size": 15, "text-anchor": "middle" }, gV);
+
+      /* ---------------- Plate VI: the list is shared, your notes are yours ---------------- */
+      const gVI = $("#gVI");
+      const divider = el("path", { class: "dash", d: "M960,220 V800" }, gVI);
+      const left = el("g", {}, gVI), right = el("g", {}, gVI);
+      txt("the catalog", { class: "label", x: 220, y: 246, "font-size": 16 }, left);
+      txt("every artist sees this", { class: "label", x: 220, y: 270, "font-size": 11, opacity: 0.8 }, left);
+      el("rect", { class: "card", x: 220, y: 300, width: 680, height: 460 }, left);
+      el("rect", { class: "line draw", x: 220, y: 300, width: 680, height: 460 }, left);
+      txt("Kootenay Lake Folk Fest", { class: "big", x: 254, y: 366, "font-size": 36 }, left);
+      txt("Nelson, BC", { class: "mono", x: 254, y: 400, "font-size": 18 }, left);
+      [["dates", "JUL 23–25, 2027"], ["stages", "Lakeside · Hall · Kids' Tent"], ["apply", "online form · by FEB 28"], ["genres", "folk · roots · bluegrass"]].forEach(([l, v], i) => {
+        txt(l, { class: "label", x: 254, y: 470 + i * 64, "font-size": 12 }, left);
+        txt(v, { class: "mono", x: 254, y: 496 + i * 64, "font-size": 18 }, left);
+      });
+      txt("your notes", { class: "label", x: 1020, y: 246, "font-size": 16 }, right);
+      txt("only your workspace sees this", { class: "label", x: 1020, y: 270, "font-size": 11, opacity: 0.8 }, right);
+      const lockR = el("g", {}, right);
+      el("path", { class: "line", d: "M1676,246 V238 A10 10 0 0 1 1696,238 V246", "stroke-width": 2 }, lockR);
+      el("rect", { x: 1668, y: 244, width: 36, height: 28, rx: 4, fill: "var(--card)", stroke: "var(--ink)", "stroke-width": 1.8 }, lockR);
+      el("rect", { class: "card", x: 1020, y: 300, width: 680, height: 460 }, right);
+      el("rect", { class: "line draw", x: 1020, y: 300, width: 680, height: 460 }, right);
+      for (let i = 0; i < 7; i++) el("path", { class: "faint", d: `M1040,${382 + i * 60} H1680` }, right);
+      const NOTES = ["Met Dana, the artistic director, in Feb.", "Wants a family-friendly afternoon set.", "Played here in 2025 as a duo.", "Fee last time: $900."];
+      const noteTxt = NOTES.map((s, i) => { const t = txt(s, { class: "mono", x: 1050, y: 374 + i * 60, "font-size": 18 }, right); t.setAttribute("clip-path", `url(#note-${i})`); return t; });
+      const warm = el("g", {}, right);
+      txt("warmth", { class: "label", x: 1050, y: 640, "font-size": 12 }, warm);
+      const warmDots = [0, 1, 2, 3, 4].map((i) => el("circle", { cx: 1160 + i * 30, cy: 636, r: 9, fill: i < 4 ? "var(--accent)" : "none", stroke: "var(--accent)", "stroke-width": 1.6, opacity: 0 }, warm));
+
+      /* ---------------- Colophon ---------------- */
+      const gC = $("#gC");
+      const mark = txt("GigCaravan", { class: "big", x: 960, y: 500, "font-size": 132, "text-anchor": "middle", "letter-spacing": "-0.02em" }, gC);
+      const rule = el("path", { class: "line", d: "M760,550 H1160" }, gC);
+      const sign = txt("Book the season.", { class: "big red", x: 960, y: 624, "font-size": 46, "text-anchor": "middle" }, gC);
+      const suite = txt("indieagent", { class: "label", x: 960, y: 700, "font-size": 15, "text-anchor": "middle" }, gC);
+
+      /* ---------------- stroke drawing setup ---------------- */
+      const prep = (n) => { const L = n.getTotalLength(); n.style.strokeDasharray = L; n.style.strokeDashoffset = L; return n; };
+      document.querySelectorAll(".draw").forEach(prep);
+      [strike, rule].forEach(prep);
+      const draws = (root) => Array.from(root.querySelectorAll(".draw"));
+
+      /* ---------------- timeline ---------------- */
+      const tl = gsap.timeline({ paused: true });
+      const countEl = $("#count");
+      const fadeIn = (nodes, t, d, stagger = 0.15) => tl.fromTo(nodes, { opacity: 0 }, { opacity: 1, duration: d, stagger }, t);
+      const head = (sel, t) => tl.from(sel, { opacity: 0, y: 12, duration: 0.7, ease: "power2.out" }, t);
+
+      // chrome
+      tl.to("#border .draw", { strokeDashoffset: 0, duration: 1.4, ease: "power2.inOut", stagger: 0.1 }, 0);
+      tl.from("#barlabel, #counter", { opacity: 0, duration: 0.6 }, 0.8);
+      tl.to("#scale .draw", { strokeDashoffset: 0, duration: 1.2, ease: "power2.inOut" }, 0.6);
+      tl.from(monthG, { opacity: 0, duration: 0.8 }, 1.0);
+
+      // scene fades and chapter labels
+      Object.keys(T).forEach((k) => {
+        const sc = document.getElementById("s" + k), t0 = T[k];
+        tl.fromTo(sc, { opacity: 0 }, { opacity: 1, duration: 0.4 }, t0);
+        if (k !== "C") tl.to(sc, { opacity: 0, duration: 0.4 }, t0 + D[k] - 0.45);
+        tl.from(sc.querySelector(".chapter"), { opacity: 0, x: -16, duration: 0.7, ease: "power2.out" }, t0 + 0.3);
+      });
+
+      // Plate I (0-10): five forms, one per beat, each dropping its deadline on the season
+      forms.forEach(({ g, body, k }, i) => {
+        tl.to(g.querySelector("rect.draw"), { strokeDashoffset: 0, duration: 0.6, ease: "power2.inOut" }, at("I", 0.625 + i * BEAT));
+        tl.from(body, { opacity: 0, duration: 0.5 }, at("I", 0.9375 + i * BEAT));
+        tl.to(deadlineMarks[k], { opacity: 1, duration: 0.3 }, at("I", 1.25 + i * BEAT));
+      });
+      head("#hI1", onBeat("I", 4.375));
+      tl.to(strike, { strokeDashoffset: 0, duration: 0.35, ease: "power2.out" }, onBeat("I", 5.625));
+      tl.from(closed, { opacity: 0, duration: 0.3 }, at("I", 5.9375));
+      tl.to(missedX, { opacity: 1, duration: 0.3 }, at("I", 5.9375));
+      head("#hI2", onBeat("I", 6.875));
+
+      // Plate II (10-25): search the catalog, the matches stay
+      tl.to(draws(gII), { strokeDashoffset: 0, duration: 0.8, ease: "power2.inOut" }, at("II", 0.4));
+      tl.from(cards2.map((c) => c.g), { opacity: 0, y: 10, duration: 0.4, stagger: 0.08 }, at("II", 1.0));
+      tl.to("#rvII", { attr: { width: QUERY.length * 13.2 + 12 }, duration: 1.875, ease: `steps(${QUERY.length})` }, onBeat("II", 3.75));
+      tl.to(cards2.filter((c) => !c.hit).map((c) => c.g), { opacity: 0.22, duration: 0.5 }, onBeat("II", 6.25));
+      tl.to(cards2.filter((c) => c.hit).map((c) => c.frame), { attr: { "stroke-width": 2.4 }, stroke: "#1E1A14", duration: 0.3, stagger: 0.15 }, onBeat("II", 6.875));
+      head("#hII1", onBeat("II", 7.5));
+      head("#hII2", onBeat("II", 9.375));
+
+      // Plate III (25-35): pin four, let one go, the four move to the watchlist
+      tl.to(draws(gIII), { strokeDashoffset: 0, duration: 0.8, ease: "power2.inOut" }, at("III", 0.3));
+      tl.from(Object.values(cards3).map((c) => c.g), { opacity: 0, y: 10, duration: 0.4, stagger: 0.1 }, at("III", 0.4));
+      KEEP.forEach((k, i) => tl.to(cards3[k].pin, { opacity: 1, duration: 0.2 }, onBeat("III", 1.875 + i * BEAT)));
+      tl.to(cards3.crf.g, { opacity: 0.2, duration: 0.4 }, at("III", 4.375));
+      ["ssr", "isc", "klf", "orf"].forEach((k, i) => {
+        const c = cards3[k], [sx, sy] = SLOT(KEEP.indexOf(k));
+        tl.to(c.g, { x: sx - c.x, y: sy - c.y, duration: 0.7, ease: "power2.inOut" }, at("III", 5.0 + i * 0.3125));
+      });
+      head("#hIII", onBeat("III", 6.25));
+
+      // Plate IV (35-57.5): the road, four applications travelling it
+      tl.to(draws(road), { strokeDashoffset: 0, duration: 1.2, ease: "power2.inOut" }, at("IV", 0.4));
+      fadeIn(centre, at("IV", 1.0), 0.6);
+      tl.from(posts, { opacity: 0, y: 8, duration: 0.3, stagger: BEAT / 2 }, at("IV", 1.0));
+      tl.to(Object.values(mini).map((m) => m.g), { opacity: 1, duration: 0.4, stagger: 0.15 }, onBeat("IV", 2.5));
+      const move = (k, s, t) => tl.to(mini[k].g, { x: SX(s) - 100, duration: 0.6, ease: "power2.inOut" }, onBeat("IV", t));
+      const done = (k, t) => tl.to(mini[k].ok, { opacity: 1, duration: 0.2 }, onBeat("IV", t));
+      move("klf", 1, 4.375); move("ssr", 1, 5.0); move("klf", 2, 6.25); done("klf", 6.875); move("orf", 1, 6.875);
+      move("ssr", 2, 8.125); done("ssr", 8.75);
+      head("#hIV1", onBeat("IV", 8.75));
+      move("isc", 1, 9.375); move("klf", 3, 10.0);
+      tl.to(noteIsc, { opacity: 1, duration: 0.3 }, at("IV", 10.625));
+      move("orf", 2, 11.25); done("orf", 11.875);
+      move("klf", 4, 13.75);
+      tl.to(noteKlf, { opacity: 1, duration: 0.3 }, at("IV", 14.375));
+      move("ssr", 3, 15.0);
+      // every deadline in sight: the four applications' deadlines light up on the season
+      head("#hIV2", onBeat("IV", 15.625));
+      ["klf", "ssr", "orf", "isc"].forEach((k, i) => {
+        tl.to(deadlineMarks[k], { opacity: 1, scale: 1.8, transformOrigin: "50% 100%", duration: 0.25, ease: "power2.out" }, onBeat("IV", 15.625 + i * BEAT / 2));
+        tl.to(deadlineMarks[k], { scale: 1, duration: 0.4 }, at("IV", 16.25 + i * BEAT / 2));
+      });
+      tl.to(noteKlf, { opacity: 0, duration: 0.25 }, at("IV", 17.1875));
+      move("klf", 5, 17.5);
+      tl.to(mini.klf.frame, { stroke: "#C8341E", attr: { "stroke-width": 2.6 }, duration: 0.25 }, at("IV", 18.125));
+
+      // Plate V (57.5-72.5): the card, the stamp on the strong downbeat, then the ticket
+      tl.to(cardLine, { strokeDashoffset: 0, duration: 1.0, ease: "power2.inOut" }, at("V", 0.4));
+      tl.from(fieldsV, { opacity: 0, duration: 0.6 }, at("V", 1.0));
+      tl.fromTo(stamp, { opacity: 0, scale: 1.35, rotation: -6, svgOrigin: "1200 595" }, { opacity: 0.94, scale: 1, rotation: -6, svgOrigin: "1200 595", duration: 0.16, ease: "power3.in" }, onBeat("V", 5.0) - 0.16);
+      // a tween, not a call, so the count also reads 00 when the timeline is sought backwards
+      const booked = { n: 0 };
+      tl.to(booked, { n: 1, duration: 0.05, onUpdate: () => (countEl.textContent = booked.n >= 0.5 ? "01" : "00") }, onBeat("V", 5.0));
+      tl.to(bookedDot, { opacity: 1, duration: 0.2 }, onBeat("V", 5.0));
+      head("#hV1", onBeat("V", 5.625));
+      tl.to([cardV, stamp], { opacity: 0, duration: 0.4 }, at("V", 8.75));
+      tl.to(tk, { opacity: 1, duration: 0.5 }, at("V", 8.75));
+      tl.from(onTour, { opacity: 0, duration: 0.4 }, at("V", 9.375));
+      head("#hV2", onBeat("V", 10.0));
+
+      // Plate VI (72.5-85): shared facts on the left, private notes on the right
+      tl.to(draws(gVI), { strokeDashoffset: 0, duration: 0.9, ease: "power2.inOut", stagger: 0.3 }, at("VI", 0.4));
+      fadeIn(divider, at("VI", 0.4), 0.6);
+      tl.from(left.querySelectorAll("text"), { opacity: 0, duration: 0.4, stagger: 0.06 }, at("VI", 1.0));
+      tl.from(right.querySelectorAll("text"), { opacity: 0, duration: 0.4, stagger: 0.04 }, at("VI", 2.2));
+      tl.from(lockR, { opacity: 0, y: -6, duration: 0.4 }, at("VI", 2.5));
+      noteTxt.forEach((t, i) => tl.to("#rvN" + i, { attr: { width: 640 }, duration: 0.9, ease: `steps(${NOTES[i].length})` }, onBeat("VI", 3.125 + i * 1.25)));
+      tl.to(warmDots, { opacity: 1, duration: 0.15, stagger: 0.12 }, at("VI", 8.125));
+      head("#hVI1", onBeat("VI", 5.0));
+      head("#hVI2", onBeat("VI", 7.5));
+
+      // Colophon (85-90): on the resolve
+      tl.from(mark, { opacity: 0, y: 14, duration: 0.8, ease: "power2.out" }, onBeat("C", 0));
+      tl.to(rule, { strokeDashoffset: 0, duration: 0.7, ease: "power2.inOut" }, at("C", 0.9));
+      tl.from(sign, { opacity: 0, y: 10, duration: 0.7, ease: "power2.out" }, at("C", 1.5));
+      tl.from(suite, { opacity: 0, duration: 0.6 }, at("C", 2.2));
+      tl.to({}, { duration: 0.01 }, 89.99);
+
+      window.__timelines["main"] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>
