@@ -78,9 +78,11 @@
  function performer(name,x,feet,h,flip,f,lean=0,squash=1){const o=img[name+'-open'],c=img[name+'-closed'];if(!o)return;
   const im=mouth(f)?o:(c||o),box=window.ALCHEMY_OPENING_BOX?.[name]||[0,0,o.width,o.height],k=h/(box[3]-box[1]);
   g.save();g.translate(x,feet);g.rotate(lean);g.scale(k*flip,k*squash);g.translate(-(box[0]+box[2])/2,-box[3]);g.drawImage(im,0,0);g.restore()}
- function notes(f,t){for(let n=0;n<14;n++){const born=Math.round(13.2*24)+n*7;if(f<born||voice(born)<.5)continue;const age=(f-born)/24;if(age>1.6)continue;
-  const x=470+age*120+18*Math.sin(age*5+n),y=520-age*170-n%3*14,a=1-age/1.6;g.save();g.globalAlpha=a;g.translate(x,y);g.rotate(-.2);
-  ellipse(0,0,9,6.5,C.ink,null);line(8,0,8,-30,C.ink,2);stroke('M8 -30q12 6 10 18',C.ink,2);g.restore()}}
+ // v18 (Robin): the notes leave his mouth, not his chest. mx,my = his mouth on screen.
+ function notes(f,t,mx,my){for(let n=0;n<14;n++){const born=Math.round(13.2*24)+n*7;if(f<born||voice(born)<.5)continue;const age=(f-born)/24;if(age>1.6)continue;
+  // he faces left (mirrored cut-out): notes leave the lips to the left, rise, then curl back over his head
+  const x=mx-22-50*age+110*age*age+8*Math.sin(age*6+n),y=my-6-150*age-(n%3)*10*Math.min(1,age*2),a=Math.min(1,age*10)*(1-age/1.6);g.save();g.globalAlpha=a;g.translate(x,y);g.rotate(-.2);
+  const k=.6+.6*Math.min(1,age*2.5);g.scale(k,k);ellipse(0,0,11,8,C.gold,C.ink);line(10,0,10,-36,C.ink,2.4);stroke('M10 -36q14 7 12 22',C.ink,2.4);g.restore()}} // gold notes, readable on the velvet
  function stage(raw){const t=Math.floor(Math.round(raw*24)/2)/12,f=Math.round(raw*24);
   base(raw);
   const open=smooth(...T.open,raw),clear=smooth(...T.clear,raw),ripple=A.performance.bump(11.4,11.8,13.4,raw)+.25*A.performance.bump(0,.3,2.3,raw);
@@ -102,8 +104,11 @@
    const walk=Math.abs(Math.sin(t*9))*(inP<1||outP>0?8:0),sing=raw>13.1&&raw<16.45;
    // v16 (audit A6): a forward bow toward the audience, then he walks off behind the left curtain.
    g.save();if(outP>0){g.beginPath();g.rect(X0+130,Y0,X1,Y1);g.clip()}
-   performer('singer',mix(-260,380,inP)-outP*420,Y1-6-walk,650,-1,sing?f:0,sing?-.05*voice(f)+.015*Math.sin(t*6):-.26*bow,1-.04*bow);g.restore();
-   if(sing)notes(f,t)}
+   const sx=mix(-260,380,inP)-outP*420,sy=Y1-6-walk,lean=sing?-.05*voice(f)+.015*Math.sin(t*6):-.26*bow,k=650/760;
+   performer('singer',sx,sy,650,-1,sing?f:0,lean,1-.04*bow);g.restore();
+   // his mouth: (264,68) in the packed 434x760 cut-out, mirrored, scaled and leaned about the feet
+   const ox=-k*(264.3-217),oy=k*(67.7-760),mouthX=sx+ox*Math.cos(lean)-oy*Math.sin(lean),mouthY=sy+ox*Math.sin(lean)+oy*Math.cos(lean);
+   if(sing)notes(f,t,mouthX,mouthY)}
   g.restore();
   valance(clear*260,t);
  }
