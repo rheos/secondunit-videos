@@ -7,11 +7,24 @@
   padding: 0;
   box-sizing: border-box;
 }
+/* Plates are always drawn on a 1920x1080 stage. Drafts render at 720p: html gets class "draft"
+   and the root data-width/height 1280x720, and the stage scales by 2/3 from the top-left corner.
+   A master (after Robin signs off the cut) drops the class and goes back to 1920x1080. stage.sh flips both. */
+:root {
+  --canvas-w: 1920px;
+  --canvas-h: 1080px;
+  --stage-scale: 1;
+}
+html.draft {
+  --canvas-w: 1280px;
+  --canvas-h: 720px;
+  --stage-scale: 0.666667;
+}
 html,
 body {
   margin: 0;
-  width: 1920px;
-  height: 1080px;
+  width: var(--canvas-w);
+  height: var(--canvas-h);
   overflow: hidden;
   background: var(--bg);
 }
@@ -21,7 +34,17 @@ body {
   height: 100%;
   overflow: hidden;
 }
-[data-composition-id="main"] > div[data-composition-src] {
+.stage {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 1920px;
+  height: 1080px;
+  transform: scale(var(--stage-scale));
+  transform-origin: 0 0;
+}
+[data-composition-id="main"] > div[data-composition-src],
+.stage > div[data-composition-src] {
   position: absolute;
   inset: 0;
 }

@@ -50,5 +50,18 @@ on the beat), `R` (unsnapped), `draw`, `sweep` (for dashed lines), `fade`, `reve
 and `$`. The furniture plate calls `BP.furniture(K, tl, { stations, sheets })` into two empty SVGs
 with ids `fu-ground` and `fu-frame`; see `novadiem-rheostream/compositions/furniture.html`.
 
+## Drafts at 720p, masters at 1080p
+
+Plates always draw on a 1920x1080 stage. Drafts render at 720p (Robin, 2026-10-15: "these are all
+drafts"); a 1080p master only after he signs off the cut. Wrap the root's slots in
+`<div class="stage">`, then flip the root with:
+
+```bash
+tools/blueprint-kit/stage.sh <project-folder> draft    # html.draft, root 1280x720, stage scaled 2/3 from top-left
+tools/blueprint-kit/stage.sh <project-folder> master   # back to 1920x1080
+```
+
+HyperFrames has no downscale flag, so this is how a draft gets rendered small. Only the root changes.
+
 Edit the kit here, then re-run `sync.sh` for each project that should pick up the change. A
 project's `kit/` copy is never edited by hand.
