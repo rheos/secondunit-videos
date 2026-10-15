@@ -84,7 +84,7 @@
   const [e1,e2]=armPose(side,Math.min(t,DANCE.end)),E1=mix(.83,e1,w),E2=mix(.83,e2,w),L1=84,L2=80;
   const ex=b[0]+side*Math.cos(E1)*L1,ey=b[1]-Math.sin(E1)*L1,tx=ex+side*Math.cos(E2)*L2,ty=ey-Math.sin(E2)*L2;
   b[2]=mix(b[0],ex,.92);b[3]=mix(b[1],ey,.92);b[4]=mix(ex,tx,.08);b[5]=mix(ey,ty,.08); /* a crisp elbow */b[6]=tx;b[7]=ty}
- // Draft 2 (Bob's note at 2:16): on the last "so are you" the heart tree's right arm swings out and points at the viewer.
+ // Draft 2 (Robin's note at 2:16, posted in the review notes box): on the last "so are you" the heart tree's right arm swings out and points at the viewer.
  // The branch ends in a carved wooden hand (source/alchemy/opening/tree-hand-at-you.png), finger straight out at the viewer.
  const POINT={on:134.75,up:135.25,you:135.4,hold:137.0,off:137.7};
  function pointAmt(t){return smooth(POINT.on,POINT.up,t)*(1-smooth(POINT.hold,POINT.off,t))}

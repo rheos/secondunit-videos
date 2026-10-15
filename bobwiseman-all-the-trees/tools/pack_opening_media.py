@@ -52,7 +52,7 @@ if hp.exists():
         bb = io.BytesIO(); im.save(bb, 'PNG', optimize=True); media[key] = 'data:image/png;base64,' + base64.b64encode(bb.getvalue()).decode()
         boxes[key] = {'w': im.width, 'h': im.height, 'tip': [(TIP[0] - x0) / 2, (TIP[1] - yt) / 2], 'wrist': [(WRIST[0] - x0) / 2, (WRIST[1] - yt) / 2]}
         print(key, boxes[key])
-# Draft 2 (Bob's note at 2:16): the heart tree's carved wooden hand pointing straight out at the viewer, end of its
+# Draft 2 (Robin's note at 2:16, posted in the review notes box): the heart tree's carved wooden hand pointing straight out at the viewer, end of its
 # right branch on the last "so are you". Half size; wrist = the branch stump, tip = the end-on fingertip.
 tp = src / 'tree-hand-at-you.png'
 if tp.exists():
