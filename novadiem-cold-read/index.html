@@ -1,0 +1,535 @@
+<!doctype html>
+<html lang="en" data-resolution="landscape">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      @font-face {
+        font-family: "Marcellus SC";
+        src: url("assets/fonts/MarcellusSC-Regular.woff2") format("woff2");
+        font-weight: 400;
+        font-style: normal;
+      }
+      :root {
+        --paper: #efe6d2;
+        --gold: #a8862f;
+        --ink: #1c1a17;
+        --red: #b3261e;
+        --night: #0e1220;
+        --gold-night: #c9a54a;
+        --red-night: #d9473b;
+      }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background: var(--paper);
+      }
+      #root {
+        width: 100%;
+        height: 100%;
+        position: relative;
+      }
+      .layer {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+      }
+      .paper {
+        background: var(--paper);
+      }
+      .night {
+        background: var(--night);
+      }
+      svg.full {
+        position: absolute;
+        inset: 0;
+        width: 1920px;
+        height: 1080px;
+        overflow: visible;
+      }
+      .grain {
+        will-change: transform;
+      }
+
+      /* Plate labels */
+      .plate-label {
+        position: absolute;
+        top: 74px;
+        font-family: "Marcellus SC", serif;
+        font-size: 26px;
+        letter-spacing: 0.18em;
+        line-height: 1;
+      }
+      .plate-label.left {
+        left: 96px;
+      }
+      .plate-label.right {
+        right: 96px;
+        text-align: right;
+      }
+      .paper .plate-label {
+        color: var(--ink);
+      }
+      .night .plate-label {
+        color: var(--paper);
+      }
+
+      /* Node and annotation labels */
+      .mono {
+        font-family: "IBM Plex Mono", monospace;
+        letter-spacing: 0.12em;
+      }
+      svg text.mono {
+        font-size: 20px;
+        font-weight: 700;
+        fill: var(--ink);
+      }
+      svg text.mono.small {
+        font-size: 16px;
+        font-weight: 400;
+      }
+      svg text.mono.note {
+        font-size: 18px;
+        font-weight: 400;
+        fill: var(--ink);
+        opacity: 0.75;
+      }
+      .night svg text.mono {
+        fill: var(--paper);
+      }
+
+      /* Statements */
+      .statement {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 820px;
+        display: flex;
+        justify-content: center;
+        gap: 0.32em;
+        font-family: "Archivo Black", sans-serif;
+        font-size: 68px;
+        line-height: 1.1;
+        letter-spacing: -0.03em;
+        white-space: nowrap;
+      }
+      .statement .phrase {
+        display: inline-block;
+      }
+      .paper .statement {
+        color: var(--ink);
+      }
+      .night .statement {
+        color: var(--paper);
+        font-size: 84px;
+        top: 806px;
+      }
+      .paper .statement .red {
+        color: var(--red);
+      }
+      .night .statement .red {
+        color: var(--red-night);
+      }
+
+      /* Line styles */
+      .ln {
+        fill: none;
+        stroke-width: 2;
+        stroke-linecap: square;
+        stroke-linejoin: miter;
+      }
+      .ln.thin {
+        stroke-width: 1;
+      }
+      .ink {
+        stroke: var(--ink);
+      }
+      .gold {
+        stroke: var(--gold);
+      }
+      .gold-n {
+        stroke: var(--gold-night);
+      }
+      .paper-s {
+        stroke: var(--paper);
+      }
+      .construct {
+        stroke-width: 1;
+        stroke-dasharray: 6 6;
+        opacity: 0.4;
+      }
+
+      /* Wipe edge between the dark field and the paper */
+      .paper-hud,
+      #bar-stations {
+        opacity: 0;
+      }
+      #wipe-edge {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 2px;
+        height: 1080px;
+        background: var(--gold-night);
+        opacity: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div
+      id="root"
+      data-composition-id="main"
+      data-start="0"
+      data-duration="25"
+      data-width="1920"
+      data-height="1080"
+    >
+      <!-- Score: drafting-table-cold-read take-01, 32.25-57.25 s (end of "Silent", all of "Assembly", start of "Critic Loop") -->
+      <audio
+        id="score"
+        src="_in/score.mp3"
+        data-start="0"
+        data-duration="25"
+        data-media-start="32.25"
+        data-track-index="9"
+        data-volume="1"
+        data-automation='{"version":1,"lanes":[{"target":"volume","points":[{"t":0,"v":0},{"t":0.35,"v":1},{"t":23.4,"v":1},{"t":25,"v":0}]}]}'
+      ></audio>
+
+      <div id="plate" class="clip layer" data-start="0" data-duration="25" data-track-index="0">
+        <!-- ============ PAPER: plate IV ============ -->
+        <div id="paper" class="layer paper">
+          <svg class="full grain" viewBox="0 0 1920 1080" aria-hidden="true">
+            <defs>
+              <filter id="grain-fine" x="0" y="0" width="100%" height="100%">
+                <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="7" stitchTiles="stitch" />
+                <feColorMatrix type="matrix" values="0 0 0 0 0.36  0 0 0 0 0.29  0 0 0 0 0.18  0.55 0 0 0 -0.18" />
+              </filter>
+              <filter id="grain-mottle" x="0" y="0" width="100%" height="100%">
+                <feTurbulence type="fractalNoise" baseFrequency="0.0035" numOctaves="3" seed="11" />
+                <feColorMatrix type="matrix" values="0 0 0 0 0.45  0 0 0 0 0.36  0 0 0 0 0.2  0.26 0 0 0 -0.09" />
+              </filter>
+              <pattern id="grid" width="60" height="60" patternUnits="userSpaceOnUse" x="48" y="48">
+                <path d="M60 0H0V60" fill="none" stroke="#1c1a17" stroke-width="1" opacity="0.06" />
+              </pattern>
+            </defs>
+            <rect width="1920" height="1080" filter="url(#grain-mottle)" />
+            <rect width="1920" height="1080" filter="url(#grain-fine)" />
+            <rect x="48" y="48" width="1824" height="984" fill="url(#grid)" />
+          </svg>
+
+          <svg id="drawing" class="full" viewBox="0 0 1920 1080">
+            <!-- plate border + registration marks (present before the wipe) -->
+            <rect class="ln thin gold" x="48" y="48" width="1824" height="984" />
+            <g id="reg-marks"></g>
+
+            <!-- conductor -->
+            <g id="conductor">
+              <path id="cond-cross-h" class="ln gold construct" d="M840 290H1080" />
+              <path id="cond-cross-v" class="ln gold construct" d="M960 170V410" />
+              <circle id="cond-outer" class="ln ink" cx="960" cy="290" r="58" />
+              <circle id="cond-inner" class="ln thin ink" cx="960" cy="290" r="46" />
+              <circle id="cond-core" class="ln ink" cx="960" cy="290" r="6" />
+              <text id="cond-label" class="mono" x="1036" y="297" text-anchor="start">CONDUCTOR</text>
+            </g>
+
+            <!-- chambers, artifacts, arrows: generated below from one table -->
+            <g id="spawns"></g>
+            <g id="chambers"></g>
+            <g id="artifacts"></g>
+            <g id="arrows"></g>
+
+            <!-- annotation -->
+            <g id="note">
+              <path id="note-leader" class="ln thin ink" d="M196 716V776H236" />
+              <text id="note-text" class="mono note" x="248" y="782">SEALED WALL · FRESH CONTEXT</text>
+            </g>
+
+            <!-- diff token for the critic lead-in -->
+            <g id="token" opacity="0">
+              <path class="ln gold" fill="#efe6d2" style="fill: var(--paper)" d="M-16 -20H6L16 -10V20H-16Z" />
+            </g>
+
+            <!-- bottom bar -->
+            <g id="bar-paper">
+              <path class="ln thin ink" d="M260 985H1660" opacity="0.4" />
+              <path id="bar-progress" class="ln gold" d="M260 985H1660" />
+              <g id="bar-stations" data-layout-allow-overlap data-layout-allow-occlusion></g>
+              <path id="bar-tick" d="M-9 -14H9L0 0Z" fill="#a8862f" />
+              <text id="pass-count" class="mono small" x="1310" y="944" text-anchor="middle" opacity="0">PASS 01</text>
+            </g>
+          </svg>
+
+          <div class="plate-label left paper-hud" data-layout-allow-overlap data-layout-allow-occlusion>Plate IV</div>
+          <div class="plate-label right paper-hud" data-layout-allow-overlap data-layout-allow-occlusion>The Bureau Assembles</div>
+
+          <div class="statement">
+            <span id="st-a" class="phrase">Fresh context.</span>
+            <span id="st-b" class="phrase red">No shared assumptions.</span>
+          </div>
+        </div>
+
+        <!-- ============ NIGHT: tail of plate III ============ -->
+        <div id="night" class="layer night">
+          <svg class="full" viewBox="0 0 1920 1080">
+            <g id="stars"></g>
+            <rect class="ln thin gold-n" x="48" y="48" width="1824" height="984" opacity="0.6" />
+            <!-- the cut-open diff: three stacked layers, the silent ones -->
+            <g id="layers" transform="translate(960 470)">
+              <path class="ln gold-n" d="M-330 -150L-90 -230L330 -150L90 -70Z" opacity="0.55" />
+              <path class="ln gold-n" d="M-330 -30L-90 -110L330 -30L90 50Z" opacity="0.55" />
+              <path class="ln gold-n" d="M-330 90L-90 10L330 90L90 170Z" opacity="0.55" />
+              <path class="ln thin gold-n construct" d="M-330 -150V90M330 -150V90M90 -70V170M-90 -230V10" />
+              <path id="crack" d="M-40 -42L-22 -30L-30 -18L-8 -6L-16 6L6 16" fill="none" stroke="#d9473b" stroke-width="2" opacity="0.22" />
+              <text class="mono small" x="360" y="-144">DURABLE STATE</text>
+              <text class="mono small" x="360" y="-24">MONEY · AUTH</text>
+              <text class="mono small" x="360" y="96">OUTBOUND SENDS</text>
+            </g>
+            <g id="bar-night">
+              <path class="ln thin paper-s" d="M260 985H1660" opacity="0.35" />
+              <path class="ln gold-n" d="M260 985H960" />
+              <g id="bar-stations-night" data-layout-allow-overlap data-layout-allow-occlusion></g>
+              <path d="M951 971H969L960 985Z" fill="#c9a54a" />
+            </g>
+          </svg>
+          <div class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate III</div>
+          <div class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>Two Kinds of Failure</div>
+          <div class="statement">
+            <span class="phrase">Some bugs are</span>
+            <span class="phrase red">silent.</span>
+          </div>
+        </div>
+        <div id="wipe-edge"></div>
+      </div>
+    </div>
+
+    <script>
+      const SVGNS = "http://www.w3.org/2000/svg";
+      const START = 32.25; // offset into the score
+
+      // Beat grid of the score (librosa, take-01), audio seconds. Cues snap to these.
+      const BEATS = [
+        32.25, 32.88, 33.51, 34.13, 34.76, 35.39, 36.01, 36.64, 37.27, 37.87, 38.5, 39.13, 39.75,
+        40.38, 41.01, 41.8, 42.56, 43.19, 43.82, 44.44, 45.07, 45.7, 46.32, 46.95, 47.58, 48.18,
+        48.81, 49.46, 50.06, 50.69, 51.32, 51.94, 52.57, 53.2, 53.82, 54.45, 55.08, 55.68, 56.31,
+        56.96,
+      ];
+      const snap = (a) => BEATS.reduce((b, x) => (Math.abs(x - a) < Math.abs(b - a) ? x : b));
+      const T = (a) => snap(a) - START; // audio time -> composition time, on the beat
+
+      function el(tag, attrs, parent) {
+        const n = document.createElementNS(SVGNS, tag);
+        for (const k in attrs) n.setAttribute(k, attrs[k]);
+        if (parent) parent.appendChild(n);
+        return n;
+      }
+      function text(str, attrs, parent) {
+        const n = el("text", attrs, parent);
+        n.textContent = str;
+        return n;
+      }
+
+      // ---- static furniture ----
+      const reg = document.getElementById("reg-marks");
+      [
+        [48, 48],
+        [1872, 48],
+        [48, 1032],
+        [1872, 1032],
+      ].forEach(([x, y]) => {
+        el("circle", { class: "ln thin gold", cx: x, cy: y, r: 10 }, reg);
+        el("path", { class: "ln thin gold", d: `M${x - 18} ${y}H${x + 18}M${x} ${y - 18}V${y + 18}` }, reg);
+      });
+
+      const STATIONS = ["SPEC", "PLAN", "BUILD", "CRITIC", "MERGE"];
+      const SX = (i) => 260 + i * 350;
+      [
+        ["bar-stations", "ink"],
+        ["bar-stations-night", "paper-s"],
+      ].forEach(([id, cls]) => {
+        const g = document.getElementById(id);
+        STATIONS.forEach((s, i) => {
+          el("path", { class: `ln thin ${cls}`, d: `M${SX(i)} 979V991` }, g);
+          text(s, { class: "mono small", x: SX(i), y: 1014, "text-anchor": "middle" }, g);
+        });
+      });
+
+      // seeded stars for the dark field (upper band only, away from text)
+      let seed = 1729;
+      const rnd = () => {
+        seed = (seed + 0x6d2b79f5) | 0;
+        let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+        t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+      };
+      const stars = document.getElementById("stars");
+      for (let i = 0; i < 70; i++) {
+        el(
+          "circle",
+          {
+            cx: (80 + rnd() * 1760).toFixed(1),
+            cy: (80 + rnd() * 600).toFixed(1),
+            r: (0.8 + rnd() * 1.1).toFixed(2),
+            fill: "#efe6d2",
+            opacity: (0.15 + rnd() * 0.35).toFixed(2),
+          },
+          stars
+        );
+      }
+
+      // ---- the run: four chambers, three artifacts ----
+      const CH_Y = 520,
+        CH_H = 190,
+        CH_W = 230,
+        MID_Y = 615;
+      const ROLES = [
+        { name: "ANALYST", cx: 300, glyph: "M-26 0A26 26 0 1 0 26 0A26 26 0 1 0 -26 0M-40 0H-18M18 0H40M0 -40V-18M0 18V40" },
+        { name: "ARCHITECT", cx: 740, glyph: "M-30 28H30L-30 -32ZM-30 6A22 22 0 0 1 -8 28" },
+        { name: "BUILDER", cx: 1180, glyph: "M-28 -28H28V28H-28ZM-28 28L28 -28M-28 0H28" },
+        { name: "CRITIC", cx: 1620, glyph: "M0 -34L34 0L0 34L-34 0Z" },
+      ];
+      const DOCS = [
+        { name: "SPEC", cx: 520 },
+        { name: "PLAN", cx: 960 },
+        { name: "DIFF", cx: 1400 },
+      ];
+
+      const gSp = document.getElementById("spawns");
+      const gCh = document.getElementById("chambers");
+      const gAr = document.getElementById("artifacts");
+      const gArw = document.getElementById("arrows");
+
+      ROLES.forEach((r, i) => {
+        const x0 = r.cx - CH_W / 2;
+        r.spawn = el(
+          "path",
+          { class: "ln thin ink", opacity: 0.55, d: `M960 ${i === 0 ? 348 : 440}V440H${r.cx}V${CH_Y}` },
+          gSp
+        );
+        const g = el("g", {}, gCh);
+        r.outer = el("rect", { class: "ln ink", x: x0, y: CH_Y, width: CH_W, height: CH_H }, g);
+        r.inner = el("rect", { class: "ln thin ink", x: x0 + 8, y: CH_Y + 8, width: CH_W - 16, height: CH_H - 16 }, g);
+        r.glyphG = el("g", { transform: `translate(${r.cx} 588)` }, g);
+        r.glyph = el("path", { class: "ln gold", d: r.glyph }, r.glyphG);
+        if (r.name === "CRITIC") r.check = el("path", { class: "ln ink", d: "M-13 0L-3 11L15 -11", "stroke-width": 3 }, r.glyphG);
+        r.label = text(r.name, { class: "mono", x: r.cx, y: 676, "text-anchor": "middle" }, g);
+        r.tag = text(`CTX·0${i + 1}`, { class: "mono small", x: x0 + 18, y: CH_Y + 32, opacity: 0.6 }, g);
+      });
+
+      // arrow into chamber i (from the artifact on its left), and out of chamber i (to the artifact on its right)
+      const arrow = (x1, x2) => {
+        const g = el("g", {}, gArw);
+        const shaft = el("path", { class: "ln gold", d: `M${x1} ${MID_Y}H${x2}` }, g);
+        const head = el("path", { class: "ln gold", d: `M${x2 - 10} ${MID_Y - 8}L${x2} ${MID_Y}L${x2 - 10} ${MID_Y + 8}` }, g);
+        return { shaft, head };
+      };
+      DOCS.forEach((d, i) => {
+        const left = ROLES[i].cx + CH_W / 2; // right wall of the chamber before
+        const right = ROLES[i + 1].cx - CH_W / 2; // left wall of the chamber after
+        d.out = arrow(left + 4, d.cx - 40);
+        d.into = arrow(d.cx + 40, right - 4);
+        const g = el("g", {}, gAr);
+        const x = d.cx;
+        d.body = el("path", { class: "ln gold", d: `M${x - 32} 575H${x + 18}L${x + 32} 589V655H${x - 32}Z` }, g);
+        d.fold = el("path", { class: "ln thin gold", d: `M${x + 18} 575V589H${x + 32}` }, g);
+        d.lines = el("path", { class: "ln thin gold", d: `M${x - 20} 600H${x + 16}M${x - 20} 614H${x + 20}M${x - 20} 628H${x + 6}` }, g);
+        d.label = text(d.name, { class: "mono small", x, y: 690, "text-anchor": "middle" }, g);
+      });
+
+      // ---- draw helpers (measured lengths, never guessed) ----
+      function prime(node) {
+        const len = node.getTotalLength() * 1.02;
+        node.style.strokeDasharray = `${len}`;
+        node.style.strokeDashoffset = `${len}`;
+        return node;
+      }
+      const tl = gsap.timeline({ paused: true });
+      const draw = (node, at, dur = 0.7, ease = "power2.out") =>
+        tl.to(prime(node), { strokeDashoffset: 0, duration: dur, ease }, at);
+      const fade = (node, at, dur = 0.4, to = Number(node.getAttribute("opacity") || 1) || 1) =>
+        tl.fromTo(node, { opacity: 0 }, { opacity: to, duration: dur, ease: "power1.out" }, at);
+
+      // ---- 1. dark field holds, then the cutaway closes (34.76 -> 35.39) ----
+      const wipeA = T(34.76),
+        wipeB = T(35.39);
+      tl.fromTo("#night", { clipPath: "inset(0 0 0 0%)" }, { clipPath: "inset(0 0 0 100%)", duration: wipeB - wipeA, ease: "power2.inOut" }, wipeA);
+      tl.fromTo("#wipe-edge", { x: 0 }, { x: 1918, duration: wipeB - wipeA, ease: "power2.inOut" }, wipeA);
+      tl.fromTo("#wipe-edge", { opacity: 0 }, { opacity: 1, duration: 0.08 }, wipeA);
+      tl.to("#wipe-edge", { opacity: 0, duration: 0.15 }, wipeB - 0.1);
+      // paper-side labels exist only once the cutaway starts closing (they sit under the dark field before that)
+      tl.set([".paper-hud", "#bar-stations"], { opacity: 1 }, wipeA);
+
+      // ---- 2. conductor ----
+      const c0 = T(35.39);
+      draw(document.getElementById("cond-outer"), c0, 1.1, "none");
+      draw(document.getElementById("cond-cross-h"), c0 + 0.3, 0.9);
+      draw(document.getElementById("cond-cross-v"), c0 + 0.45, 0.9);
+      draw(document.getElementById("cond-inner"), c0 + 0.7, 0.8, "none");
+      draw(document.getElementById("cond-core"), c0 + 1.1, 0.3);
+      fade(document.getElementById("cond-label"), c0 + 1.2, 0.5);
+
+      // ---- 3. chambers assemble, each passing work on through an artifact ----
+      const chamberAt = [37.27, 40.38, 43.82, 46.95];
+      const docAt = [39.13, 42.56, 45.7];
+      ROLES.forEach((r, i) => {
+        const t0 = T(chamberAt[i]);
+        draw(r.spawn, t0, 0.6, "power1.inOut");
+        draw(r.outer, t0 + 0.45, 0.9, "none");
+        draw(r.inner, t0 + 1.0, 0.7, "none");
+        draw(r.glyph, t0 + 1.2, 0.8);
+        fade(r.label, t0 + 1.35);
+        fade(r.tag, t0 + 1.5);
+        if (i > 0) {
+          const into = DOCS[i - 1].into;
+          draw(into.shaft, t0 + 1.4, 0.4);
+          draw(into.head, t0 + 1.75, 0.2);
+        }
+      });
+      DOCS.forEach((d, i) => {
+        const t0 = T(docAt[i]);
+        draw(d.out.shaft, t0, 0.4);
+        draw(d.out.head, t0 + 0.35, 0.2);
+        draw(d.body, t0 + 0.4, 0.7, "none");
+        draw(d.fold, t0 + 0.95, 0.25);
+        draw(d.lines, t0 + 1.0, 0.5);
+        fade(d.label, t0 + 1.1);
+      });
+      const critic = ROLES[3];
+      prime(critic.check);
+
+      // ---- 4. annotation and statement ----
+      draw(document.getElementById("note-leader"), T(49.46), 0.6);
+      fade(document.getElementById("note-text"), T(49.46) + 0.5, 0.5);
+      tl.fromTo("#st-a", { clipPath: "inset(0 100% 0 0)" }, { clipPath: "inset(0 0% 0 0)", duration: 0.7, ease: "power2.out" }, T(50.06));
+      tl.fromTo("#st-b", { clipPath: "inset(0 100% 0 0)" }, { clipPath: "inset(0 0% 0 0)", duration: 0.9, ease: "power2.out" }, T(51.32));
+
+      // ---- 5. section change: the bar ticks to CRITIC and the diff goes in for its first cold read ----
+      const k0 = T(55.08);
+      const prog = document.getElementById("bar-progress");
+      const progLen = prog.getTotalLength();
+      prog.style.strokeDasharray = `${progLen}`;
+      tl.set(prog, { strokeDashoffset: progLen * 0.5 }, 0); // 260 -> 960 = BUILD
+      tl.to(prog, { strokeDashoffset: progLen * 0.25, duration: 0.6, ease: "power2.inOut" }, k0);
+      tl.set("#bar-tick", { x: 960, y: 971 }, 0);
+      tl.to("#bar-tick", { x: 1310, duration: 0.6, ease: "power2.inOut" }, k0);
+      fade(document.getElementById("pass-count"), T(55.68), 0.4);
+      tl.set("#token", { x: 1400, y: MID_Y }, 0);
+      tl.to("#token", { opacity: 1, duration: 0.2 }, k0);
+      tl.to("#token", { x: 1620, y: 588, duration: 1.0, ease: "power2.inOut" }, k0 + 0.1);
+      tl.to("#token", { opacity: 0, duration: 0.25 }, k0 + 0.95);
+      tl.to(critic.check, { strokeDashoffset: 0, duration: 0.45, ease: "power2.out" }, T(56.31));
+
+      window.__timelines["main"] = tl;
+    </script>
+  </body>
+</html>
