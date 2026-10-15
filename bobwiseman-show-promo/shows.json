@@ -32,6 +32,16 @@
  {
   "act": "TWO PIANOS NO RODEO",
   "with": "Bob Wiseman & Mike Boguski",
+  "dow": "FRI",
+  "date": "OCT 23",
+  "city": "Miramichi, NB",
+  "venue": "Three Dog Distilling",
+  "slug": "oct-23-miramichi",
+  "iso": "2026-10-23"
+ },
+ {
+  "act": "TWO PIANOS NO RODEO",
+  "with": "Bob Wiseman & Mike Boguski",
   "dow": "SAT",
   "date": "OCT 24",
   "city": "Souris, PEI",
