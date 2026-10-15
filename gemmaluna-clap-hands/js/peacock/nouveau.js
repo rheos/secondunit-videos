@@ -152,18 +152,18 @@ function cuff(sc, col = C.gold) { // a scalloped gold cuff below the wrist (Nouv
   pts.push([.48, .7], [-.48, .7]);
   cut(poly(pts), col, { sh: .6, lift: .2 });
 }
-function palmHand(x, y, sc, { dir = -1, rot = 0, spread = .14, sx = 1 } = {}) {
+function palmHand(x, y, sc, { dir = -1, rot = 0, spread = .14, sx = 1, cuffCol = C.gold } = {}) {
   g.save(); g.translate(x, y); g.rotate(rot); g.scale(sc * sx, sc);
   g.lineWidth = .02;
   cut(palmPath(spread, dir), C.cream, { sh: .8, lift: .4 });
   // palm creases, light plum pencil
   g.save(); g.globalAlpha *= .45 * sx; g.strokeStyle = C.plumLight; g.lineWidth = .025; g.lineCap = 'round';
   g.beginPath(); g.moveTo(-.3, -.72); g.quadraticCurveTo(0, -.6, .32, -.75); g.moveTo(dir * .05, -.12); g.quadraticCurveTo(dir * .2, -.4, dir * .02, -.6); g.stroke(); g.restore();
-  cuff(sc);
+  cuff(sc, cuffCol);
   g.restore();
 }
 // drawing 3: the hand in profile, upright, palm facing the other hand; fingers stacked behind
-function profileHand(x, y, sc, dir, open = 0) {
+function profileHand(x, y, sc, dir, open = 0, cuffCol = C.gold) {
   const m = -dir;
   g.save(); g.translate(x, y); g.translate(.15 * m * sc, -.3 * sc); g.rotate(dir * open); g.translate(-.15 * m * sc, .3 * sc); g.scale(sc * m, sc);
   const body = [[-.3, 0], [-.34, -.4], [-.35, -.78], [-.31, -1.0], [-.28, -1.3], [-.21, -1.62], [-.1, -1.84], [.02, -1.88], [.11, -1.8], [.15, -1.5], [.17, -1.05], [.17, -.55], [.14, 0]];
@@ -172,28 +172,51 @@ function profileHand(x, y, sc, dir, open = 0) {
   for (const l of [[[-.2, -1.02], [-.14, -1.42], [-.05, -1.7]], [[-.08, -1.04], [-.03, -1.4], [.04, -1.62]], [[.04, -1.06], [.08, -1.36], [.11, -1.5]]]) { g.beginPath(); g.moveTo(...l[0]); g.quadraticCurveTo(...l[1], ...l[2]); g.stroke(); }
   g.restore();
   cut(blob([[.02, -.2], [.1, -.5], [.15, -.8], [.21, -1.0], [.27, -.98], [.27, -.86], [.22, -.55], [.17, -.22], [.12, -.08]], .5), C.creamDeep, { sh: .5 });
-  g.translate(-.08, 0); g.scale(.62, 1); cuff(sc);
+  g.translate(-.08, 0); g.scale(.62, 1); cuff(sc, cuffCol);
   g.restore();
 }
 // the hinge angle through a clap at k: swings shut fast, bounces open, settles half open
 function clapOpen(t, k, wide = .5) { const lt = t - k; if (lt < 0) return wide * eo(clamp(-lt / .38)); return wide * (.55 * eo(clamp(lt / .3)) - .1 * eio(clamp((lt - .3) / 1.2))); }
+// a round-ended limb from (x0,y0) to (x1,y1), radius r0 at the start, r1 at the end
+function capsule(x0, y0, x1, y1, r0, r1 = r0) {
+  const a = Math.atan2(y1 - y0, x1 - x0), p = new Path2D();
+  p.arc(x1, y1, r1, a - Math.PI / 2, a + Math.PI / 2); p.arc(x0, y0, r0, a + Math.PI / 2, a + Math.PI * 1.5); p.closePath(); return p;
+}
+// a sleeve running from the wrist down out of view (len in hand units), leaning outward
+function sleeve(wx, wy, sc, dir, len, col) {
+  const L = len * sc, lean = dir * .22 * L;
+  cut(poly([[wx - .27 * sc, wy + .5 * sc], [wx + .27 * sc, wy + .5 * sc], [wx + lean + .42 * sc, wy + L], [wx + lean - .42 * sc, wy + L]]), col, { sh: .7, lift: .2 });
+}
 // the pair, centred at cx, wrists at cy. The approach accelerates into the hit (d = u^0.6), so
 // contact lands on the sung "clap", not early. drift (0..1) lets them float open after the last clap.
-function clapPair(t, cx, cy, sc, k, { drift = 0 } = {}) {
+// cuffCol / sleeveCol give each person their own paper; sleeveLen 0 = no arms.
+function clapPair(t, cx, cy, sc, k, { drift = 0, cuffCol = C.gold, sleeveCol = C.plumLight, sleeveLen = 0 } = {}) {
   const lt = t - k;
   let d = lt < 0 ? Math.pow(clamp(-lt / .42), .6) : eo(clamp((lt - .06) / .45));
   d = Math.max(d, drift);
-  const bob = Math.sin(t * Math.PI * 2 / 1.02) * sc * .02;
+  const bob = Math.sin(t * Math.PI * 2 / 1.02) * sc * .02, wy = cy + bob;
+  const xs = (off) => [-1, 1].map((dir) => [dir, cx + dir * off]);
+  let off, draw;
   if (d <= .14) {
     const op = lt < 0 ? 0 : .12 * eo(clamp(lt / .1)), sq = (lt < 0 ? 0 : Math.exp(-14 * lt)) * .04;
-    for (const dir of [-1, 1]) profileHand(cx + dir * (.17 * sc + op * .04 * sc), cy + bob, sc * (1 - sq), dir, op);
+    off = .17 * sc + op * .04 * sc; draw = (dir, x) => profileHand(x, wy, sc * (1 - sq), dir, op, cuffCol);
   } else if (d <= .58) {
-    const q = (d - .14) / .44, off = lerp(.3, .6, q) * sc, sx = lerp(.45, .72, q);
-    for (const dir of [-1, 1]) palmHand(cx + dir * off, cy + bob, sc * .84, { dir, rot: dir * lerp(.03, .1, q), spread: 0, sx });
+    const q = (d - .14) / .44, sx = lerp(.45, .72, q); off = lerp(.3, .6, q) * sc;
+    draw = (dir, x) => palmHand(x, wy, sc * .84, { dir, rot: dir * lerp(.03, .1, q), spread: 0, sx, cuffCol });
   } else {
-    const q = (d - .58) / .42, off = lerp(.68, .92, q) * sc, rk = Math.sin(lt * Math.PI * 2) * .03;
-    for (const dir of [-1, 1]) palmHand(cx + dir * off, cy + bob, sc * .84, { dir, rot: dir * (.16 + rk), spread: .14 });
+    const q = (d - .58) / .42, rk = Math.sin(lt * Math.PI * 2) * .03; off = lerp(.68, .92, q) * sc;
+    draw = (dir, x) => palmHand(x, wy, sc * .84, { dir, rot: dir * (.16 + rk), spread: .14, cuffCol });
   }
+  if (sleeveLen > 0) for (const [dir, x] of xs(off)) sleeve(x, wy, sc, dir, sleeveLen, sleeveCol);
+  for (const [dir, x] of xs(off)) draw(dir, x);
+}
+// A clap that visits (Robin, look test v1: no hands hanging on screen between claps). The pair comes
+// in over [k-pre, k-.2], claps on k, opens on the sung "hands" (k+.53) and is gone by k+post.
+// It travels along local +y by dy (rises from below, or out from under a halo in a rotated frame).
+function visitClap(t, cx, cy, sc, k, { dy = 600, pre = .7, post = 1.35, ...o } = {}) {
+  if (t < k - pre || t > k + post) return;
+  const i = eo(clamp((t - k + pre) / (pre - .2))), out = ei(clamp((t - k - .62) / (post - .62)));
+  clapPair(t, cx, cy + (1 - i) * dy + out * dy, sc, k, o);
 }
 // gold rings bursting from the hit
 function clapRings(t, x, y, k, scale = 1) {

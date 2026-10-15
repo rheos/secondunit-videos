@@ -1,6 +1,8 @@
 // Look test: verse 1 + chorus 1 (26.04 to 56.88) in cut paper, peacock palette.
 // Cues from STORYBOARD.md c01/c02 (word times are Whisper, ~0.3 s slop; claps are exact).
 const CLAPS = [41.6, 46.0, 50.033, 54.133];
+// keyframes on song time with eased in-between: kf3(t, [[t0, v0], [t1, v1], ...])
+const kf3 = (t, ks) => { if (t <= ks[0][0]) return ks[0][1]; for (let i = 1; i < ks.length; i++) if (t < ks[i][0]) return lerp(ks[i - 1][1], ks[i][1], eio((t - ks[i - 1][0]) / (ks[i][0] - ks[i - 1][0]))); return ks[ks.length - 1][1]; };
 const cam = (cx, cy, z = 1, rot = 0) => { g.translate(W / 2, H / 2); g.rotate(rot); g.scale(z, z); g.translate(-cx, -cy); };
 
 // ---- the tram car: clerestory of stained glass, brass rail, swinging straps, lily lamps ----
@@ -149,109 +151,140 @@ SHOT(36.44, 37.7, 'horseshoe', (t, k, d) => {
   g.restore();
 }, { xin: .25, tr: 'fade' });
 
-// 37.7 "hanging out the window with a bottle full of rain": the arched window, a cream arm, a Galle bottle filling
-SHOT(37.7, 41.0, 'window', (t, k, d) => {
-  g.save(); cam(540, lerp(980, 1040, eio(k)), lerp(1.0, 1.18, eio(k)));
+// ---- CHORUS 1: the clap catches on. 1 pair, then 3, then 6, then everyone (Robin, look test v1 notes).
+// Each pair visits for its clap only: up just before "clap", open on "hands", gone a second later.
+
+// The tenement: three by three arched windows; the bottle window is the centre one.
+// Inside a window everything is drawn in a local 600 x 825 frame (scale .4 in the world).
+const WIN = { xs: [90, 420, 750], ys: [640, 1040, 1440], k: .4, w: 600, h: 825 };
+const PEOPLE = [ // sleeve, cuff: one paper pair per person
+  [C.plumLight, C.gold], [C.tealDeep, C.goldPale], [C.goldDeep, C.cream], [C.plum, C.gold], [C.teal, C.gold], [C.plumDeep, C.goldPale],
+];
+function inWin(c, r, fn) { g.save(); g.translate(WIN.xs[c], WIN.ys[r]); g.scale(WIN.k, WIN.k); fn(); g.restore(); }
+const opening = () => archPath(0, 0, WIN.w, WIN.h);
+// lit 0..1; inside() draws in the opening (clipped), front() over the frame and sill
+function tenWindow(c, r, lit, inside, front) {
+  inWin(c, r, () => {
+    cut(opening(), C.tealInk, { sh: 0 });
+    if (lit > 0) { g.save(); g.globalAlpha *= lit; cut(opening(), C.goldPale, { sh: 0, grain: .3 }); g.restore(); glow(300, 520, 560, '250,215,140', .4 * lit); }
+    g.save(); g.clip(opening());
+    for (const sx of [0, 1]) cut(blob(sx ? [[610, 60], [610, 840], [540, 840], [500, 520], [560, 300]] : [[-10, 60], [-10, 840], [60, 840], [100, 520], [40, 300]], .5), lit > .5 ? C.tealLight : C.tealDeep, { sh: .5 });
+    if (inside) inside();
+    g.restore();
+    archFrame(0, 0, WIN.w, WIN.h, 30, C.gold);
+    cut(poly([[-70, WIN.h], [WIN.w + 70, WIN.h], [WIN.w + 90, WIN.h + 54], [-90, WIN.h + 54]]), C.cream, { sh: 1, lift: .3 });
+    if (front) front();
+  });
+}
+// the Galle bottle, its base at (0,0): teal glass, a gold lily, filling with rain
+function galleBottle(fill) {
+  const b = blob([[-80, 0], [-100, -100], [-90, -200], [-34, -260], [-28, -380], [28, -380], [34, -260], [90, -200], [100, -100], [80, 0]], .55);
+  cut(b, C.tealLight, { sh: 1, lift: .5, alpha: .94 });
+  g.save(); g.clip(b); cut(rect(-110, lerp(10, -300, fill), 220, 420), C.teal, { sh: 0, grain: .3 }); g.restore();
+  cut(flowerPath(0, -120, 50, 5, .3), C.goldPale, { sh: .3, alpha: .9 });
+  cut(cutRect(-36, -402, 72, 26, 4), C.gold, { sh: .5 });
+}
+// a window lights with a flare when its people clap
+const flare = (t, k) => t < k ? 0 : Math.exp(-3 * (t - k)) * .5;
+
+// 37.7 to 49.4, one place: the bottle window, then the street joins in.
+// 37.7 "hanging out the window with a bottle full of rain"; 40.4 the bottle is set on the sill;
+// clap 1 (41.6) the same person's hands come up and clap; pull back; clap 2 (46.0) both neighbours too;
+// the rest of the building lights up window by window.
+SHOT(37.7, 49.4, 'tenement', (t, k, d) => {
+  const k1 = CLAPS[0], k2 = CLAPS[1];
+  g.save();
+  const z = kf3(t, [[37.7, 2.6], [41.0, 2.75], [42.7, 2.75], [45.3, 1.0], [49.4, 1.05]]);
+  const cy = kf3(t, [[37.7, 1190], [42.7, 1190], [45.3, 1010], [49.4, 990]]);
+  cam(540, cy, z);
   sheet(C.tealInk);
-  halo(540, 520, 330, t * .05, ss(37.0, 38.0, t), [C.goldDeep, C.creamDeep, C.teal, C.gold]);
-  cut(cutRect(-60, 900, W + 120, 1200, 51), C.plum, { sh: 1, lift: .4 });
-  const wx = 240, wy = 1000, ww = 600, wh = 760;
-  cut(archPath(wx, wy, ww, wh), C.goldPale, { sh: 0 });
-  glow(540, wy + wh * .55, 520, '250,215,140', .35);
-  archFrame(wx, wy, ww, wh, 26, C.gold);
-  // ironwork tendrils grow up the frame through the line
-  const gu = ss(37.7, 40.6, t);
-  for (const sx of [-1, 1]) {
-    const x0 = 540 + sx * 340;
-    const v = whipPts([x0, wy + wh + 80], [x0 + sx * 90, wy + wh * .55], [x0 - sx * 40, wy + wh * .2], [x0 + sx * 60, wy - 40], 54, -sx);
-    tendril(grow(v, gu), 22, C.goldDeep);
-    for (let i = 0; i < 3; i++) if (gu > .3 + i * .2) lily(x0 + sx * 34, wy + wh - 120 - i * 210, -Math.PI / 2 + sx * .9, 70, eo((gu - .3 - i * .2) * 4), [C.cream, C.goldPale]);
+  // the moon-halo over the roofs; its lilies open on clap 1
+  halo(540, 380, 200, t * .05, 1, [C.goldDeep, C.creamDeep, C.teal, C.gold]);
+  for (let i = 0; i < 8; i++) { const a = i / 8 * TAU + t * .04; lily(540 + Math.cos(a) * 240, 380 + Math.sin(a) * 240, a, 64, back(clamp((t - k1 - i * .04) / .7)), [C.cream, C.goldPale]); }
+  // the building
+  cut(cutRect(-60, 560, W + 120, 1400, 51), C.plum, { sh: 1, lift: .4 });
+  cut(cutRect(-60, 540, W + 120, 40, 52), C.gold, { sh: .8, lift: .3 });
+  for (const sx of [-1, 1]) tendril(whipPts([540 + sx * 40, 545], [540 + sx * 200, 470], [540 + sx * 360, 600], [540 + sx * 470, 500], 40, -sx), 14, C.gold);
+  for (const y of [1010, 1410, 1810]) cut(cutRect(-60, y, W + 120, 12, y), C.goldDeep, { sh: .4 });
+  cut(cutRect(-60, 1840, W + 120, 200, 53), C.tealDeep, { sh: .6 });
+  // windows: the centre is lit throughout; its neighbours light on clap 2; the rest wake after
+  const order = [[0, 0], [2, 2], [1, 0], [0, 2], [2, 0], [1, 2]];
+  for (let r = 0; r < 3; r++) for (let c = 0; c < 3; c++) {
+    let lit;
+    if (c === 1 && r === 1) lit = 1 + flare(t, k1);
+    else if (r === 1) lit = ss(k2 - .02, k2 + .04, t) + flare(t, k2);
+    else { const j = order.findIndex(([a, b]) => a === c && b === r); lit = ss(46.7 + j * .4, 46.76 + j * .4, t); }
+    lit = Math.min(1.25, lit);
+    const centre = c === 1 && r === 1;
+    // the bottle: held up 37.7 to 40.4, set down on the sill by 40.9, the arm gone inside by 41.2
+    const set = ss(40.2, 40.7, t), gone = ss(40.7, 41.0, t);
+    const bx = lerp(430, 500, set), by = lerp(WIN.h - 230, WIN.h, set), fill = ss(37.9, 40.2, t), lean = Math.sin(t * 2.2) * .03 * (1 - set);
+    tenWindow(c, r, lit, () => {
+      if (centre && gone < 1) {
+        // the arm: sleeve from behind the left jamb to the elbow on the sill, up to a gold cuff, the palm behind the bottle
+        g.save(); g.translate(-gone * 120, gone * 520);
+        const ex = 220, ey = WIN.h - 50, wx = bx - 112, wy = by - 92, a = Math.atan2(wy - ey, wx - ex);
+        cut(capsule(-120, WIN.h - 170, ex, ey, 66, 60), PEOPLE[0][0], { sh: .9, lift: .4 });
+        cut(capsule(ex, ey, wx - Math.cos(a) * 40, wy - Math.sin(a) * 40, 60, 50), PEOPLE[0][0], { sh: .9, lift: .4 });
+        cut(capsule(wx - Math.cos(a) * 52, wy - Math.sin(a) * 52, wx - Math.cos(a) * 14, wy - Math.sin(a) * 14, 56), PEOPLE[0][1], { sh: .6, lift: .3 });
+        cut(ellipse(wx + 22, wy - 20, 52, 66, a + Math.PI / 2), C.cream, { sh: .7, lift: .3 });
+        g.restore();
+      }
+      if (centre) visitClap(t, 230, 560, 170, k1, { dy: 700, sleeveLen: 4, sleeveCol: PEOPLE[0][0], cuffCol: PEOPLE[0][1] });
+      if (r === 1 && !centre) visitClap(t, 300, 560, 170, k2, { dy: 700, sleeveLen: 4, sleeveCol: PEOPLE[c ? 1 : 2][0], cuffCol: PEOPLE[c ? 1 : 2][1] });
+      if (centre) visitClap(t, 230, 560, 170, k2, { dy: 700, sleeveLen: 4, sleeveCol: PEOPLE[0][0], cuffCol: PEOPLE[0][1] });
+    }, centre ? () => {
+      g.save(); g.translate(bx, by); g.rotate(lean); galleBottle(fill);
+      // the hand round the bottle: four fingers across the front, until it lets go
+      g.restore();
+      if (gone < 1) { g.save(); g.clip(opening()); g.translate(bx - gone * 120, by + gone * 520); g.rotate(lean);
+        for (let i = 0; i < 4; i++) cut(rrect(-98, -150 + i * 30, 120 - i * 6, 26, 13), C.cream, { sh: .6, lift: .2 }); g.restore(); }
+    } : null);
   }
-  // the sill
-  cut(poly([[wx - 70, wy + wh], [wx + ww + 70, wy + wh], [wx + ww + 90, wy + wh + 54], [wx - 90, wy + wh + 54]]), C.cream, { sh: 1, lift: .3 });
-  // the bottle (Galle: teal glass, gold lily on it) filling with rain, held up by an arm from below the sill
-  const lean = Math.sin(t * 2.2) * .03, fill = ss(37.9, 41.0, t), sy = wy + wh;
-  g.save(); g.translate(540, sy + 40); g.rotate(lean);
-  tendril([[-60, 120], [-50, 0], [-30, -120], [0, -230]], 150, C.plumLight, { sh: .9, lift: .4 });
-  tendril([[-6, -210], [0, -300], [6, -380], [10, -450]], 92, C.cream, { sh: .8, lift: .4 });
-  g.translate(10, -600);
-  const bottle = blob([[-80, 230], [-100, 130], [-90, 30], [-34, -30], [-28, -150], [28, -150], [34, -30], [90, 30], [100, 130], [80, 230]], .55);
-  cut(bottle, C.tealLight, { sh: 1, lift: .5, alpha: .92 });
-  g.save(); g.clip(bottle); cut(rect(-110, lerp(240, -60, fill), 220, 400), C.teal, { sh: 0, grain: .3 }); g.restore();
-  cut(flowerPath(0, 120, 50, 5, .3), C.goldPale, { sh: .3, alpha: .9 });
-  cut(cutRect(-36, -172, 72, 26, 4), C.gold, { sh: .5 });
-  // the hand cupping the bottle from below: fingers curled up its side
-  cut(blob([[-70, 250], [-96, 190], [-60, 170], [60, 170], [96, 190], [70, 250], [0, 270]], .6), C.cream, { sh: .8, lift: .4 });
-  for (let i = 0; i < 3; i++) cut(rrect(-92 + i * 6, 120 + i * 24, 34, 20, 10), C.cream, { sh: .5 });
+  for (let i = 0; i < 2; i++) clapRings(t, 540, 1150, [k1, k2][i], .6);
   g.restore();
-  // rain falls into the open mouth
-  rain(t, 70, 2, .5, .1);
-  g.restore();
-}, { xin: .45, tr: 'rise' });
+  rain(t, lerp(80, 40, ss(42.7, 45.3, t)), 2, .45, .1);
+}, { xin: .45, tr: 'rise', smooth: true });
 
-// CHORUS 1 · clap 1 (41.6): slender hands meet in front of the halo; lilies open round the ring on the clap
-SHOT(41.0, 45.4, 'clap1', (t, k, d) => {
-  const kk = CLAPS[0];
-  g.save(); cam(540, 900, lerp(1.1, 1.0, eo(d / 1.4)));
-  sheet(C.tealDeep);
-  rays(540, 820, 360, 1200, 24, t * .03, C.teal);
-  halo(540, 820, 470, t * .06, 1);
-  const ok = back(clamp((t - kk) / .7));
-  for (let i = 0; i < 10; i++) { const a = i / 10 * TAU + t * .04, R = 520; lily(540 + Math.cos(a) * R, 820 + Math.sin(a) * R, a, 100, i % 2 ? ok : back(clamp((t - kk - .53) / .7)), i % 2 ? [C.cream, C.goldPale] : [C.goldPale, C.cream]); }
-  for (const sx of [-1, 1]) tendril(whipPts([540 + sx * 120, 1950], [540 + sx * 520, 1600], [540 + sx * 160, 1360], [540 + sx * 380, 1230], 60, -sx), 30, C.plum);
-  clapRings(t, 540, 760, kk);
-  clapPair(t, 540, 1000, 280, kk);
-  rain(t, 40, 11, .3);
-  g.restore();
-}, { xin: .6, tr: 'iris', ix: 540, iy: 1000, smooth: true });
-
-// clap 2 (46.0): two Guimard lily-bud lamps over the wet street light on the clap, the hands between them
-SHOT(45.4, 49.4, 'clap2', (t, k, d) => {
-  const kk = CLAPS[1], on = clamp((t - kk + .04) / .12);
-  g.save(); cam(540, 980, lerp(.98, 1.08, k));
-  sheet(C.tealInk);
-  halo(540, 520, 250, t * .05, 1, [C.goldDeep, C.creamDeep, C.tealDeep, C.gold]);
-  // the street and its reflections
-  cut(cutRect(-60, 1500, W + 120, 600, 61), C.tealDeep, { sh: .6 });
-  for (let i = 0; i < 6; i++) cut(ribbon(-40, W + 40, 1560 + i * 60, 10, i * 1.3 + t * .8, 8), on > 0 ? C.goldDeep : C.teal, { sh: 0, grain: .2, alpha: .45 + .3 * on });
-  for (const [x, dir] of [[150, 1], [930, -1]]) guimard(x, 1520, 980, dir, on * (.9 + .1 * Math.sin(t * 17 + x)), Math.sin(t * 1.4) * 8);
-  clapRings(t, 540, 1000, kk, .8);
-  clapPair(t, 540, 1200, 220, kk);
-  rain(t, 80, 21, .45);
-  g.restore();
-}, { xin: .4, tr: 'slideL', smooth: true });
-
-// clap 3 (50.033): the peacock: a fan of feathers opens behind the hands on the clap
-SHOT(49.4, 53.5, 'clap3', (t, k, d) => {
-  const kk = CLAPS[2], fan = back(clamp((t - kk) / .9));
-  g.save(); cam(540, 960, lerp(1.0, 1.06, k));
+// clap 3 (50.033): a ring of six pairs grows out from under the halo, clapping as one; then peacock
+// feathers open in the gaps and the ring turns on without them
+SHOT(49.4, 53.5, 'ring', (t, k, d) => {
+  const kk = CLAPS[2], rot = -Math.PI / 2 + t * .05;
+  g.save(); cam(540, 960, lerp(1.0, 1.08, eio(k)));
   sheet(C.plumDeep);
-  rays(540, 1180, 200, 1300, 30, -t * .02, C.plum);
-  const n = 11;
-  for (let i = 0; i < n; i++) {
-    const a = -Math.PI / 2 + (i - (n - 1) / 2) * lerp(.03, .24, fan) + Math.sin(t * 1.8 + i) * .01;
-    feather(540, 1220, a, lerp(380, 820, fan) * (1 - Math.abs(i - 6) * .025), fan);
+  rays(540, 960, 200, 1400, 36, -t * .02, C.plum);
+  const fan = back(clamp((t - kk - .2) / 1.0));
+  if (fan > 0) for (let i = 0; i < 6; i++) feather(540, 960, rot + (i + .5) / 6 * TAU, lerp(240, 600, fan), fan);
+  for (let i = 0; i < 6; i++) {
+    const a = rot + i / 6 * TAU, [sl, cf] = PEOPLE[i];
+    g.save(); g.translate(540 + Math.cos(a) * 330, 960 + Math.sin(a) * 330); g.rotate(a + Math.PI / 2);
+    visitClap(t, 0, 0, 115, kk, { dy: 360, sleeveLen: 2.6, sleeveCol: sl, cuffCol: cf, pre: .75 });
+    g.restore();
   }
-  cut(scallop(540, 1220, 150, 18, .08, t * .2), C.gold, { sh: 1, lift: .4 });
-  cut(circle(540, 1220, 110), C.teal, { sh: .5 });
-  clapRings(t, 540, 940, kk);
-  clapPair(t, 540, 1160, 260, kk);
+  halo(540, 960, 250, t * .06, 1);
+  clapRings(t, 540, 960, kk);
   g.restore();
-}, { xin: .5, tr: 'iris', ix: 540, iy: 1160, smooth: true });
+}, { xin: .5, tr: 'iris', ix: 540, iy: 960, smooth: true });
 
-// clap 4 (54.133): the great halo unfolds ring by ring on the clap; the hands drift open; push in
-SHOT(53.5, 56.88, 'clap4', (t, k, d) => {
-  const kk = CLAPS[3];
-  g.save(); cam(540, 900, lerp(1.0, 1.16, eio(k)));
+// clap 4 (54.133): everyone. A crowd of raised arms rises from the bottom, three rows deep, and claps
+// once; the great halo bursts open, the brightest image of the chorus; they sink and we push in
+const CROWD = (() => { const out = []; const rows = [[1230, 56, 8], [1420, 80, 6], [1630, 112, 5], [1860, 158, 3]];
+  rows.forEach(([y, sc, n], r) => { for (let i = 0; i < n; i++) { const x = (i + .5) / n * 1000 + 40 + (hash(r * 17 + i) - .5) * 60;
+    out.push({ x, y: y + (hash(r * 5 + i * 3) - .5) * 50, sc, r, p: PEOPLE[(i + r * 2) % PEOPLE.length], j: r === 0 ? (hash(i + 3) - .5) * .04 : 0, pre: .55 + hash(i * 7 + r) * .35 }); } });
+  return out; })();
+SHOT(53.5, 56.88, 'everyone', (t, k, d) => {
+  const kk = CLAPS[3], burst = back(clamp((t - kk) / .9));
+  g.save(); cam(540, 900, lerp(1.0, 1.16, ss(55.2, 56.88, t)));
   sheet(C.teal);
-  rays(540, 860, 420, 1400, 36, t * .04, C.tealLight);
-  halo(540, 860, lerp(380, 640, back(clamp((t - kk) / .9))), t * .05, 1);
+  glow(540, 760, 1100, '250,215,140', .55 * ss(kk - .05, kk + .3, t) * (1 - .4 * ss(kk + .5, kk + 2.5, t)));
+  rays(540, 760, 420, 1500, 36, t * .04, C.tealLight);
+  halo(540, 760, lerp(330, 600, burst), t * .05, 1);
   for (const sx of [-1, 1]) for (let j = 0; j < 2; j++) {
-    const v = whipPts([540 + sx * 600, 1500 + j * 160], [540 + sx * 300, 1640 - j * 80], [540 + sx * 60, 1320], [540 + sx * 220, 1180 - j * 60], 50 - j * 14, -sx);
+    const v = whipPts([540 + sx * 600, 1300 + j * 160], [540 + sx * 300, 1440 - j * 80], [540 + sx * 60, 1120], [540 + sx * 220, 980 - j * 60], 50 - j * 14, -sx);
     tendril(grow(v, ss(kk, kk + 1.6 + j * .4, t)), 26 - j * 8, j ? C.goldPale : C.gold);
   }
-  for (let i = 0; i < 12; i++) { const a = i / 12 * TAU - t * .05; lily(540 + Math.cos(a) * 700, 860 + Math.sin(a) * 700, a, 120, back(clamp((t - kk - i * .05) / .7)), [C.cream, C.goldPale]); }
-  clapRings(t, 540, 820, kk, 1.2);
-  clapPair(t, 540, 1080, 300, kk, { drift: ss(55.6, 56.8, t) * .9 });
+  for (let i = 0; i < 12; i++) { const a = i / 12 * TAU - t * .05; lily(540 + Math.cos(a) * 640, 760 + Math.sin(a) * 640, a, 110, back(clamp((t - kk - i * .05) / .7)), [C.cream, C.goldPale]); }
+  for (const h of CROWD) visitClap(t, h.x, h.y, h.sc, kk + h.j, { dy: 1100, pre: h.pre, post: 1.5 + h.r * .15, sleeveLen: 16, sleeveCol: h.p[0], cuffCol: h.p[1] });
+  clapRings(t, 540, 760, kk, 1.3);
   g.restore();
 }, { xin: .45, tr: 'fade', smooth: true });
