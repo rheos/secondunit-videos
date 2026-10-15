@@ -1846,22 +1846,10 @@ window.ALCHEMY_CUES = {
       1178,
       1217
     ],
-    "solBranches": [
-      1362,
-      1382
-    ],
-    "lunaBranches": [
-      1422,
-      1450
-    ],
-    "solLeaves": [
-      1382,
-      1402
-    ],
-    "lunaLeaves": [
-      1450,
-      1469
-    ]
+    "solBranches": [1380, 1398],
+    "lunaBranches": [1448, 1468],
+    "solLeaves": [1398, 1418],
+    "lunaLeaves": [1468, 1487]
   },
   "grove": {
     "land": [
@@ -2037,10 +2025,7 @@ window.ALCHEMY_CUES = {
     "attackDecayFrames": 4,
     "playFrames": 9,
     "recoverFrames": 9,
-    "rootExchange": [
-      1536,
-      1584
-    ],
+    "rootExchange": [1488, 1532],
     "birdContact": [
       1644,
       1650,

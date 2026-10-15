@@ -45,8 +45,8 @@
   const active=(1-smooth(95,97,t))+smooth(123,125,t),beat=Math.sin(q);
   const hop=(c.sprite==='hare'?25:c.sprite==='fox'?17:4)*Math.max(0,beat)*active;
   let lean=(c.sprite==='keeper'?.055:.09)*Math.sin(q*.5)*active+(c.x<960?1:-1)*.18*receive-.2*reply;
-  const scale=c.k*.91,footY=797-hop+14*(1-enter),step=(c.sprite==='fox'?26:c.sprite==='hare'?17:8)*Math.sin(q*.5)*active;
-  const x=c.x+step+(c.x<960?-1:1)*(1-enter)*185-(c.sprite==='fox'?55*smooth(95,97,t)*(1-smooth(105,107,t)):0);
+  const scale=c.k*.91,footY=797-hop+14*(1-enter),step=(c.sprite==='fox'?12:c.sprite==='hare'?10:8)*Math.sin(q*.5)*active;
+  const x=c.x+step+(c.x<960?-1:1)*(1-enter)*50; // v11: short step-in, no slide through neighbours (audit C5, D3, D10)
   const bow=(c.sprite==='owl'?A.performance.bump(c.on+1,c.on+1.5,c.on+2.5,t)*.22:0);
   const reach=c.sprite==='fox'?.44:c.sprite==='hare'?.37:.26;
   const armL=reach*Math.sin(q*.5-.8)*active+.22*intro-.45*receive,armR=-reach*Math.sin(q*.5+.4)*active-.2*intro+.42*receive;
@@ -55,9 +55,9 @@
   // Two little conversations have preparation, a held look, answer and recovery.
   const offer=A.performance.bump(85.8,86.6,88.1,t),answer=A.performance.bump(87.3,88.1,89.4,t);
   const stumble=A.performance.bump(100.2,100.8,102.0,t),steady=A.performance.bump(100.65,101.2,102.5,t);
-  if(c.sprite==='fox'){lean+=.28*offer;angles[1]-=.5*offer}
+  if(c.sprite==='fox'){lean+=.1*offer;angles[1]-=.6*offer}
   if(c.sprite==='owl'){lean-=.15*answer;angles[0]+=.25*answer}
-  if(c.sprite==='fish'){lean-=.32*stumble;angles[1]-=.38*stumble}
+  if(c.sprite==='fish'){lean+=.08*stumble;angles[0]-=.3*stumble} // v11: stumbles away from her (audit C6)
   if(c.sprite==='keeper'){lean+=.18*steady;angles[0]-=.45*steady}
   const world=p=>{const v=turn([(p[0]-200)*scale,(p[1]-d.height)*scale],[0,0],lean+bow);return [x+v[0],footY+v[1]]};
   const p={d,enter,q,scale,footY,x,lean:lean+bow,angles,receive,lift,bird,world,head:(c.sprite==='owl'?.16:.07)*Math.sin(q*.25)+.12*receive,leg:.11*beat*active*(c.sprite==='fox'||c.sprite==='hare'?1.5:1)};
@@ -67,7 +67,7 @@
   g.save();g.globalAlpha=p.enter;g.translate(p.x,p.footY);g.rotate(p.lean);g.scale(p.scale,p.scale);g.translate(-200,-d.height);mesh(p);g.restore();
   // A consequence remains after a root delivery: a warm, visible chest medallion.
   const index=c.index,bloom=smooth(ALCHEMY_CUES.performance.finalRelay[index],ALCHEMY_CUES.performance.finalRelay[index]+8,t*24);
-  if(bloom){const q=p.world([200,d.neck+64]);ellipse(q[0],q[1],12*bloom,12*bloom,C.gold,C.ink);line(q[0]-5,q[1],q[0]+5,q[1],C.ink,1)}
+  // v11: the relay's consequence is the flowering sprig (extended.js), not a chest disc that read as a UI button (audit D2).
   if(c.role==='caretaker'&&p.lift){const h=p.hands[0];stroke(`M${h[0]} ${h[1]}q-6 -35 -10 -76`,C.earth,9*p.lift);stroke(`M${h[0]} ${h[1]}q-6 -35 -10 -76`,C.ink,1.4);stroke(`M${h[0]-6} ${h[1]-40}l8 -23M${h[0]-9} ${h[1]-60}l-5 -22`,C.ink,2*p.lift)}
  }
  function perch(c,t){const p=pose(c,t,0),h=p.hands[0];return [h[0]-10,h[1]-76]}

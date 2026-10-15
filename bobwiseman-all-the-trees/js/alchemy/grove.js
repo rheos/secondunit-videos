@@ -21,14 +21,16 @@
   fill('M0 0Q-25-18-13-48Q14-30 0 0',C.green);stroke('M0 0Q-25-18-13-48Q14-30 0 0',C.ink,1.3);line(0,0,-12,-42,C.ink,.8);g.restore();
  }
  function treeShape(seed,t,depth){
-  S.woodyRoot([0,0,-12,-90,20,-203,0,-303],1,43,15,seed);
+  // v11: children are drawn before their parent and start in a narrow neck, so every join tucks under
+  // the parent limb instead of showing a sawn-off butt end (audit A7).
   function branch(px,py,angle,length,level,id){const ex=px+Math.cos(angle)*length,ey=py+Math.sin(angle)*length;
-   S.woodyRoot([px,py,px+Math.cos(angle+.12)*length*.35,py+Math.sin(angle+.12)*length*.35,ex-12,ey+24,ex,ey],1,level*4+2,level*2,id);
    if(level>1){branch(ex,ey,angle-.44-noise(id)*.18,length*.72,level-1,id*2);branch(ex,ey,angle+.50+noise(id+1)*.16,length*.73,level-1,id*2+1)}
-   else {leaf(ex,ey,angle+1.7,.75);leaf(ex-8,ey+13,angle-.6,.65)}
+   S.woodyRoot([px,py,px+Math.cos(angle+.12)*length*.35,py+Math.sin(angle+.12)*length*.35,ex-12,ey+24,ex,ey],1,level*4+2,level*2,id,{neck:true});
+   if(level===1){leaf(ex,ey,angle+1.7,.75);leaf(ex-8,ey+13,angle-.6,.65)}
   }
   const fork=depth<.15?2:3,bend=.09*Math.sin(t*1.8+seed);
   branch(0,-153,-2.38+bend,96,fork,seed);branch(2,-202,-.81+bend,109,fork,seed+20);branch(0,-293,-1.61+bend,76,fork,seed+40);
+  S.woodyRoot([0,0,-12,-90,20,-203,0,-303],1,43,15,seed);
  }
  function draw(raw){const st=state(raw);if(!st.land)return;const t=Math.floor(Math.round(raw*24)/2)/12;
   g.save();g.beginPath();g.rect(76,70,1768,690);g.clip();
@@ -56,5 +58,5 @@
   }
   g.restore();
  }
- A.grove={draw,state};
+ A.grove={draw,state,treeShape};
 })();

@@ -13,18 +13,21 @@
  // Exact half-open intervals can replace the legacy draft accents after listening review.
  function horn(t){const score=window.ALCHEMY_TRUMPET_SCORE;
   if(!score?.verified||!score.intervals.length)return fallbackHorn(t);
-  const f=t*24,first=score.intervals[0][0],visible=f>=first;
+  // v11: the heralds hold the trumpet low from their arrival (7.25 s) and raise it into the first note (audit A2).
+  const f=t*24,first=score.intervals[0][0],visible=f>=174;
   const current=score.intervals.find(([on,off])=>f>=on&&f<off),next=score.intervals.find(([on])=>on>f);
   const prior=score.intervals.filter(([,off])=>off<=f).at(-1),recover=prior?1-smooth(prior[1],prior[1]+6,f):0;
-  const prep=next?smooth(next[0]-6,next[0],f):0,play=current?1:0;
+  const prep=next?smooth(next[0]-(next[0]===first?8:6),next[0],f):0,play=current?1:0;
   // Each note inside a held passage re-strikes the bell; the passage start is always a note.
   const notes=score.notes||[],note=current?notes.filter(n=>n>=current[0]&&n<=f).at(-1)??current[0]:null;
   // A breath: a short gap between phrases (under 1.5 s). The bell dips part way and the player inhales,
   // then comes back up for the next phrase; longer gaps are real rests.
   const gap=prior&&next&&!current?next[0]-prior[1]:Infinity,breathing=gap<=36;
   const inhale=breathing?Math.sin(Math.PI*clamp((f-prior[1])/gap)):0;
-  if(breathing)return {visible,state:'breath',play:0,lift:1-.42*inhale,uncover:1,attack:0,prepare:0,inhale,frame:Math.round(f)};
-  return {visible,state:current?'play':recover>0?'recover':visible?'rest':f>=first-6?'prepare':'concealed',play,lift:Math.max(play,recover,prep),uncover:visible?1:0,attack:current?Math.max(.22,1-(f-note)/7):0,prepare:visible?0:prep,inhale:0,frame:Math.round(f)};
+  // v11: the dip scales with the gap; a 3-5 frame catch-breath keeps the bell at the lips (audit A3).
+  const depth=gap<6?.07:gap<8?.2:.42;
+  if(breathing)return {visible,state:'breath',play:0,lift:1-depth*inhale,uncover:1,attack:0,prepare:0,inhale:inhale*(gap<6?.45:1),frame:Math.round(f)};
+  return {visible,state:current?'play':recover>0?'recover':visible?'rest':f>=first-6?'prepare':'concealed',play,lift:Math.max(play,recover,prep),uncover:visible?1:0,attack:current?Math.max(.22,1-(f-note)/7):0,prepare:f<first?prep:0,inhale:0,frame:Math.round(f)};
  }
  function reaction(t,at,amount=1){const f=t*24,d=f-at;if(d<0||d>32)return 0;return amount*Math.sin(Math.min(1,d/9)*Math.PI/2)*Math.exp(-Math.max(0,d-9)/9)}
  function actor(which,t,role=''){const f=t*24,moon=which==='luna',exchange=c.rootExchange;
@@ -65,11 +68,19 @@
    head:-side*.14*turn*free,stretch:1-.09*bow*free,turn:free*turn};
  }
  function flow(t){const f=t*24,[start,end]=c.rootExchange;return {active:f>=start&&f<=end,u:clamp((f-start)/(end-start)),from:'sol',to:'luna'}}
- function rootCamera(t){const f=t*24,keys=c.rootCamera;if(f<=keys[0].f||f>=keys.at(-1).f)return {z:1,x:960,y:540};
+ // v11: the root dip is one continuous eased move (down, along the join, back up), 61.25-64.5 s, so the
+ // birds launch on "birds" (audit B4, B5). The old keyframes stalled twice and ended in a whip.
+ function rootCamera(t){const f=t*24;if(f<=1470||f>=1548)return {z:1,x:960,y:540};const u=smooth(1470,1548,f),s=Math.sin(Math.PI*u);
+  return {z:1+.55*s,x:960+s*(-80+290*u),y:540+250*s}}
+ // v11: one push-in or reframe per key sung word, and into the climax (audit F1, D5, D6). [in, held, release, out, zoom, x, y]
+ const pushes=[[50.35,50.85,52.4,53.4,1.32,960,360],[60.05,60.5,60.9,61.3,1.26,1220,330],[81.9,82.4,83.5,84.4,1.24,960,360],[91.3,91.75,92.6,93.4,1.24,1220,340],
+  [111,116,120.4,122.6,1.22,950,430],[125.6,131,134.6,136.4,1.16,960,470]];
+ function push(t){let best={z:1,x:960,y:540,w:0};for(const [a,b,d,e,z,x,y] of pushes){const w=smooth(a,b,t)*(1-smooth(d,e,t));if(w>best.w)best={z:1+(z-1)*w,x,y,w}}return best}
+ function rootCameraOld(t){const f=t*24,keys=c.rootCamera;if(f<=keys[0].f||f>=keys.at(-1).f)return {z:1,x:960,y:540};
   const i=keys.findIndex(k=>k.f>=f),a=keys[i-1],b=keys[i],u=smooth(a.f,b.f,f);
   return Object.fromEntries(['z','x','y'].map(key=>[key,a[key]+(b[key]-a[key])*u]));
  }
- A.performance={horn,actor,flow,reaction,bump,rootCamera,branchPresence,choreography};
+ A.performance={push,horn,actor,flow,reaction,bump,rootCamera,branchPresence,choreography};
  // Sparse attacks drive rays; sustained performance state drives the instrument pose.
  A.brass=t=>horn(t).attack;
 })();
