@@ -97,3 +97,52 @@ caption-sized region, and nothing may differ where no caption shows.
 - `flashcheck.py`: the three clips pass. The 16:9 cut fails at 131.88 s (4.5 flashes in a second, the flapping leader
   tail in the outro), exactly as the approved v4 master does, outside every caption span.
 - 1:1 caption crops at 720p in both aspects: every word inside its block with margin.
+
+## Finals (2026-10-14, after Bob's sign-off)
+
+Bob approved Giulietta on Messenger, 2026-10-14: "I am good with giulietta, if you could render 1080, 740, and 9x16
+with lyrics on screen" (740 = 720p). `zsh tools/finals.sh` makes all three into `out/finals/`:
+
+| File | Size | Frames | Bytes |
+|---|---|---|---|
+| `gm_looks-v4-lyrics-final_f00000-f03337_24fps_1080p.mp4` | 1920x1080, crf 17 | 3337 | 431 MB |
+| `gm_looks-v4-lyrics-final_f00000-f03337_24fps_720p.mp4` | 1280x720, crf 18 | 3337 | 167 MB |
+| `gm_looks-v4-lyrics-final_f00000-f03337_24fps_9x16.mp4` | 720x1280, crf 23, max 4.5 Mb/s | 3337 | 51 MB |
+
+- **16:9 is not redrawn.** The page always draws at 1920x1080, so the v4 master's own frames (`out/frames_looks_*`,
+  the dream's f1440-1850 from the v3 render the master reused) and the caption spans (`out/frames_cap/*-cap_*`) are
+  native 1080p already. The 1080p final is those frames, encoded once; the 720p final is the same frames scaled down
+  once (cleaner than the v1 lyric cut, which was an overlay on the 720p master, two encodes deep). The frame
+  sequences are hard links in `work/finals/`, so a later render that clears an `out/frames_*` folder can't change them.
+- **9:16 full song** (no 1080x1920: the house rule is 720x1280 for phone ratios, and the window is only 607.5 px of
+  the 16:9 frame). The verse spans are the delivered clips' own frames; three spans were new: kite f0-109, the whole
+  dream f1440-2220 and the leader tail f3108-3337. The pan-and-scan plan was extended over them
+  (`tools/panscan_plan.mjs`), with the seams pinned to the delivered windows (kite 1241 px at 4.0 s, leader 958 px at
+  129.5 s).
+- **Bug found and fixed:** the dream's shot table for the tools (`js/lyrics/faces-dream.js`, `capShot`) read `SH`,
+  which still holds the old kite dream's cuts after 77.1 s. The page draws the beach (`BEACH_SHOTS`: 77.1, 80.89,
+  84.58, 86.87, 88.39, 89.84), so on the beach the window changed where nothing cut and held across real cuts. It now
+  reads the beach's cuts. Only the tools read `capShot`, so no 16:9 frame changes. Consequence: the shore shot
+  (f2122-2157) pans 494 -> 304, and the first 4 frames of verse 3 (f2150-2153) sit a few px off the delivered clip.
+- **Hand edit:** the farm's boy close (f1744-1797) holds at x 820. The proposal panned toward the small doll on the
+  right and slid his face out of the window by f1796 (`aspects/9x16/panscan-edits-v1.json`).
+- Dream captions re-placed for 9:16 (`place_captions.mjs dream tall`): line 13 sits mid-frame (y 594) over the dark
+  above the girl's head, since both the top and bottom spots touch a head in that shot.
+
+Checks (2026-10-14):
+- Frames: 3337 in every final, the same as the v4 master; audio 139.041 s, video 139.042 s. The v4 master's sha256 is
+  unchanged (904af40f...).
+- `tools/finals_check.py`: the 1080p and 720p finals against the approved v1 lyric cut, frame by frame at 720p: 0
+  frames with a block over 22 levels (median mean |diff| 1.1 to 1.2, encode noise). `tools/lyrics_check.py` against
+  the v4 master: 0 suspect frames (everything that differs is a caption).
+- `tools/verse_check.py`: the full 9:16 against the delivered verse clips: verse 1 and 2 identical on every frame;
+  verse 3 differs on f2150-2153 only (above).
+- Audit, 9:16 dream f1440-2220: 19 of 19 words on onset, all words in their blocks, no block on a face (780 frames).
+  The verse spans are the audited, delivered frames. The known exception stands: "played" prints 2 frames late
+  (f1078, the cut back from the caption-free poster crying close, which is all face in 9:16). Printing it on time
+  would put it on her face, so it stays.
+- `badframes.py`: 16:9 flags only the master's designed blacks. The 9:16 also flags dark crops in the dream (the
+  oval portrait f1667-1689, the boy close f1781-1805); all checked by eye: real picture, no mis-scaled frame.
+- `flashcheck.py`: all three fail at 131.88 s only (4.5 flashes in a second, the flapping leader tail), exactly as the
+  approved v4 master does. Not changed: the picture must match the approved cut.
+- Open: Bob's sheet spells "stagefight", the recording sings "stage fright". The finals keep his spelling.
