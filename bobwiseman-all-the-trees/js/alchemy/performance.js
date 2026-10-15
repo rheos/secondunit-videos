@@ -73,14 +73,17 @@
  function rootCamera(t){const f=t*24;if(f<=1470||f>=1548)return {z:1,x:960,y:540};const u=smooth(1470,1548,f),s=Math.sin(Math.PI*u);
   return {z:1+.55*s,x:960+s*(-80+290*u),y:540+250*s}}
  // v11: one push-in or reframe per key sung word, and into the climax (audit F1, D5, D6). [in, held, release, out, zoom, x, y]
- const pushes=[[50.35,50.85,52.4,53.4,1.32,960,360],[60.05,60.5,60.9,61.3,1.26,1220,330],[81.9,82.4,83.5,84.4,1.24,960,360],[91.3,91.75,92.6,93.4,1.24,1220,340],
+ const pushes=[[50.35,50.85,52.4,53.4,1.32,960,360],[81.9,82.4,83.5,84.4,1.24,960,360], // v12: no push on "you"; the root toward the viewer takes that word
+  
   [111,116,120.4,122.6,1.22,950,430],[125.6,131,134.6,136.4,1.16,960,470]];
+ // v12: keep the view inside the plate (sky 70-760, ground to 1005, x 76-1844) whatever the zoom.
+ function frameIn(cx,cy,zoom){const hw=884/zoom,hh=467.5/zoom;return [Math.min(Math.max(cx,76+hw),1844-hw),Math.min(Math.max(cy,70+hh),1005-hh)]}
  function push(t){let best={z:1,x:960,y:540,w:0};for(const [a,b,d,e,z,x,y] of pushes){const w=smooth(a,b,t)*(1-smooth(d,e,t));if(w>best.w)best={z:1+(z-1)*w,x,y,w}}return best}
  function rootCameraOld(t){const f=t*24,keys=c.rootCamera;if(f<=keys[0].f||f>=keys.at(-1).f)return {z:1,x:960,y:540};
   const i=keys.findIndex(k=>k.f>=f),a=keys[i-1],b=keys[i],u=smooth(a.f,b.f,f);
   return Object.fromEntries(['z','x','y'].map(key=>[key,a[key]+(b[key]-a[key])*u]));
  }
- A.performance={push,horn,actor,flow,reaction,bump,rootCamera,branchPresence,choreography};
+ A.performance={frameIn,push,horn,actor,flow,reaction,bump,rootCamera,branchPresence,choreography};
  // Sparse attacks drive rays; sustained performance state drives the instrument pose.
  A.brass=t=>horn(t).attack;
 })();

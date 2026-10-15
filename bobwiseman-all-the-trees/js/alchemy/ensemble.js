@@ -38,15 +38,16 @@
   }
   for(let y=0;y<ny;y++)for(let x=0;x<nx;x++){const i=y*(nx+1)+x,a=[x*dx,y*dy],b=[(x+1)*dx,y*dy],c=[x*dx,(y+1)*dy],d=[(x+1)*dx,(y+1)*dy];tri([a,b,c],[points[i],points[i+1],points[i+nx+1]]);tri([b,d,c],[points[i+1],points[i+nx+2],points[i+nx+1]])}
  }
- function pose(c,t,receive=0){const d=defs[c.sprite],enter=smooth(c.on,c.on+.85,t),q=(t-c.on)*145/60*Math.PI+c.phase;
+ function pose(c,t,receive=0){const d=defs[c.sprite],enter=smooth(c.on,c.on+1.1,t),q=(t-c.on)*145/60*Math.PI+c.phase;
   const intro=1-smooth(c.on+1.8,c.on+3.1,t),r=A.performance.reaction;
   const reply=c.role==='mischief'?r(t,ALCHEMY_CUES.performance.reply.launch,1.55):0;
   const bird=c.role==='caretaker'?r(t,ALCHEMY_CUES.performance.reply.birdContact):0;
   const active=(1-smooth(95,97,t))+smooth(123,125,t),beat=Math.sin(q);
   const hop=(c.sprite==='hare'?25:c.sprite==='fox'?17:4)*Math.max(0,beat)*active;
   let lean=(c.sprite==='keeper'?.055:.09)*Math.sin(q*.5)*active+(c.x<960?1:-1)*.18*receive-.2*reply;
-  const scale=c.k*.91,footY=797-hop+14*(1-enter),step=(c.sprite==='fox'?12:c.sprite==='hare'?10:8)*Math.sin(q*.5)*active;
-  const x=c.x+step+(c.x<960?-1:1)*(1-enter)*50; // v11: short step-in, no slide through neighbours (audit C5, D3, D10)
+  // v12: rises out of the soil, not a ghost fade (audit F9, C11).
+  const scale=c.k*.91,footY=797-hop+(1-enter)*d.height*c.k*.95,step=(c.sprite==='fox'?12:c.sprite==='hare'?10:8)*Math.sin(q*.5)*active;
+  const x=c.x+step; // v11: short step-in, no slide through neighbours (audit C5, D3, D10)
   const bow=(c.sprite==='owl'?A.performance.bump(c.on+1,c.on+1.5,c.on+2.5,t)*.22:0);
   const reach=c.sprite==='fox'?.44:c.sprite==='hare'?.37:.26;
   const armL=reach*Math.sin(q*.5-.8)*active+.22*intro-.45*receive,armR=-reach*Math.sin(q*.5+.4)*active-.2*intro+.42*receive;
@@ -64,7 +65,7 @@
   p.hands=d.hands.map(v=>world(deform(v,p)));p.feet=d.feet.map(v=>world(deform(v,p)));return p;
  }
  function draw(c,t,receive=0,headOnly=false){const p=pose(c,t,receive),d=p.d;if(!p.enter||headOnly)return;
-  g.save();g.globalAlpha=p.enter;g.translate(p.x,p.footY);g.rotate(p.lean);g.scale(p.scale,p.scale);g.translate(-200,-d.height);mesh(p);g.restore();
+  g.save();g.translate(p.x,p.footY);g.rotate(p.lean);g.scale(p.scale,p.scale);g.translate(-200,-d.height);mesh(p);g.restore();
   // A consequence remains after a root delivery: a warm, visible chest medallion.
   const index=c.index,bloom=smooth(ALCHEMY_CUES.performance.finalRelay[index],ALCHEMY_CUES.performance.finalRelay[index]+8,t*24);
   // v11: the relay's consequence is the flowering sprig (extended.js), not a chest disc that read as a UI button (audit D2).

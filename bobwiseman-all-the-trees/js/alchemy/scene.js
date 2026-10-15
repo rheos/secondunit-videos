@@ -52,6 +52,17 @@
   const left=roots[2],right=roots[7],p=flow.u<.5?bez(left,flow.u*2):bez(right,(1-flow.u)*2);
   A.glow(p[0],p[1],30);
  }
+ // v12: "so are you" (audit F4). On each "you" a new root grows out of the shared junction down through the
+ // soil to the bottom edge, widening as it comes toward the viewer; each is bigger, the last one gold. They stay.
+ const youBeats=[[60.4,30,-150],[91.56,46,165],[123.5,62,-95],[135.4,86,35]];
+ function towardYou(t){youBeats.forEach(([w,width,dx],i)=>{const p=smooth(w-.3,w+.5,t);if(!p)return;
+   const b=[960,930,960+dx*.15,968,960+dx*.75,1012,960+dx,1082];
+   woodyRoot(b,p,9,width,90+i,{rootlets:3,rootletLen:50});
+   const lit=i===3?smooth(w+.2,w+1.2,t):.55*A.performance.bump(w+.2,w+.6,w+2.2,t);
+   if(lit){g.save();g.globalAlpha=lit;g.beginPath();for(let k=0;k<=30;k++){const q=bez(b,k/30*p);k?g.lineTo(q[0],q[1]):g.moveTo(q[0],q[1])}
+    g.strokeStyle='rgba(250,200,80,.5)';g.lineWidth=width*.55;g.stroke();g.strokeStyle=C.gold;g.lineWidth=Math.max(3,width*.18);g.stroke();g.restore();
+    const e=bez(b,Math.min(p,.93));A.glow(e[0],e[1],width*1.6,lit)}});
+ }
  function rootNetwork(t){const p=smooth(61,63.75,t);if(!p)return;
   for(let j=0;j<roots.length;j++){const ch=A.performance.choreography(j<5?'sol':'luna',t),b=roots[j].slice();b[0]+=ch.x+spread(j>=5,t);b[1]-=ch.hop;b[2]+=ch.x*.7;const phase=clamp(p*1.18-(j%5)*.018);
    // A staggered woody fork sits behind each parent root.
@@ -77,10 +88,12 @@
   else if(role==='caretaker'){act.canopy+=.45*Math.max(receive,bloom);act.arms+=(moon?-.16:.16)*Math.max(receive,bloom)}
   else {act.lean+=(moon?-.16:.16)*receive;act.stretch-=.09*receive;act.head+=(moon?.20:-.20)*receive;act.canopy+=.18*receive}
   const q=pulse(t)+(moon?Math.PI*.64:0)+phase,dance=cueProgress('dance',cueTime)*act.dance;
-  const meet=role?0:A.performance.bump(50.45,50.85,52.6,t),step2=role?0:A.performance.bump(53.4,53.75,54.6,t);
+  const meet=role?0:A.performance.bump(50.45,50.85,52.6,t)+A.performance.bump(96.9,97.4,108.8,t),step2=role?0:A.performance.bump(53.4,53.75,54.6,t);
+  // v12: in the love bridge they turn in on "love" and reach their inner arms to the heart's cradle on "keeps us" (audit C3).
+  const reach=role?0:A.performance.bump(98.2,98.75,108.6,t);
   const lean=.085*Math.sin(q)*dance+act.lean+chore.lean+(moon?-.07:.07)*meet,stretch=(1-.024*(.5+.5*Math.sin(q*2-.5))*dance)*act.stretch*chore.stretch;
-  const left=(moon?-.29:.44)*lift+.24*Math.sin(q-.38)*dance+act.arms-(moon?.02:.12)*act.birdLoad+chore.left;
-  const right=(moon?-.26:-.38)*lift-.22*Math.sin(q+.34)*dance+act.arms+(moon?.12:.02)*act.birdLoad+chore.right;
+  const left=(moon?-.29:.44)*lift+.24*Math.sin(q-.38)*dance+act.arms-(moon?.02:.12)*act.birdLoad+chore.left+(moon?.6:0)*reach;
+  const right=(moon?-.26:-.38)*lift-.22*Math.sin(q+.34)*dance+act.arms+(moon?.12:.02)*act.birdLoad+chore.right-(moon?0:.6)*reach;
   const elbow=(moon?.23:-.26)*lift+.28*Math.sin(q-.9)*dance+chore.elbow;
   const head=-lean*.6+.028*Math.sin(q-1)*dance+act.head+chore.head+(moon?-.16:.16)*meet;
   const world=p=>{const v=rotate([(p[0]-ox)*s,(p[1]-1200)*s*stretch],[0,0],lean);return [x+chore.x+(moon?-22:22)*step2+v[0],foot-chore.hop-10*step2+28*(1-appear)+v[1]]};
@@ -209,16 +222,23 @@
  function turf(){g.save();let d='M75 763Q480 749 960 764T1845 763';for(let x=1845;x>=75;x-=12)d+='L'+x+' '+(cutEdge(x)+9);g.clip(new Path2D(d+'Z'));g.drawImage(fieldArt,0,700);g.restore()}
  function ground(t,showRoots=true){fill('M75 760Q480 746 960 761T1845 760V1370H75Z','#dcd09c');
  g.drawImage(groundArt,0,700);g.drawImage(fieldArt,0,700);
- stroke('M75 760Q480 746 960 761T1845 760',C.ink,2);if(showRoots){rootNetwork(t);rootSignal(t);turf()}}
- function sky(){g.save();g.beginPath();g.rect(76,70,1768,690);g.clip();g.fillStyle=C.azure;g.fillRect(76,70,1768,690);g.globalAlpha=.12;g.drawImage(A.paper,0,0);g.globalAlpha=.37;
+ stroke('M75 760Q480 746 960 761T1845 760',C.ink,2);if(showRoots){rootNetwork(t);rootSignal(t);towardYou(t);turf()}}
+ // v12: one designed light arc (audit F6). Cool slate before dawn, lifting through each chorus, a cool dip on
+ // each "winter", warming when the heart becomes a sun; the gold dawn (extended.js warmSky) finishes it.
+ const skyKeys=[[0,'#4f6a86'],[11,'#4f6a86'],[16.6,'#55789a'],[32,'#5a84a5'],[47,'#558dab'],[72.8,'#5a93b2'],[73.8,'#7690a2'],[76.5,'#5a93b2'],
+  [79.5,'#5d98b8'],[96,'#63a0bd'],[104.3,'#68a3bd'],[105,'#86a9b6'],[106.6,'#7898ab'],[108.6,'#86a8b6'],[110,'#84a9b9'],[122,'#88adbb'],[125,'#92b2bb']];
+ const hex=h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16));
+ function skyColor(t){let i=skyKeys.findIndex(k=>k[0]>t);if(i<0)return skyKeys.at(-1)[1];if(i===0)return skyKeys[0][1];const [t0,c0]=skyKeys[i-1],[t1,c1]=skyKeys[i],u=smooth(t0,t1,t),a=hex(c0),b=hex(c1);
+  return 'rgb('+a.map((v,k)=>Math.round(mix(v,b[k],u))).join(',')+')'}
+ function sky(t=47){g.save();g.beginPath();g.rect(76,70,1768,690);g.clip();g.fillStyle=skyColor(t);g.fillRect(76,70,1768,690);g.globalAlpha=.12;g.drawImage(A.paper,0,0);g.globalAlpha=.37;
  for(let i=0;i<125;i++){let y=76+i*5.5;stroke(`M77 ${y}Q490 ${y-3} 966 ${y+1}T1844 ${y}`,C.ink,.7)}g.restore()}
  function weather(t){const c=ALCHEMY_CUES.performance,f=t*24,w=A.performance.bump(...c.wind,f),winter=smooth(c.shelter[0],c.shelter[1],f)*(1-smooth(1802,1820,f));
   if(w){g.save();g.globalAlpha=w*.55;for(let i=0;i<4;i++)stroke(`M${310+i*70} ${270+i*56}q155-48 340 9t370-5`,C.cream,2.3);g.restore()}
   if(winter){g.save();g.globalAlpha=winter;for(let i=0;i<24;i++){const x=670+noise(i+38)*640,y=210+((t-73.75)*120+noise(i)*270)%390;line(x-3,y,x+3,y,C.cream,2);line(x,y-3,x,y+3,C.cream,2)}g.restore()}
  }
  function chorusState(raw){const t=Math.floor(Math.round(raw*24)/2)/12;return Object.fromEntries(['sol','luna'].map(which=>{const p=personPose(which,t,0,raw),boughs=[0,1].map(side=>boughSpec(p,side,t));return [which,{appear:p.appear,hands:p.hands,branchNodes:boughs.map(b=>b.nodes.length),leaves:boughs.map(b=>b.leaves)}]}))}
- A.scene={turf,leaf,chorusState,birdPose,perch,bez,roots,heraldPose,sky,ground,person,herald,bird,birds,roundel,woodyRoot,personPose,pulse};
- A.draw=(raw)=>{const frame=Math.round(raw*24),t=Math.floor(frame/2)/12;g.setTransform(1,0,0,1,0,0);g.globalAlpha=1;g.drawImage(A.paper,0,0);g.save();g.beginPath();g.rect(76,70,1768,935);g.clip();g.translate(960,540);const camera=A.performance.rootCamera(raw),pb=A.performance.push(raw),zoom=(1+.032*smooth(47,79.5,raw))*camera.z*pb.z;g.scale(zoom,zoom);g.translate(-camera.x-(pb.x-960)*pb.w+2*Math.sin(raw*.14),-camera.y-(pb.y-540)*pb.w);sky();
+ A.scene={skyColor,turf,leaf,chorusState,birdPose,perch,bez,roots,heraldPose,sky,ground,person,herald,bird,birds,roundel,woodyRoot,personPose,pulse};
+ A.draw=(raw)=>{const frame=Math.round(raw*24),t=Math.floor(frame/2)/12;g.setTransform(1,0,0,1,0,0);g.globalAlpha=1;g.drawImage(A.paper,0,0);g.save();g.beginPath();g.rect(76,70,1768,935);g.clip();g.translate(960,540);const camera=A.performance.rootCamera(raw),pb=A.performance.push(raw),zoom=(1+.032*smooth(47,79.5,raw))*camera.z*pb.z;g.scale(zoom,zoom);const view=pb.w?A.performance.frameIn(camera.x+(pb.x-960)*pb.w,camera.y+(pb.y-540)*pb.w,zoom):[camera.x,camera.y];g.translate(-view[0]+2*Math.sin(raw*.14),-view[1]);sky(raw);
   // Rear cloud layer has its own slow parallax; paper-coloured silhouettes occlude the sky hatch.
   for(let i=0;i<5;i++)cloud(160+i*400+Math.sin(raw*.15+i)*22,140+(i%2)*-25,.72+(i%2)*.15,i%2?-1:1);
   ground(t);herald(290,294,-1,t,raw);herald(1635,294,1,t,raw);

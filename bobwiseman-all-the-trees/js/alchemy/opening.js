@@ -20,11 +20,16 @@
   if(kind===4){ellipse(0,-134,24,24,C.gold,C.ink);A.rays(0,-134,28,27,23,.7+.15*Math.sin(t*2),t*.05)}
   if(kind===5){g.save();g.translate(0,-140);g.scale(.20,.20);g.translate(-994,-170);piece('luna-head','#bdc9d3');g.restore()}
  }
- function chart(t){const handoff=smooth(30.7,33.8,t);
-  for(let i=0;i<portraits.length;i++){const born=smooth(portraits[i],portraits[i]+.65,t);if(!born||handoff>=1)continue;
+ // v12: the named people become the trees (audit A5): each medallion falls like a seed onto a tree spot and lands
+ // as that tree starts to grow (front row from 32.9 s).
+ const seedSpots=['0-0','0-1','0-2','0-3','1-1','1-4'];
+ function chart(t){const handoff=smooth(30.7,32.9,t),st=A.grove.state(t);
+  for(let i=0;i<portraits.length;i++){const born=smooth(portraits[i],portraits[i]+.65,t);if(!born||t>=33.1)continue;
    const side=i%2,settle=smooth(2.9,4.65,t),baseX=mix(960,650+(i%3)*310,settle),baseY=mix(470,i<3?402:654,settle);
-   const x=mix(baseX,(side?1220:690)+(i%3-1)*48,handoff),y=mix(baseY,468+(i%3)*25,handoff);
-   const hit=A.performance.horn(t).attack,k=born*(1-handoff)*(i===0?mix(1.8,1,settle):1)*(1+.05*hit),beat=.45+.55*smooth(12.5,14,t);
+   const spot=st.trees.find(tr=>tr.id===seedSpots[i]),sx=spot?spot.x:baseX,sy=spot?spot.y+st.cameraY:760;
+   const x=mix(baseX,sx,smooth(0,1,handoff)),y=mix(baseY,sy-8,handoff*handoff);
+   const hit=A.performance.horn(t).attack,k=born*mix(1,.13,smooth(0,1,handoff))*(i===0?mix(1.8,1,settle):1)*(1+.05*hit),beat=(.45+.55*smooth(12.5,14,t))*(1-handoff);
+   if(handoff>.97)A.glow(sx,sy-6,40*(1-smooth(32.9,33.1,t)));
    g.save();g.translate(x,y+beat*7*Math.sin(S.pulse(t)+i));g.rotate(.045*beat*Math.sin(S.pulse(t)+i*.8));g.scale(k,k);
    ellipse(0,0,91,91,C.paper,C.ink);ellipse(0,0,85,85,null,'#ad9662');
    // Keep the same historical face; only the emblem above it changes.
@@ -63,7 +68,7 @@
   const sky=smooth(7.25,11.4,raw),ground=smooth(30.5,33,raw),cameraY=A.grove.state(raw).cameraY;
   if(sky){g.save();g.beginPath();g.moveTo(76,70);const ex=76+1830*sky;
    for(let y=70;y<=760;y+=10)g.lineTo(Math.min(1844,ex-60+48*noise(Math.floor(y/10)+3)+22*Math.sin(y*.045)),y);
-   g.lineTo(76,760);g.closePath();g.clip();S.sky();g.restore()} // v11: hand-washed edge (audit A13)
+   g.lineTo(76,760);g.closePath();g.clip();S.sky(raw);g.restore()} // v11: hand-washed edge (audit A13)
   g.save();g.beginPath();g.rect(58,51,1804,958);g.clip();g.translate(0,cameraY);
   for(let i=0;i<5;i++){const p=smooth(11.7+i*.5,14.2+i*.5,raw);if(!p)continue;
    cloud(160+i*400+Math.sin(raw*.15+i)*22,140+(i%2)*-25-210*(1-p),.72+(i%2)*.15,i%2?-1:1)}

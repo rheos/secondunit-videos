@@ -28,11 +28,13 @@
    if(p>.9){const e=S.bez(b,1),k=c.k/.6*smooth(.9,1,p);g.save();g.translate(e[0],e[1]);for(let j=0;j<5;j++){const a=j/5*Math.PI*2+t*.2;ellipse(Math.cos(a)*6*k,Math.sin(a)*6*k,5*k,3.4*k,C.gold,C.ink)}ellipse(0,0,3.2*k,3.2*k,'#c0532f',C.ink);g.restore()} // gold flower, not a disc
   });
  }
- function widerRootCurve(a,c,j=1,t=0){const end=910+j*51,side=a.x<960?1:-1,p=A.puppets.pose(a,t),foot=p.feet[j===2?1:0];return [foot[0],foot[1]-4,foot[0]+(j-1)*37,848+j*16,end-side*(70+c*8),988-j*14,end,922+j*13]}
- function widerRoots(t){for(let c=0;c<cast.length;c++){const a=cast[c],p=smooth(a.on+.6,a.on+3.0,t);if(!p)continue;
+ function widerRootCurve(a,c,j=1,t=0){const end=910+j*51,side=a.x<960?1:-1,p=A.puppets.pose(a,t),f0=p.feet[j===2?1:0],foot=[f0[0],Math.min(f0[1],797)];return [foot[0],foot[1]-4,foot[0]+(j-1)*37,848+j*16,end-side*(70+c*8),988-j*14,end,922+j*13]}
+ // v12: each newcomer's root grows out from the knot to their spot first; then they rise from the soil (audit F9).
+ function widerRoots(t){for(let c=0;c<cast.length;c++){const a=cast[c],p=smooth(a.on-1.3,a.on+.1,t);if(!p)continue;
   for(let j=0;j<3;j++){const end=910+j*51,side=a.x<960?1:-1;
    const b=widerRootCurve(a,c,j,t);
-   g.save();g.globalAlpha=p;S.woodyRoot(b,1,20*a.k+6,5+j,c+j,{rootlets:4,rootletLen:64,neck:true});g.restore();
+   const rb=[b[6],b[7],b[4],b[5],b[2],b[3],b[0],b[1]];S.woodyRoot(rb,clamp(p*1.15-j*.07),5+j,20*a.k+6,c+j,{rootlets:4,rootletLen:64});
+   if(p<1){const e=S.bez(rb,clamp(p*1.15-j*.07));A.glow(e[0],e[1],22)}
   }
  }}
  // v9: the heart grows on its own young tree out of the shared root junction, cradled by two leafy
@@ -60,6 +62,9 @@
   // v11: the trunk always runs the full way from the junction to the heart, so the heart never floats (audit C1).
   const trunk=[960,936,mix(960,936,rise),mix(936,759,rise),mix(960,990,rise),Math.min(936,y+210),x,y+radius*.7];
   S.woodyRoot(trunk,1,mix(16,44,rise),mix(7,20,rise),77,{});
+  // v12: their roots feed the heart: sap runs from each partner's root into the junction and up the trunk (audit C3).
+  if(t>98.5&&t<108.8){for(const [k,root] of [[0,S.roots[2]],[1,S.roots[7]]]){const q=((t-98.5)/1.7+k*.5)%1,u=q<.62?q/.62:(q-.62)/.38;
+   const p=q<.62?S.bez(root,u):S.bez(trunk,u);A.glow(p[0],p[1],28*(1-smooth(108.2,108.8,t)))}}
   // The emblem sun sits behind; the branches hold the heart in front of it.
   if(sun){g.save();g.translate(x,y);g.scale(birth,birth);g.globalAlpha=sun;ellipse(0,0,radius*1.1,radius*1.1,C.gold,C.ink);
    for(const k of [1.02,.93,.86])ellipse(0,0,radius*k,radius*k,null,'#8f5f1e');
@@ -86,6 +91,13 @@
   if(sun){const ph=Math.floor(t*12)*1.7,h=radius*(.9+.12*Math.sin(ph))*sun,w=radius*.11;
    for(const [fx,fy,rot,k,o] of [[-.42,-.74,-.25,.62,2.4],[.42,-.7,.22,.6,4.1],[0,-.36,0,1,1]]){g.save();g.translate(fx*radius,fy*radius);g.rotate(rot);flame(h*k,w*(k>.9?1.15:.9),ph+o);g.restore()}}
   g.restore();
+ }
+ // v12: chorus 2's own move on "tree too" (89.0 s, audit C4/F10): a gold pulse runs every newcomer's root into the
+ // pair's knot, bursts there, and the pair's roots light up.
+ function treeToo(t){if(t<88.9||t>92.4)return;
+  cast.forEach((c,i)=>{if(t<c.on+1.2)return;const u=smooth(89.0,89.85,t);if(u<=0||u>=1)return;const q=S.bez(widerRootCurve(c,i,1,t),u);A.glow(q[0],q[1],30)});
+  const burst=A.performance.bump(89.8,89.95,90.9,t);if(burst)A.glow(958,936,140*burst,burst);
+  const lit=A.performance.bump(89.9,90.3,92.3,t);if(lit){g.save();g.globalAlpha=lit;for(const b of S.roots){g.beginPath();for(let k=0;k<=30;k++){const q=S.bez(b,k/30);k?g.lineTo(q[0],q[1]):g.moveTo(q[0],q[1])}g.strokeStyle=C.gold;g.lineWidth=3.5;g.stroke()}g.restore()}
  }
  function fallingLeaves(t){if(t<107.96||t>111.6)return;
   for(let i=0;i<22;i++){const u=clamp((t-107.96-noise(i+18)*.9)/2.5);if(!u||u>=1)continue;
@@ -171,7 +183,7 @@
  }
  function warmSky(t,a){const w=smooth(125.5,136,t);if(!w)return;const {x,y}=heartGeom(t,a),r=g.createRadialGradient(x,y,60,x,y,1150);
   // An opaque dawn that fades into the azure, so the warm light never mixes to olive.
-  r.addColorStop(0,'#fbe6a6');r.addColorStop(.3,'#f2c773');r.addColorStop(.62,'#d9b98a');r.addColorStop(1,C.azure);
+  r.addColorStop(0,'#fbe6a6');r.addColorStop(.3,'#f2c773');r.addColorStop(.62,'#d9b98a');r.addColorStop(1,S.skyColor(t));
   g.save();g.beginPath();g.rect(76,70,1768,690);g.clip();g.globalAlpha=w;g.fillStyle=r;g.fillRect(0,0,1920,1080);g.globalAlpha=.12*w;g.drawImage(A.paper,0,0);
   g.globalAlpha=.3*w;for(let i=0;i<125;i++){let yy=76+i*5.5;stroke(`M77 ${yy}Q490 ${yy-3} 966 ${yy+1}T1844 ${yy}`,'#6b4a1c',.7)}g.restore()}
  function upperHeralds(t,raw){const p=smooth(122.7,125.6,t);if(!p)return;
@@ -202,9 +214,9 @@
   // A continuous widening from the existing look test, then a final pull-back to the whole plate.
   const close=smooth(96.3,100.1,raw)*(1-smooth(108.0,110.0,raw));
   const fr=smooth(136.5,146.6,raw),fk=1-.14*fr,pb=A.performance.push(raw),zoom=(1.032-.032*smooth(79.5,85,raw)+.12*close)*fk*pb.z; // v11: the pull-back lands on the last phrase (audit D7)
-  g.save();g.beginPath();g.rect(960-884*fk,537.5-467.5*fk,1768*fk,935*fk);g.clip();g.translate(960,540);g.scale(zoom,zoom);g.translate(-960-(pb.x-960)*pb.w+2*Math.sin(raw*.14),-540-(pb.y-540)*pb.w);S.sky();warmSky(t,a);
+  g.save();g.beginPath();g.rect(960-884*fk,537.5-467.5*fk,1768*fk,935*fk);g.clip();g.translate(960,540);g.scale(zoom,zoom);const view=pb.w&&zoom>1?A.performance.frameIn(960+(pb.x-960)*pb.w,540+(pb.y-540)*pb.w,zoom):[960+(pb.x-960)*pb.w,540+(pb.y-540)*pb.w];g.translate(-view[0]+2*Math.sin(raw*.14),-view[1]);S.sky(raw);warmSky(t,a);
   for(let i=0;i<5;i++)cloud(160+i*400+Math.sin(raw*.15+i)*22,140+(i%2)*-25,.72+(i%2)*.15,i%2?-1:1);
-  horizonForest(t);S.ground(t);widerRoots(t);goldenRoots(t);careFlow(t);finalRelay(t);returnReply(t);S.turf();
+  horizonForest(t);S.ground(t);widerRoots(t);treeToo(t);goldenRoots(t);careFlow(t);finalRelay(t);returnReply(t);S.turf();
   orbitBirds(t);heart(t,a,true);
   upperHeralds(t,raw);
   for(const flip of [-1,1]){const h=heraldPosition(flip,t);g.save();g.translate(h.x,h.y);g.scale(h.scale,h.scale);const oldX=flip<0?290:1635;g.translate(-oldX,-294);S.herald(oldX,294,flip,t,raw);g.restore()}
