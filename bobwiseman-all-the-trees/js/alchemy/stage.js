@@ -77,7 +77,7 @@
  // ---- performers: registered open/closed mouth cut-outs ----
  function performer(name,x,feet,h,flip,f,lean=0,squash=1){const pose=img[name],o=pose||img[name+'-open'],c=img[name+'-closed'];if(!o)return;
   const im=pose?pose:mouth(f)?o:(c||o),box=window.ALCHEMY_OPENING_BOX?.[name.split('-')[0]]||[0,0,o.width,o.height],k=h/(box[3]-box[1]);
-  g.save();g.translate(x,feet);g.rotate(lean);g.scale(k*flip,k*squash);g.translate(-(box[0]+box[2])/2,-box[3]);g.drawImage(im,0,0);g.restore()}
+  g.save();g.translate(x,feet);g.rotate(lean);g.scale(k*flip,k*squash);g.translate(-im.width/2,-box[3]);g.drawImage(im,0,0);g.restore()}
  // v18 (Robin): the notes leave his mouth, not his chest. mx,my = his mouth on screen.
  function notes(f,t,mx,my){for(let n=0;n<14;n++){const born=Math.round(13.2*24)+n*7;if(f<born||voice(born)<.5)continue;const age=(f-born)/24;if(age>1.6)continue;
   // Robin preferred these heading out to the right, into the blue, sooner than rising
@@ -100,12 +100,18 @@
    const coin=[2.62,4.88,8.85,9.7,10.45,11.5].reduce((v,c)=>Math.max(v,A.performance.bump(c-.15,c+.1,c+.9,raw)),0),sway=.025*Math.sin(t*1.7);
    performer('herald',x-18*coin,Y1-6-walk-5*voice(f)-6*coin,640,flip*sq,raw<11.55?f:0,.03*voice(f)-.02-.09*coin+sway)}
   // the troubadour (the French station): steps in, sings as the curtains open, bows and leaves
-  if(raw>=T.singerIn[0]&&raw<17.7){const inP=smooth(...T.singerIn,raw),outP=smooth(16.95,17.6,raw),bow=A.performance.bump(16.45,16.7,16.95,raw);
-   const walk=Math.abs(Math.sin(t*9))*(inP<1||outP>0?8:0),sing=raw>13.1&&raw<16.45;
-   // v16 (audit A6): a forward bow toward the audience, then he walks off behind the left curtain.
-   g.save();if(outP>0){g.beginPath();g.rect(X0+130,Y0,X1,Y1);g.clip()}
-   const sx=mix(-260,380,inP)-outP*420,sy=Y1-6-walk,lean=sing?-.05*voice(f)+.015*Math.sin(t*6):-.26*bow,k=650/760;
-   performer('singer',sx,sy,650,-1,sing?f:0,lean,1-.04*bow);g.restore();
+  if(raw>=T.singerIn[0]&&raw<17.7){const inP=smooth(...T.singerIn,raw);
+   // v26 (Robin): the horns (first note 16.58 s) catch him out: a startled hop, a look one way and the other, then he scuttles off left.
+   const H0=16.58,crouch=A.performance.bump(H0,H0+.06,H0+.12,raw),hop=Math.sin(Math.PI*clamp((raw-(H0+.08))/.3)),land=A.performance.bump(H0+.36,H0+.4,H0+.5,raw);
+   const run=smooth(17.32,17.66,raw),outP=run;
+   const face=raw<16.98?-1:raw<17.16?1:raw<17.32?-1:1; /* -1 faces the stage, 1 faces his exit */
+   const turn=1; /* paper puppets flip instantly */
+   const walk=Math.abs(Math.sin(t*9))*(inP<1?8:0)+Math.abs(Math.sin(raw*Math.PI*9))*16*(run>0&&run<1?1:0),sing=raw>13.1&&raw<16.45;
+   g.save();if(raw>17.3){g.beginPath();g.rect(X0+132-240*clear,Y0,X1,Y1);g.clip()} /* behind the left curtain as it slides away */
+   const sx=mix(-260,380,inP)-run*560,sy=Y1-6-walk-95*hop*(raw>H0?1:0),k=650/760;
+   const lean=sing?-.05*voice(f)+.015*Math.sin(t*6):raw<H0?0:raw<16.98?-.2*hop:-.18*Math.min(1,run*4)*(run<1?1:0); /* back on the hop, forward into the run */
+   const squash=(1-.1*crouch-.08*land)*(1+.1*hop),pose=raw<H0+.04?'singer':raw<16.98?'singer-startled':raw<17.32?'singer-glance':'singer-scuttle';
+   performer(pose==='singer'||img[pose]?pose:'singer-open',sx,sy,650,face*turn,sing?f:0,lean,squash);g.restore();
    // his mouth: (264,68) in the packed 434x760 cut-out, mirrored, scaled and leaned about the feet
    const ox=-k*(264.3-217),oy=k*(67.7-760),mouthX=sx+ox*Math.cos(lean)-oy*Math.sin(lean),mouthY=sy+ox*Math.sin(lean)+oy*Math.cos(lean);
    if(sing)notes(f,t,mouthX,mouthY)}
