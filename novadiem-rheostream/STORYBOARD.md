@@ -32,8 +32,8 @@ bottom right, 01/07 to 07/07 at each plate start.
 
 Labels `PLATE I` / `THE PROJECT`. A streamline field (five curves, the rheo.stream hero motif)
 draws left to right and gathers into one channel. `rheoStream` in Geist 800 at 168px, revealed on
-the beat; a 640px mint rule with end ticks under it; mono subtitle `A SELF-HOSTED FRAMEWORK FOR
-AGENT-ASSISTED WORK`; small mono `AGPL-3.0 · OPEN SOURCE · RHEO.STREAM`. Out at 7.0.
+the beat; a 640px mint rule with end ticks under it; mono subtitle `AN OPEN FRAMEWORK FOR
+AGENT-ASSISTED WORK` (never "self-hosted": viewers read it as a self-hosted model; Robin, 2026-10-15); small mono `AGPL-3.0 · OPEN SOURCE · RHEO.STREAM`. Out at 7.0.
 No accent phrase. **Built as a style frame.**
 
 ## Plate II · The Scatter (7.5 to 20, 5 bars)
