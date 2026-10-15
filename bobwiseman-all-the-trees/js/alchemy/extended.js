@@ -169,8 +169,9 @@
   g.save();g.beginPath();g.rect(76,70,1768,690);g.clip();g.globalAlpha=w;g.fillStyle=r;g.fillRect(0,0,1920,1080);g.globalAlpha=.12*w;g.drawImage(A.paper,0,0);
   g.globalAlpha=.3*w;for(let i=0;i<125;i++){let yy=76+i*5.5;stroke(`M77 ${yy}Q490 ${yy-3} 966 ${yy+1}T1844 ${yy}`,'#6b4a1c',.7)}g.restore()}
  function upperHeralds(t,raw){const p=smooth(122.7,125.6,t);if(!p)return;
-  for(const flip of [-1,1]){const x=960+flip*(395+18*Math.sin(t*.4+flip)),y=mix(-260,118,p)+10*Math.sin(t*.55+flip*2);
-   g.save();g.translate(x,y);g.scale(.72,.72);const oldX=flip<0?290:1635;g.translate(-oldX,-294);S.herald(oldX,294,flip,t+.21*flip,raw+.21*flip);g.restore()}}
+  // v10b: low enough that the whole figure stays in frame (Robin: heads were cropped), outside the sun and moon heads.
+  for(const flip of [-1,1]){const x=960+flip*(335+10*Math.sin(t*.4+flip)),y=mix(-200,150,p)+6*Math.sin(t*.55+flip*2);
+   g.save();g.translate(x,y);g.scale(.47,.47);const oldX=flip<0?290:1635;g.translate(-oldX,-294);S.herald(oldX,294,flip,t+.21*flip,raw+.21*flip);g.restore()}}
  function medallion(x,y,r,kind,p,t){if(p<=0)return;g.save();g.translate(x,y);g.scale(p,p);ellipse(0,0,r+9,r+9,C.paper,C.ink);ellipse(0,0,r,r,kind==='moon'?'#a9bccb':kind==='tree'?'#b9cf95':C.gold,C.ink);
   g.save();g.beginPath();g.arc(0,0,r-3,0,Math.PI*2);g.clip();
   if(kind==='sun'){g.scale(r/165,r/165);g.translate(-332,-170);A.piece('sol-head',C.gold)}
