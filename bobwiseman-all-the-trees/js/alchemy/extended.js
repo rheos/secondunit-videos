@@ -85,17 +85,15 @@
   const ex=b[0]+side*Math.cos(E1)*L1,ey=b[1]-Math.sin(E1)*L1,tx=ex+side*Math.cos(E2)*L2,ty=ey-Math.sin(E2)*L2;
   b[2]=mix(b[0],ex,.92);b[3]=mix(b[1],ey,.92);b[4]=mix(ex,tx,.08);b[5]=mix(ey,ty,.08); /* a crisp elbow */b[6]=tx;b[7]=ty}
  // Draft 2 (Robin's note at 2:16, posted in the review notes box): on the last "so are you" the heart tree's right arm swings out and points at the viewer.
- // The branch ends in a carved wooden hand (source/alchemy/opening/tree-hand-at-you.png), finger straight out at the viewer.
+ // No hand (Robin): the branch swings to point straight at the viewer, so it foreshortens to a stub.
  const POINT={on:134.75,up:135.25,you:135.4,hold:137.0,off:137.7};
  function pointAmt(t){return smooth(POINT.on,POINT.up,t)*(1-smooth(POINT.hold,POINT.off,t))}
  function armPoint(b,side,t){const w=side>0?pointAmt(t):0;if(!w)return 0;
-  const jab=Math.exp(-Math.max(0,t-POINT.you)*5)*(t>=POINT.you?1:0),E1=mix(.83,.45,w),E2=mix(.83,-1.15,w),L1=mix(84,95,w),L2=mix(80,62,w);
-  const ex=b[0]+side*Math.cos(E1)*L1,ey=b[1]-Math.sin(E1)*L1,tx=ex+side*Math.cos(E2)*L2,ty=ey-Math.sin(E2)*L2;
-  b[2]=mix(b[0],ex,.92);b[3]=mix(b[1],ey,.92);b[4]=mix(ex,tx,.08);b[5]=mix(ey,ty,.08);b[6]=tx;b[7]=ty;return w}
- function twigHand(b,w,t){const H=A.openingImg&&A.openingImg.treehand,B=window.ALCHEMY_OPENING_BOX&&window.ALCHEMY_OPENING_BOX.treehand;if(!H||!B)return;
-  const jab=Math.exp(-Math.max(0,t-POINT.you)*5)*(t>=POINT.you?1:0),sc=w*(1+.14*jab)*190/B.h;
-  // the carved hand drawn first, so the branch runs over its stump; the end-on finger aimed straight out of the picture at the viewer
-  g.save();g.globalAlpha=Math.min(1,w*1.6);g.translate(b[6],b[7]);const back=Math.atan2(b[5]-b[7],b[4]-b[6]),stump=Math.atan2(-110,15),rot=Math.max(-.9,Math.min(.9,Math.atan2(Math.sin(back-stump),Math.cos(back-stump))));g.rotate(rot*w);g.scale(sc,sc);g.translate(-B.wrist[0],-B.wrist[1]);g.drawImage(H,0,0);g.restore()}
+  // foreshortening, not growth: the arm swings from out to the side to straight at the lens, so its length on screen
+  // shrinks to a stub, a little below level; a small extra shortening on "you" is the jab toward us
+  const jab=Math.exp(-Math.max(0,t-POINT.you)*5)*(t>=POINT.you?1:0),E=mix(.83,-.25,w),L=mix(164,82-12*jab,w);
+  const tx=b[0]+side*Math.cos(E)*L,ty=b[1]-Math.sin(E)*L;
+  b[2]=mix(b[0],tx,.33);b[3]=mix(b[1],ty,.33);b[4]=mix(b[0],tx,.67);b[5]=mix(b[1],ty,.67);b[6]=tx;b[7]=ty;return w}
  function heart(t,a,raysOnly=false){if(!raysOnly)glintToHeart(t);const birth=smooth(96.3,97.4,t);if(!birth)return;
   const {rise,final,climax,x,y,radius,sun}=heartGeom(t,a);
   if(raysOnly){if(!sun)return;g.save();g.translate(x,y);g.scale(birth,birth);g.rotate(t*.02);
@@ -113,7 +111,7 @@
   if(rise>.45){const g2=smooth(.45,.9,rise),season=Math.max(.45,A.leafSeason?A.leafSeason(t):1);
    for(const side of [-1,1]){const p0=S.bez(trunk,.52),b=[p0[0],p0[1],p0[0]+side*40,p0[1]-30,p0[0]+side*85,p0[1]-75,p0[0]+side*110,p0[1]-120];
     armDance(b,side,t);const pw=armPoint(b,side,t);const warp=armWave(b,side,t),wq=u=>{const q=S.bez(b,u);if(!warp)return q;const w=warp(u);return [q[0]+w[0],q[1]+w[1]]};
-    if(pw>.05)twigHand(b,pw,t);S.woodyRoot(b,g2,mix(14,18,pw),mix(3,20,pw),60+side,warp?{warp}:{});for(let k=0;k<6;k++){const u=.3+k*.12;if(u>g2)continue;const q=wq(u),q2=wq(Math.min(1,u+.03)),ang=Math.atan2(q2[1]-q[1],q2[0]-q[0]);S.leaf(q[0],q[1],ang+(k%2?1.8:-1.3)*side,.6,clamp((g2-u)*5)*season)}}}
+    S.woodyRoot(b,g2,14,mix(3,9,pw),60+side,warp?{warp}:{});if(pw>.3){g.save();g.globalAlpha=smooth(.3,.7,pw);ellipse(b[6],b[7],6,7,'#e2c995',C.ink);ellipse(b[6],b[7],3,3.5,null,'#8f5f1e');g.restore()} /* the branch end, facing us */for(let k=0;k<6;k++){const u=.3+k*.12;if(u>g2)continue;const q=wq(u),q2=wq(Math.min(1,u+.03)),ang=Math.atan2(q2[1]-q[1],q2[0]-q[0]);S.leaf(q[0],q[1],ang+(k%2?1.8:-1.3)*side,.6,clamp((g2-u)*5)*season)}}}
   S.woodyRoot(trunk,1,mix(16,56,rise),mix(7,24,rise),77,{});
   // v12: their roots feed the heart: sap runs from each partner's root into the junction and up the trunk (audit C3).
   if(t>98.5&&t<108.8){for(const [k,root] of [[0,S.roots[2]],[1,S.roots[7]]]){const q=((t-98.5)/1.7+k*.5)%1,u=q<.62?q/.62:(q-.62)/.38;
