@@ -123,8 +123,8 @@
 
       <div id="sVI" class="scene clip" data-start="72.5" data-duration="12.5" data-track-index="1">
         <svg id="gVI" viewBox="0 0 1920 1080"></svg>
-        <div class="chapter">Plate VI &middot; The Road</div>
-        <div class="headline"><span id="hVI1">53 shows.</span> <span id="hVI2" class="accent">Not one typed twice.</span></div>
+        <div class="chapter">Plate VI &middot; The Promo</div>
+        <div class="headline"><span id="hVI1">Pick the dates.</span> <span id="hVI2">Pick a look.</span> <span id="hVI3" class="accent">Your promo's ready.</span></div>
       </div>
 
       <!-- score: drafting-table take-01 (score library), 96 BPM; its 61 ms lead is trimmed so beat k is at k * 0.625 s -->
@@ -157,7 +157,7 @@
       const D = { I: 12.5, II: 10, III: 15, IV: 15, V: 20, VI: 12.5, C: 5 };
       // scene timings were drafted silent; F stretches each to its section, then times snap to the score
       const BEAT = 0.625;
-      const F = { I: 12.5 / 12, II: 1, III: 15 / 14, IV: 15 / 14, V: 20 / 22, VI: 12.5 / 13, C: 1 };
+      const F = { I: 12.5 / 12, II: 1, III: 15 / 14, IV: 15 / 14, V: 20 / 22, VI: 1, C: 1 }; // VI was rebuilt in real seconds
       const snap = (t, step) => Math.round(t / step) * step;
       const at = (k, x) => T[k] + snap(x * F[k], BEAT / 2); // motion on the eighth-note grid
       const onBeat = (k, x) => T[k] + snap(x * F[k], BEAT); // headlines and hits on the beat
@@ -415,51 +415,108 @@
       txt("NELSON, BC", { class: "big", x: 1270, y: 578, "font-size": 22, "font-weight": 600 }, listRow);
       txt("The Royal", { class: "mono", x: 1270, y: 600, "font-size": 15 }, listRow);
 
-      /* ---------------- Plate VI: the road, 53 shows ---------------- */
+      /* ---------------- Plate VI: the road becomes the date picker for a promo ---------------- */
       const gVI = $("#gVI");
-      // faint contour lines and a compass rose for a surveyed map
+      // faint contour lines and a compass rose for a surveyed map, on the left of the plate
       const contours = el("g", {}, gVI);
       for (let c = 0; c < 4; c++) {
         let d = "";
-        for (let x = 200; x <= 1720; x += 20) {
-          const y = 250 + c * 150 + 40 * Math.sin(x / 210 + c * 1.7) + 18 * Math.sin(x / 77 + c);
-          d += (x === 200 ? "M" : "L") + x + "," + y.toFixed(1) + " ";
+        for (let x = 180; x <= 1120; x += 20) {
+          const y = 260 + c * 150 + 36 * Math.sin(x / 190 + c * 1.7) + 14 * Math.sin(x / 71 + c);
+          d += (x === 180 ? "M" : "L") + x + "," + y.toFixed(1) + " ";
         }
         el("path", { class: "faint", d, "stroke-dasharray": "2 7" }, contours);
       }
       const rose = el("g", {}, gVI);
-      el("circle", { cx: 1650, cy: 720, r: 54, class: "hair" }, rose);
-      el("circle", { cx: 1650, cy: 720, r: 40, class: "faint" }, rose);
-      el("path", { class: "hair", d: "M1650,654 V786 M1584,720 H1716" }, rose);
-      el("path", { d: "M1650,666 L1660,720 L1650,710 L1640,720 Z", fill: "var(--line)" }, rose);
-      txt("N", { class: "label", x: 1650, y: 646, "font-size": 15, "text-anchor": "middle" }, rose);
-      // 53 stops, a deterministic wandering route west to east
+      el("circle", { cx: 1080, cy: 740, r: 54, class: "hair" }, rose);
+      el("circle", { cx: 1080, cy: 740, r: 40, class: "faint" }, rose);
+      el("path", { class: "hair", d: "M1080,674 V806 M1014,740 H1146" }, rose);
+      el("path", { d: "M1080,686 L1090,740 L1080,730 L1070,740 Z", fill: "var(--line)" }, rose);
+      txt("N", { class: "label", x: 1080, y: 666, "font-size": 15, "text-anchor": "middle" }, rose);
+      // 53 stops, a deterministic wandering road west to east
       const stops = [];
       for (let i = 0; i < 53; i++) {
-        const x = 230 + (i * 1300) / 52 + 28 * Math.sin(i * 0.9);
-        const y = 500 + 190 * Math.sin(i * 0.19 + 0.2) + 50 * Math.sin(i * 0.53 + 1.3);
+        const x = 220 + (i * 820) / 52 + 16 * Math.sin(i * 0.9);
+        const y = 500 + 170 * Math.sin(i * 0.19 + 0.2) + 45 * Math.sin(i * 0.53 + 1.3);
         stops.push([x, y]);
       }
-      // Catmull-Rom through the stops, as cubic Beziers
-      let roadD = `M${stops[0][0].toFixed(1)},${stops[0][1].toFixed(1)}`;
-      for (let i = 0; i < stops.length - 1; i++) {
-        const p0 = stops[i - 1] || stops[i], p1 = stops[i], p2 = stops[i + 1], p3 = stops[i + 2] || p2;
-        const c1 = [p1[0] + (p2[0] - p0[0]) / 6, p1[1] + (p2[1] - p0[1]) / 6];
-        const c2 = [p2[0] - (p3[0] - p1[0]) / 6, p2[1] - (p3[1] - p1[1]) / 6];
-        roadD += ` C${c1.map((v) => v.toFixed(1))} ${c2.map((v) => v.toFixed(1))} ${p2.map((v) => v.toFixed(1))}`;
-      }
-      const roadBed = el("path", { d: roadD, fill: "none", stroke: "var(--line)", "stroke-width": 9, "stroke-linecap": "round", "stroke-opacity": 0.16 }, gVI);
-      const route = el("path", { class: "line", d: roadD, "stroke-width": 2.2 }, gVI);
-      const stopDots = stops.map(([x, y], i) =>
-        i === 52
-          ? el("circle", { cx: x, cy: y, r: 9, fill: "var(--accent)", stroke: "var(--card)", "stroke-width": 3, opacity: 0 }, gVI)
-          : el("circle", { cx: x, cy: y, r: 5, fill: "var(--card)", stroke: "var(--ink)", "stroke-width": 1.6, opacity: 0 }, gVI)
-      );
-      const last = stops[52];
-      const nelson = txt("Nelson", { class: "label", x: last[0] + 16, y: last[1] - 14, "font-size": 15, style: "fill: var(--accent-text)", opacity: 0 }, gVI);
+      // Catmull-Rom through stops i0..i1, as cubic Beziers
+      const crPath = (i0, i1) => {
+        let d = `M${stops[i0][0].toFixed(1)},${stops[i0][1].toFixed(1)}`;
+        for (let i = i0; i < i1; i++) {
+          const p0 = stops[i - 1] || stops[i], p1 = stops[i], p2 = stops[i + 1], p3 = stops[i + 2] || p2;
+          const c1 = [p1[0] + (p2[0] - p0[0]) / 6, p1[1] + (p2[1] - p0[1]) / 6];
+          const c2 = [p2[0] - (p3[0] - p1[0]) / 6, p2[1] - (p3[1] - p1[1]) / 6];
+          d += ` C${c1.map((v) => v.toFixed(1))} ${c2.map((v) => v.toFixed(1))} ${p2.map((v) => v.toFixed(1))}`;
+        }
+        return d;
+      };
+      const roadBed = el("path", { d: crPath(0, 52), fill: "none", stroke: "var(--line)", "stroke-width": 9, "stroke-linecap": "round", "stroke-opacity": 0.16 }, gVI);
+      const route = el("path", { class: "line", d: crPath(0, 52), "stroke-width": 2.2 }, gVI);
+      const stopDots = stops.map(([x, y]) => el("circle", { cx: x, cy: y, r: 5, fill: "var(--card)", stroke: "var(--ink)", "stroke-width": 1.6, opacity: 0 }, gVI));
       const legend = el("g", {}, gVI);
       el("circle", { cx: 236, cy: 790, r: 5, fill: "var(--card)", stroke: "var(--ink)", "stroke-width": 1.6 }, legend);
       txt("one show", { class: "label", x: 252, y: 795, "font-size": 14 }, legend);
+      // step 1: the last run of eight shows, ending at Nelson, picked along the road
+      const L0 = 45, L1 = 52;
+      const legLine = el("path", { d: crPath(L0, L1), fill: "none", stroke: "var(--accent)", "stroke-width": 4, "stroke-linecap": "round" }, gVI);
+      const legDots = stops.slice(L0, L1 + 1).map(([x, y]) => el("circle", { cx: x, cy: y, r: 6.5, fill: "var(--accent)", stroke: "var(--card)", "stroke-width": 2, opacity: 0 }, gVI));
+      const lx = stops.slice(L0).map((p) => p[0]), ly = stops.slice(L0).map((p) => p[1]);
+      const bx0 = Math.min(...lx) - 22, bx1 = Math.max(...lx) + 22, by0 = Math.min(...ly) - 22, by1 = Math.max(...ly) + 22;
+      const legBox = el("rect", { class: "dash", x: bx0, y: by0, width: bx1 - bx0, height: by1 - by0, rx: 14 }, gVI);
+      const step1 = txt("1 · pick the dates", { class: "label", x: bx0, y: by0 - 14, "font-size": 15, style: "fill: var(--accent-text)" }, gVI);
+      // step 2: three looks, each a little 9:16 sheet; riso is picked
+      const panel = el("g", {}, gVI);
+      txt("2 · pick a look", { class: "label", x: 1240, y: 240, "font-size": 15 }, panel);
+      const looks = ["riso", "woodcut", "type"].map((name, j) => {
+        const x = 1240 + j * 170, y = 262, w = 120, h = 213;
+        const g = el("g", {}, panel);
+        el("rect", { class: "card", x, y, width: w, height: h }, g);
+        el("rect", { class: "line draw", x, y, width: w, height: h }, g);
+        const art = el("g", {}, g);
+        if (j === 0) {
+          for (let r = 0; r < 5; r++) for (let c = 0; c < 5; c++) el("circle", { cx: x + 30 + c * 15, cy: y + 34 + r * 15, r: 2.6 + (r + c) * 0.35, fill: "var(--accent)", "fill-opacity": 0.55 }, art);
+          el("rect", { x: x + 16, y: y + 128, width: 88, height: 12, fill: "var(--ink)" }, art);
+          el("rect", { x: x + 16, y: y + 148, width: 60, height: 12, fill: "var(--ink)" }, art);
+          el("path", { class: "faint", d: `M${x + 16},${y + 180} H${x + 104} M${x + 16},${y + 192} H${x + 84}` }, art);
+        }
+        if (j === 1) {
+          let hatch = "";
+          for (let k = 0; k < 12; k++) hatch += `M${x + 12},${y + 24 + k * 8} L${x + 12 + 40 + (k % 3) * 18},${y + 14 + k * 8} `;
+          el("path", { d: hatch, stroke: "var(--ink)", "stroke-width": 1.4, fill: "none" }, art);
+          el("path", { d: `M${x + 64},${y + 70} A28 28 0 0 1 ${x + 108},${y + 70}`, class: "line" }, art);
+          el("path", { class: "faint", d: `M${x + 16},${y + 150} H${x + 104} M${x + 16},${y + 166} H${x + 90} M${x + 16},${y + 182} H${x + 96}` }, art);
+        }
+        if (j === 2) {
+          txt("ON", { class: "big", x: x + 14, y: y + 70, "font-size": 40 }, art);
+          txt("TOUR", { class: "big", x: x + 14, y: y + 110, "font-size": 34 }, art);
+          el("path", { class: "faint", d: `M${x + 16},${y + 150} H${x + 104} M${x + 16},${y + 166} H${x + 90} M${x + 16},${y + 182} H${x + 96}` }, art);
+        }
+        txt(name, { class: "label", x: x + w / 2, y: y + h + 26, "font-size": 13, "text-anchor": "middle" }, g);
+        return { g, art };
+      });
+      const pick = el("rect", { x: 1234, y: 256, width: 132, height: 225, rx: 4, fill: "none", stroke: "var(--accent)", "stroke-width": 3 }, panel);
+      // step 3: generate
+      const btn = el("g", {}, panel);
+      el("rect", { x: 1240, y: 540, width: 460, height: 58, rx: 29, fill: "var(--card)", stroke: "var(--ink)", "stroke-width": 1.6 }, btn);
+      const btnOn = el("rect", { x: 1240, y: 540, width: 460, height: 58, rx: 29, fill: "var(--accent)", opacity: 0 }, btn);
+      // one label; it turns paper-coloured when the button is pressed
+      const btnTxt = txt("3 · generate", { class: "label", x: 1470, y: 575, "font-size": 18, "text-anchor": "middle", style: "fill: #1E1A14" }, btn);
+      // the result: a 9:16 promo with the eight dates
+      const legDates = [["NOV 06", "KAMLOOPS"], ["NOV 07", "VERNON"], ["NOV 08", "KELOWNA"], ["NOV 09", "PENTICTON"], ["NOV 10", "GRAND FORKS"], ["NOV 11", "CASTLEGAR"], ["NOV 12", "ROSSLAND"], ["NOV 13", "NELSON"]];
+      const phone = el("g", {}, gVI);
+      el("rect", { class: "card", x: 1340, y: 200, width: 240, height: 427, rx: 22 }, phone);
+      const phoneLine = el("rect", { class: "line", x: 1340, y: 200, width: 240, height: 427, rx: 22, "stroke-width": 2 }, phone);
+      const phoneIn = el("g", {}, phone);
+      el("path", { class: "hair", d: "M1430,218 H1490" }, phoneIn);
+      for (let r = 0; r < 3; r++) for (let c = 0; c < 6; c++) el("circle", { cx: 1470 + c * 16, cy: 236 + r * 15, r: 2.4 + (r + c) * 0.4, fill: "var(--accent)", "fill-opacity": 0.5 }, phoneIn);
+      txt("ON TOUR", { class: "big", x: 1364, y: 340, "font-size": 40 }, phoneIn);
+      const rows = legDates.map(([d, c], k) => txt(`${d}  ${c}`, { class: k === 7 ? "mono red" : "mono", x: 1364, y: 382 + k * 26, "font-size": 15 }, phoneIn));
+      el("path", { d: "M1364,598 H1556", class: "faint" }, phoneIn);
+      el("path", { d: "M1364,598 H1470", stroke: "var(--accent)", "stroke-width": 4, fill: "none" }, phoneIn);
+      const dims = el("g", {}, gVI);
+      el("path", { class: "hair", d: "M1612,200 V627 M1604,200 H1620 M1604,627 H1620" }, dims);
+      txt("9:16", { class: "label", x: 1630, y: 419, "font-size": 15 }, dims);
 
       /* ---------------- Colophon ---------------- */
       const gC = $("#gC");
@@ -470,7 +527,7 @@
       /* ---------------- stroke drawing setup ---------------- */
       const prep = (n) => { const L = n.getTotalLength(); n.style.strokeDasharray = L; n.style.strokeDashoffset = L; return n; };
       document.querySelectorAll(".draw").forEach(prep);
-      [outline, route, rule].forEach(prep);
+      [outline, route, rule, legLine, pick, phoneLine].forEach(prep);
       pulses.forEach(prep);
       const fillLen = 1680; fill.style.strokeDasharray = fillLen; fill.style.strokeDashoffset = fillLen;
       const draws = (root) => Array.from(root.querySelectorAll(".draw"));
@@ -593,16 +650,35 @@
       tl.to([siteDate, promoDate, listDay], { opacity: 0, duration: 0.3 }, at("V", 17.8));
       tl.to([siteDate2, promoDate2, listDay2], { opacity: 1, duration: 0.3 }, at("V", 17.9));
 
-      // Plate VI (72-85)
-      fadeIn(Array.from(contours.children), at("VI", 0.4), 1.2, 0.2);
-      fadeIn(roadBed, at("VI", 0.6), 0.8);
+      // Plate VI (72.5-85): pick the dates, pick a look, generate
+      fadeIn(Array.from(contours.children), at("VI", 0.4), 1.0, 0.15);
+      fadeIn(roadBed, at("VI", 0.5), 0.8);
       tl.from(rose, { opacity: 0, duration: 0.8 }, at("VI", 0.6));
-      tl.from(legend, { opacity: 0, duration: 0.6 }, at("VI", 1.2));
-      tl.to(route, { strokeDashoffset: 0, duration: 6.4, ease: "none" }, at("VI", 1.0));
-      tl.to(stopDots, { opacity: 1, duration: 0.15, stagger: 6.4 / 52 }, at("VI", 1.0));
-      tl.to(nelson, { opacity: 1, duration: 0.4 }, at("VI", 7.5));
-      head("#hVI1", onBeat("VI", 7.6));
-      head("#hVI2", onBeat("VI", 8.6));
+      tl.from(legend, { opacity: 0, duration: 0.6 }, at("VI", 1.0));
+      tl.to(route, { strokeDashoffset: 0, duration: 3.8, ease: "none" }, at("VI", 0.6));
+      tl.to(stopDots, { opacity: 1, duration: 0.15, stagger: 3.8 / 52 }, at("VI", 0.6));
+      tl.to(legLine, { strokeDashoffset: 0, duration: 0.9, ease: "power2.inOut" }, onBeat("VI", 4.4));
+      tl.to(legDots, { opacity: 1, duration: 0.2, stagger: 0.08 }, at("VI", 4.6));
+      fadeIn(legBox, at("VI", 5.0), 0.4);
+      tl.from(step1, { opacity: 0, duration: 0.4 }, at("VI", 5.0));
+      head("#hVI1", onBeat("VI", 5.0));
+      tl.from(panel.firstChild, { opacity: 0, duration: 0.4 }, at("VI", 5.6));
+      looks.forEach(({ g, art }, j) => {
+        tl.to(g.querySelector("rect.draw"), { strokeDashoffset: 0, duration: 0.5, ease: "power2.out" }, at("VI", 5.6 + j * BEAT));
+        tl.from([art, g.lastChild, g.querySelector("rect.card")], { opacity: 0, duration: 0.4 }, at("VI", 5.8 + j * BEAT));
+      });
+      tl.to(pick, { strokeDashoffset: 0, duration: 0.4, ease: "power2.out" }, onBeat("VI", 7.5));
+      head("#hVI2", onBeat("VI", 7.5));
+      tl.from(btn, { opacity: 0, y: 8, duration: 0.3 }, at("VI", 7.8));
+      tl.to(btnOn, { opacity: 1, duration: 0.12 }, onBeat("VI", 8.125));
+      tl.to(btnTxt, { fill: "#F5EEE1", duration: 0.12 }, onBeat("VI", 8.125));
+      tl.to(panel, { opacity: 0, duration: 0.3 }, at("VI", 8.6));
+      tl.from(phone.firstChild, { opacity: 0, duration: 0.4 }, at("VI", 8.75));
+      tl.to(phoneLine, { strokeDashoffset: 0, duration: 0.6, ease: "power2.inOut" }, at("VI", 8.75));
+      tl.from(phoneIn.children, { opacity: 0, duration: 0.25, stagger: 0.03 }, at("VI", 9.1));
+      tl.from(rows, { opacity: 0, x: -8, duration: 0.25, stagger: 0.08 }, at("VI", 9.2));
+      tl.from(dims, { opacity: 0, duration: 0.4 }, at("VI", 9.6));
+      head("#hVI3", onBeat("VI", 9.375));
 
       // Colophon (85-90)
       tl.from(mark, { opacity: 0, y: 14, duration: 0.8, ease: "power2.out" }, onBeat("C", 0));
