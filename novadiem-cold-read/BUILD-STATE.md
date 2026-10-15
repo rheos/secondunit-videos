@@ -114,6 +114,9 @@ only for now). Hold to 92; audio fades 90.6-92.
    `data-width="1280" data-height="720"` and wrap the slots in a 1920x1080 stage div with
    `transform: scale(0.666667); transform-origin: 0 0`. Render
    `nice -n 15 npx hyperframes render -f 24 -q draft -o renders/cold-read-artpop_take02_f0-f2208_24fps_draft1.mp4`.
+   Same mechanism as the blueprint kit (rheos/secondunit-videos PR #143, `tools/blueprint-kit/`):
+   `html.draft` + a `.stage` div, switched by `tools/blueprint-kit/stage.sh <project> draft|master`.
+   Once #143 is on main, reuse that (its kit.css rule and stage.sh) instead of hand-rolling it.
    No 1080p render of anything until Robin signs off the cut; the master then flips the root back
    to 1920x1080 with scale 1. (The v1 look test wrongly rendered at 1080p and downscaled.)
 4. flashcheck + badframes from latest tools (`git archive origin/main tools/motion-lab
