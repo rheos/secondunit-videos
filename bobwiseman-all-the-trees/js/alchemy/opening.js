@@ -80,6 +80,27 @@
   }
   g.restore();
  }
+ function gear(x,y,r,teeth,ang,k,crank){if(k<=0)return;g.save();g.translate(x,y);g.scale(k,k);g.rotate(ang);
+  const P=new Path2D();for(let i=0;i<teeth;i++){const a0=i/teeth*Math.PI*2,a1=a0+Math.PI/teeth*.55,a2=a0+Math.PI/teeth,a3=a2+Math.PI/teeth*.45,ro=r+r*.22;
+   const pt=(a,rr)=>[Math.cos(a)*rr,Math.sin(a)*rr];const q=[pt(a0,r),pt(a0+.06,ro),pt(a1-.06,ro),pt(a1,r),pt(a3,r)];q.forEach(([px,py],j)=>i||j?P.lineTo(px,py):P.moveTo(px,py))}
+  P.closePath();g.fillStyle='#d4a640';g.fill(P);g.save();g.clip(P);for(let j=-r*1.3;j<r*1.3;j+=3.2)line(j,-r*1.3,j+r*.6,r*1.3,'#7a5320',.6);g.restore();
+  g.fillStyle='rgba(255,236,170,.35)';g.beginPath();g.arc(-r*.25,-r*.25,r*.55,0,Math.PI*2);g.fill();
+  g.strokeStyle=C.ink;g.lineWidth=1.6;g.stroke(P);ellipse(0,0,r*.72,r*.72,null,C.ink);
+  for(let s=0;s<4;s++){g.save();g.rotate(s*Math.PI/2);fill(`M${-r*.09} ${-r*.2}L${r*.09} ${-r*.2}L${r*.07} ${-r*.68}L${-r*.07} ${-r*.68}Z`,'#b8862e');stroke(`M${-r*.09} ${-r*.2}L${r*.09} ${-r*.2}L${r*.07} ${-r*.68}L${-r*.07} ${-r*.68}Z`,C.ink,1);g.restore()}
+  ellipse(0,0,r*.24,r*.24,'#e7c46a',C.ink);ellipse(0,0,r*.09,r*.09,C.ink,null);
+  if(crank){line(0,0,r*1.15,0,C.ink,5);line(0,0,r*1.15,0,'#c9962e',3);ellipse(r*1.15,0,r*.16,r*.16,'#8a5a2b',C.ink)}
+  g.restore()}
+ function machine(t,cover){const grow=smooth(43.6,44.45,t),k0=grow*(1-cover);if(k0<=0)return;
+  const run=t<44.54?0:(t-44.54)*1.6+Math.max(0,t-46.0)*7*(1-smooth(46.5,46.9,t)),works=A.performance.bump(45.95,46.12,46.9,t);
+  // gear sites: the central knot, each front tree's root crown, and the middle of each long root
+  const sites=[[960,939,86,18,1,1]];
+  for(const [x,dir] of [[400,1],[1520,-1]]){sites.push([x,812,48,12,-1,0]);sites.push([...S.bez([x,756,x+dir*25,845,x+dir*390,979,960,939],.55),44,11,1,0])}
+  for(const [x,dir] of [[690,1],[1220,-1]]){sites.push([x,812,50,12,-1,0]);sites.push([...S.bez([x,756,x+dir*55,856,960-dir*147,979,959,934],.5),42,11,1,0])}
+  // the gold drive: on "how" a glint runs from every tree's gear to the knot
+  const drive=smooth(44.9,45.8,t);if(drive>0&&drive<1)for(const [x,dir] of [[400,1],[1520,-1],[690,1],[1220,-1]]){const b=x===400||x===1520?[x,756,x+dir*25,845,x+dir*390,979,960,939]:[x,756,x+dir*55,856,960-dir*147,979,959,934];const q=S.bez(b,drive);A.glow(q[0],q[1],26)}
+  if(works)A.glow(960,939,120*works,works*.9);
+  sites.forEach(([x,y,r,teeth,dir,crank],i)=>{const k=k0*smooth(0,.6,grow*1.6-i*.08)*(1+.12*works);gear(x,y,r,teeth,dir*run*(46/r)+i*.3,k,crank)});
+ }
  function roots(t){const cover=smooth(46.1,46.9,t),reveal=smooth(37,40.75,t)*(1-cover);if(!reveal||cover>=1)return;
   g.save();g.beginPath();g.rect(76,760,1768,245);g.clip();
   // The flanking trees join the same living system as the central pair.
@@ -97,6 +118,9 @@
    }
    S.woodyRoot([x+(j-1)*10,756,x+dir*(35+j*20),856,end-dir*(130+j*17),971+j*8,end,926+j*8],phase,38-j*3,13+j,side*3+j);
   }
+  // v20 (Robin's pick): "Oh, that's exactly how it works" (43.3-46.1 s). The root network turns into an engraved working
+  // machine: brass gears grow in at its junctions on "that's", mesh and start turning on "exactly", a gold drive runs
+  // between them on "how", and on "works" the whole machine spins up and every tree shivers. It folds away with the roots.
   // A visible central join is the thesis of the cross-section.
   if(reveal>.9){const k=smooth(.9,1,reveal),glint=A.performance.bump(40.6,40.8,41.6,t);g.save();g.translate(960,939);g.scale(k,k);
    ellipse(0,0,42,27,C.gold,C.ink);ellipse(0,0,32,19,null,'#8f5f1e');g.save();g.beginPath();g.ellipse(0,0,41,26,0,0,Math.PI*2);g.clip();for(let j=-40;j<44;j+=4)line(j,26,j+14,-26,'#7a5320',.6);g.restore();
@@ -104,6 +128,7 @@
   // Soil closes the cross-section across the whole network; no root is severed.
   // v16 (audit A3, A4): no wipe with straight cuts; the roots draw back along their own length after the spoken payoff.
   g.restore();
+  machine(t,cover); // over the knot and outside the roots' clip, so the big gear and its crank are whole
  }
  function opening(raw){const t=Math.floor(Math.round(raw*24)/2)/12;
   g.setTransform(1,0,0,1,0,0);g.globalAlpha=1;g.drawImage(A.paper,0,0);

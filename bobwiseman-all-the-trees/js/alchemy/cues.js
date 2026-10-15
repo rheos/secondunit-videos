@@ -1862,8 +1862,8 @@ window.ALCHEMY_CUES = {
       924
     ],
     "cameraUp": [
-      1038,
-      1082
+      1100,
+      1128
     ],
     "depthDelay": 12,
     "popDuration": 15,

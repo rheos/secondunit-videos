@@ -28,7 +28,8 @@
    S.woodyRoot([px,py,px+Math.cos(angle+.12)*length*.35,py+Math.sin(angle+.12)*length*.35,ex-12,ey+24,ex,ey],1,level*4+2,level*2,id,{neck:true});
    if(level===1){leaf(ex,ey,angle+1.7,.75);leaf(ex-8,ey+13,angle-.6,.65)}
   }
-  const fork=depth<.15?2:3,bend=.09*Math.sin(t*1.8+seed);
+  // v20: on "works" every tree shivers at once (the machine has run).
+  const shiver=A.performance.bump(45.95,46.12,46.9,t),fork=depth<.15?2:3,bend=.09*Math.sin(t*1.8+seed)+.12*shiver*Math.sin(t*48+seed*3);
   branch(0,-153,-2.38+bend,96,fork,seed);branch(2,-202,-.81+bend,109,fork,seed+20);branch(0,-293,-1.61+bend,76,fork,seed+40);
   S.woodyRoot([0,0,-12,-90,20,-203,0,-303],1,43,15,seed);
  }

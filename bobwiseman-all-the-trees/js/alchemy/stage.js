@@ -80,8 +80,8 @@
   g.save();g.translate(x,feet);g.rotate(lean);g.scale(k*flip,k*squash);g.translate(-(box[0]+box[2])/2,-box[3]);g.drawImage(im,0,0);g.restore()}
  // v18 (Robin): the notes leave his mouth, not his chest. mx,my = his mouth on screen.
  function notes(f,t,mx,my){for(let n=0;n<14;n++){const born=Math.round(13.2*24)+n*7;if(f<born||voice(born)<.5)continue;const age=(f-born)/24;if(age>1.6)continue;
-  // he faces left (mirrored cut-out): notes leave the lips to the left, rise, then curl back over his head
-  const x=mx-22-50*age+110*age*age+8*Math.sin(age*6+n),y=my-6-150*age-(n%3)*10*Math.min(1,age*2),a=Math.min(1,age*10)*(1-age/1.6);g.save();g.globalAlpha=a;g.translate(x,y);g.rotate(-.2);
+  // Robin preferred these heading out to the right, into the blue, sooner than rising
+  const x=mx+44+age*240+10*Math.sin(age*5+n)*Math.min(1,age*3),y=my-8-age*80-(n%3)*14*Math.min(1,age*2)+12*Math.sin(age*7+n),a=Math.min(1,age*10)*(1-age/1.6);g.save();g.globalAlpha=a;g.translate(x,y);g.rotate(-.2);
   const k=.6+.6*Math.min(1,age*2.5);g.scale(k,k);ellipse(0,0,11,8,C.gold,C.ink);line(10,0,10,-36,C.ink,2.4);stroke('M10 -36q14 7 12 22',C.ink,2.4);g.restore()}} // gold notes, readable on the velvet
  function stage(raw){const t=Math.floor(Math.round(raw*24)/2)/12,f=Math.round(raw*24);
   base(raw);
