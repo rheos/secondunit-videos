@@ -1,0 +1,97 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #b2 {
+          position: absolute;
+          inset: 0;
+        }
+      </style>
+      <div id="b2" data-composition-id="b2" data-width="1920" data-height="1080">
+        <div id="b2-content" class="layer">
+          <div id="b2-lab-l" class="plate-label left">PLATE II</div>
+          <div id="b2-lab-r" class="plate-label right">THE PROBLEM</div>
+          <svg id="b2-svg" class="full" viewBox="0 0 1920 1080"></svg>
+          <div class="statement">
+            <span id="b2-s1" class="phrase">The assistant sees</span>
+            <span id="b2-s2" class="phrase accent">one tab.</span>
+          </div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text } = BP;
+          const tl = gsap.timeline({ paused: true });
+          const S = 7.5;
+          const K = BP.kit(tl, S);
+          const svg = K.$("b2-svg");
+
+          // five tools, scattered
+          const PANES = [
+            ["INBOX", 280, 220, [200, 150, 230]],
+            ["TRACKER", 760, 170, [170, 230, 120]],
+            ["NOTES", 1260, 240, [230, 110, 190]],
+            ["CRM", 420, 500, [140, 220, 160]],
+            ["CHAT", 1000, 490, [210, 180, 130]],
+          ];
+          const panes = PANES.map(([name, x, y, lens], i) => {
+            const g = el("g", {}, svg);
+            const box = el("rect", { class: name === "CHAT" ? "ln line-strong" : "ln line", x, y, width: 280, height: 180 }, g);
+            const rule = el("path", { class: "ln thin line", d: `M${x} ${y + 38}H${x + 280}` }, g);
+            const lab = text(name, { class: "mono small", x: x + 16, y: y + 26 }, g);
+            const rows = lens.map((w, k) => el("path", { class: "ln thin line", d: `M${x + 20} ${y + 72 + k * 34}h${w}`, opacity: 0.55 }, g));
+            return { box, rule, lab, rows };
+          });
+
+          // copy and paste between them, by hand
+          const hops = [
+            "M560 300C640 300 680 250 760 250",
+            "M1040 250C1130 250 1170 320 1260 320",
+            "M1400 420C1400 470 1330 520 1280 540",
+            "M700 590C800 590 900 580 1000 580",
+          ].map((d) => el("path", { class: "ln line construct", d, opacity: 0.8 }, svg));
+          const hopT = text("COPY  ·  PASTE", { class: "mono small dim", x: 660, y: 236, "text-anchor": "middle" }, svg);
+          const hopT2 = text("COPY  ·  PASTE", { class: "mono small dim", x: 850, y: 612, "text-anchor": "middle" }, svg);
+
+          // the assistant, and the one pane it can see
+          const cone = el("path", { d: "M1500 640L1280 500L1280 670Z", fill: "var(--line)", opacity: 0.08 }, svg);
+          const coneL = el("path", { class: "ln thin line construct", d: "M1500 640L1280 500M1500 640L1280 670", opacity: 0.9 }, svg);
+          const ring = el("circle", { class: "ln line", cx: 1540, cy: 650, r: 44 }, svg);
+          const ring2 = el("circle", { class: "ln thin line", cx: 1540, cy: 650, r: 32 }, svg);
+          const agT = text("ASSISTANT", { class: "mono small", x: 1540, y: 728, "text-anchor": "middle" }, svg);
+          const ctxT = text("CONTEXT", { class: "mono small dim", x: 1380, y: 560, "text-anchor": "middle" }, svg);
+
+          K.fade(K.$("b2-lab-l"), K.T(8.12), 0.4);
+          K.fade(K.$("b2-lab-r"), K.T(8.12), 0.4);
+          panes.forEach((p, i) => {
+            const at = K.T(8.75 + i * 0.63);
+            K.draw(p.box, at, 0.6);
+            K.draw(p.rule, at + 0.3, 0.3);
+            K.fade(p.lab, at + 0.35, 0.3);
+            p.rows.forEach((r, k) => K.draw(r, at + 0.4 + k * 0.08, 0.35));
+          });
+          hops.forEach((h, i) => K.sweep(h, K.T(12.53 + i * 0.63), 0.55));
+          K.fade(hopT, K.T(13.16), 0.35);
+          K.fade(hopT2, K.T(14.42), 0.35);
+          K.draw(ring, K.T(15.05), 0.6);
+          K.draw(ring2, K.T(15.05) + 0.15, 0.5);
+          K.fade(agT, K.T(15.67), 0.35);
+          K.sweep(coneL, K.T(15.67), 0.5);
+          K.fade(cone, K.T(16.3), 0.4, 0.08);
+          K.fade(ctxT, K.T(16.3), 0.35);
+          K.reveal(K.$("b2-s1"), K.T(16.93), 0.6);
+          K.reveal(K.$("b2-s2"), K.T(17.55), 0.6);
+
+          // the panes gather toward the centre and hand over to plate III
+          tl.to(K.$("b2-content"), { scale: 0.86, opacity: 0, transformOrigin: "960px 540px", duration: 0.9, ease: "power2.in" }, K.T(18.81));
+          window.__timelines["b2"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

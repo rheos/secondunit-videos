@@ -4,8 +4,8 @@ cut: developer
 duration: 102.5
 format: 1920x1080
 mode: collaborative
-music: "score-library drafting-table-rheostream (to generate after this board is approved)"
-status: "storyboard for review; furniture, plate I and plate III built as style frames"
+music: "score-library drafting-table-rheostream take-01 (sha256 8b13e494...57bf), beats.json"
+status: "draft 1: all seven plates built on the score; awaiting render go"
 ---
 
 # rheoStream: One System You Own (developer cut)
@@ -112,8 +112,7 @@ Statement: "Inspect it. Export it. **Own it.**" Mono line: `RHEO.STREAM · GITHU
 · AGPL-3.0`. Score fades 101 to 102.5.
 Source: README "Current status and limits" (connectors, channels and packs unimplemented).
 
-## Open for Robin
+## Decided (Robin, 2026-10-15)
 
-1. Accent colour: the brand has no red, so the kit uses coral `#ff6a55` on teal. Keep, or go mint-only?
-2. Plate V on the light drafting sheet (the one contrast plate), or stay on teal throughout?
-3. Credit line on plate VII: `RHEO.STREAM` only, or add `NOVADIEM.COM`?
+Storyboard approved. Coral accent kept. Plate V on the light drafting sheet. Credit line rheo.stream
+only (no novadiem.com).
