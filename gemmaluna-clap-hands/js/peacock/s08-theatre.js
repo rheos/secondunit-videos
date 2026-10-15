@@ -19,6 +19,8 @@ const SUN0 = { x: 540, y: 1100, r: 200 };
       const u = t - 156.1, sx = 540 + Math.sin(u * 1.9) * 300, sy = 1250 + Math.sin(u * 2.7 + 1) * 160, s = ss(158.4, 159.2, t);
       x = lerp(lerp(700, sx, ss(156.1, 156.7, t)), 540, s); y = lerp(lerp(1330, sy, ss(156.1, 156.7, t)), 1320, s); r = 220;
     }
+    // the operator's hand is never quite still: the light breathes and drifts
+    x += Math.sin(t * 1.1) * 14 + Math.sin(t * 2.3) * 6; y += Math.sin(t * .9 + 1) * 10; r *= 1 + .025 * Math.sin(t * 1.7);
     if (t > 161.5) { const c = ss(161.6, 163.4, t); x = lerp(x, SUN0.x, c); y = lerp(y, SUN0.y, c); r = lerp(220, SUN0.r, c); }
     return { x, y, r };
   }
@@ -51,7 +53,7 @@ const SUN0 = { x: 540, y: 1100, r: 200 };
   function costumeRail(x, y) {
     for (const sx of [-1, 1]) cut(rect(x + sx * 150 - 6, y, 12, 330), C.goldDeep, { sh: .6 });
     cut(rect(x - 160, y, 320, 12), C.gold, { sh: .6 });
-    g.save(); g.translate(x, y + 10); cut(poly([[0, 0], [-70, 50], [70, 50]]), C.goldDeep, { sh: .3 }); g.translate(0, 50); jeans(.7, Math.sin(t0 * 1.3) * .03, C.tealLight); g.restore();
+    g.save(); g.translate(x, y + 10); g.rotate(Math.sin(t0 * 1.4) * .05); cut(poly([[0, 0], [-70, 50], [70, 50]]), C.goldDeep, { sh: .3 }); g.translate(0, 50); jeans(.7, Math.sin(t0 * 2.1) * .04, C.tealLight); g.restore();
   }
   let t0 = 0;
   function bentwoodChair(x, y, turn) {
@@ -78,7 +80,7 @@ const SUN0 = { x: 540, y: 1100, r: 200 };
     cut(poly([[OP.x - 40, FLOOR], [OP.x + OP.w + 40, FLOOR], [OP.x + OP.w + 120, OP.y + OP.h], [OP.x - 120, OP.y + OP.h]]), C.goldDeep, { sh: .6 });
     for (let i = 0; i < 6; i++) cut(rect(OP.x - 100, FLOOR + 20 + i * 32, OP.w + 200, 3), C.plumDeep, { sh: 0, grain: 0, alpha: .5 });
     if (t > 147.5) costumeRail(300, 1150);
-    if (t > 151.5) { cut(ellipse(700, 1520, 80, 18), C.plum, { sh: .7 }); for (const sx of [-1, 1]) cut(capsule(700 + sx * 50, 1520, 700 + sx * 70, 1680, 8), C.goldDeep, { sh: .5 }); g.save(); g.translate(700, 1430); helmet(.5); g.restore(); }
+    if (t > 151.5) { cut(ellipse(700, 1520, 80, 18), C.plum, { sh: .7 }); for (const sx of [-1, 1]) cut(capsule(700 + sx * 50, 1520, 700 + sx * 70, 1680, 8), C.goldDeep, { sh: .5 }); g.save(); g.translate(700, 1430); g.rotate(Math.sin(t * 1.2) * .02); helmet(.5, 1 + .04 * Math.sin(t * 2.6)); g.restore(); }
     if (t > 155.5) { bentwoodChair(540, 1640, (t - 155.5) * .8); g.save(); g.translate(540 + Math.cos((t - 155.5) * .8) * 10, 1622); bowler(.42); g.restore(); }
     // the shadow play, inside the spotlight on the backdrop
     g.save(); g.clip(circle(S.x, S.y, S.r));
@@ -97,7 +99,12 @@ const SUN0 = { x: 540, y: 1100, r: 200 };
     g.globalCompositeOperation = 'screen';
     const sg = g.createRadialGradient(S.x, S.y, 0, S.x, S.y, S.r * 1.06); sg.addColorStop(0, 'rgba(250,225,170,.42)'); sg.addColorStop(.85, 'rgba(250,215,140,.3)'); sg.addColorStop(1, 'rgba(250,215,140,0)');
     g.fillStyle = sg; g.fill(circle(S.x, S.y, S.r * 1.06));
-    g.fillStyle = 'rgba(250,215,140,.07)'; g.fill(poly([[540 - 30, 250], [540 + 30, 250], [S.x + S.r, S.y], [S.x - S.r, S.y]]));
+    const beamP = poly([[540 - 30, 250], [540 + 30, 250], [S.x + S.r, S.y], [S.x - S.r, S.y]]);
+    g.fillStyle = 'rgba(250,215,140,.07)'; g.fill(beamP);
+    // dust turning in the beam
+    g.save(); g.clip(beamP); g.globalCompositeOperation = 'source-over'; g.fillStyle = C.cream;
+    for (let i = 0; i < 40; i++) { const u = hash(i * 3.3), v = (hash(i * 7.1) + t * (.02 + hash(i) * .04)) % 1; g.globalAlpha = .35 + .3 * Math.sin(t * 2 + i); g.fill(circle(lerp(540, S.x, v) + (u - .5) * lerp(60, 2 * S.r, v) + Math.sin(t + i) * 8, lerp(250, S.y, v), 2 + hash(i * 5) * 2.5)); }
+    g.restore();
     g.restore();
     // the sun to come: the spotlight on the closed curtain turns gold and solid
     const sunK = ss(163.4, 165.0, t);
