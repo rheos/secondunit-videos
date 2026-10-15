@@ -1,0 +1,106 @@
+/* v13 opening (Robin, 2026-10-14): the song opens on a radio. Static, a co-op radio DJ reading Toronto gig
+   listings, the dial turning, a French singer on another station, then the song proper at 16.55 s.
+   Here it is a theatre: closed curtains in the plate, a herald reads the listings (the DJ), each named act
+   pins its medallion to the curtain, the dial turn is a gust of aether that spins him off, a troubadour sings
+   the French station as the curtains open on the scene, and the stage clears as the trumpets come in.
+   Song-time pure: everything is a function of the song clock, poses on twos. */
+(() => {
+ const A=Alchemy,S=A.scene,{g,C,smooth,clamp,mix,noise,line,stroke,fill,ellipse}=A;
+ const base=A.draw,W=1920,H=1080,X0=76,X1=1844,Y0=70,Y1=1005,CB=932;
+ const T={staticEnd:2.25,heraldIn:[1.2,2.1],dial:11.5,heraldOut:[11.6,12.45],singerIn:[12.3,13.1],open:[13.35,16.5],singerOut:[16.5,17.5],clear:[16.55,18.3],floorOut:[30.5,33.0]};
+ const img={};
+ const oldLoad=A.load;
+ A.load=async()=>{await oldLoad();const M=window.ALCHEMY_OPENING_MEDIA||{};
+  await Promise.all(Object.keys(M).map(k=>new Promise((res,rej)=>{const im=new Image();im.onload=()=>{img[k]=im;res()};im.onerror=()=>rej(new Error('Missing opening asset '+k));im.src=M[k]})))};
+ const V=window.ALCHEMY_VOICE||{env:[]};
+ const voice=f=>V.env[Math.max(0,Math.min(V.env.length-1,f))]||0;
+ // Mouth open on voiced frames, with a little hysteresis so a syllable reads as one opening.
+ const mouth=f=>voice(f)>.6||(voice(f-1)>.6&&voice(f)>.42);
+
+ // ---- curtains: engraved crimson velvet, folds hatched in ink, gold fringe ----
+ function panel(side,o,t,ripple){const outer=side<0?X0:X1,closedW=(X1-X0)/2+10,w=mix(closedW,135,o),inner=outer-side*w;
+  const lift=o*o*260,top=150;
+  const path=new Path2D();path.moveTo(outer,top);path.lineTo(inner,top);
+  path.bezierCurveTo(inner,mix(CB,top,.35),inner+side*w*.12*o,CB-lift,inner+side*w*.35*o,CB-lift*.75);
+  path.quadraticCurveTo(mix(inner,outer,.6),CB-lift*.25,outer,CB+4);path.closePath();
+  g.save();g.clip(path);g.fillStyle='#7d2430';g.fillRect(X0,top,X1-X0,CB-top+10);
+  // Velvet folds: each fold shades from a dark crease to a lit crest, hatched in its shadow (engraved drapery).
+  const N=10,wob=(y,i)=>(5+ripple*14)*Math.sin(y*.011+i*1.9+t*(1.1+ripple*5))*(.35+.65*Math.abs(i/N));
+  for(let i=0;i<N;i++){const xa=mix(outer,inner,i/N),xb=mix(outer,inner,(i+1)/N);
+   const band=new Path2D();band.moveTo(xa+wob(top,i),top);for(let y=top;y<=CB+12;y+=22)band.lineTo(xa+wob(y,i),y);
+   for(let y=CB+12;y>=top;y-=22)band.lineTo(xb+wob(y,i+1),y);band.closePath();
+   const gr=g.createLinearGradient(xa,0,xb,0);gr.addColorStop(0,'#3e0f15');gr.addColorStop(.22,'#7a2230');gr.addColorStop(.52,'#b3404b');gr.addColorStop(.66,'#d26a6c');gr.addColorStop(.8,'#9a3340');gr.addColorStop(1,'#4a1219');
+   g.fillStyle=gr;g.fill(band);
+   const hatch=new Path2D();for(let k=0;k<8;k++){const u=k/8*.3,xx=mix(xa,xb,u);hatch.moveTo(xx+wob(top,i),top);for(let y=top;y<=CB+12;y+=22)hatch.lineTo(xx+mix(wob(y,i),wob(y,i+1),u),y)}
+   for(let k=0;k<5;k++){const u=.86+k*.03,xx=mix(xa,xb,u);hatch.moveTo(xx+wob(top,i+1),top);for(let y=top;y<=CB+12;y+=22)hatch.lineTo(xx+mix(wob(y,i),wob(y,i+1),u),y)}
+   g.strokeStyle='rgba(24,8,8,.5)';g.lineWidth=.8;g.stroke(hatch);
+   const crest=new Path2D(),cu=.6;crest.moveTo(mix(xa,xb,cu)+wob(top,i),top);for(let y=top;y<=CB+12;y+=22)crest.lineTo(mix(xa,xb,cu)+mix(wob(y,i),wob(y,i+1),cu),y);
+   g.strokeStyle='rgba(248,196,180,.55)';g.lineWidth=1.6;g.stroke(crest)}
+  g.restore();
+  g.strokeStyle=C.ink;g.lineWidth=2;g.stroke(path);
+  // gold fringe along the hem
+  const hem=[];for(let k=0;k<=40;k++){const s=k/40,x=mix(inner+side*w*.35*o,outer,s),y=mix(CB-lift*.75,CB+4,s)-Math.sin(s*Math.PI)*lift*.2;hem.push([x,y])}
+  for(const [x,y] of hem){line(x,y-14,x,y+2,'#c9962e',3);line(x,y-14,x,y+2,C.ink,.6)}
+ }
+ function valance(drop,t){const y0=Y0-drop;g.save();g.beginPath();g.rect(X0,Y0,X1-X0,Y1-Y0);g.clip();
+  fill(`M${X0} ${y0}H${X1}V${y0+96}H${X0}Z`,'#4f141c');const sw=5,span=(X1-X0)/sw;
+  for(let k=0;k<sw;k++){const a=X0+k*span,b=a+span,m=(a+b)/2,depth=118;
+   const p=new Path2D(`M${a} ${y0}L${b} ${y0}L${b} ${y0+40}Q${m} ${y0+depth+40} ${a} ${y0+40}Z`);
+   g.fillStyle='#7f2630';g.fill(p);g.save();g.clip(p);for(let j=0;j<16;j++){const yy=y0+20+j*9;stroke(`M${a} ${yy}Q${m} ${yy+depth*.9} ${b} ${yy}`,'rgba(30,12,10,.45)',.8)}
+   for(let j=0;j<3;j++){const yy=y0+44+j*22;stroke(`M${a+20} ${yy}Q${m} ${yy+depth*.7} ${b-20} ${yy}`,'rgba(236,170,150,.5)',2)}g.restore();
+   g.strokeStyle=C.ink;g.lineWidth=1.8;g.stroke(p);
+   for(let s=0;s<=30;s++){const u=s/30,x=mix(a,b,u),y=y0+40+Math.sin(u*Math.PI)*depth*.5*1.0;line(x,y,x,y+14,'#c9962e',3);line(x,y,x,y+14,C.ink,.6)}
+   // tassel at each joint
+   if(k>0){g.save();g.translate(a,y0+40);g.rotate(.06*Math.sin(t*1.3+k));ellipse(0,8,9,9,'#d9a63a',C.ink);fill('M-9 14L9 14L13 58L-13 58Z','#c9962e');stroke('M-9 14L9 14L13 58L-13 58Z',C.ink,1);for(let q=-10;q<=10;q+=4)line(q,18,q*1.2,57,C.ink,.5);g.restore()}
+  }
+  // gold cartouche with the constant sun face at the centre of the valance
+  g.save();g.translate(960,y0+64);ellipse(0,0,52,52,'#e0b13e',C.ink);ellipse(0,0,44,44,null,'#8f5f1e');g.save();g.beginPath();g.arc(0,0,42,0,Math.PI*2);g.clip();g.scale(.25,.25);g.translate(-333,-170);A.piece('sol-head',C.gold);g.restore();g.restore();
+  g.restore()}
+ // ---- the stage floor: engraved boards in perspective, a row of footlights ----
+ function floor(a,t,cut=0){if(a<=0)return;g.save();if(cut){g.beginPath();g.rect(X0,cut,X1-X0,Y1-cut);g.clip()}g.globalAlpha=a;const back=772,vx=960,vy=300;
+  fill(`M${X0} ${back}H${X1}V${Y1}H${X0}Z`,'#c9a46c');
+  for(let k=-14;k<=14;k++){const xb=vx+k*68,xf=vx+k*150;stroke(`M${xb} ${back}L${xf} ${Y1}`,'#5b4022',1.1)}
+  for(let j=0;j<7;j++){const y=back+Math.pow(j/7,1.6)*(Y1-back);stroke(`M${X0} ${y}H${X1}`,'#6b4d2a',.8)}
+  g.globalAlpha=a*.35;for(let y=back+4;y<Y1;y+=5)line(X0,y,X1,y,'#3a2a14',.5);g.globalAlpha=a;
+  stroke(`M${X0} ${back}H${X1}`,C.ink,2);
+  // footlights: shell reflectors with candle flames, flickering on twos
+  for(let k=0;k<11;k++){const x=X0+90+k*(X1-X0-180)/10,y=Y1-22,fl=.8+.2*Math.sin(Math.floor(t*12)*1.9+k*2.3);
+   fill(`M${x-26} ${y+10}Q${x} ${y-26} ${x+26} ${y+10}Z`,'#d8c79a');stroke(`M${x-26} ${y+10}Q${x} ${y-26} ${x+26} ${y+10}Z`,C.ink,1.2);
+   A.glow(x,y-14,30*fl,.55);fill(`M${x-4} ${y}Q${x-5} ${y-12} ${x} ${y-24*fl}Q${x+5} ${y-12} ${x+4} ${y}Z`,C.gold);stroke(`M${x-4} ${y}Q${x-5} ${y-12} ${x} ${y-24*fl}Q${x+5} ${y-12} ${x+4} ${y}Z`,C.ink,.8)}
+  g.restore()}
+ // ---- aether: engraved interference across the plate (radio static, the dial turning) ----
+ function aether(a,t){if(a<=0)return;g.save();g.globalAlpha=a*.55;const step=Math.floor(t*12);
+  for(let k=0;k<26;k++){const y=Y0+30+k*36+8*noise(step*7+k),amp=6+10*noise(step+k*3),f=.02+.03*noise(k+step*.3);let d=`M${X0} ${y}`;
+   for(let x=X0;x<=X1;x+=14)d+=`L${x} ${y+amp*Math.sin(x*f+step*1.7+k)*(noise(Math.floor(x/120)+k*11+step)>.35?1:.15)}`;stroke(d,k%3?C.ink:'#c9962e',k%3?.7:1.3)}
+  g.restore()}
+ // ---- performers: registered open/closed mouth cut-outs ----
+ function performer(name,x,feet,h,flip,f,lean=0,squash=1){const o=img[name+'-open'],c=img[name+'-closed'];if(!o)return;
+  const im=mouth(f)?o:(c||o),box=window.ALCHEMY_OPENING_BOX?.[name]||[0,0,o.width,o.height],k=h/(box[3]-box[1]);
+  g.save();g.translate(x,feet);g.rotate(lean);g.scale(k*flip,k*squash);g.translate(-(box[0]+box[2])/2,-box[3]);g.drawImage(im,0,0);g.restore()}
+ function notes(f,t){for(let n=0;n<14;n++){const born=Math.round(13.2*24)+n*7;if(f<born||voice(born)<.5)continue;const age=(f-born)/24;if(age>1.6)continue;
+  const x=470+age*120+18*Math.sin(age*5+n),y=520-age*170-n%3*14,a=1-age/1.6;g.save();g.globalAlpha=a;g.translate(x,y);g.rotate(-.2);
+  ellipse(0,0,9,6.5,C.ink,null);line(8,0,8,-30,C.ink,2);stroke('M8 -30q12 6 10 18',C.ink,2);g.restore()}}
+ function stage(raw){const t=Math.floor(Math.round(raw*24)/2)/12,f=Math.round(raw*24);
+  base(raw);
+  const open=smooth(...T.open,raw),clear=smooth(...T.clear,raw),ripple=A.performance.bump(11.4,11.8,13.4,raw)+.25*A.performance.bump(0,.3,2.3,raw);
+  g.save();g.beginPath();g.rect(X0,Y0,X1-X0,Y1-Y0);g.clip();
+  const groundUp=smooth(30.5,33,raw);floor(groundUp>=1?0:1,t,groundUp?760+610*groundUp:0);
+  if(clear<1){const slide=clear*1;for(const side of [-1,1]){g.save();g.translate(side*slide*240,0);panel(side,open,t,ripple);g.restore()}}
+  // the playbill medallions hang in front of the curtain from the herald's names on
+  if(raw<16.6&&A.openingChart){g.save();g.translate(2*Math.sin(raw*.14),0);A.openingChart(t);g.restore()}
+  aether(1-smooth(1.8,2.3,raw)+A.performance.bump(11.45,11.6,12.5,raw),t);
+  // the herald (the DJ): walks in, reads, is spun off by the dial turn
+  if(raw>=T.heraldIn[0]&&raw<T.heraldOut[1]){const inP=smooth(...T.heraldIn,raw),outP=smooth(...T.heraldOut,raw);
+   const walk=Math.abs(Math.sin(t*9))*(inP<1||outP>0?8:0),spin=smooth(11.55,11.8,raw);
+   const x=mix(2020,1545,inP)+outP*560,flip=raw<11.55?1:Math.cos(spin*Math.PI)>=0?1:-1,sq=raw>11.55&&raw<11.8?Math.abs(Math.cos(spin*Math.PI))*.9+.1:1;
+   performer('herald',x,Y1-6-walk-5*voice(f),640,flip*sq,raw<11.55?f:0,.03*voice(f)-.02)}
+  // the troubadour (the French station): steps in, sings as the curtains open, bows and leaves
+  if(raw>=T.singerIn[0]&&raw<T.singerOut[1]){const inP=smooth(...T.singerIn,raw),outP=smooth(...T.singerOut,raw),bow=A.performance.bump(16.45,16.7,17.0,raw);
+   const walk=Math.abs(Math.sin(t*9))*(inP<1||outP>0?8:0),sing=raw>13.1&&raw<16.5;
+   performer('singer',mix(-260,380,inP)-outP*700,Y1-6-walk,650,-1,sing?f:0,sing?-.05*voice(f)+.015*Math.sin(t*6):.12*bow,1-.05*bow);
+   if(sing)notes(f,t)}
+  g.restore();
+  valance(clear*260,t);
+ }
+ A.draw=raw=>raw<T.floorOut[1]?stage(raw):base(raw);
+})();

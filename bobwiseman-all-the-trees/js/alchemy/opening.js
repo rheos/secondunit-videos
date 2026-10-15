@@ -2,7 +2,8 @@
 (() => {
  const A=Alchemy,S=A.scene,{g,C,clamp,smooth,mix,noise,line,stroke,fill,ellipse,piece,cloud}=A;
  const later=A.draw;
- const portraits=[1.875,4.708,8,10.458,17,24];
+ // v13: each medallion pins up on the name the DJ (herald) reads: Earwigs, Cameron, Goofs, Scott Merritt.
+ const portraits=[2.62,4.88,8.85,10.48,17,24];
  function border(t){const p=smooth(0,1.8,t),length=5552;
   g.save();g.strokeStyle=C.ink;g.lineWidth=1.4;g.setLineDash([length*p,length]);g.strokeRect(57,50,1806,970);g.restore();
   g.save();g.globalAlpha=smooth(.7,2.2,t);g.strokeStyle=C.ink;g.lineWidth=.6;g.strokeRect(63,56,1794,958);g.restore();
@@ -89,5 +90,6 @@
   for(const x of [57,1863])for(const y of [50,1020]){line(x-7,y,x+7,y,C.ink,.8);line(x,y-7,x,y+7,C.ink,.8)}g.restore();
  }
  A.draw=raw=>raw<ALCHEMY_CUES.chorus.sharedArrival[0]/24?opening(raw):later(raw);
+ A.openingChart=chart;
  A.openingState=t=>({chapter:t<12.5?'spoken-chart':t<32.9?'brass-chart':t<47?'hidden-roots':'later-cut',portraits:portraits.filter(s=>s<=t).length});
 })();
