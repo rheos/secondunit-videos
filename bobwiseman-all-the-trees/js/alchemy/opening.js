@@ -2,8 +2,9 @@
 (() => {
  const A=Alchemy,S=A.scene,{g,C,clamp,smooth,mix,noise,line,stroke,fill,ellipse,piece,cloud}=A;
  const later=A.draw;
- // v13: each medallion pins up on the name the DJ (herald) reads: Earwigs, Cameron, Goofs, Scott Merritt.
- const portraits=[2.62,4.88,8.85,10.48,17,24];
+ // v15: every coin lands on a name the DJ reads (Earwigs, Cameron, Goofs, Sibony Club, Scott Merritt, Pat), so the
+ // wheel is full before the station changes (Robin: the last coin took too long).
+ const portraits=[2.62,4.88,8.85,9.7,10.45,11.5];
  function border(t){const p=smooth(0,1.8,t),length=5552;
   g.save();g.strokeStyle=C.ink;g.lineWidth=1.4;g.setLineDash([length*p,length]);g.strokeRect(57,50,1806,970);g.restore();
   g.save();g.globalAlpha=smooth(.7,2.2,t);g.strokeStyle=C.ink;g.lineWidth=.6;g.strokeRect(63,56,1794,958);g.restore();
