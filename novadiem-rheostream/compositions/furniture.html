@@ -1,0 +1,40 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #furniture {
+          position: absolute;
+          inset: 0;
+          background: var(--bg);
+        }
+      </style>
+      <div id="furniture" data-composition-id="furniture" data-width="1920" data-height="1080">
+        <svg id="fu-ground" class="full" viewBox="0 0 1920 1080" aria-hidden="true" style="will-change: transform"></svg>
+        <svg id="fu-frame" class="full" viewBox="0 0 1920 1080"></svg>
+      </div>
+
+      <script>
+        (() => {
+          const tl = gsap.timeline({ paused: true });
+          const K = BP.kit(tl, 0);
+          BP.furniture(K, tl, {
+            stations: [
+              { label: "TOOLS", at: 7.5 },
+              { label: "SYSTEM", at: 20 },
+              { label: "DOOR", at: 40 },
+              { label: "WORK", at: 55 },
+              { label: "GATE", at: 75 },
+              { label: "STATUS", at: 90 },
+            ],
+            sheets: [0, 7.5, 20, 40, 55, 75, 90],
+          });
+          window.__timelines["furniture"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

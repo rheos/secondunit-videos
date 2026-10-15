@@ -1,0 +1,61 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #b1 {
+          position: absolute;
+          inset: 0;
+        }
+        #b1-title {
+          top: 262px;
+          font-size: 168px;
+        }
+      </style>
+      <div id="b1" data-composition-id="b1" data-width="1920" data-height="1080">
+        <div id="b1-content" class="layer">
+          <div id="b1-lab-l" class="plate-label left">PLATE I</div>
+          <div id="b1-lab-r" class="plate-label right">THE PROJECT</div>
+          <div id="b1-title" class="title">rheoStream</div>
+          <svg id="b1-svg" class="full" viewBox="0 0 1920 1080"></svg>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text } = BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = BP.kit(tl, 0);
+          const svg = K.$("b1-svg");
+
+          // the rheo.stream hero motif: five streamlines gathering into one channel
+          const lines = [];
+          for (let i = 0; i < 5; i++) {
+            const y0 = 610 + i * 46;
+            const mid = 712 + (y0 - 712) * 0.22;
+            lines.push(el("path", { class: i === 2 ? "ln line-strong" : "ln line", d: `M180 ${y0}C640 ${y0} 1000 ${mid} 1480 712L1740 712`, opacity: i === 2 ? 1 : 0.7 }, svg));
+          }
+          const head = el("path", { class: "ln line-strong", d: "M1722 700L1742 712L1722 724" }, svg);
+          const rule = el("path", { class: "ln line", d: "M640 492H1280M640 482V502M1280 482V502" }, svg);
+          const sub = text("A SELF-HOSTED FRAMEWORK FOR AGENT-ASSISTED WORK", { class: "mono", x: 960, y: 548, "text-anchor": "middle" }, svg);
+          const small = text("AGPL-3.0  ·  OPEN SOURCE  ·  RHEO.STREAM", { class: "mono small dim", x: 960, y: 872, "text-anchor": "middle" }, svg);
+
+          K.fade(K.$("b1-lab-l"), K.T(1.25), 0.4);
+          K.fade(K.$("b1-lab-r"), K.T(1.25), 0.4);
+          lines.forEach((p, i) => K.draw(p, K.T(1.25) + i * 0.12, 2.4, "none"));
+          K.draw(head, K.T(3.75), 0.3);
+          K.reveal(K.$("b1-title"), K.T(2.5), 1.0);
+          K.draw(rule, K.T(3.125), 0.6);
+          K.fade(sub, K.T(3.75), 0.5);
+          K.fade(small, K.T(4.375), 0.5);
+
+          K.out(K.$("b1-content"), K.R(7.0), 0.45);
+          window.__timelines["b1"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>
