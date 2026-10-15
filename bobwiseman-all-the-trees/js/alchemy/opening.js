@@ -105,7 +105,8 @@
  // v21 (Robin's pick for "exactly", 44.54 s): the geometer's dividers from the emblem books walk along the roots, stepping
  // over on alternating points, and land astride the gold knot exactly on the word, with a gold spark and a measured arc.
  function dividers(t){const on=smooth(43.75,44.0,t),off=smooth(45.0,45.7,t);if(on<=0||off>=1)return;
-  const S2=270,Y=932,L=330,steps=[[285,555],[555,825],[825,1095]],at=[44.05,44.3,44.54];
+  // v23 (Robin): small and underground, walking the roots, not a giant instrument dropping from the sky.
+  const S2=170,Y=950,L=130,steps=[[535,705],[705,875],[875,1045]],at=[44.05,44.3,44.54];
   let a=steps[0][0],b=steps[0][1];
   if(t>=at[0]){const k=t<at[1]?0:1,u=smooth(at[k]-.25+.0,at[k],t)*(t<at[k]?1:1);const pivot=steps[k][1],phi=Math.PI*(1-smooth(at[k]-.25,at[k],t));
    a=pivot;b=pivot+S2*Math.cos(phi);var by=Y-S2*Math.sin(phi)*.55;if(t>=at[1]&&t>=at[2]){a=steps[2][0];b=steps[2][1];by=Y}}
@@ -113,7 +114,7 @@
   // a: planted tip, (b,by): swinging tip; the hinge sits above their midpoint, legs rigid
   const mx=(a+b)/2,my=(Y+by)/2,dx=b-a,dy=by-Y,d=Math.hypot(dx,dy)||1,h=Math.sqrt(Math.max(0,L*L-(d/2)*(d/2)));
   let nx=-dy/d,ny=dx/d;if(ny>0){nx=-nx;ny=-ny}
-  const hx=mx+nx*h,hy=my+ny*h-(1-on)*500-off*700;const tipA=[a,Y-(1-on)*500-off*700],tipB=[b,by-(1-on)*500-off*700];
+  const fold=off*.85,hx=mx+nx*h,hy=my+ny*h;const tipA=[mix(a,mx,fold),Y],tipB=[mix(b,mx,fold),mix(by,Y,fold)];g.save();g.globalAlpha=on*(1-off);
   const leg=(tx,ty)=>{const ux=tx-hx,uy=ty-hy,l=Math.hypot(ux,uy),px=-uy/l,py=ux/l,P=`M${hx+px*9} ${hy+py*9}L${tx+px*1.5} ${ty+py*1.5}L${tx} ${ty}L${tx-px*1.5} ${ty-py*1.5}L${hx-px*9} ${hy-py*9}Z`;
    fill(P,'#6f7177');g.save();g.clip(new Path2D(P));for(let k=0;k<l;k+=3.2)line(hx+ux*k/l+px*9,hy+uy*k/l+py*9,hx+ux*(k+5)/l-px*2,hy+uy*(k+5)/l-py*2,'#25262b',.7);line(hx-px*3,hy-py*3,tx-px*.4,ty-py*.4,'#d9dbe0',1.2);g.restore();stroke(P,C.ink,1.8)};
   leg(...tipA);leg(...tipB);
@@ -124,6 +125,7 @@
   const hit=A.performance.bump(44.42,44.5,45.25,t);if(hit){A.glow(tipA[0],tipA[1],90*hit,hit);A.glow(tipB[0],tipB[1],90*hit,hit);A.glow(hx,hy,60*hit,hit*.8);
    g.save();g.globalAlpha=hit;stroke(`M${tipA[0]} ${tipA[1]+16}Q${(tipA[0]+tipB[0])/2} ${tipA[1]+70} ${tipB[0]} ${tipB[1]+16}`,C.gold,3);stroke(`M${tipA[0]} ${tipA[1]+16}Q${(tipA[0]+tipB[0])/2} ${tipA[1]+70} ${tipB[0]} ${tipB[1]+16}`,C.ink,1);
    for(const x of [tipA[0],tipB[0]])line(x,tipA[1]+4,x,tipA[1]+28,C.ink,1.6);A.rays(960,939,40,24,60*hit,hit,0);g.restore()}
+  g.restore();
  }
  // v21 (Robin): on "which we cannot see" the roots draw back out of sight (a searcher looks for them), and rush back on "Oh".
  function roots(t){const cover=smooth(46.1,46.9,t),gone=smooth(41.15,41.85,t)*(1-smooth(43.2,43.5,t)),reveal=smooth(37,40.75,t)*(1-cover)*(1-gone);if(!reveal||cover>=1)return;
@@ -174,7 +176,7 @@
    fill('M75 754H1845V775H75Z','#dcd09c');S.ground(t,false);g.restore()} // v9: the same engraved soil section as the rest of the film
   // v22 (Robin): the angels and their clouds sit between the land and the trees, so the trees stay in front of them.
   const heraldsBehind=A.grove.draw(raw,()=>{g.save();g.translate(0,-cameraY*.7);drawHeralds(raw,t);g.restore()});
-  roots(t);if(ground)S.turf();dividers(t); // dividers over the turf: the hinge stands above ground
+  roots(t);if(ground)S.turf();dividers(t); /* underground now, drawn after the turf so nothing covers it */
   g.restore();
   // v11: heralds stand in front of the grove and move at 0.3x the camera dip, so their heads stay in the plate.
   if(!heraldsBehind){g.save();g.beginPath();g.rect(76,70,1768,935);g.clip();g.translate(0,cameraY*.3);drawHeralds(raw,t);g.restore()}
