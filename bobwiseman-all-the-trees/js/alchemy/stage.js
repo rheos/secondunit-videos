@@ -75,8 +75,8 @@
   for(let k=0;k<6;k++){const y=Y0+noise(step*3.7+k)*(Y1-Y0);P.moveTo(X0,y);for(let x=X0;x<=X1;x+=40)P.lineTo(x,y+(noise(x+step+k)-.5)*5)}
   g.strokeStyle=C.ink;g.lineWidth=1.1;g.stroke(P);g.strokeStyle='#f3e7c8';g.lineWidth=1.6;g.stroke(Q);g.restore()}
  // ---- performers: registered open/closed mouth cut-outs ----
- function performer(name,x,feet,h,flip,f,lean=0,squash=1){const o=img[name+'-open'],c=img[name+'-closed'];if(!o)return;
-  const im=mouth(f)?o:(c||o),box=window.ALCHEMY_OPENING_BOX?.[name]||[0,0,o.width,o.height],k=h/(box[3]-box[1]);
+ function performer(name,x,feet,h,flip,f,lean=0,squash=1){const pose=img[name],o=pose||img[name+'-open'],c=img[name+'-closed'];if(!o)return;
+  const im=pose?pose:mouth(f)?o:(c||o),box=window.ALCHEMY_OPENING_BOX?.[name.split('-')[0]]||[0,0,o.width,o.height],k=h/(box[3]-box[1]);
   g.save();g.translate(x,feet);g.rotate(lean);g.scale(k*flip,k*squash);g.translate(-(box[0]+box[2])/2,-box[3]);g.drawImage(im,0,0);g.restore()}
  // v18 (Robin): the notes leave his mouth, not his chest. mx,my = his mouth on screen.
  function notes(f,t,mx,my){for(let n=0;n<14;n++){const born=Math.round(13.2*24)+n*7;if(f<born||voice(born)<.5)continue;const age=(f-born)/24;if(age>1.6)continue;
@@ -123,5 +123,16 @@
   if(call>0){performer('herald',mix(1990,1500,call),Y1-6,600,1,0,-.22*bow);performer('singer',mix(-130,420,call),Y1-6,610,-1,0,.22*bow)}
   g.restore();valance(260*(1-drop),t);
   const fade=smooth(148.2,149.4,raw);if(fade){g.save();g.globalAlpha=fade;g.drawImage(A.paper,0,0);g.restore()}}
- A.draw=raw=>raw<T.floorOut[1]?stage(raw):raw>=144.6?finale(raw):base(raw);
+ // v21 (Robin): "which we cannot see" - an old searcher with a lantern and a magnifying glass (Diogenes looking in
+ // daylight) comes looking for the roots just as they vanish, peers, scratches his head ("where did they go?"), jumps
+ // back on "Oh" as they rush back and the machine starts, then studies it through his glass and leaves for chorus 1.
+ function searcher(raw){const t=Math.floor(Math.round(raw*24)/2)/12,cam=A.grove.state(raw).cameraY;
+  const inP=smooth(40.6,41.4,raw),outP=smooth(46.5,47.4,raw);if(inP<=0||outP>=1)return;
+  const pose=raw<42.15?'peer':raw<43.27?'shrug':raw<44.3?'surprise':'peer';
+  const walking=(inP<1)||(outP>0)||(raw>44.3&&raw<44.9),walk=walking?Math.abs(Math.sin(t*9))*7:0;
+  const jump=A.performance.bump(43.27,43.45,43.9,raw),x=mix(-220,640,inP)-40*jump+mix(0,90,smooth(44.3,44.9,raw))-outP*900;
+  const scratch=pose==='shrug'?.03*Math.sin(t*14):0,peer=pose==='peer'?.04*Math.sin(t*3):0;
+  g.save();g.beginPath();g.rect(X0,Y0,X1-X0,Y1-Y0);g.clip();g.translate(0,cam);
+  performer('searcher-'+pose,x,766-walk-60*jump,330,outP>0?-1:1,0,peer+scratch-.08*jump);g.restore()} // turns round to leave
+ A.draw=raw=>{if(raw<T.floorOut[1])return stage(raw);if(raw>=144.6)return finale(raw);base(raw);if(raw>40.5&&raw<47.5)searcher(raw)};
 })();

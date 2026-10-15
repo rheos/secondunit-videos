@@ -100,8 +100,33 @@
   const drive=smooth(44.9,45.8,t);if(drive>0&&drive<1)for(const [x,dir] of [[400,1],[1520,-1],[690,1],[1220,-1]]){const b=x===400||x===1520?[x,756,x+dir*25,845,x+dir*390,979,960,939]:[x,756,x+dir*55,856,960-dir*147,979,959,934];const q=S.bez(b,drive);A.glow(q[0],q[1],26)}
   if(works)A.glow(960,939,120*works,works*.9);
   sites.forEach(([x,y,r,teeth,dir,crank],i)=>{const k=k0*smooth(0,.6,grow*1.6-i*.08)*(1+.12*works);gear(x,y,r,teeth,dir*run*(46/r)+i*.3,k,crank)});
+
  }
- function roots(t){const cover=smooth(46.1,46.9,t),reveal=smooth(37,40.75,t)*(1-cover);if(!reveal||cover>=1)return;
+ // v21 (Robin's pick for "exactly", 44.54 s): the geometer's dividers from the emblem books walk along the roots, stepping
+ // over on alternating points, and land astride the gold knot exactly on the word, with a gold spark and a measured arc.
+ function dividers(t){const on=smooth(43.75,44.0,t),off=smooth(45.0,45.7,t);if(on<=0||off>=1)return;
+  const S2=270,Y=932,L=330,steps=[[285,555],[555,825],[825,1095]],at=[44.05,44.3,44.54];
+  let a=steps[0][0],b=steps[0][1];
+  if(t>=at[0]){const k=t<at[1]?0:1,u=smooth(at[k]-.25+.0,at[k],t)*(t<at[k]?1:1);const pivot=steps[k][1],phi=Math.PI*(1-smooth(at[k]-.25,at[k],t));
+   a=pivot;b=pivot+S2*Math.cos(phi);var by=Y-S2*Math.sin(phi)*.55;if(t>=at[1]&&t>=at[2]){a=steps[2][0];b=steps[2][1];by=Y}}
+  if(by===undefined)var by=Y;
+  // a: planted tip, (b,by): swinging tip; the hinge sits above their midpoint, legs rigid
+  const mx=(a+b)/2,my=(Y+by)/2,dx=b-a,dy=by-Y,d=Math.hypot(dx,dy)||1,h=Math.sqrt(Math.max(0,L*L-(d/2)*(d/2)));
+  let nx=-dy/d,ny=dx/d;if(ny>0){nx=-nx;ny=-ny}
+  const hx=mx+nx*h,hy=my+ny*h-(1-on)*500-off*700;const tipA=[a,Y-(1-on)*500-off*700],tipB=[b,by-(1-on)*500-off*700];
+  const leg=(tx,ty)=>{const ux=tx-hx,uy=ty-hy,l=Math.hypot(ux,uy),px=-uy/l,py=ux/l,P=`M${hx+px*9} ${hy+py*9}L${tx+px*1.5} ${ty+py*1.5}L${tx} ${ty}L${tx-px*1.5} ${ty-py*1.5}L${hx-px*9} ${hy-py*9}Z`;
+   fill(P,'#6f7177');g.save();g.clip(new Path2D(P));for(let k=0;k<l;k+=3.2)line(hx+ux*k/l+px*9,hy+uy*k/l+py*9,hx+ux*(k+5)/l-px*2,hy+uy*(k+5)/l-py*2,'#25262b',.7);line(hx-px*3,hy-py*3,tx-px*.4,ty-py*.4,'#d9dbe0',1.2);g.restore();stroke(P,C.ink,1.8)};
+  leg(...tipA);leg(...tipB);
+  // the quadrant bar between the legs, and the hinge
+  const q=.32;stroke(`M${hx+(tipA[0]-hx)*q} ${hy+(tipA[1]-hy)*q}Q${hx} ${hy+(Math.max(tipA[1],tipB[1])-hy)*.42} ${hx+(tipB[0]-hx)*q} ${hy+(tipB[1]-hy)*q}`,C.ink,3);
+  ellipse(hx,hy,20,20,'#e0b13e',C.ink);ellipse(hx,hy,13,13,null,'#8f5f1e');ellipse(hx,hy,6,6,C.ink,null);line(hx,hy-20,hx,hy-46,C.ink,4);ellipse(hx,hy-50,8,8,'#e0b13e',C.ink);
+  // exactly: sparks on both points and an engraved measuring arc between them
+  const hit=A.performance.bump(44.42,44.5,45.25,t);if(hit){A.glow(tipA[0],tipA[1],90*hit,hit);A.glow(tipB[0],tipB[1],90*hit,hit);A.glow(hx,hy,60*hit,hit*.8);
+   g.save();g.globalAlpha=hit;stroke(`M${tipA[0]} ${tipA[1]+16}Q${(tipA[0]+tipB[0])/2} ${tipA[1]+70} ${tipB[0]} ${tipB[1]+16}`,C.gold,3);stroke(`M${tipA[0]} ${tipA[1]+16}Q${(tipA[0]+tipB[0])/2} ${tipA[1]+70} ${tipB[0]} ${tipB[1]+16}`,C.ink,1);
+   for(const x of [tipA[0],tipB[0]])line(x,tipA[1]+4,x,tipA[1]+28,C.ink,1.6);A.rays(960,939,40,24,60*hit,hit,0);g.restore()}
+ }
+ // v21 (Robin): on "which we cannot see" the roots draw back out of sight (a searcher looks for them), and rush back on "Oh".
+ function roots(t){const cover=smooth(46.1,46.9,t),gone=smooth(41.15,41.85,t)*(1-smooth(43.2,43.5,t)),reveal=smooth(37,40.75,t)*(1-cover)*(1-gone);if(!reveal||cover>=1)return;
   g.save();g.beginPath();g.rect(76,760,1768,245);g.clip();
   // The flanking trees join the same living system as the central pair.
   for(const [x,dir,seed] of [[400,1,54],[1520,-1,67]]){
@@ -145,7 +170,7 @@
   if(ground&&raw>=ALCHEMY_CUES.grove.landRetreat[0]/24){fill('M75 754H1845V775H75Z','#dcd09c');S.ground(t,false)}
   else if(ground){g.save();g.beginPath();g.rect(75,760,1770,610*ground);g.clip();
    fill('M75 754H1845V775H75Z','#dcd09c');S.ground(t,false);g.restore()} // v9: the same engraved soil section as the rest of the film
-  A.grove.draw(raw);roots(t);if(ground)S.turf();g.restore();
+  A.grove.draw(raw);roots(t);if(ground)S.turf();dividers(t); // over the turf: the hinge stands above groundg.restore();
   // v11: heralds stand in front of the grove and move at 0.3x the camera dip, so their heads stay in the plate.
   const arrive=smooth(7.25,9.25,raw);
   if(arrive){g.save();g.beginPath();g.rect(76,70,1768,935);g.clip();g.translate(0,cameraY*.3);
