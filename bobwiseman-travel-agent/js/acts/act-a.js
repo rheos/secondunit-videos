@@ -835,15 +835,18 @@ SU.a_sHold = { mode: 'sch', f(q, p, a, T) {
 
 // 104.2 the giant rubber stamp on the town: URGENT in dark oxblood on a cream knockout, so it reads over the red roofs
 SU.a_stampWorld = { mode: 'ill', f(q, p, a, T) {
-  const hit = .34, shake = p > hit && p < hit + .12 ? 1 : 0, INK2 = '#5e1c19';
+  // Robin 2026-10-15: URGENT must land on "help me quick". With a.hitT the drop is timed to the word (seconds), and the
+  // shadow of the stamp grows over the town while he sings "Travel agent" first.
+  const H0 = a.hitT, down = H0 ? T >= H0 : false, hit = H0 ? 2 : .34, shake = H0 ? (T >= H0 && T < H0 + .4 ? 1 : 0) : (p > hit && p < hit + .12 ? 1 : 0), INK2 = '#5e1c19';
   stripes(C.paper, '#e6d9b8', 140, -.62, 0, C.tan); cam(960 + jit(14 * shake), 540 + jit(14 * shake), 1);
   const hz = 700;
   for (let row = 0; row < 3; row++) for (let i = 0; i < 9; i++) { const w2 = 150 + ((i * 37 + row * 11) % 60), x = -60 + i * 230 + row * 70, hh = 140 + ((i * 53 + row * 29) % 120), y = 420 + row * 120; const b = PR(x, y - hh, w2, hh + 40); fillP(b, [C.brick, C.tan, C.sage, C.ochre, C.rose][(i + row) % 5]); shade(b, x + w2 / 2, y - hh / 2, hh, [w2 * .25, 0], .9, 5); iBox(x, y - hh, w2, hh + 40, C.ink, 2); const rf = PP([[x - 10, y - hh], [x + w2 / 2, y - hh - 60], [x + w2 + 10, y - hh]]); fillP(rf, '#7a4a2a'); hatch(rf, x + w2 / 2, y - hh - 30, w2, .4, 4, C.ink, .9, .55); iP([[x - 10, y - hh], [x + w2 / 2, y - hh - 60], [x + w2 + 10, y - hh]], true, C.ink, 2); for (let k = 0; k < 2; k++) { const wn = PR(x + 20 + k * (w2 / 2), y - hh + 30, 30, 40); fillP(wn, C.cream); iBox(x + 20 + k * (w2 / 2), y - hh + 30, 30, 40, C.ink, 1.4); } }
   const g = PR(-200, hz + 140, W + 400, 500); fillP(g, '#b9a98a'); hatch(g, 960, hz + 300, 1400, .15, 9, C.ink, .8, .35); iline(-200, hz + 140, W + 200, hz + 140, C.ink, 2.6);
   traveller(330, 1040, .9, { look: 1, mouth: sing(T) }); cloud(330, 620, .5, { rain: true }); kioskMini(1600, 1000, .55);
-  if (p > hit) { X.save(); X.translate(1000, 560); X.rotate(-.12); const kn = [[-350, -70], [350, -78], [356, 72], [-344, 80]]; fillP(PP(kn), C.cream, .92); iP(kn, true, INK2, 2, .7, false, 2); X.restore(); stampMark(1000, 560, 380, a.mark || 'URGENT', INK2, -.12, .95); }
+  if (H0 && !down) { const u = eo(seg(T, H0 - 2.6, H0)); fillP(PE(1000, 600, 120 + 300 * u, 40 + 110 * u, -.12), C.ink, .06 + .22 * u); } // the stamp's shadow
+  if (H0 ? down : p > hit) { X.save(); X.translate(1000, 560); X.rotate(-.12); const kn = [[-350, -70], [350, -78], [356, 72], [-344, 80]]; fillP(PP(kn), C.cream, .92); iP(kn, true, INK2, 2, .7, false, 2); X.restore(); stampMark(1000, 560, 380, a.mark || 'URGENT', INK2, -.12, .95); }
   // draft 11: a rubber stamp, not a plank: red rubber face under a chamfered wooden mount, a short neck, a round knob
-  const sy = p < hit ? lerp(-700, 430, eo(p / hit)) : lerp(430, -700, eo((p - hit - .12) / .5)), sx = 1000;
+  const sy = H0 ? (down ? lerp(430, -700, eo(seg(T, H0 + .1, H0 + .6))) : lerp(-700, 430, Math.pow(seg(T, H0 - .55, H0), 2))) : (p < hit ? lerp(-700, 430, eo(p / hit)) : lerp(430, -700, eo((p - hit - .12) / .5))), sx = 1000;
   if (sy > -680) {
     const rb = PR(sx - 370, sy + 96, 740, 34); fillP(rb, '#b8432f'); hatch(rb, sx, sy + 113, 760, 0, 5, C.ink, .8, .45); iBox(sx - 370, sy + 96, 740, 34, C.ink, 2.6);
     X.beginPath(); for (let x = sx - 340; x < sx + 340; x += 46) { X.moveTo(x, sy + 104); X.lineTo(x + 26, sy + 122); } stroke('#7a2a1e', 2, .7);
@@ -1025,8 +1028,8 @@ var CUTS_A = [
   [95.48, 'a_poleDesk', {}],
   [100.0, 'a_sHold', {}],
   // "help me quick"
-  [104.2, 'a_stampWorld', { mark: 'URGENT' }],
-  [107.8, 'mvu_dialFace', {}],
+  [104.2, 'a_stampWorld', { mark: 'URGENT', hitT: 107.8 }], // URGENT lands on "help" (onset 107.8), reads through "help me"
+  [108.83, 'mvu_dialFace', {}],                              // on "quick" (108.83); its dial spins on "quick" (109.0)
   [109.95, 'a_sTicket', { note: 'DEPARTS: NOW' }],
   [112.25, 'a_rushRoad', {}],
 ];
