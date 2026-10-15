@@ -3,6 +3,21 @@
 Robin approved the beat 4 look test (https://youtu.be/0KMfTCTauI0) and asked for beats 1-7 on the
 full score, same look, then draft 1. Paused mid-build for session quota. Resume from here.
 
+## Score swapped (2026-10-15, Robin: the Bureau series goes art-pop / indietronica)
+
+`_in/score.mp3` is now score-library `bureau-art-pop-cold-read/take-02.mp3` (sha256 703195c3...cf7b),
+~103 BPM, same seven sections and boundaries as before (Plate 0-7.5, Closed Loop 7.5-20, Silent
+20-35, Assembly 35-55, Critic Loop 55-70, The Test 70-85, Colophon 85-95). `beats.json` and the
+BEATS array in `index.html` are regenerated (149 beats, first 0.65 s), so every cue below still
+works: `T()` snaps it to the new grid. The old drafting-table score is kept at
+`_in/score-drafting-table-take01.mp3`.
+
+Differences to build around:
+- The music resolves at ~90 s, so the film is now **92 s** (root, audio, furniture and b7 slot
+  already changed; audio fades 90.6-92).
+- A one-second pause in the music at ~8.5 s: good place for the AGENT node's first stroke.
+- "Silent" (20-35) is only slightly quieter than its neighbours. Let the picture carry the hush.
+
 ## Read before writing beats (added 2026-10-15)
 
 - Pacing rules and this film's accuracy limit: `~/Code/novadiem/assistant/ideas/bureau-series.md`
@@ -21,7 +36,7 @@ full score, same look, then draft 1. Paused mid-build for session quota. Resume 
 - `compositions/furniture.html` (0-95 s): paper grain, grid, border + registration marks drawn in
   at the start, bottom bar drawn in, tick and progress move SPEC (1.63) > PLAN (7.89) >
   BUILD (20.39) > CRITIC (55.08) > MERGE (85.08). Not yet checked.
-- `beats.json`: 144 librosa beats of the score (~95.7 BPM, first beat 1.63 s).
+- `beats.json`: 149 librosa beats of the art-pop score (~103 BPM, first beat 0.65 s).
 - The v1 look test (single-file `index.html`) is in git at rheos/secondunit-videos PR #135 if
   beat 4 code needs copying: `git show 29aad8b:novadiem-cold-read/index.html`.
 
@@ -40,7 +55,7 @@ in its last ~0.5 s (except b3 and b4, see below). Cue times below are SCORE seco
 | b4 | b4-assembly.html | 34.7-55.08 | Plate IV / The Bureau Assembles |
 | b5 | b5-critic-loop.html | 55.08-70.08 | Plate V / The Critic Loop |
 | b6 | b6-the-test.html | 70.08-85.08 | Plate VI / The Test |
-| b7 | b7-colophon.html | 85.08-95 | Plate VII / Colophon |
+| b7 | b7-colophon.html | 85.08-92 | Plate VII / Colophon |
 
 **b1.** Labels at 1.63. Title "THE COLD READ" in Marcellus SC ~120px, letterspaced, centred
 y~380, `reveal` at 2.25 (1.2 s). Gold rule 600px under it at 2.88 with end ticks. Mono subtitle
@@ -86,7 +101,7 @@ boxes 76.95 (left "YES" > "BRING THE BUREAU" with a small double-square glyph; r
 **b7.** Two statement rows centred around y 420 and 520, ~80px: "Independent review costs a lot."
 (85.68), then "Spend it" (87.56) + "**where errors stay quiet.**" red (88.19). Gold rule at 88.82,
 mono "THE COLD READ · NOVADIEM.COM" at 89.44 (credit line is still an open decision: novadiem.com
-only for now). Hold to 95; audio fades 93.6-95.
+only for now). Hold to 92; audio fades 90.6-92.
 
 ## Then
 
@@ -98,7 +113,7 @@ only for now). Hold to 95; audio fades 93.6-95.
    at this point? these are all drafts"). HyperFrames has no downscale flag, so: set the root
    `data-width="1280" data-height="720"` and wrap the slots in a 1920x1080 stage div with
    `transform: scale(0.666667); transform-origin: 0 0`. Render
-   `nice -n 15 npx hyperframes render -f 24 -q draft -o renders/cold-read-score_take01_f0-f2280_24fps_draft1.mp4`.
+   `nice -n 15 npx hyperframes render -f 24 -q draft -o renders/cold-read-artpop_take02_f0-f2208_24fps_draft1.mp4`.
    No 1080p render of anything until Robin signs off the cut; the master then flips the root back
    to 1920x1080 with scale 1. (The v1 look test wrongly rendered at 1080p and downscaled.)
 4. flashcheck + badframes from latest tools (`git archive origin/main tools/motion-lab

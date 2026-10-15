@@ -7,7 +7,7 @@ destination: youtube
 aspect: "16:9"
 language: en
 audience: "clients hiring for agentic dev work; Robin himself"
-length: "95s film; this pass is a 25s look test of beat 4"
+length: "92s film"
 ---
 
 # The Cold Read
@@ -28,10 +28,11 @@ ends as the bottom bar ticks to CRITIC.
 
 ## Assets
 
-- Score: `_in/score.mp3` = score-library `drafting-table-cold-read/take-01.mp3`,
-  sha256 5e0ac901f553525e4e2b9db3fd97cf8fdd250a575af66e17e3ce3e4975e30c82, 95.0 s, ~96 BPM,
-  ElevenLabs Music, 1,306 credits (2026-10-15). Sections: Plate 0-7.5, Closed Loop 7.5-20,
-  Silent 20-35, Assembly 35-55, Critic Loop 55-70, The Test 70-85, Colophon 85-95.
+- Score: `_in/score.mp3` = score-library `bureau-art-pop-cold-read/take-02.mp3`,
+  sha256 703195c3346da8043c4fb70ef1c972d88d98f0145efd30450bfb502a8abdcf7b, 95.0 s file (music resolves
+  ~90 s), ~103 BPM, ElevenLabs Music, 1,306 credits (2026-10-15). Art-pop / indietronica, the Bureau
+  series direction. Same seven sections as before. Replaced the drafting-table score used for the
+  beat 4 look test (kept as `_in/score-drafting-table-take01.mp3`).
 - Font: Marcellus SC (Google Fonts, OFL) in `assets/fonts/`; Archivo Black and IBM Plex Mono are
   bundled by HyperFrames.
 
