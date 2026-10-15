@@ -5,20 +5,21 @@
     <meta name="viewport" content="width=1920, height=1080" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link
-      href="https://fonts.googleapis.com/css2?family=Cormorant+SC:wght@500;600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@600;700&display=block"
+      href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;800&family=JetBrains+Mono:wght@400;500&display=block"
       rel="stylesheet"
     />
     <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
     <style>
       :root {
-        --paper: #ece0c2;
-        --paper-edge: #d9c69a;
-        --gold: #8f6d22;
-        --gold-faint: rgba(143, 109, 34, 0.32);
-        --ink: #1e1910;
-        --red: #a8231b;
-        --gold-text: #6a5018;
-        --red-text: #8a1c15;
+        /* indieagent.ai default (dark) theme tokens, app/globals.css */
+        --paper: #14161A;
+        --paper-edge: #0e0f12;
+        --gold: #7C8388;
+        --gold-faint: rgba(124, 131, 136, 0.35);
+        --ink: #EDEEEA;
+        --red: #E8A33D;
+        --gold-text: #A8AFB3;
+        --red-text: #E8A33D;
       }
       * { margin: 0; padding: 0; box-sizing: border-box; }
       html, body { width: 1920px; height: 1080px; overflow: hidden; background: var(--paper); }
@@ -30,16 +31,16 @@
       .line { fill: none; stroke: var(--gold); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
       .hair { fill: none; stroke: var(--gold); stroke-width: 1; }
       .faint { fill: none; stroke: var(--gold-faint); stroke-width: 1; stroke-dasharray: 4 6; }
-      .label { font-family: "Cormorant SC", serif; font-weight: 600; fill: var(--gold-text); letter-spacing: 0.14em; }
-      .mono { font-family: "IBM Plex Mono", monospace; fill: var(--ink); }
-      #chapter { position: absolute; left: 120px; top: 92px; font: 600 26px "Cormorant SC", serif; letter-spacing: 0.22em; color: var(--gold-text); }
+      .label { font-family: "Archivo", sans-serif; font-weight: 600; text-transform: uppercase; fill: var(--gold-text); letter-spacing: 0.14em; }
+      .mono { font-family: "JetBrains Mono", monospace; fill: var(--ink); }
+      #chapter { position: absolute; left: 120px; top: 92px; font: 600 26px "Archivo", sans-serif; letter-spacing: 0.22em; text-transform: uppercase; font-size: 20px; color: var(--gold-text); }
       #headline {
         position: absolute; left: 0; right: 0; top: 862px; text-align: center;
-        font: 700 52px "IBM Plex Sans", sans-serif; letter-spacing: -0.01em; color: var(--ink);
+        font: 800 52px "Archivo", sans-serif; letter-spacing: -0.01em; color: var(--ink);
       }
       #headline .red { color: var(--red); }
-      #counter { position: absolute; right: 120px; top: 958px; font: 500 22px "IBM Plex Mono", monospace; color: var(--ink); letter-spacing: 0.08em; }
-      #barlabel { position: absolute; left: 120px; top: 958px; font: 600 22px "Cormorant SC", serif; letter-spacing: 0.2em; color: var(--gold-text); }
+      #counter { position: absolute; right: 120px; top: 958px; font: 500 22px "JetBrains Mono", monospace; color: var(--ink); letter-spacing: 0.08em; }
+      #barlabel { position: absolute; left: 120px; top: 958px; font: 600 22px "Archivo", sans-serif; letter-spacing: 0.2em; text-transform: uppercase; font-size: 16px; color: var(--gold-text); }
     </style>
   </head>
   <body>
@@ -48,7 +49,7 @@
         <defs>
           <filter id="grain" x="0" y="0" width="100%" height="100%">
             <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" seed="7" />
-            <feColorMatrix values="0 0 0 0 0.35  0 0 0 0 0.27  0 0 0 0 0.12  0 0 0 0.10 0" />
+            <feColorMatrix values="0 0 0 0 0.93  0 0 0 0 0.93  0 0 0 0 0.92  0 0 0 0.035 0" />
           </filter>
         </defs>
         <rect width="1920" height="1080" filter="url(#grain)" />
@@ -93,12 +94,12 @@
         const g = el("g", { class: "slab" }, db);
         layers.push(g);
         // paper fills give hidden-line occlusion: lower slabs vanish behind upper ones
-        el("path", { d: `M${c.Wp} V${s.cy + T} L${CX},${s.cy + H + T} L${CX + W},${s.cy + T} V${s.cy} L${c.N} Z`, fill: "#e8dcbc", stroke: "none", class: "occ" }, g);
+        el("path", { d: `M${c.Wp} V${s.cy + T} L${CX},${s.cy + H + T} L${CX + W},${s.cy + T} V${s.cy} L${c.N} Z`, fill: "#181a1f", stroke: "none", class: "occ" }, g);
         el("path", { class: "line draw", d: `M${c.N} L${c.E} L${c.S} L${c.Wp} Z` }, g);
         el("path", { class: "line draw", d: `M${c.Wp} V${s.cy + T} L${CX},${s.cy + H + T} L${CX + W},${s.cy + T} V${s.cy} M${CX},${s.cy + H} V${s.cy + H + T}` }, g);
         // leader + label
         el("path", { class: "hair draw", d: `M${CX + W + 14},${s.cy} H${CX + W + 120}` }, g);
-        el("text", { class: "label fade", x: CX + W + 132, y: s.cy - 4, "font-size": 30 }, g).textContent = s.name;
+        el("text", { class: "label fade", x: CX + W + 132, y: s.cy - 4, "font-size": 24 }, g).textContent = s.name;
         el("text", { class: "mono fade", x: CX + W + 132, y: s.cy + 26, "font-size": 18, opacity: 0.75 }, g).textContent = s.note;
         if (i < slabs.length - 1) {
           const nxt = slabs[i + 1].cy;
@@ -147,7 +148,7 @@
         const x = 120 + (i * 1680) / 52;
         ticks.push(el("path", { class: "line", d: `M${x} 1000 V${i % 10 === 0 ? 982 : 990}`, opacity: 0 }, scale));
       }
-      const fill = el("path", { d: "M120 1000 H1800", stroke: "var(--gold)", "stroke-width": 4, fill: "none" }, scale);
+      const fill = el("path", { d: "M120 1000 H1800", stroke: "var(--red)", "stroke-width": 4, fill: "none" }, scale);
 
       // prepare stroke drawing
       const prep = (n) => { const L = n.getTotalLength(); n.style.strokeDasharray = L; n.style.strokeDashoffset = L; return n; };
