@@ -11,13 +11,14 @@ const echoTraveller = traveller;
 // record every traveller drawn this frame with its transform; the echo picks the main one (default teal coat, largest)
 traveller = function (x, y, s, o = {}) { ECHO_CALLS.push({ x, y, s, o, m: X.getTransform() }); return echoTraveller(x, y, s, o); };
 let echoCanvas;
-function ohEnvelope(T) {
+function ohEnvelope(T, t0) {
   for (const [a, b] of OHARA) { if (T < a - .1 || T > b + .45) continue;
+    if (t0 !== undefined && t0 >= b) return 0; // never carry the fade-out into the next shot (it flickered on the cut)
     return Math.min(cl((T - a + .1) / .3), 1 - cl((T - b) / .45)); }
   return 0;
 }
-function drawEcho(T) {
-  const e = ohEnvelope(T); if (e <= 0) return;
+function drawEcho(T, t0) {
+  const e = ohEnvelope(T, t0); if (e <= 0) return;
   const cand = ECHO_CALLS.filter((c) => !c.o.coat && !c.o.sch);
   if (!cand.length) return;
   const c = cand.reduce((a, b) => (b.s * Math.hypot(b.m.a, b.m.b) > a.s * Math.hypot(a.m.a, a.m.b) ? b : a));
@@ -41,5 +42,5 @@ function drawEcho(T) {
 }
 const echoBuild = buildShots;
 buildShots = function () {
-  return echoBuild().map((sh) => Object.assign({}, sh, { draw: (p, lt) => { ECHO_CALLS = []; sh.draw(p, lt); drawEcho(sh.t0 + lt); } }));
+  return echoBuild().map((sh) => Object.assign({}, sh, { draw: (p, lt) => { ECHO_CALLS = []; sh.draw(p, lt); drawEcho(sh.t0 + lt, sh.t0); } }));
 };
