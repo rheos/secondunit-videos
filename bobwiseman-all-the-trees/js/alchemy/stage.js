@@ -56,17 +56,14 @@
   // gold cartouche with the constant sun face at the centre of the valance
   g.save();g.translate(960,y0+64);ellipse(0,0,52,52,'#e0b13e',C.ink);ellipse(0,0,44,44,null,'#8f5f1e');g.save();g.beginPath();g.arc(0,0,42,0,Math.PI*2);g.clip();g.scale(.25,.25);g.translate(-333,-170);A.piece('sol-head',C.gold);g.restore();g.restore();
   g.restore()}
- // ---- the stage floor: engraved boards in perspective, a row of footlights ----
+ // ---- the stage floor: engraved boards in perspective ----
  function floor(a,t,cut=0){if(a<=0)return;g.save();if(cut){g.beginPath();g.rect(X0,cut,X1-X0,Y1-cut);g.clip()}g.globalAlpha=a;const back=772,vx=960,vy=300;
   fill(`M${X0} ${back}H${X1}V${Y1}H${X0}Z`,'#c9a46c');
   for(let k=-14;k<=14;k++){const xb=vx+k*68,xf=vx+k*150;stroke(`M${xb} ${back}L${xf} ${Y1}`,'#5b4022',1.1)}
   for(let j=0;j<7;j++){const y=back+Math.pow(j/7,1.6)*(Y1-back);stroke(`M${X0} ${y}H${X1}`,'#6b4d2a',.8)}
   g.globalAlpha=a*.35;for(let y=back+4;y<Y1;y+=5)line(X0,y,X1,y,'#3a2a14',.5);g.globalAlpha=a;
   stroke(`M${X0} ${back}H${X1}`,C.ink,2);
-  // footlights: shell reflectors with candle flames, flickering on twos
-  for(let k=0;k<11;k++){const x=X0+90+k*(X1-X0-180)/10,y=Y1-22,fl=.8+.2*Math.sin(Math.floor(t*12)*1.9+k*2.3);
-   fill(`M${x-26} ${y+10}Q${x} ${y-26} ${x+26} ${y+10}Z`,'#d8c79a');stroke(`M${x-26} ${y+10}Q${x} ${y-26} ${x+26} ${y+10}Z`,C.ink,1.2);
-   A.glow(x,y-14,30*fl,.55);fill(`M${x-4} ${y}Q${x-5} ${y-12} ${x} ${y-24*fl}Q${x+5} ${y-12} ${x+4} ${y}Z`,C.gold);stroke(`M${x-4} ${y}Q${x-5} ${y-12} ${x} ${y-24*fl}Q${x+5} ${y-12} ${x+4} ${y}Z`,C.ink,.8)}
+  // v29 (Robin): no footlight candles along the front of the stage.
   g.restore()}
  // ---- aether: engraved interference across the plate (radio static, the dial turning) ----
  // v16 (audit A9): radio static as broken engraved snow that changes every frame, over the whole picture.

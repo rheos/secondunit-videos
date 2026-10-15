@@ -59,13 +59,31 @@
  // v27/v28 (Robin): at 1:51 the heart tree does "the wave" with its two outstretched lower branch arms, in time with the music:
  // a ripple runs from one arm's tip, through the fork, out to the other tip, one bar per pass, then back again.
  // s runs 0 (left tip) to 1 (fork) to 2 (right tip); bars at 145 bpm from the beat grid S.pulse uses (bar at 110.97 s).
- const WAVE={t0:110.97,bar:4*60/145,end:122.6};
- function armWave(b,side,t){if(t<WAVE.t0-.2||t>WAVE.end+.3)return null;
-  const env=smooth(WAVE.t0-.2,WAVE.t0+.25,t)*(1-smooth(WAVE.end-.35,WAVE.end+.3,t)),ph=(t-WAVE.t0)/WAVE.bar,k=Math.floor(ph),f=ph-k;
+ // v29 (Robin): two cycles of the wave (there and back, twice: four bars), then the arms dance to the beat for the
+ // rest of the instrumental: a bar of the robot, a bar of the mashed potato, a bar pumping to the sky.
+ const BEAT=60/145,WAVE={t0:110.97,bar:4*BEAT};WAVE.end=WAVE.t0+4*WAVE.bar;
+ const DANCE={t0:WAVE.end,end:122.55};
+ function armWave(b,side,t){if(t<WAVE.t0-.2||t>WAVE.end+.1)return null;
+  const env=smooth(WAVE.t0-.2,WAVE.t0+.25,t),ph=(t-WAVE.t0)/WAVE.bar,k=Math.floor(ph),f=ph-k;
   const sw=-.3+2.6*(k%2?1-f:f); /* starts off the left tip, exits past the right tip, then comes back */
   // u runs fork (0) to tip (1); the bump lifts the wood across its own line, up and in, like a raised arm
   const dx=b[6]-b[0],dy=b[7]-b[1],l=Math.hypot(dx,dy),n=[dy/l*side,-dx/l*side];
   return u=>{const sp=side<0?1-u:1+u,G=env*Math.exp(-(((sp-sw)/.22)**2))*Math.min(1,u*4);return [n[0]*36*G,n[1]*36*G]}}
+ // An arm as shoulder elevation e1 and forearm elevation e2 (0 = straight out, PI/2 = straight up), rebuilt as the
+ // branch's cubic so the wood bends at an elbow. The arm at rest is straight at about 0.83.
+ function armPose(side,t){const ph=(t-DANCE.t0)/BEAT,beat=Math.floor(ph),f=ph-beat,L=side<0;
+  const snap=u=>smooth(0,.14,u); /* robot: a two-frame snap, then hold */
+  if(beat<4){const R=[[0,1.57,0,-1.45],[0,-1.45,0,1.57],[0,1.57,0,1.57],[.05,.05,.05,.05]]; /* robot: right angles at the elbow, swapping, goalposts, then straight out */
+   const a=R[beat],p=beat?R[beat-1]:[.83,.83,.83,.83],u=snap(f),k=L?0:2;return [mix(p[k],a[k],u),mix(p[k+1],a[k+1],u)]}
+  if(beat<8){const sw=Math.sin((ph-4)*Math.PI)*(L?1:-1); /* mashed potato: bent arms swinging in and out, opposite sides, on every beat */
+   return [.25+.38*sw,1.15+.5*sw]}
+  const up=Math.exp(-f*5); /* pumping to the sky: a hard punch up on every beat, sinking back through it */
+  const e=beat>=11&&f>.5?1.2:mix(.3,1.2,up);return [e,e]} /* stays off the trunk */
+ function armDance(b,side,t){if(t<DANCE.t0||t>DANCE.end+.45)return;
+  const w=smooth(DANCE.t0,DANCE.t0+.12,t)*(1-smooth(DANCE.end,DANCE.end+.4,t));
+  const [e1,e2]=armPose(side,Math.min(t,DANCE.end)),E1=mix(.83,e1,w),E2=mix(.83,e2,w),L1=84,L2=80;
+  const ex=b[0]+side*Math.cos(E1)*L1,ey=b[1]-Math.sin(E1)*L1,tx=ex+side*Math.cos(E2)*L2,ty=ey-Math.sin(E2)*L2;
+  b[2]=mix(b[0],ex,.92);b[3]=mix(b[1],ey,.92);b[4]=mix(ex,tx,.08);b[5]=mix(ey,ty,.08); /* a crisp elbow */b[6]=tx;b[7]=ty}
  function heart(t,a,raysOnly=false){if(!raysOnly)glintToHeart(t);const birth=smooth(96.3,97.4,t);if(!birth)return;
   const {rise,final,climax,x,y,radius,sun}=heartGeom(t,a);
   if(raysOnly){if(!sun)return;g.save();g.translate(x,y);g.scale(birth,birth);g.rotate(t*.02);
@@ -82,7 +100,7 @@
   for(const s2 of [-1,0,1])S.woodyRoot([960,930,960+s2*20,950,960+s2*45,968,960+s2*70+(s2?0:8),990],rise,18,3,70+s2,{});
   if(rise>.45){const g2=smooth(.45,.9,rise),season=Math.max(.45,A.leafSeason?A.leafSeason(t):1);
    for(const side of [-1,1]){const p0=S.bez(trunk,.52),b=[p0[0],p0[1],p0[0]+side*40,p0[1]-30,p0[0]+side*85,p0[1]-75,p0[0]+side*110,p0[1]-120];
-    const warp=armWave(b,side,t),wq=u=>{const q=S.bez(b,u);if(!warp)return q;const w=warp(u);return [q[0]+w[0],q[1]+w[1]]};
+    armDance(b,side,t);const warp=armWave(b,side,t),wq=u=>{const q=S.bez(b,u);if(!warp)return q;const w=warp(u);return [q[0]+w[0],q[1]+w[1]]};
     S.woodyRoot(b,g2,14,3,60+side,warp?{warp}:{});for(let k=0;k<6;k++){const u=.3+k*.12;if(u>g2)continue;const q=wq(u),q2=wq(Math.min(1,u+.03)),ang=Math.atan2(q2[1]-q[1],q2[0]-q[0]);S.leaf(q[0],q[1],ang+(k%2?1.8:-1.3)*side,.6,clamp((g2-u)*5)*season)}}}
   S.woodyRoot(trunk,1,mix(16,56,rise),mix(7,24,rise),77,{});
   // v12: their roots feed the heart: sap runs from each partner's root into the junction and up the trunk (audit C3).
