@@ -1,6 +1,6 @@
 // audit.spec.mjs's word contract, plus the backing singer's syllables (js/common/bv-onsets.js) and face checks,
-// for looks/tv-r3c-bv.html. All boxes are program/signal pixels (960x720). Run from the project folder:
-//   node work/motion-lab/audit.mjs looks/tv-r3c-bv.html 308 331 --spec js/tv/bv-audit.spec.mjs --safe 0.05
+// for looks/tv-r3a-bv.html and looks/tv-r3c-bv.html. All boxes are program/signal pixels (960x720). Run from the project folder:
+//   node work/motion-lab/audit.mjs looks/tv-r3a-bv.html 6.5 15 (or tv-r3c-bv.html 308 331) --spec js/tv/bv-audit.spec.mjs --safe 0.05
 import fs from 'fs';
 import { events as wordEvents, tolerance } from '../../audit.spec.mjs';
 const src = fs.readFileSync(new URL('../common/bv-onsets.js', import.meta.url), 'utf8');

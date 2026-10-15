@@ -51,12 +51,24 @@ The split itself, from the project folder (the 900 MB model downloads on first u
 Check by ear before a final: the split between LIB and EL is a vowel change on a held pitch, so it is the softest
 of the three boundaries.
 
-## Look test on TV news (occurrences 2 and 3), 2026-10-14
+## In the TV-news version (all three), 2026-10-14
 
-Robin picked the TV-news version for the test (after the woodcut test below was built; the woodcut one is set aside).
+Robin picked the TV-news version for the test (after the woodcut test below was built; the woodcut one is set aside),
+approved the treatment on the refrain test, and asked for the intro and the full version.
 
-- Page `looks/tv-r3c-bv.html` = `tv-r3c.html` plus `js/common/bv-onsets.js` and `js/tv/bv-r3c.js`. No existing file is
-  edited: bv-r3c.js wraps `r3cProgram`, so her box is part of the bulletin picture and goes through the CRT like it.
+- Code: `js/tv/bv-inset.js` draws her box (shared); `js/tv/bv-r3a.js` and `js/tv/bv-r3c.js` hook it into the two
+  pages that carry an occurrence. Pages: `looks/tv-r3a-bv.html` (intro, f0-f2302) and `looks/tv-r3c-bv.html`
+  (refrain, f6276-f8171). The kept pages and files are not edited.
+- Intro (7.48-12.92 s): over the ident her box sits in its usual place, top right. At the cut to the studio (10.96 s)
+  she is in the anchor's over-the-shoulder box itself (same place and size), which would otherwise show the globe;
+  her box wipes off after the note and the globe is underneath.
+- Full version: `out/lib_tvnews-full-v2_f00000-f08171_24fps_draft.mp4` = tv-r3a-bv + tv-r3b + tv (5782-6276) +
+  tv-r3c-bv (the middle two parts reused from v1, unchanged).
+
+### The refrain test (occurrences 2 and 3)
+
+- Page `looks/tv-r3c-bv.html` = `tv-r3c.html` plus `js/common/bv-onsets.js`, `js/tv/bv-inset.js` and `js/tv/bv-r3c.js`.
+  bv-r3c.js wraps `r3cProgram`, so her box is part of the bulletin picture and goes through the CRT like it.
 - Each time she sings, a second inset box wipes on at the top right of the picture (the over-the-shoulder box's
   navy frame and pale rim), 0.32 s before LIB: her in a studio at a chrome microphone, eyes shut on the held note,
   the mouth shaped to each vowel and closing for a moment on each consonant. Under her, a navy caption band in the
@@ -72,7 +84,9 @@ Robin picked the TV-news version for the test (after the woodcut test below was 
 - Outside her spans the page renders byte-identical to `tv-r3c.html` (308.5, 317, 320.5, 330.8 checked).
 - Review clip: `out/lib_tvnews-bvtest-v1_f07392-f07944_24fps_draft.mp4` (308-331 s, 720p, 0 bad frames, flash check pass).
 
-Not done until Robin picks the treatment: occurrence 1 (the intro, on `tv-r3a.html`).
+Intro audit (`node work/motion-lab/audit.mjs looks/tv-r3a-bv.html 6.5 15 --spec js/tv/bv-audit.spec.mjs --safe 0.05`,
+204 frames): her 3 syllables and the first line's words on their onsets, everything inside its container and the safe
+area, her box over no face (the anchor's included) and clear of the wire copy. All pass.
 
 ## Look test (woodcut, occurrences 2 and 3), 2026-10-14 (set aside: Robin chose TV news)
 

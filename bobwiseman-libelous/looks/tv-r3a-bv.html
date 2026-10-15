@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Libelous, the evening news (round 3, stanzas 0-5), backing-vocal intro</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #000; overflow: hidden; }
+  canvas { width: 100vw; height: 100vh; object-fit: contain; display: block; cursor: pointer; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<audio id="a" src="../assets/song.wav" preload="auto"></audio>
+<script src="../js/common/core.js"></script>
+<!-- the TV kit, read-only: the room, the tube, the cel helpers, the news set -->
+<script src="../js/tv/gen/lines.js"></script>
+<script src="../js/tv/gen/lines_r2.js"></script>
+<script src="../js/tv/timing.js"></script>
+<script src="../js/tv/r2_timing.js"></script>
+<script src="../js/tv/crt.js"></script>
+<script src="../js/tv/show.js"></script>
+<script src="../js/tv/ad.js"></script>
+<script src="../js/tv/room.js"></script>
+<script src="../js/tv/news.js"></script>
+<!-- round 3, tv-A -->
+<script src="../js/tv/gen/r3a-lines.js"></script>
+<script src="../js/tv/r3a-timing.js"></script>
+<script src="../js/tv/r3a-wire.js"></script>
+<script src="../js/tv/r3a-studio.js"></script>
+<script src="../js/tv/r3a-film.js"></script>
+<script src="../js/tv/r3a-main.js"></script>
+<!-- the backing singer's sung title (BACKING-VOCAL.md) -->
+<script src="../js/common/bv-onsets.js"></script>
+<script src="../js/tv/bv-inset.js"></script>
+<script src="../js/tv/bv-r3a.js"></script>
+</body>
+</html>
