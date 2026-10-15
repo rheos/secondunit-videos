@@ -2,7 +2,7 @@
 // few hard colours (hot pink, cyan, sodium amber). "Spin" is the whole stanza: fire spinners whirl the party's poi,
 // a dime spins in the dark, a poor man holds out a cup, and a searchlight sweeps it away. The sung words light up as
 // neon tubes, flickering on at each onset.
-// Section: the middle stanza, first half (sung lines 14-19).
+// Section: the middle stanza, first half (sung lines 14-19). Art cars drive behind it all (v2, Robin 2026-10-15).
 (() => {
   const LT = (i) => LINES[i].s, LE = (i) => LINES[i].e;
   const A = 14, B = 19, T0 = LT(A) - 1.5, T1 = LE(B) + 1.2;
@@ -38,6 +38,80 @@
   function dime(x, y, r, t, spin) { const ph = Math.cos(t * spin), rx = Math.abs(ph) * r + 3; tube(ring(x, y, rx, r, 40), '#e6e6ff', 7); if (Math.abs(ph) > .4) tube(ring(x, y, rx * .7, r * .7, 30), '#9aa0ff', 3); }
   function horizon(t) { tube([[0, 760], [W, 760]], 'rgba(63,242,255,.35)', 3); for (let i = 0; i < 14; i++) { const x = (i * 157 + 40) % W, h = 20 + (i % 4) * 14; tube([[x, 760], [x + 30, 760 - h], [x + 60, 760]], i % 3 ? 'rgba(255,63,166,.5)' : 'rgba(255,181,58,.5)', 3); } }
   function stars(t) { g.fillStyle = '#fff'; for (let i = 0; i < 160; i++) { const x = rnd(i, 1) * W, y = rnd(i, 2) * 700, a = .3 + .7 * rnd(i, Math.floor(t * 3 + i)); g.globalAlpha = a * .6; g.fillRect(x, y, 2, 2); } g.globalAlpha = 1; }
+
+  // ---- art cars (Robin, 2026-10-15): drawn from photos in source/refs, in EL wire and real fire ----
+  const PURPLE = '#a64dff', FIRE = ['#ffd27a', '#ff8a2a', '#ff4a1a'];
+  function flame(x, y, s, t, seed) { // a torch flame on a tentacle tip: three tongues, flickering at 24 fps
+    for (let k = 0; k < 3; k++) {
+      const h = (54 + 22 * n1(seed + k, t * 9)) * s * (1 - k * .22), w = (20 - k * 5) * s, sway = n1(seed + 7 + k, t * 6) * 6 * s;
+      gl.save(); gl.globalCompositeOperation = 'lighter'; gl.fillStyle = FIRE[k]; gl.globalAlpha = .85;
+      gl.beginPath(); gl.moveTo(x - w, y); gl.quadraticCurveTo(x - w * .8 + sway * .5, y - h * .6, x + sway, y - h); gl.quadraticCurveTo(x + w * .8 + sway * .5, y - h * .6, x + w, y); gl.closePath(); gl.fill(); gl.restore();
+    }
+    const gr = gl.createRadialGradient(x, y - 20 * s, 0, x, y - 20 * s, 55 * s); gr.addColorStop(0, 'rgba(255,150,60,.18)'); gr.addColorStop(1, 'rgba(255,150,60,0)');
+    gl.save(); gl.globalCompositeOperation = 'lighter'; gl.fillStyle = gr; gl.fillRect(x - 90 * s, y - 110 * s, 180 * s, 180 * s); gl.restore();
+  }
+  // El Pulpo Mecanico (Duane Flatmo): a scrap-metal octopus on a truck. Domed head with a crown of spikes and a
+  // burner on top, two big chrome eyes, a toothed mouth, six tentacles curling down and up to flame torches,
+  // a lattice tower under the head, the truck's bed and cab below. x = centre, y = ground, s = scale.
+  function pulpo(x, y, s, t) {
+    const P = (dx, dy) => [x + dx * s, y + dy * s], col = AMBER, rust = '#ff7a3a';
+    for (const wx of [-150, 90, 170]) tube(ring(x + wx * s, y - 26 * s, 26 * s, 26 * s, 18), col, 4); // wheels
+    tube([P(-200, -40), P(200, -40), P(210, -80), P(140, -80), P(130, -120), P(-200, -120), P(-200, -40)], col, 4); // bed + cab
+    for (let k = 0; k < 5; k++) tube([P(-90 + k * 40, -120), P(-60 + k * 40, -330)], 'rgba(255,181,58,.7)', 3); // tower struts
+    tube([P(-90, -120), P(60, -330)], 'rgba(255,181,58,.6)', 2.5); tube([P(70, -120), P(-80, -330)], 'rgba(255,181,58,.6)', 2.5);
+    const sway = (k) => Math.sin(t * 1.6 + k * 1.1) * .18;
+    const tips = [];
+    for (let k = 0; k < 6; k++) { // tentacles: out from under the head, down and out, then curling up to a torch
+      const side = k < 3 ? -1 : 1, j = k % 3, a = sway(k) * 60;
+      const p0 = [side * (30 + j * 20), -330], p1 = [side * (120 + j * 75), -120 + j * 25], p2 = [side * (200 + j * 85) + a * side * .3, -300 - j * 45 + a];
+      const pts = []; for (let u = 0; u <= 1.0001; u += .08) { const v = 1 - u; pts.push(P(v * v * p0[0] + 2 * v * u * p1[0] + u * u * p2[0], v * v * p0[1] + 2 * v * u * p1[1] + u * u * p2[1])); }
+      tube(pts, rust, 14 * s); tube(pts.filter((_, i) => i % 2), '#ffb98a', 4 * s); tips.push(pts[pts.length - 1]);
+    }
+    const head = []; for (let i = 0; i <= 30; i++) { const a = Math.PI * (1 + i / 30); head.push(P(Math.cos(a) * 110, -390 + Math.sin(a) * 150)); }
+    tube(head.concat([P(110, -390), P(90, -330), P(-90, -330), P(-110, -390)]), col, 6);
+    for (let i = 0; i < 9; i++) { const a = Math.PI * (1.12 + i * .095); const bx = Math.cos(a) * 110, by = -390 + Math.sin(a) * 150; tube([P(bx, by), P(bx * 1.12, by - 22)], col, 3); } // spikes
+    for (const ex of [-42, 42]) { tube(ring(x + ex * s, y - 430 * s, 26 * s, 26 * s, 18), CYAN, 5); tube(ring(x + ex * s, y - 430 * s, 10 * s, 10 * s, 10), '#ffffff', 4); } // chrome eyes
+    const teeth = []; for (let i = 0; i <= 8; i++) teeth.push(P(-44 + i * 11, -368 + (i % 2 ? 16 : 0))); tube(teeth, '#ffffff', 3);
+    tube(ring(x - 30 * s, y - 120 * s, 16 * s, 12 * s, 10), col, 3);
+    flame(...P(0, -545), s * .8, t, 1);
+    tips.forEach(([fx, fy], k) => flame(fx, fy, s, t, 10 + k));
+  }
+  // the Cheshire Cat car: a long purple-and-pink striped body on a low chassis, a cat head at the front with
+  // spiral eyes and a huge white grin, a striped tail curling up at the back. Faces the way it drives (dir).
+  function cheshire(x, y, s, t, dir, grinOnly = 0) {
+    const P = (dx, dy) => [x + dir * dx * s, y + dy * s], body = 1 - grinOnly;
+    if (body > 0) {
+      gl.save(); gl.globalAlpha = body;
+      for (const wx of [-170, 140]) tube(ring(x + dir * wx * s, y - 22 * s, 22 * s, 22 * s, 16), PINK, 4);
+      tube([P(-250, -40), P(160, -40), P(170, -150), P(-250, -170), P(-250, -40)], PURPLE, 6);
+      for (let k = 0; k < 6; k++) { const bx = -230 + k * 66; tube([P(bx, -42), P(bx + 14, -160 + k * 2)], k % 2 ? PINK : PURPLE, 7); } // stripes
+      const tail = []; for (let u = 0; u <= 1.0001; u += .08) tail.push(P(-250 - u * 70 + Math.sin(u * 5 + t * 2) * 20, -170 - u * 300));
+      tube(tail, PINK, 16 * s); tube(tail.map(([a, b], i) => [a, b + (i % 2 ? 6 : -6)]), PURPLE, 6 * s);
+      tube([P(150, -150), P(170, -250), P(210, -200), P(260, -250), P(290, -150)], PURPLE, 6); // ears
+      tube([P(130, -40), P(140, -150), P(300, -150), P(320, -60), P(130, -40)], PURPLE, 5);
+      for (const ex of [190, 260]) { const sp = []; for (let i = 0; i < 26; i++) { const a = i * .55 + t * 4, r = i * .9; sp.push([x + dir * ex * s + Math.cos(a) * r * s, y - 120 * s + Math.sin(a) * r * s]); } tube(sp, LIME, 3); } // spiral eyes
+      for (const sx of [-1, 1]) for (let k = 0; k < 3; k++) tube([P(225 + sx * 70, -80 + k * 10), P(225 + sx * 120, -86 + k * 16)], '#ffffff', 2); // whiskers
+      gl.restore();
+    }
+    // the grin (stays after the cat has gone)
+    const gr = []; for (let i = 0; i <= 24; i++) { const a = Math.PI * (.08 + .84 * i / 24); gr.push(P(225 + Math.cos(a) * 95, -92 + Math.sin(a) * 34)); }
+    const top = []; for (let i = 0; i <= 24; i++) { const a = Math.PI * (.08 + .84 * i / 24); top.push(P(225 + Math.cos(a) * 95, -92 + Math.sin(a) * 10)); }
+    tube(gr, '#ffffff', 7); tube(top, '#ffffff', 4);
+    for (let i = 1; i < 12; i++) { const a = Math.PI * (.1 + .8 * i / 12); tube([P(225 + Math.cos(a) * 95, -92 + Math.sin(a) * 10), P(225 + Math.cos(a) * 95, -92 + Math.sin(a) * 30)], '#ffffff', 2.5); }
+  }
+  function galleon(x, y, s, t) { // a far-off ship art car on the horizon: hull, three masts, strings of lights
+    const P = (dx, dy) => [x + dx * s, y + dy * s];
+    tube([P(-180, 0), P(200, 0), P(240, -60), P(-220, -60), P(-180, 0)], 'rgba(255,181,58,.8)', 3);
+    for (const mx of [-110, 0, 110]) { tube([P(mx, -60), P(mx, -300)], 'rgba(255,181,58,.8)', 3); for (let r = 0; r < 3; r++) tube([P(mx - 50 + r * 6, -110 - r * 60), P(mx + 50 - r * 6, -110 - r * 60)], 'rgba(255,181,58,.6)', 2.5); }
+    for (let i = 0; i < 18; i++) { const u = i / 17, on = rnd(i, Math.floor(t * 4)) > .3; if (on) { gl.fillStyle = i % 2 ? PINK : CYAN; const [lx, ly] = P(lerp(-220, 240, u), -300 + Math.abs(u - .5) * 400 - 60); gl.fillRect(lx - 3, ly - 3, 6, 6); } }
+  }
+  // the parade behind the people: one continuous drive across the whole section, so the cars move forward through it
+  function artCars(t) {
+    galleon(lerp(1500, 1300, lin(t, T0, T1)), 770, .55, t);
+    pulpo(lerp(-350, 1450, lin(t, T0, LT(A + 3) + 1)), 800, 1.05, t);
+    const c0 = LT(A + 2), c1 = LE(A + 4) - .4; // the cat drives in the other way; on "the era we're in" it fades and leaves its grin
+    if (t >= c0 - .5) cheshire(lerp(2300, 760, ease(t, c0 - .5, c1)), 800, .95, t, -1, ease(t, LE(A + 4) - 1.2, LE(A + 4) + .3));
+  }
 
   function sVogue(t, L) { // the party's spinners on the playa, suits outlined in cyan with pink rosettes
     horizon(t);
@@ -82,7 +156,7 @@
     stars(t);
     gl.setTransform(1, 0, 0, 1, 0, 0); gl.clearRect(0, 0, W, H);
     const S = [{ t: -1, f: sVogue, i: A }, { t: LT(A + 1) - .1, f: sDime, i: A + 1 }, { t: LT(A + 2) - .1, f: sCrime, i: A + 2 }, { t: LT(A + 3) - .1, f: sShare, i: A + 3 }, { t: LT(A + 4) - .1, f: sSearch, i: A + 4 }];
-    const [s] = shotAt(S, t); s.f(t, LINES[s.i]); words(t);
+    artCars(t); const [s] = shotAt(S, t); s.f(t, LINES[s.i]); words(t);
     bl.setTransform(1, 0, 0, 1, 0, 0); bl.clearRect(0, 0, W / 4, H / 4); bl.filter = 'blur(6px)'; bl.drawImage(GL, 0, 0, W / 4, H / 4); bl.filter = 'none';
     g.globalCompositeOperation = 'lighter'; g.globalAlpha = .9; g.drawImage(BL, 0, 0, W, H); g.globalAlpha = .5; g.drawImage(BL, 0, 0, W, H); g.globalAlpha = 1; g.drawImage(GL, 0, 0);
     g.globalCompositeOperation = 'source-over';

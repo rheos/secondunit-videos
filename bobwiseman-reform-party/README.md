@@ -30,7 +30,7 @@ song's own words, no real people's likenesses. The playa is the stage: camps, ar
 |---|---|---|---|
 | A risograph festival zine | `looks/riso.html` | intro + verse 1 (sheet lines 0-3) | blue caps on a pink strip, the sung word knocked out |
 | B newspaper editorial cartoon | `looks/cartoon.html` | verse 2 (lines 4-6) | the cartoon's italic caption under the ruled panel |
-| C the playa at night in neon | `looks/neon.html` | middle stanza (lines 7-11) | neon script flickering on at each onset |
+| C the playa at night in neon | `looks/neon.html` | middle stanza (sung lines 14-19); v2 adds art cars: El Pulpo Mecanico, a galleon, a Cheshire Cat car that leaves its grin (refs in source/refs) | neon script flickering on at each onset |
 | D Victorian toy theatre | `looks/theatre.html` | last stanza (lines 17-20) | the playbill strip under the stage |
 
 Little Bob with his piano and Junos (Bob 2026-10-11: in every video) walks across the playa in A's intro, printed
