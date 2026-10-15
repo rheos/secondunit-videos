@@ -85,9 +85,13 @@ only for now). Hold to 95; audio fades 93.6-95.
    `data-layout-allow-overlap` / `data-layout-allow-occlusion` as in v1.
 2. `npx hyperframes snapshot --at <every beat midpoint + every red phrase>`; read the contact
    sheet and zoom crops; fix.
-3. Render: `nice -n 15 npx hyperframes render -f 24 -q looks -o renders/master_1080.mp4`, then the
-   720p review encode (`-vf scale=1280:720 -crf 20 -maxrate 4M`), name
-   `cold-read-score_take01_f0-f2280_24fps_draft1.mp4`.
+3. Render drafts NATIVELY at 720p (house rule; Robin 2026-10-15: "why are we doing 1080p anything
+   at this point? these are all drafts"). HyperFrames has no downscale flag, so: set the root
+   `data-width="1280" data-height="720"` and wrap the slots in a 1920x1080 stage div with
+   `transform: scale(0.666667); transform-origin: 0 0`. Render
+   `nice -n 15 npx hyperframes render -f 24 -q draft -o renders/cold-read-score_take01_f0-f2280_24fps_draft1.mp4`.
+   No 1080p render of anything until Robin signs off the cut; the master then flips the root back
+   to 1920x1080 with scale 1. (The v1 look test wrongly rendered at 1080p and downscaled.)
 4. flashcheck + badframes from latest tools (`git archive origin/main tools/motion-lab
    tools/cloud-render` into the scratchpad; the shared checkout's tools/ is stale). badframes will
    flag b3's dark plate (~27.5-35.4 s): expected.
