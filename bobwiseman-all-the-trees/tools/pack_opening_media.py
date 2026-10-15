@@ -8,13 +8,20 @@ import numpy as np
 from PIL import Image
 src = Path('source/alchemy/opening'); out = Path('assets/alchemy/opening-media.js')
 media, boxes = {}, {}
-MOUTH = {'herald': (490, 215, 46, 34), 'singer': (610, 165, 40, 28)}  # mouth centre and radii in the 1024x1536 source
+MOUTH = {'singer': (610, 165, 40, 28)}  # mouth centre and radii in the 1024x1536 source; others are found automatically
 for name in ['herald', 'singer']:
     ims = {k: Image.open(src / f'{name}-{k}.png').convert('RGBA') for k in ['open', 'closed'] if (src / f'{name}-{k}.png').exists()}
     if not ims: continue
     arrs = {k: np.asarray(v).copy() for k, v in ims.items()}
     # The edit redrew the whole engraving, so swapping whole images would make it shimmer: the closed
     # variant is the open image with only a feathered mouth patch taken from the closed one.
+    if 'closed' in arrs and name not in MOUTH:
+        # Find the mouth: the strongest open/closed difference in the top third of the figure, after blurring.
+        from scipy import ndimage as ndi
+        d = np.abs(arrs['open'][..., :3].astype(int) - arrs['closed'][..., :3].astype(int)).mean(-1)
+        op = arrs['open'][..., 3] > 200; ys, xs = np.where(op); top = ys.min() + (ys.max() - ys.min()) // 3
+        d[top:] = 0; d[~op] = 0; d = ndi.gaussian_filter(d, 9); cy, cx = np.unravel_index(np.argmax(d), d.shape)
+        MOUTH[name] = (int(cx), int(cy), 46, 34); print(name, 'mouth found at', cx, cy)
     if 'closed' in arrs and name in MOUTH:
         cx, cy, rx, ry = MOUTH[name]; hgt, wid = arrs['open'].shape[:2]; yy, xx = np.mgrid[0:hgt, 0:wid]
         r = np.sqrt(((xx - cx) / rx) ** 2 + ((yy - cy) / ry) ** 2); m = np.clip((1.25 - r) / .25, 0, 1)[..., None]

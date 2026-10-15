@@ -24,19 +24,53 @@
  // v12: the named people become the trees (audit A5): each medallion falls like a seed onto a tree spot and lands
  // as that tree starts to grow (front row from 32.9 s).
  const seedSpots=['0-0','0-1','0-2','0-3','1-1','1-4'];
- function chart(t){const handoff=smooth(30.7,32.9,t),st=A.grove.state(t);
-  for(let i=0;i<portraits.length;i++){const born=smooth(portraits[i],portraits[i]+.65,t);if(!born||t>=33.1)continue;
-   const side=i%2,settle=smooth(2.9,4.65,t),baseX=mix(960,650+(i%3)*310,settle),baseY=mix(470,i<3?402:654,settle);
+ // v14 (Robin: the hanging grid was lopsided and thin): the roll call is a WHEEL OF NAMES. A symmetric engraved
+ // wheel is flown in before the first name with all six roundels empty, so it is balanced from the start; each act
+ // the DJ names fills a slot with the constant face and its crown, alternating left and right. From the trumpet
+ // entry the wheel turns a step on every trumpet phrase (faces stay upright, like a Ferris wheel) and every crown
+ // advances one place. At 30.7 s the faces come loose and fall as the seeds; the wheel lifts away.
+ const WC={x:960,y:465,R:225},slotDeg=[330,30,270,90,210,150];
+ function phrasesBy(t){const sc=window.ALCHEMY_TRUMPET_SCORE;if(!sc)return 0;const f=t*24;let n=0;for(const [a] of sc.intervals){if(a/24>30.7)break;n+=smooth(a,a+9,f)}return n}
+ function wheelTurn(t){return phrasesBy(t)*Math.PI/14+.05*smooth(16.6,18,t)*(t-16.6)}
+ function slotPos(i,t){const a=slotDeg[i]*Math.PI/180+wheelTurn(t);return [WC.x+Math.sin(a)*WC.R,WC.y-Math.cos(a)*WC.R]}
+ function wheel(t,lift){const fly=smooth(1.5,2.5,t),y0=WC.y-900*(1-fly)-1000*lift*lift;if(fly<=0||lift>=1)return;
+  const turn=wheelTurn(t);g.save();g.translate(WC.x,y0);
+  // suspension cords from the flies
+  line(-150,-700,-60,-WC.R-30,C.ink,1.4);line(150,-700,60,-WC.R-30,C.ink,1.4);
+  g.rotate(turn);
+  // outer ring: double engraved band with a laurel run between
+  ellipse(0,0,WC.R+26,WC.R+26,null,C.ink);ellipse(0,0,WC.R-26,WC.R-26,null,C.ink);
+  g.save();g.beginPath();g.arc(0,0,WC.R+26,0,Math.PI*2);g.arc(0,0,WC.R-26,0,Math.PI*2,true);g.fillStyle='#e7c46a';g.fill('evenodd');g.restore();
+  for(let k=0;k<48;k++){const a=k/48*Math.PI*2;g.save();g.rotate(a);S.leaf(0,-WC.R+2,Math.PI/2.4,.34,1);g.restore()}
+  ellipse(0,0,WC.R+26,WC.R+26,null,C.ink);ellipse(0,0,WC.R-26,WC.R-26,null,C.ink);
+  // spokes to every slot, and between slots
+  for(let i=0;i<12;i++){const a=i/12*Math.PI*2,r0=98,r1=WC.R-26;g.save();g.rotate(a);fill(`M-5 ${-r0}L5 ${-r0}L3 ${-r1}L-3 ${-r1}Z`,i%2?'#c9962e':'#d8b25a');stroke(`M-5 ${-r0}L5 ${-r0}L3 ${-r1}L-3 ${-r1}Z`,C.ink,1);g.restore()}
+  g.rotate(-turn);
+  // hub: the large constant sun face
+  ellipse(0,0,100,100,'#e0b13e',C.ink);ellipse(0,0,92,92,null,'#8f5f1e');g.save();g.beginPath();g.arc(0,0,90,0,Math.PI*2);g.clip();g.scale(.55,.55);g.translate(-333,-170);piece('sol-head',C.gold);g.restore();
+  A.rays(0,0,104,40,30*A.performance.horn(t).attack,A.performance.horn(t).attack,turn);
+  g.restore();
+  // empty roundels in every slot (upright)
+  for(let i=0;i<6;i++){const [x,y]=slotPos(i,t),yy=y-(WC.y-y0);g.save();g.translate(x,yy);ellipse(0,0,74,74,C.paper,C.ink);ellipse(0,0,68,68,null,'#ad9662');for(let k=0;k<24;k++){const a=k/24*Math.PI*2;line(Math.cos(a)*58,Math.sin(a)*58,Math.cos(a)*66,Math.sin(a)*66,'#ad9662',.8)}g.restore()}
+ }
+ function chart(t){const handoff=smooth(30.7,32.9,t),st=A.grove.state(t),lift=smooth(30.7,32.2,t),fly=smooth(1.5,2.5,t);
+  g.save();g.beginPath();g.rect(76,70,1768,935);g.clip(); // the wheel stays inside the plate while it flies in and out
+  wheel(t,lift);
+  const steps=Math.floor(phrasesBy(t)+.5);
+  for(let i=0;i<portraits.length;i++){const born=smooth(portraits[i],portraits[i]+.45,t);if(!born||t>=33.1)continue;
+   const [wx,wy]=slotPos(i,t),baseX=wx,baseY=wy-(WC.y-(WC.y-900*(1-fly)));
    const spot=st.trees.find(tr=>tr.id===seedSpots[i]),sx=spot?spot.x:baseX,sy=spot?spot.y+st.cameraY:760;
    const x=mix(baseX,sx,smooth(0,1,handoff)),y=mix(baseY,sy-8,handoff*handoff);
-   const hit=A.performance.horn(t).attack,k=born*mix(1,.13,smooth(0,1,handoff))*(i===0?mix(1.8,1,settle):1)*(1+.05*hit),beat=(.45+.55*smooth(12.5,14,t))*(1-handoff);
+   const hit=A.performance.horn(t).attack,pop=1+.25*A.performance.bump(portraits[i],portraits[i]+.2,portraits[i]+.6,t);
+   const k=born*.78*pop*mix(1,.17,smooth(0,1,handoff))*(1+.05*hit),beat=(.45+.55*smooth(12.5,14,t))*(1-handoff);
    if(handoff>.97)A.glow(sx,sy-6,40*(1-smooth(32.9,33.1,t)));
-   g.save();g.translate(x,y+beat*7*Math.sin(S.pulse(t)+i));g.rotate(.045*beat*Math.sin(S.pulse(t)+i*.8));g.scale(k,k);
+   g.save();g.translate(x,y+beat*4*Math.sin(S.pulse(t)+i));g.rotate(.03*beat*Math.sin(S.pulse(t)+i*.8));g.scale(k,k);
    ellipse(0,0,91,91,C.paper,C.ink);ellipse(0,0,85,85,null,'#ad9662');
-   // Keep the same historical face; only the emblem above it changes.
+   // Keep the same historical face; only the emblem above it changes, one place per trumpet phrase.
    g.save();g.beginPath();g.arc(0,0,80,0,Math.PI*2);g.clip();g.scale(.43,.43);g.translate(-333,-164);piece('sol-head',C.gold,smooth(12.5,18,t));g.restore();
-   if(hit&&born>=1)A.rays(0,0,96,36,26*hit,hit*.9,i*.4);crown(i,t);g.restore();
+   if(hit&&born>=1)A.rays(0,0,96,36,26*hit,hit*.9,i*.4);crown((i+steps)%6,t);g.restore();
   }
+  g.restore();
  }
  function roots(t){const reveal=smooth(37,40.75,t),cover=smooth(43.5,45.1,t);if(!reveal||cover>=1)return;
   g.save();g.beginPath();g.rect(76,760,1768,245);g.clip();
