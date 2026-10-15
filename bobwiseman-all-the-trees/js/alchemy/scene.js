@@ -19,7 +19,7 @@
   const N=opts.n||Math.round(clamp(arc/3.1,12,260));
   for(let i=0;i<=N;i++){const u=i/N*phase,taper=Math.pow(u,.8);let r=mix(base,tip,taper)*(1+.11*Math.sin(u*17+seed)+.06*Math.sin(u*43+seed*2.3));
    // v11: a growing tip comes to a point (no sawn ends); roots narrow into a neck under the foot.
-   if(phase<1)r*=mix(.12,1,clamp((phase-u)/.07));if(opts.neck)r*=mix(.5,1,smooth(0,.09,u));sections.push(rootSection(b,u,r/2))}
+   if(phase<1)r*=mix(.12,1,clamp((phase-u)/.07));if(opts.neck)r*=mix(.5,1,smooth(0,.09,u));sections.push(rootSection(b,u,r/2));if(opts.warp){const sc=sections.at(-1),w=opts.warp(u);sc.q=[sc.q[0]+w[0],sc.q[1]+w[1]]}} /* v27: an optional ripple along the wood */
   g.beginPath();for(let i=0;i<sections.length;i++){const {q,n,r}=sections[i];i?g.lineTo(q[0]+n[0]*r,q[1]+n[1]*r):g.moveTo(q[0]+n[0]*r,q[1]+n[1]*r)}
   for(const {q,n,r} of sections.slice().reverse())g.lineTo(q[0]-n[0]*r,q[1]-n[1]*r);
   g.closePath();g.fillStyle=opts.fill||(seed%2?'#d6bd88':'#e2c995');g.fill();g.strokeStyle=C.ink;g.lineWidth=opts.outline||1.8;g.stroke();
