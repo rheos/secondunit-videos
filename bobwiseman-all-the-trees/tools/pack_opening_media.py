@@ -52,6 +52,17 @@ if hp.exists():
         bb = io.BytesIO(); im.save(bb, 'PNG', optimize=True); media[key] = 'data:image/png;base64,' + base64.b64encode(bb.getvalue()).decode()
         boxes[key] = {'w': im.width, 'h': im.height, 'tip': [(TIP[0] - x0) / 2, (TIP[1] - yt) / 2], 'wrist': [(WRIST[0] - x0) / 2, (WRIST[1] - yt) / 2]}
         print(key, boxes[key])
+# Draft 2 (Bob's note at 2:16): the heart tree's carved wooden hand pointing straight out at the viewer, end of its
+# right branch on the last "so are you". Half size; wrist = the branch stump, tip = the end-on fingertip.
+tp = src / 'tree-hand-at-you.png'
+if tp.exists():
+    a = np.asarray(Image.open(tp).convert('RGBA')).copy(); al = a[..., 3].astype(float); al[al < 90] = 0; al[al > 235] = 255; a[..., 3] = al.astype(np.uint8)
+    TIP, WRIST = (585, 640), (865, 190)
+    ys, xs = np.where(a[..., 3] > 0); x0, yt, x1, yb = xs.min() - 4, ys.min(), xs.max() + 5, ys.max() + 5
+    im = Image.fromarray(a).crop((x0, yt, x1, yb)); im = im.resize((round(im.width / 2), round(im.height / 2)), Image.LANCZOS)
+    bb = io.BytesIO(); im.save(bb, 'PNG', optimize=True); media['treehand'] = 'data:image/png;base64,' + base64.b64encode(bb.getvalue()).decode()
+    boxes['treehand'] = {'w': im.width, 'h': im.height, 'tip': [(TIP[0] - x0) / 2, (TIP[1] - yt) / 2], 'wrist': [(WRIST[0] - x0) / 2, (WRIST[1] - yt) / 2]}
+    print('treehand', boxes['treehand'])
 # v26: extra troubadour poses (startled hop, nervous glance, scuttle off) in the singer's own crop box, so they swap in at
 # the same scale; each is shifted so its feet land where the singing pose's feet are.
 def feet(a):
