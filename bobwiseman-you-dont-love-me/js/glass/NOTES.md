@@ -61,3 +61,24 @@ wish we still saw some action or delayed the dimming of the light." The table ab
 - Falling panes (203.75-211) now show daylight through the holes instead of night sky.
 
 Frames before 199.5 are unchanged.
+
+## Draft 9: the Pips stay, sing the refrains and dance out the song (Bob's notes on draft 8, 2026-10-15)
+
+Baseline 8b (5bcf8fb, cpP1M3Nu9MQ). Bob's four notes, built as written:
+
+- "the Pips are gone by :08 but I would like them to remain closer to :17": the intro Pips (`v1-pips.js`) no
+  longer leap out at 8.46. They keep dancing through the up-from-black and the window reveal, grow back to their
+  floor size as the camera pulls out, and leap out of the top on the bar at 16.8. Frames before 8.1 are unchanged.
+- "could one or all three stick their heads in each time to sing the 'you don't love me' refrain?": new
+  `pip-heads.js`. Two Pips (left and right singers of the bridge trio) pop their heads in for all twelve refrains
+  (27.42 ... 191.24, snapped to the backing onsets), alternating bottom corners and sides, mouths on the vocal
+  stem. The middle Pip is the petal plucker, already there, so all three are in every refrain. Drawn in
+  `v1-main.js`, `v2-main.js` and `main.js` over the scene, under vignette and grain.
+- "can they enter for the rest of the song @ 3:15 to dance around?": new `pip-finale.js`. All three drop in on
+  the beat at 195.37, land one per beat on the nave floor and dance a new move every beat or two, behind little
+  Bob as he walks; hat tip with him at 225.55, leap out at 230.72 before the fade.
+- "0:49 ... i just want her lips in a kissy face and peck her head twice like a chicken": `v1alt-wave.js`. Her
+  lips go into a squeezed kissy face on "waiting" and hold (never parted) through the near miss; on "kissed" she
+  jabs her head out at the wave twice, 0.35 s apart, a smack on each.
+- "2:45 ... i believe the glue stick should be inverted": in `scenes.js` (local, quotes the lyric) the tube is
+  turned over in her hand, nozzle up and left, and the nozzle's point runs down the crack line.

@@ -254,6 +254,7 @@ function v1Render(t) {
     v1dz.setTransform(1, 0, 0, 1, 0, 0); v1dz.clearRect(0, 0, W, H); v1Daisy(v1dz, t, tod);
     g.save(); g.setTransform(1, 0, 0, 1, 0, 0); g.globalAlpha = 1 - black; g.drawImage(V1DZ, 0, 0); g.restore();
   } else v1Daisy(g, t, tod);
+  drawPipHeads(g, t, tod); // the refrains: the Pips stick their heads in (pip-heads.js)
   g.setTransform(1, 0, 0, 1, 0, 0); g.globalCompositeOperation = 'source-over';
   const vg = g.createRadialGradient(W / 2, H / 2, H * .45, W / 2, H / 2, W * .65); vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(0,0,0,.5)');
   g.fillStyle = vg; g.fillRect(0, 0, W, H);

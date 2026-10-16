@@ -58,20 +58,26 @@ function v1aWaveSpine(S) {
 function v1aWaveAt(sp, i, f) { const w = lerp(-sp.Wd[i], sp.Wd[i], f); return [sp.P[i][0] + sp.N[i][0] * w, sp.P[i][1] + sp.N[i][1] * w]; }
 
 // ---------------- her, and where her face is ----------------
-// Bob (2026-10-12): "could she pucker more than once? start stop start stop." From V1.waiting she puckers and lets
-// go again and again, on the vocal: [start, hold]. Eyes shut on each pucker, open between them. The fourth lands on
-// V1.kissed and holds through the near miss; one last hopeful pucker as the wave falls apart, eyes kept shut to V1.bk5.
-const V1AWAVE_PUCKERS = [[V1.waiting + .03, .34], [(V1.waiting + V1.tobe) / 2, .3], [V1.tobe + .02, .36], [V1.kissed - .04, .46], [V1.kissed + .76, .24]];
+// Bob (2026-10-12): "could she pucker more than once? start stop start stop." Draft 5 to 8 had five start-stop
+// puckers from V1.waiting. Draft 9 (Bob, 2026-10-15: "the kissy face isn't yet right to me. i just want her lips in a
+// kissy face and peck her head twice like a chicken - you know?"): her lips go into the kissy face on V1.waiting and
+// stay there, eyes shut, through the near miss (to where the last pucker used to let go); on V1.kissed she pecks her
+// head out at the wave twice, a chicken's jab and snap back, an eighth note apart, with a smack on each.
+const V1AWAVE_KISS = { on: V1.waiting + .03, off: V1.kissed + 1.0 };
+const V1AWAVE_PECKS = [V1.kissed - .02, V1.kissed + .33];
+const V1AWAVE_PECK = [58, -36, -.12]; // the jab: head-lean units out along the lean, a little more tilt
+function v1aWavePeck(t) { // 0..1: how far out the head is jabbed
+  let j = 0;
+  for (const a of V1AWAVE_PECKS) j = Math.max(j, (1 - Math.pow(1 - lin(t, a, a + .07), 3)) * (1 - ease(t, a + .11, a + .25)));
+  return j;
+}
 function v1aWaveKiss(t) {
-  let pk = 0, shut = 0, sm = 0;
-  V1AWAVE_PUCKERS.forEach(([a, h], i) => {
-    const last = i === V1AWAVE_PUCKERS.length - 1;
-    pk = Math.max(pk, ease(t, a - .04, a + .06) * (1 - ease(t, a + h, a + h + .14)));
-    const sh = last ? ease(t, V1.bk5 - .1, V1.bk5 + .15) : ease(t, a + h + .06, a + h + .18);
-    shut = Math.max(shut, ease(t, a - .08, a + .02) * (1 - sh));
-    if (t >= a) { const u = (t - a) / .7; sm = Math.max(sm, u < .1 ? u / .1 : Math.exp(-(u - .1) * 6)); } // the smack
-  });
-  return { pk, shut, sm: sm * pk };
+  const K = V1AWAVE_KISS;
+  const pk = ease(t, K.on - .04, K.on + .06) * (1 - ease(t, K.off, K.off + .14));
+  const shut = ease(t, K.on - .08, K.on + .02) * (1 - ease(t, V1.bk5 - .1, V1.bk5 + .15));
+  let sm = 0;
+  for (const a of V1AWAVE_PECKS) if (t >= a) { const u = (t - a) / .5; sm = Math.max(sm, u < .1 ? u / .1 : Math.exp(-(u - .1) * 6)); } // the smack
+  return { pk, shut, sm: Math.max(.75, sm) * pk }; // held squeezed (a kissy face, never parted); each peck squeezes it fully
 }
 function v1aWavePose(t) {
   const k = ease(t, V1.tobe - .1, V1.kissed - .05), K = v1aWaveKiss(t);
@@ -79,7 +85,8 @@ function v1aWavePose(t) {
   const give = ease(t, V1.giveUp, V1.giveUp + .5) * (1 - lin(t, V1.l4 - 1, V1.l4));
   const glance = ease(t, V1.steep - .2, V1.steep + .1) * (1 - ease(t, V1.tobe - .4, V1.tobe - .1));
   const watch = ease(t, V1.bk5 + .2, V1.bk5 + .5) * (1 - ease(t, V1.giveUp - .2, V1.giveUp + .1));
-  const hd = [V1AWAVE_KISSHD[0] * lean, V1AWAVE_KISSHD[1] * lean + 9 * give, V1AWAVE_KISSHD[2] * lean + .07 * give];
+  const j = v1aWavePeck(t);
+  const hd = [V1AWAVE_KISSHD[0] * lean + V1AWAVE_PECK[0] * j, V1AWAVE_KISSHD[1] * lean + 9 * give + V1AWAVE_PECK[1] * j, V1AWAVE_KISSHD[2] * lean + .07 * give + V1AWAVE_PECK[2] * j];
   return { k, shut: K.shut, pucker: K.pk, smack: K.sm, hd, look: glance * (1 - K.shut) + .9 * watch - .45 * give, give };
 }
 function v1aWaveHeadPt(hd, p) { // head-local point -> world

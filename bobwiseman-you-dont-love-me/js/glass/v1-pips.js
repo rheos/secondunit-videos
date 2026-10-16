@@ -6,8 +6,14 @@
 // frame 0), into a warm follow spot in the dark nave, ta-da, a Temptations walk, a hat tip into the rippling spin,
 // a hand roll, then strut left across the floor (behind the passing pillar) and leap out of the top of the frame on
 // the bar at 8.46. The spot irises out behind them. Same singers, suits and moves as their bridge run.
-// Beats: four per bar between the no_vocals stem's bar onsets (0.25, 3.04, 5.78, 8.46, 11.26).
-const PIPS_BARS = [0.25, 3.04, 5.78, 8.46, 11.26];
+// Draft 9 (Bob, 2026-10-15: "the Pips are gone by :08 but I would like them to remain closer to :17"): they no longer
+// leap out on the bar at 8.46. After the strut they dance on: a hora kick line for a bar, chicken elbows, a crouch,
+// and on the beat the camera starts its tilt (13.30) they spring up and ride it, dancing in the air (scissor kicks,
+// the spin, a hand roll, a goodbye hat tip), and shoot out of the top of the frame on the bar at 16.76.
+// Frames before ~8.1 s are unchanged.
+// Beats: four per bar between the no_vocals stem's bar onsets (0.25, 3.04, 5.78, 8.46, 11.26, 13.98, 16.76; librosa
+// beat track on the stem, 86 bpm: 11.96 12.63 13.31 13.98 14.72 15.39 16.07 16.76).
+const PIPS_BARS = [0.25, 3.04, 5.78, 8.46, 11.26, 13.98, 16.76];
 const PIPS_BEATS = (() => { const b = []; for (let i = 0; i + 1 < PIPS_BARS.length; i++) for (let q = 0; q < 4; q++) b.push(lerp(PIPS_BARS[i], PIPS_BARS[i + 1], q / 4)); b.push(PIPS_BARS[PIPS_BARS.length - 1]); return b; })();
 const PB = PIPS_BEATS; // 0.25 0.95 1.65 2.34 | 3.04 3.73 4.41 5.10 | 5.78 6.45 7.12 7.79 | 8.46 ...
 const PIPS_IN = {
@@ -18,8 +24,12 @@ const PIPS_IN = {
   tip: PB[6],                   // hat tip, then the spin ripples down the line
   roll: [PB[7], PB[8]],         // a hand roll for one beat
   strut: [PB[8], PB[12]],       // strut left across the floor, a knee lift on every beat
-  leap: PB[12],                 // and up out of the top of the frame
+  hora: [PB[12], PB[16]],       // draft 9: a hora kick line for a bar
+  chick: [PB[16], PB[18]],      // chicken elbows for two beats, stepping back to the right
+  jump: PB[19],                 // crouch on PB[18], spring up on the beat the tilt starts, and ride it up
+  leap: PB[24],                 // out of the top of the frame on the bar at 16.76
   x0: 2560, x1: 1600,           // world x of the middle singer: standing, and where the strut ends
+  x2: 1700, x3: 1820,           // where the chicken steps take him, and where he drifts to in the air
   gap: 230,                     // between singers (world)
   y: 3330,                      // world y of their feet on the nave floor
   s: .42,                       // their scale against the bridge stage
@@ -35,6 +45,9 @@ const PIPS_POSE = {
   ready: { ...POSE.idle, dip: 8 },
   leapPrep: { L: [-.6, -.2], R: [.6, .2], lL: [-.45, .3], lR: [.45, -.3], x: 0, lean: 0, tilt: .1, dip: 50 },
   leap: { ...POSE.vee, lL: [-.05, -.02], lR: [.3, 1.2], dip: 0 },                          // one knee tucked
+  // in the air (draft 9): scissor kicks, arms flung wide
+  scissA: { L: [-2.1, -2.3], R: [1.6, 1.2], lL: [-.9, -.4], lR: [.35, .9], x: 0, lean: .06, tilt: .1, dip: 0 },
+  scissB: { L: [-1.6, -1.2], R: [2.1, 2.3], lL: [-.35, -.9], lR: [.9, .4], x: 0, lean: -.06, tilt: -.1, dip: 0 },
 };
 const PIPS_MOUTH = .08;
 const withMouth = (P, m = PIPS_MOUTH) => ({ ...P, mouth: m });
@@ -51,8 +64,16 @@ function pipsInKeys(k) {
     [I.tip - .1, withMouth(POSE6.salute), .12], [I.tip, withMouth(POSE6.flick), .1],
     [I.roll[0], withMouth(POSE.roll), .12],
     [I.strut[0], withMouth(PIPS_STRUT[1]), .14],
-    [I.leap - .22, withMouth(PIPS_POSE.leapPrep), .14],
-    [I.leap + .04, withMouth(PIPS_POSE.leap, .3), .12],
+    // draft 9: the hora (a kick every half beat), chicken elbows, the crouch, the jump, and the routine in the air
+    ...[12, 13, 14, 15].flatMap((n) => [[PB[n], withMouth(POSE6.horaR), .12], [PB[n] + h / 2, withMouth(POSE6.horaL), .12]]),
+    [PB[16], withMouth(POSE6.chick), .12],
+    [PB[18], withMouth(PIPS_POSE.leapPrep), .16],
+    [I.jump + .02, withMouth(PIPS_POSE.leap, .3), .1],
+    [PB[20], withMouth(PIPS_POSE.scissA, .3), .12], [PB[20] + h / 2, withMouth(PIPS_POSE.scissB, .3), .1],
+    [PB[21] + .1, withMouth(POSE.wide, .3), .2],                        // the spin in the air (PIPS_SPINS)
+    [PB[22], withMouth(POSE.roll, .2), .12],
+    [PB[23] - .1, withMouth(POSE6.salute, .3), .12], [PB[23], withMouth(POSE6.flick, .4), .1],
+    [I.leap - .12, withMouth(PIPS_POSE.leap, .3), .12],
   ];
 }
 const PIPS_KEYS = [0, 1, 2].map(pipsInKeys);
@@ -71,9 +92,9 @@ function pipsInPose(k, t) {
   const I = PIPS_IN;
   let P = pipsKeyed(k, t);
   // the strut: on each beat the other knee comes up
-  if (t > I.strut[0] && t < I.leap - .22) {
+  if (t > I.strut[0] && t < I.strut[1] - .22) {
     const { n, f } = pipsBeat(t), A = withMouth(PIPS_STRUT[(n + 1) & 1]), Bp = withMouth(PIPS_STRUT[n & 1]);
-    const w = ease(t, I.strut[0], I.strut[0] + .14) * (1 - ease(t, I.leap - .36, I.leap - .22));
+    const w = ease(t, I.strut[0], I.strut[0] + .14) * (1 - ease(t, I.strut[1] - .36, I.strut[1] - .22));
     P = mixPose(P, mixPose(A, Bp, easeOutBack(clamp(f / .32), 1.2)), w);
   }
   // the hand roll: forearms circling each other in front of the belt, two turns a beat (as trioMoves)
@@ -83,24 +104,53 @@ function pipsInPose(k, t) {
       const L = [-.42 + .2 * s1, 1.5 + .5 * c1], R = [.42 + .2 * s1, -1.5 + .5 * c1];
       P = { ...P, L: P.L.map((v, i) => lerp(v, L[i], w)), R: P.R.map((v, i) => lerp(v, R[i], w)) };
     } }
+  // draft 9: the chicken's flapping elbows (four flaps a beat, knees bouncing with them, as trioMoves)
+  { const [a, b] = I.chick, w = ease(t, a - .05, a + .03) * (1 - ease(t, b - .05, b + .03));
+    if (w > 0) {
+      const bt = PB[17] - PB[16], f = .5 + .5 * Math.sin(TAU * (t - a) / (bt / 4) - Math.PI / 2);
+      P = { ...P, L: [P.L[0] - .5 * f * w, P.L[1]], R: [P.R[0] + .5 * f * w, P.R[1]], dip: P.dip + 12 * f * w, tilt: P.tilt + .1 * Math.sin(TAU * (t - a) / (bt / 2)) * w };
+    } }
+  // and a hand roll in the air
+  { const a = PB[22], b = PB[23] - .1, w = ease(t, a - .05, a + .03) * (1 - ease(t, b - .05, b + .03));
+    if (w > 0) {
+      const ph = TAU * (t - a) / ((b - a) / 2), s1 = Math.sin(ph), c1 = Math.cos(ph);
+      const L = [-.42 + .2 * s1, 1.5 + .5 * c1], R = [.42 + .2 * s1, -1.5 + .5 * c1];
+      P = { ...P, L: P.L.map((v, i) => lerp(v, L[i], w)), R: P.R.map((v, i) => lerp(v, R[i], w)) };
+    } }
   return P;
 }
 // where the singer is: world x of the middle singer, and how far above the floor (world units, + is up)
-function pipsInX(t) { return lerp(PIPS_IN.x0, PIPS_IN.x1, ease(t, PIPS_IN.strut[0], PIPS_IN.leap - .1)); }
-function pipsInLift(k, t) {
+function pipsInX(t) {
+  const I = PIPS_IN;
+  return lerp(I.x0, I.x1, ease(t, I.strut[0], I.strut[1] - .1)) + (I.x2 - I.x1) * ease(t, I.chick[0], I.chick[1])
+    + (I.x3 - I.x2) * ease(t, I.jump, I.leap);
+}
+// Draft 9: in the air his feet ride the camera's tilt. Screen y of his feet (camera at time t): up from the floor in
+// two thirds of a beat to 82% of the frame height, a little higher on each beat's kick, drifting up to 72% by the
+// leap; then up and out, pulled from above.
+function pipsFlySY(k, t, cam) {
+  const I = PIPS_IN, floorSY = H / 2 + (I.y - cam.y) * cam.s, j = I.jump + k * .04;
+  const rise = 1 - Math.pow(1 - lin(t, j, j + .46), 2.2);
+  let sy = lerp(floorSY, lerp(.82, .72, ease(t, j + .5, I.leap)) * H, rise);
+  if (t > PB[20] - .1) { const { n, f } = pipsBeat(t); sy -= 26 * Math.sin(Math.PI * f) * (n >= 20 && n < 24 ? 1 : 0); }
+  const a = I.leap + k * .06;
+  if (t > a) { const u = (t - a) / .5; sy -= (1.5 * H * u * u * u + 300 * u); }
+  return sy;
+}
+function pipsInLift(k, t, cam) {
   const I = PIPS_IN, L = I.land[k];
   if (t < L) { const u = lin(t, L - I.fall, L); return I.drop * (1 - u * u); } // falling, faster as he goes
-  const a = I.leap + k * .06;
-  if (t > a) { const u = (t - a) / .5; return 1400 * u * u * u + 260 * u; } // up and out, pulled from above
+  if (t > I.jump + k * .04) return I.y - (cam.y + (pipsFlySY(k, t, cam) - H / 2) / cam.s); // in the air (world units)
   return 0;
 }
 function pipsInActive(t) { return t > PIPS_IN.land[0] - PIPS_IN.fall && t < PIPS_IN.leap + .9; }
+const PIPS_SPINS = [[PIPS_IN.tip, .5], [PB[21], .55]]; // [start, length]: each spin ripples down the line, .12 s apart
 
 // The follow spot: a warm pool on the floor under them with a faint beam from above. It is on from the first frame
 // (the nave is still black), eases down as the dawn comes up, and irises out once they have gone up.
 function pipsSpot(g, t, cam) {
   const A = ease(t, -.4, .1) * (1 - .35 * ease(t, 4, 8));
-  const r = 560 * (1 - ease(t, PIPS_IN.leap + .2, PIPS_IN.leap + .85));
+  const r = 560 * (1 - ease(t, PIPS_IN.jump + .2, PIPS_IN.jump + .85)); // irises out once they are up
   if (A <= .001 || r < 4) return;
   const s = cam.s, sx = W / 2 + (pipsInX(t) - cam.x) * s, sy = H / 2 + (PIPS_IN.y - cam.y) * s;
   g.save(); g.setTransform(1, 0, 0, 1, 0, 0); g.globalCompositeOperation = 'screen';
@@ -121,8 +171,10 @@ function drawIntroPips(g, t, cam) {
   if (!pipsInActive(t)) return;
   pipsSpot(g, t, cam);
   const s = cam.s, xm = pipsInX(t);
+  // draft 9: in the air they grow as the camera pulls back for the window, so they stay about their floor size
+  const grow = t > PIPS_IN.jump ? lerp(1, Math.pow(v1Cam(PIPS_IN.jump).s / s, .8), ease(t, PIPS_IN.jump, PIPS_IN.jump + .6)) : 1;
   for (let k = 0; k < 3; k++) {
-    const S = SINGERS[k], wx = xm + (k - 1) * PIPS_IN.gap, lift = pipsInLift(k, t);
+    const S = SINGERS[k], wx = xm + (k - 1) * PIPS_IN.gap * grow, lift = pipsInLift(k, t, cam);
     if (t < PIPS_IN.land[k] - PIPS_IN.fall) continue;
     g.save();
     g.setTransform(s, 0, 0, s, W / 2 - cam.x * s, H / 2 - cam.y * s);
@@ -147,8 +199,9 @@ function drawIntroPips(g, t, cam) {
       g.restore();
     }
     g.translate(0, -lift / PIPS_IN.s);
+    if (grow !== 1) { g.translate(S.x, TRIO_FLOOR_Y); g.scale(grow, grow); g.translate(-S.x, -TRIO_FLOOR_Y); }
     // the spin after the hat tip ripples down the line (the trio draws its back when cos < 0)
-    const sp0 = PIPS_IN.tip + k * .12, spU = ease(t, sp0, sp0 + .5), cs = Math.cos(spU * TAU);
+    const spU = PIPS_SPINS.reduce((u, [a, d]) => u + ease(t, a + k * .12, a + k * .12 + d), 0), cs = Math.cos(spU * TAU);
     g.translate(S.x, 0); g.scale(Math.max(.12, Math.abs(cs)) * Math.sign(cs || 1), 1); g.translate(-S.x, 0);
     drawSinger(g, S, k, t, pipsInPose(k, t));
     g.restore();

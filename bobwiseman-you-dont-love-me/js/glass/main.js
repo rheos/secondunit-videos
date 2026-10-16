@@ -213,6 +213,7 @@ function renderFrame(t) {
   drawWall(g, view, wallL);
   drawFloor(g, view, wallL, tod);
   drawPool(g, view, tod, t);
+  drawFinalePips(g, rt, cam, tod); // the Pips dance out the song from 195.37, behind little Bob (pip-finale.js)
   // the outro cameo: Bob crossing the floor in the window's late light (moonlight once night comes) (nothing is drawn before OB.in)
   if (rt >= OB.in) { OUTRO_BOB.drawPool(g, view, rt, tod); OUTRO_BOB.draw(g, rt, cam, tod); }
   // the church light comes back as we leave the roundel (the bridge's frame is flat: no bloom, shafts, vignette)
@@ -220,6 +221,7 @@ function renderFrame(t) {
   bloom(g, tod.I * (1 - .7 * fin));
   drawShafts(g, t, tod, 1 - fin);
   drawDaisy(g, t, tod, rt);
+  drawPipHeads(g, rt, tod); // the refrains: the Pips stick their heads in (pip-heads.js)
   // vignette + grain
   g.setTransform(1, 0, 0, 1, 0, 0); g.globalCompositeOperation = 'source-over';
   const vg = g.createRadialGradient(W / 2, H / 2, H * .45, W / 2, H / 2, W * .65); vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, `rgba(0,0,0,${.5 * (1 - fin)})`);
