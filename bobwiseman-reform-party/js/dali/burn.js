@@ -244,6 +244,7 @@ const CAM_KEEP = (() => { const out = []; for (const e of shotsEnd()) { if (e[0]
 const SIGHT = [[[320, 0], [311, 8]], [[321, 6], [318, 14]]];
 const inCarBox = (X, Z) => X > 277.6 && X < 292.5 && Z > -4.6 && Z < 4.6; // where the board parks (206-238)
 function keepOut(X, Z) {
+  if (typeof DRUM !== 'undefined' && Math.hypot(X - DRUM.x, Z - DRUM.z) < DRUM.r + 2.4) return true; // a gap in the crowd round the drum circle
   if (X > 277.6 && X < 292.5 && Z > -12.5 && Z <= -4.6) return true; // behind it, where the vote cameras stand and look across the table
   for (const c of CAM_KEEP) if (Math.hypot(X - c[0], Z - c[1]) < 2.3) return true;
   for (const [a, b] of SIGHT) { const L = Math.hypot(b[0] - a[0], b[1] - a[1]), u = clamp(((X - a[0]) * (b[0] - a[0]) + (Z - a[1]) * (b[1] - a[1])) / (L * L)); if (u > 0 && u < 1 && segDist(X, Z, a, b) < 1.3 + 1.6 * u) return true; }

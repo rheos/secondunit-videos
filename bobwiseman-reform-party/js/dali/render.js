@@ -168,7 +168,7 @@ function render(t) {
   spinDevils(t); bigGavel(t);
   installsOver(t); burnOver(t); // screen-space overlays before the grade
   grade(t);
-  for (const l of LAMPS) lamp(l, t, true); spinners(t);
+  for (const l of LAMPS) lamp(l, t, true); spinners(t); if (typeof drumGlow === 'function') drumGlow(t);
   // the car layer: drawn, graded, lit by its own emissive props, masked to its own pixels, then laid over the fire
   g = gc; gc.setTransform(1, 0, 0, 1, 0, 0); gc.globalCompositeOperation = 'source-over'; gc.globalAlpha = 1; gc.clearRect(0, 0, W, H);
   drawCar(t); gm.clearRect(0, 0, W, H); gm.drawImage(CARC, 0, 0); grade(t, true); gc.globalCompositeOperation = 'destination-in'; gc.drawImage(MASK, 0, 0); gc.globalCompositeOperation = 'source-over';

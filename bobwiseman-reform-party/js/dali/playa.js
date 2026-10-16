@@ -863,8 +863,48 @@ const BIKES = [];
 function bike(b, t) { return null; }
 
 // scene hook (draft 3): pushes {z, draw, shadow} into list.
+
+// ---------- the drum circle (Robin, after draft 6) ----------
+// Hand drums play under the outro from about 3:25 on, so a small circle of djembe players sits on the playa beside where
+// the board parks, the whole night. The camera does not go looking for them; it just passes them now and then.
+const DRUM = { x: 274.5, z: 10.5, r: 2.3, t0: 205, beat: .6, phase: 206.47 }; // 100 bpm from the hand-drum onsets (no_vocals stem)
+const DRUMMERS = [...Array(9)].map((_, i) => ({ a: i / 9 * TAU + .2, c: bmCostume(7300 + i * 13), i }));
+function drummer(d, t) {
+  const X = DRUM.x + Math.cos(d.a) * DRUM.r, Z = DRUM.z + Math.sin(d.a) * DRUM.r, p = P(X, 0, Z); if (p[2] < 1.2 || p[0] < -200 || p[0] > W + 200) return null;
+  return { z: p[2], draw: () => { const q = P(X, 0, Z), k = kAt(q); if (k < 1.2) return; const x = q[0], y = q[1], c = d.c;
+    const n = (t - DRUM.phase) / (DRUM.beat / 2), step = Math.floor(n), f = n - step, hand = (step + d.i) % 2, hit = Math.max(0, 1 - f * 3); // a hit on every half beat, hands alternating
+    const lift = (h) => (h === hand ? (1 - hit) * .22 : .12) * k;
+    // the drum: a wooden goblet with a pale skin, between the knees
+    const dx = x, dy = y; g.fillStyle = '#7b4a24'; g.beginPath(); g.moveTo(dx - .2 * k, dy - .62 * k); g.lineTo(dx + .2 * k, dy - .62 * k); g.lineTo(dx + .08 * k, dy - .3 * k); g.lineTo(dx + .14 * k, dy); g.lineTo(dx - .14 * k, dy); g.lineTo(dx - .08 * k, dy - .3 * k); g.fill();
+    g.fillStyle = '#e9d9b4'; g.beginPath(); g.ellipse(dx, dy - .62 * k, .2 * k, .06 * k, 0, 0, TAU); g.fill();
+    // sitting on the ground behind it: crossed legs, body, head, hat
+    const bx = x, by = y - .05 * k; g.fillStyle = c.legs; g.beginPath(); g.ellipse(bx, by - .08 * k, .42 * k, .12 * k, 0, 0, TAU); g.fill();
+    g.fillStyle = c.coat[0]; g.beginPath(); g.moveTo(bx - .24 * k, by - .15 * k); g.lineTo(bx + .24 * k, by - .15 * k); g.lineTo(bx + .19 * k, by - .78 * k); g.lineTo(bx - .19 * k, by - .78 * k); g.fill();
+    g.fillStyle = c.skin; g.beginPath(); g.arc(bx, by - .92 * k + (hit * .02 * k), .12 * k, 0, TAU); g.fill();
+    if (c.hat === 'top' || c.hat === 'fluff') { g.fillStyle = c.hat === 'top' ? '#1c1a1e' : c.trim; g.fillRect(bx - .1 * k, by - 1.18 * k, .2 * k, .17 * k); }
+    // arms: shoulders to the drum skin, the hitting hand slaps down on the half beat
+    g.strokeStyle = c.coat[1]; g.lineWidth = Math.max(1, .07 * k); g.lineCap = 'round';
+    for (const h of [0, 1]) { const sx = bx + (h ? .17 : -.17) * k, hx = dx + (h ? .09 : -.09) * k, hy = dy - .64 * k - lift(h); g.beginPath(); g.moveTo(sx, by - .7 * k); g.quadraticCurveTo(sx + (h ? .1 : -.1) * k, by - .5 * k, hx, hy); g.stroke(); g.fillStyle = c.skin; g.beginPath(); g.arc(hx, hy, .045 * k, 0, TAU); g.fill(); }
+  }, shadow: () => shadowStick(X, 0, 1.1, Z, .5, t) };
+}
+
+// after the night grade: the lantern pool and the drummers again at part strength, so they read at night (render.js)
+function drumGlow(t) {
+  if (t < DRUM.t0) return; const n = ease(t, 199, 216); if (n <= 0) return; const pit = P(DRUM.x, 0, DRUM.z); if (pit[2] < 1.2) return; const k = kAt(pit); if (k < 1.2) return;
+  g.save(); g.globalCompositeOperation = 'lighter'; const R = 4 * k, rg = g.createRadialGradient(pit[0], pit[1] - .3 * k, 0, pit[0], pit[1] - .3 * k, R); rg.addColorStop(0, `rgba(255,190,110,${.5 * n})`); rg.addColorStop(1, 'rgba(255,140,60,0)'); g.fillStyle = rg; g.fillRect(pit[0] - R, pit[1] - R, 2 * R, 2 * R); g.restore();
+  const l = []; for (const d of DRUMMERS) { const o = drummer(d, t); if (o) l.push(o); } l.sort((a, b) => b.z - a.z);
+  g.save(); g.globalAlpha = .62 * n; for (const o of l) o.draw(); g.restore();
+}
+function drumCircleInto(t, list) {
+  if (t < DRUM.t0) return;
+  const pit = P(DRUM.x, 0, DRUM.z); if (pit[2] > 1.2) list.push({ z: pit[2] + .01, draw: () => { const k = kAt(pit); if (k < 1.2) return; // a lantern on a rug in the middle
+    g.fillStyle = '#8c2a28'; g.beginPath(); g.ellipse(pit[0], pit[1], 1.2 * k, .35 * k, 0, 0, TAU); g.fill(); g.fillStyle = '#e8b23a'; g.fillRect(pit[0] - .08 * k, pit[1] - .35 * k, .16 * k, .3 * k);
+    const rg = g.createRadialGradient(pit[0], pit[1] - .2 * k, 0, pit[0], pit[1] - .2 * k, 1.6 * k); rg.addColorStop(0, 'rgba(255,214,140,.55)'); rg.addColorStop(1, 'rgba(255,170,80,0)'); g.fillStyle = rg; g.fillRect(pit[0] - 1.6 * k, pit[1] - 1.8 * k, 3.2 * k, 3.2 * k); } });
+  for (const d of DRUMMERS) { const o = drummer(d, t); if (o) list.push(o); }
+}
+
 function playaInto(t, list) {
   brcInto(t, list); bmCampsInto(t, list); bmInstallsInto(t, list); bmElephantsInto(t, list); bmWarsInto(t, list);
-  bmTraffic(t, list); bmFlockInto(t, list); bmParadeInto(t, list); bmPoorInto(t, list); bmCopsInto(t, list);
+  bmTraffic(t, list); bmFlockInto(t, list); bmParadeInto(t, list); bmPoorInto(t, list); bmCopsInto(t, list); drumCircleInto(t, list);
 }
 function playaFront(t) { bmSaxFront(t); } // render.js front hook: things that pass between the drone and the car

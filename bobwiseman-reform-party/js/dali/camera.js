@@ -182,17 +182,33 @@ const FLY_A = flight((() => { const out = []; let th = -Math.PI / 2, yw = 0; for
 const FLY_C = flight((() => { const out = []; let yw = 0; for (const k of END_KEYS) { yw = unwrap(k[6] || 0, yw); out.push([k[0], k[1], k[2], k[3], k[4], yw, Math.log(k[5])]); } return out; })());
 // the hover: slow sums of sines, never jitter (periods 5 to 20 s)
 const hov = (t, s) => .6 * Math.sin(t * (.31 + .07 * s) + s * 1.7) + .4 * Math.sin(t * (.53 + .05 * s) + s * 2.9);
+
+// Draft 7 (Robin, after draft 6): "it really zooms around ... it would be nice if it would just glide a bit more". The
+// flight above still passes every framing on its word; GLIDE low-passes it (a gaussian over the path), so the drone
+// eases in and out of each framing instead of darting between them. The dives that must stay exact keep a narrow window.
+const GLIDE_EXACT = [[16.6, 19.6, .3], [20.8, 24.6, .15], [36.4, 40.2, .35], [79.0, 81.2, .2], [102.3, 104.8, .2], [126.6, 131.2, .2], [144.9, 147.4, .3], [170.4, 196.2, .3]];
+function glideSigma(t) { let s = 1.5; for (const [a, b, v] of GLIDE_EXACT) { const w = Math.min(ease(t, a - 1.2, a), 1 - ease(t, b, b + 1.2)); s = lerp(s, Math.min(s, v), clamp(w)); } return s; }
+function glideA(t) {
+  const sg = glideSigma(t); if (sg < .02) return FLY_A(t); const n = 12, acc = [0, 0, 0, 0, 0, 0]; let wsum = 0;
+  for (let i = -n; i <= n; i++) { const d = i / n * 2.2 * sg, w = Math.exp(-.5 * (d / sg) ** 2), v = FLY_A(clamp(t + d, 0, 201)); for (let c = 0; c < 6; c++) acc[c] += w * v[c]; wsum += w; }
+  return acc.map((v) => v / wsum);
+}
+function glideC(t) { const sg = 1.5, n = 12, acc = [0, 0, 0, 0, 0, 0]; let wsum = 0;
+  for (let i = -n; i <= n; i++) { const d = i / n * 2.2 * sg, w = Math.exp(-.5 * (d / sg) ** 2), v = FLY_C(clamp(t + d, 215.2, 268.99)); for (let c = 0; c < 6; c++) acc[c] += w * v[c]; wsum += w; }
+  return acc.map((v) => v / wsum); }
+// the drone's own bob on top of the slow hover: a few centimetres at 1.5 to 3 s periods, so a held framing still breathes
+const bob = (t, s) => .55 * Math.sin(t * (2.3 + .17 * s) + s * 2.1) + .45 * Math.sin(t * (3.7 + .11 * s) + s * .7);
 function camAt(t, bare) { // bare: without the hover (for the motion check only)
   let c = typeof camEnd === 'function' ? camEnd(t) : null; // the dusk aerial over Black Rock City (camera-end.js), 201-215.2
   if (!c) {
     let x, y, z, p, yw, f;
-    if (t <= 201) { const [r, th, cy0, cp, cyw, lf] = FLY_A(t);
+    if (t <= 201) { const [r, th, cy0, cp, cyw, lf] = bare === 'raw' ? FLY_A(t) : glideA(t);
       // the follow point: the car, except the intro (it drives into a still frame, then the drone picks it up) and the
       // last seconds before the aerial (the drone slows to a stop in the air while the car brakes)
       const follow = t < 10 ? carX(14) : t < 18 ? carX(14) + 12.8 * ((t - 10) / 8) ** 3 * (1 - (t - 10) / 16) : t < 197 ? carX(t)
         : (() => { const u = (t - 197) / 4, p0 = carX(197), p1 = carX(201), h00 = 2 * u ** 3 - 3 * u * u + 1, h10 = u ** 3 - 2 * u * u + u, h01 = -2 * u ** 3 + 3 * u * u; return h00 * p0 + h10 * 4 * 1.6 + h01 * p1; })();
       x = follow + r * Math.cos(th); y = cy0; z = r * Math.sin(th); p = cp; yw = cyw; f = Math.exp(lf); }
-    else { const [cx, cy0, cz, cp, cyw, lf] = FLY_C(t); x = cx; y = cy0; z = cz; p = cp; yw = cyw; f = Math.exp(lf); }
+    else { const [cx, cy0, cz, cp, cyw, lf] = bare === 'raw' ? FLY_C(t) : glideC(t); x = cx; y = cy0; z = cz; p = cp; yw = cyw; f = Math.exp(lf); }
     // the old hand-held wobble, kept so the hand-overs to and from the aerial (which has it too) match exactly
     const ox = x - carX(Math.min(t, 238)), near = clamp((Math.hypot(ox, y - TOP, z - carZ(t)) - .5) / .7);
     x += .25 * Math.sin(t * .23) * near; y += .05 * Math.sin(t * .31) * near;
@@ -204,5 +220,7 @@ function camAt(t, bare) { // bare: without the hover (for the motion check only)
   const hx = A * hov(t, 1), hy = A * .6 * hov(t, 2), hz = A * hov(t, 3), ha = dist > 400 ? .3 : 1;
   const gu = t - (typeof gavelT === 'function' ? gavelT() : L_(34).e - .5), sh = gu >= 0 && gu < .4 ? (1 - gu / .4) ** 2 : 0; // the giant gavel's impact shakes the drone
   const hb = bare ? 0 : 1, yaw = c.yaw + .012 * ha * hb * hov(t, 4), p = Math.min(c.p + .008 * ha * hb * hov(t, 5), 1.565), f = c.f * (1 + .018 * hb * hov(t, 6));
+  const bb = bare ? 0 : clamp(.012 * dist, .025, .09) * near; // the bob, scaled like the hover but smaller
+  c = Object.assign({}, c, { x: c.x + bb * bob(t, 7), y: c.y + bb * .8 * bob(t, 8), z: c.z + bb * bob(t, 9) });
   return { x: c.x + hx + .05 * sh * Math.sin(gu * 55), y: c.y + hy + .04 * sh * Math.sin(gu * 71 + 1), z: c.z + hz, p, f, yaw, cy: Math.cos(yaw), sy: Math.sin(yaw), clip: c.clip || clip };
 }
