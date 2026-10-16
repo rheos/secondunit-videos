@@ -5,7 +5,8 @@
 // traveller is drawn: schematics, the plane loop and the locked nested-phone shot are untouched.
 'use strict';
 const OHARA = [[89.7, 90.5], [219.4, 220.05], [286.6, 289.8], [292.0, 293.45], [305.55, 306.4], [329.4, 330.45],
-  [360.4, 362.35], [363.85, 365.2], [375.4, 378.3]];
+  [360.4, 362.35], [363.85, 365.2], [375.4, 378.3],
+  [314.5, 319.5]]; // draft 14: her long high line (pitch-tracked, ~E5) between two sung lines
 let ECHO_CALLS = [];
 const echoTraveller = traveller;
 // record every traveller drawn this frame with its transform; the echo picks the main one (default teal coat, largest)

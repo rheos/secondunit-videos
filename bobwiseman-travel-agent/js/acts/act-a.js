@@ -992,9 +992,11 @@ SU.a_sGlobe = a_punchSU('sGlobe', { 'ANTIPODE': 28 });
 // ---------- the cut list: 0 - 116.6 ----------
 var CUTS_A = [
   // intro, wordless: the street, the shop, in through the door
-  [0.0, 'a_street', {}],
-  [4.02, 'a_cloudWalk', {}],
-  [7.57, 'a_sTraveller', {}],
+  // draft 14 (Bob's note): the first images tell his depression. His room at noon, stoned under his cloud; then the
+  // trick that makes another man rich and famous; then out under the cloud. a_street and a_sTraveller are out.
+  [0.0, 'a_room', {}],
+  [4.02, 'a_trick', {}],
+  [7.57, 'a_cloudWalk', {}],
   [10.82, 'a_puddle', {}],
   [13.56, 'shop', { walk: [-120, 1300], byP: 1, ring: 1 }],
   [17.6, 'a_posterCU', {}],
