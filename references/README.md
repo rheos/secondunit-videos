@@ -1,6 +1,7 @@
 # Reference profiles
 
-A library of people whose ideas Robin wants to call on, visually or philosophically. Each profile
+A library of people whose ideas Robin wants to call on, visually or philosophically. Open
+[index.html](index.html) for the illustrated library page. Each profile
 turns one person's work into something an agent can use on a brief: what they did, what we infer
 from it, and a short pass that asks "what would they add here?"
 
@@ -12,6 +13,8 @@ video stays in its own look unless Robin asks for the profile's surface too.
 | Profile | Calls on | Start with | Used in |
 |---|---|---|---|
 | [Mark Von Ulrich](mark-von-ulrich/) | Symbolic construction: give the idea a body (giant ear = listening, person built from their tools, one face compared across structures). Visually: early colour Mac raster, 256-colour system palette, ordered dither. | `AGENT-DIRECTION.txt` (symbolic pass); add `STYLE-BRIEF.txt` only for the raster look | Travel Agent draft 6 (`bobwiseman-travel-agent/MVU-DIRECTION.md`) |
+| [Joel Nakamura](joel-nakamura/) | Inhabited story: give an object a life and a world inside it (an ark becomes a DNA lab, a saxophone becomes a stage, slow wifi becomes a snail). Visually: painted and ornamented folk panels with glyph-like figures. | `AGENT-DIRECTION.txt`; `articles.html` for the illustration beside its article; add `STYLE-BRIEF.txt` for the panel look | Not yet |
+| [Terry Gilliam](terry-gilliam/) | Cut-out satire: cut a respectable thing out of its world, make it misbehave, turn it into the next thing (found face on a silly body, the link as the joke, the convenience that eats its user, the stop from above). Visually: Victorian photographs and airbrush on deep skies, dark-rimmed paper pieces, sudden paper motion. | `AGENT-DIRECTION.txt`; `PSYCHOLOGY.md` for why the symbols work; add `STYLE-BRIEF.txt` for the cut-out look | Not yet (the `bobwiseman-wgt-gilliam` look test came before it) |
 
 ## Calling on a profile
 
@@ -24,7 +27,9 @@ and add the project to the "Used in" column above.
 ## Building a new profile
 
 One folder per person: `references/<first-last>/`. Mark's folder is the worked example; copy its
-shape. Only `README.md` and `AGENT-DIRECTION.txt` are required.
+shape. Terry Gilliam's shows the same shape for an artist whose work is copyrighted and cannot be
+committed: cite and link the works, and commit only public-domain material. Only `README.md` and
+`AGENT-DIRECTION.txt` are required. Add the profile to the table above and a card to `index.html`.
 
 | File | What it holds |
 |---|---|
@@ -36,6 +41,7 @@ shape. Only `README.md` and `AGENT-DIRECTION.txt` are required.
 | `biography.html` / `.json` | Optional. Sourced life facts, each tied to a source id. |
 | `artwork/`, `previews/`, `pages/` | Images (committed). Large PDFs stay local under `sources/`, listed with URL and SHA-256 in `sources/download-manifest.json`. |
 | `STUDY-<project>.md` | Optional. How the profile bears on one project. |
+| `PSYCHOLOGY.md` | Optional. Why the symbols work on a viewer, symbol by symbol, each reading labelled with the framework it borrows. |
 
 Rules that keep profiles useful and honest:
 
@@ -48,3 +54,14 @@ Rules that keep profiles useful and honest:
 
 The same shape works for a philosopher or writer: swap the artwork catalogue for a catalogue of
 passages or ideas with IDs, keep the direction file.
+
+## Profiles built in ChatGPT
+
+Robin also builds profiles in ChatGPT under `~/Documents/ChatGPT/IndieAgent/references/`. Every one of
+them belongs here too, so any agent working in `secondunit/` can find it. From the repo root:
+
+    tools/sync-chatgpt-references.sh            # dry run: what would change
+    tools/sync-chatgpt-references.sh --apply    # copy, then commit on a branch
+
+It compares by content, never deletes, leaves PDFs and files over 25 MB local, and never overwrites an
+existing profile's `README.md` (the repo copy says where it lives; merge those by hand).

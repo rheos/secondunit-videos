@@ -168,7 +168,7 @@ our reading, and how to use it. Symbols in his work have no fixed dictionary mea
 - **Use it when:** a character's private thought, memory or obsession needs to become visible, especially a
   respectable character's.
 
-### Devouring things (G10, G17)
+### Devouring things (G10, G13, G17)
 
 - **Where:** *Killer Cars* (cars eat pedestrians; a giant mutant cat towers over London, eats a building, and is
   killed by a giant hand) [S, flavorwire; cinemacats; montypython-bio]; *TV is Bad for Your Eyes* [S, wikipedia-mpfc
@@ -186,8 +186,8 @@ our reading, and how to use it. Symbols in his work have no fixed dictionary mea
 
 ### The betraying body (G14, G15)
 
-- **Where:** *The Prince and the Black Spot* [mpfc2019]; *Investigating the Body* (S3 E27) and the episode titled
-  *How to Recognise Different Parts of the Body* (S2 E22) [S, wikipedia-mpfc].
+- **Where:** *The Prince and the Black Spot* [mpfc2019]; *Investigating the Body* (episode 27, series 3) and the episode
+  titled *How to Recognise Different Parts of the Body* (episode 22, series 2) [S, wikipedia-mpfc].
 - **Frameworks:** [F] the uncanny of the body as a stranger; [F] isolation of affect in the narration; the medical
   diagram as a stage.
 - **Our reading [I]:** the body is a machine you do not control, and it can kill you over a spot you ignored. The

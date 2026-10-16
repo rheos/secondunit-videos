@@ -32,3 +32,16 @@ Artwork rights remain with the artist and respective owners. Local copies are re
 ## Magazine article case studies
 
 Open [articles.html](articles.html) for seven visually verified pairings and an eighth publisher-credited article whose image remains unrecovered. Includes six local magazine issue PDFs, page previews, exact article metadata, source links, and clearly marked symbolic interpretations. Machine-readable records are in `article-index.json`. Existing artwork IDs N01–N54 are unchanged.
+
+## Where this copy lives
+
+This folder is the working copy for all Novadiem video work: `references/joel-nakamura/` in
+rheos/secondunit-videos (issue #154). It was copied on 2026-10-15 from
+`~/Documents/ChatGPT/IndieAgent/references/joel-nakamura/`, where the collection was built. To bring
+later changes over, run `tools/sync-chatgpt-references.sh` from the repo root (dry run first, then
+`--apply`).
+
+The seven magazine PDFs (about 120 MB, `sources/*.pdf` and `sources/articles/*.pdf`) stay out of git.
+Re-download them from the URLs in `sources/download-manifest.json` and `sources/articles/manifest.json`
+and check them against the SHA-256 hashes there. Everything the HTML pages link to, apart from those
+PDFs, is committed.
