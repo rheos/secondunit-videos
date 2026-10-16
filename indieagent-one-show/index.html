@@ -45,6 +45,7 @@
         position: absolute; left: 0; right: 0; top: 868px; text-align: center;
         font: 800 52px "Archivo", sans-serif; letter-spacing: -0.01em; color: var(--ink);
       }
+      .headline.small { font-size: 46px; }
       .headline span { display: inline-block; }
       .headline .accent { color: var(--accent-text); }
       #counter { position: absolute; right: 120px; top: 958px; font: 500 22px "JetBrains Mono", monospace; color: var(--ink); letter-spacing: 0.08em; }
@@ -52,9 +53,11 @@
     </style>
   </head>
   <body>
-    <div id="root" data-composition-id="main" data-start="0" data-duration="90" data-width="1920" data-height="1080">
+    <!-- Draft 5: voiced. Jenna reads vo/script-v1.txt; vo/timeline.json sets the plates and where each line starts.
+         Scenes overlap by half a second (alternate tracks) so one plate hands over to the next with no blank paper. -->
+    <div id="root" data-composition-id="main" data-start="0" data-duration="95" data-width="1920" data-height="1080">
       <!-- chrome: plate border, shows-booked scale and the film's time cursor, on for the whole film -->
-      <div id="chrome" class="chrome clip" data-start="0" data-duration="90" data-track-index="0">
+      <div id="chrome" class="chrome clip" data-start="0" data-duration="95" data-track-index="0">
         <svg id="gChrome" viewBox="0 0 1920 1080">
           <defs>
             <filter id="grain" x="0" y="0" width="100%" height="100%">
@@ -74,13 +77,13 @@
         <div id="counter"><span id="count">00</span> / 53</div>
       </div>
 
-      <div id="sI" class="scene clip" data-start="0" data-duration="12.5" data-track-index="1">
+      <div id="sI" class="scene clip" data-start="0" data-duration="13" data-track-index="1">
         <svg id="gI" viewBox="0 0 1920 1080"></svg>
         <div class="chapter">Plate I &middot; Five Copies</div>
-        <div class="headline" style="font-size: 46px"><span id="hI1">You've typed this date five times.</span> <span id="hI2" class="accent">Four of them are wrong.</span></div>
+        <div class="headline"><span id="hI1">Five copies.</span> <span id="hI2" class="accent">Four of them are wrong.</span></div>
       </div>
 
-      <div id="sII" class="scene clip" data-start="12.5" data-duration="10" data-track-index="1">
+      <div id="sII" class="scene clip" data-start="12.5" data-duration="13" data-track-index="3">
         <svg id="gII" viewBox="0 0 1920 1080">
           <defs><clipPath id="type-II"><rect id="rvII" x="596" y="260" width="0" height="70" /></clipPath></defs>
         </svg>
@@ -88,13 +91,13 @@
         <div class="headline"><span id="hII">Say it once, the way you'd say it.</span></div>
       </div>
 
-      <div id="sIII" class="scene clip" data-start="22.5" data-duration="15" data-track-index="1">
+      <div id="sIII" class="scene clip" data-start="25" data-duration="9.25" data-track-index="1">
         <svg id="gIII" viewBox="0 0 1920 1080"></svg>
-        <div class="chapter">Plate III &middot; Your Chat</div>
-        <div class="headline" style="font-size: 46px"><span id="hIII1">In your own ChatGPT.</span> <span id="hIII2" class="accent">You choose who else can change your dates.</span></div>
+        <div class="chapter">Plate III &middot; Who Gets In</div>
+        <div class="headline small"><span id="hIII1">It's your tour.</span> <span id="hIII2" class="accent">You choose who else can change it.</span></div>
       </div>
 
-      <div id="sIV" class="scene clip" data-start="37.5" data-duration="15" data-track-index="1">
+      <div id="sIV" class="scene clip" data-start="33.75" data-duration="6.75" data-track-index="3">
         <svg id="gIV" viewBox="0 0 1920 1080">
           <defs>
             <clipPath id="reveal-date"><rect id="rv-date" x="440" y="330" width="0" height="70" /></clipPath>
@@ -106,34 +109,43 @@
           <g id="iv-callouts"></g>
         </svg>
         <div class="chapter">Plate IV &middot; The Ticket</div>
-        <div class="headline"><span id="hIV">One show, written down <span class="accent">once.</span></span></div>
+        <div class="headline"><span id="hIV">One ticket. Written down <span class="accent">once.</span></span></div>
       </div>
 
-      <div id="sV" class="scene clip" data-start="52.5" data-duration="20" data-track-index="1">
+      <div id="sV" class="scene clip" data-start="40" data-duration="10.5" data-track-index="1">
         <svg id="gV" viewBox="0 0 1920 1080">
           <defs>
-            <clipPath id="rvV-site"><rect id="rvV1" x="286" y="600" width="0" height="34" /></clipPath>
-            <clipPath id="rvV-promo"><rect id="rvV2" x="860" y="510" width="200" height="0" /></clipPath>
-            <clipPath id="rvV-list"><rect id="rvV3" x="1186" y="548" width="0" height="64" /></clipPath>
+            <clipPath id="rvV-site"><rect id="rvV1" x="226" y="600" width="0" height="34" /></clipPath>
+            <clipPath id="rvV-list"><rect id="rvV2" x="786" y="548" width="0" height="64" /></clipPath>
+            <clipPath id="rvV-promo"><rect id="rvV3" x="1300" y="500" width="200" height="0" /></clipPath>
           </defs>
         </svg>
         <div class="chapter">Plate V &middot; Where It Goes</div>
-        <div class="headline"><span id="hV1">Your site.</span> <span id="hV2">Your promo.</span> <span id="hV3">Your listings.</span></div>
+        <div class="headline small"><span id="hV1">All from one ticket.</span> <span id="hV2">Move a date,</span> <span id="hV3" class="accent">everything follows.</span></div>
       </div>
 
-      <div id="sVI" class="scene clip" data-start="72.5" data-duration="12.5" data-track-index="1">
+      <div id="sVI" class="scene clip" data-start="50" data-duration="25.5" data-track-index="3">
         <svg id="gVI" viewBox="0 0 1920 1080"></svg>
-        <div class="chapter">Plate VI &middot; The Promo</div>
-        <div class="headline"><span id="hVI1">Pick the dates.</span> <span id="hVI2">Pick a look.</span> <span id="hVI3" class="accent">Your promo's ready.</span></div>
+        <div class="chapter">Plate VI &middot; The Promo Maker</div>
+        <div id="hVIa" class="headline"><span>The promo maker.</span></div>
+        <div id="hVIb" class="headline"><span id="hVIb1">Pick the dates.</span> <span id="hVIb2">Pick a look.</span> <span id="hVIb3" class="accent">Press generate.</span></div>
+        <div id="hVIc" class="headline small"><span id="hVIc1">Your dates,</span> <span id="hVIc2">your towns,</span> <span id="hVIc3">your venues,</span> <span id="hVIc4" class="accent">your look.</span></div>
+        <div id="hVId" class="headline"><span id="hVId1">No editing app.</span> <span id="hVId2" class="accent">No retyping.</span></div>
       </div>
 
-      <!-- score: drafting-table take-01 (score library), 96 BPM; its 61 ms lead is trimmed so beat k is at k * 0.625 s -->
-      <audio id="score" src="assets/score.mp3" data-start="0" data-duration="90" data-media-start="0.061" data-track-index="2"></audio>
+      <div id="sVII" class="scene clip" data-start="75" data-duration="13" data-track-index="1">
+        <svg id="gVII" viewBox="0 0 1920 1080"></svg>
+        <div class="chapter">Plate VII &middot; Every Shape</div>
+        <div class="headline"><span id="hVII1">One promo.</span> <span id="hVII2" class="accent">Every shape you post.</span></div>
+      </div>
 
-      <div id="sC" class="scene clip" data-start="85" data-duration="5" data-track-index="1">
+      <div id="sC" class="scene clip" data-start="87.5" data-duration="7.5" data-track-index="3">
         <svg id="gC" viewBox="0 0 1920 1080"></svg>
         <div class="chapter">Colophon</div>
       </div>
+
+      <!-- voice + score, mixed by vo/mix.py: Jenna (ElevenLabs v4) over drafting-table-one-show-vo take-01, beat k at k * 0.625 s -->
+      <audio id="mix" src="assets/mix.mp3" data-start="0" data-duration="95" data-track-index="5"></audio>
     </div>
     <script>
       const NS = "http://www.w3.org/2000/svg";
@@ -151,16 +163,22 @@
       // JetBrains Mono advances 0.6 em, so character columns can be measured without layout
       const CW = (fs) => 0.6 * fs;
 
-      // scene start times (s) and lengths; the film is 90 s. Each scene is one section of the score,
-      // and every section starts on a downbeat (a bar is 2.5 s at 96 BPM).
-      const T = { I: 0, II: 12.5, III: 22.5, IV: 37.5, V: 52.5, VI: 72.5, C: 85 };
-      const D = { I: 12.5, II: 10, III: 15, IV: 15, V: 20, VI: 12.5, C: 5 };
-      // scene timings were drafted silent; F stretches each to its section, then times snap to the score
-      const BEAT = 0.625;
-      const F = { I: 12.5 / 12, II: 1, III: 15 / 14, IV: 15 / 14, V: 20 / 22, VI: 1, C: 1 }; // VI was rebuilt in real seconds
-      const snap = (t, step) => Math.round(t / step) * step;
-      const at = (k, x) => T[k] + snap(x * F[k], BEAT / 2); // motion on the eighth-note grid
-      const onBeat = (k, x) => T[k] + snap(x * F[k], BEAT); // headlines and hits on the beat
+      // The voice is the clock. Plates start at T; each plate's line starts VO seconds in; WORDS holds
+      // every word's start inside its line. vo/embed.py writes these four lines from vo/*.json.
+      const T = {"I": 0, "II": 12.5, "III": 25, "IV": 33.75, "V": 40, "VI": 50, "VII": 75, "C": 87.5};
+      const VO = {"I": 0.4, "II": 0.3, "III": 0.3, "IV": 0.25, "V": 0.3, "VI": 0.3, "VII": 0.3, "C": 0.4}; // where each plate's voice line starts inside it
+      const END = 95;
+      const WORDS = {"I":[["you",0.0],["book",0.18],["the",0.34],["show",0.56],["now",1.28],["you",1.56],["type",1.78],["it",2.04],["into",2.18],["your",2.36],["website",2.54],["the",3.44],["poster",3.52],["the",4.46],["event",4.52],["page",4.78],["the",5.62],["email",5.68],["to",5.92],["the",6.16],["venue",6.3],["your",7.12],["spreadsheet",7.22],["five",8.36],["copies",8.52],["and",9.62],["four",9.82],["of",10.2],["them",10.36],["are",10.56],["wrong",10.8]],"II":[["with",0.0],["indieagent",0.18],["you",1.14],["say",1.28],["it",1.5],["once",1.66],["the",2.44],["way",2.56],["you'd",2.7],["say",2.9],["it",3.1],["in",3.44],["your",3.7],["own",3.84],["chat",4.14],["gpt",4.38],["add",5.92],["nelson",5.98],["november",6.8],["12th",7.06],["at",7.72],["the",7.9],["royal",8.06],["it",9.0],["works",9.2],["out",9.38],["the",9.58],["rest",9.72]],"III":[["it's",0.0],["your",0.28],["tour",0.52],["you",1.52],["choose",1.8],["who",2.08],["else",2.3],["can",2.44],["change",2.66],["it",2.92],["your",3.56],["manager",3.66],["your",4.52],["drummer",4.6],["nobody",5.74],["else",5.92],["gets",6.26],["in",6.48]],"IV":[["every",0.0],["show",0.28],["becomes",0.6],["one",1.02],["ticket",1.44],["written",2.26],["down",2.5],["once",2.9]],"V":[["your",0.0],["website's",0.2],["tour",0.78],["page",0.98],["your",1.84],["listings",1.94],["and",2.64],["your",2.86],["promos",3.0],["all",3.48],["read",3.94],["from",4.26],["that",4.48],["ticket",4.68],["move",5.52],["a",5.78],["date",5.92],["and",6.48],["everything",6.62],["follows",7.08]],"VI":[["now",0.0],["the",0.22],["part",0.4],["that",0.6],["saves",0.84],["you",1.06],["the",1.28],["most",1.4],["time",1.74],["pick",2.8],["a",2.94],["run",3.1],["of",3.22],["dates",3.36],["say",4.14],["the",4.54],["bc",4.94],["leg",5.3],["eight",6.0],["shows",6.24],["kamloops",7.18],["to",7.42],["nelson",7.6],["pick",8.62],["a",8.74],["look",8.9],["rysograph",9.8],["woodcut",10.6],["big",11.34],["type",11.48],["whatever",12.14],["fits",12.36],["the",12.62],["record",12.82],["press",13.76],["generate",14.06],["indie",15.38],["agent",15.58],["makes",15.84],["the",16.22],["promo",16.46],["for",16.72],["that",17.0],["leg",17.28],["with",17.64],["your",18.06],["dates",18.24],["your",18.88],["towns",18.92],["and",19.56],["your",19.78],["venues",19.92],["in",20.28],["your",20.86],["look",21.18],["no",22.08],["editing",22.32],["app",22.62],["no",23.36],["retyping",23.5]],"VII":[["and",0.0],["it",0.1],["comes",0.2],["out",0.46],["in",0.72],["every",0.94],["shape",1.34],["you",1.62],["post",1.82],["tall",3.0],["for",3.0],["reels",3.24],["tiktok",3.98],["and",4.52],["shorts",4.56],["four",5.54],["by",5.7],["five",5.84],["for",6.16],["the",6.4],["instagram",6.5],["and",6.96],["facebook",7.18],["feed",7.48],["square",8.76],["widescreen",9.24],["for",9.84],["youtube",10.08]],"C":[["indie",0.0],["agent",0.32],["your",1.4],["tour",1.56],["kept",1.96],["straight",2.58],["coming",3.54],["soon",3.86]]}; // vo/words.json, seconds from each line's start
+      const ORDER = ["I", "II", "III", "IV", "V", "VI", "VII", "C"];
+      // w("VI", "generate") is the moment that word starts, in film seconds
+      const w = (k, word, n = 0) => {
+        const hits = WORDS[k].filter((x) => x[0] === word);
+        if (!hits[n]) throw new Error("no word " + word + " in plate " + k);
+        return T[k] + VO[k] + hits[n][1];
+      };
+      const BEAT = 0.625; // the score is 96 BPM, beat k at k * 0.625 s
+      const onBeat = (t) => Math.round(t / BEAT) * BEAT;
+      const next = (k) => (k === "C" ? END : T[ORDER[ORDER.indexOf(k) + 1]]);
 
       /* ---------------- chrome: shows-booked scale + time cursor ---------------- */
       const scale = $("#scale");
@@ -173,13 +191,23 @@
       const fill = el("path", { d: "M120 1000 H1800", stroke: "var(--accent)", "stroke-width": 4, fill: "none" }, scale);
       const cursor = el("path", { d: "M-6,1011 L0,1003 L6,1011 Z", fill: "var(--line)" }, scale);
 
-      /* ---------------- Plate I: five copies, four wrong ---------------- */
+      /* ---------------- Plate I: you booked one show and typed it five times ---------------- */
       const gI = $("#gI");
+      const booked = el("g", {}, gI);
+      el("rect", { class: "card", x: 700, y: 146, width: 520, height: 80, rx: 6 }, booked);
+      el("rect", { class: "line draw", x: 700, y: 146, width: 520, height: 80, rx: 6 }, booked);
+      txt("one show", { class: "label", x: 724, y: 174, "font-size": 13 }, booked);
+      txt("NOV 12 · NELSON · THE ROYAL", { class: "mono", x: 724, y: 208, "font-size": 22 }, booked);
+      const stamp = el("g", {}, gI);
+      el("rect", { x: 1114, y: 170, width: 88, height: 32, rx: 4, fill: "none", stroke: "var(--accent)", "stroke-width": 2.4 }, stamp);
+      txt("BOOKED", { class: "label", x: 1158, y: 192, "font-size": 13, "text-anchor": "middle", style: "fill: var(--accent-text)" }, stamp);
+      gsap.set(stamp, { rotation: -8, svgOrigin: "1158 186" });
       const docs = [];
+      const leads = [];
       const rings = [];
       const FS1 = 18, cw1 = CW(FS1);
       const docSpec = [
-        { name: "tour page", lines: [["Nov 21 · Nelson", 190], ["The Royal", 214]], err: [0, 4, 5] },
+        { name: "your website", lines: [["Nov 21 · Nelson", 190], ["The Royal", 214]], err: [0, 4, 5] },
         { name: "poster", lines: [["FRI NOV 12", 200], ["NELSON, BC", 226], ["THE ROYAL · 8PM", 252]], err: [0, 0, 2] },
         { name: "event page", lines: [["Thu, Nov 12", 190], ["Nelsen, BC", 216], ["The Royal", 242]], err: [1, 0, 5] },
         { name: "venue email", lines: [["Re: November", 90], ["Thu Nov 12 at", 200], ["The Royale", 226]], err: [2, 4, 9] },
@@ -187,6 +215,7 @@
       ];
       docSpec.forEach((d, i) => {
         const x0 = 180 + i * 320, y0 = 300, w = 280, h = 380;
+        leads.push(el("path", { class: "dash", d: `M960,226 L${x0 + w / 2},${y0}` }, gI));
         const g = el("g", { class: "doc" }, gI);
         el("rect", { class: "card", x: x0, y: y0, width: w, height: h }, g);
         el("rect", { class: "line draw", x: x0, y: y0, width: w, height: h }, g);
@@ -224,16 +253,29 @@
         }
         docs.push(g);
       });
+      // the spreadsheet's row is the one that is right
+      const okI = el("path", { d: "M1712,487 l7,8 l15,-18", fill: "none", stroke: "var(--ink)", "stroke-width": 3, "stroke-linecap": "round", "stroke-linejoin": "round" }, gI);
 
-      /* ---------------- Plate II: one sentence becomes four fields ---------------- */
+      /* ---------------- Plate II: one sentence in your own ChatGPT becomes four fields ---------------- */
       const gII = $("#gII");
       const S2 = "add Nelson, Nov 12 at the Royal", FS2 = 32, cw2 = CW(FS2), X2 = 600;
-      txt("your chat", { class: "label", x: 560, y: 232, "font-size": 15 }, gII);
+      const winII = el("g", {}, gII);
+      el("rect", { class: "card", x: 440, y: 170, width: 1040, height: 236, rx: 16 }, winII);
+      el("rect", { class: "line draw", x: 440, y: 170, width: 1040, height: 236, rx: 16 }, winII);
+      el("path", { class: "hair draw", d: "M440,212 H1480" }, winII);
+      txt("your chatgpt", { class: "label", x: 466, y: 197, "font-size": 15 }, winII);
+      const titleUnder = el("path", { d: "M466,204 H612", stroke: "var(--accent)", "stroke-width": 2.4, fill: "none" }, winII);
+      // the IndieAgent app, added to the artist's own ChatGPT
+      const pill = el("g", {}, gII);
+      el("rect", { x: 1318, y: 179, width: 140, height: 26, rx: 13, fill: "var(--card)", stroke: "var(--accent)", "stroke-width": 1.6 }, pill);
+      txt("+ IndieAgent", { class: "mono", x: 1388, y: 197, "font-size": 14, "text-anchor": "middle", style: "fill: var(--accent-text)" }, pill);
+      const bubbleG = el("g", {}, gII);
       const bubbleD = "M580,250 H1340 Q1360,250 1360,270 V320 Q1360,340 1340,340 H626 L594,368 L602,340 H580 Q560,340 560,320 V270 Q560,250 580,250 Z";
-      el("path", { class: "card", d: bubbleD }, gII);
-      el("path", { class: "line draw", d: bubbleD }, gII);
-      const said = txt(S2, { class: "mono", x: X2, y: 306, "font-size": FS2 }, gII);
+      el("path", { class: "card", d: bubbleD }, bubbleG);
+      el("path", { class: "line draw", d: bubbleD }, bubbleG);
+      const said = txt(S2, { class: "mono", x: X2, y: 306, "font-size": FS2 }, bubbleG);
       said.setAttribute("clip-path", "url(#type-II)");
+      const caret = el("rect", { x: X2, y: 280, width: 3, height: 34, fill: "var(--ink)", opacity: 0 }, bubbleG);
       const cx2 = (a, b) => X2 + ((a + b + 1) / 2) * cw2;
       const brk = (a, b) => `M${X2 + a * cw2},352 V362 H${X2 + (b + 1) * cw2} V352`;
       const g2b = el("g", {}, gII);
@@ -256,7 +298,7 @@
       });
       const workedOut = txt("worked out", { class: "label", x: 830, y: 478, "font-size": 13 }, gII);
 
-      /* ---------------- Plate III: your chat, only you ---------------- */
+      /* ---------------- Plate III: your tour, and who else you let in ---------------- */
       const gIII = $("#gIII");
       const win = (x, title) => {
         const g = el("g", {}, gIII);
@@ -267,9 +309,10 @@
         return g;
       };
       const chatWin = win(200, "your chatgpt");
-      el("path", { class: "faint", d: "M230,384 H430 M230,404 H380" }, chatWin);
-      el("rect", { class: "hair", x: 300, y: 440, width: 290, height: 50, rx: 10 }, chatWin);
-      txt("add Nelson, Nov 12…", { class: "mono", x: 316, y: 471, "font-size": 16 }, chatWin);
+      const chatIn = el("g", {}, chatWin);
+      el("path", { class: "faint", d: "M230,384 H430 M230,404 H380" }, chatIn);
+      el("rect", { class: "hair", x: 300, y: 440, width: 290, height: 50, rx: 10 }, chatIn);
+      txt("add Nelson, Nov 12…", { class: "mono", x: 316, y: 471, "font-size": 16 }, chatIn);
       const tourWin = win(1300, "your tour");
       for (let k = 2; k >= 0; k--) el("path", { d: ticketPath(1410 - k * 4, 440 + k * 6, 200, 80, 1560 - k * 4, 6), fill: "var(--card)", stroke: "var(--line)", "stroke-width": 1 }, tourWin);
       const newMini = el("g", { opacity: 0 }, tourWin);
@@ -281,34 +324,61 @@
       let marks = "";
       for (let x = 650; x < 1300; x += 50) marks += `M${x},440 V447 M${x},470 V463 `;
       el("path", { class: "hair draw", d: marks }, gC3);
-      const packet = el("g", {}, gIII);
-      el("path", { d: ticketPath(0, 0, 44, 24, 32, 4), fill: "var(--card)", stroke: "var(--ink)", "stroke-width": 1.4 }, packet);
+      const tk3 = (stroke, dash) => {
+        const g = el("g", {}, gIII);
+        el("path", Object.assign({ d: ticketPath(0, 0, 44, 24, 32, 4), fill: "var(--card)", stroke, "stroke-width": 1.4 }, dash ? { "stroke-dasharray": "3 3" } : {}), g);
+        return g;
+      };
+      const packet = tk3("var(--ink)");
       // someone else's attempt, from above
       const other = el("g", {}, gIII);
       el("path", { class: "dash", d: "M960,214 V404" }, other);
       txt("someone else", { class: "label", x: 960, y: 200, "font-size": 14, "text-anchor": "middle" }, other);
-      const otherTk = el("g", {}, gIII);
-      el("path", { d: ticketPath(0, 0, 44, 24, 32, 4), fill: "var(--card)", stroke: "var(--line)", "stroke-width": 1.2, "stroke-dasharray": "3 3" }, otherTk);
-      // someone the artist invited (a manager, a bandmate) comes up from below and gets in
-      const mgr = el("g", {}, gIII);
-      el("path", { class: "dash", d: "M960,506 V716" }, mgr);
-      txt("your manager", { class: "label", x: 960, y: 744, "font-size": 14, "text-anchor": "middle" }, mgr);
-      txt("invited", { class: "label", x: 960, y: 764, "font-size": 12, "text-anchor": "middle" }, mgr);
-      const mgrTk = el("g", {}, gIII);
-      el("path", { d: ticketPath(0, 0, 44, 24, 32, 4), fill: "var(--card)", stroke: "var(--ink)", "stroke-width": 1.4 }, mgrTk);
+      const otherTk = tk3("var(--line)", true);
+      // the people the artist invited (a manager, a drummer) come up from below and get in
+      const inv = (x, ex, name) => {
+        const g = el("g", {}, gIII);
+        el("path", { class: "dash", d: `M${x},716 L${ex},532` }, g);
+        txt(name, { class: "label", x, y: 744, "font-size": 14, "text-anchor": "middle" }, g);
+        txt("invited", { class: "label", x, y: 764, "font-size": 12, "text-anchor": "middle" }, g);
+        return g;
+      };
+      const mgr = inv(860, 940, "your manager");
+      const drum = inv(1060, 980, "your drummer");
+      const mgrTk = tk3("var(--ink)");
+      const drumTk = tk3("var(--ink)");
       // the lock sits over the conduit and over every ticket passing through it
       const lock = el("g", {}, gIII);
       el("path", { class: "line", d: "M942,446 V430 A18 18 0 0 1 978,430 V446", "stroke-width": 2.2 }, lock);
       el("rect", { x: 926, y: 444, width: 68, height: 52, rx: 7, fill: "var(--card)", stroke: "var(--ink)", "stroke-width": 2 }, lock);
       el("circle", { cx: 960, cy: 464, r: 5, fill: "var(--ink)" }, lock);
       el("path", { d: "M960,466 V480", stroke: "var(--ink)", "stroke-width": 3, "stroke-linecap": "round" }, lock);
-      const lockLbl = txt("signed in", { class: "label", x: 904, y: 528, "font-size": 15, "text-anchor": "end" }, gIII);
-      const check = el("path", { d: "M1004,420 l8,9 l17,-20", fill: "none", stroke: "var(--ink)", "stroke-width": 3, "stroke-linecap": "round", "stroke-linejoin": "round" }, gIII);
-      const check2 = el("path", { d: "M1004,514 l8,9 l17,-20", fill: "none", stroke: "var(--ink)", "stroke-width": 3, "stroke-linecap": "round", "stroke-linejoin": "round" }, gIII);
+      const lockLbl = txt("invite only", { class: "label", x: 912, y: 424, "font-size": 15, "text-anchor": "end" }, gIII);
+      const chk = (x, y) => el("path", { d: `M${x},${y} l8,9 l17,-20`, fill: "none", stroke: "var(--ink)", "stroke-width": 3, "stroke-linecap": "round", "stroke-linejoin": "round" }, gIII);
+      const checkM = chk(884, 522);
+      const checkD = chk(1012, 522);
       const cross = el("path", { d: "M948,374 l24,24 m0,-24 l-24,24", fill: "none", stroke: "var(--accent)", "stroke-width": 3.2, "stroke-linecap": "round" }, gIII);
 
-      /* ---------------- Plate IV: the ticket (the approved style test) ---------------- */
+      /* ---------------- the ticket (Plate IV, and again small in Plate V) ---------------- */
       const X = 400, Y = 290, TW = 960, TH = 380, PX = 1100, R = 16;
+      const makeTicket = (parent, reveal) => {
+        const g = el("g", {}, parent);
+        el("path", { d: ticketPath(X, Y, TW, TH, PX, R), fill: "var(--card)" }, g);
+        const outline = el("path", { class: "line", d: ticketPath(X, Y, TW, TH, PX, R), "stroke-width": 2 }, g);
+        el("path", { class: "perf", d: `M${PX},${Y + R + 8} V${Y + TH - R - 8}` }, g);
+        el("rect", { class: "hair", x: X + 18, y: Y + 18, width: PX - X - 52, height: TH - 36 }, g);
+        const f = (s, attrs, clip) => { const t = txt(s, attrs, g); if (reveal && clip) t.setAttribute("clip-path", `url(#${clip})`); return t; };
+        // 2026-11-12 falls on a Thursday
+        const dateT = f("THU · NOV 12 · 2026", { class: "mono", x: 440, y: 380, "font-size": 30, "letter-spacing": "0.06em" }, "reveal-date");
+        f("NELSON, BC", { class: "big", x: 440, y: 490, "font-size": 84, "letter-spacing": "-0.01em" }, "reveal-city");
+        f("THE ROYAL", { class: "big", x: 440, y: 566, "font-size": 40, "font-weight": 600, "letter-spacing": "0.04em" }, "reveal-venue");
+        const admit = f("ADMIT ONE", { class: "label", x: PX + 40, y: Y + 70, "font-size": 18 });
+        const noLbl = f("NO.", { class: "label", x: PX + 40, y: Y + 200, "font-size": 18 });
+        const serial = f("053", { class: "mono", x: PX + 38, y: Y + 270, "font-size": 72, "font-weight": 500, style: "fill: var(--accent-text)" });
+        return { g, outline, dateT, admit, noLbl, serial };
+      };
+
+      /* ---------------- Plate IV: every show becomes one ticket ---------------- */
       const pile = $("#pile");
       const ghosts = [];
       for (let i = 0; i < 52; i++) {
@@ -316,19 +386,7 @@
         // plain card edges: stacked notches read as a tube, so only the top ticket is notched
         ghosts.push(el("rect", { x: X - k * 0.45, y: Y + k * 1.2, width: TW, height: TH, fill: "var(--card)", stroke: "var(--line)", "stroke-width": 0.8, opacity: 0 }, pile));
       }
-      const tk = $("#ticket");
-      el("path", { d: ticketPath(X, Y, TW, TH, PX, R), fill: "var(--card)", stroke: "none", class: "card-fill" }, tk);
-      const outline = el("path", { class: "line", d: ticketPath(X, Y, TW, TH, PX, R), "stroke-width": 2 }, tk);
-      const perf = el("path", { class: "perf", d: `M${PX},${Y + R + 8} V${Y + TH - R - 8}` }, tk);
-      const inner = el("rect", { class: "hair", x: X + 18, y: Y + 18, width: PX - X - 52, height: TH - 36 }, tk);
-      const field = (s, attrs, clip) => { const t = txt(s, attrs, tk); if (clip) t.setAttribute("clip-path", `url(#${clip})`); return t; };
-      // 2026-11-12 falls on a Thursday
-      field("THU · NOV 12 · 2026", { class: "mono", x: 440, y: 380, "font-size": 30, "letter-spacing": "0.06em" }, "reveal-date");
-      field("NELSON, BC", { class: "big", x: 440, y: 490, "font-size": 84, "letter-spacing": "-0.01em" }, "reveal-city");
-      field("THE ROYAL", { class: "big", x: 440, y: 566, "font-size": 40, "font-weight": 600, "letter-spacing": "0.04em" }, "reveal-venue");
-      const admit = field("ADMIT ONE", { class: "label", x: PX + 40, y: Y + 70, "font-size": 18 });
-      const noLbl = field("NO.", { class: "label", x: PX + 40, y: Y + 200, "font-size": 18 });
-      const serial = field("053", { class: "mono", x: PX + 38, y: Y + 270, "font-size": 72, "font-weight": 500, style: "fill: var(--accent-text)" });
+      const tkIV = makeTicket($("#ticket"), true);
       const co = $("#iv-callouts");
       const callTxt = (t, a) => txt(t, Object.assign({ class: "label", "font-size": 16 }, a), co);
       el("path", { class: "hair draw", d: `M${X},${Y - 44} H${X + TW} M${X},${Y - 54} V${Y - 34} M${X + TW},${Y - 54} V${Y - 34}` }, co);
@@ -340,104 +398,150 @@
       });
       el("path", { class: "hair draw", d: `M${PX + 92},${Y + 290} V${Y + TH + 70}` }, co);
       callTxt("show no.", { x: PX + 92, y: Y + TH + 96, "text-anchor": "middle" });
+      // the mini ticket in Plate III's tour window, and the ticket's place at the top of Plate V
+      const MINI = { x: 1416 - X * (200 / TW), y: 428 - Y * (200 / TW), scale: 200 / TW };
+      const SMALL = { x: 720 - X * 0.5, y: 150 - Y * 0.5, scale: 0.5 };
 
-      /* ---------------- Plate V: the stub tears off and prints everywhere ---------------- */
+      /* ---------------- Plate V: the website, the listings and the promos all read the ticket ---------------- */
       const gV = $("#gV");
-      // ticket at the top, body and stub as separate pieces so the stub can tear away
-      const vx = 720, vy = 150, vw = 480, vh = 180, vpx = 1080;
-      const vBody = el("g", {}, gV), vStub = el("g", {}, gV);
-      el("rect", { class: "card", x: vx, y: vy, width: vpx - vx, height: vh }, vBody);
-      el("path", { class: "line draw", d: `M${vpx},${vy} H${vx} V${vy + vh} H${vpx}`, "stroke-width": 2 }, vBody);
-      const vDate = txt("THU · NOV 12 · 2026", { class: "mono", x: vx + 30, y: vy + 48, "font-size": 20 }, vBody);
-      const vDate2 = txt("FRI · NOV 13 · 2026", { class: "mono red", x: vx + 30, y: vy + 48, "font-size": 20, opacity: 0 }, vBody);
-      txt("NELSON, BC", { class: "big", x: vx + 30, y: vy + 110, "font-size": 50 }, vBody);
-      txt("THE ROYAL", { class: "big", x: vx + 30, y: vy + 150, "font-size": 24, "font-weight": 600, "letter-spacing": "0.04em" }, vBody);
-      el("rect", { class: "card", x: vpx, y: vy, width: vx + vw - vpx, height: vh }, vStub);
-      el("path", { class: "line draw", d: `M${vpx},${vy} H${vx + vw} V${vy + vh} H${vpx}`, "stroke-width": 2 }, vStub);
-      el("path", { class: "perf", d: `M${vpx},${vy + 10} V${vy + vh - 10}` }, vStub);
-      txt("NO.", { class: "label", x: vpx + 22, y: vy + 70, "font-size": 13 }, vStub);
-      txt("053", { class: "mono red", x: vpx + 20, y: vy + 118, "font-size": 40 }, vStub);
-      // three rays from the ticket to the three outputs, plus red pulses for the change
-      const rayD = ["M960,340 L510,420", "M960,340 L960,420", "M960,340 L1410,420"];
+      const tkV = makeTicket(gV, false);
+      gsap.set(tkV.g, Object.assign({ svgOrigin: "0 0" }, SMALL));
+      const vDate2 = txt("FRI · NOV 13 · 2026", { class: "mono red", x: 440, y: 380, "font-size": 30, "letter-spacing": "0.06em", opacity: 0 }, tkV.g);
+      const OUT = 120; // the outputs row is drawn from x 200 and shifted right to sit centred under the ticket
+      const rayD = ["M960,345 L570,420", "M960,345 L1080,420", "M960,345 L1520,412"];
       const rays = rayD.map((d) => el("path", { class: "dash", d }, gV));
       const pulses = rayD.map((d) => el("path", { d, fill: "none", stroke: "var(--accent)", "stroke-width": 2.4, "stroke-linecap": "round" }, gV));
-      // your site: a browser window with the tour table
-      const site = el("g", {}, gV);
-      el("rect", { class: "card", x: 260, y: 420, width: 500, height: 340, rx: 10 }, site);
-      el("rect", { class: "line draw", x: 260, y: 420, width: 500, height: 340, rx: 10 }, site);
+      // your website's tour page
+      const outRow = el("g", { transform: `translate(${OUT},0)` }, gV);
+      const site = el("g", {}, outRow);
+      el("rect", { class: "card", x: 200, y: 420, width: 500, height: 340, rx: 10 }, site);
+      el("rect", { class: "line draw", x: 200, y: 420, width: 500, height: 340, rx: 10 }, site);
       const siteIn = el("g", {}, site);
-      el("path", { class: "hair", d: "M260,456 H760" }, siteIn);
-      [282, 298, 314].forEach((x) => el("circle", { cx: x, cy: 438, r: 5, class: "hair" }, siteIn));
-      el("rect", { class: "hair", x: 340, y: 428, width: 300, height: 20, rx: 10 }, siteIn);
-      txt("yoursite.com/tour", { class: "mono", x: 354, y: 443, "font-size": 12 }, siteIn);
-      txt("TOUR DATES", { class: "big", x: 290, y: 502, "font-size": 26 }, siteIn);
-      [540, 580, 660, 700].forEach((y) => el("path", { class: "faint", d: `M290,${y} H350 M380,${y} H500 M540,${y} H660` }, siteIn));
+      el("path", { class: "hair", d: "M200,456 H700" }, siteIn);
+      [222, 238, 254].forEach((x) => el("circle", { cx: x, cy: 438, r: 5, class: "hair" }, siteIn));
+      el("rect", { class: "hair", x: 280, y: 428, width: 300, height: 20, rx: 10 }, siteIn);
+      txt("yoursite.com/tour", { class: "mono", x: 294, y: 443, "font-size": 12 }, siteIn);
+      txt("TOUR DATES", { class: "big", x: 230, y: 502, "font-size": 26 }, siteIn);
+      [540, 580, 660, 700].forEach((y) => el("path", { class: "faint", d: `M230,${y} H290 M320,${y} H440 M480,${y} H600` }, siteIn));
       const siteRow = el("g", {}, site);
       siteRow.setAttribute("clip-path", "url(#rvV-site)");
-      const siteDate = txt("NOV 12", { class: "mono", x: 290, y: 624, "font-size": 16 }, siteRow);
-      const siteDate2 = txt("NOV 13", { class: "mono red", x: 290, y: 624, "font-size": 16, opacity: 0 }, siteRow);
-      txt("NELSON, BC", { class: "mono", x: 380, y: 624, "font-size": 16 }, siteRow);
-      txt("THE ROYAL", { class: "mono", x: 540, y: 624, "font-size": 16 }, siteRow);
-      const siteUnder = el("path", { d: "M290,634 H730", stroke: "var(--accent)", "stroke-width": 2, fill: "none" }, site);
-      // your promo: a 9:16 phone frame
-      const promo = el("g", {}, gV);
-      el("rect", { class: "card", x: 860, y: 420, width: 200, height: 356, rx: 18 }, promo);
-      el("rect", { class: "line draw", x: 860, y: 420, width: 200, height: 356, rx: 18 }, promo);
-      const promoIn = el("g", {}, promo);
-      el("path", { class: "hair", d: "M935,436 H985" }, promoIn);
-      el("path", { d: "M952,470 L972,482 L952,494 Z", fill: "var(--line)" }, promoIn);
-      el("path", { d: "M884,746 H1036", class: "faint" }, promoIn);
-      el("path", { d: "M884,746 H990", stroke: "var(--accent)", "stroke-width": 3, fill: "none" }, promoIn);
-      const promoTxt = el("g", {}, promo);
-      promoTxt.setAttribute("clip-path", "url(#rvV-promo)");
-      txt("NELSON", { class: "big", x: 960, y: 572, "font-size": 38, "text-anchor": "middle" }, promoTxt);
-      const promoDate = txt("NOV 12", { class: "big", x: 960, y: 614, "font-size": 30, "text-anchor": "middle" }, promoTxt);
-      const promoDate2 = txt("NOV 13", { class: "big red", x: 960, y: 614, "font-size": 30, "text-anchor": "middle", opacity: 0 }, promoTxt);
-      txt("THE ROYAL", { class: "mono", x: 960, y: 646, "font-size": 15, "text-anchor": "middle" }, promoTxt);
+      const siteDate = txt("NOV 12", { class: "mono", x: 230, y: 624, "font-size": 16 }, siteRow);
+      const siteDate2 = txt("NOV 13", { class: "mono red", x: 230, y: 624, "font-size": 16, opacity: 0 }, siteRow);
+      txt("NELSON, BC", { class: "mono", x: 320, y: 624, "font-size": 16 }, siteRow);
+      txt("THE ROYAL", { class: "mono", x: 480, y: 624, "font-size": 16 }, siteRow);
+      const siteUnder = el("path", { d: "M230,634 H670", stroke: "var(--accent)", "stroke-width": 2, fill: "none" }, site);
       // your listings: an upcoming-shows feed
-      const list = el("g", {}, gV);
-      el("rect", { class: "card", x: 1160, y: 420, width: 500, height: 340, rx: 10 }, list);
-      el("rect", { class: "line draw", x: 1160, y: 420, width: 500, height: 340, rx: 10 }, list);
+      const list = el("g", {}, outRow);
+      el("rect", { class: "card", x: 760, y: 420, width: 400, height: 340, rx: 10 }, list);
+      el("rect", { class: "line draw", x: 760, y: 420, width: 400, height: 340, rx: 10 }, list);
       const listIn = el("g", {}, list);
-      txt("upcoming shows", { class: "label", x: 1190, y: 462, "font-size": 15 }, listIn);
+      txt("upcoming shows", { class: "label", x: 790, y: 462, "font-size": 15 }, listIn);
       [480, 548, 616, 684].forEach((y, k) => {
-        el("rect", { class: "hair", x: 1190, y: y + 4, width: 56, height: 56, rx: 6 }, listIn);
+        el("rect", { class: "hair", x: 790, y: y + 4, width: 56, height: 56, rx: 6 }, listIn);
         if (k !== 1) {
-          el("path", { class: "faint", d: `M1202,${y + 26} H1234 M1202,${y + 44} H1226` }, listIn);
-          el("path", { class: "faint", d: `M1270,${y + 26} H1440 M1270,${y + 46} H1380` }, listIn);
+          el("path", { class: "faint", d: `M802,${y + 26} H834 M802,${y + 44} H826` }, listIn);
+          el("path", { class: "faint", d: `M870,${y + 26} H1040 M870,${y + 46} H980` }, listIn);
         }
       });
       const listRow = el("g", {}, list);
       listRow.setAttribute("clip-path", "url(#rvV-list)");
-      txt("NOV", { class: "label", x: 1218, y: 574, "font-size": 12, "text-anchor": "middle" }, listRow);
-      const listDay = txt("12", { class: "mono", x: 1218, y: 598, "font-size": 20, "text-anchor": "middle" }, listRow);
-      const listDay2 = txt("13", { class: "mono red", x: 1218, y: 598, "font-size": 20, "text-anchor": "middle", opacity: 0 }, listRow);
-      txt("NELSON, BC", { class: "big", x: 1270, y: 578, "font-size": 22, "font-weight": 600 }, listRow);
-      txt("The Royal", { class: "mono", x: 1270, y: 600, "font-size": 15 }, listRow);
+      txt("NOV", { class: "label", x: 818, y: 574, "font-size": 12, "text-anchor": "middle" }, listRow);
+      const listDay = txt("12", { class: "mono", x: 818, y: 598, "font-size": 20, "text-anchor": "middle" }, listRow);
+      const listDay2 = txt("13", { class: "mono red", x: 818, y: 598, "font-size": 20, "text-anchor": "middle", opacity: 0 }, listRow);
+      txt("NELSON, BC", { class: "big", x: 870, y: 578, "font-size": 22, "font-weight": 600 }, listRow);
+      txt("The Royal", { class: "mono", x: 870, y: 600, "font-size": 15 }, listRow);
+      // your promos: a 9:16 phone frame
+      const PH = { x: 1300, y: 412, w: 200, h: 356 };
+      const promo = el("g", {}, outRow);
+      el("rect", { class: "card", x: PH.x, y: PH.y, width: PH.w, height: PH.h, rx: 18 }, promo);
+      el("rect", { class: "line draw", x: PH.x, y: PH.y, width: PH.w, height: PH.h, rx: 18 }, promo);
+      const promoIn = el("g", {}, promo);
+      el("path", { class: "hair", d: "M1375,428 H1425" }, promoIn);
+      el("path", { d: "M1392,462 L1412,474 L1392,486 Z", fill: "var(--line)" }, promoIn);
+      el("path", { d: "M1324,738 H1476", class: "faint" }, promoIn);
+      el("path", { d: "M1324,738 H1430", stroke: "var(--accent)", "stroke-width": 3, fill: "none" }, promoIn);
+      const promoTxt = el("g", {}, promo);
+      promoTxt.setAttribute("clip-path", "url(#rvV-promo)");
+      txt("NELSON", { class: "big", x: 1400, y: 564, "font-size": 38, "text-anchor": "middle" }, promoTxt);
+      const promoDate = txt("NOV 12", { class: "big", x: 1400, y: 606, "font-size": 30, "text-anchor": "middle" }, promoTxt);
+      const promoDate2 = txt("NOV 13", { class: "big red", x: 1400, y: 606, "font-size": 30, "text-anchor": "middle", opacity: 0 }, promoTxt);
+      txt("THE ROYAL", { class: "mono", x: 1400, y: 638, "font-size": 15, "text-anchor": "middle" }, promoTxt);
 
-      /* ---------------- Plate VI: the road becomes the date picker for a promo ---------------- */
+      /* ---------------- the promo itself: one leg of the tour, laid out for each shape ---------------- */
+      const LEG = [
+        ["NOV 06", "KAMLOOPS", "The Station"], ["NOV 07", "VERNON", "Legion Hall"], ["NOV 08", "KELOWNA", "Fern Room"],
+        ["NOV 09", "PENTICTON", "Elks Hall"], ["NOV 10", "GRAND FORKS", "Union Hall"], ["NOV 11", "CASTLEGAR", "The Mill"],
+        ["NOV 12", "ROSSLAND", "Old Firehall"], ["NOV 13", "NELSON", "The Royal"],
+      ];
+      // look art in a w×h box: riso (red sun, ink halftone), woodcut (hatching) or big type
+      const lookArt = (kind, parent, x, y, w, h) => {
+        const g = el("g", {}, parent);
+        const u = Math.min(w, h) / 100;
+        if (kind === "riso") {
+          el("circle", { cx: x + w * 0.66, cy: y + h * 0.5, r: Math.min(w, h) * 0.38, fill: "var(--accent)", "fill-opacity": 0.85 }, g);
+          const n = 7, step = (Math.min(w * 0.6, h) / n);
+          for (let r = 0; r < n; r++) for (let c = 0; c < n; c++)
+            el("circle", { cx: x + step * (c + 0.6), cy: y + h * 0.5 - (n / 2 - r - 0.5) * step, r: step * (0.12 + (r + c) * 0.025), fill: "var(--ink)", "fill-opacity": 0.85 }, g);
+        }
+        if (kind === "woodcut") {
+          let hatch = "";
+          for (let k = 0; k < 14; k++) hatch += `M${x + w * 0.06},${y + h * (0.12 + k * 0.06)} L${x + w * (0.5 + (k % 3) * 0.12)},${y + h * (0.04 + k * 0.06)} `;
+          el("path", { d: hatch, stroke: "var(--ink)", "stroke-width": Math.max(1.2, u * 1.4), fill: "none" }, g);
+          el("path", { d: `M${x + w * 0.52},${y + h * 0.7} A${w * 0.22} ${w * 0.22} 0 0 1 ${x + w * 0.96},${y + h * 0.7}`, fill: "none", stroke: "var(--ink)", "stroke-width": Math.max(1.6, u * 2) }, g);
+        }
+        if (kind === "type") {
+          txt("ON", { class: "big", x: x + w * 0.06, y: y + h * 0.48, "font-size": Math.min(h * 0.42, w * 0.42) }, g);
+          txt("TOUR", { class: "big red", x: x + w * 0.06, y: y + h * 0.9, "font-size": Math.min(h * 0.36, w * 0.3) }, g);
+        }
+        return g;
+      };
+      // a promo frame in local coordinates (0..w, 0..h); s scales the type to the frame
+      const PROMO = {
+        tall: { w: 320, h: 569, s: 1, art: [16, 34, 288, 148], title: [20, 244, 56], sub: [22, 268], rows: (k) => [20, 300 + k * 32, 86, 313 + k * 32] },
+        feed: { w: 304, h: 380, s: 0.668, art: [12, 18, 280, 112], title: [14, 172, 40], sub: [16, 190], rows: (k) => [14 + (k >> 2) * 146, 222 + (k % 4) * 38, 58 + (k >> 2) * 146, 234 + (k % 4) * 38] },
+        square: { w: 380, h: 380, s: 0.668, art: [12, 22, 168, 336], title: [194, 78, 36], sub: [196, 98], rows: (k) => [194, 134 + k * 30, 240, 145 + k * 30] },
+        wide: { w: 676, h: 380, s: 0.668, art: [14, 22, 250, 336], title: [286, 96, 56], sub: [288, 120], rows: (k) => [286 + (k >> 2) * 196, 168 + (k % 4) * 46, 334 + (k >> 2) * 196, 181 + (k % 4) * 46] },
+      };
+      const makePromo = (parent, kind) => {
+        const L = PROMO[kind], s = L.s, g = el("g", {}, parent);
+        el("rect", { class: "card", x: 0, y: 0, width: L.w, height: L.h, rx: 22 * s }, g);
+        const frame = el("rect", { class: "line", x: 0, y: 0, width: L.w, height: L.h, rx: 22 * s, "stroke-width": 2 }, g);
+        const art = lookArt("riso", g, ...L.art);
+        const title = txt("ON TOUR", { class: "big", x: L.title[0], y: L.title[1], "font-size": L.title[2] }, g);
+        const sub = txt("B.C. · NOV 6–13", { class: "label", x: L.sub[0], y: L.sub[1], "font-size": 13 * s * (kind === "tall" ? 1 : 1.25) }, g);
+        const dates = [], towns = [], venues = [];
+        LEG.forEach(([d, c, v], k) => {
+          const [dx, dy, cx, vy] = L.rows(k);
+          dates.push(txt(d, { class: k === 7 ? "mono red" : "mono", x: dx, y: dy, "font-size": 14 * s * (kind === "tall" ? 1 : 1.2) }, g));
+          towns.push(txt(c, { class: "big", x: cx, y: dy, "font-size": 15 * s * (kind === "tall" ? 1 : 1.2), "font-weight": 600 }, g));
+          venues.push(txt(v, { class: "mono", x: cx, y: vy, "font-size": 11 * s * (kind === "tall" ? 1 : 1.2), style: "fill: var(--label)" }, g));
+        });
+        return { g, frame, art, title, sub, dates, towns, venues, w: L.w, h: L.h };
+      };
+
+      /* ---------------- Plate VI: the promo maker ---------------- */
       const gVI = $("#gVI");
       // faint contour lines and a compass rose for a surveyed map, on the left of the plate
       const contours = el("g", {}, gVI);
       for (let c = 0; c < 4; c++) {
         let d = "";
-        for (let x = 180; x <= 1120; x += 20) {
-          const y = 260 + c * 150 + 36 * Math.sin(x / 190 + c * 1.7) + 14 * Math.sin(x / 71 + c);
-          d += (x === 180 ? "M" : "L") + x + "," + y.toFixed(1) + " ";
+        for (let x = 160; x <= 1000; x += 20) {
+          const y = 270 + c * 140 + 36 * Math.sin(x / 190 + c * 1.7) + 14 * Math.sin(x / 71 + c);
+          d += (x === 160 ? "M" : "L") + x + "," + y.toFixed(1) + " ";
         }
         el("path", { class: "faint", d, "stroke-dasharray": "2 7" }, contours);
       }
       const rose = el("g", {}, gVI);
-      el("circle", { cx: 1080, cy: 740, r: 54, class: "hair" }, rose);
-      el("circle", { cx: 1080, cy: 740, r: 40, class: "faint" }, rose);
-      el("path", { class: "hair", d: "M1080,674 V806 M1014,740 H1146" }, rose);
-      el("path", { d: "M1080,686 L1090,740 L1080,730 L1070,740 Z", fill: "var(--line)" }, rose);
-      txt("N", { class: "label", x: 1080, y: 666, "font-size": 15, "text-anchor": "middle" }, rose);
+      el("circle", { cx: 230, cy: 770, r: 44, class: "hair" }, rose);
+      el("circle", { cx: 230, cy: 770, r: 32, class: "faint" }, rose);
+      el("path", { class: "hair", d: "M230,716 V824 M176,770 H284" }, rose);
+      el("path", { d: "M230,726 L238,770 L230,762 L222,770 Z", fill: "var(--line)" }, rose);
+      txt("N", { class: "label", x: 230, y: 708, "font-size": 14, "text-anchor": "middle" }, rose);
       // 53 stops, a deterministic wandering road west to east
       const stops = [];
       for (let i = 0; i < 53; i++) {
-        const x = 220 + (i * 820) / 52 + 16 * Math.sin(i * 0.9);
-        const y = 500 + 170 * Math.sin(i * 0.19 + 0.2) + 45 * Math.sin(i * 0.53 + 1.3);
+        const x = 170 + (i * 760) / 52 + 14 * Math.sin(i * 0.9);
+        const y = 520 + 150 * Math.sin(i * 0.19 + 0.2) + 40 * Math.sin(i * 0.53 + 1.3);
         stops.push([x, y]);
       }
       // Catmull-Rom through stops i0..i1, as cubic Beziers
@@ -451,83 +555,115 @@
         }
         return d;
       };
-      const roadBed = el("path", { d: crPath(0, 52), fill: "none", stroke: "var(--line)", "stroke-width": 9, "stroke-linecap": "round", "stroke-opacity": 0.16 }, gVI);
-      const route = el("path", { class: "line", d: crPath(0, 52), "stroke-width": 2.2 }, gVI);
-      const stopDots = stops.map(([x, y]) => el("circle", { cx: x, cy: y, r: 5, fill: "var(--card)", stroke: "var(--ink)", "stroke-width": 1.6, opacity: 0 }, gVI));
-      const legend = el("g", {}, gVI);
-      el("circle", { cx: 236, cy: 790, r: 5, fill: "var(--card)", stroke: "var(--ink)", "stroke-width": 1.6 }, legend);
-      txt("one show", { class: "label", x: 252, y: 795, "font-size": 14 }, legend);
-      // step 1: the last run of eight shows, ending at Nelson, picked along the road
+      const mapG = el("g", {}, gVI);
+      const roadBed = el("path", { d: crPath(0, 52), fill: "none", stroke: "var(--line)", "stroke-width": 9, "stroke-linecap": "round", "stroke-opacity": 0.16 }, mapG);
+      const route = el("path", { class: "line", d: crPath(0, 52), "stroke-width": 2.2 }, mapG);
+      const stopDots = stops.map(([x, y]) => el("circle", { cx: x, cy: y, r: 5, fill: "var(--card)", stroke: "var(--ink)", "stroke-width": 1.6, opacity: 0 }, mapG));
+      const legend = el("g", {}, mapG);
+      el("circle", { cx: 310, cy: 800, r: 5, fill: "var(--card)", stroke: "var(--ink)", "stroke-width": 1.6 }, legend);
+      txt("one show", { class: "label", x: 326, y: 805, "font-size": 14 }, legend);
+      // step 1: a run of eight shows ending at Nelson, picked on the road
       const L0 = 45, L1 = 52;
-      const legLine = el("path", { d: crPath(L0, L1), fill: "none", stroke: "var(--accent)", "stroke-width": 4, "stroke-linecap": "round" }, gVI);
-      const legDots = stops.slice(L0, L1 + 1).map(([x, y]) => el("circle", { cx: x, cy: y, r: 6.5, fill: "var(--accent)", stroke: "var(--card)", "stroke-width": 2, opacity: 0 }, gVI));
+      const seeker = el("circle", { cx: stops[0][0], cy: stops[0][1], r: 9, fill: "none", stroke: "var(--accent)", "stroke-width": 2.4, opacity: 0 }, mapG);
+      const legLine = el("path", { d: crPath(L0, L1), fill: "none", stroke: "var(--accent)", "stroke-width": 4, "stroke-linecap": "round" }, mapG);
+      const legDots = stops.slice(L0, L1 + 1).map(([x, y]) => el("circle", { cx: x, cy: y, r: 6.5, fill: "var(--accent)", stroke: "var(--card)", "stroke-width": 2, opacity: 0 }, mapG));
       const lx = stops.slice(L0).map((p) => p[0]), ly = stops.slice(L0).map((p) => p[1]);
       const bx0 = Math.min(...lx) - 22, bx1 = Math.max(...lx) + 22, by0 = Math.min(...ly) - 22, by1 = Math.max(...ly) + 22;
-      const legBox = el("rect", { class: "dash", x: bx0, y: by0, width: bx1 - bx0, height: by1 - by0, rx: 14 }, gVI);
-      const step1 = txt("1 · pick the dates", { class: "label", x: bx0, y: by0 - 14, "font-size": 15, style: "fill: var(--accent-text)" }, gVI);
-      // step 2: three looks, each a little 9:16 sheet; riso is picked
+      const legBox = el("rect", { class: "dash", x: bx0, y: by0, width: bx1 - bx0, height: by1 - by0, rx: 14 }, mapG);
+      const legLbl = txt("B.C. leg", { class: "label", x: bx0, y: by0 - 12, "font-size": 14, style: "fill: var(--accent-text)" }, mapG);
+      const kam = txt("KAMLOOPS", { class: "label", x: stops[L0][0], y: by1 + 24, "font-size": 13, "text-anchor": "middle" }, mapG);
+      const nel = txt("NELSON", { class: "label", x: bx1 + 8, y: stops[L1][1] + 5, "font-size": 13 }, mapG);
+      // the steps panel
       const panel = el("g", {}, gVI);
-      txt("2 · pick a look", { class: "label", x: 1240, y: 240, "font-size": 15 }, panel);
-      const looks = ["riso", "woodcut", "type"].map((name, j) => {
-        const x = 1240 + j * 170, y = 262, w = 120, h = 213;
+      const PX6 = 1080;
+      const step1 = txt("1 · pick the dates", { class: "label", x: PX6, y: 214, "font-size": 15 }, panel);
+      const legCount = { n: 0, full: 0 };
+      const legSum = txt("", { class: "mono", x: PX6, y: 252, "font-size": 21 }, panel);
+      const showLeg = () => {
+        const n = Math.min(8, Math.round(legCount.n));
+        legSum.textContent = n === 0 ? "" : n + (n === 1 ? " show" : " shows") + (legCount.full >= 0.5 ? " · NOV 6–13" : "");
+      };
+      const step2 = txt("2 · pick a look", { class: "label", x: PX6, y: 300, "font-size": 15 }, panel);
+      const LOOKS = [["riso", "riso"], ["woodcut", "woodcut"], ["type", "big type"]];
+      const looks = LOOKS.map(([kind, name], j) => {
+        const x = PX6 + j * 110, y = 318, wv = 90, hv = 160;
         const g = el("g", {}, panel);
-        el("rect", { class: "card", x, y, width: w, height: h }, g);
-        el("rect", { class: "line draw", x, y, width: w, height: h }, g);
-        const art = el("g", {}, g);
-        if (j === 0) {
-          for (let r = 0; r < 5; r++) for (let c = 0; c < 5; c++) el("circle", { cx: x + 30 + c * 15, cy: y + 34 + r * 15, r: 2.6 + (r + c) * 0.35, fill: "var(--accent)", "fill-opacity": 0.55 }, art);
-          el("rect", { x: x + 16, y: y + 128, width: 88, height: 12, fill: "var(--ink)" }, art);
-          el("rect", { x: x + 16, y: y + 148, width: 60, height: 12, fill: "var(--ink)" }, art);
-          el("path", { class: "faint", d: `M${x + 16},${y + 180} H${x + 104} M${x + 16},${y + 192} H${x + 84}` }, art);
-        }
-        if (j === 1) {
-          let hatch = "";
-          for (let k = 0; k < 12; k++) hatch += `M${x + 12},${y + 24 + k * 8} L${x + 12 + 40 + (k % 3) * 18},${y + 14 + k * 8} `;
-          el("path", { d: hatch, stroke: "var(--ink)", "stroke-width": 1.4, fill: "none" }, art);
-          el("path", { d: `M${x + 64},${y + 70} A28 28 0 0 1 ${x + 108},${y + 70}`, class: "line" }, art);
-          el("path", { class: "faint", d: `M${x + 16},${y + 150} H${x + 104} M${x + 16},${y + 166} H${x + 90} M${x + 16},${y + 182} H${x + 96}` }, art);
-        }
-        if (j === 2) {
-          txt("ON", { class: "big", x: x + 14, y: y + 70, "font-size": 40 }, art);
-          txt("TOUR", { class: "big", x: x + 14, y: y + 110, "font-size": 34 }, art);
-          el("path", { class: "faint", d: `M${x + 16},${y + 150} H${x + 104} M${x + 16},${y + 166} H${x + 90} M${x + 16},${y + 182} H${x + 96}` }, art);
-        }
-        txt(name, { class: "label", x: x + w / 2, y: y + h + 26, "font-size": 13, "text-anchor": "middle" }, g);
-        return { g, art };
+        el("rect", { class: "card", x, y, width: wv, height: hv }, g);
+        el("rect", { class: "line draw", x, y, width: wv, height: hv }, g);
+        lookArt(kind, g, x + 8, y + 14, wv - 16, hv - 70);
+        el("path", { class: "faint", d: `M${x + 10},${y + hv - 40} H${x + wv - 10} M${x + 10},${y + hv - 28} H${x + wv - 26} M${x + 10},${y + hv - 16} H${x + wv - 18}` }, g);
+        txt(name, { class: "label", x: x + wv / 2, y: y + hv + 24, "font-size": 13, "text-anchor": "middle" }, g);
+        return g;
       });
-      const pick = el("rect", { x: 1234, y: 256, width: 132, height: 225, rx: 4, fill: "none", stroke: "var(--accent)", "stroke-width": 3 }, panel);
-      // step 3: generate
+      const hover = el("rect", { x: PX6 - 6, y: 312, width: 102, height: 172, rx: 4, class: "dash", style: "stroke: var(--accent)", opacity: 0 }, panel);
+      const pick = el("rect", { x: PX6 - 6, y: 312, width: 102, height: 172, rx: 4, fill: "none", stroke: "var(--accent)", "stroke-width": 3 }, panel);
       const btn = el("g", {}, panel);
-      el("rect", { x: 1240, y: 540, width: 460, height: 58, rx: 29, fill: "var(--card)", stroke: "var(--ink)", "stroke-width": 1.6 }, btn);
-      const btnOn = el("rect", { x: 1240, y: 540, width: 460, height: 58, rx: 29, fill: "var(--accent)", opacity: 0 }, btn);
+      el("rect", { x: PX6, y: 560, width: 310, height: 58, rx: 29, fill: "var(--card)", stroke: "var(--ink)", "stroke-width": 1.6 }, btn);
+      const btnOn = el("rect", { x: PX6, y: 560, width: 310, height: 58, rx: 29, fill: "var(--accent)", opacity: 0 }, btn);
       // one label; it turns paper-coloured when the button is pressed
-      const btnTxt = txt("3 · generate", { class: "label", x: 1470, y: 575, "font-size": 18, "text-anchor": "middle", style: "fill: #1E1A14" }, btn);
-      // the result: a 9:16 promo with the eight dates
-      const legDates = [["NOV 06", "KAMLOOPS"], ["NOV 07", "VERNON"], ["NOV 08", "KELOWNA"], ["NOV 09", "PENTICTON"], ["NOV 10", "GRAND FORKS"], ["NOV 11", "CASTLEGAR"], ["NOV 12", "ROSSLAND"], ["NOV 13", "NELSON"]];
-      const phone = el("g", {}, gVI);
-      el("rect", { class: "card", x: 1340, y: 200, width: 240, height: 427, rx: 22 }, phone);
-      const phoneLine = el("rect", { class: "line", x: 1340, y: 200, width: 240, height: 427, rx: 22, "stroke-width": 2 }, phone);
-      const phoneIn = el("g", {}, phone);
-      el("path", { class: "hair", d: "M1430,218 H1490" }, phoneIn);
-      for (let r = 0; r < 3; r++) for (let c = 0; c < 6; c++) el("circle", { cx: 1470 + c * 16, cy: 236 + r * 15, r: 2.4 + (r + c) * 0.4, fill: "var(--accent)", "fill-opacity": 0.5 }, phoneIn);
-      txt("ON TOUR", { class: "big", x: 1364, y: 340, "font-size": 40 }, phoneIn);
-      const rows = legDates.map(([d, c], k) => txt(`${d}  ${c}`, { class: k === 7 ? "mono red" : "mono", x: 1364, y: 382 + k * 26, "font-size": 15 }, phoneIn));
-      el("path", { d: "M1364,598 H1556", class: "faint" }, phoneIn);
-      el("path", { d: "M1364,598 H1470", stroke: "var(--accent)", "stroke-width": 4, fill: "none" }, phoneIn);
-      const dims = el("g", {}, gVI);
-      el("path", { class: "hair", d: "M1612,200 V627 M1604,200 H1620 M1604,627 H1620" }, dims);
-      txt("9:16", { class: "label", x: 1630, y: 419, "font-size": 15 }, dims);
+      const btnTxt = txt("3 · generate", { class: "label", x: PX6 + 155, y: 595, "font-size": 18, "text-anchor": "middle", style: "fill: #1E1A14" }, btn);
+      // the phone: an empty 9:16 frame until generate, then the promo plays in it
+      const phone = makePromo(gVI, "tall");
+      const PHONE = { x: 1430, y: 160, scale: 1 };
+      const STAGE = { x: 784, y: 180, scale: 1.1 }; // centre stage once the promo is made
+      const yourPromo = txt("your promo", { class: "label", x: 160, y: 290, "font-size": 15, "text-anchor": "middle" }, phone.g);
+      const previews = LOOKS.map(([kind]) => lookArt(kind, phone.g, 30, 120, 260, 330));
+      const scan = el("path", { d: "M14,0 H306", stroke: "var(--accent)", "stroke-width": 3, opacity: 0 }, phone.g);
+      const storyBar = el("path", { d: "M20,16 H300", class: "faint" }, phone.g);
+      const storyFill = el("path", { d: "M20,16 H300", stroke: "var(--accent)", "stroke-width": 3, fill: "none" }, phone.g);
+      phone.g.appendChild(phone.frame);
+      const dims6 = el("g", {}, gVI);
+      el("path", { class: "hair", d: "M1774,160 V729 M1766,160 H1782 M1766,729 H1782" }, dims6);
+      txt("9:16", { class: "label", x: 1790, y: 450, "font-size": 15 }, dims6);
+      // callouts around the promo once it is centre stage (phone at 784,180, ×1.1)
+      const SX = (lx) => STAGE.x + lx * STAGE.scale, SY = (ly) => STAGE.y + ly * STAGE.scale;
+      const call6 = (label, x0, y0, x1, side) => {
+        const g = el("g", {}, gVI);
+        el("path", { class: "hair", d: `M${x0},${y0} H${x1}` }, g);
+        el("circle", { cx: x1, cy: y0, r: 3, fill: "var(--accent)" }, g);
+        txt(label, { class: "label", x: side === "left" ? x0 - 12 : x0 + 12, y: y0 + 5, "font-size": 15, "text-anchor": side === "left" ? "end" : "start", style: "fill: var(--accent-text)" }, g);
+        return g;
+      };
+      const rowY = (k) => SY(300 + k * 32) - 5;
+      const cDates = call6("your dates", 740, rowY(0), SX(12), "left");
+      const cTowns = call6("your towns", 1200, rowY(0), SX(178), "right");
+      const cVenues = call6("your venues", 1200, SY(345) - 4, SX(168), "right");
+      const cLook = call6("your look", 1200, SY(108), SX(250), "right");
+
+      /* ---------------- Plate VII: one promo, every shape ---------------- */
+      const gVII = $("#gVII");
+      const FH = 380, FY = 350;
+      const SLOTS = [
+        { kind: "tall", x: 113, w: FH * 9 / 16, ratio: "9:16", where: "Reels · TikTok · Shorts" },
+        { kind: "feed", x: 367, w: FH * 4 / 5, ratio: "4:5", where: "Instagram · Facebook feed" },
+        { kind: "square", x: 711, w: FH, ratio: "1:1", where: "square posts" },
+        { kind: "wide", x: 1131, w: FH * 16 / 9, ratio: "16:9", where: "YouTube" },
+      ];
+      const shapes = SLOTS.map((sl) => {
+        const holder = el("rect", { class: "dash", x: sl.x, y: FY, width: sl.w, height: FH, rx: 14 * 0.668, opacity: 0 }, gVII);
+        const p = makePromo(gVII, sl.kind);
+        if (sl.kind === "tall") gsap.set(p.g, { svgOrigin: "0 0", x: sl.x, y: FY, scale: FH / 569 });
+        else gsap.set(p.g, { x: sl.x, y: FY });
+        const dimG = el("g", {}, gVII);
+        el("path", { class: "hair", d: `M${sl.x},${FY - 22} H${sl.x + sl.w} M${sl.x},${FY - 30} V${FY - 14} M${sl.x + sl.w},${FY - 30} V${FY - 14}` }, dimG);
+        txt(sl.ratio, { class: "mono", x: sl.x + sl.w / 2, y: FY - 34, "font-size": 20, "text-anchor": "middle" }, dimG);
+        const where = txt(sl.where, { class: "label", x: sl.x + sl.w / 2, y: FY + FH + 40, "font-size": 14, "text-anchor": "middle" }, gVII);
+        return Object.assign({}, sl, { holder, p, dimG, where });
+      });
 
       /* ---------------- Colophon ---------------- */
       const gC = $("#gC");
       const mark = txt("IndieAgent", { class: "big", x: 960, y: 500, "font-size": 132, "text-anchor": "middle", "letter-spacing": "-0.02em" }, gC);
       const rule = el("path", { class: "line", d: "M760,550 H1160" }, gC);
       const sign = txt("Your tour, kept straight.", { class: "big red", x: 960, y: 624, "font-size": 46, "text-anchor": "middle" }, gC);
+      const soon = txt("Coming soon", { class: "label", x: 960, y: 700, "font-size": 20, "text-anchor": "middle" }, gC);
 
       /* ---------------- stroke drawing setup ---------------- */
-      const prep = (n) => { const L = n.getTotalLength(); n.style.strokeDasharray = L; n.style.strokeDashoffset = L; return n; };
+      // the gap is a little longer than the dash and the offset parks the dash just before the path's start,
+      // so a round line cap can't leave a dot on an undrawn line
+      const prep = (n) => { const L = n.getTotalLength(); n.style.strokeDasharray = `${L} ${L + 10}`; n.style.strokeDashoffset = L + 5; return n; };
       document.querySelectorAll(".draw").forEach(prep);
-      [outline, route, rule, legLine, pick, phoneLine].forEach(prep);
+      [rule, legLine, pick].forEach(prep);
       pulses.forEach(prep);
       const fillLen = 1680; fill.style.strokeDasharray = fillLen; fill.style.strokeDashoffset = fillLen;
       const draws = (root) => Array.from(root.querySelectorAll(".draw"));
@@ -539,153 +675,295 @@
       const showCount = () => (countEl.textContent = String(Math.round(count.n)).padStart(2, "0"));
       // dashed lines keep their dash pattern, so they fade in rather than draw
       const fadeIn = (nodes, t, d, stagger = 0.15) => tl.fromTo(nodes, { opacity: 0 }, { opacity: 1, duration: d, stagger }, t);
-      const head = (sel, t) => tl.from(sel, { opacity: 0, y: 12, duration: 0.7, ease: "power2.out" }, t);
+      const head = (sel, t) => tl.fromTo(sel, { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.6, ease: "power2.out" }, t);
+      const drawOn = (nodes, t, d = 0.6, stagger = 0) => tl.to(nodes, { strokeDashoffset: 0, duration: d, ease: "power2.inOut", stagger }, t);
 
       // chrome
-      tl.to("#border .draw", { strokeDashoffset: 0, duration: 1.4, ease: "power2.inOut", stagger: 0.1 }, 0);
-      tl.from("#barlabel, #counter", { opacity: 0, duration: 0.6 }, 0.8);
-      tl.to("#scale .draw", { strokeDashoffset: 0, duration: 1.2, ease: "power2.inOut" }, 0.6);
-      tl.fromTo(cursor, { x: 120 }, { x: 1800, duration: 90, ease: "none" }, 0);
+      tl.to("#border .draw", { strokeDashoffset: 0, duration: 1.0, ease: "power2.inOut", stagger: 0.08 }, 0);
+      tl.from("#barlabel, #counter", { opacity: 0, duration: 0.5 }, 0.5);
+      tl.to("#scale .draw", { strokeDashoffset: 0, duration: 1.0, ease: "power2.inOut" }, 0.4);
+      tl.fromTo(cursor, { x: 120 }, { x: 1800, duration: END, ease: "none" }, 0);
 
-      // scene fades and chapter labels
-      Object.keys(T).forEach((k) => {
-        const t0 = T[k];
+      // scenes: each fades in at its start and out over the first half second of the next, so the
+      // outgoing plate is still on screen while the incoming one draws; chapter labels wait for the handover
+      ORDER.forEach((k) => {
         const sc = document.getElementById("s" + k);
-        tl.fromTo(sc, { opacity: 0 }, { opacity: 1, duration: 0.4 }, t0);
-        if (k !== "C") tl.to(sc, { opacity: 0, duration: 0.4 }, t0 + D[k] - 0.45);
-        tl.from(sc.querySelector(".chapter"), { opacity: 0, x: -16, duration: 0.7, ease: "power2.out" }, t0 + 0.3);
+        tl.fromTo(sc, { opacity: 0 }, { opacity: 1, duration: k === "I" ? 0.2 : 0.3 }, T[k]);
+        if (k !== "C") tl.to(sc, { opacity: 0, duration: 0.45 }, next(k));
+        if (k !== "C") tl.to(sc.querySelectorAll(".headline"), { opacity: 0, duration: 0.25 }, next(k) - 0.1);
+        tl.from(sc.querySelector(".chapter"), { opacity: 0, x: -16, duration: 0.6, ease: "power2.out" }, T[k] + 0.45);
       });
 
-      // Plate I (0-12.5): one document per beat, one circled mistake per beat
-      tl.to(docs.map((g) => g.querySelector("rect.draw")), { strokeDashoffset: 0, duration: 0.8, ease: "power2.inOut", stagger: BEAT }, at("I", 0.6));
-      tl.from(docs.map((g) => g.querySelector(".docbody")), { opacity: 0, duration: 0.6, stagger: BEAT }, at("I", 1.1));
-      head("#hI1", onBeat("I", 4.0));
-      tl.to(rings, { strokeDashoffset: 0, duration: 0.5, ease: "power2.out", stagger: BEAT }, onBeat("I", 5.4));
-      head("#hI2", onBeat("I", 7.9));
+      // Plate I. "You booked the show. Now you type it into your website. The poster. The event page.
+      // The email to the venue. Your spreadsheet. Five copies. And four of them are wrong."
+      tl.from(booked.querySelector("rect.card"), { opacity: 0, duration: 0.3 }, w("I", "you"));
+      drawOn(draws(booked), w("I", "you"), 0.6);
+      tl.from(Array.from(booked.querySelectorAll("text")), { opacity: 0, duration: 0.4 }, w("I", "you") + 0.2);
+      tl.from(stamp, { opacity: 0, scale: 1.4, svgOrigin: "1158 186", duration: 0.25, ease: "power2.in" }, w("I", "show"));
+      ["website", "poster", "event", "email", "spreadsheet"].forEach((word, i) => {
+        const t = w("I", word) - 0.25;
+        fadeIn(leads[i], t, 0.3);
+        tl.to(docs[i].querySelector("rect.draw"), { strokeDashoffset: 0, duration: 0.5, ease: "power2.inOut" }, t + 0.05);
+        tl.from(docs[i].querySelector("rect.card"), { opacity: 0, duration: 0.3 }, t + 0.05);
+        tl.from(docs[i].querySelector(".docbody"), { opacity: 0, duration: 0.35 }, t + 0.3);
+      });
+      head("#hI1", w("I", "five"));
+      tl.to(rings, { strokeDashoffset: 0, duration: 0.4, ease: "power2.out", stagger: 0.16 }, w("I", "four") - 0.1);
+      head("#hI2", w("I", "four"));
+      tl.from(okI, { opacity: 0, scale: 0.5, transformOrigin: "50% 50%", duration: 0.3 }, w("I", "wrong") + 0.3);
+      // the five copies fold into one sentence
+      tl.to(leads, { opacity: 0, duration: 0.3 }, 12.2);
+      docs.forEach((g, i) => tl.to(g, { x: 960 - (320 + i * 320), y: 295 - 490, scale: 0.12, svgOrigin: `${320 + i * 320} 490`, opacity: 0, duration: 0.55, ease: "power2.in" }, 12.2 + i * 0.04));
+      tl.to([booked, stamp, okI], { opacity: 0, duration: 0.4 }, 12.2);
 
-      // Plate II (12-22)
-      tl.to(Array.from(gII.children).filter((n) => n.classList.contains("draw")), { strokeDashoffset: 0, duration: 0.8, ease: "power2.inOut" }, at("II", 0.4));
-      tl.to("#rvII", { attr: { width: S2.length * cw2 + 12 }, duration: 2.0, ease: `steps(${S2.length})` }, at("II", 1.2));
-      tl.to(draws(g2b).concat(draws(g2l)), { strokeDashoffset: 0, duration: 0.7, ease: "power2.inOut", stagger: 0.2 }, at("II", 3.6));
-      fadeIn(Array.from(document.querySelectorAll("#gII .dash")), at("II", 4.0), 0.6);
-      tl.from(Array.from(document.querySelectorAll("#gII .box")), { opacity: 0, y: 10, duration: 0.5, stagger: 0.25 }, at("II", 4.6));
-      tl.from(workedOut, { opacity: 0, duration: 0.5 }, at("II", 5.4));
-      head("#hII", onBeat("II", 6.6));
+      // Plate II. "With IndieAgent, you say it once, the way you'd say it, in your own ChatGPT.
+      // 'Add Nelson, November twelfth, at the Royal.' It works out the rest."
+      tl.fromTo(winII.querySelector("rect.card"), { opacity: 0 }, { opacity: 1, duration: 0.4 }, T.II);
+      drawOn(draws(winII), T.II + 0.05, 0.6, 0.1);
+      tl.from(winII.querySelector("text"), { opacity: 0, duration: 0.4 }, T.II + 0.3);
+      tl.from(pill, { opacity: 0, scale: 0.7, transformOrigin: "50% 50%", duration: 0.35, ease: "back.out(2)" }, w("II", "indieagent"));
+      tl.from(bubbleG.querySelector("path.card"), { opacity: 0, duration: 0.4 }, T.II + 0.8);
+      drawOn(draws(bubbleG), T.II + 0.8, 0.6);
+      head("#hII", w("II", "once") - 0.1);
+      tl.fromTo(titleUnder, { scaleX: 0 }, { scaleX: 1, transformOrigin: "0% 50%", duration: 0.4, ease: "power2.out" }, w("II", "chat"));
+      // a blinking caret, then the sentence typed as she says it
+      const typeA = w("II", "add"), typeB = w("II", "royal") + 0.45;
+      tl.set(caret, { opacity: 1 }, T.II + 1.4);
+      for (let t = T.II + 1.8; t < typeA - 0.2; t += 0.8) { tl.set(caret, { opacity: 0 }, t); tl.set(caret, { opacity: 1 }, t + 0.4); }
+      tl.to("#rvII", { attr: { width: S2.length * cw2 + 12 }, duration: typeB - typeA, ease: `steps(${S2.length})` }, typeA);
+      tl.to(caret, { x: S2.length * cw2 + 2, duration: typeB - typeA, ease: `steps(${S2.length})` }, typeA);
+      tl.to(caret, { opacity: 0, duration: 0.1 }, typeB + 0.4);
+      const rest = w("II", "works") - 0.15;
+      drawOn(draws(g2b), rest, 0.35, 0.08);
+      drawOn(draws(g2l), rest + 0.2, 0.5, 0.08);
+      fadeIn(Array.from(gII.querySelectorAll(".dash")), rest + 0.35, 0.4);
+      tl.from(Array.from(gII.querySelectorAll(".box")), { opacity: 0, y: 10, duration: 0.4, stagger: 0.18 }, rest + 0.4);
+      tl.from(workedOut, { opacity: 0, duration: 0.4 }, rest + 1.0);
+      // the sentence travels into the chat window of Plate III
+      tl.to([winII, pill, g2b, g2l, g2x, workedOut], { opacity: 0, duration: 0.4 }, 24.4);
+      tl.to(bubbleG, { x: 300 - 560 * 0.3625, y: 449 - 250 * 0.3625, scale: 0.3625, svgOrigin: "0 0", duration: 0.7, ease: "power3.inOut" }, 24.4);
 
-      // Plate III (22-36)
-      tl.to([...draws(chatWin), ...draws(tourWin)], { strokeDashoffset: 0, duration: 1.0, ease: "power2.inOut", stagger: 0.1 }, at("III", 0.3));
-      tl.to(draws(gC3), { strokeDashoffset: 0, duration: 1.0, ease: "power2.inOut", stagger: 0.2 }, at("III", 1.5));
-      tl.from([lock, lockLbl], { opacity: 0, y: -8, duration: 0.6, stagger: 0.2 }, at("III", 2.4));
+      // Plate III. "It's your tour. You choose who else can change it: your manager, your drummer. Nobody else gets in."
+      [chatWin, tourWin].forEach((g, i) => {
+        tl.from(g.querySelector("rect.card"), { opacity: 0, duration: 0.4 }, T.III + i * 0.1);
+        drawOn(draws(g), T.III + i * 0.1, 0.7, 0.1);
+        tl.from(g.querySelector("text"), { opacity: 0, duration: 0.4 }, T.III + 0.3);
+      });
+      tl.from(chatIn, { opacity: 0, duration: 0.3 }, T.III + 0.05);
+      tl.from(Array.from(tourWin.children).filter((n) => n.tagName === "path" && !n.classList.contains("draw")), { opacity: 0, duration: 0.4 }, T.III + 0.4);
+      drawOn(draws(gC3), T.III + 0.3, 0.7, 0.15);
+      head("#hIII1", w("III", "it's") + 0.05);
       gsap.set(packet, { x: 630, y: 443, opacity: 0 });
-      tl.to(packet, { opacity: 1, duration: 0.3 }, at("III", 3.2));
-      tl.to(packet, { x: 870, duration: 1.2, ease: "power1.inOut" }, at("III", 3.2));
-      tl.from(check, { opacity: 0, scale: 0.6, transformOrigin: "50% 50%", duration: 0.35 }, at("III", 4.6));
-      tl.to(packet, { x: 1240, duration: 1.0, ease: "power1.inOut" }, at("III", 5.0));
-      tl.to(packet, { opacity: 0, duration: 0.25 }, at("III", 5.9));
-      tl.to(newMini, { opacity: 1, duration: 0.4 }, at("III", 6.0));
-      tl.from(newMini, { y: -14, duration: 0.4, ease: "power2.out" }, at("III", 6.0));
-      head("#hIII1", onBeat("III", 6.4));
-      // someone uninvited is stopped at the lock
-      tl.from(other, { opacity: 0, duration: 0.6 }, at("III", 7.0));
-      gsap.set(otherTk, { x: 938, y: 214, opacity: 0 });
-      tl.to(otherTk, { opacity: 1, duration: 0.3 }, at("III", 7.2));
-      tl.to(otherTk, { y: 326, duration: 0.9, ease: "power1.in" }, at("III", 7.2));
-      tl.from(cross, { opacity: 0, scale: 0.5, transformOrigin: "50% 50%", duration: 0.3 }, onBeat("III", 8.1));
-      tl.to(otherTk, { y: 290, opacity: 0, duration: 0.6, ease: "power2.out" }, at("III", 8.4));
-      // the artist's invited manager gets in and goes through to the tour
-      tl.from(mgr, { opacity: 0, duration: 0.6 }, at("III", 8.6));
-      gsap.set(mgrTk, { x: 938, y: 716, opacity: 0 });
-      tl.to(mgrTk, { opacity: 1, duration: 0.3 }, at("III", 8.8));
-      tl.to(mgrTk, { y: 508, duration: 0.9, ease: "power1.inOut" }, at("III", 8.8));
-      tl.from(check2, { opacity: 0, scale: 0.6, transformOrigin: "50% 50%", duration: 0.35 }, onBeat("III", 9.8));
-      tl.to(mgrTk, { y: 443, duration: 0.4, ease: "power1.inOut" }, at("III", 10.1));
-      tl.to(mgrTk, { x: 1240, duration: 0.9, ease: "power1.inOut" }, at("III", 10.5));
-      tl.to(mgrTk, { opacity: 0, duration: 0.25 }, at("III", 11.3));
-      head("#hIII2", onBeat("III", 11.0));
-
-      // Plate IV (36-50): the approved style test, shifted
-      tl.to(ghosts, { opacity: 1, duration: 0.2, stagger: 3.4 / 52 }, at("IV", 1.4));
-      tl.to(ticks.slice(0, 52), { opacity: 1, duration: 0.2, stagger: 3.4 / 52 }, at("IV", 1.4));
-      tl.to(fill, { strokeDashoffset: fillLen * (1 - 52 / 53), duration: 3.6, ease: "none" }, at("IV", 1.4));
-      tl.to(count, { n: 52, duration: 3.6, ease: "none", onUpdate: showCount }, at("IV", 1.4));
-      tl.fromTo(".card-fill", { opacity: 0 }, { opacity: 1, duration: 0.5 }, at("IV", 5.0));
-      tl.to(outline, { strokeDashoffset: 0, duration: 1.3, ease: "power2.inOut" }, at("IV", 5.0));
-      tl.from([perf, inner], { opacity: 0, duration: 0.6, stagger: 0.2 }, at("IV", 5.9));
-      tl.from(admit, { opacity: 0, duration: 0.5 }, at("IV", 6.2));
-      tl.to("#rv-date", { attr: { width: 760 }, duration: 0.7, ease: "steps(22)" }, at("IV", 6.4));
-      tl.to("#rv-city", { attr: { width: 760 }, duration: 0.6, ease: "power2.out" }, at("IV", 7.0));
-      tl.to("#rv-venue", { attr: { width: 760 }, duration: 0.5, ease: "power2.out" }, at("IV", 7.5));
-      tl.to(draws(co), { strokeDashoffset: 0, duration: 0.7, ease: "power2.inOut", stagger: 0.12 }, at("IV", 6.6));
-      tl.from("#iv-callouts text, #iv-callouts .dot", { opacity: 0, duration: 0.5, stagger: 0.1 }, at("IV", 6.9));
-      tl.from(noLbl, { opacity: 0, duration: 0.4 }, at("IV", 8.4));
-      tl.from(serial, { opacity: 0, y: 10, duration: 0.5, ease: "power2.out" }, at("IV", 8.6));
-      tl.to(ticks[52], { opacity: 1, stroke: "var(--accent)", duration: 0.2 }, at("IV", 8.8));
-      tl.to(fill, { strokeDashoffset: 0, duration: 0.4, ease: "power2.out" }, at("IV", 8.7));
-      tl.to(count, { n: 53, duration: 0.3, onUpdate: showCount }, at("IV", 8.8));
-      head("#hIV", onBeat("IV", 9.8));
-
-      // Plate V (50-72)
-      tl.to([...draws(vBody), ...draws(vStub)], { strokeDashoffset: 0, duration: 1.0, ease: "power2.inOut" }, at("V", 0.3));
-      tl.from([...vBody.querySelectorAll("text:not(.red)"), ...vStub.querySelectorAll("text")], { opacity: 0, duration: 0.6, stagger: 0.1 }, at("V", 1.0));
-      tl.to(vStub, { x: 22, y: 6, rotation: 7, svgOrigin: "1140 240", duration: 0.8, ease: "back.out(1.6)" }, at("V", 2.4));
-      const output = (i, g, innerG, rv, rvAttr, t) => {
-        fadeIn(rays[i], t, 0.6);
-        tl.from(g.querySelector("rect.card"), { opacity: 0, duration: 0.5 }, t + 0.5);
-        tl.to(g.querySelector("rect.draw"), { strokeDashoffset: 0, duration: 0.9, ease: "power2.inOut" }, t + 0.5);
-        tl.from(innerG, { opacity: 0, duration: 0.6 }, t + 1.1);
-        tl.to(rv, { attr: rvAttr, duration: 0.7, ease: "power2.out" }, t + 2.2);
+      tl.to(packet, { opacity: 1, duration: 0.2 }, w("III", "your"));
+      tl.to(packet, { x: 1240, duration: 1.0, ease: "power1.inOut" }, w("III", "your"));
+      tl.to(packet, { opacity: 0, duration: 0.2 }, w("III", "your") + 0.9);
+      tl.to(newMini, { opacity: 1, duration: 0.3 }, w("III", "your") + 1.0);
+      tl.from(newMini, { y: -14, duration: 0.4, ease: "power2.out" }, w("III", "your") + 1.0);
+      tl.from(lock, { opacity: 0, y: -10, duration: 0.4, ease: "power2.out" }, w("III", "you"));
+      tl.from(lockLbl, { opacity: 0, duration: 0.4 }, w("III", "you") + 0.15);
+      head("#hIII2", w("III", "choose"));
+      // the people you invited get through
+      const invite = (who, tkn, x0, ex, chkN, word) => {
+        const t = w("III", word) - 0.3;
+        tl.from(who, { opacity: 0, duration: 0.4 }, t);
+        gsap.set(tkn, { x: x0 - 22, y: 704, opacity: 0 });
+        tl.to(tkn, { opacity: 1, duration: 0.2 }, t + 0.15);
+        tl.to(tkn, { x: ex - 22, y: 508, duration: 0.6, ease: "power1.inOut" }, t + 0.15);
+        tl.from(chkN, { opacity: 0, scale: 0.6, transformOrigin: "50% 50%", duration: 0.3 }, t + 0.75);
+        tl.to(tkn, { x: 938, y: 443, duration: 0.3, ease: "power1.inOut" }, t + 0.85);
+        tl.to(tkn, { x: 1240, duration: 0.8, ease: "power1.inOut" }, t + 1.15);
+        tl.to(tkn, { opacity: 0, duration: 0.2 }, t + 1.85);
       };
-      output(0, site, siteIn, "#rvV1", { width: 460 }, at("V", 3.4));
-      tl.from(siteUnder, { opacity: 0, duration: 0.4 }, at("V", 6.0));
-      head("#hV1", onBeat("V", 6.4));
-      output(1, promo, promoIn, "#rvV2", { y: 520, height: 140 }, at("V", 7.4));
-      head("#hV2", onBeat("V", 10.4));
-      output(2, list, listIn, "#rvV3", { width: 440 }, at("V", 11.4));
-      head("#hV3", onBeat("V", 14.4));
-      // the date moves once, and all three follow
-      tl.to(vDate, { opacity: 0, duration: 0.4 }, at("V", 16.2));
-      tl.to(vDate2, { opacity: 1, duration: 0.4 }, at("V", 16.4));
-      tl.to(pulses, { strokeDashoffset: 0, duration: 0.7, ease: "power2.in", stagger: 0.08 }, at("V", 17.0));
-      tl.to(pulses, { opacity: 0, duration: 0.5 }, at("V", 18.0));
-      tl.to([siteDate, promoDate, listDay], { opacity: 0, duration: 0.3 }, at("V", 17.8));
-      tl.to([siteDate2, promoDate2, listDay2], { opacity: 1, duration: 0.3 }, at("V", 17.9));
+      invite(mgr, mgrTk, 860, 940, checkM, "manager");
+      invite(drum, drumTk, 1060, 980, checkD, "drummer");
+      // nobody else gets in
+      tl.from(other, { opacity: 0, duration: 0.4 }, w("III", "nobody") - 0.3);
+      gsap.set(otherTk, { x: 938, y: 214, opacity: 0 });
+      tl.to(otherTk, { opacity: 1, duration: 0.2 }, w("III", "nobody") - 0.2);
+      tl.to(otherTk, { y: 326, duration: 0.8, ease: "power1.in" }, w("III", "nobody") - 0.2);
+      tl.from(cross, { opacity: 0, scale: 0.5, transformOrigin: "50% 50%", duration: 0.25 }, w("III", "in"));
+      tl.to(otherTk, { y: 286, opacity: 0, duration: 0.6, ease: "power2.out" }, w("III", "in") + 0.25);
 
-      // Plate VI (72.5-85): pick the dates, pick a look, generate
-      fadeIn(Array.from(contours.children), at("VI", 0.4), 1.0, 0.15);
-      fadeIn(roadBed, at("VI", 0.5), 0.8);
-      tl.from(rose, { opacity: 0, duration: 0.8 }, at("VI", 0.6));
-      tl.from(legend, { opacity: 0, duration: 0.6 }, at("VI", 1.0));
-      tl.to(route, { strokeDashoffset: 0, duration: 3.8, ease: "none" }, at("VI", 0.6));
-      tl.to(stopDots, { opacity: 1, duration: 0.15, stagger: 3.8 / 52 }, at("VI", 0.6));
-      tl.to(legLine, { strokeDashoffset: 0, duration: 0.9, ease: "power2.inOut" }, onBeat("VI", 4.4));
-      tl.to(legDots, { opacity: 1, duration: 0.2, stagger: 0.08 }, at("VI", 4.6));
-      fadeIn(legBox, at("VI", 5.0), 0.4);
-      tl.from(step1, { opacity: 0, duration: 0.4 }, at("VI", 5.0));
-      head("#hVI1", onBeat("VI", 5.0));
-      tl.from(panel.firstChild, { opacity: 0, duration: 0.4 }, at("VI", 5.6));
-      looks.forEach(({ g, art }, j) => {
-        tl.to(g.querySelector("rect.draw"), { strokeDashoffset: 0, duration: 0.5, ease: "power2.out" }, at("VI", 5.6 + j * BEAT));
-        tl.from([art, g.lastChild, g.querySelector("rect.card")], { opacity: 0, duration: 0.4 }, at("VI", 5.8 + j * BEAT));
+      // Plate IV. "Every show becomes one ticket, written down once."
+      // the ticket grows out of the new mini ticket in Plate III's tour window
+      gsap.set(tkIV.g, Object.assign({ svgOrigin: "0 0", opacity: 0 }, MINI));
+      tl.to(tkIV.g, { opacity: 1, duration: 0.15 }, T.IV);
+      tl.to(tkIV.g, { x: 0, y: 0, scale: 1, duration: 0.85, ease: "power3.inOut" }, T.IV + 0.05);
+      tl.set([tkIV.admit, tkIV.noLbl, tkIV.serial], { opacity: 0 }, 0);
+      const pileT = T.IV + 0.75, pileD = w("IV", "ticket") - pileT - 0.1;
+      tl.to(ghosts, { opacity: 1, duration: 0.15, stagger: pileD / 52 }, pileT);
+      tl.to(ticks.slice(0, 52), { opacity: 1, duration: 0.15, stagger: pileD / 52 }, pileT);
+      tl.to(fill, { strokeDashoffset: fillLen * (1 - 52 / 53), duration: pileD, ease: "none" }, pileT);
+      tl.to(count, { n: 52, duration: pileD, ease: "none", onUpdate: showCount }, pileT);
+      const tkT = w("IV", "ticket");
+      tl.to([tkIV.admit, tkIV.noLbl], { opacity: 1, duration: 0.3 }, tkT);
+      tl.fromTo(tkIV.serial, { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, tkT);
+      tl.to(ticks[52], { opacity: 1, stroke: "var(--accent)", duration: 0.2 }, tkT);
+      tl.to(fill, { strokeDashoffset: 0, duration: 0.3, ease: "power2.out" }, tkT);
+      tl.to(count, { n: 53, duration: 0.2, onUpdate: showCount }, tkT);
+      const wrT = w("IV", "written");
+      tl.to("#rv-date", { attr: { width: 760 }, duration: 0.5, ease: "steps(22)" }, wrT - 0.1);
+      tl.to("#rv-city", { attr: { width: 760 }, duration: 0.45, ease: "power2.out" }, wrT + 0.25);
+      tl.to("#rv-venue", { attr: { width: 760 }, duration: 0.4, ease: "power2.out" }, wrT + 0.5);
+      head("#hIV", w("IV", "once") - 0.1);
+      drawOn(draws(co), w("IV", "once") + 0.1, 0.5, 0.08);
+      tl.from("#iv-callouts text, #iv-callouts .dot", { opacity: 0, duration: 0.4, stagger: 0.06 }, w("IV", "once") + 0.3);
+      // the ticket shrinks to its place at the top of Plate V
+      tl.to([co, pile], { opacity: 0, duration: 0.35 }, next("IV") - 0.8);
+      tl.to(tkIV.g, Object.assign({ duration: 0.75, ease: "power3.inOut" }, SMALL), next("IV") - 0.75);
+
+      // Plate V. "Your website's tour page, your listings and your promos all read from that ticket.
+      // Move a date, and everything follows."
+      const output = (i, g, innerG, rv, rvAttr, t) => {
+        fadeIn(rays[i], t, 0.4);
+        tl.from(g.querySelector("rect.card"), { opacity: 0, duration: 0.4 }, t + 0.15);
+        tl.to(g.querySelector("rect.draw"), { strokeDashoffset: 0, duration: 0.6, ease: "power2.inOut" }, t + 0.15);
+        tl.from(innerG, { opacity: 0, duration: 0.4 }, t + 0.45);
+        tl.to(rv, { attr: rvAttr, duration: 0.5, ease: "power2.out" }, t + 0.75);
+      };
+      output(0, site, siteIn, "#rvV1", { width: 460 }, w("V", "website's") - 0.2);
+      tl.from(siteUnder, { opacity: 0, duration: 0.3 }, w("V", "website's") + 1.0);
+      output(1, list, listIn, "#rvV2", { width: 340 }, w("V", "listings") - 0.2);
+      output(2, promo, promoIn, "#rvV3", { y: 512, height: 140 }, w("V", "promos") - 0.2);
+      head("#hV1", w("V", "all"));
+      tl.to(tkV.dateT, { opacity: 0, duration: 0.3 }, w("V", "move"));
+      tl.to(vDate2, { opacity: 1, duration: 0.3 }, w("V", "date"));
+      head("#hV2", w("V", "move"));
+      const fol = w("V", "everything");
+      tl.to(pulses, { strokeDashoffset: 0, duration: 0.5, ease: "power2.in", stagger: 0.06 }, fol);
+      tl.to(pulses, { opacity: 0, duration: 0.4 }, fol + 0.8);
+      tl.to([siteDate, promoDate, listDay], { opacity: 0, duration: 0.25 }, fol + 0.45);
+      tl.to([siteDate2, promoDate2, listDay2], { opacity: 1, duration: 0.25 }, fol + 0.5);
+      head("#hV3", fol);
+
+      // Plate VI. "Now the part that saves you the most time. Pick a run of dates. Say, the B.C. leg: eight shows,
+      // Kamloops to Nelson. Pick a look. Risograph, woodcut, big type, whatever fits the record. Press generate.
+      // IndieAgent makes the promo for that leg, with your dates, your towns and your venues, in your look.
+      // No editing app. No retyping."
+      // the promo frame grows out of Plate V's phone, empty, waiting
+      const PH5 = { x: PH.x + OUT, y: PH.y, scale: PH.w / 320 };
+      gsap.set(phone.g, Object.assign({ svgOrigin: "0 0" }, PH5));
+      [phone.art, phone.title, phone.sub, ...phone.dates, ...phone.towns, ...phone.venues, ...previews].forEach((n) => gsap.set(n, { opacity: 0 }));
+      tl.to(phone.g, Object.assign({ duration: 0.85, ease: "power3.inOut" }, PHONE), T.VI);
+      tl.from(yourPromo, { opacity: 0, duration: 0.4 }, T.VI + 0.7);
+      tl.from(dims6, { opacity: 0, duration: 0.4 }, T.VI + 0.9);
+      fadeIn(Array.from(contours.children), T.VI + 0.2, 0.8, 0.1);
+      fadeIn(roadBed, T.VI + 0.3, 0.6);
+      tl.fromTo(route, { strokeDasharray: `${route.getTotalLength()} ${route.getTotalLength() + 10}`, strokeDashoffset: route.getTotalLength() + 5 }, { strokeDashoffset: 0, duration: 1.5, ease: "none" }, T.VI + 0.4);
+      tl.to(stopDots, { opacity: 1, duration: 0.12, stagger: 1.5 / 52 }, T.VI + 0.4);
+      tl.from(rose, { opacity: 0, duration: 0.6 }, T.VI + 0.6);
+      tl.from(legend, { opacity: 0, duration: 0.5 }, T.VI + 1.0);
+      head("#hVIa", w("VI", "now") + 0.1);
+      tl.to("#hVIa", { opacity: 0, duration: 0.3 }, w("VI", "pick") - 0.4);
+      // 1. pick the dates: a cursor runs the road and settles on the last leg
+      const pickT = w("VI", "pick");
+      head("#hVIb1", pickT);
+      tl.from(step1, { opacity: 0, duration: 0.4 }, pickT);
+      const seek = { i: 0 };
+      const placeSeeker = () => {
+        const i = Math.min(seek.i, 52), a = Math.floor(i), f = i - a, b = Math.min(a + 1, 52);
+        seeker.setAttribute("cx", stops[a][0] + (stops[b][0] - stops[a][0]) * f);
+        seeker.setAttribute("cy", stops[a][1] + (stops[b][1] - stops[a][1]) * f);
+      };
+      tl.to(seeker, { opacity: 1, duration: 0.2 }, pickT + 0.1);
+      tl.to(seek, { i: L0, duration: w("VI", "bc") - pickT - 0.3, ease: "power1.inOut", onUpdate: placeSeeker }, pickT + 0.1);
+      tl.to(seeker, { opacity: 0, duration: 0.3 }, w("VI", "bc") + 0.2);
+      fadeIn(legBox, w("VI", "bc") - 0.1, 0.35);
+      tl.from(legLbl, { opacity: 0, duration: 0.35 }, w("VI", "bc"));
+      const eightT = w("VI", "eight");
+      tl.to(legDots, { opacity: 1, duration: 0.15, stagger: 0.11 }, eightT);
+      tl.to(legLine, { strokeDashoffset: 0, duration: 0.9, ease: "none" }, eightT);
+      tl.to(ticks.slice(L0, L1 + 1), { stroke: "var(--accent)", duration: 0.15, stagger: 0.11 }, eightT);
+      tl.to(legCount, { n: 8, duration: 0.88, ease: "none", onUpdate: showLeg }, eightT);
+      tl.from(kam, { opacity: 0, duration: 0.3 }, w("VI", "kamloops"));
+      tl.from(nel, { opacity: 0, duration: 0.3 }, w("VI", "nelson"));
+      tl.to(legCount, { full: 1, duration: 0.01, onUpdate: showLeg }, w("VI", "nelson"));
+      // 2. pick a look: each look previews in the frame as she names it
+      const lookT = w("VI", "pick", 1);
+      head("#hVIb2", lookT);
+      tl.from(step2, { opacity: 0, duration: 0.4 }, lookT);
+      looks.forEach((g, j) => {
+        tl.from(g.querySelector("rect.card"), { opacity: 0, duration: 0.3 }, lookT + j * 0.15);
+        tl.to(g.querySelector("rect.draw"), { strokeDashoffset: 0, duration: 0.4, ease: "power2.out" }, lookT + j * 0.15);
+        tl.from(Array.from(g.children).slice(2), { opacity: 0, duration: 0.3 }, lookT + 0.15 + j * 0.15);
       });
-      tl.to(pick, { strokeDashoffset: 0, duration: 0.4, ease: "power2.out" }, onBeat("VI", 7.5));
-      head("#hVI2", onBeat("VI", 7.5));
-      tl.from(btn, { opacity: 0, y: 8, duration: 0.3 }, at("VI", 7.8));
-      tl.to(btnOn, { opacity: 1, duration: 0.12 }, onBeat("VI", 8.125));
-      tl.to(btnTxt, { fill: "#F5EEE1", duration: 0.12 }, onBeat("VI", 8.125));
-      tl.to(panel, { opacity: 0, duration: 0.3 }, at("VI", 8.6));
-      tl.from(phone.firstChild, { opacity: 0, duration: 0.4 }, at("VI", 8.75));
-      tl.to(phoneLine, { strokeDashoffset: 0, duration: 0.6, ease: "power2.inOut" }, at("VI", 8.75));
-      tl.from(phoneIn.children, { opacity: 0, duration: 0.25, stagger: 0.03 }, at("VI", 9.1));
-      tl.from(rows, { opacity: 0, x: -8, duration: 0.25, stagger: 0.08 }, at("VI", 9.2));
-      tl.from(dims, { opacity: 0, duration: 0.4 }, at("VI", 9.6));
-      head("#hVI3", onBeat("VI", 9.375));
+      tl.to(yourPromo, { opacity: 0, duration: 0.2 }, w("VI", "rysograph") - 0.1);
+      [["rysograph", 0], ["woodcut", 1], ["type", 2], ["whatever", 0]].forEach(([word, j], n, all) => {
+        const t = w("VI", word) - 0.1;
+        tl.to(hover, { opacity: 1, x: j * 110, duration: n === 0 ? 0.01 : 0.25, ease: "power2.inOut" }, t);
+        if (n > 0) tl.to(previews[all[n - 1][1]], { opacity: 0, duration: 0.2 }, t);
+        tl.to(previews[j], { opacity: 0.9, duration: 0.25 }, t + 0.05);
+      });
+      tl.to(pick, { strokeDashoffset: 0, duration: 0.4, ease: "power2.out" }, w("VI", "record"));
+      tl.to(hover, { opacity: 0, duration: 0.2 }, w("VI", "record") + 0.3);
+      // 3. press generate
+      tl.from(btn, { opacity: 0, y: 8, duration: 0.3 }, w("VI", "record") + 0.2);
+      head("#hVIb3", w("VI", "press"));
+      const pressT = onBeat(w("VI", "generate"));
+      tl.to(btnOn, { opacity: 1, duration: 0.1 }, pressT);
+      tl.to(btnTxt, { fill: "#F5EEE1", duration: 0.1 }, pressT);
+      tl.to(btn, { scale: 0.96, transformOrigin: "50% 50%", duration: 0.1, yoyo: true, repeat: 1 }, pressT);
+      // the frame is made: a scan line runs down it while the preview clears
+      tl.to(scan, { opacity: 1, duration: 0.05 }, pressT + 0.1);
+      tl.fromTo(scan, { y: 30 }, { y: 545, duration: 0.55, ease: "power1.in" }, pressT + 0.1);
+      tl.to(scan, { opacity: 0, duration: 0.1 }, pressT + 0.6);
+      tl.to(previews[0], { opacity: 0, duration: 0.3 }, pressT + 0.2);
+      // the promo takes the stage and plays
+      const madeT = T.VI + 15; // the score's lift, on a downbeat
+      tl.to("#hVIb", { opacity: 0, duration: 0.3 }, madeT);
+      tl.to([mapG, contours, rose, panel, dims6], { opacity: 0, duration: 0.5 }, madeT);
+      tl.to(phone.g, Object.assign({ duration: 0.8, ease: "power3.inOut" }, STAGE), madeT);
+      tl.to(phone.art, { opacity: 1, duration: 0.4 }, madeT + 0.1);
+      tl.from(Array.from(phone.art.children), { scale: 0, transformOrigin: "50% 50%", duration: 0.5, stagger: 0.008, ease: "back.out(2)" }, madeT + 0.1);
+      tl.fromTo(phone.title, { opacity: 0, scale: 1.25, transformOrigin: "0% 100%" }, { opacity: 1, scale: 1, duration: 0.35, ease: "power3.out" }, madeT + 0.8);
+      tl.to(phone.sub, { opacity: 1, duration: 0.4 }, madeT + 1.2);
+      tl.fromTo(storyFill, { scaleX: 0 }, { scaleX: 1, transformOrigin: "0% 50%", duration: next("VI") - madeT, ease: "none" }, madeT);
+      const youDates = w("VI", "dates", 1), youTowns = w("VI", "towns"), youVenues = w("VI", "venues"), youLook = w("VI", "look", 1);
+      tl.to(phone.dates, { opacity: 1, duration: 0.2, stagger: 0.05 }, youDates - 0.15);
+      tl.to(phone.towns, { opacity: 1, duration: 0.2, stagger: 0.05 }, youTowns - 0.15);
+      tl.to(phone.venues, { opacity: 1, duration: 0.2, stagger: 0.05 }, youVenues - 0.15);
+      [[cDates, youDates, "#hVIc1"], [cTowns, youTowns, "#hVIc2"], [cVenues, youVenues, "#hVIc3"], [cLook, youLook, "#hVIc4"]].forEach(([g, t, h]) => {
+        tl.fromTo(g, { opacity: 0 }, { opacity: 1, duration: 0.3 }, t - 0.1);
+        head(h, t - 0.1);
+      });
+      // in your look: the red plate slips off register for a moment, the way riso does
+      tl.to(phone.art.firstChild, { x: 5, y: -3, duration: 0.15, yoyo: true, repeat: 1 }, youLook + 0.1);
+      tl.to("#hVIc", { opacity: 0, duration: 0.3 }, w("VI", "no") - 0.35);
+      tl.to([cDates, cTowns, cVenues, cLook], { opacity: 0, duration: 0.4 }, w("VI", "no") - 0.35);
+      head("#hVId1", w("VI", "no"));
+      head("#hVId2", w("VI", "no", 1));
 
-      // Colophon (85-90)
-      tl.from(mark, { opacity: 0, y: 14, duration: 0.8, ease: "power2.out" }, onBeat("C", 0));
-      tl.to(rule, { strokeDashoffset: 0, duration: 0.7, ease: "power2.inOut" }, at("C", 0.9));
-      tl.from(sign, { opacity: 0, y: 10, duration: 0.7, ease: "power2.out" }, at("C", 1.5));
-      tl.to({}, { duration: 0.01 }, 89.99);
+      // Plate VII. "And it comes out in every shape you post. Tall for Reels, TikTok and Shorts. Four by five for
+      // the Instagram and Facebook feed. Square. Widescreen for YouTube."
+      const tall = shapes[0];
+      gsap.set(tall.p.g, Object.assign({ svgOrigin: "0 0" }, STAGE));
+      tl.to(tall.p.g, { x: tall.x, y: FY, scale: FH / 569, duration: 0.85, ease: "power3.inOut" }, T.VII);
+      fadeIn(shapes.slice(1).map((s) => s.holder), w("VII", "every") - 0.2, 0.4, 0.12);
+      head("#hVII1", w("VII", "comes"));
+      head("#hVII2", w("VII", "shape"));
+      const reveal = (s, t, whereT) => {
+        if (s.kind !== "tall") {
+          tl.to(s.holder, { opacity: 0, duration: 0.3 }, t);
+          tl.from(s.p.g.querySelector("rect.card"), { opacity: 0, duration: 0.3 }, t);
+          tl.fromTo(s.p.frame, { strokeDasharray: "2400 2410", strokeDashoffset: 2405 }, { strokeDashoffset: 0, duration: 0.6, ease: "power2.inOut" }, t);
+          tl.from(Array.from(s.p.g.children).slice(2), { opacity: 0, duration: 0.35, stagger: 0.012 }, t + 0.25);
+        }
+        tl.from(s.dimG, { opacity: 0, duration: 0.35 }, t);
+        tl.from(s.where, { opacity: 0, y: 6, duration: 0.35 }, whereT);
+      };
+      reveal(shapes[0], w("VII", "tall") - 0.1, w("VII", "reels") - 0.1);
+      reveal(shapes[1], w("VII", "four") - 0.1, w("VII", "instagram") - 0.1);
+      reveal(shapes[2], w("VII", "square") - 0.1, w("VII", "square") + 0.1);
+      reveal(shapes[3], w("VII", "widescreen") - 0.1, w("VII", "youtube") - 0.1);
 
+      // Colophon. "IndieAgent. Your tour, kept straight. Coming soon."
+      tl.from(mark, { opacity: 0, y: 14, duration: 0.7, ease: "power2.out" }, w("C", "indie") - 0.1);
+      tl.to(rule, { strokeDashoffset: 0, duration: 0.6, ease: "power2.inOut" }, w("C", "indie") + 0.5);
+      tl.from(sign, { opacity: 0, y: 10, duration: 0.6, ease: "power2.out" }, w("C", "your") - 0.1);
+      tl.from(soon, { opacity: 0, duration: 0.5 }, w("C", "coming") - 0.1);
+      tl.to({}, { duration: 0.01 }, END - 0.01);
+
+      window.__timelines = window.__timelines || {};
       window.__timelines["main"] = tl;
       tl.seek(0);
     </script>
