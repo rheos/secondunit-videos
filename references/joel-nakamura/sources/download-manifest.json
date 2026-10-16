@@ -1,0 +1,421 @@
+{
+  "retrieved": "2026-10-13",
+  "files": [
+    {
+      "file": "artwork/N01-brain-and-skeleton.jpeg",
+      "url": null,
+      "origin": "/Users/robin/Pictures/Photos Library.photoslibrary/originals/3/3886B3BE-1731-4D8B-8CA8-1AF6B464F1DD.jpeg",
+      "bytes": 127686,
+      "sha256": "fa757320e5359a04ec477b6de1b277f88c22a50c2a545892453b42ed4b70549c"
+    },
+    {
+      "file": "artwork/N02-figure-under-rainbow.jpeg",
+      "url": null,
+      "origin": "/Users/robin/Pictures/Photos Library.photoslibrary/originals/3/3282D081-DB15-48B5-98F6-B4CA7A0ACB85.jpeg",
+      "bytes": 85614,
+      "sha256": "5c0d1dc5136d1e114af1e4043dd1b78b072bb2b798974ccb18f5efb85937059c"
+    },
+    {
+      "file": "artwork/N03-blue-vessel-and-connections.jpeg",
+      "url": null,
+      "origin": "/Users/robin/Pictures/Photos Library.photoslibrary/resources/derivatives/masters/6/62AE9B58-AEEE-4F11-8E35-36060538B5A7_4_5005_c.jpeg",
+      "bytes": 75537,
+      "sha256": "9b6ff3bf8295f82e534afc38c421d52884a82c8f44160ebfbbab0813f1c99a51"
+    },
+    {
+      "file": "artwork/N04-helix-body-and-orbits.jpeg",
+      "url": null,
+      "origin": "/Users/robin/Pictures/Photos Library.photoslibrary/resources/derivatives/masters/4/45A9C4A8-9DB9-475F-A96C-279C49EF98CA_4_5005_c.jpeg",
+      "bytes": 69303,
+      "sha256": "f65b096605b20b0c52beb0b98515c6d922758fdb0b4b68379e33d07b56b14b5b"
+    },
+    {
+      "file": "artwork/N05-out-of-thin-air-moose-music.jpg",
+      "url": "https://static.wixstatic.com/media/010a85_0b3e8e2337c04bde908edaa50edf4087~mv2.jpg",
+      "origin": null,
+      "bytes": 692745,
+      "sha256": "78a2d9740b4b5c7035f81cfc498053d77d8aed59e294fab07d2739a96d27708c"
+    },
+    {
+      "file": "artwork/N06-the-last-train.jpg",
+      "url": "https://static.wixstatic.com/media/010a85_fdffa1d257fe4538959681eefaf3b853~mv2.jpg",
+      "origin": null,
+      "bytes": 639078,
+      "sha256": "c24f74d69fde46f22aa452bd140b57e0148036848970d87c8e7fb0e69e6f964f"
+    },
+    {
+      "file": "artwork/N07-so-nan-desu.jpg",
+      "url": "https://static.wixstatic.com/media/010a85_57e74c50cd774dde96e65f0bb853a83e~mv2.jpg",
+      "origin": null,
+      "bytes": 758323,
+      "sha256": "458ec3401470952cc59391404d51bd9a5a3c46e79542f1c7a6f92f006231761e"
+    },
+    {
+      "file": "artwork/N08-covid-19.jpg",
+      "url": "https://static.wixstatic.com/media/010a85_f3b18406110f4b679355a71519db72ac~mv2.jpg",
+      "origin": null,
+      "bytes": 522986,
+      "sha256": "e4e6f122011201a3f4186834c61cc18485aa53dd738b55604d1680408ee28d93"
+    },
+    {
+      "file": "artwork/N09-medtronic-poster-art.jpg",
+      "url": "https://static.wixstatic.com/media/010a85_56092a7a78f4484fb93e884c342245c6~mv2.jpg",
+      "origin": null,
+      "bytes": 459557,
+      "sha256": "d8549fec8b1fd57e6f41825bfd848e9f282ce13ed33898966b772b12b2bdd5ca"
+    },
+    {
+      "file": "artwork/N10-zeus.jpg",
+      "url": "https://static.wixstatic.com/media/010a85_bee2189466784fe8999b8958854d4a66~mv2.jpg",
+      "origin": null,
+      "bytes": 2072127,
+      "sha256": "e413151ac8342a1bfa52f34e5fe4eb47070a356abbf5e8f95846aeabdce81d34"
+    },
+    {
+      "file": "artwork/N11-hempire.jpg",
+      "url": "https://static.wixstatic.com/media/010a85_4467a137ef1649d2bea713ffc80e4da1~mv2.jpg",
+      "origin": null,
+      "bytes": 560744,
+      "sha256": "2a11bd5361213a9fe93b66443a50b26c8630cc604a00db172c6181c67177c515"
+    },
+    {
+      "file": "artwork/N12-koi-and-robot.jpg",
+      "url": "https://static.wixstatic.com/media/010a85_63530fd6d5fa4db1a1575cc9a1b77f1e~mv2.jpg",
+      "origin": null,
+      "bytes": 653965,
+      "sha256": "e4fba9ceb0a1997aed201b3dfddf259e89921cb57563f3ce66edd55be5bc902d"
+    },
+    {
+      "file": "artwork/N13-earthquake.jpg",
+      "url": "https://static.wixstatic.com/media/010a85_b0da09c96fdd46de8c392bf4095d0f14~mv2.jpg",
+      "origin": null,
+      "bytes": 228674,
+      "sha256": "ed50674bdaea40f844de08a994ff01c580db1aec4945a144979d1b6f3338c6b5"
+    },
+    {
+      "file": "artwork/N14-kabuki-octopus.jpg",
+      "url": "https://static.wixstatic.com/media/010a85_999fa54273504aea9783c00c3761c845~mv2.jpg",
+      "origin": null,
+      "bytes": 1673753,
+      "sha256": "4eaf7808740b9fe5f1c1755856ef0dc8efa66b415753dc55e406e8e120adf03c"
+    },
+    {
+      "file": "artwork/N15-merck-maxalt-boston-tea-party.jpg",
+      "url": "https://static.wixstatic.com/media/010a85_9ec3ea05e9584fbeb8c7cb95ebc75b62~mv2.jpg",
+      "origin": null,
+      "bytes": 532227,
+      "sha256": "69f7444daffbd626fec4c938cbf2a7271e8917fe1e19fb33e2d01a5414b0b90d"
+    },
+    {
+      "file": "artwork/N16-choices.jpg",
+      "url": "https://static.wixstatic.com/media/010a85_6ba961abfc824c13b57ff6489079a50a~mv2.jpg",
+      "origin": null,
+      "bytes": 790934,
+      "sha256": "dbe8865dd0e5b08f28370eaf89f5d4664ab1f6c44fa7a85d6df248a60b5fec00"
+    },
+    {
+      "file": "artwork/N17-wind-power.jpg",
+      "url": "https://static.wixstatic.com/media/010a85_9e9359ee74cc46e8b5ac3870434a2ad4~mv2.jpg",
+      "origin": null,
+      "bytes": 683884,
+      "sha256": "fd3aadef16ef2a26a2658f0fcd71b61029d496dc4c9310524b693d445ac3d98c"
+    },
+    {
+      "file": "artwork/N18-merck-maxalt-poster-art.jpg",
+      "url": "https://static.wixstatic.com/media/010a85_99a7f06d85c9498797c6406b3148fbc9~mv2.jpg",
+      "origin": null,
+      "bytes": 236069,
+      "sha256": "d785614a722944f1a9edc593f75c8b3d6b8f1e8a866f22a23a9c004980913e9f"
+    },
+    {
+      "file": "artwork/N19-wrestler-and-godzilla.jpeg",
+      "url": "https://static.wixstatic.com/media/010a85_ed4aab69a4b843e6b7d67926d5acc1df~mv2.jpeg",
+      "origin": null,
+      "bytes": 174204,
+      "sha256": "f86183ed435b298a7495246b0b6116b48f6c77dc1ef0dacb3a20b9e0db3a6844"
+    },
+    {
+      "file": "artwork/N20-network-dream.png",
+      "url": "https://static.wixstatic.com/media/010a85_095feb10bbb1469faefec6c171af9e5c~mv2.png",
+      "origin": null,
+      "bytes": 6809543,
+      "sha256": "4e4345c800ba3bf98f226344a45e62021d0af055604c50c9745cbac231f4c068"
+    },
+    {
+      "file": "artwork/N21-beer-distribution-poster.jpg",
+      "url": "https://static.wixstatic.com/media/010a85_ef883b7e45704d769cd9feb2faee7250~mv2.jpg",
+      "origin": null,
+      "bytes": 867061,
+      "sha256": "ded3e1de1fa471a8bcf1b62a498003ac438fe9ac22812a5cdcfc4b450d49da26"
+    },
+    {
+      "file": "artwork/N22-lsd.jpg",
+      "url": "https://static.wixstatic.com/media/010a85_dd2b4b1370b744368d46dabbc1dac180~mv2.jpg",
+      "origin": null,
+      "bytes": 136793,
+      "sha256": "5b12f9d625786eaec4d0a2032b4a29b6cb8b78cf5bfe78dea1cc6b7777c1b5bb"
+    },
+    {
+      "file": "artwork/N23-2002-winter-olympic-program.png",
+      "url": "https://static.wixstatic.com/media/010a85_0e8b43b162674618b5a63abd187c3376~mv2.png",
+      "origin": null,
+      "bytes": 704721,
+      "sha256": "fe002758123e41dd1da5b2971a380a13a1cd3baca2d84d8df3578e8ea69b5327"
+    },
+    {
+      "file": "artwork/N24-2002-winter-olympics.png",
+      "url": "https://static.wixstatic.com/media/010a85_d444d56499e64e4ba15edb837487df83~mv2.png",
+      "origin": null,
+      "bytes": 731900,
+      "sha256": "5662954e85bbe10e4482d568c4df83fe8ee045f8fbd03b7a7c3482118fc45c0f"
+    },
+    {
+      "file": "artwork/N25-poster-sea-grant.jpg",
+      "url": "https://static.wixstatic.com/media/010a85_170f19682e1d4938959dc4b811a2adc6~mv2.jpg",
+      "origin": null,
+      "bytes": 2990498,
+      "sha256": "95deab3c0b5facb280dd8d549540fcef30d8248c987dc421df556296112f1741"
+    },
+    {
+      "file": "artwork/N26-washington-sea-grant-2011.jpg",
+      "url": "https://static.wixstatic.com/media/010a85_103584c97382416d97dca4dcaa9d9c36~mv2.jpg",
+      "origin": null,
+      "bytes": 615986,
+      "sha256": "7e54979926d10725d36fe99972de12dad90e366cad7ed59b2239f681491adc21"
+    },
+    {
+      "file": "artwork/N27-jvc-jazz-festival-poster.jpg",
+      "url": "https://static.wixstatic.com/media/010a85_bc7eb6257ee445f092cd1f012b17aef3~mv2.jpg",
+      "origin": null,
+      "bytes": 306372,
+      "sha256": "916052d20aaf4aed7cab49754ddd6ca9a64199da5b69eaddfab84b66d61aa6d4"
+    },
+    {
+      "file": "artwork/N28-merck-maxalt-poster.jpg",
+      "url": "https://static.wixstatic.com/media/010a85_875ab185e2114612b9e28a70ecac4916~mv2.jpg",
+      "origin": null,
+      "bytes": 1101365,
+      "sha256": "29b273bc99553df4380746db8d8c45cf8627182d3cfbfd6c0d67cf5e1c04fc6c"
+    },
+    {
+      "file": "artwork/N29-astrology-cards-paper-company-promotion.jpg",
+      "url": "https://static.wixstatic.com/media/010a85_878025a34ab04d3893c94b2a81c4d4b5~mv2.jpg",
+      "origin": null,
+      "bytes": 815550,
+      "sha256": "3655ea905ad64ee4fb709849dbfddd580cbab7abe1784bf661527d3afa94e289"
+    },
+    {
+      "file": "artwork/N30-makai.jpg",
+      "url": "https://static.wixstatic.com/media/010a85_a5e0ddf1e7844e7cb54226bd92faa895~mv2.jpg",
+      "origin": null,
+      "bytes": 802078,
+      "sha256": "ec155156f07d3b1c35e9cecae59fa3598b68d64e6618d3e4787f18229e15e7f4"
+    },
+    {
+      "file": "artwork/N31-portal.png",
+      "url": "https://static.wixstatic.com/media/010a85_5c3e10e503f04136855a218fc8f96d94~mv2.png",
+      "origin": null,
+      "bytes": 1125344,
+      "sha256": "2f6075f659aca51e2e0c5a842af870b36a176aa19078a0cdec7ff5783db368aa"
+    },
+    {
+      "file": "artwork/N32-sheepdog-dream-watch.jpg",
+      "url": "https://static.wixstatic.com/media/010a85_8d48f27b0e3d442c894233a3a74fa715~mv2.jpg",
+      "origin": null,
+      "bytes": 2097610,
+      "sha256": "75dc3c84222173f884e1fd727cac37f06f9b4332d4a0b9eb10d90ba56640376a"
+    },
+    {
+      "file": "artwork/N33-dreamwatch.jpg",
+      "url": "https://static.wixstatic.com/media/010a85_f27b0384d81d4c82b38c6f51c54cb50a~mv2.jpg",
+      "origin": null,
+      "bytes": 2000868,
+      "sha256": "8b53b37bdec44b3fd606985332906cc259904ee632147bc2c79536ea8f10e1d0"
+    },
+    {
+      "file": "artwork/N34-manifest-destiny.jpg",
+      "url": "https://static.wixstatic.com/media/010a85_d73b544dc19941488b4b60f46460ffa3~mv2.jpg",
+      "origin": null,
+      "bytes": 518757,
+      "sha256": "09048591ead913284e1451452fa4e65ce2f1cc0e31ce0c7cde63e0bf920d73e1"
+    },
+    {
+      "file": "artwork/N35-tin-mans-dream.jpg",
+      "url": "https://static.wixstatic.com/media/010a85_fcc0d68b93a642dd98ee9afeb928df9f~mv2.jpg",
+      "origin": null,
+      "bytes": 4239083,
+      "sha256": "c1144fe2a7da8835bdbc27f05e4f26a2b929cc91f46fc87b8d8d34779348c286"
+    },
+    {
+      "file": "artwork/N36-the-group-howl.png",
+      "url": "https://static.wixstatic.com/media/010a85_fd9f421033c749d0a84dd1b46a3087d9~mv2.png",
+      "origin": null,
+      "bytes": 23584308,
+      "sha256": "9f98d6ef73d1c3f98fb3a46b57fb060324312ae13a887b6f5cee0cae318503af"
+    },
+    {
+      "file": "artwork/N37-t-bone.jpg",
+      "url": "https://static.wixstatic.com/media/010a85_59ef1ec1752f4e9d8f8b9a1cc6e18e78~mv2.jpg",
+      "origin": null,
+      "bytes": 677107,
+      "sha256": "37cd883f67f8be06abe04c69c5e008ea24fa981d42b2fae4848ec0bd73dbba9b"
+    },
+    {
+      "file": "artwork/N38-zombie-walk.jpg",
+      "url": "https://static.wixstatic.com/media/010a85_87c149c101734e41b7571e3f4be480e1~mv2.jpg",
+      "origin": null,
+      "bytes": 891115,
+      "sha256": "f2c16c1aed8993e6e507226fa86d17839f80c8350a184c611d0f66d296ccbd54"
+    },
+    {
+      "file": "artwork/N39-ephemeral-soup.jpg",
+      "url": "https://static.wixstatic.com/media/010a85_ac2a74ac5ae849608a9b9d4fc8fb6c18~mv2.jpg",
+      "origin": null,
+      "bytes": 7384915,
+      "sha256": "9b6e3de2e2265539d07bde6fc7347d630b2f1e51404ebd5bde1fbbaf50e5707b"
+    },
+    {
+      "file": "artwork/N40-noahs-ark.jpg",
+      "url": "https://static.wixstatic.com/media/010a85_31ecf274085440e9afca74c3428bbf75~mv2.jpg",
+      "origin": null,
+      "bytes": 2244616,
+      "sha256": "94130f15190e0c0dc17196a910c931f9b5f800f0e155495f42337bae872703b6"
+    },
+    {
+      "file": "artwork/N41-sisyphus.jpg",
+      "url": "https://static.wixstatic.com/media/010a85_4d27fcacd061418c848838b87a63b742~mv2.jpg",
+      "origin": null,
+      "bytes": 1252851,
+      "sha256": "83aec6719ad7c1b357b639a2bfa6e97a7d6a95e1a456edd93fa424f66c7d4dd4"
+    },
+    {
+      "file": "artwork/N42-zozobra.jpg",
+      "url": "https://static.wixstatic.com/media/010a85_95806b2c4523486aaf15f66621e8ab42~mv2.jpg",
+      "origin": null,
+      "bytes": 538432,
+      "sha256": "2969fdc85cd35c2b3032a8660ae5564fad65d7de75a02c918e41180c614dbf27"
+    },
+    {
+      "file": "artwork/N43-slow-wifi.jpg",
+      "url": "https://static.wixstatic.com/media/010a85_98616cc38ec4429ca7d0b1e847e68a13~mv2.jpg",
+      "origin": null,
+      "bytes": 1149196,
+      "sha256": "9df19e74abf228c54fd860ed1215d31cef8452f76fc1fde2dce6c914f603b3b1"
+    },
+    {
+      "file": "artwork/N44-white-buffalo.jpg",
+      "url": "https://static.wixstatic.com/media/010a85_aa6db2f7f67b42d68bcdedffe5948b21~mv2.jpg",
+      "origin": null,
+      "bytes": 854163,
+      "sha256": "c23e3e0de0beefe97fc8d25ac619bb82f3f37f7c68c13ad50214df7f0fa74274"
+    },
+    {
+      "file": "artwork/N45-red-bison.jpg",
+      "url": "https://static.wixstatic.com/media/010a85_d7bf3e1718f04368b1420a70994c7f53~mv2.jpg",
+      "origin": null,
+      "bytes": 981648,
+      "sha256": "03822da92e5f0ef1e0b4a6a79786cdfde249a07eca396534dc302a5cf03f5706"
+    },
+    {
+      "file": "artwork/N46-trojan-horse.jpg",
+      "url": "https://static.wixstatic.com/media/010a85_5ad796e2a9d84718ad4a2ef0e5fe29c1~mv2.jpg",
+      "origin": null,
+      "bytes": 491078,
+      "sha256": "325475167cc78006c0487e52032a26221f344fc25b17cb16437aaf011bb44b7b"
+    },
+    {
+      "file": "artwork/N47-indiscernible-genus.jpg",
+      "url": "https://static.wixstatic.com/media/010a85_979078255d66427b88f101b7ef5a4525~mv2.jpg",
+      "origin": null,
+      "bytes": 613326,
+      "sha256": "617c3f58f8abe3d742bf113008adb2e117cad97a6c502261e4c6224ecbcf5287"
+    },
+    {
+      "file": "artwork/N48-a-traditional-version-of-god-as-geometer.jpg",
+      "url": "https://static.wixstatic.com/media/010a85_36a986e4975e408e82b31605f780c110~mv2.jpg",
+      "origin": null,
+      "bytes": 540511,
+      "sha256": "d62d281441baf88ab21b98735be1c692d8e038e64c46185ec8ffce235491705c"
+    },
+    {
+      "file": "artwork/N49-god-as-geometer.jpg",
+      "url": "https://static.wixstatic.com/media/010a85_7379023525f6401f8d3f9f6070431253~mv2.jpg",
+      "origin": null,
+      "bytes": 1075113,
+      "sha256": "29681440bb8599aedd35f2a73042eb0f0cb0fea103734ac82bf48d359b8a8402"
+    },
+    {
+      "file": "artwork/N50-kaiju-glyphs.jpg",
+      "url": "https://static.wixstatic.com/media/010a85_f03b3ad724094916854a3c43933daa95~mv2.jpg",
+      "origin": null,
+      "bytes": 585810,
+      "sha256": "77047ca16dfeff264fa0e01d612a10509ad2722eef7c7352e87296c6eefa7184"
+    },
+    {
+      "file": "artwork/N51-talking-rocks-2.jpg",
+      "url": "https://static.wixstatic.com/media/010a85_126bcb5c1c3f4ca79d02b7547a6c9981~mv2.jpg",
+      "origin": null,
+      "bytes": 724703,
+      "sha256": "2b2d06f9fe926ea0fb645737cf97e1f072d3706eb6ae30200c96384d5666651f"
+    },
+    {
+      "file": "artwork/N52-green-folk-legend.jpg",
+      "url": "https://static.wixstatic.com/media/010a85_eb3d16c9d14f4a9a897f3bc7443a5e04~mv2.jpg",
+      "origin": null,
+      "bytes": 144945,
+      "sha256": "9fddfa300e79a670fb6094b91abb5d9cbcb4d01bf30910f414c98c74032fed02"
+    },
+    {
+      "file": "artwork/N53-insomnia.jpg",
+      "url": "https://static.wixstatic.com/media/010a85_9bcc3cdf38774f979f146ce0f78c6ae0~mv2.jpg",
+      "origin": null,
+      "bytes": 1403806,
+      "sha256": "db9398867e20bbb120207c636debdf7358ffa5437d9851ac1f5d5ad769625812"
+    },
+    {
+      "file": "artwork/N54-rainbow-bridge.jpg",
+      "url": "https://static.wixstatic.com/media/010a85_7bec348e36b34ee694e2c8395fd15a7a~mv2.jpg",
+      "origin": null,
+      "bytes": 848760,
+      "sha256": "d77f75bf7d7c4bbd8a2074e045fcf8da576da8c38de1935d0ecb283e7a6c8302"
+    },
+    {
+      "file": "sources/design-by-nature-excerpt.pdf",
+      "url": "https://ptgmedia.pearsoncmg.com/imprint_downloads/peachpit/peachpit/samplechapters/0321747763/0321747763_designByNature_01rev.pdf",
+      "origin": null,
+      "bytes": 2119861,
+      "sha256": "287fd075fa09a9e1528d914d8de6b2882367df71f4ecb67200e8456679487f0a"
+    },
+    {
+      "file": "sources/official-bio.html.txt",
+      "url": "https://www.joelnakamura.com/about-joel",
+      "origin": null,
+      "bytes": 639502,
+      "sha256": "763f7c7299cf059e4864e1acf8d7b564495e4235a49f7ed747aee56dd6212d5a"
+    },
+    {
+      "file": "sources/pbs-profile.html.txt",
+      "url": "https://www.newmexicopbs.org/productions/colores/nakamura-joel/",
+      "origin": null,
+      "bytes": 270213,
+      "sha256": "319b6530ab60f3e729fe21e8fc3d7cd3d9dc6cd76787cb81e09eb859e2bd0987"
+    },
+    {
+      "file": "sources/pixels-art.html.txt",
+      "url": "https://joel-nakamura.pixels.com/art",
+      "origin": null,
+      "bytes": 224179,
+      "sha256": "aca1245fab3de035abeed0214b8bc45d9e4ac82b982921a3d10392f0b3d482e8"
+    }
+  ],
+  "failures": [
+    {
+      "url": "https://discovernikkei.org/en/journal/2010/6/22/joel-nakamura/",
+      "error": "HTTP Error 403: Forbidden"
+    },
+    {
+      "url": "https://magazine.publichealth.jhu.edu/2016/rethinking-the-new-science-of-thriving",
+      "error": "HTTP Error 403: Forbidden"
+    }
+  ]
+}
