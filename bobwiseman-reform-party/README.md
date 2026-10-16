@@ -41,6 +41,27 @@ Mind); any look calls `LITTLE_BOB.draw(g, t, {tIn, tOut, y, h, stop, beats, mode
 Every look is a pure function of song time. Shots key off line starts in `js/gen/lines.js`, so a better timing file
 moves every cue.
 
+## Look E: the boardroom art car on a Dali playa (draft 1, 2026-10-16)
+
+Bob on look tests 2: "I am not liking these so far." Robin's new direction, built straight to a full draft: the
+boardroom art car (from a real car Robin saw at Burning Man; never name a camp) on a Salvador Dali-style playa, because
+"burning man really feels like a dali painting". Dali is inspiration only, no copied paintings.
+
+- Page `looks/dali.html`, code `js/dali/main.js`. One 3D world through a pinhole camera: the shot list `SH` is camera
+  offsets from the car, and each entry is a move, so nearly every change of shot follows the table through one place.
+- The car: a mahogany table covers the whole car (a red skirt hides it); the driver's red hat shows in a hole in the
+  middle; seven suits sit on beams out past the edge, propped on crutches. Speakerphone and whiteboard soften through the
+  day and hang over the edge. One suit (back row, centre) is a torso of drawers.
+- Beats: gavel on "law"; tape across the speakerphone on "can't speak"; tape recorders into the drawer; a beige blind
+  rolls down over the blue sky on every "control the blues"; papers wilt over the edge on "news"; grins on "grin"; the
+  table spins on "spin"; chart bars become cell bars on "crime"; rings and a bite on "soundbite"; a cloth lifts off model
+  cells on "unveiled" and cells on stilts rise on the playa on "jails"; bridge: dime, poor person with a bowl, truth in
+  the drawer, chip stacks, wilting boom mics, pie, Little Bob up through the hole on "little big guy", a book, chessboard
+  table with knight and rook, riot shields paid in coins, everyone nodding as one on "rehearsed". Outro at night: the
+  charts burn, the board votes with both hands, the Man burns and falls, the table rolls off into the dark, and Little
+  Bob crosses in front of the embers.
+- Render: `PAGE=looks/dali.html node render.mjs 0 268.99 out/rp_dali-v1_720p.mp4 4 24 0.6667` (~13 min locally).
+
 ## Commands
 
     python3 tools/make_lines_js.py                      # source/lines.json -> js/gen/lines.js
