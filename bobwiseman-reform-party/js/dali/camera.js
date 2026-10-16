@@ -1,4 +1,4 @@
-// Reform Party, Dali look: the shot list. Each entry moves the camera there, then holds.
+// Reform Party, Dali look: the camera. Draft 5: one continuous drone flight, never a cut and never a lock-off.
 // ---------- projection (moved from world.js for draft 3) ----------
 // Draft 3: the camera may turn left or right (C.yaw, radians, 0 = looking down +z, positive turns right).
 // At yaw 0 the maths is exactly draft 2's. camAt fills C.cy / C.sy so P stays cheap.
@@ -16,11 +16,15 @@
   function seg(a, b, w, col) { if (a[2] < .08 || b[2] < .08) return; g.strokeStyle = col; g.lineWidth = Math.max(1, w); g.lineCap = 'round'; g.beginPath(); g.moveTo(a[0], a[1]); g.lineTo(b[0], b[1]); g.stroke(); }
   const kAt = (p) => C.f / p[2]; // px per metre at that depth
 
-// ---------- camera: shots as offsets from the car; each entry moves there over dur, then holds ----------
-// [t, dur, ox, oy, oz, pitch, f, yaw?]. Pitch > 0 looks down. When both ends of a move carry a yaw, the camera
-// swings round the car (polar) instead of sliding in a straight line, so orbits stay orbits.
-// orb(): a framing on a circle round the car, aimed at its centre (plus a turn `aim`, to set the car on a third).
+// ---------- draft 5: the drone ----------
+// Robin: always moving, zooming in and out and panning round with the important thing in frame, never stopping for
+// more than a second or two, and even then floating a little in that spot.
+// The framings below are pose keys [ox, oy, oz, pitch, f, yaw?] as offsets from the car (pitch > 0 looks down, yaw > 0
+// turns right). KEYS says when the drone passes through each one: on its word. Between keys it flies a smooth curve
+// (cubic, C1, with a limiter so it never overshoots a key), in cylinder coordinates round the car, so it swings round
+// the table instead of cutting through it. On top of that, always: a slow hover (position, aim and focal length).
 const orb = (deg, R, y, pitch, f, aim = 0) => { const a = deg * Math.PI / 180, ox = R * Math.cos(a), oz = R * Math.sin(a); return [ox, y, oz, pitch, f, Math.atan2(-ox, -oz) + aim]; };
+const tw = (F, dx = 0, dy = 0, dz = 0, dp = 0, kf = 1, dyaw = 0) => [F[0] + dx, F[1] + dy, F[2] + dz, F[3] + dp, F[4] * kf, (F[5] || 0) + dyaw]; // a nudged copy
 // draft-2 framings kept for the protected moments
 const SPK = [1.2, 2.75, -3.3, .62, 1400], DRW = [-.8, 1.8, -1.6, .1, 1500], HEADS = [-.8, 1.95, -.4, .12, 1150];
 const WB = [3.2, 2.1, -1.6, 0, 1400], WBM = [2.6, 2.1, -4.2, .04, 1350], TCLOSE = [1.2, 2.0, -4.0, .25, 1400];
@@ -29,20 +33,20 @@ const PIE = [-.15, 2.9, -3.4, .55, 1400], BOOK = [-1.5, 2.7, -3.1, .6, 1400];
 // draft 3 framings
 const PUSH0 = [4, 1.4, -150, -.015, 1700], PUSH1 = [4, 1.5, -16, .03, 1250];       // intro: the car grows out of the horizon
 const GAVEL = [-7.6, 1.2, -2.5, .03, 1200, .82];                                   // "law": low three-quarter on the chairman
-const HTOP = [0, 3.9, -.3, 1.45, 1100], HIN = [0, 1.75, -.06, 1.5, 1300];          // over the hat hole, then into the hat
+const HTOP = [0, 3.9, -.3, 1.45, 1100], HTOP2 = [0, 3.6, -.9, 1.2, 1100], HIN = [0, 1.75, -.06, 1.5, 1300];          // over the hat hole, then into the hat
 const SKY1 = [-3.6, 1.3, -14, -.34, 1100];                                         // refrain 1 blues: low, the sky over the car
 const WBF = [3.2, 2.15, -.95, 0, 1350];                                            // into the whiteboard (fills the frame)
 const NEWS1 = [-1.4, 2.8, -6.8, .22, 1200];                                        // papers come down on the table
 const SPIN1 = orb(-112, 11, 6.2, .5, 1150, .26), SPIN1C = [-2.2, 1.15, -6, .02, 1000]; // refrain 1 spin: high 3/4, then low cut-in
 const TR1A = orb(-140, 7.5, .5, -.03, 950, .2), TR1B = orb(-100, 5.6, .45, -.05, 900, .12), TR1C = orb(-50, 7, .6, -.03, 950, -.2); // instrumental 1 tracking
 const WBF2 = [3.2, 2.1, -.9, 0, 1400];                                             // push into the cell bars
-const JAILM = [-.9, 1.32, -2.05, -.06, 820];                                       // "unveiled": table-top level on the jail model
+const JAILM = [-1.52, 1.32, -2.05, -.06, 820, .3];                                         // "unveiled": table-top level on the jail model
 const JAILW = [4, .4, -13, -.14, 1600];                                            // "jails": worm's-eye, cells rise behind
-const WORME = orb(-170, 7.4, .3, -.36, 820, .15);                                 // refrain 2 blues: low, end-on, the chairman looms
+const WORME = orb(-155, 6.6, .3, -.36, 820, .15);                                 // refrain 2 blues: low, end-on, the chairman looms
 const NEWS2 = [-1.2, .4, -5.2, -.34, 900];                                        // refrain 2 news: inside the ring, the drawer row
 const HEADS2 = [-.8, 1.8, -.6, .08, 1250];                                         // grin 2: a touch lower and closer
-const SPIN2A = [-1.2, .35, -5.4, -.2, 820], SPIN2B = orb(-160, 8, .4, -.2, 880, .1); // refrain 2 spin: worm's-eye, suits whip overhead
-const TR2A = orb(-25, 10, .45, -.03, 950, .3), TR2B = orb(-55, 6.4, .5, -.05, 900, .15); // instrumental 2: the car comes at us
+const SPIN2A = [-1.2, .35, -5.4, -.2, 820], SPIN2B = orb(-140, 7.6, .4, -.2, 880, .1); // refrain 2 spin: worm's-eye, suits whip overhead
+const TR2A = orb(-40, 9.5, .45, -.03, 950, .3), TR2B = orb(-55, 6.4, .5, -.05, 900, .15); // instrumental 2: the car comes at us
 const VOGUE = [-.3, 2.5, -1.6, .22, 900];                                          // vogue: over the near row onto the poses
 const DIME = [-1.6, 2.5, -3.4, .55, 1400];
 const POOR = [5.5, 1.5, -12.5, .04, 1150], POOR2 = [1.5, 1.5, -12, .04, 1150];      // the poor person on foot, the table rolls past
@@ -57,92 +61,148 @@ const HEADS3 = [-.8, 1.9, -.35, .1, 1300];
 const POVS = [0, TOP + .16, .05, -.22, 700, 0], POVS2 = [0, TOP + .16, .05, -.3, 760, .5]; // spin 3: the board whirls round the hole
 const GBIG = [0, 6.0, -10, .44, 1150];                                           // the giant gavel lands on the table
 
-// Where things are in frame (for the other builders; local = table coords, x along the table, z toward the far row):
-//  17-20.4 GAVEL: chairman (local x -5.15) on the left third, table receding right. 22.2 the hat fills the frame.
-//  40.4-41 the whiteboard fills the frame. 41-45 NEWS1: front edge of the table across the lower half.
-//  59-72 tracking, low (0.5 m) and close, swinging from behind-left to front-right; the near row is 3-6 m away.
-//  79.6-84.4 TCLOSE (draft 2's low table close-up): speakerphone centre, whiteboard on the right edge.
-//  79.6-86.2 TCLOSE holds (the draped model sits left of centre); 86.2-89.5 JAILM: table-top level, the jail model (local x -1.8..0) fills the middle. 89.5-93.6 JAILW: long lens
-//  from low in front; frame covers about local x -9..+17 at 30-50 m behind the car (cells closer than 25 m read bigger).
-//  93.5-98 WORME: end-on worm's-eye from beyond the left end. 98-102.6 NEWS2: worm's-eye from the front, near row looms.
-//  108.5-116.8 spin 2 worm's-eye. 117-121.7 the car comes at a low camera from front-right.
-//  128.4-133.9 POOR: the poor person at about 7 m right of the car, 5.5 m in front of it, on the right third.
-//  133.9-137.3 and 150.5-152.2, 154-155.6 and 160.4-163.9: the bridge's high orbit (horizon above frame).
-//  152.2-154 CHESSW: low front, the giant pieces about 22-32 m behind the car in the middle of the frame.
-//  155.6-160.4 COPS: long lens from 26 m, table in the lower middle, the playa 16-20 m behind it in the upper half.
-//  169.6-175.8, 175.8-180, 185.2-192.3: POV from the driver's hole at table-top height (near polygons are clipped).
-//  192.3-196 GBIG: high three-quarter, table in the middle half; the gavel should land at local x 0 to read big.
-const SH = [
-  [0, 0, ...PUSH0],
-  [0, 16.7, ...PUSH1],                     // one slow push: the car from the horizon to mid-frame
-  [16.7, 1.0, ...GAVEL],                   // ...and the push carries on into the chairman's gavel ("law" 17.97)
-  [20.5, 1.0, ...HTOP],                    // 0:21 match: rise over the table, the hat hole below
-  [21.5, .7, ...HIN],                      // drop into the hat (it fills the frame)
-  [22.2, 1.3, ...SPK],                     // pull up out of it onto the speakerphone (tape X on "can't")
-  [L_(2).s - .6, .9, ...DRW],              // gag, the ear
-  [L_(3).s - .4, 1.2, ...SKY1],            // control the blues
-  [40.35, .7, ...WBF],                     // 0:40.5 match: out of the sky, into the whiteboard
-  [41.05, 1.0, ...NEWS1],                  // pull back off the board onto the papers
-  [44.95, .6, ...HTOP],                    // 0:45.5 match: up over the hat hole...
-  [45.55, 1.0, ...HEADS],                  // ...and out of it, tilting up onto the grins
-  [50.45, 1.7, ...SPIN1],                  // 0:50.5: widen from the grin into the spin
-  [54.7, .9, ...SPIN1C],                   // cut in mid-spin: faces blur past
-  [59.2, 1.6, ...TR1A],                    // instrumental: low and close, tracking the car
-  [60.8, 5.8, ...TR1B],
-  [66.6, 5.2, ...TR1C],
-  [72.0, 2.5, ...WB],                      // the whiteboard (crime: chart bars become cell bars)
-  [79.0, .55, ...WBF2],                    // 1:20 match: push into the bars...
-  [79.55, .9, ...TCLOSE],                  // ...and down onto the low table close-up (soundbite)
-  [wt(9, 'unveiled') - 1.1, 1.1, ...JAILM], // "unveiled": push down to table-top level as the cloth lifts
-  [wt(9, 'build') - .5, 1.4, ...JAILW],    // "jails": worm's-eye, the cells shoot up
-  [L_(10).s - .3, 1.3, ...WORME],          // refrain 2 blues: end-on worm's-eye
-  [L_(11).s - .25, 1.0, ...NEWS2],         // news into the drawer
-  [102.6, .5, ...WBF],                     // 1:43 match: push through the whiteboard...
-  [103.1, 1.0, ...HEADS2],                 // ...slide off it onto the grins
-  [L_(13).s - .3, 1.3, ...SPIN2A],         // refrain 2 spin: worm's-eye
-  [112.4, 1.6, ...SPIN2B],
-  [116.9, 1.8, ...TR2A],                   // instrumental 2: the car comes at us, low
-  [118.7, 3.0, ...TR2B],
-  [121.7, 1.5, ...VOGUE],                  // 2:03 vogue arrival: the track pushes in onto the poses
-  [126.75, .45, ...DIME],                  // the dime (vogue holds over "once upon a time": the clock car on the right third)
-  [128.4, 1.1, ...POOR],                   // the poor person with the bowl
-  [131.3, 2.6, ...POOR2],                  // life's unfair: the table rolls on past
-  [133.9, 1.0, ...ORBA1],                  // bridge signature: the high orbit (vogue 2, truth into the box)
-  [134.9, 2.3, ...ORBA2],
-  [L_(21).s - .4, .5, ...WBM],             // wars: chips
-  [L_(22).s - .3, .5, ...MICS],            // the mics wilt on "limit"
-  [L_(23).s - .25, .45, ...PIE],           // pie, blackbirds
-  [L_(24).s - .2, .45, ...HOLE],           // little big guy
-  [L_(25).s - .2, .45, ...BOOK],           // the book
-  [L_(26).s - .3, .5, ...TOPY],            // the match into the chess top-down (hat hole as a square)
-  [150.5, 1.7, ...ORBB],                   // the board turns under us
-  [152.2, .45, ...CHESSW],                 // "foul": down and back, the giant knight kicks the giant rook
-  [154.0, 1.6, ...ORBC],                   // back up to the orbit
-  [L_(28).s - .3, 1.0, ...COPS],           // the paid cops behind the table
-  [L_(29).s - .3, 1.2, ...PERV1],          // "perverse": back up to the orbit...
-  [161.9, 2.0, ...PERV2],                  // ...which comes down onto the car for the word
-  [L_(30).s - .3, .6, ...HEADS],           // rehearsed: the row nods as one
-  [L_(31).s - .5, 1.1, ...POVB],           // refrain 3, from the driver's hole: the sky and the blind
-  [L_(32).s - .3, .8, ...POVN],            // news rains in
-  [L_(33).s - .3, .7, ...HEADS3],          // grin 3
-  [L_(34).s - .3, .9, ...POVS],            // spin 3: the board whirls round the hole
-  [189.0, 2.0, ...POVS2],
-  [192.3, 1.5, ...GBIG],                   // up and out: the giant gavel lands on the table (~195)
-  ...shotsEnd(),
+
+// when the drone passes through each framing (song seconds), 0 to the aerial at 201
+const KEYS = [
+  [0, PUSH0],
+  [8.5, [5, 1.45, -78, -.01, 1500]],
+  [16.4, PUSH1],                             // the car has grown from the horizon to mid-frame
+  [17.8, GAVEL],                             // the push carries on into the chairman's gavel ("law" 17.97)
+  [19.3, tw(GAVEL, .6, .15, -.6, .02, 1.04, -.04)],
+  [20.2, [-4.0, 2.8, -3.6, .62, 1150, .35]],  // rising over the near row...
+  [21.4, HTOP],                              // 0:21: up and over the table, the hat hole below...
+  [22.15, HIN],                              // ...down into the hat (it fills the frame)
+  [23.9, SPK],                               // ...and up out of it onto the speakerphone (tape X on "can't" 24.76)
+  [26.1, tw(SPK, .05, -.15, .3, .01)],
+  [27.6, DRW],                               // gag (27.5), then the ear and the flying recorders
+  [31.4, [-.5, 1.85, -1.5, .1, 1450, .06]],
+  [34.7, [-.95, 1.75, -1.7, .09, 1500, .02]],
+  [35.9, [-2.0, 2.9, -6.5, -.05, 1150]],     // up over the near row
+  [37.0, SKY1],                              // control the blues
+  [39.9, tw(SKY1, 2.5, .2, 6, .05, .95)],     // in toward the table under the blind (blues 39.65)
+  [40.95, [2.0, 2.35, -3.9, .02, 1150]],     // 0:40.5: down out of the sky, skimming past the whiteboard: the padlock drops on the ear ("restrict" 40.91)
+  [42.4, NEWS1],                             // onto the papers
+  [44.4, tw(NEWS1, .1, -.1, .6, .01, 1.02)], // news 44.27
+  [45.9, HTOP2],                             // 0:45.5: over the hat hole...
+  [47.6, HEADS],                             // ...and up out of it onto the grins (grin 49.05)
+  [49.6, tw(HEADS, .05, -.02, .1, 0, 1.03)],
+  [52.3, SPIN1],                             // 0:50.5: widening from the grins into the spin
+  [54.0, orb(-95, 10, 5.6, .47, 1150, .2)],
+  [55.7, SPIN1C],                            // down and in: faces blur past (spin 56.2)
+  [58.6, [-1.6, 1.0, -5.6, 0, 980]],
+  [60.9, TR1A],                              // instrumental: low and close, swinging round the car
+  [66.6, TR1B],
+  [71.3, TR1C],
+  [73.2, [3.6, 2.3, -3.6, .03, 1300]],       // up over the near row's end
+  [74.5, WB],                                // the whiteboard: chart bars become cell bars on "crime" (75.71)
+  [77.9, tw(WB, -.05, 0, .2, 0, 1.015)],     // barbed wire on "right" (78.01)
+  [79.5, WBF2],                              // 1:20: into the bars...
+  [80.6, TCLOSE],                            // ...and down onto the low table close-up
+  [83.3, tw(TCLOSE, -.1, -.05, .25, .01, 1.015)], // soundbite teeth (82.37)
+  [85.9, tw(TCLOSE, -.3, -.1, .4, -.01)],
+  [86.6, [-1.52, 1.55, -3.3, 0, 900, .25]],  // in through the gap in the near row
+  [87.3, JAILM],                             // "unveiled": table-top level as the drape lifts
+  [88.9, tw(JAILM, .1, -.02, .1, -.01, 1.025)],
+  [90.9, JAILW],                             // "jails" (92.32): long lens from low, the cells rise behind
+  [92.6, tw(JAILW, -.4, -.02, .6, -.01, 1.015)],
+  [95.0, WORME],                             // refrain 2 blues: end-on worm's-eye
+  [97.2, orb(-151, 6.4, .3, -.37, 830, .15)],
+  [99.3, NEWS2],                             // news into the drawer (101.77)
+  [101.9, tw(NEWS2, .1, -.02, .2, -.01, 1.01)],
+  [102.55, [2.6, 1.9, -3.6, 0, 1250]],       // rising past the near row
+  [103.1, WBF],                              // 1:43: through the whiteboard...
+  [104.2, HEADS2],                           // ...onto the grins (106.69)
+  [107.4, tw(HEADS2, .05, -.02, .1, 0, 1.025)],
+  [108.75, [-1.52, 1.3, -2.3, .02, 1050]],   // out between two of the suits
+  [109.8, SPIN2A],                           // refrain 2 spin: worm's-eye, suits sweep overhead (spin 114.11)
+  [112.3, tw(SPIN2A, -.2, .02, -.3, .01, 1.025)],
+  [114.0, SPIN2B],
+  [116.3, orb(-120, 7.6, .42, -.2, 880, .05)],
+  [118.7, TR2A],                             // instrumental 2: the car comes at us, low
+  [121.4, TR2B],
+  [123.3, VOGUE],                            // 2:03: the track flies in onto the poses (vogue 123.54)
+  [126.4, tw(VOGUE, -.02, .02, -.05, -.005, 1.005)], // vogue holds over "once upon a time" (126.52): the clock car on the right third
+  [127.4, DIME],                             // the dime (127.46), the hat hole in frame for the iris into the table world
+  [128.2, tw(DIME, .05, -.15, .1, .02, 1.03)],
+  [130.0, POOR],                             // out of the iris (130.04) onto the poor person with the bowl
+  [133.6, POOR2],                            // life's unfair: the table rolls on past
+  [135.0, ORBA1],                            // up into the bridge's high orbit (truth 135.53)
+  [136.6, ORBA2],
+  [138.2, WBM],                              // wars (138.39): chips
+  [139.3, tw(WBM, -.2, 0, -.2, .005)],
+  [140.55, MICS],                            // the mics wilt on "limit" (140.3)
+  [141.6, tw(MICS, .3, .1, -.1, .01, 1.01)],
+  [142.7, PIE],                              // pie, blackbirds (144.55)
+  [144.4, tw(PIE, 0, -.1, .15, .01, 1.015)],
+  [145.3, HOLE],                             // Little Bob up through the hole (146.33)
+  [146.8, tw(HOLE, 0, -.05, .2, 0, 1.015)],
+  [147.7, BOOK],                             // the book (147.97)
+  [149.4, TOPY],                             // the match into the chess top-down (knight 149.16)
+  [150.9, ORBB],                             // the board turns under us
+  [152.65, CHESSW],                          // "foul" (152.82): down and back, the giant knight kicks the giant rook
+  [153.6, tw(CHESSW, .2, .1, -.6, .01, .98)],
+  [156.7, COPS],                             // pulling back and zooming in: the paid cops behind the table (paid 159.38)
+  [159.5, tw(COPS, .2, -.2, 1.5, 0, .98)],
+  [161.4, PERV1],                            // "perverse": the orbit comes down onto the car (163.34)
+  [163.3, PERV2],
+  [164.9, orb(-80, 6.8, 3.9, .4, 1160)],
+  [166.3, HEADS],                            // rehearsed: the row nods as one (167.73)
+  [169.0, tw(HEADS, .05, -.02, .1, 0, 1.02)],
+  [170.8, POVB],                             // refrain 3, from the driver's hole: the sky and the drape (blues 174.05)
+  [174.3, tw(POVB, 0, .01, 0, -.02, .985, .12)],
+  [176.6, POVN],                             // news rains in (179.01)
+  [179.3, tw(POVN, 0, 0, 0, -.02, 1.015, -.1)],
+  [180.8, HEADS3],                           // grin 3 (182.78)
+  [184.4, tw(HEADS3, .05, -.02, .07, 0, 1.015)],
+  [186.3, POVS],                             // spin 3: the board whirls round the hole (spin 190.98)
+  [190.9, POVS2],
+  [193.7, GBIG],                             // up and out: the giant gavel lands on the table (195.02)
+  [195.6, tw(GBIG, 0, .1, -.3, 0, .99)],
+  [198.4, [5, 1.5, -36, -.12, 1300]],        // golden wide down the promenade
+  [201, [6, 1.6, -40, -.13, 1300]],          // where the aerial (camera-end.js camEnd) takes off, at rest
 ];
-function camAt(t) {
-  { const ce = typeof camEnd === 'function' ? camEnd(t) : null; if (ce) return ce; } // the dusk aerial over Black Rock City (camera-end.js)
-  let i = 0; while (i + 1 < SH.length && SH[i + 1][0] <= t) i++;
-  const e = SH[i], p = SH[Math.max(0, i - 1)], u = e[1] > 0 ? smooth((t - e[0]) / e[1]) : 1;
-  const v = [2, 3, 4, 5, 6].map((k) => lerp(p[k], e[k], u));
-  if (p.length > 7 && e.length > 7) { // swing round the car
-    const r0 = Math.hypot(p[2], p[4]), r1 = Math.hypot(e[2], e[4]), a0 = Math.atan2(p[4], p[2]); let da = Math.atan2(e[4], e[2]) - a0;
-    da -= TAU * Math.round(da / TAU); const r = lerp(r0, r1, u), a = a0 + da * u; v[0] = r * Math.cos(a); v[2] = r * Math.sin(a);
+// ---------- the flight ----------
+// A cubic through keys with a slope limiter: C1, never overshoots a key, slope zero where a channel turns round.
+function flight(keys) { // keys: [t, c0, c1, ...] -> f(t) giving the channels
+  const n = keys.length, T = keys.map((k) => k[0]), nc = keys[0].length - 1, M = [];
+  for (let c = 1; c <= nc; c++) { const m = [];
+    for (let i = 0; i < n; i++) { if (i === 0 || i === n - 1) { m.push(0); continue; } // at rest at both ends (the aerial hands over at rest)
+      const dl = (keys[i][c] - keys[i - 1][c]) / (T[i] - T[i - 1]), dr = (keys[i + 1][c] - keys[i][c]) / (T[i + 1] - T[i]);
+      if (dl * dr <= 0) { m.push(0); continue; }
+      const v = (keys[i + 1][c] - keys[i - 1][c]) / (T[i + 1] - T[i - 1]), lim = 3 * Math.min(Math.abs(dl), Math.abs(dr)); m.push(Math.sign(v) * Math.min(Math.abs(v), lim)); }
+    M.push(m); }
+  return (t) => { t = clamp(t, T[0], T[n - 1]); let lo = 0, hi = n - 1; while (hi - lo > 1) { const mid = (lo + hi) >> 1; if (T[mid] <= t) lo = mid; else hi = mid; }
+    const h = T[hi] - T[lo], s = (t - T[lo]) / h, s2 = s * s, s3 = s2 * s, a = 2 * s3 - 3 * s2 + 1, b = s3 - 2 * s2 + s, c2 = -2 * s3 + 3 * s2, d = s3 - s2;
+    const out = []; for (let c = 0; c < nc; c++) out.push(a * keys[lo][c + 1] + b * h * M[c][lo] + c2 * keys[hi][c + 1] + d * h * M[c][hi]); return out; };
+}
+const unwrap = (a, ref) => a - TAU * Math.round((a - ref) / TAU);
+// before the aerial: [t, r, angle, y, pitch, yaw, ln f] in cylinder coordinates round the car
+const FLY_A = flight((() => { const out = []; let th = -Math.PI / 2, yw = 0; for (const [t, F] of KEYS) { const r = Math.hypot(F[0], F[2]); th = unwrap(Math.atan2(F[2], F[0]), th); yw = unwrap(F[5] || 0, yw); out.push([t, r, th, F[1], F[3], yw, Math.log(F[4])]); } return out; })());
+// after it: world metres [t, x, y, z, pitch, yaw, ln f] (camera-end.js END_KEYS)
+const FLY_C = flight((() => { const out = []; let yw = 0; for (const k of END_KEYS) { yw = unwrap(k[6] || 0, yw); out.push([k[0], k[1], k[2], k[3], k[4], yw, Math.log(k[5])]); } return out; })());
+// the hover: slow sums of sines, never jitter (periods 5 to 20 s)
+const hov = (t, s) => .6 * Math.sin(t * (.31 + .07 * s) + s * 1.7) + .4 * Math.sin(t * (.53 + .05 * s) + s * 2.9);
+function camAt(t, bare) { // bare: without the hover (for the motion check only)
+  let c = typeof camEnd === 'function' ? camEnd(t) : null; // the dusk aerial over Black Rock City (camera-end.js), 201-215.2
+  if (!c) {
+    let x, y, z, p, yw, f;
+    if (t <= 201) { const [r, th, cy0, cp, cyw, lf] = FLY_A(t);
+      // the follow point: the car, except the intro (it drives into a still frame, then the drone picks it up) and the
+      // last seconds before the aerial (the drone slows to a stop in the air while the car brakes)
+      const follow = t < 10 ? carX(14) : t < 18 ? carX(14) + 12.8 * ((t - 10) / 8) ** 3 * (1 - (t - 10) / 16) : t < 197 ? carX(t)
+        : (() => { const u = (t - 197) / 4, p0 = carX(197), p1 = carX(201), h00 = 2 * u ** 3 - 3 * u * u + 1, h10 = u ** 3 - 2 * u * u + u, h01 = -2 * u ** 3 + 3 * u * u; return h00 * p0 + h10 * 4 * 1.6 + h01 * p1; })();
+      x = follow + r * Math.cos(th); y = cy0; z = r * Math.sin(th); p = cp; yw = cyw; f = Math.exp(lf); }
+    else { const [cx, cy0, cz, cp, cyw, lf] = FLY_C(t); x = cx; y = cy0; z = cz; p = cp; yw = cyw; f = Math.exp(lf); }
+    // the old hand-held wobble, kept so the hand-overs to and from the aerial (which has it too) match exactly
+    const ox = x - carX(Math.min(t, 238)), near = clamp((Math.hypot(ox, y - TOP, z - carZ(t)) - .5) / .7);
+    x += .25 * Math.sin(t * .23) * near; y += .05 * Math.sin(t * .31) * near;
+    c = { x, y, z, p, f, yaw: yw };
   }
-  const yw = lerp(p[7] || 0, e[7] || 0, u);
-  // the intro's car drives into a still frame; from 10 s the camera eases into following it (no jolt at 14 s)
-  const follow = t < 10 ? carX(14) : t < 18 ? carX(14) + 12.8 * ((t - 10) / 8) ** 3 * (1 - (t - 10) / 16) : carX(Math.min(t, 238));
-  const near = clamp((Math.hypot(v[0], v[1] - TOP, v[2]) - .5) / .7), clip = Math.hypot(v[0], v[2]) < .5 && v[1] < TOP + .6; // no drift right up against the hat or inside the hole
-  const gu = t - (typeof gavelT === 'function' ? gavelT() : L_(34).e - .5), sh = gu >= 0 && gu < .4 ? (1 - gu / .4) ** 2 : 0; // the giant gavel's impact shakes the camera
-  return { x: follow + v[0] + .25 * Math.sin(t * .23) * near + .05 * sh * Math.sin(gu * 55), y: v[1] + .05 * Math.sin(t * .31) * near + .04 * sh * Math.sin(gu * 71 + 1), z: v[2], p: v[3], f: v[4], yaw: yw, cy: Math.cos(yw), sy: Math.sin(yw), clip };
+  // the hover, everywhere: up to half a metre of drift (scaled with the distance to the car), a little float in the aim, the lens breathing
+  const dist = Math.hypot(c.x - carX(t), c.y - 1, c.z - carZ(t)), near = clamp((Math.hypot(c.x - carX(t), c.y - TOP, c.z - carZ(t)) - .5) / .7), A = bare ? 0 : clamp(.05 * dist, .04, .45) * near;
+  const clip = Math.hypot(c.x - carX(t), c.z - carZ(t)) < .6 && c.y < TOP + .6; // inside the driver's hole: clip near polygons
+  const hx = A * hov(t, 1), hy = A * .6 * hov(t, 2), hz = A * hov(t, 3), ha = dist > 400 ? .3 : 1;
+  const gu = t - (typeof gavelT === 'function' ? gavelT() : L_(34).e - .5), sh = gu >= 0 && gu < .4 ? (1 - gu / .4) ** 2 : 0; // the giant gavel's impact shakes the drone
+  const hb = bare ? 0 : 1, yaw = c.yaw + .012 * ha * hb * hov(t, 4), p = Math.min(c.p + .008 * ha * hb * hov(t, 5), 1.565), f = c.f * (1 + .018 * hb * hov(t, 6));
+  return { x: c.x + hx + .05 * sh * Math.sin(gu * 55), y: c.y + hy + .04 * sh * Math.sin(gu * 71 + 1), z: c.z + hz, p, f, yaw, cy: Math.cos(yaw), sy: Math.sin(yaw), clip: c.clip || clip };
 }
