@@ -1,4 +1,4 @@
-"""Render the whole piece as a 720p review MP4 into out/ (about 15 min on the M-series Mac).
+"""Render the whole piece as a 720p review MP4 into out/ (about 15 min on the 2019 Intel i9 MacBook Pro).
     blender -b --factory-startup --python tools/render_preview.py -- take-02
 """
 import os
