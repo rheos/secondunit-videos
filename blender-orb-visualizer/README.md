@@ -1,7 +1,7 @@
 # Blender orb visualizer
 
-A procedural 24-second music-video sequence, built entirely by one bpy script for Blender 4.5 LTS
-(EEVEE). A glowing orb travels through four flat, illustrative scenes: a gyroscope of orbits, a
+A procedural 24-second music-video sequence, built entirely by one bpy script that runs on Blender
+4.5 LTS (this Mac) and 5.2 LTS (in the cloud), with EEVEE. A glowing orb travels through four flat, illustrative scenes: a gyroscope of orbits, a
 corridor of arches, a rippling pillar field, and a halo with a shard burst. The orb glow, the bloom
 and the geometry all react to one "energy" curve, which can be keyed per beat or baked from a song.
 
@@ -26,6 +26,33 @@ The script deletes every object in the current scene first. It is re-runnable in
 | `tools/probe_api.py` | Prints what the installed Blender's API really is. Run it on every new Blender version |
 
 Run them all as `blender -b --factory-startup --python tools/<name>.py -- <args>` from this folder.
+
+## Blender 5 in the cloud (Modal)
+
+This Mac is a 2019 Intel MacBook Pro. Blender 5.0+ ships for Apple silicon only on macOS, so 4.5 LTS
+is the local ceiling. `cloud/modal_blender.py` runs the same script on Blender 5.2.2 (the `bpy` wheel
+from PyPI) in Modal containers, under Robin's Modal account (profile `rheos`, token in ~/.modal.toml).
+
+```bash
+ORB_GPU=cpu modal run cloud/modal_blender.py --mode probe  --blender 5.2
+ORB_GPU=cpu modal run cloud/modal_blender.py --mode stills --blender 5.2 --frames 60,200,445 --res 50
+modal run cloud/modal_blender.py --mode stills --blender 5.2 --frames 60,200,445     # L4 GPU
+modal run cloud/modal_blender.py --mode full --blender 5.2 --res 67 --chunks 8        # whole piece
+```
+
+| Setting | What happens | Measured (2026-10-16) |
+|---|---|---|
+| `ORB_GPU=cpu` | EEVEE runs on Mesa's software GL (llvmpipe), 8 cores | 34 s for the first frame (shader compile), then 5-9 s a frame at 960x540 |
+| `ORB_GPU=L4` (default) | EEVEE on an NVIDIA GPU, if the container exposes graphics | Not run yet: Modal needs a card on file for GPUs |
+
+Prices (modal.com/pricing, 2026-10-16):
+- CPU is $0.047 per core-hour. A full 576-frame piece at 960x540 on CPU is roughly an hour of an
+  8-core container, about $0.40, and 8 containers bring it down to minutes of wall time.
+- An L4 is $0.80/h and an L40S $1.95/h.
+- The Starter plan includes $30 a month.
+
+Renders land in `out/cloud/<tag>/`. Full mode assembles the MP4 locally with ffmpeg.
+`--blender 4.5` runs the same thing on 4.5.14 in the cloud, for like-for-like comparisons.
 
 `out/` holds renders and is gitignored (video never goes to GitHub). `reviews/` holds the small
 contact sheets that are committed, so each take has a visual record.
@@ -57,18 +84,23 @@ contact sheets that are committed, so each take has a visual record.
   sky and fog color changes while hidden, and the fog clears 1.5 beats after the downbeat. Gates 1
   and 2 are rings the orb and camera fly through exactly on the drop.
 
-## Blender 4.5 API facts (verified on 4.5.14, see `notes/blender-4.5.14-api-probe.txt`)
+## Blender 4.5 and 5.2 API facts (probes in `notes/blender-4.5.14-api-probe.txt` and `notes/blender-5.2.2-api-probe.txt`)
 
 | Topic | 4.5 | Note |
 |---|---|---|
-| EEVEE engine id | `BLENDER_EEVEE_NEXT` | 5.0 goes back to `BLENDER_EEVEE`; the script picks whichever exists |
+| EEVEE engine id | `BLENDER_EEVEE_NEXT` | 5.x is `BLENDER_EEVEE`; the script picks whichever exists |
 | Bloom | Compositor Glare, `glare_type = "BLOOM"` | EEVEE's own bloom is gone since 4.2 |
 | Glare options | **Input sockets** (`Threshold`, `Strength`, `Size` 0-1, ...) | The old node properties still exist but are not what renders |
 | Keyframe storage | Slotted actions: `action.layers[0].strips[0].channelbag(slot).fcurves` | `action.fcurves` still works in 4.5 but is removed in 5.0. Use `fcurve_ensure_for_datablock` |
 | Motion blur | `scene.render.use_motion_blur`, `motion_blur_shutter` | Not on `scene.eevee` any more |
 | Auto Smooth | `mesh.set_sharp_from_angle(angle)` | Replaced the old auto-smooth flag in 4.1 |
 | Sequencer | `sequence_editor.strips` | `sequences` still there as an alias; renamed in 4.4 |
-| Compositor tree | `scene.use_nodes`, `scene.node_tree` | 5.0 moves to `scene.compositing_node_group` |
+| Compositor tree | `scene.use_nodes`, `scene.node_tree` | 5.x: a `CompositorNodeTree` node group set as `scene.compositing_node_group`; output through a Group Output socket (the Composite node is gone) |
+| Compositor mix | `CompositorNodeMixRGB` | Gone in 5.x. `ShaderNodeMix` with `data_type = "RGBA"` works in both (sockets `Factor_Float`, `A_Color`, `B_Color`, `Result_Color`) |
+| Glare and Lens Distortion type | `glare_type` property | 5.x: a `Type` menu input socket (`"Bloom"`) |
+| Video output | `image_settings.file_format = "FFMPEG"` | 5.x: set `image_settings.media_type = "VIDEO"` (or `"IMAGE"`) first |
+| Legacy `action.fcurves` | Still works | Removed in 5.x. Use channelbags or `fcurve_ensure_for_datablock` |
+| Sequencer `sequences` | Alias of `strips` | Removed in 5.x |
 | Principled emission | `Emission Color`, `Emission Strength` sockets | 4.0+ names |
 
 ## Pitfalls hit or avoided
