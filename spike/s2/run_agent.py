@@ -30,17 +30,19 @@ findings: dict = {'model': MODEL, 'effort': EFFORT}
 
 
 def agent_cmd(args: list) -> list:
-    # sudo env_reset scrubs the environment; only the token name is preserved (not env -i: that drops it)
-    return ['sudo', '-n', '-u', 'agent', '-H', '--preserve-env=CLAUDE_CODE_OAUTH_TOKEN', 'env', *ENV_ARGS, CLAUDE, *args]
+    # Shape C (probes.py): sudo does not scrub the runner environment on these images, so the agent must start under
+    # env -i; the token goes sudo --preserve-env -> sh -> env -i NAME="$NAME", never in sudo's or sh's argv
+    return ['sudo', '-n', '-u', 'agent', '-H', '--preserve-env=CLAUDE_CODE_OAUTH_TOKEN', 'sh', '-c',
+            'exec env -i CLAUDE_CODE_OAUTH_TOKEN="$CLAUDE_CODE_OAUTH_TOKEN" "$@"', 'sh', *ENV_ARGS, CLAUDE, *args]
 
 
-def groups(budget: str) -> list:
+def groups(budget: str, model: str = MODEL) -> list:
     return [['--restricted'], ['--tools', 'Read,Edit,Write,Glob,Grep'],
             ['--allowedTools', 'Read Edit Write Glob Grep mcp__sheet__contact_sheet mcp__sheet__stills'],
             ['--permission-mode', 'dontAsk'], ['--permission-prompts', 'none'], ['--strict-mcp-config'],
             ['--mcp-config', '/srv/ar/scratch/mcp.json'], ['--disable-slash-commands'], ['--no-session-persistence'],
             ['--output-format', 'stream-json'], ['--verbose'], ['--json-schema', json.dumps(SCHEMA)],
-            ['--max-budget-usd', budget], ['--model', MODEL], ['--effort', EFFORT],
+            ['--max-budget-usd', budget], ['--model', model], ['--effort', EFFORT],
             ['--add-dir', '/srv/ar/mv/deps'], ['--system-prompt', SYSTEM]]
 
 
@@ -58,8 +60,8 @@ def events(stdout: str) -> list:
     return out
 
 
-def run_with_dropping(budget: str, user_turn: str, rejected: list, timeout: int = 900):
-    gs = groups(budget)
+def run_with_dropping(budget: str, user_turn: str, rejected: list, timeout: int = 600, model: str = MODEL):
+    gs = groups(budget, model)
     dropped = {r['flag'] for r in rejected}
     for _ in range(12):
         args = ['-p']
@@ -137,7 +139,8 @@ print('help flags documented:', len(findings['help_flags']))
 findings['config_dir_before'] = sorted(os.listdir('/home/agent/.claude')) if os.path.isdir('/home/agent/.claude') else 'absent (fresh)'
 
 # environment names the agent process gets under the launch shape used here (names only)
-r = sh(['sudo', '-n', '-u', 'agent', '-H', '--preserve-env=CLAUDE_CODE_OAUTH_TOKEN', 'env', *ENV_ARGS, '/usr/bin/env'])
+r = sh(['sudo', '-n', '-u', 'agent', '-H', '--preserve-env=CLAUDE_CODE_OAUTH_TOKEN', 'sh', '-c',
+        'exec env -i CLAUDE_CODE_OAUTH_TOKEN="$CLAUDE_CODE_OAUTH_TOKEN" "$@"', 'sh', *ENV_ARGS, '/usr/bin/env'])
 findings['agent_env_names'] = sorted(l.split('=')[0] for l in r.stdout.splitlines())
 findings['token_name_in_agent_env'] = 'CLAUDE_CODE_OAUTH_TOKEN' in findings['agent_env_names']
 
@@ -155,16 +158,25 @@ main.update({'exit_code': r.returncode, 'seconds': secs, 'stderr_first_line': (r
 with open('/srv/ar/mv/song/notes.txt') as f:
     main['notes_txt_after'] = f.read().strip()[:80]
 findings['main_run'] = main
+if 'session limit' in (main.get('result_text_head') or '').lower():
+    main['blocked'] = 'subscription session limit reached (the call reached the API and authenticated)'
+    findings['blocked'] = main['blocked']
+    findings['proxy_log'] = open('/srv/ar/out/proxy.log').read().splitlines()
+    findings['probes'] = json.load(open('/srv/ar/out/probes.json'))
+    with open(os.path.join(os.environ.get('GITHUB_WORKSPACE', '.'), 'spike/s2/findings.json'), 'w') as f:
+        json.dump(findings, f, indent=1)
+    print('BLOCKED: subscription session limit; findings written, budget probe skipped')
+    sys.exit(0)
 print('main run:', json.dumps({k: main.get(k) for k in ('exit_code', 'result_subtype', 'num_turns', 'total_cost_usd', 'init_tools_match_expected', 'structured_output_field')}))
 
 # ---- budget probe: a task that needs far more than $0.05
 rej2: list = list(rejected)
-bturn = ("Read every file in the bulk/ folder one at a time with the Read tool (there are 40; each is about 14 KB), "
+bturn = ("Read every file in the bulk/ folder one at a time with the Read tool (there are 20; each is about 14 KB), "
          "and after each one write a 150-word summary of it to summary.txt in the song folder. Do not skip any file.")
 t0 = time.time()
-rb, evb, args_b, secs_b = run_with_dropping('0.05', bturn, rej2)
+rb, evb, args_b, secs_b = run_with_dropping('0.05', bturn, rej2, 300, os.environ.get('S2_BUDGET_MODEL', 'haiku'))
 bud = summarize(evb)
-bud.update({'exit_code': rb.returncode, 'seconds': secs_b, 'budget_cap_usd': 0.05,
+bud.update({'model': os.environ.get('S2_BUDGET_MODEL', 'haiku'), 'exit_code': rb.returncode, 'seconds': secs_b, 'budget_cap_usd': 0.05,
             'read_calls': (bud.get('tool_uses') or {}).get('Read', 0)})
 bud['verdict'] = ('enforced' if (bud.get('result_subtype') or '').startswith('error_max_budget') else
                   f"not enforced (reported cost {bud.get('total_cost_usd')}, subtype {bud.get('result_subtype')})")

@@ -65,16 +65,30 @@ probe('CONNECT example.com:443 through the proxy', ['curl', '-sS', '-m', '15', '
 probe('CONNECT api.anthropic.com:443 through the proxy (allowed)', ['curl', '-sS', '-m', '20', '-o', '/dev/null',
       '-w', '%{http_code}', '-x', f'http://127.0.0.1:{P}', 'https://api.anthropic.com/'], expect_fail=False)
 
-# environment names an agent process sees under the two launch shapes (names only, never values)
-os.environ['AR_PROBE_SECRET'] = 'x'
-r = run(['sudo', '-n', '-u', 'agent', '-H', '--preserve-env=AR_PROBE_SECRET', 'env', 'PATH=/usr/bin:/bin', '/usr/bin/env'])
-names_sudo = sorted(l.split('=')[0] for l in r.stdout.splitlines())
-r = run(['sudo', '-n', '-u', 'agent', '-H', '--preserve-env=AR_PROBE_SECRET', 'env', '-i', 'PATH=/usr/bin:/bin', '/usr/bin/env'])
-names_envi = sorted(l.split('=')[0] for l in r.stdout.splitlines())
-results.append({'probe': 'env names: sudo --preserve-env then env (no -i)', 'first_line': ' '.join(names_sudo)})
-results.append({'probe': 'env names: sudo --preserve-env then env -i (token would be dropped)', 'first_line': ' '.join(names_envi)})
-print('env names (sudo, no -i):', names_sudo)
-print('env names (env -i):', names_envi)
+# how the token can reach the agent process: three launch shapes, with a dummy secret (never the real token)
+DUMMY = 'dummy' + 'secret987'
+os.environ['AR_PROBE_SECRET'] = DUMMY
+SCAN = ('printenv | cut -d= -f1 | sort | tr "\\n" " "; echo; '
+        'for f in /proc/[0-9]*/cmdline; do tr "\\0" " " < "$f" 2>/dev/null | grep -q "dummy""secret987" && echo "LEAK in $f"; done; echo scan-done')
+shapes = {
+    'A sudo env -i NAME=value (the spec literal)': ['sudo', '-n', '-u', 'agent', '-H', 'env', '-i', 'PATH=/usr/bin:/bin',
+                                                    f'AR_PROBE_SECRET={DUMMY}', 'sh', '-c', SCAN],
+    'B sudo --preserve-env then env, no -i': ['sudo', '-n', '-u', 'agent', '-H', '--preserve-env=AR_PROBE_SECRET', 'env',
+                                              'PATH=/usr/bin:/bin', 'sh', '-c', SCAN],
+    'C sudo --preserve-env, sh -c exec env -i NAME="$NAME"': ['sudo', '-n', '-u', 'agent', '-H', '--preserve-env=AR_PROBE_SECRET', 'sh', '-c',
+                                                              'exec env -i PATH=/usr/bin:/bin AR_PROBE_SECRET="$AR_PROBE_SECRET" "$@"', 'sh', 'sh', '-c', SCAN],
+}
+for label, cmd in shapes.items():
+    r = run(cmd)
+    lines = r.stdout.splitlines()
+    names = lines[0].split() if lines else []
+    leaks = [l for l in lines if l.startswith('LEAK')]
+    suspicious = [n for n in names if any(x in n for x in ('TOKEN', 'SECRET', 'KEY', 'ACTIONS', 'GITHUB', 'RUNNER'))]
+    rec = {'probe': f'launch shape {label}', 'exit': r.returncode, 'env_name_count': len(names), 'secret_in_agent_env': 'AR_PROBE_SECRET' in names,
+           'suspicious_names': suspicious, 'other_names_head': names[:12], 'secret_visible_in_other_cmdlines': len(leaks)}
+    results.append(rec)
+    print(json.dumps(rec))
+os.environ.pop('AR_PROBE_SECRET', None)
 
 # relay self-test: the relay as agent under env -i, one tool call answered by the sheet worker via docker
 req = [{'jsonrpc': '2.0', 'id': 1, 'method': 'initialize', 'params': {'protocolVersion': '2025-06-18', 'capabilities': {}, 'clientInfo': {'name': 't', 'version': '0'}}},

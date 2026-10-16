@@ -37,7 +37,7 @@ random.seed(7)
 words = "amber river lantern slow chorus glass window verse bridge tempo mirror paper salt orbit hollow bright thread quiet".split()
 import os
 os.makedirs('/srv/ar/mv/song/bulk', exist_ok=True)
-for i in range(1, 41):
+for i in range(1, 21):
     body = ' '.join(random.choice(words) for _ in range(2400))
     open(f'/srv/ar/mv/song/bulk/f{i:02d}.txt', 'w').write(body + '\n')
 PY
