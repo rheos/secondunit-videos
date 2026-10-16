@@ -78,7 +78,7 @@ Baseline 8b (5bcf8fb, cpP1M3Nu9MQ). Bob's four notes, built as written:
   the beat at 195.37, land one per beat on the nave floor and dance a new move every beat or two, behind little
   Bob as he walks; hat tip with him at 225.55, leap out at 230.72 before the fade.
 - "0:49 ... i just want her lips in a kissy face and peck her head twice like a chicken": `v1alt-wave.js`. Her
-  lips go into a squeezed kissy face on "waiting" and hold (never parted) through the near miss; on "kissed" she
+  lips go into a squeezed kissy face on V1.waiting and hold (never parted) through the near miss; on V1.kissed she
   jabs her head out at the wave twice, 0.35 s apart, a smack on each.
 - "2:45 ... i believe the glue stick should be inverted": in `scenes.js` (local, quotes the lyric) the tube is
   turned over in her hand, nozzle up and left, and the nozzle's point runs down the crack line.
