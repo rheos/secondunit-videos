@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-"""Copy the plate timeline and the voice's word times into index.html (the lines starting
-`const T =`, `const VO =`, `const END =` and `const WORDS =`), so the page needs no fetch."""
+"""Copy the plate timeline and the voice's word times into index.html and every other aspect page
+(index-4x5.html and the like; the lines starting `const T =`, `const VO =`, `const END =` and
+`const WORDS =`), so the pages need no fetch and every ratio keeps the master's timing."""
 import json, pathlib, re
 HERE = pathlib.Path(__file__).parent
-page = HERE.parent / "index.html"
+pages = [HERE.parent / "index.html"] + sorted(HERE.parent.glob("index-*.html"))
 tl = json.loads((HERE / "timeline.json").read_text())
 words = json.loads((HERE / "words.json").read_text())
 norm = lambda w: re.sub(r"[^a-z0-9']", "", w.lower())
@@ -14,10 +15,11 @@ lines = {
     "const END =": "const END = " + json.dumps(tl["END"]) + ";",
     "const WORDS =": "const WORDS = " + json.dumps(compact, separators=(",", ":")) + "; // vo/words.json, seconds from each line's start",
 }
-src = page.read_text().split("\n")
-for i, line in enumerate(src):
-    for key, new in lines.items():
-        if line.strip().startswith(key):
-            src[i] = line[: len(line) - len(line.lstrip())] + new
-page.write_text("\n".join(src))
-print("embedded", ", ".join(lines))
+for page in pages:
+    src = page.read_text().split("\n")
+    for i, line in enumerate(src):
+        for key, new in lines.items():
+            if line.strip().startswith(key):
+                src[i] = line[: len(line) - len(line.lstrip())] + new
+    page.write_text("\n".join(src))
+    print("embedded", ", ".join(lines), "in", page.name)
