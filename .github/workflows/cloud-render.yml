@@ -87,6 +87,19 @@ jobs:
         working-directory: pkg
         run: |
           sudo apt-get -qq update && sudo apt-get -qq install -y --no-install-recommends ffmpeg > /dev/null
+          # Mac Chrome draws Courier New, Arial, Georgia and the other Microsoft core fonts from the copies Apple
+          # ships. The runner has none, and fontconfig quietly swaps in a look-alike, so install the same families.
+          # The installer fetches Microsoft's own files; the EULA is accepted here so it does not prompt. Its
+          # download can fail without failing apt, so check for the font and retry, then refuse to draw without it.
+          echo "ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true" | sudo debconf-set-selections
+          sudo DEBIAN_FRONTEND=noninteractive apt-get -qq install -y --no-install-recommends ttf-mscorefonts-installer > /dev/null 2>&1 || true
+          for try in 1 2 3; do
+            fc-list : family | grep -qx "Courier New" && break
+            sleep 10; sudo DEBIAN_FRONTEND=noninteractive dpkg-reconfigure ttf-mscorefonts-installer > /dev/null 2>&1 || true
+          done
+          fc-list : family | grep -qx "Courier New" || { echo "::error::the Microsoft core fonts did not install"; exit 1; }
+          sudo fc-cache -f
+          echo "Courier New is $(fc-match -f '%{file}' 'Courier New:bold')"
           npm init -y > /dev/null && npm install --silent playwright@1.55.0 && npx playwright install --with-deps chromium > /dev/null
       - name: Render and encode
         working-directory: pkg

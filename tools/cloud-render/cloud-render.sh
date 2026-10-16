@@ -10,6 +10,7 @@
 #   CR_REF=<branch> runs the workflow file from that branch (to test workflow changes before merging).
 #   e.g. tools/cloud-render/cloud-render.sh bobwiseman-holiday-tavern looks/charcoal.html 24 130
 #
+# 0. Warns when the page draws in a font the runner lacks (fontcheck.py), since that frame will not match.
 # 1. Packages the project's code and assets (never audio, video, source/, _in/, out/, work/) and uploads it
 #    as a DRAFT release asset, because page code can quote lyrics and lyrics stay out of git.
 # 2. Starts .github/workflows/cloud-render.yml: N runners each draw their frames and encode a silent slice.
@@ -44,6 +45,8 @@ out=${5:-$pdir/out/${slug}_cloud_${t0}-${t1}.mp4}
 label="${proj}-${slug}-$(date +%Y%m%d-%H%M%S)"
 tmp=$(mktemp -d); trap 'rm -rf $tmp' EXIT
 echo "== $label: $frames frames in $slices slices at ${width}x${height}$( (( draft )) && echo ", draft")"
+# fonts: the runner has the Microsoft core fonts but no Mac-only faces (Futura, Helvetica Neue, ~/Library/Fonts)
+python3 $here/fontcheck.py $pdir $page
 
 # 1. package: an ALLOWLIST of code, styles, data, images and fonts, never audio, video, secrets or data folders
 (cd $pdir && find . \( -path ./out -o -path ./source -o -path ./_in -o -path ./work -o -path ./tmp -o -path ./output \
