@@ -3,3 +3,4 @@ renders/
 .hyperframes/
 node_modules/
 assets/*.mp3
+vo/*.mp3
