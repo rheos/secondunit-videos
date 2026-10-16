@@ -14,17 +14,18 @@ function manicule(sc, skin = SKIN.cream, cuffCol = C.gold) {
   g.restore();
 }
 // the clock face: a zodiac halo with twelve gold pips. Hands are drawn by the caller (clockHands).
+// draft 3: lit cold, from inside the dial (moonlight, not a sunrise), with a zodiac bezel of twelve roundels
 function clockFace(x, y, r, t, light = 0) {
-  if (light > 0) { glow(x, y, r * 2.2, '250,215,140', .55 * light); rays(x, y, r * 1.02, r * 2.4, 24, t * .05, C.goldPale, .6 * light); }
+  if (light > 0) glow(x, y, r * 2.1, '200,235,225', .45 * light);
   cut(scallop(x, y, r, 40, .04, t * .02), C.gold, { sh: 1.1, lift: .6 });
-  cut(ringLace(x, y, r * .78, r * .93, 24, t * .02), C.cream, { sh: .7, lift: .3, rule: 'evenodd' });
-  cut(circle(x, y, r * .76), C.tealDeep, { sh: .5 });
-  cut(ringLace(x, y, r * .64, r * .68), C.goldDeep, { sh: .2, rule: 'evenodd' });
+  haloOrnament(x, y, r, t * .02, 'zodiac', C.cream);
+  cut(circle(x, y, r * .7), C.tealDeep, { sh: .5 });
+  if (light > 0) { g.save(); g.globalAlpha *= Math.min(1, .7 * light); cut(circle(x, y, r * .7), C.tealLight, { sh: 0, grain: .3 }); g.restore(); glow(x, y, r * .7, '225,245,235', .35 * light); }
+  cut(ringLace(x, y, r * .62, r * .66), C.goldDeep, { sh: .2, rule: 'evenodd' });
   for (let i = 0; i < 12; i++) {
-    const a = i / 12 * TAU - Math.PI / 2, px = x + Math.cos(a) * r * .7, py = y + Math.sin(a) * r * .7;
-    if (i % 3 === 0) cut(flowerPath(px, py, r * .07, 5, a), C.goldPale, { sh: .3 }); else cut(circle(px, py, r * .025), C.goldPale, { sh: .2, grain: 0 });
+    const a = i / 12 * TAU - Math.PI / 2, px = x + Math.cos(a) * r * .55, py = y + Math.sin(a) * r * .55;
+    if (i % 3 === 0) cut(flowerPath(px, py, r * .06, 5, a), C.goldPale, { sh: .3 }); else cut(circle(px, py, r * .022), C.goldPale, { sh: .2, grain: 0 });
   }
-  if (light > 0) { g.save(); g.globalAlpha *= .5 * light; cut(circle(x, y, r * .76), C.teal, { sh: 0 }); g.restore(); }
 }
 // a clock hand: gold rod from the centre, a pointing hand at its tip. a = radians clockwise from twelve
 function clockHand(x, y, a, len, sc) {
@@ -104,15 +105,19 @@ function jeans(s, sway = 0, col = C.tealDeep) {
   g.beginPath(); g.moveTo(-80, 30); g.lineTo(-90, 370); g.moveTo(80, 30); g.lineTo(90, 370); g.moveTo(0, 30); g.lineTo(0, 110); g.stroke(); g.restore();
   // the back pocket and the pistol grip in it (an object only)
   cut(poly([[20, 60], [80, 60], [76, 140], [50, 152], [24, 140]]), C.teal, { sh: .5 });
-  cut(blob([[34, 70], [40, 6], [70, -6], [80, 10], [62, 66]], .4), C.plumDeep, { sh: .6, lift: .2 });
-  cut(circle(62, 6, 5), C.gold, { sh: 0, grain: 0 });
+  g.save(); g.translate(52, 70); g.rotate(-.5);
+  cut(blob([[-14, 0], [-18, -60], [-6, -86], [20, -84], [22, -60], [14, 0]], .4), C.cream, { sh: .7, lift: .3 });
+  for (let i = 0; i < 4; i++) cut(rect(-12, -70 + i * 16, 22, 3), C.goldDeep, { sh: 0, grain: 0 });
+  cut(rect(-14, -96, 60, 18), C.goldDeep, { sh: .5 });
+  cut(ringLace(26, -70, 10, 16), C.gold, { sh: .3, rule: 'evenodd' });
+  g.restore();
   for (const sx of [-1, 1]) cut(rect(sx * 60 - 6, -14, 12, 26), C.creamDeep, { sh: .3 }); // pegs
   g.restore();
 }
 // the paladin's helmet: a great helm with visor slits and a plume; a plain banknote tucked under it (no numbers)
 function helmet(s, note = 1) {
   g.save(); g.scale(s, s);
-  if (note > 0) { g.save(); g.rotate(-.25); cut(rrect(10, 40, 190 * note, 80, 6), C.tealLight, { sh: .7, lift: .3 }); cut(rrect(22, 52, 166 * note, 56, 4), C.teal, { sh: 0, grain: .3, alpha: .6 }); cut(ellipse(10 + 95 * note, 80, 24, 22), C.goldPale, { sh: 0, grain: .2 }); g.restore(); }
+  if (note > 0) { g.save(); g.rotate(-.25); cut(rrect(10, 34, 210 * note, 96, 6), C.cream, { sh: .7, lift: .3 }); cut(rrect(20, 44, 190 * note, 76, 4), C.tealLight, { sh: 0, grain: .3, alpha: .8 }); cut(ellipse(10 + 105 * note, 82, 30, 30), C.gold, { sh: 0, grain: .2 }); cut(ellipse(10 + 105 * note, 80, 13, 17), C.plum, { sh: 0, grain: 0 }); for (const sx of [-1, 1]) cut(circle(10 + 105 * note + sx * 70, 82, 10), C.goldPale, { sh: 0, grain: 0 }); g.restore(); }
   cut(blob([[-110, 120], [-120, -40], [-80, -140], [0, -170], [80, -140], [120, -40], [110, 120]], .45), C.creamDeep, { sh: 1, lift: .4 });
   cut(rect(-6, -168, 12, 288), C.cream, { sh: .3 });
   for (const y of [-30, 4]) cut(rrect(-96, y, 192, 14, 7), C.plumDeep, { sh: 0, grain: 0 });
@@ -122,13 +127,15 @@ function helmet(s, note = 1) {
 }
 function bowler(s) {
   g.save(); g.scale(s, s);
-  cut(ellipse(0, 0, 110, 22), C.plumDeep, { sh: .8 });
+  cut(ellipse(0, 0, 112, 24), C.plumDeep, { sh: .8 });
+  g.save(); g.lineWidth = 6; g.strokeStyle = C.cream; g.globalAlpha *= .85; g.beginPath(); g.ellipse(0, 0, 110, 22, 0, .1, Math.PI - .1); g.stroke(); g.restore();
   const c = new Path2D(); c.moveTo(-70, -4); c.bezierCurveTo(-74, -120, 74, -120, 70, -4); c.closePath(); cut(c, C.plumDeep, { sh: .8, lift: .2 });
-  cut(rect(-70, -26, 140, 18), C.plum, { sh: .2 });
+  cut(rect(-71, -30, 142, 22), C.gold, { sh: .2 });
+  g.save(); g.globalAlpha *= .5; g.strokeStyle = C.plumLight; g.lineWidth = 5; g.beginPath(); g.arc(-10, -40, 52, -2.6, -1.6); g.stroke(); g.restore();
   g.restore();
 }
 function cane(len) {
   cut(rect(-7, 0, 14, len), C.goldDeep, { sh: .7 });
-  cut(ringLace(-30, 0, 18, 32), C.goldDeep, { sh: .6, rule: 'evenodd' });
+  const j = new Path2D(); j.arc(-34, 0, 34, 0, Math.PI, true); j.arc(-34, 0, 20, Math.PI, 0, false); j.closePath(); cut(j, C.goldDeep, { sh: .6 }); // the crook
   cut(rect(-9, len - 14, 18, 14), C.gold, { sh: .3 });
 }

@@ -14,7 +14,7 @@
     const τ = t - tf, y = LEDGE + .5 * FALL_G * τ * τ, s = 1 - ss(HOLE.y - 260, HOLE.y, y);
     return { x: lerp(CK.x + dx, HOLE.x + dx * .15, ss(LEDGE, HOLE.y, y)), y: Math.min(y, HOLE.y), a: sp * τ * 2.6, s };
   }
-  const boatY = (t) => lerp(HOLE.y + 40, CK.y - 660, eio(clamp((t - 123.95) / 3.4)));
+  const boatY = (t) => lerp(HOLE.y + 260, CK.y - 660, eio(clamp((t - 123.95) / 3.4)));
   // the clock hands as a clapping pair: the minute hand from the left, the hour hand from the right
   function clockClap(t, len, sc) {
     const lt = t - K;
@@ -33,6 +33,9 @@
     // camera
     let cy = kf3(t, [[111.8, 900], [113.0, 1000], [119.6, 1000], [120.6, 1520], [121.3, 1520], [123.1, 3380], [124.2, 3380], [127.0, 900]]);
     let z = kf3(t, [[111.8, 1.286], [113.0, 1.0], [115.4, 1.0], [119.4, 1.12], [120.6, 1.2], [121.3, 1.2], [123.1, 1.0], [127.0, 1.0], [127.9, 1.08]]);
+    // a punch onto twelve as the hands meet (K-.35 to K+.35), released into the rise
+    const pk = eio(clamp((t - (K - .35)) / .3)) * (1 - eio(clamp((t - (K + .35)) / .4)));
+    z = lerp(z, 1.75, pk); cy = lerp(cy, CK.y - CK.r * .55, pk);
     const rise = eio(clamp((t - 128.3) / .9));
     if (t > 128.3) { z = lerp(1.08, .35, rise); cy = 900; }
     g.save(); cam(540, cy, z);
@@ -40,20 +43,28 @@
     // the tower: plum stone, gold bands, arched windows, down to the street and its hole
     cut(cutRect(40, 300, 1000, 3400, 401), C.plum, { sh: .8 });
     cut(poly([[40, 300], [540, -300], [1040, 300]]), C.plumDeep, { sh: .8 });
-    for (const y of [380, 1380, 2100, 2800]) cut(rect(40, y, 1000, 22), C.gold, { sh: .4 });
+    // mosaic friezes instead of plain bands; lilies climbing both sides of the tower
+    for (const y of [380, 1380, 2100, 2800]) { cut(rect(40, y, 1000, 30), C.plumDeep, { sh: .4 }); for (let i = 0; i < 40; i++) { g.fillStyle = [C.gold, C.teal, C.goldPale, C.plumLight][(i + y) % 4]; g.fillRect(48 + i * 25, y + 7, 16, 16); } }
     for (let r = 0; r < 3; r++) for (const x of [180, 820]) { const wy = 1700 + r * 620; cut(archPath(x - 70, wy, 140, 300), (r + x) % 3 ? C.tealInk : C.goldPale, { sh: .3 }); archFrame(x - 70, wy, 140, 300, 12, C.goldDeep); }
-    for (const sx of [-1, 1]) tendril(whipPts([540 + sx * 470, 1400], [540 + sx * 520, 1100], [540 + sx * 470, 700], [540 + sx * 420, 520], 40, -sx), 22, C.gold, { sh: .6 });
-    cut(cutRect(-200, 3600, 1480, 600, 402), C.tealDeep, { sh: .6 });
-    cut(cutRect(-200, 3580, 1480, 30, 403), C.creamDeep, { sh: .5 });
+    for (const sx of [-1, 1]) {
+      const stem = []; for (let i = 0; i <= 30; i++) { const u = i / 30; stem.push([540 + sx * (470 - 16 * Math.sin(u * 14)), 3500 - u * 2900]); }
+      tendril(stem, 12, C.tealDeep, { sh: .3 });
+      for (let i = 3; i < 30; i += 4) { const [lx, ly] = stem[i]; lily(lx - sx * 20, ly, -Math.PI / 2 - sx * .5, 70, .8, [C.cream, C.goldPale]); }
+    }
+    // Guimard whiplash brackets holding the clock face
+    for (const sx of [-1, 1]) { tendril(whipPts([540 + sx * 480, 1440], [540 + sx * 560, 1100], [540 + sx * 520, 700], [540 + sx * 380, 470], 60, -sx), 40, C.tealDeep, { sh: .8, lift: .3 }); tendril(whipPts([540 + sx * 474, 1440], [540 + sx * 552, 1100], [540 + sx * 512, 700], [540 + sx * 372, 470], 56, -sx), 10, C.gold, { sh: 0, grain: 0 }); }
+    // the street: cream cobbles, a flat clock set into them round the hole (narrower than the tower)
+    cut(cutRect(-200, 3590, 1480, 700, 402), C.creamDeep, { sh: .6 });
+    for (let r = 0; r < 6; r++) for (let c = 0; c < 18; c++) cut(ellipse(-160 + c * 90 + (r % 2) * 45, 3620 + r * 34 + r * r * 4, 38 + r * 3, 12 + r), C.cream, { sh: 0, grain: .2, alpha: .7 });
     // Mark Von Ulrich (guest director): the hole is the centre of a clock face set in the street; time swallows
     // the band, and the rowboat rises out of time's own centre
-    cut(ellipse(HOLE.x, HOLE.y + 30, 500, 150), C.gold, { sh: .6 });
-    cut(ellipse(HOLE.x, HOLE.y + 30, 470, 136), C.cream, { sh: .2 });
-    cut(ellipse(HOLE.x, HOLE.y + 30, 400, 112), C.tealDeep, { sh: 0 });
-    for (let i = 0; i < 12; i++) { const a = i / 12 * TAU, px = HOLE.x + Math.cos(a) * 436, py = HOLE.y + 30 + Math.sin(a) * 124; if (i % 3 === 0) cut(ellipse(px, py, 22, 9), C.goldDeep, { sh: .2 }); else cut(ellipse(px, py, 8, 4), C.goldDeep, { sh: 0, grain: 0 }); }
-    for (const [a, L] of [[-.6, 380], [.9, 270]]) { g.save(); g.translate(HOLE.x, HOLE.y + 30); g.scale(1, .28); g.rotate(a); cut(poly([[-30, 0], [-8, -L * .8], [0, -L], [8, -L * .8], [30, 0]]), C.goldDeep, { sh: .4 }); g.restore(); }
-    cut(ellipse(HOLE.x, HOLE.y + 30, 190, 56), C.gold, { sh: .7 });
-    cut(ellipse(HOLE.x, HOLE.y + 30, 166, 44), C.tealInk, { sh: 0 });
+    cut(ellipse(HOLE.x, HOLE.y + 30, 400, 118), C.gold, { sh: .6 });
+    cut(ellipse(HOLE.x, HOLE.y + 30, 374, 106), C.cream, { sh: .2 });
+    for (let i = 0; i < 12; i++) { const a = i / 12 * TAU, px = HOLE.x + Math.cos(a) * 330, py = HOLE.y + 30 + Math.sin(a) * 92; cut(ellipse(px, py, i % 3 ? 14 : 26, i % 3 ? 6 : 10), C.plumDeep, { sh: .1, grain: 0 }); }
+    for (const [a, L] of [[-.55, 300], [1.0, 210]]) { g.save(); g.translate(HOLE.x, HOLE.y + 30); g.scale(1, .28); g.rotate(a); g.translate(0, -L * .55); manicule(L * .35); g.restore(); g.save(); g.translate(HOLE.x, HOLE.y + 30); g.scale(1, .28); g.rotate(a); cut(rect(-8, -L * .5, 16, L * .5), C.goldDeep, { sh: .2 }); g.restore(); }
+    cut(ellipse(HOLE.x, HOLE.y + 30, 176, 52), C.gold, { sh: .7 });
+    cut(ellipse(HOLE.x, HOLE.y + 30, 156, 42), C.plumDeep, { sh: 0 });
+    cut(ellipse(HOLE.x, HOLE.y + 22, 150, 30), '#1c0d1b', { sh: 0, grain: 0 });
     // the ledge and the band's instruments on it, then falling
     cut(cutRect(80, LEDGE, 920, 40, 404), C.gold, { sh: 1, lift: .4 });
     for (const B of BAND) {
@@ -71,7 +82,12 @@
     cut(circle(CK.x, CK.y, 24), C.gold, { sh: .5 });
     clapRings(t, CK.x, CK.y - CK.r * .62, K, .9);
     // the rowboat rising out of the hole, past the clock, rowing on the beats
-    if (t > 123.95) rowboat(CK.x + Math.sin(t * .8) * 30, boatY(t), .9, t * TAU / 1.03, 1);
+    if (t > 123.95) {
+      const by = boatY(t);
+      g.save(); if (by > HOLE.y - 300) { g.beginPath(); g.rect(-400, -6000, 2000, HOLE.y + 30 + 6000); g.clip(); }
+      rowboat(CK.x + Math.sin(t * .8) * 30 * ss(124.6, 125.4, t), by, .9, t * TAU / 1.03, 1); g.restore();
+      if (by > HOLE.y - 300) { const near = new Path2D(); near.ellipse(HOLE.x, HOLE.y + 30, 176, 52, 0, 0, Math.PI); near.ellipse(HOLE.x, HOLE.y + 30, 156, 42, 0, Math.PI, 0, true); cut(near, C.gold, { sh: .4 }); }
+    }
     g.restore();
     rain(t, 30, 71, .25 * (1 - rise), .1);
     // the night closes in round the clock as we rise; the face stays bright (it becomes the moon)
@@ -84,6 +100,6 @@
       rowboat(CK.x + Math.sin(t * .8) * 30, boatY(t), .9, t * TAU / 1.03, 1);
       g.restore();
     }
-    sheet(C.goldPale, .45 * (1 - ss(111.8, 112.4, t)));
-  }, { smooth: true });
+    sheet(C.goldPale, .3 * (1 - ss(111.8, 112.0, t)));
+  });
 })();

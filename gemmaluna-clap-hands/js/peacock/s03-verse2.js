@@ -64,6 +64,7 @@
     g.restore();
     g.restore();
   }
+  window.heron = heron; // the dawn's heron leads the floating band (draft 3)
   function lampPole(x, yb, yt, lit) {
     cut(cutRect(x - 10, yt, 20, yb - yt, 61), C.goldDeep, { sh: .7 });
     tendril(whipPts([x, yt + 40], [x - 60, yt - 20], [x - 110, yt + 20], [x - 70, yt + 60], 20, -1), 10, C.goldDeep);
@@ -169,7 +170,9 @@
   function calyxLamp(x, wy) { glow(x, wy - 120, 300, '250,215,140', .45); nouveauHand(x, wy, GUIMARD_HAND_SC, .8, { fill: C.tealDeep, edge: C.gold }); lily(x, wy - GUIMARD_HAND_SC * 1.15 + 40, -Math.PI / 2, 90, .85, [C.goldPale, C.white]); cut(ellipse(x, wy - 105, 14, 26), C.white, { sh: 0, grain: .1 }); }
   SHOT(66.9, 70.6, 'heron', (t, k, d) => {
     const u = eio(clamp((t - 66.9) / 1.4)), out = ei(clamp((t - 70.22) / .38));
-    g.save(); cam(lerp(lerp(WX + WW / 2, 540, u), QBUD.x, out), lerp(lerp(WY + 190, 1000, u), QBUD.y, out), Math.exp(lerp(lerp(Math.log(5), 0, u), Math.log(4), out)));
+    const hk = eio(clamp((t - 68.9) / .5)) * (1 - eio(clamp((t - 69.9) / .3))); // a push onto the heron as it lands on "bird"
+    const bx0 = lerp(lerp(WX + WW / 2, 540, u), PERCH[0] - 60, hk), by0 = lerp(lerp(WY + 190, 1000, u), PERCH[1] + 120, hk), bz0 = lerp(lerp(Math.log(5), 0, u), Math.log(1.45), hk);
+    g.save(); cam(lerp(bx0, QBUD.x, out), lerp(by0, QBUD.y, out), Math.exp(lerp(bz0, Math.log(4), out)));
     sheet(C.tealInk);
     for (let i = 0; i < 4; i++) cut(cloud(150 + i * 300 + Math.sin(t * .3 + i) * 20, 220 + (i % 2) * 90, 520, 140, i + 20), i % 2 ? C.plumDeep : C.tealDeep, { sh: .8, lift: .3 });
     cut(cutRect(-60, 420, 560, 1200, 81), C.plum, { sh: 1, lift: .4 });
