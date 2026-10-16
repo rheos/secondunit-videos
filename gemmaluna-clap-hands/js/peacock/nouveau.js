@@ -41,10 +41,36 @@ function ringLace(x, y, r0, r1, holes = 0, rot = 0) {
   return p;
 }
 // the Mucha halo: layered paper rings. u = how many layers have unfolded (0..1), rot turns the lace
-function halo(x, y, R, rot = 0, u = 1, cols = [C.gold, C.cream, C.tealLight, C.goldPale]) {
+// the Mucha halo: layered paper rings. u = how many layers have unfolded (0..1), rot turns the ornament.
+// style (draft 3, the audit: the dotted ring read Deco) chooses the ornament ring for each appearance:
+// 'lace' petal-cut lace (default), 'rose' a rose window, 'peacock' feather eyes, 'zodiac' twelve roundels,
+// 'poppy' plum poppies, 'sunflower' petals
+function haloOrnament(x, y, R, rot, style, col) {
+  const r0 = R * .72, r1 = R * .9, rm = (r0 + r1) / 2, bw = r1 - r0;
+  if (style === 'sunflower') {
+    for (let i = 0; i < 30; i++) { const a = rot + TAU * i / 30; g.save(); g.translate(x + Math.cos(a) * r0, y + Math.sin(a) * r0); g.rotate(a + Math.PI / 2);
+      cut(blob([[-bw * .22, 0], [0, -bw * 1.25], [bw * .22, 0], [0, bw * .1]], .6), i % 2 ? C.goldPale : C.cream, { sh: .4, grain: .15 }); g.restore(); }
+    return;
+  }
+  const p = new Path2D(); p.arc(x, y, r1, 0, TAU); p.moveTo(x + r0, y); p.arc(x, y, r0, 0, TAU, true);
+  if (style === 'lace' || style === 'rose') {
+    const n = style === 'rose' ? 12 : 20;
+    for (let i = 0; i < n; i++) { const a = rot + TAU * i / n, cx = x + Math.cos(a) * rm, cy = y + Math.sin(a) * rm;
+      const e = new Path2D(); e.ellipse(cx, cy, bw * .36, bw * (style === 'rose' ? .16 : .12), a, 0, TAU); p.addPath(e);
+      if (style === 'rose') { const c2 = new Path2D(); c2.arc(x + Math.cos(a + Math.PI / n) * rm, y + Math.sin(a + Math.PI / n) * rm, bw * .1, 0, TAU); p.addPath(c2); } }
+  }
+  cut(p, col, { sh: .7, lift: .3, rule: 'evenodd' });
+  if (style === 'peacock') for (let i = 0; i < 16; i++) { const a = rot + TAU * i / 16, cx = x + Math.cos(a) * rm, cy = y + Math.sin(a) * rm;
+    g.save(); g.translate(cx, cy); g.rotate(a + Math.PI / 2); cut(ellipse(0, 0, bw * .26, bw * .38), C.gold, { sh: .3, grain: 0 }); cut(ellipse(0, bw * .04, bw * .17, bw * .25), C.teal, { sh: 0, grain: 0 }); cut(ellipse(0, bw * .08, bw * .09, bw * .13), C.blue, { sh: 0, grain: 0 }); g.restore(); }
+  if (style === 'zodiac') for (let i = 0; i < 12; i++) { const a = rot + TAU * i / 12, cx = x + Math.cos(a) * rm, cy = y + Math.sin(a) * rm;
+    cut(circle(cx, cy, bw * .36), C.gold, { sh: .4 }); cut(circle(cx, cy, bw * .26), C.tealDeep, { sh: 0 }); cut(flowerPath(cx, cy, bw * .22, 5, a), C.goldPale, { sh: 0, grain: 0 }); }
+  if (style === 'poppy') for (let i = 0; i < 12; i++) { const a = rot + TAU * i / 12, cx = x + Math.cos(a) * rm, cy = y + Math.sin(a) * rm;
+    cut(flowerPath(cx, cy, bw * .42, 4, a), C.plumLight, { sh: .3 }); cut(circle(cx, cy, bw * .12), C.plumDeep, { sh: 0, grain: 0 }); }
+}
+function halo(x, y, R, rot = 0, u = 1, cols = [C.gold, C.cream, C.tealLight, C.goldPale], style = 'lace') {
   const L = [
     () => cut(scallop(x, y, R, 36, .05, rot * .3), cols[0], { sh: 1, lift: .6 }),
-    () => cut(ringLace(x, y, R * .72, R * .9, 28, rot), cols[1], { sh: .7, lift: .3, rule: 'evenodd' }),
+    () => haloOrnament(x, y, R, rot, style, cols[1]),
     () => cut(circle(x, y, R * .7), cols[2], { sh: .6, lift: .2 }),
     () => cut(ringLace(x, y, R * .5, R * .58, 0), cols[3], { sh: .4, rule: 'evenodd' }),
   ];
@@ -53,11 +79,17 @@ function halo(x, y, R, rot = 0, u = 1, cols = [C.gold, C.cream, C.tealLight, C.g
     g.save(); g.translate(x, y); const s = back(k); g.scale(s, s); g.translate(-x, -y); L[i](); g.restore();
   }
 }
-// rays of the halo: thin paper spokes fanning out behind it
+// a moon set inside a halo (the audit: several haloes read as empty teal medallions, not moons)
+function haloMoon(x, y, r, t = 0) { glow(x, y, r * 2.4, '250,230,180', .35); cut(circle(x, y, r), C.cream, { sh: .4, grain: .3 }); cut(crescent(x + r * .1, y, r * .96, .82, .3), C.goldPale, { sh: 0, grain: .2, alpha: .7 }); }
+// rays of the halo (draft 3): curving whiplash quills, not straight Deco spokes. Each sweeps out in an S and
+// ends in a small curl, alternating the turn
 function rays(x, y, r0, r1, n, rot, col, alpha = 1) {
+  if (alpha <= 0) return;
+  const pol = (r, a) => [x + Math.cos(a) * r, y + Math.sin(a) * r], L = r1 - r0;
   for (let i = 0; i < n; i++) {
-    const a = rot + TAU * i / n, w = .045;
-    cut(poly([[x + Math.cos(a - w) * r0, y + Math.sin(a - w) * r0], [x + Math.cos(a) * r1, y + Math.sin(a) * r1], [x + Math.cos(a + w) * r0, y + Math.sin(a + w) * r0]]), col, { sh: .35, grain: .15, alpha });
+    const a = rot + TAU * i / n, b = (i % 2 ? 1 : -1) * .32;
+    const pts = whipPts(pol(r0, a), pol(r0 + L * .35, a + b), pol(r0 + L * .7, a - b * .5), pol(r1, a + b * .4), L * .045, i % 2 ? 1 : -1, 24);
+    cut(ribbonAlong(pts, Math.max(10, L * .05)), col, { sh: .3, grain: .12, alpha });
   }
 }
 // a lily seen from the side: petals open from a bud (open 0..1), stem pointing along ang
@@ -119,23 +151,48 @@ function rain(t, n, seed = 1, alpha = .5, ang = .12, x0 = -100, x1 = W + 100) {
 // hand (0..1, optional): instead of hanging, the bud is held up in an iron hand rising from the stem's end,
 // whose fingers spread open (0 closed, 1 open) as it lights. Mark: hands enter the film holding light.
 const IRON = { fill: C.goldDeep, shade: C.gold, line: C.plumDeep };
-const GUIMARD_HAND_SC = 150;
+const GUIMARD_HAND_SC = 100;
 function guimard(x, y, h, dir, lit, sway = 0, hand = -1) {
   const stem = whipPts([x, y], [x - dir * h * .06, y - h * .55], [x + dir * h * .02 + sway, y - h * 1.1], [x + dir * h * .3 + sway, y - h], 0);
-  tendril(stem, 30, C.goldDeep, { sh: .8, lift: .3 });
+  tendril(stem, 30, hand >= 0 ? C.tealDeep : C.goldDeep, { sh: .8, lift: .3 });
+  if (hand >= 0) tendril(stem.map(([px, py]) => [px - dir * 6, py]), 7, C.gold, { sh: 0, grain: 0 }); // cast iron: teal with a gold highlight
   const [bx, by] = stem[stem.length - 1];
   if (hand >= 0) {
-    const o = clamp(hand), sc = GUIMARD_HAND_SC, cy = by - sc * .62;
-    palmHand(bx, by, sc, { dir, rot: dir * .08, spread: lerp(0, .3, o), skin: IRON, cuffCol: C.gold });
+    const o = clamp(hand), sc = GUIMARD_HAND_SC, cy = by - sc * 1.15;
     if (lit > 0) glow(bx, cy, 360, '240,190,110', .55 * lit);
-    cut(blob([[bx - 40, cy - 30], [bx, cy - 66], [bx + 40, cy - 30], [bx + 30, cy + 40], [bx, cy + 60], [bx - 30, cy + 40]], .7), lit > .5 ? C.goldPale : C.plum, { sh: .8, lift: .4 });
-    if (lit > 0) { g.save(); g.globalAlpha *= lit; cut(ellipse(bx, cy, 20, 34), C.white, { sh: 0, grain: .1 }); g.restore(); }
+    nouveauHand(bx, by, sc, o * .8, { fill: C.tealDeep, edge: C.gold });
+    lily(bx, cy + 40, -Math.PI / 2, 90, .15 + .7 * o, lit > .5 ? [C.goldPale, C.white] : [C.plumLight, C.plum]);
+    if (lit > 0) { g.save(); g.globalAlpha *= lit; cut(ellipse(bx, cy + 10, 14, 26), C.white, { sh: 0, grain: .1 }); g.restore(); }
     return;
   }
   if (lit > 0) glow(bx + dir * 10, by + 70, 360, '240,190,110', .55 * lit);
   cut(blob([[bx + dir * 10 - 46, by + 40], [bx + dir * 10, by + 6], [bx + dir * 10 + 46, by + 40], [bx + dir * 10 + 34, by + 120], [bx + dir * 10, by + 150], [bx + dir * 10 - 34, by + 120]], .7), lit > .5 ? C.goldPale : C.plum, { sh: .7, lift: .2 });
   if (lit > 0) { g.save(); g.globalAlpha *= lit; cut(ellipse(bx + dir * 10, by + 84, 24, 40), C.white, { sh: 0, grain: .1 }); g.restore(); }
   for (let i = -1; i <= 1; i++) { g.save(); g.translate(bx + dir * 10, by + 20); g.rotate(i * .7); cut(blob([[-14, 0], [0, -70], [14, 0]], .6), C.goldDeep, { sh: .4 }); g.restore(); }
+}
+
+// A Nouveau hand (draft 3): a palm and five tapered petal fingers that curve. open 0 cups them like a calyx
+// round whatever it holds, open 1 spreads them like a lily with the tips curling out. Wrist at (0,0), up is -y,
+// the middle finger about 2.1 units from the wrist. The Metro's iron lamp hands and the final sun-hand share it.
+function petalPath(bx, by, ang, L, w, curl) {
+  const dx = Math.sin(ang), dy = -Math.cos(ang), px = -dy, py = dx, tx = bx + dx * L + px * curl * L * .25, ty = by + dy * L + py * curl * L * .25;
+  const p = new Path2D(); p.moveTo(bx - px * w / 2, by - py * w / 2);
+  p.quadraticCurveTo(bx + dx * L * .6 - px * w * .7 + px * curl * L * .1, by + dy * L * .6 - py * w * .7 + py * curl * L * .1, tx, ty);
+  p.quadraticCurveTo(bx + dx * L * .6 + px * w * .7 + px * curl * L * .1, by + dy * L * .6 + py * w * .7 + py * curl * L * .1, bx + px * w / 2, by + py * w / 2);
+  p.closePath(); return p;
+}
+function nouveauHand(x, y, sc, open, { fill = C.cream, edge = null, thumbSide = -1, glowFill = null } = {}) {
+  g.save(); g.translate(x, y); g.scale(sc, sc);
+  const o = clamp(open), F = [[-.33, 1.0], [-.11, 1.22], [.11, 1.16], [.33, .92]];
+  const draw = (path, col, sh = .7) => { if (edge) cut(path, edge, { sh, lift: .3 }); g.save(); if (edge) { g.translate(0, 0); } cut(path, col, { sh: edge ? 0 : sh, lift: .3, grain: .2 }); g.restore(); };
+  const parts = [];
+  F.forEach(([fx, L]) => { const a = lerp(-fx * 1.3, fx * 1.5, o), curl = lerp(-fx * 1.2, fx * 2.0, o); parts.push(petalPath(fx, -.8, a, L, .2, curl)); });
+  parts.push(petalPath(thumbSide * .4, -.3, thumbSide * lerp(.25, 1.05, o), .78, .22, thumbSide * lerp(-.4, .8, o)));
+  parts.push(blob([[-.42, 0], [-.46, -.5], [-.36, -.9], [0, -.98], [.36, -.9], [.46, -.5], [.42, 0]], .55));
+  for (const pth of parts) { if (edge) { g.save(); g.lineWidth = .05; g.strokeStyle = edge; g.stroke(pth); g.restore(); } }
+  for (const pth of parts) cut(pth, fill, { sh: .7, lift: .3, grain: .2 });
+  if (edge) for (const pth of parts) { g.save(); g.lineWidth = .035; g.strokeStyle = edge; g.stroke(pth); g.restore(); }
+  g.restore();
 }
 
 // ---------------- the clapping hands ----------------
@@ -168,15 +225,15 @@ function cuff(sc, col = C.gold) { // a scalloped gold cuff below the wrist (Nouv
 const SKIN = {
   cream: { fill: C.cream, shade: C.creamDeep, line: C.plumLight },
   glove: { fill: C.white, shade: C.cream, line: C.creamDeep },          // the millionaire's white gloves
-  soot: { fill: C.plumDeep, shade: C.tealInk, line: C.plumLight },       // the stoker's hands
+  soot: { fill: C.plumDeep, shade: C.tealInk, line: C.plumLight, rim: C.goldPale }, // the stoker's hands, rim-lit by the fire
   brass: { fill: C.gold, shade: C.goldDeep, line: C.goldDeep },          // the engine's hands
 };
 function palmHand(x, y, sc, { dir = -1, rot = 0, spread = .14, sx = 1, cuffCol = C.gold, skin = SKIN.cream, print = 0 } = {}) {
   g.save(); g.translate(x, y); g.rotate(rot); g.scale(sc * sx, sc);
   const pp = palmPath(spread, dir);
-  cut(pp, skin.fill, { sh: .8, lift: .4 });
-  if (print > 0) { g.save(); g.clip(pp); g.globalAlpha *= print * .8; cut(blob([[-.32, -.95], [-.1, -.6], [.3, -.85], [.28, -.3], [0, -.12], [-.3, -.35]], .7), C.plumDeep, { sh: 0, grain: .5 });
-    for (let i = 0; i < 4; i++) cut(ellipse(-.28 + i * .19, -1.35 + Math.abs(i - 1.5) * .08, .07, .16), C.plumDeep, { sh: 0, grain: .5 }); g.restore(); }
+  if (skin.rim) { g.save(); g.scale(1.07, 1.04); cut(pp, skin.rim, { sh: .5, grain: 0 }); g.restore(); }
+  cut(pp, skin.fill, { sh: skin.rim ? 0 : .8, lift: .4 });
+  if (print > 0) { g.save(); g.clip(pp); g.globalAlpha *= print * .72; g.scale(-.86, .86); g.translate(0, -.12); cut(palmPath(.14, -dir), C.plumDeep, { sh: 0, grain: .6 }); g.restore(); } // the sooty hand's own print
   // palm creases in pencil
   g.save(); g.globalAlpha *= .45 * sx; g.strokeStyle = skin.line; g.lineWidth = .025; g.lineCap = 'round';
   g.beginPath(); g.moveTo(-.3, -.72); g.quadraticCurveTo(0, -.6, .32, -.75); g.moveTo(dir * .05, -.12); g.quadraticCurveTo(dir * .2, -.4, dir * .02, -.6); g.stroke(); g.restore();
@@ -188,7 +245,8 @@ function profileHand(x, y, sc, dir, open = 0, cuffCol = C.gold, skin = SKIN.crea
   const m = -dir;
   g.save(); g.translate(x, y); g.translate(.15 * m * sc, -.3 * sc); g.rotate(dir * open); g.translate(-.15 * m * sc, .3 * sc); g.scale(sc * m, sc);
   const body = [[-.3, 0], [-.34, -.4], [-.35, -.78], [-.31, -1.0], [-.28, -1.3], [-.21, -1.62], [-.1, -1.84], [.02, -1.88], [.11, -1.8], [.15, -1.5], [.17, -1.05], [.17, -.55], [.14, 0]];
-  cut(blob(body, .4), skin.fill, { sh: .8, lift: .4 });
+  if (skin.rim) { g.save(); g.scale(1.08, 1.03); cut(blob(body, .4), skin.rim, { sh: .5, grain: 0 }); g.restore(); }
+  cut(blob(body, .4), skin.fill, { sh: skin.rim ? 0 : .8, lift: .4 });
   g.save(); g.globalAlpha *= .5; g.strokeStyle = skin.line; g.lineWidth = .022; g.lineCap = 'round';
   for (const l of [[[-.2, -1.02], [-.14, -1.42], [-.05, -1.7]], [[-.08, -1.04], [-.03, -1.4], [.04, -1.62]], [[.04, -1.06], [.08, -1.36], [.11, -1.5]]]) { g.beginPath(); g.moveTo(...l[0]); g.quadraticCurveTo(...l[1], ...l[2]); g.stroke(); }
   g.restore();
@@ -258,7 +316,19 @@ function clapRings(t, x, y, k, scale = 1) {
 
 // ---------------- the poster border (static, over every frame) ----------------
 // Cream paper frame with an arched top opening and a gold inner rule; corner roundels.
-function posterBorder(ctx) {
+// Draft 3 (the audit: "make the border a living Mucha frame"): a mosaic band under the arch, and on each side
+// rail one plant climbs, a different flower per act, its blooms opening on every chorus.
+const ACTS = [[0, 56.88, 'lily'], [56.88, 89.7, 'iris'], [89.7, 165.0, 'poppy'], [165.0, 999, 'sunflower']];
+const CHORUS_SPANS = [[41.0, 56.9], [73.8, 89.7], [127.4, 142.5], [180.0, 197.5]];
+function borderBloom(x, y, r, kind, open, side) {
+  if (kind === 'lily') { lily(x, y, -Math.PI / 2 + side * .5, r * 1.6, open, [C.cream, C.goldPale]); return; }
+  if (kind === 'iris') { for (const [a, col] of [[-.9, C.plumLight], [0, C.plum], [.9, C.plumLight]]) { g.save(); g.translate(x, y); g.rotate(a * (.4 + .6 * open)); cut(blob([[-r * .3, 0], [0, -r * 1.3], [r * .3, 0]], .6), col, { sh: .4, grain: 0 }); g.restore(); }
+    cut(blob([[x - r * .25, y], [x, y + r * .9 * open], [x + r * .25, y]], .6), C.goldPale, { sh: .3, grain: 0 }); return; }
+  if (kind === 'poppy') { cut(flowerPath(x, y, r * (.5 + .5 * open), 4, side), C.plumLight, { sh: .4, grain: 0 }); cut(circle(x, y, r * .22), C.plumDeep, { sh: 0, grain: 0 }); return; }
+  for (let i = 0; i < 12; i++) { const a = TAU * i / 12; g.save(); g.translate(x, y); g.rotate(a); cut(blob([[-r * .14, -r * .25], [0, -r * (.5 + .55 * open)], [r * .14, -r * .25]], .6), C.gold, { sh: .3, grain: 0 }); g.restore(); }
+  cut(circle(x, y, r * .3), C.plumDeep, { sh: .2, grain: 0 });
+}
+function posterBorder(ctx, t = 0) {
   const prev = g; g = ctx;
   const m = 44, top = 300, p = new Path2D();
   p.rect(-20, -20, W + 40, H + 40);
@@ -269,6 +339,21 @@ function posterBorder(ctx) {
   q.moveTo(ix + o, H - m - o); q.lineTo(ix + o, top); q.ellipse(W / 2, top, r - o, top - m - o, 0, Math.PI, 0); q.lineTo(ix + iw - o, H - m - o); q.closePath();
   q.moveTo(ix + o + j, H - m - o - j); q.lineTo(ix + iw - o - j, H - m - o - j); q.lineTo(ix + iw - o - j, top); q.ellipse(W / 2, top, r - o - j, top - m - o - j, 0, 0, Math.PI, true); q.lineTo(ix + o + j, H - m - o - j); q.closePath();
   cut(q, C.gold, { sh: .5, rule: 'evenodd', grain: .25 });
+  // the mosaic band hung under the arch: two rows of small tesserae following it
+  const tiles = [C.gold, C.plum, C.teal, C.cream, C.goldDeep, C.plumLight];
+  for (let row = 0; row < 2; row++) { const rr = r - o - j - 12 - row * 15, rt = top - m - o - j - 12 - row * 15, n = 64 - row * 4;
+    for (let i = 0; i < n; i++) { const a = Math.PI + Math.PI * (i + .5) / n, cx = W / 2 + Math.cos(a) * rr, cy = top + Math.sin(a) * rt;
+      g.save(); g.translate(cx, cy); g.rotate(a + Math.PI / 2); g.fillStyle = tiles[(i * 7 + row * 3) % tiles.length]; g.fillRect(-6, -6, 12, 12); g.restore(); } }
+  // the climbing plants
+  const act = ACTS.find(([a0, a1]) => t >= a0 && t < a1) || ACTS[3], kind = act[2];
+  const ch = Math.max(...CHORUS_SPANS.map(([a0, a1]) => ss(a0, a0 + .8, t) * (1 - ss(a1 - .3, a1, t)))), grow = ss(act[0], act[0] + 1.5, t) * .6 + .4;
+  for (const side of [-1, 1]) {
+    const x0 = side < 0 ? ix + o + j + 6 : ix + iw - o - j - 6, sway = Math.sin(t * .8 + side) * 4;
+    const stem = []; for (let i = 0; i <= 24; i++) { const u = i / 24, y = H - m - 30 - u * 1180 * grow; stem.push([x0 - side * (6 + 10 * Math.sin(u * 9 + side)) + sway * u, y]); }
+    tendril(stem, 9, C.goldDeep, { sh: .3, grain: 0 });
+    for (let i = 3; i < 24; i += 4) { const [lx, ly] = stem[i]; g.save(); g.translate(lx, ly); g.rotate(-side * (.9 + .2 * Math.sin(i))); cut(blob([[0, 0], [-8, -26], [0, -46], [8, -26]], .6), i % 8 ? C.teal : C.tealLight, { sh: .2, grain: 0 }); g.restore(); }
+    for (const [i, rad] of [[8, 22], [15, 26], [23, 30]]) { const [bx, by] = stem[Math.min(i, stem.length - 1)]; borderBloom(bx - side * 14, by, rad, kind, .25 + .75 * ch, side); }
+  }
   for (const [x, y] of [[m + 6, H - m - 6], [W - m - 6, H - m - 6]]) { cut(circle(x, y, 30), C.gold, { sh: .6 }); cut(circle(x, y, 14), C.plum, { sh: .3 }); }
   g = prev;
 }

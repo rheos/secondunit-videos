@@ -9,7 +9,7 @@ function drawShot(sh, t, buf) {
   g = buf.getContext('2d');
   g.setTransform(1, 0, 0, 1, 0, 0); g.globalAlpha = 1; g.globalCompositeOperation = 'source-over'; g.filter = 'none';
   g.clearRect(0, 0, W, H);
-  const tt = sh.o.smooth ? t : twos(t);
+  const tt = sh.o.twos ? twos(t) : t; // draft 3: everything on ones (camera moves on twos juddered)
   try { sh.fn(tt, clamp((tt - sh.a) / (sh.b - sh.a)), tt - sh.a, t); } catch (e) { console.error(sh.name, e); }
 }
 
@@ -55,7 +55,7 @@ function frame(t) {
   const v = out.createRadialGradient(W / 2, H / 2, H * .45, W / 2, H / 2, H * 1.05); v.addColorStop(0, 'rgba(255,255,255,0)'); v.addColorStop(1, 'rgba(40,30,60,.4)');
   out.fillStyle = v; out.fillRect(0, 0, W, H);
   out.globalCompositeOperation = 'source-over';
-  posterBorder(out);
+  posterBorder(out, t);
   // head of the film: the picture fades up from black over 1.5 s (the audio is untouched)
   const fin = clamp((t - START) / 1.5); if (fin < 1) { out.globalAlpha = 1 - fin; out.fillStyle = '#000'; out.fillRect(0, 0, W, H); out.globalAlpha = 1; }
 }

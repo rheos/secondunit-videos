@@ -36,3 +36,9 @@ Waiting on Robin's notes.
 
 - Gemma Luna's consent is not on record; unlisted review only.
 - Not watched end to end with sound yet; claps were checked on contact sheets at their frames only.
+
+## Audit of draft 2 (2026-10-15) - START HERE for draft 3
+
+`AUDIT-d2.md` (local only): Robin's notes on top (errors still to list, more engaging, more Art Nouveau, NOT Deco),
+the themes, the merged protect list, the fix plan (pass 1 PATCH, pass 2 RETHINK) and every finding. Draft 2's code is
+frozen at commit 40e5251 for side-by-side checks.

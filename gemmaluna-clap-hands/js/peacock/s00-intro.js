@@ -49,44 +49,45 @@
     return [1, 0, 1, 1, 0, 1, 0, 1][Math.floor(d / .2)] ? .9 : .15;
   };
   // where the right lamp's bud glows (matches guimard(): the stem's end, plus the bud's offset)
-  const H_LAMP = 760, BASE = 1660, BUD = { x: 930 - H_LAMP * .3, y: BASE - H_LAMP - GUIMARD_HAND_SC * .62 }; // the bud in the right iron hand
+  const H_LAMP = 760, BASE = 1660, BUD = { x: 930 - H_LAMP * .3, y: BASE - H_LAMP - 120 }; // the bud in the right iron calyx
   function metro(t) {
     cut(cutRect(-60, 1640, W + 120, 400, 31), C.tealDeep, { sh: .6 });
     for (let i = 0; i < 5; i++) cut(ribbon(-40, W + 40, 1700 + i * 44, 8, i * 1.7 + t * .5, 6), C.teal, { sh: 0, grain: .2, alpha: .6 });
-    // the stair mouth and its railings
+    // the stair mouth, framed by Guimard escutcheon panels (iron with whiplash cut-outs) instead of a box rail
     cut(poly([[300, 1660], [780, 1660], [700, 1900], [380, 1900]]), C.tealInk, { sh: .4 });
-    for (let i = 0; i < 5; i++) cut(rect(330 - i * 0 + i * 8, 1700 + i * 40, 420 - i * 16, 8), C.tealDeep, { sh: 0, grain: 0 });
-    for (const sx of [-1, 1]) {
-      const x0 = 540 + sx * 250;
-      cut(rect(x0 - 6, 1500, 12, 170), C.goldDeep, { sh: .5 });
-      tendril(whipPts([x0, 1520], [x0 - sx * 80, 1540], [x0 - sx * 140, 1600], [x0 - sx * 200, 1560], 24, sx), 12, C.goldDeep);
+    for (let i = 0; i < 5; i++) cut(rect(338 + i * 8, 1700 + i * 40, 404 - i * 16, 8), C.tealDeep, { sh: 0, grain: 0 });
+    for (let i = 0; i < 4; i++) {
+      const px = 300 + i * 125, sx = i < 2 ? -1 : 1;
+      cut(blob([[px, 1660], [px - 4, 1560], [px + 20, 1500], [px + 62, 1486], [px + 104, 1500], [px + 124, 1560], [px + 120, 1660]], .5), C.tealDeep, { sh: .8, lift: .3 });
+      tendril(whipPts([px + 30, 1640], [px + 20, 1560], [px + 80, 1530], [px + 76, 1580], 14, sx), 8, C.gold, { sh: 0, grain: 0 });
+      tendril(whipPts([px + 92, 1640], [px + 104, 1570], [px + 50, 1550], [px + 56, 1600], 12, -sx), 6, C.goldDeep, { sh: 0, grain: 0 });
     }
-    cut(rect(290, 1500, 500, 12), C.goldDeep, { sh: .5 });
-    for (const [x, dir, t0] of LAMPS) guimard(x, BASE, H_LAMP, dir, flick(t, t0), Math.sin(t * 1.2 + x) * 4, ss(t0 - .7, t0 + .3, t)); // iron hands open round the light
-    // the cartouche, held between the stems (no lettering)
+    for (const [x, dir, t0] of LAMPS) guimard(x, BASE, H_LAMP, dir, flick(t, t0), Math.sin(t * 1.2 + x) * 4, ss(t0 - .7, t0 + .3, t)); // iron calyx hands open round the light
+    // the enamel cartouche, held in a whiplash iron frame (no lettering)
+    for (const sx of [-1, 1]) tendril(whipPts([540 + sx * 160, 1077], [540 + sx * 230, 1040], [540 + sx * 250, 1120], [540 + sx * 210, 1110], 22, sx), 12, C.tealDeep, { sh: .5 });
     cut(rrect(370, 1040, 340, 74, 30), C.cream, { sh: .9, lift: .3 });
     cut(rrect(384, 1052, 312, 50, 22), C.goldPale, { sh: 0, grain: .2, alpha: .6 });
     for (const sx of [-1, 1]) cut(circle(540 + sx * 190, 1077, 16), C.gold, { sh: .4 });
   }
   SHOT(START, 26.04, 'intro', (t, k, d) => {
     // the tilt: from the moon down the façades to the Metro, then a push into the right lamp's bud
-    const cy0 = kf3(t, [[11.0, -1480], [12.5, -1450], [20.8, 1280], [25.3, 1300]]);
+    const cy0 = kf3(t, [[11.0, -1480], [12.5, -1450], [22.9, 1280], [25.3, 1310]]); // the tilt lands on the lamps' flicker
     const z0 = kf3(t, [[11.0, 1.0], [25.3, 1.06]]);
     const u = ei(clamp((t - 25.3) / .74));
     const z = z0 * Math.pow(9 / z0, u), cx = lerp(540, BUD.x, eio(clamp((t - 25.3) / .6))), cy = lerp(cy0, BUD.y, eio(clamp((t - 25.3) / .6)));
     g.save(); cam(cx, cy, z);
     sheet(C.tealInk);
     rays(540, -1560, 300, 1300, 28, t * .02, C.tealDeep);
-    halo(540, -1560, 270, t * .04, 1, [C.goldDeep, C.creamDeep, C.teal, C.gold]);
+    halo(540, -1560, 270, t * .04, 1, [C.goldDeep, C.creamDeep, C.tealDeep, C.gold], 'rose'); haloMoon(540, -1560, 150);
     // cloud cards drifting across the moon
     for (let i = 0; i < 5; i++) {
-      const x = ((hash(i * 3.3) * 1400 + t * (14 + i * 5)) % 1700) - 300, y = -2050 + i * 170;
+      const x = ((hash(i * 3.3) * 1400 + t * (14 + i * 5)) % 1700) - 300, y = [-2060, -1900, -1250, -1130, -1990][i]; // clear of the moon
       cut(cloud(x, y, 420 + hash(i) * 200, 120 + hash(i + 4) * 50, i), i % 2 ? C.plum : C.plumDeep, { sh: .7, lift: .3, alpha: .95 });
     }
     skyline(t);
     metro(t);
     g.restore();
     rain(t, 90, 31, .45, .12);
-    sheet(C.goldPale, .75 * ss(25.6, 26.04, t)); // into the lamp's light (the tram opens out of its own lamp's light)
+    sheet(C.goldPale, .4 * ss(25.86, 26.04, t)); // into the lamp's light, briefly (the audit: white-outs outshone the end)
   });
 })();
