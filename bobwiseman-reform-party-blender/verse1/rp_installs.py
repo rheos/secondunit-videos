@@ -498,6 +498,8 @@ def build_gag():
     b.box(M["i_dark"], (0, -0.99, Y0 - 0.7), (0.16, 0.02, 0.4))
     ob = b.build("Inst_GagLips", K.COL_INST, em)
     key_hidden(ob, [v <= 1e-4 for v in g])
+    gs = dict(zip(K.FRAMES, g))
+    shadow_stick("Inst_GagShadow", X, Z, lambda f: 6.5 * gs[f], lambda f: 4 * gs[f], lambda f: gs[f] > 1e-4)
     return em
 
 
@@ -634,6 +636,8 @@ def build_ear():
         b.rod(M["i_crutch"], (d * 1.35, -0.75, 2.6), (d * 1.6, 0.45, 2.0), 0.05, seg=6)
     shell = b.build("Inst_Ear", K.COL_INST, em)
     key_hidden(shell, hidden)
+    gs = dict(zip(K.FRAMES, g))
+    shadow_stick("Inst_EarShadow", X, Z, lambda f: 9 * gs[f], lambda f: 3 * gs[f], lambda f: gs[f] > 1e-4)
     # the drawer in the canal: slides out toward us on "every", shuts on "want"
     d = K.Builder()
     d.box(M["i_drawer"], (0, 0, 0), (1.0, 0.1, 0.62))
@@ -1088,6 +1092,79 @@ def build_blind():
     cols += [tipc] * ntip + [(1, 1, 1, 1)] * (rest - ntip)
     ca.data.foreach_set("color", [c for v in cols for c in v])
     key_hidden(ob, ["blind" not in I[f - 1] for f in K.FRAMES])
+    return ob
+
+
+# =============================================================================================
+# the draft's stick shadows (world.js shadowStick): a flat plum band with round ends, from the foot
+# along the sun by height x sunVec, a stylised shadow far wider than the real one Blender casts.
+# =============================================================================================
+_CORE = K.state("core")
+
+
+def _sun_vec(f):
+    c = _CORE[f - 1]
+    ln = min(6.3, 1 / math.tan(math.radians(max(c["sunEl"], 1))))
+    return ln * c["sunDir"][0], ln * c["sunDir"][1]
+
+
+def _shadow_a(f):
+    c = _CORE[f - 1]
+    return (0.42 + 0.06 * c["gold"]) * clamp((c["sunEl"] + 0.6) / 4)
+
+
+_STICK_MAT = None
+
+
+def stick_mat():
+    global _STICK_MAT
+    if _STICK_MAT is None:
+        mat = bpy.data.materials.new("RP_StickShadow")
+        mat.use_nodes = True
+        mat.surface_render_method = "BLENDED"
+        n, l = mat.node_tree.nodes, mat.node_tree.links
+        n.clear()
+        oi, em, tr, mx, out = (n.new(t) for t in ("ShaderNodeObjectInfo", "ShaderNodeEmission", "ShaderNodeBsdfTransparent",
+                                                   "ShaderNodeMixShader", "ShaderNodeOutputMaterial"))
+        em.inputs[0].default_value = K.lin(K.PLUM)
+        l.new(oi.outputs["Alpha"], mx.inputs[0])
+        l.new(tr.outputs[0], mx.inputs[1])
+        l.new(em.outputs[0], mx.inputs[2])
+        l.new(mx.outputs[0], out.inputs[0])
+        _STICK_MAT = mat
+    return _STICK_MAT
+
+
+def shadow_stick(name, X, Z, height_at, width_at, alive_at, cap=12):
+    """height_at/width_at/alive_at(f): the stick's height and width in metres, and whether it shows.
+    The draft strokes the shadow w metres wide ON SCREEN, so the band faces the lens; any part that would
+    sit under the playa slides along its view ray to just above it (same place on screen)."""
+    def verts(f):
+        sx, sz = _sun_vec(f)
+        h, w = height_at(f), max(width_at(f), 1e-4) / 2
+        c = _CORE[f - 1]["cam"]
+        eye = B(c[0], c[1], c[2])
+        p, q = B(X, 0, Z), B(X + sx * h, 0, Z + sz * h)
+        d = (q - p) if h > 1e-6 else Vector((1, 0, 0))
+        n = (p - eye).cross(d).normalized()     # across the stroke, square to the view ray
+        m = d.normalized()
+        out = []
+        for ctr, sgn in ((q, 1), (p, -1)):
+            for i in range(cap + 1):
+                u = math.pi * i / cap
+                v = ctr + (n * math.cos(u) + m * math.sin(u)) * (w * sgn)    # q end: +n round past q to -n; p end back
+                if v.z < 0.03 and eye.z > 0.03:
+                    v = eye + (v - eye) * ((eye.z - 0.03) / (eye.z - v.z))
+                out.append(v)
+        return out
+    b = K.Builder()
+    vs = verts(K.FRAMES[0])
+    add_geo(b, stick_mat(), vs, [list(range(len(vs)))])
+    ob = b.build(name, K.COL_INST, None, smooth=False)
+    K.bake_shapes(ob, verts)
+    ob.visible_shadow = False
+    K.key_series(ob, "color", [_shadow_a(f) for f in K.FRAMES], index=3)
+    key_hidden(ob, [not alive_at(f) for f in K.FRAMES])
     return ob
 
 

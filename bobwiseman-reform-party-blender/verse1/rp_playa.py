@@ -1031,10 +1031,12 @@ def build_dust():
     me.materials.append(dust_material())
     cams = [s["cam"] for s in S]
     crot = [(math.pi / 2 - c[3], 0.0, -c[5]) for c in cams]   # screen-aligned, as verse1.py turns the camera
-    far = []
+    far, box = [], []
     for fi, s in enumerate(S):
         cx_, cz_ = s["car"][0], s["car"][1]
-        far.append(max(proj(cams[fi], cx_ + u * 5.7, y, cz_ + w * 3.0)[2] for u in (-1, 1) for w in (-1, 1) for y in (0, 2.6)))
+        cn = [proj(cams[fi], cx_ + u * 5.7, y, cz_ + w * 3.0) for u in (-1, 1) for w in (-1, 1) for y in (0, 2.6)]
+        far.append(max(c[2] for c in cn))
+        box.append((min(c[0] for c in cn), max(c[0] for c in cn), min(c[1] for c in cn), max(c[1] for c in cn)))
     pool = []
     for k in range(NSLOT * 3):
         ob = bpy.data.objects.new("RP_PlayaPuff_%03d" % k, me)
@@ -1064,8 +1066,12 @@ def build_dust():
                     # back along its view ray to just behind it, scaled so it covers the same patch of the frame
                     d2 = far[fi] + 0.3 + 0.05 * d
                     eye = B(cams[fi][0], cams[fi][1], cams[fi][2])
-                    p = eye + (p - eye) * (d2 / d)
-                    r *= d2 / d
+                    sc = d2 / d
+                    if p.z < eye.z:         # a downward ray: stop above the playa, or the ground hides the puff
+                        sg = 0.97 * (eye.z - 0.05) / (eye.z - p.z)
+                        sc = max(1.0, min(sc, sg))
+                    p = eye + (p - eye) * sc
+                    r *= sc
                 locs.append(p)
                 scs.append((r * 1.35, r, 1.0))
                 als.append(a)

@@ -109,10 +109,14 @@ def build_car():
     b._tag([b.bm.faces.new((vi[i], vi[(i + 1) % 48], vo[(i + 1) % 48], vo[i])) for i in range(48)], M["gold"])
     b.cone(M["hole"], (0, 0, TOP - 0.25), 1.0, 1.0, 0.5, seg=48, rot=Matrix.Diagonal((0.549, 0.449, 1, 1)), caps=False)
     b.disc(M["hole"], (0, 0, TOP - 0.45), 1.0, seg=48, scale=(0.55, 0.45))
-    b.cone(M["brim"], (0, 0, TOP - 0.06), 0.30, 0.27, 0.025, seg=40)
-    b.cone(M["hat"], (0, 0, TOP + 0.03), 0.15, 0.125, 0.17, seg=32)
-    b.cone(M["band"], (0, 0, TOP - 0.025), 0.153, 0.149, 0.04, seg=32, caps=False)
     b.build("HoleAndHat", K.COL_CAR, car)
+    # driverHat: the draft draws the hat as a side-on sprite from every angle, so the hat is its own object
+    # that turns its side to the lens (verse1.py adds the Damped Track once the camera exists)
+    h = K.Builder()
+    h.cone(M["brim"], (0, 0, -0.01), 0.30, 0.27, 0.025, seg=40)
+    h.cone(M["hat"], (0, 0, 0.08), 0.15, 0.125, 0.17, seg=32)
+    h.cone(M["band"], (0, 0, 0.025), 0.153, 0.149, 0.04, seg=32, caps=False)
+    h.build("DriverHat", K.COL_CAR, car, loc=(0, 0, TOP - 0.05)).visible_shadow = False   # a sprite: no shadow
 
     # chassis, wheels (rolling without slipping: rotation about +Y = distance / R)
     b = K.Builder()

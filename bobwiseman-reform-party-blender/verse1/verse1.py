@@ -56,6 +56,10 @@ cams = [s["cam"] for s in S]
 K.key_loc(CAM, [K.B(c[0], c[1], c[2]) for c in cams])
 K.key_rot(CAM, [(math.pi / 2 - c[3], 0.0, -c[5]) for c in cams])
 K.key_series(cd, "lens", [c[4] / 1920 * 36.0 for c in cams])
+hat = bpy.data.objects.get("RP_DriverHat") or bpy.data.objects.get("DriverHat")
+if hat:
+    dt = hat.constraints.new("DAMPED_TRACK")
+    dt.target, dt.track_axis = CAM, "TRACK_NEGATIVE_Y"
 
 # =============================================================================================
 # light: the draft's sun (sunEl, sunDir per frame; shadows), a shadowless key that turns with the camera
