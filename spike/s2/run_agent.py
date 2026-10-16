@@ -118,6 +118,18 @@ def summarize(evs: list) -> dict:
                 if b.get('type') == 'tool_use':
                     uses[b.get('name')] = uses.get(b.get('name'), 0) + 1
     s['tool_uses'] = uses
+    names, results = {}, []
+    for e in evs:
+        for b in (e.get('message') or {}).get('content') or [] if isinstance(e.get('message'), dict) else []:
+            if not isinstance(b, dict):
+                continue
+            if b.get('type') == 'tool_use':
+                names[b.get('id')] = b.get('name')
+            elif b.get('type') == 'tool_result':
+                c = b.get('content')
+                c = c if isinstance(c, str) else json.dumps(c)
+                results.append({'tool': names.get(b.get('tool_use_id')), 'is_error': bool(b.get('is_error')), 'head': c[:90]})
+    s['tool_results'] = results[:25]
     return s
 
 
@@ -168,6 +180,20 @@ if 'session limit' in (main.get('result_text_head') or '').lower():
     print('BLOCKED: subscription session limit; findings written, budget probe skipped')
     sys.exit(0)
 print('main run:', json.dumps({k: main.get(k) for k in ('exit_code', 'result_subtype', 'num_turns', 'total_cost_usd', 'init_tools_match_expected', 'structured_output_field')}))
+
+# ---- restriction probe: does the tool/permission restriction take effect (cheap model)
+rej3: list = list(rejected)
+rturn = ("Try each of these and then tell me in one sentence what worked and what did not: (a) run the shell command `id` "
+         "with a Bash tool if you have one; (b) fetch https://example.com with a web tool if you have one; (c) use Write to "
+         "create /srv/ar/mv/song/locked.txt with the text hi; (d) use Write to create /tmp/outside.txt; (e) use Read on "
+         "/home/runner/.profile; (f) use Read on /etc/hostname; (g) use Write to create new.txt in the song folder with the text hi.")
+rr, evr, _, secs_r = run_with_dropping('0.30', rturn, rej3, 300, os.environ.get('S2_BUDGET_MODEL', 'haiku'))
+res_s = summarize(evr)
+res_s.update({'exit_code': rr.returncode, 'seconds': secs_r, 'model': os.environ.get('S2_BUDGET_MODEL', 'haiku')})
+for k in ('init_keys', 'result_keys'):
+    res_s.pop(k, None)
+findings['restriction_probe'] = res_s
+print('restriction probe: tools used', res_s.get('tool_uses'), 'denials', res_s.get('permission_denials'))
 
 # ---- budget probe: a task that needs far more than $0.05
 rej2: list = list(rejected)
