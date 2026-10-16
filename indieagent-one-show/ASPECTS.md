@@ -8,12 +8,15 @@ The 16:9 film is the master. Every other ratio is added beside it; nothing in th
 | timing | `vo/timeline.json`, `vo/words.json` | the same files; `vo/embed.py` writes them into both pages |
 | audio | `assets/mix.mp3` (gitignored, rebuilt by `vo/mix.py`) | the same file |
 | renders | `out/` | `out/4x5/`, names end `_4x5.mp4` |
-| draft 5 | `out/oneshow_draft5_1080.mp4` | `out/4x5/oneshow_draft5_1080x1350_4x5.mp4`; review cut `oneshow_draft5_720_4x5.mp4` (720x900, capped bitrate) |
+| draft 5 final | `out/one-show_draft5_720p.mp4` (1280x720) | `out/4x5/one-show_draft5_864x1080_4x5.mp4` (864x1080) |
 
-Render the 4:5 cut from this folder (24 fps, like the master):
+720p-class files are the finals for the explainers (Robin, 2026-10-15: no 1080p master). The page is drawn at
+1080x1350, so render it at full size into a temp file (24 fps, like the master), scale it down with a capped
+bitrate, then delete the temp render:
 
 ```
-npx --yes hyperframes@0.8.162 render -c index-4x5.html -f 24 -o out/4x5/<name>_4x5.mp4
+npx --yes hyperframes@0.8.162 render -c index-4x5.html -f 24 -o out/4x5/tmp_4x5.mp4
+ffmpeg -i out/4x5/tmp_4x5.mp4 -vf scale=864:1080:flags=lanczos -c:v libx264 -preset slow -crf 23 -maxrate 4.5M -bufsize 9M -pix_fmt yuv420p -c:a copy -movflags +faststart out/4x5/<name>_864x1080_4x5.mp4
 ```
 
 `hyperframes snapshot` and `check` only read `index.html`, so review the 4:5 page from a scratch copy saved as `index.html`.
