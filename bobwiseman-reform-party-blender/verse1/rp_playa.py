@@ -1069,6 +1069,8 @@ def build_dust():
                     sc = d2 / d
                     if p.z < eye.z:         # a downward ray: stop above the playa, or the ground hides the puff
                         sg = 0.97 * (eye.z - 0.05) / (eye.z - p.z)
+                        if sg < sc:         # stuck in front of the car: keep a thin haze, not a veil over the suits
+                            a *= 0.3
                         sc = max(1.0, min(sc, sg))
                     p = eye + (p - eye) * sc
                     r *= sc
