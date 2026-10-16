@@ -22,6 +22,14 @@ and every hand-off.
 pans) and theatre (living spotlight) spans re-rendered and spliced in. Scanned: no bad frames besides the fade
 from black, no frozen runs, seamless splices; all 14 hand-offs checked on a contact sheet. Uploaded unlisted as
 "Clap Hands, cut paper peacock, full draft 1": https://youtu.be/GGcq57B5QZM (link sent to Telegram).
+
+## Full draft 2: Mark Von Ulrich as guest director (2026-10-15)
+
+Robin brought Mark in on draft 1: thinking only (the film keeps its cut-paper look), the whole film, and asked for
+all eleven of his picks. Proposals and the protect list: `MVU-DIRECTION.md` (local only). Built and rendered:
+`out/peacock/gmc-v2_peacock-cutpaper-full-d2_f00264-f04728_24fps_review-720p.mp4`. Scanned clean, flash check
+PASS (worst 2.5/s), no frozen runs, before/after vs draft 1 at the 11 changes plus 6 protected moments
+(unchanged), lamp hand-off rechecked. Uploaded unlisted: https://youtu.be/V9xNFu7ooiM (Telegram sent).
 Waiting on Robin's notes.
 
 ## Still open
