@@ -120,6 +120,23 @@ def _parse_frames(spec):
     return frames
 
 
+def encode(frame_dir, frames, mp4, fps=24, timeout_s=1800):
+    """Encode exactly `frames`, in that order, from frame_dir/fNNNN.png. A list file (not a numbered
+    pattern) means a gap or a stale PNG from an earlier run can't change the cut."""
+    missing = [f for f in frames if not (frame_dir / f"f{f:04d}.png").exists()]
+    if missing:
+        raise SystemExit(f"[cloud] {len(missing)} frames missing, first {missing[:5]}; not encoding")
+    listing = frame_dir / "frames.txt"
+    listing.write_text("".join(f"file 'f{f:04d}.png'\nduration {1 / fps:.6f}\n" for f in frames))
+    try:
+        subprocess.run(["ffmpeg", "-loglevel", "error", "-y", "-f", "concat", "-safe", "0", "-i", str(listing),
+                        "-fps_mode", "cfr", "-r", str(fps), "-c:v", "libx264", "-pix_fmt", "yuv420p", "-crf", "18",
+                        str(mp4)], check=True, timeout=timeout_s)
+    except subprocess.TimeoutExpired:
+        raise SystemExit(f"[cloud] ffmpeg took longer than {timeout_s} s; frames are kept in {frame_dir}")
+    return mp4
+
+
 @app.local_entrypoint()
 def main(mode: str = "stills", blender: str = "5.2", frames: str = "1,150,365,445", res: int = 50,
          samples: int = 16, chunks: int = 8, tag: str = ""):
@@ -150,8 +167,5 @@ def main(mode: str = "stills", blender: str = "5.2", frames: str = "1,150,365,44
     print(f"[cloud] {len(wanted)} frames on {len(results)} x {GPU} in {wall:.0f} s wall -> {out_dir}")
 
     if mode == "full":
-        mp4 = out_dir.parent / f"{out_dir.name}.mp4"
-        subprocess.run(["ffmpeg", "-loglevel", "error", "-y", "-framerate", "24", "-start_number", str(wanted[0]),
-                        "-i", str(out_dir / "f%04d.png"), "-c:v", "libx264", "-pix_fmt", "yuv420p", "-crf", "18",
-                        str(mp4)], check=True)
+        mp4 = encode(out_dir, wanted, out_dir.parent / f"{out_dir.name}.mp4")
         print(f"[cloud] video -> {mp4}")
