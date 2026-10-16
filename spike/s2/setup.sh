@@ -52,8 +52,10 @@ if chattr +i /srv/ar/mv/song/locked.txt 2> /tmp/chattr.err; then echo "chattr +i
 iptables -I OUTPUT 1 -m owner --uid-owner agent -j REJECT
 iptables -I OUTPUT 1 -m owner --uid-owner agent -o lo -p tcp -d 127.0.0.1 --dport "$P" -j ACCEPT
 ip6tables -I OUTPUT 1 -m owner --uid-owner agent -j REJECT
-iptables -S OUTPUT | grep -c agent | sed 's/^/iptables agent rules: /'
-ip6tables -S OUTPUT | grep -c agent | sed 's/^/ip6tables agent rules: /'
+AGENT_UID=$(id -u agent)
+echo "iptables agent rules: $(iptables -S OUTPUT | grep -c -- "--uid-owner $AGENT_UID" || true)"
+echo "ip6tables agent rules: $(ip6tables -S OUTPUT | grep -c -- "--uid-owner $AGENT_UID" || true)"
+iptables -S OUTPUT | grep -- "--uid-owner $AGENT_UID" || true
 
 # pinned CLI into /opt/ar-claude (npm ci from the lockfile)
 mkdir -p /opt/ar-claude && cp "$HERE/ar-claude/package.json" "$HERE/ar-claude/package-lock.json" /opt/ar-claude/
