@@ -175,7 +175,7 @@ function bmRider(x, y, k, d, sp, t, c, alpha) {
   if (c.bike !== 'fish') { bmLine([H0, K1, P1], .14, legCol); if (det && c.stripes) { g.strokeStyle = 'rgba(255,250,235,.7)'; g.lineWidth = bmW(.03); g.setLineDash([.04, .05]); g.beginPath(); g.moveTo(K1[0], -K1[1]); g.lineTo(P1[0], -P1[1]); g.stroke(); g.setLineDash([]); } }
   bmOval(P1[0] + .04, P1[1] + .01, .11, .065, c.fur ? c.trim : ink);
   // far arm (to the grip) behind the coat
-  const E2 = bmJoint(S, G, .3, .31, 0, -1); bmLine([S, E2, G], .1, bmShade(c.coat[1], .75));
+  if (!c.sax) { const E2 = bmJoint(S, G, .3, .31, 0, -1); bmLine([S, E2, G], .1, bmShade(c.coat[1], .75)); }
   // the coat: fur breaks the edge into tufts, light from the left
   const coat = [[S[0] - .17, S[1] + .03], [S[0] + .12, S[1] + .03], [S[0] + .17, S[1] - .25], [H0[0] + .3, H0[1] - .1], [H0[0] + .24, H0[1] - .36], [H0[0] - .34, H0[1] - .44], [H0[0] - .27, H0[1] + .06]];
   bmPath(c.fur && det ? bmFur(coat, .035, c.seed) : coat); g.closePath(); g.fillStyle = bmLG(lx * .45 + S[0], 0, -lx * .35 + S[0], 0, [c.coat[0], c.coat[0], c.coat[1]]); g.fill();
@@ -183,7 +183,8 @@ function bmRider(x, y, k, d, sp, t, c, alpha) {
   if (det && c.fur) { g.strokeStyle = 'rgba(255,250,240,.25)'; g.lineWidth = bmW(.012); g.beginPath(); for (let i = 0; i < 8; i++) { const fx = H0[0] - .25 + i * .07; g.moveTo(fx, -(H0[1] - .3)); g.lineTo(fx + .03, -(H0[1] + .2)); } g.stroke(); }
   bmOval(S[0] - .02, S[1] - .01, .18, .075, c.fur ? c.trim : bmShade(c.coat[1], .8));
   // near arm: to the grip, or up holding a parasol
-  if (c.para) { const Hn = [S[0] + .14, S[1] + .32], E1 = bmJoint(S, Hn, .3, .3, 1, -.5); bmLine([S, E1, Hn], .1, c.coat[0]); bmDot(Hn[0], Hn[1], .045, c.skin); }
+  if (c.sax) { /* both hands on the sax, drawn after the head */ }
+  else if (c.para) { const Hn = [S[0] + .14, S[1] + .32], E1 = bmJoint(S, Hn, .3, .3, 1, -.5); bmLine([S, E1, Hn], .1, c.coat[0]); bmDot(Hn[0], Hn[1], .045, c.skin); }
   else { const E1 = bmJoint(S, G, .3, .31, 0, -1); bmLine([S, E1, G], .1, c.coat[0]); bmDot(G[0], G[1], .045, c.skin); }
   // head: goggles, a hat
   bmLine([[S[0] + .02, S[1]], [HD[0], HD[1] - .05]], .07, c.skin);
@@ -195,6 +196,7 @@ function bmRider(x, y, k, d, sp, t, c, alpha) {
   bmLine([[HD[0] - .11, HD[1] + .01], [HD[0] + .1, HD[1] + .02]], .035, '#2a2420'); bmDot(HD[0] + .075, HD[1] + .02, .05, bmLG(HD[0] + .03, HD[1] + .07, HD[0] + .12, HD[1] - .03, ['#ffffff', c.lens, bmShade(c.lens, .5)])); if (det) bmDot(HD[0] + .06, HD[1] + .04, .013, 'rgba(255,255,255,.9)');
   if (c.bike === 'snail') for (const s2 of [0, .08]) { const tip = [G[0] + .12 + s2, G[1] + .42]; bmLine([[G[0] + .02, G[1] + .03], tip], .02, '#8a5a2a'); bmDot(tip[0], tip[1], .04, '#e8d4b4'); }
   if (c.para) bmParasol(S[0] + .14, S[1] + .32, c, t, det);
+  if (c.sax) bmSax(S, HD, t, det, c);
   g.restore();
 }
 function bmRiderShadow(X, Z, c, t) { const top = 1.95 + (c.bike === 'tall' ? 1 : 0); shadowOf([[X - .9, 0, Z], [X + .9, 0, Z], [X - .35, top, Z], [X + .3, top, Z]], t); if (c.flag) shadowStick(X - .66, 0, c.flag.h, Z, .06, t); if (c.para) shadowOf([[X - .7, top + .9, Z], [X + .9, top + .9, Z], [X, top + 1.3, Z]], t); }
@@ -214,6 +216,35 @@ function bmTraffic(t, list) {
 const BM_FLOCK = [...Array(8)].map((_, i) => ({ dx: -i * 2.6 - (i % 2) * .9, dz: (i % 3) * 1.6, c: bmCostume(9100 + i * 7, { bike: ['tall', 'tall', 'fish', 'tall', 'clock', 'tall', 'snail', 'tall'][i], para: i % 2 ? null : BM_PARAS[i % 6], flag: i % 2 ? { h: 4 + (i % 3) * .5, col: ['#e8b23a', '#d8452f', '#2f6fb5', '#f6efe0'][i % 4], col2: '#1c1a1e' } : null }) }));
 function bmFlockInto(t, list) { const s = 63.5, e = 75; if (t < s || t > e) return; const cx = carX(t);
   for (const f of BM_FLOCK) { const X = cx - 26 + (t - s) * 3.6 + f.dx, Z = 7 + f.dz; bmRiderEntry(X, Z, 1, (1.6 + 3.6) * t, t, f.c, list); } }
+
+
+// Bob's note on draft 2 (1:05): the first sax lick comes in with a rider who is playing it. No hands on the bars.
+const SAX_IN = 65.0; // Bob's time for the first sax lick; nudge here if it lands early or late by ear
+function bmSax(S, HD, t, det, c) { // drawn in the rider's local units (y up), inside bmRider's transform
+  const sw = Math.sin(t * 7.5) * .025, gold = bmLG(S[0] - .1, S[1] + .2, S[0] + .5, S[1] - .6, ['#fbe7a0', '#d9a63a', '#8a5a14']);
+  const M = [HD[0] + .1, HD[1] - .06], N = [HD[0] + .25, HD[1] - .14 + sw], B1 = [S[0] + .3, S[1] - .5 + sw], U = [S[0] + .36, S[1] - .66 + sw], B2 = [S[0] + .48, S[1] - .48 + sw], BELL = [S[0] + .55, S[1] - .26 + sw];
+  // arms to the keys
+  const K1 = [S[0] + .3, S[1] - .22 + sw], K2 = [S[0] + .34, S[1] - .45 + sw];
+  bmLine([S, bmJoint(S, K2, .3, .31, 0, -1), K2], .1, bmShade(c.coat[1], .75));
+  bmLine([M, N, B1, U, B2, BELL], .085, gold); bmLine([M, N], .03, '#1c1a1e');
+  bmOval(BELL[0] + .03, BELL[1] + .05, .13, .06, '#f2d27a'); bmOval(BELL[0] + .03, BELL[1] + .05, .08, .035, '#6a4410');
+  if (det) for (let i = 0; i < 5; i++) { const u = .15 + i * .15; bmDot(lerp(N[0], B1[0], u), lerp(N[1], B1[1], u), .022, '#fff3c4'); }
+  bmLine([S, bmJoint(S, K1, .3, .3, 1, -.6), K1], .1, c.coat[0]); bmDot(K1[0], K1[1], .045, c.skin); bmDot(K2[0], K2[1], .045, c.skin);
+  // notes puff out of the bell once the lick starts
+  if (t >= SAX_IN) for (let i = 0; i < 4; i++) { const age = ((t - SAX_IN) * 1.6 + i * .25) % 1, nx = BELL[0] + .1 - age * .9, ny = BELL[1] + .25 + age * .9 + Math.sin(age * 9 + i) * .06;
+    g.save(); g.globalAlpha *= (1 - age) * clamp((t - SAX_IN) * 4); bmOval(nx, ny, .06, .045, '#1c1a1e'); bmLine([[nx + .055, ny], [nx + .055, ny + .2]], .018, '#1c1a1e'); if (i % 2) bmLine([[nx + .055, ny + .2], [nx + .14, ny + .14]], .018, '#1c1a1e'); g.restore(); }
+}
+// a tracking shot: he rides alongside the drone, D m in front of it. He enters from the left edge on SAX_IN, settles left
+// of centre for the lick, then pulls ahead and out to the right.
+function bmSaxInto(t, list) {
+  if (t < SAX_IN - .6 || t > SAX_IN + 9.5) return;
+  const c = camAt(t), fw = [Math.sin(c.yaw), Math.cos(c.yaw)], rt = [Math.cos(c.yaw), -Math.sin(c.yaw)], D = 2.8, half = D * (W / 2) / c.f;
+  const u = t - SAX_IN, lat = u < 1.6 ? lerp(-half - .9, -half * .3, smooth((u + .6) / 2.2)) : u < 6.5 ? -half * .3 + (u - 1.6) * .08 : -half * .3 + 4.9 * .08 + (u - 6.5) * 1.6 * ((u - 6.5) / 3 + .5);
+  const X = c.x + fw[0] * D + rt[0] * lat, Z = c.z + fw[1] * D + rt[1] * lat;
+  bmRiderEntry(X, Z, 1, (t - SAX_IN) * 4 + 40, t, BM_SAX, list, false);
+}
+function bmSaxFront(t) { const l = []; bmSaxInto(t, l); for (const o of l) { o.shadow(); o.draw(); } } // over the car layer (render.js front hook)
+const BM_SAX = bmCostume(6501, { sax: true, bike: 'plain', para: null, flag: { h: 3.6, col: '#e8b23a', col2: '#1c1a1e' }, hat: 'top', coat: ['#7a3c8c', '#4a2058'], fur: true, trim: '#e8b23a' });
 
 // ---------- art cars ----------
 function bmSitter(x, y, col, hat, t, ph, wave) { // a small passenger on an art car's roof
@@ -836,3 +867,4 @@ function playaInto(t, list) {
   brcInto(t, list); bmCampsInto(t, list); bmInstallsInto(t, list); bmElephantsInto(t, list); bmWarsInto(t, list);
   bmTraffic(t, list); bmFlockInto(t, list); bmParadeInto(t, list); bmPoorInto(t, list); bmCopsInto(t, list);
 }
+function playaFront(t) { bmSaxFront(t); } // render.js front hook: things that pass between the drone and the car
