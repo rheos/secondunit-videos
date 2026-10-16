@@ -37,3 +37,10 @@ Fixed points: everything before 2:05 stays as it is. "Because I'm a tree too and
 `js/alchemy/coda.js` (loaded before `stage.js`, so the curtains still close over it). One world and one camera: world units are plate pixels, the plate sits at (0,0), the meadow at y=486. The plate is drawn as before, copied into a small mip chain, and redrawn as the print. Cut-outs (GPT Image via Codex, style refs: a draft 2 frame and the searcher cut-out) live in `source/alchemy/coda/`, packed by `tools/pack_coda_media.py`.
 
 Checks: frames at 0:20, 1:00, 1:50, 2:04.95 and 2:12.2 to 2:18.15 are pixel-identical to draft 2b's code.
+
+## QA on the render (2026-10-15)
+
+- Span 2:05 to the end: 674 of 674 frames (f03000-f03673), 0 bad frames (`tools/cloud-render/badframes.py`). The two biggest frame-to-frame jumps are designed motion: the dive back into the print at 2:12.0 and the king's pop at 2:19.0. The only frozen run is the end card after the fade (2:31.4 on), same as draft 2b.
+- Full cut `out/att_alchemy-d3-full_f00000-f03674_24fps_draft.mp4`: v29 frames 0-2999 (draft 2b is v29 up to 2:05) plus the draft 3 span, encoded at 720p crf 24 on the untouched song.wav. 3674 frames, 153.083 s.
+- Against draft 2b's file (decoded, 320x180 grey): before 2:05 mean diff at most 0.96/255; 2:12.2 to 2:18.2 (the line and the pointing branch) at most 1.20/255. That is encode noise. The curtain call converges by 2:27.5, once the curtains cover the new picture. Audio stream md5 identical to draft 2b.
+- Before/after sheet: `out/att_d3_before-after_2m05-end_left-d2b_right-d3.png` (2:06.9, 2:09.6, 2:11.3, 2:20.5, 2:23.8, 2:26.6). Side by side: `out/att_d3_side-by-side_f03000-f03674_24fps_left-d2b_right-d3.mp4`.
