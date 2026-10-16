@@ -24,7 +24,7 @@
   };
 
   // ---------- the car: path, spin ----------
-  const TOP = 2.4, TD = 1.5, TL = 4.0, SEAT = 1.95;
+  const TOP = 1.15, TD = 1.5, TL = 4.4, SEAT = .65; // seats low enough to hop on and off (Robin)
   function carX(t) { if (t < 200) return -40 + 1.6 * t; if (t < 206) { const u = t - 200; return 280 + 1.6 * (u - u * u / 12); } if (t < 238) return 284.8; const u = t - 238; return 284.8 + .22 * u * u; }
   function carZ(t) { if (t < 238) return 0; const u = t - 238; return .3 * u * u; }
   function yaw(t) { let a = 0; for (const [s, e] of SPINS) a += TAU * smooth((t - s - .3) / (e - s - .3)); return a; }
@@ -32,10 +32,10 @@
 
   // ---------- camera: shots as offsets from the car; each entry moves there over dur, then holds ----------
   // [t, dur, ox, oy, oz, pitch, f]
-  const WIDE = [0, 1.7, -45, -.12, 1400], MED = [-.5, 3.2, -12.5, .07, 1300], SKY = [0, 1.6, -17, -.36, 1100];
-  const SPK = [2.0, 4.0, -3.3, .62, 1400], DRW = [-1, 3.0, -2.2, .08, 1500], HEADS = [-1, 3.25, -.3, .04, 1150];
-  const HIGH = [0, 9, -22, .36, 1300], LOW = [0, 1.45, -27, -.12, 1300], WB = [3.2, 3.35, -1.6, 0, 1400], WBM = [2.6, 3.3, -4.2, .04, 1350];
-  const HOLE = [0, 3.25, -4.4, .13, 1500], TOPDOWN = [0, 9.5, -3.2, 1.15, 1250], DUSK = [6, 1.7, -36, -.13, 1300];
+  const WIDE = [0, 1.6, -60, -.12, 1400], MED = [-.5, 2.3, -11.5, .08, 1300], SKY = [0, 1.4, -15, -.36, 1100];
+  const SPK = [1.2, 2.75, -3.3, .62, 1400], DRW = [-.8, 1.8, -1.6, .1, 1500], HEADS = [-.8, 1.95, -.4, .12, 1150];
+  const HIGH = [0, 9, -24, .34, 1300], LOW = [0, 1.3, -24, -.1, 1250], WB = [3.2, 2.1, -1.6, 0, 1400], WBM = [2.6, 2.1, -4.2, .04, 1350];
+  const HOLE = [-.12, 2.05, -4.2, .13, 1500], TOPDOWN = [0, 8.5, -3.2, 1.15, 1250], DUSK = [6, 1.6, -40, -.13, 1300];
   const SH = [
     [0, 0, ...WIDE],
     [15.0, 1.9, ...MED],
@@ -47,8 +47,8 @@
     [L_(6).s - .3, 1.0, ...HIGH],
     [60.6, 2.6, ...LOW],
     [72.0, 2.5, ...WB],
-    [L_(8).s - .4, .7, 2.0, 3.1, -4.2, .25, 1400],
-    [L_(9).s - .2, .7, 0, 5, -11, .32, 1300],
+    [L_(8).s - .4, .7, 1.2, 2.0, -4.0, .25, 1400],
+    [L_(9).s - .2, .7, 0, 4, -10, .32, 1300],
     [wt(9, 'build') - .2, 1.6, ...LOW],
     [L_(10).s - .2, .8, ...SKY],
     [L_(11).s - .3, .6, ...MED],
@@ -56,16 +56,16 @@
     [L_(13).s - .3, 1.0, ...HIGH],
     [117.2, 2.5, ...LOW],
     [L_(14).s - .3, .5, ...MED],
-    [L_(15).s - .25, .45, -2.0, 3.9, -3.6, .6, 1400],
+    [L_(15).s - .25, .45, -1.5, 2.7, -3.4, .6, 1400],
     [L_(17).s - .3, .5, 0, 1.5, -21, -.1, 1300],
     [L_(19).s + .8, .5, ...DRW],
     [L_(21).s - .25, .45, ...WBM],
-    [L_(22).s - .25, .45, -2, 3.1, -11, .04, 1250],
-    [L_(23).s - .25, .45, 0, 4.0, -3.4, .6, 1400],
+    [L_(22).s - .25, .45, -2, 2.2, -11, .04, 1250],
+    [L_(23).s - .25, .45, -.15, 2.9, -3.4, .55, 1400],
     [L_(24).s - .2, .45, ...HOLE],
-    [L_(25).s - .2, .45, -2.0, 4.0, -3.1, .6, 1400],
+    [L_(25).s - .2, .45, -1.5, 2.7, -3.1, .6, 1400],
     [L_(26).s - .3, .5, ...TOPDOWN],
-    [L_(28).s - .3, .6, -1, 2.7, -13, .0, 1300],
+    [L_(28).s - .3, .6, -1, 1.8, -13, -.02, 1300],
     [L_(29).s - .3, .8, ...HIGH],
     [L_(30).s - .3, .6, ...HEADS],
     [L_(31).s - .3, .9, ...SKY],
@@ -75,7 +75,7 @@
     [196, 5, ...DUSK],
     [L_(35).s - .6, 1.0, ...WBM],
     [L_(35).e + .3, 1.6, ...DUSK],
-    [L_(36).s - .3, 1.0, -1, 3.3, -8.5, .1, 1250],
+    [L_(36).s - .3, 1.0, -1, 2.3, -9.5, .1, 1250],
     [L_(36).e + .2, 2.0, 6, 1.8, -40, -.13, 1300],
   ];
   function camAt(t) {
@@ -225,13 +225,13 @@
 
   // ---------- the table car ----------
   const SEATS = [ // local x, z, faces camera at yaw 0, role
-    { x: -3, z: 2.55, r: 'b0' }, { x: -1, z: 2.55, r: 'drawer' }, { x: 1, z: 2.55, r: 'b2' },
-    { x: -3, z: -2.55, r: 'f0' }, { x: -1, z: -2.55, r: 'f1' }, { x: 1, z: -2.55, r: 'f2' },
-    { x: -4.85, z: 0, r: 'chair' },
+    ...[-3.6, -2.25, -.8, .55, 1.9, 3.25].map((x) => ({ x, z: 2.3, r: x === -.8 ? 'drawer' : 'b' })),
+    ...[-3.6, -2.25, -.8, .55, 1.9, 3.25].map((x) => ({ x, z: -2.3, r: 'f' })),
+    { x: -5.15, z: 0, r: 'chair' }, { x: 5.15, z: 0, r: 'end' },
   ];
   function seatState(s, t, i) {
     const o = { arms: 'rest', grin: 0, nod: Math.sin(t * 1.3 + i * 1.7) * .3, swing: t * 2 + i };
-    o.front = s.r === 'chair' ? 1 : (Math.cos(YAW) * Math.sign(s.z) > 0 ? 1 : 0); // as the table spins, who faces us flips
+    o.front = (s.r === 'chair' || s.r === 'end') ? 1 : (Math.cos(YAW) * Math.sign(s.z) > 0 ? 1 : 0); // as the table spins, who faces us flips
     for (const li of [5, 12, 33]) { const gr = wt(li, 'grin'); o.grin = Math.max(o.grin, ease(t, gr - .1, gr + .4) * (1 - ease(t, L_(li).e + 1, L_(li).e + 1.6))); }
     if (s.r === 'chair') { const law = wt(0, 'law'); if (t > law - 1.2 && t < law + 1.2) { o.arms = 'gavel'; o.lift = t < law ? ease(t, law - 1.1, law - .3) : 0; } }
     if (s.r === 'drawer') o.drawer = Math.max(ease(t, L_(2).s, L_(2).s + .6) * (1 - ease(t, L_(2).e - .2, L_(2).e + .3)), ease(t, wt(19, 'put') - .1, wt(19, 'put') + .5) * (1 - ease(t, wt(20, 'talk') - .1, wt(20, 'talk') + .25)));
@@ -241,7 +241,8 @@
     const v0 = L_(36).s; if (t > v0 && t < 238) { o.arms = 'vote2'; o.lift = ease(t, v0 + .3 + i * .12, v0 + 1 + i * .12); }
     return o;
   }
-  function seatGeom(s) { const out = Math.sign(s.z); return s.r === 'chair' ? { beamA: [-TL, 1.9, 0], beamB: [-4.75, 1.9, 0], crutch: [[-4.8, 1.85, 0], [-5.6, 0, .4]] } : { beamA: [s.x, 1.9, out * TD], beamB: [s.x, 1.9, s.z - out * .1], crutch: [[s.x, 1.85, s.z], [s.x + .35, 0, s.z + out * .9]] }; }
+  function seatGeom(s) { const out = Math.sign(s.z), by = SEAT - .06; if (!s.z) { const d = Math.sign(s.x); return { beamA: [d * TL, by, 0], beamB: [s.x - d * .1, by, 0], crutch: [[s.x, by - .05, 0], [s.x + d * .5, 0, .3]] }; }
+    return { beamA: [s.x, by, out * TD], beamB: [s.x, by, s.z - out * .1], crutch: [[s.x, by - .05, s.z], [s.x + .3, 0, s.z + out * .5]] }; }
   function crutch(a, b) { // a Dali crutch: a long pole with a padded fork at the top
     const pa = PL(...a), pb = PL(...b); if (pa[2] < .1 || pb[2] < .1) return; const k = kAt(pa);
     seg(pa, pb, .05 * k, PAL.crutch);
@@ -251,25 +252,25 @@
     g.fillStyle = '#3a2a1a'; g.beginPath(); g.arc(pb[0], pb[1], .05 * kAt(pb), 0, TAU); g.fill();
   }
   function tableShadow(t) {
-    const pts = []; for (const [x, z] of [[-TL, -TD], [TL, -TD], [TL, TD], [-TL, TD]]) { pts.push(Lw(x, TOP, z)); pts.push(Lw(x * .97, .4, z * .9)); }
+    const pts = []; for (const [x, z] of [[-TL, -TD], [TL, -TD], [TL, TD], [-TL, TD]]) { pts.push(Lw(x, TOP, z)); pts.push(Lw(x * .97, .2, z * .9)); }
     shadowOf(pts, t);
     const sv = sunVec(t), a = shadowA(t); if (a < .01) return;
     for (const s of SEATS) { const G = seatGeom(s);
-      shadowOf([Lw(s.x - .25, SEAT - .5, s.z), Lw(s.x + .25, SEAT - .5, s.z), Lw(s.x + .25, SEAT + .5, s.z), Lw(s.x - .25, SEAT + .5, s.z), Lw(s.x, SEAT + 1.05, s.z)], t);
+      shadowOf([Lw(s.x - .25, SEAT - .45, s.z), Lw(s.x + .25, SEAT - .45, s.z), Lw(s.x + .25, SEAT + .5, s.z), Lw(s.x - .25, SEAT + .5, s.z), Lw(s.x, SEAT + 1.05, s.z)], t);
       const pa = shadowPt(...Lw(...G.crutch[0]), sv), pb = shadowPt(...Lw(...G.crutch[1]), sv); seg(pa, pb, .05 * kAt(pa), `rgba(52,34,58,${a})`); }
   }
   function tableBody(t) {
     const c = PL;
-    for (const [x, z] of [[-2.8, -1.2], [2.8, -1.2], [-2.8, 1.2], [2.8, 1.2]]) { const p = c(x, .32, z); if (p[2] < .2) continue; const k = kAt(p); g.fillStyle = '#17120f'; g.beginPath(); g.ellipse(p[0], p[1], .2 * k, .32 * k, 0, 0, TAU); g.fill(); }
+    for (const [x, z] of [[-2.8, -1.2], [2.8, -1.2], [-2.8, 1.2], [2.8, 1.2]]) { const p = c(x, .2, z); if (p[2] < .2) continue; const k = kAt(p); g.fillStyle = '#17120f'; g.beginPath(); g.ellipse(p[0], p[1], .14 * k, .2 * k, 0, 0, TAU); g.fill(); }
     // skirt: four hanging cloth panels that hide the car, drawn back to front
     const faces = [[[-TL * .97, -TD * .93], [TL * .97, -TD * .93]], [[TL * .97, -TD * .93], [TL * .97, TD * .93]], [[TL * .97, TD * .93], [-TL * .97, TD * .93]], [[-TL * .97, TD * .93], [-TL * .97, -TD * .93]]];
     const fd = faces.map((f) => [c((f[0][0] + f[1][0]) / 2, 1.2, (f[0][1] + f[1][1]) / 2)[2], f]).sort((a, b) => b[0] - a[0]);
-    const N = 14, hem = (u) => .5 + .07 * Math.sin(u * 20 + t * 1.5);
+    const N = 14, hem = (u) => .24 + .05 * Math.sin(u * 20 + t * 1.5);
     for (const [, f] of fd) {
       const at = (u, y) => c(lerp(f[0][0], f[1][0], u), y, lerp(f[0][1], f[1][1], u));
-      const pts = []; for (let i = 0; i <= N; i++) pts.push(at(i / N, 2.18)); for (let i = N; i >= 0; i--) pts.push(at(i / N, hem(i / N)));
+      const pts = []; for (let i = 0; i <= N; i++) pts.push(at(i / N, TOP - .2)); for (let i = N; i >= 0; i--) pts.push(at(i / N, hem(i / N)));
       poly(pts, PAL.skirt);
-      for (let i = 1; i < N; i++) seg(at(i / N, 2.15), at(i / N, .55), 2, 'rgba(0,0,0,.18)');
+      for (let i = 1; i < N; i++) seg(at(i / N, TOP - .23), at(i / N, .3), 2, 'rgba(0,0,0,.18)');
       for (let i = 0; i < N; i++) { const a = at(i / N, hem(i / N)); seg(a, at((i + 1) / N, hem((i + 1) / N)), .05 * kAt(a), '#d6a632'); }
     }
     const tc = [[-TL, -TD], [TL, -TD], [TL, TD], [-TL, TD]];
@@ -295,7 +296,7 @@
   function drape(pts, y0) { return pts.map(([x, z]) => z < -TD ? [x, y0 - (-TD - z) * 1.05, -TD - .015] : [x, y0, z]); } // a soft object hangs over the front edge
   function melt(t) { return clamp((t - 20) / 200) * .55 + ease(t, L_(1).s, L_(1).e) * .12; } // the heat softens the props through the day
   function speakerphone(t) {
-    const m = melt(t), cz = -.95 - m * .75, cx = 2.0, pts = [];
+    const m = melt(t), cz = -.95 - m * .75, cx = 1.2, pts = [];
     for (let i = 0; i < 36; i++) { const a = i / 36 * TAU, r = .34 * (1 + .14 * Math.cos(3 * a)); pts.push([cx + Math.cos(a + .5) * r, cz + Math.sin(a + .5) * r * .9]); }
     const P3 = drape(pts, TOP + .04).map((p) => PL(...p)); if (!ok(P3)) return;
     poly(P3, '#2f3136'); poly(drape(pts.map(([x, z]) => [cx + (x - cx) * .55, cz + (z - cz) * .55]), TOP + .05).map((p) => PL(...p)), '#3f4248');
@@ -328,7 +329,7 @@
     g.beginPath(); g.moveTo(0, 0); g.lineTo(1, 0); for (let i = 10; i >= 0; i--) { const u = i / 10; g.lineTo(u, sag(u, i, 1)); } g.closePath();
     const wg = g.createLinearGradient(0, 0, 1, 1); wg.addColorStop(0, '#fbfbf6'); wg.addColorStop(1, '#d9dbd6'); g.fillStyle = wg; g.fill();
     if (burn > .2) { g.globalAlpha = clamp(burn); g.fillStyle = '#1b1210'; g.fill(); g.globalAlpha = 1; }
-    if (burn < .6) charts(t, 1 - burn / .6);
+    if (burn < .6) { charts(t, 1 - burn / .6); chartClimbers(t); }
     g.restore();
   }
   function charts(t, al) {
@@ -355,9 +356,9 @@
     g.globalCompositeOperation = 'source-over';
   }
   function tapeRecorders(t) { // "every tape recorder" goes into the drawer
-    const t0 = wt(2, 'every') - .2; if (t < t0 || t > L_(2).e + .2) return; const dr = [-1, SEAT + .4, 2.3];
+    const t0 = wt(2, 'every') - .2; if (t < t0 || t > L_(2).e + .2) return; const dr = [-.8, SEAT + .4, 2.05];
     for (let i = 0; i < 4; i++) { const st = t0 + i * .35, u = clamp((t - st) / .9); if (t < st || u >= 1) continue;
-      const s = [-2.6 + i * 1.1, TOP + .05, -.8 + (i % 2) * .5]; const x = lerp(s[0], dr[0], u), z = lerp(s[2], dr[2], u), y = lerp(s[1], dr[1], u) + Math.sin(u * Math.PI) * 1.2;
+      const s = [-2.6 + i * 1.1, TOP + .05, -.8 + (i % 2) * .5]; const x = lerp(s[0], dr[0], u), z = lerp(s[2], dr[2], u), y = lerp(s[1], dr[1], u) + Math.sin(u * Math.PI) * .6;
       const p = PL(x, y, z); if (p[2] < .2) continue; const k = kAt(p) * (1 - u * .4);
       g.save(); g.translate(p[0], p[1]); g.rotate(u * 3 + i); g.fillStyle = '#3a3a40'; g.fillRect(-.12 * k, -.075 * k, .24 * k, .15 * k); g.fillStyle = '#d8d0bc';
       for (const dx of [-.05, .05]) { g.beginPath(); g.arc(dx * k, -.01 * k, .03 * k, 0, TAU); g.fill(); } g.restore(); }
@@ -392,25 +393,25 @@
       list.push({ z: P(X, 0, z)[2], draw: () => { const p = P(X, 0, z); cage(p, kAt(p), legs); }, shadow: () => shadowStick(X, 0, 7 * legs + 2.8, z, 2.6, t) }); }); }
   function chips(t) { // "expand the wars and the military bets": chip stacks grow on the table
     const s = L_(21).s, e = L_(21).e; if (t < s || t > e + 1.2) return; const sink = 1 - ease(t, e + .2, e + 1.2);
-    for (let i = 0; i < 4; i++) { const n = Math.floor(clamp((t - s - i * .25) / 1.8) * 14 * sink), x = 1.35 + i * .3, z = -.45 + (i % 2) * .22;
+    for (let i = 0; i < 4; i++) { const n = Math.floor(clamp((t - s - i * .25) / 1.8) * 14 * sink), x = 1.7 + i * .25, z = -.35 + (i % 2) * .22;
       for (let c = 0; c < n; c++) { const p = PL(x, TOP + c * .035, z), k = kAt(p); g.fillStyle = ['#c7362b', '#f4efe6', '#2f6fb5', '#1c1c1c'][i]; g.beginPath(); g.ellipse(p[0], p[1], .14 * k, .05 * k, 0, 0, TAU); g.fill(); g.strokeStyle = 'rgba(0,0,0,.35)'; g.lineWidth = 1; g.stroke(); } }
   }
   function micBooms(t) { // "and limit the questions the media gets": the boom mics wilt before they reach the table
     const s = L_(22).s, e = L_(22).e; if (t < s - .5 || t > e + .8) return; const reach = ease(t, s - .5, s + .2) * (1 - ease(t, e + .2, e + .8)), droop = ease(t, wt(22, 'limit'), wt(22, 'limit') + .8);
-    for (let i = 0; i < 2; i++) { const a = [-9, 3.8 - i * .6, -3.4 + i * .7], tip = [lerp(-9, -2.6 + i * .8, reach), lerp(3.3, 1.2, droop), -1.3 + i * .4];
+    for (let i = 0; i < 2; i++) { const a = [-9, 2.8 - i * .5, -3.4 + i * .7], tip = [lerp(-9, -2.6 + i * .8, reach), lerp(2.2, .4, droop), -1.3 + i * .4];
       const pts = []; for (let k = 0; k <= 12; k++) { const u = k / 12; pts.push(PL(lerp(a[0], tip[0], u), lerp(a[1], tip[1], u) + Math.sin(u * Math.PI) * (1 - droop) * .4 - droop * u * u * .4, lerp(a[2], tip[2], u))); }
       for (let k = 0; k < 12; k++) seg(pts[k], pts[k + 1], .05 * kAt(pts[k]), '#888b90');
       const p = pts[12]; if (p[2] < .2) continue; const kk = kAt(p); g.save(); g.translate(p[0], p[1]); g.rotate(droop * 1.2); g.fillStyle = '#5b5e63'; g.beginPath(); g.ellipse(0, 0, .3 * kk, .1 * kk, 0, 0, TAU); g.fill(); g.restore(); }
   }
   function pie(t) { // "how many lies can you bake in this pie?": a real pie, one slice slumping over the edge
-    const s = L_(23).s, e = L_(23).e; if (t < s - .2 || t > e + 1) return; const al = ease(t, s - .2, s + .2) * (1 - ease(t, e + .3, e + 1)), cx = 0, cz = -.95, sl = ease(t, wt(23, 'pie') - .5, e + .3);
+    const s = L_(23).s, e = L_(23).e; if (t < s - .2 || t > e + 1) return; const al = ease(t, s - .2, s + .2) * (1 - ease(t, e + .3, e + 1)), cx = -.15, cz = -.95, sl = ease(t, wt(23, 'pie') - .5, e + .3);
     const disc = (r, a0, a1, oz, y) => { const ps = [[cx, cz + oz]]; for (let i = 0; i <= 20; i++) { const a = lerp(a0, a1, i / 20); ps.push([cx + Math.cos(a) * r, cz + oz + Math.sin(a) * r]); } return drape(ps, y).map((p) => PL(...p)); };
     g.save(); g.globalAlpha = al; poly(disc(.42, -1.1, 4.6, 0, TOP + .06), '#c98a3e'); poly(disc(.36, -1.1, 4.6, 0, TOP + .07), '#e2b267');
     for (let i = 0; i < 6; i++) { const a = -1.1 + i * .95; seg(PL(cx, TOP + .075, cz), PL(cx + Math.cos(a) * .36, TOP + .075, cz + Math.sin(a) * .36), 2, 'rgba(120,70,20,.5)'); }
     poly(disc(.42, -1.6, -1.1, -sl * .75, TOP + .06), '#c98a3e'); g.restore();
   }
   function book(t) { // "it's a mystery book the way you look": an open book whose pages keep turning
-    const s = L_(25).s, e = L_(26).s; if (t < s - .2 || t > e + .5) return; const al = ease(t, s - .2, s + .2) * (1 - ease(t, e, e + .5)), cx = -2.0, cz = -.8;
+    const s = L_(25).s, e = L_(26).s; if (t < s - .2 || t > e + .5) return; const al = ease(t, s - .2, s + .2) * (1 - ease(t, e, e + .5)), cx = -1.5, cz = -.8;
     const pg = (ang) => { const c = Math.cos(ang), sn = Math.sin(ang); return [PL(cx, TOP + .05, cz - .3), PL(cx, TOP + .05, cz + .3), PL(cx + .45 * c, TOP + .05 + .45 * sn, cz + .3), PL(cx + .45 * c, TOP + .05 + .45 * sn, cz - .3)]; };
     g.save(); g.globalAlpha = al; poly([PL(cx - .5, TOP + .02, cz - .33), PL(cx + .5, TOP + .02, cz - .33), PL(cx + .5, TOP + .02, cz + .33), PL(cx - .5, TOP + .02, cz + .33)], '#5c1f2a');
     poly(pg(Math.PI), '#f2ead6', 'rgba(0,0,0,.2)', 1); poly(pg(0), '#f2ead6', 'rgba(0,0,0,.2)', 1);
@@ -426,7 +427,7 @@
   }
   function dime(t) { // "people had a dime": a coin rolls to the edge and goes soft over it
     const d = wt(15, 'dime'); if (t < d - .2 || t > L_(16).e + .6) return; const al = 1 - ease(t, L_(16).e, L_(16).e + .6);
-    const u = ease(t, d - .2, d + 1.0), cx = lerp(-2.5, -1.9, u), sag = ease(t, d + .9, d + 1.8);
+    const u = ease(t, d - .2, d + 1.0), cx = lerp(-1.9, -1.5, u), sag = ease(t, d + .9, d + 1.8);
     g.save(); g.globalAlpha = al;
     if (sag <= 0) { const p = PL(cx, TOP + .14, -.9 - u * .55), k = kAt(p); g.fillStyle = '#c9c3b8'; g.beginPath(); g.ellipse(p[0], p[1], .05 * k + .09 * k * Math.abs(Math.cos(u * 9)), .14 * k, 0, 0, TAU); g.fill(); g.strokeStyle = '#7b766d'; g.lineWidth = 2; g.stroke(); }
     else { const ps = []; for (let i = 0; i < 30; i++) { const a = i / 30 * TAU; ps.push([cx + Math.cos(a) * .14, -1.45 - sag * .2 + Math.sin(a) * .14 * (1 + sag)]); } poly(drape(ps, TOP + .02).map((p) => PL(...p)), '#c9c3b8', '#7b766d', 2); }
@@ -434,7 +435,7 @@
   }
   function truth(t, emissive) { // "put the truth in a box": a small light carried into the open drawer
     const s = wt(19, 'truth') - .2, e = wt(19, 'box') + .3; if (t < s || t > e) return; const u = ease(t, s, e);
-    const p = PL(lerp(.2, -1, u), lerp(TOP + .4, SEAT + .4, u) + Math.sin(u * Math.PI) * .7, lerp(-.5, 2.35, u)); if (p[2] < .2) return; const k = kAt(p);
+    const p = PL(lerp(.2, -.8, u), lerp(TOP + .4, SEAT + .4, u) + Math.sin(u * Math.PI) * .4, lerp(-.5, 2.1, u)); if (p[2] < .2) return; const k = kAt(p);
     if (emissive) { g.save(); g.globalCompositeOperation = 'lighter'; const rg = g.createRadialGradient(p[0], p[1], 0, p[0], p[1], .22 * k); rg.addColorStop(0, 'rgba(255,240,190,.7)'); rg.addColorStop(1, 'rgba(255,200,120,0)'); g.fillStyle = rg; g.fillRect(p[0] - .22 * k, p[1] - .22 * k, .44 * k, .44 * k); g.restore(); }
     else { g.fillStyle = '#fff6d8'; g.beginPath(); g.arc(p[0], p[1], .08 * k, 0, TAU); g.fill(); }
   }
@@ -446,8 +447,8 @@
   }
 
   // ---------- the playa's other figures ----------
-  const ELEPHANTS = [{ x: -60, z: 85, v: 1.25, s: 1 }, { x: 40, z: 120, v: 1.0, s: .9 }, { x: 150, z: 70, v: 1.4, s: 1.1 }, { x: 260, z: 140, v: 1.2, s: .8 }, { x: -20, z: 160, v: 1.5, s: .8 }];
-  function elephant(X, Z, t, s, ph) { // a stilt-legged elephant: a small body high on four long spindly legs
+  const ELEPHANTS = [{ x: -60, z: 85, v: 1.25, s: 1 }, { x: 40, z: 120, v: 1.0, s: .9, load: 'papers' }, { x: 150, z: 70, v: 1.4, s: 1.1 }, { x: 260, z: 140, v: 1.2, s: .8, load: 'ballot' }, { x: -20, z: 160, v: 1.5, s: .8 }, { x: 10, z: 64, v: 1.7, s: .9, load: 'papers' }, { x: 90, z: 100, v: 1.1, s: 1, load: 'ballot' }, { x: 200, z: 58, v: 1.5, s: .9 }];
+  function elephant(X, Z, t, s, ph, load) { // a stilt-legged elephant: a small body high on four long spindly legs
     const p = P(X, 0, Z); if (p[2] < 1) return; const k = kAt(p) * s, x = p[0], y = p[1], legH = 10.5, bodyY = y - legH * k, w = Math.sin(t * 1.4 + ph);
     g.strokeStyle = PAL.elephant; g.lineCap = 'round';
     for (let i = 0; i < 4; i++) { const hx = x + (-1.3 + (i % 2) * 2.6 + (i > 1 ? .3 : 0)) * k, fx = hx + ((i === 0 || i === 3) ? w : -w) * 1.3 * k; g.lineWidth = Math.max(1, .2 * k);
@@ -457,10 +458,12 @@
     g.beginPath(); g.ellipse(x + 2.4 * k, bodyY - .9 * k, .95 * k, .9 * k, 0, 0, TAU); g.fill();
     g.fillStyle = PAL.elephant; g.beginPath(); g.ellipse(x + 2 * k, bodyY - .7 * k, .55 * k, .85 * k, .3, 0, TAU); g.fill();
     g.strokeStyle = PAL.elephant; g.lineWidth = Math.max(1, .3 * k); g.beginPath(); g.moveTo(x + 3.1 * k, bodyY - .6 * k); g.quadraticCurveTo(x + 3.8 * k, bodyY + .8 * k + w * .3 * k, x + 3.4 * k, bodyY + 2.2 * k); g.stroke();
-    g.fillStyle = '#e8d9b5'; g.beginPath(); g.moveTo(x - 1 * k, bodyY - 1.6 * k); g.lineTo(x + 1 * k, bodyY - 1.6 * k); g.lineTo(x + .25 * k, bodyY - 5.5 * k); g.lineTo(x - .25 * k, bodyY - 5.5 * k); g.fill(); // an obelisk on its back
+    if (load === 'papers') { for (let i = 0; i < 9; i++) { g.fillStyle = i % 2 ? '#ece6d6' : '#d9d1bd'; g.fillRect(x - 1.1 * k + Math.sin(i * 2.3) * .2 * k, bodyY - (1.75 + i * .38) * k, 2.2 * k, .36 * k); } }
+    else if (load === 'ballot') { g.fillStyle = '#efe7d4'; g.fillRect(x - 1.2 * k, bodyY - 4.2 * k, 2.4 * k, 2.4 * k); g.fillStyle = '#1a1a1a'; g.fillRect(x - .7 * k, bodyY - 4.2 * k, 1.4 * k, .18 * k); g.fillStyle = '#fbf7ec'; g.fillRect(x - .35 * k, bodyY - (4.9 - Math.abs(Math.sin(t * 2 + ph)) * .5) * k, .7 * k, .9 * k); }
+    else { g.fillStyle = '#e8d9b5'; g.beginPath(); g.moveTo(x - 1 * k, bodyY - 1.6 * k); g.lineTo(x + 1 * k, bodyY - 1.6 * k); g.lineTo(x + .25 * k, bodyY - 5.5 * k); g.lineTo(x - .25 * k, bodyY - 5.5 * k); g.fill(); } // an obelisk on its back
     g.fillStyle = '#c7362b'; g.fillRect(x - 1.2 * k, bodyY - 1.75 * k, 2.4 * k, .3 * k);
   }
-  function elephantsInto(t, list) { for (const e of ELEPHANTS) { const X = e.x + e.v * t; list.push({ z: P(X, 0, e.z)[2], draw: () => elephant(X, e.z, t, e.s, e.x), shadow: () => { shadowStick(X, 10.5 * e.s, 16 * e.s, e.z, 3 * e.s, t); for (const d of [-1.3, 1.3]) shadowStick(X + d * e.s, 0, 10.5 * e.s, e.z, .35, t); } }); } }
+  function elephantsInto(t, list) { for (const e of ELEPHANTS) { const X = e.x + e.v * t; list.push({ z: P(X, 0, e.z)[2], draw: () => elephant(X, e.z, t, e.s, e.x, e.load), shadow: () => { shadowStick(X, 10.5 * e.s, 16 * e.s, e.z, 3 * e.s, t); for (const d of [-1.3, 1.3]) shadowStick(X + d * e.s, 0, 10.5 * e.s, e.z, .35, t); } }); } }
   function poorPerson(t, list) { // "when a poor person dared to ask you to share"
     const s = L_(17).s - .4, e = L_(18).e + .5; if (t < s || t > e) return; const X = carX(s) + 9 - (t - s) * .8, Z = -5.5;
     list.push({ z: P(X, 0, Z)[2], draw: () => { const p = P(X, 0, Z), k = kAt(p), x = p[0], y = p[1], st = Math.sin((t - s) * 5), ask = ease(t, L_(17).s, L_(17).s + .5) * (1 - ease(t, L_(18).s + .2, L_(18).s + .6));
@@ -527,6 +530,141 @@
     LITTLE_BOB.draw(g, t, { tIn: 255.2, tOut: 268.4, y: 985, h: 270, stop: { t0: 260.4, t1: 262.6 }, mode: 'card', grade: (kg) => { kg.globalCompositeOperation = 'multiply'; kg.fillStyle = 'rgb(255,170,120)'; kg.fillRect(0, 0, W, H); } });
   }
 
+
+  // ---------- Burning Man: camps, lamps, bikes, crowd (draft 2) ----------
+  const nightAmt = (t) => ease(t, 199, 216);
+  const CAMPS = []; { const R = mulberry(77); for (let X = -90; X < 420; X += 14 + R() * 12) CAMPS.push({ X, Z: 50 + R() * 34, kind: R() < .55 ? 'dome' : 'tent', r: 4 + R() * 4, col: ['#d8452f', '#2f6fb5', '#e8b23a', '#7a3c8c', '#f2ede0'][Math.floor(R() * 5)], flag: R() < .7, seed: Math.floor(R() * 1e4) }); }
+  function camp(c, t) {
+    const p = P(c.X, 0, c.Z); if (p[2] < 2 || p[0] < -600 || p[0] > W + 600) return; const k = kAt(p), x = p[0], y = p[1], r = c.r * k;
+    if (c.kind === 'dome') { // a geodesic dome: a half disc with its struts
+      const dg = g.createLinearGradient(x - r, 0, x + r, 0); dg.addColorStop(0, '#f4ecdc'); dg.addColorStop(1, '#b9ad98'); g.fillStyle = dg; g.beginPath(); g.arc(x, y, r, Math.PI, TAU); g.fill();
+      g.strokeStyle = 'rgba(90,70,50,.55)'; g.lineWidth = Math.max(.6, .06 * k);
+      for (let ring = 1; ring <= 3; ring++) { const a = ring / 4 * Math.PI / 2, ry = y - Math.sin(a) * r, rx = Math.cos(a) * r; g.beginPath(); g.moveTo(x - rx, ry); g.lineTo(x + rx, ry); g.stroke(); }
+      for (let i = 0; i <= 8; i++) { const a = Math.PI + i / 8 * Math.PI; g.beginPath(); g.moveTo(x, y - r); g.lineTo(x + Math.cos(a) * r, y + Math.sin(a) * r); g.stroke(); }
+      g.fillStyle = c.col; g.globalAlpha = .55; g.beginPath(); g.arc(x, y, r, Math.PI * 1.15, Math.PI * 1.45); g.lineTo(x, y); g.fill(); g.globalAlpha = 1;
+    } else { // a shade tent: poles and a sagging cloth
+      g.strokeStyle = '#6d5a44'; g.lineWidth = Math.max(1, .1 * k); for (const d of [-1, 1]) { g.beginPath(); g.moveTo(x + d * r, y); g.lineTo(x + d * r, y - .6 * r); g.stroke(); }
+      g.fillStyle = c.col; g.beginPath(); g.moveTo(x - r * 1.1, y - .6 * r); g.quadraticCurveTo(x, y - .45 * r + Math.sin(t + c.seed) * .03 * r, x + r * 1.1, y - .6 * r); g.lineTo(x + r * .9, y - .75 * r); g.quadraticCurveTo(x, y - .6 * r, x - r * .9, y - .75 * r); g.fill();
+    }
+    if (c.flag) { const fx = x + r * .3, top = y - r * 1.6; g.strokeStyle = '#5a4a3a'; g.lineWidth = Math.max(1, .05 * k); g.beginPath(); g.moveTo(fx, y - r * .8); g.lineTo(fx, top); g.stroke();
+      g.fillStyle = ['#d8452f', '#e8b23a', '#2f6fb5'][c.seed % 3]; g.beginPath(); g.moveTo(fx, top); for (let i = 0; i <= 6; i++) { const u = i / 6; g.lineTo(fx + u * 1.6 * k, top + Math.sin(u * 5 - t * 4 + c.seed) * .15 * k + u * .1 * k); } for (let i = 6; i >= 0; i--) { const u = i / 6; g.lineTo(fx + u * 1.6 * k, top + .7 * k + Math.sin(u * 5 - t * 4 + c.seed) * .15 * k - u * .2 * k); } g.fill(); }
+  }
+  const LAMPS = []; for (let X = -80; X < 420; X += 20) LAMPS.push({ X, Z: 26 + (X % 40 ? 2 : 0) });
+  function lamp(l, t, emissive) {
+    const p = P(l.X, 0, l.Z); if (p[2] < 2 || p[0] < -200 || p[0] > W + 200) return; const k = kAt(p), x = p[0], y = p[1], top = y - 5 * k;
+    if (!emissive) { g.strokeStyle = '#4a3a2c'; g.lineWidth = Math.max(1, .14 * k); g.beginPath(); g.moveTo(x, y); g.lineTo(x, top); g.lineTo(x + .5 * k, top); g.stroke(); g.fillStyle = '#e9dcb8'; g.fillRect(x + .3 * k, top, .45 * k, .6 * k); return; }
+    const n = nightAmt(t); if (n <= .1) return; g.save(); g.globalCompositeOperation = 'lighter'; const R = 1.1 * k; const rg = g.createRadialGradient(x + .52 * k, top + .3 * k, 0, x + .52 * k, top + .3 * k, R); rg.addColorStop(0, `rgba(255,214,140,${.6 * n})`); rg.addColorStop(1, 'rgba(255,170,80,0)'); g.fillStyle = rg; g.fillRect(x + .52 * k - R, top + .3 * k - R, 2 * R, 2 * R); g.restore();
+  }
+  // bikes: people on wheels (Gilliam's cheat), crossing all day; positions wrap relative to the car so the playa always has traffic
+  const BIKES = [...Array(14)].map((_, i) => ({ Z: [-16, 14, 20, 32, 40, -19, 9][i % 7] + (i > 6 ? 3 : 0), v: (i % 2 ? 1 : -1) * (2.2 + (i % 5) * .7), off: i * 23, col: ['#d8452f', '#2f6fb5', '#e8b23a', '#3c8c5a', '#f2ede0', '#7a3c8c', '#e07a2f'][i % 7], i }));
+  function bike(b, t) {
+    const X = carX(clamp(t, 14, 238)) + ((((b.v * t + b.off) % 180) + 180) % 180) - 90, p = P(X, 0, b.Z); if (p[2] < 1.5 || p[0] < -150 || p[0] > W + 150) return null;
+    return { z: p[2], draw: () => { const k = kAt(p), x = p[0], y = p[1], d = Math.sign(b.v), wr = .34 * k, bob = (Math.floor(t * 8 + b.i) % 2) * .03 * k;
+      g.strokeStyle = '#2a2420'; g.lineWidth = Math.max(1, .05 * k); for (const w of [-.55, .55]) { g.beginPath(); g.arc(x + w * k, y - wr, wr, 0, TAU); g.stroke(); }
+      g.beginPath(); g.moveTo(x - .55 * k, y - wr); g.lineTo(x, y - .75 * k); g.lineTo(x + .55 * k, y - wr); g.moveTo(x, y - .75 * k); g.lineTo(x + d * .45 * k, y - 1.05 * k); g.stroke();
+      g.fillStyle = b.col; g.fillRect(x - .17 * k, y - 1.55 * k - bob, .34 * k, .65 * k); g.fillStyle = '#e8d4b4'; g.beginPath(); g.arc(x + d * .05 * k, y - 1.72 * k - bob, .13 * k, 0, TAU); g.fill();
+      g.strokeStyle = b.col; g.lineWidth = .08 * k; g.beginPath(); g.moveTo(x, y - 1.4 * k - bob); g.lineTo(x + d * .45 * k, y - 1.05 * k); g.stroke();
+      if (b.i % 3 === 0) { g.fillStyle = '#f2ede0'; g.beginPath(); g.ellipse(x - d * .1 * k, y - 1.86 * k - bob, .28 * k, .06 * k, 0, 0, TAU); g.fill(); } }, shadow: () => shadowStick(X, 0, 1.8, b.Z, .5, t) };
+  }
+  // the crowd that walks a spiral to the Man at dusk, then rings it; on "we didn't vote" they hold up ballots (Nakamura's route)
+  const CROWD = [...Array(90)].map((_, i) => ({ a: rnd(i, 11) * TAU, r: 22 + rnd(i, 12) * 14, col: ['#d8452f', '#2f6fb5', '#e8b23a', '#3c8c5a', '#f2ede0', '#7a3c8c'][i % 6], i }));
+  function crowdInto(t, list) {
+    if (t < 192) return; const arrive = ease(t, 194, 214);
+    for (const c of CROWD) { const spin = (1 - arrive) * 2.4, a = c.a + spin, r = c.r + (1 - arrive) * 40, X = MAN.x + Math.cos(a) * r, Z = MAN.z + Math.sin(a) * r * .7; if (Z < -20) continue;
+      const p = P(X, 0, Z); if (p[2] < 1.5 || p[0] < -100 || p[0] > W + 100) continue;
+      list.push({ z: p[2], draw: () => { const k = kAt(p), x = p[0], y = p[1], step = Math.floor(t * 6 + c.i) % 2 * (1 - arrive) * .05 * k, vote = t > L_(35).s ? ease(t, L_(35).s + c.i * .03, L_(35).s + .6 + c.i * .03) : 0;
+        g.fillStyle = '#3a3040'; g.fillRect(x - .12 * k, y - .85 * k, .1 * k, .85 * k); g.fillRect(x + .02 * k, y - .85 * k + step, .1 * k, .85 * k - step);
+        g.fillStyle = c.col; g.fillRect(x - .2 * k, y - 1.5 * k, .4 * k, .68 * k); g.fillStyle = '#e8d4b4'; g.beginPath(); g.arc(x, y - 1.65 * k, .13 * k, 0, TAU); g.fill();
+        if (vote > 0) { const hx = x + .25 * k, hy = y - lerp(1.3, 2.15, vote) * k; g.strokeStyle = c.col; g.lineWidth = .09 * k; g.beginPath(); g.moveTo(x + .15 * k, y - 1.4 * k); g.lineTo(hx, hy); g.stroke(); g.fillStyle = '#fbf7ec'; g.fillRect(hx - .12 * k, hy - .32 * k, .24 * k, .3 * k); g.fillStyle = '#1a1a1a'; g.fillRect(hx - .07 * k, hy - .22 * k, .14 * k, .02 * k); } } });
+    }
+  }
+  function spinners(t) { // fire spinners in the crowd at night: rings of light on chains
+    const n = nightAmt(t); if (n < .3) return; g.save(); g.globalCompositeOperation = 'lighter';
+    for (let i = 0; i < 6; i++) { const c = CROWD[i * 13], a = c.a, X = MAN.x + Math.cos(a) * (c.r - 4), Z = MAN.z + Math.sin(a) * (c.r - 4) * .7, p = P(X, 1.3, Z); if (p[2] < 2) continue; const k = kAt(p);
+      for (let j = 0; j < 2; j++) { const ang = t * 9 + j * Math.PI + i, fx = p[0] + Math.cos(ang) * .9 * k, fy = p[1] + Math.sin(ang) * .9 * k; const rg = g.createRadialGradient(fx, fy, 0, fx, fy, .5 * k); rg.addColorStop(0, `rgba(255,210,120,${n})`); rg.addColorStop(1, 'rgba(255,90,20,0)'); g.fillStyle = rg; g.fillRect(fx - .5 * k, fy - .5 * k, k, k);
+        g.strokeStyle = `rgba(255,150,60,${.5 * n})`; g.lineWidth = Math.max(1, .12 * k); g.beginPath(); g.arc(p[0], p[1], .9 * k, ang - .9, ang); g.stroke(); } }
+    g.restore();
+  }
+  function ballotEmbers(t) { // the raised ballots burn and rise in the heat over the Man
+    const s = L_(35).s + 2; if (t < s) return; g.save();
+    for (let i = 0; i < 46; i++) { const ph = ((t - s) * .12 + rnd(i, 21)) % 1, X = MAN.x + (rnd(i, 22) - .5) * 30, Z = MAN.z + (rnd(i, 23) - .5) * 14, p = P(X + n1(900 + i, t * .4) * 3, 2 + ph * 26, Z); if (p[2] < 2) continue; const k = kAt(p);
+      g.translate(p[0], p[1]); g.rotate(t * 1.5 + i); g.fillStyle = `rgba(255,${200 - ph * 120},${140 - ph * 120},${(1 - ph) * .9 * (1 - ease(t, 262, 267))})`; g.fillRect(-.22 * k, -.15 * k, .44 * k, .3 * k); g.setTransform(1, 0, 0, 1, 0, 0); }
+    g.restore();
+  }
+  function dustDevil(X, Z, t, amt, seed) { // a spinning column of playa dust
+    const p = P(X, 0, Z); if (p[2] < 2 || amt <= 0) return; const k = kAt(p), H2 = 14 * amt;
+    g.save(); for (let i = 0; i < 26; i++) { const u = i / 26, y = p[1] - u * H2 * k, w = (.6 + u * u * 4) * k, a = t * 6 + u * 9 + seed; g.fillStyle = `rgba(214,182,130,${.16 * amt * (1 - u * .6)})`; g.beginPath(); g.ellipse(p[0] + Math.sin(a) * w * .35 + n1(seed, t + u) * k, y, w, .5 * k, 0, 0, TAU); g.fill(); } g.restore();
+  }
+
+  // ---------- lyric installations on the playa ----------
+  // Von Ulrich: give the idea a body. A monumental ear on crutches listens from "every tape recorder" on; the recorders stack on its lobe.
+  function bigEar(t, list) { const s = wt(2, 'every'); if (t < s - .3) return; const X = carX(s) + 14, Z = 24, grow = easeOutBack(clamp((t - s + .3) / 1.1));
+    list.push({ z: P(X, 0, Z)[2], draw: () => { const p = P(X, 0, Z); if (p[2] < 1) return; const k = kAt(p) * grow, x = p[0], y = p[1], h = 9 * k;
+      for (const d of [-1, 1]) { g.strokeStyle = PAL.crutch; g.lineWidth = Math.max(1, .25 * k); g.beginPath(); g.moveTo(x + d * 2.6 * k, y); g.lineTo(x + d * 1.4 * k, y - h * .55); g.stroke(); g.lineWidth = Math.max(1, .4 * k); g.strokeStyle = '#e9dcc2'; g.beginPath(); g.moveTo(x + d * 1.4 * k - .7 * k, y - h * .55); g.lineTo(x + d * 1.4 * k + .7 * k, y - h * .55); g.stroke(); }
+      const eg = g.createRadialGradient(x - 1.2 * k, y - h * .78, .3 * k, x, y - h * .6, 5 * k); eg.addColorStop(0, '#f6d7bd'); eg.addColorStop(1, '#c58a6a'); g.fillStyle = eg;
+      g.beginPath(); g.moveTo(x - .4 * k, y - h * .3); g.bezierCurveTo(x - 3.4 * k, y - h * .45, x - 3.2 * k, y - h * 1.08, x, y - h); g.bezierCurveTo(x + 2.6 * k, y - h * .95, x + 2.4 * k, y - h * .62, x + 1 * k, y - h * .52); g.bezierCurveTo(x + .2 * k, y - h * .45, x + 1 * k, y - h * .3, x - .4 * k, y - h * .3); g.fill();
+      g.strokeStyle = '#9c5f45'; g.lineWidth = Math.max(1, .3 * k); g.beginPath(); g.moveTo(x - 1.6 * k, y - h * .5); g.bezierCurveTo(x - 2.1 * k, y - h * .9, x + 1.6 * k, y - h * 1.0, x + 1 * k, y - h * .7); g.bezierCurveTo(x + .4 * k, y - h * .6, x - .6 * k, y - h * .7, x - .3 * k, y - h * .55); g.stroke();
+      const n = Math.floor(clamp((t - s) / 2.5) * 6); for (let i = 0; i < n; i++) { g.fillStyle = '#3a3a40'; g.fillRect(x - 1.3 * k + (i % 3) * .8 * k, y - h * .3 - (1 + Math.floor(i / 3)) * .45 * k, .7 * k, .42 * k); g.fillStyle = '#d8d0bc'; g.beginPath(); g.arc(x - 1.1 * k + (i % 3) * .8 * k, y - h * .3 - (.8 + Math.floor(i / 3)) * .45 * k, .1 * k, 0, TAU); g.arc(x - .8 * k + (i % 3) * .8 * k, y - h * .3 - (.8 + Math.floor(i / 3)) * .45 * k, .1 * k, 0, TAU); g.fill(); } },
+      shadow: () => shadowStick(X, 0, 9 * grow, Z, 3 * grow, t) }); }
+  // a mouth sculpture with a padlock through its lips, on "gag order"
+  function gagMouth(t, list) { const s = L_(2).s; if (t < s - .2) return; const X = carX(s) - 12, Z = 30, grow = easeOutBack(clamp((t - s + .2) / .9));
+    list.push({ z: P(X, 0, Z)[2], draw: () => { const p = P(X, 0, Z); if (p[2] < 1) return; const k = kAt(p) * grow, x = p[0], y = p[1] - 5 * k;
+      g.strokeStyle = '#6b4a2a'; g.lineWidth = Math.max(1, .3 * k); g.beginPath(); g.moveTo(x, p[1]); g.lineTo(x, y + 1.2 * k); g.stroke();
+      g.fillStyle = '#c0322a'; g.beginPath(); g.moveTo(x - 3 * k, y); g.bezierCurveTo(x - 1.5 * k, y - 1.6 * k, x - .3 * k, y - .9 * k, x, y - .6 * k); g.bezierCurveTo(x + .3 * k, y - .9 * k, x + 1.5 * k, y - 1.6 * k, x + 3 * k, y); g.bezierCurveTo(x + 1.5 * k, y + 1.7 * k, x - 1.5 * k, y + 1.7 * k, x - 3 * k, y); g.fill();
+      g.strokeStyle = '#6a1712'; g.lineWidth = Math.max(1, .12 * k); g.beginPath(); g.moveTo(x - 3 * k, y); g.quadraticCurveTo(x, y + .35 * k, x + 3 * k, y); g.stroke();
+      g.strokeStyle = '#b8b4aa'; g.lineWidth = Math.max(1, .18 * k); g.beginPath(); g.arc(x, y + .1 * k, .45 * k, Math.PI, TAU); g.stroke(); g.fillStyle = '#c9a43a'; g.fillRect(x - .6 * k, y + .1 * k, 1.2 * k, .9 * k); },
+      shadow: () => shadowStick(X, 0, 6.5 * grow, Z, 4 * grow, t) }); }
+  // newspapers tumble across the playa on every "news"
+  function tumblePapers(t, list) { for (const li of [4, 11, 32]) { const s = L_(li).s; if (t < s - .5 || t > L_(li).e + 3) continue; const base = carX(s);
+    for (let i = 0; i < 6; i++) { const X = base - 30 + (t - s) * 7 + i * 6, Z = 6 + i * 5, Y = Math.abs(Math.sin((t - s) * 3 + i)) * 1.2;
+      const p = P(X, Y + .4, Z); if (p[2] < 1) continue; list.push({ z: p[2], draw: () => { const k = kAt(p); g.save(); g.translate(p[0], p[1]); g.rotate((t - s) * 4 + i); g.fillStyle = '#ece6d6'; g.fillRect(-.45 * k, -.3 * k, .9 * k, .6 * k); g.fillStyle = 'rgba(120,110,95,.5)'; for (let c = 0; c < 3; c++) g.fillRect((-.38 + c * .27) * k, -.2 * k, .2 * k, .4 * k); g.restore(); }, shadow: () => {} }); } } }
+  // a dust devil rises on every "spin"
+  function spinDevils(t) { for (const li of [6, 13, 19, 34]) { const s = wt(li, 'spin'); const amt = ease(t, s - .3, s + 1) * (1 - ease(t, s + 5, s + 7)); if (amt > 0) dustDevil(carX(s) + 16, 28, t, amt, li); } dustDevil(carX(clamp(t, 14, 238)) - 45 + ((t * 3) % 90), 95, t, .6 * (1 - nightAmt(t)), 3); }
+  // Gilliam, crowds of copies: a column of identical suits rolls across on wheels in each refrain and nods as one on "rehearsed"
+  function suitColumn(t, list) { const wins = [[L_(4).s, L_(6).e], [L_(11).s, L_(13).e], [L_(30).s - .5, L_(34).e]];
+    for (const [s, e] of wins) { if (t < s || t > e) continue; const base = carX(s), v = 2.6;
+      for (let i = 0; i < 16; i++) { const X = base - 40 + (t - s) * (v + 1.6) - i * 2.2, Z = 13; const p = P(X, 0, Z); if (p[2] < 1.5 || p[0] < -80 || p[0] > W + 80) continue;
+        list.push({ z: p[2], draw: () => { const k = kAt(p), x = p[0], y = p[1], hop = (Math.floor((t - s) * 4) % 2) * .08 * k, nod = t > L_(30).s && t < L_(30).e ? Math.abs(Math.sin((t - L_(30).s) * 1.6 * Math.PI)) * .06 * k : 0;
+          g.fillStyle = '#141216'; g.beginPath(); g.arc(x - .2 * k, y - .15 * k, .15 * k, 0, TAU); g.arc(x + .2 * k, y - .15 * k, .15 * k, 0, TAU); g.fill();
+          g.fillStyle = PAL.suit; g.fillRect(x - .22 * k, y - 1.05 * k - hop, .44 * k, .8 * k); g.fillRect(x - .26 * k, y - 1.75 * k - hop, .52 * k, .72 * k);
+          g.fillStyle = '#f4efe6'; g.beginPath(); g.moveTo(x - .08 * k, y - 1.75 * k - hop); g.lineTo(x, y - 1.45 * k - hop); g.lineTo(x + .08 * k, y - 1.75 * k - hop); g.fill(); rosette(x - .15 * k, y - 1.62 * k - hop, .04 * k);
+          egg(x, y - 1.95 * k - hop + nod, k, true, 0); }, shadow: () => shadowStick(X, 0, 2, Z, .5, t) }); } } }
+  // Gilliam, take the lyric literally: wind-up chattering teeth roll past on "soundbite"
+  function teeth(t, list) { const s = wt(8, 'patent') - .5; if (t < s || t > L_(9).s + 1) return; const X = carX(s) + 26 - (t - s) * 3.4, Z = 9; const p = P(X, 0, Z); if (p[2] < 1.5) return;
+    list.push({ z: p[2], draw: () => { const k = kAt(p), x = p[0], y = p[1] - .4 * k, ch = Math.abs(Math.sin(t * 14)) * .5 * k;
+      g.fillStyle = '#e07a8a'; g.beginPath(); g.ellipse(x, y - .6 * k, 1.6 * k, .55 * k, 0, 0, TAU); g.fill(); g.beginPath(); g.ellipse(x, y - 1.3 * k - ch, 1.6 * k, .55 * k, 0, 0, TAU); g.fill();
+      g.fillStyle = '#fbf7ec'; for (let i = 0; i < 8; i++) { g.fillRect(x - 1.3 * k + i * .33 * k, y - 1 * k, .28 * k, .4 * k); g.fillRect(x - 1.3 * k + i * .33 * k, y - 1.3 * k - ch, .28 * k, .4 * k); }
+      g.strokeStyle = '#c9a43a'; g.lineWidth = .12 * k; g.save(); g.translate(x + 1.9 * k, y - .9 * k); g.rotate(t * 5); g.beginPath(); g.moveTo(-.5 * k, 0); g.lineTo(.5 * k, 0); g.moveTo(0, -.5 * k); g.lineTo(0, .5 * k); g.stroke(); g.restore();
+      g.fillStyle = '#1a1412'; g.beginPath(); g.arc(x - 1 * k, p[1] - .2 * k, .2 * k, 0, TAU); g.arc(x + 1 * k, p[1] - .2 * k, .2 * k, 0, TAU); g.fill(); }, shadow: () => shadowStick(X, 0, 2, Z, 3, t) }); }
+  // a soft clock art car: its face droops over its cart; on "once upon a time" its hands run backward
+  function clockCar(t, list) { const X = -10 + t * 1.42, Z = 42; const p = P(X, 0, Z); if (p[2] < 2 || p[0] < -300 || p[0] > W + 300) return;
+    list.push({ z: p[2], draw: () => { const k = kAt(p), x = p[0], y = p[1], m = .4 + melt(t) * .8, back = wt(15, 'time'), hands = t < back ? t * .2 : back * .2 - ease(t, back, back + 3) * 25;
+      g.fillStyle = '#4a3a2c'; g.fillRect(x - 3 * k, y - 1.6 * k, 6 * k, 1.2 * k); g.fillStyle = '#17120f'; g.beginPath(); g.arc(x - 2 * k, y - .4 * k, .4 * k, 0, TAU); g.arc(x + 2 * k, y - .4 * k, .4 * k, 0, TAU); g.fill();
+      const cy = y - 4.2 * k, R = 2.6 * k; g.fillStyle = '#e8d9a8'; g.beginPath(); for (let i = 0; i <= 40; i++) { const a = i / 40 * TAU, sag = Math.max(0, Math.sin(a)) * m * 2.2 * k * (.5 + .5 * Math.cos(a * 2)); const px = x + Math.cos(a) * R, py = cy + Math.sin(a) * R + sag; i ? g.lineTo(px, py) : g.moveTo(px, py); } g.closePath(); g.fill(); g.strokeStyle = '#b08a3a'; g.lineWidth = .18 * k; g.stroke();
+      g.fillStyle = '#3a2a1a'; for (let i = 0; i < 12; i++) { const a = i / 12 * TAU; g.fillRect(x + Math.cos(a) * R * .8 - .08 * k, cy + Math.sin(a) * R * .8 - .08 * k + Math.max(0, Math.sin(a)) * m * 1.2 * k, .16 * k, .16 * k); }
+      g.strokeStyle = '#1a1412'; g.lineCap = 'round'; for (const [len, sp, w] of [[1.5, 1, .18], [2.1, 12, .1]]) { const a = hands * sp - Math.PI / 2; g.lineWidth = w * k; g.beginPath(); g.moveTo(x, cy); g.lineTo(x + Math.cos(a) * len * k, cy + Math.sin(a) * len * k); g.stroke(); } },
+      shadow: () => shadowStick(X, 0, 7, Z, 5, t) }); }
+  // Gilliam, lie about scale: chess pieces the size of art cars on "knight to queen's rook"
+  function giantChess(t, list) { const s = L_(26).s, e = L_(27).e + .3; if (t < s - .3 || t > e) return; const base = carX(s), up = easeOutBack(clamp((t - s + .3) / .7)) * (1 - ease(t, e - .6, e)), foul = ease(t, wt(27, 'foul'), wt(27, 'foul') + .6);
+    const pieces = [{ X: base + 16, Z: 20, kind: 'knight', col: '#1d1a1a' }, { X: base - 14, Z: 26, kind: 'rook', col: '#efe6cf' }, { X: base + 4, Z: 34, kind: 'rook', col: '#1d1a1a' }];
+    for (const pc of pieces) { const p = P(pc.X, 0, pc.Z); if (p[2] < 1.5) continue; list.push({ z: p[2], draw: () => { const k = kAt(p) * up, x = p[0], y = p[1]; g.save(); g.translate(x, y); if (pc.kind === 'rook' && pc.col === '#efe6cf') g.rotate(foul * 1.4); g.fillStyle = pc.col;
+      if (pc.kind === 'rook') { g.fillRect(-1.6 * k, -6 * k, 3.2 * k, 6 * k); g.fillRect(-2 * k, -7 * k, 4 * k, 1.2 * k); for (let i = 0; i < 3; i++) g.fillRect((-2 + i * 1.5) * k, -8 * k, 1 * k, 1 * k); g.fillRect(-2.2 * k, -.8 * k, 4.4 * k, .8 * k); }
+      else { g.beginPath(); g.moveTo(-2.2 * k, 0); g.lineTo(2.2 * k, 0); g.lineTo(1.3 * k, -3 * k); g.quadraticCurveTo(3 * k, -5 * k, .5 * k, -8 * k); g.lineTo(-2.4 * k, -5.6 * k); g.lineTo(-.2 * k, -5 * k); g.lineTo(-1.3 * k, -3 * k); g.fill(); }
+      g.restore(); }, shadow: () => shadowStick(pc.X, 0, 8 * up, pc.Z, 3 * up, t) }); } }
+  // Gilliam, stop it from above, once: a giant gavel drops out of the sky at the end of the last refrain
+  function bigGavel(t) { const s = L_(34).e - .5; if (t < s - .6 || t > s + 2.5) return; const X = carX(s) + 12, Z = 14, drop = t < s ? 1 - ((t - s + .6) / .6) ** 2 : 0, lift = ease(t, s + 1.1, s + 2.4);
+    const yAir = (drop + lift) * 40, p = P(X, yAir, Z), pg = P(X, 0, Z); if (p[2] < 1) return; const k = kAt(p);
+    g.save(); g.translate(p[0], p[1]); g.rotate(-.15); g.fillStyle = '#5a3418'; g.fillRect(-.6 * k, -12 * k, 1.2 * k, 12 * k); const hg = g.createLinearGradient(-4 * k, 0, 4 * k, 0); hg.addColorStop(0, '#9a5a2a'); hg.addColorStop(1, '#4a2410'); g.fillStyle = hg; g.fillRect(-4.5 * k, -2.6 * k, 9 * k, 2.6 * k); g.fillStyle = '#c9a43a'; g.fillRect(-4.5 * k, -1.8 * k, .5 * k, 1 * k); g.fillRect(4 * k, -1.8 * k, .5 * k, 1 * k); g.restore();
+    const puff = t > s ? ease(t, s, s + .2) * (1 - ease(t, s + .4, s + 1.6)) : 0; if (puff > 0) { const kg = kAt(pg); for (let i = 0; i < 12; i++) { const a = i / 12 * Math.PI, r = (4 + (t - s) * 10) * kg; g.fillStyle = `rgba(220,190,140,${.35 * puff})`; g.beginPath(); g.ellipse(pg[0] + Math.cos(a + Math.PI) * r, pg[1] - Math.sin(a) * r * .25, 2.5 * kg, 1 * kg, 0, 0, TAU); g.fill(); } } }
+  // the pie of lies: blackbirds burst out on "pie" (four and twenty, near enough)
+  function pieBirds(t) { const s = wt(23, 'pie'); if (t < s || t > s + 2.4) return;
+    for (let i = 0; i < 9; i++) { const u = clamp((t - s - i * .06) / 2); if (u <= 0) continue; const p = PL(-.15 + (rnd(i, 31) - .5) * .4 + u * (rnd(i, 32) - .5) * 8, TOP + .1 + u * 4, -.95 - u * 2); if (p[2] < .3) continue; const k = kAt(p), f = Math.sin(t * 30 + i) * .25 * k;
+      g.fillStyle = '#16131a'; g.beginPath(); g.ellipse(p[0], p[1], .14 * k, .07 * k, 0, 0, TAU); g.fill(); g.beginPath(); g.moveTo(p[0], p[1]); g.lineTo(p[0] - .3 * k, p[1] - f); g.lineTo(p[0] - .1 * k, p[1] + .02 * k); g.lineTo(p[0] + .3 * k, p[1] - f); g.lineTo(p[0] + .1 * k, p[1] + .02 * k); g.fill(); } }
+  // Nakamura, inhabit the object: tiny burners climb the line chart on the whiteboard (drawn in board units)
+  function chartClimbers(t) { const pts = [[.58, .8], [.66, .72], [.73, .76], [.8, .58], [.87, .5], [.93, .34]];
+    for (let i = 0; i < 3; i++) { const u = ((t * .05 + i / 3) % 1) * 5, j = Math.floor(u), f = u - j, a = pts[j], b = pts[j + 1]; const x = lerp(a[0], b[0], f), y = lerp(a[1], b[1], f) - .012;
+      g.fillStyle = ['#d8452f', '#2f6fb5', '#3c8c5a'][i]; g.fillRect(x - .006, y - .03, .012, .03); g.fillStyle = '#e8d4b4'; g.beginPath(); g.arc(x, y - .036, .007, 0, TAU); g.fill(); } }
+
   // ---------- grade ----------
   function grade(t, layer) {
     const gold = ease(t, 172, 200) * (1 - ease(t, 205, 215)), night = ease(t, 199, 216);
@@ -561,7 +699,7 @@
     chessPieces(t); speakerphone(t); dime(t); pie(t); book(t); chips(t); jailModel(t); newspapers(t);
     whiteboard(t, false);
     seats.filter((x) => x.d <= mid).forEach(seatDraw);
-    tapeRecorders(t); truth(t, false); micBooms(t); bobPopUp(t);
+    tapeRecorders(t); truth(t, false); micBooms(t); pieBirds(t); bobPopUp(t);
   }
   function render(t) {
     C = camAt(t); CP = Math.cos(C.p); SP = Math.sin(C.p); CX = carX(t); CZ = carZ(t); YAW = yaw(t);
@@ -570,17 +708,23 @@
     const list = [];
     list.push({ z: P(MAN.x, 0, MAN.z)[2], draw: () => theMan(t), shadow: () => shadowStick(MAN.x, 0, 22, MAN.z, 6, t) });
     elephantsInto(t, list); jails(t, list); poorPerson(t, list); cops(t, list);
-    for (const o of list) if (o.z > .5) o.shadow();
+    for (const c of CAMPS) { const z = P(c.X, 0, c.Z)[2]; if (z > 2) list.push({ z, draw: () => camp(c, t), shadow: () => shadowOf([[c.X - c.r, 0, c.Z], [c.X + c.r, 0, c.Z], [c.X, c.r, c.Z]], t) }); }
+    for (const l of LAMPS) { const z = P(l.X, 0, l.Z)[2]; if (z > 2) list.push({ z, draw: () => lamp(l, t, false), shadow: () => shadowStick(l.X, 0, 5, l.Z, .15, t) }); }
+    for (const b of BIKES) { const o = bike(b, t); if (o) list.push(o); }
+    crowdInto(t, list); bigEar(t, list); gagMouth(t, list); tumblePapers(t, list); suitColumn(t, list); teeth(t, list); clockCar(t, list); giantChess(t, list);
+    for (const o of list) if (o.z > .5 && o.shadow) o.shadow();
     tableShadow(t);
     list.sort((a, b) => b.z - a.z); for (const o of list) if (o.z > .3) o.draw();
+    spinDevils(t); bigGavel(t);
     grade(t);
+    for (const l of LAMPS) lamp(l, t, true); spinners(t);
     // the car layer: drawn, graded, lit by its own emissive props, masked to its own pixels, then laid over the fire
     g = gc; gc.setTransform(1, 0, 0, 1, 0, 0); gc.globalCompositeOperation = 'source-over'; gc.globalAlpha = 1; gc.clearRect(0, 0, W, H);
     drawCar(t); gm.clearRect(0, 0, W, H); gm.drawImage(CARC, 0, 0); grade(t, true); gc.globalCompositeOperation = 'destination-in'; gc.drawImage(MASK, 0, 0); gc.globalCompositeOperation = 'source-over';
     whiteboard(t, true); truth(t, true); g = g0;
     const carBehind = P(CX, 0, CZ)[2] > P(MAN.x, 0, MAN.z)[2];
     if (carBehind) g.drawImage(CARC, 0, 0);
-    manFire(t);
+    manFire(t); ballotEmbers(t);
     if (!carBehind) g.drawImage(CARC, 0, 0);
     bobWalk(t);
     vignette();
