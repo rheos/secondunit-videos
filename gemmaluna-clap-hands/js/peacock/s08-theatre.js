@@ -102,7 +102,9 @@ const SUN0 = { x: 540, y: 1100, r: 200 };
     // inside the opening: the backdrop of dreams, the floor, the props
     g.save(); g.clip(opening());
     cut(rect(OP.x, OP.y, OP.w, FLOOR - OP.y), C.tealDeep, { sh: 0 });
-    halo(540, 1060, 290, t * .03, 1, [C.goldDeep, C.creamDeep, C.cream, C.goldDeep], 'lace'); // a lace roundel for the shadow play
+    // a lace roundel for the shadow play; once the dog and dragonflies are done it sinks into the dark, so the
+    // spotlit jeans and helmet read against plain backdrop, not a busy disc (draft 4)
+    { const rk = 1 - .85 * ss(148.2, 149.0, t); g.save(); g.globalAlpha *= rk; halo(540, 1060, 290, t * .03, 1, [C.goldDeep, C.creamDeep, C.cream, C.goldDeep], 'lace'); g.restore(); }
     for (let i = 0; i < 14; i++) cut(star4(OP.x + 40 + hash(i * 3.1) * (OP.w - 80), OP.y + 120 + hash(i * 7.7) * 500, 10 + hash(i) * 8), C.goldPale, { sh: .2, grain: 0 });
     cut(poly([[OP.x - 40, FLOOR], [OP.x + OP.w + 40, FLOOR], [OP.x + OP.w + 120, OP.y + OP.h], [OP.x - 120, OP.y + OP.h]]), C.goldDeep, { sh: .6 });
     for (let i = 0; i < 6; i++) cut(rect(OP.x - 100, FLOOR + 20 + i * 32, OP.w + 200, 3), C.plumDeep, { sh: 0, grain: 0, alpha: .5 });

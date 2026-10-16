@@ -259,6 +259,6 @@
     for (const b of BITES) { const u = clamp((t - b - .3) / .45); if (u <= 0 || u >= 1) continue; for (let i = 0; i < 5; i++) { const x = lerp(sx + 40, 540 + (i - 2) * 18, u), y = lerp(sy + 10, 1010, u) - Math.sin(u * Math.PI) * (220 + i * 20); cut(circle(x, y, 13 - u * 5), i % 2 ? C.plumDeep : C.tealDeep, { sh: .3, grain: 0 }); } }
     g.save(); g.translate(hatX, hatY); g.rotate(-.06 - hp * 5.5); g.scale(1 - hp * .5, 1 - hp * .5); topHat(0, 0, .9, 0); g.restore();
     g.restore();
-    sheet(C.goldPale, .3 * ss(73.45, 73.6, t) + .3 * (1 - ss(70.6, 70.75, t)));
+    sheet(C.goldPale, .12 * ss(73.45, 73.6, t) + .3 * (1 - ss(70.6, 70.75, t))); // draft 4: a lighter wash into the furnace (flash check sat at 3/s)
   }); // the quay lamp becomes the deck lamp (same lamp, same place, pulled back from)
 })();

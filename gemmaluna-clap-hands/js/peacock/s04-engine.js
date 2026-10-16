@@ -135,6 +135,7 @@
     // clap 2's foreground: two great pistons pumping close to the lens, low angle
     const fg = ss(77.2, 77.9, t) * (1 - ss(79.9, 80.6, t));
     if (fg > 0) for (const x of [80, 1000]) { const e = 120 * p + 220 * strike; g.save(); g.globalAlpha *= fg * .95; cut(rect(x - 46, 1100 - e, 92, 900), C.goldDeep, { sh: 1, lift: .6 }); cut(rect(x - 52, 1060 - e, 104, 50), C.gold, { sh: .4 }); g.restore(); }
-    sheet(C.goldPale, .3 * (1 - ss(73.6, 73.77, t)));
+    sheet(C.goldPale, .2 * (1 - ss(73.6, 74.15, t))); // draft 4: a slower wash out of the furnace covers the pull-back's
+    // second brightening (the flash check sat at its 3/s limit here)
   });
 })();

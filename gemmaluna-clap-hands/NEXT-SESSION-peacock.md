@@ -78,3 +78,16 @@ before the "pistol" punch-in, the rail still swaying). Before/after vs draft 2 o
 lands as listed, nothing protected got worse. Worth a look: in the theatre the lace roundel on the backdrop sits
 behind the jeans and the helmet, so the spotlit props read against a busy disc. Uploaded unlisted:
 https://youtu.be/ywgJqjnEjJ4 (Telegram sent). Waiting on Robin's error list and notes.
+
+## Audit of draft 3 (2026-10-16) - START HERE for draft 4
+
+Robin had no error list for draft 3 and asked how to find improvements. He chose a cold audit, the three known fixes,
+and a Terry Gilliam guest pass. `AUDIT-d3.md` (local only): themes, merged protect list, a three-pass plan for draft 4,
+and the five critics' reports. `GILLIAM-DIRECTION.md` (local only): one proposal per section, the stiff thing is
+official time, top 5 picks (clock weight on "time", the overspeeding governor, always another millionaire, the moon's
+pips become stars, the bowler flies off as a bird).
+
+Already in the code for draft 4 (checked on short local renders in `out/peacock/d4-check/`): claps 8, 15, 16 moved onto
+the sung onset (86.958, 189.042, 193.042); the theatre roundel sinks into the dark after the shadow play; a lighter,
+slower gold wash at the furnace match cut (confirm with the full-film flash check). Draft 4 renders through
+`tools/cloud-render/cloud-render.sh --draft --tall` (PR #159 merged), not on the Mac.
