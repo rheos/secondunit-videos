@@ -131,6 +131,7 @@ const SH = [
   ...shotsEnd(),
 ];
 function camAt(t) {
+  { const ce = typeof camEnd === 'function' ? camEnd(t) : null; if (ce) return ce; } // the dusk aerial over Black Rock City (camera-end.js)
   let i = 0; while (i + 1 < SH.length && SH[i + 1][0] <= t) i++;
   const e = SH[i], p = SH[Math.max(0, i - 1)], u = e[1] > 0 ? smooth((t - e[0]) / e[1]) : 1;
   const v = [2, 3, 4, 5, 6].map((k) => lerp(p[k], e[k], u));

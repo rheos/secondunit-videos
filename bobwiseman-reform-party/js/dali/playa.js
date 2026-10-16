@@ -407,8 +407,12 @@ function bmCamp(c, t, p) {
   g.restore();
 }
 const BM_CAMP_H = { dome: 1.6, tent: .9, yurt: 1.2, sail: 1.2, chairs: 1.5, drip: 1.7, eye: 1.7, speakers: 1.3, arch: 1.5, flags: 1.4, umbrella: 1.3, parked: .3 };
+// draft 4: the open playa holds art, not camps. Only the art pieces of draft 3's row stay where they were (the chair
+// tower, the melting candle, the eye on its tripod, the lantern arch); the domes, tents, sails, flags, sound camps and
+// parked props now live in Black Rock City (brcGround / brcAir below).
+const BM_PLAYA_ART = { chairs: 1, drip: 1, eye: 1, arch: 1 };
 function bmCampsInto(t, list) {
-  for (const c of BM_CAMPS) { const p = P(c.X, 0, c.Z); if (p[2] < 2) continue; const k = kAt(p); if (p[0] < -c.r * k * 2 - 400 || p[0] > W + c.r * k * 2 + 400) continue;
+  for (const c of BM_CAMPS) { if (!BM_PLAYA_ART[c.kind]) continue; const p = P(c.X, 0, c.Z); if (p[2] < 2) continue; const k = kAt(p); if (p[0] < -c.r * k * 2 - 400 || p[0] > W + c.r * k * 2 + 400) continue;
     list.push({ z: p[2], draw: () => bmCamp(c, t, p), shadow: () => shadowOf([[c.X - c.r, 0, c.Z], [c.X + c.r, 0, c.Z], [c.X, c.r * (BM_CAMP_H[c.kind] || 1), c.Z]], t) }); }
 }
 
@@ -453,13 +457,356 @@ function bmInstallsInto(t, list) {
   if (t > 126 && t < 134.3) bmInstall('seesaw', t, unf, carX(unf) + 12.5, 17, list);
 }
 
-// ---------- lamps (render.js draws them from LAMPS; soft-headed Dali street lamps that light at dusk) ----------
-const LAMPS = []; for (let X = -80; X < 420; X += 20) LAMPS.push({ X, Z: 26 + (X % 40 ? 2 : 0), droop: .3 + .7 * rnd(X, 5) });
+// ---------- Black Rock City (draft 4): the real city plan round the Man ----------
+// The Man is the centre of a circle. The city is a 240 degree arc of camps from 2:00 to 10:00, open toward 12:00, where
+// the Temple stands on the open playa 760 m out. Radial streets every half hour, named by the clock; concentric
+// streets: the Esplanade (760 m, the camps along it face the open playa), then A, B, C ... out to about 1.7 km. Center
+// Camp, a big round shade structure, sits on the Esplanade at 6:00, with the keyhole and Gate Road out at 6:00. Plazas
+// at 3:00, 4:30, 7:30 and 9:00 on G street. Four promenades lined with lampposts run from the Man to the Temple (12:00),
+// to Center Camp (6:00) and toward 3:00 and 9:00. The trash fence is a pentagon round everything; the airport is
+// outside it near 5:00.
+// Clock angle a in hours: direction from the Man = (sin(a TAU/12), -cos(a TAU/12)) in (x, z), so 12:00 = -z (the side
+// the car drives on), 3:00 = +x, 6:00 = +z (behind the Man in most shots), 9:00 = -x.
+// Two levels of drawing: from the ground the city is a band of tiny camps on the horizon (brcGround); from the air
+// (camera above about 80 m) it is a map (brcAir). Camp lights come on at dusk and are drawn after the grade
+// (brcEmissive), hidden wherever something nearer was drawn over the city (a per-frame pixel mask, brcMaskA/B).
+const brcDir = (a) => [Math.sin(a * TAU / 12), -Math.cos(a * TAU / 12)];
+const brcAt = (a, r) => { const d = brcDir(a); return [MAN.x + d[0] * r, MAN.z + d[1] * r]; };
+const brcClock = (X, Z) => { const a = Math.atan2(X - MAN.x, -(Z - MAN.z)) / TAU * 12; return a < 0 ? a + 12 : a; };
+const BRC = {
+  ESP: 760, RINGS: [760, 890, 965, 1040, 1115, 1190, 1265, 1340, 1415, 1490, 1565, 1640], EDGE: 1715, ST: 12, // Esplanade, A..K, the outer edge; streets 12 m wide
+  CC: { a: 6, r: 900, R: 45, rod: 140 },                       // Center Camp: the shade structure (R) inside Rod's Road (rod)
+  PLAZAS: [3, 4.5, 7.5, 9].map((a) => ({ a, r: 1340, R: 55 })), // on G street
+  KEY: { a: 6, r: 1690, R: 70 },                                 // the keyhole where Gate Road comes in
+  TEMPLE: { a: 12, r: 760 }, FENCE: 2420, AIRPORT: { a: 5, r: 2520, L: 1100 },
+};
+const TEMPLE_XZ = brcAt(BRC.TEMPLE.a, BRC.TEMPLE.r);
+// camp fabric and paint: silver shade cloth, white, canvas, then a few strong colours, black, RV white, raw wood
+const BRC_COLS = ['#d3d6d6', '#efe9dc', '#cdb88e', '#b8452f', '#d27a3c', '#43699a', '#6e4a86', '#55805a', '#dcb24c', '#34302f', '#e8e4da', '#8f6d48'];
+const BRC_LCOL = [[255, 206, 140], [255, 160, 72], [255, 122, 196], [122, 214, 255], [150, 255, 172], [192, 142, 255], [255, 98, 72]]; // light colours: warm white most
+const K_SHADE = 0, K_DOME = 1, K_HEXA = 2, K_TENT = 3, K_RV = 4, K_FLAG = 5, K_TOWER = 6, K_STAGE = 7, K_ART = 8, K_YURT = 9, K_TRUCK = 10, K_CC = 11;
+const BRC_ITEMS = [], BRC_BLOCKS = [];
+(() => {
+  const R = mulberry(1986), ST = BRC.ST, rings = BRC.RINGS.concat([BRC.EDGE]);
+  const ccC = brcAt(6, BRC.CC.r), keyC = brcAt(6, BRC.KEY.r), plz = BRC.PLAZAS.map((p) => brcAt(p.a, p.r));
+  const pick = (ws) => { let s = 0; for (const w of ws) s += w; let x = R() * s; for (let i = 0; i < ws.length; i++) { x -= ws[i]; if (x <= 0) return i; } return ws.length - 1; };
+  const FAB = [5, 4, 3, 1.1, 1, 1, .7, .6, .8, .45, 0, 0], BRIGHT = [1, 1, 1, 2, 2, 2, 1.5, 1.4, 1.6, .5, 0, 0], LW = [55, 20, 6, 6, 5, 4, 4];
+  const frame = (a, r) => { const th = a * TAU / 12, c = Math.cos(th), s = Math.sin(th); return { cx: MAN.x + s * r, cz: MAN.z - c * r, tx: c, tz: s, rx: s, rz: -c }; }; // t = along the clock, r = outward
+  const blocked = (X, Z, pad) => {
+    if (Math.hypot(X - ccC[0], Z - ccC[1]) < BRC.CC.rod + 7 + pad) return true;
+    if (Math.hypot(X - keyC[0], Z - keyC[1]) < BRC.KEY.R + pad) return true;
+    for (const p of plz) if (Math.hypot(X - p[0], Z - p[1]) < 55 + pad) return true;
+    const r = Math.hypot(X - MAN.x, Z - MAN.z), a = brcClock(X, Z);
+    return r > BRC.CC.r && Math.abs(a - 6) * TAU / 12 * r < 13 + pad; // the wide 6:00 road from Center Camp out to the keyhole
+  };
+  const add = (b, X, Z, k, w, d, h, c, lc, L, v) => { const dx = X - b.cx, dz = Z - b.cz;
+    const it = { X, Z, r: Math.hypot(X - MAN.x, Z - MAN.z), ring: b.ring, k, w, d, h, c, lc, L: L || [], u: dx * b.tx + dz * b.tz, v: dx * b.rx + dz * b.rz, tall: h >= 12, on: R(), al: R() < .6, ph: R() * TAU, vr: v == null ? [0, 0, 0, 3, 3, 3, 4, 4, 1, 2][Math.floor(R() * 10)] : v };
+    b.items.push(it); BRC_ITEMS.push(it); return it; };
+  // one camp on a lot: w along the street, dd deep, centred at clock a, radius r
+  const camp = (b, a, r, w, dd, zone) => {
+    const f = frame(a, r), lc = pick(LW), hw = w / 2, hd = dd / 2;
+    const put = (lu, lv, k, ww, d, h, c, L, v) => { const X = f.cx + f.tx * lu + f.rx * lv, Z = f.cz + f.tz * lu + f.rz * lv; if (blocked(X, Z, Math.max(ww, d) * .5)) return null; return add(b, X, Z, k, ww, d, h, c, lc, L, v); };
+    const shade = (lu, lv, sw, sd, h) => put(lu, lv, K_SHADE, sw, sd, h, pick(FAB), [[-sw * .42, h], [0, h + .1], [sw * .42, h]]);
+    const flag = (lu, lv) => { const h = 6 + R() * 5; put(lu, lv, K_FLAG, .6, .6, h, 3 + Math.floor(R() * 6), R() < .3 ? [[0, h]] : null); };
+    const rv = (lu, lv) => { const along = R() < .7; put(lu, lv, K_RV, along ? 9 : 3, along ? 3 : 9, 3.3, 10, [[along ? 1.8 : 0, 2.1]]); };
+    const tent = (lu, lv) => { const tw = 2.4 + R() * 2; put(lu, lv, K_TENT, tw, tw, 1.3 + R() * .9, pick(BRIGHT), R() < .35 ? [[0, .7]] : null); };
+    const hexa = (lu, lv) => put(lu, lv, K_HEXA, 4.6, 4.6, 3.6, R() < .7 ? 1 : 0, [[0, 1.4]]);
+    const dome = (lu, lv, rr) => put(lu, lv, K_DOME, rr * 2, rr * 2, rr, R() < .7 ? pick([4, 4, 2, 0, 0, 0, 0, 0, 1, 0, 0, 0]) : pick(BRIGHT), [[0, rr * .45], [rr * .4, rr * .3]]);
+    const ends = a < 3.5 || a > 8.5;
+    const W_ = zone === 'esp' ? [4, 0, 0, 2, 0, ends ? 1.6 : .25, 1.3, .4] : zone === 'in' ? [2.2, 3, 2, 1.2, 1.4, .08, .25, 0] : [.9, 4, 2.6, .5, 2, .02, .08, 0];
+    const type = ['theme', 'rv', 'tents', 'dome', 'hexa', 'sound', 'art', 'rvb'][pick(W_)];
+    const front = -hd + 2, back = hd - 2;
+    if (type === 'theme') { const sw = Math.min(w - 4, 12 + R() * 14), sd = Math.min(dd - 6, 8 + R() * 9); shade((R() - .5) * (w - sw - 2), front + sd / 2, sw, sd, 3.6 + R());
+      if (R() < .7) dome((R() - .5) * w * .5, back - 6, 3.5 + R() * 4); for (let i = 0, n = 1 + Math.floor(R() * 3); i < n; i++) flag(-hw + 1 + R() * (w - 2), front + R() * 3);
+      if (R() < .5) for (let i = 0, n = 1 + Math.floor(R() * 2); i < n; i++) hexa(-hw + 3 + R() * (w - 6), back - 3); else if (R() < .6) rv(-hw + 5 + R() * (w - 10), back - 2);
+    } else if (type === 'rv' || type === 'rvb') { for (let i = 0, n = 1 + Math.floor(R() * 3); i < n; i++) rv(-hw + 5 + i * 10 + R() * 2, back - 2 - R() * 3);
+      if (R() < .8) shade((R() - .5) * 4, front + 5, Math.min(w - 4, 7 + R() * 6), 7, 3.1); for (let i = 0, n = Math.floor(R() * 3); i < n; i++) tent(-hw + 2 + R() * (w - 4), front + 8 + R() * 6); if (R() < .3) flag(-hw + 1, front + 1);
+      if (R() < .25) put(hw - 5, back - 8, K_TRUCK, 8, 2.6, 3.8, R() < .5 ? 10 : 0);
+    } else if (type === 'tents') { for (let i = 0, n = 3 + Math.floor(R() * 5); i < n; i++) tent(-hw + 2 + R() * (w - 4), -hd + 3 + R() * (dd - 6)); if (R() < .5) shade(0, front + 4, Math.min(w - 4, 6 + R() * 4), 6, 2.8); if (R() < .2) flag(0, front + 1);
+    } else if (type === 'dome') { dome((R() - .5) * w * .3, (R() - .5) * dd * .2, 4 + R() * 4.5); for (let i = 0, n = 1 + Math.floor(R() * 3); i < n; i++) tent(-hw + 2 + R() * (w - 4), back - 2); if (R() < .5) flag(-hw + 2, front + 1); if (R() < .4) shade(hw - 5, front + 4, 7, 6, 3);
+    } else if (type === 'hexa') { const n = 3 + Math.floor(R() * 4); for (let i = 0; i < n; i++) hexa(-hw + 3 + (i % 3) * 5.4 + R(), back - 3 - Math.floor(i / 3) * 6); if (R() < .6) shade(0, front + 4, Math.min(w - 4, 8), 6, 3);
+    } else if (type === 'sound') { // a sound camp: a truss tower or two, a stage, its shade
+      const sw = Math.min(w - 4, 12 + R() * 6); put(0, (front + back) / 2, K_STAGE, sw, 8, 6 + R() * 2.5, R() < .5 ? 9 : 11, [[-sw * .4, 5.5], [0, 7], [sw * .4, 5.5], [0, 3]]);
+      for (const s of R() < .6 ? [-1, 1] : [1]) { const h = 10 + R() * 6; put(s * (sw / 2 + 2), (front + back) / 2, K_TOWER, 3, 3, h, 9, [[0, h], [0, h * .7], [0, h * .45]]); }
+      shade(0, front + 4, Math.min(w - 4, 14), 7, 3.6); flag(-hw + 1, front + 1); flag(hw - 1, front + 1);
+    } else { const h = 12 + R() * 13, aw = 7 + R() * 7; put(0, 0, K_ART, aw, aw, h, pick([0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 0, 3]) === 0 ? 11 : pick([1, 1, 0, 1, 1, 1, 1, 1, 1, 0, 0, 1]), [[-aw * .3, h * .5], [0, h], [aw * .3, h * .5], [0, h * .75]]); if (R() < .6) flag(-hw + 2, front + 1); }
+  };
+  // the blocks between streets, filled with lots
+  for (let i = 0; i < rings.length - 1; i++) {
+    const r0 = rings[i] + ST / 2, r1 = rings[i + 1] - (i + 2 < rings.length ? ST / 2 : 0), rm = (r0 + r1) / 2;
+    for (let s = 0; s < 16; s++) {
+      const am = 2.25 + s * .5, ga0 = (ST / 2) / r0 * 12 / TAU, ga1 = (ST / 2) / r1 * 12 / TAU, f = frame(am, rm);
+      const b = Object.assign({ ring: i, items: [], r0, r1, a0: am - .25, a1: am + .25 }, f), poly = [];
+      for (let j = 0; j <= 6; j++) { const a = am - .25 + ga0 + (.5 - 2 * ga0) * j / 6; poly.push(brcAt(a, r0)); }
+      for (let j = 6; j >= 0; j--) { const a = am - .25 + ga1 + (.5 - 2 * ga1) * j / 6; poly.push(brcAt(a, r1)); }
+      b.poly = poly; BRC_BLOCKS.push(b);
+      const rows = i === 0 ? [[0, .36, 'esp'], [.36, .68, 'in'], [.68, 1, 'in']] : [[0, .5, i < 5 ? 'in' : 'out'], [.5, 1, i < 5 ? 'in' : 'out']];
+      for (const [u0, u1, zone] of rows) {
+        const ra = r0 + (r1 - r0) * u0 + 1.5, rb = r0 + (r1 - r0) * u1 - 1.5, rr = (ra + rb) / 2, gl = ga0 + 1 / rr * 12 / TAU, L = (.5 - 2 * gl) * TAU / 12 * rr;
+        let s0 = 0; while (s0 < L - 8) { const w = Math.min(L - s0, (zone === 'esp' ? 22 : 14) + R() * (zone === 'esp' ? 30 : 26)); const a = am - .25 + gl + (s0 + w / 2) / rr * 12 / TAU; camp(b, a, rr, w - 2, rb - ra, zone); s0 += w; }
+      }
+    }
+  }
+  // Center Camp: the big round shade structure, a ring of camps inside Rod's Road, its opening toward the Man and the keyhole
+  { const f = frame(6, BRC.CC.r), b = Object.assign({ ring: 1, items: [], poly: null }, f), lc = 0; BRC_BLOCKS.push(b);
+    add(b, ccC[0], ccC[1], K_CC, BRC.CC.R * 2, BRC.CC.R * 2, 14, 1, 0, [[-40, 3.3], [-26, 3.3], [-12, 3.3], [12, 3.3], [26, 3.3], [40, 3.3], [0, 14.5]], 0);
+    for (let j = 0; j < 30; j++) { const ang = (j + .5) / 30 * TAU, cs = Math.cos(ang), sn = Math.sin(ang); if (Math.abs(sn) > .93) continue; // keep the axis toward the Man and out to the keyhole open
+      const rr = 100 + R() * 12, X = ccC[0] + (f.tx * cs + f.rx * sn) * rr, Z = ccC[1] + (f.tz * cs + f.rz * sn) * rr, kk = R();
+      if (kk < .45) add(b, X, Z, K_SHADE, 8 + R() * 8, 7, 3.4, pick(FAB), pick(LW), [[-4, 3.4], [4, 3.4]]); else if (kk < .7) add(b, X, Z, K_DOME, 8 + R() * 6, 8 + R() * 6, 5, pick(FAB), pick(LW), [[0, 2]]);
+      else if (kk < .85) add(b, X, Z, K_FLAG, .6, .6, 8 + R() * 3, 3 + Math.floor(R() * 6), pick(LW), [[0, 9]]); else add(b, X, Z, K_HEXA, 4.6, 4.6, 3.6, 1, pick(LW), [[0, 1.4]]); } }
+  // the plazas: an open circle with an art piece in the middle
+  BRC.PLAZAS.forEach((pz, j) => { const f = frame(pz.a, pz.r), b = Object.assign({ ring: 7, items: [], poly: null }, f); BRC_BLOCKS.push(b); const h = 13 + R() * 6; add(b, f.cx, f.cz, K_ART, 9, 9, h, 11, 1 + j, [[-3, h * .5], [0, h], [3, h * .5]], j % 5); });
+  BRC_ITEMS.sort((a, b) => b.r - a.r); // far to near from the Man: also far to near from any camera on the open playa
+})();
+// fence, Gate Road, airport (world points)
+const BRC_FENCE = [0, 1, 2, 3, 4, 5].map((i) => brcAt(12 + i * 2.4, BRC.FENCE));
+const BRC_GATE = [brcAt(6, BRC.KEY.r + BRC.KEY.R - 10), brcAt(6, 2600), brcAt(6.08, 3400), brcAt(6.25, 5200)];
+
+// ---------- the promenade lampposts (render.js draws LAMPS through lamp()) ----------
+// Real infrastructure: a tall wooden post with a crossbar at the top and a braced arm, a lantern hanging from the end
+// of it. The posts stand on both sides of each promenade, every 20 m, from 60 m out from the Man. By day the hooks are
+// empty: the Lamplighters carry the lanterns out at dusk and hang them, lit. Default: from 3:18, staggered outward
+// from the Man (LAMP_T0 at LAMP_D0, LAMP_V metres a second). lampTime(l) is when lamp l is hung and lit; lampLit(l, t)
+// is 0..1 (bA can time the Lamplighters' procession to it).
+const LAMP_T0 = 198, LAMP_D0 = 60, LAMP_V = 52, LAMP_H = 4.8, LAMP_ARM = 4.45;
+const PROMS = [{ a: 12, r1: 722 }, { a: 6, r1: 846 }, { a: 3, r1: BRC.ESP }, { a: 9, r1: BRC.ESP }];
+const LAMPS = [];
+PROMS.forEach((pr) => { const d = brcDir(pr.a), n = [-d[1], d[0]];
+  for (let r = LAMP_D0; r <= pr.r1; r += 20) for (const s of [-1, 1]) LAMPS.push({ X: MAN.x + d[0] * r + n[0] * 6 * s, Z: MAN.z + d[1] * r + n[1] * 6 * s, d: r, a: pr.a, side: s, ax: -n[0] * s, az: -n[1] * s, lt: LAMP_T0 + (r - LAMP_D0) / LAMP_V + (s > 0 ? .2 : 0), i: LAMPS.length }); });
+const lampTime = (l) => l.lt;
+function lampLit(l, t) { return smooth((t - l.lt) / .5); }
+function lantern(q, k, lit, emissive, t, i) { // a box lantern hanging below the hook point q
+  const s = Math.max(k, 6) * 1.35, x = q[0], y = q[1], fl = .88 + .12 * n1(970 + i, t * 3.1);
+  if (!emissive) { g.strokeStyle = '#2a2420'; g.lineWidth = Math.max(1, .02 * k); g.beginPath(); g.moveTo(x, y); g.lineTo(x, y + .06 * k); g.stroke();
+    g.fillStyle = '#2e2622'; g.beginPath(); g.moveTo(x - .14 * s, y + .12 * s); g.lineTo(x, y + .05 * s); g.lineTo(x + .14 * s, y + .12 * s); g.closePath(); g.fill(); // cap
+    g.fillStyle = lit > 0 ? '#f2cf86' : '#b9b2a4'; g.fillRect(x - .1 * s, y + .12 * s, .2 * s, .26 * s); // glass
+    g.fillStyle = '#2e2622'; g.fillRect(x - .12 * s, y + .37 * s, .24 * s, .05 * s); if (k > 25) { g.fillRect(x - .1 * s, y + .12 * s, .02 * s, .26 * s); g.fillRect(x + .08 * s, y + .12 * s, .02 * s, .26 * s); }
+    return; }
+  const a = lit * fl, R = Math.min(Math.max(1.4 * k, 5), 120), cy = y + .25 * s;
+  const rg = g.createRadialGradient(x, cy, 0, x, cy, R); rg.addColorStop(0, `rgba(255,206,128,${.55 * a})`); rg.addColorStop(.35, `rgba(255,170,80,${.2 * a})`); rg.addColorStop(1, 'rgba(255,150,60,0)'); g.fillStyle = rg; g.fillRect(x - R, cy - R, 2 * R, 2 * R);
+  g.fillStyle = `rgba(255,226,160,${.8 * a})`; g.fillRect(x - .08 * s, y + .14 * s, .16 * s, .22 * s);
+}
 function lamp(l, t, emissive) {
-  const p = P(l.X, 0, l.Z); if (p[2] < 2 || (p[2] < 6 && t > 236) || p[0] < -200 || p[0] > W + 200) return; const k = kAt(p), x = p[0], y = p[1], top = y - 5 * k, dr = l.droop || .5, hx = x + (.5 + dr * .25) * k, hy = top + dr * .55 * k;
-  if (!emissive) { g.strokeStyle = '#4a3a2c'; g.lineWidth = Math.max(1, .14 * k); g.lineCap = 'round'; g.beginPath(); g.moveTo(x, y); g.lineTo(x, top); g.quadraticCurveTo(x + .5 * k, top - .35 * k, hx, hy - .1 * k); g.stroke();
-    g.fillStyle = '#e9dcb8'; g.beginPath(); g.moveTo(hx - .3 * k, hy); g.quadraticCurveTo(hx, hy - .45 * k, hx + .3 * k, hy); g.quadraticCurveTo(hx + .05 * k, hy + (.25 + dr * .35) * k, hx - .3 * k, hy); g.fill(); return; }
-  const n = nightAmt(t); if (n <= .1) return; g.save(); g.globalCompositeOperation = 'lighter'; const R = 1.1 * k; const rg = g.createRadialGradient(hx, hy + .15 * k, 0, hx, hy + .15 * k, R); rg.addColorStop(0, `rgba(255,214,140,${.6 * n})`); rg.addColorStop(1, 'rgba(255,170,80,0)'); g.fillStyle = rg; g.fillRect(hx - R, hy + .15 * k - R, 2 * R, 2 * R); g.restore();
+  if (emissive && l.i === 0) brcEmissive(t); // the city's lights ride on the first lamp's call, after the grade
+  const p = P(l.X, 0, l.Z); if (p[2] < 2 || (p[2] < 6 && t > 236) || p[0] < -300 || p[0] > W + 300) return;
+  const k = kAt(p), lit = lampLit(l, t); if (k < .3 && !lit) return;
+  const hook = P(l.X + l.ax * .92, LAMP_ARM, l.Z + l.az * .92);
+  if (emissive) { if (lit > 0 && hook[2] > 1) lantern(hook, kAt(hook), lit * (.35 + .65 * nightAmt(t)), true, t, l.i); return; }
+  const top = P(l.X, LAMP_H, l.Z), b0 = P(l.X - l.ax * .32, LAMP_ARM, l.Z - l.az * .32), b1 = P(l.X + l.ax * 1.02, LAMP_ARM, l.Z + l.az * 1.02), br0 = P(l.X, LAMP_ARM - .6, l.Z), br1 = P(l.X + l.ax * .55, LAMP_ARM, l.Z + l.az * .55);
+  const wood = '#5b4632', w = .16 * k;
+  seg(p, top, w, wood); if (k > 8) { g.globalAlpha = .35; seg(P(l.X - .03 * l.az, 0, l.Z + .03 * l.ax), P(l.X - .03 * l.az, LAMP_H, l.Z + .03 * l.ax), w * .3, '#8a6c4a'); g.globalAlpha = 1; } // lit edge of the post
+  seg(b0, b1, .14 * k, wood); seg(br0, br1, .08 * k, wood);
+  if (k > 4) seg(P(l.X + l.ax * .92, LAMP_ARM, l.Z + l.az * .92), hook, .02 * k, '#2a2420');
+  if (lit > 0 && hook[2] > 1) { const kh = kAt(hook); g.globalAlpha = clamp(lit * 3); lantern([hook[0], hook[1]], kh, lit, false, t, l.i); g.globalAlpha = 1; }
+}
+
+// ---------- the city: per-frame state, colours ----------
+const BRC_F = { t: NaN, pts: [], air: [], box: null, A: null };
+const brcLightAmt = (t) => ease(t, 197.5, 213); // how much of the city has switched its lights on
+const BRC_LC = mkCanvas(), brcLg = BRC_LC.getContext('2d'), BRC_MC = mkCanvas(), brcMg = BRC_MC.getContext('2d');
+const BRC_GLOW = BRC_LCOL.map((c) => { const cv = mkCanvas(32, 32), b = cv.getContext('2d'), rg = b.createRadialGradient(16, 16, 0, 16, 16, 16);
+  rg.addColorStop(0, `rgba(${c[0]},${c[1]},${c[2]},1)`); rg.addColorStop(.2, `rgba(${c[0]},${c[1]},${c[2]},.7)`); rg.addColorStop(.5, `rgba(${c[0]},${c[1]},${c[2]},.14)`); rg.addColorStop(1, `rgba(${c[0]},${c[1]},${c[2]},0)`);
+  b.fillStyle = rg; b.fillRect(0, 0, 32, 32); return cv; });
+const BRC_HZ = BRC.RINGS.map((r, i) => .2 + i * .028).concat([.53]); // haze by ring: far camps sink into the sky colour
+const BRC_RGB = BRC_COLS.map(hex);
+const brcAirPlaya = () => mix(PAL.groundFar, PAL.groundNear, .22);
+const brcAirAmt = () => smooth((C.y - 70) / 80);      // the map fades in from 70 m up
+const brcGroundAmt = () => 1 - smooth((C.y - 110) / 90); // the skyline band fades out by 200 m
+
+// ---------- from the ground: the skyline band ----------
+function brcBill(it, x, y, k, c1, c2, dk) { // one camp structure seen from the open playa, base centre (x, y), k px per metre
+  const w = Math.max(it.w * k, 1), h = it.h * k, pw = Math.max(1, .14 * k);
+  switch (it.k) {
+    case K_SHADE: g.fillStyle = dk; g.fillRect(x - w / 2, y - h, pw, h); g.fillRect(x + w / 2 - pw, y - h, pw, h); if (w > 8) g.fillRect(x - pw / 2, y - h, pw, h);
+      if (it.vr < 2) { g.fillStyle = c2; g.fillRect(x - w / 2, y - h, w * (it.vr ? .4 : .7), h * .75); } // a shade-cloth wall on one side
+      g.fillStyle = c1; g.fillRect(x - w / 2 - .3 * k, y - h - .35 * k, w + .6 * k, Math.max(1, .55 * k)); break;
+    case K_DOME: { const r = w / 2; g.fillStyle = c1; g.beginPath(); g.moveTo(x - r, y); g.arc(x, y, r, Math.PI, TAU); g.fill(); if (r > 2) { g.fillStyle = c2; g.beginPath(); g.moveTo(x, y); g.arc(x, y, r, -Math.PI / 2, 0); g.fill(); } break; }
+    case K_HEXA: g.fillStyle = c1; g.beginPath(); g.moveTo(x - w / 2, y); g.lineTo(x - w / 2, y - h * .62); g.lineTo(x - w * .22, y - h); g.lineTo(x + w * .22, y - h); g.lineTo(x + w / 2, y - h * .62); g.lineTo(x + w / 2, y); g.fill();
+      if (w > 3) { g.fillStyle = c2; g.fillRect(x + w * .12, y - h * .62, w * .38, h * .62); } break;
+    case K_TENT: g.fillStyle = c1; g.beginPath(); if (it.vr < 3) { g.moveTo(x - w / 2, y); g.lineTo(x, y - h); g.lineTo(x + w / 2, y); } else { g.moveTo(x - w / 2, y); g.quadraticCurveTo(x, y - h * 1.6, x + w / 2, y); } g.fill(); break;
+    case K_RV: g.fillStyle = c1; g.fillRect(x - w / 2, y - h, w, h * .84); if (w > 3) { g.fillStyle = c2; g.fillRect(x - w / 2, y - h * .5, w, Math.max(1, .3 * k)); g.fillStyle = dk; g.fillRect(x - w / 2, y - h * .16, w, h * .16); } break;
+    case K_TRUCK: g.fillStyle = c1; g.fillRect(x - w / 2, y - h, w * .74, h * .84); g.fillStyle = c2; g.fillRect(x + w * .26, y - h * .62, w * .24, h * .46); break;
+    case K_FLAG: g.fillStyle = dk; g.fillRect(x - pw / 2, y - h, pw, h); g.fillStyle = c1; g.fillRect(x, y - h, Math.max(2, 1.5 * k), Math.max(1.5, .9 * k)); break;
+    case K_TOWER: g.fillStyle = dk; g.fillRect(x - w / 2, y - h, pw, h); g.fillRect(x + w / 2 - pw, y - h, pw, h); if (k > 2) for (let j = 1; j < 5; j++) g.fillRect(x - w / 2, y - h * j / 5, w, pw * .7);
+      g.fillRect(x - w * .45, y - h - 1.4 * k, w * .9, 1.4 * k); break; // the speaker stack on top
+    case K_STAGE: g.fillStyle = dk; g.fillRect(x - w / 2, y - h * .72, w, h * .72); g.fillStyle = c1; g.beginPath(); g.moveTo(x - w / 2 - .5 * k, y - h * .7); g.quadraticCurveTo(x, y - h * 1.25, x + w / 2 + .5 * k, y - h * .7); g.fill(); break;
+    case K_YURT: g.fillStyle = c1; g.fillRect(x - w / 2, y - h * .6, w, h * .6); g.beginPath(); g.moveTo(x - w / 2 - .2 * k, y - h * .6); g.lineTo(x, y - h); g.lineTo(x + w / 2 + .2 * k, y - h * .6); g.fill(); break;
+    case K_ART: brcArtBill(it, x, y, k, c1, c2, dk); break;
+    case K_CC: { const R = w / 2; g.fillStyle = c2; g.fillRect(x - R, y - 3.5 * k, 2 * R, 3.5 * k); // Center Camp: the dark shade under the round canopy, then the peaked roof and its mast
+      g.fillStyle = c1; g.beginPath(); g.moveTo(x - R - k, y - 3.2 * k); g.lineTo(x - R * .55, y - 8 * k); g.lineTo(x - R * .14, y - 12.2 * k); g.lineTo(x, y - h); g.lineTo(x + R * .14, y - 12.2 * k); g.lineTo(x + R * .55, y - 8 * k); g.lineTo(x + R + k, y - 3.2 * k); g.fill();
+      g.fillStyle = c2; g.beginPath(); g.moveTo(x, y - h); g.lineTo(x + R * .14, y - 12.2 * k); g.lineTo(x + R * .55, y - 8 * k); g.lineTo(x + R + k, y - 3.2 * k); g.lineTo(x + R * .3, y - 3.2 * k); g.fill();
+      if (k > 1) { g.fillStyle = dk; for (let j = -4; j <= 4; j++) g.fillRect(x + j * R / 4.5 - pw / 2, y - 3.5 * k, pw, 3.5 * k); }
+      g.fillStyle = dk; g.fillRect(x - pw / 2, y - h - 4 * k, pw, 4 * k); g.fillStyle = '#b8452f'; g.fillRect(x, y - h - 4 * k, Math.max(2, 2 * k), Math.max(1.5, 1.2 * k)); break; }
+  }
+}
+function brcArtBill(it, x, y, k, c1, c2, dk) { // the odd big art piece in the city: a spire, a ring, a wheel, a stack, an arch
+  const w = it.w * k, h = it.h * k, pw = Math.max(1, .3 * k);
+  if (it.vr === 0) { g.fillStyle = c1; g.beginPath(); g.moveTo(x - w * .3, y); g.lineTo(x, y - h); g.lineTo(x + w * .3, y); g.fill(); g.fillStyle = c2; g.beginPath(); g.moveTo(x, y); g.lineTo(x, y - h); g.lineTo(x + w * .3, y); g.fill(); }
+  else if (it.vr === 1) { g.strokeStyle = c1; g.lineWidth = Math.max(1, .8 * k); g.beginPath(); g.arc(x, y - h * .55, Math.max(1, h * .42), 0, TAU); g.stroke(); g.fillStyle = dk; g.fillRect(x - w * .2, y - h * .14, w * .4, h * .14); }
+  else if (it.vr === 2) { const r = h * .45; g.strokeStyle = c1; g.lineWidth = Math.max(1, .4 * k); g.beginPath(); g.arc(x, y - h * .52, r, 0, TAU); for (let j = 0; j < 6; j++) { const a = j / 6 * Math.PI; g.moveTo(x + Math.cos(a) * r, y - h * .52 + Math.sin(a) * r); g.lineTo(x - Math.cos(a) * r, y - h * .52 - Math.sin(a) * r); } g.stroke(); g.fillStyle = dk; g.fillRect(x - pw, y - h * .52, 2 * pw, h * .52); }
+  else if (it.vr === 3) { g.fillStyle = c1; let yy = y; for (let j = 0; j < 4; j++) { const bw = w * (.9 - j * .17), bh = h / 4.2; g.fillRect(x - bw / 2 + (j % 2 ? 1 : -1) * w * .06, yy - bh, bw, bh); yy -= bh; } g.fillStyle = c2; g.fillRect(x + w * .1, y - h * .9, w * .2, h * .9); }
+  else { g.strokeStyle = c1; g.lineWidth = Math.max(1, .9 * k); g.beginPath(); g.moveTo(x - w / 2, y); g.lineTo(x - w / 2, y - h * .5); g.arc(x, y - h * .5, w / 2, Math.PI, TAU); g.lineTo(x + w / 2, y); g.stroke(); }
+}
+function brcGround(t, alpha, lights) {
+  const low = skyCols(t)[1], cache = [], lim = 3.2 + C.y / 5, hy = H / 2 - C.f * Math.tan(C.p);
+  if (hy < -60 || hy > H + 200) return; // the horizon is out of frame: the band is too
+  for (let ri = 0; ri < BRC_HZ.length; ri++) { const hz = BRC_HZ[ri]; cache.push(BRC_RGB.map((c) => [rgb(mix(c, low, hz)), rgb(mix([c[0] * .62, c[1] * .6, c[2] * .62], low, hz)), rgb(mix([66, 52, 44], low, hz))])); }
+  const la = lights ? brcLightAmt(t) : 0, pts = BRC_F.pts; g.globalAlpha = alpha;
+  for (const it of BRC_ITEMS) {
+    if (it.ring > lim && !it.tall) continue;
+    const p = P(it.X, 0, it.Z); if (p[2] < 20) continue; const k = C.f / p[2], hw = it.w * .5 * k + 2; if (p[0] + hw < 0 || p[0] - hw > W) continue;
+    const hp = (it.h + 4) * k; if (hp < .7 || p[1] - hp > H || p[1] < -2) continue;
+    const cc = cache[Math.min(it.ring, BRC_HZ.length - 1)][it.c]; brcBill(it, p[0], p[1], k, cc[0], cc[1], cc[2]);
+    if (la > it.on * 1.3 && it.L.length) { const f = clamp((la - it.on * 1.3) * 8) * (1.25 - BRC_HZ[Math.min(it.ring, 12)] * 1.1) * (it.ring > 1 && !it.tall ? .7 : 1), sz = clamp(.5 * k, 1.1, 2.6) * (it.tall ? 1.3 : 1);
+      for (let j = 0; j < it.L.length; j++) { const L = it.L[j], tw = .82 + .18 * Math.sin(t * (1.3 + j * .4) + it.ph + j); pts.push(p[0] + L[0] * k, p[1] - L[1] * k, sz, it.k === K_FLAG || it.k === K_RV || it.k === K_HEXA ? 0 : (it.lc + j * (it.k === K_TOWER || it.k === K_ART ? 1 : 0)) % 7, f * tw); } }
+  }
+  g.globalAlpha = 1;
+  // playa dust over the foot of the band
+  if (hy > -20 && hy < H) { const gr = g.createLinearGradient(0, hy - 6, 0, hy + 10); gr.addColorStop(0, rgb(low, 0)); gr.addColorStop(.45, rgb(low, .35 * alpha)); gr.addColorStop(1, rgb(low, 0)); g.fillStyle = gr; g.fillRect(0, hy - 6, W, 16); }
+}
+
+// ---------- from the air: the map ----------
+function brcPoly(pts, fill) { g.beginPath(); for (let i = 0; i < pts.length; i++) { const q = P(pts[i][0], 0, pts[i][1]); if (q[2] < 1) return false; i ? g.lineTo(q[0], q[1]) : g.moveTo(q[0], q[1]); } g.closePath(); g.fillStyle = fill; g.fill(); return true; }
+function brcCircle(cx, cz, r, n) { const pts = []; for (let i = 0; i < n; i++) { const a = i / n * TAU; pts.push([cx + Math.cos(a) * r, cz + Math.sin(a) * r]); } return pts; }
+function brcBand(a, b, half) { const dx = b[0] - a[0], dz = b[1] - a[1], n = Math.hypot(dx, dz) || 1, nx = -dz / n * half, nz = dx / n * half; return [[a[0] + nx, a[1] + nz], [b[0] + nx, b[1] + nz], [b[0] - nx, b[1] - nz], [a[0] - nx, a[1] - nz]]; }
+function brcLine(pts, w, col, closed) { g.beginPath(); for (let i = 0; i < pts.length; i++) { const q = P(pts[i][0], 0, pts[i][1]); if (q[2] < 1) return; i ? g.lineTo(q[0], q[1]) : g.moveTo(q[0], q[1]); } if (closed) g.closePath(); g.strokeStyle = col; g.lineWidth = w; g.lineJoin = 'round'; g.stroke(); }
+function brcAir(t, alpha, lights) {
+  const pl = brcAirPlaya(), hy = H / 2 - C.f * Math.tan(C.p), sv = sunVec(t), sa = shadowA(t), la = lights ? brcLightAmt(t) : 0, air = BRC_F.air;
+  const kc = C.f / Math.max(1, Math.hypot(C.x - MAN.x, C.y, C.z - MAN.z)); // px per metre round the Man
+  g.save(); g.globalAlpha = alpha;
+  // the playa itself, flat and even from up here (only below the horizon)
+  const rep = smooth((C.y - 150) / 250); if (rep > 0 && hy < H) { g.globalAlpha = alpha * rep; g.fillStyle = rgb(pl); g.fillRect(0, Math.max(0, hy), W, H - Math.max(0, hy)); g.globalAlpha = alpha; }
+  const playa = rgb(pl), blockC = rgb(mix(pl, [128, 112, 98], .32)), road = rgb(mix(pl, [250, 244, 230], .35)), dark = rgb(mix(pl, [60, 44, 34], .5));
+  // a paler worn disc round the Man and down the promenades (foot traffic and art cars)
+  brcPoly(brcCircle(MAN.x, MAN.z, 95, 28), rgb(mix(pl, [250, 242, 222], .18)));
+  for (const pr of PROMS) brcPoly(brcBand(brcAt(pr.a, 40), brcAt(pr.a, pr.r1 + 8), 7), road);
+  // the blocks: darker, filled with camps; the streets stay pale between them
+  for (const b of BRC_BLOCKS) if (b.poly) brcPoly(b.poly, blockC);
+  // Center Camp's plaza and Rod's Road, the plazas, the keyhole and the wide 6:00 road out to it, Gate Road
+  const cc = brcAt(6, BRC.CC.r), key = brcAt(6, BRC.KEY.r);
+  brcPoly(brcCircle(cc[0], cc[1], BRC.CC.rod + 7, 40), road); brcPoly(brcCircle(cc[0], cc[1], BRC.CC.rod - 6, 40), playa);
+  brcPoly(brcBand(brcAt(6, BRC.CC.r + BRC.CC.rod - 4), brcAt(6, BRC.KEY.r), 13), road); brcPoly(brcCircle(key[0], key[1], BRC.KEY.R, 28), road); brcPoly(brcCircle(key[0], key[1], BRC.KEY.R - 14, 28), playa);
+  for (const pz of BRC.PLAZAS) { const c = brcAt(pz.a, pz.r); brcPoly(brcCircle(c[0], c[1], pz.R + 6, 24), road); brcPoly(brcCircle(c[0], c[1], pz.R - 4, 24), playa); }
+  for (let i = 0; i + 1 < BRC_GATE.length; i++) brcPoly(brcBand(BRC_GATE[i], BRC_GATE[i + 1], 9), road);
+  // the airport outside the fence near 5:00: a graded strip, a centre line, an apron with small planes
+  { const ap = brcAt(BRC.AIRPORT.a, BRC.AIRPORT.r), d = brcDir(BRC.AIRPORT.a), tn = [-d[1], d[0]], L = BRC.AIRPORT.L / 2, a0 = [ap[0] - tn[0] * L, ap[1] - tn[1] * L], a1 = [ap[0] + tn[0] * L, ap[1] + tn[1] * L];
+    brcPoly(brcBand(a0, a1, 22), rgb(mix(pl, [120, 104, 88], .28))); for (let j = 0; j < 14; j++) { const u0 = -L + 40 + j * 75; brcPoly(brcBand([ap[0] + tn[0] * u0, ap[1] + tn[1] * u0], [ap[0] + tn[0] * (u0 + 35), ap[1] + tn[1] * (u0 + 35)], 1.2), road); }
+    const apr = [ap[0] + d[0] * 60, ap[1] + d[1] * 60]; brcPoly(brcBand([apr[0] - tn[0] * 90, apr[1] - tn[1] * 90], [apr[0] + tn[0] * 90, apr[1] + tn[1] * 90], 30), rgb(mix(pl, [120, 104, 88], .2)));
+    for (let j = 0; j < 7; j++) { const c = [apr[0] + tn[0] * (-75 + j * 25) + d[0] * (j % 2 ? 8 : -8), apr[1] + tn[1] * (-75 + j * 25) + d[1] * (j % 2 ? 8 : -8)]; brcPoly(brcBand([c[0] - d[0] * 5, c[1] - d[1] * 5], [c[0] + d[0] * 5, c[1] + d[1] * 5], 1), '#f2efe6'); brcPoly(brcBand([c[0] - tn[0] * 6, c[1] - tn[1] * 6], [c[0] + tn[0] * 6, c[1] + tn[1] * 6], 1), '#f2efe6'); } }
+  // the trash fence: a pentagon round everything
+  brcLine(BRC_FENCE, Math.max(1.2, 2.2 * kc), 'rgba(122,82,52,.85)');
+  // the camps: shadows on the playa first, then the structures, block by block in that block's own frame
+  for (const b of BRC_BLOCKS) {
+    const o = P(b.cx, 0, b.cz); if (o[2] < 40) continue; const pa = P(b.cx + b.tx, 0, b.cz + b.tz), pb = P(b.cx + b.rx, 0, b.cz + b.rz);
+    if (b.poly && [0, 6, 7, 13].some((j) => P(b.poly[j][0], 0, b.poly[j][1])[2] < 20)) continue; // a block reaching behind the lens: its local frame would smear
+    const ex0 = pa[0] - o[0], ex1 = pa[1] - o[1], ey0 = pb[0] - o[0], ey1 = pb[1] - o[1], kk = Math.sqrt(Math.abs(ex0 * ey1 - ex1 * ey0)); if (kk < .05) continue;
+    if (o[0] < -400 * kk - 50 || o[0] > W + 400 * kk + 50 || o[1] < -400 * kk - 50 || o[1] > H + 400 * kk + 50) continue;
+    g.setTransform(ex0, ex1, ey0, ey1, o[0], o[1]);
+    if (sa > .02) { const su = sv[0] * b.tx + sv[1] * b.tz, sw = sv[0] * b.rx + sv[1] * b.rz; g.fillStyle = `rgba(52,34,58,${sa * .75})`; g.beginPath();
+      for (const it of b.items) { if (it.h < 2.5) continue; const hh = Math.min(it.h, 9), du = su * hh, dv = sw * hh; if (it.k === K_FLAG || it.k === K_TOWER) { g.moveTo(it.u, it.v); g.lineTo(it.u + su * it.h, it.v + sw * it.h); g.lineTo(it.u + su * it.h + .6, it.v + sw * it.h); g.lineTo(it.u + .6, it.v); continue; }
+        g.rect(Math.min(it.u - it.w / 2, it.u - it.w / 2 + du), Math.min(it.v - it.d / 2, it.v - it.d / 2 + dv), it.w + Math.abs(du), it.d + Math.abs(dv)); }
+      g.fill(); }
+    for (const it of b.items) { const c = BRC_COLS[it.c];
+      if (it.k === K_DOME || it.k === K_YURT) { g.fillStyle = c; g.beginPath(); g.arc(it.u, it.v, it.w / 2, 0, TAU); g.fill(); if (it.w * kk > 5) { g.fillStyle = 'rgba(60,44,40,.25)'; g.beginPath(); g.arc(it.u, it.v, it.w / 2, -Math.PI / 4, Math.PI * .75); g.fill(); } }
+      else if (it.k === K_CC) { const R = it.w / 2; g.fillStyle = '#efe6d2'; g.beginPath(); g.arc(it.u, it.v, R, 0, TAU); g.fill(); g.strokeStyle = 'rgba(120,96,70,.5)'; g.lineWidth = 1.2; g.beginPath(); for (let j = 0; j < 16; j++) { const a = j / 16 * TAU; g.moveTo(it.u, it.v); g.lineTo(it.u + Math.cos(a) * R, it.v + Math.sin(a) * R); } g.stroke(); g.beginPath(); g.arc(it.u, it.v, R * .55, 0, TAU); g.stroke(); g.fillStyle = '#8f6d48'; g.beginPath(); g.arc(it.u, it.v, 2.5, 0, TAU); g.fill(); }
+      else if (it.k === K_ART) { g.fillStyle = c; g.beginPath(); g.arc(it.u, it.v, it.w * .35, 0, TAU); g.fill(); g.fillStyle = '#34302f'; g.fillRect(it.u - 1, it.v - 1, 2, 2); }
+      else if (it.k === K_FLAG) { g.fillStyle = c; g.fillRect(it.u - .8, it.v - .8, 1.6, 1.6); }
+      else if (it.k === K_TOWER) { g.fillStyle = '#34302f'; g.fillRect(it.u - 1.5, it.v - 1.5, 3, 3); }
+      else { g.fillStyle = c; g.fillRect(it.u - it.w / 2, it.v - it.d / 2, it.w, it.d); if (it.k === K_SHADE && it.w * kk > 6) { g.fillStyle = 'rgba(255,255,255,.18)'; g.fillRect(it.u - it.w / 2, it.v - it.d / 2, it.w, it.d * .35); } } }
+    if (la > 0) for (const it of b.items) { if (!it.al || la < it.on * 1.2 || it.k === K_CC) continue; const f = clamp((la - it.on * 1.2) * 8);
+      air.push(o[0] + ex0 * it.u + ey0 * it.v, o[1] + ex1 * it.u + ey1 * it.v, clamp(kk * (it.k === K_SHADE || it.k === K_ART || it.k === K_STAGE ? 3.4 : 2.4), 1.3, 3.8), it.lc, f * (.85 + .15 * Math.sin(t * 1.7 + it.ph))); }
+    if (la > 0 && b.items.length && b.items[0].k === K_CC) for (let j = 0; j < 16; j++) { const a = j / 16 * TAU, u = b.items[0].u + Math.cos(a) * 44, v = b.items[0].v + Math.sin(a) * 44; air.push(o[0] + ex0 * u + ey0 * v, o[1] + ex1 * u + ey1 * v, clamp(kk * 4, 1.5, 5), 0, la); }
+  }
+  g.setTransform(1, 0, 0, 1, 0, 0); g.restore();
+}
+function templeAir(t, k) { // the Temple from above: its courtyard wall, the corner pavilions, the hall with its cross roof and spire
+  const [X, Z] = TEMPLE_XZ, d = [0, 1], sv = sunVec(t), sa = shadowA(t), sq = (cx, cz, h, col) => brcPoly([[X + cx - h, Z + cz - h], [X + cx + h, Z + cz - h], [X + cx + h, Z + cz + h], [X + cx - h, Z + cz + h]], col);
+  if (sa > .02) { g.save(); g.globalAlpha = sa * .9; brcPoly([[X - 15, Z - 15], [X + 15, Z - 15], [X + 15 + sv[0] * 22, Z + 15 + sv[1] * 22], [X - 15 + sv[0] * 22, Z + 15 + sv[1] * 22]], 'rgb(52,34,58)'); g.restore(); }
+  brcLine([[X - 36, Z - 36], [X + 36, Z - 36], [X + 36, Z + 36], [X - 36, Z + 36]], Math.max(1, 1.5 * k), '#9a7a52', true);
+  for (const [cx, cz] of [[-30, -30], [30, -30], [30, 30], [-30, 30]]) sq(cx, cz, 4, '#c9a878');
+  sq(0, 0, 15, '#d8b98a'); brcPoly([[X - 15, Z - 2], [X + 15, Z - 2], [X + 15, Z + 2], [X - 15, Z + 2]], '#a8875e'); brcPoly([[X - 2, Z - 15], [X + 2, Z - 15], [X + 2, Z + 15], [X - 2, Z + 15]], '#a8875e'); sq(0, 0, 4, '#8a6a46');
+}
+
+// ---------- the Temple, seen from the playa: a plain wooden temple, not any one year's design ----------
+function templeBill(t, p, k) {
+  bmBegin(p[0], p[1], k, 1); const wood = '#d8b98a', shade = '#a8875e', deep = '#4a3626', det = k > 3;
+  bmFill([[-36, 0], [36, 0], [36, 2.4], [-36, 2.4]], bmShade('#c9a878', .9)); // the courtyard wall
+  if (det) for (let i = -35; i <= 35; i += 2.5) bmLine([[i, 0], [i, 2.4]], .12, 'rgba(90,64,40,.45)');
+  for (const cx of [-30, 30]) { bmFill([[cx - 3.5, 0], [cx + 3.5, 0], [cx + 3.5, 6], [cx - 3.5, 6]], wood); bmFill([[cx - 4.2, 6], [cx + 4.2, 6], [cx, 10]], shade); bmFill([[cx - 1.2, 0], [cx + 1.2, 0], [cx + 1.2, 3.6], [cx - 1.2, 3.6]], deep); }
+  bmFill([[-16, 0], [16, 0], [16, 2], [-16, 2]], shade); bmFill([[-12.5, 2], [12.5, 2], [12.5, 9], [-12.5, 9]], bmLG(-12, 0, 12, 0, [wood, wood, shade]));
+  for (const ox of [-7.5, 0, 7.5]) { bmPath([[ox - 2, 2], [ox + 2, 2], [ox + 2, 6.4], [ox, 7.6], [ox - 2, 6.4]]); g.closePath(); g.fillStyle = deep; g.fill(); }
+  bmFill([[-15, 9], [15, 9], [11, 11], [-11, 11]], shade); bmFill([[-10.5, 11], [10.5, 11], [10.5, 12.6], [-10.5, 12.6]], wood); bmFill([[-12, 12.6], [12, 12.6], [7.5, 15], [-7.5, 15]], shade);
+  bmFill([[-6.5, 15], [6.5, 15], [6.5, 16.6], [-6.5, 16.6]], wood); bmFill([[-7.6, 16.6], [7.6, 16.6], [3.5, 19], [-3.5, 19]], shade);
+  bmFill([[-3, 19], [3, 19], [.25, 28.5], [-.25, 28.5]], bmLG(-3, 0, 3, 0, [wood, shade])); // the spire
+  if (det) { g.strokeStyle = 'rgba(80,56,36,.55)'; g.lineWidth = bmW(.1); g.beginPath(); for (let y = 19.8; y < 27.5; y += 1.3) { const hw = 3 * (28.5 - y) / 9.5; g.moveTo(-hw, -y); g.lineTo(hw, -(y + 1.1)); g.moveTo(hw, -y); g.lineTo(-hw, -(y + 1.1)); } g.stroke(); }
+  g.restore();
+}
+function templeInto(t, list) {
+  const [X, Z] = TEMPLE_XZ, p = P(X, 0, Z); if (p[2] < 30) return; const k = kAt(p); if (p[0] < -40 * k || p[0] > W + 40 * k) return;
+  list.push({ z: p[2], draw: () => { const air = brcAirAmt(); if (air > 0) { g.save(); g.globalAlpha = air; templeAir(t, k); g.restore(); } if (air < 1) { g.save(); g.globalAlpha = 1 - air; templeBill(t, p, k); g.restore(); } },
+    shadow: () => { if (brcAirAmt() < 1) shadowOf([[X - 16, 0, Z], [X + 16, 0, Z], [X, 28, Z]], t); } });
+}
+
+// ---------- art on the open playa (draft 4): a few big pieces between the road and the Esplanade, none of them camps ----------
+const BRC_ART = [[4, 330, 'tower'], [5.25, 450, 'sphere'], [7.5, 310, 'ring'], [8.25, 520, 'flower'], [6.75, 600, 'pyramid'], [2.5, 420, 'arches'], [9.75, 380, 'tower'], [11, 300, 'sphere'], [1, 450, 'ring'], [3.75, 600, 'flower'], [5.5, 190, 'arches'], [10.5, 560, 'pyramid']]
+  .map(([a, r, kind], i) => { const [X, Z] = brcAt(a, r); return { X, Z, kind, i, s: .9 + .3 * rnd(i, 7) }; });
+function brcArtDraw(o, t, p, k) {
+  const s = o.s; bmBegin(p[0], p[1], k * s, 1); const det = k > 4, wood = '#b38452', woodD = '#7a5634', steel = '#8d8f94', steelD = '#585a60';
+  if (o.kind === 'tower') { // an open wooden lattice tower with a platform
+    for (const sx of [-1, 1]) bmLine([[sx * 3.2, 0], [sx * 1.2, 15]], .35, sx < 0 ? wood : woodD);
+    for (let j = 1; j < 6; j++) { const y = j * 2.6, hw = 3.2 - 2 * y / 15; bmLine([[-hw, y], [hw, y]], .22, woodD); if (det) bmLine([[-hw, y], [hw - .15, y + 2.6]], .12, woodD); }
+    bmFill([[-2.2, 15], [2.2, 15], [2.2, 15.5], [-2.2, 15.5]], wood); bmFill([[-2, 15.5], [2, 15.5], [0, 17.8]], woodD);
+  } else if (o.kind === 'sphere') { // a geodesic sphere on three legs
+    for (const sx of [-1, 0, 1]) bmLine([[sx * 3.4, 0], [sx * .8, 5]], .25, steelD);
+    bmDot(0, 8.5, 4.2, bmLG(-3, 11, 3, 6, ['#e8e2d4', steel, steelD])); if (det) { g.strokeStyle = 'rgba(40,40,46,.5)'; g.lineWidth = bmW(.08); g.beginPath(); for (let j = 0; j < 5; j++) { const a = j / 5 * Math.PI; g.ellipse(0, -8.5, 4.2 * Math.abs(Math.cos(a)), 4.2, 0, 0, TAU); } g.moveTo(-4.2, -8.5); g.lineTo(4.2, -8.5); g.stroke(); }
+  } else if (o.kind === 'ring') { // a steel ring standing on edge, bolted to a footing
+    g.strokeStyle = bmLG(-6, 12, 6, 0, ['#c9c4b8', steel, steelD]); g.lineWidth = bmW(.9); g.beginPath(); g.arc(0, -6.6, 6, 0, TAU); g.stroke(); bmFill([[-2.4, 0], [2.4, 0], [1.6, .9], [-1.6, .9]], steelD);
+  } else if (o.kind === 'flower') { // a giant metal flower
+    bmLine([[0, 0], [.6, 4], [0, 8.4]], .3, '#4f6a46'); bmFill([[.3, 3.6], [2.6, 4.8], [.5, 4.4]], '#5f7f52');
+    for (let j = 0; j < 8; j++) { const a = j / 8 * TAU + .2; bmOval(Math.cos(a) * 1.8, 9 + Math.sin(a) * 1.8, 1.5, .7, j % 2 ? '#d27a3c' : '#c8452f', a); } bmDot(0, 9, 1, '#e8c04a');
+  } else if (o.kind === 'pyramid') { // a wooden pyramid of open frames
+    bmFill([[-7, 0], [7, 0], [0, 11]], bmLG(-6, 0, 6, 0, [wood, woodD])); if (det) { g.strokeStyle = 'rgba(60,40,24,.55)'; g.lineWidth = bmW(.15); g.beginPath(); for (let j = 1; j < 5; j++) { const y = j * 2.2, hw = 7 * (1 - y / 11); g.moveTo(-hw, -y); g.lineTo(hw, -y); } g.moveTo(0, 0); g.lineTo(0, -11); g.stroke(); }
+    bmFill([[-1.4, 0], [1.4, 0], [1.4, 2.6], [-1.4, 2.6]], '#4a3626');
+  } else { // three arches in a row
+    for (let j = -1; j <= 1; j++) { g.strokeStyle = j ? woodD : wood; g.lineWidth = bmW(.6); g.beginPath(); g.moveTo(j * 6 - 2.4, 0); g.lineTo(j * 6 - 2.4, -4.5); g.arc(j * 6, -4.5, 2.4, Math.PI, TAU); g.lineTo(j * 6 + 2.4, 0); g.stroke(); }
+  }
+  g.restore();
+}
+const BRC_ART_H = { tower: 17, sphere: 12.7, ring: 12.6, flower: 10.8, pyramid: 11, arches: 7 };
+function brcArtInto(t, list) {
+  for (const o of BRC_ART) { const p = P(o.X, 0, o.Z); if (p[2] < 8) continue; const k = kAt(p), h = BRC_ART_H[o.kind] * o.s; if (p[0] < -10 * k - 100 || p[0] > W + 10 * k + 100 || h * k < 1) continue;
+    list.push({ z: p[2], draw: () => brcArtDraw(o, t, p, k), shadow: () => shadowOf([[o.X - 5 * o.s, 0, o.Z], [o.X + 5 * o.s, 0, o.Z], [o.X, h, o.Z]], t) }); }
+}
+
+// ---------- the city in the scene list, and its lights ----------
+function brcMaskA() { // after the city is drawn: keep the pixels round its lights, to find out later what was drawn over them
+  const pts = BRC_F.pts; BRC_F.box = null; BRC_F.A = null; if (!pts.length) return;
+  let x0 = W, y0 = H, x1 = 0, y1 = 0; for (let i = 0; i < pts.length; i += 5) { const r = pts[i + 2] * 2 + 2; x0 = Math.min(x0, pts[i] - r); x1 = Math.max(x1, pts[i] + r); y0 = Math.min(y0, pts[i + 1] - r); y1 = Math.max(y1, pts[i + 1] + r); }
+  x0 = Math.max(0, Math.floor(x0)); y0 = Math.max(0, Math.floor(y0)); x1 = Math.min(W, Math.ceil(x1)); y1 = Math.min(H, Math.ceil(y1)); if (x1 - x0 < 1 || y1 - y0 < 1) return;
+  BRC_F.box = [x0, y0, x1 - x0, y1 - y0]; BRC_F.A = g.getImageData(x0, y0, x1 - x0, y1 - y0).data;
+}
+function brcMaskB(t) { // after everything nearer is drawn: the mask is 1 where the city still shows
+  if (BRC_F.t !== t || !BRC_F.box) return; const [x0, y0, w, h] = BRC_F.box, A = BRC_F.A, B = g.getImageData(x0, y0, w, h).data, M = brcMg.createImageData(w, h), m = M.data;
+  for (let i = 0; i < A.length; i += 4) { const d = Math.abs(A[i] - B[i]) + Math.abs(A[i + 1] - B[i + 1]) + Math.abs(A[i + 2] - B[i + 2]); m[i] = m[i + 1] = m[i + 2] = 255; m[i + 3] = d > 6 ? 0 : 255; }
+  brcMg.clearRect(0, 0, W, H); brcMg.putImageData(M, 0, 0); BRC_F.masked = true;
+}
+function brcDots(c, pts, ox, oy, m) { m = m == null ? 1 : m; for (let i = 0; i < pts.length; i += 5) { const s = pts[i + 2] * 1.7; c.globalAlpha = clamp(pts[i + 4]) * m; c.drawImage(BRC_GLOW[pts[i + 3]], pts[i] - s - ox, pts[i + 1] - s - oy, 2 * s, 2 * s); } c.globalAlpha = 1; }
+function brcEmissive(t) { // called once a frame after the grade (through lamp() for LAMPS[0])
+  if (BRC_F.t !== t) return; const night = .6 + .4 * nightAmt(t);
+  if (BRC_F.pts.length && BRC_F.box && BRC_F.masked) { const [x0, y0, w, h] = BRC_F.box; brcLg.setTransform(1, 0, 0, 1, 0, 0); brcLg.globalCompositeOperation = 'source-over'; brcLg.clearRect(0, 0, w + 2, h + 2);
+    brcLg.globalCompositeOperation = 'lighter'; brcDots(brcLg, BRC_F.pts, x0, y0); brcLg.globalCompositeOperation = 'destination-in'; brcLg.drawImage(BRC_MC, 0, 0, w, h, 0, 0, w, h); brcLg.globalCompositeOperation = 'source-over';
+    g.save(); g.globalCompositeOperation = 'screen'; g.globalAlpha = night; g.drawImage(BRC_LC, 0, 0, w, h, x0, y0, w, h); g.restore(); } // screen, not lighter: warm points stay warm on the violet dusk
+  if (BRC_F.air.length) { g.save(); g.globalCompositeOperation = 'screen'; brcDots(g, BRC_F.air, 0, 0, night); g.globalCompositeOperation = 'lighter'; brcDots(g, BRC_F.air, 0, 0, .45 * night * nightAmt(t)); g.restore(); } // from the air: screen keeps them warm, a light lighter pass lets them glow as night falls
+  // the Temple keeps a soft warm light inside it at night
+  const tn = nightAmt(t); if (tn > 0) { const p = P(TEMPLE_XZ[0], 6, TEMPLE_XZ[1]); if (p[2] > 30 && p[0] > -200 && p[0] < W + 200) { const k = kAt(p), R = Math.max(18 * k, 6); g.save(); g.globalCompositeOperation = 'lighter'; const rg = g.createRadialGradient(p[0], p[1], 0, p[0], p[1], R); rg.addColorStop(0, `rgba(255,190,120,${.35 * tn})`); rg.addColorStop(1, 'rgba(255,160,90,0)'); g.fillStyle = rg; g.fillRect(p[0] - R, p[1] - R, 2 * R, 2 * R); g.restore(); } }
+}
+function brcInto(t, list) {
+  list.push({ z: 1e7, draw: () => { BRC_F.t = t; BRC_F.pts = []; BRC_F.air = []; BRC_F.box = null; BRC_F.masked = false;
+    const ga = brcGroundAmt(), aa = brcAirAmt(), lights = t > 196;
+    if (aa > 0) brcAir(t, aa, lights);
+    if (ga > 0) { brcGround(t, ga, lights); if (BRC_F.pts.length) brcMaskA(); } } });
+  list.push({ z: .31, draw: () => brcMaskB(t) }); // drawn after everything else in the list
+  templeInto(t, list); brcArtInto(t, list);
 }
 
 // ---------- dust devils (called by installs.js) ----------
@@ -486,6 +833,6 @@ function bike(b, t) { return null; }
 
 // scene hook (draft 3): pushes {z, draw, shadow} into list.
 function playaInto(t, list) {
-  bmCampsInto(t, list); bmInstallsInto(t, list); bmElephantsInto(t, list); bmWarsInto(t, list);
+  brcInto(t, list); bmCampsInto(t, list); bmInstallsInto(t, list); bmElephantsInto(t, list); bmWarsInto(t, list);
   bmTraffic(t, list); bmFlockInto(t, list); bmParadeInto(t, list); bmPoorInto(t, list); bmCopsInto(t, list);
 }
