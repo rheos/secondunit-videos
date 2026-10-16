@@ -77,3 +77,34 @@ needs smooth camera moves, a cohesive palette, and should feel music-video rathe
 - A 9:16 cut: 1080x1920, a wider lens, `shift_x` 0.
 - Lyric-safe framing: key `shift_y` to hold a third empty per line.
 - Replace the 81 pillar objects with a Geometry Nodes grid, so a bigger field stays cheap.
+
+---
+
+## Take 01b: the same piece on Blender 5.2 (2026-10-16)
+
+**Why.** This Mac is an Intel MacBook Pro and can't run Blender 5. The newer agent skills target 5.x,
+so the lab needs a way to render on 5. See `notes/skill-survey-2026-10-16.md`.
+
+**Changes to the script (no visual change on 4.5).**
+- The compositor is built two ways: on 5.x a node group with a Group Output, on 4.5 the scene tree
+  with a Composite node.
+- Both mixes now use the generic Mix node in Color mode.
+- Glare's type is set through the property or the 5.x menu socket.
+- Video output sets `media_type` first on 5.x.
+- The reset also removes the `OV_` compositor node group.
+
+**Checks.**
+- On 4.5, frames 60 and 200 are bit-identical to take 01. Frame 445 is 54 dB PSNR (sampling noise in
+  the burst).
+- 5.2 on Modal CPU (software GL) against 4.5 locally gives 50, 60 and 43 dB on frames 60, 200 and
+  445. That is the same picture; 5.2's bloom is a little tighter.
+- Sheet: `reviews/port-4.5-vs-5.2_stills.jpg` (left 4.5, right 5.2).
+
+**Cost so far.** Two CPU runs (probe, three stills). Under 2 minutes of an 8-core container each,
+a few cents.
+
+**Open.**
+- The GPU stills test is blocked until a card is on the Modal account.
+- It will show whether EEVEE sees the NVIDIA GPU through EGL or falls back to llvmpipe there too
+  (the run prints `gpu_renderer`).
+

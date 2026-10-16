@@ -192,7 +192,7 @@ scn = bpy.context.scene
 for ob in list(scn.objects):
     bpy.data.objects.remove(ob, do_unlink=True)
 for coll_type in (bpy.data.collections, bpy.data.meshes, bpy.data.materials, bpy.data.lights,
-                  bpy.data.cameras, bpy.data.actions, bpy.data.worlds):
+                  bpy.data.cameras, bpy.data.actions, bpy.data.worlds, bpy.data.node_groups):
     for block in list(coll_type):
         if block.name.startswith("OV_"):
             coll_type.remove(block)
@@ -624,6 +624,8 @@ scn.view_settings.view_transform = "Standard"   # exact palette colours (AgX wou
 scn.view_settings.look = "None"
 scn.view_layers[0].use_pass_mist = True
 
+if "media_type" in scn.render.image_settings.bl_rna.properties:   # 5.0+: pick video before the container
+    scn.render.image_settings.media_type = "VIDEO"
 scn.render.image_settings.file_format = "FFMPEG"
 scn.render.ffmpeg.format = "MPEG4"
 scn.render.ffmpeg.codec = "H264"
@@ -648,44 +650,83 @@ if AUDIO_PATH:
 # =============================================================================================
 # 15. COMPOSITOR: mist fog > bloom > slight chromatic fringe > fade in/out
 # =============================================================================================
-scn.use_nodes = True                          # 5.0 replaces this with scene.compositing_node_group
-tree = scn.node_tree
-tree.animation_data_clear()                   # drop keys/drivers from a previous run
-tree.nodes.clear()
-N, L = tree.nodes, tree.links
+if hasattr(scn, "compositing_node_group"):
+    # 5.0+: the compositor is its own node-group datablock, and the result leaves through a Group Output.
+    tree = bpy.data.node_groups.new("OV_Compositor", "CompositorNodeTree")
+    scn.compositing_node_group = tree
+    tree.interface.new_socket("Image", in_out="OUTPUT", socket_type="NodeSocketColor")
+    N, L = tree.nodes, tree.links
+    final = N.new("NodeGroupOutput")
+    final_in = final.inputs["Image"]
+else:
+    # 4.x: the scene owns one compositor tree; clear its old keys/drivers on a re-run.
+    scn.use_nodes = True
+    tree = scn.node_tree
+    tree.animation_data_clear()
+    tree.nodes.clear()
+    N, L = tree.nodes, tree.links
+    final = N.new("CompositorNodeComposite")
+    final_in = final.inputs["Image"]
+
+
+def sock(sockets, identifier):
+    return next(x for x in sockets if x.identifier == identifier)
+
+
+def color_mix():
+    """The generic Mix node in Color mode (works in 4.5 and 5.x; MixRGB is gone in 5.0).
+    Returns (node, factor, a, b, result)."""
+    node = N.new("ShaderNodeMix")
+    node.data_type = "RGBA"
+    return (node, sock(node.inputs, "Factor_Float"), sock(node.inputs, "A_Color"),
+            sock(node.inputs, "B_Color"), sock(node.outputs, "Result_Color"))
+
+
+def set_option(node, prop, socket_name, value, socket_value=None):
+    """Node options moved from properties (4.5) to menu input sockets (5.x); set whichever exists."""
+    if socket_name in node.inputs:
+        sock_ = node.inputs[socket_name]
+        for candidate in (socket_value, value):
+            try:
+                sock_.default_value = candidate
+                return
+            except (TypeError, ValueError):
+                continue
+        raise ValueError(f"{node.name}.{socket_name}: none of {socket_value!r}, {value!r} accepted")
+    setattr(node, prop, value)
+
+
 rl = N.new("CompositorNodeRLayers")
+rl.scene = scn
 fog_col = N.new("CompositorNodeRGB")
-fog = N.new("CompositorNodeMixRGB")
+fog, fog_fac, fog_a, fog_b, fog_out = color_mix()
 glare = N.new("CompositorNodeGlare")
 lens = N.new("CompositorNodeLensdist")
-fade = N.new("CompositorNodeMixRGB")
-comp = N.new("CompositorNodeComposite")
-viewer = N.new("CompositorNodeViewer")
+fade, fade_fac, fade_a, fade_b, fade_out = color_mix()
 
-L.new(rl.outputs["Mist"], fog.inputs["Fac"])
-L.new(rl.outputs["Image"], fog.inputs[1])
-L.new(fog_col.outputs[0], fog.inputs[2])
-L.new(fog.outputs[0], glare.inputs["Image"])
+L.new(rl.outputs["Mist"], fog_fac)
+L.new(rl.outputs["Image"], fog_a)
+L.new(fog_col.outputs[0], fog_b)
+L.new(fog_out, glare.inputs["Image"])
 L.new(glare.outputs[0], lens.inputs["Image"])
-L.new(lens.outputs[0], fade.inputs[2])
-fade.inputs[1].default_value = C["ink"]
-L.new(fade.outputs[0], comp.inputs["Image"])
-L.new(fade.outputs[0], viewer.inputs["Image"])
+L.new(lens.outputs[0], fade_b)
+fade_a.default_value = C["ink"]
+L.new(fade_out, final_in)
 
 # Fog colour follows the sky keys (same beats).
 key_track(fog_col.outputs[0], "default_value", sky_track)
 
-glare.glare_type = "BLOOM"                    # 4.5: the rest of the options are input sockets
+set_option(glare, "glare_type", "Type", "BLOOM", "Bloom")   # 4.5: property; 5.x: menu socket
 glare.inputs["Threshold"].default_value = 1.0  # only emission above white blooms, toon colours stay crisp
 glare.inputs["Size"].default_value = 0.75
 add_driver(glare.inputs["Strength"], "default_value", "0.7 + 0.9*e")
 lens.inputs["Dispersion"].default_value = 0.012
 
-key_track(fade.inputs["Fac"], "default_value", [(0, 0.0), (1.5, 1.0), (TOTAL_BEATS - 2, 1.0), (TOTAL_BEATS, 0.0)])
+key_track(fade_fac, "default_value", [(0, 0.0), (1.5, 1.0), (TOTAL_BEATS - 2, 1.0), (TOTAL_BEATS, 0.0)])
 
-for i, node in enumerate((rl, fog, glare, lens, fade, comp)):
+for i, node in enumerate((rl, fog, glare, lens, fade, final)):
     node.location = (i * 260, 0)
-fog_col.location, viewer.location = (0, -300), (5 * 260, -220)
+fog_col.location = (0, -300)
 
 
 # =============================================================================================
