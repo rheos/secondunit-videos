@@ -1,0 +1,9 @@
+source/
+work/
+out/
+tmp/
+_in/
+node_modules
+assets/song.wav
+js/words.js
+STORYBOARD.md
