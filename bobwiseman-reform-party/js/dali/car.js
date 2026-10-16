@@ -63,6 +63,7 @@ function drawers(x, sh, k, open) { // a torso of drawers: the middle one slides 
 }
 
 // ---------- the table car ----------
+const SEAT = .65; // seats low enough to hop on and off (Robin); moved from world.js for draft 3
 const SEATS = [ // local x, z, faces camera at yaw 0, role
   ...[-3.6, -2.25, -.8, .55, 1.9, 3.25].map((x) => ({ x, z: 2.3, r: x === -.8 ? 'drawer' : 'b' })),
   ...[-3.6, -2.25, -.8, .55, 1.9, 3.25].map((x) => ({ x, z: -2.3, r: 'f' })),
@@ -130,3 +131,15 @@ function chess(t) { // knight to queen's rook: the table top turns into a chessb
     poly([PL(x0, TOP + .001, z0), PL(x0 + 1, TOP + .001, z0), PL(x0 + 1, TOP + .001, z0 + .75), PL(x0, TOP + .001, z0 + .75)], '#efe3c6'); }
   g.restore();
 }
+// ---------- drawing the car (moved from render.js for draft 3) ----------
+function drawCar(t) {
+  const seats = SEATS.map((s, i) => ({ s, i, d: PL(s.x, SEAT, s.z)[2] })).sort((a, b) => b.d - a.d), mid = PL(0, SEAT, 0)[2];
+  const seatDraw = ({ s, i }) => { const G = seatGeom(s); crutch(G.crutch[0], G.crutch[1]); const a = PL(...G.beamA), b = PL(...G.beamB); seg(a, b, .1 * kAt(a), '#4a2a14'); const p = PL(s.x, SEAT, s.z); if (p[2] < .25) return; suit(p[0], p[1], kAt(p), seatState(s, t, i)); };
+  seats.filter((x) => x.d > mid).forEach(seatDraw);
+  tableBody(t); driverHat();
+  tablePropsBack(t);
+  seats.filter((x) => x.d <= mid).forEach(seatDraw);
+  tablePropsFront(t); pieBirds(t); bobPopUp(t);
+}
+// scene hook: anything of the car's that lives on the playa (dust trail, wheels' tracks). Pushes {z, draw, shadow} into list.
+function carInto(t, list) {}

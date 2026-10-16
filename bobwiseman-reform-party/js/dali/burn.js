@@ -62,3 +62,7 @@ function ballotEmbers(t) { // the raised ballots burn and rise in the heat over 
     g.translate(p[0], p[1]); g.rotate(t * 1.5 + i); g.fillStyle = `rgba(255,${200 - ph * 120},${140 - ph * 120},${(1 - ph) * .9 * (1 - ease(t, 262, 267))})`; g.fillRect(-.22 * k, -.15 * k, .44 * k, .3 * k); g.setTransform(1, 0, 0, 1, 0, 0); }
   g.restore();
 }
+// scene hook (draft 3): pushes {z, draw, shadow} into list.
+function burnInto(t, list) {}
+// overlay hook (draft 3): drawn after the scene, before the grade.
+function burnOver(t) {}

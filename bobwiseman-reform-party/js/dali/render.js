@@ -14,16 +14,6 @@ function captions(t) {
 }
 
 // ---------- frame ----------
-function drawCar(t) {
-  const seats = SEATS.map((s, i) => ({ s, i, d: PL(s.x, SEAT, s.z)[2] })).sort((a, b) => b.d - a.d), mid = PL(0, SEAT, 0)[2];
-  const seatDraw = ({ s, i }) => { const G = seatGeom(s); crutch(G.crutch[0], G.crutch[1]); const a = PL(...G.beamA), b = PL(...G.beamB); seg(a, b, .1 * kAt(a), '#4a2a14'); const p = PL(s.x, SEAT, s.z); if (p[2] < .25) return; suit(p[0], p[1], kAt(p), seatState(s, t, i)); };
-  seats.filter((x) => x.d > mid).forEach(seatDraw);
-  tableBody(t); driverHat();
-  chessPieces(t); speakerphone(t); dime(t); pie(t); book(t); chips(t); jailModel(t); newspapers(t);
-  whiteboard(t, false);
-  seats.filter((x) => x.d <= mid).forEach(seatDraw);
-  tapeRecorders(t); truth(t, false); micBooms(t); pieBirds(t); bobPopUp(t);
-}
 function render(t) {
   C = camAt(t); CP = Math.cos(C.p); SP = Math.sin(C.p); CX = carX(t); CZ = carZ(t); YAW = yaw(t);
   g.setTransform(1, 0, 0, 1, 0, 0); g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
@@ -35,10 +25,12 @@ function render(t) {
   for (const l of LAMPS) { const z = P(l.X, 0, l.Z)[2]; if (z > 2) list.push({ z, draw: () => lamp(l, t, false), shadow: () => shadowStick(l.X, 0, 5, l.Z, .15, t) }); }
   for (const b of BIKES) { const o = bike(b, t); if (o) list.push(o); }
   crowdInto(t, list); bigEar(t, list); gagMouth(t, list); tumblePapers(t, list); suitColumn(t, list); teeth(t, list); clockCar(t, list); giantChess(t, list);
+  carInto(t, list); tableInto(t, list); playaInto(t, list); burnInto(t, list); installsInto(t, list); // one scene hook per builder file (draft 3)
   for (const o of list) if (o.z > .5 && o.shadow) o.shadow();
   tableShadow(t);
   list.sort((a, b) => b.z - a.z); for (const o of list) if (o.z > .3) o.draw();
   spinDevils(t); bigGavel(t);
+  installsOver(t); burnOver(t); // screen-space overlays before the grade
   grade(t);
   for (const l of LAMPS) lamp(l, t, true); spinners(t);
   // the car layer: drawn, graded, lit by its own emissive props, masked to its own pixels, then laid over the fire

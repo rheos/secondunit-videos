@@ -23,7 +23,7 @@
   };
 
   // ---------- the car: path, spin ----------
-  const TOP = 1.15, TD = 1.5, TL = 4.4, SEAT = .65; // seats low enough to hop on and off (Robin)
+  const TOP = 1.15, TD = 1.5, TL = 4.4; // table top height, half depth, half length (SEAT is in car.js)
   function carX(t) { if (t < 200) return -40 + 1.6 * t; if (t < 206) { const u = t - 200; return 280 + 1.6 * (u - u * u / 12); } if (t < 238) return 284.8; const u = t - 238; return 284.8 + .22 * u * u; }
   function carZ(t) { if (t < 238) return 0; const u = t - 238; return .3 * u * u; }
   function yaw(t) { let a = 0; for (const [s, e] of SPINS) a += TAU * smooth((t - s - .3) / (e - s - .3)); return a; }

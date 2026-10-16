@@ -72,3 +72,5 @@ function dustDevil(X, Z, t, amt, seed) { // a spinning column of playa dust
   const p = P(X, 0, Z); if (p[2] < 2 || amt <= 0) return; const k = kAt(p), H2 = 14 * amt;
   g.save(); for (let i = 0; i < 26; i++) { const u = i / 26, y = p[1] - u * H2 * k, w = (.6 + u * u * 4) * k, a = t * 6 + u * 9 + seed; g.fillStyle = `rgba(214,182,130,${.16 * amt * (1 - u * .6)})`; g.beginPath(); g.ellipse(p[0] + Math.sin(a) * w * .35 + n1(seed, t + u) * k, y, w, .5 * k, 0, 0, TAU); g.fill(); } g.restore();
 }
+// scene hook (draft 3): pushes {z, draw, shadow} into list.
+function playaInto(t, list) {}

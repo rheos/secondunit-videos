@@ -160,3 +160,11 @@ function teeth(t, list) { const s = wt(8, 'patent') - .5; if (t < s || t > L_(9)
     g.fillStyle = '#fbf7ec'; for (let i = 0; i < 8; i++) { g.fillRect(x - 1.3 * k + i * .33 * k, y - 1 * k, .28 * k, .4 * k); g.fillRect(x - 1.3 * k + i * .33 * k, y - 1.3 * k - ch, .28 * k, .4 * k); }
     g.strokeStyle = '#c9a43a'; g.lineWidth = .12 * k; g.save(); g.translate(x + 1.9 * k, y - .9 * k); g.rotate(t * 5); g.beginPath(); g.moveTo(-.5 * k, 0); g.lineTo(.5 * k, 0); g.moveTo(0, -.5 * k); g.lineTo(0, .5 * k); g.stroke(); g.restore();
     g.fillStyle = '#1a1412'; g.beginPath(); g.arc(x - 1 * k, p[1] - .2 * k, .2 * k, 0, TAU); g.arc(x + 1 * k, p[1] - .2 * k, .2 * k, 0, TAU); g.fill(); }, shadow: () => shadowStick(X, 0, 2, Z, 3, t) }); }
+// the table props in draw order (moved from render.js drawCar for draft 3): behind the near seats, then in front of them
+function tablePropsBack(t) {
+  chessPieces(t); speakerphone(t); dime(t); pie(t); book(t); chips(t); jailModel(t); newspapers(t);
+  whiteboard(t, false);
+}
+function tablePropsFront(t) { tapeRecorders(t); truth(t, false); micBooms(t); }
+// scene hook: table-chain things that live on the playa. Pushes {z, draw, shadow} into list.
+function tableInto(t, list) {}

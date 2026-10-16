@@ -70,3 +70,7 @@ function chartClimbers(t) { const pts = [[.58, .8], [.66, .72], [.73, .76], [.8,
     g.strokeStyle = '#5a4a32'; g.lineWidth = 3; g.beginPath(); g.moveTo(W * .62, y + 10); g.lineTo(W * .62, y + 120); g.stroke();
     g.beginPath(); g.arc(W * .62, y + 134, 14, 0, TAU); g.stroke();
   }
+// scene hook (draft 3): pushes {z, draw, shadow} into list.
+function installsInto(t, list) {}
+// overlay hook (draft 3): drawn after the scene, before the grade.
+function installsOver(t) {}
