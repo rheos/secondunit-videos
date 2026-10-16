@@ -1,6 +1,6 @@
 WHAT WOULD TERRY ADD?
 Symbolic and motion direction informed by Terry Gilliam's cut-out animation (1968-1983)
-Updated 2026-10-15
+Updated 2026-10-16
 
 PURPOSE
 Use Gilliam as a reference for cutting a respectable image out of its world, making it misbehave, and turning it into the next thing. Keep the project's chosen medium unless Robin asks for the cut-out surface too (then add STYLE-BRIEF.txt). This is a working guide built from his recorded statements and finished work. It is not written in his voice and does not claim to know his intentions.
@@ -33,6 +33,22 @@ G14 The Prince and the Black Spot: a level narrator reports a death from an igno
 G24 The Black Beast and the weak-hearted animator: the monster vanishes when its animator dies.
 Open index.html#G21 etc. for sources. Descriptions of broadcast pieces come from cited sources; watch the piece before treating it as a visual anchor.
 
+IN A MUSIC VIDEO
+The song is the clock. Gilliam's documented habits are marked (G); the rest is our proposal, or a memory of the broadcasts to check against a clip before relying on it (check).
+Rhythm
+- Hits on the beat. Snaps, pops, drops and squashes land on kicks and snares; holds sit on rests. Paper's jerky motion is percussive by nature. (The Python titles cut to a march; check.)
+- Cycles as groove. Cogs, pumps, a turning wheel, a row of identical marchers: cheap repeating cycles, locked to the tempo so a loop is one bar or two. (check)
+- Singing without lip-sync. A found face whose cut-out jaw drops on each sung syllable, or on the beat when the line is fast. No mouth shapes. (G, the dropping jaw; the timing is ours)
+Structure
+- The verse is a chain. Each scene turns into the next by visual rhyme (move 2). The chorus comes back to the same object or place every time, so the viewer learns the song's shape. The bridge breaks the chain. The last chorus ends on the one stop from above (move 6).
+- Take the lyric literally. "Time flies", "eats me up", "head over heels": draw the phrase at face value, as a Mad-style visual pun. Good for one or two lines per section, not every line.
+- Instrumentals are pans. A long, slow pan across one wide collage panorama, or a slow push into one detail, carries a solo or an intro for almost no animation. (check)
+Images that sit well on a song
+- Fly into the mouth, the opened head, an eye or a doorway, and come out in the next scene. A transition built into the picture. (G05 for the head; flying in is ours)
+- Growth over a held note or a swell: tentacles, vines, fungus or flowers sprouting from a respectable thing. One of the few slow moves cut-outs do well.
+- Scale against the sky. A giant figure over a tiny town on an airbrushed gradient sky. One frame type can carry a chorus. (G10, G21)
+- Crowds of copies. One cut-out figure duplicated into a crowd, choir or army, moving in sync to the beat. (check)
+
 HOW MUCH TO CHANGE
 Accent: one found face or one misbehaving prop inside the existing look.
 Link: plan the section's scene changes as a chain of visual rhymes (the cheapest high-value use of Gilliam).
@@ -40,7 +56,7 @@ Scene: the whole section becomes a collage stage with found pieces, a fake-scale
 Default to Accent or Link. Scene is for sections that are already satire or allegory.
 
 RETURN
-State the scene's claim and name its stiff thing. Give two options. For each: the found material (and a PD source if possible), what it does that it should not, the next thing it becomes, how the section ends, the sound that sells each beat, and the reference anchor. Recommend one. For motion, name one sudden action and its consequence, and the visual rhyme that carries the cut.
+State the scene's claim and name its stiff thing. Give two options. For each: the found material (and a PD source if possible), what it does that it should not, the next thing it becomes, how the section ends, the sound that sells each beat, and the reference anchor. Recommend one. For motion, name one sudden action and its consequence, and the visual rhyme that carries the cut. For a music video, also say which beats the hits land on, what the chorus returns to, and how any singing character sings.
 
 CHECK
 Who is the target? It must be power, pomposity, an institution or a product, never a weak or real private person. No recognisable real public figure; for Bob's films, allegory only. Does the violence stay visibly paper, with no realistic injury? Does each transition follow an element rather than fade? Can you explain the joke without saying "Gilliam" or "Monty Python"? Would it still work in clean vector or clay? If it only works as a Python pastiche (the foot, the Liberty Bell, the Victorian strongman), start again.

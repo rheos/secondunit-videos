@@ -1,5 +1,5 @@
 TERRY GILLIAM: CUT-OUT SURFACE AND MOTION BRIEF
-Updated 2026-10-15
+Updated 2026-10-16
 
 SCOPE
 Use this when Robin wants the cut-out surface, not just the thinking. The thinking is in AGENT-DIRECTION.txt and works in any medium. The method below comes from Gilliam's own 1974 demonstration (BBC Do-It-Yourself Film Animation Show, source bbc1974) unless marked otherwise. Where we propose a code equivalent, it says so. We have not studied frames from the broadcast pieces in this session; check against a real clip before calling a look finished.
@@ -38,6 +38,15 @@ PROPOSED CODE APPROACH (ours)
 - Sound: every movement beat gets a sound (pop, squeak, boing, crash, raspberry). Time actions to the song's clock (video-production skill); sound effects ride on top in the mix.
 - Determinism: paint each piece once at load, then only transform it per frame, as the existing kits do.
 
+MUSIC VIDEO TIMING AND FRAME (ours)
+- Two motion layers. Cut-out pieces step (held on twos or threes) while the background moves smoothly: the sky glow breathes, a pan drifts, light shifts. The contrast between stepped paper and a smooth world is the look. Do not step the background.
+- Hits on the grid. Put every snap, pop, drop and squash on a beat or subdivision from the song's beat map (video-production skill, audio as clock). A hit is one or two frames; the hold after it lasts until the next hit.
+- Cycles in bars. A repeating cycle (cog, pump, marching row, wheel) lasts exactly one or two bars so it never drifts off the tempo.
+- The singing jaw. For a singing found face, the jaw opens on each sung syllable from the word timings and closes between; on fast lines, open on the beat instead. Opening is a 2-3 frame drop, never eased.
+- Colour layers. Colour lives in the sky and the airbrushed shapes: deep gradients (sunset orange to night blue, acid green to violet). Photo pieces stay sepia or lightly tinted. The photographs are the "real" layer, the airbrush is the dream layer.
+- Panorama pans. For an intro, solo or outro, build one collage several screens wide and pan or push slowly across it at a constant speed, with the pieces on it barely moving.
+- Fly-through cuts. To go into a mouth, eye, opened head or doorway, scale the camera into the opening until its dark interior fills the frame, cut on a beat, and scale out of a matching opening in the next scene.
+
 GENERATOR NOTES (from our own Midjourney runs, memory wgt-generative-mj-look)
 - Putting "Gilliam" in a prompt with "painted" pulls Monty Python cut-out collage with grotesque faces.
 - "Film still from Terry Gilliam's Brazil 1985" pulls a live-action ministry interior, not the animation.
@@ -56,6 +65,7 @@ ACCEPTANCE CHECK
 - Motion reads as paper: holds, slides, snaps, bounces, a dropping jaw. Nothing glides.
 - Each scene change follows an element into the next scene.
 - Each beat has a sound.
+- In a music video: hits land on the beat map, cycles last whole bars, and the background moves smoothly while the pieces step.
 - The joke survives if the texture is swapped for clean vector.
 
 READING ORDER

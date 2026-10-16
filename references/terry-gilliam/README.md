@@ -7,7 +7,8 @@ symbols, and the psychology of why they work. His live-action films come in only
 
 - `AGENT-DIRECTION.txt`: the one-page "What would Terry add?" pass. Give it to an agent with a
   section brief. It returns the scene's stiff thing, two options, a recommendation and how the
-  section ends.
+  section ends. Its "In a music video" section maps the moves onto a song: hits on the beat, cycles
+  in bars, a dropping jaw for singing, verse chains and returning choruses, pans for instrumentals.
 - `PSYCHOLOGY.md`: the deep file Robin asked for. Why the moves work on a viewer, symbol by symbol:
   the foot, the opening head, devouring machines, the betraying body, lies about scale, God as a
   found photograph, the animator who dies, flight and the fall, the margins of sacred books, high art
