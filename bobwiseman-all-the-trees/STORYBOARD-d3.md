@@ -44,3 +44,16 @@ Checks: frames at 0:20, 1:00, 1:50, 2:04.95 and 2:12.2 to 2:18.15 are pixel-iden
 - Full cut `out/att_alchemy-d3-full_f00000-f03674_24fps_draft.mp4`: v29 frames 0-2999 (draft 2b is v29 up to 2:05) plus the draft 3 span, encoded at 720p crf 24 on the untouched song.wav. 3674 frames, 153.083 s.
 - Against draft 2b's file (decoded, 320x180 grey): before 2:05 mean diff at most 0.96/255; 2:12.2 to 2:18.2 (the line and the pointing branch) at most 1.20/255. That is encode noise. The curtain call converges by 2:27.5, once the curtains cover the new picture. Audio stream md5 identical to draft 2b.
 - Before/after sheet: `out/att_d3_before-after_2m05-end_left-d2b_right-d3.png` (2:06.9, 2:09.6, 2:11.3, 2:20.5, 2:23.8, 2:26.6). Side by side: `out/att_d3_side-by-side_f03000-f03674_24fps_left-d2b_right-d3.mp4`.
+
+## Draft 3b: Robin's Gilliam pass (2026-10-15)
+
+Robin held draft 3 and brought in the Terry Gilliam reference study (`references/terry-gilliam/AGENT-DIRECTION.txt`, issue #154). Its question: what respectable thing can we cut out of its world, make misbehave, and turn into the next thing? Draft 3's giants arrived and then stood still, nothing turned into the next thing, and the meadow was an empty stage. Robin picked all four moves offered:
+
+- Chain the pops. 2:08.3 the snail's tree shudders and flings an acorn over the print; 2:09.18 the whale bursts up out of the soil where it lands, throwing clods; 2:10.15 its spout arcs over the print and rains down behind it, and the king shoots up there on the trumpet (2:10.71).
+- Whale swallows the print. 2:19.12 (bar) it lunges and gulps the print; 2:19.95 it blows it out of its blowhole on a water column, and the print tumbles through the air back to its place (2:20.62).
+- The hand plants it. 2:20.77 (bar) the engraved hand from "it's true" comes in from above the frame and pokes the print into the soil like a seed; the roots grow from that push (2:21.0) and run gold on the next bar (2:22.42) as before.
+- The king's head opens. Camera in on the king from 2:22.8; 2:23.25 his crown hinges up like a lid, tree and all, onto a hollow skull; from 2:23.5 the six newcomers climb out of his head one per half beat and hop down onto the print's top edge, as the curtains close.
+
+The king re-enters only after the poke (2:21.17) in this half. No new cut-outs: the hand is `cloudhand` from the opening media and the climbers are the ensemble atlas. The king is split at runtime along the crown's lower rim (`KCUT` in coda.js).
+
+QA: protected frames pixel-identical to draft 2b's code (0:20, 1:00, 1:50, 2:04.95, 2:12.2 to 2:18.15); 674/674 frames, 0 bad; full cut `out/att_alchemy-d3b-full_f00000-f03674_24fps_draft.mp4` matches draft 2b before 2:05 and on 2:12.2 to 2:18.2 to encode noise (mean diff at most 1.22/255), audio md5 identical. Before/after `out/att_d3b_before-after_left-d3_right-d3b.jpg`.
