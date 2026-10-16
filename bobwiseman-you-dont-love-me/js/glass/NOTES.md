@@ -82,3 +82,24 @@ Baseline 8b (5bcf8fb, cpP1M3Nu9MQ). Bob's four notes, built as written:
   jabs her head out at the wave twice, 0.35 s apart, a smack on each.
 - "2:45 ... i believe the glue stick should be inverted": in `scenes.js` (local, quotes the lyric) the tube is
   turned over in her hand, nozzle up and left, and the nozzle's point runs down the crack line.
+
+## Draft 10: the Pips in sharkskin, with a synchronized step finale (Bob's photo, 2026-10-16, #176)
+
+Baseline draft 9 (63125df, KTAHdM5sC4U). Bob sent a 1960s soul group publicity photo: five singers in matching
+pale sharkskin tuxedo jackets, mid-step in one move. The photo is a press shot and stays out of git.
+
+- Costume (`bridge-trio.js` drawSinger, so every appearance gets it: the intro, the refrain heads, the petal
+  plucker, the bridge trio and the finale): a pale silver glass jacket with a lighter leaded piece for the sheen
+  down each front and each sleeve (the fronts catch more light as he leans), satin-black peaked lapels with their
+  own sheen strip, one button, black pocket welts, a black bow tie with a satin knot, white shirt, black trousers
+  with a satin stripe, and the trousers' seat showing through the cutaway below the button. The gold sequins are
+  gone. Faces, sizes, poses and timing outside the finale are unchanged.
+- Finale (`pip-finale.js`): from the ta-da (200.88) to the hat tip (225.58) one unison step routine in 4-beat
+  phrases built on the photo's pose (`PF_STEP.KEY_R` and its mirror: a knee up and across, weight on the back foot,
+  both arms reaching forward and down with open palms, a new `palm` value on a pose). Kicks land on the beats of
+  `PF_B`, the step is the half beat before each one, and the line travels 70 world units a step (right, left, right,
+  left: back to centre by the hat tip). Double kicks, the photo held with two claps, a unison spin, kicks with a
+  clap on every and. The entry, the middle one's pluck of petal 27 (he rejoins in step on b17), the hat tip with
+  Bob, the wave and the exit are as draft 9; the ta-das are now all three the same.
+- `mixPose` treats a scalar one pose lacks (the palm) as 0; all the older poses share their keys, so nothing they
+  draw changes.

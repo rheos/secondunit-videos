@@ -1,5 +1,5 @@
 // The Pip who plucks the daisy. Bob (2026-10-12): "could the pips (or one of them) be plucking the daisy petals
-// throughout?" One small Pip (the bridge's middle singer: sky-blue suit, gold lapels, ruby bow tie, drawn by
+// throughout?" One small Pip (the bridge's middle singer: since draft 10 a sharkskin tuxedo jacket, drawn by
 // bridge-trio.js's drawSinger) drops in from the top of frame a beat before each petal drop, hovers beside the
 // petal, reaches in and takes hold of its outer end, pulls it on its exact drop frame (the falling petal starts
 // in his fingers and he follows it for the first fifth of a second), lets it go, brushes off his hands with a

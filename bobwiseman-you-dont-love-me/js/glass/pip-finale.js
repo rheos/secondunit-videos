@@ -6,6 +6,13 @@
 // last petal (205.12, pip-plucker.js) and drops back in. They dance on behind little Bob as he crosses the floor
 // (outro-bob.js, he walks in front of them), tip their hats with him under the daisy (225.55), wave as the light goes
 // and leap out of the top of the frame (230.72), just before the fade. They mouth along wherever the vocal stem sings.
+// Draft 10 (Bob's photo, 2026-10-16: five singers in sharkskin jackets caught mid-step in one move): from the ta-da
+// to the hat tip the routine is one synchronized step line in that manner, all three in unison. The key pose is
+// the photo's: one knee lifted and crossing in front, weight on the back foot, both arms reaching forward and down
+// with open palms. Kick-steps land that pose on the beat (the step is the half beat before it), in 4-beat phrases:
+// travel right, travel left (the middle one is up plucking), double kicks, travel right, the photo held with two
+// claps, travel left, a unison spin, kicks with a clap on every and, double kicks into the hat tip. The entry, the
+// pluck, the hat tip with Bob, the wave and the exit are as draft 9.
 // World space on the nave floor, drawn after the floor pool and before Bob. Needs bridge-trio.js and pip-heads.js
 // (pipSingMouth). Pure function of song time t.
 
@@ -36,9 +43,22 @@ const PF_POSE = {
   strutB: { L: [-.55, -1.1], R: [1.5, 2.1], lL: [-1.25, .1], lR: [.04, .02], x: 0, lean: .08, tilt: .1, dip: 4 },
   wave: { L: [-.22, .95], R: [2.5, 2.2], lL: [-.05, -.02], lR: [.05, .02], x: 0, lean: -.05, tilt: -.1, dip: 6 },
 };
-const PF_SPINS = [[PF_B[2], .55], [PF_B[30], .5], [PF_B[44] + .15, .55]]; // each ripples down the line, .12 s apart
-const PF_ROLLS = [[PF_B[3], PF_B[4]], [PF_B[23], PF_B[24]], [PF_B[42], PF_B[44] - .15], [PF_B[46], PF_B[47]]];
-const PF_CHICK = [[PF_B[16], PF_B[20]], [PF_B[40], PF_B[42]]];
+// The photo's step (draft 10). KEY_R: the screen-right knee up and across, weight back on the left foot, both arms
+// reaching forward and down; KEY_L is its mirror. KICK2 is the second, higher kick of a double; STEP is the half beat
+// between, both feet down, knees giving; CLAP brings the hands together in front of the chest.
+const pfMirror = (P) => ({ ...P, L: P.R.map((a) => -a), R: P.L.map((a) => -a), lL: P.lR.map((a) => -a), lR: P.lL.map((a) => -a), x: -P.x, lean: -P.lean, tilt: -P.tilt });
+const PF_STEP = { KEY_R: { L: [-.72, -.32], R: [.42, -.2], lL: [-.05, .05], lR: [-.8, .82], x: -16, lean: -.05, tilt: -.1, dip: 8, palm: 1 },
+  KICK2_R: { L: [-.85, -.45], R: [.55, -.3], lL: [-.06, .06], lR: [-1.05, .9], x: -20, lean: -.08, tilt: -.14, dip: 4, palm: 1 },
+  STEP: { L: [-.16, -.02], R: [.16, .02], lL: [-.1, -.03], lR: [.1, .03], x: 0, lean: 0, tilt: 0, dip: 24 },
+  CLAP: { L: [-.3, 1.42], R: [.3, -1.42], lL: [-.07, -.02], lR: [.07, .02], x: 0, lean: 0, tilt: .06, dip: 12 } };
+PF_STEP.KEY_L = pfMirror(PF_STEP.KEY_R); PF_STEP.KICK2_L = pfMirror(PF_STEP.KICK2_R);
+// Travel: the line moves PF_TRAVEL world units sideways on each travelling beat, in the step into the kick.
+const PF_TRAVEL = 70, PF_MOVES = [...[9, 10, 11, 12, 21, 22, 23, 24].map((i) => [i, 1]), ...[13, 14, 15, 16, 29, 30, 31, 32].map((i) => [i, -1])];
+function pfTravel(t) { let x = 0; for (const [i, d] of PF_MOVES) x += d * PF_TRAVEL * ease(t, PF_B[i] - (PF_B[i + 1] - PF_B[i]) / 2, PF_B[i]); return x; }
+// [start, length, delay between singers]: the entry spin ripples down the line, the routine's spins are in unison
+const PF_SPINS = [[PF_B[2], .55, .12], [PF_B[35], .5, 0], [PF_B[44] + .15, .55, 0]];
+const PF_ROLLS = [[PF_B[3], PF_B[4]]];
+const PF_CHICK = [];
 function pfKeys(k) {
   const b = PF_B, h = (i) => (b[i + 1] - b[i]) / 2, F = FINAL[k], K = [];
   const add = (t, P, d = .12) => K.push([t, P, d]);
@@ -46,27 +66,30 @@ function pfKeys(k) {
   add(b[1], PF_POSE.scissA); add(b[1] + h(1), PF_POSE.scissB, .1); add(b[2] + .1, POSE.wide, .2); // the spin in the air
   add(b[3], POSE.roll); add(b[4], PF_POSE.fall, .2);
   add(PF.land[k], PF_POSE.land, .06); add(PF.land[k] + .32, PF_POSE.ready, .2);
-  add(b[8] + .02, F, .26);                                                  // ta-da
-  add(b[9], POSE6.walkL, .16); add(b[9] + h(9), POSE6.touchL); add(b[10], POSE6.walkR, .16); add(b[10] + h(10), POSE6.touchR);
-  add(b[11], POSE6.walkL, .16); add(b[11] + h(11), POSE6.touchL);
-  for (const i of [12, 13, 14, 15]) { add(b[i], POSE6.horaR); add(b[i] + h(i), POSE6.horaL); }
-  add(b[16] + (k === 1 ? .3 : 0), POSE6.chick);
-  add(b[20], POSE.point, .14); add(b[21], POSE.sky, .14); add(b[22], POSE.vee, .1); add(b[23], POSE.chest, .1);
-  add(b[24], POSE.slideL, .14); add(b[24] + h(24), POSE.kickR, .1); add(b[25], POSE.slideR, .14); add(b[25] + h(25), POSE.kickL, .1);
-  add(b[26], POSE.slideL, .14); add(b[26] + h(26), POSE.kickR, .1); add(b[27], POSE.slideR, .14); add(b[27] + h(27), POSE.kickL, .1);
-  for (const i of [28, 29]) { add(b[i], POSE6.walkL, .16); add(b[i] + h(i), POSE6.touchL); }
-  add(b[30] + .1, POSE.wide, .2); add(b[31], POSE6.walkR, .16); add(b[31] + h(31), POSE6.touchR);
-  for (const i of [32, 33, 34, 35]) add(b[i], i % 2 ? PF_POSE.strutA : PF_POSE.strutB, .14);
-  for (const i of [36, 37, 38, 39]) { add(b[i], POSE6.horaR); add(b[i] + h(i), POSE6.horaL); }
-  add(b[40], POSE6.chick); add(b[42], POSE.roll);
+  const T = FINAL[1], S = PF_STEP, kick = (i, P) => { add(b[i], P, .14); add(b[i] + h(i), S.STEP, .14); };
+  add(b[8] + .02, T, .26);                                                   // ta-da, all three the same
+  [9, 10, 11, 12].forEach((i, j) => kick(i, j % 2 ? S.KEY_L : S.KEY_R));      // kick-steps travelling right
+  [13, 14, 15, 16].forEach((i, j) => kick(i, j % 2 ? S.KEY_L : S.KEY_R));     // and back left
+  for (const [i, K1, K2] of [[17, S.KEY_R, S.KICK2_R], [19, S.KEY_L, S.KICK2_L]]) { // double kicks in place
+    add(b[i], K1, .14); add(b[i] + h(i), K2, .12); add(b[i + 1], S.STEP, .16);
+  }
+  [21, 22, 23, 24].forEach((i, j) => kick(i, j % 2 ? S.KEY_L : S.KEY_R));     // travelling right
+  for (const [i, K] of [[25, S.KEY_L], [27, S.KEY_R]]) {                      // the photo, held, and two claps
+    add(b[i], K, .14); add(b[i + 1], S.CLAP, .1); add(b[i + 1] + h(i + 1) * .5, S.STEP, .08); add(b[i + 1] + h(i + 1), S.CLAP, .1);
+  }
+  [29, 30, 31, 32].forEach((i, j) => kick(i, j % 2 ? S.KEY_L : S.KEY_R));     // travelling left
+  add(b[33], S.KEY_R, .14); add(b[33] + h(33), S.STEP, .14); add(b[34], S.KEY_L, .14);
+  add(b[35] + .1, POSE.wide, .2); add(b[36], S.KEY_R, .14);                   // the spin (PF_SPINS), out into the photo
+  for (const i of [37, 38, 39, 40]) { add(b[i], i % 2 ? S.KEY_L : S.KEY_R, .14); add(b[i] + h(i), S.CLAP, .1); } // a clap on every and
+  add(b[41], S.KEY_L, .14); add(b[41] + h(41), S.KICK2_L, .12); add(b[42], S.STEP, .16); add(b[42] + h(42), S.KEY_R, .14); add(b[43], S.STEP, .16);
   add(PF_B[44] - .13, POSE6.salute, .12); add(PF_B[44], POSE6.flick, .1); add(226.68, PF_POSE.ready, .2); // with Bob's hat
-  add(b[46], POSE.roll); add(b[47], POSE6.walkL, .16); add(b[47] + h(47), POSE6.touchL); add(b[48], POSE6.walkR, .16); add(b[48] + h(48), POSE6.touchR);
-  add(b[49], PF_POSE.wave, .16); add(b[50] + .02, F, .26);                  // a wave as the light goes, a last ta-da
+  for (const i of [46, 47, 48]) kick(i, i % 2 ? S.KEY_L : S.KEY_R);           // three more kick-steps
+  add(b[49], PF_POSE.wave, .16); add(b[50] + .02, T, .26);                  // a wave as the light goes, a last ta-da
   add(PF.leap - .3, PF_POSE.prep, .14); add(PF.leap + .04, PF_POSE.leap, .12);
   if (k === 1) { // up to the daisy and back: crouch on the beat before, gone on PF.pluck[0], falling back in to PF.pluck[1]
-    const r = K.filter(([t]) => t < PF.pluck[0] - .3 || t > PF.pluck[1] - .6);
+    const r = K.filter(([t]) => t < PF.pluck[0] - .3 || t > PF.pluck[1] + .4); // he is back in step on b[17]
     r.push([PF.pluck[0] - .3, PF_POSE.prep, .14], [PF.pluck[0] + .04, PF_POSE.leap, .12], [PF.pluck[1] - .58, PF_POSE.fall, .05],
-      [PF.pluck[1], PF_POSE.land, .06], [PF.pluck[1] + .3, POSE6.chick, .16]);
+      [PF.pluck[1], PF_POSE.land, .06], [PF.pluck[1] + .3, PF_POSE.ready, .16]);
     return r.sort((a, c) => a[0] - c[0]);
   }
   return K.sort((a, c) => a[0] - c[0]);
@@ -90,14 +113,15 @@ function pfPose(k, t) {
     P = { ...P, L: P.L.map((v, i) => lerp(v, L[i], w)), R: P.R.map((v, i) => lerp(v, R[i], w)) };
   }
   for (const [a0, b] of PF_CHICK) { // chicken elbows: four flaps a beat, knees bouncing with them
-    const a = a0 + (k === 1 && a0 === PF_B[16] ? .3 : 0), w = pfEnv(a, b, t); if (w <= 0) continue;
+    const a = a0, w = pfEnv(a, b, t); if (w <= 0) continue;
     const f = .5 + .5 * Math.sin(TAU * (t - a) / (PIP_HEAD_BEAT / 4) - Math.PI / 2);
     P = { ...P, L: [P.L[0] - .5 * f * w, P.L[1]], R: [P.R[0] + .5 * f * w, P.R[1]], dip: P.dip + 12 * f * w, tilt: P.tilt + .1 * Math.sin(TAU * (t - a) / (PIP_HEAD_BEAT / 2)) * w };
   }
   { const w = pfEnv(PF_B[49], PF_B[50], t); // the wave: the raised forearm swings
     if (w > 0) P = { ...P, R: [P.R[0], P.R[1] + .45 * Math.sin(TAU * (t - PF_B[49]) / (PIP_HEAD_BEAT / 2)) * w] }; }
   const sing = PF.sing.some(([a, b]) => t >= a && t < b);
-  const tada = (t >= PF_B[8] && t < PF_B[9]) || (t >= PF_B[50] && t < PF.leap - .3); // grins on the ta-das
+  const tada = (t >= PF_B[8] && t < PF_B[9]) || (t >= PF_B[50] && t < PF.leap - .3) // grins on the ta-das
+    || (t >= PF_B[25] && t < PF_B[26]) || (t >= PF_B[27] && t < PF_B[28]);        // and on the held photo poses
   return { ...P, mouth: sing ? pipSingMouth(t) : tada ? .4 : .08 };
 }
 function pfActive(t) { return t >= PF.in && t < PF.leap + 1.2; }
@@ -135,7 +159,7 @@ function drawFinalePips(g, t, cam, tod) {
     if (t < PF.in + k * .12) continue;
     const S = SINGERS[k], air = pfAir(k, t), lift = pfLift(k, t, cam);
     const grow = air === 1 ? camAt(PF.land[k]).s / s : 1;
-    const wx = PF.x + (k - 1) * PF.gap * (air === 1 ? lerp(.55, 1, ease(t, PF.land[k] - .6, PF.land[k])) : 1);
+    const wx = PF.x + pfTravel(t) + (k - 1) * PF.gap * (air === 1 ? lerp(.55, 1, ease(t, PF.land[k] - .6, PF.land[k])) : 1);
     g.save(); g.setTransform(s, 0, 0, s, W / 2 - cam.x * s, H / 2 - cam.y * s);
     g.translate(wx, PF.y); g.scale(PF.s, PF.s); g.translate(-S.x, -TRIO_FLOOR_Y);
     const near = clamp(1 - lift / 700);
@@ -156,7 +180,7 @@ function drawFinalePips(g, t, cam, tod) {
     }
     g.translate(0, -lift / PF.s);
     if (grow !== 1) { g.translate(S.x, TRIO_FLOOR_Y); g.scale(grow, grow); g.translate(-S.x, -TRIO_FLOOR_Y); }
-    const spU = PF_SPINS.reduce((u, [a, d]) => u + ease(t, a + k * .12, a + k * .12 + d), 0), cs = Math.cos(spU * TAU);
+    const spU = PF_SPINS.reduce((u, [a, d, q]) => u + ease(t, a + k * q, a + k * q + d), 0), cs = Math.cos(spU * TAU);
     g.translate(S.x, 0); g.scale(Math.max(.12, Math.abs(cs)) * Math.sign(cs || 1), 1); g.translate(-S.x, 0);
     if (br < .985) g.filter = `brightness(${br.toFixed(3)})`;
     drawSinger(g, S, k, t, pfPose(k, t));

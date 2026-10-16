@@ -91,9 +91,12 @@ function trioKeys(k) {
   ];
 }
 const TRIO_KEYS = [0, 1, 2].map(trioKeys);
-function mixPose(A, Bp, u) {
+function mixPose(A, Bp, u) { // a scalar one pose lacks (draft 10's palm) counts as 0
   const o = {};
-  for (const key in A) o[key] = Array.isArray(A[key]) ? A[key].map((v, i) => lerp(v, Bp[key][i], u)) : lerp(A[key], Bp[key], u);
+  for (const key of new Set([...Object.keys(A), ...Object.keys(Bp)])) {
+    const a = A[key] ?? (Array.isArray(Bp[key]) ? Bp[key] : 0), b = Bp[key] ?? (Array.isArray(a) ? a : 0);
+    o[key] = Array.isArray(a) ? a.map((v, i) => lerp(v, b[i], u)) : lerp(a, b, u);
+  }
   return o;
 }
 function poseAt(k, t) {
@@ -135,7 +138,12 @@ const SINGERS = [
   { x: 960, skin: [92, 54, 34], hair: [20, 14, 12], mous: false, face: 1.06, seed: 9200 },
   { x: 1450, skin: [138, 88, 56], hair: [30, 20, 14], mous: false, part: true, face: 1, seed: 9300 },
 ];
-const SUIT = [74, 150, 214], SUIT2 = [40, 96, 170], LAPEL = [232, 176, 40], TIE = [176, 20, 40], SHIRT = [232, 234, 222];
+// Draft 10 (Bob's photo, 2026-10-16: a 1960s soul group in matching sharkskin tuxedo jackets): pale sharkskin
+// jackets with a lighter piece of glass for the sheen down each front and sleeve, satin-black peaked lapels with
+// their own sheen strip, one button, black pocket welts, black bow ties, white shirts, black trousers with a satin
+// stripe. The gold sequins are gone (sharkskin shines by itself).
+const SUIT = [172, 176, 188], SHEEN = [214, 219, 230], SUIT2 = [40, 38, 48], SATIN = [84, 80, 100],
+  LAPEL = [30, 28, 34], LAPEL2 = [96, 94, 108], TIE = [22, 20, 28], SHIRT = [232, 234, 222];
 const TRIO_FLOOR_Y = 1018, TRIO_SC = .92;
 
 function armPts(sx, sy, P) {
@@ -147,10 +155,17 @@ function legPts(hx, P) {
   return [[hx, 0], [kx, ky], [kx + Math.sin(a2) * FIG.sh, ky + Math.cos(a2) * FIG.sh]];
 }
 // a limb as one leaded piece per segment
-function limb(g, pts, w0, w1, col, seed) {
+function limb(g, pts, w0, w1, col, seed, amt = 1) {
   for (let i = 0; i < pts.length - 1; i++) {
     const a = pts[i], b = pts[i + 1], wa = lerp(w0, w1, i / (pts.length - 1)), wb = lerp(w0, w1, (i + 1) / (pts.length - 1));
-    pane(g, smoothPath(limbPts([a, [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2], b], [wa, (wa + wb) / 2, wb])), col, seed + i, { ew: 14, shade: .32, lw: 6 });
+    pane(g, smoothPath(limbPts([a, [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2], b], [wa, (wa + wb) / 2, wb])), col, seed + i, { ew: 14, shade: .32, lw: 6, amt });
+  }
+}
+// a narrow strip of lighter glass down the middle of a limb (the jacket's sheen on the sleeves, the trousers' stripe)
+function limbStrip(g, pts, w, col, seed) {
+  for (let i = 0; i < pts.length - 1; i++) {
+    const a = pts[i], b = pts[i + 1], u = (q) => [lerp(a[0], b[0], q), lerp(a[1], b[1], q)];
+    pane(g, smoothPath(limbPts([u(.16), u(.5), u(.84)], [w * .6, w, w * .6])), col, seed + i, { ew: 4, shade: .12, lw: 3, amt: .4 });
   }
 }
 
@@ -168,39 +183,56 @@ function drawSinger(g, s, k, t, pose) {
 
   // legs and shoes (trousers in the darker suit blue)
   for (const [hx, LP, side] of [[-FIG.hipX, P.lL, -1], [FIG.hipX, P.lR, 1]]) {
-    const pts = legPts(hx, LP); limb(g, pts, 56, 44, SUIT2, s.seed + 10 + side);
+    const pts = legPts(hx, LP); limb(g, pts, 56, 44, SUIT2, s.seed + 10 + side, .25); limbStrip(g, pts, 9, SATIN, s.seed + 14 + side);
     const [ax, ay] = pts[2];
     pane(g, ellPath(ax + side * 16, ay + 8, 36, 15, 0), [24, 20, 22], s.seed + 20 + side, { ew: 8, shade: .2, lw: 5 });
     g.fillStyle = 'rgba(255,255,255,.35)'; g.beginPath(); g.ellipse(ax + side * 22, ay + 3, 12, 4, 0, 0, TAU); g.fill();
   }
   // upper body, tilted about the pelvis
   g.rotate(P.lean); g.translate(shim, 0);
-  const jacket = [[-74, 72], [-58, -40], [-54, -120], [-FIG.shX - 12, FIG.shY + 20], [-FIG.shX + 6, FIG.shY - 8], [FIG.shX - 6, FIG.shY - 8], [FIG.shX + 12, FIG.shY + 20], [54, -120], [58, -40], [74, 72], [10, 64], [0, -40], [-10, 64]];
-  pane(g, polyPath(jacket), SUIT, s.seed + 30, { ew: 30, shade: .34, lw: 8 });
-  if (!back) {
-    pane(g, polyPath([[-26, FIG.shY - 4], [26, FIG.shY - 4], [0, -150]]), SHIRT, s.seed + 31, { ew: 10, shade: .15, lw: 5 });
-    pane(g, polyPath([[-26, FIG.shY - 4], [-46, FIG.shY + 20], [-30, -110], [0, -150]]), LAPEL, s.seed + 32, { ew: 10, shade: .25, lw: 5 });
-    pane(g, polyPath([[26, FIG.shY - 4], [46, FIG.shY + 20], [30, -110], [0, -150]]), LAPEL, s.seed + 33, { ew: 10, shade: .25, lw: 5 });
-    pane(g, polyPath([[-22, FIG.shY + 2], [0, FIG.shY + 12], [22, FIG.shY + 2], [22, FIG.shY + 22], [0, FIG.shY + 12], [-22, FIG.shY + 22]]), TIE, s.seed + 34, { ew: 6, shade: .2, lw: 4 });
-    for (const y of [-118, -78]) { g.fillStyle = rgb(LAPEL); g.beginPath(); g.arc(0, y, 6, 0, TAU); g.fill(); lead(g, circPath(0, y, 6), 3); }
-  } else {
-    paint(g, 3, .5); g.beginPath(); g.moveTo(0, FIG.shY + 10); g.lineTo(0, 66); g.stroke(); // back seam
+  // the trousers' seat, seen through the cutaway below the button
+  pane(g, polyPath([[-54, -100], [54, -100], [58, 44], [-58, 44]]), SUIT2, s.seed + 29, { ew: 10, shade: .2, lw: 5 });
+  const jacket = [[-74, 72], [-58, -40], [-54, -120], [-FIG.shX - 12, FIG.shY + 20], [-FIG.shX + 6, FIG.shY - 8], [FIG.shX - 6, FIG.shY - 8], [FIG.shX + 12, FIG.shY + 20], [54, -120], [58, -40], [74, 72], [24, 64], [4, -84], [-4, -84], [-24, 64]];
+  pane(g, polyPath(jacket), SUIT, s.seed + 30, { ew: 30, shade: .34, lw: 8, amt: .5 });
+  // the sheen: a lighter piece down each front, catching more light as he leans into it
+  const shn = (sd) => mix(SUIT, SHEEN, clamp(.55 + 1.6 * P.lean * sd + .12 * Math.sin(t * 1.3 + s.seed)));
+  for (const sd of [-1, 1]) {
+    pane(g, smoothPath([[sd * 50, FIG.shY + 52], [sd * 58, -140], [sd * 60, -40], [sd * 64, 56], [sd * 50, 60], [sd * 44, -44], [sd * 40, -150]]), shn(sd), s.seed + 35 + sd, { ew: 8, shade: .16, lw: 5, amt: .4 });
   }
-  // sequins: gold chips that glint, most on the hits
-  const hp = hitPulse(t);
-  for (let q = 0; q < 26; q++) {
-    const u = rnd(s.seed, q), v = rnd(s.seed, q + 40), x = lerp(-60, 60, u), y = lerp(FIG.shY + 30, 50, v);
-    const gl = Math.max(0, Math.sin(t * (3 + rnd(q, 5) * 4) + q * 2.3)) ** 6 * .6 + hp * rnd(q, Math.floor(t * 12));
-    if (gl < .08) continue;
-    g.fillStyle = `rgba(255,246,200,${Math.min(1, gl)})`; g.beginPath(); g.arc(x, y, 2.5 + 3 * gl, 0, TAU); g.fill();
+  if (!back) {
+    pane(g, polyPath([[-30, FIG.shY - 6], [30, FIG.shY - 6], [0, -102]]), SHIRT, s.seed + 31, { ew: 10, shade: .15, lw: 5 });
+    for (const sd of [-1, 1]) { // satin peaked lapels, collar to the button, each with a strip of sheen
+      pane(g, polyPath([[sd * 30, FIG.shY - 6], [sd * 60, FIG.shY + 2], [sd * 78, FIG.shY + 38], [sd * 58, FIG.shY + 52], [sd * 52, -190], [sd * 8, -94], [0, -102]]), LAPEL, s.seed + 32.5 + sd, { ew: 8, shade: .16, lw: 5, amt: .25 });
+      pane(g, smoothPath(limbPts([[sd * 62, FIG.shY + 26], [sd * 46, -186], [sd * 16, -110]], [8, 10, 5])), LAPEL2, s.seed + 38 + sd, { ew: 3, shade: .1, lw: 3, amt: .25 });
+    }
+    // one button, black welts on the breast pocket and the hip pockets
+    pane(g, circPath(0, -88, 8), LAPEL, s.seed + 39, { ew: 3, shade: .1, lw: 3 });
+    g.fillStyle = 'rgba(255,255,255,.4)'; g.beginPath(); g.arc(-2.5, -91, 2.5, 0, TAU); g.fill();
+    g.strokeStyle = rgb(LAPEL); g.lineCap = 'round'; g.lineWidth = 5;
+    g.beginPath(); g.moveTo(38, -148); g.lineTo(60, -152); for (const sd of [-1, 1]) { g.moveTo(sd * 26, -10); g.lineTo(sd * 54, -12); } g.stroke();
+    // the bow tie: black, with a satin knot
+    pane(g, polyPath([[-38, FIG.shY - 2], [0, FIG.shY + 12], [38, FIG.shY - 2], [38, FIG.shY + 30], [0, FIG.shY + 15], [-38, FIG.shY + 30]]), TIE, s.seed + 34, { ew: 6, shade: .2, lw: 4, amt: .25 });
+    pane(g, polyPath([[-8, FIG.shY + 5], [8, FIG.shY + 5], [8, FIG.shY + 22], [-8, FIG.shY + 22]]), mix(TIE, LAPEL2, .45), s.seed + 37, { ew: 3, shade: .2, lw: 3 });
+  } else {
+    pane(g, polyPath([[-24, FIG.shY - 10], [24, FIG.shY - 10], [28, FIG.shY + 8], [-28, FIG.shY + 8]]), LAPEL, s.seed + 31, { ew: 4, shade: .2, lw: 4 }); // the collar
+    paint(g, 3, .5); g.beginPath(); g.moveTo(0, FIG.shY + 10); g.lineTo(0, 66); g.stroke(); // back seam
   }
   // arms (sleeves, then hands); seen from the back the arms swap sides
   const arms = [[-FIG.shX, back ? P.R.map((a) => -a) : P.L, -1], [FIG.shX, back ? P.L.map((a) => -a) : P.R, 1]];
   for (const [ax, AP, side] of arms) {
-    const pts = armPts(ax, FIG.shY + 12, AP); limb(g, pts, 50, 38, SUIT, s.seed + 40 + side);
+    const pts = armPts(ax, FIG.shY + 12, AP); limb(g, pts, 50, 38, SUIT, s.seed + 40 + side, .5); limbStrip(g, pts, 9, mix(SUIT, SHEEN, .5), s.seed + 48 + side);
     { const [cx, cy] = pts[2]; pane(g, circPath(cx, cy, 15), SHIRT, s.seed + 46 + side, { ew: 6, shade: .15, lw: 4 }); } // shirt cuff
     const [hx, hy] = pts[2], hand = smoothPath(blobPts(hx + Math.sin(AP[1]) * 14, hy + Math.cos(AP[1]) * 14, 17, 20, s.seed + side));
-    pane(g, hand, s.skin, s.seed + 44 + side, { ew: 10, shade: .25, lw: 5 });
+    if (P.palm > .05) { // draft 10: an open palm, fingers fanned out along the forearm (the photo's reaching hands)
+      const a = AP[1], pw = P.palm, cx = hx + Math.sin(a) * 18, cy = hy + Math.cos(a) * 18;
+      for (let f = 0; f < 4; f++) {
+        const fa = a + (f - 1.5) * .3 * pw - .1 * side, fl = (f === 0 || f === 3 ? 20 : 25) * (.6 + .4 * pw);
+        pane(g, smoothPath(limbPts([[cx + Math.sin(fa) * 8, cy + Math.cos(fa) * 8], [cx + Math.sin(fa) * (8 + fl), cy + Math.cos(fa) * (8 + fl)]], [9, 7])), s.skin, s.seed + 90 + f + side, { ew: 4, shade: .2, lw: 3.5 });
+      }
+      const ta = a - side * 1.1; // the thumb
+      pane(g, smoothPath(limbPts([[cx, cy], [cx + Math.sin(ta) * 20, cy + Math.cos(ta) * 20]], [10, 8])), s.skin, s.seed + 95 + side, { ew: 4, shade: .2, lw: 3.5 });
+      pane(g, ellPath(cx, cy, 18, 16, -a), s.skin, s.seed + 44 + side, { ew: 8, shade: .22, lw: 4.5 });
+    } else pane(g, hand, s.skin, s.seed + 44 + side, { ew: 10, shade: .25, lw: 5 });
     // the snap on each gap beat: a little white star at the fingers
     const bp = (t > TRIO.beats[0] - .05 && t < TRIO.beats[4] + .3) ? beatPulse(t) : 0;
     if (bp > .15) {
