@@ -94,3 +94,10 @@ uniform sawtooth.
 Film: ~50% same side view; refrains rerun; flat light arc; climax not biggest; playa not busy or Dali enough at 720p;
 chairs; bridge is the best stretch; cuts mostly hard; intro hold; instrumental repeat; one change for Bob = escalate the
 refrains and land a full-frame brightest Man burn.
+
+## Scope and build (2026-10-16)
+Robin picked all three passes. Before the build the code was regrouped by area, pixel-identical at 22 times
+(f24b6c9, d46aad5, 3f577d2): burn.js split from playa.js, camera-end.js (t >= 196) from camera.js, projection into
+camera.js, grade into world.js, the blind into installs.js, the teeth into table.js, drawCar into car.js, one scene
+hook per file. Seven builders, one sandbox each under out/d3/, base 3f577d2: b1 camera.js; b2 car.js; b3 table.js;
+b4 playa.js; b5 installs.js; b6 world.js + burn.js + camera-end.js; b7 bob.js + render.js.
