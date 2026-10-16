@@ -43,13 +43,13 @@
     }
   }
   // the Metro entrance: two Guimard lamps arching over a stair, a blank cream cartouche between them
-  const LAMPS = [[210, 1, 23.0], [870, -1, 23.35]];
+  const LAMPS = [[150, 1, 23.0], [930, -1, 23.35]];
   const flick = (t, t0) => { // stutters on, then holds
     const d = t - t0; if (d < 0) return 0; if (d > 1.6) return 1;
     return [1, 0, 1, 1, 0, 1, 0, 1][Math.floor(d / .2)] ? .9 : .15;
   };
   // where the right lamp's bud glows (matches guimard(): the stem's end, plus the bud's offset)
-  const H_LAMP = 760, BASE = 1660, BUD = { x: 870 - H_LAMP * .3 - 10, y: BASE - H_LAMP + 84 };
+  const H_LAMP = 760, BASE = 1660, BUD = { x: 930 - H_LAMP * .3, y: BASE - H_LAMP - GUIMARD_HAND_SC * .62 }; // the bud in the right iron hand
   function metro(t) {
     cut(cutRect(-60, 1640, W + 120, 400, 31), C.tealDeep, { sh: .6 });
     for (let i = 0; i < 5; i++) cut(ribbon(-40, W + 40, 1700 + i * 44, 8, i * 1.7 + t * .5, 6), C.teal, { sh: 0, grain: .2, alpha: .6 });
@@ -62,7 +62,7 @@
       tendril(whipPts([x0, 1520], [x0 - sx * 80, 1540], [x0 - sx * 140, 1600], [x0 - sx * 200, 1560], 24, sx), 12, C.goldDeep);
     }
     cut(rect(290, 1500, 500, 12), C.goldDeep, { sh: .5 });
-    for (const [x, dir, t0] of LAMPS) guimard(x, BASE, H_LAMP, dir, flick(t, t0), Math.sin(t * 1.2 + x) * 4);
+    for (const [x, dir, t0] of LAMPS) guimard(x, BASE, H_LAMP, dir, flick(t, t0), Math.sin(t * 1.2 + x) * 4, ss(t0 - .7, t0 + .3, t)); // iron hands open round the light
     // the cartouche, held between the stems (no lettering)
     cut(rrect(370, 1040, 340, 74, 30), C.cream, { sh: .9, lift: .3 });
     cut(rrect(384, 1052, 312, 50, 22), C.goldPale, { sh: 0, grain: .2, alpha: .6 });

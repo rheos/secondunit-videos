@@ -10,6 +10,24 @@ const SUN0 = { x: 540, y: 1100, r: 200 };
   const OP = { x: 110, y: 330, w: 860, h: 1380 }, FLOOR = 1520;
   const opening = () => archPath(OP.x, OP.y, OP.w, OP.h);
   const SNAPS = [144.46, 145.92, 146.84, 147.7];
+  // the house is full, of things: the film's leftovers sit in the front row as its audience
+  const SEATS = [140, 290, 440, 590, 740, 890], SEAT = { x: 740, y: 1800 };
+  function audience(t, lit) {
+    SEATS.forEach((x, i) => {
+      cut(rrect(x - 66, 1772, 132, 220, [44, 44, 0, 0]), C.plumDeep, { sh: .9, lift: .3 });
+      cut(rrect(x - 66, 1772, 132, 16, [8, 8, 0, 0]), C.plum, { sh: 0, grain: .2 });
+      if (i === 4 && lit > 0) { g.save(); g.globalAlpha *= lit; cut(rrect(x - 66, 1772, 132, 220, [44, 44, 0, 0]), C.goldPale, { sh: 0, grain: .3 }); g.restore(); }
+      g.save(); g.filter = i === 4 ? 'none' : 'brightness(0.32)';
+      g.translate(x, 1770);
+      if (i === 0) { cut(blob([[-80, 0], [-60, -50], [0, -64], [60, -50], [80, 0]], .6), C.plum, { sh: .4 }); cut(blob([[-10, 4], [80, 0], [110, 14], [30, 20]], .6), C.tealInk, { sh: .3 }); }
+      else if (i === 1) { cut(blob([[-80, 0], [-90, 120], [-40, 160], [40, 160], [90, 120], [80, 0], [0, -20]], .4), C.plum, { sh: .4 }); cut(poly([[0, -16], [-30, 90], [30, 90]]), C.cream, { sh: .2 }); }
+      else if (i === 2) { for (const sx of [-1, 1]) cut(ringLace(sx * 34, -26, 22, 30), C.goldDeep, { sh: .3, rule: 'evenodd' }); cut(rect(-10, -30, 20, 6), C.goldDeep, { sh: 0 }); }
+      else if (i === 3) { g.translate(0, -4); g.scale(.7, .7); cut(ellipse(0, 0, 120, 24), C.plumDeep, { sh: .3 }); cut(blob([[-70, -6], [-78, -190], [60, -206], [78, -190], [70, -6]], .3), C.plumDeep, { sh: .3 }); cut(rect(-72, -54, 144, 30), C.gold, { sh: .2 }); }
+      else if (i === 4) { g.translate(0, 96); bowler(1.0); }
+      else { cut(rect(-3, -120, 6, 40), C.goldDeep, { sh: 0 }); cut(blob([[-34, -84], [34, -84], [26, -10], [-26, -10]], .2), C.goldPale, { sh: .3 }); }
+      g.restore();
+    });
+  }
   // where the spotlight is, and how big
   function spot(t) {
     let x = kf3(t, [[142.48, SPOT0.x], [145.6, 540], [148.4, 540], [149.2, 300], [152.6, 300], [153.4, 700], [156.1, 700]]);
@@ -18,10 +36,13 @@ const SUN0 = { x: 540, y: 1100, r: 200 };
     if (t > 156.1) { // the search: wandering, then settling on the chair on "Nick" (159.0)
       const u = t - 156.1, sx = 540 + Math.sin(u * 1.9) * 300, sy = 1250 + Math.sin(u * 2.7 + 1) * 160, s = ss(158.4, 159.2, t);
       x = lerp(lerp(700, sx, ss(156.1, 156.7, t)), 540, s); y = lerp(lerp(1330, sy, ss(156.1, 156.7, t)), 1320, s); r = 220;
+      // Mark Von Ulrich (guest director): the chair on stage is empty, so the light swings off the stage onto the
+      // house: one seat in the front row, with only the bowler in it
+      const h = ss(159.6, 160.4, t); x = lerp(x, SEAT.x, h); y = lerp(y, SEAT.y - 30, h); r = lerp(r, 170, h);
     }
     // the operator's hand is never quite still: the light breathes and drifts
     x += Math.sin(t * 1.1) * 14 + Math.sin(t * 2.3) * 6; y += Math.sin(t * .9 + 1) * 10; r *= 1 + .025 * Math.sin(t * 1.7);
-    if (t > 161.5) { const c = ss(161.6, 163.4, t); x = lerp(x, SUN0.x, c); y = lerp(y, SUN0.y, c); r = lerp(220, SUN0.r, c); }
+    if (t > 161.5) { const c = ss(161.6, 163.4, t); x = lerp(x, SUN0.x, c); y = lerp(y, SUN0.y, c); r = lerp(r, SUN0.r, c); }
     return { x, y, r };
   }
   // the dog: a hand shadow (thumb ear, fingers snout, little finger jaw), wrist rising from below
@@ -66,8 +87,8 @@ const SUN0 = { x: 540, y: 1100, r: 200 };
   SHOT(142.48, 165.0, 'theatre', (t, k, d) => {
     t0 = t;
     const op = ss(143.2, 145.4, t) * (1 - ss(161.5, 163.3, t)), S = spot(t);
-    const z = kf3(t, [[142.48, 1.0], [148.0, 1.06], [156.0, 1.06], [161.0, 1.0]]);
-    g.save(); cam(540, 1000, z);
+    const z = kf3(t, [[142.48, 1.0], [148.0, 1.06], [156.0, 1.06], [159.5, 1.06], [160.4, 1.16], [161.4, 1.16], [162.6, 1.0]]);
+    g.save(); cam(540, kf3(t, [[159.5, 1000], [160.4, 1420], [161.4, 1420], [162.6, 1000]]), z); // down to the house when the light finds the bowler
     sheet(C.plumDeep);
     // the house: dark boxes either side
     for (const sx of [-1, 1]) for (let r = 0; r < 3; r++) { cut(archPath(540 + sx * 520 - 60, 520 + r * 420, 120, 220), C.tealInk, { sh: .4 }); archFrame(540 + sx * 520 - 60, 520 + r * 420, 120, 220, 10, C.goldDeep); }
@@ -81,7 +102,7 @@ const SUN0 = { x: 540, y: 1100, r: 200 };
     for (let i = 0; i < 6; i++) cut(rect(OP.x - 100, FLOOR + 20 + i * 32, OP.w + 200, 3), C.plumDeep, { sh: 0, grain: 0, alpha: .5 });
     if (t > 147.5) costumeRail(300, 1150);
     if (t > 151.5) { cut(ellipse(700, 1520, 80, 18), C.plum, { sh: .7 }); for (const sx of [-1, 1]) cut(capsule(700 + sx * 50, 1520, 700 + sx * 70, 1680, 8), C.goldDeep, { sh: .5 }); g.save(); g.translate(700, 1430); g.rotate(Math.sin(t * 1.2) * .02); helmet(.5, 1 + .04 * Math.sin(t * 2.6)); g.restore(); }
-    if (t > 155.5) { bentwoodChair(540, 1640, (t - 155.5) * .8); g.save(); g.translate(540 + Math.cos((t - 155.5) * .8) * 10, 1622); bowler(.42); g.restore(); }
+    if (t > 155.5) bentwoodChair(540, 1640, (t - 155.5) * .8); // empty: the bowler is in the house
     // the shadow play, inside the spotlight on the backdrop
     g.save(); g.clip(circle(S.x, S.y, S.r));
     glow(S.x, S.y, S.r, '250,220,160', .6);
@@ -117,6 +138,9 @@ const SUN0 = { x: 540, y: 1100, r: 200 };
     // footlights
     for (let i = 0; i < 9; i++) { const fx = 160 + i * 95; glow(fx, 1720, 70, '250,215,140', .5); cut(blob([[fx - 26, 1736], [fx, 1700], [fx + 26, 1736]], .6), C.goldPale, { sh: .4 }); }
     cut(cutRect(-60, 1736, W + 120, 400, 501), C.plumDeep, { sh: .8 });
+    const seatLit = ss(159.9, 160.4, t) * (1 - ss(161.6, 162.2, t));
+    audience(t, seatLit);
+    if (seatLit > 0) { g.save(); g.globalCompositeOperation = 'screen'; const sg2 = g.createRadialGradient(S.x, S.y, 0, S.x, S.y, S.r); sg2.addColorStop(0, `rgba(250,225,170,${.6 * seatLit})`); sg2.addColorStop(1, 'rgba(250,215,140,0)'); g.fillStyle = sg2; g.fill(circle(S.x, S.y, S.r)); g.restore(); }
     g.restore();
     // the falling star landing: a bright disc that settles into the spotlight
     if (t < 143.0) { g.save(); g.globalAlpha *= 1 - ss(142.48, 143.0, t); g.fillStyle = C.goldPale; g.fill(circle(SPOT0.x, SPOT0.y, SPOT0.r)); g.restore(); }

@@ -33,10 +33,23 @@
   }
   const THREE = [[220, 1400, 150, 1], [540, 1330, 180, 0], [860, 1400, 150, 2]];
   SHOT(180.633, END + .1, 'letgo', (t, k, d) => {
-    g.save(); cam(540, 960, 1 + .04 * ss(180.6, 196, t));
+    // Mark Von Ulrich (guest director): at the last clap the sun becomes an open hand rising out of the river;
+    // its rays fold into five gold fingers and the hand-bird flies into that palm
+    const hand = eo(clamp((t - CLAPS[15] + .05) / 1.1)), zo = lerp(1, .78, eio(clamp((t - CLAPS[15] + .4) / 1.6)));
+    g.save(); cam(540, lerp(960, 900, 1 - zo), (1 + .04 * ss(180.6, 196, t)) * zo);
     dawnSky(t, ss(181, 194, t));
-    rays(SUN4.x, SUN4.y, SUN4.R * 1.02, 1700, 36, t * .04, C.goldPale, .7);
+    rays(SUN4.x, SUN4.y, SUN4.R * 1.02, 1700, 36, t * .04, C.goldPale, .7 * (1 - hand));
     glow(SUN4.x, SUN4.y, 1000, '250,215,140', .55);
+    if (hand > 0) {
+      // the wrist rising from the water, a scalloped cuff, then four fingers and a thumb behind the halo (its palm)
+      cut(poly([[SUN4.x - 250, SUN4.y + 300], [SUN4.x + 250, SUN4.y + 300], [SUN4.x + 290, 1700], [SUN4.x - 290, 1700]]), C.gold, { sh: .8, lift: .3, alpha: hand });
+      { const y0 = SUN4.y + 360, pts = [[SUN4.x - 268, y0]]; for (let i = 0; i <= 12; i++) pts.push([SUN4.x - 268 + i * 536 / 12, y0 - (i % 2 ? 18 : 0)]); pts.push([SUN4.x + 274, y0 + 90], [SUN4.x - 274, y0 + 90]); cut(poly(pts), C.goldPale, { sh: .7, lift: .3, alpha: hand }); } // the cuff
+      [[-.52, 300], [-.17, 380], [.18, 370], [.53, 290]].forEach(([a, L]) => { const L2 = L * hand, bx0 = SUN4.x + Math.sin(a) * SUN4.R * .8, by0 = SUN4.y - Math.cos(a) * SUN4.R * .8;
+        cut(capsule(bx0, by0, bx0 + Math.sin(a) * (SUN4.R * .25 + L2), by0 - Math.cos(a) * (SUN4.R * .25 + L2), 66, 58), C.gold, { sh: 1, lift: .5 });
+        cut(capsule(bx0 + Math.sin(a) * 30, by0 - Math.cos(a) * 30, bx0 + Math.sin(a) * (SUN4.R * .2 + L2), by0 - Math.cos(a) * (SUN4.R * .2 + L2), 24, 20), C.goldPale, { sh: 0, grain: .2, alpha: .7 }); });
+      const ta = -1.25, tb = [SUN4.x + Math.sin(-1.9) * SUN4.R * .8, SUN4.y - Math.cos(-1.9) * SUN4.R * .8];
+      cut(capsule(tb[0], tb[1], tb[0] + Math.sin(ta) * 300 * hand, tb[1] - Math.cos(ta) * 300 * hand, 70, 60), C.gold, { sh: 1, lift: .5 });
+    }
     halo(SUN4.x, SUN4.y, SUN4.R, t * .04, 1, [C.gold, C.cream, C.goldPale, C.gold]);
     // clap 3: a corona of six pairs round the sun's core, out from under it; six birds, then a flock circling
     for (let i = 0; i < 6; i++) {
@@ -48,7 +61,7 @@
     }
     cut(circle(SUN4.x, SUN4.y, SUN4.R * .52), C.goldPale, { sh: .5, lift: .3, grain: .3 });
     // lilies round the sun open a few more on each clap; tendrils unfurl
-    for (let i = 0; i < 16; i++) { const a = i / 16 * TAU + t * .03, kk = CLAPS[12 + (i % 4)]; lily(SUN4.x + Math.cos(a) * (SUN4.R + 90), SUN4.y + Math.sin(a) * (SUN4.R + 90), a, 100, back(clamp((t - kk - .1) / .7)), [C.cream, C.goldPale]); }
+    for (let i = 0; i < 16; i++) { const a = i / 16 * TAU + t * .03, kk = CLAPS[12 + (i % 4)]; if (hand > 0 && Math.sin(a) < .2) continue; lily(SUN4.x + Math.cos(a) * (SUN4.R + 90), SUN4.y + Math.sin(a) * (SUN4.R + 90), a, 100, back(clamp((t - kk - .1) / .7)), [C.cream, C.goldPale]); }
     for (const sx of [-1, 1]) { const v = whipPts([540 + sx * 600, 1700], [540 + sx * 300, 1800], [540 + sx * 80, 1450], [540 + sx * 260, 1330], 60, -sx); tendril(grow(v, ss(K1, K4, t)), 30, C.gold); }
     // the river under the sun
     cut(cutRect(-200, 1500, 1480, 700, 701), C.teal, { sh: .6 });

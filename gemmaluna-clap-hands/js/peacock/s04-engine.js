@@ -56,7 +56,6 @@
     for (let i = 0; i < 9; i++) { const a = i / 9 * TAU + .3, r = 40 + 260 * eo(d / 1.2);
       g.save(); g.globalAlpha *= .75 * (1 - d / 1.6); cut(cloud(x + Math.cos(a) * r, y + Math.sin(a) * r * .7, 120 + 80 * eo(d), 70 + 40 * eo(d), i), i % 2 ? C.tealInk : C.plumDeep, { sh: .3 }); g.restore(); }
   }
-  const BRASS = [[150, 1000, 92, .2], [345, 880, 104, .1], [540, 840, 122, 0], [735, 880, 104, .1], [930, 1000, 92, .2]];
   const GLOVE = { skin: SKIN.glove, cuffCol: C.white, sleeveCol: C.plumDeep };
   const SOOT = { skin: SKIN.soot, cuffCol: C.cream, sleeveCol: C.tealDeep };
 
@@ -123,7 +122,9 @@
     visitClap(t, 540, 1330, 210, K2, { ...SOOT, sleeveLen: 6, dy: 1000 });
     dust(t, 540, 1050, K2 + .02);
     visitClap(t, 540, 1310, 220, K3, { L: { ...GLOVE, print: ss(K3 + .02, K3 + .1, t) }, R: SOOT, sleeveLen: 6, dy: 1000 });
-    for (const [x, y, sc, lag] of BRASS) visitClap(t, x, y, sc, K4 + lag, { skin: SKIN.brass, cuffCol: C.goldPale, sleeveCol: C.goldDeep, sleeveLen: 7, dy: 900, pre: .8 });
+    // clap 4 (Mark Von Ulrich, guest director): the machine itself claps. Its two pistons are its arms, brass
+    // hands at their ends; the boiler is the body, the door its mouth, the gauges its eyes.
+    visitClap(t, 540, 860, 230, K4, { skin: SKIN.brass, cuffCol: C.goldPale, sleeveCol: C.goldDeep, L: { root: [110, 1110] }, R: { root: [970, 1110] }, dy: 520, pre: .9, post: 1.6 });
     for (const k of [K2, K4]) steam(t, 540, 920, k, 5, 1.2);
     for (const k of [K1, K2, K3]) clapRings(t, 540, 1080, k, .7);
     clapRings(t, 540, 650, K4, 1.1);

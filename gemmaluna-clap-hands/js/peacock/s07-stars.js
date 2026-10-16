@@ -60,7 +60,14 @@ const SPOT0 = { x: 540, y: 1180, r: 240 };   // where the theatre's spotlight op
     g.save(); g.globalAlpha *= mo; halo(540, 560, 147, t * .04, 1, [C.gold, C.cream, C.goldPale, C.gold]); g.restore();
     glow(540, 560, 420, '250,215,140', .25);
     // the rowboat sailing among the stars
-    rowboat(lerp(540, 880, ss(129.2, 142.4, t)), lerp(329, 430, ss(129.2, 142.4, t)) + Math.sin(t * 1.3) * 10, lerp(.315, .42, ss(129.2, 131, t)), t * TAU / 1.03, 1);
+    // Mark Von Ulrich (guest director): heaven is being held. The rowboat sails down between the great starry palms;
+    // they close round it gently on the last clap and it glows inside like a firefly, then rises out again
+    const bx = kf3(t, [[129.2, 540], [137.8, 860], [139.3, 540], [140.7, 540], [141.7, 760], [142.48, 880]]);
+    const by = kf3(t, [[129.2, 329], [137.8, 430], [139.3, 1090], [140.7, 1090], [141.7, 560], [142.48, 430]]) + Math.sin(t * 1.3) * 10;
+    const bs = kf3(t, [[129.2, .315], [131, .42], [137.8, .42], [139.3, .3], [140.7, .3], [141.7, .38]]);
+    const fire = t > K4 - .05 ? Math.exp(-1.5 * (t - K4)) * (.75 + .25 * Math.sin(t * 18)) : 0;
+    if (fire > .02) glow(bx, by - 40, 220, '250,225,150', .7 * fire);
+    rowboat(bx, by, bs, t * TAU / 1.03, 1 + fire);
     // the claps
     constellation(t, 540, 1320, 330, K2);
     for (const [x, y, sc, rot] of FOUR) { constellation(t, x, y, sc, K3, { rot }); for (let j = 0; j < 2; j++) shooting(t, x, y - sc, rot - Math.PI / 2 + (j ? .9 : -.9), K3 + .02 + j * .08, 700); }

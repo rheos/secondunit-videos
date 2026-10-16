@@ -45,6 +45,13 @@
     for (const sx of [-1, 1]) tendril(whipPts([540 + sx * 470, 1400], [540 + sx * 520, 1100], [540 + sx * 470, 700], [540 + sx * 420, 520], 40, -sx), 22, C.gold, { sh: .6 });
     cut(cutRect(-200, 3600, 1480, 600, 402), C.tealDeep, { sh: .6 });
     cut(cutRect(-200, 3580, 1480, 30, 403), C.creamDeep, { sh: .5 });
+    // Mark Von Ulrich (guest director): the hole is the centre of a clock face set in the street; time swallows
+    // the band, and the rowboat rises out of time's own centre
+    cut(ellipse(HOLE.x, HOLE.y + 30, 500, 150), C.gold, { sh: .6 });
+    cut(ellipse(HOLE.x, HOLE.y + 30, 470, 136), C.cream, { sh: .2 });
+    cut(ellipse(HOLE.x, HOLE.y + 30, 400, 112), C.tealDeep, { sh: 0 });
+    for (let i = 0; i < 12; i++) { const a = i / 12 * TAU, px = HOLE.x + Math.cos(a) * 436, py = HOLE.y + 30 + Math.sin(a) * 124; if (i % 3 === 0) cut(ellipse(px, py, 22, 9), C.goldDeep, { sh: .2 }); else cut(ellipse(px, py, 8, 4), C.goldDeep, { sh: 0, grain: 0 }); }
+    for (const [a, L] of [[-.6, 380], [.9, 270]]) { g.save(); g.translate(HOLE.x, HOLE.y + 30); g.scale(1, .28); g.rotate(a); cut(poly([[-30, 0], [-8, -L * .8], [0, -L], [8, -L * .8], [30, 0]]), C.goldDeep, { sh: .4 }); g.restore(); }
     cut(ellipse(HOLE.x, HOLE.y + 30, 190, 56), C.gold, { sh: .7 });
     cut(ellipse(HOLE.x, HOLE.y + 30, 166, 44), C.tealInk, { sh: 0 });
     // the ledge and the band's instruments on it, then falling

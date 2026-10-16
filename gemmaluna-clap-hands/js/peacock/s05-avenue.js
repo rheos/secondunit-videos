@@ -74,9 +74,9 @@ const TOWER = { x: 4900, cy: -1100, r: 300 };
     const lineY = (x) => 700 + 50 * Math.sin(Math.PI * (x - 1480) / 380);
     g.save(); g.strokeStyle = C.creamDeep; g.lineWidth = 4; g.beginPath(); for (let x = 1480; x <= 1860; x += 20) g[x === 1480 ? 'moveTo' : 'lineTo'](x, lineY(x)); g.stroke(); g.restore();
     const sw = Math.sin(t * 1.6) * .05;
-    g.save(); g.translate(1550, lineY(1550)); g.rotate(sw); cut(blob([[-60, 0], [60, 0], [80, 40], [56, 60], [50, 200], [-50, 200], [-56, 60], [-80, 40]], .3), C.cream, { sh: .8, lift: .3 }); g.restore();
-    g.save(); g.translate(1680, lineY(1680)); jeans(.75, sw * 1.2); g.restore();
-    for (const sx of [1790, 1820]) { g.save(); g.translate(sx, lineY(sx)); g.rotate(sw * 1.4); cut(blob([[-12, 0], [12, 0], [14, 80], [40, 100], [36, 116], [-12, 108]], .4), C.goldPale, { sh: .5 }); g.restore(); }
+    g.save(); g.translate(1610, lineY(1610)); g.rotate(sw); cut(blob([[-60, 0], [60, 0], [80, 40], [56, 60], [50, 200], [-50, 200], [-56, 60], [-80, 40]], .3), C.cream, { sh: .8, lift: .3 }); g.restore();
+    g.save(); g.translate(1730, lineY(1730)); jeans(.75, sw * 1.2); g.restore();
+    for (const sx of [1815, 1840]) { g.save(); g.translate(sx, lineY(sx)); g.rotate(sw * 1.4); cut(blob([[-12, 0], [12, 0], [14, 80], [40, 100], [36, 116], [-12, 108]], .4), C.goldPale, { sh: .5 }); g.restore(); }
     // the stoop railing and the paladin's helmet on its post
     tendril(whipPts([2560, 1620], [2600, 1480], [2700, 1440], [2760, 1460], 0), 12, C.gold, { sh: .5 });
     for (let i = 0; i < 4; i++) tendril(whipPts([2600 + i * 60, 1620], [2580 + i * 60, 1560], [2640 + i * 60, 1520], [2610 + i * 60, 1490], 14, 1), 7, C.goldDeep, { sh: .3 });
@@ -90,7 +90,6 @@ const TOWER = { x: 4900, cy: -1100, r: 300 };
     archFrame(3770, 1190, 170, 420, 16, C.gold);
     g.save(); g.globalAlpha *= .35; cut(poly([[3830, 1610], [3940, 1610], [4120, 1700], [3860, 1700]]), C.goldPale, { sh: 0, grain: .2 }); g.restore();
     for (let i = 0; i < 3; i++) cut(rect(3700 - i * 30, 1610 + i * 22, 310 + i * 60, 24), C.cream, { sh: .7 });
-    g.save(); g.translate(3820, 1606); bowler(.55); g.restore();
     g.save(); g.translate(3930, 1560); g.rotate(-1.25); cane(160); g.restore();
     // pavement and the wet street
     cut(cutRect(-300, 1640, 5800, 60, 303), C.creamDeep, { sh: .7 });
@@ -99,6 +98,20 @@ const TOWER = { x: 4900, cy: -1100, r: 300 };
     const seen = ss(104.4, 106.4, t);
     for (let i = 0; i < 12; i++) { const fx = 4000 + i * 70, fy = 1712 + (i % 2) * 20; if ((i + 1) / 12 > seen) break; cut(ellipse(fx, fy, 20, 9), C.tealLight, { sh: 0, grain: .2, alpha: .75 }); cut(ellipse(fx + 22, fy, 7, 6), C.tealLight, { sh: 0, grain: 0, alpha: .75 }); }
     for (const lx of [1100, 2200, 3300, 4400]) guimard(lx, 1650, 560, lx % 2200 ? -1 : 1, .9 + .1 * Math.sin(t * 13 + lx), Math.sin(t + lx) * 4);
+    // Mark Von Ulrich (guest director): one empty bowler travels the street on different heads, hopping ahead
+    // of the camera on each pan: pegged on the washing line, then on the paladin's helmet, then alone on the steps.
+    {
+      const P1 = [1515, lineY(1515) + 30], P2 = [2763, 1222], P3 = [3820, 1606];
+      const hop = (a, b, t0, t1) => { const u = eio(clamp((t - t0) / (t1 - t0))); return [lerp(a[0], b[0], u), lerp(a[1], b[1], u) - Math.sin(u * Math.PI) * 340, u]; };
+      let x, y, rot = 0, sc = .5;
+      if (t < 99.0) { [x, y] = P1; rot = Math.PI + sw * 2; }
+      else if (t < 100.25) { let u; [x, y, u] = hop(P1, P2, 99.0, 100.25); rot = lerp(Math.PI, TAU * 2, u); }
+      else if (t < 102.8) { [x, y] = P2; rot = -.12 + Math.sin(t * 2) * .03; sc = .46; }
+      else if (t < 104.05) { let u; [x, y, u] = hop(P2, P3, 102.8, 104.05); rot = lerp(0, -TAU, u); }
+      else { [x, y] = P3; }
+      if (t < 99.0) { cut(rect(P1[0] - 5, lineY(P1[0]) - 10, 10, 40), C.creamDeep, { sh: .3 }); } // its peg
+      g.save(); g.translate(x, y); g.rotate(rot); bowler(sc); g.restore();
+    }
     // the bad dreams
     for (const B of BUGS) {
       if (t < B.b) continue;

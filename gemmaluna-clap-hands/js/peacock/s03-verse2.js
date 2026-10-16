@@ -83,9 +83,9 @@
     g.restore();
   }
   // a gloved fist round a handle, seen from the side: four knuckles, the thumb over, a tailcoat sleeve off right
-  function gloveFist(x, y, s, a) {
+  function gloveFist(x, y, s, a, sleeve = true) {
     g.save(); g.translate(x, y); g.rotate(a); g.scale(s, s);
-    cut(capsule(30, 10, 700, -260, 44, 60), C.plumDeep, { sh: .8, lift: .3 });
+    if (sleeve) cut(capsule(30, 10, 700, -260, 44, 60), C.plumDeep, { sh: .8, lift: .3 });
     cut(capsule(40, 6, 70, -6, 40), C.white, { sh: .5 });
     cut(blob([[-44, -40], [-10, -56], [40, -50], [56, -10], [44, 44], [0, 56], [-46, 40], [-56, 0]], .6), C.white, { sh: .8, lift: .4 });
     for (let i = 0; i < 4; i++) cut(ellipse(-46, -36 + i * 24, 14, 12), C.white, { sh: .4 });
@@ -93,7 +93,7 @@
     g.save(); g.globalAlpha *= .5; g.strokeStyle = C.creamDeep; g.lineWidth = 3; for (let i = 1; i < 4; i++) { g.beginPath(); g.moveTo(-58, -48 + i * 24); g.lineTo(-30, -48 + i * 24); g.stroke(); } g.restore();
     g.restore();
   }
-  function shovel(x, y, a, bite) {
+  function shovel(x, y, a, bite, sleeves = true) {
     g.save(); g.translate(x, y); g.rotate(a);
     // handle up the shaft to a D-grip; the square-mouth blade at the bottom (0,0)
     cut(rect(-9, -560, 18, 500), C.creamDeep, { sh: .6 });
@@ -102,7 +102,7 @@
     cut(poly([[-70, -70], [70, -70], [74, 40], [-74, 40]]), C.goldDeep, { sh: .8, lift: .3 });
     cut(rect(-18, -110, 36, 50), C.goldDeep, { sh: .4 });
     if (bite > 0) for (let i = 0; i < 7; i++) cut(circle(-50 + i * 16, 30 - hash(i) * 30 * bite, 15), C.plumDeep, { sh: .3, grain: 0 });
-    gloveFist(0, -250, 1, -.25); gloveFist(0, -500, .9, -.25);
+    gloveFist(0, -250, 1, -.25, sleeves); gloveFist(0, -500, .9, -.25, sleeves);
     g.restore();
   }
 
@@ -214,14 +214,24 @@
     // the deck
     cut(cutRect(-60, 1560, W + 120, 600, 92), C.goldDeep, { sh: .8 });
     for (let i = 0; i < 8; i++) cut(rect(-60, 1600 + i * 50, W + 120, 4), C.plumDeep, { sh: 0, grain: 0, alpha: .5 });
-    coalHeap(560, 1720, 760, 330);
-    topHat(360, 1450, .9, -.18);
-    // the shovel bites into the heap on the beats; on "shovel" it lifts toward the open door
-    let bite = 0, lift = 0;
+    // Mark Von Ulrich (guest director): the coal heap IS the millionaire. A coal head under his top hat, his
+    // tailcoat arms from his own shoulders, his white gloves shovelling himself into the fire; each bite he
+    // takes leaves less of him.
+    let bite = 0;
     for (const b of BITES) { const dt = t - b; if (dt > -.15 && dt < .8) { bite = Math.max(bite, dt < 0 ? ei(1 + dt / .15) : 1 - eo(dt / .8)); } }
-    lift = ss(73.0, 73.4, t);
-    const sx = 700, sy = lerp(lerp(1440, 1560, bite), 1300, lift);
-    shovel(sx, sy, lerp(.45, .25, bite) - lift * .6, Math.max(bite > .3 ? 1 : 0, lift));
+    const lift = ss(73.0, 73.4, t), gone = BITES.filter((b) => t > b + .3).length, hh = 330 - gone * 34 - lift * 20;
+    coalHeap(560, 1720, 760 - gone * 40, hh);
+    const headY = 1720 - hh - 50;
+    const sx = 700, sy = lerp(lerp(1440, 1560, bite), 1300, lift), sa = lerp(.45, .25, bite) - lift * .6;
+    const fist = (L) => [sx + L * Math.sin(sa), sy - L * Math.cos(sa)];
+    const [f1x, f1y] = fist(250), [f2x, f2y] = fist(500);
+    cut(capsule(470, headY + 120, f2x, f2y, 54, 40), C.tealInk, { sh: .8, lift: .3 });
+    cut(capsule(650, headY + 130, f1x, f1y, 56, 44), C.tealInk, { sh: .9, lift: .3 });
+    // his head: a knot of coal lumps with two gold glints for eyes, the top hat on it
+    for (let i = 0; i < 11; i++) { const a = i / 11 * TAU, r = 36 + hash(i) * 36; cut(poly([...Array(5).keys()].map((j) => [560 + Math.cos(a) * r + Math.cos(j / 5 * TAU + i) * 36, headY + Math.sin(a) * r * .85 + Math.sin(j / 5 * TAU + i) * 36])), i % 3 ? C.tealDeep : C.tealInk, { sh: .6 }); }
+    cut(circle(532, headY - 6, 11), C.goldPale, { sh: .2, grain: 0 }); cut(circle(590, headY - 6, 11), C.goldPale, { sh: .2, grain: 0 });
+    topHat(560, headY - 66, .9, -.06);
+    shovel(sx, sy, sa, Math.max(bite > .3 ? 1 : 0, lift), false);
     g.restore();
     sheet(C.goldPale, .6 * ss(73.35, 73.6, t)); // into the furnace's glow
   }, { xin: .35, tr: 'fade' }); // the waterfront lamp becomes the deck lantern

@@ -116,10 +116,22 @@ function rain(t, n, seed = 1, alpha = .5, ang = .12, x0 = -100, x1 = W + 100) {
   g.restore();
 }
 // a Guimard lamp: a gold whiplash stem bending over into a plum lily-bud lamp that lights
-function guimard(x, y, h, dir, lit, sway = 0) {
+// hand (0..1, optional): instead of hanging, the bud is held up in an iron hand rising from the stem's end,
+// whose fingers spread open (0 closed, 1 open) as it lights. Mark: hands enter the film holding light.
+const IRON = { fill: C.goldDeep, shade: C.gold, line: C.plumDeep };
+const GUIMARD_HAND_SC = 150;
+function guimard(x, y, h, dir, lit, sway = 0, hand = -1) {
   const stem = whipPts([x, y], [x - dir * h * .06, y - h * .55], [x + dir * h * .02 + sway, y - h * 1.1], [x + dir * h * .3 + sway, y - h], 0);
   tendril(stem, 30, C.goldDeep, { sh: .8, lift: .3 });
   const [bx, by] = stem[stem.length - 1];
+  if (hand >= 0) {
+    const o = clamp(hand), sc = GUIMARD_HAND_SC, cy = by - sc * .62;
+    palmHand(bx, by, sc, { dir, rot: dir * .08, spread: lerp(0, .3, o), skin: IRON, cuffCol: C.gold });
+    if (lit > 0) glow(bx, cy, 360, '240,190,110', .55 * lit);
+    cut(blob([[bx - 40, cy - 30], [bx, cy - 66], [bx + 40, cy - 30], [bx + 30, cy + 40], [bx, cy + 60], [bx - 30, cy + 40]], .7), lit > .5 ? C.goldPale : C.plum, { sh: .8, lift: .4 });
+    if (lit > 0) { g.save(); g.globalAlpha *= lit; cut(ellipse(bx, cy, 20, 34), C.white, { sh: 0, grain: .1 }); g.restore(); }
+    return;
+  }
   if (lit > 0) glow(bx + dir * 10, by + 70, 360, '240,190,110', .55 * lit);
   cut(blob([[bx + dir * 10 - 46, by + 40], [bx + dir * 10, by + 6], [bx + dir * 10 + 46, by + 40], [bx + dir * 10 + 34, by + 120], [bx + dir * 10, by + 150], [bx + dir * 10 - 34, by + 120]], .7), lit > .5 ? C.goldPale : C.plum, { sh: .7, lift: .2 });
   if (lit > 0) { g.save(); g.globalAlpha *= lit; cut(ellipse(bx + dir * 10, by + 84, 24, 40), C.white, { sh: 0, grain: .1 }); g.restore(); }
@@ -196,6 +208,11 @@ function sleeve(wx, wy, sc, dir, len, col) {
   const L = len * sc, lean = dir * .22 * L;
   cut(poly([[wx - .27 * sc, wy + .5 * sc], [wx + .27 * sc, wy + .5 * sc], [wx + lean + .42 * sc, wy + L], [wx + lean - .42 * sc, wy + L]]), col, { sh: .7, lift: .2 });
 }
+// a sleeve (or a machine's arm) running from the wrist to a fixed root point
+function sleeveTo(wx, wy, sc, root, col) {
+  const [rx, ry] = root, a = Math.atan2(ry - (wy + .5 * sc), rx - wx), nx = -Math.sin(a), ny = Math.cos(a);
+  cut(poly([[wx + nx * .27 * sc, wy + .5 * sc + ny * .27 * sc], [wx - nx * .27 * sc, wy + .5 * sc - ny * .27 * sc], [rx - nx * .4 * sc, ry - ny * .4 * sc], [rx + nx * .4 * sc, ry + ny * .4 * sc]]), col, { sh: .7, lift: .2 });
+}
 // the pair, centred at cx, wrists at cy. The approach accelerates into the hit (d = u^0.6), so
 // contact lands on the sung "clap", not early. drift (0..1) lets them float open after the last clap.
 // cuffCol / sleeveCol / skin give each person their own paper; sleeveLen 0 = no arms.
@@ -219,7 +236,7 @@ function clapPair(t, cx, cy, sc, k, { drift = 0, L = {}, R = {}, ...o } = {}) {
     const q = (d - .58) / .42, rk = Math.sin(lt * Math.PI * 2) * .03; off = lerp(.68, .92, q) * sc;
     draw = (dir, x) => { const h = side(dir); palmHand(x, wy, sc * .84, { dir, rot: dir * (.16 + rk), spread: .14, cuffCol: h.cuffCol, skin: h.skin, print: h.print }); };
   }
-  for (const [dir, x] of xs(off)) { const h = side(dir); if (h.sleeveLen > 0) sleeve(x, wy, sc, dir, h.sleeveLen, h.sleeveCol); }
+  for (const [dir, x] of xs(off)) { const h = side(dir); if (h.root) sleeveTo(x, wy, sc, h.root, h.sleeveCol); else if (h.sleeveLen > 0) sleeve(x, wy, sc, dir, h.sleeveLen, h.sleeveCol); }
   for (const [dir, x] of xs(off)) draw(dir, x);
 }
 // A clap that visits (Robin, look test v1: no hands hanging on screen between claps). The pair comes

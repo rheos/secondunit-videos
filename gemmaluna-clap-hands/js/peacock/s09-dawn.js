@@ -33,6 +33,18 @@ function dawnSky(t, bright = 0) {
     cut(cutRect(-200, HZ, 1480, 1200, 601), C.teal, { sh: .6 });
     for (let i = 0; i < 12; i++) cut(ribbon(-200, 1300, HZ + 20 + i * i * 5, 4 + i * .7, i * 1.3 + t * (.3 + i * .04), 4 + i * .8), C.tealLight, { sh: 0, grain: .2, alpha: .6 });
     for (let i = 0; i < 9; i++) { const w = 40 + i * 26; cut(rrect(540 - w, HZ + 24 + i * 52, w * 2, 12, 6), C.goldPale, { sh: 0, grain: .2, alpha: .75 }); }
+    // Mark Von Ulrich (guest director): the sun's path is a ladder. Rails rise through the rungs' ends, up out of
+    // the river and on into the sun; the rowboat climbs it.
+    const lad = eo(clamp((t - 176.6) / 1.4));
+    if (lad > 0) {
+      const top = lerp(HZ + 460, sunY(t) + 130, lad);
+      for (const sd of [-1, 1]) {
+        const pts = [[540 + sd * (40 + 8 * 26 + 18), HZ + 24 + 8 * 52 + 140], ...[...Array(9).keys()].reverse().map((i) => [540 + sd * (40 + i * 26 + 10), HZ + 30 + i * 52]), [540 + sd * 44, HZ], [540 + sd * 32, sunY(t) + 130]];
+        const keep = pts.filter(([, y]) => y >= top - 1); if (keep.length < 2) continue;
+        tendril(keep.concat([[keep[keep.length - 1][0], Math.max(top, keep[keep.length - 1][1] - 1)]]), 12, C.gold, { sh: .4, grain: .2 });
+      }
+      for (let y = HZ - 40; y > Math.max(top, sunY(t) + 140); y -= 46) { const w = lerp(44, 32, (HZ - y) / (HZ - sunY(t) - 130)); cut(rrect(540 - w, y, w * 2, 9, 4), C.goldPale, { sh: .2, grain: .1, alpha: .85 }); }
+    }
     const sw = ss(169.3, 172.8, t);
     if (sw > 0 && sw < 1) for (let i = 0; i < 6; i++) { const x = lerp(-600, 1500, sw) - i * 120; cut(ribbon(x - 300, x + 300, HZ + 120 + i * 90, 10, i + t, 10), C.goldPale, { sh: 0, grain: .2, alpha: .7 * Math.sin(sw * Math.PI) }); }
     const mist = ss(169.0, 170.5, t) * (1 - ss(172.5, 174.5, t));
@@ -45,8 +57,10 @@ function dawnSky(t, bright = 0) {
       g.restore();
     });
     // the rowboat sails up the sun's path into it
-    const bp = clamp((t - 177.2) / 2.9);
-    if (bp > 0) rowboat(lerp(260, 540, eo(bp)), lerp(1760, HZ + 6, eo(bp)), lerp(.95, .12, eo(bp)), t * TAU / 1.03, 1);
+    if (t > 177.2) { // up the path to the horizon, then up the ladder into the sun
+      const bx = kf3(t, [[177.2, 260], [178.2, 520], [179.0, 540]]), by = kf3(t, [[177.2, 1760], [179.0, HZ + 6], [180.3, sunY(t) + 40]]), bs = kf3(t, [[177.2, .95], [179.0, .24], [180.3, .1]]);
+      g.save(); g.translate(bx, by); g.rotate(-.5 * ss(179.0, 179.4, t)); rowboat(0, 0, bs, t * TAU / 1.03, 1); g.restore();
+    }
     g.restore();
     sheet(C.goldPale, .5 * (1 - ss(165.0, 165.6, t)));
   }, { xin: .4, tr: 'fade' }); // the curtain's spotlight becomes the sun
