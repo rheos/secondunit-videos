@@ -152,3 +152,11 @@ function driverHat() { // the unseen driver: only a red hat brim showing in the 
   g.fillStyle = '#b52c22'; g.beginPath(); g.moveTo(p[0] - .15 * k, p[1]); g.lineTo(p[0] - .13 * k, p[1] - .16 * k); g.quadraticCurveTo(p[0], p[1] - .22 * k, p[0] + .13 * k, p[1] - .16 * k); g.lineTo(p[0] + .15 * k, p[1]); g.fill();
   g.fillStyle = '#3a1410'; g.fillRect(p[0] - .15 * k, p[1] - .05 * k, .3 * k, .035 * k);
 }
+// (moved from installs.js for draft 3: the bars -> cells -> teeth -> jail chain lives in this file)
+// Gilliam, take the lyric literally: wind-up chattering teeth roll past on "soundbite"
+function teeth(t, list) { const s = wt(8, 'patent') - .5; if (t < s || t > L_(9).s + 1) return; const X = carX(s) + 26 - (t - s) * 3.4, Z = 9; const p = P(X, 0, Z); if (p[2] < 1.5) return;
+  list.push({ z: p[2], draw: () => { const k = kAt(p), x = p[0], y = p[1] - .4 * k, ch = Math.abs(Math.sin(t * 14)) * .5 * k;
+    g.fillStyle = '#e07a8a'; g.beginPath(); g.ellipse(x, y - .6 * k, 1.6 * k, .55 * k, 0, 0, TAU); g.fill(); g.beginPath(); g.ellipse(x, y - 1.3 * k - ch, 1.6 * k, .55 * k, 0, 0, TAU); g.fill();
+    g.fillStyle = '#fbf7ec'; for (let i = 0; i < 8; i++) { g.fillRect(x - 1.3 * k + i * .33 * k, y - 1 * k, .28 * k, .4 * k); g.fillRect(x - 1.3 * k + i * .33 * k, y - 1.3 * k - ch, .28 * k, .4 * k); }
+    g.strokeStyle = '#c9a43a'; g.lineWidth = .12 * k; g.save(); g.translate(x + 1.9 * k, y - .9 * k); g.rotate(t * 5); g.beginPath(); g.moveTo(-.5 * k, 0); g.lineTo(.5 * k, 0); g.moveTo(0, -.5 * k); g.lineTo(0, .5 * k); g.stroke(); g.restore();
+    g.fillStyle = '#1a1412'; g.beginPath(); g.arc(x - 1 * k, p[1] - .2 * k, .2 * k, 0, TAU); g.arc(x + 1 * k, p[1] - .2 * k, .2 * k, 0, TAU); g.fill(); }, shadow: () => shadowStick(X, 0, 2, Z, 3, t) }); }

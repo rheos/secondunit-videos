@@ -1,15 +1,4 @@
 // Reform Party, Dali look: grade, captions and the frame. Loads last.
-// ---------- grade ----------
-function grade(t, layer) {
-  const gold = ease(t, 172, 200) * (1 - ease(t, 205, 215)), night = ease(t, 199, 216);
-  if (gold > 0) { g.globalCompositeOperation = 'soft-light'; g.fillStyle = `rgba(255,170,90,${gold * .5})`; g.fillRect(0, 0, W, H); }
-  if (night > 0) { g.globalCompositeOperation = 'multiply'; g.fillStyle = rgb(mix([255, 255, 255], [52, 52, 104], night)); g.fillRect(0, 0, W, H); }
-  g.globalCompositeOperation = 'source-over';
-  if (night > .4 && !layer) { const hy = H / 2 - C.f * Math.tan(C.p); for (let i = 0; i < 160; i++) { const sx = rnd(i, 1) * W, sy = rnd(i, 2) * Math.min(hy - 20, H); if (sy < 0) continue; g.fillStyle = `rgba(255,250,235,${(night - .4) * .9 * (.4 + .6 * rnd(i, 3)) * (.75 + .25 * Math.sin(t * 3 + i))})`; g.fillRect(sx, sy, 2, 2); } }
-  const b = burnAmt(t); if (b > 0) { const { p, k } = manGeom(); g.globalCompositeOperation = 'screen'; const R = Math.max(W, 70 * k); const rg = g.createRadialGradient(p[0], p[1] - 6 * k, 0, p[0], p[1], R); rg.addColorStop(0, `rgba(255,130,50,${.45 * b})`); rg.addColorStop(1, 'rgba(255,90,30,0)'); g.fillStyle = rg; g.fillRect(0, 0, W, H); g.globalCompositeOperation = 'source-over'; }
-}
-function vignette() { const vg = g.createRadialGradient(W / 2, H * .55, H * .45, W / 2, H * .55, H * 1.05); vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(30,15,10,.38)'); g.fillStyle = vg; g.fillRect(0, 0, W, H); }
-
 // ---------- captions ----------
 const FONT = 'italic {s}px "Didot", "Bodoni 72", Georgia, serif';
 function captions(t) {

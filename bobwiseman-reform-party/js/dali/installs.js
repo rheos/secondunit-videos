@@ -32,13 +32,6 @@ function suitColumn(t, list) { const wins = [[L_(4).s, L_(6).e], [L_(11).s, L_(1
         g.fillStyle = PAL.suit; g.fillRect(x - .22 * k, y - 1.05 * k - hop, .44 * k, .8 * k); g.fillRect(x - .26 * k, y - 1.75 * k - hop, .52 * k, .72 * k);
         g.fillStyle = '#f4efe6'; g.beginPath(); g.moveTo(x - .08 * k, y - 1.75 * k - hop); g.lineTo(x, y - 1.45 * k - hop); g.lineTo(x + .08 * k, y - 1.75 * k - hop); g.fill(); rosette(x - .15 * k, y - 1.62 * k - hop, .04 * k);
         egg(x, y - 1.95 * k - hop + nod, k, true, 0); }, shadow: () => shadowStick(X, 0, 2, Z, .5, t) }); } } }
-// Gilliam, take the lyric literally: wind-up chattering teeth roll past on "soundbite"
-function teeth(t, list) { const s = wt(8, 'patent') - .5; if (t < s || t > L_(9).s + 1) return; const X = carX(s) + 26 - (t - s) * 3.4, Z = 9; const p = P(X, 0, Z); if (p[2] < 1.5) return;
-  list.push({ z: p[2], draw: () => { const k = kAt(p), x = p[0], y = p[1] - .4 * k, ch = Math.abs(Math.sin(t * 14)) * .5 * k;
-    g.fillStyle = '#e07a8a'; g.beginPath(); g.ellipse(x, y - .6 * k, 1.6 * k, .55 * k, 0, 0, TAU); g.fill(); g.beginPath(); g.ellipse(x, y - 1.3 * k - ch, 1.6 * k, .55 * k, 0, 0, TAU); g.fill();
-    g.fillStyle = '#fbf7ec'; for (let i = 0; i < 8; i++) { g.fillRect(x - 1.3 * k + i * .33 * k, y - 1 * k, .28 * k, .4 * k); g.fillRect(x - 1.3 * k + i * .33 * k, y - 1.3 * k - ch, .28 * k, .4 * k); }
-    g.strokeStyle = '#c9a43a'; g.lineWidth = .12 * k; g.save(); g.translate(x + 1.9 * k, y - .9 * k); g.rotate(t * 5); g.beginPath(); g.moveTo(-.5 * k, 0); g.lineTo(.5 * k, 0); g.moveTo(0, -.5 * k); g.lineTo(0, .5 * k); g.stroke(); g.restore();
-    g.fillStyle = '#1a1412'; g.beginPath(); g.arc(x - 1 * k, p[1] - .2 * k, .2 * k, 0, TAU); g.arc(x + 1 * k, p[1] - .2 * k, .2 * k, 0, TAU); g.fill(); }, shadow: () => shadowStick(X, 0, 2, Z, 3, t) }); }
 // a soft clock art car: its face droops over its cart; on "once upon a time" its hands run backward
 function clockCar(t, list) { const X = -10 + t * 1.42, Z = 42; const p = P(X, 0, Z); if (p[2] < 2 || p[0] < -300 || p[0] > W + 300) return;
   list.push({ z: p[2], draw: () => { const k = kAt(p), x = p[0], y = p[1], m = .4 + melt(t) * .8, back = wt(15, 'time'), hands = t < back ? t * .2 : back * .2 - ease(t, back, back + 3) * 25;
@@ -67,3 +60,13 @@ function pieBirds(t) { const s = wt(23, 'pie'); if (t < s || t > s + 2.4) return
 function chartClimbers(t) { const pts = [[.58, .8], [.66, .72], [.73, .76], [.8, .58], [.87, .5], [.93, .34]];
   for (let i = 0; i < 3; i++) { const u = ((t * .05 + i / 3) % 1) * 5, j = Math.floor(u), f = u - j, a = pts[j], b = pts[j + 1]; const x = lerp(a[0], b[0], f), y = lerp(a[1], b[1], f) - .012;
     g.fillStyle = ['#d8452f', '#2f6fb5', '#3c8c5a'][i]; g.fillRect(x - .006, y - .03, .012, .03); g.fillStyle = '#e8d4b4'; g.beginPath(); g.arc(x, y - .036, .007, 0, TAU); g.fill(); } }
+// the sky blind on "blues" (moved from world.js for draft 3; world.js skyAndGround calls it)
+  function blind(t, hy) { // "they want to control the blues": a beige blind rolls down over the blue sky, then snaps back up
+    let u = 0; for (const li of REFRAINS) { const c = wt(li, 'control'); u = Math.max(u, ease(t, c - .2, c + .9) * (1 - ease(t, L_(li).e + .1, L_(li).e + .6))); }
+    if (u <= 0) return; const y = (hy + 8) * u;
+    g.fillStyle = '#cdbf9f'; g.fillRect(0, 0, W, y);
+    g.fillStyle = 'rgba(120,95,60,.18)'; for (let x = 0; x < W; x += 90) g.fillRect(x, 0, 2, y);
+    const rg = g.createLinearGradient(0, y - 14, 0, y + 10); rg.addColorStop(0, '#6d5a3a'); rg.addColorStop(.5, '#c8a970'); rg.addColorStop(1, '#4b3b25'); g.fillStyle = rg; g.fillRect(0, y - 12, W, 22);
+    g.strokeStyle = '#5a4a32'; g.lineWidth = 3; g.beginPath(); g.moveTo(W * .62, y + 10); g.lineTo(W * .62, y + 120); g.stroke();
+    g.beginPath(); g.arc(W * .62, y + 134, 14, 0, TAU); g.stroke();
+  }

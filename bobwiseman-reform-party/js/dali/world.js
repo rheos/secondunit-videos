@@ -29,16 +29,6 @@
   function yaw(t) { let a = 0; for (const [s, e] of SPINS) a += TAU * smooth((t - s - .3) / (e - s - .3)); return a; }
   const MAN = { x: 300, z: 45 };
 
-  // ---------- projection ----------
-  let C, CX, CZ, YAW, CP, SP;
-  function P(X, Y, Z) { const dx = X - C.x, dy = Y - C.y, dz = Z - C.z; const z = -dy * SP + dz * CP, y = dy * CP + dz * SP; return [W / 2 + C.f * dx / z, H / 2 - C.f * y / z, z]; }
-  function Lw(x, y, z) { const c = Math.cos(YAW), s = Math.sin(YAW); return [CX + x * c - z * s, y, CZ + x * s + z * c]; }
-  const PL = (x, y, z) => { const w = Lw(x, y, z); return P(w[0], w[1], w[2]); };
-  const ok = (pts) => pts.every((p) => p[2] > .08);
-  function poly(pts, fill, stroke, lw) { if (!ok(pts)) return; g.beginPath(); pts.forEach((p, i) => i ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1])); g.closePath(); if (fill) { g.fillStyle = fill; g.fill(); } if (stroke) { g.strokeStyle = stroke; g.lineWidth = lw || 1; g.stroke(); } }
-  function seg(a, b, w, col) { if (a[2] < .08 || b[2] < .08) return; g.strokeStyle = col; g.lineWidth = Math.max(1, w); g.lineCap = 'round'; g.beginPath(); g.moveTo(a[0], a[1]); g.lineTo(b[0], b[1]); g.stroke(); }
-  const kAt = (p) => C.f / p[2]; // px per metre at that depth
-
   // ---------- light ----------
   function sunVec(t) { // ground shadow offset per metre of height: long, toward the viewer and right
     const len = t < 16 ? 4.5 : t < 30 ? lerp(4.5, 1.9, (t - 16) / 14) : t < 170 ? 1.9 : t < 205 ? lerp(1.9, 5.5, (t - 170) / 35) : 5.5;
@@ -93,12 +83,15 @@
       g.lineWidth = clamp(C.f / d * .03, .6, 3); g.stroke();
     }
   }
-  function blind(t, hy) { // "they want to control the blues": a beige blind rolls down over the blue sky, then snaps back up
-    let u = 0; for (const li of REFRAINS) { const c = wt(li, 'control'); u = Math.max(u, ease(t, c - .2, c + .9) * (1 - ease(t, L_(li).e + .1, L_(li).e + .6))); }
-    if (u <= 0) return; const y = (hy + 8) * u;
-    g.fillStyle = '#cdbf9f'; g.fillRect(0, 0, W, y);
-    g.fillStyle = 'rgba(120,95,60,.18)'; for (let x = 0; x < W; x += 90) g.fillRect(x, 0, 2, y);
-    const rg = g.createLinearGradient(0, y - 14, 0, y + 10); rg.addColorStop(0, '#6d5a3a'); rg.addColorStop(.5, '#c8a970'); rg.addColorStop(1, '#4b3b25'); g.fillStyle = rg; g.fillRect(0, y - 12, W, 22);
-    g.strokeStyle = '#5a4a32'; g.lineWidth = 3; g.beginPath(); g.moveTo(W * .62, y + 10); g.lineTo(W * .62, y + 120); g.stroke();
-    g.beginPath(); g.arc(W * .62, y + 134, 14, 0, TAU); g.stroke();
-  }
+// grade + vignette (moved from render.js for draft 3: the light arc lives here)
+// ---------- grade ----------
+function grade(t, layer) {
+  const gold = ease(t, 172, 200) * (1 - ease(t, 205, 215)), night = ease(t, 199, 216);
+  if (gold > 0) { g.globalCompositeOperation = 'soft-light'; g.fillStyle = `rgba(255,170,90,${gold * .5})`; g.fillRect(0, 0, W, H); }
+  if (night > 0) { g.globalCompositeOperation = 'multiply'; g.fillStyle = rgb(mix([255, 255, 255], [52, 52, 104], night)); g.fillRect(0, 0, W, H); }
+  g.globalCompositeOperation = 'source-over';
+  if (night > .4 && !layer) { const hy = H / 2 - C.f * Math.tan(C.p); for (let i = 0; i < 160; i++) { const sx = rnd(i, 1) * W, sy = rnd(i, 2) * Math.min(hy - 20, H); if (sy < 0) continue; g.fillStyle = `rgba(255,250,235,${(night - .4) * .9 * (.4 + .6 * rnd(i, 3)) * (.75 + .25 * Math.sin(t * 3 + i))})`; g.fillRect(sx, sy, 2, 2); } }
+  const b = burnAmt(t); if (b > 0) { const { p, k } = manGeom(); g.globalCompositeOperation = 'screen'; const R = Math.max(W, 70 * k); const rg = g.createRadialGradient(p[0], p[1] - 6 * k, 0, p[0], p[1], R); rg.addColorStop(0, `rgba(255,130,50,${.45 * b})`); rg.addColorStop(1, 'rgba(255,90,30,0)'); g.fillStyle = rg; g.fillRect(0, 0, W, H); g.globalCompositeOperation = 'source-over'; }
+}
+function vignette() { const vg = g.createRadialGradient(W / 2, H * .55, H * .45, W / 2, H * .55, H * 1.05); vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(30,15,10,.38)'); g.fillStyle = vg; g.fillRect(0, 0, W, H); }
+

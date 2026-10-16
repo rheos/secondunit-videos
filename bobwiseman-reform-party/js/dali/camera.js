@@ -1,4 +1,14 @@
 // Reform Party, Dali look: the shot list. Each entry moves the camera there, then holds.
+// ---------- projection (moved from world.js for draft 3) ----------
+  let C, CX, CZ, YAW, CP, SP;
+  function P(X, Y, Z) { const dx = X - C.x, dy = Y - C.y, dz = Z - C.z; const z = -dy * SP + dz * CP, y = dy * CP + dz * SP; return [W / 2 + C.f * dx / z, H / 2 - C.f * y / z, z]; }
+  function Lw(x, y, z) { const c = Math.cos(YAW), s = Math.sin(YAW); return [CX + x * c - z * s, y, CZ + x * s + z * c]; }
+  const PL = (x, y, z) => { const w = Lw(x, y, z); return P(w[0], w[1], w[2]); };
+  const ok = (pts) => pts.every((p) => p[2] > .08);
+  function poly(pts, fill, stroke, lw) { if (!ok(pts)) return; g.beginPath(); pts.forEach((p, i) => i ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1])); g.closePath(); if (fill) { g.fillStyle = fill; g.fill(); } if (stroke) { g.strokeStyle = stroke; g.lineWidth = lw || 1; g.stroke(); } }
+  function seg(a, b, w, col) { if (a[2] < .08 || b[2] < .08) return; g.strokeStyle = col; g.lineWidth = Math.max(1, w); g.lineCap = 'round'; g.beginPath(); g.moveTo(a[0], a[1]); g.lineTo(b[0], b[1]); g.stroke(); }
+  const kAt = (p) => C.f / p[2]; // px per metre at that depth
+
 // ---------- camera: shots as offsets from the car; each entry moves there over dur, then holds ----------
 // [t, dur, ox, oy, oz, pitch, f]
 const WIDE = [0, 1.6, -60, -.12, 1400], MED = [-.5, 2.3, -11.5, .08, 1300], SKY = [0, 1.4, -15, -.36, 1100];
@@ -41,11 +51,7 @@ const SH = [
   [L_(32).s - .3, .6, ...MED],
   [L_(33).s - .3, .7, ...HEADS],
   [L_(34).s - .3, 1.0, ...HIGH],
-  [196, 5, ...DUSK],
-  [L_(35).s - .6, 1.0, ...WBM],
-  [L_(35).e + .3, 1.6, ...DUSK],
-  [L_(36).s - .3, 1.0, -1, 2.3, -9.5, .1, 1250],
-  [L_(36).e + .2, 2.0, 6, 1.8, -40, -.13, 1300],
+  ...shotsEnd(),
 ];
 function camAt(t) {
   let i = 0; while (i + 1 < SH.length && SH[i + 1][0] <= t) i++;
