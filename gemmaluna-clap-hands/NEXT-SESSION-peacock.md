@@ -1,4 +1,4 @@
-# Clap Hands, cut-paper peacock: where it stands (2026-10-15, draft 3)
+# Clap Hands, cut-paper peacock: where it stands (2026-10-16, draft 4)
 
 Read this first, then `STORYBOARD-peacock.md` (local only, gitignored) for the look bible, the four-chorus arc
 and every hand-off.
@@ -116,3 +116,38 @@ commits or full renders by builders (contact sheets only, `node check-peacock.mj
    heron, sun on a third, sunflower corona, climax sky gold, last pair size, calyx sun-hand, hand-bird <=40%, ring
    round the sun, the bowler flies off as a bird (11A).
 Then: review every section on sheets, cloud render, scan + flash check + before/after vs draft 3, upload unlisted.
+
+## Draft 4 built (2026-10-16) - START HERE
+
+Robin took the work back from the takeover session and picked seven parallel builders. Each worked in its own copy
+of the page (`out/d4/b1..b7`, local) and owned its own files; the coordinator merged them, checked every hand-off on a
+sheet, and committed 35e8696 on `clap-hands-peacock`. Brief and builder map: this session's scratchpad (`d4/BRIEF.md`,
+`d4/AGENTS.md`); the builders' reports are summed up in the commit message.
+
+- b1 shared kit (`nouveau.js`): `calyxHand(x, y, sc, open, o)` (anchor = wrist, palm centre 0.5 above, returns
+  {x, y, r}; skins 'iron' and 'gold'), used by the Metro, the tram piers, the quay lamp and the sun-hand; the ordered
+  Mucha border; rays() now opaque gold (alpha = reach, not opacity); soot hands and print.
+- b2 intro + chorus 1 (`s00`, `shots.js`): hook from frame 1 (`beatClock`), Guimard arch + METROPOLITAIN plate, calyx
+  lamps, calyx lantern, whole horseshoe, glazed windows, "bottle" punch, crowd arms, `HALO_NIGHT` (also used by s03).
+- b3 storm + engine (`s03`, `s04`): no 0:55.9 flash, bolts, rowboat, heron plumes, furnace on a third
+  (`furnaceFire`), 4A top hats, per-clap engine setups, 5A governor, Horta stair. Storm quills removed.
+- b4 avenue + clock (`s05`, `s06`, `props.js`): revolver grip, great helm with `helmet(s, note, jaw, swallow)` and 6A,
+  `banknote()`, shoe prints, `clockFace(..., pips, lit, haloR)` with zodiac roundels, cold teal tower, 7A weight and
+  see-saw, street clock with a real hole, bigger twelve clap.
+- b5 stars (`s07`): per-clap moon framings, star-and-line hands, 8A hour marks to stars, Milky Way hands.
+- b6 theatre (`s08`): hand-shadow dog, bentwood chair, no spill, 9A note spat onto the top hat. `GRIP = false`.
+- b7 dawn + last chorus (`s09`, `s10`): no faces, `dawnCorona()` sunflower, climax held gold, 11A bowler bird,
+  calyx sun-hand at sc 420, the 165.0 boundary 40 px offset fixed.
+
+**Draft 4: https://youtu.be/URVy7QmfzRE** (unlisted, Telegram sent), `out/peacock/gmc-v2_peacock-cutpaper-full-d4_...mp4`.
+Scanned: 4464 frames, 186.0 s, only the 2 head-fade frames flat, no frozen runs, flash check PASS (worst 2.5/s at 1:31.5);
+before/after vs draft 3 at 24 protected and 16 changed moments (`out/peacock/d4-protect-1/2.jpg`, `d4-changed.jpg`): no
+regressions. Waiting on Robin's notes.
+
+Rendered on GitHub (270 s for 20 slices) with `tools/cloud-render/cloud-render.sh --draft --tall` from a throwaway worktree at origin/main
+(the shared checkout's main is old and has other sessions' edits: never pull there). Copy peacock.html, js/data.js,
+js/peacock/ and assets/song.wav into that worktree's project folder first.
+
+Known, not fixed: the intro sky's teal quills read a bit like a web; the last chorus stays centred (every framing there
+is a clap); one spin frame at 118.58 shows both clock hands near twelve.
+
