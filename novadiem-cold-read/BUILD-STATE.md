@@ -1,4 +1,12 @@
-# Build state: full film (draft 1), PAUSED 2026-10-15
+# Build state: full film
+
+**Draft 1 BUILT 2026-10-15** (resumed after the quota pause): all seven plates, art-pop score, 92 s,
+rendered natively at 720p, uploaded unlisted https://youtu.be/eITB3VFbi98. `hyperframes check`
+passes; flashcheck PASS; the only dark frames are plate III's night (27.4-35.0 s). Known nit: in
+plate V the V1/V2 token brushes the DIFF label as it passes. Next: Robin's notes on draft 1.
+Everything below is the build record.
+
+## (Original pause note)
 
 Robin approved the beat 4 look test (https://youtu.be/0KMfTCTauI0) and asked for beats 1-7 on the
 full score, same look, then draft 1. Paused mid-build for session quota. Resume from here.

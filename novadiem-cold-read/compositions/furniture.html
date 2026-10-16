@@ -85,8 +85,8 @@
           const prog = K.$("fu-bar-progress");
           const len = prog.getTotalLength();
           prog.style.strokeDasharray = `${len}`;
-          tl.set(prog, { strokeDashoffset: len }, 0);
-          tl.set("#fu-tick", { x: SX(0), y: 971, opacity: 0 }, 0);
+          prog.style.strokeDashoffset = `${len}`;
+          gsap.set("#fu-tick", { x: SX(0), y: 971, opacity: 0 });
           tl.to("#fu-tick", { opacity: 1, duration: 0.3 }, K.T(1.63));
           [
             [7.89, 1],

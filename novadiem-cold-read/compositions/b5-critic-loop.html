@@ -1,0 +1,176 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #b5 {
+          position: absolute;
+          inset: 0;
+        }
+      </style>
+      <div id="b5" data-composition-id="b5" data-width="1920" data-height="1080">
+        <div id="b5-all" class="layer">
+          <svg class="full" viewBox="0 0 1920 1080">
+            <!-- builder and critic, each in its own sealed chamber -->
+            <rect id="b5-bld-outer" class="ln ink" x="390" y="400" width="260" height="210" />
+            <rect id="b5-bld-inner" class="ln thin ink" x="398" y="408" width="244" height="194" />
+            <path id="b5-bld-glyph" class="ln gold" d="M492 457H548V513H492ZM492 513L548 457M492 485H548" />
+            <text id="b5-bld-label" class="mono" x="520" y="580" text-anchor="middle">BUILDER</text>
+            <text id="b5-bld-tag" class="mono small" x="408" y="432" opacity="0.6">CTX·03</text>
+
+            <rect id="b5-crt-outer" class="ln ink" x="1010" y="400" width="260" height="210" />
+            <rect id="b5-crt-inner" class="ln thin ink" x="1018" y="408" width="244" height="194" />
+            <path id="b5-crt-glyph" class="ln gold" d="M1140 451L1174 485L1140 519L1106 485Z" />
+            <path id="b5-crt-x" class="ln ink" d="M1129 474L1151 496M1151 474L1129 496" stroke-width="3" />
+            <path id="b5-crt-check" class="ln ink" d="M1127 485L1137 496L1155 474" stroke-width="3" />
+            <text id="b5-crt-label" class="mono" x="1140" y="580" text-anchor="middle">CRITIC</text>
+            <text id="b5-crt-tag" class="mono small" x="1028" y="432" opacity="0.6">CTX·04</text>
+
+            <!-- the cap on fix loops: the Bureau's default max_critic_loops is 2 -->
+            <text id="b5-gauge-label" class="mono small" x="1140" y="356" text-anchor="middle">FIX LOOPS · MAX 2</text>
+            <rect id="b5-cell-1" class="ln thin gold" x="1110" y="366" width="26" height="14" />
+            <rect id="b5-cell-2" class="ln thin gold" x="1144" y="366" width="26" height="14" />
+            <rect id="b5-cell-1-fill" x="1112" y="368" width="22" height="10" fill="#a8862f" opacity="0" />
+
+            <!-- diff out, findings back -->
+            <path id="b5-diff" class="ln gold" d="M654 470H1006" />
+            <path id="b5-diff-head" class="ln gold" d="M996 462L1006 470L996 478" />
+            <text id="b5-diff-label" class="mono small" x="830" y="500" text-anchor="middle">DIFF</text>
+            <path id="b5-back" class="ln gold" d="M1140 614C1140 720 520 720 520 614" />
+            <path id="b5-back-head" class="ln gold" d="M512 626L520 614L528 626" />
+            <text id="b5-back-label" class="mono small" x="830" y="728" text-anchor="middle">FINDINGS</text>
+
+            <!-- the human checkpoint -->
+            <path id="b5-to-gate" class="ln gold" d="M1274 505H1548" />
+            <path id="b5-to-gate-head" class="ln gold" d="M1538 497L1548 505L1538 513" />
+            <path id="b5-post" class="ln ink" d="M1560 420V610M1530 610H1590" />
+            <g id="b5-boom-pivot" transform="translate(1560 460)">
+              <g id="b5-boom">
+                <rect id="b5-boom-bar" class="ln ink" x="0" y="-8" width="220" height="16" />
+                <g id="b5-boom-stripes"></g>
+              </g>
+            </g>
+            <text id="b5-gate-label" class="mono" x="1650" y="654" text-anchor="middle">CHECKPOINT</text>
+            <text id="b5-gate-sub" class="mono small" x="1650" y="680" text-anchor="middle">HUMAN GATE</text>
+
+            <path id="b5-route-1" d="M654 470H1140V485" fill="none" stroke="none" />
+            <path id="b5-route-back" d="M1140 485V614C1140 720 520 720 520 614L520 485" fill="none" stroke="none" />
+            <path id="b5-route-2" d="M654 470H1140V485" fill="none" stroke="none" />
+            <path id="b5-route-gate" d="M1140 485V505H1820" fill="none" stroke="none" />
+            <g id="b5-token-1" opacity="0">
+              <path class="ln gold" d="M-16 -20H6L16 -10V20H-16Z" style="fill: var(--paper)" />
+              <text class="mono small" x="0" y="7" text-anchor="middle" style="font-size: 13px">V1</text>
+            </g>
+            <g id="b5-token-2" opacity="0">
+              <path class="ln gold" d="M-16 -20H6L16 -10V20H-16Z" style="fill: var(--paper)" />
+              <text class="mono small" x="0" y="7" text-anchor="middle" style="font-size: 13px">V2</text>
+            </g>
+          </svg>
+          <div id="b5-label-l" class="plate-label left">Plate V</div>
+          <div id="b5-label-r" class="plate-label right">The Critic Loop</div>
+          <div class="statement">
+            <span id="b5-st-a" class="phrase">Every pass,</span>
+            <span id="b5-st-b" class="phrase red">a cold read.</span>
+          </div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, kit } = window.CR;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 55.08);
+
+          const stripes = K.$("b5-boom-stripes");
+          for (let x = 14; x < 220; x += 28) el("path", { class: "ln ink", d: `M${x} -8L${x + 12} 8` }, stripes);
+
+          // a token rides a route; its start position is set before the tween so seeking back is clean
+          const ride = (token, route, at, dur) => {
+            const len = route.getTotalLength();
+            const p0 = route.getPointAtLength(0);
+            const tok = K.$(token);
+            tok.setAttribute("transform", `translate(${p0.x} ${p0.y})`);
+            const p = { t: 0 };
+            tl.fromTo(
+              p,
+              { t: 0 },
+              {
+                t: 1,
+                duration: dur,
+                ease: "power1.inOut",
+                immediateRender: false,
+                onUpdate: () => {
+                  const pt = route.getPointAtLength(p.t * len);
+                  tok.setAttribute("transform", `translate(${pt.x.toFixed(2)} ${pt.y.toFixed(2)})`);
+                },
+              },
+              at
+            );
+          };
+
+          K.fade(K.$("b5-label-l"), 0.05, 0.4);
+          K.fade(K.$("b5-label-r"), 0.05, 0.4);
+          // the two chambers redraw, builder then critic
+          [["bld", 0], ["crt", 0.25]].forEach(([k, d]) => {
+            const t0 = K.T(55.3) + d;
+            K.draw(K.$(`b5-${k}-outer`), t0, 0.8, "none");
+            K.draw(K.$(`b5-${k}-inner`), t0 + 0.5, 0.6, "none");
+            K.draw(K.$(`b5-${k}-glyph`), t0 + 0.9, 0.6);
+            K.fade(K.$(`b5-${k}-label`), t0 + 1.0);
+            K.fade(K.$(`b5-${k}-tag`), t0 + 1.1);
+          });
+          prime(K.$("b5-crt-x"));
+          prime(K.$("b5-crt-check"));
+          function prime(n) {
+            window.CR.prime(n);
+          }
+          // gate and gauge set the stakes before the work arrives
+          K.draw(K.$("b5-post"), K.T(56.3), 0.5);
+          K.draw(K.$("b5-boom-bar"), K.T(56.3) + 0.4, 0.6, "none");
+          K.fade(stripes, K.T(56.3) + 0.9, 0.3);
+          K.fade(K.$("b5-gate-label"), K.T(56.3) + 0.9, 0.4);
+          K.fade(K.$("b5-gate-sub"), K.T(56.3) + 1.1, 0.4);
+          K.fade(K.$("b5-gauge-label"), K.T(56.96), 0.4);
+          K.draw(K.$("b5-cell-1"), K.T(56.96) + 0.2, 0.3);
+          K.draw(K.$("b5-cell-2"), K.T(56.96) + 0.35, 0.3);
+
+          // pass 1: the diff goes in, findings come back
+          K.draw(K.$("b5-diff"), K.T(57.56), 0.5);
+          K.draw(K.$("b5-diff-head"), K.T(57.56) + 0.45, 0.2);
+          K.fade(K.$("b5-diff-label"), K.T(57.56) + 0.3, 0.3);
+          tl.to("#b5-token-1", { opacity: 1, duration: 0.2 }, K.T(58.19));
+          ride("b5-token-1", K.$("b5-route-1"), K.T(58.19), 1.0);
+          tl.to(K.$("b5-crt-x"), { strokeDashoffset: 0, duration: 0.4, ease: "power2.out" }, K.T(59.44));
+          K.draw(K.$("b5-back"), K.T(60.07), 0.9, "none");
+          K.draw(K.$("b5-back-head"), K.T(60.07) + 0.85, 0.2);
+          K.fade(K.$("b5-back-label"), K.T(60.07) + 0.5, 0.4);
+          ride("b5-token-1", K.$("b5-route-back"), K.T(60.07) + 0.3, 1.3);
+          tl.to("#b5-token-1", { opacity: 0, duration: 0.25 }, K.T(60.07) + 1.5);
+          tl.to("#b5-cell-1-fill", { opacity: 1, duration: 0.3 }, K.T(61.32));
+
+          K.reveal(K.$("b5-st-a"), K.T(61.95), 0.6);
+          K.reveal(K.$("b5-st-b"), K.T(62.58), 0.7);
+
+          // pass 2: the fixed diff goes in and passes
+          tl.to("#b5-token-2", { opacity: 1, duration: 0.2 }, K.T(63.18));
+          ride("b5-token-2", K.$("b5-route-2"), K.T(63.18), 1.0);
+          tl.to(K.$("b5-crt-x"), { opacity: 0, duration: 0.25 }, K.T(64.44));
+          tl.to(K.$("b5-crt-check"), { strokeDashoffset: 0, duration: 0.45, ease: "power2.out" }, K.T(64.44) + 0.1);
+          K.draw(K.$("b5-to-gate"), K.T(65.06), 0.5);
+          K.draw(K.$("b5-to-gate-head"), K.T(65.06) + 0.45, 0.2);
+          // the human gate opens, the work goes through
+          ride("b5-token-2", K.$("b5-route-gate"), K.T(65.69), 1.6);
+          tl.to("#b5-boom", { rotation: -80, svgOrigin: "0 0", duration: 0.8, ease: "power2.inOut" }, K.T(65.69) + 0.3);
+          tl.to("#b5-token-2", { opacity: 0, duration: 0.3 }, K.T(65.69) + 1.4);
+
+          K.out(K.$("b5-all"), 69.45 - 55.08, 0.45);
+
+          window.__timelines["b5"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

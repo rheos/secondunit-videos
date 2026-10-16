@@ -1,8 +1,8 @@
 <!doctype html>
-<html lang="en" data-resolution="landscape">
+<html class="draft" lang="en" data-resolution="landscape">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=1920, height=1080" />
+    <meta name="viewport" content="width=1280, height=720" />
     <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
     <style>
       @font-face {
@@ -20,6 +20,16 @@
         --night: #0e1220;
         --gold-night: #c9a54a;
         --red-night: #d9473b;
+        --canvas-w: 1920px;
+        --canvas-h: 1080px;
+        --stage-scale: 1;
+      }
+      /* Drafts render at 720p (blueprint kit rule): html.draft + root 1280x720, the 1920x1080 stage scales by 2/3.
+         tools/blueprint-kit/stage.sh novadiem-cold-read draft|master flips it. Plates always draw at 1920x1080. */
+      html.draft {
+        --canvas-w: 1280px;
+        --canvas-h: 720px;
+        --stage-scale: 0.666667;
       }
       * {
         margin: 0;
@@ -29,8 +39,8 @@
       html,
       body {
         margin: 0;
-        width: 1920px;
-        height: 1080px;
+        width: var(--canvas-w);
+        height: var(--canvas-h);
         overflow: hidden;
         background: var(--paper);
       }
@@ -40,7 +50,16 @@
         height: 100%;
         overflow: hidden;
       }
-      [data-composition-id="main"] > div[data-composition-src] {
+      .stage {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 1920px;
+        height: 1080px;
+        transform: scale(var(--stage-scale));
+        transform-origin: 0 0;
+      }
+      .stage > div[data-composition-src] {
         position: absolute;
         inset: 0;
       }
@@ -165,6 +184,43 @@
         stroke-dasharray: 6 6;
         opacity: 0.4;
       }
+      .plate-title {
+        position: absolute;
+        left: 0;
+        right: 0;
+        text-align: center;
+        font-family: "Marcellus SC", serif;
+        font-size: 118px;
+        letter-spacing: 0.14em;
+        line-height: 1;
+        color: var(--ink);
+      }
+      .sub-mono {
+        position: absolute;
+        left: 0;
+        right: 0;
+        text-align: center;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 22px;
+        letter-spacing: 0.2em;
+        color: var(--ink);
+        opacity: 0.8;
+      }
+      .inscription {
+        position: absolute;
+        left: 300px;
+        right: 300px;
+        text-align: center;
+        font-family: "Marcellus SC", serif;
+        font-size: 40px;
+        letter-spacing: 0.1em;
+        line-height: 1.3;
+        color: var(--ink);
+      }
+      .inscription .w {
+        display: inline-block;
+        margin: 0 0.12em;
+      }
       .wipe-edge {
         position: absolute;
         top: 0;
@@ -182,8 +238,8 @@
       data-composition-id="main"
       data-start="0"
       data-duration="92"
-      data-width="1920"
-      data-height="1080"
+      data-width="1280"
+      data-height="720"
     >
       <!-- Score: score-library bureau-art-pop-cold-read take-02, sha256 703195c3...cf7b (music resolves ~90 s), the clock for every cue -->
       <audio
@@ -196,6 +252,7 @@
         data-automation='{"version":1,"lanes":[{"target":"volume","points":[{"t":0,"v":1},{"t":90.6,"v":1},{"t":92,"v":0}]}]}'
       ></audio>
 
+      <div class="stage">
       <div id="slot-furniture" data-composition-id="furniture" data-composition-src="compositions/furniture.html" data-start="0" data-duration="92" data-track-index="0" data-width="1920" data-height="1080"></div>
       <div id="slot-b1" data-composition-id="b1" data-composition-src="compositions/b1-plate.html" data-start="0" data-duration="7.5" data-track-index="1" data-width="1920" data-height="1080"></div>
       <div id="slot-b2" data-composition-id="b2" data-composition-src="compositions/b2-closed-loop.html" data-start="7.5" data-duration="12.5" data-track-index="2" data-width="1920" data-height="1080"></div>
@@ -204,6 +261,7 @@
       <div id="slot-b5" data-composition-id="b5" data-composition-src="compositions/b5-critic-loop.html" data-start="55.08" data-duration="15" data-track-index="5" data-width="1920" data-height="1080"></div>
       <div id="slot-b6" data-composition-id="b6" data-composition-src="compositions/b6-the-test.html" data-start="70.08" data-duration="15" data-track-index="6" data-width="1920" data-height="1080"></div>
       <div id="slot-b7" data-composition-id="b7" data-composition-src="compositions/b7-colophon.html" data-start="85.08" data-duration="6.92" data-track-index="7" data-width="1920" data-height="1080"></div>
+      </div>
     </div>
 
     <script>

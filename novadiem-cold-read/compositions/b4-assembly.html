@@ -1,0 +1,149 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #b4 {
+          position: absolute;
+          inset: 0;
+        }
+      </style>
+      <div id="b4" data-composition-id="b4" data-width="1920" data-height="1080">
+        <div id="b4-all" class="layer">
+          <svg class="full" viewBox="0 0 1920 1080">
+            <g id="b4-conductor">
+              <path id="b4-cond-cross-h" class="ln gold construct" d="M840 290H1080" />
+              <path id="b4-cond-cross-v" class="ln gold construct" d="M960 170V410" />
+              <circle id="b4-cond-outer" class="ln ink" cx="960" cy="290" r="58" />
+              <circle id="b4-cond-inner" class="ln thin ink" cx="960" cy="290" r="46" />
+              <circle id="b4-cond-core" class="ln ink" cx="960" cy="290" r="6" />
+              <text id="b4-cond-label" class="mono" x="1036" y="297">CONDUCTOR</text>
+            </g>
+            <g id="b4-spawns"></g>
+            <g id="b4-chambers"></g>
+            <g id="b4-artifacts"></g>
+            <g id="b4-arrows"></g>
+            <path id="b4-note-leader" class="ln thin ink" d="M196 716V776H236" />
+            <text id="b4-note-text" class="mono note" x="248" y="782">SEALED WALL · FRESH CONTEXT</text>
+          </svg>
+          <div class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate IV</div>
+          <div class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>The Bureau Assembles</div>
+          <div class="statement">
+            <span id="b4-st-a" class="phrase">Fresh context.</span>
+            <span id="b4-st-b" class="phrase red">No shared assumptions.</span>
+          </div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text, kit } = window.CR;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 34.7);
+
+          // four sealed chambers, three artifacts between them
+          const CH_Y = 520,
+            CH_H = 190,
+            CH_W = 230,
+            MID_Y = 615;
+          const ROLES = [
+            { name: "ANALYST", cx: 300, glyph: "M-26 0A26 26 0 1 0 26 0A26 26 0 1 0 -26 0M-40 0H-18M18 0H40M0 -40V-18M0 18V40" },
+            { name: "ARCHITECT", cx: 740, glyph: "M-30 28H30L-30 -32ZM-30 6A22 22 0 0 1 -8 28" },
+            { name: "BUILDER", cx: 1180, glyph: "M-28 -28H28V28H-28ZM-28 28L28 -28M-28 0H28" },
+            { name: "CRITIC", cx: 1620, glyph: "M0 -34L34 0L0 34L-34 0Z" },
+          ];
+          const DOCS = [
+            { name: "SPEC", cx: 520 },
+            { name: "PLAN", cx: 960 },
+            { name: "DIFF", cx: 1400 },
+          ];
+          const gSp = K.$("b4-spawns"),
+            gCh = K.$("b4-chambers"),
+            gAr = K.$("b4-artifacts"),
+            gArw = K.$("b4-arrows");
+
+          ROLES.forEach((r, i) => {
+            const x0 = r.cx - CH_W / 2;
+            r.spawn = el("path", { class: "ln thin ink", opacity: 0.55, d: `M960 ${i === 0 ? 348 : 440}V440H${r.cx}V${CH_Y}` }, gSp);
+            const g = el("g", {}, gCh);
+            r.outer = el("rect", { class: "ln ink", x: x0, y: CH_Y, width: CH_W, height: CH_H }, g);
+            r.inner = el("rect", { class: "ln thin ink", x: x0 + 8, y: CH_Y + 8, width: CH_W - 16, height: CH_H - 16 }, g);
+            const gg = el("g", { transform: `translate(${r.cx} 588)` }, g);
+            r.glyphPath = el("path", { class: "ln gold", d: r.glyph }, gg);
+            r.label = text(r.name, { class: "mono", x: r.cx, y: 676, "text-anchor": "middle" }, g);
+            r.tag = text(`CTX·0${i + 1}`, { class: "mono small", x: x0 + 18, y: CH_Y + 32, opacity: 0.6 }, g);
+          });
+          const arrow = (x1, x2) => {
+            const g = el("g", {}, gArw);
+            return {
+              shaft: el("path", { class: "ln gold", d: `M${x1} ${MID_Y}H${x2}` }, g),
+              head: el("path", { class: "ln gold", d: `M${x2 - 10} ${MID_Y - 8}L${x2} ${MID_Y}L${x2 - 10} ${MID_Y + 8}` }, g),
+            };
+          };
+          DOCS.forEach((d, i) => {
+            const left = ROLES[i].cx + CH_W / 2;
+            const right = ROLES[i + 1].cx - CH_W / 2;
+            d.out = arrow(left + 4, d.cx - 40);
+            d.into = arrow(d.cx + 40, right - 4);
+            const g = el("g", {}, gAr);
+            const x = d.cx;
+            d.body = el("path", { class: "ln gold", d: `M${x - 32} 575H${x + 18}L${x + 32} 589V655H${x - 32}Z` }, g);
+            d.fold = el("path", { class: "ln thin gold", d: `M${x + 18} 575V589H${x + 32}` }, g);
+            d.lines = el("path", { class: "ln thin gold", d: `M${x - 20} 600H${x + 16}M${x - 20} 614H${x + 20}M${x - 20} 628H${x + 6}` }, g);
+            d.label = text(d.name, { class: "mono small", x, y: 690, "text-anchor": "middle" }, g);
+          });
+
+          // ---- conductor (as plate III's cutaway finishes closing) ----
+          const c0 = K.T(35.39);
+          K.draw(K.$("b4-cond-outer"), c0, 1.1, "none");
+          K.draw(K.$("b4-cond-cross-h"), c0 + 0.3, 0.9);
+          K.draw(K.$("b4-cond-cross-v"), c0 + 0.45, 0.9);
+          K.draw(K.$("b4-cond-inner"), c0 + 0.7, 0.8, "none");
+          K.draw(K.$("b4-cond-core"), c0 + 1.1, 0.3);
+          K.fade(K.$("b4-cond-label"), c0 + 1.2, 0.5);
+
+          // ---- chambers assemble, each passing work on through an artifact ----
+          const chamberAt = [37.27, 40.38, 43.82, 46.95];
+          const docAt = [39.13, 42.56, 45.7];
+          ROLES.forEach((r, i) => {
+            const t0 = K.T(chamberAt[i]);
+            K.draw(r.spawn, t0, 0.6, "power1.inOut");
+            K.draw(r.outer, t0 + 0.45, 0.9, "none");
+            K.draw(r.inner, t0 + 1.0, 0.7, "none");
+            K.draw(r.glyphPath, t0 + 1.2, 0.8);
+            K.fade(r.label, t0 + 1.35);
+            K.fade(r.tag, t0 + 1.5);
+            if (i > 0) {
+              const into = DOCS[i - 1].into;
+              K.draw(into.shaft, t0 + 1.4, 0.4);
+              K.draw(into.head, t0 + 1.75, 0.2);
+            }
+          });
+          DOCS.forEach((d, i) => {
+            const t0 = K.T(docAt[i]);
+            K.draw(d.out.shaft, t0, 0.4);
+            K.draw(d.out.head, t0 + 0.35, 0.2);
+            K.draw(d.body, t0 + 0.4, 0.7, "none");
+            K.draw(d.fold, t0 + 0.95, 0.25);
+            K.draw(d.lines, t0 + 1.0, 0.5);
+            K.fade(d.label, t0 + 1.1);
+          });
+
+          // ---- annotation and statement ----
+          K.draw(K.$("b4-note-leader"), K.T(49.46), 0.6);
+          K.fade(K.$("b4-note-text"), K.T(49.46) + 0.5, 0.5, 0.75);
+          K.reveal(K.$("b4-st-a"), K.T(50.06), 0.7);
+          K.reveal(K.$("b4-st-b"), K.T(51.32), 0.9);
+
+          // clear the plate for the critic loop
+          K.out(K.$("b4-all"), 54.5 - 34.7, 0.5);
+
+          window.__timelines["b4"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>
