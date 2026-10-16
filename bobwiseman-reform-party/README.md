@@ -67,3 +67,10 @@ boardroom art car (from a real car Robin saw at Burning Man; never name a camp) 
     python3 tools/make_lines_js.py                      # source/lines.json -> js/gen/lines.js
     PAGE=looks/riso.html node check.mjs out/sheet.jpg 3 8 12   # contact sheet
     PAGE=looks/riso.html node render.mjs <t0> <t1> out/x.mp4 4 24 0.6667   # 720p review
+
+### Draft 2 (2026-10-16)
+
+Robin's notes on draft 1: the real car's chairs were low enough to hop on and off without help, and there were more of
+them; the playa was too sparse for Burning Man. Draft 2 (https://youtu.be/ldst6ELsCkM): table top 1.15 m, seats 0.65 m,
+14 suits; camps, lamps, bikes, crowd, fire spinners; lyric installations from the Gilliam / Von Ulrich / Nakamura
+audit in `AUDIT-dali-v1.md` (three.js not needed: the renderer is already a 3D camera).
