@@ -13,19 +13,58 @@ function manicule(sc, skin = SKIN.cream, cuffCol = C.gold) {
   cut(poly([[-.4, 0], [-.27, -.06], [-.14, 0], [0, -.06], [.14, 0], [.27, -.06], [.4, 0], [.44, .34], [-.44, .34]]), cuffCol, { sh: .5 });
   g.restore();
 }
+// the twelve signs of the zodiac as pen strokes in a unit box (-1..1, y down), for the clock's bezel roundels
+// (draft 4, the audit: Mucha's Zodiac, the twelve roundels as the signs instead of generic flowers)
+const ZODIAC = [
+  'M -0.75 -0.1 C -0.95 -0.85 -0.05 -0.95 0 -0.25 C 0.05 -0.95 0.95 -0.85 0.75 -0.1 M 0 -0.25 L 0 0.8',
+  'M -0.8 -0.8 C -0.65 -0.15 0.65 -0.15 0.8 -0.8 M 0.42 0.3 A 0.42 0.42 0 1 1 -0.42 0.3 A 0.42 0.42 0 1 1 0.42 0.3',
+  'M -0.75 -0.75 Q 0 -0.5 0.75 -0.75 M -0.75 0.75 Q 0 0.5 0.75 0.75 M -0.33 -0.62 L -0.33 0.62 M 0.33 -0.62 L 0.33 0.62',
+  'M -0.75 -0.2 C -0.5 -0.85 0.5 -0.85 0.8 -0.35 M 0.75 0.2 C 0.5 0.85 -0.5 0.85 -0.8 0.35 M -0.33 -0.22 A 0.2 0.2 0 1 1 -0.73 -0.22 A 0.2 0.2 0 1 1 -0.33 -0.22 M 0.73 0.22 A 0.2 0.2 0 1 1 0.33 0.22 A 0.2 0.2 0 1 1 0.73 0.22',
+  'M -0.2 0.35 A 0.27 0.27 0 1 1 -0.74 0.35 A 0.27 0.27 0 1 1 -0.2 0.35 M -0.25 0.2 C -0.55 -0.55 0.4 -0.95 0.45 -0.25 C 0.48 0.25 0.2 0.55 0.5 0.75 Q 0.7 0.85 0.85 0.65',
+  'M -0.8 -0.55 L -0.8 0.65 M -0.8 -0.3 Q -0.55 -0.75 -0.3 -0.3 L -0.3 0.65 M -0.3 -0.3 Q -0.05 -0.75 0.2 -0.3 L 0.2 0.45 Q 0.25 0.85 0.65 0.5 Q 0.85 0.2 0.4 0.25',
+  'M -0.8 0.6 L 0.8 0.6 M -0.8 0.22 L -0.33 0.22 C -0.55 -0.65 0.55 -0.65 0.33 0.22 L 0.8 0.22',
+  'M -0.8 -0.55 L -0.8 0.55 M -0.8 -0.3 Q -0.55 -0.75 -0.3 -0.3 L -0.3 0.55 M -0.3 -0.3 Q -0.05 -0.75 0.2 -0.3 L 0.2 0.45 Q 0.25 0.7 0.75 0.6 M 0.55 0.38 L 0.78 0.6 L 0.55 0.82',
+  'M -0.7 0.7 L 0.7 -0.7 M 0.1 -0.72 L 0.72 -0.72 L 0.72 -0.1 M -0.5 -0.05 L 0.05 0.5',
+  'M -0.85 -0.6 Q -0.6 -0.65 -0.45 0.45 L -0.1 -0.55 Q 0.05 0.6 0.55 0.55 A 0.25 0.25 0 1 0 0.35 0.1 Q 0.2 0.6 -0.05 0.85',
+  'M -0.8 -0.12 L -0.4 -0.45 L 0 -0.12 L 0.4 -0.45 L 0.8 -0.12 M -0.8 0.45 L -0.4 0.12 L 0 0.45 L 0.4 0.12 L 0.8 0.45',
+  'M -0.6 -0.78 Q -0.05 0 -0.6 0.78 M 0.6 -0.78 Q 0.05 0 0.6 0.78 M -0.42 0 L 0.42 0',
+].map((d) => new Path2D(d));
+// one sign at (x, y), s px per unit; skipped when it would be under ~4 px on the canvas
+function zodiacGlyph(i, x, y, s, col, lw = .17) {
+  const m = g.getTransform(), k = Math.hypot(m.a, m.b) * s; if (k < 4) return;
+  g.save(); g.translate(x, y); g.scale(s, s); g.strokeStyle = col; g.lineWidth = lw; g.lineCap = 'round'; g.lineJoin = 'round'; g.stroke(ZODIAC[((i % 12) + 12) % 12]); g.restore();
+}
 // the clock face: a zodiac halo with twelve gold pips. Hands are drawn by the caller (clockHands).
 // draft 3: lit cold, from inside the dial (moonlight, not a sunrise), with a zodiac bezel of twelve roundels
-function clockFace(x, y, r, t, light = 0) {
-  if (light > 0) glow(x, y, r * 2.1, '200,235,225', .45 * light);
-  cut(scallop(x, y, r, 40, .04, t * .02), C.gold, { sh: 1.1, lift: .6 });
-  haloOrnament(x, y, r, t * .02, 'zodiac', C.cream);
+// draft 4: the roundels carry the twelve signs. lit (0..12): how many roundels are lit with moonlight, sweeping
+// clockwise from twelve (a fraction lights the next one part way). haloR: the outer glow's radius in r (the old
+// 2.1 washed the whole frame at close range).
+function clockFace(x, y, r, t, light = 0, pips = 1, lit = 0, haloR = 2.1) { // pips: alpha of the twelve hour marks (s07 pops them off as stars)
+  if (light > 0) glow(x, y, r * haloR, '200,235,225', .45 * light);
+  const rot = t * .02;
+  cut(scallop(x, y, r, 40, .04, rot), C.gold, { sh: 1.1, lift: .6 });
+  { // the zodiac ring: a cream band with twelve gold roundels, each holding its sign
+    const r0 = r * .72, r1 = r * .9, rm = (r0 + r1) / 2, bw = r1 - r0;
+    const band = new Path2D(); band.arc(x, y, r1, 0, TAU); band.moveTo(x + r0, y); band.arc(x, y, r0, 0, TAU, true);
+    cut(band, C.cream, { sh: .7, lift: .3, rule: 'evenodd' });
+    for (let i = 0; i < 12; i++) {
+      const a = rot + TAU * i / 12 - Math.PI / 2, cx = x + Math.cos(a) * rm, cy = y + Math.sin(a) * rm, l = clamp(lit - i);
+      cut(circle(cx, cy, bw * .36), C.gold, { sh: .4, grain: 0 }); cut(circle(cx, cy, bw * .27), C.tealDeep, { sh: 0, grain: 0 });
+      // lit: the glass goes moonlit teal and the sign glows white (dark marks on a pale disc read as little faces)
+      if (l > 0) { glow(cx, cy, bw * .9, '215,240,230', .5 * l); g.save(); g.globalAlpha *= l; cut(circle(cx, cy, bw * .27), C.tealLight, { sh: 0, grain: 0 }); g.restore(); }
+      zodiacGlyph(i, cx, cy, bw * .17, l > .5 ? C.white : C.goldPale, l > .5 ? .24 : .2);
+    }
+  }
   cut(circle(x, y, r * .7), C.tealDeep, { sh: .5 });
   if (light > 0) { g.save(); g.globalAlpha *= Math.min(1, .7 * light); cut(circle(x, y, r * .7), C.tealLight, { sh: 0, grain: .3 }); g.restore(); glow(x, y, r * .7, '225,245,235', .35 * light); }
   cut(ringLace(x, y, r * .62, r * .66), C.goldDeep, { sh: .2, rule: 'evenodd' });
+  if (pips <= 0) return;
+  g.save(); g.globalAlpha *= Math.min(1, pips);
   for (let i = 0; i < 12; i++) {
     const a = i / 12 * TAU - Math.PI / 2, px = x + Math.cos(a) * r * .55, py = y + Math.sin(a) * r * .55;
     if (i % 3 === 0) cut(flowerPath(px, py, r * .06, 5, a), C.goldPale, { sh: .3 }); else cut(circle(px, py, r * .022), C.goldPale, { sh: .2, grain: 0 });
   }
+  g.restore();
 }
 // a clock hand: gold rod from the centre, a pointing hand at its tip. a = radians clockwise from twelve
 function clockHand(x, y, a, len, sc) {
@@ -40,8 +79,13 @@ function rowboat(x, y, s, ph, lantern = 1) {
   g.save(); g.translate(x, y); g.scale(s, s);
   const o = Math.sin(ph);
   for (const sx of [-1]) { g.save(); g.translate(-10, -40); g.rotate(.5 + o * .45); cut(rect(-5, 0, 10, 170), C.creamDeep, { sh: .4 }); cut(rrect(-14, 150, 28, 60, 10), C.creamDeep, { sh: .3 }); g.restore(); }
-  cut(blob([[-170, -60], [-120, 20], [120, 20], [180, -70], [150, -60], [-150, -50]], .4), C.plum, { sh: .9, lift: .4 });
-  cut(rect(-160, -66, 330, 12), C.gold, { sh: .3, grain: 0 });
+  // draft 4 (the audit: the plum hull vanished on plum, only the oars read): the far side's cream inner shows above
+  // the gunwale, and the hull has a goldPale keyline
+  const hull = blob([[-170, -60], [-120, 20], [120, 20], [180, -70], [150, -60], [-150, -50]], .4);
+  cut(poly([[-158, -62], [-120, -84], [130, -88], [172, -72]]), C.cream, { sh: .3, grain: .1 });
+  g.save(); g.lineWidth = 12; g.strokeStyle = C.goldPale; g.lineJoin = 'round'; g.stroke(hull); g.restore();
+  cut(hull, C.plum, { sh: .9, lift: .4 });
+  cut(rect(-160, -70, 330, 16), C.gold, { sh: .3, grain: 0 });
   for (let i = 0; i < 4; i++) cut(rect(-110 + i * 70, -50, 6, 60), C.plumDeep, { sh: 0, grain: 0, alpha: .5 });
   cut(rect(150, -150, 8, 90), C.goldDeep, { sh: .3 });
   if (lantern) { glow(158, -160, 110, '250,215,140', .5 * lantern); cut(rrect(144, -186, 28, 36, 8), C.goldPale, { sh: .4 }); }
@@ -103,26 +147,80 @@ function jeans(s, sway = 0, col = C.tealDeep) {
   cut(rect(-92, 0, 184, 26), C.teal, { sh: .3 });
   g.save(); g.globalAlpha *= .8; g.strokeStyle = C.gold; g.lineWidth = 3; g.setLineDash([8, 7]);
   g.beginPath(); g.moveTo(-80, 30); g.lineTo(-90, 370); g.moveTo(80, 30); g.lineTo(90, 370); g.moveTo(0, 30); g.lineTo(0, 110); g.stroke(); g.restore();
-  // the back pocket and the pistol grip in it (an object only)
-  cut(poly([[20, 60], [80, 60], [76, 140], [50, 152], [24, 140]]), C.teal, { sh: .5 });
-  g.save(); g.translate(52, 70); g.rotate(-.5);
-  cut(blob([[-14, 0], [-18, -60], [-6, -86], [20, -84], [22, -60], [14, 0]], .4), C.cream, { sh: .7, lift: .3 });
-  for (let i = 0; i < 4; i++) cut(rect(-12, -70 + i * 16, 22, 3), C.goldDeep, { sh: 0, grain: 0 });
-  cut(rect(-14, -96, 60, 18), C.goldDeep, { sh: .5 });
-  cut(ringLace(26, -70, 10, 16), C.gold, { sh: .3, rule: 'evenodd' });
+  // the back pocket and the pistol grip in it (an object only). Draft 4 (the audit: the cream grip with stripes
+  // read as a luggage tag): a dark plum revolver butt curving up and back out of the pocket, its checkered panel,
+  // a gold butt cap, the hammer and a gold trigger guard showing at the pocket's lip
+  g.save(); g.translate(46, 64); g.rotate(-.34);
+  const guard = new Path2D(); guard.arc(30, 2, 22, Math.PI * 1.0, Math.PI * 2.0, false); guard.arc(30, 2, 13, Math.PI * 2.0, Math.PI * 1.0, true); guard.closePath();
+  cut(guard, C.gold, { sh: .4, grain: 0 }); // the trigger guard, half out of the pocket
+  cut(poly([[-22, 8], [-20, -26], [22, -32], [26, 8]]), C.gold, { sh: .5, grain: 0 }); // the back of the frame
+  cut(poly([[14, -26], [40, -50], [48, -42], [26, -16]]), C.goldDeep, { sh: .5, grain: 0 }); // the hammer spur
+  // the butt: long, curving back, flaring into a bird's-head end
+  const butt = new Path2D('M -18 -24 C -22 -60 -30 -96 -48 -122 C -54 -134 -40 -146 -24 -142 C -8 -138 6 -124 10 -100 C 14 -74 16 -50 18 -26 Z');
+  g.save(); g.lineWidth = 8; g.strokeStyle = C.goldPale; g.lineJoin = 'round'; g.stroke(butt); g.restore();
+  cut(butt, C.plumDeep, { sh: .8, lift: .4 });
+  const panel = new Path2D('M -10 -36 C -14 -62 -20 -88 -30 -110 C -22 -120 -10 -114 -4 -100 C 0 -80 4 -58 6 -36 Z');
+  g.save(); g.clip(panel); g.strokeStyle = C.plumLight; g.lineWidth = 2.2; g.beginPath();
+  for (let i = -6; i <= 6; i++) { g.moveTo(-40 + i * 9, -120); g.lineTo(-40 + i * 9 + 50, -30); g.moveTo(-40 + i * 9 + 50, -120); g.lineTo(-40 + i * 9, -30); }
+  g.stroke(); g.restore();
+  g.save(); g.lineWidth = 2.5; g.strokeStyle = C.goldDeep; g.stroke(panel); g.restore();
+  g.save(); g.lineWidth = 5; g.strokeStyle = C.gold; g.lineCap = 'round'; g.beginPath(); g.moveTo(16, -30); g.bezierCurveTo(14, -60, 10, -96, 2, -118); g.stroke(); g.restore(); // the backstrap
+  cut(circle(-30, -134, 7), C.gold, { sh: .3, grain: 0 }); // the lanyard ring on the butt
   g.restore();
+  cut(poly([[20, 60], [80, 60], [76, 140], [50, 152], [24, 140]]), C.teal, { sh: .5 });
+  g.save(); g.strokeStyle = C.gold; g.lineWidth = 3; g.globalAlpha *= .8; g.setLineDash([7, 6]); g.beginPath(); g.moveTo(24, 66); g.lineTo(76, 66); g.stroke(); g.restore();
   for (const sx of [-1, 1]) cut(rect(sx * 60 - 6, -14, 12, 26), C.creamDeep, { sh: .3 }); // pegs
   g.restore();
 }
-// the paladin's helmet: a great helm with visor slits and a plume; a plain banknote tucked under it (no numbers)
-function helmet(s, note = 1) {
+// a plain banknote (no numbers): its left end at (0,0), len 0..1 how much of it shows (it grows to the right)
+function banknote(len = 1) {
+  if (len <= 0) return;
+  cut(rrect(0, -48, 210 * len, 96, 6), C.cream, { sh: .7, lift: .3 });
+  cut(rrect(10, -38, 190 * len, 76, 4), C.tealLight, { sh: 0, grain: .3, alpha: .8 });
+  cut(ellipse(105 * len, 0, 30, 30), C.gold, { sh: 0, grain: .2 }); cut(ellipse(105 * len, -2, 13, 17), C.plum, { sh: 0, grain: 0 });
+  for (const sx of [-1, 1]) cut(circle(105 * len + sx * 70, 0, 10), C.goldPale, { sh: 0, grain: 0 });
+}
+// the paladin's helmet: a great helm (flat top, cross-shaped visor slit, rivets), a crest of peacock feathers that
+// always shows, and a hinged jaw plate; a plain banknote tucked under the chin. Local units: it sits on y = 120,
+// its flat top at y = -176. Draft 4 (the audit: the round shell read as a bell, the plume got lost in the theatre).
+// note: how much of the note shows under the chin (0..1, as before).
+// jaw (0..1): the jaw plate drops open, showing the dark mouth. swallow (0..1): the note swings up into the open
+// mouth and is pulled in (1 = gone inside). To spit it out, open the jaw and run swallow from 1 back to 0; to fly
+// it further, draw banknote() yourself from where swallow 0 leaves it (left end at (30, 77), turned -.25).
+function helmet(s, note = 1, jaw = 0, swallow = 0) {
   g.save(); g.scale(s, s);
-  if (note > 0) { g.save(); g.rotate(-.25); cut(rrect(10, 34, 210 * note, 96, 6), C.cream, { sh: .7, lift: .3 }); cut(rrect(20, 44, 190 * note, 76, 4), C.tealLight, { sh: 0, grain: .3, alpha: .8 }); cut(ellipse(10 + 105 * note, 82, 30, 30), C.gold, { sh: 0, grain: .2 }); cut(ellipse(10 + 105 * note, 80, 13, 17), C.plum, { sh: 0, grain: 0 }); for (const sx of [-1, 1]) cut(circle(10 + 105 * note + sx * 70, 82, 10), C.goldPale, { sh: 0, grain: 0 }); g.restore(); }
-  cut(blob([[-110, 120], [-120, -40], [-80, -140], [0, -170], [80, -140], [120, -40], [110, 120]], .45), C.creamDeep, { sh: 1, lift: .4 });
-  cut(rect(-6, -168, 12, 288), C.cream, { sh: .3 });
-  for (const y of [-30, 4]) cut(rrect(-96, y, 192, 14, 7), C.plumDeep, { sh: 0, grain: 0 });
-  for (let i = 0; i < 6; i++) cut(circle(-80 + i * 32, 60, 5), C.plumDeep, { sh: 0, grain: 0 });
-  tendril(whipPts([0, -160], [-60, -260], [-180, -260], [-220, -170], 40, -1), 40, C.plumLight, { sh: .6 });
+  const J = clamp(jaw), S = clamp(swallow), hy = 18, drop = 58 * J;
+  // the crest: three peacock feathers rising from behind the top, leaning back over the left shoulder
+  for (const [fx, a, L] of [[-58, -.62, 170], [-30, -.3, 215], [-4, -.08, 150]]) feather(fx, -150, -Math.PI / 2 + a, L, .9);
+  cut(rrect(-74, -196, 76, 26, 8), C.gold, { sh: .5, grain: 0 }); // the crest socket
+  // the dark mouth behind the open jaw
+  if (J > 0) { cut(rrect(-104, hy - 8, 208, drop + 26, 16), C.plumDeep, { sh: 0, grain: .2 }); cut(rrect(-90, hy, 180, drop + 6, 12), '#1c0d1b', { sh: 0, grain: 0 }); }
+  // the note: tucked under the chin, then up into the mouth (hidden behind the face and the jaw where they cover it)
+  if (note > 0 && S < 1) {
+    const e = eo(clamp(S / .45)), len = note * (1 - ss(.4, 1, S));
+    g.save(); g.translate(lerp(30, -70, e), lerp(77, hy + 4 + drop * .55, e)); g.rotate(lerp(-.25, -.06, e)); banknote(len); g.restore();
+  }
+  // the upper shell, steel lit by the moon: flat top, flared sides, ending at the jaw line
+  const upper = new Path2D('M -114 18 L -118 -20 Q -121 -142 -100 -166 Q -92 -176 -80 -177 Q 0 -184 80 -177 Q 92 -176 100 -166 Q 121 -142 118 -20 L 114 18 Z');
+  cut(upper, C.creamDeep, { sh: 1, lift: .4 });
+  g.save(); g.clip(upper);
+  g.globalAlpha *= .55; g.fillStyle = C.cream; g.fillRect(-104, -180, 34, 200); g.globalAlpha /= .55; // a cold highlight down the left
+  g.globalAlpha *= .22; g.fillStyle = C.tealDeep; g.fillRect(70, -180, 60, 200); g.globalAlpha /= .22; // the far side in shade
+  g.fillStyle = C.gold; g.fillRect(-130, -158, 260, 18); // the brow band
+  g.restore();
+  cut(rect(-8, -182, 16, 200), C.cream, { sh: .3, grain: 0 }); // the ridge down the middle
+  for (const sx of [-1, 1]) cut(rrect(sx > 0 ? 14 : -98, -66, 84, 16, 7), C.plumDeep, { sh: 0, grain: 0 }); // the eye slit: the cross bar
+  for (let i = 0; i < 8; i++) cut(circle(-98 + i * 28, -149, 4.5), C.plumDeep, { sh: 0, grain: 0 }); // rivets on the brow
+  // the jaw plate, hinged at the sides, dropping open
+  g.save(); g.translate(0, drop); g.scale(1 + .04 * J, 1 - .12 * J);
+  const lower = new Path2D('M -114 18 L 114 18 L 106 96 Q 96 118 60 122 L -60 122 Q -96 118 -106 96 Z');
+  cut(lower, C.creamDeep, { sh: .9, lift: .4 });
+  g.save(); g.clip(lower); g.globalAlpha *= .55; g.fillStyle = C.cream; g.fillRect(-104, 18, 34, 110); g.globalAlpha /= .55; g.fillStyle = C.gold; g.fillRect(-130, 18, 260, 14); g.restore();
+  cut(rect(-8, 18, 16, 104), C.cream, { sh: .3, grain: 0 });
+  for (const sx of [-1, 1]) for (let r = 0; r < 2; r++) for (let c = 0; c < 3; c++) cut(circle(sx * (36 + c * 22), 58 + r * 24, 5.5), C.plumDeep, { sh: 0, grain: 0 }); // the breaths
+  for (let i = 0; i < 8; i++) cut(circle(-98 + i * 28, 25, 4), C.plumDeep, { sh: 0, grain: 0 });
+  g.restore();
+  for (const sx of [-1, 1]) cut(circle(sx * 110, hy, 9), C.gold, { sh: .4, grain: 0 }); // the hinges
   g.restore();
 }
 function bowler(s) {

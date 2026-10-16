@@ -6,11 +6,20 @@
 // ajar, an empty bowler and a cane on the steps, wet footprints leading off; then tilt up to the clock tower
 // and push into the clock face (bridge 1 opens filling the frame with it).
 // When the clock's hands turn. Shared with the bridge and chorus 3 (they meet at twelve on CLAPS[8]).
+// Draft 4 (critic C: the hands stacked at twelve 12 s before the clap; Gilliam 7A: the weight stops them): they rest
+// at ten past ten and tick a minute on each beat from 108.0; from "gonna" (115.4) they spin, the minute hand
+// forward and the hour hand backward, faster and faster, and stop dead on "time" (119.3) when the clock's weight
+// drops: twenty past eight, both hands hanging (the turn counts keep their crossings off twelve but for one frame
+// mid-spin). They wake (126.7) only to swing up to the twelve clap (s06 draws the clap itself).
 function clockAngles(t) {
-  const k = CLAPS[8], t0 = 115.4, t1 = k - 1.0, u = eio(clamp((t - t0) / (t1 - t0)));
-  const beats = (window.FEAT && FEAT.beats) || [];
-  let tick = 0; for (const b of beats) { if (b < 108.0 || b > t0) continue; if (b > t) break; tick += eo(clamp((t - b) / .12)); }
-  return { m: lerp(-TAU / 6 + tick * .05, TAU * 12 - .6, u), h: lerp(-TAU / 12 + tick * .006, -TAU * 2 + .6, u) };
+  const T0 = 115.4, T1 = 119.3, beats = (window.FEAT && FEAT.beats) || [], tt = Math.min(t, T0);
+  let tick = 0; for (const b of beats) { if (b < 108.0 || b > T0) continue; if (b > tt) break; tick += eo(clamp((tt - b) / .12)); }
+  const m0 = TAU / 6 + tick * .105, h0 = -TAU / 6 + tick * .105 / 12;
+  if (t < T0) return { m: m0, h: h0 };
+  const M1 = TAU / 3 + TAU * 4, H1 = -TAU / 3 - TAU;
+  if (t < T1) { const u = Math.pow((t - T0) / (T1 - T0), 1.95); return { m: lerp(m0, M1, u), h: lerp(h0, H1, u) }; }
+  const rec = Math.sin((t - T1) * 38) * Math.exp(-9 * (t - T1)), w = eio(clamp((t - 126.7) / .8)) * (TAU / 3 - .6);
+  return { m: M1 + .09 * rec - w, h: H1 - .05 * rec + w };
 }
 const TOWER = { x: 4900, cy: -1100, r: 300 };
 (() => {
@@ -33,9 +42,11 @@ const TOWER = { x: 4900, cy: -1100, r: 300 };
   function facade(S, t) {
     const { x, w, top, i } = S, col = i % 3 === 1 ? C.plumDeep : C.plum, kind = i % 3;
     if (x > TOWER.x - 300 && x < TOWER.x + 300) return;
+    if (x > VIEW.x1 || x + w < VIEW.x0) return; // off camera
     cut(cutRect(x, top, w + 4, 1700 - top, i * 13), col, { sh: .9, lift: .3 });
     cut(cutRect(x - 6, top - 6, w + 16, 22, i * 13 + 1), C.gold, { sh: .5 });
-    for (let j = 0; j < Math.floor(w / 24); j++) { g.fillStyle = [C.gold, C.teal, C.plumLight, C.goldPale][(j + i) % 4]; g.fillRect(x + 6 + j * 24, top + 24, 16, 16); }
+    // draft 4: a lace scallop hung under the cornice (the row of coloured squares read as a Deco chequer band)
+    for (let j = 0; j < Math.floor(w / 30); j++) { g.fillStyle = j % 2 ? C.goldDeep : C.gold; g.beginPath(); g.arc(x + 16 + j * 30, top + 16, 13, 0, Math.PI); g.fill(); g.fillStyle = C.goldPale; g.beginPath(); g.arc(x + 16 + j * 30, top + 24, 3.5, 0, TAU); g.fill(); }
     const cols = Math.max(2, Math.floor(w / 150));
     for (let r = 0; top + 120 + r * 270 < 1200; r++) for (let c = 0; c < cols; c++) {
       const wx = x + (c + .5) * w / cols - 45, wy = top + 120 + r * 270;
@@ -57,6 +68,23 @@ const TOWER = { x: 4900, cy: -1100, r: 300 };
     for (let i = 0; i < 3; i++) tendril(whipPts([x + 20 + i * (w - 40) / 2, y], [x + i * (w - 40) / 2, y - 60], [x + 40 + i * (w - 40) / 2, y - 90], [x + 60 + i * (w - 40) / 2, y - 60], 16, 1), 7, C.gold, { sh: .3 });
     cut(rect(x, y - 110, w, 8), C.gold, { sh: .4 });
   }
+  const VIEW = { x0: 0, x1: 0, y0: 0, y1: 0 };
+  const seen = (x, y, r) => x + r > VIEW.x0 && x - r < VIEW.x1 && y + r > VIEW.y0 && y - r < VIEW.y1;
+  // draft 4: footprints read as beans. Shoe prints (sole and heel), left and right, toes leading away from the door,
+  // wet shine on each, fading and shrinking as the trail goes cold
+  // a shoe's sole seen from above, toe to the right: wide ball, narrow waist (the heel is cut separately)
+  const SOLE = new Path2D('M -14 -12 C 6 -18 40 -19 54 -9 C 61 -3 61 4 54 10 C 40 19 10 17 -2 9 C -8 6 -12 5 -18 5 C -24 5 -25 -10 -14 -12 Z');
+  function footprints(t) {
+    const shown = ss(104.4, 106.4, t);
+    for (let i = 0; i < 12; i++) {
+      if ((i + 1) / 12 > shown) break;
+      const left = i % 2 === 0, k = 1 - i * .025;
+      g.save(); g.translate(3998 + i * 70, 1670 + (left ? -10 : 10)); g.scale(k, k * (left ? -.5 : .5)); g.globalAlpha *= .92 - i * .055;
+      cut(SOLE, C.plumDeep, { sh: 0, grain: 0 }); cut(rrect(-50, -12, 24, 24, 10), C.plumDeep, { sh: 0, grain: 0 });
+      cut(ellipse(30, -6, 14, 4), C.cream, { sh: 0, grain: 0, alpha: .75 }); cut(ellipse(-38, -5, 7, 3), C.cream, { sh: 0, grain: 0, alpha: .6 });
+      g.restore();
+    }
+  }
   SHOT(89.7, 111.8, 'avenue', (t, k, d) => {
     const out = eio(clamp((t - 89.7) / 1.9));
     const z0 = 3.73, sx0 = MOON.x - 168 / z0, sy0 = MOON.y + 112 / z0;
@@ -64,29 +92,26 @@ const TOWER = { x: 4900, cy: -1100, r: 300 };
     let cy = kf3(t, [[91.6, 1080], [94.4, 1080], [95.95, 860], [99.0, 860], [100.6, 1380], [102.6, 1380], [104.2, 1440], [106.9, 1440], [108.3, 1300], [111.0, TOWER.cy]]);
     let z = kf3(t, [[91.6, 1.0], [94.4, 1.0], [95.95, 1.4], [99.0, 1.4], [100.6, 1.55], [102.6, 1.55], [104.2, 1.35], [106.9, 1.35], [108.7, 1.0], [110.4, 1.0], [111.8, 1.8]]);
     // punch-ins on the key words: the grip on "pistol", the note on "bill", the footprints on the missing man
-    for (const [t0, t1, px, py, pz] of [[97.8, 98.9, 1767, 822, 2.3], [100.45, 102.3, 2830, 1392, 2.4], [105.9, 106.8, 4060, 1660, 1.9]]) {
+    for (const [t0, t1, px, py, pz] of [[97.8, 98.9, 1767, 822, 2.3], [100.45, 102.3, 2830, 1392, 2.4], [105.9, 106.8, 4020, 1630, 1.75]]) {
       const pk = eio(clamp((t - t0) / .45)) * (1 - eio(clamp((t - t1) / .4)));
       cx = lerp(cx, px, pk); cy = lerp(cy, py, pk); z = lerp(z, pz, pk);
     }
     if (t < 91.6) { cx = lerp(sx0, 540, out); cy = lerp(sy0, 1080, out); z = Math.exp(lerp(Math.log(z0), 0, out)); }
+    VIEW.x0 = cx - 600 / z; VIEW.x1 = cx + 600 / z; VIEW.y0 = cy - 1020 / z; VIEW.y1 = cy + 1020 / z;
     g.save(); cam(cx, cy, z);
     sheet(C.tealInk);
     // sky: the moon, cloud cards, a few stars
     cut(circle(MOON.x, MOON.y, MOON.r), C.goldPale, { sh: .4, grain: .3 });
-    for (let i = 0; i < 9; i++) cut(cloud(-200 + i * 700 + Math.sin(t * .2 + i) * 40, -500 + (i % 3) * 140, 560, 130, i + 40), i % 2 ? C.tealDeep : C.plumDeep, { sh: .7, lift: .3, alpha: .9 * ss(89.8, 90.5, t) });
+    for (let i = 0; i < 9; i++) { const ux = -200 + i * 700 + Math.sin(t * .2 + i) * 40, uy = -500 + (i % 3) * 140; if (seen(ux, uy, 320)) cut(cloud(ux, uy, 560, 130, i + 40), i % 2 ? C.tealDeep : C.plumDeep, { sh: .7, lift: .3, alpha: .9 * ss(89.8, 90.5, t) }); }
     for (let i = 0; i < 9; i++) { const a = i * 2.4, r = 130 + hash(i) * 120; g.save(); g.globalAlpha *= 1 - ss(90.0, 91.0, t); g.fillStyle = C.goldPale; g.fill(star4(MOON.x + Math.cos(a) * r, MOON.y + Math.sin(a) * r * .8, 8 + hash(i) * 7)); g.restore(); }
-    // the clock tower (behind the street) at the far end
-    cut(poly([[TOWER.x - 260, -1480], [TOWER.x, -1900], [TOWER.x + 260, -1480]]), C.plumDeep, { sh: .8, lift: .3 });
-    cut(circle(TOWER.x, -1910, 18), C.gold, { sh: .4 });
-    cut(cutRect(TOWER.x - 340, -1500, 680, 820, 301), C.plum, { sh: 1, lift: .4 });
-    cut(cutRect(TOWER.x - 250, -700, 500, 2400, 302), C.plum, { sh: .9, lift: .3 });
-    for (const y of [-1500, -700, -200, 400, 1000]) cut(rect(TOWER.x - 340, y - 10, 680, 20), C.gold, { sh: .4 });
-    for (let r = 0; r < 4; r++) { cut(archPath(TOWER.x - 60, -560 + r * 520, 120, 260), r % 2 ? C.goldPale : C.tealInk, { sh: .3 }); archFrame(TOWER.x - 60, -560 + r * 520, 120, 260, 10, C.goldDeep); }
-    const A = clockAngles(t);
-    clockFace(TOWER.x, TOWER.cy, TOWER.r, t, 0);
-    clockHand(TOWER.x, TOWER.cy, A.h, TOWER.r * .45, TOWER.r * .12);
-    clockHand(TOWER.x, TOWER.cy, A.m, TOWER.r * .62, TOWER.r * .12);
-    cut(circle(TOWER.x, TOWER.cy, 18), C.gold, { sh: .5 });
+    // the clock tower (behind the street) at the far end. Draft 4: the bridge's own tower (s06), drawn at this
+    // distance, so the push into the clock at 111.8 cuts to exactly the same picture
+    if (seen(TOWER.x, -100, 2000)) {
+      const ks = TOWER.r / CLOCKTOWER.CK.r;
+      const hw = 500 * ks; cut(rect(TOWER.x - hw, 700, hw * 2, 1020), C.teal, { sh: .9, lift: .3 }); // the shaft on down to the street
+      g.save(); g.globalAlpha *= .8; g.fillStyle = C.tealLight; g.fillRect(TOWER.x - hw, 700, 26 * ks, 1020); g.globalAlpha /= .8; g.globalAlpha *= .45; g.fillStyle = C.tealDeep; g.fillRect(TOWER.x + hw - 50 * ks, 700, 50 * ks, 1020); g.restore();
+      g.save(); g.translate(TOWER.x, TOWER.cy); g.scale(ks, ks); g.translate(-CLOCKTOWER.CK.x, -CLOCKTOWER.CK.y); CLOCKTOWER.far(t); g.restore();
+    }
     // the street of façades
     for (const S of SEGS) facade(S, t);
     // balconies and the washing line: shirt, the jeans, a pair of socks
@@ -99,11 +124,18 @@ const TOWER = { x: 4900, cy: -1100, r: 300 };
     g.save(); g.translate(1730, lineY(1730)); jeans(.75, sw * 1.2); g.restore();
     for (const sx of [1815, 1840]) { g.save(); g.translate(sx, lineY(sx)); g.rotate(sw * 1.4); cut(blob([[-12, 0], [12, 0], [14, 80], [40, 100], [36, 116], [-12, 108]], .4), C.goldPale, { sh: .5 }); g.restore(); }
     // the stoop railing and the paladin's helmet on its post
-    tendril(whipPts([2560, 1620], [2600, 1480], [2700, 1440], [2760, 1460], 0), 12, C.gold, { sh: .5 });
-    for (let i = 0; i < 4; i++) tendril(whipPts([2600 + i * 60, 1620], [2580 + i * 60, 1560], [2640 + i * 60, 1520], [2610 + i * 60, 1490], 14, 1), 7, C.goldDeep, { sh: .3 });
+    // draft 4: a straight railing with Guimard finials (the hanging curls under the niche read as jellyfish)
+    for (let i = 0; i < 5; i++) { const bx = 2560 + i * 44; cut(rect(bx - 4, 1500, 8, 140), C.goldDeep, { sh: .3, grain: 0 }); cut(blob([[bx - 9, 1500], [bx - 7, 1484], [bx, 1470], [bx + 7, 1484], [bx + 9, 1500]], .6), C.gold, { sh: .3, grain: 0 }); tendril(whipPts([bx, 1566], [bx + 10, 1546], [bx + 26, 1550], [bx + 22, 1566], 6, 1), 4, C.gold, { sh: 0, grain: 0 }); }
+    cut(rect(2540, 1500, 230, 10), C.gold, { sh: .5, grain: 0 }); cut(rect(2540, 1600, 230, 8), C.goldDeep, { sh: .3, grain: 0 });
     cut(rect(2750, 1460, 26, 180), C.gold, { sh: .7 });
     cut(rrect(2640, 1180, 250, 300, [100, 100, 0, 0]), C.tealInk, { sh: .5 }); g.save(); g.lineWidth = 10; g.strokeStyle = C.gold; g.stroke(rrect(2640, 1180, 250, 300, [100, 100, 0, 0])); g.restore();
-    g.save(); g.translate(2763, 1386); helmet(.62, ss(100.2, 100.7, t)); g.restore();
+    // Gilliam 6A: chivalry takes the money. The jaw drops on "bill" (100.52), the note goes in on "inside" (101.06),
+    // the jaw snaps shut (101.66, a gulp) and the helmet gives one satisfied hop (102.6) that kicks the bowler off
+    {
+      const jaw = ss(100.45, 100.72, t) * (1 - ss(101.52, 101.68, t)), swallow = ss(101.0, 101.58, t);
+      const hop = t > 102.5 && t < 102.86 ? Math.sin(Math.PI * (t - 102.5) / .36) : 0, sq = .05 * bump(t, 101.62, .22) - .04 * bump(t, 102.38, .14);
+      g.save(); g.translate(2763, 1460 - 42 * hop); g.scale(1 + sq, 1 - sq); g.translate(0, -74); helmet(.62, ss(100.05, 100.4, t), jaw, swallow); g.restore();
+    }
     // the door ajar, the steps, the empty bowler and cane, wet footprints leading off toward the tower
     cut(archPath(3770, 1190, 170, 420), C.goldPale, { sh: 0, grain: .3 });
     glow(3870, 1450, 320, '250,215,140', .4);
@@ -117,8 +149,7 @@ const TOWER = { x: 4900, cy: -1100, r: 300 };
     cut(cutRect(-300, 1640, 5800, 60, 303), C.creamDeep, { sh: .7 });
     cut(cutRect(-300, 1700, 5800, 600, 304), C.tealDeep, { sh: .5 });
     for (let i = 0; i < 6; i++) cut(ribbon(-300, 5500, 1740 + i * 45, 6, i * 1.7 + t * .4, 5), C.teal, { sh: 0, grain: .2, alpha: .6 });
-    const seen = ss(104.4, 106.4, t);
-    for (let i = 0; i < 12; i++) { const fx = 4000 + i * 70, fy = 1712 + (i % 2) * 20; if ((i + 1) / 12 > seen) break; cut(ellipse(fx, fy - 40, 22, 10), C.plumDeep, { sh: 0, grain: .3, alpha: .7 }); cut(ellipse(fx + 24, fy - 40, 9, 8), C.plumDeep, { sh: 0, grain: .3, alpha: .7 }); cut(ellipse(fx - 4, fy - 43, 8, 3), C.cream, { sh: 0, grain: 0, alpha: .5 }); }
+    footprints(t);
     for (const lx of [1100, 2200, 3300, 4400]) guimard(lx, 1650, 560, lx % 2200 ? -1 : 1, .9 + .1 * Math.sin(t * 13 + lx), Math.sin(t + lx) * 4);
     // Mark Von Ulrich (guest director): one empty bowler travels the street on different heads, hopping ahead
     // of the camera on each pan: pegged on the washing line, then on the paladin's helmet, then alone on the steps.
@@ -136,10 +167,15 @@ const TOWER = { x: 4900, cy: -1100, r: 300 };
       g.save(); g.translate(x, y); g.rotate(rot); bowler(sc); g.restore();
     }
     // the bad dreams
+    // (draft 4: they thin out over the last half second so none pops off at the cut into the clock)
+    const bugA = 1 - ss(111.2, 111.75, t);
     for (const B of BUGS) {
-      if (t < B.b) continue;
-      const [x, y] = bugAt(B, t), [x2, y2] = bugAt(B, t + .05), a = Math.atan2(y2 - y, x2 - x);
+      if (t < B.b || bugA <= 0) continue;
+      const [x, y] = bugAt(B, t); if (!seen(x, y, 130)) continue;
+      const [x2, y2] = bugAt(B, t + .05), a = Math.atan2(y2 - y, x2 - x);
+      g.save(); g.globalAlpha *= bugA;
       if (B.kind === 'moth') moth(x, y, B.s * 1.1, a, t * 26 + B.ph); else dragonfly(x, y, B.s, a, t * 34 + B.ph, B.i % 2 ? C.tealLight : C.plumLight);
+      g.restore();
     }
     g.restore();
     rain(t, 40, 61, .3, .12);

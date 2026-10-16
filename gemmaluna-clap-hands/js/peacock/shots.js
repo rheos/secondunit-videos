@@ -1,7 +1,10 @@
 // Look test: verse 1 + chorus 1 (26.04 to 56.88) in cut paper, peacock palette.
 // Cues from STORYBOARD.md c01/c02 (word times are Whisper, ~0.3 s slop; claps are exact).
 
-const TRAM_LAMPS = [[390, 0], [690, 1.3]], TRAM_BUD = { x: 690, y: 651 };
+// TRAM_BUD: the right pier lamp's bud of light (its calyx hand's palm centre, 724 - .5 * 58), where the Metro's push lands
+const TRAM_LAMPS = [[390, 0], [690, 1.3]], TRAM_HAND = 58, TRAM_BUD = { x: 690, y: 724 - .5 * TRAM_HAND };
+// the Metro bud (calyx hand sc 150) at zoom 9 is the tram bud (sc 58) at this zoom: the light-to-light hand-off
+const TRAM_Z0 = 9 * (typeof CALYX_LAMP_SC === 'number' ? CALYX_LAMP_SC : 150) / TRAM_HAND;
 // ---- the tram car: clerestory of stained glass, brass rail, swinging straps, lily lamps ----
 function tramCar(t, wild, swayK = 1) {
   sheet(C.plumDeep);
@@ -28,14 +31,15 @@ function tramCar(t, wild, swayK = 1) {
     const a = Math.sin(t * 2.3 + ph) * .03 * swayK + wild * Math.sin(t * 13 + ph) * .2;
     g.save(); g.translate(lx, 800); g.rotate(a); g.translate(-lx, -800);
     tendril(whipPts([lx, 800], [lx - 10, 780], [lx + 10, 750], [lx, 724], 0), 12, C.tealDeep, { sh: .5 });
-    glow(lx, 650, 260, '240,200,120', .4);
-    nouveauHand(lx, 724, 58, .55, { fill: C.tealDeep, edge: C.gold });
-    lily(lx, 724 - 58 * 1.15 + 24, -Math.PI / 2, 52, .5, [C.goldPale, C.white]);
+    glow(lx, 650, 260, '240,200,120', .25);
+    // draft 4: the Metro's iron calyx hand holding its bud of light (the old cupped hand and lily read as a lotus in a pot)
+    if (typeof calyxHand === 'function') calyxHand(lx, 724, TRAM_HAND, .7, { skin: 'iron', palm: 'bud', thumb: lx < 540 ? -1 : 1 });
+    else { nouveauHand(lx, 724, 58, .55, { fill: C.tealDeep, edge: C.gold }); metroBud(lx, 724 - 58 * .2, 36, 1); }
     g.restore();
   }
   // straps: plum leather loops hanging from the rail, all swinging with the car
   for (let i = 0; i < 6; i++) {
-    const x = 120 + i * 168, a = Math.sin(t * 2.3 + i * .25) * .1 * swayK + wild * Math.sin(t * 11 - i * .4) * .55;
+    const x = 120 + i * 168, a = Math.sin(t * 2.3 + i * .25) * .1 * swayK + wild * Math.sin(t * 11 - i * .4) * 1.0 + (i === 3 ? TAU * eio(clamp((t - 28.55) / .75)) : 0); // a real whip on "insane"; one strap loops over the rail
     g.save(); g.translate(x, 812); g.rotate(a);
     cut(cutRect(-11, 0, 22, 210, 40 + i), C.plumLight, { sh: .6 });
     cut(ringLace(0, 250, 30, 46), C.plumLight, { sh: .7, lift: .2, rule: 'evenodd' });
@@ -56,12 +60,12 @@ SHOT(26.04, 31.94, 'tram', (t, k, d) => {
   const wild = bump(t, 28.4, 1.2);
   // opens inside its right lamp's bud (the Metro bud's size), pulls back; punches in on the spectacles on
   // "blind"; ends pushing into the same lamp, which becomes the conductor's lantern
-  const u = eio(clamp((t - 26.04) / 1.3)), zEnd = lerp(1.0, 1.12, eio(k));
-  let cx = lerp(TRAM_BUD.x, 540, u), cy = lerp(TRAM_BUD.y, lerp(980, 1100, eio(k)), u), z = Math.exp(lerp(Math.log(15.6), Math.log(zEnd), u));
+  const u = eio(clamp((t - 26.04) / 1.3)), up = eio(clamp((t - 26.25) / 1.1)), zEnd = lerp(1.0, 1.12, eio(k)); // the lamp stays centred while the zoom starts
+  let cx = lerp(TRAM_BUD.x, 540, up), cy = lerp(TRAM_BUD.y, lerp(980, 1100, eio(k)), up), z = Math.exp(lerp(Math.log(TRAM_Z0), Math.log(zEnd), u));
   const sp = eio(clamp((t - 29.45) / .5)) * (1 - eio(clamp((t - 30.7) / .6)));
   cx = lerp(cx, 720, sp); cy = lerp(cy, 1380, sp); z = lerp(z, 1.7, sp);
   const out = ei(clamp((t - 31.45) / .49));
-  cx = lerp(cx, TRAM_BUD.x, out); cy = lerp(cy, TRAM_BUD.y, out); z = Math.exp(lerp(Math.log(z), Math.log(5), out));
+  cx = lerp(cx, TRAM_BUD.x, out); cy = lerp(cy, TRAM_BUD.y, out); z = Math.exp(lerp(Math.log(z), Math.log(260 / (.62 * TRAM_HAND)), out));
   g.save(); cam(cx, cy, z, (Math.sin(t * 2.3) * .012 + wild * Math.sin(t * 13) * .025) * u * (1 - out));
   tramCar(t, wild);
   // spectacles left on the seat, on the right third
@@ -105,7 +109,8 @@ SHOT(31.94, 36.44, 'conductor', (t, k, d) => {
   cut(archPath(220, 420, 640, 1180), C.tealInk, { sh: 0 });
   glow(540, 820, 560, '240,200,120', .2);
   archFrame(220, 420, 640, 1180, 28, C.gold);
-  for (const sx of [-1, 1]) tendril(whipPts([540 + sx * 300, 1580], [540 + sx * 340, 1260], [540 + sx * 140, 1000], [540 + sx * 200, 760], 46, -sx), 16, C.goldDeep);
+  // the booth's tendrils grow up as the camera pulls off the lantern (draft 3: their curls read as a stray scroll by it)
+  for (const sx of [-1, 1]) tendril(grow(whipPts([540 + sx * 300, 1580], [540 + sx * 340, 1260], [540 + sx * 140, 1000], [540 + sx * 200, 760], 46, -sx), ss(32.0, 32.9, t)), 16, C.goldDeep);
   cut(cutRect(340, 500, 400, 18, 22), C.goldDeep, { sh: .6 });
   cut(rect(536, 500, 8, 50), C.gold, { sh: .3 });
   // the whole figure hangs from the hook and sways with the car
@@ -118,21 +123,29 @@ SHOT(31.94, 36.44, 'conductor', (t, k, d) => {
   const jk = back(clamp((t - 33.62) / .55));
   if (jk > 0) { g.save(); g.translate(540, 640 - (1 - jk) * 700); g.scale(.52, .52); cut(ribbonAlong(whipPts([0, -120], [0, -60], [-16, -20], [0, 0], 0), 22), C.gold, { sh: .4 }); conductorJacket(); g.restore(); }
   // the cap drops onto the hook as his head
-  const cp = back(clamp((t - 32.3) / .45));
-  g.save(); g.translate(540, 540 - (1 - cp) * 500);
+  const cp = back(clamp((t - 32.3) / .45)), tip = bump(t, 35.45, .8); // he tips his cap before "hard luck"
+  g.save(); g.translate(540, 540 - (1 - cp) * 500 - 26 * tip); g.translate(-80, 96); g.rotate(-.3 * tip); g.translate(80, -96);
   cut(blob([[-90, 90], [-70, 40], [0, 26], [70, 40], [90, 90]], .6), C.plum, { sh: .8, lift: .2 });
   cut(cutRect(-90, 80, 180, 26, 3), C.gold, { sh: .4 });
   cut(blob([[-20, 104], [90, 100], [130, 116], [40, 124]], .6), C.tealInk, { sh: .5 });
   g.restore();
-  // the lantern swings in where his heart would be; it beats
-  const ln = 1, lx = 505, ly = 820, beat = .5 + .5 * Math.max(0, Math.sin(t * Math.PI * 2 / 1.0));
-  g.save(); g.translate(lx, ly); g.rotate(Math.sin(t * 3.1) * .08 * ln + (1 - ln) * .6); g.scale(.62, .62);
-  glow(0, 120, 340, '245,205,120', .35 + .3 * beat);
-  cut(blob([[-50, 40], [50, 40], [40, 170], [-40, 170]], .2), C.goldPale, { sh: .8, lift: .3 });
-  cut(cutRect(-60, 28, 120, 20, 5), C.goldDeep, { sh: .5 }); cut(cutRect(-50, 166, 100, 18, 6), C.goldDeep, { sh: .5 });
-  for (let i = -1; i <= 1; i++) cut(rect(i * 22 - 3, 48, 6, 118), C.goldDeep, { sh: 0, grain: 0 });
-  cut(ellipse(0, 110, 14 + 4 * beat, 26 + 6 * beat), C.white, { sh: 0, grain: 0 });
+  // the lantern where his heart would be (draft 4): the tram lamp's bud of light in a gilt calyx cradle, hung
+  // from a ring (critic A: a square cage lantern broke the lamp rhyme). It swings to a side on every beat and its
+  // flame pulses on the beat
+  const lx = 505, ly = 820, pulse = Math.exp(-6 * beatClock.since(t));
+  g.save(); g.translate(lx, ly); g.rotate(Math.cos(Math.PI * beatClock.phase(t)) * .09); g.scale(.62, .62);
+  glow(0, 105, 340, '245,205,120', .3 + .3 * pulse);
   cut(ringLace(0, 14, 10, 18), C.goldDeep, { sh: .3, rule: 'evenodd' });
+  cut(rect(-4, 26, 8, 22), C.goldDeep, { sh: .3, grain: 0 });
+  metroBud(0, 152, 93, 1, .25);
+  glow(0, 108, 90, '255,240,200', .35 * pulse);
+  // three gilt sepals hug the glass from below, curling in (a lantern's cradle, not a flower's fan); gold, so the
+  // heart still reads as a lit lantern on the booth's dark teal
+  for (const i of [-1, 1, 0]) { const pth = petalPath(i * 16, 166, i * .38, 50 - (i === 0) * 10, 26, -i * .35);
+    cut(pth, C.gold, { sh: .5, lift: .2, grain: .1 }); g.save(); g.lineWidth = 3; g.strokeStyle = C.goldDeep; g.stroke(pth); g.restore(); }
+  cut(ellipse(0, 172, 22, 12), C.goldDeep, { sh: .4 }); cut(circle(0, 188, 8), C.gold, { sh: .3, grain: 0 });
+  // its cap: a little gilt dome with a finial over the glass
+  cut(blob([[-34, 66], [-26, 44], [0, 34], [26, 44], [34, 66]], .6), C.gold, { sh: .5 }); g.save(); g.lineWidth = 3; g.strokeStyle = C.goldDeep; g.beginPath(); g.moveTo(-34, 66); g.lineTo(34, 66); g.stroke(); g.restore();
   g.restore();
   g.restore();
   rain(t, 12, 5, .25);
@@ -149,17 +162,21 @@ SHOT(36.44, 37.7, 'horseshoe', (t, k, d) => {
   archFrame(270, 700, 540, 1300, 30, C.gold);
   for (let i = 0; i < 2; i++) cut(archPath(320 + i * 230, 1000, 210, 520), C.tealLight, { sh: .2, alpha: .85 });
   rain(t, 14, 8, .4, .4, 320, 780);
-  // the slip: it rocks on its nail, then falls off spinning
-  const sl = clamp((t - 36.85) / .75);
-  const rock = Math.sin(t * 16) * .12 * (1 - sl) * clamp((t - 36.5) * 3);
-  // the upside-down horseshoe (open end DOWN: the luck runs out) hangs by its crown from the nail at 470,
-  // rocks about the nail, then slips off and spins away
-  g.save(); g.translate(540, 470 + ei(sl) * 1300); g.rotate(rock + sl * sl * 7); g.translate(0, 112);
-  const shoe = new Path2D(); shoe.arc(0, 0, 110, Math.PI * .92, Math.PI * .08 + TAU, false); shoe.arc(0, 0, 66, Math.PI * .08 + TAU, Math.PI * .92, true); shoe.closePath();
-  cut(shoe, C.gold, { sh: 1.1, lift: .5 });
-  for (let i = 0; i < 6; i++) { const a = Math.PI * .92 + (i + .5) / 6 * Math.PI * 1.16; cut(circle(Math.cos(a) * 88, Math.sin(a) * 88, 7), C.plumDeep, { sh: 0, grain: 0 }); }
+  // the slip: it rocks on its nail, then falls off spinning. The upside-down horseshoe (open end DOWN: the luck runs
+  // out) hangs by its crown from the nail. Draft 4: hung lower (nail at 600, it was 470) and a little smaller, so the
+  // whole shoe is in frame from the cut and still for 0.3 s before it rocks (the crown sat under the border and the
+  // shoe read as a staple); pale gold with a deep keyline so it parts from the gold door arch it hangs over
+  const NAIL = 600, RO = 92, RI = 54;
+  const sl = clamp((t - 36.98) / .65);
+  const rock = Math.sin((t - 36.7) * 16) * .14 * (1 - sl) * clamp((t - 36.7) * 3);
+  g.save(); g.translate(540, NAIL + ei(sl) * 1400); g.rotate(rock + sl * sl * 7); g.translate(0, RO);
+  const shoeP = (ro, ri, a0 = .1) => { const p = new Path2D(); p.arc(0, 0, ro, Math.PI * (1 - a0), Math.PI * a0 + TAU, false); p.arc(0, 0, ri, Math.PI * a0 + TAU, Math.PI * (1 - a0), true); p.closePath(); return p; };
+  cut(shoeP(RO, RI), C.goldDeep, { sh: 1.2, lift: .6 });
+  cut(shoeP(RO - 6, RI + 6, .12), C.goldPale, { sh: 0, grain: .2 });
+  for (let i = 0; i < 6; i++) { const a = Math.PI * .9 + (i + .5) / 6 * Math.PI * 1.2; cut(ellipse(Math.cos(a) * (RO + RI) / 2, Math.sin(a) * (RO + RI) / 2, 5, 7, a), C.plumDeep, { sh: 0, grain: 0 }); }
+  for (const sx of [-1, 1]) cut(rrect(sx * (RO + RI) / 2 - 20, RO * Math.sin(Math.PI * .1) - 4, 40, 14, 6), C.goldDeep, { sh: .3, grain: 0 }); // the heels
   g.restore();
-  cut(circle(540, 470, 9), C.goldDeep, { sh: .4 });
+  cut(circle(540, NAIL, 9), C.goldDeep, { sh: .4 });
   g.restore();
 }, { xin: .25, tr: 'fade' });
 
@@ -186,9 +203,18 @@ function tenWindow(c, r, lit, inside, front) {
     cut(opening(), C.tealInk, { sh: 0 });
     if (lit > 0) { g.save(); g.globalAlpha *= lit; cut(opening(), C.goldPale, { sh: 0, grain: .3 }); g.restore(); glow(300, 520, 560, '250,215,140', .4 * lit); }
     g.save(); g.clip(opening());
-    for (const sx of [0, 1]) cut(blob(sx ? [[610, 60], [610, 840], [540, 840], [500, 520], [560, 300]] : [[-10, 60], [-10, 840], [60, 840], [100, 520], [40, 300]], .5), lit > .5 ? C.tealLight : C.tealDeep, { sh: .5 });
-    // a whiplash mullion splitting the glass, its two stems curling apart at the head
-    for (const sx of [-1, 1]) tendril(whipPts([300, WIN.h], [300, 560], [300 + sx * 120, 420], [300 + sx * 70, 250], 46, sx), 16, lit > .5 ? C.gold : C.goldDeep, { sh: .3 });
+    // glazing: a mullion and a transom, two lower panes, and a fanlight in the arched head (draft 4: the two curling
+    // stems read as a bulb's filament); dark lead on lit glass, gold on dark
+    const lead = lit > .5 ? C.plumDeep : C.goldDeep, lw = 13;
+    cut(rect(300 - lw / 2, 330, lw, WIN.h), lead, { sh: .2, grain: 0 });
+    cut(rect(0, 330 - lw / 2, WIN.w, lw), lead, { sh: .2, grain: 0 });
+    cut(rect(0, 590 - lw / 2, WIN.w, lw * .8), lead, { sh: .2, grain: 0 });
+    { const fan = new Path2D(); fan.arc(300, 330, 150 + lw / 2, Math.PI, 0); fan.arc(300, 330, 150 - lw / 2, 0, Math.PI, true); fan.closePath(); cut(fan, lead, { sh: .2, grain: 0 }); // an arched fanlight bar in the head
+      cut(rect(300 - lw / 2, 180, lw, 150), lead, { sh: .2, grain: 0 }); }
+    // straight drapes down both jambs, wide enough to hide the head's bulge, so the light is a plain arched window
+    for (const sx of [0, 1]) { const x0 = sx ? WIN.w + 20 : -20, x1 = sx ? WIN.w - 84 : 84;
+      cut(poly([[x0, -10], [x0, WIN.h + 10], ...[...Array(9).keys()].map((i) => [x1 + (sx ? 1 : -1) * 8 * Math.sin(i * 1.7), WIN.h - i * WIN.h / 8])]), lit > .5 ? C.tealLight : C.tealDeep, { sh: .5 });
+      for (let j = 1; j < 3; j++) cut(rect(lerp(x0, x1, j / 3) - 3, 0, 6, WIN.h), lit > .5 ? C.teal : C.tealInk, { sh: 0, grain: 0, alpha: .5 }); } // folds
     if (inside) inside();
     g.restore();
     { const fr = shoePath(WIN.w, WIN.h, 30); fr.addPath(shoePath(WIN.w, WIN.h)); cut(fr, C.gold, { sh: .9, lift: .3, rule: 'evenodd' }); }
@@ -204,7 +230,8 @@ function tenWindow(c, r, lit, inside, front) {
 function galleBottle(fill) {
   const b = blob([[-80, 0], [-100, -100], [-90, -200], [-34, -260], [-28, -380], [28, -380], [34, -260], [90, -200], [100, -100], [80, 0]], .55);
   cut(b, C.tealLight, { sh: 1, lift: .5, alpha: .94 });
-  g.save(); g.clip(b); cut(rect(-110, lerp(10, -300, fill), 220, 420), C.teal, { sh: 0, grain: .3 }); g.restore();
+  g.save(); g.clip(b); const wl = lerp(10, -300, fill); cut(rect(-110, wl, 220, 420), C.teal, { sh: 0, grain: .3 });
+  cut(ellipse(0, wl, 110, 9), C.goldPale, { sh: 0, grain: 0, alpha: .75 }); g.restore(); // the waterline, rising
   borderBloom(0, -110, 46, 'iris', 1, 1); tendril([[0, -60], [-10, -20], [6, 0]], 10, C.tealDeep, { sh: 0, grain: 0 });
   cut(cutRect(-36, -402, 72, 26, 4), C.gold, { sh: .5 });
 }
@@ -218,9 +245,13 @@ const flare = (t, k) => t < k ? 0 : Math.exp(-3 * (t - k)) * .5;
 SHOT(37.7, 49.4, 'tenement', (t, k, d) => {
   const k1 = CLAPS[0], k2 = CLAPS[1];
   g.save();
-  const z = kf3(t, [[37.7, 2.6], [41.0, 2.75], [42.7, 2.75], [44.6, 1.4], [46.5, 1.46], [47.6, 1.0], [48.2, 1.02], [49.4, 1.25]]);
-  const cy = kf3(t, [[37.7, 1190], [42.7, 1190], [44.6, 1210], [46.5, 1210], [47.6, 1010], [48.2, 1000], [49.4, 380]]);
-  cam(540, cy, z);
+  let z = kf3(t, [[37.7, 2.6], [41.0, 2.75], [42.7, 2.75], [44.7, 1.16], [46.5, 1.2], [47.6, 1.0], [48.2, 1.02], [49.4, 1.25]]);
+  let cy = kf3(t, [[37.7, 1190], [42.7, 1190], [44.7, 1210], [46.5, 1210], [47.6, 1010], [48.2, 1000], [49.4, 380]]), cx = 540;
+  // draft 4: a punch onto the bottle on "bottle" (40.5), following it down onto the sill, then back for clap 1
+  { const pb = eio(clamp((t - 40.28) / .3)) * (1 - eio(clamp((t - 40.95) / .45))), st = ss(40.2, 40.7, t);
+    const bxw = WIN.xs[1] + WIN.k * lerp(430, 555, st), byw = WIN.ys[1] + WIN.k * (lerp(WIN.h - 230, WIN.h, st) - 190);
+    cx = lerp(cx, bxw, .8 * pb); cy = lerp(cy, byw, .8 * pb); z *= 1 + .2 * pb; }
+  cam(cx, cy, z);
   sheet(C.tealInk);
   // the moon-halo over the roofs; its lilies open on clap 1
   halo(540, 380, 200, t * .05, 1, [C.goldDeep, C.creamDeep, C.teal, C.gold]);
@@ -244,7 +275,7 @@ SHOT(37.7, 49.4, 'tenement', (t, k, d) => {
     const centre = c === 1 && r === 1;
     // the bottle: held up 37.7 to 40.4, set down on the sill by 40.9, the arm gone inside by 41.2
     const set = ss(40.2, 40.7, t), gone = ss(40.7, 41.0, t);
-    const bx = lerp(430, 500, set), by = lerp(WIN.h - 230, WIN.h, set), fill = ss(37.9, 40.6, t), lean = Math.sin(t * 2.2) * .03 * (1 - set);
+    const bx = lerp(430, 555, set), by = lerp(WIN.h - 230, WIN.h, set), fill = ss(37.9, 40.6, t), lean = Math.sin(t * 2.2) * .03 * (1 - set);
     tenWindow(c, r, lit, () => {
       if (centre && gone < 1) {
         // the arm: sleeve from behind the left jamb to the elbow on the sill, up to a gold cuff, the palm behind the bottle
@@ -275,14 +306,21 @@ SHOT(37.7, 49.4, 'tenement', (t, k, d) => {
 
 // clap 3 (50.033): a ring of six pairs grows out from under the halo, clapping as one; then peacock
 // feathers open in the gaps and the ring turns on without them
+// where the ring shot's camera ends: its halo (540, 960, r 250) on the upper-left third; the crowd shot opens on it
+const RING_END = { cx: 688, cy: 1300, z: 1.08 };
 SHOT(49.4, 53.5, 'ring', (t, k, d) => {
   const kk = CLAPS[2], rot = -Math.PI / 2 + t * .05;
   // warmer ground; the feathers spring open in two waves on the beats while the camera tilts the halo up into
   // the top third, so the crowd rises into a fresh frame (draft 3)
-  g.save(); cam(540, kf3(t, [[51.0, 960], [53.4, 1300]]), lerp(1.0, 1.08, eio(k)));
+  // draft 4: after the clap the halo drifts up onto the upper-left third (the crowd shot opens there and swings it back
+  // to the centre for clap 4); the feathers open one per beat; the quills are bright gold and thin (the audit: the
+  // muddy brown rays read as sticks and roots)
+  const dr = eio(clamp((t - 51.0) / 2.4));
+  g.save(); cam(lerp(540, RING_END.cx, dr), lerp(960, RING_END.cy, dr), lerp(1.0, RING_END.z, eio(k)));
   sheet(C.plum);
-  rays(540, 960, 220, 1400, 28, -t * .02, C.goldDeep, .55);
-  for (let i = 0; i < 6; i++) { const fan = back(clamp((t - kk - (i % 2 ? .72 : .2)) / .9)); if (fan > 0) feather(540, 960, rot + (i + .5) / 6 * TAU, lerp(240, 560, fan), fan); }
+  rays(540, 960, 260, 900, 17, -t * .02, C.gold); // an odd count, so no two quills mirror into a teardrop under the halo
+  const fb = beatClock.beats.findIndex((b) => b >= kk + .2);
+  for (let j = 0; j < 6; j++) { const i = [0, 3, 1, 4, 2, 5][j], t0 = fb >= 0 ? beatClock.beats[fb + j] : kk + .2 + j * .52, fan = back(clamp((t - t0) / .55)); if (fan > 0) feather(540, 960, rot + (i + .5) / 6 * TAU, lerp(240, 560, fan), fan); }
   for (let i = 0; i < 6; i++) {
     const a = rot + i / 6 * TAU, [sl, cf] = PEOPLE[i];
     g.save(); g.translate(540 + Math.cos(a) * 285, 960 + Math.sin(a) * 285); g.rotate(a + Math.PI / 2);
@@ -305,32 +343,69 @@ const CROWD = (() => { const out = []; let n = 0;
     out.push({ a: deg * Math.PI / 180, r, sc, p: PEOPLE[n % PEOPLE.length], j: r > 400 ? (hash(n) - .5) * .03 : 0, pre: .55 + hash(n * 7) * .3 }); n++;
   }
   return out; })();
+// the creature's arms after the clap (draft 4): as the hands sink back, each sleeve stays and sweeps out along the
+// moon-head's rim like Mucha hair, the tips curling at the frame's edges, so the body keeps its arms round its head
+// (critic A: with the arms gone the body read as a prize rosette). Long and uneven on purpose: short symmetric
+// curls by the neck read as an urn's handles
+const CROWD_HEAD = { x: 540, y: 760, R: 600 };
+function cradleArm(h, j, u) {
+  if (u <= 0) return;
+  const sx = Math.cos(h.a) < 0 ? -1 : 1, f = clamp(Math.abs(h.a + Math.PI / 2) / 1.25), lane = (j * 7) % 5;
+  const S = [BODY.x + Math.cos(h.a) * 150, BODY.y + Math.sin(h.a) * 150];
+  const rr = CROWD_HEAD.R - 10 - lane * 34, a0 = Math.PI / 2 - sx * (.12 + .1 * f), a1 = Math.PI / 2 - sx * (.62 + .5 * f + .08 * lane);
+  const pts = [S, [lerp(S[0], CROWD_HEAD.x + Math.cos(a0) * rr, .55), lerp(S[1], CROWD_HEAD.y + Math.sin(a0) * rr, .7) + 30]];
+  for (let i = 0; i <= 14; i++) { const a = lerp(a0, a1, i / 14); pts.push([CROWD_HEAD.x + Math.cos(a) * rr, CROWD_HEAD.y + Math.sin(a) * rr]); }
+  // the tip lifts off the rim and curls back toward the head
+  let [x, y] = pts[pts.length - 1], dir = Math.atan2(y - pts[pts.length - 2][1], x - pts[pts.length - 2][0]), r = 34;
+  for (let i = 0; i < 18; i++) { dir += (sx > 0 ? -1 : 1) * .34; r *= .93; x += Math.cos(dir) * r * .5; y += Math.sin(dir) * r * .5; pts.push([x, y]); }
+  const v = grow(smoothPts(pts), u), w = h.sc * .46;
+  tendril(v, w, h.p[0], { sh: .8, lift: .4 });
+  tendril(v.map(([px, py]) => [px, py - w * .2]), w * .14, h.p[1], { sh: 0, grain: 0, alpha: .85 }); // a cuff-coloured edge
+}
+// a polyline smoothed by corner cutting (twice)
+function smoothPts(pts) { let p = pts; for (let r = 0; r < 2; r++) { const q = [p[0]]; for (let i = 0; i < p.length - 1; i++) { const [ax, ay] = p[i], [bx, by] = p[i + 1]; q.push([ax * .75 + bx * .25, ay * .75 + by * .25], [ax * .25 + bx * .75, ay * .25 + by * .75]); } q.push(p[p.length - 1]); p = q; } return p; }
 function crowdBody(t) {
   const torso = blob([[BODY.x - 360, 2100], [BODY.x - 380, BODY.y + 160], [BODY.x - 250, BODY.y - 20], [BODY.x, BODY.y - 70], [BODY.x + 250, BODY.y - 20], [BODY.x + 380, BODY.y + 160], [BODY.x + 360, 2100]], .5);
   cut(torso, C.plum, { sh: 1.1, lift: .6 });
   g.save(); g.clip(torso);
   PEOPLE.forEach(([col], i) => cut(poly([[BODY.x - 420 + i * 140, BODY.y - 120], [BODY.x - 280 + i * 140, BODY.y - 120], [BODY.x - 300 + i * 140, 2200], [BODY.x - 440 + i * 140, 2200]]), col, { sh: .4, grain: .3 }));
   g.restore();
-  cut(scallop(BODY.x, BODY.y - 40, 130, 14, .1), C.gold, { sh: .7, lift: .3 });
-  cut(circle(BODY.x, BODY.y - 40, 92), C.plum, { sh: .3 });
+  // a Mucha collar (draft 4): a crescent of gold petals lying round the neck, open where the neck rises (a full
+  // scalloped disc with a plum centre read as a rosette)
+  const cx = BODY.x, cy = BODY.y - 30, band = new Path2D();
+  band.ellipse(cx, cy, 190, 120, 0, -.15, Math.PI + .15); band.ellipse(cx, cy - 6, 104, 64, 0, Math.PI + .15, -.15, true); band.closePath();
+  cut(band, C.gold, { sh: .8, lift: .3 });
+  for (let i = 0; i < 11; i++) { const a = Math.PI * (.05 + .9 * i / 10), bx = cx + Math.cos(a) * 150, by = cy + Math.sin(a) * 94;
+    cut(circle(bx, by, 15), i % 2 ? C.goldPale : C.cream, { sh: .5, grain: .1 });
+    if (i % 2 === 0) { cut(ellipse(bx + Math.cos(a) * 34, by + Math.sin(a) * 30, 11, 15, a - Math.PI / 2), C.gold, { sh: 0, grain: 0 }); } } // a strand of pearls with gold drops
 }
+// the push's night palette (draft 4): the crowd halo turns to lamplight gold as it bursts, and the moon stays the one
+// bright thing, so the push is a lamp in the night (the audit: luma 155-159, brighter than early dawn). Its size and
+// place at the cut into the storm are unchanged.
+const HALO_NIGHT = [C.goldDeep, C.plum, C.tealDeep, C.goldDeep];
 SHOT(53.5, 56.88, 'everyone', (t, k, d) => {
   const kk = CLAPS[3], burst = back(clamp((t - kk) / .9));
-  // opens with its halo where the ring's ended (top third, r 270), settles; the night stays night (draft 3: no
-  // daylight sky, no rays), the light comes from the halo-head
-  g.save(); cam(540, kf3(t, [[53.5, 1208.6], [54.05, 900]]), kf3(t, [[53.5, .818], [54.05, 1.0], [55.2, 1.0], [56.88, 1.16]]));
+  // opens with its halo where the ring's ended (upper-left third, r 270), swings it to the centre for the clap; the
+  // night stays night (no daylight sky, no rays), the light comes from the halo-head
+  const z = kf3(t, [[53.5, .818], [54.05, 1.0], [55.2, 1.0], [56.88, 1.16]]);
+  const ox = 540 + (540 - RING_END.cx) * RING_END.z, oy = 960 + (960 - RING_END.cy) * RING_END.z; // the ring halo on screen at its end
+  g.save(); cam(kf3(t, [[53.5, 540 - (ox - 540) / .818], [54.05, 540]]), kf3(t, [[53.5, 760 - (oy - 960) / .818], [54.05, 900]]), z);
   sheet(C.tealInk);
-  glow(540, 760, 1100, '250,215,140', .3 + .45 * ss(kk - .05, kk + .3, t) * (1 - .4 * ss(kk + .5, kk + 2.5, t)));
+  glow(540, 760, 1100, '250,215,140', .06 + .14 * ss(kk - .05, kk + .3, t) * (1 - .6 * ss(kk + .5, kk + 2.0, t)));
   for (const sx of [-1, 1]) for (let j = 0; j < 2; j++) {
     const v = whipPts([540 + sx * 600, 1300 + j * 160], [540 + sx * 300, 1440 - j * 80], [540 + sx * 60, 1120], [540 + sx * 220, 980 - j * 60], 50 - j * 14, -sx);
-    tendril(grow(v, ss(kk, kk + 1.6 + j * .4, t)), 26 - j * 8, j ? C.goldPale : C.gold);
+    tendril(grow(v, ss(kk, kk + 1.6 + j * .4, t)), 26 - j * 8, j ? C.gold : C.goldDeep);
   }
   cut(poly([[BODY.x - 80, BODY.y + 40], [BODY.x - 70, 760], [BODY.x + 70, 760], [BODY.x + 80, BODY.y + 40]]), C.plum, { sh: .8, lift: .3 }); // the creature's neck
-  const HR = lerp(330, 600, burst);
-  halo(540, 760, HR, t * .05, 1, undefined, 'lace'); // ...and the halo is its head, a moon inside
-  haloMoon(540, 760, HR * .42);
-  for (let i = 0; i < 12; i++) { const a = i / 12 * TAU - t * .05; lily(540 + Math.cos(a) * 640, 760 + Math.sin(a) * 640, a, 110, back(clamp((t - kk - i * .05) / .7)), [C.cream, C.goldPale]); }
-  // the arms rise out of the one body, each rooted in its shoulders, then sink back into it
+  const HR = lerp(330, CROWD_HEAD.R, burst);
+  halo(540, 760, HR, t * .05, 1, t < kk + .08 ? undefined : HALO_NIGHT, 'lace'); // ...and the halo is its head, a moon inside
+  // the moon in the head: haloMoon's paper with a softer glow after the burst (its full glow lit the whole frame);
+  // the moon swells into its storm size over the push (it reaches it 1 s before the cut, so the hand-off is unchanged)
+  { const r = .42 * lerp(330, CROWD_HEAD.R, ss(kk, 55.85, t)) * (t < kk ? HR / 330 : 1), gk = lerp(.35, .12, ss(kk, kk + .6, t)); glow(540, 760, r * 2.4, '250,230,180', gk); cut(circle(540, 760, r), C.cream, { sh: .4, grain: .3 }); cut(crescent(540 + r * .1, 760, r * .96, .82, .3), C.goldPale, { sh: 0, grain: .2, alpha: .7 }); }
+  for (let i = 0; i < 12; i++) { const a = i / 12 * TAU - t * .05; lily(540 + Math.cos(a) * 640, 760 + Math.sin(a) * 640, a, 110, back(clamp((t - kk - i * .05) / .7)), [C.gold, C.goldDeep]); }
+  // the arms rise out of the one body, each rooted in its shoulders; after the clap the hands sink back into it and
+  // the sleeves stay, curling up round the head
+  CROWD.forEach((h, j) => cradleArm(h, j, ss(kk + .45 + j * .03, kk + 1.25 + j * .03, t)));
   for (const h of CROWD) {
     g.save(); g.translate(BODY.x + Math.cos(h.a) * h.r, BODY.y + Math.sin(h.a) * h.r); g.rotate(h.a + Math.PI / 2);
     visitClap(t, 0, 0, h.sc, kk + h.j, { dy: h.r * .6, pre: h.pre, post: 1.5, sleeveCol: h.p[0], cuffCol: h.p[1], L: { root: [-28, h.r - 150] }, R: { root: [28, h.r - 150] } });
