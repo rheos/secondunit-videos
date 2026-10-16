@@ -91,3 +91,28 @@ Already in the code for draft 4 (checked on short local renders in `out/peacock/
 the sung onset (86.958, 189.042, 193.042); the theatre roundel sinks into the dark after the shadow play; a lighter,
 slower gold wash at the furnace match cut (confirm with the full-film flash check). Draft 4 renders through
 `tools/cloud-render/cloud-render.sh --draft --tall` (PR #159 merged), not on the Mac.
+
+### Draft 4: scope decided, build paused (2026-10-16)
+
+Robin chose ALL THREE passes from AUDIT-d3.md: the patch pass, the layout rethink, and Gilliam's top 5 plus the
+helmet-and-banknote pair (6A + 9A). Render through `tools/cloud-render/cloud-render.sh --draft --tall`. He paused
+before the build started; nothing beyond commit 5f888f1 is in the code.
+
+Planned build: parallel builder agents in the main checkout, one per file group, none touching another's files, no
+commits or full renders by builders (contact sheets only, `node check-peacock.mjs <out.jpg> t1 t2 ...`, song time):
+1. shared: `nouveau.js` (border tesserae ordered between gold rules, stems 8-10 px, shoulder blooms on choruses;
+   `rays()` at full opacity in gold, not muddy goldDeep) and a new `calyxHand()` that both the Metro and the sun-hand use.
+2. 0:00-0:46 `s00-intro.js`, `shots.js`: Metro calyx hands opening on the flicker, motion hook, Guimard arch and
+   cartouche, bud glow, calyx lantern, horseshoe framing, keyhole windows, clap 2 framing, crowd arms, halo luma <=130.
+3. 0:46-1:19 `s03-verse2.js`, `s04-engine.js`: the 0:55.9 flash and pink wash, window "V", bolts, rowboat, heron,
+   furnace layout, always-another-millionaire (Gilliam 4A), engine clap setups with the machine in view, clap 3
+   regression, the governor (5A), Horta stair.
+4. 1:19-1:58 `s05-avenue.js`, `s06-clock.js`, `props.js`: pistol, helmet, footprints, helmet swallows the note (6A),
+   clock shine, cold wash, drift to a third, hands not meeting early, the clock weight on "time" (7A), street clock,
+   rowboat read, twelve-clap framing, zodiac glyphs.
+5. 1:58-2:12 `s07-stars.js`: Milky Way hands, chorus framing, constellation hands, the moon's pips become stars (8A).
+6. 2:12-2:34 `s08-theatre.js`: dog, spill light, chair, seat, plume, jeans contrast, helmet spits the note (9A).
+7. 2:34-3:06 `s09-dawn.js`, `s10-letgo.js`: grinning town, sun inside the arch, sweep, boat pop and rim, horseshoe,
+   heron, sun on a third, sunflower corona, climax sky gold, last pair size, calyx sun-hand, hand-bird <=40%, ring
+   round the sun, the bowler flies off as a bird (11A).
+Then: review every section on sheets, cloud render, scan + flash check + before/after vs draft 3, upload unlisted.
