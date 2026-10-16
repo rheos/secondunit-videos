@@ -1,0 +1,105 @@
+{
+  "name": "Joel Nakamura",
+  "updated": "2026-10-13",
+  "sources": {
+    "official": {
+      "title": "Official biography",
+      "url": "https://www.joelnakamura.com/about-joel"
+    },
+    "publication": {
+      "title": "Artist portfolio: Art for Publication",
+      "url": "https://www.joelnakamura.com/art-for-publication"
+    },
+    "neo-folk": {
+      "title": "Artist portfolio: Neo-Folk Primitive",
+      "url": "https://www.joelnakamura.com/neo-folk-primitive"
+    },
+    "nikkei": {
+      "title": "Mia Nakaji Monnier, Discover Nikkei, June 22, 2010",
+      "url": "https://discovernikkei.org/en/journal/2010/6/22/joel-nakamura/"
+    },
+    "nature": {
+      "title": "Maggie Macnab, Design by Nature, publisher excerpt, copyright 2012; printed pp. 12–13",
+      "url": "https://ptgmedia.pearsoncmg.com/imprint_downloads/peachpit/peachpit/samplechapters/0321747763/0321747763_designByNature_01rev.pdf",
+      "local": "sources/design-by-nature-excerpt.pdf#page=11"
+    },
+    "pbs": {
+      "title": "New Mexico PBS, ¡COLORES! artist profile",
+      "url": "https://www.newmexicopbs.org/productions/colores/nakamura-joel/"
+    },
+    "latimes": {
+      "title": "Los Angeles Times, February 24, 1985",
+      "url": "https://www.latimes.com/archives/la-xpm-1985-02-24-ga-24879-story.html"
+    },
+    "books": {
+      "title": "Official books page",
+      "url": "https://www.joelnakamura.com/books"
+    },
+    "southwest": {
+      "title": "Southwest Art, Contemporary Perspectives, 2005 profile",
+      "url": "https://www.southwestart.com/articles-interviews/feature-articles/contemporary_eye"
+    },
+    "prints": {
+      "title": "Artist print catalogue",
+      "url": "https://joel-nakamura.pixels.com/art"
+    }
+  },
+  "sections": [
+    {
+      "title": "Life and career",
+      "facts": [
+        {
+          "text": "Nakamura was born in Los Angeles, graduated from ArtCenter College of Design in Pasadena, and later taught there. An exact birth date is not established in this profile.",
+          "source_id": "pbs"
+        },
+        {
+          "text": "He grew up in Whittier and later moved to Santa Fe. The 2010 profile identifies him as a third-generation Japanese American and connects his cultural interests to his family’s experience of assimilation.",
+          "source_id": "nikkei"
+        },
+        {
+          "text": "By 1985, he was teaching at ArtCenter and producing commercial illustrations for Atari and Epson.",
+          "source_id": "latimes"
+        },
+        {
+          "text": "His official biography places him in Santa Fe and describes a practice spanning commercial illustration and gallery work. It lists Time, U.S. News & World Report, the Los Angeles Times, and the 2002 Winter Olympic ceremony programs among his commissions.",
+          "source_id": "official"
+        },
+        {
+          "text": "His books include Go West, I Dreamed I Was a Dog, and Imaginary Creatures. The books page describes interconnected creatures and dream journeys as subjects of the work.",
+          "source_id": "books"
+        }
+      ]
+    },
+    {
+      "title": "Materials and cultural context",
+      "facts": [
+        {
+          "text": "The 2010 interview describes polymer painting on tin and discusses Southwestern retablos, petroglyphs, mythology, Japanese popular culture, and his interest in reconnecting with Japanese traditions. These are specific influences, not a single interchangeable cultural style.",
+          "source_id": "nikkei"
+        },
+        {
+          "text": "The portfolio also records acrylic on canvas and work on hand-tooled panels. The medium should be established separately for each piece.",
+          "source_id": "neo-folk"
+        }
+      ]
+    },
+    {
+      "title": "What he says about developing an image",
+      "facts": [
+        {
+          "text": "In the 2010 interview, he says: “I like to begin with a story to build around.”",
+          "source_id": "nikkei"
+        },
+        {
+          "text": "In his Design by Nature contribution, he recalls museum visits with his art-educator parents and an early encounter with Hieronymus Bosch. He describes surrounding himself with books and reference material until a concept forms, and broadening what he shows clients to include his sketches and doodles. Painting, he says, is a sustained process.",
+          "source_id": "nature"
+        }
+      ]
+    }
+  ],
+  "limits": [
+    "The source dates identify when accounts were published; they are not artwork creation dates.",
+    "Specific symbol meanings in the director’s guide are interpretations unless the artist’s own portfolio or statement supplies them.",
+    "This profile does not turn past ownership, sale availability, or family details into current claims."
+  ]
+}

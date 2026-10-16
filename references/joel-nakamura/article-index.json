@@ -1,0 +1,198 @@
+{
+  "artist": "Joel Nakamura",
+  "updated": "2026-10-13",
+  "scope": "Seven visually checked article/image pairings plus one publisher-credited article without a recovered image. Editorial use and credit are verified; original commissioning contracts or reuse arrangements are not.",
+  "articles": [
+    {
+      "id": "A01",
+      "title": "A Short Course in Maintenance",
+      "publication": "Mix",
+      "date": "October 1993",
+      "author": "Mel Lambert",
+      "pdf": "sources/articles/mix-1993-10.pdf",
+      "pdf_url": "https://www.worldradiohistory.com/Archive-All-Audio/Mix-Magazine/90s/93/Mix-1993-10.pdf",
+      "pdf_pages": [
+        150,
+        151
+      ],
+      "printed_pages": "148–149 (opening spread)",
+      "article_url": null,
+      "article_summary": "Practical advice on preventive care and troubleshooting for recording equipment.",
+      "observed_forms": "A human figure has a mixing console for a head, holds tools, and stands among cables and repair implements within a red framed panel.",
+      "interpretation": "The studio becomes a body that can be cared for. Making the console the head also joins technical equipment to the person responsible for it.",
+      "directing_lesson": "Fuse the subject with its caretaker. Let specific working tools anchor the metaphor in the article’s practical task.",
+      "verification_note": "Illustrator credit and article opening verified in the scanned issue; image inspected.",
+      "images": [
+        "articles/mix-1993-10-p150.jpg",
+        "articles/mix-1993-10-p151.jpg"
+      ],
+      "interpretation_status": "Our visual reading, not a statement of the artist’s documented intention."
+    },
+    {
+      "id": "A02",
+      "title": "The Natives Are Restless",
+      "publication": "Electronic Musician",
+      "date": "March 1996",
+      "author": "Jim Miller",
+      "pdf": "sources/articles/em-1996-03.pdf",
+      "pdf_url": "https://www.worldradiohistory.com/Archive-All-Music/Electronic-Musician/1996/Electronic-Musician-1996-03.pdf",
+      "pdf_pages": [
+        78,
+        79
+      ],
+      "printed_pages": "78–79 (opening spread)",
+      "article_url": null,
+      "article_summary": "A comparison of how samplers import sounds and settings from other manufacturers’ instruments.",
+      "observed_forms": "A patterned creature has a curling piano keyboard passing into its head; a separate eye-like form, skull, and bone shapes surround it.",
+      "interpretation": "The creature turns an electronic instrument into a being with anatomy. The restless pose echoes the headline; the keyboard keeps the technical subject recognizable. The skull’s precise intended meaning is unresolved.",
+      "directing_lesson": "Give a technical system anatomy and behavior, but keep one unmistakable functional feature. Avoid assigning a meaning to every ornament.",
+      "verification_note": "Illustrator credit and article opening verified in the scanned issue; image inspected.",
+      "images": [
+        "articles/em-1996-03-p78.jpg",
+        "articles/em-1996-03-p79.jpg"
+      ],
+      "interpretation_status": "Our visual reading, not a statement of the artist’s documented intention."
+    },
+    {
+      "id": "A03",
+      "title": "All the World’s a Stage",
+      "publication": "Electronic Musician",
+      "date": "November 1999",
+      "author": "Karen Stackpole",
+      "pdf": "sources/articles/em-1999-11.pdf",
+      "pdf_url": "https://www.worldradiohistory.com/Archive-All-Music/Electronic-Musician/1999/Electronic-Musician-1999-11.pdf",
+      "pdf_pages": [
+        76,
+        77
+      ],
+      "printed_pages": "76–77 (opening spread)",
+      "article_url": null,
+      "article_summary": "A guide to microphone placement for live percussion from several musical traditions.",
+      "observed_forms": "A blue elephant-headed figure has many arms holding percussion instruments and implements. Several circular forms surround its body and crown.",
+      "interpretation": "The many arms gather a varied percussion setup into one performer. The elephant-headed form appears to draw on Ganesha imagery, but the article does not explain that reference or establish a meaning for each object.",
+      "directing_lesson": "Multiply a character’s useful parts to express coordination or range. Research culturally specific references before reusing them.",
+      "verification_note": "Illustrator credit and article opening verified in the scanned issue; image inspected.",
+      "images": [
+        "articles/em-1999-11-p76.jpg",
+        "articles/em-1999-11-p77.jpg"
+      ],
+      "interpretation_status": "Our visual reading, not a statement of the artist’s documented intention."
+    },
+    {
+      "id": "A04",
+      "title": "See the Pyramids: A Long Denial",
+      "publication": "Mix — The Fast Lane",
+      "date": "June 2001",
+      "author": "Stephen St. Croix",
+      "pdf": "sources/articles/mix-2001-06.pdf",
+      "pdf_url": "https://www.worldradiohistory.com/Archive-All-Audio/Mix-Magazine/00s/2001/Mix-2001-06.pdf",
+      "pdf_pages": [
+        16,
+        18
+      ],
+      "printed_pages": "14, 16 (continues on 212)",
+      "article_url": null,
+      "article_summary": "A column arguing for sound foundations, advance planning, and expert help in studio design and other projects.",
+      "observed_forms": "A bird-human figure occupies an upright triangular panel; an inverted dark triangle appears inside a bright disk above its head.",
+      "interpretation": "The illustration takes the author’s pyramid metaphor literally. Upright framing and the smaller inverted triangle make stability and inversion visible within the same image.",
+      "directing_lesson": "Find the article’s own governing metaphor, then build the composition around its physical rule.",
+      "verification_note": "Illustrator credit and article opening verified in the scanned issue; image inspected.",
+      "images": [
+        "articles/mix-2001-06-p16.jpg",
+        "articles/mix-2001-06-p18.jpg"
+      ],
+      "interpretation_status": "Our visual reading, not a statement of the artist’s documented intention."
+    },
+    {
+      "id": "A05",
+      "title": "Finding Sleep: An Insomniac Learns to Let Go",
+      "publication": "Spirituality & Health",
+      "date": "March–April 2009",
+      "author": "Edward Readicker-Henderson",
+      "pdf": "sources/articles/spirituality-health-2009-03.pdf",
+      "pdf_url": "https://storage.googleapis.com/spirituality-health/files/Issues/SH_MarApr_2009.pdf",
+      "pdf_pages": [
+        59,
+        60
+      ],
+      "printed_pages": "58–59",
+      "article_url": null,
+      "article_summary": "A personal essay about insomnia, worry, and learning to relinquish vigilance at night.",
+      "observed_forms": "A blue figure rests its head on a pillow; a yellow crescent sits inside its torso. Faces, eyes, brain silhouettes, stars, and tiny marks fill the surrounding panel. Related small symbols appear among the article’s text.",
+      "interpretation": "The quiet body sits inside a busy mental environment. The moon is brought inside the body, making night and the desired state of rest internal experiences as well as a setting.",
+      "directing_lesson": "Put the subject’s inner condition inside the body; use the surrounding field to stage pressure or competing thoughts. Repeat selected motifs as smaller editorial accents.",
+      "verification_note": "Illustrator credit and article opening verified in the scanned issue; image inspected.",
+      "images": [
+        "articles/spirituality-health-2009-03-p59.jpg",
+        "articles/spirituality-health-2009-03-p60.jpg"
+      ],
+      "interpretation_status": "Our visual reading, not a statement of the artist’s documented intention."
+    },
+    {
+      "id": "A06",
+      "title": "Rethinking: The New Science of Thriving",
+      "publication": "Johns Hopkins Public Health / Hopkins Bloomberg Public Health",
+      "date": "Spring 2016; web publication December 18, 2015",
+      "author": "Christina Bethell",
+      "pdf": "sources/articles/jhu-spring-2016.pdf",
+      "pdf_url": "https://www.case.org/system/files/media/file/JohnsHopkins_AwdNomineeDocs_JHPH%20Spring%202016%20SMALL.pdf",
+      "pdf_pages": [
+        11,
+        12
+      ],
+      "printed_pages": "18–21",
+      "article_url": "https://magazine.publichealth.jhu.edu/2016/rethinking-the-new-science-of-thriving",
+      "article_summary": "The author argues that public health should address childhood adversity and support resilience, relationships, and mindfulness.",
+      "observed_forms": "A large blue profile divides a crowded orange field of figures and jagged marks from calm grey lines. A second image places a small seated figure inside a blue vessel-like opening amid a larger environment.",
+      "interpretation": "Color, density, and the profile boundary make contrasting mental states visible. Nesting the small figure suggests an interior place of attention. This is an interpretation of the illustration, not an endorsement or evaluation of the article’s health claims.",
+      "directing_lesson": "Let spatial organization carry the argument: pressure on one side, space on the other, and a person forming the boundary.",
+      "verification_note": "Illustrator credit and article opening verified in the scanned issue; image inspected.",
+      "images": [
+        "articles/jhu-spring-2016-p11.jpg",
+        "articles/jhu-spring-2016-p12.jpg"
+      ],
+      "interpretation_status": "Our visual reading, not a statement of the artist’s documented intention."
+    },
+    {
+      "id": "A07",
+      "title": "The Sense of Place",
+      "publication": "New Mexico Magazine",
+      "date": "November 3, 2015; updated December 7, 2021",
+      "author": "John Muller",
+      "pdf": null,
+      "pdf_url": null,
+      "pdf_pages": [],
+      "printed_pages": "Print pagination not established",
+      "article_url": "https://www.newmexicomagazine.org/blog/post/the-sense-of-place-94026/",
+      "article_summary": "A newcomer describes Santa Fe through smells, seasons, food, and the memories they evoke.",
+      "observed_forms": "The publisher’s header image shows a reclining figure on a cloud beneath a field of food imagery; a landscape and fire appear below.",
+      "interpretation": "The dream scene makes sensory memory visible as an environment around a person. The publisher image filename says “Dream of the Feast”; that is retained as an asset label, not a verified original commission title.",
+      "directing_lesson": "Turn an invisible sensory experience into a surrounding scene. Let familiar objects make the abstract experience legible.",
+      "verification_note": "Publisher page explicitly credits Joel Nakamura; the displayed header image was downloaded and inspected. Whether this was newly commissioned or reused art is not established.",
+      "images": [
+        "articles/new-mexico-sense-of-place.jpg"
+      ],
+      "interpretation_status": "Our visual reading, not a statement of the artist’s documented intention.",
+      "image_source_url": "https://assets.simpleviewinc.com/simpleview/image/upload/c_fill%2Ch_430%2Cq_75%2Cw_640/v1/clients/newmexico/Nakamura_Dream_of_the_Feast_Main_e979c02e-7e25-4fb5-bb8d-b71eae5e5356.jpg"
+    },
+    {
+      "id": "A08",
+      "title": "After the Famine",
+      "publication": "Hopkins Bloomberg Public Health",
+      "date": "Winter 2014 — Special Issue on Food; web publication February 18, 2014",
+      "author": "Keith West",
+      "pdf": null,
+      "pdf_url": null,
+      "pdf_pages": [],
+      "printed_pages": "Not yet established",
+      "article_url": "https://magazine.publichealth.jhu.edu/2014/after-the-famine",
+      "article_summary": "A nutrition researcher reflects on the Bangladesh famine and the small donation that led to a lasting commitment to work there.",
+      "observed_forms": null,
+      "interpretation": null,
+      "directing_lesson": null,
+      "verification_note": "Publisher search-indexed article explicitly credits illustration to Joel Nakamura. The page’s illustration has not been recovered; no existing collection image has been assigned to it.",
+      "images": [],
+      "interpretation_status": "Our visual reading, not a statement of the artist’s documented intention."
+    }
+  ]
+}
