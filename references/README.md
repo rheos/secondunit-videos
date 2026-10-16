@@ -11,7 +11,7 @@ video stays in its own look unless Robin asks for the profile's surface too.
 
 | Profile | Calls on | Start with | Used in |
 |---|---|---|---|
-| [Mark Von Ulrich](mark-von-ulrich/) | Symbolic construction: give the idea a body (giant ear = listening, person built from their tools, one face compared across structures). Visually: early colour Mac raster, 256-colour system palette, ordered dither. | `AGENT-DIRECTION.txt` (symbolic pass); add `STYLE-BRIEF.txt` only for the raster look | Travel Agent draft 6 (`bobwiseman-travel-agent/MVU-DIRECTION.md`) |
+| [Mark Von Ulrich](mark-von-ulrich/) | Symbolic construction: give the idea a body (giant ear = listening, person built from their tools, one face compared across structures). Visually: early colour Mac raster, 256-colour system palette, ordered dither. | `AGENT-DIRECTION.txt` (symbolic pass); add `STYLE-BRIEF.txt` only for the raster look | Travel Agent draft 6 (`bobwiseman-travel-agent/MVU-DIRECTION.md`); Clap Hands peacock draft 2, thinking only, whole film (`gemmaluna-clap-hands/MVU-DIRECTION.md`) |
 
 ## Calling on a profile
 
