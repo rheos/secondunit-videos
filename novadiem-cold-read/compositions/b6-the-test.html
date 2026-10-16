@@ -1,0 +1,102 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #b6 {
+          position: absolute;
+          inset: 0;
+        }
+      </style>
+      <div id="b6" data-composition-id="b6" data-width="1920" data-height="1080">
+        <div id="b6-all" class="layer">
+          <svg class="full" viewBox="0 0 1920 1080">
+            <!-- the cartouche the question is carved into -->
+            <rect id="b6-cart-outer" class="ln ink" x="260" y="190" width="1400" height="210" />
+            <rect id="b6-cart-inner" class="ln thin ink" x="272" y="202" width="1376" height="186" />
+
+            <!-- the decision -->
+            <path id="b6-trunk" class="ln ink" d="M960 400V470" />
+            <path id="b6-branch-l" class="ln ink" d="M960 470H560" />
+            <path id="b6-branch-r" class="ln ink" d="M960 470H1360" />
+            <path id="b6-drop-l" class="ln ink" d="M560 470V540" />
+            <path id="b6-drop-r" class="ln ink" d="M1360 470V540" />
+            <text id="b6-yes" class="mono" x="544" y="512" text-anchor="end">YES</text>
+            <text id="b6-no" class="mono" x="1376" y="512">NO</text>
+
+            <rect id="b6-box-l" class="ln ink" x="360" y="540" width="400" height="140" />
+            <path id="b6-glyph-l" class="ln gold" d="M545 568H575V598H545ZM539 562H581V604H539Z" />
+            <text id="b6-box-l-text" class="mono" x="560" y="642" text-anchor="middle">BRING THE BUREAU</text>
+            <text id="b6-box-l-note" class="mono small" x="560" y="716" text-anchor="middle" opacity="0.75">COLD REVIEW · CHECKPOINTS</text>
+
+            <rect id="b6-box-r" class="ln ink" x="1160" y="540" width="400" height="140" />
+            <rect id="b6-box-r-2" class="ln thin gold" x="1168" y="548" width="384" height="124" />
+            <path id="b6-glyph-r" class="ln gold" d="M1340 583H1380M1370 573L1380 583L1370 593" />
+            <text id="b6-box-r-text" class="mono" x="1360" y="642" text-anchor="middle">SHIP IT</text>
+            <text id="b6-box-r-note" class="mono small" x="1360" y="716" text-anchor="middle" opacity="0.75">THE USUAL CHECKS</text>
+          </svg>
+          <div id="b6-label-l" class="plate-label left">Plate VI</div>
+          <div id="b6-label-r" class="plate-label right">The Test</div>
+          <div id="b6-ins" class="inscription" style="top: 226px"></div>
+          <div class="statement">
+            <span id="b6-st-a" class="phrase">No:</span>
+            <span id="b6-st-b" class="phrase red">just ship.</span>
+          </div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { kit } = window.CR;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 70.08);
+
+          const QUESTION = "Does this diff write durable state, move money, gate access, or fire something irreversible?";
+          const ins = K.$("b6-ins");
+          const words = QUESTION.split(" ").map((w) => {
+            const s = document.createElement("span");
+            s.className = "w";
+            s.textContent = w;
+            ins.appendChild(s);
+            return s;
+          });
+
+          K.fade(K.$("b6-label-l"), 0.05, 0.4);
+          K.fade(K.$("b6-label-r"), 0.05, 0.4);
+          K.draw(K.$("b6-cart-outer"), K.T(70.68), 1.1, "none");
+          K.draw(K.$("b6-cart-inner"), K.T(70.68) + 0.4, 1.0, "none");
+          // carved word by word
+          words.forEach((w, i) => K.fade(w, K.T(71.31) + i * 0.17, 0.3));
+
+          K.draw(K.$("b6-trunk"), K.T(75.07), 0.4);
+          K.draw(K.$("b6-branch-l"), K.T(75.7), 0.6);
+          K.draw(K.$("b6-branch-r"), K.T(75.7), 0.6);
+          K.draw(K.$("b6-drop-l"), K.T(76.32), 0.35);
+          K.draw(K.$("b6-drop-r"), K.T(76.32), 0.35);
+          K.fade(K.$("b6-yes"), K.T(76.32) + 0.3, 0.3);
+          K.fade(K.$("b6-no"), K.T(76.32) + 0.3, 0.3);
+          K.draw(K.$("b6-box-l"), K.T(76.95), 0.8, "none");
+          K.draw(K.$("b6-box-r"), K.T(76.95) + 0.15, 0.8, "none");
+          K.draw(K.$("b6-glyph-l"), K.T(77.58), 0.5);
+          K.draw(K.$("b6-glyph-r"), K.T(77.58), 0.4);
+          K.fade(K.$("b6-box-l-text"), K.T(77.58) + 0.3, 0.4);
+          K.fade(K.$("b6-box-r-text"), K.T(77.58) + 0.3, 0.4);
+          K.fade(K.$("b6-box-l-note"), K.T(78.2), 0.4, 0.75);
+          K.fade(K.$("b6-box-r-note"), K.T(78.2), 0.4, 0.75);
+
+          K.reveal(K.$("b6-st-a"), K.T(79.46), 0.4);
+          K.reveal(K.$("b6-st-b"), K.T(80.06), 0.7);
+          // the usual answer gets the second line
+          K.draw(K.$("b6-box-r-2"), K.T(80.69), 0.8, "none");
+
+          K.out(K.$("b6-all"), 84.45 - 70.08, 0.45);
+
+          window.__timelines["b6"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>
