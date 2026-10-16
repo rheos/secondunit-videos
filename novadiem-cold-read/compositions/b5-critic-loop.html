@@ -80,7 +80,7 @@
 
       <script>
         (() => {
-          const { el, kit } = window.CR;
+          const { el, kit, prime } = window.CR;
           const tl = gsap.timeline({ paused: true });
           const K = kit(tl, 55.08);
 
@@ -124,9 +124,6 @@
           });
           prime(K.$("b5-crt-x"));
           prime(K.$("b5-crt-check"));
-          function prime(n) {
-            window.CR.prime(n);
-          }
           // gate and gauge set the stakes before the work arrives
           K.draw(K.$("b5-post"), K.T(56.3), 0.5);
           K.draw(K.$("b5-boom-bar"), K.T(56.3) + 0.4, 0.6, "none");
