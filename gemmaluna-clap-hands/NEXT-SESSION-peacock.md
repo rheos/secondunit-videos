@@ -1,4 +1,4 @@
-# Clap Hands, cut-paper peacock: where it stands (2026-10-15)
+# Clap Hands, cut-paper peacock: where it stands (2026-10-15, draft 3)
 
 Read this first, then `STORYBOARD-peacock.md` (local only, gitignored) for the look bible, the four-chorus arc
 and every hand-off.
@@ -42,3 +42,39 @@ Waiting on Robin's notes.
 `AUDIT-d2.md` (local only): Robin's notes on top (errors still to list, more engaging, more Art Nouveau, NOT Deco),
 the themes, the merged protect list, the fix plan (pass 1 PATCH, pass 2 RETHINK) and every finding. Draft 2's code is
 frozen at commit 40e5251 for side-by-side checks.
+
+## Full draft 3 (2026-10-15)
+
+Both passes of the audit plan, built in one go (Robin: "the errors, reads and Art Nouveau first, then the
+engagement and camera rethink"). Code: commits 78fd761 and f8c1805 on `clap-hands-peacock` (the render matches f8c1805 exactly).
+
+- Errors: horseshoe hangs the hard-luck way (open end down); last chorus cuts to the sun 0.8 s before clap 1 so
+  the pair rises; every shot draws on ones (no camera judder); steamers, theatre props and the rowboat move in
+  instead of popping; no stair "E"; no rain inside the tram; hands kept inside the border; hatch-to-avenue moon
+  matched; waterfront to deck is a match on the lamp; flashes capped at .4.
+- Reads: calyx iron hands with lily buds, a crowd under a night sky with a moon head, whiplash lightning to the
+  river, a visible storm moon, an S-necked heron on a real lamp, a mirrored soot print, a flat street clock with a
+  hole, a legible bowler, pistol grip, helmet with banknote, crook cane, footprints, star-and-line constellation
+  hands, a hand-shadow dog, a bentwood chair, a coiled tuba, sun-paper corona sleeves.
+- Nouveau: a living Mucha border on every frame (mosaic band, plants that bloom on each chorus), whiplash quill
+  rays instead of straight Deco rays, a per-scene halo ornament (lace, rose, peacock, zodiac, poppy, sunflower),
+  a real Guimard Metro, Horta stair, Tiffany/Gallé glass, Nouveau facades instead of grids.
+- Engagement: per-clap framings in choruses 2-4 matched on their shared disc, punch-ins on the key word of
+  every vignette, objects on thirds, a camera plan for the dawn, the Milky Way clap at twice the size.
+- Light arc: night behind the chorus 1 crowd, a cold moonlit clock, the climax brightens to gold.
+- Climax: the sun becomes an open Nouveau hand rising from the river (the Metro's iron-hand drawing), the
+  hand-bird flies into its palm, the light fills the frame.
+- Payoffs planted: rowboat among the steamers, horseshoe back right way up on the boat at dawn, heron leads the band.
+
+Not changed, for Robin's ear: three claps may land 4-5 frames early by the vocal stem (video 1:15.8, 2:57.9,
+3:01.9 = song 86.8, 188.867, 192.933). Robin's own error list from draft 2 has not arrived yet; fold it in when
+it does.
+
+Rendered locally (the last full local render: future ones go through `tools/cloud-render`, see issue #155 for 9:16):
+`out/peacock/gmc-v2_peacock-cutpaper-full-d3_f00264-f04728_24fps_review-720p.mp4` (720x1280, 186.0 s, 4464 frames,
+45 MB). Scanned: no bad frames besides the fade from black; flash check PASS (worst 3/s at 1:02.6, the engine clap,
+right at the limit); no frozen runs except a 1.6 s near-hold at 2:18.1-2:19.7 (the spotlight resting on the jeans
+before the "pistol" punch-in, the rail still swaying). Before/after vs draft 2 on 32 matched frames: every change
+lands as listed, nothing protected got worse. Worth a look: in the theatre the lace roundel on the backdrop sits
+behind the jeans and the helmet, so the spotlit props read against a busy disc. Uploaded unlisted:
+https://youtu.be/ywgJqjnEjJ4 (Telegram sent). Waiting on Robin's error list and notes.
