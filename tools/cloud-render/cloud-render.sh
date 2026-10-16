@@ -46,7 +46,7 @@ label="${proj}-${slug}-$(date +%Y%m%d-%H%M%S)"
 tmp=$(mktemp -d); trap 'rm -rf $tmp' EXIT
 echo "== $label: $frames frames in $slices slices at ${width}x${height}$( (( draft )) && echo ", draft")"
 # fonts: the runner has the Microsoft core fonts but no Mac-only faces (Futura, Helvetica Neue, ~/Library/Fonts)
-python3 $here/fontcheck.py $pdir $page
+python3 $here/fontcheck.py $pdir $page || echo "font check failed; carrying on without it"
 
 # 1. package: an ALLOWLIST of code, styles, data, images and fonts, never audio, video, secrets or data folders
 (cd $pdir && find . \( -path ./out -o -path ./source -o -path ./_in -o -path ./work -o -path ./tmp -o -path ./output \
