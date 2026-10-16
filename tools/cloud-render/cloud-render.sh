@@ -1,9 +1,11 @@
 #!/bin/zsh
 # Render a look on GitHub Actions in parallel and bring back one video with the song on it.
 #
-#   tools/cloud-render/cloud-render.sh [--draft] <project> <page> <t0> <t1> [out.mp4] [slices=20] [height=720]
+#   tools/cloud-render/cloud-render.sh [--draft] [--tall] <project> <page> <t0> <t1> [out.mp4] [slices=20] [height=720]
 #   --draft (or CR_DRAFT=1): review quality: slices at crf 26, joined on GitHub by stream copy (no second encode,
 #   smallest download). Masters (no flag): crf 18, joined with the concat filter at preset medium.
+#   --tall (or CR_TALL=1): a 9:16 page, always 720x1280 at crf 23 capped at 4.5 Mbit/s, the house phone-ratio
+#   encode for drafts and finals alike (secondunit/CLAUDE.md), so --draft changes nothing there. No height argument.
 #   Either way GitHub joins the slices and the Mac downloads one file and only muxes the song (stream copy).
 #   CR_REF=<branch> runs the workflow file from that branch (to test workflow changes before merging).
 #   e.g. tools/cloud-render/cloud-render.sh bobwiseman-holiday-tavern looks/charcoal.html 24 130
@@ -15,15 +17,20 @@
 #    downloads that one video and muxes the project's assets/song.wav for t0..t1 onto it (video copied, no encode).
 # 4. Runs badframes, then deletes the release. Uses about 3 Actions minutes per slice.
 set -e -o pipefail
-draft=${CR_DRAFT:-0}; [[ $1 == --draft ]] && { draft=1; shift; }
+draft=${CR_DRAFT:-0}; tall=${CR_TALL:-0}
+while [[ $1 == --(draft|tall) ]]; do [[ $1 == --draft ]] && draft=1 || tall=1; shift; done
 (( draft )) && crf=26 || crf=18
 REPO=rheos/secondunit-videos
 here=${0:A:h}; root=${here:h:h}
 proj=$1; page=$2; t0=$3; t1=$4; slices=${6:-20}; height=${7:-720}
-[[ -n $proj && -n $page && -n $t0 && -n $t1 ]] || { sed -n '2,6p' $0; exit 2; }
+[[ -n $proj && -n $page && -n $t0 && -n $t1 ]] || { sed -n '2,8p' $0; exit 2; }
 pdir=$root/$proj; [[ -f $pdir/$page ]] || { echo "no page $pdir/$page"; exit 2; }
 song=$pdir/assets/song.wav; [[ -f $song ]] || { echo "no $song (the song clock)"; exit 2; }
-fps=24; width=$(( height * 16 / 9 ))
+fps=24; width=$(( height * 16 / 9 )); vbv=()
+if (( tall )); then
+  [[ -z $7 ]] || { echo "--tall is always 720x1280: drop the height argument"; exit 2; }
+  width=720; height=1280; crf=23; vbv=(-f maxrate=4500)   # kbit/s; the workflow sets bufsize to twice it
+fi
 frames=$(python3 -c "print(round(($t1 - $t0) * $fps))")
 [[ $slices == <-> ]] || { echo "slices must be a whole number"; exit 2; }
 max=$(( frames < 20 ? frames : 20 ))
@@ -68,7 +75,7 @@ asset=$(gh api --paginate repos/$REPO/releases --jq ".[] | select(.tag_name==\"$
 
 # 2. run
 gh workflow run cloud-render.yml --repo $REPO ${CR_REF:+--ref=$CR_REF} -f crf=$crf -f label=$label -f asset_id=$asset -f page=$page -f t0=$t0 \
-  -f frames=$frames -f slices=$slices -f fps=$fps -f width=$width -f height=$height
+  -f frames=$frames -f slices=$slices -f fps=$fps -f width=$width -f height=$height $vbv
 run=""
 for i in {1..30}; do
   run=$(gh run list --repo $REPO --workflow cloud-render.yml ${CR_REF:+--branch=$CR_REF} --limit 10 --json databaseId,displayTitle \

@@ -18,6 +18,7 @@ on:
       width: { description: "encoded width", required: true, default: "1280" }
       height: { description: "encoded height", required: true, default: "720" }
       crf: { description: "x264 crf for the slices (18 master, 23 draft)", required: false, default: "18" }
+      maxrate: { description: "x264 -maxrate in kbit/s, bufsize twice it (4500 for 9:16); empty for no cap", required: false, default: "" }
 permissions:
   contents: write   # a draft release (the package) is only visible with write access
 jobs:
@@ -37,10 +38,12 @@ jobs:
           T0: ${{ inputs.t0 }}
           PAGE: ${{ inputs.page }}
           CRF: ${{ inputs.crf || '18' }}
+          MAXRATE: ${{ inputs.maxrate }}
         run: |
           for v in "$FRAMES" "$SLICES" "$FPS" "$WIDTH" "$HEIGHT" "$ASSET" "$CRF"; do
             [[ "$v" =~ ^[0-9]+$ ]] || { echo "not a whole number: $v"; exit 1; }
           done
+          [[ "$MAXRATE" =~ ^[0-9]*$ ]] || { echo "bad maxrate: $MAXRATE"; exit 1; }
           [[ "$T0" =~ ^[0-9]+(\.[0-9]+)?$ ]] || { echo "bad t0: $T0"; exit 1; }
           [[ "$PAGE" =~ ^[A-Za-z0-9._/-]+\.html$ && "$PAGE" != *..* ]] || { echo "bad page: $PAGE"; exit 1; }
           max=$(( FRAMES < 20 ? FRAMES : 20 ))
@@ -63,6 +66,7 @@ jobs:
       WIDTH: ${{ inputs.width }}
       HEIGHT: ${{ inputs.height }}
       CRF: ${{ inputs.crf || '18' }}
+      MAXRATE: ${{ inputs.maxrate }}
       N: ${{ matrix.n }}
     steps:
       - uses: actions/checkout@v4
@@ -88,10 +92,11 @@ jobs:
         working-directory: pkg
         run: |
           a=$(( N * FRAMES / SLICES )); b=$(( (N + 1) * FRAMES / SLICES ))
-          node render-slice.mjs "$PAGE" "$T0" "$FPS" "$a" "$b" 2
+          node render-slice.mjs "$PAGE" "$T0" "$FPS" "$a" "$b" 2 "${WIDTH}x${HEIGHT}"
           mkdir -p out
+          vbv=(); [[ -n "$MAXRATE" ]] && vbv=(-maxrate "${MAXRATE}k" -bufsize "$(( MAXRATE * 2 ))k")
           ffmpeg -y -loglevel error -framerate "$FPS" -start_number "$a" -i frames/f_%06d.jpg -frames:v $(( b - a )) \
-            -vf "scale=${WIDTH}:${HEIGHT}:flags=lanczos" -c:v libx264 -preset medium -crf "$CRF" -pix_fmt yuv420p \
+            -vf "scale=${WIDTH}:${HEIGHT}:flags=lanczos" -c:v libx264 -preset medium -crf "$CRF" "${vbv[@]}" -pix_fmt yuv420p \
             "out/slice_$(printf %03d "$N")_f$(printf %06d "$a")-f$(printf %06d "$b").mp4"
       - uses: actions/upload-artifact@v4
         with:
@@ -108,6 +113,7 @@ jobs:
       FRAMES: ${{ inputs.frames }}
       SLICES: ${{ inputs.slices }}
       CRF: ${{ inputs.crf || '18' }}
+      MAXRATE: ${{ inputs.maxrate }}
     steps:
       - uses: actions/download-artifact@v4
         with:
@@ -134,8 +140,9 @@ jobs:
             for f in "${files[@]}"; do echo "file '$PWD/$f'"; done > list.txt
             ffmpeg -y -loglevel error -f concat -safe 0 -i list.txt -c copy -movflags +faststart film/film.mp4
           else
+            vbv=(); [[ -n "$MAXRATE" ]] && vbv=(-maxrate "${MAXRATE}k" -bufsize "$(( MAXRATE * 2 ))k")
             ffmpeg -y -loglevel error "${ins[@]}" -filter_complex "${filt}${cat}concat=n=${k}:v=1:a=0[v]" -map "[v]" \
-              -c:v libx264 -preset medium -crf "$CRF" -pix_fmt yuv420p -movflags +faststart film/film.mp4
+              -c:v libx264 -preset medium -crf "$CRF" "${vbv[@]}" -pix_fmt yuv420p -movflags +faststart film/film.mp4
           fi
           got=$(ffprobe -v error -count_frames -select_streams v:0 -show_entries stream=nb_read_frames -of csv=p=0 film/film.mp4 | tr -d ',')
           (( got == FRAMES )) || { echo "joined video has $got frames, want $FRAMES"; exit 1; }
