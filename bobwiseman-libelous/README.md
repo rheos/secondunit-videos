@@ -66,3 +66,12 @@ from a folder that has Playwright, with rheos/secondunit-videos `tools/motion-la
 window or sheet. Two "in frame" flags, both by design: the sing-along band carries its last line off the
 tube as it slides out (frames 2841-2844), and the school strips sit about 29 px from the bottom, 1 to 3 px
 inside a 3% safe line. Use `--safe 0.05` for tv (the tube crops 3% a side).
+
+## Bob's notes
+
+- 2026-10-15, TV news v2 (#164): "could the shareholders greeting be like the shareholders greeting in woodcut? which
+  is to say they tip their hats? 0:26". `js/tv/hattip-r3a.js` wraps `r3aTvFilmMeeting` on `looks/tv-r3a-bv.html`
+  (no r3a file edited): a white glove lifts each hat clear of the head and tilts it toward the speaker, the head dips,
+  on the woodcut's envelope (up in 0.16 s, held, down by 1 s) and step (0.074 s). The wave now starts on the top row,
+  the one row seen whole, so the clearest tips land on "shareholders"; the lower rows' raised hats sit behind the
+  benches and heads in front of them. Changed frames: f634-f682 (26.42-28.42 s); everything else is v2.
