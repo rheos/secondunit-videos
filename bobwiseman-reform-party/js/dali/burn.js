@@ -15,24 +15,41 @@
 const VOTES = [35, 36, 37, 38].map((li) => wt(li, 'vote'));
 // each "vote" adds fire: refrain 1 the base, 2 the lattice behind the voting board, 3 the whole figure, 4 the peak and the fall
 const burnAmt = (t) => (.4 * ease(t, VOTES[0] - 2, VOTES[0] + 4) + .26 * ease(t, VOTES[1] - .6, VOTES[1] + 3) + .19 * ease(t, VOTES[2] - .6, VOTES[2] + 4) + .15 * ease(t, VOTES[3] - .6, VOTES[3] + 2.5)) * (1 - ease(t, 254, 266) * .75);
-const fallAmt = (t) => ease(t, 248.5, 252.5);
-function flameAmt(t) { return burnAmt(t) * (1 - .78 * ease(t, 251.5, 259)); } // the standing fire drops to the heap after the fall
-function heapAmt(t) { return ease(t, 250.5, 254.5) * (1 - .5 * ease(t, 262, 268.6)); } // the ember heap left for Little Bob
+// The collapse (Robin, after draft 6): not a topple to one side. On the last "people that are broke": one arm drops and
+// falls off, then the other, a shoulder caves in, and the whole figure comes straight down into its base.
+const COL = { p: wt(38, 'people'), th: wt(38, 'that'), a: wt(38, 'are'), b: wt(38, 'broke') };
+const fallAmt = (t) => ease(t, COL.b, COL.b + 1.7); // the straight-down collapse
+function flameAmt(t) { return burnAmt(t) * (1 - .78 * ease(t, COL.b + .3, COL.b + 7)); } // the standing fire drops to the heap after the fall
+function heapAmt(t) { return ease(t, COL.b + .5, COL.b + 3.8) * (1 - .5 * ease(t, 262, 268.6)); } // the ember heap left for Little Bob
 function fireGlow(t) { return Math.max(flameAmt(t), .5 * heapAmt(t)); } // what the grade lights the playa with
 const manMelt = (t) => 0; // draft 3's Dali melt is gone: the real Man never sags or melts (kept so old callers still work)
 const ARMS_UP = 215.99; // a strong beat just before the burn: the arms lock into the V on it
 const armsAmt = (t) => ease(t, ARMS_UP - 1.6, ARMS_UP);
 const BASE_H = 8.5; // the base is about 8.5 m high and 25 m wide; the figure on it is 12.5 m to the top of the head
-const plinthH = (t) => BASE_H * (1 - .62 * ease(t, 251, 256.5));
+const plinthH = (t) => BASE_H * (1 - .62 * ease(t, COL.b - .2, COL.b + 4.5));
 const flameTop = (t) => 4 + 36 * Math.pow(flameAmt(t), 1.1); // metres above the ground
 
 // ---------- the Man ----------
 function manGeom() { const p = P(MAN.x, 0, MAN.z); return { p, k: kAt(p) }; }
 // his local frame: metres, y up, origin between his feet on top of the base; he rotates about his feet as he falls
-const manBase = (t) => lerp(plinthH(t), .9, fallAmt(t)); // he falls onto the heap and lies there, half buried
-function manFrame(x, y, k, t) { const f = fallAmt(t); g.beginPath(); g.rect(-W, -H, 3 * W, y + H + .2 * k); g.clip(); g.translate(x, y - manBase(t) * k); g.rotate(f * 1.52); g.scale(k, -k); }
-function manPt(lx, ly, t) { const { p, k } = manGeom(), f = fallAmt(t), a = f * 1.52, c = Math.cos(a), s = Math.sin(a), X = lx * k, Y = -ly * k;
-  return [p[0] + X * c - Y * s, p[1] - manBase(t) * k + X * s + Y * c]; }
+const manBase = (t) => plinthH(t); // he stays on his base; the base sinks as it burns
+function manFrame(x, y, k, t) { g.beginPath(); g.rect(-W, -H, 3 * W, y + H + .2 * k); g.clip(); g.translate(x, y - manBase(t) * k); g.scale(k, -k); }
+// where a point of the standing figure is now, after the collapse stages. part: 'body', or -1 / 1 for an arm
+const armDrop = (d, t) => d < 0 ? ease(t, COL.p, COL.p + .38) : ease(t, COL.th, COL.th + .32); // the V arm swings down to hanging
+const armOff0 = (d) => d < 0 ? COL.p + .38 : COL.th + .32; // then it breaks off at the shoulder and falls
+function xfPt(x, y, t, part, seed) {
+  if (part !== 'body') { const d = part, tau = t - armOff0(d); if (tau <= 0) return [x, y];
+    const c0 = [d * (SHOULDER[0] + .2), SHOULDER[1] - ARM_L / 2], gy = -plinthH(t) + .35, dy = c0[1] - gy, T = Math.sqrt(2 * dy / 9.8), u = clamp(tau / T);
+    const ang = d * Math.PI / 2 * u + d * .25 * Math.sin(u * Math.PI), cx = c0[0] + d * 3.4 * u, cy = c0[1] - Math.min(4.9 * tau * tau, dy) + (u >= 1 ? .25 * Math.max(0, Math.sin((tau - T) * 9)) * Math.exp(-(tau - T) * 5) : 0);
+    const rx = x - c0[0], ry = y - c0[1], c = Math.cos(ang), s2 = Math.sin(ang); return [cx + rx * c - ry * s2, cy + rx * s2 + ry * c]; }
+  const sh = ease(t, COL.a, COL.a + .35), cf = fallAmt(t); let X = x, Y = y;
+  if (sh > 0 && Y > 7) { Y -= sh * 1.5 * clamp((X + .4) / 1.9) * clamp((Y - 7) / 2.2); // the right shoulder caves in
+    if (y > 9.2) { const a = -sh * .45, rx = X, ry = Y - 9.2; X = rx * Math.cos(a) - ry * Math.sin(a) + sh * .5; Y = 9.2 - sh * .9 + rx * Math.sin(a) + ry * Math.cos(a); } } // the head lolls
+  if (cf > 0) { const j = seed == null ? 0 : n1(900 + seed, 3.1); Y = Y * (1 - .84 * cf) - cf * (plinthH(t) - .8) + j * .25 * cf; X = X * (1 + .35 * cf) + j * .6 * cf; } // straight down, the timbers splaying
+  return [X, Y];
+}
+function manPt(lx, ly, t, part) { const { p, k } = manGeom(), q = xfPt(lx, ly, t, part || (Math.abs(lx) > 2.4 && ly > 9.5 ? Math.sign(lx) : 'body'));
+  return [p[0] + q[0] * k, p[1] - manBase(t) * k - q[1] * k]; }
 // the point the film's last ember sits on (his chest, on the fallen figure), in screen pixels, for the ember-contract ending
 function lastEmber(t) { return manPt(0, 7.4, t); }
 
@@ -44,7 +61,7 @@ function lattice(out, a, b, w, piece) { const dx = b[0] - a[0], dy = b[1] - a[1]
     if (i % 2 === 0) out.push([A[0] + nx, A[1] + ny, A[0] - nx, A[1] - ny, .07, 0]); }
   out.push([b[0] + nx, b[1] + ny, b[0] - nx, b[1] - ny, .1, piece]); }
 const SHOULDER = [1.38, 9.0], ARM_L = 5.0;
-function armHand(d, t) { const ph = lerp(.07, 2.65, armsAmt(t)); return [d * (SHOULDER[0] + Math.sin(ph) * ARM_L), SHOULDER[1] - Math.cos(ph) * ARM_L]; } // straight down (4 deg out) to the V (28 deg off vertical)
+function armHand(d, t) { const ph = lerp(.07, 2.65, armsAmt(t) * (1 - armDrop(d, t))); return [d * (SHOULDER[0] + Math.sin(ph) * ARM_L), SHOULDER[1] - Math.cos(ph) * ARM_L]; } // straight down (4 deg out) to the V (28 deg off vertical)
 let MSTK = { t: NaN, s: null };
 function manSticks(t) {
   if (MSTK.t === t) return MSTK.s; const s = [];
@@ -59,7 +76,9 @@ function manSticks(t) {
   const hd = [[0, 9.72], [1.02, 11.62], [0, 12.5], [-1.02, 11.62]];
   for (let i = 0; i < 4; i++) { const a = hd[i], b = hd[(i + 1) % 4]; s.push([a[0], a[1], b[0], b[1], .17, 1]); }
   s.push([0, 9.72, 0, 12.5, .08, 0], [-1.02, 11.62, 1.02, 11.62, .08, 0], [-.5, 10.67, .5, 12.06, .06, 0], [.5, 10.67, -.5, 12.06, .06, 0]);
-  for (const d of [-1, 1]) lattice(s, [d * SHOULDER[0], SHOULDER[1]], armHand(d, t), .46, 0); // the arms: straight timber columns, down or up in the V
+  const nb = s.length;
+  for (const d of [-1, 1]) { const a0 = s.length; lattice(s, [d * SHOULDER[0], SHOULDER[1]], armHand(d, t), .46, 0); for (let i = a0; i < s.length; i++) s[i].arm = d; } // the arms: straight timber columns, down or up in the V
+  for (let i = 0; i < s.length; i++) { const st = s[i], part = st.arm || 'body', a = xfPt(st[0], st[1], t, part, i), b = xfPt(st[2], st[3], t, part, i + .5); st[0] = a[0]; st[1] = a[1]; st[2] = b[0]; st[3] = b[1]; }
   MSTK = { t, s }; return s;
 }
 function manSkin(t) { // the figure's silhouette (legs, torso, head, arms) as one path, for the faint fill behind the lattice
@@ -121,7 +140,7 @@ function theMan(t) {
   if (fallAmt(t) < 1) { g.save(); manFrame(x, y, k, t); effigy(t, 'lit'); g.restore(); }
 }
 // the neon tubing that outlines him from dusk (cool blue-white), drawn after the grade so it glows; it dies as each stick catches
-const neonAmt = (t) => ease(t, 202.5, 206.5) * (1 - ease(t, 250, 252));
+const neonAmt = (t) => ease(t, 202.5, 206.5) * (1 - ease(t, COL.p - 2, COL.p));
 function manNeon(t) {
   const n = neonAmt(t); if (n <= 0) return; const { p, k } = manGeom(); if (p[2] < 1) return;
   const Hc = flameTop(t), sticks = manSticks(t), on = (st) => st[5] && stickBurn(st, t, Hc) < .3;
@@ -155,7 +174,7 @@ function manFire(t) {
   for (let i = 1; i < N; i += 2) { const u = rnd(i, 61) * 2 - 1; flameTongue(x + u * Wb * .85 * k, y, tongueH(i, u, true) * k, (1.2 + 1.3 * f) * k, i, t, baseOn * .6 * ta); }
   g.restore();
   // the figure in the fire: glowing timbers. Burning sticks get a hot halo, a charred core and bright flickering seams
-  const fade = 1 - ease(t, 253.5, 260.5) * .72; // once burnt he stays burnt, then crumbles into the heap
+  const fade = 1 - ease(t, COL.b + .8, COL.b + 7) * .72; // once burnt he stays burnt, then crumbles into the heap
   if (fall < 1 || fade > 0) {
     const sticks = manSticks(t), hot = (st) => stickBurn(st, t, Hc) >= .5 || fall > .5;
     if (sticks.some(hot)) {
