@@ -11,13 +11,16 @@
 // and on the beat the camera starts its tilt (13.30) they spring up and ride it, dancing in the air (scissor kicks,
 // the spin, a hand roll, a goodbye hat tip), and shoot out of the top of the frame on the bar at 16.76.
 // Frames before ~8.1 s are unchanged.
+// Draft 10 (Bob's photo): five of them now, each his own man (bridge-trio.js SINGERS), left to right in PIP_LINE.
+// They land on the first five half beats instead of three beats, and the ta-da is a pyramid: low at the ends, the
+// lead in the middle highest. Everything after the ta-da is the same moves, all five in unison.
 // Beats: four per bar between the no_vocals stem's bar onsets (0.25, 3.04, 5.78, 8.46, 11.26, 13.98, 16.76; librosa
 // beat track on the stem, 86 bpm: 11.96 12.63 13.31 13.98 14.72 15.39 16.07 16.76).
 const PIPS_BARS = [0.25, 3.04, 5.78, 8.46, 11.26, 13.98, 16.76];
 const PIPS_BEATS = (() => { const b = []; for (let i = 0; i + 1 < PIPS_BARS.length; i++) for (let q = 0; q < 4; q++) b.push(lerp(PIPS_BARS[i], PIPS_BARS[i + 1], q / 4)); b.push(PIPS_BARS[PIPS_BARS.length - 1]); return b; })();
 const PB = PIPS_BEATS; // 0.25 0.95 1.65 2.34 | 3.04 3.73 4.41 5.10 | 5.78 6.45 7.12 7.79 | 8.46 ...
 const PIPS_IN = {
-  land: [PB[0], PB[1], PB[2]],  // each singer lands on his own beat (left, middle, right)
+  land: [PB[0], (PB[0] + PB[1]) / 2, PB[1], (PB[1] + PB[2]) / 2, PB[2]], // one landing a half beat, left to right
   fall: .55, drop: 900,         // seconds in the air, and from how far above his mark (world units)
   tada: PB[3],                  // together: the staggered ta-da
   walk: PB[4],                  // the Temptations walk (step, touch, step, touch)
@@ -30,7 +33,7 @@ const PIPS_IN = {
   leap: PB[24],                 // out of the top of the frame on the bar at 16.76
   x0: 2560, x1: 1600,           // world x of the middle singer: standing, and where the strut ends
   x2: 1700, x3: 1820,           // where the chicken steps take him, and where he drifts to in the air
-  gap: 230,                     // between singers (world)
+  gap: 200,                     // between singers (world)
   y: 3330,                      // world y of their feet on the nave floor
   s: .42,                       // their scale against the bridge stage
 };
@@ -52,8 +55,9 @@ const PIPS_POSE = {
 const PIPS_MOUTH = .08;
 const withMouth = (P, m = PIPS_MOUTH) => ({ ...P, mouth: m });
 // Timeline per singer: [arrive time, pose, transition length], as the bridge's trioKeys.
-function pipsInKeys(k) {
-  const I = PIPS_IN, L = I.land[k], F = FINAL[k], h = PB[5] - PB[4];
+const PIPS_TADA = [FINAL[0], FINAL[1], FINAL[2], mirrorPose(FINAL[1]), mirrorPose(FINAL[0])]; // by place in the line
+function pipsInKeys(k) { // k: place in the line, 0..4
+  const I = PIPS_IN, L = I.land[k], F = PIPS_TADA[k], h = PB[5] - PB[4];
   return [
     [L - I.fall, withMouth(PIPS_POSE.fall), .01],
     [L, withMouth(PIPS_POSE.land), .06],
@@ -76,7 +80,7 @@ function pipsInKeys(k) {
     [I.leap - .12, withMouth(PIPS_POSE.leap, .3), .12],
   ];
 }
-const PIPS_KEYS = [0, 1, 2].map(pipsInKeys);
+const PIPS_KEYS = [0, 1, 2, 3, 4].map(pipsInKeys);
 function pipsKeyed(k, t) {
   const K = PIPS_KEYS[k];
   let i = 0; while (i + 1 < K.length && K[i + 1][0] - K[i + 1][2] <= t) i++;
@@ -173,8 +177,8 @@ function drawIntroPips(g, t, cam) {
   const s = cam.s, xm = pipsInX(t);
   // draft 9: in the air they grow as the camera pulls back for the window, so they stay about their floor size
   const grow = t > PIPS_IN.jump ? lerp(1, Math.pow(v1Cam(PIPS_IN.jump).s / s, .8), ease(t, PIPS_IN.jump, PIPS_IN.jump + .6)) : 1;
-  for (let k = 0; k < 3; k++) {
-    const S = SINGERS[k], wx = xm + (k - 1) * PIPS_IN.gap * grow, lift = pipsInLift(k, t, cam);
+  for (let k = 0; k < 5; k++) { // k: place in the line
+    const S = SINGERS[PIP_LINE[k]], wx = xm + (k - 2) * PIPS_IN.gap * grow, lift = pipsInLift(k, t, cam);
     if (t < PIPS_IN.land[k] - PIPS_IN.fall) continue;
     g.save();
     g.setTransform(s, 0, 0, s, W / 2 - cam.x * s, H / 2 - cam.y * s);
@@ -203,7 +207,7 @@ function drawIntroPips(g, t, cam) {
     // the spin after the hat tip ripples down the line (the trio draws its back when cos < 0)
     const spU = PIPS_SPINS.reduce((u, [a, d]) => u + ease(t, a + k * .12, a + k * .12 + d), 0), cs = Math.cos(spU * TAU);
     g.translate(S.x, 0); g.scale(Math.max(.12, Math.abs(cs)) * Math.sign(cs || 1), 1); g.translate(-S.x, 0);
-    drawSinger(g, S, k, t, pipsInPose(k, t));
+    drawSinger(g, S, PIP_LINE[k], t, pipsInPose(k, t));
     g.restore();
   }
 }

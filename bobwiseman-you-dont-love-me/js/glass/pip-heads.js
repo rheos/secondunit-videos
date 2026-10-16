@@ -29,22 +29,26 @@ const pipSingMouth = (t) => Math.max(.06, clamp((pipEnv(t) - .4) / .5));
 // to screen right). The body hangs off the frame along the axis; arms stay out of shot.
 const PIP_HEAD_SC = 1.6; // screen px per stage unit (head ~165 px tall)
 const PIP_HEAD_LAYOUT = [
-  [{ k: 0, x: 260, y: H - 215, rot: .1 }, { k: 2, x: W - 260, y: H - 215, rot: -.1 }],          // bottom corners
-  [{ k: 0, x: 165, y: H * .64, rot: 1.22 }, { k: 2, x: W - 165, y: H * .58, rot: -1.22 }],      // in from the sides
+  [{ x: 260, y: H - 215, rot: .1 }, { x: W - 260, y: H - 215, rot: -.1 }],          // bottom corners
+  [{ x: 165, y: H * .64, rot: 1.22 }, { x: W - 165, y: H * .58, rot: -1.22 }],      // in from the sides
 ];
+// Draft 10, five Pips: still two heads a refrain (four would crowd the scene and the daisy), the pairs taking turns
+// two refrains each (Specs and the big man, then the tallest and the kid), so all five are in the refrains.
+const PIP_HEAD_PAIRS = [[0, 2], [3, 4]];
 const PIP_HEAD_POSE = { L: [-.12, .3], R: [.12, -.3], lL: [-.05, -.02], lR: [.05, .02], x: 0, lean: 0, tilt: 0, dip: 6 };
 function pipHeadStage(S, P) { // the head centre in drawSinger's stage coordinates, for a pose with lean 0, x 0, dip 6
   const legH = Math.max(...[P.lL, P.lR].map(([a1, a2]) => FIG.th * Math.cos(a1) + FIG.sh * Math.cos(a2)));
-  const hy = FIG.shY - FIG.neck - FIG.headR * S.face + 6;
-  return [S.x, TRIO_FLOOR_Y - legH * TRIO_SC + hy * TRIO_SC];
+  const hy = FIG.shY - FIG.neck - FIG.headR * S.face * (S.fh ?? 1) + 6, z = pipSz(S);
+  return [S.x, TRIO_FLOOR_Y - legH * TRIO_SC * z + hy * TRIO_SC * z];
 }
 
 function drawPipHeads(g, t, tod) {
   const n = PIP_REFRAINS.findIndex(([a, b]) => t > a - .05 && t < b + .4);
   if (n < 0) return;
   const [a, b] = PIP_REFRAINS[n], L = .35 + .65 * tod.I, br = L * (tod.col[0] + tod.col[1] + tod.col[2]) / 765;
+  const pair = PIP_HEAD_PAIRS[Math.floor(n / 2) % 2];
   PIP_HEAD_LAYOUT[n % 2].forEach((Q, j) => {
-    const S = SINGERS[Q.k], ti = a + j * .1, to = b + j * .06;
+    const k = pair[j], S = SINGERS[k], ti = a + j * .1, to = b + j * .06;
     const inU = easeOutBack(lin(t, ti, ti + .32), 1.4), outU = Math.pow(lin(t, to - .24, to), 2);
     const off = 340 * (1 - inU) + 380 * outU; if (inU <= 0 || outU >= 1) return;
     // to the beat: the head bobs and tilts, one side then the other, the pair in mirror
@@ -56,7 +60,7 @@ function drawPipHeads(g, t, tod) {
     g.save(); g.setTransform(1, 0, 0, 1, 0, 0); g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
     if (br < .985) g.filter = `brightness(${br.toFixed(3)})`;
     g.translate(Q.x - dx * off + dx * bob, Q.y - dy * off + dy * bob); g.rotate(rot); g.scale(PIP_HEAD_SC, PIP_HEAD_SC); g.translate(-hx, -hy);
-    drawSinger(g, S, Q.k, t, P);
+    drawSinger(g, S, k, t, P);
     g.restore();
   });
 }

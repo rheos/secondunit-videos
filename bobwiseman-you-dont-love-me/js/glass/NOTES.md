@@ -103,3 +103,18 @@ pale sharkskin tuxedo jackets, mid-step in one move. The photo is a press shot a
   Bob, the wave and the exit are as draft 9; the ta-das are now all three the same.
 - `mixPose` treats a scalar one pose lacks (the palm) as 0; all the older poses share their keys, so nothing they
   draw changes.
+- Five Pips, each his own man (Robin, after Bob's reply 2026-10-16: "their differences are part of the fun", and the
+  singer on the left of the photo wore "big buddy Holly glasses"). `SINGERS` in `bridge-trio.js` now holds five, with
+  height (`sz`, the whole figure on the same floor), build (`bw`), face size and shape, hair (`style`: part, pomp,
+  fade, afro, cap), mustache, ears, grin, and `specs` (big black horn-rims): Specs (tall, slim, glasses), the lead
+  (pompadour, pencil mustache; the petal plucker, draft 9's size exactly so the pluck geometry is untouched), the big
+  man (short, broad, full mustache), the tallest (lanky, short afro), the kid (shortest, round face). `PIP_LINE` puts
+  them left to right as Specs, the kid, the lead, the tallest, the big man.
+  - Intro (`v1-pips.js`): five, landing on the first five half beats; the ta-da is a pyramid (low at the ends, the
+    lead highest); gap 200 (was 230). The two on the left pass behind the pillar on the strut, as draft 9's left one did.
+  - Refrain heads (`pip-heads.js`): still two heads a refrain plus the plucker (four heads would crowd the scene and the
+    daisy); the pairs take turns two refrains each, Specs and the big man, then the tallest and the kid.
+  - Bridge: the stage, its three discs and mic stands are built for three, so it stays a trio (`TRIO_THREE`: Specs, the
+    lead, the big man); the mic stands are set to each man's height.
+  - Finale (`pip-finale.js`): five in the line (gap 470, was 600), landing on the half beats from PF_B[5] to PF_B[7];
+    the middle place is the lead, who still goes up for petal 27. The steps are the same, in unison.
