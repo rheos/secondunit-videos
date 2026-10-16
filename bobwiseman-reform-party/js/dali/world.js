@@ -59,7 +59,7 @@
     for (const p of ps.slice().reverse()) { while (up.length >= 2 && cr(up[up.length - 2], up[up.length - 1], p) <= 0) up.pop(); up.push(p); }
     return lo.slice(0, -1).concat(up.slice(0, -1)); }
   function shadowOf(pts3, t) { const sv = sunVec(t), a = shadowA(t); if (a < .01) return; const ps = pts3.map(([X, Y, Z]) => shadowPt(X, Y, Z, sv)); if (!ok(ps)) return; poly(hull(ps), `rgba(52,34,58,${a})`); }
-  function shadowStick(X, Y0, Y1, Z, w, t) { const sv = sunVec(t), a = shadowA(t); if (a < .01) return; const p = shadowPt(X, Y0, Z, sv), q = shadowPt(X, Y1, Z, sv); seg(p, q, w * kAt(p), `rgba(52,34,58,${a})`); }
+  function shadowStick(X, Y0, Y1, Z, w, t) { const sv = sunVec(t), a = shadowA(t); if (a < .01) return; const p = shadowPt(X, Y0, Z, sv), q = shadowPt(X, Y1, Z, sv); if (p[2] < 2.5 || q[2] < 2.5) return; seg(p, q, w * kAt(p), `rgba(52,34,58,${a})`); } // a stick shadow right under the lens would draw as a screen-sized blob
 
   // ---------- sky, ground ----------
   const SKY_TOP = [[0, '#24467e'], [26, '#2d5fa8'], [112, '#2d5fa8'], [150, '#3a62a0'], [188, '#4d5b90'], [196, '#4b4f8a'], [201, '#3a2f6b'], [212, '#23255a'], [222, '#11163a'], [240, '#0d1233']];

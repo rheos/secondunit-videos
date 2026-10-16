@@ -46,7 +46,8 @@ function canvasBlind(t, b, maxY) {
   g.beginPath(); g.ellipse(cx + 14 * melt, Math.min(cy + 124 + 40 * melt, maxY - 16), 13, 13 + 6 * melt, 0, 0, TAU); g.stroke();
 }
 function slatBlind(t, b, maxY) {
-  const drop = ease(t, b - .05, b + .55), raise = ease(t, b + 2.15, b + 2.8), shut = ease(t, b + .55, b + .9) * (1 - ease(t, b + 1.85, b + 2.15));
+  // slow, overlapping drop and tilt so the sky darkens once, not in three quick swaps (flash check, draft 3)
+  const drop = ease(t, b - .05, b + .85), raise = ease(t, b + 2.25, b + 3.0), shut = ease(t, b + .45, b + 1.35) * (1 - ease(t, b + 1.6, b + 2.25));
   const D = maxY * .93 * drop * (1 - raise); if (D <= 4) return;
   const N = 17, pitch = maxY * .93 / N, n = Math.min(N, Math.floor(D / pitch)), cords = [W * .12, W * .37, W * .63, W * .88];
   g.fillStyle = 'rgba(70,62,52,.45)'; for (const x of cords) g.fillRect(x - 2, 0, 4, D); // ladder strings
