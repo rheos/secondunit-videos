@@ -75,3 +75,8 @@ inside a 3% safe line. Use `--safe 0.05` for tv (the tube crops 3% a side).
   on the woodcut's envelope (up in 0.16 s, held, down by 1 s) and step (0.074 s). The wave now starts on the top row,
   the one row seen whole, so the clearest tips land on "shareholders"; the lower rows' raised hats sit behind the
   benches and heads in front of them. Changed frames: f634-f682 (26.42-28.42 s); everything else is v2.
+  Cut: `out/lib_tvnews-full-v3_f00000-f08171_24fps_draft.mp4` = v2 with those 48 frames drawn again and spliced in
+  (one encode). The new page's frames f528-f707 are byte-identical to v2's own frames outside f634-f682; the full cut
+  matches v2 outside the span to encode noise (PSNR-Y 37 dB or more), the caption audit passes on 22-29.5 s, 0 bad
+  frames, flash check pass. The patch was drawn on the Mac: the cloud-render runner has no Courier New, so the TV
+  captions came out in a fallback monospace there (fix the workflow's fonts before cloud-rendering a TV page).
