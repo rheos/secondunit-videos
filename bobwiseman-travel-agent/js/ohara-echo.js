@@ -6,12 +6,13 @@
 'use strict';
 const OHARA = [[89.7, 90.5], [219.4, 220.05], [286.6, 289.8], [292.0, 293.45], [305.55, 306.4], [329.4, 330.45],
   [360.4, 362.35], [363.85, 365.2], [375.4, 378.3],
-  [314.5, 319.5]]; // draft 14: her long high line (pitch-tracked, ~E5) between two sung lines
+  [314.5, 319.5, -1]]; // draft 14: her long high line (pitch-tracked, ~E5) between two sung lines; drifts left, off the phone
 let ECHO_CALLS = [];
 const echoTraveller = traveller;
 // record every traveller drawn this frame with its transform; the echo picks the main one (default teal coat, largest)
 traveller = function (x, y, s, o = {}) { ECHO_CALLS.push({ x, y, s, o, m: X.getTransform() }); return echoTraveller(x, y, s, o); };
 let echoCanvas;
+const ohDir = (T) => { for (const [a, b, d] of OHARA) if (T >= a - .1 && T <= b + .45) return d || 1; return 1; };
 function ohEnvelope(T, t0) {
   for (const [a, b] of OHARA) { if (T < a - .1 || T > b + .45) continue;
     if (t0 !== undefined && t0 >= b) return 0; // never carry the fade-out into the next shot (it flickered on the cut)
@@ -34,7 +35,7 @@ function drawEcho(T, t0) {
   const sc = c.s * Math.hypot(c.m.a, c.m.b), ph = Math.floor(T * 12) / 12; // on twos
   X.save(); X.setTransform(1, 0, 0, 1, 0, 0);
   for (const [k, al] of [[1, .55], [2.1, .28]]) {
-    const dx = (70 + 26 * Math.sin(ph * 2.3)) * sc * e * k, dy = (-34 + 12 * Math.cos(ph * 1.7)) * sc * e * k;
+    const dx = ohDir(T) * (70 + 26 * Math.sin(ph * 2.3)) * sc * e * k, dy = (-34 + 12 * Math.cos(ph * 1.7)) * sc * e * k;
     X.globalAlpha = al * e; X.filter = 'none';
     X.drawImage(echoCanvas, dx - 1.5, dy + 1.5); // a faint ink shadow edge
     X.globalAlpha = al * e * .9; X.drawImage(echoCanvas, dx, dy);
