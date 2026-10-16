@@ -74,3 +74,12 @@ Robin's notes on draft 1: the real car's chairs were low enough to hop on and of
 them; the playa was too sparse for Burning Man. Draft 2 (https://youtu.be/ldst6ELsCkM): table top 1.15 m, seats 0.65 m,
 14 suits; camps, lamps, bikes, crowd, fire spinners; lyric installations from the Gilliam / Von Ulrich / Nakamura
 audit in `AUDIT-dali-v1.md` (three.js not needed: the renderer is already a 3D camera).
+
+### Draft 3 (2026-10-16)
+
+The revision loop on draft 2: four section critics, a film critic and a guest pass (Gilliam, Von Ulrich, Nakamura),
+merged in `AUDIT-d2.md`; Robin picked all three passes; seven builders in sandboxes, one per file (camera.js;
+car.js; table.js; playa.js; installs.js; world.js + burn.js + camera-end.js; bob.js + render.js). What changed per
+audit item and the known issues are at the end of `AUDIT-d2.md`. Rendered on GitHub
+(`tools/cloud-render/cloud-render.sh --draft`, 250 s): `out/rp_dali-v3_720p.mp4`. Captions use Newsreader Italic
+from `fonts/` (OFL) so the cloud render matches the Mac. Not uploaded yet; waiting on Robin's OK.

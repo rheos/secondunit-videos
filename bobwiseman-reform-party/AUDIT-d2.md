@@ -101,3 +101,36 @@ Robin picked all three passes. Before the build the code was regrouped by area, 
 camera.js, grade into world.js, the blind into installs.js, the teeth into table.js, drawCar into car.js, one scene
 hook per file. Seven builders, one sandbox each under out/d3/, base 3f577d2: b1 camera.js; b2 car.js; b3 table.js;
 b4 playa.js; b5 installs.js; b6 world.js + burn.js + camera-end.js; b7 bob.js + render.js.
+
+## Draft 3: what changed per audit item (code 91924b3, render out/rp_dali-v3_720p.mp4, cloud, 720p)
+Themes:
+1. Chairs: SEAT .65 -> .42, short bracket seats with knees up and feet on the sand; six wheels under a raised
+   hem, wheel tracks and dust behind the car (b2). The low tracking shots read as sitting.
+2. Framing: 60 shots, 30+ framings, none over 6% of the film; intro push from the horizon; tracking
+   instrumentals with art-car parades; worm's-eye verse 2, high orbit bridge, refrain 3 from the driver's hole (b1).
+3. Refrains escalate: blinds canvas / venetian / velvet drape, each dropping on "blues" with a short hold (b5);
+   spins closer each time with a growing whirl of devils and art cars (b1, b5); grins: one crown, the row,
+   wind-up teeth climbing out (b2).
+4. Climax: one move from the dusk spiral into the burn; the Man melts inside the fire; ballot waves on each
+   "vote"; four refrains close in; the board votes harder each time; brightest frames at 4:02-4:12 (b6, b2).
+5. Dusk: exposure lifted (night #605ea0 instead of #343468), lanterns light one by one (b6).
+6. Light arc: dawn, midday, golden hour from the bridge, a sunset disc at 3:18, dusk, night (b6).
+7. Density: costumed riders and art bikes, bigger stilt elephants, varied camps, lyric installations, art-car
+   parades, chip-howdah parade on "wars", rolling board copies (b4, b5).
+8. Match cuts: drop into the hat at 0:21, whiteboard and hole hand-offs at 0:40.5, 0:45.5, 1:20, 1:43, grin to
+   spin at 0:50.5, tracking push into vogue at 2:03 (b1).
+9. Key words: mallet slam on "law"; Gilliam chain (barbed wire on "right", teeth on "soundbite", drape and jail
+   model on "unveiled", stilt cells on "jails"); real dime; pawns in riot helmets paid in coins; board flips on
+   "perverse"; giant gavel lands on the table (b2, b3, b4, b5).
+Guest picks: 1 climax with witnesses (b6), 2 lantern spiral with inhabited props (b6), 3 Gilliam chain (b3),
+4 padlocked ear with tape lines and a drawer (b5), 5 world inside the table, iris through the hole 2:07.9-2:10.6
+(b7), 6 grin escalation (b2); stilt elephants with chip howdahs on "wars" (b4).
+Patch extras: melting speakerphone, recorders hop into the drawer, news press three ways, scale on "unfair",
+wilting booms, the knight fouls the rook (CHESSW shot), clock framed on "time", Little Bob's full ending walk
+lit by the fire, the ember-contract ending, caption backing, captions in Newsreader Italic (shipped font, so
+cloud and Mac match; draft 2 used the Mac's Didot).
+Coordinator fixes after merge: flash check failed at 1:37.7 (stick shadows under the lens drew as
+screen-sized blobs; the venetian blind swapped light three times in a second), fixed in 91924b3.
+Known, not fixed: 0:45.5 overhead hand-off shows the news press pages as a translucent grey slab for about
+0.6 s; the board fire at 3:43-3:46 burns as curling paper with smaller flames than draft 2's flat wall of
+flame (kept: it reads as the chart burning); the iris push in/out of the table world is soft for about .25 s.
