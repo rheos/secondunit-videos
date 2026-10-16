@@ -110,13 +110,16 @@ def build_car():
     b.cone(M["hole"], (0, 0, TOP - 0.25), 1.0, 1.0, 0.5, seg=48, rot=Matrix.Diagonal((0.549, 0.449, 1, 1)), caps=False)
     b.disc(M["hole"], (0, 0, TOP - 0.45), 1.0, seg=48, scale=(0.55, 0.45))
     b.build("HoleAndHat", K.COL_CAR, car)
-    # driverHat: the draft draws the hat as a side-on sprite from every angle, so the hat is its own object
-    # that turns its side to the lens (verse1.py adds the Damped Track once the camera exists)
+    # the driver: an egg head in the hole (Robin, 2026-10-16) with the red hat sitting upright on it; the
+    # egg rises a hand above the table so it shows between the table and the brim
+    d = K.Builder()
+    d.ellipsoid(M["egg"], (0, 0, 0), (0.125, 0.125 * 0.95, 0.155), seg=32)
+    d.build("DriverHead", K.COL_CAR, car, loc=(0, 0, TOP + 0.05))
     h = K.Builder()
     h.cone(M["brim"], (0, 0, -0.01), 0.30, 0.27, 0.025, seg=40)
     h.cone(M["hat"], (0, 0, 0.08), 0.15, 0.125, 0.17, seg=32)
     h.cone(M["band"], (0, 0, 0.025), 0.153, 0.149, 0.04, seg=32, caps=False)
-    h.build("DriverHat", K.COL_CAR, car, loc=(0, 0, TOP - 0.05)).visible_shadow = False   # a sprite: no shadow
+    h.build("DriverHat", K.COL_CAR, car, loc=(0, 0, TOP + 0.13))
 
     # chassis, wheels (rolling without slipping: rotation about +Y = distance / R)
     b = K.Builder()
