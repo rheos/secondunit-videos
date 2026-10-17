@@ -233,11 +233,16 @@ function v1Daisy(g, t, tod) {
 }
 
 const V1DZ = mkCanvas(W, H), v1dz = V1DZ.getContext('2d'); // the daisy's own layer while the nave comes up from black
+// Draft 12: the intro opens outside the church (v1-exterior.js). Before EX.mix0 only the outside is drawn; from
+// EX.mix0 to EX.t1 the interior is drawn under the outside's camera and the outside dissolves off it, so the window
+// (the same lancets in the same place) is what carries us in.
+const V1EXC = mkCanvas(W, H), v1exc = V1EXC.getContext('2d');
 function v1Render(t) {
   const g = v1g;
   g.setTransform(1, 0, 0, 1, 0, 0); g.globalAlpha = 1; g.globalCompositeOperation = 'source-over'; g.filter = 'none';
   g.fillStyle = '#000'; g.fillRect(0, 0, W, H);
-  const cam = v1Cam(t);
+  if (t < EX.mix0) { v1RenderOutside(g, t); return; }
+  const cam = t < EX.t1 ? exCam(t) : v1Cam(t);
   const { view, tod } = v1GlassWorld(g, t, cam);
   const wallL = .55 * tod.I + .08;
   drawWall(g, view, wallL);
@@ -248,7 +253,8 @@ function v1Render(t) {
   // up from black: the nave only. The Pips bring their own follow spot, so they are drawn over it (draft 8).
   const black = t < 3 ? 1 - ease(t, 0, 3) : 0;
   if (black > 0) { g.setTransform(1, 0, 0, 1, 0, 0); g.globalCompositeOperation = 'source-over'; g.fillStyle = `rgba(0,0,0,${black})`; g.fillRect(0, 0, W, H); }
-  drawIntroPips(g, t, cam); // the intro cameo (v1-pips.js), behind the passing pillars
+  // draft 12: no intro cameo (v1-pips.js is no longer drawn; Bob: "the first time we see them will be when they first
+  // enter singing")
   v1Pillars(g, t, cam, tod);
   if (black > 0) { // the daisy still comes up out of the black with the nave
     v1dz.setTransform(1, 0, 0, 1, 0, 0); v1dz.clearRect(0, 0, W, H); v1Daisy(v1dz, t, tod);
@@ -258,6 +264,29 @@ function v1Render(t) {
   g.setTransform(1, 0, 0, 1, 0, 0); g.globalCompositeOperation = 'source-over';
   const vg = g.createRadialGradient(W / 2, H / 2, H * .45, W / 2, H / 2, W * .65); vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(0,0,0,.5)');
   g.fillStyle = vg; g.fillRect(0, 0, W, H);
+  if (t < EX.t1) { // the outside dissolving away around the window
+    v1exc.setTransform(1, 0, 0, 1, 0, 0); v1exc.clearRect(0, 0, W, H); drawExterior(v1exc, t, cam); v1OutsideVignette(v1exc);
+    g.save(); g.setTransform(1, 0, 0, 1, 0, 0); g.globalAlpha = 1 - ease(t, EX.mix0, EX.t1); g.drawImage(V1EXC, 0, 0); g.restore();
+    v1Daisy(g, t, tod);
+  }
+  drawGrain(g, t, .12);
+  g.setTransform(1, 0, 0, 1, 0, 0); g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
+}
+// The outside (draft 12): church, up from black as the nave used to come up, the daisy on its own layer as before.
+function v1OutsideVignette(g) {
+  g.setTransform(1, 0, 0, 1, 0, 0); g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
+  const vg = g.createRadialGradient(W / 2, H / 2, H * .45, W / 2, H / 2, W * .65); vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(0,0,0,.5)');
+  g.fillStyle = vg; g.fillRect(0, 0, W, H);
+}
+function v1RenderOutside(g, t) {
+  drawExterior(g, t, exCam(t)); v1OutsideVignette(g);
+  const tod = v1Tod(t), black = t < 3 ? 1 - ease(t, 0, 3) : 0;
+  g.setTransform(1, 0, 0, 1, 0, 0); g.globalCompositeOperation = 'source-over';
+  if (black > 0) { g.fillStyle = `rgba(0,0,0,${black})`; g.fillRect(0, 0, W, H); }
+  if (black > 0) {
+    v1dz.setTransform(1, 0, 0, 1, 0, 0); v1dz.clearRect(0, 0, W, H); v1Daisy(v1dz, t, tod);
+    g.save(); g.setTransform(1, 0, 0, 1, 0, 0); g.globalAlpha = 1 - black; g.drawImage(V1DZ, 0, 0); g.restore();
+  } else v1Daisy(g, t, tod);
   drawGrain(g, t, .12);
   g.setTransform(1, 0, 0, 1, 0, 0); g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
 }

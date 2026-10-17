@@ -42,11 +42,11 @@ function teabag(g, seed) {
 function teabagOnHead(g, t) {
   if (t < RA_TEA) return;
   const b = Math.sin(Math.PI * lin(t, RA_TEA, RA_TEA + .2)) * 8 * (1 - lin(t, RA_TEA, RA_TEA + .2));
-  g.save(); g.translate(8, -HOST.headRy - 20 - b); g.rotate(.18); teabag(g, 12000); g.restore();
+  g.save(); g.translate(8, -HOST.headRy * 1.05 * HAIR_TOP - 16 - b); g.rotate(.18); teabag(g, 12000); g.restore(); // on his hair (draft 12)
 }
 function teabagFalling(g, t) {
   const tF = RA_TEA - .32; if (t < tF || t >= RA_TEA) return;
-  const top = xfPt(raXf(RA_TEA), [8, HOST.headY - HOST.headRy - 20]);
+  const top = xfPt(raXf(RA_TEA), [8, HOST.headY - HOST.headRy * 1.05 * HAIR_TOP - 16]);
   g.save(); g.translate(top[0], fallY(t, RA_TEA, -1900, top[1], .32)); g.scale(RA.s, RA.s); g.rotate(.18 + (RA_TEA - t) * 3); teabag(g, 12000); g.restore();
 }
 

@@ -142,3 +142,33 @@ other Bob videos.)
 - The salute and flick poses, a hat tip on the men, now read as a hand to the hair.
 - Cut: `out/_render_d11.sh` (cloud-render --draft for verse 1, verse 2, the bridge trio span and verse 3 + outro,
   draft 9's own bridge parts for the rest), file `out/ydlm_full-v13_*`.
+
+## Draft 12: the church outside, no intro singers, a third peck, an Eric Idle host, the finale entry two ways
+
+Baseline draft 11 (e53c1af, 9bGzyJw9AOw). Bob's five notes on it (review round 23, notes 10-14, 2026-10-17); Robin:
+build both finale entries and give Bob the choice (one round, versions A and B).
+
+- Note 1 (0:27, "remove them off the top ... the first time we see them will be when they first enter singing"):
+  the intro cameo is gone (`v1-main.js` no longer calls `drawIntroPips`). The first singers are the refrain heads
+  at 27.42 and the plucker's first petal.
+- Note 2 ("not crazy about the opening of reflected stain glass ... try instead ... an exterior shot of a church"):
+  `v1-exterior.js`. 0-17.2 is the outside: a stone church at dawn up a churchyard path (bell tower, gable with a
+  round window, buttresses, an oak door, gravestones, two yews, hills, a sun coming up on the right, stars going),
+  all in leaded glass, the dawn's light tinted into the stone as it is drawn (no overlay boxes). Its window is our
+  window (the same four lancets in the same world place), candlelit from inside, and one long push (`exCam`) ends on
+  the interior's 18.0 camera key. From 17.2 to 18.0 the outside dissolves away around the window; from 18.0 the
+  interior is draft 11's. The up-from-black and the daisy's own fade are as before.
+- Note 3 (0:48, "add a third ... three in a row"): `V1AWAVE_PECKS` has a third peck an eighth note after the second.
+- Note 4 ("make him look more like Eric Idle"): `bridge-show.js` host. The bald old man with white tufts, gold
+  specs and giant pockets is a 1970s Python-era Eric Idle type: shaggy collar-length sandy hair, a ragged fringe,
+  sideburns, arched brows that go up when he talks, the big cheeky grin, a brown tweed jacket with flap pockets, a
+  pale blue shirt and a wide maroon tie. The teabag lands on his hair. Moves and times unchanged.
+- Note 5 (3:16, the tiny drop in; "I do love when we only see their faces coming in from the side"): `pip-finale.js`
+  and `pip-heads.js`. No drop. The last refrain's two side heads stay in and three more slide in on the beat at
+  195.37 (Specs and the big one on the left, the lead low on the right), singing the held phrase; then all five
+  dance in from the wings at floor level (three from the left, two from the right), strutting on the half beats.
+  `PF_VARIANT` picks the version: A (looks/glass.html) pulls the faces at 198.7 and they strut in to the ta-da at
+  200.88, the routine as draft 11 from there; B (looks/glass-finale-b.html) keeps the faces for the whole long
+  phrase (the lead ducks out to pluck petal 27 and comes back) and they strut in from 210.49, joining the routine at
+  the held photo pose (212.56).
+- Cuts: `out/_render_d12.sh` + `out/_assemble_d12.sh`, files `out/ydlm_full-v14A_*` and `out/ydlm_full-v14B_*`.

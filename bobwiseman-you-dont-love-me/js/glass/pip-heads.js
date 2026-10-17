@@ -42,25 +42,30 @@ function pipHeadStage(S, P) { // the head centre in drawSinger's stage coordinat
   return [S.x, TRIO_FLOOR_Y - legH * TRIO_SC * z + hy * TRIO_SC * z];
 }
 
+// One head: in at ti, out at to (both ease along the body's axis), bobbing on the beat counted from a; j mirrors the
+// pair's sway. hideFrom (optional): the head is not drawn from that time on (the pluck duck in pip-finale.js).
+function pipHeadDraw(g, k, Q, t, ti, to, a, j, br, hideFrom = Infinity) {
+  if (t >= hideFrom) return;
+  const S = SINGERS[k], inU = easeOutBack(lin(t, ti, ti + .32), 1.4), outU = Math.pow(lin(t, to - .24, to), 2);
+  const off = 340 * (1 - inU) + 380 * outU; if (inU <= 0 || outU >= 1) return;
+  // to the beat: the head bobs and tilts, one side then the other, the pair in mirror
+  const ph = TAU * (t - a) / (2 * PIP_HEAD_BEAT), sd = j % 2 ? -1 : 1;
+  const rot = Q.rot + .05 * Math.sin(ph) * sd, dx = Math.sin(rot), dy = -Math.cos(rot); // (dx, dy): toward the head
+  const bob = 7 * Math.abs(Math.sin(ph));
+  const P = { ...PIP_HEAD_POSE, tilt: .14 * Math.sin(ph) * sd, mouth: pipSingMouth(t) };
+  const [hx, hy] = pipHeadStage(S, P);
+  g.save(); g.setTransform(1, 0, 0, 1, 0, 0); g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
+  if (br < .985) g.filter = `brightness(${br.toFixed(3)})`;
+  g.translate(Q.x - dx * off + dx * bob, Q.y - dy * off + dy * bob); g.rotate(rot); g.scale(PIP_HEAD_SC, PIP_HEAD_SC); g.translate(-hx, -hy);
+  drawSinger(g, S, k, t, P);
+  g.restore();
+}
+// Draft 12: on the verse 3 page the last refrain's two heads stay in for the finale's faces (pip-finale.js PF_HEADS).
+const pipRefrainEnd = (n) => n === PIP_REFRAINS.length - 1 && typeof PF_HEADS !== 'undefined' ? PF_HEADS.out : PIP_REFRAINS[n][1];
 function drawPipHeads(g, t, tod) {
-  const n = PIP_REFRAINS.findIndex(([a, b]) => t > a - .05 && t < b + .4);
+  const n = PIP_REFRAINS.findIndex(([a], i) => t > a - .05 && t < pipRefrainEnd(i) + .4);
   if (n < 0) return;
-  const [a, b] = PIP_REFRAINS[n], L = .35 + .65 * tod.I, br = L * (tod.col[0] + tod.col[1] + tod.col[2]) / 765;
+  const a = PIP_REFRAINS[n][0], b = pipRefrainEnd(n), L = .35 + .65 * tod.I, br = L * (tod.col[0] + tod.col[1] + tod.col[2]) / 765;
   const pair = PIP_HEAD_PAIRS[Math.floor(n / 2) % 2];
-  PIP_HEAD_LAYOUT[n % 2].forEach((Q, j) => {
-    const k = pair[j], S = SINGERS[k], ti = a + j * .1, to = b + j * .06;
-    const inU = easeOutBack(lin(t, ti, ti + .32), 1.4), outU = Math.pow(lin(t, to - .24, to), 2);
-    const off = 340 * (1 - inU) + 380 * outU; if (inU <= 0 || outU >= 1) return;
-    // to the beat: the head bobs and tilts, one side then the other, the pair in mirror
-    const ph = TAU * (t - a) / (2 * PIP_HEAD_BEAT), sd = j ? -1 : 1;
-    const rot = Q.rot + .05 * Math.sin(ph) * sd, dx = Math.sin(rot), dy = -Math.cos(rot); // (dx, dy): toward the head
-    const bob = 7 * Math.abs(Math.sin(ph));
-    const P = { ...PIP_HEAD_POSE, tilt: .14 * Math.sin(ph) * sd, mouth: pipSingMouth(t) };
-    const [hx, hy] = pipHeadStage(S, P);
-    g.save(); g.setTransform(1, 0, 0, 1, 0, 0); g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
-    if (br < .985) g.filter = `brightness(${br.toFixed(3)})`;
-    g.translate(Q.x - dx * off + dx * bob, Q.y - dy * off + dy * bob); g.rotate(rot); g.scale(PIP_HEAD_SC, PIP_HEAD_SC); g.translate(-hx, -hy);
-    drawSinger(g, S, k, t, P);
-    g.restore();
-  });
+  PIP_HEAD_LAYOUT[n % 2].forEach((Q, j) => pipHeadDraw(g, pair[j], Q, t, a + j * .1, b + j * .06, a, j, br));
 }

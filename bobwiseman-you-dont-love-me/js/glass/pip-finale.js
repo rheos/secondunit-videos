@@ -27,15 +27,25 @@ const PF_B = [195.37, 196.05, 196.74, 197.42, 198.11, 198.79, 199.48, 200.18, 20
   204.27, 204.96, 205.66, 206.33, 207.03, 207.73, 208.40, 209.12, 209.79, 210.49, 211.16, 211.86, 212.56, 213.23, 213.90,
   214.60, 215.30, 215.99, 216.67, 217.36, 218.06, 218.76, 219.43, 220.06, 220.78, 221.47, 222.17, 222.87, 223.54, 224.24,
   224.91, 225.58, 226.32, 227.02, 227.71, 228.40, 229.09, 229.78, 230.47, 231.16];
+// Draft 12 (Bob, 2026-10-17: "I don't like how the drop into the frame tiny @ 3:16 ... I do love when we only see their
+// faces coming in from the side. Not sure what to do."): no drop from the top. Their faces come in from the sides for
+// the long held phrase (PF_HEADS, drawFinaleHeads), then they dance in from the wings, three from the left and two from
+// the right, strutting on the half beats (PF.walk). Two versions for Bob to choose from (PF_VARIANT, set by the page):
+// A: the faces pull out at 198.7 and they strut in to the ta-da at 200.88; the routine as draft 11 from there.
+// B: the faces stay for the whole long phrase (the lead ducks out to pluck the last petal and comes back), and they
+//    strut in from 210.49 to 212.56, joining the routine at the held photo pose.
+const PF_VARIANT = (typeof window !== 'undefined' && window.PF_VARIANT) || 'A';
 const PF = {
-  in: PF_B[0], land: [PF_B[5], (PF_B[5] + PF_B[6]) / 2, PF_B[6], (PF_B[6] + PF_B[7]) / 2, PF_B[7]],
+  in: PF_B[0], walk: PF_VARIANT === 'B' ? [PF_B[22], PF_B[25]] : [PF_B[5], PF_B[8]],
   pluck: [PF_B[13], PF_B[16]], // the middle Pip goes up to pluck petal 27 (205.12) and lands back on PF_B[16]
   leap: PF_B[51] + .25,        // and they all go up and out
   y: 2780,                     // world y of their feet: behind little Bob's line (2900), in front of the wall (2560)
   x: 1700, gap: 470,           // the middle singer's world x, and the spacing (screen ~890 px and ~165 px at rest)
   s: 1.1,                      // stage units -> world units (~300 px tall at the resting camera; Bob is ~380)
   sing: [[195.3, 211.2], [214.5, 217.5]], // the vocal stem's last held phrase and the tail
+  wing: 2700,                  // how far off their marks they start the walk in (world units, out of frame at rest)
 };
+const PF_HEADS = { in: PF_B[0], out: PF.walk[0] - .1 }; // the faces at the sides (pip-heads.js holds refrain 12's two to .out)
 const PF_POSE = {
   fall: { ...POSE.vee, lL: [-.1, .25], lR: [.12, -.2], dip: 0 },
   land: { L: [-1.25, -1.0], R: [1.25, 1.0], lL: [-.55, .35], lR: [.55, -.35], x: 0, lean: 0, tilt: .08, dip: 64 },
@@ -61,16 +71,13 @@ PF_STEP.KEY_L = pfMirror(PF_STEP.KEY_R); PF_STEP.KICK2_L = pfMirror(PF_STEP.KICK
 const PF_TRAVEL = 70, PF_MOVES = [...[9, 10, 11, 12, 21, 22, 23, 24].map((i) => [i, 1]), ...[13, 14, 15, 16, 29, 30, 31, 32].map((i) => [i, -1])];
 function pfTravel(t) { let x = 0; for (const [i, d] of PF_MOVES) x += d * PF_TRAVEL * ease(t, PF_B[i] - (PF_B[i + 1] - PF_B[i]) / 2, PF_B[i]); return x; }
 // [start, length, delay between singers]: the entry spin ripples down the line, the routine's spins are in unison
-const PF_SPINS = [[PF_B[2], .55, .12], [PF_B[35], .5, 0], [PF_B[44] + .15, .55, 0]];
-const PF_ROLLS = [[PF_B[3], PF_B[4]]];
+const PF_SPINS = [[PF_B[35], .5, 0], [PF_B[44] + .15, .55, 0]]; // draft 12: no spin in the air (there is no drop)
+const PF_ROLLS = [];
 const PF_CHICK = [];
 function pfKeys(k) {
   const b = PF_B, h = (i) => (b[i + 1] - b[i]) / 2, K = [];
   const add = (t, P, d = .12) => K.push([t, P, d]);
-  add(PF.in - .01, PF_POSE.fall, .01);
-  add(b[1], PF_POSE.scissA); add(b[1] + h(1), PF_POSE.scissB, .1); add(b[2] + .1, POSE.wide, .2); // the spin in the air
-  add(b[3], POSE.roll); add(b[4], PF_POSE.fall, .2);
-  add(PF.land[k], PF_POSE.land, .06); add(PF.land[k] + .32, PF_POSE.ready, .2);
+  add(PF.walk[0] - .01, PF_POSE.strutB, .01); // the walk in from the wings is laid over these keys (pfPose)
   const T = FINAL[1], S = PF_STEP, kick = (i, P) => { add(b[i], P, .14); add(b[i] + h(i), S.STEP, .14); };
   add(b[8] + .02, T, .26);                                                   // ta-da, all three the same
   [9, 10, 11, 12].forEach((i, j) => kick(i, j % 2 ? S.KEY_L : S.KEY_R));      // kick-steps travelling right
@@ -91,6 +98,7 @@ function pfKeys(k) {
   for (const i of [46, 47, 48]) kick(i, i % 2 ? S.KEY_L : S.KEY_R);           // three more kick-steps
   add(b[49], PF_POSE.wave, .16); add(b[50] + .02, T, .26);                  // a wave as the light goes, a last ta-da
   add(PF.leap - .3, PF_POSE.prep, .14); add(PF.leap + .04, PF_POSE.leap, .12);
+  if (PF_VARIANT === 'B') return K.filter(([t], i) => i === 0 || t >= PF.walk[1] - .02).sort((a, c) => a[0] - c[0]); // B: offstage until then
   if (k === 2) { // up to the daisy and back: crouch on the beat before, gone on PF.pluck[0], falling back in to PF.pluck[1]
     const r = K.filter(([t]) => t < PF.pluck[0] - .3 || t > PF.pluck[1] + .4); // he is back in step on b[17]
     r.push([PF.pluck[0] - .3, PF_POSE.prep, .14], [PF.pluck[0] + .04, PF_POSE.leap, .12], [PF.pluck[1] - .58, PF_POSE.fall, .05],
@@ -122,6 +130,9 @@ function pfPose(k, t) {
     const f = .5 + .5 * Math.sin(TAU * (t - a) / (PIP_HEAD_BEAT / 4) - Math.PI / 2);
     P = { ...P, L: [P.L[0] - .5 * f * w, P.L[1]], R: [P.R[0] + .5 * f * w, P.R[1]], dip: P.dip + 12 * f * w, tilt: P.tilt + .1 * Math.sin(TAU * (t - a) / (PIP_HEAD_BEAT / 2)) * w };
   }
+  { const [a, b] = PF.walk, w = pfEnv(a, b - .1, t); // the walk in: the strut, a knee up on every half beat
+    if (w > 0) { const { n, f } = pfBeat(t), half = f < .5, A = half ? PF_POSE.strutA : PF_POSE.strutB, Bp = half ? PF_POSE.strutB : PF_POSE.strutA;
+      P = mixPose(P, mixPose(Bp, A, easeOutBack(clamp((f % .5) / .16), 1.2)), w); } }
   { const w = pfEnv(PF_B[49], PF_B[50], t); // the wave: the raised forearm swings
     if (w > 0) P = { ...P, R: [P.R[0], P.R[1] + .45 * Math.sin(TAU * (t - PF_B[49]) / (PIP_HEAD_BEAT / 2)) * w] }; }
   const sing = PF.sing.some(([a, b]) => t >= a && t < b);
@@ -129,25 +140,14 @@ function pfPose(k, t) {
     || (t >= PF_B[25] && t < PF_B[26]) || (t >= PF_B[27] && t < PF_B[28]);        // and on the held photo poses
   return { ...P, mouth: sing ? pipSingMouth(t) : tada ? .4 : .08 };
 }
-function pfActive(t) { return t >= PF.in && t < PF.leap + 1.2; }
-// Feet: screen y while they come down with the pull-back (camera at t), world lift on the floor.
-// In the air they keep their landing size on screen (grow), so the pull-back does not make them shrink.
-function pfAir(k, t) { // 0 on the floor; otherwise which flight: 1 = the entry, 2 = the middle one's pluck, 3 = the exit
-  if (t < PF.land[k]) return 1;
-  if (k === 2 && t > PF.pluck[0] && t < PF.pluck[1]) return 2;
+function pfActive(t) { return t >= PF.walk[0] && t < PF.leap + 1.2; }
+function pfAir(k, t) { // 0 on the floor; otherwise which flight: 2 = the middle one's pluck (A only), 3 = the exit
+  if (PF_VARIANT !== 'B' && k === 2 && t > PF.pluck[0] && t < PF.pluck[1]) return 2;
   if (t > PF.leap + k * .08) return 3;
   return 0;
 }
-function pfFeetSY(k, t, cam) { // screen y of his feet during the entry (cam: the camera at t)
-  const fl = H / 2 + (PF.y - cam.y) * cam.s, a = PF.in + k * .12, L = PF.land[k];
-  let sy = lerp(-80, .5 * H + 25 * k, 1 - Math.pow(1 - lin(t, a, a + .55), 2));   // in from the top
-  sy += .08 * H * ease(t, a + .6, L - .5);                                          // drifting down
-  { const { n, f } = pfBeat(t); if (n >= 1 && t < L - .5) sy -= 22 * Math.sin(Math.PI * f); } // a kick up on each beat
-  const u = lin(t, L - .5, L); return lerp(sy, fl, u * u);                         // and down onto the floor
-}
 function pfLift(k, t, cam) {
   const air = pfAir(k, t);
-  if (air === 1) return PF.y - (cam.y + (pfFeetSY(k, t, cam) - H / 2) / cam.s);
   if (air === 2) { // up out of the top, then falling back in from above
     const a = PF.pluck[0], b = PF.pluck[1], top = (PF.y - (cam.y - H / 2 / cam.s)) + 900;
     if (t < a + .5) { const u = (t - a) / .5; return top * u * u * u + 260 * u; }
@@ -161,10 +161,10 @@ function drawFinalePips(g, t, cam, tod) {
   if (!pfActive(t)) return;
   const s = cam.s, L = .35 + .65 * tod.I, br = L * (tod.col[0] + tod.col[1] + tod.col[2]) / 765;
   for (let k = 0; k < 5; k++) {
-    if (t < PF.in + k * .12) continue;
-    const S = SINGERS[PIP_LINE[k]], air = pfAir(k, t), lift = pfLift(k, t, cam);
-    const grow = air === 1 ? camAt(PF.land[k]).s / s : 1;
-    const wx = PF.x + pfTravel(t) + (k - 2) * PF.gap * (air === 1 ? lerp(.55, 1, ease(t, PF.land[k] - .6, PF.land[k])) : 1);
+    const S = SINGERS[PIP_LINE[k]], air = pfAir(k, t), lift = pfLift(k, t, cam), grow = 1;
+    // in from the wings: places 0-2 from the left, 3-4 from the right, all on their marks by the end of the walk
+    const wing = (k <= 2 ? -1 : 1) * PF.wing * (1 - ease(t, PF.walk[0], PF.walk[1] - .15));
+    const wx = PF.x + pfTravel(t) + (k - 2) * PF.gap + wing;
     g.save(); g.setTransform(s, 0, 0, s, W / 2 - cam.x * s, H / 2 - cam.y * s);
     g.translate(wx, PF.y); g.scale(PF.s, PF.s); g.translate(-S.x, -TRIO_FLOOR_Y);
     const near = clamp(1 - lift / 700);
@@ -173,7 +173,7 @@ function drawFinalePips(g, t, cam, tod) {
       const rg = g.createRadialGradient(0, 0, 0, 0, 0, 160); rg.addColorStop(0, `rgba(0,0,0,${.45 * near})`); rg.addColorStop(1, 'rgba(0,0,0,0)');
       g.fillStyle = rg; g.fillRect(-160, -160, 320, 320); g.restore();
     }
-    for (const ld of k === 2 ? [PF.land[k], PF.pluck[1]] : [PF.land[k]]) { // landing: a ring of gold sparks at his feet
+    for (const ld of k === 2 && PF_VARIANT !== 'B' ? [PF.pluck[1]] : []) { // landing back from the pluck: a ring of gold sparks
       const dl = t - ld; if (dl <= 0 || dl >= .45) continue;
       const u = dl / .45;
       g.save(); g.translate(S.x, TRIO_FLOOR_Y); g.strokeStyle = `rgba(255,224,140,${(1 - u) * br})`; g.lineWidth = 7; g.lineCap = 'round';
@@ -191,4 +191,26 @@ function drawFinalePips(g, t, cam, tod) {
     drawSinger(g, S, PIP_LINE[k], t, pfPose(k, t));
     g.restore();
   }
+}
+
+// The faces at the sides for the long held phrase (draft 12). Refrain 12's two (the tallest on the left, the kid on the
+// right, pip-heads.js) stay in to PF_HEADS.out; three more slide in on the beat: Specs above and the big one below on
+// the left, the lead low on the right. B: the lead ducks out while she plucks the last petal at the daisy and comes back.
+const PF_HEAD_SLOTS = [
+  { k: 0, x: 165, y: H * .30, rot: 1.22, ti: PF_B[0] },
+  { k: 2, x: 165, y: H * .97, rot: 1.22, ti: PF_B[0] + (PF_B[1] - PF_B[0]) / 2 },
+  { k: 1, x: W - 165, y: H * .92, rot: -1.22, ti: PF_B[1], duck: PF_VARIANT === 'B' ? [PF.pluck[0] - .35, PF.pluck[1]] : null },
+];
+function drawFinaleHeads(g, t, tod) {
+  if (t < PF_HEADS.in - .05 || t > PF_HEADS.out + .5) return;
+  const L = .35 + .65 * tod.I, br = L * (tod.col[0] + tod.col[1] + tod.col[2]) / 765;
+  PF_HEAD_SLOTS.forEach((Q, j) => {
+    const to = PF_HEADS.out + j * .06;
+    if (Q.duck && t > Q.duck[0] - .05 && t < Q.duck[1] + .4) { // out for the pluck and back in
+      pipHeadDraw(g, Q.k, Q, t, Q.duck[1], Q.duck[1] + 99, PF_B[0], j, br);
+      pipHeadDraw(g, Q.k, Q, t, Q.ti, Q.duck[0], PF_B[0], j, br, Q.duck[1]);
+      return;
+    }
+    pipHeadDraw(g, Q.k, Q, t, Q.ti, to, PF_B[0], j, br);
+  });
 }

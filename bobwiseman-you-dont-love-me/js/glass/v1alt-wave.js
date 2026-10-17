@@ -63,8 +63,10 @@ function v1aWaveAt(sp, i, f) { const w = lerp(-sp.Wd[i], sp.Wd[i], f); return [s
 // kissy face and peck her head twice like a chicken - you know?"): her lips go into the kissy face on V1.waiting and
 // stay there, eyes shut, through the near miss (to where the last pucker used to let go); on V1.kissed she pecks her
 // head out at the wave twice, a chicken's jab and snap back, an eighth note apart, with a smack on each.
+// Draft 12 (Bob, 2026-10-17: "now she does it two times, can you add a third. the three in a row would be perfect"):
+// a third peck, the same eighth note on.
 const V1AWAVE_KISS = { on: V1.waiting + .03, off: V1.kissed + 1.0 };
-const V1AWAVE_PECKS = [V1.kissed - .02, V1.kissed + .33];
+const V1AWAVE_PECKS = [V1.kissed - .02, V1.kissed + .33, V1.kissed + .68];
 const V1AWAVE_PECK = [58, -36, -.12]; // the jab: head-lean units out along the lean, a little more tilt
 function v1aWavePeck(t) { // 0..1: how far out the head is jabbed
   let j = 0;
