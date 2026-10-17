@@ -1,0 +1,40 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #furniture {
+          position: absolute;
+          inset: 0;
+          background: var(--bg);
+        }
+      </style>
+      <div data-hf-id="hf-de10" id="furniture" data-composition-id="furniture" data-width="1920" data-height="1080">
+        <svg data-hf-id="hf-de11" id="fu-ground" class="full" viewBox="0 0 1920 1080" aria-hidden="true" style="will-change: transform"></svg>
+        <svg data-hf-id="hf-de12" id="fu-frame" class="full" viewBox="0 0 1920 1080"></svg>
+      </div>
+
+      <script>
+        (() => {
+          const tl = gsap.timeline({ paused: true });
+          const K = BP.kit(tl, 0);
+          // stations are the real pipeline: pdftotext, claude -p, validate.py, JSON out
+          BP.furniture(K, tl, {
+            stations: [
+              { label: "PDF", at: 0 },
+              { label: "TEXT", at: 8 },
+              { label: "MODEL", at: 22 },
+              { label: "CHECK", at: 52 },
+              { label: "JSON", at: 66 },
+            ],
+            sheets: [0, 8, 22, 36, 52, 66, 80],
+          });
+          window.__timelines["furniture"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

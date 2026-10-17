@@ -1,0 +1,50 @@
+<!doctype html>
+<html class="draft" lang="en" data-resolution="landscape">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1280, height=720" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=IBM+Plex+Mono:wght@400;700&display=block" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <!-- Series kit (tools/blueprint-kit, copied by sync.sh). Theme first, then structure. -->
+    <link rel="stylesheet" href="kit/themes/paper.css" />
+    <link rel="stylesheet" href="kit/kit.css" />
+    <script src="kit/kit.js"></script>
+    <script>
+      // Beat grid of the score (beats.json): librosa beats 0.07-84.43 at ~95.7 BPM, extended to 87.58 at 0.63 s.
+      BP.grid({ beats: [0.07, 0.7, 1.32, 1.95, 2.58, 3.2, 3.81, 4.44, 5.06, 5.69, 6.32, 6.94, 7.57, 8.2, 8.82, 9.45, 10.05, 10.68, 11.31, 11.94, 12.56, 13.19, 13.82, 14.44, 15.05, 15.7, 16.32, 16.93, 17.55, 18.18, 18.81, 19.44, 20.06, 20.69, 21.32, 21.94, 22.57, 23.2, 23.82, 24.45, 25.05, 25.68, 26.31, 26.94, 27.56, 28.19, 28.82, 29.44, 30.07, 30.7, 31.3, 31.93, 32.55, 33.18, 33.81, 34.44, 35.06, 35.69, 36.32, 36.94, 37.57, 38.2, 38.82, 39.45, 40.05, 40.68, 41.31, 41.94, 42.56, 43.19, 43.82, 44.44, 45.07, 45.7, 46.3, 46.93, 47.55, 48.18, 48.81, 49.44, 50.06, 50.69, 51.32, 51.94, 52.57, 53.2, 53.82, 54.43, 55.05, 55.68, 56.31, 56.94, 57.56, 58.19, 58.82, 59.44, 60.07, 60.7, 61.3, 61.93, 62.55, 63.18, 63.81, 64.44, 65.06, 65.69, 66.32, 66.94, 67.57, 68.2, 68.82, 69.43, 70.05, 70.68, 71.31, 71.94, 72.56, 73.19, 73.82, 74.44, 75.05, 75.7, 76.3, 76.93, 77.55, 78.18, 78.81, 79.44, 80.06, 80.69, 81.32, 81.94, 82.55, 83.2, 83.8, 84.43, 85.06, 85.69, 86.32, 86.95, 87.58] });
+    </script>
+  </head>
+  <body>
+    <!-- LOOK TEST: furniture + plate IV only, root cut at 54 s. The full film sets 88 s and adds b1-b3, b5-b7. -->
+    <div data-hf-id="hf-de01"
+      id="root"
+      data-composition-id="main"
+      data-start="0"
+      data-duration="54"
+      data-width="1280"
+      data-height="720"
+    >
+      <!-- Score: score-library drafting-table-doc-extraction take-01, sha256 d03dc64f...f344, the clock for every cue -->
+      <audio data-hf-id="hf-de02"
+        id="score"
+        src="_in/score.mp3"
+        data-start="0"
+        data-duration="54"
+        data-track-index="9"
+        data-volume="1"
+      ></audio>
+
+      <!-- every plate draws on a 1920x1080 stage; drafts scale it to 720p (kit.css, stage.sh) -->
+      <div class="stage">
+        <div data-hf-id="hf-de03" id="slot-furniture" data-composition-id="furniture" data-composition-src="compositions/furniture.html" data-start="0" data-duration="54" data-track-index="0" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-de07" id="slot-b4" data-composition-id="b4" data-composition-src="compositions/b4-old-layout.html" data-start="35.4" data-duration="17.3" data-track-index="4" data-width="1920" data-height="1080"></div>
+      </div>
+    </div>
+
+    <script>
+      window.__timelines["main"] = gsap.timeline({ paused: true });
+    </script>
+  </body>
+</html>
