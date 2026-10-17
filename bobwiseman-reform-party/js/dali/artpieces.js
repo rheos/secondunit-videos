@@ -330,10 +330,22 @@ function apMonolith(o, t, p, k) {
       g.save(); apPath(hole); g.strokeStyle = 'rgba(20,28,60,.45)'; g.lineWidth = Math.max(1.4, .07 * k); g.stroke(); g.strokeStyle = rgb(apShade(base, 1.25), .9); g.lineWidth = Math.max(1, .028 * k); g.stroke(); g.restore(); }
     g.restore();
   }
+  // inside the bore, paint the wall over the seam where two faces' cut-outs meet, so no line runs down through the hole (Robin)
+  if (holes.length > 1) { const mt = (gn) => at(gn, (gn.t0 + gn.t1) / 2), pb = gb ? mt(gb.gn) : null, pd = gd ? mt(gd.gn) : null;
+    if (pb && pd) { g.save(); g.beginPath(); for (const hh of holes) { hh.forEach((q, i) => i ? g.lineTo(q[0], q[1]) : g.moveTo(q[0], q[1])); g.closePath(); } g.clip();
+      const fars = vis.map(farOf).filter(Boolean); if (fars.length) { g.beginPath(); g.rect(-W, -H, 3 * W, 3 * H); for (const fh of fars) { fh.forEach((q, i) => i ? g.lineTo(q[0], q[1]) : g.moveTo(q[0], q[1])); g.closePath(); } g.clip('evenodd'); }
+      const wg = g.createLinearGradient(pb[0], pb[1], pd[0], pd[1]); wg.addColorStop(0, rgb(wallLit)); wg.addColorStop(.45, rgb(wallMid)); wg.addColorStop(1, rgb(wallDark));
+      g.strokeStyle = wg; g.lineWidth = Math.max(3, .08 * k); g.lineCap = 'butt';
+      for (const fc of sides) { const nx = G.faces[(fc.i + 1) % 4]; if (!isVis(nx)) continue; const a2 = apP(fc.pts[1]), b2 = apP(fc.pts[2]); g.beginPath(); g.moveTo(a2[0], a2[1]); g.lineTo(b2[0], b2[1]); g.stroke(); }
+      g.restore(); } }
   // the edges: a crisp light line where two visible faces meet (kept off the hole)
   if (k > 2.5) { g.save(); if (holes.length) { g.beginPath(); g.rect(-W, -H, 3 * W, 3 * H); for (const hh of holes) { hh.forEach((q, i) => i ? g.lineTo(q[0], q[1]) : g.moveTo(q[0], q[1])); g.closePath(); } g.clip('evenodd'); }
     g.strokeStyle = rgb(apShade(base, 1.3), .85); g.lineWidth = Math.max(1, .022 * k); g.lineCap = 'butt';
-    for (const fc of sides) { const nx = G.faces[(fc.i + 1) % 4]; if (!isVis(nx)) continue; const a2 = apP(fc.pts[1]), b2 = apP(fc.pts[2]); g.beginPath(); g.moveTo(a2[0], a2[1]); g.lineTo(b2[0], b2[1]); g.stroke(); }
+    for (const fc of sides) { const nx = G.faces[(fc.i + 1) % 4]; if (!isVis(nx)) continue; const A3 = fc.pts[1], B3 = fc.pts[2];
+      // the edge the bore cuts: leave the stretch beside the hole out entirely (two faces' cut-outs overlap there, so a clip can't hide it)
+      const at3 = (u) => [lerp(A3[0], B3[0], u), lerp(A3[1], B3[1], u), lerp(A3[2], B3[2], u)], uh = m.hy / m.h, mid = at3(uh), dq = apSub(mid, G.Q), along = apDot(dq, G.ax), rad = Math.hypot(dq[0] - G.ax[0] * along, dq[1] - G.ax[1] * along, dq[2] - G.ax[2] * along);
+      const segs = rad < m.hr * S * 1.25 ? [[0, (m.hy - m.hr * 1.15) / m.h], [(m.hy + m.hr * 1.15) / m.h, 1]] : [[0, 1]];
+      for (const [u0, u1] of segs) { const a2 = apP(at3(u0)), b2 = apP(at3(u1)); g.beginPath(); g.moveTo(a2[0], a2[1]); g.lineTo(b2[0], b2[1]); g.stroke(); } }
     g.restore(); }
   // the near corner pokes out at the foot: a small flat point of plate on the playa
   { const nf = G.faces[0].n, fp = [G.F(-.3, 0, AP_MONO.b - .18), G.F(.3, 0, AP_MONO.b - .18), G.F(.05, 0, AP_MONO.b + .55), G.F(.05, .2, AP_MONO.b + .05)].map(apP); if (ok(fp)) { poly([fp[0], fp[2], fp[1]], col(nf, .78)); poly([fp[0], fp[3], fp[2]], col(nf, .9)); } }
