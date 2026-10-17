@@ -186,6 +186,7 @@ function rollFrame(a) { const ph = Math.abs(a) % Math.PI, fo = Math.min(ph, Math
 // to draw over the car layer and the fire (before Little Bob, the insert, the vignette and the captions).
 const FRONT_HOOKS = ['carFront', 'burnFront', 'playaFront', 'installsFront', 'instrumentsFront', 'scenesFront', 'artcarsFront', 'artpiecesFront'];
 function render(t) {
+  if (ACT.on) ACT.reset(); // the check tools read what each actor reports this frame
   C = camAt(t); CP = Math.cos(C.p); SP = Math.sin(C.p); CX = carX(t); CZ = carZ(t); YAW = yaw(t);
   g.setTransform(1, 0, 0, 1, 0, 0); g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
   skyAndGround(t);
