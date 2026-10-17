@@ -80,3 +80,10 @@ https://youtu.be/tcsvJvogNZA (unlisted, default channel), 88 s at 720p
 No vendor names or real figures in the sources (grep audit). The first full render caught plate III
 leaving the sheet parked left: a `set` + `to` pair that snapshots ran correctly but the renderer
 did not. Both sheet slides now use `fromTo` with explicit values.
+
+## Delivery (2026-10-17)
+
+Robin approved draft 1 as the delivery cut. On Novadiem Studio: https://youtu.be/4B_UinelxCY (unlisted,
+"300 of 300 Fields: a document extraction API, checked"). Listed on the library page and on
+novadiem.com/video/explainers (rheos/novadiem.com#170). Renders and the score copy stay in this
+worktree (`renders/`, `_in/`), outside git.
