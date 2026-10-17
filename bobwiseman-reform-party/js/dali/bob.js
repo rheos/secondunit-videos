@@ -30,16 +30,21 @@ function fireLight(t) { // screen position of the fire and how strong its light 
   return { fx, fy, f: clamp(b / .75) };
 }
 function bobWalk(t) {
+  if (typeof rangerTorchPool === 'function') rangerTorchPool(t); // burn.js: the Rangers' torchlight on the board, over the car layer
   const cfg = bobEndCfg(); if (!LITTLE_BOB.active(cfg, t)) return;
   const k = cfg.h / 330, sx = LITTLE_BOB.xAt(cfg, t), { fx, fy, f } = fireLight(t);
   const bx0 = Math.max(0, Math.floor(sx - 560 * k)), bx1 = Math.min(W, Math.ceil(sx + 90 * k)), by0 = Math.max(0, Math.floor(cfg.y - 360 * k)), by1 = H;
   if (bx1 <= bx0) return; const bw = bx1 - bx0, bh = by1 - by0, cy = cfg.y - 170 * k;
   cfg.grade = (kg) => {
-    // 1. his long shadow, thrown toward the camera and away from the fire, laid on the playa under him
-    const sy = .5, sxs = clamp((sx - fx) / 700, -1.3, 1.3) * sy, y0 = cfg.y + 2;
+    // 1. his long shadow, thrown toward the camera and away from the fire, laid on the playa under him. Draft 9 (Dali,
+    // dream scale, the answer to "little big guy"): as he comes up to the embers it swings round under him and stretches
+    // back across the playa toward the heap, as long as the Man was tall, holds through the hat lift, then shrinks back.
+    const sy = .5, sxs = clamp((sx - fx) / 700, -1.3, 1.3) * sy, y0 = cfg.y + 2, mg = manGeom(), gy = mg.p[2] > 1 ? Math.min(mg.p[1], y0 - 120) : y0 - 300, hb = cfg.h;
+    const sw = ease(t, BOB_END.stop - 1.5, BOB_END.stop + .1) * (1 - ease(t, BOB_END.lift + 1.3, BOB_END.lift + 3.3)), q = .8;
+    const hx = lerp(sxs, q * (fx - sx) / hb, sw), hy = lerp(sy, q * (gy - y0) / hb, sw);
     bsg.setTransform(1, 0, 0, 1, 0, 0); bsg.globalCompositeOperation = 'source-over'; bsg.clearRect(bx0, by0, bw, bh); bsg.drawImage(kg.canvas, bx0, by0, bw, bh, bx0, by0, bw, bh);
     bsg.globalCompositeOperation = 'source-in'; bsg.fillStyle = 'rgb(22,10,28)'; bsg.fillRect(bx0, by0, bw, bh);
-    g.save(); g.setTransform(1, 0, 0, -sy, 0, y0 * (1 + sy)); g.transform(1, 0, -sxs, 1, sxs * y0, 0); g.globalAlpha = .28 + .3 * f; g.filter = 'blur(2px)';
+    g.save(); g.setTransform(1, 0, -hx, -hy, hx * y0, y0 * (1 + hy)); g.globalAlpha = .28 + .3 * f; g.filter = 'blur(2px)'; // a point at height h above his feet lands at (x + hx h, y0 + hy h)
     g.drawImage(BOB_SCR, bx0, by0, bw, bh, bx0, by0, bw, bh); g.restore();
     // 2. the rim: the edge of him that faces the fire, pulled out of his own alpha
     const dx = fx - sx, dy = fy - cy, dl = Math.hypot(dx, dy) || 1, r = 4.5 * k / .88, ox = dx / dl * r, oy = dy / dl * r;

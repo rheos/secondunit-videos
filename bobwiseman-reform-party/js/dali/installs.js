@@ -22,10 +22,26 @@ function newspaper(k, i) { // a broadsheet in metres-scaled px, centred on the o
 // refrain 1 a melting canvas roller blind; refrain 2 a venetian blind whose slats tilt shut; refrain 3 a red velvet drape
 // that melts on its rail and slides off like a soft watch. Each holds under 2 s; nothing goes below y 975 (caption band).
 function blind(t, hy) {
-  const Y = Math.min(hy, H), maxY = Math.min(Y + 6, 975); if (maxY < 40) return;
+  const Y = Math.min(hy, H), maxY = Math.min(Y + 6, 975);
   for (let r = 0; r < 3; r++) { const b = wt(REFRAINS[r], 'blues'); if (t < b - .1 || t > b + 3.2) continue;
-    if (r === 0) canvasBlind(t, b, maxY); else if (r === 1) slatBlind(t, b, maxY); else drapeBlind(t, b, maxY); }
+    if (r === 2) { if (!drapeHigh()) drapeBlind(t, b, drapeReach(hy)); continue; } if (maxY < 40) continue;
+    if (r === 0) canvasBlind(t, b, maxY); else slatBlind(t, b, maxY); }
 }
+// draft 9: refrain 3 goes out over the city, so the drape hangs from the top of frame to below the horizon, over the far
+// band of camps (more of the frame the higher the drone is), and still reads when the horizon is off the top of frame.
+// The city under it is not touched: the drape is the fiction's object, laid over the view for three seconds.
+function drapeReach(hy) { const high = clamp((C.y - 4) / 22); return clamp(Math.max(Math.min(hy, H) + 6 + high * 110, H * lerp(.3, .5, high)), 40, 975); }
+// The sky pass is painted over by the ground, so when the drone is up over the city at "blues" the drape is drawn as a
+// far item in the depth list instead (300 m out): it covers the sky and the band of camps under the horizon, and
+// everything nearer (the board, the Man, the art) stands in front of it. Decided once from the flight at "blues", so it
+// never switches mode mid-drop. If the drone looks so steeply down that the horizon is off the top of frame, it hangs
+// 45 m beyond the board instead, its hem on that ground line.
+let drapeMode = null;
+function drapeHigh() { if (drapeMode !== null) return drapeMode; const c = camAt(wt(REFRAINS[2], 'blues') + .4, true); return (drapeMode = c.y > 6); }
+function drapeInto(t, list) { const b = wt(REFRAINS[2], 'blues'); if (t < b - .1 || t > b + 3.2 || !drapeHigh()) return; const hy = H / 2 - C.f * Math.tan(C.p);
+  let z = 300, maxY = (Math.min(hy, H) + 6 + clamp(C.y / 32) * 110) / .69; // the hem's highest point sits below the band of camps
+  if (hy < 40) { const Dh = Math.hypot(C.x - CX, C.z - CZ) + 45; z = C.y * SP + Dh * CP; maxY = (H / 2 - C.f * (-C.y * CP + Dh * SP) / z) / .76; }
+  list.push({ z, draw: () => drapeBlind(t, b, clamp(maxY, H * .24, 975), true), shadow: null }); }
 function canvasBlind(t, b, maxY) {
   const ext = ease(t, b - .05, b + .5) * (1 - ease(t, b + 1.75, b + 2.45)); if (ext <= 0) return;
   const melt = ease(t, b + .25, b + 1.75), D = maxY * .8 * ext, R = mulberry(311);
@@ -63,12 +79,12 @@ function slatBlind(t, b, maxY) {
   g.strokeStyle = '#4a3c2a'; g.lineWidth = 3; g.beginPath(); g.moveTo(W * .9, 24); g.lineTo(W * .9, Math.min(by + 140, maxY - 30)); g.stroke(); // the tilt wand
   g.fillStyle = '#4a3c2a'; g.fillRect(W * .9 - 6, Math.min(by + 140, maxY - 30), 12, 26);
 }
-function drapeBlind(t, b, maxY) {
-  const drop = ease(t, b - .05, b + .6), melt = ease(t, b + .3, b + 1.9), slide = ease(t, b + 1.75, b + 3.0); if (drop <= 0 || slide >= 1) return;
+function drapeBlind(t, b, maxY, hauled) { // hauled: it goes back up into the sky instead of sliding off down the horizon
+  const drop = ease(t, b - .05, b + .6), melt = ease(t, b + .3, b + 1.9), slide = ease(t, b + 1.75, b + 3.0), fade = 1 - ease(t, b + 2.7, b + 3.0); if (drop <= 0 || slide >= 1 || fade <= 0) return; // fades over its last .3 s, so it never vanishes half on screen (2:57.08)
   const D = maxY * .84 * drop, R = mulberry(733), drips = [...Array(9)].map((_, i) => ({ x: (i + .2 + R() * .6) / 9 * W, w: 40 + R() * 60, L: (60 + R() * 170) * melt }));
   // the hem: lowest left of centre like a soft watch over a branch, with drips that lengthen as it melts
   const hem = (x) => { const u = x / W; let y = D * (.82 + .18 * Math.sin(u * Math.PI)) + melt * 90 * Math.exp(-((u - .38) ** 2) / .03) + Math.sin(u * 23 + t * 1.2) * 10; for (const d of drips) { const v = (x - d.x) / d.w; if (v > -1 && v < 1) y += d.L * (1 - v * v) ** 2; } return Math.min(y, maxY - 4); };
-  g.save(); g.translate(W, 0); g.rotate(slide * slide * .5); g.translate(-W + slide * slide * W * .25, slide * slide * maxY * .9); // it slides off to the right and down behind the horizon
+  g.save(); g.globalAlpha = fade; if (hauled) g.translate(0, -slide * slide * (D + 260)); else { g.translate(W, 0); g.rotate(slide * slide * .5); g.translate(-W + slide * slide * W * .25, slide * slide * maxY * .9); } // it slides off to the right and down behind the horizon
   g.beginPath(); g.moveTo(-20, 0); g.lineTo(W + 20, 0); for (let x = W + 20; x >= -20; x -= 12) g.lineTo(x, hem(x)); g.closePath();
   const fg = g.createLinearGradient(0, 0, W, 0); for (let i = 0; i <= 28; i++) { const u = i / 28, l = .5 + .5 * Math.sin(u * 13 * Math.PI + Math.sin(u * 7) * 1.5); fg.addColorStop(u, rgb(mix([84, 10, 16], [196, 44, 40], l))); }
   g.fillStyle = fg; g.fill();
@@ -116,14 +132,27 @@ function earLock(t, hx, hy, k) { // on "restrict" a padlock drops out of the sky
   g.fillStyle = '#2a1e0c'; g.beginPath(); g.arc(0, 1.55 * k, .2 * k, 0, TAU); g.fill(); g.fillRect(-.08 * k, 1.55 * k, .16 * k, .5 * k);
   g.restore();
 }
-// a mouth sculpture with a padlock through its lips, on "gag order" (protected: unchanged)
-function gagMouth(t, list) { const s = L_(2).s; if (t < s - .2) return; const X = carX(s) - 12, Z = 30, grow = easeOutBack(clamp((t - s + .2) / .9));
-  list.push({ z: P(X, 0, Z)[2], draw: () => { const p = P(X, 0, Z); if (p[2] < 1) return; const k = kAt(p) * grow, x = p[0], y = p[1] - 5 * k;
-    g.strokeStyle = '#6b4a2a'; g.lineWidth = Math.max(1, .3 * k); g.beginPath(); g.moveTo(x, p[1]); g.lineTo(x, y + 1.2 * k); g.stroke();
-    g.fillStyle = '#c0322a'; g.beginPath(); g.moveTo(x - 3 * k, y); g.bezierCurveTo(x - 1.5 * k, y - 1.6 * k, x - .3 * k, y - .9 * k, x, y - .6 * k); g.bezierCurveTo(x + .3 * k, y - .9 * k, x + 1.5 * k, y - 1.6 * k, x + 3 * k, y); g.bezierCurveTo(x + 1.5 * k, y + 1.7 * k, x - 1.5 * k, y + 1.7 * k, x - 3 * k, y); g.fill();
-    g.strokeStyle = '#6a1712'; g.lineWidth = Math.max(1, .12 * k); g.beginPath(); g.moveTo(x - 3 * k, y); g.quadraticCurveTo(x, y + .35 * k, x + 3 * k, y); g.stroke();
-    g.strokeStyle = '#b8b4aa'; g.lineWidth = Math.max(1, .18 * k); g.beginPath(); g.arc(x, y + .1 * k, .45 * k, Math.PI, TAU); g.stroke(); g.fillStyle = '#c9a43a'; g.fillRect(x - .6 * k, y + .1 * k, 1.2 * k, .9 * k); },
-    shadow: () => shadowStick(X, 0, 6.5 * grow, Z, 4 * grow, t) }); }
+// a mouth sculpture with a padlock through its lips, on "gag order". Draft 9: twice the size, and placed from the camera's
+// own pose at "order" so it sits on the left third of that framing and the frame edge never cuts it (30-31.5) whatever
+// the flight does; the padlock hangs open from "gag" and its shackle snaps shut on "order", the lips pinch, the lock shudders.
+const GAG = { S: 2, D: 31.6, SX: 480, H: 2.8 }; // scale, metres ahead of the lens at "order", screen x of its centre there, lips height (scaled units)
+let gagAt = null; // a constant (worked out once from the flight, which is itself a pure function of t), not frame state
+function gagWhere() { if (gagAt) return gagAt; const c = camAt(wt(2, 'order'), true), fx = Math.sin(c.yaw), fz = Math.cos(c.yaw), lat = (GAG.SX - W / 2) / c.f * GAG.D;
+  return (gagAt = { X: c.x + fx * GAG.D + fz * lat, Z: c.z + fz * GAG.D - fx * lat, rx: fz, rz: -fx }); }
+function gagMouth(t, list) { const s = L_(2).s; if (t < s - .2) return; const { X, Z } = gagWhere(), grow = easeOutBack(clamp((t - s + .2) / .9)), o = wt(2, 'order');
+  const shut = ease(t, o - .1, o + .02), snap = t > o ? Math.exp(-(t - o) * 8) * Math.sin((t - o) * 38) : 0, pinch = shut * (1 - .4 * Math.exp(-Math.max(0, t - o) * 4));
+  list.push({ z: P(X, 0, Z)[2], draw: () => { const p = P(X, 0, Z); if (p[2] < 1) return; const k = kAt(p) * grow * GAG.S, x = p[0], y = p[1] - GAG.H * k, hz = 1 - .14 * pinch + .04 * snap;
+    g.strokeStyle = '#6b4a2a'; g.lineWidth = Math.max(1, .22 * k); g.beginPath(); g.moveTo(x, p[1]); g.lineTo(x, y + 1.2 * k); g.stroke();
+    g.fillStyle = '#c0322a'; g.beginPath(); g.moveTo(x - 3 * k, y); g.bezierCurveTo(x - 1.5 * k, y - 1.6 * k * hz, x - .3 * k, y - .9 * k * hz, x, y - .6 * k * hz); g.bezierCurveTo(x + .3 * k, y - .9 * k * hz, x + 1.5 * k, y - 1.6 * k * hz, x + 3 * k, y); g.bezierCurveTo(x + 1.5 * k, y + 1.7 * k * hz, x - 1.5 * k, y + 1.7 * k * hz, x - 3 * k, y); g.fill();
+    g.strokeStyle = 'rgba(255,190,170,.45)'; g.lineWidth = Math.max(1, .14 * k); g.beginPath(); g.moveTo(x - 1.9 * k, y - .62 * k * hz); g.quadraticCurveTo(x - 1.2 * k, y - 1.05 * k * hz, x - .55 * k, y - .78 * k * hz); g.stroke(); // a shine on the top lip
+    g.strokeStyle = '#6a1712'; g.lineWidth = Math.max(1, .12 * k); g.beginPath(); g.moveTo(x - 3 * k, y); g.quadraticCurveTo(x, y + .35 * k * hz, x + 3 * k, y); g.stroke();
+    // the padlock through the lips: open, its shackle up and swung out, until "order" drops it home
+    const by = y + .1 * k + snap * .06 * k, lift = (1 - shut) * .5 * k;
+    g.save(); g.translate(x - .45 * k, by - lift); g.rotate(-(1 - shut) * .75); g.strokeStyle = '#b8b4aa'; g.lineWidth = Math.max(1, .18 * k); g.beginPath(); g.moveTo(0, .15 * k); g.lineTo(0, 0); g.arc(.45 * k, 0, .45 * k, Math.PI, TAU); g.lineTo(.9 * k, .15 * k); g.stroke(); g.restore();
+    g.fillStyle = '#c9a43a'; g.fillRect(x - .6 * k, by, 1.2 * k, .9 * k); g.fillStyle = 'rgba(255,240,190,.35)'; g.fillRect(x - .52 * k, by + .06 * k, .3 * k, .78 * k);
+    g.fillStyle = '#2a1e0c'; g.beginPath(); g.arc(x, by + .4 * k, .11 * k, 0, TAU); g.fill(); g.fillRect(x - .04 * k, by + .4 * k, .08 * k, .28 * k); },
+    shadow: () => { const { rx, rz } = gagWhere(), S = GAG.S * grow, Y = GAG.H * S; shadowStick(X, 0, Y, Z, .22 * S, t); // the post, then the lips as a flat cut-out facing the lens
+      shadowOf([[-3, 0], [-1.6, 1.3], [0, .9], [1.6, 1.3], [3, 0], [1.5, -1.2], [-1.5, -1.2]].map(([u, v]) => [X + rx * u * S, Y + v * S, Z + rz * u * S]), t); } }); }
 
 // ---------- newspapers on every "news": big broadsheets tumbling through on the wind, blacked out ----------
 function paperItems(t) { const out = [];
@@ -190,67 +219,147 @@ function boardCopy(x, y, k, t, nod, i) { // a small replica of the table car: th
     g.fillStyle = '#1a1a20'; g.fillRect(bx - .16 * k, seat, .12 * k, .42 * k); g.fillRect(bx + .04 * k, seat, .12 * k, .42 * k);
     g.fillStyle = '#5c3a1c'; g.fillRect(bx - .3 * k, seat - .02 * k, .6 * k, .06 * k); torso(bx, seat, false); g.fillStyle = PAL.wood; g.fillRect(bx - .27 * k, seat - .64 * k, .54 * k, .07 * k); g.fillRect(bx - .25 * k, seat - .6 * k, .05 * k, .6 * k); g.fillRect(bx + .2 * k, seat - .6 * k, .05 * k, .6 * k); }
 }
-function suitColumn(t, list) { // during news and grin (and from "rehearsed" in refrain 3) a column of copies rolls past the other way
-  const wins = [[L_(4).s - .5, L_(5).e + .4, 5], [L_(11).s - .5, L_(12).e + .4, 6], [L_(30).s - .5, L_(33).e + .4, 7]];
-  for (const [s, e, n] of wins) { if (t < s || t > e) continue; const vis = hold(t, s, s + .3, e - .3, e), reh = L_(30), nodOne = t > reh.s && t < reh.e + .3 ? Math.abs(Math.sin((t - reh.s) * 1.6 * Math.PI)) * .12 : Math.abs(Math.sin(t * 2.2)) * .05;
+function suitColumn(t, list) { // during news and grin a column of copies rolls past the other way (refrains 1 and 2, draft 7)
+  const wins = [[L_(4).s - .5, L_(5).e + .4, 5], [L_(11).s - .5, L_(12).e + .4, 6]];
+  for (const [s, e, n] of wins) { if (t < s || t > e) continue; const vis = hold(t, s, s + .3, e - .3, e), nodOne = Math.abs(Math.sin(t * 2.2)) * .05;
     for (let i = 0; i < n; i++) { const X = carX(t) + 34 - (t - s) * 7.5 + i * 6.2, Z = 15 + (i % 2) * 1.2; const p = P(X, 0, Z); if (p[2] < 1.5 || p[0] < -200 || p[0] > W + 200) continue;
-      list.push({ z: p[2], draw: () => { const k = kAt(p) * vis; if (k < .5) return; boardCopy(p[0], p[1] - (Math.floor(t * 5 + i) % 2) * .03 * k, k, t, nodOne, i); }, shadow: () => shadowOf([[X - 1.7, 0, Z - .6], [X + 1.7, 0, Z - .6], [X + 1.7, 2, Z], [X - 1.7, 2, Z]], t) }); } } }
+      list.push({ z: p[2], draw: () => { const k = kAt(p) * vis; if (k < .5) return; boardCopy(p[0], p[1] - (Math.floor(t * 5 + i) % 2) * .03 * k, k, t, nodOne, i); }, shadow: () => shadowOf([[X - 1.7, 0, Z - .6], [X + 1.7, 0, Z - .6], [X + 1.7, 2, Z], [X - 1.7, 2, Z]], t) }); } }
+  rehearsedRow(t, list); }
+// draft 9, "rehearsed": five copies roll in to about 8 m beyond the far row, pace the board in a line, and nod on exactly
+// the main row's beat (car.js: |sin(1.6 pi (t - line start))| from the line's start to its end + .3); then they roll off
+// the other way before refrain 3 climbs out over the city
+function rehearsedRow(t, list) { const reh = L_(30), s = reh.s - .5, e = reh.e + 2.6; if (t < s || t > e) return;
+  const nod = t > reh.s && t < reh.e + .3 ? Math.abs(Math.sin((t - reh.s) * 1.6 * Math.PI)) * .14 : 0, inn = 1 - ease(t, s, reh.s + 1.1), out = ease(t, reh.e + .4, e), vis = hold(t, s, s + .25, e - .35, e);
+  for (let i = 0; i < 5; i++) { const X = carX(t) - 9.4 + i * 4.3 + inn * (16 + i * 2.5) - out * out * (34 + i * 3), Z = 7.2 + (i % 2) * .5, p = P(X, 0, Z); if (p[2] < 1.5 || p[0] < -260 || p[0] > W + 260) continue;
+    const roll = inn > .02 || out > .02 ? (Math.floor(t * 5 + i) % 2) * .03 : 0; // the wheels only bump while rolling, so the nod reads as one
+    list.push({ z: p[2], draw: () => { const k = kAt(p) * vis; if (k < .5) return; boardCopy(p[0], p[1] - roll * k, k, t, nod, i); }, shadow: () => shadowOf([[X - 1.7, 0, Z - .6], [X + 1.7, 0, Z - .6], [X + 1.7, 2, Z], [X - 1.7, 2, Z]], t) }); } }
 
 // ---------- the soft clock car: two visits only, drooping more each time; on "once upon a time" its hands run backward ----------
 // visit 1: dawn, nearly round, drives through the intro push. Visit 2: midday-soft, rolls in behind the vogue poses and parks on
 // the right third for "once upon a time" (needs the camera to hold VOGUE through 126.7, see the report), then leaves during the dime.
-const CLOCK_VISITS = [{ a: 0, b: 17, dx: (t) => lerp(46, 4, t / 17), Z: 34 }, { a: L_(14).s, b: 127.9, dx: (t) => lerp(24, 9, ease(t, L_(14).s, 125.7)) - Math.max(0, t - 125.7) * .7, Z: 16 }];
-function clockCar(t, list) { const v = CLOCK_VISITS.find((v) => t >= v.a && t <= v.b); if (!v) return; const X = carX(t) + v.dx(t), Z = v.Z; const p = P(X, 0, Z); if (p[2] < 2 || p[0] < -400 || p[0] > W + 400) return;
-  list.push({ z: p[2], draw: () => { const k = kAt(p), x = p[0], y = p[1], m = lerp(.15, 1.25, clamp(t / 130)), back = wt(15, 'time'), hands = t < back ? t * .2 : back * .2 - ease(t, back - .05, back + 2.5) * 30, rock = Math.sin(t * 9) * .03 * k;
+// Draft 9, visit 3 (Dali DI-1): smaller, it paces the board's far side as the face's left eye, with the eyeball car (eyeCar) as
+// the right eye. Through the grin close-up both pace well out to the sides, clear of that frame; as the drone rises off the
+// grin they close in to either side of the far row, so from above the table is the mouth and these two are the eyes; after
+// "facts" they peel off and drop behind.
+const EYES = { a: L_(33).s, in0: L_(33).s + 2.75, in1: L_(33).s + 4.2, out0: L_(34).s + .3, b: L_(34).s + 1.9, x: 3.2, far: 11.5 };
+// They only close in if the flight really rises over the board for DI-1 (camera above 7 m at the face hold); otherwise they
+// stay wide, clear of the protected grin close-up (a constant, worked out once from the flight)
+let eyesUp = null; const eyesRise = () => (eyesUp !== null ? eyesUp : (eyesUp = camAt(EYES.in1 + .5, true).y > 7 ? 1 : 0));
+const eyeX = (t, side) => side * (lerp(EYES.far, EYES.x, ease(t, EYES.in0, EYES.in1) * eyesRise()) + 30 * (1 - ease(t, EYES.a, EYES.a + 2.2))) - 28 * ease(t, EYES.out0, EYES.b) ** 2; // in from either side, out by dropping behind
+const eyeZ = (t, z) => z + 12 * ease(t, EYES.out0, EYES.b);
+const CLOCK_VISITS = [{ a: 0, b: 17, dx: (t) => lerp(46, 4, t / 17), Z: 34 }, { a: L_(14).s, b: 127.9, dx: (t) => lerp(24, 9, ease(t, L_(14).s, 125.7)) - Math.max(0, t - 125.7) * .7, Z: 16 },
+  { a: EYES.a, b: EYES.b, dx: (t) => eyeX(t, -1), Z: (t) => eyeZ(t, 3.7), s: .6 }];
+function clockCar(t, list) { const v = CLOCK_VISITS.find((v) => t >= v.a && t <= v.b); if (!v) return; const X = carX(t) + v.dx(t), Z = typeof v.Z === 'function' ? v.Z(t) : v.Z, sc = v.s || 1; const p = P(X, 0, Z); if (p[2] < 2 || p[0] < -400 || p[0] > W + 400) return;
+  list.push({ z: p[2], draw: () => { const k = kAt(p) * sc, x = p[0], y = p[1], m = lerp(.15, 1.25, clamp(t / 130)), back = wt(15, 'time'), hands = t < back ? t * .2 : back * .2 - ease(t, back - .05, back + 2.5) * 30, rock = Math.sin(t * 9) * .03 * k;
     g.fillStyle = '#4a3a2c'; g.fillRect(x - 3 * k, y - 1.6 * k + rock, 6 * k, 1.2 * k); g.fillStyle = '#17120f'; g.beginPath(); g.arc(x - 2 * k, y - .4 * k, .4 * k, 0, TAU); g.arc(x + 2 * k, y - .4 * k, .4 * k, 0, TAU); g.fill();
     g.strokeStyle = PAL.crutch; g.lineWidth = Math.max(1, .14 * k); g.beginPath(); g.moveTo(x + 2.6 * k, y - 1.6 * k); g.lineTo(x + 3.4 * k, y - 4.4 * k - m * k); g.stroke(); // a crutch props the sagging side
     const cy = y - 4.2 * k + rock, R = 2.6 * k; g.fillStyle = '#e8d9a8'; g.beginPath(); for (let i = 0; i <= 40; i++) { const a = i / 40 * TAU, sag = Math.max(0, Math.sin(a)) * m * 2.2 * k * (.5 + .5 * Math.cos(a * 2)); const px = x + Math.cos(a) * R, py = cy + Math.sin(a) * R + sag; i ? g.lineTo(px, py) : g.moveTo(px, py); } g.closePath(); g.fill(); g.strokeStyle = '#b08a3a'; g.lineWidth = .18 * k; g.stroke();
     g.fillStyle = '#3a2a1a'; for (let i = 0; i < 12; i++) { const a = i / 12 * TAU; g.fillRect(x + Math.cos(a) * R * .8 - .08 * k, cy + Math.sin(a) * R * .8 - .08 * k + Math.max(0, Math.sin(a)) * m * 1.2 * k, .16 * k, .16 * k); }
     const spinning = t > back - .05 && t < back + 2.5; if (spinning) { g.strokeStyle = 'rgba(26,20,18,.25)'; g.lineWidth = .4 * k; g.beginPath(); g.arc(x, cy, 1.9 * k, -hands * 12 - Math.PI / 2, -hands * 12 - Math.PI / 2 + 1.2); g.stroke(); }
     g.strokeStyle = '#1a1412'; g.lineCap = 'round'; for (const [len, sp, w] of [[1.5, 1, .2], [2.1, 12, .12]]) { const a = hands * sp - Math.PI / 2; g.lineWidth = w * k; g.beginPath(); g.moveTo(x, cy); g.lineTo(x + Math.cos(a) * len * k, cy + Math.sin(a) * len * k); g.stroke(); } },
-    shadow: () => shadowStick(X, 0, 7, Z, 5, t) }); }
+    shadow: () => shadowStick(X, 0, 7 * sc, Z, 5 * sc, t) }); }
+// the eyeball car (Dali DI-1, the face's right eye): a 2.5 m eyeball on a low wooden cart, white with red veins and a blue
+// iris; it looks across at the board while it paces, and up into the lens while the drone hangs over the face
+function eyeCar(t, list) { if (t < EYES.a || t > EYES.b) return; const X = carX(t) + eyeX(t, 1), Z = eyeZ(t, 4.4), p = P(X, 0, Z); if (p[2] < 2 || p[0] < -400 || p[0] > W + 400) return;
+  list.push({ z: p[2], draw: () => { const k = kAt(p), x = p[0], y = p[1], R = 1.25 * k, cy = y - 1.85 * k, wob = Math.sin(t * 7) * .02 * k;
+    g.fillStyle = '#6b4a2a'; g.fillRect(x - 1.5 * k, y - .62 * k, 3 * k, .3 * k); g.fillStyle = '#4a3220'; g.fillRect(x - 1.5 * k, y - .36 * k, 3 * k, .06 * k); // the cart bed
+    g.fillStyle = '#17120f'; for (const wx of [-1.05, 1.05]) { g.beginPath(); g.arc(x + wx * k, y - .28 * k, .28 * k, 0, TAU); g.fill(); g.strokeStyle = '#8a7a60'; g.lineWidth = Math.max(1, .05 * k); const a = -t * 6; g.beginPath(); g.moveTo(x + wx * k + Math.cos(a) * .28 * k, y - .28 * k + Math.sin(a) * .28 * k); g.lineTo(x + wx * k - Math.cos(a) * .28 * k, y - .28 * k - Math.sin(a) * .28 * k); g.stroke(); }
+    g.strokeStyle = PAL.crutch; g.lineWidth = Math.max(1, .1 * k); g.beginPath(); g.moveTo(x - 1.25 * k, y - .62 * k); g.lineTo(x - .7 * k, cy + .4 * k); g.moveTo(x + 1.25 * k, y - .62 * k); g.lineTo(x + .7 * k, cy + .4 * k); g.stroke(); // two crutches cradle the ball
+    const eg = g.createRadialGradient(x - R * .35, cy - R * .4 + wob, R * .08, x, cy + wob, R); eg.addColorStop(0, '#fffdf6'); eg.addColorStop(.6, '#f4efe4'); eg.addColorStop(1, '#cfc4ae'); g.fillStyle = eg; g.beginPath(); g.arc(x, cy + wob, R, 0, TAU); g.fill();
+    const up = ease(t, EYES.in0, EYES.in1) * eyesRise() * (1 - ease(t, EYES.out0, EYES.out0 + .8)), side = clamp((CX - X) / 8, -1, 1), lx = x + side * (1 - up) * R * .42, ly = cy + wob - (1 - up) * R * .05; // iris: toward the board, then into the lens
+    g.strokeStyle = 'rgba(184,40,36,.75)'; g.lineWidth = Math.max(1, .045 * k); g.lineCap = 'round'; for (let i = 0; i < 9; i++) { const a = i / 9 * TAU + .3, r0 = R * .97, r1 = R * (.58 + .12 * rnd(i, 71)); g.beginPath(); g.moveTo(x + Math.cos(a) * r0, cy + wob + Math.sin(a) * r0); g.quadraticCurveTo(x + Math.cos(a + .25) * (r0 + r1) / 2, cy + wob + Math.sin(a + .25) * (r0 + r1) / 2, x + Math.cos(a - .1) * r1, cy + wob + Math.sin(a - .1) * r1); g.stroke(); } // red veins
+    g.fillStyle = '#43699a'; g.beginPath(); g.arc(lx, ly, R * .42, 0, TAU); g.fill(); g.strokeStyle = '#2c4a72'; g.lineWidth = Math.max(1, .05 * k); g.stroke();
+    g.fillStyle = '#16131a'; g.beginPath(); g.arc(lx, ly, R * .19, 0, TAU); g.fill(); g.fillStyle = 'rgba(255,255,255,.9)'; g.beginPath(); g.arc(lx - R * .13, ly - R * .13, R * .07, 0, TAU); g.fill(); },
+    shadow: () => shadowStick(X, 0, 3.1, Z, 2.4, t) }); }
 
 // ---------- Gilliam, lie about scale: chess pieces the size of art cars on "knight to queen's rook"; on "foul" the knight kicks the rook over ----------
-function giantChess(t, list) { const s = L_(26).s, e = L_(27).e + .4; if (t < s - .3 || t > e) return; const base = carX(s), up = easeOutBack(clamp((t - s + .3) / .7)) * (1 - ease(t, e - .6, e));
+// Draft 9: the white rook topples TOWARD the lens (a 3D cylinder from "foul"), so it lands with its crenellated top facing
+// us, and a referee in stripes jogs in and holds a 1.2 m yellow card up on "play". The upright pieces are draft 7's.
+let rookDir = null; // the fall heading on the ground: toward where the drone is when the rook lands (a constant, worked out once)
+function rookHeading(X, Z) { if (rookDir) return rookDir; const c = camAt(wt(27, 'foul') + .45, true), dx = c.x - X, dz = c.z - Z, l = Math.hypot(dx, dz) || 1, a = .55; // toward the lens, turned a little to the lens's left (the knight kicked from the right) so the shaft shows behind the top
+  const hx = dx / l, hz = dz / l, lx = -Math.cos(c.yaw), lz = Math.sin(c.yaw); return (rookDir = [hx * Math.cos(a) + lx * Math.sin(a), hz * Math.cos(a) + lz * Math.sin(a)]); }
+function giantChess(t, list) { const s = L_(26).s, e = L_(28).s; if (t < s - .3 || t > e) return; const base = carX(s), up = easeOutBack(clamp((t - s + .3) / .7)) * (1 - ease(t, e - .6, e));
   const rook = wt(26, 'rook'), foul = wt(27, 'foul'), ku = ease(t, s, rook + .2), hop = Math.abs(Math.sin(ku * Math.PI * 2)) * 5 * (ku < 1 ? 1 : 0), kick = ease(t, foul - .35, foul), fall = clamp((t - foul) / .45) ** 2;
   const pieces = [{ X: lerp(base + 30, base + 13, ku) - kick * 2.5, Z: 22, kind: 'knight', col: '#1d1a1a', Y: hop + Math.sin(kick * Math.PI) * 2.5 }, { X: base + 6, Z: 22.5, kind: 'rook', col: '#efe6cf', fall }, { X: base - 8, Z: 32, kind: 'rook', col: '#1d1a1a' }];
-  for (const pc of pieces) { const p = P(pc.X, 0, pc.Z); if (p[2] < 1.5) continue; list.push({ z: p[2], draw: () => { const k = kAt(p) * up, x = p[0], y = p[1] - (pc.Y || 0) * k; g.save(); g.translate(x, y); if (pc.fall) g.rotate(-pc.fall * 1.5); if (pc.kind === 'knight') g.scale(-1, 1); g.fillStyle = pc.col; g.strokeStyle = pc.col === '#efe6cf' ? '#8a8070' : '#4a4444'; g.lineWidth = Math.max(1, .1 * k);
+  for (const pc of pieces) { const p = P(pc.X, 0, pc.Z); if (p[2] < 1.5) continue;
+    if (pc.fall > 0) { list.push({ z: p[2], draw: () => rookFallen(pc.X, pc.Z, pc.fall, up, t - foul), shadow: () => { const [hx, hz] = rookHeading(pc.X, pc.Z), th = pc.fall * Math.PI / 2; shadowStick(pc.X + hx * 4 * Math.sin(th) * up, 0, 8 * up * Math.cos(th) + 2 * up, pc.Z + hz * 4 * Math.sin(th) * up, 3 * up, t); } }); continue; }
+    list.push({ z: p[2], draw: () => { const k = kAt(p) * up, x = p[0], y = p[1] - (pc.Y || 0) * k; g.save(); g.translate(x, y); if (pc.kind === 'knight') g.scale(-1, 1); g.fillStyle = pc.col; g.strokeStyle = pc.col === '#efe6cf' ? '#8a8070' : '#4a4444'; g.lineWidth = Math.max(1, .1 * k);
     if (pc.kind === 'rook') { g.fillRect(-1.6 * k, -6 * k, 3.2 * k, 6 * k); g.fillRect(-2 * k, -7 * k, 4 * k, 1.2 * k); for (let i = 0; i < 3; i++) g.fillRect((-2 + i * 1.5) * k, -8 * k, 1 * k, 1 * k); g.fillRect(-2.2 * k, -.8 * k, 4.4 * k, .8 * k); g.strokeRect(-1.6 * k, -6 * k, 3.2 * k, 6 * k); }
     else { g.beginPath(); g.moveTo(-2.2 * k, 0); g.lineTo(2.2 * k, 0); g.lineTo(1.3 * k, -3 * k); g.quadraticCurveTo(3 * k, -5 * k, .5 * k, -8 * k); g.lineTo(-2.4 * k, -5.6 * k); g.lineTo(-.2 * k, -5 * k); g.lineTo(-1.3 * k, -3 * k); g.fill(); g.fillStyle = '#efe6cf'; g.beginPath(); g.arc(.1 * k, -6.4 * k, .3 * k, 0, TAU); g.fill(); }
-    g.restore();
-    if (pc.fall >= 1) { const d = t - foul - .45, a = clamp(1 - d / 1.4); if (a > 0) for (let i = 0; i < 9; i++) { const ang = i / 9 * Math.PI, r = (2 + d * 9) * k; g.fillStyle = `rgba(222,192,140,${.4 * a})`; g.beginPath(); g.ellipse(x - 4 * k + Math.cos(ang + Math.PI) * r, y - Math.sin(ang) * r * .35, 2 * k * (1 + d), .9 * k * (1 + d), 0, 0, TAU); g.fill(); } }
-    if (pc.kind === 'rook' && pc.col === '#efe6cf' && t > foul - .2) penaltyFlag(t - foul + .2, x + 3 * k, y, k); },
-    shadow: () => shadowStick(pc.X, 0, 8 * up, pc.Z, 3 * up, t) }); } }
-function penaltyFlag(d, x, y, k) { // a referee's yellow flag flutters down onto the foul
-  const fallY = Math.min(1, d / 1.1), fy = y - lerp(14, .3, fallY) * k, fx = x + Math.sin(d * 5) * .8 * k * (1 - fallY);
-  g.save(); g.translate(fx, fy); g.rotate(Math.sin(d * 7) * .5 * (1 - fallY) + fallY * 1.2); g.fillStyle = '#f2c81e'; g.beginPath(); g.moveTo(-1 * k, -.6 * k); g.quadraticCurveTo(0, -.9 * k + Math.sin(d * 9) * .3 * k, 1 * k, -.6 * k); g.lineTo(1 * k, .6 * k); g.quadraticCurveTo(0, .3 * k, -1 * k, .6 * k); g.fill(); g.fillStyle = '#1d1a18'; g.beginPath(); g.arc(-.7 * k, -.35 * k, .18 * k, 0, TAU); g.fill(); g.restore(); }
+    g.restore(); },
+    shadow: () => shadowStick(pc.X, 0, 8 * up, pc.Z, 3 * up, t) }); }
+  referee(t, list, up); }
+// the white rook as a solid: plinth, shaft, collar and a ring of eight merlons round a hollow top, tipping about the edge
+// of its plinth toward the lens; d = seconds since "foul"
+function rookFallen(X, Z, fall, up, d) {
+  const [hx, hz] = rookHeading(X, Z), th = fall * Math.PI / 2 * .98, ct = Math.cos(th), st = Math.sin(th), R0 = 2.2 * up, vx = -hz, vz = hx;
+  const wp = (a, b, c) => { a *= up; b *= up; c *= up; const ar = a - R0, A = ar * ct + b * st + R0, B = -ar * st + b * ct; return P(X + A * hx + c * vx, B, Z + A * hz + c * vz); }; // (along the fall, up the rook, across)
+  const ring = (b, r, n = 28) => { const o = []; for (let i = 0; i < n; i++) { const f = i / n * TAU; o.push(wp(Math.cos(f) * r, b, Math.sin(f) * r)); } return o; };
+  const cyl = (b0, b1, r, fill) => { const pts = ring(b0, r).concat(ring(b1, r)); if (!ok(pts)) return; poly(hull(pts), fill, '#8a8070', 1.5); };
+  // the axis points at the camera once it is down, so the top is the near end: draw base to top
+  cyl(0, .8, 2.2, '#e2d8bf'); cyl(.8, 6, 1.6, '#efe6cf'); cyl(6, 7.2, 2.0, '#f3ebd6');
+  const top = wp(0, 7.2, 0), ax = wp(0, 8.2, 0), facing = ax[2] < top[2]; // the top end faces us when the axis runs toward the lens
+  const merlons = []; for (let i = 0; i < 8; i++) { const f0 = (i + .25) / 8 * TAU, f1 = (i + .75) / 8 * TAU, pts = []; for (const f of [f0, (f0 + f1) / 2, f1]) for (const r of [1.3, 2.0]) for (const b of [7.2, 8.2]) pts.push(wp(Math.cos(f) * r, b, Math.sin(f) * r)); if (ok(pts)) merlons.push({ z: wp(Math.cos((f0 + f1) / 2) * 1.65, 8.2, Math.sin((f0 + f1) / 2) * 1.65)[2], pts }); }
+  merlons.sort((a, b) => b.z - a.z);
+  if (facing) { const rim = ring(7.2, 2.0); if (ok(rim)) poly(rim, '#e6dcc2', '#8a8070', 1.5); const hole = ring(7.2, 1.3); if (ok(hole)) poly(hole, '#4f473c'); } // the top's deck and its dark hollow
+  for (const m of merlons) poly(hull(m.pts), '#f3ebd6', '#8a8070', 1.5);
+  if (d > .45) { const u = d - .45, a = clamp(1 - u / 1.4); if (a > 0) { const c = wp(0, 8, 0), k = kAt(c); if (c[2] > 1) for (let i = 0; i < 11; i++) { const ang = i / 11 * Math.PI, r = (2.4 + u * 8) * k; g.fillStyle = `rgba(222,192,140,${.42 * a})`; g.beginPath(); g.ellipse(c[0] + Math.cos(ang + Math.PI) * r, c[1] + 2 * k - Math.sin(ang) * r * .35, 2 * k * (1 + u), .9 * k * (1 + u), 0, 0, TAU); g.fill(); } } } // the dust where the top lands
+}
+// the referee: black and white stripes, faceless, jogs in from the right and holds a 1.2 m yellow card high on "play"
+let refAt = null;
+function refWhere() { if (refAt) return refAt; const c = camAt(wt(27, 'play'), true), fx = Math.sin(c.yaw), fz = Math.cos(c.yaw), D = 15, lat = (.78 * W - W / 2) / c.f * D;
+  return (refAt = { X: c.x + fx * D + fz * lat, Z: c.z + fz * D - fx * lat, rx: fz, rz: -fx }); }
+function referee(t, list, up) { const play = wt(27, 'play'); if (t < play - 1.6) return; const { X: X0, Z: Z0, rx, rz } = refWhere(), run = 1 - ease(t, play - 1.6, play - .35), X = X0 + rx * 7 * run, Z = Z0 + rz * 7 * run;
+  const raise = ease(t, play - .14, play + .02), jog = run > .01 ? Math.sin(t * 15) : 0;
+  list.push({ z: P(X, 0, Z)[2], draw: () => { const p = P(X, 0, Z); if (p[2] < 1) return; const k = kAt(p) * up, x = p[0], y = p[1] - Math.abs(jog) * .05 * k;
+    g.fillStyle = '#1d1a18'; for (const sd of [-1, 1]) { g.save(); g.translate(x + sd * .09 * k, y - .95 * k); g.rotate(sd * jog * .35); g.fillRect(-.07 * k, 0, .14 * k, .92 * k); g.restore(); } // black trousers
+    g.fillStyle = '#141216'; for (const sd of [-1, 1]) { g.beginPath(); g.ellipse(x + sd * .1 * k + sd * jog * .1 * k, y - .03 * k, .12 * k, .05 * k, 0, 0, TAU); g.fill(); }
+    g.save(); g.beginPath(); g.moveTo(x - .2 * k, y - .9 * k); g.lineTo(x - .25 * k, y - 1.5 * k); g.lineTo(x + .25 * k, y - 1.5 * k); g.lineTo(x + .2 * k, y - .9 * k); g.closePath(); g.fillStyle = '#f4f1ea'; g.fill(); g.clip();
+    g.fillStyle = '#1d1a18'; for (let i = -3; i <= 3; i++) g.fillRect(x + (i * .085 - .022) * k, y - 1.55 * k, .045 * k, .7 * k); g.restore(); // the stripes
+    g.fillStyle = '#d7c3a3'; g.fillRect(x - .04 * k, y - 1.58 * k, .08 * k, .09 * k); g.fillStyle = '#ead9bd'; g.beginPath(); g.arc(x, y - 1.7 * k, .13 * k, 0, TAU); g.fill(); // neck, faceless head
+    g.strokeStyle = '#f4f1ea'; g.lineCap = 'round'; g.lineWidth = Math.max(1, .09 * k); g.beginPath(); g.moveTo(x - .22 * k, y - 1.45 * k); g.lineTo(x - .3 * k - jog * .1 * k, y - 1.0 * k); g.stroke(); // the free arm
+    const hx = lerp(x + .32 * k, x + .3 * k, raise), hy = lerp(y - 1.0 * k, y - 2.12 * k, raise); g.beginPath(); g.moveTo(x + .22 * k, y - 1.45 * k); g.lineTo(hx, hy); g.stroke(); // the card arm
+    const cw = .8 * k, ch = 1.2 * k, cx = hx - cw * .3, cy = hy - lerp(.3, 1.08, raise) * ch; g.save(); g.translate(cx, cy + ch / 2); g.rotate(lerp(.9, -.06, raise)); g.fillStyle = '#f2c81e'; g.fillRect(-cw / 2, -ch / 2, cw, ch); g.strokeStyle = '#8a6a10'; g.lineWidth = Math.max(1, .04 * k); g.strokeRect(-cw / 2, -ch / 2, cw, ch); g.restore();
+    g.fillStyle = '#ead9bd'; g.beginPath(); g.arc(hx, hy, .06 * k, 0, TAU); g.fill(); },
+    shadow: () => shadowStick(X, 0, 1.75 * up, Z, .45 * up, t) }); }
 
 // ---------- Gilliam, stop it from above, once: the giant gavel lands ON the table at the end of refrain 3 ----------
 const gavelT = () => L_(34).e - .5; // the moment it hits (after refrain 3's grin teeth have climbed out)
 function bigGavel(t) {} // draft 3: drawn on the car layer (gavelCar) so it can sit on top of the table
+function toCam(pl, dl) { const w = Lw(...pl), yc = Math.cos(YAW), ys = Math.sin(YAW), dw = [dl[0] * yc - dl[2] * ys, dl[1], dl[0] * ys + dl[2] * yc]; return (C.x - w[0]) * dw[0] + (C.y - w[1]) * dw[1] + (C.z - w[2]) * dw[2]; } // camera side of a car-local direction
 function gavelCar(t) { const s = gavelT(); if (t < s - 1.4 || t > s + 2.3) return;
-  // the classic mallet: the head lies across the table side-on (long axis along the table, parallel to the screen in GBIG),
-  // the handle rises from its middle out of frame to a hand high above; the head swings over from behind on that arc,
-  // hits the hat hole, holds, and swings back up the same way
-  const HL = 2.7, HR = 1.15, AR = 24, PHI = .3, fallU = clamp((t - (s - .65)) / .65), al = PHI - (t < s ? (1 - fallU * fallU) * 1.25 : ease(t, s + .9, s + 2.1) * 1.4);
-  const sh = ease(t, s - 1.4, s) * (1 - ease(t, s + .9, s + 1.6)); if (sh > 0) { const r = lerp(2.2, 1, ease(t, s - 1.4, s)), pts = []; for (let i = 0; i < 24; i++) { const a = i / 24 * TAU; pts.push(PL(Math.cos(a) * (HL + .4) * r, TOP + .01, Math.sin(a) * 1.3 * r)); } g.save(); g.globalAlpha = .5 * sh; poly(pts, '#1a0c06'); g.restore(); } // its shadow comes first
+  // draft 9: a real gavel struck face down. The head stands on its striking face in the hat hole (axis straight up); the
+  // handle runs out level from its waist, away and to the left, so from GBIG it climbs out of the frame's upper left at
+  // about 30 degrees (it read as a barrel on a pole when the handle stood straight up). The head swings down out of the
+  // sky on the handle's arc, the hand off frame, hits, holds, and swings back up the same way.
+  const HH = 1.45, HR = 1.15, AR = 40, TH = 50 * Math.PI / 180, hh = [-Math.cos(TH), 0, Math.sin(TH)], up = [0, 1, 0], nn = [-hh[2], 0, hh[0]]; // half height, radius, handle length; the handle's heading; across it
+  const fallU = clamp((t - (s - .65)) / .65), be = t < s ? -(1 - fallU * fallU) * .9 : -ease(t, s + .9, s + 2.1) * 1.05; // the handle's angle below level (negative: the head is up in the air)
+  const sh = ease(t, s - 1.4, s) * (1 - ease(t, s + .9, s + 1.6)); if (sh > 0) { const r = lerp(2.2, 1, ease(t, s - 1.4, s)), pts = []; for (let i = 0; i < 24; i++) { const a = i / 24 * TAU; pts.push(PL(Math.cos(a) * (HR + .35) * r, TOP + .01, Math.sin(a) * (HR + .35) * r * .9)); } g.save(); g.globalAlpha = .5 * sh; poly(pts, '#1a0c06'); g.restore(); } // its shadow comes first
   if (t >= s) gavelBurst(t - s, true); // dust and papers first, so the head reads clean over them
-  if (al < PHI - 1.3) return; const squash = t >= s ? 1 - .14 * Math.exp(-(t - s) * 14) : 1;
-  const piv = [0, TOP + HR + AR * Math.cos(PHI), AR * Math.sin(PHI)], dy = Math.cos(al), dz = Math.sin(al), hc = [0, piv[1] - AR * dy, piv[2] - AR * dz]; // head centre; (0, dy, dz) points up the handle
-  const nx = [0, -dz, dy]; // across the head, perpendicular to the handle
-  const at = (x, a, r) => PL(x, hc[1] + (dy * Math.cos(a) * squash + nx[1] * Math.sin(a)) * r, hc[2] + (dz * Math.cos(a) * squash + nx[2] * Math.sin(a)) * r);
-  const ring = (x, r) => { const o = []; for (let i = 0; i < 28; i++) o.push(at(x, i / 28 * TAU, r)); return o; };
-  const A = ring(-HL, HR * .92), B = ring(HL, HR * .92), A2 = ring(-HL + .25, HR), B2 = ring(HL - .25, HR); if (![A, B, A2, B2].every(ok)) return;
-  // the handle, tapering up toward the hand, drawn first so the head sits over its root
-  const h0 = PL(0, hc[1], hc[2]), h1 = PL(0, hc[1] + dy * 30, hc[2] + dz * 30);
-  if (h0[2] > .3 && h1[2] > .3) { const k0 = kAt(h0), k1 = kAt(h1), ux = -(h1[1] - h0[1]), uy = h1[0] - h0[0], ul = Math.hypot(ux, uy) || 1, w0 = .34 * k0, w1 = .5 * k1;
-    const hg = g.createLinearGradient(h0[0] + ux / ul * w0, h0[1] + uy / ul * w0, h0[0] - ux / ul * w0, h0[1] - uy / ul * w0); hg.addColorStop(0, '#b0703e'); hg.addColorStop(1, '#3a1c0c'); g.fillStyle = hg;
+  if (be < -.95) return; const squash = t >= s ? 1 - .12 * Math.exp(-(t - s) * 14) : 1;
+  const EL = .2, cb = Math.cos(be), sb = Math.sin(be), ce = Math.cos(be + EL), se = Math.sin(be + EL), d = [ce * hh[0], se, ce * hh[2]], ax = [-sb * hh[0], cb, -sb * hh[2]]; // d: head to hand along the handle (rising EL so it leaves the top of frame); ax: the head's axis, straight up at the strike
+  const hand = [AR * Math.cos(EL) * hh[0], TOP + HH + AR * Math.sin(EL), AR * Math.cos(EL) * hh[2]], c = [hand[0] - AR * d[0], hand[1] - AR * d[1], hand[2] - AR * d[2]]; // the head's centre (local)
+  const at = (u, r, f) => PL(c[0] + ax[0] * u * squash + r * (Math.cos(f) * d[0] + Math.sin(f) * nn[0]), c[1] + ax[1] * u * squash + r * Math.cos(f) * d[1], c[2] + ax[2] * u * squash + r * (Math.cos(f) * d[2] + Math.sin(f) * nn[2]));
+  const ring = (u, r) => { const o = []; for (let i = 0; i < 28; i++) o.push(at(u, r, i / 28 * TAU)); return o; };
+  const A = ring(-HH, HR), B = ring(HH, HR); if (![A, B].every(ok)) return;
+  // the handle first (its far end is out of frame), tapering toward the head and fat toward the lens's hand side
+  const h0 = PL(c[0] + d[0] * HR * .8, c[1] + d[1] * HR * .8, c[2] + d[2] * HR * .8), h1 = PL(...hand);
+  if (h0[2] > .3 && h1[2] > .3) { const k0 = kAt(h0), k1 = kAt(h1), ux = -(h1[1] - h0[1]), uy = h1[0] - h0[0], ul = Math.hypot(ux, uy) || 1, w0 = .22 * k0, w1 = .34 * k1;
+    const hg = g.createLinearGradient(h0[0] + ux / ul * w0, h0[1] + uy / ul * w0, h0[0] - ux / ul * w0, h0[1] - uy / ul * w0); hg.addColorStop(0, '#c07a44'); hg.addColorStop(1, '#3a1c0c'); g.fillStyle = hg;
     g.beginPath(); g.moveTo(h0[0] + ux / ul * w0, h0[1] + uy / ul * w0); g.lineTo(h1[0] + ux / ul * w1, h1[1] + uy / ul * w1); g.lineTo(h1[0] - ux / ul * w1, h1[1] - uy / ul * w1); g.lineTo(h0[0] - ux / ul * w0, h0[1] - uy / ul * w0); g.fill(); }
-  // the head: a barrel lying across the table, rounded at both ends, brass bands near each end
-  const body = hull(A.concat(B, A2, B2)), ys = body.map((p) => p[1]); const bg = g.createLinearGradient(0, Math.min(...ys), 0, Math.max(...ys));
-  bg.addColorStop(0, '#d08a4c'); bg.addColorStop(.35, '#9a5428'); bg.addColorStop(.8, '#5a2a10'); bg.addColorStop(1, '#2a1006'); poly(body, bg);
-  for (const x of [-HL + .6, HL - .6]) { const w = .16, band = []; for (let i = 0; i <= 12; i++) band.push(at(x - w, -i / 12 * Math.PI, HR * 1.02)); for (let i = 12; i >= 0; i--) band.push(at(x + w, -i / 12 * Math.PI, HR * 1.02)); poly(band, '#d9a83a'); } // brass bands near both ends, on the side we see
-  for (const [x, R2] of [[-HL, A], [HL, B]]) { const c = PL(x, hc[1], hc[2]); if (Math.abs(c[0] - W / 2) > 40) { const far = (x < 0) === (c[0] < W / 2); if (far) poly(R2, '#b87a44', '#e8c050', 2); } } // an end face where the camera can see it
+  // the head: a turned drum on its striking face, lit from the left, two brass bands, its top face toward the lens
+  const body = hull(A.concat(B)), xs = body.map((p) => p[0]); const bg = g.createLinearGradient(Math.min(...xs), 0, Math.max(...xs), 0);
+  bg.addColorStop(0, '#d8945a'); bg.addColorStop(.35, '#a45c2c'); bg.addColorStop(.8, '#5e2c12'); bg.addColorStop(1, '#2e1206');
+  const drum = (u0, u1, r) => poly(hull(ring(u0, r).concat(ring(u1, r))), bg);
+  const capsFirst = !(toCam(c, ax) > 0); // a turned gavel head: two flared ends and a waist; draw from the end away from the lens
+  const parts = [[-HH, -HH + .55, HR], [-HH + .5, HH - .5, HR * .8], [HH - .55, HH, HR]]; for (const [u0, u1, r] of capsFirst ? parts.reverse() : parts) drum(u0, u1, r);
+  const cw = PL(...c), cam = [C.x, C.y, C.z], cwW = Lw(...c), toC = [cam[0] - cwW[0], cam[1] - cwW[1], cam[2] - cwW[2]];
+  const yawc = Math.cos(YAW), yaws = Math.sin(YAW), wv = (v) => [v[0] * yawc - v[2] * yaws, v[1], v[0] * yaws + v[2] * yawc]; // a car-local direction in world axes
+  const dW = wv(d), nW = wv(nn), aW = wv(ax), fc = Math.atan2(toC[0] * nW[0] + toC[1] * nW[1] + toC[2] * nW[2], toC[0] * dW[0] + toC[1] * dW[1] + toC[2] * dW[2]); // the side facing the lens
+  for (const u of [-HH + .3, HH - .3]) { const w = .1, band = []; for (let i = 0; i <= 14; i++) band.push(at(u - w, HR * 1.03, fc - Math.PI / 2 + i / 14 * Math.PI)); for (let i = 14; i >= 0; i--) band.push(at(u + w, HR * 1.03, fc - Math.PI / 2 + i / 14 * Math.PI)); if (ok(band)) poly(band, '#d9a83a'); }
+  const topSeen = toC[0] * aW[0] + toC[1] * aW[1] + toC[2] * aW[2] > 0;
+  if (topSeen) { poly(B, '#b87a44', '#e8c050', Math.max(2, .06 * kAt(cw))); const inner = []; for (let i = 0; i < 28; i++) inner.push(at(HH, HR * .62, i / 28 * TAU)); poly(inner, 'rgba(90,40,14,.35)'); } // the end grain, a ring turned in it
+  else poly(A, '#b87a44', '#e8c050', 2); // the striking face, seen while it swings up
 }
 function gavelBurst(d, nearPass) { // on impact: a ring of playa dust and the board's papers blown out over the table
   const fade = clamp(1 - d / 1.8); if (fade <= 0) return;
@@ -263,12 +372,43 @@ function gavelBurst(d, nearPass) { // on impact: a ring of playa dust and the bo
     g.save(); g.translate(p[0], p[1]); g.rotate(d * (3 + i) + i); g.scale(Math.cos(d * 6 + i), 1); g.globalAlpha = fade; g.fillStyle = '#f1ebdc'; g.fillRect(-.6 * k, -.42 * k, 1.2 * k, .84 * k); g.fillStyle = '#1d1a18'; g.fillRect(-.52 * k, -.36 * k, 1.04 * k, .14 * k); g.fillStyle = 'rgba(90,84,76,.55)'; for (let r = 0; r < 4; r++) g.fillRect(-.5 * k, (-.14 + r * .12) * k, 1 * k, .05 * k); g.restore(); }
 }
 
+// ---------- refrain 3, "control": a giant marionette control bar over the board (critic C, draft 9) ----------
+// Two crossed wooden bars come down out of the sky on "control" with a string to every suit's head; each beat the bar
+// yanks and the suits jerk upright (car.js reads marionetteJerk); as the drape drops on "blues" it is hauled back up.
+// Sized to read from 30 m up: a 10 m bar, 0.7 m thick, hanging 9.5 m over the table.
+const MARI = { Y: 9.5, L: 10, CR: 4.6, TH: .9, beat: .625, headY: SEAT + .03 + TORSO + .19 };
+// It needs the drone to frame the board at "control" (strings to the heads, the jerk). If the flight is looking past the
+// board there, the bar is left out rather than drawn as a stray rope across the sky (a constant, worked out once).
+let mariOn = null;
+function mariSeen() { if (mariOn !== null) return mariOn; const c = camAt(wt(31, 'control') + .3, true), X = carX(wt(31, 'control') + .3), cp = Math.cos(c.p), sp = Math.sin(c.p);
+  let dx = X - c.x, dz = -c.z; const dy = TOP - c.y, a = dx * c.cy - dz * c.sy; dz = dx * c.sy + dz * c.cy; dx = a; const z = -dy * sp + dz * cp, y = dy * cp + dz * sp, sx = W / 2 + c.f * dx / z, sy = H / 2 - c.f * y / z;
+  return (mariOn = z > 1 && sx > 0 && sx < W && sy > 80 && sy < H - 80); }
+function mariState(t) { const c = wt(31, 'control'), b = wt(31, 'blues'); if (t < c - 1.9 || t > b + 2.4 || !mariSeen()) return null;
+  const down = ease(t, c - 1.9, c), gone = ease(t, b + .35, b + 2.4), n = t >= c ? Math.floor((t - c) / MARI.beat) : -1, ph = t >= c ? t - c - n * MARI.beat : 0, yank = t >= c && t < b + .35 ? Math.exp(-ph / .1) : 0;
+  return { y: MARI.Y + 46 * (1 - down) ** 2 + 46 * gone * gone + .7 * yank, yank, tilt: (n % 2 ? 1 : -1) * .07 * yank, taut: down * (1 - gone) }; }
+function marionetteJerk(t, i) { const m = mariState(t); if (!m || m.taut < .4) return 0; return m.taut * (.35 + 1.5 * m.yank); } // car.js: an upward jolt in its bounce units (x 0.09 m)
+function marionette(t) { const m = mariState(t); if (!m) return;
+  const rot = (x, z) => [x * Math.cos(m.tilt), m.y + x * Math.sin(m.tilt), z]; // the bar rocks a little on each yank
+  const strings = [];
+  for (const st of SEATS) { const ax = clamp(st.x * .92, -MARI.L / 2 + .3, MARI.L / 2 - .3), az = st.z ? Math.sign(st.z) * .25 : 0, a = rot(ax, az), hy = MARI.headY + m.taut * (.35 + 1.5 * m.yank) * .09;
+    const top = PL(...a), bot = PL(st.x, lerp(a[1] - 2, hy + .12, m.taut), st.z); if (top[2] > .3 && bot[2] > .3) strings.push([top, bot]); }
+  g.save(); g.lineCap = 'round';
+  for (const [a, b] of strings) { const k = kAt(b); g.strokeStyle = 'rgba(38,28,22,.85)'; g.lineWidth = Math.max(1.3, .045 * k); g.beginPath(); g.moveTo(a[0], a[1]); g.lineTo(b[0], b[1]); g.stroke(); }
+  const r0 = PL(0, m.y + .3, 0), r1 = PL(0, m.y + 80, 0); if (r0[2] > .3 && r1[2] > .3) { g.strokeStyle = 'rgba(38,28,22,.9)'; g.lineWidth = Math.max(1.5, .07 * kAt(r0)); g.beginPath(); g.moveTo(r0[0], r0[1]); g.lineTo(r1[0], r1[1]); g.stroke(); } // the line up out of the sky
+  const beam = (a, b) => { const p = PL(...a), q = PL(...b); if (p[2] < .3 || q[2] < .3) return; const kp = kAt(p) * MARI.TH / 2, kq = kAt(q) * MARI.TH / 2, ux = -(q[1] - p[1]), uy = q[0] - p[0], ul = Math.hypot(ux, uy) || 1, nx = ux / ul, ny = uy / ul;
+    g.fillStyle = '#6b4a2a'; g.beginPath(); g.moveTo(p[0] + nx * kp, p[1] + ny * kp); g.lineTo(q[0] + nx * kq, q[1] + ny * kq); g.lineTo(q[0] - nx * kq, q[1] - ny * kq); g.lineTo(p[0] - nx * kp, p[1] - ny * kp); g.closePath(); g.fill();
+    g.fillStyle = 'rgba(255,214,160,.28)'; g.beginPath(); g.moveTo(p[0] - nx * kp, p[1] - ny * kp); g.lineTo(q[0] - nx * kq, q[1] - ny * kq); g.lineTo(q[0] - nx * kq * .3, q[1] - ny * kq * .3); g.lineTo(p[0] - nx * kp * .3, p[1] - ny * kp * .3); g.closePath(); g.fill(); // the lit edge
+    g.fillStyle = '#4a3018'; for (const [e, ke] of [[p, kp], [q, kq]]) { g.beginPath(); g.arc(e[0], e[1], ke, 0, TAU); g.fill(); } };
+  const bars = [[rot(-MARI.L / 2, 0), rot(MARI.L / 2, 0)], [rot(0, -MARI.CR / 2), rot(0, MARI.CR / 2)]].map(([a, b]) => ({ a, b, z: PL(...a)[2] + PL(...b)[2] })).sort((u, v) => v.z - u.z);
+  for (const bb of bars) beam(bb.a, bb.b);
+  g.restore(); }
+
 // ---------- the pie of lies: blackbirds burst out on "pie" (four and twenty, near enough) ----------
 // Also the car-layer hook for this file: drawCar calls pieBirds last, so installsCar draws over the table.
 function pieBirds(t) { const s = wt(23, 'pie'); if (t >= s && t <= s + 2.4)
   for (let i = 0; i < 9; i++) { const u = clamp((t - s - i * .06) / 2); if (u <= 0) continue; const p = PL(-.15 + (rnd(i, 31) - .5) * .4 + u * (rnd(i, 32) - .5) * 8, TOP + .1 + u * 4, -.95 - u * 2); if (p[2] < .3) continue; const k = kAt(p), f = Math.sin(t * 30 + i) * .25 * k;
     g.fillStyle = '#16131a'; g.beginPath(); g.ellipse(p[0], p[1], .14 * k, .07 * k, 0, 0, TAU); g.fill(); g.beginPath(); g.moveTo(p[0], p[1]); g.lineTo(p[0] - .3 * k, p[1] - f); g.lineTo(p[0] - .1 * k, p[1] + .02 * k); g.lineTo(p[0] + .3 * k, p[1] - f); g.lineTo(p[0] + .1 * k, p[1] + .02 * k); g.fill(); }
-  installsCar(t); }
+  } // draft 9: installsCar is called by drawCar (car.js) right after pieBirds; calling it here too drew it twice
 // Nakamura, inhabit the object: tiny burners climb the line chart on the whiteboard (drawn in board units)
 function chartClimbers(t) { const pts = [[.58, .8], [.66, .72], [.73, .76], [.8, .58], [.87, .5], [.93, .34]];
   for (let i = 0; i < 3; i++) { const u = ((t * .05 + i / 3) % 1) * 5, j = Math.floor(u), f = u - j, a = pts[j], b = pts[j + 1]; const x = lerp(a[0], b[0], f), y = lerp(a[1], b[1], f) - .012;
@@ -279,6 +419,7 @@ function spinDevils(t) { const s = wt(19, 'spin'); const amt = ease(t, s - .3, s
 
 // scene hook (draft 3): pushes {z, draw, shadow} into list. The far half of the spin whirl and of the gavel's dust ring.
 function installsInto(t, list) {
+  eyeCar(t, list); drapeInto(t, list);
   for (const o of whirlItems(t)) { if (nearCar(o.X, o.Z)) continue; list.push({ z: P(o.X, 0, o.Z)[2], draw: () => drawWhirl(o, t), shadow: o.kind === 'devil' ? null : () => shadowStick(o.X, 0, 3, o.Z, 2.5, t) }); }
   const gs = gavelT(); if (t > gs && t < gs + 1.8) list.push({ z: P(CX, 0, CZ)[2] + .01, draw: () => gavelBurst(t - gs, false), shadow: null });
 }
@@ -287,7 +428,7 @@ function installsCar(t) {
   const near = whirlItems(t).filter((o) => nearCar(o.X, o.Z)).map((o) => [P(o.X, 0, o.Z)[2], () => drawWhirl(o, t)]);
   for (const o of paperItems(t)) if (nearCar(o.X, o.Z)) near.push([P(o.X, o.Y, o.Z)[2], () => drawPaper(o)]);
   near.sort((a, b) => b[0] - a[0]); for (const [, d] of near) d();
-  gavelCar(t);
+  marionette(t); gavelCar(t);
 }
 // overlay hook (draft 3): drawn after the scene, before the grade.
 function installsOver(t) {}

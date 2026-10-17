@@ -37,12 +37,12 @@ const bmFade = (p) => clamp((p[2] - 4.5) / 3.5); // anything closer than ~3 m to
 function elephant(X, Z, t, s, ph, load, o) {
   o = o || {}; const p = P(X, 0, Z); if (p[2] < 1.5) return; const k = kAt(p) * s; if (k < .25 || p[0] < -16 * k || p[0] > W + 16 * k) return;
   const d = o.dir || 1, grow = o.grow == null ? 1 : o.grow, legH = .9 + 9.6 * grow, flip = o.flip || 0, vog = o.vogue || 0, det = k > 6, lx = -d;
-  const wk = (o.walk == null ? 1 : o.walk), w = Math.sin(t * 1.4 * wk + ph) * wk, bob = Math.abs(Math.cos(t * 1.4 * wk + ph)) * .12 * wk, B = legH + bob;
+  const kn = o.kneel || 0, wk = (o.walk == null ? 1 : o.walk) * (1 - kn), w = Math.sin(t * 1.4 * wk + ph) * wk, bob = Math.abs(Math.cos(t * 1.4 * wk + ph)) * .12 * wk, B = legH * (1 - .5 * kn) + bob;
   bmBegin(p[0], p[1], k, d); if (o.alpha != null) g.globalAlpha = o.alpha;
   if (flip > 0) { const hp = (legH + 2.7) / 2; g.translate(0, -hp); g.rotate(Math.PI * flip); g.translate(0, hp); }
   const skin = PAL.elephant, lit = PAL.elephantLit, far = bmShade(PAL.elephant, .72);
   const leg = (hx, sw, col, lift) => { // a spindly insect leg with two knees and a small round foot
-    const top = [hx, B + .35], foot = lift ? [hx + 1.2, legH * .42] : [hx + sw, 0], k1 = [lerp(top[0], foot[0], .38) + .28 + (lift ? .9 : 0), lerp(top[1], foot[1], .36)], k2 = [lerp(top[0], foot[0], .7) - .12, lerp(top[1], foot[1], .7)];
+    const top = [hx, B + .35], foot = lift ? [hx + 1.2, legH * .42] : [hx + sw, 0], kb = kn * legH * (hx > 0 ? .3 : -.12), k1 = [lerp(top[0], foot[0], .38) + .28 + (lift ? .9 : 0) + kb, lerp(top[1], foot[1], .36) - kn * .4], k2 = [lerp(top[0], foot[0], .7) - .12 + kb * .55, lerp(top[1], foot[1], .7)]; // on "rehearsed" the knees fold: front ones forward
     bmLine([top, k1, k2, foot], .2, col); if (det) { bmDot(k1[0], k1[1], .17, col); bmDot(k2[0], k2[1], .13, col); } bmOval(foot[0], foot[1] + .08, .3, .11, col);
   };
   leg(-1.0, -w * 1.1, far); leg(1.85, w * 1.1, far);
@@ -53,13 +53,15 @@ function elephant(X, Z, t, s, ph, load, o) {
   bmPath([[-2.55, B + 1.2], [-2.3, B + 2.15], [-1, B + 2.62], [1, B + 2.6], [2.35, B + 2.1], [2.6, B + 1.2], [2.1, B + .38], [.6, B + .05], [-.8, B + .08], [-2.15, B + .42]]); g.closePath(); g.fillStyle = bg; g.fill();
   if (det) { g.strokeStyle = 'rgba(60,50,45,.35)'; g.lineWidth = bmW(.05); for (const wx of [-1.7, -1.4, 1.5]) { g.beginPath(); g.moveTo(wx, -(B + .4)); g.quadraticCurveTo(wx + .15, -(B + 1.2), wx, -(B + 1.9)); g.stroke(); } }
   // saddle cloth with a fringe
-  const cloth = load === 'chips' ? '#7a1420' : '#c7362b'; bmFill([[-1.35, B + 2.55], [1.35, B + 2.55], [1.45, B + 1.25], [-1.45, B + 1.25]], cloth);
-  bmFill([[-1.45, B + 1.32], [1.45, B + 1.32], [1.45, B + 1.18], [-1.45, B + 1.18]], '#d9b45a');
-  if (det) { for (let i = 0; i < 10; i++) { const fx = -1.4 + i * .31; bmFill([[fx, B + 1.2], [fx + .3, B + 1.2], [fx + .15, B + .95]], '#d9b45a'); } }
+  if (load === 'chips') { // draft 9: a casino-felt cloth and one giant chip hung on the flank, so the load reads as chips, not a sofa
+    bmFill([[-1.25, B + 2.55], [1.25, B + 2.55], [1.3, B + 1.6], [-1.3, B + 1.6]], '#2f6b46'); bmBigChip(0, B + 1.55, 1.05, '#c7362b', det);
+  } else { bmFill([[-1.35, B + 2.55], [1.35, B + 2.55], [1.45, B + 1.25], [-1.45, B + 1.25]], '#c7362b');
+    bmFill([[-1.45, B + 1.32], [1.45, B + 1.32], [1.45, B + 1.18], [-1.45, B + 1.18]], '#d9b45a');
+    if (det) { for (let i = 0; i < 10; i++) { const fx = -1.4 + i * .31; bmFill([[fx, B + 1.2], [fx + .3, B + 1.2], [fx + .15, B + .95]], '#d9b45a'); } } }
   // near legs (one lifts and the trunk goes up on "vogue")
   leg(-1.5, w * 1.1, skin); leg(1.35, -w * 1.1, skin, vog > .5);
   // head, ear, tusk, trunk
-  const HX = 2.55, HY = B + 1.75 + vog * .2;
+  const HX = 2.55, HY = B + 1.75 + vog * .2 - kn * (.35 + .3 * (o.nod || 0)); // kneeling, the head bows with the board's nod
   bmDot(HX, HY, .95, bmLG(HX + lx * .8, HY + .8, HX - lx * .8, HY - .8, [lit, skin]));
   const fl = Math.sin(t * 2.1 + ph) * .1; bmOval(HX - .45, HY - .05, .72 + fl * .3, 1.05, bmShade(PAL.elephant, .82), -.15 + fl); if (det) bmOval(HX - .45, HY - .05, .46, .74, 'rgba(210,150,140,.55)', -.15 + fl);
   bmDot(HX + .45, HY + .3, .075, '#1c1614');
@@ -72,11 +74,12 @@ function elephant(X, Z, t, s, ph, load, o) {
     if (load === 'papers') { for (let i = 0; i < 9; i++) bmFill([[-1.1 + Math.sin(i * 2.3) * .2, top + i * .38], [1.1 + Math.sin(i * 2.3) * .2, top + i * .38], [1.1 + Math.sin(i * 2.3) * .2, top + i * .38 + .34], [-1.1 + Math.sin(i * 2.3) * .2, top + i * .38 + .34]], i % 2 ? '#ece6d6' : '#d9d1bd'); }
     else if (load === 'ballot') { bmFill([[-1.2, top], [1.2, top], [1.2, top + 2.4], [-1.2, top + 2.4]], bmLG(-1.2 * lx, 0, 1.2 * lx, 0, ['#f7f0de', '#cfc5ad'])); bmFill([[-.7, top + 2.3], [.7, top + 2.3], [.7, top + 2.45], [-.7, top + 2.45]], '#1a1a1a'); const by = top + 2.5 + Math.abs(Math.sin(t * 2 + ph)) * .5; bmFill([[-.35, by], [.35, by], [.35, by + .9], [-.35, by + .9]], '#fbf7ec'); }
     else if (load === 'cash') { for (let i = 0; i < 6; i++) { bmFill([[-1.2, top + i * .32], [1.2, top + i * .32], [1.15, top + i * .32 + .3], [-1.25, top + i * .32 + .3]], i % 2 ? '#b9c99a' : '#9fb37e'); bmFill([[-.2, top + i * .32], [.2, top + i * .32], [.2, top + i * .32 + .3], [-.2, top + i * .32 + .3]], '#e8dcb0'); } }
-    else if (load === 'chips') { // a howdah of casino chips: towers that grow on "bets", one propped on a crutch
-      bmFill([[-1.7, top - .05], [1.7, top - .05], [1.6, top + .3], [-1.6, top + .3]], '#d9b45a'); const cols = ['#c7362b', '#f2ede0', '#2f6fb5', '#1c1a1e'], hs = [7, 11, 9, 13];
-      for (let c = 0; c < 4; c++) { const n = Math.round(hs[c] * clamp(o.chips == null ? 1 : o.chips)), cx = -1.2 + c * .8 + Math.sin(c * 1.7) * .05, lean = Math.sin(t * .9 + c + ph) * .015 * n;
-        for (let j = 0; j < n; j++) { const cy = top + .3 + j * .2, cxx = cx + lean * j / Math.max(1, n); bmFill([[cxx - .36, cy], [cxx + .36, cy], [cxx + .36, cy + .18], [cxx - .36, cy + .18]], bmShade(cols[c], c === 1 ? .82 : .8)); if (det) for (let q = 0; q < 3; q++) bmFill([[cxx - .26 + q * .22, cy + .03], [cxx - .2 + q * .22, cy + .03], [cxx - .2 + q * .22, cy + .15], [cxx - .26 + q * .22, cy + .15]], c === 1 ? '#c7362b' : '#f2ede0'); bmOval(cxx, cy + .18, .36, .07, cols[c]); }
-        if (c === 3 && n > 6) bmCrutch([2.3, B + 1.4], [cx + lean + .38, top + .3 + n * .14], .06); }
+    else if (load === 'chips') { // a howdah of casino chips: tall leaning stacks that grow on "bets", one propped on a crutch
+      bmFill([[-1.8, top - .05], [1.8, top - .05], [1.7, top + .25], [-1.7, top + .25]], '#d9b45a'); const cols = ['#c7362b', '#2f6fb5', '#f2ede0', '#1c1a1e'], hs = [10, 15, 12, 17];
+      for (let c = 0; c < 4; c++) { const n = Math.round(hs[c] * (.3 + .7 * clamp(o.chips == null ? 1 : o.chips))), cx = -1.3 + c * .87 + Math.sin(c * 1.7) * .05, lean = Math.sin(t * .9 + c + ph) * .018 * n;
+        for (let j = 0; j < n; j++) { const cy = top + .25 + j * .23, cxx = cx + lean * j / Math.max(1, n), cc = cols[(c + (j % 5 === 4 ? 1 : 0)) % 4]; bmFill([[cxx - .42, cy], [cxx + .42, cy], [cxx + .42, cy + .21], [cxx - .42, cy + .21]], bmShade(cc, cc === '#f2ede0' ? .82 : .78));
+          for (let q = j % 2; q < 4; q += 2) bmFill([[cxx - .36 + q * .22, cy], [cxx - .26 + q * .22, cy], [cxx - .26 + q * .22, cy + .21], [cxx - .36 + q * .22, cy + .21]], cc === '#f2ede0' ? '#c7362b' : '#f6f1e4'); bmOval(cxx, cy + .21, .42, .08, cc); } // edge stripes staggered chip to chip
+        if (c === 3 && n > 6) bmCrutch([2.3, B + 1.4], [cx + lean + .44, top + .25 + n * .16], .06); }
     } else { // a soft tower that droops at the tip, with a red pennant
       bmFill([[-1, top], [1, top], [.3, top + 3.6], [.5, top + 3.9], [.15, top + 4.0], [-.3, top + 3.6]], bmLG(lx * .8, 0, -lx * .8, 0, ['#f1e4c4', '#c9b88f'])); bmLine([[.2, top + 3.9], [.2, top + 4.8]], .05, '#5a4a3a'); bmFill([[.2, top + 4.8], [1.1, top + 4.6 + Math.sin(t * 3 + ph) * .08], [.2, top + 4.4]], '#c7362b'); }
   }
@@ -94,8 +97,15 @@ const BM_ELEPHANTS = [
 const BM_ROAD = [{ t0: 24, t1: 58.5, r0: 30, dv: -.75, Z: 11, s: 1.2, load: 'papers' }, { t0: 141, t1: 155.4, r0: 26, dv: -.9, Z: 12, s: 1.15, load: 'cash' }];
 const bmVogue = (t) => { const v = wt(14, 'vogue'); return ease(t, v - .15, v + .35) * (1 - ease(t, v + 1.7, v + 2.3)); };
 const bmFlip = (t) => { const pv = wt(29, 'perverse'); return easeOutBack(clamp((t - pv + .05) / .55), 1.2) * (1 - ease(t, L_(30).s - .5, L_(30).s + .1)); };
+function bmBigChip(x, y, r, col, det) { // a casino chip face on: the coloured disc, six white edge spots, an inner ring
+  bmDot(x, y, r, col); for (let i = 0; i < 6; i++) { const a = i / 6 * TAU + .26; g.save(); g.translate(x + Math.cos(a) * r * .84, -(y + Math.sin(a) * r * .84)); g.rotate(-a); g.fillStyle = '#f6f1e4'; g.fillRect(-r * .13, -r * .1, r * .26, r * .2); g.restore(); }
+  g.beginPath(); g.arc(x, -y, r * .6, 0, TAU); g.strokeStyle = '#f6f1e4'; g.lineWidth = bmW(r * .07); if (det) g.setLineDash([r * .12, r * .08]); g.stroke(); g.setLineDash([]); bmDot(x, y, r * .45, bmShade(col, .85)); }
+// "rehearsed": every stilt elephant kneels in unison with the board's nod (car.js nods the row from L_(30).s), then rises
+const bmKneel = (t) => { const r = wt(30, 'rehearsed'); return ease(t, r - .3, r + .15) * (1 - ease(t, L_(30).e + .1, L_(30).e + 1)); };
+const bmNod = (t) => t > L_(30).s && t < L_(30).e + .3 ? Math.abs(Math.sin((t - L_(30).s) * 1.6 * Math.PI)) : 0;
 function bmElephantEntry(X, Z, t, s, ph, load, o, list) {
-  const p = P(X, 0, Z); if (p[2] < 2 || p[0] < -W * .7 || p[0] > W * 1.7) return; const lh = .9 + 9.6 * (o.grow == null ? 1 : o.grow);
+  if (o.kneel == null) { o.kneel = bmKneel(t); o.nod = bmNod(t); }
+  const p = P(X, 0, Z); if (p[2] < 2 || p[0] < -W * .7 || p[0] > W * 1.7) return; const lh = (.9 + 9.6 * (o.grow == null ? 1 : o.grow)) * (1 - .5 * o.kneel);
   list.push({ z: p[2], draw: () => elephant(X, Z, t, s, ph, load, o), shadow: () => { shadowOf([[X - 2.4 * s, (lh + .3) * s, Z], [X + 3.4 * s, (lh + .3) * s, Z], [X - 2.2 * s, (lh + 2.6) * s, Z], [X + 2.6 * s, (lh + 2.8) * s, Z]], t); for (const dx of [-1.5, -1, 1.35, 1.85]) shadowStick(X + dx * s, 0, lh * s, Z, .3 * s, t); } });
 }
 function bmElephantsInto(t, list) {
@@ -182,9 +192,11 @@ function bmRider(x, y, k, d, sp, t, c, alpha) {
   if (det && c.spots) { for (let i = 0; i < 9; i++) bmOval(H0[0] - .2 + rnd(c.seed, i, 1) * .4, H0[1] - .3 + rnd(c.seed, i, 2) * .75, .035, .025, 'rgba(40,24,14,.7)'); }
   if (det && c.fur) { g.strokeStyle = 'rgba(255,250,240,.25)'; g.lineWidth = bmW(.012); g.beginPath(); for (let i = 0; i < 8; i++) { const fx = H0[0] - .25 + i * .07; g.moveTo(fx, -(H0[1] - .3)); g.lineTo(fx + .03, -(H0[1] + .2)); } g.stroke(); }
   bmOval(S[0] - .02, S[1] - .01, .18, .075, c.fur ? c.trim : bmShade(c.coat[1], .8));
+  if (c.ranger) { bmOval(S[0] + .02, S[1] - .17, .055, .045, '#5a3a20'); bmLine([[H0[0] + .2, H0[1] - .02], [H0[0] + .23, H0[1] - .24]], .06, '#151517'); bmOval(H0[0] + .235, H0[1] - .26, .04, .025, '#e8ecef'); } // the Ranger mark on the chest, a flashlight on the belt
   // near arm: to the grip, or up holding a parasol
   if (c.sax) { /* both hands on the sax, drawn after the head */ }
   else if (c.para) { const Hn = [S[0] + .14, S[1] + .32], E1 = bmJoint(S, Hn, .3, .3, 1, -.5); bmLine([S, E1, Hn], .1, c.coat[0]); bmDot(Hn[0], Hn[1], .045, c.skin); }
+  else if (c.drink) { const Hn = [S[0] + .24, S[1] + .1], E1 = bmJoint(S, Hn, .3, .3, 1, -.8); bmLine([S, E1, Hn], .1, c.coat[0]); bmCan(Hn[0] - .01, Hn[1] - .04); bmDot(Hn[0], Hn[1], .045, c.skin); } // a cold drink, one hand on the bars
   else { const E1 = bmJoint(S, G, .3, .31, 0, -1); bmLine([S, E1, G], .1, c.coat[0]); bmDot(G[0], G[1], .045, c.skin); }
   // head: goggles, a hat
   bmLine([[S[0] + .02, S[1]], [HD[0], HD[1] - .05]], .07, c.skin);
@@ -192,6 +204,7 @@ function bmRider(x, y, k, d, sp, t, c, alpha) {
   if (c.hat === 'top') { bmFill([[HD[0] - .1, HD[1] + .08], [HD[0] + .1, HD[1] + .08], [HD[0] + .11, HD[1] + .38], [HD[0] - .09, HD[1] + .38]], '#1c1a1e'); bmFill([[HD[0] - .1, HD[1] + .1], [HD[0] + .1, HD[1] + .1], [HD[0] + .1, HD[1] + .15], [HD[0] - .1, HD[1] + .15]], c.coat[0]); bmOval(HD[0], HD[1] + .08, .19, .03, '#1c1a1e'); }
   else if (c.hat === 'fluff') { bmPath(bmFur([[HD[0] - .16, HD[1] + .02], [HD[0] - .1, HD[1] + .22], [HD[0] + .12, HD[1] + .22], [HD[0] + .17, HD[1] + .02]], .03, c.seed + 3)); g.closePath(); g.fillStyle = c.trim; g.fill(); }
   else if (c.hat === 'sun') { bmOval(HD[0], HD[1] + .09, .3, .045, '#e2c88a'); bmFill([[HD[0] - .1, HD[1] + .09], [HD[0] + .1, HD[1] + .09], [HD[0] + .08, HD[1] + .22], [HD[0] - .08, HD[1] + .22]], '#d4b670'); bmFill([[HD[0] - .1, HD[1] + .1], [HD[0] + .1, HD[1] + .1], [HD[0] + .1, HD[1] + .14], [HD[0] - .1, HD[1] + .14]], c.coat[0]); }
+  else if (c.hat === 'ranger') { bmOval(HD[0], HD[1] + .08, .27, .045, '#6e5032'); bmFill([[HD[0] - .1, HD[1] + .08], [HD[0] + .1, HD[1] + .08], [HD[0] + .085, HD[1] + .23], [HD[0] - .085, HD[1] + .23]], '#86643e'); bmFill([[HD[0] - .1, HD[1] + .09], [HD[0] + .1, HD[1] + .09], [HD[0] + .1, HD[1] + .12], [HD[0] - .1, HD[1] + .12]], '#3a2a1a'); }
   else if (c.hat === 'bopper') { for (const s2 of [-1, 1]) { const tip = [HD[0] + s2 * .1 + Math.sin(t * 6 + s2) * .03, HD[1] + .4]; bmLine([[HD[0] + s2 * .05, HD[1] + .1], tip], .015, '#2a2420'); bmDot(tip[0], tip[1], .05, c.lens); } }
   bmLine([[HD[0] - .11, HD[1] + .01], [HD[0] + .1, HD[1] + .02]], .035, '#2a2420'); bmDot(HD[0] + .075, HD[1] + .02, .05, bmLG(HD[0] + .03, HD[1] + .07, HD[0] + .12, HD[1] - .03, ['#ffffff', c.lens, bmShade(c.lens, .5)])); if (det) bmDot(HD[0] + .06, HD[1] + .04, .013, 'rgba(255,255,255,.9)');
   if (c.bike === 'snail') for (const s2 of [0, .08]) { const tip = [G[0] + .12 + s2, G[1] + .42]; bmLine([[G[0] + .02, G[1] + .03], tip], .02, '#8a5a2a'); bmDot(tip[0], tip[1], .04, '#e8d4b4'); }
@@ -230,20 +243,57 @@ function bmSax(S, HD, t, det, c) { // drawn in the rider's local units (y up), i
   bmOval(BELL[0] + .03, BELL[1] + .05, .13, .06, '#f2d27a'); bmOval(BELL[0] + .03, BELL[1] + .05, .08, .035, '#6a4410');
   if (det) for (let i = 0; i < 5; i++) { const u = .15 + i * .15; bmDot(lerp(N[0], B1[0], u), lerp(N[1], B1[1], u), .022, '#fff3c4'); }
   bmLine([S, bmJoint(S, K1, .3, .3, 1, -.6), K1], .1, c.coat[0]); bmDot(K1[0], K1[1], .045, c.skin); bmDot(K2[0], K2[1], .045, c.skin);
-  // notes puff out of the bell once the lick starts
-  if (t >= SAX_IN) for (let i = 0; i < 4; i++) { const age = ((t - SAX_IN) * 1.6 + i * .25) % 1, nx = BELL[0] + .1 - age * .9, ny = BELL[1] + .25 + age * .9 + Math.sin(age * 9 + i) * .06;
+  // notes puff out of the bell once the lick starts; none come out while the bell is corked (draft 9)
+  if (t >= SAX_IN) for (let i = 0; i < 4; i++) { const age = ((t - SAX_IN) * 1.6 + i * .25) % 1, te = t - age / 1.6; if (te > SAX_CORK[0] - .04 && te < SAX_CORK[1]) continue;
+    const nx = BELL[0] + .1 - age * .9, ny = BELL[1] + .25 + age * .9 + Math.sin(age * 9 + i) * .06;
     g.save(); g.globalAlpha *= (1 - age) * clamp((t - SAX_IN) * 4); bmOval(nx, ny, .06, .045, '#1c1a1e'); bmLine([[nx + .055, ny], [nx + .055, ny + .2]], .018, '#1c1a1e'); if (i % 2) bmLine([[nx + .055, ny + .2], [nx + .14, ny + .14]], .018, '#1c1a1e'); g.restore(); }
+  // the brass mute: in the bell from the cork to the pop, then it flies off spinning
+  const M0 = [BELL[0] + .03, BELL[1] + .05];
+  if (t >= SAX_CORK[0] && t < SAX_CORK[1]) bmMute(M0[0], M0[1] - .03, .12 + Math.sin(t * 7.5) * .03);
+  else if (t >= SAX_CORK[1] && t < SAX_CORK[1] + 1) { const u = t - SAX_CORK[1]; g.save(); g.globalAlpha *= 1 - smooth((u - .6) / .4); bmMute(M0[0] + .5 * u, M0[1] + 2.4 * u - 2.6 * u * u, .12 + u * 9); g.restore(); }
 }
+// the corked lick (draft 9, critic A): about 69 a suit leans out of his seat and corks the bell with a brass mute, the
+// notes stop; about 70.5 the rider pops it out and a burst of six notes spills over the board.
+const SAX_CORK = [69.0, 70.5];
+function bmMute(x, y, rot) { // a straight mute, 0.3 m: a brass cone, narrow end down in the bell, a cork band; local metres, y up
+  g.save(); g.translate(x, -y); g.rotate(rot); bmFill([[-.045, 0], [.045, 0], [.1, .3], [-.1, .3]], bmLG(-.1, 0, .1, 0, ['#fbe7a0', '#d9a63a', '#8a5a14']));
+  bmFill([[-.05, .02], [.05, .02], [.058, .07], [-.058, .07]], '#b98a5a'); bmOval(0, .3, .1, .03, '#f2d27a'); g.restore(); }
+function bmNote(x, y, s, flag) { // a black quaver at a screen point, s px per metre
+  g.fillStyle = '#1c1a1e'; g.beginPath(); g.ellipse(x, y, .075 * s, .055 * s, -.35, 0, TAU); g.fill();
+  g.strokeStyle = '#1c1a1e'; g.lineWidth = Math.max(1.2, .022 * s); g.lineCap = 'round'; g.beginPath(); g.moveTo(x + .068 * s, y); g.lineTo(x + .068 * s, y - .25 * s); if (flag) g.lineTo(x + .17 * s, y - .17 * s); g.stroke(); }
 // a tracking shot: he rides alongside the drone, D m in front of it. He enters from the left edge on SAX_IN, settles left
 // of centre for the lick, then pulls ahead and out to the right.
-function bmSaxInto(t, list) {
-  if (t < SAX_IN - .6 || t > SAX_IN + 9.5) return;
+function bmSaxPos(t) {
   const c = camAt(t), fw = [Math.sin(c.yaw), Math.cos(c.yaw)], rt = [Math.cos(c.yaw), -Math.sin(c.yaw)], D = 2.8, half = D * (W / 2) / c.f;
   const u = t - SAX_IN, lat = u < 1.6 ? lerp(-half - .9, -half * .3, smooth((u + .6) / 2.2)) : u < 6.5 ? -half * .3 + (u - 1.6) * .08 : -half * .3 + 4.9 * .08 + (u - 6.5) * 1.6 * ((u - 6.5) / 3 + .5);
-  const X = c.x + fw[0] * D + rt[0] * lat, Z = c.z + fw[1] * D + rt[1] * lat;
+  return [c.x + fw[0] * D + rt[0] * lat, c.z + fw[1] * D + rt[1] * lat];
+}
+function bmSaxInto(t, list) {
+  if (t < SAX_IN - .6 || t > SAX_IN + 9.5) return;
+  const [X, Z] = bmSaxPos(t);
   bmRiderEntry(X, Z, 1, (t - SAX_IN) * 4 + 40, t, BM_SAX, list, false);
 }
-function bmSaxFront(t) { const l = []; bmSaxInto(t, l); for (const o of l) { o.shadow(); o.draw(); } } // over the car layer (render.js front hook)
+function bmSaxFront(t) { // over the car layer (render.js front hook)
+  const l = []; bmSaxInto(t, l); for (const o of l) { o.shadow(); o.draw(); }
+  if (t < SAX_CORK[0] - .7 || t > SAX_CORK[1] + 1.8) return;
+  const [X, Z] = bmSaxPos(t), q = P(X, 0, Z); if (q[2] < .5) return; const k = kAt(q), sw = Math.sin(t * 7.5) * .025, bell = [q[0] + k * .51, q[1] - k * (1.33 + sw)];
+  // the suit who corks it: the nearest seat on screen to the right of the bell leans out with one long arm
+  const reach = ease(t, SAX_CORK[0] - .65, SAX_CORK[0]), back = ease(t, SAX_CORK[0] + .15, SAX_CORK[0] + .7);
+  if (reach > 0 && back < 1 && typeof SEATS !== 'undefined') {
+    let best = null, bd = 1e9; for (const s of SEATS) { const w = carLocalToWorld(t, s.x, s.z), sh = P(w[0], SEAT + TORSO - .08, w[1]); if (sh[2] < 1.5 || sh[0] < bell[0] + .2 * k) continue; const dd = Math.hypot(sh[0] - bell[0], sh[1] - bell[1]); if (dd < bd) { bd = dd; best = sh; } }
+    const sh = best ? [best[0], best[1]] : [W + 40, bell[1] + .3 * k], ks = best ? kAt(best) : k, u = reach * (1 - back), hand = [lerp(sh[0], bell[0], u), lerp(sh[1], bell[1] - .1 * k, u)];
+    const el = [(sh[0] + hand[0]) / 2 + .05 * ks, Math.max(sh[1], hand[1]) + .12 * ks * u]; // the elbow sags: a long Dali arm
+    g.strokeStyle = PAL.suit; g.lineWidth = Math.max(2, .13 * ks); g.lineCap = 'round'; g.beginPath(); g.moveTo(sh[0], sh[1]); g.quadraticCurveTo(el[0], el[1], hand[0], hand[1]); g.stroke();
+    g.fillStyle = '#f3efe6'; g.beginPath(); g.arc(hand[0] + .02 * k, hand[1], .055 * Math.max(k, ks), 0, TAU); g.fill(); // a white cuff
+    g.fillStyle = PAL.egg; g.beginPath(); g.arc(hand[0], hand[1], .05 * Math.max(k, ks), 0, TAU); g.fill();
+    if (t < SAX_CORK[0]) { g.save(); g.translate(hand[0], hand[1]); g.scale(k, k); bmMute(-.02, .02, -.5); g.restore(); } // the mute in his hand on the way in
+  }
+  // the pop: six notes burst out of the bell and spill over the board
+  const u0 = t - SAX_CORK[1]; if (u0 > 0 && u0 < 1.8) { const tb = PL(0, TOP + .9, 0), tk = tb[2] > .5 ? kAt(tb) : k;
+    for (let i = 0; i < 6; i++) { const u = clamp((u0 - i * .07) / 1.6); if (u <= 0 || u >= 1) continue; const sp = (i - 2.5) * 1.3, ex = tb[2] > .5 ? tb[0] + sp * tk : bell[0] + (3 + sp) * k, ey = tb[2] > .5 ? tb[1] + (.1 + .22 * (i % 3)) * tk : bell[1] - k;
+      const x = lerp(bell[0], ex, smooth(u)), y = lerp(bell[1], ey, u * u) - Math.sin(u * Math.PI) * (.35 + .1 * (i % 2)) * k, s = lerp(k, tk, u) * 1.15;
+      g.save(); g.globalAlpha = 1 - smooth((u - .65) / .35); g.translate(x, y); g.rotate(Math.sin(t * 6 + i) * .3); bmNote(0, 0, s, i % 2 === 0); g.restore(); } }
+}
 const BM_SAX = bmCostume(6501, { sax: true, bike: 'plain', para: null, flag: { h: 3.6, col: '#e8b23a', col2: '#1c1a1e' }, hat: 'top', coat: ['#7a3c8c', '#4a2058'], fur: true, trim: '#e8b23a' });
 
 // ---------- art cars ----------
@@ -334,57 +384,103 @@ function bmPoorInto(t, list) {
   list.push({ z: p[2], draw: () => { const q = P(X, 0, Z), k = kAt(q); bmBegin(q[0], q[1], k, turn); const lx = -turn, det = k > 14;
     const st = Math.sin(phase) * .2 * walking, coat = '#7d6248', coatD = '#4e3c2c';
     for (const [sgn, col] of [[-1, '#3a2e26'], [1, '#55453a']]) { const hip = [0, .88], foot = [sgn * st + .02, .02], kn = bmJoint(hip, foot, .45, .45, 1, 0); bmLine([hip, kn, foot], .12, col); bmOval(foot[0] + .06, .04, .1, .045, '#2a201a'); }
-    bmPath([[-.2, 1.42], [.16, 1.42], [.25, .92], [.3, .5], [.05, .46], [-.15, .52], [-.32, .5], [-.27, .95]]); g.closePath(); g.fillStyle = bmLG(lx * .35, 0, -lx * .35, 0, [coat, coatD]); g.fill();
+    const ink = 'rgba(36,22,14,.75)', inkW = bmW(.022); // draft 9: a dark edge so she holds up at phone size against the playa
+    bmPath([[-.2, 1.42], [.16, 1.42], [.25, .92], [.3, .5], [.05, .46], [-.15, .52], [-.32, .5], [-.27, .95]]); g.closePath(); g.fillStyle = bmLG(lx * .35, 0, -lx * .35, 0, [coat, coatD]); g.fill(); g.strokeStyle = ink; g.lineWidth = inkW; g.lineJoin = 'round'; g.stroke();
     if (det) { bmFill([[-.15, .7], [.02, .7], [.02, .86], [-.15, .86]], '#9a8462'); bmFill([[.08, 1.05], [.2, 1.05], [.2, 1.16], [.08, 1.16]], '#5e5a48'); g.strokeStyle = 'rgba(30,20,10,.5)'; g.lineWidth = bmW(.012); g.setLineDash([.025, .02]); g.strokeRect(-.15, -.86, .17, .16); g.setLineDash([]); }
-    bmFill([[-.24, 1.45], [.2, 1.45], [.26, 1.1], [-.3, 1.05]], '#8a3a2c'); // a shawl
+    bmFill([[-.24, 1.45], [.2, 1.45], [.26, 1.1], [-.3, 1.05]], '#8a3a2c'); g.strokeStyle = ink; g.lineWidth = inkW; g.stroke(); // a shawl
     const sh = [.08, 1.36], hand = [lerp(.3, .5, ask) + more * .08 - drop * .25, lerp(1.0, 1.42, ask) + more * .2 - drop * .45], el = bmJoint(sh, hand, .3, .3, .2, -1);
     bmLine([[-.12, 1.36], [-.08, 1.1], [.06, 1.06]], .09, coatD); bmLine([sh, el, hand], .095, coat); bmDot(hand[0], hand[1], .045, '#c99a72');
-    g.save(); g.translate(hand[0] + .1, -(hand[1] + .03)); g.rotate(tip * 2.6); g.beginPath(); g.ellipse(0, 0, .25, .1, 0, 0, Math.PI); g.closePath(); g.fillStyle = '#8a5a2c'; g.fill(); g.beginPath(); g.ellipse(0, 0, .25, .05, 0, 0, TAU); g.fillStyle = '#4a2c14'; g.fill(); g.restore();
-    bmLine([[.02, 1.45], [.04, 1.52]], .07, '#c99a72'); bmOval(.05, 1.64, .1, .12, bmLG(.05 + lx * .1, 1.75, .05 - lx * .1, 1.55, ['#e2b88e', '#9a6a46']));
+    g.save(); g.translate(hand[0] + .12, -(hand[1] + .04)); g.rotate(tip * 2.6); g.beginPath(); g.ellipse(0, 0, .3, .12, 0, 0, Math.PI); g.closePath(); g.fillStyle = '#8a5a2c'; g.fill(); g.strokeStyle = ink; g.lineWidth = inkW; g.stroke(); g.beginPath(); g.ellipse(0, 0, .3, .06, 0, 0, TAU); g.fillStyle = '#4a2c14'; g.fill(); g.restore(); // the bowl, a little bigger
+    bmLine([[.02, 1.45], [.04, 1.52]], .07, '#c99a72'); bmOval(.05, 1.64, .1, .12, bmLG(.05 + lx * .1, 1.75, .05 - lx * .1, 1.55, ['#e2b88e', '#9a6a46'])); g.strokeStyle = ink; g.lineWidth = inkW; g.stroke();
     bmPath([[-.08, 1.62], [-.02, 1.8], [.14, 1.78], [.16, 1.66], [.05, 1.74], [-.02, 1.55], [-.12, 1.42]]); g.closePath(); g.fillStyle = '#a04a3a'; g.fill(); // headscarf
     g.restore(); }, shadow: () => shadowOf([[X - .3, 0, Z], [X + .3, 0, Z], [X - .15, 1.75, Z], [X + .2, 1.75, Z]], t) });
 }
 
-// ---------- the cops: giant chess pawns in riot helmets (155.94 on, "cop" 158.3, "paid" 159.38) ----------
-// they drop onto the playa one by one behind the table, shields facing us, then keep pace like an escort. On "paid"
-// each puts out a gloved palm over the board and coins arc up from the table and stack in it.
-function bmPawn(x, y, k, t, i, palm, coins, sq, flip) { // front view, 3.4 m tall; flip turns it onto its helmet
-  bmBegin(x, y, k, 1); const s = 1.36, det = k > 5, blk = bmLG(-.6 * s, 0, .6 * s, 0, ['#55555f', '#1c1c22', '#08080a']);
-  g.scale(1 + sq * .12, 1 - sq * .12); if (flip > 0) { const hp = 1.18 * s; g.translate(0, -hp); g.rotate(Math.PI * flip); g.translate(0, hp); }
+// ---------- the cops: coin-operated pawns (155.94 on, "cop" 158.3, "paid" 159.38) ----------
+// Draft 9 (critic C, the scout): giant black chess pawns that read as police: boots under the base, a duty belt, a
+// silver badge, a black baton held up, and for a head a parking meter in a peaked cap, its red EXPIRED flag up in the
+// window. They drop onto the playa one by one behind the table and keep pace like an escort. On "paid" the board flips
+// a coin into each slot in a domino (.1 s apart): the red flag drops and a gold PAID flag snaps up. On "perverse" they
+// go over onto their caps; on "rehearsed" they spring back up into the sky, tumbling, the way they came.
+// Meanwhile two real Rangers (khaki, flashlights on their belts, unpaid volunteers) ride past behind them the other
+// way, and a burner by a cooler hands each of them a cold drink.
+const COP = { boot: .34, s: 1.36 };
+COP.neck = COP.boot + 1.58 * COP.s; COP.m0 = COP.neck + .2; COP.slot = COP.m0 + .3; COP.top = COP.m0 + 1.15;
+function bmPawn(x, y, k, t, i, o) { // front view, about 3.9 m to the top of the cap; o: sq (landing squash), flip (turns), pay (0..1 flag swap), baton (0..1 raise)
+  bmBegin(x, y, k, 1); const s = COP.s, det = k > 5, blk = bmLG(-.6 * s, 0, .6 * s, 0, ['#55555f', '#1c1c22', '#08080a']);
+  g.scale(1 + o.sq * .12, 1 - o.sq * .12); if (o.flip) { const hp = COP.top / 2; g.translate(0, -hp); g.rotate(Math.PI * o.flip); g.translate(0, hp); }
+  // boots: two black riot boots under the base, a shine on each toe
+  for (const sx of [-1, 1]) { const bx = sx * .27; bmFill([[bx - .14, .08], [bx + .14, .08], [bx + .12, COP.boot + .06], [bx - .12, COP.boot + .06]], bmLG(bx - .14, 0, bx + .14, 0, ['#34343c', '#121216', '#050507']));
+    bmOval(bx + sx * .03, .1, .2, .1, '#0c0c10'); bmFill([[bx - .2, 0], [bx + .23, 0], [bx + .23, .035], [bx - .2, .035]], '#3a2a1e');
+    bmOval(bx - .05, .14, .06, .025, 'rgba(255,255,255,.5)'); if (det) bmLine([[bx - .08, .16], [bx - .07, COP.boot]], .025, 'rgba(255,255,255,.3)'); }
+  g.save(); g.translate(0, -COP.boot);
+  // the pawn: base, column, collar
   bmPath([[-.62 * s, 0], [.62 * s, 0], [.56 * s, .16 * s], [.42 * s, .24 * s], [.46 * s, .34 * s], [.26 * s, .4 * s], [.18 * s, 1.42 * s], [.32 * s, 1.5 * s], [.24 * s, 1.58 * s], [-.24 * s, 1.58 * s], [-.32 * s, 1.5 * s], [-.18 * s, 1.42 * s], [-.26 * s, .4 * s], [-.46 * s, .34 * s], [-.42 * s, .24 * s], [-.56 * s, .16 * s]]); g.closePath(); g.fillStyle = blk; g.fill();
   if (det) bmLine([[-.12 * s, .5 * s], [-.08 * s, 1.35 * s]], .04 * s, 'rgba(255,255,255,.18)');
-  bmDot(0, 1.9 * s, .34 * s, blk);
-  // riot helmet: a navy dome with a ridge, a clear face shield down over the ball, a neck guard; no insignia
-  bmPath([[-.42 * s, 1.82 * s], [-.4 * s, 2.06 * s], [-.22 * s, 2.28 * s], [.22 * s, 2.28 * s], [.4 * s, 2.06 * s], [.42 * s, 1.82 * s]]); g.closePath(); g.fillStyle = bmLG(-.3 * s, 2.28 * s, .4 * s, 1.85 * s, ['#5a6886', '#25304a', '#121828']); g.fill();
-  bmLine([[0, 2.28 * s], [0, 2.05 * s]], .05 * s, '#3a4664'); bmFill([[-.46 * s, 1.84 * s], [-.36 * s, 1.84 * s], [-.36 * s, 1.56 * s], [-.48 * s, 1.6 * s]], '#141a26'); bmFill([[.46 * s, 1.84 * s], [.36 * s, 1.84 * s], [.36 * s, 1.56 * s], [.48 * s, 1.6 * s]], '#141a26');
-  bmPath([[-.37 * s, 2.0 * s], [.37 * s, 2.0 * s], [.35 * s, 1.68 * s], [.18 * s, 1.58 * s], [-.18 * s, 1.58 * s], [-.35 * s, 1.68 * s]]); g.closePath(); g.fillStyle = 'rgba(165,195,225,.5)'; g.fill(); g.strokeStyle = '#dfe8f2'; g.lineWidth = bmW(.045 * s); g.stroke();
-  bmLine([[-.4 * s, 2.02 * s], [.4 * s, 2.02 * s]], .07 * s, '#0e121c'); if (det) { bmLine([[-.26 * s, 1.92 * s], [.02 * s, 1.94 * s]], .03 * s, 'rgba(255,255,255,.75)'); bmDot(-.41 * s, 1.98 * s, .045 * s, '#9aa6bc'); bmDot(.41 * s, 1.98 * s, .045 * s, '#9aa6bc'); }
-  // free arm: a baton at rest, then a palm out over the board on "paid", coins stacking in it
-  const sh = [-.25 * s, 1.3 * s];
-  if (palm > 0) { const hand = [lerp(-.35, -1.05, palm) * s, lerp(1.0, 1.55, palm) * s], el = bmJoint(sh, hand, .45 * s, .45 * s, -.3, -1);
-    bmLine([sh, el, hand], .13 * s, '#1a1a20'); bmOval(hand[0], hand[1], .15 * s, .06 * s, '#2a2a30');
-    for (let j = 0; j < coins; j++) { const cy = hand[1] + (.04 + j * .08) * s; bmFill([[hand[0] - .14 * s, cy], [hand[0] + .14 * s, cy], [hand[0] + .14 * s, cy + .07 * s], [hand[0] - .14 * s, cy + .07 * s]], '#a87a1a'); bmOval(hand[0], cy + .07 * s, .14 * s, .045 * s, '#f6d050'); } }
-  else { const hand = [-.62 * s, .75 * s]; bmLine([sh, [-.55 * s, 1.0 * s], hand], .13 * s, '#1a1a20'); bmLine([[hand[0], hand[1] + .05 * s], [hand[0] - .1 * s, hand[1] - .6 * s]], .07 * s, '#0a0a0c'); }
-  // riot shield: a smoked rectangle with a pale rim and a grip bar, held low across the body
-  const sx0 = -.5 * s, sx1 = .5 * s, sy0 = .22 * s, sy1 = 1.36 * s; bmPath([[sx0, sy0], [sx1, sy0], [sx1, sy1 - .1 * s], [sx1 - .08 * s, sy1], [sx0 + .08 * s, sy1], [sx0, sy1 - .1 * s]]); g.closePath();
-  g.fillStyle = 'rgba(46,58,80,.8)'; g.fill(); g.strokeStyle = '#c9d4e0'; g.lineWidth = bmW(.07 * s); g.stroke();
-  if (det) { bmFill([[sx0 + .08 * s, 1.04 * s], [sx1 - .08 * s, 1.04 * s], [sx1 - .08 * s, 1.16 * s], [sx0 + .08 * s, 1.16 * s]], 'rgba(150,175,205,.55)'); bmLine([[sx0 + .14 * s, 1.26 * s], [sx0 + .28 * s, .34 * s]], .05 * s, 'rgba(255,255,255,.3)'); bmDot(sx1 - .02 * s, .8 * s, .08 * s, '#1a1a20'); }
+  // the duty belt and buckle, the badge
+  const bw = (y) => (.26 - .08 * (y - .4) / 1.02) * s + .02; bmFill([[-bw(.74), .74 * s], [bw(.74), .74 * s], [bw(.84), .84 * s], [-bw(.84), .84 * s]], '#3a2a1c'); bmFill([[-.07, .75 * s], [.07, .75 * s], [.07, .83 * s], [-.07, .83 * s]], '#c9cdd2');
+  { const cx = .02, cy = 1.24 * s, R = .11, pts = []; for (let j = 0; j < 10; j++) { const a = Math.PI / 2 + j * Math.PI / 5, r = j % 2 ? R * .45 : R; pts.push([cx + Math.cos(a) * r, cy + Math.sin(a) * r]); } bmFill(pts, '#dfe3e8'); }
+  // the baton arm: out to the side, the black baton held up (lifted on "cop")
+  { const sh = [-.2 * s, 1.36 * s], hand = [-.66 * s, (1.0 + .18 * o.baton) * s], el = bmJoint(sh, hand, .4 * s, .4 * s, -1, -1), a = 1.0 - .35 * o.baton;
+    bmLine([sh, el, hand], .13 * s, '#1a1a20'); bmLine([[hand[0] + Math.sin(a) * .12, hand[1] - Math.cos(a) * .12], [hand[0] - Math.sin(a) * .78, hand[1] + Math.cos(a) * .78]], .075 * s, '#0a0a0c');
+    bmLine([[hand[0] + Math.sin(a) * .02, hand[1] - Math.cos(a) * .02], [hand[0] - Math.sin(a) * .1 + .12, hand[1] + Math.cos(a) * .1]], .05, '#0a0a0c'); bmDot(hand[0], hand[1], .07 * s, '#1a1a20'); }
+  g.restore();
+  // the head: a parking meter on its post, a peaked cap on top
+  const m0 = COP.m0, steel = bmLG(-.4, 0, .4, 0, ['#c9ced4', '#8c939b', '#545a62']), cy = m0 + .5;
+  bmFill([[-.07, COP.neck - .02], [.07, COP.neck - .02], [.07, m0 + .02], [-.07, m0 + .02]], '#6d737b');
+  bmPath([[-.4, m0 + .06], [-.34, m0], [.34, m0], [.4, m0 + .06], [.4, cy]]); g.arc(0, -cy, .4, 0, Math.PI, true); g.closePath(); g.fillStyle = steel; g.fill();
+  g.save(); g.beginPath(); g.arc(0, -(cy + .02), .31, Math.PI, TAU); g.closePath(); g.fillStyle = '#e8eef0'; g.fill(); g.clip(); // the window
+  const red = 1 - ease(o.pay, 0, .5), gold = easeOutBack(clamp(o.pay * 1.6 - .4), 2.2);
+  // the flags swing on one pivot under the window's middle: red EXPIRED drops away to the left, gold PAID snaps up from the right
+  const flag = (rot, c1, c2) => { g.save(); g.translate(0, -(cy + .01)); g.rotate(rot); bmFill([[-.12, 0], [.12, 0], [.12, .29], [-.12, .29]], c1); bmFill([[-.12, .22], [.12, .22], [.12, .29], [-.12, .29]], c2); g.restore(); };
+  if (red > 0) flag(-(1 - red) * Math.PI, '#d0281f', '#8e1a14');
+  if (gold > 0) flag((1 - gold) * Math.PI, '#f2c230', '#a87a1a');
+  if (det) { g.strokeStyle = 'rgba(40,40,46,.6)'; g.lineWidth = bmW(.015); g.beginPath(); g.arc(0, -(cy + .02), .22, Math.PI * 1.15, Math.PI * 1.85); g.stroke(); }
+  g.restore(); g.beginPath(); g.arc(0, -(cy + .02), .31, Math.PI, TAU); g.closePath(); g.strokeStyle = '#3a3f46'; g.lineWidth = bmW(.04); g.stroke();
+  bmFill([[-.09, m0 + .29], [.09, m0 + .29], [.09, m0 + .33], [-.09, m0 + .33]], '#15171a'); bmDot(0, m0 + .14, .055, '#dfe3e8'); // the coin slot and the knob
+  // the peaked cap: navy crown, dark band, black visor, a small gold badge
+  const c0 = cy + .32; bmFill([[-.3, c0], [.3, c0], [.38, c0 + .2], [-.38, c0 + .2]], '#1f2a44'); bmFill([[-.3, c0], [.3, c0], [.31, c0 + .07], [-.31, c0 + .07]], '#0e1220');
+  bmOval(.04, c0 - .01, .32, .055, '#08080c'); bmDot(0, c0 + .13, .05, '#d9b45a');
   g.restore();
 }
 function bmCopsInto(t, list) {
-  const s = L_(28).s, cop = wt(28, 'cop'), paid = wt(28, 'paid'), end = L_(30).s - .32; if (t < s - .2 || t > end) return; const n = 7;
+  const s = L_(28).s, cop = wt(28, 'cop'), paid = wt(28, 'paid'), pv = wt(29, 'perverse'), r30 = L_(30).s, end = r30 + 1.2; if (t < s - .2 || t > end) return; const n = 7;
   for (let i = 0; i < n; i++) { const land = s + .3 + i * ((cop - .2 - s - .3) / (n - 1)), dt = t - land; if (dt < -.55) continue;
-    const Y = dt < 0 ? 9 * (dt / .55) * (dt / .55) : 0, sq = dt >= 0 ? Math.max(0, Math.sin(clamp(dt / .35) * Math.PI)) * (1 - clamp(dt / .35)) * 2 : 0;
-    const rel = -6.3 + i * 2.1, Z = 7 + (i % 2) * .6, fl = ease(t, wt(29, 'perverse') - .05 + i * .06, wt(29, 'perverse') + .45 + i * .06) * (1 - ease(t, L_(30).s - .4, L_(30).s + .2)), X = carX(t) + rel, palm = ease(t, paid - .6 + i * .05, paid - .1 + i * .05);
-    const coinT = (j) => paid + .1 + i * .07 + j * .26, nLanded = [0, 1, 2, 3, 4].filter((j) => t > coinT(j) + .55).length;
-    list.push({ z: P(X, 0, Z)[2], draw: () => { const q = P(X, Y, Z), k = kAt(q); if (q[2] < 1) return; bmPawn(q[0], q[1], k, t, i, palm, nLanded, sq, fl);
+    const ue = clamp((t - (r30 - .45 + i * .05)) / .8), Y = (dt < 0 ? 9 * (dt / .55) * (dt / .55) : 0) + 26 * ue * ue, sq = dt >= 0 ? Math.max(0, Math.sin(clamp(dt / .35) * Math.PI)) * (1 - clamp(dt / .35)) * 2 : 0;
+    const rel = -6.3 + i * 2.1, Z = 7 + (i % 2) * .6, X = carX(t) + rel, fl = ease(t, pv - .05 + i * .06, pv + .45 + i * .06) + 1.4 * ue * ue;
+    const cl = paid + i * .1, pay = clamp((t - cl - .02) / .25), baton = ease(t, cop - .15, cop + .1) * (1 - ease(t, cop + .5, cop + .9));
+    if (Y > 40) continue; // gone up out of every frame
+    list.push({ z: P(X, 0, Z)[2], draw: () => { const q = P(X, Y, Z), k = kAt(q); if (q[2] < 1) return; bmPawn(q[0], q[1], k, t, i, { sq, flip: fl, pay, baton });
         if (sq > 0 && Y === 0) { const pg = P(X, 0, Z), kg = kAt(pg); g.fillStyle = `rgba(220,190,140,${.4 * sq})`; g.beginPath(); g.ellipse(pg[0], pg[1], 1.4 * kg * (1 + clamp(dt / .35)), .3 * kg, 0, 0, TAU); g.fill(); }
-        // coins in flight: from the table up into the palm
-        const s2 = 1.36, hand = [X + lerp(-.35, -1.05, palm) * s2, lerp(1.0, 1.55, palm) * s2 + .1, Z - .05];
-        for (let j = 0; j < 5; j++) { const u = clamp((t - coinT(j)) / .55); if (u <= 0 || u >= 1) continue; const a = PL(clamp(rel - .3, -TL + .4, TL - .4), TOP + .1, 1.2), b = P(...hand), kk = kAt(b);
-          const cx = lerp(a[0], b[0], u), cy = lerp(a[1], b[1], u) - Math.sin(u * Math.PI) * 1.6 * kk, spin = Math.abs(Math.cos(t * 14 + j + i)); g.fillStyle = '#f0c84a'; g.beginPath(); g.ellipse(cx, cy, Math.max(2.5, .17 * kk * (.35 + .65 * spin)), Math.max(2.5, .17 * kk), 0, 0, TAU); g.fill(); g.strokeStyle = '#a87a1a'; g.lineWidth = Math.max(1, .03 * kk); g.stroke(); } },
-      shadow: () => { if (Y < 1) shadowOf([[X - .8, 0, Z], [X + .8, 0, Z], [X - .4, 3.1, Z], [X + .4, 3.1, Z]], t); } }); }
+        // the coin: flipped up from the far edge of the table, it drops into the slot on its beat
+        const u = clamp((t - cl + .5) / .5); if (u > 0 && u < 1) { const a = PL(clamp(rel - .3, -TL + .4, TL - .4), TOP + .1, 1.2), b = P(X, COP.slot + .03, Z - .05), kk = kAt(b);
+          const cx = lerp(a[0], b[0], u), cy = lerp(a[1], b[1], u) - Math.sin(u * Math.PI) * 1.4 * kk, spin = Math.abs(Math.cos(t * 14 + i)); g.fillStyle = '#f0c84a'; g.beginPath(); g.ellipse(cx, cy, Math.max(2.5, .15 * kk * (.35 + .65 * spin)), Math.max(2.5, .15 * kk), 0, 0, TAU); g.fill(); g.strokeStyle = '#a87a1a'; g.lineWidth = Math.max(1, .03 * kk); g.stroke(); } },
+      shadow: () => { if (Y < 1) shadowOf([[X - .8, 0, Z], [X + .8, 0, Z], [X - .4, 3.6, Z], [X + .4, 3.6, Z]], t); } }); }
+  bmRangersInto(t, list);
 }
+// the Rangers and the burner with the cooler: they pass him right on "paid" (one drink each, .42 s apart)
+const BM_RANGERS = [0, 1].map((j) => bmCostume(7710 + j * 7, { coat: ['#c2ab80', '#8a7650'], fur: false, spots: false, stripes: false, legs: j ? '#4e3c2a' : '#5a4632', skin: j ? '#e8cfae' : '#8a5a3c', hat: 'ranger', para: null, flag: null, frame: j ? '#2f3a2a' : '#5a4632', bike: 'plain', ranger: true, trim: '#3a2c20' }));
+const BM_GIVER = bmCostume(7733, { coat: ['#47c1ba', '#1d6f6a'], fur: true, trim: '#f4b0cf', hat: 'fluff', legs: '#e8d4b4' });
+function bmRangersInto(t, list) {
+  const paid = wt(28, 'paid'); if (t < paid - 5 || t > paid + 4) return; const Xg = carX(paid) + 9.5, Zg = 9.3;
+  let held = 2;
+  [0, 1].forEach((j) => { const tj = paid + .05 + j * .42, u = t - tj, dx = 3 * u - 1.76 * Math.tanh(u / .8), X = Xg + .3 - dx, Z = 10.5 + j * .9; if (u > 0) held--;
+    bmRiderEntry(X, Z, -1, 60 + dx, t, Object.assign({}, BM_RANGERS[j], { drink: u > 0 ? 1 : 0 }), list); });
+  const p = P(Xg, 0, Zg); if (p[2] < 1.5) return; const reach = Math.max(0, 1 - Math.abs(t - (paid + .26)) / .55);
+  list.push({ z: p[2], draw: () => { const q = P(Xg, 0, Zg), k = kAt(q); if (k < 1) return; bmGiver(q[0], q[1], k, t, held, reach); }, shadow: () => shadowOf([[Xg - .5, 0, Zg], [Xg + .9, 0, Zg], [Xg, 1.9, Zg]], t) });
+}
+function bmGiver(x, y, k, t, held, reach) { // a burner in a fur coat by a cooler, holding cold cans up to the riders going by
+  const c = BM_GIVER, det = k > 12; bmBegin(x, y, k, 1);
+  bmFill([[-.75, 0], [-.15, 0], [-.15, .42], [-.75, .42]], bmLG(-.75, 0, -.15, 0, ['#f6f2ea', '#c9c4ba'])); bmFill([[-.78, .42], [-.12, .42], [-.12, .5], [-.78, .5]], '#c7362b'); // the cooler
+  for (const [fx, col] of [[-.06, bmShade(c.legs, .7)], [.1, c.legs]]) bmLine([[fx * .5 + .02, .9], [fx, .05]], .12, col);
+  const coat = [[-.2, 1.45], [.2, 1.45], [.26, .82], [-.24, .82]]; bmPath(det ? bmFur(coat, .03, c.seed) : coat); g.closePath(); g.fillStyle = bmLG(-.25, 0, .25, 0, [c.coat[0], c.coat[1]]); g.fill();
+  bmLine([[0, 1.45], [.02, 1.53]], .07, c.skin); bmOval(.02, 1.66, .11, .13, c.skin); bmPath(bmFur([[-.14, 1.68], [-.09, 1.88], [.13, 1.88], [.18, 1.68]], .03, c.seed + 3)); g.closePath(); g.fillStyle = c.trim; g.fill();
+  bmLine([[-.11, 1.67], [.13, 1.68]], .035, '#2a2420');
+  const sh = [.14, 1.38], hand = [lerp(.38, .55, reach), lerp(1.15, 1.75, reach)], el = bmJoint(sh, hand, .3, .3, 1, -1); bmLine([sh, el, hand], .09, c.coat[0]); bmDot(hand[0], hand[1], .045, c.skin);
+  for (let j = 0; j < held; j++) bmCan(hand[0] - .02 + j * .09, hand[1] - .02);
+  g.restore();
+}
+function bmCan(x, y) { bmFill([[x - .04, y], [x + .04, y], [x + .04, y + .14], [x - .04, y + .14]], bmLG(x - .04, 0, x + .04, 0, ['#7fc0ec', '#2f6fb5', '#1c4f86'])); bmFill([[x - .04, y + .12], [x + .04, y + .12], [x + .04, y + .145], [x - .04, y + .145]], '#d9dde2'); bmDot(x - .015, y + .06, .012, 'rgba(255,255,255,.85)'); bmDot(x + .015, y + .09, .01, 'rgba(255,255,255,.85)'); }
 
 // ---------- camps: vary along the road ----------
 const BM_KINDS = ['dome', 'tent', 'yurt', 'dome', 'sail', 'chairs', 'drip', 'eye', 'speakers', 'arch', 'flags', 'dome', 'tent', 'yurt'];
@@ -421,6 +517,8 @@ function bmCamp(c, t, p) {
     const ey = r * 1.25, er = r * .42; bmLine([[-er, 0], [0, ey - er * .6], [er, 0]], .14, '#5a4a3a'); bmLine([[0, 0], [0, ey - er]], .12, '#4a3a2c');
     bmDot(0, ey, er, bmLG(-er * .6, ey + er * .6, er * .6, ey - er * .6, ['#ffffff', '#e8e2d6', '#b8b0a2'])); const look = clamp((carX(t) - c.X) / 40, -1, 1) * er * .45; bmDot(look, ey - er * .05, er * .42, '#2f6fb5'); bmDot(look * 1.08, ey - er * .05, er * .2, '#0e0c10'); bmDot(look - er * .12, ey + er * .1, er * .07, 'rgba(255,255,255,.9)');
     g.strokeStyle = '#3a2a20'; g.lineWidth = bmW(.08); g.beginPath(); g.arc(0, -ey, er * 1.02, Math.PI * 1.1, Math.PI * 1.9); g.stroke();
+    // refrain 2 "restrict" (b4's request): the lid drops over the eye, then lifts once the line is over
+    const rl = ease(t, wt(11, 'restrict') - .05, wt(11, 'restrict') + .15) * (1 - ease(t, L_(11).e, L_(11).e + .5)); if (rl > 0) { g.save(); g.beginPath(); g.arc(0, -ey, er * 1.02, 0, TAU); g.clip(); g.fillStyle = '#c9a07a'; g.fillRect(-er * 1.1, -ey - er * 1.1, er * 2.2, rl * er * 2.2); g.fillStyle = '#3a2a20'; g.fillRect(-er * 1.1, -ey - er * 1.1 + rl * er * 2.2 - bmW(.06), er * 2.2, bmW(.06)); g.restore(); }
   } else if (c.kind === 'speakers') { // a sound camp: a speaker wall under a striped awning; the cones pump
     const pump = 1 + .08 * Math.max(0, Math.sin(t * TAU * 2)); for (let i = 0; i < 3; i++) for (let j = 0; j < 2; j++) { const x0 = -r * .7 + i * r * .48, y0 = j * r * .42; bmFill([[x0, y0], [x0 + r * .45, y0], [x0 + r * .45, y0 + r * .4], [x0, y0 + r * .4]], '#1c1a1e'); bmDot(x0 + r * .225, y0 + r * .2, r * .14 * pump, '#3a3640'); bmDot(x0 + r * .225, y0 + r * .2, r * .05, '#5a5662'); }
     for (const dx of [-1, 1]) bmLine([[dx * r, 0], [dx * r, r * 1.1]], .08, '#6d5a44'); for (let i = 0; i < 6; i++) bmFill([[-r + i * r / 3, r * 1.1], [-r + (i + 1) * r / 3, r * 1.1], [-r + (i + 1) * r / 3, r * 1.25], [-r + i * r / 3, r * 1.25]], i % 2 ? c.col : '#f2ede0');
@@ -460,7 +558,7 @@ function bmInstall(kind, t, cue, X, Z, list) {
       bmPath([[-.7, 2.7], [-1.2, 3.2]]); g.beginPath(); g.moveTo(-.7, -2.7); g.quadraticCurveTo(-1.0, -3.2, -r, -cy); g.arc(0, -cy, r, Math.PI, TAU); g.quadraticCurveTo(1.0, -3.2, .7, -2.7); g.closePath(); g.fillStyle = on > 0 ? `rgba(255,${226 - 20 * (1 - on)},${150 + 60 * (1 - on)},${.55 + .3 * on})` : 'rgba(214,226,232,.55)'; g.fill(); g.strokeStyle = 'rgba(120,130,140,.6)'; g.lineWidth = bmW(.05); g.stroke();
       bmLine([[-.3, 2.8], [-.25, 3.8], [-.1, 4.2], [.1, 3.9], [.25, 4.2], [.3, 3.8], [.3, 2.8]], .05, on > 0 ? '#fff0b0' : '#6a5a40'); if (det) bmLine([[-.9, 4.8], [-.5, 5.3]], .12, 'rgba(255,255,255,.6)');
       const seal = ease(t, cue, cue + .4); if (seal > 0) { g.save(); g.translate(.75, -1.95); g.scale(seal, seal); rosette(0, 0, .28); g.restore(); }
-    } else if (kind === 'hourglass') { const run = ease(t, cue - .1, cue + .4), m = .25 + .2 * Math.sin(t * .5), h = 5.4, w = 1.5;
+    } else if (kind === 'hourglass') { const run = ease(t, cue - .1, cue + .4), m = .25 + .2 * Math.sin(t * .5), h = 5.4, w = 1.5, melt = ease(t, 128.6, 130.2); if (melt > 0) g.scale(1 + .5 * melt, 1 - melt); // Dali: once its line is sung the hourglass slumps into the ground
       bmFill([[-w - .2, 0], [w + .2, 0], [w + .2, .35], [-w - .2, .35]], '#6a4426'); bmFill([[-w - .3, h], [w + .1, h - .1 - m * .4], [w + .1, h + .25 - m * .4], [-w - .3, h + .3]], '#6a4426');
       for (const dx of [-w, w]) bmLine([[dx, .35], [dx + (dx > 0 ? -m * .2 : 0), h]], .12, '#8a5a2c');
       g.beginPath(); g.moveTo(-w * .9, -.35); g.quadraticCurveTo(-w * .2, -h * .45, -.12, -h * .5); g.quadraticCurveTo(-w * .2, -h * .55, -w * .9 + m * .2, -(h - .05)); g.lineTo(w * .85 - m * .3, -(h - .1 - m * .4)); g.quadraticCurveTo(w * .2, -h * .55, .12, -h * .5); g.quadraticCurveTo(w * .2, -h * .45, w * .9, -.35); g.closePath(); g.fillStyle = 'rgba(214,226,232,.5)'; g.fill(); g.strokeStyle = 'rgba(120,130,140,.6)'; g.lineWidth = bmW(.05); g.stroke();
@@ -484,8 +582,8 @@ function bmInstallsInto(t, list) {
   const pat = wt(8, 'patent'), tim = wt(15, 'time'), unf = wt(18, 'unfair');
   bmInstall('ballot', t, 0, carX(9) + 13, 17, list);
   bmInstall('bulb', t, pat, carX(pat) - 7, 21, list);
-  if (t < 136) bmInstall('hourglass', t, tim, carX(tim) + 9, 15, list);
-  if (t > 126 && t < 134.3) bmInstall('seesaw', t, unf, carX(unf) + 12.5, 17, list);
+  if (t < 130.3) bmInstall('hourglass', t, tim, carX(tim) + 9, 15, list); // it melts into the playa by 130.2 (draft 9), clear of the bridge's seesaw
+  // draft 9: the seesaw on "unfair" is table.js's now; the playa one is gone so the two don't duplicate
 }
 
 // ---------- Black Rock City (draft 4): the real city plan round the Man ----------
@@ -593,19 +691,25 @@ const BRC_ITEMS = [], BRC_BLOCKS = [];
 const BRC_FENCE = [0, 1, 2, 3, 4, 5].map((i) => brcAt(12 + i * 2.4, BRC.FENCE));
 const BRC_GATE = [brcAt(6, BRC.KEY.r + BRC.KEY.R - 10), brcAt(6, 2600), brcAt(6.08, 3400), brcAt(6.25, 5200)];
 
-// ---------- the promenade lampposts (render.js draws LAMPS through lamp()) ----------
-// Real infrastructure: a tall wooden post with a crossbar at the top and a braced arm, a lantern hanging from the end
-// of it. The posts stand on both sides of each promenade, every 20 m, from 60 m out from the Man. By day the hooks are
-// empty: the Lamplighters carry the lanterns out at dusk and hang them, lit. Default: from 3:18, staggered outward
-// from the Man (LAMP_T0 at LAMP_D0, LAMP_V metres a second). lampTime(l) is when lamp l is hung and lit; lampLit(l, t)
-// is 0..1 (bA can time the Lamplighters' procession to it).
-const LAMP_T0 = 198, LAMP_D0 = 60, LAMP_V = 52, LAMP_H = 4.8, LAMP_ARM = 4.45;
+// ---------- the promenade spires (render.js draws LAMPS through lamp()) ----------
+// Real infrastructure: tall wooden spires on both sides of each promenade, every 20 m from 60 m out from the Man. Along
+// the processional (the 6:00 promenade from Center Camp to the Man, and the 12:00 one on out to the Temple) each spire
+// carries four lanterns on a cross of arms; on the 3:00 and 9:00 promenades two. By day the hooks are empty: the
+// Lamplighters carry the lanterns out at dusk and hang them by hand, at a walk, from Center Camp toward the Man and on
+// out toward the Temple, so it is dark ahead of them and lit behind. burn.js (b6) times that: lampLitT(X, Z) is when
+// the spire at (X, Z) gets lit. Without it the draft-7 timing stays (lampTime). lampLit(l, t) is 0..1.
+const LAMP_T0 = 198, LAMP_D0 = 60, LAMP_V = 52, LAMP_H = 4.8, LAMP_ARM = 4.45, LAMP_TIP = 5.5, LAMP_REACH = .92;
 const PROMS = [{ a: 12, r1: 722 }, { a: 6, r1: 846 }, { a: 3, r1: BRC.ESP }, { a: 9, r1: BRC.ESP }];
 const LAMPS = [];
 PROMS.forEach((pr) => { const d = brcDir(pr.a), n = [-d[1], d[0]];
-  for (let r = LAMP_D0; r <= pr.r1; r += 20) for (const s of [-1, 1]) LAMPS.push({ X: MAN.x + d[0] * r + n[0] * 6 * s, Z: MAN.z + d[1] * r + n[1] * 6 * s, d: r, a: pr.a, side: s, ax: -n[0] * s, az: -n[1] * s, lt: LAMP_T0 + (r - LAMP_D0) / LAMP_V + (s > 0 ? .2 : 0), i: LAMPS.length }); });
+  for (let r = LAMP_D0; r <= pr.r1; r += 20) for (const s of [-1, 1]) LAMPS.push({ X: MAN.x + d[0] * r + n[0] * 6 * s, Z: MAN.z + d[1] * r + n[1] * 6 * s, d: r, a: pr.a, side: s, ax: -n[0] * s, az: -n[1] * s, ux: d[0], uz: d[1], four: pr.a === 12 || pr.a === 6, lt: LAMP_T0 + (r - LAMP_D0) / LAMP_V + (s > 0 ? .2 : 0), i: LAMPS.length }); });
 const lampTime = (l) => l.lt;
-function lampLit(l, t) { return smooth((t - l.lt) / .5); }
+function lampLitAt(l) { // when this spire is lit: the Lamplighters' time from burn.js when it exists (cached, it depends on the spot only)
+  if (l.ltt === undefined) { const v = typeof lampLitT === 'function' ? lampLitT(l.X, l.Z) : NaN; l.ltt = typeof v === 'number' && !Number.isNaN(v) ? v : null; }
+  return l.ltt == null ? l.lt : l.ltt; }
+function lampLit(l, t) { return smooth((t - lampLitAt(l)) / .5); }
+function lampArms(l) { // the hook directions: in toward the promenade (where burn.js's pole reaches), out, and along it on the processional
+  return l.four ? [[l.ax, l.az], [-l.ax, -l.az], [l.ux, l.uz], [-l.ux, -l.uz]] : [[l.ax, l.az], [-l.ax, -l.az]]; }
 function lantern(q, k, lit, emissive, t, i) { // a box lantern hanging below the hook point q
   const s = Math.max(k, 6) * 1.35, x = q[0], y = q[1], fl = .88 + .12 * n1(970 + i, t * 3.1);
   if (!emissive) { g.strokeStyle = '#2a2420'; g.lineWidth = Math.max(1, .02 * k); g.beginPath(); g.moveTo(x, y); g.lineTo(x, y + .06 * k); g.stroke();
@@ -619,16 +723,21 @@ function lantern(q, k, lit, emissive, t, i) { // a box lantern hanging below the
 }
 function lamp(l, t, emissive) {
   if (emissive && l.i === 0) brcEmissive(t); // the city's lights ride on the first lamp's call, after the grade
+  if (Math.hypot(l.X - C.x, l.Z - C.z) < 3) return; // a spire right under the drone would draw as a line across the frame
   const p = P(l.X, 0, l.Z); if (p[2] < 2 || (p[2] < 6 && t > 236) || p[0] < -300 || p[0] > W + 300) return;
-  const k = kAt(p), lit = lampLit(l, t); if (k < .3 && !lit) return;
-  const hook = P(l.X + l.ax * .92, LAMP_ARM, l.Z + l.az * .92);
-  if (emissive) { if (lit > 0 && hook[2] > 1) lantern(hook, kAt(hook), lit * (.35 + .65 * nightAmt(t)), true, t, l.i); return; }
-  const top = P(l.X, LAMP_H, l.Z), b0 = P(l.X - l.ax * .32, LAMP_ARM, l.Z - l.az * .32), b1 = P(l.X + l.ax * 1.02, LAMP_ARM, l.Z + l.az * 1.02), br0 = P(l.X, LAMP_ARM - .6, l.Z), br1 = P(l.X + l.ax * .55, LAMP_ARM, l.Z + l.az * .55);
-  const wood = '#5b4632', w = .16 * k;
-  seg(p, top, w, wood); if (k > 8) { g.globalAlpha = .35; seg(P(l.X - .03 * l.az, 0, l.Z + .03 * l.ax), P(l.X - .03 * l.az, LAMP_H, l.Z + .03 * l.ax), w * .3, '#8a6c4a'); g.globalAlpha = 1; } // lit edge of the post
-  seg(b0, b1, .14 * k, wood); seg(br0, br1, .08 * k, wood);
-  if (k > 4) seg(P(l.X + l.ax * .92, LAMP_ARM, l.Z + l.az * .92), hook, .02 * k, '#2a2420');
-  if (lit > 0 && hook[2] > 1) { const kh = kAt(hook); g.globalAlpha = clamp(lit * 3); lantern([hook[0], hook[1]], kh, lit, false, t, l.i); g.globalAlpha = 1; }
+  const k = kAt(p), t0 = lampLitAt(l), lit = smooth((t - t0) / .5); if (k < .3 && !lit) return;
+  const arms = lampArms(l), hookAt = (j) => P(l.X + arms[j][0] * LAMP_REACH, LAMP_ARM, l.Z + arms[j][1] * LAMP_REACH), litJ = (j) => smooth((t - t0 - j * .3) / .5); // hung one after another
+  if (emissive) { const night = .35 + .65 * nightAmt(t);
+    if (k < 3) { const h = P(l.X, LAMP_ARM, l.Z); if (lit > 0 && h[2] > 1) lantern(h, kAt(h) * 1.2, lit * night, true, t, l.i); return; } // far off: one glow for the spire
+    for (let j = 0; j < arms.length; j++) { const lj = litJ(j), h = hookAt(j); if (lj > 0 && h[2] > 1) lantern(h, kAt(h), lj * night, true, t, l.i * 4 + j); } return; }
+  const top = P(l.X, LAMP_H, l.Z), tip = P(l.X, LAMP_TIP, l.Z), wood = '#5b4632', w = .16 * k;
+  seg(p, top, w, wood); seg(top, tip, w * .55, wood); if (k > 8) { g.globalAlpha = .35; seg(P(l.X - .03 * l.az, 0, l.Z + .03 * l.ax), P(l.X - .03 * l.az, LAMP_H, l.Z + .03 * l.ax), w * .3, '#8a6c4a'); g.globalAlpha = 1; } // lit edge of the post
+  if (k > 3) { const fin = P(l.X, LAMP_TIP + .3, l.Z); seg(tip, fin, w * .25, '#3a2c20'); }
+  const c0 = P(l.X, LAMP_ARM + .02, l.Z);
+  for (let j = 0; j < arms.length; j++) { const [ax, az] = arms[j], e = P(l.X + ax * (LAMP_REACH + .1), LAMP_ARM + .1, l.Z + az * (LAMP_REACH + .1)); seg(c0, e, .11 * k, wood); // the cross of arms, tips turned up a little
+    if (k > 5) seg(P(l.X, LAMP_ARM - .55, l.Z), P(l.X + ax * .5, LAMP_ARM, l.Z + az * .5), .06 * k, wood); // a brace under each
+    const h = hookAt(j); if (k > 4) seg(P(l.X + ax * LAMP_REACH, LAMP_ARM + .06, l.Z + az * LAMP_REACH), h, .02 * k, '#2a2420');
+    const lj = litJ(j); if (lj > 0 && h[2] > 1) { g.globalAlpha = clamp(lj * 3); lantern([h[0], h[1]], kAt(h), lj, false, t, l.i * 4 + j); g.globalAlpha = 1; } }
 }
 
 // ---------- the city: per-frame state, colours ----------
@@ -748,7 +857,24 @@ function brcAir(t, alpha, lights) {
       air.push(o[0] + ex0 * it.u + ey0 * it.v, o[1] + ex1 * it.u + ey1 * it.v, clamp(kk * (it.k === K_SHADE || it.k === K_ART || it.k === K_STAGE ? 3.4 : 2.4), 1.3, 3.8), it.lc, f * (.85 + .15 * Math.sin(t * 1.7 + it.ph))); }
     if (la > 0 && b.items.length && b.items[0].k === K_CC) for (let j = 0; j < 16; j++) { const a = j / 16 * TAU, u = b.items[0].u + Math.cos(a) * 44, v = b.items[0].v + Math.sin(a) * 44; air.push(o[0] + ex0 * u + ey0 * v, o[1] + ex1 * u + ey1 * v, clamp(kk * 4, 1.5, 5), 0, la); }
   }
-  g.setTransform(1, 0, 0, 1, 0, 0); g.restore();
+  g.setTransform(1, 0, 0, 1, 0, 0);
+  // draft 9: from high up the streets are drawn again over the camps, paler and wider than life, so the grid reads
+  const hi = smooth((C.y - 250) / 1300); if (hi > 0) { const sw = Math.max(BRC.ST * kc, lerp(BRC.ST * kc, 4.6, hi)), sc = rgb(mix(pl, [252, 246, 232], .55)); g.globalAlpha = alpha * hi * .9;
+    for (const r of BRC.RINGS) { const pts = []; for (let j = 0; j <= 64; j++) pts.push(brcAt(2 + 8 * j / 64, r)); brcLine(pts, r === BRC.ESP ? sw * 1.3 : sw, sc); }
+    for (let a = 2; a <= 10.001; a += .5) { if (Math.abs(a - 6) < .01) continue; brcLine([brcAt(a, BRC.ESP), brcAt(a, BRC.EDGE)], sw, sc); } // 6:00 is Center Camp's road, already drawn
+    g.globalAlpha = alpha; }
+  BRC_F.cars = la > 0 && hi > 0 ? alpha * hi : 0;
+  g.restore();
+}
+// burn night: art cars stream in from the camps along the radial streets toward the Man and park round the burn
+// (draft 9, critic D). Seen only from the aerial, as warm points 1-2 px across; their pace is sped up so it reads from 5 km.
+const BRC_CARS = [...Array(200)].map((_, i) => { const R = mulberry(5150 + i * 7); return { a: 2 + .5 * Math.floor(R() * 17), r0: 900 + R() * 780, v: 28 + R() * 20, ts: 199 + R() * 6, stop: 78 + R() * 30, lat: (R() - .5) * 8, c: R() < .7 ? 0 : 1 + Math.floor(R() * 3) }; });
+function brcCarLights(t) {
+  const m = BRC_F.cars || 0; if (m <= .01) return; const cols = ['255,214,150', '255,170,90', '255,130,190', '150,220,255'];
+  g.save(); g.globalCompositeOperation = 'lighter';
+  for (const o of BRC_CARS) { const r = Math.max(o.stop, o.r0 - o.v * Math.max(0, t - o.ts)), d = brcDir(o.a), X = MAN.x + d[0] * r - d[1] * o.lat, Z = MAN.z + d[1] * r + d[0] * o.lat, q = P(X, 0, Z); if (q[2] < 1 || q[0] < -4 || q[0] > W + 4 || q[1] < -4 || q[1] > H + 4) continue;
+    const a = m * (.75 + .25 * Math.sin(t * 3 + o.r0)); g.fillStyle = `rgba(${cols[o.c]},${.22 * a})`; g.fillRect(q[0] - 3, q[1] - 3, 6, 6); g.fillStyle = `rgba(${cols[o.c]},${.95 * a})`; g.fillRect(q[0] - 1.2, q[1] - 1.2, 2.4, 2.4); }
+  g.restore();
 }
 function templeAir(t, k) { // the Temple from above: its courtyard wall, the corner pavilions, the hall with its cross roof and spire
   const [X, Z] = TEMPLE_XZ, d = [0, 1], sv = sunVec(t), sa = shadowA(t), sq = (cx, cz, h, col) => brcPoly([[X + cx - h, Z + cz - h], [X + cx + h, Z + cz - h], [X + cx + h, Z + cz + h], [X + cx - h, Z + cz + h]], col);
@@ -828,11 +954,12 @@ function brcEmissive(t) { // called once a frame after the grade (through lamp()
     brcLg.globalCompositeOperation = 'lighter'; brcDots(brcLg, BRC_F.pts, x0, y0); brcLg.globalCompositeOperation = 'destination-in'; brcLg.drawImage(BRC_MC, 0, 0, w, h, 0, 0, w, h); brcLg.globalCompositeOperation = 'source-over';
     g.save(); g.globalCompositeOperation = 'screen'; g.globalAlpha = night; g.drawImage(BRC_LC, 0, 0, w, h, x0, y0, w, h); g.restore(); } // screen, not lighter: warm points stay warm on the violet dusk
   if (BRC_F.air.length) { g.save(); g.globalCompositeOperation = 'screen'; brcDots(g, BRC_F.air, 0, 0, night); g.globalCompositeOperation = 'lighter'; brcDots(g, BRC_F.air, 0, 0, .45 * night * nightAmt(t)); g.restore(); } // from the air: screen keeps them warm, a light lighter pass lets them glow as night falls
+  brcCarLights(t);
   // the Temple keeps a soft warm light inside it at night
   const tn = nightAmt(t); if (tn > 0) { const p = P(TEMPLE_XZ[0], 6, TEMPLE_XZ[1]); if (p[2] > 30 && p[0] > -200 && p[0] < W + 200) { const k = kAt(p), R = Math.max(18 * k, 6); g.save(); g.globalCompositeOperation = 'lighter'; const rg = g.createRadialGradient(p[0], p[1], 0, p[0], p[1], R); rg.addColorStop(0, `rgba(255,190,120,${.35 * tn})`); rg.addColorStop(1, 'rgba(255,160,90,0)'); g.fillStyle = rg; g.fillRect(p[0] - R, p[1] - R, 2 * R, 2 * R); g.restore(); } }
 }
 function brcInto(t, list) {
-  list.push({ z: 1e7, draw: () => { BRC_F.t = t; BRC_F.pts = []; BRC_F.air = []; BRC_F.box = null; BRC_F.masked = false;
+  list.push({ z: 1e7, draw: () => { BRC_F.t = t; BRC_F.pts = []; BRC_F.air = []; BRC_F.box = null; BRC_F.masked = false; BRC_F.cars = 0;
     const ga = brcGroundAmt(), aa = brcAirAmt(), lights = t > 196;
     if (aa > 0) brcAir(t, aa, lights);
     if (ga > 0) { brcGround(t, ga, lights); if (BRC_F.pts.length) brcMaskA(); } } });
@@ -867,8 +994,8 @@ function bike(b, t) { return null; }
 // ---------- the drum circle (Robin, after draft 6) ----------
 // Hand drums play under the outro from about 3:25 on, so a small circle of djembe players sits on the playa beside where
 // the board parks, the whole night. The camera does not go looking for them; it just passes them now and then.
-const DRUM = { x: 274.5, z: 10.5, r: 2.3, t0: 205, beat: .6, phase: 206.47 }; // 100 bpm from the hand-drum onsets (no_vocals stem)
-const DRUMMERS = [...Array(9)].map((_, i) => ({ a: i / 9 * TAU + .2, c: bmCostume(7300 + i * 13), i }));
+const DRUM = { x: 282, z: 21, r: 2.6, t0: 205, beat: .6, phase: 206.47 }; // draft 9: in the Fire Conclave's ring, 30 m from the Man toward the board (it was beside the board). 100 bpm from the hand-drum onsets (no_vocals stem)
+const DRUMMERS = [...Array(11)].map((_, i) => ({ a: i / 11 * TAU + .2, c: bmCostume(7300 + i * 13), i }));
 function drummer(d, t) {
   const X = DRUM.x + Math.cos(d.a) * DRUM.r, Z = DRUM.z + Math.sin(d.a) * DRUM.r, p = P(X, 0, Z); if (p[2] < 1.2 || p[0] < -200 || p[0] > W + 200) return null;
   return { z: p[2], draw: () => { const q = P(X, 0, Z), k = kAt(q); if (k < 1.2) return; const x = q[0], y = q[1], c = d.c;
@@ -946,9 +1073,26 @@ function octArm(o, lift) { // the tentacle's centre line and widths in local met
     const a = a0 - dr * Math.sin(Math.min(u / .4, 1) * Math.PI / 2) + up * smooth((u - .3) / .7); x += o.s * Math.cos(a) * ds; y += Math.sin(a) * ds; }
   const dir = [o.s * Math.cos(tip), Math.sin(tip)], e = pts[N]; return { pts, ws, dir, noz: [e[0] + dir[0] * .95, e[1] + dir[1] * .95] };
 }
+// Draft 9 (Robin: "make the octopus closer at night, roll by in the background between the table and the man"): it waits
+// at its 4:30 spot until the aerial has climbed, drives in while the camera is kilometres up, and from 211.5 rolls at a
+// crawl right to left along z = 30, 15 m in front of the Man and to the right of him from the board's cameras, so it
+// never stands between them and the Man, the drum circle or the front row. As the fire takes hold (226.5) it turns away,
+// out past the Man's right side toward 4:00 (the fire is drawn over anything in front of it, so it must not linger there).
+const OCT_N = { t0: 203.2, t1: 211.5, P1: [320, 30], turn: 226.5 }; // turn: it heads off before the Man's fire grows wide enough to swallow it on screen
+const octAng = (a, b, s) => { let d = b - a; while (d > Math.PI) d -= TAU; while (d < -Math.PI) d += TAU; return a + d * s; };
+function octNight(t) { // the night path: {X, Z, hx, hz, sp (metres driven, for the wheels), mv (moving)}
+  const P0 = [OCT.park.X, OCT.park.Z], th00 = Math.atan2(OCT.park.hz, OCT.park.hx); if (t < OCT_N.t0) return { X: P0[0], Z: P0[1], hx: OCT.park.hx, hz: OCT.park.hz, sp: 0, mv: false };
+  const dx = OCT_N.P1[0] - P0[0], dz = OCT_N.P1[1] - P0[1], L = Math.hypot(dx, dz), th0 = Math.atan2(dz, dx);
+  if (t < OCT_N.t1) { const u = smooth((t - OCT_N.t0) / (OCT_N.t1 - OCT_N.t0)), th = octAng(th00, th0, smooth(u * 4)); return { X: P0[0] + dx * u, Z: P0[1] + dz * u, hx: Math.cos(th), hz: Math.sin(th), sp: L * u, mv: true }; }
+  const v = (s) => s < 213 ? .45 * smooth((s - OCT_N.t1) / (213 - OCT_N.t1)) : s < OCT_N.turn ? .45 : .45 + 2.15 * smooth((s - OCT_N.turn) / 3.5);
+  const th = (s) => s < 213 ? octAng(th0, Math.PI, smooth((s - OCT_N.t1) / (213 - OCT_N.t1))) : s < OCT_N.turn ? Math.PI : lerp(Math.PI, .55, smooth((s - OCT_N.turn) / 5)); // the turn goes through +z: away from the lens
+  let X = OCT_N.P1[0], Z = OCT_N.P1[1], sp = L; const dt = .05;
+  for (let s = OCT_N.t1; s < t; s += dt) { const h = Math.min(dt, t - s), m = s + h / 2, a = th(m), d = v(m) * h; X += Math.cos(a) * d; Z += Math.sin(a) * d; sp += d; }
+  const a = th(t); return { X, Z, hx: Math.cos(a), hz: Math.sin(a), sp, mv: v(t) > .2 };
+}
 function octPose(t) { // where it is and which way it is heading, or null
-  if (t >= OCT.day.t0 && t <= OCT.day.t1) return { X: OCT.day.X, Z: OCT.day.Z0 - OCT.day.v * (t - OCT.day.tr), hx: 0, hz: -1, sp: OCT.day.v * t, a: 1, night: 0 };
-  if (t >= OCT.park.t0) { const a = 1 - ease(t, 258, 263); if (a <= .01) return null; return { X: OCT.park.X, Z: OCT.park.Z, hx: OCT.park.hx, hz: OCT.park.hz, sp: 0, a, night: typeof nightAmt === 'function' ? nightAmt(t) : 0 }; }
+  if (t >= OCT.day.t0 && t <= OCT.day.t1) return { X: OCT.day.X, Z: OCT.day.Z0 - OCT.day.v * (t - OCT.day.tr), hx: 0, hz: -1, sp: OCT.day.v * t, a: 1, night: 0, mv: true };
+  if (t >= OCT.park.t0) { const a = 1 - ease(t, 258, 263); if (a <= .01) return null; const n = octNight(t); return { X: n.X, Z: n.Z, hx: n.hx, hz: n.hz, sp: n.sp, mv: n.mv, a, night: typeof nightAmt === 'function' ? nightAmt(t) : 0 }; }
   return null;
 }
 // ---------- drawing (local metres, y up, front = +x; bmBegin flips it) ----------
@@ -1043,7 +1187,7 @@ function octChassis(t, sp, det, moving) { // the vehicle, side on: hammered plat
 function octDraw(st, t, p, k, d, sq, lit) {
   const det = k > 12, x0 = OCT.X0 * sq; if (!lit) octSetPal(.55 * st.night);
   bmBegin(p[0], p[1], k, d); if (st.a < 1) g.globalAlpha = st.a;
-  g.save(); g.scale(sq, 1); octChassis(t, st.sp, det, st.sp > 0); g.restore();
+  g.save(); g.scale(sq, 1); octChassis(t, st.sp, det, st.mv); g.restore();
   const arms = OCT_ARMS.map((o) => octArm(o, octLift(o, t)));
   g.save(); g.translate(x0, 0);
   OCT_ARMS.forEach((o, j) => { if (o.layer === 0) octPipe(arms[j], .72, det); });
@@ -1115,7 +1259,7 @@ function octGlow(t) { // after the grade: the bursts, the warm light they throw 
   const [bx, by, bw, bh] = OCT_F.box; octLg.setTransform(1, 0, 0, 1, 0, 0); octLg.globalCompositeOperation = 'source-over'; octLg.clearRect(bx, by, bw, bh);
   const g0 = g; g = octLg; const glows = [];
   const fire = bursts.reduce((a, b) => a + (t - b.tb < b.open + .3 ? 1 : 0), 0); // how many cannons are going
-  if (nt > .02) { octSetPal(.8); octDraw({ ...st, a: 1, sp: 0 }, t, p, k, d, sq, true); octSetPal(0); g.save(); g.globalCompositeOperation = 'destination-in'; g.fillStyle = `rgba(0,0,0,${nt * (.52 + .1 * Math.min(3, fire))})`; g.fillRect(bx, by, bw, bh); g.restore(); // the metal in its own firelight, at part strength
+  if (nt > .02) { octSetPal(.8); octDraw({ ...st, a: 1, mv: false }, t, p, k, d, sq, true); octSetPal(0); g.save(); g.globalCompositeOperation = 'destination-in'; g.fillStyle = `rgba(0,0,0,${nt * (.52 + .1 * Math.min(3, fire))})`; g.fillRect(bx, by, bw, bh); g.restore(); // the metal in its own firelight, at part strength
     g.save(); for (const y of [1.3, 1.75, 4.9]) for (let i = 0; i < 9; i++) { const lx = (i - 4) * (y < 2 ? .62 : .26), q = S(lx, y), tw = .6 + .4 * Math.sin(t * 4 + i * 1.7 + y); g.fillStyle = `rgba(255,${190 + (i % 3) * 20},${110 + (i % 2) * 60},${.9 * nt * tw})`; const s2 = Math.max(1.6, .09 * k); g.fillRect(q[0] - s2 / 2, q[1] - s2 / 2, s2, s2); } g.restore(); } // its strings of deck and cage lights
   for (const b of bursts) { let q, dir; if (b.j === 8) { q = S(0, 8.4); dir = [0, -1]; } else { const a = arms[b.j]; q = S(a.noz[0] + a.dir[0] * .15, a.noz[1] + a.dir[1] * .15); dir = [d * a.dir[0], -a.dir[1]]; }
     const r = octFlame(q[0], q[1], dir[0], dir[1], k, t - b.tb, b.size, b.open, b.j + 1, t, lerp(.28, .45, nt)); if (r) glows.push(r); } // by day a burst burns off faster

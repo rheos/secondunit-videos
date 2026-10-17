@@ -88,7 +88,35 @@ function miniPlaya(t) {
   people.sort((a, b) => a.y - b.y).forEach((p) => burner(p.x, p.y, 230 * p.s, MINI_COST[p.i % MINI_COST.length], t, p.walk, p.i));
   const ang = (step + smooth(clamp((frac - .15) / .4))) * TAU / 3; g.fillStyle = '#8f949c'; g.fillRect(gx - 9, gy - 150, 18, 150); g.fillStyle = '#5e636b'; g.beginPath(); g.arc(gx, gy - 150, 18, 0, TAU); g.fill();
   g.strokeStyle = '#b8bdc4'; g.lineWidth = 12; for (let a = 0; a < 3; a++) { const th = ang + a * TAU / 3, ex = gx + Math.cos(th) * 110, ey = gy - 150 + Math.sin(th) * 34 + 30; g.beginPath(); g.moveTo(gx, gy - 150); g.lineTo(ex, ey); g.stroke(); }
-  poorMan(t);
+  bobby(t); poorMan(t);
+}
+// draft 9: on "crime" a storybook bobby (1.8 m, blue tunic, tall helmet) beside the poor man tips his helmet, then
+// drops the coin into the bowl (the coin's own flight and its landing at 130.0 are the protected ones in poorMan)
+const BOBBY = { x: 1035, y: 1058, k: 2.75 };
+function bobbyHand(t) { // his right hand, screen px: by his side, then out over the bowl as the coin goes
+  const { x, y, k } = BOBBY, out = ease(t, wt(17, 'poor') - .45, wt(17, 'poor') - .05) * (1 - ease(t, wt(17, 'poor') + .6, wt(17, 'poor') + 1.1));
+  return [x + lerp(30, 150, out) * k, y - lerp(80, 150, out) * k]; }
+function bobby(t) {
+  const { x, y, k } = BOBBY, cr = wt(16, 'crime'), tip = ease(t, cr - .12, cr + .15) * (1 - ease(t, cr + .55, cr + .85)), sw = Math.sin(t * 1.7) * .015;
+  g.fillStyle = 'rgba(52,34,58,.32)'; g.beginPath(); g.moveTo(x - 30 * k, y); g.lineTo(x + 30 * k, y); g.lineTo(x + 230 * k, y + 80 * k); g.lineTo(x + 180 * k, y + 90 * k); g.fill(); // his long hard shadow
+  g.strokeStyle = '#1d2240'; g.lineWidth = 15 * k; g.lineCap = 'round'; g.beginPath(); g.moveTo(x - 13 * k, y - 100 * k); g.lineTo(x - 17 * k, y - 4 * k); g.moveTo(x + 13 * k, y - 100 * k); g.lineTo(x + 16 * k, y - 4 * k); g.stroke();
+  g.fillStyle = '#121420'; g.fillRect(x - 30 * k, y - 10 * k, 24 * k, 10 * k); g.fillRect(x + 4 * k, y - 10 * k, 26 * k, 10 * k); // boots
+  g.save(); g.translate(x, y - 100 * k); g.rotate(sw);
+  g.fillStyle = '#26347a'; g.beginPath(); g.moveTo(-32 * k, -112 * k); g.lineTo(32 * k, -112 * k); g.lineTo(38 * k, 8 * k); g.lineTo(-38 * k, 8 * k); g.closePath(); g.fill(); // the tunic
+  g.fillStyle = 'rgba(0,0,0,.18)'; g.fillRect(6 * k, -112 * k, 32 * k, 120 * k);
+  g.fillStyle = '#15182c'; g.fillRect(-38 * k, -22 * k, 76 * k, 9 * k); g.fillStyle = '#c9ccd4'; g.fillRect(-5 * k, -23 * k, 10 * k, 11 * k); // belt and buckle
+  g.fillStyle = '#d9dce4'; for (let i = 0; i < 4; i++) { g.beginPath(); g.arc(0, (-98 + i * 22) * k, 3.2 * k, 0, TAU); g.fill(); } // silver buttons
+  g.fillStyle = '#e8d4b4'; g.beginPath(); g.arc(0, -134 * k, 23 * k, 0, TAU); g.fill(); // a round faceless head
+  // his left arm goes up to the helmet on "crime"; the helmet lifts off his head and settles back
+  const hand = [lerp(-28, -20, tip) * k, lerp(-20, -190, tip) * k]; g.strokeStyle = '#26347a'; g.lineWidth = 12 * k; g.beginPath(); g.moveTo(-26 * k, -102 * k); g.lineTo(hand[0], hand[1]); g.stroke();
+  g.save(); g.translate(0, -150 * k - 34 * k * tip); g.rotate(-.18 * tip);
+  g.fillStyle = '#161a33'; g.beginPath(); g.moveTo(-27 * k, 6 * k); g.lineTo(27 * k, 6 * k); g.lineTo(22 * k, -40 * k); g.quadraticCurveTo(0, -78 * k, -22 * k, -40 * k); g.closePath(); g.fill(); // the tall helmet
+  g.fillRect(-30 * k, 2 * k, 60 * k, 6 * k); g.fillStyle = '#c9ccd4'; g.beginPath(); g.moveTo(0, -36 * k); g.lineTo(9 * k, -22 * k); g.lineTo(0, -10 * k); g.lineTo(-9 * k, -22 * k); g.closePath(); g.fill(); // the silver star
+  g.beginPath(); g.arc(0, -64 * k, 4 * k, 0, TAU); g.fill(); g.restore();
+  g.fillStyle = '#e8d4b4'; g.beginPath(); g.arc(hand[0], hand[1], 7 * k, 0, TAU); g.fill();
+  g.restore();
+  const h = bobbyHand(t); g.strokeStyle = '#26347a'; g.lineWidth = 12 * k; g.lineCap = 'round'; g.beginPath(); g.moveTo(x + 24 * k, y - 202 * k); g.lineTo(h[0], h[1]); g.stroke(); // his right arm, out to the bowl
+  g.fillStyle = '#e8d4b4'; g.beginPath(); g.arc(h[0], h[1], 7 * k, 0, TAU); g.fill();
 }
 function burner(x, y, h, cost, t, walk, seed) { // a small costumed burner: feet at (x, y), h tall, facing left
   const [col, kind] = cost, k = h / 230, sw = walk ? Math.sin(t * 9 + seed) * .35 : 0;
@@ -123,7 +151,7 @@ function poorMan(t) { // foreground right: a poor man in a patched coat holds hi
   g.strokeStyle = '#c99a62'; g.lineWidth = 2.5 * k; g.beginPath(); g.ellipse(bx + 10 * k, by, 36 * k, 8 * k, 0, 0, TAU); g.stroke();
   // the coin: tossed from the queue on "poor", lands in the bowl with a glint as we pull out
   const cs = wt(17, 'poor'), cu = clamp((t - cs) / .45);
-  if (cu > 0) { const sx = (1040 - x) - 0, sy = (650 - (y - 100 * k)), cx = lerp(sx, bx + 10 * k, cu), cy = lerp(sy, by - 4 * k, cu) - Math.sin(cu * Math.PI) * 140, sp = Math.abs(Math.cos(t * 18));
+  if (cu > 0) { const hb = bobbyHand(cs), sx = hb[0] - x, sy = hb[1] - (y - 100 * k), cx = lerp(sx, bx + 10 * k, cu), cy = lerp(sy, by - 4 * k, cu) - Math.sin(cu * Math.PI) * 60, sp = Math.abs(Math.cos(t * 18)); // draft 9: dropped from the bobby's hand
     g.fillStyle = '#e8c04a'; g.beginPath(); g.ellipse(cx, cy, 13 * k * (cu < 1 ? sp * .8 + .2 : 1), 13 * k, 0, 0, TAU); g.fill(); g.strokeStyle = '#a07a1e'; g.lineWidth = 2 * k; g.stroke();
     if (cu >= 1) { const gl = 1 - clamp((t - cs - .45) / .5); if (gl > 0) { g.strokeStyle = `rgba(255,240,190,${.4 * gl})`; g.lineWidth = 3 * k; for (let a = 0; a < 4; a++) { const th = a * Math.PI / 2 + .4; g.beginPath(); g.moveTo(cx + Math.cos(th) * 16 * k, cy + Math.sin(th) * 16 * k); g.lineTo(cx + Math.cos(th) * 30 * k, cy + Math.sin(th) * 30 * k); g.stroke(); } } } }
   g.restore();
@@ -146,10 +174,17 @@ function lastEmbers(t) {
   g.restore();
 }
 
+// ---------- draft 9: the drone's roll, as a post pass ----------
+// The finished frame turns about its centre, scaled just enough that its corners never show (1.78x at 90 degrees, 1x
+// upside down), so the playa hangs overhead and the board drives on upside down against the sky.
+function rollFrame(a) { const ph = Math.abs(a) % Math.PI, fo = Math.min(ph, Math.PI - ph), s = 1.004 * Math.max((W * Math.cos(fo) + H * Math.sin(fo)) / W, (W * Math.sin(fo) + H * Math.cos(fo)) / H);
+  twg.setTransform(1, 0, 0, 1, 0, 0); twg.clearRect(0, 0, W, H); twg.drawImage(g.canvas, 0, 0);
+  g.save(); g.setTransform(1, 0, 0, 1, 0, 0); g.imageSmoothingQuality = 'high'; g.translate(W / 2, H / 2); g.rotate(a); g.scale(s, s); g.translate(-W / 2, -H / 2); g.drawImage(TWC, 0, 0); g.restore(); }
+
 // ---------- frame ----------
 // Optional front hooks: any builder file may declare function burnFront(t) / playaFront(t) / installsFront(t) / carFront(t)
 // to draw over the car layer and the fire (before Little Bob, the insert, the vignette and the captions).
-const FRONT_HOOKS = ['carFront', 'burnFront', 'playaFront', 'installsFront'];
+const FRONT_HOOKS = ['carFront', 'burnFront', 'playaFront', 'installsFront', 'instrumentsFront', 'scenesFront'];
 function render(t) {
   C = camAt(t); CP = Math.cos(C.p); SP = Math.sin(C.p); CX = carX(t); CZ = carZ(t); YAW = yaw(t);
   g.setTransform(1, 0, 0, 1, 0, 0); g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
@@ -161,7 +196,7 @@ function render(t) {
   for (const l of LAMPS) { const z = P(l.X, 0, l.Z)[2]; if (z > 2) list.push({ z, draw: () => lamp(l, t, false), shadow: () => shadowStick(l.X, 0, 5, l.Z, .15, t) }); }
   for (const b of BIKES) { const o = bike(b, t); if (o) list.push(o); }
   crowdInto(t, list); bigEar(t, list); gagMouth(t, list); tumblePapers(t, list); suitColumn(t, list); teeth(t, list); clockCar(t, list); giantChess(t, list);
-  carInto(t, list); tableInto(t, list); playaInto(t, list); burnInto(t, list); installsInto(t, list); // one scene hook per builder file (draft 3)
+  carInto(t, list); tableInto(t, list); playaInto(t, list); burnInto(t, list); installsInto(t, list); instrumentsInto(t, list); scenesInto(t, list); // one scene hook per builder file (draft 3; instruments and scenes draft 9)
   for (const o of list) if (o.z > .5 && o.shadow) o.shadow();
   tableShadow(t);
   list.sort((a, b) => b.z - a.z); for (const o of list) if (o.z > .3) o.draw();
@@ -180,6 +215,7 @@ function render(t) {
   for (const f of FRONT_HOOKS) if (typeof window[f] === 'function') { g.save(); window[f](t); g.restore(); }
   bobWalk(t);
   tableWorld(t);
+  if (C.roll) rollFrame(C.roll); // draft 9: the "perverse" roll (camera.js camRoll)
   vignette();
   drawGrain(g, t, .1);
   const fin = ease(t, END.s + .1, END.dark), fo = 1 - ease(t, 0, 1.2), blk = Math.max(fin, fo); if (blk > 0) { g.fillStyle = `rgba(0,0,0,${blk})`; g.fillRect(0, 0, W, H); }
