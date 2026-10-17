@@ -890,6 +890,7 @@ function drummer(d, t) {
 
 // after the night grade: the lantern pool and the drummers again at part strength, so they read at night (render.js)
 function drumGlow(t) {
+  octGlow(t); // the octopus art car's fire (draft 8) rides on this after-the-grade call
   if (t < DRUM.t0) return; const n = ease(t, 199, 216); if (n <= 0) return; const pit = P(DRUM.x, 0, DRUM.z); if (pit[2] < 1.2) return; const k = kAt(pit); if (k < 1.2) return;
   g.save(); g.globalCompositeOperation = 'lighter'; const R = 4 * k, rg = g.createRadialGradient(pit[0], pit[1] - .3 * k, 0, pit[0], pit[1] - .3 * k, R); rg.addColorStop(0, `rgba(255,190,110,${.5 * n})`); rg.addColorStop(1, 'rgba(255,140,60,0)'); g.fillStyle = rg; g.fillRect(pit[0] - R, pit[1] - R, 2 * R, 2 * R); g.restore();
   const l = []; for (const d of DRUMMERS) { const o = drummer(d, t); if (o) l.push(o); } l.sort((a, b) => b.z - a.z);
@@ -903,8 +904,230 @@ function drumCircleInto(t, list) {
   for (const d of DRUMMERS) { const o = drummer(d, t); if (o) list.push(o); }
 }
 
+// ---------- the fire-breathing octopus art car (Robin's notes on draft 7) ----------
+// An homage to a real scrap-metal octopus art car, drawn from Robin's photos; no name on screen. About 8 m tall: a domed,
+// riveted pewter head with a crown of brass spikes and a ring on top, a row of four goggle eyes (two big brass-rimmed ones
+// in the middle, smaller ones out at the sides) and a shark-tooth mouth under each big eye; below it an open steel-rod
+// cage; eight tentacles of segmented pipe that curl down, out and up, each ending in an upturned flame cannon with a small
+// ring. Each tentacle is cranked up and down on its own rhythm (Robin: not in unison), and fires near the top of its lift.
+// The vehicle is a long low chassis of hammered plate and kitchenware, an anglerfish head at the front with spiked teeth
+// and a lure, a spiny fin at the back, riders on the deck. By day it rolls right to left behind the first instrumental's
+// parade; at night it is parked in the art-car ring behind the burn crowd and fires on the beat.
+// Fire is drawn after the grade (drumGlow below), masked by whatever nearer was drawn over the car, so it lights up the
+// night without showing through the crowd. Flash rule: the hot cores stay at .38 alpha, bursts land on beats (about
+// 100 bpm) and swell and fade over most of a second, and the car is never near the lens.
+const OCT = {
+  day: { t0: 56.5, t1: 67, X: 82, Z0: 12, v: 2.2, tr: 59 },  // crosses the board's road 18 m ahead of it, far side to near, at playa speed (5 mph)
+  park: (() => { const d = brcDir(4.4), r = 65; return { X: MAN.x + d[0] * r, Z: MAN.z + d[1] * r, hx: -d[1], hz: d[0], t0: 150 }; })(), // 4:30, just inside the art-car ring
+  VOTES: [220.65, 230.25, 239.93, 249.47],
+  ARMS_UP: 215.97,
+  X0: -.5, // the octopus stands on the deck a little behind the chassis centre (local x, front = +x)
+};
+// the beats: a steady 100 bpm grid through the instrumental, and the tracked beats through dusk and the burn (song.wav)
+const OCT_BEATS = (() => { const out = []; for (let b = 58.18; b < 77; b += .59978) out.push(b);
+  return out.concat([194.37, 194.98, 195.58, 196.19, 196.79, 197.37, 197.97, 198.58, 199.18, 199.76, 200.36, 200.97, 201.57, 202.18, 202.76, 203.36, 203.96, 204.57, 205.17, 205.78, 206.38, 206.98, 207.56, 208.17, 208.77, 209.37, 209.95, 210.58, 211.16, 211.77, 212.37, 212.97, 213.58, 214.18, 214.76, 215.37, 215.97, 216.57, 217.18, 217.78, 218.36, 218.96, 219.57, 220.17, 220.78, 221.36, 221.96, 222.56, 223.17, 223.77, 224.37, 224.98, 225.56, 226.05, 226.63, 227.21, 227.81, 228.41, 229.02, 229.62, 230.23, 230.83, 231.43, 232.04, 232.62, 233.2, 233.82, 234.43, 235.03, 235.61, 236.22, 236.82, 237.42, 238, 238.63, 239.24, 239.82, 240.42, 241.16, 241.79, 242.37, 242.97, 243.58, 244.18, 244.78, 245.39, 245.97, 246.57, 247.18, 247.78, 248.36, 248.96, 249.57, 250.17, 250.78, 251.38, 251.98, 252.59, 253.17, 253.77, 254.37, 254.98, 255.58]); })();
+const OCT_I0 = OCT_BEATS.indexOf(215.97); // the arms-up beat; every other beat from it is the strong one
+// eight tentacles: side, layer (0 behind the cage, 1 round it, 2 hanging in front), shoulder, length, width, start angle,
+// droop, tip angle (radians, right-hand side; the left side mirrors), and each its own crank: period and phase
+const OCT_ARMS = [
+  [-1, 0, .55, 5.35, 3.9, .66, .1, 1.0, 1.2], [1, 0, .55, 5.35, 3.9, .66, .1, 1.0, 1.2],
+  [-1, 1, .95, 5.2, 4.8, .86, -.3, 1.25, 1.35], [1, 1, .95, 5.2, 4.8, .86, -.3, 1.25, 1.35],
+  [-1, 1, 1.0, 5.0, 4.0, .78, -.55, .95, 1.5], [1, 1, 1.0, 5.0, 4.0, .78, -.55, .95, 1.5],
+  [-1, 2, .5, 4.95, 3.3, .68, -1.5, 0, 1.2], [1, 2, .5, 4.95, 3.3, .68, -1.5, 0, 1.2],
+].map(([s, layer, sx, sy, L, w0, a0, dr, tip], j) => ({ j, s, layer, sx, sy, L, w0, a0, dr, tip, per: [4.6, 3.7, 5.3, 4.1, 3.3, 5.9, 4.9, 3.9][j], ph: rnd(j, 51) * TAU }));
+function octLift(o, t) { // a smooth crank, a little irregular (a hand on the lever), dwelling at the top and the bottom; never runs backward
+  const ph = TAU * t / o.per + o.ph + .7 * Math.sin(TAU * t / (o.per * 2.9) + o.j * 1.3);
+  return smooth(.5 - .5 * Math.cos(ph));
+}
+function octArm(o, lift) { // the tentacle's centre line and widths in local metres (x from the octopus axis), and its tip direction
+  const N = 9, pts = [], ws = [], a0 = o.a0 + .5 * lift, dr = o.dr * (1 - .35 * lift), tip = o.tip - .1 * lift, up = tip - a0 + dr, ds = o.L / N;
+  let x = o.s * o.sx, y = o.sy;
+  for (let i = 0; i <= N; i++) { const u = i / N; pts.push([x, y]); ws.push(o.w0 * (1 - .55 * u));
+    const a = a0 - dr * Math.sin(Math.min(u / .4, 1) * Math.PI / 2) + up * smooth((u - .3) / .7); x += o.s * Math.cos(a) * ds; y += Math.sin(a) * ds; }
+  const dir = [o.s * Math.cos(tip), Math.sin(tip)], e = pts[N]; return { pts, ws, dir, noz: [e[0] + dir[0] * .95, e[1] + dir[1] * .95] };
+}
+function octPose(t) { // where it is and which way it is heading, or null
+  if (t >= OCT.day.t0 && t <= OCT.day.t1) return { X: OCT.day.X, Z: OCT.day.Z0 - OCT.day.v * (t - OCT.day.tr), hx: 0, hz: -1, sp: OCT.day.v * t, a: 1, night: 0 };
+  if (t >= OCT.park.t0) { const a = 1 - ease(t, 258, 263); if (a <= .01) return null; return { X: OCT.park.X, Z: OCT.park.Z, hx: OCT.park.hx, hz: OCT.park.hz, sp: 0, a, night: typeof nightAmt === 'function' ? nightAmt(t) : 0 }; }
+  return null;
+}
+// ---------- drawing (local metres, y up, front = +x; bmBegin flips it) ----------
+const OCT_STEEL0 = ['#efede6', '#b7b8b5', '#6b6d71'], OCT_WARM = ['#ffe2b0', '#d8a070', '#6a4232'], OCT_BRASS = ['#f6e2a0', '#c99a42', '#6e4c18'];
+let OCT_STEEL = OCT_STEEL0;
+const octHex = (a) => '#' + a.map((v) => Math.round(clamp(v, 0, 255)).toString(16).padStart(2, '0')).join('');
+function octSetPal(w) { OCT_STEEL = w > 0 ? OCT_STEEL0.map((c, i) => octHex(mix(hex(c), hex(OCT_WARM[i]), w))) : OCT_STEEL0; } // by night the metal takes the firelight
+function octPipe(arm, f, det) { // segmented duct: tapered sections of hammered plate, a dark collar at each joint, a brass band now and then
+  const { pts, ws } = arm, n = pts.length, cols = OCT_STEEL.map((c) => bmShade(c, f)), alt = OCT_STEEL.map((c) => bmShade(c, f * .93));
+  for (let i = 1; i < n; i++) bmDot(pts[i][0], pts[i][1], ws[i] / 2, cols[1]);
+  for (let i = 0; i < n - 1; i++) { const a = pts[i], b = pts[i + 1], dx = b[0] - a[0], dy = b[1] - a[1], L = Math.hypot(dx, dy) || 1; let nx = -dy / L, ny = dx / L; if (ny < 0) { nx = -nx; ny = -ny; } // n points up: the lit side
+    const w0 = ws[i] / 2, w1 = ws[i + 1] / 2, c = i % 2 ? alt : cols;
+    bmFill([[a[0] + nx * w0, a[1] + ny * w0], [b[0] + nx * w1, b[1] + ny * w1], [b[0] - nx * w1, b[1] - ny * w1], [a[0] - nx * w0, a[1] - ny * w0]], bmLG(a[0] + nx * w0, a[1] + ny * w0, a[0] - nx * w0, a[1] - ny * w0, [c[0], c[1], c[2]]));
+    if (det) for (const u of [.3, .7]) bmDot(lerp(a[0], b[0], u) + nx * w0 * .45, lerp(a[1], b[1], u) + ny * w0 * .45, .025, 'rgba(70,70,74,.7)'); // rivets
+    bmLine([[b[0] + nx * w1 * 1.06, b[1] + ny * w1 * 1.06], [b[0] - nx * w1 * 1.06, b[1] - ny * w1 * 1.06]], i % 4 === 2 ? .09 : .055, i % 4 === 2 ? bmShade('#b8913e', f) : bmShade('#505156', f)); }
+  const e = pts[n - 1]; bmLine([e, arm.noz], .13, bmShade('#8d8f93', f)); bmLine([[lerp(e[0], arm.noz[0], .45), lerp(e[1], arm.noz[1], .45)], [lerp(e[0], arm.noz[0], .55), lerp(e[1], arm.noz[1], .55)]], .19, bmShade('#45464b', f)); // the cannon and its valve
+  const rc = [arm.noz[0] + arm.dir[0] * .12, arm.noz[1] + arm.dir[1] * .12]; g.beginPath(); g.arc(rc[0], -rc[1], .11, 0, TAU); g.strokeStyle = bmShade('#3a3a3e', f); g.lineWidth = bmW(.04); g.stroke(); // the little ring on top
+}
+function octCage(x0, front, det) { // the open steel-rod cage under the head; front = the near half
+  const y0 = 1.2, y1 = 5.35, hw = (y) => 1.3 + .22 * Math.sin(Math.PI * Math.pow(clamp((y - y0) / (y1 - y0)), .8)), col = front ? '#4b4d53' : '#3a3b40', lw = front ? .055 : .045;
+  g.strokeStyle = col; g.lineWidth = bmW(lw); g.lineCap = 'round';
+  const RINGS = [1.75, 2.55, 3.35, 4.15, 4.9], TH = [...Array(10)].map((_, i) => i / 10 * TAU + .3);
+  for (const y of RINGS) { const r = hw(y); g.beginPath(); g.ellipse(x0, -y, r, r * .2, 0, front ? 0 : Math.PI, front ? Math.PI : TAU); g.stroke(); }
+  for (const th of TH) { if ((Math.sin(th) > 0) !== front) continue; g.beginPath(); for (let i = 0; i <= 10; i++) { const y = lerp(y0, y1, i / 10), r = hw(y), px = x0 + r * Math.cos(th), py = y - r * .2 * Math.sin(th); i ? g.lineTo(px, -py) : g.moveTo(px, -py); } g.stroke(); }
+  if (det || front) for (let ri = 0; ri < RINGS.length - 1; ri++) for (let i = 0; i < TH.length; i++) { const a = TH[i], b = TH[(i + 1) % TH.length]; if ((Math.sin(a) > 0) !== front || (Math.sin(b) > 0) !== front) continue;
+    const ya = RINGS[ri], yb = RINGS[ri + 1], fl = (ri + i) % 2, pa = [x0 + hw(ya) * Math.cos(fl ? a : b), ya - hw(ya) * .2 * Math.sin(fl ? a : b)], pb = [x0 + hw(yb) * Math.cos(fl ? b : a), yb - hw(yb) * .2 * Math.sin(fl ? b : a)];
+    g.beginPath(); g.moveTo(pa[0], -pa[1]); g.lineTo(pb[0], -pb[1]); g.lineWidth = bmW(lw * .7); g.stroke(); }
+}
+function octHead(x0, det) {
+  const cy = 6.75, rx = 1.32, ry = 1.18;
+  // the dome and the face below it, hammered pewter lit from the upper left
+  g.beginPath(); g.ellipse(x0, -cy, rx, ry, 0, Math.PI, TAU); g.lineTo(x0 + rx * .98, -(cy - .32)); g.quadraticCurveTo(x0 + rx * .9, -5.75, x0 + .78, -5.5); g.lineTo(x0 - .78, -5.5); g.quadraticCurveTo(x0 - rx * .9, -5.75, x0 - rx * .98, -(cy - .32)); g.closePath();
+  const hg = g.createRadialGradient(x0 - .5, -(cy + .55), .1, x0, -cy, 2.1); hg.addColorStop(0, OCT_STEEL[0]); hg.addColorStop(.5, OCT_STEEL[1]); hg.addColorStop(1, OCT_STEEL[2]); g.fillStyle = hg; g.fill();
+  if (det) { // plate seams, rivets and a few odd patches
+    g.save(); g.clip(); g.strokeStyle = 'rgba(80,82,88,.55)'; g.lineWidth = bmW(.03);
+    for (const m of [-.66, -.33, 0, .33, .66]) { g.beginPath(); g.ellipse(x0, -cy, Math.abs(m) * rx + .01, ry, 0, m < 0 ? Math.PI / 2 : -Math.PI / 2, m < 0 ? Math.PI * 1.5 : Math.PI / 2); g.stroke(); }
+    for (const y of [7.35, 6.3]) { g.beginPath(); g.moveTo(x0 - rx, -y); g.quadraticCurveTo(x0, -(y - .12), x0 + rx, -y); g.stroke(); }
+    for (let i = 0; i < 7; i++) { const px = x0 + (rnd(i, 61) - .5) * 2, py = 6.1 + rnd(i, 62) * 1.6; bmFill([[px, py], [px + .32, py + .05], [px + .3, py + .3], [px - .02, py + .26]], i % 2 ? 'rgba(255,250,236,.16)' : 'rgba(40,40,46,.14)'); }
+    for (let i = 0; i < 26; i++) { const a = Math.PI + (i + .5) / 26 * Math.PI; bmDot(x0 + Math.cos(a) * rx * .9, cy - Math.sin(a) * ry * .9, .028, 'rgba(70,70,76,.75)'); }
+    g.restore(); }
+  // the crown: small brass spikes round the top, a cap, a stem and the ring
+  for (let i = 0; i < 9; i++) { const lx = (i - 4) * .13, by = cy + ry * Math.sqrt(1 - (lx / rx) ** 2) - .04;
+    bmFill([[x0 + lx - .065, by], [x0 + lx + .065, by], [x0 + lx * 1.35, by + .27 - Math.abs(i - 4) * .025]], i % 2 ? OCT_BRASS[1] : '#a87e30'); }
+  bmOval(x0, cy + ry - .03, .34, .14, bmLG(x0 - .3, 0, x0 + .3, 0, OCT_BRASS)); bmLine([[x0, cy + ry + .05], [x0, cy + ry + .36]], .07, '#55565b');
+  g.beginPath(); g.arc(x0, -(cy + ry + .5), .14, 0, TAU); g.strokeStyle = '#3a3b40'; g.lineWidth = bmW(.05); g.stroke();
+  // a collar of spikes under the jaw
+  for (let i = 0; i < 9; i++) { const px = x0 - .9 + i * .225; bmFill([[px - .07, 5.55], [px + .07, 5.55], [px + .01, 5.28]], '#55575c'); }
+  // the four goggle eyes
+  for (const s of [-1, 1]) { const ex = x0 + s * 1.3, ey = 6.72; // the small ones stick out at the sides on short barrels
+    bmFill([[ex - s * .14, ey - .16], [ex + s * .2, ey - .16], [ex + s * .2, ey + .16], [ex - s * .14, ey + .16]], bmLG(0, ey + .16, 0, ey - .16, OCT_STEEL)); bmDot(ex + s * .24, ey, .16, bmLG(ex, ey + .16, ex + s * .3, ey - .16, OCT_BRASS)); }
+  for (const s of [-1, 1]) { const ex = x0 + s * .55, ey = 6.95;
+    bmDot(ex, ey, .4, '#2a2a2e'); g.beginPath(); g.arc(ex, -ey, .38, 0, TAU); g.strokeStyle = '#c19a48'; g.lineWidth = bmW(.09); g.stroke();
+    bmDot(ex + s * .03, ey - .02, .25, bmLG(ex - .2, ey + .2, ex + .2, ey - .2, OCT_BRASS)); bmDot(ex - .08, ey + .09, .06, 'rgba(255,252,240,.85)'); }
+  // a shark-tooth mouth under each big eye, and the ridge between them
+  bmLine([[x0, 6.62], [x0, 5.85]], .09, '#9a9c9f');
+  for (const s of [-1, 1]) { const mx = x0 + s * .5, top = 6.42, bot = 5.82;
+    bmFill([[mx - .4, top], [mx + .4, top], [mx + .33, 5.98], [mx, bot], [mx - .33, 5.98]], '#1d1617');
+    for (let i = 0; i < 5; i++) { const tx = mx - .32 + i * .16; bmFill([[tx - .07, top - .01], [tx + .07, top - .01], [tx, top - .24]], '#ece8de'); }
+    for (let i = 0; i < 4; i++) { const tx = mx - .22 + i * .15, ty = lerp(5.97, bot + .03, 1 - Math.abs(tx - mx) / .36); bmFill([[tx - .06, ty], [tx + .06, ty], [tx, ty + .2]], '#ddd8cc'); }
+    bmPath([[mx - .42, top + .02], [mx + .42, top + .02], [mx + .35, 5.97], [mx, bot - .03], [mx - .35, 5.97]]); g.closePath(); g.strokeStyle = '#8e9094'; g.lineWidth = bmW(.05); g.stroke(); }
+}
+function octChassis(t, sp, det, moving) { // the vehicle, side on: hammered plate and kitchenware, the anglerfish at the front, the fin at the back
+  const ang = -sp / .42;
+  if (moving) for (let i = 0; i < 6; i++) { const u = ((t * .9 + i / 6) % 1); bmOval(-4.6 - u * 3.2, .25 + u * .5, .4 + u * 1.1, .2 + u * .45, `rgba(214,184,140,${.22 * (1 - u)})`); } // dust off the back wheel
+  // the fin: spiny ribs fanned out behind, a scalloped steel web between them
+  const fb = [-4.2, 1.35], tips = [[-5.6, 2.55], [-6.0, 2.0], [-6.05, 1.45], [-5.75, .9], [-5.2, .55]];
+  bmPath([[-4.25, 1.95], ...tips, [-4.3, .75]]); g.closePath(); g.fillStyle = bmLG(-6, 2.5, -4.2, .8, ['#d6d6d2', '#9fa0a0', '#66686c']); g.fill();
+  for (const tp of tips) bmLine([fb, [tp[0] - .12, tp[1] + (tp[1] - fb[1]) * .08]], .065, '#46474c');
+  // wheels and fenders
+  for (const wx of [1.5, -2.8]) { bmDot(wx, .42, .42, '#17130f'); bmDot(wx, .42, .25, bmLG(wx - .2, .62, wx + .2, .22, OCT_STEEL)); if (det) for (let i = 0; i < 5; i++) { const a = ang + i / 5 * TAU; bmLine([[wx, .42], [wx + Math.cos(a) * .22, .42 + Math.sin(a) * .22]], .03, '#55575c'); } bmDot(wx, .42, .06, '#3a3b40');
+    g.beginPath(); g.arc(wx, -.42, .56, Math.PI * 1.05, Math.PI * 1.95); g.strokeStyle = '#8b8d90'; g.lineWidth = bmW(.1); g.stroke(); }
+  // the body: plate panels, a grille, rows of pot lids and hubcaps
+  bmPath([[-4.45, .5], [2.05, .5], [2.25, 1.18], [-4.35, 1.22]]); g.closePath(); g.fillStyle = bmLG(0, 1.22, 0, .5, ['#e2e1db', '#aeafac', '#6f7175']); g.fill();
+  if (det) { g.strokeStyle = 'rgba(70,72,78,.55)'; g.lineWidth = bmW(.025); for (const sx of [-3.4, -2.2, -.2, .9]) { g.beginPath(); g.moveTo(sx, -.52); g.lineTo(sx, -1.2); g.stroke(); }
+    for (let i = 0; i < 9; i++) { g.beginPath(); g.moveTo(-1.95 + i * .19, -.62); g.lineTo(-1.95 + i * .19, -1.1); g.stroke(); } }
+  for (let i = 0; i < 11; i++) { const lx = -4.1 + i * .58 + (i % 3) * .05, r = .13 + .1 * rnd(i, 71); if (lx > -2.05 && lx < -.15) continue; bmDot(lx, .86 + (i % 2) * .08, r, bmLG(lx - r, .86 + r, lx + r, .86 - r, ['#f4f3ee', '#a9aaa8', '#77797d'])); if (det) bmDot(lx, .86 + (i % 2) * .08, r * .25, '#5b5d61'); }
+  bmLine([[-4.35, 1.25], [1.7, 1.25]], .08, '#4a4b50'); // the deck edge
+  // rails and a bench at the back, riders, the driver at the front, a speaker stack
+  for (const rx of [-4.25, -3.65, -3.05, -2.45]) bmLine([[rx, 1.25], [rx, 2.0]], .04, '#55565b'); bmLine([[-4.25, 2.0], [-2.45, 2.0]], .05, '#55565b');
+  bmSitter(-3.85, 1.27, '#2f6fb5', '#1c1a1e', t, 11, false); bmSitter(-3.25, 1.27, '#e0533a', null, t, 12, true); bmSitter(-2.75, 1.27, '#e8b23a', '#f2ede0', t, 13, false);
+  bmFill([[-1.95, 1.25], [-1.45, 1.25], [-1.45, 2.05], [-1.95, 2.05]], '#1c1a1e'); bmDot(-1.7, 1.48, .14, '#3a3640'); bmDot(-1.7, 1.83, .1, '#3a3640');
+  bmSitter(1.25, 1.24, '#3a3442', '#e2c88a', t, 14, false); bmLine([[1.65, 1.25], [1.85, 1.75]], .05, 'rgba(160,190,210,.8)'); // the driver behind a little windscreen
+  // the anglerfish: a big jaw of riveted plate, spiked teeth, bubble scales along its back, an eye and the lure
+  bmPath([[1.8, 2.05], [2.7, 2.3], [3.6, 2.05], [4.6, 1.4], [5.2, .98], [4.75, .82], [2.0, .78]]); g.closePath(); g.fillStyle = bmLG(3, 2.3, 3, .8, ['#ecebe4', '#b2b3b0', '#727478']); g.fill();
+  bmPath([[2.0, .74], [4.9, .62], [5.55, .45], [5.4, .22], [2.3, .3]]); g.closePath(); g.fillStyle = bmLG(3, .74, 3, .22, ['#c6c6c2', '#7c7e82']); g.fill();
+  for (let i = 0; i < 9; i++) { const tx = 2.5 + i * .3; bmFill([[tx - .1, .82 - (tx - 2.5) * .03], [tx + .1, .82 - (tx - 2.5) * .03], [tx, .55 - (tx - 2.5) * .03]], '#e9e5da'); } // upper teeth, down
+  for (let i = 0; i < 8; i++) { const tx = 4.35 + i * .15; bmFill([[tx - .06, .58 - (tx - 4.35) * .1], [tx + .06, .58 - (tx - 4.35) * .1], [tx + .03, .98 - (tx - 4.35) * .05]], '#d9d5ca'); } // the row of spikes up at the jaw's tip
+  if (det) for (let i = 0; i < 5; i++) { const bx = 2.45 + i * .38, by = 2.22 - Math.max(0, i - 1.5) * .17; bmDot(bx, by, .15, bmLG(bx - .15, by + .15, bx + .15, by - .15, ['#f7f6f1', '#a9aaa8'])); }
+  bmDot(3.35, 1.62, .17, bmLG(3.2, 1.78, 3.5, 1.46, OCT_BRASS)); bmDot(3.38, 1.6, .07, '#1c1a1e');
+  g.beginPath(); g.moveTo(2.55, -2.25); g.bezierCurveTo(2.9, -3.5, 4.1, -3.55, 4.35, -2.75); g.strokeStyle = '#77797d'; g.lineWidth = bmW(.07); g.stroke(); bmDot(4.37, 2.62, .14, bmLG(4.25, 2.75, 4.5, 2.5, OCT_BRASS));
+}
+function octDraw(st, t, p, k, d, sq, lit) {
+  const det = k > 12, x0 = OCT.X0 * sq; if (!lit) octSetPal(.55 * st.night);
+  bmBegin(p[0], p[1], k, d); if (st.a < 1) g.globalAlpha = st.a;
+  g.save(); g.scale(sq, 1); octChassis(t, st.sp, det, st.sp > 0); g.restore();
+  const arms = OCT_ARMS.map((o) => octArm(o, octLift(o, t)));
+  g.save(); g.translate(x0, 0);
+  OCT_ARMS.forEach((o, j) => { if (o.layer === 0) octPipe(arms[j], .72, det); });
+  octCage(0, false, det);
+  for (let i = 0; i < 9; i++) { const y = 1.35 + i * .45, w = .32 + .12 * Math.sin(i * 1.7); bmOval(0, y, w, w * .3, i % 3 ? bmShade('#b9bab7', .8) : '#a98c4c'); } // a column of stacked pots up the middle
+  for (const sx of [-.95, .8]) { bmFill([[sx - .26, 2.95], [sx + .26, 2.95], [sx + .26, 3.7], [sx - .26, 3.7]], '#1c1a1e'); bmDot(sx, 3.18, .15, '#3a3640'); bmDot(sx, 3.5, .08, '#3a3640'); } // speakers in the cage
+  g.save(); g.translate(.35, -1.25); g.scale(1.45, 1.45); bmSitter(0, 0, '#7a3c8c', '#1c1a1e', t, 15, true); g.restore(); // a rider standing in the cage
+  octCage(0, true, det);
+  OCT_ARMS.forEach((o, j) => { if (o.layer === 1) octPipe(arms[j], 1, det); });
+  OCT_ARMS.forEach((o, j) => { if (o.layer === 2) octPipe(arms[j], .94, det); });
+  octHead(0, det);
+  g.restore(); g.restore();
+  return arms;
+}
+// ---------- the fire ----------
+function octFires(o, b, show) { // does nozzle o fire on beat b: near the top of its lift, on the beat closest to the peak (two beats at full show)
+  const l0 = octLift(o, b), lp = octLift(o, b - .6), ln = octLift(o, b + .6);
+  if (l0 < (show >= 1 ? .8 : .86)) return false;
+  return (l0 >= lp && l0 >= ln) || (show >= 1 && ln > l0 && l0 > .9);
+}
+function octShow(b) { // how much fire a beat gets: day bursts are few and small; at night it is a show, held off the votes
+  if (b < 80) return b > 59.5 && b < 74.2 && !(b > 64.3 && b < 66.9) ? .4 : 0; // not while the sax rider comes in (65.0)
+  if (b < 202) return b > 197.5 && b < 201.2 ? .4 : 0; // the golden wide: a puff or two
+  for (const v of OCT.VOTES) if (Math.abs(b - v) < .75) return 0;
+  return b < 213.4 ? 0 : b < 215.8 ? .6 : b < 220.3 ? 1 : b < 254.6 ? .8 : 0;
+}
+function octBursts(t) { // every burst still alive at t: {j (8 = the head), tb, size (m), open (s)}
+  const out = [];
+  for (let i = 0; i < OCT_BEATS.length; i++) { const b = OCT_BEATS[i]; if (b > t) break; if (b < t - 1.3) continue; const show = octShow(b); if (!show) continue;
+    const day = show < .5, strong = i >= OCT_I0 ? (i - OCT_I0) % 2 === 0 : false;
+    for (const o of OCT_ARMS) { if (!octFires(o, b, show)) continue; if (day && rnd(o.j, i, 57) > .55) continue; if (show < 1 && show >= .5 && !strong && rnd(o.j, i, 58) > .5) continue;
+      out.push({ j: o.j, tb: b, size: day ? 2.1 : 3.6 + .9 * rnd(o.j, i, 59), open: day ? .2 : .3 }); }
+    const head = Math.abs(b - OCT.ARMS_UP) < .05 || (show >= 1 && strong && (i - OCT_I0) % 4 === 0) || (show >= .8 && show < 1 && (i - OCT_I0) % 8 === 4) || (day && i % 9 === 4);
+    if (head) out.push({ j: 8, tb: b, size: day ? 2.8 : Math.abs(b - OCT.ARMS_UP) < .05 ? 7 : 5.6, open: day ? .22 : .38 });
+  }
+  return out;
+}
+function octFlame(x, y, dx, dy, k, u, size, open, seed, t, fade) { // one burst from a nozzle at (x, y) px, heading (dx, dy) on screen
+  const af = u < open ? 1 : 1 - smooth((u - open) / fade); if (af <= 0) return null;
+  const grow = smooth(u / .09), off = u > open ? (u - open) * 11 : 0, s1 = size * grow + (u > open ? (u - open) * 6 : 0), N = 24, P0 = [];
+  let px = x, py = y, vx = dx, vy = dy, prev = 0;
+  for (let i = 0; i < N; i++) { const fr = i / (N - 1), s = lerp(off, s1, fr), ds = s - prev; prev = s; const bend = clamp(s / (size * 1.6)) * .55; vx = lerp(dx, 0, bend); vy = lerp(dy, -1, bend); const L = Math.hypot(vx, vy) || 1; px += vx / L * ds * k; py += vy / L * ds * k;
+    const r = ((.055 + .16 * Math.pow(fr, .75)) * (1 + .3 * n1(seed * 13 + i, t * 9)) + (u > open ? (u - open) * .3 : 0)) * size * k, j = .11 * size * k * Math.pow(fr, 1.2) * n1(seed * 13 + 40, i * .35 - t * 8); // a wiggle that travels up the jet
+    P0.push([px - vy / L * j, py + vx / L * j, r, fr]); }
+  const layer = (rm, fmax, col, a) => { g.fillStyle = `rgba(${col},${a * af})`; g.beginPath(); for (const [qx, qy, r, fr] of P0) { if (fr > fmax) continue; g.moveTo(qx + r * rm, qy); g.arc(qx, qy, Math.max(.6, r * rm), 0, TAU); } g.fill(); };
+  const rm = P0.reduce((a, q) => a + q[2], 0) / N; g.filter = `blur(${Math.max(1, rm * .45).toFixed(1)}px)`; layer(1.4, 1, '200,58,16', .36); g.filter = 'none'; // a soft red edge
+  g.fillStyle = `rgba(250,128,30,${.5 * af})`; g.beginPath(); for (let i = 5; i < N; i++) { const [qx, qy, r] = P0[i]; for (const sd of [-1, 1]) { const o = r * (.75 + .35 * n1(seed * 7 + i + sd * 50, t * 11)), tx = qx + sd * o, ty = qy - r * .3 * (1 + n1(seed * 5 + i, t * 9)), tr = r * (.28 + .12 * n1(seed + i * 3 + sd, t * 13)); g.moveTo(tx + tr, ty); g.arc(tx, ty, Math.max(.5, tr), 0, TAU); } } g.fill(); // ragged tongues along the sides
+  layer(1, 1, '250,118,26', .6); layer(.7, .8, '255,176,58', .7); layer(.4, .5, '255,236,190', .38); // the hot core stays at .38
+  const m = P0[Math.floor(N / 2)]; return [m[0], m[1], size * k, af];
+}
+// ---------- per frame: the occlusion mask, then the fire after the grade ----------
+const OCT_F = { t: NaN, box: null, A: null, st: null, geo: null }, OCT_LC = mkCanvas(), octLg = OCT_LC.getContext('2d'), OCT_MC = mkCanvas(), octMg = OCT_MC.getContext('2d');
+function octMaskA(k, p) { const x0 = Math.max(0, Math.floor(p[0] - 11 * k)), x1 = Math.min(W, Math.ceil(p[0] + 11 * k)), y0 = Math.max(0, Math.floor(p[1] - 21 * k)), y1 = Math.min(H, Math.ceil(p[1] + .5 * k));
+  OCT_F.box = null; OCT_F.A = null; if (x1 - x0 < 2 || y1 - y0 < 2) return; OCT_F.box = [x0, y0, x1 - x0, y1 - y0]; OCT_F.A = g.getImageData(x0, y0, x1 - x0, y1 - y0).data; }
+function octMaskB(t) { if (OCT_F.t !== t || !OCT_F.box) return; const [x0, y0, w, h] = OCT_F.box, A = OCT_F.A, B = g.getImageData(x0, y0, w, h).data, M = octMg.createImageData(w, h), m = M.data;
+  for (let i = 0; i < A.length; i += 4) { const dd = Math.abs(A[i] - B[i]) + Math.abs(A[i + 1] - B[i + 1]) + Math.abs(A[i + 2] - B[i + 2]); m[i] = m[i + 1] = m[i + 2] = 255; m[i + 3] = dd > 6 ? 0 : 255; }
+  octMg.clearRect(0, 0, W, H); octMg.putImageData(M, x0, y0); OCT_F.masked = true; }
+function octInto(t, list) {
+  OCT_F.t = NaN; const st = octPose(t); if (!st) return; const p = P(st.X, 0, st.Z); if (p[2] < 3) return; const k = kAt(p); if (k < .6 || p[0] < -12 * k || p[0] > W + 12 * k) return;
+  const ah = P(st.X + st.hx, 0, st.Z + st.hz), d = Math.sign(ah[0] - p[0]) || -1, vx = st.X - C.x, vz = st.Z - C.z, sq = Math.max(.42, Math.abs(st.hx * vz - st.hz * vx) / (Math.hypot(vx, vz) || 1));
+  list.push({ z: p[2], draw: () => { const arms = octDraw(st, t, p, k, d, sq); OCT_F.t = t; OCT_F.st = st; OCT_F.geo = { p, k, d, sq, arms }; OCT_F.masked = false; octMaskA(k, p); },
+    shadow: () => shadowOf([[st.X - st.hx * 5.5, 0, st.Z - st.hz * 5.5], [st.X + st.hx * 5.5, 0, st.Z + st.hz * 5.5], [st.X - 1.4, 5.5, st.Z], [st.X + 1.4, 5.5, st.Z], [st.X, 8.2, st.Z]], t) });
+  list.push({ z: .305, draw: () => octMaskB(t) }); // after everything nearer: where the car still shows
+}
+function octGlow(t) { // after the grade: the bursts, the warm light they throw on the metal, masked to where the car shows
+  if (OCT_F.t !== t || !OCT_F.box || !OCT_F.masked) return; const { p, k, d, sq, arms } = OCT_F.geo, st = OCT_F.st, x0 = OCT.X0 * sq;
+  const S = (lx, ly) => [p[0] + d * k * (x0 + lx), p[1] - k * ly];
+  const bursts = octBursts(t), nt = st.night; if (!bursts.length && nt < .02) return;
+  const [bx, by, bw, bh] = OCT_F.box; octLg.setTransform(1, 0, 0, 1, 0, 0); octLg.globalCompositeOperation = 'source-over'; octLg.clearRect(bx, by, bw, bh);
+  const g0 = g; g = octLg; const glows = [];
+  const fire = bursts.reduce((a, b) => a + (t - b.tb < b.open + .3 ? 1 : 0), 0); // how many cannons are going
+  if (nt > .02) { octSetPal(.8); octDraw({ ...st, a: 1, sp: 0 }, t, p, k, d, sq, true); octSetPal(0); g.save(); g.globalCompositeOperation = 'destination-in'; g.fillStyle = `rgba(0,0,0,${nt * (.52 + .1 * Math.min(3, fire))})`; g.fillRect(bx, by, bw, bh); g.restore(); // the metal in its own firelight, at part strength
+    g.save(); for (const y of [1.3, 1.75, 4.9]) for (let i = 0; i < 9; i++) { const lx = (i - 4) * (y < 2 ? .62 : .26), q = S(lx, y), tw = .6 + .4 * Math.sin(t * 4 + i * 1.7 + y); g.fillStyle = `rgba(255,${190 + (i % 3) * 20},${110 + (i % 2) * 60},${.9 * nt * tw})`; const s2 = Math.max(1.6, .09 * k); g.fillRect(q[0] - s2 / 2, q[1] - s2 / 2, s2, s2); } g.restore(); } // its strings of deck and cage lights
+  for (const b of bursts) { let q, dir; if (b.j === 8) { q = S(0, 8.4); dir = [0, -1]; } else { const a = arms[b.j]; q = S(a.noz[0] + a.dir[0] * .15, a.noz[1] + a.dir[1] * .15); dir = [d * a.dir[0], -a.dir[1]]; }
+    const r = octFlame(q[0], q[1], dir[0], dir[1], k, t - b.tb, b.size, b.open, b.j + 1, t, lerp(.28, .45, nt)); if (r) glows.push(r); } // by day a burst burns off faster
+  g = g0;
+  octLg.globalCompositeOperation = 'destination-in'; octLg.drawImage(OCT_MC, bx, by, bw, bh, bx, by, bw, bh); octLg.globalCompositeOperation = 'source-over';
+  g.save(); g.globalAlpha = st.a;
+  if (glows.length) { g.globalCompositeOperation = 'screen'; for (const [gx, gy, R0, af] of glows) { const R = R0 * 1.5, rg = g.createRadialGradient(gx, gy, 0, gx, gy, R); rg.addColorStop(0, `rgba(255,150,60,${(.1 + .22 * nt) * af})`); rg.addColorStop(1, 'rgba(255,120,40,0)'); g.fillStyle = rg; g.fillRect(gx - R, gy - R, 2 * R, 2 * R); } }
+  g.globalCompositeOperation = 'source-over'; g.drawImage(OCT_LC, bx, by, bw, bh, bx, by, bw, bh); g.restore();
+}
+
 function playaInto(t, list) {
   brcInto(t, list); bmCampsInto(t, list); bmInstallsInto(t, list); bmElephantsInto(t, list); bmWarsInto(t, list);
-  bmTraffic(t, list); bmFlockInto(t, list); bmParadeInto(t, list); bmPoorInto(t, list); bmCopsInto(t, list); drumCircleInto(t, list);
+  bmTraffic(t, list); bmFlockInto(t, list); bmParadeInto(t, list); bmPoorInto(t, list); bmCopsInto(t, list); drumCircleInto(t, list); octInto(t, list);
 }
 function playaFront(t) { bmSaxFront(t); } // render.js front hook: things that pass between the drone and the car
