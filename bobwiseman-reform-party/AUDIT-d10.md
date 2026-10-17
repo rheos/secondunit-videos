@@ -97,3 +97,9 @@ Little Bob's walk (the model for a physical exit); 4:24-4:29 embers to black.
 - **Pass 4, light and read risks:** the dunce caps (if Robin agrees), the one-frame grade steps (203.3, 211.3,
   246.1), the sky wedges at 211, Little Bob's shadow away from the fire.
 - **Robin's call:** the copies of the board (keep as a deliberate gag and make it read, or cut).
+
+## Scope (2026-10-16)
+Robin picked passes 0-4, the dunce caps (coloured, not white cones) and cutting the board copies. Pass 0 is in
+86dfb6e (tools/check-camera.mjs, tools/check-actors.mjs, js/dali/actors.js). Six builders in out/d12 (map in
+out/d12/AGENTS.md): bCam camera.js + camera-end.js; bCar car.js + table.js + installs.js; bPlaya playa.js; bScenes
+instruments.js + scenes.js; bBurn burn.js + world.js; bArt artcars.js + artpieces.js + bob.js.
