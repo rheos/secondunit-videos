@@ -12,6 +12,10 @@ full score. The root is 88 s.
 - Score: score-library `drafting-table-doc-extraction/take-01`, sha256 d03dc64f...f344, 88 s,
   ~95.7 BPM. `beats.json`: librosa beats 0.07-84.43, extended to 87.58 at 0.63 s.
 - Plate starts on the score: 0, 8, 22, 36, 52, 66, 80; end 88 (music decays from 86.3).
+- Getting the score on a fresh checkout (audio stays out of git): copy it from the score library in
+  rheos/indieagent-workspace, then check the hash.
+  `cp ../score-library/drafting-table-doc-extraction/take-01.mp3 novadiem-doc-extraction/_in/score.mp3`
+  (from `secondunit/mv-projects`), and `shasum -a 256` must print `d03dc64f876d6b6c1d93ace760674eaf43e4532cb68c21a3c58f840760ecf344`.
 - Theme `paper` from the kit. Archivo Black and IBM Plex Mono come from Google Fonts; HyperFrames
   fetches and pins them at compile time. Small gold type uses #6b5416 (line-strong is 3.5:1 on paper).
 - Bar stations are the real pipeline: PDF 0, TEXT 8, MODEL 22, CHECK 52, JSON 66.
