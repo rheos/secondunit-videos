@@ -9,6 +9,10 @@
 #   Either way GitHub joins the slices and the Mac downloads one file and only muxes the song (stream copy).
 #   CR_REF=<branch> runs the workflow file from that branch (to test workflow changes before merging).
 #   e.g. tools/cloud-render/cloud-render.sh bobwiseman-holiday-tavern looks/charcoal.html 24 130
+#   HyperFrames compositions (the IndieAgent explainers) go through unchanged: render-slice.mjs injects HyperFrames'
+#   own runtime when a page has no __frameJPEG, and the sound is the composition's one <audio> clip (offsets and
+#   volume applied, hfaudio.py) unless the project has an assets/song.wav. t0/t1 are composition seconds.
+#   e.g. tools/cloud-render/cloud-render.sh --draft indieagent-gigcaravan index.html 0 90
 #
 # 0. Warns when the page draws in a font the runner lacks (fontcheck.py), since that frame will not match.
 # 1. Packages the project's code and assets (never audio, video, source/, _in/, out/, work/) and uploads it
@@ -26,7 +30,13 @@ here=${0:A:h}; root=${here:h:h}
 proj=$1; page=$2; t0=$3; t1=$4; slices=${6:-20}; height=${7:-720}
 [[ -n $proj && -n $page && -n $t0 && -n $t1 ]] || { sed -n '2,8p' $0; exit 2; }
 pdir=$root/$proj; [[ -f $pdir/$page ]] || { echo "no page $pdir/$page"; exit 2; }
-song=$pdir/assets/song.wav; [[ -f $song ]] || { echo "no $song (the song clock)"; exit 2; }
+song=$pdir/assets/song.wav; hfclip=()
+if [[ ! -f $song ]] && grep -q 'data-composition-id' $pdir/$page; then
+  # a HyperFrames composition carries its sound as an <audio> clip: src start media-start duration volume
+  hfclip=($(python3 $here/hfaudio.py $pdir/$page)) || { echo "no $song, and no single <audio> clip in the page to use"; exit 2; }
+  song=$pdir/${hfclip[1]}
+fi
+[[ -f $song ]] || { echo "no $song (the song clock)"; exit 2; }
 fps=24; width=$(( height * 16 / 9 )); vbv=()
 if (( tall )); then
   [[ -z $7 ]] || { echo "--tall is always 720x1280: drop the height argument"; exit 2; }
@@ -44,6 +54,12 @@ slug=${${page:t}:r}
 out=${5:-$pdir/out/${slug}_cloud_${t0}-${t1}.mp4}
 label="${proj}-${slug}-$(date +%Y%m%d-%H%M%S)"
 tmp=$(mktemp -d); trap 'rm -rf $tmp' EXIT
+if (( ${#hfclip} )); then
+  # put the clip on the composition clock: from its media-start, delayed to its start, at its volume
+  ms=$(python3 -c "print(round(${hfclip[2]} * 1000))")
+  ffmpeg -v error -ss ${hfclip[3]} ${${hfclip[4]:#-}:+-t ${hfclip[4]}} -i $song -af "adelay=$ms:all=1,volume=${hfclip[5]}" $tmp/song.wav
+  echo "sound: ${hfclip[1]} from ${hfclip[2]} s (media from ${hfclip[3]} s)"; song=$tmp/song.wav
+fi
 echo "== $label: $frames frames in $slices slices at ${width}x${height}$( (( draft )) && echo ", draft")"
 # fonts: the runner has the Microsoft core fonts but no Mac-only faces (Futura, Helvetica Neue, ~/Library/Fonts)
 python3 $here/fontcheck.py $pdir $page || echo "font check failed; carrying on without it"
