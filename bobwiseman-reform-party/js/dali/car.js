@@ -5,6 +5,37 @@
 // Draft 9: the gavel lives on the table and the chairman picks it up; a DAY licence plate; prize rosettes; bolder grins;
 // same face, new hat (pinwheels, weathervanes); the bridge gestures (snub, photo-op, the book mask, thumbs up); tape
 // recorders in the heads on "rehearsed"; the outro (collect, party hats, soft table, horns, minutes, confetti, sinking).
+// ---------- draft 11: permanence helpers (shared with table.js and installs.js) ----------
+// Robin: nothing blinks in or out. A solid thing may only start or stop being drawn where the lens cannot see it.
+// camSees: does the lens at song time t see a ball of radius r at world (X, Y, Z)? (camAt is a pure function of t)
+function camSees(t, X, Y, Z, r) { const c = camAt(t); let dx = X - c.x, dz = Z - c.z; const dy = Y - c.y; const a = dx * c.cy - dz * c.sy; dz = dx * c.sy + dz * c.cy; dx = a;
+  const cp = Math.cos(c.p), sp = Math.sin(c.p), z = -dy * sp + dz * cp, y = dy * cp + dz * sp; if (z < -r) return false; const zz = Math.max(z, .3), R = c.f * r / zz, sx = W / 2 + c.f * dx / zz, sy = H / 2 - c.f * y / zz;
+  return sx + R > -20 && sx - R < W + 20 && sy + R > -20 && sy - R < H + 20; }
+// seenSpan: an actor whose story runs from a to b is also drawn before a for as long as the lens keeps seeing it until a
+// (so it comes in from off frame), and after b for as long as the lens has seen it since b (so it leaves off frame).
+// pos(u) -> [X, Y, Z, r]. Up to maxX seconds either side; the paths are laid so the lens loses them well inside that.
+function seenSpan(t, a, b, pos, maxX = 12, dt = .1) {
+  if (t >= a && t <= b) return true; if (t < a - maxX || t > b + maxX) return false;
+  if (t < a) { for (let u = t; u < a; u += dt) { const q = pos(u); if (!camSees(u, ...q)) return false; } return true; }
+  for (let u = b; u <= t; u += dt) { const q = pos(u); if (!camSees(u, ...q)) return false; } return camSees(t, ...pos(t)); }
+// dropHeight: a prop that drops onto the table falls from the lowest of 6, 12, 24, 48 or 96 m above its landing spot
+// (car-local lx, ly, lz) whose first frame the lens does not see; worked out once from the flight (a constant).
+const DROPS = {};
+function dropHeight(key, tl, lx, ly, lz) { if (DROPS[key] != null) return DROPS[key]; let H = 6;
+  for (H of [6, 12, 24, 48, 96]) { const t0 = tl - Math.sqrt(2 * H / 9.8), [X, Z] = carLocalToWorld(t0, lx, lz); if (!camSees(t0, X, ly + H, Z, 1)) break; } return (DROPS[key] = H); }
+// height above the landing spot at t for a drop from H landing at tl (null before it starts), with a small bounce
+function dropY(t, tl, H) { const T = Math.sqrt(2 * H / 9.8), u = t - (tl - T); if (u < 0) return null; if (t < tl) return H - 4.9 * u * u; const b = t - tl; return b < .4 ? .05 * Math.abs(Math.sin(b * 11)) * Math.exp(-b * 9) : 0; }
+// holeClip: draw something sinking into (or rising out of) the hat hole: the part under the table's top shows only
+// through the hole's opening. Clip = the opening plus everything on the far side of the opening's middle on screen.
+function holeClip(draw) { const ring = []; for (let i = 0; i < 28; i++) { const a = i / 28 * TAU; ring.push(PL(Math.cos(a) * .55, TOP, Math.sin(a) * .45)); }
+  if (!ok(ring)) return; let far = ring[0], near = ring[0]; for (const q of ring) { if (q[2] > far[2]) far = q; if (q[2] < near[2]) near = q; }
+  const h = PL(0, TOP, 0), dx = far[0] - near[0], dy = far[1] - near[1], dl = Math.hypot(dx, dy) || 1, ux = dx / dl, uy = dy / dl, px = -uy, py = ux, B = 1e4;
+  let ar = 0; for (let i = 0; i < ring.length; i++) { const a = ring[i], b = ring[(i + 1) % ring.length]; ar += a[0] * b[1] - b[0] * a[1]; } if (ar > 0) ring.reverse(); // the same winding as the box, so the two add up
+  g.save(); g.beginPath(); ring.forEach((q, i) => i ? g.lineTo(q[0], q[1]) : g.moveTo(q[0], q[1])); g.closePath();
+  g.moveTo(h[0] + px * B, h[1] + py * B); g.lineTo(h[0] + px * B + ux * B, h[1] + py * B + uy * B); g.lineTo(h[0] - px * B + ux * B, h[1] - py * B + uy * B); g.lineTo(h[0] - px * B, h[1] - py * B); g.closePath();
+  g.clip('nonzero'); draw(); g.restore(); }
+// worldToLocal: a world point in the car's own metres at this frame (for things left behind on the playa, drawn with PL)
+function worldToLocal(X, Z) { const dx = X - CX, dz = Z - CZ, c = Math.cos(YAW), s = Math.sin(YAW); return [dx * c + dz * s, -dx * s + dz * c]; }
 // ---------- figures ----------
 let CAR_SIL = false; // true while carGlow redraws the near figures as a silhouette (eggs, hats and props are skipped)
 let REEL_A = 0; // the shared reel angle of the recorders in the heads (set per frame by drawCar)
@@ -146,6 +177,11 @@ function drawers(x, sh, k, open) { // a torso of drawers: the middle one slides 
 }
 
 // ---------- the table car ----------
+// draft 11: polygons and lines of the table that cross the near plane are cut at it, not dropped (camera.js clipNear)
+const NEAR_N = .12;
+function polyN(pts, fill, stroke, lw) { if (!ok(pts)) { if (pts.some((p) => p.length < 5)) return; pts = clipNear(pts, NEAR_N); if (pts.length < 3) return; } poly(pts, fill, stroke, lw); }
+function segN(a, b, w, col) { if (a[2] < NEAR_N && b[2] < NEAR_N) return; if (a[2] < NEAR_N || b[2] < NEAR_N) { if (a.length < 5 || b.length < 5) return; const [p, q] = a[2] < NEAR_N ? [b, a] : [a, b], u = (NEAR_N - p[2]) / (q[2] - p[2]), x = lerp(p[3], q[3], u), y = lerp(p[4], q[4], u);
+  const r = [W / 2 + C.f * x / NEAR_N, H / 2 - C.f * y / NEAR_N, NEAR_N, x, y]; seg(p, r, w, col); return; } seg(a, b, w, col); }
 const SEAT = .42; // hop-on seats at the hubcap line, low enough to hop on and off (Robin)
 const WHEEL_R = .4, WHEELS = [-2.925, -.125, 2.575]; // three axles, in the gaps between the seats
 const SEATS = [ // local x, z, faces camera at yaw 0, role
@@ -386,7 +422,7 @@ function tableBody(t) {
   wheels(t, false);
   const bx = TL * .9, bz = TD * .86, cf = [[[-bx, -bz], [bx, -bz]], [[bx, -bz], [bx, bz]], [[bx, bz], [-bx, bz]], [[-bx, bz], [-bx, -bz]]];
   cf.map((f) => [c((f[0][0] + f[1][0]) / 2, .4, (f[0][1] + f[1][1]) / 2)[2], f]).sort((a, b) => b[0] - a[0])
-    .forEach(([, f]) => poly([c(f[0][0], .14, f[0][1]), c(f[1][0], .14, f[1][1]), c(f[1][0], .8 - Math.min(.5, sy(f[1][0])), f[1][1]), c(f[0][0], .8 - Math.min(.5, sy(f[0][0])), f[0][1])], '#1d130e'));
+    .forEach(([, f]) => polyN([c(f[0][0], .14, f[0][1]), c(f[1][0], .14, f[1][1]), c(f[1][0], .8 - Math.min(.5, sy(f[1][0])), f[1][1]), c(f[0][0], .8 - Math.min(.5, sy(f[0][0])), f[0][1])], '#1d130e'));
   wheels(t, true);
   // skirt: four hanging cloth panels down to a hem just above the hubcaps, drawn back to front (they droop with the soft top)
   const faces = [[[-TL * .97, -TD * .93], [TL * .97, -TD * .93]], [[TL * .97, -TD * .93], [TL * .97, TD * .93]], [[TL * .97, TD * .93], [-TL * .97, TD * .93]], [[-TL * .97, TD * .93], [-TL * .97, -TD * .93]]];
@@ -395,7 +431,7 @@ function tableBody(t) {
   for (const [, f] of fd) {
     const xa = (u) => lerp(f[0][0], f[1][0], u), at = (u, y) => c(xa(u), y - sy(xa(u)), lerp(f[0][1], f[1][1], u));
     const pts = []; for (let i = 0; i <= N; i++) pts.push(at(i / N, TOP - .2)); for (let i = N; i >= 0; i--) pts.push(c(xa(i / N), hem(i / N, xa(i / N)), lerp(f[0][1], f[1][1], i / N)));
-    poly(pts, PAL.skirt);
+    polyN(pts, PAL.skirt);
     for (let i = 1; i < N; i++) seg(at(i / N, TOP - .23), c(xa(i / N), hem(i / N, xa(i / N)) + .06, lerp(f[0][1], f[1][1], i / N)), 2, 'rgba(0,0,0,.18)');
     for (let i = 0; i < N; i++) { const a = c(xa(i / N), hem(i / N, xa(i / N)), lerp(f[0][1], f[1][1], i / N)); seg(a, c(xa((i + 1) / N), hem((i + 1) / N, xa((i + 1) / N)), lerp(f[0][1], f[1][1], (i + 1) / N)), .05 * kAt(a), '#d6a632'); }
   }
@@ -404,27 +440,30 @@ function tableBody(t) {
   const band = (zz) => { const ps = []; for (const x of xs) ps.push(c(x, TOP - sy(x), zz)); for (let j = xs.length - 1; j >= 0; j--) ps.push(c(xs[j], TOP - .22 - sy(xs[j]), zz)); return ps; };
   const ends = (xx) => [c(xx, TOP - sy(xx), -TD), c(xx, TOP - sy(xx), TD), c(xx, TOP - .22 - sy(xx), TD), c(xx, TOP - .22 - sy(xx), -TD)];
   const bands = [band(-TD), band(TD), ends(-TL), ends(TL)].map((ps) => [ps.reduce((s, p) => s + p[2], 0) / ps.length, ps]).sort((a, b) => b[0] - a[0]);
-  for (const [, ps] of bands) poly(ps, '#3d170c');
-  const topP = []; for (const x of xs) topP.push(c(x, TOP - sy(x), -TD)); for (let j = xs.length - 1; j >= 0; j--) topP.push(c(xs[j], TOP - sy(xs[j]), TD)); if (!ok(topP)) return;
-  const g0p = c(-TL, TOP, -TD), g2p = c(TL, TOP, TD), lg = g.createLinearGradient(g0p[0], g0p[1], g2p[0], g2p[1]); lg.addColorStop(0, PAL.mahoganyLit); lg.addColorStop(1, PAL.mahogany);
-  poly(topP, lg);
-  for (let i = 1; i < 9; i++) { const z = -TD + i * TD * 2 / 9; if (sa <= 0) { seg(c(-TL, TOP, z), c(TL, TOP, z + .05 * Math.sin(i)), 1.2, 'rgba(30,8,4,.22)'); continue; }
+  for (const [, ps] of bands) polyN(ps, '#3d170c');
+  const topP = []; for (const x of xs) topP.push(c(x, TOP - sy(x), -TD)); for (let j = xs.length - 1; j >= 0; j--) topP.push(c(xs[j], TOP - sy(xs[j]), TD));
+  // draft 11: when a corner of the top crosses the lens's near plane the top is cut there instead of dropped (it blinked out at 29.2, 46.7, 87.0)
+  const tp = ok(topP) ? topP : clipNear(topP, NEAR_N); if (tp.length < 3) return;
+  let g0p = c(-TL, TOP, -TD), g2p = c(TL, TOP, TD); if (!ok([g0p, g2p])) { const bx = tp.map((p) => clamp(p[0], 0, W)), by = tp.map((p) => clamp(p[1], 0, H)); g0p = [Math.min(...bx), Math.min(...by)]; g2p = [Math.max(...bx), Math.max(...by)]; }
+  const lg = g.createLinearGradient(g0p[0], g0p[1], g2p[0], g2p[1]); lg.addColorStop(0, PAL.mahoganyLit); lg.addColorStop(1, PAL.mahogany);
+  poly(tp, lg);
+  for (let i = 1; i < 9; i++) { const z = -TD + i * TD * 2 / 9; if (sa <= 0) { segN(c(-TL, TOP, z), c(TL, TOP, z + .05 * Math.sin(i)), 1.2, 'rgba(30,8,4,.22)'); continue; }
     g.strokeStyle = 'rgba(30,8,4,.22)'; g.lineWidth = 1.2; g.beginPath(); xs.forEach((x, j) => { const p = c(x, TOP - sy(x), z + .05 * Math.sin(i) * (j / NX)); j ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1]); }); g.stroke(); }
   if (sa > .02) { // soft: drips of mahogany hang off both ends and a slow ripple runs over the top
     for (const e of [-1, 1]) for (let j = 0; j < 5; j++) { const z = -TD * .8 + j * TD * .4, x = e * TL, y0 = TOP - .2 - sy(x), len = sa * (.15 + .35 * rnd(j, e + 3)) * (1 + .1 * Math.sin(t * 2 + j)), a0 = c(x + e * .01, y0, z), b0 = c(x + e * .01, y0 - len, z); if (a0[2] < .2) continue;
       seg(a0, b0, .07 * kAt(a0), PAL.mahogany); g.fillStyle = PAL.mahogany; g.beginPath(); g.arc(b0[0], b0[1], .05 * kAt(b0), 0, TAU); g.fill(); }
-    g.save(); g.globalAlpha = .25 * clamp(sa / .3); for (let r = 0; r < 3; r++) { const R = ((t * .5 + r / 3) % 1) * 2.4 + .7, ps = []; for (let i = 0; i < 28; i++) { const q = i / 28 * TAU, x = Math.cos(q) * R * 1.4; ps.push(c(x, TOP + .003 - sy(x), Math.sin(q) * R * .55)); } poly(ps, null, PAL.mahoganyLit, 2); } g.restore();
+    g.save(); g.globalAlpha = .25 * clamp(sa / .3); for (let r = 0; r < 3; r++) { const R = ((t * .5 + r / 3) % 1) * 2.4 + .7, ps = []; for (let i = 0; i < 28; i++) { const q = i / 28 * TAU, x = Math.cos(q) * R * 1.4; ps.push(c(x, TOP + .003 - sy(x), Math.sin(q) * R * .55)); } polyN(ps, null, PAL.mahoganyLit, 2); } g.restore();
   }
   chess(t);
   // the hole in the middle: the driver's seat
   const ring = (rx, rz) => { const r = []; for (let i = 0; i < 28; i++) { const a = i / 28 * TAU; r.push(c(Math.cos(a) * rx, TOP, Math.sin(a) * rz)); } return r; };
-  poly(ring(.55, .45), '#120806'); poly(ring(.62, .52), null, '#c9a24a', 2.5);
+  polyN(ring(.55, .45), '#120806'); polyN(ring(.62, .52), null, '#c9a24a', 2.5);
 }
 function chess(t) { // knight to queen's rook: the table top turns into a chessboard
   const s = L_(26).s, e = L_(27).e; const a = ease(t, s - .3, s + .2) * (1 - ease(t, e + .3, e + .8)); if (a <= 0) return;
   g.save(); g.globalAlpha = a * .85;
   for (let i = 0; i < 8; i++) for (let j = 0; j < 4; j++) { if ((i + j) % 2) continue; const x0 = -TL + i, z0 = -TD + j * .75;
-    poly([PL(x0, TOP + .001, z0), PL(x0 + 1, TOP + .001, z0), PL(x0 + 1, TOP + .001, z0 + .75), PL(x0, TOP + .001, z0 + .75)], '#efe3c6'); }
+    polyN([PL(x0, TOP + .001, z0), PL(x0 + 1, TOP + .001, z0), PL(x0 + 1, TOP + .001, z0 + .75), PL(x0, TOP + .001, z0 + .75)], '#efe3c6'); }
   g.restore();
 }
 // ---------- hats, horns and masks on the eggs (draft 9) ----------
@@ -452,15 +491,21 @@ function weathervane(x, ey, k, u, A3, t) { // refrain 2: a stalk, an arrow and a
   poly([at(.46, 0), at(.33, .07), at(.33, -.07)], col); poly([at(-.3, 0), at(-.22, .1), at(-.36, .12), at(-.4, 0), at(-.36, -.08), at(-.22, -.06)], col); // head and tail fin, in the arrow's own upright plane
   poly(COCK.map(([al, up]) => at(al * .85, up * .85 + .03)), col);
 }
-function partyHat(x, ey, k, h, i, front) { // joke 1: a paper party hat folded from a ballot, .35 m, a black X on the front
-  const top = ey - .13 * k, sq = 1 + .28 * Math.sin(clamp(h.pop / .3) * Math.PI) * (1 - clamp(h.pop / .3)), tl = (i % 2 ? .14 : -.12) + .03 * Math.sin(h.age * 3 + i);
-  g.save(); g.translate(x, top); g.rotate(tl); g.scale(1 / Math.sqrt(sq), sq);
-  const hh = .35 * k, w = .12 * k; g.fillStyle = '#f2ede0'; g.beginPath(); g.moveTo(-w, 0); g.lineTo(0, -hh); g.lineTo(w, 0); g.quadraticCurveTo(0, .035 * k, -w, 0); g.fill();
-  g.fillStyle = 'rgba(120,100,80,.25)'; g.beginPath(); g.moveTo(0, -hh); g.lineTo(w, 0); g.quadraticCurveTo(w * .4, .02 * k, w * .3, .015 * k); g.closePath(); g.fill(); // the fold in shadow
-  g.strokeStyle = 'rgba(70,50,35,.55)'; g.lineWidth = Math.max(1, .008 * k); g.beginPath(); g.moveTo(-w, 0); g.lineTo(0, -hh); g.lineTo(w, 0); g.stroke();
-  if (front) { g.strokeStyle = '#141216'; g.lineWidth = Math.max(1.2, .02 * k); } else g.strokeStyle = 'rgba(0,0,0,0)'; const xc = -.01 * k, yc = -hh * .36, s = .045 * k; g.beginPath(); g.moveTo(xc - s, yc - s); g.lineTo(xc + s, yc + s); g.moveTo(xc + s, yc - s); g.lineTo(xc - s, yc + s); g.stroke();
-  g.fillStyle = '#f2ede0'; g.beginPath(); g.arc(0, -hh, .025 * k, 0, TAU); g.fill();
-  g.restore();
+// joke 1: a dunce cap (draft 11, Robin: the white pointed caps could read as hoods). Short, fat, tilted well over,
+// in a strong colour with bands of a second one and a pompom on the tip; no white, no eye marks. Each suit has his own colours.
+const DUNCE = [['#d0281f', '#f0b23a', '#2f6fb5'], ['#2f6fb5', '#f0b23a', '#d0281f'], ['#e8a31a', '#7a3c8c', '#3c8c5a'], ['#3c8c5a', '#f0b23a', '#d0281f'], ['#7a3c8c', '#f0b23a', '#e0702a'], ['#e0702a', '#2f6fb5', '#f2ede0'], ['#d23a7a', '#2f6fb5', '#f0b23a']];
+function dunceCap(k, i, u) { // drawn at the origin, base centre (0, 0), tip up; u 0..1 how far it has folded from the flat ballot
+  const [c0, c1, c2] = DUNCE[i % DUNCE.length], hh = .27 * k * lerp(.5, 1, u), w = .14 * k;
+  g.fillStyle = c0; g.beginPath(); g.moveTo(-w, 0); g.lineTo(0, -hh); g.lineTo(w, 0); g.quadraticCurveTo(0, .04 * k, -w, 0); g.fill();
+  g.save(); g.clip(); g.fillStyle = c1; for (let b = 0; b < 3; b++) { const y0 = -hh * (.12 + b * .3), y1 = y0 - hh * .13; g.beginPath(); g.moveTo(-w * 1.2, y0 + .02 * k); g.lineTo(w * 1.2, y0 - .03 * k); g.lineTo(w * 1.2, y1 - .03 * k); g.lineTo(-w * 1.2, y1 + .02 * k); g.fill(); } // tilted bands
+  g.fillStyle = 'rgba(40,20,20,.22)'; g.beginPath(); g.moveTo(0, -hh); g.lineTo(w, 0); g.quadraticCurveTo(w * .4, .03 * k, w * .3, .02 * k); g.closePath(); g.fill(); g.restore(); // the fold side in shadow
+  g.strokeStyle = 'rgba(50,25,20,.6)'; g.lineWidth = Math.max(1, .008 * k); g.beginPath(); g.moveTo(-w, 0); g.lineTo(0, -hh); g.lineTo(w, 0); g.stroke();
+  g.fillStyle = c1; g.beginPath(); g.ellipse(0, .005 * k, w * 1.02, .028 * k, 0, 0, TAU); g.fill(); // a band round the brim
+  if (u > .5) { const r = .045 * k * ease(u, .5, 1); g.fillStyle = c2; g.beginPath(); g.arc(0, -hh - r * .6, r, 0, TAU); g.fill(); g.fillStyle = 'rgba(255,255,255,.3)'; g.beginPath(); g.arc(-r * .3, -hh - r, r * .35, 0, TAU); g.fill(); } // the pompom
+}
+function partyHat(x, ey, k, h, i, front) { // joke 1: the dunce cap on his egg, tipped well over to one side, a squash as it lands
+  const top = ey - .13 * k, sq = 1 + .28 * Math.sin(clamp(h.pop / .3) * Math.PI) * (1 - clamp(h.pop / .3)), tl = (i % 2 ? .42 : -.38) + .04 * Math.sin(h.age * 3 + i);
+  g.save(); g.translate(x + (i % 2 ? .03 : -.03) * k, top); g.rotate(tl); g.scale(1 / Math.sqrt(sq), sq); dunceCap(k, i, 1); g.restore();
 }
 function partyHorn(x, ey, k, u, side, t, i) { // joke 2: a paper party horn unrolls .4 m, red and white, and curls back up
   const L = .4 * k, ds = L / 36, straight = u * L, w = .05 * k; let px = x + side * .045 * k, py = ey + .06 * k, hd = side > 0 ? .3 : Math.PI - .3; const pts = [[px, py]];
@@ -501,7 +546,7 @@ function collectSide(i, gt) { return ((i + (gt > OUT.vote[0] + .5 ? 1 : 0)) % 2)
 const STACK = { x: 1.0, z: -.3, dy: .012 }; // the ballot stack beside the hat hole, car-local
 function stackCount(t) { let n = 0; for (let i = 0; i < 14; i++) for (const gt of collectTimes(i)) if (t >= gt + 1) n++; return n; }
 function hatState(t, i) { // joke 1: each suit's hat leaves the stack and lands on his egg
-  const j = OUT.joke[0], dep = j - .42 + (i % 7) * .04 + (i > 6 ? .02 : 0), land = dep + .5; if (t < dep) return null;
+  const j = OUT.joke[0], dep = j - .72 + (i % 7) * .04 + (i > 6 ? .02 : 0), land = dep + .5; if (t < dep) return null;
   return { dep, land, fly: clamp((t - dep) / .5), pop: Math.max(0, t - land), age: t - land, on: t >= land };
 }
 function ballotStack(t) {
@@ -526,7 +571,9 @@ function outroFlyers(t, at) { // ballots tossed onto the stack (vote 1) and hats
     for (const gt of collectTimes(i)) { const u = (t - gt - .7) / .3; if (u < 0 || u >= 1) continue; const top = PL(sx, TOP + stackCount(gt + 1) * STACK.dy - tableSag(sx, t), sz); if (top[2] < .2) continue;
       const kk = lerp(A.k, kAt(top), u); ballotCard(lerp(A.hx, top[0], u), lerp(A.hy, top[1], u) - Math.sin(u * Math.PI) * .6 * kk, kk, u * 5 + i, 0); }
     const h = hatState(t, i); if (h && !h.on) { const top = PL(sx, TOP + .1 - tableSag(sx, t), sz); if (top[2] < .2) continue; const u = h.fly, e = u * u * (3 - 2 * u), kk = lerp(kAt(top), A.k, e);
-      ballotCard(lerp(top[0], A.x, e), lerp(top[1], A.ey - .3 * A.k, e) - Math.sin(u * Math.PI) * 1.1 * kk, kk, (1 - u) * 4 + i * .3, ease(u, .3, .9)); } }
+      const fx = lerp(top[0], A.x, e), fy = lerp(top[1], A.ey - .3 * A.k, e) - Math.sin(u * Math.PI) * 1.1 * kk, fold = ease(u, .25, .7), rot = (1 - u) * 4 + i * .3;
+      const cf = ease(fold, .15, .55); if (cf < 1) { g.save(); g.globalAlpha = 1 - cf; ballotCard(fx, fy, kk, rot, 0); g.restore(); } // draft 11: the ballot folds into his coloured dunce cap in the air
+      if (cf > 0) { g.save(); g.globalAlpha = cf; g.translate(fx, fy + .12 * kk); g.rotate(rot * (1 - ease(u, .7, 1)) + (i % 2 ? .42 : -.38) * ease(u, .7, 1)); dunceCap(kk, i, fold); g.restore(); } } }
 }
 function confetti(t) { // joke 3: shredded ballots flung from the board's hands over the crowd, fluttering down
   const j = OUT.joke[2]; if (t < j - .1 || t > j + 3.6) return;
@@ -557,6 +604,10 @@ function drawCar(t) {
   REEL_A = t * 7; CAR_NEAR = [];
   const seats = SEATS.map((s, i) => { const o = seatState(s, t, i), Pz = bodyPose(s, o); return { s, i, o, Pz, d: PL(Pz.bx, SEAT, Pz.bz)[2], up: o.onTable > .45 }; }).sort((a, b) => b.d - a.d), mid = PL(0, SEAT, 0)[2];
   const AT = []; // screen anchors per suit (for the flyers, the hats and the photo-op arms)
+  // draft 11: the board for the actor check (tools/check-actors.mjs): the top as five circles along its length (r .9, so they do not count as overlapping each other), and each
+  // suit on his chair as his own circle; a suit up on the table is part of the top's footprint and is not noted apart
+  if (ACT.on) { for (let j = 0; j < 5; j++) { const [X, Z] = carLocalToWorld(t, -3.3 + j * 1.65, 0); ACT.note('car:table:' + j, X, Z, .9, { h: 2.3, group: 'board' }); }
+    for (const rec of seats) { if (rec.o.onTable > .02) continue; const [X, Z] = carLocalToWorld(t, rec.Pz.bx, rec.Pz.bz); ACT.note('car:suit:' + rec.i, X, Z, .4, { h: 1.7, group: 'board' }); } }
   const sitter = (rec) => { const { s, i, o, Pz } = rec;
     const p = PL(Pz.bx, Pz.hy, Pz.bz); if (p[2] < .25) return; const k = kAt(p);
     const drop = i === CHAIR_I ? .22 * crutchSoft(t, i).kink : 0;

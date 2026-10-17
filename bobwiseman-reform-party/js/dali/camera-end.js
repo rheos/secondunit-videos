@@ -16,31 +16,41 @@ const BOARD = [287.4, 2.1, -4.2, -.05, 1150];  // world x, y, z, pitch, f: behin
 // 3-4 m and back over the drum circle (b5, about (282, 21)) onto BOARD for the arms-up (215.99). camEnd now lands on
 // LOW at AIR.t1 and END_KEYS fly the low pass from there. It takes off from wherever the golden wide (camera.js
 // goldEnd) leaves the drone at 201: looking toward the Temple, so the climb no longer has to turn.
-const AIR = { t0: 201, top: 207.3, hold: 207.8, t1: 212.6, D: 5000, f: 1000 };
-const LOW = [290, 3.8, 22.5, -.16, 900];        // in the Conclave ring, low, the Man ahead
-function camState(x, y, z, p, f, yaw = 0) { // the drone as seen from the Man: lateral offset, log distance, elevation, aim, lens, heading
-  const dx = x - MAN.x, dz = z - MAN.z, cy = Math.cos(yaw), sy = Math.sin(yaw), h = -(sy * dx + cy * dz), xo = cy * dx - sy * dz, D = Math.hypot(h, y), el = Math.atan2(y, h);
-  return { xo, lnD: Math.log(D), el, dp: p - el, f, yaw }; }
+// Draft 12 (AUDIT-d10: the descent spun half round in its first half and hard-landed into a dead stop at 212.6): the
+// climb and the half-second map at the top are draft 10's (protected). On the way down the half turn is done while the
+// view is still straight down (the map turns under us, the view does not swing), the height drops on a log scale, and
+// the drone tips from straight down to look at the board from 40 m up behind it (HO). It hands over there still moving,
+// and END_KEYS fly the last 40 m inside the speed limits onto BOARD, tilting up until the Man stands over the board.
+const AIR = { t0: 201, top: 207.3, hold: 207.8, spin: 209.5, tip: 208.4, t1: 210.6, D: 5000, f: 1000 };
+const HO = [286.5, 40, -22];                       // the hand-over point, high behind the board
+const HO_LOOK = [284.8, 1.2, 0];                   // what the drone looks at there: the board
+const LOW = HO;                                    // (draft 9's name for the hand-over pose)
+const herm = (t, t0, t1, a, b, ma, mb) => { const h = t1 - t0, s = clamp((t - t0) / h), s2 = s * s, s3 = s2 * s; return (2 * s3 - 3 * s2 + 1) * a + (s3 - 2 * s2 + s) * h * ma + (-2 * s3 + 3 * s2) * b + (s3 - s2) * h * mb; };
+const HO_P = Math.atan2(HO[1] - HO_LOOK[1], Math.hypot(HO_LOOK[0] - HO[0], HO_LOOK[2] - HO[2])), HO_YAW = Math.atan2(HO_LOOK[0] - HO[0], HO_LOOK[2] - HO[2]);
 let AIR_Q = null;
 function camEnd(t) {
   if (t <= AIR.t0 || t >= AIR.t1) return null;
   const q = AIR_Q || (AIR_Q = typeof goldEnd === 'function' ? goldEnd() : { x: carX(AIR.t0) + 6, y: 1.6, z: -40, p: -.13, f: 1300, yaw: 0 });
-  const yTop = q.yaw + unwrapTo(Math.PI - q.yaw), sA = { xo: 0, lnD: Math.log(AIR.D), el: Math.PI / 2, dp: 0, f: AIR.f, yaw: yTop }, s1 = camState(...LOW, yTop + Math.PI);
-  const wob = .25 * Math.sin(t * .23);
+  const yTop = q.yaw + unwrapTo(Math.PI - q.yaw), yHO = yTop + Math.PI + unwrapTo(HO_YAW - yTop - Math.PI);
   if (t < AIR.top) { // draft 9: a crane straight up, drifting over the Man and tilting down while it faces the Temple, so
     // the city's arms open out on both sides as it rises (from the golden wide, which already faces 12:00)
-    const u = smooth((t - AIR.t0) / (AIR.top - AIR.t0)), yw = lerp(q.yaw, yTop, u), cy = Math.cos(yTop), sy = Math.sin(yTop);
-    const x = lerp(q.x, MAN.x, u) + lerp(1, cy, u) * wob, z = lerp(q.z, MAN.z, u) - lerp(0, sy, u) * wob;
-    const y = Math.exp(lerp(Math.log(q.y), Math.log(AIR.D), u)) + .05 * Math.sin(t * .31), p = lerp(q.p, Math.PI / 2, Math.pow(u, .7));
-    return { x, y, z, p, f: lerp(q.f, AIR.f, u), yaw: Math.atan2(Math.sin(yw), Math.cos(yw)), cy: Math.cos(yw), sy: Math.sin(yw), clip: false }; }
-  let s;
-  if (t < AIR.hold) { const u = (t - AIR.top) / (AIR.hold - AIR.top); s = { ...sA, lnD: sA.lnD + .01 * Math.sin(u * Math.PI), yaw: yTop + .02 * Math.sin(u * Math.PI) }; } // a breath at the top
-  else { const u = smooth((t - AIR.hold) / (AIR.t1 - AIR.hold)), ue = u; // back down through the Conclave, levelling out last
-    s = { xo: lerp(0, s1.xo, u), lnD: lerp(sA.lnD, s1.lnD, u), el: lerp(sA.el, s1.el, ue), dp: lerp(0, s1.dp, u * u), f: lerp(sA.f, s1.f, u), yaw: yTop + Math.PI * smooth(Math.min(1, u * 1.8)) }; }
-  const D = Math.exp(s.lnD), cy = Math.cos(s.yaw), sy = Math.sin(s.yaw), h = D * Math.cos(s.el);
-  const x = MAN.x - sy * h + cy * (s.xo + wob), y = D * Math.sin(s.el) + .05 * Math.sin(t * .31), z = MAN.z - cy * h - sy * (s.xo + wob);
-  const yaw = Math.atan2(sy, cy); // wrapped, so it is exactly 0 again when camera.js takes over at AIR.t1
-  return { x, y, z, p: s.el + s.dp, f: s.f, yaw, cy, sy, clip: false };
+    const u = smooth((t - AIR.t0) / (AIR.top - AIR.t0)), yw = lerp(q.yaw, yTop, u);
+    const x = lerp(q.x, MAN.x, u), z = lerp(q.z, MAN.z, u);
+    const y = Math.exp(lerp(Math.log(q.y), Math.log(AIR.D), u)), p = lerp(q.p, Math.PI / 2, Math.pow(u, .7));
+    return { x, y, z, p, f: lerp(q.f, AIR.f, u), yaw: yw, cy: Math.cos(yw), sy: Math.sin(yw), clip: false }; }
+  if (t < AIR.hold) { const u = (t - AIR.top) / (AIR.hold - AIR.top), yw = yTop + .02 * Math.sin(u * Math.PI); // a breath at the top
+    return { x: MAN.x, y: AIR.D * Math.exp(.01 * Math.sin(u * Math.PI)), z: MAN.z, p: Math.PI / 2, f: AIR.f, yaw: yw, cy: Math.cos(yw), sy: Math.sin(yw), clip: false }; }
+  // back down: the height on a log scale, still dropping at 12 m/s at the hand-over; over the ground from the Man to HO
+  // as the height goes; the half turn while the view is straight down; then the tilt onto the board
+  // the log-rate is a smooth bump on top of the hand-over rate (12 m/s at 40 m), and the bump is over .35 s before the
+  // hand-over, so the drone has done its braking well above 40 m and arrives at a steady speed (draft 12: it braked
+  // from 70 to 15 m/s in the last 0.4 s, 146 m/s2)
+  const T = AIR.t1 - AIR.hold, r0 = 12 / HO[1], se = 1 - .35 / T, dl = Math.log(AIR.D) - Math.log(HO[1]), amp = (dl - r0 * T) / (.5 * se * T);
+  const sx = clamp((t - AIR.hold) / T), xb = Math.min(sx, se), ib = xb / 2 - se / (4 * Math.PI) * Math.sin(2 * Math.PI * xb / se); // the integral of sin^2(pi x / se)
+  const ly = Math.log(AIR.D) - T * (r0 * sx * sx * (3 - 2 * sx) * 0 + r0 * sx + amp * ib), y = Math.exp(ly), w = (Math.log(AIR.D) - ly) / dl;
+  const g = herm(w, 0, 1, 0, 1, 0, .6), x = lerp(MAN.x, HO[0], g), z = lerp(MAN.z, HO[2], g);
+  const yw = lerp(yTop, yHO, smooth((t - AIR.hold) / (AIR.spin - AIR.hold))), p = herm(t, AIR.tip, AIR.t1, Math.PI / 2, HO_P, 0, -.12);
+  return { x, y, z, p, f: lerp(AIR.f, 1100, smooth((t - AIR.hold) / (AIR.t1 - AIR.hold))), yaw: yw, cy: Math.cos(yw), sy: Math.sin(yw), clip: false };
 }
 const unwrapTo = (a) => a - TAU * Math.round(a / TAU); // the shortest turn
 
@@ -48,9 +58,12 @@ const unwrapTo = (a) => a - TAU * Math.round(a / TAU); // the shortest turn
 // Pose keys in world metres [t, x, y, z, pitch, f, yaw?]. camera.js flies a smooth spline through them (it never holds);
 // the key times are where each framing lands, on its word. The aerial above lands on BOARD at 215.2.
 const END_KEYS = [
-  [AIR.t1, ...LOW],                                   // draft 9: the aerial lands low inside the Conclave
-  [213.9, 282.6, 3.4, 14.5, .2, 980, .05],                   // back low over the drum circle (b5, (282, 21)), the Man ahead
-  [215.2, ...BOARD],                                // arms up on 215.99, the whole Man over the board
+  [AIR.t1, ...HO, HO_P, 1100, HO_YAW],              // draft 12: the aerial hands over moving, high behind the board
+  [211.6, 286.6, 26, -19.5, .95, 1110, -.06],      // down the last 40 m inside the speed limits, slowing as it nears the
+  [212.7, 286.8, 14, -15.0, .7, 1120, -.04],        // ground and tilting up from the board to the Man
+  [213.8, 287.1, 6.5, -9.5, .38, 1135, -.02],
+  [214.7, 287.3, 3.0, -5.6, .08, 1145, 0],
+  [215.35, ...BOARD],                               // arms up on 215.99, the whole Man over the board
   [216.7, 287.6, 2.0, -5.1, -.1, 1060],             // easing back as the arms rise
   [218.4, 287.8, 1.8, -7.5, -.25, 860],             // tilted up and wide: fireworks from the Man and his base
   [220.6, 287.4, 2.1, -4.2, .01, 1250],             // vote 1 (220.65): down onto the board as the base catches

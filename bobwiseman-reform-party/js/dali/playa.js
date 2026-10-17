@@ -30,7 +30,36 @@ function bmCrutch(a, b, w) { // a Dali crutch from foot a up to the fork b, with
   const hp = [lerp(a[0], b[0], .78), lerp(a[1], b[1], .78)]; bmLine([[hp[0] + nx * w * 1.2, hp[1] + ny * w * 1.2], [hp[0] - nx * w * 1.2, hp[1] - ny * w * 1.2]], w * .8, '#8a6a3c');
 }
 const bmVis = (p, m) => p[2] > 1 && p[0] > -m && p[0] < W + m;
-const bmFade = (p) => clamp((p[2] - 4.5) / 3.5); // anything closer than ~3 m to the lens fades out instead of wiping the frame as a block
+const bmFade = (p) => clamp((p[2] - 4.5) / 3.5); // draft 10's near-lens fade. Draft 11: no playa body uses it (kept for scenes.js and artcars.js)
+
+// ---------- draft 11: permanence and spacing (Robin: nobody passes through anybody, nothing blinks) ----------
+// Every solid body here enters and leaves by moving. Where a body has a time window, the window is widened to the
+// nearest moment it is out of shot (bmBorn, bmGone): it keeps moving along its own path until the camera of that moment
+// cannot see it, and only then starts or stops. These scans use camAt, so they follow whatever flight camera.js flies.
+const BM_CQ = new Map(); // camAt on a 20 fps grid, kept once worked out (a pure function of t, so this is only a memo)
+function bmCam(s) { const k = Math.round(s * 20); let c = BM_CQ.get(k); if (!c) { c = camAt(k / 20); BM_CQ.set(k, c); } return c; }
+function bmProj(c, X, Y, Z) { let dx = X - c.x, dz = Z - c.z; const dy = Y - c.y; if (c.sy) { const a = dx * c.cy - dz * c.sy; dz = dx * c.sy + dz * c.cy; dx = a; }
+  const cp = Math.cos(c.p), sp = Math.sin(c.p), z = -dy * sp + dz * cp, y = dy * cp + dz * sp; return [W / 2 + c.f * dx / z, H / 2 - c.f * y / z, z]; }
+function bmSeen(s, X, Z, r, h, Y0) { // could the camera of time s see any of the box round (X, Z), radius r, height h, from Y0 up
+  const c = bmCam(s), y0 = Y0 || 0; let n = 0, a = 1e9, b = -1e9, u = 1e9, v = -1e9;
+  for (const dx of [-r, r]) for (const dz of [-r, r]) for (const y of [y0, y0 + h]) { const q = bmProj(c, X + dx, y, Z + dz); if (q[2] < .3) continue; n++; a = Math.min(a, q[0]); b = Math.max(b, q[0]); u = Math.min(u, q[1]); v = Math.max(v, q[1]); }
+  if (!n) return false; if (n < 8) return true; return b > -2 && a < W + 2 && v > -2 && u < H + 2; }
+const BM_TQ = new Map();
+// bmBorn: the latest time on the 20 fps grid at or before t0 at which the body at pos(s) = [X, Z, Y0] is out of shot.
+// bmGone: the earliest at or after t1. The body exists from bmBorn to bmGone, so it starts and stops where no one sees.
+function bmBorn(key, t0, pos, r, h, lim) { if (BM_TQ.has(key)) return BM_TQ.get(key); let s = Math.floor(t0 * 20) / 20; const end = Math.max(t0 - (lim || 90), -.05); // reaching the film's start means it was there all along
+  for (; s > end; s -= .05) { const q = pos(s); if (!bmSeen(s, q[0], q[1], r, h, q[2])) break; } BM_TQ.set(key, s); return s; }
+function bmGone(key, t1, pos, r, h, lim) { if (BM_TQ.has(key)) return BM_TQ.get(key); let s = Math.ceil(t1 * 20) / 20; const end = Math.min(t1 + (lim || 90), 269.5); // reaching the end: it stays till the black
+  for (; s < end; s += .05) { const q = pos(s); if (!bmSeen(s, q[0], q[1], r, h, q[2])) break; } BM_TQ.set(key, s); return s; }
+// bmAvoid: a body of radius rr on its own lane Z0 at X swings out round each obstacle {X, Z, r, side} it passes (a smooth
+// bump along the road, so the swerve is a smooth function of time), on its own side of it, or on o.side if given.
+function bmAvoid(X, Z0, rr, obs) {
+  let up = 0, dn = 0;
+  for (const o of obs) { const c = (o.r + rr) * .9 + .3, dx = Math.abs(X - o.X), L = 2.2 * c; if (dx >= L || Math.abs(Z0 - o.Z) >= c) continue; // only what the lane itself runs into
+    const need = c * Math.cos(Math.PI / 2 * dx / L) ** 2, side = o.side || (Z0 >= o.Z ? 1 : -1);
+    if (side > 0) up = Math.max(up, o.Z + need - Z0); else dn = Math.max(dn, Z0 - (o.Z - need)); }
+  return Z0 + up - dn;
+}
 
 // ---------- stilt elephants ----------
 // elephant(X, Z, t, s, ph, load) keeps its draft-2 signature; o (optional, last) adds: dir, grow (stilts 0..1), vogue, flip, chips (0..1), walk.
@@ -87,14 +116,39 @@ function elephant(X, Z, t, s, ph, load, o) {
 }
 // day elephants: wrapped relative to the car so a few always walk the playa; bigger and nearer than draft 2.
 // r0: start offset from the car, dv: speed relative to the car, Z: depth, s: scale.
+// Draft 11: each on its own lane 7 m from the next (they never walk through each other), out past the parades
+// (Z 36-41) and the wars elephants (Z 27-35); they swing round the playa's art pieces and give the Man a wide
+// berth (bmHerdZ), so at night they walk behind the art-car ring, never through the burn crowd. They keep walking
+// after the board parks (draft 10 had them walk backwards at night), and their wrap far ahead of or behind the board
+// only happens on a lap whose two ends are out of shot (bmLapOK); a lap that would start or end in view is skipped.
 const BM_ELEPHANTS = [
-  { r0: 30, dv: -.55, Z: 36, s: 1.25, load: 'papers' }, { r0: -40, dv: .5, Z: 46, s: 1.15 }, { r0: 85, dv: -.8, Z: 58, s: 1.4, load: 'ballot' },
-  { r0: 150, dv: -.4, Z: 40, s: 1.2 }, { r0: -110, dv: .65, Z: 64, s: 1.5, load: 'papers' }, { r0: 10, dv: -1.1, Z: 75, s: 1.6, load: 'ballot' },
-  { r0: 205, dv: -.7, Z: 50, s: 1.3, load: 'cash' }, { r0: -170, dv: .35, Z: 30, s: 1.05 },
+  { r0: 30, dv: -.55, Z: 57, s: 1.25, load: 'papers' }, { r0: -40, dv: .5, Z: 71, s: 1.15 }, { r0: 85, dv: -.8, Z: 85, s: 1.4, load: 'ballot' },
+  { r0: 150, dv: -.4, Z: 64, s: 1.2 }, { r0: -110, dv: .65, Z: 92, s: 1.5, load: 'papers' }, { r0: 10, dv: -1.1, Z: 99, s: 1.6, load: 'ballot' },
+  { r0: 205, dv: -.7, Z: 78, s: 1.3, load: 'cash' }, { r0: -170, dv: .35, Z: 50, s: 1.05 },
 ];
+const bmHerdZ = (X, Z) => { const u = Math.abs(X - MAN.x) / 220; return Z + (u < 1 ? 110 * Math.cos(Math.PI / 2 * u) ** 2 : 0); }; // round the far side of the Man, at least 95 m out
+// the static bodies the herd and the riders steer round: the playa's art pieces and installations, worked out once
+// on first use (the installations' places hang on cue times)
+let BM_STATIC_L = null;
+function bmStatic() { if (BM_STATIC_L) return BM_STATIC_L; const L = [];
+  BM_CAMPS.forEach((c) => { if (BM_PLAYA_ART[c.kind]) L.push({ X: c.X, Z: c.Z, r: BM_ART_R[c.kind] * c.r }); });
+  for (const [kind, X, Z] of bmInstallPlaces()) L.push({ X, Z, r: BM_INST_R[kind] });
+  return (BM_STATIC_L = L); }
+// a body that wraps round a moving centre: u = u0 + v t, rel = mod(u, P) - P / 2, lap n = floor(u / P). The lap is
+// drawn only if the camera cannot see the wrap at either end (posAt(s, rel) = [X, Z] in the world).
+const BM_LAPQ = new Map();
+function bmLapOK(key, n, u0, v, P, posAt, r, h) {
+  const k = key + ':' + n; if (BM_LAPQ.has(k)) return BM_LAPQ.get(k);
+  const ta = ((v > 0 ? n : n + 1) * P - u0) / v, tb = ((v > 0 ? n + 1 : n) * P - u0) / v, ra = v > 0 ? -P / 2 : P / 2;
+  const seen = (s, rel) => { if (s < -.5 || s > 269.5) return false; const q = posAt(s, rel); return bmSeen(s, q[0], q[1], r, h); };
+  const ok = !seen(ta, ra) && !seen(tb, -ra); BM_LAPQ.set(k, ok); return ok;
+}
+const bmHerdAt = (e) => (s, rel) => { const X = -40 + 1.6 * s + rel; return [X, bmAvoid(X, bmHerdZ(X, e.Z), 2.2 * e.s, bmStatic())]; };
 // elephants that lead the table along the road: they walk just behind the car's line, a little slower, so the board
-// drives past beneath their stilts. Each has a window [t0, t1] in which it is on the road.
-const BM_ROAD = [{ t0: 24, t1: 58.5, r0: 30, dv: -.75, Z: 11, s: 1.2, load: 'papers' }, { t0: 141, t1: 155.4, r0: 26, dv: -.9, Z: 12, s: 1.15, load: 'cash' }];
+// drives past beneath their stilts. Each has a window [t0, t1] in which it is on the road; draft 11: they walk in and
+// out of shot round that window (bmBorn, bmGone), on Z 15.2, 4.7 m behind the Instrument People's file.
+const BM_ROAD = [{ t0: 24, t1: 58.5, r0: 30, dv: -.75, Z: 15.2, s: 1.2, load: 'papers' }, { t0: 141, t1: 154.4, r0: 26, dv: -.9, Z: 15.2, s: 1.15, load: 'cash' }];
+const bmRoadAt = (e) => (s) => [carX(s) + e.r0 + e.dv * (s - e.t0) + 3 * Math.max(0, s - e.t1) ** 2, e.Z, 0]; // past its window it strides on ahead and out of shot
 const bmVogue = (t) => { const v = wt(14, 'vogue'); return ease(t, v - .15, v + .35) * (1 - ease(t, v + 1.7, v + 2.3)); };
 const bmFlip = (t) => { const pv = wt(29, 'perverse'); return easeOutBack(clamp((t - pv + .05) / .55), 1.2) * (1 - ease(t, L_(30).s - .5, L_(30).s + .1)); };
 function bmBigChip(x, y, r, col, det) { // a casino chip face on: the coloured disc, six white edge spots, an inner ring
@@ -106,19 +160,31 @@ const bmNod = (t) => t > L_(30).s && t < L_(30).e + .3 ? Math.abs(Math.sin((t - 
 function bmElephantEntry(X, Z, t, s, ph, load, o, list) {
   if (o.kneel == null) { o.kneel = bmKneel(t); o.nod = bmNod(t); }
   const p = P(X, 0, Z); if (p[2] < 2 || p[0] < -W * .7 || p[0] > W * 1.7) return; const lh = (.9 + 9.6 * (o.grow == null ? 1 : o.grow)) * (1 - .5 * o.kneel);
+  if (o.id) ACT.note(o.id, X, Z, 2.2 * s, { h: (lh + 3) * s, a: o.alpha == null ? 1 : o.alpha, group: 'elephant' });
   list.push({ z: p[2], draw: () => elephant(X, Z, t, s, ph, load, o), shadow: () => { shadowOf([[X - 2.4 * s, (lh + .3) * s, Z], [X + 3.4 * s, (lh + .3) * s, Z], [X - 2.2 * s, (lh + 2.6) * s, Z], [X + 2.6 * s, (lh + 2.8) * s, Z]], t); for (const dx of [-1.5, -1, 1.35, 1.85]) shadowStick(X + dx * s, 0, lh * s, Z, .3 * s, t); } });
 }
+function bmRoadPos(e, i, t) { const at = bmRoadAt(e), h = 13 * e.s; if (t < bmBorn('road' + i, e.t0, at, 2.2 * e.s, h) || t > bmGone('road' + i + 'e', e.t1, at, 2.2 * e.s, h)) return null;
+  const q = at(t); return [q[0], bmAvoid(q[0], q[1], 2.2 * e.s, bmForeign(t).filter((o) => /^installs:whirl/.test(o.id)).map((o) => ({ X: o.X, Z: o.Z, r: o.r, side: 1 }))), 0]; } // swings out round the whirl cars
+function bmWarsPos(i, t) { const w = wt(21, 'wars'), at = bmWarsAt(i), s = 1.05 + (i % 3) * .1; if (t < w - 60 || t > 240 || t < bmBorn('wars' + i, w - 1.5, at, 2.2 * s, 6 * s) || t > bmGone('wars' + i + 'e', 150, at, 2.2 * s, 13 * s)) return null;
+  const q = at(t), ob = []; BM_ROAD.forEach((e, j) => { const r = bmRoadPos(e, j, t); if (r) ob.push({ X: r[0], Z: r[1], r: 2.2 * e.s, side: 1 }); });
+  for (const o of bmForeign(t)) if (!/^scenes:ant/.test(o.id)) ob.push(o); for (const o of bmStatic()) ob.push(o);
+  return [q[0], bmAvoid(q[0], q[1], 2.2 * s, ob), 0]; }
 function bmElephantsInto(t, list) {
-  const cx = carX(clamp(t, 0, 238)), vo = bmVogue(t), fl = bmFlip(t);
-  BM_ELEPHANTS.forEach((e, i) => { const rel = ((((e.r0 + e.dv * t) % 400) + 400) % 400) - 200, X = cx + rel, v = 1.6 + e.dv; bmElephantEntry(X, e.Z, t, e.s, i * 2.1, e.load, { dir: Math.sign(v) || 1, walk: clamp(Math.abs(v) / 1.4, .5, 1.3), vogue: vo, flip: fl }, list); });
-  BM_ROAD.forEach((e, i) => { if (t < e.t0 || t > e.t1) return; const X = cx + e.r0 + e.dv * (t - e.t0); bmElephantEntry(X, e.Z, t, e.s, 7 + i, e.load, { dir: 1, walk: .85, vogue: vo, flip: fl }, list); });
+  const vo = bmVogue(t), fl = bmFlip(t);
+  BM_ELEPHANTS.forEach((e, i) => { const u = e.r0 + e.dv * t, n = Math.floor(u / 400), at = bmHerdAt(e); if (!bmLapOK('eleph:' + i, n, e.r0, e.dv, 400, at, 2.2 * e.s, 13 * e.s)) return;
+    const rel = u - n * 400 - 200, [X, Z] = at(t, rel), v = 1.6 + e.dv; bmElephantEntry(X, Z, t, e.s, i * 2.1, e.load, { id: 'playa:eleph:' + i, dir: Math.sign(v) || 1, walk: clamp(Math.abs(v) / 1.4, .5, 1.3), vogue: vo, flip: fl }, list); });
+  BM_ROAD.forEach((e, i) => { const q = bmRoadPos(e, i, t); if (!q) return;
+    const [X, Z] = q; bmElephantEntry(X, Z, t, e.s, 7 + i, e.load, { id: 'playa:road:' + i, dir: 1, walk: .85, vogue: vo, flip: fl }, list); });
 }
 // "expand the wars": a stilt-elephant parade behind the table; their stilts shoot up out of the sand on "wars" and
-// the chip towers on their backs grow with the bets.
+// the chip towers on their backs grow with the bets. Draft 11: they walk in low from out of shot (no growing out of
+// nothing), on lanes clear of the riders (Z 27.5-35.3), and run off on the far side until no camera sees them.
+const bmWarsAt = (i) => (s) => { const w = wt(21, 'wars'), go = Math.max(0, s - 142.7); return [carX(w) - 17 + i * 9 + (s - w) * 1.95 + go * go * 5, [22, 18.5, 16.5, 20.5, 24][i], 0]; }; // draft 11 merge: through the gap the ballot-ant file opens for the board, clear of the genie
 function bmWarsInto(t, list) {
-  const w = wt(21, 'wars'), bets = wt(22, 'bets'); if (t < w - 1.5 || t > 150) return; const base = carX(w), fl = bmFlip(t);
-  for (let i = 0; i < 5; i++) { const go = Math.max(0, t - 142.7), X = base - 17 + i * 9 + (t - w) * 1.95 + go * go * 5, Z = 21 + (i % 2) * 7 + i * .8, grow = (.02 + .98 * easeOutBack(clamp((t - w - i * .12) / .9), 1.4)) * (1 - .9 * ease(t, 142.6, 143.5)), chips = .25 + .75 * ease(t, bets - .4, bets + 1.6);
-    bmElephantEntry(X, Z, t, 1.05 + (i % 3) * .1, 30 + i * 1.3, 'chips', { dir: 1, grow, chips, walk: .9 + .3 * grow, flip: fl }, list); }
+  const w = wt(21, 'wars'), bets = wt(22, 'bets'), fl = bmFlip(t);
+  for (let i = 0; i < 5; i++) { const q = bmWarsPos(i, t), s = 1.05 + (i % 3) * .1; if (!q) continue;
+    const [X, Z] = q, grow = (.02 + .98 * easeOutBack(clamp((t - w - i * .12) / .9), 1.4)) * (1 - .9 * ease(t, 142.6, 143.5)), chips = .25 + .75 * ease(t, bets - .4, bets + 1.6);
+    bmElephantEntry(X, Z, t, s, 30 + i * 1.3, 'chips', { id: 'playa:wars:' + i, dir: 1, grow, chips, walk: .9 + .3 * grow, flip: fl }, list); }
 }
 
 // ---------- costumed riders ----------
@@ -213,22 +279,76 @@ function bmRider(x, y, k, d, sp, t, c, alpha) {
   g.restore();
 }
 function bmRiderShadow(X, Z, c, t) { const top = 1.95 + (c.bike === 'tall' ? 1 : 0); shadowOf([[X - .9, 0, Z], [X + .9, 0, Z], [X - .35, top, Z], [X + .3, top, Z]], t); if (c.flag) shadowStick(X - .66, 0, c.flag.h, Z, .06, t); if (c.para) shadowOf([[X - .7, top + .9, Z], [X + .9, top + .9, Z], [X, top + 1.3, Z]], t); }
-function bmRiderEntry(X, Z, d, sp, t, c, list, fadeNear) {
-  const p = P(X, 0, Z); if (p[2] < 1.2 || p[0] < -400 || p[0] > W + 400) return; const a = fadeNear === false ? 1 : bmFade(p); if (a <= 0) return;
+function bmRiderEntry(X, Z, d, sp, t, c, list, fadeNear, id) {
+  const p = P(X, 0, Z); if (p[2] < 1.2 || p[0] < -400 || p[0] > W + 400) return; const a = 1; // draft 11: no near-lens fade; riders pass the lens by moving (fadeNear is kept for the callers)
+  if (id) ACT.note(id, X, Z, .8, { h: c.bike === 'tall' ? 2.9 : 1.95, a, group: 'rider' });
   list.push({ z: p[2], draw: () => { const q = P(X, 0, Z); bmRider(q[0], q[1], kAt(q), d, sp, t, c, a); }, shadow: () => bmRiderShadow(X, Z, c, t) });
 }
-// traffic: riders crossing all day on lanes behind the car (and two in front), wrapped relative to the car far off-screen
-const BM_LANES = [8, 11.5, 15, 19, 23.5, 28, 33, 39, -19, -24];
-const BM_BIKES = [...Array(22)].map((_, i) => { const R = mulberry(4000 + i * 17), v = (R() < .5 ? -1 : 1) * (2.3 + R() * 2.4); return { Z: BM_LANES[i % BM_LANES.length] + R() * 2, v, off: R() * 240, c: bmCostume(500 + i * 31), i }; });
+// traffic: riders crossing all day on lanes behind the car (and a few in front), wrapped relative to the car far off-screen.
+// Draft 11: every rider has a lane of its own (1.6 m apart, behind the Instrument People's file at z 10.5 and its road
+// elephants, or out in front), swings round anything bigger it meets (bmObs) and round the riders already placed, and
+// never blinks: a lap whose wrap the camera could see is skipped whole, and the rules that clear the foreground (the
+// quiet windows, night) take a rider away only once it has ridden out of shot, and bring it back the same way.
+const BM_LANES = [8, 11.5, 15, 19, 23.5, 28, 33, 39, -19, -24]; // draft 10's lanes (kept for anything that reads them)
+const BM_FRONT = [8, 9, 18, 19], BM_LANE11 = (i) => { const f = BM_FRONT.indexOf(i); if (f >= 0) return -19 - f * 2; let k = 0; for (let j = 0; j < i; j++) if (BM_FRONT.indexOf(j) < 0) k++; return 17.5 + k * 1.6; };
+const BM_BIKES = [...Array(22)].map((_, i) => { const R = mulberry(4000 + i * 17), v = (R() < .5 ? -1 : 1) * (2.3 + R() * 2.4); R(); return { Z: BM_LANE11(i), v, off: R() * 240, c: bmCostume(500 + i * 31), i }; });
+const BM_QUIET = [[84, 99], [127, 135.5], [155.5, 171]]; // keep the foreground clear for the poor person and the cops
+const bmRiderAt = (b) => (s, rel) => { if (rel == null) rel = ((((b.v * s + b.off) % 240) + 240) % 240) - 120; return [carX(clamp(s, 14, 238)) + rel, b.Z, 0]; };
+// hidden from the first moment after a that the body is out of shot until the last moment before b that it is (b >= 269.5: for good)
+function bmOffDuring(key, t, a, b, pos, r, h) { if (t < a) return false; const ga = bmGone(key + '>', a, pos, r, h); if (t < ga) return false; if (b >= 269.5) return true; const bb = bmBorn(key + '<', b, pos, r, h); return bb < ga || t <= bb; }
+function bmRiderOff(b, t) { const at = bmRiderAt(b), k = 'rider' + b.i;
+  if (b.Z < 0) { for (const [a, e] of BM_QUIET) if (t > a && bmOffDuring(k + 'q' + a, t, a, e, at, .8, 2.9)) return true; if (bmOffDuring(k + 'n', t, 200, 270, at, .8, 2.9)) return true; }
+  if (b.i % 2 && bmOffDuring(k + 'n2', t, 205, 270, at, .8, 2.9)) return true;
+  const n = Math.floor((b.v * t + b.off) / 240); if (bmLapAnts(b, n)) return true; return !bmLapOK('rider:' + b.i, n, b.off, b.v, 240, at, .8, 2.9); }
+// the ballot-ant column (scenes.js) is a file across the whole road (and the spin whirl, BM_ZONES) at x 163-167 from 117 to about 158: a rider lap that
+// would ride through it then is skipped whole (its two ends are out of shot), so riders never cut through the file
+const BM_ANTQ = new Map();
+// [t0, t1, x0, x1]: the ant file (scenes.js) and the spin whirl's spiral of riders as it opens out (scenes.js, 189-200)
+const BM_ZONES = [[115, 160, 160.5, 169.5], [189, 200.5, 222, 338]];
+function bmLapAnts(b, n) { const k = b.i + ':' + n; if (BM_ANTQ.has(k)) return BM_ANTQ.get(k); if (b.Z < -16) { BM_ANTQ.set(k, false); return false; }
+  const ta = ((b.v > 0 ? n : n + 1) * 240 - b.off) / b.v, tb = ((b.v > 0 ? n + 1 : n) * 240 - b.off) / b.v; let hit = false;
+  for (const [z0, z1, xa, xb] of BM_ZONES) for (let s = Math.max(ta, z0); s <= Math.min(tb, z1) && !hit; s += .2) { const X = bmRiderAt(b)(s)[0]; if (X > xa && X < xb) hit = true; }
+  BM_ANTQ.set(k, hit); return hit; }
 function bmTraffic(t, list) {
-  const cx = carX(clamp(t, 14, 238)), quiet = (t > 84 && t < 99) || (t > 127 && t < 135.5) || (t > 155.5 && t < 171); // keep the foreground clear for the poor person and the cops
-  for (const b of BM_BIKES) { if (b.Z < 0 && (quiet || t > 200)) continue; if (t > 205 && b.i % 2) continue;
-    const rel = ((((b.v * t + b.off) % 240) + 240) % 240) - 120, vw = b.v + (t > 14 && t < 200 ? 1.6 : 0); bmRiderEntry(cx + rel, b.Z, Math.sign(vw) || 1, Math.abs(vw) * t, t, b.c, list); }
+  const cx = carX(clamp(t, 14, 238)), obs = bmObs(t), placed = [];
+  for (const b of BM_BIKES) { if (bmRiderOff(b, t)) continue;
+    const rel = ((((b.v * t + b.off) % 240) + 240) % 240) - 120, vw = b.v + (t > 14 && t < 200 ? 1.6 : 0), X = cx + rel; let Z = bmAvoid(X, b.Z, .8, obs.concat(placed)); if (obs.some((o) => Math.hypot(o.X - X, o.Z - Z) < (o.r + .8) * .95)) Z = bmAvoid(X, b.Z, .8, obs); // the bigger bodies win over the riders already placed
+    placed.push({ X, Z, r: .8 }); bmRiderEntry(X, Z, Math.sign(vw) || 1, Math.abs(vw) * t, t, b.c, list, undefined, 'playa:rider:' + b.i); }
 }
-// a costumed flock crossing in front of the camera in the first instrumental (it replaces draft 2's foreground block)
+// everything bigger than a rider that a rider steers round this frame: the board, the Instrument People's file, the
+// elephants on the road and in the wars, the parade cars, the octopus, the drum circle and the art
+const BM_TABLE_R = 6; // the table car with its end chairs, from its centre
+// draft 11 merge: the other builders' bodies at time t, read from their own ACT.note calls. Their scene hooks are run
+// into a scratch list with the actor registry switched on for the call (nothing they push is drawn), then the
+// registry is put back exactly as it was. One sample per frame (kept for the last t only). Skips the burn crowd
+// (bBurn parts it) and anything of ours.
+let BM_FOR = { t: NaN, L: [] };
+function bmForeign(t) {
+  if (BM_FOR.t === t) return BM_FOR.L; const on = ACT.on, keep = ACT.list; ACT.on = true; ACT.list = [];
+  const junk = [], call = (f) => { try { if (typeof f === 'function') f(t, junk); } catch (e) { } };
+  call(typeof clockCar !== 'undefined' && clockCar); call(typeof giantChess !== 'undefined' && giantChess); call(typeof installsInto !== 'undefined' && installsInto);
+  call(typeof scenesInto !== 'undefined' && scenesInto); call(typeof artcarsInto !== 'undefined' && artcarsInto); call(typeof artpiecesInto !== 'undefined' && artpiecesInto); call(typeof burnInto !== 'undefined' && burnInto);
+  const L = ACT.list.filter((a) => !/^playa:|^burn:crowd/.test(a.id) && a.a > .02).map((a) => ({ X: a.X, Z: a.Z, r: a.r, id: a.id }));
+  ACT.on = on; ACT.list = keep; BM_FOR = { t, L }; return L; }
+function bmObs(t) {
+  const L = bmStatic().slice(); L.push({ X: carX(t), Z: carZ(t), r: BM_TABLE_R });
+  if (t < 203 && typeof IP_OFF !== 'undefined') for (const k in IP_OFF) L.push({ X: carX(t) + IP_OFF[k], Z: IP_ZW, r: .3 });
+  BM_ROAD.forEach((e, i) => { const q = bmRoadPos(e, i, t); if (q) L.push({ X: q[0], Z: q[1], r: 2.2 * e.s }); });
+  for (let i = 0; i < 5; i++) { const q = bmWarsPos(i, t); if (q) L.push({ X: q[0], Z: q[1], r: 2.2 * (1.05 + (i % 3) * .1) }); }
+  BM_PARADE.forEach((e, i) => { const q = bmParadePos(i, t); if (q) L.push({ X: q[0], Z: q[1], r: q[2] }); });
+  const st = octPose(t); if (st) L.push({ X: st.X, Z: st.Z, r: 5.5 });
+  if (t >= bmDrumT0()) L.push({ X: DRUM.x, Z: DRUM.z, r: DRUM.r + .5 });
+  if (typeof extrasEach === 'function') extrasEach(t, (e) => { if (e.alpha == null || e.alpha > .02) L.push({ X: e.X, Z: e.Z, r: .3, id: e.id }); }); // burn.js's Rangers and the poor woman
+  if (typeof MAN !== 'undefined') L.push({ X: MAN.x, Z: MAN.z, r: 12.5 }); // the Man's base (burn.js notes it from theMan, which draws directly)
+  return L.concat(bmForeign(t)); }
+// a costumed flock crossing in front of the camera in the first instrumental (it replaces draft 2's foreground block).
+// Draft 11: between the board's far seats and the Instrument People (z 5.4-8.3, it was 7-10.2, through the file), and
+// it rides in from and out to wherever no camera sees it.
 const BM_FLOCK = [...Array(8)].map((_, i) => ({ dx: -i * 2.6 - (i % 2) * .9, dz: (i % 3) * 1.6, c: bmCostume(9100 + i * 7, { bike: ['tall', 'plain', 'fish', 'plain', 'clock', 'plain', 'snail', 'plain'][i], para: i % 2 ? null : BM_PARAS[i % 6], flag: i % 2 ? { h: 4 + (i % 3) * .5, col: ['#e8b23a', '#d8452f', '#2f6fb5', '#f6efe0'][i % 4], col2: '#1c1a1e' } : null }) }));
-function bmFlockInto(t, list) { const s = 63.5, e = 75; if (t < s || t > e) return; const cx = carX(t);
-  for (const f of BM_FLOCK) { const X = cx - 26 + (t - s) * 3.6 + f.dx, Z = 7 + f.dz; bmRiderEntry(X, Z, 1, (1.6 + 3.6) * t, t, f.c, list); } }
+const bmFlockAt = (f) => (s) => [carX(s) - 26 + (s - 63.5) * 3.6 + f.dx, 5.4 + f.dz * .9, 0];
+function bmFlockInto(t, list) { if (t < 40 || t > 110) return;
+  BM_FLOCK.forEach((f, i) => { const at = bmFlockAt(f); if (t < bmBorn('flock' + i, 63.5, at, .8, 2.9) || t > bmGone('flock' + i + 'e', 75, at, .8, 2.9)) return;
+    const [X, Z] = at(t); bmRiderEntry(X, Z, 1, (1.6 + 3.6) * t, t, f.c, list, undefined, 'playa:flock:' + i); }); }
 
 
 // Bob's note on draft 2 (1:05): the first sax lick comes in with a rider who is playing it. No hands on the bars.
@@ -265,13 +385,19 @@ function bmNote(x, y, s, flag) { // a black quaver at a screen point, s px per m
 // of centre for the lick, then pulls ahead and out to the right.
 function bmSaxPos(t) {
   const c = camAt(t), fw = [Math.sin(c.yaw), Math.cos(c.yaw)], rt = [Math.cos(c.yaw), -Math.sin(c.yaw)], D = 2.8, half = D * (W / 2) / c.f;
-  const u = t - SAX_IN, lat = u < 1.6 ? lerp(-half - .9, -half * .3, smooth((u + .6) / 2.2)) : u < 6.5 ? -half * .3 + (u - 1.6) * .08 : -half * .3 + 4.9 * .08 + (u - 6.5) * 1.6 * ((u - 6.5) / 3 + .5);
-  return [c.x + fw[0] * D + rt[0] * lat, c.z + fw[1] * D + rt[1] * lat];
+  const u = t - SAX_IN, lat = u < 1.6 ? lerp(-half - .9, -half * .3, smooth((u + .6) / 2.2)) : u < 6.5 ? -half * .3 + (u - 1.6) * .08 : -half * .3 + 4.9 * .08 + (u - 6.5) * (.8 + 3.6 * (u - 6.5)); // draft 11: he pulls out right sooner and faster, clear before the drone comes down to the seat line
+  const X = c.x + fw[0] * D + rt[0] * lat, Z = c.z + fw[1] * D + rt[1] * lat;
+  // draft 11: he stays in a world lane at least 1 m outside the seats' reach. In the car's frame his distance from the
+  // centreline is held at 4.4 m or more on the camera's side while he is alongside the table (it eases off past the ends).
+  const X0 = carX(t), Z0 = carZ(t), a = yaw(t), cs = Math.cos(a), sn = Math.sin(a), dX = X - X0, dZ = Z - Z0, lx = dX * cs + dZ * sn, lz = -dX * sn + dZ * cs;
+  const side = Math.sign(-(c.x - X0) * sn + (c.z - Z0) * cs) || -1, w = Math.cos(Math.PI / 2 * clamp((Math.abs(lx) - 5.6) / 4)) ** 2, lz2 = side * Math.max(side * lz, 4.4 * w);
+  return [X0 + lx * cs - lz2 * sn, Z0 + lx * sn + lz2 * cs];
 }
+const bmSaxAt = (s) => { const q = bmSaxPos(s); return [q[0], q[1], 0]; };
 function bmSaxInto(t, list) {
-  if (t < SAX_IN - .6 || t > SAX_IN + 9.5) return;
+  if (t < SAX_IN - 20 || t > SAX_IN + 30 || t < bmBorn('sax', SAX_IN - .6, bmSaxAt, .8, 2.2, 20) || t > bmGone('saxe', SAX_IN + 9.5, bmSaxAt, .8, 2.2, 20)) return;
   const [X, Z] = bmSaxPos(t);
-  bmRiderEntry(X, Z, 1, (t - SAX_IN) * 4 + 40, t, BM_SAX, list, false);
+  bmRiderEntry(X, Z, 1, (t - SAX_IN) * 4 + 40, t, BM_SAX, list, false, 'playa:sax');
 }
 function bmSaxFront(t) { // over the car layer (render.js front hook)
   const l = []; bmSaxInto(t, l); for (const o of l) { o.shadow(); o.draw(); }
@@ -364,12 +490,20 @@ const BM_CAR_SIZE = { drawers: [4.2, 7.8], phone: [3.8, 5.5], bus: [5.2, 6.8], s
 // the parades: one per instrumental, each car on a lane behind the table, entering and leaving off-screen.
 // [kind, lane Z, enter time, offset from the car at entry, speed relative to the car, leave time]
 const BM_PARADE = [
-  ['drawers', 15, 59.4, 36, -4.4, 75.5, 1.6], ['phone', 19, 61.6, 38, -4.4, 77, 1.7], ['bus', 14, 63.8, 40, -4.4, 79, 1.5],
-  ['swan', 15, 116.9, -34, 6.2, 126.5, 1.3], ['drawers', 20, 117.6, -42, 6.2, 127, 1.2], ['bus', 24, 118.3, -48, 6.2, 128, 1.2],
+  ['drawers', 18, 59.4, 36, -4.4, 75.5, 1.6], ['phone', 25, 61.6, 38, -4.4, 77, 1.7], ['bus', 18, 63.8, 40, -4.4, 79, 1.5],
+  ['swan', 27, 116.9, -34, 6.2, 126.5, 1.3], ['drawers', 34, 117.6, -42, 6.2, 127, 1.2], ['bus', 39, 118.3, -48, 6.2, 128, 1.2], // draft 11 merge: beyond the head of the ballot-ant file as each crosses x 165
 ];
+// draft 11: the parade lanes are out behind the Instrument People's file and the road elephants (z 18-28, they were 14-24),
+// each car swings out round the playa's art and installations on their far side, and it drives on in and out of shot
+// round its window (no near-lens fade).
+const bmParadeAt = (i) => (s) => { const [kind, Z, t0, r0, vr] = BM_PARADE[i]; return [carX(s) + r0 + vr * (s - t0), Z, 0]; };
+function bmParadePos(i, t) { const [kind, Z0, t0, , , t1, sc] = BM_PARADE[i], sz = BM_CAR_SIZE[kind].map((v) => v * sc), at = bmParadeAt(i);
+  if (t < t0 - 40 || t > t1 + 40 || t < bmBorn('parade' + i, t0, at, sz[0], sz[1], 40) || t > bmGone('parade' + i + 'e', t1, at, sz[0], sz[1], 40)) return null;
+  const X = at(t)[0], fo = bmForeign(t).filter((o) => !/^scenes:ant/.test(o.id)).map((o) => ({ X: o.X, Z: o.Z, r: o.r, side: 1 }));
+  return [X, bmAvoid(X, Z0, sz[0], bmStatic().map((o) => ({ X: o.X, Z: o.Z, r: o.r, side: 1 })).concat(fo)), sz[0]]; }
 function bmParadeInto(t, list) {
-  BM_PARADE.forEach(([kind, Z, t0, r0, vr, t1, sc], i) => { if (t < t0 || t > t1) return; const X = carX(t) + r0 + vr * (t - t0), vw = 1.6 + vr, p = P(X, 0, Z), sz = BM_CAR_SIZE[kind].map((v) => v * sc); if (p[2] < 2) return; const k = kAt(p); if (p[0] < -sz[0] * k * 1.5 - 300 || p[0] > W + sz[0] * k * 1.5 + 300) return;
-    const d = Math.sign(vw) || 1, a = bmFade(p);
+  BM_PARADE.forEach(([kind, Z0, t0, r0, vr, t1, sc], i) => { const q = bmParadePos(i, t); if (!q) return; const X = q[0], Z = q[1], vw = 1.6 + vr, p = P(X, 0, Z), sz = BM_CAR_SIZE[kind].map((v) => v * sc); if (p[2] < 2) return; const k = kAt(p); if (p[0] < -sz[0] * k * 1.5 - 300 || p[0] > W + sz[0] * k * 1.5 + 300) return;
+    const d = Math.sign(vw) || 1, a = 1; ACT.note('playa:parade:' + i, X, Z, sz[0], { h: sz[1], a, group: 'artcar' });
     list.push({ z: p[2], draw: () => { g.save(); g.globalAlpha = a; bmArtCar(kind, p[0], p[1], k, d, t, Math.abs(vw) * t / sc, i, sc); g.restore(); }, shadow: () => shadowOf([[X - sz[0], 0, Z], [X + sz[0], 0, Z], [X - sz[0] * .8, sz[1] * .6, Z], [X + sz[0] * .8, sz[1] * .55, Z]], t) }); });
 }
 
@@ -377,10 +511,12 @@ function bmParadeInto(t, list) {
 // on foot, a bowl held out: she walks up to the end of the table, holds the bowl up to the end seat and walks
 // with the table; on "unfair" she stops, the board rolls on, and her bowl turns over: empty.
 function bmPoorInto(t, list) {
-  const poor = wt(17, 'poor'), share = wt(17, 'share'), unfair = wt(18, 'unfair'), s = L_(16).s - .6, e = L_(19).s + 1.6; if (t < s || t > e) return;
+  const poor = wt(17, 'poor'), share = wt(17, 'share'), unfair = wt(18, 'unfair'), s = L_(16).s - .6, e = L_(19).s + 1.6; if (t < s - 30 || t > e + 30) return;
+  const poorAt = (u) => { const tt = Math.min(u, unfair + .15); return [carX(tt) + lerp(11, 6.15, ease(tt, s, poor - .05)), -3, 0]; }; // draft 11: in and out where no camera sees
+  if (t < bmBorn('poor', s, poorAt, .3, 1.8, 30) || t > bmGone('poore', e, poorAt, .3, 1.8, 30)) return;
   const stop = unfair + .15, tt = Math.min(t, stop), rel = lerp(11, 6.15, ease(tt, s, poor - .05)), X = carX(tt) + rel, Z = -3.0;
   const walking = t < poor ? 1 : t < stop ? .55 : 0, phase = t * 5.2, ask = ease(t, poor - .3, poor + .25), more = ease(t, share - .2, share + .3), drop = ease(t, unfair + .35, unfair + 1.5), tip = ease(t, unfair - .05, unfair + .45), turn = t > stop + .5 ? 1 : -1;
-  const p = P(X, 0, Z); if (p[2] < 1.5) return;
+  const p = P(X, 0, Z); if (p[2] < 1.5) return; ACT.note('playa:poor', X, Z, .3, { h: 1.8, group: 'scene' });
   list.push({ z: p[2], draw: () => { const q = P(X, 0, Z), k = kAt(q); bmBegin(q[0], q[1], k, turn); const lx = -turn, det = k > 14;
     const st = Math.sin(phase) * .2 * walking, coat = '#7d6248', coatD = '#4e3c2c';
     for (const [sgn, col] of [[-1, '#3a2e26'], [1, '#55453a']]) { const hip = [0, .88], foot = [sgn * st + .02, .02], kn = bmJoint(hip, foot, .45, .45, 1, 0); bmLine([hip, kn, foot], .12, col); bmOval(foot[0] + .06, .04, .1, .045, '#2a201a'); }
@@ -444,29 +580,32 @@ function bmPawn(x, y, k, t, i, o) { // front view, about 3.9 m to the top of the
   g.restore();
 }
 function bmCopsInto(t, list) {
-  const s = L_(28).s, cop = wt(28, 'cop'), paid = wt(28, 'paid'), pv = wt(29, 'perverse'), r30 = L_(30).s, end = r30 + 1.2; if (t < s - .2 || t > end) return; const n = 7;
-  for (let i = 0; i < n; i++) { const land = s + .3 + i * ((cop - .2 - s - .3) / (n - 1)), dt = t - land; if (dt < -.55) continue;
+  const s = L_(28).s, cop = wt(28, 'cop'), paid = wt(28, 'paid'), pv = wt(29, 'perverse'), r30 = L_(30).s, end = r30 + 1.2; if (t < s - 1 || t > end) return; const n = 7;
+  for (let i = 0; i < n; i++) { const land = s + .3 + i * ((cop - .2 - s - .3) / (n - 1)), dt = t - land; if (dt < -1.05) continue; // draft 11: they fall in from 33 m up, above every frame (same fall, begun higher)
     const ue = clamp((t - (r30 - .45 + i * .05)) / .8), Y = (dt < 0 ? 9 * (dt / .55) * (dt / .55) : 0) + 26 * ue * ue, sq = dt >= 0 ? Math.max(0, Math.sin(clamp(dt / .35) * Math.PI)) * (1 - clamp(dt / .35)) * 2 : 0;
     const rel = -6.3 + i * 2.1, Z = 7 + (i % 2) * .6, X = carX(t) + rel, fl = ease(t, pv - .05 + i * .06, pv + .45 + i * .06) + 1.4 * ue * ue;
     const cl = paid + i * .1, pay = clamp((t - cl - .02) / .25), baton = ease(t, cop - .15, cop + .1) * (1 - ease(t, cop + .5, cop + .9));
     if (Y > 40) continue; // gone up out of every frame
+    ACT.note('playa:cop:' + i, X, Z, .85, { h: 3.9, group: 'scene' });
     list.push({ z: P(X, 0, Z)[2], draw: () => { const q = P(X, Y, Z), k = kAt(q); if (q[2] < 1) return; bmPawn(q[0], q[1], k, t, i, { sq, flip: fl, pay, baton });
         if (sq > 0 && Y === 0) { const pg = P(X, 0, Z), kg = kAt(pg); g.fillStyle = `rgba(220,190,140,${.4 * sq})`; g.beginPath(); g.ellipse(pg[0], pg[1], 1.4 * kg * (1 + clamp(dt / .35)), .3 * kg, 0, 0, TAU); g.fill(); }
         // the coin: flipped up from the far edge of the table, it drops into the slot on its beat
         const u = clamp((t - cl + .5) / .5); if (u > 0 && u < 1) { const a = PL(clamp(rel - .3, -TL + .4, TL - .4), TOP + .1, 1.2), b = P(X, COP.slot + .03, Z - .05), kk = kAt(b);
           const cx = lerp(a[0], b[0], u), cy = lerp(a[1], b[1], u) - Math.sin(u * Math.PI) * 1.4 * kk, spin = Math.abs(Math.cos(t * 14 + i)); g.fillStyle = '#f0c84a'; g.beginPath(); g.ellipse(cx, cy, Math.max(2.5, .15 * kk * (.35 + .65 * spin)), Math.max(2.5, .15 * kk), 0, 0, TAU); g.fill(); g.strokeStyle = '#a87a1a'; g.lineWidth = Math.max(1, .03 * kk); g.stroke(); } },
       shadow: () => { if (Y < 1) shadowOf([[X - .8, 0, Z], [X + .8, 0, Z], [X - .4, 3.6, Z], [X + .4, 3.6, Z]], t); } }); }
-  bmRangersInto(t, list);
+  // draft 11: the Rangers and the giver are called from playaInto now, so the cops' window no longer cuts them off
 }
 // the Rangers and the burner with the cooler: they pass him right on "paid" (one drink each, .42 s apart)
 const BM_RANGERS = [0, 1].map((j) => bmCostume(7710 + j * 7, { coat: ['#c2ab80', '#8a7650'], fur: false, spots: false, stripes: false, legs: j ? '#4e3c2a' : '#5a4632', skin: j ? '#e8cfae' : '#8a5a3c', hat: 'ranger', para: null, flag: null, frame: j ? '#2f3a2a' : '#5a4632', bike: 'plain', ranger: true, trim: '#3a2c20' }));
 const BM_GIVER = bmCostume(7733, { coat: ['#47c1ba', '#1d6f6a'], fur: true, trim: '#f4b0cf', hat: 'fluff', legs: '#e8d4b4' });
 function bmRangersInto(t, list) {
-  const paid = wt(28, 'paid'); if (t < paid - 5 || t > paid + 4) return; const Xg = carX(paid) + 9.5, Zg = 9.3;
-  let held = 2;
-  [0, 1].forEach((j) => { const tj = paid + .05 + j * .42, u = t - tj, dx = 3 * u - 1.76 * Math.tanh(u / .8), X = Xg + .3 - dx, Z = 10.5 + j * .9; if (u > 0) held--;
-    bmRiderEntry(X, Z, -1, 60 + dx, t, Object.assign({}, BM_RANGERS[j], { drink: u > 0 ? 1 : 0 }), list); });
-  const p = P(Xg, 0, Zg); if (p[2] < 1.5) return; const reach = Math.max(0, 1 - Math.abs(t - (paid + .26)) / .55);
+  const paid = wt(28, 'paid'); if (t < paid - 40 || t > paid + 40) return; const Xg = carX(paid) + 9.5, Zg = 11.4; // draft 11: he and the Rangers are behind the Instrument People's file (z 10.5), not through it
+  let held = 2; const rAt = (j) => (s) => { const u = s - (paid + .05 + j * .42); return [Xg + .3 - (3 * u - 1.76 * Math.tanh(u / .8)), 12.6 + j * 1.7, 0]; };
+  [0, 1].forEach((j) => { const tj = paid + .05 + j * .42, u = t - tj, dx = 3 * u - 1.76 * Math.tanh(u / .8), X = Xg + .3 - dx, Z = 12.6 + j * 1.7; if (u > 0) held--;
+    if (t < bmBorn('ranger' + j, paid - 5, rAt(j), .8, 2.2, 35) || t > bmGone('ranger' + j + 'e', paid + 4, rAt(j), .8, 2.2, 35)) return; // draft 11: they ride in and out of shot
+    bmRiderEntry(X, Z, -1, 60 + dx, t, Object.assign({}, BM_RANGERS[j], { drink: u > 0 ? 1 : 0 }), list, undefined, 'playa:ranger:' + j); });
+  const gAt = () => [Xg, Zg, 0]; if (t < bmBorn('giver', paid - 5, gAt, .9, 1.9, 35) || t > bmGone('givere', paid + 4, gAt, .9, 1.9, 35)) return; // he is there before the shot finds him and after it leaves
+  const p = P(Xg, 0, Zg); if (p[2] < 1.5) return; ACT.note('playa:giver', Xg, Zg, .45, { h: 1.9, group: 'scene' }); const reach = Math.max(0, 1 - Math.abs(t - (paid + .26)) / .55);
   list.push({ z: p[2], draw: () => { const q = P(Xg, 0, Zg), k = kAt(q); if (k < 1) return; bmGiver(q[0], q[1], k, t, held, reach); }, shadow: () => shadowOf([[Xg - .5, 0, Zg], [Xg + .9, 0, Zg], [Xg, 1.9, Zg]], t) });
 }
 function bmGiver(x, y, k, t, held, reach) { // a burner in a fur coat by a cooler, holding cold cans up to the riders going by
@@ -489,6 +628,7 @@ const BM_CAMPS = []; { const R = mulberry(78); let last = ''; for (let X = -100;
 // a sparse near ring between the road and the camps, kept clear of the other builders' installations
 { const R = mulberry(91), skip = [[-24, 8], [52, 84], [88, 152], [210, 262]], NEAR = ['parked', 'sail', 'flags', 'umbrella', 'parked', 'chairs', 'speakers'];
   for (let X = -80; X < 420; X += 26 + R() * 22) { if (skip.some(([a, b]) => X > a && X < b)) continue; BM_CAMPS.push({ X, Z: 31 + R() * 8, kind: NEAR[Math.floor(R() * NEAR.length)], r: 2.4 + R() * 1.6, col: ['#d8452f', '#2f6fb5', '#e8b23a', '#7a3c8c', '#3c8c5a'][Math.floor(R() * 5)], col2: '#f2ede0', seed: Math.floor(R() * 1e4) }); } }
+BM_CAMPS[19].X = 232; BM_CAMPS[19].Z = 58; // draft 11 merge: the chairs piece moves clear of the monolith, the ring its visitors walk, and the burn ring cars (artpieces.js)
 function bmCamp(c, t, p) {
   const k = kAt(p), r = c.r; bmBegin(p[0], p[1], k, 1); const det = k > 5;
   if (c.kind === 'dome') { // geodesic: a shaded half disc, triangulated struts, a few fabric panels
@@ -541,15 +681,20 @@ const BM_CAMP_H = { dome: 1.6, tent: .9, yurt: 1.2, sail: 1.2, chairs: 1.5, drip
 // parked props now live in Black Rock City (brcGround / brcAir below).
 const BM_PLAYA_ART = { chairs: 1, drip: 1, eye: 1, arch: 1 };
 function bmCampsInto(t, list) {
-  for (const c of BM_CAMPS) { if (!BM_PLAYA_ART[c.kind]) continue; const p = P(c.X, 0, c.Z); if (p[2] < 2) continue; const k = kAt(p); if (p[0] < -c.r * k * 2 - 400 || p[0] > W + c.r * k * 2 + 400) continue;
-    list.push({ z: p[2], draw: () => bmCamp(c, t, p), shadow: () => shadowOf([[c.X - c.r, 0, c.Z], [c.X + c.r, 0, c.Z], [c.X, c.r * (BM_CAMP_H[c.kind] || 1), c.Z]], t) }); }
+  BM_CAMPS.forEach((c, ci) => { if (!BM_PLAYA_ART[c.kind]) return; const p = P(c.X, 0, c.Z); if (p[2] < 2) return; const k = kAt(p); if (p[0] < -c.r * k * 2 - 400 || p[0] > W + c.r * k * 2 + 400) return;
+    ACT.note('playa:art:' + ci, c.X, c.Z, BM_ART_R[c.kind] * c.r, { h: c.r * (BM_CAMP_H[c.kind] || 1), group: 'install' });
+    list.push({ z: p[2], draw: () => bmCamp(c, t, p), shadow: () => shadowOf([[c.X - c.r, 0, c.Z], [c.X + c.r, 0, c.Z], [c.X, c.r * (BM_CAMP_H[c.kind] || 1), c.Z]], t) }); });
 }
+const BM_ART_R = { chairs: .3, drip: .25, eye: .45, arch: 1 }; // footprint radius as a share of c.r, for the actor registry
 
 // ---------- installations the car passes, each tied to a line ----------
 // "patent": a giant light bulb on crutches switches on; "time": a soft hourglass runs upward;
 // "unfair": a seesaw, a chip tower on one end and an empty bowl on the other, slams down; a soft ballot box at dawn.
 function bmInstall(kind, t, cue, X, Z, list) {
   const p = P(X, 0, Z); if (p[2] < 2 || p[0] < -900 || p[0] > W + 900) return;
+  // the hourglass slumps flat into the playa (a Dali melt, seen happening, as Robin asked of the speakerphone): it keeps
+  // its footprint and loses its height, so it is noted at full scale with its height going down
+  ACT.note('playa:inst:' + kind, X, Z, BM_INST_R[kind], { h: { bulb: 5.6, hourglass: 5.4, seesaw: 2.5, ballot: 4.3 }[kind] * (kind === 'hourglass' ? 1 - .88 * ease(t, 128.6, 130.2) : 1), group: 'install' });
   list.push({ z: p[2], draw: () => { const k = kAt(p); bmBegin(p[0], p[1], k, 1); const det = k > 5;
     if (kind === 'bulb') { const on = ease(t, cue - .1, cue + .25) * (1 - ease(t, cue + 4, cue + 6)) * (.85 + .15 * Math.sin(t * 9)), cy = 4.1, r = 1.5;
       bmCrutch([-2.2, 0], [-1.0, 3.0], .09); bmCrutch([2.1, 0], [1.0, 3.1], .09);
@@ -558,7 +703,7 @@ function bmInstall(kind, t, cue, X, Z, list) {
       bmPath([[-.7, 2.7], [-1.2, 3.2]]); g.beginPath(); g.moveTo(-.7, -2.7); g.quadraticCurveTo(-1.0, -3.2, -r, -cy); g.arc(0, -cy, r, Math.PI, TAU); g.quadraticCurveTo(1.0, -3.2, .7, -2.7); g.closePath(); g.fillStyle = on > 0 ? `rgba(255,${226 - 20 * (1 - on)},${150 + 60 * (1 - on)},${.55 + .3 * on})` : 'rgba(214,226,232,.55)'; g.fill(); g.strokeStyle = 'rgba(120,130,140,.6)'; g.lineWidth = bmW(.05); g.stroke();
       bmLine([[-.3, 2.8], [-.25, 3.8], [-.1, 4.2], [.1, 3.9], [.25, 4.2], [.3, 3.8], [.3, 2.8]], .05, on > 0 ? '#fff0b0' : '#6a5a40'); if (det) bmLine([[-.9, 4.8], [-.5, 5.3]], .12, 'rgba(255,255,255,.6)');
       const seal = ease(t, cue, cue + .4); if (seal > 0) { g.save(); g.translate(.75, -1.95); g.scale(seal, seal); rosette(0, 0, .28); g.restore(); }
-    } else if (kind === 'hourglass') { const run = ease(t, cue - .1, cue + .4), m = .25 + .2 * Math.sin(t * .5), h = 5.4, w = 1.5, melt = ease(t, 128.6, 130.2); if (melt > 0) g.scale(1 + .5 * melt, 1 - melt); // Dali: once its line is sung the hourglass slumps into the ground
+    } else if (kind === 'hourglass') { const run = ease(t, cue - .1, cue + .4), m = .25 + .2 * Math.sin(t * .5), h = 5.4, w = 1.5, melt = .88 * ease(t, 128.6, 130.2); if (melt > 0) g.scale(1 + .5 * melt, 1 - melt); // Dali: once its line is sung the hourglass slumps into the ground
       bmFill([[-w - .2, 0], [w + .2, 0], [w + .2, .35], [-w - .2, .35]], '#6a4426'); bmFill([[-w - .3, h], [w + .1, h - .1 - m * .4], [w + .1, h + .25 - m * .4], [-w - .3, h + .3]], '#6a4426');
       for (const dx of [-w, w]) bmLine([[dx, .35], [dx + (dx > 0 ? -m * .2 : 0), h]], .12, '#8a5a2c');
       g.beginPath(); g.moveTo(-w * .9, -.35); g.quadraticCurveTo(-w * .2, -h * .45, -.12, -h * .5); g.quadraticCurveTo(-w * .2, -h * .55, -w * .9 + m * .2, -(h - .05)); g.lineTo(w * .85 - m * .3, -(h - .1 - m * .4)); g.quadraticCurveTo(w * .2, -h * .55, .12, -h * .5); g.quadraticCurveTo(w * .2, -h * .45, w * .9, -.35); g.closePath(); g.fillStyle = 'rgba(214,226,232,.5)'; g.fill(); g.strokeStyle = 'rgba(120,130,140,.6)'; g.lineWidth = bmW(.05); g.stroke();
@@ -578,11 +723,13 @@ function bmInstall(kind, t, cue, X, Z, list) {
     }
     g.restore(); }, shadow: () => kind === 'seesaw' ? shadowOf([[X - 4.2, 0, Z], [X + 4.2, 0, Z], [X - 4.2, 2.2, Z], [X + 4.2, 1.6, Z]], t) : shadowStick(X, 0, 5.5, Z, 3, t) });
 }
+const BM_INST_R = { bulb: 2.2, hourglass: 1.7, seesaw: 4.2, ballot: 2.4 };
+function bmInstallPlaces() { const pat = wt(8, 'patent'), tim = wt(15, 'time'); return [['ballot', carX(9) + 13, 17, 0], ['bulb', carX(pat) - 7, 21, pat], ['hourglass', carX(tim) + 9, 15, tim]]; }
 function bmInstallsInto(t, list) {
-  const pat = wt(8, 'patent'), tim = wt(15, 'time'), unf = wt(18, 'unfair');
-  bmInstall('ballot', t, 0, carX(9) + 13, 17, list);
-  bmInstall('bulb', t, pat, carX(pat) - 7, 21, list);
-  if (t < 130.3) bmInstall('hourglass', t, tim, carX(tim) + 9, 15, list); // it melts into the playa by 130.2 (draft 9), clear of the bridge's seesaw
+  const [b, u, h] = bmInstallPlaces();
+  bmInstall('ballot', t, b[3], b[1], b[2], list);
+  bmInstall('bulb', t, u[3], u[1], u[2], list);
+  bmInstall('hourglass', t, h[3], h[1], h[2], list); // it melts into a low puddle by 130.2 (draft 9) and stays there (draft 11: it no longer vanishes), clear of the bridge's seesaw
   // draft 9: the seesaw on "unfair" is table.js's now; the playa one is gone so the two don't duplicate
 }
 
@@ -996,6 +1143,8 @@ function bike(b, t) { return null; }
 // the board parks, the whole night. The camera does not go looking for them; it just passes them now and then.
 const DRUM = { x: 282, z: 21, r: 2.6, t0: 205, beat: .6, phase: 206.47 }; // draft 9: in the Fire Conclave's ring, 30 m from the Man toward the board (it was beside the board). 100 bpm from the hand-drum onsets (no_vocals stem)
 const DRUMMERS = [...Array(11)].map((_, i) => ({ a: i / 11 * TAU + .2, c: bmCostume(7300 + i * 13), i }));
+// draft 11: the circle sits down while no camera sees its place (the latest such moment at or before 205: the aerial)
+function bmDrumT0() { return bmBorn('drum', DRUM.t0, () => [DRUM.x, DRUM.z, 0], DRUM.r + .5, 1.3, 60); }
 function drummer(d, t) {
   const X = DRUM.x + Math.cos(d.a) * DRUM.r, Z = DRUM.z + Math.sin(d.a) * DRUM.r, p = P(X, 0, Z); if (p[2] < 1.2 || p[0] < -200 || p[0] > W + 200) return null;
   return { z: p[2], draw: () => { const q = P(X, 0, Z), k = kAt(q); if (k < 1.2) return; const x = q[0], y = q[1], c = d.c;
@@ -1018,17 +1167,17 @@ function drummer(d, t) {
 // after the night grade: the lantern pool and the drummers again at part strength, so they read at night (render.js)
 function drumGlow(t) {
   octGlow(t); // the octopus art car's fire (draft 8) rides on this after-the-grade call
-  if (t < DRUM.t0) return; const n = ease(t, 199, 216); if (n <= 0) return; const pit = P(DRUM.x, 0, DRUM.z); if (pit[2] < 1.2) return; const k = kAt(pit); if (k < 1.2) return;
+  if (t < bmDrumT0()) return; const n = ease(t, 199, 216); if (n <= 0) return; const pit = P(DRUM.x, 0, DRUM.z); if (pit[2] < 1.2) return; const k = kAt(pit); if (k < 1.2) return;
   g.save(); g.globalCompositeOperation = 'lighter'; const R = 4 * k, rg = g.createRadialGradient(pit[0], pit[1] - .3 * k, 0, pit[0], pit[1] - .3 * k, R); rg.addColorStop(0, `rgba(255,190,110,${.5 * n})`); rg.addColorStop(1, 'rgba(255,140,60,0)'); g.fillStyle = rg; g.fillRect(pit[0] - R, pit[1] - R, 2 * R, 2 * R); g.restore();
   const l = []; for (const d of DRUMMERS) { const o = drummer(d, t); if (o) l.push(o); } l.sort((a, b) => b.z - a.z);
   g.save(); g.globalAlpha = .62 * n; for (const o of l) o.draw(); g.restore();
 }
 function drumCircleInto(t, list) {
-  if (t < DRUM.t0) return;
+  if (t < bmDrumT0()) return;
   const pit = P(DRUM.x, 0, DRUM.z); if (pit[2] > 1.2) list.push({ z: pit[2] + .01, draw: () => { const k = kAt(pit); if (k < 1.2) return; // a lantern on a rug in the middle
     g.fillStyle = '#8c2a28'; g.beginPath(); g.ellipse(pit[0], pit[1], 1.2 * k, .35 * k, 0, 0, TAU); g.fill(); g.fillStyle = '#e8b23a'; g.fillRect(pit[0] - .08 * k, pit[1] - .35 * k, .16 * k, .3 * k);
     const rg = g.createRadialGradient(pit[0], pit[1] - .2 * k, 0, pit[0], pit[1] - .2 * k, 1.6 * k); rg.addColorStop(0, 'rgba(255,214,140,.55)'); rg.addColorStop(1, 'rgba(255,170,80,0)'); g.fillStyle = rg; g.fillRect(pit[0] - 1.6 * k, pit[1] - 1.8 * k, 3.2 * k, 3.2 * k); } });
-  for (const d of DRUMMERS) { const o = drummer(d, t); if (o) list.push(o); }
+  for (const d of DRUMMERS) { const o = drummer(d, t); if (o) { list.push(o); ACT.note('playa:drum:' + d.i, DRUM.x + Math.cos(d.a) * DRUM.r, DRUM.z + Math.sin(d.a) * DRUM.r, .35, { h: 1.2, group: 'scene' }); } }
 }
 
 // ---------- the fire-breathing octopus art car (Robin's notes on draft 7) ----------
@@ -1084,15 +1233,18 @@ function octNight(t) { // the night path: {X, Z, hx, hz, sp (metres driven, for 
   const P0 = [OCT.park.X, OCT.park.Z], th00 = Math.atan2(OCT.park.hz, OCT.park.hx); if (t < OCT_N.t0) return { X: P0[0], Z: P0[1], hx: OCT.park.hx, hz: OCT.park.hz, sp: 0, mv: false };
   const dx = OCT_N.P1[0] - P0[0], dz = OCT_N.P1[1] - P0[1], L = Math.hypot(dx, dz), th0 = Math.atan2(dz, dx);
   if (t < OCT_N.t1) { const u = smooth((t - OCT_N.t0) / (OCT_N.t1 - OCT_N.t0)), th = octAng(th00, th0, smooth(u * 4)); return { X: P0[0] + dx * u, Z: P0[1] + dz * u, hx: Math.cos(th), hz: Math.sin(th), sp: L * u, mv: true }; }
-  const v = (s) => s < 213 ? .45 * smooth((s - OCT_N.t1) / (213 - OCT_N.t1)) : s < OCT_N.turn ? .45 : .45 + 2.15 * smooth((s - OCT_N.turn) / 3.5);
+  const v = (s) => (1 - smooth((s - 255) / 3)) * (s < 213 ? .45 * smooth((s - OCT_N.t1) / (213 - OCT_N.t1)) : s < OCT_N.turn ? .45 : .45 + 2.15 * smooth((s - OCT_N.turn) / 3.5)); // draft 11 merge: it rolls to a stop by 258 and stays lit to the black
   const th = (s) => s < 213 ? octAng(th0, Math.PI, smooth((s - OCT_N.t1) / (213 - OCT_N.t1))) : s < OCT_N.turn ? Math.PI : lerp(Math.PI, .55, smooth((s - OCT_N.turn) / 5)); // the turn goes through +z: away from the lens
   let X = OCT_N.P1[0], Z = OCT_N.P1[1], sp = L; const dt = .05;
   for (let s = OCT_N.t1; s < t; s += dt) { const h = Math.min(dt, t - s), m = s + h / 2, a = th(m), d = v(m) * h; X += Math.cos(a) * d; Z += Math.sin(a) * d; sp += d; }
   const a = th(t); return { X, Z, hx: Math.cos(a), hz: Math.sin(a), sp, mv: v(t) > .2 };
 }
 function octPose(t) { // where it is and which way it is heading, or null
-  if (t >= OCT.day.t0 && t <= OCT.day.t1) return { X: OCT.day.X, Z: OCT.day.Z0 - OCT.day.v * (t - OCT.day.tr), hx: 0, hz: -1, sp: OCT.day.v * t, a: 1, night: 0, mv: true };
-  if (t >= OCT.park.t0) { const a = 1 - ease(t, 258, 263); if (a <= .01) return null; const n = octNight(t); return { X: n.X, Z: n.Z, hx: n.hx, hz: n.hz, sp: n.sp, mv: n.mv, a, night: typeof nightAmt === 'function' ? nightAmt(t) : 0 }; }
+  // draft 11: by day it drives on in and out of shot round its window; at the end it drives off along its night path
+  // until no camera sees it (no fade), or on to the black
+  const dayAt = (s) => { const Z = OCT.day.Z0 - OCT.day.v * (s - OCT.day.tr); return [bmAvoid(Z, OCT.day.X, 5.5, bmStatic().map((o) => ({ X: o.Z, Z: o.X, r: o.r }))), Z, 0]; }; // it swings round the playa's art on its way across
+  if (t > OCT.day.t0 - 30 && t < OCT.day.t1 + 30 && t >= bmBorn('octday', OCT.day.t0, dayAt, 5.5, 8.5, 30) && t <= bmGone('octdaye', OCT.day.t1, dayAt, 5.5, 8.5, 30)) return { X: dayAt(t)[0], Z: dayAt(t)[1], hx: 0, hz: -1, sp: OCT.day.v * t, a: 1, night: 0, mv: true };
+  if (t >= OCT.park.t0) { const a = 1; const n = octNight(t); return { X: n.X, Z: n.Z, hx: n.hx, hz: n.hz, sp: n.sp, mv: n.mv, a, night: typeof nightAmt === 'function' ? nightAmt(t) : 0 }; }
   return null;
 }
 // ---------- drawing (local metres, y up, front = +x; bmBegin flips it) ----------
@@ -1247,6 +1399,7 @@ function octMaskB(t) { if (OCT_F.t !== t || !OCT_F.box) return; const [x0, y0, w
   octMg.clearRect(0, 0, W, H); octMg.putImageData(M, x0, y0); OCT_F.masked = true; }
 function octInto(t, list) {
   OCT_F.t = NaN; const st = octPose(t); if (!st) return; const p = P(st.X, 0, st.Z); if (p[2] < 3) return; const k = kAt(p); if (k < .6 || p[0] < -12 * k || p[0] > W + 12 * k) return;
+  ACT.note('playa:oct', st.X, st.Z, 5.5, { h: 8.5, a: st.a, group: 'artcar' });
   const ah = P(st.X + st.hx, 0, st.Z + st.hz), d = Math.sign(ah[0] - p[0]) || -1, vx = st.X - C.x, vz = st.Z - C.z, sq = Math.max(.42, Math.abs(st.hx * vz - st.hz * vx) / (Math.hypot(vx, vz) || 1));
   list.push({ z: p[2], draw: () => { const arms = octDraw(st, t, p, k, d, sq); OCT_F.t = t; OCT_F.st = st; OCT_F.geo = { p, k, d, sq, arms }; OCT_F.masked = false; octMaskA(k, p); },
     shadow: () => shadowOf([[st.X - st.hx * 5.5, 0, st.Z - st.hz * 5.5], [st.X + st.hx * 5.5, 0, st.Z + st.hz * 5.5], [st.X - 1.4, 5.5, st.Z], [st.X + 1.4, 5.5, st.Z], [st.X, 8.2, st.Z]], t) });
@@ -1272,6 +1425,6 @@ function octGlow(t) { // after the grade: the bursts, the warm light they throw 
 
 function playaInto(t, list) {
   brcInto(t, list); bmCampsInto(t, list); bmInstallsInto(t, list); bmElephantsInto(t, list); bmWarsInto(t, list);
-  bmTraffic(t, list); bmFlockInto(t, list); bmParadeInto(t, list); bmPoorInto(t, list); bmCopsInto(t, list); drumCircleInto(t, list); octInto(t, list);
+  bmTraffic(t, list); bmFlockInto(t, list); bmParadeInto(t, list); bmPoorInto(t, list); bmCopsInto(t, list); bmRangersInto(t, list); drumCircleInto(t, list); octInto(t, list);
 }
 function playaFront(t) { bmSaxFront(t); } // render.js front hook: things that pass between the drone and the car

@@ -29,19 +29,31 @@ function fireLight(t) { // screen position of the fire and how strong its light 
   if (m.p[2] < 1 || fx < -400 || fx > W + 400) { fx = W * .56; fy = H * .55; }
   return { fx, fy, f: clamp(b / .75) };
 }
+// the playa point under a screen pixel (the inverse of P on the ground plane), for the actor check: he walks a fixed
+// screen line, so this says where on the playa he and his piano stand in the current framing
+function bobGround(sx, sy) {
+  const x = (sx - W / 2) / C.f, y = -(sy - H / 2) / C.f, dy = y * CP - SP, dz = y * SP + CP;
+  let dx = x, dzw = dz; if (C.sy) { dx = x * C.cy + dz * C.sy; dzw = -x * C.sy + dz * C.cy; }
+  if (dy > -1e-4) return null; const l = -C.y / dy; return [C.x + dx * l, C.z + dzw * l];
+}
 function bobWalk(t) {
   if (typeof rangerTorchPool === 'function') rangerTorchPool(t); // burn.js: the Rangers' torchlight on the board, over the car layer
   const cfg = bobEndCfg(); if (!LITTLE_BOB.active(cfg, t)) return;
   const k = cfg.h / 330, sx = LITTLE_BOB.xAt(cfg, t), { fx, fy, f } = fireLight(t);
+  // the actor check: he, the piano and the Junos on their ropes are one body, from his front foot (+20) to the last Juno (-500)
+  if (ACT.on) { const q0 = bobGround(sx + 20 * k, cfg.y), q1 = bobGround(sx - 500 * k, cfg.y);
+    if (q0 && q1) ACT.note('bob:little-bob', (q0[0] + q1[0]) / 2, (q0[1] + q1[1]) / 2, Math.hypot(q0[0] - q1[0], q0[1] - q1[1]) / 2, { h: 1.7, group: 'bob' }); }
   const bx0 = Math.max(0, Math.floor(sx - 560 * k)), bx1 = Math.min(W, Math.ceil(sx + 90 * k)), by0 = Math.max(0, Math.floor(cfg.y - 360 * k)), by1 = H;
   if (bx1 <= bx0) return; const bw = bx1 - bx0, bh = by1 - by0, cy = cfg.y - 170 * k;
   cfg.grade = (kg) => {
-    // 1. his long shadow, thrown toward the camera and away from the fire, laid on the playa under him. Draft 9 (Dali,
-    // dream scale, the answer to "little big guy"): as he comes up to the embers it swings round under him and stretches
-    // back across the playa toward the heap, as long as the Man was tall, holds through the hat lift, then shrinks back.
+    // 1. his long shadow, thrown toward the camera and away from the fire, laid on the playa under him (the piano's and the
+    // Junos' with it: they are cut from the same layer). Draft 9 (Dali, dream scale, the answer to "little big guy"): as he
+    // comes up to the embers it stretches, as long as the Man was tall, holds through the hat lift, then shrinks back.
+    // Draft 11 (audit pass 4): it stretches AWAY from the heap, down the playa toward us, never back across it toward the
+    // fire (a fire behind him cannot throw his shadow at itself).
     const sy = .5, sxs = clamp((sx - fx) / 700, -1.3, 1.3) * sy, y0 = cfg.y + 2, mg = manGeom(), gy = mg.p[2] > 1 ? Math.min(mg.p[1], y0 - 120) : y0 - 300, hb = cfg.h;
     const sw = ease(t, BOB_END.stop - 1.5, BOB_END.stop + .1) * (1 - ease(t, BOB_END.lift + 1.3, BOB_END.lift + 3.3)), q = .8;
-    const hx = lerp(sxs, q * (fx - sx) / hb, sw), hy = lerp(sy, q * (gy - y0) / hb, sw);
+    const hx = lerp(sxs, clamp(q * (sx - fx) / hb, -1.3, 1.3), sw), hy = lerp(sy, Math.min(1.1, q * (y0 - gy) / hb), sw);
     bsg.setTransform(1, 0, 0, 1, 0, 0); bsg.globalCompositeOperation = 'source-over'; bsg.clearRect(bx0, by0, bw, bh); bsg.drawImage(kg.canvas, bx0, by0, bw, bh, bx0, by0, bw, bh);
     bsg.globalCompositeOperation = 'source-in'; bsg.fillStyle = 'rgb(22,10,28)'; bsg.fillRect(bx0, by0, bw, bh);
     g.save(); g.setTransform(1, 0, -hx, -hy, hx * y0, y0 * (1 + hy)); g.globalAlpha = .28 + .3 * f; g.filter = 'blur(2px)'; // a point at height h above his feet lands at (x + hx h, y0 + hy h)

@@ -67,7 +67,19 @@ const IP_W0 = (kind) => [IP_V1[kind][0] - 5.2, 6.4]; // where they wait while th
 // vote 4: a row in front of the fire, two left and three right of the Man in the vote-4 frame (camera.js b1, 249.47);
 // far enough in front of the drone's push to the Man's feet (it stops at z 17) that it never reaches them
 const IP_V4 = { LENS: [301.9, 25], MIC: [304.7, 25], CAMERA: [311.2, 25], RADIO: [313.9, 25], RECORDER: [316.6, 25] };
-const IP_SIT = [251.0, 251.7], IP_GONE = [254.8, 256.2]; // they sit down for the fall (a real burn crowd sits), then go with the crowd
+const IP_SIT = [251.0, 251.7]; // they sit down for the fall (a real burn crowd sits)
+// draft 11 (Robin: no blinking out): after the fall they stand up and walk off, the lens and the mic out past the left
+// edge, the press camera, the radio and the recorder past the right (draft 10 dissolved them in place, IP_GONE). Each
+// exit point is worked out once from the camera at the end of the walk, so they clear the frame whatever the flight.
+const IP_STAND = [254.4, 254.95], IP_WALK0 = 254.75, IP_OUT = 257.9; // up, off by IP_OUT, then on out of sight
+let IP_EXIT = null;
+function ipExits() {
+  if (IP_EXIT) return IP_EXIT; const c = camAt(IP_OUT), fw = [Math.sin(c.yaw), Math.cos(c.yaw)], rt = [Math.cos(c.yaw), -Math.sin(c.yaw)], half = (W / 2) / c.f; IP_EXIT = {};
+  for (const kind of IP_KINDS) { const [sx, sz] = IP_V4[kind], side = IP_LR.indexOf(kind) < 2 ? -1 : 1, dx = sx - c.x, dz = sz - c.z, d = dx * fw[0] + dz * fw[1], lat = dx * rt[0] + dz * rt[1];
+    const dOut = d - 1.2 - [0, 1.8, 0, 1.6, 3.2][IP_LR.indexOf(kind)], lOut = side * Math.max(dOut * half + 1.3, Math.abs(lat) + 2); // a step nearer the lens as they go (staggered in depth so neighbours never converge), 1.3 m past the edge (arms and head), always outward
+    const ex = c.x + fw[0] * dOut + rt[0] * lOut, ez = c.z + fw[1] * dOut + rt[1] * lOut, L = Math.hypot(ex - sx, ez - sz) || 1;
+    IP_EXIT[kind] = { dir: [(ex - sx) / L, (ez - sz) / L], v: Math.max(1.5, L / (IP_OUT - IP_WALK0 - .45)), L, lat }; }
+  return IP_EXIT; }
 function ipOwnerAt(kind, t) {
   const off = IP_OFF[kind], v1 = IP_V1[kind], w0 = IP_W0(kind);
   const r3 = ease(t, 170.5, 177) * (1 - ease(t, 181.5, 190)); // refrain 3: they step ahead and close up, so the empty-collar row stands beside the big press on "news" (between two eggs as seen from the hole)
@@ -76,12 +88,14 @@ function ipOwnerAt(kind, t) {
   let X = lerp(lerp(carX(t) + off, w0[0], a), v1[0], b), Z = lerp(lerp(IP_ZW, w0[1], a), v1[1], b);
   if (t < 241) return [X, Z, 0];
   const v4 = IP_V4[kind], c = ease(t, 241.0 + IP_LR.indexOf(kind) * .1, 248.6);
-  return [lerp(X, v4[0], c), lerp(Z, v4[1], c), ease(t, IP_GONE[0], IP_GONE[1])];
+  if (t < IP_WALK0) return [lerp(X, v4[0], c), lerp(Z, v4[1], c), 0];
+  const ex = ipExits()[kind], u = t - IP_WALK0, acc = .9, run = u < acc ? ex.v * u * u / (2 * acc) : ex.v * (u - acc / 2); // they pick up pace over 0.9 s, then keep going
+  return [v4[0] + ex.dir[0] * run, v4[1] + ex.dir[1] * run, 0];
 }
 function ipOwner(kind, t) {
   const a = ipOwnerAt(kind, t); if (t < 170 || (t > 191 && t < 200)) return { X: a[0], Z: a[1], mv: 1, fade: 0 };
   const p = ipOwnerAt(kind, t - .06), q = ipOwnerAt(kind, t + .06), v = Math.hypot(q[0] - p[0], q[1] - p[1]) / .12;
-  return { X: a[0], Z: a[1], mv: clamp(v / 1.4, 0, 1.3), fade: a[2] };
+  return { X: a[0], Z: a[1], mv: clamp(v / 1.4, 0, 1.3), fade: 0 };
 }
 
 // ---------- the five heads (drawn in metres: origin at the collar, y up is negative) ----------
@@ -239,7 +253,7 @@ function ipArms(kind, t, st) {
     h = L(L(rest, card, raise1), up1, headUp); h = L(h, rest, lower1); collarCard = raise1 > .5 && headUp < .05 && !st.returned; ballots = [false, headUp > .3 && lower1 < .7]; }
   else if (t < v[2] - .6) { const r = ease(t, v[1] - .4, v[1]) * (1 - ease(t, 236.6, 237.4)); h = L(rest, up1, r); ballots = [false, r > .3]; }
   else if (t < v[3] - 1) { const r = ease(t, v[2] - .4, v[2]) * (1 - ease(t, L_(37).e + .3, L_(37).e + 1)); h = L(rest, up2, r); ballots = [r > .3, r > .3]; }
-  else { const r = ease(t, v[3] - .5, v[3]) * (1 - ease(t, IP_SIT[0], IP_SIT[1])); h = L(rest, frame, r); ballots = [r > .3, r > .3]; }
+  else { const r = ease(t, v[3] - .5, v[3]) * (1 - ease(t, IP_SIT[0], IP_SIT[1])); h = L(rest, frame, r); ballots = [r > .3, r > .3]; } // seated from IP_SIT, arms down
   return { hands: h, ballots, collarCard };
 }
 
@@ -284,13 +298,23 @@ function ipMicTarget(t) {
 }
 // the LENS's crates: three, nested, beside the hat hole
 const IP_CRATE = { x: 1.0, z: .4, sizes: [.5, .8, 1.2] };
-function ipCrateDrop(j, t) { // 0 up in the air .. 1 landed, for the two bigger crates that drop over the small one
-  const at = IPT.box + j * .3; return t < at - .35 ? 0 : t < at ? ((t - at + .35) / .35) ** 2 : 1; }
+// draft 11: all three drop in from above the top of the frame (draft 10 faded the small one in, and the big two started
+// 2.6 m up, in view); each one's height is worked out once from the camera at the start of its fall
+const ipCrateAt = (j) => j ? IPT.box + j * .3 : IPT.put + .15; // when crate j lands
+const IP_CRATE_H = [];
+function ipCrateFallH(j) { if (IP_CRATE_H[j] != null) return IP_CRATE_H[j]; const T = ipCrateAt(j) - .35, keep = [C, CP, SP, CX, CZ, YAW];
+  C = camAt(T); CP = Math.cos(C.p); SP = Math.sin(C.p); CX = carX(T); CZ = carZ(T); YAW = yaw(T);
+  let h = 2.6; while (h < 80) { const q = PL(IP_CRATE.x, TOP + h, IP_CRATE.z); if (q[2] > .3 && q[1] < -40) break; h += 1; }
+  [C, CP, SP, CX, CZ, YAW] = keep; return (IP_CRATE_H[j] = h); }
+function ipCrateDrop(j, t) { // 0 up out of frame .. 1 landed
+  const at = ipCrateAt(j); return t < at - .35 ? 0 : t < at ? ((t - at + .35) / .35) ** 2 : 1; }
+const ipCrateY = (j, t) => (1 - ipCrateDrop(j, t)) * ipCrateFallH(j); // metres above where it lands
 function ipCrates(t) {
-  const t0 = IPT.put - .1, t9 = IPT.talk + 1.7; if (t < t0 || t > t9 + .7) return; const al = ease(t, t0, t0 + .25), sink = ease(t, t9, t9 + .7); // sunk into the table before the mics and the pie
+  const t0 = ipCrateAt(0) - .35, t9 = IPT.talk + 1.7; if (t < t0 || t > t9 + .7) return; const sink = ease(t, t9, t9 + .7); // sunk into the table before the mics and the pie (the top hides what is under it)
   const { x: cx, z: cz } = IP_CRATE, wood = '#cdb88e', edge = '#8f6d48';
   const face = (pts, col) => poly(pts.map((q) => PL(...q)), col, edge, Math.max(1, .012 * kAt(PL(cx, TOP, cz))));
-  const boxAt = (s, y0, hgt, open, lidA) => { const a = s / 2, x0 = cx - a, x1 = cx + a, z0 = cz - a, z1 = cz + a, y1 = y0 + hgt;
+  const boxAt = (s, yb, hgt, open, lidA) => { const a = s / 2, x0 = cx - a, x1 = cx + a, z0 = cz - a, z1 = cz + a, y1 = yb + hgt, y0 = Math.max(yb, TOP); // only the part above the table top shows
+    if (y1 <= y0 + .005) return { back: () => {}, front: () => {} };
     // seen from the camera's side: back and inner walls first when open
     const camLocal = (() => { const dx = C.x - CX, dz = C.z - CZ, c = Math.cos(-YAW), sn = Math.sin(-YAW); return [dx * c - dz * sn, dx * sn + dz * c]; })();
     const walls = [[[x0, y0, z1], [x1, y0, z1], [x1, y1, z1], [x0, y1, z1], z1, 'z', 1], [[x0, y0, z0], [x1, y0, z0], [x1, y1, z0], [x0, y1, z0], z0, 'z', -1],
@@ -301,18 +325,18 @@ function ipCrates(t) {
         if (!open) face([[x0, y1, z0], [x1, y1, z0], [x1, y1, z1], [x0, y1, z1]], '#dccaa0');
         else if (lidA != null) { const ca = Math.cos(lidA), sa = Math.sin(lidA); face([[x0, y1, z1], [x1, y1, z1], [x1, y1 + s * sa, z1 - s * ca], [x0, y1 + s * sa, z1 - s * ca]], '#d8c69c'); } } };
   };
-  g.save(); g.globalAlpha = al;
+  g.save();
   const y0 = TOP - sink * 1.3, s0 = IP_CRATE.sizes[0], lid = lerp(Math.PI * .62, 0, ease(t, IPT.box - .12, IPT.box)); // the small crate's lid slams on "box"
-  const inner = boxAt(s0, y0, s0 * .8, true, lid);
+  const yi = y0 + ipCrateY(0, t), inner = boxAt(s0, yi, s0 * .8, true, lid);
   inner.back();
   // the lens head drops in on "truth"
   const [ta, tb] = IP_TAKE.LENS;
-  if (t >= ta && lid > .25) { const c = PL(cx, y0 + .04, cz), u = clamp((t - ta) / (tb - ta)); if (c[2] > .2) {
+  if (t >= ta && lid > .25) { const c = PL(cx, yi + .04, cz), u = clamp((t - ta) / (tb - ta)); if (c[2] > .2) {
       const start = ipCollarScr('LENS', t), end = { x: c[0], y: c[1], k: kAt(c), d: c[2] }, f = u < 1 && start ? ipFly(start, end, u, 2.2, .6) : Object.assign(end, { rot: 0 });
-      g.save(); if (u >= 1) { const rim = PL(cx, y0 + s0 * .8, cz - s0 / 2); g.beginPath(); g.rect(-W, -H, 3 * W, rim[1] + H); g.clip(); }
+      g.save(); if (u >= 1) { const rim = PL(cx, Math.max(y0 + s0 * .8, TOP), cz - s0 / 2); g.beginPath(); g.rect(-W, -H, 3 * W, rim[1] + H); g.clip(); }
       ipDrawAt('LENS', f, lerp(1, .42, smooth(u)), t, ipLife('LENS', t)); g.restore(); } }
   inner.front();
-  for (let j = 1; j < 3; j++) { const d = ipCrateDrop(j, t); if (d <= 0) continue; const s = IP_CRATE.sizes[j], h = s * .8, yb = y0 + (1 - d) * 2.6 + (d >= 1 ? .03 * Math.abs(Math.sin((t - IPT.box - j * .3) * 16)) * Math.exp(-(t - IPT.box - j * .3) * 7) : 0);
+  for (let j = 1; j < 3; j++) { const d = ipCrateDrop(j, t); if (d <= 0) continue; const s = IP_CRATE.sizes[j], h = s * .8, yb = y0 + ipCrateY(j, t) + (d >= 1 ? .03 * Math.abs(Math.sin((t - IPT.box - j * .3) * 16)) * Math.exp(-(t - IPT.box - j * .3) * 7) : 0);
     const b = boxAt(s, yb, h, false); b.back(); b.front(); }
   // "talk": two strips of tape slap an X across the outer crate, the same tape as the speakerphone's
   const tp = ease(t, IPT.talk - .05, IPT.talk + .12); if (tp > 0 && ipCrateDrop(2, t) >= 1) { const s = IP_CRATE.sizes[2], a = s / 2 * .9, hh = s * .8, yt = y0 + hh + .012;
@@ -347,17 +371,19 @@ function ipSilhouette(kind, t, o, p, k, al) {
   g.restore(); IP_PAPER = null;
 }
 function ipWalker(kind, t, st) {
-  const ow = ipOwner(kind, t), p = P(ow.X, 0, ow.Z); if (p[2] < 1.2) return null; const k = kAt(p); if (k < .6) return null;
+  const ow = ipOwner(kind, t), p = P(ow.X, 0, ow.Z); if (p[2] < .4) return null; const k = kAt(p); if (k < .6) return null;
   if (p[0] < -4 * k || p[0] > W + 4 * k || p[1] < -.5 * k || p[1] > H + 4 * k) return null;
   const head = st.where === 'owner', ar = ipArms(kind, t, st);
-  const o = { mv: ow.mv, head, on: st.on, hopts: ipHeadOpts(kind, t), hands: ar && ar.hands, ballots: ar && ar.ballots, collarCard: ar && ar.collarCard, sit: ease(t, IP_SIT[0], IP_SIT[1]) };
-  const al = 1 - (ow.fade || 0), su = ipSilAmt(t);
+  const o = { mv: ow.mv, head, on: st.on, hopts: ipHeadOpts(kind, t), hands: ar && ar.hands, ballots: ar && ar.ballots, collarCard: ar && ar.collarCard, sit: ease(t, IP_SIT[0], IP_SIT[1]) * (1 - ease(t, IP_STAND[0], IP_STAND[1])) };
+  const al = 1, su = ipSilAmt(t); // a solid body: never faded (the lit body crossfades to its firelit silhouette, which is light)
   return { z: p[2], draw: () => { if (al * (1 - su) <= .01) return; g.save(); g.globalAlpha = al * (1 - su); g.translate(p[0], p[1]); g.scale(k, k); ipBody(kind, t, o); g.restore(); },
     sil: () => { if (al * su <= .01) return; ipSilhouette(kind, t, o, p, k, al * su); },
     shadow: () => shadowStick(ow.X, 0, head ? 2.75 : 1.8, ow.Z, .5, t), X: ow.X, Z: ow.Z };
 }
 function instrumentsInto(t, list) {
   const sts = ipState(t);
+  for (const st of sts) { const ow = ipOwner(st.kind, t), sit = ease(t, IP_SIT[0], IP_SIT[1]) * (1 - ease(t, IP_STAND[0], IP_STAND[1]));
+    ACT.note('instruments:ip:' + st.kind, ow.X, ow.Z, .3, { h: (st.where === 'owner' ? 2.75 : 1.8) - .74 * sit, group: 'instruments' }); }
   for (const st of sts) { const w = ipWalker(st.kind, t, st); if (!w) continue; if ((t < 218 && ipFrontNeeded(w.X, w.Z)) || t >= 241) list.push({ z: w.z, draw: () => {}, shadow: w.shadow }); else list.push(w); }
   // the recorder hops into the giant ear's drawer and sinks into it as it shuts
   const R = sts[IP_KINDS.indexOf('RECORDER')], [r0, r1] = IP_TAKE.RECORDER;
@@ -372,7 +398,7 @@ function instrumentsInto(t, list) {
     const tgt = { x: W * .42, y: 30 + D * .42, k: 120, d: 9e3 };
     const u = clamp((t - d0) / (d9 - d0)), f = a && u < 1 ? ipFly(a, tgt, u, 1.5, 1.2) : Object.assign({}, tgt, { rot: (t - d9) * .8 });
     const sl2 = slide * slide; let x = f.x, y = f.y; { const cr = Math.cos(sl2 * .5), sr = Math.sin(sl2 * .5), lx = x - W + sl2 * W * .25, ly = y + sl2 * maxY * .9; x = W + lx * cr - ly * sr; y = lx * sr + ly * cr; } // ride the drape's slide
-    const fold = smooth((u - .5) / .5), z = u > .55 ? 9e3 : f.d, al = u < .5 ? 1 : vis;
+    const fold = smooth((u - .5) / .5), z = u > .55 ? 9e3 : f.d, al = 1; void vis; // draft 11: solid, it rides the drape out of frame
     if (al > .01) list.push({ z, draw: () => { g.save(); g.globalAlpha = al; g.translate(x, y); g.rotate(f.rot + sl2 * .5); const o = ipRadioBlind(t);
       ipHead('RADIO', 0, 0, f.k, t, 0, o); if (fold > 0) { g.globalAlpha = al * .5 * fold; ipHead('RADIO', 0, 0, f.k, t, 0, Object.assign({}, o, { sil: '#5a0c12' })); } g.restore(); } }); }
 }
@@ -399,21 +425,24 @@ function instrumentsFront(t) {
   if (t >= 241) for (const st of sts) { const w = ipWalker(st.kind, t, st); if (!w) continue; const behind = carD < w.z - 2;
     items.push({ d: w.z, draw: w.draw, car: behind }); items.push({ d: w.z, draw: w.sil, car: behind, post: true }); }
   // CAMERA: into the news press; the plate comes down on it on "news" and squeezes it flat
-  { const [c0, c1] = IP_TAKE.CAMERA, end = L_(12).s + .3; if (t >= c0 && t < end) { const plateY = ipPressPlate(t), pc = PL(IP_PRESS.x, TOP + .1, IP_PRESS.z); if (pc[2] > .2) {
+  // draft 11: it stays pressed flat to the plate and goes up with the press when it lifts out (table.js newsOne's lift)
+  { const [c0, c1] = IP_TAKE.CAMERA, end = L_(12).s + .3, lift = clamp((t - (L_(12).s - .25)) / .4) ** 2 * 16; if (t >= c0 && t < end) { const plateY = ipPressPlate(t), pc = PL(IP_PRESS.x, TOP + .1 + lift, IP_PRESS.z); if (pc[2] > .2) {
     const u = clamp((t - c0) / (c1 - c0)), a = ipCollarScr('CAMERA', t), e = { x: pc[0], y: pc[1], k: kAt(pc), d: pc[2] }, f = u < 1 && a ? ipFly(a, e, u, 2.5, -.5) : Object.assign(e, { rot: 0 });
-    const al = 1 - ease(t, L_(12).s - .2, L_(12).s + .3), sq = clamp((plateY - TOP - .1) / .5);
-    items.push({ d: f.d, draw: () => { g.globalAlpha = al; if (u >= 1) { const pb = PL(IP_PRESS.x, plateY, IP_PRESS.z); g.beginPath(); g.rect(-W, pb[1], 3 * W, 2 * H); g.clip(); }
+    const sq = clamp((plateY - TOP - .1) / .5);
+    items.push({ d: f.d, draw: () => { if (u >= 1) { const pb = PL(IP_PRESS.x, plateY + lift, IP_PRESS.z); g.beginPath(); g.rect(-W, pb[1], 3 * W, 2 * H); g.clip(); }
       g.translate(f.x, f.y); g.scale(1 + .5 * (1 - sq), u >= 1 ? Math.max(.08, sq) : 1); ipDrawAt('CAMERA', { x: 0, y: 0, k: f.k, rot: f.rot }, lerp(1, .5, smooth(u)), t, ipLife('CAMERA', t), { cap: true }); } }); } } }
   // LENS: the three nested crates beside the hat hole
   if (t > IPT.put - .2 && t < IPT.talk + 2.5) items.push({ d: PL(IP_CRATE.x, TOP, IP_CRATE.z)[2], draw: () => ipCrates(t) });
   // MIC: it goes soft on "limit", then is reeled in onto the wilting booms on "questions" and dragged off with them
-  { const [m0, m1] = IP_TAKE.MIC, e9 = L_(22).e + .9; if (t >= m0 && t < e9) { const [bx, by, bz, reach] = ipMicTarget(t), tip = PL(bx, by, bz); if (tip[2] > .2 && reach > .02) {
+  { const [m0, m1] = IP_TAKE.MIC, e9 = L_(22).e + .9; if (t >= m0 && t < e9) { const [bx, by, bz, reach] = ipMicTarget(t), tip = PL(bx, by, bz); if (tip[2] > .2 && reach > 0) {
     const u = clamp((t - m0) / (m1 - m0)), a = ipCollarScr('MIC', t), e = { x: tip[0], y: tip[1], k: kAt(tip), d: tip[2] }, f = u < 1 && a ? ipFly(a, e, u, 2, .9) : Object.assign(e, { rot: .5 });
-    items.push({ d: f.d, draw: () => { g.globalAlpha = clamp(reach); ipDrawAt('MIC', f, lerp(1, .55, smooth(u)), t, 0, { droop: 1 }); } }); } } }
+    items.push({ d: f.d, draw: () => ipDrawAt('MIC', f, lerp(1, .55, smooth(u)), t, 0, { droop: 1 }) }); } } } // solid while the booms hold it (they go at L_(22).e + .9)
   // the crowns: the real five on five eggs, lit and working, from "facts" 3 to the vote; then they hop home
   for (const st of sts) { if (st.where !== 'crown' && st.where !== 'back') continue; const eg = ipEgg(st.kind, t); if (!eg) continue;
-    const pop = easeOutBack(clamp((t - IPT.facts3 - IP_LR.indexOf(st.kind) * .07) / .35));
-    if (st.where === 'crown') { if (pop <= 0) continue; items.push({ d: eg.d, draw: () => { g.translate(eg.x, eg.y); g.rotate(Math.sin(t * 1.3 + st.i) * .06); ipHead(st.kind, 0, 0, eg.k * IP_CROWN * pop, t, st.on); } }); }
+    // draft 11: each crown drops onto its egg from above the top of the frame (draft 10 grew it from nothing), a hop on landing
+    const du = (t - IPT.facts3 - IP_LR.indexOf(st.kind) * .07) / .35;
+    if (st.where === 'crown') { if (du <= 0) continue; const ch = eg.k * IP_CROWN, y0 = Math.min(eg.y, 0) - ch * 1.3 - 30, fall = clamp(du), hop = du > 1 ? .25 * ch * Math.abs(Math.sin((du - 1) * 5)) * Math.exp(-(du - 1) * 4) : 0;
+      const y = lerp(y0, eg.y, fall * fall) - hop; items.push({ d: eg.d, draw: () => { g.translate(eg.x, y); g.rotate(Math.sin(t * 1.3 + st.i) * .06); ipHead(st.kind, 0, 0, ch, t, st.on); } }); }
     else { const a = { x: eg.x, y: eg.y, k: eg.k * IP_CROWN, d: eg.d }, b = ipCollarScr(st.kind, t); if (!b) continue; const f = ipFly(a, b, st.u, 1.4, .8);
       items.push({ d: f.d, draw: () => ipDrawAt(st.kind, f, 1, t, st.on) }); } }
   if (!items.length) return;

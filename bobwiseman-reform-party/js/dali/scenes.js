@@ -16,6 +16,37 @@ const scNear = (X, Z, R) => Math.hypot(C.x - X, C.z - Z) < R; // is the drone an
 const scScreen = (p, m) => p[2] > 1 && p[0] > -m && p[0] < W + m && p[1] > -m && p[1] < H + m * 1.5;
 const scLED = ['120,220,255', '255,90,200', '140,255,120', '255,200,80', '200,120,255', '255,120,80'];
 
+// ---------- draft 11: nothing blinks, nobody passes through anybody ----------
+// Every solid body here reports itself to the actor check (ACT.note, js/dali/actors.js) on the code path that draws it.
+// A group that only lives round its moment exists over a span widened to the nearest times the drone sees none of it
+// (scSpan, worked out once from camAt, so it follows any change to the flight): it is already there when the drone
+// arrives and still there when it leaves, so nothing appears or vanishes in view. Bodies: [[X, Z, r, h], ...].
+function scOff(bodies, m = 8) { // none of them on screen at the current camera (the actor check's test, m px of margin)
+  for (const [X, Z, r, h] of bodies) { const q = P(X, h / 2, Z); if (q[2] < .3) continue; const k = C.f / q[2], rad = r * k, hh = h * k / 2;
+    if (Math.max(rad, hh) < 2) continue; if (q[0] + rad > -m && q[0] - rad < W + m && q[1] + hh > -m && q[1] - hh < H + m) return false; }
+  return true; }
+const scIn = (X, Z, r, h) => !scOff([[X, Z, r * 1.4 + .3, h * 1.3]], 40); // worth drawing (generous, so nothing is culled at the frame edge)
+const SC_SPAN = {};
+function scSpan(key, a, b, bodies, back = 40, fwd = 60) { // [A, B]: a..b widened both ways to the nearest moments none of it is seen
+  const s = SC_SPAN[key]; if (s) return s; const keep = [C, CP, SP];
+  const off = (t) => { C = camAt(t); CP = Math.cos(C.p); SP = Math.sin(C.p); return scOff(bodies(t)); };
+  let A = a, B = b; while (A > a - back && !off(A)) A -= .05; while (B < b + fwd && !off(B)) B += .05;
+  C = keep[0]; CP = keep[1]; SP = keep[2]; return (SC_SPAN[key] = [A, B]); }
+const scLive = (key, t, a, b, bodies, back, fwd) => { const [A, B] = scSpan(key, a, b, bodies, back, fwd); return t >= A && t <= B; };
+// the scene figures part for the higher bodies near them (Instrument People, the whirl cars of table.js / installs.js):
+// pushed out to clearance d, a smooth push, so a rider swerves round instead of riding through
+function scPart(X, Z, r, t, o) {
+  const obs = scObstacles(t, o); for (let it = 0; it < 2; it++) for (const [ox, oz, orad] of obs) { const dx = X - ox, dz = Z - oz, d = Math.hypot(dx, dz), need = (r + orad) / .9 + .15;
+    const L = 1.6 * need; if (d < L && d > 1e-6) { const push = need * (1 - d / L) ** 2; X += dx / d * push; Z += dz / d * push; } } // never closer than about need
+  return [X, Z]; }
+const SC_OBS = { t: NaN, list: null };
+function scObstacles(t, o) { // [[X, Z, r]] this frame: the five owners, and the whirl cars when installs.js tells us where they are
+  if (SC_OBS.t === t) return SC_OBS.list; const out = [];
+  if (typeof ipOwner === 'function') for (const k of IP_KINDS) { const w = ipOwner(k, t); out.push([w.X, w.Z, .3]); }
+  if (typeof whirlCarAt === 'function' && typeof WHIRLS !== 'undefined') WHIRLS.forEach((wh, r) => { for (let j = 0; j < wh.cars; j++) { const q = whirlCarAt(wh, r, j, t); out.push([q[0], q[1], 2.6]); } });
+  if (t > 186 && t < 206 && typeof SC_HOWL !== 'undefined') for (const m of SC_HOWL.ppl) out.push([m.X, m.Z, .3]); // the howl group stands; the spin riders go round it
+  SC_OBS.t = t; SC_OBS.list = out; return out; }
+
 // ---------- figures ----------
 // A standing costumed burner (the playa.js rider's costume: bmCostume), feet at screen (x, y), k px per metre.
 // o: view 'front' | 'back' | 'side', d (side: +1 faces right), step (walk phase, radians), bob (m), hands [[x, y], [x, y]]
@@ -101,29 +132,39 @@ const scSeg = (a, b, w, col) => { const p = P(...a), q = P(...b); if (p[2] < .3 
 // Real: the big sound camps sit on the Esplanade with their speakers facing out to the open playa (+x here), under a
 // shade-cloth canopy; at dawn the last dancers are still going and the bikes start streaming out to the open playa.
 const SC_CAMP = { x: -462, z: 30, ph: 2.443 };
-const SC_DANCE = (() => { const R = mulberry(8101), out = []; for (let i = 0; i < 30; i++) { const X = -457.5 + R() * 13, Z = 22.5 + R() * 15.5;
+const SC_DANCE = (() => { const R = mulberry(8101), out = []; for (let i = 0; i < 30; i++) { let X = -457.5 + R() * 13, Z = 22.5 + R() * 15.5;
+  for (let n = 0; n < 40 && out.some((o) => Math.hypot(o.X - X, o.Z - Z) < .95); n++) { X = -457.5 + R() * 13; Z = 22.5 + R() * 15.5; } // draft 11: at least .95 m apart
   out.push({ X, Z, c: bmCostume(8000 + i * 13), mv: i % 4, ph: R() * .4, i }); } return out; })();
 const SC_FLAGS = [[-460.6, 11.6, 7.4, '#d8452f'], [-460.8, 18.5, 6.6, '#e8b23a'], [-461, 25.2, 7.8, '#2f6fb5'], [-461, 34.8, 7.2, '#9a68dc'], [-460.8, 41.2, 6.8, '#3c8c5a'], [-460.6, 48.4, 7.6, '#f4b0cf']];
-const SC_OUT = [...Array(30)].map((_, i) => { const R = mulberry(8600 + i * 7); return { ts: -28 + i * 1.45 + R() * .8, v: 3.4 + R() * 1.4, z0: [11, 15, 45.5, 49.5, 13, 47.5][i % 6] + R(), zl: -5 + R() * 11, c: bmCostume(8600 + i * 7), i }; });
+const SC_OUT = (() => { const out = [...Array(30)].map((_, i) => { const R = mulberry(8600 + i * 7); let ts = -28 + i * 1.45 + R() * .8; if (ts > -.2 && ts < 2.8) ts += 3; // draft 11: none rides out of camp while the opening frames see the camp front
+    return { ts, v: 3.4 + R() * 1.4, z0: [11, 15, 45.5, 49.5, 13, 47.5][i % 6] + R(), zl: -5 + R() * 11, c: bmCostume(8600 + i * 7), i }; });
+  // draft 11: each one's lane out is nudged (in 0.4 m steps) until it never comes within 1.7 m of another rider
+  const at = (r, t) => { const sp = r.v * (t - r.ts); return sp < 0 || sp > 220 ? null : [SC_CAMP.x - 1 + sp, lerp(r.z0, r.zl, smooth(sp / 95))]; };
+  const clear = (r, done) => { for (let t = -30; t < 70; t += .25) { const a = at(r, t); if (!a) continue; for (const o of done) { const b = at(o, t); if (b && Math.hypot(a[0] - b[0], a[1] - b[1]) < 1.7) return false; } } return true; };
+  const done = []; for (const r of out) { const z = r.zl; for (let n = 0; n < 30 && !clear(r, done); n++) r.zl = z + (n % 2 ? -1 : 1) * .4 * Math.ceil((n + 1) / 2); done.push(r); }
+  return out; })();
+const scOutAt = (r, t) => { const s = r.v * (t - r.ts), X = SC_CAMP.x - 1 + s, Z = lerp(r.z0, r.zl, smooth(s / 95)); return { s, X, Z }; }; // s < 0: still in camp, behind the canopy
+function scCampBodies(t) { const b = [[SC_CAMP.x - 8.5, 30, 14, 5.4]]; for (const r of SC_OUT) { const o = scOutAt(r, t); if (o.s >= 0 && o.s <= 220) b.push([o.X, o.Z, .8, 1.7]); } return b; }
 function scCampInto(t, list) {
-  if (t > 17.2 || !scNear(SC_CAMP.x, SC_CAMP.z, 300)) return;
+  if (!scLive('camp', t, 0, 16.4, scCampBodies, 1, 60)) return;
   const fx = SC_CAMP.x, bt = scBeat(t, SC_CAMP.ph), pulse = Math.pow(1 - bt, 3);
   // the shade structure: a frame of poles under a silver shade-cloth roof, a scalloped valance along the front
   const p0 = P(fx - 8, 0, SC_CAMP.z); if (p0[2] > 1) list.push({ z: p0[2], draw: () => scShade(t, pulse), shadow: () => shadowOf([[fx - 15, 4.6, 17], [fx - 2, 5.2, 17], [fx - 15, 4.6, 43], [fx - 2, 5.2, 43]], t) });
   // speaker stacks facing the open playa
   for (const z of [14.6, 45.4]) { const p = P(fx - .4, 0, z); if (p[2] > 1) list.push({ z: p[2], draw: () => scStack(fx - .9, z, pulse), shadow: () => shadowOf([[fx - 1.6, 0, z - .8], [fx - .1, 0, z + .8], [fx - 1.6, 3.4, z - .8], [fx - .1, 3.4, z + .8]], t) }); } // either side of the canopy, bracketing the dance floor
   // feather flags along the frontage
-  for (const [X, Z, h, col] of SC_FLAGS) { const p = P(X, 0, Z); if (scScreen(p, 300)) list.push({ z: p[2], draw: () => scFlag(X, Z, h, col, t), shadow: () => shadowStick(X, 0, h, Z, .5, t) }); }
+  for (const [X, Z, h, col] of SC_FLAGS) { const p = P(X, 0, Z); if (p[2] > .3 && scIn(X, Z, 1.2, h)) list.push({ z: p[2], draw: () => scFlag(X, Z, h, col, t), shadow: () => shadowStick(X, 0, h, Z, .5, t) }); }
   // the last dancers, facing the speakers (we see their backs from the playa side)
-  for (const d of SC_DANCE) { const p = P(d.X, 0, d.Z); if (!scScreen(p, 100)) continue;
+  for (const d of SC_DANCE) { ACT.note('scenes:dancer:' + d.i, d.X, d.Z, .3, { h: 1.9, group: 'camp' }); if (!scIn(d.X, d.Z, .5, 2.2)) continue; const p = P(d.X, 0, d.Z);
     list.push({ z: p[2], draw: () => { const q = P(d.X, 0, d.Z), k = kAt(q), u = scBeat(t + d.ph * SC_BEAT, SC_CAMP.ph), bob = .06 * Math.abs(Math.sin(Math.PI * u)), sw = Math.sin((t - SC_CAMP.ph) / SC_BEAT * Math.PI + d.i);
       const hands = d.mv === 0 ? [[-.38 + .08 * sw, 1.9 + bob + .15 * Math.abs(sw)], [.38 + .08 * sw, 1.9 + bob + .15 * Math.abs(sw)]]           // both up, waving
         : d.mv === 1 ? [[-.25, .85 + bob], [.3, lerp(1.5, 2.15, Math.pow(1 - u, 2)) + bob]]                                                      // a fist pumping on the beat
         : d.mv === 2 ? [[-.45 + .1 * sw, 1.25 + bob], [.45 + .1 * sw, 1.25 + bob - .1 * sw]] : [[-.2 + .05 * sw, 1.15 + bob], [.2 + .05 * sw, 1.15 + bob]];
       scFig(q[0] + sw * .05 * k, q[1], k, d.c, { view: C.x > d.X ? 'back' : 'front', bob, hands, step: sw * .6, t }); }, shadow: () => scFigShadow(d.X, d.Z, t, 1.9) }); }
   // bikes streaming out of the camp gaps onto the open playa, toward the car's lane
-  for (const r of SC_OUT) { const s = r.v * (t - r.ts); if (s < 0 || s > 220) continue; const X = fx - 1 + s, Z = lerp(r.z0, r.zl, smooth(s / 95)), d = Math.sign(P(X + 1, 0, Z)[0] - P(X, 0, Z)[0]) || 1;
-    bmRiderEntry(X, Z, d, s, t, r.c, list); }
+  for (const r of SC_OUT) { const { s, X, Z } = scOutAt(r, t); if (s < 0 || s > 220) continue; ACT.note('scenes:campbike:' + r.i, X, Z, .8, { h: 1.7, group: 'camp' });
+    if (!scIn(X, Z, .9, 1.8)) continue; const d = Math.sign(P(X + 1, 0, Z)[0] - P(X, 0, Z)[0]) || 1;
+    list.push({ z: P(X, 0, Z)[2], draw: () => { const q = P(X, 0, Z); if (q[2] > .3) bmRider(q[0], q[1], kAt(q), d, s, t, r.c, 1); }, shadow: () => bmRiderShadow(X, Z, r.c, t) }); }
 }
 function scShade(t, pulse) {
   const fx = SC_CAMP.x, x0 = fx - 15, x1 = fx - 2, zs = [17, 30, 43], yb = 4.6, yf = 5.2, sag = (z) => .4 * Math.sin(((z - 17) / 13 % 1) * Math.PI);
@@ -134,7 +175,7 @@ function scShade(t, pulse) {
   for (const z of zs) for (const [x, y] of [[x0, yb], [x1, yf]]) scSeg([x, 0, z], [x, y, z], .14, '#5d5650');
   // the DJ booth under the front edge, a DJ in a fur hat behind it, string lights still on from the night
   scBox(x1 - 2.2, x1 - .8, 0, 1.15, 27.6, 32.4, ['#2a2622', '#3a342e', '#4a423a', '#2f2a26', '#2f2a26']);
-  const dj = P(x1 - 2.6, 0, 30); if (dj[2] > 1) scFig(dj[0], dj[1], kAt(dj), SC_DJ, { view: C.x > x1 - 2.6 ? 'front' : 'back', bob: .04 * pulse, hands: [[-.3, 1.15], [.32, 1.2 + .25 * pulse]], t });
+  ACT.note('scenes:dj', x1 - 2.6, 30, .3, { h: 1.9, group: 'camp' }); const dj = P(x1 - 2.6, 0, 30); if (dj[2] > .3) scFig(dj[0], dj[1], kAt(dj), SC_DJ, { view: C.x > x1 - 2.6 ? 'front' : 'back', bob: .04 * pulse, hands: [[-.3, 1.15], [.32, 1.2 + .25 * pulse]], t });
   // the roof: shade cloth in strips so it sags between the poles
   const under = C.y < yf; const cloth = under ? '#8f8e88' : '#cfcec6';
   for (let i = 0; i < 8; i++) { const za = lerp(17, 43, i / 8), zb = lerp(17, 43, (i + 1) / 8);
@@ -181,9 +222,12 @@ function scRoller(t) { // where the roller is: [s, y] on the canvas
   return [s0 + (j + .5) * bw, y0 + .3 + Math.min(1, (u - 1) * .6) * .4];
 }
 const SC_TURN = 65.0;
+function scPainterBodies() { const b = []; for (let i = 0; i < 9; i++) { const q = scPW(-4.8 + i * 1.2, 0, 0); b.push([q[0], q[2], .42, SC_PNT.y1 + .4]); } const l = scPW(SC_PNT.lad, 0, 1.15); b.push([l[0], l[2], .3, 7.2]); return b; }
 function scPainterInto(t, list) {
-  if (t < 40 || t > 112 || !scNear(SC_PNT.c[0], SC_PNT.c[1], 160)) return; const { y0, y1, w } = SC_PNT;
-  const p = P(SC_PNT.c[0], 0, SC_PNT.c[1]); if (!scScreen(p, 1600)) return;
+  if (!scLive('painter', t, 60.3, 65.9, scPainterBodies)) return; const { y0, y1, w } = SC_PNT;
+  // the flat as nine posts along it (it is thin: a rider may pass close behind it, not through it), and the painter on his ladder
+  scPainterBodies().forEach(([X, Z, r, h], i) => ACT.note(i < 9 ? 'scenes:canvas:' + i : 'scenes:painter', X, Z, r, { h, group: 'painter' }));
+  const p = P(SC_PNT.c[0], 0, SC_PNT.c[1]); if (!scIn(SC_PNT.c[0], SC_PNT.c[1], 6, 8)) return;
   list.push({ z: p[2], draw: () => scPainter(t), shadow: () => { shadowOf([scPW(-w / 2, y0, 0), scPW(w / 2, y0, 0), scPW(-w / 2, y1, 0), scPW(w / 2, y1, 0)], t);
     for (const s of [-w / 2 + .2, 0, w / 2 - .2]) { const q = scPW(s, 0, -.2); shadowStick(q[0], 0, y0, q[2], .12, t); } shadowOf([scPW(SC_PNT.lad - .5, 0, 1.3), scPW(SC_PNT.lad + .5, 0, 1.3), scPW(SC_PNT.lad, 6.3, 1.1)], t); } });
 }
@@ -224,14 +268,25 @@ function scPainter(t) {
 // stilts, four more on the ground; on "more" the whole unit is stamped out again and again in a row toward the city.
 const SC_CREW = (() => { const j = wt(9, 'jails'); return { X: carX(j) - 4, Z: 27, more: wt(9, 'more'), jail: j, ph: 84.553, n: 9, gap: 5.4 }; })();
 const scLiftH = (t) => lerp(1.2, 3.45, ease(t, 89.9, 90.85)); // the platform tops out just under the cell floor (5.6 m)
+// draft 11: on "more" the copies are stamped down out of the sky, one after another, each from above the top of the
+// frame (draft 10 grew them from nothing in place); they land with a jolt and a puff of playa dust
+const scCopyLand = (i) => SC_CREW.more + (i - 1) * .085 + .3;
+const SC_DROP = [];
+function scCopyY(i, t) { // the copy's height off the playa: up out of frame, falling, landing
+  const T = scCopyLand(i), fall = .3; if (t >= T) { const u = t - T; return u < .35 ? .22 * Math.abs(Math.sin(u * 18)) * Math.exp(-u * 9) : 0; }
+  if (SC_DROP[i] == null) { const keep = [C, CP, SP], XX = SC_CREW.X - i * SC_CREW.gap, ZZ = SC_CREW.Z + i * .35; C = camAt(T - fall); CP = Math.cos(C.p); SP = Math.sin(C.p);
+    let Y = 12; while (Y < 160) { const q = P(XX, Y, ZZ); if (q[2] > .3 && q[1] < -30) break; Y += 2; } SC_DROP[i] = Y; C = keep[0]; CP = keep[1]; SP = keep[2]; }
+  const u = clamp((t - (T - fall)) / fall); return SC_DROP[i] * (1 - u * u); }
+function scCrewBodies(t) { const { X, Z, n, gap } = SC_CREW, b = []; for (let i = 0; i <= n; i++) b.push([X - i * gap, Z + i * .35 - .85, 1.6, 8.4]); return b; }
 function scCrewInto(t, list) {
-  if (t < 30 || !scNear(SC_CREW.X, SC_CREW.Z, 170)) return; const { X, Z, n, gap, more } = SC_CREW; // the site is there all day; the lift goes up on "build"
-  for (let i = 0; i <= n; i++) { const u = i ? easeOutBack(clamp((t - more - (i - 1) * .085) / .38), 1.3) : 1; if (u <= .001) continue;
-    const XX = X - i * gap, ZZ = Z + i * .35, p = P(XX, 0, ZZ); if (!scScreen(p, 260)) continue;
-    list.push({ z: p[2], draw: () => scUnit(XX, ZZ, t, u, i), shadow: () => { shadowStick(XX, 0, 5.6 * u + 2.8, ZZ, 2.6 * u, t); shadowOf([[XX - 1, 0, ZZ - 1.6], [XX + 1, 0, ZZ - 1.6], [XX - 1, scLiftH(t) * u, ZZ - 1.6], [XX + 1, scLiftH(t) * u, ZZ - 1.6]], t); } }); }
+  if (t < 30 || !scLive('crew', t, 37, 104, scCrewBodies, 7, 60)) return; const { X, Z, n, gap, more } = SC_CREW; // the site is there all day; the lift goes up on "build"
+  for (let i = 0; i <= n; i++) { if (i && t < scCopyLand(i) - .3) continue; const dy = i ? scCopyY(i, t) : 0;
+    const XX = X - i * gap, ZZ = Z + i * .35; ACT.note('scenes:cell:' + i, XX, ZZ - .85, 1.6, { h: 8.4, group: 'crew' }); if (!scIn(XX, ZZ - .85, 1.8, 8.6 + dy * 2)) continue; const p = P(XX, 0, ZZ);
+    list.push({ z: p[2], draw: () => scUnit(XX, ZZ, t, dy, i), shadow: () => { shadowStick(XX, dy, dy + 8.4, ZZ, 2.6, t); shadowOf([[XX - 1, dy, ZZ - 1.6], [XX + 1, dy, ZZ - 1.6], [XX - 1, dy + scLiftH(t), ZZ - 1.6], [XX + 1, dy + scLiftH(t), ZZ - 1.6]], t); } });
+    if (i) { const u = (t - scCopyLand(i)) / .7; if (u > 0 && u < 1) list.push({ z: p[2] - 1.8, draw: () => scPuff(XX, ZZ - .85, u) }); } }
   // the ground crew at the first cell: two steady the stilts, one reads the plan, one points the row out toward the city
   const G = [[-1.6, -2.3, 'leg'], [1.6, -2.3, 'leg'], [-3.6, -4.6, 'plan'], [3.3, -5.2, 'point']];
-  G.forEach(([dx, dz, job], i) => { const XX = X + dx, ZZ = Z + dz, p = P(XX, 0, ZZ); if (!scScreen(p, 150)) return;
+  G.forEach(([dx, dz, job], i) => { const XX = X + dx, ZZ = Z + dz; ACT.note('scenes:crew:' + i, XX, ZZ, .3, { h: 2.1, group: 'crew' }); if (!scIn(XX, ZZ, .5, 2.4)) return; const p = P(XX, 0, ZZ);
     list.push({ z: p[2], draw: () => { const q = P(XX, 0, ZZ), k = kAt(q); scSuit(q[0], q[1], k, scCrewPose(job, t, i, C.z < ZZ)); }, shadow: () => scFigShadow(XX, ZZ, t, 2.05) }); });
 }
 function scCrewPose(job, t, i, front) {
@@ -242,15 +297,18 @@ function scCrewPose(job, t, i, front) {
   const up = [.42, 2.15 + .05 * bt], out = [-.75, 1.75];
   return { front, hat: 'hard', hands: [[-.25, .85], [lerp(up[0], out[0], mo), lerp(up[1], out[1], mo)]] };
 }
-function scUnit(X, Z, t, u, i) { // one cell on stilts, the scissor lift under it and its two bolting suits (i > 0: a stamped copy)
-  const p = P(X, 0, Z); if (p[2] < 1) return; const k = kAt(p);
-  cage(p, k * u, .8);
-  const lh = scLiftH(t) * u, bz = Z - 1.7, yel = '#e8b51e', yelD = '#b88a12', yelL = '#f4cf4a';
+function scPuff(X, Z, u) { // a ring of playa dust kicked out from under a landing copy (dust may fade)
+  const q = P(X, .2, Z); if (q[2] < 1) return; const k = kAt(q); g.fillStyle = `rgba(214,196,160,${.55 * (1 - u)})`;
+  for (let j = 0; j < 9; j++) { const a = j / 9 * TAU, r = (1.2 + 2.2 * u) * k; g.beginPath(); g.ellipse(q[0] + Math.cos(a) * r, q[1] + Math.sin(a) * r * .3, (.5 + .6 * u) * k, (.3 + .35 * u) * k, 0, 0, TAU); g.fill(); } }
+function scUnit(X, Z, t, dy, i) { // one cell on stilts, the scissor lift under it and its two bolting suits (i > 0: a stamped copy, dy m up while it drops in)
+  const p = P(X, dy, Z); if (p[2] < .3) return; const k = kAt(p);
+  cage(p, k, .8);
+  const lh = dy + scLiftH(t), bz = Z - 1.7, yel = '#e8b51e', yelD = '#b88a12', yelL = '#f4cf4a';
   // base and wheels
-  scBox(X - 1, X + 1, .15, .65 * u, bz - .5, bz + .5, [yelD, yelD, yelL, yel, yel]);
-  for (const wx of [-.75, .75]) { const w = P(X + wx, .15, bz - .52); if (w[2] > 1) { g.fillStyle = '#1c1a1e'; g.beginPath(); g.arc(w[0], w[1], Math.max(1, .15 * kAt(w)), 0, TAU); g.fill(); } }
+  scBox(X - 1, X + 1, dy + .15, dy + .65, bz - .5, bz + .5, [yelD, yelD, yelL, yel, yel]);
+  for (const wx of [-.75, .75]) { const w = P(X + wx, dy + .15, bz - .52); if (w[2] > 1) { g.fillStyle = '#1c1a1e'; g.beginPath(); g.arc(w[0], w[1], Math.max(1, .15 * kAt(w)), 0, TAU); g.fill(); } }
   // the scissor arms: three stages of crossed bars on the near face
-  const zf = C.z < bz ? bz - .45 : bz + .45, y0 = .65 * u, st = 3;
+  const zf = C.z < bz ? bz - .45 : bz + .45, y0 = dy + .65, st = 3;
   for (let s = 0; s < st; s++) { const ya = lerp(y0, lh, s / st), yb = lerp(y0, lh, (s + 1) / st); scSeg([X - .9, ya, zf], [X + .9, yb, zf], .09, '#3a3836'); scSeg([X + .9, ya, zf], [X - .9, yb, zf], .09, '#3a3836'); }
   // the platform and its railing
   scBox(X - 1.1, X + 1.1, lh, lh + .18, bz - .55, bz + .55, [yelD, yelD, yelL, yel, yel]);
@@ -258,7 +316,7 @@ function scUnit(X, Z, t, u, i) { // one cell on stilts, the scissor lift under i
   for (const [a, b] of [[-1.1, -.55], [1.1, -.55], [-1.1, .55], [1.1, .55]]) scSeg([X + a, lh + .18, bz + b], [X + a, lh + 1.05, bz + b], .05, yelD);
   // two suits on the platform, wrenches up at the cell floor; they turn the bolts on every beat, all copies in step
   const bt = scBeat(t, SC_CREW.ph), crank = Math.sin(bt * Math.PI) * .12;
-  for (const dx of [-.5, .5]) { const f = P(X + dx, lh + .18, bz), fk = kAt(f) * u, front = C.z < bz;
+  for (const dx of [-.5, .5]) { const f = P(X + dx, lh + .18, bz), fk = kAt(f), front = C.z < bz;
     scSuit(f[0], f[1], fk, { front, hat: 'hard', hands: [[dx < 0 ? -.3 : .05, 2.1 + crank], [dx < 0 ? -.05 : .3, 2.2 - crank]],
       prop: () => { const hx = dx < 0 ? -.05 : .05; bmLine([[hx, 2.2 - crank], [hx + (dx < 0 ? .25 : -.25), 2.35 + crank]], .05, '#8f949c'); } }); }
 }
@@ -266,28 +324,45 @@ function scUnit(X, Z, t, u, i) { // one cell on stilts, the scissor lift under i
 // ---------- 4. instrumental 2: the ballot ants (Dali) ----------
 // A column of burners in dark coats and head-bopper antennae carries a 4 m paper ballot overhead across the car's road.
 // From the ground it is a playa procession; from 10 m up it is ants carrying off a crumb.
-const SC_ANT = { X: 165, n: 26, gap: 1.1, v: 1.3, t0: 117, z0: 5.4, ahead: 9, carry: 8 }; // the ballot crosses z -6 at 117.8, 0 at 122.4: under the drone's 118.6-121.6 framings
+const SC_ANT = { X: 165, n: 26, gap: 1.1, v: 1.3, t0: 117, z0: 5.4, ahead: 9, carry: 8 }; // the ballot crosses z -6 at 117.8, 0 at 121.6: under the drone's 118.6-121.6 framings
 const SC_ANTC = [...Array(26)].map((_, i) => bmCostume(9300 + i * 11, { coat: [['#2a2420', '#141210'], ['#1c1a1e', '#0e0d10'], ['#3a3048', '#1e1828'], ['#4a2a1e', '#241208']][i % 4], hat: 'bopper', lens: ['#e05a3a', '#f0b030', '#e05a3a'][i % 3], legs: '#1c1a1e', para: null, flag: null, trim: '#2a2420', spots: false }));
 const scAntX = (z) => SC_ANT.X + 1.1 * Math.sin(z * .3 + 1); // the trail wanders like an ant trail
-function scAntHead(t) { return SC_ANT.z0 + SC_ANT.v * (t - SC_ANT.t0); }
+// draft 11: the column parts for the board instead of walking through its far row and the Instrument People (124.5-126).
+// As the board bears down (just after the glide) it splits: the front of the file and the ballot break into a run and
+// get across ahead of the board and the five, then walk on; the back steps back off the road and waits for the board
+// and the five to pass, then crosses after them. Speeds are keys [t, m/s] eased between, integrated to metres.
+function scF(keys, t) { // the running total of a speed eased between keys [t, v] (smoothstep), as a function of t
+  if (t <= keys[0][0]) return keys[0][1] * (t - keys[0][0]); let F = 0;
+  for (let k = 0; k < keys.length - 1; k++) { const [a, va] = keys[k], [b, vb] = keys[k + 1], D = b - a;
+    if (t < b) { const u = (t - a) / D; return F + D * (va * u + (vb - va) * (u * u * u - u * u * u * u / 2)); } F += D * (va + vb) / 2; }
+  const [a, va] = keys[keys.length - 1]; return F + va * (t - a); }
+const scRun = (keys, t0, t) => scF(keys, t) - scF(keys, t0); // metres from t0 to t
+const SC_ANT_T1 = 120.9; // the split: just as the glide over the column ends
+const SC_ANT_F = [[SC_ANT_T1, 1.3], [SC_ANT_T1 + .8, 4.2], [125.1, 4.2], [126.1, 1.3]]; // the front runs for it
+let SC_ANT_T2 = null; // the back crosses once the board's back chair is past the trail
+function scAntT2() { if (SC_ANT_T2 === null) { let t = 124; while (t < 160 && carX(t) - 5.6 < SC_ANT.X + 2.6) t += .05; SC_ANT_T2 = t + .3; } return SC_ANT_T2; }
+const scAntR = () => [[SC_ANT_T1, 1.3], [SC_ANT_T1 + .6, 0], [SC_ANT_T1 + .7, 0], [SC_ANT_T1 + 1.35, -1.4], [SC_ANT_T1 + 2, 0], [scAntT2(), 0], [scAntT2() + .8, 1.3]];
+function scAntHead(t) { return SC_ANT.z0 + scRun(SC_ANT_F, SC_ANT.t0, t); }
 function scAntBallot(t) { const z = scAntHead(t) - (SC_ANT.ahead - 1) * SC_ANT.gap - 2.5; return [scAntX(z), z]; }
+function scAntDist(t, i) { return i < SC_ANT.ahead + SC_ANT.carry ? scRun(SC_ANT_F, SC_ANT.t0, t) : scRun(scAntR(), SC_ANT.t0, t); } // metres walked (for the legs)
 function scAntPos(t, i) { // a file in front, eight carriers in pairs under the ballot, a file behind
   const { ahead, carry, gap } = SC_ANT, head = scAntHead(t);
   if (i < ahead) { const z = head - i * gap; return [scAntX(z) + .2 * Math.sin(i * 2.1), z]; }
-  const [bx, bz] = scAntBallot(t);
-  if (i < ahead + carry) { const j = i - ahead, z = bz + [-1.05, -.35, .35, 1.05][j >> 1] + .08 * Math.sin(j); return [bx + (j % 2 ? 1.25 : -1.25), z]; }
-  const z = bz - 2.5 - (i - ahead - carry) * gap; return [scAntX(z) + .2 * Math.sin(i * 2.1), z];
+  if (i < ahead + carry) { const [bx, bz] = scAntBallot(t), j = i - ahead, z = bz + [-1.2, -.4, .4, 1.2][j >> 1] + .08 * Math.sin(j); return [bx + (j % 2 ? 1.25 : -1.25), z]; }
+  const bz = SC_ANT.z0 + scRun(scAntR(), SC_ANT.t0, t) - (ahead - 1) * gap - 2.5, z = bz - 2.5 - (i - ahead - carry) * gap; return [scAntX(z) + .2 * Math.sin(i * 2.1), z];
 }
+const scAntBodies = (t) => [...Array(SC_ANT.n)].map((_, i) => { const [X, Z] = scAntPos(t, i); return [X, Z, .3, 2.2]; });
 function scAntsInto(t, list) {
-  if (t < 112 || t > 128 || !scNear(SC_ANT.X, 0, 140)) return; const { ahead, carry } = SC_ANT;
-  for (let i = 0; i < SC_ANT.n; i++) { const [X, Z] = scAntPos(t, i), p = P(X, 0, Z); if (!scScreen(p, 120)) continue; const cr = i >= ahead && i < ahead + carry;
-    list.push({ z: p[2], draw: () => { const q = P(X, 0, Z), k = kAt(q), st = (t * SC_ANT.v / .7 + i * .9) * Math.PI, d = Math.sign(P(X, 0, Z + 1)[0] - q[0]) || 1;
-      scFig(q[0], q[1], k, SC_ANTC[i], { view: 'side', d, step: st, bob: .03 * Math.abs(Math.sin(st)), hands: cr ? [[-.08, 2.1], [.14, 2.12]] : [[-.2 + .12 * Math.sin(st), .85], [.2 - .12 * Math.sin(st), .85]], t }); },
+  if (t < 100 || !scLive('ants', t, 117, scAntT2() + 21, scAntBodies, 17, 60)) return; const { ahead, carry } = SC_ANT;
+  for (let i = 0; i < SC_ANT.n; i++) { const [X, Z] = scAntPos(t, i), cr = i >= ahead && i < ahead + carry; ACT.note('scenes:ant:' + i, X, Z, .3, { h: cr ? 2.2 : 1.9, group: 'ants' });
+    if (!scIn(X, Z, .5, 2.4)) continue; const p = P(X, 0, Z), dist = scAntDist(t, i), run = clamp((scAntDist(t + .05, i) - scAntDist(t - .05, i)) / .1 / 1.3 - 1, 0, 2.3);
+    list.push({ z: p[2], draw: () => { const q = P(X, 0, Z), k = kAt(q), st = (dist / (.7 + .12 * run) + i * .9) * Math.PI, d = Math.sign(P(X, 0, Z + 1)[0] - q[0]) || 1;
+      scFig(q[0], q[1], k, SC_ANTC[i], { view: 'side', d, step: st, bob: (.03 + .03 * run) * Math.abs(Math.sin(st)), hands: cr ? [[-.08, 2.1], [.14, 2.12]] : [[-.2 + (.12 + .1 * run) * Math.sin(st), .85 + .12 * run], [.2 - (.12 + .1 * run) * Math.sin(st), .85 + .12 * run]], t }); },
       shadow: () => scFigShadow(X, Z, t, cr ? 2.15 : 1.85) }); }
   // the ballot: flat overhead, tipped a little toward a low camera, rocking with the carriers' steps
   const [cx, cz] = scAntBallot(t), rock = .06 * Math.sin(t * 4.3), dn = Math.hypot(C.x - cx, C.z - cz) || 1, dx = (C.x - cx) / dn, dz = (C.z - cz) / dn, tip = lerp(.42, .1, clamp((C.y - 3) / 6));
   const corner = (a, b) => [cx + a * 2, 2.18 + rock * a - (a * 2 * dx + b * 1.3 * dz) * tip, cz + b * 1.3]; // the far edge lifted toward a low camera
-  const p = P(cx, 0, cz); if (scScreen(p, 400)) list.push({ z: p[2] - 1.4, draw: () => scBallot(corner), shadow: () => shadowOf([[cx - 2, 2.18, cz - 1.3], [cx + 2, 2.18, cz - 1.3], [cx - 2, 2.18, cz + 1.3], [cx + 2, 2.18, cz + 1.3]], t) });
+  const p = P(cx, 0, cz); if (scIn(cx, cz, 2.4, 2.6)) list.push({ z: p[2] - 1.4, draw: () => scBallot(corner), shadow: () => shadowOf([[cx - 2, 2.18, cz - 1.3], [cx + 2, 2.18, cz - 1.3], [cx - 2, 2.18, cz + 1.3], [cx + 2, 2.18, cz + 1.3]], t) });
 }
 function scBallot(corner) {
   const q = [corner(-1, -1), corner(1, -1), corner(1, 1), corner(-1, 1)].map((c) => P(...c)); if (!ok(q)) return;
@@ -318,11 +393,20 @@ const SC_CLING = (() => { const R = mulberry(9501), out = []; // on the steep si
   for (let i = 0; i < 30; i++) { const win = i < 3, az = win ? Math.PI + (i - 1) * .5 : Math.PI + .8 + (i - 3) / 27 * (TAU - 1.6) + R() * .12, el = win ? .06 + R() * .08 : .1 + R() * .5;
     out.push({ az, el, c: bmCostume(9600 + i * 5), i }); } return out; })();
 const SC_BETTOR = bmCostume(9690, {});
+const SC_BOOK = [SC_DOME.x - 4.8, SC_DOME.z + 7.4];
+function scDomeBodies() { const b = [[SC_DOME.x, SC_DOME.z, SC_DOME.r + .4, SC_DOME.r]], [bx, bz] = SC_BOOK; b.push([bx, bz, .3, 2.4], [bx + 1.1, bz + .4, .3, 1.9], [bx - 1.2, bz + .6, .3, 1.9]); return b; }
+let SC_FAX = null; // the fighters swing on one world axis, the one most across the frame at "wars" (draft 10 picked it per frame)
+function scFightAxis() { if (!SC_FAX) { const c = camAt(wt(21, 'wars'), true); SC_FAX = Math.abs(c.cy) > .5 ? [1, 0] : [0, 1]; } return SC_FAX; }
 function scDomeInto(t, list) {
-  if (t < 130 || t > 146 || !scNear(SC_DOME.x, SC_DOME.z, 150)) return; const p = P(SC_DOME.x, 0, SC_DOME.z); if (!scScreen(p, 900)) return;
-  list.push({ z: p[2], draw: () => scDome(t), shadow: () => scDomeShadow(t) });
+  if (t < 100 || !scLive('dome', t, 137, 141.5, scDomeBodies)) return;
+  // the dome as twelve stations round its foot (the burners climb its outside; the fighters hang inside it), the two
+  // fighters, the bookie and the two burners handing him chips
+  for (let j = 0; j < 12; j++) { const a = j / 12 * TAU; ACT.note('scenes:dome:' + j, SC_DOME.x + Math.cos(a) * SC_DOME.r, SC_DOME.z + Math.sin(a) * SC_DOME.r, 1.6, { h: 3, group: 'dome' }); }
+  scFighters(t).forEach((f, j) => ACT.note('scenes:fighter:' + j, f.hip[0], f.hip[2], .3, { h: 1.8, group: 'dome' }));
+  { const [bx, bz] = SC_BOOK; ACT.note('scenes:bookie', bx, bz, .3, { h: 2.4, group: 'dome' }); ACT.note('scenes:chips:0', bx + 1.1, bz + .4, .3, { h: 1.9, group: 'dome' }); ACT.note('scenes:chips:1', bx - 1.2, bz + .6, .3, { h: 1.9, group: 'dome' }); }
+  const p = P(SC_DOME.x, 0, SC_DOME.z); if (scIn(SC_DOME.x, SC_DOME.z, SC_DOME.r + 2, SC_DOME.r + 2)) list.push({ z: p[2], draw: () => scDome(t), shadow: () => scDomeShadow(t) });
   // the bookie just outside the dome on the side the drone comes in from, a chalk slate, two burners handing him chips
-  const bx = SC_DOME.x - 4.8, bz = SC_DOME.z + 7.4, pb = P(bx, 0, bz); if (scScreen(pb, 200)) list.push({ z: pb[2], draw: () => scBookie(t, bx, bz), shadow: () => { scFigShadow(bx, bz, t, 2.4); scFigShadow(bx + 1.1, bz + .4, t); scFigShadow(bx - 1.2, bz + .6, t); } });
+  const [bx, bz] = SC_BOOK, pb = P(bx, 0, bz); if (scIn(bx, bz, 2, 2.6)) list.push({ z: pb[2], draw: () => scBookie(t, bx, bz), shadow: () => { scFigShadow(bx, bz, t, 2.4); scFigShadow(bx + 1.1, bz + .4, t); scFigShadow(bx - 1.2, bz + .6, t); } });
 }
 function scDomeShadow(t) { // the dome throws a lattice, not a blob: every strut's own shadow, and the clingers'
   const a = shadowA(t); if (a < .01) return; const sv = sunVec(t), { x: cx, z: cz, r } = SC_DOME, G = SC_DOME_GEO, col = `rgba(52,34,58,${a})`;
@@ -342,13 +426,16 @@ function scDome(t) {
   for (const [a, b] of G.E) if (!(isBack(G.pts[a]) && isBack(G.pts[b]))) strut(a, b);
   cl(false);
 }
+function scMeet(t) { const wars = wt(21, 'wars'), hit2 = wars + 4 * SC_BEAT; return Math.max(Math.exp(-(((t - wars) / .42) ** 2)), .8 * Math.exp(-(((t - hit2) / .42) ** 2))); }
+function scFighters(t) { const { x: cx, z: cz } = SC_DOME, ax = scFightAxis(), meet = scMeet(t);
+  return [-1, 1].map((s) => { const swing = Math.sin(t * 3.1 + (s > 0 ? 1.7 : 0)) * .9, off = s * lerp(2.3 + swing * .5, .55, meet), bounce = .45 * Math.sin(t * 4.2 + s) * (1 - meet * .7);
+    return { s, hip: [cx + ax[0] * off, 2.9 + bounce, cz + ax[1] * off] }; }); }
 function scFight(t) { // two suits in harnesses on bungees from the top of the dome, foam bats; they meet on "wars"
   const { x: cx, z: cz, r } = SC_DOME, wars = wt(21, 'wars'), apex = [cx, r - .15, cz], hit2 = wars + 4 * SC_BEAT;
-  const meet = Math.max(Math.exp(-(((t - wars) / .42) ** 2)), .8 * Math.exp(-(((t - hit2) / .42) ** 2)));
+  const meet = scMeet(t);
   // the dome's cross axis on screen: the fighters swing along whichever horizontal axis is most across the frame
-  const ax = Math.abs(C.cy) > .5 ? [1, 0] : [0, 1], F = [-1, 1].map((s) => { const swing = Math.sin(t * 3.1 + (s > 0 ? 1.7 : 0)) * .9, off = s * lerp(2.3 + swing * .5, .55, meet), bounce = .45 * Math.sin(t * 4.2 + s) * (1 - meet * .7);
-    return { s, hip: [cx + ax[0] * off, 2.9 + bounce, cz + ax[1] * off] }; });
-  F.forEach((f) => { f.p = P(...f.hip); }); if (F.some((f) => f.p[2] < 1)) return;
+  const ax = scFightAxis(), F = scFighters(t);
+  F.forEach((f) => { f.p = P(...f.hip); }); if (F.some((f) => f.p[2] < .3)) return;
   for (const f of F) {
     const { s, hip, p: hp } = f, k = kAt(hp), other = F.find((o) => o !== f).p, face = Math.sign(other[0] - hp[0]) || s;
     // the bungee: two cords from the top to the harness
@@ -380,25 +467,38 @@ function scBookie(t, bx, bz) { // taking bets all through the fight (a tally mar
 // ---------- 6. refrain 3 "spin": the bike-light spiral ----------
 // Bikes really do follow art cars. Forty riders with lights on their wheels trail the board, and on "spin" they swing out
 // round it in a spiral arm; inner riders lap faster, so the arm winds up like a galaxy. After the giant gavel they scatter.
-const SC_SPIN = { s: wt(34, "spin"), n: 40, v: 6.6 };
-const SC_SPINR = [...Array(40)].map((_, i) => ({ c: bmCostume(9800 + i * 3, { para: null, flag: i % 5 === 0 ? { h: 3.2, col: ['#d8452f', '#e8b23a', '#2f6fb5'][i % 3], col2: '#1c1a1e' } : null }), led: scLED[i % scLED.length], r: 6.5 + i * .42, th: Math.PI + i * .12, i }));
-function scSpinPos(t, b) { // polar round the car: from the trailing pack each rider rides off round it at the same speed, so
+const SC_SPIN = { s: wt(34, "spin"), n: 24, v: 6.6 };
+// draft 11: 24 riders in two arms (draft 10 had 40 packed .7 m apart, closer than a bike's width). Each arm's riders sit
+// 1.5 m apart in radius, so no two ever touch, and the arms skip the ring the five Instrument People stand on (10.5-11 m
+// from the car's centre at Z 10.5). They ride in from 45 m out and ride off at the end: no fade in or out.
+const SC_SPINR = [...Array(24)].map((_, i) => ({ c: bmCostume(9800 + i * 3, { para: null, flag: i % 5 === 0 ? { h: 3.2, col: ['#d8452f', '#e8b23a', '#2f6fb5'][i % 3], col2: '#1c1a1e' } : null }), led: scLED[i % scLED.length], i }));
+const scSpinRo = (j) => j === 0 ? 7.8 : 12.5 + (j - 1) * 1.5; // the ring radius rider j of an arm winds onto
+function scSpinRaw(t, b) { // polar round the car: from the trailing pack each rider rides off round it at the same speed, so
   // the inner ones lap faster and the pack winds itself into a spiral arm (no rider ever jumps or cuts across)
   const cx = carX(t), gv = (typeof gavelT === 'function' ? gavelT() : 195.02);
   const j = b.i >> 1, side = b.i % 2 ? 1 : -1, fx = side * (7.5 + j * 2.1 + 45 * (1 - ease(t, 184.5, 189))), fz = side * (2.4 + .4 * Math.sin(t * .9 + b.i)); // one file trailing the car, one riding ahead of it (they catch up with it first)
   const rf = Math.hypot(fx, fz), tf = Math.atan2(fz, fx), dt = t - (SC_SPIN.s - 3.2), ramp = 1.2;
   const sDist = dt <= 0 ? 0 : dt < ramp ? SC_SPIN.v * dt * dt / (2 * ramp) : SC_SPIN.v * (dt - ramp / 2), pull = smooth(dt / 2.4);
-  const ro = lerp(rf, 7.8 + (rf - 7.5) * .33, pull), rr = ro + Math.pow(Math.max(0, t - gv), 1.6) * 7, th = tf - sDist / ro; // the files wind into two spiral arms, never closer than the chairs
-  return [cx + Math.cos(th) * rr, Math.sin(th) * rr];
+  const ro = lerp(rf, scSpinRo(j), pull), rr = ro + Math.pow(Math.max(0, t - gv), 1.6) * 7, th = tf - sDist / ro; // the files wind into two spiral arms, never closer than the chairs
+  return scPart(cx + Math.cos(th) * rr, Math.sin(th) * rr, .8, t);
 }
-const scSpinA = (t) => ease(t, 184.5, 185.5) * (1 - ease(t, 196.2, 197.6));
+// after parting round the standing bodies, riders that got pushed together ease apart from each other (smooth, so no jump)
+const SC_SPALL = new Map();
+function scSpinAll(t) { const hit = SC_SPALL.get(t); if (hit) return hit; const ps = SC_SPINR.map((b) => scSpinRaw(t, b));
+  for (let it = 0; it < 3; it++) for (let a = 0; a < ps.length; a++) for (let c = a + 1; c < ps.length; c++) { const dx = ps[c][0] - ps[a][0], dz = ps[c][1] - ps[a][1], d = Math.hypot(dx, dz), L = 2.6;
+    if (d < L && d > 1e-6) { const push = .5 * 1.9 * (1 - d / L) ** 2; ps[a][0] -= dx / d * push; ps[a][1] -= dz / d * push; ps[c][0] += dx / d * push; ps[c][1] += dz / d * push; } }
+  if (SC_SPALL.size > 8) SC_SPALL.clear(); SC_SPALL.set(t, ps); return ps; }
+const scSpinPos = (t, b) => scSpinAll(t)[b.i];
+const scSpinA = (t) => ease(t, 184.5, 185.5) * (1 - ease(t, 196.2, 197.6)); // the wheel lights only (light may fade)
+const scSpinBodies = (t) => SC_SPINR.map((b) => { const [X, Z] = scSpinPos(t, b); return [X, Z, .8, 1.7]; });
 function scSpinInto(t, list) {
-  const a = scSpinA(t); if (a <= 0) return;
-  for (const b of SC_SPINR) { const [X, Z] = scSpinPos(t, b), [X2, Z2] = scSpinPos(t + .05, b), p = P(X, 0, Z); if (!scScreen(p, 120)) continue; const d = Math.sign(P(X2, 0, Z2)[0] - p[0]) || 1;
-    list.push({ z: p[2], draw: () => { const q = P(X, 0, Z); bmRider(q[0], q[1], kAt(q), d, t * SC_SPIN.v, t, b.c, a * bmFade(q)); }, shadow: () => bmRiderShadow(X, Z, b.c, t) }); }
+  if (t < 150 || t > 240 || !scLive('spin', t, 184.5, 197.6, scSpinBodies, 12, 30)) return;
+  for (const b of SC_SPINR) { const [X, Z] = scSpinPos(t, b), [X2, Z2] = scSpinPos(t + .05, b); ACT.note('scenes:spin:' + b.i, X, Z, .8, { h: 1.7, group: 'spin' });
+    if (!scIn(X, Z, 1, 1.8)) continue; const p = P(X, 0, Z), d = Math.sign(P(X2, 0, Z2)[0] - p[0]) || 1;
+    list.push({ z: p[2], draw: () => { const q = P(X, 0, Z); if (q[2] > .3) bmRider(q[0], q[1], kAt(q), d, t * SC_SPIN.v, t, b.c, 1); }, shadow: () => bmRiderShadow(X, Z, b.c, t) }); }
 }
 function scSpinFront(t) { // after the grade: the wheel lights and their light trails, so the spiral reads from up high
-  const a = scSpinA(t); if (a <= 0) return; g.save(); g.globalCompositeOperation = 'lighter'; g.lineCap = 'round'; g.lineJoin = 'round';
+  const a = scSpinA(t); if (a <= 0 || !scLive('spin', t, 184.5, 197.6, scSpinBodies, 12, 30)) return; g.save(); g.globalCompositeOperation = 'lighter'; g.lineCap = 'round'; g.lineJoin = 'round';
   for (const b of SC_SPINR) { const pts = []; for (let j = 0; j < 9; j++) { const [X, Z] = scSpinPos(t - j * .09, b), q = P(X, .35, Z); if (q[2] < 1) break; pts.push(q); } if (pts.length < 2 || !scScreen(pts[0], 80)) continue;
     const k = kAt(pts[0]); g.strokeStyle = `rgba(${b.led},${.32 * a})`; g.lineWidth = Math.max(1.5, .16 * k); g.beginPath(); pts.forEach((q, i) => i ? g.lineTo(q[0], q[1]) : g.moveTo(q[0], q[1])); g.stroke();
     g.fillStyle = `rgba(${b.led},${.55 * a})`; for (const off of [-.55, .55]) { g.beginPath(); g.arc(pts[0][0] + off * k * .9, pts[0][1] - .1 * k, Math.max(1.5, .2 * k), 0, TAU); g.fill(); } }
@@ -410,7 +510,7 @@ function scSpinFront(t) { // after the grade: the wheel lights and their light t
 // so low that their shadows run 11 m toward the camera, and together they draw one 22 m howling head on the playa:
 // neck at their feet, ears back, muzzle up (away from them), mouth open. The voice the board gagged comes back.
 const SC_HOWL = (() => { const sd = sunDir(198), u = [sd[0], sd[1]], v = [-u[1], u[0]], F0 = [280.5, -12.8]; // the head lies round (286, -22), down the drone's 198.9-201 golden wide
-  const ppl = [...Array(16)].map((_, j) => { const s = -3.4 + j * .45, a = .7 * Math.sin(j * 1.7); return { X: F0[0] + v[0] * s + u[0] * a, Z: F0[1] + v[1] * s + u[1] * a, c: bmCostume(9900 + j * 7), j }; });
+  const ppl = [...Array(16)].map((_, j) => { const s = -3.4 + j * .45, a = (j % 2 ? .45 : -.45) + .08 * Math.sin(j * 1.7); return { X: F0[0] + v[0] * s + u[0] * a, Z: F0[1] + v[1] * s + u[1] * a, c: bmCostume(9900 + j * 7), j }; }); // draft 11: two staggered rows, everyone at least .9 m apart
   // the head's outline in shadow coordinates: s along the shadow (m from their feet), w across it
   // a howling wolf's head, drawn as the low drone sees it down the shadows (across, up), then stretched 2.5x along the
   // shadow to undo the foreshortening: neck at their feet, ear laid back, muzzle thrown up, jaws open. 22 m long.
@@ -420,12 +520,13 @@ const SC_HOWL = (() => { const sd = sunDir(198), u = [sd[0], sd[1]], v = [-u[1],
   return { u, v, F0, ppl, head };
 })();
 const scHowlAmt = (t) => ease(t, 196.4, 197.3) * (1 - ease(t, 202.5, 203.6));
-function scHowlInto(t, list) {
-  if (t < 186 || t > 206 || !scNear(SC_HOWL.F0[0], SC_HOWL.F0[1], 200)) return; const h = scHowlAmt(t);
-  for (const m of SC_HOWL.ppl) { const p = P(m.X, 0, m.Z); if (!scScreen(p, 100)) continue;
+const scHowlBodies = () => SC_HOWL.ppl.map((m) => [m.X, m.Z, .3, 1.9]);
+function scHowlInto(t, list) { // draft 11: they are there before the drone first sees them and stay through the aerial (no fade)
+  if (t < 150 || t > 240 || !scLive('howl', t, 189, 211, scHowlBodies, 30, 30)) return; const h = scHowlAmt(t);
+  for (const m of SC_HOWL.ppl) { ACT.note('scenes:howl:' + m.j, m.X, m.Z, .3, { h: 1.9, group: 'howl' }); if (!scIn(m.X, m.Z, .5, 2.2)) continue; const p = P(m.X, 0, m.Z);
     list.push({ z: p[2], draw: () => { const q = P(m.X, 0, m.Z), k = kAt(q), hu = h * (1 - .15 * Math.sin(t * 2 + m.j)), sw = Math.sin(t * 1.3 + m.j * 2);
       const hands = [[lerp(-.24, -.78, hu), lerp(.82, 1.62, hu) + .04 * sw], [lerp(.24, .78, hu), lerp(.82, 1.62, hu) - .04 * sw]];
-      scFig(q[0], q[1], k, m.c, { view: C.z < m.Z ? 'back' : 'front', hands, tip: hu, bob: .02 * sw * (1 - hu), t, alpha: ease(t, 186, 187.5) * (1 - ease(t, 204.5, 206)) }); }, shadow: () => {} }); }
+      scFig(q[0], q[1], k, m.c, { view: C.z < m.Z ? 'back' : 'front', hands, tip: hu, bob: .02 * sw * (1 - hu), t }); }, shadow: () => {} }); }
   // one list item carries every shadow, filled as one path so the head and the sixteen stick shadows join without seams
   const c = P(SC_HOWL.F0[0], 0, SC_HOWL.F0[1]); list.push({ z: c[2] + 30, draw: () => {}, shadow: () => scHowlShadow(t, h) });
 }

@@ -4,8 +4,12 @@ function drape(pts, y0) { return pts.map(([x, z]) => z < -TD ? [x, y0 - (-TD - z
 function melt(t) { return clamp((t - 20) / 200) * .55 + ease(t, L_(1).s, L_(1).e) * .12; } // the heat softens the props through the day
 // "scientists can't speak": under the tape X the speakerphone slumps like a soft watch and runs over the table edge
 const phoneSlump = (t) => ease(t, wt(1, 'can') + .45, L_(1).e + .7) * (1 - .72 * ease(t, L_(2).s + .3, L_(2).s + 1)); // springs most of the way back when the tape comes off
+// draft 11 (Robin: it went out of frame as it melted): the phone sits 0.25 m nearer the hat hole and 0.4 m further from
+// the front edge, so in the low shot that turns from it to the Instrument People (24-27.6) it stays in the lower middle
+// of the frame while it slumps, instead of sliding off the bottom right corner
+const PHONE = { x: .95, z: -.55 };
 function speakerphone(t) {
-  const m = melt(t), cz = -.95 - m * .75, cx = 1.2, sl = phoneSlump(t), pts = [];
+  const m = melt(t), cz = PHONE.z - m * .75, cx = PHONE.x, sl = phoneSlump(t), pts = [];
   const flow = (x, z, f = 1) => { const dx = x - cx, dz = z - cz, front = clamp(-dz / .3), side = 1 - .55 * (dx / .4) ** 2; // front points run toward the edge
     return [cx + dx * (1 + .2 * sl * f), z - sl * f * (.12 + .78 * front * side)]; };
   // draft 9: it read as a beetle at phone size (a dark rounded shell with two "eyes"). Now a conference phone: a flat
@@ -77,9 +81,9 @@ function ants(t) {
 }
 // "patent" (critic B; Gilliam's stamp): the lead set of wind-up teeth hops out first, and a red wax notary seal with a
 // gold ribbon stamps down onto it on the word and stays. Drawn face on, in screen space, at the teeth's spot.
-function waxSeal(x, y, k, t, st, fl = 1) { // centre (x, y), k px per metre, st = the stamp time, fl < 1 squashes it flat (lying on top of something)
-  const u = clamp((t - st + .22) / .22), drop = (1 - u * u) * 2.2 * k, sq = t > st ? Math.exp(-(t - st) * 9) * Math.sin((t - st) * 30) * .12 : 0, r = .25 * k;
-  if (u <= 0) return; const cy = y - drop;
+function waxSeal(x, y, k, t, st, fl = 1, fallPx) { // centre (x, y), k px per metre, st = the stamp time, fl < 1 squashes it flat (lying on top of something); fallPx: the caller's own drop (draft 11)
+  const u = clamp((t - st + .22) / .22), drop = fallPx != null ? fallPx : (1 - u * u) * 2.2 * k, sq = t > st ? Math.exp(-(t - st) * 9) * Math.sin((t - st) * 30) * .12 : 0, r = .25 * k;
+  if (fallPx == null && u <= 0) return; const cy = y - drop;
   g.save(); g.translate(x, cy);
   g.fillStyle = '#d9b45a'; for (const d of [-1, 1]) { g.beginPath(); g.moveTo(d * .05 * k, .1 * k); g.lineTo(d * .2 * k, .52 * k); g.lineTo(d * .13 * k, .46 * k); g.lineTo(d * .09 * k, .55 * k); g.lineTo(-d * .04 * k, .12 * k); g.fill(); } // the ribbon tails
   g.scale(1 + sq, (1 - sq) * fl);
@@ -250,7 +254,9 @@ function recorder(x, y, k, t, i, rec) { // a reel-to-reel recorder, face on; (x,
   if (rec) { g.fillStyle = Math.sin(t * 9 + i) > 0 ? '#ff3b2a' : '#7a1a14'; g.beginPath(); g.arc(x + .13 * k, y - .03 * k, .014 * k, 0, TAU); g.fill(); }
 }
 function tapeRecorders(t) {
-  const s = L_(2).s; if (t < s - .3 || t > L_(2).e + .3) return; const appear = ease(t, s - .3, s + .3);
+  const s = L_(2).s; if (t > L_(2).e + .3) return; // draft 11: no fade in; each drops onto the table from out of frame (dropHeight) and lands by s + .3
+  const land = (i) => s - .2 + i * .14, fallAt = (i) => { const [x, z] = TAPE_AT[i]; return dropY(t, land(i), dropHeight('tape' + i, land(i), x, TOP + .12, z)); };
+  if (t < s - 6) return;
   const D = SEATS[2], dp = PL(D.x, SEAT, D.z); if (dp[2] < .25) return; const dk = kAt(dp), ev = wt(2, 'every');
   // the top drawer of the drawer-torso suit (the one that clears the table edge) pulls out to take them; car.js's middle drawer is hidden by the table here
   const open = ease(t, ev - .45, ev - .05) * (1 - ease(t, L_(2).e - .1, L_(2).e + .25)), T = typeof TORSO !== 'undefined' ? TORSO : .59, sh = dp[1] - (T + .03) * dk, dy = sh + (T > .6 ? .08 : .1) * dk, dw = .26 * dk, dh = .1 * dk, d = open * .2 * dk;
@@ -258,10 +264,10 @@ function tapeRecorders(t) {
   if (open > 0) { g.fillStyle = '#2a1608'; g.fillRect(dp[0] - dw / 2, dy, dw, dh); g.fillStyle = '#a77a48'; g.beginPath(); g.moveTo(dp[0] - dw / 2, dy + dh); g.lineTo(dp[0] - dw / 2 - d * .3, dy + dh + d); g.lineTo(dp[0] + dw / 2 + d * .3, dy + dh + d); g.lineTo(dp[0] + dw / 2, dy + dh); g.fill();
     g.fillStyle = '#5a3a1c'; g.fillRect(dp[0] - dw / 2 - d * .25, dy + dh + d * .15, dw + d * .5, d * .7); } // the tray, open toward us
   let inTray = 0;
-  for (let i = 0; i < TAPE_N; i++) { const u = tapeHop(t, i), [x, z] = TAPE_AT[i], p = PL(x, TOP, z); if (p[2] < .25) continue; const k = kAt(p);
+  for (let i = 0; i < TAPE_N; i++) { const u = tapeHop(t, i), [x, z] = TAPE_AT[i], fy = fallAt(i); if (fy === null) continue; const p = PL(x, TOP + fy, z); if (p[2] < .25) continue; const k = kAt(p);
     if (u >= 1) { inTray++; continue; }
     const e = u * u * (3 - 2 * u), sx = lerp(p[0], tray[0], e), sy = lerp(p[1], tray[1], e) - Math.sin(u * Math.PI) * .07 * k, sk = lerp(k, dk * .4, e);
-    g.save(); g.globalAlpha = appear; g.translate(sx, sy); g.rotate(Math.sin(u * Math.PI) * (i % 2 ? .35 : -.35)); recorder(0, 0, sk * (u > 0 ? 1 : 1 + .04 * Math.sin(t * 12 + i)), t, i, u === 0 && t > s + .2); g.restore(); }
+    g.save(); g.translate(sx, sy); g.rotate(Math.sin(u * Math.PI) * (i % 2 ? .35 : -.35)); recorder(0, 0, sk * (u > 0 ? 1 : 1 + .04 * Math.sin(t * 12 + i)), t, i, u === 0 && t > s + .2); g.restore(); }
   if (open > 0) { // the ones already filed sit in the tray behind its front, then the drawer slides shut on them
     g.save(); g.beginPath(); g.rect(dp[0] - .3 * dk, dy, .6 * dk, dh + d); g.clip();
     for (let j = 0; j < inTray; j++) recorder(dp[0] + (j - (inTray - 1) / 2) * .085 * dk, dy + dh + d * .8 - (j % 2) * .02 * dk, dk * .4, t, j, false);
@@ -273,24 +279,27 @@ function tapeRecorders(t) {
 // plate slams down and squeezes them out over the edge. Each refrain escalates: 1 the press; 2 a cell drops over it;
 // 3 a chain and a padlock on top of that.
 const NEWS = [[4, 1], [11, 2], [32, 3]];
-function newsPress(t) { for (const [li, lv] of NEWS) { const s = L_(li).s, e = L_(li + 1).s + .3; if (lv < 3 && t > s - .3 && t < e) newsOne(t, li, lv); } }
+// draft 11: after its window a press goes on rising until the lens has lost it (it vanished in one frame, 45.3), and its
+// faces are cut at the near plane, not dropped, when the drone passes close (polyN / segN in car.js)
+function newsPress(t) { for (const [li, lv] of NEWS) { const s = L_(li).s, e = L_(li + 1).s + .3; if (lv < 3 && t > s - .3 && (t < e || seenSpan(t, s, e, (u) => { const [X, Z] = carLocalToWorld(u, -1.25, -1.0); return [X, TOP + 1 + newsLift(u, li, lv), Z, 1.6]; }, 6, .05))) newsOne(t, li, lv); } }
+function newsLift(t, li, lv) { const ex = L_(li + 1).s - (lv < 3 ? .25 : .45); return clamp((t - ex) / (lv < 3 ? .4 : .6), 0, 4) ** 2 * 16; } // refrain 3 (the playa press in its cage): a 0.6 s rise (it was yanked out in three frames, 180.1)
 function newsOne(t, li, lv) { // refrain 3 is seen from the driver's hole: a press four times the size, out on the playa beyond the far row
   // draft 9: no alpha fade any more (it left a translucent grey slab, 0:45.5): the papers drop in from high up, and at the
   // end the whole press lifts straight up out of frame in 0.4 s. Dark outlines keep it readable through the dust haze.
-  const s = L_(li).s, n = wt(li, 'news'), ex = L_(li + 1).s - .25, lift = clamp((t - ex) / .4) ** 2 * 16;
+  const s = L_(li).s, n = wt(li, 'news'), lift = newsLift(t, li, lv);
   const px = -1.25, pz = -1.0, hw = 1.05, up = easeOutBack(clamp((t - s - .65) / .6)), postH = 1.85 * up;
   const S = lv < 3 ? 1 : 4, X0 = lv < 3 ? 0 : carX(n) - CX, Z0 = 14;
   const Q = (x, y, z) => lv < 3 ? PL(x, y + lift, z) : PL(X0 + (x - px) * S, (y + lift - TOP) * S, Z0 + (z - pz) * S), kS = (p) => kAt(p) * S;
   const slam = t < n - .14 ? 0 : t < n ? ease(t, n - .14, n) : 1 - .06 * Math.sin((t - n) * 18) * Math.exp(-(t - n) * 6), plateY = TOP + lerp(1.3, .08, slam) * up; // the plate hits on the word
   g.save();
   const iron = '#34302e', ironLit = '#5c5550', brass = '#c9a24a', edge = '#141110', ew = lv < 3 ? 2 : 2.5;
-  const box = (x0, x1, y0, y1, z0, z1, top, front, side) => { poly([Q(x0, y1, z0), Q(x1, y1, z0), Q(x1, y1, z1), Q(x0, y1, z1)], top, edge, ew); poly([Q(x1, y0, z0), Q(x1, y1, z0), Q(x1, y1, z1), Q(x1, y0, z1)], side, edge, ew); poly([Q(x0, y0, z0), Q(x1, y0, z0), Q(x1, y1, z0), Q(x0, y1, z0)], front, edge, ew); };
+  const box = (x0, x1, y0, y1, z0, z1, top, front, side) => { polyN([Q(x0, y1, z0), Q(x1, y1, z0), Q(x1, y1, z1), Q(x0, y1, z1)], top, edge, ew); polyN([Q(x1, y0, z0), Q(x1, y1, z0), Q(x1, y1, z1), Q(x1, y0, z1)], side, edge, ew); polyN([Q(x0, y0, z0), Q(x1, y0, z0), Q(x1, y1, z0), Q(x0, y1, z0)], front, edge, ew); };
   if (up > 0) { // base, posts, crossbar, screw and wheel
     box(px - hw - .12, px + hw + .12, TOP, TOP + .06, pz - .42, pz + .42, ironLit, iron, '#221f1e');
     for (const d of [-1, 1]) box(px + d * hw - .07, px + d * hw + .07, TOP, TOP + postH, pz - .07, pz + .07, ironLit, iron, '#221f1e');
     box(px - hw - .12, px + hw + .12, TOP + postH - .16, TOP + postH, pz - .1, pz + .1, ironLit, iron, '#221f1e');
-    const sa = Q(px, TOP + postH + .25, pz), sb = Q(px, plateY + .12, pz); seg(sa, sb, .07 * kS(sa), brass);
-    for (let k = 0; k < 7; k++) { const yy = lerp(plateY + .12, TOP + postH, k / 7), q0 = Q(px - .05, yy, pz - .04), q1 = Q(px + .05, yy + .05, pz - .04); seg(q0, q1, 2, 'rgba(90,60,20,.6)'); } // the thread
+    const sa = Q(px, TOP + postH + .25, pz), sb = Q(px, plateY + .12, pz); segN(sa, sb, .07 * kS(sa), brass);
+    for (let k = 0; k < 7; k++) { const yy = lerp(plateY + .12, TOP + postH, k / 7), q0 = Q(px - .05, yy, pz - .04), q1 = Q(px + .05, yy + .05, pz - .04); segN(q0, q1, 2, 'rgba(90,60,20,.6)'); } // the thread
     const wc = Q(px, TOP + postH + .25, pz), wk = kS(wc), spin = slam * 6 + (t - s) * .5; if (wc[2] > .2) { g.strokeStyle = brass; g.lineWidth = .04 * wk; g.beginPath(); g.ellipse(wc[0], wc[1], .42 * wk, .12 * wk, 0, 0, TAU); g.stroke();
     for (let k = 0; k < 4; k++) { const a = spin + k / 4 * TAU; g.beginPath(); g.moveTo(wc[0], wc[1]); g.lineTo(wc[0] + Math.cos(a) * .42 * wk, wc[1] + Math.sin(a) * .12 * wk); g.stroke(); } } }
   // the papers: three broadsheets, upright and fluttering in the air, then flattened under the plate and squeezed over the edge
@@ -300,10 +309,10 @@ function newsOne(t, li, lv) { // refrain 3 is seen from the driver's hole: a pre
     const psi = fl * .7 * Math.sin(t * 2.4 + i * 1.7) + (1 - fall) * (i - 1) * .6, tilt = lerp(.15 * Math.sin(t * 2 + i), Math.PI / 2, flat), w = .95 * (1 + sq * .2), h = .7;
     const U = [Math.cos(psi), 0, Math.sin(psi)], V = [0, Math.cos(tilt), Math.sin(tilt) * -1];
     const at = (a, b) => { let x = cx + U[0] * a * w + V[0] * b * h, y = cy + U[1] * a * w + V[1] * b * h, z = cz + U[2] * a * w + V[2] * b * h; if (flat > 0) y = lerp(y, TOP + .07 + i * .005, flat); return Q(...(z < -TD && flat > .5 ? drape([[x, z]], y)[0] : [x, y, z])); };
-    const sheet = (a0, b0, a1, b1, col) => poly([at(a0, b0), at(a1, b0), at(a1, b1), at(a0, b1)], col);
+    const sheet = (a0, b0, a1, b1, col) => polyN([at(a0, b0), at(a1, b0), at(a1, b1), at(a0, b1)], col);
     // flattened: the front half is squeezed out (b < 0 runs toward the edge) and droops over it
     const bs = (b) => flat > 0 && b < 0 ? b * (1 + sq * 1.4) : b;
-    poly([at(-.5, bs(-.5)), at(.5, bs(-.5)), at(.5, .5), at(-.5, .5)], '#efe9d9', '#2a2520', 1.5); if (fl > .05 || flat < 1) sheet(-.5, .38, .5, .5, '#26221f');
+    polyN([at(-.5, bs(-.5)), at(.5, bs(-.5)), at(.5, .5), at(-.5, .5)], '#efe9d9', '#2a2520', 1.5); if (fl > .05 || flat < 1) sheet(-.5, .38, .5, .5, '#26221f');
     for (let r = 0; r < 2; r++) sheet(-.42, .25 - r * .12, .3 - r * .2, .31 - r * .12, '#3b3632');
     for (let c = 0; c < 4; c++) for (let r = 0; r < 5; r++) { const b0 = bs(.06 - r * .11); sheet(-.44 + c * .23, b0 - .045, -.26 + c * .23, b0, 'rgba(120,110,95,.55)'); }
   }
@@ -311,8 +320,8 @@ function newsOne(t, li, lv) { // refrain 3 is seen from the driver's hole: a pre
   if (lv >= 2) { // a cell drops over the press
     const dropT = n + .45, cd = t < dropT - .35 ? 0 : t < dropT ? ease(t, dropT - .35, dropT) : 1, cy = (1 - cd) * 3.5 + (t > dropT ? .08 * Math.abs(Math.sin((t - dropT) * 14)) * Math.exp(-(t - dropT) * 5) : 0);
     if (cd > 0) { const x0 = px - hw - .3, x1 = px + hw + .3, z0 = pz - .55, z1 = pz + .55, y0 = TOP + cy, y1 = TOP + 2.45 + cy;
-      for (let k = 0; k <= 9; k++) { const x = lerp(x0, x1, k / 9); seg(Q(x, y0, z0), Q(x, y1, z0), .05 * kS(Q(x, y0, z0)), '#2a2226'); seg(Q(x, y0, z1), Q(x, y1, z1), .04 * kS(Q(x, y0, z1)), '#2a2226'); }
-      for (const y of [y0, y1, (y0 + y1) / 2]) { seg(Q(x0, y, z0), Q(x1, y, z0), .07 * kS(Q(x0, y, z0)), '#3b3232'); seg(Q(x1, y, z0), Q(x1, y, z1), .06 * kS(Q(x1, y, z0)), '#3b3232'); } } }
+      for (let k = 0; k <= 9; k++) { const x = lerp(x0, x1, k / 9); segN(Q(x, y0, z0), Q(x, y1, z0), .05 * kS(Q(x, y0, z0)), '#2a2226'); segN(Q(x, y0, z1), Q(x, y1, z1), .04 * kS(Q(x, y0, z1)), '#2a2226'); }
+      for (const y of [y0, y1, (y0 + y1) / 2]) { segN(Q(x0, y, z0), Q(x1, y, z0), .07 * kS(Q(x0, y, z0)), '#3b3232'); segN(Q(x1, y, z0), Q(x1, y, z1), .06 * kS(Q(x1, y, z0)), '#3b3232'); } } }
   if (lv >= 3) { // and a chain with a padlock
     const lockT = n + .85, lk = ease(t, lockT - .3, lockT), x0 = px - hw - .3, x1 = px + hw + .3, z0 = pz - .58;
     if (lk > 0) { for (const [ya, yb] of [[.2, 2.2], [2.2, .2]]) for (let k = 0; k < 18 * lk; k++) { const u = k / 18, q = Q(lerp(x0, x1, u), TOP + lerp(ya, yb, u), z0), kk = kS(q); if (q[2] < .2) continue; g.strokeStyle = '#8f8a80'; g.lineWidth = .025 * kk; g.beginPath(); g.ellipse(q[0], q[1], .07 * kk, .04 * kk, (ya < yb ? -1 : 1) * .5 + (k % 2) * 1.2, 0, TAU); g.stroke(); }
@@ -386,19 +395,29 @@ function windupTeeth(x, y, k, ch, t, i) { // a pair of wind-up chattering teeth,
   g.fillStyle = '#fbf6e8'; for (let j = 0; j < 5; j++) { const tx = x - w * .82 + j * w * .34; g.fillRect(tx, gy - .075 * k, w * .3, .05 * k); g.fillRect(tx, gy - .14 * k - open, w * .3, .05 * k); }
   g.strokeStyle = '#c9a43a'; g.lineWidth = Math.max(1, .02 * k); g.save(); g.translate(x + w * 1.15, gy - .07 * k); g.rotate(t * 6 + i); g.beginPath(); g.moveTo(-.05 * k, 0); g.lineTo(.05 * k, 0); g.moveTo(0, -.05 * k); g.lineTo(0, .05 * k); g.stroke(); g.restore();
 }
-function jailModel(t) {
-  const sb = wt(8, 'soundbite'), pat = wt(8, 'patent'), s9 = L_(9).s, un = wt(9, 'unveiled'), jl = wt(9, 'jails'), back = L_(10).s; if (t < pat - .7 || t > back + .6) return;
-  const al = 1 - ease(t, back - .1, back + .4); g.save(); g.globalAlpha = al;
+function jailModel(t, onPlaya) { // onPlaya: the depth-sorted call from tableInto, once the model has stepped off past the far row (draft 11)
+  const sb = wt(8, 'soundbite'), pat = wt(8, 'patent'), s9 = L_(9).s, un = wt(9, 'unveiled'), jl = wt(9, 'jails'), back = L_(10).s;
+  const sealH = dropHeight('patent', pat, TEETH[TEETH_LEAD].x, TOP + .45, TEETH[TEETH_LEAD].z); if (t < Math.min(pat - .7, pat - Math.sqrt(2 * sealH / 9.8))) return;
+  // draft 11: no fade at the end. After "they want" the model steps off the far edge on its stilts and is left standing on the
+  // playa among the real cells; it is drawn until the lens has lost it (JM_WALK, jmWorld)
+  if (t > JM_WALK.t1() && !seenSpan(t, 0, JM_WALK.t1(), (u) => { const [X, Z] = jmWorld(u); return [X, 1.5, Z, 1.6]; }, 40, .2)) return;
+  g.save();
   const drop = ease(t, s9 + .1, s9 + .55), whip = ease(t, un - .05, un + .55), grow = ease(t, un - .8, un - .1);
   // the teeth: hop out of the speakerphone on "soundbite" and chatter in two rows; hidden once the drape is down
-  if (drop < 1) { const pc = PL(1.2, TOP + .1, -1.05);
-    for (const T of TEETH) { const lead = T.i === TEETH_LEAD, st = lead ? pat - .55 : sb - .1 + T.i * .07, u = clamp((t - st) / .45); if (u <= 0) continue; const p = PL(T.x, TOP, T.z); if (p[2] < .2 || pc[2] < .2) continue;
+  const hemClip = !onPlaya && drop > 0 && drop < 1 ? drapeHem(t, drop, whip, grow) : null; if (hemClip) { g.save(); g.beginPath(); hemClip.forEach((q, i) => i ? g.lineTo(q[0], q[1]) : g.moveTo(q[0], q[1])); g.lineTo(hemClip[hemClip.length - 1][0], H + 4e3); g.lineTo(hemClip[0][0], H + 4e3); g.closePath(); g.clip(); } // draft 11: the drape falls over them, so only what is under its hem shows, and nothing is left sticking out when it lands
+  if (!onPlaya && drop < 1) { const pc = PL(PHONE.x, TOP + .1, PHONE.z - melt(t) * .75 - .1);
+    for (const T of TEETH) { const lead = T.i === TEETH_LEAD, st = lead ? pat - .55 : sb - .1 + T.i * .07, u = clamp((t - st) / .45), p = PL(T.x, TOP, T.z);
+      if (lead && u < 1 && p[2] > .2) { const fh = dropY(t, pat, sealH); if (fh !== null) waxSeal(p[0], p[1] - .34 * kAt(p) * 1.3, kAt(p), t, pat, .5, fh * kAt(p)); } // draft 11: the seal falls from out of frame onto the spot the lead set hops to
+      if (u <= 0) continue; if (p[2] < .2 || pc[2] < .2) continue;
       const e = u * u * (3 - 2 * u), x = lerp(pc[0], p[0], e), y = lerp(pc[1], p[1], e) - Math.sin(u * Math.PI) * .5 * kAt(p) - (u >= 1 ? Math.abs(Math.sin(t * 11 + T.i)) * .04 * kAt(p) : 0), k = lerp(kAt(pc) * .5, kAt(p), e);
       windupTeeth(x, y, k * 1.3, Math.abs(Math.sin(t * 22 + T.i * 1.3)), t, T.i);
-      if (lead) waxSeal(x, y - .34 * k * 1.3, k, t, pat, .5); } } // the patented original wears the notary seal
+      if (lead && u >= 1) { const fh = t < pat ? dropY(t, pat, sealH) : 0; if (fh !== null) waxSeal(x, y - .34 * k * 1.3, k, t, pat, .5, fh * k); } } } // the patented original wears the notary seal
+  if (hemClip) g.restore();
   // the jail model, revealed on "unveiled"; on "jails" it rises on stilt legs
-  if (whip > 0) { const lift = t > jl - .1 ? easeOutBack(clamp((t - jl + .1) / .7)) * 1.3 : 0, pop = easeOutBack(clamp((t - un + .05) / .4)), h = .62 * pop, y0 = TOP + lift, { x0, x1, z0, z1 } = JM;
-    if (lift > 0) for (const [lx, lz] of [[x0 + .1, z0 + .08], [x1 - .1, z0 + .08], [x0 + .1, z1 - .08], [x1 - .1, z1 - .08]]) { const a = PL(lx, y0, lz), b = PL(lx + (lx < -1 ? -.12 : .12), TOP, lz - .05); seg(a, b, .035 * kAt(a), '#2a2226'); }
+  const jwz = jmOffset(t)[2] + (JM.z0 + JM.z1) / 2 > 2.9; // past the far row: drawn with the playa, behind the car layer
+  if (whip > 0 && jwz === !!onPlaya) { const lift = t > jl - .1 ? easeOutBack(clamp((t - jl + .1) / .7)) * 1.3 : 0, pop = easeOutBack(clamp((t - un + .05) / .4)), h = .62 * pop, jw = jmOffset(t), y0 = TOP + lift + jw[1];
+    const x0 = JM.x0 + jw[0], x1 = JM.x1 + jw[0], z0 = JM.z0 + jw[2], z1 = JM.z1 + jw[2], legY = jw[4] + TOP; // the stilts reach down to the playa once it is past the edge // jw: the walk off the table (draft 11)
+    if (lift > 0) for (const [lx, lz] of [[x0 + .1, z0 + .08], [x1 - .1, z0 + .08], [x0 + .1, z1 - .08], [x1 - .1, z1 - .08]]) { const st = jw[3] ? Math.sin(t * 9 + lx * 3) * .12 * jw[3] : 0, a = PL(lx, y0, lz), b = PL(lx + (lx < x0 + .75 ? -.12 : .12), legY + Math.max(0, st), lz - .05 + st); seg(a, b, .035 * kAt(a), '#2a2226'); } // stepping while it walks
     box3(x0, x1, y0, y0 + h, z0, z1, ['#a49d91', '#7f786e', '#c9c3b6', '#3b3530']);
     const fp = PL(x0, y0, z0), fq = PL(x1, y0 + h, z0); if (fp[2] > .2 && fq[2] > .2 && h > .2) for (let r = 0; r < 2; r++) for (let c = 0; c < 4; c++) { // the cells' barred windows
       const cx0 = x0 + .06 + c * .36, cy0 = y0 + .06 + r * h / 2, cw = .28, chh = h / 2 - .1;
@@ -406,22 +425,40 @@ function jailModel(t) {
       for (let k = 1; k < 5; k++) { const bx = cx0 + k * cw / 5, a = PL(bx, cy0, z0 - .004); seg(a, PL(bx, cy0 + chh, z0 - .004), .018 * kAt(a), '#d8d2c4'); } }
     if (h > .3) { const sp = PL(x1 - .22, y0 + h * .62, z0 - .01); if (sp[2] > .2) waxSeal(sp[0], sp[1], kAt(sp) * .6, t, un - 9); } // the plan carries the same seal
     const fl = PL(x0 + .2, y0 + h, (z0 + z1) / 2), ft = PL(x0 + .2, y0 + h + .35, (z0 + z1) / 2); if (fl[2] > .2 && h > .3) { seg(fl, ft, .015 * kAt(fl), '#3b3232'); const fk = kAt(ft); g.fillStyle = PAL.rosette; g.beginPath(); g.moveTo(ft[0], ft[1]); g.lineTo(ft[0] + (.22 + .02 * Math.sin(t * 6)) * fk, ft[1] + .06 * fk); g.lineTo(ft[0], ft[1] + .13 * fk); g.fill(); } }
+  if (!onPlaya) drapeDraw(t, drop, whip, grow);
+  g.restore();
+}
+// draft 11: the drape is tall enough to cover the teeth and the seal on the lead set (it used to land lower than them, and
+// they vanished sticking out of it, 85.3)
+function drapeShape(t, drop, whip, grow) { const { x0, x1, z0, z1 } = JM, up = (1 - drop) * 1.6 + whip * whip * 3.2, back2 = whip * 2.2, hh = lerp(.74, .8, grow), N = 12;
+  const lump = (u) => hh * (.82 + .12 * Math.abs(Math.sin(u * 4 * Math.PI))) + .03 * Math.abs(Math.sin(t * 22 + u * 9)) * (1 - grow);
+  const hem = (u) => .02 + .04 * Math.sin(u * 17 + t * 3) * (1 - drop * .5) + whip * .3 * Math.sin(u * 6 + t * 12);
+  const at = (x, y, z) => PL(x, y + up, z + back2), top = [], front = [];
+  for (let i = 0; i <= N; i++) { const u = i / N, x = lerp(x0 - .08, x1 + .08, u); top.push([x, TOP + lump(u), z0 - .02]); }
+  for (let i = 0; i <= N; i++) { const u = i / N, x = lerp(x0 - .1, x1 + .1, u); front.push(at(x, TOP + hem(u), z0 - .1 - .04 * Math.sin(u * 13))); }
+  return { top, front, at, N, z1 }; }
+function drapeHem(t, drop, whip, grow) { const d = drapeShape(t, drop, whip, grow); return ok(d.front) ? d.front : null; }
+function drapeDraw(t, drop, whip, grow) {
   // the drape: red velvet that drops over the teeth on "their grand plan", jiggles as they chatter and stretch under it,
   // then whips up and away (back, over the far row) on "unveiled"
-  if (drop > 0 && whip < 1) { const { x0, x1, z0, z1 } = JM, up = (1 - drop) * 1.6 + whip * whip * 3.2, back2 = whip * 2.2, hh = lerp(.32, .66, grow), N = 12;
-    const lump = (u) => hh * (.82 + .12 * Math.abs(Math.sin(u * 4 * Math.PI))) + .03 * Math.abs(Math.sin(t * 22 + u * 9)) * (1 - grow);
-    const hem = (u) => .02 + .04 * Math.sin(u * 17 + t * 3) * (1 - drop * .5) + whip * .3 * Math.sin(u * 6 + t * 12);
-    const at = (x, y, z) => PL(x, y + up, z + back2);
-    const top = [], front = [];
-    for (let i = 0; i <= N; i++) { const u = i / N, x = lerp(x0 - .08, x1 + .08, u); top.push([x, TOP + lump(u), z0 - .02]); }
-    for (let i = 0; i <= N; i++) { const u = i / N, x = lerp(x0 - .1, x1 + .1, u); front.push(at(x, TOP + hem(u), z0 - .1 - .04 * Math.sin(u * 13))); }
+  if (drop > 0 && whip < 1) { const { top, front, at, N, z1 } = drapeShape(t, drop, whip, grow);
     const vel = '#8e1b22', velLit = '#b8323a';
     poly([...top.map((p) => at(p[0], p[1], z1 + .02)).reverse(), ...top.map((p) => at(...p))], velLit); // the top of the drape
     poly([...top.map((p) => at(...p)), ...front.slice().reverse()], vel);
     for (let i = 1; i < N; i += 2) seg(at(top[i][0], top[i][1], top[i][2]), front[i], 2, 'rgba(40,5,8,.35)'); // folds
     for (let i = 0; i < N; i++) { const a = front[i]; if (a[2] > .2) seg(a, front[i + 1], .04 * kAt(a), '#d6a632'); } }
-  g.restore();
 }
+// the jail model's walk off the table: after "they want" it strides on its stilts to the far edge, steps down to the
+// playa and stays there (world-fixed) while the table rolls on
+const JM_WALK = { t0: () => L_(10).s - .2, t1: () => L_(10).s + 2.2, z: 4.3 }; // it strides high over the far row on its stilts (their tops are 2.45 m up, the eggs 1.6 m), and lands 1.7 m beyond the chairs
+let jmRest = null;
+function jmGround() { if (jmRest) return jmRest; const t1 = JM_WALK.t1(); return (jmRest = carLocalToWorld(t1, (JM.x0 + JM.x1) / 2, JM_WALK.z)); }
+function jmWorld(u) { if (u >= JM_WALK.t1()) return jmGround(); const o = jmOffset(u); return carLocalToWorld(u, (JM.x0 + JM.x1) / 2 + o[0], (JM.z0 + JM.z1) / 2 + o[2]); }
+function jmOffset(t) { // [dx, dy, dz, stepping] from the model's place on the table, car-local
+  const t0 = JM_WALK.t0(), t1 = JM_WALK.t1(); if (t <= t0) return [0, 0, 0, 0, 0];
+  const cx = (JM.x0 + JM.x1) / 2, cz = (JM.z0 + JM.z1) / 2;
+  if (t < t1) { const u = ease(t, t0, t1), dz = lerp(0, JM_WALK.z - cz, u), down = smooth(clamp((cz + dz - 2.9) / (JM_WALK.z - 2.9))), feet = smooth(clamp((cz + dz - TD + .3) / .6)); return [0, -TOP * down, dz, 1 - ease(t, t1 - .3, t1), -TOP * feet]; }
+  const [X, Z] = jmGround(), lc = worldToLocal(X, Z); return [lc[0] - cx, -TOP, lc[1] - cz, 0, -TOP]; }
 const JAILS = [[4, 7, 1], [-5, 8.5, .9], [11, 10, 1.05], [-8.5, 13, 1], [15.5, 14, .95], [-1.5, 15, 1.1], [7.5, 18, 1], [-6, 20, .9], [13, 22, 1.15], [1.5, 24, 1.2]]; // inside JAILW's frame (local x -9..17), under 25 m back
 function jails(t, list) { const j = wt(9, 'jails'); if (t < j - .1) return; const base = carX(j);
   JAILS.forEach(([x, z, s], i) => { const legs = easeOutBack(clamp((t - j + .1 - i * .09) / .8)) * s, X = base + x;
@@ -437,12 +474,25 @@ function chips(t) { // "expand the wars and the military bets": casino chip stac
       g.fillStyle = S.col[0]; g.beginPath(); g.ellipse(p1[0], p1[1], rx, ry, 0, 0, TAU); g.fill(); g.strokeStyle = 'rgba(0,0,0,.35)'; g.lineWidth = 1; g.stroke();
       g.strokeStyle = S.i % 3 === 1 ? 'rgba(199,54,43,.7)' : 'rgba(244,239,230,.7)'; g.lineWidth = Math.max(1, .012 * k); g.beginPath(); g.ellipse(p1[0], p1[1], rx * .62, ry * .62, 0, 0, TAU); g.stroke(); } }
 }
+// draft 11: no fade. The pie drops onto the table from out of frame; after the line it slides off the near edge, falls
+// to the playa and lies there while the table rolls on (drawn until the lens has lost it).
+const PIE_T = { x: -.15, z: -.95, land: () => L_(23).s - .05, slide: () => L_(23).e + .3, off: () => L_(23).e + .85, down: () => L_(23).e + .85 + Math.sqrt(2 * (TOP + .04) / 9.8) };
+let pieRest = null; // where it lies on the playa (world X, Z): a constant from the car's own path, worked out once
+function pieGround() { if (pieRest) return pieRest; const to = PIE_T.off(); return (pieRest = carLocalToWorld(to, PIE_T.x, -TD - .45)); }
+function pieWorld(u) { // [X, Y, Z] of the pie's middle at song time u (for the lens test)
+  if (u < PIE_T.off()) { const [X, Z] = carLocalToWorld(u, PIE_T.x, lerp(PIE_T.z, -TD - .45, ease(u, PIE_T.slide(), PIE_T.off()))); return [X, TOP + .06, Z]; }
+  const [X, Z] = pieGround(), f = u - PIE_T.off(); return [X, Math.max(.03, TOP + .06 - 4.9 * f * f), Z]; }
 function pie(t) { // "how many lies can you bake in this pie?": a real pie, one slice slumping over the edge
-  const s = L_(23).s, e = L_(23).e; if (t < s - .2 || t > e + 1) return; const al = ease(t, s - .2, s + .2) * (1 - ease(t, e + .3, e + 1)), cx = -.15, cz = -.95, sl = ease(t, wt(23, 'pie') - .5, e + .3);
-  const disc = (r, a0, a1, oz, y) => { const ps = [[cx, cz + oz]]; for (let i = 0; i <= 20; i++) { const a = lerp(a0, a1, i / 20); ps.push([cx + Math.cos(a) * r, cz + oz + Math.sin(a) * r]); } return drape(ps, y).map((p) => PL(...p)); };
-  g.save(); g.globalAlpha = al; poly(disc(.42, -1.1, 4.6, 0, TOP + .06), '#c98a3e'); poly(disc(.36, -1.1, 4.6, 0, TOP + .07), '#e2b267');
-  for (let i = 0; i < 6; i++) { const a = -1.1 + i * .95; seg(PL(cx, TOP + .075, cz), PL(cx + Math.cos(a) * .36, TOP + .075, cz + Math.sin(a) * .36), 2, 'rgba(120,70,20,.5)'); }
-  poly(disc(.42, -1.6, -1.1, -sl * .75, TOP + .06), '#c98a3e'); g.restore();
+  const s = L_(23).s, e = L_(23).e, land = PIE_T.land(), H = dropHeight('pie', land, PIE_T.x, TOP + .06, PIE_T.z), fy = dropY(t, land, H); if (fy === null) return;
+  if (t > PIE_T.down() + .5 && !seenSpan(t, 0, PIE_T.down() + .5, (u) => [...pieWorld(u), .5], 40, .2)) return;
+  const sl = ease(t, wt(23, 'pie') - .5, e + .3), off = t >= PIE_T.off();
+  let cx = PIE_T.x, cz = lerp(PIE_T.z, -TD - .45, ease(t, PIE_T.slide(), PIE_T.off())), y = TOP + .06 + fy;
+  if (off) { const [X, Z] = pieGround(), lc = worldToLocal(X, Z); cx = lc[0]; cz = lc[1]; y = pieWorld(t)[1]; }
+  const tip = off ? ease(t, PIE_T.off(), PIE_T.down()) * .5 : 0, flat = off || cz - .42 < -TD - .4; // over the edge it tips, then lies flat on the sand
+  const disc = (r, a0, a1, oz, yy) => { const ps = [[cx, cz + oz]]; for (let i = 0; i <= 20; i++) { const a = lerp(a0, a1, i / 20); ps.push([cx + Math.cos(a) * r, cz + oz + Math.sin(a) * r * (1 - tip)]); } return (flat ? ps.map(([x, z]) => [x, yy, z]) : drape(ps, yy)).map((p) => PL(...p)); };
+  poly(disc(.42, -1.1, 4.6, 0, y), '#c98a3e'); poly(disc(.36, -1.1, 4.6, 0, y + .01), '#e2b267');
+  for (let i = 0; i < 6; i++) { const a = -1.1 + i * .95; seg(PL(cx, y + .015, cz), PL(cx + Math.cos(a) * .36, y + .015, cz + Math.sin(a) * .36 * (1 - tip)), 2, 'rgba(120,70,20,.5)'); }
+  poly(disc(.42, -1.6, -1.1, -sl * .75 * (off ? 0 : 1), y), '#c98a3e');
 }
 function book(t) { // "it's a mystery book the way you look": an open book whose pages keep turning
   return; // draft 9: the board holds the book up as a mask (car.js), so the table copy stays hidden. Kept callable.
@@ -543,23 +593,37 @@ function micBooms(t) {
   for (const pl of poles) { const fp = PL(...pl.pts[Math.round(N * .42)]); if (fp[2] < .2) continue; const fk = kAt(fp); g.save(); g.translate(fp[0], fp[1]); g.rotate(pl.kn * (pl.i - 1) * .6); // the "?" flag cube on the pole
     g.fillStyle = ['#d8452f', '#2f6fb5', '#e8b23a'][pl.i]; g.fillRect(-.16 * fk, -.16 * fk, .32 * fk, .32 * fk); g.fillStyle = '#fbf3e3'; g.font = `bold ${Math.max(6, .3 * fk) | 0}px Georgia, serif`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('?', 0, .01 * fk); g.restore(); }
 }
+// draft 11: no fade. The two pieces drop onto the board from out of frame (dropHeight); after "foul play" the stomped rook is
+// kicked off the near edge and the knight hops down after it; they lie on the playa where they land while the table rolls
+// on, drawn with the playa (tableInto) until the lens has lost them.
+const CHESS = { s: () => L_(26).s, e: () => L_(27).e, foul: () => wt(27, 'foul'), knightOff: () => L_(27).e + .2 };
+let chessRest = null; // where the two pieces come to rest on the playa (world X, Z): constants from the car's path. Draft 11: 1.1 m beyond the near row's chairs (z -2.3), so the chairs roll past them instead of through them
+function chessGround() { if (chessRest) return chessRest; const f = CHESS.foul(), ko = CHESS.knightOff(); return (chessRest = { rook: carLocalToWorld(f + 1.3, 1.4, -3.4), knight: carLocalToWorld(ko + .6, 2.5, -3.6) }); }
+function chessPieceDraw(kind, p, k, rot, sqx, sqy) { // the small pieces, face on; p = screen point of the base, k px per metre (already x1.5)
+  g.save(); g.translate(p[0], p[1]); g.rotate(rot);
+  if (kind === 'rook') { const kr = k * 1.5; g.scale(sqx, sqy); g.fillStyle = '#efe6cf'; g.fillRect(-.16 * kr, -.55 * kr, .32 * kr, .55 * kr); g.fillRect(-.2 * kr, -.66 * kr, .4 * kr, .12 * kr); for (let i = 0; i < 3; i++) g.fillRect((-.2 + i * .15) * kr, -.76 * kr, .1 * kr, .1 * kr);
+    g.strokeStyle = 'rgba(60,50,40,.4)'; g.lineWidth = Math.max(1, .015 * kr); g.strokeRect(-.16 * kr, -.55 * kr, .32 * kr, .55 * kr); }
+  else { const kk = k; g.fillStyle = '#1d1a1a'; g.beginPath(); g.moveTo(-.2 * kk, 0); g.lineTo(.2 * kk, 0); g.lineTo(.12 * kk, -.3 * kk); g.quadraticCurveTo(.28 * kk, -.5 * kk, .05 * kk, -.78 * kk); g.lineTo(-.22 * kk, -.55 * kk); g.lineTo(-.02 * kk, -.5 * kk); g.lineTo(-.12 * kk, -.3 * kk); g.fill();
+    g.fillStyle = '#efe6cf'; g.beginPath(); g.arc(.02 * kk, -.6 * kk, .025 * kk, 0, TAU); g.fill(); }
+  g.restore(); }
+function chessGroundSeen(t, which) { const G = chessGround()[which], b = which === 'rook' ? CHESS.foul() + 1.3 : CHESS.knightOff() + .6; return t <= b || seenSpan(t, 0, b, () => [G[0], .4, G[1], .9], 40, .2); }
+function chessOnPlaya(t, list) { // the pieces lying on the playa (from tableInto)
+  const S = 1.5; for (const which of ['rook', 'knight']) { const b = which === 'rook' ? CHESS.foul() + 1.3 : CHESS.knightOff() + .6; if (t < b || !chessGroundSeen(t, which)) continue; const [X, Z] = chessGround()[which];
+    ACT.note('table:chess:' + which, X, Z, .5, { h: .4, group: 'chessSmall' });
+    list.push({ z: P(X, 0, Z)[2], draw: () => { const q = P(X, .02, Z); if (q[2] < .3) return; const k = kAt(q) * S; if (which === 'rook') chessPieceDraw('rook', q, k, 5, 1.6, .28); else chessPieceDraw('knight', q, k, 1.45, 1, 1); } }); } }
 function chessPieces(t) { // the knight hops to the rook; on "foul play" it jumps two squares too far, stomps the rook flat and kicks it off the board
-  const s = L_(26).s, e = L_(27).e; if (t < s - .2 || t > e + .8) return; const al = ease(t, s - .2, s + .1) * (1 - ease(t, e + .2, e + .8));
-  const rook = wt(26, 'rook'), foul = wt(27, 'foul'), S = 1.5;
+  const s = CHESS.s(), e = CHESS.e(); if (t < s - 6 || t > e + 1.4) return;
+  const rook = wt(26, 'rook'), foul = CHESS.foul(), S = 1.5, ko = CHESS.knightOff();
+  const kH = dropHeight('chessK', s, -2.5, TOP, -.4), rH = dropHeight('chessR', s - .3, 2.0, TOP, .4), kf = dropY(t, s, kH), rf = dropY(t, s - .3, rH);
   const ku = ease(t, s, rook), hop1 = Math.sin(ku * Math.PI) * .6, fu = clamp((t - foul + .25) / .45), stomp = fu >= 1 ? 1 : 0;
-  let kx = lerp(-2.5, 1.0, ku), kz = lerp(-.4, .4, ku), ky = TOP + hop1;
+  let kx = lerp(-2.5, 1.0, ku), kz = lerp(-.4, .4, ku), ky = TOP + hop1 + (kf || 0);
   if (fu > 0) { kx = lerp(1.0, 2.0, fu); kz = .4; ky = TOP + Math.sin(fu * Math.PI) * 1.6; } // the illegal leap, high and long
+  const off = clamp((t - ko) / .6); if (off > 0) { kx = lerp(2.0, 2.5, off); kz = lerp(.4, -3.6, off); ky = lerp(TOP, 0, off * off) + Math.sin(off * Math.PI) * .7; } // it hops down off the near edge after the rook
   const squash = ease(t, foul + .2, foul + .3), kick = ease(t, foul + .55, foul + 1.3);
-  g.save(); g.globalAlpha = al;
-  const rx = lerp(2.0, 1.4, kick), ry = TOP + Math.sin(kick * Math.PI) * .9 - (kick > .75 ? (kick - .75) * 5 : 0), pr = PL(rx, ry, .4 - kick * 2.6); if (pr[2] > .2) { const kr = kAt(pr) * S * 1.5; // draft 9: the rook 1.5x
-    g.save(); g.translate(pr[0], pr[1]); g.rotate(kick * 5); g.scale(1 + squash * .6, 1 - squash * .72);
-    g.fillStyle = '#efe6cf'; g.fillRect(-.16 * kr, -.55 * kr, .32 * kr, .55 * kr); g.fillRect(-.2 * kr, -.66 * kr, .4 * kr, .12 * kr); for (let i = 0; i < 3; i++) g.fillRect((-.2 + i * .15) * kr, -.76 * kr, .1 * kr, .1 * kr);
-    g.strokeStyle = 'rgba(60,50,40,.4)'; g.lineWidth = Math.max(1, .015 * kr); g.strokeRect(-.16 * kr, -.55 * kr, .32 * kr, .55 * kr); g.restore();
-    if (squash > 0 && kick < .3) { g.strokeStyle = `rgba(240,230,210,${.6 * (1 - kick / .3)})`; g.lineWidth = Math.max(1, .03 * kr); for (let i = 0; i < 6; i++) { const a = i / 6 * Math.PI + Math.PI, r0 = .4 * kr, r1 = (.6 + squash * .3) * kr; g.beginPath(); g.moveTo(pr[0] + Math.cos(a) * r0, pr[1] + Math.sin(a) * r0 * .5); g.lineTo(pr[0] + Math.cos(a) * r1, pr[1] + Math.sin(a) * r1 * .5); g.stroke(); } } } // the stomp's dust lines
-  const pk = PL(kx, ky - stomp * 0 + (squash > 0 && kick === 0 ? -.05 : 0) + squash * .25 * (1 - kick), kz), kk = kAt(pk) * S; if (pk[2] > .2) { g.save(); g.translate(pk[0], pk[1]); g.rotate(fu > 0 && fu < 1 ? -.4 * Math.sin(fu * Math.PI) : kick > 0 && kick < .4 ? .5 : 0);
-    g.fillStyle = '#1d1a1a'; g.beginPath(); g.moveTo(-.2 * kk, 0); g.lineTo(.2 * kk, 0); g.lineTo(.12 * kk, -.3 * kk); g.quadraticCurveTo(.28 * kk, -.5 * kk, .05 * kk, -.78 * kk); g.lineTo(-.22 * kk, -.55 * kk); g.lineTo(-.02 * kk, -.5 * kk); g.lineTo(-.12 * kk, -.3 * kk); g.fill();
-    g.fillStyle = '#efe6cf'; g.beginPath(); g.arc(.02 * kk, -.6 * kk, .025 * kk, 0, TAU); g.fill(); g.restore(); }
-  g.restore();
+  if (rf !== null && kick < 1) { const rx = lerp(2.0, 1.4, kick), ry = TOP + (rf || 0) + Math.sin(kick * Math.PI) * .9 - (kick > .75 ? (kick - .75) * 4.6 : 0), pr = PL(rx, ry, .4 - kick * 3.8); if (pr[2] > .2) { const kr = kAt(pr) * S * 1.5; // draft 9: the rook 1.5x
+    chessPieceDraw('rook', pr, kAt(pr) * S, kick * 5, 1 + squash * .6, 1 - squash * .72);
+    if (squash > 0 && kick < .3) { g.strokeStyle = `rgba(240,230,210,${.6 * (1 - kick / .3)})`; g.lineWidth = Math.max(1, .03 * kr); for (let i = 0; i < 6; i++) { const a = i / 6 * Math.PI + Math.PI, r0 = .4 * kr, r1 = (.6 + squash * .3) * kr; g.beginPath(); g.moveTo(pr[0] + Math.cos(a) * r0, pr[1] + Math.sin(a) * r0 * .5); g.lineTo(pr[0] + Math.cos(a) * r1, pr[1] + Math.sin(a) * r1 * .5); g.stroke(); } } } } // the stomp's dust lines
+  if (kf !== null && off < 1) { const pk = PL(kx, ky + (squash > 0 && kick === 0 ? -.05 : 0) + squash * .25 * (1 - kick) * (1 - off), kz); if (pk[2] > .2) chessPieceDraw('knight', pk, kAt(pk) * S, fu > 0 && fu < 1 ? -.4 * Math.sin(fu * Math.PI) : kick > 0 && kick < .4 ? .5 : off > 0 ? 1.45 * ease(off, .5, 1) : 0, 1, 1); }
 }
 function truth(t, emissive) { // "put the truth in a box": a small light carried into the open drawer
   return; // draft 9: the 8 cm light is retired; the LENS head goes into nested crates instead (instruments.js). Kept callable.
@@ -587,5 +651,7 @@ function tablePropsFront(t) { truth(t, false); micBooms(t); }
 // scene hook: table-chain things that live on the playa. Pushes {z, draw, shadow} into list.
 function tableInto(t, list) {
   const li = 32, s = L_(li).s, e = L_(li + 1).s + .3; // the refrain-3 press stands on the playa, depth-sorted with it
-  if (t > s - .3 && t < e) list.push({ z: P(carX(wt(li, 'news')), 0, CZ + 14)[2], draw: () => newsOne(t, li, 3) });
+  if (t > s - .3 && (t < e || seenSpan(t, s, e, (u) => [carX(wt(li, 'news')), 4 + newsLift(u, li, 3) * 4, carZ(u) + 14, 5], 6, .05))) list.push({ z: P(carX(wt(li, 'news')), 0, CZ + 14)[2], draw: () => newsOne(t, li, 3) }), ACT.note('table:press', carX(wt(li, 'news')), carZ(t) + 14, 4.7, { h: 10 + newsLift(t, li, 3) * 4, group: 'press' });
+  if (t > JM_WALK.t0() && (t <= JM_WALK.t1() || seenSpan(t, 0, JM_WALK.t1(), (u) => { const [X, Z] = jmWorld(u); return [X, 1.5, Z, 1.6]; }, 40, .2))) { const [X, Z] = jmWorld(t); if (jmOffset(t)[2] + (JM.z0 + JM.z1) / 2 > 2.9) ACT.note('table:jail', X, Z, .8, { h: 2.2, group: 'jail' }); list.push({ z: P(X, 0, Z)[2], draw: () => jailModel(t, true) }); } // the jail model once it has stepped off the table
+  chessOnPlaya(t, list);
 }

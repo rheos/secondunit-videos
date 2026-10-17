@@ -1,5 +1,5 @@
 // Reform Party, Dali look: lyric installations on the playa.
-// Draft 3: escalating blinds, the padlocked ear, the spin whirl, the board-copy parade, the clock car's two visits,
+// Draft 3: escalating blinds, the padlocked ear, the spin whirl, the clock car's two visits,
 // bigger news, the foul, and the giant gavel landing on the table.
 // Anything that must sit in front of the table is drawn on the car layer (installsCar, called from pieBirds at the end
 // of drawCar), because the car layer is laid over the whole scene; the rest goes through the depth-sorted list.
@@ -135,7 +135,7 @@ function earLock(t, hx, hy, k) { // on "restrict" a padlock drops out of the sky
 // a mouth sculpture with a padlock through its lips, on "gag order". Draft 9: twice the size, and placed from the camera's
 // own pose at "order" so it sits on the left third of that framing and the frame edge never cuts it (30-31.5) whatever
 // the flight does; the padlock hangs open from "gag" and its shackle snaps shut on "order", the lips pinch, the lock shudders.
-const GAG = { S: 2, D: 31.6, SX: 480, H: 2.8 }; // scale, metres ahead of the lens at "order", screen x of its centre there, lips height (scaled units)
+const GAG = { S: 1.8, D: 22, SX: 860, H: 2.5 }; // draft 11 (Robin: closer and more central so it is easy to notice): 22 m out (was 31.6), near the centre (was the left third), the lock held above the Instrument People's heads; // scale, metres ahead of the lens at "order", screen x of its centre there, lips height (scaled units)
 let gagAt = null; // a constant (worked out once from the flight, which is itself a pure function of t), not frame state
 function gagWhere() { if (gagAt) return gagAt; const c = camAt(wt(2, 'order'), true), fx = Math.sin(c.yaw), fz = Math.cos(c.yaw), lat = (GAG.SX - W / 2) / c.f * GAG.D;
   return (gagAt = { X: c.x + fx * GAG.D + fz * lat, Z: c.z + fz * GAG.D - fx * lat, rx: fz, rz: -fx }); }
@@ -167,23 +167,43 @@ function tumblePapers(t, list) { for (const o of paperItems(t)) { if (nearCar(o.
 // ---------- the spin refrains: dust devils and art cars whirl round the table, bigger each time ----------
 const WHIRLS = [{ li: 6, n: 3, cars: 2, R: 15, amt: .85, w: .5 }, { li: 13, n: 5, cars: 4, R: 14, amt: 1.1, w: .7 }, { li: 34, n: 7, cars: 6, R: 13, amt: 1.4, w: .95 }];
 const KINDS = ['fish', 'organ', 'horse', 'teacup', 'shoe', 'rhino']; // one of a kind (Robin): car slot j is always the same vehicle, no design twice (organ..rhino in artcars.js)
+// Draft 11 (Robin: permanence; audit: the cars grew from nothing and shrank to a smear, and rode within 1 m of the chairs
+// on a radius tied to the drone's distance). The cars now drive a fixed ring 17.5 m (and 20.5 m) round the table's
+// centre, 12 m and more clear of its corners however it turns. Each drives in along the ring's tangent, laps, and drives
+// off along it (refrain 3: the gavel's blast throws them outward and tips them over, and they lie where they land). Off
+// the ring they are only drawn while the lens keeps them in view (seenSpan), so they come and go off frame. The dust
+// devils keep their fade (dust) on an 11 m ring.
+const WHIRL_R = 17.5, DEVIL_R = 11;
+function whirlAng(wh, t) { const s = L_(wh.li).s, sp = wt(wh.li, 'spin'); return wh.w * (t - s) + wh.w * .6 * ease(t, sp - .3, sp + 1.5) * 3; }
+function whirlSpan(wh, r) { const s = L_(wh.li).s, e = L_(wh.li).e; return r === 2 ? [s + 1.6, gavelT()] : [s + 1.6, e - .4]; } // the laps on the ring
+function whirlRing(wh, j, t) { const a = -((j + .5) / wh.cars * TAU + whirlAng(wh, t) * 1.15), R2 = WHIRL_R + (j % 2) * 3; return [carX(t) + Math.cos(a) * R2, carZ(t) + Math.sin(a) * R2, a]; }
+function whirlCarAt(wh, r, j, t) { // world [X, Z, tilt] of whirl car j of refrain r at song time t (any t)
+  const [ta, tb] = whirlSpan(wh, r), vel = (u) => { const p0 = whirlRing(wh, j, u - .05), p1 = whirlRing(wh, j, u + .05); return [(p1[0] - p0[0]) / .1, (p1[1] - p0[1]) / .1]; };
+  if (t < ta && r === 2) { const p = whirlRing(wh, j, ta), dx = p[0] - carX(ta), dz = p[1] - carZ(ta), dl = Math.hypot(dx, dz) || 1, d = (ta - t) * 9; return [p[0] + dx / dl * d, p[1] + dz / dl * d, 0]; } // refrain 3: straight in from beyond the ring (on the tangent the horse met the clock and eye cars driving off, 186.75)
+  if (t < ta) { const p = whirlRing(wh, j, ta), v = vel(ta); return [p[0] - v[0] * (ta - t), p[1] - v[1] * (ta - t), 0]; } // in along the tangent
+  if (t <= tb) { const p = whirlRing(wh, j, t); return [p[0], p[1], 0]; }
+  if (r < 2) { const p = whirlRing(wh, j, tb), v = vel(tb); return [p[0] + v[0] * (t - tb), p[1] + v[1] * (t - tb), 0]; } // off along it
+  const p = whirlRing(wh, j, tb), cx = carX(tb), cz = carZ(tb), dx = p[0] - cx, dz = p[1] - cz, dl = Math.hypot(dx, dz) || 1, bl = ease(t, tb, tb + 1.2) * 14; // the blast
+  return [p[0] + dx / dl * bl, p[1] + dz / dl * bl, ease(t, tb, tb + 1.2) * (j % 2 ? 1 : -1) * 1.2]; }
 function whirlItems(t) { const out = [];
-  WHIRLS.forEach((wh, r) => { const s = L_(wh.li).s, e = L_(wh.li).e, gs = gavelT(); if (t < s - .3 || t > e + 1.5) return;
-    let env = ease(t, s - .3, s + 1.6) * (1 - ease(t, e - .4, e + .8)), blow = 0;
-    if (r === 2) { env = ease(t, s - .3, s + 1.6) * (1 - ease(t, gs, gs + .5)); blow = ease(t, gs, gs + 1.2); }
-    if (env <= 0 && blow <= 0) return; const ang = wh.w * (t - s) + wh.w * .6 * ease(t, wt(wh.li, 'spin') - .3, wt(wh.li, 'spin') + 1.5) * 3;
-    const dcam = Math.hypot(C.x - CX, C.z - CZ), Rr = Math.min(wh.R, Math.max(9.5, dcam * .6)) * lerp(1.5, 1, ease(t, s - .3, s + 1.6)) + blow * 30;
-    for (let j = 0; j < wh.n; j++) { const a = -(j / wh.n * TAU + ang); out.push({ kind: 'devil', X: CX + Math.cos(a) * Rr, Z: CZ + Math.sin(a) * Rr * .8, amt: wh.amt * env, seed: r * 10 + j }); }
-    for (let j = 0; j < wh.cars; j++) { const a = -((j + .5) / wh.cars * TAU + ang * 1.15), R2 = Rr * .82 + (j % 2) * 2.5; const X = CX + Math.cos(a) * R2, Z = CZ + Math.sin(a) * R2 * .8;
-      const ah = a - .05, dir = Math.sign(P(CX + Math.cos(ah) * R2, 0, CZ + Math.sin(ah) * R2 * .8)[0] - P(X, 0, Z)[0]) || 1;
-      out.push({ kind: KINDS[j], X, Z, dir, up: clamp(env * 1.4 + blow), tilt: blow * (j % 2 ? 1 : -1) * 1.2, i: j + r * 7, nod: 0 }); } });
+  WHIRLS.forEach((wh, r) => { const s = L_(wh.li).s, e = L_(wh.li).e, gs = gavelT(), [ta, tb] = whirlSpan(wh, r);
+    // the dust devils (dust: they may fade)
+    if (t >= s - .3 && t <= e + 1.5) { let env = ease(t, s - .3, s + 1.6) * (1 - ease(t, e - .4, e + .8)), blow = 0;
+      if (r === 2) { env = ease(t, s - .3, s + 1.6) * (1 - ease(t, gs, gs + .5)); blow = ease(t, gs, gs + 1.2); }
+      const ang = whirlAng(wh, t), Rr = DEVIL_R * lerp(1.5, 1, ease(t, s - .3, s + 1.6)) + blow * 30;
+      if (env > 0) for (let j = 0; j < wh.n; j++) { const a = -(j / wh.n * TAU + ang); out.push({ kind: 'devil', X: CX + Math.cos(a) * Rr, Z: CZ + Math.sin(a) * Rr * .8, amt: wh.amt * env, seed: r * 10 + j }); } }
+    // the cars: drawn on their ring through the laps, and on the way in and out only while the lens sees them
+    for (let j = 0; j < wh.cars; j++) { const pos = (u) => { const q = whirlCarAt(wh, r, j, u); return [q[0], 1.8, q[1], 3.4]; };
+      if (!seenSpan(t, ta, r === 2 ? tb + 1.2 : tb, pos, r === 2 ? 40 : 12, r === 2 ? .2 : .1)) continue;
+      const [X, Z, tilt] = whirlCarAt(wh, r, j, t), [X2] = whirlCarAt(wh, r, j, t + .05), Z2 = whirlCarAt(wh, r, j, t + .05)[1], moving = Math.hypot(X2 - X, Z2 - Z) > .01;
+      const dir = moving ? Math.sign(P(X2, 0, Z2)[0] - P(X, 0, Z)[0]) || 1 : (j % 2 ? 1 : -1);
+      out.push({ kind: KINDS[j], X, Z, dir, up: 1, tilt, i: j + r * 7, nod: 0, id: 'installs:whirl:' + KINDS[j] + ':' + r }); } });
   return out; }
-function drawWhirl(o, t) { if (P(o.X, 0, o.Z)[2] < 5) return; if (o.kind === 'devil') { dustDevil(o.X, o.Z, t, o.amt, o.seed); dustDevil(o.X + .6, o.Z + .4, t, o.amt * .9, o.seed + 50); return; } const p = P(o.X, 0, o.Z); if (p[2] < 8 || o.up <= 0) return; artCar(o.kind, p[0], p[1], kAt(p) * o.up, o.dir, t, o.i, o.tilt); }
+function drawWhirl(o, t) { if (o.kind === 'devil') { if (P(o.X, 0, o.Z)[2] < 5) return; dustDevil(o.X, o.Z, t, o.amt, o.seed); dustDevil(o.X + .6, o.Z + .4, t, o.amt * .9, o.seed + 50); return; } const p = P(o.X, 0, o.Z); if (p[2] < .6) return; artCar(o.kind, p[0], p[1], kAt(p), o.dir, t, o.i, o.tilt); }
 function artCar(kind, x, y, k, dir, t, i, tilt) {
   g.save(); g.translate(x, y); if (tilt) g.rotate(tilt); g.scale(dir, 1);
   const wheel = (wx, r) => { g.fillStyle = '#17120f'; g.beginPath(); g.arc(wx * k, -r * k, r * k, 0, TAU); g.fill(); g.strokeStyle = '#8a7a60'; g.lineWidth = Math.max(1, .05 * k); const a = -t * 6; g.beginPath(); g.moveTo(wx * k + Math.cos(a) * r * k, -r * k + Math.sin(a) * r * k); g.lineTo(wx * k - Math.cos(a) * r * k, -r * k - Math.sin(a) * r * k); g.stroke(); };
-  if (kind === 'copy') boardCopy(0, 0, k, t, 0, i);
-  else if (kind === 'fish') { // a fish mutant vehicle with a costumed rider
+  if (kind === 'fish') { // a fish mutant vehicle with a costumed rider
     const fg = g.createLinearGradient(0, -2.6 * k, 0, -.4 * k); fg.addColorStop(0, '#3fa7a0'); fg.addColorStop(1, '#1f5e72'); g.fillStyle = fg;
     g.beginPath(); g.ellipse(0, -1.5 * k, 2.1 * k, 1.05 * k, 0, 0, TAU); g.fill();
     g.beginPath(); g.moveTo(-1.8 * k, -1.5 * k); g.lineTo(-3.2 * k, -2.6 * k + Math.sin(t * 7 + i) * .3 * k); g.lineTo(-3 * k, -1.5 * k); g.lineTo(-3.2 * k, -.5 * k - Math.sin(t * 7 + i) * .3 * k); g.fill();
@@ -204,37 +224,10 @@ function artCar(kind, x, y, k, dir, t, i, tilt) {
   g.restore();
 }
 
-// ---------- Gilliam, crowds of copies: the board's copies parade past on wheels, nodding as one ----------
-function boardCopy(x, y, k, t, nod, i) { // a small replica of the table car: three suits facing us behind it, three on low chairs in front, red skirt, red hat
-  const torso = (bx, by, front) => { g.fillStyle = front ? PAL.suit : '#22222a'; g.beginPath(); g.moveTo(bx - .24 * k, by); g.lineTo(bx - .29 * k, by - .5 * k); g.quadraticCurveTo(bx, by - .58 * k, bx + .29 * k, by - .5 * k); g.lineTo(bx + .24 * k, by); g.fill();
-    if (front) { g.fillStyle = '#f4efe6'; g.beginPath(); g.moveTo(bx - .08 * k, by - .53 * k); g.lineTo(bx, by - .28 * k); g.lineTo(bx + .08 * k, by - .53 * k); g.fill(); rosette(bx - .15 * k, by - .42 * k, .045 * k); }
-    egg(bx, by - .7 * k + nod * k, k * 1.2, front, 0); };
-  for (const sx of [-1.3, 0, 1.3]) torso(x + sx * k, y - 1.08 * k, true); // the far row, facing us
-  g.fillStyle = '#b52c22'; g.fillRect(x - .12 * k, y - 1.3 * k, .24 * k, .16 * k); g.fillRect(x - .2 * k, y - 1.16 * k, .4 * k, .05 * k);
-  g.fillStyle = PAL.mahoganyLit; g.fillRect(x - 2 * k, y - 1.12 * k, 4 * k, .14 * k); g.fillStyle = '#3d170c'; g.fillRect(x - 2 * k, y - .99 * k, 4 * k, .06 * k);
-  const sg = g.createLinearGradient(0, y - k, 0, y - .1 * k); sg.addColorStop(0, '#5a0e16'); sg.addColorStop(1, PAL.skirt); g.fillStyle = sg; g.beginPath(); g.moveTo(x - 1.95 * k, y - .94 * k); g.lineTo(x + 1.95 * k, y - .94 * k);
-  for (let j = 8; j >= 0; j--) g.lineTo(x - 1.95 * k + j * .4875 * k, y - (.2 + .04 * Math.sin(j * 2 + t * 2 + i)) * k); g.fill();
-  g.strokeStyle = '#d6a632'; g.lineWidth = Math.max(1, .05 * k); g.beginPath(); for (let j = 0; j <= 8; j++) { const yy = y - (.2 + .04 * Math.sin(j * 2 + t * 2 + i)) * k; j ? g.lineTo(x - 1.95 * k + j * .4875 * k, yy) : g.moveTo(x - 1.95 * k, yy); } g.stroke();
-  g.fillStyle = '#17120f'; for (const wx of [-1.4, 1.4]) { g.beginPath(); g.arc(x + wx * k, y - .14 * k, .14 * k, 0, TAU); g.fill(); }
-  for (const sx of [-.65, .65]) { const bx = x + sx * k, seat = y - .5 * k; // the near row on low chairs, backs to us, feet near the sand
-    g.fillStyle = '#1a1a20'; g.fillRect(bx - .16 * k, seat, .12 * k, .42 * k); g.fillRect(bx + .04 * k, seat, .12 * k, .42 * k);
-    g.fillStyle = '#5c3a1c'; g.fillRect(bx - .3 * k, seat - .02 * k, .6 * k, .06 * k); torso(bx, seat, false); g.fillStyle = PAL.wood; g.fillRect(bx - .27 * k, seat - .64 * k, .54 * k, .07 * k); g.fillRect(bx - .25 * k, seat - .6 * k, .05 * k, .6 * k); g.fillRect(bx + .2 * k, seat - .6 * k, .05 * k, .6 * k); }
-}
-function suitColumn(t, list) { // during news and grin a column of copies rolls past the other way (refrains 1 and 2, draft 7)
-  const wins = [[L_(4).s - .5, L_(5).e + .4, 5], [L_(11).s - .5, L_(12).e + .4, 6]];
-  for (const [s, e, n] of wins) { if (t < s || t > e) continue; const vis = hold(t, s, s + .3, e - .3, e), nodOne = Math.abs(Math.sin(t * 2.2)) * .05;
-    for (let i = 0; i < n; i++) { const X = carX(t) + 34 - (t - s) * 7.5 + i * 6.2, Z = 15 + (i % 2) * 1.2; const p = P(X, 0, Z); if (p[2] < 1.5 || p[0] < -200 || p[0] > W + 200) continue;
-      list.push({ z: p[2], draw: () => { const k = kAt(p) * vis; if (k < .5) return; boardCopy(p[0], p[1] - (Math.floor(t * 5 + i) % 2) * .03 * k, k, t, nodOne, i); }, shadow: () => shadowOf([[X - 1.7, 0, Z - .6], [X + 1.7, 0, Z - .6], [X + 1.7, 2, Z], [X - 1.7, 2, Z]], t) }); } }
-  rehearsedRow(t, list); }
-// draft 9, "rehearsed": five copies roll in to about 8 m beyond the far row, pace the board in a line, and nod on exactly
-// the main row's beat (car.js: |sin(1.6 pi (t - line start))| from the line's start to its end + .3); then they roll off
-// the other way before refrain 3 climbs out over the city
-function rehearsedRow(t, list) { const reh = L_(30), s = reh.s - .5, e = reh.e + 2.6; if (t < s || t > e) return;
-  const nod = t > reh.s && t < reh.e + .3 ? Math.abs(Math.sin((t - reh.s) * 1.6 * Math.PI)) * .14 : 0, inn = 1 - ease(t, s, reh.s + 1.1), out = ease(t, reh.e + .4, e), vis = hold(t, s, s + .25, e - .35, e);
-  for (let i = 0; i < 5; i++) { const X = carX(t) - 9.4 + i * 4.3 + inn * (16 + i * 2.5) - out * out * (34 + i * 3), Z = 7.2 + (i % 2) * .5, p = P(X, 0, Z); if (p[2] < 1.5 || p[0] < -260 || p[0] > W + 260) continue;
-    const roll = inn > .02 || out > .02 ? (Math.floor(t * 5 + i) % 2) * .03 : 0; // the wheels only bump while rolling, so the nod reads as one
-    list.push({ z: p[2], draw: () => { const k = kAt(p) * vis; if (k < .5) return; boardCopy(p[0], p[1] - roll * k, k, t, nod, i); }, shadow: () => shadowOf([[X - 1.7, 0, Z - .6], [X + 1.7, 0, Z - .6], [X + 1.7, 2, Z], [X - 1.7, 2, Z]], t) }); } }
-
+// ---------- (cut in draft 11) the copies of the board ----------
+// Robin cut the mini boardroom copies that rolled past in refrains 1 and 2 and on "rehearsed" (art cars are one of a
+// kind). "Rehearsed" is played by the board itself: every suit nods as one and the recorders rise in the heads (car.js).
+function suitColumn(t, list) {} // kept callable: render.js still calls it
 // ---------- the soft clock car: two visits only, drooping more each time; on "once upon a time" its hands run backward ----------
 // visit 1: dawn, nearly round, drives through the intro push. Visit 2: midday-soft, rolls in behind the vogue poses and parks on
 // the right third for "once upon a time" (needs the camera to hold VOGUE through 126.7, see the report), then leaves during the dime.
@@ -246,11 +239,17 @@ const EYES = { a: L_(33).s, in0: L_(33).s + 2.75, in1: L_(33).s + 4.2, out0: L_(
 // They only close in if the flight really rises over the board for DI-1 (camera above 7 m at the face hold); otherwise they
 // stay wide, clear of the protected grin close-up (a constant, worked out once from the flight)
 let eyesUp = null; const eyesRise = () => (eyesUp !== null ? eyesUp : (eyesUp = camAt(EYES.in1 + .5, true).y > 7 ? 1 : 0));
-const eyeX = (t, side) => side * (lerp(EYES.far, EYES.x, ease(t, EYES.in0, EYES.in1) * eyesRise()) + 30 * (1 - ease(t, EYES.a, EYES.a + 2.2))) - 28 * ease(t, EYES.out0, EYES.b) ** 2; // in from either side, out by dropping behind
-const eyeZ = (t, z) => z + 12 * ease(t, EYES.out0, EYES.b);
-const CLOCK_VISITS = [{ a: 0, b: 17, dx: (t) => lerp(46, 4, t / 17), Z: 34 }, { a: L_(14).s, b: 127.9, dx: (t) => lerp(24, 9, ease(t, L_(14).s, 125.7)) - Math.max(0, t - 125.7) * .7, Z: 16 },
-  { a: EYES.a, b: EYES.b, dx: (t) => eyeX(t, -1), Z: (t) => eyeZ(t, 3.7), s: .6 }];
-function clockCar(t, list) { const v = CLOCK_VISITS.find((v) => t >= v.a && t <= v.b); if (!v) return; const X = carX(t) + v.dx(t), Z = typeof v.Z === 'function' ? v.Z(t) : v.Z, sc = v.s || 1; const p = P(X, 0, Z); if (p[2] < 2 || p[0] < -400 || p[0] > W + 400) return;
+// draft 11: before and after their window the two keep driving (in from further out, off behind), drawn only while the
+// lens still sees them, so they never blink; and they pace 2 m clear of the far row's chairs (audit: 0.5 m)
+const eyeX = (t, side) => { const u = t < EYES.a ? (EYES.a - t) ** 2 * 3 : 0, v = t > EYES.b ? (t - EYES.b) ** 2 * 4 : 0;
+  return side * (lerp(EYES.far, EYES.x, ease(t, EYES.in0, EYES.in1) * eyesRise()) + 30 * (1 - ease(t, EYES.a, EYES.a + 2.2)) + u) - 28 * ease(t, EYES.out0, EYES.b) ** 2 - v; }; // in from either side, out by dropping behind
+const eyeZ = (t, z) => z + 12 * ease(t, EYES.out0, EYES.b) + (t > EYES.b ? (t - EYES.b) ** 2 * 2 : 0);
+// visit 1 drives through the intro and on out; visit 2 parks on the right third for "once upon a time", 5 m behind the
+// hourglass's line (it parked inside it), then drives off; visit 3 is the face's left eye
+const CLOCK_VISITS = [{ a: 0, b: 17, dx: (t) => lerp(46, 4, t / 17), Z: 34 }, { a: L_(14).s, b: 127.9, dx: (t) => (t < L_(14).s ? 24 + (L_(14).s - t) ** 2 * 3 : lerp(24, 9, ease(t, L_(14).s, 125.7))) - Math.max(0, t - 125.7) * .7 - (t > 127.9 ? (t - 127.9) ** 2 * 1.2 : 0), Z: 21 },
+  { a: EYES.a, b: EYES.b, dx: (t) => eyeX(t, -1), Z: (t) => eyeZ(t, 6.6), s: .6 }];
+function clockVisit(t) { for (let j = 0; j < CLOCK_VISITS.length; j++) { const v = CLOCK_VISITS[j], pos = (u) => [carX(u) + v.dx(u), 3.5 * (v.s || 1), typeof v.Z === 'function' ? v.Z(u) : v.Z, 4.5 * (v.s || 1)]; if (seenSpan(t, v.a, v.b, pos, 20, .1)) return v; } return null; }
+function clockCar(t, list) { const v = clockVisit(t); if (!v) return; const X = carX(t) + v.dx(t), Z = typeof v.Z === 'function' ? v.Z(t) : v.Z, sc = v.s || 1; ACT.note('installs:clock', X, Z, 3 * sc, { h: 7 * sc, group: 'clock' }); const p = P(X, 0, Z); if (p[2] < 2 || p[0] < -400 || p[0] > W + 400) return;
   list.push({ z: p[2], draw: () => { const k = kAt(p) * sc, x = p[0], y = p[1], m = lerp(.15, 1.25, clamp(t / 130)), back = wt(15, 'time'), hands = t < back ? t * .2 : back * .2 - ease(t, back - .05, back + 2.5) * 30, rock = Math.sin(t * 9) * .03 * k;
     g.fillStyle = '#4a3a2c'; g.fillRect(x - 3 * k, y - 1.6 * k + rock, 6 * k, 1.2 * k); g.fillStyle = '#17120f'; g.beginPath(); g.arc(x - 2 * k, y - .4 * k, .4 * k, 0, TAU); g.arc(x + 2 * k, y - .4 * k, .4 * k, 0, TAU); g.fill();
     g.strokeStyle = PAL.crutch; g.lineWidth = Math.max(1, .14 * k); g.beginPath(); g.moveTo(x + 2.6 * k, y - 1.6 * k); g.lineTo(x + 3.4 * k, y - 4.4 * k - m * k); g.stroke(); // a crutch props the sagging side
@@ -261,7 +260,7 @@ function clockCar(t, list) { const v = CLOCK_VISITS.find((v) => t >= v.a && t <=
     shadow: () => shadowStick(X, 0, 7 * sc, Z, 5 * sc, t) }); }
 // the eyeball car (Dali DI-1, the face's right eye): a 2.5 m eyeball on a low wooden cart, white with red veins and a blue
 // iris; it looks across at the board while it paces, and up into the lens while the drone hangs over the face
-function eyeCar(t, list) { if (t < EYES.a || t > EYES.b) return; const X = carX(t) + eyeX(t, 1), Z = eyeZ(t, 4.4), p = P(X, 0, Z); if (p[2] < 2 || p[0] < -400 || p[0] > W + 400) return;
+function eyeCar(t, list) { if (!seenSpan(t, EYES.a, EYES.b, (u) => [carX(u) + eyeX(u, 1), 1.6, eyeZ(u, 6.3), 2], 20, .1)) return; const X = carX(t) + eyeX(t, 1), Z = eyeZ(t, 6.3); ACT.note('installs:eyeball', X, Z, 1.5, { h: 3.1, group: 'clock' }); const p = P(X, 0, Z); if (p[2] < 2 || p[0] < -400 || p[0] > W + 400) return;
   list.push({ z: p[2], draw: () => { const k = kAt(p), x = p[0], y = p[1], R = 1.25 * k, cy = y - 1.85 * k, wob = Math.sin(t * 7) * .02 * k;
     g.fillStyle = '#6b4a2a'; g.fillRect(x - 1.5 * k, y - .62 * k, 3 * k, .3 * k); g.fillStyle = '#4a3220'; g.fillRect(x - 1.5 * k, y - .36 * k, 3 * k, .06 * k); // the cart bed
     g.fillStyle = '#17120f'; for (const wx of [-1.05, 1.05]) { g.beginPath(); g.arc(x + wx * k, y - .28 * k, .28 * k, 0, TAU); g.fill(); g.strokeStyle = '#8a7a60'; g.lineWidth = Math.max(1, .05 * k); const a = -t * 6; g.beginPath(); g.moveTo(x + wx * k + Math.cos(a) * .28 * k, y - .28 * k + Math.sin(a) * .28 * k); g.lineTo(x + wx * k - Math.cos(a) * .28 * k, y - .28 * k - Math.sin(a) * .28 * k); g.stroke(); }
@@ -276,42 +275,63 @@ function eyeCar(t, list) { if (t < EYES.a || t > EYES.b) return; const X = carX(
 // ---------- Gilliam, lie about scale: chess pieces the size of art cars on "knight to queen's rook"; on "foul" the knight kicks the rook over ----------
 // Draft 9: the white rook topples TOWARD the lens (a 3D cylinder from "foul"), so it lands with its crenellated top facing
 // us, and a referee in stripes jogs in and holds a 1.2 m yellow card up on "play". The upright pieces are draft 7's.
-let rookDir = null; // the fall heading on the ground: toward where the drone is when the rook lands (a constant, worked out once)
-function rookHeading(X, Z) { if (rookDir) return rookDir; const c = camAt(wt(27, 'foul') + .45, true), dx = c.x - X, dz = c.z - Z, l = Math.hypot(dx, dz) || 1, a = .55; // toward the lens, turned a little to the lens's left (the knight kicked from the right) so the shaft shows behind the top
-  const hx = dx / l, hz = dz / l, lx = -Math.cos(c.yaw), lz = Math.sin(c.yaw); return (rookDir = [hx * Math.cos(a) + lx * Math.sin(a), hz * Math.cos(a) + lz * Math.sin(a)]); }
-function giantChess(t, list) { const s = L_(26).s, e = L_(28).s; if (t < s - .3 || t > e) return; const base = carX(s), up = easeOutBack(clamp((t - s + .3) / .7)) * (1 - ease(t, e - .6, e));
-  const rook = wt(26, 'rook'), foul = wt(27, 'foul'), ku = ease(t, s, rook + .2), hop = Math.abs(Math.sin(ku * Math.PI * 2)) * 5 * (ku < 1 ? 1 : 0), kick = ease(t, foul - .35, foul), fall = clamp((t - foul) / .45) ** 2;
-  const pieces = [{ X: lerp(base + 30, base + 13, ku) - kick * 2.5, Z: 22, kind: 'knight', col: '#1d1a1a', Y: hop + Math.sin(kick * Math.PI) * 2.5 }, { X: base + 6, Z: 22.5, kind: 'rook', col: '#efe6cf', fall }, { X: base - 8, Z: 32, kind: 'rook', col: '#1d1a1a' }];
-  for (const pc of pieces) { const p = P(pc.X, 0, pc.Z); if (p[2] < 1.5) continue;
-    if (pc.fall > 0) { list.push({ z: p[2], draw: () => rookFallen(pc.X, pc.Z, pc.fall, up, t - foul), shadow: () => { const [hx, hz] = rookHeading(pc.X, pc.Z), th = pc.fall * Math.PI / 2; shadowStick(pc.X + hx * 4 * Math.sin(th) * up, 0, 8 * up * Math.cos(th) + 2 * up, pc.Z + hz * 4 * Math.sin(th) * up, 3 * up, t); } }); continue; }
-    list.push({ z: p[2], draw: () => { const k = kAt(p) * up, x = p[0], y = p[1] - (pc.Y || 0) * k; g.save(); g.translate(x, y); if (pc.kind === 'knight') g.scale(-1, 1); g.fillStyle = pc.col; g.strokeStyle = pc.col === '#efe6cf' ? '#8a8070' : '#4a4444'; g.lineWidth = Math.max(1, .1 * k);
+// Draft 11 (Robin: permanence; audit: they shrank to nothing in place, 155.3): no scale at all. The pieces stand on the
+// playa from before the line (drawn from the moment the lens could not see their spot) and after "play" the knight and the
+// black rook topple too; all three lie where they fell until the lens has lost them. The referee jogs in, shows the card,
+// and jogs off out of frame.
+const ROOK_DIRS = {}; // the fall headings on the ground: toward where the drone is when each rook lands (constants, worked out once)
+function rookHeadingAt(key, X, Z, tl) { if (ROOK_DIRS[key]) return ROOK_DIRS[key]; const c = camAt(tl, true), dx = c.x - X, dz = c.z - Z, l = Math.hypot(dx, dz) || 1, a = .55; // toward the lens, turned a little to the lens's left (the knight kicked from the right) so the shaft shows behind the top
+  const hx = dx / l, hz = dz / l, lx = -Math.cos(c.yaw), lz = Math.sin(c.yaw); return (ROOK_DIRS[key] = [hx * Math.cos(a) + lx * Math.sin(a), hz * Math.cos(a) + lz * Math.sin(a)]); }
+function rookHeading(X, Z) { return rookHeadingAt('white', X, Z, wt(27, 'foul') + .45); }
+const GC = { s: () => L_(26).s, kFall: () => wt(27, 'play') + .3, bFall: () => wt(27, 'play') + .7, lie: () => wt(27, 'play') + 1.6 };
+function giantPieces(t) { const s = GC.s(), base = carX(s), rook = wt(26, 'rook'), foul = wt(27, 'foul');
+  const ku = ease(t, s, rook + .2), hop = Math.abs(Math.sin(ku * Math.PI * 2)) * 5 * (ku < 1 ? 1 : 0), kick = ease(t, foul - .35, foul);
+  const kx = lerp(base + 30, base + 13, ku) - kick * 2.5, kfall = clamp((t - GC.kFall()) / .55) ** 2, bfall = clamp((t - GC.bFall()) / .5) ** 2;
+  return [{ id: 'knight', X: kx, Z: 22, kind: 'knight', col: '#1d1a1a', Y: hop + Math.sin(kick * Math.PI) * 2.5, tip: kfall },
+    { id: 'rookW', X: base + 6, Z: 22.5, kind: 'rook', col: '#efe6cf', fall: clamp((t - foul) / .45) ** 2, d: t - foul, key: 'white', tl: foul + .45 },
+    { id: 'rookB', X: base - 8, Z: 32, kind: 'rook', col: '#1d1a1a', fall: bfall, d: t - GC.bFall(), key: 'black', tl: GC.bFall() + .5 }]; }
+function giantChess(t, list) { const s = GC.s(), lie = GC.lie();
+  const all = giantPieces(t);
+  for (const pc of all) { // each piece on its own: drawn through its story, and either side only while the lens keeps it in view
+    const pos = (u) => { const q = giantPieces(u).find((o) => o.id === pc.id); return [q.X, 4, q.Z, 5]; }; if (!seenSpan(t, s - .3, lie, pos, 40, .25)) continue;
+    const p = P(pc.X, 0, pc.Z); if (p[2] < 1.5) continue;
+    if (pc.kind === 'rook') { const [hx, hz] = rookHeadingAt(pc.key, pc.X, pc.Z, pc.tl), th = pc.fall * Math.PI / 2; ACT.note('installs:chess:' + pc.id, pc.X + hx * 4 * Math.sin(th), pc.Z + hz * 4 * Math.sin(th), 2.2, { h: 8 * Math.cos(th) + 2.2 * Math.sin(th) + .5, group: 'chess' });
+      if (pc.fall > 0) { list.push({ z: p[2], draw: () => rookFallen(pc.X, pc.Z, pc.fall, 1, pc.d, pc.key, pc.tl, pc.col), shadow: () => shadowStick(pc.X + hx * 4 * Math.sin(th), 0, 8 * Math.cos(th) + 2, pc.Z + hz * 4 * Math.sin(th), 3, t) }); continue; } }
+    else ACT.note('installs:chess:' + pc.id, pc.X, pc.Z, 2.2, { h: lerp(8, 2.4, pc.tip), group: 'chess' });
+    list.push({ z: p[2], draw: () => { const k = kAt(p), x = p[0], y = p[1] - (pc.Y || 0) * k; g.save(); g.translate(x, y); if (pc.tip) g.rotate(-pc.tip * Math.PI / 2 * .97); if (pc.kind === 'knight') g.scale(-1, 1); g.fillStyle = pc.col; g.strokeStyle = pc.col === '#efe6cf' ? '#8a8070' : '#4a4444'; g.lineWidth = Math.max(1, .1 * k);
     if (pc.kind === 'rook') { g.fillRect(-1.6 * k, -6 * k, 3.2 * k, 6 * k); g.fillRect(-2 * k, -7 * k, 4 * k, 1.2 * k); for (let i = 0; i < 3; i++) g.fillRect((-2 + i * 1.5) * k, -8 * k, 1 * k, 1 * k); g.fillRect(-2.2 * k, -.8 * k, 4.4 * k, .8 * k); g.strokeRect(-1.6 * k, -6 * k, 3.2 * k, 6 * k); }
     else { g.beginPath(); g.moveTo(-2.2 * k, 0); g.lineTo(2.2 * k, 0); g.lineTo(1.3 * k, -3 * k); g.quadraticCurveTo(3 * k, -5 * k, .5 * k, -8 * k); g.lineTo(-2.4 * k, -5.6 * k); g.lineTo(-.2 * k, -5 * k); g.lineTo(-1.3 * k, -3 * k); g.fill(); g.fillStyle = '#efe6cf'; g.beginPath(); g.arc(.1 * k, -6.4 * k, .3 * k, 0, TAU); g.fill(); }
-    g.restore(); },
-    shadow: () => shadowStick(pc.X, 0, 8 * up, pc.Z, 3 * up, t) }); }
-  referee(t, list, up); }
-// the white rook as a solid: plinth, shaft, collar and a ring of eight merlons round a hollow top, tipping about the edge
-// of its plinth toward the lens; d = seconds since "foul"
-function rookFallen(X, Z, fall, up, d) {
-  const [hx, hz] = rookHeading(X, Z), th = fall * Math.PI / 2 * .98, ct = Math.cos(th), st = Math.sin(th), R0 = 2.2 * up, vx = -hz, vz = hx;
+    g.restore(); if (pc.tip > .95 && t - GC.kFall() < 1.9) { const u = t - GC.kFall() - .55, a = clamp(1 - u / 1.4); if (u > 0 && a > 0) for (let i = 0; i < 9; i++) { const ang = i / 9 * Math.PI, r = (2 + u * 7) * k; g.fillStyle = `rgba(222,192,140,${.4 * a})`; g.beginPath(); g.ellipse(x + 4 * k + Math.cos(ang + Math.PI) * r, y - Math.sin(ang) * r * .3, 1.8 * k * (1 + u), .8 * k * (1 + u), 0, 0, TAU); g.fill(); } } }, // the dust where it lands
+    shadow: () => shadowStick(pc.X, 0, lerp(8, 2, pc.tip || 0), pc.Z, 3, t) }); }
+  referee(t, list); }
+// a rook as a solid: plinth, shaft, collar and a ring of eight merlons round a hollow top, tipping about the edge of its
+// plinth toward the lens; d = seconds since it began to fall; key / tl / col: which rook (its own heading and colours)
+function rookFallen(X, Z, fall, up, d, key = 'white', tl, col = '#efe6cf') {
+  const [hx, hz] = rookHeadingAt(key, X, Z, tl != null ? tl : wt(27, 'foul') + .45), th = fall * Math.PI / 2 * .98, ct = Math.cos(th), st = Math.sin(th), R0 = 2.2 * up, vx = -hz, vz = hx;
+  const dark = col !== '#efe6cf', c0 = dark ? '#2a2626' : '#e2d8bf', c1 = dark ? '#1d1a1a' : '#efe6cf', c2 = dark ? '#262222' : '#f3ebd6', ln = dark ? '#4a4444' : '#8a8070', hl = dark ? '#0e0c0c' : '#4f473c', dk = dark ? '#322c2c' : '#e6dcc2';
   const wp = (a, b, c) => { a *= up; b *= up; c *= up; const ar = a - R0, A = ar * ct + b * st + R0, B = -ar * st + b * ct; return P(X + A * hx + c * vx, B, Z + A * hz + c * vz); }; // (along the fall, up the rook, across)
   const ring = (b, r, n = 28) => { const o = []; for (let i = 0; i < n; i++) { const f = i / n * TAU; o.push(wp(Math.cos(f) * r, b, Math.sin(f) * r)); } return o; };
-  const cyl = (b0, b1, r, fill) => { const pts = ring(b0, r).concat(ring(b1, r)); if (!ok(pts)) return; poly(hull(pts), fill, '#8a8070', 1.5); };
+  const cyl = (b0, b1, r, fill) => { const pts = ring(b0, r).concat(ring(b1, r)); if (!ok(pts)) return; poly(hull(pts), fill, ln, 1.5); };
   // the axis points at the camera once it is down, so the top is the near end: draw base to top
-  cyl(0, .8, 2.2, '#e2d8bf'); cyl(.8, 6, 1.6, '#efe6cf'); cyl(6, 7.2, 2.0, '#f3ebd6');
+  cyl(0, .8, 2.2, c0); cyl(.8, 6, 1.6, c1); cyl(6, 7.2, 2.0, c2);
   const top = wp(0, 7.2, 0), ax = wp(0, 8.2, 0), facing = ax[2] < top[2]; // the top end faces us when the axis runs toward the lens
   const merlons = []; for (let i = 0; i < 8; i++) { const f0 = (i + .25) / 8 * TAU, f1 = (i + .75) / 8 * TAU, pts = []; for (const f of [f0, (f0 + f1) / 2, f1]) for (const r of [1.3, 2.0]) for (const b of [7.2, 8.2]) pts.push(wp(Math.cos(f) * r, b, Math.sin(f) * r)); if (ok(pts)) merlons.push({ z: wp(Math.cos((f0 + f1) / 2) * 1.65, 8.2, Math.sin((f0 + f1) / 2) * 1.65)[2], pts }); }
   merlons.sort((a, b) => b.z - a.z);
-  if (facing) { const rim = ring(7.2, 2.0); if (ok(rim)) poly(rim, '#e6dcc2', '#8a8070', 1.5); const hole = ring(7.2, 1.3); if (ok(hole)) poly(hole, '#4f473c'); } // the top's deck and its dark hollow
-  for (const m of merlons) poly(hull(m.pts), '#f3ebd6', '#8a8070', 1.5);
+  if (facing) { const rim = ring(7.2, 2.0); if (ok(rim)) poly(rim, dk, ln, 1.5); const hole = ring(7.2, 1.3); if (ok(hole)) poly(hole, hl); } // the top's deck and its dark hollow
+  for (const m of merlons) poly(hull(m.pts), c2, ln, 1.5);
   if (d > .45) { const u = d - .45, a = clamp(1 - u / 1.4); if (a > 0) { const c = wp(0, 8, 0), k = kAt(c); if (c[2] > 1) for (let i = 0; i < 11; i++) { const ang = i / 11 * Math.PI, r = (2.4 + u * 8) * k; g.fillStyle = `rgba(222,192,140,${.42 * a})`; g.beginPath(); g.ellipse(c[0] + Math.cos(ang + Math.PI) * r, c[1] + 2 * k - Math.sin(ang) * r * .35, 2 * k * (1 + u), .9 * k * (1 + u), 0, 0, TAU); g.fill(); } } } // the dust where the top lands
 }
-// the referee: black and white stripes, faceless, jogs in from the right and holds a 1.2 m yellow card high on "play"
+// the referee: black and white stripes, faceless, jogs in from the right and holds a 1.2 m yellow card high on "play",
+// then (draft 11) jogs on out of frame instead of shrinking away with the pieces
 let refAt = null;
-function refWhere() { if (refAt) return refAt; const c = camAt(wt(27, 'play'), true), fx = Math.sin(c.yaw), fz = Math.cos(c.yaw), D = 15, lat = (.78 * W - W / 2) / c.f * D;
+function refWhere() { if (refAt) return refAt; const c = camAt(wt(27, 'play'), true), fx = Math.sin(c.yaw), fz = Math.cos(c.yaw), D = 18, lat = (.78 * W - W / 2) / c.f * D;
   return (refAt = { X: c.x + fx * D + fz * lat, Z: c.z + fz * D - fx * lat, rx: fz, rz: -fx }); }
-function referee(t, list, up) { const play = wt(27, 'play'); if (t < play - 1.6) return; const { X: X0, Z: Z0, rx, rz } = refWhere(), run = 1 - ease(t, play - 1.6, play - .35), X = X0 + rx * 7 * run, Z = Z0 + rz * 7 * run;
-  const raise = ease(t, play - .14, play + .02), jog = run > .01 ? Math.sin(t * 15) : 0;
+function refPos(t) { const play = wt(27, 'play'), { X: X0, Z: Z0, rx, rz } = refWhere(), r0 = play - 1.6, r1 = play - .35, o0 = play + 1.1;
+  const d = t < r0 ? 7 + (r0 - t) * 5.4 : t < r1 ? 7 * (1 - ease(t, r0, r1)) : t < o0 ? 0 : t - o0 < .5 ? (t - o0) * (t - o0) * 5.4 : (t - o0) * 5.4 - 1.35; // in from the right, the card, then back off the way he came
+  return { X: X0 + rx * d, Z: Z0 + rz * d, run: t < r1 || t > o0 }; }
+function referee(t, list) { const play = wt(27, 'play'), pos = (u) => { const q = refPos(u); return [q.X, .9, q.Z, 1.1]; }; if (!seenSpan(t, play - 1.6, play + 1.1, pos, 12, .1)) return;
+  const { X, Z, run: running } = refPos(t), up = 1, raise = ease(t, play - .14, play + .02) * (1 - ease(t, play + .9, play + 1.25)), jog = running ? Math.sin(t * 15) : 0;
+  ACT.note('installs:referee', X, Z, .3, { h: 1.8, group: 'chess' });
   list.push({ z: P(X, 0, Z)[2], draw: () => { const p = P(X, 0, Z); if (p[2] < 1) return; const k = kAt(p) * up, x = p[0], y = p[1] - Math.abs(jog) * .05 * k;
     g.fillStyle = '#1d1a18'; for (const sd of [-1, 1]) { g.save(); g.translate(x + sd * .09 * k, y - .95 * k); g.rotate(sd * jog * .35); g.fillRect(-.07 * k, 0, .14 * k, .92 * k); g.restore(); } // black trousers
     g.fillStyle = '#141216'; for (const sd of [-1, 1]) { g.beginPath(); g.ellipse(x + sd * .1 * k + sd * jog * .1 * k, y - .03 * k, .12 * k, .05 * k, 0, 0, TAU); g.fill(); }
@@ -421,7 +441,7 @@ function spinDevils(t) { const s = wt(19, 'spin'); const amt = ease(t, s - .3, s
 // scene hook (draft 3): pushes {z, draw, shadow} into list. The far half of the spin whirl and of the gavel's dust ring.
 function installsInto(t, list) {
   eyeCar(t, list); drapeInto(t, list);
-  for (const o of whirlItems(t)) { if (nearCar(o.X, o.Z)) continue; list.push({ z: P(o.X, 0, o.Z)[2], draw: () => drawWhirl(o, t), shadow: o.kind === 'devil' ? null : () => shadowStick(o.X, 0, 3, o.Z, 2.5, t) }); }
+  for (const o of whirlItems(t)) { if (o.id) ACT.note(o.id, o.X, o.Z, 2.6, { h: 3.4, group: 'whirl' }); if (nearCar(o.X, o.Z)) continue; list.push({ z: P(o.X, 0, o.Z)[2], draw: () => drawWhirl(o, t), shadow: o.kind === 'devil' ? null : () => shadowStick(o.X, 0, 3, o.Z, 2.5, t) }); }
   const gs = gavelT(); if (t > gs && t < gs + 1.8) list.push({ z: P(CX, 0, CZ)[2] + .01, draw: () => gavelBurst(t - gs, false), shadow: null });
 }
 // car-layer hook: things in front of the table (near half of the whirl, near papers), then the gavel over everything

@@ -18,31 +18,47 @@
 // Burning Man: art cars drive the open playa at 5 mph (2.2 m/s) and park in the outer art-car ring behind the burn crowd
 // (burn.js parks its own ring at 68-80 m; the two big ones here take the back row, about 92-95 m out, like the big sound cars).
 const ARTCARS = [
-  // dawn, the intro glide (4-10.8): the dragon coming home from deep playa toward the city, rolling slowly along z 46 while the
-  // drone flies past it 46 m to its right; it grows from the horizon into the left half of the frame and slides out left by 10.8
-  { id: 'dragon-dawn', kind: 'dragon', t0: 3.5, t1: 11.2, path: [[0, -120, 46], [17, -157, 46]] },
+  // dawn, the intro glide (0-11.8): the dragon coming home from deep playa toward the city, rolling slowly along z 46 while the
+  // drone flies past it 46 m to its right; it grows from the horizon into the left half of the frame and slides out left
+  // (draft 11: there from the first frame and drawn until it has left the frame, so it never blinks in or out)
+  { id: 'dragon-dawn', kind: 'dragon', t0: 0, t1: 11.8, path: [[0, -120, 46], [17, -157, 46]] },
   // instrumental 1, the painter's window (61-64.4, no lyric; camera.js WINS out to the suit painting the sky beige at (78, -28)):
   // Robin on his chopper rides across the empty foreground, left to right, side on, about 10 m from the drone (230 px tall),
   // under the canvas and gone before the sax rider rides in on 65.0
-  { id: 'robin', kind: 'chopper', t0: 61.0, t1: 64.6, path: [[61.0, 76.4, -13.0], [64.6, 65.4, -27.0]], fade: [61.0, 61.3, 64.4, 64.6] },
-  // bridge, "they're ok with foul play" (151-156.4): the organ cart rolls left to right on the left of the long wide, clear of the
-  // giant chess pieces, its player at the keys
-  { id: 'organ', kind: 'organ', t0: 150.8, t1: 156.6, path: [[150.8, 184.5, 26], [156.6, 196, 26]], fade: [150.8, 151.2, 156.2, 156.6] },
-  // bridge, "foul play" into "every little G20 cop got paid" (152-162): the galleon sails left to right on the far playa,
-  // in the empty right half of the long-lens wides, above and right of the paid cops
-  { id: 'galleon-day', kind: 'galleon', t0: 151.5, t1: 162.5, path: [[151.5, 232, 96], [162.5, 256, 96]] },
-  // bridge, "but what's especially perverse" (160.4-163.4): the horse bike pedals the other way behind the board, right to left,
-  // in its own dust, above the paid cops on the right (they rise up and cover that side from 163.5, so it is gone by then)
-  { id: 'horse', kind: 'horse', rel: 'car', t0: 160.4, t1: 163.6, path: [[160.4, 16, 27], [163.6, 4, 27]], fade: [160.4, 160.8, 163.1, 163.6] },
-  // dusk: both big cars roll out from the city and park in the back row of the art-car ring, side on to the burn; lit at night,
-  // fading out with burn.js's own ring (258-263) as everyone drives off after the burn
-  { id: 'dragon-park', kind: 'dragon', lights: true, t0: 168, t1: 263, ease: [false, true], fade: [168, 169, 258, 263],
-    path: [[168, 262, 170], [186, 252, 132], [194.5, 243, 118.5], [200.5, 235, 110.5]] },         // 7:30, about 92 m out
-  { id: 'galleon-park', kind: 'galleon', lights: true, t0: 168, t1: 263, ease: [false, true], fade: [168, 169, 258, 263],
-    path: [[168, 315, 180], [184, 292, 152], [196, 270, 137.8], [204.5, 252.5, 127.3]] },        // 7:00, about 95 m out
+  // Draft 11 (Robin: "when you see me i don't bike off screen.. i'm just there a moment and then blink i disappear"): no fade.
+  // One straight lane square to the painter shot's view (the 62.4 key looks along (.78, -.62)), 12.5 m in front of the drone
+  // (nearer than that the 5 m high drone has the playa below the frame), at a steady 6.5 m/s, a fast cruise: past the left
+  // edge as the shot settles, across the frame in front of the canvas and out past the right edge by 64.8, his shadow with
+  // him, clear before the sax rider rides in on 65.0. The ride is drawn from 60.0 to 65.4, so both ends happen off frame.
+  { id: 'robin', kind: 'chopper', t0: 60.0, t1: 65.4, path: [[60.0, 83.58, -7.23], [65.4, 61.78, -34.49]] },
+  // bridge, "they're ok with foul play" (151-160): the organ cart rolls left to right on the left of the long wide, clear of the
+  // giant chess pieces, its player at the keys. Draft 11 (no fades): it comes into the frame as the drone tilts down off the
+  // chess board (151.5), rolls on at 5 mph, swings away from the board toward the deep playa (157-160) and keeps going out
+  // there, smaller and smaller, until a moment the frame has left it (182, before it is needed in the refrain-3 whirl,
+  // installs.js, from 185.2: one organ cart, never two on screen)
+  { id: 'organ', kind: 'organ', t0: 150.8, t1: 182, path: [[150.8, 184.5, 26], [156.6, 196, 26], [157.6, 197.6, 26.6], [158.6, 198.4, 28], [159.8, 198, 30], [207, 140, 108]] },
+  // the galleon, one ship all evening (draft 11 joins draft 10's two appearances): it sails left to right on the far
+  // playa in the empty right half of the bridge's long-lens wides (152-162, above and right of the paid cops), comes
+  // about short of the big rig arch (wide of the people at its foot), sails north round its west side and parks side on in
+  // the back row of the art-car ring, 95 m out at 7:00 (175.9); lit at night and parked there to the black
+  { id: 'galleon', kind: 'galleon', lights: true, t0: 151.5, t1: 269, ease: [false, true],
+    path: [[151.5, 232, 96], [158.6, 247, 96], [159.6, 248.5, 97], [160.6, 248.8, 99], [161.8, 247.8, 101.5], [163.5, 245.8, 104.5], [165.7, 244.6, 109],
+      [168.1, 244.5, 114], [170.5, 245, 119], [172.9, 247.5, 123.3], [175.9, 252.5, 127.3]] },
+  // bridge, "but what's especially perverse" (159-164): the horse bike pedals the other way behind the board, right to left,
+  // in its own dust, above the paid cops on the right. Draft 11: in its own world lane at z 37, 9 m behind the lavender head and clear of the people round it
+  // (it rode through the head in draft 10), in from beyond the right edge (158) and pedalling on west across the playa
+  // until the frame has left it (182), like the organ cart, before the refrain-3 whirl needs it
+  { id: 'horse', kind: 'horse', t0: 158.0, t1: 182, path: [[158.0, 246, 37], [207, 148, 37]] },
+  // dusk: the dragon rolls in from the far playa (in from beyond the right edge while the drone looks left at 148.5) and parks
+  // side on in the back row of the art-car ring, 92 m out at 7:30 (200.5); lit at night and parked there to the black
+  { id: 'dragon-park', kind: 'dragon', lights: true, t0: 148.5, t1: 269, ease: [false, true],
+    path: [[148.5, 200, 190], [178, 212, 130], [186.5, 218, 113], [191.5, 224, 104], [194.5, 229, 102.8], [200.5, 235, 110.5]] },
 ];
 // half length, height (m), for culling and the glow box
 const AC_SIZE = { dragon: [13.2, 10.8], galleon: [13.5, 17.8], organ: [2.0, 3.1], horse: [1.9, 4.9], chopper: [1.4, 2.0] };
+// body radius for the actor check (half the length): the dragon about 25 m, the galleon 22 m with its bowsprit, Robin and his
+// chopper as one body
+const AC_R = { dragon: 12.5, galleon: 11, organ: 1.8, horse: 1.7, chopper: 1.2 };
 
 // ---------- path maths (pure functions of t) ----------
 function acKey(e, t) { // [X, Z] on the path at t, before the car offset
@@ -480,12 +496,20 @@ function artcarsInto(t, list) {
   if (lit) list.push({ z: .305, draw: () => acMaskB(t) });
 }
 function artcarsFront(t) { const l = []; for (const e of ARTCARS) if (e.front) acEntry(e, t, l); l.sort((a, b) => b.z - a.z); for (const o of l) { o.shadow(); o.draw(); } } // over the car layer
+function shadowAt(st, h, sv) { const q = shadowPt(st.X, h, st.Z, sv); return q[2] > .3 ? q : null; } // the screen point where the top of the car's shadow lands
 function acEntry(e, t, list) { // push one appearance into list; true when it wants the night glow
   {
-    const st = acState(e, t); if (!st) return false; const p = P(st.X, 0, st.Z); if (p[2] < 1.2) return false; const k = kAt(p), sz = AC_SIZE[e.kind]; if (k < .5) return false;
-    if (p[0] < -sz[0] * k * 1.2 - 40 || p[0] > W + sz[0] * k * 1.2 + 40 || p[1] - sz[1] * k > H || p[1] < -60) return false;
+    const st = acState(e, t); if (!st) return false; const p = P(st.X, 0, st.Z), sz = AC_SIZE[e.kind];
+    // draft 11: no car fades on screen any more; the near fade below only ever acts if a path comes within ~8 m of the lens,
+    // and the note tells the actor check (tools/check-actors.mjs) exactly what is drawn, so a blink would show up there
+    const a = st.a * (e.kind === 'organ' || e.kind === 'horse' ? bmFade(p) : e.kind === 'chopper' ? clamp((p[2] - 1.6) / 1.2) : 1), drawn = p[2] >= 1.2 && kAt(p) >= .5;
+    ACT.note('artcars:' + e.id, st.X, st.Z, AC_R[e.kind], { h: sz[1], a: drawn ? a : 0, group: 'artcars' });
+    if (!drawn || a <= .01) return false; const k = kAt(p);
+    // off frame: the car and the tip of its shadow both past the same edge (draft 10 dropped Robin's shadow a frame after him)
+    const sv = sunVec(t), sp = shadowAt(st, sz[1], sv), m = sz[0] * k * 1.2 + 40;
+    const offL = p[0] < -m && (!sp || sp[0] < -40), offR = p[0] > W + m && (!sp || sp[0] > W + 40);
+    if (offL || offR || p[1] - sz[1] * k > H || p[1] < -60) return false;
     const ah = P(st.X + st.hx, 0, st.Z + st.hz), d = Math.sign(ah[0] - p[0]) || 1, vx = st.X - C.x, vz = st.Z - C.z, sq = AC_SIZE[e.kind][0] < 3 ? 1 : Math.max(.42, Math.abs(st.hx * vz - st.hz * vx) / (Math.hypot(vx, vz) || 1)); // small ones stay side on, like playa.js's riders
-    const a = st.a * (e.kind === 'organ' || e.kind === 'horse' ? bmFade(p) : e.kind === 'chopper' ? clamp((p[2] - 1.6) / 1.2) : 1); if (a <= .01) return false; // Robin passes close, like the sax rider
     const K = AC_KIND[e.kind], wantGlow = K.glow && st.night > .02;
     list.push({ z: p[2], draw: () => { const q = P(st.X, 0, st.Z), kk = kAt(q); bmBegin(q[0], q[1], kk, d); if (a < 1) g.globalAlpha = a; K.draw(st, t, kk, sq); g.restore();
         if (wantGlow) { const box = acBox(q, kk, sz); if (box) AC_F.items.push({ e, st, p: q, k: kk, d, sq, box, A: g.getImageData(box[0], box[1], box[2], box[3]).data }); } },

@@ -73,13 +73,53 @@ function apShadowLine(wpts, wm, t) { const sv = sunVec(t), a = shadowA(t); if (a
 
 // ---------- visitors: people standing about and bikes parked at a piece's foot ----------
 const AP_COLS = ['#d8452f', '#2f6fb5', '#e8b23a', '#7a3c8c', '#3c8c5a', '#f2ede0', '#ee9a42', '#47c1ba'];
-function apVisitors(o, t, list) {
-  const n0 = o.people || 0, n = n0 + (o.nightPeople || 0); if (!n) return; /* the night ones gather at dusk, on their way to the burn */ const F = apFrame(o), R = { burger: 3.2, jig: 6.5, monolith: 4.3, head: 4.8 }[o.kind] || 4;
+// Draft 11 (Robin: nothing blinks in or out): the night ones no longer fade in and out. Each walks in from 16 m out along
+// its own spoke from the piece (so nobody walks through the piece or through anyone standing nearer), setting off in the
+// dusk aerial (204.6-209.5, when the drone is hundreds of metres up and they are specks), reaching its spot 12 s later
+// in the first burn framings, and after the burn (from 253) walks back out the way it came, toward the city.
+const AP_WALK = { d: 16, v: 1.3, in0: 204.6, inStep: .7, out0: 253, outStep: .6 };
+function apWalkOff(s) { return s <= 0 ? 0 : s >= 1 ? AP_WALK.v * (s - .5) : AP_WALK.v * .5 * s * s; } // metres from the spot, s seconds from it (eases the last second)
+// where each visitor stands, in the piece's frame [lx, lf] (draft 11: spaced so nobody stands inside anybody, with every
+// night walker's spoke clear of everyone else's spot). A fixed layout, worked out once per piece from its seeds.
+// other builders' standing things a visitor must not stand in or walk through: playa.js's art (the chair tower, the candle,
+// the eye, the lantern arch) and burn.js's parked mutant vehicles where they park for the burn
+function apNearPlayaArt(o, q, rb) {
+  const w = apFrame(o)(q[0], 0, q[1]), near = (X, Z, r) => Math.hypot(w[0] - X, w[2] - Z) < r + rb + .5;
+  if (typeof BM_CAMPS !== 'undefined' && typeof BM_PLAYA_ART !== 'undefined' && BM_CAMPS.some((c) => BM_PLAYA_ART[c.kind] && near(c.X, c.Z, (typeof BM_ART_R !== 'undefined' && BM_ART_R[c.kind] ? BM_ART_R[c.kind] : 1) * c.r))) return true;
+  if (typeof MV !== 'undefined' && MV.some((c) => near(c.X, c.Z, (typeof MV_HALF !== 'undefined' && MV_HALF[c.kind]) || 5))) return true;
+  return false;
+}
+function apSpots(o) {
+  if (o._spots) return o._spots; const n0 = o.people || 0, n = n0 + (o.nightPeople || 0), R = { burger: 3.2, jig: 6.5, monolith: 4.3, head: 4.8 }[o.kind] || 4, out = [];
+  const body = (i) => (i < n0 && i % 3 === 1 ? .8 : .3), foot = AP_FOOT[o.kind];
+  const segD = (p, a, b) => { const dx = b[0] - a[0], dz = b[1] - a[1], u = clamp(((p[0] - a[0]) * dx + (p[1] - a[1]) * dz) / (dx * dx + dz * dz || 1)); return Math.hypot(p[0] - a[0] - dx * u, p[1] - a[1] - dz * u); };
+  const spoke = (q) => { const l = Math.hypot(q[0], q[1]) || 1; return [q, [q[0] * (1 + AP_WALK.d / l), q[1] * (1 + AP_WALK.d / l)]]; };
   for (let i = 0; i < n; i++) {
-    const a = rnd(i, 3, o.X) * TAU, r = R + 1.2 + 2.6 * rnd(i, 4, o.Z), lx = Math.cos(a) * r, lf = Math.sin(a) * r * .8;
-    const w = F(lx, 0, lf), p = P(w[0], 0, w[2]); if (p[2] < 3) continue; const k = kAt(p) * (o.scale || 1); if (k < .4 || p[0] < -60 || p[0] > W + 60) continue;
-    const bike = i % 3 === 1, seed = i + o.kind.length * 7, al = clamp((p[2] - 3) / 3) * (i < n0 ? 1 : ease(t, 203 + (i - n0) * 1.1, 206 + (i - n0) * 1.1) * (1 - ease(t, 254, 258))); if (al <= .01) continue;
-    list.push({ z: p[2], draw: () => { g.save(); g.globalAlpha = al; bike ? apBike(p[0], p[1], k, seed, t) : person(p[0], p[1], k, { step: 0, lift: 0, hat: seed % 6, cape: seed % 4 === 1, sit: 0 }, { body: AP_COLS[seed % 8], skin: ['#e8d4b4', '#c99a74', '#8c6448', '#f0dcc4'][seed % 4], dark: '#3a3040', lamp: '#f0d49a', hatc: AP_COLS[(seed + 3) % 8] }); g.restore(); },
+    let best = null;
+    for (let tr = 0; tr < 60 && !best; tr++) {
+      const a = rnd(i, 3, o.X) * TAU + tr * .23, r = R + 1.2 + 2.6 * rnd(i, 4, o.Z) + (tr % 3) * .4, q = [Math.cos(a) * r, Math.sin(a) * r * .8];
+      if (Math.hypot(q[0] - foot[0], q[1] - foot[1]) < foot[2] + body(i) + .4) continue;
+      if (out.some((s, j) => Math.hypot(q[0] - s[0], q[1] - s[1]) < body(i) + body(j) + .35)) continue;
+      if (apNearPlayaArt(o, q, body(i)) || (i >= n0 && [.25, .5, .75, 1].some((u) => apNearPlayaArt(o, [q[0] + (spoke(q)[1][0] - q[0]) * u, q[1] + (spoke(q)[1][1] - q[1]) * u], body(i))))) continue; // clear of playa.js's art pieces (spot and walk-out end)
+      if (i >= n0) { const [a0, b0] = spoke(q); if (out.some((s, j) => segD(s, a0, b0) < body(i) + body(j) + .35)) continue; } // its own walk in and out
+      if (out.some((s, j) => j >= n0 && (() => { const [a0, b0] = spoke(s); return segD(q, a0, b0) < body(i) + body(j) + .35; })())) continue; // not on an earlier walker's way
+      best = q; }
+    out.push(best || [Math.cos(i) * (R + 4 + i * .9), Math.sin(i) * (R + 4 + i * .9)]); }
+  return (o._spots = out);
+}
+function apVisitors(o, t, list) {
+  const n0 = o.people || 0, n = n0 + (o.nightPeople || 0); if (!n) return; const F = apFrame(o), sp = apSpots(o);
+  for (let i = 0; i < n; i++) {
+    const [lx, lf] = sp[i];
+    const night = i >= n0, j = i - n0, bike = !night && i % 3 === 1, seed = i + o.kind.length * 7;
+    let off = 0, step = 0;
+    if (night) { const tIn = AP_WALK.in0 + j * AP_WALK.inStep, tArr = tIn + AP_WALK.d / AP_WALK.v + .5, tOut = AP_WALK.out0 + j * AP_WALK.outStep;
+      if (t < tIn) continue; off = t < tArr ? apWalkOff(tArr - t) : apWalkOff(t - tOut); if (off > .02) step = Math.sin(t * 5.2 + j * 1.7) * .25 * clamp(off); }
+    const sl = Math.hypot(lx, lf) || 1, w = F(lx * (1 + off / sl), 0, lf * (1 + off / sl)), p = P(w[0], 0, w[2]);
+    const al = clamp((p[2] - 3) / 3), kk = p[2] > .3 ? kAt(p) * (o.scale || 1) : 0, vis = p[2] >= 3 && kk >= .4 && p[0] >= -60 && p[0] <= W + 60;
+    ACT.note('artpieces:visitor:' + o.kind + ':' + i, w[0], w[2], bike ? .8 : .3, { h: bike ? 1.1 : 1.8, a: vis ? al : 0, group: 'visitors' });
+    if (!vis || al <= .01) continue; const k = kk;
+    list.push({ z: p[2], draw: () => { g.save(); if (al < 1) g.globalAlpha = al; bike ? apBike(p[0], p[1], k, seed, t) : person(p[0], p[1], k, { step, lift: 0, hat: seed % 6, cape: seed % 4 === 1, sit: 0 }, { body: AP_COLS[seed % 8], skin: ['#e8d4b4', '#c99a74', '#8c6448', '#f0dcc4'][seed % 4], dark: '#3a3040', lamp: '#f0d49a', hatc: AP_COLS[(seed + 3) % 8] }); g.restore(); },
       shadow: () => shadowStick(w[0], 0, 1.8, w[2], .45, t) });
   }
 }
@@ -526,13 +566,22 @@ function artpiecesFront(t) {
   g = gs; g.drawImage(AP_FC, 0, 0);
 }
 
+// ---------- the actor check (tools/check-actors.mjs) ----------
+// Each piece reports its footprint as a fixed circle (the genie as its planter, where it has driven to). The big rig arch
+// stands on the first cab's nose and the bent tank above it; the rest of it is overhead, so only that foot is solid.
+const AP_FOOT = { burger: [0, 0, 2.1], jig: [1.6, 0, 2.6], monolith: [0, 0, 2.6], head: [0, 0, 3.9], genie: [0, 0, 2.4] }; // [lx, lf, r]
+function apNote(o, S) { const [lx, lf, r] = AP_FOOT[o.kind], w = apFrame(o)(lx, 0, lf), h = AP_SIZE[o.kind][1] * S;
+  ACT.note('artpieces:' + o.kind, w[0], w[2], r * S, { h, group: 'installs' });
+  if (o.sign) { const b = apFrame(o)(o.sign.lx, 0, o.sign.lf); ACT.note('artpieces:burger-sign', b[0], b[2], .5, { h: 7, group: 'installs' }); } }
+
 // ---------- the scene hook ----------
 const AP_SIZE = { burger: [8, 7], jig: [7, 15.5], monolith: [4, 7.6], head: [5, 5.3], genie: [6, 14] }; // half width for culling, height
 function artpiecesInto(t, list) {
   for (const o of ARTPIECES) {
     if (o.t0 != null && t < o.t0) continue; if (o.t1 != null && t > o.t1) continue;
     if (o.path) { const [X, Z] = apPath2(o.path, t); o.X = X; o.Z = Z; } // a mobile piece: where it has driven to by t (set each frame, so still a pure function of t)
-    const p = P(o.X, 0, o.Z); if (p[2] < 3) continue; const k = kAt(p), [hw, ht] = AP_SIZE[o.kind], S = o.scale || 1;
+    const p = P(o.X, 0, o.Z), [hw, ht] = AP_SIZE[o.kind], S = o.scale || 1; apNote(o, S);
+    if (p[2] < 3) continue; const k = kAt(p);
     if (ht * S * k < 2 || p[0] < -hw * S * k - 200 || p[0] > W + hw * S * k + 200) continue;
     const draw = AP_DRAW[o.kind], shadow = { burger: apBurgerShadow, jig: apJigShadow, monolith: apMonoShadow, head: apHeadShadow, genie: apGenieShadow }[o.kind];
     list.push({ z: p[2], draw: () => { if (o.front && apFrontOn()) return; g.save(); draw(o, t, p, k); g.restore(); }, shadow: () => { g.save(); shadow(o, t); g.restore(); } }); // a front piece is drawn by artpiecesFront instead
