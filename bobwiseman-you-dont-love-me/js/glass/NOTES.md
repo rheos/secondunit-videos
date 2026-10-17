@@ -118,3 +118,27 @@ pale sharkskin tuxedo jackets, mid-step in one move. The photo is a press shot a
     lead, the big man); the mic stands are set to each man's height.
   - Finale (`pip-finale.js`): five in the line (gap 470, was 600), landing on the half beats from PF_B[5] to PF_B[7];
     the middle place is the lead, who still goes up for petal 27. The steps are the same, in unison.
+
+## Draft 11: the singers are women, and little Bob is gone (Bob's notes on draft 10, 2026-10-17)
+
+Baseline draft 10 (7fa02fc, IZiE_0-P_ak). Bob: "I unfortunately realize now they should be female. dresses. big hair.
+Also I don't like the little bob and piano anymore. i think it is overkill. can you take that away?" (He had asked
+for little Bob out on draft 9 as well; Robin, 2026-10-17: take it out of this video only. Little Bob stays in the
+other Bob videos.)
+
+- Little Bob (`main.js`): the outro no longer draws `outro-bob.js` (the man, his piano, the Junos, his moon pool and
+  shadows). The light, the camera, the daisy and the singers' finale are as draft 10, so 214.6 to the end is the five
+  singers dancing in the window's late light, then dusk, their leap out (230.72) and the fade.
+- The singers (`bridge-trio.js` drawSinger and drawSingerHead, so every appearance changes together: the intro, the
+  refrain heads, the petal plucker, the bridge trio and the finale): matching 1960s girl-group cocktail dresses in
+  the silver of draft 10's sharkskin, a sleeveless fitted bodice with a scoop neck, a black satin sash, a knee-length
+  A-line skirt with a beaded hem whose two sides ride on the knees (every kick still lifts it), a sheen piece down
+  the bodice and skirt, slow sequin twinkles (no flashes on the beat), pearls, bare arms with a silver bangle, sheer
+  stockings, black pumps. Faces get fine arched brows, lashes and a liner flick, rouge, red lipstick (closed: a red
+  bow; singing: parted) and earrings. No mustaches. Big hair (`PIP_HAIR`, a back mass behind the face and a front
+  piece over it, `big` = width and crown height): Specs a bouffant flip (with her horn-rims), the lead a tall
+  beehive, the big one a round bubble bouffant, the tallest a big natural, the kid a flip with a ruby headband and
+  bow. Heights, builds, skin tones, face shapes, the line order and every move and time are draft 10's.
+- The salute and flick poses, a hat tip on the men, now read as a hand to the hair.
+- Cut: `out/_render_d11.sh` (cloud-render --draft for verse 1, verse 2, the bridge trio span and verse 3 + outro,
+  draft 9's own bridge parts for the rest), file `out/ydlm_full-v13_*`.

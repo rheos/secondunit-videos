@@ -16,7 +16,9 @@
 // Five of them (Bob: "their differences are part of the fun"): k below is a place in the line, 0..4, left to right,
 // and PIP_LINE says who stands there; the middle place (2) is the lead, who plucks the last petal. They land on the
 // half beats from PF_B[5] to PF_B[7].
-// World space on the nave floor, drawn after the floor pool and before Bob. Needs bridge-trio.js and pip-heads.js
+// Draft 11 (Bob, 2026-10-17): little Bob's walk is gone (main.js no longer draws outro-bob.js) and the singers are
+// women (bridge-trio.js). The routine is unchanged: the hand to the hair at 225.58 is the old hat tip, now on its own.
+// World space on the nave floor, drawn after the floor pool. Needs bridge-trio.js and pip-heads.js
 // (pipSingMouth). Pure function of song time t.
 
 // Beats from 195.37 (librosa beat track on the no_vocals stem, 86 bpm; the music's last hit is ~227.35, beats after

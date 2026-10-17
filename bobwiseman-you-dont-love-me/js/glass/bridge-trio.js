@@ -134,30 +134,33 @@ function hitPulse(t) { let p = 0; for (const h of BR.hits) if (t >= h) p = Math.
 function beatPulse(t) { let p = 0; for (const b of TRIO.beats) if (t >= b) p = Math.max(p, Math.exp(-(t - b) * 9)); return p; }
 
 // Draft 10 (Bob, 2026-10-16: "their differences are part of the fun"; the singer on the left of his photo had "big
-// buddy Holly glasses"): five Pips, each his own man in the same suit. sz = height (the whole figure, standing on the
-// same floor), bw = build (body width), face/fw/fh = head size and shape, style = hair, mous = 'full' | 'pencil',
-// specs = big black horn-rims, ear = ear size, grin = mouth width. The first three are the bridge trio (x = their
+// buddy Holly glasses"): five singers, each her own woman in the same dress. sz = height (the whole figure, standing on
+// the same floor), bw = build (body width), face/fw/fh = head size and shape, style = hair, specs = big black
+// horn-rims, grin = mouth width, ring = earrings ('hoop' | 'pearl'). The first three are the bridge trio (x = their
 // marks on its stage); the middle one (1) is the petal plucker and keeps draft 9's size exactly.
+// Draft 11 (Bob, 2026-10-17, on draft 10: "I unfortunately realize now they should be female. dresses. big hair."):
+// the same five, recast as women. Heights, builds, skin tones, face shapes and every move are as draft 10; the
+// mustaches are gone and each has her own big 1960s hair: Specs a bouffant flip, the lead a tall beehive, the big one
+// a round bubble bouffant, the tallest a big natural, the kid a flip with a ruby headband and bow.
 const SINGERS = [
-  { x: 470, skin: [116, 70, 44], hair: [26, 18, 14], style: 'part', specs: true, face: .98, fw: .9, fh: 1.08, sz: 1.05, bw: .9, seed: 9100 },  // Specs
-  { x: 960, skin: [92, 54, 34], hair: [20, 14, 12], style: 'pomp', mous: 'pencil', face: 1.06, sz: 1, bw: 1, seed: 9200 },                // the lead
-  { x: 1450, skin: [138, 88, 56], hair: [30, 20, 14], style: 'fade', mous: 'full', brow: 7, face: 1.04, fw: 1.18, fh: .94, sz: .92, bw: 1.34, seed: 9300 }, // the big man
-  { x: 1450, skin: [74, 44, 30], hair: [18, 12, 10], style: 'afro', face: 1, fw: .92, fh: 1.06, sz: 1.12, bw: .86, ear: 1.25, seed: 9400 },      // the tallest
-  { x: 470, skin: [150, 100, 66], hair: [34, 22, 16], style: 'cap', face: .97, fw: 1.06, fh: .94, sz: .89, bw: .96, grin: 1.3, seed: 9500 },    // the kid
+  { x: 470, skin: [116, 70, 44], hair: [26, 18, 14], style: 'flip', specs: true, ring: 'pearl', face: .98, fw: .9, fh: 1.08, sz: 1.05, bw: .9, seed: 9100 },  // Specs
+  { x: 960, skin: [92, 54, 34], hair: [20, 14, 12], style: 'hive', ring: 'hoop', face: 1.06, sz: 1, bw: 1, seed: 9200 },                // the lead
+  { x: 1450, skin: [138, 88, 56], hair: [30, 20, 14], style: 'bubble', ring: 'pearl', face: 1.04, fw: 1.18, fh: .94, sz: .92, bw: 1.34, seed: 9300 }, // the big one
+  { x: 1450, skin: [74, 44, 30], hair: [18, 12, 10], style: 'afro', ring: 'hoop', face: 1, fw: .92, fh: 1.06, sz: 1.12, bw: .86, seed: 9400 },      // the tallest
+  { x: 470, skin: [150, 100, 66], hair: [34, 22, 16], style: 'band', ring: 'pearl', face: .97, fw: 1.06, fh: .94, sz: .89, bw: .96, grin: 1.3, seed: 9500 },    // the kid
 ];
 // Left to right in a line of five (the intro and the finale): Specs first, as in Bob's photo, the lead in the middle.
 const PIP_LINE = [0, 4, 1, 3, 2];
 const mirrorPose = (P) => ({ ...P, L: P.R.map((a) => -a), R: P.L.map((a) => -a), lL: P.lR.map((a) => -a), lR: P.lL.map((a) => -a), x: -P.x, lean: -P.lean, tilt: -P.tilt });
 // a figure's size: height and build (1 for anyone not given them)
 const pipSz = (S) => S.sz ?? 1, pipBw = (S) => S.bw ?? 1;
-// Draft 10 (Bob's photo, 2026-10-16: a 1960s soul group in matching sharkskin tuxedo jackets): pale sharkskin
-// jackets with a lighter piece of glass for the sheen down each front and sleeve, satin-black peaked lapels with
-// their own sheen strip, one button, black pocket welts, black bow ties, white shirts, black trousers with a satin
-// stripe. The gold sequins are gone (sharkskin shines by itself).
-const SUIT = [172, 176, 188], SHEEN = [214, 219, 230], SUIT2 = [40, 38, 48], SATIN = [84, 80, 100],
-  LAPEL = [30, 28, 34], LAPEL2 = [96, 94, 108], TIE = [22, 20, 28], SHIRT = [232, 234, 222];
+// Draft 11: matching 1960s girl-group cocktail dresses in silver sequinned glass (the colour of draft 10's sharkskin),
+// a sleeveless fitted bodice with a scoop neck, a black satin sash, a knee-length A-line skirt with a beaded
+// hem that follows the knees (so every kick still reads), a lighter piece for the sheen, slow sequin twinkles, a string of
+// pearls, bare arms with a silver bangle, sheer stockings and black pumps.
+const DRESS = [178, 182, 196], SHEEN = [218, 222, 234], SASH = [30, 28, 36], SASH2 = [92, 90, 106], SHOE = [22, 20, 26], PEARL = [240, 236, 226];
 const TRIO_FLOOR_Y = 1018, TRIO_SC = .92;
-const TRIO_THREE = SINGERS.slice(0, 3); // the bridge stage is built for three: Specs, the lead and the big man
+const TRIO_THREE = SINGERS.slice(0, 3); // the bridge stage is built for three: Specs, the lead and the big one
 
 function armPts(sx, sy, P) {
   const [a1, a2] = P, ex = sx + Math.sin(a1) * FIG.up, ey = sy + Math.cos(a1) * FIG.up;
@@ -194,60 +197,85 @@ function drawSinger(g, s, k, t, pose) {
   const sz = pipSz(s), bw = pipBw(s);
   const pelvisY = TRIO_FLOOR_Y - legH * TRIO_SC * sz + (Math.max(0, P.dip - 6) * .5 + bob) * TRIO_SC;
   g.save(); g.translate(s.x + P.x * TRIO_SC, pelvisY); g.scale(TRIO_SC * sz * sx, TRIO_SC * sz);
+  const stock = mix(s.skin, [36, 28, 30], .18); // sheer stockings
 
-  // legs and shoes (trousers in the darker suit blue)
-  for (const [hx, LP, side] of [[-FIG.hipX * bw, P.lL, -1], [FIG.hipX * bw, P.lR, 1]]) {
-    const pts = legPts(hx, LP); limb(g, pts, 56 * bw, 44 * bw, SUIT2, s.seed + 10 + side, .25); limbStrip(g, pts, 9, SATIN, s.seed + 14 + side);
-    const [ax, ay] = pts[2];
-    pane(g, ellPath(ax + side * 16, ay + 8, 36, 15, 0), [24, 20, 22], s.seed + 20 + side, { ew: 8, shade: .2, lw: 5 });
-    g.fillStyle = 'rgba(255,255,255,.35)'; g.beginPath(); g.ellipse(ax + side * 22, ay + 3, 12, 4, 0, 0, TAU); g.fill();
+  // legs in stockings, and black pumps with a little heel
+  const legs = [[-FIG.hipX * bw, P.lL, -1], [FIG.hipX * bw, P.lR, 1]];
+  for (const [hx, LP, side] of legs) {
+    const pts = legPts(hx, LP); limb(g, pts, 40 * bw, 28 * (.6 + .4 * bw), stock, s.seed + 10 + side, .3);
+    const [ax, ay] = pts[2], fd = side; // the toe points out to her side, as draft 10's shoes did
+    pane(g, smoothPath([[ax - fd * 14, ay - 4], [ax + fd * 10, ay - 2], [ax + fd * 34, ay + 10], [ax + fd * 36, ay + 18], [ax - fd * 4, ay + 18], [ax - fd * 16, ay + 10]]), SHOE, s.seed + 20 + side, { ew: 6, shade: .2, lw: 4.5 });
+    pane(g, polyPath([[ax - fd * 18, ay + 10], [ax - fd * 8, ay + 12], [ax - fd * 10, ay + 22], [ax - fd * 16, ay + 22]]), SHOE, s.seed + 23 + side, { ew: 3, shade: .1, lw: 3 });
+    g.fillStyle = 'rgba(255,255,255,.35)'; g.beginPath(); g.ellipse(ax + fd * 18, ay + 6, 9, 3, fd * .35, 0, TAU); g.fill();
+  }
+  // the skirt: knee length, flaring from the hips; each side of the hem rides on its knee, so a kick lifts it
+  {
+    const hem = (hx, LP, sd) => {
+      const kx = hx + Math.sin(LP[0]) * FIG.th * .9, ky = Math.cos(LP[0]) * FIG.th * .9;
+      return [sd < 0 ? Math.min(kx - 42, -50 * bw) : Math.max(kx + 42, 50 * bw), Math.max(104, ky + 10)];
+    };
+    const HL = hem(-FIG.hipX * bw, P.lL, -1), HR = hem(FIG.hipX * bw, P.lR, 1), wl = [-58 * bw, -76], wr = [58 * bw, -76];
+    const cy = Math.max(HL[1], HR[1]) + 14, pts = [wl, [lerp(wl[0], HL[0], .55) - 8, lerp(wl[1], HL[1], .55)], HL];
+    for (let q = 1; q < 8; q++) { const u = q / 8, a = (1 - u) * (1 - u), b = 2 * u * (1 - u), c = u * u; pts.push([a * HL[0] + b * (HL[0] + HR[0]) / 2 + c * HR[0], a * HL[1] + b * cy + c * HR[1]]); }
+    pts.push(HR, [lerp(wr[0], HR[0], .55) + 8, lerp(wr[1], HR[1], .55)], wr);
+    pane(g, polyPath(pts), DRESS, s.seed + 26, { ew: 30, shade: .34, lw: 8, amt: .5 });
+    for (let q = 2; q <= 9; q++) { // a beaded trim along the hem (HL to HR)
+      const [x0, y0] = pts[q], [x1, y1] = pts[q + 1];
+      for (let r = 0; r < 3; r++) { const u = r / 3; pane(g, circPath(lerp(x0, x1, u), lerp(y0, y1, u) - 7, 5.5), PEARL, s.seed + 150 + q * 3 + r, { ew: 2, shade: .2, lw: 2.5 }); }
+    }
+    if (!back) for (const sd of [-1, 1]) { // the sheen down the skirt, catching more light as she leans
+      const top = [sd * 26 * bw, -60], bot = [lerp(sd * 30 * bw, sd > 0 ? HR[0] : HL[0], .45), lerp(-60, sd > 0 ? HR[1] : HL[1], .9)];
+      pane(g, smoothPath(limbPts([top, [(top[0] + bot[0]) / 2, (top[1] + bot[1]) / 2], bot], [8, 14, 10])), mix(DRESS, SHEEN, clamp(.5 + 1.6 * P.lean * sd)), s.seed + 27 + sd, { ew: 4, shade: .12, lw: 3, amt: .4 });
+    }
+    // sequins: slow twinkles (no flashes on the beat)
+    for (let q = 0; q < 14; q++) {
+      const u = rnd(s.seed, q + 70), v = rnd(s.seed, q + 90), y = lerp(-50, 96, v), x = lerp(-50, 50, u) * bw * (1 + .3 * v);
+      const gl = Math.max(0, Math.sin(t * (1.6 + rnd(q, 6) * 2) + q * 2.3)) ** 8 * .7; if (gl < .08) continue;
+      g.fillStyle = `rgba(255,252,236,${gl})`; g.beginPath(); g.arc(x, y, 2 + 2.5 * gl, 0, TAU); g.fill();
+    }
   }
   // upper body, tilted about the pelvis
   g.rotate(P.lean); g.translate(shim, 0);
-  g.save(); g.scale(bw, 1); // the torso takes his build
-  // the trousers' seat, seen through the cutaway below the button
-  pane(g, polyPath([[-54, -100], [54, -100], [58, 44], [-58, 44]]), SUIT2, s.seed + 29, { ew: 10, shade: .2, lw: 5 });
-  const jacket = [[-74, 72], [-58, -40], [-54, -120], [-FIG.shX - 12, FIG.shY + 20], [-FIG.shX + 6, FIG.shY - 8], [FIG.shX - 6, FIG.shY - 8], [FIG.shX + 12, FIG.shY + 20], [54, -120], [58, -40], [74, 72], [24, 64], [4, -84], [-4, -84], [-24, 64]];
-  pane(g, polyPath(jacket), SUIT, s.seed + 30, { ew: 30, shade: .34, lw: 8, amt: .5 });
-  // the sheen: a lighter piece down each front, catching more light as he leans into it
-  const shn = (sd) => mix(SUIT, SHEEN, clamp(.55 + 1.6 * P.lean * sd + .12 * Math.sin(t * 1.3 + s.seed)));
+  g.save(); g.scale(bw, 1); // the torso takes her build
+  // shoulders and chest above the neckline
+  pane(g, polyPath([[-FIG.shX - 8, FIG.shY + 22], [-FIG.shX + 6, FIG.shY - 6], [-22, FIG.shY - 10], [22, FIG.shY - 10], [FIG.shX - 6, FIG.shY - 6], [FIG.shX + 8, FIG.shY + 22], [FIG.shX - 2, FIG.shY + 62], [-FIG.shX + 2, FIG.shY + 62]]), s.skin, s.seed + 28, { ew: 10, shade: .28, lw: 5 });
+  // the bodice: sleeveless, fitted to the waist, a scoop neck in front, straight across the back
+  const bod = back
+    ? [[-FIG.shX - 4, FIG.shY + 20], [-FIG.shX + 10, FIG.shY - 4], [FIG.shX - 10, FIG.shY - 4], [FIG.shX + 4, FIG.shY + 20], [62, -150], [54, -110], [60, -52], [-60, -52], [-54, -110], [-62, -150]]
+    : [[-FIG.shX - 4, FIG.shY + 20], [-FIG.shX + 10, FIG.shY - 4], [-34, FIG.shY + 4], [-16, FIG.shY + 22], [0, FIG.shY + 28], [16, FIG.shY + 22], [34, FIG.shY + 4], [FIG.shX - 10, FIG.shY - 4], [FIG.shX + 4, FIG.shY + 20], [62, -150], [54, -110], [60, -52], [-60, -52], [-54, -110], [-62, -150]];
+  pane(g, polyPath(bod), DRESS, s.seed + 30, { ew: 26, shade: .34, lw: 8, amt: .5 });
   for (const sd of [-1, 1]) {
-    pane(g, smoothPath([[sd * 50, FIG.shY + 52], [sd * 58, -140], [sd * 60, -40], [sd * 64, 56], [sd * 50, 60], [sd * 44, -44], [sd * 40, -150]]), shn(sd), s.seed + 35 + sd, { ew: 8, shade: .16, lw: 5, amt: .4 });
+    if (!back) pane(g, smoothPath([[sd * 46, FIG.shY + 60], [sd * 52, -170], [sd * 50, -96], [sd * 40, -96], [sd * 38, -168]]), mix(DRESS, SHEEN, clamp(.55 + 1.6 * P.lean * sd)), s.seed + 35 + sd, { ew: 6, shade: .14, lw: 4, amt: .4 });
   }
-  if (!back) {
-    pane(g, polyPath([[-30, FIG.shY - 6], [30, FIG.shY - 6], [0, -102]]), SHIRT, s.seed + 31, { ew: 10, shade: .15, lw: 5 });
-    for (const sd of [-1, 1]) { // satin peaked lapels, collar to the button, each with a strip of sheen
-      pane(g, polyPath([[sd * 30, FIG.shY - 6], [sd * 60, FIG.shY + 2], [sd * 78, FIG.shY + 38], [sd * 58, FIG.shY + 52], [sd * 52, -190], [sd * 8, -94], [0, -102]]), LAPEL, s.seed + 32.5 + sd, { ew: 8, shade: .16, lw: 5, amt: .25 });
-      pane(g, smoothPath(limbPts([[sd * 62, FIG.shY + 26], [sd * 46, -186], [sd * 16, -110]], [8, 10, 5])), LAPEL2, s.seed + 38 + sd, { ew: 3, shade: .1, lw: 3, amt: .25 });
-    }
-    // one button, black welts on the breast pocket and the hip pockets
-    pane(g, circPath(0, -88, 8), LAPEL, s.seed + 39, { ew: 3, shade: .1, lw: 3 });
-    g.fillStyle = 'rgba(255,255,255,.4)'; g.beginPath(); g.arc(-2.5, -91, 2.5, 0, TAU); g.fill();
-    g.strokeStyle = rgb(LAPEL); g.lineCap = 'round'; g.lineWidth = 5;
-    g.beginPath(); g.moveTo(38, -148); g.lineTo(60, -152); for (const sd of [-1, 1]) { g.moveTo(sd * 26, -10); g.lineTo(sd * 54, -12); } g.stroke();
-    // the bow tie: black, with a satin knot
-    pane(g, polyPath([[-38, FIG.shY - 2], [0, FIG.shY + 12], [38, FIG.shY - 2], [38, FIG.shY + 30], [0, FIG.shY + 15], [-38, FIG.shY + 30]]), TIE, s.seed + 34, { ew: 6, shade: .2, lw: 4, amt: .25 });
-    pane(g, polyPath([[-8, FIG.shY + 5], [8, FIG.shY + 5], [8, FIG.shY + 22], [-8, FIG.shY + 22]]), mix(TIE, LAPEL2, .45), s.seed + 37, { ew: 3, shade: .2, lw: 3 });
-  } else {
-    pane(g, polyPath([[-24, FIG.shY - 10], [24, FIG.shY - 10], [28, FIG.shY + 8], [-28, FIG.shY + 8]]), LAPEL, s.seed + 31, { ew: 4, shade: .2, lw: 4 }); // the collar
-    paint(g, 3, .5); g.beginPath(); g.moveTo(0, FIG.shY + 10); g.lineTo(0, 66); g.stroke(); // back seam
+  // the black satin sash at the waist, with its sheen
+  pane(g, polyPath([[-58, -130], [58, -130], [58, -104], [-58, -104]]), SASH, s.seed + 38, { ew: 6, shade: .16, lw: 5, amt: .25 });
+  pane(g, polyPath([[-50, -124], [50, -124], [50, -118], [-50, -118]]), SASH2, s.seed + 39, { ew: 2, shade: .08, lw: 2.5, amt: .25 });
+  if (back) { paint(g, 3, .5); g.beginPath(); g.moveTo(0, FIG.shY + 44); g.lineTo(0, -132); g.stroke(); } // the zip
+  for (let q = 0; q < 10; q++) { // sequin twinkles on the bodice
+    const x = lerp(-50, 50, rnd(s.seed, q + 110)), y = lerp(FIG.shY + 70, -60, rnd(s.seed, q + 130));
+    const gl = Math.max(0, Math.sin(t * (1.6 + rnd(q, 8) * 2) + q * 1.7)) ** 8 * .7; if (gl < .08) continue;
+    g.fillStyle = `rgba(255,252,236,${gl})`; g.beginPath(); g.arc(x, y, 2 + 2.5 * gl, 0, TAU); g.fill();
+  }
+  if (!back) for (let q = 0; q < 9; q++) { // a string of pearls
+    const u = (q - 4) / 4, x = u * 24, y = FIG.shY + 2 + 13 * (1 - u * u);
+    pane(g, circPath(x, y, 6), PEARL, s.seed + 140 + q, { ew: 3, shade: .2, lw: 2.5 });
   }
   g.restore();
-  // arms (sleeves, then hands); seen from the back the arms swap sides
+  // arms, bare, with a silver bangle; seen from the back the arms swap sides
   const arms = [[-FIG.shX * bw, back ? P.R.map((a) => -a) : P.L, -1], [FIG.shX * bw, back ? P.L.map((a) => -a) : P.R, 1]];
   for (const [ax, AP, side] of arms) {
-    const pts = armPts(ax, FIG.shY + 12, AP); limb(g, pts, 50 * (.5 + .5 * bw), 38 * (.5 + .5 * bw), SUIT, s.seed + 40 + side, .5); limbStrip(g, pts, 9, mix(SUIT, SHEEN, .5), s.seed + 48 + side);
-    { const [cx, cy] = pts[2]; pane(g, circPath(cx, cy, 15), SHIRT, s.seed + 46 + side, { ew: 6, shade: .15, lw: 4 }); } // shirt cuff
-    const [hx, hy] = pts[2], hand = smoothPath(blobPts(hx + Math.sin(AP[1]) * 14, hy + Math.cos(AP[1]) * 14, 17, 20, s.seed + side));
+    const pts = armPts(ax, FIG.shY + 12, AP); limb(g, pts, 36 * (.5 + .5 * bw), 26 * (.5 + .5 * bw), s.skin, s.seed + 40 + side, .4);
+    { const [cx, cy] = pts[2], [ex, ey] = pts[1], u = .82; pane(g, ellPath(lerp(ex, cx, u), lerp(ey, cy, u), 15, 6, Math.atan2(cy - ey, cx - ex) + Math.PI / 2), SHEEN, s.seed + 46 + side, { ew: 3, shade: .2, lw: 3 }); }
+    const [hx, hy] = pts[2], hand = smoothPath(blobPts(hx + Math.sin(AP[1]) * 12, hy + Math.cos(AP[1]) * 12, 14, 18, s.seed + side));
     if (P.palm > .05) { // draft 10: an open palm, fingers fanned out along the forearm (the photo's reaching hands)
-      const a = AP[1], pw = P.palm, cx = hx + Math.sin(a) * 18, cy = hy + Math.cos(a) * 18;
+      const a = AP[1], pw = P.palm, cx = hx + Math.sin(a) * 16, cy = hy + Math.cos(a) * 16;
       for (let f = 0; f < 4; f++) {
-        const fa = a + (f - 1.5) * .3 * pw - .1 * side, fl = (f === 0 || f === 3 ? 20 : 25) * (.6 + .4 * pw);
-        pane(g, smoothPath(limbPts([[cx + Math.sin(fa) * 8, cy + Math.cos(fa) * 8], [cx + Math.sin(fa) * (8 + fl), cy + Math.cos(fa) * (8 + fl)]], [9, 7])), s.skin, s.seed + 90 + f + side, { ew: 4, shade: .2, lw: 3.5 });
+        const fa = a + (f - 1.5) * .3 * pw - .1 * side, fl = (f === 0 || f === 3 ? 18 : 23) * (.6 + .4 * pw);
+        pane(g, smoothPath(limbPts([[cx + Math.sin(fa) * 7, cy + Math.cos(fa) * 7], [cx + Math.sin(fa) * (7 + fl), cy + Math.cos(fa) * (7 + fl)]], [8, 6])), s.skin, s.seed + 90 + f + side, { ew: 4, shade: .2, lw: 3.5 });
       }
       const ta = a - side * 1.1; // the thumb
-      pane(g, smoothPath(limbPts([[cx, cy], [cx + Math.sin(ta) * 20, cy + Math.cos(ta) * 20]], [10, 8])), s.skin, s.seed + 95 + side, { ew: 4, shade: .2, lw: 3.5 });
-      pane(g, ellPath(cx, cy, 18, 16, -a), s.skin, s.seed + 44 + side, { ew: 8, shade: .22, lw: 4.5 });
+      pane(g, smoothPath(limbPts([[cx, cy], [cx + Math.sin(ta) * 18, cy + Math.cos(ta) * 18]], [9, 7])), s.skin, s.seed + 95 + side, { ew: 4, shade: .2, lw: 3.5 });
+      pane(g, ellPath(cx, cy, 16, 14, -a), s.skin, s.seed + 44 + side, { ew: 8, shade: .22, lw: 4.5 });
     } else pane(g, hand, s.skin, s.seed + 44 + side, { ew: 10, shade: .25, lw: 5 });
     // the snap on each gap beat: a little white star at the fingers
     const bp = (t > TRIO.beats[0] - .05 && t < TRIO.beats[4] + .3) ? beatPulse(t) : 0;
@@ -260,8 +288,8 @@ function drawSinger(g, s, k, t, pose) {
   }
   // neck and head
   const hy = FIG.shY - FIG.neck - FIG.headR * s.face * (s.fh ?? 1) + 6;
-  const nw = .6 + .4 * bw;
-  pane(g, polyPath([[-15 * nw, FIG.shY + 2], [-14 * nw, FIG.shY - FIG.neck - 6], [14 * nw, FIG.shY - FIG.neck - 6], [15 * nw, FIG.shY + 2]]), s.skin, s.seed + 50, { ew: 8, shade: .3, lw: 5 });
+  const nw = .55 + .3 * bw;
+  pane(g, polyPath([[-15 * nw, FIG.shY + 2], [-13 * nw, FIG.shY - FIG.neck - 6], [13 * nw, FIG.shY - FIG.neck - 6], [15 * nw, FIG.shY + 2]]), s.skin, s.seed + 50, { ew: 8, shade: .3, lw: 5 });
   g.save(); g.translate(0, hy); g.rotate(P.tilt + (back ? 0 : .04 * hitPulse(t)));
   drawSingerHead(g, s, t, back, P.mouth);
   g.restore();
@@ -269,50 +297,73 @@ function drawSinger(g, s, k, t, pose) {
 }
 function blobPts(cx, cy, rx, ry, seed, n = 9) { return [...Array(n)].map((_, i) => { const a = i / n * TAU, w = 1 + .1 * n1(seed, i); return [cx + Math.cos(a) * rx * w, cy + Math.sin(a) * ry * w]; }); }
 
+// Draft 11: big 1960s hair. Each style is a back mass (behind the face) and a front piece (the crown over the
+// forehead, down the sides), in head units (x by rx, y by ry, 0 at the head centre, y down).
+const PIP_HAIR = {
+  flip: { big: [1.22, 1.6], // a bouffant crown, flipped out at the jaw
+    back: [[-1.62, .8], [-1.3, .64], [-1.16, .2], [-1.3, -.5], [-1.02, -1.25], [0, -1.6], [1.02, -1.25], [1.3, -.5], [1.16, .2], [1.3, .64], [1.62, .8], [1.42, .98], [1.0, .82], [0, .72], [-1.0, .82], [-1.42, .98]],
+    front: [[-1.12, .34], [-1.1, -.75], [-.62, -1.42], [0, -1.56], [.62, -1.42], [1.1, -.75], [1.12, .34], [.96, .1], [.9, -.48], [.3, -.62], [-.42, -.56], [-.9, -.48], [-.96, .1]],
+  },
+  hive: { big: [1.08, 1.12], // a tall beehive
+    back: [[-1.12, .32], [-1.22, -.4], [-1.08, -1.1], [-.9, -1.9], [-.48, -2.46], [0, -2.62], [.48, -2.46], [.9, -1.9], [1.08, -1.1], [1.22, -.4], [1.12, .32], [.7, .5], [0, .44], [-.7, .5]],
+    front: [[-1.12, -.1], [-1.14, -.82], [-.92, -1.56], [-.48, -2.3], [0, -2.5], [.48, -2.3], [.92, -1.56], [1.14, -.82], [1.12, -.1], [.88, -.46], [.24, -.66], [-.5, -.56], [-.9, -.44]],
+  },
+  bubble: { big: [1.2, 1.45], // a round bubble bouffant
+    back: [...Array(18)].map((_, i) => { const a = i / 18 * TAU; return [Math.cos(a) * 1.62, -.48 + Math.sin(a) * 1.42]; }),
+    front: [[-1.3, .2], [-1.4, -.8], [-.94, -1.62], [0, -1.88], [.94, -1.62], [1.4, -.8], [1.3, .2], [1.0, -.1], [.9, -.5], [.3, -.68], [-.4, -.6], [-.9, -.46], [-1.0, -.1]],
+  },
+  afro: { big: [1.12, 1.25], // a big rounded natural
+    back: [...Array(20)].map((_, i) => { const a = i / 20 * TAU; return [Math.cos(a) * 1.86, -.58 + Math.sin(a) * 1.58]; }),
+    front: [[-1.42, .26], [-1.66, -.62], [-1.26, -1.66], [0, -2.12], [1.26, -1.66], [1.66, -.62], [1.42, .26], [1.04, -.16], [.86, -.54], [0, -.66], [-.86, -.54], [-1.04, -.16]],
+  },
+  band: { big: [1.2, 1.55], // a flip, smaller, with a headband
+    back: [[-1.46, .58], [-1.2, .5], [-1.1, .14], [-1.22, -.5], [-.96, -1.18], [0, -1.46], [.96, -1.18], [1.22, -.5], [1.1, .14], [1.2, .5], [1.46, .58], [1.3, .74], [.92, .62], [0, .56], [-.92, .62], [-1.3, .74]],
+    front: [[-1.08, .22], [-1.06, -.72], [-.6, -1.32], [0, -1.44], [.6, -1.32], [1.06, -.72], [1.08, .22], [.94, .02], [.88, -.46], [.3, -.6], [-.42, -.54], [-.88, -.46], [-.94, .02]],
+  },
+};
 function drawSingerHead(g, s, t, back, mo) { // mo: mouth 0..1 to use instead of the bridge's backing hits
   const R = FIG.headR, f = s.face, rx = R * .86 * f * (s.fw ?? 1), ry = R * 1.06 * f * (s.fh ?? 1);
-  const face = ellPath(0, 0, rx, ry, 0), st = s.style || (s.part ? 'part' : 'cap');
-  // the hair's outline (cap: short and close; part: the same with a side part; fade: cropped tight;
-  // afro: a short rounded natural; pomp: a pompadour, swept up and over to his right)
-  const top = { cap: 1.1, part: 1.1, fade: 1.03, afro: 1.38, pomp: 1.1 }[st], side = st === 'afro' ? 1.3 : st === 'fade' ? 1 : 1.02;
-  const line = st === 'fade' ? .72 : st === 'afro' ? .5 : .62;
-  const hl = [[rx * side, -ry * .1], [rx * .7, -ry * (line - .07)], [0, -ry * (line + .04)], [-rx * .7, -ry * (line - .07)]]; // the hairline
-  const cap = st === 'pomp' // swept up off the forehead into a high wave over to his left (screen right)
-    ? [[-rx * 1.02, -ry * .1], [-rx * 1.0, -ry * .72], [-rx * .78, -ry * 1.22], [-rx * .2, -ry * 1.58], [rx * .55, -ry * 1.6], [rx * 1.02, -ry * 1.28], [rx * 1.04, -ry * .7], ...hl]
-    : st === 'afro' // a short rounded natural, wider than his head
-    ? [[-rx * side, -ry * .1], [-rx * side, -ry * .62], [-rx * .85, -ry * 1.2], [0, -ry * top], [rx * .85, -ry * 1.2], [rx * side, -ry * .62], ...hl]
-    : [[-rx * side, -ry * .1], [-rx * side * .95, -ry * .62], [-rx * .5, -ry * (top - .1)], [0, -ry * top], [rx * .5, -ry * (top - .1)], [rx * side * .95, -ry * .62], ...hl];
-  if (back) { pane(g, smoothPath([...cap.slice(0, 7), [rx * .9, ry * .5], [0, ry * .9], [-rx * .9, ry * .5]]), s.hair, s.seed + 60, { ew: 20, shade: .3, lw: 7 }); return; }
+  const face = ellPath(0, 0, rx, ry, 0), Hs = PIP_HAIR[s.style] || PIP_HAIR.flip, [hsx, hsy] = Hs.big || [1, 1];
+  // big: the hair's width, and the height of the crown above the hairline (the face and jaw lines stay put)
+  const hu = ([x, y]) => [x * hsx, y < -.7 ? -.7 + (y + .7) * hsy : y];
+  const hp = (pts) => smoothPath(pts.map((q) => { const [x, y] = hu(q); return [x * rx, y * ry]; }));
+  pane(g, hp(Hs.back), s.hair, s.seed + 60, { ew: 24, shade: .32, lw: 7 });
+  if (back) { pane(g, hp(Hs.front), s.hair, s.seed + 64, { ew: 16, shade: .26, lw: 6 }); return; }
   pane(g, face, s.skin, s.seed + 61, { ew: 26, shade: .3, lw: 7 });
-  // ears
-  for (const sd of [-1, 1]) pane(g, ellPath(sd * rx * .98, 4, 9 * (s.ear ?? 1), 15 * (s.ear ?? 1), 0), s.skin, s.seed + 62 + sd, { ew: 6, shade: .3, lw: 4 });
-  pane(g, smoothPath(cap), s.hair, s.seed + 63, { ew: 12, shade: .2, lw: 6 });
-  if (st === 'part') { g.strokeStyle = 'rgba(200,190,170,.5)'; g.lineWidth = 2.5; g.beginPath(); g.moveTo(-rx * .45, -ry * .98); g.lineTo(-rx * .38, -ry * .64); g.stroke(); }
-  if (st === 'pomp') { // the shine along the wave, and the line where it turns over
-    g.lineCap = 'round'; g.strokeStyle = 'rgba(214,206,226,.6)'; g.lineWidth = 5;
-    g.beginPath(); g.moveTo(-rx * .62, -ry * 1.12); g.quadraticCurveTo(-rx * .05, -ry * 1.52, rx * .72, -ry * 1.34); g.stroke();
-    paint(g, 3, .6); g.beginPath(); g.moveTo(-rx * .5, -ry * .8); g.quadraticCurveTo(rx * .2, -ry * 1.12, rx * .9, -ry * .95); g.stroke();
-  }
-  if (st === 'afro') { // a little texture: short curls, lighter than the hair so they read on the glass
+  // cheeks: a little rouge
+  for (const sd of [-1, 1]) { const rg = g.createRadialGradient(sd * rx * .5, ry * .2, 0, sd * rx * .5, ry * .2, rx * .3); rg.addColorStop(0, 'rgba(210,70,90,.28)'); rg.addColorStop(1, 'rgba(210,70,90,0)'); g.fillStyle = rg; g.fillRect(sd * rx * .5 - rx * .3, ry * .2 - rx * .3, rx * .6, rx * .6); }
+  pane(g, hp(Hs.front), s.hair, s.seed + 63, { ew: 14, shade: .22, lw: 6 });
+  // the shine across the crown, lighter than the hair so it reads on the glass
+  g.lineCap = 'round'; g.strokeStyle = 'rgba(190,176,190,.42)'; g.lineWidth = 5;
+  const crown = Hs.front.reduce((m, p) => Math.min(m, hu(p)[1]), 0);
+  g.beginPath(); g.moveTo(-rx * .7, ry * (crown * .62)); g.quadraticCurveTo(0, ry * (crown * .93), rx * .66, ry * (crown * .66)); g.stroke();
+  if (s.style === 'hive') { paint(g, 3, .55); for (const k of [.5, .72]) { g.beginPath(); g.moveTo(-rx * .9, ry * crown * k); g.quadraticCurveTo(0, ry * crown * (k + .14), rx * .9, ry * crown * k); g.stroke(); } }
+  if (s.style === 'afro') { // short curls
     g.fillStyle = 'rgba(120,104,100,.3)';
-    for (let q = 0; q < 46; q++) { const a = Math.PI * (1.04 + .92 * rnd(s.seed, q)), r = lerp(.5, 1, Math.sqrt(rnd(s.seed, q + 50))); const x = Math.cos(a) * rx * side * .9 * r, y = -ry * .3 + Math.sin(a) * ry * (top - .36) * r; g.beginPath(); g.arc(x, y, 2.6, 0, TAU); g.fill(); }
+    for (let q = 0; q < 80; q++) { const a = TAU * rnd(s.seed, q), r = Math.sqrt(rnd(s.seed, q + 80)); const x = Math.cos(a) * rx * 1.75 * hsx * r, y = -ry * .58 + Math.sin(a) * ry * 1.5 * hsy * r; if (Math.hypot(x / rx, y / ry) < 1.02 && y > -ry * .6) continue; g.beginPath(); g.arc(x, y, 2.6, 0, TAU); g.fill(); }
   }
-  if (st === 'fade') { paint(g, 2, .3); for (let q = 0; q < 18; q++) { const x = lerp(-rx * .8, rx * .8, rnd(s.seed, q)), y = -ry * lerp(.75, 1, rnd(s.seed, q + 9)); g.beginPath(); g.moveTo(x, y); g.lineTo(x + 2, y + 4); g.stroke(); } }
-  // grisaille: brows, eyes, nose, mouth
+  if (s.style === 'band') { // the ruby headband, and its bow on her right
+    const band = new Path2D(); band.moveTo(-rx * 1.12, -ry * .66); band.quadraticCurveTo(0, -ry * 1.72, rx * 1.12, -ry * .66);
+    lead(g, band, 22); g.lineWidth = 14; g.strokeStyle = rgb(C.ruby); g.stroke(band);
+    for (const sd of [-1, 1]) pane(g, polyPath([[-rx * .78, -ry * 1.14], [-rx * .78 + sd * rx * .34, -ry * 1.14 - rx * .2], [-rx * .78 + sd * rx * .34, -ry * 1.14 + rx * .2]]), C.ruby, s.seed + 66 + sd, { ew: 4, shade: .2, lw: 3.5 });
+    pane(g, circPath(-rx * .78, -ry * 1.14, rx * .09), C.ruby2, s.seed + 68, { ew: 3, shade: .2, lw: 3 });
+  }
+  // grisaille: brows, eyes with lashes and liner, nose, mouth
   const m = mo !== undefined ? mo : trioMouthAt(t);
-  paint(g, s.brow ?? 4, .9);
-  for (const sd of [-1, 1]) { // brows lift when singing
-    g.beginPath(); g.moveTo(sd * rx * .18, -ry * .3 - m * 4); g.quadraticCurveTo(sd * rx * .42, -ry * .42 - m * 6, sd * rx * .64, -ry * .3 - m * 3); g.stroke();
+  paint(g, 3, .9);
+  for (const sd of [-1, 1]) { // fine arched brows, lifting when she sings
+    g.beginPath(); g.moveTo(sd * rx * .2, -ry * .3 - m * 4); g.quadraticCurveTo(sd * rx * .44, -ry * .48 - m * 6, sd * rx * .66, -ry * .32 - m * 3); g.stroke();
   }
   const shut = m > .55 ? .4 : 1; // eyes half-close on the big notes
   for (const sd of [-1, 1]) {
-    g.fillStyle = 'rgba(238,232,214,.95)'; g.beginPath(); g.ellipse(sd * rx * .4, -ry * .14, rx * .18, ry * .07 * shut, 0, 0, TAU); g.fill();
-    g.fillStyle = 'rgba(30,18,10,.95)'; g.beginPath(); g.ellipse(sd * rx * .4, -ry * .14, rx * .07, ry * .065 * shut, 0, 0, TAU); g.fill();
-    paint(g, 3, .85); g.beginPath(); g.ellipse(sd * rx * .4, -ry * .14, rx * .19, ry * .08 * shut, 0, Math.PI, TAU); g.stroke();
+    const ex = sd * rx * .4, ey = -ry * .14;
+    g.fillStyle = 'rgba(238,232,214,.95)'; g.beginPath(); g.ellipse(ex, ey, rx * .18, ry * .075 * shut, 0, 0, TAU); g.fill();
+    g.fillStyle = 'rgba(30,18,10,.95)'; g.beginPath(); g.ellipse(ex, ey, rx * .07, ry * .068 * shut, 0, 0, TAU); g.fill();
+    paint(g, 4, .95); g.beginPath(); g.ellipse(ex, ey, rx * .19, ry * .085 * shut, 0, Math.PI, TAU); g.stroke();
+    g.beginPath(); g.moveTo(ex + sd * rx * .18, ey - ry * .01); g.lineTo(ex + sd * rx * .27, ey - ry * .08); g.stroke(); // the liner's flick
+    paint(g, 2.5, .9); for (const u of [-.5, 0, .5]) { const lx0 = ex + u * rx * .15, ly0 = ey - ry * .085 * shut * Math.sqrt(1 - u * u); g.beginPath(); g.moveTo(lx0, ly0); g.lineTo(lx0 + sd * 3 + u * 4, ly0 - 7); g.stroke(); }
   }
-  paint(g, 3.5, .8); g.beginPath(); g.moveTo(-rx * .04, -ry * .06); g.quadraticCurveTo(-rx * .1, ry * .2, -rx * .18, ry * .25); g.quadraticCurveTo(0, ry * .32, rx * .18, ry * .25); g.stroke();
-  if (s.mous === 'pencil') { paint(g, 3, .9); g.beginPath(); g.moveTo(-rx * .3, ry * .4); g.quadraticCurveTo(0, ry * .34, rx * .3, ry * .4); g.stroke(); }
-  else if (s.mous) { g.fillStyle = 'rgba(24,14,10,.95)'; g.beginPath(); g.ellipse(0, ry * .37, rx * .38, ry * .085, 0, 0, TAU); g.fill(); }
+  paint(g, 3, .7); g.beginPath(); g.moveTo(-rx * .04, -ry * .04); g.quadraticCurveTo(-rx * .08, ry * .18, -rx * .14, ry * .24); g.quadraticCurveTo(0, ry * .3, rx * .14, ry * .24); g.stroke();
   if (s.specs) { // big black horn-rims: smoky lenses, a heavy brow bar, arms back to the ears
     for (const sd of [-1, 1]) {
       const cx = sd * rx * .4, cy = -ry * .14, w = rx * .3, h = ry * .15, lens = new Path2D();
@@ -325,10 +376,20 @@ function drawSingerHead(g, s, t, back, mo) { // mo: mouth 0..1 to use instead of
     }
     g.lineWidth = 7; g.strokeStyle = LEAD; g.beginPath(); g.moveTo(-rx * .1, -ry * .2); g.quadraticCurveTo(0, -ry * .25, rx * .1, -ry * .2); g.stroke();
   }
-  const mw = rx * (.26 + .1 * m) * (s.grin ?? 1), mh = ry * (.03 + .2 * m), my = ry * (.52 + .06 * m);
-  g.fillStyle = 'rgba(54,10,18,.95)'; g.beginPath(); g.ellipse(0, my, mw, Math.max(2, mh), 0, 0, TAU); g.fill();
-  if (m > .3) { g.fillStyle = 'rgba(240,236,220,.9)'; g.fillRect(-mw * .6, my - mh + 1, mw * 1.2, mh * .28); }
-  paint(g, 3, .8); g.beginPath(); g.ellipse(0, my, mw, Math.max(2, mh), 0, 0, TAU); g.stroke();
+  // the mouth, in red lipstick
+  const mw = rx * (.24 + .1 * m) * (s.grin ?? 1), mh = ry * (.035 + .2 * m), my = ry * (.52 + .06 * m);
+  // closed, the lips are a small red bow with a dark line between them; singing, they part around a dark mouth
+  pane(g, ellPath(0, my, mw + 3, Math.max(4.5, mh + 3)), [184, 26, 52], s.seed + 69, { ew: 3, shade: .2, lw: 3, amt: .25 });
+  if (m > .14) {
+    g.fillStyle = 'rgba(54,10,18,.95)'; g.beginPath(); g.ellipse(0, my, mw * .8, Math.max(1.5, mh * .8), 0, 0, TAU); g.fill();
+    if (m > .3) { g.fillStyle = 'rgba(240,236,220,.9)'; g.fillRect(-mw * .5, my - mh * .8 + 1, mw, mh * .26); }
+  } else { paint(g, 2.5, .85); g.beginPath(); g.moveTo(-mw - 2, my); g.quadraticCurveTo(0, my + 2, mw + 2, my); g.stroke(); }
+  // earrings, just below the hair
+  for (const sd of [-1, 1]) {
+    const ex = sd * rx * .99, ey = ry * .3;
+    if (s.ring === 'hoop') { g.lineWidth = 9; g.strokeStyle = LEAD; g.beginPath(); g.arc(ex, ey + 14, 13, 0, TAU); g.stroke(); g.lineWidth = 5; g.strokeStyle = rgb(C.gold); g.stroke(); }
+    else pane(g, circPath(ex, ey + 8, 8), PEARL, s.seed + 70 + sd, { ew: 3, shade: .2, lw: 3 });
+  }
 }
 
 function drawMicStand(g, s, t) {

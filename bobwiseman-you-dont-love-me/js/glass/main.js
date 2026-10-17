@@ -214,8 +214,8 @@ function renderFrame(t) {
   drawFloor(g, view, wallL, tod);
   drawPool(g, view, tod, t);
   drawFinalePips(g, rt, cam, tod); // the Pips dance out the song from 195.37, behind little Bob (pip-finale.js)
-  // the outro cameo: Bob crossing the floor in the window's late light (moonlight once night comes) (nothing is drawn before OB.in)
-  if (rt >= OB.in) { OUTRO_BOB.drawPool(g, view, rt, tod); OUTRO_BOB.draw(g, rt, cam, tod); }
+  // Draft 11 (Bob, 2026-10-17: "I don't like the little bob and piano anymore. i think it is overkill. can you take that
+  // away?"): little Bob's walk with the piano and Junos (outro-bob.js, drafts 2 to 10) is no longer drawn.
   // the church light comes back as we leave the roundel (the bridge's frame is flat: no bloom, shafts, vignette)
   const fin = 1 - smooth(lin(rt, PORTAL.t0, PORTAL.t0 + .75));
   bloom(g, tod.I * (1 - .7 * fin));
