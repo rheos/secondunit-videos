@@ -56,8 +56,8 @@ label="${proj}-${slug}-$(date +%Y%m%d-%H%M%S)"
 tmp=$(mktemp -d); trap 'rm -rf $tmp' EXIT
 if (( ${#hfclip} )); then
   # put the clip on the composition clock: from its media-start, delayed to its start, at its volume
-  ms=$(python3 -c "print(round(${hfclip[2]} * 1000))")
-  ffmpeg -v error -ss ${hfclip[3]} ${${hfclip[4]:#-}:+-t ${hfclip[4]}} -i $song -af "adelay=$ms:all=1,volume=${hfclip[5]}" $tmp/song.wav
+  ms=$(python3 -c "print(round(${hfclip[2]} * 1000))"); lim=(); [[ ${hfclip[4]} == - ]] || lim=(-t ${hfclip[4]})
+  ffmpeg -v error -ss ${hfclip[3]} $lim -i $song -af "adelay=$ms:all=1,volume=${hfclip[5]}" $tmp/song.wav
   echo "sound: ${hfclip[1]} from ${hfclip[2]} s (media from ${hfclip[3]} s)"; song=$tmp/song.wav
 fi
 echo "== $label: $frames frames in $slices slices at ${width}x${height}$( (( draft )) && echo ", draft")"
