@@ -8,6 +8,7 @@
 #   encode for drafts and finals alike (secondunit/CLAUDE.md), so --draft changes nothing there. No height argument.
 #   Either way GitHub joins the slices and the Mac downloads one file and only muxes the song (stream copy).
 #   CR_REF=<branch> runs the workflow file from that branch (to test workflow changes before merging).
+#   CR_HOLD=<seconds>: the longest still run the join accepts (default 2, 6 for a HyperFrames composition).
 #   e.g. tools/cloud-render/cloud-render.sh bobwiseman-holiday-tavern looks/charcoal.html 24 130
 #   HyperFrames compositions (the IndieAgent explainers) go through unchanged: render-slice.mjs injects HyperFrames'
 #   own runtime when a page has no __frameJPEG, and the sound is the composition's one <audio> clip (offsets and
@@ -30,8 +31,9 @@ here=${0:A:h}; root=${here:h:h}
 proj=$1; page=$2; t0=$3; t1=$4; slices=${6:-20}; height=${7:-720}
 [[ -n $proj && -n $page && -n $t0 && -n $t1 ]] || { sed -n '2,8p' $0; exit 2; }
 pdir=$root/$proj; [[ -f $pdir/$page ]] || { echo "no page $pdir/$page"; exit 2; }
-song=$pdir/assets/song.wav; hfclip=()
-if [[ ! -f $song ]] && grep -q 'data-composition-id' $pdir/$page; then
+song=$pdir/assets/song.wav; hfclip=(); hfpage=0
+grep -q 'data-composition-id' $pdir/$page && hfpage=1
+if [[ ! -f $song ]] && (( hfpage )); then
   # a HyperFrames composition carries its sound as an <audio> clip: src start media-start duration volume
   hfclip=($(python3 $here/hfaudio.py $pdir/$page)) || { echo "no $song, and no single <audio> clip in the page to use"; exit 2; }
   song=$pdir/${hfclip[1]}
@@ -43,6 +45,9 @@ if (( tall )); then
   width=720; height=1280; crf=23; vbv=(-f maxrate=4500)   # kbit/s; the workflow sets bufsize to twice it
 fi
 frames=$(python3 -c "print(round(($t1 - $t0) * $fps))")
+# the join fails on a still run longer than this: a look never holds 2 s, an explainer holds a plate for 4 s and more
+hold=${CR_HOLD:-$(( hfpage ? 6 : 2 ))}
+maxhold=$(python3 -c "print(round(float('$hold') * $fps))")
 [[ $slices == <-> ]] || { echo "slices must be a whole number"; exit 2; }
 max=$(( frames < 20 ? frames : 20 ))
 (( frames > 0 && slices >= 1 && slices <= max )) || { echo "need t1 > t0 and 1 <= slices <= $max"; exit 2; }
@@ -117,7 +122,7 @@ asset=$(retry 4 asset_id) || asset=""
 dispatched=1
 for try in 1 2 3; do
   gh workflow run cloud-render.yml --repo $REPO ${CR_REF:+--ref=$CR_REF} -f crf=$crf -f label=$label -f asset_id=$asset -f page=$page -f t0=$t0 \
-    -f frames=$frames -f slices=$slices -f fps=$fps -f width=$width -f height=$height $vbv && break
+    -f frames=$frames -f slices=$slices -f fps=$fps -f width=$width -f height=$height -f maxhold=$maxhold $vbv && break
   # the dispatch may have landed even though its reply was lost: look for the run before sending another
   for i in {1..6}; do sleep 5; run=$(find_run 2>/dev/null) || run=""; [[ -n $run ]] && break; done
   [[ -n $run ]] && break
