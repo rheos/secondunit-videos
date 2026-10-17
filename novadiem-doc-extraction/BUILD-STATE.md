@@ -37,3 +37,9 @@ It carries its own border, grid and bar copy (tick at MODEL, sheet 04 / 07).
 
 `hyperframes check` reports the paper furniture's bar text as occluded under the night field.
 That's intended (the plate draws its own bar copy), the same as the Cold Read's plate III.
+
+## Look test v1
+
+https://youtu.be/vhQkCCpVATk (unlisted, default channel), 19 s cut from 35-54 s of the 0-54 s render
+(`renders/doc-extraction_plate4_looktest_v1.mp4`). flashcheck PASS; -13.0 LUFS, peak -1.0 dBFS.
+badframes flags the night field as "dark lower-right" by design; frames checked by eye, full-frame.
