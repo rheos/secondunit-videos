@@ -5,8 +5,9 @@
 //              sign beside it: a red panel with a yellow upside-down-arches "W", guyed with wires (burger.jpg)
 //   jig      - two semi trucks (cab + tanker) bent into a towering arch: one stands on its nose, the second is balanced
 //              upside down on top, the tankers bent like pipe elbows, wheels sticking out; about 15 m tall (big-rig-jig.jpg)
-//   monolith - a tall tapered olive-green slab, 7.6 m, with a 2.5 m hole bored through near the top by one edge, 1 m
-//              thick; by night the side that faces the Man takes the burn's rust light (green-monolith-day/night.jpg)
+//   monolith - a tapered olive-green prism on a diamond footprint (diagonals 6 m and 3.6 m), 7.6 m tall, a wide face and
+//              a narrow one meeting at the near edge; a 2.6 m bore runs through near the top against that edge; by night
+//              the face toward the Man takes the burn's rust light (green-monolith-day/night.jpg)
 //   head     - a giant lavender head buried to the eyes: the skull's dome, half-lidded eyes, the nose running into the
 //              playa, the ears; about 7.6 m across, 5.3 m tall (purple-head.jpg)
 //   genie    - a slow mobile art car: a giant lace-white daisy on a Genie articulating boom lift, the boom sleeved like a
@@ -23,15 +24,15 @@
 // path (mobile pieces): [t, X, Z] keys at walking pace; lift(t): how far the boom is raised, 0..1.
 // front: true draws the piece after the Man's fire (artpiecesFront), for a framing that sees the burn through the
 // monolith's hole. It only takes effect once render.js lists 'artpiecesFront' in FRONT_HOOKS. Tested framing: monolith
-// rot -1.12 (its hole on the line to the Man) and a drone pose [t, 223.3, 1.6, 82, -.12, 1300, 2.02] (world metres,
-// as END_KEYS): the burning Man stands inside the hole. Draft 9 has no such pose, so it is off.
+// rot 4.62 (its bore square to the line to the Man) and a drone pose [t, 222.7, 2.23, 81.7, -.125, 1300, 2.014]
+// (world metres, as END_KEYS): the burning Man stands inside the bore. Draft 9 has no such pose, so it is off.
 const ARTPIECES = [
   { kind: 'burger', X: -316, Z: -4, rot: -Math.PI / 2 - .3, scale: 1, sign: { lx: 5.2, lf: -1.6, rot: .35 }, people: 4,
     clock: '9:20', r: 600, seen: 'intro 3-7.6: on the open playa straight ahead of the drone as it glides in from the 9:00 Esplanade sound camp; the bun grows to about 140 px (the sign 260 px) at 7.4 before the drone passes over it' },
   { kind: 'jig', X: 265, Z: 110, rot: Math.PI - .2, scale: 1, people: 7,
     clock: '7:00', r: 72, seen: 'day 153-160, 163-184, 193-198 (h 120-255 px); night 212-268 on the left of the burn framings, dark against the city' },
-  { kind: 'monolith', X: 244, Z: 72, rot: 2.8, scale: 1, people: 4, nightPeople: 8,
-    clock: '8:10', r: 62, seen: 'day 152-160, 163-184, 193-198 (h 80-180 px); night 212-233 and 237-246 behind the crowd ring, its Man side lit rust' },
+  { kind: 'monolith', X: 244, Z: 72, rot: 2.45, scale: 1, people: 4, nightPeople: 8,
+    clock: '8:10', r: 62, seen: 'day 152-160, 163-184, 193-198 (h 80-180 px), the wide face to the drone with the bore reading round, the narrow face beside it; night 212-233 and 237-246 behind the crowd ring, the narrow face (toward the Man) rust, the wide face olive' },
   { kind: 'head', X: 236, Z: 28, rot: 2.68, scale: 1, people: 5,
     clock: '8:50', r: 66, seen: 'grin 3, 180.5-184 (left third, h 225-250 px); also 159-172 in the background (behind the row on "rehearsed"), 173-177 below the refrain-3 drape' },
   { kind: 'genie', path: [[96, 230, 33], [131, 186, 32], [170, 140, 30]], X: 0, Z: 0, rot: Math.PI, scale: 1,
@@ -73,7 +74,7 @@ function apShadowLine(wpts, wm, t) { const sv = sunVec(t), a = shadowA(t); if (a
 // ---------- visitors: people standing about and bikes parked at a piece's foot ----------
 const AP_COLS = ['#d8452f', '#2f6fb5', '#e8b23a', '#7a3c8c', '#3c8c5a', '#f2ede0', '#ee9a42', '#47c1ba'];
 function apVisitors(o, t, list) {
-  const n0 = o.people || 0, n = n0 + (o.nightPeople || 0); if (!n) return; /* the night ones gather at dusk, on their way to the burn */ const F = apFrame(o), R = { burger: 3.2, jig: 6.5, monolith: 3.4, head: 4.8 }[o.kind] || 4;
+  const n0 = o.people || 0, n = n0 + (o.nightPeople || 0); if (!n) return; /* the night ones gather at dusk, on their way to the burn */ const F = apFrame(o), R = { burger: 3.2, jig: 6.5, monolith: 4.3, head: 4.8 }[o.kind] || 4;
   for (let i = 0; i < n; i++) {
     const a = rnd(i, 3, o.X) * TAU, r = R + 1.2 + 2.6 * rnd(i, 4, o.Z), lx = Math.cos(a) * r, lf = Math.sin(a) * r * .8;
     const w = F(lx, 0, lf), p = P(w[0], 0, w[2]); if (p[2] < 3) continue; const k = kAt(p) * (o.scale || 1); if (k < .4 || p[0] < -60 || p[0] > W + 60) continue;
@@ -258,53 +259,100 @@ function apJigShadow(o, t) {
 }
 
 // ---------- 3. the green monolith ----------
-// the slab in its own frame: base 4 m wide, 7.6 m tall, the left edge leaning in, 1 m thick; the hole is 2.5 m across,
-// its centre 5.3 m up and toward the right edge, so it nearly breaks the side
-const AP_MONO = { bl: -2.0, br: 2.0, tl: -.55, tr: 1.7, h: 7.6, th: .5, hx: .43, hy: 5.0, hr: 1.25 };
+// A tapered prism on a DIAMOND footprint (Robin: "the base is a diamond. it's not flat across the front"). Seen from
+// the photo's angle: a wide face and a narrower face meeting at the near, nearly vertical edge, each tapering in to a
+// smaller diamond on top; the near corner pokes out at the foot. A round bore runs horizontally right through near the
+// top, square to the wide face and set against the near edge, so the edge cuts the circle and you see the bore's
+// curved inner wall. Real 3D: four side faces, the top, and the bore as a cylinder through the solid, from any angle.
+// Local metres: lx along the long diagonal, lf along the short one (the near corner is +lf), ly up.
+const AP_MONO = { a: 3.0, b: 1.8, h: 7.6, top: .65, piv: [.1, 1.05], hr: 1.3, hy: 5.0, hoff: .5, nb: 36 }; // hoff: the bore's centre this far in from the near edge, so the edge cuts the circle
 const AP_STREAKS = [...Array(14)].map((_, i) => ({ u: rnd(i, 51), w: .03 + .07 * rnd(i, 52), y0: .1 + 2.5 * rnd(i, 53), y1: 3.5 + 4 * rnd(i, 54), d: rnd(i, 55) < .5 }));
-function apMonoGeo(o) {
-  const F = apFrame(o), m = AP_MONO, S = o.scale || 1;
-  const v = (lx, ly, lf) => apP(F(lx, ly, lf));
-  const front = [v(m.bl, 0, m.th), v(m.br, 0, m.th), v(m.tr, m.h, m.th), v(m.tl, m.h, m.th)], back = [v(m.bl, 0, -m.th), v(m.br, 0, -m.th), v(m.tr, m.h, -m.th), v(m.tl, m.h, -m.th)];
-  const holeF = [], holeB = []; for (let i = 0; i < 40; i++) { const a = i / 40 * TAU, x = m.hx + Math.cos(a) * m.hr, y = m.hy + Math.sin(a) * m.hr; holeF.push(v(x, y, m.th)); holeB.push(v(x, y, -m.th)); }
-  return { F, front, back, holeF, holeB };
+const apSub = (p, q) => [p[0] - q[0], p[1] - q[1], p[2] - q[2]], apDot = (p, q) => p[0] * q[0] + p[1] * q[1] + p[2] * q[2];
+const apCross = (p, q) => [p[1] * q[2] - p[2] * q[1], p[2] * q[0] - p[0] * q[2], p[0] * q[1] - p[1] * q[0]], apNorm = (p) => { const l = Math.hypot(...p) || 1; return [p[0] / l, p[1] / l, p[2] / l]; };
+function apMonoGeo(o) { // world geometry: corners, faces (with outward normals), the bore
+  const F = apFrame(o), m = AP_MONO, S = o.scale || 1, B2 = [[-m.a, 0], [0, m.b], [m.a, 0], [0, -m.b]]; // left, near, right, back
+  const T2 = B2.map(([x, f]) => [m.piv[0] + m.top * (x - m.piv[0]), m.piv[1] + m.top * (f - m.piv[1])]);
+  const base = B2.map(([x, f]) => F(x, 0, f)), top = T2.map(([x, f]) => F(x, m.h, f)), cen = F(0, m.h * .45, .2);
+  const faces = []; for (let i = 0; i < 4; i++) { const j = (i + 1) % 4, pts = [base[i], base[j], top[j], top[i]]; let n = apNorm(apCross(apSub(base[j], base[i]), apSub(top[i], base[i])));
+    if (apDot(n, apSub(base[i], cen)) < 0) n = n.map((v) => -v); faces.push({ pts, n, q: base[i], side: true, i }); }
+  faces.push({ pts: top.slice(), n: [0, 1, 0], q: top[0], side: false, i: 4 });
+  // the bore: square to the wide face (left to near), its axis horizontal, centred hoff in from the near edge
+  const e = [B2[1][0] - B2[0][0], B2[1][1] - B2[0][1]], el = Math.hypot(e[0], e[1]), nl = [-e[1] / el, e[0] / el]; // the wide face's outward normal in (lx, lf)
+  const u = m.hy / m.h, Ly = [lerp(B2[0][0], T2[0][0], u), lerp(B2[0][1], T2[0][1], u)], Ny = [lerp(B2[1][0], T2[1][0], u), lerp(B2[1][1], T2[1][1], u)], dl = Math.hypot(Ly[0] - Ny[0], Ly[1] - Ny[1]);
+  const Q2 = [Ny[0] + (Ly[0] - Ny[0]) / dl * m.hoff, Ny[1] + (Ly[1] - Ny[1]) / dl * m.hoff];
+  const Q = F(Q2[0], m.hy, Q2[1]), ax = apNorm(apSub(F(Q2[0] + nl[0], m.hy, Q2[1] + nl[1]), Q)), U = apNorm(apCross([0, 1, 0], ax)), V = [0, 1, 0];
+  // each generator line of the bore, clipped to the solid (the four side planes, the top, the playa)
+  const gens = []; for (let k = 0; k < m.nb; k++) { const th = k / m.nb * TAU, ct = Math.cos(th), st = Math.sin(th), p0 = [Q[0] + (U[0] * ct + V[0] * st) * m.hr * S, Q[1] + (U[1] * ct + V[1] * st) * m.hr * S, Q[2] + (U[2] * ct + V[2] * st) * m.hr * S];
+    let t0 = -50, t1 = 50; for (const fc of faces) { const dn = apDot(fc.n, ax), dd = apDot(fc.n, apSub(p0, fc.q)); if (Math.abs(dn) < 1e-6) { if (dd > 0) { t0 = 1; t1 = 0; } continue; } const tt = -dd / dn; if (dn > 0) t1 = Math.min(t1, tt); else t0 = Math.max(t0, tt); }
+    if (p0[1] < 0) { t0 = 1; t1 = 0; }
+    gens.push({ th, p0, t0, t1, ok: t1 > t0, inN: [-(U[0] * ct + V[0] * st), -(U[1] * ct + V[1] * st), -(U[2] * ct + V[2] * st)] }); }
+  return { F, faces, base, top, Q, ax, U, V, gens };
 }
 function apMonolith(o, t, p, k) {
-  const { F, front, back, holeF, holeB } = apMonoGeo(o), m = AP_MONO; if (!ok(front) || !ok(back)) return;
-  const cam = [C.x, C.y, C.z], facing = (n, w) => n[0] * (cam[0] - w[0]) + n[1] * (cam[2] - w[2]) > 0;
-  const nF = apNormal(o, 0, 1), nB = apNormal(o, 0, -1), nR = apNormal(o, 1, .06), nL = apNormal(o, -.99, -.0), night = nightAmt(t);
-  const green = hex('#a5bf3c'), olive = hex('#b4cc48'), base = mix(green, olive, night), rust = hex('#ff8a3a'); // by night a brighter olive so it survives the dusk grade
-  const col = (n, f, side) => { const l = apLight(t, n, 0, o.X, o.Z), r = apRust(t, n, o.X, o.Z) * (side ? 1.7 : .25); return rgb(mix(apShade(base, (f || 1) * (.5 + .52 * l)), rust, clamp(r))); }; // the burn turns the edges rust, the big faces stay olive
-  const wF = F(0, 3, m.th), wB = F(0, 3, -m.th), wR = F(1.9, 3, 0), wL = F(-1.45, 3, 0);
-  const top = [front[3], front[2], back[2], back[3]];
-  // side faces first (they never overlap the face with the hole)
-  if (facing(nR, wR)) poly([front[1], back[1], back[2], front[2]], col(nR, .86, true));
-  if (facing(nL, wL)) poly([back[0], front[0], front[3], back[3]], col(nL, .86, true));
-  if (C.y > m.h * (o.scale || 1)) poly(top, col([0, 0], .95));
-  const showF = facing(nF, wF), face = showF ? front : back, hn = showF ? holeF : holeB, hf = showF ? holeB : holeF;
-  // the big face with the hole cut through it (evenodd), then the tunnel's inside wall in the hole
-  g.save(); g.beginPath(); face.forEach((q, i) => i ? g.lineTo(q[0], q[1]) : g.moveTo(q[0], q[1])); g.closePath(); hn.forEach((q, i) => i ? g.lineTo(q[0], q[1]) : g.moveTo(q[0], q[1])); g.closePath();
-  g.fillStyle = col(showF ? nF : nB); g.fill('evenodd');
-  // weathering: long faint streaks running down from the top, and a darker grime band at the foot
-  if (k > 3) { g.clip('evenodd'); const map = apQuad(face[3], face[2], face[0], face[1]); // u across, v down
-    for (const s of AP_STREAKS) { const a = map(s.u, 1 - s.y1 / m.h), b = map(s.u + .01, 1 - s.y0 / m.h); g.strokeStyle = s.d ? 'rgba(60,72,20,.16)' : 'rgba(235,240,190,.13)'; g.lineWidth = Math.max(1, s.w * k); g.beginPath(); g.moveTo(a[0], a[1]); g.lineTo(b[0], b[1]); g.stroke(); }
-    const f0 = map(0, 1), f1 = map(1, 1), f2 = map(1, .9), f3 = map(0, .9); const gr = g.createLinearGradient(0, f0[1], 0, f3[1]); gr.addColorStop(0, 'rgba(70,60,30,.28)'); gr.addColorStop(1, 'rgba(70,60,30,0)'); g.fillStyle = gr; g.beginPath(); g.moveTo(f0[0], f0[1]); g.lineTo(f1[0], f1[1]); g.lineTo(f2[0], f2[1]); g.lineTo(f3[0], f3[1]); g.closePath(); g.fill(); }
-  g.restore();
-  // the tunnel: inside the near hole, everything that is not the far opening (you see the playa or the sky through that)
-  g.save(); apPath(hn); g.clip(); g.beginPath(); hn.forEach((q, i) => i ? g.lineTo(q[0], q[1]) : g.moveTo(q[0], q[1])); g.closePath(); hf.forEach((q, i) => i ? g.lineTo(q[0], q[1]) : g.moveTo(q[0], q[1])); g.closePath();
-  const tun = mix(hex('#41528c'), hex('#2a2a3a'), night * .6), tl = apLight(t, showF ? nB : nF, .3, o.X, o.Z), rr = apRust(t, showF ? nB : nF, o.X, o.Z);
-  const hc = apP(F(m.hx, m.hy, 0)), gr = g.createRadialGradient(hc[0], hc[1], 0, hc[0], hc[1], m.hr * k * 1.1); gr.addColorStop(0, rgb(mix(apShade(tun, .55 + .4 * tl), rust, rr * .6))); gr.addColorStop(1, rgb(mix(apShade(tun, .85 + .3 * tl), rust, rr * .8)));
-  g.fillStyle = gr; g.fill('evenodd'); g.restore();
-  // a bright lip on the hole's rim, and the little foot plate at the bottom corner (both in the photo)
-  if (k > 5) { g.save(); apPath(hn); g.strokeStyle = rgb(apShade(base, 1.08), .55); g.lineWidth = Math.max(1, .05 * k); g.stroke(); g.restore();
-    const fp = [apP(F(m.br - .1, 0, m.th + .05)), apP(F(m.br + .55, 0, m.th + .15)), apP(F(m.br + .1, .35, m.th + .02))]; if (ok(fp)) poly(fp, col(nF, .8)); }
-  apRim([front[3], front[2], back[2]], t, k, false);
+  const G = apMonoGeo(o), m = AP_MONO, S = o.scale || 1, night = nightAmt(t), cam = [C.x, C.y, C.z];
+  const green = hex('#a5bf3c'), olive = hex('#b4cc48'), base = mix(green, olive, night), rust = hex('#ff8a3a'), wallC = mix(hex('#3f4f8c'), hex('#2a2a3a'), night * .6);
+  const mx = MAN.x - o.X, mz = MAN.z - o.Z, ml = Math.hypot(mx, mz) || 1; // by night only the face turned most squarely to the burn goes rust; the others stay olive, as in the night photo
+  const h2of = (n) => { const hn = Math.hypot(n[0], n[2]) || 1; return [n[0] / hn, n[2] / hn]; };
+  const col = (n, f, l) => { const h2 = h2of(n); if (l == null) l = apLight(t, h2, n[1], o.X, o.Z); const sq = smooth((h2[0] * mx / ml + h2[1] * mz / ml - .8) / .12), r = apRust(t, h2, o.X, o.Z) * 1.6 * sq; return rgb(mix(apShade(base, (f || 1) * (.48 + .55 * l)), rust, clamp(r))); };
+  const at = (gn, tt) => P(gn.p0[0] + G.ax[0] * tt, gn.p0[1] + G.ax[1] * tt, gn.p0[2] + G.ax[2] * tt);
+  // where the bore's cylinder meets a face's plane (an ellipse; null if the plane runs along the bore)
+  const holeOn = (fc) => { const dn = apDot(fc.n, G.ax); if (Math.abs(dn) < .05) return null; const out = []; for (const gn of G.gens) out.push(at(gn, -apDot(fc.n, apSub(gn.p0, fc.q)) / dn)); return ok(out) ? out : null; };
+  const isVis = (fc) => apDot(fc.n, apSub(cam, fc.q)) > 0, vis = G.faces.filter(isVis);
+  // each face its own value from the sun, and the visible sides held at least .36 apart so the edge between them reads
+  const Lf = new Map(); for (const fc of vis) Lf.set(fc, apLight(t, h2of(fc.n), fc.n[1], o.X, o.Z));
+  const sides = vis.filter((fc) => fc.side).sort((p1, p2) => Lf.get(p1) - Lf.get(p2));
+  if (sides.length > 1) { const lo = Lf.get(sides[0]), hi = Lf.get(sides[sides.length - 1]); if (hi - lo < .36) { const md = (hi + lo) / 2; sides.forEach((fc, i) => Lf.set(fc, md - .18 + .36 * i / (sides.length - 1))); } }
+  const farOf = (fc) => { const op = G.faces.find((f2) => f2.side && f2 !== fc && apDot(f2.n, G.ax) * apDot(fc.n, G.ax) < -.8); return op && !isVis(op) ? holeOn(op) : null; }; // the bore's far opening (on the face opposite the one we look in by), where you see out
+  // the bore's wall: lit where it faces the sun, deep blue where it doesn't (a gradient across the opening)
+  const el = Math.max(sunEl(t), 2) * Math.PI / 180, sd = sunDir(t), sun = [-sd[0] * Math.cos(el), Math.sin(el), -sd[1] * Math.cos(el)];
+  let gb = null, gd = null; for (const gn of G.gens) { if (!gn.ok) continue; const v = apDot(gn.inN, sun); if (!gb || v > gb.v) gb = { v, gn }; if (!gd || v < gd.v) gd = { v, gn }; }
+  const wallLit = mix(hex('#aab8de'), hex('#4a4a62'), night), wallMid = mix(hex('#56669f'), hex('#2e2e44'), night), wallDark = mix(hex('#25326a'), hex('#1a1a28'), night);
+  const holes = [];
+  for (const fc of vis) { const sp = fc.pts.map(apP); if (!ok(sp)) continue; const hole = fc.side ? holeOn(fc) : null; if (hole) holes.push(hole);
+    g.save(); apPath(sp); g.clip();
+    g.beginPath(); sp.forEach((q, i) => i ? g.lineTo(q[0], q[1]) : g.moveTo(q[0], q[1])); g.closePath(); if (hole) { hole.forEach((q, i) => i ? g.lineTo(q[0], q[1]) : g.moveTo(q[0], q[1])); g.closePath(); }
+    g.fillStyle = col(fc.n, fc.side ? 1 : 1.05, Lf.get(fc)); g.fill('evenodd');
+    if (k > 3 && fc.side) { // weathering: long faint streaks down from the top, a grime band at the foot (not over the hole)
+      g.save(); if (hole) { g.beginPath(); g.rect(-W, -H, 3 * W, 3 * H); hole.forEach((q, i) => i ? g.lineTo(q[0], q[1]) : g.moveTo(q[0], q[1])); g.closePath(); g.clip('evenodd'); }
+      const map = apQuad(sp[3], sp[2], sp[0], sp[1]);
+      for (const st of AP_STREAKS) { const a = map(st.u, 1 - st.y1 / m.h), b = map(st.u + .01, 1 - st.y0 / m.h); g.strokeStyle = st.d ? 'rgba(60,72,20,.14)' : 'rgba(235,240,190,.11)'; g.lineWidth = Math.max(1, st.w * k); g.beginPath(); g.moveTo(a[0], a[1]); g.lineTo(b[0], b[1]); g.stroke(); }
+      const f0 = map(0, 1), f1 = map(1, 1), f2 = map(1, .9), f3 = map(0, .9), gr = g.createLinearGradient(0, f0[1], 0, f3[1]); gr.addColorStop(0, 'rgba(70,60,30,.28)'); gr.addColorStop(1, 'rgba(70,60,30,0)'); g.fillStyle = gr; g.beginPath(); g.moveTo(f0[0], f0[1]); g.lineTo(f1[0], f1[1]); g.lineTo(f2[0], f2[1]); g.lineTo(f3[0], f3[1]); g.closePath(); g.fill(); g.restore(); }
+    // through the hole in this face: the bore's inner wall, everywhere except the clean far opening
+    if (hole) { const farHole = farOf(fc); g.save(); apPath(hole); g.clip();
+      if (farHole) { g.beginPath(); g.rect(-W, -H, 3 * W, 3 * H); farHole.forEach((q, i) => i ? g.lineTo(q[0], q[1]) : g.moveTo(q[0], q[1])); g.closePath(); g.clip('evenodd'); }
+      const mt = (gn) => at(gn, (gn.t0 + gn.t1) / 2), pb = gb ? mt(gb.gn) : sp[0], pd = gd ? mt(gd.gn) : sp[2];
+      const wg = g.createLinearGradient(pb[0], pb[1], pd[0], pd[1]); wg.addColorStop(0, rgb(wallLit)); wg.addColorStop(.45, rgb(wallMid)); wg.addColorStop(1, rgb(wallDark));
+      g.fillStyle = wg; g.fillRect(-W, -H, 3 * W, 3 * H);
+      const rr = apRust(t, h2of(G.ax.map((v) => -v)), o.X, o.Z); if (rr > .02) { g.fillStyle = rgb(rust, clamp(rr * .45)); g.fillRect(-W, -H, 3 * W, 3 * H); } // by night the burn glows down the bore
+      if (farHole && k > 5) { g.strokeStyle = rgb(wallDark, .8); g.lineWidth = Math.max(1, .03 * k); apPath(farHole); g.stroke(); } // the far rim, crisp
+      g.restore();
+      // the cut rim: a dark line just inside and a light lip on the face
+      g.save(); apPath(hole); g.strokeStyle = 'rgba(20,28,60,.45)'; g.lineWidth = Math.max(1.4, .07 * k); g.stroke(); g.strokeStyle = rgb(apShade(base, 1.25), .9); g.lineWidth = Math.max(1, .028 * k); g.stroke(); g.restore(); }
+    g.restore();
+  }
+  // the edges: a crisp light line where two visible faces meet (kept off the hole)
+  if (k > 2.5) { g.save(); if (holes.length) { g.beginPath(); g.rect(-W, -H, 3 * W, 3 * H); for (const hh of holes) { hh.forEach((q, i) => i ? g.lineTo(q[0], q[1]) : g.moveTo(q[0], q[1])); g.closePath(); } g.clip('evenodd'); }
+    g.strokeStyle = rgb(apShade(base, 1.3), .85); g.lineWidth = Math.max(1, .022 * k); g.lineCap = 'butt';
+    for (const fc of sides) { const nx = G.faces[(fc.i + 1) % 4]; if (!isVis(nx)) continue; const a2 = apP(fc.pts[1]), b2 = apP(fc.pts[2]); g.beginPath(); g.moveTo(a2[0], a2[1]); g.lineTo(b2[0], b2[1]); g.stroke(); }
+    g.restore(); }
+  // the near corner pokes out at the foot: a small flat point of plate on the playa
+  { const nf = G.faces[0].n, fp = [G.F(-.3, 0, AP_MONO.b - .18), G.F(.3, 0, AP_MONO.b - .18), G.F(.05, 0, AP_MONO.b + .55), G.F(.05, .2, AP_MONO.b + .05)].map(apP); if (ok(fp)) { poly([fp[0], fp[2], fp[1]], col(nf, .78)); poly([fp[0], fp[3], fp[2]], col(nf, .9)); } }
+  const topS = G.top.map(apP); if (ok(topS)) apRim([topS[0], topS[1], topS[2]], t, k, false);
 }
-function apMonoShadow(o, t) { // the slab's shadow, with the hole's patch of sunlight in it
-  const sv = sunVec(t), a = shadowA(t); if (a < .01) return; const F = apFrame(o), m = AP_MONO, S = o.scale || 1, sp = (w) => shadowPt(w[0], w[1], w[2], sv);
-  const corners = [[m.bl, 0, m.th], [m.br, 0, m.th], [m.tr, m.h, m.th], [m.tl, m.h, m.th], [m.bl, 0, -m.th], [m.br, 0, -m.th], [m.tr, m.h, -m.th], [m.tl, m.h, -m.th]].map((c) => sp(F(...c)));
-  if (!ok(corners)) return; const hl = hull(corners), hole = []; for (let i = 0; i < 32; i++) { const an = i / 32 * TAU; hole.push(sp(F(m.hx + Math.cos(an) * m.hr * .86, m.hy + Math.sin(an) * m.hr * .86, 0))); }
-  g.save(); g.beginPath(); hl.forEach((q, i) => i ? g.lineTo(q[0], q[1]) : g.moveTo(q[0], q[1])); g.closePath(); if (ok(hole)) { hole.forEach((q, i) => i ? g.lineTo(q[0], q[1]) : g.moveTo(q[0], q[1])); g.closePath(); }
+function apClipConvex(subj, clip) { // Sutherland-Hodgman: a polygon clipped to a convex one (screen points)
+  let out = subj; const n = clip.length, sgn = Math.sign((clip[1][0] - clip[0][0]) * (clip[2][1] - clip[0][1]) - (clip[1][1] - clip[0][1]) * (clip[2][0] - clip[0][0])) || 1;
+  for (let i = 0; i < n && out.length; i++) { const A = clip[i], B = clip[(i + 1) % n], inside = (p) => sgn * ((B[0] - A[0]) * (p[1] - A[1]) - (B[1] - A[1]) * (p[0] - A[0])) >= 0, inp = out; out = [];
+    for (let j = 0; j < inp.length; j++) { const P1 = inp[j], P2 = inp[(j + 1) % inp.length], i1 = inside(P1), i2 = inside(P2);
+      if (i1) out.push(P1); if (i1 !== i2) { const d1 = (B[0] - A[0]) * (P1[1] - A[1]) - (B[1] - A[1]) * (P1[0] - A[0]), d2 = (B[0] - A[0]) * (P2[1] - A[1]) - (B[1] - A[1]) * (P2[0] - A[0]), u = d1 / (d1 - d2); out.push([lerp(P1[0], P2[0], u), lerp(P1[1], P2[1], u)]); } } }
+  return out; }
+function apMonoShadow(o, t) { // the prism's shadow, with the patch of sun that comes through the bore when it lines up
+  const sv = sunVec(t), a = shadowA(t); if (a < .01) return; const G = apMonoGeo(o), sp = (w) => shadowPt(w[0], w[1], w[2], sv);
+  const corners = [...G.base, ...G.top].map(sp); if (!ok(corners)) return; const hl = hull(corners);
+  const ends = (which) => G.gens.filter((gn) => gn.ok).map((gn) => sp([gn.p0[0] + G.ax[0] * gn[which], gn.p0[1] + G.ax[1] * gn[which], gn.p0[2] + G.ax[2] * gn[which]]));
+  const e0 = ends('t0'), e1 = ends('t1'); let patch = [];
+  if (e0.length > 5 && ok(e0) && ok(e1)) { const h0 = hull(e0), h1 = hull(e1); if (h0.length > 2 && h1.length > 2) patch = apClipConvex(h0, h1); }
+  g.save(); g.beginPath(); hl.forEach((q, i) => i ? g.lineTo(q[0], q[1]) : g.moveTo(q[0], q[1])); g.closePath();
+  if (patch.length > 2) { patch.forEach((q, i) => i ? g.lineTo(q[0], q[1]) : g.moveTo(q[0], q[1])); g.closePath(); }
   g.fillStyle = `rgba(52,34,58,${a})`; g.fill('evenodd'); g.restore();
 }
 
@@ -467,7 +515,7 @@ function artpiecesFront(t) {
 }
 
 // ---------- the scene hook ----------
-const AP_SIZE = { burger: [8, 7], jig: [7, 15.5], monolith: [3, 7.6], head: [5, 5.3], genie: [6, 14] }; // half width for culling, height
+const AP_SIZE = { burger: [8, 7], jig: [7, 15.5], monolith: [4, 7.6], head: [5, 5.3], genie: [6, 14] }; // half width for culling, height
 function artpiecesInto(t, list) {
   for (const o of ARTPIECES) {
     if (o.t0 != null && t < o.t0) continue; if (o.t1 != null && t > o.t1) continue;
