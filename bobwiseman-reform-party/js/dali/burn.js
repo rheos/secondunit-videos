@@ -612,9 +612,27 @@ function drawMV(c, s, t, glow) {
   if (sh.snail) { const q = L([.4, 1.6 + sh.snail]); g.strokeStyle = bmShade2(c.col, 1.25); g.lineWidth = Math.max(1, .5 * k); g.beginPath(); for (let i = 0; i <= 40; i++) { const a = i / 40 * 5, rr = sh.snail * (1 - i / 46); i ? g.lineTo(q[0] + Math.cos(a) * rr * k, q[1] + Math.sin(a) * rr * k) : g.moveTo(q[0] + rr * k, q[1]); } g.stroke(); }
   if (c.kind === 'bus' && k > 4) { g.fillStyle = 'rgba(20,16,24,.7)'; for (let i = 0; i < 6; i++) { const q = L([-4.2 + i * 1.5, 2.9]); g.fillRect(q[0], q[1], 1.0 * k * dir, .9 * k); } }
   if (c.kind === 'fish') { const q = L([2.6, 2.5]); g.fillStyle = '#f4efe6'; g.beginPath(); g.arc(q[0], q[1], .3 * k, 0, TAU); g.fill(); }
-  mvRiders(c, s, x, y, k, dir, t);
+  mvTopper(c, L, k, t); mvRiders(c, s, x, y, k, dir, t);
   g.restore();
 }
+// a one-off sculpture on every ring car, so no two of the 30 match (Robin: art cars are unique); with the car's kind and
+// colour, car i gets topper i % 10, and (kind, colour, topper) never repeats inside 30 cars
+function mvTopper(c, L, k, t) { const top = c.kind === 'ship' ? 2.4 : c.kind === 'dome' ? 4.3 : c.kind === 'fish' ? 3.6 : c.kind === 'snail' ? 4.0 : 4.45, q = L([c.kind === 'ship' ? -2.5 : -.6, top]), r = k, x = q[0], y = q[1], ln = Math.max(1, .1 * k);
+  const dot = (dx, dy, rr, col) => { g.fillStyle = col; g.beginPath(); g.arc(x + dx * r, y - dy * r, Math.max(.6, rr * r), 0, TAU); g.fill(); };
+  g.lineWidth = ln; g.lineCap = 'round';
+  switch (c.i % 10) {
+    case 0: dot(0, .7, .7, '#f4efe6'); dot(.15, .7, .32, '#3fa8a4'); dot(.2, .7, .14, '#111'); break;                                    // a giant eye
+    case 1: g.strokeStyle = '#efe6d2'; g.lineWidth = .25 * k; g.beginPath(); g.moveTo(x - .6 * r, y); g.quadraticCurveTo(x - 1.4 * r, y - 1.2 * r, x - .6 * r, y - 1.9 * r); g.moveTo(x + .6 * r, y); g.quadraticCurveTo(x + 1.4 * r, y - 1.2 * r, x + .6 * r, y - 1.9 * r); g.stroke(); break; // horns
+    case 2: g.fillStyle = '#f2ede2'; for (const sd of [-1, 1]) { g.beginPath(); g.moveTo(x, y - .2 * r); g.quadraticCurveTo(x + sd * 1.6 * r, y - (1.6 + .2 * Math.sin(t * 3)) * r, x + sd * 2.4 * r, y - .4 * r); g.closePath(); g.fill(); } break; // wings
+    case 3: dot(0, 1.0, .75, '#c8ccd0'); g.strokeStyle = 'rgba(80,84,90,.6)'; g.beginPath(); g.moveTo(x - .75 * r, y - r); g.lineTo(x + .75 * r, y - r); g.moveTo(x, y - .25 * r); g.lineTo(x, y - 1.75 * r); g.stroke(); break; // a mirror ball
+    case 4: g.fillStyle = '#e8b23a'; g.beginPath(); g.moveTo(x - .7 * r, y); g.lineTo(x - .7 * r, y - 1.0 * r); g.lineTo(x - .35 * r, y - .55 * r); g.lineTo(x, y - 1.25 * r); g.lineTo(x + .35 * r, y - .55 * r); g.lineTo(x + .7 * r, y - 1.0 * r); g.lineTo(x + .7 * r, y); g.fill(); break; // a crown
+    case 5: g.fillStyle = '#f2e6b0'; g.beginPath(); g.arc(x, y - 1.0 * r, .8 * r, -1.2, 1.9); g.arc(x + .35 * r, y - 1.0 * r, .62 * r, 1.9, -1.2, true); g.fill(); break; // a crescent moon
+    case 6: g.fillStyle = '#e8cfae'; g.fillRect(x - .35 * r, y - 1.2 * r, .7 * r, 1.2 * r); for (let f = 0; f < 4; f++) g.fillRect(x + (-.35 + f * .18) * r, y - 1.9 * r, .14 * r, .7 * r); break; // a raised hand
+    case 7: g.fillStyle = '#d8452f'; g.beginPath(); for (let j = 0; j < 10; j++) { const a = j / 10 * TAU - Math.PI / 2, rr = (j % 2 ? .35 : .85) * r; g.lineTo(x + Math.cos(a) * rr, y - 1.0 * r + Math.sin(a) * rr); } g.fill(); break; // a star
+    case 8: g.strokeStyle = '#3a3040'; g.beginPath(); g.moveTo(x, y); g.lineTo(x, y - 1.8 * r); g.stroke(); dot(0, 1.8, .45, '#f4b0cf'); dot(-.5, 1.4, .3, '#47c1ba'); dot(.5, 1.5, .32, '#e8b23a'); break; // balloons
+    default: g.fillStyle = '#5a3a24'; g.fillRect(x - .9 * r, y - .25 * r, 1.8 * r, .25 * r); g.fillRect(x - .6 * r, y - 1.25 * r, 1.2 * r, 1.0 * r); g.fillStyle = '#c7362b'; g.fillRect(x - .6 * r, y - .55 * r, 1.2 * r, .15 * r); // a top hat
+  } }
+
 // riders on the parked art cars: they stand on the deck to see over the crowd, and on the last "vote" they vote too
 const MV_DECK = { bus: [4.4, [-3.4, -1.7, .3, 1.9]], ship: [1.9, [-3.4, -2.1, 2.4, 3.6]], fish: [3.55, [-1.1, .3, 1.5]], dome: [1.4, [-3.3, 3.3]], snail: [1.65, [-2.9, -1.9, 2.9]] };
 function mvRiders(c, s, x, y, k, dir, t) {

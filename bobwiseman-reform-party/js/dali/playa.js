@@ -129,7 +129,7 @@ function bmCostume(seed, force) {
     coat: pick(BM_COATS), fur: R() < .72, spots: R() < .22, trim: pick(['#fbf6ea', '#f4b0cf', '#e8b23a', '#1c1a1e', '#47c1ba']), legs: pick(['#2a2420', '#e8d4b4', '#3a3048', '#c43a2a', '#1c1a1e']), stripes: R() < .3,
     skin: pick(['#e8cfae', '#c99a72', '#8a5a3c', '#f1dcc4', '#6a4630']), hat: pick(['top', 'fluff', 'bopper', 'sun', 'none', 'top', 'fluff']), lens: pick(['#f0b030', '#3fc0e0', '#c060e0', '#e05a3a']),
     para: R() < .38 ? pick(BM_PARAS) : null, flag: R() < .5 ? { h: 3 + R() * 1.7, col: pick(['#d8452f', '#e8b23a', '#2f6fb5', '#f6efe0', '#7a3c8c', '#3c8c5a']), col2: pick(['#f6efe0', '#1c1a1e', '#e8b23a']) } : null,
-    frame: pick(['#c43a2a', '#2f6fb5', '#e8b23a', '#3c8c5a', '#d9d2c2', '#1c1a1e', '#9a68dc']), bike: R() < .68 ? 'plain' : pick(['tall', 'fish', 'snail', 'clock']), seed: seed % 97 };
+    frame: pick(['#c43a2a', '#2f6fb5', '#e8b23a', '#3c8c5a', '#d9d2c2', '#1c1a1e', '#9a68dc']), bike: 'plain', seed: seed % 97 }; // every special art bike is one of a kind (Robin): only BM_FLOCK forces the four
   return Object.assign(c, force || {});
 }
 function bmWheel(cx, cy, r, ang, det, rimCol) {
@@ -226,7 +226,7 @@ function bmTraffic(t, list) {
     const rel = ((((b.v * t + b.off) % 240) + 240) % 240) - 120, vw = b.v + (t > 14 && t < 200 ? 1.6 : 0); bmRiderEntry(cx + rel, b.Z, Math.sign(vw) || 1, Math.abs(vw) * t, t, b.c, list); }
 }
 // a costumed flock crossing in front of the camera in the first instrumental (it replaces draft 2's foreground block)
-const BM_FLOCK = [...Array(8)].map((_, i) => ({ dx: -i * 2.6 - (i % 2) * .9, dz: (i % 3) * 1.6, c: bmCostume(9100 + i * 7, { bike: ['tall', 'tall', 'fish', 'tall', 'clock', 'tall', 'snail', 'tall'][i], para: i % 2 ? null : BM_PARAS[i % 6], flag: i % 2 ? { h: 4 + (i % 3) * .5, col: ['#e8b23a', '#d8452f', '#2f6fb5', '#f6efe0'][i % 4], col2: '#1c1a1e' } : null }) }));
+const BM_FLOCK = [...Array(8)].map((_, i) => ({ dx: -i * 2.6 - (i % 2) * .9, dz: (i % 3) * 1.6, c: bmCostume(9100 + i * 7, { bike: ['tall', 'plain', 'fish', 'plain', 'clock', 'plain', 'snail', 'plain'][i], para: i % 2 ? null : BM_PARAS[i % 6], flag: i % 2 ? { h: 4 + (i % 3) * .5, col: ['#e8b23a', '#d8452f', '#2f6fb5', '#f6efe0'][i % 4], col2: '#1c1a1e' } : null }) }));
 function bmFlockInto(t, list) { const s = 63.5, e = 75; if (t < s || t > e) return; const cx = carX(t);
   for (const f of BM_FLOCK) { const X = cx - 26 + (t - s) * 3.6 + f.dx, Z = 7 + f.dz; bmRiderEntry(X, Z, 1, (1.6 + 3.6) * t, t, f.c, list); } }
 

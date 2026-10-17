@@ -166,7 +166,7 @@ function tumblePapers(t, list) { for (const o of paperItems(t)) { if (nearCar(o.
 
 // ---------- the spin refrains: dust devils and art cars whirl round the table, bigger each time ----------
 const WHIRLS = [{ li: 6, n: 3, cars: 2, R: 15, amt: .85, w: .5 }, { li: 13, n: 5, cars: 4, R: 14, amt: 1.1, w: .7 }, { li: 34, n: 7, cars: 6, R: 13, amt: 1.4, w: .95 }];
-const KINDS = ['copy', 'fish', 'drawer'];
+const KINDS = ['fish', 'organ', 'horse', 'teacup', 'shoe', 'rhino']; // one of a kind (Robin): car slot j is always the same vehicle, no design twice (organ..rhino in artcars.js)
 function whirlItems(t) { const out = [];
   WHIRLS.forEach((wh, r) => { const s = L_(wh.li).s, e = L_(wh.li).e, gs = gavelT(); if (t < s - .3 || t > e + 1.5) return;
     let env = ease(t, s - .3, s + 1.6) * (1 - ease(t, e - .4, e + .8)), blow = 0;
@@ -176,7 +176,7 @@ function whirlItems(t) { const out = [];
     for (let j = 0; j < wh.n; j++) { const a = -(j / wh.n * TAU + ang); out.push({ kind: 'devil', X: CX + Math.cos(a) * Rr, Z: CZ + Math.sin(a) * Rr * .8, amt: wh.amt * env, seed: r * 10 + j }); }
     for (let j = 0; j < wh.cars; j++) { const a = -((j + .5) / wh.cars * TAU + ang * 1.15), R2 = Rr * .82 + (j % 2) * 2.5; const X = CX + Math.cos(a) * R2, Z = CZ + Math.sin(a) * R2 * .8;
       const ah = a - .05, dir = Math.sign(P(CX + Math.cos(ah) * R2, 0, CZ + Math.sin(ah) * R2 * .8)[0] - P(X, 0, Z)[0]) || 1;
-      out.push({ kind: KINDS[(j + r) % 3], X, Z, dir, up: clamp(env * 1.4 + blow), tilt: blow * (j % 2 ? 1 : -1) * 1.2, i: j + r * 7, nod: 0 }); } });
+      out.push({ kind: KINDS[j], X, Z, dir, up: clamp(env * 1.4 + blow), tilt: blow * (j % 2 ? 1 : -1) * 1.2, i: j + r * 7, nod: 0 }); } });
   return out; }
 function drawWhirl(o, t) { if (P(o.X, 0, o.Z)[2] < 5) return; if (o.kind === 'devil') { dustDevil(o.X, o.Z, t, o.amt, o.seed); dustDevil(o.X + .6, o.Z + .4, t, o.amt * .9, o.seed + 50); return; } const p = P(o.X, 0, o.Z); if (p[2] < 8 || o.up <= 0) return; artCar(o.kind, p[0], p[1], kAt(p) * o.up, o.dir, t, o.i, o.tilt); }
 function artCar(kind, x, y, k, dir, t, i, tilt) {
@@ -193,7 +193,8 @@ function artCar(kind, x, y, k, dir, t, i, tilt) {
     g.fillStyle = '#d8452f'; g.fillRect(-.2 * k, -3.25 * k, .38 * k, .7 * k); g.fillStyle = '#e8d4b4'; g.beginPath(); g.arc(0, -3.45 * k, .16 * k, 0, TAU); g.fill();
     g.strokeStyle = '#5a4a3a'; g.lineWidth = Math.max(1, .05 * k); g.beginPath(); g.moveTo(.1 * k, -3.2 * k); g.lineTo(.1 * k, -4.4 * k); g.stroke(); g.fillStyle = '#7a3c8c'; g.beginPath(); g.arc(.1 * k, -4.4 * k, .7 * k, Math.PI, TAU); g.fill(); // parasol
     wheel(-1.2, .32); wheel(1.1, .32);
-  } else { // a chest of drawers on wheels, its middle drawer gaping, propped on a crutch
+  } else if (kind !== 'drawer' && typeof acWhirlCar === 'function') acWhirlCar(kind, k, t, i); // artcars.js
+  else { // a chest of drawers on wheels, its middle drawer gaping, propped on a crutch
     const sag = Math.sin(t * .8 + i) * .08 * k; g.fillStyle = '#7b5530'; g.beginPath(); g.moveTo(-1.1 * k, -.45 * k); g.lineTo(1.1 * k, -.45 * k); g.lineTo(1.05 * k, -3.1 * k); g.quadraticCurveTo(0, -3.25 * k + sag, -1.05 * k, -3.1 * k); g.fill();
     for (let d = 0; d < 3; d++) { const dy = -(1.0 + d * .75) * k, o = d === 1 ? (.5 + .5 * Math.sin(t * 2 + i)) * .9 * k : 0; g.fillStyle = '#2a1608'; g.fillRect(-.95 * k, dy - .3 * k, 1.9 * k, .6 * k); g.fillStyle = '#9a6c3c'; g.fillRect(-.95 * k + o, dy - .3 * k, 1.9 * k, .6 * k); g.strokeStyle = '#3a2412'; g.lineWidth = Math.max(1, .04 * k); g.strokeRect(-.95 * k + o, dy - .3 * k, 1.9 * k, .6 * k); g.fillStyle = '#d9b45a'; g.beginPath(); g.arc(o, dy, .07 * k, 0, TAU); g.fill();
       if (o > .3 * k) { g.fillStyle = '#efe9da'; g.fillRect(.2 * k + o, dy - .5 * k, .6 * k, .3 * k); } }

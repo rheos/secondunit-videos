@@ -184,7 +184,7 @@ function rollFrame(a) { const ph = Math.abs(a) % Math.PI, fo = Math.min(ph, Math
 // ---------- frame ----------
 // Optional front hooks: any builder file may declare function burnFront(t) / playaFront(t) / installsFront(t) / carFront(t)
 // to draw over the car layer and the fire (before Little Bob, the insert, the vignette and the captions).
-const FRONT_HOOKS = ['carFront', 'burnFront', 'playaFront', 'installsFront', 'instrumentsFront', 'scenesFront'];
+const FRONT_HOOKS = ['carFront', 'burnFront', 'playaFront', 'installsFront', 'instrumentsFront', 'scenesFront', 'artcarsFront', 'artpiecesFront'];
 function render(t) {
   C = camAt(t); CP = Math.cos(C.p); SP = Math.sin(C.p); CX = carX(t); CZ = carZ(t); YAW = yaw(t);
   g.setTransform(1, 0, 0, 1, 0, 0); g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
@@ -204,7 +204,7 @@ function render(t) {
   spinDevils(t); bigGavel(t);
   installsOver(t); burnOver(t); // screen-space overlays before the grade
   grade(t);
-  for (const l of LAMPS) lamp(l, t, true); spinners(t); if (typeof drumGlow === 'function') drumGlow(t);
+  for (const l of LAMPS) lamp(l, t, true); spinners(t); if (typeof drumGlow === 'function') drumGlow(t); if (typeof artcarsGlow === 'function') artcarsGlow(t); // the art cars' own night lights (artcars.js)
   // the car layer: drawn, graded, lit by its own emissive props, masked to its own pixels, then laid over the fire
   g = gc; gc.setTransform(1, 0, 0, 1, 0, 0); gc.globalCompositeOperation = 'source-over'; gc.globalAlpha = 1; gc.clearRect(0, 0, W, H);
   drawCar(t); gm.clearRect(0, 0, W, H); gm.drawImage(CARC, 0, 0); grade(t, true); gc.globalCompositeOperation = 'destination-in'; gc.drawImage(MASK, 0, 0); gc.globalCompositeOperation = 'source-over';
