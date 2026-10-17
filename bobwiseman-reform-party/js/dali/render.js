@@ -197,6 +197,7 @@ function render(t) {
   for (const b of BIKES) { const o = bike(b, t); if (o) list.push(o); }
   crowdInto(t, list); bigEar(t, list); gagMouth(t, list); tumblePapers(t, list); suitColumn(t, list); teeth(t, list); clockCar(t, list); giantChess(t, list);
   carInto(t, list); tableInto(t, list); playaInto(t, list); burnInto(t, list); installsInto(t, list); instrumentsInto(t, list); scenesInto(t, list); // one scene hook per builder file (draft 3; instruments and scenes draft 9)
+  if (typeof artcarsInto === 'function') artcarsInto(t, list); if (typeof artpiecesInto === 'function') artpiecesInto(t, list); // Robin's art cars and installations (artcars.js, artpieces.js)
   for (const o of list) if (o.z > .5 && o.shadow) o.shadow();
   tableShadow(t);
   list.sort((a, b) => b.z - a.z); for (const o of list) if (o.z > .3) o.draw();
