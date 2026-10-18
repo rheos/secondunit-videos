@@ -18,6 +18,19 @@
 // Burning Man: art cars drive the open playa at 5 mph (2.2 m/s) and park in the outer art-car ring behind the burn crowd
 // (burn.js parks its own ring at 68-80 m; the two big ones here take the back row, about 92-95 m out, like the big sound cars).
 const ARTCARS = [
+  // draft 16, Robin's new photos (robin-2026-10-18): two more cars, one of a kind each.
+  // The car-boat (1.png) runs west along z 35.5, 10 m inside the 9:00 promenade, at 7.4 km/h: out of frame when it sets off
+  // (the drone looks east at the painter), across the background of verse 2 (about 83-95 and 100-106, 100-135 px tall),
+  // and gone off the left of frame before it stops being drawn (130).
+  // The heart sound bus (13-16): rolls west across the far playa behind the Man through the golden-hour wides (from 141,
+  // after setting off out of frame at 128), at 5 km/h, then parks 160 m out at 5:00, side on, for the dusk and the burn:
+  // its heart's string lights on, dancers in silhouette, right of the Man in the burn framings (80 px tall).
+  { id: 'heart', kind: 'heart', lights: true, t0: 128, t1: 269, ease: [false, true], path: [[128, 450, 200], [200, 345, 200]] },
+  { id: 'boat', kind: 'boat', t0: 64, t1: 130, path: [[64, 166, 35.5], [122, 46, 35.5], [130, 30, 35.5]] },
+  // The Victorian house (3.jpg, 7.jpg) trundles west along z 112 at 7.8 km/h, behind the elephants and in front of the
+  // clock tower, through the background of 86-148 (about 100 px tall), then swings north-west out toward the deep playa
+  // and is still driving when the drone climbs into the dusk aerial (205, where it is a few px), so it never stops on screen.
+  { id: 'house', kind: 'house', lights: true, t0: 78, t1: 206, path: [[78, 235, 112], [175, 25, 112], [206, -20, 150]] },
   // dawn, the intro glide (0-11.8): the dragon coming home from deep playa toward the city, rolling slowly along z 46 while the
   // drone flies past it 46 m to its right; it grows from the horizon into the left half of the frame and slides out left
   // (draft 11: there from the first frame and drawn until it has left the frame, so it never blinks in or out)
@@ -55,10 +68,10 @@ const ARTCARS = [
     path: [[148.5, 200, 190], [178, 212, 130], [186.5, 218, 113], [191.5, 224, 104], [194.5, 229, 102.8], [200.5, 235, 110.5]] },
 ];
 // half length, height (m), for culling and the glow box
-const AC_SIZE = { dragon: [13.2, 10.8], galleon: [13.5, 17.8], organ: [2.0, 3.1], horse: [1.9, 4.9], chopper: [1.4, 2.0] };
+const AC_SIZE = { dragon: [13.2, 10.8], galleon: [13.5, 17.8], organ: [2.0, 3.1], horse: [1.9, 4.9], chopper: [1.4, 2.0], boat: [3.7, 4.1], house: [4.9, 10.7], heart: [10.2, 16.8] };
 // body radius for the actor check (half the length): the dragon about 25 m, the galleon 22 m with its bowsprit, Robin and his
 // chopper as one body
-const AC_R = { dragon: 12.5, galleon: 11, organ: 1.8, horse: 1.7, chopper: 1.2 };
+const AC_R = { dragon: 12.5, galleon: 11, organ: 1.8, horse: 1.7, chopper: 1.2, boat: 3.4, house: 4.6, heart: 8.6 };
 
 // ---------- path maths (pure functions of t) ----------
 function acKey(e, t) { // [X, Z] on the path at t, before the car offset
@@ -400,9 +413,176 @@ function chDraw(st, t, k, sq, alpha) {
   bmFill([[HD[0] + .03, HD[1] - .06], [HD[0] + .12, HD[1] - .06], [HD[0] + .09, HD[1] - .15], [HD[0] + .02, HD[1] - .14]], '#5a3a24'); // goatee
   bmLine([[HD[0] - .11, HD[1] + .025], [HD[0] + .09, HD[1] + .025]], .03, '#2a2a2e'); bmOval(HD[0] + .085, HD[1] + .025, .042, .035, bmLG(HD[0] + .05, HD[1] + .06, HD[0] + .12, HD[1], ['#f4f6f8', '#9aa6ae']));
   if (det) bmDot(HD[0] + .075, HD[1] + .035, .01, '#ffffff');
+  // draft 16 (Robin, photo robin-2026-10-18/2.jpg): his woven conical straw rice-paddy hat, a wide shallow cone sitting
+  // low over the goggles' strap, fine radial weave lines from the point to the brim, and a chin cord down past the goatee
+  const hb = HD[1] + .07, hw = .36, ap = [HD[0] - .015, HD[1] + .27];
+  bmLine([[HD[0] - .07, hb - .01], [HD[0] - .02, HD[1] - .1], [HD[0] + .06, HD[1] - .17]], .012, '#7a6038'); // the cord, under the brim
+  bmOval(HD[0], hb - .005, hw * .97, .03, '#8a6a3c'); // the brim's underside, in its own shade
+  bmPath([[HD[0] - hw, hb], [ap[0], ap[1]], [HD[0] + hw, hb], [HD[0], hb - .025]]); g.closePath(); g.fillStyle = bmLG(HD[0] - hw, hb + .2, HD[0] + hw, hb, ['#f0dca0', '#d9bc78', '#b8955a']); g.fill();
+  if (k > 14) { g.strokeStyle = 'rgba(120,88,44,.55)'; g.lineWidth = bmW(.008); g.beginPath(); for (let i = 1; i < 12; i++) { const u = i / 12; g.moveTo(ap[0], -ap[1]); g.lineTo(lerp(HD[0] - hw, HD[0] + hw, u), -(hb - .012 * Math.sin(u * Math.PI))); } g.stroke(); // the weave: spokes from the point
+    if (det) { g.strokeStyle = 'rgba(130,96,50,.4)'; for (const f of [.35, .6, .82]) { g.beginPath(); g.moveTo(lerp(ap[0], HD[0] - hw, f), -lerp(ap[1], hb, f)); g.lineTo(lerp(ap[0], HD[0] + hw, f), -lerp(ap[1], hb, f)); g.stroke(); } } } // and the rings round it
+  bmLine([[HD[0] - hw, hb], [HD[0] + hw, hb]], .018, '#a8844c'); // the bound rim
+  bmDot(ap[0], ap[1], .012, '#a8844c'); // the knot at the point
   g.restore();
 }
-function chShadow(st, t) { const { X, Z, hx, hz } = st, at = (u, y) => [X + hx * u, y, Z + hz * u]; shadowOf([at(-1.0, 0), at(1.5, 0), at(-.4, 1.8), at(.4, 1.3)], t); }
+function chShadow(st, t) { const { X, Z, hx, hz } = st, at = (u, y) => [X + hx * u, y, Z + hz * u]; shadowOf([at(-1.0, 0), at(1.5, 0), at(-.64, 1.73), at(.08, 1.73), at(-.3, 1.94), at(.4, 1.3)], t); } // the hat's brim and point in his shadow
+
+// ---------- 7. the car-boat (draft 16, robin-2026-10-18/1.png; about 6.6 m, front = +x) ----------
+// A runabout speedboat on car wheels: a black ribbed lower hull and a bright green topsides with a pale rub strip, a
+// cuddy cabin forward with dark side windows and a bow rail, an open cockpit aft under a grey bimini canopy on four
+// poles, a red swim ladder hanging off the stern on its red frame. Burners ride in the cockpit; one stands on the bow.
+const BT_CREW = [{ x: -.55, body: '#2a2a30', skin: '#c99a72', hat: 'hair', hatc: '#1c1410' }, { x: -1.35, body: '#e07a34', skin: '#e8cfae', hat: 'cowboy', hatc: '#2a2420' }, { x: -2.2, body: '#d9a33a', skin: '#8a5a3c', hat: 'hair', hatc: '#3a2418' }];
+function btDraw(st, t, k, sq) {
+  const det = k > 14, ang = -st.sp / .42, green = '#3fb23a', greenD = '#2a8a2a', blk = '#1e1c1e';
+  g.save(); g.scale(sq, 1);
+  // the far bimini poles first (behind the hull)
+  for (const x of [-2.95, -.35]) bmLine([[x + .1, 1.55], [x + .25, 3.0]], .045, '#c4c8cc');
+  // the people in the cockpit: torsos and heads above the gunwale
+  BT_CREW.forEach((c, i) => { const bob = .025 * Math.sin(t * 2.4 + i * 1.7), y0 = 1.3 + bob; bmFill([[c.x - .2, y0], [c.x + .2, y0], [c.x + .17, y0 + .55], [c.x - .17, y0 + .55]], c.body); bmOval(c.x + .02, y0 + .7, .11, .125, c.skin);
+    if (c.hat === 'cowboy') { bmOval(c.x + .02, y0 + .79, .22, .04, c.hatc); bmFill([[c.x - .08, y0 + .79], [c.x + .12, y0 + .79], [c.x + .1, y0 + .9], [c.x - .06, y0 + .9]], c.hatc); } else bmOval(c.x - .01, y0 + .73, .12, .12, c.hatc);
+    if (i === 1) bmLine([[c.x + .15, y0 + .5], [c.x + .4, y0 + .85 + .08 * Math.sin(t * 3)]], .07, c.skin); }); // one waves
+  // wheels: car tyres under the hull
+  for (const wx of [-2.0, 2.05]) { bmDot(wx, .42, .42, '#17120f'); bmDot(wx, .42, .2, '#8a8e92'); if (det) { g.strokeStyle = '#4a4e52'; g.lineWidth = bmW(.03); g.beginPath(); for (let i = 0; i < 5; i++) { const a = ang + i * TAU / 5; g.moveTo(wx, -.42); g.lineTo(wx + Math.cos(a) * .19, -.42 - Math.sin(a) * .19); } g.stroke(); } }
+  // the hull: a black ribbed bottom, the green topsides, the bow raked up
+  const HULL = [[-3.15, .62], [1.9, .55], [2.9, .85], [3.35, 1.35], [3.35, 1.58], [-3.1, 1.6]];
+  bmFill(HULL, blk);
+  if (det) { g.strokeStyle = 'rgba(120,124,128,.45)'; g.lineWidth = bmW(.025); for (const y of [.78, .92]) { g.beginPath(); g.moveTo(-3.1, -y); g.lineTo(2.2 + (y - .7) * 3, -y); g.stroke(); } }
+  bmFill([[-3.12, 1.06], [2.55, 1.04], [3.3, 1.28], [3.35, 1.58], [-3.1, 1.6]], bmLG(0, 1.6, 0, 1.04, [green, greenD]));
+  bmLine([[-3.12, 1.2], [3.3, 1.38]], .035, '#d8e8c8'); // the pale rub strip
+  bmFill([[-3.15, 1.56], [3.36, 1.55], [3.36, 1.62], [-3.15, 1.63]], '#f2f0e8'); // the white gunwale cap
+  // the cuddy cabin forward: a green roof and dark side windows, the windscreen frame
+  bmFill([[.35, 1.6], [2.55, 1.6], [2.3, 2.15], [.55, 2.25]], green); bmFill([[.5, 2.22], [2.3, 2.13], [2.32, 2.2], [.48, 2.3]], '#2a2a2e');
+  bmFill([[.75, 1.72], [1.45, 1.72], [1.45, 2.08], [.8, 2.12]], '#2a3a44'); bmFill([[1.6, 1.72], [2.25, 1.72], [2.12, 2.03], [1.6, 2.06]], '#2a3a44');
+  if (det) bmFill([[.85, 2.0], [1.1, 2.08], [.9, 2.08]], 'rgba(200,220,230,.45)');
+  bmLine([[.4, 2.25], [.25, 2.55]], .04, '#c4c8cc'); // windscreen post
+  if (det) { bmLine([[2.55, 1.62], [2.7, 1.92], [3.3, 1.75]], .03, '#c8ccd0'); bmFill([[2.6, 1.58], [2.95, 1.58], [2.9, 1.66], [2.62, 1.66]], '#e8384a'); } // the bow rail, a red cleat panel
+  // the burner standing on the bow, white cap, one arm on the canopy pole, swaying with the ride
+  acPerson(2.0, 2.25, 1.72, { body: '#e8cfae', legs: '#f2f0ec', skin: '#e2b48c', hat: 'hair', hatc: '#f6f6f2', arms: 'one', dance: true }, t, .4, det);
+  // the near bimini poles and the canopy: grey fabric, a soft droop between the bows
+  for (const x of [-3.05, -.45]) bmLine([[x, 1.6], [x + .25, 3.05]], .05, '#d4d8dc');
+  bmPath([[-3.25, 3.0], [-1.75, 3.18], [-.05, 3.06], [.05, 2.92], [-1.7, 2.98], [-3.2, 2.86]]); g.closePath(); g.fillStyle = bmLG(0, 3.2, 0, 2.85, ['#b8bcc0', '#8a8e94']); g.fill();
+  if (det) { g.strokeStyle = 'rgba(70,72,78,.5)'; g.lineWidth = bmW(.02); g.beginPath(); g.moveTo(-3.2, -2.86); g.quadraticCurveTo(-1.7, -2.92, .05, -2.92); g.stroke(); }
+  bmLine([[-.05, 3.0], [.6, 1.62]], .02, '#9aa0a6'); bmLine([[-3.2, 2.92], [-3.4, 1.62]], .02, '#9aa0a6'); // the canopy's straps down to the deck
+  // the red swim ladder and its frame on the stern
+  const red = '#e0403a'; bmLine([[-3.1, 1.15], [-3.6, 1.15], [-3.6, .95]], .06, red); bmLine([[-3.5, 1.15], [-3.45, .25]], .05, red); bmLine([[-3.2, 1.15], [-3.15, .25]], .05, red);
+  for (let i = 0; i < 4; i++) { const y = .35 + i * .22; bmLine([[-3.47, y], [-3.16, y]], .04, red); }
+  bmLine([[-3.1, 1.55], [-3.35, 1.9], [-3.35, 1.15]], .04, '#c8ccd0'); // the stern grab rail
+  g.restore();
+}
+function btShadow(st, t) { const { X, Z, hx, hz } = st, at = (u, y) => [X + hx * u, y, Z + hz * u]; shadowOf([at(-3.5, 0), at(3.35, 0), at(-3.2, 3.05), at(.05, 3.05), at(3.3, 1.6), at(2.0, 4.0)], t); }
+
+// ---------- 8. the Victorian house on wheels (draft 16, robin-2026-10-18/3.jpg and 7.jpg; about 9 m, front = +x) ----------
+// A two-storey steampunk Victorian house on a wagon: a dark plank-and-iron ground floor on big spoked rear wheels and a
+// small pair of front wheels; white clapboard upstairs under grey gables with iron cresting; a round turret with a domed
+// cap and a green flag; a balcony at the back; portholes. The front is a bay-windowed cab, its arched windows framed in
+// brass with a copper cornice, two gramophone horns and a smoke stack on the cab roof, lamps on its corners, a plank over
+// the windows left blank but for a painted curl (no name). At night the windows and the lanterns glow.
+function hsDraw(st, t, k, sq, lit) {
+  const det = k > 9, ang = -st.sp / 1.0, wood = '#5a4232', woodD = '#3e2c22', white = '#e8e2d2', whiteD = '#bcb4a2', brass = '#c8a048', copper = '#b8703a', roof = '#7c8288', win = lit ? '#f4c870' : '#2a3038';
+  g.save(); g.scale(sq, 1);
+  // the far wheels and the chassis
+  bmDot(-2.4, 1.0, .98, '#2a2018'); bmDot(3.55, .4, .38, '#2a2018');
+  bmFill([[-4.2, .95], [4.3, .95], [4.3, 1.25], [-4.2, 1.25]], '#2e2420'); bmLine([[3.0, 1.0], [3.55, .4]], .12, '#3a3028');
+  // ground floor: dark planks with iron straps, a door, the stair down at the back
+  bmFill([[-4.0, 1.25], [3.05, 1.25], [3.05, 4.0], [-4.0, 4.0]], bmLG(0, 4, 0, 1.25, [wood, woodD]));
+  if (det) { g.strokeStyle = 'rgba(20,14,10,.5)'; g.lineWidth = bmW(.03); g.beginPath(); for (let x = -3.7; x < 3; x += .45) { g.moveTo(x, -1.25); g.lineTo(x, -4.0); } g.stroke(); for (const x of [-3.0, -.6, 1.8]) bmLine([[x, 1.25], [x, 4.0]], .1, '#2a2622'); }
+  bmFill([[-.2, 1.25], [.75, 1.25], [.75, 3.2], [.28, 3.45], [-.2, 3.2]], '#2a1e18'); if (det) bmDot(.62, 2.2, .05, brass);
+  bmLine([[-4.0, 1.3], [-4.7, .3]], .07, '#4a3a2c'); if (det) for (let i = 1; i < 4; i++) { const u = i / 4; bmLine([[lerp(-4.0, -4.7, u) - .05, lerp(1.3, .3, u)], [lerp(-4.0, -4.7, u) + .35, lerp(1.3, .3, u)]], .05, '#4a3a2c'); }
+  // the trim band between the floors
+  bmFill([[-4.15, 3.95], [3.1, 3.95], [3.1, 4.2], [-4.15, 4.2]], brass);
+  // upstairs: white clapboard, two gables, portholes
+  bmFill([[-3.8, 4.2], [2.95, 4.2], [2.95, 6.7], [-3.8, 6.7]], bmLG(-3.8, 0, 2.9, 0, [white, white, whiteD]));
+  if (det) { g.strokeStyle = 'rgba(120,110,96,.45)'; g.lineWidth = bmW(.02); g.beginPath(); for (let y = 4.4; y < 6.7; y += .2) { g.moveTo(-3.8, -y); g.lineTo(2.95, -y); } g.stroke(); }
+  for (const [x0, x1] of [[-3.95, -1.0], [1.1, 3.1]]) { const mx = (x0 + x1) / 2; bmFill([[x0, 6.65], [x1, 6.65], [mx, 7.75]], roof); bmFill([[x0 + .35, 6.65], [x1 - .35, 6.65], [mx, 7.45]], bmShade(white, .9)); if (det) for (let i = 0; i < 7; i++) { const x = lerp(x0 + .2, x1 - .2, i / 6); bmLine([[x, 6.68], [x, 6.92]], .04, '#2e5a3a'); } }
+  bmFill([[-1.0, 6.65], [1.1, 6.65], [1.1, 6.95], [-1.0, 6.95]], roof);
+  for (const x of [-2.6, 2.1]) { bmDot(x, 5.45, .38, '#9aa2a8'); bmDot(x, 5.45, .28, lit ? win : '#d8dee2'); if (det && !lit) bmDot(x - .08, 5.53, .08, 'rgba(255,255,255,.7)'); }
+  // the turret: a round tower through the roof, an arched window, a dome and a finial, the green flag
+  bmFill([[-.55, 4.2], [.65, 4.2], [.65, 8.1], [-.55, 8.1]], bmLG(-.55, 0, .65, 0, [whiteD, white, whiteD]));
+  bmFill([[-.6, 8.05], [.7, 8.05], [.7, 8.25], [-.6, 8.25]], brass);
+  bmPath([[-.6, 8.25], [.7, 8.25], [.62, 8.7], [.35, 9.0], [.05, 9.08], [-.25, 9.0], [-.52, 8.7]]); g.closePath(); g.fillStyle = bmLG(-.6, 9, .7, 8.2, ['#8a9096', '#5e6468']); g.fill();
+  bmPath([[-.15, 6.4], [.25, 6.4], [.25, 7.3], [.05, 7.55], [-.15, 7.3]]); g.closePath(); g.fillStyle = win; g.fill();
+  bmLine([[.05, 9.05], [.05, 10.6]], .05, '#3a3a3a');
+  const fl = Math.sin(t * 2.3) * .12; bmPath([[.08, 10.55], [1.2, 10.5 + fl], [2.05, 10.38 - fl * .5], [2.0, 9.72 - fl * .4], [1.1, 9.85 + fl], [.08, 9.85]]); g.closePath(); g.fillStyle = '#2f9a48'; g.fill();
+  if (det) bmFill([[.7, 10.3], [1.1, 10.25], [1.0, 9.98], [.75, 10.02]], '#e8c44a'); // a gold device on the flag (a little harp-like shape, no letters)
+  // the balcony at the back: a floor, turned balusters, a burner leaning on the rail
+  bmFill([[-4.6, 4.15], [-3.8, 4.15], [-3.8, 4.3], [-4.6, 4.3]], wood);
+  acPerson(-4.25, 4.3, 1.7, { body: '#3a3028', legs: '#2a2420', skin: '#c99a72', hat: 'hair', hatc: '#2a2018', arms: 'down' }, t, 1.3, det);
+  bmLine([[-4.6, 5.15], [-3.8, 5.15]], .06, wood); if (det) for (let i = 0; i <= 4; i++) bmLine([[-4.6 + i * .2, 4.3], [-4.6 + i * .2, 5.15]], .035, woodD);
+  // the bay-windowed cab at the front, its brass-framed arched windows, the copper cornice, the blank sign plank
+  bmFill([[3.0, 1.25], [4.45, 1.3], [4.55, 2.6], [3.0, 2.6]], bmLG(0, 2.6, 0, 1.25, ['#d8ccb4', '#a8987c']));
+  if (det) for (const x of [3.3, 3.95]) { bmFill([[x, 1.55], [x + .45, 1.55], [x + .45, 2.35], [x, 2.35]], '#b8a888'); bmFill([[x + .12, 1.75], [x + .33, 1.75], [x + .33, 2.15], [x + .12, 2.15]], '#4a6a4a'); }
+  bmFill([[2.95, 2.6], [4.6, 2.6], [4.65, 2.72], [2.95, 2.72]], brass);
+  bmFill([[3.0, 2.72], [4.55, 2.72], [4.5, 4.7], [3.0, 4.7]], '#4a3628');
+  for (let i = 0; i < 3; i++) { const x0 = 3.08 + i * .49, x1 = x0 + .42; bmPath([[x0, 2.85], [x1, 2.85], [x1, 4.25], [(x0 + x1) / 2, 4.5], [x0, 4.25]]); g.closePath(); g.fillStyle = win; g.fill(); if (det) { g.strokeStyle = brass; g.lineWidth = bmW(.04); g.stroke(); } }
+  if (det && !lit) { bmFill([[3.6, 2.9], [3.95, 2.9], [3.95, 3.55], [3.6, 3.55]], '#4f8a52'); bmOval(3.25, 3.4, .1, .12, '#c99a72'); } // a green shutter, the driver
+  bmPath([[2.9, 4.7], [4.62, 4.7], [4.85, 4.95], [4.75, 5.15], [2.9, 5.2]]); g.closePath(); g.fillStyle = bmLG(0, 5.2, 0, 4.7, ['#d08a4a', copper, '#7a4422']); g.fill();
+  bmFill([[3.05, 5.2], [4.55, 5.2], [4.55, 5.65], [3.05, 5.65]], '#2a2420'); bmLine([[3.05, 5.2], [4.55, 5.2], [4.55, 5.65], [3.05, 5.65], [3.05, 5.2]], .04, brass);
+  if (det) { g.strokeStyle = brass; g.lineWidth = bmW(.035); g.beginPath(); g.moveTo(3.25, -5.42); g.bezierCurveTo(3.5, -5.62, 3.7, -5.22, 3.85, -5.42); g.bezierCurveTo(4.0, -5.62, 4.2, -5.25, 4.35, -5.45); g.stroke(); } // the blank plank: only a painted curl
+  // on the cab roof: the smoke stack and the twin gramophone horns
+  bmFill([[3.55, 5.65], [3.8, 5.65], [3.8, 7.1], [3.55, 7.1]], '#2a2a2c'); bmOval(3.675, 7.15, .2, .08, '#4a4a4c');
+  for (const [hx, hy, dir] of [[3.25, 5.7, -1], [4.15, 5.7, 1]]) { bmLine([[hx, hy], [hx + dir * .15, hy + .7]], .1, '#9a9ea2');
+    bmPath([[hx + dir * .1, hy + .65], [hx + dir * .65, hy + 1.05], [hx + dir * .45, hy + 1.5], [hx + dir * .02, hy + .8]]); g.closePath(); g.fillStyle = bmLG(hx, hy + 1.5, hx + dir * .6, hy + .7, ['#5a5e64', '#2a2c30']); g.fill();
+    bmOval(hx + dir * .56, hy + 1.27, .13, .26, '#141416', dir * -.6); }
+  // the corner lamps on brackets
+  for (const lx of [3.0, 4.5]) { bmLine([[lx, 2.6], [lx + (lx > 4 ? .25 : -.25), 2.75]], .04, '#2a2420'); const x = lx + (lx > 4 ? .25 : -.25); bmFill([[x - .13, 2.45], [x + .13, 2.45], [x + .1, 2.85], [x - .1, 2.85]], lit ? '#ffe2a0' : '#4a4440'); bmFill([[x - .15, 2.85], [x + .15, 2.85], [x, 3.0]], '#2a2420'); }
+  // the near wheels: big spoked iron-tyred rear wheels, small rubber front wheels
+  const spoked = (cx, cy, r) => { g.beginPath(); g.arc(cx, -cy, r * .93, 0, TAU); g.strokeStyle = '#3a2c20'; g.lineWidth = bmW(r * .12); g.stroke(); g.beginPath(); g.arc(cx, -cy, r, 0, TAU); g.strokeStyle = '#1c1a18'; g.lineWidth = bmW(r * .06); g.stroke();
+    g.strokeStyle = '#4a3a2a'; g.lineWidth = bmW(r * .06); g.beginPath(); for (let i = 0; i < 7; i++) { const a = ang + i * Math.PI / 7; g.moveTo(cx + Math.cos(a) * r * .9, -cy - Math.sin(a) * r * .9); g.lineTo(cx - Math.cos(a) * r * .9, -cy + Math.sin(a) * r * .9); } g.stroke(); bmDot(cx, cy, r * .14, '#2a2018'); };
+  spoked(-1.7, 1.0, 1.0); bmDot(4.0, .38, .38, '#1c1a18'); bmDot(4.0, .38, .16, '#8a8a88');
+  g.restore();
+}
+function hsShadow(st, t) { const { X, Z, hx, hz } = st, at = (u, y) => [X + hx * u, y, Z + hz * u]; shadowOf([at(-4.7, 0), at(4.6, 0), at(-4.0, 6.7), at(2.95, 6.7), at(-2.5, 7.7), at(2.1, 7.7), at(.05, 9.1), at(4.5, 6.9)], t); shadowStick(X + hx * .05, 0, 10.6, Z + hz * .05, .06, t); }
+function hsGlow(st, t, k, sq) { // the night layer: the lit house again, then soft halos round the lanterns and the windows
+  hsDraw(st, t, k, sq, true);
+  g.save(); g.scale(sq, 1);
+  const halo = (x, y, r, a) => { const rg = g.createRadialGradient(x, -y, 0, x, -y, r); rg.addColorStop(0, `rgba(255,214,140,${a})`); rg.addColorStop(1, 'rgba(255,180,90,0)'); g.fillStyle = rg; g.fillRect(x - r, -y - r, 2 * r, 2 * r); };
+  for (const x of [2.75, 4.75]) halo(x, 2.65, .9, .55 + .1 * Math.sin(t * 3 + x));
+  halo(3.8, 3.6, 1.6, .25); halo(.05, 6.9, 1.0, .3); for (const x of [-2.6, 2.1]) halo(x, 5.45, .8, .3);
+  g.restore();
+}
+
+// ---------- 9. the heart sound bus (draft 16, robin-2026-10-18/13-16; about 17 m with its outriggers, front = +x) ----------
+// The famous dawn sound camp: an old bus carrying a flat deck, a wall of round black woofers down its side, tall stacks of
+// grey horn cabinets out on outrigger arms at both ends and black stacks by the deck, a DJ booth on the deck crowded with
+// dancers, arms up, and above the DJ a giant wire-frame heart on a scaffold with people climbing it. A long banner panel
+// across the deck front carries an abstract wave pattern. At night the heart's string lights glow and the dancers go to
+// silhouette; a small crowd dances at its foot.
+const HR_HEART = (() => { const o = []; for (let i = 0; i <= 40; i++) { const a = i / 40 * TAU, x = 16 * Math.sin(a) ** 3, y = 13 * Math.cos(a) - 5 * Math.cos(2 * a) - 2 * Math.cos(3 * a) - Math.cos(4 * a); o.push([x * .17, 10.9 + (y + 17) * .17]); } return o; })();
+function hrPeople(xs, y, t, lit, det, seed) { xs.forEach((x, i) => { const c = AP_COLS_HR[(i + seed) % AP_COLS_HR.length]; acPerson(x, y, 1.7, lit ? { body: '#1a1418', legs: '#141014', skin: '#2a2024', hat: 'hair', hatc: '#141014', arms: i % 3 ? 'up' : 'one', dance: true } : { body: c, legs: '#3a3040', skin: ['#e8cfae', '#c99a72', '#8a5a3c'][i % 3], hat: 'hair', hatc: '#3a2418', arms: i % 3 ? 'up' : 'one', dance: true }, t, i * .37 + seed, det); }); }
+const AP_COLS_HR = ['#d8452f', '#f2ede0', '#e8b23a', '#2f6fb5', '#c7362b', '#7a3c8c', '#ee9a42'];
+function hrDraw(st, t, k, sq, lit) {
+  const det = k > 6, grey = lit ? '#4a4a50' : '#c8c8c6', greyD = lit ? '#2e2e34' : '#9a9a98', blk = '#1e1c20';
+  g.save(); g.scale(sq, 1);
+  // the crowd at its foot (behind the near wheels), the bus body, the woofer wall
+  hrPeople([-6.5, -5.7, 6.2, 7.0], 0, t, lit, det, 3);
+  bmDot(-3.6, .55, .55, '#17120f'); bmDot(3.4, .55, .55, '#17120f');
+  bmFill([[-6.0, .6], [5.6, .6], [5.9, 3.9], [-6.0, 3.9]], lit ? '#2a2628' : '#d8d2c4'); bmFill([[4.4, 1.6], [5.7, 1.6], [5.8, 3.3], [4.4, 3.3]], lit ? '#f0c070' : '#3a4a52'); // the cab windscreen
+  bmFill([[-4.6, .9], [4.2, .9], [4.2, 3.8], [-4.6, 3.8]], blk);
+  for (let r = 0; r < 2; r++) for (let j = 0; j < 9; j++) { const x = -4.1 + j * .98, y = 1.6 + r * 1.35; bmDot(x, y, .44, '#3a383c'); bmDot(x, y, .3, '#141216'); if (det) bmDot(x, y, .1, '#5a585c'); }
+  // outriggers and the grey horn stacks at both ends
+  for (const s of [-1, 1]) { const x0 = s * 6.0, x1 = s * 8.6; bmLine([[x0, 1.0], [x1, 4.8]], .14, '#6a6a6a'); bmLine([[x0, 4.5], [x1, 4.8]], .14, '#6a6a6a');
+    bmFill([[x1 - 1.5, 4.8], [x1 + 1.5, 4.8], [x1 + 1.5, 8.6], [x1 - 1.5, 8.6]], grey);
+    if (det) for (let r = 0; r < 4; r++) for (let j = 0; j < 3; j++) bmFill([[x1 - 1.4 + j * .97, 4.9 + r * .93], [x1 - .5 + j * .97, 4.9 + r * .93], [x1 - .62 + j * .97, 5.65 + r * .93], [x1 - 1.28 + j * .97, 5.65 + r * .93]], greyD); }
+  // the deck, the banner across its front, the black stacks
+  bmFill([[-6.2, 3.9], [6.0, 3.9], [6.0, 4.3], [-6.2, 4.3]], '#3a3a3e');
+  bmFill([[-5.2, 4.3], [5.2, 4.3], [5.2, 5.6], [-5.2, 5.6]], lit ? '#2a1830' : '#e8e2d8');
+  if (det) { g.save(); bmPath([[-5.2, 4.3], [5.2, 4.3], [5.2, 5.6], [-5.2, 5.6]]); g.closePath(); g.clip(); for (let j = 0; j < 7; j++) { const ph = t * .8 + j; g.strokeStyle = lit ? `hsla(${(j * 50 + t * 30) % 360},80%,60%,.9)` : ['#d8452f', '#e8b23a', '#2f6fb5', '#7a3c8c'][j % 4]; g.lineWidth = bmW(.14); g.beginPath(); for (let x = -5.2; x <= 5.2; x += .2) { const y = 4.5 + j * .17 + .12 * Math.sin(x * 1.4 + ph); x < -5.1 ? g.moveTo(x, -y) : g.lineTo(x, -y); } g.stroke(); } g.restore(); } // abstract waves, no face
+  for (const x of [-5.7, 5.5]) { bmFill([[x - .45, 4.3], [x + .45, 4.3], [x + .45, 7.2], [x - .45, 7.2]], blk); if (det) for (let r = 0; r < 4; r++) bmDot(x, 4.75 + r * .7, .28, '#3a383c'); }
+  // dancers on the deck, the DJ booth, the scaffold, the heart and its climbers
+  hrPeople([-4.6, -3.9, -3.2, -2.4, 2.4, 3.1, 3.8, 4.6], 5.6, t, lit, det, 0);
+  bmFill([[-1.4, 5.6], [1.4, 5.6], [1.4, 6.6], [-1.4, 6.6]], blk); acPerson(0, 5.6, 1.75, { body: lit ? '#1a1418' : '#2a2428', legs: '#141014', skin: lit ? '#2a2024' : '#c99a72', hat: 'cowboy', hatc: '#6a4a30', arms: 'one', dance: true }, t, .2, det);
+  for (const x of [-1.8, 1.8]) bmLine([[x, 5.6], [x, 9.4]], .1, '#8a7a5a'); bmLine([[-1.9, 9.4], [1.9, 9.4]], .12, '#8a7a5a'); if (det) { bmLine([[-1.8, 6.6], [1.8, 9.4]], .05, '#8a7a5a'); bmLine([[1.8, 6.6], [-1.8, 9.4]], .05, '#8a7a5a'); }
+  bmLine([[0, 9.4], [0, 10.9]], .1, '#9a9a98');
+  bmLine(HR_HEART, .16, lit ? '#e8c890' : '#b8bcc0'); if (det) { g.save(); bmPath(HR_HEART); g.closePath(); g.clip(); g.strokeStyle = lit ? 'rgba(232,200,144,.7)' : 'rgba(150,154,160,.8)'; g.lineWidth = bmW(.04); g.beginPath(); for (let x = -2.8; x <= 2.8; x += .55) { g.moveTo(x, -10.6); g.lineTo(x * .4, -17); } for (let y = 11.5; y < 16.5; y += .7) { g.moveTo(-3, -y); g.lineTo(3, -y); } g.stroke(); g.restore(); }
+  hrPeople([-1.4, 1.5], 12.6, t, lit, det, 5); hrPeople([.1], 14.9, t, lit, det, 2);
+  g.restore();
+}
+function hrShadow(st, t) { const { X, Z, hx, hz } = st, at = (u, y) => [X + hx * u, y, Z + hz * u]; shadowOf([at(-10.1, 4.8), at(10.1, 4.8), at(-10.1, 8.6), at(10.1, 8.6), at(-6, 0), at(6, 0), at(-2.8, 15), at(2.8, 15), at(0, 16.8)], t); }
+function hrGlow(st, t, k, sq) { hrDraw(st, t, k, sq, true); g.save(); g.scale(sq, 1); const s = Math.max(.08, 1.5 / k);
+  HR_HEART.forEach(([x, y], i) => { const tw = .65 + .35 * Math.sin(t * 2.4 + i * 1.3); bmFill([[x - s, y - s], [x + s, y - s], [x + s, y + s], [x - s, y + s]], `rgba(255,${200 + (i % 3) * 18},${130 + (i % 2) * 50},${.95 * tw})`); });
+  const rg = g.createRadialGradient(0, -13.5, 0, 0, -13.5, 5); rg.addColorStop(0, 'rgba(255,170,110,.3)'); rg.addColorStop(1, 'rgba(255,150,90,0)'); g.fillStyle = rg; g.fillRect(-5, -18.5, 10, 10);
+  for (let j = 0; j < 12; j++) { const x = -5.6 + j * 1.02; bmFill([[x - s, 3.95], [x + s, 3.95], [x + s, 3.95 + 2 * s], [x - s, 3.95 + 2 * s]], `hsla(${(j * 40 + t * 40) % 360},85%,62%,.9)`); }
+  g.restore(); }
 
 // ---------- 6. the spin-refrain whirl's cars (installs.js whirlItems): one of each, never a design twice ----------
 // Robin: art cars are unique. The whirl's car slots are fixed vehicles (slot 0 the teal fish, drawn in installs.js; then
@@ -465,6 +645,8 @@ const AC_KIND = {
   dragon: { draw: (st, t, k, sq) => drDraw(st, t, k, sq, false), shadow: drShadow, glow: drGlow },
   galleon: { draw: (st, t, k, sq) => gaDraw(st, t, k, sq, st.night > .3), shadow: gaShadow, glow: gaGlow },
   organ: { draw: ogDraw, shadow: ogShadow }, horse: { draw: hbDraw, shadow: hbShadow }, chopper: { draw: (st, t, k, sq) => chDraw(st, t, k, sq, 1), shadow: chShadow },
+  boat: { draw: btDraw, shadow: btShadow }, house: { draw: (st, t, k, sq) => hsDraw(st, t, k, sq, false), shadow: hsShadow, glow: hsGlow },
+  heart: { draw: (st, t, k, sq) => hrDraw(st, t, k, sq, st.night > .5), shadow: hrShadow, glow: hrGlow },
 };
 const AC_F = { t: NaN, items: [] }, AC_LC = mkCanvas(), acLg = AC_LC.getContext('2d'), AC_MC = mkCanvas(), acMg = AC_MC.getContext('2d');
 function acBox(p, k, sz) { const x0 = Math.max(0, Math.floor(p[0] - (sz[0] + .5) * k)), x1 = Math.min(W, Math.ceil(p[0] + (sz[0] + .5) * k)), y0 = Math.max(0, Math.floor(p[1] - (sz[1] + .5) * k)), y1 = Math.min(H, Math.ceil(p[1] + .6 * k));

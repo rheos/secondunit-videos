@@ -27,6 +27,17 @@
 // rot 4.62 (its bore square to the line to the Man) and a drone pose [t, 222.7, 2.23, 81.7, -.125, 1300, 2.014]
 // (world metres, as END_KEYS): the burning Man stands inside the bore. Draft 9 has no such pose, so it is off.
 const ARTPIECES = [
+  // ---------- draft 16: Robin's new photos (source/refs/robin-2026-10-18), placed on the open playa off the promenades ----------
+  { kind: 'nave', X: 176, Z: 176, rot: 2.5, scale: 1, people: 0,
+    clock: '7:30', r: 186, seen: 'the long wides down the road all day: 73-104, 112-160, 163-177, 185-195 in the background (60-170 px), the entrance toward the drone' },
+  { kind: 'octa', name: 'octa-a', X: 156, Z: 64, rot: .4, a: 2.1, tilt: 0, sitter: true, scale: 1, people: 3,
+    clock: '8:30', r: 145, seen: '113-137 and 147-155 in the background left of the road (75-110 px)' },
+  { kind: 'octa', name: 'octa-b', X: 140, Z: 55, rot: 2.2, a: 2.0, tilt: .62, scale: 1, people: 0,
+    clock: '8:40', r: 161, seen: 'with the first one, 17 m to its west' },
+  { kind: 'clock', X: 104, Z: 130, rot: 2.74, scale: 1, people: 0,
+    clock: '8:00', r: 210, seen: 'on "time" (126.5) in the open playa left of the melting clock, 125 px; also 72-95 and 129-141' },
+  { kind: 'stilts', path: [[0, -14, 47.4], [114.5, 123.4, 47.4]], X: 0, Z: 0, rot: 0, scale: 1, t0: 0, t1: 114.5,
+    clock: '9:00 promenade', r: 200, seen: 'strolling east along the 9:00 promenade from the first frame, 50-90 px, in the board shots of verse 1; gone off frame by 114.5' },
   { kind: 'burger', X: -316, Z: -4, rot: -Math.PI / 2 - .3, scale: 1, sign: { lx: 5.2, lf: -1.6, rot: .35 }, people: 4,
     clock: '9:20', r: 600, seen: 'intro 3-7.6: on the open playa straight ahead of the drone as it glides in from the 9:00 Esplanade sound camp; the bun grows to about 140 px (the sign 260 px) at 7.4 before the drone passes over it' },
   { kind: 'jig', X: 265, Z: 110, rot: Math.PI - .2, scale: 1, people: 7,
@@ -117,7 +128,7 @@ function apVisitors(o, t, list) {
       if (t < tIn) continue; off = t < tArr ? apWalkOff(tArr - t) : apWalkOff(t - tOut); if (off > .02) step = Math.sin(t * 5.2 + j * 1.7) * .25 * clamp(off); }
     const sl = Math.hypot(lx, lf) || 1, w = F(lx * (1 + off / sl), 0, lf * (1 + off / sl)), p = P(w[0], 0, w[2]);
     const al = clamp((p[2] - 3) / 3), kk = p[2] > .3 ? kAt(p) * (o.scale || 1) : 0, vis = p[2] >= 3 && kk >= .4 && p[0] >= -60 && p[0] <= W + 60;
-    ACT.note('artpieces:visitor:' + o.kind + ':' + i, w[0], w[2], bike ? .8 : .3, { h: bike ? 1.1 : 1.8, a: vis ? al : 0, group: 'visitors' });
+    ACT.note('artpieces:visitor:' + (o.name || o.kind) + ':' + i, w[0], w[2], bike ? .8 : .3, { h: bike ? 1.1 : 1.8, a: vis ? al : 0, group: 'visitors' });
     if (!vis || al <= .01) continue; const k = kk;
     list.push({ z: p[2], draw: () => { g.save(); if (al < 1) g.globalAlpha = al; bike ? apBike(p[0], p[1], k, seed, t) : person(p[0], p[1], k, { step, lift: 0, hat: seed % 6, cape: seed % 4 === 1, sit: 0 }, { body: AP_COLS[seed % 8], skin: ['#e8d4b4', '#c99a74', '#8c6448', '#f0dcc4'][seed % 4], dark: '#3a3040', lamp: '#f0d49a', hatc: AP_COLS[(seed + 3) % 8] }); g.restore(); },
       shadow: () => shadowStick(w[0], 0, 1.8, w[2], .45, t) });
@@ -551,11 +562,161 @@ function apGenieShadow(o, t) { const st = apGeniePose(o, t), J = apGenieJoints(s
   const { c, u, v } = apGenieHead(st), R = (AP_GENIE.petal + AP_GENIE.disc) * S * .9, hp = []; for (let i = 0; i < 12; i++) { const a = i / 12 * TAU; hp.push([c[0] + (Math.cos(a) * u[0] + Math.sin(a) * v[0]) * R, c[1] + (Math.cos(a) * u[1] + Math.sin(a) * v[1]) * R, c[2] + (Math.cos(a) * u[2] + Math.sin(a) * v[2]) * R]); }
   const sv = sunVec(t), a = shadowA(t); if (a < .01) return; const sp = hp.map((w) => shadowPt(w[0], w[1], w[2], sv)); if (!ok(sp)) return; g.save(); apPath(hull(sp)); g.fillStyle = `rgba(52,34,58,${a * .7})`; g.fill(); g.restore(); } // the lace lets a little light through
 
+// ---------- 6. the white Gothic nave (draft 16, robin-2026-10-18/4.jpg) ----------
+// Two rows of tall white spires, 8 m apart and 4 m between spires, joined across by pointed arches and along each row by
+// lower ones, so it reads as a nave you walk down; the front pair tallest, each spire a column with a pointed cap; guy
+// wires off the front; a coloured mandala wheel on a pole stands at the far end. Drawn in 3D (it is long and seen end on),
+// far parts first. lf runs along the nave from the far end (-) to the entrance (+), lx across it.
+const AP_NAVE = { n: 7, half: 12, w: 4, sp: 4, h: 11.2, h0: 14, mand: -16 };
+const apNaveSpires = () => { const N = AP_NAVE, out = []; for (let i = 0; i < N.n; i++) for (const s of [-1, 1]) out.push({ lx: s * N.w, lf: N.half - i * N.sp, h: i === 0 ? N.h0 : N.h, i }); return out; };
+function apArchPts(F, ax, bx, lfA, lfB, spring, c) { // a pointed arch from (ax, lfA) to (bx, lfB) in the piece frame: two arcs meeting at the apex
+  const half = Math.hypot(bx - ax, lfB - lfA) / 2, r = half + c, out = [];
+  for (let j = 0; j <= 16; j++) { const left = j <= 8, u = left ? j / 8 : (16 - j) / 8, th = Math.PI - u * (Math.PI - Math.acos(c / r)), d = c + r * Math.cos(th), y = spring + r * Math.sin(th), s = left ? (half + d) / (2 * half) : 1 - (half + d) / (2 * half);
+    out.push(F(lerp(ax, bx, s), y, lerp(lfA, lfB, s))); }
+  return out;
+}
+function apNaveWalkers(o, t) { // two burners strolling up and down the nave, three standing in it
+  const F = apFrame(o), out = [];
+  [[-1.1, .55, .1, 4], [1.4, .48, .62, 1]].forEach(([lx, v, ph, seed], i) => { const L = 26, s = ((t * v / L + ph) % 2 + 2) % 2, u = s < 1 ? s : 2 - s; const w = F(lx, 0, -13 + 26 * u); out.push({ X: w[0], Z: w[2], step: Math.sin(t * 5 + i) * .2, seed, i }); });
+  [[.4, 6.5, 2], [-2.0, -4.0, 5], [2.4, -9.5, 7]].forEach(([lx, lf, seed], j) => { const w = F(lx, 0, lf); out.push({ X: w[0], Z: w[2], step: 0, seed, i: 2 + j }); });
+  return out;
+}
+function apNave(o, t, p, k) {
+  const F = apFrame(o), N = AP_NAVE, L = apLight(t, apNormal(o, 1, 0), 0, o.X, o.Z), Lf = apLight(t, apNormal(o, 0, 1), 0, o.X, o.Z);
+  const white = rgb(apShade([246, 244, 238], .78 + .22 * Math.max(L, Lf))), side = rgb(apShade([246, 244, 238], .62 + .2 * Math.min(L, Lf))), items = [];
+  const dz = (w) => { const q = P(w[0], 0, w[2]); return q[2]; };
+  for (const s of apNaveSpires()) { const b = F(s.lx, 0, s.lf); items.push({ z: dz(b), d: () => { const B = P(b[0], 0, b[2]), T = P(b[0], s.h, b[2]), C = P(b[0], s.h - 2.6, b[2]); if (B[2] < 1 || T[2] < 1) return; const kk = kAt(B), w = Math.max(1, .28 * kk), wc = Math.max(1.2, .42 * kk);
+      g.fillStyle = white; g.beginPath(); g.moveTo(B[0] - w, B[1]); g.lineTo(C[0] - w * .95, C[1]); g.lineTo(C[0] + w * .95, C[1]); g.lineTo(B[0] + w, B[1]); g.closePath(); g.fill();
+      g.fillStyle = side; g.fillRect(B[0] + w * .25, C[1], w * .7, B[1] - C[1]);
+      const M = P(b[0], s.h - 1.6, b[2]); g.fillStyle = white; g.beginPath(); g.moveTo(C[0] - w, C[1]); g.quadraticCurveTo(M[0] - wc * 1.15, M[1], T[0], T[1]); g.quadraticCurveTo(M[0] + wc * 1.15, M[1], C[0] + w, C[1]); g.closePath(); g.fill();
+      if (kk > 3) { g.strokeStyle = side; g.lineWidth = Math.max(1, .06 * kk); g.beginPath(); g.moveTo(C[0] - w, C[1]); g.lineTo(C[0] + w, C[1]); g.stroke(); } } });
+    if (s.lx > 0) { const pts = apArchPts(F, -N.w, N.w, s.lf, s.lf, 6.3, 1.6); items.push({ z: dz(F(0, 0, s.lf)) + .01, d: () => { const q = pts.map(apP); if (!ok(q)) return; const kk = kAt(P(...F(0, 0, s.lf))); g.strokeStyle = white; g.lineWidth = Math.max(1, .24 * kk); g.lineCap = 'round'; apPath(q, false); g.stroke(); } }); }
+    if (s.i < N.n - 1) { const pts = apArchPts(F, s.lx, s.lx, s.lf, s.lf - N.sp, 6.0, .4); items.push({ z: dz(F(s.lx, 0, s.lf - N.sp / 2)), d: () => { const q = pts.map(apP); if (!ok(q)) return; const kk = kAt(P(...F(s.lx, 0, s.lf - 2))); g.strokeStyle = side; g.lineWidth = Math.max(1, .16 * kk); apPath(q, false); g.stroke(); } }); }
+  }
+  // the mandala wheel on its pole at the far end, turning slowly
+  const mb = F(0, 0, N.mand); items.push({ z: dz(mb), d: () => { const B = P(mb[0], 0, mb[2]), Cn = P(mb[0], 7.4, mb[2]); if (B[2] < 1) return; const kk = kAt(B); g.strokeStyle = white; g.lineWidth = Math.max(1, .2 * kk); g.beginPath(); g.moveTo(B[0], B[1]); g.lineTo(Cn[0], Cn[1]); g.stroke();
+    const R = 1.8 * kk, cols = ['#d8452f', '#2f6fb5', '#e8b23a', '#7a3c8c', '#3c8c5a', '#ee9a42'], rot = t * .25; g.save(); g.translate(Cn[0], Cn[1]); g.rotate(rot);
+    g.fillStyle = '#f2ede0'; g.beginPath(); g.arc(0, 0, R, 0, TAU); g.fill();
+    for (let j = 0; j < 12; j++) { const a = j / 12 * TAU; g.fillStyle = cols[j % 6]; g.beginPath(); g.ellipse(Math.cos(a) * R * .62, Math.sin(a) * R * .62, R * .34, R * .14, a, 0, TAU); g.fill(); }
+    for (let j = 0; j < 8; j++) { const a = (j + .5) / 8 * TAU; g.fillStyle = cols[(j + 2) % 6]; g.beginPath(); g.ellipse(Math.cos(a) * R * .3, Math.sin(a) * R * .3, R * .18, R * .08, a, 0, TAU); g.fill(); }
+    g.fillStyle = '#7a3c8c'; g.beginPath(); g.arc(0, 0, R * .14, 0, TAU); g.fill(); g.restore(); } });
+  // the visitors walking through it
+  for (const v of apNaveWalkers(o, t)) items.push({ z: dz([v.X, 0, v.Z]), d: () => { const q = P(v.X, 0, v.Z); if (q[2] < 2) return; person(q[0], q[1], kAt(q), { step: v.step, lift: 0, hat: v.seed % 4, cape: v.seed % 3 === 1, sit: 0 }, { body: AP_COLS[v.seed % 8], skin: ['#e8d4b4', '#c99a74', '#8c6448'][v.seed % 3], dark: '#3a3040', lamp: '#f0d49a', hatc: AP_COLS[(v.seed + 3) % 8] }); } });
+  items.sort((a, b) => b.z - a.z); for (const it of items) it.d();
+  // guy wires off the front spires
+  if (k > 4) { g.strokeStyle = 'rgba(90,90,96,.5)'; g.lineWidth = 1; for (const s of [-1, 1]) { const a = apP(F(s * N.w, N.h0 - 2, N.half)), b = apP(F(s * (N.w + 9), 0, N.half + 7)), c = apP(F(s * (N.w + 10), 0, N.half - 6)); if (ok([a, b, c])) { g.beginPath(); g.moveTo(a[0], a[1]); g.lineTo(b[0], b[1]); g.moveTo(a[0], a[1]); g.lineTo(c[0], c[1]); g.stroke(); } } }
+}
+function apNaveShadow(o, t) { const F = apFrame(o); for (const s of apNaveSpires()) apShadowLine([F(s.lx, 0, s.lf), F(s.lx, s.h, s.lf)], .5, t);
+  for (const lf of [AP_NAVE.half, 0, -AP_NAVE.half]) apShadowLine(apArchPts(F, -AP_NAVE.w, AP_NAVE.w, lf, lf, 6.3, 1.6), .3, t); }
+
+// ---------- 7. the lime-green octahedron shelters (draft 16, robin-2026-10-18/5.jpg and 6.jpg) ----------
+// Plywood octahedra painted lime green, one balanced on its point, one tipped over onto an edge; a little cube caps the
+// top point; a square window is cut through the upper faces and the lower faces are open, so people sit inside in the
+// shade. Someone sits cross-legged in the first one's window. Drawn in 3D: the faces that face the drone, lit by the sun.
+function apOctaGeo(o) { const a = o.a || 2.1, tl = o.tilt || 0, ct = Math.cos(tl), sn = Math.sin(tl);
+  const raw = [[0, a, 0], [a, 0, 0], [0, 0, a], [-a, 0, 0], [0, 0, -a], [0, -a, 0]].map(([x, y, z]) => [x, y * ct - z * sn, y * sn + z * ct]);
+  const lift = -Math.min(...raw.map((v) => v[1])), F = apFrame(o); return raw.map(([x, y, z]) => F(x, y + lift, z)); }
+const AP_OCTA_F = [[0, 1, 2], [0, 2, 3], [0, 3, 4], [0, 4, 1], [5, 2, 1], [5, 3, 2], [5, 4, 3], [5, 1, 4]];
+function apOcta(o, t, p, k) {
+  const V = apOctaGeo(o), cen = [0, 1, 2].map((i) => V.reduce((s, v) => s + v[i], 0) / 6), base = [164, 212, 58];
+  const faces = AP_OCTA_F.map((f) => { const [A, B, Cc] = f.map((i) => V[i]); let n = apNorm(apCross(apSub(B, A), apSub(Cc, A))); const m = [0, 1, 2].map((i) => (A[i] + B[i] + Cc[i]) / 3); if (apDot(n, apSub(m, cen)) < 0) n = n.map((v) => -v);
+    return { f, n, m, vis: apDot(n, apSub([C.x, C.y, C.z], m)) > 0, top: f[0] === 0 }; });
+  const vis = faces.filter((f) => f.vis).sort((a, b) => apDot(apSub(b.m, [C.x, C.y, C.z]), apSub(b.m, [C.x, C.y, C.z])) - apDot(apSub(a.m, [C.x, C.y, C.z]), apSub(a.m, [C.x, C.y, C.z])));
+  let best = null;
+  for (const fc of vis) { const q = fc.f.map((i) => apP(V[i])); if (!ok(q)) return; const hl = Math.hypot(fc.n[0], fc.n[2]) || 1, L = apLight(t, [fc.n[0] / hl, fc.n[2] / hl], fc.n[1], o.X, o.Z);
+    apPath(q); g.fillStyle = rgb(apShade(base, .55 + .45 * L)); g.fill(); g.strokeStyle = rgb(apShade(base, .45)); g.lineWidth = Math.max(1, .03 * k); g.stroke();
+    const [A, B, Cc] = fc.f.map((i) => V[i]), at = (u, v) => apP([0, 1, 2].map((j) => A[j] + u * (B[j] - A[j]) + v * (Cc[j] - A[j])));
+    if (fc.top) { const w = (o.tilt || 0) < .3 ? [at(.2, .2), at(.52, .2), at(.52, .48), at(.2, .48)] : [at(.18, .22), at(.45, .22), at(.45, .45), at(.18, .45)]; apPath(w); g.fillStyle = '#34401e'; g.fill(); // the square window, cut through the upper faces
+      const s = apDot(fc.n, apNorm(apSub([C.x, C.y, C.z], fc.m))); if (!best || s > best.s) best = { s, w, fc }; }
+    else { apPath([at(.1, .18), at(.62, .18), at(.1, .7)]); g.fillStyle = '#2a3418'; g.fill(); } // the lower faces are open: shade inside
+  }
+  // the person sitting cross-legged in the window, clipped to it
+  if (o.sitter && best && k > 3) { const w = best.w, cx = (w[0][0] + w[1][0] + w[2][0] + w[3][0]) / 4, by = Math.max(...w.map((q) => q[1])), kk = k * .95; g.save(); apPath(w); g.clip();
+    person(cx, by - .1 * kk, kk, { step: 0, lift: 0, hat: 0, cape: false, sit: 1 }, { body: '#2a2228', skin: '#e2c4a4', dark: '#47c1ba', lamp: '#f0d49a' }); g.restore(); }
+  // the little cube on the top point
+  const top = V[0], cq = [apP([top[0] - .25, top[1], top[2]]), apP([top[0], top[1] + .3, top[2]]), apP([top[0] + .25, top[1], top[2]]), apP([top[0], top[1] - .3, top[2]])]; if (ok(cq)) { apPath(cq); g.fillStyle = rgb(apShade(base, .9)); g.fill(); }
+}
+function apOctaShadow(o, t) { shadowOf(apOctaGeo(o), t); }
+
+// ---------- 8. the wooden clock tower (draft 16, robin-2026-10-18/8.jpg, 9.jpg, 10.jpg) ----------
+// A lattice timber tower: a plank pavilion with a Gothic grille door, a fretwork balcony round it reached by an open stair,
+// a shaft with two round dials, an open belfry full of clockwork, a copper spire with a ball and a cup anemometer that
+// turns in the wind. Two flying lattice arches reach from the shaft to two X-braced obelisks, one crowned by an armillary
+// sphere, the other by a pinwheel sunburst. Drawn as a flat cut-out that faces the drone (like the head). Lit at night: the
+// belfry and the lamps on the balcony glow. Two jesters in striped orange and black stand at its foot (separate bodies).
+function apClock(o, t, p, k) {
+  const S = o.scale || 1; bmBegin(p[0], p[1], k * S, 1); const det = k > 5, night = nightAmt(t), L = apLight(t, [Math.sin(Math.atan2(C.x - o.X, C.z - o.Z)), Math.cos(Math.atan2(C.x - o.X, C.z - o.Z))], 0, o.X, o.Z);
+  const sh = (h, f) => bmShade(h, (.7 + .3 * L) * (f || 1)), wood = sh('#cfae7e'), woodM = sh('#b08a5c'), woodD = sh('#7a5c3c'), copper = sh('#7a8a80'), grey = sh('#9a9488');
+  // the obelisks with their X bracing, the armillary sphere and the pinwheel
+  for (const s of [-1, 1]) { const x = s * 8.6; bmFill([[x - .85, 0], [x + .85, 0], [x + .42, 7.4], [x - .42, 7.4]], s < 0 ? wood : woodM); bmFill([[x - .95, 0], [x + .95, 0], [x + .95, .3], [x - .95, .3]], woodD);
+    if (det) for (let j = 0; j < 4; j++) { const y0 = .4 + j * 1.75, y1 = y0 + 1.75, w0 = .85 - .43 * y0 / 7.4, w1 = .85 - .43 * y1 / 7.4; bmLine([[x - w0 * .8, y0], [x + w1 * .8, y1]], .07, woodD); bmLine([[x + w0 * .8, y0], [x - w1 * .8, y1]], .07, woodD); bmLine([[x - w1, y1], [x + w1, y1]], .06, woodD); }
+    bmFill([[x - .5, 7.4], [x + .5, 7.4], [x, 8.0]], woodD); }
+  g.strokeStyle = woodD; g.lineWidth = bmW(.08); for (const [rx, ry, a] of [[.75, .75, 0], [.75, .28, .5], [.28, .75, 0]]) { g.beginPath(); g.ellipse(-8.6, -8.7, rx, ry, a, 0, TAU); g.stroke(); } bmLine([[-9.3, 8.0], [-7.9, 9.4]], .05, woodD);
+  for (let j = 0; j < 10; j++) { const a = j / 10 * TAU + t * .6; bmFill([[8.6, 8.6], [8.6 + Math.cos(a) * .9, 8.6 + Math.sin(a) * .9], [8.6 + Math.cos(a + .25) * .75, 8.6 + Math.sin(a + .25) * .75]], j % 2 ? wood : '#e8d4a8'); }
+  // the flying lattice arches from the shaft to the obelisk tops
+  for (const s of [-1, 1]) { const A = [s * 1.3, 9.6], B = [s * 8.4, 7.3], M = [s * 5.2, 11.2], arc = (o2) => { const pts = []; for (let j = 0; j <= 14; j++) { const u = j / 14, a = 1 - u; pts.push([a * a * A[0] + 2 * a * u * M[0] + u * u * B[0], a * a * (A[1] + o2) + 2 * a * u * (M[1] + o2) + u * u * (B[1] + o2)]); } return pts; };
+    const up = arc(0), lo = arc(-.55); bmLine(up, .12, woodM); bmLine(lo, .12, woodM); if (det) for (let j = 0; j < 14; j++) bmLine([up[j], lo[j + 1]], .05, woodD); else bmFill(up.concat(lo.slice().reverse()), woodM); }
+  // the open stair up the left to the balcony
+  bmFill([[-6.2, 0], [-5.3, 0], [-2.6, 3.4], [-3.5, 3.4]], woodM); if (det) for (let j = 1; j < 8; j++) { const u = j / 8; bmLine([[lerp(-6.2, -3.5, u), lerp(0, 3.4, u)], [lerp(-5.3, -2.6, u), lerp(0, 3.4, u)]], .05, woodD); }
+  bmLine([[-6.0, 1.0], [-3.3, 4.4]], .08, wood); bmLine([[-6.0, 0], [-6.0, 1.0]], .07, wood);
+  // the pavilion, its Gothic grille door
+  bmFill([[-2.3, 0], [2.3, 0], [2.3, 3.4], [-2.3, 3.4]], grey); if (det) { g.strokeStyle = 'rgba(60,50,40,.4)'; g.lineWidth = bmW(.04); g.beginPath(); for (let x = -2.1; x < 2.3; x += .35) { g.moveTo(x, 0); g.lineTo(x, -3.4); } g.stroke(); }
+  bmPath([[-.55, .2], [.55, .2], [.55, 1.9], [0, 2.6], [-.55, 1.9]]); g.closePath(); g.fillStyle = woodD; g.fill(); if (det) for (let j = -2; j <= 2; j++) bmLine([[j * .18, .25], [j * .18, 1.9 + .5 * (1 - Math.abs(j) / 3)]], .04, wood);
+  // the balcony with its fretwork rail and two lamps
+  bmFill([[-3.7, 3.4], [3.7, 3.4], [3.7, 3.65], [-3.7, 3.65]], woodD); bmFill([[-3.6, 3.65], [3.6, 3.65], [3.6, 4.65], [-3.6, 4.65]], wood);
+  if (det) for (let j = 0; j < 8; j++) { const x = -3.4 + j * .97; bmOval(x + .45, 4.15, .3, .3, woodM); bmOval(x + .45, 4.15, .15, .15, wood); }
+  for (const lx of [-3.5, 3.5]) { bmLine([[lx, 4.65], [lx, 5.2]], .05, '#3a3028'); bmFill([[lx - .12, 5.2], [lx + .12, 5.2], [lx + .1, 5.5], [lx - .1, 5.5]], night > .1 ? '#ffe2a0' : '#d8d0b8'); }
+  // the shaft with two round dials, then the belfry full of clockwork
+  bmFill([[-1.4, 4.65], [1.4, 4.65], [1.4, 8.9], [-1.4, 8.9]], bmLG(-1.4, 0, 1.4, 0, [woodM, wood, woodM])); bmFill([[-.9, 4.65], [.9, 4.65], [.9, 6.4], [-.9, 6.4]], sh('#a86a3a'));
+  for (const [x, y] of [[-.62, 8.0], [.62, 8.0]]) { bmDot(x, y, .42, woodD); bmDot(x, y, .32, '#d8d0b8'); }
+  bmFill([[-2.0, 8.9], [2.0, 8.9], [2.0, 12.1], [-2.0, 12.1]], wood); bmFill([[-2.15, 12.1], [2.15, 12.1], [2.15, 12.45], [-2.15, 12.45]], woodD);
+  const glow = night > .05 ? `rgba(255,${200 + 20 * night},${120 + 30 * night},${.4 + .5 * night})` : woodD;
+  for (const s of [-1, 1]) { bmPath([[s * .2, 9.3], [s * 1.75, 9.3], [s * 1.75, 11.0], [s * .97, 11.8], [s * .2, 11.0]]); g.closePath(); g.fillStyle = glow; g.fill(); }
+  const gear = (x, y, r, a) => { g.save(); g.translate(x, -y); g.rotate(a); g.fillStyle = sh('#e8d8b0'); g.beginPath(); for (let j = 0; j < 20; j++) { const rr = j % 2 ? r : r * .8, aa = j / 20 * TAU; g.lineTo(Math.cos(aa) * rr, Math.sin(aa) * rr); } g.closePath(); g.fill(); g.fillStyle = woodD; g.beginPath(); g.arc(0, 0, r * .3, 0, TAU); g.fill(); g.restore(); };
+  gear(-1.0, 10.3, .6, t * .5); gear(-.75, 11.1, .35, -t * .85); gear(1.0, 10.1, .55, -t * .3); gear(.85, 10.95, .3, t * .9);
+  bmDot(0, 10.4, .55, '#efe6cc'); g.strokeStyle = '#2a2420'; g.lineWidth = bmW(.06); g.beginPath(); g.moveTo(0, -10.4); g.lineTo(Math.sin(t * .1) * .42, -10.4 - Math.cos(t * .1) * .42); g.moveTo(0, -10.4); g.lineTo(Math.sin(t * 1.2) * .5, -10.4 - Math.cos(t * 1.2) * .5); g.stroke(); // the front dial, its hands turning
+  // the copper spire, the ball, the anemometer
+  bmFill([[-2.1, 12.45], [2.1, 12.45], [.3, 14.6], [-.3, 14.6]], bmLG(-2, 0, 2, 0, [copper, sh('#9aaaa0'), sh('#5e6a62')]));
+  bmOval(0, 14.9, .42, .38, sh('#8a5a3a')); bmLine([[0, 15.2], [0, 15.9]], .06, '#3a3028');
+  for (let j = 0; j < 4; j++) { const a = t * 2.6 + j * Math.PI / 2, cx = Math.cos(a) * 1.0, front = Math.sin(a) > 0; bmLine([[0, 15.85], [cx, 15.85]], .045, '#3a3028'); bmOval(cx, 15.85, .2 * (front ? 1 : .8), .17, front ? sh('#a87a4a') : sh('#6a4a2c')); }
+  g.restore();
+}
+function apClockShadow(o, t) { const F = apFrame(o); shadowOf([F(-2.3, 0, -1.5), F(2.3, 0, 1.5), F(-2.3, 12.4, 0), F(2.3, 12.4, 0), F(0, 15.9, 0)], t); for (const s of [-1, 1]) apShadowLine([F(s * 8.6, 0, 0), F(s * 8.6, 8, 0)], 1.2, t); apShadowLine([F(-1.3, 9.6, 0), F(-5.2, 10.6, 0), F(-8.4, 7.3, 0)], .3, t); apShadowLine([F(1.3, 9.6, 0), F(5.2, 10.6, 0), F(8.4, 7.3, 0)], .3, t); }
+// the two jesters at its foot: striped orange-and-black costumes, crested gold helmets; they shift their weight and point
+function apJester(x, y, k, t, i) { bmBegin(x, y, k, i ? -1 : 1); const det = k > 8, sw = Math.sin(t * .9 + i * 2) * .04;
+  for (const s of [-1, 1]) bmLine([[s * .12, 0], [s * .1 + sw, .9]], .16, '#1c1a1e');
+  bmFill([[-.27, .85], [.27, .85], [.24, 1.5], [-.24, 1.5]], '#e07a20'); if (det) for (let j = 0; j < 4; j++) bmFill([[-.22 + j * .14, .85], [-.15 + j * .14, .85], [-.15 + j * .14, 1.5], [-.22 + j * .14, 1.5]], '#1c1a1e');
+  bmLine([[.22, 1.42], [.4, 1.15], [.5, 1.45 + .15 * Math.sin(t * 1.3 + i)]], .09, '#e07a20'); bmLine([[-.22, 1.42], [-.3, 1.0]], .09, '#1c1a1e');
+  bmOval(0, 1.67, .12, .14, '#c99a72'); bmPath([[-.15, 1.66], [.15, 1.66], [.13, 1.86], [-.13, 1.86]]); g.closePath(); g.fillStyle = '#c8a040'; g.fill();
+  g.beginPath(); g.moveTo(-.05, -1.84); g.quadraticCurveTo(.05, -2.25, .28, -2.08); g.quadraticCurveTo(.12, -2.0, .05, -1.84); g.closePath(); g.fillStyle = '#1c1a1e'; g.fill();
+  g.restore(); }
+const AP_JESTERS = [[3.4, 2.6], [4.2, 3.1]]; // [lx, lf] in the clock tower's frame, in front and to its right
+function apClockExtras(o, t, list) { const F = apFrame(o);
+  AP_JESTERS.forEach(([lx, lf], i) => { const w = F(lx, 0, lf), q = P(w[0], 0, w[2]); ACT.note('artpieces:clock:jester:' + i, w[0], w[2], .3, { h: 2.1, group: 'installs' }); if (q[2] < 3) return; const kk = kAt(q); if (kk < .6 || q[0] < -60 || q[0] > W + 60) return;
+    list.push({ z: q[2], draw: () => apJester(q[0], q[1], kk, t, i), shadow: () => shadowStick(w[0], 0, 2.0, w[2], .45, t) }); }); }
+
+// ---------- 9. the silver bucket-head stilt walkers (draft 16, robin-2026-10-18/11.jpg) ----------
+// Two performers in shiny silver suits with upturned silver buckets over their heads, walking on buckets strapped to
+// their feet: slow, stiff steps side by side along the 9:00 promenade. Separate bodies; o.path is the pair's centre.
+function apStiltPair(o, t) { const [X, Z] = apPath2(o.path, t), a = o.path[0], b = o.path[o.path.length - 1], hx = b[1] - a[1], hz = b[2] - a[2], L = Math.hypot(hx, hz) || 1;
+  return [[-.6, 1.0], [.6, -1.0]].map(([side, back], i) => ({ X: X + (-hz / L) * side - hx / L * back, Z: Z + (hx / L) * side - hz / L * back, i, hx: hx / L, hz: hz / L })); }
+function apStilt(x, y, k, d, t, i) { bmBegin(x, y, k, d); const ph = t * 2.6 + i * 1.3, det = k > 8, silver = (x0, x1) => bmLG(x0, 0, x1, 0, ['#f4f6f8', '#9aa2aa', '#e2e6ea', '#6e767e']);
+  for (const s of [-1, 1]) { const sw = Math.sin(ph + (s > 0 ? Math.PI : 0)), lift = Math.max(0, sw) * .12, fx = s * .1 + sw * .22; // a bucket on each foot
+    bmFill([[fx - .17, lift], [fx + .17, lift], [fx + .14, lift + .45], [fx - .14, lift + .45]], silver(fx - .17, fx + .17)); if (det) bmLine([[fx - .16, lift + .05], [fx + .16, lift + .05]], .02, '#5a626a');
+    bmLine([[fx, lift + .45], [s * .1 + sw * .08, 1.3]], .17, '#c8ced4'); }
+  bmPath([[-.26, 1.25], [.26, 1.25], [.3, 1.95], [.2, 2.05], [-.2, 2.05], [-.3, 1.95]]); g.closePath(); g.fillStyle = silver(-.3, .3); g.fill();
+  const as = Math.sin(ph) * .2; bmLine([[.24, 1.95], [.32 + as * .5, 1.55], [.3 + as, 1.25]], .11, '#d4dade'); bmLine([[-.24, 1.95], [-.32 - as * .5, 1.55], [-.3 - as, 1.25]], .11, '#aab2ba');
+  g.save(); g.translate(.06, -2.32); g.rotate(-.18); bmFill([[-.24, -.3], [.24, -.3], [.18, .22], [-.18, .22]], silver(-.24, .24)); bmOval(0, -.3, .25, .05, '#7e868e'); bmOval(0, .22, .18, .04, '#dfe4e8');
+  if (det) { bmLine([[-.23, -.18], [.23, -.18]], .02, '#6e767e'); for (let j = 0; j < 4; j++) bmDot(-.09 + j * .06, .23, .015, '#5a626a'); } g.restore();
+  g.restore(); }
+function apStiltsExtras(o, t, list) { for (const w of apStiltPair(o, t)) { ACT.note('artpieces:stilts:' + w.i, w.X, w.Z, .35, { h: 2.6, group: 'walkers' }); const q = P(w.X, 0, w.Z); if (q[2] < 3) continue; const kk = kAt(q); if (kk < .5 || q[0] < -60 || q[0] > W + 60) continue;
+    const ah = P(w.X + w.hx, 0, w.Z + w.hz), d = Math.sign(ah[0] - q[0]) || 1; list.push({ z: q[2], draw: () => apStilt(q[0], q[1], kk, d, t, w.i), shadow: () => shadowStick(w.X, 0, 2.6, w.Z, .45, t) }); } }
+
 // ---------- the front layer: the monolith framing the burn through its hole ----------
 // The Man's fire is drawn over the scene list (render.js manFire), so a slab standing between the drone and the fire
 // would be painted over. A piece with front: true is drawn here instead, after the fire, graded the way render.js grades
 // the car layer. Needs one word in render.js: FRONT_HOOKS gets 'artpiecesFront'. Without it, front pieces draw as usual.
-const AP_DRAW = { burger: apBurger, jig: apJig, monolith: apMonolith, head: apHead, genie: apGenie };
+const AP_DRAW = { burger: apBurger, jig: apJig, monolith: apMonolith, head: apHead, genie: apGenie, nave: apNave, octa: apOcta, clock: apClock };
 const AP_FC = mkCanvas(), apFg = AP_FC.getContext('2d'), AP_FM = mkCanvas(), apFm = AP_FM.getContext('2d');
 const apFrontOn = () => typeof FRONT_HOOKS !== 'undefined' && FRONT_HOOKS.includes('artpiecesFront');
 function artpiecesFront(t) {
@@ -569,23 +730,32 @@ function artpiecesFront(t) {
 // ---------- the actor check (tools/check-actors.mjs) ----------
 // Each piece reports its footprint as a fixed circle (the genie as its planter, where it has driven to). The big rig arch
 // stands on the first cab's nose and the bent tank above it; the rest of it is overhead, so only that foot is solid.
-const AP_FOOT = { burger: [0, 0, 2.1], jig: [1.6, 0, 2.6], monolith: [0, 0, 2.6], head: [0, 0, 3.9], genie: [0, 0, 2.4] }; // [lx, lf, r]
-function apNote(o, S) { const [lx, lf, r] = AP_FOOT[o.kind], w = apFrame(o)(lx, 0, lf), h = AP_SIZE[o.kind][1] * S;
-  ACT.note('artpieces:' + o.kind, w[0], w[2], r * S, { h, group: 'installs' });
+const AP_FOOT = { burger: [0, 0, 2.1], jig: [1.6, 0, 2.6], monolith: [0, 0, 2.6], head: [0, 0, 3.9], genie: [0, 0, 2.4], octa: [0, 0, 2.0], clock: [0, 0, 3.8] }; // [lx, lf, r]
+// draft 16: pieces with more than one solid body note each one ([lx, lf, r] in the piece's frame); the nave's spires and its
+// mandala pole, the clock tower's obelisks and the foot of its stair
+const AP_BODIES = { nave: () => apNaveSpires().map((q) => [q.lx, q.lf, .45]).concat([[0, AP_NAVE.mand, .3]]), clock: () => [[0, 0, 3.8], [-5.6, 0, .8], [-8.6, 0, 1.0], [8.6, 0, 1.0]] };
+function apNote(o, S, t) { if (o.kind === 'stilts') return; const id = 'artpieces:' + (o.name || o.kind), h = AP_SIZE[o.kind][1] * S;
+  if (AP_BODIES[o.kind]) { AP_BODIES[o.kind]().forEach(([lx, lf, r], i) => { const w = apFrame(o)(lx, 0, lf); ACT.note(id + ':' + i, w[0], w[2], r * S, { h, group: 'installs' }); });
+    if (o.kind === 'nave' && ACT.on) apNaveWalkers(o, t).forEach((v) => ACT.note(id + ':visitor:' + v.i, v.X, v.Z, .3, { h: 1.8, group: 'visitors' })); return; }
+  const [lx, lf, r] = AP_FOOT[o.kind], w = apFrame(o)(lx, 0, lf);
+  ACT.note(id, w[0], w[2], r * S, { h, group: 'installs' });
   if (o.sign) { const b = apFrame(o)(o.sign.lx, 0, o.sign.lf); ACT.note('artpieces:burger-sign', b[0], b[2], .5, { h: 7, group: 'installs' }); } }
 
 // ---------- the scene hook ----------
-const AP_SIZE = { burger: [8, 7], jig: [7, 15.5], monolith: [4, 7.6], head: [5, 5.3], genie: [6, 14] }; // half width for culling, height
+const AP_SIZE = { burger: [8, 7], jig: [7, 15.5], monolith: [4, 7.6], head: [5, 5.3], genie: [6, 14], nave: [17, 14], octa: [3, 4.4], clock: [9.6, 16], stilts: [1, 2.6] }; // half width for culling, height
 function artpiecesInto(t, list) {
   for (const o of ARTPIECES) {
     if (o.t0 != null && t < o.t0) continue; if (o.t1 != null && t > o.t1) continue;
     if (o.path) { const [X, Z] = apPath2(o.path, t); o.X = X; o.Z = Z; } // a mobile piece: where it has driven to by t (set each frame, so still a pure function of t)
-    const p = P(o.X, 0, o.Z), [hw, ht] = AP_SIZE[o.kind], S = o.scale || 1; apNote(o, S);
+    if (o.kind === 'stilts') { apStiltsExtras(o, t, list); continue; } // draft 16: the stilt walkers are two bodies of their own
+    const p = P(o.X, 0, o.Z), [hw, ht] = AP_SIZE[o.kind], S = o.scale || 1; apNote(o, S, t);
+    if (o.kind === 'clock') apClockExtras(o, t, list);
+    if (o.kind === 'octa') apVisitors(o, t, list); // draft 16: its visitors are culled one by one, never with the piece (no pop at a frame edge)
     if (p[2] < 3) continue; const k = kAt(p);
     if (ht * S * k < 2 || p[0] < -hw * S * k - 200 || p[0] > W + hw * S * k + 200) continue;
-    const draw = AP_DRAW[o.kind], shadow = { burger: apBurgerShadow, jig: apJigShadow, monolith: apMonoShadow, head: apHeadShadow, genie: apGenieShadow }[o.kind];
+    const draw = AP_DRAW[o.kind], shadow = { burger: apBurgerShadow, jig: apJigShadow, monolith: apMonoShadow, head: apHeadShadow, genie: apGenieShadow, nave: apNaveShadow, octa: apOctaShadow, clock: apClockShadow }[o.kind];
     list.push({ z: p[2], draw: () => { if (o.front && apFrontOn()) return; g.save(); draw(o, t, p, k); g.restore(); }, shadow: () => { g.save(); shadow(o, t); g.restore(); } }); // a front piece is drawn by artpiecesFront instead
     if (o.sign) { const b = apFrame(o)(o.sign.lx, 0, o.sign.lf), q = P(b[0], 0, b[2]); if (q[2] > 2) list.push({ z: q[2], draw: () => { g.save(); apSign(o, t); g.restore(); } }); }
-    if (k > .8) apVisitors(o, t, list);
+    if (k > .8 && o.kind !== 'octa') apVisitors(o, t, list);
   }
 }

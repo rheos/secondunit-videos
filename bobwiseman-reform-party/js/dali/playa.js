@@ -1023,32 +1023,50 @@ function brcCarLights(t) {
     const a = m * (.75 + .25 * Math.sin(t * 3 + o.r0)); g.fillStyle = `rgba(${cols[o.c]},${.22 * a})`; g.fillRect(q[0] - 3, q[1] - 3, 6, 6); g.fillStyle = `rgba(${cols[o.c]},${.95 * a})`; g.fillRect(q[0] - 1.2, q[1] - 1.2, 2.4, 2.4); }
   g.restore();
 }
-function templeAir(t, k) { // the Temple from above: its courtyard wall, the corner pavilions, the hall with its cross roof and spire
-  const [X, Z] = TEMPLE_XZ, d = [0, 1], sv = sunVec(t), sa = shadowA(t), sq = (cx, cz, h, col) => brcPoly([[X + cx - h, Z + cz - h], [X + cx + h, Z + cz - h], [X + cx + h, Z + cz + h], [X + cx - h, Z + cz + h]], col);
-  if (sa > .02) { g.save(); g.globalAlpha = sa * .9; brcPoly([[X - 15, Z - 15], [X + 15, Z - 15], [X + 15 + sv[0] * 22, Z + 15 + sv[1] * 22], [X - 15 + sv[0] * 22, Z + 15 + sv[1] * 22]], 'rgb(52,34,58)'); g.restore(); }
-  brcLine([[X - 36, Z - 36], [X + 36, Z - 36], [X + 36, Z + 36], [X - 36, Z + 36]], Math.max(1, 1.5 * k), '#9a7a52', true);
-  for (const [cx, cz] of [[-30, -30], [30, -30], [30, 30], [-30, 30]]) sq(cx, cz, 4, '#c9a878');
-  sq(0, 0, 15, '#d8b98a'); brcPoly([[X - 15, Z - 2], [X + 15, Z - 2], [X + 15, Z + 2], [X - 15, Z + 2]], '#a8875e'); brcPoly([[X - 2, Z - 15], [X + 2, Z - 15], [X + 2, Z + 15], [X - 2, Z + 15]], '#a8875e'); sq(0, 0, 4, '#8a6a46');
+// draft 16 (Robin's photo robin-2026-10-18/12.jpg): the Temple is a tiered wooden pagoda, not any one year's design: a wide
+// low pavilion with a lattice roof and prayer flags strung along its eaves, four flared roof tiers above it with rows of
+// paper lanterns hanging from every eave, and a spire. Same spot and size class as before (about 46 m across, 30 m tall).
+const TPL_TIERS = [[11, 6.2, 9.0, 16.5, 11.2], [9.0, 11.2, 13.2, 13.5, 15.4], [7.0, 15.4, 17.2, 10.8, 19.2], [5.0, 19.2, 20.8, 8.0, 23.4]]; // [body half width, body y0, y1, eave half width, roof top]
+function templeAir(t, k) { // the Temple from above: the pavilion's lattice square, the tiers' roofs stepping in, the spire; lantern points at night
+  const [X, Z] = TEMPLE_XZ, sv = sunVec(t), sa = shadowA(t), sq = (h, col) => brcPoly([[X - h, Z - h], [X + h, Z - h], [X + h, Z + h], [X - h, Z + h]], col);
+  if (sa > .02) { g.save(); g.globalAlpha = sa * .9; brcPoly([[X - 17, Z - 17], [X + 17, Z - 17], [X + 17 + sv[0] * 24, Z + 17 + sv[1] * 24], [X - 17 + sv[0] * 24, Z + 17 + sv[1] * 24]], 'rgb(52,34,58)'); g.restore(); }
+  sq(23, '#cdb48a'); sq(21.5, '#b89a6c');
+  TPL_TIERS.forEach(([, , , e], i) => { sq(e, i % 2 ? '#a8875e' : '#8f7048'); sq(e * .72, i % 2 ? '#c6a678' : '#b39064'); });
+  brcPoly([[X - e1(0), Z - .6], [X + e1(0), Z - .6], [X + e1(0), Z + .6], [X - e1(0), Z + .6]], '#7a5c3c'); brcPoly([[X - .6, Z - e1(0)], [X + .6, Z - e1(0)], [X + .6, Z + e1(0)], [X - .6, Z + e1(0)]], '#7a5c3c'); // the hips of the roofs
+  sq(1.2, '#5a4430');
+  const n = nightAmt(t); if (n > .05) { g.save(); g.globalCompositeOperation = 'lighter'; for (const [, , , e] of TPL_TIERS) for (let j = 0; j < 16; j++) { const u = j / 16 * 4, sd = Math.floor(u), f = (u - sd) * 2 - 1, cx = [f * e, e, -f * e, -e][sd], cz = [-e, f * e, e, -f * e][sd], q = P(X + cx, 8, Z + cz);
+      if (q[2] < 1) continue; g.fillStyle = `rgba(255,214,150,${.8 * n})`; g.fillRect(q[0] - 1, q[1] - 1, 2, 2); } g.restore(); }
+  function e1() { return TPL_TIERS[0][3]; }
 }
 
-// ---------- the Temple, seen from the playa: a plain wooden temple, not any one year's design ----------
+// ---------- the Temple, seen from the playa: the pagoda ----------
 function templeBill(t, p, k) {
-  bmBegin(p[0], p[1], k, 1); const wood = '#d8b98a', shade = '#a8875e', deep = '#4a3626', det = k > 3;
-  bmFill([[-36, 0], [36, 0], [36, 2.4], [-36, 2.4]], bmShade('#c9a878', .9)); // the courtyard wall
-  if (det) for (let i = -35; i <= 35; i += 2.5) bmLine([[i, 0], [i, 2.4]], .12, 'rgba(90,64,40,.45)');
-  for (const cx of [-30, 30]) { bmFill([[cx - 3.5, 0], [cx + 3.5, 0], [cx + 3.5, 6], [cx - 3.5, 6]], wood); bmFill([[cx - 4.2, 6], [cx + 4.2, 6], [cx, 10]], shade); bmFill([[cx - 1.2, 0], [cx + 1.2, 0], [cx + 1.2, 3.6], [cx - 1.2, 3.6]], deep); }
-  bmFill([[-16, 0], [16, 0], [16, 2], [-16, 2]], shade); bmFill([[-12.5, 2], [12.5, 2], [12.5, 9], [-12.5, 9]], bmLG(-12, 0, 12, 0, [wood, wood, shade]));
-  for (const ox of [-7.5, 0, 7.5]) { bmPath([[ox - 2, 2], [ox + 2, 2], [ox + 2, 6.4], [ox, 7.6], [ox - 2, 6.4]]); g.closePath(); g.fillStyle = deep; g.fill(); }
-  bmFill([[-15, 9], [15, 9], [11, 11], [-11, 11]], shade); bmFill([[-10.5, 11], [10.5, 11], [10.5, 12.6], [-10.5, 12.6]], wood); bmFill([[-12, 12.6], [12, 12.6], [7.5, 15], [-7.5, 15]], shade);
-  bmFill([[-6.5, 15], [6.5, 15], [6.5, 16.6], [-6.5, 16.6]], wood); bmFill([[-7.6, 16.6], [7.6, 16.6], [3.5, 19], [-3.5, 19]], shade);
-  bmFill([[-3, 19], [3, 19], [.25, 28.5], [-.25, 28.5]], bmLG(-3, 0, 3, 0, [wood, shade])); // the spire
-  if (det) { g.strokeStyle = 'rgba(80,56,36,.55)'; g.lineWidth = bmW(.1); g.beginPath(); for (let y = 19.8; y < 27.5; y += 1.3) { const hw = 3 * (28.5 - y) / 9.5; g.moveTo(-hw, -y); g.lineTo(hw, -(y + 1.1)); g.moveTo(hw, -y); g.lineTo(-hw, -(y + 1.1)); } g.stroke(); }
+  bmBegin(p[0], p[1], k, 1); const wood = '#d8b98a', shade = '#a8875e', deep = '#4a3626', roofC = '#8f7048', det = k > 2.5, n = nightAmt(t);
+  // the low base pavilion: posts, a lattice roof sloping out to wide eaves, prayer flags along it
+  bmFill([[-21, 0], [21, 0], [21, .5], [-21, .5]], bmShade('#c9a878', .85));
+  for (let x = -20; x <= 20; x += 2.5) bmLine([[x, .5], [x, 4.6]], .45, x % 5 === 0 ? shade : '#b8976a');
+  bmFill([[-11, .5], [11, .5], [11, 6.2], [-11, 6.2]], bmLG(-11, 0, 11, 0, [wood, wood, shade])); // the hall in the middle
+  if (det) { for (let x = -10; x <= 10; x += 2) bmFill([[x - .5, .5], [x + .5, .5], [x + .5, 4.0], [x - .5, 4.0]], deep); }
+  bmPath([[-23.5, 4.2], [-21, 4.9], [-11, 6.4], [11, 6.4], [21, 4.9], [23.5, 4.2], [21, 4.55], [-21, 4.55]]); g.closePath(); g.fillStyle = '#c9ac80'; g.fill();
+  if (det) { g.strokeStyle = 'rgba(110,80,50,.55)'; g.lineWidth = bmW(.12); g.beginPath(); for (let x = -21; x <= 21; x += 1.4) { const y0 = 4.55 + 1.85 * (1 - Math.min(1, Math.abs(x) / 21)) * .5; g.moveTo(x, -4.6); g.lineTo(x + 1.2, -Math.min(6.3, y0 + 1)); g.moveTo(x + 1.2, -4.6); g.lineTo(x, -Math.min(6.3, y0 + 1)); } g.stroke(); } // the lattice
+  if (det) { const cols = ['#d8452f', '#2f6fb5', '#e8b23a', '#3c8c5a', '#f2ede0']; for (let j = 0; j < 30; j++) { const x = -20 + j * 40 / 29, y = 4.4 - .35 * Math.sin((j % 10) / 9 * Math.PI); bmFill([[x - .45, y], [x + .45, y], [x, y - 1.0]], cols[j % 5]); } } // prayer flags on their string
+  // the tiers: a body, then a roof flaring out to upturned eaves, a row of paper lanterns under each eave
+  TPL_TIERS.forEach(([bw, y0, y1, e, top], i) => {
+    bmFill([[-bw, y0], [bw, y0], [bw, y1], [-bw, y1]], bmLG(-bw, 0, bw, 0, [wood, wood, shade]));
+    if (det) { g.strokeStyle = 'rgba(80,56,36,.5)'; g.lineWidth = bmW(.12); g.beginPath(); for (let x = -bw + 1; x < bw; x += 1.2) { g.moveTo(x, -y0); g.lineTo(x, -y1); } g.stroke(); }
+    const ey = y1 - .4; bmPath([[-e - .8, ey + .9], [-e, ey + .35], [-bw, y1 + .2], [-bw * .45, top], [bw * .45, top], [bw, y1 + .2], [e, ey + .35], [e + .8, ey + .9], [e, ey], [-e, ey]]); g.closePath(); g.fillStyle = bmLG(0, top, 0, ey, [bmShade(roofC, 1.05), roofC, bmShade(roofC, .8)]); g.fill();
+    if (det) { g.strokeStyle = 'rgba(60,42,26,.45)'; g.lineWidth = bmW(.1); g.beginPath(); for (let x = -e; x <= e; x += 1.1) { g.moveTo(x, -ey); g.lineTo(x * .45, -top); } g.stroke(); }
+    const m = Math.round(e * 2 / 2.1); for (let j = 0; j <= m; j++) { const x = -e + .6 + j * (2 * e - 1.2) / m, ly = ey - .9 - .25 * Math.sin(j * 1.7 + i); if (det) bmLine([[x, ey], [x, ly + .5]], .04, '#5a4430');
+      bmOval(x, ly, .42, .5, n > .05 ? `rgb(${255},${226 - 20 * n},${170 - 40 * n})` : '#f2ead6'); if (det) bmLine([[x - .36, ly], [x + .36, ly]], .05, n > .05 ? 'rgba(200,120,60,.6)' : 'rgba(170,150,120,.6)'); } });
+  // the spire: a slim cone with rings, a finial
+  bmFill([[-2.4, 23.4], [2.4, 23.4], [.2, 30.5], [-.2, 30.5]], bmLG(-2.4, 0, 2.4, 0, [wood, shade])); if (det) for (const y of [24.6, 26, 27.4, 28.8]) { const hw = 2.4 * (30.5 - y) / 7.1; bmLine([[-hw, y], [hw, y]], .14, deep); }
+  bmLine([[0, 30.4], [0, 32.2]], .1, deep);
   g.restore();
 }
 function templeInto(t, list) {
   const [X, Z] = TEMPLE_XZ, p = P(X, 0, Z); if (p[2] < 30) return; const k = kAt(p); if (p[0] < -40 * k || p[0] > W + 40 * k) return;
   list.push({ z: p[2], draw: () => { const air = brcAirAmt(); if (air > 0) { g.save(); g.globalAlpha = air; templeAir(t, k); g.restore(); } if (air < 1) { g.save(); g.globalAlpha = 1 - air; templeBill(t, p, k); g.restore(); } },
-    shadow: () => { if (brcAirAmt() < 1) shadowOf([[X - 16, 0, Z], [X + 16, 0, Z], [X, 28, Z]], t); } });
+    shadow: () => { if (brcAirAmt() < 1) shadowOf([[X - 22, 0, Z], [X + 22, 0, Z], [X - 16, 6, Z], [X + 16, 6, Z], [X, 32, Z]], t); } });
 }
 
 // ---------- art on the open playa (draft 4): a few big pieces between the road and the Esplanade, none of them camps ----------
