@@ -5,7 +5,9 @@ function melt(t) { return clamp((t - 20) / 200) * .55 + ease(t, L_(1).s, L_(1).e
 // "scientists can't speak": under the tape X the speakerphone slumps like a soft watch and runs over the table edge
 // draft 13 (Robin on d12: you can't absorb it melting): it starts to soften on "scientists" and is fully melted over the
 // table's edge by 26.0, while the camera holds on it; when the tape comes off it springs only partly back (it stays soft)
-const phoneSlump = (t) => ease(t, wt(1, 'scientists') + .3, L_(1).s + 3.9) * (1 - .35 * ease(t, L_(2).s + .3, L_(2).s + 1));
+// draft 19 (Robin, studio note 12, "look at the OG Dali"): like the soft watches, the phone goes limp and stays limp,
+// hanging over the table edge as one piece; no spring back, no separate drips
+const phoneSlump = (t) => ease(t, wt(1, 'scientists') + .3, L_(1).s + 3.9);
 // draft 11 (Robin: it went out of frame as it melted): the phone sits 0.25 m nearer the hat hole and 0.4 m further from
 // the front edge, so in the low shot that turns from it to the Instrument People (24-27.6) it stays in the lower middle
 // of the frame while it slumps, instead of sliding off the bottom right corner
@@ -63,10 +65,6 @@ function speakerphone(t) {
       cord.push(PL(...drape([flow(bx + Math.cos(w) * .06 * Math.sin(u * Math.PI), bz + Math.sin(w) * .045 * Math.sin(u * Math.PI), .2)], TOP + .02)[0])); }
     if (ok(cord)) { g.strokeStyle = '#1b1c20'; g.lineWidth = Math.max(1.2, .02 * kAt(cord[0])); g.lineJoin = 'round'; g.beginPath(); cord.forEach((p, i) => i ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1])); g.stroke(); } }
   poly(P3, '#2f3136', '#17181b', Math.max(1, .012 * kAt(P3[0])));
-  if (sl > 0) for (let i = 0; i < 4; i++) { // drips off the front edge
-    const x = cx - .2 + i * .13, ov = -TD - flow(x, cz - .3)[1]; if (ov <= .03) continue; const len = sl * (.18 + .32 * rnd(i, 61)) * (1 + .15 * Math.sin(t * 2 + i)), ytop = TOP + .04 - ov * 1.05 + .03, ylow = ytop - len;
-    poly([PL(x - .035, ytop, -TD - .016), PL(x + .035, ytop, -TD - .016), PL(x + .015, ylow, -TD - .016), PL(x - .015, ylow, -TD - .016)], '#2f3136');
-    const q = PL(x, ylow, -TD - .017); if (q[2] > .2) { g.fillStyle = '#2f3136'; g.beginPath(); g.arc(q[0], q[1], .03 * kAt(q), 0, TAU); g.fill(); } }
   if (sl > 0 && P3.every((p) => p[2] > .15)) { const hl = []; for (let i = 0; i <= 12; i++) { const a = 3.7 + i / 12 * 1.9; hl.push(PL(...drape([flow(cx + Math.cos(a) * .27, cz + Math.sin(a) * .22)], TOP + .055)[0])); } // a soft highlight on its back
     g.save(); g.globalAlpha = .35 * sl; g.strokeStyle = '#8a8e96'; g.lineWidth = .025 * kAt(hl[6]); g.beginPath(); hl.forEach((p, i) => i ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1])); g.stroke(); g.restore(); }
   const ring = (r, dz = 0) => drape(Array.from({ length: 28 }, (_, i) => { const a = i / 28 * TAU; return flow(cx + Math.cos(a) * r, cz + Math.sin(a) * r * .9 - dz, .5); }), TOP + .05).map((p) => PL(...p));
