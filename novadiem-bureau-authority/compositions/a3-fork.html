@@ -1,0 +1,85 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #a3 {
+          position: absolute;
+          inset: 0;
+        }
+      </style>
+      <div id="a3" data-composition-id="a3" data-width="1920" data-height="1080">
+        <div id="a3-all" class="layer">
+          <svg class="full" viewBox="0 0 1920 1080">
+            <g id="a3-art"></g>
+          </svg>
+          <div class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate III</div>
+          <div class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>The Fork</div>
+          <div id="a3-st" class="statement"><span class="phrase">A product choice is</span> <span class="phrase red">the owner's call.</span></div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text, kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 23.59);
+          const art = K.$("a3-art");
+          const P = AG.rig(art);
+          const G = AG.groups(P);
+          AG.hide(G.review);
+          const Y = AG.Y;
+
+          // the drawing carries over from plate II, gate down again
+          AG.show(K, G.base, K.T(23.59));
+
+          // the fork comes back from the Conductor
+          const F = AG.packet(art, "FORK", 250, Y);
+          AG.appear(tl, F, K.T(24.17));
+          AG.move(K, tl, F, `M250 ${Y}H${AG.DCX}`, K.T(24.17), 1.1);
+          const rt = text("return-type: genuine-fork", { class: "mono small dim", x: 140, y: 470 }, art);
+          K.fade(rt, K.T(24.75), 0.35);
+
+          // what it asks
+          const q = text("FREE TIER, OR A TRIAL?", { class: "mono q", x: 140, y: 320 }, art);
+          const qs = text("a scope or product decision, not a correctness call", { class: "mono small dim", x: 140, y: 356 }, art);
+          K.reveal(q, K.T(25.94), 0.7);
+          K.fade(qs, K.T(26.52), 0.4);
+
+          // the escalation signals it matches (4 of the 10 in agents/delegate.md)
+          const sx = 1290;
+          const head = text("ESCALATION SIGNALS · 4 OF 10", { class: "mono small gold-t", x: sx, y: 196 }, art);
+          const sig = [
+            ["2", "scope that moves cost or timeline"],
+            ["3", "two valid designs: the owner's tradeoff"],
+            ["5", "production, or any outside action"],
+            ["6", "hard to undo, secrets, billing"],
+          ].map(([n, t], i) => {
+            const y = 240 + i * 40;
+            return { n: text(n, { class: "mono", x: sx, y }, art), t: text(t, { class: "mono src", x: sx + 36, y }, art), y };
+          });
+          K.fade(head, K.T(28.28), 0.35);
+          sig.forEach((s, i) => {
+            K.fade(s.n, K.T(28.28) + 0.2 + i * 0.25, 0.3);
+            K.reveal(s.t, K.T(28.28) + 0.25 + i * 0.25, 0.5);
+          });
+          const hit = el("rect", { class: "ln line-strong", x: sx - 14, y: sig[1].y - 27, width: 548, height: 38, style: "stroke-width:2.5" }, art);
+          K.draw(hit, K.T(30.05), 0.5, "none");
+          const fired = text("signal-fired: 3", { class: "mono small gold-t", x: sx, y: 420 }, art);
+          K.fade(fired, K.T(30.65), 0.35);
+
+          // it is not decided here: the branch to the owner's control point
+          AG.drawOwner(K, P, K.T(31.23));
+          AG.move(K, tl, F, `M${AG.DCX} ${Y}V${AG.PY}`, K.T(33.0), 1.0);
+
+          K.reveal(K.$("a3-st"), K.T(34.18), 0.8);
+          K.out(K.$("a3-all"), K.R(37.25), 0.4);
+          window.__timelines["a3"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>
