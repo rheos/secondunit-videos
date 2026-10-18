@@ -1,0 +1,164 @@
+<!doctype html>
+<html class="draft" lang="en" data-resolution="landscape">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1280, height=720" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;700&family=IBM+Plex+Mono:wght@400;700&display=block" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <!-- Series kit (tools/blueprint-kit, copied by sync.sh). Theme first, then structure. -->
+    <link rel="stylesheet" href="kit/themes/orchardly.css" />
+    <link rel="stylesheet" href="kit/kit.css" />
+    <script src="kit/kit.js"></script>
+    <script>
+      // Beat grid of the score (beats.json): librosa beats 0.30-78.25 at ~95.7 BPM, extended to 84.52 at 0.627 s.
+      BP.grid({ beats: [0.3,1.02,1.67,2.3,2.95,3.58,4.2,4.85,5.48,6.11,6.76,7.41,8.03,8.66,9.31,9.96,10.59,11.24,11.87,12.52,13.14,13.77,14.42,15.07,15.7,16.35,16.97,17.62,18.25,18.9,19.53,20.18,20.81,21.43,22.08,22.73,23.36,23.99,24.64,25.26,25.91,26.54,27.19,27.84,28.47,29.12,29.74,30.39,31.02,31.65,32.3,32.95,33.58,34.2,34.85,35.48,36.13,36.76,37.38,38.06,38.68,39.33,39.96,40.59,41.24,41.84,42.52,43.14,43.79,44.42,45.07,45.7,46.35,46.97,47.6,48.25,48.9,49.53,50.18,50.81,51.43,52.08,52.71,53.36,53.99,54.64,55.26,55.91,56.54,57.17,57.82,58.47,59.12,59.74,60.37,61.02,61.65,62.28,62.93,63.58,64.2,64.85,65.48,66.13,66.76,67.38,68.01,68.66,69.31,69.96,70.59,71.22,71.87,72.49,73.14,73.79,74.42,75.05,75.7,76.32,76.97,77.6,78.25,78.88,79.51,80.13,80.76,81.39,82.01,82.64,83.27,83.89,84.52] });
+    </script>
+    <style>
+      svg text.mono.head { font-size: 22px; }
+      svg text.mono.cell { font-size: 18px; }
+      svg text.mono.green-t { fill: #1d7a31; } /* line-strong: 4.8:1 on the pale surface */
+      svg text.mono.red-t { fill: var(--accent); }
+      svg text.mono.faint { fill: var(--ink-faint); font-weight: 400; }
+      svg text.mono.planned-t { fill: #5b6b5a; } /* ink-faint is 2.6:1 on pale; planned words still have to read */
+      svg text.big { font-family: var(--font-display); font-weight: var(--display-weight); letter-spacing: var(--display-tracking); fill: var(--ink); }
+      .fill-ink { fill: var(--ink); }
+      .fill-accent { fill: var(--accent); }
+      .tree { fill: none; stroke: var(--line); stroke-width: 2; }
+      .statement.two { top: 800px; flex-direction: column; align-items: center; font-size: 62px; row-gap: 4px; }
+      .statement.two .row { display: flex; column-gap: 0.3em; }
+      /* the evening plate draws on navy */
+      .field svg text.mono.green-t { fill: var(--line-field); }
+      .field svg text.mono.red-t { fill: var(--accent-field); }
+      .field svg text.mono.faint { fill: #b7c4b0; }
+      .field .fill-ink { fill: var(--ink-field); }
+      .field .fill-accent { fill: var(--accent-field); }
+      .field .ink { stroke: var(--ink-field); }
+      .field .line { stroke: var(--line-field); }
+      .field .accent-s { stroke: var(--accent-field); }
+      .field .fill-line { fill: var(--line-field); }
+    </style>
+    <script>
+      // OR: the shared drawings. Synthetic crew, block and counts throughout (no real people or amounts).
+      window.OR = (() => {
+        const { el, text } = BP;
+        const CREW = ["ANA", "BEN", "CLEO", "DEV"];
+        // the phone always sits at the same place on the stage, so plates hand it over without a jump
+        const PH = { x: 1380, y: 150, w: 320, h: 600 };
+        // the day's taps, in order: [picker row, bin number]
+        const TAPS = [[0, 1], [1, 1], [2, 1], [3, 1], [0, 2], [2, 2], [1, 2], [3, 2], [0, 3], [2, 3]];
+        const COLX = [1490, 1536, 1582, 1628];
+        const ROWY = [338, 398, 458, 518];
+
+        // phone(parent): outline, status bar, app header. Returns the parts for cueing.
+        function phone(parent) {
+          const P = {};
+          P.frame = el("rect", { class: "ln ink", x: PH.x, y: PH.y, width: PH.w, height: PH.h, rx: 40 }, parent);
+          P.slot = el("path", { class: "ln thin ink", d: `M${PH.x + 130} ${PH.y + 18}H${PH.x + 190}` }, parent);
+          P.home = el("path", { class: "ln thin ink", d: `M${PH.x + 110} ${PH.y + PH.h - 20}H${PH.x + 210}` }, parent);
+          // signal: four bars, empty while there is no service
+          P.bars = [0, 1, 2, 3].map((i) => {
+            const h = 6 + i * 5;
+            return el("rect", { class: "ln thin ink", x: 1636 + i * 10, y: 196 - h, width: 6, height: h }, parent);
+          });
+          P.fills = [0, 1, 2, 3].map((i) => {
+            const h = 6 + i * 5;
+            return el("rect", { class: "fill-ink", x: 1636 + i * 10, y: 196 - h, width: 6, height: h, opacity: 0 }, parent);
+          });
+          P.svc = text("NO SERVICE", { class: "mono small red-t", x: 1624, y: 196, "text-anchor": "end" }, parent);
+          P.head = el("g", {}, parent);
+          text("TALLIES", { class: "mono", x: 1404, y: 240 }, P.head);
+          text("BLOCK 4 · GALA · BIN", { class: "mono small", x: 1404, y: 266 }, P.head);
+          P.rule = el("path", { class: "ln thin ink", d: "M1400 282H1680" }, parent);
+          return P;
+        }
+
+        // grid(parent): the tally sheet on the phone: four pickers, bins 1-4. Cells fill in tap order.
+        function grid(parent) {
+          const G = { names: [], cols: [], cells: [], marks: [] };
+          COLX.forEach((x, c) => G.cols.push(text(String(c + 1), { class: "mono small", x: x + 20, y: 308, "text-anchor": "middle" }, parent)));
+          CREW.forEach((n, r) => {
+            G.names.push(text(n, { class: "mono cell", x: 1404, y: ROWY[r] }, parent));
+            G.cells.push(COLX.map((x) => el("rect", { class: "ln thin ink", x, y: ROWY[r] - 26, width: 40, height: 38 }, parent)));
+          });
+          G.marks = TAPS.map(([r, c]) => el("rect", { class: "fill-line", x: COLX[c - 1] + 6, y: ROWY[r] - 20, width: 28, height: 26, opacity: 0 }, parent));
+          G.total = text("BINS TODAY  10", { class: "mono small", x: 1404, y: 600 }, parent);
+          return G;
+        }
+
+        // server(parent): orchardly-rails and its sync_batches table (built). Returns parts for cueing.
+        const BATCH_ID = "7c1e4b2a-…-a3f9"; // synthetic UUID v4
+        function server(parent) {
+          const S = {};
+          S.box = el("rect", { class: "ln ink", x: 160, y: 200, width: 480, height: 420 }, parent);
+          S.head = el("g", {}, parent);
+          text("ORCHARDLY-RAILS", { class: "mono head", x: 184, y: 244 }, S.head);
+          text("POST /api/v1/sync_batches", { class: "mono small", x: 184, y: 276 }, S.head);
+          S.rule1 = el("path", { class: "ln thin ink", d: "M160 296H640" }, parent);
+          S.tab = el("g", {}, parent);
+          text("sync_batches", { class: "mono", x: 184, y: 340 }, S.tab);
+          text("client_batch_id", { class: "mono small", x: 184, y: 380 }, S.tab);
+          text("ops", { class: "mono small", x: 616, y: 380, "text-anchor": "end" }, S.tab);
+          S.rule2 = el("path", { class: "ln thin ink", d: "M184 394H616" }, parent);
+          S.row = el("g", {}, parent);
+          text(BATCH_ID, { class: "mono small", x: 184, y: 430 }, S.row);
+          text("10", { class: "mono small", x: 616, y: 430, "text-anchor": "end" }, S.row);
+          S.uniq = text("unique index on client_batch_id", { class: "mono small green-t", x: 184, y: 596 }, parent);
+          // the wire from the phone: the endpoint is built, the app's push to it is not yet
+          S.wire = el("path", { class: "ln planned", d: "M1374 470H642" }, parent);
+          S.wireTag = text("APP PUSH: PLANNED", { class: "mono small planned-t", x: 1008, y: 560, "text-anchor": "middle" }, parent);
+          return S;
+        }
+        // batch(parent): the sync batch envelope, drawn at the origin; place it with a transform
+        function batch(parent) {
+          const g = el("g", {}, parent);
+          el("rect", { class: "ln line fill-bg", x: -170, y: -56, width: 340, height: 112 }, g);
+          text("sync_batch", { class: "mono", x: -150, y: -20 }, g);
+          text(`id ${BATCH_ID}`, { class: "mono small", x: -150, y: 10 }, g);
+          text("operations 10 · Tally", { class: "mono small", x: -150, y: 38 }, g);
+          return g;
+        }
+
+        return { CREW, PH, TAPS, COLX, ROWY, BATCH_ID, phone, grid, server, batch };
+      })();
+    </script>
+  </head>
+  <body>
+    <div data-hf-id="hf-or01"
+      id="root"
+      data-composition-id="main"
+      data-start="0"
+      data-duration="83.3"
+      data-width="1280"
+      data-height="720"
+    >
+      <!-- Score: score-library drafting-table-orchardly take-01, sha256 9c3f9edb...7ece, the clock for every cue -->
+      <audio data-hf-id="hf-or02"
+        id="score"
+        src="_in/score.mp3"
+        data-start="0"
+        data-duration="83.3"
+        data-track-index="9"
+        data-volume="1"
+      ></audio>
+
+      <!-- every plate draws on a 1920x1080 stage; drafts scale it to 720p (kit.css, stage.sh) -->
+      <div class="stage">
+        <div data-hf-id="hf-or03" id="slot-furniture" data-composition-id="furniture" data-composition-src="compositions/furniture.html" data-start="0" data-duration="83.3" data-track-index="0" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-or04" id="slot-p1" data-composition-id="p1" data-composition-src="compositions/p1-no-signal.html" data-start="0" data-duration="9.96" data-track-index="1" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-or05" id="slot-p2" data-composition-id="p2" data-composition-src="compositions/p2-tally-book.html" data-start="9.96" data-duration="14.03" data-track-index="2" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-or06" id="slot-p3" data-composition-id="p3" data-composition-src="compositions/p3-rate.html" data-start="23.99" data-duration="14.07" data-track-index="3" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-or08" id="slot-p5" data-composition-id="p5" data-composition-src="compositions/p5-back-in-range.html" data-start="50.81" data-duration="13.39" data-track-index="5" data-width="1920" data-height="1080"></div>
+        <!-- plate IV's navy field covers the end of III and the start of V, so it sits on top -->
+        <div data-hf-id="hf-or07" id="slot-p4" data-composition-id="p4" data-composition-src="compositions/p4-pay-week.html" data-start="37.38" data-duration="14.05" data-track-index="4" data-width="1920" data-height="1080" style="z-index: 5"></div>
+        <div data-hf-id="hf-or09" id="slot-p6" data-composition-id="p6" data-composition-src="compositions/p6-sent-twice.html" data-start="64.2" data-duration="12.12" data-track-index="6" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-or0a" id="slot-p7" data-composition-id="p7" data-composition-src="compositions/p7-colophon.html" data-start="76.32" data-duration="6.98" data-track-index="7" data-width="1920" data-height="1080"></div>
+      </div>
+    </div>
+
+    <script>
+      window.__timelines["main"] = gsap.timeline({ paused: true });
+    </script>
+  </body>
+</html>

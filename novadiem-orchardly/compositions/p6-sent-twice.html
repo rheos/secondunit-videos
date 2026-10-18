@@ -1,0 +1,111 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #p6 {
+          position: absolute;
+          inset: 0;
+        }
+      </style>
+      <div id="p6" data-composition-id="p6" data-width="1920" data-height="1080">
+        <svg class="full" viewBox="0 0 1920 1080">
+          <g id="p6-srv"></g>
+          <g id="p6-phone"></g>
+          <g id="p6-grid"></g>
+          <g id="p6-fly"></g>
+          <g id="p6-next"></g>
+        </svg>
+        <div id="p6-label-l" class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate VI</div>
+        <div id="p6-label-r" class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>Sent Twice</div>
+        <div class="statement" data-layout-allow-overlap data-layout-allow-occlusion>
+          <span id="p6-st-a" class="phrase">Sent twice.</span>
+          <span id="p6-st-b" class="phrase red">Stored once.</span>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text, kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 64.2);
+          const fly = K.$("p6-fly");
+
+          // the scene carries over from plate V: signal back, one batch stored
+          const P = OR.phone(K.$("p6-phone"));
+          P.svc.setAttribute("opacity", 0);
+          P.fills.forEach((f) => f.setAttribute("opacity", 1));
+          const G = OR.grid(K.$("p6-grid"));
+          G.marks.forEach((m) => m.setAttribute("opacity", 1));
+          const S = OR.server(K.$("p6-srv"));
+
+          K.fade(K.$("p6-label-l"), K.T(64.2), 0.4);
+          K.fade(K.$("p6-label-r"), K.T(64.2), 0.4);
+
+          // the reply heads back to the phone and is lost on the way
+          const reply = text("201", { class: "mono green-t", x: 0, y: -12, "text-anchor": "middle" }, fly);
+          const back = el("path", { d: "M700 470H1010", fill: "none" }, fly);
+          tl.fromTo(reply, { opacity: 0 }, { opacity: 1, duration: 0.2 }, K.T(64.85));
+          reply.setAttribute("transform", "translate(700 470)");
+          K.travel(reply, back, K.T(64.85), 0.6, "none");
+          tl.fromTo(reply, { opacity: 1 }, { opacity: 0, duration: 0.2, immediateRender: false }, K.T(65.48));
+          const cut = el("path", { class: "ln accent-s", d: "M996 452l28 36M1024 452l-28 36", style: "stroke-width: 4" }, fly);
+          K.draw(cut, K.T(65.48), 0.25);
+          const lost = text("reply lost", { class: "mono small red-t", x: 1010, y: 430, "text-anchor": "middle" }, fly);
+          K.fade(lost, K.T(65.48), 0.3);
+
+          // the phone never heard back, so it sends the same batch again: same id
+          const B = OR.batch(fly);
+          B.setAttribute("transform", "translate(1180 470)");
+          const route = el("path", { d: "M1180 470H760", fill: "none" }, fly);
+          tl.fromTo(B, { opacity: 0 }, { opacity: 1, duration: 0.4 }, K.T(66.13));
+          const same = text("same id", { class: "mono small green-t", x: 1180, y: 556, "text-anchor": "middle" }, fly);
+          K.fade(same, K.T(66.76), 0.3);
+          tl.fromTo(same, { opacity: 1 }, { opacity: 0, duration: 0.3, immediateRender: false }, K.T(67.38));
+          tl.fromTo([cut, lost], { opacity: 1 }, { opacity: 0, duration: 0.3, immediateRender: false }, K.T(67.38));
+          K.travel(B, route, K.T(67.38), 1.1, "power2.inOut");
+          tl.fromTo(B, { opacity: 1 }, { opacity: 0, duration: 0.3, immediateRender: false }, K.T(68.66));
+
+          // the server looks the id up, finds the stored batch and adds nothing
+          const hit = el("rect", { class: "ln line", x: 176, y: 406, width: 448, height: 36 }, fly);
+          K.draw(hit, K.T(68.66), 0.5, "none");
+          const found = text("already stored: return it", { class: "mono small green-t", x: 184, y: 480 }, fly);
+          K.fade(found, K.T(69.31), 0.4);
+          const ok = text("200 OK · same batch", { class: "mono green-t", x: 664, y: 446 }, fly);
+          K.fade(ok, K.T(69.96), 0.4);
+          const okBack = el("path", { d: "M700 470H1300", fill: "none" }, fly);
+          const okTag = text("200", { class: "mono green-t", x: 0, y: -12, "text-anchor": "middle" }, fly);
+          okTag.setAttribute("transform", "translate(700 470)");
+          tl.fromTo(okTag, { opacity: 0 }, { opacity: 1, duration: 0.2 }, K.T(70.59));
+          K.travel(okTag, okBack, K.T(70.59), 0.9, "power1.inOut");
+          tl.fromTo(okTag, { opacity: 1 }, { opacity: 0, duration: 0.25, immediateRender: false }, K.T(71.87));
+          const one = text("rows: 1", { class: "mono green-t", x: 616, y: 540, "text-anchor": "end" }, fly);
+          K.fade(one, K.T(71.22), 0.4);
+
+          // still to build: apply each operation to typed tables, last write wins on conflict
+          const nx = K.$("p6-next");
+          const nbox = el("rect", { class: "ln planned", x: 160, y: 664, width: 1140, height: 84 }, nx);
+          const n1 = text("NEXT: APPLY EACH OPERATION TO TALLY AND PAYOUT TABLES", { class: "mono small planned-t", x: 184, y: 698 }, nx);
+          const n2 = text("conflicts: last write wins by updated_at, sync_version breaks ties", { class: "mono small planned-t", x: 184, y: 728 }, nx);
+          const nTag = text("PLANNED", { class: "mono small planned-t", x: 1300, y: 652, "text-anchor": "end" }, nx);
+          K.sweep(nbox, K.T(73.14), 0.7);
+          K.fade(n1, K.T(73.79), 0.4);
+          K.fade(n2, K.T(74.42), 0.4);
+          K.fade(nTag, K.T(73.79), 0.4);
+
+          K.reveal(K.$("p6-st-a"), K.T(69.96), 0.5);
+          K.reveal(K.$("p6-st-b"), K.T(71.22), 0.6);
+
+          // clear the whole sheet for the colophon
+          ["p6-srv", "p6-phone", "p6-grid", "p6-fly", "p6-next", "p6-label-l", "p6-label-r"].forEach((id) => K.out(K.$(id), K.T(75.7), 0.45));
+          tl.to("#p6 .statement", { opacity: 0, duration: 0.45, ease: "power1.in" }, K.T(75.7));
+
+          window.__timelines["p6"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

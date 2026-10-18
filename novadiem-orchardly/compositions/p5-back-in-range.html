@@ -1,0 +1,86 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #p5 {
+          position: absolute;
+          inset: 0;
+        }
+      </style>
+      <div id="p5" data-composition-id="p5" data-width="1920" data-height="1080">
+        <svg class="full" viewBox="0 0 1920 1080">
+          <g id="p5-srv"></g>
+          <g id="p5-phone"></g>
+          <g id="p5-grid"></g>
+          <g id="p5-fly"></g>
+        </svg>
+        <div id="p5-label-l" class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate V</div>
+        <div id="p5-label-r" class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>Back in Range</div>
+        <div class="statement two" data-layout-allow-overlap data-layout-allow-occlusion>
+          <div class="row"><span id="p5-st-a" class="phrase">Back in range.</span></div>
+          <div class="row"><span id="p5-st-b" class="phrase red">One batch, one ID.</span></div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text, kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 50.81);
+
+          const P = OR.phone(K.$("p5-phone"));
+          const G = OR.grid(K.$("p5-grid"));
+          G.marks.forEach((m) => m.setAttribute("opacity", 1));
+
+          K.fade(K.$("p5-label-l"), K.T(51.43), 0.4);
+          K.fade(K.$("p5-label-r"), K.T(51.43), 0.4);
+
+          // signal comes back
+          tl.fromTo(P.svc, { opacity: 1 }, { opacity: 0, duration: 0.3, immediateRender: false }, K.T(52.08));
+          P.fills.forEach((f, i) => K.fade(f, K.T(52.08) + 0.15 + i * 0.12, 0.2));
+
+          // the server side: orchardly-rails and its sync_batches table
+          const S = OR.server(K.$("p5-srv"));
+          K.draw(S.box, K.T(53.36), 0.8, "none");
+          K.fade(S.head, K.T(53.99), 0.4);
+          K.draw(S.rule1, K.T(53.99), 0.4, "none");
+          K.fade(S.tab, K.T(54.64), 0.4);
+          K.draw(S.rule2, K.T(54.64), 0.4, "none");
+          K.fade(S.uniq, K.T(55.26), 0.4);
+
+          // the wire: built endpoint, planned push
+          K.sweep(S.wire, K.T(53.99), 0.8);
+          K.fade(S.wireTag, K.T(54.64), 0.4);
+
+          // the day's ten tallies go up as one batch with its own id
+          const B = OR.batch(K.$("p5-fly"));
+          const route = el("path", { d: "M1180 470H760", fill: "none" }, K.$("p5-fly"));
+          tl.fromTo(B, { opacity: 0 }, { opacity: 1, duration: 0.4 }, K.T(55.91));
+          B.setAttribute("transform", "translate(1180 470)");
+          K.travel(B, route, K.T(56.54), 1.2, "power2.inOut");
+          tl.fromTo(B, { opacity: 1 }, { opacity: 0, duration: 0.3, immediateRender: false }, K.T(57.82));
+          K.reveal(S.row, K.T(57.82), 0.5);
+
+          // the server answers: created
+          const resp = text("201 CREATED", { class: "mono green-t", x: 664, y: 446 }, K.$("p5-fly"));
+          K.fade(resp, K.T(58.47), 0.4);
+
+          K.reveal(K.$("p5-st-a"), K.T(53.36), 0.6);
+          K.reveal(K.$("p5-st-b"), K.T(59.74), 0.7);
+
+          // plate VI keeps this scene; only the words and the reply clear
+          K.out(resp, K.T(63.58), 0.4);
+          K.out(K.$("p5-label-l"), K.T(63.58), 0.4);
+          K.out(K.$("p5-label-r"), K.T(63.58), 0.4);
+          tl.to("#p5 .statement", { opacity: 0, duration: 0.4, ease: "power1.in" }, K.T(63.58));
+
+          window.__timelines["p5"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>
