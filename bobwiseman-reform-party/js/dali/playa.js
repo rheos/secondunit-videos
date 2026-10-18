@@ -339,6 +339,7 @@ function bmObs(t) {
   const st = octPose(t); if (st) L.push({ X: st.X, Z: st.Z, r: 5.5 });
   if (t >= bmDrumT0()) L.push({ X: DRUM.x, Z: DRUM.z, r: DRUM.r + .5 });
   if (typeof extrasEach === 'function') extrasEach(t, (e) => { if (e.alpha == null || e.alpha > .02) L.push({ X: e.X, Z: e.Z, r: .3, id: e.id }); }); // burn.js's Rangers and the poor woman
+  bmStiltObs(t, L); // draft 21: the stilt walkers
   if (typeof MAN !== 'undefined') L.push({ X: MAN.x, Z: MAN.z, r: 12.5 }); // the Man's base (burn.js notes it from theMan, which draws directly)
   return L.concat(bmForeign(t)); }
 // a costumed flock crossing in front of the camera in the first instrumental (it replaces draft 2's foreground block).
@@ -647,7 +648,7 @@ const BM_CAMPS = []; { const R = mulberry(78); let last = ''; for (let X = -100;
 // a sparse near ring between the road and the camps, kept clear of the other builders' installations
 { const R = mulberry(91), skip = [[-24, 8], [52, 84], [88, 152], [210, 262]], NEAR = ['parked', 'sail', 'flags', 'umbrella', 'parked', 'chairs', 'speakers'];
   for (let X = -80; X < 420; X += 26 + R() * 22) { if (skip.some(([a, b]) => X > a && X < b)) continue; BM_CAMPS.push({ X, Z: 31 + R() * 8, kind: NEAR[Math.floor(R() * NEAR.length)], r: 2.4 + R() * 1.6, col: ['#d8452f', '#2f6fb5', '#e8b23a', '#7a3c8c', '#3c8c5a'][Math.floor(R() * 5)], col2: '#f2ede0', seed: Math.floor(R() * 1e4) }); } }
-BM_CAMPS[19].X = 232; BM_CAMPS[19].Z = 58; // draft 11 merge: the chairs piece moves clear of the monolith, the ring its visitors walk, and the burn ring cars (artpieces.js)
+BM_CAMPS[19].X = 149; BM_CAMPS[19].Z = 98; // draft 21 (Robin: no art in the fire circle): out to 160 m from the Man, 8:20 (was 232, 58, 69 m). Draft 11: draft 11 merge: the chairs piece moves clear of the monolith, the ring its visitors walk, and the burn ring cars (artpieces.js)
 function bmCamp(c, t, p) {
   const k = kAt(p), r = c.r; bmBegin(p[0], p[1], k, 1); const det = k > 5;
   if (c.kind === 'dome') { // geodesic: a shaded half disc, triangulated struts, a few fabric panels
@@ -1046,8 +1047,8 @@ function brcCarLights(t) {
 // low pavilion with a lattice roof and prayer flags strung along its eaves, four flared roof tiers above it with rows of
 // paper lanterns hanging from every eave, and a spire. Same spot and size class as before (about 46 m across, 30 m tall).
 const TPL_TIERS = [[11, 6.2, 9.0, 16.5, 11.2], [9.0, 11.2, 13.2, 13.5, 15.4], [7.0, 15.4, 17.2, 10.8, 19.2], [5.0, 19.2, 20.8, 8.0, 23.4]]; // [body half width, body y0, y1, eave half width, roof top]
-function templeAir(t, k) { // the Temple from above: the pavilion's lattice square, the tiers' roofs stepping in, the spire; lantern points at night
-  const [X, Z] = TEMPLE_XZ, sv = sunVec(t), sa = shadowA(t), sq = (h, col) => brcPoly([[X - h, Z - h], [X + h, Z - h], [X + h, Z + h], [X - h, Z + h]], col);
+function pagodaAir(t, k) { // draft 21: the pagoda (the Temple until draft 20) from above: the pavilion's lattice square, the tiers' roofs stepping in, the spire; lantern points at night
+  const [X, Z] = PAGODA_XZ, sv = sunVec(t), sa = shadowA(t), sq = (h, col) => brcPoly([[X - h, Z - h], [X + h, Z - h], [X + h, Z + h], [X - h, Z + h]], col);
   if (sa > .02) { g.save(); g.globalAlpha = sa * .9; brcPoly([[X - 17, Z - 17], [X + 17, Z - 17], [X + 17 + sv[0] * 24, Z + 17 + sv[1] * 24], [X - 17 + sv[0] * 24, Z + 17 + sv[1] * 24]], 'rgb(52,34,58)'); g.restore(); }
   sq(23, '#cdb48a'); sq(21.5, '#b89a6c');
   TPL_TIERS.forEach(([, , , e], i) => { sq(e, i % 2 ? '#a8875e' : '#8f7048'); sq(e * .72, i % 2 ? '#c6a678' : '#b39064'); });
@@ -1058,8 +1059,8 @@ function templeAir(t, k) { // the Temple from above: the pavilion's lattice squa
   function e1() { return TPL_TIERS[0][3]; }
 }
 
-// ---------- the Temple, seen from the playa: the pagoda ----------
-function templeBill(t, p, k) {
+// ---------- the pagoda, seen from the playa (draft 21: no longer the Temple, an art piece out on deep playa) ----------
+function pagodaBill(t, p, k) {
   bmBegin(p[0], p[1], k, 1); const wood = '#d8b98a', shade = '#a8875e', deep = '#4a3626', roofC = '#8f7048', det = k > 2.5, n = nightAmt(t), lit = clamp((t - 196) / 4) * Math.max(.7, Math.min(1, n * 3)); // draft 18: lanterns lit warm from dusk
   // the low base pavilion: posts, a lattice roof sloping out to wide eaves, prayer flags along it
   bmFill([[-21, 0], [21, 0], [21, .5], [-21, .5]], bmShade('#c9a878', .85));
@@ -1082,15 +1083,84 @@ function templeBill(t, p, k) {
   bmLine([[0, 30.4], [0, 32.2]], .1, deep);
   g.restore();
 }
+// ---------- draft 21: this year's Temple (Robin's photos robin-2026-10-18/22-26.jpg) ----------
+// A tall open gateway tower, black and white all over: a wide square base platform on four ornate pillars with a big
+// open archway (the sunset shows through it) and a staircase up the front; an upper tier on four slimmer pillars with
+// onion domes and spires at its corners; on top a big onion dome on a tetrapod of striped legs, ending in a needle
+// spire, about 35 m up; small domes and spires on the base platform's corners; guy cables to the ground. The pattern
+// is suggested, not drawn: rows of small rosette circles, zig-zags and barber stripes. It never burns in this film.
+const PAGODA_XZ = [362, -430]; // the pagoda, out on deep playa beyond the Man, 34 m right of the 12:00 line, where the fly-out passes it
+const TPL_INK = '#1b1719', TPL_LACE = '#ece6da';
+function tplDome(cx, y0, r, sp, det, med) { // an onion dome sitting at y0, widest r, with a spire sp metres above its point
+  bmPath([[cx - r * .32, y0], [cx - r * .95, y0 + r * .55], [cx - r, y0 + r * .95], [cx - r * .7, y0 + r * 1.55], [cx - r * .18, y0 + r * 2.1], [cx, y0 + r * 2.35], [cx + r * .18, y0 + r * 2.1], [cx + r * .7, y0 + r * 1.55], [cx + r, y0 + r * .95], [cx + r * .95, y0 + r * .55], [cx + r * .32, y0]]); g.closePath(); g.fillStyle = TPL_INK; g.fill();
+  if (det) { const n = Math.max(3, Math.round(r * 2.4)); for (let j = 0; j < n; j++) { const x = cx - r * .7 + j * 1.4 * r / (n - 1); bmDot(x, y0 + r * .95, r * .1, TPL_LACE); } // the rosette row round its waist
+    if (med) { bmDot(cx, y0 + r * 1.05, r * .34, TPL_LACE); bmDot(cx, y0 + r * 1.05, r * .24, TPL_INK); for (let j = 0; j < 8; j++) { const a = j / 8 * TAU; bmDot(cx + Math.cos(a) * r * .29, y0 + r * 1.05 + Math.sin(a) * r * .29, r * .045, TPL_LACE); } bmDot(cx, y0 + r * 1.05, r * .08, TPL_LACE); }
+    bmLine([[cx - r * .55, y0 + r * 1.6], [cx + r * .55, y0 + r * 1.6]], r * .05, TPL_LACE); }
+  bmFill([[cx - r * .07, y0 + r * 2.3], [cx + r * .07, y0 + r * 2.3], [cx, y0 + r * 2.35 + sp]], TPL_INK); if (det) bmDot(cx, y0 + r * 2.35 + sp * .3, r * .09, TPL_INK);
+}
+function tplPillar(x0, x1, y0, y1, det, zig) { // an ornate black pillar with lace: a white edge stripe, rosettes or zig-zags up its face
+  bmFill([[x0, y0], [x1, y0], [x1, y1], [x0, y1]], TPL_INK); if (!det) return; const w = x1 - x0, cx = (x0 + x1) / 2;
+  if (zig) { g.strokeStyle = TPL_LACE; g.lineWidth = bmW(w * .06); g.beginPath(); for (let y = y0 + .3, i = 0; y < y1 - .2; y += w * .35, i++) { const x = cx + (i % 2 ? .3 : -.3) * w; y === y0 + .3 ? g.moveTo(x, -y) : g.lineTo(x, -y); } g.stroke(); }
+  else for (let y = y0 + w * .5; y < y1 - w * .3; y += w * .75) { bmDot(cx, y, w * .26, TPL_LACE); bmDot(cx, y, w * .15, TPL_INK); bmDot(cx, y, w * .06, TPL_LACE); }
+  bmLine([[x0 + w * .08, y0], [x0 + w * .08, y1]], w * .05, TPL_LACE); bmLine([[x1 - w * .08, y0], [x1 - w * .08, y1]], w * .05, TPL_LACE);
+}
+function tplRail(x0, x1, y, h, det) { // a barber-striped edge band
+  bmFill([[x0, y], [x1, y], [x1, y + h], [x0, y + h]], TPL_INK); if (!det) return; g.save(); bmPath([[x0, y], [x1, y], [x1, y + h], [x0, y + h]]); g.closePath(); g.clip(); g.strokeStyle = TPL_LACE; g.lineWidth = bmW(h * .28); g.beginPath();
+  for (let x = x0 - h; x < x1 + h; x += h * .9) { g.moveTo(x, -y); g.lineTo(x + h, -(y + h)); } g.stroke(); g.restore();
+}
+function templeBill(t, p, k) {
+  bmBegin(p[0], p[1], k, .62); /* drawn 0.62 narrow: tall and slim, about 17 m across the base, 36 m up */ const det = k > 2.2, fine = k > 5;
+  // guy cables first, behind everything: from the upper tier and the crown out to the ground
+  g.strokeStyle = 'rgba(30,24,28,.55)'; g.lineWidth = bmW(.05); g.beginPath(); for (const s of [-1, 1]) { g.moveTo(s * 7.5, -18.5); g.lineTo(s * 34, 0); g.moveTo(s * 3, -27); g.lineTo(s * 40, 0); g.moveTo(s * 12, -10); g.lineTo(s * 24, 0); } g.stroke();
+  // the base platform: two big ornate pillar pairs, the deck across them, the open arch between (the sky shows through)
+  for (const s of [-1, 1]) { tplPillar(s * 12.5 - (s > 0 ? 2.2 : 0), s * 12.5 + (s < 0 ? 2.2 : 0), 0, 9, det, false); tplPillar(s * 8.6 - (s > 0 ? 1.8 : 0), s * 8.6 + (s < 0 ? 1.8 : 0), 0, 9, det, true);
+    bmFill([[s * 10.3 - .5, 0], [s * 10.3 + .5, 0], [s * 10.3 + .5, 9], [s * 10.3 - .5, 9]], TPL_INK); // the web between each pair
+    if (fine) for (let y = 1; y < 8.5; y += 1.2) bmDot(s * 10.3, y, .32, TPL_LACE); }
+  tplRail(-13, 13, 8.2, .9, det); bmFill([[-13.4, 9.1], [13.4, 9.1], [13.4, 9.7], [-13.4, 9.7]], TPL_INK); tplRail(-13.4, 13.4, 9.7, .55, det); // the deck and its striped rail
+  bmPath([[-6.8, 8.2], [-6.8, 6.6], [-4.5, 7.6], [0, 8.05], [4.5, 7.6], [6.8, 6.6], [6.8, 8.2]]); g.closePath(); g.fillStyle = TPL_INK; g.fill(); // the arch's crown under the deck
+  if (fine) for (let j = 0; j < 11; j++) bmDot(-5.5 + j * 1.1, 7.75 - .5 * Math.pow((j - 5) / 5, 2), .18, TPL_LACE);
+  // the staircase up the front, under the arch
+  for (let j = 0; j < 6; j++) { const y = j * .32, hw = 3.4 - j * .25; bmFill([[-hw, y], [hw, y], [hw, y + .32], [-hw, y + .32]], j % 2 ? '#2a2427' : TPL_INK); if (det) bmLine([[-hw, y + .32], [hw, y + .32]], .05, TPL_LACE); }
+  // small domes with spires on the base platform's corners
+  for (const s of [-1, 1]) tplDome(s * 12.3, 10.25, 1.15, 2.4, fine, false);
+  // the upper tier: four slimmer pillars (three show side on), its deck and rail
+  for (const x of [-6.8, 0, 6.8]) tplPillar(x - .55, x + .55, 10.25, 17.3, det, x === 0);
+  tplRail(-8.2, 8.2, 17.3, .7, det); bmFill([[-8.6, 18.0], [8.6, 18.0], [8.6, 18.5], [-8.6, 18.5]], TPL_INK);
+  // onion domes with spires at the upper tier's corners (a pair each side, one in the middle behind the crown's legs)
+  for (const s of [-1, 1]) { tplDome(s * 7.6, 18.5, 1.5, 3.4, fine, true); tplDome(s * 6.0, 18.5, 1.05, 3.0, fine, false); }
+  tplDome(0, 18.5, 1.45, 1.2, fine, true);
+  // the crown: a tetrapod of striped legs up to a big onion dome, then the very tall needle spire
+  for (const [a, b] of [[-5.2, -.9], [5.2, .9], [-2.2, -.5], [2.2, .5]]) { bmLine([[a, 18.5], [b, 23.6]], .38, TPL_INK); if (det) for (let j = 0; j < 10; j += 2) { const u0 = j / 10, u1 = (j + 1) / 10; bmLine([[lerp(a, b, u0), lerp(18.5, 23.6, u0)], [lerp(a, b, u1), lerp(18.5, 23.6, u1)]], .3, TPL_LACE); } }
+  bmFill([[-1.1, 23.3], [1.1, 23.3], [.9, 24.2], [-.9, 24.2]], TPL_INK);
+  tplDome(0, 24.0, 3.0, 1.0, det, true);
+  bmFill([[-.42, 31.0], [.42, 31.0], [0, 36.0]], TPL_INK); bmDot(0, 31.6, .45, TPL_INK); if (fine) { bmDot(0, 31.6, .22, TPL_LACE); bmLine([[-.3, 32.6], [.3, 32.6]], .06, TPL_LACE); }
+  g.restore();
+}
+function templeAir(t, k) { // the Temple from above: the square base deck, the upper tier, the crown's dome and its rosette ring; the guy lines
+  const [X, Z] = TEMPLE_XZ, sv = sunVec(t), sa = shadowA(t), sq = (h, col) => brcPoly([[X - h, Z - h], [X + h, Z - h], [X + h, Z + h], [X - h, Z + h]], col);
+  if (sa > .02) { g.save(); g.globalAlpha = sa * .9; brcPoly([[X - 13, Z - 13], [X + 13, Z - 13], [X + 13 + sv[0] * 30, Z + 13 + sv[1] * 30], [X - 13 + sv[0] * 30, Z + 13 + sv[1] * 30]], 'rgb(52,34,58)'); g.restore(); }
+  for (const [a, b] of [[34, 0], [-34, 0], [0, 34], [0, -34]]) brcLine([[X, Z], [X + a, Z + b]], 1, 'rgba(30,24,28,.5)');
+  sq(13.4, TPL_INK); sq(12.4, TPL_LACE); sq(11.6, TPL_INK); sq(8.6, '#2a2427'); sq(7.6, TPL_LACE); sq(7.0, TPL_INK);
+  brcPoly(brcCircle(X, Z, 3, 14), TPL_LACE); brcPoly(brcCircle(X, Z, 2.3, 14), TPL_INK); brcPoly(brcCircle(X, Z, .8, 8), TPL_LACE);
+  for (const [a, b] of [[-12.3, -12.3], [12.3, -12.3], [12.3, 12.3], [-12.3, 12.3], [-7.6, -7.6], [7.6, -7.6], [7.6, 7.6], [-7.6, 7.6]]) brcPoly(brcCircle(X + a, Z + b, 1.3, 8), TPL_INK);
+}
 function templeInto(t, list) {
-  const [X, Z] = TEMPLE_XZ, p = P(X, 0, Z); if (p[2] < 30) return; const k = kAt(p); if (p[0] < -40 * k || p[0] > W + 40 * k) return;
-  list.push({ z: p[2], draw: () => { const air = brcAirAmt(); if (air > 0) { g.save(); g.globalAlpha = air; templeAir(t, k); g.restore(); } if (air < 1) { g.save(); g.globalAlpha = 1 - air; templeBill(t, p, k); g.restore(); } },
-    shadow: () => { if (brcAirAmt() < 1) shadowOf([[X - 22, 0, Z], [X + 22, 0, Z], [X - 16, 6, Z], [X + 16, 6, Z], [X, 32, Z]], t); } });
+  const [X, Z] = TEMPLE_XZ, p = P(X, 0, Z); // draft 21: drawn down to 3 m deep (the fly-out passes it close, it must not drop out of frame)
+  if (p[2] >= 3) { const k = kAt(p); if (p[0] > -45 * k && p[0] < W + 45 * k)
+    list.push({ z: p[2], draw: () => { const air = brcAirAmt(); if (air > 0) { g.save(); g.globalAlpha = air; templeAir(t, k); g.restore(); } if (air < 1) { g.save(); g.globalAlpha = 1 - air; templeBill(t, p, k); g.restore(); } },
+      shadow: () => { if (brcAirAmt() < 1) shadowOf([[X - 13, 0, Z], [X + 13, 0, Z], [X - 8, 18, Z], [X + 8, 18, Z], [X, 36, Z]], t); } }); }
+  const [PX, PZ] = PAGODA_XZ, q = P(PX, 0, PZ); // the pagoda, now an art piece on deep playa
+  if (q[2] >= 3) { const k = kAt(q); if (q[0] > -45 * k && q[0] < W + 45 * k)
+    list.push({ z: q[2], draw: () => { const air = brcAirAmt(); if (air > 0) { g.save(); g.globalAlpha = air; pagodaAir(t, k); g.restore(); } if (air < 1) { g.save(); g.globalAlpha = 1 - air; pagodaBill(t, q, k); g.restore(); } },
+      shadow: () => { if (brcAirAmt() < 1) shadowOf([[PX - 22, 0, PZ], [PX + 22, 0, PZ], [PX - 16, 6, PZ], [PX + 16, 6, PZ], [PX, 32, PZ]], t); } }); }
 }
 
 // ---------- art on the open playa (draft 4): a few big pieces between the road and the Esplanade, none of them camps ----------
 const BRC_ART = [[4, 330, 'tower'], [5.25, 450, 'sphere'], [7.5, 310, 'ring'], [8.25, 520, 'flower'], [6.75, 600, 'pyramid'], [2.5, 420, 'arches'], [9.75, 380, 'tower'], [11, 300, 'sphere'], [1, 450, 'ring'], [3.75, 600, 'flower'], [5.5, 190, 'arches'], [10.5, 560, 'pyramid']]
   .map(([a, r, kind], i) => { const [X, Z] = brcAt(a, r); return { X, Z, kind, i, s: .9 + .3 * rnd(i, 7) }; });
+// draft 21: a few more out along the fly-out to the Temple (201-206), left and right of its line, each a different
+// size and turn from the city's ones so no two read the same; deep playa, off the 12:00 promenade
+[[268, -235, 'ring', 1.35], [338, -330, 'flower', 1.5], [262, -480, 'sphere', .75], [336, -575, 'pyramid', .7], [270, -640, 'arches', 1.25]].forEach(([X, Z, kind, s], j) => BRC_ART.push({ X, Z, kind, i: 12 + j, s, deep: true }));
 function brcArtDraw(o, t, p, k) {
   const s = o.s; bmBegin(p[0], p[1], k * s, 1); const det = k > 4, wood = '#b38452', woodD = '#7a5634', steel = '#8d8f94', steelD = '#585a60';
   if (o.kind === 'tower') { // an open wooden lattice tower with a platform
@@ -1115,7 +1185,7 @@ function brcArtDraw(o, t, p, k) {
 }
 const BRC_ART_H = { tower: 17, sphere: 12.7, ring: 12.6, flower: 10.8, pyramid: 11, arches: 7 };
 function brcArtInto(t, list) {
-  for (const o of BRC_ART) { const p = P(o.X, 0, o.Z); if (p[2] < 8) continue; const k = kAt(p), h = BRC_ART_H[o.kind] * o.s; if (p[0] < -10 * k - 100 || p[0] > W + 10 * k + 100 || h * k < 1) continue;
+  for (const o of BRC_ART) { const p = P(o.X, 0, o.Z); if (p[2] < (o.deep ? 2 : 8)) continue; const k = kAt(p), h = BRC_ART_H[o.kind] * o.s; if (p[0] < -10 * k - 100 || p[0] > W + 10 * k + 100 || h * k < 1) continue;
     list.push({ z: p[2], draw: () => brcArtDraw(o, t, p, k), shadow: () => shadowOf([[o.X - 5 * o.s, 0, o.Z], [o.X + 5 * o.s, 0, o.Z], [o.X, h, o.Z]], t) }); }
 }
 
@@ -1462,7 +1532,56 @@ function octGlow(t) { // after the grade: the bursts, the warm light they throw 
 
 function playaInto(t, list) {
   brcInto(t, list); bmCampsInto(t, list); bmInstallsInto(t, list); bmElephantsInto(t, list); bmWarsInto(t, list);
-  bmTraffic(t, list); bmFlockInto(t, list); bmParadeInto(t, list); bmPoorInto(t, list); bmCopsInto(t, list); bmRangersInto(t, list); drumCircleInto(t, list); octInto(t, list);
+  bmTraffic(t, list); bmFlockInto(t, list); bmParadeInto(t, list); bmPoorInto(t, list); bmCopsInto(t, list); bmRangersInto(t, list); drumCircleInto(t, list); octInto(t, list); bmStiltsInto(t, list);
   if (t >= SAX_BACK) bmSaxInto(t, list); // draft 17: the sax rider on the table's far side
 }
 function playaFront(t) { bmSaxFront(t); } // render.js front hook: things that pass between the drone and the car
+
+// ---------- draft 21: the stilt walkers (Robin's photos robin-2026-10-18/27-28.jpg) ----------
+// A pair walking hand in hand on tall stilts across the open playa behind the board, verse 2 into the bridge: one in
+// a rainbow-striped bodysuit with a flower crown and a ruffled jacket; the other in purple and pink, long flared
+// purple-and-pink stilt covers like inverted cones, a pink-trimmed jacket and spiky purple hair. They walk in from and
+// out to where no camera sees them (bmBorn / bmGone), in the gap the near camps leave at x 210-262, z 34.
+const STILT = { t0: 147, t1: 186, x0: 203, v: .75, Z: 34, gap: 1.5 };
+const bmStiltAt = (j) => (s) => [STILT.x0 + (s - STILT.t0) * STILT.v + j * STILT.gap, STILT.Z + j * .35, 0];
+function bmStiltOn(t) { const a = bmStiltAt(0); return t >= bmBorn('stilt', STILT.t0, a, 2.4, 4.6) && t <= bmGone('stilte', STILT.t1, a, 2.4, 4.6); }
+function bmStiltObs(t, L) { if (!bmStiltOn(t)) return; for (const j of [0, 1]) { const [X, Z] = bmStiltAt(j)(t); L.push({ X, Z, r: .6 }); } }
+function bmStilter(j, x, y, k, t, hand) { // one walker, front on, feet of the stilts at (x, y), k px per metre; hand: the screen point of the joined hands
+  const st = Math.sin(t * 3.4 + j * Math.PI) * .09, det = k > 14; bmBegin(x, y, k, 1);
+  const stripe = (a, b, w, cols, n) => { for (let i = 0; i < n; i++) bmLine([[lerp(a[0], b[0], i / n), lerp(a[1], b[1], i / n)], [lerp(a[0], b[0], (i + 1) / n), lerp(a[1], b[1], (i + 1) / n)]], w, cols[i % cols.length]); };
+  if (j === 0) { // rainbow: black stilt poles under rainbow-striped legs, ruffled pink-and-purple cuffs, the ruffled jacket, a flower crown
+    for (const s of [-1, 1]) { const f = [s * .13 + s * st, 0], kn = [s * .11, 1.35]; bmLine([f, kn], .05, '#1c1a1e'); if (det) bmLine([[f[0], .05], [f[0], .14]], .06, '#e8b23a');
+      bmFill([[kn[0] - .2, 1.2], [kn[0] + .2, 1.2], [kn[0] + .08, 1.5], [kn[0] - .08, 1.5]], s < 0 ? '#e85aa8' : '#9a68dc');
+      stripe([kn[0], 1.45], [s * .08, 2.35], .14, DRESS_RAINBOW, det ? 12 : 4); }
+    stripe([0, 2.35], [0, 3.0], .36, DRESS_RAINBOW, det ? 8 : 3);
+    for (const s of [-1, 1]) { bmFill([[s * .19, 3.02], [s * .34, 2.95], [s * .3, 2.55], [s * .22, 2.6]], '#f6efe0'); if (det) for (let i = 0; i < 4; i++) bmDot(s * (.3 - i * .01), 2.95 - i * .11, .045, ['#e85aa8', '#47c1ba', '#e8b23a', '#9a68dc'][i]); } // the ruffled jacket
+    bmLine([[-.2, 2.98], [-.38, 2.6], [-.42, 2.3]], .08, '#e8b23a'); // the free arm, down
+    if (det) bmLine([[.22, 2.98], [.38, 2.62]], .08, '#47c1ba');
+    bmLine([[0, 3.0], [0, 3.1]], .07, '#e2c4a4'); bmOval(0, 3.2, .11, .13, '#e8cfae'); bmOval(0, 3.27, .12, .07, '#e8d070');
+    for (let i = 0; i < 6; i++) bmDot(-.12 + i * .048, 3.32 + Math.sin(i * 1.3) * .02, .045, ['#e8452f', '#e8b23a', '#7fd04a', '#e85aa8', '#ee9a42', '#f6efe0'][i]); }
+  else { // purple and pink: flared cone covers over the stilts, pink-trimmed jacket, spiky purple hair, one arm up
+    for (const s of [-1, 1]) { const f = [s * .16 + s * st, 0]; bmLine([f, [f[0], .45]], .05, '#1c1a1e');
+      bmFill([[f[0] - .24, .42], [f[0] + .24, .42], [s * .11 + .09, 2.2], [s * .11 - .09, 2.2]], bmLG(f[0] - .24, 0, f[0] + .24, 0, ['#c24ad0', '#8a3cb0', '#5a2a80']));
+      bmFill([[f[0] - .26, .42], [f[0] - .3, .3], [f[0] - .1, .48], [f[0] + .1, .48], [f[0] + .3, .3], [f[0] + .26, .42]], '#ff6ec0'); // the pink flare at the hem
+      if (det) bmLine([[f[0] - .17, .9], [s * .11 - .07, 2.1]], .03, '#ff6ec0'); }
+    bmFill([[-.17, 2.2], [.17, 2.2], [.2, 2.95], [-.2, 2.95]], '#9a3cc0'); bmFill([[-.18, 2.2], [.18, 2.2], [.16, 2.38], [-.16, 2.38]], '#ff6ec0');
+    for (const s of [-1, 1]) bmLine([[s * .2, 2.95], [s * .23, 2.4]], .07, '#ff6ec0'); // the jacket's pink trim
+    bmLine([[.2, 2.95], [.42, 3.2], [.38, 3.55]], .08, '#9a3cc0'); bmDot(.38, 3.58, .05, '#e8cfae'); // the free arm, up and waving
+    bmLine([[0, 2.95], [0, 3.05]], .07, '#e8cfae'); bmOval(0, 3.15, .11, .13, '#f1dcc4');
+    for (let i = 0; i < 7; i++) { const a = Math.PI * (.12 + i * .127); bmFill([[Math.cos(a) * .09, 3.2 + Math.sin(a) * .1], [Math.cos(a) * .26, 3.2 + Math.sin(a) * .28], [Math.cos(a + .2) * .09, 3.2 + Math.sin(a + .2) * .1]], i % 2 ? '#a64dff' : '#7a2ab0'); } }
+  g.restore();
+  if (hand) { g.strokeStyle = j === 0 ? '#e8b23a' : '#9a3cc0'; g.lineWidth = Math.max(1, .08 * k); g.lineCap = 'round'; g.beginPath(); g.moveTo(x + (j === 0 ? -.22 : .2) * k * (j === 0 ? -1 : -1), y - 2.95 * k); g.lineTo(hand[0], hand[1]); g.stroke(); }
+}
+function bmStiltsInto(t, list) {
+  if (t < STILT.t0 - 60 || t > STILT.t1 + 60 || !bmStiltOn(t)) return;
+  const pts = [0, 1].map((j) => bmStiltAt(j)(t)), pr = pts.map(([X, Z]) => P(X, 0, Z)); if (pr.some((p) => p[2] < 1.5)) return;
+  const hp = P((pts[0][0] + pts[1][0]) / 2, 2.55, (pts[0][1] + pts[1][1]) / 2); // where the hands meet
+  pts.forEach(([X, Z], j) => { ACT.note('playa:stilt:' + j, X, Z, .5, { h: 3.6, group: 'scene' });
+    const p = pr[j]; if (p[0] < -200 || p[0] > W + 200) return;
+    list.push({ z: p[2], draw: () => { const k = kAt(p); if (k < .6) return; bmStilter(j, p[0], p[1], k, t, null); }, shadow: () => shadowStick(X, 0, 3.4, Z, .35, t) }); });
+  // the joined hands: each near arm from its shoulder down to where the hands meet, drawn after both bodies
+  list.push({ z: Math.min(pr[0][2], pr[1][2]) - .02, draw: () => { const sd = Math.sign(pr[1][0] - pr[0][0]) || 1;
+    [0, 1].forEach((j) => { const k = kAt(pr[j]), sx = pr[j][0] + (j ? -sd : sd) * .2 * k, sy = pr[j][1] - 2.95 * k; if (k < 2) return;
+      g.strokeStyle = j ? '#9a3cc0' : '#47c1ba'; g.lineWidth = Math.max(1, .08 * k); g.lineCap = 'round'; g.beginPath(); g.moveTo(sx, sy); g.quadraticCurveTo(sx + (hp[0] - sx) * .3, hp[1] - .1 * k, hp[0], hp[1]); g.stroke(); });
+    const k = kAt(hp); if (k > 2) { g.fillStyle = '#e8cfae'; g.beginPath(); g.arc(hp[0], hp[1], .07 * k, 0, TAU); g.fill(); } } });
+}

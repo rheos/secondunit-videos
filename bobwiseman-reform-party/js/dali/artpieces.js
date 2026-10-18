@@ -43,13 +43,16 @@ const ARTPIECES = [
   { kind: 'jig', X: -400, Z: 75, rot: 1.05, scale: 1, people: 7,
     clock: 'city edge, beside the opening glide', r: 600, seen: 'opening glide 3-8 (Robin, d18: it stood near Center Camp, not by the Man)' },
   // draft 17: the 2:22 Amethyst Portal, the third of the set, between its siblings (19 m short of the 11:11 Diamond Portal)
-  { kind: 'amethyst', name: 'amethyst', X: 228, Z: 84, rot: 2.2, scale: 1, people: 0,
+  { kind: 'amethyst', name: 'amethyst', X: 138, Z: 222, // draft 21 (Robin: art installations do not go in the fire circle): 239 m out at 7:40, in open playa clear of every elephant and art-car path; was (228, 84), 82 m
+    rot: 2.2, scale: 1, people: 0,
     clock: '8:15', r: 85, seen: 'see draft 17 report' },
-  { kind: 'monolith', X: 244, Z: 72, rot: 2.45, scale: 1, people: 4, nightPeople: 8,
+  { kind: 'monolith', X: 114, Z: 186, // draft 21: 237 m out at 8:05 (was (244, 72), 62 m)
+    rot: 2.45, scale: 1, people: 4, nightPeople: 8,
     clock: '8:10', r: 62, seen: 'day 152-160, 163-184, 193-198 (h 80-180 px), the wide face to the drone with the bore reading round, the narrow face beside it; night 212-233 and 237-246 behind the crowd ring, the narrow face (toward the Man) rust, the wide face olive' },
-  { kind: 'head', X: 236, Z: 28, rot: 2.68, scale: 1, people: 5,
+  { kind: 'head', X: 162, Z: 240, // draft 21: 238 m out at 7:25 (was (236, 28), 66 m)
+    rot: 2.68, scale: 1, people: 5,
     clock: '8:50', r: 66, seen: 'grin 3, 180.5-184 (left third, h 225-250 px); also 159-172 in the background (behind the row on "rehearsed"), 173-177 below the refrain-3 drape' },
-  { kind: 'genie', path: [[96, 230, 33], [131, 186, 32], [170, 140, 30]], X: 0, Z: 0, rot: Math.PI, scale: 1,
+  { kind: 'genie', path: [[96, 195, 30], [131, 186, 32], [170, 140, 30]] /* draft 21: starts 106 m out, was 71 m */, X: 0, Z: 0, rot: Math.PI, scale: 1,
     lift: (t) => .3 + .7 * ease(t, 126.5, 131.6) - .45 * ease(t, 141, 148), // folded on the way in, raised on "poor person", lowered again after the bridge
     clock: '8:40-9:00', r: 125, seen: 'the poor person, 129.5-134.2: it creeps past behind her and lifts its bloom against the sky (h 330-350 px)' },
 ];
@@ -133,7 +136,7 @@ function apVisitors(o, t, list) {
     const al = clamp((p[2] - 3) / 3), kk = p[2] > .3 ? kAt(p) * (o.scale || 1) : 0, vis = p[2] >= 3 && kk >= .4 && p[0] >= -60 && p[0] <= W + 60;
     ACT.note('artpieces:visitor:' + (o.name || o.kind) + ':' + i, w[0], w[2], bike ? .8 : .3, { h: bike ? 1.1 : 1.8, a: vis ? al : 0, group: 'visitors' });
     if (!vis || al <= .01) continue; const k = kk;
-    list.push({ z: p[2], draw: () => { g.save(); if (al < 1) g.globalAlpha = al; bike ? apBike(p[0], p[1], k, seed, t) : person(p[0], p[1], k, { step, lift: 0, hat: seed % 6, cape: seed % 4 === 1, sit: 0 }, { body: AP_COLS[seed % 8], skin: ['#e8d4b4', '#c99a74', '#8c6448', '#f0dcc4'][seed % 4], dark: '#3a3040', lamp: '#f0d49a', hatc: AP_COLS[(seed + 3) % 8] }); g.restore(); },
+    list.push({ z: p[2], draw: () => { g.save(); if (al < 1) g.globalAlpha = al; bike ? apBike(p[0], p[1], k, seed, t) : person(p[0], p[1], k, { step, lift: 0, hat: seed % 6, cape: seed % 4 === 1, sit: 0, seed: 6000 + seed * 13 + Math.round(o.X) }, { body: AP_COLS[seed % 8], skin: ['#e8d4b4', '#c99a74', '#8c6448', '#f0dcc4'][seed % 4], dark: '#3a3040', lamp: '#f0d49a', hatc: AP_COLS[(seed + 3) % 8] }); g.restore(); },
       shadow: () => shadowStick(w[0], 0, 1.8, w[2], .45, t) });
   }
 }
@@ -604,7 +607,7 @@ function apNave(o, t, p, k) {
     for (let j = 0; j < 8; j++) { const a = (j + .5) / 8 * TAU; g.fillStyle = cols[(j + 2) % 6]; g.beginPath(); g.ellipse(Math.cos(a) * R * .3, Math.sin(a) * R * .3, R * .18, R * .08, a, 0, TAU); g.fill(); }
     g.fillStyle = '#7a3c8c'; g.beginPath(); g.arc(0, 0, R * .14, 0, TAU); g.fill(); g.restore(); } });
   // the visitors walking through it
-  for (const v of apNaveWalkers(o, t)) items.push({ z: dz([v.X, 0, v.Z]), d: () => { const q = P(v.X, 0, v.Z); if (q[2] < 2) return; person(q[0], q[1], kAt(q), { step: v.step, lift: 0, hat: v.seed % 4, cape: v.seed % 3 === 1, sit: 0 }, { body: AP_COLS[v.seed % 8], skin: ['#e8d4b4', '#c99a74', '#8c6448'][v.seed % 3], dark: '#3a3040', lamp: '#f0d49a', hatc: AP_COLS[(v.seed + 3) % 8] }); } });
+  for (const v of apNaveWalkers(o, t)) items.push({ z: dz([v.X, 0, v.Z]), d: () => { const q = P(v.X, 0, v.Z); if (q[2] < 2) return; person(q[0], q[1], kAt(q), { step: v.step, lift: 0, hat: v.seed % 4, cape: v.seed % 3 === 1, sit: 0, seed: 7000 + v.seed }, { body: AP_COLS[v.seed % 8], skin: ['#e8d4b4', '#c99a74', '#8c6448'][v.seed % 3], dark: '#3a3040', lamp: '#f0d49a', hatc: AP_COLS[(v.seed + 3) % 8] }); } });
   items.sort((a, b) => b.z - a.z); for (const it of items) it.d();
   // guy wires off the front spires
   if (k > 4) { g.strokeStyle = 'rgba(90,90,96,.5)'; g.lineWidth = 1; for (const s of [-1, 1]) { const a = apP(F(s * N.w, N.h0 - 2, N.half)), b = apP(F(s * (N.w + 9), 0, N.half + 7)), c = apP(F(s * (N.w + 10), 0, N.half - 6)); if (ok([a, b, c])) { g.beginPath(); g.moveTo(a[0], a[1]); g.lineTo(b[0], b[1]); g.moveTo(a[0], a[1]); g.lineTo(c[0], c[1]); g.stroke(); } } }

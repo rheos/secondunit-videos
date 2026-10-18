@@ -167,3 +167,76 @@ function grade(t, layer) {
   if (b > 0) { const { p, k } = manGeom(); if (p[2] > .5) { g.globalCompositeOperation = 'screen'; const R = Math.max(W * 1.15, 90 * k), cy = p[1] - 10 * k; const rg = g.createRadialGradient(p[0], cy, 0, p[0], cy, R); rg.addColorStop(0, `rgba(255,140,55,${.55 * b})`); rg.addColorStop(.45, `rgba(255,105,40,${.22 * b})`); rg.addColorStop(1, 'rgba(255,90,30,0)'); g.fillStyle = rg; g.fillRect(0, 0, W, H); g.globalCompositeOperation = 'source-over'; } }
 }
 function vignette() { const vg = g.createRadialGradient(W / 2, H * .55, H * .45, W / 2, H * .55, H * 1.05); vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(30,15,10,.36)'); g.fillStyle = vg; g.fillRect(0, 0, W, H); }
+
+// ---------- draft 21: party attire for every generic burner (Robin: "all the people should be in some kind of costume
+// or party attire if we see them as more than a figure in the distance") ----------
+// One shared helper. burnerDress(seed) picks an outfit from a seeded random (so no two neighbours match and it never
+// changes between frames); dressBack/dressFront draw it round a standing figure in screen pixels: feet at (x, y), k px
+// per metre, G = the figure's proportions in metres { sh: shoulder height, hip, hd: head centre, hr: head radius, w:
+// half shoulder width }. lw0 is one screen pixel in the drawing units (1 for screen space, 1/bmK inside bmBegin).
+// Detail goes by size: under 12 px a metre only the colours and the big shapes (coat, tutu, headdress), patterns above.
+// mono: a silhouette or a rim-light pass; every shape is drawn in that one colour so the costume reads as a shape.
+let DRESS_T = 0; // the song time of the frame being drawn (render.js sets it), for the EL wire at night
+const DRESS_NEON = ['#ff3fa4', '#39e6ff', '#b6ff3a', '#ffde2a', '#ff7a1a', '#a64dff', '#ff2f4f', '#2affb0'];
+const DRESS_BRIGHT = ['#e8452f', '#2f6fb5', '#e8b23a', '#7a3c8c', '#3c8c5a', '#ee9a42', '#f4b0cf', '#47c1ba', '#9a68dc', '#f6efe0', '#1c1a1e'];
+const DRESS_METAL = ['#e2c878', '#cfd3dc', '#e8a8cc', '#8fd8ec', '#d9a05a'];
+const DRESS_FUR = ['#f6f0e2', '#f4b0cf', '#9a68dc', '#47c1ba', '#ee9a42', '#e0533a', '#1c1a1e', '#e3cb82', '#7fd04a'];
+const DRESS_RAINBOW = ['#e8452f', '#ee9a42', '#e8d040', '#3c9c5a', '#2f6fb5', '#7a3c8c'];
+function burnerDress(seed) {
+  const R = mulberry(Math.floor(seed * 7919 + 104729)), pick = (a) => a[Math.floor(R() * a.length)];
+  const top = pick(['fur', 'rainbow', 'sequin', 'neon', 'fur', 'paint', 'corset', 'sequin']);
+  const col = top === 'fur' ? pick(DRESS_FUR) : top === 'sequin' ? pick(DRESS_METAL) : top === 'neon' ? pick(DRESS_NEON) : top === 'paint' ? pick(['#3fa0e0', '#e0e4ea', '#d04ab0', '#40c070', '#e8b23a']) : pick(DRESS_BRIGHT);
+  return { top, col, col2: pick(DRESS_NEON), col3: pick(DRESS_BRIGHT), legs: pick(['fur', 'stripe', 'fur', 'neon', 'plain', 'stripe']), legc: pick(DRESS_FUR),
+    tutu: top !== 'fur' && R() < .4, head: pick(['feathers', 'horns', 'tophat', 'flowers', 'fluff', 'ears', 'boppers', 'feathers', 'tophat', 'mohawk']), headc: pick(DRESS_NEON),
+    goggles: R() < .6, lens: pick(['#f0b030', '#3fc0e0', '#c060e0', '#e05a3a', '#40e090']), wings: R() < .16, cape: R() < .18, parasol: R() < .1, el: pick(DRESS_NEON), seed };
+}
+function dressSeedOf(o, c) { if (o.seed != null) return o.seed; let h = 7; const s = String(c.body) + '|' + String(c.hatc) + '|' + (o.hat || 0) + (o.cape ? 'c' : ''); for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) % 100003; return h; }
+const DRESS_G = { sh: 1.5, hip: .8, hd: 1.69, hr: .13, w: .22 };
+function dressBack(x, y, k, dr, mono, G, lw0) {
+  G = G || DRESS_G; lw0 = lw0 || 1; const col = (c) => mono || c;
+  if (dr.wings) { g.save(); g.globalAlpha *= mono ? 1 : .78; for (const s of [-1, 1]) { g.fillStyle = col(s < 0 ? '#e8d8fa' : '#cfe8fa'); g.beginPath(); g.ellipse(x + s * .3 * k, y - (G.sh - .12) * k, .2 * k, .44 * k, s * .55, 0, TAU); g.fill(); g.beginPath(); g.ellipse(x + s * .26 * k, y - (G.sh - .6) * k, .14 * k, .26 * k, -s * .5, 0, TAU); g.fill(); } g.restore(); }
+  if (dr.cape) { g.fillStyle = col(dr.col3); g.beginPath(); g.moveTo(x - G.w * k, y - (G.sh - .02) * k); g.lineTo(x + G.w * k, y - (G.sh - .02) * k); g.lineTo(x + .44 * k, y - .3 * k); g.quadraticCurveTo(x, y - .2 * k, x - .44 * k, y - .3 * k); g.closePath(); g.fill(); }
+}
+function dressFront(x, y, k, o, dr, mono, G, lw0, sit) {
+  G = G || DRESS_G; lw0 = lw0 || 1; const kp = k / lw0, col = (c) => mono || c, det = kp >= 12, lw = (v) => Math.max(lw0, v * k), st = o.step || 0, hy = y - G.hd * k;
+  g.lineCap = 'round'; g.lineJoin = 'round';
+  // the legs: fur leg warmers, or striped / neon tights
+  if (!sit) for (const s of [-1, 1]) { const fx = x + s * (.1 + st) * k, kx = x + s * .08 * k, a = [kx + (fx - kx) * .55, y - .38 * k], b = [fx, y - .04 * k];
+    if (dr.legs === 'fur') { g.fillStyle = col(dr.legc); g.beginPath(); g.ellipse((a[0] + b[0]) / 2, (a[1] + b[1]) / 2, .12 * k, .22 * k, 0, 0, TAU); g.fill();
+      if (det && !mono) { g.fillStyle = 'rgba(255,255,255,.28)'; for (let i = 0; i < 4; i++) { g.beginPath(); g.arc((a[0] + b[0]) / 2 - .07 * k + i * .045 * k, a[1] + (i % 2) * .1 * k + .05 * k, .035 * k, 0, TAU); g.fill(); } } }
+    else if (dr.legs !== 'plain' && !mono) { const top = [kx, y - .82 * k]; g.lineWidth = lw(.12);
+      if (dr.legs === 'neon') { g.strokeStyle = dr.col2; g.beginPath(); g.moveTo(top[0], top[1]); g.lineTo(b[0], b[1]); g.stroke(); }
+      else { for (let i = 0; i < 6; i++) { const u0 = i / 6, u1 = (i + 1) / 6; g.strokeStyle = DRESS_RAINBOW[(i + dr.seed) % 6]; g.beginPath(); g.moveTo(top[0] + (b[0] - top[0]) * u0, top[1] + (b[1] - top[1]) * u0); g.lineTo(top[0] + (b[0] - top[0]) * u1, top[1] + (b[1] - top[1]) * u1); g.stroke(); } } } }
+  // the top
+  const yS = y - G.sh * k, yH = y - G.hip * k, w = G.w * k;
+  if (dr.top === 'fur') { g.fillStyle = col(dr.col); g.beginPath(); g.moveTo(x - (w + .05 * k), yS + .03 * k); g.lineTo(x - .36 * k, y - (sit ? .2 : .42) * k); g.lineTo(x + .36 * k, y - (sit ? .2 : .42) * k); g.lineTo(x + (w + .05 * k), yS + .03 * k); g.closePath(); g.fill();
+    if (kp >= 8) { const n = det ? 9 : 5; for (let i = 0; i <= n; i++) { const u = i / n; for (const s of [-1, 1]) { g.beginPath(); g.arc(x + s * lerp(w + .05 * k, .36 * k, u), lerp(yS + .03 * k, y - (sit ? .2 : .42) * k, u), .06 * k, 0, TAU); g.fill(); } g.beginPath(); g.arc(x + lerp(-.36, .36, u) * k, y - (sit ? .2 : .42) * k, .06 * k, 0, TAU); g.fill(); } }
+    g.fillStyle = col(dr.col === '#f6f0e2' ? dr.col3 : '#f6f0e2'); g.beginPath(); g.ellipse(x, yS + .04 * k, .2 * k, .07 * k, 0, 0, TAU); g.fill(); // the fluffy collar
+    if (det && !mono) { g.fillStyle = dr.col2; g.fillRect(x - .04 * k, yS + .12 * k, .08 * k, (yH - yS) * .8); } }
+  else if (!mono) { g.save(); g.beginPath(); g.moveTo(x - w * .95, yS); g.lineTo(x + w * .95, yS); g.lineTo(x + w * .85, yH); g.lineTo(x - w * .85, yH); g.closePath(); g.clip();
+    if (dr.top === 'rainbow') DRESS_RAINBOW.forEach((c, i) => { g.fillStyle = c; g.fillRect(x - w, yS + (yH - yS) * i / 6, 2 * w, (yH - yS) / 6 + 1); });
+    else { g.fillStyle = dr.col; g.fillRect(x - w, yS, 2 * w, yH - yS);
+      if (dr.top === 'neon') { g.strokeStyle = dr.col2 === dr.col ? '#f6efe0' : dr.col2; g.lineWidth = lw(.08); g.beginPath(); g.moveTo(x - w, yS); g.lineTo(x + w, yH); g.stroke(); }
+      if (det && (dr.top === 'sequin' || dr.top === 'paint')) { g.fillStyle = dr.top === 'paint' ? 'rgba(255,255,255,.85)' : 'rgba(255,255,250,.75)'; for (let i = 0; i < 14; i++) { g.beginPath(); g.arc(x - w + rnd(dr.seed, i, 3) * 2 * w, yS + rnd(dr.seed, i, 4) * (yH - yS), (dr.top === 'paint' ? .03 : .018) * k, 0, TAU); g.fill(); } }
+      if (dr.top === 'corset') { g.strokeStyle = dr.col2; g.lineWidth = lw(.015); g.beginPath(); for (let i = 0; i < 5; i++) { const yy = yS + (yH - yS) * (.15 + i * .17); g.moveTo(x - .05 * k, yy); g.lineTo(x + .05 * k, yy + .08 * k); g.moveTo(x + .05 * k, yy); g.lineTo(x - .05 * k, yy + .08 * k); } g.stroke(); } }
+    g.restore(); }
+  if (dr.tutu) { const ty = yH + .02 * k; g.fillStyle = col(dr.col2); g.beginPath(); g.ellipse(x, ty, .38 * k, .11 * k, 0, 0, TAU); g.fill(); if (!mono) { g.fillStyle = dr.col3; g.beginPath(); g.ellipse(x, ty - .04 * k, .3 * k, .07 * k, 0, 0, TAU); g.fill(); }
+    if (det) { g.strokeStyle = col('rgba(255,255,255,.55)'); g.lineWidth = lw(.01); g.beginPath(); for (let i = -5; i <= 5; i++) { g.moveTo(x + i * .06 * k, ty - .06 * k); g.lineTo(x + i * .075 * k, ty + .1 * k); } g.stroke(); } }
+  // the head
+  const hr = G.hr * k, hc = col(dr.headc);
+  if (dr.head === 'feathers') { for (let i = -3; i <= 3; i++) { const a = i * .28; g.fillStyle = mono || DRESS_NEON[(i + 3 + dr.seed) % 8]; g.beginPath(); g.ellipse(x + Math.sin(a) * .26 * k, hy - .12 * k - Math.cos(a) * .24 * k, .05 * k, .2 * k, a, 0, TAU); g.fill(); } g.fillStyle = col('#e8c04a'); g.fillRect(x - hr, hy - .1 * k, 2 * hr, .05 * k); }
+  else if (dr.head === 'horns') { g.strokeStyle = col('#e8dcc0'); g.lineWidth = lw(.05); for (const s of [-1, 1]) { g.beginPath(); g.moveTo(x + s * .07 * k, hy - .1 * k); g.quadraticCurveTo(x + s * .3 * k, hy - .18 * k, x + s * .24 * k, hy - .38 * k); g.stroke(); } }
+  else if (dr.head === 'tophat') { g.fillStyle = col('#1c1a1e'); g.fillRect(x - .1 * k, hy - .44 * k, .2 * k, .32 * k); g.fillRect(x - .18 * k, hy - .14 * k, .36 * k, .05 * k); g.fillStyle = hc; g.fillRect(x - .1 * k, hy - .2 * k, .2 * k, .05 * k); if (det && !mono) { g.fillStyle = dr.col2; g.beginPath(); g.ellipse(x + .12 * k, hy - .34 * k, .03 * k, .12 * k, .4, 0, TAU); g.fill(); } }
+  else if (dr.head === 'flowers') { for (let i = 0; i < 7; i++) { const a = Math.PI + i / 6 * Math.PI; g.fillStyle = mono || DRESS_NEON[(i + dr.seed) % 8]; g.beginPath(); g.arc(x + Math.cos(a) * hr * 1.05, hy + Math.sin(a) * hr * .9 - .02 * k, .045 * k, 0, TAU); g.fill(); } }
+  else if (dr.head === 'fluff') { g.fillStyle = hc; g.beginPath(); g.ellipse(x, hy - .1 * k, .18 * k, .13 * k, 0, 0, TAU); g.fill(); }
+  else if (dr.head === 'ears') { g.fillStyle = hc; for (const s of [-1, 1]) { g.beginPath(); g.ellipse(x + s * .07 * k, hy - .3 * k, .04 * k, .16 * k, s * .2, 0, TAU); g.fill(); } }
+  else if (dr.head === 'boppers') { g.strokeStyle = col('#2a2420'); g.lineWidth = lw(.015); for (const s of [-1, 1]) { const tx = x + s * .13 * k, ty = hy - .4 * k; g.beginPath(); g.moveTo(x + s * .04 * k, hy - .12 * k); g.lineTo(tx, ty); g.stroke(); g.fillStyle = hc; g.beginPath(); g.arc(tx, ty, .05 * k, 0, TAU); g.fill(); } }
+  else if (dr.head === 'mohawk') { g.fillStyle = hc; g.beginPath(); g.moveTo(x - .09 * k, hy - .08 * k); for (let i = 0; i <= 4; i++) g.lineTo(x - .09 * k + i * .045 * k, hy - (i % 2 ? .2 : .32) * k); g.lineTo(x + .09 * k, hy - .08 * k); g.closePath(); g.fill(); }
+  if (dr.goggles && kp >= 8) { g.fillStyle = col('#2a2420'); g.fillRect(x - hr, hy - .03 * k, 2 * hr, .045 * k); if (!mono) { g.fillStyle = dr.lens; g.beginPath(); g.arc(x - .045 * k, hy - .01 * k, .035 * k, 0, TAU); g.arc(x + .045 * k, hy - .01 * k, .035 * k, 0, TAU); g.fill(); } }
+  if (dr.parasol) { const hx = x + .32 * k, top = y - (G.sh + .85) * k; g.strokeStyle = col('#3a3028'); g.lineWidth = lw(.025); g.beginPath(); g.moveTo(hx, y - (G.sh - .55) * k); g.lineTo(hx, top); g.stroke();
+    for (let i = 0; i < 6; i++) { g.fillStyle = mono || (i % 2 ? '#f6efe0' : dr.col2); g.beginPath(); g.moveTo(hx, top - .2 * k); g.lineTo(hx - .55 * k + i * .1833 * k, top + .08 * k); g.lineTo(hx - .55 * k + (i + 1) * .1833 * k, top + .08 * k); g.closePath(); g.fill(); } }
+  // EL wire after dusk: a thin glowing line round the outfit
+  const nt = typeof nightAmt === 'function' ? nightAmt(DRESS_T) : 0;
+  if (nt > .15 && !mono && kp >= 6) { g.save(); g.globalCompositeOperation = 'lighter'; g.strokeStyle = dr.el; g.globalAlpha *= .85 * nt; g.lineWidth = lw(.03);
+    g.beginPath(); g.moveTo(x - w, yS); g.lineTo(x - w * .85, yH); g.lineTo(x + w * .85, yH); g.lineTo(x + w, yS); g.closePath(); if (!sit) { g.moveTo(x - .08 * k, yH); g.lineTo(x - (.1 + st) * k, y - .05 * k); g.moveTo(x + .08 * k, yH); g.lineTo(x + (.1 + st) * k, y - .05 * k); } g.stroke(); g.restore(); }
+}

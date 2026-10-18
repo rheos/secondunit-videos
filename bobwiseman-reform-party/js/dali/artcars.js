@@ -112,13 +112,17 @@ function acHorn(P0, P1, P2, P3, w0, fill) { const cl = acCubic(P0, P1, P2, P3, 1
 function acPerson(x, y, h, c, t, ph, det) {
   const s = h / 1.75, bob = c.dance ? .045 * Math.max(0, Math.sin((acBeat(t) + ph) * Math.PI)) : 0, Y = y + bob, sw = c.dance ? Math.sin((acBeat(t) + ph) * Math.PI) * .12 : 0;
   const hip = [x, Y + .86 * s], sh = [x + sw * .3, Y + 1.42 * s], hd = [x + sw * .4, Y + 1.6 * s];
+  // draft 21: party attire from the shared helper (world.js); by night (dark bodies) it reads as a costume silhouette
+  const dr = c.plain || !det ? null : burnerDress(Math.round(x * 37 + y * 11 + ph * 101 + 900)), mono = dr && c.body[0] === '#' && hex(c.body).reduce((a, v) => a + v, 0) < 160 ? c.body : null, AG = { sh: 1.42, hip: .86, hd: 1.6, hr: .12, w: .2 };
+  if (dr) { g.save(); g.translate(sw * .3 * s, 0); dressBack(x, -Y, s, dr, mono, AG, 1 / bmK); g.restore(); }
   bmLine([[x - .1 * s, y], hip, [x + .11 * s, y]], .11 * s, c.legs);
   bmFill([[hip[0] - .17 * s, hip[1] - .02], [hip[0] + .17 * s, hip[1] - .02], [sh[0] + .2 * s, sh[1]], [sh[0] - .2 * s, sh[1]]], c.body);
   const up = c.arms === 'up' ? 1 : c.arms === 'one' ? .5 : 0, wave = c.dance ? Math.sin((acBeat(t) + ph) * TAU) * .15 : 0;
   for (const sd of [-1, 1]) { const raise = up >= 1 || (up > 0 && sd > 0); const e = raise ? [sh[0] + sd * .26 * s, sh[1] + .32 * s] : [sh[0] + sd * .22 * s, sh[1] - .3 * s], hnd = raise ? [sh[0] + sd * (.18 + wave) * s, sh[1] + .66 * s] : [sh[0] + sd * .18 * s, sh[1] - .58 * s];
     bmLine([[sh[0] + sd * .17 * s, sh[1] - .03], e, hnd], .085 * s, c.body); if (det) bmDot(hnd[0], hnd[1], .05 * s, c.skin); }
   bmLine([[sh[0], sh[1]], [hd[0], hd[1] - .08 * s]], .07 * s, c.skin); bmOval(hd[0], hd[1], .11 * s, .125 * s, c.skin);
-  if (c.hat === 'top') { bmFill([[hd[0] - .09 * s, hd[1] + .07 * s], [hd[0] + .09 * s, hd[1] + .07 * s], [hd[0] + .1 * s, hd[1] + .32 * s], [hd[0] - .08 * s, hd[1] + .32 * s]], '#1c1a1e'); bmOval(hd[0], hd[1] + .07 * s, .17 * s, .03 * s, '#1c1a1e'); }
+  if (dr) { g.save(); g.translate(sw * .35 * s, 0); dressFront(x, -Y, s, { step: 0 }, dr, mono, AG, 1 / bmK, false); g.restore(); }
+  else if (c.hat === 'top') { bmFill([[hd[0] - .09 * s, hd[1] + .07 * s], [hd[0] + .09 * s, hd[1] + .07 * s], [hd[0] + .1 * s, hd[1] + .32 * s], [hd[0] - .08 * s, hd[1] + .32 * s]], '#1c1a1e'); bmOval(hd[0], hd[1] + .07 * s, .17 * s, .03 * s, '#1c1a1e'); }
   else if (c.hat === 'cowboy') { bmOval(hd[0], hd[1] + .09 * s, .24 * s, .045 * s, c.hatc || '#6a4a30'); bmFill([[hd[0] - .1 * s, hd[1] + .09 * s], [hd[0] + .1 * s, hd[1] + .09 * s], [hd[0] + .08 * s, hd[1] + .22 * s], [hd[0] - .08 * s, hd[1] + .22 * s]], c.hatc || '#6a4a30'); }
   else if (c.hat === 'hair') bmOval(hd[0] - .03 * s, hd[1] + .02 * s, .13 * s, .15 * s, c.hatc || '#3a2418');
   if (det && c.goggles) bmLine([[hd[0] - .1 * s, hd[1] + .02 * s], [hd[0] + .11 * s, hd[1] + .02 * s]], .045 * s, '#2a2420');

@@ -47,26 +47,36 @@ function camEnd(t) {
   const yw = lerp(yTop, yHO, smooth((t - AIR.hold) / (AIR.spin - AIR.hold))), p = herm(t, AIR.tip, AIR.t1, Math.PI / 2, HO_P, 0, -.12);
   return { x, y, z, p, f: lerp(AIR.f, 1100, smooth((t - AIR.hold) / (AIR.t1 - AIR.hold))), yaw: yw, cy: Math.cos(yw), sy: Math.sin(yw), clip: false };
 }
-// Draft 18 (Robin: "it looks like there is a temple out there... can we fly out there before we go up to the sky view?"):
-// from the golden wide the drone rises to 60 m, turns square on to 12:00 and runs out over the open playa toward the
-// Temple, a long fast transit at altitude, easing the lens in on the way. It arrives about 130 m short of the pagoda
-// and drifts in toward it for a couple of seconds while the lanterns glow, then the crane goes straight up from
-// there, drifting back over the Man as it climbs, so it still lands on the top-down map at AIR.top. Every channel is
-// a sum of quintic eases (zero velocity and acceleration at both ends), so nothing jerks.
-const TRUN = { rise: [201, 202.7], run: [201.6, 203.4], drift: [202.9, 205.2], aim: [201, 202.6], zoom: [201, 203.8],
-  climb: [204.55, AIR.top], home: [204.7, AIR.top], down: [204.6, AIR.top - .1], out: [204.4, AIR.top],
-  H: 62, sag: .08, L0: [298.5, -598], L1: [299.5, -630], TC: [300, 15], F: 1500 };
+// Draft 18 flew out to the Temple and held there. Draft 21 (Robin: "there should not be a pause.. it should just head
+// out and see art on either side as it does and then head up"): from the golden wide the drone runs straight out
+// toward the Temple at 10-16 m, low enough that the deep-playa art (playa.js: the relocated pagoda and the pieces on
+// the fly-out) passes on either side, sweeps past the Temple 30 m off its right side without slowing, and the crane
+// starts while it is still moving, drifting back over the Man as it climbs, so it still lands on the map at AIR.top.
+// The run is one long transit: its speed ramps up and down on quintic eases (no jerk) with a steady cruise between;
+// every other channel is a sum of quintic eases.
+const TRUN = { run: [201, 206.0], ramp: .3, alt: [201, 202.2], climb: [205.0, AIR.top], home: [205.6, AIR.top], down: [205.45, AIR.top - .1], lock: [203.4, 205.3],
+  zoom: [201, 202.4], out: [205.2, AIR.top], aim: [201, 201.9], H: 13, ZE: -745, XM: 312, XT: 334, F: 820 };
 const s5 = (t, ab) => { const u = clamp((t - ab[0]) / (ab[1] - ab[0])); return u * u * u * (u * (6 * u - 15) + 10); };
+const I5 = (x) => x * x * x * x * (x * (x - 3) + 2.5); // the integral of the quintic ease, 0..1 -> 0..0.5
+function cruise(t, ab, r) { // 0..1 over ab: speed eased up over the first r, steady, eased down over the last r
+  const u = clamp((t - ab[0]) / (ab[1] - ab[0])), tot = 1 - r; let d;
+  if (u < r) d = r * I5(u / r); else if (u < 1 - r) d = r * .5 + (u - r); else d = tot - r * I5((1 - u) / r);
+  return d / tot; }
 function templeRun(t, q, yTop) {
-  const R = TRUN, TZ = TEMPLE_XZ[1], lnTop = Math.log(R.H) - R.sag;
-  const pos = (t) => { const ly = Math.log(q.y) + (Math.log(R.H) - Math.log(q.y)) * s5(t, R.rise) - R.sag * s5(t, R.drift) + (Math.log(AIR.D) - lnTop) * s5(t, R.climb);
-    const a = s5(t, R.run), b = s5(t, R.drift), hx = q.x + (R.L0[0] - q.x) * a + (R.L1[0] - R.L0[0]) * b, hz = q.z + (R.L0[1] - q.z) * a + (R.L1[1] - R.L0[1]) * b;
-    const h = s5(t, R.home); return [lerp(hx, MAN.x, h), Math.exp(ly), lerp(hz, MAN.z, h)]; };
+  const R = TRUN;
+  const pos = (t) => { const a = cruise(t, R.run, R.ramp), z = lerp(q.z, R.ZE, a), sa = (u, u0, u1) => { const v = clamp((u - u0) / (u1 - u0)); return v * v * v * (v * (6 * v - 15) + 10); };
+    const x = q.x + (R.XM - q.x) * sa(a, 0, .35) + (R.XT - R.XM) * sa(a, .55, .85), ly0 = Math.log(q.y) + (Math.log(R.H) - Math.log(q.y)) * s5(t, R.alt);
+    const ly = ly0 + .12 * Math.sin(a * Math.PI * 2) * (1 - s5(t, R.climb)) + (Math.log(AIR.D) - Math.log(R.H)) * s5(t, R.climb), h = s5(t, R.home);
+    return [lerp(x, MAN.x, h), Math.exp(ly), lerp(z, MAN.z, h)]; };
   const [x, y, z] = pos(t);
-  // the aim: on the pagoda's middle from the moment the drone has turned; once the crane starts, the aim it had there
-  // eases evenly to straight down for the map (following the Temple live would whip the view down as the drone shot up)
-  const aimOf = ([x, y, z]) => [Math.atan2(R.TC[0] - x, TZ - z), Math.atan2(y - R.TC[1], Math.hypot(R.TC[0] - x, TZ - z))];
-  const [ayw, ap] = aimOf(t < R.down[0] ? [x, y, z] : pos(R.down[0]));
+  // the aim: straight down the run, a little ahead of the Temple, so the art slides past on both sides and the Temple
+  // swings by on the left; once the crane starts it eases evenly to straight down for the map
+  // the aim: down the run to begin with; from 203.4 it settles on the Temple, which the drone comes up beside, slowing,
+  // rising past its needle as the crane starts; the aim it has when the crane tips (R.down) eases evenly to straight down
+  const aimAt = (s) => { const [x, y, z] = pos(s), w = .6 * s5(s, R.lock), L = [lerp(300, TEMPLE_XZ[0], w), lerp(4, 16, w), lerp(R.ZE - 400, TEMPLE_XZ[1], w)];
+    const a0 = Math.atan2(R.ZE - 400 > 0 ? 0 : 300 - x, R.ZE - 400 - z), a1 = Math.atan2(TEMPLE_XZ[0] - x, TEMPLE_XZ[1] - z), yw = a0 + unwrapTo(a1 - a0) * w;
+    return [yw, Math.atan2(y - L[1], Math.hypot(L[0] - x, L[2] - z))]; };
+  const [ayw, ap] = aimAt(Math.min(t, R.down[0]));
   const w0 = s5(t, R.aim), w1 = s5(t, R.down), yw0 = q.yaw + unwrapTo(ayw - q.yaw) * w0, p0 = lerp(q.p, ap, w0);
   const yw = yw0 + unwrapTo(yTop - yw0) * w1, p = lerp(p0, Math.PI / 2, w1);
   const f = Math.exp(Math.log(q.f) + (Math.log(R.F) - Math.log(q.f)) * s5(t, R.zoom) + (Math.log(AIR.f) - Math.log(R.F)) * s5(t, R.out));
