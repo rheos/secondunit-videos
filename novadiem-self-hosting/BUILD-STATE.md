@@ -88,3 +88,11 @@ hosting vendor and the box location are not named. Coolify and Traefik appear on
 
 `hyperframes check`: 0 errors. One layout info at 9.56 s (the box caption drawn by plates I and II at
 the handoff): expected.
+
+## Draft 1
+
+https://youtu.be/WfBtLUWJTL4 (unlisted, default channel), 85.5 s at 720p
+(`renders/self-hosting_take01_draft1.mp4`, remuxed from the `-raw` render). flashcheck PASS (worst 0
+flashes in a second); -13.2 LUFS, peak -1.6 dBFS, so no loudness pass. Eight frames tiled across the MP4
+match the snapshots. Security grep of `index.html` and `compositions/`: no IP addresses, no `:port`
+patterns, no private or admin hostnames, no auth terms or vendor names on screen.
