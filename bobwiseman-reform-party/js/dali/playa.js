@@ -1060,7 +1060,7 @@ function templeAir(t, k) { // the Temple from above: the pavilion's lattice squa
 
 // ---------- the Temple, seen from the playa: the pagoda ----------
 function templeBill(t, p, k) {
-  bmBegin(p[0], p[1], k, 1); const wood = '#d8b98a', shade = '#a8875e', deep = '#4a3626', roofC = '#8f7048', det = k > 2.5, n = nightAmt(t);
+  bmBegin(p[0], p[1], k, 1); const wood = '#d8b98a', shade = '#a8875e', deep = '#4a3626', roofC = '#8f7048', det = k > 2.5, n = nightAmt(t), lit = clamp((t - 196) / 4) * Math.max(.7, Math.min(1, n * 3)); // draft 18: lanterns lit warm from dusk
   // the low base pavilion: posts, a lattice roof sloping out to wide eaves, prayer flags along it
   bmFill([[-21, 0], [21, 0], [21, .5], [-21, .5]], bmShade('#c9a878', .85));
   for (let x = -20; x <= 20; x += 2.5) bmLine([[x, .5], [x, 4.6]], .45, x % 5 === 0 ? shade : '#b8976a');
@@ -1076,7 +1076,7 @@ function templeBill(t, p, k) {
     const ey = y1 - .4; bmPath([[-e - .8, ey + .9], [-e, ey + .35], [-bw, y1 + .2], [-bw * .45, top], [bw * .45, top], [bw, y1 + .2], [e, ey + .35], [e + .8, ey + .9], [e, ey], [-e, ey]]); g.closePath(); g.fillStyle = bmLG(0, top, 0, ey, [bmShade(roofC, 1.05), roofC, bmShade(roofC, .8)]); g.fill();
     if (det) { g.strokeStyle = 'rgba(60,42,26,.45)'; g.lineWidth = bmW(.1); g.beginPath(); for (let x = -e; x <= e; x += 1.1) { g.moveTo(x, -ey); g.lineTo(x * .45, -top); } g.stroke(); }
     const m = Math.round(e * 2 / 2.1); for (let j = 0; j <= m; j++) { const x = -e + .6 + j * (2 * e - 1.2) / m, ly = ey - .9 - .25 * Math.sin(j * 1.7 + i); if (det) bmLine([[x, ey], [x, ly + .5]], .04, '#5a4430');
-      bmOval(x, ly, .42, .5, n > .05 ? `rgb(${255},${226 - 20 * n},${170 - 40 * n})` : '#f2ead6'); if (det) bmLine([[x - .36, ly], [x + .36, ly]], .05, n > .05 ? 'rgba(200,120,60,.6)' : 'rgba(170,150,120,.6)'); } });
+      if (lit > 0) { g.save(); g.globalCompositeOperation = 'lighter'; bmOval(x, ly, 1.1, 1.2, `rgba(255,170,90,${.28 * lit})`); g.restore(); } bmOval(x, ly, .42, .5, lit > 0 ? `rgb(255,${Math.round(226 - 30 * lit)},${Math.round(170 - 70 * lit)})` : '#f2ead6'); if (det) bmLine([[x - .36, ly], [x + .36, ly]], .05, n > .05 ? 'rgba(200,120,60,.6)' : 'rgba(170,150,120,.6)'); } });
   // the spire: a slim cone with rings, a finial
   bmFill([[-2.4, 23.4], [2.4, 23.4], [.2, 30.5], [-.2, 30.5]], bmLG(-2.4, 0, 2.4, 0, [wood, shade])); if (det) for (const y of [24.6, 26, 27.4, 28.8]) { const hw = 2.4 * (30.5 - y) / 7.1; bmLine([[-hw, y], [hw, y]], .14, deep); }
   bmLine([[0, 30.4], [0, 32.2]], .1, deep);

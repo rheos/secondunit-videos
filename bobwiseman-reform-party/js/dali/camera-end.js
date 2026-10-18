@@ -32,12 +32,7 @@ function camEnd(t) {
   if (t <= AIR.t0 || t >= AIR.t1) return null;
   const q = AIR_Q || (AIR_Q = typeof goldEnd === 'function' ? goldEnd() : { x: carX(AIR.t0) + 6, y: 1.6, z: -40, p: -.13, f: 1300, yaw: 0 });
   const yTop = q.yaw + unwrapTo(Math.PI - q.yaw), yHO = yTop + Math.PI + unwrapTo(HO_YAW - yTop - Math.PI);
-  if (t < AIR.top) { // draft 9: a crane straight up, drifting over the Man and tilting down while it faces the Temple, so
-    // the city's arms open out on both sides as it rises (from the golden wide, which already faces 12:00)
-    const u = smooth((t - AIR.t0) / (AIR.top - AIR.t0)), yw = lerp(q.yaw, yTop, u);
-    const x = lerp(q.x, MAN.x, u), z = lerp(q.z, MAN.z, u);
-    const y = Math.exp(lerp(Math.log(q.y), Math.log(AIR.D), u)), p = lerp(q.p, Math.PI / 2, Math.pow(u, .7));
-    return { x, y, z, p, f: lerp(q.f, AIR.f, u), yaw: yw, cy: Math.cos(yw), sy: Math.sin(yw), clip: false }; }
+  if (t < AIR.top) return templeRun(t, q, yTop);
   if (t < AIR.hold) { const u = (t - AIR.top) / (AIR.hold - AIR.top), yw = yTop + .02 * Math.sin(u * Math.PI); // a breath at the top
     return { x: MAN.x, y: AIR.D * Math.exp(.01 * Math.sin(u * Math.PI)), z: MAN.z, p: Math.PI / 2, f: AIR.f, yaw: yw, cy: Math.cos(yw), sy: Math.sin(yw), clip: false }; }
   // back down: the height on a log scale, still dropping at 12 m/s at the hand-over; over the ground from the Man to HO
@@ -51,6 +46,31 @@ function camEnd(t) {
   const g = herm(w, 0, 1, 0, 1, 0, .6), x = lerp(MAN.x, HO[0], g), z = lerp(MAN.z, HO[2], g);
   const yw = lerp(yTop, yHO, smooth((t - AIR.hold) / (AIR.spin - AIR.hold))), p = herm(t, AIR.tip, AIR.t1, Math.PI / 2, HO_P, 0, -.12);
   return { x, y, z, p, f: lerp(AIR.f, 1100, smooth((t - AIR.hold) / (AIR.t1 - AIR.hold))), yaw: yw, cy: Math.cos(yw), sy: Math.sin(yw), clip: false };
+}
+// Draft 18 (Robin: "it looks like there is a temple out there... can we fly out there before we go up to the sky view?"):
+// from the golden wide the drone rises to 60 m, turns square on to 12:00 and runs out over the open playa toward the
+// Temple, a long fast transit at altitude, easing the lens in on the way. It arrives about 130 m short of the pagoda
+// and drifts in toward it for a couple of seconds while the lanterns glow, then the crane goes straight up from
+// there, drifting back over the Man as it climbs, so it still lands on the top-down map at AIR.top. Every channel is
+// a sum of quintic eases (zero velocity and acceleration at both ends), so nothing jerks.
+const TRUN = { rise: [201, 202.7], run: [201.6, 203.4], drift: [202.9, 205.2], aim: [201, 202.6], zoom: [201, 203.8],
+  climb: [204.55, AIR.top], home: [204.7, AIR.top], down: [204.6, AIR.top - .1], out: [204.4, AIR.top],
+  H: 62, sag: .08, L0: [298.5, -598], L1: [299.5, -630], TC: [300, 15], F: 1500 };
+const s5 = (t, ab) => { const u = clamp((t - ab[0]) / (ab[1] - ab[0])); return u * u * u * (u * (6 * u - 15) + 10); };
+function templeRun(t, q, yTop) {
+  const R = TRUN, TZ = TEMPLE_XZ[1], lnTop = Math.log(R.H) - R.sag;
+  const pos = (t) => { const ly = Math.log(q.y) + (Math.log(R.H) - Math.log(q.y)) * s5(t, R.rise) - R.sag * s5(t, R.drift) + (Math.log(AIR.D) - lnTop) * s5(t, R.climb);
+    const a = s5(t, R.run), b = s5(t, R.drift), hx = q.x + (R.L0[0] - q.x) * a + (R.L1[0] - R.L0[0]) * b, hz = q.z + (R.L0[1] - q.z) * a + (R.L1[1] - R.L0[1]) * b;
+    const h = s5(t, R.home); return [lerp(hx, MAN.x, h), Math.exp(ly), lerp(hz, MAN.z, h)]; };
+  const [x, y, z] = pos(t);
+  // the aim: on the pagoda's middle from the moment the drone has turned; once the crane starts, the aim it had there
+  // eases evenly to straight down for the map (following the Temple live would whip the view down as the drone shot up)
+  const aimOf = ([x, y, z]) => [Math.atan2(R.TC[0] - x, TZ - z), Math.atan2(y - R.TC[1], Math.hypot(R.TC[0] - x, TZ - z))];
+  const [ayw, ap] = aimOf(t < R.down[0] ? [x, y, z] : pos(R.down[0]));
+  const w0 = s5(t, R.aim), w1 = s5(t, R.down), yw0 = q.yaw + unwrapTo(ayw - q.yaw) * w0, p0 = lerp(q.p, ap, w0);
+  const yw = yw0 + unwrapTo(yTop - yw0) * w1, p = lerp(p0, Math.PI / 2, w1);
+  const f = Math.exp(Math.log(q.f) + (Math.log(R.F) - Math.log(q.f)) * s5(t, R.zoom) + (Math.log(AIR.f) - Math.log(R.F)) * s5(t, R.out));
+  return { x, y, z, p, f, yaw: yw, cy: Math.cos(yw), sy: Math.sin(yw), clip: false };
 }
 const unwrapTo = (a) => a - TAU * Math.round(a / TAU); // the shortest turn
 

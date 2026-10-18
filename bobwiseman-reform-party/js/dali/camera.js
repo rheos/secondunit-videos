@@ -367,7 +367,8 @@ function camPass(src, dir, cues) {
       vel[5] += clamp((vc - vel[5]) * 5, -CAM_ZA, CAM_ZA) * dt; st[5] += vel[5] * dt; }
     st[1] = Math.max(st[1], .12); if (st[1] === .12 && vel[1] * dir < 0) vel[1] = 0; // never under the playa
     // high in the aerial (camEnd's own log-scale flight) the drone is the path: the follower only shapes the low ends
-    const hi = smooth((src[r + 1] - 30) / 25); if (hi > 0) for (let c = 0; c < 6; c++) { const tv = c === 4 ? unwrap(src[r + c], st[c]) : src[r + c]; st[c] = lerp(st[c], tv, hi); vel[c] = lerp(vel[c], dv(i, c), hi); }
+    // draft 18: the Temple run (camEnd's own quintic flight) is flown exactly; the follower dragged its fast rise back into the golden wide
+    const ti = i * CAM_DT, hi = ti > AIR.t0 && ti < AIR.top ? 1 : smooth((src[r + 1] - 30) / 25); if (hi > 0) for (let c = 0; c < 6; c++) { const tv = c === 4 ? unwrap(src[r + c], st[c]) : src[r + c]; st[c] = lerp(st[c], tv, hi); vel[c] = lerp(vel[c], dv(i, c), hi); }
     for (let c = 0; c < 6; c++) out[i * 6 + c] = st[c];
   }
   for (let c = 0; c < 6; c++) out[i0 * 6 + c] = src[i0 * 6 + c];
