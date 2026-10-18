@@ -1,0 +1,7 @@
+_in/
+renders/
+.hyperframes/
+*.mp3
+*.wav
+*.mp4
+snapshots/

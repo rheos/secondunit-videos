@@ -1,0 +1,87 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #b3 {
+          position: absolute;
+          inset: 0;
+        }
+      </style>
+      <div id="b3" data-composition-id="b3" data-width="1920" data-height="1080">
+        <svg class="full" viewBox="0 0 1920 1080">
+          <g id="b3-card" transform="translate(130 150)"></g>
+          <g id="b3-idx"></g>
+          <path id="b3-brk" class="ln ink" d="M826 216H840V423H826" />
+          <path id="b3-c1" class="ln thin ink" d="M840 320C860 320 860 265 880 265" />
+          <g id="b3-frag">
+            <rect id="b3-frag-f" class="ln ink fill-bg" x="880" y="205" width="320" height="120" />
+            <text class="hd" x="900" y="238">FRAGMENT 1</text>
+            <text class="tt dim" x="900" y="274">turn_span</text>
+            <text id="b3-span" class="tt" x="1180" y="274" text-anchor="end">12–15</text>
+            <text class="tt" x="900" y="306">Coming of Age</text>
+          </g>
+          <rect id="b3-span-box" class="ln line-strong" x="1116" y="255" width="72" height="26" />
+          <text id="b3-fw-t" class="mono small" x="1330" y="150">CHAPTER FRAMEWORK</text>
+          <g id="b3-fw"></g>
+          <path id="b3-c2" class="ln thin ink" d="M1200 265C1265 265 1265 248 1330 248" />
+          <rect id="b3-hit" class="ln line-strong" x="1326" y="222" width="448" height="52" style="stroke-width: 3" />
+        </svg>
+        <div id="b3-label-l" class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate III</div>
+        <div id="b3-label-r" class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>The Map</div>
+        <div class="statement two" data-layout-allow-overlap data-layout-allow-occlusion>
+          <div class="row"><span id="b3-st-a" class="phrase">Mapped to a chapter,</span></div>
+          <div class="row"><span id="b3-st-b" class="phrase red">pinned to its turns.</span></div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text, kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 22.86);
+          const C = MQ.card(K.$("b3-card"), MQ.S1);
+
+          K.fade(K.$("b3-label-l"), K.T(22.86) + 0.1, 0.4);
+          K.fade(K.$("b3-label-r"), K.T(22.86) + 0.1, 0.4);
+
+          // the subject's chapter framework (src/server/services/life-graph.ts DEFAULT_CHAPTER_FRAMEWORK)
+          const CH = ["Origins", "Coming of Age", "The Work", "The People", "Turning Points", "Hard Times", "Transformation", "The Quiet Years", "Legacy"];
+          K.fade(K.$("b3-fw-t"), K.T(23.49), 0.4);
+          CH.forEach((c, i) => {
+            const y = 168 + i * 58;
+            const r = el("rect", { class: "ln thin ink", x: 1330, y, width: 440, height: 44 }, K.$("b3-fw"));
+            const t = text(c, { class: "tt", x: 1350, y: y + 29 }, K.$("b3-fw"));
+            K.draw(r, K.T(23.49) + i * 0.08, 0.4, "none");
+            K.fade(t, K.T(23.49) + 0.2 + i * 0.08, 0.3);
+          });
+
+          // chapter_map: turns 12-15 become one fragment, pinned to one chapter
+          K.draw(K.$("b3-brk"), K.T(25.03), 0.5, "none");
+          K.draw(K.$("b3-c1"), K.T(25.03) + 0.4, 0.3, "none");
+          K.fade(K.$("b3-frag"), K.T(25.67), 0.4);
+          K.reveal(K.$("b3-st-a"), K.T(25.67), 0.6);
+          K.draw(K.$("b3-c2"), K.T(26.91), 0.5, "none");
+          K.draw(K.$("b3-hit"), K.T(26.91) + 0.4, 0.5, "none");
+
+          // the fragment keeps the turn numbers it came from
+          K.draw(K.$("b3-span-box"), K.T(28.17), 0.4, "none");
+          K.reveal(K.$("b3-st-b"), K.T(28.17), 0.6);
+          C.rows.forEach((r, i) => {
+            const b = el("rect", { class: "ln line-strong", x: 130 + 14, y: 150 + r.base - 18, width: 30, height: 24 }, K.$("b3-idx"));
+            K.draw(b, K.T(30.04) + i * 0.31, 0.3, "none");
+          });
+
+          // clear the framework; plate IV keeps the card and the fragment
+          ["b3-fw", "b3-fw-t", "b3-c2", "b3-hit", "b3-idx", "b3-span-box", "b3-label-l", "b3-label-r"].forEach((id) => K.out(K.$(id), K.T(33.17), 0.4));
+          tl.to("#b3 .statement", { opacity: 0, duration: 0.4, ease: "power1.in" }, K.T(33.17));
+
+          window.__timelines["b3"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

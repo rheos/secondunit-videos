@@ -1,0 +1,108 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #b7 {
+          position: absolute;
+          inset: 0;
+        }
+        #b7 svg text.prose { font-size: 24px; }
+      </style>
+      <div id="b7" data-composition-id="b7" data-width="1920" data-height="1080">
+        <svg class="full" viewBox="0 0 1920 1080">
+          <rect id="b7-d-f" class="ln ink" x="200" y="180" width="560" height="330" />
+          <text id="b7-d-t" class="hd" x="224" y="218">CHAPTER DRAFT · COMING OF AGE</text>
+          <path id="b7-d-r" class="ln thin ink" d="M200 236H760" />
+          <g id="b7-d-lines"></g>
+
+          <text id="b7-g-t" class="mono small" x="960" y="212" text-anchor="middle">SAFETY GATE</text>
+          <path id="b7-p1" class="ln ink" d="M900 232V470" />
+          <path id="b7-p2" class="ln ink" d="M1020 232V470" />
+          <rect id="b7-bar" class="fill-line" x="900" y="330" width="120" height="14" />
+          <text id="b7-gated" class="mono head" x="960" y="516" text-anchor="middle">GATED</text>
+          <text id="b7-pub" class="mono head" x="960" y="516" text-anchor="middle" opacity="0">PUBLISHED</text>
+
+          <rect id="b7-r-f" class="ln ink" x="1160" y="180" width="560" height="330" />
+          <text id="b7-r-t" class="hd" x="1184" y="218">READER VIEW</text>
+          <path id="b7-r-r" class="ln thin ink" d="M1160 236H1720" />
+          <text id="b7-r-gap" class="mono note" x="1440" y="370" text-anchor="middle">Not published yet.</text>
+          <g id="b7-r-lines"></g>
+
+          <path id="b7-c" class="ln thin ink" d="M960 580V530" />
+          <rect id="b7-b-f" class="ln line-strong" x="700" y="580" width="520" height="96" style="stroke-width: 2" />
+          <text id="b7-b-1" class="hd" x="726" y="618">CONTRADICTION · fourteen / thirteen</text>
+          <text id="b7-b-2" class="mono small gold-t" x="726" y="654">UNRESOLVED</text>
+          <text id="b7-b-3" class="mono small gold-t" x="726" y="654" opacity="0">RESOLVED BY A PERSON · BOTH KEPT</text>
+
+          <text id="b7-site" class="mono" x="960" y="742" text-anchor="middle">MemoirQuill · novadiem.com</text>
+        </svg>
+        <div id="b7-label-l" class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate VII</div>
+        <div id="b7-label-r" class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>The Gate</div>
+        <div class="statement two" data-layout-allow-overlap data-layout-allow-occlusion>
+          <div class="row"><span id="b7-st-a" class="phrase">Every passage can be checked</span></div>
+          <div class="row"><span id="b7-st-b" class="phrase red">against what was said.</span></div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { text, kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 75.05);
+
+          K.fade(K.$("b7-label-l"), K.T(75.05) + 0.1, 0.4);
+          K.fade(K.$("b7-label-r"), K.T(75.05) + 0.1, 0.4);
+
+          // review_flag runs the safety gate: only a draft with no open blocker reaches a reader
+          K.draw(K.$("b7-d-f"), K.T(75.66), 0.6, "none");
+          K.fade(K.$("b7-d-t"), K.T(75.66) + 0.3, 0.3);
+          K.draw(K.$("b7-d-r"), K.T(75.66) + 0.3, 0.3, "none");
+          const L = MQ.PASSAGE.slice(0, 5);
+          L.forEach((s, i) => {
+            const t = text(s, { class: "prose", x: 226, y: 284 + i * 42 }, K.$("b7-d-lines"));
+            K.fade(t, K.T(75.66) + 0.4 + i * 0.1, 0.3);
+          });
+
+          K.fade(K.$("b7-g-t"), K.T(76.29), 0.3);
+          K.draw(K.$("b7-p1"), K.T(76.29), 0.4, "none");
+          K.draw(K.$("b7-p2"), K.T(76.29) + 0.1, 0.4, "none");
+          K.fade(K.$("b7-bar"), K.T(76.29) + 0.4, 0.3);
+          K.draw(K.$("b7-r-f"), K.T(76.29), 0.6, "none");
+          K.fade(K.$("b7-r-t"), K.T(76.29) + 0.3, 0.3);
+          K.draw(K.$("b7-r-r"), K.T(76.29) + 0.3, 0.3, "none");
+          K.fade(K.$("b7-r-gap"), K.T(76.92), 0.4, 0.75);
+          K.fade(K.$("b7-gated"), K.T(76.92), 0.3);
+
+          // the open contradiction from plate IV holds the draft
+          K.draw(K.$("b7-b-f"), K.T(77.54), 0.5, "none");
+          K.fade(K.$("b7-b-1"), K.T(77.54) + 0.3, 0.3);
+          K.fade(K.$("b7-b-2"), K.T(77.54) + 0.4, 0.3);
+          K.draw(K.$("b7-c"), K.T(78.16), 0.3, "none");
+
+          // a person resolves it; the gate opens and the reader sees the passage
+          tl.set(K.$("b7-b-2"), { opacity: 0 }, K.T(79.41));
+          tl.set(K.$("b7-b-3"), { opacity: 1 }, K.T(79.41));
+          tl.fromTo(K.$("b7-bar"), { rotation: 0 }, { rotation: -72, svgOrigin: "900 337", duration: 0.6, ease: "power2.inOut" }, K.T(80.04));
+          tl.set(K.$("b7-gated"), { opacity: 0 }, K.T(80.04) + 0.3);
+          tl.set(K.$("b7-pub"), { opacity: 1 }, K.T(80.04) + 0.3);
+          K.out(K.$("b7-r-gap"), K.T(80.04), 0.3);
+          L.forEach((s, i) => {
+            const t = text(s, { class: "prose", x: 1186, y: 284 + i * 42 }, K.$("b7-r-lines"));
+            K.reveal(t, K.T(80.67) + i * 0.15, 0.4);
+          });
+
+          // colophon
+          K.reveal(K.$("b7-st-a"), K.T(81.91), 0.7);
+          K.reveal(K.$("b7-st-b"), K.T(82.55), 0.8);
+          K.fade(K.$("b7-site"), K.T(84.42), 0.5);
+
+          window.__timelines["b7"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

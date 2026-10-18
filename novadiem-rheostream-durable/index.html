@@ -1,0 +1,125 @@
+<!doctype html>
+<html class="draft" lang="en" data-resolution="landscape">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1280, height=720" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;700&display=block" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <!-- Series kit (tools/blueprint-kit, copied by sync.sh). Theme first, then structure. -->
+    <link rel="stylesheet" href="kit/themes/rheo.css" />
+    <link rel="stylesheet" href="kit/kit.css" />
+    <script src="kit/kit.js"></script>
+    <script>
+      // Beat grid of the score (beats.json): librosa beats 5.36-84.73 at ~95.7 BPM, extended to 0.32 and 89.77 at 0.63 s.
+      BP.grid({ beats: [0.32,  0.95,  1.58,  2.21,  2.84,  3.47,  4.1,  4.73,  5.36,  5.98,  6.61,  7.23,  7.86,  8.49,  9.1,  9.73,  10.36,  10.98,  11.61,  12.23,  12.85,  13.48,  14.11,  14.73,  15.36,  15.98,  16.6,  17.23,  17.86,  18.48,  19.11,  19.73,  20.35,  20.98,  21.61,  22.23,  22.86,  23.49,  24.1,  24.73,  25.36,  25.98,  26.61,  27.24,  27.86,  28.48,  29.11,  29.73,  30.36,  30.98,  31.6,  32.23,  32.86,  33.48,  34.11,  34.73,  35.35,  35.98,  36.61,  37.23,  37.86,  38.49,  39.1,  39.73,  40.36,  40.98,  41.61,  42.23,  42.85,  43.48,  44.11,  44.73,  45.36,  45.98,  46.6,  47.23,  47.86,  48.48,  49.11,  49.73,  50.35,  50.98,  51.61,  52.23,  52.86,  53.48,  54.1,  54.73,  55.36,  55.98,  56.61,  57.23,  57.85,  58.48,  59.11,  59.73,  60.36,  60.98,  61.6,  62.23,  62.86,  63.48,  64.1,  64.73,  65.35,  65.98,  66.61,  67.23,  67.86,  68.48,  69.1,  69.73,  70.36,  70.98,  71.61,  72.23,  72.85,  73.48,  74.11,  74.73,  75.36,  75.98,  76.6,  77.23,  77.86,  78.48,  79.1,  79.73,  80.36,  80.98,  81.61,  82.23,  82.86,  83.49,  84.1,  84.73,  85.36,  85.99,  86.62,  87.25,  87.88,  88.51,  89.14,  89.77] });
+    </script>
+    <style>
+      /* shared by every plate */
+      svg text.mono.cell { font-size: 22px; font-weight: 400; letter-spacing: 0.06em; }
+      svg text.mono.cell.b { font-weight: 700; }
+      svg text.mono.cell.dim { fill: var(--ink-faint); }
+      svg text.mono.code { font-size: 22px; font-weight: 400; letter-spacing: 0.04em; }
+      svg text.mono.code.hi { fill: var(--line-strong); font-weight: 700; }
+      svg text.mono.acc { fill: var(--accent); }
+      svg text.mono.strong { fill: var(--line-strong); }
+      .statement.two { top: 772px; flex-direction: column; align-items: center; row-gap: 6px; }
+      .statement.two .row { display: flex; column-gap: 0.3em; }
+    </style>
+    <script>
+      // JB.table(parent, opts): the core.job table, the film's one device. Columns are the real ones
+      // (docs/architecture/intake-and-events.md, § Jobs and the worker); the rows hold synthetic jobs.
+      // Returns the parts for cueing, P.cell(r, c, value, cls) to place a value, P.rowY(r) for a row's centre.
+      window.JB = (() => {
+        const { el, text } = BP;
+        const COLS = [["JOB", 170], ["STATE", 230], ["LEASE_OWNER", 250], ["LEASE_UNTIL", 250], ["ATTEMPTS", 180]];
+        const W = 1080, HH = 52, RH = 64;
+        function table(parent, { x = 420, y = 206, rows = 1, title = "core.job" } = {}) {
+          const P = { x, y, W, HH, RH, colX: [], heads: [], rules: [], divs: [] };
+          let cx = x;
+          COLS.forEach(([, w]) => { P.colX.push(cx); cx += w; });
+          const H = HH + rows * RH;
+          P.title = title ? text(title, { class: "mono", x, y: y - 20 }, parent) : null;
+          P.frame = el("rect", { class: "ln line", x, y, width: W, height: H }, parent);
+          P.headRule = el("path", { class: "ln thin line", d: `M${x} ${y + HH}H${x + W}` }, parent);
+          COLS.forEach(([n], i) => P.heads.push(text(n, { class: "mono small dim", x: P.colX[i] + 18, y: y + 33 }, parent)));
+          for (let r = 1; r < rows; r++) P.rules.push(el("path", { class: "ln thin line", d: `M${x} ${y + HH + r * RH}H${x + W}`, opacity: 0.5 }, parent));
+          P.colX.slice(1).forEach((c) => P.divs.push(el("path", { class: "ln thin line", d: `M${c} ${y}V${y + H}`, opacity: 0.35 }, parent)));
+          P.cell = (r, c, v, cls) => text(v, { class: `mono cell ${cls || ""}`, x: P.colX[c] + 18, y: y + HH + r * RH + 40 }, parent);
+          P.rowY = (r) => y + HH + r * RH + RH / 2;
+          P.colMid = (c) => P.colX[c] + COLS[c][1] / 2;
+          return P;
+        }
+        // rule the table in: title, frame, header, dividers, row rules
+        function draw(K, P, at) {
+          if (P.title) K.fade(P.title, at, 0.35);
+          K.draw(P.frame, at, 0.8);
+          K.draw(P.headRule, at + 0.3, 0.6, "none");
+          P.divs.forEach((d, i) => K.draw(d, at + 0.35 + i * 0.06, 0.4));
+          P.heads.forEach((h, i) => K.fade(h, at + 0.45 + i * 0.08, 0.3));
+          P.rules.forEach((r, i) => K.draw(r, at + 0.5 + i * 0.1, 0.5, "none"));
+        }
+        // one row of values, each faded in a beat-fraction apart
+        function row(K, P, r, values, at, cls) {
+          return values.map((v, c) => {
+            const n = P.cell(r, c, v, v === "null" ? "dim" : cls);
+            K.fade(n, at + c * 0.08, 0.3);
+            return n;
+          });
+        }
+        // swap a cell: the old value goes, the new one lands in its place
+        function swap(K, P, oldNode, r, c, v, at, cls) {
+          K.out(oldNode, at, 0.2);
+          const n = P.cell(r, c, v, v === "null" ? "dim" : cls);
+          K.fade(n, at + 0.15, 0.3);
+          return n;
+        }
+        // a box with a centred mono caption
+        function box(parent, x, y, w, h, label, cls = "ln line", tcls = "mono") {
+          const r = el("rect", { class: cls, x, y, width: w, height: h }, parent);
+          const t = label ? text(label, { class: tcls, x: x + w / 2, y: y + h / 2 + 7, "text-anchor": "middle" }, parent) : null;
+          return { r, t };
+        }
+        return { table, draw, row, swap, box, COLS };
+      })();
+    </script>
+  </head>
+  <body>
+    <div data-hf-id="hf-nl01"
+      id="root"
+      data-composition-id="main"
+      data-start="0"
+      data-duration="89.9"
+      data-width="1280"
+      data-height="720"
+    >
+      <!-- Score: score-library drafting-table-rheostream-durable take-01, sha256 fddeda3f...7917, the clock for every cue.
+           Played at 0.9: the take is -12.7 LUFS with a -0.8 dBFS true peak. -->
+      <audio data-hf-id="hf-nl02"
+        id="score"
+        src="_in/score.mp3"
+        data-start="0"
+        data-duration="89.9"
+        data-track-index="9"
+        data-volume="0.9"
+      ></audio>
+
+      <!-- every plate draws on a 1920x1080 stage; drafts scale it to 720p (kit.css, stage.sh) -->
+      <div class="stage">
+        <div data-hf-id="hf-nl03" id="slot-furniture" data-composition-id="furniture" data-composition-src="compositions/furniture.html" data-start="0" data-duration="89.9" data-track-index="0" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-nl04" id="slot-b1" data-composition-id="b1" data-composition-src="compositions/b1-title.html" data-start="0" data-duration="8" data-track-index="1" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-nl05" id="slot-b2" data-composition-id="b2" data-composition-src="compositions/b2-lease.html" data-start="8" data-duration="14" data-track-index="2" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-nl06" id="slot-b3" data-composition-id="b3" data-composition-src="compositions/b3-crash.html" data-start="22" data-duration="14" data-track-index="3" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-nl07" id="slot-b4" data-composition-id="b4" data-composition-src="compositions/b4-recovery.html" data-start="36" data-duration="14" data-track-index="4" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-nl08" id="slot-b5" data-composition-id="b5" data-composition-src="compositions/b5-outbox.html" data-start="50" data-duration="14" data-track-index="5" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-nl09" id="slot-b6" data-composition-id="b6" data-composition-src="compositions/b6-audit.html" data-start="64" data-duration="16" data-track-index="6" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-nl0a" id="slot-b7" data-composition-id="b7" data-composition-src="compositions/b7-colophon.html" data-start="80" data-duration="9.9" data-track-index="7" data-width="1920" data-height="1080"></div>
+      </div>
+    </div>
+
+    <script>
+      window.__timelines["main"] = gsap.timeline({ paused: true });
+    </script>
+  </body>
+</html>

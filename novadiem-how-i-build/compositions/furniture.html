@@ -1,0 +1,41 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #furniture {
+          position: absolute;
+          inset: 0;
+          background: var(--bg);
+        }
+      </style>
+      <div data-hf-id="hf-hb10" id="furniture" data-composition-id="furniture" data-width="1920" data-height="1080">
+        <svg data-hf-id="hf-hb11" id="fu-ground" class="full" viewBox="0 0 1920 1080" aria-hidden="true" style="will-change: transform"></svg>
+        <svg data-hf-id="hf-hb12" id="fu-frame" class="full" viewBox="0 0 1920 1080"></svg>
+      </div>
+
+      <script>
+        (() => {
+          const tl = gsap.timeline({ paused: true });
+          const K = BP.kit(tl, 0);
+          // stations are the real delivery flow (~/.claude/CLAUDE.md, "GitHub delivery flow"), then the deploy
+          BP.furniture(K, tl, {
+            stations: [
+              { label: "ISSUE", at: 0 },
+              { label: "BRANCH", at: 8.8 },
+              { label: "DRAFT PR", at: 12.56 },
+              { label: "CHECKS", at: 20.06 },
+              { label: "MERGE", at: 32.55 },
+              { label: "DEPLOY", at: 40.05 },
+            ],
+            sheets: [0, 8, 19, 31, 39, 47, 75],
+          });
+          window.__timelines["furniture"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

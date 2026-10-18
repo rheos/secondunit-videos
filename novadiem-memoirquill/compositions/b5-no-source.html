@@ -1,0 +1,102 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #b5 {
+          position: absolute;
+          inset: 0;
+        }
+      </style>
+      <div id="b5" data-composition-id="b5" data-width="1920" data-height="1080">
+        <svg class="full" viewBox="0 0 1920 1080">
+          <g id="b5-card" transform="translate(130 150)"></g>
+          <path id="b5-strike" class="ln ink" d="M296 273H404" style="stroke-width: 3" />
+
+          <g id="b5-clean">
+            <rect id="b5-cl-f" class="ln ink fill-bg" x="130" y="490" width="690" height="220" />
+            <text id="b5-cl-t" class="hd" x="150" y="524">CLEANED TEXT · NO NEW FACTS</text>
+            <path id="b5-cl-r" class="ln thin ink" d="M130 542H820" />
+            <g id="b5-cl-lines"></g>
+            <path id="b5-anc1" class="ln line-strong" d="M160 638H617" style="stroke-width: 3" />
+            <path id="b5-anc2" class="ln line-strong" d="M160 665H291" style="stroke-width: 3" />
+            <text id="b5-anc-t" class="mono small gold-t" x="800" y="524" text-anchor="end">ANCHOR KEPT VERBATIM</text>
+          </g>
+
+          <g id="b5-pas" transform="translate(960 150)"></g>
+          <text id="b5-src" class="mono small" x="990" y="508">PASSAGE 1 · FROM FRAGMENT 1 ONLY</text>
+
+          <g id="b5-gap">
+            <rect id="b5-gap-f" class="ln thin ink" x="960" y="560" width="810" height="140" />
+            <text id="b5-gap-1" class="hd" x="990" y="598">CHAPTER · THE WORK</text>
+            <text id="b5-gap-2" class="tt dim" x="990" y="636">one thin fragment, under the coverage gate</text>
+            <text id="b5-gap-3" class="mono small gold-t" x="990" y="674">THIN SOURCE FLAG · NO PROSE WRITTEN</text>
+          </g>
+        </svg>
+        <div id="b5-label-l" class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate V</div>
+        <div id="b5-label-r" class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>No Source, No Sentence</div>
+        <div class="statement two" data-layout-allow-overlap data-layout-allow-occlusion>
+          <div class="row"><span id="b5-st-a" class="phrase">Only her words go in.</span></div>
+          <div class="row"><span id="b5-st-b" class="phrase red">No source, no sentence.</span></div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { text, kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 46.92);
+          MQ.card(K.$("b5-card"), MQ.S1);
+
+          K.fade(K.$("b5-label-l"), K.T(46.92) + 0.1, 0.4);
+          K.fade(K.$("b5-label-r"), K.T(46.92) + 0.1, 0.4);
+
+          // structured_clean: false starts go, her phrasing stays, nothing is added
+          K.draw(K.$("b5-strike"), K.T(47.54), 0.4, "none");
+          K.draw(K.$("b5-cl-f"), K.T(48.17), 0.6, "none");
+          K.fade(K.$("b5-cl-t"), K.T(48.17) + 0.3, 0.3);
+          K.draw(K.$("b5-cl-r"), K.T(48.17) + 0.3, 0.3, "none");
+          const CLEAN = [
+            "The grain truck. Dad's truck, out at the",
+            "Birch Creek place. I was fourteen. He said,",
+            "\"If you can reach the pedals, you can haul",
+            "the barley.\" I put it in the ditch the first",
+            "day. Twice.",
+          ];
+          CLEAN.forEach((s, i) => {
+            const t = text(s, { class: "tt", x: 160, y: 578 + i * 27 }, K.$("b5-cl-lines"));
+            K.reveal(t, K.T(48.8) + i * 0.31, 0.4);
+          });
+          K.reveal(K.$("b5-st-a"), K.T(49.41), 0.6);
+          K.draw(K.$("b5-anc1"), K.T(50.67), 0.4, "none");
+          K.draw(K.$("b5-anc2"), K.T(50.67) + 0.4, 0.2, "none");
+          K.fade(K.$("b5-anc-t"), K.T(50.67) + 0.3, 0.4);
+
+          // prose_draft: one passage, written only from the fragment it lists
+          const P = MQ.passage(K.$("b5-pas"));
+          K.draw(P.frame, K.T(53.8), 0.7, "none");
+          K.fade(P.paper, K.T(53.8), 0.3, 0.92);
+          K.fade(P.head, K.T(53.8) + 0.3, 0.3);
+          K.draw(P.rule, K.T(53.8) + 0.3, 0.4, "none");
+          P.lines.forEach((ln, i) => K.reveal(ln, K.T(54.42) + i * 0.42, 0.5));
+          K.draw(P.foot, K.T(56.3), 0.4, "none");
+          K.fade(K.$("b5-src"), K.T(56.3) + 0.2, 0.4);
+
+          // the coverage gate: a thin chapter gets a flag and a gap, not invented prose
+          K.draw(K.$("b5-gap-f"), K.T(56.91), 0.6, "none");
+          ["b5-gap-1", "b5-gap-2", "b5-gap-3"].forEach((id, i) => K.fade(K.$(id), K.T(57.24) + i * 0.2, 0.3));
+          K.reveal(K.$("b5-st-b"), K.T(57.54), 0.6);
+
+          // clear to the card and the passage; plate VI keeps both
+          ["b5-strike", "b5-clean", "b5-src", "b5-gap", "b5-label-l", "b5-label-r"].forEach((id) => K.out(K.$(id), K.T(60.66), 0.4));
+          tl.to("#b5 .statement", { opacity: 0, duration: 0.4, ease: "power1.in" }, K.T(60.66));
+
+          window.__timelines["b5"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

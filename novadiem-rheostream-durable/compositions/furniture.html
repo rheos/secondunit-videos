@@ -1,0 +1,40 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #furniture {
+          position: absolute;
+          inset: 0;
+          background: var(--bg);
+        }
+      </style>
+      <div data-hf-id="hf-nf01" id="furniture" data-composition-id="furniture" data-width="1920" data-height="1080">
+        <svg data-hf-id="hf-nf02" id="fu-ground" class="full" viewBox="0 0 1920 1080" aria-hidden="true" style="will-change: transform"></svg>
+        <svg data-hf-id="hf-nf03" id="fu-frame" class="full" viewBox="0 0 1920 1080"></svg>
+      </div>
+
+      <script>
+        (() => {
+          const tl = gsap.timeline({ paused: true });
+          const K = BP.kit(tl, 0);
+          // one job's real life through a crash: the states and the expiry, in the order the film shows them
+          BP.furniture(K, tl, {
+            stations: [
+              { label: "QUEUED", at: 8 },
+              { label: "LEASED", at: 15.98 },
+              { label: "LEASE EXPIRES", at: 31.6 },
+              { label: "RE-LEASED", at: 40.98 },
+              { label: "SUCCEEDED", at: 52.23 },
+            ],
+            sheets: [0, 8, 22, 36, 50, 64, 80],
+          });
+          window.__timelines["furniture"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>
