@@ -1,0 +1,108 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #b1 {
+          position: absolute;
+          inset: 0;
+        }
+        #b1 .title {
+          top: 548px;
+          font-size: 120px;
+        }
+        #b1 .sub {
+          position: absolute;
+          left: 0;
+          right: 0;
+          top: 716px;
+          text-align: center;
+          font-size: 26px;
+          color: var(--ink);
+        }
+        #b1 svg text.stamp {
+          font-family: var(--font-mono);
+          font-size: 34px;
+          font-weight: 700;
+          letter-spacing: 0.16em;
+          fill: var(--accent);
+        }
+        #b1 .stamp-box {
+          fill: var(--bg);
+          stroke: var(--accent);
+          stroke-width: 3;
+        }
+      </style>
+      <div id="b1" data-composition-id="b1" data-width="1920" data-height="1080">
+        <div id="b1-all" class="layer">
+          <svg class="full" viewBox="0 0 1920 1080">
+            <g id="b1-map"></g>
+            <path id="b1-rule" class="ln line" d="M660 690H1260M660 680V700M1260 680V700" />
+            <g id="b1-top"></g>
+          </svg>
+          <div class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate I</div>
+          <div class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>Inside the Bureau · 3</div>
+          <div id="b1-title" class="title">WHAT SURVIVES</div>
+          <div id="b1-sub" class="sub mono">WHEN A BUREAU SESSION ENDS</div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text, kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 0);
+          const map = K.$("b1-map");
+
+          // a run mid-way: the session, the Conductor's context busy, four specialist contexts already ended
+          const S = AM.session(map, 1);
+          K.draw(S.frame, K.T(0.07), 0.9, "none");
+          K.fade(S.label, K.T(0.65), 0.3);
+          const C = AM.conductor(map);
+          K.draw(C.outer, K.T(0.65), 0.7, "none");
+          K.draw(C.inner, K.T(0.65) + 0.3, 0.6, "none");
+          K.fade(C.label, K.T(1.25), 0.3);
+          K.fade(C.ctx, K.T(1.25), 0.3, 0.6);
+          const SP = AM.specialists(map);
+          SP.forEach((R, i) => {
+            const at = K.T(1.25) + i * 0.14;
+            K.draw(R.outer, at, 0.5, "none");
+            K.draw(R.inner, at + 0.2, 0.4, "none");
+            K.fade(R.label, at + 0.3, 0.3);
+            K.fade(R.ctx, at + 0.3, 0.3, 0.6);
+            K.draw(R.check, K.T(1.83) + i * 0.14, 0.3);
+            K.fade(R.ended, K.T(1.83) + i * 0.14 + 0.1, 0.3);
+          });
+
+          // the conversation streams in the Conductor's context, one line per beat
+          const lines = AM.chat(C.g);
+          const beats = [1.83, 2.41, 3.0, 3.6, 4.18, 4.76];
+          lines.forEach((ln, i) => K.draw(ln, K.T(beats[i]), 0.45));
+
+          K.reveal(K.$("b1-title"), K.T(2.41), 1.0);
+          K.draw(K.$("b1-rule"), K.T(3.0), 0.7);
+          K.reveal(K.$("b1-sub"), K.T(3.6), 0.8);
+
+          // the cut: the session ends mid-way and every context goes with it
+          const cut = K.T(5.94);
+          const stampTilt = el("g", { transform: "rotate(-5 960 312)" }, K.$("b1-top"));
+          const stamp = el("g", {}, stampTilt);
+          el("rect", { class: "stamp-box", x: 776, y: 280, width: 368, height: 64 }, stamp);
+          text("SESSION ENDED", { class: "stamp", x: 960, y: 324, "text-anchor": "middle" }, stamp);
+          tl.fromTo(stamp, { opacity: 0, scale: 1.25, svgOrigin: "960 312" }, { opacity: 1, scale: 1, svgOrigin: "960 312", duration: 0.25, ease: "power2.in" }, cut);
+          lines.forEach((ln) => tl.to(ln, { opacity: 0, duration: 0.12 }, cut + 0.2));
+          [S.g, C.g, ...SP.map((r) => r.g)].forEach((n) => tl.fromTo(n, { opacity: 1 }, { opacity: 0.22, duration: 0.7, ease: "power1.inOut" }, cut + 0.3));
+
+          K.out(K.$("b1-title"), 8.35, 0.45);
+          K.out(K.$("b1-rule"), 8.35, 0.45);
+          K.out(K.$("b1-sub"), 8.35, 0.45);
+          K.out(stamp, 8.35, 0.45);
+          window.__timelines["b1"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>
