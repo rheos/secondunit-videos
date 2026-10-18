@@ -1,0 +1,57 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #p1 {
+          position: absolute;
+          inset: 0;
+        }
+      </style>
+      <div id="p1" data-composition-id="p1" data-width="1920" data-height="1080">
+        <svg class="full" viewBox="0 0 1920 1080">
+          <g id="p1-card" transform="translate(700 150)"></g>
+        </svg>
+        <div id="p1-label-l" class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate I</div>
+        <div id="p1-label-r" class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>Recipe In, Label Out</div>
+        <div class="statement two" data-layout-allow-overlap data-layout-allow-occlusion>
+          <div class="row"><span id="p1-st-a" class="phrase">Your recipe, in cups and spoons.</span></div>
+          <div class="row"><span id="p1-st-b" class="phrase red">The label needs numbers.</span></div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 0);
+          const C = NF.card(K.$("p1-card"));
+
+          K.fade(K.$("p1-label-l"), K.T(0.72), 0.4);
+          K.fade(K.$("p1-label-r"), K.T(0.72), 0.4);
+
+          // the card, then the recipe written onto it one line per beat
+          K.draw(C.frame, K.T(0.72), 0.9, "none");
+          K.fade(C.paper, K.T(1.37), 0.5, 0.55);
+          C.rules.forEach((r, i) => K.draw(r, K.T(1.37) + i * 0.06, 0.35, "none"));
+          K.reveal(C.title, K.T(1.37), 0.6);
+          C.lines.forEach((n, i) => K.reveal(n, K.T(2.02 + i * 0.65), 0.55));
+          K.reveal(C.serves, K.T(5.92), 0.55);
+
+          K.reveal(K.$("p1-st-a"), K.T(4.62), 0.7);
+          K.reveal(K.$("p1-st-b"), K.T(6.57), 0.7);
+
+          // clear down to the card; plate II takes it over at 10.0
+          K.out(K.$("p1-label-l"), K.T(9.17), 0.4);
+          K.out(K.$("p1-label-r"), K.T(9.17), 0.4);
+          tl.to("#p1 .statement", { opacity: 0, duration: 0.4, ease: "power1.in" }, K.T(9.17));
+
+          window.__timelines["p1"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>
