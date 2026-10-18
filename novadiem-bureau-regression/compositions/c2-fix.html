@@ -1,0 +1,82 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #c2 {
+          position: absolute;
+          inset: 0;
+        }
+      </style>
+      <div id="c2" data-composition-id="c2" data-width="1920" data-height="1080">
+        <div id="c2-all" class="layer">
+          <svg class="full" viewBox="0 0 1920 1080">
+            <g id="c2-art"></g>
+          </svg>
+          <div class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate II</div>
+          <div class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>The Fix</div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text, kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 9.87);
+          const art = K.$("c2-art");
+
+          // why it happened (commit 0e2983c): the Conductor is an LLM and typed a plausible stamp
+          const h1 = text("THE CONDUCTOR IS A MODEL.", { class: "mono big", x: 960, y: 186, "text-anchor": "middle" }, art);
+          const h2 = text("It typed a plausible time from context instead of reading a clock.", { class: "mono cap dim", x: 960, y: 228, "text-anchor": "middle" }, art);
+          K.reveal(h1, K.T(10.45), 0.7);
+          K.fade(h2, K.T(11.05), 0.5);
+
+          // the slip, and the three things a lesson can become (README § Regression checks)
+          const s = TW.slip(art);
+          s.setAttribute("transform", "translate(300 520)");
+          K.fade(s, K.T(11.63), 0.35);
+          const cap = text("README: LESSONS FROM REPEATED FAILURES BECOME CONVENTIONS, SCRIPT CHANGES OR FIXTURES", { class: "mono small dim", x: 760, y: 284 }, art);
+          K.fade(cap, K.T(12.24), 0.4);
+
+          const BOX = [
+            { y: 300, name: "CONVENTION", what: "canon: every log stamp is shell-computed, never typed", ref: "1321e89" },
+            { y: 460, name: "SCRIPT CHANGE", what: "scripts/log-append.sh writes each heading with its own clock read", ref: "0e2983c" },
+            { y: 620, name: "REGRESSION FIXTURE", what: ".bureau/regression/135-log-append-real-timestamp.md", ref: "0e2983c" },
+          ];
+          const PATHS = ["M392 520H560V360H748", "M392 520H748", "M392 520H560V680H748"];
+          [12.84, 13.42, 14.0].forEach((at, i) => {
+            const b = BOX[i];
+            const p = el("path", { class: "ln ink", d: PATHS[i] }, art);
+            K.draw(p, K.T(at), 0.45);
+            const a = TW.arrow(art, 758, b.y + 60, "r");
+            K.fade(a, K.T(at) + 0.4, 0.2);
+            const paper = el("rect", { class: "fill-bg", x: 770, y: b.y, width: 990, height: 120 }, art);
+            const fr = el("rect", { class: "ln ink", x: 770, y: b.y, width: 990, height: 120 }, art);
+            const n = text(b.name, { class: "mono head", x: 798, y: b.y + 46 }, art);
+            const r = text(b.ref, { class: "mono small dim", x: 1736, y: b.y + 44, "text-anchor": "end" }, art);
+            const w = text(b.what, { class: "mono code", x: 798, y: b.y + 90 }, art);
+            K.fade(paper, K.T(at) + 0.35, 0.15);
+            K.draw(fr, K.T(at) + 0.35, 0.5, "none");
+            K.reveal(n, K.T(at) + 0.5, 0.4);
+            K.fade(r, K.T(at) + 0.6, 0.3);
+            K.reveal(w, K.T(at) + 0.65, 0.6);
+          });
+
+          // the fix itself: one line, the only source of the time
+          const C = TW.card(art, 460, 790, 1000, 110, "scripts/log-append.sh", { right: "0e2983c" });
+          TW.drawCard(K, C, K.T(15.79), 0.6);
+          const code = text('TS="$(date -u +%Y-%m-%dT%H:%M:%SZ)"', { class: "mono code b", x: 488, y: 878 }, art);
+          K.reveal(code, K.T(15.79) + 0.4, 0.7);
+          const note = text("THE ONLY SOURCE. NEVER AN ARGUMENT.", { class: "mono cap b gold-t", x: 1436, y: 878, "text-anchor": "end" }, art);
+          K.reveal(note, K.T(16.39) + 0.3, 0.6);
+
+          K.out(K.$("c2-all"), K.R(18.9), 0.45);
+          window.__timelines["c2"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>
