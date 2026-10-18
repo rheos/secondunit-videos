@@ -1,6 +1,9 @@
 # Build state: The Casting Board (Inside the Bureau, deep dive 9)
 
-**Draft 1 BUILT 2026-10-18.** Seven plates, 87 s, 720p, kit `paper` theme (The Cold Read's look).
+**Draft 1 BUILT 2026-10-18**: https://youtu.be/R1dpsrN2dDM (unlisted, default channel). Seven plates,
+87 s, 720p, kit `paper` theme (The Cold Read's look). `hyperframes check` passes; flashcheck PASS
+(worst 0.5 flashes/s); -14.0 LUFS, true peak -1.8 dBFS. Local master:
+`renders/bureau-model-routing_take01_draft1.mp4` (gitignored). Next: Robin's notes.
 Question: who decides which model does which job? Send it when someone asks "Is it one AI doing
 everything?" or "Which model runs the review?"
 
