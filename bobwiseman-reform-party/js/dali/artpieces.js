@@ -36,7 +36,7 @@ const ARTPIECES = [
   // 140, 55) is cut; this one, balanced on its point with the sitter in its window, is the only one
   { kind: 'clock', X: 104, Z: 130, rot: 2.74, scale: 1, people: 0,
     clock: '8:00', r: 210, seen: 'on "time" (126.5) in the open playa left of the melting clock, 125 px; also 72-95 and 129-141' },
-  { kind: 'stilts', path: [[0, -14, 47.4], [114.5, 123.4, 47.4]], X: 0, Z: 0, rot: 0, scale: 1, t0: 0, t1: 114.5,
+  { kind: 'stilts', path: [[0, -14, 47.4], [13, 1.6, 47.4], [19, 8, 31], [44, 38, 29], [54, 50, 47.4], [114.5, 123.4, 47.4]], X: 0, Z: 0, rot: 0, scale: 1, t0: 0, t1: 114.5,
     clock: '9:00 promenade', r: 200, seen: 'strolling east along the 9:00 promenade from the first frame, 50-90 px, in the board shots of verse 1; gone off frame by 114.5' },
   { kind: 'burger', X: -316, Z: -4, rot: -Math.PI / 2 - .3, scale: 1, sign: { lx: 5.2, lf: -1.6, rot: .35 }, people: 4,
     clock: '9:20', r: 600, seen: 'intro 3-7.6: on the open playa straight ahead of the drone as it glides in from the 9:00 Esplanade sound camp; the bun grows to about 140 px (the sign 260 px) at 7.4 before the drone passes over it' },
