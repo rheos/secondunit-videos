@@ -1,0 +1,70 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #b5 {
+          position: absolute;
+          inset: 0;
+        }
+      </style>
+      <div id="b5" data-composition-id="b5" data-width="1920" data-height="1080">
+        <svg class="full" viewBox="0 0 1920 1080">
+          <g id="b5-scene"></g>
+          <g id="b5-new"></g>
+        </svg>
+        <div id="b5-label-l" class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate V</div>
+        <div id="b5-label-r" class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>One Database Each</div>
+        <div class="statement two" data-layout-allow-overlap data-layout-allow-occlusion>
+          <div class="row"><span id="b5-st-a" class="phrase">Each app keeps</span></div>
+          <div class="row"><span id="b5-st-b" class="phrase red">its own database.</span></div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text, kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 54);
+          SH.scene(K.$("b5-scene"), 4); // box, edge, routes, containers, Coolify
+          const N = K.$("b5-new");
+
+          K.fade(K.$("b5-label-l"), K.T(54.43), 0.4);
+          K.fade(K.$("b5-label-r"), K.T(54.43), 0.4);
+
+          // one Postgres per app: two on the box, one managed off it
+          [0, 1, 2].forEach((i) => {
+            const D = SH.db(N, i);
+            const at = K.T(55.05) + i * 1.26;
+            K.draw(D.link, at, i === 2 ? 0.7 : 0.4, "none");
+            K.draw(D.body, at + 0.3, 0.6, "none");
+            K.draw(D.top, at + 0.45, 0.5, "none");
+            K.fade(D.lab, at + 0.7, 0.35);
+          });
+
+          const nightly = text("DUMPED NIGHTLY", { class: "mono cap", x: 1410, y: 336, "text-anchor": "middle" }, N);
+          K.fade(nightly, K.T(59.44), 0.4);
+
+          K.reveal(K.$("b5-st-a"), K.T(60.7), 0.6);
+          K.reveal(K.$("b5-st-b"), K.T(61.33), 0.7);
+
+          const where = text("ON THE BOX, OR MANAGED OFF IT", { class: "mono cap", x: 860, y: 726 }, N);
+          K.fade(where, K.T(63.18), 0.4);
+
+          const three = text("THREE OF THE APPS ON THIS BOX", { class: "mono cap", x: 1620, y: 186, "text-anchor": "end" }, N);
+          K.fade(three, K.T(65.69), 0.4);
+
+          [nightly, where, three].forEach((n) => K.out(n, K.T(67.57), 0.4));
+          K.out(K.$("b5-label-l"), K.T(67.57), 0.4);
+          K.out(K.$("b5-label-r"), K.T(67.57), 0.4);
+          tl.to("#b5 .statement", { opacity: 0, duration: 0.4, ease: "power1.in" }, K.T(67.57));
+
+          window.__timelines["b5"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

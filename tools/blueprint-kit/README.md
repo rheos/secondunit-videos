@@ -28,6 +28,7 @@ mono). The themes so far:
 | `onloan` | ink and pine on onloan.net's warm paper, pine night field, Instrument Serif display, Hanken Grotesk labels | novadiem-onloan-ledger |
 | `orchardly` | navy and canopy green on the brand's pale day surface, navy field with fruit orange, Bricolage Grotesque | novadiem-orchardly |
 | `foaf` | navy ink and FOAF blue on a cool pale sheet, pink accent, navy field, Red Hat Display | novadiem-foaf-client |
+| `cyanotype` | pale line work on Prussian blue (a classic blueprint), amber accent, cream field, Space Grotesk display, JetBrains Mono labels | novadiem-self-hosting |
 
 Add a theme by copying one file in `themes/` and changing the tokens.
 
