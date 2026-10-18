@@ -1,0 +1,110 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #b4 {
+          position: absolute;
+          inset: 0;
+        }
+      </style>
+      <div id="b4" data-composition-id="b4" data-width="1920" data-height="1080">
+        <svg class="full" viewBox="0 0 1920 1080">
+          <g id="b4-scene"></g>
+          <g id="b4-new"></g>
+        </svg>
+        <div id="b4-label-l" class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate IV</div>
+        <div id="b4-label-r" class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>Push to Deploy</div>
+        <div class="statement two" data-layout-allow-overlap data-layout-allow-occlusion>
+          <div class="row"><span id="b4-st-a" class="phrase red">Push to main.</span></div>
+          <div class="row"><span id="b4-st-b" class="phrase">Coolify builds it and swaps it in.</span></div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text, kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 38);
+          const S = SH.scene(K.$("b4-scene"), 3); // box, edge, routes, three containers
+          const N = K.$("b4-new");
+
+          K.fade(K.$("b4-label-l"), K.T(38.2), 0.4);
+          K.fade(K.$("b4-label-r"), K.T(38.2), 0.4);
+
+          // a push to main
+          const push = el("rect", { class: "ln line", x: 150, y: 470, width: 300, height: 80 }, N);
+          const pushT = text("git push", { class: "mono", x: 300, y: 506, "text-anchor": "middle" }, N);
+          const pushS = text("BRANCH: MAIN", { class: "mono cap", x: 300, y: 534, "text-anchor": "middle" }, N);
+          K.draw(push, K.T(39.45), 0.6, "none");
+          K.fade(pushT, K.T(39.45) + 0.3, 0.3);
+          K.fade(pushS, K.T(39.45) + 0.45, 0.3);
+
+          // checks go green first
+          const a1 = el("path", { class: "ln line", d: "M300 550V600" }, N);
+          const chk = el("rect", { class: "ln line", x: 150, y: 600, width: 300, height: 90 }, N);
+          const chkT = text("CHECKS", { class: "mono", x: 270, y: 652, "text-anchor": "middle" }, N);
+          const tick = el("path", { class: "ln line-strong", d: "M372 640l12 14l26 -30" }, N);
+          K.draw(a1, K.T(40.68), 0.3, "none");
+          K.draw(chk, K.T(40.68) + 0.2, 0.6, "none");
+          K.fade(chkT, K.T(40.68) + 0.5, 0.3);
+          K.draw(tick, K.T(41.94), 0.4);
+
+          // Coolify, on the box, takes the deploy
+          const a2 = el("path", { class: "ln line", d: `M450 645H590` }, N);
+          const C = SH.coolify(N);
+          K.draw(a2, K.T(43.19), 0.4, "none");
+          K.draw(C.frame, K.T(43.19) + 0.3, 0.6, "none");
+          K.fade(C.name, K.T(43.19) + 0.6, 0.3);
+          K.fade(C.sub, K.T(43.19) + 0.75, 0.3);
+
+          // it pulls main and builds a new container beside the running one
+          const build = el("path", { class: "ln line construct", d: `M830 645C880 645 870 545 940 545H1430V290` }, N);
+          const next = el("g", {}, N);
+          const nF = el("rect", { class: "ln line-strong", x: 1280, y: 200, width: 300, height: 90 }, next);
+          const nName = text("rheoStream", { class: "mono", x: 1430, y: 241, "text-anchor": "middle" }, next);
+          const nSub = text("NEW BUILD", { class: "mono cap hi", x: 1430, y: 269, "text-anchor": "middle" }, next);
+          const nSub2 = text("RECALL", { class: "mono cap", x: 1430, y: 269, "text-anchor": "middle", opacity: 0 }, next);
+          const built = text("BUILT FROM MAIN", { class: "mono cap", x: 1430, y: 330, "text-anchor": "middle" }, N);
+          K.sweep(build, K.T(44.44), 0.9);
+          K.draw(nF, K.T(45.07), 0.7, "none");
+          K.fade(nName, K.T(45.07) + 0.4, 0.3);
+          K.fade(nSub, K.T(45.07) + 0.55, 0.3);
+          K.fade(built, K.T(45.7), 0.4);
+
+          // the swap: the old container steps out, the new one takes its place on the same route
+          const old = S.apps[0].g;
+          tl.fromTo(old, { opacity: 1 }, { opacity: 0, duration: 0.5, ease: "power1.in" }, K.T(47.55));
+          tl.fromTo(next, { x: 0 }, { x: SH.APP_X - 1280, duration: 0.8, ease: "power2.inOut" }, K.T(47.55) + 0.3);
+          K.out(built, K.T(47.55), 0.3);
+          K.out(build, K.T(47.55), 0.4);
+          const flash = el("path", { class: "ln line-strong", d: SH.routeD(0) }, N);
+          K.draw(flash, K.T(48.18) + 0.2, 0.5, "none");
+          tl.to(flash, { opacity: 0, duration: 0.6 }, K.T(48.18) + 1.0);
+
+          K.reveal(K.$("b4-st-a"), K.T(48.81), 0.6);
+          K.reveal(K.$("b4-st-b"), K.T(49.44), 0.8);
+
+          const follow = text("ITS ROUTE AND CERTIFICATE COME WITH IT", { class: "mono cap", x: 860, y: 726 }, N);
+          K.fade(follow, K.T(50.69), 0.4);
+
+          // settle: the new build is now just the rheoStream container
+          tl.to(nF, { stroke: "#a9d4ff", duration: 0.6 }, K.T(51.94));
+          K.out(nSub, K.T(51.94), 0.3);
+          tl.fromTo(nSub2, { opacity: 0 }, { opacity: 1, duration: 0.3 }, K.T(51.94) + 0.3);
+
+          // clear the outside world; Coolify stays on the box
+          [push, pushT, pushS, a1, chk, chkT, tick, a2, follow].forEach((n) => K.out(n, K.T(53.2), 0.4));
+          K.out(K.$("b4-label-l"), K.T(53.2), 0.4);
+          K.out(K.$("b4-label-r"), K.T(53.2), 0.4);
+          tl.to("#b4 .statement", { opacity: 0, duration: 0.4, ease: "power1.in" }, K.T(53.2));
+
+          window.__timelines["b4"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>
