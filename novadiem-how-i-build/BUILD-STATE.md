@@ -84,3 +84,17 @@ CHECKS 20.06, MERGE 32.55, DEPLOY 40.05.
   `immediateRender: false`.
 - `hyperframes check` warns `nested_media_start_basis_ambiguous` on the three videos. Their
   `data-start` values are plate-local on purpose.
+
+## Draft 1 (2026-10-17)
+
+https://youtu.be/DCNt9uMnOHQ (unlisted, default channel), 84 s at 720p
+(`renders/how-i-build_take01_draft1.mp4`, remuxed from `-raw`). flashcheck PASS (worst 0.5 flashes/s at
+49.5 s, the first clip fading in). -13.5 LUFS integrated, true peak -2.8 dBFS. Grep audit of the
+sources: no names, amounts, vendors or keys.
+
+## Upwork's rules for this slot (checked 2026-10-17)
+
+The profile "Video introduction" takes a YouTube link with monetization off; the Help Center sets no
+length and no on-camera rule. Upwork's blog advises talking to camera and 30-60 s. The separate
+Boosted Profile video (paid, gated) requires up to 60 s, "really you", and no background music, so a
+music-only film can't go there.
