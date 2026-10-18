@@ -90,3 +90,11 @@ RECALL 53.02. One device throughout: the memory as an index card (`RC.card` on t
 - **VII · Colophon (79.83-89.9).** "Memory you can correct", Recallatron, a rheoStream module, the five
   steps, "Inspect it. Correct it." / "Changed facts stay as history." (red) 83.66/84.3,
   AGPL-3.0 · open source · rheo.stream. Holds to the end.
+
+## Draft 1 (2026-10-17)
+
+https://youtu.be/WsgYFYeal-c (unlisted, default channel), 90 s at 720p
+(`renders/recallatron_take01_draft1.mp4`). flashcheck PASS (0 flashes). The score came out at
+-15.1 LUFS, so the remux runs a linear loudnorm to -13.8 LUFS, peak -1.2 dBFS. Frames from the MP4
+match the snapshots (every move uses `fromTo`). `hyperframes check` passes. No real names, keys or
+amounts in the sources (grep audit). Renders and the score copy stay in this worktree, outside git.
