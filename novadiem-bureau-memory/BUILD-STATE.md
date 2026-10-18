@@ -1,7 +1,10 @@
 # Build state: What Survives (Inside the Bureau, film 3)
 
-**Draft 1 BUILT 2026-10-17.** Seven plates, 86 s, 720p, kit `paper` theme (The Cold Read and The
-Map's look). Question: where does a Bureau run's memory live when the session ends? Send it when
+**Draft 1 BUILT 2026-10-17**: https://youtu.be/V98nKVNlhb4 (unlisted, default channel). Seven plates,
+86 s, 720p, kit `paper` theme (The Cold Read and The Map's look). `hyperframes check` passes;
+flashcheck PASS (worst 0.5 flashes/s); -14.0 LUFS, true peak -1.3 dBFS (remux adds 1.4 dB through a
+limiter); no dark fields. Local master: `renders/bureau-memory_take01_draft1.mp4` (gitignored).
+Next: Robin's notes. Question: where does a Bureau run's memory live when the session ends? Send it when
 someone asks "What happens when the session ends?"
 
 ## Facts used (all from ~/Code/novadiem/bureau at origin/main 939f522, read with `git show`)
