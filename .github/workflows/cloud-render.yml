@@ -76,7 +76,7 @@ jobs:
           sparse-checkout: tools/cloud-render
           persist-credentials: false
       - uses: actions/setup-node@v4
-        with: { node-version: 22 }
+        with: { node-version-file: .nvmrc }
       - name: Fetch package
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

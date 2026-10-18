@@ -3,6 +3,7 @@
 # Media, lyrics and artist audio stay out (each project has its own .gitignore too).
 /*
 !/.gitignore
+!/.nvmrc
 !/.githooks/
 !/.github/
 !/tools/
