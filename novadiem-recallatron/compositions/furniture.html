@@ -1,0 +1,41 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #furniture {
+          position: absolute;
+          inset: 0;
+          background: var(--bg);
+        }
+      </style>
+      <div data-hf-id="hf-rc10" id="furniture" data-composition-id="furniture" data-width="1920" data-height="1080">
+        <svg data-hf-id="hf-rc11" id="fu-ground" class="full" viewBox="0 0 1920 1080" aria-hidden="true" style="will-change: transform"></svg>
+        <svg data-hf-id="hf-rc12" id="fu-frame" class="full" viewBox="0 0 1920 1080"></svg>
+      </div>
+
+      <script>
+        (() => {
+          const tl = gsap.timeline({ paused: true });
+          const K = BP.kit(tl, 0);
+          // stations are a memory's life in Recallatron, in order: the one-time import, then
+          // remember (automatic), supersede, correct and recall (the module's own operations)
+          BP.furniture(K, tl, {
+            stations: [
+              { label: "IMPORT", at: 0 },
+              { label: "SAVE", at: 12.81 },
+              { label: "SUPERSEDE", at: 26.2 },
+              { label: "CORRECT", at: 40.25 },
+              { label: "RECALL", at: 53.02 },
+            ],
+            sheets: [0, 12.81, 26.2, 40.25, 53.02, 67.7, 79.83],
+          });
+          window.__timelines["furniture"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>
