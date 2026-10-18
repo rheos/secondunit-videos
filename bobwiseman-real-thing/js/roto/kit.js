@@ -25,9 +25,14 @@ const HANDS = {
   // brown brush with hatching (an etching feel)
   brush: { wob: 2.4, reg: 5, ink: 1, inkW: 3.6, inkVar: .85, passes: 1, paint: 0, hatch: 1, inkCol: '#2c1a12' },
   // fine pen for close-ups: thin, steady, fills close to the line
+  crisp: { wob: 0, reg: 0, ink: 1, inkW: 3.2, inkVar: .08, passes: 1, paint: 0, hatch: 0, inkCol: '#121014' },
   fine: { wob: 1.6, reg: 3.5, ink: 1, inkW: 2.4, inkVar: .45, passes: 1, paint: 0, hatch: 0, inkCol: '#1d1820' },
 };
-const hsl = (h, sat, l, a = 1, hk = 1) => `hsla(${(h + HUE * hk).toFixed(1)},${sat}%,${clamp(l, 0, 100).toFixed(1)}%,${a})`;
+// Real Thing: CRISP = the real thing. While a frame (or the part of it inside a switch) is drawn crisp, every
+// shape uses the crisp hand: no wobble, no off-register drift, no hue drift, one even confident line, true colour.
+let CRISP = 0;
+function HH() { return CRISP ? HANDS.crisp : HAND; }
+const hsl = (h, sat, l, a = 1, hk = 1) => `hsla(${(h + (CRISP ? 0 : HUE) * hk).toFixed(1)},${CRISP ? Math.min(100, sat * 1.15).toFixed(1) : sat}%,${clamp(l, 0, 100).toFixed(1)}%,${a})`;
 // shift the lightness of an hsla() colour string (for the automatic second shadow tone and the highlight)
 function relight(c, dl, da) {
   const m = /hsla\(([-\d.]+),([\d.]+)%,([\d.]+)%,([\d.]+)\)/.exec(c); if (!m) return c;
@@ -81,14 +86,14 @@ function ink(P, closed, w, seed, col) {
   const ph = seed * 1.7 + T * .35, den = closed ? n : n - 1, Wd = [], L = [], R = [];
   for (let i = 0; i < n; i++) {
     const u = i / den;
-    let ww = w * (1 - HAND.inkVar * (.5 + .5 * Math.sin(u * TAU * 3 + ph)));
+    let ww = w * (1 - HH().inkVar * (.5 + .5 * Math.sin(u * TAU * 3 + ph)));
     if (!closed) ww *= Math.min(1, u * 5 + .2, (1 - u) * 5 + .2);
     ww = Math.max(.35, ww) / 2; Wd.push(ww);
     const a = P[closed ? (i - 1 + n) % n : Math.max(0, i - 1)], b = P[closed ? (i + 1) % n : Math.min(n - 1, i + 1)];
     let dx = b[0] - a[0], dy = b[1] - a[1]; const l = Math.hypot(dx, dy) || 1; dx /= l; dy /= l;
     L.push([P[i][0] - dy * ww, P[i][1] + dx * ww]); R.push([P[i][0] + dy * ww, P[i][1] - dx * ww]);
   }
-  s.fillStyle = col || HAND.inkCol; s.beginPath();
+  s.fillStyle = col || HH().inkCol; s.beginPath();
   const m = closed ? n : n - 1;
   for (let i = 0; i < m; i++) { const j = (i + 1) % n; addPoly([L[i], L[j], R[j], R[i]]); }
   for (let i = 0; i < n; i++) { const r = Wd[i], c = P[i], Q = []; for (let k = 0; k < 8; k++) Q.push([c[0] + Math.cos(k * TAU / 8) * r, c[1] + Math.sin(k * TAU / 8) * r]); addPoly(Q); }
@@ -99,7 +104,7 @@ function hatch(F, dir, seed, col) {
   let x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9; for (const [x, y] of F) { x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y); }
   const cx = (x0 + x1) / 2, cy = (y0 + y1) / 2, L = Math.hypot(dir[0], dir[1]) || 1, dx = -dir[0] / L, dy = -dir[1] / L;
   const span = Math.max(x1 - x0, y1 - y0), gap = Math.max(5, span / 26), r = rng(seed);
-  s.strokeStyle = col || HAND.inkCol; s.lineWidth = 1.3 * INKK; s.lineCap = 'round';
+  s.strokeStyle = col || HH().inkCol; s.lineWidth = 1.3 * INKK; s.lineCap = 'round';
   for (let k = -span; k < span; k += gap) {
     const ox = cx + dx * span * .38, oy = cy + dy * span * .38; // centred on the shadow side
     const j = snoise(T * .4 + k * .1, seed) * 3;
@@ -110,7 +115,7 @@ function hatch(F, dir, seed, col) {
 // One rotoscoped shape: fill layer, shadow layer, ink layer, each drifting on its own.
 // o: { fill, shade, shadeShift:[dx,dy] (toward the light), seed, ink:false, inkW, reg, wob, extra(F), alpha }
 function part(ctrl, o = {}) {
-  const H = HAND, seed = o.seed || 1, reg = H.reg * (o.reg ?? 1) * WOBK, wa = H.wob * (o.wob ?? 1) * WOBK;
+  const H = HH(), seed = o.seed || 1, reg = H.reg * (o.reg ?? 1) * WOBK, wa = H.wob * (o.wob ?? 1) * WOBK;
   const D = o.dense ? ctrl : o.sharp ? sharpen(ctrl, o.sharp) : spline(ctrl, true, o.seg || 6);
   const F = add(wob(D, seed, wa), drift(seed + 1, reg));
   if (o.alpha !== undefined) { s.save(); s.globalAlpha *= o.alpha; }
@@ -144,7 +149,7 @@ function part(ctrl, o = {}) {
 // An open contour line (interior detail: folds, cheek lines, features). force draws it even in the
 // painterly hand (which has no outlines), as a soft painted stroke.
 function stroke(P, seed, w = 1, o = {}) {
-  const H = HAND; if (!H.ink && !o.force) return;
+  const H = HH(); if (!H.ink && !o.force) return;
   const D = o.dense ? P : spline(P, false, o.seg || 5);
   const I = add(wob(D, seed + 5, H.wob * (o.wob ?? .7) * WOBK), drift(seed + 2, H.reg * .5 * (o.reg ?? 1) * WOBK));
   const passes = H.ink ? H.passes : 1, ww = w * (H.ink ? H.inkW : H.inkW * 1.5);

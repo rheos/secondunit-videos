@@ -459,11 +459,45 @@ chapter('rt', 0, DUR, [
   [160.6, sOutro],
 ]);
 
+// THE SWITCHES (Robin's brainstorm, 2026-10-17): rotoscope = the offer (the deal, the promised lake, "settle");
+// crisp = the thing itself (the real lake, the land, the dirt, a real face). Every refusal line snaps into focus,
+// every "settle for less" line goes soft again. A switch starts at one element (the fish, the treaty, the scales,
+// the jar, her) and spreads out from it across the frame. The last switch, on "love", is permanent.
+// [song time, to crisp?, element point on screen, seconds to spread]
+const SWITCH = [
+  [W_.fishless - .15, 1, [960, 420], .7],   // the brochure fish go; the real lake is empty and clear
+  [38.2, 0, [960, 60], .8],                 // "don't want to settle...": the painted sky comes down soft
+  [44.26, 1, [960, 640], .6],               // "don't trust the treaty": the paper snaps sharp
+  [50.0, 0, [400, 700], .9],                // refrain 1: the painters, the long settle
+  [69.0, 1, [450, 260], .7],                // the people on the shore (a placard first)
+  [76.0, 0, [960, 820], .9],                // the float into the office: the offer again
+  [W_.decide - .7, 1, [960, 300], .6],      // "you can't decide for me what's fair": the scales
+  [94.44, 0, [960, 430], .7],               // the smiling masks
+  [W_.dirt - .1, 1, [1060, 700], .6],       // "dirt for air": the jar
+  [W_.r2dont, 0, [720, 820], .9],           // refrain 2, the dust field and the long settle
+  [W_.r2real - .2, 1, [960, 400], .7],      // the shoot
+  [125.6, 0, [960, 80], .8],                // the rain comes in soft
+  [W_.love - .15, 1, [1480, 300], .9],      // "I want to love you": she comes into focus, and stays
+];
+function crispState(t) {
+  let base = 0, sw = null;
+  for (const S of SWITCH) { if (t < S[0]) break; if (t < S[0] + S[3]) { sw = S; break; } base = S[1]; }
+  return { base, sw, R: sw ? ease.inOut(inv(sw[0], sw[0] + sw[3], t)) * 2300 : 0 };
+}
 // frame assembly with element-led transitions: the next shot opens through a wobbly iris from the element's point
 const TR = {}; // index -> tr
 [[0, { d: .9, at: [1240, 700] }], [3, { d: .7, at: [420, 980] }], [6, { d: .8, at: [960, 980] }], [11, { d: 1.0, at: [960, 700] }], [15, { d: 1.0, at: [900, 900] }], [18, { d: .9, at: [960, 600] }]].forEach(([i, o]) => TR[i] = o);
 function drawShot(sh, t) { FX = {}; s.save(); try { sh.fn(t, t - sh.a, sh.b - sh.a); } catch (e) { console.error(sh.name, e); } s.restore(); }
 function drawFrame(t) {
+  const cs = crispState(t);
+  CRISP = cs.base; const fxv = drawCut(t);
+  if (cs.sw) { CRISP = cs.sw[1]; const [x, y] = cs.sw[2], R = cs.R;
+    layer(1, () => { s.save(); s.beginPath(); s.arc(x, y, Math.max(1, R), 0, TAU); s.clip(); drawCut(t); s.restore(); }, null, 1); }
+  CRISP = 0;
+  Object.assign(fxv, { cb: cs.base, ct: cs.sw ? cs.sw[1] : cs.base, cx: cs.sw ? cs.sw[2][0] : 0, cy: cs.sw ? cs.sw[2][1] : 0, cr: cs.R });
+  T = t; Look.present(t, fxv);
+}
+function drawCut(t) {
   s.setTransform(RS, 0, 0, RS, 0, 0); s.globalAlpha = 1; s.globalCompositeOperation = 'source-over'; s.filter = 'none';
   const i = Math.max(0, SHOTS.findIndex((x) => t >= x.a && t < x.b)), sh = SHOTS[i] || SHOTS[SHOTS.length - 1];
   drawShot(sh, t); const keep = { ...FX };
@@ -473,5 +507,5 @@ function drawFrame(t) {
     layer(1, () => { s.save(); s.beginPath(); const Lp = lump(tr.at[0], tr.at[1], R, R * .8, 77, 22); Lp.forEach(([x, y], k) => k ? s.lineTo(x, y) : s.moveTo(x, y)); s.closePath(); s.clip(); drawShot(nx, t); s.restore(); });
     for (const k of Object.keys(FX)) keep[k] = lerp(keep[k] ?? 0, FX[k], u);
   }
-  T = t; Look.present(t, keep);
+  return keep;
 }

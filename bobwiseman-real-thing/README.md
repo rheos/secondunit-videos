@@ -57,9 +57,12 @@ After Bob turned down all four look tests (#165), Robin asked for the whole song
 and `warm`. Page `roto.html`; `node rstills.mjs <dir> <t...>` for stills; render
 `PAGE=roto.html QS=scale=0.6667 node render.mjs 0 165.854 out/<name>.mp4 6 24 0.6667`.
 
-**The rule that carries it:** real things are rotoscoped (they breathe, fills slide under their lines); fake things
-are drawn dead still and flat in brochure colours (`fake()` in `js/roto/world.js`). Every "settle for less" image
-is a flat thing laid over a living one. The generative ideas so far (brochure, placards, peeling heart, tear to a
+**Two looks (Robin's brainstorm, 2026-10-17): rotoscope = the offer, crisp = the thing itself.** Rotoscope is the
+deal being sold (hazy, traced-over, a picture of a place). Crisp is what's actually there: no wobble or drift,
+one even line, true colour, no haze or grain (`HANDS.crisp`, `CRISP` in `js/roto/kit.js`, `crispLook` in the
+shader). The `SWITCH` list in `shots.js` lands every switch on a lyric, and each one spreads out from an element
+(the fish, the treaty, the scales, the jar, her). The last switch, on "love", is permanent. The brochure props
+stay flat and still in both looks. Draft 1: https://youtu.be/mnsk9RJPPv0 (unlisted). The generative ideas so far (brochure, placards, peeling heart, tear to a
 real lake) all survive as props inside this one story.
 
 **Story:** a man in a red toque paddles a lake at dawn. A man in a pale blue suit keeps offering him the fake
