@@ -121,3 +121,12 @@ and during the V-to-VI handoff; both groups carry `data-layout-allow-overlap`.
   the label. Worth a look in Nutrifax.
 - `docs/claude/label-system.md` says standard formats are pay-per-label (Ω); the CA landing page says
   "free". The film makes no price claim.
+
+## Draft 1
+
+https://youtu.be/i7HvLFXCpPw (unlisted, default channel), 86.1 s at 720p, 24 fps
+(`renders/nutrifax-label_take01_draft1.mp4`, sha256 8da91ce3ce323e21...). Rendered in about 90 s under the
+shared lock. Remux adds 0.8 dB and a limiter: -14.2 LUFS integrated, true peak -1.3 dBFS. flashcheck
+PASS (worst 1 flash in a second, at the plate VI turn). Eight tiled frames and two full frames
+(75.5 s, 85.5 s) checked by eye; the MP4 matches the snapshots. No real names, vendors, keys or
+amounts in the sources (grep audit).
