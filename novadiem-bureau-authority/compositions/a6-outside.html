@@ -1,0 +1,99 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #a6 {
+          position: absolute;
+          inset: 0;
+        }
+      </style>
+      <div id="a6" data-composition-id="a6" data-width="1920" data-height="1080">
+        <div id="a6-all" class="layer">
+          <svg class="full" viewBox="0 0 1920 1080">
+            <g id="a6-art"></g>
+          </svg>
+          <div class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate VI</div>
+          <div class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>Outside Actions</div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text, kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 61.23);
+          const art = K.$("a6-art");
+          const P = AG.rig(art);
+          const G = AG.groups(P);
+          AG.hide(G.review);
+          const Y = AG.Y;
+          AG.show(K, [...G.base, ...G.owner], K.T(61.23));
+
+          // 1. an action that reaches outside the run: a real email to a real recipient
+          const E = AG.packet(art, "SEND EMAIL", 250, Y);
+          AG.appear(tl, E, K.T(61.81));
+          AG.move(K, tl, E, `M250 ${Y}H${AG.DCX}`, K.T(61.81), 0.9);
+
+          const C = AG.card(art, 1290, 160, 560, 330, "EXTERNAL-ACTION CHECKPOINT");
+          AG.drawCard(K, C, K.T(62.42));
+          const rows = [
+            ["action type", "email send"],
+            ["target", "a real recipient"],
+            ["payload", "the message body"],
+            ["reversibility", "irreversible"],
+          ].map(([k, v], i) => AG.row(C, i, k, v, { step: 50, vx: 230 }));
+          rows.forEach((r, i) => AG.drawRow(K, r, K.T(63.0) + i * 0.58));
+
+          // it goes to the owner, and is logged before it fires
+          AG.move(K, tl, E, `M${AG.DCX} ${Y}V${AG.PY}`, K.T(65.34), 0.8);
+          const lg = text("logged to log.md before it fires", { class: "mono small gold-t", x: 1314, y: 470 }, art);
+          K.fade(lg, K.T(65.94), 0.35);
+          const rev = text("reversible or not, the same gate", { class: "mono small dim", x: 140, y: 396 }, art);
+          const uns = text("UNSURE? IT COUNTS AS EXTERNAL.", { class: "mono q red-t", x: 140, y: 356 }, art);
+          K.reveal(uns, K.T(66.53), 0.7);
+          K.fade(rev, K.T(67.71), 0.35);
+
+          // 2. a deploy past dev: only an explicit go, for this action, now
+          const first = [C.g, lg, rev, uns];
+          first.forEach((n) => tl.fromTo(n, { opacity: 1 }, { opacity: 0, duration: 0.35, immediateRender: false }, K.T(69.47)));
+          AG.vanish(tl, E, K.T(69.47), 0.35);
+          const D = AG.packet(art, "DEPLOY STAGING", 250, Y);
+          AG.appear(tl, D, K.T(70.05));
+          AG.move(K, tl, D, `M250 ${Y}H${AG.DCX}`, K.T(70.05), 0.9);
+
+          const tx = 1290;
+          const asks = [
+            ["a plan step says deploy", false],
+            ['"looks good", "continue", silence', false],
+            ['owner: "deploy to staging, now"', true],
+          ].map(([t, ok], i) => {
+            const y = 220 + i * 70;
+            const n = text(t, { class: "mono src", x: tx + 44, y }, art);
+            const m = ok ? AG.check(art, tx + 12, y - 6) : AG.cross(art, tx + 12, y - 7);
+            const v = text(ok ? "a go" : "not a go", { class: ok ? "mono small gold-t" : "mono small dim", x: tx + 44, y: y + 28 }, art);
+            return { n, m, v, ok };
+          });
+          asks.forEach((a, i) => {
+            const t = K.T(70.05) + i * 0.6;
+            K.reveal(a.n, t, 0.5);
+            K.draw(a.m, t + 0.45, 0.3);
+            K.fade(a.v, t + 0.6, 0.3);
+          });
+
+          // already authorized: no fresh ask, the gate lifts
+          AG.lift(tl, P, K.T(72.4));
+          AG.move(K, tl, D, `M${AG.DCX} ${Y}H1480`, K.T(72.99), 1.0);
+          const au = text("already authorized: no fresh ask", { class: "mono small gold-t", x: 1480, y: Y + 46, "text-anchor": "middle" }, art);
+          K.fade(au, K.T(72.99), 0.35);
+
+          K.out(K.$("a6-all"), K.R(74.95), 0.4);
+          window.__timelines["a6"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

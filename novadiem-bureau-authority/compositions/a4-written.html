@@ -1,0 +1,72 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #a4 {
+          position: absolute;
+          inset: 0;
+        }
+      </style>
+      <div id="a4" data-composition-id="a4" data-width="1920" data-height="1080">
+        <div id="a4-all" class="layer">
+          <svg class="full" viewBox="0 0 1920 1080">
+            <g id="a4-art"></g>
+          </svg>
+          <div class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate IV</div>
+          <div class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>Written Down</div>
+          <div id="a4-st" class="statement"><span class="phrase">It writes the fork down,</span> <span class="phrase red">then waits.</span></div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text, kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 37.69);
+          const art = K.$("a4-art");
+          const P = AG.rig(art);
+          const G = AG.groups(P);
+          AG.hide(G.review);
+          const Y = AG.Y;
+
+          // plate III's end state: the fork waits below the owner's control point
+          AG.show(K, [...G.base, ...G.owner], K.T(37.69));
+          const F = AG.packet(art, "FORK", AG.DCX, AG.PY);
+          AG.appear(tl, F, K.T(37.69), 0.35);
+
+          // four records, written before anyone is asked
+          const C = AG.card(art, 1250, 200, 590, 300, "WRITTEN DOWN");
+          AG.drawCard(K, C, K.T(38.29));
+          const rows = [
+            ["ledger", "03.F1 · escalate"],
+            ["state.json", "open_questions +1"],
+            ["log.md", "the fork, appended"],
+            ["notify", "question + recommendation"],
+          ].map(([k, v], i) => AG.row(C, i, k, v, { step: 48, vx: 210 }));
+          rows.forEach((r, i) => {
+            const t = K.T(38.87) + i * 0.6;
+            AG.carry(K, tl, art, `M${AG.DCX + 70} ${AG.PY}H1236`, t - 0.5, 0.5);
+            AG.drawRow(K, r, t);
+          });
+
+          // then it ends its turn: no pop-up picker holding the session
+          const ring = el("circle", { class: "ln line-strong construct", cx: AG.DCX, cy: AG.OY, r: 64, style: "opacity:0.9" }, art);
+          K.fade(ring, K.T(42.4), 0.5);
+          tl.fromTo(ring, { rotation: 0, svgOrigin: `${AG.DCX} ${AG.OY}` }, { rotation: 90, svgOrigin: `${AG.DCX} ${AG.OY}`, duration: 4.6, ease: "none" }, K.T(42.4));
+          const ends = text("ENDS ITS TURN", { class: "mono small gold-t", x: 890, y: 230, "text-anchor": "end" }, art);
+          const nop = text("written, not a pop-up picker", { class: "mono small dim", x: 890, y: 258, "text-anchor": "end" }, art);
+          K.fade(ends, K.T(42.4), 0.35);
+          K.fade(nop, K.T(43.0), 0.35);
+
+          K.reveal(K.$("a4-st"), K.T(43.58), 0.8);
+          K.out(K.$("a4-all"), K.R(46.7), 0.4);
+          window.__timelines["a4"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

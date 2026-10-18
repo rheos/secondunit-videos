@@ -1,0 +1,70 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #a2 {
+          position: absolute;
+          inset: 0;
+        }
+      </style>
+      <div id="a2" data-composition-id="a2" data-width="1920" data-height="1080">
+        <div id="a2-all" class="layer">
+          <svg class="full" viewBox="0 0 1920 1080">
+            <g id="a2-art"></g>
+          </svg>
+          <div class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate II</div>
+          <div class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>Routine</div>
+          <div id="a2-st" class="statement"><span class="phrase">Routine checks pass. The run moves on.</span></div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text, kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 9.47);
+          const art = K.$("a2-art");
+          const P = AG.rig(art);
+          const G = AG.groups(P);
+          AG.hide(G.owner);
+          const Y = AG.Y;
+
+          AG.drawBase(K, P, K.T(9.47));
+
+          // checkpoint 03 comes back from the Conductor, marked routine
+          const A = AG.packet(art, "CHECKPOINT 03", 250, Y);
+          AG.appear(tl, A, K.T(11.24));
+          AG.move(K, tl, A, `M250 ${Y}H${AG.DCX}`, K.T(11.24), 1.1);
+          const rt = text("return-type: routine-checkpoint", { class: "mono small dim", x: 140, y: 470 }, art);
+          K.fade(rt, K.T(11.82), 0.35);
+
+          // the Delegate never grades: it stages the packet for a fresh, read-only reviewer
+          AG.drawReview(K, P, K.T(13.0));
+          AG.carry(K, tl, art, `M1060 ${Y + 40}V700`, K.T(13.58), 0.6);
+
+          // the verdict: one of three
+          const opts = ["proceed", "revise", "escalate"].map((w, i) => text(w, { class: i ? "mono small dim" : "mono", x: 1130, y: 692 + i * 30 }, art));
+          opts.forEach((n, i) => K.fade(n, K.T(14.77) + i * 0.12, 0.3));
+          const pick = el("rect", { class: "ln line-strong", x: 1118, y: 668, width: 136, height: 34, style: "stroke-width:2.5" }, art);
+          K.draw(pick, K.T(15.35), 0.5, "none");
+          const vL = text("VERDICT", { class: "mono small gold-t", x: 1130, y: 650 }, art);
+          K.fade(vL, K.T(15.35), 0.3);
+
+          // the gate lifts and the work goes on (the full groove arrives at 18.88)
+          AG.lift(tl, P, K.T(17.69));
+          AG.move(K, tl, A, `M${AG.DCX} ${Y}H1480`, K.T(18.3), 1.2);
+          const away = text("the owner can be elsewhere", { class: "mono small gold-t", x: 1480, y: Y + 46, "text-anchor": "middle" }, art);
+          K.fade(away, K.T(19.46), 0.4);
+
+          K.reveal(K.$("a2-st"), K.T(20.06), 0.8);
+          K.out(K.$("a2-all"), K.R(23.15), 0.4);
+          window.__timelines["a2"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>
