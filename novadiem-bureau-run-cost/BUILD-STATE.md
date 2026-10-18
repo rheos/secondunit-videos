@@ -1,7 +1,7 @@
 # Build state: The Ledger (Inside the Bureau, deep dive 10)
 
-**Draft 1 BUILT 2026-10-18**: DRAFT_LINK (unlisted, default channel). Seven plates, 87.5 s, 720p,
-kit `paper` theme (The Cold Read's look). `hyperframes check` passes. Local master:
+**Draft 1 BUILT 2026-10-18**: https://youtu.be/omf_4GhwomI (unlisted, default channel). Seven plates, 87.5 s, 720p,
+kit `paper` theme (The Cold Read's look). `hyperframes check` passes; flashcheck PASS (worst 0.5 flashes/s); -13.8 LUFS, peak -2.9 dBFS after -1.9 dB in the remux. Local master:
 `renders/bureau-run-cost_take01_draft1.mp4` (gitignored). Next: Robin's notes.
 Question: what did this run actually cost? Point: failed and discarded work counts toward the cost,
 and a cost nobody measured stays "unknown", never zero.
