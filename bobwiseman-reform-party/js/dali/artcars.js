@@ -34,7 +34,7 @@ const ARTCARS = [
   // dawn, the intro glide (0-11.8): the dragon coming home from deep playa toward the city, rolling slowly along z 46 while the
   // drone flies past it 46 m to its right; it grows from the horizon into the left half of the frame and slides out left
   // (draft 11: there from the first frame and drawn until it has left the frame, so it never blinks in or out)
-  { id: 'dragon-dawn', kind: 'dragon', t0: 0, t1: 11.8, path: [[0, -120, 46], [17, -157, 46]] },
+  { id: 'dragon-dawn', kind: 'dragon', t0: 0, t1: 11.8, path: [[0, -120, 72], [17, -157, 72]] }, // draft 20 (Robin): off the 9:00 promenade, no cars on the path
   // instrumental 1, the painter's window (61-64.4, no lyric; camera.js WINS out to the suit painting the sky beige at (78, -28)):
   // Robin on his chopper rides across the empty foreground, left to right, side on, about 10 m from the drone (230 px tall),
   // under the canvas and gone before the sax rider rides in on 65.0
