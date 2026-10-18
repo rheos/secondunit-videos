@@ -80,3 +80,19 @@ inside a 3% safe line. Use `--safe 0.05` for tv (the tube crops 3% a side).
   matches v2 outside the span to encode noise (PSNR-Y 37 dB or more), the caption audit passes on 22-29.5 s, 0 bad
   frames, flash check pass. The patch was drawn on the Mac: the cloud-render runner has no Courier New, so the TV
   captions came out in a fallback monospace there (fix the workflow's fonts before cloud-rendering a TV page).
+
+## Finals (TV news v3), 2026-10-17
+
+Bob signed off TV news v3 on 2026-10-16 ("great. can I get them in 1080 740 and 9x16?"). Scripts in `tools/finals/`,
+run from the project folder in order: `seq.sh` (links the pages' own 1080p frames onto the song grid in
+work/finals/wide: tv-r3a-bv 0-2302 with the hat-tip frames f634-682 from the 22-29.5 s patch render, tv-r3b
+2302-5782, tv 5782-6276, tv-r3c-bv 6276-8171), `strip.py` + `plan916.py` (the 9:16 window), `encode.sh`.
+Nothing was redrawn or upscaled: render.mjs always draws at 1920x1080, so the 1080p master is those frames once
+encoded (crf 17) and the 720p is the same frames scaled down once (crf 18).
+9:16 (720x1280): a Giulietta-style 607 px window would cut the teleprinter strip (about 1010 px wide), so the tall
+cut is a 1200x1080 window centred on the strip, scaled to 720x648 in the middle of the frame over the same picture
+blurred and darkened. The window holds still and pans with the strip when the camera moves (333 frames move,
+at most 19 px a frame); the strip sits inside it with 20 px margin on every frame that has one.
+Checks: 8171 frames each; both 16:9 finals match the v3 draft on every frame to encode noise (lowest PSNR-Y 33 dB,
+against a crf-22 draft); hat tip and refrain frames compared side by side. Files on Bob's downloads page as
+"Libelous" 1080p / 720p / 9x16. Outputs: out/finals/lib_tvnews-v3-final_f00000-f08171_24fps_{1080p,720p,9x16}.mp4.
