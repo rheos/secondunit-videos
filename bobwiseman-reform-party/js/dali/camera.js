@@ -375,7 +375,11 @@ function camBuild() {
   for (let i = 0; i < N; i++) { const t = i * CAM_DT; let row;
     const e = (t > AIR.t0 && t < AIR.t1) ? camEnd(t) : null;
     if (e) row = [...qOf(t, e.x, e.y, e.z), e.p, e.yaw, Math.log(e.f)]; else row = t <= AIR.t0 ? P1(t) : P3(t);
-    row[4] = unwrap(row[4], ywRef); ywRef = row[4]; for (let c = 0; c < 6; c++) src[i * 6 + c] = row[c]; }
+    row[4] = unwrap(row[4], ywRef); ywRef = row[4];
+    // draft 14 (Robin, 1:28): never below the table top while over or beside it, or the props on top show from underneath
+    // (the driver's hole shots, inside .8 m of its centre, are the only exception)
+    if (!e && Math.abs(row[0]) < 7.4 && Math.abs(row[2] - carZ(t)) < 4.5 && Math.hypot(row[0], row[2] - carZ(t)) > .8) row[1] = Math.max(row[1], TOP + .3 + .25 * clamp((7.4 - Math.abs(row[0])) / 3));
+    for (let c = 0; c < 6; c++) src[i * 6 + c] = row[c]; }
   const cues = typeof CUE_TARGETS !== 'undefined' ? CUE_TARGETS.map((q) => q.t) : [];
   CAM_TAB = { N, src, out: camPass(camPass(src, 1, cues), -1, cues) };
 }
