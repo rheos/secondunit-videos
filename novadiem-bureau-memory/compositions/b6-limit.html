@@ -1,0 +1,100 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #b6 {
+          position: absolute;
+          inset: 0;
+        }
+        #b6 .statement {
+          font-size: 64px;
+        }
+      </style>
+      <div id="b6" data-composition-id="b6" data-width="1920" data-height="1080">
+        <div class="layer">
+          <svg class="full" viewBox="0 0 1920 1080">
+            <g id="b6-map"></g>
+            <g id="b6-top"></g>
+          </svg>
+          <div class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate VI</div>
+          <div class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>The Limit</div>
+          <div id="b6-st" class="statement">
+            <span id="b6-st-a" class="phrase">Only what was</span>
+            <span id="b6-st-b" class="phrase red">written down</span>
+            <span id="b6-st-c" class="phrase">comes back.</span>
+          </div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text, kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 65.34);
+          const map = K.$("b6-map");
+          const top = K.$("b6-top");
+          const { carry } = AM.cues(K, tl, top);
+          const transient = [];
+          const keep = (n) => (transient.push(n), n);
+
+          AM.session(map, 2);
+          const C = AM.conductor(map, "NEW CTX");
+          AM.READ.forEach(([k, v], i) => AM.row(C.g, k, v, i));
+          const D = AM.disk(map);
+          text("resumed_legs: 1", { class: "mono tiny gold-t", x: 420, y: 744, "text-anchor": "middle" }, D.g);
+
+          // two things decided in session 1 (illustrative). One was written to state.json, one was only said.
+          const cap = keep(text("DECIDED IN SESSION 1", { class: "mono tiny dim", x: 960, y: 216 }, top));
+          K.fade(cap, K.T(66.53), 0.3);
+
+          const aBox = keep(el("rect", { class: "ln ink", x: 960, y: 230, width: 640, height: 70 }, top));
+          K.draw(aBox, K.T(67.11), 0.6, "none");
+          const aT = keep(text("auth: session cookie", { class: "mono small", x: 986, y: 272 }, top));
+          K.reveal(aT, K.T(67.71), 0.5);
+          const aW = keep(text("WRITTEN TO STATE.JSON", { class: "mono tiny gold-t", x: 1580, y: 272, "text-anchor": "end" }, top));
+          K.fade(aW, K.T(68.29), 0.3);
+          const aLine = keep(el("path", { class: "ln line", d: "M960 265H930V544H420V558" }, top));
+          K.draw(aLine, K.T(68.29), 0.8, "power1.inOut");
+          const dec = keep(text('+ "decisions"', { class: "mono tiny gold-t", x: 468, y: 604 }, top));
+          K.fade(dec, K.T(68.87), 0.4);
+
+          // the new session reads it back with everything else
+          carry("M420 600V420", K.T(69.47), 0.6);
+          const [k5, v5] = AM.row(C.g, "decided", "auth: session cookie", 5);
+          K.fade(k5, K.T(70.05), 0.3);
+          K.reveal(v5, K.T(70.05) + 0.1, 0.5);
+
+          // the other was only said in the conversation, and the conversation is gone
+          const bBox = keep(el("rect", { class: "ln planned", x: 960, y: 324, width: 640, height: 70 }, top));
+          K.sweep(bBox, K.T(70.64), 0.6);
+          const bT = keep(text("keep the v1 endpoints", { class: "mono small planned-t", x: 986, y: 366 }, top));
+          K.fade(bT, K.T(71.24), 0.4);
+          const bW = keep(text("SAID ONLY IN CHAT", { class: "mono tiny dim", x: 1580, y: 366, "text-anchor": "end" }, top));
+          K.fade(bW, K.T(71.24) + 0.2, 0.3);
+          const bLine = keep(el("path", { class: "ln planned", d: "M1280 394V478" }, top));
+          K.sweep(bLine, K.T(71.82), 0.4);
+          const bX = keep(el("path", { class: "ln ink", d: "M1270 476L1290 496M1290 476L1270 496" }, top));
+          K.draw(bX, K.T(71.82) + 0.4, 0.3);
+          const bN = keep(text("NOT ON DISK", { class: "mono tiny dim", x: 1306, y: 470 }, top));
+          K.fade(bN, K.T(71.82) + 0.5, 0.3);
+          const [k6, v6] = AM.row(C.g, "v1 endpoints", "?", 6);
+          K.fade(k6, K.T(72.4), 0.3);
+          K.fade(v6, K.T(72.4) + 0.1, 0.3);
+
+          K.reveal(K.$("b6-st-a"), K.T(73.0), 0.5);
+          K.reveal(K.$("b6-st-b"), K.T(73.58), 0.6);
+          K.reveal(K.$("b6-st-c"), K.T(74.16), 0.5);
+
+          const end = 77.3 - 65.34;
+          K.out(K.$("b6-st"), end, 0.35);
+          [...transient, k6, v6].forEach((n) => K.out(n, end, 0.35));
+          window.__timelines["b6"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>
