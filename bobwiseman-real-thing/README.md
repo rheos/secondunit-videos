@@ -48,3 +48,29 @@ Concept: real vs fake. The fake is a glossy mid-century tourism brochure; the re
 Little Bob (`js/bob.js`) is the Satisfied Mind / YDLM character redrawn in each look's hand. He walks through A (print) and B and D (marker).
 
 Reel: `out/real-thing-2026_looks-v1_f00600-f03980_24fps_reel.mp4` (1073 frames, 720p; flashcheck PASS, badframes 0). Unlisted for Robin: https://youtu.be/Ax6-Bn4jL40 (not sent to Bob).
+
+## Rotoscope animatic (draft 1, 2026-10-17)
+
+After Bob turned down all four look tests (#165), Robin asked for the whole song storyboarded in animation, in the
+"rotoscope dream" look of Airplane on the Highway (Waking Life after the fact). Kit copied from
+`bobwiseman-airplane-v1/sections/dream-j` (core, gl, person, roto -> `js/roto/kit.js`); the look shader adds `grey`
+and `warm`. Page `roto.html`; `node rstills.mjs <dir> <t...>` for stills; render
+`PAGE=roto.html QS=scale=0.6667 node render.mjs 0 165.854 out/<name>.mp4 6 24 0.6667`.
+
+**The rule that carries it:** real things are rotoscoped (they breathe, fills slide under their lines); fake things
+are drawn dead still and flat in brochure colours (`fake()` in `js/roto/world.js`). Every "settle for less" image
+is a flat thing laid over a living one. The generative ideas so far (brochure, placards, peeling heart, tear to a
+real lake) all survive as props inside this one story.
+
+**Story:** a man in a red toque paddles a lake at dawn. A man in a pale blue suit keeps offering him the fake
+version: a brochure of the lake, flat fish, a painted sky dropped like a theatre flat, a paper treaty signed by a
+hand from the clouds, men painting the grey lake brochure-blue. He pulls the paint off like a tablecloth and puts
+his hand in real water. Shore people hold drawn placards (fish, drop, tree, heart; no words). In the office the
+blue-suit man offers a shrink-wrapped fish, presses the scales, hides behind smiling masks, pours dirt from a jar of
+"air". Out in the dust his paper building blows apart; a shoot comes up; rain; a woman on the far dock is a
+cardboard stand-up that falls over on "fake" and she is there behind it. They paddle off as the billboards peel
+away, fish jump, the crowd waves, little Bob walks the shore with his Junos, mist closes over the lake.
+
+Shot list with times: `js/roto/shots.js` (25 shots, each commented). Transitions marked `TR` open the next shot
+through an iris from an element (the loon ripple, the near water, the ink, the lake-to-table float, the dust, the
+raindrop splash).
