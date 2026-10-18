@@ -31,8 +31,9 @@
       <div id="p7" data-composition-id="p7" data-width="1920" data-height="1080">
         <svg class="full" viewBox="0 0 1920 1080">
           <g id="p7-pipe"></g>
-          <text id="p7-site" class="site" x="960" y="560" text-anchor="middle">nutrifax.app</text>
-          <text id="p7-fine" class="fine" x="960" y="640" text-anchor="middle">Confirm the final label against current regulations for your product.</text>
+          <text id="p7-name" class="site" x="960" y="540" text-anchor="middle">Nutrifax</text>
+          <text id="p7-site" class="mono head" x="960" y="592" text-anchor="middle">nutrifax.app</text>
+          <text id="p7-fine" class="fine" x="960" y="660" text-anchor="middle">Confirm the final label against current regulations for your product.</text>
         </svg>
         <div id="p7-label-l" class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate VII</div>
         <div id="p7-label-r" class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>Colophon</div>
@@ -69,7 +70,8 @@
 
           K.reveal(K.$("p7-st-a"), K.T(79.61), 0.6);
           K.reveal(K.$("p7-st-b"), K.T(80.26), 0.8);
-          K.fade(K.$("p7-site"), K.T(81.56), 0.5);
+          K.fade(K.$("p7-name"), K.T(81.56), 0.5);
+          K.fade(K.$("p7-site"), K.T(81.56) + 0.3, 0.5);
           K.fade(K.$("p7-fine"), K.T(82.21), 0.5);
 
           window.__timelines["p7"] = tl;

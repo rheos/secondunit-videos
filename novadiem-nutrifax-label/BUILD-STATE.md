@@ -87,7 +87,7 @@ Nothing is drawn dashed: every part shown is built.
 
 ## Plates
 
-- **I · The Recipe (0-10).** The card draws, the recipe is written one line per beat from 2.02.
+- **I · The Recipe (0-10).** Right label "Nutrifax · Recipe In, Label Out". The card draws, the recipe is written one line per beat from 2.02.
   "Your recipe, in cups and spoons." 4.62; "The label needs numbers." (red) 6.57. Clears to the card.
 - **II · The Match (10-24).** Card glides left 10.47. Each line is underlined and arrowed to its CNF
   record one beat apart from 11.13. "Each line is matched to / the Canadian Nutrient File." (red)
@@ -109,7 +109,7 @@ Nothing is drawn dashed: every part shown is built.
   69.17; the other nine fill from 70.47. PDF and PNG 71.12. The audit report's sodium trail 72.43.
   "Print-ready, ten to a sheet, / with every number traced to its source." (red) 71.12/73.72.
 - **VII · Colophon (78-86).** The six stations as construction lines; "Put your recipe in. / Get a
-  label you can print." (red) 79.61/80.26; nutrifax.app 81.56; the standing qualifier 82.21.
+  label you can print." (red) 79.61/80.26; "Nutrifax" wordmark 81.56 with nutrifax.app under it; the standing qualifier 82.21.
 
 `hyperframes check` passes. The table's text boxes overlap while it rotates into the sheet (plate VI)
 and during the V-to-VI handoff; both groups carry `data-layout-allow-overlap`.
@@ -130,3 +130,11 @@ shared lock. Remux adds 0.8 dB and a limiter: -14.2 LUFS integrated, true peak -
 PASS (worst 1 flash in a second, at the plate VI turn). Eight tiled frames and two full frames
 (75.5 s, 85.5 s) checked by eye; the MP4 matches the snapshots. No real names, vendors, keys or
 amounts in the sources (grep audit).
+
+## Draft 1b (2026-10-17)
+
+New series rule from the coordinating session: name the product on screen. Plate I's right label now
+reads "Nutrifax · Recipe In, Label Out" and the colophon shows "Nutrifax" above nutrifax.app.
+Nothing else changed. https://youtu.be/RekZ0cM4eFU (unlisted, default channel), 86.0 s at 720p
+(`renders/nutrifax-label_take01_draft1b.mp4`). Same remux: -14.2 LUFS, true peak -1.3 dBFS;
+flashcheck PASS. Supersedes the draft 1 upload above (still live, unlisted).
