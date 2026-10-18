@@ -94,39 +94,15 @@
   const jab=Math.exp(-Math.max(0,t-POINT.you)*5)*(t>=POINT.you?1:0),E=mix(.83,-.25,w),L=mix(164,82-12*jab,w);
   const tx=b[0]+side*Math.cos(E)*L,ty=b[1]-Math.sin(E)*L;
   b[2]=mix(b[0],tx,.33);b[3]=mix(b[1],ty,.33);b[4]=mix(b[0],tx,.67);b[5]=mix(b[1],ty,.67);b[6]=tx;b[7]=ty;return w}
- function heart(t,a,raysOnly=false){if(!raysOnly)glintToHeart(t);const birth=smooth(96.3,97.4,t);if(!birth)return;
-  const {rise,final,climax,x,y,radius,sun}=heartGeom(t,a);
-  if(raysOnly){if(!sun)return;g.save();g.translate(x,y);g.scale(birth,birth);g.rotate(t*.02);
-   const n=40,inner=radius*1.12,len=(120+final*330+climax*260)*(.9+.1*Math.sin(S.pulse(t))),glow=.5+sun*.25+A.brass(t)*.2;
-   g.globalAlpha=Math.min(1,glow);
-   for(let j=0;j<n;j++){const ang=j/n*Math.PI*2,ca=Math.cos(ang),sa=Math.sin(ang),l=len*(j%2?.62:1);
-    if(j%2){let d=`M${ca*inner} ${sa*inner}`;for(let k=1;k<=8;k++){const r=inner+l*k/8,o=(k%2?1:-1)*7*(1-k/9);d+=`L${ca*r-sa*o} ${sa*r+ca*o}`}stroke(d,'#b5791f',2.2)}
-    else {line(ca*inner,sa*inner,ca*(inner+l),sa*(inner+l),C.ink,1.1);line(ca*inner+sa*2,sa*inner-ca*2,ca*(inner+l*.8)+sa*2,sa*(inner+l*.8)-ca*2,C.gold,1.6)}}
-   g.restore();return}
-  // The young tree: same path the care packets ride, now with real wood and two cradling branches.
-  // v11: the trunk always runs the full way from the junction to the heart, so the heart never floats (audit C1).
-  const trunk=[960,936,mix(960,936,rise),mix(936,759,rise),mix(960,990,rise),Math.min(936,y+210),x,y+radius*.7];
-  // v16 (audit #2): a forked young tree, not a pole: root flare at the junction, a lower pair of leafy branches.
-  for(const s2 of [-1,0,1])S.woodyRoot([960,930,960+s2*20,950,960+s2*45,968,960+s2*70+(s2?0:8),990],rise,18,3,70+s2,{});
-  if(rise>.45){const g2=smooth(.45,.9,rise),season=Math.max(.45,A.leafSeason?A.leafSeason(t):1);
-   for(const side of [-1,1]){const p0=S.bez(trunk,.52),b=[p0[0],p0[1],p0[0]+side*40,p0[1]-30,p0[0]+side*85,p0[1]-75,p0[0]+side*110,p0[1]-120];
-    armDance(b,side,t);const pw=armPoint(b,side,t);const warp=armWave(b,side,t),wq=u=>{const q=S.bez(b,u);if(!warp)return q;const w=warp(u);return [q[0]+w[0],q[1]+w[1]]};
-    S.woodyRoot(b,g2,14,mix(3,9,pw),60+side,warp?{warp}:{});if(pw>.3){g.save();g.globalAlpha=smooth(.3,.7,pw);ellipse(b[6],b[7],6,7,'#e2c995',C.ink);ellipse(b[6],b[7],3,3.5,null,'#8f5f1e');g.restore()} /* the branch end, facing us */for(let k=0;k<6;k++){const u=.3+k*.12;if(u>g2)continue;const q=wq(u),q2=wq(Math.min(1,u+.03)),ang=Math.atan2(q2[1]-q[1],q2[0]-q[0]);S.leaf(q[0],q[1],ang+(k%2?1.8:-1.3)*side,.6,clamp((g2-u)*5)*season)}}}
-  S.woodyRoot(trunk,1,mix(16,56,rise),mix(7,24,rise),77,{});
-  // v12: their roots feed the heart: sap runs from each partner's root into the junction and up the trunk (audit C3).
-  if(t>98.5&&t<108.8){for(const [k,root] of [[0,S.roots[2]],[1,S.roots[7]]]){const q=((t-98.5)/1.7+k*.5)%1,u=q<.62?q/.62:(q-.62)/.38;
-   const p=q<.62?S.bez(root,u):S.bez(trunk,u);A.glow(p[0],p[1],28*(1-smooth(108.2,108.8,t)))}}
-  if(t>111&&t<122.7){const sc=window.ALCHEMY_TRUMPET_SCORE;for(const [a2] of sc.intervals){const u=(t*24-a2)/20;if(u>=0&&u<1){const p=S.bez(trunk,u);A.glow(p[0],p[1],34*(1-u*.4))}}}
+ // Draft 4 (Bob's note on draft 3): the bridge (js/alchemy/bridge.js) can lift and inflate the heart off its tree and draw
+ // it behind the saints. A.bridgeLift is identity outside the bridge, so these draw exactly as before everywhere else.
+ function heartDisc(x,y,radius,birth,sun){
   // The emblem sun sits behind; the branches hold the heart in front of it.
   if(sun){g.save();g.translate(x,y);g.scale(birth,birth);g.globalAlpha=sun;ellipse(0,0,radius*1.1,radius*1.1,C.gold,C.ink);
    for(const k of [1.02,.93,.86])ellipse(0,0,radius*k,radius*k,null,'#8f5f1e');
    g.save();g.beginPath();g.arc(0,0,radius*1.08,0,Math.PI*2);g.clip();for(let j=0;j<60;j++){const ang=j/60*Math.PI*2;line(Math.cos(ang)*radius*.86,Math.sin(ang)*radius*.86,Math.cos(ang)*radius*1.08,Math.sin(ang)*radius*1.08,'#8f5f1e',.7)}g.restore();g.restore()}
-  if(rise>.6){const grow=smooth(.6,1,rise),season=Math.max(.55,A.leafSeason?A.leafSeason(t):1);
-   for(const side of [-1,1]){const p0=S.bez(trunk,.8),b=[p0[0],p0[1],p0[0]+side*radius*.7,p0[1]+radius*.05,x+side*radius*1.3,y+radius*.45,x+side*radius*.8,y-radius*.3]; // v11: ends under the heart's edge so it holds it (audit C2)
-    S.woodyRoot(b,grow,18,4,80+side,{});
-    for(let k=0;k<8;k++){const u=.22+k*.1;if(u>grow)continue;const q=S.bez(b,u),q2=S.bez(b,Math.min(1,u+.02));const ang=Math.atan2(q2[1]-q[1],q2[0]-q[0]);
-     S.leaf(q[0],q[1],ang+(k%2?1.9:-1.2)*side,.62+.18*noise(k+side*9),clamp((grow-u)*5)*season)}}
-  }
+ }
+ function heartBody(t,x,y,radius,birth,sun){
   g.save();g.translate(x,y);g.scale(birth,birth);
   const path=new Path2D('M0 1C-.18 .85-1 .25-.86-.3C-.78-.78-.2-.8 0-.36C.22-.82.85-.74.9-.22C1 .23.25 .76 0 1Z');
   // v16: green sepals cup the bud, then open back as it flowers (audit C4).
@@ -149,6 +125,43 @@
   if(sun){const ph=Math.floor(t*12)*1.7,h=radius*(.9+.12*Math.sin(ph))*sun,w=radius*.11;
    for(const [fx,fy,rot,k,o] of [[-.4,-.72,-.3,.42,2.4],[.4,-.68,.28,.4,4.1],[0,-.36,0,1.4,1]]){g.save();g.translate(fx*radius,fy*radius);g.rotate(rot);flame(h*k,w*(k>.9?1.6:.8),ph+o);g.restore()}} // v16: one large flame from the cleft (audit C12)
   g.restore();
+ }
+ A.bridgeLift=A.bridgeLift||(()=>({k:1,dx:0,dy:0,ray:1,behind:false,fa:0}));
+ A.heartBehind=(t,a)=>{const L=A.bridgeLift(t);if(!L.behind)return;const {x,y,radius,sun}=heartGeom(t,a),birth=smooth(96.3,97.4,t);
+  heartDisc(x+L.dx,y+L.dy,radius*L.k,birth,sun);heartBody(t,x+L.dx,y+L.dy,radius*L.k,birth,sun)};
+ function heart(t,a,raysOnly=false){if(!raysOnly)glintToHeart(t);const birth=smooth(96.3,97.4,t);if(!birth)return;
+  const {rise,final,climax,x,y,radius,sun}=heartGeom(t,a),L=A.bridgeLift(t),hx=x+L.dx,hy=y+L.dy,hr=radius*L.k;
+  if(raysOnly){if(!sun)return;g.save();g.translate(hx,hy);g.scale(birth,birth);g.rotate(t*.02);
+   const n=40,inner=hr*1.12,len=(120+final*330+climax*260)*(.9+.1*Math.sin(S.pulse(t)))*L.ray,glow=.5+sun*.25+A.brass(t)*.2;
+   g.globalAlpha=Math.min(1,glow);
+   for(let j=0;j<n;j++){const ang=j/n*Math.PI*2,ca=Math.cos(ang),sa=Math.sin(ang),l=len*(j%2?.62:1);
+    if(j%2){let d=`M${ca*inner} ${sa*inner}`;for(let k=1;k<=8;k++){const r=inner+l*k/8,o=(k%2?1:-1)*7*(1-k/9);d+=`L${ca*r-sa*o} ${sa*r+ca*o}`}stroke(d,'#b5791f',2.2)}
+    else {line(ca*inner,sa*inner,ca*(inner+l),sa*(inner+l),C.ink,1.1);line(ca*inner+sa*2,sa*inner-ca*2,ca*(inner+l*.8)+sa*2,sa*(inner+l*.8)-ca*2,C.gold,1.6)}}
+   g.restore();return}
+  // The young tree: same path the care packets ride, now with real wood and two cradling branches.
+  // v11: the trunk always runs the full way from the junction to the heart, so the heart never floats (audit C1).
+  const trunk=[960,936,mix(960,936,rise),mix(936,759,rise),mix(960,990,rise),Math.min(936,y+210),x,y+radius*.7];
+  // v16 (audit #2): a forked young tree, not a pole: root flare at the junction, a lower pair of leafy branches.
+  for(const s2 of [-1,0,1])S.woodyRoot([960,930,960+s2*20,950,960+s2*45,968,960+s2*70+(s2?0:8),990],rise,18,3,70+s2,{});
+  if(rise>.45){const g2=smooth(.45,.9,rise),season=Math.max(.45,A.leafSeason?A.leafSeason(t):1);
+   for(const side of [-1,1]){const p0=S.bez(trunk,.52),b=[p0[0],p0[1],p0[0]+side*40,p0[1]-30,p0[0]+side*85,p0[1]-75,p0[0]+side*110,p0[1]-120];
+    armDance(b,side,t);const pw=armPoint(b,side,t);const warp=armWave(b,side,t),wq=u=>{const q=S.bez(b,u);if(!warp)return q;const w=warp(u);return [q[0]+w[0],q[1]+w[1]]};
+    S.woodyRoot(b,g2,14,mix(3,9,pw),60+side,warp?{warp}:{});if(pw>.3){g.save();g.globalAlpha=smooth(.3,.7,pw);ellipse(b[6],b[7],6,7,'#e2c995',C.ink);ellipse(b[6],b[7],3,3.5,null,'#8f5f1e');g.restore()} /* the branch end, facing us */for(let k=0;k<6;k++){const u=.3+k*.12;if(u>g2)continue;const q=wq(u),q2=wq(Math.min(1,u+.03)),ang=Math.atan2(q2[1]-q[1],q2[0]-q[0]);S.leaf(q[0],q[1],ang+(k%2?1.8:-1.3)*side,.6,clamp((g2-u)*5)*season)}}}
+  S.woodyRoot(trunk,1,mix(16,56,rise),mix(7,24,rise),77,{});
+  // v12: their roots feed the heart: sap runs from each partner's root into the junction and up the trunk (audit C3).
+  if(t>98.5&&t<108.8){for(const [k,root] of [[0,S.roots[2]],[1,S.roots[7]]]){const q=((t-98.5)/1.7+k*.5)%1,u=q<.62?q/.62:(q-.62)/.38;
+   const p=q<.62?S.bez(root,u):S.bez(trunk,u);A.glow(p[0],p[1],28*(1-smooth(108.2,108.8,t)))}}
+  if(t>111&&t<122.7){const sc=window.ALCHEMY_TRUMPET_SCORE;for(const [a2] of sc.intervals){const u=(t*24-a2)/20;if(u>=0&&u<1){const p=S.bez(trunk,u);A.glow(p[0],p[1],34*(1-u*.4))}}}
+  // On the way home the front copy opens as an iris from the heart's centre, so the saints' branches slip behind it.
+  const iris=L.behind&&L.fa>0,open=f=>{if(!iris)return f();g.save();g.beginPath();g.arc(hx,hy,hr*1.3*L.fa,0,Math.PI*2);g.clip();f();g.restore()};
+  if(!L.behind||iris)open(()=>heartDisc(hx,hy,hr,birth,sun));
+  if(rise>.6){const grow=smooth(.6,1,rise),season=Math.max(.55,A.leafSeason?A.leafSeason(t):1);
+   for(const side of [-1,1]){const p0=S.bez(trunk,.8),b=[p0[0],p0[1],p0[0]+side*radius*.7,p0[1]+radius*.05,x+side*radius*1.3,y+radius*.45,x+side*radius*.8,y-radius*.3]; // v11: ends under the heart's edge so it holds it (audit C2)
+    S.woodyRoot(b,grow,18,4,80+side,{});
+    for(let k=0;k<8;k++){const u=.22+k*.1;if(u>grow)continue;const q=S.bez(b,u),q2=S.bez(b,Math.min(1,u+.02));const ang=Math.atan2(q2[1]-q[1],q2[0]-q[0]);
+     S.leaf(q[0],q[1],ang+(k%2?1.9:-1.2)*side,.62+.18*noise(k+side*9),clamp((grow-u)*5)*season)}}
+  }
+  if(!L.behind||iris)open(()=>heartBody(t,hx,hy,hr,birth,sun));
  }
  // v12: chorus 2's own move on "tree too" (89.0 s, audit C4/F10): a gold pulse runs every newcomer's root into the
  // pair's knot, bursts there, and the pair's roots light up.
@@ -273,10 +286,12 @@
   // A continuous widening from the existing look test, then a final pull-back to the whole plate.
   const close=.5*smooth(96.3,100.1,raw)*(1-smooth(108.0,110.0,raw)); // v16: half the bridge push, wings stay in (audit C14)
   const fr=smooth(136.5,146.6,raw),fk=1-.14*fr,pb=A.performance.push(raw),zoom=(1.032-.032*smooth(79.5,85,raw)+.12*close)*fk*pb.z; // v11: the pull-back lands on the last phrase (audit D7)
-  g.save();g.beginPath();g.rect(960-884*fk,537.5-467.5*fk,1768*fk,935*fk);g.clip();g.translate(960,540);g.scale(zoom,zoom);const view=pb.w&&zoom>1?A.performance.frameIn(960+(pb.x-960)*pb.w,540+(pb.y-540)*pb.w,zoom):[960+(pb.x-960)*pb.w,540+(pb.y-540)*pb.w];g.translate(-view[0]+2*Math.sin(raw*.14),-view[1]);S.sky(raw);warmSky(t,a);
+  g.save();g.beginPath();g.rect(960-884*fk,537.5-467.5*fk,1768*fk,935*fk);g.clip();g.translate(960,540);const bc=A.bridgeCam?A.bridgeCam(raw):null; // draft 4: the bridge's cut to a tilted close-up
+  if(bc){g.rotate(bc.r);g.scale(bc.z,bc.z);g.translate(-bc.x,-bc.y)}else{g.scale(zoom,zoom);const view=pb.w&&zoom>1?A.performance.frameIn(960+(pb.x-960)*pb.w,540+(pb.y-540)*pb.w,zoom):[960+(pb.x-960)*pb.w,540+(pb.y-540)*pb.w];g.translate(-view[0]+2*Math.sin(raw*.14),-view[1]);}S.sky(raw);warmSky(t,a);
   for(let i=0;i<5;i++)cloud(160+i*400+Math.sin(raw*.15+i)*22,140+(i%2)*-25,.72+(i%2)*.15,i%2?-1:1);
   horizonForest(t);S.ground(t);widerRoots(t);treeToo(t);goldenRoots(t);careFlow(t);finalRelay(t);returnReply(t);S.turf();
   orbitBirds(t);g.save();g.beginPath();g.rect(76,70,1768,690);g.clip();heart(t,a,true);g.restore(); // v16: rays stay in the sky (audit D7)
+  A.heartBehind(t,a); // draft 4: the lifted heart rides behind the saints
   upperHeralds(t,raw);
   for(const flip of [-1,1]){const h=heraldPosition(flip,t);g.save();g.translate(h.x,h.y);g.scale(h.scale,h.scale);const oldX=flip<0?290:1635;g.translate(-oldX,-294);S.herald(oldX,294,flip,t,raw);g.restore()}
   // The cast retreats below the soil while its musical emblem occupies the sky.
@@ -287,7 +302,7 @@
  
   // Foreground earth occludes the retreating bodies and the entire root section together.
   if(a){g.save();g.globalAlpha=Math.min(1,a*3.3);S.ground(t,false);g.restore()} // v11: no see-through feet (audit C14)
-  fallingLeaves(t);heart(t,a);brassRibbons(t,raw);orbitBirds(t,true);
+  fallingLeaves(t);heart(t,a);if(A.bridgeFront)A.bridgeFront(t,raw);brassRibbons(t,raw);orbitBirds(t,true);
   // Last verse roundels physically leave their row before the next chorus builds its cast.
   if(t<79.6){g.save();g.translate(0,-330*smooth(78.4,79.5,t));S.roundel(820,163,63,t,'wind',71.875);S.roundel(960,156,64,t,'sun',72.875);S.roundel(1100,163,63,t,'winter',73.75);g.restore()}
   g.restore();emblemFrame(fr,fk,t);border();
