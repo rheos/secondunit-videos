@@ -215,11 +215,11 @@ function sOffice(t, tt, len) {
     office(t);
     const P = slickPose(t, { armR: [.9 - slide * .3, -1.0, 0, .6, 1] }); person({ ...P, parts: 'body' }); person({ ...P, parts: 'arms' });
     part([[-400, 760], [2400, 750], [2400, 800], [-400, 812]], { fill: hsl(28, 30, 48), seed: 711, inkW: 1, sharp: 80 });
-    const px = lerp(780, 1060, slide) - back * 300;
+    const reach = q01(t, W_.v2real - .7, W_.v2real - .1), px = lerp(780, 1060, slide) - back * 150; // his hand lands on the plate, then pushes it back
     part(ellipse(px, 900, 210, 60, 18), { fill: hsl(40, 16, 92), shade: hsl(36, 12, 78), shadeShift: [0, -14], seed: 720, inkW: 1 });
     fake(() => { s.fillStyle = 'rgba(220,240,255,.85)'; s.fillRect(px - 150, 860, 300, 70); flatFish(px, 895, 3.4, 0, 1); s.strokeStyle = '#ffffff'; s.lineWidth = 3; s.strokeRect(px - 150, 860, 300, 70); });
     // our man, back to camera, foreground right; his hand pushes the plate back
-    const Q = who(CAST.lead, { x: 1500, y: 980, sc: 1.25, seed: 120, back: true, turn: -.3, breath: breath(t), armL: [-.3 - back * .9, -.4 - back * .6, 0, .7, 1], armR: [.3, -.2, 0, .3, .8] });
+    const Q = who(CAST.lead, { x: 1500, y: 980, sc: 1.25, seed: 120, back: true, turn: -.3, breath: breath(t), armL: [lerp(-.3, -.85, reach) - back * .15, lerp(-.4, -.2, reach) + back * .2, 0, .7, 1], armR: [.3, -.2, 0, .3, .8] });
     const J = person({ ...Q, parts: 'body' }); toque(J.hc, Q.sc, 0); person({ ...Q, parts: 'arms' });
   });
 }
@@ -301,8 +301,10 @@ function sDustField(t, tt, len) {
     for (let i = 0; i < 12; i++) { const x = -300 + ((i * 230 + tt * 160) % 2600), y = 300 + (i % 4) * 160 + Math.sin(t + i) * 30; part(lump(x, y, 180, 50, 840 + i), { fill: hsl(32, 30, 60, .3), seed: 840 + i, ink: false, wob: 3, tone2: false }); }
     // him, walking away from us into the wind, small
     const x = lerp(700, 820, walk), sc = lerp(.42, .3, walk), ph = t * 1.6 * TAU;
-    const P = who(CAST.lead, { x, y: 900 - walk * 140, sc, seed: 120, back: true, breath: breath(t), lean: -.08, armL: [-.2 + Math.sin(ph) * .3, .2, 0, .3, 1], armR: [.2 - Math.sin(ph) * .3, -.2, 0, .3, 1], legs: [Math.sin(ph) * .3, .1, -Math.sin(ph) * .3, .1], footDown: true });
-    const J = person({ ...P, parts: 'body' }); toque(J.hc, sc, 0); person({ ...P, parts: 'arms' });
+    // seen from behind: arms hang at his sides BEHIND the torso (drawn first), a short stride that never crosses
+    const sw = Math.sin(ph);
+    const P = who(CAST.lead, { x, y: 900 - walk * 140, sc, seed: 120, back: true, armsBehind: true, breath: breath(t), lean: .04, armL: [-.22 + sw * .12, .08, 0, .3, 1], armR: [.22 + sw * .12, -.08, 0, .3, 1], legs: [-.06 + sw * .14, .06, .06 - sw * .14, .06], footDown: true });
+    const J = person(P); toque(J.hc, sc, 0);
   });
 }
 // S18 120.6-125.5: the dust settles; close on the ground; a green shoot pushes up on "real thing".
