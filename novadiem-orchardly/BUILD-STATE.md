@@ -84,3 +84,10 @@ Synthetic on screen: crew ANA, BEN, CLEO, DEV; BLOCK 4 · GALA · BIN; rate 2400
 
 `hyperframes check` flags the paper furniture's bar text as occluded under the navy field. Intended:
 plate IV draws its own bar copy.
+
+## Draft 1
+
+https://youtu.be/vg7GxNHjJMk (unlisted, default channel), 83.3 s at 720p
+(`renders/orchardly_take01_draft1.mp4`, remuxed with `volume=0.2dB,alimiter=limit=0.82`).
+flashcheck PASS (worst 0.5 flashes/s at the navy wipe); -13.9 LUFS, peak -1.3 dBFS. Eight frames
+tiled from the MP4 match the snapshots. No real names, amounts, vendors or keys in the sources (grep audit).
