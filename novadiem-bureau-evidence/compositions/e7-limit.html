@@ -1,0 +1,100 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #e7 {
+          position: absolute;
+          inset: 0;
+        }
+        #e7 .statement.one {
+          top: 500px;
+        }
+        #e7 .statement.two {
+          top: 590px;
+        }
+        #e7 .colo {
+          position: absolute;
+          left: 0;
+          right: 0;
+          text-align: center;
+          color: var(--ink);
+        }
+        #e7 .colo.a {
+          top: 796px;
+          font-size: 24px;
+          font-weight: 700;
+        }
+        #e7 .colo.b {
+          top: 838px;
+          font-size: 18px;
+          color: var(--ink-dim);
+        }
+      </style>
+      <div id="e7" data-composition-id="e7" data-width="1920" data-height="1080">
+        <div class="layer">
+          <svg class="full" viewBox="0 0 1920 1080">
+            <g id="e7-art"></g>
+            <path id="e7-rule" class="ln line" d="M760 740H1160M760 730V750M1160 730V750" />
+          </svg>
+          <div class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate VII</div>
+          <div class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>The Limit</div>
+          <div id="e7-st-a" class="statement one"><span class="phrase">It proves what was reviewed.</span></div>
+          <div id="e7-st-b" class="statement two"><span class="phrase red">Not that it was understood.</span></div>
+          <div id="e7-colo-a" class="colo a mono">THE BUREAU · THEBUREAU.DEV · NOVADIEM.COM</div>
+          <div id="e7-colo-b" class="colo b mono">INSIDE THE BUREAU · 5 · THE FINGERPRINT</div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text, kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 75.35);
+          const art = K.$("e7-art");
+          // plate VI's end state (static): manifest, the fresh reviewer, the shut gate
+          const P = FP.desk(art, { read: 2, roomName: "FRESH REVIEWER" });
+          FP.hide([P.slot]);
+          const barF = el("rect", { class: "ln thin ink", x: 800, y: 262, width: 220, height: 12 }, art);
+          const bar = el("rect", { class: "fill-gold", x: 802, y: 264, width: 216, height: 8 }, art);
+          K.out(barF, K.T(75.93), 0.3);
+          K.out(bar, K.T(75.93), 0.3);
+
+          // the new verdict lists both documents, each with its fingerprint
+          K.draw(P.toCard, K.T(75.35), 0.25);
+          FP.drawCard(K, P.card, K.T(75.35));
+          [P.decL, P.decV, P.hashL, P.hashG.g, P.readL].forEach((n, i) => K.fade(n, K.T(75.35) + 0.25 + i * 0.08, 0.3));
+          K.fade(P.reads[0].g, K.T(75.93), 0.3);
+          K.fade(P.reads[1].g, K.T(75.93) + 0.15, 0.3);
+          K.draw(P.hashOk, K.T(75.93) + 0.3, 0.3);
+          K.draw(P.reads[0].ok, K.T(76.51), 0.3);
+          K.draw(P.reads[1].ok, K.T(77.11), 0.3);
+
+          // the gate lifts; the Conductor resumes; one record goes to the ledger
+          tl.fromTo(P.arm, { rotation: 0, svgOrigin: "1660 300" }, { rotation: -90, svgOrigin: "1660 300", duration: 0.5, ease: "power2.inOut" }, K.T(77.69));
+          const tok = FP.sheet(art, 1560, 420);
+          tl.fromTo(tok, { opacity: 0 }, { opacity: 1, duration: 0.15 }, K.T(78.27));
+          K.travel(tok, el("path", { d: "M1560 420H1800" }), K.T(78.27), 0.7);
+          tl.fromTo(tok, { opacity: 1 }, { opacity: 0, duration: 0.2, immediateRender: false }, K.T(78.27) + 0.7);
+          const res = text("RESUMES", { class: "mono small gold-t", x: 1764, y: 498, "text-anchor": "middle" }, art);
+          const led = text("+1 LEDGER RECORD", { class: "mono small dim", x: 1764, y: 526, "text-anchor": "middle" }, art);
+          K.fade(res, K.T(78.88), 0.3);
+          K.fade(led, K.T(78.88) + 0.25, 0.3);
+
+          // step back: what the match proves, and what it doesn't
+          K.out(art, K.R(79.9), 0.5);
+          K.reveal(K.$("e7-st-a"), K.T(80.64), 0.7);
+          K.reveal(K.$("e7-st-b"), K.T(81.22), 0.8);
+          K.draw(K.$("e7-rule"), K.T(81.8), 0.6);
+          K.fade(K.$("e7-colo-a"), K.T(83.57), 0.5);
+          K.fade(K.$("e7-colo-b"), K.T(84.15), 0.5);
+
+          window.__timelines["e7"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>
