@@ -1,0 +1,106 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #c6 {
+          position: absolute;
+          inset: 0;
+        }
+        #c6 svg text.mono.fact { font-size: 26px; font-weight: 400; letter-spacing: 0.04em; }
+        #c6 svg text.mono.num { font-size: 30px; }
+      </style>
+      <div id="c6" data-composition-id="c6" data-width="1920" data-height="1080">
+        <div class="layer">
+          <svg class="full" viewBox="0 0 1920 1080">
+            <g id="c6-art"></g>
+            <g id="c6-real"></g>
+          </svg>
+          <div class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate VI</div>
+          <div class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>The Total</div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text, kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 55.05);
+          const art = K.$("c6-art");
+
+          // plate V's end state: six rows, five token figures, one UNKNOWN
+          const L = LG.ledger(art, { show: 6, tok: 6 });
+
+          // the Conductor's legs are counted too, but not as a spawn
+          K.draw(L.cRule, K.T(55.5), 0.5);
+          K.fade(L.cName, K.T(55.94), 0.3, 1);
+          K.fade(L.cNote, K.T(56.38), 0.3, 1);
+          K.fade(L.cTok, K.T(56.82), 0.3, 1);
+
+          // the total: what was measured, and how sure it is
+          K.draw(L.tRule, K.T(57.7), 0.6);
+          K.fade(L.tName, K.T(58.14), 0.3, 1);
+          K.fade(L.tTok, K.T(58.58), 0.35, 1);
+          K.fade(L.tConf, K.T(59.47), 0.35, 1);
+          const capA = text("the sum of the shares present;", { class: "mono cap", x: 1300, y: 290 }, art);
+          const capB = text("the missing one is named", { class: "mono cap", x: 1300, y: 322 }, art);
+          K.reveal(capA, K.T(59.91), 0.5);
+          K.reveal(capB, K.T(60.35), 0.5);
+
+          // the reruns' share of it
+          const br = el("path", { class: "ln line-strong", d: `M${LG.X + 20} ${L.rows[3].y - 30}H${LG.X + 10}V${L.rows[4].y + 14}H${LG.X + 20}`, style: "stroke-width:3" }, art);
+          K.draw(br, K.T(61.23), 0.4);
+
+          const J = LG.tag(art, 1300, 380, ["processed_total 23.2M · partial", "rework_ratio 0.33 · partial", "_note: spellwright-1 unavailable"], { head: "ACCOUNTING.JSON", lineCls: [null, "gold-t", null] });
+          LG.drawTag(K, J, K.T(60.79));
+          const rw = text("rework 7.7M of 23.2M", { class: "mono cap", x: 1300, y: 580 }, art);
+          K.reveal(rw, K.T(61.67), 0.5);
+
+          tl.fromTo(art, { opacity: 1 }, { opacity: 0, duration: 0.5, immediateRender: false }, K.T(63.44));
+
+          // a real run, read from its accounting.json (bureau .bureau/runs/20260812-posthoc-token-accounting)
+          const real = K.$("c6-real");
+          const x = 360, y = 210, w = 1200, h = 640;
+          const paper = el("rect", { class: "fill-bg", x, y, width: w, height: h }, real);
+          const frame = el("rect", { class: "ln ink", x, y, width: w, height: h }, real);
+          const head = text("A REAL RUN · 2026-08-12", { class: "mono head", x: x + 40, y: y + 50 }, real);
+          const src = text("accounting.json", { class: "mono small dim", x: x + w - 40, y: y + 48, "text-anchor": "end" }, real);
+          const sub = text("20260812-posthoc-token-accounting · a feature run on the Bureau itself", { class: "mono small dim", x: x + 40, y: y + 86 }, real);
+          const rule = el("path", { class: "ln thin ink", d: `M${x + 40} ${y + 108}H${x + w - 40}` }, real);
+          K.fade(paper, K.T(64.32), 0.2);
+          K.draw(frame, K.T(64.32), 0.8, "none");
+          K.fade(head, K.T(64.32) + 0.3, 0.3);
+          K.fade(src, K.T(64.32) + 0.4, 0.3);
+          K.fade(sub, K.T(64.32) + 0.5, 0.3);
+          K.draw(rule, K.T(64.32) + 0.5, 0.5);
+
+          const facts = [
+            ["22", "specialist spawns"],
+            ["1", "review ended no-handoff"],
+            ["14", "flagged rework"],
+            ["9", "with no token figure, 8 of them on a second host"],
+            ["0.56", "rework_ratio, partial"],
+          ];
+          [65.2, 66.08, 66.97, 67.85, 68.73].forEach((t, i) => {
+            const fy = y + 168 + i * 74;
+            const n = text(facts[i][0], { class: "mono num", x: x + 150, y: fy, "text-anchor": "end" }, real);
+            const d = text(facts[i][1], { class: "mono fact", x: x + 190, y: fy }, real);
+            K.fade(n, K.T(t), 0.3);
+            K.reveal(d, K.T(t) + 0.1, 0.6);
+          });
+          const ry = y + 168 + 5 * 74 + 10;
+          const rl = text("reviewer share:", { class: "mono fact", x: x + 190, y: ry }, real);
+          const rq = text('"a real gap, not a clean zero"', { class: "mono fact red-t", x: x + 470, y: ry }, real);
+          K.reveal(rl, K.T(69.61), 0.5);
+          K.reveal(rq, K.T(70.05), 0.7);
+
+          tl.fromTo(real, { opacity: 1 }, { opacity: 0, duration: 0.45, immediateRender: false }, K.R(72.65));
+          window.__timelines["c6"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

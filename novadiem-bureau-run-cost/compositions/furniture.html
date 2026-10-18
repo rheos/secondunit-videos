@@ -1,0 +1,41 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #furniture {
+          position: absolute;
+          inset: 0;
+          background: var(--bg);
+        }
+      </style>
+      <div data-hf-id="hf-rc10" id="furniture" data-composition-id="furniture" data-width="1920" data-height="1080">
+        <svg data-hf-id="hf-rc11" id="fu-ground" class="full" viewBox="0 0 1920 1080" aria-hidden="true" style="will-change: transform"></svg>
+        <svg data-hf-id="hf-rc12" id="fu-frame" class="full" viewBox="0 0 1920 1080"></svg>
+      </div>
+
+      <script>
+        (() => {
+          const tl = gsap.timeline({ paused: true });
+          const K = BP.kit(tl, 0);
+          // stations follow a run's accounting (docs/run-accounting.md): SPAWN-EVENT lines during the run, account-run.sh at close-out, the transcript aggregator it calls, the published accounting.json. The stage of the story, not live progress
+          BP.furniture(K, tl, {
+            stations: [
+              { label: "SPAWN-EVENTS", at: 0 },
+              { label: "CLOSE-OUT", at: 43.58 },
+              { label: "TRANSCRIPTS", at: 45.35 },
+              { label: "ACCOUNTING.JSON", at: 60.35 },
+            ],
+            sheets: [0, 9.03, 19.18, 30.79, 40.94, 55.05, 73.14],
+          });
+          window.__timelines["furniture"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>
+
+
