@@ -13,13 +13,14 @@
       </style>
       <div id="b1" data-composition-id="b1" data-width="1920" data-height="1080">
         <svg class="full" viewBox="0 0 1920 1080">
-          <text id="b1-tag" class="mono small" x="260" y="150">VOICE INTERVIEW · SESSION 1</text>
+          <text id="b1-tag" class="mono small" x="260" y="160">VOICE INTERVIEW · SESSION 1</text>
           <g id="b1-wave"></g>
           <g id="b1-segs"></g>
           <g id="b1-card" transform="translate(615 420)"></g>
         </svg>
         <div id="b1-label-l" class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate I</div>
-        <div id="b1-label-r" class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>Every Passage Has a Source</div>
+        <div id="b1-label-r" class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>MemoirQuill</div>
+        <div id="b1-sub" class="plate-label right" style="top: 112px; font-size: 19px;" data-layout-allow-overlap data-layout-allow-occlusion>Every Passage Has a Source</div>
         <div class="statement two" data-layout-allow-overlap data-layout-allow-occlusion>
           <div class="row"><span id="b1-st-a" class="phrase">A voice interview.</span></div>
           <div class="row"><span id="b1-st-b" class="phrase red">Kept exactly as said.</span></div>
@@ -34,6 +35,7 @@
 
           K.fade(K.$("b1-label-l"), K.T(0.98), 0.4);
           K.fade(K.$("b1-label-r"), K.T(0.98), 0.4);
+          K.fade(K.$("b1-sub"), K.T(1.6), 0.4);
 
           // the recording: four turns, one quieter interviewer turn then three of Nell's
           const SEGS = [
@@ -73,7 +75,7 @@
           K.reveal(K.$("b1-st-b"), K.T(7.23), 0.6);
 
           // clear to the card; plate II takes it over at 10.98
-          ["b1-tag", "b1-wave", "b1-segs", "b1-label-l", "b1-label-r"].forEach((id) => K.out(K.$(id), K.T(10.36), 0.4));
+          ["b1-tag", "b1-wave", "b1-segs", "b1-label-l", "b1-label-r", "b1-sub"].forEach((id) => K.out(K.$(id), K.T(10.36), 0.4));
           tl.to("#b1 .statement", { opacity: 0, duration: 0.4, ease: "power1.in" }, K.T(10.36));
 
           window.__timelines["b1"] = tl;

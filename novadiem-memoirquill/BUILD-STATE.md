@@ -1,4 +1,4 @@
-# Every Passage Has a Source: build state
+# MemoirQuill: Every Passage Has a Source, build state
 
 Music-only blueprint explainer for MemoirQuill, slate item 8 (slug `memoirquill`). Audience: Upwork
 clients hiring for LLM pipeline work, later MemoirQuill users. Facts come only from rheos/memoirquill
@@ -69,7 +69,7 @@ mono machinery. `window.MQ` on the root draws the shared transcript card, passag
 
 ## Plates
 
-- **I · The Interview (0-11).** Waveform draws 1.6-3.5, four turn brackets 3.48; "A voice interview."
+- **I · The Interview (0-11).** Right label "MemoirQuill" 0.98, subtitle "Every Passage Has a Source" under it 1.6. Waveform draws 1.6-3.5, four turn brackets 3.48; "A voice interview."
   2.86. The transcript card lands row by row 5.35-6.3; WRITE-ONCE and "Kept exactly as said." (red) 7.23.
 - **II · Read and Tag (10.98-22.9).** Card slides to the left. normalization_report 12.24, the kept
   unparsed line boxed 14.73 with "Nothing dropped." (red); status raw to ingested 15.36. Entities
@@ -89,7 +89,7 @@ mono machinery. `window.MQ` on the root draws the shared transcript card, passag
 - **VII · The Gate (75.05-90).** Draft, safety gate and reader view 75.66-76.92 (GATED, "Not published
   yet."). The contradiction from IV holds it 77.54; resolved by a person 79.41; gate opens 80.04,
   PUBLISHED, reader view fills 80.67. "Every passage can be checked / against what was said." (red)
-  81.91 / 82.55, novadiem.com 84.42. Holds to the end.
+  81.91 / 82.55, "MemoirQuill · novadiem.com" 84.42 (the repo is private and its README gives no public URL). Holds to the end.
 
 ## Draft 1 (2026-10-17)
 
@@ -97,3 +97,13 @@ https://youtu.be/5kKM5a2MYtM (unlisted, default channel), 90.0 s at 720p
 (`renders/memoirquill_take01_draft1.mp4`, remuxed from `-raw`). flashcheck PASS (worst 0.5 flashes/s);
 -13.5 LUFS, peak -2.6 dBFS. Eight frames tiled from the MP4 match the snapshots. Grep audit: no real
 names, vendors, keys or amounts in `index.html` or `compositions/`.
+
+## Draft 2 (2026-10-17)
+
+Robin's note on draft 1: the film never named the product. Draft 2 puts "MemoirQuill" as plate I's
+right label with "Every Passage Has a Source" as its subtitle, and the colophon reads
+"MemoirQuill · novadiem.com". Nothing else changed.
+
+https://youtu.be/I_f1nslliLc (unlisted, default channel), 90.0 s at 720p
+(`renders/memoirquill_take01_draft2.mp4`). flashcheck PASS (worst 0.5 flashes/s); -13.5 LUFS, peak
+-2.6 dBFS. Eight frames from the MP4 checked by eye.
