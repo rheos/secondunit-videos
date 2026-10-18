@@ -1,0 +1,54 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #b1 {
+          position: absolute;
+          inset: 0;
+        }
+        #b1-title {
+          top: 286px;
+          font-size: 128px;
+        }
+      </style>
+      <div data-hf-id="hf-n101" id="b1" data-composition-id="b1" data-width="1920" data-height="1080">
+        <div data-hf-id="hf-n102" id="b1-content" class="layer">
+          <div data-hf-id="hf-n103" id="b1-lab-l" class="plate-label left">PLATE I</div>
+          <div data-hf-id="hf-n104" id="b1-lab-r" class="plate-label right">DURABLE WORK</div>
+          <div data-hf-id="hf-n105" id="b1-title" class="title">Nothing Lost Mid-Job</div>
+          <svg data-hf-id="hf-n106" id="b1-svg" class="full" viewBox="0 0 1920 1080"></svg>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text } = BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = BP.kit(tl, 0);
+          const svg = K.$("b1-svg");
+
+          const rule = el("path", { class: "ln line", d: "M640 470H1280M640 460V480M1280 460V480" }, svg);
+          const sub = text("JOBS, EVENTS AND AUDIT IN RHEOSTREAM", { class: "mono", x: 960, y: 530, "text-anchor": "middle" }, svg);
+
+          // the film's one device, introduced: the job table and its first row
+          const P = JB.table(svg, { x: 420, y: 656, rows: 1 });
+
+          K.fade(K.$("b1-lab-l"), K.T(0.95), 0.4);
+          K.fade(K.$("b1-lab-r"), K.T(0.95), 0.4);
+          K.reveal(K.$("b1-title"), K.T(1.58), 1.0);
+          K.draw(rule, K.T(2.21), 0.6);
+          K.fade(sub, K.T(2.84), 0.5);
+          JB.draw(K, P, K.T(3.47));
+          JB.row(K, P, 0, ["job 1", "queued", "null", "null", "0"], K.T(4.73));
+
+          K.out(K.$("b1-content"), K.R(7.4), 0.45);
+          window.__timelines["b1"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>
