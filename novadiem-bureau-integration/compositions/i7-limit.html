@@ -1,0 +1,104 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #i7 {
+          position: absolute;
+          inset: 0;
+        }
+        #i7 .statement {
+          font-size: 54px;
+        }
+        #i7 .statement.a { top: 470px; }
+        #i7 .statement.b { top: 542px; }
+        #i7 .statement.c { top: 614px; }
+        #i7 .statement.d { top: 686px; }
+        #i7 .colo {
+          position: absolute;
+          left: 0;
+          right: 0;
+          text-align: center;
+          color: var(--ink);
+        }
+        #i7 .colo.a {
+          top: 812px;
+          font-size: 24px;
+          font-weight: 700;
+        }
+        #i7 .colo.b {
+          top: 854px;
+          font-size: 18px;
+          color: var(--ink-dim);
+        }
+      </style>
+      <div id="i7" data-composition-id="i7" data-width="1920" data-height="1080">
+        <div class="layer">
+          <svg class="full" viewBox="0 0 1920 1080">
+            <g id="i7-art"></g>
+            <path id="i7-rule" class="ln line" d="M760 786H1160M760 776V796M1160 776V796" />
+          </svg>
+          <div class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate VII</div>
+          <div class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>The Limit</div>
+          <div id="i7-st-a" class="statement a"><span class="phrase">It verifies and reports.</span></div>
+          <div id="i7-st-b" class="statement b"><span class="phrase">It doesn't build the fix.</span></div>
+          <div id="i7-st-c" class="statement c"><span class="phrase">It doesn't replace the cold review.</span></div>
+          <div id="i7-st-d" class="statement d"><span class="phrase red">Dev-complete is not a production deploy.</span></div>
+          <div id="i7-colo-a" class="colo a mono">THE BUREAU · THEBUREAU.DEV · NOVADIEM.COM</div>
+          <div id="i7-colo-b" class="colo b mono">INSIDE THE BUREAU · 6 · THE SEAM</div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text, kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 72.4);
+          const art = K.$("i7-art");
+
+          // the joined halves, verified in the run's worktree: the build party stops at development
+          const frame = el("rect", { class: "ln thin ink", x: 380, y: 180, width: 720, height: 230 }, art);
+          const fl = text("THE RUN'S WORKTREE · DEV", { class: "mono small dim", x: 380, y: 166 }, art);
+          K.draw(frame, K.T(72.4), 0.8, "none");
+          K.fade(fl, K.T(72.4) + 0.3, 0.4);
+          const A = SM.assembly(art, { cx: 740, cy: 300, s: 0.5 });
+          [A.lTitle, A.rTitle, ...A.lLabels, ...A.rLabels].forEach((n) => n.setAttribute("display", "none"));
+          SM.show(K, A, K.T(72.4) + 0.2);
+          const ok = SM.check(art, 1050, 210);
+          const okT = text("DEV", { class: "mono small gold-t", x: 1002, y: 216, "text-anchor": "end" }, art);
+          K.draw(ok, K.T(72.99), 0.3);
+          K.fade(okT, K.T(72.99), 0.3);
+
+          // production is the owner's call: the gate stays shut
+          const path = el("path", { class: "ln ink", d: "M1100 296H1460M1446 286L1462 296L1446 306" }, art);
+          K.draw(path, K.T(73.58), 0.6);
+          const hinge = el("circle", { class: "ln ink", cx: 1300, cy: 232, r: 6 }, art);
+          const arm = el("g", {}, art);
+          el("rect", { class: "fill-bg", x: 1293, y: 240, width: 14, height: 112 }, arm);
+          el("rect", { class: "ln ink", x: 1293, y: 240, width: 14, height: 112 }, arm);
+          [0, 1, 2].forEach((i) => el("rect", { class: "fill-ink", x: 1293, y: 250 + i * 36, width: 14, height: 18 }, arm));
+          K.draw(hinge, K.T(74.16), 0.3);
+          K.fade(arm, K.T(74.16) + 0.1, 0.35);
+          const pr = text("PRODUCTION", { class: "mono", x: 1488, y: 292 }, art);
+          const own = text("THE OWNER'S CALL", { class: "mono small dim", x: 1488, y: 322 }, art);
+          K.fade(pr, K.T(74.76), 0.35);
+          K.fade(own, K.T(74.76) + 0.2, 0.35);
+
+          // what the Coupler is, and what it is not
+          K.reveal(K.$("i7-st-a"), K.T(75.93), 0.6);
+          K.reveal(K.$("i7-st-b"), K.T(76.51), 0.6);
+          K.reveal(K.$("i7-st-c"), K.T(77.11), 0.7);
+          K.reveal(K.$("i7-st-d"), K.T(77.69), 0.8);
+          K.draw(K.$("i7-rule"), K.T(79.46), 0.6);
+          K.fade(K.$("i7-colo-a"), K.T(80.64), 0.5);
+          K.fade(K.$("i7-colo-b"), K.T(81.22), 0.5);
+
+          window.__timelines["i7"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>
