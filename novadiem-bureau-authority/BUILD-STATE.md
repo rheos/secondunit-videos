@@ -1,7 +1,9 @@
 # Build state: The Control Point (Inside the Bureau, film 7)
 
-**Draft 1 BUILT 2026-10-17**: DRAFT_LINK (unlisted, default channel). Seven plates, 86.5 s, 720p,
-kit `paper` theme (The Cold Read's look). Local master: `renders/bureau-authority_take01_draft1.mp4`
+**Draft 1 BUILT 2026-10-17**: https://youtu.be/mffh6GdntPQ (unlisted, default channel). Seven plates,
+86.5 s, 720p, kit `paper` theme (The Cold Read's look). `hyperframes check` passes; flashcheck PASS
+(worst 0.5 flashes/s); -13.7 LUFS, peak -3.4 dBFS after taking 2.5 dB off the render (it came out at
+-11.1 LUFS, peak -0.9). Local master: `renders/bureau-authority_take01_draft1.mp4`
 (gitignored). Next: Robin's notes.
 Question: which decisions proceed and which go to the owner? Send it when someone asks "When am I
 still in control?"
