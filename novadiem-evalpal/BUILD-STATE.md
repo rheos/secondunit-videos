@@ -69,7 +69,8 @@ Getting the score on a fresh checkout (audio stays out of git):
 Bar stations are what the app does with one definition: DEFINITION 0, FORM 11, SCORE 24, REPORT 52.
 Sheets 0, 11, 24, 38, 52, 64, 78; end 85.9.
 
-- **I · The Definition (0-11).** The PHQ-9 definition card draws (0.93-2.9). "One questionnaire,"
+- **I · The Definition (0-11).** Right label "EvalPal · Instruments as Data" (the product is named on
+  screen, per the coordinator, 2026-10-17). The PHQ-9 definition card draws (0.93-2.9). "One questionnaire,"
   4.2, "written as data." (red) 5.5. Four callouts: scale, items, rule, bands (6.15-8.1).
 - **II · The Form (11-24).** Card slides left. ItemRenderer's six scale types; FREQUENCY lights
   (12.03-12.7). The form screen draws, the four option labels lift off the card into it (15.93),
@@ -89,4 +90,4 @@ Sheets 0, 11, 24, 38, 52, 64, 78; end 85.9.
   same renderer, scorer and PDF. 417f43e tally; "7 definitions · 1 renderer · 1 scorer". "A new
   questionnaire is a data change," / "not a code change." (red).
 - **VII · Colophon (78-85.9).** The four stations as construction lines. "Questions are data." /
-  "Answers are encrypted." (red). evalpal.app · novadiem.com.
+  "Answers are encrypted." (red). "EvalPal · evalpal.app · novadiem.com".
