@@ -1,0 +1,101 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #p2 {
+          position: absolute;
+          inset: 0;
+        }
+      </style>
+      <div id="p2" data-composition-id="p2" data-width="1920" data-height="1080">
+        <svg class="full" viewBox="0 0 1920 1080">
+          <g id="p2-db"></g>
+          <g id="p2-phone"></g>
+          <g id="p2-grid"></g>
+        </svg>
+        <div id="p2-label-l" class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate II</div>
+        <div id="p2-label-r" class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>The Tally Book</div>
+        <div class="statement two" data-layout-allow-overlap data-layout-allow-occlusion>
+          <div class="row"><span id="p2-st-a" class="phrase">Every tap is saved on the phone,</span></div>
+          <div class="row"><span id="p2-st-b" class="phrase red">no network needed.</span></div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text, kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 9.96);
+          const db = K.$("p2-db");
+
+          // the phone carries over from plate I as it was: no service
+          const P = OR.phone(K.$("p2-phone"));
+          const G = OR.grid(K.$("p2-grid"));
+
+          K.fade(K.$("p2-label-l"), K.T(10.59), 0.4);
+          K.fade(K.$("p2-label-r"), K.T(10.59), 0.4);
+
+          // the tally sheet draws on the phone
+          G.cols.forEach((c, i) => K.fade(c, K.T(10.59) + i * 0.06, 0.3));
+          G.names.forEach((n, i) => K.fade(n, K.T(10.59) + i * 0.08, 0.3));
+          G.cells.flat().forEach((c, i) => K.draw(c, K.T(11.24) + i * 0.03, 0.3, "none"));
+          K.fade(G.total, K.T(18.9), 0.4);
+
+          // the phone's own database: two tables in SQLite
+          const cap = text("SQLITE, ON THE PHONE", { class: "mono head green-t", x: 160, y: 168 }, db);
+          const tT = text("tally", { class: "mono", x: 160, y: 214 }, db);
+          const tL = text("tally_edit_log", { class: "mono", x: 960, y: 214 }, db);
+          const hT = el("g", {}, db);
+          [["id", 160], ["picker", 290], ["bin", 450], ["count", 560], ["rate ¢", 690]].forEach(([s, x]) => text(s, { class: "mono small", x, y: 250 }, hT));
+          const hL = el("g", {}, db);
+          [["action", 960], ["tally", 1120]].forEach(([s, x]) => text(s, { class: "mono small", x, y: 250 }, hL));
+          const rT = el("path", { class: "ln thin ink", d: "M160 262H860" }, db);
+          const rL = el("path", { class: "ln thin ink", d: "M960 262H1300" }, db);
+          const arrow = el("path", { class: "ln ink", d: "M1366 410H1316M1330 400L1316 410L1330 420" }, db);
+
+          K.fade(cap, K.T(11.24), 0.4);
+          K.fade(tT, K.T(11.87), 0.3);
+          K.fade(tL, K.T(11.87), 0.3);
+          K.fade(hT, K.T(11.87), 0.3);
+          K.fade(hL, K.T(11.87), 0.3);
+          K.draw(rT, K.T(11.87), 0.5, "none");
+          K.draw(rL, K.T(11.87), 0.5, "none");
+          K.draw(arrow, K.T(12.52), 0.35);
+
+          // ten taps, one a beat: each fills a cell and writes a tally row plus an edit-log row together
+          const AT = [12.52, 13.14, 13.77, 14.42, 15.07, 15.7, 16.35, 16.97, 17.62, 18.25];
+          OR.TAPS.forEach(([r, c], i) => {
+            const y = 298 + i * 30;
+            const id = `t-${String(i + 1).padStart(2, "0")}`;
+            const rowT = el("g", {}, db);
+            [[id, 160], [OR.CREW[r], 290], [String(c), 450], ["1", 560], ["2400", 690]].forEach(([s, x]) => text(s, { class: "mono cell", x, y }, rowT));
+            const rowL = el("g", {}, db);
+            [["create", 960], [id, 1120]].forEach(([s, x]) => text(s, { class: "mono cell", x, y }, rowL));
+            const at = K.T(AT[i]);
+            K.fade(G.marks[i], at, 0.15);
+            K.reveal(rowT, at + 0.05, 0.3);
+            K.reveal(rowL, at + 0.05, 0.3);
+          });
+
+          const note = text("each tap: one tally row and one edit-log row, in one transaction", { class: "mono note", x: 160, y: 640 }, db);
+          K.fade(note, K.T(16.35), 0.5, 0.75);
+
+          K.reveal(K.$("p2-st-a"), K.T(15.7), 0.6);
+          K.reveal(K.$("p2-st-b"), K.T(19.53), 0.7);
+
+          // clear the database; plate III keeps the phone and its sheet
+          K.out(db, K.T(23.36), 0.45);
+          K.out(K.$("p2-label-l"), K.T(23.36), 0.45);
+          K.out(K.$("p2-label-r"), K.T(23.36), 0.45);
+          tl.to("#p2 .statement", { opacity: 0, duration: 0.45, ease: "power1.in" }, K.T(23.36));
+
+          window.__timelines["p2"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>
