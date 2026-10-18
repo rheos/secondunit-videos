@@ -1,0 +1,101 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #b6 {
+          position: absolute;
+          inset: 0;
+        }
+      </style>
+      <div data-hf-id="hf-rc70" id="b6" data-composition-id="b6" data-width="1920" data-height="1080">
+        <div data-hf-id="hf-rc71" id="b6-content" class="layer">
+          <div data-hf-id="hf-rc72" id="b6-lab-l" class="plate-label left">PLATE VI</div>
+          <div data-hf-id="hf-rc73" id="b6-lab-r" class="plate-label right">THE NEXT SESSION</div>
+          <svg data-hf-id="hf-rc74" id="b6-svg" class="full" viewBox="0 0 1920 1080"></svg>
+          <div data-hf-id="hf-rc75" class="statement">
+            <span data-hf-id="hf-rc76" id="b6-s1" class="phrase">Recalled as a dated claim,</span>
+            <span data-hf-id="hf-rc77" id="b6-s2" class="phrase accent">not an order.</span>
+          </div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text } = BP;
+          const tl = gsap.timeline({ paused: true });
+          const S = 67.7;
+          const K = BP.kit(tl, S);
+          const svg = K.$("b6-svg");
+
+          // a new session's first prompt (made up)
+          const panel = el("rect", { class: "ln line", x: 160, y: 200, width: 600, height: 200 }, svg);
+          const panelRule = el("path", { class: "ln thin line", d: "M160 246H760" }, svg);
+          const panelT = text("NEW SESSION  ·  FIRST PROMPT", { class: "mono small", x: 182, y: 230 }, svg);
+          const said = el("g", {}, svg);
+          text("YOU", { class: "cm on", x: 184, y: 304 }, said);
+          text("Bump the staging DB driver.", { class: "cb", x: 260, y: 304 }, said);
+
+          // the UserPromptSubmit hook asks recall once per session and adds what it finds to the context
+          const hook = el("rect", { class: "ln line-strong", x: 830, y: 250, width: 300, height: 100 }, svg);
+          const hookT = text("PROMPT HOOK", { class: "mono", x: 980, y: 292, "text-anchor": "middle" }, svg);
+          const hookT2 = text("ONCE PER SESSION", { class: "mono small dim", x: 980, y: 324, "text-anchor": "middle" }, svg);
+          const a1 = el("path", { class: "ln line", d: "M760 300H830" }, svg);
+          const a2 = el("path", { class: "ln line", d: "M1130 300H1200" }, svg);
+          const h1 = RC.head(svg, 828, 300, "r");
+          const h2 = RC.head(svg, 1198, 300, "r");
+          const route = el("path", { d: "M760 300H1200", fill: "none", stroke: "none" }, svg);
+          const dot = el("circle", { class: "fill-strong", r: 8, cx: 0, cy: 0, opacity: 0 }, svg);
+
+          const ctx = el("rect", { class: "ln line", x: 1200, y: 170, width: 560, height: 420 }, svg);
+          const ctxRule = el("path", { class: "ln thin line", d: "M1200 216H1760" }, svg);
+          const ctxT = text("ADDED TO THE CONTEXT", { class: "mono small", x: 1222, y: 200 }, svg);
+          const ctxH = text("Dated claims recorded earlier,", { class: "cb", x: 1222, y: 262 }, svg);
+          const ctxH2 = text("not current truth. Check live", { class: "cb", x: 1222, y: 292 }, svg);
+          const ctxH3 = text("state before relying on one.", { class: "cb", x: 1222, y: 322 }, svg);
+          const B = RC.card(svg, 1250, 360, { kind: "FACT", title: "Staging database", body: "Staging runs Postgres 17.", foot: "2026-10-09", strong: true });
+
+          // and when this session stops, plate II runs again
+          const loop = el("path", { class: "ln line", d: "M1490 590V660C1490 720 1440 740 1380 740H520C460 740 460 700 460 660V402" }, svg);
+          const loopHead = RC.head(svg, 460, 402, "u");
+          const loopT = text("WHEN IT STOPS, IT SAVES AGAIN", { class: "mono small", x: 960, y: 722, "text-anchor": "middle" }, svg);
+
+          K.fade(K.$("b6-lab-l"), K.T(68.34), 0.4);
+          K.fade(K.$("b6-lab-r"), K.T(68.34), 0.4);
+          K.draw(panel, K.T(68.97), 0.6);
+          K.draw(panelRule, K.T(68.97) + 0.3, 0.3);
+          K.fade(panelT, K.T(68.97) + 0.35, 0.3);
+          K.fade(said, K.T(69.61), 0.4);
+          K.draw(a1, K.T(70.25), 0.25);
+          K.draw(h1, K.T(70.25) + 0.2, 0.15);
+          K.draw(hook, K.T(70.25) + 0.2, 0.5);
+          K.fade(hookT, K.T(70.25) + 0.45, 0.3);
+          K.fade(hookT2, K.T(70.25) + 0.6, 0.3);
+          K.fade(dot, K.T(70.89), 0.1);
+          K.travel(dot, route, K.T(70.89), 0.9);
+          tl.to(dot, { opacity: 0, duration: 0.15 }, K.T(70.89) + 0.88);
+          K.draw(a2, K.T(70.89) + 0.6, 0.25);
+          K.draw(h2, K.T(70.89) + 0.8, 0.15);
+          K.draw(ctx, K.T(71.53), 0.6);
+          K.draw(ctxRule, K.T(71.53) + 0.3, 0.3);
+          K.fade(ctxT, K.T(71.53) + 0.35, 0.3);
+          K.fade(ctxH, K.T(72.17), 0.35);
+          K.fade(ctxH2, K.T(72.17) + 0.2, 0.35);
+          K.fade(ctxH3, K.T(72.17) + 0.4, 0.35);
+          RC.drawIn(K, B, K.T(72.81), true);
+          K.reveal(K.$("b6-s1"), K.T(73.44), 0.6);
+          K.reveal(K.$("b6-s2"), K.T(74.08), 0.6);
+          K.draw(loop, K.T(75.36), 1.2, "power1.inOut");
+          K.draw(loopHead, K.T(75.36) + 1.15, 0.15);
+          K.fade(loopT, K.T(76.0), 0.4);
+
+          K.out(K.$("b6-content"), K.R(79.4), 0.4);
+          window.__timelines["b6"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>
