@@ -91,6 +91,9 @@ mono machinery. `window.MQ` on the root draws the shared transcript card, passag
   PUBLISHED, reader view fills 80.67. "Every passage can be checked / against what was said." (red)
   81.91 / 82.55, novadiem.com 84.42. Holds to the end.
 
-## Draft 1
+## Draft 1 (2026-10-17)
 
-See the PR and the final report.
+https://youtu.be/5kKM5a2MYtM (unlisted, default channel), 90.0 s at 720p
+(`renders/memoirquill_take01_draft1.mp4`, remuxed from `-raw`). flashcheck PASS (worst 0.5 flashes/s);
+-13.5 LUFS, peak -2.6 dBFS. Eight frames tiled from the MP4 match the snapshots. Grep audit: no real
+names, vendors, keys or amounts in `index.html` or `compositions/`.
