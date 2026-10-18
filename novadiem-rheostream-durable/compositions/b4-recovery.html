@@ -1,0 +1,97 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #b4 {
+          position: absolute;
+          inset: 0;
+        }
+      </style>
+      <div data-hf-id="hf-n401" id="b4" data-composition-id="b4" data-width="1920" data-height="1080">
+        <div data-hf-id="hf-n402" id="b4-content" class="layer">
+          <div data-hf-id="hf-n403" id="b4-lab-l" class="plate-label left">PLATE IV</div>
+          <div data-hf-id="hf-n404" id="b4-lab-r" class="plate-label right">RECOVERY</div>
+          <svg data-hf-id="hf-n405" id="b4-svg" class="full" viewBox="0 0 1920 1080"></svg>
+          <div data-hf-id="hf-n406" class="statement">
+            <span data-hf-id="hf-n407" id="b4-s1" class="phrase">The lease</span>
+            <span data-hf-id="hf-n408" id="b4-s2" class="phrase accent">is the recovery.</span>
+          </div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text } = BP;
+          const tl = gsap.timeline({ paused: true });
+          const S = 36;
+          const K = BP.kit(tl, S);
+          const svg = K.$("b4-svg");
+
+          const P = JB.table(svg, { x: 420, y: 206, rows: 1 });
+          const ry = P.rowY(0);
+
+          // the lease query's two arms (work/jobs.py, acquire_lease); the second is the crash-recovery path
+          const capT = text("acquire_lease(): THE SAME STATEMENT", { class: "mono small dim", x: 960, y: 392, "text-anchor": "middle" }, svg);
+          const card = el("rect", { class: "ln thin line", x: 520, y: 408, width: 880, height: 112 }, svg);
+          const l1 = text("WHERE state = 'queued' AND next_run_at <= :now", { class: "mono code", x: 560, y: 452 }, svg);
+          const l2 = text("   OR state = 'leased' AND lease_until  <  :now", { class: "mono code hi", x: 560, y: 494 }, svg);
+          const hi = el("rect", { class: "ln line-strong", x: 540, y: 468, width: 840, height: 38 }, svg);
+          const quote = text("AN EXPIRED LEASE IS A DEAD WORKER", { class: "mono small strong", x: 960, y: 556, "text-anchor": "middle" }, svg);
+
+          // worker B takes it over
+          const wb = JB.box(svg, 1520, 600, 240, 80, "WORKER B");
+          const pathB = el("path", { class: "ln line", d: `M1640 600V${ry}H1500` }, svg);
+          const countT = text("THE RETRY COUNTS AN ATTEMPT", { class: "mono small dim", x: 1500, y: 352, "text-anchor": "end" }, svg);
+
+          // worker A comes back late; its finish is predicated on still owning the row
+          const wa = JB.box(svg, 160, 600, 240, 80, "WORKER A, LATE", "ln line construct", "mono dim");
+          const pathA = el("path", { class: "ln line construct", d: `M280 600V${ry}H420` }, svg);
+          const ref = el("rect", { class: "ln thin line", x: 520, y: 600, width: 880, height: 80 }, svg);
+          const refT = text("finish_succeeded(owner = 'worker-a')", { class: "mono code", x: 560, y: 648 }, svg);
+          const refR = text("0 ROWS", { class: "mono code hi", x: 1370, y: 648, "text-anchor": "end" }, svg);
+          const note = text("A LATE WORKER CANNOT OVERWRITE THE NEW OWNER", { class: "mono small dim", x: 960, y: 728, "text-anchor": "middle" }, svg);
+
+          // cues
+          K.fade(K.$("b4-lab-l"), K.T(36.61), 0.4);
+          K.fade(K.$("b4-lab-r"), K.T(36.61), 0.4);
+          JB.draw(K, P, K.T(36.61));
+          const r = JB.row(K, P, 0, ["job 1", "leased", "worker-a", "t + 100 s", "1"], K.T(37.23), "");
+          r[1].setAttribute("class", "mono cell b");
+
+          K.fade(capT, K.T(37.86), 0.35);
+          K.draw(card, K.T(37.86), 0.6);
+          K.fade(l1, K.T(38.49), 0.4);
+          K.fade(l2, K.T(39.1), 0.4);
+          K.draw(hi, K.T(39.73), 0.5);
+          K.fade(quote, K.T(39.73) + 0.3, 0.4);
+
+          K.draw(wb.r, K.T(40.36), 0.5);
+          K.fade(wb.t, K.T(40.36) + 0.3, 0.3);
+          K.draw(pathB, K.T(40.36) + 0.2, 0.6);
+          JB.swap(K, P, r[2], 0, 2, "worker-b", K.T(40.98));
+          JB.swap(K, P, r[3], 0, 3, "now + 60 s", K.T(40.98) + 0.08);
+          JB.swap(K, P, r[4], 0, 4, "2", K.T(40.98) + 0.16, "b");
+          K.fade(countT, K.T(41.61), 0.35);
+
+          K.sweep(wa.r, K.T(42.85), 0.5);
+          K.fade(wa.t, K.T(42.85) + 0.3, 0.3, 0.8);
+          K.sweep(pathA, K.T(43.48), 0.6);
+          K.draw(ref, K.T(43.48), 0.5);
+          K.fade(refT, K.T(43.48) + 0.3, 0.35);
+          K.fade(refR, K.T(44.11), 0.3);
+          K.fade(note, K.T(44.73), 0.4);
+
+          K.reveal(K.$("b4-s1"), K.T(45.98), 0.6);
+          K.reveal(K.$("b4-s2"), K.T(46.6), 0.7);
+
+          K.out(K.$("b4-content"), K.R(49.4), 0.45);
+          window.__timelines["b4"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>
