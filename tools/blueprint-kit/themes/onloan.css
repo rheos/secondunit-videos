@@ -1,0 +1,37 @@
+/* onloan theme: onloan.net's "warm-ledger" system (rheos/onloan-web app/globals.css). Ink line work on the
+   site's warm paper, pine for the drawing line, clay as the one accent phrase per plate. The alternate field
+   is the pine ground, for the plate where the two signatures meet on the FOAF ledger. */
+@font-face {
+  font-family: "Hanken Grotesk";
+  src: url("../fonts/hanken-grotesk-latin-wght-normal.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+}
+:root {
+  --bg: #f4eee0;
+  --bg-raised: #ece3cf;
+  --line: #2f6a50;
+  --line-strong: #1f4b39;
+  --ink: #211c14;
+  --ink-dim: #5c5443;
+  --ink-faint: #8a8272;
+  --accent: #a8501f;
+
+  --field: #1f4b39;
+  --line-field: #d98a5a;
+  --ink-field: #f4eee0;
+  --accent-field: #f0b48a;
+
+  --grid: #211c14;
+  --grid-opacity: 0.05;
+  --grain-rgb: 0.33 0.27 0.16;
+  --grain-alpha: 0.35;
+
+  --font-display: "Instrument Serif", serif;
+  --display-weight: 400;
+  --display-tracking: 0;
+  --font-label: "Hanken Grotesk", sans-serif;
+  --label-size: 24px;
+  --label-tracking: 0.2em;
+  --font-mono: "JetBrains Mono", monospace;
+}

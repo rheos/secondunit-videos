@@ -18,13 +18,14 @@ per film. First used by `novadiem-rheostream`.
 ## What a theme sets
 
 Colours, the alternate field, grain colour and strength, and the three type roles (display, label,
-mono). Three themes so far:
+mono). Four themes so far:
 
 | Theme | Look | Used by |
 |---|---|---|
 | `paper` | gold on aged paper, night field, Marcellus SC labels | The Cold Read's look (it still has its own inline copy) |
 | `rheo` | mint on deep teal (rheo.stream brand), light drafting-sheet field, Geist display | novadiem-rheostream |
 | `nutrifax` | ink and Nutrifax green on the site's warm paper, cream field, Fraunces display, Hanken Grotesk labels | novadiem-nutrifax-label |
+| `onloan` | ink and pine on onloan.net's warm paper, pine night field, Instrument Serif display, Hanken Grotesk labels | novadiem-onloan-ledger |
 
 Add a theme by copying one file in `themes/` and changing the tokens.
 
