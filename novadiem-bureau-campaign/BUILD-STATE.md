@@ -1,7 +1,9 @@
 # Build state: The Campaign (Inside the Bureau, film 8)
 
-**Draft 1 BUILT 2026-10-17** (link below once uploaded). Seven plates, 86.5 s, 720p, kit `paper`
-theme (The Cold Read's look). Question: what does the Envoy add above a single run? Send it when
+**Draft 1 BUILT 2026-10-17**: https://youtu.be/ZUzxbEowBWU (unlisted, default channel). Seven plates,
+86.5 s, 720p, kit `paper` theme (The Cold Read's look). `hyperframes check` passes; flashcheck PASS
+(worst 0.5 flashes/s); -13.9 LUFS, peak -1.4 dBFS. Local master:
+`renders/bureau-campaign_take01_draft1.mp4` (gitignored). Next: Robin's notes. Question: what does the Envoy add above a single run? Send it when
 someone asks "Can it work through a roadmap?"
 
 ## Facts used (all from ~/Code/novadiem/bureau at origin/main 939f522, read with `git show`)
