@@ -1,0 +1,86 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #m2 {
+          position: absolute;
+          inset: 0;
+        }
+      </style>
+      <div id="m2" data-composition-id="m2" data-width="1920" data-height="1080">
+        <div class="layer">
+          <svg class="full" viewBox="0 0 1920 1080">
+            <g id="m2-art"></g>
+            <g id="m2-side"></g>
+          </svg>
+          <div id="m2-pl" class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate II</div>
+          <div id="m2-pr" class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>The Cast</div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text, kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 8.87);
+          K.fade(K.$("m2-pl"), K.T(8.87), 0.4);
+          K.fade(K.$("m2-pr"), K.T(8.87), 0.4);
+
+          // the board: one row per role
+          const B = CB.board(K.$("m2-art"));
+          CB.drawBoard(K, B, K.T(8.87));
+
+          // the tiers, cheapest at the top (config/model-policy.v2.json "tiers")
+          const side = K.$("m2-side");
+          const tiers = ["cheap", "standard", "strong", "frontier", "escalated"];
+          const lx = 1510;
+          const head = text("TIERS", { class: "mono head", x: lx, y: 220 }, side);
+          const spine = el("path", { class: "ln line-strong", d: `M${lx + 6} 250V${250 + 4 * 52}` }, side);
+          K.fade(head, K.T(13.58), 0.3);
+          K.draw(spine, K.T(13.58), 0.6);
+          const tierY = {};
+          tiers.forEach((t, i) => {
+            const y = 250 + i * 52;
+            tierY[t] = y;
+            const dot = el("circle", { class: "fill-bg ln line-strong", cx: lx + 6, cy: y, r: 6 }, side);
+            const lab = text(t, { class: "mono", x: lx + 28, y: y + 7 }, side);
+            K.fade(dot, K.T(13.58) + 0.15 + i * 0.1, 0.25);
+            K.reveal(lab, K.T(13.58) + 0.2 + i * 0.1, 0.4);
+          });
+          const more = text("more capable, costs more", { class: "mono small dim", x: lx, y: 250 + 4 * 52 + 44 }, side);
+          K.fade(more, K.T(14.19), 0.4);
+
+          // each role is cast to a tier, one per beat
+          const cells = CB.fill(B, { tier: true }).tier;
+          cells.forEach((c, r) => {
+            const at = K.T(14.77) + r * 0.58;
+            K.reveal(c, at, 0.4);
+            // the tier it lands on flashes on the ladder
+            const ring = el("circle", { class: "ln ink", cx: lx + 6, cy: tierY[CB.TIER[r]], r: 12 }, side);
+            tl.fromTo(ring, { opacity: 0 }, { opacity: 1, duration: 0.1 }, at);
+            tl.fromTo(ring, { opacity: 1 }, { opacity: 0, duration: 0.3, immediateRender: false }, at + 0.35);
+          });
+          // Scoot is locked to cheap (roles.scoot.lock)
+          const lock = text("LOCKED", { class: "mono small gold-t", x: 580, y: CB.rowMid(5) + 7 }, B.layer);
+          K.fade(lock, K.T(18.3), 0.4);
+
+          // the rule for choosing (docs/model-routing-and-cast.md, budget posture)
+          const n1 = text("start on the cheapest tier", { class: "mono small", x: lx, y: 600 }, side);
+          const n2 = text("that is usually good enough,", { class: "mono small", x: lx, y: 626 }, side);
+          const n3 = text("then escalate on evidence", { class: "mono small gold-t", x: lx, y: 652 }, side);
+          K.reveal(n1, K.T(17.69), 0.5);
+          K.reveal(n2, K.T(17.69) + 0.25, 0.5);
+          K.reveal(n3, K.T(18.3) + 0.3, 0.5);
+
+          K.out(side, K.R(20.85), 0.35);
+          K.out(lock, K.R(20.85), 0.35);
+          window.__timelines["m2"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>
