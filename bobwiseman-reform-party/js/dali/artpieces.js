@@ -40,8 +40,8 @@ const ARTPIECES = [
     clock: '9:00 promenade', r: 200, seen: 'strolling east along the 9:00 promenade from the first frame, 50-90 px, in the board shots of verse 1; gone off frame by 114.5' },
   { kind: 'burger', X: -316, Z: -4, rot: -Math.PI / 2 - .3, scale: 1, sign: { lx: 5.2, lf: -1.6, rot: .35 }, people: 4,
     clock: '9:20', r: 600, seen: 'intro 3-7.6: on the open playa straight ahead of the drone as it glides in from the 9:00 Esplanade sound camp; the bun grows to about 140 px (the sign 260 px) at 7.4 before the drone passes over it' },
-  { kind: 'jig', X: 265, Z: 110, rot: Math.PI - .2, scale: 1, people: 7,
-    clock: '7:00', r: 72, seen: 'day 153-160, 163-184, 193-198 (h 120-255 px); night 212-268 on the left of the burn framings, dark against the city' },
+  { kind: 'jig', X: -300, Z: 30, rot: 1.05, scale: 1, people: 7,
+    clock: 'city edge, beside the opening glide', r: 600, seen: 'opening glide 3-8 (Robin, d18: it stood near Center Camp, not by the Man)' },
   // draft 17: the 2:22 Amethyst Portal, the third of the set, between its siblings (19 m short of the 11:11 Diamond Portal)
   { kind: 'amethyst', name: 'amethyst', X: 228, Z: 84, rot: 2.2, scale: 1, people: 0,
     clock: '8:15', r: 85, seen: 'see draft 17 report' },
