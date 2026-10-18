@@ -1,6 +1,9 @@
 # Build state: The Map (Inside the Bureau, film 1)
 
-Draft 1, 2026-10-17. Seven plates, 84 s, 720p draft stage, kit `paper` theme (The Cold Read's look).
+**Draft 1 BUILT 2026-10-17**: https://youtu.be/iHLl4XRwB3I (unlisted, default channel). Seven plates,
+84 s, 720p, kit `paper` theme (The Cold Read's look). `hyperframes check` passes; flashcheck PASS
+(worst 0.5 flashes/s); -14.3 LUFS, true peak -1.5 dBFS; no dark fields. Local master:
+`renders/bureau-map_take01_draft1.mp4` (gitignored). Next: Robin's notes.
 Question: what are the Bureau's main parts, and how does work move between them? Send it when
 someone asks "What is the Bureau's architecture?"
 
