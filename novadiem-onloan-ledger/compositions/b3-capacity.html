@@ -1,0 +1,93 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #b3 {
+          position: absolute;
+          inset: 0;
+        }
+        #b3 svg text.res { fill: #1f4b39; font-weight: 700; }
+      </style>
+      <div id="b3" data-composition-id="b3" data-width="1920" data-height="1080">
+        <svg class="full" viewBox="0 0 1920 1080">
+          <g id="b3-pair"></g>
+
+          <!-- Ben's credit with Ana, as a scale under the trustline: 100.00 = 600 px -->
+          <text id="b3-g-cap" class="mono small" x="660" y="452">BEN'S CREDIT WITH ANA</text>
+          <path id="b3-g-axis" class="ln ink" d="M660 480H1260" />
+          <path id="b3-g-ticks" class="ln thin ink" d="M660 470V490M960 474V486M1260 470V490" />
+          <text id="b3-g-0" class="mono small" x="660" y="514" text-anchor="middle">0</text>
+          <text id="b3-g-100" class="mono small" x="1260" y="514" text-anchor="middle">100.00</text>
+          <path id="b3-g-use" class="ln line-strong" d="M660 480H790" style="stroke-width: 10" />
+          <text id="b3-g-use-t" class="mono small gold-t" x="790" y="514" text-anchor="middle">21.68</text>
+
+          <!-- the call -->
+          <rect id="b3-req" class="ln line" x="200" y="560" width="700" height="190" />
+          <text id="b3-req-1" class="code b" x="226" y="604">POST /networks/:net/max-capacity-path-info</text>
+          <text id="b3-req-2" class="code" x="226" y="644"><tspan class="dim">from</tspan> Ben  <tspan class="dim">to</tspan> Ana</text>
+          <text id="b3-req-3" class="code" x="226" y="690"><tspan class="dim">→</tspan> capacity: 100</text>
+          <text id="b3-req-4" class="code res" x="226" y="728">21.68 ≤ 100  ·  go</text>
+
+          <!-- and when it doesn't fit -->
+          <rect id="b3-no" class="ln thin ink" x="1020" y="560" width="700" height="190" />
+          <text id="b3-no-1" class="code dim" x="1046" y="604">if the credit were 15.00:</text>
+          <text id="b3-no-2" class="code" x="1046" y="646">"ben's credit with you is 15.00;</text>
+          <text id="b3-no-3" class="code" x="1046" y="680"> this loan came to 21.68."</text>
+          <text id="b3-no-4" class="code dim" x="1046" y="726">nothing is written to the ledger</text>
+        </svg>
+        <div id="b3-label-l" class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate III</div>
+        <div id="b3-label-r" class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>Capacity First</div>
+        <div class="statement" data-layout-allow-overlap data-layout-allow-occlusion>
+          <span id="b3-st-a" class="phrase">Before anything moves,</span>
+          <span id="b3-st-b" class="phrase red">check Ben's credit.</span>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 24);
+          OL.pair(K.$("b3-pair"));
+
+          K.fade(K.$("b3-label-l"), K.T(24.31), 0.4);
+          K.fade(K.$("b3-label-r"), K.T(24.31), 0.4);
+
+          // the scale
+          K.fade(K.$("b3-g-cap"), K.T(24.96), 0.4);
+          K.draw(K.$("b3-g-axis"), K.T(24.96), 0.7, "none");
+          K.draw(K.$("b3-g-ticks"), K.T(24.96) + 0.5, 0.3, "none");
+          K.fade(K.$("b3-g-0"), K.T(25.59), 0.3);
+          K.fade(K.$("b3-g-100"), K.T(25.59), 0.3);
+          K.reveal(K.$("b3-st-a"), K.T(25.59), 0.6);
+
+          // the capacity call, borrower to lender
+          K.draw(K.$("b3-req"), K.T(26.22), 0.7, "none");
+          K.reveal(K.$("b3-req-1"), K.T(26.22) + 0.4, 0.6);
+          K.fade(K.$("b3-req-2"), K.T(26.87), 0.4);
+          K.fade(K.$("b3-req-3"), K.T(28.14), 0.4);
+          K.draw(K.$("b3-g-use"), K.T(28.79), 0.5, "power2.out");
+          K.fade(K.$("b3-g-use-t"), K.T(28.79) + 0.3, 0.3);
+          K.reveal(K.$("b3-req-4"), K.T(29.42), 0.5);
+          K.reveal(K.$("b3-st-b"), K.T(29.42), 0.7);
+
+          // the refusal path, word for word from SettleService
+          K.draw(K.$("b3-no"), K.T(30.69), 0.7, "none");
+          K.fade(K.$("b3-no-1"), K.T(30.69) + 0.4, 0.4);
+          K.reveal(K.$("b3-no-2"), K.T(31.34), 0.6);
+          K.reveal(K.$("b3-no-3"), K.T(31.34) + 0.4, 0.5);
+          K.fade(K.$("b3-no-4"), K.T(32.6), 0.4);
+
+          // plate IV's pine field wipes over this from 35.7
+          ["b3-label-l", "b3-label-r"].forEach((id) => K.out(K.$(id), K.T(35.69), 0.3));
+
+          window.__timelines["b3"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>
