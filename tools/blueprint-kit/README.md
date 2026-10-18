@@ -27,6 +27,7 @@ mono). Four themes so far:
 | `nutrifax` | ink and Nutrifax green on the site's warm paper, cream field, Fraunces display, Hanken Grotesk labels | novadiem-nutrifax-label |
 | `onloan` | ink and pine on onloan.net's warm paper, pine night field, Instrument Serif display, Hanken Grotesk labels | novadiem-onloan-ledger |
 | `orchardly` | navy and canopy green on the brand's pale day surface, navy field with fruit orange, Bricolage Grotesque | novadiem-orchardly |
+| `cyanotype` | pale line work on Prussian blue (a classic blueprint), amber accent, cream field, Space Grotesk display, JetBrains Mono labels | novadiem-self-hosting |
 
 Add a theme by copying one file in `themes/` and changing the tokens.
 
