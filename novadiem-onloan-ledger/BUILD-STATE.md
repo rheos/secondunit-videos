@@ -106,3 +106,10 @@ numbers are left out). Not built, drawn dashed: "Your app" on plate VI.
 
 `hyperframes check` flags the paper furniture's bar text as occluded and low-contrast under the pine
 field at 44 s. That's intended: plate IV draws its own bar copy.
+
+## Draft 1
+
+https://youtu.be/TcG_dOMdqqU (unlisted, default channel), 88 s at 720p
+(`renders/onloan-ledger_take01_draft1.mp4`, remuxed with +2 dB and a limiter). flashcheck PASS (worst
+0.5 flashes/s at the pine wipe, 36.0 s); -13.9 LUFS, peak -1.3 dBFS. Eight frames tiled from the MP4
+match the snapshots. No live amounts, op numbers, addresses or real names in the sources (grep audit).
