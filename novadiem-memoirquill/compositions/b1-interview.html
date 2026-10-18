@@ -1,0 +1,84 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #b1 {
+          position: absolute;
+          inset: 0;
+        }
+      </style>
+      <div id="b1" data-composition-id="b1" data-width="1920" data-height="1080">
+        <svg class="full" viewBox="0 0 1920 1080">
+          <text id="b1-tag" class="mono small" x="260" y="150">VOICE INTERVIEW · SESSION 1</text>
+          <g id="b1-wave"></g>
+          <g id="b1-segs"></g>
+          <g id="b1-card" transform="translate(615 420)"></g>
+        </svg>
+        <div id="b1-label-l" class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate I</div>
+        <div id="b1-label-r" class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>Every Passage Has a Source</div>
+        <div class="statement two" data-layout-allow-overlap data-layout-allow-occlusion>
+          <div class="row"><span id="b1-st-a" class="phrase">A voice interview.</span></div>
+          <div class="row"><span id="b1-st-b" class="phrase red">Kept exactly as said.</span></div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text, kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 0);
+
+          K.fade(K.$("b1-label-l"), K.T(0.98), 0.4);
+          K.fade(K.$("b1-label-r"), K.T(0.98), 0.4);
+
+          // the recording: four turns, one quieter interviewer turn then three of Nell's
+          const SEGS = [
+            [260, 489, 34, "12 · INTERVIEWER"],
+            [519, 999, 62, "13 · NELL"],
+            [1029, 1378, 58, "14 · NELL"],
+            [1408, 1660, 54, "15 · NELL"],
+          ];
+          const wv = MQ.wave(K.$("b1-wave"), 260, 1660, 250, SEGS, "ln thin ink");
+          K.fade(K.$("b1-tag"), K.T(0.98) + 0.2, 0.4);
+          K.draw(wv, K.T(1.6), 1.9, "none");
+          K.reveal(K.$("b1-st-a"), K.T(2.86), 0.6);
+
+          const segs = SEGS.map(([a, b, , lab], i) => {
+            const g = el("g", {}, K.$("b1-segs"));
+            const br = el("path", { class: "ln thin ink", d: `M${a} 334V342H${b}V334` }, g);
+            const t = text(lab, { class: "mono small", x: (a + b) / 2, y: 370, "text-anchor": "middle" }, g);
+            const at = K.T(3.48) + i * 0.31;
+            K.draw(br, at, 0.35, "none");
+            K.fade(t, at + 0.1, 0.3);
+            return br;
+          });
+
+          // the transcript: each turn lands as its own row, then the whole thing is frozen
+          const C = MQ.card(K.$("b1-card"), MQ.S1);
+          K.draw(C.frame, K.T(4.73), 0.6, "none");
+          K.fade(C.paper, K.T(4.73), 0.3, 0.92);
+          K.fade(C.head, K.T(4.73) + 0.3, 0.3);
+          K.draw(C.rule, K.T(4.73) + 0.3, 0.3, "none");
+          C.rows.forEach((r, i) => {
+            const at = K.T(5.35) + i * 0.31;
+            K.fade(r.g, at, 0.3);
+            tl.fromTo(segs[i], { stroke: "#1c1a17" }, { stroke: "#8c6e22", duration: 0.15 }, at);
+            tl.to(segs[i], { stroke: "#1c1a17", duration: 0.4 }, at + 0.5);
+          });
+          K.fade(C.lock, K.T(7.23), 0.4);
+          K.reveal(K.$("b1-st-b"), K.T(7.23), 0.6);
+
+          // clear to the card; plate II takes it over at 10.98
+          ["b1-tag", "b1-wave", "b1-segs", "b1-label-l", "b1-label-r"].forEach((id) => K.out(K.$(id), K.T(10.36), 0.4));
+          tl.to("#b1 .statement", { opacity: 0, duration: 0.4, ease: "power1.in" }, K.T(10.36));
+
+          window.__timelines["b1"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>
