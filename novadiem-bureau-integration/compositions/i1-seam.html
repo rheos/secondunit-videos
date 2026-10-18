@@ -1,0 +1,81 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #i1 {
+          position: absolute;
+          inset: 0;
+        }
+        #i1 .title {
+          top: 150px;
+          font-family: var(--font-label);
+          font-size: 120px;
+          letter-spacing: 0.08em;
+        }
+        #i1 .sub {
+          position: absolute;
+          left: 0;
+          right: 0;
+          top: 330px;
+          text-align: center;
+          font-size: 26px;
+          color: var(--ink);
+        }
+      </style>
+      <div id="i1" data-composition-id="i1" data-width="1920" data-height="1080">
+        <div id="i1-all" class="layer">
+          <svg class="full" viewBox="0 0 1920 1080">
+            <path id="i1-rule" class="ln line" d="M660 302H1260M660 292V312M1260 292V312" />
+            <g id="i1-art"></g>
+          </svg>
+          <div class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate I</div>
+          <div class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>Inside the Bureau · 6</div>
+          <div id="i1-title" class="title">THE SEAM</div>
+          <div id="i1-sub" class="sub mono">HOW THE BUREAU CHECKS THAT TWO HALVES WORK TOGETHER</div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text, kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 0);
+
+          K.reveal(K.$("i1-title"), K.T(0.65), 1.1);
+          K.draw(K.$("i1-rule"), K.T(1.23), 0.8);
+          K.reveal(K.$("i1-sub"), K.T(1.81), 0.8);
+
+          // two halves, built apart: each one passes its own tests
+          const root = K.$("i1-art");
+          const A = SM.assembly(root, { cx: 960, cy: 660, s: 0.78, gap: 120 });
+          SM.drawHalf(K, A, "R", K.T(2.41));
+          SM.drawHalf(K, A, "L", K.T(3.0));
+          [[A.R, 320, 3.58], [A.L, -320, 4.16]].forEach(([g, x, at]) => {
+            const ok = SM.check(g, x - 110, -224);
+            const t = text("TESTS PASS", { class: "mono gold-t", x: x + 14, y: -218, "text-anchor": "middle" }, g);
+            K.draw(ok, K.T(at), 0.3);
+            K.fade(t, K.T(at) + 0.1, 0.3);
+          });
+
+          // joined, the signal crosses two lines and dies on the third
+          SM.join(tl, A, K.T(4.76), 0.55);
+          const t0 = K.T(5.34),
+            beat = K.T(5.92) - t0;
+          SM.pulse(K, tl, A, 0, 420, -420, t0, beat * 2);
+          SM.pulse(K, tl, A, 2, 420, -420, t0, beat * 2);
+          SM.pulse(K, tl, A, 1, 420, 0, t0, beat);
+          SM.spark(K, tl, A, 1, K.T(5.92));
+          const dead = text("DEAD AT THE SEAM", { class: "mono red-t big", x: 960, y: 862, "text-anchor": "middle" }, root);
+          K.reveal(dead, K.T(5.92) + 0.15, 0.5);
+
+          K.out(K.$("i1-all"), K.R(9.0), 0.45);
+          window.__timelines["i1"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

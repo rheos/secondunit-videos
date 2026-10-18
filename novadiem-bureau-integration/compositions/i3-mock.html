@@ -1,0 +1,75 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #i3 {
+          position: absolute;
+          inset: 0;
+        }
+      </style>
+      <div id="i3" data-composition-id="i3" data-width="1920" data-height="1080">
+        <div id="i3-all" class="layer">
+          <svg class="full" viewBox="0 0 1920 1080">
+            <g id="i3-art"></g>
+          </svg>
+          <div class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate III</div>
+          <div class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>The Mock</div>
+          <div id="i3-st" class="statement wrap">
+            <span id="i3-st-a" class="phrase">The UI was tested on a mock.</span>
+            <span id="i3-st-b" class="phrase red">The mock agreed.</span>
+          </div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text, kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 18.88);
+          const root = K.$("i3-art");
+          const G = 220;
+          const A = SM.assembly(root, { cx: 960, cy: 440, s: 0.8, gap: G });
+          SM.show(K, A, K.T(18.88));
+
+          // the UI's own tests plug a mock into its connector
+          const M = SM.mock(A, -G);
+          tl.fromTo(M.g, { x: -G, y: 170, opacity: 0 }, { x: -G, y: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, K.T(19.46));
+          [0, 1, 2].forEach((i) => SM.pulse(K, tl, A, i, -G + 60, -G - 430, K.T(20.64) + i * 0.08, 0.9));
+          const okL = SM.check(A.L, -430, -224);
+          const tL = text("UI TESTS PASS", { class: "mono gold-t", x: -306, y: -218, "text-anchor": "middle" }, A.L);
+          K.draw(okL, K.T(21.82), 0.3);
+          K.fade(tL, K.T(21.82) + 0.1, 0.3);
+
+          // the API's own tests call the real route
+          [0, 1, 2].forEach((i) => SM.pulse(K, tl, A, i, G + 420, G + 70, K.T(22.41) + i * 0.08, 0.6));
+          const r1 = text("curl /api/runs → 200", { class: "mono src", x: G + 76, y: 200 }, A.extra);
+          const r2 = text('{ "id": 7, "status": "done" }', { class: "mono src", x: G + 76, y: 236 }, A.extra);
+          K.reveal(r1, K.T(22.99), 0.5);
+          K.reveal(r2, K.T(23.59), 0.6);
+          const okR = SM.check(A.R, 210, -224);
+          const tR = text("API TESTS PASS", { class: "mono gold-t", x: 334, y: -218, "text-anchor": "middle" }, A.R);
+          K.draw(okR, K.T(24.17), 0.3);
+          K.fade(tR, K.T(24.17) + 0.1, 0.3);
+
+          // the mock's field and the real one don't match
+          const ringM = el("ellipse", { class: "ln ink", cx: -G + 105, cy: 0, rx: 58, ry: 22 }, A.extra);
+          const ringA = el("ellipse", { class: "ln ink", cx: G + 90, cy: -21, rx: 34, ry: 22 }, A.extra);
+          const tie = el("path", { class: "ln thin ink construct", d: `M${-G + 163} 0H${G - 30}V-21H${G + 56}` }, A.extra);
+          K.draw(ringM, K.T(24.75), 0.4);
+          K.draw(ringA, K.T(24.75) + 0.2, 0.4);
+          K.sweep(tie, K.T(25.33), 0.5);
+
+          K.reveal(K.$("i3-st-a"), K.T(25.94), 0.6);
+          K.reveal(K.$("i3-st-b"), K.T(26.52), 0.6);
+
+          K.out(K.$("i3-all"), K.R(29.0), 0.45);
+          window.__timelines["i3"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

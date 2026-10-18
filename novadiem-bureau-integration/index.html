@@ -1,0 +1,240 @@
+<!doctype html>
+<html class="draft" lang="en" data-resolution="landscape">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1280, height=720" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=IBM+Plex+Mono:wght@400;700&display=block" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <!-- Series kit (tools/blueprint-kit, copied by sync.sh). Theme first, then structure. -->
+    <link rel="stylesheet" href="kit/themes/paper.css" />
+    <link rel="stylesheet" href="kit/kit.css" />
+    <script src="kit/kit.js"></script>
+    <script>
+      // Beat grid of the score (beats.json): librosa beats at a 0.5805 s median gap from 13.58 s, the intro's
+      // onsets and intro-only beat track before that, extended at the median gap to the end of take-01.
+      BP.grid({ beats: [0.07,0.65,1.23,1.81,2.41,3.0,3.58,4.16,4.76,5.34,5.92,6.52,7.11,7.71,8.29,8.87,9.47,10.05,10.63,11.24,11.82,12.4,13.0,13.58,14.19,14.77,15.35,15.95,16.53,17.11,17.69,18.3,18.88,19.48,20.06,20.64,21.25,21.83,22.41,22.99,23.59,24.17,24.75,25.36,25.94,26.54,27.12,27.7,28.31,28.89,29.47,30.07,30.65,31.23,31.83,32.42,33.0,33.6,34.18,34.76,35.36,35.94,36.52,37.13,37.71,38.29,38.87,39.47,40.05,40.63,41.24,41.82,42.4,43.0,43.58,44.16,44.77,45.35,45.93,46.53,47.11,47.69,48.3,48.88,49.46,50.06,50.64,51.22,51.83,52.41,52.99,53.59,54.17,54.75,55.36,55.94,56.52,57.12,57.7,58.28,58.89,59.47,60.05,60.65,61.23,61.81,62.42,63.0,63.58,64.18,64.76,65.34,65.94,66.53,67.11,67.71,68.29,68.87,69.47,70.05,70.64,71.24,71.82,72.4,73.0,73.58,74.16,74.77,75.35,75.93,76.53,77.11,77.69,78.3,78.88,79.46,80.06,80.64,81.22,81.83,82.41,82.99,83.59,84.17,84.75,85.33,85.91,86.49,87.07,87.66,88.24,88.82,89.4,89.98] });
+    </script>
+    <style>
+      svg text.mono.head { font-size: 22px; }
+      svg text.mono.src { font-size: 21px; font-weight: 400; letter-spacing: 0.04em; }
+      svg text.mono.gold-t { fill: #6b5416; } /* line-strong is 3.5:1 on paper; small type needs 4.5:1 */
+      svg text.mono.red-t { fill: var(--accent); }
+      svg text.mono.big { font-size: 26px; }
+      .fill-ink { fill: var(--ink); }
+      .fill-gold { fill: var(--line); }
+      .fill-accent { fill: var(--accent); }
+      .stamp-t { font-family: var(--font-mono); font-size: 30px; font-weight: 700; letter-spacing: 0.16em; fill: var(--ink); }
+      .stamp-t.red { fill: var(--accent); }
+    </style>
+    <script>
+      // SM: the one device of this film, two assemblies meeting at one connector (the seam).
+      // Left: the UI half (P4, the Mage). Right: the API half (P3, the Systemsmith). Three contract
+      // lines cross the seam: the route, the run's id field, its status field. The scenario is synthetic.
+      window.SM = (() => {
+        const { el, text } = BP;
+        const PY = [-80, 0, 80];
+        const UI = ["GET /api/runs", "run_id", "status"];
+        const API = ["/api/runs", "id", "status"];
+        const MOCK = ["/api/runs", "run_id", "status"];
+
+        // assembly(parent, { cx, cy, s, gap }) -> A. Local coords: the seam is x=0, housings 520x300.
+        // A.L (UI half) and A.R (API half) sit at x=-gap / +gap; animate their x to join them.
+        function assembly(parent, o = {}) {
+          const s = o.s || 1,
+            gap = o.gap || 0;
+          const A = { s, cx: o.cx, cy: o.cy, gap };
+          A.root = el("g", { transform: `translate(${o.cx} ${o.cy}) scale(${s})` }, parent);
+          A.L = el("g", gap ? { transform: `translate(${-gap} 0)` } : {}, A.root);
+          A.R = el("g", gap ? { transform: `translate(${gap} 0)` } : {}, A.root);
+          A.extra = el("g", {}, A.root);
+          A.sig = el("g", {}, A.root);
+
+          // UI half
+          A.lFill = el("rect", { class: "fill-bg", x: -580, y: -150, width: 520, height: 300 }, A.L);
+          A.lFrame = el("rect", { class: "ln ink", x: -580, y: -150, width: 520, height: 300 }, A.L);
+          A.lInner = el("rect", { class: "ln thin ink", x: -568, y: -138, width: 496, height: 276 }, A.L);
+          A.lGlyph = el("path", { class: "ln line", d: "M-550 -66H-420V66H-550Z" }, A.L);
+          A.lRows = [-34, 0, 34].map((y) => el("path", { class: "ln line-strong", d: `M-536 ${y}H${y === 34 ? -470 : -434}`, style: "stroke-width:6" }, A.L));
+          A.lWires = PY.map((y) => el("path", { class: "ln thin line-strong", d: `M-420 ${y}H-60` }, A.L));
+          A.lLabels = UI.map((t, i) => text(t, { class: "mono src", x: -76, y: PY[i] - 14, "text-anchor": "end" }, A.L));
+          A.lPins = PY.map((y) => el("path", { class: "ln ink", d: `M-60 ${y - 8}H-4V${y + 8}H-60`, style: "stroke-width:3" }, A.L));
+          A.lTitle = text("UI · P4 · THE MAGE", { class: "mono", x: -320, y: -176, "text-anchor": "middle" }, A.L);
+
+          // API half
+          A.rFill = el("rect", { class: "fill-bg", x: 60, y: -150, width: 520, height: 300 }, A.R);
+          A.rFrame = el("rect", { class: "ln ink", x: 60, y: -150, width: 520, height: 300 }, A.R);
+          A.rInner = el("rect", { class: "ln thin ink", x: 72, y: -138, width: 496, height: 276 }, A.R);
+          A.rGlyph = el("path", { class: "ln line", d: "M430 -50V50A55 18 0 0 0 540 50V-50A55 18 0 0 0 430 -50A55 18 0 0 0 540 -50M430 0A55 18 0 0 0 540 0" }, A.R);
+          A.rWires = PY.map((y) => el("path", { class: "ln thin line-strong", d: `M60 ${y}H420` }, A.R));
+          A.rLabels = API.map((t, i) => text(t, { class: "mono src", x: 76, y: PY[i] - 14 }, A.R));
+          A.rSockets = PY.map((y) => el("path", { class: "ln ink", d: `M60 ${y - 12}H4V${y + 12}H60`, style: "stroke-width:3" }, A.R));
+          A.rTitle = text("API · P3 · THE SYSTEMSMITH", { class: "mono", x: 320, y: -176, "text-anchor": "middle" }, A.R);
+          return A;
+        }
+        const halfL = (A) => [A.lFill, A.lFrame, A.lInner, A.lGlyph, ...A.lRows, ...A.lWires, ...A.lPins];
+        const halfR = (A) => [A.rFill, A.rFrame, A.rInner, A.rGlyph, ...A.rWires, ...A.rSockets];
+        // draw one half line by line
+        function drawHalf(K, A, side, at) {
+          const L = side === "L";
+          K.fade(L ? A.lFill : A.rFill, at, 0.2);
+          K.draw(L ? A.lFrame : A.rFrame, at, 0.7, "none");
+          K.draw(L ? A.lInner : A.rInner, at + 0.25, 0.5, "none");
+          K.draw(L ? A.lGlyph : A.rGlyph, at + 0.35, 0.6);
+          if (L) A.lRows.forEach((r, i) => K.draw(r, at + 0.6 + i * 0.08, 0.25));
+          (L ? A.lWires : A.rWires).forEach((w, i) => K.draw(w, at + 0.4 + i * 0.1, 0.5));
+          (L ? A.lPins : A.rSockets).forEach((p, i) => K.draw(p, at + 0.6 + i * 0.1, 0.3));
+          (L ? A.lLabels : A.rLabels).forEach((t, i) => K.reveal(t, at + 0.5 + i * 0.12, 0.45));
+          K.fade(L ? A.lTitle : A.rTitle, at + 0.3, 0.4);
+        }
+        // the whole device, already drawn
+        function show(K, A, at, dur = 0.4) {
+          K.fade(A.root, at, dur);
+        }
+        // slide the halves together at the seam
+        function join(tl, A, at, dur = 0.6) {
+          tl.fromTo(A.L, { x: -A.gap }, { x: 0, duration: dur, ease: "power2.inOut" }, at);
+          tl.fromTo(A.R, { x: A.gap }, { x: 0, duration: dur, ease: "power2.inOut" }, at);
+        }
+        // a signal dot along contract line i, local x0 -> x1
+        function pulse(K, tl, A, i, x0, x1, at, dur = 0.8, cls = "fill-line") {
+          const y = PY[i];
+          const dot = el("circle", { class: cls, cx: 0, cy: 0, r: 8 }, A.sig);
+          tl.fromTo(dot, { opacity: 0 }, { opacity: 1, duration: 0.08 }, at);
+          K.travel(dot, el("path", { d: `M${x0} ${y}H${x1}` }), at, dur, "none");
+          tl.fromTo(dot, { opacity: 1 }, { opacity: 0, duration: 0.15, immediateRender: false }, at + dur);
+          return dot;
+        }
+        // the signal dies at the seam on line i
+        function spark(K, tl, A, i, at, cls = "accent-s") {
+          const y = PY[i];
+          const g = el("g", {}, A.sig);
+          const p = el("path", { class: `ln ${cls}`, d: `M-16 ${y - 16}L16 ${y + 16}M16 ${y - 16}L-16 ${y + 16}`, style: "stroke-width:4" }, g);
+          const rays = el("path", { class: `ln ${cls}`, d: `M0 ${y - 30}V${y - 44}M0 ${y + 30}V${y + 44}M-30 ${y}H-44M30 ${y}H44`, style: "stroke-width:3" }, g);
+          K.draw(p, at, 0.2);
+          K.draw(rays, at + 0.1, 0.2);
+          return g;
+        }
+        // the mock that stood in for the API during the UI's own tests (plugs into the UI's pins)
+        function mock(A, x) {
+          const M = { g: el("g", { transform: `translate(${x} 0)` }, A.extra) };
+          M.fill = el("rect", { class: "fill-raised", x: 4, y: -120, width: 190, height: 240 }, M.g);
+          M.frame = el("rect", { class: "ln ink", x: 4, y: -120, width: 190, height: 240 }, M.g);
+          M.sockets = PY.map((y) => el("path", { class: "ln ink", d: `M60 ${y - 12}H4V${y + 12}H60`, style: "stroke-width:3" }, M.g));
+          M.labels = MOCK.map((t, i) => text(t, { class: "mono small", x: 70, y: PY[i] + 6 }, M.g));
+          M.title = text("MOCK", { class: "mono", x: 99, y: -138, "text-anchor": "middle" }, M.g);
+          return M;
+        }
+
+        // a framed card with a title: card(parent, x, y, w, h, title)
+        function card(parent, x, y, w, h, title) {
+          const C = { g: el("g", {}, parent), x, y, w, h };
+          C.paper = el("rect", { class: "fill-bg", x, y, width: w, height: h }, C.g);
+          C.frame = el("rect", { class: "ln ink", x, y, width: w, height: h }, C.g);
+          C.title = text(title, { class: "mono head", x: x + 24, y: y + 40 }, C.g);
+          C.rule = el("path", { class: "ln thin ink", d: `M${x + 24} ${y + 58}H${x + w - 24}` }, C.g);
+          return C;
+        }
+        function drawCard(K, C, at) {
+          K.fade(C.paper, at, 0.2);
+          K.draw(C.frame, at, 0.6, "none");
+          K.fade(C.title, at + 0.25, 0.3);
+          K.draw(C.rule, at + 0.3, 0.4);
+        }
+        // a fresh agent: a double-walled room
+        function room(parent, x, y, w, h, name, sub) {
+          const R = { g: el("g", {}, parent), x, y, w, h };
+          R.outer = el("rect", { class: "ln ink", x, y, width: w, height: h }, R.g);
+          R.inner = el("rect", { class: "ln thin ink", x: x + 8, y: y + 8, width: w - 16, height: h - 16 }, R.g);
+          R.glyph = el("path", { class: "ln line", d: `M${x + w / 2} ${y + 26}l18 18l-18 18l-18 -18Z` }, R.g);
+          R.name = text(name, { class: "mono", x: x + w / 2, y: y + h - 44, "text-anchor": "middle" }, R.g);
+          R.sub = text(sub, { class: "mono small dim", x: x + w / 2, y: y + h - 20, "text-anchor": "middle" }, R.g);
+          return R;
+        }
+        function drawRoom(K, R, at) {
+          K.draw(R.outer, at, 0.7, "none");
+          K.draw(R.inner, at + 0.3, 0.5, "none");
+          K.draw(R.glyph, at + 0.4, 0.5);
+          K.fade(R.name, at + 0.5, 0.3);
+          K.fade(R.sub, at + 0.6, 0.3);
+        }
+        const check = (parent, x, y, cls = "line-strong") => el("path", { class: `ln ${cls}`, d: `M${x - 12} ${y}l8 9l16 -20`, style: "stroke-width:3" }, parent);
+        const cross = (parent, x, y, cls = "ink") => el("path", { class: `ln ${cls}`, d: `M${x - 10} ${y - 10}l20 20M${x + 10} ${y - 10}l-20 20`, style: "stroke-width:3" }, parent);
+
+        // a stamp, tilted: stamp(parent, word, cx, cy, w, red)
+        function stamp(parent, word, cx, cy, w = 220, red = false) {
+          const tilt = el("g", { transform: `rotate(-6 ${cx} ${cy})`, "data-layout-allow-overlap": "" }, parent);
+          const g = el("g", {}, tilt);
+          el("rect", { class: "fill-bg", x: cx - w / 2, y: cy - 27, width: w, height: 54, opacity: 0.94 }, g);
+          el("rect", { class: `ln ${red ? "accent-s" : "ink"}`, x: cx - w / 2, y: cy - 27, width: w, height: 54, style: "stroke-width:3" }, g);
+          text(word, { class: `stamp-t${red ? " red" : ""}`, x: cx, y: cy + 11, "text-anchor": "middle" }, g);
+          return { g, cx, cy };
+        }
+        function slam(tl, S, at) {
+          tl.fromTo(S.g, { opacity: 0, scale: 1.25, svgOrigin: `${S.cx} ${S.cy}` }, { opacity: 1, scale: 1, svgOrigin: `${S.cx} ${S.cy}`, duration: 0.25, ease: "power2.in" }, at);
+        }
+        // a sheet in transit
+        function sheet(parent, x, y) {
+          const t = el("g", { transform: `translate(${x} ${y})` }, parent);
+          el("path", { class: "fill-bg", d: "M-12 -15H5L12 -8V15H-12Z" }, t);
+          el("path", { class: "ln line", d: "M-12 -15H5L12 -8V15H-12Z" }, t);
+          el("path", { class: "ln thin line", d: "M-6 -4H6M-6 3H6M-6 10H2" }, t);
+          return t;
+        }
+        function carry(K, tl, parent, d, at, dur) {
+          const s = sheet(parent, 0, 0);
+          tl.fromTo(s, { opacity: 0 }, { opacity: 1, duration: 0.15 }, at);
+          K.travel(s, el("path", { d }), at, dur);
+          tl.fromTo(s, { opacity: 1 }, { opacity: 0, duration: 0.2, immediateRender: false }, at + dur);
+          return s;
+        }
+        // a log card of short lines: log(parent, x, y, w, lines) -> { C, lines[] }
+        function log(parent, x, y, w, title, lines) {
+          const C = card(parent, x, y, w, 80 + lines.length * 40, title);
+          C.lines = lines.map((l, i) => text(l, { class: "mono src", x: x + 28, y: y + 100 + i * 40 }, C.g));
+          C.lineY = (i) => y + 100 + i * 40;
+          return C;
+        }
+
+        return { PY, UI, API, MOCK, assembly, halfL, halfR, drawHalf, show, join, pulse, spark, mock, card, drawCard, room, drawRoom, check, cross, stamp, slam, sheet, carry, log };
+      })();
+    </script>
+  </head>
+  <body>
+    <div data-hf-id="hf-bi01"
+      id="root"
+      data-composition-id="main"
+      data-start="0"
+      data-duration="87"
+      data-width="1280"
+      data-height="720"
+    >
+      <!-- Score: score-library bureau-art-pop-bureau-integration take-01, sha256 63fb3a40...0358, the clock for every cue -->
+      <audio data-hf-id="hf-bi02"
+        id="score"
+        src="_in/score.mp3"
+        data-start="0"
+        data-duration="87"
+        data-track-index="9"
+        data-volume="1"
+      ></audio>
+
+      <!-- every plate draws on a 1920x1080 stage; drafts scale it to 720p (kit.css, stage.sh) -->
+      <div class="stage">
+        <div data-hf-id="hf-bi03" id="slot-furniture" data-composition-id="furniture" data-composition-src="compositions/furniture.html" data-start="0" data-duration="87" data-track-index="0" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-bi04" id="slot-i1" data-composition-id="i1" data-composition-src="compositions/i1-seam.html" data-start="0" data-duration="9.47" data-track-index="1" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-bi05" id="slot-i2" data-composition-id="i2" data-composition-src="compositions/i2-apart.html" data-start="9.47" data-duration="9.41" data-track-index="2" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-bi06" id="slot-i3" data-composition-id="i3" data-composition-src="compositions/i3-mock.html" data-start="18.88" data-duration="10.59" data-track-index="3" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-bi07" id="slot-i4" data-composition-id="i4" data-composition-src="compositions/i4-coupler.html" data-start="29.47" data-duration="11.77" data-track-index="4" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-bi08" id="slot-i5" data-composition-id="i5" data-composition-src="compositions/i5-smoke.html" data-start="41.24" data-duration="13.51" data-track-index="5" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-bi09" id="slot-i6" data-composition-id="i6" data-composition-src="compositions/i6-route.html" data-start="54.75" data-duration="17.65" data-track-index="6" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-bi0a" id="slot-i7" data-composition-id="i7" data-composition-src="compositions/i7-limit.html" data-start="72.4" data-duration="14.6" data-track-index="7" data-width="1920" data-height="1080"></div>
+      </div>
+    </div>
+
+    <script>
+      window.__timelines["main"] = gsap.timeline({ paused: true });
+    </script>
+  </body>
+</html>

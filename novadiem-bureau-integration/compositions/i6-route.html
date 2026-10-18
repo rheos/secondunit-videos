@@ -1,0 +1,94 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #i6 {
+          position: absolute;
+          inset: 0;
+        }
+      </style>
+      <div id="i6" data-composition-id="i6" data-width="1920" data-height="1080">
+        <div id="i6-all" class="layer">
+          <svg class="full" viewBox="0 0 1920 1080">
+            <g id="i6-art"></g>
+          </svg>
+          <div class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate VI</div>
+          <div class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>Route and Re-couple</div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text, kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 54.75);
+          const root = K.$("i6-art");
+          const A = SM.assembly(root, { cx: 960, cy: 380, s: 0.72 });
+          SM.show(K, A, K.T(54.75));
+          // the broken line from plate V, and the UI's list, still empty
+          const sp = el("g", {}, A.sig);
+          el("path", { class: "ln accent-s", d: "M-16 -16L16 16M16 -16L-16 16", style: "stroke-width:4" }, sp);
+          A.lRows.forEach((r) => r.setAttribute("opacity", 0));
+
+          // the Coupler reports; it does not fix
+          const R = SM.room(root, 140, 600, 380, 130, "THE COUPLER", "REPORTS · DOES NOT FIX");
+          SM.drawRoom(K, R, K.T(54.75));
+
+          // the prompt that consumes both halves waits (not built yet: dashed)
+          const p5 = el("rect", { class: "ln planned", x: 1340, y: 600, width: 440, height: 130 }, root);
+          const p5t = text("P5 · USES BOTH HALVES", { class: "mono dim", x: 1560, y: 656, "text-anchor": "middle" }, root);
+          const wait = text("WAITS", { class: "mono small dim", x: 1560, y: 692, "text-anchor": "middle" }, root);
+          K.sweep(p5, K.T(55.33), 0.6);
+          K.fade(p5t, K.T(55.33) + 0.3, 0.4);
+          K.fade(wait, K.T(55.93), 0.3);
+
+          // the blocker goes to the coder who owns that half, with the exact file and line
+          const B = SM.log(root, 600, 600, 640, "BLOCKER → THE MAGE (P4)", ["RunsList.tsx:42", "reads run.run_id", "the API sends id", ""]);
+          SM.drawCard(K, B, K.T(55.93));
+          SM.carry(K, tl, root, "M520 665H600", K.T(55.93), 0.4);
+          B.lines.slice(0, 3).forEach((l, i) => K.reveal(l, K.T(56.54 + i * 0.58), 0.45));
+          SM.carry(K, tl, root, "M730 600V500", K.T(58.31), 0.5);
+
+          // the Mage fixes it in the worktree
+          const old = A.lLabels[1];
+          const strike = el("path", { class: "ln ink", d: "M-160 -21H-70", style: "stroke-width:3" }, A.L);
+          K.draw(strike, K.T(58.89), 0.3);
+          tl.fromTo(old, { opacity: 1 }, { opacity: 0, duration: 0.25, immediateRender: false }, K.T(59.49));
+          tl.fromTo(strike, { opacity: 1 }, { opacity: 0, duration: 0.25, immediateRender: false }, K.T(59.49));
+          const now = text("id", { class: "mono src", x: -76, y: -14, "text-anchor": "end" }, A.L);
+          K.reveal(now, K.T(59.49) + 0.15, 0.4);
+          const fixed = text("FIXED IN THE WORKTREE", { class: "mono small gold-t", x: -320, y: 186, "text-anchor": "middle" }, A.L);
+          K.fade(fixed, K.T(60.07), 0.4);
+
+          // re-couple: the same smoke, end to end
+          tl.fromTo(sp, { opacity: 1 }, { opacity: 0, duration: 0.3, immediateRender: false }, K.T(61.25));
+          const again = SM.carry(K, tl, root, "M520 640H560V480H900", K.T(61.25), 0.6);
+          [0, 1, 2].forEach((i) => SM.pulse(K, tl, A, i, 420, -470, K.T(61.83), 1.2));
+          A.lRows.forEach((r, i) => K.fade(r, K.T(63.02) + i * 0.1, 0.3));
+          const re = text("RE-COUPLE · run.id → 7", { class: "mono src gold-t", x: 628, y: B.lineY(3) }, B.g);
+          const reOk = SM.check(B.g, 1200, B.lineY(3) - 6);
+          K.reveal(re, K.T(63.02), 0.5);
+          K.draw(reOk, K.T(63.6), 0.3);
+
+          // current keeps flowing through the joined halves
+          [64.2, 65.39, 66.55, 67.73, 68.94, 70.12].forEach((t, j) => [0, 1, 2].forEach((i) => SM.pulse(K, tl, A, i, 420, -470, K.T(t) + i * 0.06, 1.1)));
+          const loops = text("UP TO 2 FIX LOOPS PER HALF", { class: "mono small dim", x: 600, y: 886 }, root);
+          K.fade(loops, K.T(66.55), 0.4);
+
+          const S = SM.stamp(root, "PHASE LOCK HELD", 1120, 552, 380);
+          SM.slam(tl, S, K.T(70.05));
+          tl.fromTo(wait, { opacity: 1 }, { opacity: 0, duration: 0.2, immediateRender: false }, K.T(70.64));
+          const go = text("MAY PROCEED", { class: "mono small gold-t", x: 1560, y: 692, "text-anchor": "middle" }, root);
+          K.fade(go, K.T(70.64) + 0.1, 0.3);
+
+          K.out(K.$("i6-all"), K.R(71.95), 0.45);
+          window.__timelines["i6"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>
