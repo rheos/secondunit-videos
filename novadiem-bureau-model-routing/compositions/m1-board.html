@@ -1,0 +1,81 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #m1 {
+          position: absolute;
+          inset: 0;
+        }
+        #m1 .title {
+          top: 150px;
+          font-family: var(--font-label);
+          font-size: 120px;
+          letter-spacing: 0.08em;
+        }
+        #m1 .sub {
+          position: absolute;
+          left: 0;
+          right: 0;
+          top: 330px;
+          text-align: center;
+          font-size: 26px;
+          color: var(--ink);
+        }
+      </style>
+      <div id="m1" data-composition-id="m1" data-width="1920" data-height="1080">
+        <div id="m1-all" class="layer">
+          <svg class="full" viewBox="0 0 1920 1080">
+            <path id="m1-rule" class="ln line" d="M660 302H1260M660 292V312M1260 292V312" />
+            <g id="m1-art"></g>
+          </svg>
+          <div class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate I</div>
+          <div class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>Inside the Bureau · 9</div>
+          <div id="m1-title" class="title">THE CASTING BOARD</div>
+          <div id="m1-sub" class="sub mono">WHO DECIDES WHICH MODEL DOES WHICH JOB IN THE BUREAU</div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text, kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 0);
+
+          K.reveal(K.$("m1-title"), K.T(0.65), 1.1);
+          K.draw(K.$("m1-rule"), K.T(1.23), 0.8);
+          K.reveal(K.$("m1-sub"), K.T(1.81), 0.8);
+
+          // seven jobs in one run, all wired to one box
+          const art = K.$("m1-art");
+          const jobs = ["run the workflow", "requirements", "build prompts", "design", "cold review", "one-line look-ups", "voice and copy"];
+          jobs.forEach((j, i) => {
+            const y = 452 + i * 46;
+            const t = text(j, { class: "mono", x: 820, y: y + 7, "text-anchor": "end" }, art);
+            const w = el("path", { class: "ln thin ink", d: `M844 ${y}C960 ${y} 960 590 1080 590` }, art);
+            K.reveal(t, K.T(2.41) + i * 0.12, 0.45);
+            K.draw(w, K.T(3.0) + i * 0.08, 0.6);
+          });
+          const box = el("rect", { class: "ln ink", x: 1080, y: 530, width: 360, height: 120 }, art);
+          const one = text("ONE MODEL", { class: "mono big", x: 1260, y: 584, "text-anchor": "middle" }, art);
+          const every = text("for every job?", { class: "mono small dim", x: 1260, y: 618, "text-anchor": "middle" }, art);
+          K.draw(box, K.T(3.58), 0.6, "none");
+          K.reveal(one, K.T(4.18), 0.5);
+          K.fade(every, K.T(4.18) + 0.3, 0.3);
+
+          // no: each job gets its own casting
+          const x1 = el("path", { class: "ln ink", d: "M1070 520L1450 660M1450 520L1070 660", style: "stroke-width:3" }, art);
+          K.draw(x1, K.T(5.34), 0.35);
+          const ask = text("WHO PLAYS EACH PART?", { class: "mono red-t big", x: 1260, y: 732, "text-anchor": "middle" }, art);
+          K.reveal(ask, K.T(5.94), 0.6);
+
+          K.out(K.$("m1-all"), K.R(8.55), 0.3);
+          window.__timelines["m1"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

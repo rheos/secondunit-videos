@@ -1,0 +1,42 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #furniture {
+          position: absolute;
+          inset: 0;
+          background: var(--bg);
+        }
+      </style>
+      <div data-hf-id="hf-mr10" id="furniture" data-composition-id="furniture" data-width="1920" data-height="1080">
+        <svg data-hf-id="hf-mr11" id="fu-ground" class="full" viewBox="0 0 1920 1080" aria-hidden="true" style="will-change: transform"></svg>
+        <svg data-hf-id="hf-mr12" id="fu-frame" class="full" viewBox="0 0 1920 1080"></svg>
+      </div>
+
+      <script>
+        (() => {
+          const tl = gsap.timeline({ paused: true });
+          const K = BP.kit(tl, 0);
+          // stations are run start steps 1-4 (docs/model-routing-and-cast.md § At run start), then a specialist retry and the next run: the stage of the story, not live progress
+          BP.furniture(K, tl, {
+            stations: [
+              { label: "RESOLVE", at: 21.22 },
+              { label: "MODEL-ROUTING.JSON", at: 24.78 },
+              { label: "LOG", at: 31.81 },
+              { label: "SPAWN", at: 34.18 },
+              { label: "RETRY", at: 37.41 },
+              { label: "NEXT RUN", at: 48.6 },
+            ],
+            sheets: [0, 8.87, 21.22, 34.18, 48.6, 64.48, 75.07],
+          });
+          window.__timelines["furniture"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>
+

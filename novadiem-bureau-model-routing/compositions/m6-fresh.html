@@ -1,0 +1,87 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #m6 {
+          position: absolute;
+          inset: 0;
+        }
+        #m6 .statement {
+          top: 820px;
+          font-size: 56px;
+        }
+      </style>
+      <div id="m6" data-composition-id="m6" data-width="1920" data-height="1080">
+        <div class="layer">
+          <svg class="full" viewBox="0 0 1920 1080">
+            <g id="m6-art"></g>
+            <g id="m6-side"></g>
+          </svg>
+          <div class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate VI</div>
+          <div class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>Fresh Context</div>
+          <div id="m6-st" class="statement"><span class="phrase">Independence comes from</span><span class="phrase red">the fresh context.</span></div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text, kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 64.48);
+
+          // plate V's end state: the board on the Codex host
+          const B = CB.board(K.$("m6-art"));
+          CB.fill(B, { host: "openai" });
+          const side = K.$("m6-side");
+
+          // the last column: fresh context, set per role (fresh_context_required)
+          const band = CB.colBand(B, "fresh");
+          K.fade(band, K.T(64.48), 0.3, 0.2);
+          for (let r = 0; r < 7; r++) {
+            const m = CB.freshMark(B, r, CB.FRESH[r]);
+            const at = K.T(65.06) + r * 0.29;
+            if (CB.FRESH[r]) K.draw(m, at, 0.3);
+            else K.reveal(m, at, 0.3);
+          }
+          const f1 = text("tracked apart from", { class: "mono small", x: 1510, y: 250 }, side);
+          const f2 = text("model strength", { class: "mono small", x: 1510, y: 276 }, side);
+          K.reveal(f1, K.T(67.41), 0.45);
+          K.reveal(f2, K.T(67.41) + 0.2, 0.45);
+          tl.fromTo(band, { opacity: 0.2 }, { opacity: 0, duration: 0.4, immediateRender: false }, K.T(68.01));
+
+          // a final gate reaches the Challenger
+          const CH = 4, yC = CB.rowMid(CH);
+          const bandC = CB.rowBand(B, CH);
+          K.fade(bandC, K.T(68.01), 0.3, 0.2);
+          const gl = text("final gate", { class: "mono small dim", x: 1556, y: yC - 26 }, side);
+          K.fade(gl, K.T(68.59), 0.3);
+          CB.carry(K, tl, side, `M1820 ${yC}H1480`, K.T(68.59), 0.9);
+
+          // a bigger model? no: a fresh cold pass on the same capable tier
+          const q = text("a bigger model?", { class: "mono small", x: 1510, y: 660 }, side);
+          K.reveal(q, K.T(69.78), 0.45);
+          const strike = el("path", { class: "ln ink", d: "M1506 654H1690", style: "stroke-width:2" }, side);
+          K.draw(strike, K.T(70.36), 0.3);
+          const a1 = text("a fresh cold pass on", { class: "mono small gold-t", x: 1510, y: 698 }, side);
+          const a2 = text("the same capable tier", { class: "mono small gold-t", x: 1510, y: 724 }, side);
+          K.reveal(a1, K.T(70.36) + 0.2, 0.45);
+          K.reveal(a2, K.T(70.36) + 0.4, 0.45);
+          K.reveal(K.$("m6-st"), K.T(71.54), 0.8);
+          const e1 = text("escalated only after a", { class: "mono small dim", x: 1510, y: 316 }, side);
+          const e2 = text("review missed something", { class: "mono small dim", x: 1510, y: 342 }, side);
+          K.reveal(e1, K.T(70.94), 0.45);
+          K.reveal(e2, K.T(70.94) + 0.2, 0.45);
+
+          K.out(side, K.R(74.75), 0.3);
+          K.out(K.$("m6-st"), K.R(74.75), 0.3);
+          K.out(bandC, K.R(74.75), 0.3);
+          window.__timelines["m6"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>
