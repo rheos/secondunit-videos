@@ -1,0 +1,228 @@
+<!doctype html>
+<html class="draft" lang="en" data-resolution="landscape">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1280, height=720" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=IBM+Plex+Mono:wght@400;700&display=block" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <!-- Series kit (tools/blueprint-kit, copied by sync.sh). Theme first, then structure. -->
+    <link rel="stylesheet" href="kit/themes/paper.css" />
+    <link rel="stylesheet" href="kit/kit.css" />
+    <script src="kit/kit.js"></script>
+    <script>
+      // Beat grid of the score (beats.json): librosa beats at a 0.5805 s median gap, extended to both ends of take-01.
+      BP.grid({ beats: [0.07,0.65,1.23,1.81,2.41,3.0,3.58,4.18,4.76,5.34,5.94,6.52,7.11,7.71,8.29,8.87,9.47,10.05,10.63,11.24,11.82,12.4,13.0,13.58,14.19,14.77,15.35,15.93,16.53,17.11,17.69,18.3,18.88,19.46,20.06,20.64,21.22,21.83,22.41,22.99,23.59,24.17,24.78,25.36,25.94,26.52,27.12,27.7,28.31,28.89,29.47,30.05,30.65,31.23,31.81,32.42,33.0,33.58,34.18,34.76,35.25,35.76,36.25,36.83,37.41,38.01,38.59,39.17,39.78,40.36,40.94,41.54,42.12,42.7,43.31,43.89,44.47,45.07,45.65,46.23,46.83,47.42,48.0,48.6,49.18,49.76,50.36,50.94,51.53,52.13,52.71,53.29,53.89,54.47,55.05,55.66,56.24,56.82,57.42,58.0,58.58,59.19,59.77,60.35,60.95,61.53,62.11,62.72,63.3,63.88,64.48,65.06,65.64,66.25,66.83,67.41,68.01,68.59,69.17,69.78,70.36,70.94,71.54,72.12,72.7,73.31,73.89,74.47,75.07,75.65,76.23,76.83,77.42,78.0,78.6,79.18,79.76,80.36,80.94,81.53,82.13,82.71,83.29,83.89,84.47,85.05,85.64,86.22,86.8,87.38,87.96,88.54,89.12,89.7] });
+    </script>
+    <style>
+      svg text.mono.head { font-size: 16px; font-weight: 700; letter-spacing: 0.12em; }
+      svg text.mono.src { font-size: 18px; font-weight: 400; letter-spacing: 0.04em; }
+      svg text.mono.gold-t { fill: #6b5416; } /* line-strong is 3.5:1 on paper; small type needs 4.5:1 */
+      svg text.mono.red-t { fill: var(--accent); }
+      svg text.mono.big { font-size: 26px; }
+      svg text.mono.cellv { font-size: 22px; font-weight: 700; letter-spacing: 0.04em; }
+      svg text.mono.cellv.w4 { font-weight: 400; }
+      .fill-ink { fill: var(--ink); }
+      .fill-gold { fill: var(--line); }
+      .red-s { stroke: var(--accent); }
+      .stamp-t { font-family: var(--font-mono); font-size: 26px; font-weight: 700; letter-spacing: 0.14em; fill: var(--ink); }
+      .stamp-t.red-f { fill: var(--accent); }
+    </style>
+    <script>
+      // CB: the one device of this film, a casting board. Each row is a Bureau role, each column one
+      // choice made for it per run. Values are the docs' own (docs/model-routing-and-cast.md,
+      // config/model-policy.v2.json, config/runtimes/claude.json and openai.json on origin/main).
+      window.CB = (() => {
+        const { el, text } = BP;
+        const ROLES = [
+          ["THE CONDUCTOR", "runs the workflow"],
+          ["ANALIZER 2000", "requirements"],
+          ["THE SPELLWRIGHT", "writes build prompts"],
+          ["THE ARCHITECT", "design"],
+          ["THE CHALLENGER", "cold review"],
+          ["SCOOT", "one-line look-ups"],
+          ["THE COUNSELOR", "voice and copy"],
+        ];
+        // config/model-policy.v2.json roles.<role>.default_tier and fresh_context_required
+        const TIER = ["strong", "standard", "standard", "strong", "strong", "cheap", "frontier"];
+        const FRESH = [false, true, true, true, true, true, true];
+        // config/runtimes/claude.json and openai.json: tier -> model (+ reasoning effort on Codex)
+        const CLAUDE = { cheap: "haiku", standard: "sonnet", strong: "opus", frontier: "fable", escalated: "fable" };
+        const OPENAI = {
+          cheap: ["gpt-5.6-terra", "low"],
+          standard: ["gpt-5.6-terra", "medium"],
+          strong: ["gpt-5.6-sol", "high"],
+          frontier: ["gpt-5.6-sol", "xhigh"],
+          escalated: ["gpt-6-astra", "max"],
+        };
+        const COLS = {
+          role: { x: 150, w: 310, h: "ROLE" },
+          tier: { x: 460, w: 210, h: "TIER" },
+          model: { x: 670, w: 260, h: "MODEL" },
+          effort: { x: 930, w: 180, h: "EFFORT" },
+          host: { x: 1110, w: 180, h: "HOST" },
+          fresh: { x: 1290, w: 180, h: "FRESH CONTEXT" },
+        };
+        const X0 = 150, X1 = 1470, HY = 186, Y0 = 240, RH = 76;
+        const rowTop = (r) => Y0 + r * RH;
+        const rowMid = (r) => Y0 + r * RH + RH / 2;
+
+        // board(parent) -> B: the frame, headers, rules and role names. Cells are added with B.cell().
+        function board(parent) {
+          const B = { g: el("g", {}, parent) };
+          B.hl = el("g", {}, B.g); // highlight layer, under everything
+          B.paper = el("rect", { class: "fill-bg", x: X0, y: HY, width: X1 - X0, height: rowTop(7) - HY }, B.g);
+          B.frame = el("rect", { class: "ln ink", x: X0, y: HY, width: X1 - X0, height: rowTop(7) - HY }, B.g);
+          B.headRule = el("path", { class: "ln ink", d: `M${X0} ${Y0}H${X1}` }, B.g);
+          B.rules = [];
+          for (let r = 1; r < 7; r++) B.rules.push(el("path", { class: "ln thin ink", d: `M${X0} ${rowTop(r)}H${X1}`, style: "opacity:0.45" }, B.g));
+          B.colRules = [];
+          Object.values(COLS).slice(1).forEach((c) => B.colRules.push(el("path", { class: "ln thin ink", d: `M${c.x} ${HY}V${rowTop(7)}`, style: "opacity:0.45" }, B.g)));
+          B.heads = {};
+          for (const k in COLS) B.heads[k] = text(COLS[k].h, { class: "mono head", x: COLS[k].x + 18, y: HY + 34 }, B.g);
+          B.names = ROLES.map(([n, j], r) => {
+            const g = el("g", {}, B.g);
+            text(n, { class: "mono", x: X0 + 22, y: rowMid(r) - 3 }, g);
+            text(j, { class: "mono small dim", x: X0 + 22, y: rowMid(r) + 21 }, g);
+            return g;
+          });
+          B.cells = {};
+          B.layer = el("g", {}, B.g); // cell values on top
+          return B;
+        }
+        // a cell value: B.cell(r, col, str, cls) -> text node
+        function cell(B, r, col, str, cls = "") {
+          return text(str, { class: `mono cellv ${cls}`, x: COLS[col].x + 22, y: rowMid(r) + 8 }, B.layer);
+        }
+        // a yes / no mark in the fresh-context column
+        function freshMark(B, r, yes) {
+          const x = COLS.fresh.x + 40, y = rowMid(r);
+          if (yes) return el("path", { class: "ln ink", d: `M${x - 12} ${y}l8 9l16 -20`, style: "stroke-width:3" }, B.layer);
+          return text("no", { class: "mono cellv w4", x: x - 14, y: y + 8 }, B.layer);
+        }
+        // the whole board in one state: fill(B, { tiers, host, models, efforts, fresh }) -> {tier:[], model:[], effort:[], host:[], fresh:[]}
+        function fill(B, s) {
+          const out = { tier: [], model: [], effort: [], host: [], fresh: [] };
+          for (let r = 0; r < 7; r++) {
+            const t = (s.tiers || TIER)[r];
+            if (s.tier !== false) out.tier.push(cell(B, r, "tier", t));
+            if (s.host) {
+              const m = s.host === "openai" ? OPENAI[t][0] : CLAUDE[t];
+              const e = s.host === "openai" ? OPENAI[t][1] : "—";
+              out.model.push(cell(B, r, "model", m));
+              out.effort.push(cell(B, r, "effort", e, "w4"));
+              out.host.push(cell(B, r, "host", s.host, "w4"));
+            }
+            if (s.fresh) out.fresh.push(freshMark(B, r, FRESH[r]));
+          }
+          return out;
+        }
+        function drawBoard(K, B, at, step = 0.58) {
+          K.fade(B.paper, at, 0.2);
+          K.draw(B.frame, at, 0.9, "none");
+          K.draw(B.headRule, at + 0.4, 0.6);
+          B.colRules.forEach((n, i) => K.draw(n, at + 0.5 + i * 0.08, 0.5));
+          Object.values(B.heads).forEach((n, i) => K.fade(n, at + 0.6 + i * 0.08, 0.3));
+          B.rules.forEach((n, i) => K.draw(n, at + 0.7 + i * 0.06, 0.4));
+          B.names.forEach((n, i) => K.reveal(n, at + 1.2 + i * step, 0.5));
+        }
+        // a gold band behind one row or one column (fades in to 0.18)
+        function rowBand(B, r) {
+          return el("rect", { class: "fill-gold", x: X0 + 2, y: rowTop(r) + 2, width: X1 - X0 - 4, height: RH - 4, opacity: 0.2 }, B.hl);
+        }
+        function colBand(B, col) {
+          const c = COLS[col];
+          return el("rect", { class: "fill-gold", x: c.x + 2, y: HY + 2, width: c.w - 4, height: rowTop(7) - HY - 4, opacity: 0.2 }, B.hl);
+        }
+        // swap one cell's value: old fades, new wipes in
+        function swap(K, tl, a, b, at) {
+          tl.fromTo(a, { opacity: 1 }, { opacity: 0, duration: 0.2, immediateRender: false }, at);
+          K.reveal(b, at + 0.15, 0.4);
+        }
+
+        // a stamp, tilted: stamp(parent, word, cx, cy, w)
+        function stamp(parent, word, cx, cy, w = 220, red = false) {
+          const tilt = el("g", { transform: `rotate(-6 ${cx} ${cy})`, "data-layout-allow-overlap": "" }, parent);
+          const g = el("g", {}, tilt);
+          el("rect", { class: "fill-bg", x: cx - w / 2, y: cy - 25, width: w, height: 50, opacity: 0.94 }, g);
+          el("rect", { class: `ln ${red ? "red-s" : "ink"}`, x: cx - w / 2, y: cy - 25, width: w, height: 50, style: "stroke-width:3" }, g);
+          text(word, { class: `stamp-t${red ? " red-f" : ""}`, x: cx, y: cy + 9, "text-anchor": "middle" }, g);
+          return { g, cx, cy };
+        }
+        function slam(tl, S, at) {
+          tl.fromTo(S.g, { opacity: 0, scale: 1.25, svgOrigin: `${S.cx} ${S.cy}` }, { opacity: 1, scale: 1, svgOrigin: `${S.cx} ${S.cy}`, duration: 0.25, ease: "power2.in" }, at);
+        }
+        // a sheet in transit
+        function sheet(parent, x, y) {
+          const t = el("g", { transform: `translate(${x} ${y})` }, parent);
+          el("path", { class: "fill-bg", d: "M-12 -15H5L12 -8V15H-12Z" }, t);
+          el("path", { class: "ln line-strong", d: "M-12 -15H5L12 -8V15H-12Z" }, t);
+          el("path", { class: "ln thin line-strong", d: "M-6 -4H6M-6 3H6M-6 10H2" }, t);
+          return t;
+        }
+        function carry(K, tl, parent, d, at, dur) {
+          const s = sheet(parent, 0, 0);
+          tl.fromTo(s, { opacity: 0 }, { opacity: 1, duration: 0.15 }, at);
+          K.travel(s, el("path", { d }), at, dur);
+          tl.fromTo(s, { opacity: 1 }, { opacity: 0, duration: 0.2, immediateRender: false }, at + dur);
+          return s;
+        }
+        // a small file card for the right-hand margin: fileCard(parent, x, y, w, name, lines)
+        function fileCard(parent, x, y, w, name, lines) {
+          const h = 50 + lines.length * 26;
+          const C = { g: el("g", {}, parent), x, y, w, h };
+          C.paper = el("path", { class: "fill-bg", d: `M${x} ${y}H${x + w - 18}L${x + w} ${y + 18}V${y + h}H${x}Z` }, C.g);
+          C.body = el("path", { class: "ln ink", d: `M${x} ${y}H${x + w - 18}L${x + w} ${y + 18}V${y + h}H${x}Z` }, C.g);
+          C.name = text(name, { class: "mono small", x: x + 16, y: y + 28, style: "font-weight:700" }, C.g);
+          C.lines = lines.map((l, i) => text(l, { class: "mono small dim", x: x + 16, y: y + 56 + i * 26 }, C.g));
+          return C;
+        }
+        function drawFile(K, C, at) {
+          K.fade(C.paper, at, 0.2);
+          K.draw(C.body, at, 0.6, "none");
+          K.fade(C.name, at + 0.2, 0.3);
+          C.lines.forEach((n, i) => K.reveal(n, at + 0.35 + i * 0.12, 0.4));
+        }
+
+        return { ROLES, TIER, FRESH, CLAUDE, OPENAI, COLS, X0, X1, HY, Y0, RH, rowTop, rowMid, board, cell, freshMark, fill, drawBoard, rowBand, colBand, swap, stamp, slam, sheet, carry, fileCard, drawFile };
+      })();
+    </script>
+  </head>
+  <body>
+    <div data-hf-id="hf-mr01"
+      id="root"
+      data-composition-id="main"
+      data-start="0"
+      data-duration="87"
+      data-width="1280"
+      data-height="720"
+    >
+      <!-- Score: score-library bureau-art-pop-bureau-model-routing take-01, sha256 35f96552...103a, the clock for every cue -->
+      <audio data-hf-id="hf-mr02"
+        id="score"
+        src="_in/score.mp3"
+        data-start="0"
+        data-duration="87"
+        data-track-index="9"
+        data-volume="0.84"
+      ></audio>
+
+      <!-- every plate draws on a 1920x1080 stage; drafts scale it to 720p (kit.css, stage.sh) -->
+      <div class="stage">
+        <div data-hf-id="hf-mr03" id="slot-furniture" data-composition-id="furniture" data-composition-src="compositions/furniture.html" data-start="0" data-duration="87" data-track-index="0" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-mr04" id="slot-m1" data-composition-id="m1" data-composition-src="compositions/m1-board.html" data-start="0" data-duration="8.87" data-track-index="1" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-mr05" id="slot-m2" data-composition-id="m2" data-composition-src="compositions/m2-cast.html" data-start="8.87" data-duration="12.35" data-track-index="2" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-mr06" id="slot-m3" data-composition-id="m3" data-composition-src="compositions/m3-resolve.html" data-start="21.22" data-duration="12.96" data-track-index="3" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-mr07" id="slot-m4" data-composition-id="m4" data-composition-src="compositions/m4-bounce.html" data-start="34.18" data-duration="14.42" data-track-index="4" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-mr08" id="slot-m5" data-composition-id="m5" data-composition-src="compositions/m5-host.html" data-start="48.6" data-duration="15.88" data-track-index="5" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-mr09" id="slot-m6" data-composition-id="m6" data-composition-src="compositions/m6-fresh.html" data-start="64.48" data-duration="10.59" data-track-index="6" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-mr0a" id="slot-m7" data-composition-id="m7" data-composition-src="compositions/m7-per-run.html" data-start="75.07" data-duration="11.93" data-track-index="7" data-width="1920" data-height="1080"></div>
+      </div>
+    </div>
+
+    <script>
+      window.__timelines["main"] = gsap.timeline({ paused: true });
+    </script>
+  </body>
+</html>

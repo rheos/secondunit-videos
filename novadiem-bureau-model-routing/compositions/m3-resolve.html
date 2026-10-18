@@ -1,0 +1,78 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #m3 {
+          position: absolute;
+          inset: 0;
+        }
+      </style>
+      <div id="m3" data-composition-id="m3" data-width="1920" data-height="1080">
+        <div class="layer">
+          <svg class="full" viewBox="0 0 1920 1080">
+            <g id="m3-art"></g>
+            <g id="m3-side"></g>
+          </svg>
+          <div class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate III</div>
+          <div class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>Resolved at Run Start</div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text, kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 21.22);
+
+          // plate II's end state: roles cast to tiers
+          const B = CB.board(K.$("m3-art"));
+          CB.fill(B, { tier: true });
+
+          // the resolver: policy + runtime adapter -> the run's routing file
+          const side = K.$("m3-side");
+          const C1 = CB.fileCard(side, 1510, 186, 320, "model-policy.v2.json", ["role -> tier"]);
+          const C2 = CB.fileCard(side, 1510, 290, 320, "runtimes/claude.json", ["tier -> model"]);
+          CB.drawFile(K, C1, K.T(21.83));
+          CB.drawFile(K, C2, K.T(22.41));
+          const a1 = el("path", { class: "ln ink", d: "M1670 368V404M1660 394L1670 406L1680 394" }, side);
+          const scr = text("resolve-model-routing.sh", { class: "mono small", x: 1670, y: 432, "text-anchor": "middle", style: "font-weight:700" }, side);
+          const a2 = el("path", { class: "ln ink", d: "M1670 446V478M1660 468L1670 480L1680 468" }, side);
+          K.draw(a1, K.T(23.0), 0.3);
+          K.reveal(scr, K.T(23.0) + 0.25, 0.5);
+          K.draw(a2, K.T(23.59), 0.3);
+          const C3 = CB.fileCard(side, 1510, 490, 320, "model-routing.json", ["in the run's folder", "runtime: claude", "one entry per role"]);
+          CB.drawFile(K, C3, K.T(24.78));
+
+          // the host: one per run, the same in every row
+          const hostBand = CB.colBand(B, "host");
+          K.fade(hostBand, K.T(25.94), 0.3, 0.2);
+          const perRun = text("per run", { class: "mono small gold-t", x: 1196, y: 220 }, B.layer);
+          K.fade(perRun, K.T(25.94), 0.3);
+          const st = CB.fill(B, { tier: false, host: "claude" });
+          st.host.forEach((n) => K.reveal(n, K.T(25.94) + 0.1, 0.4));
+          tl.fromTo(hostBand, { opacity: 0.2 }, { opacity: 0, duration: 0.4, immediateRender: false }, K.T(27.12));
+
+          // the adapter maps each row's tier to a model, one row per beat
+          st.model.forEach((n, r) => K.reveal(n, K.T(26.52) + r * 0.58, 0.4));
+
+          // Claude has no effort setting (config/runtimes/claude.json capabilities)
+          st.effort.forEach((n) => K.fade(n, K.T(30.65), 0.4));
+          const e1 = text("Claude has no effort setting;", { class: "mono small", x: 1510, y: 700 }, side);
+          const e2 = text("a higher tier asks for", { class: "mono small", x: 1510, y: 726 }, side);
+          const e3 = text("more thinking in the prompt", { class: "mono small", x: 1510, y: 752 }, side);
+          [e1, e2, e3].forEach((n, i) => K.reveal(n, K.T(30.65) + 0.2 + i * 0.2, 0.45));
+          const lg = text("runtime logged in log.md", { class: "mono small gold-t", x: 1510, y: 646 }, side);
+          K.reveal(lg, K.T(31.81), 0.5);
+
+          K.out(side, K.R(33.85), 0.33);
+          K.out(perRun, K.R(33.85), 0.33);
+          window.__timelines["m3"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>
