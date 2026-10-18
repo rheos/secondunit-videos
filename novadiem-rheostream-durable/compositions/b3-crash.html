@@ -1,0 +1,130 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #b3 {
+          position: absolute;
+          inset: 0;
+        }
+      </style>
+      <div data-hf-id="hf-n301" id="b3" data-composition-id="b3" data-width="1920" data-height="1080">
+        <div data-hf-id="hf-n302" id="b3-content" class="layer">
+          <div data-hf-id="hf-n303" id="b3-lab-l" class="plate-label left">PLATE III</div>
+          <div data-hf-id="hf-n304" id="b3-lab-r" class="plate-label right">THE CRASH</div>
+          <svg data-hf-id="hf-n305" id="b3-svg" class="full" viewBox="0 0 1920 1080"></svg>
+          <div data-hf-id="hf-n306" class="statement">
+            <span data-hf-id="hf-n307" id="b3-s1" class="phrase">The worker dies.</span>
+            <span data-hf-id="hf-n308" id="b3-s2" class="phrase accent">The job doesn't.</span>
+          </div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text } = BP;
+          const tl = gsap.timeline({ paused: true });
+          const S = 22;
+          const K = BP.kit(tl, S);
+          const svg = K.$("b3-svg");
+
+          // job 1 as worker A left it; t is the moment A took the lease
+          const P = JB.table(svg, { x: 420, y: 206, rows: 1 });
+
+          // the lease clock: seconds since the lease, 9 px a second (LEASE_SECONDS 60, HEARTBEAT_SECONDS 20, work/loop.py)
+          const X = (s) => 420 + s * 9;
+          const AY = 600;
+          const axis = el("path", { class: "ln thin ink", d: `M${X(0)} ${AY}H${X(120)}`, opacity: 0.7 }, svg);
+          const ticks = [], tickT = [];
+          for (let s = 0; s <= 120; s += 20) {
+            ticks.push(el("path", { class: "ln thin ink", d: `M${X(s)} ${AY}V${AY + 12}` }, svg));
+            tickT.push(text(`${s}`, { class: "mono small dim", x: X(s), y: AY + 36, "text-anchor": "middle" }, svg));
+          }
+          const axisT = text("SECONDS SINCE THE LEASE", { class: "mono small dim", x: X(0), y: AY + 70 }, svg);
+
+          // the lease bar; each heartbeat pushes its end out to now + 60 s
+          const bar = el("rect", { class: "ln line", x: X(0), y: 500, width: 540, height: 40 }, svg);
+          const barT = text("LEASE", { class: "mono small", x: X(0) + 16, y: 527 }, svg);
+          const endG = el("g", {}, svg);
+          el("path", { class: "ln line-strong", d: `M0 484V556` }, endG);
+          const endT = text("LEASE_UNTIL", { class: "mono small strong", x: 0, y: 474, "text-anchor": "middle" }, endG);
+
+          // heartbeats at 20 and 40; the one at 60 never comes
+          const beat = (s, cls) => el("path", { class: cls, d: `M${X(s) - 8} ${AY - 8}l8 -10l8 10l-8 10z` }, svg);
+          const hb1 = beat(20, "ln line-strong");
+          const hb2 = beat(40, "ln line-strong");
+          const hb3 = beat(60, "ln line construct");
+          const hbT = text("HEARTBEAT", { class: "mono small", x: X(20), y: AY - 30, "text-anchor": "middle" }, svg);
+          const noT = text("NO HEARTBEAT", { class: "mono small dim", x: X(60), y: AY - 30, "text-anchor": "middle" }, svg);
+
+          // now: a cursor walking the axis
+          const now = el("g", {}, svg);
+          el("path", { class: "ln thin ink", d: `M0 ${AY - 136}V${AY + 14}` }, now);
+          text("NOW", { class: "mono small", x: 0, y: AY - 146, "text-anchor": "middle" }, now);
+
+          // worker A, below the table at the left
+          const wa = JB.box(svg, 120, 380, 240, 80, "WORKER A");
+          const link = el("path", { class: "ln line", d: `M240 380V${P.rowY(0)}H420` }, svg);
+          const crack = el("path", { class: "ln accent-s", d: "M132 452L166 438L192 455L230 436L262 453L300 440L348 452" }, svg);
+          const deadT = text("PROCESS DIES", { class: "mono small dim", x: 240, y: 492, "text-anchor": "middle" }, svg);
+          const lapsedT = text("LEASE_UNTIL < NOW", { class: "mono small strong", x: X(100), y: 690, "text-anchor": "middle" }, svg);
+
+          // cues
+          K.fade(K.$("b3-lab-l"), K.T(22.23), 0.4);
+          K.fade(K.$("b3-lab-r"), K.T(22.23), 0.4);
+          JB.draw(K, P, K.T(22.23));
+          const r = JB.row(K, P, 0, ["job 1", "leased", "worker-a", "t + 60 s", "1"], K.T(22.86));
+          r[1].setAttribute("class", "mono cell b");
+          K.draw(wa.r, K.T(23.49), 0.5);
+          K.fade(wa.t, K.T(23.49) + 0.3, 0.3);
+          K.draw(link, K.T(23.49) + 0.3, 0.5);
+
+          K.draw(axis, K.T(24.1), 0.8, "none");
+          ticks.forEach((t, i) => K.draw(t, K.T(24.1) + 0.2 + i * 0.08, 0.2));
+          tickT.forEach((t, i) => K.fade(t, K.T(24.1) + 0.3 + i * 0.08, 0.3));
+          K.fade(axisT, K.T(24.73), 0.35);
+          K.reveal(bar, K.T(24.73), 0.6);
+          K.fade(barT, K.T(24.73) + 0.4, 0.3);
+          tl.fromTo(endG, { x: X(60), opacity: 0 }, { x: X(60), opacity: 1, duration: 0.3 }, K.T(25.36));
+          tl.fromTo(now, { x: X(0), opacity: 0 }, { x: X(0), opacity: 1, duration: 0.3 }, K.T(25.36));
+
+          // heartbeat 1 at t + 20: lease_until goes to t + 80
+          tl.fromTo(now, { x: X(0) }, { x: X(20), duration: 1.2, ease: "none", immediateRender: false }, K.T(25.36) + 0.3);
+          K.fade(hb1, K.T(26.61), 0.25);
+          K.fade(hbT, K.T(26.61), 0.3);
+          tl.fromTo(bar, { attr: { width: 540 } }, { attr: { width: 720 }, duration: 0.5, ease: "power2.out", immediateRender: false }, K.T(26.61));
+          tl.fromTo(endG, { x: X(60) }, { x: X(80), duration: 0.5, ease: "power2.out", immediateRender: false }, K.T(26.61));
+          let c3 = JB.swap(K, P, r[3], 0, 3, "t + 80 s", K.T(26.61));
+
+          // heartbeat 2 at t + 40: lease_until goes to t + 100
+          tl.fromTo(now, { x: X(20) }, { x: X(40), duration: 1.2, ease: "none", immediateRender: false }, K.T(26.61) + 0.05);
+          K.fade(hb2, K.T(27.86), 0.25);
+          tl.fromTo(bar, { attr: { width: 720 } }, { attr: { width: 900 }, duration: 0.5, ease: "power2.out", immediateRender: false }, K.T(27.86));
+          tl.fromTo(endG, { x: X(80) }, { x: X(100), duration: 0.5, ease: "power2.out", immediateRender: false }, K.T(27.86));
+          c3 = JB.swap(K, P, c3, 0, 3, "t + 100 s", K.T(27.86));
+
+          // the worker dies between heartbeats; the clock keeps going
+          tl.fromTo(now, { x: X(40) }, { x: X(100), duration: 3.0, ease: "none", immediateRender: false }, K.T(27.86) + 0.05);
+          K.draw(crack, K.T(29.11), 0.3, "none");
+          K.fade(deadT, K.T(29.11) + 0.3, 0.3);
+          tl.to([wa.r, wa.t, link], { opacity: 0.3, duration: 0.4 }, K.T(29.73));
+          K.sweep(hb3, K.T(29.73), 0.3);
+          K.fade(noT, K.T(29.73), 0.3);
+          // the cursor passes lease_until: the lease has lapsed, the row is still there
+          tl.fromTo(now, { x: X(100) }, { x: X(108), duration: 0.6, ease: "none", immediateRender: false }, K.T(27.86) + 3.05);
+          K.fade(lapsedT, K.T(31.6), 0.35);
+          tl.to(bar, { opacity: 0.45, duration: 0.4 }, K.T(31.6));
+
+          K.reveal(K.$("b3-s1"), K.T(32.23), 0.6);
+          K.reveal(K.$("b3-s2"), K.T(32.86), 0.7);
+
+          K.out(K.$("b3-content"), K.R(35.4), 0.45);
+          window.__timelines["b3"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

@@ -1,0 +1,97 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #b3 {
+          position: absolute;
+          inset: 0;
+        }
+      </style>
+      <div data-hf-id="hf-rc40" id="b3" data-composition-id="b3" data-width="1920" data-height="1080">
+        <div data-hf-id="hf-rc41" id="b3-content" class="layer">
+          <div data-hf-id="hf-rc42" id="b3-lab-l" class="plate-label left">PLATE III</div>
+          <div data-hf-id="hf-rc43" id="b3-lab-r" class="plate-label right">SUPERSEDED</div>
+          <svg data-hf-id="hf-rc44" id="b3-svg" class="full" viewBox="0 0 1920 1080"></svg>
+          <div data-hf-id="hf-rc45" class="statement">
+            <span data-hf-id="hf-rc46" id="b3-s1" class="phrase">Superseded,</span>
+            <span data-hf-id="hf-rc47" id="b3-s2" class="phrase accent">not overwritten.</span>
+          </div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text } = BP;
+          const tl = gsap.timeline({ paused: true });
+          const S = 26.2;
+          const K = BP.kit(tl, S);
+          const svg = K.$("b3-svg");
+
+          // a later session says the fact has changed
+          const panel = el("rect", { class: "ln line", x: 520, y: 150, width: 880, height: 104 }, svg);
+          const panelT = text("SESSION  ·  2026-10-09", { class: "mono small dim", x: 544, y: 184 }, svg);
+          const said = el("g", {}, svg);
+          text("YOU", { class: "cm on", x: 544, y: 228 }, said);
+          text("Staging moved to Postgres 17 today.", { class: "cb", x: 620, y: 228 }, said);
+
+          // A, the memory plate II saved, is replaced by B; A stays as history
+          const A = RC.card(svg, 730, 330, { kind: "FACT", title: "Staging database", body: "Staging runs Postgres 15.", foot: "2026-10-02  ·  AUTOMATIC" });
+          const tagA = text("A", { class: "mono mint", x: 0, y: 0 }, A.g);
+          tagA.setAttribute("x", "-34");
+          tagA.setAttribute("y", "30");
+          const B = RC.card(svg, 1230, 330, { kind: "FACT", title: "Staging database", body: "Staging runs Postgres 17.", foot: "2026-10-09", strong: true });
+          const tagB = text("B", { class: "mono mint", x: 1196, y: 360 }, svg);
+
+          // the server writes B's derived_from link back to A and marks it as lineage
+          const link = el("path", { class: "ln line", d: "M1230 430H700" }, svg);
+          const linkHead = RC.head(svg, 696, 430, "l");
+          const linkT = text("DERIVED_FROM  ·  LINEAGE", { class: "mono small", x: 965, y: 412, "text-anchor": "middle" }, svg);
+          const linkT2 = text("WRITTEN BY THE SERVER", { class: "mono small dim", x: 965, y: 462, "text-anchor": "middle" }, svg);
+
+          const st = el("g", { transform: "rotate(-4 460 566)" }, svg);
+          const stR = el("rect", { class: "ln line-strong fill-bg", x: 320, y: 544, width: 280, height: 44 }, st);
+          const stT = text("SUPERSEDED", { class: "stamp-t", x: 460, y: 572, "text-anchor": "middle" }, st);
+
+          const noteA = text("SUPERSEDED_BY: B", { class: "mono small", x: 230, y: 636 }, svg);
+          const noteA2 = text("KEPT, READABLE AS HISTORY", { class: "mono small dim", x: 230, y: 664 }, svg);
+          const noteB = text("CURRENT", { class: "mono small", x: 1230, y: 636 }, svg);
+          const noteB2 = text("SAME AUDIENCE AND PURPOSES AS A", { class: "mono small dim", x: 1230, y: 664 }, svg);
+          const late = text("RECALL SKIPS A  ·  A HISTORY READ STILL SHOWS IT", { class: "mono mint", x: 960, y: 736, "text-anchor": "middle" }, svg);
+
+          K.fade(K.$("b3-lab-l"), K.T(26.85), 0.4);
+          K.fade(K.$("b3-lab-r"), K.T(26.85), 0.4);
+          K.draw(panel, K.T(27.49), 0.6);
+          K.fade(panelT, K.T(27.49) + 0.3, 0.3);
+          K.fade(said, K.T(27.49) + 0.5, 0.4);
+          RC.drawIn(K, A, K.T(28.12), true);
+          K.fade(tagA, K.T(28.12) + 0.4, 0.3);
+          tl.fromTo(A.root, { x: 0 }, { x: -500, duration: 0.9, ease: "power2.inOut" }, K.T(29.4));
+          tl.fromTo(A.root, { opacity: 1 }, { opacity: 0.55, duration: 0.9, ease: "power1.inOut" }, K.T(29.4));
+          RC.drawIn(K, B, K.T(30.04));
+          K.fade(tagB, K.T(30.04) + 0.4, 0.3);
+          K.draw(link, K.T(31.31), 0.6);
+          K.draw(linkHead, K.T(31.31) + 0.55, 0.15);
+          K.fade(linkT, K.T(31.95), 0.35);
+          K.fade(linkT2, K.T(31.95) + 0.2, 0.35);
+          K.fade(stR, K.T(32.59), 0.15);
+          K.fade(stT, K.T(32.59), 0.15);
+          tl.fromTo(st, { scale: 1.25, transformOrigin: "460px 566px" }, { scale: 1, transformOrigin: "460px 566px", duration: 0.25, ease: "power2.out" }, K.T(32.59));
+          K.fade(noteA, K.T(33.23), 0.35);
+          K.fade(noteA2, K.T(33.23) + 0.2, 0.35);
+          K.fade(noteB, K.T(33.87), 0.35);
+          K.fade(noteB2, K.T(33.87) + 0.2, 0.35);
+          K.reveal(K.$("b3-s1"), K.T(34.5), 0.6);
+          K.reveal(K.$("b3-s2"), K.T(35.14), 0.6);
+          K.fade(late, K.T(36.42), 0.4);
+
+          K.out(K.$("b3-content"), K.R(39.8), 0.4);
+          window.__timelines["b3"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>
