@@ -364,8 +364,8 @@ function sTogether(t, tt, len) {
     part([[1150, 720], [1900, 710], [1900, 760], [1150, 770]], { fill: hsl(30, 26, 44), shade: hsl(26, 26, 32), shadeShift: [0, -12], seed: 910, inkW: .9, sharp: 50 });
     const cx = lerp(950, 900, q01(t, 140.2, 141.5));
     canoeHull(cx, 900, .9, 0);
-    const H = who(CAST.her, { x: lerp(1500, cx + 160, k), y: lerp(450, 640, k) + Math.sin(k * Math.PI) * -40, sc: lerp(.62, .55, k), seed: 160, breath: breath(t, 4), turn: -.5, blink: blinkAt(t, 9), legs: [.2 * Math.sin(k * 6), .1, -.2 * Math.sin(k * 6), .1], footDown: true, armL: [-.6, .4, 0, .5, 1], armR: [.9, -.6, 0, .5, 1], flipR: true });
-    const Pm = paddlerPose(t, cx - 140, 870, .56, { still: true, turn: .5 });
+    const H = who(CAST.her, { x: lerp(1500, cx + 160, k), y: lerp(450, 927, k) + Math.sin(k * Math.PI) * -60, sc: lerp(.62, .55, k), seed: 160, breath: breath(t, 4), turn: -.5, blink: blinkAt(t, 9), legs: k < .85 ? [.2 * Math.sin(k * 6), .1, -.2 * Math.sin(k * 6), .1] : undefined, footDown: true, armL: [-.6, .4, 0, .5, 1], armR: [.9, -.6, 0, .5, 1], flipR: true });
+    const Pm = paddlerPose(t, cx - 150, 927, .56, { still: true, turn: .5 });
     const J = person({ ...Pm, parts: 'body' }); toque(J.hc, Pm.sc, Pm.lean); person({ ...Pm, parts: 'arms' });
     person({ ...H, parts: 'body' }); person({ ...H, parts: 'arms' });
     canoeFront(cx, 900, .9, 0);
@@ -374,11 +374,11 @@ function sTogether(t, tt, len) {
 // two in the canoe, paddling together
 function twoInCanoe(t, x, y, sc) {
   canoeHull(x, y, sc, 0);
-  const H = who(CAST.her, { x: x + 150 * sc, y: y - 30 * sc, sc: sc * .58, seed: 160, breath: breath(t, 4), turn: .55, blink: blinkAt(t, 9), armL: [-.8, 1.3, 0, .3, .9], armR: [.4, -.6, 0, .3, .9], flipR: true });
-  const Pm = paddlerPose(t, x - 140 * sc, y - 30 * sc, sc * .62, { turn: .5 });
-  const J = person({ ...Pm, parts: 'body' }); toque(J.hc, Pm.sc, Pm.lean); const J2 = person({ ...Pm, parts: 'arms' }); paddle(J2, Pm);
+  const H = who(CAST.her, { x: x + 170 * sc, y: y + 30 * sc, sc: sc * .58, seed: 160, breath: breath(t, 4), turn: .55, blink: blinkAt(t, 9), armL: [-.8, 1.3, 0, .3, .9], armR: [.4, -.6, 0, .3, .9], flipR: true });
+  const Pm = paddlerPose(t, x - 150 * sc, y + 30 * sc, sc * .62, { turn: .5 });
+  const J = person({ ...Pm, parts: 'body' }); toque(J.hc, Pm.sc, Pm.lean); const J2 = person({ ...Pm, parts: 'arms' });
   person({ ...H, parts: 'body' }); person({ ...H, parts: 'arms' });
-  canoeFront(x, y, sc, 0);
+  canoeFront(x, y, sc, 0); paddle(J2, Pm);
 }
 // S22 141.5-148.4 refrain 3 ("don't..." held): they paddle along the shore; the brochure billboards peel off and
 // blow away like leaves; real fish jump.

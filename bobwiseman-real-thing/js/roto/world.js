@@ -99,18 +99,20 @@ function mist(hz, amt, seed = 40) {
   for (let i = 0; i < 9; i++) { const cx = -400 + ((r() * 2900 + T * 16 * (.4 + r())) % 2900), cy = hz - 30 + r() * 120, rx = 260 + r() * 260;
     part(lump(cx, cy, rx, rx * .16, seed + i), { fill: hsl(40, 20, 94, .5 * amt), seed: seed + i, ink: false, wob: 2, tone2: false, hatch: false }); }
 }
-// ---- the canoe (side view, bow to +x), about 600 units long at sc 1. Paddler goes between hull and front.
+// ---- the canoe (side view, bow to +x), about 720 units long at sc 1 (CK: 1.2x long, 1.4x deep, so a seated
+// paddler sits down in it with only chest, arms and head above the gunwale).
+const CK = [1.2, 1.4]; // paddler goes between hull and front
 function canoeHull(x, y, sc, rot, seed = 60) {
-  withT(() => { s.translate(x, y); s.rotate(rot); s.scale(sc, sc);
+  withT(() => { s.translate(x, y); s.rotate(rot); s.scale(sc * CK[0], sc * CK[1]);
     part([[-300, -40], [-250, -10], [-120, 18], [0, 24], [120, 18], [250, -10], [306, -46], [290, -20], [200, 4], [0, 10], [-200, 4], [-286, -20]], { fill: hsl(14, 54, 32), shade: hsl(10, 52, 24), shadeShift: [0, -10], seed, inkW: 1 });
   });
 }
 function canoeFront(x, y, sc, rot, seed = 60) {
-  withT(() => { s.translate(x, y); s.rotate(rot); s.scale(sc, sc);
+  withT(() => { s.translate(x, y); s.rotate(rot); s.scale(sc * CK[0], sc * CK[1]);
     part([[-306, -46], [-250, -14], [-120, 12], [0, 18], [120, 12], [250, -14], [310, -50], [292, 0], [200, 34], [0, 50], [-200, 34], [-292, 0]], { fill: hsl(14, 56, 46), shade: hsl(10, 54, 32), shadeShift: [0, -18], seed: seed + 1, inkW: 1.1 });
     stroke([[-300, -42], [-120, 14], [0, 20], [120, 14], [304, -46]], seed + 2, .9, { col: hsl(30, 40, 78) });
   });
-  stroke([[x - 330 * sc, y + 46 * sc], [x, y + 56 * sc], [x + 330 * sc, y + 46 * sc]], seed + 3, .6, { col: hsl(200, 30, 86, .7) });
+  stroke([[x - 400 * sc, y + 64 * sc], [x, y + 78 * sc], [x + 400 * sc, y + 64 * sc]], seed + 3, .6, { col: hsl(200, 30, 86, .7) });
 }
 function paddlerPose(t, x, y, sc, o = {}) {
   const per = o.per ?? 2.4, ph = ((t + (o.ph || 0)) / per) % 1, k = o.still ? 0 : 1;
@@ -123,17 +125,17 @@ function paddle(J, P, seed = 80) {
   const sp = (w) => [P.x + w[0] * P.sc, P.y + w[1] * P.sc];
   const a = sp(J.armL.wr), b = sp(J.armR.wr), dx = b[0] - a[0], dy = b[1] - a[1], L = Math.hypot(dx, dy) || 1, u = [dx / L, dy / L];
   const top = [a[0] - u[0] * 40 * P.sc, a[1] - u[1] * 40 * P.sc], end = [b[0] + u[0] * 300 * P.sc, b[1] + u[1] * 300 * P.sc];
-  stroke([top, end], seed, 2.4 * P.sc / .6, { col: hsl(32, 45, 44) });
+  stroke([top, end], seed, 7 * P.sc, { col: hsl(30, 45, 34), force: true });
   const n = [-u[1], u[0]], bw = 26 * P.sc, bl = 120 * P.sc, c = [end[0] + u[0] * bl * .5, end[1] + u[1] * bl * .5];
   part([[c[0] + n[0] * bw - u[0] * bl * .5, c[1] + n[1] * bw - u[1] * bl * .5], [c[0] + n[0] * bw * .9 + u[0] * bl * .4, c[1] + n[1] * bw * .9 + u[1] * bl * .4], [c[0] + u[0] * bl * .55, c[1] + u[1] * bl * .55], [c[0] - n[0] * bw * .9 + u[0] * bl * .4, c[1] - n[1] * bw * .9 + u[1] * bl * .4], [c[0] - n[0] * bw - u[0] * bl * .5, c[1] - n[1] * bw - u[1] * bl * .5]], { fill: hsl(32, 45, 50), shade: hsl(30, 45, 36), shadeShift: [4, -4], seed: seed + 1, inkW: .8, seg: 3 });
 }
 // one man paddling his canoe (side view). Returns the person pose and joints.
 function paddler(t, x, y, sc, o = {}) {
-  const P = paddlerPose(t, x - 40 * sc, y - 30 * sc, sc * .62, o);
+  const P = paddlerPose(t, x - 40 * sc, y + 30 * sc, sc * .62, o);
   canoeHull(x, y, sc, o.rot || 0);
   const J = person({ ...P, parts: 'body' }); toque(J.hc, P.sc, (P.lean || 0) + (P.tilt || 0));
-  const J2 = person({ ...P, parts: 'arms' }); if (!o.noPaddle) paddle(J2, P);
-  canoeFront(x, y, sc, o.rot || 0);
+  const J2 = person({ ...P, parts: 'arms' });
+  canoeFront(x, y, sc, o.rot || 0); if (!o.noPaddle) paddle(J2, P); // near-side paddle, in front of the hull
   return { P, J: J2 };
 }
 // a real fish (rotoscoped, alive)
