@@ -1,0 +1,82 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #p7 {
+          position: absolute;
+          inset: 0;
+        }
+        #p7 svg text.mono.faint {
+          fill: var(--ink-dim);
+          font-weight: 400;
+        }
+        #p7 svg text.site {
+          font-family: var(--font-display);
+          font-weight: var(--display-weight);
+          font-size: 64px;
+          letter-spacing: var(--display-tracking);
+          fill: var(--ink);
+        }
+        #p7 svg text.fine {
+          font-family: var(--font-label);
+          font-weight: 500;
+          font-size: 22px;
+          fill: var(--ink-dim);
+        }
+      </style>
+      <div id="p7" data-composition-id="p7" data-width="1920" data-height="1080">
+        <svg class="full" viewBox="0 0 1920 1080">
+          <g id="p7-pipe"></g>
+          <text id="p7-name" class="site" x="960" y="540" text-anchor="middle">Nutrifax</text>
+          <text id="p7-site" class="mono head" x="960" y="592" text-anchor="middle">nutrifax.app</text>
+          <text id="p7-fine" class="fine" x="960" y="660" text-anchor="middle">Confirm the final label against current regulations for your product.</text>
+        </svg>
+        <div id="p7-label-l" class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate VII</div>
+        <div id="p7-label-r" class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>Colophon</div>
+        <div class="statement two" data-layout-allow-overlap data-layout-allow-occlusion>
+          <div class="row"><span id="p7-st-a" class="phrase">Put your recipe in.</span></div>
+          <div class="row"><span id="p7-st-b" class="phrase red">Get a label you can print.</span></div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text, kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 78);
+
+          K.fade(K.$("p7-label-l"), K.T(78.3), 0.4);
+          K.fade(K.$("p7-label-r"), K.T(78.3), 0.4);
+
+          // the whole path, left as construction lines
+          const pipe = K.$("p7-pipe");
+          const ST = ["RECIPE", "MATCH", "CALCULATE", "ROUND", "LABEL", "PRINT"];
+          ST.forEach((s, i) => {
+            const cx = 310 + i * 260;
+            const box = el("rect", { class: "ln line construct", x: cx - 105, y: 310, width: 210, height: 80 }, pipe);
+            const lab = text(s, { class: "mono faint", x: cx, y: 357, "text-anchor": "middle" }, pipe);
+            const at = K.T(78.95) + i * 0.18;
+            K.sweep(box, at, 0.4);
+            K.fade(lab, at + 0.2, 0.3, 0.8);
+            if (i < ST.length - 1) {
+              const arrow = el("path", { class: "ln line construct", d: `M${cx + 112} 350H${cx + 148}` }, pipe);
+              K.sweep(arrow, at + 0.3, 0.25);
+            }
+          });
+
+          K.reveal(K.$("p7-st-a"), K.T(79.61), 0.6);
+          K.reveal(K.$("p7-st-b"), K.T(80.26), 0.8);
+          K.fade(K.$("p7-name"), K.T(81.56), 0.5);
+          K.fade(K.$("p7-site"), K.T(81.56) + 0.3, 0.5);
+          K.fade(K.$("p7-fine"), K.T(82.21), 0.5);
+
+          window.__timelines["p7"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>
