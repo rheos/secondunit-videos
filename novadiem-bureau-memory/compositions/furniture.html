@@ -1,0 +1,42 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #furniture {
+          position: absolute;
+          inset: 0;
+          background: var(--bg);
+        }
+      </style>
+      <div data-hf-id="hf-am10" id="furniture" data-composition-id="furniture" data-width="1920" data-height="1080">
+        <svg data-hf-id="hf-am11" id="fu-ground" class="full" viewBox="0 0 1920 1080" aria-hidden="true" style="will-change: transform"></svg>
+        <svg data-hf-id="hf-am12" id="fu-frame" class="full" viewBox="0 0 1920 1080"></svg>
+      </div>
+
+      <script>
+        (() => {
+          const tl = gsap.timeline({ paused: true });
+          const K = BP.kit(tl, 0);
+          // stations are the stages of the story: a session ends and a new one resumes from the run dir (docs/run-protocol.md, agents/orchestrator.md "Context hygiene"), not live progress
+          BP.furniture(K, tl, {
+            stations: [
+              { label: "SESSION ENDS", at: 0 },
+              { label: "ON DISK", at: 8.89 },
+              { label: "STATE + LOG", at: 22.41 },
+              { label: "NEW SESSION", at: 36.52 },
+              { label: "RE-READ", at: 50.06 },
+              { label: "CONTINUE", at: 77.69 },
+            ],
+            sheets: [0, 8.89, 22.41, 36.52, 50.06, 65.34, 77.69],
+          });
+          window.__timelines["furniture"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>
+

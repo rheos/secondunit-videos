@@ -1,0 +1,32 @@
+/* foaf theme: the FOAF Foundation site's palette (FOAF-Foundation/foaf-next-v2 src/app/globals.css).
+   Navy ink and FOAF blue line work on a cool pale sheet, pink (darkened for contrast on paper) as the one
+   accent phrase per plate. The alternate field is the site's navy ground. Red Hat Display is the site's
+   display face; JetBrains Mono for code. */
+:root {
+  --bg: #eef0f5;
+  --bg-raised: #e1e5ee;
+  --line: #324ccd;
+  --line-strong: #1f2f8a;
+  --ink: #0d1c2a;
+  --ink-dim: #4a5566;
+  --ink-faint: #858ea0;
+  --accent: #c2306d;
+
+  --field: #0d1c2a;
+  --line-field: #8fa2ff;
+  --ink-field: #eef0f5;
+  --accent-field: #f07aa8;
+
+  --grid: #0d1c2a;
+  --grid-opacity: 0.05;
+  --grain-rgb: 0.2 0.24 0.34;
+  --grain-alpha: 0.3;
+
+  --font-display: "Red Hat Display", sans-serif;
+  --display-weight: 500;
+  --display-tracking: -0.01em;
+  --font-label: "Red Hat Display", sans-serif;
+  --label-size: 24px;
+  --label-tracking: 0.2em;
+  --font-mono: "JetBrains Mono", monospace;
+}

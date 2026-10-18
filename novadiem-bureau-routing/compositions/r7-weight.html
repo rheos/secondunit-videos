@@ -1,0 +1,120 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #r7 {
+          position: absolute;
+          inset: 0;
+        }
+        #r7 .statement {
+          top: 556px;
+          flex-direction: column;
+          align-items: center;
+          font-size: 64px;
+        }
+        #r7 .colo {
+          position: absolute;
+          left: 0;
+          right: 0;
+          text-align: center;
+          color: var(--ink);
+        }
+        #r7 .colo.a {
+          top: 790px;
+          font-size: 24px;
+          font-weight: 700;
+        }
+        #r7 .colo.b {
+          top: 832px;
+          font-size: 18px;
+          color: var(--ink-dim);
+        }
+      </style>
+      <div id="r7" data-composition-id="r7" data-width="1920" data-height="1080">
+        <div class="layer">
+          <svg class="full" viewBox="0 0 1920 1080">
+            <g id="r7-zoom"><g id="r7-sb"></g><g id="r7-top"></g></g>
+            <path id="r7-rule" class="ln line" d="M760 752H1160M760 742V762M1160 742V762" />
+          </svg>
+          <div class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate VII</div>
+          <div class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>Routing</div>
+          <div class="statement">
+            <span id="r7-st-a" class="phrase">Match the weight of process</span>
+            <span id="r7-st-b" class="phrase red">to the weight of the work.</span>
+          </div>
+          <div id="r7-colo-a" class="colo a mono">THE BUREAU · THEBUREAU.DEV · NOVADIEM.COM</div>
+          <div id="r7-colo-b" class="colo b mono">INSIDE THE BUREAU · 2 · ROUTING</div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text, kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 76.51);
+          const P = RT.build(K.$("r7-sb"));
+          const top = K.$("r7-top");
+          const S = RT.scene(P, top, {
+            route: "feature",
+            ticket: "feature",
+            workflow: "feature",
+            files: [[1, "spec.md"], [2, "plan.md"], [3, "prompts.md"]],
+            lit: ["feature"],
+            lamps: [
+              ["feature", "analizer", "1 · 3"],
+              ["feature", "architect", "2"],
+              ["feature", "challenger", "5 · 9"],
+              ["feature", "cleric", "6 · 7"],
+              ["feature", "spellwright", "8"],
+            ],
+            reticle: [RT.col("challenger").cx, RT.RY(0)],
+          });
+
+          // the switchboard comes back and steps up and away: the whole board
+          const zoom = K.$("r7-zoom");
+          tl.fromTo(zoom, { opacity: 0.12 }, { opacity: 1, duration: 0.7, ease: "power1.out" }, 0.05);
+          const z = { e: 0 };
+          tl.fromTo(
+            z,
+            { e: 0 },
+            {
+              e: 1,
+              duration: 1.1,
+              ease: "power2.inOut",
+              onUpdate: () => zoom.setAttribute("transform", `translate(${(432 * z.e).toFixed(2)} ${(38 * z.e).toFixed(2)}) scale(${(1 - 0.4 * z.e).toFixed(4)})`),
+            },
+            K.T(77.09)
+          );
+
+          // one run's paperwork goes; both routes stay lit, the other rows stay dark
+          [S.pick, S.cord, S.ticketW, S.w1, S.w2, S.reticle, S.state.g, P.dir.g, ...Object.values(S.files).map((f) => f.g)].forEach((n) => K.out(n, K.T(77.69), 0.4));
+          const bus = RT.litBus("bug-fix", top);
+          K.draw(bus, K.T(78.27), 0.5, "none");
+          [
+            ["analizer", "1"],
+            ["coder", "3"],
+            ["challenger", "4"],
+          ].forEach(([c, step], i) => {
+            const L = RT.lamp(P, "bug-fix", c, step, top);
+            const at = K.T(78.27) + 0.3 + i * 0.25;
+            K.draw(L.ring, at, 0.3);
+            K.fade(L.fill, at + 0.1, 0.25);
+            K.fade(L.tag, at + 0.2, 0.3);
+          });
+
+          K.reveal(K.$("r7-st-a"), K.T(79.44), 0.8);
+          K.reveal(K.$("r7-st-b"), K.T(80.04), 0.9);
+          K.draw(K.$("r7-rule"), K.T(80.62), 0.6);
+          K.fade(K.$("r7-colo-a"), K.T(81.22), 0.5);
+          K.fade(K.$("r7-colo-b"), K.T(81.8), 0.5);
+
+          window.__timelines["r7"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>
