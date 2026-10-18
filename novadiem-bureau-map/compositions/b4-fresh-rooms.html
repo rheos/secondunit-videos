@@ -1,0 +1,100 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #b4 {
+          position: absolute;
+          inset: 0;
+        }
+      </style>
+      <div id="b4" data-composition-id="b4" data-width="1920" data-height="1080">
+        <div class="layer">
+          <svg class="full" viewBox="0 0 1920 1080">
+            <g id="b4-map"></g>
+            <g id="b4-top"></g>
+          </svg>
+          <div class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate IV</div>
+          <div class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>Fresh Rooms</div>
+          <div id="b4-st" class="statement">
+            <span id="b4-st-a" class="phrase">Every handoff is</span>
+            <span id="b4-st-b" class="phrase red">written to disk.</span>
+          </div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text, kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 32);
+          const P = BM.build(K.$("b4-map"), 4);
+          const top = K.$("b4-top");
+
+          // the cutaway grows a second floor
+          K.draw(P.floor2.walls, K.T(32.28), 0.8, "none");
+
+          const room = (rm, at) => {
+            K.draw(rm.spawn, at, 0.5, "power1.inOut");
+            K.draw(rm.outer, at + 0.45, 0.8, "none");
+            K.draw(rm.inner, at + 0.9, 0.6, "none");
+            K.draw(rm.glyph, at + 1.0, 0.7);
+            K.fade(rm.ctx, at + 1.2, 0.3, 0.6);
+          };
+          const file = (f, at) => {
+            K.draw(f.body, at, 0.5, "none");
+            K.draw(f.fold, at + 0.4, 0.2);
+            K.draw(f.lines, at + 0.45, 0.3);
+            K.fade(f.label, at + 0.3, 0.3);
+          };
+          const carry = (d, at, dur) => {
+            const s = BM.sheet(top, 0, 0);
+            const path = el("path", { d });
+            tl.fromTo(s, { opacity: 0 }, { opacity: 1, duration: 0.15 }, at);
+            K.travel(s, path, at, dur);
+            tl.to(s, { opacity: 0, duration: 0.2 }, at + dur);
+          };
+
+          // Analizer 2000 writes the requirements
+          const an = P.rooms.analizer;
+          room(an, K.T(32.72));
+          K.fade(an.label, K.T(34.92), 0.4);
+          carry("M490 470V572H662V612", K.T(34.92), 1.1);
+          file(P.files.spec, K.T(35.81));
+
+          // the Architect starts fresh and reads the spec from disk
+          const ar = P.rooms.architect;
+          room(ar, K.T(36.69));
+          const read = el("path", { class: "ln line construct", d: "M662 586V556H800V510" }, top);
+          K.sweep(read, K.T(38.45), 0.6);
+          carry("M662 590V556H800V470", K.T(38.89), 1.0);
+          K.fade(ar.label, K.T(38.89), 0.4);
+          carry("M870 470V572H807V612", K.T(40.22), 1.0);
+          file(P.files.plan, K.T(41.1));
+
+          // note under the run dir
+          const lead = el("path", { class: "ln thin ink", d: "M330 708V738H350" }, top);
+          const note = text("EACH ROOM STARTS FRESH · READS THE FILES, NOT THE CHAT", { class: "mono note", x: 362, y: 744 }, top);
+          K.draw(lead, K.T(41.98), 0.5);
+          K.fade(note, K.T(41.98) + 0.4, 0.5, 0.75);
+
+          K.reveal(K.$("b4-st-a"), K.T(42.86), 0.6);
+          K.reveal(K.$("b4-st-b"), K.T(43.31), 0.9);
+
+          // the log keeps every spawn and handoff
+          const logged = text("every spawn and handoff", { class: "mono small gold-t", x: 400, y: 686 }, top);
+          const bar = el("path", { class: "ln line-strong", d: "M493 590V636" }, top);
+          K.draw(bar, K.T(45.51), 0.4);
+          K.fade(logged, K.T(45.51) + 0.2, 0.4);
+
+          K.out(K.$("b4-st"), 48.0 - 32, 0.45);
+          [read, lead, note, logged, bar].forEach((n) => K.out(n, 48.0 - 32, 0.45));
+          window.__timelines["b4"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

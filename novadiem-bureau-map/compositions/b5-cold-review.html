@@ -1,0 +1,115 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #b5 {
+          position: absolute;
+          inset: 0;
+        }
+      </style>
+      <div id="b5" data-composition-id="b5" data-width="1920" data-height="1080">
+        <div class="layer">
+          <svg class="full" viewBox="0 0 1920 1080">
+            <g id="b5-map"></g>
+            <g id="b5-top"></g>
+          </svg>
+          <div class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate V</div>
+          <div class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>Cold Review</div>
+          <div id="b5-st" class="statement">
+            <span id="b5-st-a" class="phrase">Revise until review says</span>
+            <span id="b5-st-b" class="phrase red">proceed.</span>
+          </div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text, kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 48.5);
+          const P = BM.build(K.$("b5-map"), 5);
+          const top = K.$("b5-top");
+          const transient = [];
+          const keep = (n) => (transient.push(n), n);
+
+          const carry = (d, at, dur) => {
+            const s = BM.sheet(top, 0, 0);
+            tl.fromTo(s, { opacity: 0 }, { opacity: 1, duration: 0.15 }, at);
+            K.travel(s, el("path", { d }), at, dur);
+            tl.to(s, { opacity: 0, duration: 0.2 }, at + dur);
+          };
+          const file = (f, at) => {
+            K.draw(f.body, at, 0.5, "none");
+            K.draw(f.fold, at + 0.4, 0.2);
+            K.draw(f.lines, at + 0.45, 0.3);
+            K.fade(f.label, at + 0.3, 0.3);
+          };
+
+          // the Challenger's room: a fresh context that only gets the files
+          const ch = P.rooms.challenger;
+          K.draw(ch.spawn, K.T(48.55), 0.7, "power1.inOut");
+          K.draw(ch.outer, K.T(48.99), 0.8, "none");
+          K.draw(ch.inner, K.T(49.44), 0.6, "none");
+          K.draw(ch.glyph, K.T(49.44) + 0.2, 0.7);
+          K.fade(ch.ctx, K.T(49.88), 0.3, 0.6);
+          const rSpec = keep(el("path", { class: "ln line construct", d: "M662 586V566H1200V510" }, top));
+          const rPlan = keep(el("path", { class: "ln line construct", d: "M807 586V560H1220V510" }, top));
+          K.sweep(rSpec, K.T(50.32), 0.6);
+          K.sweep(rPlan, K.T(50.32) + 0.2, 0.6);
+          carry("M807 590V560H1220V470", K.T(50.32), 1.0);
+          K.fade(ch.label, K.T(50.76), 0.4);
+
+          // a blocker: findings go back to the Conductor
+          const xMark = keep(el("path", { class: "ln ink", d: "M1386 362L1406 382M1406 362L1386 382" }, top));
+          const blocked = keep(text("BLOCKED", { class: "mono small", x: 1376, y: 378, "text-anchor": "end" }, top));
+          K.draw(xMark, K.T(51.64), 0.35);
+          K.fade(blocked, K.T(51.64) + 0.2, 0.3);
+          carry("M1270 342V336H470V290", K.T(52.52), 1.2);
+
+          // the Conductor adjudicates: revise
+          const stamp = (word, at) => {
+            const g = keep(el("g", {}, top));
+            el("rect", { class: "ln ink", x: 562, y: 235, width: 122, height: 30 }, g);
+            text(word, { class: "mono", x: 623, y: 257, "text-anchor": "middle" }, g);
+            tl.fromTo(g, { opacity: 0 }, { opacity: 1, duration: 0.25 }, at);
+            return g;
+          };
+          const revise = stamp("REVISE", K.T(54.31));
+          // back to the Architect, plan.md comes out again
+          carry("M500 290V318H870V440", K.T(55.22), 1.0);
+          carry("M870 470V572H807V612", K.T(56.56), 1.0);
+          tl.fromTo(P.files.plan.lines, { opacity: 0.2 }, { opacity: 1, duration: 0.4 }, K.T(57.45));
+          K.fade(P.planRev, K.T(57.45), 0.4);
+
+          // second cold read
+          carry("M807 590V560H1220V470", K.T(58.33), 1.0);
+          K.out(xMark, K.T(59.19), 0.3);
+          K.out(blocked, K.T(59.19), 0.3);
+          const check = keep(el("path", { class: "ln line-strong", d: "M1384 372L1394 382L1410 362" }, top));
+          const approved = keep(text("APPROVED", { class: "mono small", x: 1376, y: 378, "text-anchor": "end" }, top));
+          K.draw(check, K.T(59.63), 0.35);
+          K.fade(approved, K.T(59.63) + 0.2, 0.3);
+          carry("M1270 342V336H470V290", K.T(60.07), 1.1);
+          K.out(revise, K.T(61.0), 0.25);
+          stamp("PROCEED", K.T(61.46));
+
+          // the verdict record lands on disk
+          carry("M1270 470V572H1242V618", K.T(61.9), 0.9);
+          file(P.files.verdicts, K.T(62.79));
+
+          K.reveal(K.$("b5-st-a"), K.T(60.53), 0.6);
+          K.reveal(K.$("b5-st-b"), K.T(61.0), 0.6);
+
+          const end = 64.55 - 48.5;
+          K.out(K.$("b5-st"), end, 0.45);
+          transient.forEach((n) => K.out(n, end, 0.45));
+          window.__timelines["b5"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>
