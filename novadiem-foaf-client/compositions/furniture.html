@@ -1,0 +1,40 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #furniture {
+          position: absolute;
+          inset: 0;
+          background: var(--bg);
+        }
+      </style>
+      <div data-hf-id="hf-fc10" id="furniture" data-composition-id="furniture" data-width="1920" data-height="1080">
+        <svg data-hf-id="hf-fc11" id="fu-ground" class="full" viewBox="0 0 1920 1080" aria-hidden="true" style="will-change: transform"></svg>
+        <svg data-hf-id="hf-fc12" id="fu-frame" class="full" viewBox="0 0 1920 1080"></svg>
+      </div>
+
+      <script>
+        (() => {
+          const tl = gsap.timeline({ paused: true });
+          const K = BP.kit(tl, 0);
+          // stations are an app's path through the SDK, in its dependency order (AGENTS.md: ledger -> contacts -> auth):
+          // sign in (auth), read contacts (contacts), set a trustline and make a transfer (ledger)
+          BP.furniture(K, tl, {
+            stations: [
+              { label: "SIGN IN", at: 10.1 },
+              { label: "CONTACTS", at: 24 },
+              { label: "TRUSTLINE", at: 38 },
+              { label: "TRANSFER", at: 52 },
+            ],
+            sheets: [0, 10, 24, 38, 52, 66, 78],
+          });
+          window.__timelines["furniture"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

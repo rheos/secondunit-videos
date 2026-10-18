@@ -1,0 +1,122 @@
+<!doctype html>
+<html class="draft" lang="en" data-resolution="landscape">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1280, height=720" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Red+Hat+Display:wght@400;500;700&family=JetBrains+Mono:wght@400;700&display=block" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <!-- Series kit (tools/blueprint-kit, copied by sync.sh). Theme first, then structure. -->
+    <link rel="stylesheet" href="kit/themes/foaf.css" />
+    <link rel="stylesheet" href="kit/kit.css" />
+    <script src="kit/kit.js"></script>
+    <script>
+      // Beat grid of the score (beats.json): librosa beats 0.06-79.42 at ~95.7 BPM, extended to 0.06-85.69 at 0.627 s.
+      BP.grid({ beats: [0.06, 0.68, 1.31, 1.93, 2.55, 3.18, 3.81, 4.44, 5.05, 5.68, 6.3, 6.93, 7.56, 8.19, 8.81, 9.43, 10.05, 10.68, 11.31, 11.92, 12.56, 13.18, 13.8, 14.43, 15.05, 15.69, 16.31, 16.93, 17.55, 18.18, 18.8, 19.42, 20.05, 20.68, 21.3, 21.93, 22.55, 23.17, 23.8, 24.43, 25.05, 25.68, 26.31, 26.92, 27.55, 28.18, 28.8, 29.43, 30.05, 30.67, 31.3, 31.93, 32.54, 33.17, 33.8, 34.42, 35.05, 35.68, 36.3, 36.93, 37.55, 38.17, 38.8, 39.43, 40.04, 40.67, 41.3, 41.92, 42.55, 43.18, 43.8, 44.42, 45.05, 45.67, 46.3, 46.93, 47.54, 48.17, 48.8, 49.42, 50.05, 50.68, 51.29, 51.92, 52.55, 53.17, 53.8, 54.43, 55.04, 55.67, 56.3, 56.92, 57.55, 58.18, 58.79, 59.42, 60.05, 60.67, 61.3, 61.93, 62.55, 63.17, 63.8, 64.42, 65.05, 65.68, 66.29, 66.92, 67.55, 68.17, 68.8, 69.43, 70.04, 70.67, 71.3, 71.92, 72.55, 73.18, 73.79, 74.42, 75.05, 75.67, 76.3, 76.93, 77.54, 78.17, 78.8, 79.42, 80.05, 80.68, 81.3, 81.93, 82.56, 83.19, 83.81, 84.44, 85.07, 85.69] });
+    </script>
+    <style>
+      svg text.mono.head { font-size: 22px; }
+      svg text.mono.gold-t { fill: var(--line-strong); } /* small blue type uses line-strong for contrast on paper */
+      svg text.mono.red-t { fill: var(--accent); }
+      svg text.code { white-space: pre; font-family: var(--font-mono); font-size: 19px; font-weight: 400; letter-spacing: 0.02em; fill: var(--ink); }
+      svg text.code.b { font-weight: 700; }
+      svg text.code.dim, svg tspan.dim { fill: var(--ink-dim); }
+      svg text.code.blue, svg tspan.blue { fill: var(--line-strong); }
+      svg text.who { font-family: var(--font-label); font-size: 22px; font-weight: 700; letter-spacing: 0.2em; fill: var(--ink); }
+      svg text.role { font-family: var(--font-label); font-size: 15px; font-weight: 500; letter-spacing: 0.24em; fill: var(--ink-dim); }
+      .statement { font-size: 72px; }
+      .statement.two { top: 790px; flex-direction: column; align-items: center; font-size: 62px; row-gap: 6px; }
+      .statement.two .row { display: flex; column-gap: 0.3em; }
+    </style>
+    <script>
+      // FC: the one device of the film. Your app (dashed: it's the viewer's, not built), the foaf-client band with its
+      // three modules, and the two FOAF services it talks to. Fixed positions across the top of every plate.
+      // FC.rig(parent, { active }) draws it; plate I animates it in, later plates redraw it whole and light a module.
+      window.FC = (() => {
+        const { el, text } = BP;
+        const CELLS = [
+          ["auth", "AUTH", 580],
+          ["contacts", "CONTACTS", 800],
+          ["ledger", "LEDGER", 1020],
+        ];
+        function rig(parent) {
+          const R = { cells: {}, cellT: {}, parent };
+          R.app = el("rect", { class: "ln planned", x: 160, y: 176, width: 300, height: 128 }, parent);
+          R.appT = text("YOUR APP", { class: "mono dim", x: 310, y: 247, "text-anchor": "middle" }, parent);
+          R.w0 = el("path", { class: "ln line", d: "M464 240H560" }, parent);
+          R.band = el("rect", { class: "ln line", x: 560, y: 160, width: 680, height: 160 }, parent);
+          R.bandT = text("FOAF-CLIENT", { class: "mono small gold-t", x: 576, y: 186 }, parent);
+          R.under = el("g", {}, parent); // highlight fills sit under the cell lines and labels
+          CELLS.forEach(([k, label, x]) => {
+            R.cells[k] = el("rect", { class: "ln line", x, y: 198, width: 200, height: 104 }, parent);
+            R.cellT[k] = text(label, { class: "mono", x: x + 100, y: 257, "text-anchor": "middle" }, parent);
+          });
+          R.w1 = el("path", { class: "ln line", d: "M1240 240H1290V194H1340M1290 240V286H1340" }, parent);
+          R.svcUnder = el("g", {}, parent);
+          R.svcA = el("rect", { class: "ln ink", x: 1340, y: 160, width: 420, height: 68 }, parent);
+          R.svcAT = text("auth.foaf.io", { class: "code b", x: 1550, y: 201, "text-anchor": "middle" }, parent);
+          R.svcL = el("rect", { class: "ln ink", x: 1340, y: 252, width: 420, height: 68 }, parent);
+          R.svcLT = text("api.foaf.io", { class: "code b", x: 1550, y: 293, "text-anchor": "middle" }, parent);
+          return R;
+        }
+        // light(R, key): the module a plate is about. A raised fill under the cell and a heavier edge over it.
+        function light(R, key) {
+          const x = CELLS.find((c) => c[0] === key)[2];
+          const fill = el("rect", { class: "fill-raised", x, y: 198, width: 200, height: 104 }, R.under);
+          const edge = el("rect", { class: "ln line-strong", x: x - 6, y: 192, width: 212, height: 116, style: "stroke-width: 3" }, R.parent);
+          return { fill, edge };
+        }
+        // lightSvc(R, which): the same treatment for a FOAF service box ("auth" or "api")
+        function lightSvc(R, which) {
+          const y = which === "auth" ? 160 : 252;
+          const fill = el("rect", { class: "fill-raised", x: 1340, y, width: 420, height: 68 }, R.svcUnder);
+          const edge = el("rect", { class: "ln line-strong", x: 1334, y: y - 6, width: 432, height: 80, style: "stroke-width: 3" }, R.parent);
+          return { fill, edge };
+        }
+        // on(K, L, at): bring a light up
+        function on(K, L, at) {
+          K.fade(L.fill, at, 0.4);
+          K.draw(L.edge, at, 0.6, "power2.inOut");
+        }
+        return { rig, light, lightSvc, on };
+      })();
+    </script>
+  </head>
+  <body>
+    <div data-hf-id="hf-fc01"
+      id="root"
+      data-composition-id="main"
+      data-start="0"
+      data-duration="85.9"
+      data-width="1280"
+      data-height="720"
+    >
+      <!-- Score: score-library drafting-table-foaf-client take-01, sha256 c93c5690...2872, the clock for every cue -->
+      <audio data-hf-id="hf-fc02"
+        id="score"
+        src="_in/score.mp3"
+        data-start="0"
+        data-duration="85.9"
+        data-track-index="9"
+        data-volume="1"
+      ></audio>
+
+      <!-- every plate draws on a 1920x1080 stage; drafts scale it to 720p (kit.css, stage.sh) -->
+      <div class="stage">
+        <div data-hf-id="hf-fc03" id="slot-furniture" data-composition-id="furniture" data-composition-src="compositions/furniture.html" data-start="0" data-duration="85.9" data-track-index="0" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-fc04" id="slot-b1" data-composition-id="b1" data-composition-src="compositions/b1-one-sdk.html" data-start="0" data-duration="10.05" data-track-index="1" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-fc05" id="slot-b2" data-composition-id="b2" data-composition-src="compositions/b2-one-login.html" data-start="10" data-duration="14.05" data-track-index="2" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-fc06" id="slot-b3" data-composition-id="b3" data-composition-src="compositions/b3-contacts.html" data-start="24" data-duration="14.05" data-track-index="3" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-fc07" id="slot-b4" data-composition-id="b4" data-composition-src="compositions/b4-trustline.html" data-start="38" data-duration="14.05" data-track-index="4" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-fc08" id="slot-b5" data-composition-id="b5" data-composition-src="compositions/b5-no-keys.html" data-start="52" data-duration="14.05" data-track-index="5" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-fc09" id="slot-b6" data-composition-id="b6" data-composition-src="compositions/b6-two-packages.html" data-start="66" data-duration="12.05" data-track-index="6" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-fc0a" id="slot-b7" data-composition-id="b7" data-composition-src="compositions/b7-colophon.html" data-start="78" data-duration="7.9" data-track-index="7" data-width="1920" data-height="1080"></div>
+      </div>
+    </div>
+
+    <script>
+      window.__timelines["main"] = gsap.timeline({ paused: true });
+    </script>
+  </body>
+</html>

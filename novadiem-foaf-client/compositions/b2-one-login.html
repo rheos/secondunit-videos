@@ -1,0 +1,106 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #b2 {
+          position: absolute;
+          inset: 0;
+        }
+        #b2 .tick {
+          fill: none;
+          stroke: var(--line-strong);
+          stroke-width: 3;
+          stroke-linecap: square;
+        }
+      </style>
+      <div id="b2" data-composition-id="b2" data-width="1920" data-height="1080">
+        <svg class="full" viewBox="0 0 1920 1080">
+          <g id="b2-rig" data-layout-allow-overlap data-layout-allow-occlusion></g>
+
+          <!-- the app signs in at auth.foaf.io under its own client_id (FoafAuthClient#login) -->
+          <rect id="b2-c1" class="ln ink" x="160" y="380" width="740" height="220" />
+          <text id="b2-c1-h" class="mono gold-t" x="188" y="420">THE APP SIGNS IN</text>
+          <text id="b2-c1-1" class="code b" x="188" y="466">auth.login({ user_name, password })</text>
+          <text id="b2-c1-2" class="code" x="188" y="504"><tspan class="dim">POST</tspan> auth.foaf.io/v1/sessions</text>
+          <text id="b2-c1-3" class="code" x="188" y="542"><tspan class="dim">client_id:</tspan> <tspan class="blue">"your-app"</tspan></text>
+          <text id="b2-c1-4" class="mono small dim" x="188" y="578">OR APPLE · GOOGLE · OAUTH LINKS</text>
+
+          <path id="b2-arrow" class="ln line" d="M912 490H1040M1028 480L1040 490L1028 500" />
+
+          <!-- what comes back: an RS256 token whose audience is the app (foaf-auth JwtIssuer) -->
+          <rect id="b2-c2" class="ln line-strong" x="1060" y="380" width="700" height="220" />
+          <text id="b2-c2-h" class="mono gold-t" x="1088" y="420">RS256 JWT</text>
+          <text id="b2-k1" class="code" x="1088" y="460"><tspan class="dim">iss</tspan>           auth.foaf.io</text>
+          <text id="b2-k2" class="code b" x="1088" y="490"><tspan class="dim">aud</tspan>           <tspan class="blue">your-app</tspan></text>
+          <text id="b2-k3" class="code" x="1088" y="520"><tspan class="dim">sub</tspan>           foaf_id</text>
+          <text id="b2-k4" class="code" x="1088" y="550"><tspan class="dim">foaf_address</tspan>  0x7a3f…c210</text>
+          <text id="b2-k5" class="code" x="1088" y="580"><tspan class="dim">jti</tspan>           revocable</text>
+
+          <!-- the backend side: Foaf::Auth::Verifier's checks -->
+          <text id="b2-v" class="mono small dim" x="160" y="676">FOAF::AUTH::VERIFIER CHECKS</text>
+          <g id="b2-checks"></g>
+        </svg>
+        <div id="b2-label-l" class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate II</div>
+        <div id="b2-label-r" class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>One Login</div>
+        <div class="statement two" data-layout-allow-overlap data-layout-allow-occlusion>
+          <div class="row"><span id="b2-st-a" class="phrase">One FOAF login,</span></div>
+          <div class="row"><span id="b2-st-b" class="phrase red">issued to your app's own audience.</span></div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text, kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 10);
+          const R = FC.rig(K.$("b2-rig"));
+          const L = FC.light(R, "auth");
+          const S = FC.lightSvc(R, "auth");
+
+          K.fade(K.$("b2-label-l"), K.T(10.1), 0.4);
+          K.fade(K.$("b2-label-r"), K.T(10.1), 0.4);
+          FC.on(K, L, K.T(10.7));
+          FC.on(K, S, K.T(10.7) + 0.3);
+
+          K.draw(K.$("b2-c1"), K.T(11.3), 0.7, "none");
+          K.fade(K.$("b2-c1-h"), K.T(11.3) + 0.3, 0.3);
+          ["b2-c1-1", "b2-c1-2", "b2-c1-3"].forEach((id, i) => K.reveal(K.$(id), K.T(11.95) + i * 0.4, 0.5));
+          K.fade(K.$("b2-c1-4"), K.T(13.45), 0.4);
+
+          K.draw(K.$("b2-arrow"), K.T(14.1), 0.5);
+          K.draw(K.$("b2-c2"), K.T(14.1) + 0.3, 0.7, "none");
+          K.fade(K.$("b2-c2-h"), K.T(14.7), 0.3);
+          ["b2-k1", "b2-k2", "b2-k3", "b2-k4", "b2-k5"].forEach((id, i) => K.reveal(K.$(id), K.T(15.35) + i * 0.3, 0.45));
+
+          K.reveal(K.$("b2-st-a"), K.T(15.35), 0.7);
+          K.reveal(K.$("b2-st-b"), K.T(17.25), 0.9);
+
+          // five checks, one per beat (gem/lib/foaf/auth/verifier.rb, README "Contract rules")
+          K.fade(K.$("b2-v"), K.T(18.5), 0.4);
+          const cg = K.$("b2-checks");
+          ["ISSUER", "AUDIENCE", "JWKS KEY", "IDENTITY CUTOFF", "REVOKED JTI"].forEach((s, i) => {
+            const x = 520 + i * 250;
+            const box = el("rect", { class: "ln thin ink", x, y: 650, width: 34, height: 34 }, cg);
+            const tick = el("path", { class: "tick", d: `M${x + 7} ${667}L${x + 15} ${676}L${x + 28} ${657}` }, cg);
+            const lab = text(s, { class: "mono small", x: x + 46, y: 674 }, cg);
+            const at = K.T(19.15) + i * 0.63;
+            K.draw(box, at, 0.3, "none");
+            K.fade(lab, at, 0.3);
+            K.draw(tick, at + 0.25, 0.3);
+          });
+
+          const ids = ["b2-c1", "b2-c1-h", "b2-c1-1", "b2-c1-2", "b2-c1-3", "b2-c1-4", "b2-arrow", "b2-c2", "b2-c2-h", "b2-k1", "b2-k2", "b2-k3", "b2-k4", "b2-k5", "b2-v", "b2-checks", "b2-label-l", "b2-label-r"];
+          ids.forEach((id) => K.out(K.$(id), K.T(23.6), 0.35));
+          [L.fill, L.edge, S.fill, S.edge].forEach((n) => K.out(n, K.T(23.6), 0.35));
+          tl.to("#b2 .statement", { opacity: 0, duration: 0.35, ease: "power1.in" }, K.T(23.6));
+
+          window.__timelines["b2"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>
