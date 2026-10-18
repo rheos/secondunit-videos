@@ -90,3 +90,10 @@ Synthetic on screen: Mira, Tomas, Jun, their areas, ids and addresses, `your-app
 - **VII · Colophon (78-85.9).** The stations as construction lines; "One login, their contacts, signed
   writes." / red "No keys in your app."; foaf-client · the FOAF SDK, github.com/FOAF-Foundation/foaf-client,
   novadiem.com, all in by 82.2 while the music rings out.
+
+## Draft 1
+
+https://youtu.be/88-E4BQvbdo (unlisted, default channel), 85.9 s at 720p
+(`renders/foaf-client_take01_draft1.mp4`, remuxed with -1 dB because the take came out hot). flashcheck
+PASS (worst 0.5 flashes/s at 57.3 s); -13.8 LUFS, peak -2.2 dBFS. Eight frames tiled from the MP4 match
+the snapshots. No real names, live addresses or keys in the sources (grep audit).
