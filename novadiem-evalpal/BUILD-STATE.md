@@ -91,3 +91,10 @@ Sheets 0, 11, 24, 38, 52, 64, 78; end 85.9.
   questionnaire is a data change," / "not a code change." (red).
 - **VII · Colophon (78-85.9).** The four stations as construction lines. "Questions are data." /
   "Answers are encrypted." (red). "EvalPal · evalpal.app · novadiem.com".
+
+## Draft 1 (2026-10-17)
+
+https://youtu.be/Wn23MV_9e7k (unlisted, default channel), 86 s at 720p
+(`renders/evalpal_take01_draft1.mp4`, remuxed with loudnorm from the raw render). flashcheck PASS
+(worst 0.5 flashes/s at the night wipe); -14.3 LUFS, peak -1.2 dBFS. Eight-frame tile checked by
+eye. Source grep: no real names, vendors, keys or amounts (only the Google Fonts URL).
