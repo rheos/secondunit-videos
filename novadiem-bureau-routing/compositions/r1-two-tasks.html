@@ -1,0 +1,109 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #r1 {
+          position: absolute;
+          inset: 0;
+        }
+        #r1 .title {
+          top: 168px;
+          font-family: var(--font-label);
+          font-size: 120px;
+          letter-spacing: 0.08em;
+        }
+        #r1 .sub {
+          position: absolute;
+          left: 0;
+          right: 0;
+          top: 352px;
+          text-align: center;
+          font-size: 26px;
+          color: var(--ink);
+        }
+        #r1 svg text.kind {
+          font-family: var(--font-mono);
+          font-size: 22px;
+          font-weight: 700;
+          letter-spacing: 0.14em;
+          fill: var(--ink);
+        }
+        #r1 svg text.task {
+          font-family: var(--font-mono);
+          font-size: 20px;
+          letter-spacing: 0.06em;
+          fill: var(--ink-dim);
+        }
+      </style>
+      <div id="r1" data-composition-id="r1" data-width="1920" data-height="1080">
+        <div id="r1-all" class="layer">
+          <svg class="full" viewBox="0 0 1920 1080">
+            <path id="r1-rule" class="ln line" d="M660 322H1260M660 312V332M1260 312V332" />
+            <g id="r1-cards"></g>
+          </svg>
+          <div class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate I</div>
+          <div class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>Inside the Bureau · 2</div>
+          <div id="r1-title" class="title">ROUTING</div>
+          <div id="r1-sub" class="sub mono">WHY THE BUREAU USES SO MANY AGENTS</div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text, kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 0);
+          const root = K.$("r1-cards");
+
+          K.reveal(K.$("r1-title"), K.T(0.65), 1.1);
+          K.draw(K.$("r1-rule"), K.T(1.81), 0.8);
+          K.reveal(K.$("r1-sub"), K.T(2.41), 0.8);
+
+          // two tasks, one small and one big (both examples from the workflow registry's triage table)
+          function card(x0, y0, w, h, kind, task) {
+            const g = el("g", {}, root);
+            const fill = el("path", { class: "fill-bg", d: `M${x0} ${y0}H${x0 + w}V${y0 + h}H${x0}Z` }, g);
+            const body = el("path", { class: "ln ink", d: `M${x0} ${y0}H${x0 + w}V${y0 + h}H${x0}ZM${x0} ${y0}V${y0 - 18}H${x0 + w * 0.36}L${x0 + w * 0.36 + 14} ${y0}` }, g);
+            const k = text(kind, { class: "kind", x: x0 + 24, y: y0 + 44 }, g);
+            const r = el("path", { class: "ln thin line", d: `M${x0 + 24} ${y0 + 62}H${x0 + w - 24}` }, g);
+            const t = text(task, { class: "task", x: x0 + 24, y: y0 + 96 }, g);
+            return { g, fill, body, k, r, t };
+          }
+          const bug = card(470, 560, 330, 130, "BUG", "fix a crash on login");
+          const feat = card(1010, 500, 440, 250, "FEATURE", "add team invitations");
+          // extra lines on the big one: it carries more
+          const more = el("path", { class: "ln thin line", d: "M1034 640H1420M1034 668H1380M1034 696H1400" }, feat.g);
+
+          [bug, feat].forEach((c, i) => {
+            const at = K.T(3.0) + i * 0.58;
+            K.fade(c.fill, at + 0.2, 0.6);
+            K.draw(c.body, at, 0.8, "none");
+            K.fade(c.k, at + 0.5, 0.3);
+            K.draw(c.r, at + 0.6, 0.4);
+            K.reveal(c.t, at + 0.8, 0.6);
+          });
+          K.draw(more, K.T(4.76), 0.7, "none");
+
+          // both go in by the same door
+          const inBug = el("path", { class: "ln thin ink", d: "M635 690V800H930" }, root);
+          const inFeat = el("path", { class: "ln thin ink", d: "M1230 750V800H990" }, root);
+          const door = el("circle", { class: "ln ink", cx: 960, cy: 800, r: 26 }, root);
+          const doorCore = el("circle", { class: "fill-ink", cx: 960, cy: 800, r: 6 }, root);
+          const doorLabel = text("ONE WAY IN", { class: "mono", x: 960, y: 862, "text-anchor": "middle" }, root);
+          K.draw(inBug, K.T(5.34), 0.8, "power1.inOut");
+          K.draw(inFeat, K.T(5.34) + 0.15, 0.7, "power1.inOut");
+          K.draw(door, K.T(5.94), 0.5, "none");
+          K.fade(doorCore, K.T(6.52), 0.25);
+          K.fade(doorLabel, K.T(6.52), 0.4);
+
+          K.out(K.$("r1-all"), 7.85, 0.45);
+          window.__timelines["r1"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>
