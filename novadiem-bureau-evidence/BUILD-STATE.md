@@ -1,6 +1,9 @@
 # Build state: The Fingerprint (Inside the Bureau, film 5)
 
-**Draft 1 BUILT 2026-10-17.** Seven plates, 88 s, 720p, kit `paper` theme (The Cold Read's look).
+**Draft 1 BUILT 2026-10-17**: https://youtu.be/bcej6dK9zrU (unlisted, default channel). Seven plates,
+88 s, 720p, kit `paper` theme (The Cold Read's look). `hyperframes check` passes; flashcheck PASS
+(worst 0.5 flashes/s); -13.9 LUFS, true peak -1.4 dBFS. Local master:
+`renders/bureau-evidence_take01_draft1.mp4` (gitignored). Next: Robin's notes.
 Question: how is a verdict tied to the exact evidence reviewed? Send it when someone asks "What if
 the reviewed files change?"
 
