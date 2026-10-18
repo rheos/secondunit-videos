@@ -26,6 +26,7 @@ mono). Four themes so far:
 | `rheo` | mint on deep teal (rheo.stream brand), light drafting-sheet field, Geist display | novadiem-rheostream |
 | `nutrifax` | ink and Nutrifax green on the site's warm paper, cream field, Fraunces display, Hanken Grotesk labels | novadiem-nutrifax-label |
 | `onloan` | ink and pine on onloan.net's warm paper, pine night field, Instrument Serif display, Hanken Grotesk labels | novadiem-onloan-ledger |
+| `orchardly` | navy and canopy green on the brand's pale day surface, navy field with fruit orange, Bricolage Grotesque | novadiem-orchardly |
 
 Add a theme by copying one file in `themes/` and changing the tokens.
 

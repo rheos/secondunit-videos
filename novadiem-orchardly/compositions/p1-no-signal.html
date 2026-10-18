@@ -1,0 +1,86 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #p1 {
+          position: absolute;
+          inset: 0;
+        }
+      </style>
+      <div id="p1" data-composition-id="p1" data-width="1920" data-height="1080">
+        <svg class="full" viewBox="0 0 1920 1080">
+          <g id="p1-block"></g>
+          <g id="p1-phone"></g>
+        </svg>
+        <div id="p1-label-l" class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate I</div>
+        <div id="p1-label-r" class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>Orchardly · Works With No Signal</div>
+        <div class="statement" data-layout-allow-overlap data-layout-allow-occlusion>
+          <span id="p1-st-a" class="phrase">Four pickers.</span>
+          <span id="p1-st-b" class="phrase">Six rows.</span>
+          <span id="p1-st-c" class="phrase red">No signal.</span>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text, kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 0);
+          const blk = K.$("p1-block");
+
+          K.fade(K.$("p1-label-l"), K.T(0.3), 0.4);
+          K.fade(K.$("p1-label-r"), K.T(0.3), 0.4);
+
+          // the block in plan view: an outline, six row lines, trees along each row
+          const outline = el("rect", { class: "ln thin ink", x: 170, y: 180, width: 1100, height: 540 }, blk);
+          const tag = text("BLOCK 4 · GALA", { class: "mono small", x: 170, y: 166 }, blk);
+          K.draw(outline, K.T(0.3), 1.2, "none");
+          K.fade(tag, K.T(1.02), 0.4);
+          const ROWS = [225, 315, 405, 495, 585, 675];
+          ROWS.forEach((y, r) => {
+            const guide = el("path", { class: "ln line construct", d: `M190 ${y}H1250` }, blk);
+            K.sweep(guide, K.T(1.02) + r * 0.08, 0.5);
+            const trees = el("g", {}, blk);
+            for (let x = 220; x <= 1220; x += 60) el("circle", { class: "tree", cx: x, cy: y, r: 15 }, trees);
+            K.reveal(trees, K.T(1.67) + r * 0.1, 0.6);
+          });
+
+          // four pickers in the aisles (synthetic crew)
+          [["ANA", 430, 270], ["BEN", 850, 360], ["CLEO", 580, 450], ["DEV", 1030, 540]].forEach(([n, x, y], i) => {
+            const g = el("g", {}, blk);
+            el("circle", { class: "fill-ink", cx: x, cy: y, r: 9 }, g);
+            text(n, { class: "mono small", x: x + 18, y: y + 6 }, g);
+            K.fade(g, K.T(2.95) + i * 0.15, 0.3);
+          });
+
+          // the phone in a picker's pocket: no service
+          const P = OR.phone(K.$("p1-phone"));
+          K.draw(P.frame, K.T(2.3), 1.0, "none");
+          K.draw(P.slot, K.T(2.95), 0.3);
+          K.draw(P.home, K.T(2.95), 0.3);
+          P.bars.forEach((b, i) => K.draw(b, K.T(3.58) + i * 0.08, 0.25));
+          K.fade(P.head, K.T(3.58), 0.4);
+          K.draw(P.rule, K.T(3.58), 0.4);
+          P.fills.forEach((f) => tl.set(f, { opacity: 0 }, 0));
+          K.fade(P.svc, K.T(6.11), 0.35);
+
+          K.reveal(K.$("p1-st-a"), K.T(2.95), 0.5);
+          K.reveal(K.$("p1-st-b"), K.T(4.2), 0.5);
+          K.reveal(K.$("p1-st-c"), K.T(6.11), 0.6);
+
+          // clear to the phone; plate II keeps it where it is
+          K.out(blk, K.T(9.31), 0.45);
+          K.out(K.$("p1-label-l"), K.T(9.31), 0.45);
+          K.out(K.$("p1-label-r"), K.T(9.31), 0.45);
+          tl.to("#p1 .statement", { opacity: 0, duration: 0.45, ease: "power1.in" }, K.T(9.31));
+
+          window.__timelines["p1"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

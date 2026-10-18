@@ -1,0 +1,163 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #p4 {
+          position: absolute;
+          inset: 0;
+        }
+      </style>
+      <div id="p4" data-composition-id="p4" data-width="1920" data-height="1080">
+        <div id="p4-night" class="layer field" data-layout-allow-overlap data-layout-allow-occlusion>
+          <svg class="full" viewBox="0 0 1920 1080">
+            <defs>
+              <pattern id="p4-grid" width="60" height="60" patternUnits="userSpaceOnUse" x="48" y="48">
+                <path d="M60 0H0V60" fill="none" stroke="#6aad4a" stroke-width="1" opacity="0.08" />
+              </pattern>
+            </defs>
+            <rect x="48" y="48" width="1824" height="984" fill="url(#p4-grid)" />
+            <rect class="ln thin line" x="48" y="48" width="1824" height="984" opacity="0.6" />
+            <!-- navy copy of the furniture bar: the tick sits at PAY WEEK, sheet 04 / 07 -->
+            <g id="p4-bar" data-layout-allow-overlap data-layout-allow-occlusion>
+              <path class="ln thin ink" d="M260 985H1520" opacity="0.35" />
+              <path class="ln line" d="M260 985H890" />
+              <g id="p4-stations"></g>
+              <path class="fill-line" d="M-9 -14H9L0 0Z" transform="translate(890 971)" />
+              <rect class="ln thin line" x="1610" y="958" width="230" height="50" />
+              <path class="ln thin line" d="M1690 958V1008" opacity="0.6" />
+              <text class="mono small" x="1650" y="990" text-anchor="middle">SHEET</text>
+              <text class="mono" x="1765" y="991" text-anchor="middle">04 / 07</text>
+            </g>
+            <g id="p4-table"></g>
+            <g id="p4-phone"></g>
+            <g id="p4-screen"></g>
+          </svg>
+          <div id="p4-label-l" class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate IV</div>
+          <div id="p4-label-r" class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>Pay Week</div>
+          <div class="statement two" data-layout-allow-overlap data-layout-allow-occlusion>
+            <div class="row"><span id="p4-st-a" class="phrase">Friday night. Still no signal.</span></div>
+            <div class="row"><span id="p4-st-b" class="phrase red">Pay week adds up on the phone.</span></div>
+          </div>
+        </div>
+        <div id="p4-edge" class="wipe-edge"></div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text, kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 37.38);
+          const tb = K.$("p4-table");
+
+          // navy bar stations (same x as the furniture: 260 + i * 315)
+          const st = K.$("p4-stations");
+          ["TAP", "SQLITE", "PAY WEEK", "BATCH", "API"].forEach((s, i) => {
+            const x = 260 + i * 315;
+            el("path", { class: "ln thin ink", d: `M${x} 979V991` }, st);
+            text(s, { class: "mono small", x, y: 1014, "text-anchor": "middle" }, st);
+          });
+
+          // the phone, now on its pay-week screen; still no service
+          const P = OR.phone(K.$("p4-phone"));
+          P.head.setAttribute("opacity", 0);
+          const scr = K.$("p4-screen");
+          text("PAY WEEK", { class: "mono", x: 1404, y: 240 }, scr);
+          text("09-08 / 09-14", { class: "mono small", x: 1404, y: 266 }, scr);
+          const lines = OR.CREW.map((n, i) => {
+            const g = el("g", {}, scr);
+            text(n, { class: "mono cell", x: 1404, y: 330 + i * 56 }, g);
+            el("path", { class: "ln thin ink", d: `M1404 ${346 + i * 56}H1676`, opacity: 0.4 }, g);
+            return g;
+          });
+
+          // ---- the plate turns to evening from the left (37.38 -> 38.06) ----
+          const inA = K.T(37.38),
+            inB = K.T(38.06);
+          tl.fromTo("#p4-night", { clipPath: "inset(0 100% 0 0)" }, { clipPath: "inset(0 0% 0 0)", duration: inB - inA, ease: "power2.inOut" }, inA);
+          tl.fromTo("#p4-edge", { x: 0 }, { x: 1918, duration: inB - inA, ease: "power2.inOut" }, inA);
+          tl.fromTo("#p4-edge", { opacity: 0 }, { opacity: 1, duration: 0.08 }, inA);
+          tl.fromTo("#p4-edge", { opacity: 1 }, { opacity: 0, duration: 0.12, immediateRender: false }, inB - 0.08);
+          K.fade(K.$("p4-label-l"), K.T(38.06), 0.4);
+          K.fade(K.$("p4-label-r"), K.T(38.06), 0.4);
+          lines.forEach((g, i) => K.fade(g, K.T(38.68) + i * 0.1, 0.3));
+
+          // ---- the pay week, worked out from the tallies on the phone (synthetic crew and counts) ----
+          const title = text("PAY WEEK · 2026-09-08 / 09-14 · RATE 2400 ¢ A BIN", { class: "mono head green-t", x: 160, y: 190 }, tb);
+          K.fade(title, K.T(38.68), 0.4);
+          const COLS = [["PICKER", 160, "start"], ["BINS", 470, "end"], ["OWED", 700, "end"], ["PAID", 920, "end"], ["UNPAID", 1160, "end"]];
+          const head = el("g", {}, tb);
+          COLS.forEach(([s, x, a]) => text(s, { class: "mono small", x, y: 250, "text-anchor": a }, head));
+          const r1 = el("path", { class: "ln thin ink", d: "M160 266H1160" }, tb);
+          K.fade(head, K.T(39.33), 0.3);
+          K.draw(r1, K.T(39.33), 0.5, "none");
+
+          const ROWS = [["ANA", 14, "336.00"], ["BEN", 12, "288.00"], ["CLEO", 15, "360.00"], ["DEV", 11, "264.00"]];
+          const cell = (s, x, y, cls) => text(s, { class: `mono ${cls || ""}`, x, y, "text-anchor": "end" }, tb);
+          const paid = [],
+            unpaid = [];
+          ROWS.forEach(([n, bins, owed], i) => {
+            const y = 310 + i * 50;
+            const g = el("g", {}, tb);
+            text(n, { class: "mono", x: 160, y }, g);
+            text(String(bins), { class: "mono", x: 470, y, "text-anchor": "end" }, g);
+            text(owed, { class: "mono", x: 700, y, "text-anchor": "end" }, g);
+            K.reveal(g, K.T(39.96) + i * 0.15, 0.4);
+            paid.push(cell("0.00", 920, y));
+            unpaid.push(cell(owed, 1160, y));
+            K.fade(paid[i], K.T(41.24) + i * 0.1, 0.3);
+            K.fade(unpaid[i], K.T(41.24) + i * 0.1 + 0.05, 0.3);
+          });
+          const r2 = el("path", { class: "ln thin ink", d: "M160 486H1160" }, tb);
+          const tot = el("g", {}, tb);
+          text("TOTAL", { class: "mono", x: 160, y: 526 }, tot);
+          text("52", { class: "mono", x: 470, y: 526, "text-anchor": "end" }, tot);
+          text("1,248.00", { class: "mono", x: 700, y: 526, "text-anchor": "end" }, tot);
+          const totPaid = cell("0.00", 920, 526);
+          const totUnpaid = cell("1,248.00", 1160, 526);
+          K.draw(r2, K.T(41.84), 0.5, "none");
+          K.fade(tot, K.T(41.84), 0.4);
+          K.fade(totPaid, K.T(41.84) + 0.1, 0.3);
+          K.fade(totUnpaid, K.T(41.84) + 0.15, 0.3);
+          const rule = text("owed = sum of floor(count × rate) · unpaid = owed − paid", { class: "mono note", x: 160, y: 580 }, tb);
+          K.fade(rule, K.T(42.52), 0.5, 0.75);
+
+          // ---- a cash payout is recorded; it is appended, and paid derives from what it covers ----
+          const pbox = el("rect", { class: "ln line", x: 160, y: 620, width: 1000, height: 60 }, tb);
+          const ptxt = text("PAYOUT · ANA · CASH · 336.00 · covers 09-08 / 09-14", { class: "mono", x: 184, y: 658 }, tb);
+          K.draw(pbox, K.T(44.42), 0.6, "none");
+          K.reveal(ptxt, K.T(45.07), 0.5);
+          const mark = el("rect", { class: "ln line", x: 800, y: 284, width: 372, height: 38 }, tb);
+          K.draw(mark, K.T(45.7), 0.4, "none");
+
+          const swap = (oldN, s, x, y, cls) => {
+            const n = cell(s, x, y, cls);
+            const at = K.T(45.7) + 0.2;
+            tl.fromTo(oldN, { opacity: 1 }, { opacity: 0, duration: 0.2, immediateRender: false }, at);
+            tl.fromTo(n, { opacity: 0 }, { opacity: 1, duration: 0.3 }, at + 0.15);
+          };
+          swap(paid[0], "336.00", 920, 310, "green-t");
+          swap(unpaid[0], "0.00", 1160, 310, "green-t");
+          swap(totPaid, "336.00", 920, 526);
+          swap(totUnpaid, "912.00", 1160, 526);
+
+          K.reveal(K.$("p4-st-a"), K.T(40.59), 0.6);
+          K.reveal(K.$("p4-st-b"), K.T(46.97), 0.8);
+
+          // ---- back to day, onto plate V (50.81 -> 51.43) ----
+          const outA = K.T(50.81),
+            outB = K.T(51.43);
+          tl.fromTo("#p4-night", { clipPath: "inset(0 0 0 0%)" }, { clipPath: "inset(0 0 0 100%)", duration: outB - outA, ease: "power2.inOut", immediateRender: false }, outA);
+          tl.fromTo("#p4-edge", { x: 0 }, { x: 1918, duration: outB - outA, ease: "power2.inOut", immediateRender: false }, outA);
+          tl.fromTo("#p4-edge", { opacity: 0 }, { opacity: 1, duration: 0.08, immediateRender: false }, outA);
+          tl.fromTo("#p4-edge", { opacity: 1 }, { opacity: 0, duration: 0.12, immediateRender: false }, outB - 0.08);
+
+          window.__timelines["p4"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>
