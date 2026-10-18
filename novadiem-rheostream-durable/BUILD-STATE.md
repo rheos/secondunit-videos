@@ -88,3 +88,11 @@ worker, the rollback that lands nothing, the colophon).
   "No audit path, **no start.**"
 - **VII · By Construction (80-89.9).** Three guarantees as construction lines; "Durable and
   accounted for. **By construction.**"; `RHEO.STREAM · GITHUB.COM/RHEOS/RHEOSTREAM · AGPL-3.0`.
+
+## Draft 1
+
+https://youtu.be/jcp269KAwSI (unlisted, default channel), 89.9 s at 720p, 24 fps
+(`renders/rheostream-durable_take01_draft1.mp4`, remuxed from the `-raw` render). flashcheck PASS
+(0 flashes in any second); -13.7 LUFS, true peak -1.8 dBFS. Eight frames tiled from the MP4 match the
+snapshots, moves included. Source grep: no real names, keys, amounts or vendors. Renders and the
+score copy stay in this worktree (`renders/`, `_in/`), outside git.
