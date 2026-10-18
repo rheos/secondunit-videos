@@ -121,7 +121,9 @@ const pileA = handAt(...PA), pileB = handAt(...PB);
 // outward from behind her (the newest sheet goes BEHIND the last, so the edges read as rings, like the
 // laugh rings); the ring shadows flatten out as the room settles into the dream
 const WARM = { x: 860, y: 600 };
-const STEPS = [[BEAT(23), 330], [BEAT(25), 640], [BEAT(27), 1020], [BEAT(29), 1700]];
+// d3: the light grows with the music, from the new chord at 15.40 s (band stem onsets 16.20, 16.58, 16.98, 17.78)
+const LIFT = 15.40;
+const STEPS = [[16.20, 330], [16.58, 640], [16.98, 1020], [17.78, 1700]];
 function scallopDisc(cx, cy, r, seed) {
   const n = Math.max(14, Math.round(Math.PI * 2 * r / 64)), p = new Path2D();
   for (let i = 0; i <= n; i++) {
@@ -153,15 +155,15 @@ SHOT(0, 18.5, 'kitchen', (t) => {
   g.save(); g.translate(W / 2, H / 2); g.scale(Z, Z); g.translate(-FX, -FY);
 
   // the drift: everything below is 0 = waking, 1 = dream
-  const haloK = ss(10.5, 14.4, t);                                       // warm circle -> paper sun
-  const navyK = ss(13.6, 17.8, t);                                       // her paper, the table
+  const haloK = ss(LIFT, 18.0, t);                                       // warm circle -> paper sun
+  const navyK = ss(16.0, 18.3, t);                                       // her paper, the table
 
   // ---- the room, waking, then the dream room on the stepped sheets ----
   room(0);
   const rs = STEPS.map((_, i) => stepR(t, i));
   const top = rs.reduce((m, r, i) => r > 0 ? i : m, -1);
   if (top >= 0) {
-    const ringSh = 1 - ss(15.6, 17.6, t);
+    const ringSh = 1 - ss(17.9, 18.45, t);
     const discs = rs.map((r, i) => r > 0 ? scallopDisc(WARM.x, WARM.y, r, i * 1.7 + .3) : null);
     // the outermost sheet lies on the grey room with a cut shadow; the dream room is printed on it
     const outer = discs[top];
@@ -180,13 +182,13 @@ SHOT(0, 18.5, 'kitchen', (t) => {
   // ---- the lamp's warm light on the wall, which becomes the sun halo ----
   const GY = LSY + 150;
   const glowR = lerp(300, 380, haloK);
-  g.save(); g.globalAlpha = A0 * .5 * (1 - ss(10.4, 12.6, t));
+  g.save(); g.globalAlpha = A0 * .5 * (1 - ss(LIFT - .1, 16.8, t));
   const gr = g.createRadialGradient(LX, GY, 20, LX, GY, glowR);
   gr.addColorStop(0, 'rgba(243,217,160,.85)'); gr.addColorStop(.55, 'rgba(243,217,160,.3)'); gr.addColorStop(1, 'rgba(243,217,160,0)');
   g.fillStyle = gr; g.fill(circle(LX, GY, glowR)); g.restore();
-  if (t >= 10.5) {
+  if (t >= LIFT) {
     // opaque paper from its first frame: it pops in small inside the glow, then grows and settles
-    const r = lerp(70, HALO.r, eo(haloK)) * (t < 11 ? back((t - 10.5) / .5) : 1) + Math.sin(t * .5) * 3;
+    const r = lerp(70, HALO.r, eo(haloK)) * (t < LIFT + .5 ? back((t - LIFT) / .5) : 1) + Math.sin(t * .5) * 3;
     const hxk = lerp(LX, HALO.x, eio(haloK)), hyk = lerp(GY, HALO.y, eio(haloK));
     cut(circle(hxk, hyk, r + lerp(14, 28, haloK)), C.goldPale, { sh: .5, grain: .25 });
     cut(circle(hxk, hyk, r), mix(C.lamp, C.sun, haloK), { sh: .6, grain: .25 });
@@ -200,7 +202,7 @@ SHOT(0, 18.5, 'kitchen', (t) => {
   cut(ellipse(LX, LSY + 78, 34, 14), C.lamp, { sh: 0, grain: .1 });
   g.restore();
   // the light cone onto the table
-  g.save(); g.globalAlpha = A0 * .2 * (1 - ss(12.4, 14.6, t));
+  g.save(); g.globalAlpha = A0 * .2 * (1 - ss(16.2, 17.6, t));
   const cg = g.createLinearGradient(0, LSY + 78, 0, TY);
   cg.addColorStop(0, 'rgba(243,217,160,.95)'); cg.addColorStop(1, 'rgba(243,217,160,.3)');
   g.fillStyle = cg; g.fill(poly([[LX - 92, LSY + 76], [LX + 92, LSY + 76], [LX + 300, TY], [LX - 300, TY - TB * .2]])); g.restore();
