@@ -32,8 +32,8 @@ const ARTPIECES = [
     clock: '7:30', r: 186, seen: 'the long wides down the road all day: 73-104, 112-160, 163-177, 185-195 in the background (60-170 px), the entrance toward the drone' },
   { kind: 'octa', name: 'octa-a', X: 156, Z: 64, rot: .4, a: 2.1, tilt: 0, sitter: true, scale: 1, people: 3,
     clock: '8:30', r: 145, seen: '113-137 and 147-155 in the background left of the road (75-110 px)' },
-  { kind: 'octa', name: 'octa-b', X: 140, Z: 55, rot: 2.2, a: 2.0, tilt: .62, scale: 1, people: 0,
-    clock: '8:40', r: 161, seen: 'with the first one, 17 m to its west' },
+  // draft 16 (Robin: "the green thing is 1 sculpture from different angles not 2"): the tipped-over second one (octa-b,
+  // 140, 55) is cut; this one, balanced on its point with the sitter in its window, is the only one
   { kind: 'clock', X: 104, Z: 130, rot: 2.74, scale: 1, people: 0,
     clock: '8:00', r: 210, seen: 'on "time" (126.5) in the open playa left of the melting clock, 125 px; also 72-95 and 129-141' },
   { kind: 'stilts', path: [[0, -14, 47.4], [114.5, 123.4, 47.4]], X: 0, Z: 0, rot: 0, scale: 1, t0: 0, t1: 114.5,
@@ -610,7 +610,7 @@ function apNaveShadow(o, t) { const F = apFrame(o); for (const s of apNaveSpires
   for (const lf of [AP_NAVE.half, 0, -AP_NAVE.half]) apShadowLine(apArchPts(F, -AP_NAVE.w, AP_NAVE.w, lf, lf, 6.3, 1.6), .3, t); }
 
 // ---------- 7. the lime-green octahedron shelters (draft 16, robin-2026-10-18/5.jpg and 6.jpg) ----------
-// Plywood octahedra painted lime green, one balanced on its point, one tipped over onto an edge; a little cube caps the
+// Plywood octahedra painted lime green (draft 16: one only, balanced on its point; apOctaGeo still takes a tilt); a little cube caps the
 // top point; a square window is cut through the upper faces and the lower faces are open, so people sit inside in the
 // shade. Someone sits cross-legged in the first one's window. Drawn in 3D: the faces that face the drone, lit by the sun.
 function apOctaGeo(o) { const a = o.a || 2.1, tl = o.tilt || 0, ct = Math.cos(tl), sn = Math.sin(tl);

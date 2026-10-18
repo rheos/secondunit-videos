@@ -136,8 +136,8 @@ const KEYS = [
   [108.75, [-1.52, 1.3, -2.3, .02, 1050]],   // out between two of the suits
   [109.8, SPIN2A],                           // refrain 2 spin: worm's-eye, suits sweep overhead (spin 114.11)
   [111.6, tw(SPIN2A, -.2, .02, -.3, .01, 1.025)],
-  [113.2, SPIN2O],                           // draft 9: overhead for the spin (114.11): the table's turn reads
-  [114.8, tw(SPIN2O, .2, .4, .1, 0, .97)],
+  [113.2, tw(SPIN2O, 0, 0, 0, -.4)],         // draft 9: overhead for the spin (114.11): the table's turn reads (d16: less steep, so the
+  [114.8, tw(SPIN2O, .2, .4, .1, -.3, .97)], // Instrument People stay in the top of frame now the climb starts from above the table)
   [116.5, orb(-120, 7.6, 1.2, .1, 880, .05)],
   [118.7, TR2A],                             // instrumental 2: the car comes at us, low
   [121.4, TR2B],
@@ -154,8 +154,12 @@ const KEYS = [
   [137.0, rapCam(-1.5, 2.3, -4.8, 1080)],
   [139.8, rapCam(-3.1, 2.5, -5.6, 1000)],     // drifting round in front of her (wars, limit)
   [142.6, rapCam(-4.4, 2.4, -5.0, 1000)],     // to her other side, close (pie 144.55)
-  [145.0, rapCam(-2.1, 2.8, -6.2, 950, [-1.45, 1.75, -1.7])], // back in front of her: she on the left, the hat hole on the right, for Little Bob (146.33)
-  [146.8, rapCam(-1.6, 2.6, -5.0, 970, [-1.4, 1.75, -1.6])],
+  // draft 16 (Robin, 2:26: "the camera should be closer to little bob"): in from her front to 3 m off the hat hole, Bob
+  // filling half the frame height on "little" (146.33); she has gone off the left edge. Aimed nearly as the book pin at
+  // 147.5 looks, so the hand-over is a small turn
+  [145.0, rapCam(-1.6, 3.0, -4.9, 1000, [-2.1, 1.9, -1.4])], // she on the left, the hat hole right of centre (pie 144.55)
+  [145.85, rapCam(-.6, 2.7, -3.5, 1180, [0, 1.6, 0])],
+  [146.75, rapCam(-.35, 2.45, -2.9, 1260, [0, 1.65, 0])],
   [153.6, tw(CHESSW, .2, .1, -.6, .01, .98)],
   [156.7, COPS],                             // pulling back and zooming in: the paid cops behind the table (paid 159.38)
   [159.5, tw(COPS, .2, -.2, 1.5, 0, .98)],
@@ -347,7 +351,10 @@ function camPass(src, dir, cues) {
       // next 2 s, at the acceleration allowed down there (a fast descent into the slow low band dived into the ground)
       { let lo = Infinity, hi = -Infinity; for (let j = 0; j <= 96; j += 4) { const y = src[clamp(i + dir * j, 0, N - 1) * 6 + 1]; lo = Math.min(lo, y); hi = Math.max(hi, y); }
         const dn = Math.sqrt(2 * camAmax(lo) * .7 * Math.max(0, st[1] - lo) + .04), up = Math.sqrt(2 * camAmax(st[1]) * .7 * Math.max(0, hi - st[1]) + .04);
-        if (hi < 30) { if (vc[1] < -dn) vc[1] = -dn; if (vc[1] > up) vc[1] = up; } }
+        if (hi < 30) { if (vc[1] < -dn) vc[1] = -dn; if (vc[1] > up) vc[1] = up; }
+        // draft 16: and brake before the table floor under where the drone is now, so it never sinks under it
+        const fl = src[r + 1] > 30 ? 0 : tableFloor(t, st[0] + carX(Math.min(t, 238)), st[2]) + .1, df = Math.sqrt(2 * camAmax(st[1]) * .5 * Math.max(0, st[1] - fl));
+        if (fl && st[1] - fl < 1.5 && vc[1] < -df) vc[1] = -df; }
       const ac = [0, 1, 2].map((c) => (vc[c] - vel[c]) * KV); lim2(ac, [vel[0], vel[1], vel[2]], L.a, 3 * L.a);
       for (let c = 0; c < 3; c++) { vel[c] += ac[c] * dt; st[c] += vel[c] * dt; } }
     // the look direction: pitch and yaw, measured as view turn (yaw counts by cos(pitch))
@@ -366,19 +373,30 @@ function camPass(src, dir, cues) {
   for (let c = 0; c < 6; c++) out[i0 * 6 + c] = src[i0 * 6 + c];
   return out;
 }
+// draft 16: the lowest the drone may fly at world (X, Z) at song time t, so the table's underside never shows and the
+// props on its top are never seen from below: TOP + .35 within 5.9 m of the car's centre (the table's corners are 4.65 m
+// out, so this covers it at any turn), easing to TOP + .12 by 8.3 m and on out to 45 m; 0 inside the driver's hole.
+function tableFloor(t, X, Z) { const r = Math.hypot(X - carX(t), Z - carZ(t)); if (r > 45) return 0; // round the car's centre, so the table's turns never move it
+  return (TOP + .12 + .23 * (1 - smooth((r - 5.9) / 2.4))) * smooth((r - .75) / .3); }
+// a key below the floor is lifted onto it, still looking at the point it aimed at (at the car's distance)
+function liftKey(k) { const X = k.q[0] + carX(Math.min(k.t, 238)), fl = tableFloor(k.t, X, k.q[2]) + .22; if (k.q[1] >= fl) return k;
+  const D = Math.max(2, Math.hypot(X - carX(k.t), k.q[2] - carZ(k.t))), ty = k.q[1] - D * Math.tan(k.p);
+  k.q[1] = fl; k.p = Math.atan2(fl - ty, D); return k; }
 let CAM_TAB = null;
 function camBuild() {
   const e0 = camEnd(AIR.t1 - .001), e1 = camEnd(AIR.t1 - .021), q0 = qOf(AIR.t1, e0.x, e0.y, e0.z), q1 = qOf(AIR.t1 - .02, e1.x, e1.y, e1.z); // the aerial's velocity at the hand-over
-  const P1 = pathOf(camKeys1()), P3 = pathOf(END_KEYS.map((k) => keyWorld(k)), q0.map((v, j) => (v - q1[j]) / .02));
+  const P1 = pathOf(camKeys1().map(liftKey)), P3 = pathOf(END_KEYS.map((k) => liftKey(keyWorld(k))), q0.map((v, j) => (v - q1[j]) / .02));
   const N = Math.ceil(CAM_T1 / CAM_DT) + 2, src = new Float64Array(N * 6);
   let ywRef = 0;
   for (let i = 0; i < N; i++) { const t = i * CAM_DT; let row;
     const e = (t > AIR.t0 && t < AIR.t1) ? camEnd(t) : null;
     if (e) row = [...qOf(t, e.x, e.y, e.z), e.p, e.yaw, Math.log(e.f)]; else row = t <= AIR.t0 ? P1(t) : P3(t);
     row[4] = unwrap(row[4], ywRef); ywRef = row[4];
-    // draft 14 (Robin, 1:28): never below the table top while over or beside it, or the props on top show from underneath
-    // (the driver's hole shots, inside .8 m of its centre, are the only exception)
-    if (!e && Math.abs(row[0]) < 7.4 && Math.abs(row[2] - carZ(t)) < 4.5 && Math.hypot(row[0], row[2] - carZ(t)) > .8) row[1] = Math.max(row[1], TOP + .3 + .25 * clamp((7.4 - Math.abs(row[0])) / 3));
+    // draft 16 (Robin, 0:57 and 1:50): never below the table top anywhere it can be seen. Draft 14's floor was a box in
+    // world axes (it missed the table's corners while it turns on "spin"), only near the car, and the follower and the
+    // hover could still drop under it; now tableFloor (below) is round, so it covers every turn, and camAt applies it
+    // again after the hover. The driver's hole shots are the only exception.
+    if (!e) { const X = row[0] + carX(Math.min(t, 238)), fl = tableFloor(t, X, row[2]) + .15 * (tableFloor(t, X, row[2]) > 1); if (row[1] < fl) row[1] = fl; }
     for (let c = 0; c < 6; c++) src[i * 6 + c] = row[c]; }
   const cues = typeof CUE_TARGETS !== 'undefined' ? CUE_TARGETS.map((q) => q.t) : [];
   CAM_TAB = { N, src, out: camPass(camPass(src, 1, cues), -1, cues) };
@@ -411,7 +429,9 @@ function camAt(t, bare) { // bare: without the hover (scene placement reads this
   const bb = bare ? 0 : clamp(.008 * dist, .02, .05) * nr; // the bob, scaled like the hover but smaller (draft 12: half, it shook the speed limits)
   c = Object.assign({}, c, { x: c.x + bb * bob(t, 7), y: c.y + bb * .8 * bob(t, 8), z: c.z + bb * bob(t, 9) });
   // draft 12: the jolt is a quick roll of the frame now (render.js rollFrame); moving the drone 5 cm at 9 Hz broke every acceleration limit
-  return { x: c.x + hx, y: c.y + hy, z: c.z + hz, p, f: f2, yaw, cy: Math.cos(yaw), sy: Math.sin(yaw), clip, roll: camRoll(t) + .012 * sh * Math.sin(gu * 48) };
+  // draft 16: the floor again after the follower and the hover (a soft max, so it never kinks)
+  const fx = c.x + hx, fz = c.z + hz, fl = t > AIR.t0 && t < AIR.t1 ? 0 : tableFloor(t, fx, fz), fy0 = c.y + hy, fy = fl ? (fy0 + fl + Math.sqrt((fy0 - fl) ** 2 + .01)) / 2 : fy0;
+  return { x: fx, y: fy, z: fz, p, f: f2, yaw, cy: Math.cos(yaw), sy: Math.sin(yaw), clip, roll: camRoll(t) + .012 * sh * Math.sin(gu * 48) };
 }
 // the protected intro glide flies 450 m from the sunrise camp to the car in 17 s (AUDIT-d10 "do not touch"): no speed or
 // acceleration limit there (tools/check-camera.mjs reads this)
@@ -432,7 +452,7 @@ const cueFar = (li, w, D = 300) => { let p = null; return () => p || (p = (() =>
 const CUE_TARGETS = [
   cueAt(0, 'law', () => { const a = typeof LAW_AT === 'function' ? LAW_AT() : [-3.9, -.6]; return Lw(a[0], TOP + .11, a[1]); }), // the gavel head on the table
   cueAt(1, 'scientists', cueLw(0, 2.0, 10.5)),                 // the Instrument People beyond the far row
-  cueAt(1, "can't", cueLw(1.2, 1.2, -1.0)),                    // the tape X on the speakerphone
+  cueAt(1, "can't", cueLw(1.0, 1.45, -.75)),                    // draft 16: the puff of smoke off the speakerphone
   cueAt(2, 'gag', () => { const q = typeof gagWhere === 'function' ? gagWhere() : { X: 0, Z: 0 }; return [q.X, 5.6, q.Z]; }), // the 12 m lips on their pole
   cueAt(2, 'every', cueLw(-.81, 1.27, .9)),                    // the tape recorders lifting on their wires
   cueAt(3, 'control', cueLw(0, 1.6, 0)),                       // (nothing acts it) the board

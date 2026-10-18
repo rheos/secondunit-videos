@@ -10,6 +10,33 @@ const phoneSlump = (t) => ease(t, wt(1, 'scientists') + .3, L_(1).s + 3.9) * (1 
 // the front edge, so in the low shot that turns from it to the Instrument People (24-27.6) it stays in the lower middle
 // of the frame while it slumps, instead of sliding off the bottom right corner
 const PHONE = { x: .95, z: -.55 };
+// draft 16: the mute button on the far edge and the puff (the arm and button are drawn by muteButton, after the props)
+const PUFF = { t: () => wt(1, 'can') - .12, bx: 1.25, bz: 1.18, seat: 4 };
+function phonePuff(t, cx, cz, sl) {
+  const u0 = t - PUFF.t(); g.save();
+  for (let i = 0; i < 9; i++) { const u = u0 - i * .07; if (u < 0 || u > 2.6) continue; const e = 1 - (1 - clamp(u / 2.6)) ** 2;
+    const x = cx + (rnd(i, 71) - .5) * .25 + e * (.35 + .2 * rnd(i, 72)), y = TOP + .1 + sl * .02 + e * (1.1 + .5 * rnd(i, 73)), z = cz - .08 + (rnd(i, 74) - .5) * .2 + e * .25;
+    const q = PL(x, y, z); if (q[2] < .2) continue; const R = (.07 + .3 * e) * (1 + .3 * rnd(i, 75)) * kAt(q);
+    g.globalAlpha = .62 * clamp(u / .12) * (1 - clamp((u - 1.2) / 1.4)); g.fillStyle = i % 3 ? '#d9d6cf' : '#b8b4ad';
+    g.beginPath(); g.arc(q[0], q[1], R, 0, TAU); g.fill(); }
+  g.restore(); }
+// the far-row suit's reach: the hand goes out from the shoulder, presses the button on PUFF.t() and comes back
+function muteButton(t) {
+  const tp = PUFF.t(); if (t < 15 || t > L_(2).e + 2) return; const { bx, bz } = PUFF;
+  const reach = ease(t, tp - .75, tp - .12) * (1 - ease(t, tp + .35, tp + 1.0)), push = ease(t, tp - .2, tp - .05) * (1 - ease(t, tp + .15, tp + .35));
+  const box = (x0, x1, y0, y1, z0, z1, col) => { poly([PL(x0, y1, z0), PL(x1, y1, z0), PL(x1, y1, z1), PL(x0, y1, z1)], col, '#17181b', 1); poly([PL(x0, y0, z0), PL(x1, y0, z0), PL(x1, y1, z0), PL(x0, y1, z0)], '#1f2024', '#17181b', 1); };
+  box(bx - .14, bx + .14, TOP, TOP + .08, bz - .1, bz + .1, '#e8c23a');
+  const dy = .05 - .035 * push, top = []; for (let i = 0; i < 16; i++) { const a = i / 16 * TAU; top.push(PL(bx + Math.cos(a) * .08, TOP + .08 + dy, bz + Math.sin(a) * .08)); }
+  const side = []; for (let i = 0; i <= 8; i++) { const a = i / 8 * Math.PI; side.push(PL(bx + Math.cos(a) * .08, TOP + .08, bz - Math.sin(a) * .08)); } for (let i = 8; i >= 0; i--) { const a = i / 8 * Math.PI; side.push(PL(bx + Math.cos(a) * .08, TOP + .08 + dy, bz - Math.sin(a) * .08)); }
+  poly(side, '#9e1a12'); poly(top, '#e0291c', '#7a120c', 1);
+  if (reach <= 0) return; const h = typeof suitHeadLocal === 'function' ? suitHeadLocal(PUFF.seat, t) : [SEATS[PUFF.seat].x, 1.9, 2.3];
+  const sh = [h[0] - .24, h[1] - .25, h[2] - .05], rest = [h[0] - .3, h[1] - .5, h[2] - .2], hand = [bx, TOP + .08 + dy + .06, bz];
+  const H = [lerp(rest[0], hand[0], reach), lerp(rest[1], hand[1], reach) + .12 * Math.sin(reach * Math.PI), lerp(rest[2], hand[2], reach)];
+  const a = PL(...sh), b = PL(...H); if (a[2] < .2 || b[2] < .2) return; const k = kAt(b);
+  const ka = (kAt(a) + k) / 2; g.save(); g.lineCap = 'round'; g.strokeStyle = '#141419'; g.lineWidth = .16 * ka; g.beginPath(); g.moveTo(a[0], a[1]); g.lineTo(b[0], b[1]); g.stroke(); // a dark edge so the sleeve reads over his own jacket
+  g.strokeStyle = PAL.suitLit; g.lineWidth = .12 * ka; g.stroke(); const c = [lerp(a[0], b[0], .86), lerp(a[1], b[1], .86)]; g.strokeStyle = '#f4efe2'; g.lineWidth = .1 * ka; g.beginPath(); g.moveTo(c[0], c[1]); g.lineTo(lerp(a[0], b[0], .93), lerp(a[1], b[1], .93)); g.stroke(); g.restore(); // the shirt cuff
+  g.fillStyle = PAL.egg; g.beginPath(); g.ellipse(b[0], b[1] + .01 * k, .055 * k, .045 * k, 0, 0, TAU); g.fill();
+}
 function speakerphone(t) {
   const m = melt(t), cz = PHONE.z - m * .75, cx = PHONE.x, sl = phoneSlump(t), pts = [];
   const flow = (x, z, f = 1) => { const dx = x - cx, dz = z - cz, front = clamp(-dz / .3), side = 1 - .55 * (dx / .4) ** 2; // front points run toward the edge
@@ -40,8 +67,10 @@ function speakerphone(t) {
   // LEDs: green while it may speak; red, with tape across, once the scientists can't
   const cant = wt(1, 'can'), red = t > cant && t < L_(2).s + .5;
   for (let i = 0; i < 3; i++) { const a = i / 3 * TAU + .5 + TAU / 6, r = .3; const q = PL(...drape([flow(cx + Math.cos(a) * r, cz + Math.sin(a) * r * .9)], TOP + .06)[0]); if (q[2] < .15) continue; g.fillStyle = red ? '#ff3b2a' : '#57e07a'; g.beginPath(); g.arc(q[0], q[1], .028 * kAt(q), 0, TAU); g.fill(); }
-  const tape = ease(t, cant - .05, cant + .2) * (1 - ease(t, L_(2).s + .3, L_(2).s + .6));
-  if (tape > 0) for (const d of [1, -1]) { const s1 = drape([flow(cx - .3 * tape, cz - .25 * d * tape, .35), flow(cx + .3 * tape, cz + .25 * d * tape, .35)], TOP + .07).map((p) => PL(...p)); seg(s1[0], s1[1], .09 * kAt(s1[0]), '#e6d7b0'); }
+  // draft 16 (Robin, 0:24: "instead of an X appearing ... someone on the other side can push a button and a puff of
+  // smoke comes up from the teleconference phone"): the tape X is gone; the far-row suit at seat 4 presses a red
+  // button on the far edge just before "can't", and the phone gives off a puff of smoke (smoke may fade; it is alpha)
+  if (t > PUFF.t() - .3 && t < PUFF.t() + 3.2) phonePuff(t, cx, cz, sl);
   // the soundbite (draft 9: on "soundbite", not "patent", which has the notary seal now): rings go out across the
   // table and the last one has a bite taken out, right where the table's edge gets bitten (tableBite)
   const sb = wt(8, 'soundbite') - .45; if (t > sb - .3 && t < L_(8).e + .6) for (let r = 0; r < 4; r++) { const age = ((t - sb + .3) * 1.4 - r * .35); if (age < 0 || age > 1.6) continue; const R = .4 + age * .9, ring = [];
@@ -571,11 +600,16 @@ function scales(t) {
 // "and limit the questions the media gets" (draft 9): three boom mics reach in over the table, each a pole with a grey
 // mic hanging from a shock mount and a "?" flag; on "limit" the three poles tie themselves together in a knot and the
 // mics hang from it in a bunch. micKnot() is the knot's centre in car-local metres (b7 flies the MIC head into it).
+// draft 16 (Robin, 2:23: "the microphones just disappear. they should retract again before disappear"): after the line
+// the knotted bundle is reeled back the way it came, out past the near end of the table and up out of frame (MIC_OUT),
+// with the MIC head still hanging under it; nothing vanishes in view.
 const MIC_KNOT = [-2.9, 2.75, -.95];
-function micKnot() { return MIC_KNOT.slice(); }
+const MIC_OUT = { t0: () => L_(22).e + .1, dur: 1.5, d: [-16, 3.5, -2.5] };
+const micOut = (t) => { const u = clamp((t - MIC_OUT.t0()) / MIC_OUT.dur); return u * u * (3 - 2 * u) * (.6 + .4 * u); }; // slow to start, then quick
+function micKnot(t) { const o = t == null ? 0 : micOut(t); return MIC_KNOT.map((v, c) => v + MIC_OUT.d[c] * o); }
 function micBooms(t) {
-  const s = L_(22).s, e = L_(22).e; if (t < s - .6 || t > e + .9) return; const lim = wt(22, 'limit'), K = MIC_KNOT;
-  const reach = ease(t, s - .6, s + .1) * (1 - ease(t, e + .3, e + .9)), N = 28;
+  const s = L_(22).s, e = L_(22).e; if (t < s - .6 || t > MIC_OUT.t0() + MIC_OUT.dur + .05) return; const lim = wt(22, 'limit'), K = MIC_KNOT, out = micOut(t), OFF = MIC_OUT.d.map((v) => v * out);
+  const reach = ease(t, s - .6, s + .1), N = 28;
   const poles = [0, 1, 2].map((i) => { const kn = ease(t, lim - .05 + i * .07, lim + .5 + i * .07), a = [-9.5, 3.1 - i * .35, -3.2 + i * .9], tip = [lerp(-9, -3.4 + i * .55, reach), 2.3 - i * .15, -1.6 + i * .55], ph = i * TAU / 3, rho = .48;
     const E1 = [[0, 1, 0], [.8, 0, .6], [.6, .6, -.5]][i], E2 = [[0, 0, 1], [0, 1, 0], [-.5, .5, .7]][i], AX = [[1, 0, 0], [0, 0, 1], [0, 1, 0]][i]; // each pole loops in its own plane, so they tangle
     const ring = (f, r, v) => [0, 1, 2].map((c) => K[c] + r * (Math.cos(f) * E1[c] + Math.sin(f) * E2[c]) + (v - .5) * .35 * AX[c]);
@@ -583,7 +617,7 @@ function micBooms(t) {
     for (let k = 0; k <= N; k++) { const u = k / N, S = [lerp(a[0], tip[0], u), lerp(a[1], tip[1], u) + Math.sin(u * Math.PI) * .3, lerp(a[2], tip[2], u)];
       let Kp; if (u < .5) { const v = u / .5; Kp = [lerp(a[0], entry[0], v), lerp(a[1], entry[1], v) + Math.sin(v * Math.PI) * .25, lerp(a[2], entry[2], v)]; }
       else { const v = (u - .5) / .5; Kp = ring(ph + v * 1.4 * TAU, rho * (1 - .2 * v), v); } // round and round, through the others
-      pts.push([lerp(S[0], Kp[0], kn), lerp(S[1], Kp[1], kn), lerp(S[2], Kp[2], kn)]); }
+      pts.push([lerp(S[0], Kp[0], kn) + OFF[0], lerp(S[1], Kp[1], kn) + OFF[1] * u, lerp(S[2], Kp[2], kn) + OFF[2]]); } // reeled out: the bundle slides back along the poles, the tips lifting
     return { i, kn, pts }; });
   const segs = []; for (const pl of poles) for (let k = 0; k < N; k++) { const A = PL(...pl.pts[k]), B = PL(...pl.pts[k + 1]); segs.push([(A[2] + B[2]) / 2, A, B, k % 4 ? '#a3a7ae' : '#7e828a']); }
   segs.sort((a, b) => b[0] - a[0]); for (const [, A, B, col] of segs) { seg(A, B, .055 * kAt(A), '#3c3f45'); seg(A, B, .035 * kAt(A), col); } // poles, back to front so the knot crosses itself
@@ -646,7 +680,7 @@ function teeth(t, list) {} // draft 3: the soundbite teeth now chatter on the bo
 // the table props in draw order (moved from render.js drawCar for draft 3): behind the near seats, then in front of them
 function tablePropsBack(t) {
   // once the dime is down the ants walk round its rim, drawn over it
-  const dm = wt(15, 'dime'); tableBite(t); chessPieces(t); speakerphone(t); if (t < dm) ants(t); tapeRecorders(t); dime(t); if (t >= dm) ants(t); scales(t); pie(t); book(t); chips(t); jailModel(t); newsPress(t);
+  const dm = wt(15, 'dime'); tableBite(t); chessPieces(t); speakerphone(t); muteButton(t); if (t < dm) ants(t); tapeRecorders(t); dime(t); if (t >= dm) ants(t); scales(t); pie(t); book(t); chips(t); jailModel(t); newsPress(t);
   wbPuddles(t); whiteboard(t, false); wbPops(t);
 }
 function tablePropsFront(t) { truth(t, false); micBooms(t); }

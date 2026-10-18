@@ -226,10 +226,27 @@ function ipBody(kind, t, o) {
   // the collar, and the head or the dark hole where it was
   ipRR(-.17, -1.78, .34, .08, .03, '#d9d1bf');
   if (o.head) { g.save(); g.translate(0, -IP_COLLAR - .01); ipHeadM(kind, t, o.on, Object.assign({}, o.hopts, { sil: IPS })); g.restore(); }
-  else { g.fillStyle = ipc(IP_HOLE); g.beginPath(); g.ellipse(0, -1.765, .13, .035, 0, 0, TAU); g.fill(); }
+  else { g.fillStyle = ipc(IP_HOLE); g.beginPath(); g.ellipse(0, -1.765, .13, .035, 0, 0, TAU); g.fill(); if (o.blank) ipBlankHead(o.blank, t); }
   if (o.collarCard) ipBallot(0, -1.95 + .02 * Math.sin(t * 3), 0);
 }
 
+// draft 16 (Robin, 1:54: "2 of them seem to have lost their heads"): while the board holds a head, its owner wears a
+// stand-in, a blank cardboard box with a paper tag, so he still has a head and it reads as "taken". It rises out of
+// the collar after the head flies off (b.up 0..1) and hops off over his shoulder when the real one comes home
+// (b.off 0..1); both move, nothing fades.
+function ipBlank(kind, t, st) { const [, t1] = IP_TAKE[kind], B = ipBackT(kind);
+  if (st.where === 'board' || st.where === 'crown') return { up: ease(t, t1 - .1, t1 + .45), off: 0 };
+  if (st.where === 'back') return { up: 1, off: smooth(clamp(st.u / .6)) };
+  return null; }
+function ipBlankHead(b, t) { if (!b || b.off >= 1) return; g.save();
+  if (b.up < 1) { g.beginPath(); g.rect(-1, -4, 2, 4 - 1.77); g.clip(); } // rising out of the collar hole
+  const off = b.off, x = off * 1.6, y = -1.77 + (1 - b.up) * .62 - Math.sin(off * Math.PI) * .9 + off * off * 1.8;
+  g.translate(x, y); g.rotate(off * 2.4);
+  ipRR(-.24, -.56, .48, .56, .03, '#c8a46a'); // the box
+  g.fillStyle = ipc('#b08c55'); g.fillRect(.1, -.56, .14, .56); // its shaded side
+  ipLine([[-.24, -.56], [-.05, -.68], [.18, -.62]], .025, '#a98450'); ipLine([[.24, -.56], [.32, -.7]], .025, '#a98450'); // the open flaps
+  ipLine([[-.1, -.3], [-.18, -.12]], .012, '#6b5a40'); ipRR(-.26, -.14, .16, .1, .01, '#f4efe2'); // the paper tag on its string
+  g.restore(); }
 // ---------- the confiscations: where each head is ----------
 function ipState(t) {
   return IP_KINDS.map((kind, i) => { const [t0, t1] = IP_TAKE[kind], B = ipBackT(kind), ow = ipOwner(kind, t);
@@ -293,7 +310,7 @@ function ipBoomTip(t) { const s = L_(22).s, e = L_(22).e, lim = IPT.limit, reach
 // table.js (b3, draft 9) ties the boom mics in a knot at micKnot() and they hang about .6 m below it: the MIC head hangs
 // there with them; without micKnot (the old booms) it hangs from the middle boom's tip. [x, y, z car-local, presence 0..1]
 function ipMicTarget(t) {
-  if (typeof micKnot === 'function') { const k = micKnot(t), e = L_(22).e; if (k) return [k[0], k[1] - .62, k[2], 1 - ease(t, e + .3, e + .9)]; }
+  if (typeof micKnot === 'function') { const k = micKnot(t), e = L_(22).e; if (k) return [k[0], k[1] - .62, k[2], typeof MIC_OUT !== 'undefined' ? (t < MIC_OUT.t0() + MIC_OUT.dur ? 1 : 0) : 1 - ease(t, e + .3, e + .9)]; } // draft 16: reeled out with the booms, solid
   const [bx, by, bz, reach] = ipBoomTip(t); return [bx, Math.max(.45, by - .25), bz, reach];
 }
 // the LENS's crates: three, nested, beside the hat hole
@@ -374,7 +391,7 @@ function ipWalker(kind, t, st) {
   const ow = ipOwner(kind, t), p = P(ow.X, 0, ow.Z); if (p[2] < .4) return null; const k = kAt(p); if (k < .6) return null;
   if (p[0] < -4 * k || p[0] > W + 4 * k || p[1] < -.5 * k || p[1] > H + 4 * k) return null;
   const head = st.where === 'owner', ar = ipArms(kind, t, st);
-  const o = { mv: ow.mv, head, on: st.on, hopts: ipHeadOpts(kind, t), hands: ar && ar.hands, ballots: ar && ar.ballots, collarCard: ar && ar.collarCard, sit: ease(t, IP_SIT[0], IP_SIT[1]) * (1 - ease(t, IP_STAND[0], IP_STAND[1])) };
+  const o = { mv: ow.mv, head, blank: ipBlank(kind, t, st), on: st.on, hopts: ipHeadOpts(kind, t), hands: ar && ar.hands, ballots: ar && ar.ballots, collarCard: ar && ar.collarCard, sit: ease(t, IP_SIT[0], IP_SIT[1]) * (1 - ease(t, IP_STAND[0], IP_STAND[1])) };
   const al = 1, su = ipSilAmt(t); // a solid body: never faded (the lit body crossfades to its firelit silhouette, which is light)
   return { z: p[2], draw: () => { if (al * (1 - su) <= .01) return; g.save(); g.globalAlpha = al * (1 - su); g.translate(p[0], p[1]); g.scale(k, k); ipBody(kind, t, o); g.restore(); },
     sil: () => { if (al * su <= .01) return; ipSilhouette(kind, t, o, p, k, al * su); },
@@ -434,7 +451,7 @@ function instrumentsFront(t) {
   // LENS: the three nested crates beside the hat hole
   if (t > IPT.put - .2 && t < IPT.talk + 2.5) items.push({ d: PL(IP_CRATE.x, TOP, IP_CRATE.z)[2], draw: () => ipCrates(t) });
   // MIC: it goes soft on "limit", then is reeled in onto the wilting booms on "questions" and dragged off with them
-  { const [m0, m1] = IP_TAKE.MIC, e9 = L_(22).e + .9; if (t >= m0 && t < e9) { const [bx, by, bz, reach] = ipMicTarget(t), tip = PL(bx, by, bz); if (tip[2] > .2 && reach > 0) {
+  { const [m0, m1] = IP_TAKE.MIC, e9 = typeof MIC_OUT !== 'undefined' ? MIC_OUT.t0() + MIC_OUT.dur : L_(22).e + .9; if (t >= m0 && t < e9) { const [bx, by, bz, reach] = ipMicTarget(t), tip = PL(bx, by, bz); if (tip[2] > .2 && reach > 0) {
     const u = clamp((t - m0) / (m1 - m0)), a = ipCollarScr('MIC', t), e = { x: tip[0], y: tip[1], k: kAt(tip), d: tip[2] }, f = u < 1 && a ? ipFly(a, e, u, 2, .9) : Object.assign(e, { rot: .5 });
     items.push({ d: f.d, draw: () => ipDrawAt('MIC', f, lerp(1, .55, smooth(u)), t, 0, { droop: 1 }) }); } } } // solid while the booms hold it (they go at L_(22).e + .9)
   // the crowns: the real five on five eggs, lit and working, from "facts" 3 to the vote; then they hop home
