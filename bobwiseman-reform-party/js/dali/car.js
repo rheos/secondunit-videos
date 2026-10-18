@@ -642,11 +642,13 @@ function drawCar(t) {
   const seatDraw = (x) => { seatUnder(x.s, t, x.i); if (!x.up) sitter(x); else seatTop(x.s, x.i === CHAIR_I ? .22 * crutchSoft(t, x.i).kink : 0); };
   PIN_A = pinAng(t); PIN_B = pinBlur(t);
   seats.filter((x) => x.d > mid).forEach(seatDraw);
+  if (typeof rapperCar === 'function') rapperCar(t, 0); // draft 13: the diva when she is on the far side of the table
   tableBody(t); driverHat(); lawMarks(t); dayPlate(t);
   { const G = gavelLocal(t, null); if (gavelHold(t) <= 0) drawGavel(t, G); } // the gavel lying on the table
   tablePropsBack(t); ballotStack(t);
   seats.filter((x) => x.d <= mid).forEach((x) => { seatDraw(x); if (!x.up) CAR_NEAR.push(x); });
   seats.filter((x) => x.up).forEach((x) => { sitter(x); CAR_NEAR.push(x); }); // the board up on the table top
+  if (typeof rapperCar === 'function') rapperCar(t, 1); // draft 13: the diva on our side
   tablePropsFront(t); pieBirds(t); if (typeof installsCar === 'function') installsCar(t); bobPopUp(t);
   friendsArms(t, AT); outroFlyers(t, AT); minutesPost(t, AT); confetti(t);
   CAR_AT = AT;

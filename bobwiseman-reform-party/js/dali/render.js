@@ -1,8 +1,12 @@
 // Reform Party, Dali look: grade, captions and the frame. Loads last.
 // ---------- captions ----------
-// Newsreader Italic (OFL, fonts/) ships with the page so the Mac and the cloud runners draw the same captions
-const FONT = 'italic {s}px "Newsreader", "Didot", "Bodoni 72", Georgia, serif';
-const FONT_READY = new FontFace('Newsreader', 'url(../fonts/Newsreader-Italic.ttf)', { style: 'italic' }).load().then((f) => { document.fonts.add(f); return true; }).catch(() => true);
+// Gochi Hand (OFL, fonts/): upright hand lettering, Bob's note on draft 11 ("less italics, less perfect"); ships with
+// the page so the Mac and the cloud runners draw the same captions. Each word gets its own small fixed tilt and lift.
+const FONT = '{s}px "Gochi Hand", "Marker Felt", "Comic Sans MS", sans-serif';
+const FONT_READY = new FontFace('Gochi Hand', 'url(../fonts/GochiHand-Regular.ttf)').load().then((f) => { document.fonts.add(f); return true; }).catch(() => true);
+const capWob = (li, wi, k) => { const v = Math.sin(li * 127.1 + wi * 311.7 + k * 74.7) * 43758.5453; return (v - Math.floor(v)) * 2 - 1; };
+// outro: the repeated last line stays uncaptioned until its final time (Bob's note on draft 11)
+const CAP_HIDE = new Set([35, 36, 37]);
 const CAP = { y: 1014, maxW: 1500, size: 50 }; // baseline inside the title-safe area; 210 px side margin at full size
 // a soft dark band behind the caption line: feathered on all four sides, built once, stretched to the line
 const CAP_BAND = (() => { const c = mkCanvas(512, 96), b = c.getContext('2d');
@@ -12,7 +16,7 @@ const CAP_BAND = (() => { const c = mkCanvas(512, 96), b = c.getContext('2d');
   b.globalCompositeOperation = 'destination-in'; b.fillStyle = hz; b.fillRect(0, 0, 512, 96); return c; })();
 function captions(t) {
   let L = null, end = 0; for (let i = 0; i < LINES.length; i++) { const l = LINES[i], nx = LINES[i + 1]; const e = Math.min(l.e + .6, nx ? nx.s - .05 : 1e9); if (t >= l.s - .05 && t < e) { L = l; end = e; } }
-  if (!L) return; const n = wordsShown(L, t + .05); if (!n) return;
+  if (!L || CAP_HIDE.has(L.i)) return; const n = wordsShown(L, t + .05); if (!n) return;
   // fit the whole line (words plus the gaps we actually draw) inside CAP.maxW, so every word sits inside the frame
   const words = L.text.split(/\s+/); g.font = FONT.replace('{s}', CAP.size);
   const w0 = words.reduce((a, w) => a + g.measureText(w).width, 0) + CAP.size * .27 * (words.length - 1);
@@ -23,7 +27,7 @@ function captions(t) {
   const ba = clamp((t - L.s + .05) / .2) * clamp((end - t) / .25) * (.48 - .16 * nightAmt(t));
   if (ba > 0) { const pad = size * 1.6; g.save(); g.globalAlpha = ba; g.drawImage(CAP_BAND, x - pad, y - size * 1.42, tw + 2 * pad, size * 2.15); g.restore(); }
   for (let i = 0; i < words.length; i++) { if (i < n) { const age = t - (L.words[i] ? L.words[i].s : L.s), a = clamp(age / .12 + .2);
-    g.save(); g.globalAlpha = a; g.shadowColor = 'rgba(20,10,5,.85)'; g.shadowBlur = 14; g.shadowOffsetY = 3; g.fillStyle = '#f7ecd3'; g.fillText(words[i], x, y); g.restore();
+    g.save(); g.globalAlpha = a; g.shadowColor = 'rgba(20,10,5,.85)'; g.shadowBlur = 14; g.shadowOffsetY = 3; g.fillStyle = '#f7ecd3'; g.translate(x + widths[i] / 2, y + capWob(L.i, i, 1) * size * .05); g.rotate(capWob(L.i, i, 0) * .045); g.fillText(words[i], -widths[i] / 2, 0); g.restore();
     probeWord(t, L.i, i, (tt) => i < wordsShown(L, tt + .05)); }
     x += widths[i] + gap; }
 }
