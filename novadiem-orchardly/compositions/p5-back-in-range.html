@@ -58,7 +58,7 @@
 
           // the day's ten tallies go up as one batch with its own id
           const B = OR.batch(K.$("p5-fly"));
-          const route = el("path", { d: "M1180 470H760", fill: "none" }, K.$("p5-fly"));
+          const route = el("path", { d: "M1180 470H830", fill: "none" }, K.$("p5-fly"));
           tl.fromTo(B, { opacity: 0 }, { opacity: 1, duration: 0.4 }, K.T(55.91));
           B.setAttribute("transform", "translate(1180 470)");
           K.travel(B, route, K.T(56.54), 1.2, "power2.inOut");

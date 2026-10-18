@@ -130,8 +130,8 @@
           const ptxt = text("PAYOUT · ANA · CASH · 336.00 · covers 09-08 / 09-14", { class: "mono", x: 184, y: 658 }, tb);
           K.draw(pbox, K.T(44.42), 0.6, "none");
           K.reveal(ptxt, K.T(45.07), 0.5);
-          const arrow = el("path", { class: "ln line", d: "M880 620V556M870 568L880 556L890 568" }, tb);
-          K.draw(arrow, K.T(45.7), 0.3);
+          const mark = el("rect", { class: "ln line", x: 800, y: 284, width: 372, height: 38 }, tb);
+          K.draw(mark, K.T(45.7), 0.4, "none");
 
           const swap = (oldN, s, x, y, cls) => {
             const n = cell(s, x, y, cls);

@@ -69,19 +69,19 @@
           // ten taps, one a beat: each fills a cell and writes a tally row plus an edit-log row together
           const AT = [12.52, 13.14, 13.77, 14.42, 15.07, 15.7, 16.35, 16.97, 17.62, 18.25];
           OR.TAPS.forEach(([r, c], i) => {
-            const y = 296 + i * 28;
+            const y = 298 + i * 30;
             const id = `t-${String(i + 1).padStart(2, "0")}`;
             const rowT = el("g", {}, db);
-            [[id, 160], [OR.CREW[r], 290], [String(c), 450], ["1", 560], ["2400", 690]].forEach(([s, x]) => text(s, { class: "mono small", x, y }, rowT));
+            [[id, 160], [OR.CREW[r], 290], [String(c), 450], ["1", 560], ["2400", 690]].forEach(([s, x]) => text(s, { class: "mono cell", x, y }, rowT));
             const rowL = el("g", {}, db);
-            [["create", 960], [id, 1120]].forEach(([s, x]) => text(s, { class: "mono small", x, y }, rowL));
+            [["create", 960], [id, 1120]].forEach(([s, x]) => text(s, { class: "mono cell", x, y }, rowL));
             const at = K.T(AT[i]);
             K.fade(G.marks[i], at, 0.15);
             K.reveal(rowT, at + 0.05, 0.3);
             K.reveal(rowL, at + 0.05, 0.3);
           });
 
-          const note = text("each tap: one tally row and one edit-log row, in one transaction", { class: "mono note", x: 160, y: 620 }, db);
+          const note = text("each tap: one tally row and one edit-log row, in one transaction", { class: "mono note", x: 160, y: 640 }, db);
           K.fade(note, K.T(16.35), 0.5, 0.75);
 
           K.reveal(K.$("p2-st-a"), K.T(15.7), 0.6);
