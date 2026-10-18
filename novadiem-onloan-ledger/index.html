@@ -1,0 +1,113 @@
+<!doctype html>
+<html class="draft" lang="en" data-resolution="landscape">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1280, height=720" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=JetBrains+Mono:wght@400;700&display=block" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <!-- Series kit (tools/blueprint-kit, copied by sync.sh). Theme first, then structure. -->
+    <link rel="stylesheet" href="kit/themes/onloan.css" />
+    <link rel="stylesheet" href="kit/kit.css" />
+    <script src="kit/kit.js"></script>
+    <script>
+      // Beat grid of the score (beats.json): librosa beats 1.35-82.41 at ~95.7 BPM, extended to 0.09-87.42 at 0.627 s.
+      BP.grid({ beats: [0.09, 0.72, 1.35, 1.97, 2.62, 3.25, 3.88, 4.53, 5.18, 5.8, 6.43, 7.08, 7.71, 8.36, 8.99, 9.64, 10.26, 10.91, 11.54, 12.19, 12.82, 13.47, 14.09, 14.74, 15.37, 16.02, 16.65, 17.3, 17.93, 18.58, 19.2, 19.85, 20.48, 21.13, 21.76, 22.41, 23.03, 23.66, 24.31, 24.96, 25.59, 26.22, 26.87, 27.52, 28.14, 28.77, 29.42, 30.05, 30.7, 31.32, 31.97, 32.6, 33.25, 33.88, 34.53, 35.16, 35.81, 36.43, 37.08, 37.71, 38.36, 38.99, 39.64, 40.26, 40.91, 41.54, 42.19, 42.82, 43.47, 44.09, 44.72, 45.37, 46.02, 46.65, 47.3, 47.93, 48.58, 49.2, 49.85, 50.48, 51.13, 51.76, 52.38, 53.03, 53.68, 54.31, 54.96, 55.59, 56.22, 56.87, 57.49, 58.14, 58.77, 59.42, 60.05, 60.7, 61.32, 61.97, 62.6, 63.25, 63.88, 64.53, 65.16, 65.81, 66.43, 67.08, 67.71, 68.36, 68.99, 69.64, 70.26, 70.91, 71.54, 72.19, 72.82, 73.47, 74.09, 74.75, 75.37, 76.02, 76.65, 77.3, 77.93, 78.55, 79.2, 79.83, 80.48, 81.11, 81.76, 82.41, 83.03, 83.66, 84.29, 84.92, 85.54, 86.17, 86.8, 87.42] });
+    </script>
+    <style>
+      svg text.mono.head { font-size: 22px; }
+      svg text.mono.big { font-size: 46px; letter-spacing: 0.04em; }
+      svg text.mono.gold-t { fill: #1f4b39; } /* small pine type uses line-strong for contrast on paper */
+      svg text.mono.red-t { fill: var(--accent); }
+      svg text.code { font-family: var(--font-mono); font-size: 19px; font-weight: 400; letter-spacing: 0.02em; fill: var(--ink); }
+      svg text.code.b { font-weight: 700; }
+      svg text.code.dim { fill: var(--ink-dim); }
+      svg text.who { font-family: var(--font-label); font-size: 22px; font-weight: 700; letter-spacing: 0.2em; fill: var(--ink); }
+      svg text.role { font-family: var(--font-label); font-size: 15px; font-weight: 500; letter-spacing: 0.24em; fill: var(--ink-dim); }
+      .field svg text.code, .field svg text.who { fill: var(--ink-field); }
+      .field svg text.code.dim, .field svg text.role { fill: var(--ink-field); opacity: 0.72; }
+      .statement.two { top: 790px; flex-direction: column; align-items: center; font-size: 60px; row-gap: 6px; }
+      .statement.two .row { display: flex; column-gap: 0.3em; }
+      .statement { font-size: 74px; }
+      .statement.two { font-size: 64px; }
+    </style>
+    <script>
+      // OL: the one device of the film, Ana and Ben joined by a FOAF trustline (synthetic people and amounts).
+      // OL.pair(parent, opts) draws it at fixed positions; plate I animates it in, later plates redraw it whole.
+      window.OL = (() => {
+        const { el, text } = BP;
+        const AX = 560, BX = 1360, Y = 290; // Ana left (lender), Ben right (borrower)
+        function person(parent, x, name, role, stroke) {
+          const g = el("g", {}, parent);
+          const head = el("circle", { class: `ln ${stroke}`, cx: x, cy: Y - 24, r: 32 }, g);
+          const body = el("path", { class: `ln ${stroke}`, d: `M${x - 62} ${Y + 70}C${x - 62} ${Y + 18} ${x + 62} ${Y + 18} ${x + 62} ${Y + 70}` }, g);
+          const nm = text(name, { class: "who", x, y: Y + 106, "text-anchor": "middle" }, g);
+          const rl = text(role, { class: "role", x, y: Y + 132, "text-anchor": "middle" }, g);
+          return { g, head, body, nm, rl };
+        }
+        function pair(parent, { field = false } = {}) {
+          const s = field ? "paper-s" : "ink";
+          const l = field ? "line-field" : "line";
+          const P = {};
+          P.ana = person(parent, AX, "ANA", "LENDER", s);
+          P.ben = person(parent, BX, "BEN", "BORROWER", s);
+          P.line = el("path", { class: `ln ${l}`, d: `M${AX + 84} ${Y}H${BX - 84}`, style: "stroke-width: 3" }, parent);
+          P.ends = el("path", { class: `ln ${l}`, d: `M${AX + 84} ${Y - 10}V${Y + 10}M${BX - 84} ${Y - 10}V${Y + 10}` }, parent);
+          P.tag = text("FOAF TRUSTLINE", { class: "mono small", x: 960, y: Y - 18, "text-anchor": "middle" }, parent);
+          P.credit = text("ANA → BEN · CREDIT 100.00", { class: "mono small", x: 960, y: Y + 34, "text-anchor": "middle" }, parent);
+          return P;
+        }
+        // a car in profile, about 420 wide, wheels on y = base
+        function car(parent, cx, base, stroke = "ink") {
+          const g = el("g", { transform: `translate(${cx - 960} ${base - 700})` }, parent);
+          const body = el("path", { class: `ln ${stroke}`, d: "M794 700H752V646Q752 636 762 636H812L872 584H1040L1104 636H1158Q1168 636 1168 646V700H1126M1054 700H866" }, g);
+          const win = el("path", { class: `ln thin ${stroke}`, d: "M884 594H1032L1076 632H840ZM958 594V632" }, g);
+          const w1 = el("circle", { class: `ln ${stroke}`, cx: 830, cy: 700, r: 34 }, g);
+          const w2 = el("circle", { class: `ln ${stroke}`, cx: 1090, cy: 700, r: 34 }, g);
+          const h1 = el("circle", { class: `ln thin ${stroke}`, cx: 830, cy: 700, r: 10 }, g);
+          const h2 = el("circle", { class: `ln thin ${stroke}`, cx: 1090, cy: 700, r: 10 }, g);
+          return { g, parts: [body, win, w1, w2, h1, h2] };
+        }
+        return { pair, car, AX, BX, Y };
+      })();
+    </script>
+  </head>
+  <body>
+    <div data-hf-id="hf-ol01"
+      id="root"
+      data-composition-id="main"
+      data-start="0"
+      data-duration="88"
+      data-width="1280"
+      data-height="720"
+    >
+      <!-- Score: score-library drafting-table-onloan-ledger take-01, sha256 b4b8e59f...7eae, the clock for every cue -->
+      <audio data-hf-id="hf-ol02"
+        id="score"
+        src="_in/score.mp3"
+        data-start="0"
+        data-duration="88"
+        data-track-index="9"
+        data-volume="1"
+      ></audio>
+
+      <!-- every plate draws on a 1920x1080 stage; drafts scale it to 720p (kit.css, stage.sh) -->
+      <div class="stage">
+        <div data-hf-id="hf-ol03" id="slot-furniture" data-composition-id="furniture" data-composition-src="compositions/furniture.html" data-start="0" data-duration="88" data-track-index="0" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-ol04" id="slot-b1" data-composition-id="b1" data-composition-src="compositions/b1-the-loan.html" data-start="0" data-duration="10.05" data-track-index="1" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-ol05" id="slot-b2" data-composition-id="b2" data-composition-src="compositions/b2-the-meter.html" data-start="10" data-duration="14.05" data-track-index="2" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-ol06" id="slot-b3" data-composition-id="b3" data-composition-src="compositions/b3-capacity.html" data-start="24" data-duration="12.4" data-track-index="3" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-ol08" id="slot-b5" data-composition-id="b5" data-composition-src="compositions/b5-the-tab.html" data-start="51.9" data-duration="14.15" data-track-index="5" data-width="1920" data-height="1080"></div>
+        <!-- plate IV's pine field covers the end of III and the start of V, so it sits on top -->
+        <div data-hf-id="hf-ol07" id="slot-b4" data-composition-id="b4" data-composition-src="compositions/b4-two-signatures.html" data-start="35.4" data-duration="17.3" data-track-index="4" data-width="1920" data-height="1080" style="z-index: 5"></div>
+        <div data-hf-id="hf-ol09" id="slot-b6" data-composition-id="b6" data-composition-src="compositions/b6-same-ledger.html" data-start="66" data-duration="14.05" data-track-index="6" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-ol0a" id="slot-b7" data-composition-id="b7" data-composition-src="compositions/b7-colophon.html" data-start="80" data-duration="8" data-track-index="7" data-width="1920" data-height="1080"></div>
+      </div>
+    </div>
+
+    <script>
+      window.__timelines["main"] = gsap.timeline({ paused: true });
+    </script>
+  </body>
+</html>

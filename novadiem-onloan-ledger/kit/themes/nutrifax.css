@@ -1,0 +1,38 @@
+/* nutrifax theme: nutrifax.app's brand (rheos/nutrifax backend/app/static/marketing/base.css and the brand
+   handoff). Ink line work on the site's warm paper, Nutrifax green for the drawing line. The brand has no
+   red; the accent is a brick red chosen to read on paper (one phrase per plate). The alternate field is
+   the brand cream, for the label itself. */
+@font-face {
+  font-family: "Hanken Grotesk";
+  src: url("../fonts/hanken-grotesk-latin-wght-normal.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+}
+:root {
+  --bg: #fbf8f1;
+  --bg-raised: #ece5d2;
+  --line: #16a34a;
+  --line-strong: #15803d;
+  --ink: #14110d;
+  --ink-dim: #4a443a;
+  --ink-faint: #8a8170;
+  --accent: #b3261e;
+
+  --field: #ece5d2;
+  --line-field: #15803d;
+  --ink-field: #14110d;
+  --accent-field: #b3261e;
+
+  --grid: #14110d;
+  --grid-opacity: 0.05;
+  --grain-rgb: 0.36 0.31 0.2;
+  --grain-alpha: 0.35;
+
+  --font-display: "Fraunces", serif;
+  --display-weight: 900;
+  --display-tracking: -0.02em;
+  --font-label: "Hanken Grotesk", sans-serif;
+  --label-size: 24px;
+  --label-tracking: 0.2em;
+  --font-mono: "JetBrains Mono", monospace;
+}

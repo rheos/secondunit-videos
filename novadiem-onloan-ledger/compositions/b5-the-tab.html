@@ -1,0 +1,95 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #b5 {
+          position: absolute;
+          inset: 0;
+        }
+        #b5 svg text.res { fill: #1f4b39; font-weight: 700; }
+      </style>
+      <div id="b5" data-composition-id="b5" data-width="1920" data-height="1080">
+        <svg class="full" viewBox="0 0 1920 1080">
+          <g id="b5-pair"></g>
+
+          <!-- the balance on the trustline after settlement -->
+          <path id="b5-g-axis" class="ln ink" d="M660 470H1260" />
+          <path id="b5-g-ticks" class="ln thin ink" d="M660 460V480M1260 460V480" />
+          <path id="b5-g-use" class="ln line-strong" d="M660 470H790" style="stroke-width: 10" />
+          <text id="b5-bal" class="code b" x="960" y="514" text-anchor="middle">Ben −21.68  ·  Ana +21.68</text>
+          <text id="b5-left" class="mono small" x="1260" y="444" text-anchor="end">78.32 OF 100.00 LEFT</text>
+
+          <!-- who owns what -->
+          <rect id="b5-on" class="ln ink" x="300" y="560" width="600" height="190" />
+          <text id="b5-on-h" class="mono head" x="326" y="600">ONLOAN · onloan-api</text>
+          <path id="b5-on-r" class="ln thin ink" d="M300 618H900" />
+          <text id="b5-on-1" class="code" x="326" y="656">loan 42 · car · 86.7 km · 21.68</text>
+          <text id="b5-on-2" class="code" x="326" y="690">status settled · operation id kept</text>
+          <text id="b5-on-3" class="code dim" x="326" y="724">no balance math</text>
+
+          <rect id="b5-fo" class="ln line" x="1020" y="560" width="600" height="190" />
+          <text id="b5-fo-h" class="mono head" x="1046" y="600">FOAF · api.foaf.io</text>
+          <path id="b5-fo-r" class="ln thin line" d="M1020 618H1620" />
+          <text id="b5-fo-1" class="code" x="1046" y="656">trustline Ana ↔ Ben</text>
+          <text id="b5-fo-2" class="code" x="1046" y="690">transfer · operation · balance</text>
+          <text id="b5-fo-3" class="code res" x="1046" y="724">the tab any FOAF app reads</text>
+          <path id="b5-link" class="ln line construct" d="M904 690H1016" />
+        </svg>
+        <div id="b5-label-l" class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate V</div>
+        <div id="b5-label-r" class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>The Tab</div>
+        <div class="statement" data-layout-allow-overlap data-layout-allow-occlusion>
+          <span id="b5-st-a" class="phrase">OnLoan keeps the loan.</span>
+          <span id="b5-st-b" class="phrase red">FOAF keeps the money.</span>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 51.9);
+          const P = OL.pair(K.$("b5-pair"));
+          // nothing draws until plate IV's pine field has gone (52.57)
+          K.fade(K.$("b5-label-l"), K.T(52.57), 0.4);
+          K.fade(K.$("b5-label-r"), K.T(52.57), 0.4);
+
+          // the trustline carries the result: the credit text gives way to the balance
+          tl.fromTo(P.line, { strokeWidth: 3 }, { strokeWidth: 6, duration: 0.4, ease: "power2.out" }, K.T(53.2));
+          K.draw(K.$("b5-g-axis"), K.T(53.2), 0.6, "none");
+          K.draw(K.$("b5-g-ticks"), K.T(53.2) + 0.4, 0.3, "none");
+          K.draw(K.$("b5-g-use"), K.T(53.82), 0.5);
+          K.reveal(K.$("b5-bal"), K.T(54.43), 0.6);
+          K.fade(K.$("b5-left"), K.T(55.05), 0.4);
+
+          // OnLoan's row and FOAF's ledger, side by side
+          K.draw(K.$("b5-on"), K.T(55.68), 0.7, "none");
+          K.fade(K.$("b5-on-h"), K.T(55.68) + 0.3, 0.3);
+          K.draw(K.$("b5-on-r"), K.T(55.68) + 0.4, 0.3, "none");
+          ["b5-on-1", "b5-on-2", "b5-on-3"].forEach((id, i) => K.reveal(K.$(id), K.T(56.31) + i * 0.31, 0.5));
+          K.reveal(K.$("b5-st-a"), K.T(56.31), 0.6);
+
+          K.draw(K.$("b5-fo"), K.T(58.19), 0.7, "none");
+          K.fade(K.$("b5-fo-h"), K.T(58.19) + 0.3, 0.3);
+          K.draw(K.$("b5-fo-r"), K.T(58.19) + 0.4, 0.3, "none");
+          ["b5-fo-1", "b5-fo-2"].forEach((id, i) => K.reveal(K.$(id), K.T(58.82) + i * 0.31, 0.5));
+          K.reveal(K.$("b5-st-b"), K.T(59.44), 0.7);
+          K.sweep(K.$("b5-link"), K.T(61.3), 0.4);
+          K.reveal(K.$("b5-fo-3"), K.T(61.93), 0.6);
+
+          // clear down to the pair
+          ["b5-g-axis", "b5-g-ticks", "b5-g-use", "b5-bal", "b5-left", "b5-on", "b5-on-h", "b5-on-r", "b5-on-1", "b5-on-2", "b5-on-3", "b5-fo", "b5-fo-h", "b5-fo-r", "b5-fo-1", "b5-fo-2", "b5-fo-3", "b5-link", "b5-label-l", "b5-label-r"].forEach((id) =>
+            K.out(K.$(id), K.T(65.69), 0.3)
+          );
+          tl.to("#b5 .statement", { opacity: 0, duration: 0.3, ease: "power1.in" }, K.T(65.69));
+          tl.fromTo(P.line, { strokeWidth: 6 }, { strokeWidth: 3, duration: 0.3, ease: "power1.in", immediateRender: false }, K.T(65.69));
+
+          window.__timelines["b5"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>
