@@ -1,8 +1,10 @@
 # Build state: The Tripwire (Inside the Bureau, deep dive 11)
 
-**Draft 1 BUILT 2026-10-18**: link and QC figures below. Seven plates, 86.9 s, 720p, kit `paper`
-theme (The Cold Read's look). Local master: `renders/bureau-regression_take01_draft1.mp4`
-(gitignored). Next: Robin's notes.
+**Draft 1 BUILT 2026-10-18**: https://youtu.be/27DeuVqxgIg (unlisted, default channel). Seven plates,
+86.9 s, 720p, kit `paper` theme (The Cold Read's look). `hyperframes check` passes; flashcheck PASS
+(worst 0.5 flashes/s); -13.9 LUFS, peak -1.7 dBFS after +1.8 dB and a limiter in the remux (the raw
+render was -15.3 LUFS, peak -1.3). Only the last 1.1 s is silent. Local master:
+`renders/bureau-regression_take01_draft1.mp4` (gitignored). Next: Robin's notes.
 Question: how does a failure become a check? Point: a failure is written down as a committed,
 mutation-tested fixture, and the next run's re-run gate trips on it before any coder is
 dispatched. Limit: a fixture catches only what it asserts.
