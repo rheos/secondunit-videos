@@ -79,16 +79,22 @@ const BOOKM = [-3.4, 1.75, -2.9, .1, 1300, -.5];     // draft 12: from in front 
 const GRIN_A = [-1.9, 1.8, .15, .1, 800], GRIN_B = [1.1, 1.8, .15, .1, 800];
 const GAGL = [.6, 2.1, -4.8, -.12, 1250, -.2];
 
+// draft 13: the diva's plinth, car-local (rapper.js RAP reads it; camera.js loads first), and a car-relative key at
+// (x, y, z) looking at her chest, or at a car-local point tgt
+const RAP_AT = { lx: -2.9, lz: -3.35, chest: .85 + 1.35, head: .85 + 1.62 };
+const rapCam = (x, y, z, f, tgt) => { const T = tgt || [RAP_AT.lx, RAP_AT.chest, RAP_AT.lz], dx = T[0] - x, dz = T[2] - z;
+  return [x, y, z, Math.atan2(y - T[1], Math.hypot(dx, dz)), f, Math.atan2(dx, dz)]; };
 // when the drone passes through each framing (song seconds), 0 to the aerial at 201
 const KEYS = [
   [19.3, tw(GAVEL, .6, .15, -.6, .02, 1.04, -.04)],
   [20.2, [-4.0, 2.8, -3.6, .62, 1150, .35]],  // rising over the near row...
   [21.0, tw(HTOP, 0, -.4, -.6, -.5)],        // 0:21: up over the table, the hat hole below (draft 12: no dive into the
   [21.75, SPKI],                            // hat, "scientists" 22.05 was inside it): the Instrument People beyond the far row
-  [23.3, tw(SPKI, .1, 0, -.3, .02)],
-  [24.05, SPK],                               // ...and up out of it onto the speakerphone (tape X on "can't" 24.76)
-  [25.9, tw(SPK, .05, -.1, -.2, .03, .92)],  // Robin (d12): the phone stays in frame while it melts (25.2-27.7)...
-  [27.0, [1.0, 2.2, -4.6, -.02, 1000, -.06]], // ...back and wider: the soft phone low in frame, the gag lips rising above it
+  [23.0, [1.1, 2.7, -3.2, .34, 1250, 0]],   // draft 13: back from the hat onto the phone as it starts to soften
+  [24.05, tw(SPK, 0, .1, 0, .12)],             // on the speakerphone, aimed down so the edge it runs over stays in frame (tape X on "can't" 24.76)
+  [25.2, tw(SPK, .05, .15, -.2, .26, 1.0)],  // Robin (d13): close and steady while it melts over the edge (22.4-26.0)
+  [25.9, tw(SPK, .08, .1, -.3, .25, 1.0)],
+  [26.85, [1.0, 2.2, -4.6, -.02, 1000, -.06]], // ...back and wider: the soft phone low in frame, the gag lips rising above it
   [27.75, GAGL],                             // gag (27.5): the lips central and close, the phone springs back below
   [29.9, tw(DRW, 0, 0, 0, -.07)],                               // then the ear and the flying recorders
   [31.4, [-.5, 1.85, -1.5, .1, 1450, .06]],
@@ -135,22 +141,21 @@ const KEYS = [
   [116.5, orb(-120, 7.6, 1.2, .1, 880, .05)],
   [118.7, TR2A],                             // instrumental 2: the car comes at us, low
   [121.4, TR2B],
-  [123.3, VOGUE],                            // 2:03: the track flies in onto the poses (vogue 123.54)
-  [126.4, tw(VOGUE, -.02, .02, -.05, -.005, 1.005)], // vogue holds over "once upon a time" (126.52): the clock car on the right third
+  // draft 13 (Robin on d12: the diva needs real camera time): the rap is flown on her. She stands on her drawer plinth
+  // behind the near row's left end (RAP_AT), and the drone hangs 2-3 m off her, cutting away only for the world
+  // through the hole (127.8-130) and the poor person on "dared", then Little Bob with her beside him, then the chess.
+  [123.3, rapCam(-1.3, 2.3, -5.0, 1000)],     // close on her as the rap opens (vogue 123.54), from the front right
+  [125.8, rapCam(-1.1, 2.4, -5.0, 1000, [-2.1, 1.8, -2.3])],   // on her, the dime coming into the right of frame, through "once upon a time"
   [127.4, DIME],                             // the dime (127.46), the hat hole in frame for the iris into the table world
   [128.2, tw(DIME, .05, -.15, .1, .02, 1.03)],
-  [130.0, POOR],                             // out of the iris (130.04) onto the poor person with the bowl
-  [134.0, POOR2],                            // life's unfair: held while the table rolls on past
-  [135.6, CRATES],                           // draft 9: truth (135.53) into the crates, box 136.15, talk 137.33
-  [137.3, tw(CRATES, .1, .02, .15, 0, 1.03)],
-  [138.4, WBM],                              // (the dome window flies over these) wars (138.39): chips
-  [139.3, tw(WBM, -.2, 0, -.2, .005)],
-  [140.9, MICS],                            // the mics wilt on "limit" (140.3)
-  [141.6, tw(MICS, .3, .1, -.1, .01, 1.01)],
-  [142.7, PIE],                              // pie, blackbirds (144.55)
-  [144.4, tw(PIE, 0, -.1, .15, .01, 1.015)],
-  [145.3, HOLE],                             // Little Bob up through the hole (146.33)
-  [146.8, tw(HOLE, 0, -.05, .2, 0, 1.015)],
+  [130.0, POOR],                             // out of the iris (130.04) onto the poor person with the bowl ("dared" 130.16)
+  [131.4, tw(POOR, -.3, 0, .1)],
+  [134.0, rapCam(-1.1, 2.35, -5.2, 1000)],    // back on her, close again (vogue 134.34, truth, box, talk)
+  [137.0, rapCam(-1.5, 2.3, -4.8, 1080)],
+  [139.8, rapCam(-3.1, 2.5, -5.6, 1000)],     // drifting round in front of her (wars, limit)
+  [142.6, rapCam(-4.4, 2.4, -5.0, 1000)],     // to her other side, close (pie 144.55)
+  [145.0, rapCam(-2.1, 2.8, -6.2, 950, [-1.45, 1.75, -1.7])], // back in front of her: she on the left, the hat hole on the right, for Little Bob (146.33)
+  [146.8, rapCam(-1.6, 2.6, -5.0, 970, [-1.4, 1.75, -1.6])],
   [153.6, tw(CHESSW, .2, .1, -.6, .01, .98)],
   [156.7, COPS],                             // pulling back and zooming in: the paid cops behind the table (paid 159.38)
   [159.5, tw(COPS, .2, -.2, 1.5, 0, .98)],
@@ -239,11 +244,6 @@ const WIN_DEF = [
     aimAt(118.6, 159, 8.5, -15, 164.5, 0, -6, 1050),
     aimAt(120.4, 163.5, 10.5, -7.5, 165.2, 0, 0, 1000),
     aimAt(121.6, 163, 9.5, -4.5, 165, 0, 2.5, 1000),
-  ] },
-  // "wars / bets": out to the geodesic bungee-fight dome (b8, (200, -32), r 6 m), back for the mics at 140.55
-  { a: 137.35, b: 141.0, keys: [
-    aimAt(138.65, 191.5, 16, -34, 200, 1.5, -32, 1000),
-    aimAt(139.8, 192.5, 15.4, -34.5, 200, 1.5, -32, 1020),
   ] },
   // refrain 3: from the driver's hole up to 25-40 m over the city for "control" (the marionette bar, b4) and "blues"
   // (the red drape across the whole horizon of camps, b4), then back down into the hole for the press (protected)
@@ -422,6 +422,7 @@ const CAM_EXEMPT = [[0, 18.6, 'SPEED,ACCEL', 'the protected intro glide into the
 const cueAt = (li, w, at) => ({ t: wt(li, w), w, at });
 const cueLw = (x, y, z) => () => Lw(x, y, z), cueW = (X, Y, Z) => () => [X, Y, Z];
 const cueHead = (i, dy = 0) => (t) => { const h = typeof suitHeadLocal === 'function' ? suitHeadLocal(i, t) : [-5.15, 1.42, 0]; return Lw(h[0], h[1] + dy, h[2]); };
+const cueRap = (t) => Lw(RAP_AT.lx, RAP_AT.head, RAP_AT.lz); // draft 13: the diva's head (the rap's main subject)
 const cuePoor = (t) => [carX(Math.min(t, wt(18, 'unfair') + .15)) + 6.15, 1.4, -3.0]; // playa.js bmPoorInto: she walks with the table, then stops
 const cueFar = (li, w, D = 300) => { let p = null; return () => p || (p = (() => { const c = camAt(wt(li, w), true); return [c.x + Math.sin(c.yaw) * D, 4, c.z + Math.cos(c.yaw) * D]; })()); }; // a horizon-wide drape
 const CUE_TARGETS = [
@@ -452,17 +453,17 @@ const CUE_TARGETS = [
   cueAt(12, 'grin', cueLw(-.15, 1.42, 2.3)),                   // every lid flips
   cueAt(13, 'facts', cueLw(2.85, 2.19, .22)),                  // the cell bars pop off the board
   cueAt(13, 'spin', cueLw(0, 1.2, 0)),                         // the table turns
-  cueAt(14, 'vogue', cueLw(-.15, 1.6, 2.3)),                   // the poses
-  cueAt(15, 'time', cueW(170.9, 4.2, 16)),                     // the clock car's face
+  cueAt(14, 'vogue', cueRap),                                  // draft 13: the diva opens the rap
+  cueAt(15, 'time', cueRap),                                   // draft 13: on her (the clock car is no longer visited)
   cueAt(15, 'dime', cueLw(-1.55, 1.45, -.75)),                 // the dime flips
   cueAt(17, 'poor', cuePoor),                                  // the poor person with the bowl
   cueAt(17, 'share', cuePoor),
-  cueAt(18, 'unfair', cuePoor),                                // she stops, the bowl tips
-  cueAt(19, 'vogue', cueLw(-.15, 1.9, 2.3)),                   // they rise off their seats
-  cueAt(19, 'truth', cueLw(1.0, 1.35, .4)),                    // the nesting crates
-  cueAt(21, 'wars', () => typeof SC_DOME !== 'undefined' ? [SC_DOME.x, 4.3, SC_DOME.z] : [200, 4.3, -32]), // the bungee dome
-  cueAt(22, 'limit', cueLw(-2.9, 2.75, -.95)),                 // the boom mics wilt
-  cueAt(23, 'pie', cueLw(-.15, 1.22, -.95)),                   // the pie, the blackbirds
+  cueAt(18, 'unfair', cueRap),                                 // draft 13: back on the diva
+  cueAt(19, 'vogue', cueRap),                                  // draft 13: the diva, close
+  cueAt(19, 'truth', cueRap),
+  cueAt(21, 'wars', cueRap),                                   // draft 13: the dome window is cut; on the diva
+  cueAt(22, 'limit', cueRap),
+  cueAt(23, 'pie', cueRap),
   cueAt(24, 'little', cueLw(0, 1.3, 0)),                       // Little Bob up through the hole
   cueAt(25, 'mystery', cueHead(12)),                           // the noir book as the chairman's mask
   cueAt(25, 'look', cueHead(12)),

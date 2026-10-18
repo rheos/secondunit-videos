@@ -3,7 +3,9 @@
 function drape(pts, y0) { return pts.map(([x, z]) => z < -TD ? [x, y0 - (-TD - z) * 1.05, -TD - .015] : [x, y0, z]); } // a soft object hangs over the front edge
 function melt(t) { return clamp((t - 20) / 200) * .55 + ease(t, L_(1).s, L_(1).e) * .12; } // the heat softens the props through the day
 // "scientists can't speak": under the tape X the speakerphone slumps like a soft watch and runs over the table edge
-const phoneSlump = (t) => ease(t, wt(1, 'can') + .45, L_(1).e + .7) * (1 - .72 * ease(t, L_(2).s + .3, L_(2).s + 1)); // springs most of the way back when the tape comes off
+// draft 13 (Robin on d12: you can't absorb it melting): it starts to soften on "scientists" and is fully melted over the
+// table's edge by 26.0, while the camera holds on it; when the tape comes off it springs only partly back (it stays soft)
+const phoneSlump = (t) => ease(t, wt(1, 'scientists') + .3, L_(1).s + 3.9) * (1 - .35 * ease(t, L_(2).s + .3, L_(2).s + 1));
 // draft 11 (Robin: it went out of frame as it melted): the phone sits 0.25 m nearer the hat hole and 0.4 m further from
 // the front edge, so in the low shot that turns from it to the Instrument People (24-27.6) it stays in the lower middle
 // of the frame while it slumps, instead of sliding off the bottom right corner
@@ -11,7 +13,7 @@ const PHONE = { x: .95, z: -.55 };
 function speakerphone(t) {
   const m = melt(t), cz = PHONE.z - m * .75, cx = PHONE.x, sl = phoneSlump(t), pts = [];
   const flow = (x, z, f = 1) => { const dx = x - cx, dz = z - cz, front = clamp(-dz / .3), side = 1 - .55 * (dx / .4) ** 2; // front points run toward the edge
-    return [cx + dx * (1 + .2 * sl * f), z - sl * f * (.12 + .78 * front * side)]; };
+    return [cx + dx * (1 + .25 * sl * f), z - sl * f * (.15 + 1.05 * front * side)]; };
   // draft 9: it read as a beetle at phone size (a dark rounded shell with two "eyes"). Now a conference phone: a flat
   // triangle with straight sides and blunt corner mic pods, a pale speaker bezel and grille in the middle, a lit LCD
   // strip, and a coiled cord running off the back. Same size, same place, same slump and tape X.
@@ -23,13 +25,13 @@ function speakerphone(t) {
     if (ok(cord)) { g.strokeStyle = '#1b1c20'; g.lineWidth = Math.max(1.2, .02 * kAt(cord[0])); g.lineJoin = 'round'; g.beginPath(); cord.forEach((p, i) => i ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1])); g.stroke(); } }
   poly(P3, '#2f3136', '#17181b', Math.max(1, .012 * kAt(P3[0])));
   if (sl > 0) for (let i = 0; i < 4; i++) { // drips off the front edge
-    const x = cx - .2 + i * .13, ov = -TD - flow(x, cz - .3)[1]; if (ov <= .03) continue; const len = sl * (.1 + .2 * rnd(i, 61)) * (1 + .15 * Math.sin(t * 2 + i)), ytop = TOP + .04 - ov * 1.05 + .03, ylow = ytop - len;
+    const x = cx - .2 + i * .13, ov = -TD - flow(x, cz - .3)[1]; if (ov <= .03) continue; const len = sl * (.18 + .32 * rnd(i, 61)) * (1 + .15 * Math.sin(t * 2 + i)), ytop = TOP + .04 - ov * 1.05 + .03, ylow = ytop - len;
     poly([PL(x - .035, ytop, -TD - .016), PL(x + .035, ytop, -TD - .016), PL(x + .015, ylow, -TD - .016), PL(x - .015, ylow, -TD - .016)], '#2f3136');
     const q = PL(x, ylow, -TD - .017); if (q[2] > .2) { g.fillStyle = '#2f3136'; g.beginPath(); g.arc(q[0], q[1], .03 * kAt(q), 0, TAU); g.fill(); } }
   if (sl > 0 && P3.every((p) => p[2] > .15)) { const hl = []; for (let i = 0; i <= 12; i++) { const a = 3.7 + i / 12 * 1.9; hl.push(PL(...drape([flow(cx + Math.cos(a) * .27, cz + Math.sin(a) * .22)], TOP + .055)[0])); } // a soft highlight on its back
     g.save(); g.globalAlpha = .35 * sl; g.strokeStyle = '#8a8e96'; g.lineWidth = .025 * kAt(hl[6]); g.beginPath(); hl.forEach((p, i) => i ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1])); g.stroke(); g.restore(); }
   const ring = (r, dz = 0) => drape(Array.from({ length: 28 }, (_, i) => { const a = i / 28 * TAU; return flow(cx + Math.cos(a) * r, cz + Math.sin(a) * r * .9 - dz, .5); }), TOP + .05).map((p) => PL(...p));
-  for (let c = 0; c < 3; c++) { const a = .5 + c * TAU / 3, pod = []; for (let i = 0; i < 12; i++) { const b = i / 12 * TAU; pod.push(PL(...drape([flow(cx + Math.cos(a) * .3 + Math.cos(b) * .07, cz + (Math.sin(a) * .3 + Math.sin(b) * .07) * .9)], TOP + .05)[0])); } poly(pod, '#4a4e56'); } // corner mic pods
+  for (let c = 0; c < 3; c++) { const a = .5 + TAU / 6 + c * TAU / 3, pod = []; for (let i = 0; i < 12; i++) { const b = i / 12 * TAU; pod.push(PL(...drape([flow(cx + Math.cos(a) * .3 + Math.cos(b) * .07, cz + (Math.sin(a) * .3 + Math.sin(b) * .07) * .9)], TOP + .05)[0])); } poly(pod, '#4a4e56'); } // corner mic pods
   poly(ring(.16, sl * .05), '#a7acb4'); poly(ring(.125, sl * .05), '#25272b'); // the speaker: a pale bezel and a dark grille
   for (let i = 0; i < 9; i++) { const a = i / 9 * TAU; const q = PL(...drape([flow(cx + Math.cos(a) * .075, cz + Math.sin(a) * .068 - sl * .05, .5)], TOP + .06)[0]); if (q[2] < .15) continue; g.fillStyle = '#80858d'; g.beginPath(); g.arc(q[0], q[1], .011 * kAt(q), 0, TAU); g.fill(); }
   { const lz = cz + Math.sin(1.55) * .19 * .9, lx = cx + Math.cos(1.55) * .19, S = (x, z) => PL(...drape([flow(x, z, .3)], TOP + .055)[0]); // the LCD strip on the back edge
@@ -37,7 +39,7 @@ function speakerphone(t) {
     for (let j = 0; j < 3; j++) seg(S(lx - .1 + j * .07, lz), S(lx - .05 + j * .07, lz), 1.5, '#3c4a34'); }
   // LEDs: green while it may speak; red, with tape across, once the scientists can't
   const cant = wt(1, 'can'), red = t > cant && t < L_(2).s + .5;
-  for (let i = 0; i < 3; i++) { const a = i / 3 * TAU + .5, r = .3; const q = PL(...drape([flow(cx + Math.cos(a) * r, cz + Math.sin(a) * r * .9)], TOP + .06)[0]); if (q[2] < .15) continue; g.fillStyle = red ? '#ff3b2a' : '#57e07a'; g.beginPath(); g.arc(q[0], q[1], .028 * kAt(q), 0, TAU); g.fill(); }
+  for (let i = 0; i < 3; i++) { const a = i / 3 * TAU + .5 + TAU / 6, r = .3; const q = PL(...drape([flow(cx + Math.cos(a) * r, cz + Math.sin(a) * r * .9)], TOP + .06)[0]); if (q[2] < .15) continue; g.fillStyle = red ? '#ff3b2a' : '#57e07a'; g.beginPath(); g.arc(q[0], q[1], .028 * kAt(q), 0, TAU); g.fill(); }
   const tape = ease(t, cant - .05, cant + .2) * (1 - ease(t, L_(2).s + .3, L_(2).s + .6));
   if (tape > 0) for (const d of [1, -1]) { const s1 = drape([flow(cx - .3 * tape, cz - .25 * d * tape, .35), flow(cx + .3 * tape, cz + .25 * d * tape, .35)], TOP + .07).map((p) => PL(...p)); seg(s1[0], s1[1], .09 * kAt(s1[0]), '#e6d7b0'); }
   // the soundbite (draft 9: on "soundbite", not "patent", which has the notary seal now): rings go out across the

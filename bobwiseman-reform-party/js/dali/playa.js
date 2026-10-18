@@ -179,7 +179,7 @@ function bmElephantsInto(t, list) {
 // "expand the wars": a stilt-elephant parade behind the table; their stilts shoot up out of the sand on "wars" and
 // the chip towers on their backs grow with the bets. Draft 11: they walk in low from out of shot (no growing out of
 // nothing), on lanes clear of the riders (Z 27.5-35.3), and run off on the far side until no camera sees them.
-const bmWarsAt = (i) => (s) => { const w = wt(21, 'wars'), go = Math.max(0, s - 142.7); return [carX(w) - 17 + i * 9 + (s - w) * 1.95 + go * go * 5, [22, 18.5, 16.5, 20.5, 24][i], 0]; }; // draft 11 merge: through the gap the ballot-ant file opens for the board, clear of the genie
+const bmWarsAt = (i) => (s) => { const w = wt(21, 'wars'), go = Math.max(0, s - 142.7); return [carX(w) - 17 + i * 9 + (s - w) * 1.95 + go * go * 5, [22, 18.5, 16.5, 20.5, 24][i] - go * go * 2, 0]; }; // draft 13: bearing in a little as they run off, clear of the head and the monolith (the rap camera looks their way now) // draft 11 merge: through the gap the ballot-ant file opens for the board, clear of the genie
 function bmWarsInto(t, list) {
   const w = wt(21, 'wars'), bets = wt(22, 'bets'), fl = bmFlip(t);
   for (let i = 0; i < 5; i++) { const q = bmWarsPos(i, t), s = 1.05 + (i % 3) * .1; if (!q) continue;

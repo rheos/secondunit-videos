@@ -5,7 +5,8 @@
 // straight up (never a fade or a scale). Alpha is used on the flames only.
 // Hooked from drawCar (car.js): rapperCar(t, 0) before the table body (when she is on the far side of it) and
 // rapperCar(t, 1) after the near seats (when she is on our side).
-const RAP = { lx: 1.25, lz: 3.35, land: 122.7, go: 150.75, plH: .85, first: 14, last: 26 };
+// draft 13: moved to our side of the table, behind the near row's left end (RAP_AT in camera.js), so the drone can hold on her
+const RAP = { lx: RAP_AT.lx, lz: RAP_AT.lz, land: 122.7, go: 150.75, plH: .85, first: 14, last: 26 };
 // her words: every word onset of the bridge, and the key words she throws an arm on (each line's first word, long words)
 const RAP_W = (() => { const out = []; for (let li = RAP.first; li <= RAP.last; li++) LINES[li].words.forEach((w, j) => out.push({ s: w.s, e: w.e, key: j === 0 || w.w.length >= 6, n: out.length })); return out; })();
 function rapJaw(t) { let m = 0; for (const w of RAP_W) { if (t < w.s - .02 || t > w.e + .15) continue; const d = Math.max(.12, Math.min(.22, w.e - w.s)), u = (t - w.s) / d;
