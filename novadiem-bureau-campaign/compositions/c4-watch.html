@@ -1,0 +1,104 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #c4 {
+          position: absolute;
+          inset: 0;
+        }
+      </style>
+      <div id="c4" data-composition-id="c4" data-width="1920" data-height="1080">
+        <div id="c4-all" class="layer">
+          <svg class="full" viewBox="0 0 1920 1080">
+            <g id="c4-art"></g>
+            <g id="c4-gauge"></g>
+          </svg>
+          <div class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate IV</div>
+          <div class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>Watch</div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text } = BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = BP.kit(tl, 33.0);
+          const art = K.$("c4-art");
+
+          // plate III's end state, static
+          const M = CM.map(art, { id: "c4" });
+          CM.hide([M.park5.g]);
+          el("rect", { class: "ln line-strong", x: 576, y: 490, width: 178, height: 100, style: "stroke-width:3" }, art);
+          CM.callout(art, 665, 540, 118, "A", "M665 422V350H1220");
+          const I = CM.inset(art, "A", 3, { prev: 2 });
+          CM.hide([I.pr.g, I.prNote]);
+          CM.route(art);
+
+          // checkpoint: the Delegate returns to the Envoy (a subagent returns to its parent)
+          CM.carry(K, tl, art, "M1520 236V128H180V176", K.T(33.0), 1.1);
+          const n1 = CM.topNote(art, "CHECKPOINT · THE DELEGATE RETURNS TO THE ENVOY");
+          K.reveal(n1, K.T(33.58), 0.5);
+          // the run dir is the truth: the Envoy reads state.json and the log
+          const hl = el("rect", { class: "ln line-strong", x: 1288, y: 578, width: 274, height: 84, style: "stroke-width:2.5" }, art);
+          K.draw(hl, K.T(34.76), 0.6, "none");
+          CM.out(tl, n1, K.T(35.34), 0.25);
+          const n2 = CM.topNote(art, "IT READS state.json AND THE TAIL OF log.md");
+          K.reveal(n2, K.T(35.34) + 0.25, 0.5);
+
+          // and it checks usage: weekly and session (5 h) bands set the pace (workflows/run-series.md step 6)
+          const G = K.$("c4-gauge");
+          const X = (p) => 300 + p * 12; // 0-100 % across x 300-1500
+          const lab = text("USAGE", { class: "mono", x: 140, y: 866 }, G);
+          const ill = text("ILLUSTRATIVE", { class: "mono small dim", x: 140, y: 892 }, G);
+          const scale = el("path", { class: "ln ink", d: `M${X(0)} 860H${X(100)}` }, G);
+          const ticks = [0, 50, 80, 100].map((p) => el("path", { class: "ln ink", d: `M${X(p)} 846V874` }, G));
+          const zone = el("rect", { class: "fill-bg", x: X(80), y: 849, width: X(100) - X(80), height: 10 }, G);
+          const zoneL = el("path", { class: "ln accent-s", d: `M${X(80)} 853H${X(100)}`, style: "stroke-width:6" }, G);
+          const b1 = text("UNDER 50%: FULL SPEED", { class: "mono small", x: X(25), y: 834, "text-anchor": "middle" }, G);
+          const b2 = text("50-80%: TO THE RUN'S END", { class: "mono small", x: X(65), y: 834, "text-anchor": "middle" }, G);
+          const b3 = text("80%: PAUSE", { class: "mono red-t", x: X(90), y: 834, "text-anchor": "middle" }, G);
+          const b3n = text("AT A CLEAN CHECKPOINT · PING THE OWNER", { class: "mono small dim", x: X(100), y: 944, "text-anchor": "end" }, G);
+          K.fade(lab, K.T(36.52), 0.3);
+          K.fade(ill, K.T(36.52) + 0.2, 0.3);
+          K.draw(scale, K.T(36.52), 0.8, "none");
+          ticks.forEach((t, i) => K.draw(t, K.T(36.52) + 0.3 + i * 0.1, 0.2));
+          K.reveal(b1, K.T(37.11), 0.5);
+          K.reveal(b2, K.T(37.11) + 0.25, 0.5);
+
+          // two needles: weekly and session
+          const needle = (label, y) => {
+            const g = el("g", { transform: `translate(${X(0)} 0)` }, G);
+            el("path", { class: "fill-ink", d: `M0 ${y}l-9 16h18Z` }, g);
+            text(label, { class: "mono small", x: 0, y: y + 38, "text-anchor": "middle" }, g);
+            return g;
+          };
+          const wk = needle("WEEKLY", 872);
+          const se = needle("SESSION", 872);
+          [wk, se].forEach((n) => tl.fromTo(n, { opacity: 0 }, { opacity: 1, duration: 0.3 }, K.T(37.71)));
+          tl.fromTo(wk, { x: X(0) }, { x: X(46), duration: 1.0, ease: "power2.out" }, K.T(37.71));
+          tl.fromTo(se, { x: X(0) }, { x: X(22), duration: 1.0, ease: "power2.out" }, K.T(37.71));
+
+          // the limit it watches for
+          K.fade(zone, K.T(39.43), 0.2);
+          K.draw(zoneL, K.T(39.43), 0.5, "none");
+          K.reveal(b3, K.T(39.43) + 0.2, 0.5);
+          K.reveal(b3n, K.T(40.01), 0.6);
+
+          // a second checkpoint; the week passes 50 %, and the run keeps going to its end
+          CM.carry(K, tl, art, "M1520 236V128H180V176", K.T(40.59), 1.1);
+          tl.fromTo(wk, { x: X(46) }, { x: X(63), duration: 0.9, ease: "power2.inOut", immediateRender: false }, K.T(41.19));
+          tl.fromTo(se, { x: X(22) }, { x: X(41), duration: 0.9, ease: "power2.inOut", immediateRender: false }, K.T(41.19));
+
+          CM.out(tl, n2, K.R(43.1), 0.4);
+          CM.out(tl, hl, K.R(43.1), 0.4);
+          CM.out(tl, G, K.R(43.1), 0.4);
+          window.__timelines["c4"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>
