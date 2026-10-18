@@ -89,9 +89,17 @@ function rapFigure(t, f, k, rocket) {
   g.restore();
   // the mic arm stays up: shoulder, elbow out, the gloved hand holding the mic at her muzzle
   const mh = [hp[0] + s * (.24 + .02 * bob) * k, hp[1] + (.08 + .02 * jaw) * k], me = pt(.3, 1.24 + by);
-  limb(shF, me, mh, .075, '#22398c'); g.fillStyle = '#141414'; g.beginPath(); g.arc(mh[0], mh[1], .05 * k, 0, TAU); g.fill();
-  g.strokeStyle = '#2a2a2a'; g.lineWidth = .035 * k; g.lineCap = 'round'; g.beginPath(); g.moveTo(mh[0] - s * .02 * k, mh[1] + .08 * k); g.lineTo(mh[0] + s * .03 * k, mh[1] - .04 * k); g.stroke();
-  const mb = [mh[0] + s * .045 * k, mh[1] - .075 * k]; const mg = g.createRadialGradient(mb[0] - .012 * k, mb[1] - .012 * k, 1, mb[0], mb[1], .045 * k); mg.addColorStop(0, '#e8e8e8'); mg.addColorStop(1, '#555');
-  g.fillStyle = mg; g.beginPath(); g.arc(mb[0], mb[1], .045 * k, 0, TAU); g.fill();
+  // draft 17 (Robin: "the horse lady rapper should be holding a cordless microphone"): a handheld cordless mic, big enough
+  // to read in the close shots: a black handle with a silver collar and a ball grille at her muzzle, no cable
+  limb(shF, me, mh, .075, '#22398c');
+  const mb = [mh[0] + s * .05 * k, mh[1] - .09 * k], mhb = [mh[0] - s * .035 * k, mh[1] + .13 * k], mr = .068 * k;
+  g.lineCap = 'round'; g.strokeStyle = '#000'; g.lineWidth = .075 * k; g.beginPath(); g.moveTo(...mhb); g.lineTo(...mb); g.stroke(); // the handle's dark edge
+  g.strokeStyle = '#1e1e22'; g.lineWidth = .055 * k; g.stroke(); g.strokeStyle = '#4a4a52'; g.lineWidth = .012 * k; g.beginPath(); g.moveTo(mhb[0] + s * .012 * k, mhb[1]); g.lineTo(mb[0] + s * .012 * k, mb[1]); g.stroke(); // a sheen down it
+  const cl = [lerp(mhb[0], mb[0], .78), lerp(mhb[1], mb[1], .78)]; g.strokeStyle = '#c9ccd2'; g.lineWidth = .07 * k; g.lineCap = 'butt'; g.beginPath(); g.moveTo(...cl); g.lineTo(lerp(mhb[0], mb[0], .86), lerp(mhb[1], mb[1], .86)); g.stroke(); // the silver collar
+  const mg = g.createRadialGradient(mb[0] - .022 * k, mb[1] - .022 * k, 1, mb[0], mb[1], mr); mg.addColorStop(0, '#ffffff'); mg.addColorStop(.45, '#d4d7dc'); mg.addColorStop(1, '#6a6d74');
+  g.fillStyle = mg; g.beginPath(); g.arc(mb[0], mb[1], mr, 0, TAU); g.fill(); g.strokeStyle = '#2a2a30'; g.lineWidth = Math.max(1, .01 * k); g.stroke();
+  g.save(); g.beginPath(); g.arc(mb[0], mb[1], mr, 0, TAU); g.clip(); g.strokeStyle = 'rgba(60,62,70,.55)'; g.lineWidth = Math.max(.6, .005 * k); g.beginPath(); // the grille mesh
+  for (let i = -3; i <= 3; i++) { g.moveTo(mb[0] + i * mr / 3.5, mb[1] - mr); g.lineTo(mb[0] + i * mr / 3.5, mb[1] + mr); g.moveTo(mb[0] - mr, mb[1] + i * mr / 3.5); g.lineTo(mb[0] + mr, mb[1] + i * mr / 3.5); } g.stroke(); g.restore();
+  g.fillStyle = '#141414'; g.beginPath(); g.arc(mh[0], mh[1], .05 * k, 0, TAU); g.fill(); // the gloved hand round the handle
   g.restore();
 }

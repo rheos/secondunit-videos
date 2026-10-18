@@ -12,13 +12,25 @@ const phoneSlump = (t) => ease(t, wt(1, 'scientists') + .3, L_(1).s + 3.9) * (1 
 const PHONE = { x: .95, z: -.55 };
 // draft 16: the mute button on the far edge and the puff (the arm and button are drawn by muteButton, after the props)
 const PUFF = { t: () => wt(1, 'can') - .12, bx: 1.25, bz: 1.18, seat: 4 };
+// draft 17 (Robin on d16: "more like bubbles ... should be darker and a bit more of it", the "this message will
+// self destruct" smoke): a short fizz of sparks off the phone, then a dense charcoal plume that billows, curls up and
+// hangs, drifting off to the right. Each puff is a ragged cluster of soft blobs (radial falloff, no hard round edge).
+// Alpha is smoke only. The phone still melts under it.
 function phonePuff(t, cx, cz, sl) {
   const u0 = t - PUFF.t(); g.save();
-  for (let i = 0; i < 9; i++) { const u = u0 - i * .07; if (u < 0 || u > 2.6) continue; const e = 1 - (1 - clamp(u / 2.6)) ** 2;
-    const x = cx + (rnd(i, 71) - .5) * .25 + e * (.35 + .2 * rnd(i, 72)), y = TOP + .1 + sl * .02 + e * (1.1 + .5 * rnd(i, 73)), z = cz - .08 + (rnd(i, 74) - .5) * .2 + e * .25;
-    const q = PL(x, y, z); if (q[2] < .2) continue; const R = (.07 + .3 * e) * (1 + .3 * rnd(i, 75)) * kAt(q);
-    g.globalAlpha = .62 * clamp(u / .12) * (1 - clamp((u - 1.2) / 1.4)); g.fillStyle = i % 3 ? '#d9d6cf' : '#b8b4ad';
-    g.beginPath(); g.arc(q[0], q[1], R, 0, TAU); g.fill(); }
+  if (u0 > 0 && u0 < .55) { g.globalCompositeOperation = 'lighter'; const b = PL(cx, TOP + .12 + sl * .02, cz - .08); if (b[2] > .2) { const k = kAt(b);
+    for (let i = 0; i < 9; i++) { const st = i * .03, u = u0 - st; if (u < 0 || u > .35) continue; const a = rnd(i, 81) * TAU, v = .5 + .7 * rnd(i, 82), x = b[0] + Math.cos(a) * v * u * k, y = b[1] - (Math.abs(Math.sin(a)) * v * u + 1.6 * u * u * -1) * k;
+      g.fillStyle = `rgba(255,${180 + 60 * rnd(i, 83) | 0},90,${.9 * (1 - u / .35)})`; g.beginPath(); g.arc(x, y, Math.max(1.2, .018 * k), 0, TAU); g.fill(); } }
+    g.globalCompositeOperation = 'source-over'; }
+  const N = 30, LIFE = 4.6, gag = wt(2, 'gag'), clear = 1 - .85 * ease(t, gag - 1.0, gag + .3); // it thins and drifts right as the padlocked lips come in on "gag", so they stay clear
+  for (let i = N - 1; i >= 0; i--) { const u = u0 - .12 - i * .085; if (u < 0 || u > LIFE) continue; const f = u / LIFE, e = 1 - (1 - f) ** 2.2;
+    const curl = Math.sin(u * 1.7 + i * 1.3) * .14 * e, x = cx + (rnd(i, 71) - .5) * .18 + e * (.55 + .35 * rnd(i, 72)) + .5 * ease(t, gag - 1.4, gag + .6) + curl, y = TOP + .1 + sl * .02 + e * (1.5 + .7 * rnd(i, 73)), z = cz - .08 + (rnd(i, 74) - .5) * .25 + e * .3 + Math.cos(u * 1.3 + i) * .08 * e;
+    const q = PL(x, y, z); if (q[2] < .2) continue; const k = kAt(q), R = (.09 + .42 * e) * (.85 + .35 * rnd(i, 75)) * k;
+    const al = .78 * clear * clamp(u / .15) * (1 - clamp((f - .5) / .5)), sh = 34 + 50 * e + 22 * rnd(i, 76) | 0; // charcoal at the source, smoky grey as it opens out
+    for (let j = 0; j < 5; j++) { const a = rnd(i * 7 + j, 77) * TAU + u * .4 * (j % 2 ? 1 : -1), d = j ? R * (.35 + .3 * rnd(i * 7 + j, 78)) : 0, r = R * (j ? .55 + .3 * rnd(i * 7 + j, 79) : .8);
+      const bx = q[0] + Math.cos(a) * d, by = q[1] + Math.sin(a) * d * .8, gr = g.createRadialGradient(bx, by, 0, bx, by, r), c = sh + (j % 3) * 6;
+      gr.addColorStop(0, `rgba(${c},${c - 2},${c - 4},${al})`); gr.addColorStop(.55, `rgba(${c},${c - 2},${c - 4},${al * .75})`); gr.addColorStop(1, `rgba(${c},${c - 2},${c - 4},0)`);
+      g.fillStyle = gr; g.beginPath(); g.arc(bx, by, r, 0, TAU); g.fill(); } }
   g.restore(); }
 // the far-row suit's reach: the hand goes out from the shoulder, presses the button on PUFF.t() and comes back
 function muteButton(t) {
@@ -70,7 +82,7 @@ function speakerphone(t) {
   // draft 16 (Robin, 0:24: "instead of an X appearing ... someone on the other side can push a button and a puff of
   // smoke comes up from the teleconference phone"): the tape X is gone; the far-row suit at seat 4 presses a red
   // button on the far edge just before "can't", and the phone gives off a puff of smoke (smoke may fade; it is alpha)
-  if (t > PUFF.t() - .3 && t < PUFF.t() + 3.2) phonePuff(t, cx, cz, sl);
+  if (t > PUFF.t() - .3 && t < PUFF.t() + 7.5) phonePuff(t, cx, cz, sl);
   // the soundbite (draft 9: on "soundbite", not "patent", which has the notary seal now): rings go out across the
   // table and the last one has a bite taken out, right where the table's edge gets bitten (tableBite)
   const sb = wt(8, 'soundbite') - .45; if (t > sb - .3 && t < L_(8).e + .6) for (let r = 0; r < 4; r++) { const age = ((t - sb + .3) * 1.4 - r * .35); if (age < 0 || age > 1.6) continue; const R = .4 + age * .9, ring = [];

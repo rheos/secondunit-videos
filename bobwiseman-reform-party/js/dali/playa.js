@@ -383,8 +383,15 @@ function bmNote(x, y, s, flag) { // a black quaver at a screen point, s px per m
   g.strokeStyle = '#1c1a1e'; g.lineWidth = Math.max(1.2, .022 * s); g.lineCap = 'round'; g.beginPath(); g.moveTo(x + .068 * s, y); g.lineTo(x + .068 * s, y - .25 * s); if (flag) g.lineTo(x + .17 * s, y - .17 * s); g.stroke(); }
 // a tracking shot: he rides alongside the drone, D m in front of it. He enters from the left edge on SAX_IN, settles left
 // of centre for the lick, then pulls ahead and out to the right.
-function bmSaxPos(t) {
-  const c = camAt(t), fw = [Math.sin(c.yaw), Math.cos(c.yaw)], rt = [Math.cos(c.yaw), -Math.sin(c.yaw)], D = 2.8, half = D * (W / 2) / c.f;
+// draft 17 (Robin on d16: "that saxaphone has left but he is still playing.. the camera should still see him"): the sax
+// part runs to 74.2 (the vocal stem's sax bleed and the 0.7-3 kHz band of the backing both drop there; "they're" comes
+// in at 74.53). From SAX_LOOP he leaves the tracking framing, swings round the back end of the table (crossing the frame right to left)
+// as the drone turns onto it, and rides back along the far side the other way (left to right), still playing, behind
+// the board and the chart, and only rides out of frame on the right after the lick ends. Keys are [t, lx, lz] in the car's own frame
+// (lz < 0 is the drone's side), joined by a Catmull-Rom curve so he never jerks.
+const SAX_LOOP = 71.0, SAX_END = 74.2, SAX_BACK = 72.35; // from SAX_BACK (passing the table's back end) he is drawn in the scene, behind the car layer
+const SAX_KEYS = [[71.6, -4.4, -6.4], [72.1, -6.6, -2.6], [72.5, -6.6, 1.0], [72.9, -4.2, 3.6], [73.3, -1.0, 3.7], [73.7, .6, 3.7], [74.1, 1.1, 3.7], [74.5, 3.0, 3.7], [75.0, 8, 3.7], [75.7, 15, 3.7]]; // the far-side lane at lz 3.7: clear of the far-row chairs (2.3) and inside the bike flock's lanes (5.4 and out); he eases off so he holds the left of the chart shot until the lick ends, then rides off behind the chart
+function bmSaxTrack(t) {  const c = camAt(t), fw = [Math.sin(c.yaw), Math.cos(c.yaw)], rt = [Math.cos(c.yaw), -Math.sin(c.yaw)], D = 2.8, half = D * (W / 2) / c.f;
   const u = t - SAX_IN, lat = u < 1.6 ? lerp(-half - .9, -half * .3, smooth((u + .6) / 2.2)) : u < 6.5 ? -half * .3 + (u - 1.6) * .08 : -half * .3 + 4.9 * .08 + (u - 6.5) * (.8 + 3.6 * (u - 6.5)); // draft 11: he pulls out right sooner and faster, clear before the drone comes down to the seat line
   const X = c.x + fw[0] * D + rt[0] * lat, Z = c.z + fw[1] * D + rt[1] * lat;
   // draft 11: he stays in a world lane at least 1 m outside the seats' reach. In the car's frame his distance from the
@@ -393,14 +400,26 @@ function bmSaxPos(t) {
   const side = Math.sign(-(c.x - X0) * sn + (c.z - Z0) * cs) || -1, w = Math.cos(Math.PI / 2 * clamp((Math.abs(lx) - 5.6) / 4)) ** 2, lz2 = side * Math.max(side * lz, 4.4 * w);
   return [X0 + lx * cs - lz2 * sn, Z0 + lx * sn + lz2 * cs];
 }
+const bmSaxLocal = (t) => { const [X, Z] = bmSaxTrack(t), X0 = carX(t), Z0 = carZ(t), a = yaw(t), cs = Math.cos(a), sn = Math.sin(a); return [t, (X - X0) * cs + (Z - Z0) * sn, -(X - X0) * sn + (Z - Z0) * cs]; };
+let SAX_K = null;
+function bmSaxPos(t) {
+  if (t <= SAX_LOOP) return bmSaxTrack(t);
+  if (!SAX_K) SAX_K = [bmSaxLocal(SAX_LOOP - .5), bmSaxLocal(SAX_LOOP), ...SAX_KEYS]; // a constant, worked out once from the pure flight
+  const K = SAX_K; let i = 1; while (i < K.length - 2 && t > K[i + 1][0]) i++;
+  const p0 = K[i - 1], p1 = K[i], p2 = K[i + 1], p3 = K[Math.min(K.length - 1, i + 2)], u = clamp((t - p1[0]) / (p2[0] - p1[0])), u2 = u * u, u3 = u2 * u;
+  const cr = (j) => .5 * (2 * p1[j] + (-p0[j] + p2[j]) * u + (2 * p0[j] - 5 * p1[j] + 4 * p2[j] - p3[j]) * u2 + (-p0[j] + 3 * p1[j] - 3 * p2[j] + p3[j]) * u3);
+  let lx = cr(1), lz = cr(2); if (t > K[K.length - 1][0]) { lx = K[K.length - 1][1] + (t - K[K.length - 1][0]) * 6; lz = K[K.length - 1][2]; }
+  const X0 = carX(t), Z0 = carZ(t), a = yaw(t), cs = Math.cos(a), sn = Math.sin(a); return [X0 + lx * cs - lz * sn, Z0 + lx * sn + lz * cs];
+}
 const bmSaxAt = (s) => { const q = bmSaxPos(s); return [q[0], q[1], 0]; };
 function bmSaxInto(t, list) {
-  if (t < SAX_IN - 20 || t > SAX_IN + 30 || t < bmBorn('sax', SAX_IN - .6, bmSaxAt, .8, 2.2, 20) || t > bmGone('saxe', SAX_IN + 9.5, bmSaxAt, .8, 2.2, 20)) return;
+  if (t < SAX_IN - 20 || t > SAX_IN + 30 || t < bmBorn('sax', SAX_IN - .6, bmSaxAt, .8, 2.2, 20) || t > bmGone('saxe', SAX_END + .2, bmSaxAt, .8, 2.2, 20)) return;
   const [X, Z] = bmSaxPos(t);
-  bmRiderEntry(X, Z, 1, (t - SAX_IN) * 4 + 40, t, BM_SAX, list, false, 'playa:sax');
+  const q0 = P(X, 0, Z), [X2, Z2] = bmSaxPos(t + .05), q1 = P(X2, 0, Z2), d = t <= SAX_LOOP || q0[2] < .5 || q1[2] < .5 ? 1 : Math.sign(q1[0] - q0[0]) || 1; // he faces the way he rides on screen
+  bmRiderEntry(X, Z, d, (t - SAX_IN) * 4 + 40, t, BM_SAX, list, false, 'playa:sax');
 }
 function bmSaxFront(t) { // over the car layer (render.js front hook)
-  const l = []; bmSaxInto(t, l); for (const o of l) { o.shadow(); o.draw(); }
+  const l = []; if (t < SAX_BACK) bmSaxInto(t, l); for (const o of l) { o.shadow(); o.draw(); }
   if (t < SAX_CORK[0] - .7 || t > SAX_CORK[1] + 1.8) return;
   const [X, Z] = bmSaxPos(t), q = P(X, 0, Z); if (q[2] < .5) return; const k = kAt(q), sw = Math.sin(t * 7.5) * .025, bell = [q[0] + k * .51, q[1] - k * (1.33 + sw)];
   // the suit who corks it: the nearest seat on screen to the right of the bell leans out with one long arm
@@ -1444,5 +1463,6 @@ function octGlow(t) { // after the grade: the bursts, the warm light they throw 
 function playaInto(t, list) {
   brcInto(t, list); bmCampsInto(t, list); bmInstallsInto(t, list); bmElephantsInto(t, list); bmWarsInto(t, list);
   bmTraffic(t, list); bmFlockInto(t, list); bmParadeInto(t, list); bmPoorInto(t, list); bmCopsInto(t, list); bmRangersInto(t, list); drumCircleInto(t, list); octInto(t, list);
+  if (t >= SAX_BACK) bmSaxInto(t, list); // draft 17: the sax rider on the table's far side
 }
 function playaFront(t) { bmSaxFront(t); } // render.js front hook: things that pass between the drone and the car

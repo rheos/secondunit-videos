@@ -5,7 +5,7 @@
 //              sign beside it: a red panel with a yellow upside-down-arches "W", guyed with wires (burger.jpg)
 //   jig      - two semi trucks (cab + tanker) bent into a towering arch: one stands on its nose, the second is balanced
 //              upside down on top, the tankers bent like pipe elbows, wheels sticking out; about 15 m tall (big-rig-jig.jpg)
-//   monolith - a tapered olive-green prism on a diamond footprint (diagonals 6 m and 3.6 m), 7.6 m tall, a wide face and
+//   monolith - the 11:11 Diamond Portal (Robin's name): a tapered olive-green prism on a diamond footprint (diagonals 6 m and 3.6 m), 7.6 m tall, a wide face and
 //              a narrow one meeting at the near edge; a 2.6 m bore runs through near the top against that edge; by night
 //              the face toward the Man takes the burn's rust light (green-monolith-day/night.jpg)
 //   head     - a giant lavender head buried to the eyes: the skull's dome, half-lidded eyes, the nose running into the
@@ -42,6 +42,9 @@ const ARTPIECES = [
     clock: '9:20', r: 600, seen: 'intro 3-7.6: on the open playa straight ahead of the drone as it glides in from the 9:00 Esplanade sound camp; the bun grows to about 140 px (the sign 260 px) at 7.4 before the drone passes over it' },
   { kind: 'jig', X: 265, Z: 110, rot: Math.PI - .2, scale: 1, people: 7,
     clock: '7:00', r: 72, seen: 'day 153-160, 163-184, 193-198 (h 120-255 px); night 212-268 on the left of the burn framings, dark against the city' },
+  // draft 17: the 2:22 Amethyst Portal, the third of the set, between its siblings (19 m short of the 11:11 Diamond Portal)
+  { kind: 'amethyst', name: 'amethyst', X: 228, Z: 84, rot: 2.2, scale: 1, people: 0,
+    clock: '8:15', r: 85, seen: 'see draft 17 report' },
   { kind: 'monolith', X: 244, Z: 72, rot: 2.45, scale: 1, people: 4, nightPeople: 8,
     clock: '8:10', r: 62, seen: 'day 152-160, 163-184, 193-198 (h 80-180 px), the wide face to the drone with the bore reading round, the narrow face beside it; night 212-233 and 237-246 behind the crowd ring, the narrow face (toward the Man) rust, the wide face olive' },
   { kind: 'head', X: 236, Z: 28, rot: 2.68, scale: 1, people: 5,
@@ -309,7 +312,7 @@ function apJigShadow(o, t) {
   apShadowLine([F(.5, 0, 0), F(2.6, 4.3, 0)], 2.6, t); apShadowLine([F(-1.6, 4.4, 0), F(-3.6, 8.2, 0)], 2.6, t);
 }
 
-// ---------- 3. the green monolith ----------
+// ---------- 3. the green monolith, the 11:11 Diamond Portal ----------
 // A tapered prism on a DIAMOND footprint (Robin: "the base is a diamond. it's not flat across the front"). Seen from
 // the photo's angle: a wide face and a narrower face meeting at the near, nearly vertical edge, each tapering in to a
 // smaller diamond on top; the near corner pokes out at the foot. A round bore runs horizontally right through near the
@@ -609,7 +612,7 @@ function apNave(o, t, p, k) {
 function apNaveShadow(o, t) { const F = apFrame(o); for (const s of apNaveSpires()) apShadowLine([F(s.lx, 0, s.lf), F(s.lx, s.h, s.lf)], .5, t);
   for (const lf of [AP_NAVE.half, 0, -AP_NAVE.half]) apShadowLine(apArchPts(F, -AP_NAVE.w, AP_NAVE.w, lf, lf, 6.3, 1.6), .3, t); }
 
-// ---------- 7. the lime-green octahedron shelters (draft 16, robin-2026-10-18/5.jpg and 6.jpg) ----------
+// ---------- 7. the 12:12 Emerald Portal (Robin's name): the lime-green octahedron shelters (draft 16, robin-2026-10-18/5.jpg and 6.jpg) ----------
 // Plywood octahedra painted lime green (draft 16: one only, balanced on its point; apOctaGeo still takes a tilt); a little cube caps the
 // top point; a square window is cut through the upper faces and the lower faces are open, so people sit inside in the
 // shade. Someone sits cross-legged in the first one's window. Drawn in 3D: the faces that face the drone, lit by the sun.
@@ -712,11 +715,74 @@ function apStilt(x, y, k, d, t, i) { bmBegin(x, y, k, d); const ph = t * 2.6 + i
 function apStiltsExtras(o, t, list) { for (const w of apStiltPair(o, t)) { ACT.note('artpieces:stilts:' + w.i, w.X, w.Z, .35, { h: 2.6, group: 'walkers' }); const q = P(w.X, 0, w.Z); if (q[2] < 3) continue; const kk = kAt(q); if (kk < .5 || q[0] < -60 || q[0] > W + 60) continue;
     const ah = P(w.X + w.hx, 0, w.Z + w.hz), d = Math.sign(ah[0] - q[0]) || 1; list.push({ z: q[2], draw: () => apStilt(q[0], q[1], kk, d, t, w.i), shadow: () => shadowStick(w.X, 0, 2.6, w.Z, .45, t) }); } }
 
+// ---------- 10. the 2:22 Amethyst Portal (draft 17, robin-2026-10-18/17.webp to 20.webp) ----------
+// Robin's name; the third of a set by the same makers with the 11:11 Diamond Portal (the monolith) and the 12:12 Emerald
+// Portal (the green octahedron). A stellated octahedron (a star tetrahedron) 5.2 m tall (17 ft, Burning Man 2009, transportals.org): plywood, wood and steel; seven hollow plywood spikes
+// round an open core, one point straight up, three resting on the playa, the bottom one left off so it is open
+// underneath. The outsides matte purple-violet, the insides lime green. Thin guy poles run from the three upper side
+// points to the ground, and two purple blocks make a step. People sit inside in the hollow and one climbs an arm.
+// At night purple LEDs glow at the tips (alpha is light only) and the green inside glows (its green LEDs). A low deck
+// inside covers the sound sculpture under the floor.
+// Built from the cube corners (+-1, +-1, +-1): the corner (1, 1, 1) turned straight up.
+const AP_AME = (() => { const r3 = Math.sqrt(3), u = [1 / r3, 1 / r3, 1 / r3], e1 = [1 / Math.SQRT2, -1 / Math.SQRT2, 0], e2 = [1 / Math.sqrt(6), 1 / Math.sqrt(6), -2 / Math.sqrt(6)];
+  const s = 5.2 / (4 / r3), loc = (v) => [apDot(v, e1) * s, (apDot(v, u) + 1 / r3) * s, apDot(v, e2) * s]; // local metres, y up from the playa
+  const spikes = []; for (const sx of [-1, 1]) for (const sy of [-1, 1]) for (const sz of [-1, 1]) { if (sx + sy + sz === -3) continue; // no bottom spike
+    const T = loc([sx, sy, sz]), A = loc([sx, 0, 0]), B = loc([0, sy, 0]), Cc = loc([0, 0, sz]); spikes.push({ T, faces: [[T, A, B], [T, B, Cc], [T, Cc, A]], low: sx + sy + sz === -1, up: sx + sy + sz === 1, top: sx + sy + sz === 3 }); }
+  const floor = [[-1, 0, 0], [0, -1, 0], [0, 0, -1]].map(loc); // the three core corners on the playa: a low deck over the sound sculpture
+  return { s, spikes, floor }; })();
+const AP_AME_FH = .3; // the floor platform's height
+// the visitors: three sitting in the hollow, one climbing an arm (lx, lf in the piece frame; the climber is on an upper spike)
+const AP_AME_SIT = [[-.6, .4, '#d8452f', 0], [.5, .7, '#47c1ba', 2], [.1, -.75, '#e8b23a', 4]];
+function apAmeClimb() { const up = AP_AME.spikes.filter((q) => q.up)[0], T = up.T, F = up.faces[0], m = [0, 1, 2].map((i) => (F[1][i] + F[2][i]) / 2); return [lerp(m[0], T[0], .35), lerp(m[1], T[1], .35) - .6, lerp(m[2], T[2], .35)]; }
+function apAmethyst(o, t, p, k) {
+  const F = apFrame(o), night = nightAmt(t), cam = [C.x, C.y, C.z], items = [];
+  const purple = [118, 74, 168], lime = [178, 214, 52];
+  for (const sp of AP_AME.spikes) for (const f of sp.faces) {
+    const W3 = f.map((v) => F(v[0], v[1], v[2])), m = [0, 1, 2].map((i) => (W3[0][i] + W3[1][i] + W3[2][i]) / 3);
+    let n = apNorm(apCross(apSub(W3[1], W3[0]), apSub(W3[2], W3[0]))); const cen = F(0, AP_AME.s * .85, 0); if (apDot(n, apSub(m, cen)) < 0) n = n.map((v) => -v);
+    const out = apDot(n, apSub(cam, m)) > 0, d = apDot(apSub(m, cam), apSub(m, cam));
+    items.push({ d, draw: () => { const q = W3.map(apP); if (!ok(q)) return; const hl = Math.hypot(n[0], n[2]) || 1;
+      // the outsides purple; the undersides (facing down) and the insides lime
+      let col; if (out && n[1] > -.2) col = apShade(purple, .5 + .5 * apLight(t, [n[0] / hl, n[2] / hl], n[1], o.X, o.Z));
+      else { const L = out ? apLight(t, [n[0] / hl, n[2] / hl], 0, o.X, o.Z) : apLight(t, [-n[0] / hl, -n[2] / hl], -n[1], o.X, o.Z); col = apShade(lime, .55 + .3 * L); if (night > 0) col = [lerp(col[0], 215, night * .85), lerp(col[1], 255, night * .85), lerp(col[2], 120, night * .85)]; }
+      apPath(q); g.fillStyle = rgb(col); g.fill(); g.strokeStyle = rgb(apShade(purple, .3)); g.lineWidth = Math.max(1, .025 * k); g.lineJoin = 'round'; g.stroke(); } }); }
+  { const fl = AP_AME.floor, wc = F(0, AP_AME_FH, 0), d = apDot(apSub(wc, cam), apSub(wc, cam)) + 2; // the low deck inside, under everything near
+    items.push({ d, draw: () => { const top = fl.map((v) => apP(F(v[0] * .92, AP_AME_FH, v[2] * .92))), bot = fl.map((v) => apP(F(v[0] * .92, 0, v[2] * .92))); if (!ok(top) || !ok(bot)) return;
+      for (let i = 0; i < 3; i++) { const j = (i + 1) % 3; apPath([bot[i], bot[j], top[j], top[i]]); g.fillStyle = '#4a3a2a'; g.fill(); }
+      apPath(top); g.fillStyle = night > .05 ? rgb([lerp(150, 120, night), lerp(120, 200, night), lerp(80, 70, night)]) : '#a8885a'; g.fill(); } }); }
+  // the sitters, sorted in with the faces
+  for (const [lx, lf, col, i] of AP_AME_SIT) { const w = F(lx, AP_AME_FH, lf), d = apDot(apSub(w, cam), apSub(w, cam)) - 1;
+    items.push({ d, draw: () => { const q = apP(w); if (q[2] < .5) return; person(q[0], q[1], kAt(q), { step: 0, lift: 0, hat: i % 3, cape: false, sit: 1 }, { body: col, skin: ['#e8d4b4', '#c99a74', '#8c6448'][i % 3], dark: '#3a3040', lamp: '#f0d49a', hatc: '#7a3c8c' }); } }); }
+  { const c = apAmeClimb(), w = F(c[0], c[1], c[2]), d = apDot(apSub(w, cam), apSub(w, cam)) - 9; // the climber hangs off the arm, a little nearer than its face
+    items.push({ d, draw: () => { const q = apP(w); if (q[2] < .5) return; const kk = kAt(q), sw = Math.sin(t * 1.3) * .08; g.save(); g.translate(q[0], q[1]); g.rotate(-.35 + sw);
+      person(0, 0, kk, { step: .15, lift: 0, hat: 0, cape: false, sit: 0 }, { body: '#ee9a42', skin: '#e2c4a4', dark: '#2f6fb5', lamp: '#f0d49a' });
+      g.strokeStyle = '#ee9a42'; g.lineWidth = Math.max(1, .09 * kk); g.lineCap = 'round'; g.beginPath(); g.moveTo(.18 * kk, -1.4 * kk); g.lineTo(.3 * kk, -2.05 * kk); g.stroke(); g.restore(); } }); }
+  // the guy poles and the step, far to near with the rest
+  for (const sp of AP_AME.spikes.filter((q) => q.up)) { const T = sp.T, hz = Math.hypot(T[0], T[2]) || 1, foot = [T[0] * (1 + 2.2 / hz), 0, T[2] * (1 + 2.2 / hz)];
+    const a = F(...T), b = F(...foot), m = [(a[0] + b[0]) / 2, a[1] / 2, (a[2] + b[2]) / 2], d = apDot(apSub(m, cam), apSub(m, cam));
+    items.push({ d, draw: () => { const qa = apP(a), qb = apP(b); if (qa[2] < .3 || qb[2] < .3) return; g.strokeStyle = '#3a3040'; g.lineWidth = Math.max(1, .05 * k); g.beginPath(); g.moveTo(qa[0], qa[1]); g.lineTo(qb[0], qb[1]); g.stroke(); } }); }
+  { const lo = AP_AME.spikes.filter((q) => q.low)[0].T, hz = Math.hypot(lo[0], lo[2]) || 1, dir = [lo[0] / hz, lo[2] / hz], side = [-dir[1], dir[0]];
+    for (const [r0, h, w] of [[1.6, .45, .55], [1.1, .9, .5]]) { const c0 = [dir[0] * r0 + side[0] * 1.3, dir[1] * r0 + side[1] * 1.3], cn = [[-1, -1], [1, -1], [1, 1], [-1, 1]].map(([a, b]) => [c0[0] + dir[0] * a * w * .5 + side[0] * b * w * .5, c0[1] + dir[1] * a * w * .5 + side[1] * b * w * .5]);
+      const wc = F(c0[0], h / 2, c0[1]), d = apDot(apSub(wc, cam), apSub(wc, cam));
+      items.push({ d, draw: () => { const bot = cn.map(([x, z]) => apP(F(x, 0, z))), top = cn.map(([x, z]) => apP(F(x, h, z))); if (!ok(bot) || !ok(top)) return; const L = apLight(t, [0, 1], .5, o.X, o.Z);
+        for (let i = 0; i < 4; i++) { const j = (i + 1) % 4; apPath([bot[i], bot[j], top[j], top[i]]); g.fillStyle = rgb(apShade(purple, .45 + .3 * L * (i % 2 ? .8 : 1))); g.fill(); }
+        apPath(top); g.fillStyle = rgb(apShade(purple, .55 + .4 * L)); g.fill(); } }); } }
+  items.sort((a, b) => b.d - a.d); for (const it of items) it.draw();
+  // violet lights at the tips after dark
+  if (night > .05) { g.save(); g.globalCompositeOperation = 'lighter'; for (const sp of AP_AME.spikes) { const q = apP(F(...sp.T)); if (q[2] < .5) continue; const r = Math.max(2, .35 * k);
+    const gr = g.createRadialGradient(q[0], q[1], 0, q[0], q[1], r * 2.2); gr.addColorStop(0, `rgba(230,180,255,${.85 * night})`); gr.addColorStop(.3, `rgba(170,90,255,${.5 * night})`); gr.addColorStop(1, 'rgba(120,40,200,0)');
+    g.fillStyle = gr; g.beginPath(); g.arc(q[0], q[1], r * 2.2, 0, TAU); g.fill(); } g.restore(); }
+}
+function apAmethystShadow(o, t) { const F = apFrame(o); shadowOf(AP_AME.spikes.flatMap((sp) => sp.faces.flat()).map((v) => F(...v)), t); }
+function apAmethystNotes(o) { const F = apFrame(o);
+  AP_AME_SIT.forEach(([lx, lf], i) => { const w = F(lx, 0, lf); ACT.note('artpieces:amethyst:sitter:' + i, w[0], w[2], .3, { h: 1.1, group: 'visitors' }); });
+  const c = apAmeClimb(), w = F(c[0], 0, c[2]); ACT.note('artpieces:amethyst:climber', w[0], w[2], .3, { h: 1.8, group: 'visitors' }); }
+
 // ---------- the front layer: the monolith framing the burn through its hole ----------
 // The Man's fire is drawn over the scene list (render.js manFire), so a slab standing between the drone and the fire
 // would be painted over. A piece with front: true is drawn here instead, after the fire, graded the way render.js grades
 // the car layer. Needs one word in render.js: FRONT_HOOKS gets 'artpiecesFront'. Without it, front pieces draw as usual.
-const AP_DRAW = { burger: apBurger, jig: apJig, monolith: apMonolith, head: apHead, genie: apGenie, nave: apNave, octa: apOcta, clock: apClock };
+const AP_DRAW = { burger: apBurger, jig: apJig, monolith: apMonolith, head: apHead, genie: apGenie, nave: apNave, octa: apOcta, clock: apClock, amethyst: apAmethyst };
 const AP_FC = mkCanvas(), apFg = AP_FC.getContext('2d'), AP_FM = mkCanvas(), apFm = AP_FM.getContext('2d');
 const apFrontOn = () => typeof FRONT_HOOKS !== 'undefined' && FRONT_HOOKS.includes('artpiecesFront');
 function artpiecesFront(t) {
@@ -733,7 +799,8 @@ function artpiecesFront(t) {
 const AP_FOOT = { burger: [0, 0, 2.1], jig: [1.6, 0, 2.6], monolith: [0, 0, 2.6], head: [0, 0, 3.9], genie: [0, 0, 2.4], octa: [0, 0, 2.0], clock: [0, 0, 3.8] }; // [lx, lf, r]
 // draft 16: pieces with more than one solid body note each one ([lx, lf, r] in the piece's frame); the nave's spires and its
 // mandala pole, the clock tower's obelisks and the foot of its stair
-const AP_BODIES = { nave: () => apNaveSpires().map((q) => [q.lx, q.lf, .45]).concat([[0, AP_NAVE.mand, .3]]), clock: () => [[0, 0, 3.8], [-5.6, 0, .8], [-8.6, 0, 1.0], [8.6, 0, 1.0]] };
+const AP_BODIES = { nave: () => apNaveSpires().map((q) => [q.lx, q.lf, .45]).concat([[0, AP_NAVE.mand, .3]]), clock: () => [[0, 0, 3.8], [-5.6, 0, .8], [-8.6, 0, 1.0], [8.6, 0, 1.0]],
+  amethyst: () => AP_AME.spikes.filter((q) => q.low).map((q) => [q.T[0], q.T[2], .9]) }; // the three points it stands on (the hollow between is open)
 function apNote(o, S, t) { if (o.kind === 'stilts') return; const id = 'artpieces:' + (o.name || o.kind), h = AP_SIZE[o.kind][1] * S;
   if (AP_BODIES[o.kind]) { AP_BODIES[o.kind]().forEach(([lx, lf, r], i) => { const w = apFrame(o)(lx, 0, lf); ACT.note(id + ':' + i, w[0], w[2], r * S, { h, group: 'installs' }); });
     if (o.kind === 'nave' && ACT.on) apNaveWalkers(o, t).forEach((v) => ACT.note(id + ':visitor:' + v.i, v.X, v.Z, .3, { h: 1.8, group: 'visitors' })); return; }
@@ -742,7 +809,7 @@ function apNote(o, S, t) { if (o.kind === 'stilts') return; const id = 'artpiece
   if (o.sign) { const b = apFrame(o)(o.sign.lx, 0, o.sign.lf); ACT.note('artpieces:burger-sign', b[0], b[2], .5, { h: 7, group: 'installs' }); } }
 
 // ---------- the scene hook ----------
-const AP_SIZE = { burger: [8, 7], jig: [7, 15.5], monolith: [4, 7.6], head: [5, 5.3], genie: [6, 14], nave: [17, 14], octa: [3, 4.4], clock: [9.6, 16], stilts: [1, 2.6] }; // half width for culling, height
+const AP_SIZE = { burger: [8, 7], jig: [7, 15.5], monolith: [4, 7.6], head: [5, 5.3], genie: [6, 14], nave: [17, 14], octa: [3, 4.4], clock: [9.6, 16], stilts: [1, 2.6], amethyst: [5, 5.2] }; // half width for culling, height
 function artpiecesInto(t, list) {
   for (const o of ARTPIECES) {
     if (o.t0 != null && t < o.t0) continue; if (o.t1 != null && t > o.t1) continue;
@@ -750,10 +817,11 @@ function artpiecesInto(t, list) {
     if (o.kind === 'stilts') { apStiltsExtras(o, t, list); continue; } // draft 16: the stilt walkers are two bodies of their own
     const p = P(o.X, 0, o.Z), [hw, ht] = AP_SIZE[o.kind], S = o.scale || 1; apNote(o, S, t);
     if (o.kind === 'clock') apClockExtras(o, t, list);
-    if (o.kind === 'octa') apVisitors(o, t, list); // draft 16: its visitors are culled one by one, never with the piece (no pop at a frame edge)
+    if (o.kind === 'octa') apVisitors(o, t, list);
+    if (o.kind === 'amethyst') apAmethystNotes(o); // its visitors are drawn with it, inside its bounds // draft 16: its visitors are culled one by one, never with the piece (no pop at a frame edge)
     if (p[2] < 3) continue; const k = kAt(p);
     if (ht * S * k < 2 || p[0] < -hw * S * k - 200 || p[0] > W + hw * S * k + 200) continue;
-    const draw = AP_DRAW[o.kind], shadow = { burger: apBurgerShadow, jig: apJigShadow, monolith: apMonoShadow, head: apHeadShadow, genie: apGenieShadow, nave: apNaveShadow, octa: apOctaShadow, clock: apClockShadow }[o.kind];
+    const draw = AP_DRAW[o.kind], shadow = { burger: apBurgerShadow, jig: apJigShadow, monolith: apMonoShadow, head: apHeadShadow, genie: apGenieShadow, nave: apNaveShadow, octa: apOctaShadow, clock: apClockShadow, amethyst: apAmethystShadow }[o.kind];
     list.push({ z: p[2], draw: () => { if (o.front && apFrontOn()) return; g.save(); draw(o, t, p, k); g.restore(); }, shadow: () => { g.save(); shadow(o, t); g.restore(); } }); // a front piece is drawn by artpiecesFront instead
     if (o.sign) { const b = apFrame(o)(o.sign.lx, 0, o.sign.lf), q = P(b[0], 0, b[2]); if (q[2] > 2) list.push({ z: q[2], draw: () => { g.save(); apSign(o, t); g.restore(); } }); }
     if (k > .8 && o.kind !== 'octa') apVisitors(o, t, list);
