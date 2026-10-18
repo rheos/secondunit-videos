@@ -1,0 +1,132 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #r3 {
+          position: absolute;
+          inset: 0;
+        }
+      </style>
+      <div id="r3" data-composition-id="r3" data-width="1920" data-height="1080">
+        <div class="layer">
+          <svg class="full" viewBox="0 0 1920 1080">
+            <g id="r3-sb"></g>
+            <g id="r3-top"></g>
+          </svg>
+          <div id="r3-lab-l" class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate III</div>
+          <div id="r3-lab-r" class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>Triage</div>
+          <div id="r3-st" class="statement">
+            <span id="r3-st-a" class="phrase">Classified</span>
+            <span id="r3-st-b" class="phrase red">before an agent is chosen.</span>
+          </div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text, kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 18.88);
+          const P = RT.build(K.$("r3-sb"));
+          const top = K.$("r3-top");
+
+          K.fade(K.$("r3-lab-l"), K.T(18.88), 0.4);
+          K.fade(K.$("r3-lab-r"), K.T(18.88), 0.4);
+
+          // the switchboard: workflows down the side, specialists across the top
+          const pn = P.panel;
+          K.draw(pn.outer, K.T(18.88) + 0.1, 1.2, "none");
+          K.draw(pn.inner, K.T(19.46), 0.9, "none");
+          K.draw(pn.rule, K.T(20.06), 0.7, "none");
+          K.draw(pn.divider, K.T(20.06) + 0.2, 0.6, "none");
+          K.fade(pn.head, K.T(20.06), 0.4);
+          P.cols.forEach((c, i) => {
+            const at = K.T(20.64) + i * 0.14;
+            K.draw(c.tick, at, 0.3);
+            K.fade(c.label, at + 0.1, 0.35);
+          });
+          P.rows.forEach((r, i) => {
+            const at = K.T(21.22) + i * 0.16;
+            K.fade(r.label, at, 0.35);
+            K.draw(r.jack, at + 0.1, 0.35);
+            K.fade(r.bus, at + 0.1, 0.4, 0.25);
+            Object.values(r.sockets).forEach((s, j) => K.fade(s, at + 0.15 + j * 0.05, 0.3, 0.6));
+          });
+          K.fade(pn.more, K.T(22.41), 0.4);
+
+          // the Delegate's desk, and the bug arriving in its tray
+          const d = P.del;
+          K.draw(d.box, K.T(22.41), 0.8, "none");
+          K.draw(d.tray, K.T(22.99), 0.4);
+          K.fade(d.trayLabel, K.T(22.99), 0.3);
+          K.fade(d.label, K.T(22.99), 0.4);
+          K.fade(d.sub, K.T(22.99) + 0.25, 0.4);
+          K.draw(d.hinge, K.T(23.59), 0.3);
+          K.draw(d.armBox, K.T(23.59) + 0.1, 0.5);
+          d.stripes.forEach((s, i) => K.fade(s, K.T(23.59) + 0.3 + i * 0.1, 0.25));
+          const bugW = el("g", {}, top); // wrapper: GSAP moves the wrapper, the ticket keeps its own translate
+          RT.ticket(bugW, "bug", 238, 222);
+          tl.fromTo(bugW, { opacity: 0, y: -60 }, { opacity: 1, y: 0, duration: 0.6, ease: "power2.out" }, K.T(23.59));
+
+          // reading the registry: the scan passes feature and stops on bug-fix
+          const scan = el("g", {}, top);
+          el("path", { class: "ln line construct", d: "M424 -20H748V20H424Z" }, scan);
+          tl.fromTo(scan, { opacity: 0, y: RT.RY(0) }, { opacity: 1, y: RT.RY(0), duration: 0.3 }, K.T(24.17));
+          tl.fromTo(scan, { y: RT.RY(0) }, { y: RT.RY(1), duration: 0.45, ease: "power2.inOut" }, K.T(24.78));
+          const pick = RT.pick("bug-fix", top);
+          K.draw(pick, K.T(25.36), 0.6, "none");
+          tl.to(scan, { opacity: 0, duration: 0.3 }, K.T(25.36) + 0.4);
+
+          K.reveal(K.$("r3-st-a"), K.T(25.94), 0.6);
+          K.reveal(K.$("r3-st-b"), K.T(26.52), 0.9);
+
+          // the cord goes in: the run takes the bug-fix route
+          K.draw(d.plug, K.T(26.52), 0.3);
+          const cord = RT.cord("bug-fix", top);
+          K.draw(cord, K.T(26.52) + 0.2, 0.9, "power1.inOut");
+
+          // the run dir opens and the choice is written down before any work starts
+          const dir = P.dir;
+          K.draw(dir.box, K.T(27.7), 0.9, "none");
+          K.fade(dir.head, K.T(28.28), 0.4);
+          const slip = RT.sheet(top, 358, 300);
+          K.fade(slip, K.T(28.28), 0.2);
+          K.travel(slip, el("path", { d: `M358 300H380V150H${RT.DIR.cx}V${RT.DIR.slots[0] + 22}` }), K.T(28.28), 1.1);
+          tl.to(slip, { opacity: 0, duration: 0.2 }, K.T(28.28) + 1.1);
+          const st = RT.file(0, "state.json", top);
+          const at = K.T(29.47);
+          K.draw(st.body, at, 0.5, "none");
+          K.draw(st.fold, at + 0.4, 0.2);
+          K.draw(st.lines, at + 0.45, 0.3);
+          K.fade(st.label, at + 0.3, 0.3);
+          const w1 = text("workflow:", { class: "mono call", x: RT.DIR.cx, y: RT.DIR.slots[0] + 98, "text-anchor": "middle" }, top);
+          const w2 = text("bug-fix", { class: "mono call", x: RT.DIR.cx, y: RT.DIR.slots[0] + 118, "text-anchor": "middle" }, top);
+          K.fade(w1, at + 0.6, 0.4);
+          K.fade(w2, at + 0.8, 0.4);
+
+          // the Delegate starts the Conductor
+          K.draw(P.spawn, K.T(30.65), 0.5);
+          const c = P.cond;
+          K.draw(c.box, K.T(31.23), 0.8, "none");
+          K.fade(c.label, K.T(31.83), 0.4);
+          K.fade(c.sub1, K.T(31.83) + 0.2, 0.4);
+          K.fade(c.sub2, K.T(31.83) + 0.3, 0.4);
+          K.draw(c.outer, K.T(32.39), 0.6, "none");
+          K.draw(c.cross, K.T(32.39) + 0.2, 0.5);
+          K.draw(c.core, K.T(32.39) + 0.5, 0.2);
+
+          // its dispatch reticle goes to the head of the chosen row
+          const ret = RT.reticle(top, 300, 640);
+          K.fade(ret, K.T(33.0), 0.25);
+          RT.travel(tl, ret, el("path", { d: `M300 640H380V${RT.RY(1)}H${RT.JACK}` }), K.T(33.58), 1.0);
+
+          window.__timelines["r3"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

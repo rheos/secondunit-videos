@@ -1,0 +1,41 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #furniture {
+          position: absolute;
+          inset: 0;
+          background: var(--bg);
+        }
+      </style>
+      <div data-hf-id="hf-br10" id="furniture" data-composition-id="furniture" data-width="1920" data-height="1080">
+        <svg data-hf-id="hf-br11" id="fu-ground" class="full" viewBox="0 0 1920 1080" aria-hidden="true" style="will-change: transform"></svg>
+        <svg data-hf-id="hf-br12" id="fu-frame" class="full" viewBox="0 0 1920 1080"></svg>
+      </div>
+
+      <script>
+        (() => {
+          const tl = gsap.timeline({ paused: true });
+          const K = BP.kit(tl, 0);
+          // stations are the stages of one Bureau run (README "How a run moves"), not live progress
+          BP.furniture(K, tl, {
+            stations: [
+              { label: "BRIEF", at: 0 },
+              { label: "TRIAGE", at: 18.88 },
+              { label: "DISPATCH", at: 35.34 },
+              { label: "REVIEW", at: 63.58 },
+              { label: "CLOSE-OUT", at: 76.51 },
+            ],
+            sheets: [0, 8.31, 18.88, 35.34, 46.51, 63.58, 76.51],
+          });
+          window.__timelines["furniture"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>
+
