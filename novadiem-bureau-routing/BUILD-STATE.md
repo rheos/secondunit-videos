@@ -1,7 +1,9 @@
 # Build state: Routing (Inside the Bureau, film 2)
 
-**Draft 1 rendering 2026-10-17.** Seven plates, 85.2 s, 720p, kit `paper` theme (The Cold Read's
-and The Map's look). Question: why are the Delegate, the Conductor and the specialists separate?
+**Draft 1 BUILT 2026-10-17**: https://youtu.be/lObvJdKVnS0 (unlisted, default channel). Seven plates,
+85.2 s, 720p, kit `paper` theme (The Cold Read's and The Map's look). `hyperframes check` passes;
+flashcheck PASS (worst 0.5 flashes/s); -14.0 LUFS, peak -2.0 dBFS; no silence at -45 dB / 1 s; no
+dark fields. Local master: `renders/bureau-routing_take01_draft1.mp4` (gitignored). Next: Robin's notes. Question: why are the Delegate, the Conductor and the specialists separate?
 Send it when someone asks "Why so many agents and coordinators?"
 
 ## Facts used (all from ~/Code/novadiem/bureau at origin/main 939f522, read with `git show`)
