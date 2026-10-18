@@ -1,0 +1,166 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #b3 {
+          position: absolute;
+          inset: 0;
+        }
+        #b3 svg text.ans {
+          font-family: var(--font-mono);
+          font-size: 20px;
+          font-weight: 700;
+          letter-spacing: 0.06em;
+          fill: var(--ink);
+        }
+        #b3 svg text.total {
+          font-family: var(--font-display);
+          font-size: 120px;
+          letter-spacing: -0.03em;
+          fill: var(--ink);
+        }
+      </style>
+      <div id="b3" data-composition-id="b3" data-width="1920" data-height="1080">
+        <svg class="full" viewBox="0 0 1920 1080">
+          <g id="b3-card" transform="translate(200 150)"></g>
+          <g id="b3-hl"></g>
+
+          <!-- ten synthetic answers -->
+          <g id="b3-answers">
+            <text id="b3-a-head" class="mono small dim" x="760" y="196">ANSWERS · SYNTHETIC</text>
+            <path id="b3-a-rule" class="ln thin ink" d="M760 212H980" />
+            <g id="b3-a-rows"></g>
+          </g>
+
+          <!-- the pure scorer -->
+          <g id="b3-scorer">
+            <rect id="b3-s-frame" class="ln ink" x="1100" y="160" width="620" height="230" />
+            <text id="b3-s-head" class="mono head" x="1130" y="204">score()</text>
+            <text id="b3-s-sub" class="sht dim" x="1130" y="234">SUM of items with scoredByTotal</text>
+            <g id="b3-s-nums"></g>
+            <text id="b3-s-max" class="sht dim" x="1690" y="364" text-anchor="end">of 27</text>
+          </g>
+
+          <!-- the bands, from the definition -->
+          <g id="b3-ladder">
+            <text id="b3-l-head" class="mono small dim" x="1100" y="456">BANDS · FROM THE DEFINITION</text>
+            <g id="b3-l-boxes"></g>
+            <g id="b3-l-marker" transform="translate(0 0)">
+              <path d="M-10 -16H10L0 0Z" class="fill-line" />
+            </g>
+            <text id="b3-l-band" class="mono" x="1100" y="590">BAND 5–9 · MILD DEPRESSION</text>
+          </g>
+          <text id="b3-safe" class="mono small gold-t" x="1100" y="660">SAFETY RULE · ITEM 09 &gt; 0 · NOT FIRED</text>
+          <g id="b3-fly"></g>
+        </svg>
+        <div id="b3-label-l" class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate III</div>
+        <div id="b3-label-r" class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>The Score</div>
+        <div class="statement two" data-layout-allow-overlap data-layout-allow-occlusion>
+          <div class="row">
+            <span id="b3-st-a" class="phrase">Scored by the rule</span>
+            <span id="b3-st-b" class="phrase red">in the definition.</span>
+          </div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text, kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 24);
+          const C = EP.card(K.$("b3-card"), EP.PHQ9); // on the left since plate II
+
+          K.fade(K.$("b3-label-l"), K.T(24.4), 0.4);
+          K.fade(K.$("b3-label-r"), K.T(24.4), 0.4);
+
+          // the answers column: 1,1,0,2,1,0,1,0,0 (sum 6) and the impairment item, outside the total
+          const VALS = [1, 1, 0, 2, 1, 0, 1, 0, 0, 1];
+          const rowsG = K.$("b3-a-rows");
+          K.fade(K.$("b3-a-head"), K.T(24.4), 0.3);
+          K.draw(K.$("b3-a-rule"), K.T(24.4) + 0.1, 0.3, "none");
+          const rows = VALS.map((v, i) => {
+            const y = 252 + i * 42;
+            const g = el("g", {}, rowsG);
+            text(String(i + 1).padStart(2, "0"), { class: "sht dim", x: 760, y }, g);
+            const val = text(String(v), { class: "ans", x: 880, y, "text-anchor": "end" }, g);
+            if (i === 9) {
+              el("path", { class: "ln ink construct", d: `M754 ${y - 26}H1040V${y + 12}H754Z` }, g);
+              text("NOT IN TOTAL", { class: "sht tiny dim", x: 900, y }, g);
+            }
+            K.fade(g, K.T(25.08) + i * 0.2, 0.25);
+            return { y, val };
+          });
+
+          // the scorer box
+          K.draw(K.$("b3-s-frame"), K.T(27.68), 0.7, "none");
+          K.fade(K.$("b3-s-head"), K.T(27.68) + 0.3, 0.3);
+          K.fade(K.$("b3-s-sub"), K.T(28.33), 0.3);
+          K.fade(K.$("b3-s-max"), K.T(28.33) + 0.2, 0.3);
+
+          // nine answers travel into the sum; the running total swaps one node at a time (seek-safe)
+          const nums = K.$("b3-s-nums"),
+            fly = K.$("b3-fly");
+          let run = 0;
+          const totals = [text("0", { class: "total", x: 1560, y: 366, "text-anchor": "end", opacity: 0 }, nums)];
+          K.fade(totals[0], K.T(28.33) + 0.3, 0.3);
+          VALS.slice(0, 9).forEach((v, i) => {
+            const at = K.T(28.98) + i * 0.325;
+            const r = rows[i];
+            const clone = text(String(v), { class: "ans", x: 880, y: r.y, "text-anchor": "end", opacity: 0 }, fly);
+            tl.set(clone, { opacity: 1 }, at);
+            tl.fromTo(clone, { x: 0, y: 0 }, { x: 1520 - 880, y: 330 - r.y, duration: 0.45, ease: "power2.in" }, at);
+            tl.set(clone, { opacity: 0 }, at + 0.46);
+            tl.fromTo(r.val, { opacity: 1 }, { opacity: 0.35, duration: 0.2 }, at);
+            if (v > 0) {
+              const prev = totals[totals.length - 1];
+              run += v;
+              const n = text(String(run), { class: "total", x: 1560, y: 366, "text-anchor": "end", opacity: 0 }, nums);
+              tl.set(prev, { opacity: 0 }, at + 0.46);
+              tl.set(n, { opacity: 1 }, at + 0.46);
+              totals.push(n);
+            }
+          });
+
+          K.reveal(K.$("b3-st-a"), K.T(29.63), 0.6);
+          K.reveal(K.$("b3-st-b"), K.T(30.28), 0.7);
+
+          // highlight where the rule and the bands live on the card
+          const hl = K.$("b3-hl");
+          const Z = EP.ZONES;
+          ["scoring", "bands"].forEach((z, i) => {
+            const [x, y, w, h] = Z[z];
+            const r = el("rect", { class: "ln line-strong", x: 200 + x - 4, y: 150 + y - 2, width: w + 8, height: h + 4 }, hl);
+            K.draw(r, K.T(i ? 32.25 : 28.33), 0.3, "none");
+          });
+
+          // the band ladder: 0-27, one cell per point
+          const X0 = 1100,
+            W = 620,
+            CELL = W / 28;
+          const boxes = K.$("b3-l-boxes");
+          K.fade(K.$("b3-l-head"), K.T(32.25), 0.3);
+          [[0, 4], [5, 9], [10, 14], [15, 19], [20, 27]].forEach(([a, b], i) => {
+            const x = X0 + a * CELL;
+            const w = (b - a + 1) * CELL - 4;
+            const box = el("rect", { class: i === 1 ? "ln line-strong" : "ln thin ink", x, y: 480, width: w, height: 44 }, boxes);
+            const lab = text(`${a}–${b}`, { class: "sht tiny", x: x + w / 2, y: 508, "text-anchor": "middle" }, boxes);
+            K.draw(box, K.T(32.25) + 0.1 + i * 0.1, 0.3, "none");
+            K.fade(lab, K.T(32.25) + 0.2 + i * 0.1, 0.25);
+          });
+          const mk = K.$("b3-l-marker");
+          tl.fromTo(mk, { opacity: 0 }, { opacity: 1, duration: 0.2 }, K.T(32.9));
+          tl.fromTo(mk, { x: X0 + 0.5 * CELL, y: 476 }, { x: X0 + 6.5 * CELL, y: 476, duration: 0.6, ease: "power2.out" }, K.T(32.9));
+          K.reveal(K.$("b3-l-band"), K.T(33.55), 0.6);
+          K.fade(K.$("b3-safe"), K.T(34.85), 0.4);
+
+          // plate IV's night wipes over all of it from 38.13
+          window.__timelines["b3"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>
