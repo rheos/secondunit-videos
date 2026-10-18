@@ -27,18 +27,18 @@
           const tl = gsap.timeline({ paused: true });
           const K = kit(tl, 41.24);
           const root = K.$("i5-art");
-          const A = SM.assembly(root, { cx: 960, cy: 420, s: 0.8 });
+          const A = SM.assembly(root, { cx: 960, cy: 400, s: 0.92 });
           SM.show(K, A, K.T(41.24));
 
           // trace both directions, naming the file on each side
-          const fL = text("RunsList.tsx", { class: "mono small dim", x: -320, y: 186, "text-anchor": "middle" }, A.extra);
-          const fR = text("routes/runs.py", { class: "mono small dim", x: 320, y: 186, "text-anchor": "middle" }, A.extra);
+          const fL = text("RunsList.tsx", { class: "mono dim", x: -320, y: 186, "text-anchor": "middle" }, A.extra);
+          const fR = text("routes/runs.py", { class: "mono dim", x: 320, y: 186, "text-anchor": "middle" }, A.extra);
           K.fade(fL, K.T(41.82), 0.3);
           K.fade(fR, K.T(41.82) + 0.15, 0.3);
           const req = el("path", { class: "ln ink", d: "M-500 -232H500M484 -242L502 -232L484 -222" }, A.extra);
-          const reqT = text("REQUEST · GET /api/runs", { class: "mono small", x: 0, y: -246, "text-anchor": "middle" }, A.extra);
+          const reqT = text("REQUEST · GET /api/runs", { class: "mono", x: 0, y: -246, "text-anchor": "middle" }, A.extra);
           const res = el("path", { class: "ln ink", d: "M500 222H-500M-484 212L-502 222L-484 232" }, A.extra);
-          const resT = text("RESPONSE · { id, status }", { class: "mono small", x: 0, y: 256, "text-anchor": "middle" }, A.extra);
+          const resT = text("RESPONSE · { id, status }", { class: "mono", x: 0, y: 256, "text-anchor": "middle" }, A.extra);
           K.draw(req, K.T(42.41), 0.6);
           K.fade(reqT, K.T(42.41) + 0.3, 0.3);
           K.draw(res, K.T(42.99), 0.6);
@@ -72,8 +72,8 @@
 
           const S = SM.stamp(root, "PHASE LOCK FAILED", 1580, 720, 420, true);
           SM.slam(tl, S, K.T(50.64));
-          const w1 = text("→ coupling/runs-api.md", { class: "mono small gold-t", x: 1580, y: 800, "text-anchor": "middle" }, root);
-          const w2 = text("+ A SUMMARY IN log.md", { class: "mono small dim", x: 1580, y: 830, "text-anchor": "middle" }, root);
+          const w1 = text("→ coupling/runs-api.md", { class: "mono gold-t", x: 1580, y: 800, "text-anchor": "middle" }, root);
+          const w2 = text("+ A SUMMARY IN log.md", { class: "mono small dim", x: 1580, y: 834, "text-anchor": "middle" }, root);
           K.fade(w1, K.T(51.8), 0.4);
           K.fade(w2, K.T(52.41), 0.4);
 

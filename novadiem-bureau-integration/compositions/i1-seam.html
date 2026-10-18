@@ -51,7 +51,7 @@
 
           // two halves, built apart: each one passes its own tests
           const root = K.$("i1-art");
-          const A = SM.assembly(root, { cx: 960, cy: 660, s: 0.78, gap: 120 });
+          const A = SM.assembly(root, { cx: 960, cy: 650, s: 0.85, gap: 120 });
           SM.drawHalf(K, A, "R", K.T(2.41));
           SM.drawHalf(K, A, "L", K.T(3.0));
           [[A.R, 320, 3.58], [A.L, -320, 4.16]].forEach(([g, x, at]) => {

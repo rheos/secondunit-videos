@@ -32,7 +32,7 @@
           const K = kit(tl, 18.88);
           const root = K.$("i3-art");
           const G = 220;
-          const A = SM.assembly(root, { cx: 960, cy: 440, s: 0.8, gap: G });
+          const A = SM.assembly(root, { cx: 960, cy: 420, s: 0.95, gap: G });
           SM.show(K, A, K.T(18.88));
 
           // the UI's own tests plug a mock into its connector
@@ -56,9 +56,9 @@
           K.fade(tR, K.T(24.17) + 0.1, 0.3);
 
           // the mock's field and the real one don't match
-          const ringM = el("ellipse", { class: "ln ink", cx: -G + 105, cy: 0, rx: 58, ry: 22 }, A.extra);
+          const ringM = el("ellipse", { class: "ln ink", cx: -G + 107, cy: 0, rx: 60, ry: 22 }, A.extra);
           const ringA = el("ellipse", { class: "ln ink", cx: G + 90, cy: -21, rx: 34, ry: 22 }, A.extra);
-          const tie = el("path", { class: "ln thin ink construct", d: `M${-G + 163} 0H${G - 30}V-21H${G + 56}` }, A.extra);
+          const tie = el("path", { class: "ln thin ink", d: `M${-G + 167} 0H${G - 30}V-21H${G + 56}` }, A.extra);
           K.draw(ringM, K.T(24.75), 0.4);
           K.draw(ringA, K.T(24.75) + 0.2, 0.4);
           K.sweep(tie, K.T(25.33), 0.5);
