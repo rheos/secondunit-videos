@@ -3,7 +3,7 @@ title: Stained glass
 note: >-
   Leaded panes with painted figures and lead-line outlines. Each window holds a scene; a watering can grows a
   flower in the desert pane.
-used: You Don't Love Me test, Bob Wiseman
+used: You Don't Love Me, Bob Wiseman
 cost: free
 group: code
 order: 280
@@ -19,12 +19,15 @@ code:
   note: >-
     On branch you-dont-love-me (draft PR #92), not merged. glass.js is the kit (panes, lead, grisaille);
     window.js and main.js are committed, scene and timing files that quote the lyric stay local. The film is
-    glass-v1.html, glass-v2.html, glass-bridge.html and glass.html; canvas-loop.html is an 8 s rose-window loop.
+    glass-v1.html, glass-v2.html, glass-bridge.html and glass.html; canvas-loop.html is an 8 s rose-window
+    loop.
 rules:
   - Every piece of glass is its own pane, with a seeded shift in value and hue so no two pieces match
   - Panes shade darker toward their lead and read brightest mid-pane
   - Dark lead cames outline every pane; faces and folds in dark brown grisaille paint lines
-  - A glass texture over all of it (mottle, drawn-glass streaks, seed bubbles), then bloom, light shafts, vignette and grain
+  - >-
+    A glass texture over all of it (mottle, drawn-glass streaks, seed bubbles), then bloom, light shafts,
+    vignette and grain
   - One window per verse in a stone nave; the camera trucks pane to pane, one lancet per sung line
   - The light moves from day to night; at the end cracks spread and panes fall out while the lead stays
 palette:
@@ -46,7 +49,9 @@ proof:
     - kHeS0CbEZVY
     - j-FusDNYy9g
     - BHJ7YJ-B1Ok
-verdict: 'Bob, 2026-10-10, on the look reel: "view the whole thing through that lens" (he loved the stained glass and asked for every verse in it).'
+verdict: >-
+  Bob, 2026-10-10, on the look reel: "view the whole thing through that lens" (he loved the stained glass and
+  asked for every verse in it).
 related:
   - teacup
   - medical

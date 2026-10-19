@@ -1,7 +1,7 @@
 slug: kawaii
 title: Kawaii watercolour
 note: Boxy characters with kaomoji faces, wobbly marker line over pastel watercolour washes.
-used: Airplane on the Highway test
+used: Airplane on the Highway, Bob Wiseman
 cost: free
 group: code
 order: 330
@@ -19,12 +19,16 @@ code:
     kawaii sections D, G and J2 are bobwiseman-airplane-v1/sections/kawaii (kawaii.html, j2.html; plane3.js is
     the approved dimensional plane).
 rules:
-  - "Two layers: flat pastel fills on the paint canvas, black felt-marker outlines on their own ink canvas, sharing every transform"
-  - "The paint becomes a wash on cold-press paper: pigment pools at the drying edge, mottles, granulates, blooms into damp paper"
+  - >-
+    Two layers: flat pastel fills on the paint canvas, black felt-marker outlines on their own ink canvas,
+    sharing every transform
+  - >-
+    The paint becomes a wash on cold-press paper: pigment pools at the drying edge, mottles, granulates,
+    blooms into damp paper
   - Ink sits on top, crisp, wobbly, re-drawn on twos, with felt-tip density and tooth skips
   - Boxy characters with kaomoji faces (^ ^ or dot eyes, tiny mouth, blush); nothing ever covers the face
   - "It is a copied style: cross-look face rules (FACE.md) do not apply to kawaii"
-  - Music notes for singing, not lettering; pastel palette (kawaii.js PAL), ink #1e1a1d
+  - Music notes for singing, not lettering; pastel palette (kawaii.js PAL), ink
 palette:
   - "#1e1a1d"
   - "#f6c3c6"

@@ -1,7 +1,7 @@
 slug: 16bit
 title: 16-bit pixel art
 note: A SNES-era racing game drawn at 320x180 in 46 colours, scaled up with crisp pixels.
-used: Airplane on the Highway test
+used: Airplane on the Highway, Bob Wiseman
 cost: free
 group: code
 order: 360
@@ -18,11 +18,15 @@ code:
     px.js is the indexed pixel engine, js/shots.js holds the 46-colour PALDEF and the shots, js/look.js the
     CRT finish. Section H (188.54-219.46 s) of the final film reuses this test as is.
 rules:
-  - Draw into an indexed 320x180 buffer, one palette index per pixel, then blow it up x4 nearest-neighbour at 720p
+  - >-
+    Draw into an indexed 320x180 buffer, one palette index per pixel, then blow it up x4 nearest-neighbour at
+    720p
   - "46 colours only (PALDEF in js/shots.js): every pixel of every frame is one of them"
   - Integer primitives, no anti-aliasing, no smooth gradients; shade with a 4x4 Bayer dither
   - Text in a hand-drawn 5x7 bitmap font, typed out letter by letter
-  - Finish reads the source 1:1 (texelFetch, no blur); only a faint darker last row per game pixel, a whisper of vignette, white flash on hits
+  - >-
+    Finish reads the source 1:1 (texelFetch, no blur); only a faint darker last row per game pixel, a whisper
+    of vignette, white flash on hits
   - Game grammar on the lyrics (position counter, JUMP not equipped, pause menu); hits snapped to vocal onsets
 palette:
   - "#000000"
