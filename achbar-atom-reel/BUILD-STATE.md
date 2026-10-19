@@ -49,7 +49,8 @@ Plates and handovers (score seconds, bars of glassy-art-pop take-02 at ~88 BPM):
   gitignored; `python3 -I fetch-pd.py` gets them back. Only trinity, eniac-beck-snyder and the stamp are used;
   the others (Crossroads Baker, Castle Bravo, Oppenheimer and Groves, Eisenhower at the UN, a second ENIAC) are
   there for the next test.
-- `assets/song.wav` (gitignored) = score-library `glassy-art-pop/take-02.mp3` (sha256 starts 2bbe26d1), 48 kHz.
+- `assets/song.wav` (gitignored) = score-library `glassy-art-pop/take-02.mp3` (sha256 starts 2bbe26d1), 48 kHz, through
+  `alimiter=limit=0.7:level=false:attack=2:release=60`.
 
 ## Running
 
@@ -62,4 +63,7 @@ taint the canvas and `toDataURL` throws.
 
 ## Draft log
 
-- Draft 1 (2026-10-19): `renders/atom-reel_test01_draft1_720p.mp4`. Not uploaded, not sent; Robin watches first.
+- Draft 1 (2026-10-19): `renders/atom-reel_test01_draft1_720p.mp4` (copy in `~/Downloads/romancing-the-atom-test01-draft1_720p.mp4`),
+  60.0 s, 1280x720, 24 fps. Flash check PASS (worst 1/s). Loudness -14.0 LUFS, peak -1.6 dBFS: the score is
+  limited into `assets/song.wav` (`alimiter=limit=0.7`), because the raw take peaks over 0 dBFS after AAC.
+  Not uploaded, not sent; Robin watches first.

@@ -219,7 +219,7 @@ function hash1(n) { n = (n ^ 61) ^ (n >>> 16); n = n + (n << 3); n = n ^ (n >>> 
 
 // ---------- V. the clock, VI. red flags, VII. title block: one sheet, the camera travels down it ----------
 const CK = { x: 960, y: 520, r: 330 };
-const FORM_Y = 1300, BLOCK_Y = 2380;
+const FORM_Y = 1300, BLOCK_Y = 2600;
 function camAt(t) {
   const zIn = eio(pr(t, bar(13) + 2.3, bar(14) + .8)), zOut = eio(pr(t, PLATE.F - .2, PLATE.F + .9)), down = eio(pr(t, PLATE.F - .2, PLATE.F + 1.0)), down2 = eio(pr(t, bar(18) - .05, bar(18) + 1.0));
   const tip = [CK.x, CK.y - CK.r];
@@ -309,18 +309,18 @@ function kinStamp(t, sk, ty) {
   X.restore();
 }
 function titleBlock(t) {
-  const t0 = bar(18) + .45, y = BLOCK_Y; if (t < t0 - 1.5) return;
+  const t0 = bar(18) + .1, y = BLOCK_Y; if (t < t0 - 1.5) return;
   const x0 = 220, x1 = 1700, rows = [y + 210, y + 330, y + 410, y + 490, y + 570, y + 650], k = pr(t, t0 + .2, t0 + 1.2);
   X.strokeStyle = C.white; X.lineWidth = 2; X.globalAlpha = .9; X.strokeRect(x0, y + 60, (x1 - x0) * eo(k), 650 * eo(pr(t, t0 + .2, t0 + .9))); X.globalAlpha = 1;
   if (k > .5) rows.slice(1).forEach((ry, i) => gl(x0, ry - 70, lerp(x0, x1, eo(pr(t, t0 + .6 + i * .08, t0 + 1.1 + i * .08))), ry - 70, C.lav, .5, 1));
   gl(1380, y + 260, 1380, y + 710, C.lav, .5 * pr(t, t0 + .9, t0 + 1.2), 1);
   const s = fit('ROMANCING THE ATOM', 1360, 120, { fam: FT.d, weight: 900, stretch: 'expanded' });
   kin('ROMANCING THE ATOM', x0 + 34, y + 190, t, t0 + .5, { size: s, weight: 900, stretch: 'expanded', stag: .03 });
-  caption('A GRAPHICS TEST FOR MARK ACHBAR’S DOCUMENTARY', x0 + 34, y + 305, t, t0 + 1.0, { size: 28, color: C.white });
-  caption('DRAWN IN CODE BY NOVADIEM · NOVADIEM.COM', x0 + 34, y + 385, t, t0 + 1.5, { size: 27, color: C.cyan, weight: 700 });
-  caption('ARCHIVAL PHOTOS: U.S. DEPT. OF ENERGY, U.S. ARMY, U.S. POST OFFICE · PUBLIC DOMAIN', x0 + 34, y + 465, t, t0 + 1.9, { size: 19, color: C.lav, cps: 60 });
-  caption('DATA: FAS VIA OUR WORLD IN DATA · BULLETIN OF THE ATOMIC SCIENTISTS · APS NEWS', x0 + 34, y + 545, t, t0 + 2.2, { size: 19, color: C.lav, cps: 60 });
-  caption('MUSIC: GLASSY ART POP, TAKE 2 (ELEVENLABS)', x0 + 34, y + 625, t, t0 + 2.5, { size: 19, color: C.lav, cps: 60 });
+  caption('A GRAPHICS TEST FOR MARK ACHBAR’S DOCUMENTARY', x0 + 34, y + 305, t, t0 + .8, { cps: 70, size: 28, color: C.white });
+  caption('DRAWN IN CODE BY NOVADIEM · NOVADIEM.COM', x0 + 34, y + 385, t, t0 + 1.2, { cps: 70, size: 27, color: C.cyan, weight: 700 });
+  caption('ARCHIVAL PHOTOS: U.S. DEPT. OF ENERGY, U.S. ARMY, U.S. POST OFFICE · PUBLIC DOMAIN', x0 + 34, y + 465, t, t0 + 1.5, { size: 19, color: C.lav, cps: 110 });
+  caption('DATA: FAS VIA OUR WORLD IN DATA · BULLETIN OF THE ATOMIC SCIENTISTS · APS NEWS', x0 + 34, y + 545, t, t0 + 1.8, { size: 19, color: C.lav, cps: 110 });
+  caption('MUSIC: GLASSY ART POP, TAKE 2 (ELEVENLABS)', x0 + 34, y + 625, t, t0 + 2.1, { size: 19, color: C.lav, cps: 110 });
   if (t > t0 + 1.3) { atom(1540, y + 470, 110, 36, pr(t, t0 + 1.3, t0 + 2.6), t, { nr: 4 }); lab(1540, y + 640, 'TEST 01 · 2026-10-19', C.lav, .8 * pr(t, t0 + 2.4, t0 + 2.8), 16, 'center'); }
 }
 
