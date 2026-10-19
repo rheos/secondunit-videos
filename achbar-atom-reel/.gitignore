@@ -3,3 +3,5 @@ out/
 assets/song.wav
 assets/pd/*.jpg
 renders/
+assets/sfx.wav
+assets/mix.wav
