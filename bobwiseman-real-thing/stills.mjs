@@ -7,6 +7,7 @@ await p.goto('file://' + process.cwd() + '/' + (process.env.PAGE || 'index.html'
 const files = [];
 for (const t of ts) { const u = await p.evaluate((t) => window.__frameJPEG(t, .9), t); const f = `${OUTD}/s_${t.toFixed(2)}.jpg`; fs.writeFileSync(f, Buffer.from(u.split(',')[1], 'base64')); files.push(f); }
 await b.close(); if (errs.length) console.log('ERRORS', [...new Set(errs)].join('\n'));
+if (files.length < 2) { console.log('still', files[0]); process.exit(0); } // xstack needs two inputs
 const cols = 4, rows = Math.ceil(files.length / cols);
 execSync(`ffmpeg -y -loglevel error ${files.map((f) => `-i ${f}`).join(' ')} -filter_complex "${files.map((_, i) => `[${i}]scale=480:270[v${i}]`).join(';')};${files.map((_, i) => `[v${i}]`).join('')}xstack=inputs=${files.length}:layout=${files.map((_, i) => `${(i % cols) * 480}_${Math.floor(i / cols) * 270}`).join('|')}:fill=black" ${OUTD}/sheet.jpg`);
 console.log('sheet', files.length);

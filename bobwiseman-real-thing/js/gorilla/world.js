@@ -36,7 +36,7 @@ const PAL = {
   day: { sky: ['#9fcfc4', '#d8ead0', '#f6e7bf'], tint: [0, 0, 0, 0], sun: '#fff4cf', halo: [255, 246, 214], rays: 1, stars: 0 },
   dawn: { sky: ['#6f86b8', '#d9a7b9', '#f7c99a'], tint: [60, 70, 135, .38], sun: '#ffd9a0', halo: [255, 214, 170], rays: .5, stars: .15 },
   dusk: { sky: ['#4b4f8f', '#d9779a', '#f6b26b'], tint: [125, 50, 75, .36], sun: '#ffb36b', halo: [255, 170, 110], rays: .7, stars: .1 },
-  night: { sky: ['#0b1430', '#1c2a58', '#33467a'], tint: [14, 22, 60, .66], sun: '#f2f0dc', halo: [190, 205, 255], rays: 0, stars: 1 },
+  night: { sky: ['#0b1430', '#1c2a58', '#33467a'], tint: [30, 44, 96, .5], sun: '#f2f0dc', halo: [190, 205, 255], rays: 0, stars: 1 },
   dream: { sky: ['#c3a3ea', '#f3c3dc', '#ffe1c4'], tint: [225, 140, 210, .3], sun: '#fff0f8', halo: [255, 220, 245], rays: .8, stars: .3 },
 };
 const hx2 = (h) => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
