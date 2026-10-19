@@ -31,7 +31,12 @@ function drawWindupTeeth(S, open, t) {
     for (let j = 0; j < 7; j++) { const tx = -38 * k + j * 11 * k, h = (j === 0 ? 9 : 11) * k; g.fillStyle = tooth; g.strokeStyle = toothE; g.lineWidth = 1.4 * k;
       g.beginPath(); g.roundRect ? g.roundRect(tx, upper ? 6 * k - h : 6 * k, 10 * k, h, 3 * k) : g.rect(tx, upper ? 6 * k - h : 6 * k, 10 * k, h); g.fill(); g.stroke(); }
     g.restore(); };
-  jaw(false, 0); jaw(true, open * .5); // the upper jaw hinges up at the back (front lifts), the lower jaw stays put
+  // seen from the front: the mouth opens straight up, the upper jaw lifting level off the lower one, a dark mouth and a
+  // pink tongue showing in the gap, then it slams shut on the beat
+  const gap = open * 26 * k;
+  if (gap > 1) { g.fillStyle = '#3a0f14'; g.beginPath(); g.ellipse(0, 6 * k - gap / 2, 42 * k, gap / 2 + 3 * k, 0, 0, TAU); g.fill();
+    g.fillStyle = '#d4566a'; g.beginPath(); g.ellipse(0, 6 * k - 2 * k, 26 * k, Math.min(gap / 2, 9 * k), 0, Math.PI, TAU); g.fill(); }
+  jaw(false, 0); g.save(); g.translate(0, -gap); jaw(true, 0); g.restore();
   // a cut-out outline round the whole toy, so it reads as a Gilliam paper cut
   g.strokeStyle = 'rgba(30,18,14,.55)'; g.lineWidth = 3 * k;
 }
