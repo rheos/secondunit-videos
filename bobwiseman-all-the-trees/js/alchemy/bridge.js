@@ -2,8 +2,9 @@
    or somehow the scene was refreshed more. maybe the heart gets much bigger much quicker or maybe something even more
    surreal happens". The bridge, 96.3-110.5 s:
    - the heart pumps up a size on every "love" (97.05, 98.02, 100.07, 103.45), each pump overshooting;
-   - "that we need to know" (99.65): a cut to a tilted close-up on the dancing saints, while the heart, too big for its
-     cradle, floats up behind them like a balloon;
+   - the bridge downbeat (96.000, draft 4b at Bob's request): a cut to a tilted close-up on the dancing saints that
+     tilts up with the rising heart; from "that we need to know" (99.65) the heart, too big for its cradle, floats up
+     behind them like a balloon;
    - "when the sun shines so hard" (102.45): cut back wide. The heart is now a giant sun bearing down behind their heads,
      and it ignites on "sun" as before;
    - "when the winter snows" (106.31): two puffed-up worthies, a bewigged statesman and an opera diva, sail across the
@@ -18,7 +19,8 @@
  const img={};const oldLoad=A.load;
  A.load=async()=>{await oldLoad();const M=window.ALCHEMY_BRIDGE_MEDIA||{};
   await Promise.all(Object.keys(M).map(k=>new Promise((res,rej)=>{const im=new Image();im.onload=()=>{img[k]=im;res()};im.onerror=()=>rej(new Error('Missing bridge asset '+k));im.src=M[k]})))};
- const T={on:96.3,off:110.5,loves:[[97.05,.4],[98.02,.4],[100.07,.5],[103.45,.6]],cut:[99.65,102.45],
+ const T={on:96.3,off:110.5,loves:[[97.05,.4],[98.02,.4],[100.07,.5],[103.45,.6]],cut:[96.0,102.45],hold:99.65, // draft 4b (Bob: "change precisely on 1:36"): the cut lands on the bridge downbeat, 96.000 s (frame 2304)
+ 
   rise:[[99.75,101.9,-120],[102.45,104.4,-40]],sail:106.31,cherub:107.62,fire:[107.96,108.08],snows:108.34,home:[107.96,109.3]};
  const ID={k:1,dx:0,dy:0,ray:1,behind:false,fa:0};
  const spring=u=>u<=0?0:1-Math.exp(-u*7)*Math.cos(u*16);
@@ -31,10 +33,14 @@
   dy+=10*Math.sin(t*3.1)*smooth(99.8,100.6,t); // it bobs like a balloon on a string
   const home=smooth(T.home[0],T.home[1],t),shiver=home>0&&home<1?.035*Math.sin(t*44)*(1-home):0;
   k=mix(k,1,home)+shiver;dy=mix(dy,0,home);
-  return {k,dx:0,dy,ray:Math.sqrt(k),behind:t>=T.cut[0]&&t<T.home[1]+.05,fa:smooth(108.9,T.home[1]+.05,t)}};
+  // Behind the saints from 99.65; the front copy closes as an iris while the heart lifts off, and reopens on the way home.
+  return {k,dx:0,dy,ray:Math.sqrt(k),behind:t>=T.hold&&t<T.home[1]+.05,fa:t<105?1-smooth(T.hold,T.hold+.5,t):smooth(108.9,T.home[1]+.05,t)}};
 
  // ---- the cut: a tilted close-up on the saints for "that we need to know" ----
- A.bridgeCam=raw=>{if(raw<T.cut[0]||raw>=T.cut[1])return null;const u=(raw-T.cut[0])/(T.cut[1]-T.cut[0]);
+ A.bridgeCam=raw=>{if(raw<T.cut[0]||raw>=T.cut[1])return null;
+  // From the downbeat the close-up starts low on the root junction and tilts up with the rising heart; from 99.65 as draft 4.
+  if(raw<T.hold){const e=smooth(T.cut[0],T.hold,raw);return {r:-.12,z:mix(1.42,1.5,e),x:950,y:mix(560,470,e)}}
+  const u=(raw-T.hold)/(T.cut[1]-T.hold);
   return {r:-.12+.03*u,z:1.5+.08*u,x:950-14*u,y:470-8*u}}; // keeps the view inside the drawn sky and ground
 
  // ---- the worthies, the cherub, the snow ----

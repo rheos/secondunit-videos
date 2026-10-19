@@ -30,3 +30,9 @@ Why these: the cuts give Bob the angle change (the film's first hard cuts outsid
 - Full cut `out/att_alchemy-d4-full_f00000-f03674_24fps_draft.mp4`: v29 frames to 1:36.25, the bridge, v29 to 2:05, then 2:05 to the end re-rendered from the committed code (identical to `frames_d3b`). Against draft 3's file (320x180 grey): before the bridge mean diff 0.00, after it at most 1.20/255. Audio md5 identical. 0/3674 bad frames.
 - Assembly trap: an ffmpeg concat list with per-frame `duration` lines drifts one frame every 2 s (it showed as a 14/255 spike every 48 frames). Assemble from a numbered image sequence (`-framerate 24 -i f_%06d.jpg`) instead.
 - Before/after: `out/att_d4_before-after_bridge_left-d3_right-d4.jpg`.
+
+## Draft 4b: the change lands on 1:36 (2026-10-19)
+
+Bob on draft 4: "could the image change precisely on 1:36, the start of the bridge?" The bridge downbeat is 96.000 s, frame 2304 (the strongest onset in both the full mix and the band under 150 Hz; the 145 bpm grid from 110.97 puts it at 96.07). The cut to the tilted close-up moved there from 99.65: it opens low on the root junction as the gold glint arrives and tilts up with the rising heart, then runs on exactly as draft 4 from 99.65. With no cut left at 99.65 to hide it, the heart's move behind the saints now closes as an iris from its own edge (99.65 to 100.15), the reverse of the way home.
+
+QA: only frames 2304-2403 (1:36.000 to 1:40.125) differ from draft 4's frames; every other frame is identical. Full cut `out/att_alchemy-d4b-full_f00000-f03674_24fps_draft.mp4` against draft 4's file: outside that span at most 1.12/255 mean diff (encode noise), audio md5 identical, 0/3674 bad frames.
