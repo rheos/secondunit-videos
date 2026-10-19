@@ -11,7 +11,11 @@ const phoneSlump = (t) => ease(t, wt(1, 'scientists') + .3, L_(1).s + 3.9);
 // draft 11 (Robin: it went out of frame as it melted): the phone sits 0.25 m nearer the hat hole and 0.4 m further from
 // the front edge, so in the low shot that turns from it to the Instrument People (24-27.6) it stays in the lower middle
 // of the frame while it slumps, instead of sliding off the bottom right corner
-const PHONE = { x: .95, z: -.55 };
+const PHONE = { x: 3.55, z: -.6 }; // draft 22: near the open end of the table (x = TL), where it folds over the end edge in view
+// where the phone's centre lies: the day's heat drifts it forward, and as it goes soft it creeps to sit 0.12 m behind the
+// front edge, so its front half folds over (draft 22, the soft watch)
+function phoneCZ(t) { return PHONE.z; }
+function phoneCX(t) { return lerp(PHONE.x + melt(t) * .5, TL - .03, ease(t, wt(1, 'scientists'), L_(1).s + 3.2)); }
 // draft 16: the mute button on the far edge and the puff (the arm and button are drawn by muteButton, after the props)
 const PUFF = { t: () => wt(1, 'can') - .12, bx: 1.25, bz: 1.18, seat: 4 };
 // draft 17 (Robin on d16: "more like bubbles ... should be darker and a bit more of it", the "this message will
@@ -52,9 +56,14 @@ function muteButton(t) {
   g.fillStyle = PAL.egg; g.beginPath(); g.ellipse(b[0], b[1] + .01 * k, .055 * k, .045 * k, 0, 0, TAU); g.fill();
 }
 function speakerphone(t) {
-  const m = melt(t), cz = PHONE.z - m * .75, cx = PHONE.x, sl = phoneSlump(t), pts = [];
-  const flow = (x, z, f = 1) => { const dx = x - cx, dz = z - cz, front = clamp(-dz / .3), side = 1 - .55 * (dx / .4) ** 2; // front points run toward the edge
-    return [cx + dx * (1 + .25 * sl * f), z - sl * f * (.15 + 1.05 * front * side)]; };
+  const cz = phoneCZ(t), cx = phoneCX(t), sl = phoneSlump(t), pts = [];
+  const drape = (pts, y0) => pts.map(([x, z]) => x > TL ? [TL + .015, y0 - (x - TL) * 1.05, z] : [x, y0, z]); // it folds over the END edge
+  // draft 22 (Robin: copy Dali's soft watch, source/refs/dali-soft-watch-ref.png): the phone creeps to the table's front
+  // edge as it softens, then folds over it along one clean crease. The part past the edge hangs straight down, longer
+  // than it lay, narrowing into a rounded lobe; the face, grille, pods and LEDs fold with it, so they stretch downward
+  // but still read, and the rim runs unbroken round the whole outline through the bend
+  const flow = (x, z) => { const dz = z - cz; let ov = x - TL; if (ov <= 0) return [x, z];
+    ov *= 1 + 2.3 * sl; const u = clamp(ov / .8); return [TL + ov, cz + dz * (1 - .72 * u ** 1.4) + sl * (.16 * Math.sin(u * 2.4) - .05 * u)]; }; // a long narrow lobe that swings off to one side, an S as in the painting
   // draft 9: it read as a beetle at phone size (a dark rounded shell with two "eyes"). Now a conference phone: a flat
   // triangle with straight sides and blunt corner mic pods, a pale speaker bezel and grille in the middle, a lit LCD
   // strip, and a coiled cord running off the back. Same size, same place, same slump and tape X.
@@ -64,7 +73,9 @@ function speakerphone(t) {
   { const cord = []; for (let i = 0; i <= 90; i++) { const u = i / 90, bx = lerp(cx + Math.cos(1.55) * .2, cx + .95, u), bz = lerp(cz + Math.sin(1.55) * .2, cz + 1.05, u) + .25 * Math.sin(u * Math.PI) * (1 - u), w = u * 7 * TAU; // the coiled cord
       cord.push(PL(...drape([flow(bx + Math.cos(w) * .06 * Math.sin(u * Math.PI), bz + Math.sin(w) * .045 * Math.sin(u * Math.PI), .2)], TOP + .02)[0])); }
     if (ok(cord)) { g.strokeStyle = '#1b1c20'; g.lineWidth = Math.max(1.2, .02 * kAt(cord[0])); g.lineJoin = 'round'; g.beginPath(); cord.forEach((p, i) => i ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1])); g.stroke(); } }
-  poly(P3, '#2f3136', '#17181b', Math.max(1, .012 * kAt(P3[0])));
+  poly(P3, '#2f3136', '#b7bcc4', Math.max(2, .05 * kAt(P3[0]))); // the rim, unbroken round the outline and through the fold, like the watch's bezel
+  if (sl > .05) { const hw = .3, cr = []; for (let i = 0; i <= 16; i++) { const u = i / 16, z = cz - hw + 2 * hw * u, b = Math.sin(u * Math.PI); cr.push(PL(TL + .03 + .05 * b, TOP + .035 - .02 * b, z)); } // the rounded crease where it bends over the edge
+    if (cr.every((q) => q[2] > .2)) { g.save(); g.globalAlpha = .55 * clamp(sl * 2); g.strokeStyle = '#9aa0a9'; g.lineWidth = Math.max(1.5, .035 * kAt(cr[8])); g.lineCap = 'round'; g.beginPath(); cr.forEach((q, i) => i ? g.lineTo(q[0], q[1]) : g.moveTo(q[0], q[1])); g.stroke(); g.restore(); } }
   if (sl > 0 && P3.every((p) => p[2] > .15)) { const hl = []; for (let i = 0; i <= 12; i++) { const a = 3.7 + i / 12 * 1.9; hl.push(PL(...drape([flow(cx + Math.cos(a) * .27, cz + Math.sin(a) * .22)], TOP + .055)[0])); } // a soft highlight on its back
     g.save(); g.globalAlpha = .35 * sl; g.strokeStyle = '#8a8e96'; g.lineWidth = .025 * kAt(hl[6]); g.beginPath(); hl.forEach((p, i) => i ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1])); g.stroke(); g.restore(); }
   const ring = (r, dz = 0) => drape(Array.from({ length: 28 }, (_, i) => { const a = i / 28 * TAU; return flow(cx + Math.cos(a) * r, cz + Math.sin(a) * r * .9 - dz, .5); }), TOP + .05).map((p) => PL(...p));
@@ -446,7 +457,7 @@ function jailModel(t, onPlaya) { // onPlaya: the depth-sorted call from tableInt
   const drop = ease(t, s9 + .1, s9 + .55), whip = ease(t, un - .05, un + .55), grow = ease(t, un - .8, un - .1);
   // the teeth: hop out of the speakerphone on "soundbite" and chatter in two rows; hidden once the drape is down
   const hemClip = !onPlaya && drop > 0 && drop < 1 ? drapeHem(t, drop, whip, grow) : null; if (hemClip) { g.save(); g.beginPath(); hemClip.forEach((q, i) => i ? g.lineTo(q[0], q[1]) : g.moveTo(q[0], q[1])); g.lineTo(hemClip[hemClip.length - 1][0], H + 4e3); g.lineTo(hemClip[0][0], H + 4e3); g.closePath(); g.clip(); } // draft 11: the drape falls over them, so only what is under its hem shows, and nothing is left sticking out when it lands
-  if (!onPlaya && drop < 1) { const pc = PL(PHONE.x, TOP + .1, PHONE.z - melt(t) * .75 - .1);
+  if (!onPlaya && drop < 1) { const pc = PL(phoneCX(t), TOP + .1, phoneCZ(t) - .1);
     for (const T of TEETH) { const lead = T.i === TEETH_LEAD, st = lead ? pat - .55 : sb - .1 + T.i * .07, u = clamp((t - st) / .45), p = PL(T.x, TOP, T.z);
       if (lead && u < 1 && p[2] > .2) { const fh = dropY(t, pat, sealH); if (fh !== null) waxSeal(p[0], p[1] - .34 * kAt(p) * 1.3, kAt(p), t, pat, .5, fh * kAt(p)); } // draft 11: the seal falls from out of frame onto the spot the lead set hops to
       if (u <= 0) continue; if (p[2] < .2 || pc[2] < .2) continue;
