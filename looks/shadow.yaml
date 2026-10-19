@@ -1,0 +1,49 @@
+slug: shadow
+title: Shadow puppets
+note: Backlit cut-paper silhouettes in amber light.
+used: The Mouse, the Bird and the Sausage
+cost: free
+group: code
+order: 50
+clip: shadow.mp4
+tall: false
+status: approved
+engine: canvas2d
+project: shadow-tales (rheos/shadow-tales)
+code:
+  path: js/gl.js
+  flag: null
+  page: mbs.html
+  note: >-
+    in rheos/shadow-tales (secondunit/shadow-tales), not secondunit-videos. gl.js is the lamp behind the
+    cloth; puppets and scenery in js/puppets.js and js/sets.js; the episode in js/ep/mbs.js.
+rules:
+  - >-
+    Three layers: front (puppets pressed on the cloth, crisp), back (scenery held away, blurred and paler),
+    glow (added light)
+  - Puppets are card silhouettes; cut-outs are holes, colour is a multiplied gel
+  - "An oil lamp behind the cloth: hotspot with a four-point star, falloff to burnt edges, flicker and sway"
+  - Shadows are red-brown, never black; one palette for the whole tale, only the lamp moves
+  - Rods run down out of frame; their shadows sit on the soft back layer
+  - A speaking puppet shakes its whole body with little hops; listeners stay still
+  - Cloth weave and folds, light wrapping the silhouette edges, faint leather grain
+palette:
+  - "#ffd24a"
+  - "#ee8418"
+  - "#8c2a05"
+  - "#130d09"
+reference: >-
+  Javanese wayang kulit (Robin, 2026-10-01): saturated orange screen, hot yellow lamp, burnt edges, red-brown
+  shadows
+proof:
+  renders:
+    - shadow-tales/out/mbs_v4-final_f00000-f04729_24fps_master-1080p.mp4
+  pr: []
+  youtube:
+    - QeAPbCZo304
+    - PJYJum43OKw
+    - F2Pno5PzN7U
+verdict: null
+related:
+  - silhouette
+  - papersilhouette

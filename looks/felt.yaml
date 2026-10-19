@@ -1,0 +1,45 @@
+slug: felt
+title: Felt diorama
+note: Felt characters in a miniature set, animated shot by shot.
+used: GrowOperative explainers
+cost: credits
+group: generated
+order: 70
+clip: felt.mp4
+tall: false
+status: approved
+engine: generated
+project: growoperative-explainers (rheos/growoperative-explainers)
+code:
+  path: prompts/_style.txt
+  flag: null
+  page: null
+  note: >-
+    in rheos/growoperative-explainers, not secondunit-videos. tools/hf.py runs one Higgsfield job per shot and
+    logs spend to docs/SPEND.md; cast sheets from prompts/cast/; per-shot prompts in prompts/v01-v05/. Stills
+    gpt_image_2_5, motion kling3_0.
+rules:
+  - "Needle-felted wool miniature: visible fibres and tiny stitches on every surface"
+  - Rounded friendly shapes, button eyes, gentle smiles
+  - Soft natural light, shallow depth of field, like a macro photo of a tabletop diorama
+  - No text, letters or numbers in generated frames; titles and tag numbers are a code-drawn overlay
+  - Trustlines are green yarn, a payment is a bead sliding along it, a balance is a blank wooden tag
+  - Yarn beats are their own macro inserts (start still, end still, kling bridge), never in wide shots
+  - Cast turnaround sheets hold the characters across shots
+palette: []
+reference: Needle-felted wool stop-motion tabletop dioramas
+proof:
+  renders:
+    - growoperative-explainers/out/explainer-05_felt-v3_f00000-f01904_24fps_composite.mp4
+  pr:
+    - rheos/growoperative-explainers#6
+  youtube:
+    - vHZPqj6kdF0
+    - PzC1msmjarE
+    - zj-JIBgbXxI
+    - yk9dCTSTZGQ
+    - cXNE16_u37k
+verdict: null
+related:
+  - sheep
+  - claymation

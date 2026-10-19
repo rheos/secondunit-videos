@@ -1,0 +1,48 @@
+slug: armink
+title: Navy ink, pencil shadows
+note: >-
+  One heavy navy line, flat grainy fills that sit a little off the line, and cast shadows hatched in
+  blue-violet coloured pencil on plain cream paper.
+used: Travel Agent test, Bob Wiseman
+cost: free
+group: code
+order: 420
+clip: armink.mp4
+tall: false
+status: option
+engine: canvas2d
+project: bobwiseman-travel-agent
+code:
+  path: bobwiseman-travel-agent/js/arm.js
+  flag: "?look=arm (&ground=plain for cream paper)"
+  page: bobwiseman-travel-agent/looks/film.html
+  note: >-
+    wraps kit.js stroke/fillP/hatch/stripes/paper; hooks armInit, armPre, armPost in main.js. Porting it means
+    mapping those onto another film kit.
+rules:
+  - "One ink for every outline: deep navy (#25264a), heavy and even, about 4.6 to 7 px at 1080p"
+  - Flat fills with a screen-anchored dry-brush speckle; no modelling inside objects
+  - Each fill sits 1.6 px right and 3 px down of its line, so a sliver of paper shows along the upper edges
+  - >-
+    Cast shadows are blue-violet coloured-pencil hatching on the paper, down and to the right, cross-hatched
+    near the object, never on objects
+  - Inside objects only a few light pencil streaks, never ink hatching
+  - Plain cream paper (#f3eddc) suits it better than stripe grounds
+palette:
+  - "#25264a"
+  - "#f3eddc"
+  - "#6c68aa"
+  - "#e06050"
+  - "#e0b040"
+reference: Kevin Ngo's robot-arm GIF (x.com/kevin_t_ngo/status/2110844474599555540, 2026-10-15)
+proof:
+  renders:
+    - bobwiseman-travel-agent/out/arm/ta_draft16-vs-arm-look.jpg
+    - bobwiseman-travel-agent/out/arm/arm-dining_6s.mp4
+  pr:
+    - rheos/secondunit-videos#239
+  youtube: []
+verdict: "Robin, 2026-10-19: keep draft 16's look for Travel Agent; merge the arm look as an option for other films."
+related:
+  - fieldguide
+  - outlinecartoon

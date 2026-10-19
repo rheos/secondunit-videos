@@ -1,0 +1,48 @@
+slug: type
+title: Kinetic typography
+note: "The lyrics are the set: black screen, one hot accent, terminal prompts, gauges and rubber stamps."
+used: Airplane on the Highway test
+cost: free
+group: code
+order: 320
+clip: type.mp4
+tall: false
+status: approved
+engine: canvas2d
+project: bobwiseman-airplane-type, bobwiseman-airplane-v1
+code:
+  path: bobwiseman-airplane-type/js/ui.js
+  flag: null
+  page: bobwiseman-airplane-type/type.html
+  note: >-
+    ui.js holds palette, fonts and HUD chrome; plane.js the technical-drawing plane; js/look.js the finish.
+    The film's kinetic sections A and K are bobwiseman-airplane-v1/sections/kinetic (kinetic.html,
+    js/ch/A-preamble.js, K-reprise.js).
+rules:
+  - "Near-black ground (#0a0908), off-white type (#ece6d8), one hot orange-red accent (#ff4a1c); the shader blooms only the accent"
+  - Archivo, JetBrains Mono and Instrument Serif; the lyric words are the set, one idea per shot
+  - Interface grammar - terminal prompts, error pop-ups, gauges, radar, forms, stamps - built from the words
+  - The plane is a line technical drawing filled with the ground colour, eyes in the windscreen, mouth opens with the vocal
+  - Cuts on the beat or the sung word; words only from Bob's sheet; every word fits its box
+  - "Finish: slight edge channel split, 24 fps grain, faint scanlines, vignette; glitch tears and white flashes on hits"
+palette:
+  - "#0a0908"
+  - "#ece6d8"
+  - "#ff4a1c"
+  - "#77736b"
+  - "#ebe2cc"
+reference: FUI screen graphics; in the film, a cockpit-voice-recorder (black box) playback
+proof:
+  renders:
+    - bobwiseman-airplane-type/out/aoh_type-test_f01704-f02184_24fps_review-720p.mp4
+    - bobwiseman-airplane-v1/out/Bob Wiseman - Airplane on the Highway (1080p master).mp4
+  pr:
+    - rheos/novadiem.com#86
+  youtube:
+    - X8kEwWUeMWI
+    - 6rkbMbEqnHA
+  note: out/ is archived on Bertha, /Volumes/Bertha/secondunit-archive/mv-projects/<project>/out/
+verdict: "Bob, 2026-10-03: one of his four favourite Airplane looks (risograph, woodcut, kinetic typography, kawaii)."
+related:
+  - blueprint
+  - newsdesk

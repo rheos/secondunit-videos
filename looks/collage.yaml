@@ -1,0 +1,40 @@
+slug: collage
+title: Sleeve collage, melting
+note: The generated singing plane on free Midjourney collage backgrounds, with a code-drawn melt between worlds.
+used: Airplane on the Highway test
+cost: hybrid
+group: generated
+order: 10
+clip: collage.mp4
+tall: false
+status: test
+engine: generated + canvas2d
+project: bobwiseman-airplane-collage
+code:
+  path: bobwiseman-airplane-collage/js/collage.js
+  flag: null
+  page: bobwiseman-airplane-collage/index.html
+  note: >-
+    js/look.js is the print finish (melt uniform). Assets (gitignored): assets/plate-a.png, plate-b.png
+    (Midjourney) and assets/plane/0000-0239.png, the keyed H3 clip from the generated cartoon test.
+rules:
+  - The generated plane (H3 clip, keyed) pasted on as a cut-out with a white scissor rim and a hard paper shadow, bobbing on the beat
+  - Full-frame Midjourney collage plates behind him, panning slowly
+  - "The melt: the plate cut into 5 px vertical strips that sag, swing and stretch (drips) while rows slide (flow), on the word \"strange\""
+  - The world flows into a second, stranger plate, then congeals
+  - "Finish: faint halftone screen, a hair of RGB misregistration, grain, uneven table light, vignette; the print goes soft while it melts"
+palette: []
+reference: 1968 avant-garde record-sleeve collage (Cal Schenkel's Mothers of Invention covers, per the project style bible)
+proof:
+  renders:
+    - bobwiseman-airplane-collage/out/aoh_collage-test_f01704-f01944_24fps_review-720p.mp4
+  pr: []
+  youtube:
+    - 7_4XGTDYRPs
+  note: out/ is archived on Bertha, /Volumes/Bertha/secondunit-archive/mv-projects/<project>/out/
+verdict: "Robin, 2026-10-03: \"the sleeve collage does.. and the metamorphosis is pretty cool\""
+related:
+  - gencartoon
+  - cutout
+  - junk
+  - morph

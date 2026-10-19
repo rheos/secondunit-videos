@@ -1,0 +1,39 @@
+slug: hj-live
+title: His own footage
+note: "Real shots from his day take: the stone bridge, the ram skull, a ghosted guitar."
+used: Dream of Fire, The Wyrd One
+cost: live action
+group: live
+order: 20
+clip: hj-live.mp4
+tall: true
+status: approved
+engine: live action
+project: hjeron-dark-blues-storyboard
+code:
+  path: hjeron-dark-blues-storyboard/tools/assemble.py
+  flag: null
+  page: null
+  note: >-
+    Real clips from viralvision-worker/artists/mythmaker/footage/clips/ (manifest.json order): #28 stone bridge with
+    the wolfdog, #0 ram skull, #6 ghosted guitar. Cut list docs/EDL.md; the realcut first pass is
+    hjeron-dark-blues-realcut/tools/render.py.
+rules:
+  - His clips are cut, trimmed and speed-changed only, never restyled
+  - Each keeps its own look (sepia torn photo, neon fire, on-black smoke, silver-grey mono)
+  - Line cuts come from vocal-stem onsets
+  - Transitions come from his own visual language and are built locally for free (smoke wipe, film burn, torn photo, double exposure, etch, crack)
+palette: []
+reference: Hjeron's own footage and his earlier Dark Blues Ritual videos (double exposure of silhouette, landscape and fire)
+proof:
+  renders:
+    - hjeron-dark-blues-storyboard/output/dream-of-fire_storyboard-cut_f0000-f2342_24fps_9x16_master.mp4 (shots 03, 14, 16)
+  pr: []
+  youtube:
+    - 5J-ST917WGc
+    - uH7Y8q0xpHc
+verdict: null
+related:
+  - hj-sepia
+  - hj-continue
+  - hj-genmontage

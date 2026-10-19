@@ -1,0 +1,55 @@
+slug: sheep
+title: Felt-and-clay puppet
+note: A deadpan felt singer, lip-synced, with code-drawn titles.
+used: Mind The Sheep hook, Pnubb
+cost: credits
+group: generated
+order: 40
+clip: sheep.mp4
+tall: false
+status: approved
+engine: generated + p5 (Midjourney concept and plates, GPT Image 2.5, MiniMax H3 Max, Kling 3.0 morphs)
+project: pnubb-mind-the-sheep-hook
+code:
+  path: null
+  flag: null
+  page: null
+  note: >-
+    Local only, not in rheos/secondunit-videos: mv-projects/pnubb-mind-the-sheep-hook/prompts/mts-hook/05_overlay.js
+    (p5 composite, clones, platform line, type) and 04_clips.yml; plan docs/PLAN.md. Take hf-hook in
+    secondunit/catalog/mts.md.
+rules:
+  - "Character char-sheep-v1 from a Midjourney concept: curly off-white wool cap, pale felt face, long muzzle, very heavy unimpressed lids, droopy felt ears, black knit turtleneck, vintage chrome mic below the chin"
+  - "Felt-and-clay stop-motion puppet surfaces: felted wool with visible fibres, matte clay faces, chunky knit, warm slightly desaturated light, miniature-set feel"
+  - Generated on flat chroma green #00B140 and keyed over Midjourney location plates (subway, lot, laundromat, diner, bus stop, rooftop); one location per section, moving forward
+  - "Lip-sync: H3 Max 768p reference mode with the vocal stem, deadpan, head barely moves, locked camera"
+  - All type is p5 (MIND THE SHEEP on the platform line, SHEEP stamps in warning yellow); the model never letters anything
+  - Each sung "sheep" adds a clone (free, from the still) with a squash bounce
+  - "Cost: 15 credits per 6 s H3 clip, 4.5 for the green reference still"
+palette:
+  - "#EDE6D6"
+  - "#E3D3C3"
+  - "#1E1E22"
+  - "#9FBFAF"
+  - "#EFE7D2"
+  - "#E8A94A"
+  - "#E9C443"
+reference: >-
+  Midjourney concept grid option 3 (docs/refs/mj-sheep-3.png, Robin's pick 2026-09-28) and the single's album art (a
+  real sheep in a Market Street parking lot at dusk with a MIND THE SHEEP sign)
+proof:
+  renders:
+    - mv-projects/auto-edits/mts_auto-7_f00000-f03496_24fps_composite.mp4
+    - mv-projects/auto-edits/mts_auto-7-clean_f00000-f03496_24fps_composite.mp4
+  pr: []
+  youtube:
+    - 7XkX0k2RMC4
+    - 7ENtGQ8LerQ
+verdict: >-
+  "we just need more of the lip sync sheep in more places throughout... more fast cuts to the singing sheep, not
+  enough to miss any of the great animation." (Robin, 2026-09-28, on auto-edit 2)
+related:
+  - brushsheep
+  - felt
+  - claymation
+  - gencartoon

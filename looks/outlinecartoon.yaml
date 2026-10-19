@@ -1,0 +1,44 @@
+slug: outlinecartoon
+title: Bold-outline pastel cartoon
+note: >-
+  One navy outline, flat pastel fills with a single shade band and halftone dots, and springy motion. The
+  ticket pops in, a rubber stamp slams it BOOKED, and sparkles fly out.
+used: IndieAgent test
+cost: free
+group: code
+order: 430
+clip: outlinecartoon.mp4
+tall: false
+status: test
+engine: hyperframes
+project: indieagent-clean-vector-test
+code:
+  path: indieagent-clean-vector-test/index.html
+  flag: null
+  page: indieagent-clean-vector-test/index.html
+  note: inline SVG + one GSAP timeline; README lists the rules
+rules:
+  - One navy outline (#2A2940) at one weight, 6 px at 1080
+  - Flat fill, one shade band along the bottom, one white highlight streak
+  - Halftone dots only on the shade band
+  - Soft ellipse ground shadow; pastel ground
+  - Four-point sparkles are the only ornament and rest clear of the object
+  - "Spring motion: elastic pop-in, anticipation, squash and stretch on the hit, wobble, slow bob"
+palette:
+  - "#2A2940"
+  - "#FFD36E"
+  - "#F7A8B8"
+  - "#C8341E"
+  - "#7CC6F2"
+  - "#86DBB0"
+  - "#F7EFE7"
+reference: Kevin Ngo's Opus-coded UI micro-animations (x.com/kevin_t_ngo/status/2111974919353544757)
+proof:
+  renders:
+    - indieagent-clean-vector-test/out/ticket-stamp_v1_720.mp4
+  pr:
+    - rheos/secondunit-videos#232
+  youtube: []
+verdict: "Robin, 2026-10-19: \"The look lands.\""
+related:
+  - armink

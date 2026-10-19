@@ -1,0 +1,49 @@
+slug: hj-genmontage
+title: Every generated shot, back to back
+note: >-
+  All the AI shots in the cut: walking with the wolfdog under the serpent moon, the desert pull-back, the fire
+  ring, smoke, a neon lip-sync, the canyon-wall painting, scratchboard dunes.
+used: Dream of Fire, The Wyrd One
+cost: credits
+group: live
+order: 10
+clip: hj-genmontage.mp4
+tall: true
+status: approved
+engine: generated (Kling 3.0, Kling O3 video edit, GPT Image 2.5, MiniMax H3 Max) + local finish
+project: hjeron-dark-blues-storyboard
+code:
+  path: hjeron-dark-blues-storyboard/tools/assemble.py
+  flag: null
+  page: null
+  note: >-
+    Every generated shot of cut v3 back to back (A1, bridge, A2, A7, C1, a neon LS take, A4, A5, SB1, SB2, A6).
+    Shot list docs/EDL.md, per-job spend docs/SPEND.md, grades tools/grade.py.
+rules:
+  - His footage is the spine and is never restyled; generated shots only where the tape can't do it
+  - Each generated shot matches a named real clip and gets the local worn-film finish (colour transfer, his grain, his border, gate weave)
+  - "Singing: H3 Max 6 s 768p on frames of his real in-character day take, veil down, graded locally into his neon or sepia"
+  - Kling 3.0 animates GPT Image 2.5 stills; scratchboard shots are Kling O3 edits of his real clips
+  - The wolfdog is always his (generated dogs take a real dog frame as reference)
+  - One Odin eye at three beats only, never two
+  - "Cut v3: 940 of 2342 frames generated (40.1%), 171.5 credits of a 175 cap"
+palette: []
+reference: Hjeron's four house looks (sepia torn photo, neon fire, on-black smoke, silver-grey mono) and his inspiration board
+proof:
+  renders:
+    - hjeron-dark-blues-storyboard/output/dream-of-fire_storyboard-cut_f0000-f2342_24fps_9x16_master.mp4
+    - hjeron-dark-blues-finish/output/dof_v3_finished_b.mp4
+  pr: []
+  youtube:
+    - 5J-ST917WGc
+    - uH7Y8q0xpHc
+    - KfDJqdW_7iY
+verdict: >-
+  "all good tests.. i like it.. especially that zoom out transition" (Robin, 2026-09-28, on the method tests);
+  "the moment the singing starts it should be a cut to a lip sync part" (2026-09-28, note that made cut v3)
+related:
+  - hj-anim
+  - hj-continue
+  - hj-lipsync
+  - hj-scratch
+  - hj-live

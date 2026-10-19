@@ -1,0 +1,51 @@
+slug: scrap
+title: Scrapbook paper theatre
+note: >-
+  Pieces cut from real old prints that were never meant to meet: a Ruisdael sky, an Aivazovsky sea, a
+  photochrom steamer, a Whistler etching, an 1887 egret photo, a Vanity Fair gent with his arm pinned on.
+  Midjourney fills the gaps. After Sarah Legault's Inland Sea video for Rheostatics.
+used: Clap Hands look test, Gemma Luna
+cost: hybrid
+group: code
+order: 580
+clip: scrap.mp4
+tall: true
+status: test
+engine: canvas2d + generated (Midjourney fills)
+project: gemmaluna-clap-hands
+code:
+  path: gemmaluna-clap-hands/js/looks/scrap.js
+  flag: null
+  page: gemmaluna-clap-hands/scrap.html
+  note: >-
+    pieces cut by tools/paper_prep.py (rembg isnet + luminance keys) into gitignored assets/paper/; scan
+    rights in _in/paper-sources/SOURCES.md (local). Chrome needs --allow-file-access-from-files or the scans
+    taint the canvas.
+rules:
+  - >-
+    Every piece is cut from a real public-domain print or photo; Midjourney only for what archives lack,
+    prompted as old print
+  - >-
+    Pieces never match: mixed eras, processes and scales (oil sky, etching, photochrom, lithograph,
+    caricature)
+  - Each piece keeps a thin cream scissor edge and casts a soft drop shadow
+  - "Pieces move like puppets: slide, bob, pivot, swap drawings; never morph"
+  - Cut a moving limb off as its own piece pinned at the joint; never rock the whole figure
+  - Paint each plate once at load and only move pieces per frame
+  - "Finish: paper tooth, warm grade, vignette, a flash wash on lightning"
+palette: []
+reference: >-
+  Sarah Legault's animation for Rheostatics' "The Inland Sea" (painted ships by Robert McGreevy). Pieces from
+  PD scans: Ruisdael sky, Aivazovsky sea, photochrom steamer, Currier lithograph, Whistler etching, an 1887
+  egret photo, a Vanity Fair caricature.
+proof:
+  renders:
+    - gemmaluna-clap-hands/out/gmc-v2_scrap-probe_f01413-f01787_24fps_review-720p.mp4
+  pr:
+    - rheos/novadiem.com#100
+  youtube: []
+verdict: null
+related:
+  - cutout
+  - junk
+  - peacock-paper

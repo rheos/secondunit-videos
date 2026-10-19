@@ -1,0 +1,54 @@
+slug: pinball
+title: Pinball cel cartoon
+note: "1970s cel animation: fine outlines, airbrushed volume, deco ornament."
+used: We Got Time, Bob Wiseman
+cost: free
+group: code
+order: 10
+clip: pinball.mp4
+tall: false
+status: approved
+engine: canvas2d
+project: bobwiseman-we-got-time
+code:
+  path: bobwiseman-we-got-time/js/style-pnc.js
+  flag: "?style=pnc (pnc.html sets window.PNC)"
+  page: bobwiseman-we-got-time/pnc.html
+  note: >-
+    style-pnc.js replaces the drawing primitives of kit.js; look.js is the shader shared with the ministry
+    look
+rules:
+  - Fine outlines in a darker shade of each fill, never heavy black ink
+  - Soft airbrushed shading, light from the upper left; no hatching
+  - "Rounded, fleshed-out cartoon figures with weight: tapered limbs, mitten hands, a nose, shoes"
+  - Glossy highlights on round things; coloured-pencil grain in the finish
+  - >-
+    The ministry look's colour rules: a grey world with sky blue and her rose let through, full colour only at
+    the end
+palette:
+  - "#4a3c34"
+  - "#e6dfc6"
+  - "#7f8b8e"
+  - "#88917f"
+  - "#a88a4c"
+  - "#f0b23a"
+  - "#3f7fc4"
+  - "#c8455a"
+reference: >-
+  1970s pinball-machine cel animation (Sesame Street's "Pinball Number Count"): its figures, line and shading,
+  not its colours
+proof:
+  renders:
+    - bobwiseman-we-got-time/out/wgt_pnc-v12_f00000-f08194_24fps_review-720p.mp4
+  pr: []
+  youtube:
+    - fAyri7vlkvI
+    - TSSR_q6NJmU
+    - Up70M4DVFv8
+verdict: >-
+  Bob, 2026-10-03, on draft pnc-v5: "you blew me away. unreal. brilliant." Robin, 2026-10-04, on v12: "call
+  that done".
+related:
+  - ministry
+  - submarine
+  - gilliam
