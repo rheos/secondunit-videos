@@ -699,11 +699,45 @@ const DRIVER = { x: -.12, wx: .22, wr: .2, tilt: .95,
     [235.65, 235.95, 236.7, 237.15, .55]] };   // the minutes are posted into the hole (235.96-236.51): he bobs down under the sheet
 function driverDuck(t) { let d = 0; for (const [a, b, c, e, m] of DRIVER.ducks) d = Math.max(d, m * ease(t, a, b) * (1 - ease(t, c, e))); return d; }
 function driverSteer(t) { return clamp((yaw(t + .25) - yaw(t - .25)) * 2.2, -1.4, 1.4) + .05 * Math.sin(t * .73) + .025 * Math.sin(t * 1.9 + 1); } // wheel turn, radians
-function driverHat() { // the unseen driver: only a red hat brim showing in the hole
-  const p = PL(0, TOP - .05, 0); if (p[2] < .2) return; const k = kAt(p);
-  g.fillStyle = '#8f2018'; g.beginPath(); g.ellipse(p[0], p[1], .3 * k, .08 * k, 0, 0, TAU); g.fill();
-  g.fillStyle = '#b52c22'; g.beginPath(); g.moveTo(p[0] - .15 * k, p[1]); g.lineTo(p[0] - .13 * k, p[1] - .16 * k); g.quadraticCurveTo(p[0], p[1] - .22 * k, p[0] + .13 * k, p[1] - .16 * k); g.lineTo(p[0] + .15 * k, p[1]); g.fill();
-  g.fillStyle = '#3a1410'; g.fillRect(p[0] - .15 * k, p[1] - .05 * k, .3 * k, .035 * k);
+function driverHat(t) {
+  // draft 24 (Robin: a driver in profile, drawn like the suits): a flat cut-out sitting in the hole, side-on to us,
+  // facing the way the car drives. Egg head, the red fedora seated on it, a dark shoulder, one bent arm reaching
+  // forward to the wheel, and the wheel as a tilted oval whose top arc shows above the table. Seen from the front or
+  // the back (no clear profile) only the hat shows, as before. He ducks into the hole for the beats that use it.
+  if (t == null) t = 0; const dn = driverDuck(t), st = driverSteer(t), X = DRIVER.x;
+  const S0 = PL(X, TOP + .1, 0), F0 = PL(X + 1, TOP + .1, 0); if (S0[2] < .25 || F0[2] < .1) return;
+  const k = kAt(S0), sdx = F0[0] - S0[0], sdy = F0[1] - S0[1], sl = Math.hypot(sdx, sdy) || 1, prof = Math.abs(sdx) / sl;
+  if (prof < .55) { hatOnly(); return; }
+  const f = Math.sign(sdx), x0 = S0[0], sh = S0[1] + dn * .6 * k, tY = PL(X + .3, TOP, 0)[1];
+  const draw = () => {
+    // the jacket: shoulder and back, down into the hole (clipped to the hole, plus everything above the table line)
+    g.save(); { const ring = []; for (let i = 0; i < 28; i++) { const a = i / 28 * TAU; ring.push(PL(Math.cos(a) * .55, TOP, Math.sin(a) * .45)); }
+      g.beginPath(); ring.forEach((q, i) => i ? g.lineTo(q[0], q[1]) : g.moveTo(q[0], q[1])); g.closePath(); g.rect(-1e4, -1e4, 2e4, Math.min(tY, ...ring.map((q) => q[1])) + 1e4); g.clip(); }
+    g.fillStyle = PAL.suit; g.beginPath(); g.moveTo(x0 - f * .13 * k, sh + .6 * k); g.lineTo(x0 - f * .14 * k, sh + .06 * k);
+    g.quadraticCurveTo(x0 - f * .12 * k, sh - .02 * k, x0, sh - .03 * k); g.quadraticCurveTo(x0 + f * .1 * k, sh - .02 * k, x0 + f * .12 * k, sh + .05 * k);
+    g.lineTo(x0 + f * .13 * k, sh + .6 * k); g.closePath(); g.fill();
+    g.restore();
+    g.fillStyle = '#d7c3a3'; g.fillRect(x0 - .035 * k, sh - .08 * k, .07 * k, .07 * k); // neck
+    const hy = sh - .21 * k; egg(x0 + f * .015 * k, hy, k, 0, 0); // the head
+    // the fedora in profile: brim, pinched crown, band; seated low on the egg, the brim dipping forward
+    g.save(); g.translate(x0 + f * .02 * k, hy - .12 * k); g.rotate(f * .08);
+    g.fillStyle = '#8f2018'; g.beginPath(); g.ellipse(0, 0, .25 * k, .04 * k, 0, 0, TAU); g.fill();
+    g.fillStyle = '#b52c22'; g.beginPath(); g.moveTo(-.14 * k, 0); g.lineTo(-.12 * k, -.15 * k); g.quadraticCurveTo(-.02 * k, -.12 * k, .02 * k, -.17 * k); g.quadraticCurveTo(.08 * k, -.2 * k, .12 * k, -.15 * k); g.lineTo(.14 * k, 0); g.closePath(); g.fill();
+    g.fillStyle = '#3a1410'; g.fillRect(-.14 * k, -.045 * k, .28 * k, .03 * k); g.restore();
+    // the wheel: a tilted oval ahead of him, only the part above the table top shows; it rocks a little with the steering
+    const wx = x0 + f * .36 * k, wy = sh + .02 * k;
+    g.save(); g.beginPath(); g.rect(-1e4, -1e4, 2e4, tY + 1e4); g.clip();
+    g.translate(wx, wy); g.rotate(f * (.42 + .08 * st)); g.strokeStyle = '#1a181c'; g.lineWidth = .06 * k; g.beginPath(); g.ellipse(0, 0, .07 * k, .2 * k, 0, 0, TAU); g.stroke();
+    g.strokeStyle = '#6a6670'; g.lineWidth = .016 * k; g.beginPath(); g.ellipse(0, 0, .07 * k, .2 * k, 0, Math.PI, TAU); g.stroke(); g.restore();
+    // the near arm: upper arm down and forward to the elbow, forearm up to the top of the wheel; the hand on the rim
+    const s = [x0 + f * .04 * k, sh + .05 * k], e = [x0 + f * .17 * k, sh + .17 * k], hd = [wx - f * .03 * k, wy - .16 * k];
+    g.strokeStyle = PAL.suitLit; g.lineCap = 'round'; g.lineJoin = 'round'; g.lineWidth = .085 * k; g.beginPath(); g.moveTo(s[0], s[1]); g.lineTo(e[0], e[1]); g.lineTo(hd[0], hd[1]); g.stroke();
+    g.fillStyle = PAL.egg; g.beginPath(); g.arc(hd[0], hd[1], .04 * k, 0, TAU); g.fill(); };
+  if (dn > .01) holeClip(draw); else { draw(); }
+  function hatOnly() { const p = PL(0, TOP - .05, 0); if (p[2] < .2) return; const k = kAt(p);
+    g.fillStyle = '#8f2018'; g.beginPath(); g.ellipse(p[0], p[1], .3 * k, .08 * k, 0, 0, TAU); g.fill();
+    g.fillStyle = '#b52c22'; g.beginPath(); g.moveTo(p[0] - .15 * k, p[1]); g.lineTo(p[0] - .13 * k, p[1] - .16 * k); g.quadraticCurveTo(p[0], p[1] - .22 * k, p[0] + .13 * k, p[1] - .16 * k); g.lineTo(p[0] + .15 * k, p[1]); g.fill();
+    g.fillStyle = '#3a1410'; g.fillRect(p[0] - .15 * k, p[1] - .05 * k, .3 * k, .035 * k); }
 }
 // ---------- draft 23: the everyday clutter on the real car's top (Robin's photos 30-33) ----------
 // Megaphones, laptops, coffee mugs, a hula hoop and a thermos, set out at the ends and edges, clear of every older prop
