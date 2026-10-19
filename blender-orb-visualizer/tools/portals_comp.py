@@ -1,6 +1,6 @@
 # Take 05 compositor: paper, sound rings, circle portals, the mosaic Earth, the rocket on top, grain.
 # Reads portals_take05.json and the Blender layers in out/portals/take-05/<part>/####.png (global frame numbers).
-#   uv run --with numpy --with pillow python tools/portals_comp.py [--frames 1,200,500] [--review]
+#   uv run --with numpy --with pillow python tools/portals_comp.py [--frames 1,200,500] [--review [--song path.mp3]] [--encode-only]
 # Writes out/portals/take-05/comp/####.png; --review also encodes take-05_review_720p.mp4 with the song.
 import json, math, os, sys, subprocess
 import numpy as np
@@ -143,12 +143,14 @@ def frame(f):
 if __name__ == "__main__":
     args = sys.argv[1:]
     frames = [int(x) for x in args[args.index("--frames") + 1].split(",")] if "--frames" in args else range(1, NF + 1)
+    if "--encode-only" in args: frames = []
     od = os.path.join(OUT, "comp"); os.makedirs(od, exist_ok=True)
     for f in frames:
         Image.fromarray(frame(f)).save(os.path.join(od, f"{f:04d}.png"))
     print(f"{len(frames)} frames -> {od}")
     if "--review" in args:
-        song = os.path.normpath(os.path.join(HERE, TM["song"]))
+        # the song is gitignored, so a worktree has none: pass the main checkout's copy with --song
+        song = args[args.index("--song") + 1] if "--song" in args else os.path.normpath(os.path.join(HERE, TM["song"]))
         mp4 = os.path.join(OUT, "take-05_review_720p.mp4")
         subprocess.run(["ffmpeg", "-nostdin", "-loglevel", "error", "-y", "-framerate", str(FPS), "-i", os.path.join(od, "%04d.png"),
                         "-ss", str(T0), "-t", str(T1 - T0), "-i", song, "-map", "0:v", "-map", "1:a", "-c:v", "libx264", "-preset", "slow",
