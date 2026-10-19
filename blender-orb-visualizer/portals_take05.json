@@ -1,0 +1,21 @@
+{
+  "about": "Take 05 timing: Bob Wiseman, 10,000 Miles, song seconds (vocal-stem Whisper times, 2026-10-19). Portal radius r is a fraction of frame height, keyed [time, r] and eased between keys.",
+  "song": "../bobwiseman-10000-miles/source/10000-miles.mp3",
+  "song_sha256": "0cc9dd22bb8213d5b696935c6b1ec87cdcab682253decd91f72ef90bdc03c877",
+  "t0": 7.0,
+  "t1": 53.0,
+  "fps": 24,
+  "size": [1280, 720],
+  "portals": [
+    {"id": "problems", "lyric": "look at your problems now / once so big / now so small", "render": [13.1, 22.9],
+     "r": [[13.30, 0], [14.05, 0.30], [18.10, 0.30], [18.90, 0.44], [20.40, 0.44], [21.30, 0.13], [22.15, 0.13], [22.70, 0]]},
+    {"id": "world", "lyric": "and the world still turns somehow", "render": [22.3, 25.6],
+     "r": [[22.45, 0], [23.10, 0.31], [24.90, 0.31], [25.45, 0]]},
+    {"id": "window", "lyric": "at a thousand miles from your loneliest smile / you can't even tell it's there", "render": [25.2, 34.0],
+     "r": [[25.35, 0], [26.30, 0.37], [31.20, 0.37], [32.70, 0.05], [33.60, 0.02], [33.90, 0]]},
+    {"id": "cat", "lyric": "maybe you will, maybe you won't even care", "render": [36.0, 43.6],
+     "r": [[36.25, 0], [37.05, 0.34], [42.80, 0.34], [43.40, 0]]}
+  ],
+  "pulses": [7.30, 8.14, 9.76, 11.60, 12.20, 13.36, 22.50, 25.40, 33.48, 34.70, 36.30, 43.46, 45.42, 47.30, 49.58, 51.74],
+  "mosaic": {"fly_in": [43.46, 47.30], "pull_back": [49.58, 53.0], "cells": 36}
+}
