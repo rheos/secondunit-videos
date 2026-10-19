@@ -146,9 +146,10 @@ def build_rocket():
     cyl("band", .25, .25, .1, toon(P["cream"]), (0, 0, -.3), parent=rk)
     sphere("port", .11, toon(P["cobalt"]), (0, -.21, .12), (1, .45, 1), parent=rk)
     sphere("portRim", .14, toon(P["cream"]), (0, -.2, .12), (1, .3, 1), parent=rk)
-    for k in range(3):
-        a = math.radians(90 + k * 120 + 30)
-        fin = cube(f"fin{k}", (.08, .3, .38), toon(P["red"], .66), (math.cos(a) * .3, math.sin(a) * .3, -.42), (0, 0, a + math.pi / 2), parent=rk)
+    for k, deg in enumerate((210, 330, 90)):                     # two fins to the sides, one behind
+        a = math.radians(deg)
+        fin = cube(f"fin{k}", (.26, .05, .42), toon(P["red"], .66), (math.cos(a) * .34, math.sin(a) * .34, -.4), (0, 0, a), parent=rk)
+        fin.scale = (1, 1, 1)
     cyl("nozzle", .14, .18, .14, toon(P["ink"]), (0, 0, -.55), parent=rk)
     flame = empty("flameRoot", (0, 0, -.62), rk)
     f1 = cyl("flame", .14, .0, .5, toon(P["flame"], emit=2.2), (0, 0, -.25), (0, 0, 0), flame)
