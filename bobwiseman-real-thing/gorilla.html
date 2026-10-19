@@ -2,10 +2,10 @@
 <html><head><meta charset="utf-8"><title>Real Thing: the gorilla</title>
 <style>html,body{margin:0;background:#111}canvas{width:100vw;height:auto;display:block}</style></head>
 <body><canvas id="c" width="1920" height="1080"></canvas>
-<script src="js/gorilla/film.js"></script>
+<script src="js/gorilla/kit.js"></script><script src="js/gorilla/cast.js"></script><script src="js/gorilla/world.js"></script><script src="js/gorilla/act0.js"></script><script src="js/gorilla/act1.js"></script><script src="js/gorilla/act2.js"></script><script src="js/gorilla/act3.js"></script><script src="js/gorilla/act4.js"></script><script src="js/gorilla/act5.js"></script><script src="js/gorilla/main.js"></script>
 <script>
 const C = document.getElementById('c'), G = C.getContext('2d');
-buildTextures();
+buildTextures(); buildShots();
 window.__draw = (t) => { G.save(); G.setTransform(1, 0, 0, 1, 0, 0); G.clearRect(0, 0, W, H); drawFrame(G, t); G.restore(); };
 window.__frameJPEG = (t, q) => { window.__draw(t); return C.toDataURL('image/jpeg', q); };
 window.__ready = document.fonts.ready.then(() => true);
