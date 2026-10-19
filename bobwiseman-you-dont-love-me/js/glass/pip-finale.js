@@ -34,9 +34,12 @@ const PF_B = [195.37, 196.05, 196.74, 197.42, 198.11, 198.79, 199.48, 200.18, 20
 // A: the faces pull out at 198.7 and they strut in to the ta-da at 200.88; the routine as draft 11 from there.
 // B: the faces stay for the whole long phrase (the lead ducks out to pluck the last petal and comes back), and they
 //    strut in from 210.49 to 212.56, joining the routine at the held photo pose.
+// C (draft 13, Bob on B: "I want even more characters to enter the screen. I do not like seeing them at the end small
+//    and dancing"): B's faces stay in to the end and nobody dances in; more heads join them (finale-chorus.js).
 const PF_VARIANT = (typeof window !== 'undefined' && window.PF_VARIANT) || 'A';
+const PF_FACES = PF_VARIANT === 'B' || PF_VARIANT === 'C'; // the faces stay in for the whole long phrase
 const PF = {
-  in: PF_B[0], walk: PF_VARIANT === 'B' ? [PF_B[22], PF_B[25]] : [PF_B[5], PF_B[8]],
+  in: PF_B[0], walk: PF_VARIANT === 'C' ? [Infinity, Infinity] : PF_VARIANT === 'B' ? [PF_B[22], PF_B[25]] : [PF_B[5], PF_B[8]],
   pluck: [PF_B[13], PF_B[16]], // the middle Pip goes up to pluck petal 27 (205.12) and lands back on PF_B[16]
   leap: PF_B[51] + .25,        // and they all go up and out
   y: 2780,                     // world y of their feet: behind little Bob's line (2900), in front of the wall (2560)
@@ -45,7 +48,7 @@ const PF = {
   sing: [[195.3, 211.2], [214.5, 217.5]], // the vocal stem's last held phrase and the tail
   wing: 2700,                  // how far off their marks they start the walk in (world units, out of frame at rest)
 };
-const PF_HEADS = { in: PF_B[0], out: PF.walk[0] - .1 }; // the faces at the sides (pip-heads.js holds refrain 12's two to .out)
+const PF_HEADS = { in: PF_B[0], out: PF_VARIANT === 'C' ? PF_B[51] + .35 : PF.walk[0] - .1 }; // the faces at the sides (pip-heads.js holds refrain 12's two to .out); C: to the end
 const PF_POSE = {
   fall: { ...POSE.vee, lL: [-.1, .25], lR: [.12, -.2], dip: 0 },
   land: { L: [-1.25, -1.0], R: [1.25, 1.0], lL: [-.55, .35], lR: [.55, -.35], x: 0, lean: 0, tilt: .08, dip: 64 },
@@ -199,7 +202,7 @@ function drawFinalePips(g, t, cam, tod) {
 const PF_HEAD_SLOTS = [
   { k: 0, x: 165, y: H * .30, rot: 1.22, ti: PF_B[0] },
   { k: 2, x: 165, y: H * .97, rot: 1.22, ti: PF_B[0] + (PF_B[1] - PF_B[0]) / 2 },
-  { k: 1, x: W - 165, y: H * .92, rot: -1.22, ti: PF_B[1], duck: PF_VARIANT === 'B' ? [PF.pluck[0] - .35, PF.pluck[1]] : null },
+  { k: 1, x: W - 165, y: H * .92, rot: -1.22, ti: PF_B[1], duck: PF_FACES ? [PF.pluck[0] - .35, PF.pluck[1]] : null },
 ];
 function drawFinaleHeads(g, t, tod) {
   if (t < PF_HEADS.in - .05 || t > PF_HEADS.out + .5) return;

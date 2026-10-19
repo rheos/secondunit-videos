@@ -13,17 +13,21 @@
 // run on periods that divide 8 s. Frame t is a pure function of t mod 8.
 (function () {
   const PERIOD = 8, FPS = 24;
-  const params = new URLSearchParams(location.search);
+  // Embedded in another page (draft 13: the bridge's backing run, bridge-rose.js): window.ROSE_EMBED = { w, h, k, cx, cy }
+  // draws on an offscreen canvas of w x h with k px per design px and the rose centre at (cx, cy), ignores the page's
+  // query and exposes window.roseLoop = { canvas, render(t) } in place of the page hooks. Unset, nothing changes.
+  const EMB = window.ROSE_EMBED || null;
+  const params = new URLSearchParams(EMB ? '' : location.search);
   // debug only, for the seam proof: nowrap=1 draws t without folding it into [0, 8); nograin=1 drops the grain
   const DBG_NOWRAP = params.has('nowrap'), DBG_NOGRAIN = params.has('nograin');
-  const OW = Math.max(16, parseInt(params.get('w') || '720', 10)), OH = Math.max(16, parseInt(params.get('h') || '1280', 10));
-  const out = document.getElementById('c'); out.width = OW; out.height = OH;
+  const OW = EMB ? EMB.w : Math.max(16, parseInt(params.get('w') || '720', 10)), OH = EMB ? EMB.h : Math.max(16, parseInt(params.get('h') || '1280', 10));
+  const out = EMB ? mkCanvas(OW, OH) : document.getElementById('c'); out.width = OW; out.height = OH;
   const g = out.getContext('2d');
   // texture layer (opaque grey texture, laid with the glass's symmetry, then overlaid onto the glass)
   const TL = mkCanvas(OW, OH), tl = TL.getContext('2d');
 
   // Layout: designed at 720x1280; other sizes scale uniformly and centre. World units: rose glass radius 1000.
-  const K = Math.min(OW / 720, OH / 1280), OX = (OW - 720 * K) / 2, OY = (OH - 1280 * K) / 2;
+  const K = EMB ? EMB.k : Math.min(OW / 720, OH / 1280), OX = EMB ? EMB.cx - 360 * K : (OW - 720 * K) / 2, OY = EMB ? EMB.cy - 568 * K : (OH - 1280 * K) / 2;
   const RS = .318 * K;                    // px per world unit
   const CX = OX + 360 * K, CY = OY + 568 * K; // rose centre on screen (Spotify's clear band is ~192-960 of 1280)
   const view = { x0: -CX / RS, x1: (OW - CX) / RS, y0: -CY / RS, y1: (OH - CY) / RS };
@@ -487,7 +491,8 @@
     g.setTransform(1, 0, 0, 1, 0, 0); g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
   }
 
-  buildTex(); PAT = tl.createPattern(TEX, 'repeat'); buildGrain(); buildLancets();
+  if (!TEX) buildTex(); PAT = tl.createPattern(TEX, 'repeat'); if (!GRAIN.length) buildGrain(); buildLancets();
+  if (EMB) { window.roseLoop = { canvas: out, render: renderFrame }; return; }
   window.__ready = Promise.resolve(true);
   window.__framePNG = (t) => { renderFrame(t); return out.toDataURL('image/png'); };
   window.__frameJPEG = (t, q = .93) => { renderFrame(t); return out.toDataURL('image/jpeg', q); };

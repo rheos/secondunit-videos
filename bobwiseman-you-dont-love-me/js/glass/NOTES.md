@@ -172,3 +172,21 @@ build both finale entries and give Bob the choice (one round, versions A and B).
   phrase (the lead ducks out to pluck petal 27 and comes back) and they strut in from 210.49, joining the routine at
   the held photo pose (212.56).
 - Cuts: `out/_render_d12.sh` + `out/_assemble_d12.sh`, files `out/ydlm_full-v14A_*` and `out/ydlm_full-v14B_*`.
+
+## Draft 13: ending B with a crowd of singing heads, and the rose window for the bridge's backing run (Bob, 2026-10-19)
+
+- Bob on draft 12 (round 25, at 3:30 on A): "I like B more but I want even more characters to enter the screen. I do
+  not like seeing them at the end small and dancing. I would like to see more background characters enter singing the
+  beegees, like the eric idle, or dogs, horses, electricians and plumbers." `PF_VARIANT` 'C' (`looks/glass-finale-c.html`)
+  is B with nobody dancing in: the five faces stay to the end (out at 230.82) and `finale-chorus.js` brings in seven
+  more heads, one every two beats from 199.48, each sticking its head in from an edge and singing with the backing
+  voices: a shaggy gent in tweed (the bridge host's type, invented), a basset hound, a bay horse looking down over
+  the top edge, an electrician in a hard hat, an old plumber in a flat cap, a poodle and a grey horse. They bob to the
+  beat through the instrumental and duck out one by one, last in first, from 228.40, before the light goes.
+- Bob on the Canvas loops round (round 42, on the You Don't Love Me loop): "this rotating image ... might be a
+  wonderful change for the part in the bridge when they see [the backing run], instead of seeing the pips in the
+  bridge". `looks/glass-bridge-d13.html` (draft 12's host A bridge) embeds `canvas-loop.js` at 16:9
+  (`window.ROSE_EMBED`; the Canvas page itself renders byte-identical), and `bridge-rose.js` replaces `drawTrio`: the
+  stage that drops in at 139.84 and lifts out at 148.0 now holds the turning rose window, each sung hit turning
+  it on a notch, with a warm glow from the daisy at its heart.
+- Cuts: `out/_render_d13.sh` + `out/_assemble_d13.sh`, file `out/ydlm_full-v15_*`.

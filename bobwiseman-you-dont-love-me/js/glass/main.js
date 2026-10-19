@@ -223,6 +223,7 @@ function renderFrame(t) {
   drawDaisy(g, t, tod, rt);
   drawPipHeads(g, rt, tod); // the refrains: the Pips stick their heads in (pip-heads.js)
   drawFinaleHeads(g, rt, tod); // draft 12: the faces at the sides for the long held phrase (pip-finale.js)
+  if (typeof drawChorus === 'function') drawChorus(g, rt, tod); // draft 13: more heads join them (finale-chorus.js)
   // vignette + grain
   g.setTransform(1, 0, 0, 1, 0, 0); g.globalCompositeOperation = 'source-over';
   const vg = g.createRadialGradient(W / 2, H / 2, H * .45, W / 2, H / 2, W * .65); vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, `rgba(0,0,0,${.5 * (1 - fin)})`);
