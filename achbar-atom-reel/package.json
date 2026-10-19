@@ -1,0 +1,7 @@
+{
+  "name": "achbar-atom-reel",
+  "private": true,
+  "type": "module",
+  "description": "Romancing the Atom graphics test for Mark Achbar: blueprint schematic, kinetic type, oscilloscope; every frame drawn in canvas code.",
+  "devDependencies": { "playwright": "^1.55.0" }
+}

@@ -64,6 +64,7 @@
 !/novadiem-self-hosting/
 !/pnubb-mind-the-sheep-painted/
 !/bobwiseman-travel-agent/
+!/achbar-atom-reel/
 
 # Local data at any depth, as folders OR symlinks (a trailing slash only matches folders; that gap let four
 # symlinks in on 2026-10-06 and a pull then deleted the folders' contents). Tracked files are unaffected.

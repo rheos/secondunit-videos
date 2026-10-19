@@ -1,0 +1,74 @@
+[
+ {
+  "file": "trinity.jpg",
+  "title": "File:Trinity Detonation T&B.jpg",
+  "page": "https://commons.wikimedia.org/wiki/File:Trinity_Detonation_T%26B.jpg",
+  "license": "Public domain",
+  "author": "United States Department of Energy",
+  "sha256": "d6668f4da5e221b3606b43d91f4a38a27f022814865eb2317e029cf3d08f7464",
+  "bytes": 230972
+ },
+ {
+  "file": "crossroads-baker.jpg",
+  "title": "File:Operation Crossroads Baker Edit.jpg",
+  "page": "https://commons.wikimedia.org/wiki/File:Operation_Crossroads_Baker_Edit.jpg",
+  "license": "Public domain",
+  "author": "Original:  United States Department of Defense (either the U.S. Army or the U.S. Navy)\nDerivative work:  Victorrocha (ta",
+  "sha256": "4e669fd102795f92ee41e9c552fc1f129d50f8129202ee83ce078a129a12632d",
+  "bytes": 1689995
+ },
+ {
+  "file": "castle-bravo.jpg",
+  "title": "File:Castle Bravo Blast.jpg",
+  "page": "https://commons.wikimedia.org/wiki/File:Castle_Bravo_Blast.jpg",
+  "license": "Public domain",
+  "author": "United States Department of Energy",
+  "sha256": "c939c2ca479fba94f4afb81f9dff28d98e6eda4a13c66bdb868a13a5a0817bd4",
+  "bytes": 319636
+ },
+ {
+  "file": "eniac-beck-snyder.jpg",
+  "title": "File:Glen Beck and Betty Snyder program the ENIAC in building 328 at the Ballistic Research Laboratory.jpg",
+  "page": "https://commons.wikimedia.org/wiki/File:Glen_Beck_and_Betty_Snyder_program_the_ENIAC_in_building_328_at_the_Ballistic_Research_Laboratory.jpg",
+  "license": "Public domain",
+  "author": "Unknown authorUnknown author",
+  "sha256": "93bcb10166fb92427ca1b0f7331e5e37dca8acad3844c1a7f0e3e7aff6a4af98",
+  "bytes": 623971
+ },
+ {
+  "file": "eniac-classic.jpg",
+  "title": "File:Classic shot of the ENIAC.jpg",
+  "page": "https://commons.wikimedia.org/wiki/File:Classic_shot_of_the_ENIAC.jpg",
+  "license": "Public domain",
+  "author": "Unidentified U.S. Army photographer",
+  "sha256": "d062757f0dfc3ff9aaa9355e9248a9fbb0f5273243b1a2ea3e683dba14e0d34a",
+  "bytes": 187826
+ },
+ {
+  "file": "atoms-for-peace-stamp.jpg",
+  "title": "File:Atoms for Peace stamp.jpg",
+  "page": "https://commons.wikimedia.org/wiki/File:Atoms_for_Peace_stamp.jpg",
+  "license": "Public domain",
+  "author": "Bureau of Engraving and Printing",
+  "sha256": "9b91cfe0cd4357107a8bf2887e46766f1ca21aef930047e18201f2c2b0c13211",
+  "bytes": 336659
+ },
+ {
+  "file": "oppenheimer-groves.jpg",
+  "title": "File:Trinity Test - Oppenheimer and Groves at Ground Zero 001.jpg",
+  "page": "https://commons.wikimedia.org/wiki/File:Trinity_Test_-_Oppenheimer_and_Groves_at_Ground_Zero_001.jpg",
+  "license": "Public domain",
+  "author": "United States Army Signal Corps",
+  "sha256": "454fa9df91255a631b43745882575cd71c6058bcf1ddd72b5ff9fdf2df0ce21e",
+  "bytes": 159857
+ },
+ {
+  "file": "eisenhower-un-1953.jpg",
+  "title": "File:Preisdent Eisenhower delivers Atoms for Peace proposal (14678902765).jpg",
+  "page": "https://commons.wikimedia.org/wiki/File:Preisdent_Eisenhower_delivers_Atoms_for_Peace_proposal_(14678902765).jpg",
+  "license": "Public domain",
+  "author": "Nuclear Regulatory Commission from US",
+  "sha256": "1ba1985e072bbd0da861ca69ffa688efb71c3c065f069827f348328af9eaebc7",
+  "bytes": 235830
+ }
+]
