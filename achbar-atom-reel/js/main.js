@@ -14,7 +14,7 @@ function renderFrame(t) {
   X.save(); try { sh.draw(t); } catch (e) { console.error(e && e.stack || e); } X.restore();
   O.globalAlpha = 1; O.drawImage(buf, 0, 0);
   O.globalAlpha = sh.mode === 'scope' ? .5 : 1; O.drawImage(GD[f & 3], ((f * 3) % 5) - 6, ((f * 7) % 5) - 6, W + 12, H + 12); O.globalAlpha = 1;
-  const fin = cl((t - 0) / 1.0) * (1 - cl((t - 59.5) / .5));   // picture in from black at the top, out at the very end
+  const fin = cl((t - 0) / 1.0) * (1 - cl((t - (END - .6)) / .6));   // picture in from black at the top, out at the very end
   if (fin < 1) { O.fillStyle = `rgba(0,0,0,${1 - fin})`; O.fillRect(0, 0, W, H); }
 }
 window.__frameJPEG = (t, q = .93) => { renderFrame(t); return out.toDataURL('image/jpeg', q); };

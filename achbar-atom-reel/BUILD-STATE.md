@@ -35,7 +35,7 @@ Archival photos are never recoloured (`js/photos.js`): paper mount, push-in, iri
 
 Sound: `sfx.py` synthesises every hit (pen on paper, stamp thump, relay clicks, CRT power-on and hum, static, clock ratchet, checkmark ticks), each one frame after its visual, and mixes them under the score into `assets/mix.wav`. Render with `AUDIO=assets/mix.wav`. Its cue times mirror `js/shots.js`; change both together.
 
-Plates and handovers (score seconds, bars of glassy-art-pop take-02 at ~88 BPM):
+Plates and handovers (draft 3 score seconds; from draft 4 every plate after the opening runs 4 bars, 10.93 s, later):
 
 | Plate | Time | Hands over by |
 |---|---|---|
@@ -81,3 +81,12 @@ taint the canvas and `toDataURL` throws.
   the clock pulls back onto a stadium scoreboard over a crowd on its phones (MC03); every red flag sourced (TC01).
   Skipped the study's paper-strip warhead chart (MC02): it would replace the oscilloscope. `renders/atom-reel_test01_draft3_720p.mp4`
   (copy in ~/Downloads). Flash PASS, -14.0 LUFS, peak -1.9 dBFS. Uploaded unlisted 2026-10-19: https://youtu.be/YOoGAQpXhX8 (replaces draft 2 6pV1tR4h4Cw as the link for Mark).
+- Draft 4 (2026-10-19, Robin: "actually seeing blueprints for a nuclear reactor or bomb being drawn in animation",
+  credits longer): a new 12 s opening drafts the 1945 Hanford drawing HTM 1945-405 in animation (`js/draft.js`:
+  construction lines, the box, graphite layers, the two-lobed cutaway, centrelines, control-rod openings, the
+  water-tube inset, the 36'-0" dimensions it prints, lettering, DECLASSIFIED), then a scan bar sweeps in the 1945
+  original under it to show the match, and sweeps it off again before the title. The score edit repeats bars 0-4
+  (SHIFT, every later plate drawn at t - SHIFT) and adds a coda from the track's own intro, so the title block now
+  holds about 8.6 s. Film is 75.2 s. A reactor, not a bomb: we have the real reactor drawing to match, and a
+  weapon design is not ours to draw. `renders/atom-reel_test01_draft4_720p.mp4`. Flash PASS, -14.1 LUFS, peak
+  -2.1 dBFS. Not uploaded. Render: `AUDIO=assets/mix.wav node render.mjs 0 75.2 renders/<name>.mp4 4 24 0.6667`.

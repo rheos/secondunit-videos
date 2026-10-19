@@ -1,10 +1,12 @@
 # Sound design for the reel: every hit synthesised here (no samples, no licences), placed one frame after the
 # visual event it belongs to, then mixed under the score and limited.
 #   viralvision venv python -I sfx.py   ->  assets/sfx.wav, assets/mix.wav (render with AUDIO=assets/mix.wav)
-# Event times mirror js/shots.js (same beat grid constants); change them together.
+# Event times mirror js/shots.js and js/draft.js (same beat grid constants); change them together.
+# The score edit: take-02 with bars 0-4 played twice (room for the drafting opening, SHIFT = 4 bars), then the
+# rest, then a coda from the track's own hushed intro under the longer title block.
 import os, numpy as np, soundfile as sf
 from scipy.signal import butter, sosfilt
-SR = 48000; DUR = 60.0; N = int(SR * DUR); FR = 1 / 24
+SR = 48000; DUR = 76.0; N = int(SR * DUR); FR = 1 / 24
 here = os.path.dirname(os.path.abspath(__file__))
 B0 = 6.41; HB = (53.55 - 6.41) / 138; BEAT = 2 * HB; BAR = 4 * BEAT
 bar = lambda n: B0 + n * BAR; bt = lambda n: B0 + n * BEAT
@@ -63,21 +65,33 @@ def ratchet(t0, t1, n0=3, n1=14):            # clock hand sweeping: ticks speedi
         put(tt, tick(3200, .006), -20 + 6 * (tt - t0) / (t1 - t0), pan=-.1); k += 1
         tt += 1 / (n0 + (n1 - n0) * ((tt - t0) / (t1 - t0)))
 
-# --- the cue sheet (score seconds; mirrors js/shots.js) ---
-PL_B, PL_C, PL_D, PL_E, PL_F = bar(1), bar(5), bar(8) + 2 * BEAT, bar(12), bar(15)
-put(.9, pen(2.0), -24, pan=-.15)                       # tracing the pile
-put(1.6, tick(2500, .02), -18)                         # caption band
-put(3.3, pen(1.3) * 0 + bp(noise(1.3), 400, 2500) * np.sin(np.pi * np.arange(int(1.3 * SR)) / SR / 1.3) * .5, -22)   # the scan bar
-put(4.95, thump(1.0), -14)                             # ROMANCING
-put(bt(1), chime(880), -20)                            # the heart
+# --- the cue sheet (score seconds of the extended edit) ---
+S = 4 * BAR                                            # later plates sit at their old time + S
+PL_B, PL_C, PL_D, PL_E, PL_F = bar(1) + S, bar(5) + S, bar(8) + 2 * BEAT + S, bar(12) + S, bar(15) + S
+# the drafting (js/draft.js)
+put(1.6, pen(1.2), -26, pan=-.2)                       # construction lines
+for i in range(9): put(2.4 + i * .145, tick(3500, .012), -24, pan=-.3 + i * .07)   # nine edges
+put(3.7, pen(2.4), -23, pan=.1)                        # graphite layers
+put(4.8, pen(1.6), -27, pan=.3)                        # top hatching
+put(6.0, pen(1.3), -22, pan=-.1)                       # the cutaway's broken edge
+put(7.0, pen(1.0), -25)                                # centrelines
+for i in range(24): put(7.8 + i * .045, tick(5200, .006), -27, pan=-.4 + i * .035)  # control-rod openings
+put(8.6, pen(1.0), -25, pan=.2)                        # water-tube inset
+put(9.2, pen(1.2), -24, pan=.35)                       # dimensions
+for i in range(14): put(10.0 + i * .08, tick(4200, .008), -26, pan=.1)              # lettering
+put(bar(2), thump(1.0), -12, pan=-.3)                  # DECLASSIFIED
+put(12.2, whoosh(.9), -21)                             # scan bar: the 1945 original
+put(13.8, whoosh(.7, rev=True), -23)                   # paper swept off
+put(4.95 + S, thump(1.0), -14)                         # ROMANCING
+put(bt(1) + S, chime(880), -20)                        # the heart
 put(PL_B + .8, thump(.7), -16, pan=-.3)                # the stamp lands
-for k in (5, 6, 7): put(bt(k), tick(5000, .01), -20, pan=.3)       # quote lines
-put(bar(3) + .6, tick(5000, .01), -20, pan=-.2)
-put(bt(15), tick(5000, .01), -20, pan=.2)
-put(bt(17), pen(.5), -22)                              # the dashed box measured round the shared words
+for k in (5, 6, 7): put(bt(k) + S, tick(5000, .01), -20, pan=.3)   # quote lines
+put(bar(3) + .6 + S, tick(5000, .01), -20, pan=-.2)
+put(bt(15) + S, tick(5000, .01), -20, pan=.2)
+put(bt(17) + S, pen(.5), -22)                          # the dashed box round the shared words
 put(PL_C, whoosh(.9), -18)                             # iris onto the HAER sheet
 put(PL_C + 1.9 + .25, whoosh(.7), -20)                 # the drawn fireball becomes the photo
-swap = bar(6) + .75 + 2 * BEAT
+swap = bar(6) + .75 + 2 * BEAT + S
 put(swap - .8, whoosh(.8, rev=True), -20)              # iris closes on the fireball
 put(swap, whoosh(.9), -19)                             # ENIAC opens
 put(swap + .9, relays(.9), -22, pan=.2)                # ENIAC relays
@@ -85,25 +99,35 @@ put(swap + 2.3, thump(.5), -18, pan=.3)                # the redaction bar
 put(PL_D - .75, whoosh(.75, rev=True), -22)
 put(PL_D, crt_on(), -14)                               # scope powers on
 put(PL_D + .2, hum(PL_E - PL_D - .2), -27)             # tube hum under the plate
-put(bar(11) - .2, static(1.6), -20)                    # sync lost
+put(bar(11) - .2 + S, static(1.6), -20)                # sync lost
 put(PL_E, blip_down(), -16)                            # tube off, back to blueprint
 put(PL_E + 1.8, tick(2800, .03), -16)                  # hands appear
-ratchet(bar(13) + .6, bar(13) + 2.2)                   # the sweep to 85 s
-put(bar(14) + .1, thump(1.1), -13)                     # 85 SECONDS TO MIDNIGHT
-put(bar(14) + 1.0, crowd(2.8), -24)                    # pull back: the stadium, nobody looking up
+ratchet(bar(13) + .6 + S, bar(13) + 2.2 + S)           # the sweep to 85 s
+put(bar(14) + .1 + S, thump(1.1), -13)                 # 85 SECONDS TO MIDNIGHT
+put(bar(14) + 1.0 + S, crowd(2.8), -24)                # pull back: the stadium, nobody looking up
 put(PL_F + .25, whoosh(1.2), -22)                      # camera down the sheet
-t0F = round((PL_F - B0) / BEAT)
+t0F = round((PL_F - S - B0) / BEAT)
 for i in range(4):
-    rt = bt(t0F + 3 + i * 2)
+    rt = bt(t0F + 3 + i * 2) + S
     put(rt, tick(4500, .015), -21, pan=-.2)
     put(rt + .3, tick(6000, .02), -17, pan=.15); put(rt + .48, tick(6000, .02), -17, pan=.3)
-put(bt(t0F + 10) + .1, thump(.9), -12, pan=.2)         # SOUND FAMILIAR?
-put(bar(18) - .05, whoosh(1.1), -22)
-put(bar(18) + .6, pen(1.4), -26)                       # title block ruled
+put(bt(t0F + 10) + .1 + S, thump(.9), -12, pan=.2)     # SOUND FAMILIAR?
+put(bar(18) - .05 + S, whoosh(1.1), -22)
+put(bar(18) + .6 + S, pen(1.4), -26)                   # title block ruled
 
 sf.write(os.path.join(here, 'assets', 'sfx.wav'), out.astype(np.float32), SR)
-song, sr = sf.read(os.path.join(here, 'assets', 'song.wav')); assert sr == SR
-m = song[:N] + out[:len(song)]
+take, sr = sf.read(os.path.join(here, 'assets', 'song.wav')); assert sr == SR
+cut = lambda a, b: take[int(a * SR):int(b * SR)].copy()
+def join(x, y, xf):
+    n = int(xf * SR); r = np.linspace(0, 1, n)[:, None]
+    return np.concatenate([x[:-n], x[-n:] * (1 - r) + y[:n] * r, y[n:]])
+edit = join(cut(0, bar(4) + .02), cut(bar(0) - .0, bar(4) + .02), .02)       # bars 0-4 twice
+edit = join(edit, cut(bar(4), 57.6), .02)                                   # the rest of the take
+coda = cut(2.0, 9.6); coda *= np.concatenate([np.ones(len(coda) - int(2.6 * SR)), np.linspace(1, 0, int(2.6 * SR))])[:, None]
+edit = join(edit, coda, 1.5)                                                # the hushed intro again, fading out
+song = np.zeros((N, 2)); song[:min(N, len(edit))] = edit[:N]
+sf.write(os.path.join(here, 'assets', 'score-edit.wav'), song.astype(np.float32), SR)
+m = song + out
 m = m / max(1.0, np.max(np.abs(m)) / .84)              # keep headroom; ffmpeg's limiter does the rest
 sf.write(os.path.join(here, 'assets', 'mix.wav'), m.astype(np.float32), SR)
 print('sfx peak', np.max(np.abs(out)).round(3), 'mix written')

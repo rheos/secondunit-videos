@@ -65,32 +65,38 @@ function band(t, t0, t1, title, sub) {
   caption(title, 120, 990, t, t0 + .3, { size: 26, weight: 700, color: C.white, alpha: bk, cps: 60 });
   if (sub) caption(sub, 120, 1030, t, t0 + .5, { size: 17, color: C.lav, alpha: bk, cps: 150 });
 }
+// The opening is four bars longer than the score's first plate: the score repeats bars 0-4 (sfx.py builds the
+// edit), and every later plate is drawn at its old score time, t - SHIFT, so it stays on the same music.
+const SHIFT = 4 * BAR, END = 75.2;
 function plateA(t) {
   schBG(); X.globalAlpha = 1;
-  const ax = 960, ay = 430, PW = 1340, PY0 = 548, PZ = lerp(1, 1.06, pr(t, 0, 5));
-  // the declassified 1945 drawing, as scanned; our line traces the pile; then its own lines become the blueprint
-  // a scan bar sweeps the sheet like a blueprint machine: paper ahead of it, linework behind
-  const inv = eio(pr(t, 3.3, 4.6)), gone = pr(t, 8.2, 9.14), PH0 = printH('breactor-pile', PW) * PZ, sx = lerp(960 - PW * PZ / 2 - 30, 960 + PW * PZ / 2 + 30, inv);
-  if (inv < 1) print('breactor-pile', 960, PY0, PW, { z: PZ, mount: 10, clip: [sx, 0, W, H] });
-  if (inv > 0) print('breactor-pile', 960, PY0, PW, { z: PZ, mount: 0, lines: true, clip: [0, 0, sx, H], alpha: lerp(1, .3, eio(pr(t, 4.6, 5.8))) * (1 - gone) });
-  if (inv > 0 && inv < 1) { const y0 = PY0 - PH0 / 2 - 20, y1 = PY0 + PH0 / 2 + 20; X.save(); X.globalCompositeOperation = 'lighter'; const g = X.createLinearGradient(sx - 90, 0, sx, 0); g.addColorStop(0, 'rgba(143,227,255,0)'); g.addColorStop(1, 'rgba(143,227,255,.35)'); X.fillStyle = g; X.fillRect(sx - 90, y0, 90, y1 - y0); X.restore(); gl(sx, y0, sx, y1, C.white, .95, 2.5); }
-  const P = (u, v) => printPt('breactor-pile', 960, PY0, PW, u, v, { z: PZ });
-  const FLT = P(.18, .327), FRT = P(.552, .327), FLB = P(.18, .883), FRB = P(.552, .883), BLT = P(.366, .099), BRT = P(.788, .117), BRB = P(.788, .671);
-  const edges = [[FLT, FRT], [FRT, FRB], [FRB, FLB], [FLB, FLT], [FLT, BLT], [BLT, BRT], [BRT, FRT], [BRT, BRB], [BRB, FRB]];
-  const tk = pr(t, .9, 2.9), ta = 1 - pr(t, 4.4, 5.2);
-  edges.forEach(([a, b], i) => { const k = eo(seg(tk, i / edges.length * .75, i / edges.length * .75 + .3)); if (k > 0) path([a, [lerp(a[0], b[0], k), lerp(a[1], b[1], k)]], C.cyan, 3.2, .95 * ta); });
-  band(t, 1.6, 3.9, 'HANFORD B REACTOR · THE GRAPHITE PILE, 1945', 'DRAWING HTM 1945-405 · DECLASSIFIED · LIBRARY OF CONGRESS, HAER WA-164');
+  // I. the 1945 drawing drafted in animation (js/draft.js), then the original swept in under a scan bar to match
+  draftPile(t, { alpha: lerp(1, .3, eio(pr(t, 13.9, 14.7))) * (1 - pr(t, 19.3, 20.07)) });
+  stampDeclassified(t, bar(2), 1 - pr(t, 13.9, 14.5));
+  const PZ = dz(t), PH0 = printH('breactor-pile', DR.PW) * PZ, xa = 960 - DR.PW * PZ / 2 - 30, xb = 960 + DR.PW * PZ / 2 + 30;
+  const sweep = eio(pr(t, 12.2, 13.1)), lift = pr(t, 13.8, 14.5), sx = lerp(xa, xb, sweep);
+  const sx2 = lerp(xb, xa, eio(lift));   // the paper is swept off again, right to left
+  if (sweep > 0 && lift < 1) print('breactor-pile', 960, DR.PY, DR.PW, { z: PZ, mount: 10, clip: [0, 0, Math.min(sx, sx2), H] });
+  if (lift > 0 && lift < 1) { const y0 = DR.PY - PH0 / 2 - 20, y1 = DR.PY + PH0 / 2 + 20; gl(sx2, y0, sx2, y1, C.white, .95, 2.5); }
+  if (sweep > 0 && sweep < 1) { const y0 = DR.PY - PH0 / 2 - 20, y1 = DR.PY + PH0 / 2 + 20; X.save(); X.globalCompositeOperation = 'lighter'; const g = X.createLinearGradient(sx, 0, sx + 90, 0); g.addColorStop(0, 'rgba(143,227,255,.35)'); g.addColorStop(1, 'rgba(143,227,255,0)'); X.fillStyle = g; X.fillRect(sx, y0, 90, y1 - y0); X.restore(); gl(sx, y0, sx, y1, C.white, .95, 2.5); }
+  band(t, 12.5, 14.1, 'THE ORIGINAL: HANFORD B REACTOR, THE GRAPHITE PILE, 1945', 'DRAWING HTM 1945-405 · DECLASSIFIED · LIBRARY OF CONGRESS, HAER WA-164');
   schFrame('0', '', '', C.lav);
-  plateLabel('FIG. 0', 'ROMANCING THE ATOM · A GRAPHICS TEST', '', t, .8);
+  plateLabel('FIG. 0', t < 12.2 ? 'DRAFTING, AFTER HANFORD DRAWING HTM 1945-405' : 'ROMANCING THE ATOM · A GRAPHICS TEST', '', t, t < 12.2 ? .8 : 12.3);
+  titleSeq(t - SHIFT);
+}
+// the title, in the old plate I's score time
+function titleSeq(t) {
+  const ax = 960, ay = 430;
   const k = pr(t, 3.7, 5.9), out = pr(t, 8.6, 9.14);
-  atom(ax, ay, 360, 118, k, t, { pulse: bt(1), a: 1 });
+  if (k <= 0) return;
+  atom(ax, ay, 360, 118, k, t, { pulse: bt(1), a: 1 - out * .6 });
   if (k > .4) { bracket(ax - 360, ay + 190, ax + 360, ay + 190, C.lav, .6 * pr(t, 4.6, 5.2) * (1 - out), 'ORBIT  r = 360'); bracket(ax + 420, ay - 118, ax + 420, ay + 118, C.lav, .6 * pr(t, 4.9, 5.5) * (1 - out), '236'); }
   // romance, constructed: a heart built from two circles and two tangents around the nucleus
   const hk = pr(t, bt(1), bt(1) + 1.1), hx = ax, hy = ay - 8, hr = 34;
   if (hk > 0) {
     gc(hx - hr * .72, hy - hr * .35, hr * .75, C.lav, .5 * (1 - out), 1, [3, 4]); gc(hx + hr * .72, hy - hr * .35, hr * .75, C.lav, .5 * (1 - out), 1, [3, 4]);
-    const H = []; for (let i = 0; i <= 80; i++) { const a = i / 80 * TAU; H.push([hx + 16 * Math.pow(Math.sin(a), 3) * hr / 15, hy - (13 * Math.cos(a) - 5 * Math.cos(2 * a) - 2 * Math.cos(3 * a) - Math.cos(4 * a)) * hr / 15]); }
-    path(H.slice(0, Math.max(2, Math.round(80 * eo(hk)))), C.mag, 2.4, 1 - out);
+    const Hh = []; for (let i = 0; i <= 80; i++) { const a = i / 80 * TAU; Hh.push([hx + 16 * Math.pow(Math.sin(a), 3) * hr / 15, hy - (13 * Math.cos(a) - 5 * Math.cos(2 * a) - 2 * Math.cos(3 * a) - Math.cos(4 * a)) * hr / 15]); }
+    path(Hh.slice(0, Math.max(2, Math.round(80 * eo(hk)))), C.mag, 2.4, 1 - out);
     if (hk >= 1) lab(hx + 70, hy - 62, 'ROMANCE (CONSTRUCTED)', C.mag, .9 * (1 - out), 14);
   }
   const tsz = fit('ROMANCING', 1240, 200, { fam: FT.d, weight: 900, stretch: 'expanded' });
@@ -419,11 +425,12 @@ function titleBlock(t) {
 }
 
 function buildShots() {
+  const at = (fn) => (t) => fn(t - SHIFT);
   return [
-    { t0: 0, t1: PLATE.B, draw: plateA },
-    { t0: PLATE.B, t1: PLATE.C, draw: plateB },
-    { t0: PLATE.C, t1: PLATE.D, draw: plateC },
-    { t0: PLATE.D, t1: PLATE.E, draw: plateD, mode: 'scope' },
-    { t0: PLATE.E, t1: PLATE.END, draw: plateEFG },
+    { t0: 0, t1: PLATE.B + SHIFT, draw: plateA },
+    { t0: PLATE.B + SHIFT, t1: PLATE.C + SHIFT, draw: at(plateB) },
+    { t0: PLATE.C + SHIFT, t1: PLATE.D + SHIFT, draw: at(plateC) },
+    { t0: PLATE.D + SHIFT, t1: PLATE.E + SHIFT, draw: at(plateD), mode: 'scope' },
+    { t0: PLATE.E + SHIFT, t1: END, draw: at(plateEFG) },
   ];
 }
