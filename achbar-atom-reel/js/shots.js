@@ -370,7 +370,7 @@ const ROWS = [
 function formRF(t) {
   const t0 = PLATE.F, b = (n) => t0 + n * BEAT, y0 = FORM_Y; if (t < t0 - 1) return;
   const x0 = 300, x1 = 1620, cA = 1260, cB = 1480, rh = 100, ty = y0 + 300;
-  lab(x0, y0 + 60, 'FORM RF-1 · RELATIONSHIP ASSESSMENT · EVERY TICK SOURCED', C.lav, .85, 19);
+  lab(x0, y0 + 60, 'FORM RF-1 · RELATIONSHIP ASSESSMENT · EVERY FLAG SOURCED', C.lav, .85, 19);
   const ts = fit('RED FLAGS', 900, 170, { fam: FT.d, weight: 900, stretch: 'expanded' });
   kin('RED FLAGS', x0 - 6, y0 + 190, t, t0 + .6, { size: ts, weight: 900, stretch: 'expanded', stag: .05 });
   const hk = pr(t, t0 + .9, t0 + 1.4);
@@ -380,12 +380,12 @@ function formRF(t) {
     const rt = b(3 + i * 2), y = ty + 56 + i * rh;
     if (t < rt - .2) return;
     gl(x0, y + 46, lerp(x0, x1, eo(pr(t, rt - .2, rt + .2))), y + 46, C.lav, .45, 1);
+    flag(x0 - 52, y + 18, 54, eo(pr(t, rt, rt + .35)), t, i * 3);                       // the bullet: a red flag
     kin(r, x0, y + 4, t, rt, { size: 46, weight: 800, stretch: 'semi-condensed', style: 'rise' });
     caption(src, x0, y + 34, t, rt + .2, { size: 16, color: C.lav, cps: 140 });
-    [cA, cB].forEach((cx, j) => {
-      const bx = cx - 26, by = y - 30; X.strokeStyle = C.white; X.lineWidth = 2; X.globalAlpha = .9 * pr(t, rt, rt + .2); X.strokeRect(bx, by, 52, 52); X.globalAlpha = 1;
-      const ck = eo(pr(t, rt + .3 + j * .18, rt + .55 + j * .18));
-      if (ck > 0) { const P = [[bx + 10, by + 28], [bx + 22, by + 41], [bx + 46, by + 8]]; const L1 = Math.hypot(12, 13), L2 = Math.hypot(24, 33), d = ck * (L1 + L2); const pts = d <= L1 ? [P[0], [lerp(P[0][0], P[1][0], d / L1), lerp(P[0][1], P[1][1], d / L1)]] : [P[0], P[1], [lerp(P[1][0], P[2][0], (d - L1) / L2), lerp(P[1][1], P[2][1], (d - L1) / L2)]]; path(pts, C.mag, 6, 1); }
+    [cA, cB].forEach((cx, j) => {                                                        // one flag per column, run up its pole
+      const pa = pr(t, rt, rt + .2); gl(cx - 8, y + 36, cx - 8, y - 32, C.white, .5 * pa, 1.6);
+      flag(cx - 8, y + 36, 68, eo(pr(t, rt + .3 + j * .18, rt + .65 + j * .18)), t, i * 7 + j * 11);
     });
   });
   // the stamp
@@ -395,6 +395,18 @@ function formRF(t) {
     X.strokeStyle = C.mag; X.lineWidth = 5; X.strokeRect(-330, -62, 660, 124); X.lineWidth = 2; X.strokeRect(-318, -50, 636, 100);
     X.restore(); kinStamp(t, sk, ty);
   }
+}
+// a red flag: the pennant runs up the pole to fraction k and flutters
+const RED = '#ff3b3b';
+function flag(x, yBase, h, k, t, ph = 0) {
+  if (k <= 0) return;
+  gl(x, yBase, x, yBase - h, C.white, .9, 2);
+  const top = yBase - h * k, w = h * .9 * k, fh = h * .5 * k, P = [[x, top]];
+  for (let i = 1; i <= 8; i++) { const u = i / 8; P.push([x + w * u, top + fh * .5 * u + Math.sin(t * 9 + ph + u * 4) * 3.5 * u * k]); }
+  for (let i = 8; i >= 1; i--) { const u = i / 8; P.push([x + w * u, top + fh * (1 - .5 * u) + Math.sin(t * 9 + ph + u * 4 + .6) * 3.5 * u * k]); }
+  P.push([x, top + fh]);
+  fillP(PP(P), RED, .95); path(P.concat([P[0]]), '#ffb3b3', 1, .5);
+  star(x, top, 3, C.white, .9);
 }
 function kinStamp(t, sk, ty) {
   X.save(); X.translate(1260, ty + 600); X.rotate(-.12); const k = eo(pr(t, sk, sk + .18)); X.scale(lerp(1.6, 1, k), lerp(1.6, 1, k)); X.globalAlpha = k;

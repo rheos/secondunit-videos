@@ -85,6 +85,10 @@ def zip_(sec=.22):                        # a leader line drawing: a quick risin
     return np.sin(2 * np.pi * np.cumsum(f) / SR) * env(n, .003, .09) * .3
 def ping(f=1200):                         # a crosshair settling: a sonar ping
     n = int(.5 * SR); return (tone(f, .5) + .3 * tone(f * 2.01, .5)) * env(n, .002, .14) * .35
+def flap():                               # a flag running up its pole and snapping in the wind: a cloth flutter
+    n = int(.3 * SR); t = np.arange(n) / SR; x = bp(noise(.3), 300, 2600)
+    fl = (.4 + .6 * np.abs(np.sin(2 * np.pi * 11 * t + 2 * np.sin(2 * np.pi * 3 * t)))) * env(n, .004, .09)
+    return x * fl * .7 + bp(noise(.3), 3000, 7000) * env(n, .001, .012) * .4
 def blip(f):                              # a neuron firing
     n = int(.1 * SR); return tone(f, .1) * env(n, .002, .025) * .5
 def glide(f_of_t, sec, gain=.3):          # a tone whose pitch follows a curve (the beam drawing the warhead count)
@@ -198,8 +202,8 @@ put(PL['P'] + 28 * BEAT - .15, snap(), -18)
 put(PL['F'] + .6, thump(.7), -16)                      # RED FLAGS
 for i in range(5):
     rt = PL['F'] + (3 + i * 2) * BEAT
-    put(rt, tick(4500, .015), -21, pan=-.2)
-    put(rt + .3, tick(6000, .02), -17, pan=.15); put(rt + .48, tick(6000, .02), -17, pan=.3)
+    put(rt, flap(), -22, pan=-.45)                      # the bullet flag
+    put(rt + .3, flap(), -17, pan=.15); put(rt + .48, flap(), -17, pan=.35)   # the column flags
 put(PL['F'] + 13 * BEAT + .1, thump(.9), -12, pan=.2)  # SOUND FAMILIAR?
 # 9. the title block
 put(PL['G'] - .05, whoosh(1.1), -22)
