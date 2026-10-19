@@ -1,6 +1,6 @@
 // Act 5 (125.5-166.0): the turn, the bridge, the turnaround, the sunrise, the outro. See STORYBOARD-gorilla.md.
 // He sits by a moonlit pond; she sits down beside him, turns the banana over and opens it from the other end with one
-// pinch. Sunrise, the biggest and brightest image of the film; the jungle wakes; little Bob crosses at the very end.
+// pinch. Sunrise, the biggest and brightest image of the film; the jungle wakes. (No little Bob in this film: Robin, 2026-10-19.)
 'use strict';
 const a5_HER = { fur: '#7a6458', fur2: '#5e4a40', face: '#c9ad98', bellyCol: '#a48a7a', muzzle: '#d8bfab' };
 const a5_HZ = 520;
@@ -562,10 +562,10 @@ ACTS.push(...[
     cam(g, lt, 1.84, 1.55, 1.65, 940, 600);
     a5_morning(g, t, a5_LM, {});
   } },
-  // 13. (outro) little Bob crosses the clearing path behind them with his toy piano and the Junos; fade to black
+  // 13. (outro) the two of them in the morning clearing; they lean together; fade to black
   { t0: 160.6, t1: 166.0, draw(g, t, lt) {
-    cam(g, lt, 5.4, 1.0, 1.04, 1000, 640);
-    a5_morning(g, t, a5_LO, { bob: true });
+    cam(g, lt, 5.4, 1.05, 1.75, 1578, 1047); // a slow push in on the two of them: zooming about this point brings them to about (1100, 720)
+    a5_morning(g, t, a5_LO, {});
     const f = seg(t, 165, 166); if (f > 0) { g.save(); g.setTransform(1, 0, 0, 1, 0, 0); g.fillStyle = `rgba(0,0,0,${f})`; g.fillRect(0, 0, W, H); g.restore(); }
   } },
 ]);
@@ -620,8 +620,8 @@ function a5_cast2(g, t, L) {
       if (t >= b.op && t < b.op + .5) { const u = seg(t, b.op, b.op + .5); sparkle(g, x + hx * s, L.gy + (hy - .3) * s, 26 * (1 - u) + 6, 1 - u); }
     }
     if (laughAt(t) && !(b && t >= b.t0 && t < b.op)) { P.eyes = 'happy'; P.mouth = P.mouth === 'chew' ? 'chew' : 'grin'; P.tilt = dir * -.08 + Math.sin(t * 14 + (dir > 0 ? 0 : 1)) * .035; P.squash = Math.abs(Math.sin(t * 14 + (dir > 0 ? 0 : 1))) * .03; }
-    if (t >= 163.0 && L === a5_LO && !(b && t >= b.t0 && t < b.op + .6)) { // they watch little Bob go by
-      const bx = lerp(-80, 2000, seg(t, 160.6, 166.0)); P.look = [cl((bx - x) / 350, -1, 1), -.8]; P.tilt = -.1; P.eyes = 'open'; P.mouth = 'smile';
+    if (t >= 163.4 && L === a5_LO && !(b && t >= b.t0 && t < b.op + .6)) { // they look at each other and lean together
+      const k = eio(seg(t, 163.4, 164.2)); P.look = [dir * .9, .1]; P.tilt = dir * -.14 * k; P.lean = dir * .06 * k; P.eyes = t > 164.4 ? 'happy' : 'open'; P.mouth = 'smile';
     }
     if (who === 'him') gorilla(g, x, L.gy, s, Object.assign(P, { front }));
     else a5_her(g, x, L.gy, s, Object.assign(P, { front }));

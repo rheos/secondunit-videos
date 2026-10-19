@@ -212,47 +212,100 @@ function a3_waterFront(g, t, x, wl, y1, ripple) {
 
 // ---------------------------------------------------------------- the elephant (ground at 0, facing left, ~1.4 tall)
 const A3_ELE = '#a7aec0', A3_ELE2 = '#8a91a4', A3_EAR = '#e3aab2', A3_NAIL = '#f2e9d6';
+// The elephant, redrawn after Kevin Ngo's characters (Robin, 2026-10-19: "make the elephant better"): ONE outer outline
+// round the whole silhouette (every part is stroked thick first, then every part filled over it, so no seams where
+// head, body, legs and trunk meet), thin lines inside, one soft shadow tone and a highlight, a big chibi head with big
+// ears. Feet at y 0, facing left, about 1.45 tall. P is unchanged: eyes, brow, mouth, look, ear (flap), trunk/trunkC
+// (tip and curve point, body units), foot/footBend (the near front foot: the stepper), tilt, squash, lean.
+const A3_ELE_SH = '#8b93a8', A3_ELE_HI = 'rgba(255,255,255,.22)', A3_ELE_IN = 'rgba(43,33,28,.55)';
+// path builders (no fill, no stroke) so a silhouette can be outlined as one
+const a3e_circle = (g, x, y, rx, ry) => () => g.ellipse(x, y, rx, ry, 0, 0, TAU);
+function a3e_capsule(g, p0, p1, r0, r1) { // a leg: round top, flat-bottomed foot pad
+  return () => {
+    const dx = p1[0] - p0[0], dy = p1[1] - p0[1], L = Math.hypot(dx, dy) || 1, nx = -dy / L, ny = dx / L;
+    g.moveTo(p0[0] + nx * r0, p0[1] + ny * r0);
+    g.lineTo(p1[0] + nx * r1, p1[1] + ny * r1 - r1 * .25);
+    g.quadraticCurveTo(p1[0] + nx * r1, p1[1] + ny * r1 + r1 * .1, p1[0], p1[1] + r1 * .1);
+    g.quadraticCurveTo(p1[0] - nx * r1, p1[1] - ny * r1 + r1 * .1, p1[0] - nx * r1, p1[1] - ny * r1 - r1 * .25);
+    g.lineTo(p0[0] - nx * r0, p0[1] - ny * r0);
+    g.arc(p0[0], p0[1], r0, Math.atan2(-ny, -nx), Math.atan2(ny, nx), true);
+    g.closePath();
+  };
+}
+function a3e_trunk(g, p0, c, p1, w0, w1) { // tapering along a quadratic curve, round tip
+  const N = 20, Lf = [], Rt = [];
+  for (let i = 0; i <= N; i++) {
+    const u = i / N, x = (1 - u) * (1 - u) * p0[0] + 2 * (1 - u) * u * c[0] + u * u * p1[0], y = (1 - u) * (1 - u) * p0[1] + 2 * (1 - u) * u * c[1] + u * u * p1[1];
+    const tx = 2 * (1 - u) * (c[0] - p0[0]) + 2 * u * (p1[0] - c[0]), ty = 2 * (1 - u) * (c[1] - p0[1]) + 2 * u * (p1[1] - c[1]), tl = Math.hypot(tx, ty) || 1;
+    const w = lerp(w0, w1, Math.pow(u, .8)) / 2; Lf.push([x - ty / tl * w, y + tx / tl * w]); Rt.push([x + ty / tl * w, y - tx / tl * w]);
+  }
+  const path = () => { g.moveTo(...Lf[0]); for (const p of Lf) g.lineTo(...p); g.arc(p1[0], p1[1], w1 / 2, Math.atan2(Lf[N][1] - p1[1], Lf[N][0] - p1[0]), Math.atan2(Rt[N][1] - p1[1], Rt[N][0] - p1[0]), false); for (let i = N; i >= 0; i--) g.lineTo(...Rt[i]); g.closePath(); };
+  path.mid = (u) => { const x = (1 - u) * (1 - u) * p0[0] + 2 * (1 - u) * u * c[0] + u * u * p1[0], y = (1 - u) * (1 - u) * p0[1] + 2 * (1 - u) * u * c[1] + u * u * p1[1]; return [x, y, lerp(w0, w1, Math.pow(u, .8)) / 2]; };
+  return path;
+}
+// stroke every part thick, then fill every part: one outline round the union
+function a3e_union(g, parts, col, LWs) {
+  g.lineJoin = 'round'; g.lineCap = 'round'; g.strokeStyle = INK; g.lineWidth = LWs * 2;
+  for (const p of parts) { g.beginPath(); p(); g.stroke(); }
+  g.fillStyle = col; for (const p of parts) { g.beginPath(); p(); g.fill(); }
+}
+const a3e_clip = (g, parts) => { g.beginPath(); for (const p of parts) p(); g.clip(); };
 function a3_ele(g, x, y, s, P) {
   P = Object.assign({ eyes: 'open', brow: 0, mouth: 'smile', look: [-1, .2], ear: 0, trunk: [-.8, -.45], trunkC: [-.8, -.8], foot: [-.42, 0], footBend: .05,
     tilt: 0, squash: 0, lean: 0 }, P);
   g.save(); g.translate(x, y); g.scale(s, s * (1 - P.squash)); g.rotate(P.lean); const LWs = LW / sc(g);
-  const foot = (p, col) => { ol(g, ell(g, p[0], p[1] - .045, .14, .065), col); for (const nx of [-.07, 0, .07]) ol(g, ell(g, p[0] + nx - .02, p[1] - .03, .025, .02), A3_NAIL, 3); };
-  g.save(); g.globalAlpha = .22; g.fillStyle = '#20301c'; g.beginPath(); g.ellipse(.1, .01, .95, .07, 0, 0, TAU); g.fill(); g.restore();
-  // far legs
-  a3_tube(g, [.55, -.5], [.6, -.05], -.02, .22, A3_ELE2); foot([.6, 0], A3_ELE2);
-  a3_tube(g, [-.05, -.5], [-.14, -.05], .02, .22, A3_ELE2); foot([-.14, 0], A3_ELE2);
-  // tail
-  a3_tube(g, [.86, -.72], [.99, -.42], -.04, .035, A3_ELE); ol(g, ell(g, .99, -.38, .03, .05), INK, 2);
-  // body
-  ol(g, () => { g.moveTo(-.25, -.95); g.bezierCurveTo(.2, -1.18, .95, -1.02, .92, -.6); g.bezierCurveTo(.9, -.32, .5, -.26, .2, -.3); g.bezierCurveTo(-.15, -.3, -.4, -.5, -.25, -.95); }, A3_ELE);
-  // near back leg
-  a3_tube(g, [.48, -.45], [.48, -.05], .02, .25, A3_ELE); foot([.48, 0], A3_ELE);
-  // near front leg: the stepper
-  a3_tube(g, [-.12, -.5], [P.foot[0], P.foot[1] - .05], P.footBend, .25, A3_ELE); foot(P.foot, A3_ELE);
-  // ear behind the head, flapping
-  g.save(); g.translate(-.12, -.98); g.rotate(-.1 + P.ear * .25); g.scale(1 + P.ear * .15, 1);
-  ol(g, () => { g.moveTo(0, -.3); g.bezierCurveTo(.34, -.36, .4, .16, .1, .26); g.bezierCurveTo(-.05, .3, -.12, .1, -.08, 0); g.closePath(); }, A3_ELE);
-  g.beginPath(); g.moveTo(.02, -.2); g.bezierCurveTo(.26, -.24, .3, .1, .1, .17); g.bezierCurveTo(0, .2, -.04, .06, -.02, 0); g.closePath(); g.fillStyle = A3_EAR; g.fill();
+  // ground shadow
+  g.save(); g.globalAlpha = .22; g.fillStyle = '#20301c'; g.beginPath(); g.ellipse(.12, .01, .92, .07, 0, 0, TAU); g.fill(); g.restore();
+  const nails = (p, k = 1) => { g.fillStyle = A3_NAIL; for (const nx of [-.075, 0, .075]) { g.beginPath(); g.ellipse(p[0] + nx * k - .03, p[1] - .035, .03, .022, 0, 0, TAU); g.fill(); } };
+  // far legs and the tail: their own silhouette, a shade darker, behind everything
+  const far = [a3e_capsule(g, [.58, -.5], [.62, -.02], .12, .13), a3e_capsule(g, [-.02, -.5], [-.1, -.02], .12, .13)];
+  a3e_union(g, far, A3_ELE_SH, LWs); nails([.62, 0], .9); nails([-.1, 0], .9);
+  g.strokeStyle = INK; g.lineWidth = .05 + LWs * 2; g.lineCap = 'round'; g.beginPath(); g.moveTo(.86, -.74); g.quadraticCurveTo(.98, -.6, .97, -.44); g.stroke();
+  g.strokeStyle = A3_ELE; g.lineWidth = .05; g.stroke();
+  ol(g, () => { g.moveTo(.97, -.47); g.lineTo(1.02, -.36); g.lineTo(.97, -.38); g.lineTo(.92, -.35); g.closePath(); }, '#4a4744', 3);
+  // the main silhouette: body, near legs, head and trunk, one outline
+  const H = [-.42, -.98], hr = .4;
+  // P.trunk/trunkC keep their old meaning: head-local points offset by (.38, 1.0), now on this head
+  const tkC = [P.trunkC[0] + .38 + H[0], P.trunkC[1] + 1.0 + H[1]], tkP = [P.trunk[0] + .38 + H[0], P.trunk[1] + 1.0 + H[1]];
+  const rot = (p) => a3_rot(p, H, P.tilt);
+  const tk = a3e_trunk(g, rot([H[0] - .14, H[1] + .1]), rot(tkC), rot(tkP), .26, .1);
+  const body = () => { g.moveTo(-.2, -1.02); g.bezierCurveTo(.25, -1.2, .98, -1.02, .95, -.62); g.bezierCurveTo(.93, -.32, .55, -.28, .22, -.3); g.bezierCurveTo(-.12, -.3, -.36, -.46, -.28, -.8); g.closePath(); };
+  const legB = a3e_capsule(g, [.48, -.46], [.5, -.02], .13, .145);
+  const legF = a3e_capsule(g, [-.1, -.5], [P.foot[0], P.foot[1] - .02], .13, .145);
+  const head = () => { g.save(); g.translate(...H); g.rotate(P.tilt); g.moveTo(hr, 0); g.ellipse(0, 0, hr, hr * .93, 0, 0, TAU); g.restore(); };
+  const parts = [body, legB, legF, head, tk];
+  a3e_union(g, parts, A3_ELE, LWs);
+  // one soft shadow tone low on every mass, a highlight up on the head (both clipped to the silhouette)
+  g.save(); a3e_clip(g, parts);
+  g.fillStyle = A3_ELE_SH; g.globalAlpha = .35;
+  g.beginPath(); g.ellipse(.36, -.27, .7, .1, -.03, 0, TAU); g.fill(); // a faint shadow under the belly, nothing more
+  g.globalAlpha = 1; g.fillStyle = A3_ELE_HI; g.beginPath(); g.ellipse(H[0] - .12, H[1] - .22, .17, .085, -.35, 0, TAU); g.fill();
+  g.beginPath(); g.ellipse(.25, -.98, .28, .05, -.1, 0, TAU); g.fill();
   g.restore();
-  // head
-  g.save(); g.translate(-.38, -1.0); g.rotate(P.tilt);
-  ol(g, ell(g, 0, 0, .36, .33), A3_ELE);
-  // little tusk, its root hidden behind the trunk
-  ol(g, () => { g.moveTo(-.04, .2); g.quadraticCurveTo(-.2, .34, -.3, .3); g.quadraticCurveTo(-.18, .26, -.1, .14); g.closePath(); }, A3_NAIL, 3.5);
-  // trunk from the face, tapering, curling
-  a3_taper(g, [-.16, .12], [P.trunkC[0] + .38, P.trunkC[1] + 1.0], [P.trunk[0] + .38, P.trunk[1] + 1.0], .2, .1, A3_ELE);
-  g.strokeStyle = A3_ELE2; g.lineWidth = LWs * .7; g.lineCap = 'round';
-  for (const u of [.25, .4, .55]) { const px = lerp(-.16, P.trunkC[0] + .38, u), py = lerp(.12, P.trunkC[1] + 1.0, u); g.beginPath(); g.arc(px, py, .07, .3, 1.7); g.stroke(); }
+  nails([.5, 0]); nails([P.foot[0], P.foot[1]]);
+  // thin inside lines: the near front leg against the body, trunk wrinkles, a crease at the shoulder
+  g.strokeStyle = A3_ELE_IN; g.lineWidth = LWs * .6; g.lineCap = 'round';
+  g.beginPath(); g.moveTo(-.02, -.5); g.quadraticCurveTo(.05, -.38, .04, -.28); g.stroke();
+  for (const u of [.3, .45, .6, .74]) { const [mx, my, w] = tk.mid(u); g.beginPath(); g.moveTo(mx - w * .8, my - w * .2); g.quadraticCurveTo(mx, my + w * .35, mx + w * .8, my - w * .2); g.stroke(); }
+  // the near ear: a big fan in front of the body, flapping from its root behind the cheek
+  g.save(); g.translate(H[0] + .24, H[1] - .04); g.rotate(-.12 + P.ear * .25 + P.tilt); g.scale(1 + P.ear * .12, 1);
+  ol(g, () => { g.moveTo(-.02, -.3); g.bezierCurveTo(.3, -.44, .5, -.08, .42, .12); g.bezierCurveTo(.36, .34, .1, .4, .02, .26); g.bezierCurveTo(-.06, .12, -.06, -.12, -.02, -.3); g.closePath(); }, A3_ELE);
+  g.beginPath(); g.moveTo(.04, -.22); g.bezierCurveTo(.28, -.32, .4, -.06, .34, .1); g.bezierCurveTo(.28, .26, .12, .3, .07, .2); g.bezierCurveTo(.02, .1, .01, -.1, .04, -.22); g.closePath();
+  const eg = g.createLinearGradient(0, -.3, .3, .3); eg.addColorStop(0, '#f2c2c9'); eg.addColorStop(1, A3_EAR); g.fillStyle = eg; g.fill();
+  g.strokeStyle = A3_ELE_IN; g.lineWidth = LWs * .6; g.beginPath(); g.moveTo(.06, -.12); g.quadraticCurveTo(.2, .02, .14, .2); g.stroke();
+  g.restore();
   // face
+  g.save(); g.translate(...H); g.rotate(P.tilt);
+  ol(g, () => { g.moveTo(-.12, .2); g.quadraticCurveTo(-.26, .32, -.36, .27); g.quadraticCurveTo(-.24, .25, -.17, .14); g.closePath(); }, A3_NAIL, 3);
   g.__lid = A3_ELE;
-  for (const [ex, er] of [[-.17, .045], [.04, .052]]) a3_eye(g, ex, -.06, er, er * 1.15, P.eyes, P.look, LWs);
-  g.strokeStyle = A3_ELE2; g.lineWidth = .03; g.lineCap = 'round';
-  for (const [ex, sx] of [[-.17, 1], [.04, -1]]) { g.beginPath(); g.moveTo(ex - .055, -.15 - P.brow * .025 * sx); g.quadraticCurveTo(ex, -.18, ex + .055, -.15 + P.brow * .025 * sx); g.stroke(); }
-  g.beginPath(); g.fillStyle = 'rgba(230,140,150,.45)'; g.ellipse(.12, .06, .06, .03, 0, 0, TAU); g.fill();
-  g.strokeStyle = INK; g.lineWidth = LWs; g.beginPath();
-  if (P.mouth === 'smile') { g.moveTo(-.02, .2); g.quadraticCurveTo(.06, .26, .13, .19); }
-  else if (P.mouth === 'o') { g.ellipse(.05, .22, .025, .03, 0, 0, TAU); }
-  else { g.moveTo(-.01, .23); g.quadraticCurveTo(.06, .2, .13, .23); }
+  for (const [ex, ey, er] of [[-.2, -.06, .055], [.04, -.04, .065]]) a3_eye(g, ex, ey, er, er * 1.2, P.eyes, P.look, LWs);
+  g.strokeStyle = A3_ELE_IN; g.lineWidth = .028; g.lineCap = 'round';
+  for (const [ex, ey, sx] of [[-.2, -.06, 1], [.04, -.04, -1]]) { g.beginPath(); g.moveTo(ex - .055, ey - .1 - P.brow * .025 * sx); g.quadraticCurveTo(ex, ey - .13, ex + .055, ey - .1 + P.brow * .025 * sx); g.stroke(); }
+  g.fillStyle = 'rgba(232,140,152,.5)'; g.beginPath(); g.ellipse(.14, .07, .065, .035, 0, 0, TAU); g.fill();
+  g.strokeStyle = INK; g.lineWidth = LWs; g.lineCap = 'round'; g.beginPath();
+  if (P.mouth === 'smile') { g.moveTo(.0, .2); g.quadraticCurveTo(.08, .27, .16, .19); }
+  else if (P.mouth === 'o') { g.ellipse(.07, .23, .028, .034, 0, 0, TAU); }
+  else { g.moveTo(.01, .23); g.quadraticCurveTo(.08, .2, .15, .23); }
   g.stroke();
   g.restore();
   g.restore();
