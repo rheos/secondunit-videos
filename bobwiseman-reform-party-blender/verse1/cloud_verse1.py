@@ -2,6 +2,7 @@
 
     modal run verse1/cloud_verse1.py --frames 1-570 --chunks 12 --res 1280x720 --tag v1
     modal run verse1/cloud_verse1.py --frames 1,200,400 --tag probe           # a cost probe
+    modal run verse1/cloud_verse1.py --frames 40,170 --tag look --extra "--chars cutout"   # flags for verse1.py
 
 CPU only for now (RP_GPU=cpu default): EEVEE on Mesa's software GL. A GPU needs a card on file at Modal
 (RP_GPU=L4). The modules and the exported state (out/state/*.json) go up as arguments; nothing else from
@@ -29,7 +30,7 @@ app = modal.App("reform-party-verse1")
 
 
 @app.function(image=IMG, gpu=GPU_ARG, cpu=CPUS, memory=8192, timeout=3600)
-def render(files, frames, res, samples, only=""):
+def render(files, frames, res, samples, only="", extra=""):
     import runpy
     import sys
     work = pathlib.Path("/tmp/work")
@@ -38,7 +39,7 @@ def render(files, frames, res, samples, only=""):
         p.parent.mkdir(parents=True, exist_ok=True)
         p.write_text(text)
     t0 = time.time()
-    sys.argv = ["blender", "--", "--res", res, "--samples", str(samples)] + (["--only", only] if only else [])
+    sys.argv = ["blender", "--", "--res", res, "--samples", str(samples)] + (["--only", only] if only else []) + extra.split()
     runpy.run_path(str(work / "verse1" / "verse1.py"), run_name="__main__")
     import bpy
     scn = bpy.context.scene
@@ -66,7 +67,9 @@ def _parse(spec):
 
 
 @app.local_entrypoint()
-def main(frames: str = "1,200,400", chunks: int = 1, res: str = "1280x720", samples: int = 16, tag: str = "probe", only: str = ""):
+def main(frames: str = "1,200,400", chunks: int = 1, res: str = "1280x720", samples: int = 16, tag: str = "probe", only: str = "",
+         extra: str = ""):
+    """extra: more verse1.py flags, space-separated, e.g. --extra '--chars cutout --look pbr'."""
     files = {str(p.relative_to(ROOT)): p.read_text() for p in sorted((ROOT / "verse1").glob("rp_*.py"))}
     files["verse1/verse1.py"] = (ROOT / "verse1" / "verse1.py").read_text()
     for p in sorted((ROOT / "out" / "state").glob("*.json")):
@@ -79,7 +82,7 @@ def main(frames: str = "1,200,400", chunks: int = 1, res: str = "1280x720", samp
     out_dir.mkdir(parents=True, exist_ok=True)
     t0 = time.time()
     total_cpu_s = 0.0
-    for r in render.starmap([(files, g, res, samples, only) for g in groups]):
+    for r in render.starmap([(files, g, res, samples, only, extra) for g in groups]):
         for f, png in r.pop("frames").items():
             (out_dir / f"f{f:04d}.png").write_bytes(png)
         busy = r["build_s"] + sum(r["frame_s"])
