@@ -6,6 +6,7 @@
 # A scene builder animates by keying every frame of its own span with bake(frames, fn(t, f)).
 import bpy, bmesh, math, random
 from mathutils import Vector
+Vector = Vector   # re-exported for cast.py
 
 FPS, T0 = 24, 0.0
 W, H = 1280, 720
@@ -31,9 +32,25 @@ P = dict(paper="#efe8db", cobalt="#2f5fb3", coral="#e8645a", red="#d4553b", crea
          denim="#4a6fa5", jacket1="#2f2f3f", jacket2="#7a3b5a", jacket3="#c8922e", jacket4="#3f6f4f", jacket5="#5a4a8a",
          space="#141836", space2="#2a2f5a", earth="#5b9bd5", land="#7fb069")
 
+# Everything links into one of two collections: Set (scenery) or Chars (the cast). render.py renders Chars a second
+# time on a view layer where Set is holdout, so comp.py can draw each character's one outer outline from its alpha.
+SET = CHARS = CUR = None
+def link(o): CUR.objects.link(o)
+def chars_begin():
+    global CUR; CUR = CHARS
+def chars_end():
+    global CUR; CUR = SET
+
 def reset_scene():
+    global SET, CHARS, CUR
     sc = bpy.context.scene
     for o in list(bpy.data.objects): bpy.data.objects.remove(o)
+    for c in list(bpy.data.collections):
+        if c.name.startswith(("Set", "Chars")): bpy.data.collections.remove(c)
+    SET = bpy.data.collections.new("Set"); CHARS = bpy.data.collections.new("Chars"); CUR = SET
+    sc.collection.children.link(SET); sc.collection.children.link(CHARS)
+    if "chars" in sc.view_layers: sc.view_layers.remove(sc.view_layers["chars"])
+    vl = sc.view_layers.new("chars"); vl.layer_collection.children["Set"].holdout = True; vl.use = False
     r = sc.render
     r.engine = "BLENDER_EEVEE_NEXT" if "BLENDER_EEVEE_NEXT" in [e.identifier for e in bpy.types.RenderSettings.bl_rna.properties["engine"].enum_items] else "BLENDER_EEVEE"
     r.resolution_x, r.resolution_y, r.resolution_percentage = W, H, 100
@@ -46,9 +63,10 @@ def scene(): return bpy.context.scene
 
 # ---------- toon material ----------
 MATS = {}
-def toon(hexc, shade=.74, light=1.07, emit=None):
-    """Toon material: shadows lean cool, one highlight step. emit=<strength> makes a flat glowing colour (lamps, flame, neon)."""
-    key = (hexc, shade, light, emit)
+def toon(hexc, shade=.74, light=1.07, emit=None, gloss=False):
+    """Toon material: shadows lean cool, one highlight step. emit=<strength> makes a flat glowing colour (lamps, flame, neon).
+    gloss adds a small hot highlight step, the sheen of moulded plastic."""
+    key = (hexc, shade, light, emit, gloss)
     if key in MATS and MATS[key].name in bpy.data.materials: return MATS[key]
     m = bpy.data.materials.new("TK_" + hexc); m.use_nodes = True; nt = m.node_tree; nt.nodes.clear()
     out = nt.nodes.new("ShaderNodeOutputMaterial"); em = nt.nodes.new("ShaderNodeEmission")
@@ -61,6 +79,8 @@ def toon(hexc, shade=.74, light=1.07, emit=None):
         cr.color_ramp.interpolation = "EASE"
         e = cr.color_ramp.elements; e[0].position = .18; e[0].color = (*sh, 1); e[1].position = .42; e[1].color = (*base, 1)
         e3 = e.new(.86); e3.color = (*li, 1)
+        if gloss:
+            e4 = e.new(.95); e4.color = (*[min(1, c * 1.25 + .22) for c in base], 1)
         nt.links.new(d.outputs["BSDF"], s2r.inputs["Shader"]); nt.links.new(s2r.outputs["Color"], cr.inputs["Fac"])
         nt.links.new(cr.outputs["Color"], em.inputs["Color"])
     nt.links.new(em.outputs["Emission"], out.inputs["Surface"])
@@ -72,7 +92,7 @@ def _obj(name, bm, mat, loc=(0, 0, 0), rot=(0, 0, 0), parent=None, smooth_faces=
     if smooth_faces:
         for f in bm.faces: f.smooth = True
     bm.to_mesh(me); bm.free(); me.materials.append(mat)
-    o = bpy.data.objects.new("TK_" + name, me); scene().collection.objects.link(o)
+    o = bpy.data.objects.new("TK_" + name, me); link(o)
     o.location = loc; o.rotation_euler = rot
     if parent: o.parent = parent
     return o
@@ -81,11 +101,11 @@ def cube(name, size, mat, loc=(0, 0, 0), rot=(0, 0, 0), parent=None, bevel=.12):
     """A box of size (x, y, z) centred on loc, with softly bevelled edges."""
     bm = bmesh.new(); bmesh.ops.create_cube(bm, size=1.0)
     for v in bm.verts: v.co = Vector((v.co.x * size[0], v.co.y * size[1], v.co.z * size[2]))
-    if bevel: bmesh.ops.bevel(bm, geom=list(bm.edges), offset=min(size) * bevel, segments=2, affect="EDGES")
+    if bevel: bmesh.ops.bevel(bm, geom=list(bm.edges), offset=min(size) * bevel, segments=4, affect="EDGES")
     return _obj(name, bm, mat, loc, rot, parent)
 
 def sphere(name, rad, mat, loc=(0, 0, 0), scale=(1, 1, 1), parent=None):
-    bm = bmesh.new(); bmesh.ops.create_uvsphere(bm, u_segments=28, v_segments=16, radius=rad)
+    bm = bmesh.new(); bmesh.ops.create_uvsphere(bm, u_segments=48, v_segments=24, radius=rad)
     for v in bm.verts: v.co = Vector((v.co.x * scale[0], v.co.y * scale[1], v.co.z * scale[2]))
     return _obj(name, bm, mat, loc, (0, 0, 0), parent)
 
@@ -95,7 +115,7 @@ def cyl(name, r1, r2, depth, mat, loc=(0, 0, 0), rot=(0, 0, 0), parent=None, seg
     return _obj(name, bm, mat, loc, rot, parent)
 
 def empty(name, loc=(0, 0, 0), parent=None):
-    o = bpy.data.objects.new("TK_" + name, None); scene().collection.objects.link(o); o.location = loc
+    o = bpy.data.objects.new("TK_" + name, None); link(o); o.location = loc
     if parent: o.parent = parent
     return o
 
@@ -116,7 +136,7 @@ def world(hex_top, hex_bottom=None):
 def camera(lens=50, ortho=None):
     cd = bpy.data.cameras.new("TK_cam"); cd.lens = lens
     if ortho: cd.type = "ORTHO"; cd.ortho_scale = ortho
-    c = bpy.data.objects.new("TK_cam", cd); scene().collection.objects.link(c); scene().camera = c
+    c = bpy.data.objects.new("TK_cam", cd); SET.objects.link(c); scene().camera = c
     return c
 
 def aim(cam, eye, target):
@@ -125,7 +145,7 @@ def aim(cam, eye, target):
 
 def sun(rot=(52, -14, -36), energy=3.0):
     sd = bpy.data.lights.new("TK_sun", "SUN"); sd.energy = energy; sd.angle = math.radians(4)
-    s = bpy.data.objects.new("TK_sun", sd); scene().collection.objects.link(s)
+    s = bpy.data.objects.new("TK_sun", sd); SET.objects.link(s)
     s.rotation_euler = [math.radians(a) for a in rot]
     return s
 
@@ -146,52 +166,30 @@ def linear_all():
                     for fc in cb.fcurves:
                         for kp in fc.keyframe_points: kp.interpolation = "LINEAR"
 
-# ---------- the cast ----------
-def limb(name, length, rad, mat, parent, loc=(0, 0, 0)):
-    """A limb hanging down from a pivot empty at loc: rotate the returned pivot to pose it."""
-    piv = empty(name + "Piv", loc, parent)
-    cyl(name, rad, rad * .9, length, mat, (0, 0, -length / 2), parent=piv)
-    sphere(name + "End", rad * 1.05, mat, (0, 0, -length), parent=piv)
-    return piv
-
+# ---------- the cast (tk/cast.py builds them; these keep the old call signatures) ----------
 def person(name, loc=(0, 0, 0), sweater=None, parent=None, scale=1.0):
-    """The person the song talks to: round head, teal sweater, small dark eyes, a mouth that can smile or droop.
-    About 1.5 m tall standing. Returns a dict of parts to pose: root, head, armL, armR, legL, legR, mouth, eyes."""
-    root = empty(name, loc, parent); root.scale = (scale, scale, scale)
-    sw = toon(sweater or P["sweater"]); sk = toon(P["skin"]); ink = toon(P["ink"])
-    legL = limb(name + "LegL", .62, .085, toon(P["denim"]), root, (-.11, 0, .66))
-    legR = limb(name + "LegR", .62, .085, toon(P["denim"]), root, (.11, 0, .66))
-    cyl(name + "Torso", .27, .22, .62, sw, (0, 0, .97), parent=root)
-    head = empty(name + "Head", (0, 0, 1.46), root)
-    sphere(name + "Skull", .23, sk, (0, 0, 0), parent=head)
-    eyes = [sphere(name + f"Eye{s}", .026, ink, (s * .08, -.21, .04), parent=head) for s in (-1, 1)]
-    mouth = sphere(name + "Mouth", .045, ink, (0, -.215, -.08), (1.3, .25, .22), parent=head)
-    armL = limb(name + "ArmL", .55, .07, sw, root, (-.31, 0, 1.22))
-    armR = limb(name + "ArmR", .55, .07, sw, root, (.31, 0, 1.22))
-    for a in (armL, armR): sphere(a.name + "Hand", .075, sk, (0, 0, -.6), parent=a)
-    return dict(root=root, head=head, armL=armL, armR=armR, legL=legL, legR=legR, mouth=mouth, eyes=eyes)
+    """The person the song talks to. See cast.PERSON and the parts list in cast.py."""
+    from . import cast
+    return cast.figure(name, loc, dict(cast.PERSON, top=sweater or P["sweater"]), parent, scale)
 
 def boy(name, k, loc=(0, 0, 0), parent=None):
-    """One of the group of boys: same build as the person but lankier, a cap (peak forward), a jacket colour by index k
-    (0-4), a cocky brow. Returns the same parts as person() plus 'cap'."""
-    jackets = [P["jacket1"], P["jacket2"], P["jacket3"], P["jacket4"], P["jacket5"]]
-    root = empty(name, loc, parent)
-    jk = toon(jackets[k % 5]); sk = toon(P["skin"] if k % 2 == 0 else P["skin2"]); ink = toon(P["ink"])
-    legL = limb(name + "LegL", .7, .08, toon(P["denim"]), root, (-.1, 0, .74))
-    legR = limb(name + "LegR", .7, .08, toon(P["denim"]), root, (.1, 0, .74))
-    cyl(name + "Torso", .25, .27, .64, jk, (0, 0, 1.06), parent=root)
-    head = empty(name + "Head", (0, 0, 1.58), root)
-    sphere(name + "Skull", .21, sk, (0, 0, 0), parent=head)
-    cap = empty(name + "Cap", (0, 0, .12), head)
-    sphere(name + "CapDome", .215, toon(jackets[(k + 2) % 5]), (0, 0, 0), (1, 1, .55), parent=cap)
-    cube(name + "Peak", (.22, .2, .03), toon(jackets[(k + 2) % 5]), (0, -.24, -.04), parent=cap)
-    eyes = [sphere(name + f"Eye{s}", .024, ink, (s * .075, -.19, .02), parent=head) for s in (-1, 1)]
-    for s in (-1, 1): cube(name + f"Brow{s}", (.07, .02, .018), ink, (s * .075, -.195, .07), (0, s * .35, 0), parent=head)
-    mouth = sphere(name + "Mouth", .04, ink, (.03, -.2, -.08), (1.2, .25, .2), parent=head)
-    armL = limb(name + "ArmL", .6, .065, jk, root, (-.3, 0, 1.32))
-    armR = limb(name + "ArmR", .6, .065, jk, root, (.3, 0, 1.32))
-    for a in (armL, armR): sphere(a.name + "Hand", .07, sk, (0, 0, -.64), parent=a)
-    return dict(root=root, head=head, armL=armL, armR=armR, legL=legL, legR=legR, mouth=mouth, eyes=eyes, cap=cap)
+    """One of the group of boys, k = 0..4 (jacket and cap colours by k)."""
+    from . import cast
+    return cast.figure(name, loc, cast.BOY(k), parent)
+
+def kid(name, loc=(0, 0, 0), sweater=None, parent=None):
+    from . import cast
+    return cast.figure(name, loc, dict(cast.KID, top=sweater or P["coral"]), parent)
+
+def face(parts, **kw):
+    """Set an expression: brow (-1 angry .. +1 sad), lids (0 open .. 1 closed), smile (+1 .. -1), open_ (0 .. 1), wide."""
+    from . import cast
+    cast.face(parts, **kw)
+
+def bend(piv, x, f=None):
+    """Curl a limb as one smooth curve (0 straight .. 1 a quarter turn forward); keys it when f is given."""
+    from . import cast
+    cast.bend(piv, x, f)
 
 def walk(parts, t, speed=1.0, amp=28):
     """Swing legs and arms for a walk cycle (1 s per stride at speed 1). Call inside a bake fn, then key the pivots."""
@@ -203,6 +201,11 @@ def key_parts(parts, f, names=("root", "head", "armL", "armR", "legL", "legR")):
     for n in names:
         o = parts[n]; key(o, "rotation_euler", f)
         if n == "root": key(o, "location", f)
+
+def key_face(parts, f):
+    for b in parts["brows"]: key(b, "rotation_euler", f)
+    for o in parts["lids"] + parts["eyes"] + [parts["mouthOpen"]]: key(o, "scale", f)
+    key(parts["mouth"], "rotation_euler", f); key(parts["mouth"], "scale", f)
 
 def rocket(name="rocket", loc=(0, 0, 0), body=None, trim=None, parent=None, flame=True):
     """Bob's rocket ship: a tin toy, red and cream by default, three fins, a porthole, a flame. About 1.6 m tall,
