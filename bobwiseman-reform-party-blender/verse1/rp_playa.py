@@ -318,6 +318,10 @@ def build_world():
     nt.l.new(lin.outputs[0], bg_cam.inputs[0])
     bg_amb.inputs[0].default_value = (1, 1, 1, 1)
     bg_amb.inputs[1].default_value = 0.25
+    if K.LOOK == "pbr":       # daylight: blue sky fill strong enough that shadows read light, as on the real playa
+        bg_amb.inputs[0].default_value = K.lin(K.arg("--fill", "#e4dccd"))   # warm: most daylight fill on the playa is bounce off the cream ground
+        bg_amb.inputs[1].default_value = float(K.arg("--sky", 1.6))
+        bg_cam.inputs[1].default_value = 2.0 ** -float(K.arg("--exposure", 0.2))   # the seen sky keeps the draft's colours
     mx, out = nt.n.new("ShaderNodeMixShader"), nt.n.new("ShaderNodeOutputWorld")
     nt.l.new(lp.outputs["Is Camera Ray"], mx.inputs[0])
     nt.l.new(bg_amb.outputs[0], mx.inputs[1])
@@ -352,7 +356,7 @@ def ground_material_pbr():
     l.new(tc.outputs["Object"], nz.inputs["Vector"])
     tone = n.new("ShaderNodeMix")
     tone.data_type = "RGBA"
-    tone.inputs["A"].default_value = K.lin_rgb([(a * 0.4 + b * 0.6) * 255 for a, b in zip(near, far)])
+    tone.inputs["A"].default_value = K.lin_rgb([min(255, (a * 0.25 + b * 0.75) * 255 * 1.06) for a, b in zip(near, far)])
     tone.inputs["B"].default_value = K.lin_rgb([c * 255 for c in far])
     l.new(nz.outputs["Fac"], tone.inputs["Factor"])
     dark = n.new("ShaderNodeMix")

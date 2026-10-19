@@ -395,6 +395,25 @@ def gavel_axes(th):
     return R, N
 
 
+def gavel_blend(f, gv, smat):
+    """Seat-local gavel matrix: lying on the table at the chairman's end (GAVEL_LIE) blended by gavelHold into the held
+    swing pose (gv = shoulder, R, N), the way gavelLocal lerps its points. Draft 9+: it never leaves the table unseen."""
+    t = K.ft(f)
+    R0, N0 = Vector((math.cos(0.08), 0, math.sin(0.08))), Vector((0, 1, 0))
+    lie = Matrix((R0, N0, R0.cross(N0))).transposed().to_4x4()
+    lie.translation = Vector((-3.85, -0.62, TOP + 0.11 - C[f - 1]["sag"])) - R0 * 1.05
+    lm = smat.inverted() @ lie
+    hold = ease(t, W_LAW - 1.55, W_LAW - 1.25) * (1 - ease(t, W_LAW + 1.1, W_LAW + 1.45))
+    if gv is None or hold <= 0:
+        return lm
+    shl, Rl, Nl = gv
+    hm = Matrix((Rl, Nl, Rl.cross(Nl))).transposed().to_4x4()
+    hm.translation = shl
+    m = lm.to_quaternion().slerp(hm.to_quaternion(), hold).to_matrix().to_4x4()
+    m.translation = lm.translation.lerp(hm.translation, hold)
+    return m
+
+
 def build_suits(car):
     M = K.M
     law_win = [f for f in K.FRAMES if K.ft(f) < W_LAW + 2.05]       # the chairman moves only around "law"
@@ -436,8 +455,8 @@ def build_suits(car):
                 shl = Vector((0.2, hipy, hy + TORSO - 0.06))          # gavelProp's shoulder: sp(..., 0, .2, hy + TORSO - .06)
                 R, N = gavel_axes(S[f - 1]["gavel"])
                 Rl, Nl = smat.to_3x3().inverted() @ R, smat.to_3x3().inverted() @ N
-                hand = shl + Rl * 0.42
                 gav = (shl, Rl, Nl)
+                hand = (gavel_blend(f, gav, smat) @ Vector((0.42, 0, 0))).to_3d()
             return hipy, hy, feet, hand, gav
 
         def chair_coords(f):
@@ -483,22 +502,7 @@ def build_suits(car):
                 kv.co = c + (p - c) * (1 + 0.55 * u) + Vector((0, -0.04 * u, 0))
         softv = [ease(K.ft(f), W_LAW + 0.04, W_LAW + 0.9) * (1 - ease(K.ft(f), W_LAW + 1.6, W_LAW + 2.4)) for f in K.FRAMES]
         K.key_series(gav.data.shape_keys, 'key_blocks["Soft"].value', softv)
-        mats_, vis = [], []
-        last = None
-        for f in K.FRAMES:
-            _, _, _, _, gv = pose(f)
-            if gv is not None:
-                shl, Rl, Nl = gv
-                W = Rl.cross(Nl)
-                m = Matrix((Rl, Nl, W)).transposed().to_4x4()
-                m.translation = shl
-                last = m
-            mats_.append(last if last is not None else Matrix.Identity(4))
-            vis.append(1.0 if gv is not None else 0.0)
-        first = next(m for m in mats_ if m is not None)
-        K.key_matrix(gav, [m if v else first for m, v in zip(mats_, vis)])
-        for k in range(3):
-            K.key_series(gav, "scale", vis, index=k, interp="CONSTANT")
+        K.key_matrix(gav, [gavel_blend(f, pose(f)[4], smat) for f in K.FRAMES])
         heads.append(head)
     return heads
 
@@ -731,13 +735,22 @@ def build_driver(car):
     wx, wz = X + 0.36, sh - 0.02
     tilt = 0.42
     rim_top = lambda ang: Vector((wx, 0, wz)) + Matrix.Rotation(tilt, 3, "Y") @ Vector((0, 0.2 * math.sin(ang), 0.2 * math.cos(ang)))
-    for d in (-1, 1):                                        # both hands on the wheel's top arc
-        s_ = Vector((X + 0.04, d * 0.19, sh - 0.05))
-        hand = rim_top(d * 0.45)
-        el = Vector((X + 0.17, d * 0.22, sh - 0.17))
-        b.rod(M["suit"], s_, el, 0.05, 0.045, seg=12)
-        b.rod(M["suit"], el, hand, 0.045, 0.038, seg=12)
-        b.ellipsoid(M["egg"], hand, (0.042, 0.04, 0.04), seg=12)
+    # draft 24 shows ONE arm, in profile, reaching to the tilted wheel: a jacket sleeve bent at the elbow, a shirt cuff,
+    # a hand closed over the rim (the near side, -Y; the far arm is hidden behind the body)
+    shl = Vector((X + 0.03, -0.2, sh - 0.04))
+    el = Vector((X + 0.06, -0.26, sh - 0.27))
+    hand = rim_top(-0.75)
+    wr = el + (hand - el) * 0.84
+    b.ellipsoid(M["suit"], shl, (0.075, 0.07, 0.08), seg=16)                  # the shoulder cap
+    b.rod(M["suit"], shl, el, 0.062, 0.055, seg=14, caps=False)               # upper sleeve
+    b.ellipsoid(M["suit"], el, (0.058, 0.058, 0.058), seg=14)                 # the elbow
+    b.rod(M["suit"], el, wr, 0.055, 0.047, seg=14, caps=False)                # forearm sleeve
+    b.rod(M["shirt"], wr, el + (hand - el) * 0.9, 0.04, 0.038, seg=12)        # the cuff
+    fa = (hand - el).normalized()
+    b.ellipsoid(M["egg"], hand - fa * 0.02, (0.045, 0.036, 0.04), seg=14,
+                rot=fa.to_track_quat("X", "Z").to_matrix().to_4x4())           # palm over the rim
+    b.ellipsoid(M["egg"], hand + Vector((0.0, 0.0, -0.035)), (0.035, 0.02, 0.018), seg=10)   # fingers under it
+    b.ellipsoid(M["egg"], hand + Vector((-0.02, -0.03, 0.02)), (0.022, 0.014, 0.014), seg=8)  # the thumb
     body = b.build("DriverBody", K.COL_CAR, rig)
     hb = K.Builder()
     hb.ellipsoid(M["egg"], (0, 0, 0), (0.125, 0.125 * 0.95, 0.155), seg=32)
@@ -827,7 +840,6 @@ def build_props(car):
 
 def build_day_plate(car):
     """car.js dayPlate: a cream DAY plate drops onto the skirt at the chairman's end on "law", bounces, swings, stays."""
-    import bpy
     M = K.M
     x, z0, z1, y0, y1 = -TL * 0.97 - 0.012, -0.98, -0.6, 0.68, 0.87
     zc = (z0 + z1) / 2
@@ -839,28 +851,74 @@ def build_day_plate(car):
     for zz in (-0.8 * (z1 - z0) / 2, 0.8 * (z1 - z0) / 2):
         b.ellipsoid(M["platebolt"], (-0.008, zz, -0.035), (0.006, 0.01, 0.01), seg=8)
     b.build("DayPlate", K.COL_CAR, piv, smooth=False)
-    cu = bpy.data.curves.new("RP_DayText", "FONT")
-    cu.body = "DAY"
-    cu.align_x, cu.align_y = "CENTER", "CENTER"
-    cu.size = 0.15
-    cu.extrude = 0.001
-    try:
-        fnt = bpy.data.fonts.load("/System/Library/Fonts/Supplemental/Georgia Bold.ttf", check_existing=True)
-        cu.font = fnt
-    except Exception:
-        pass
-    cu.body_format.foreach_set("use_bold", [True] * 3)
-    cu.materials.append(M["plateink"])
-    tx = bpy.data.objects.new("RP_DayText", cu)
-    K.COL_CAR.objects.link(tx)
-    tx.parent = piv
-    tx.location = (-0.009, 0, -(y1 - y0) / 2 - 0.01)
-    tx.rotation_euler = (math.pi / 2, 0, -math.pi / 2)
+    # the lettering as geometry (no system font on the render boxes): a bold serif DAY, draft's 36px Georgia on a
+    # 100 x 50 plate. u reads left to right (-Y on the plate's face), v up; baseline 41/50 down, cap height ~25/50.
+    k_ = (y1 - y0) / 50.0
+    vb, vt = -(y1 - y0) + 9 * k_, -(y1 - y0) + 9 * k_ + 25 * k_
+    xf = -0.0078
+    L = K.Builder()
+
+    def stroke(u0, v0, u1, v1, w):
+        du, dv = u1 - u0, v1 - v0
+        ln = math.hypot(du, dv)
+        rot = Matrix.Rotation(math.atan2(dv, -du), 4, "X")
+        L.box(M["plateink"], (xf, -(u0 + u1) / 2, (v0 + v1) / 2), (0.003, ln, w), rot=rot)
+
+    TH, TN, SW = 5.6 * k_, 1.9 * k_, 1.6 * k_                # thick stroke, hairline, serif thickness
+    hgt = vt - vb
+    def serif(u, v, wd):
+        stroke(u - wd / 2, v, u + wd / 2, v, SW)
+    # D
+    u0 = -37 * k_
+    stroke(u0, vb, u0, vt, TH)
+    serif(u0 + 1 * k_, vb + SW / 2, 10 * k_); serif(u0 + 1 * k_, vt - SW / 2, 10 * k_)
+    cu_, rv, ru = vb + hgt / 2, hgt / 2 - TN / 2, 13 * k_
+    pts = [(u0 + 2 * k_ + ru * math.sin(a), cu_ + rv * math.cos(a)) for a in [i_ / 12 * math.pi for i_ in range(13)]]
+    for j_, (pa, pb) in enumerate(zip(pts, pts[1:])):
+        w_ = TN + (TH - TN) * math.sin((j_ + 0.5) / 12 * math.pi) ** 2
+        stroke(pa[0], pa[1], pb[0], pb[1], w_)
+    # A
+    ua = 0.0
+    stroke(ua - 1 * k_, vt, ua - 13 * k_, vb, TN)
+    stroke(ua + 1 * k_, vt, ua + 13 * k_, vb, TH)
+    stroke(ua - 7.5 * k_, vb + 8 * k_, ua + 7.5 * k_, vb + 8 * k_, TN)
+    serif(ua - 13 * k_, vb + SW / 2, 9 * k_); serif(ua + 13.5 * k_, vb + SW / 2, 10 * k_)
+    # Y
+    uy, vm = 33 * k_, vb + 11 * k_
+    stroke(uy - 12 * k_, vt, uy, vm, TH)
+    stroke(uy + 12 * k_, vt, uy, vm, TN)
+    stroke(uy, vm, uy, vb, TH)
+    serif(uy, vb + SW / 2, 12 * k_); serif(uy - 12 * k_, vt - SW / 2, 10 * k_); serif(uy + 12 * k_, vt - SW / 2, 9 * k_)
+    L.build("DayLetters", K.COL_CAR, piv, smooth=False)
     vis = [1.0 if st["plate"] else 0.0 for st in C]
     K.key_series(piv, "location", [y1 + (st["plate"][0] if st["plate"] else 0.7) - st["sag"] for st in C], index=2)
     K.key_series(piv, "rotation_euler", [(-st["plate"][1] if st["plate"] else 0.0) for st in C], index=0)
     for k in range(3):
         K.key_series(piv, "scale", vis, index=k, interp="CONSTANT")
+
+
+def build_sparks(car):
+    """table.js phonePuff: a 0.55 s fizz of nine sparks off the phone before the smoke (PUFF.t = "can" - .12)."""
+    M = K.M
+    if "spark" not in M:
+        M["spark"] = K.flat("PhoneSpark", "#ffcf6a", 4.0)
+    for i in range(9):
+        b = K.Builder()
+        b.ellipsoid(M["spark"], (0, 0, 0), (0.018, 0.018, 0.018), seg=8)
+        sp = b.build("Spark_%d" % i, K.COL_CAR, car)
+        a, v = rnd(i, 81) * TAU, 0.5 + 0.7 * rnd(i, 82)
+        locs, scs = [], []
+        for f in K.FRAMES:
+            st = C[f - 1]
+            u = K.ft(f) - (st["wt"]["can"] - 0.12) - i * 0.03
+            on = 0 <= u <= 0.35
+            uu = clamp(u, 0, 0.35)
+            base = Vector((st["cx"], st["cz"] - 0.08, TOP + 0.12 + st["sl"] * 0.02))
+            locs.append(base + Vector((math.cos(a) * v * uu, 0, abs(math.sin(a)) * v * uu - 1.6 * uu * uu)))
+            scs.append((1 - uu / 0.35) * 0.7 + 0.3 if on else 0.0)
+        K.key_loc(sp, locs)
+        for k in range(3):
+            K.key_series(sp, "scale", scs, index=k, interp="CONSTANT")
 
 
 def tag_characters():
@@ -880,6 +938,7 @@ def build():
     build_phone(car)
     build_mute(car)
     build_smoke(car)
+    build_sparks(car)
     build_driver(car)
     build_props(car)
     tag_characters()

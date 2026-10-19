@@ -5,7 +5,9 @@ them the LENS (magnifying glass), MIC (stage-mic ball), CAMERA (folding press ca
 RECORDER (reel-to-reel deck). Same body on all five (pale dust coveralls, boots, a coloured sash shoulder to hip); the
 recorder's owner also wears the scientist's open white lab coat with a pocket and two pens.
 
-In this window nothing is confiscated yet (the recorder goes on "every", 32.94 s). What happens: they walk on the
+On "every" (32.94 s) the recorder is confiscated: it hops off the collar in an arc into the giant ear's drawer
+(rp_installs' Inst_EarDrawer, mirrored here from the same cues), shrinking to 0.6, and its owner grows a blank
+cardboard box with a paper tag in its place (ipBlank). The other four keep their heads to 36.7 s. Before that: they walk on the
 song's 100 bpm beat (ipBody: feet lift and sway, a small bob, arms swing), the reels turn and the dial needle
 wavers while the heads work, and on "can't" (24.76 s) all five die at once: the recorder's reels stop and its red
 record lamp goes out, the tape goes slack, the radio's needle drops out of the blue sector, the camera's pilot light
@@ -109,13 +111,19 @@ def mats():
         "m_lit": lambda: F("MicBandLit", "#78d2ff", 6.0),
         "m_dead": lambda: T("MicBandDeadPlastic", "#55585e"),
         "m_ball": lambda: T("MicBallSteel", "#c9cccd"),
-        "m_mesh": lambda: T("MicMeshGrille", "#8f9396"),
+        "m_mesh": lambda: T("MicMeshGrille", "#6e747a"),
         # lens
         "l_handle": lambda: T("LensHandleWood", "#5a3a24"),
         "l_brass": lambda: T("LensRimGold", "#c9a46a"),
         "l_rim2": lambda: T("LensRimDarkGold", "#8a6a2e"),
-        "l_glass": lambda: glass("MagnifierGlass", "#dfe9f2", rough=0.02),
-        "l_cloud": lambda: T("LensCloudCeramic", "#c4c6c7"),
+        "l_glass": lambda: glass("MagnifierGlass", "#a9c3dd", rough=0.02),   # tinted like the sky behind it
+        "l_dead": lambda: T("LensDeadGlassCeramic", "#b9bcbe", shadow="#9a9da0", light="#d3d5d6"),
+        "l_cloud": lambda: T("LensCloudCeramic", "#e4e6e6", shadow="#c9cbcc", light="#f2f3f3"),
+        # the cardboard stand-in head and its tag
+        "b_box": lambda: T("BlankBoxCardboard", "#c8a46a", shadow="#b08c55"),
+        "b_flap": lambda: T("BlankFlapCardboard", "#a98450"),
+        "b_tag": lambda: T("BlankTagPaper", "#f4efe2"),
+        "b_str": lambda: T("BlankStringFabric", "#6b5a40"),
     }
     pal.update({"sash_" + k: (lambda k=k: T("IPSash%sBand" % k.title(), SASH[k])) for k in KINDS})
     for k, fn in pal.items():
@@ -145,6 +153,20 @@ def ring(b, mat, c, R, r, seg=40, rs=10):
     b.strip(mat, rows)
 
 
+def tilted_ring(b, mat, c, n, R, r, seg=40, rs=4):
+    """A torus centred at c around the unit axis n."""
+    n = Vector(n).normalized()
+    u = n.orthogonal().normalized()
+    v = n.cross(u)
+    rows = []
+    for j in range(rs + 1):
+        a = j / rs * 2 * math.pi
+        rr, dn = R + r * math.cos(a), r * math.sin(a)
+        rows.append([Vector(c) + rr * (math.cos(i / seg * 2 * math.pi) * u + math.sin(i / seg * 2 * math.pi) * v) + dn * n
+                     for i in range(seg + 1)])
+    b.strip(mat, rows)
+
+
 def part(b, name, parent, loc=(0, 0, 0), smooth=True):
     ob = b.build(name, COL, parent=parent, smooth=smooth, loc=loc)
     return tag(ob)
@@ -153,7 +175,7 @@ def part(b, name, parent, loc=(0, 0, 0), smooth=True):
 # =============================================================================================
 # heads (origin at the collar point; built in the draft's head metres)
 # =============================================================================================
-def head_recorder(kind, root, on, run):
+def head_recorder(kind, root, on, run, hl=(0, 0, COLLAR + .01)):
     b = K.Builder()
     D = 0.36
     b.box(M["r_hub"], f2(0, -.06), (.2, .2, .12))
@@ -163,7 +185,7 @@ def head_recorder(kind, root, on, run):
     for i in range(3):
         b.box(M["r_key"], f2(-.245 + i * .16, -.23, -D / 2 - .02), (.11, .04, .08))
     b.box(M["r_key"], f2(0, -.385, -D / 2 - .02), (.14, .05, .09))       # the tape head
-    head = part(b, "IP_%s_Head" % kind, root, loc=(0, 0, COLLAR + .01))
+    head = part(b, "IP_%s_Head" % kind, root, loc=hl)
     # record key: red and lit while it works, dark after "can't"
     lamp = []
     for nm, mt in (("On", "r_red"), ("Off", "r_key")):
@@ -268,18 +290,19 @@ def head_mic(kind, root, on):
     b.cone(M["m_band"], f2(0, -.345), .2, .2, .09, seg=32)
     b.ellipsoid(M["m_ball"], f2(0, -.79), (.4, .4, .4), seg=40)
     head = part(b, "IP_%s_Head" % kind, root, loc=(0, 0, COLLAR + .01))
-    # the grille mesh: a wireframe over the ball
-    me = bpy.data.meshes.new("RP_IP_MicMesh")
-    bm = bmesh.new()
-    bmesh.ops.create_icosphere(bm, subdivisions=3, radius=.42, matrix=Matrix.Translation(f2(0, -.79)))
-    bm.to_mesh(me)
-    bm.free()
-    me.materials.append(M["m_mesh"])
-    gr = tag(bpy.data.objects.new("RP_IP_%s_Grille" % kind, me))
-    COL.objects.link(gr)
-    gr.parent = head
-    wm = gr.modifiers.new("wire", "WIREFRAME")
-    wm.thickness = .012
+    # the grille: the draft's crosshatch, two sets of diagonal lines .085 apart, laid on the ball as thin rings
+    b = K.Builder()
+    c, R0 = f2(0, -.79), .403
+    for sgn in (1, -1):
+        nrm = Vector((1, 0, sgn)).normalized()
+        k = -4
+        while k <= 4:
+            off = k * .085
+            rr = math.sqrt(max(0.0, R0 * R0 - off * off))
+            if rr > .05:
+                tilted_ring(b, M["m_mesh"], c + nrm * off, nrm, rr, .006, seg=48, rs=4)
+            k += 1
+    part(b, "IP_%s_Grille" % kind, head)
     # the band light (the tally): lit while the mic is live
     for nm, mt in (("On", "m_lit"), ("Off", "m_dead")):
         b = K.Builder()
@@ -298,9 +321,10 @@ def head_lens(kind, root, on):
     head = part(b, "IP_%s_Head" % kind, root, loc=(0, 0, COLLAR + .01))
     # "can't": the lens clouds over (draft: grey ellipses fill the glass)
     b = K.Builder()
-    b.cone(M["l_cloud"], f2(0, -.74, -.024), .36, .36, .006, seg=56, rot=ROTX90)
+    b.cone(M["l_dead"], f2(0, -.74, -.024), .37, .37, .006, seg=56, rot=ROTX90)
     for i in range(6):
-        b.ellipsoid(M["l_cloud"], f2(-.2 + (i % 3) * .2, -.74 - .13 + (i // 3) * .26, -.03), (.13, .015, .08), seg=12)
+        b.ellipsoid(M["l_cloud"], f2(-.25 + (i % 3) * .25, -.74 - .15 + (i // 3) * .3, -.03), (.2, .012, .12), seg=16)
+    b.rod(M["l_cloud"], f2(-.2, -.95, -.034), f2(-.05, -1.05, -.034), .018, seg=6)   # the highlight streak
     cl = part(b, "IP_%s_Cloud" % kind, head)
     key_hidden(cl, [o >= .5 for o in on])
 
@@ -350,11 +374,20 @@ def body(kind, root, frames):
         b.box(M["p_boot"], (0, -.04, .08), (.2, .3, .16))
         b.ellipsoid(M["p_boot"], (0, -.17, .07), (.1, .08, .07), seg=12)
         boots.append(part(b, "IP_%s_Boot%d" % (kind, j), root))
+        # the sleeve: upper arm from the shoulder, forearm from the elbow (bent a little forward), cuff and hand
         b = K.Builder()
-        b.rod(sleeve, (0, 0, 0), (0, 0, -.62), .06, .055, seg=12)
-        b.ellipsoid(M["p_hand"], (0, 0, -.66), (.065, .065, .065), seg=12)
-        arms.append(part(b, "IP_%s_Arm%d" % (kind, j), root, loc=(d * .27, 0, 1.52)))
-    legrot, legsc, bootloc, armrot = [[], []], [[], []], [[], []], [[], []]
+        b.ellipsoid(sleeve, (0, 0, 0), (.068, .068, .068), seg=12)
+        b.rod(sleeve, (0, 0, 0), (0, 0, -.33), .064, .058, seg=12)
+        b.ellipsoid(sleeve, (0, 0, -.33), (.058, .058, .058), seg=12)
+        up = part(b, "IP_%s_Arm%d" % (kind, j), root, loc=(d * .27, 0, 1.52))
+        b = K.Builder()
+        b.rod(sleeve, (0, 0, 0), (0, 0, -.27), .057, .062 if lab else .052, seg=12)
+        b.cone(M["p_seam"] if not lab else M["p_coatin"], (0, 0, -.28), .062 if lab else .054, .062 if lab else .054, .025, seg=12)
+        b.ellipsoid(M["p_hand"], (0, -.005, -.345), (.048, .04, .068), seg=12)
+        b.ellipsoid(M["p_hand"], (-d * .035, -.03, -.315), (.018, .018, .03), seg=8)      # the thumb
+        fore = part(b, "IP_%s_Fore%d" % (kind, j), up, loc=(0, 0, -.33))
+        arms.append((up, fore))
+    legrot, legsc, bootloc, armrot, forerot = [[], []], [[], []], [[], []], [[], []], [[], []]
     for fr in frames:
         s, mv = fr["s"], fr["p"][kind]["mv"]
         bob = .035 * mv * abs(s)
@@ -371,11 +404,13 @@ def body(kind, root, frames):
             bootloc[j].append((foot.x, -math.sin(.35 * lift[j] / .1) * v.length, foot.z - .14 + v.length * (1 - math.cos(.35 * lift[j] / .1))))
             hand = Vector((d * .3 - d * sw, 0, .86))
             armrot[j].append((d * .25 * s * mv, -math.atan2(hand.x - d * .27, -(hand.z - 1.52)), 0))
+            forerot[j].append((-(.28 + .14 * max(0.0, d * s) * mv), 0, 0))   # the elbow bends more on the forward swing
     for j in range(2):
         K.key_rot(legs[j], legrot[j])
         K.key_scale(legs[j], legsc[j])
         K.key_loc(boots[j], bootloc[j])
-        K.key_rot(arms[j], armrot[j])
+        K.key_rot(arms[j][0], armrot[j])
+        K.key_rot(arms[j][1], forerot[j])
 
 
 HEADS = {"RECORDER": head_recorder, "RADIO": head_radio, "CAMERA": head_camera, "MIC": head_mic, "LENS": head_lens}
@@ -398,9 +433,84 @@ def build():
         on = [fr["p"][kind]["on"] for fr in frames]
         fn = HEADS[kind]
         if kind == "RECORDER":
-            fn(kind, root, on, run)
+            carrier = recorder_carrier(kind, locs, frames, tt)
+            fn(kind, carrier, on, run, hl=(0, 0, 0))
+            blank_box(kind, root, frames, tt)
         elif kind == "RADIO":
             fn(kind, root, on, tt)
         else:
             fn(kind, root, on)
         # whole figure hidden while far off frame is not needed: they are in shot for the whole window
+
+
+# =============================================================================================
+# "every": the recorder is confiscated into the giant ear's drawer (instrumentsInto), its owner gets a cardboard box
+# =============================================================================================
+def _ease_out_back(x, s=1.7):
+    x = clamp(x) - 1
+    return 1 + x * x * ((s + 1) * x + s)
+
+
+def _hold(t, a, b, c, d):
+    return K.ease(t, a, b) * (1 - K.ease(t, c, d))
+
+
+def recorder_carrier(kind, locs, frames, tt):
+    """An empty the recorder head rides: on the collar while it is the owner's, then an arc to the drawer
+    (ipFly: smoothstep, lift at mid-flight, a roll, scale 1 -> .6), then sitting in the drawer as it shuts.
+    The drawer is mirrored from rp_installs.build_ear (same cues, same local offsets), not looked up, so this
+    builds with --only rp_people too."""
+    IC = K.state("installs")[0]["cues"]
+    every, want, ex, ez = IC["every"], IC["want"], IC["earX"], IC["earZ"]
+    r0, r1 = every, every + .9
+    ear = B(ex, 0, ez)
+
+    def drawer(t):
+        o = _hold(t, every - .1, every + .5, want - .1, want + .35)
+        g = _ease_out_back((t - every + .3) / 1.1) if t >= every - .3 else 0.0
+        # Inst_EarDrawer local (EAR_C.x + .3o, .2 - 1.3o, EAR_C.y + .1o), EAR_C = (-.25, .56 * 9); inside it: y +.27, floor -.23
+        return ear + g * Vector((-.25 + .3 * o, .2 - 1.3 * o + .27, .56 * 9 + .1 * o - .23)), o, g
+
+    em = K.empty("IP_%s_Carrier" % kind, COL)
+    tag(em)
+    L, S, Rr = [], [], []
+    for fr, t, rl in zip(frames, tt, locs):
+        a = Vector(rl) + Vector((0, 0, COLLAR + .01))
+        w = fr["p"][kind]["where"]
+        if w == "owner" or t < r0:
+            L.append(a); S.append((1, 1, 1)); Rr.append((0, 0, 0))
+        elif t < r1:
+            u = clamp((t - r0) / (r1 - r0))
+            e = u * u * (3 - 2 * u)
+            d, _, _ = drawer(t)
+            p = a.lerp(d, e) + Vector((0, 0, math.sin(u * math.pi) * 2.5))   # 2.5 m keeps it in frame, as in the draft
+            sc = lerp(1, .6, K.smooth(u))
+            L.append(p); S.append((sc,) * 3); Rr.append((0, -math.sin(u * math.pi) * .5, 0))
+        else:
+            d, o, g = drawer(t)
+            sc = .6 * g if (o > .05 and t < want + .4) else 1e-4
+            L.append(d); S.append((sc,) * 3); Rr.append((0, 0, 0))
+    K.key_loc(em, L)
+    K.key_scale(em, S)
+    K.key_rot(em, Rr)
+    return em
+
+
+def blank_box(kind, root, frames, tt):
+    """ipBlank: while the board holds the head, a blank cardboard box with open flaps and a paper tag on a string
+    rises out of the collar (up = ease(t1 - .1, t1 + .45)); drawn as growing up from the collar."""
+    IC = K.state("installs")[0]["cues"]
+    t1 = IC["every"] + .9
+    b = K.Builder()
+    b.box(M["b_box"], (0, 0, .28), (.48, .4, .56))
+    b.box(M["b_flap"], (-.13, -.02, .6), (.22, .36, .02), rot=Matrix.Rotation(-.55, 4, "Y"))
+    b.box(M["b_flap"], (.27, 0, .62), (.02, .3, .16), rot=Matrix.Rotation(-.45, 4, "Y"))
+    b.rod(M["b_str"], (-.1, -.205, .3), (-.18, -.205, .12), .008, seg=6)
+    b.box(M["b_tag"], (-.18, -.215, .09), (.16, .006, .1))
+    bx = part(b, "IP_%s_BlankBox" % kind, root, loc=(0, 0, COLLAR + .02), smooth=False)
+    ups = []
+    for fr, t in zip(frames, tt):
+        w = fr["p"][kind]["where"]
+        ups.append(K.ease(t, t1 - .1, t1 + .45) if w in ("board", "crown") else 0.0)
+    K.key_scale(bx, [(1, 1, max(1e-3, u)) for u in ups])
+    key_hidden(bx, [u < .01 for u in ups])

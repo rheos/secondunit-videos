@@ -76,6 +76,7 @@ def mats():
         "i_canal": lambda: F("EarCanal", "#3a160e"),
         "i_drawer": lambda: T("EarDrawer", "#8c6338", shadow="#5a3a1c", light="#a77a48"),
         "i_drawin": lambda: F("EarDrawerIn", "#2a1608"),
+        "i_drawside": lambda: T("EarDrawerSide", "#5a3a1c", shadow="#3a2412", light="#7a5430"),
         "i_lips": lambda: T("Lips", "#c0322a", shadow="#7e1c17", light="#dc5446"),
         "i_lipline": lambda: F("LipLine", "#6a1712"),
         "i_post": lambda: T("GagPost", "#6b4a2a", shadow="#45301b"),
@@ -190,6 +191,19 @@ SURF = {  # key: (Principled inputs, bumps [(tex, scale, strength, distance, str
     "i_ballot": ({"Roughness": 0.85}, [("noise", 1.5, 0.25, 0.05, None)]),
     "i_tower": ({"Roughness": 0.9, "Sheen Weight": 0.4}, [("noise", 2.0, 0.3, 0.05, None)]),
     "i_cloth": ({"Roughness": 0.9}, []),
+    # the ear: a painted fibreglass sculpture, skin-toned with a soft subsurface glow and a satin finish
+    "i_ear": ({"Base Color": "#e0a888", "Roughness": 0.5, "Subsurface Weight": 0.25, "Coat Weight": 0.1,
+               "Coat Roughness": 0.3}, [("noise", 5.0, 0.06, 0.01, None)]),
+    "i_helix": ({"Roughness": 0.45, "Subsurface Weight": 0.2, "Coat Weight": 0.3}, []),
+    # the drawer and the crutch easel: varnished wood, grain along their length
+    "i_drawer": ({"Roughness": 0.35, "Coat Weight": 0.5, "Coat Roughness": 0.15},
+                 [("wave", 6.0, 0.12, 0.005, (1, 1, 0.15))]),
+    "i_drawside": ({"Roughness": 0.6}, [("wave", 6.0, 0.12, 0.005, (0.15, 1, 1))]),
+    "i_crutch": ({"Roughness": 0.4, "Coat Weight": 0.4}, [("wave", 4.0, 0.15, 0.005, (1, 1, 0.1))]),
+    # the recorders: black bakelite with cream reels; the tape lines: glossy oxide tape
+    "i_rec": ({"Roughness": 0.5, "Coat Weight": 0.15, "Coat Roughness": 0.3}, [("noise", 40.0, 0.05, 0.002, None)]),
+    "i_reel": ({"Roughness": 0.45}, []),
+    "i_tape": ({"Roughness": 0.55, "Specular IOR Level": 0.3}, []),
 }
 
 
@@ -737,6 +751,11 @@ def recorder_geo(b, c, sc, face=-1, spin=None, reels=True):
         b.box(M["i_hub"], c + Vector((0, face * 0.103 * sc, 0.053 * sc)), (0.15 * sc, 0.006 * sc, 0.008 * sc))
 
 
+def drawer_front(o):
+    """Ear-local centre of the drawer's front at opening o (0 shut in the canal .. 1 out)."""
+    return Vector((EAR_C.x + 1.3 * o, 0.1 - 0.75 * o, EAR_C.y + 0.325 * o))
+
+
 def build_ear():
     s = EVERY
     X, Z = CUE["earX"], CUE["earZ"]
@@ -752,14 +771,15 @@ def build_ear():
         crutch(b, (d * 2.6, 0.45, 0), (d * 1.4, 0.45, 0.55 * EH), 0.25)
     b.rod(M["i_crutch"], (0, 3.2, 0), (0, 0.55, 0.6 * EH), 0.1, seg=8)
     # a shelf under the lobe for the filed tapes
-    b.box(M["i_crutch"], (-0.1, -0.55, 2.62), (2.9, 0.6, 0.1))
+    b.box(M["i_crutch"], (-0.1, -0.55, 2.68), (2.9, 0.6, 0.1))
     for d in (-1, 1):
         b.rod(M["i_crutch"], (d * 1.35, -0.75, 2.6), (d * 1.6, 0.45, 2.0), 0.05, seg=6)
     shell = b.build("Inst_Ear", K.COL_INST, em)
     key_hidden(shell, hidden)
     gs = dict(zip(K.FRAMES, g))
     shadow_stick("Inst_EarShadow", X, Z, lambda f: 9 * gs[f], lambda f: 3 * gs[f], lambda f: gs[f] > 1e-4)
-    # the drawer in the canal: slides out toward us on "every", shuts on "want"
+    # the drawer in the canal (draft 24 bigEar): on "every" it slides out of the canal to the lens's right and a little
+    # up (the draft's dx = 1.3 k right, 0.25 dx up), its sleeve showing between canal and front; it shuts on "want"
     d = K.Builder()
     d.box(M["i_drawer"], (0, 0, 0), (1.0, 0.1, 0.62))
     d.ellipsoid(M["i_gold"], (0, -0.06, 0), (0.08, 0.03, 0.08), seg=8)
@@ -768,52 +788,132 @@ def build_ear():
         d.box(M["i_drawin"], (sx * 0.47, 0.27, 0), (0.05, 0.45, 0.5))
     drw = d.build("Inst_EarDrawer", K.COL_INST, em, smooth=False)
     opens = [hold(tf(f), s - 0.1, s + 0.5, WANT - 0.1, WANT + 0.35) for f in K.FRAMES]
-    K.key_loc(drw, [(EAR_C.x + 0.3 * o, 0.2 - 1.3 * o, EAR_C.y + 0.1 * o) for o in opens])
+    K.key_loc(drw, [drawer_front(o) for o in opens])
     key_hidden(drw, hidden)
-    # the filed tapes: one more on the shelf every 2.5/6 s after "every"
+    sl = K.Builder()
+    sl.box(M["i_drawside"], (0.5, 0, 0), (1.0, 0.5, 0.56))
+    sl.box(M["i_drawin"], (0.5, 0, 0.285), (1.0, 0.44, 0.02))
+    slv = sl.build("Inst_EarDrawerSleeve", K.COL_INST, em, smooth=False, loc=drawer_front(0.0))
+    axis = drawer_front(1.0) - drawer_front(0.0)
+    slv.rotation_mode = "QUATERNION"
+    slv.rotation_quaternion = axis.to_track_quat("X", "Z")
+    K.key_series(slv, "scale", [max(1e-3, o * axis.length) for o in opens], index=0)
+    key_hidden(slv, [h or o < 0.02 for h, o in zip(hidden, opens)])
+    # the filed tapes: one more under the canal every 2.5/6 s after "every" (draft: 0.7 x 0.42 boxes, 3 to a row)
     for i in range(6):
         tb = K.Builder()
         recorder_geo(tb, (0, 0, 0), 2.1)
         rob = tb.build("Inst_EarTape_%d" % i, K.COL_INST, em, smooth=False)
-        rob.location = (-0.95 + (i % 3) * 0.8, -0.6, 2.67 + (i // 3) * 0.45)
+        rob.location = (-0.95 + (i % 3) * 0.8, -0.6, 2.73 + (i // 3) * 0.45)
         n = [math.floor(clamp((tf(f) - s) / 2.5) * 6) for f in K.FRAMES]
         key_hidden(rob, [h or nn <= i for h, nn in zip(hidden, n)])
     return em, opens, g
 
 
+def draft_unP(c, sx, sy, z):
+    """Inverse of draft_P: screen (sx, sy) at camera depth z -> draft world (X, Y, Z)."""
+    xc, yc = (sx - 960) * z / c[4], (540 - sy) * z / c[4]
+    CP, SP = math.cos(c[3]), math.sin(c[3])
+    dy, dz = yc * CP - z * SP, yc * SP + z * CP
+    cy, sy_ = math.cos(c[5]), math.sin(c[5])
+    dx, dz = xc * cy + dz * sy_, -xc * sy_ + dz * cy
+    return c[0] + dx, c[1] + dy, c[2] + dz
+
+
+def tape_dashes(ob, N, frames, seg=6):
+    """The draft strokes a pale dashed line (10 on, 18 off, scrolling 160 px/s) over each brown tape line. The baked
+    mesh's basis (its undeformed coords, which Generated reads) is laid out flat so x runs 0..1 along every line;
+    the material bands that into ~36 dashes per line and scrolls them with a keyed offset."""
+    if K.LOOK != "pbr":
+        return
+    me = ob.data
+    co = []
+    per = (N + 1) * seg + 2
+    for v in range(len(me.vertices)):
+        li, k = divmod(v, per)
+        if k < (N + 1) * seg:
+            j, r = divmod(k, seg)
+            co.append((j / N, li * 0.1 + 0.01 * math.cos(r / seg * math.tau), 0.01 * math.sin(r / seg * math.tau)))
+        else:
+            co.append((0.0 if k == (N + 1) * seg else 1.0, li * 0.1, 0.0))
+    flat = [c for v in co for c in v]
+    me.vertices.foreach_set("co", flat)
+    me.shape_keys.key_blocks[0].data.foreach_set("co", flat)
+    me.update()
+    mat = M["i_tape"]
+    bs = _bsdf(mat)
+    if bs is None:
+        return
+    n, l = mat.node_tree.nodes, mat.node_tree.links
+    tc, sep, off = n.new("ShaderNodeTexCoord"), n.new("ShaderNodeSeparateXYZ"), n.new("ShaderNodeValue")
+    mul, add, fr, lt = (n.new("ShaderNodeMath") for _ in range(4))
+    mul.operation, add.operation, fr.operation, lt.operation = "MULTIPLY", "SUBTRACT", "FRACT", "LESS_THAN"
+    mul.inputs[1].default_value = 36.0
+    lt.inputs[1].default_value = 10 / 28
+    l.new(tc.outputs["Generated"], sep.inputs[0])
+    l.new(sep.outputs["X"], mul.inputs[0])
+    l.new(mul.outputs[0], add.inputs[0])
+    l.new(off.outputs[0], add.inputs[1])
+    l.new(add.outputs[0], fr.inputs[0])
+    l.new(fr.outputs[0], lt.inputs[0])
+    mix = n.new("ShaderNodeMix")
+    mix.data_type = "RGBA"
+    ca = next(i for i in mix.inputs if i.name == "A" and i.type == "RGBA")
+    cb = next(i for i in mix.inputs if i.name == "B" and i.type == "RGBA")
+    ca.default_value = K.lin("#3f2614")
+    cb.default_value = K.lin("#6f4f35")
+    l.new(lt.outputs[0], mix.inputs["Factor"])
+    l.new(next(o for o in mix.outputs if o.type == "RGBA"), bs.inputs["Base Color"])
+    K.key_series(mat.node_tree, 'nodes["%s"].outputs[0].default_value' % off.name, [tf(f) * 160 / 28 for f in K.FRAMES])
+
+
 def build_tape_lines(opens, grow):
-    """earTapes: four brown tape lines from the board's table into the ear's drawer; snapped in when it shuts."""
+    """Draft 24 earTapes: four brown tape lines from the board's table to the ear's drawer front, then snapped in when
+    it shuts. The draft draws them in screen space (a straight screen line lifted by an arch of 90 + 30 i px, with a
+    travelling wiggle); here each frame's line is that same screen path, unprojected at the depth of the straight 3D
+    line between its ends (1/z linear), so it lands on the same pixels as the draft from the lens, with the draft's
+    stroke width (max(1.5, 0.07 min(k_src, 3 k_ear)) px) turned back into metres at each point's depth."""
     s = EVERY
     shut = WANT + 0.2
     X, Z = CUE["earX"], CUE["earZ"]
     frames = [f for f in K.FRAMES if s - 1 / 24 <= tf(f) <= shut + 0.4]
-    N = 26
+    N = 40
 
     def parts(f):
         t = tf(f)
+        c = S[f - 1]["cam"]
         reach, suck = ease(t, s, s + 0.6), ease(t, shut - 0.1, shut + 0.35)
-        o, gr = opens[f - 1], grow[f - 1]
-        dst = Vector((X, Z, 0)) + gr * Vector((EAR_C.x + 0.3 * o, 0.15 - 1.3 * o, EAR_C.y + 0.1 * o))
+        o, gr = opens[f - 1], max(grow[f - 1], 1e-3)
+        dl = drawer_front(o) + Vector((0, -0.06, 0))
+        dB = Vector((X, Z, 0)) + gr * dl                     # Blender world
+        e = draft_P(c, dB.x, dB.z, dB.y)
+        ek = c[4] / max(draft_P(c, X, 0, Z)[2], 0.5) * gr     # the ear's px per metre (k in bigEar)
         out = []
         for i in range(4):
-            src = lw_world(f, (-2.6 + i * 1.1, TOP + 0.12, 1.0 + (i % 2) * 0.3))
-            ch = dst - src
-            side = ch.cross(Vector((0, 0, 1)))
-            side = side.normalized() if side.length > 1e-6 else Vector((1, 0, 0))
-            lift = 0.9 + 0.35 * i           # draft: 90 + 30 i px of arch at its zoom, about a metre
-            pts = []
+            sB = lw_world(f, (-2.6 + i * 1.1, TOP + 0.12, 1.0 + (i % 2) * 0.3))
+            q = draft_P(c, sB.x, sB.z, sB.y)
+            zs, ze = max(q[2], 0.3), max(e[2], 0.3)
+            wpx = max(1.5, 0.07 * min(c[4] / zs, ek * 3))
+            pts, rad = [], []
             for j in range(N + 1):
                 u = lerp(suck, reach, j / N)
-                p = src.lerp(dst, u)
-                p.z += math.sin(u * math.pi) * lift + math.sin(u * 14 - t * 9 + i) * 0.12 * (1 - u)
-                pts.append(p)
-            vs, fs = tube_geo(pts, 0.03, seg=6, ref=side)
+                sx = lerp(q[0], e[0], u)
+                sy = lerp(q[1], e[1], u) - math.sin(u * math.pi) * (90 + i * 30) + math.sin(u * 14 - t * 9 + i) * 10 * (1 - u)
+                z = 1.0 / lerp(1.0 / zs, 1.0 / ze, u)
+                wx, wy, wz = draft_unP(c, sx, sy, z)
+                pts.append(B(wx, wy, wz))
+                rad.append(max(0.004, 0.5 * wpx * z / c[4]))
+            ch = pts[-1] - pts[0]
+            side = ch.cross(Vector((0, 0, 1)))
+            side = side.normalized() if side.length > 1e-6 else Vector((1, 0, 0))
+            vs, fs = tube_geo(pts, rad, seg=6, ref=side)
             out.append((M["i_tape"], vs, fs))
         return out
 
     if not frames:              # the clip ends before "every": no tape lines in it
         return None
     ob = baked("Inst_TapeLines", K.COL_INST, None, parts, frames)
+    tape_dashes(ob, N, frames)
     win = set(frames)
     key_hidden(ob, [not (f in win and ease(tf(f), s, s + 0.6) > 0.002 and ease(tf(f), shut - 0.1, shut + 0.35) < 0.998) for f in K.FRAMES])
     return ob

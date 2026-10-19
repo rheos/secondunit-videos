@@ -28,7 +28,7 @@ def arg(name, default=None):
 
 FPS = 24
 T0 = float(arg("--t0", 16.7))
-NF = int(arg("--frames", 360))            # draft 24 build: 16.70 .. 31.66 s
+NF = int(arg("--frames", 480))            # draft 24 build: 16.70 .. 36.66 s (20 s)
 LOOK = arg("--look", "pbr")               # pbr: real surfaces, sun shadows, mist haze; toon: take 01's cel look
 CHARS = arg("--chars", "3d")              # 3d | cutout (characters flattened into lit paper cut-outs)
 RES = tuple(int(v) for v in arg("--res", "1280x720").split("x"))
@@ -317,7 +317,7 @@ _KINDS = (
     ("ceramic", ("egg", "eyewhite", "iris", "wax", "candle", "bulb", "hat")),
 )
 _PARAM = {  # roughness, metallic, sheen, coat, bump strength, texture
-    "metal": (0.28, 1.0, 0.0, 0.0, 0.05, None), "wood": (0.42, 0.0, 0.0, 0.35, 0.04, "wood"),
+    "metal": (0.28, 1.0, 0.0, 0.0, 0.05, None), "wood": (0.5, 0.0, 0.0, 0.08, 0.04, "wood"),
     "velvet": (0.85, 0.0, 1.0, 0.0, 0.2, "weave"), "fabric": (0.78, 0.0, 0.5, 0.0, 0.25, "weave"),
     "rubber": (0.9, 0.0, 0.0, 0.0, 0.1, "noise"), "plastic": (0.38, 0.0, 0.0, 0.15, 0.03, None),
     "paper": (0.92, 0.0, 0.1, 0.0, 0.08, "noise"), "skin": (0.5, 0.0, 0.2, 0.0, 0.05, None),

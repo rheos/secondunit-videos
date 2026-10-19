@@ -76,7 +76,7 @@ def aim(travel_xy, el_deg):
 
 
 PBR = K.LOOK == "pbr"
-SUN = sun_obj("Sun", float(K.arg("--sun", 4.2)) if PBR else 0.9 * math.pi, True)
+SUN = sun_obj("Sun", float(K.arg("--sun", 7.5)) if PBR else 0.9 * math.pi, True)
 if PBR:
     SUN.data.angle = math.radians(0.8)          # the real sun's disc is .53 deg; a touch softer reads nicer
     SUN.data.color = (1.0, 0.95, 0.86)
@@ -239,8 +239,8 @@ engines = {e.identifier for e in bpy.types.RenderSettings.bl_rna.properties["eng
 scn.render.engine = "BLENDER_EEVEE_NEXT" if "BLENDER_EEVEE_NEXT" in engines else "BLENDER_EEVEE"
 scn.eevee.taa_render_samples = int(K.arg("--samples", 16))
 scn.view_settings.view_transform = "AgX" if PBR else "Standard"
-scn.view_settings.look = "AgX - Punchy" if PBR else "None"     # keeps the draft's reds and blues saturated
-scn.view_settings.exposure = float(K.arg("--exposure", 0.35)) if PBR else 0.0
+scn.view_settings.look = K.arg("--agx", "AgX - Punchy").replace("_", " ") if PBR else "None"     # Punchy keeps the draft's reds and blues
+scn.view_settings.exposure = float(K.arg("--exposure", 0.2)) if PBR else 0.0
 if PBR:
     ee = scn.eevee
     for a, v in (("use_shadows", True), ("shadow_ray_count", 2), ("shadow_step_count", 8), ("use_raytracing", True),
