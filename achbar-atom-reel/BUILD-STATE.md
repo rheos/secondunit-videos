@@ -133,3 +133,8 @@ taint the canvas and `toDataURL` throws.
   pings on the crosshairs, card snaps and flips. Order of work after a timing change: `node cues.mjs`, then
   `python -I sfx.py`, then render with `AUDIO=assets/mix.wav`. `renders/atom-reel_test01_draft6_720p.mp4`,
   118.0 s, flash PASS (worst 1.5/s), -14.0 LUFS, peak -4.5 dBFS. Not uploaded; Robin watches first.
+  6b: the Oppenheimer attribution cleared of the poster's footer. 6c (Robin, 1:37: "should the red flags not have
+  red flags as the bullets?"): the check boxes became red pennants that run up their poles and flutter, one as
+  each row's bullet and one per column, with a cloth snap each; the form header reads EVERY FLAG SOURCED.
+  Only the changed plates were re-rendered (render.mjs on the span, frames copied into out/frames_index_0_118,
+  then one encode).
