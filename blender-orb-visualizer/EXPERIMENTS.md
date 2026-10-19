@@ -108,3 +108,36 @@ a few cents.
 - It will show whether EEVEE sees the NVIDIA GPU through EGL or falls back to llvmpipe there too
   (the run prints `gpu_renderer`).
 
+
+## Take 02: an 8-second Canvas loop for Travel Agent (2026-10-19)
+
+**Brief.** Robin liked Kevin Ngo's Blender GIF of Claude mascots riding a turning tesseract: rendered small and
+scaled up into hard pixels, and the loop closes because the shape maps onto itself. He asked for a test in that
+manner: an 8-second vertical loop for a song (Spotify Canvas shape), pixel-render look, motion whose symmetry
+closes the loop. Issue #235.
+
+**What it is.** `canvas_loop.py`, a separate script from the orb piece. Bob Wiseman's traveller (teal coat,
+fedora, suitcase, never Bob) and his rain cloud walk on top of a cube-shaped little world. The cube turns once
+in exactly 8 s about the axis facing the camera, so each side face comes up under him in turn: the travel agent
+at 0 s, the beach at 2 s, the snow at 4 s, the city at 6 s, and the travel agent again at 8 s, which is frame 1.
+He rides the surface height (`A / cos q`), so he climbs over every corner. Walk 1 s, cloud bob 2 s, rain 0.5 s:
+every period divides 8 s, so nothing jumps at the seam. Every value is keyed on every frame, linear.
+
+**Look.** Voxel boxes with 16x16 textures generated in Python, sampled Closest through box projection in world
+metres (one texel = 0.05-0.12 m), so pixel density is the same on every box. The film's own palette. Sky graded
+in screen space (Window Y), so it reads whatever the camera tilt. EEVEE Next at 180x320, filter 0.6, 16 samples;
+`tools/canvas_encode.sh` scales x4 nearest-neighbour to 720x1280.
+
+**Settings.** Blender 4.5.14 LTS. 24 fps, 192 frames. Cube half-size 2.5 m, traveller x1.4, camera at
+(-7, -23, 11.6) aimed at (0.3, 0, 1.6), 50 mm on a 24 mm vertical sensor.
+
+**Speed.** 192 frames in 27 s on this Mac (about 0.14 s a frame).
+
+**Seam check** (`tools/canvas_encode.sh take-02`): PSNR of every frame step, median 19.36 dB (17.56-20.85);
+last frame to first 20.77 dB. The seam is an ordinary step.
+
+**Renders** (`out/canvas/take-02/`): `take-02_canvas_720x1280.mp4` (8.0 s, silent, the Canvas) and
+`take-02_review_x4_song.mp4` (four loops over the song from 1:30, for review only). Contact sheet:
+`reviews/take-02_canvas_contact.jpg` (one frame a second).
+
+**Verdict.** Waiting on Robin.
