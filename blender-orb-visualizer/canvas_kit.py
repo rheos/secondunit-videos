@@ -91,6 +91,29 @@ def box(name, size, loc, material, parent=None, rot=None):
     if parent: ob.parent = parent
     return ob
 
+def blocks(name, parts, material, parent=None):
+    """Several boxes in ONE mesh, parts = [(size, loc), ...], so a texture runs across them without seams."""
+    me = bpy.data.meshes.new("CL_" + name); bm = bmesh.new()
+    for size, loc in parts:
+        r = bmesh.ops.create_cube(bm, size=1.0)
+        for v in r["verts"]:
+            v.co = Vector((v.co.x * size[0] + loc[0], v.co.y * size[1] + loc[1], v.co.z * size[2] + loc[2]))
+    bm.to_mesh(me); bm.free()
+    ob = bpy.data.objects.new("CL_" + name, me); bpy.context.scene.collection.objects.link(ob)
+    me.materials.append(material)
+    if parent: ob.parent = parent
+    return ob
+
+def disc(name, radius, z_top, thick, material, parent=None, step=.5):
+    """a voxel disc: strips of width `step`, each as long as the circle allows, stepped at the rim"""
+    parts, n = [], int(radius / step)
+    for i in range(-n, n):
+        x = (i + .5) * step
+        half = math.sqrt(max(radius * radius - x * x, 0))
+        half = round(half / step) * step
+        if half > 0: parts.append(((step, 2 * half, thick), (x, 0, z_top - thick / 2)))
+    return blocks(name, parts, material, parent)
+
 def empty(name, loc=(0, 0, 0), parent=None):
     ob = bpy.data.objects.new("CL_" + name, None); bpy.context.scene.collection.objects.link(ob)
     ob.location = loc
