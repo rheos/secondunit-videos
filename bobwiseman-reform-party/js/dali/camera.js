@@ -90,10 +90,10 @@ const KEYS = [
   [20.2, [-4.0, 2.8, -3.6, .62, 1150, .35]],  // rising over the near row...
   [21.0, tw(HTOP, 0, -.4, -.6, -.5)],        // 0:21: up over the table, the hat hole below (draft 12: no dive into the
   [21.75, SPKI],                            // hat, "scientists" 22.05 was inside it): the Instrument People beyond the far row
-  [23.0, [3.6, 2.7, -3.2, .36, 1250, 0]],   // draft 13: back from the hat onto the phone as it starts to soften
-  [24.05, [4.0, 2.75, -3.2, .42, 1300, -.1]],             // on the speakerphone, aimed down so the edge it runs over stays in frame (tape X on "can't" 24.76)
-  [25.2, [5.55, 1.95, -2.75, .3, 1150, -.6]],  // draft 22: down through the gap in the near row onto the front edge, where the phone
-  [25.9, [5.75, 1.85, -2.6, .26, 1150, -.66]],  // folds over and hangs like Dali's soft watch (22.4-26.0)
+  [23.0, [1.1, 2.7, -3.2, .34, 1250, 0]],   // draft 13: back from the hat onto the phone as it starts to soften
+  [24.05, tw(SPK, 0, .1, 0, .12)],             // on the speakerphone, aimed down so the edge it runs over stays in frame (tape X on "can't" 24.76)
+  [25.2, tw(SPK, .05, .15, -.2, .26, 1.0)],  // Robin (d13): close and steady while it melts over the edge (22.4-26.0)
+  [25.9, tw(SPK, .08, .1, -.3, .25, 1.0)],
   [26.85, [1.0, 2.2, -4.6, -.02, 1000, -.06]], // ...back and wider: the soft phone low in frame, the gag lips rising above it
   [27.75, GAGL],                             // gag (27.5): the lips central and close, the phone springs back below
   [29.9, tw(DRW, 0, 0, 0, -.07)],                               // then the ear and the flying recorders
@@ -453,7 +453,7 @@ const cueFar = (li, w, D = 300) => { let p = null; return () => p || (p = (() =>
 const CUE_TARGETS = [
   cueAt(0, 'law', () => { const a = typeof LAW_AT === 'function' ? LAW_AT() : [-3.9, -.6]; return Lw(a[0], TOP + .11, a[1]); }), // the gavel head on the table
   cueAt(1, 'scientists', cueLw(0, 2.0, 10.5)),                 // the Instrument People beyond the far row
-  cueAt(1, "can't", cueLw(4.2, 1.45, -.6)),                     // draft 22: the puff off the phone at the table's end
+  cueAt(1, "can't", cueLw(1.0, 1.45, -.75)),                    // draft 16: the puff of smoke off the speakerphone
   cueAt(2, 'gag', () => { const q = typeof gagWhere === 'function' ? gagWhere() : { X: 0, Z: 0 }; return [q.X, 5.6, q.Z]; }), // the 12 m lips on their pole
   cueAt(2, 'every', cueLw(-.81, 1.27, .9)),                    // the tape recorders lifting on their wires
   cueAt(3, 'control', cueLw(0, 1.6, 0)),                       // (nothing acts it) the board
