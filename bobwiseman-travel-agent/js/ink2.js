@@ -7,7 +7,7 @@
 //   3. opaque fills get a wash: light from the upper left, a darker rim pooled inside the edge.
 // ?ink=1 turns it off (the draft 15 look), for before/after.
 'use strict';
-const INK2 = !/[?&]ink=1(&|$)/.test(location.search);
+const INK2 = !/[?&]ink=1(&|$)/.test(location.search) && !/[?&]look=arm(&|$)/.test(location.search); // look=arm: js/arm.js draws instead
 let INK2_CTX = null;
 
 function ink2Init(ctx) {
