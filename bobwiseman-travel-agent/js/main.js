@@ -5,6 +5,7 @@
 const SHOTS = buildShots();
 const out = document.getElementById('c'); out.width = W; out.height = H; const O = out.getContext('2d');
 const buf = document.createElement('canvas'); buf.width = W; buf.height = H; X = buf.getContext('2d');
+if (typeof ink2Init === 'function') ink2Init(X); // js/ink2.js: the upgraded line and wash (?ink=1 = draft 15 look)
 const GP = [0, 1, 2, 3].map((i) => grainCanvas(11 + i, false)), GD = [0, 1, 2, 3].map((i) => grainCanvas(91 + i, true));
 let lastFD = -1, lastShot = null;
 
