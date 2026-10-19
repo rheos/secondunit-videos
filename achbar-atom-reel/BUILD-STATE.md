@@ -80,4 +80,4 @@ taint the canvas and `toDataURL` throws.
   two quotes set as matching strips with the four shared words boxed and measured; ENIAC's purpose field redacted;
   the clock pulls back onto a stadium scoreboard over a crowd on its phones (MC03); every red flag sourced (TC01).
   Skipped the study's paper-strip warhead chart (MC02): it would replace the oscilloscope. `renders/atom-reel_test01_draft3_720p.mp4`
-  (copy in ~/Downloads). Flash PASS, -14.0 LUFS, peak -1.9 dBFS. Not uploaded.
+  (copy in ~/Downloads). Flash PASS, -14.0 LUFS, peak -1.9 dBFS. Uploaded unlisted 2026-10-19: https://youtu.be/YOoGAQpXhX8 (replaces draft 2 6pV1tR4h4Cw as the link for Mark).
