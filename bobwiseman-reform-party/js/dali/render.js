@@ -228,6 +228,7 @@ function render(t) {
   const fin = ease(t, END.s + .1, END.dark), fo = 1 - ease(t, 0, 1.2), blk = Math.max(fin, fo); if (blk > 0) { g.fillStyle = `rgba(0,0,0,${blk})`; g.fillRect(0, 0, W, H); }
   lastEmbers(t);
   if (t >= END.out) { g.fillStyle = '#000'; g.fillRect(0, 0, W, H); }
+  if (typeof buhTeeth === "function" && t < END.out) buhTeeth(t); // draft 25: the chattering teeth on the eleven "buh"s
   captions(t);
 }
 

@@ -38,6 +38,7 @@ function bobGround(sx, sy) {
 }
 function bobWalk(t) {
   if (typeof rangerTorchPool === 'function') rangerTorchPool(t); // burn.js: the Rangers' torchlight on the board, over the car layer
+  return; // draft 25 (Bob: "can you remove the bob w piano and junos? not working for me"): the end walk is cut
   const cfg = bobEndCfg(); if (!LITTLE_BOB.active(cfg, t)) return;
   const k = cfg.h / 330, sx = LITTLE_BOB.xAt(cfg, t), { fx, fy, f } = fireLight(t);
   // the actor check: he, the piano and the Junos on their ropes are one body, from his front foot (+20) to the last Juno (-500)

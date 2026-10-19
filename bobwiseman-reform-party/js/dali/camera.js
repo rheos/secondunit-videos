@@ -144,6 +144,7 @@ const KEYS = [
   // draft 13 (Robin on d12: the diva needs real camera time): the rap is flown on her. She stands on her drawer plinth
   // behind the near row's left end (RAP_AT), and the drone hangs 2-3 m off her, cutting away only for the world
   // through the hole (127.8-130) and the poor person on "dared", then Little Bob with her beside him, then the chess.
+  [122.3, rapCam(-1.5, 2.5, -5.3, 1000)],     // draft 25: already on her as she lands, so she is there on the first word (123.28)
   [123.3, rapCam(-1.3, 2.3, -5.0, 1000)],     // close on her as the rap opens (vogue 123.54), from the front right
   [125.8, rapCam(-1.1, 2.4, -5.0, 1000, [-2.1, 1.8, -2.3])],   // on her, the dime coming into the right of frame, through "once upon a time"
   [127.4, DIME],                             // the dime (127.46), the hat hole in frame for the iris into the table world
@@ -244,10 +245,9 @@ const WIN_DEF = [
   ] },
   // instrumental 2: 10 m up over the column of burners carrying a 4 m X ballot across the road at x 165 (b8): ants
   // carrying a crumb; then down onto VOGUE at 123.3
-  { a: 116.8, b: 123.3, keys: [
+  { a: 116.8, b: 121.2, keys: [  // draft 25 (Bob: "can we see the horse woman immediately"): the window ends sooner
     aimAt(118.6, 159, 8.5, -15, 164.5, 0, -6, 1050),
     aimAt(120.4, 163.5, 10.5, -7.5, 165.2, 0, 0, 1000),
-    aimAt(121.6, 163, 9.5, -4.5, 165, 0, 2.5, 1000),
   ] },
   // refrain 3: from the driver's hole up to 25-40 m over the city for "control" (the marionette bar, b4) and "blues"
   // (the red drape across the whole horizon of camps, b4), then back down into the hole for the press (protected)
