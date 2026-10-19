@@ -24,7 +24,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import rp_core as K  # noqa: E402  (resets the scene on import)
 
 MODULES = (K.arg("--only") or "rp_car,rp_playa,rp_installs").split(",")
-LINEART = "--no-lineart" not in K.ARGS
+LINEART = "--no-lineart" not in K.ARGS and K.LOOK != "pbr"
 S = K.state("core")
 scn = K.scn
 
@@ -75,7 +75,11 @@ def aim(travel_xy, el_deg):
     return Vector((h.x, h.y, -math.sin(e))).to_track_quat("-Z", "Y").to_euler()
 
 
-SUN = sun_obj("Sun", 0.9 * math.pi, True)
+PBR = K.LOOK == "pbr"
+SUN = sun_obj("Sun", float(K.arg("--sun", 4.2)) if PBR else 0.9 * math.pi, True)
+if PBR:
+    SUN.data.angle = math.radians(0.8)          # the real sun's disc is .53 deg; a touch softer reads nicer
+    SUN.data.color = (1.0, 0.95, 0.86)
 prev = None
 rots = []
 for s in S:
@@ -85,7 +89,7 @@ for s in S:
     prev = e
     rots.append(e)
 K.key_rot(SUN, rots)
-KEY = sun_obj("Key", 0.7 * math.pi, False)
+KEY = sun_obj("Key", 0.0 if PBR else 0.7 * math.pi, False)   # pbr: sky light only, no cheat key
 prev = None
 rots = []
 for c in cams:                 # from 35 deg left of the camera's heading, 50 deg up, travelling away from it
@@ -114,8 +118,8 @@ if not world.node_tree.nodes.get("RP_SkyDone"):
     lp, bg_cam, bg_amb = wn.new("ShaderNodeLightPath"), wn.new("ShaderNodeBackground"), wn.new("ShaderNodeBackground")
     wmix, wout = wn.new("ShaderNodeMixShader"), wn.new("ShaderNodeOutputWorld")
     bg_cam.inputs[0].default_value = K.lin("#7fa3cf")
-    bg_amb.inputs[0].default_value = (1, 1, 1, 1)
-    bg_amb.inputs[1].default_value = 0.25
+    bg_amb.inputs[0].default_value = K.lin("#a9c3e6") if PBR else (1, 1, 1, 1)
+    bg_amb.inputs[1].default_value = float(K.arg("--sky", 1.1)) if PBR else 0.25
     wl.new(lp.outputs["Is Camera Ray"], wmix.inputs[0])
     wl.new(bg_amb.outputs[0], wmix.inputs[1])
     wl.new(bg_cam.outputs[0], wmix.inputs[2])
@@ -149,8 +153,19 @@ if LINEART:
 engines = {e.identifier for e in bpy.types.RenderSettings.bl_rna.properties["engine"].enum_items}
 scn.render.engine = "BLENDER_EEVEE_NEXT" if "BLENDER_EEVEE_NEXT" in engines else "BLENDER_EEVEE"
 scn.eevee.taa_render_samples = int(K.arg("--samples", 16))
-scn.view_settings.view_transform = "Standard"
-scn.view_settings.look = "None"
+scn.view_settings.view_transform = "AgX" if PBR else "Standard"
+scn.view_settings.look = "AgX - Medium High Contrast" if PBR else "None"
+if PBR:
+    ee = scn.eevee
+    for a, v in (("use_shadows", True), ("shadow_ray_count", 2), ("shadow_step_count", 8), ("use_raytracing", True),
+                 ("fast_gi_method", "GLOBAL_ILLUMINATION"), ("use_fast_gi", True), ("fast_gi_distance", 6.0),
+                 ("shadow_resolution_scale", 1.0)):
+        if hasattr(ee, a):
+            try:
+                setattr(ee, a, v)
+            except Exception as e:
+                print("[v1] eevee", a, e)
+    # haze lives in the materials (rp_core.pbr_out): a mist pass tiles over the screen-space sky
 scn.render.resolution_x, scn.render.resolution_y = K.RES
 scn.render.resolution_percentage = 100
 scn.render.fps = K.FPS

@@ -28,7 +28,9 @@ def arg(name, default=None):
 
 FPS = 24
 T0 = float(arg("--t0", 16.7))
-NF = int(arg("--frames", 570))            # 16.70 .. 40.446 s
+NF = int(arg("--frames", 360))            # draft 24 build: 16.70 .. 31.66 s
+LOOK = arg("--look", "pbr")               # pbr: real surfaces, sun shadows, mist haze; toon: take 01's cel look
+CHARS = arg("--chars", "3d")              # 3d | cutout (characters flattened into lit paper cut-outs)
 RES = tuple(int(v) for v in arg("--res", "1280x720").split("x"))
 
 
@@ -216,6 +218,7 @@ def haze_group():
     g = bpy.data.node_groups.new("RP_Haze", "ShaderNodeTree")
     g.interface.new_socket("Color", in_out="INPUT", socket_type="NodeSocketColor")
     g.interface.new_socket("Color", in_out="OUTPUT", socket_type="NodeSocketColor")
+    g.interface.new_socket("Haze", in_out="OUTPUT", socket_type="NodeSocketColor")    # the keyed haze colour itself
     n, l = g.nodes, g.links
     gi, go = n.new("NodeGroupInput"), n.new("NodeGroupOutput")
     cam, mr, pw = n.new("ShaderNodeCameraData"), n.new("ShaderNodeMapRange"), n.new("ShaderNodeMath")
@@ -239,6 +242,7 @@ def haze_group():
     l.new(gi.outputs[0], mix.inputs["A"])
     l.new(rgb.outputs[0], mix.inputs["B"])
     l.new(mix.outputs["Result"], go.inputs[0])
+    l.new(rgb.outputs[0], go.inputs[1])
     return g
 
 
@@ -261,6 +265,8 @@ def _finish(mat, n, l, col):
 
 def toon(name, base, shadow=None, light=None, cuts=(0.32, 0.74), grain=None, haze=True):
     """base/shadow/light are sRGB hex. grain: (scale, strength) wave texture multiplied in."""
+    if LOOK == "pbr":
+        return pbr(name, base, light)
     mat = bpy.data.materials.new("RP_" + name)
     n, l = _nodes(mat)
     dif, rgb, ramp = n.new("ShaderNodeBsdfDiffuse"), n.new("ShaderNodeShaderToRGB"), n.new("ShaderNodeValToRGB")
@@ -295,8 +301,142 @@ def toon(name, base, shadow=None, light=None, cuts=(0.32, 0.74), grain=None, haz
     return _finish(mat, n, l, col)
 
 
+# =============================================================================================
+# PBR (draft 24 build, --look pbr): real surfaces under the sun; the haze is a mist pass in the compositor
+# Surface kind by material name: wood grain, fabric weave + sheen, metal, plastic, paper, skin, ceramic.
+# =============================================================================================
+_KINDS = (
+    ("metal", ("chrome", "gold", "spoke", "bracket", "padlock", "shackle", "rim", "trim", "steel", "tripod", "grille")),
+    ("wood", ("mahogany", "tableedge", "wood", "gavel", "easel", "drawer", "crutch", "boardframe", "post", "pole")),
+    ("velvet", ("skirt", "elcloth", "cloth")),
+    ("fabric", ("suit", "shirt", "tie", "rosette", "neck", "crutchpad", "pad", "band", "canvas", "blind")),
+    ("rubber", ("tyre", "shoe", "tape")),
+    ("plastic", ("phone", "recorder", "seat", "reel", "chassis", "cart", "laptop", "megaphone", "hoop", "mug", "thermos")),
+    ("paper", ("paper", "ballot", "board", "clockface", "cash", "chart", "sign", "tower")),
+    ("skin", ("ear", "lips", "elskin", "eltusk", "ear")),
+    ("ceramic", ("egg", "eyewhite", "iris", "wax", "candle", "bulb", "hat")),
+)
+_PARAM = {  # roughness, metallic, sheen, coat, bump strength, texture
+    "metal": (0.28, 1.0, 0.0, 0.0, 0.05, None), "wood": (0.42, 0.0, 0.0, 0.35, 0.25, "wood"),
+    "velvet": (0.85, 0.0, 1.0, 0.0, 0.2, "weave"), "fabric": (0.78, 0.0, 0.5, 0.0, 0.25, "weave"),
+    "rubber": (0.9, 0.0, 0.0, 0.0, 0.1, "noise"), "plastic": (0.38, 0.0, 0.0, 0.15, 0.03, None),
+    "paper": (0.92, 0.0, 0.1, 0.0, 0.08, "noise"), "skin": (0.5, 0.0, 0.2, 0.0, 0.05, None),
+    "ceramic": (0.32, 0.0, 0.0, 0.2, 0.02, None), "matte": (0.7, 0.0, 0.0, 0.0, 0.05, "noise"),
+}
+
+
+def haze_fac_group():
+    """0 near .. .85 far, the same curve as RP_Haze, as a factor for mixing a lit surface toward the haze colour."""
+    g = bpy.data.node_groups.get("RP_HazeFac")
+    if g:
+        return g
+    g = bpy.data.node_groups.new("RP_HazeFac", "ShaderNodeTree")
+    g.interface.new_socket("Fac", in_out="OUTPUT", socket_type="NodeSocketFloat")
+    n, l = g.nodes, g.links
+    go, cam, mr, pw, amt = n.new("NodeGroupOutput"), n.new("ShaderNodeCameraData"), n.new("ShaderNodeMapRange"), n.new("ShaderNodeMath"), n.new("ShaderNodeMath")
+    mr.inputs["From Min"].default_value, mr.inputs["From Max"].default_value = HAZE_NEAR, HAZE_FAR
+    pw.operation, pw.inputs[1].default_value = "POWER", 0.6
+    amt.operation, amt.inputs[1].default_value = "MULTIPLY", 0.7
+    l.new(cam.outputs["View Distance"], mr.inputs["Value"])
+    l.new(mr.outputs[0], pw.inputs[0])
+    l.new(pw.outputs[0], amt.inputs[0])
+    l.new(amt.outputs[0], go.inputs[0])
+    return g
+
+
+def pbr_out(n, l, shader):
+    """Lit shader -> mixed toward the keyed haze colour with distance -> material output."""
+    hf, hc = n.new("ShaderNodeGroup"), n.new("ShaderNodeGroup")
+    hf.node_tree = haze_fac_group()
+    hc.node_tree = haze_group()                      # its HazeColor node is keyed per frame by verse1.py
+    em, mx, out = n.new("ShaderNodeEmission"), n.new("ShaderNodeMixShader"), n.new("ShaderNodeOutputMaterial")
+    l.new(hc.outputs["Haze"], em.inputs[0])
+    l.new(hf.outputs[0], mx.inputs[0])
+    l.new(shader, mx.inputs[1])
+    l.new(em.outputs[0], mx.inputs[2])
+    l.new(mx.outputs[0], out.inputs[0])
+
+
+def surface_kind(name):
+    k = name.lower()
+    for kind, keys in _KINDS:
+        if any(w in k for w in keys):
+            return kind
+    return "matte"
+
+
+def pbr(name, base, light=None, kind=None):
+    """A Principled material from the draft colour (the lit tone is the base; a light tone tints the highlights)."""
+    mat = bpy.data.materials.new("RP_" + name)
+    n, l = _nodes(mat)
+    kind = kind or surface_kind(name)
+    rough, metal, sheen, coat, bump_s, tex = _PARAM[kind]
+    bs, out = n.new("ShaderNodeBsdfPrincipled"), n.new("ShaderNodeOutputMaterial")
+    col = lin(base)
+    bs.inputs["Base Color"].default_value = col
+    bs.inputs["Roughness"].default_value = rough
+    bs.inputs["Metallic"].default_value = metal
+    bs.inputs["Sheen Weight"].default_value = sheen
+    bs.inputs["Sheen Tint"].default_value = (1, 1, 1, 1) if not light else lin(light)
+    bs.inputs["Coat Weight"].default_value = coat
+    if kind == "skin":
+        bs.inputs["Subsurface Weight"].default_value = 0.25
+        bs.inputs["Subsurface Radius"].default_value = (0.08, 0.03, 0.02)
+    tc = n.new("ShaderNodeTexCoord")
+    h = None
+    if tex == "wood":
+        mp, wv, nz = n.new("ShaderNodeMapping"), n.new("ShaderNodeTexWave"), n.new("ShaderNodeTexNoise")
+        mp.inputs["Scale"].default_value = (0.35, 3.0, 0.35)
+        l.new(tc.outputs["Object"], mp.inputs["Vector"])
+        wv.wave_type, wv.bands_direction = "RINGS", "Z"
+        wv.inputs["Scale"].default_value = 3.0
+        wv.inputs["Distortion"].default_value = 4.0
+        wv.inputs["Detail"].default_value = 3.0
+        l.new(mp.outputs[0], wv.inputs["Vector"])
+        mx = n.new("ShaderNodeMix")
+        mx.data_type = "RGBA"
+        mx.inputs["A"].default_value = col
+        mx.inputs["B"].default_value = lin(shade(base, 0.82))
+        rr = n.new("ShaderNodeMapRange")
+        rr.inputs["From Min"].default_value, rr.inputs["From Max"].default_value = 0.35, 1.0
+        l.new(wv.outputs["Fac"], rr.inputs["Value"])
+        l.new(rr.outputs[0], mx.inputs["Factor"])
+        l.new(mx.outputs["Result"], bs.inputs["Base Color"])
+        h = wv.outputs["Fac"]
+    elif tex == "weave":
+        mp, wv1, wv2, ad = n.new("ShaderNodeMapping"), n.new("ShaderNodeTexWave"), n.new("ShaderNodeTexWave"), n.new("ShaderNodeMath")
+        mp.inputs["Scale"].default_value = (1, 1, 1)
+        l.new(tc.outputs["Object"], mp.inputs["Vector"])
+        for w, d in ((wv1, "X"), (wv2, "Z")):
+            w.wave_type, w.bands_direction = "BANDS", d
+            w.inputs["Scale"].default_value = 140.0
+            l.new(mp.outputs[0], w.inputs["Vector"])
+        ad.operation = "ADD"
+        l.new(wv1.outputs["Fac"], ad.inputs[0])
+        l.new(wv2.outputs["Fac"], ad.inputs[1])
+        h = ad.outputs[0]
+    elif tex == "noise":
+        nz = n.new("ShaderNodeTexNoise")
+        nz.inputs["Scale"].default_value = 60.0
+        nz.inputs["Detail"].default_value = 6.0
+        l.new(tc.outputs["Object"], nz.inputs["Vector"])
+        h = nz.outputs["Fac"]
+    if h is not None and bump_s > 0:
+        bp = n.new("ShaderNodeBump")
+        bp.inputs["Strength"].default_value = bump_s
+        bp.inputs["Distance"].default_value = 0.002
+        l.new(h, bp.inputs["Height"])
+        l.new(bp.outputs["Normal"], bs.inputs["Normal"])
+    l.new(bs.outputs[0], out.inputs[0])
+    n.remove(out)
+    pbr_out(n, l, bs.outputs[0])
+    return mat
+
+
 def flat(name, hexc, strength=1.0, haze=True):
     """Unlit colour (LEDs, ink-flat props). strength > 1 glows."""
+    if LOOK == "pbr" and strength == 1.0:
+        return pbr(name, hexc, kind="matte" if surface_kind(name) == "matte" else None)
     mat = bpy.data.materials.new("RP_" + name)
     n, l = _nodes(mat)
     rgb = n.new("ShaderNodeRGB")

@@ -331,7 +331,63 @@ def build_world():
 SHADOW_CUT = 0.70        # Shader-to-RGB on the flat playa: sun-lit .77-.96 over this verse, in cast shadow ~.63
 
 
+def ground_material_pbr():
+    """--look pbr: lit playa. Dried-mud plates (Voronoi, ~3 m) with dark cracks that also dip, a dust-pale
+    plate tone varying in big soft patches, rough dusty surface catching the real sun and shadows."""
+    mat = bpy.data.materials.new("RP_PlayaGround")
+    n, l = K._nodes(mat)
+    near, far = s01(G["pal"]["groundNear"]), s01(G["pal"]["groundFar"])
+    tc, bs, out = n.new("ShaderNodeTexCoord"), n.new("ShaderNodeBsdfPrincipled"), n.new("ShaderNodeOutputMaterial")
+    vo = n.new("ShaderNodeTexVoronoi")
+    vo.feature = "DISTANCE_TO_EDGE"
+    vo.inputs["Scale"].default_value = 1 / 3.2
+    vo.inputs["Randomness"].default_value = 0.85
+    l.new(tc.outputs["Object"], vo.inputs["Vector"])
+    crack = n.new("ShaderNodeMapRange")
+    crack.inputs["From Min"].default_value, crack.inputs["From Max"].default_value = 0.0, 0.012
+    l.new(vo.outputs["Distance"], crack.inputs["Value"])                   # 0 in a crack, 1 on a plate
+    nz = n.new("ShaderNodeTexNoise")
+    nz.inputs["Scale"].default_value = 0.04
+    nz.inputs["Detail"].default_value = 4.0
+    l.new(tc.outputs["Object"], nz.inputs["Vector"])
+    tone = n.new("ShaderNodeMix")
+    tone.data_type = "RGBA"
+    tone.inputs["A"].default_value = K.lin_rgb([c * 255 for c in near])
+    tone.inputs["B"].default_value = K.lin_rgb([c * 255 for c in far])
+    l.new(nz.outputs["Fac"], tone.inputs["Factor"])
+    dark = n.new("ShaderNodeMix")
+    dark.data_type = "RGBA"
+    dark.inputs["B"].default_value = K.lin_rgb([c * 255 * 0.72 for c in near])
+    l.new(tone.outputs["Result"], dark.inputs["A"])
+    inv = n.new("ShaderNodeMath")
+    inv.operation = "SUBTRACT"
+    inv.inputs[0].default_value = 1.0
+    l.new(crack.outputs[0], inv.inputs[1])
+    l.new(inv.outputs[0], dark.inputs["Factor"])
+    l.new(dark.outputs["Result"], bs.inputs["Base Color"])
+    bs.inputs["Roughness"].default_value = 0.95
+    fine = n.new("ShaderNodeTexNoise")
+    fine.inputs["Scale"].default_value = 40.0
+    fine.inputs["Detail"].default_value = 8.0
+    l.new(tc.outputs["Object"], fine.inputs["Vector"])
+    hsum = n.new("ShaderNodeMath")
+    hsum.operation = "MULTIPLY_ADD"
+    hsum.inputs[1].default_value = 0.15
+    l.new(fine.outputs["Fac"], hsum.inputs[0])
+    l.new(crack.outputs[0], hsum.inputs[2])
+    bp = n.new("ShaderNodeBump")
+    bp.inputs["Strength"].default_value = 0.35
+    bp.inputs["Distance"].default_value = 0.01
+    l.new(hsum.outputs[0], bp.inputs["Height"])
+    l.new(bp.outputs["Normal"], bs.inputs["Normal"])
+    n.remove(out)
+    K.pbr_out(n, l, bs.outputs[0])
+    return mat
+
+
 def ground_material():
+    if K.LOOK == "pbr":
+        return ground_material_pbr()
     mat = bpy.data.materials.new("RP_PlayaGround")
     mat.use_nodes = True
     nt = NT(mat.node_tree)

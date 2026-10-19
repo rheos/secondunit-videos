@@ -690,6 +690,8 @@ def build_tape_lines(opens, grow):
             out.append((M["i_tape"], vs, fs))
         return out
 
+    if not frames:              # the clip ends before "every": no tape lines in it
+        return None
     ob = baked("Inst_TapeLines", K.COL_INST, None, parts, frames)
     win = set(frames)
     key_hidden(ob, [not (f in win and ease(tf(f), s, s + 0.6) > 0.002 and ease(tf(f), shut - 0.1, shut + 0.35) < 0.998) for f in K.FRAMES])
