@@ -110,7 +110,7 @@ function plateB(t) {
   const ann = pr(t, t0 + 1, t0 + 1.4) * (1 - sp);
   if (ann > 0) { const h = printH('atoms-for-peace-stamp', sw); bracket(sx - sw / 2, sy + h / 2 + 34, sx + sw / 2, sy + h / 2 + 34, C.white, .8 * ann, '3¢ U.S. POSTAGE · ATOMS FOR PEACE · 1955'); }
   // quote 1: Lewis Strauss, 1954
-  const q1o = bar(3) - .45;
+  const q1o = bar(3) - .55;
   caption('1954 · LEWIS STRAUSS, CHAIRMAN, U.S. ATOMIC ENERGY COMMISSION', 1060, 300, t, t0 + 1.3, { size: 18, color: C.lav, alpha: (1 - pr(t, q1o, q1o + .3)) * .95 });
   const qs = fit('“ELECTRICAL ENERGY', 760, 96, { fam: FT.d, weight: 800, stretch: 'semi-condensed' });
   const L1 = { size: qs, weight: 800, stretch: 'semi-condensed', out: q1o };
@@ -133,13 +133,23 @@ function plateB(t) {
     if (nk >= 1) for (let s = 0; s < 6; s++) { const ph = (t * .9 + s / 6) % 1, c = Math.floor(ph * 4), u = ph * 4 - c, A = nodes.filter((d) => d.c === c), Bn = nodes.filter((d) => d.c === c + 1); if (!A.length || !Bn.length) continue; const a = A[(s * 3 + 1) % A.length], b = Bn[(s * 5 + 2) % Bn.length]; star(lerp(a.x, b.x, u), lerp(a.y, b.y, u), 2.4, C.cyan, .9); }
     if (nk > .6) lab(1580, 380, 'OUTPUT', C.lav, .7 * pr(nk, .6, 1), 12, 'center');
   }
-  // quote 2: Sam Altman, 2025
-  const q2o = bar(5) - .5;
-  caption('2025 · SAM ALTMAN, CEO, OPENAI · “THE GENTLE SINGULARITY”', 760, 196, t, bar(3) + 2.0, { size: 19, color: C.lav, alpha: (1 - pr(t, q2o, q2o + .3)) * .95 });
-  const q2s = fit('“INTELLIGENCE TOO CHEAP TO METER …”', 1120, 84, { fam: FT.d, weight: 800, stretch: 'semi-condensed' });
-  const L2 = { size: q2s, weight: 800, stretch: 'semi-condensed', out: q2o };
-  kin('“INTELLIGENCE', 760, 900, t, bt(15), L2);
-  kin('TOO CHEAP TO METER …”', 760, 900 + q2s * 1.08, t, bt(16), { ...L2, color: C.mag });
+  // the same four words, 71 years apart: both quotes set as strips with the shared words aligned, then measured
+  const QS = { fam: FT.d, size: 54, weight: 800, stretch: 'semi-condensed' }, QX = 990;
+  const pA = '“ELECTRICAL ENERGY ', pB = '“INTELLIGENCE ', tail = 'TOO CHEAP TO METER', eA = '.”', eB = ' …”';
+  const wA = meas(pA, QS), wB = meas(pB, QS), wT = meas(tail, QS);
+  const s1 = bar(3) + .6, s2 = bt(15), qo = bar(5) - .45, y1 = 830, y2 = 980, qa = 1 - pr(t, qo, qo + .3);
+  const cA1 = '1954 · LEWIS STRAUSS, ATOMIC ENERGY COMMISSION', cB1 = '2025 · SAM ALTMAN, OPENAI, “THE GENTLE SINGULARITY”';
+  caption(cA1, QX - 30 - meas(cA1, { size: 17 }), y1 - 62, t, s1 - .2, { size: 17, color: C.lav, alpha: qa });
+  kin(pA + tail + eA, QX - wA, y1, t, s1, { ...QS, stag: .018, hot: [pA.length, pA.length + tail.length, C.mag], out: qo });
+  caption(cB1, QX - 30 - meas(cB1, { size: 17 }), y2 - 62, t, s2 - .2, { size: 17, color: C.lav, alpha: qa });
+  kin(pB + tail + eB, QX - wB, y2, t, s2, { ...QS, stag: .018, hot: [pB.length, pB.length + tail.length, C.mag], out: qo });
+  const mk = eo(pr(t, bt(17), bt(17) + .45)) * qa;
+  if (mk > 0) {
+    const bx0 = QX - 14, bx1 = QX + wT + 14, by0 = y1 - 50, by1 = y2 + 16;
+    X.setLineDash([6, 5]); X.strokeStyle = C.white; X.lineWidth = 1.6; X.globalAlpha = .9 * mk;
+    X.strokeRect(bx0, by0, (bx1 - bx0) * mk, by1 - by0); X.setLineDash([]); X.globalAlpha = 1;
+    if (mk > .9) { lab(bx1 + 70, (by0 + by1) / 2 - 6, 'SAME FOUR WORDS', C.white, qa, 22); lab(bx1 + 70, (by0 + by1) / 2 + 26, '71 YEARS APART', C.lav, .85 * qa, 22); gl(bx1, (by0 + by1) / 2, bx1 + 56, (by0 + by1) / 2 - 12, C.white, .8 * qa, 1.2); }
+  }
 }
 
 // ---------- III. the same lab ----------
@@ -192,6 +202,13 @@ function plateC(t) {
       const cs = fit('A SECRET PROBLEM FROM LOS ALAMOS', 1500, 74, { fam: FT.d, weight: 800, stretch: 'semi-condensed' });
       caption('DECEMBER 1945 · ITS FIRST JOB:', 210, by - 34, t, swap + 1.3, { size: 26, color: C.lav });
       kin('A SECRET PROBLEM FROM LOS ALAMOS', 210, by + 52, t, swap + 1.8, { size: cs, weight: 800, stretch: 'semi-condensed', hot: [22, 32, C.mag], out: PLATE.D - .95 });
+      // the case file's purpose field: redacted, and the bar never lifts (the program is still classified)
+      const rk = pr(t, swap + 2.3, swap + 2.65), ra = 1 - pr(t, PLATE.D - .95, PLATE.D - .65);
+      if (rk > 0) {
+        txt('PURPOSE:', 1250, by - 34, { size: 26, color: C.lav, alpha: ra });
+        X.globalAlpha = ra; X.fillStyle = '#000'; X.fillRect(1395, by - 58, 250 * eo(rk), 32); X.globalAlpha = 1;
+        if (rk >= 1) lab(1662, by - 36, 'STILL CLASSIFIED', C.white, .9 * ra, 16);
+      }
     }
     if (shut > .7) star(cx, cy, 6, C.white, 1);
   }
@@ -252,14 +269,51 @@ function hash1(n) { n = (n ^ 61) ^ (n >>> 16); n = n + (n << 3); n = n ^ (n >>> 
 
 // ---------- V. the clock, VI. red flags, VII. title block: one sheet, the camera travels down it ----------
 const CK = { x: 960, y: 520, r: 330 };
-const FORM_Y = 1300, BLOCK_Y = 2600;
+const FORM_Y = 2100, BLOCK_Y = 3400;
 function camAt(t) {
-  const zIn = eio(pr(t, bar(13) + 2.3, bar(14) + .8)), zOut = eio(pr(t, PLATE.F - .2, PLATE.F + .9)), down = eio(pr(t, PLATE.F - .2, PLATE.F + 1.0)), down2 = eio(pr(t, bar(18) - .05, bar(18) + 1.0));
-  const tip = [CK.x, CK.y - CK.r];
-  const cx = lerp(lerp(960, tip[0] - 40, zIn), 960, zOut);
-  const cy = lerp(lerp(540, tip[1] + 50, zIn), 540, zOut) + down * (FORM_Y - 80) + down2 * ((BLOCK_Y - 170) - (FORM_Y - 80));
-  const z = lerp(lerp(1, 3.1, zIn), 1, zOut);
-  return [cx, cy, z];
+  const tip = [CK.x, CK.y - CK.r]; let c = [960, 540, 1];
+  const go = (k, to) => { c = [lerp(c[0], to[0], k), lerp(c[1], to[1], k), Math.exp(lerp(Math.log(c[2]), Math.log(to[2]), k))]; };
+  go(eio(pr(t, bar(13) + 1.9, bar(14) + .4)), [tip[0] - 40, tip[1] + 50, 3.1]);
+  go(eio(pr(t, bar(14) + 1.1, bar(14) + 2.2)), [960, 760, .4]);                    // out: the clock is on a scoreboard
+  go(eio(pr(t, PLATE.F + .3, PLATE.F + 1.3)), [960, FORM_Y - 80 + 540, 1]);
+  go(eio(pr(t, bar(18) - .05, bar(18) + 1.0)), [960, BLOCK_Y - 170 + 540, 1]);
+  return c;
+}
+// MC03 after Achbar: the clock plays on a stadium scoreboard between the score and the kiss cam, and the
+// crowd under it is looking at its phones. Drawn in world space around the clock; revealed by the camera.
+function scoreboard(t) {
+  const sb = pr(t, bar(14) + .9, bar(14) + 1.9); if (sb <= 0) return;
+  const draw = eo(sb), A = sb;
+  X.save(); X.globalAlpha = A;
+  X.fillStyle = C.navy2; X.fillRect(60, 120, 520, 810); X.fillRect(1340, 120, 520, 810); X.fillRect(560, 120, 800, 70); X.fillRect(560, 900, 800, 30);
+  X.restore();
+  iBox(60, 120, 1800 * draw, 810, C.white, 2, .9 * A, false); iBox(80, 140, 480, 770, C.lav, 1.2, .6 * A, false); iBox(1360, 140, 480, 770, C.lav, 1.2, .6 * A, false);
+  for (const x of [400, 1520]) gl(x, 930, x, 1150, C.lav, .6 * A, 3);
+  // left: the game
+  const led = (str, x, y, size, col = C.white) => txt(str, x, y, { fam: FT.m, size, weight: 700, color: col, align: 'center', alpha: A });
+  if (sb > .3) { led('HOME', 320, 260, 46); led('3', 320, 440, 170); led('VISITORS', 320, 560, 40); led('1', 320, 740, 170); led('7TH INNING', 320, 860, 30, C.lav); }
+  // right: the kiss cam
+  if (sb > .5) {
+    led('KISS', 1600, 300, 92); led('CAM', 1600, 400, 92);
+    const hx = 1600, hy = 600, hr = 110, P = []; for (let i = 0; i <= 80; i++) { const a = i / 80 * TAU; P.push([hx + 16 * Math.pow(Math.sin(a), 3) * hr / 15, hy - (13 * Math.cos(a) - 5 * Math.cos(2 * a) - 2 * Math.cos(3 * a) - Math.cos(4 * a)) * hr / 15]); }
+    path(P, C.white, 5, A); led('NEXT!', 1600, 840, 44, C.lav);
+  }
+  // LED pitch over the panels
+  X.save(); X.globalAlpha = .35 * A; X.strokeStyle = C.navy2; X.lineWidth = 3; X.beginPath();
+  for (const [x0, x1] of [[80, 560], [1360, 1840]]) { for (let y = 144; y < 910; y += 9) { X.moveTo(x0, y); X.lineTo(x1, y); } }
+  X.stroke(); X.restore();
+  // the crowd, heads down
+  const r0 = M32(4242);
+  for (let row = 0; row < 5; row++) {
+    const y = 1220 + row * 78;
+    for (let x = -460 + (row % 2) * 34; x < 2380; x += 68) {
+      const jx = (r0() - .5) * 16, hx = x + jx, hy = y + (r0() - .5) * 8, ph = r0() < .8;
+      const sh = new Path2D(); sh.ellipse(hx, hy + 44, 32, 24, 0, Math.PI, TAU); sh.closePath();
+      X.save(); X.globalAlpha = A; X.fillStyle = C.navy; X.fill(sh); X.beginPath(); X.arc(hx, hy + 8, 17, 0, TAU); X.fill(); X.restore();
+      X.globalAlpha = .7 * A; X.strokeStyle = C.lav; X.lineWidth = 1.5; X.stroke(sh); X.beginPath(); X.arc(hx, hy + 8, 17, 0, TAU); X.stroke(); X.globalAlpha = 1;
+      if (ph) { X.save(); X.globalAlpha = A; X.fillStyle = C.cyan; X.fillRect(hx - 6, hy + 30, 12, 9); X.globalAlpha = .25 * A; X.beginPath(); X.arc(hx, hy + 30, 22, 0, TAU); X.fill(); X.restore(); }
+    }
+  }
 }
 function plateEFG(t) {
   const t0 = PLATE.E; schBG();
@@ -273,23 +327,24 @@ function plateEFG(t) {
   if (flat >= 1) {
     gc(CK.x, CK.y, CK.r, C.white, .95, 2); gc(CK.x, CK.y, CK.r + 14, C.lav, .4, 1, [4, 5]);
     ticks(CK.x, CK.y, CK.r - 16, 60, 8, C.white, .8 * dial, 1.3, 5, -Math.PI / 2, -Math.PI / 2 + TAU * eo(dial));
-    ticks(CK.x, CK.y, CK.r - 34, 36, 4, C.lav, .55 * pr(t, bar(13) + 2.3, bar(14) + .5), .6, 12, -Math.PI / 2 - 36 * TAU / 720, -Math.PI / 2);
+    ticks(CK.x, CK.y, CK.r - 34, 36, 4, C.lav, .55 * pr(t, bar(13) + 1.9, bar(14) + .1), .6, 12, -Math.PI / 2 - 36 * TAU / 720, -Math.PI / 2);
     for (let h = 0; h < 12; h++) { const a = -Math.PI / 2 + h * TAU / 12; if (dial > h / 12) lab(CK.x + Math.cos(a) * (CK.r - 70), CK.y + Math.sin(a) * (CK.r - 70) + 6, String(h || 12), C.white, .9, 18, 'center'); }
     gl(CK.x - CK.r - 60, CK.y, CK.x + CK.r + 60, CK.y, C.lav, .2, 1, [3, 6]); gl(CK.x, CK.y - CK.r - 60, CK.x, CK.y + CK.r + 60, C.lav, .2, 1, [3, 6]);
     // hands: 1947, seven minutes to midnight; then 2026, 85 seconds
-    const hk = pr(t, t0 + 1.8, t0 + 2.2), sweep = eio(pr(t, bar(13) + 1.0, bar(13) + 2.6)), hidH = 1 - eio(pr(t, bar(13) + 2.1, bar(13) + 2.6));
+    const hk = pr(t, t0 + 1.8, t0 + 2.2), sweep = eio(pr(t, bar(13) + .6, bar(13) + 2.2)), hidH = 1 - eio(pr(t, bar(13) + 1.7, bar(13) + 2.2)) + eio(pr(t, bar(14) + 1.0, bar(14) + 1.6));
     const secs = lerp(7 * 60, 85, sweep), ma = -Math.PI / 2 - secs / 3600 * TAU, ha = -Math.PI / 2 - secs / 43200 * TAU;
     if (hk > 0) {
       X.lineCap = 'round';
       path([[CK.x, CK.y], [CK.x + Math.cos(ha) * CK.r * .55 * eo(hk), CK.y + Math.sin(ha) * CK.r * .55 * eo(hk)]], C.white, 7, .95 * hidH);
       path([[CK.x, CK.y], [CK.x + Math.cos(ma) * (CK.r - 40) * eo(hk), CK.y + Math.sin(ma) * (CK.r - 40) * eo(hk)]], C.mag, 4, 1);
       star(CK.x, CK.y, 5, C.white, 1);
-      const arcA = pr(t, bar(14) - .3, bar(14) + .3);
+      const arcA = pr(t, bar(14) - .7, bar(14) - .1);
       if (arcA > 0) { gc(CK.x, CK.y, CK.r - 58, C.mag, arcA, 3, null, ma, -Math.PI / 2); }
     }
-    if (hk > 0 && t < bar(13) + 1.4) { const a1947 = 1 - pr(t, bar(13) + .9, bar(13) + 1.2); lab(CK.x + CK.r + 70, CK.y - 120, '1947', C.lav, a1947, 22); kin('7 MINUTES', CK.x + CK.r + 70, CK.y - 50, t, t0 + 2.2, { size: 72, weight: 800, stretch: 'semi-condensed', out: bar(13) + .9 }); }
-    lab(CK.x, CK.y + CK.r + 60, 'DOOMSDAY CLOCK · BULLETIN OF THE ATOMIC SCIENTISTS', C.lav, .8 * dial * (1 - pr(t, bar(13) + 2, bar(13) + 2.4)), 18, 'center');
+    if (hk > 0 && t < bar(13) + 1.0) { const a1947 = 1 - pr(t, bar(13) + .5, bar(13) + .8); lab(CK.x + CK.r + 70, CK.y - 120, '1947', C.lav, a1947, 22); kin('7 MINUTES', CK.x + CK.r + 70, CK.y - 50, t, t0 + 2.2, { size: 72, weight: 800, stretch: 'semi-condensed', out: bar(13) + .5 }); }
+    lab(CK.x, CK.y + CK.r + 60, 'DOOMSDAY CLOCK · BULLETIN OF THE ATOMIC SCIENTISTS', C.lav, .8 * dial * (1 - pr(t, bar(13) + 1.6, bar(13) + 2.0)), 18, 'center');
   }
+  scoreboard(t);
   // VI. red flags: a form further down the sheet
   formRF(t);
   // VII. the title block at the foot of the sheet
@@ -297,7 +352,7 @@ function plateEFG(t) {
   X.restore();
   // screen-space words for the clock
   if (t < PLATE.F) {
-    const k0 = bar(14) + .3, out = PLATE.F - .45;
+    const k0 = bar(14) - .15, out = PLATE.F - .45;
     caption('27 JANUARY 2026 · BULLETIN OF THE ATOMIC SCIENTISTS', 120, 878, t, k0, { size: 20, color: C.lav, alpha: 1 - pr(t, out, out + .3) });
     const s = fit('85 SECONDS TO MIDNIGHT', 1680, 130, { fam: FT.d, weight: 900, stretch: 'semi-condensed' });
     X.globalAlpha = .95 * pr(t, k0 - .2, k0 + .1) * (1 - pr(t, out, out + .4)); X.fillStyle = C.navy2; X.fillRect(0, 836, W, 244); X.globalAlpha = 1;
@@ -307,21 +362,27 @@ function plateEFG(t) {
   plateLabel(t < PLATE.F ? 'FIG. 3' : t < bar(18) ? 'FIG. 4' : 'SHEET 1', t < PLATE.F ? 'THE CLOCK' : t < bar(18) ? 'RED FLAGS' : 'TITLE BLOCK', '', t, t < PLATE.F ? t0 + .2 : t < bar(18) ? PLATE.F + .5 : bar(18) + .6);
   schFrame(t < PLATE.F ? '3' : t < bar(18) ? '4' : '5', '', '', C.lav);
 }
-const ROWS = ['PROMISED THE WORLD', 'TOO CHEAP TO METER', 'AN ARMS RACE', 'CAN’T BE UN-INVENTED'];
+const ROWS = [
+  ['TOO CHEAP TO METER', 'ATOM: STRAUSS, AEC, 1954  ·  AI: ALTMAN, OPENAI, 2025'],
+  ['BUILT IN SECRET', 'ATOM: MANHATTAN PROJECT, 1942-46  ·  AI: GPT-4 REPORT WITHHOLDS SIZE AND DATA, 2023'],
+  ['AN ARMS RACE', 'ATOM: 70,374 WARHEADS BY 1986  ·  AI: “WINNING THE RACE”, U.S. AI ACTION PLAN, 2025'],
+  ['ITS MAKERS WARNED US', 'ATOM: SZILARD PETITION, 70 SCIENTISTS, 1945  ·  AI: CAIS EXTINCTION-RISK STATEMENT, 2023'],
+];
 function formRF(t) {
   const t0 = PLATE.F, y0 = FORM_Y; if (t < t0 - 1) return;
-  const x0 = 300, x1 = 1620, cA = 1180, cB = 1420, rh = 105, ty = y0 + 330;
-  lab(x0, y0 + 60, 'FORM RF-1 · RELATIONSHIP ASSESSMENT', C.lav, .85, 19);
+  const x0 = 300, x1 = 1620, cA = 1260, cB = 1480, rh = 112, ty = y0 + 300;
+  lab(x0, y0 + 60, 'FORM RF-1 · RELATIONSHIP ASSESSMENT · EVERY TICK SOURCED', C.lav, .85, 19);
   const ts = fit('RED FLAGS', 900, 170, { fam: FT.d, weight: 900, stretch: 'expanded' });
   kin('RED FLAGS', x0 - 6, y0 + 190, t, t0 + .7, { size: ts, weight: 900, stretch: 'expanded', stag: .05 });
   const hk = pr(t, t0 + 1.0, t0 + 1.6);
   gl(x0, ty - 30, lerp(x0, x1, eo(hk)), ty - 30, C.white, .9, 1.6);
-  if (hk > .5) { lab(cA, ty - 48, 'THE ATOM, 1945', C.white, .9, 19, 'center'); lab(cB, ty - 48, 'AI, 2025', C.white, .9, 19, 'center'); }
-  ROWS.forEach((r, i) => {
-    const rt = bt(Math.round((t0 - B0) / BEAT) + 3 + i * 2), y = ty + 70 + i * rh;
+  if (hk > .5) { lab(cA, ty - 48, 'THE ATOM', C.white, .9, 19, 'center'); lab(cB, ty - 48, 'AI', C.white, .9, 19, 'center'); }
+  ROWS.forEach(([r, src], i) => {
+    const rt = bt(Math.round((t0 - B0) / BEAT) + 3 + i * 2), y = ty + 60 + i * rh;
     if (t < rt - .2) return;
-    gl(x0, y + 40, lerp(x0, x1, eo(pr(t, rt - .2, rt + .2))), y + 40, C.lav, .45, 1);
-    kin(r, x0, y + 14, t, rt, { size: 50, weight: 800, stretch: 'semi-condensed', style: 'rise' });
+    gl(x0, y + 52, lerp(x0, x1, eo(pr(t, rt - .2, rt + .2))), y + 52, C.lav, .45, 1);
+    kin(r, x0, y + 8, t, rt, { size: 48, weight: 800, stretch: 'semi-condensed', style: 'rise' });
+    caption(src, x0, y + 38, t, rt + .25, { size: 17, color: C.lav, cps: 120 });
     [cA, cB].forEach((cx, j) => {
       const bx = cx - 26, by = y - 30; X.strokeStyle = C.white; X.lineWidth = 2; X.globalAlpha = .9 * pr(t, rt, rt + .2); X.strokeRect(bx, by, 52, 52); X.globalAlpha = 1;
       const ck = eo(pr(t, rt + .3 + j * .18, rt + .55 + j * .18));

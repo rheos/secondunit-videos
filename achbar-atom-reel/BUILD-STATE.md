@@ -17,7 +17,9 @@ the film. Issue rheos/secondunit-videos#252. Made 2026-10-19, 0 credits.
 | Doomsday Clock: 1947 seven minutes; 27 Jan 2026, 85 seconds, the closest yet; the statement calls for international guidelines on AI | thebulletin.org/doomsday-clock (85 s, 27 Jan 2026, AI guidelines); the 1947 setting of 7 minutes is the clock's well-known first setting |
 | Hanford B Reactor, graphite pile, 1945, drawing HTM 1945-405, DECLASSIFIED | Commons `File:An external view of the B Reactor's graphite pile. (HTM 1945- 405) ... HAER WA-164-8.tif`, public domain (Library of Congress HAER WA-164). The DECLASSIFIED stamp is on the scan itself |
 | "July 16, 1945", Trinity Site sheet 4, drawn 1985 by Rossana H. Santos | Commons `File:White Sands Missile Range, Trinity Site ... HAER NM,27-ALMOG.V,1A- (sheet 4 of 11).tif`, public domain (HAER, Library of Congress); delineator credit is in the sheet's margin |
-| Red flags table | Editorial, not a data claim |
+| Red flags rows, each tick sourced (draft 3): too cheap to meter (Strauss 1954 / Altman 2025); built in secret (Manhattan Project / GPT-4 Technical Report 2023 withholds architecture, size, data, compute: arxiv.org/abs/2303.08774); an arms race (70,374 warheads by 1986, FAS / "Winning the Race: America's AI Action Plan", White House, 23 July 2025); its makers warned us (Szilard petition, 70 Manhattan Project scientists, July 1945 / CAIS Statement on AI Risk, 30 May 2023, safe.ai) | Row wording is ours; every tick has a dated public source |
+| ENIAC purpose field redacted, "still classified" | APS News: the program's content remains classified |
+| Scoreboard: HOME 3, VISITORS 1, 7TH INNING, KISS CAM | Invented set dressing, not a claim |
 
 The clock is our own drawing, not the Bulletin's artwork. The hand sweeps straight from 7 minutes to 85 s; the
 real setting moved back and forth over the decades, and the reel does not claim otherwise.
@@ -74,3 +76,8 @@ taint the canvas and `toDataURL` throws.
 - Draft 2 (2026-10-19, Robin: add Manhattan Project blueprints): `renders/atom-reel_test01_draft2_720p.mp4` (copy
   `~/Downloads/romancing-the-atom-test01-draft2_720p.mp4`). Opens on the declassified 1945 B Reactor drawing, Trinity
   arrives through the 1985 HAER sheet, synthesised sound hits. Flash PASS, -14.0 LUFS, peak -2.1 dBFS. Uploaded unlisted 2026-10-19: https://youtu.be/6pV1tR4h4Cw (Robin G channel).
+- Draft 3 (2026-10-19, Robin: revise with the Achbar style study, references/mark-achbar/ PR #258): the promise's
+  two quotes set as matching strips with the four shared words boxed and measured; ENIAC's purpose field redacted;
+  the clock pulls back onto a stadium scoreboard over a crowd on its phones (MC03); every red flag sourced (TC01).
+  Skipped the study's paper-strip warhead chart (MC02): it would replace the oscilloscope. `renders/atom-reel_test01_draft3_720p.mp4`
+  (copy in ~/Downloads). Flash PASS, -14.0 LUFS, peak -1.9 dBFS. Not uploaded.

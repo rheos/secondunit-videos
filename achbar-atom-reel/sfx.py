@@ -53,6 +53,10 @@ def hum(sec, f=60):
 def crt_on(): n = int(.9 * SR); t = np.arange(n) / SR; return (bp(noise(.9), 300, 3000) * env(n, .001, .05) * .8 + tone(40, .9) * env(n, .001, .2) * .7)
 def static(sec): x = bp(noise(sec), 1000, 9000); t = np.arange(len(x)) / SR; return x * (np.abs(np.sin(2 * np.pi * 9 * t)) ** 3) * np.sin(np.pi * t / sec) * .6
 def blip_down(): n = int(.35 * SR); t = np.arange(n) / SR; f = 900 * np.exp(-t * 9) + 60; return np.sin(2 * np.pi * np.cumsum(f) / SR) * env(n, .002, .12) * .4
+def crowd(sec):                           # a stadium murmur: many voices as filtered noise, slow swells
+    x = bp(noise(sec), 250, 1800); t = np.arange(len(x)) / SR
+    sw = .6 + .4 * np.sin(2 * np.pi * .7 * t) * np.sin(2 * np.pi * .23 * t + 1)
+    return x * sw * np.minimum(1, t / .4) * np.minimum(1, (sec - t) / .6) * .5
 def ratchet(t0, t1, n0=3, n1=14):            # clock hand sweeping: ticks speeding up
     tt = t0; k = 0
     while tt < t1:
@@ -68,22 +72,26 @@ put(4.95, thump(1.0), -14)                             # ROMANCING
 put(bt(1), chime(880), -20)                            # the heart
 put(PL_B + .8, thump(.7), -16, pan=-.3)                # the stamp lands
 for k in (5, 6, 7): put(bt(k), tick(5000, .01), -20, pan=.3)       # quote lines
-for k in (15, 16): put(bt(k), tick(5000, .01), -20, pan=.2)
+put(bar(3) + .6, tick(5000, .01), -20, pan=-.2)
+put(bt(15), tick(5000, .01), -20, pan=.2)
+put(bt(17), pen(.5), -22)                              # the dashed box measured round the shared words
 put(PL_C, whoosh(.9), -18)                             # iris onto the HAER sheet
 put(PL_C + 1.9 + .25, whoosh(.7), -20)                 # the drawn fireball becomes the photo
 swap = bar(6) + .75 + 2 * BEAT
 put(swap - .8, whoosh(.8, rev=True), -20)              # iris closes on the fireball
 put(swap, whoosh(.9), -19)                             # ENIAC opens
 put(swap + .9, relays(.9), -22, pan=.2)                # ENIAC relays
+put(swap + 2.3, thump(.5), -18, pan=.3)                # the redaction bar
 put(PL_D - .75, whoosh(.75, rev=True), -22)
 put(PL_D, crt_on(), -14)                               # scope powers on
 put(PL_D + .2, hum(PL_E - PL_D - .2), -27)             # tube hum under the plate
 put(bar(11) - .2, static(1.6), -20)                    # sync lost
 put(PL_E, blip_down(), -16)                            # tube off, back to blueprint
 put(PL_E + 1.8, tick(2800, .03), -16)                  # hands appear
-ratchet(bar(13) + 1.0, bar(13) + 2.6)                  # the sweep to 85 s
-put(bar(14) + .55, thump(1.1), -13)                    # 85 SECONDS TO MIDNIGHT
-put(PL_F - .2, whoosh(1.2), -22)                       # camera down the sheet
+ratchet(bar(13) + .6, bar(13) + 2.2)                   # the sweep to 85 s
+put(bar(14) + .1, thump(1.1), -13)                     # 85 SECONDS TO MIDNIGHT
+put(bar(14) + 1.0, crowd(2.8), -24)                    # pull back: the stadium, nobody looking up
+put(PL_F + .25, whoosh(1.2), -22)                      # camera down the sheet
 t0F = round((PL_F - B0) / BEAT)
 for i in range(4):
     rt = bt(t0F + 3 + i * 2)
