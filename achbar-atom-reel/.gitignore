@@ -1,0 +1,8 @@
+node_modules
+out/
+assets/song.wav
+assets/pd/*.jpg
+renders/
+assets/sfx.wav
+assets/mix.wav
+assets/score-edit.wav
