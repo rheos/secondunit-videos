@@ -36,12 +36,13 @@ def rocket_layer(body=None, trim=None, seed=5):
         s = .85 + .3 * rng.random(); fl.scale = (1, 1, s); K.key(fl, "scale", f)
     K.bake(frames, anim); return frames
 
-def render_frames(frames, sub):
-    """The scene, then (if it has characters) the same frames again on the holdout view layer, as <sub>_chars/."""
+def render_frames(frames, sub, transparent=False):
+    """The scene, then (if it has characters) the same frames again on the holdout view layer, as <sub>_chars/.
+    transparent=True for the rocket layers, which are composited over everything else."""
     sc = K.scene(); K.linear_all()
     sc.frame_start, sc.frame_end = frames[0], frames[-1]
     d = os.path.join(OUT, sub); os.makedirs(d, exist_ok=True)
-    sc.view_layers["ViewLayer"].use = True; sc.view_layers["chars"].use = False; sc.render.film_transparent = False
+    sc.view_layers["ViewLayer"].use = True; sc.view_layers["chars"].use = False; sc.render.film_transparent = transparent
     sc.render.filepath = os.path.join(d, ""); bpy.ops.render.render(animation=True)
     if len(K.CHARS.all_objects):
         d2 = os.path.join(OUT, sub + "_chars"); os.makedirs(d2, exist_ok=True)
@@ -54,7 +55,7 @@ if PART in ("rocket", "friend"):
         K.linear_all(); K.scene().frame_set(K.frame_of(float(arg("--still")))); os.makedirs(os.path.join(OUT, "stills"), exist_ok=True)
         K.scene().render.filepath = os.path.join(OUT, "stills", f"{PART}.png"); bpy.ops.render.render(write_still=True)
     else:
-        render_frames(frames, PART)
+        render_frames(frames, PART, transparent=True)
 elif PART == "lineup":
     # the cast line-up: one row per style variant, rendered on transparent film; comp.py --lineup adds the outlines
     import tk.cast as C
