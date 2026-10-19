@@ -11,8 +11,8 @@ function buhTeeth(t) {
     // which clack we are on, and how far through it (jaw snaps shut on the beat, springs open between)
     const u = (t - s0) / BUH.step, i = Math.floor(u), ph = u - i, live = i >= 0 && i < BUH.n;
     const open = live ? (ph < .18 ? ph / .18 * .05 : .05 + .95 * Math.sin(Math.min(1, (ph - .18) / .6) * Math.PI / 2)) : .35;
-    const hop = live ? Math.max(0, Math.sin(ph * Math.PI)) * .12 : 0; // a little bounce between clacks
-    const S = BUH.size, x = W - S * 1.05, y = H + S * .2 - up * S * 1.25 - hop * S * .35, rot = live ? .06 * Math.sin(i * 2.1) : 0;
+    const hop = live ? Math.max(0, Math.sin(ph * Math.PI)) * .05 : 0; // a small hop as the jaw springs open
+    const S = BUH.size, x = W - S * 1.05, y = H + S * .2 - up * S * 1.25 - hop * S * .35, rot = 0;
     g.save(); g.translate(x, y); g.rotate(rot); drawWindupTeeth(S, open, t); g.restore();
   }
 }
@@ -31,7 +31,7 @@ function drawWindupTeeth(S, open, t) {
     for (let j = 0; j < 7; j++) { const tx = -38 * k + j * 11 * k, h = (j === 0 ? 9 : 11) * k; g.fillStyle = tooth; g.strokeStyle = toothE; g.lineWidth = 1.4 * k;
       g.beginPath(); g.roundRect ? g.roundRect(tx, upper ? 6 * k - h : 6 * k, 10 * k, h, 3 * k) : g.rect(tx, upper ? 6 * k - h : 6 * k, 10 * k, h); g.fill(); g.stroke(); }
     g.restore(); };
-  jaw(false, 0); jaw(true, -open * .55);
+  jaw(false, 0); jaw(true, open * .5); // the upper jaw hinges up at the back (front lifts), the lower jaw stays put
   // a cut-out outline round the whole toy, so it reads as a Gilliam paper cut
   g.strokeStyle = 'rgba(30,18,14,.55)'; g.lineWidth = 3 * k;
 }
