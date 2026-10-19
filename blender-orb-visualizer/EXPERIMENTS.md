@@ -140,4 +140,4 @@ last frame to first 20.77 dB. The seam is an ordinary step.
 `take-02_review_x4_song.mp4` (four loops over the song from 1:30, for review only). Contact sheet:
 `reviews/take-02_canvas_contact.jpg` (one frame a second).
 
-**Verdict.** Waiting on Robin.
+**Verdict.** Robin, 2026-10-19: "this is great. love it." Merged in #236 (6805b44); tagged `canvas-take-02`.
