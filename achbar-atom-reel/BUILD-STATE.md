@@ -73,4 +73,4 @@ taint the canvas and `toDataURL` throws.
   Not uploaded, not sent; Robin watches first.
 - Draft 2 (2026-10-19, Robin: add Manhattan Project blueprints): `renders/atom-reel_test01_draft2_720p.mp4` (copy
   `~/Downloads/romancing-the-atom-test01-draft2_720p.mp4`). Opens on the declassified 1945 B Reactor drawing, Trinity
-  arrives through the 1985 HAER sheet, synthesised sound hits. Flash PASS, -14.0 LUFS, peak -2.1 dBFS. Not uploaded, not sent.
+  arrives through the 1985 HAER sheet, synthesised sound hits. Flash PASS, -14.0 LUFS, peak -2.1 dBFS. Uploaded unlisted 2026-10-19: https://youtu.be/6pV1tR4h4Cw (Robin G channel).
