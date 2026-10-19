@@ -1,7 +1,7 @@
 slug: riso
 title: Risograph poster
 note: Misregistered pink, teal and yellow inks with halftone grain, and a Warhol triptych.
-used: Airplane on the Highway test
+used: Airplane on the Highway, Bob Wiseman
 cost: free
 group: code
 order: 80
@@ -18,11 +18,15 @@ code:
     js/ch/01-airplane.js draws the separations. The film's riso sections B and F are
     bobwiseman-airplane-v1/sections/riso (riso.html, verse1.html; js/ch/06-F.js is the sax solo).
 rules:
-  - "The 2D frame is a set of separations: R = pink plate, G = teal, B = yellow; black in the source is bare paper"
+  - >-
+    The 2D frame is a set of separations: R = pink plate, G = teal, B = yellow; black in the source is bare
+    paper
   - Opaque shapes knock out every plate (source-over); overprints use lighten (max per plate)
   - Each plate gets its own registration error, new every drawing; animation on twos (12 a second)
   - Plates screened into rotated halftones, starved in streaks and blotches, speckled with white
-  - Inks multiply over off-white stock, so overlaps go deep (pink x teal = navy line, pink x yellow = red, teal x yellow = green)
+  - >-
+    Inks multiply over off-white stock, so overlaps go deep (pink x teal = navy line, pink x yellow = red,
+    teal x yellow = green)
   - Big moments fly the plates apart and re-register; Warhol-style repeats of his face, one per ink
 palette:
   - "#ff4a9e"
