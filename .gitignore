@@ -74,4 +74,5 @@
 **/output
 **/tmp
 !/indieagent-one-show/
+!/indieagent-clean-vector-test/
 !/indieagent-gigcaravan/
