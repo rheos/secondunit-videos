@@ -687,7 +687,7 @@ function truth(t, emissive) { // "put the truth in a box": a small light carried
 // whose top quarter rises above the table top. He faces the way the car drives (+x) and steers with the car's turns.
 // He makes room by ducking down out of sight (movement, never a fade) whenever something uses the hole or the drone
 // flies through it: [start down, down, start up, up] in song seconds; d = how far down (1 = all of him under the top).
-const DRIVER = { x: -.1, wx: .3, wr: .2, tilt: .5,
+const DRIVER = { x: -.12, wx: .22, wr: .2, tilt: .95,
   ducks: [[28.1, 28.65, 34.9, 35.5, 1],    // the ear and the flying recorders: the drone hangs just behind the hole (29.3-34.05)
     [126.9, 127.45, 131.0, 131.6, 1], // the dime and the iris into the world inside the table (127.85-130.6)
     [46.0, 46.5, 51.5, 52.1, 1],            // grin 1: the drone comes down off the hat (46-47) and through the hole's column (49.1-51.1)
@@ -700,34 +700,36 @@ const DRIVER = { x: -.1, wx: .3, wr: .2, tilt: .5,
 function driverDuck(t) { let d = 0; for (const [a, b, c, e, m] of DRIVER.ducks) d = Math.max(d, m * ease(t, a, b) * (1 - ease(t, c, e))); return d; }
 function driverSteer(t) { return clamp((yaw(t + .25) - yaw(t - .25)) * 2.2, -1.4, 1.4) + .05 * Math.sin(t * .73) + .025 * Math.sin(t * 1.9 + 1); } // wheel turn, radians
 function driverHat(t) {
+  // draft 23b (Robin: "what's going on with that driver"): rebuilt. He sits low in the hole facing the way the car drives;
+  // the wheel's top quarter rises above the table (as in the photo of the real car) and is drawn unclipped there, the
+  // rest only through the hole; short forearms reach it at ten to two; the red hat sits down on his head.
   if (t == null) t = 0; const D = DRIVER, dn = driverDuck(t) * .9, st = driverSteer(t);
-  const S = PL(D.x, TOP + .04 - dn, 0); if (S[2] < .25) return; const k = kAt(S);
-  // where the lens is, in car-local metres, so the shoulders narrow in profile and the draw order follows the depth
-  const [cx, cz] = worldToLocal(C.x, C.z), vx = cx - D.x, vz = cz, vl = Math.hypot(vx, vz) || 1, side = Math.abs(vz) / vl, ahead = vx > 0;
-  const wc = [D.wx, TOP - .09, 0], ev = [-Math.sin(D.tilt), Math.cos(D.tilt), 0]; // the wheel's centre, and its "up" in its own plane (leans back toward him)
-  const rim = (a) => [wc[0] + D.wr * Math.sin(a + st) * ev[0], wc[1] + D.wr * Math.sin(a + st) * ev[1], wc[2] + D.wr * Math.cos(a + st)];
-  const wheel = () => { const ring = []; for (let i = 0; i < 30; i++) ring.push(PL(...rim(i / 30 * TAU))); if (!ok(ring)) return; const kw = kAt(PL(...wc));
-    const hub = PL(...wc), col = PL(wc[0] + .12, wc[1] - .45, 0); seg(hub, col, .05 * kw, '#16131a');
-    for (const a of [Math.PI / 2, Math.PI * 7 / 6, Math.PI * 11 / 6]) seg(hub, PL(...rim(a)), .025 * kw, '#2c2a30');
-    g.strokeStyle = '#141216'; g.lineWidth = Math.max(1.5, .045 * kw); g.lineJoin = 'round'; g.beginPath(); ring.forEach((q, i) => i ? g.lineTo(q[0], q[1]) : g.moveTo(q[0], q[1])); g.closePath(); g.stroke();
-    g.fillStyle = '#c9c6bd'; g.beginPath(); g.arc(hub[0], hub[1], .04 * kw, 0, TAU); g.fill(); };
-  const sh = S[1], ey = sh - .19 * k, hw = lerp(.25, .15, side) * k, sq = 1 - .45 * side;
-  const body = () => { // the dark jacket (the part under the top only shows through the hole), collar and tie when he faces us
-    g.fillStyle = PAL.suit; g.beginPath(); g.moveTo(S[0] - hw * .9, sh + .7 * k); g.lineTo(S[0] - hw, sh + .06 * k); g.quadraticCurveTo(S[0] - hw * .95, sh, S[0] - hw * .6, sh - .02 * k);
-    g.lineTo(S[0] + hw * .6, sh - .02 * k); g.quadraticCurveTo(S[0] + hw * .95, sh, S[0] + hw, sh + .06 * k); g.lineTo(S[0] + hw * .9, sh + .7 * k); g.closePath(); g.fill();
-    if (ahead && side < .8) { const w = .08 * k * sq; g.fillStyle = '#f4efe6'; g.beginPath(); g.moveTo(S[0] - w, sh - .01 * k); g.lineTo(S[0], sh + .22 * k); g.lineTo(S[0] + w, sh - .01 * k); g.fill();
-      g.fillStyle = '#8f1d1d'; g.beginPath(); g.moveTo(S[0] - .02 * k * sq, sh + .03 * k); g.lineTo(S[0] + .02 * k * sq, sh + .03 * k); g.lineTo(S[0], sh + .22 * k); g.fill(); }
-    g.fillStyle = '#d7c3a3'; g.fillRect(S[0] - .045 * k, sh - .07 * k, .09 * k, .08 * k); };
-  const head = () => { egg(S[0], ey, k, ahead ? 1 : 0, 0);
-    const p = [S[0], ey - .1 * k]; // the red hat, as before, now on his head
-    g.fillStyle = '#8f2018'; g.beginPath(); g.ellipse(p[0], p[1], .3 * k, .08 * k, 0, 0, TAU); g.fill();
-    g.fillStyle = '#b52c22'; g.beginPath(); g.moveTo(p[0] - .15 * k, p[1]); g.lineTo(p[0] - .13 * k, p[1] - .16 * k); g.quadraticCurveTo(p[0], p[1] - .22 * k, p[0] + .13 * k, p[1] - .16 * k); g.lineTo(p[0] + .15 * k, p[1]); g.fill();
-    g.fillStyle = '#3a1410'; g.fillRect(p[0] - .15 * k, p[1] - .05 * k, .3 * k, .035 * k); };
-  const arms = () => { // both hands on the rim at ten to two, so they turn with the wheel; as he ducks they let go and follow him down
-    const let_go = clamp(dn / .35);
-    for (const [sz, a] of [[-1, Math.PI / 2 + 1.0], [1, Math.PI / 2 - 1.0]]) { const s3 = PL(D.x + .02, TOP + .02 - dn, sz * .2 * (1 - .3 * side)), h3 = rim(a), hn = PL(lerp(h3[0], D.x + .15, let_go), lerp(h3[1], TOP - .2 - dn, let_go), lerp(h3[2], sz * .15, let_go));
-      if (s3[2] < .1 || hn[2] < .1) continue; arm(s3[0], s3[1], hn[0], hn[1], k, PAL.suitLit); } };
-  holeClip(() => { if (ahead) { body(); head(); arms(); wheel(); } else { wheel(); body(); arms(); head(); } });
+  const S = PL(D.x, TOP + .02 - dn, 0); if (S[2] < .25) return; const k = kAt(S);
+  const [cx, cz] = worldToLocal(C.x, C.z), vx = cx - D.x, vl = Math.hypot(vx, cz) || 1, side = Math.abs(cz) / vl, ahead = vx > 0;
+  const wc = [D.wx, TOP - .05 - dn * .3, 0], ev = [-Math.sin(D.tilt), Math.cos(D.tilt), 0];
+  const rim = (a) => [wc[0] + D.wr * Math.sin(a) * ev[0], wc[1] + D.wr * Math.sin(a) * ev[1], wc[2] + D.wr * Math.cos(a)];
+  const kw = kAt(PL(...wc));
+  const wheelPart = (above) => { // the rim in short pieces; each piece is drawn in the pass for its side of the table top
+    g.lineCap = 'round'; for (let i = 0; i < 40; i++) { const a0 = i / 40 * TAU + st, a1 = (i + 1) / 40 * TAU + st, p0 = rim(a0), p1 = rim(a1);
+      if (((p0[1] + p1[1]) / 2 >= TOP) !== above) continue; const q0 = PL(...p0), q1 = PL(...p1); if (q0[2] < .1 || q1[2] < .1) continue;
+      seg(q0, q1, Math.max(2, .055 * kw), '#1a181c'); seg(q0, q1, Math.max(1, .016 * kw), '#5a5660'); }
+    if (!above) { const hub = PL(...wc); for (const a of [Math.PI / 2 + st, Math.PI * 7 / 6 + st, Math.PI * 11 / 6 + st]) seg(hub, PL(...rim(a)), .028 * kw, '#2c2a30');
+    } };
+  const sh = S[1], hw = lerp(.24, .15, side) * k, ey = sh - .2 * k;
+  const body = () => { g.fillStyle = PAL.suit; g.beginPath(); g.moveTo(S[0] - hw * .9, sh + .7 * k); g.lineTo(S[0] - hw, sh + .05 * k); g.quadraticCurveTo(S[0] - hw * .95, sh - .02 * k, S[0] - hw * .55, sh - .03 * k);
+    g.lineTo(S[0] + hw * .55, sh - .03 * k); g.quadraticCurveTo(S[0] + hw * .95, sh - .02 * k, S[0] + hw, sh + .05 * k); g.lineTo(S[0] + hw * .9, sh + .7 * k); g.closePath(); g.fill();
+    g.fillStyle = '#d7c3a3'; g.fillRect(S[0] - .04 * k, sh - .08 * k, .08 * k, .08 * k); };
+  const head = () => { egg(S[0], ey, k, ahead && side < .8 ? 1 : 0, 0);
+    const p = [S[0], ey - .125 * k]; // brim sits down on the crown of the egg
+    g.fillStyle = '#8f2018'; g.beginPath(); g.ellipse(p[0], p[1], .24 * k, .06 * k, 0, 0, TAU); g.fill();
+    g.fillStyle = '#b52c22'; g.beginPath(); g.moveTo(p[0] - .13 * k, p[1]); g.lineTo(p[0] - .11 * k, p[1] - .14 * k); g.quadraticCurveTo(p[0], p[1] - .19 * k, p[0] + .11 * k, p[1] - .14 * k); g.lineTo(p[0] + .13 * k, p[1]); g.fill();
+    g.fillStyle = '#3a1410'; g.fillRect(p[0] - .13 * k, p[1] - .045 * k, .26 * k, .03 * k); };
+  const arms = () => { const let_go = clamp(dn / .3); if (let_go > .95) return;
+    for (const [sz, a] of [[-1, Math.PI / 2 + .9], [1, Math.PI / 2 - .9]]) { const s3 = PL(D.x + .03, TOP - .02 - dn, sz * .15 * (1 - .3 * side)), h3 = rim(a + st), hn = PL(h3[0], h3[1] - let_go * .3, h3[2]);
+      if (s3[2] < .1 || hn[2] < .1) continue; g.strokeStyle = PAL.suitLit; g.lineWidth = .085 * k; g.lineCap = 'round'; g.beginPath(); g.moveTo(s3[0], s3[1]); g.lineTo(hn[0], hn[1]); g.stroke();
+      g.fillStyle = PAL.egg; g.beginPath(); g.arc(hn[0], hn[1], .035 * kw, 0, TAU); g.fill(); } };
+  holeClip(() => { if (ahead) { body(); head(); wheelPart(false); } else { wheelPart(false); body(); head(); } });
+  if (ahead) { wheelPart(true); arms(); } else { arms(); wheelPart(true); }
 }
 // ---------- draft 23: the everyday clutter on the real car's top (Robin's photos 30-33) ----------
 // Megaphones, laptops, coffee mugs, a hula hoop and a thermos, set out at the ends and edges, clear of every older prop
