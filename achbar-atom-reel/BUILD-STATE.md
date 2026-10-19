@@ -137,4 +137,5 @@ taint the canvas and `toDataURL` throws.
   red flags as the bullets?"): the check boxes became red pennants that run up their poles and flutter, one as
   each row's bullet and one per column, with a cloth snap each; the form header reads EVERY FLAG SOURCED.
   Only the changed plates were re-rendered (render.mjs on the span, frames copied into out/frames_index_0_118,
-  then one encode).
+  then one encode). 6d (Robin: flags instead of check boxes, yes, but not as bullets too): the bullet flags are gone;
+  each column flag flies, then folds down into its box and the tick draws in red, with a flap, a fold and a tick.

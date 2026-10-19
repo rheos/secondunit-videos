@@ -202,8 +202,10 @@ put(PL['P'] + 28 * BEAT - .15, snap(), -18)
 put(PL['F'] + .6, thump(.7), -16)                      # RED FLAGS
 for i in range(5):
     rt = PL['F'] + (3 + i * 2) * BEAT
-    put(rt, flap(), -22, pan=-.45)                      # the bullet flag
-    put(rt + .3, flap(), -17, pan=.15); put(rt + .48, flap(), -17, pan=.35)   # the column flags
+    put(rt, tick(4500, .015), -21, pan=-.2)             # the row rules itself
+    put(rt + .3, flap(), -17, pan=.15); put(rt + .48, flap(), -17, pan=.35)   # the column flags fly
+    put(rt + 1.25, slide(.35), -24, pan=.15); put(rt + 1.43, slide(.35), -24, pan=.35)   # and fold into their boxes
+    put(rt + 1.6, tick(6000, .02), -17, pan=.15); put(rt + 1.78, tick(6000, .02), -17, pan=.35)   # ticked
 put(PL['F'] + 13 * BEAT + .1, thump(.9), -12, pan=.2)  # SOUND FAMILIAR?
 # 9. the title block
 put(PL['G'] - .05, whoosh(1.1), -22)
