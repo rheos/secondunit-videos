@@ -70,18 +70,18 @@ S = 4 * BAR                                            # later plates sit at the
 PL_B, PL_C, PL_D, PL_E, PL_F = bar(1) + S, bar(5) + S, bar(8) + 2 * BEAT + S, bar(12) + S, bar(15) + S
 # the drafting (js/draft.js)
 put(1.6, pen(1.2), -26, pan=-.2)                       # construction lines
-for i in range(9): put(2.4 + i * .145, tick(3500, .012), -24, pan=-.3 + i * .07)   # nine edges
-put(3.7, pen(2.4), -23, pan=.1)                        # graphite layers
-put(4.8, pen(1.6), -27, pan=.3)                        # top hatching
-put(6.0, pen(1.3), -22, pan=-.1)                       # the cutaway's broken edge
-put(7.0, pen(1.0), -25)                                # centrelines
-for i in range(24): put(7.8 + i * .045, tick(5200, .006), -27, pan=-.4 + i * .035)  # control-rod openings
-put(8.6, pen(1.0), -25, pan=.2)                        # water-tube inset
-put(9.2, pen(1.2), -24, pan=.35)                       # dimensions
-for i in range(14): put(10.0 + i * .08, tick(4200, .008), -26, pan=.1)              # lettering
-put(bar(2), thump(1.0), -12, pan=-.3)                  # DECLASSIFIED
-put(12.2, whoosh(.9), -21)                             # scan bar: the 1945 original
-put(13.8, whoosh(.7, rev=True), -23)                   # paper swept off
+put(2.4, pen(1.5), -22, pan=.1)                        # the outlines of both halves
+put(3.8, pen(1.6), -24, pan=-.2)                       # lid lenses inked from the centre
+put(4.9, pen(1.5), -24, pan=.2)                        # bowl lenses
+put(6.2, pen(.7), -25)                                 # the floating cup
+put(6.8, tick(3000, .03), -18)                         # the initiator drops in
+put(7.2, pen(1.4), -26, pan=.1)                        # casing, detonators
+put(8.4, pen(1.2), -24, pan=-.4)                       # the wires
+for i in range(16): put(9.4 + i * .09, tick(4200, .008), -26, pan=.25)              # labels
+put(10.8, thump(.5), -20)                              # THE BOMB
+put(bt(7), thump(.8), -14, pan=-.3)                    # the core ringed: Hanford plutonium
+put(12.6, whoosh(.9), -21)                             # scan bar: the original sheet
+put(13.95, whoosh(.6, rev=True), -23)                  # paper swept off
 put(4.95 + S, thump(1.0), -14)                         # ROMANCING
 put(bt(1) + S, chime(880), -20)                        # the heart
 put(PL_B + .8, thump(.7), -16, pan=-.3)                # the stamp lands

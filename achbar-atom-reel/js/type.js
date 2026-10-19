@@ -49,7 +49,7 @@ function kin(str, x, y, t, t0, o = {}) {
   const stag = o.stag ?? .028, dur = o.dur ?? .2, n = str.length;
   return letters(str, x, y, o, (i) => {
     const k = eo(seg(t, t0 + i * stag, t0 + i * stag + dur));
-    let alpha = k, sc = 1, dy = 0;
+    let alpha = k * (o.alpha ?? 1), sc = 1, dy = 0;
     if ((o.style || 'slam') === 'slam') sc = lerp(1.7, 1, k); else dy = lerp(o.size * .45, 0, k);
     if (o.out !== undefined && t > o.out) { const q = eio(seg(t, o.out + i * .012, o.out + i * .012 + (o.outDur ?? .22))); alpha *= 1 - q; dy += q * o.size * .35; }
     const hot = o.hot && i >= o.hot[0] && i < o.hot[1];

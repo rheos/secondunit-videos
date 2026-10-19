@@ -70,18 +70,18 @@ function band(t, t0, t1, title, sub) {
 const SHIFT = 4 * BAR, END = 75.2;
 function plateA(t) {
   schBG(); X.globalAlpha = 1;
-  // I. the 1945 drawing drafted in animation (js/draft.js), then the original swept in under a scan bar to match
-  draftPile(t, { alpha: lerp(1, .3, eio(pr(t, 13.9, 14.7))) * (1 - pr(t, 19.3, 20.07)) });
-  stampDeclassified(t, bar(2), 1 - pr(t, 13.9, 14.5));
-  const PZ = dz(t), PH0 = printH('breactor-pile', DR.PW) * PZ, xa = 960 - DR.PW * PZ / 2 - 30, xb = 960 + DR.PW * PZ / 2 + 30;
-  const sweep = eio(pr(t, 12.2, 13.1)), lift = pr(t, 13.8, 14.5), sx = lerp(xa, xb, sweep);
+  // I. HAER sheet 3, the Trinity bomb, drafted in animation (js/bomb.js), then the original swept in to match
+  draftBomb(t, { alpha: lerp(1, .3, eio(pr(t, 13.9, 14.7))) * (1 - pr(t, 19.3, 20.07)) });
+  const PZ = bz_(t), PH0 = printH(BB.key, BB.PW) * PZ, xa = 960 - BB.PW * PZ / 2 - 30, xb = 960 + BB.PW * PZ / 2 + 30;
+  const sweep = eio(pr(t, 12.6, 13.5)), lift = pr(t, 13.95, 14.55), sx = lerp(xa, xb, sweep);
   const sx2 = lerp(xb, xa, eio(lift));   // the paper is swept off again, right to left
-  if (sweep > 0 && lift < 1) print('breactor-pile', 960, DR.PY, DR.PW, { z: PZ, mount: 10, clip: [0, 0, Math.min(sx, sx2), H] });
-  if (lift > 0 && lift < 1) { const y0 = DR.PY - PH0 / 2 - 20, y1 = DR.PY + PH0 / 2 + 20; gl(sx2, y0, sx2, y1, C.white, .95, 2.5); }
-  if (sweep > 0 && sweep < 1) { const y0 = DR.PY - PH0 / 2 - 20, y1 = DR.PY + PH0 / 2 + 20; X.save(); X.globalCompositeOperation = 'lighter'; const g = X.createLinearGradient(sx, 0, sx + 90, 0); g.addColorStop(0, 'rgba(143,227,255,.35)'); g.addColorStop(1, 'rgba(143,227,255,0)'); X.fillStyle = g; X.fillRect(sx, y0, 90, y1 - y0); X.restore(); gl(sx, y0, sx, y1, C.white, .95, 2.5); }
-  band(t, 12.5, 14.1, 'THE ORIGINAL: HANFORD B REACTOR, THE GRAPHITE PILE, 1945', 'DRAWING HTM 1945-405 · DECLASSIFIED · LIBRARY OF CONGRESS, HAER WA-164');
+  if (sweep > 0 && lift < 1) print(BB.key, 960, BB.PY, BB.PW, { z: PZ, mount: 10, clip: [0, 0, Math.min(sx, sx2), H] });
+  if (lift > 0 && lift < 1) { const y0 = BB.PY - PH0 / 2 - 20, y1 = BB.PY + PH0 / 2 + 20; gl(sx2, y0, sx2, y1, C.white, .95, 2.5); }
+  if (sweep > 0 && sweep < 1) { const y0 = BB.PY - PH0 / 2 - 20, y1 = BB.PY + PH0 / 2 + 20; X.save(); X.globalCompositeOperation = 'lighter'; const g = X.createLinearGradient(sx, 0, sx + 90, 0); g.addColorStop(0, 'rgba(143,227,255,.35)'); g.addColorStop(1, 'rgba(143,227,255,0)'); X.fillStyle = g; X.fillRect(sx, y0, 90, y1 - y0); X.restore(); gl(sx, y0, sx, y1, C.white, .95, 2.5); }
+  coreNote(t, bt(7), 1 - pr(t, 14.0, 14.5));
+  band(t, 12.8, 14.3, 'THE ORIGINAL: TRINITY SITE, SHEET 3, “THE BOMB”', 'HISTORIC AMERICAN ENGINEERING RECORD, 1985 · LIBRARY OF CONGRESS · AFTER LANSING LAMONT, DAY OF TRINITY (1965)');
   schFrame('0', '', '', C.lav);
-  plateLabel('FIG. 0', t < 12.2 ? 'DRAFTING, AFTER HANFORD DRAWING HTM 1945-405' : 'ROMANCING THE ATOM · A GRAPHICS TEST', '', t, t < 12.2 ? .8 : 12.3);
+  plateLabel('FIG. 0', t < 12.6 ? 'DRAFTING, AFTER HAER TRINITY SITE SHEET 3' : 'ROMANCING THE ATOM · A GRAPHICS TEST', '', t, t < 12.6 ? .8 : 12.7);
   titleSeq(t - SHIFT);
 }
 // the title, in the old plate I's score time

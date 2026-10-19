@@ -90,3 +90,11 @@ taint the canvas and `toDataURL` throws.
   holds about 8.6 s. Film is 75.2 s. A reactor, not a bomb: we have the real reactor drawing to match, and a
   weapon design is not ours to draw. `renders/atom-reel_test01_draft4_720p.mp4`. Flash PASS, -14.1 LUFS, peak
   -2.1 dBFS. Not uploaded. Render: `AUDIO=assets/mix.wav node render.mjs 0 75.2 renders/<name>.mp4 4 24 0.6667`.
+- Draft 5 (2026-10-19, Robin: the reactor read as a block; open on the bomb): the opening now drafts HAER sheet 3,
+  "The Bomb" (`js/bomb.js`): construction axes, both halves' outlines, the lens faces inked in from each centre (the
+  sheet's own linework, revealed), the floating cup, the initiator, casing and detonators, the wires, the labels in the
+  sheet's wording, CONCEPTUAL ILLUSTRATION and THE BOMB. The core is ringed in magenta: "plutonium from the Hanford B
+  Reactor". Then the original sheet sweeps in under a scan bar and off again before the title. It draws only what the
+  public sheet shows. The reactor drafting (`js/draft.js`, draft 4) stays in the repo for a later beat; only its
+  helpers are used now. `renders/atom-reel_test01_draft5_720p.mp4`, 75.2 s. Flash PASS, -14.1 LUFS, peak -2.1 dBFS.
+  Not uploaded. Film research: `RESEARCH-romancing-the-atom.md`.
