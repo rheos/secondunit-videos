@@ -307,15 +307,34 @@ function seatUnder(s, t, i) { // bracket + crutch, always behind the sitter
   const G = seatGeom(s), sg = t != null ? tableSag(G.beamA[0], t) : 0, A = PL(G.beamA[0], G.beamA[1] - sg, G.beamA[2]), B = PL(...G.beamB), Cc = PL(...G.beamC); if (B[2] < .25) return; const k = kAt(B);
   seg(Cc, B, .09 * k, '#3d2412'); seg(A, B, .08 * k, '#4a2a14'); seg(A, Cc, .06 * k, '#3d2412');
   g.fillStyle = '#c9a24a'; for (const p of [A, B]) { if (p[2] < .1) continue; g.beginPath(); g.arc(p[0], p[1], .035 * kAt(p), 0, TAU); g.fill(); }
+  officeBase(s);
   const cs = t != null ? crutchSoft(t, i) : { bend: 0, kink: 0 };
   crutch(G.crutch[0], G.crutch[1], .5, cs.bend, cs.kink);
 }
-function seatTop(s, drop) { // the low seat pan and its short leather back (drop: the chairman's chair sinks when its crutch buckles)
+// draft 23 (Robin, the real car's photos 31 and 33): black leather executive office chairs. Same place, same low seat
+// height, same brackets and crutches; a padded seat, a tall padded back, two armrests, and (seatUnder) a swivel post on
+// a five-star base whose casters hang just clear of the sand.
+function officeBase(s) { // draft 23: the swivel post and the five-star base under the seat, casters just off the sand
+  const post0 = PL(s.x, SEAT - .08, s.z), hub = PL(s.x, .15, s.z); if (post0[2] < .25 || hub[2] < .25) return; const k = kAt(hub);
+  const legs = []; for (let j = 0; j < 5; j++) { const a = j / 5 * TAU + .3, x = s.x + Math.cos(a) * .27, z = s.z + Math.sin(a) * .27; legs.push([PL(x, .1, z), PL(x, .05, z)]); }
+  legs.sort((u, v) => v[0][2] - u[0][2]);
+  for (const [f, w] of legs) { if (f[2] < .25) continue; seg(hub, f, .04 * k, '#121113'); g.fillStyle = '#0a0a0a'; g.beginPath(); g.arc(w[0], w[1], .035 * kAt(w), 0, TAU); g.fill(); }
+  seg(post0, hub, .045 * k, '#3a3a40'); seg(post0, hub, .015 * k, 'rgba(220,220,230,.35)'); // the chrome gas lift
+}
+function seatTop(s, drop) { // the padded seat, tall padded back and armrests (drop: the chairman's chair sinks when its crutch buckles)
   const F = seatFrame(s), dr = drop || 0, c = (a, b, y) => PL(...sp(s.x, s.z, F, a, b, y - dr * (a < 0 ? 1.4 : .6)));
-  poly([c(.2, -.25, SEAT - .07), c(.2, .25, SEAT - .07), c(-.2, .25, SEAT - .07), c(-.2, -.25, SEAT - .07)], '#3d2412');
-  poly([c(.2, -.25, SEAT), c(.2, .25, SEAT), c(-.2, .25, SEAT), c(-.2, -.25, SEAT)], '#7a4e26');
-  const bk = [c(-.2, -.23, SEAT + .02), c(-.2, .23, SEAT + .02), c(-.24 - dr, .2, SEAT + .27), c(-.24 - dr, -.2, SEAT + .27)]; poly(bk, '#7b2a1c', '#3a140c', 1.5);
-  if (!ok(bk)) return; const k = kAt(bk[0]); g.fillStyle = '#d9b45a'; for (let j = 0; j < 4; j++) { const p = c(-.24 - dr, -.15 + j * .1, SEAT + .23); if (p[2] < .1) continue; g.beginPath(); g.arc(p[0], p[1], .02 * k, 0, TAU); g.fill(); }
+  const pan = () => { poly([c(.22, -.25, SEAT - .08), c(.22, .25, SEAT - .08), c(-.2, .25, SEAT - .08), c(-.2, -.25, SEAT - .08)], '#0d0b0b');
+    const top = [c(.22, -.24, SEAT - .01), c(.24, 0, SEAT + .01), c(.22, .24, SEAT - .01), c(-.2, .24, SEAT + .01), c(-.2, -.24, SEAT + .01)]; poly(top, '#26211f', '#0b0909', 1.2);
+    if (ok(top)) seg(c(.16, -.18, SEAT + .015), c(.16, .18, SEAT + .015), Math.max(1, .012 * kAt(top[1])), 'rgba(150,140,130,.35)'); };
+  const BH = .62, ba = (u) => -.2 - dr - .08 * u, back = () => { // the back: two stacked cushions, rounded at the top, leaning back a little
+    const pts = []; pts.push(c(ba(0), -.22, SEAT + .04)); for (let i = 0; i <= 10; i++) { const q = i / 10 * Math.PI, u = .82 + .18 * Math.sin(q); pts.push(c(ba(u), -.21 * Math.cos(q), SEAT + BH * u + .04 * Math.sin(q))); } pts.push(c(ba(0), .22, SEAT + .04));
+    poly(pts, '#1d1a18', '#080707', 1.5); if (!ok(pts)) return; const k = kAt(pts[0]);
+    for (const u of [.3, .58]) seg(c(ba(u), -.19, SEAT + BH * u), c(ba(u), .19, SEAT + BH * u), Math.max(1, .014 * k), 'rgba(0,0,0,.6)'); // tufting seams
+    seg(c(ba(.78) + .005, -.15, SEAT + BH * .74), c(ba(.78) + .005, .12, SEAT + BH * .74), Math.max(1, .02 * k), 'rgba(170,160,150,.22)'); }; // a soft leather sheen
+  const arms = () => { for (const b of [-.28, .28]) { const p0 = c(-.06, b, SEAT - .02), p1 = c(-.06, b, SEAT + .2), a0 = c(-.16, b, SEAT + .21), a1 = c(.14, b, SEAT + .21); if (!ok([p0, p1, a0, a1])) continue; const k = kAt(p1);
+    seg(p0, p1, .035 * k, '#111012'); seg(a0, a1, .07 * k, '#1b1817'); seg(a0, a1, .03 * k, 'rgba(160,150,140,.18)'); } };
+  const backFar = c(ba(.5), 0, SEAT + .3)[2] > c(.1, 0, SEAT)[2];
+  if (backFar) { back(); pan(); arms(); } else { pan(); arms(); back(); }
 }
 function kneeIK(h, f, B) { // two-bone leg: thigh .42, shin .56, the knee bends toward B
   const a = .42, b = .56, d = [f[0] - h[0], f[1] - h[1], f[2] - h[2]], L = Math.hypot(...d);
@@ -454,6 +473,11 @@ function tableBody(t) {
       seg(a0, b0, .07 * kAt(a0), PAL.mahogany); g.fillStyle = PAL.mahogany; g.beginPath(); g.arc(b0[0], b0[1], .05 * kAt(b0), 0, TAU); g.fill(); }
     g.save(); g.globalAlpha = .25 * clamp(sa / .3); for (let r = 0; r < 3; r++) { const R = ((t * .5 + r / 3) % 1) * 2.4 + .7, ps = []; for (let i = 0; i < 28; i++) { const q = i / 28 * TAU, x = Math.cos(q) * R * 1.4; ps.push(c(x, TOP + .003 - sy(x), Math.sin(q) * R * .55)); } polyN(ps, null, PAL.mahoganyLit, 2); } g.restore();
   }
+  { // draft 23: the varnish reads glossy, a soft highlight band running the length of the top (dimmer as night falls)
+    const nA = typeof nightAmt === 'function' ? nightAmt(t) : 0, A = c(0, TOP, -TD), B = c(0, TOP, TD);
+    if (A[2] > .1 && B[2] > .1 && Math.hypot(B[0] - A[0], B[1] - A[1]) > 2) { const hg = g.createLinearGradient(A[0], A[1], B[0], B[1]), al = .2 * (1 - .75 * nA);
+      hg.addColorStop(0, 'rgba(255,236,214,0)'); hg.addColorStop(.5, 'rgba(255,236,214,0)'); hg.addColorStop(.62, `rgba(255,236,214,${al})`); hg.addColorStop(.68, `rgba(255,240,222,${al * 1.2})`); hg.addColorStop(.8, 'rgba(255,236,214,0)'); hg.addColorStop(1, 'rgba(255,236,214,0)');
+      poly(tp, hg); } }
   chess(t);
   // the hole in the middle: the driver's seat
   const ring = (rx, rz) => { const r = []; for (let i = 0; i < 28; i++) { const a = i / 28 * TAU; r.push(c(Math.cos(a) * rx, TOP, Math.sin(a) * rz)); } return r; };
@@ -643,7 +667,7 @@ function drawCar(t) {
   PIN_A = pinAng(t); PIN_B = pinBlur(t);
   seats.filter((x) => x.d > mid).forEach(seatDraw);
   if (typeof rapperCar === 'function') rapperCar(t, 0); // draft 13: the diva when she is on the far side of the table
-  tableBody(t); driverHat(); lawMarks(t); dayPlate(t);
+  tableBody(t); driverHat(t); lawMarks(t); dayPlate(t);
   { const G = gavelLocal(t, null); if (gavelHold(t) <= 0) drawGavel(t, G); } // the gavel lying on the table
   tablePropsBack(t); ballotStack(t);
   seats.filter((x) => x.d <= mid).forEach((x) => { seatDraw(x); if (!x.up) CAR_NEAR.push(x); });
@@ -664,7 +688,28 @@ function minutesPost(t, at) { // the minute-taker posts the finished sheet into 
 // colour and read as see-through; here their bodies are darkened into solid backlit silhouettes with a rim of firelight
 // on the edge that faces the fire. Their eggs, hats and props stay as graded.
 const SILC = mkCanvas(), silg = SILC.getContext('2d'), RIMC = mkCanvas(), rimg = RIMC.getContext('2d');
+// draft 23 (Robin's photo 31): at night blue light glows from under the table's edge onto the skirt and the playa.
+// Light only, so alpha is fine. The ground pool is drawn on the main canvas after the grade, under the car layer
+// (render.js); the skirt's lit hem is drawn on the car layer after its grade (carGlow).
+function underglowAmt(t) { return typeof nightAmt === 'function' ? nightAmt(t) : 0; }
+function carUnderglowGround(t) {
+  const n = underglowAmt(t); if (n < .01) return; g.save(); g.globalCompositeOperation = 'lighter';
+  for (const [e, a] of [[.1, .16], [.35, .12], [.65, .09], [1.0, .06], [1.45, .04]]) { const x = TL * .97 + e, z = TD * .93 + e, pts = [];
+    for (const [px, pz] of [[-x, -z], [x, -z], [x, z], [-x, z]]) pts.push(PL(px, .02, pz));
+    const q = []; for (let i = 0; i < 4; i++) for (let j = 0; j < 8; j++) { const p0 = pts[i], p1 = pts[(i + 1) % 4], u = j / 8, w = [lerp([-x, x, x, -x][i], [-x, x, x, -x][(i + 1) % 4], u), lerp([-z, -z, z, z][i], [-z, -z, z, z][(i + 1) % 4], u)]; q.push(PL(w[0], .02, w[1])); }
+    polyN(q, `rgba(40,110,255,${a * n})`); }
+  g.restore();
+}
+function carUnderglowSkirt(t) {
+  const n = underglowAmt(t); if (n < .01) return; const [cx, cz] = worldToLocal(C.x, C.z); g.save(); g.globalCompositeOperation = 'lighter';
+  const faces = [[[-TL * .97, -TD * .93], [TL * .97, -TD * .93], cz < -TD * .93], [[TL * .97, -TD * .93], [TL * .97, TD * .93], cx > TL * .97], [[TL * .97, TD * .93], [-TL * .97, TD * .93], cz > TD * .93], [[-TL * .97, TD * .93], [-TL * .97, -TD * .93], cx < -TL * .97]];
+  for (const [a, b, vis] of faces) { if (!vis) continue; const N = 10, pts = []; for (let i = 0; i <= N; i++) pts.push(PL(lerp(a[0], b[0], i / N), .02, lerp(a[1], b[1], i / N))); for (let i = N; i >= 0; i--) pts.push(PL(lerp(a[0], b[0], i / N), .95, lerp(a[1], b[1], i / N)));
+    if (!ok(pts)) continue; const m0 = PL((a[0] + b[0]) / 2, .1, (a[1] + b[1]) / 2), m1 = PL((a[0] + b[0]) / 2, .95, (a[1] + b[1]) / 2); const lg = g.createLinearGradient(m0[0], m0[1], m1[0], m1[1]);
+    lg.addColorStop(0, `rgba(60,130,255,${.55 * n})`); lg.addColorStop(.45, `rgba(50,110,255,${.25 * n})`); lg.addColorStop(1, 'rgba(40,90,255,0)'); poly(pts, lg); }
+  g.restore();
+}
 function carGlow(t) {
+  carUnderglowSkirt(t);
   const b = typeof burnAmt === 'function' ? burnAmt(t) : 0; if (b < .05) return;
   g.save(); g.globalCompositeOperation = 'source-atop';
   const { p } = manGeom(); const rg = g.createRadialGradient(p[0], p[1] - 200, 50, p[0], p[1] - 200, W * .9); rg.addColorStop(0, `rgba(255,150,70,${.32 * b})`); rg.addColorStop(1, `rgba(255,110,50,${.1 * b})`);

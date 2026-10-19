@@ -682,17 +682,104 @@ function truth(t, emissive) { // "put the truth in a box": a small light carried
   if (emissive) { g.save(); g.globalCompositeOperation = 'lighter'; const rg = g.createRadialGradient(p[0], p[1], 0, p[0], p[1], .22 * k); rg.addColorStop(0, 'rgba(255,240,190,.7)'); rg.addColorStop(1, 'rgba(255,200,120,0)'); g.fillStyle = rg; g.fillRect(p[0] - .22 * k, p[1] - .22 * k, .44 * k, .44 * k); g.restore(); }
   else { g.fillStyle = '#fff6d8'; g.beginPath(); g.arc(p[0], p[1], .08 * k, 0, TAU); g.fill(); }
 }
-function driverHat() { // the unseen driver: only a red hat brim showing in the hole
-  const p = PL(0, TOP - .05, 0); if (p[2] < .2) return; const k = kAt(p);
-  g.fillStyle = '#8f2018'; g.beginPath(); g.ellipse(p[0], p[1], .3 * k, .08 * k, 0, 0, TAU); g.fill();
-  g.fillStyle = '#b52c22'; g.beginPath(); g.moveTo(p[0] - .15 * k, p[1]); g.lineTo(p[0] - .13 * k, p[1] - .16 * k); g.quadraticCurveTo(p[0], p[1] - .22 * k, p[0] + .13 * k, p[1] - .16 * k); g.lineTo(p[0] + .15 * k, p[1]); g.fill();
-  g.fillStyle = '#3a1410'; g.fillRect(p[0] - .15 * k, p[1] - .05 * k, .3 * k, .035 * k);
+// draft 23 (Robin on d22b: the wheel shows above the table, so show the driver, or the red hat needs explaining): the
+// driver in the hat hole, a faceless egg in a dark suit, the same red hat, shoulders up, both hands on a steering wheel
+// whose top quarter rises above the table top. He faces the way the car drives (+x) and steers with the car's turns.
+// He makes room by ducking down out of sight (movement, never a fade) whenever something uses the hole or the drone
+// flies through it: [start down, down, start up, up] in song seconds; d = how far down (1 = all of him under the top).
+const DRIVER = { x: -.1, wx: .3, wr: .2, tilt: .5,
+  ducks: [[28.1, 28.65, 34.9, 35.5, 1],    // the ear and the flying recorders: the drone hangs just behind the hole (29.3-34.05)
+    [126.9, 127.45, 131.0, 131.6, 1], // the dime and the iris into the world inside the table (127.85-130.6)
+    [46.0, 46.5, 51.5, 52.1, 1],            // grin 1: the drone comes down off the hat (46-47) and through the hole's column (49.1-51.1)
+    [87.0, 87.5, 90.0, 90.6, 1],            // the drone skims past the hole at head height (87.5-89.5)
+    [103.2, 103.75, 108.8, 109.4, 1],       // grin 2: the drone through the hole's column (104.05-108.4)
+    [144.0, 144.55, 148.0, 148.6, 1],       // Little Bob comes up through the hole (144.77-147.75)
+    [179.4, 179.95, 185.3, 185.9, 1],       // grin 3: the drone through the hole's column (180.15-184.8)
+    [193.6, 194.1, 197.5, 198.1, 1],        // the giant gavel stands in the hole (194.4-197.1)
+    [235.65, 235.95, 236.7, 237.15, .55]] };   // the minutes are posted into the hole (235.96-236.51): he bobs down under the sheet
+function driverDuck(t) { let d = 0; for (const [a, b, c, e, m] of DRIVER.ducks) d = Math.max(d, m * ease(t, a, b) * (1 - ease(t, c, e))); return d; }
+function driverSteer(t) { return clamp((yaw(t + .25) - yaw(t - .25)) * 2.2, -1.4, 1.4) + .05 * Math.sin(t * .73) + .025 * Math.sin(t * 1.9 + 1); } // wheel turn, radians
+function driverHat(t) {
+  if (t == null) t = 0; const D = DRIVER, dn = driverDuck(t) * .9, st = driverSteer(t);
+  const S = PL(D.x, TOP + .04 - dn, 0); if (S[2] < .25) return; const k = kAt(S);
+  // where the lens is, in car-local metres, so the shoulders narrow in profile and the draw order follows the depth
+  const [cx, cz] = worldToLocal(C.x, C.z), vx = cx - D.x, vz = cz, vl = Math.hypot(vx, vz) || 1, side = Math.abs(vz) / vl, ahead = vx > 0;
+  const wc = [D.wx, TOP - .09, 0], ev = [-Math.sin(D.tilt), Math.cos(D.tilt), 0]; // the wheel's centre, and its "up" in its own plane (leans back toward him)
+  const rim = (a) => [wc[0] + D.wr * Math.sin(a + st) * ev[0], wc[1] + D.wr * Math.sin(a + st) * ev[1], wc[2] + D.wr * Math.cos(a + st)];
+  const wheel = () => { const ring = []; for (let i = 0; i < 30; i++) ring.push(PL(...rim(i / 30 * TAU))); if (!ok(ring)) return; const kw = kAt(PL(...wc));
+    const hub = PL(...wc), col = PL(wc[0] + .12, wc[1] - .45, 0); seg(hub, col, .05 * kw, '#16131a');
+    for (const a of [Math.PI / 2, Math.PI * 7 / 6, Math.PI * 11 / 6]) seg(hub, PL(...rim(a)), .025 * kw, '#2c2a30');
+    g.strokeStyle = '#141216'; g.lineWidth = Math.max(1.5, .045 * kw); g.lineJoin = 'round'; g.beginPath(); ring.forEach((q, i) => i ? g.lineTo(q[0], q[1]) : g.moveTo(q[0], q[1])); g.closePath(); g.stroke();
+    g.fillStyle = '#c9c6bd'; g.beginPath(); g.arc(hub[0], hub[1], .04 * kw, 0, TAU); g.fill(); };
+  const sh = S[1], ey = sh - .19 * k, hw = lerp(.25, .15, side) * k, sq = 1 - .45 * side;
+  const body = () => { // the dark jacket (the part under the top only shows through the hole), collar and tie when he faces us
+    g.fillStyle = PAL.suit; g.beginPath(); g.moveTo(S[0] - hw * .9, sh + .7 * k); g.lineTo(S[0] - hw, sh + .06 * k); g.quadraticCurveTo(S[0] - hw * .95, sh, S[0] - hw * .6, sh - .02 * k);
+    g.lineTo(S[0] + hw * .6, sh - .02 * k); g.quadraticCurveTo(S[0] + hw * .95, sh, S[0] + hw, sh + .06 * k); g.lineTo(S[0] + hw * .9, sh + .7 * k); g.closePath(); g.fill();
+    if (ahead && side < .8) { const w = .08 * k * sq; g.fillStyle = '#f4efe6'; g.beginPath(); g.moveTo(S[0] - w, sh - .01 * k); g.lineTo(S[0], sh + .22 * k); g.lineTo(S[0] + w, sh - .01 * k); g.fill();
+      g.fillStyle = '#8f1d1d'; g.beginPath(); g.moveTo(S[0] - .02 * k * sq, sh + .03 * k); g.lineTo(S[0] + .02 * k * sq, sh + .03 * k); g.lineTo(S[0], sh + .22 * k); g.fill(); }
+    g.fillStyle = '#d7c3a3'; g.fillRect(S[0] - .045 * k, sh - .07 * k, .09 * k, .08 * k); };
+  const head = () => { egg(S[0], ey, k, ahead ? 1 : 0, 0);
+    const p = [S[0], ey - .1 * k]; // the red hat, as before, now on his head
+    g.fillStyle = '#8f2018'; g.beginPath(); g.ellipse(p[0], p[1], .3 * k, .08 * k, 0, 0, TAU); g.fill();
+    g.fillStyle = '#b52c22'; g.beginPath(); g.moveTo(p[0] - .15 * k, p[1]); g.lineTo(p[0] - .13 * k, p[1] - .16 * k); g.quadraticCurveTo(p[0], p[1] - .22 * k, p[0] + .13 * k, p[1] - .16 * k); g.lineTo(p[0] + .15 * k, p[1]); g.fill();
+    g.fillStyle = '#3a1410'; g.fillRect(p[0] - .15 * k, p[1] - .05 * k, .3 * k, .035 * k); };
+  const arms = () => { // both hands on the rim at ten to two, so they turn with the wheel; as he ducks they let go and follow him down
+    const let_go = clamp(dn / .35);
+    for (const [sz, a] of [[-1, Math.PI / 2 + 1.0], [1, Math.PI / 2 - 1.0]]) { const s3 = PL(D.x + .02, TOP + .02 - dn, sz * .2 * (1 - .3 * side)), h3 = rim(a), hn = PL(lerp(h3[0], D.x + .15, let_go), lerp(h3[1], TOP - .2 - dn, let_go), lerp(h3[2], sz * .15, let_go));
+      if (s3[2] < .1 || hn[2] < .1) continue; arm(s3[0], s3[1], hn[0], hn[1], k, PAL.suitLit); } };
+  holeClip(() => { if (ahead) { body(); head(); arms(); wheel(); } else { wheel(); body(); arms(); head(); } });
+}
+// ---------- draft 23: the everyday clutter on the real car's top (Robin's photos 30-33) ----------
+// Megaphones, laptops, coffee mugs, a hula hoop and a thermos, set out at the ends and edges, clear of every older prop
+// and beat (they are drawn before all of them, so nothing older is ever covered), and the round mirror sign on its pole
+// at the far corner of the +x end. Car-local metres; they ride with the table.
+const EVERYDAY = {
+  megaphones: [[3.9, -.85, .35], [2.15, 1.12, -2.6]],          // x, z, heading of the bell (radians in the top's plane)
+  laptops: [[.55, 1.12, 1], [3.25, 1.12, 1]], // x, z, the side its user sits on (+1 far row, -1 near row)
+  mugs: [[-3.12, .72, '#f4f1ea'], [2.5, -1.22, '#2f6fb5'], [-1.88, -1.22, '#c7362b']],
+  hoop: [-3.05, .05, .42], thermos: [3.85, -.78], sign: [4.2, 1.33] };
+function everydayProps(t) {
+  const sg = (x) => tableSag(x, t), E = EVERYDAY;
+  { const [hx, hz, R] = E.hoop, y = TOP + .012 - sg(hx), N = 32, pts = []; for (let i = 0; i <= N; i++) { const a = i / N * TAU; pts.push(PL(hx + Math.cos(a) * R, y, hz + Math.sin(a) * R)); }
+    if (pts.every((q) => q[2] > .2)) { const k = kAt(PL(hx, y, hz)); g.lineCap = 'butt'; for (let i = 0; i < N; i++) { g.strokeStyle = i % 2 ? '#4f9e2f' : '#dfe63c'; g.lineWidth = Math.max(1.5, .028 * k); g.beginPath(); g.moveTo(pts[i][0], pts[i][1]); g.lineTo(pts[i + 1][0], pts[i + 1][1]); g.stroke(); } } }
+  for (const [x, z, side] of E.laptops) { const y = TOP + .005 - sg(x), hw = .17, d = .12, hz = z - side * d, lean = .26, lh = .23; // the hinge is on the table-middle side, the screen faces the user
+    const base = [PL(x - hw, y, z + side * d), PL(x + hw, y, z + side * d), PL(x + hw, y + .015, hz), PL(x - hw, y + .015, hz)];
+    const lt = (sx) => PL(x + sx * hw, y + .015 + lh * Math.cos(lean), hz - side * lh * Math.sin(lean)), lid = [PL(x - hw, y + .015, hz), PL(x + hw, y + .015, hz), lt(1), lt(-1)];
+    if (!ok(base) || !ok(lid)) continue; const k = kAt(base[0]);
+    const camSide = (worldToLocal(C.x, C.z)[1] - hz) * side > 0; // does the lens see the screen or the lid's back?
+    const drawBase = () => { poly(base, '#b9bcc2', '#6d7076', 1); seg(PL(x - hw * .8, y + .012, z + side * d * .2), PL(x + hw * .8, y + .012, z + side * d * .2), Math.max(1, .05 * k), '#3a3d44'); };
+    const drawLid = () => { poly(lid, camSide ? '#22324a' : '#8d9097', '#55585e', 1); if (camSide) poly([PL(x - hw * .85, y + .04, hz), PL(x + hw * .85, y + .04, hz), PL(x + hw * .85, y + .015 + lh * .9 * Math.cos(lean), hz - side * lh * .9 * Math.sin(lean)), PL(x - hw * .85, y + .015 + lh * .9 * Math.cos(lean), hz - side * lh * .9 * Math.sin(lean))], '#3d6ea8'); };
+    if (camSide) { drawLid(); drawBase(); } else { drawBase(); drawLid(); } }
+  for (const [x, z, col] of E.mugs) { const y = TOP - sg(x), r = .045, h = .1, b = PL(x, y, z), tp = PL(x, y + h, z); if (b[2] < .2) continue; const k = kAt(b), rx = r * k, ry = Math.max(1, Math.abs(PL(x, y + h, z + r)[1] - tp[1]));
+    g.fillStyle = col; g.beginPath(); g.ellipse(b[0], b[1], rx, ry, 0, 0, Math.PI); g.lineTo(tp[0] - rx, tp[1]); g.ellipse(tp[0], tp[1], rx, ry, 0, Math.PI, 0, true); g.closePath(); g.fill(); g.strokeStyle = 'rgba(0,0,0,.3)'; g.lineWidth = 1; g.stroke();
+    g.strokeStyle = col; g.lineWidth = Math.max(1, .014 * k); g.beginPath(); g.arc(b[0] + rx * 1.05, (b[1] + tp[1]) / 2, rx * .45, -1.2, 1.2); g.stroke();
+    g.fillStyle = '#3b2215'; g.beginPath(); g.ellipse(tp[0], tp[1], rx * .85, ry * .85, 0, 0, TAU); g.fill(); }
+  { const [x, z] = E.thermos, y = TOP - sg(x), r = .055, b = PL(x, y, z), m = PL(x, y + .25, z), tp = PL(x, y + .32, z); if (b[2] > .2) { const k = kAt(b), rx = r * k;
+    const cyl = (p0, p1, c0) => { g.fillStyle = c0; g.beginPath(); g.moveTo(p0[0] - rx, p0[1]); g.lineTo(p1[0] - rx, p1[1]); g.lineTo(p1[0] + rx, p1[1]); g.lineTo(p0[0] + rx, p0[1]); g.closePath(); g.fill(); };
+    const sgr = g.createLinearGradient(b[0] - rx, 0, b[0] + rx, 0); sgr.addColorStop(0, '#6f777c'); sgr.addColorStop(.35, '#d4dade'); sgr.addColorStop(1, '#7c858a'); cyl(b, m, sgr); cyl(m, tp, '#b5352a');
+    g.fillStyle = '#8e2a21'; g.beginPath(); g.ellipse(tp[0], tp[1], rx, rx * .3, 0, 0, TAU); g.fill(); } }
+  for (const [x, z, hd] of E.megaphones) { const y = TOP - sg(x), L = .46, ca = Math.cos(hd), sa = Math.sin(hd), m0 = [x - ca * L / 2, y + .05, z - sa * L / 2], m1 = [x + ca * L / 2, y + .14, z + sa * L / 2];
+    const ring = (c, r) => { const ps = []; for (let i = 0; i < 20; i++) { const a = i / 20 * TAU; ps.push(PL(c[0] - sa * Math.cos(a) * r, c[1] + Math.sin(a) * r, c[2] + ca * Math.cos(a) * r)); } return ps; };
+    const r0 = ring(m0, .045), r1 = ring(m1, .14); if (!ok(r0) || !ok(r1)) continue;
+    const hull = (A, B) => { const pts = A.concat(B); pts.sort((p, q) => p[0] - q[0] || p[1] - q[1]); const cr = (o, a, b) => (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]); const lo = [], up = [];
+      for (const p of pts) { while (lo.length > 1 && cr(lo[lo.length - 2], lo[lo.length - 1], p) <= 0) lo.pop(); lo.push(p); } for (let i = pts.length - 1; i >= 0; i--) { const p = pts[i]; while (up.length > 1 && cr(up[up.length - 2], up[up.length - 1], p) <= 0) up.pop(); up.push(p); } return lo.slice(0, -1).concat(up.slice(0, -1)); };
+    const bellFar = PL(...m1)[2] > PL(...m0)[2];
+    if (bellFar) poly(r1, '#a9a69f'); // the bell's dark inside, when it opens away from us (seen through)
+    poly(hull(r0, r1), '#f2f0ea', 'rgba(0,0,0,.28)', 1);
+    const hd0 = PL(x - ca * .05, y + .03, z - sa * .05), hd1 = PL(x - ca * .05, y - .0, z - sa * .05); seg(hd0, hd1, .04 * kAt(hd0), '#2a2a2e'); // the pistol grip, flat on the table
+    if (!bellFar) { poly(r1, '#f7f5ef', 'rgba(0,0,0,.25)', 1); poly(ring(m1, .1), '#bdb9b0'); poly(ring([m1[0] - ca * .05, m1[1], m1[2] - sa * .05], .05), '#8e8a82'); } }
+  { const [x, z] = E.sign, y0 = TOP - .25 - sg(x), y1 = TOP + 2.35, cy = y1 + .3, R = .3, a = PL(x, y0, z), b = PL(x, y1, z); // the round mirror sign on its pole, the disc square to the car's length
+    if (a[2] > .2 && b[2] > .2) { seg(a, b, .055 * kAt(b), '#4a3020'); seg(PL(x, y1 - .05, z), PL(x, cy - R, z), .03 * kAt(b), '#2b2b2e');
+      const disc = []; for (let i = 0; i < 28; i++) { const q = i / 28 * TAU; disc.push(PL(x, cy + Math.sin(q) * R, z + Math.cos(q) * R)); }
+      if (ok(disc)) { const xs = disc.map((p) => p[0]), ys = disc.map((p) => p[1]), mg = g.createLinearGradient(Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys));
+        mg.addColorStop(0, '#f4f8fb'); mg.addColorStop(.45, '#b9c7d3'); mg.addColorStop(.55, '#dfe8ef'); mg.addColorStop(1, '#7f8d99'); poly(disc, mg, '#2b2b2e', Math.max(1.5, .025 * kAt(b))); } } }
 }
 // (moved from installs.js for draft 3: the bars -> cells -> teeth -> jail chain lives in this file)
 // Gilliam, take the lyric literally: wind-up chattering teeth roll past on "soundbite"
 function teeth(t, list) {} // draft 3: the soundbite teeth now chatter on the board (cellBars), in the cell bars' screen spot
 // the table props in draw order (moved from render.js drawCar for draft 3): behind the near seats, then in front of them
 function tablePropsBack(t) {
+  everydayProps(t); // draft 23: drawn first, so every older prop and beat paints over them
   // once the dime is down the ants walk round its rim, drawn over it
   const dm = wt(15, 'dime'); tableBite(t); chessPieces(t); speakerphone(t); muteButton(t); if (t < dm) ants(t); tapeRecorders(t); dime(t); if (t >= dm) ants(t); scales(t); pie(t); book(t); chips(t); jailModel(t); newsPress(t);
   wbPuddles(t); whiteboard(t, false); wbPops(t);
