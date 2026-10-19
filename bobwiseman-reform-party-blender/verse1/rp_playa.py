@@ -352,7 +352,7 @@ def ground_material_pbr():
     l.new(tc.outputs["Object"], nz.inputs["Vector"])
     tone = n.new("ShaderNodeMix")
     tone.data_type = "RGBA"
-    tone.inputs["A"].default_value = K.lin_rgb([c * 255 for c in near])
+    tone.inputs["A"].default_value = K.lin_rgb([(a * 0.4 + b * 0.6) * 255 for a, b in zip(near, far)])
     tone.inputs["B"].default_value = K.lin_rgb([c * 255 for c in far])
     l.new(nz.outputs["Fac"], tone.inputs["Factor"])
     dark = n.new("ShaderNodeMix")
@@ -1132,7 +1132,7 @@ def build_dust():
                     r *= sc
                 locs.append(p)
                 scs.append((r * 1.35, r, 1.0))
-                als.append(a)
+                als.append(a * (0.55 if K.LOOK == "pbr" else 1.0))   # lit, the cards read denser than the draft's
     for k in range(NSLOT * 3):
         ob = bpy.data.objects["RP_PlayaPuff_%03d" % k]
         locs, scs, als = pool[k]

@@ -110,6 +110,109 @@ def mats():
         M["i_glass"] = glass_mat()
     if "i_canvas" not in M:
         M["i_canvas"] = canvas_mat()
+    M.setdefault("i_clockface", K.toon("ClockFace", "#e8d9a8", shadow="#b8a674", light="#f6ead0"))
+    M.setdefault("i_clockrim", K.toon("ClockRim", "#b08a3a", shadow="#7a5e22"))
+    M.setdefault("i_cart", K.toon("ClockCart", "#4a3a2c", shadow="#2e241a"))
+    refine_mats()
+
+
+# ---------------------------------------------------------------------------------------------
+# real surfaces (--look pbr): the toon() name mapping gives a Principled base; these set what each installation is
+# made of under a real sun: lacquered fibreglass lips, brushed brass padlock, enamel clock face, wrinkled hide...
+# ---------------------------------------------------------------------------------------------
+def _bsdf(mat):
+    if not mat or not mat.use_nodes:
+        return None
+    return next((n for n in mat.node_tree.nodes if n.type == "BSDF_PRINCIPLED"), None)
+
+
+def _bump(mat, bs, tex, scale, strength, distance=0.01, stretch=None, extra=None):
+    """Add a procedural bump (chained onto any bump already there). tex: noise | voronoi | wave."""
+    n, l = mat.node_tree.nodes, mat.node_tree.links
+    tc, mp = n.new("ShaderNodeTexCoord"), n.new("ShaderNodeMapping")
+    if stretch:
+        mp.inputs["Scale"].default_value = stretch
+    l.new(tc.outputs["Object"], mp.inputs["Vector"])
+    if tex == "voronoi":
+        t = n.new("ShaderNodeTexVoronoi")
+        t.feature = "DISTANCE_TO_EDGE"
+        out = t.outputs["Distance"]
+    elif tex == "wave":
+        t = n.new("ShaderNodeTexWave")
+        t.wave_type, t.bands_direction = "BANDS", "Z"
+        t.inputs["Distortion"].default_value = 2.0
+        t.inputs["Detail"].default_value = 4.0
+        out = t.outputs["Fac"]
+    else:
+        t = n.new("ShaderNodeTexNoise")
+        t.inputs["Detail"].default_value = 8.0
+        t.inputs["Roughness"].default_value = 0.6
+        out = t.outputs["Fac"]
+    t.inputs["Scale"].default_value = scale
+    l.new(mp.outputs[0], t.inputs["Vector"])
+    bp = n.new("ShaderNodeBump")
+    bp.inputs["Strength"].default_value = strength
+    bp.inputs["Distance"].default_value = distance
+    l.new(out, bp.inputs["Height"])
+    old = bs.inputs["Normal"].links
+    if old:
+        l.new(old[0].from_socket, bp.inputs["Normal"])
+    l.new(bp.outputs["Normal"], bs.inputs["Normal"])
+    if extra:
+        l.new(out, extra)
+
+
+SURF = {  # key: (Principled inputs, bumps [(tex, scale, strength, distance, stretch)])
+    "i_lips": ({"Base Color": "#b8231d", "Roughness": 0.22, "Coat Weight": 1.0, "Coat Roughness": 0.04,
+                "Subsurface Weight": 0.04, "Specular IOR Level": 0.6}, [("noise", 3.0, 0.08, 0.02, None)]),
+    "i_lipline": ({"Roughness": 0.5, "Coat Weight": 0.6}, []),
+    "i_lock": ({"Base Color": "#e0b450", "Metallic": 1.0, "Roughness": 0.24, "Anisotropic": 0.7},
+               [("noise", 4.0, 0.06, 0.01, (1, 1, 60)), ("noise", 2.0, 0.05, 0.03, None)]),
+    "i_steel": ({"Base Color": "#cfccc4", "Metallic": 1.0, "Roughness": 0.2}, []),
+    "i_post": ({"Roughness": 0.7, "Coat Weight": 0.0}, [("wave", 1.5, 0.3, 0.01, (1, 1, 0.2))]),
+    "i_skin": ({"Base Color": "#8a7e74", "Roughness": 0.78, "Subsurface Weight": 0.0, "Sheen Weight": 0.15},
+               [("voronoi", 2.2, 0.55, 0.04, (1, 1, 2.5)), ("noise", 14.0, 0.25, 0.01, None)]),
+    "i_earin": ({"Roughness": 0.6, "Subsurface Weight": 0.15}, [("noise", 10.0, 0.15, 0.01, None)]),
+    "i_tusk": ({"Base Color": "#ece2c8", "Roughness": 0.3, "Coat Weight": 0.4, "Subsurface Weight": 0.1}, []),
+    "i_gold": ({"Metallic": 1.0, "Roughness": 0.3}, []),
+    "i_clockface": ({"Base Color": "#efe4c0", "Roughness": 0.12, "Coat Weight": 1.0, "Coat Roughness": 0.02}, []),
+    "i_clockrim": ({"Base Color": "#b8903e", "Metallic": 1.0, "Roughness": 0.28}, []),
+    "i_cart": ({"Roughness": 0.55, "Coat Weight": 0.2}, [("noise", 6.0, 0.15, 0.01, None)]),
+    "i_eyew": ({"Base Color": "#efe9de", "Roughness": 0.06, "Coat Weight": 1.0, "Coat Roughness": 0.0,
+                "Subsurface Weight": 0.12}, []),
+    "i_iris": ({"Roughness": 0.08, "Coat Weight": 1.0}, [("noise", 30.0, 0.2, 0.005, None)]),
+    "i_pupil": ({"Roughness": 0.05, "Coat Weight": 1.0}, []),
+    "i_candle": ({"Roughness": 0.45, "Subsurface Weight": 0.5}, [("noise", 3.0, 0.15, 0.03, (1, 1, 0.3))]),
+    "i_wax": ({"Roughness": 0.3, "Subsurface Weight": 0.6}, []),
+    "i_tripod": ({"Base Color": "#4a4440", "Metallic": 1.0, "Roughness": 0.45}, []),
+    "i_bulbbase": ({"Base Color": "#b8a888", "Metallic": 1.0, "Roughness": 0.3}, []),
+    "i_band2": ({"Metallic": 1.0, "Roughness": 0.35}, []),
+    "i_ballot": ({"Roughness": 0.85}, [("noise", 1.5, 0.25, 0.05, None)]),
+    "i_tower": ({"Roughness": 0.9, "Sheen Weight": 0.4}, [("noise", 2.0, 0.3, 0.05, None)]),
+    "i_cloth": ({"Roughness": 0.9}, []),
+}
+
+
+def refine_mats():
+    if K.LOOK != "pbr":
+        return
+    for key, (ins, bumps) in SURF.items():
+        mat = M.get(key)
+        bs = _bsdf(mat)
+        if bs is None:
+            continue
+        for name, v in ins.items():
+            if name not in bs.inputs:
+                continue
+            if isinstance(v, str):
+                if bs.inputs[name].links:
+                    continue
+                v = K.lin(v)
+            bs.inputs[name].default_value = v
+        if key == "i_candle" or key == "i_wax":
+            bs.inputs["Subsurface Radius"].default_value = (0.3, 0.15, 0.06)
+        for tex, sc, st, dist, stretch in bumps:
+            _bump(mat, bs, tex, sc, st, dist, stretch)
 
 
 def glass_mat():
@@ -471,35 +574,53 @@ def lip_pillow(b, mat, top, bot, n=22, dep=0.55, zc=0.0):
 
 
 def build_gag():
-    X, Z = CUE["gagX"], CUE["gagZ"]
-    s = L2S
+    """Draft 24 gagMouth: placed from the camera's pose at "order" (22 m out, near frame centre), GAG.S = 1.8 times
+    the draft-5 size, the lips' centre GAG.H scaled units up a post. It grows in on line 2 (easeOutBack, 0.9 s); the
+    padlock hangs open, shackle lifted and swung out, until "order" drops it home; the lips pinch and the lock shudders."""
+    G = I[0]["gag"]
+    X, Z, S, H, s, o = G["X"], G["Z"], G["S"], G["H"], G["s"], G["order"]
     em = K.empty("Inst_Gag", K.COL_INST)
     em.location = B(X, 0, Z)
+    em.rotation_euler = (0, 0, math.atan2(G["rz"], G["rx"]))       # local X along the lens's right at "order": front (-Y) to the lens
     g = [ease_out_back(clamp((tf(f) - s + 0.2) / 0.9)) if tf(f) >= s - 0.2 else 0.0 for f in K.FRAMES]
-    K.key_scale(em, [max(1e-4, v) for v in g])
-    b = K.Builder()
-    Y0 = 5.0
-    b.rod(M["i_post"], (0, 0.3, 0), (0, 0.3, Y0 - 1.0), 0.15, seg=10)
-    b.box(M["i_post"], (0, 0.3, 0.06), (0.9, 0.9, 0.12))
-    up = lambda x: Y0 + (bez3((-3, 0), (-1.5, 1.6), (-0.3, 0.9), (0, 0.6), _inv(x, -3, 0))[1] if x <= 0 else
-                         bez3((0, 0.6), (0.3, 0.9), (1.5, 1.6), (3, 0), _inv(x, 0, 3, rev=False))[1])
-    line = lambda x: Y0 - 0.35 * (1 - (x / 3) ** 2) * 0.5
-    low = lambda x: Y0 - 1.27 * (1 - (x / 3) ** 2) ** 0.8
-    lip_pillow(b, M["i_lips"], up, lambda x: line(x) + 0.03, dep=0.6)
-    lip_pillow(b, M["i_lips"], lambda x: line(x) - 0.03, low, dep=0.7)
-    vs, fs = tube_geo([Vector((-3 + 6 * i / 16, -0.05, line(-3 + 6 * i / 16))) for i in range(17)], 0.07, seg=6, ref=(0, 1, 0))
-    add_geo(b, M["i_lipline"], vs, fs)
-    # the padlock through the lips: shackle arc through the mouth, the body hanging in front of the lower lip
-    arc = [Vector((math.cos(a) * 0.45, -0.75, Y0 - 0.1 + math.sin(a) * 0.45)) for a in [i / 10 * math.pi for i in range(11)]]
-    vs, fs = tube_geo([arc[0] + Vector((0, 0, -0.35))] + arc + [arc[-1] + Vector((0, 0, -0.35))], 0.09, seg=8, ref=(0, 1, 0))
-    add_geo(b, M["i_steel"], vs, fs)
-    b.box(M["i_lock"], (0, -0.8, Y0 - 0.55), (1.2, 0.36, 0.9))
-    b.ellipsoid(M["i_dark"], (0, -0.99, Y0 - 0.45), (0.2, 0.03, 0.2), seg=10)
-    b.box(M["i_dark"], (0, -0.99, Y0 - 0.7), (0.16, 0.02, 0.4))
-    ob = b.build("Inst_GagLips", K.COL_INST, em)
-    key_hidden(ob, [v <= 1e-4 for v in g])
-    gs = dict(zip(K.FRAMES, g))
-    shadow_stick("Inst_GagShadow", X, Z, lambda f: 6.5 * gs[f], lambda f: 4 * gs[f], lambda f: gs[f] > 1e-4)
+    K.key_scale(em, [max(1e-4, v * S) for v in g])
+    shut = [ease(tf(f), o - 0.1, o + 0.02) for f in K.FRAMES]
+    snap = [math.exp(-(tf(f) - o) * 8) * math.sin((tf(f) - o) * 38) if tf(f) > o else 0.0 for f in K.FRAMES]
+    pinch = [sh * (1 - 0.4 * math.exp(-max(0.0, tf(f) - o) * 4)) for sh, f in zip(shut, K.FRAMES)]
+    # the post and its foot (draft: a brown stroke from the playa to 1.2 units under the lips' centre)
+    pb = K.Builder()
+    pb.rod(M["i_post"], (0, 0.15, 0), (0, 0.15, H - 0.6), 0.11, seg=12)
+    pb.box(M["i_post"], (0, 0.15, 0.05), (0.8, 0.8, 0.1))
+    post = pb.build("Inst_GagPost", K.COL_INST, em)
+    # the lips, built about their own centre so the pinch squashes them toward the parting line
+    up = lambda x: (bez3((-3, 0), (-1.5, 1.6), (-0.3, 0.9), (0, 0.6), _inv(x, -3, 0))[1] if x <= 0 else
+                    bez3((0, 0.6), (0.3, 0.9), (1.5, 1.6), (3, 0), _inv(x, 0, 3, rev=False))[1])
+    line = lambda x: -0.35 * (1 - (x / 3) ** 2) * 0.5
+    low = lambda x: -1.27 * (1 - (x / 3) ** 2) ** 0.8
+    lb = K.Builder()
+    lip_pillow(lb, M["i_lips"], up, lambda x: line(x) + 0.03, dep=0.6)
+    lip_pillow(lb, M["i_lips"], lambda x: line(x) - 0.03, low, dep=0.7)
+    vs, fs = tube_geo([Vector((-3 + 6 * i / 24, -0.05, line(-3 + 6 * i / 24))) for i in range(25)], 0.07, seg=6, ref=(0, 1, 0))
+    add_geo(lb, M["i_lipline"], vs, fs)
+    lips = lb.build("Inst_GagLips", K.COL_INST, em, loc=(0, 0, H))
+    K.key_series(lips, "scale", [1 - 0.14 * p_ + 0.04 * n_ for p_, n_ in zip(pinch, snap)], index=2)
+    # the padlock: a brass body hung in front of the lower lip, its steel shackle through the mouth
+    kb = K.Builder()
+    kb.box(M["i_lock"], (0, 0, -0.45), (1.2, 0.36, 0.9))
+    kb.box(M["i_lock"], (0, 0, -0.03), (1.08, 0.3, 0.08))                       # the shoulder under the shackle
+    kb.ellipsoid(M["i_dark"], (0, -0.185, -0.4), (0.11, 0.02, 0.11), seg=12)    # keyhole
+    kb.box(M["i_dark"], (0, -0.185, -0.55), (0.08, 0.015, 0.28))
+    body = kb.build("Inst_GagLock", K.COL_INST, em)
+    K.key_loc(body, [Vector((0, -0.8, H - 0.1 - 0.06 * n_)) for n_ in snap])
+    sb = K.Builder()
+    arc = [Vector((0.45 - math.cos(a_) * 0.45, 0, math.sin(a_) * 0.45)) for a_ in [i / 14 * math.pi for i in range(15)]]
+    vs, fs = tube_geo([arc[0] + Vector((0, 0, -0.15))] + arc + [arc[-1] + Vector((0, 0, -0.15))], 0.09, seg=10, ref=(0, 1, 0))
+    add_geo(sb, M["i_steel"], vs, fs)
+    shk = sb.build("Inst_GagShackle", K.COL_INST, em)
+    K.key_loc(shk, [Vector((-0.45, -0.8, H - 0.1 + (1 - sh) * 0.5 - 0.06 * n_)) for sh, n_ in zip(shut, snap)])
+    K.key_series(shk, "rotation_euler", [-(1 - sh) * 0.75 for sh in shut], index=1)
+    for ob in (post, lips, body, shk):
+        key_hidden(ob, [v <= 1e-4 for v in g])
     return em
 
 
@@ -960,6 +1081,174 @@ def build_playa_art():
     return out
 
 
+# =============================================================================================
+# 5b. artpieces.js (draft 16-24): Robin's own Burning Man installations far out on the open playa, and the two silver
+# bucket-head stilt walkers on the 9:00 promenade. Real 3D at the draft's sizes and facings (apFrame).
+# =============================================================================================
+def ap_mat(key, name, hexc, **ins):
+    if key not in M:
+        M[key] = K.toon(name, hexc, shadow=K.shade(hexc, 0.5))
+        bs = _bsdf(M[key])
+        if bs is not None and K.LOOK == "pbr":
+            for k_, v in ins.items():
+                if k_ in bs.inputs:
+                    bs.inputs[k_].default_value = v
+    return M[key]
+
+
+def ap_frame(o):
+    c, s_, S_ = math.cos(o["rot"]), math.sin(o["rot"]), o["scale"]
+    return lambda lx, ly, lf: B(o["X"] + S_ * (-lx * c + lf * s_), S_ * ly, o["Z"] + S_ * (lx * s_ + lf * c))
+
+
+def ap_nave(b, F):
+    white = ap_mat("ap_white", "NaveWood", "#f2ede0", Roughness=0.6)
+    for i in range(7):
+        lf, h = 12 - i * 4, (14.0 if i == 0 else 11.2)
+        for sd in (-1, 1):
+            b.rod(white, F(sd * 4, 0, lf), F(sd * 4, h - 1.6, lf), 0.32, seg=8)
+            b.rod(white, F(sd * 4, h - 1.6, lf), F(sd * 4, h, lf), 0.42, 0.02, seg=8)
+        pts = [F(4 * math.cos(a_), h * 0.62 + 2.6 * math.sin(a_) ** 0.7, lf) for a_ in [j / 10 * math.pi for j in range(11)]]
+        vs, fs = tube_geo(pts, 0.16, seg=6, ref=(0, 0, 1))
+        add_geo(b, white, vs, fs)
+        if i:
+            for sd in (-1, 1):
+                pts = [F(sd * 4, 6.0 + 1.6 * math.sin(u * math.pi) ** 0.7, lf + 4 - 4 * u) for u in [j / 8 for j in range(9)]]
+                vs, fs = tube_geo(pts, 0.13, seg=6, ref=(0, 0, 1))
+                add_geo(b, white, vs, fs)
+    b.rod(M["i_pole"], F(0, 0, -16), F(0, 6, -16), 0.1, seg=6)
+    b.cone(ap_mat("ap_mandala", "MandalaPlastic", "#d8452f"), F(0, 6.5, -16), 1.4, 1.4, 0.1, seg=20, rot=Matrix.Rotation(math.pi / 2, 4, "X"))
+
+
+def ap_octa(b, o, F):
+    a = o["a"] or 2.1
+    v = [F(0, 2 * a, 0), F(a, a, 0), F(0, a, a), F(-a, a, 0), F(0, a, -a), F(0, 0, 0)]
+    lime = ap_mat("ap_lime", "OctaPlywoodPaint", "#9cc83a", Roughness=0.55)
+    for f in ((0, 1, 2), (0, 2, 3), (0, 3, 4), (0, 4, 1), (5, 2, 1), (5, 3, 2), (5, 4, 3), (5, 1, 4)):
+        b.poly(lime, [v[i] for i in f])
+        b.poly(lime, [v[i] for i in f[::-1]])
+    b.box(lime, F(0, 2 * a + 0.2, 0), (0.45, 0.45, 0.45))
+
+
+def ap_clock(b, F):
+    wood = ap_mat("ap_towerwood", "TowerWood", "#a8743e")
+    dark = ap_mat("ap_towerdark", "TowerWoodDark", "#5a3a1c")
+    copper = ap_mat("ap_copper", "SpireCopperMetal", "#b8693a", Metallic=1.0, Roughness=0.35)
+    for (x0, x1, y0, y1, hw) in ((-2.3, 2.3, 0, 3.2, 1.5), (-1.0, 1.0, 3.2, 10.0, 1.0), (-1.3, 1.3, 10.0, 12.4, 1.3)):
+        c = F((x0 + x1) / 2, (y0 + y1) / 2, 0)
+        b.box(wood, c, (x1 - x0, 2 * hw, y1 - y0))
+    b.box(dark, F(0, 3.35, 0), (5.4, 3.6, 0.3))                          # the balcony
+    for y in (6.2, 8.4):
+        b.cone(M["i_clockface"], F(0, y, -1.05), 0.8, 0.8, 0.08, seg=24, rot=Matrix.Rotation(math.pi / 2, 4, "X"))
+    b.rod(copper, F(0, 12.4, 0), F(0, 15.9, 0), 1.2, 0.05, seg=12)
+    b.ellipsoid(copper, F(0, 16.1, 0), (0.25, 0.25, 0.25), seg=10)
+    for sd in (-1, 1):                                                    # the two obelisks and their lattice arches
+        b.rod(wood, F(sd * 7.5, 0, 0), F(sd * 7.5, 8.0, 0), 0.5, 0.15, seg=4)
+        pts = [F(sd * (1.0 + 6.5 * u), 10.5 - 2.5 * u * u, 0) for u in [j / 8 for j in range(9)]]
+        vs, fs = tube_geo(pts, 0.14, seg=6, ref=(0, 0, 1))
+        add_geo(b, wood, vs, fs)
+        b.ellipsoid(copper, F(sd * 7.5, 8.6, 0), (0.6, 0.6, 0.6), seg=10)
+
+
+def ap_monolith(b, F):
+    olive = ap_mat("ap_olive", "MonolithPaintedSteelPlate", "#6f7a3a", Roughness=0.5)
+    A, Bb, H, T = 3.0, 1.8, 7.6, 0.65
+    bot = [F(-A, 0, 0), F(0, 0, Bb), F(A, 0, 0), F(0, 0, -Bb)]
+    top = [F(-A * T, H, 0), F(0, H, Bb * T), F(A * T, H, 0), F(0, H, -Bb * T)]
+    b.strip(olive, [bot + [bot[0]], top + [top[0]]])
+    b.poly(olive, top)
+    b.ellipsoid(M["i_dark"], F(-0.9, 5.0, 1.0), (1.3, 0.25, 1.3), seg=16)   # the bore, read as a dark round mouth
+
+
+def ap_head(b, F):
+    lav = ap_mat("ap_lav", "HeadLavenderFibreglass", "#a99ad0", Roughness=0.4)
+    rings = []
+    for k in range(10):
+        y = 5.3 * k / 9
+        w = 3.8 * max(0.0, 1 - (y / 5.3) ** (1 / 0.9)) ** 0.39
+        rings.append([F(math.cos(a_) * w, y, math.sin(a_) * w * 0.9) for a_ in [j / 24 * math.tau for j in range(25)]])
+    b.strip(lav, rings)
+    for sd in (-1, 1):
+        b.ellipsoid(lav, F(sd * 1.3, 1.1, 3.1), (0.75, 0.45, 0.5), seg=12)
+        b.ellipsoid(M["i_dark"], F(sd * 1.3, 1.05, 3.45), (0.45, 0.18, 0.1), seg=10)
+        b.ellipsoid(lav, F(sd * 3.6, 1.2, 0.2), (0.3, 1.0, 0.7), seg=10)
+    b.ellipsoid(lav, F(0, 0.3, 3.5), (0.6, 0.6, 0.8), seg=10)
+
+
+def ap_amethyst(b, F):
+    pur = ap_mat("ap_ame", "AmethystCrystalPaint", "#7a3c8c", Roughness=0.25, **{"Coat Weight": 0.6})
+    c = F(0, 2.6, 0)
+    for j in range(7):
+        th, ph = j / 7 * math.tau, 0.5 + 0.9 * rnd(j, 71)
+        d = Vector((math.cos(th) * math.sin(ph), math.sin(th) * math.sin(ph), math.cos(ph) * (1 if j % 3 else -1)))
+        L = 2.4 + 0.8 * rnd(j, 72)
+        b.rod(pur, c, c + d * L, 0.75, 0.05, seg=6)
+
+
+def build_artpieces():
+    seen = set()
+    for f in K.FRAMES:
+        seen.update(I[f - 1].get("artIn", []))
+    out = []
+    for o in I[0].get("art", []):
+        if o["i"] not in seen or o["path"]:
+            continue
+        F = ap_frame(o)
+        b = K.Builder()
+        {"nave": lambda: ap_nave(b, F), "octa": lambda: ap_octa(b, o, F), "clock": lambda: ap_clock(b, F),
+         "monolith": lambda: ap_monolith(b, F), "head": lambda: ap_head(b, F), "amethyst": lambda: ap_amethyst(b, F)}.get(
+            o["kind"], lambda: None)()
+        if len(b.bm.verts):
+            out.append(b.build("Inst_AP_%s" % o["kind"], K.COL_INST, None, smooth=o["kind"] in ("head",)))
+    return out
+
+
+def build_stilts():
+    """The two silver bucket-head stilt walkers (apStilt): silver suits, an upturned bucket over each head, a bucket
+    strapped to each foot, slow stiff steps along the promenade. People: every part carries rp_char."""
+    if not I[0].get("stilts") or not any(w[4] for f in K.FRAMES for w in I[f - 1]["stilts"]):
+        return []
+    silver = ap_mat("ap_silver", "StiltSuitMetalFoil", "#d6dce2", Metallic=1.0, Roughness=0.22)
+    bucket = ap_mat("ap_bucket", "StiltBucketSteel", "#c4ccd2", Metallic=1.0, Roughness=0.3)
+    out = []
+    for i in range(2):
+        em = K.empty("Stilt_%d" % i, K.COL_INST)
+        em["rp_char"] = 1
+        st = [I[f - 1]["stilts"][i] for f in K.FRAMES]
+        K.key_loc(em, [B(w[0], 0, w[1]) for w in st])
+        K.key_series(em, "rotation_euler", [math.atan2(w[3], w[2]) - math.pi / 2 for w in st], index=2)   # local -Y.. +Y forward
+        bb = K.Builder()
+        rings = [[Vector((math.cos(a_) * r * 1.0, math.sin(a_) * r * 0.7, z)) for a_ in [j / 16 * math.tau for j in range(17)]]
+                 for z, r in ((1.25, 0.26), (1.6, 0.27), (1.95, 0.3), (2.05, 0.2))]
+        bb.strip(silver, rings)
+        bb.rod(silver, (0, 0, 2.05), (0, 0, 2.18), 0.08, seg=8)
+        bb.cone(bucket, (0, 0.04, 2.38), 0.18, 0.24, 0.52, seg=16, rot=Matrix.Rotation(-0.18, 4, "Y"))
+        bb.cone(M["i_dark"], (0, 0.04, 2.645), 0.25, 0.25, 0.03, seg=16)
+        body = bb.build("Stilt_%d_Body" % i, K.COL_INST, em)
+        body["rp_char"] = 1
+        ph0 = [tf(f) * 2.6 + i * 1.3 for f in K.FRAMES]
+        for sd in (-1, 1):
+            lb = K.Builder()
+            lb.rod(silver, (0, 0, 0), (0, 0, -0.85), 0.085, seg=8)
+            lb.cone(bucket, (0, 0, -1.075), 0.14, 0.17, 0.45, seg=14)
+            leg = lb.build("Stilt_%d_Leg%d" % (i, sd), K.COL_INST, em)
+            leg["rp_char"] = 1
+            sw = [math.sin(p + (math.pi if sd > 0 else 0)) for p in ph0]
+            K.key_loc(leg, [Vector((sd * 0.12, 0, 1.3 + max(0.0, v) * 0.12)) for v in sw])
+            K.key_series(leg, "rotation_euler", [math.asin(clamp(v * 0.22 / 1.1, -1, 1)) for v in sw], index=0)
+            ab = K.Builder()
+            ab.rod(silver, (0, 0, 0), (0, 0, -0.7), 0.055, seg=8)
+            arm = ab.build("Stilt_%d_Arm%d" % (i, sd), K.COL_INST, em, loc=(sd * 0.3, 0, 1.95))
+            arm["rp_char"] = 1
+            K.key_series(arm, "rotation_euler", [sd * 0.0 + math.sin(p) * 0.25 * sd for p in ph0], index=0)
+            out += [leg, arm]
+        key_hidden(body, [not w[4] for w in st])
+        for ob in out[-4:]:
+            key_hidden(ob, [not w[4] for w in st])
+        out.append(body)
+    return out
+
+
 def build_clock_car():
     """The soft clock car's first visit (installs.js clockCar, CLOCK_VISITS[0]): it ends at 17 s, inside our first 8 frames."""
     frames = [f for f in K.FRAMES if tf(f) <= 17.0]
@@ -1140,7 +1429,10 @@ def stick_mat():
 def shadow_stick(name, X, Z, height_at, width_at, alive_at, cap=12):
     """height_at/width_at/alive_at(f): the stick's height and width in metres, and whether it shows.
     The draft strokes the shadow w metres wide ON SCREEN, so the band faces the lens; any part that would
-    sit under the playa slides along its view ray to just above it (same place on screen)."""
+    sit under the playa slides along its view ray to just above it (same place on screen).
+    In the pbr look the real geometry casts real sun shadows, so the draft's stand-in sticks are not built."""
+    if K.LOOK == "pbr":
+        return None
     def verts(f):
         sx, sz = _sun_vec(f)
         h, w = height_at(f), max(width_at(f), 1e-4) / 2
@@ -1180,5 +1472,7 @@ def build():
     build_recorders()
     build_playa_art()
     build_clock_car()
+    build_artpieces()
+    build_stilts()
     build_blind()
     print("[installs] %d elephants, %d objects" % (len(els), len([o for o in bpy.data.objects if o.name.startswith("RP_Inst_")])))

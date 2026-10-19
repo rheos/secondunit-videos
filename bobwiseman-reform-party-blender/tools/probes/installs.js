@@ -9,15 +9,22 @@
       earX: EAR.X(), earZ: EAR.Z, gagX: carX(L_(2).s) - 12, gagZ: 30, patent: wt(8, 'patent'), ballotX: carX(9) + 13, bulbX: carX(wt(8, 'patent')) - 7 };
     o.camps = BM_CAMPS.map((c, i) => ({ i, X: c.X, Z: c.Z, kind: c.kind, r: c.r, col: c.col, col2: c.col2, seed: c.seed })).filter((c) => BM_PLAYA_ART[c.kind]);
     o.eleph = BM_ELEPHANTS; o.road = BM_ROAD;
+    // draft 9-24: the gag is placed from the camera's pose at "order" (gagWhere), scaled GAG.S
+    const gw = gagWhere(); o.gag = { X: gw.X, Z: gw.Z, rx: gw.rx, rz: gw.rz, S: GAG.S, H: GAG.H, s: L_(2).s, order: wt(2, 'order') };
+    o.art = ARTPIECES.map((a, i) => ({ i, kind: a.kind, X: a.X, Z: a.Z, rot: a.rot, scale: a.scale || 1, a: a.a, tilt: a.tilt || 0, path: a.path || null, t0: a.t0, t1: a.t1 }));
   }
+  // artpieces.js (draft 16+): which pieces are in frame, and the two silver stilt walkers
+  o.artIn = ARTPIECES.map((a, i) => [a, i]).filter(([a]) => !a.path && inView(a.X, AP_SIZE[a.kind][1] / 2, a.Z, 400)).map(([, i]) => i);
+  const st = ARTPIECES.find((a) => a.kind === 'stilts');
+  o.stilts = apStiltPair(st, t).map((w) => [w.X, w.Z, w.hx, w.hz, inView(w.X, 1.3, w.Z, 200) ? 1 : 0]);
   // elephants as bmElephantsInto places them (vogue/flip are 0 in verse 1)
   const cx = carX(clamp(t, 0, 238)), el = [];
   BM_ELEPHANTS.forEach((e, i) => { const rel = ((((e.r0 + e.dv * t) % 400) + 400) % 400) - 200, X = cx + rel, v = 1.6 + e.dv; el.push([X, e.Z, e.s, i * 2.1, e.load || 'tower', clamp(Math.abs(v) / 1.4, .5, 1.3), Math.sign(v) || 1, inView(X, 7 * e.s, e.Z, 900) ? 1 : 0]); });
   BM_ROAD.forEach((e, i) => { const on = t >= e.t0 && t <= e.t1, X = cx + e.r0 + e.dv * (t - e.t0); el.push([X, e.Z, e.s, 7 + i, e.load, .85, 1, on && inView(X, 7 * e.s, e.Z, 900) ? 1 : 0, on ? 1 : 0]); });
   o.el = el;
   o.campsIn = BM_CAMPS.map((c, i) => [c, i]).filter(([c]) => BM_PLAYA_ART[c.kind] && inView(c.X, c.r, c.Z, 300)).map(([, i]) => i);
-  const ear = EAR.X(), gag = carX(L_(2).s) - 12;
-  o.vis = { ear: inView(ear, 5, 24, 600) ? 1 : 0, gag: inView(gag, 5, 30, 600) ? 1 : 0, ballot: inView(carX(9) + 13, 2, 17, 600) ? 1 : 0, bulb: inView(carX(wt(8, 'patent')) - 7, 3, 21, 600) ? 1 : 0,
+  const ear = EAR.X(), gw2 = gagWhere();
+  o.vis = { ear: inView(ear, 5, 24, 600) ? 1 : 0, gag: inView(gw2.X, 4.5, gw2.Z, 600) ? 1 : 0, ballot: inView(carX(9) + 13, 2, 17, 600) ? 1 : 0, bulb: inView(carX(wt(8, 'patent')) - 7, 3, 21, 600) ? 1 : 0,
     clock: t <= 17 && inView(carX(t) + lerp(46, 4, t / 17), 3, 34, 600) ? 1 : 0 };
   // the canvas blind on refrain 1's "blues", in draft screen px (1920x1080): roller, edge samples, drip tips, cord
   const hy = H / 2 - C.f * Math.tan(C.p), b = wt(3, 'blues');

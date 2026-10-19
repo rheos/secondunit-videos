@@ -1,7 +1,9 @@
-"""The boardroom table car (car.js, table.js): table with the driver's hole and hat, skirt, wheels,
-whiteboard with its charts, 14 egg-head suits on hop-on seats, the chairman's gavel on "law" with its
-stamp and shock ring, and the speakerphone (tape X on "can't", soft-watch slump, springs back on "gag").
-Poses come from draft 5's seatState() and gavelPose() via state("core")."""
+"""The boardroom table car (draft 24 car.js, table.js): table with the driver's hole, skirt, wheels, whiteboard,
+14 egg-head suits on black office chairs (car.js seatTop/officeBase, still on the brackets and crutches), the chairman's
+gavel on "law" with its stamp, shock ring and the DAY plate, the profile driver in the hole (steers, ducks), the real
+car's clutter (megaphones, laptops, mugs, hoop, thermos, mirror sign), and the speakerphone whose overhang narrows into
+a Dali lobe, with the mute button, the far-row suit's reach and the black smoke. Poses via state("core"), the d24
+extras via state("car") (tools/probes/car.js)."""
 import math
 
 import bmesh
@@ -38,9 +40,9 @@ def mats():
         "spoke": lambda: toon("Spoke", "#6f6a60", shadow="#4c4840"),
         "gold": lambda: toon("Gold", "#c9a24a", shadow="#8e6f2a", light="#ecd087"),
         "hole": lambda: flat("Hole", "#120806"),
-        "hat": lambda: toon("HatCrown", "#b52c22", shadow="#7e1c15", light="#d24a36"),
-        "brim": lambda: toon("HatBrim", "#8f2018", shadow="#5e130e"),
-        "band": lambda: toon("HatBand", "#3a1410", shadow="#240b08"),
+        "hat": lambda: toon("FedoraFeltCrown", "#b52c22", shadow="#7e1c15", light="#d24a36"),
+        "brim": lambda: toon("FedoraFeltBrim", "#8f2018", shadow="#5e130e"),
+        "band": lambda: toon("FedoraBand", "#3a1410", shadow="#240b08"),
         "suit": lambda: toon("Suit", "#2f2f39", shadow="#212128", light="#4a4a5c"),
         "shirt": lambda: toon("Shirt", "#f4efe6", shadow="#c9bfb2", light="#ffffff"),
         "tie": lambda: toon("Tie", "#8f1d1d", shadow="#5e1212"),
@@ -74,6 +76,44 @@ def mats():
         "stamp": lambda: flat("StampInk", "#b3201a"),
         "stamp_star": lambda: flat("StampStar", "#f1d9a8"),
         "shock": lambda: flat("ShockRing", "#fbf0d6"),
+        "c_pan": lambda: toon("ChairSeatShell", "#0d0b0b", shadow="#070606"),
+        "c_lea": lambda: toon("ChairSeatLeather", "#26211f", shadow="#141110", light="#3a3330"),
+        "c_back": lambda: toon("ChairSeatBack", "#1d1a18", shadow="#0f0d0c", light="#2e2a27"),
+        "c_seam": lambda: flat("ChairSeam", "#080707"),
+        "c_base": lambda: toon("ChairBaseSeat", "#121113", shadow="#0a0a0b"),
+        "c_lift": lambda: toon("ChairLiftChrome", "#5a5a62", shadow="#2a2a30", light="#c8c8d2"),
+        "c_cast": lambda: toon("ChairCasterTyre", "#0a0a0a", shadow="#050505"),
+        "pod": lambda: toon("PhonePod", "#4a4e56", shadow="#33363c"),
+        "bezel": lambda: toon("PhoneBezel", "#a7acb4", shadow="#7c8088"),
+        "holes": lambda: flat("PhoneHoles", "#80858d"),
+        "lcd": lambda: flat("PhoneLcd", "#bcd9a4", 1.1),
+        "cord": lambda: toon("PhoneCord", "#1b1c20", shadow="#111215"),
+        "mutebox": lambda: toon("MuteBoxPhone", "#e8c23a", shadow="#a8861c", light="#f6d860"),
+        "mutecap": lambda: toon("MuteCapPhone", "#e0291c", shadow="#9e1a12"),
+        "smoke": lambda: K.soft("PhoneSmoke", "#1e1b19", 1.0),
+        "wheel": lambda: toon("WheelRimPhone", "#1a181c", shadow="#0f0e10", light="#6a6670"),
+        "wheelhub": lambda: toon("WheelHubChrome", "#6a6670", shadow="#3a3840", light="#b8b4bc"),
+        "hoop_g": lambda: toon("HoopPlasticGreen", "#4f9e2f", shadow="#356b1f"),
+        "hoop_y": lambda: toon("HoopPlasticYellow", "#dfe63c", shadow="#a3a828"),
+        "laptop": lambda: toon("LaptopShell", "#b9bcc2", shadow="#6d7076", light="#d6d9de"),
+        "keys": lambda: toon("LaptopKeys", "#3a3d44", shadow="#24262b"),
+        "screen": lambda: flat("LaptopScreen", "#3d6ea8", 1.0),
+        "mug_w": lambda: toon("MugCeramicWhite", "#f4f1ea", shadow="#c4bfb4"),
+        "mug_b": lambda: toon("MugCeramicBlue", "#2f6fb5", shadow="#1f4c7d"),
+        "mug_r": lambda: toon("MugCeramicRed", "#c7362b", shadow="#8a241c"),
+        "coffee": lambda: toon("MugCoffee", "#3b2215", shadow="#24140c"),
+        "thermos": lambda: toon("ThermosSteel", "#c4cacf", shadow="#6f777c", light="#e4eaee"),
+        "thermoscap": lambda: toon("ThermosCapPlastic", "#b5352a", shadow="#8e2a21"),
+        "megaphone": lambda: toon("MegaphonePlastic", "#f2f0ea", shadow="#bdb9b0"),
+        "megin": lambda: toon("MegaphoneInside", "#bdb9b0", shadow="#8e8a82"),
+        "megdark": lambda: toon("MegaphoneThroat", "#8e8a82", shadow="#5e5a52"),
+        "grip": lambda: toon("MegaphoneGrip", "#2a2a2e", shadow="#18181b"),
+        "signpole": lambda: toon("SignPoleWood", "#4a3020", shadow="#2e1d12"),
+        "signframe": lambda: toon("SignFrameSteel", "#2b2b2e", shadow="#18181a"),
+        "mirror": lambda: toon("MirrorChrome", "#dfe8ef", shadow="#7f8d99", light="#f4f8fb"),
+        "plate": lambda: toon("DaySignPaper", "#e9dca8", shadow="#b5a878"),
+        "plateink": lambda: toon("DaySignInk", "#1e1c22", shadow="#121115"),
+        "platebolt": lambda: toon("DaySignBoltSteel", "#8a8478", shadow="#5a554c"),
     }.items():
         if k not in M:
             M[k] = v()
@@ -110,17 +150,6 @@ def build_car():
     b.cone(M["hole"], (0, 0, TOP - 0.25), 1.0, 1.0, 0.5, seg=48, rot=Matrix.Diagonal((0.549, 0.449, 1, 1)), caps=False)
     b.disc(M["hole"], (0, 0, TOP - 0.45), 1.0, seg=48, scale=(0.55, 0.45))
     b.build("HoleAndHat", K.COL_CAR, car)
-    # the driver: an egg head in the hole (Robin, 2026-10-16) with the red hat sitting upright on it; the
-    # egg rises a hand above the table so it shows between the table and the brim
-    d = K.Builder()
-    d.ellipsoid(M["egg"], (0, 0, 0), (0.125, 0.125 * 0.95, 0.155), seg=32)
-    d.build("DriverHead", K.COL_CAR, car, loc=(0, 0, TOP + 0.05))
-    h = K.Builder()
-    h.cone(M["brim"], (0, 0, -0.01), 0.30, 0.27, 0.025, seg=40)
-    h.cone(M["hat"], (0, 0, 0.08), 0.15, 0.125, 0.17, seg=32)
-    h.cone(M["band"], (0, 0, 0.025), 0.153, 0.149, 0.04, seg=32, caps=False)
-    h.build("DriverHat", K.COL_CAR, car, loc=(0, 0, TOP + 0.13))
-
     # chassis, wheels (rolling without slipping: rotation about +Y = distance / R)
     b = K.Builder()
     b.box(M["chassis"], (0, 0, 0.47), (2 * TL * 0.9, 2 * TD * 0.86, 0.66))
@@ -262,10 +291,31 @@ def build_seat(b, s):
     b.rod(M["crutch"], fm, ca + Vector((-0.18 * sc, 0, -0.1 * sc)), 0.016, seg=6)
     b.rod(M["crutch"], fm, ca + Vector((0.18 * sc, 0, -0.1 * sc)), 0.016, seg=6)
     b.rod(M["pad"], ca + Vector((-0.22 * sc, 0, 0)), ca + Vector((0.22 * sc, 0, 0)), 0.035, seg=10)
-    b.box(M["seat"], (0, 0, SEAT - 0.035), (0.5, 0.4, 0.07))
-    b.box(M["seatback"], (0, -0.22, SEAT + 0.145), (0.46, 0.04, 0.25), rot=Matrix.Rotation(-0.16, 4, "X"))
-    for j in range(4):
-        b.ellipsoid(M["gold"], (-0.15 + j * 0.1, -0.245, SEAT + 0.23), (0.018,) * 3, seg=8)
+    build_office_chair(b)
+
+
+def build_office_chair(b):
+    """car.js seatTop + officeBase (draft 23/24): black leather executive chair, seat-local (x lateral, y to the table)."""
+    M = K.M
+    b.box(M["c_pan"], (0, 0.01, SEAT - 0.045), (0.5, 0.42, 0.07))
+    b.box(M["c_lea"], (0, 0.01, SEAT - 0.005), (0.48, 0.4, 0.03))
+    lean = math.atan2(0.08, 0.62)
+    rot = Matrix.Rotation(-lean, 4, "X")
+    bc = Vector((0, -0.22 - 0.04, SEAT + 0.04 + 0.29))
+    b.box(M["c_back"], bc, (0.44, 0.07, 0.56), rot=rot)
+    b.ellipsoid(M["c_back"], bc + rot.to_3x3() @ Vector((0, 0, 0.27)), (0.22, 0.036, 0.07), seg=20)
+    for u in (0.3, 0.58):
+        p = bc + rot.to_3x3() @ Vector((0, 0.037, (u - 0.47) * 0.6))
+        b.rod(M["c_seam"], p + Vector((-0.19, 0, 0)), p + Vector((0.19, 0, 0)), 0.006, seg=6, caps=False)
+    for x in (-0.28, 0.28):
+        b.rod(M["c_base"], (x, -0.06, SEAT - 0.02), (x, -0.06, SEAT + 0.2), 0.018, seg=8, caps=False)
+        b.rod(M["c_lea"], (x, -0.16, SEAT + 0.21), (x, 0.14, SEAT + 0.21), 0.035, seg=10)
+    b.rod(M["c_lift"], (0, 0, SEAT - 0.08), (0, 0, 0.15), 0.0225, seg=12, caps=False)
+    for j in range(5):
+        a = j / 5 * 2 * math.pi + 0.3
+        e = Vector((math.cos(a) * 0.27, math.sin(a) * 0.27, 0.1))
+        b.rod(M["c_base"], (0, 0, 0.15), e, 0.022, 0.016, seg=8)
+        b.ellipsoid(M["c_cast"], e + Vector((0, 0, -0.05)), (0.035, 0.035, 0.035), seg=10)
 
 
 def body_pose(stand):
@@ -483,36 +533,33 @@ def build_law_marks(car):
 
 
 # =============================================================================================
-# the speakerphone (table.js speakerphone): a soft watch, baked per frame from the draft's own maths
+# the speakerphone (draft 24 table.js speakerphone): the triangle conference phone at PHONE, softening from
+# "scientists"; only what runs over the front edge narrows into a long Dali lobe (draft 22). Its state comes from
+# the draft (state("car"): melt, slump, phone centre, LEDs), the shape from the draft's own flow().
 # =============================================================================================
-CX = 1.2
+C = K.state("car")
 NA = 48
-RINGS = [0.03, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.78, 0.85, 0.9, 0.94, 0.97, 1.0]
-DOME = (0.03, 0.25, 0.5, 0.75, 1.0)
+RINGS = [0.03, 0.12, 0.25, 0.4, 0.55, 0.7, 0.8, 0.88, 0.94, 0.98, 1.0]
 BEND_R = 0.025
+TAU = 2 * math.pi
 
 
-def melt(t):
-    return clamp((t - 20) / 200) * 0.55 + ease(t, L1S, L1E) * 0.12
-
-
-def phone_slump(t):
-    return ease(t, W_CANT + 0.45, L1E + 0.7) * (1 - 0.72 * ease(t, L2S + 0.3, L2S + 1))
-
-
-def tape_amt(t):
-    return ease(t, W_CANT - 0.05, W_CANT + 0.2) * (1 - ease(t, L2S + 0.3, L2S + 0.6))
-
-
-def flow(st, x, z, f=1.0):
-    cz, sl = st["cz"], st["sl"]
-    dx, dz = x - CX, z - cz
+def flow(cx, cz, sl, x, z, f=1.0):
+    dx, dz = x - cx, z - cz
     front = clamp(-dz / 0.3)
     side = 1 - 0.55 * (dx / 0.4) ** 2
-    return CX + dx * (1 + 0.2 * sl * f), z - sl * f * (0.12 + 0.78 * front * side)
+    nx = cx + dx * (1 + 0.25 * sl * f)
+    nz = z - sl * f * (0.15 + 1.05 * front * side)
+    ov = -TD - nz
+    if ov <= 0:
+        return nx, nz
+    o2 = ov * (1 + 0.7 * sl)
+    u = clamp(o2 / 0.75)
+    return cx + (nx - cx) * (1 - 0.62 * u ** 1.3) + sl * (0.12 * math.sin(u * 2.4) - 0.04 * u), -TD - o2
 
 
 def drape(x, z, h):
+    """A point h above the soft top, bent smoothly over the front edge and hanging down it."""
     if z >= -TD:
         return B(x, TOP + h, z)
     d = -TD - z
@@ -525,136 +572,302 @@ def drape(x, z, h):
     return B(x, yc - rem * 1.05, -TD - rr)
 
 
+def ph(a):
+    d = ((a - 0.5 - TAU / 6) % (TAU / 3) + TAU / 3) % (TAU / 3) - TAU / 6
+    return min(0.25 / math.cos(d), 0.41)
+
+
 def body_h(rho):
-    if rho <= 0.9:
-        return 0.04 + 0.008 * (1 - (rho / 0.9) ** 2)
-    return 0.034 if rho <= 0.97 else 0.018
+    return 0.045 + 0.01 * (1 - rho * rho) if rho < 0.94 else (0.035 if rho < 0.99 else 0.02)
 
 
-def phone_coords(fr):
+def loop_strip(b, rows, mat, close_centre=None):
+    vs = [[b.bm.verts.new(p) for p in r] for r in rows]
+    fs = []
+    for r in range(len(vs) - 1):
+        n = len(vs[r])
+        for i in range(n):
+            j = (i + 1) % n
+            fs.append(b.bm.faces.new((vs[r][i], vs[r][j], vs[r + 1][j], vs[r + 1][i])))
+    if close_centre is not None:
+        c = b.bm.verts.new(close_centre)
+        n = len(vs[-1])
+        for i in range(n):
+            fs.append(b.bm.faces.new((vs[-1][(i + 1) % n], vs[-1][i], c)))
+    b._tag(fs, mat)
+
+
+def phone_builder(fr):
+    M = K.M
+    st = C[fr - 1]
     t = K.ft(fr)
-    st = dict(sl=phone_slump(t), cz=-0.95 - melt(t) * 0.75, tape=tape_amt(t), red=W_CANT < t < L2S + 0.5)
-    sl, cz = st["sl"], st["cz"]
-    co = []
-
-    def body_pt(a, rho, h, scale=1.0, dz=0.0):
-        r = 0.34 * (1 + 0.14 * math.cos(3 * a)) * (1 + sl * 0.06 * n1(5, a * 2)) * rho
-        x, z = flow(st, CX + math.cos(a + 0.5) * r, cz + math.sin(a + 0.5) * r * 0.9)
-        if scale != 1.0:
-            x, z = CX + (x - CX) * scale, cz + (z - cz) * scale - dz
-        return drape(x, z, h)
-
+    cx, cz, sl = st["cx"], st["cz"], st["sl"]
+    fl = lambda x, z, f=1.0: flow(cx, cz, sl, x, z, f)
+    b = K.Builder()
+    outline = [ph(i / NA * TAU) * (1 + sl * 0.06 * n1(5, i / NA * TAU * 2)) for i in range(NA)]
+    rows = []
     for rho in RINGS:
-        for i in range(NA):
-            co.append(body_pt(i / NA * 2 * math.pi, rho, body_h(rho)))
-    for i in range(NA):
-        co.append(body_pt(i / NA * 2 * math.pi, 1.0, 0.002))
-    co.append(body_pt(0.0, 0.0, 0.002))
-    for rho in DOME:
-        for i in range(NA):
-            co.append(body_pt(i / NA * 2 * math.pi, rho, 0.052 + 0.006 * (1 - rho * rho), scale=0.55, dz=sl * 0.05))
+        rows.append([drape(*fl(cx + math.cos(i / NA * TAU) * outline[i] * rho, cz + math.sin(i / NA * TAU) * outline[i] * rho * 0.9), body_h(rho)) for i in range(NA)])
+    rows.append([drape(*fl(cx + math.cos(i / NA * TAU) * outline[i], cz + math.sin(i / NA * TAU) * outline[i] * 0.9), 0.002) for i in range(NA)])
+    loop_strip(b, rows, M["phone"], close_centre=drape(*fl(cx, cz), 0.002))
+
+    def blob(mat, x0, z0, r, h, f=1.0, n=12, rz=0.9):
+        pts = [drape(*fl(x0 + math.cos(k / n * TAU) * r, z0 + math.sin(k / n * TAU) * r * rz, f), h) for k in range(n)]
+        b.poly(mat, pts)
+
+    for c in range(3):                                           # corner mic pods, an LED on each
+        a = 0.5 + TAU / 6 + c * TAU / 3
+        px, pz = cx + math.cos(a) * 0.3, cz + math.sin(a) * 0.3 * 0.9
+        blob(M["pod"], px, pz, 0.07, 0.05, rz=1.0)
+        blob(M["led_g"], px, pz, 0.028, 0.03 if st["red"] else 0.056, rz=0.9)
+        blob(M["led_r"], px, pz, 0.028, 0.056 if st["red"] else 0.03, rz=0.9)
+    for r, mat, h in ((0.16, M["bezel"], 0.053), (0.125, M["grille"], 0.056)):   # the speaker: pale bezel, dark grille
+        blob(mat, cx, cz - sl * 0.05, r, h, f=0.5, n=28)
     for k in range(9):
-        a = k / 9 * 2 * math.pi
-        x, z = flow(st, CX + math.cos(a) * 0.1, cz + math.sin(a) * 0.09, 0.5)
-        for j in range(8):
-            b_ = j / 8 * 2 * math.pi
-            co.append(drape(x + math.cos(b_) * 0.013, z + math.sin(b_) * 0.012, 0.0595))
-    for col in ("g", "r"):
-        on = st["red"] == (col == "r")
-        for k in range(3):
-            a = k / 3 * 2 * math.pi + 0.5
-            x, z = flow(st, CX + math.cos(a) * 0.24, cz + math.sin(a) * 0.216)
-            for j in range(8):
-                b_ = j / 8 * 2 * math.pi
-                co.append(drape(x + math.cos(b_) * 0.022, z + math.sin(b_) * 0.02, 0.046 if on else 0.01))
-    tp = st["tape"]
-    for d in (1, -1):
-        p0 = flow(st, CX - 0.3 * tp, cz - 0.25 * d * tp, 0.35)
-        p1 = flow(st, CX + 0.3 * tp, cz + 0.25 * d * tp, 0.35)
-        dx, dz = p1[0] - p0[0], p1[1] - p0[1]
-        L = math.hypot(dx, dz) or 1.0
-        nx, nz = -dz / L * 0.045 * min(1.0, tp * 4), dx / L * 0.045 * min(1.0, tp * 4)
-        for k in range(9):
-            u = k / 8
-            x, z = lerp(p0[0], p1[0], u), lerp(p0[1], p1[1], u)
-            hh = 0.064 + 0.006 * math.sin(u * math.pi) + (0.004 if d < 0 else 0)
-            co.append(drape(x - nx, z - nz, hh))
-            co.append(drape(x + nx, z + nz, hh))
-    for i in range(4):
-        x = CX - 0.2 + i * 0.13
-        ov = -TD - flow(st, x, cz - 0.3)[1]
-        ln = sl * (0.1 + 0.2 * rnd(i, 61)) * (1 + 0.15 * math.sin(t * 2 + i)) if ov > 0.03 else 0.0
-        top_y = min(TOP + 0.04 - ov * 1.05 + 0.03, TOP - 0.05)
-        for yy, rr in [(top_y + 0.02, 0.035), (top_y - ln * 0.5, 0.024), (top_y - ln, 0.03)]:
-            for j in range(8):
-                b_ = j / 8 * 2 * math.pi
-                rr2 = rr if ln else 0.0
-                co.append(B(x + math.cos(b_) * rr2, yy, -TD - BEND_R - 0.012 + math.sin(b_) * rr2 * 0.6))
-        co.append(B(x, top_y - ln - (0.03 if ln else 0.0), -TD - BEND_R - 0.012))
-    return co
+        a = k / 9 * TAU
+        blob(M["holes"], cx + math.cos(a) * 0.075, cz + math.sin(a) * 0.068 - sl * 0.05, 0.011, 0.058, f=0.5, n=8, rz=1.0)
+    lx, lz = cx + math.cos(1.55) * 0.19, cz + math.sin(1.55) * 0.19 * 0.9          # the LCD strip on the back edge
+    b.poly(M["lcd"], [drape(*fl(x, z, 0.3), 0.055) for x, z in ((lx - 0.13, lz - 0.03), (lx + 0.13, lz - 0.03), (lx + 0.13, lz + 0.03), (lx - 0.13, lz + 0.03))])
+    for j in range(3):
+        b.rod(M["grille"], drape(*fl(lx - 0.1 + j * 0.07, lz, 0.3), 0.058), drape(*fl(lx - 0.05 + j * 0.07, lz, 0.3), 0.058), 0.004, seg=4, caps=False)
+    pts = []                                                     # the coiled cord off the back
+    for i in range(91):
+        u = i / 90
+        bx = lerp(cx + math.cos(1.55) * 0.2, cx + 0.95, u)
+        bz = lerp(cz + math.sin(1.55) * 0.2, cz + 1.05, u) + 0.25 * math.sin(u * math.pi) * (1 - u)
+        w = u * 7 * TAU
+        s = math.sin(u * math.pi)
+        x, z = fl(bx + math.cos(w) * 0.06 * s, bz + math.sin(w) * 0.045 * s, 0.2)
+        pts.append(drape(x, z, 0.012 + 0.035 * s * (0.6 + 0.4 * math.sin(w))))
+    for p, q in zip(pts, pts[1:]):
+        b.rod(M["cord"], p, q, 0.009, seg=6, caps=False)
+    return b
 
 
 def build_phone(car):
+    b = phone_builder(1)
+    ob = b.build("Speakerphone", K.COL_CAR, car)
+    K.bake_shapes(ob, lambda f: phone_builder(f).coords())
+
+
+# ---------- the mute button on the far edge, the far-row suit's reach to it, and the smoke (draft 16-17) ----------
+def build_mute(car):
+    M = K.M
+    bx, bz = 1.25, 1.18
+    b = K.Builder()
+    b.box(M["mutebox"], (bx, bz, TOP + 0.04), (0.28, 0.2, 0.08))
+    b.build("MuteBox", K.COL_CAR, car, smooth=False)
+    c = K.Builder()
+    c.cone(M["mutecap"], (0, 0, 0.025), 0.08, 0.08, 0.05, seg=20)
+    cap = c.build("MuteButton", K.COL_CAR, car, loc=(bx, bz, TOP + 0.08))
+    K.key_series(cap, "location", [TOP + 0.08 - 0.035 * st["push"] for st in C], index=2)
+
+    def arm_builder(f):
+        st = C[f - 1]
+        a, h = (st["arm"] if st["arm"] else [[bx, TOP + 1.0, bz + 1.0], [bx, TOP + 0.99, bz + 1.0]])
+        a, h = B(*a), B(*h)
+        ab = K.Builder()
+        cuff = a.lerp(h, 0.86)
+        ab.rod(M["suit"], a, cuff, 0.06, 0.055, seg=12)
+        ab.rod(M["shirt"], cuff, a.lerp(h, 0.93), 0.05, seg=10, caps=False)
+        ab.ellipsoid(M["egg"], h, (0.055, 0.05, 0.045), seg=12)
+        return ab
+    arm = arm_builder(1).build("MuteArm", K.COL_CAR, car)
+    arm["rp_char"] = 1
+    K.bake_shapes(arm, lambda f: arm_builder(f).coords())
+    for k in range(3):
+        K.key_series(arm, "scale", [1.0 if st["arm"] else 0.0 for st in C], index=k, interp="CONSTANT")
+
+
+def build_smoke(car):
+    """phonePuff: 30 soft charcoal puffs, each a camera-facing card (K.soft, alpha keyed through ob.color)."""
     import bpy
     M = K.M
-    bm = bmesh.new()
-    vs = [bm.verts.new(c) for c in phone_coords(1)]
-    mats = [M["phone"], M["dome"], M["grille"], M["led_g"], M["led_r"], M["tape"]]
+    cams, mats_l = [], []
+    for nd in M["smoke"].node_tree.nodes:             # falloff reaches zero at the card's edge (soft()'s default
+        if nd.type == "MAPPING":                      # stops at half strength on a unit card), a hazy round puff
+            nd.inputs["Scale"].default_value = (2.0, 2.0, 2.0)
+            nd.inputs["Location"].default_value = (-1.0, -1.0, -1.0)
+    for s in S:
+        cw = B(s["cam"][0], s["cam"][1], s["cam"][2])
+        cm = Matrix.Translation((s["car"][0], s["car"][1], 0)) @ Matrix.Rotation(s["car"][2], 4, "Z")
+        cams.append(cm.inverted() @ cw)
+    for i in range(30):
+        b = K.Builder()
+        b.strip(M["smoke"], [[(-1, -1, 0), (1, -1, 0)], [(-1, 1, 0), (1, 1, 0)]])
+        b.bm.verts.new((0, 0, -1))                           # loose verts: give Generated coords a z extent so the
+        b.bm.verts.new((0, 0, 1))                            # soft material's spherical falloff is round on the card
+        ob = b.build("Smoke_%02d" % i, K.COL_CAR, car, smooth=False)
+        ob.visible_shadow = False
+        ms, al = [], []
+        for f in K.FRAMES:
+            p = C[f - 1]["puffs"][i]
+            if p is None:
+                ms.append(Matrix.Translation((0, 0, -3)) @ Matrix.Diagonal((1e-4, 1e-4, 1e-4, 1)))
+                al.append(0.0)
+                continue
+            pos = B(p[0], p[1], p[2])
+            n = (cams[f - 1] - pos).normalized()
+            q = n.to_track_quat("Z", "Y").to_matrix().to_4x4()
+            ms.append(Matrix.Translation(pos) @ q @ Matrix.Diagonal((p[3] * 1.6, p[3] * 1.45, 1, 1)))
+            al.append(p[4])
+        K.key_matrix(ob, ms)
+        K.key_series(ob, "color", al, index=3)
 
-    def face(idx, mi):
-        bm.faces.new([vs[k] for k in idx]).material_index = mi
 
-    nr = len(RINGS)
-    for r in range(nr - 1):
-        for i in range(NA):
-            j = (i + 1) % NA
-            face([r * NA + i, r * NA + j, (r + 1) * NA + j, (r + 1) * NA + i], 0)
-    rim = nr * NA
-    for i in range(NA):
-        j = (i + 1) % NA
-        face([(nr - 1) * NA + i, (nr - 1) * NA + j, rim + j, rim + i], 0)
-    bc = rim + NA
-    for i in range(NA):
-        face([rim + (i + 1) % NA, rim + i, bc], 0)
-    d0 = bc + 1
-    for r in range(len(DOME) - 1):
-        for i in range(NA):
-            j = (i + 1) % NA
-            face([d0 + r * NA + i, d0 + r * NA + j, d0 + (r + 1) * NA + j, d0 + (r + 1) * NA + i], 1)
-    k0 = d0 + len(DOME) * NA
-    for k in range(9):
-        face(list(range(k0 + k * 8, k0 + k * 8 + 8)), 2)
-    l0 = k0 + 72
-    for c in range(2):
-        for k in range(3):
-            face(list(range(l0 + (c * 3 + k) * 8, l0 + (c * 3 + k) * 8 + 8)), 3 + c)
-    t0 = l0 + 48
-    for d in range(2):
-        s0 = t0 + d * 18
-        for k in range(8):
-            face([s0 + 2 * k, s0 + 2 * k + 2, s0 + 2 * k + 3, s0 + 2 * k + 1], 5)
-    r0 = t0 + 36
-    for i in range(4):
-        s0 = r0 + i * 25
-        for ring in range(2):
-            for j in range(8):
-                jj = (j + 1) % 8
-                face([s0 + ring * 8 + j, s0 + ring * 8 + jj, s0 + (ring + 1) * 8 + jj, s0 + (ring + 1) * 8 + j], 0)
-        for j in range(8):
-            face([s0 + 16 + j, s0 + 16 + (j + 1) % 8, s0 + 24], 0)
-    assert len(vs) == r0 + 100, len(vs)
-    me = bpy.data.meshes.new("RP_Speakerphone")
-    bm.to_mesh(me)
-    bm.free()
-    for m in mats:
-        me.materials.append(m)
-    me.shade_smooth()
-    ob = bpy.data.objects.new("RP_Speakerphone", me)
-    K.COL_CAR.objects.link(ob)
-    ob.parent = car
-    K.bake_shapes(ob, phone_coords)
-    ss = ob.modifiers.new("Soft", "SUBSURF")
-    ss.levels = ss.render_levels = 1
+# ---------- the driver (draft 24 driverHat): profile cut-out in the draft, here in 3D; steers, ducks into the hole ----------
+DRV_X = -0.12
+
+
+def build_driver(car):
+    M = K.M
+    rig = K.empty("DriverRig", K.COL_CAR, parent=car)
+    K.key_series(rig, "location", [-0.6 * st["duck"] for st in C], index=2)
+    X, sh = DRV_X, TOP + 0.1
+    b = K.Builder()                                          # jacket: shoulders and back, down into the hole
+    b.cone(M["suit"], (X, 0, sh - 0.32), 1.0, 1.0, 0.64, seg=24, rot=Matrix.Diagonal((0.15, 0.22, 1, 1)))
+    b.ellipsoid(M["suit"], (X, 0, sh), (0.15, 0.24, 0.06), seg=20)
+    b.rod(M["neck"], (X, 0, sh - 0.02), (X, 0, sh + 0.09), 0.04, seg=12)
+    wx, wz = X + 0.36, sh - 0.02
+    tilt = 0.42
+    rim_top = lambda ang: Vector((wx, 0, wz)) + Matrix.Rotation(tilt, 3, "Y") @ Vector((0, 0.2 * math.sin(ang), 0.2 * math.cos(ang)))
+    for d in (-1, 1):                                        # both hands on the wheel's top arc
+        s_ = Vector((X + 0.04, d * 0.19, sh - 0.05))
+        hand = rim_top(d * 0.45)
+        el = Vector((X + 0.17, d * 0.22, sh - 0.17))
+        b.rod(M["suit"], s_, el, 0.05, 0.045, seg=12)
+        b.rod(M["suit"], el, hand, 0.045, 0.038, seg=12)
+        b.ellipsoid(M["egg"], hand, (0.042, 0.04, 0.04), seg=12)
+    body = b.build("DriverBody", K.COL_CAR, rig)
+    hb = K.Builder()
+    hb.ellipsoid(M["egg"], (0, 0, 0), (0.125, 0.125 * 0.95, 0.155), seg=32)
+    head = hb.build("DriverHead", K.COL_CAR, rig, loc=(X + 0.015, 0, sh + 0.21))
+    h = K.Builder()                                          # the fedora seated low on the egg, the brim dipping forward
+    h.cone(M["brim"], (0, 0, 0), 0.25, 0.24, 0.022, seg=40, rot=Matrix.Diagonal((1, 0.92, 1, 1)))
+    h.cone(M["hat"], (0, 0, 0.085), 0.14, 0.12, 0.17, seg=32)
+    h.ellipsoid(M["hat"], (0, 0, 0.165), (0.12, 0.1, 0.03), seg=24)
+    h.box(M["hat"], (0, 0, 0.172), (0.12, 0.05, 0.02))          # the pinch
+    h.cone(M["band"], (0, 0, 0.03), 0.143, 0.139, 0.035, seg=32, caps=False)
+    hat = h.build("DriverHat", K.COL_CAR, rig, loc=(X + 0.02, 0, sh + 0.21 + 0.12))
+    hat.rotation_euler = (0, 0.08, 0)
+    for o in (body, head, hat):
+        o["rp_char"] = 1
+    w = K.Builder()                                          # the wheel (a prop): rim, hub, three spokes, column
+    rim = []
+    for k in range(48):
+        a = k / 48 * TAU
+        rim.append(Vector((0, 0.2 * math.sin(a), 0.2 * math.cos(a))))
+    for p, q in zip(rim, rim[1:] + rim[:1]):
+        w.rod(M["wheel"], p, q, 0.026, seg=8, caps=False)
+    w.cone(M["wheelhub"], (0, 0, 0), 0.05, 0.05, 0.04, seg=16, rot=Matrix.Rotation(math.pi / 2, 4, "Y"))
+    for k in range(3):
+        a = k / 3 * TAU + math.pi
+        w.rod(M["wheelhub"], (0, 0, 0), (0, 0.19 * math.sin(a), 0.19 * math.cos(a)), 0.012, seg=6, caps=False)
+    w.rod(M["wheel"], (0, 0, 0), (0.42, 0, 0), 0.025, seg=10, caps=False)
+    wheel = w.build("SteeringWheel", K.COL_CAR, rig, loc=(wx, 0, wz))
+    K.key_series(wheel, "rotation_euler", [tilt] * len(C), index=1)
+    K.key_series(wheel, "rotation_euler", [st["steer"] for st in C], index=0)
+
+
+# ---------- draft 23-24: the everyday clutter on the real car's top, the mirror sign, the DAY plate ----------
+def build_props(car):
+    M = K.M
+    b = K.Builder()
+    hx, hz, R = -3.05, 0.05, 0.42                            # hula hoop, green and yellow bands
+    for i in range(32):
+        a0, a1 = i / 32 * TAU, (i + 1) / 32 * TAU
+        b.rod(M["hoop_g" if i % 2 else "hoop_y"], (hx + math.cos(a0) * R, hz + math.sin(a0) * R, TOP + 0.014),
+              (hx + math.cos(a1) * R, hz + math.sin(a1) * R, TOP + 0.014), 0.014, seg=8, caps=False)
+    for x, z, side in ((0.55, 1.12, 1), (3.25, 1.12, 1)):    # laptops, the screen toward the far row
+        b.box(M["laptop"], (x, z, TOP + 0.0125), (0.34, 0.24, 0.015))
+        b.box(M["keys"], (x, z + side * 0.02, TOP + 0.021), (0.28, 0.1, 0.002))
+        hinge = Vector((x, z - side * 0.12, TOP + 0.02))
+        lean = 0.26
+        up = Vector((0, -side * math.sin(lean), math.cos(lean)))
+        rot = Matrix.Rotation(side * lean, 4, "X")
+        b.box(M["laptop"], hinge + up * 0.115, (0.34, 0.012, 0.23), rot=rot)
+        b.box(M["screen"], hinge + up * 0.115 + Vector((0, side * 0.0065 * math.cos(lean), 0.0065 * math.sin(lean) * side)), (0.29, 0.002, 0.19), rot=rot)
+    for x, z, mk in ((-3.12, 0.72, "mug_w"), (2.5, -1.22, "mug_b"), (-1.88, -1.22, "mug_r")):   # coffee mugs
+        b.cone(M[mk], (x, z, TOP + 0.05), 0.045, 0.045, 0.1, seg=20)
+        b.disc(M["coffee"], (x, z, TOP + 0.092), 0.04, seg=20)
+        hp = [(x + 0.045 + 0.03 * math.cos(a), z, TOP + 0.05 + 0.03 * math.sin(a)) for a in [(-1.3 + k * 0.65) for k in range(5)]]
+        for p, q in zip(hp, hp[1:]):
+            b.rod(M[mk], p, q, 0.008, seg=6)
+    tx, tz = 3.85, -0.78                                     # thermos: steel body, red cap
+    b.cone(M["thermos"], (tx, tz, TOP + 0.125), 0.055, 0.055, 0.25, seg=24)
+    b.cone(M["thermoscap"], (tx, tz, TOP + 0.285), 0.055, 0.05, 0.07, seg=24)
+    for x, z, hd in ((3.9, -0.85, 0.35), (2.15, 1.12, -2.6)):   # megaphones lying on the table, bell up off the top
+        ca, sa = math.cos(hd), math.sin(hd)
+        m0 = Vector((x - ca * 0.23, z - sa * 0.23, TOP + 0.05))
+        m1 = Vector((x + ca * 0.23, z + sa * 0.23, TOP + 0.14))
+        b.rod(M["megaphone"], m0, m1, 0.045, 0.14, seg=24, caps=False)
+        ax = (m1 - m0).normalized()
+        q = ax.to_track_quat("Z", "Y").to_matrix().to_4x4()
+        b.disc(M["megin"], m1 + ax * 0.002, 0.125, seg=24, rot=q)
+        b.disc(M["megdark"], m1 + ax * 0.004, 0.05, seg=16, rot=q)
+        b.ellipsoid(M["megaphone"], m0, (0.045, 0.045, 0.045), seg=12)
+        g0 = Vector((x - ca * 0.05, z - sa * 0.05, TOP + 0.075))
+        b.rod(M["grip"], g0, g0 + Vector((0, 0, -0.07)), 0.02, seg=8)
+    b.build("TableClutter", K.COL_CAR, car)
+
+    sx, sz = 4.2, 1.33                                       # the round mirror sign on its pole, square to the car's length
+    y1, R = TOP + 2.35, 0.3
+    cy = y1 + R
+    s = K.Builder()
+    s.rod(M["signpole"], (sx, sz, TOP - 0.25), (sx, sz, y1), 0.0275, seg=10)
+    s.rod(M["signframe"], (sx, sz, y1 - 0.05), (sx, sz, cy - R), 0.015, seg=8)
+    ry = Matrix.Rotation(math.pi / 2, 4, "Y")
+    s.cone(M["signframe"], (sx, sz, cy), R + 0.015, R + 0.015, 0.03, seg=40, rot=ry)
+    s.disc(M["mirror"], (sx + 0.016, sz, cy), R, seg=40, rot=ry)
+    s.disc(M["mirror"], (sx - 0.016, sz, cy), R, seg=40, rot=Matrix.Rotation(-math.pi / 2, 4, "Y"))
+    s.build("MirrorSign", K.COL_CAR, car)
+
+    build_day_plate(car)
+
+
+def build_day_plate(car):
+    """car.js dayPlate: a cream DAY plate drops onto the skirt at the chairman's end on "law", bounces, swings, stays."""
+    import bpy
+    M = K.M
+    x, z0, z1, y0, y1 = -TL * 0.97 - 0.012, -0.98, -0.6, 0.68, 0.87
+    zc = (z0 + z1) / 2
+    piv = K.empty("DayPlatePivot", K.COL_CAR, loc=(x, zc, y1), parent=car)
+    b = K.Builder()
+    b.box(M["plate"], (0, 0, -(y1 - y0) / 2), (0.012, z1 - z0, y1 - y0))
+    b.box(M["plateink"], (-0.0065, 0, -(y1 - y0) / 2), (0.001, (z1 - z0) * 0.94, (y1 - y0) * 0.88))
+    b.box(M["plate"], (-0.007, 0, -(y1 - y0) / 2), (0.001, (z1 - z0) * 0.9, (y1 - y0) * 0.8))
+    for zz in (-0.8 * (z1 - z0) / 2, 0.8 * (z1 - z0) / 2):
+        b.ellipsoid(M["platebolt"], (-0.008, zz, -0.035), (0.006, 0.01, 0.01), seg=8)
+    b.build("DayPlate", K.COL_CAR, piv, smooth=False)
+    cu = bpy.data.curves.new("RP_DayText", "FONT")
+    cu.body = "DAY"
+    cu.align_x, cu.align_y = "CENTER", "CENTER"
+    cu.size = 0.15
+    cu.extrude = 0.001
+    try:
+        fnt = bpy.data.fonts.load("/System/Library/Fonts/Supplemental/Georgia Bold.ttf", check_existing=True)
+        cu.font = fnt
+    except Exception:
+        pass
+    cu.body_format.foreach_set("use_bold", [True] * 3)
+    cu.materials.append(M["plateink"])
+    tx = bpy.data.objects.new("RP_DayText", cu)
+    K.COL_CAR.objects.link(tx)
+    tx.parent = piv
+    tx.location = (-0.009, 0, -(y1 - y0) / 2 - 0.01)
+    tx.rotation_euler = (math.pi / 2, 0, -math.pi / 2)
+    vis = [1.0 if st["plate"] else 0.0 for st in C]
+    K.key_series(piv, "location", [y1 + (st["plate"][0] if st["plate"] else 0.7) - st["sag"] for st in C], index=2)
+    K.key_series(piv, "rotation_euler", [(-st["plate"][1] if st["plate"] else 0.0) for st in C], index=0)
+    for k in range(3):
+        K.key_series(piv, "scale", vis, index=k, interp="CONSTANT")
+
+
+def tag_characters():
+    for o in K.COL_CAR.objects:
+        n = o.name
+        if n.startswith(("RP_Legs_", "RP_Upper_", "RP_Head_", "RP_Chairman", "RP_Drawer", "RP_Driver", "RP_MuteArm")) and o.type == "MESH":
+            o["rp_char"] = 1
 
 
 def build():
@@ -665,3 +878,8 @@ def build():
     build_suits(car)
     build_law_marks(car)
     build_phone(car)
+    build_mute(car)
+    build_smoke(car)
+    build_driver(car)
+    build_props(car)
+    tag_characters()

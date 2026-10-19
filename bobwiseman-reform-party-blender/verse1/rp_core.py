@@ -265,8 +265,8 @@ def _finish(mat, n, l, col):
 
 def toon(name, base, shadow=None, light=None, cuts=(0.32, 0.74), grain=None, haze=True):
     """base/shadow/light are sRGB hex. grain: (scale, strength) wave texture multiplied in."""
-    if LOOK == "pbr":
-        return pbr(name, base, light)
+    if LOOK == "pbr":                   # the cel 'base' is a mid tone; under a real sun the sunlit tone is the surface colour
+        return pbr(name, light or base, light)
     mat = bpy.data.materials.new("RP_" + name)
     n, l = _nodes(mat)
     dif, rgb, ramp = n.new("ShaderNodeBsdfDiffuse"), n.new("ShaderNodeShaderToRGB"), n.new("ShaderNodeValToRGB")
@@ -317,7 +317,7 @@ _KINDS = (
     ("ceramic", ("egg", "eyewhite", "iris", "wax", "candle", "bulb", "hat")),
 )
 _PARAM = {  # roughness, metallic, sheen, coat, bump strength, texture
-    "metal": (0.28, 1.0, 0.0, 0.0, 0.05, None), "wood": (0.42, 0.0, 0.0, 0.35, 0.25, "wood"),
+    "metal": (0.28, 1.0, 0.0, 0.0, 0.05, None), "wood": (0.42, 0.0, 0.0, 0.35, 0.04, "wood"),
     "velvet": (0.85, 0.0, 1.0, 0.0, 0.2, "weave"), "fabric": (0.78, 0.0, 0.5, 0.0, 0.25, "weave"),
     "rubber": (0.9, 0.0, 0.0, 0.0, 0.1, "noise"), "plastic": (0.38, 0.0, 0.0, 0.15, 0.03, None),
     "paper": (0.92, 0.0, 0.1, 0.0, 0.08, "noise"), "skin": (0.5, 0.0, 0.2, 0.0, 0.05, None),
@@ -389,16 +389,16 @@ def pbr(name, base, light=None, kind=None):
         mp.inputs["Scale"].default_value = (0.35, 3.0, 0.35)
         l.new(tc.outputs["Object"], mp.inputs["Vector"])
         wv.wave_type, wv.bands_direction = "RINGS", "Z"
-        wv.inputs["Scale"].default_value = 3.0
+        wv.inputs["Scale"].default_value = 8.0
         wv.inputs["Distortion"].default_value = 4.0
         wv.inputs["Detail"].default_value = 3.0
         l.new(mp.outputs[0], wv.inputs["Vector"])
         mx = n.new("ShaderNodeMix")
         mx.data_type = "RGBA"
         mx.inputs["A"].default_value = col
-        mx.inputs["B"].default_value = lin(shade(base, 0.82))
+        mx.inputs["B"].default_value = lin(shade(base, 0.93))
         rr = n.new("ShaderNodeMapRange")
-        rr.inputs["From Min"].default_value, rr.inputs["From Max"].default_value = 0.35, 1.0
+        rr.inputs["From Min"].default_value, rr.inputs["From Max"].default_value = 0.55, 1.0
         l.new(wv.outputs["Fac"], rr.inputs["Value"])
         l.new(rr.outputs[0], mx.inputs["Factor"])
         l.new(mx.outputs["Result"], bs.inputs["Base Color"])

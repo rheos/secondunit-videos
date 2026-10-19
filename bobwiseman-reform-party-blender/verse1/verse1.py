@@ -23,7 +23,7 @@ from mathutils import Vector
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import rp_core as K  # noqa: E402  (resets the scene on import)
 
-MODULES = (K.arg("--only") or "rp_car,rp_playa,rp_installs").split(",")
+MODULES = (K.arg("--only") or "rp_car,rp_playa,rp_installs,rp_people").split(",")
 LINEART = "--no-lineart" not in K.ARGS and K.LOOK != "pbr"
 S = K.state("core")
 scn = K.scn
@@ -126,6 +126,91 @@ if not world.node_tree.nodes.get("RP_SkyDone"):
     wl.new(wmix.outputs[0], wout.inputs[0])
 
 # =============================================================================================
+# characters: --chars cutout turns every object tagged rp_char into a lit paper cut-out. The camera sees a
+# copy squashed toward the lens (geometry nodes: each vertex pulled onto the plane through the object's
+# origin square to the camera ray, depth kept at CUT_DEPTH); the 3D original stays for the sun only, so the
+# shadows keep a real silhouette. --chars 3d leaves them as built.
+# =============================================================================================
+CUT_DEPTH = float(K.arg("--cut-depth", 0.04))
+
+
+def flatten_group():
+    """Each vertex p slides along its own camera ray onto the plane square to (centre -> lens) that sits at
+    CUT_DEPTH of its original depth from the part's centre: same place on screen, nearly no thickness."""
+    g = bpy.data.node_groups.new("RP_Flatten", "GeometryNodeTree")
+    g.interface.new_socket("Geometry", in_out="INPUT", socket_type="NodeSocketGeometry")
+    g.interface.new_socket("Centre", in_out="INPUT", socket_type="NodeSocketVector")
+    g.interface.new_socket("Geometry", in_out="OUTPUT", socket_type="NodeSocketGeometry")
+    n, l = g.nodes, g.links
+    gi, go = n.new("NodeGroupInput"), n.new("NodeGroupOutput")
+    oi = n.new("GeometryNodeObjectInfo")
+    oi.transform_space = "RELATIVE"
+    oi.inputs["Object"].default_value = CAM
+    pos, setp = n.new("GeometryNodeInputPosition"), n.new("GeometryNodeSetPosition")
+
+    def vm(op, a, b=None, out=0):
+        m = n.new("ShaderNodeVectorMath")
+        m.operation = op
+        l.new(a, m.inputs[0])
+        if b is not None:
+            l.new(b, m.inputs[1])
+        return m.outputs[out]
+
+    def fm(op, a, b):
+        m = n.new("ShaderNodeMath")
+        m.operation = op
+        for i, x in enumerate((a, b)):
+            if isinstance(x, float):
+                m.inputs[i].default_value = x
+            else:
+                l.new(x, m.inputs[i])
+        return m.outputs[0]
+
+    cam = oi.outputs["Location"]
+    c = gi.outputs["Centre"]
+    v = vm("NORMALIZE", vm("SUBTRACT", cam, c))                       # centre -> lens
+    pc = vm("SUBTRACT", pos.outputs[0], c)                             # p relative to the centre
+    cc = vm("SUBTRACT", cam, c)                                        # lens relative to the centre
+    dp = vm("DOT_PRODUCT", pc, v, out="Value")                         # p's depth toward the lens
+    dc = vm("DOT_PRODUCT", cc, v, out="Value")
+    ray = vm("SUBTRACT", pc, cc)                                       # lens -> p
+    dr = vm("DOT_PRODUCT", ray, v, out="Value")
+    t = fm("DIVIDE", fm("SUBTRACT", fm("MULTIPLY", dp, CUT_DEPTH), dc), dr)
+    sc = n.new("ShaderNodeVectorMath")
+    sc.operation = "SCALE"
+    l.new(ray, sc.inputs[0])
+    l.new(t, sc.inputs["Scale"])
+    q = vm("ADD", vm("ADD", cc, sc.outputs[0]), c)                     # back to object space
+    l.new(gi.outputs["Geometry"], setp.inputs["Geometry"])
+    l.new(q, setp.inputs["Position"])
+    l.new(setp.outputs[0], go.inputs[0])
+    return g
+
+
+CHAR_OBS = [o for o in bpy.data.objects if o.get("rp_char")]
+if K.CHARS == "cutout" and CHAR_OBS:
+    fg = flatten_group()
+    for o in CHAR_OBS:
+        if o.type != "MESH":
+            continue
+        c = o.copy()                                   # shares mesh, shape keys, keyed action and parent
+        for coll in o.users_collection:
+            coll.objects.link(c)
+        c.name = o.name + "_Cut"
+        md = c.modifiers.new("RP_Flatten", "NODES")
+        md.node_group = fg
+        vs = o.data.vertices
+        ctr = sum((v.co for v in vs), Vector()) / max(1, len(vs))
+        for item in fg.interface.items_tree:
+            if item.name == "Centre":
+                md[item.identifier] = ctr
+        c.visible_shadow = False
+        o.visible_camera = False
+    print("[v1] cutout: %d character parts flattened toward the lens" % len(CHAR_OBS))
+else:
+    print("[v1] characters: 3d (%d parts)" % len(CHAR_OBS))
+
+# =============================================================================================
 # ink: Grease Pencil Line Art over the car and the installations
 # =============================================================================================
 if LINEART:
@@ -154,7 +239,8 @@ engines = {e.identifier for e in bpy.types.RenderSettings.bl_rna.properties["eng
 scn.render.engine = "BLENDER_EEVEE_NEXT" if "BLENDER_EEVEE_NEXT" in engines else "BLENDER_EEVEE"
 scn.eevee.taa_render_samples = int(K.arg("--samples", 16))
 scn.view_settings.view_transform = "AgX" if PBR else "Standard"
-scn.view_settings.look = "AgX - Medium High Contrast" if PBR else "None"
+scn.view_settings.look = "AgX - Punchy" if PBR else "None"     # keeps the draft's reds and blues saturated
+scn.view_settings.exposure = float(K.arg("--exposure", 0.35)) if PBR else 0.0
 if PBR:
     ee = scn.eevee
     for a, v in (("use_shadows", True), ("shadow_ray_count", 2), ("shadow_step_count", 8), ("use_raytracing", True),
