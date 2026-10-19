@@ -1,0 +1,46 @@
+WHAT WOULD ACHBAR ADD?
+Argument and graphics direction informed by Mark Achbar's Manufacturing Consent (1992) and The Corporation (2003)
+Updated 2026-10-19
+
+PURPOSE
+Use Achbar's two big documentaries as a reference for turning an argument into something a viewer can see, measure and laugh at, while staying aware they are watching a made thing. Keep the project's own visual look. This is our working inference from documented devices (devices.md) and the filmmakers' recorded statements. It is not written in his voice and does not claim to know how he would direct this film.
+
+CORE PRINCIPLE
+Make the commonplace strange, and show the machinery. Two documented statements carry it: Achbar's aim for The Corporation was "to make the commonplace seem strange" (press kit), and he told NPR in 1993 that the screens and staging in Manufacturing Consent remind viewers they are watching a media product. Every move below is one of those two ideas in practice.
+
+READ THE CLAIM FIRST
+Write the shot's claim as one checkable sentence with a number or a named source in it ("the Times gave Cambodia about 17 times the column inches it gave East Timor"). Then name the commonplace thing the claim depends on: a phrase everyone repeats, an official chart, a familiar screen, a reassuring promo film. That is your material. If the brief has no checkable claim, Achbar has little to add; try Mark Von Ulrich or Gilliam instead.
+
+TRY ONE OR TWO OF THESE MOVES
+1. Make the measure physical. Turn a ratio into length, area or time in a real-looking space and reveal it in real time; the number arrives last, as the verdict. (MC02 paper rolls in a stadium; MC11 a whole Times on a gym floor)
+2. Run it through an official form. Borrow a real diagnostic or bureaucratic format, fill it with sourced criteria, and land the check marks one at a time. The first tick is the laugh. Get an outside authority to sign the criteria. (TC01 the psychopath checklist; TC05 the clinical chapter titles)
+3. Put it on the public screen. Play the idea on a scoreboard, billboard, Jumbotron or mall video wall, among ads and scores, and keep the people who walk past ignoring it. (MC03 Times Square and the 264-screen mall wall; MC04 the stadium scoreboard)
+4. Stage the process as a procedure. Act out what an institution does with cheap literal props and solemn sound: surgeons with scalpels editing a story, a heart monitor under the cut. (MC01)
+5. Let the archive argue with itself. Gather every instance of a repeated phrase into one montage, cut the institution's own confident promo film against the result, and keep the broadcaster's interruptions in. (TC02 "bad apple"; TC06 campy instructional films; MC09 cut to a lottery ad)
+6. Collect the metaphors. Ask each voice for its image of the thing, then cut the answers side by side; the clash shows their values. (TC03 eagle, family, Frankenstein)
+7. Show the strings. Leave a slate, a "Cut", a monitor, the filmmaker in frame, a held key phrase in capitals. Use sparingly; once per sequence is plenty. (MC05, MC06, MC07; TC09)
+
+REFERENCE ANCHORS (see devices.md for sources)
+MC02 Column inches: two rolls unrolled in a dark stadium, floodlights coming on, then 1175 vs 70.
+MC03 Public screens: Chomsky on a Sony Jumbotron in Times Square and a 264-screen mall video wall; shoppers mostly ignored him.
+MC01 The newspaper on the operating table: filmmakers in scrubs, scalpel and sutures, heart-monitor sound.
+TC01 The checklist: WHO and DSM-IV criteria, Robert Hare as authority, Bento Box graphics, a laugh on the first tick.
+TC02 "Bad apple": 30 hours of off-air recordings mined for one phrase.
+TC03 Metaphor Rorschach: every CEO and critic asked for their image.
+TC04 Direct address: a part-silvered mirror in front of the lens, blue or green screen behind.
+Watch the scene (both films stream from ihpi.ca) before treating any of these as a visual anchor.
+
+HOW MUCH TO ADD
+Accent: one device inside the existing shot (a check mark, a scoreboard frame, a held caption).
+Device: rebuild the shot around one move (the measure made physical, the form filled in).
+Sequence: a short chaptered run with a framing device carried through (diagnosis, case histories, prognosis).
+Default to Accent or Device. Sequence only when the section is an argument, not a mood.
+
+RETURN
+State the claim and its sources. Name the commonplace thing you are making strange. Give two options; for each: the move and its device ID, what the viewer sees in order, where the number or verdict lands, what is shown of the machinery, and the sound that sells it. Recommend one. Say what in the current shot stays. List every fact that would appear on screen with its source, and flag any that are editorial.
+
+CHECK
+Is every number and quote on screen sourced, and is the authority real (a named expert, an official criterion, a public record)? Achbar's checklist works because the criteria were real. Is there a joke, and does it sit right beside the grim fact rather than replace it? Critics called some devices gimmicks that undercut grave material (young2003) and graphics like a government leaflet (kermode2006): if it only decorates, cut it. Does the image add a second idea, or just picture the word being said? Does it end somewhere a viewer can act (MC13, MC14, TC12)? Would it work in another look (clean vector, paper, live action)? Never use frames from his films, and never caricature real private people.
+
+WITH THE OTHER PROFILES
+Mark Von Ulrich gives the idea a body. Joel Nakamura puts a story inside an object. Terry Gilliam cuts a respectable thing out and makes it misbehave. Achbar measures the claim in public and shows the machinery. Run Achbar first on anything that has a number in it.
