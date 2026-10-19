@@ -1,0 +1,65 @@
+slug: peacock-paper
+title: Art Nouveau cut paper
+note: >-
+  Layered cut paper in teal, plum and gold inside an arched Nouveau border. A peacock fan opens behind a
+  petalled sun as it rises over a paper town, and its light ripples across the water.
+used: Clap Hands, Gemma Luna
+cost: free
+group: code
+order: 600
+clip: peacock-paper.mp4
+tall: true
+status: draft
+engine: canvas2d
+project: gemmaluna-clap-hands
+code:
+  path: gemmaluna-clap-hands/js/peacock/kit.js
+  flag: null
+  page: gemmaluna-clap-hands/peacock.html
+  note: >-
+    on branch clap-hands-peacock (draft PR #141), not on main. kit.js = paper primitives ported from In Her
+    Dream (cut(), grain, mottle); nouveau.js = the Nouveau motifs and clap hands; one file per section
+    (s00-s10). Look bible in STORYBOARD-peacock.md (local).
+rules:
+  - >-
+    Four papers only: teal ground, antique gold, plum, cream, each in three weights; peacock blue only in a
+    feather eye
+  - >-
+    Every shape goes through cut(): scissor edge, paper grain and mottling, a soft drop shadow that grows with
+    lift
+  - >-
+    Nouveau in paper: whiplash tendrils, scalloped and lace-punched Mucha haloes, lilies, peacock feathers,
+    Guimard lamps
+  - A cream poster border with an arched top on every frame
+  - Paper moves on twos, except the clap shots (smooth, so contact lands on its frame)
+  - People are jointed silhouette puppets, one colour per person
+  - Every scene change is a match cut on one element that contracts, expands or morphs
+palette:
+  - "#0c3133"
+  - "#1b6662"
+  - "#2f8a80"
+  - "#9c7426"
+  - "#c99c3c"
+  - "#e8cd86"
+  - "#62294f"
+  - "#f0e5c8"
+  - "#1f4e78"
+reference: >-
+  In Her Dream's cut-paper kit, pushed to Art Nouveau (Mucha, Guimard, Horta, Tiffany and Galle glass);
+  guest-direction passes after Mark Von Ulrich (draft 2) and Terry Gilliam (draft 4)
+proof:
+  renders:
+    - gemmaluna-clap-hands/out/peacock/gmc-v2_peacock-cutpaper-full-d4_f00264-f04728_24fps_review-720p.mp4
+  pr:
+    - rheos/secondunit-videos#141
+  youtube:
+    - neRdYo0YyVw
+    - GGcq57B5QZM
+    - V9xNFu7ooiM
+    - ywgJqjnEjJ4
+    - URVy7QmfzRE
+verdict: "Robin, 2026-10-16, on draft 4: \"whatever we did to audit and revise this really worked.\""
+related:
+  - nouveau
+  - papersilhouette
+  - scrap

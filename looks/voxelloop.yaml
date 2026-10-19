@@ -1,0 +1,42 @@
+slug: voxelloop
+title: Pixel voxel loop
+note: >-
+  A little block world rendered small in 3D and blown up into hard pixels. It turns once in eight seconds and
+  the last frame runs straight into the first, sized for a Spotify Canvas.
+used: Travel Agent Canvas, Bob Wiseman
+cost: free
+group: code
+order: 590
+clip: voxelloop.mp4
+tall: true
+status: approved
+engine: blender
+project: blender-orb-visualizer
+code:
+  path: blender-orb-visualizer/canvas_loop.py
+  flag: null
+  page: null
+  note: tools/canvas_encode.sh encodes the 720x1280 Canvas and checks the seam; tag canvas-take-02
+rules:
+  - >-
+    A small world turns once in exactly 8 s (or by an angle its symmetry maps onto itself), so the last frame
+    runs into the first
+  - "Every other motion has a period that divides 8 s: walk 1 s, bob 2 s, rain 0.5 s"
+  - Voxel boxes with 16x16 Python-generated textures, sampled Closest in world metres
+  - EEVEE at 180x320, scaled x4 nearest-neighbour to 720x1280
+  - Sky graded in screen space so it reads at any camera tilt
+  - "Check the seam: last-to-first PSNR within 1.5 dB of the median frame step"
+palette: []
+reference: >-
+  Kevin Ngo's Blender GIF of Claude mascots on a turning tesseract
+  (x.com/kevin_t_ngo/status/2111855072825217095)
+proof:
+  renders:
+    - blender-orb-visualizer/out/canvas/take-02/take-02_canvas_720x1280.mp4
+  pr:
+    - rheos/secondunit-videos#236
+  youtube: []
+verdict: "Robin, 2026-10-19: \"yes.. this is great. love it.\""
+related:
+  - orb-cel
+  - 16bit

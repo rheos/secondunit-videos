@@ -1,0 +1,50 @@
+slug: orb-cel
+title: Cel-shaded 3D
+note: >-
+  Flat-shaded Blender scenes with soft outlines in coral, teal, plum and cream. A glowing orb flies down a
+  corridor of rings that sweep past the camera.
+used: Blender lab test
+cost: free
+group: code
+order: 540
+clip: orb-cel.mp4
+tall: false
+status: test
+engine: blender
+project: blender-orb-visualizer
+code:
+  path: blender-orb-visualizer/orb_visualizer.py
+  flag: null
+  page: null
+  note: >-
+    On main (PR #169, issue #168). Take 01 in EXPERIMENTS.md. Runs on Blender 4.5 here and 5.2 on Modal
+    (cloud/modal_blender.py).
+rules:
+  - "Cel shading: Diffuse, Shader to RGB, a CONSTANT colour ramp (shadow, base, light), Emission; every shadow leans violet"
+  - Inverted-hull outlines (Solidify with flipped normals and a backface-culled ink material)
+  - Standard view transform so the palette hexes come out exact; convert sRGB hexes to linear in Python
+  - Mist-pass fog, Glare bloom and a little lens dispersion in the compositor
+  - One energy curve drives the orb glow, light, bloom and geometry on the beat
+  - Scene changes hide in a fog swell before each drop, where the sky colour changes
+palette:
+  - "#17122B"
+  - "#2A1F4A"
+  - "#4A2F63"
+  - "#F2786D"
+  - "#FFB38A"
+  - "#FFF1DC"
+  - "#FFD27A"
+  - "#3BB7B0"
+  - "#9C8BD8"
+reference: null
+proof:
+  renders:
+    - blender-orb-visualizer/out/take-01_preview_720p.mp4
+    - blender-orb-visualizer/reviews/take-01_v2_contact.jpg
+  pr:
+    - rheos/secondunit-videos#169
+  youtube: []
+verdict: null
+related:
+  - playa-3d
+  - voxelloop

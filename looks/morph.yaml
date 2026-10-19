@@ -1,0 +1,57 @@
+slug: morph
+title: Generated morph between looks
+note: Two drawn-in-code looks with the plane locked in place; a video model morphs one world into the other.
+used: Airplane on the Highway, hybrid exploration
+cost: 10 credits / 5 s
+group: generated
+order: 20
+clip: morph.mp4
+tall: false
+status: approved
+engine: canvas2d + brushstroke + generated
+project: bobwiseman-airplane-hybrid, bobwiseman-airplane-v1
+code:
+  path: bobwiseman-airplane-hybrid/js/ch/hybrid.js
+  flag: null
+  page: bobwiseman-airplane-hybrid/hybrid.html
+  note: >-
+    seams.mjs exports the seam start/end frames as lossless PNGs from the render pipeline; docs/SPEND.md logs
+    the Kling jobs. The final film's 23 bridges are built by bobwiseman-airplane-v1/tools/build_v4c.py +
+    v4d_plan.json (prompts in tools/prompts_v4*.tsv).
+rules:
+  - "Both looks share one ANCHOR framing: side on, the plane fixed at the same screen position and size, road and horizon at the same heights, so across the window only the style changes"
+  - Seam frames come straight from the renderer as lossless PNGs (outgoing look at the window start, incoming look at the window end)
+  - A video model fills the window from start frame to end frame (Kling 3.0 std, 5 s here; mostly Wan 3.0 Prime, 2 s, in the final)
+  - Splice the clip at the seam and drop its last frame (it equals the next segment's first frame); in the final, overlay with alpha fades
+  - A fade must not overlap a different shot underneath; generate only after every look's character is locked
+  - "Shared hybrid finish: cream stock #efe6d2 on a dark table, one red accent #cf2a28 only on the plane, motion on twos, re-pulled on threes"
+palette:
+  - "#efe6d2"
+  - "#29241f"
+  - "#1d1b1d"
+  - "#55535a"
+  - "#e2a591"
+  - "#2a2541"
+  - "#a6c0cb"
+  - "#e0a548"
+  - "#cf2a28"
+reference: Bob Wiseman's own album covers (The Legend linocut, the Real Thing naive painting, photocopy and cut-paper sleeves), per js/ch/hybrid.js
+proof:
+  renders:
+    - bobwiseman-airplane-hybrid/out/aoh_hybrid-morph_f02389-f02997_24fps_review-720p.mp4
+    - bobwiseman-airplane-v1/out/Bob Wiseman - Airplane on the Highway (1080p master).mp4
+  pr:
+    - rheos/novadiem.com#86
+  youtube:
+    - YXRc9lYVTvA
+    - 0l22a24vk90
+    - 6rkbMbEqnHA
+  note: out/ is archived on Bertha, /Volumes/Bertha/secondunit-archive/mv-projects/<project>/out/
+verdict: >-
+  Robin, 2026-10-03/04: "this is why we were finalizing the storyboard and characters before adding the
+  transitions." (about 94 credits of bridges anchored on kawaii frames had to be redone). The hybrid plane's
+  black ball nose is FACE.md's example of what to avoid.
+related:
+  - collage
+  - cutout
+  - woodcut

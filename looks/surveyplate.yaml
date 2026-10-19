@@ -1,0 +1,55 @@
+slug: surveyplate
+title: Surveyor's plate
+note: >-
+  Thin ink line work on warm paper inside a ruled plate border, with red as the only accent. A ticket rises
+  off the page, prints its date and venue, then shrinks to the top as the tour list builds from it.
+used: IndieAgent explainers
+cost: free
+group: code
+order: 530
+clip: surveyplate.mp4
+tall: false
+status: approved
+engine: hyperframes
+project: indieagent-one-show, indieagent-gigcaravan, indieagent-viralvision
+code:
+  path: indieagent-one-show/index.html
+  flag: null
+  page: indieagent-one-show/index.html
+  note: >-
+    On main (PRs #133 and #147). GigCaravan is indieagent-gigcaravan/index.html (main, PR #137); ViralVision is on
+    branch film/indieagent-viralvision (draft PR #139).
+rules:
+  - Warm paper with a soft darker edge; red is the one accent and the only colour
+  - "Thin brown ink line work: 1.6 px lines, 1 px hairlines, faint lines at 45% opacity, dashed and perforated strokes"
+  - Each chapter is a plate with a ruled border, a chapter label top left, and a scale and counter along the bottom the whole film
+  - Archivo for labels and headlines (labels uppercase and wide-tracked), JetBrains Mono for numbers
+  - Musician objects only (ticket stubs, tour lists, posters), never tech diagrams
+  - Plates overlap so each hands an object to the next, with no blank paper between
+palette:
+  - "#F2EADB"
+  - "#E2D4BA"
+  - "#8A7350"
+  - "#1E1A14"
+  - "#5E4E33"
+  - "#C8341E"
+  - "#F5EEE1"
+reference: null
+proof:
+  renders:
+    - indieagent-one-show/out/one-show_draft5_720p.mp4
+  pr:
+    - rheos/secondunit-videos#133
+    - rheos/secondunit-videos#147
+    - rheos/secondunit-videos#137
+    - rheos/secondunit-videos#139
+  youtube:
+    - 7pQM5DPMzmU
+    - aSXQ-aw5qIE
+    - dgMsSPGWVo4
+    - f_uITQKlHN4
+verdict: null
+related:
+  - blueprint
+  - fieldguide
+  - surveymap

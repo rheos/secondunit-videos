@@ -1,0 +1,46 @@
+slug: hj-anim
+title: Generated animation, matched
+note: A smoke serpent rises and rings him, then firelight paints him on the canyon wall.
+used: Dream of Fire, The Wyrd One
+cost: credits
+group: live
+order: 50
+clip: hj-anim.mp4
+tall: true
+status: approved
+engine: generated (Kling 3.0, GPT Image 2.5) + local worn-film finish
+project: hjeron-dark-blues-storyboard
+code:
+  path: hjeron-dark-blues-storyboard/tools/assemble.py
+  flag: null
+  page: null
+  note: >-
+    Paid jobs submitted through tools/gen.py (refuses anything past the cap); local finish in assemble.py
+    (grain_of(), ghost() on A4) and tools/grade.py. Shots 37 (A4) and 38 (A5) in docs/EDL.md.
+rules:
+  - "A4 smoke serpent: Kling 3.0 from a frame of his real neon clip #23; the smoke coils like a real diamondback (spiral, forebody in an S, rattle raised) before it closes into a ring, then dissolves"
+  - "A5 rock-wall painting: GPT Image 2.5 still (the figure painted in ochre and umber on cracked sandstone among petroglyph spirals, snakes and bighorn), animated by Kling 3.0 so firelight reveals it"
+  - Generated figures wear the long tattered duster, hat and veil; the face never shows
+  - "Every generated shot gets the local worn-film finish matched to a named real clip: LAB colour transfer, his grain, his torn border plate, gate weave"
+  - Petroglyph forms are invented in the Hohokam vocabulary, never copies of a real panel
+  - "Cost: Kling 3.0 about 4.5 to 6 credits per 5 s clip, GPT Image 2.5 still 4.5"
+palette: []
+reference: >-
+  Hjeron's inspiration board (smoke rattlesnake ring, figure painted on cracked sandstone); Hohokam petroglyph
+  vocabulary at Signal Hill, Saguaro NP; western diamondback threat posture
+proof:
+  renders:
+    - hjeron-dark-blues-storyboard/output/dream-of-fire_storyboard-cut_f0000-f2342_24fps_9x16_master.mp4 (shots 37-38)
+  jobs:
+    - 58f7b6e3 (A4, Kling 3.0)
+    - 0556ece1 (A5 still, GPT Image 2.5)
+    - 2998be1e (A5 anim, Kling 3.0)
+  pr: []
+  youtube:
+    - 5J-ST917WGc
+    - uH7Y8q0xpHc
+verdict: null
+related:
+  - hj-genmontage
+  - hj-continue
+  - brushhjeron

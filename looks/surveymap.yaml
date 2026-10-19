@@ -1,0 +1,46 @@
+slug: surveymap
+title: Survey map
+note: >-
+  Contour lines, spot heights and hachured cliffs on old paper, with cloud shadows passing over. A tiny
+  surveyor crosses it and a peak rises into a dress.
+used: You Don't Love Me test, Bob Wiseman
+cost: free
+group: code
+order: 250
+clip: surveymap.mp4
+tall: false
+status: rejected
+engine: canvas2d
+project: bobwiseman-you-dont-love-me
+code:
+  path: bobwiseman-you-dont-love-me/js/survey/map.js
+  flag: null
+  page: bobwiseman-you-dont-love-me/looks/survey.html
+  note: >-
+    On branch you-dont-love-me (draft PR #92), not merged. terrain.js builds the height field, map.js draws the
+    sheet, figures.js the surveyor, theodolite and daisy; js/survey/NOTES.md has the shot list.
+rules:
+  - "A height field contoured with marching squares at load: 50 m interval, an index contour every 250 m"
+  - Relief shading from the north-west, hachures down steep fall lines, a cliff with a toothed rock line
+  - Map symbols in brown and blue (water lines, a river with flow dashes, tree symbols, a dashed footpath, a kilometre grid, graduated neatline, scale bar)
+  - Numbers only, in italic serif (spot heights, grid numbers); no words
+  - An old sheet folded in 4 x 3 panels, foxed and stained, on a desk; a rostrum camera pans, zooms and turns over it
+  - The surveyor is a small engraved woman in a hatched dress; a real pressed daisy is taped to the sheet
+palette:
+  - "#2a211a"
+  - "#a8582a"
+  - "#3f7fae"
+  - "#9cc3dc"
+  - "#d4e3e1"
+reference: Old topographic survey sheets
+proof:
+  renders:
+    - bobwiseman-you-dont-love-me/out/ydlm_survey-v1_f480-f1740_24fps_draft.mp4
+  pr:
+    - rheos/secondunit-videos#92
+  youtube:
+    - hmi7b9OBc94
+verdict: 'Bob, 2026-10-10, on the look reel: he wanted the whole song in the stained glass ("view the whole thing through that lens"), so the survey map left the cut.'
+related:
+  - medical
+  - surveyplate

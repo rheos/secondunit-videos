@@ -1,0 +1,40 @@
+slug: hj-sepia
+title: Sepia film look
+note: "Generated dunes aged to match his footage: burnt edges, grain, sepia."
+used: Dream of Fire look test
+cost: credits
+group: live
+order: 60
+clip: hj-sepia.mp4
+tall: true
+status: approved
+engine: live action
+project: hjeron-dark-blues-storyboard
+code:
+  path: hjeron-dark-blues-storyboard/tools/assemble.py
+  flag: null
+  page: null
+  note: >-
+    The clip is his real clip #37 (viralvision-worker/artists/mythmaker/footage/clips/root-copy4b346e12..._003.mp4),
+    unaltered; it is shot 47 of the cut and the source of the scratchboard conversion. The same sepia finish is put
+    on generated shots by hjeron-dark-blues-storyboard/tools/grade.py --look sepia.
+rules:
+  - Warm amber, lifted blacks, heavy grain and dust
+  - Vertical scratches and light leaks
+  - Torn, burned photo border around the frame
+  - "On generated shots: colour transfer (LAB mean/std) from a named real clip, his grain looped over the shot, his border plate multiplied over the frame, 1 to 2 px gate weave"
+  - His real footage is never restyled; only generated shots are graded toward it
+palette: []
+reference: Hjeron's own sepia torn-photo clips (#11-#16, #27-#42, #47-#50), his house look
+proof:
+  renders:
+    - hjeron-dark-blues-storyboard/output/dream-of-fire_storyboard-cut_f0000-f2342_24fps_9x16_master.mp4 (shot 47)
+  pr: []
+  youtube:
+    - 5J-ST917WGc
+    - uH7Y8q0xpHc
+verdict: null
+related:
+  - hj-scratch
+  - hj-live
+  - hj-continue

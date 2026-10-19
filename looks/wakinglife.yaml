@@ -1,0 +1,46 @@
+slug: wakinglife
+title: Rotoscope dream
+note: "Faux-rotoscope: fills, shadows and outlines drift apart, walls breathe, each scene a different hand."
+used: Airplane on the Highway test
+cost: free
+group: code
+order: 350
+clip: wakinglife.mp4
+tall: false
+status: approved
+engine: canvas2d
+project: bobwiseman-airplane-wakinglife, bobwiseman-airplane-v1
+code:
+  path: bobwiseman-airplane-wakinglife/js/roto.js
+  flag: null
+  page: bobwiseman-airplane-wakinglife/wakinglife.html
+  note: >-
+    roto.js is the faux-rotoscope kit (three hands), person.js the skeleton talker, js/look.js the breathing/acid
+    finish. The film's sections I and J are bobwiseman-airplane-v1/sections/dream-i (dream.html, acid controls)
+    and sections/dream-j (wakinglife.html, the anchorman).
+rules:
+  - "Every shape is drawn three times from one contour (fill, shadow, ink), each with its own slow wobble and drift, so fills slide under their lines"
+  - "Each scene in a different animator's hand: clean thin line, painterly flat shapes with no outline, or scratchy triple line with hatching"
+  - People drawn from a skeleton with naturalistic proportions, posed by gesture keyframes plus breathing and weight-shift noise, so they move like traced footage
+  - "Finish: the whole frame breathes (low-frequency warp), film softness and grain, washed colour, lifted blacks, a hue that drifts all the time"
+  - Odd sounds in the bed push acid turns (hue jolts, mirrored seep, peeled ghost layer, kaleidoscope fold)
+  - All motion is smooth noise in song time, never Math.random; anonymous talkers, no real likeness
+palette: []
+reference: Richard Linklater's Waking Life (2001), its painted-over-video rotoscope
+proof:
+  renders:
+    - bobwiseman-airplane-wakinglife/out/aoh_wakinglife-test_f07152-f07632_24fps_review-720p.mp4
+    - bobwiseman-airplane-v1/out/Bob Wiseman - Airplane on the Highway (1080p master).mp4
+  pr:
+    - rheos/novadiem.com#86
+    - rheos/novadiem.com#89
+  youtube:
+    - 9oDWqFATILM
+    - 6rkbMbEqnHA
+  note: out/ is archived on Bertha, /Volumes/Bertha/secondunit-archive/mv-projects/<project>/out/
+verdict: >-
+  Robin's v3 notes, 2026-10-03 (STORYBOARD.md): keep what Bob loves, the "anchorman" and the flying living
+  room. Bob's note on draft v3, 2026-10-04: the anchorman stays.
+related:
+  - rotoscope-haze
+  - crisp-line

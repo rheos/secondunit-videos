@@ -1,0 +1,42 @@
+slug: hj-continue
+title: Footage continued by AI
+note: A real shot of him on the spire, then a generated pull-back that flies the desert and lands on a dune.
+used: Dream of Fire, The Wyrd One
+cost: credits
+group: live
+order: 30
+clip: hj-continue.mp4
+tall: true
+status: approved
+engine: live action + generated (Kling 3.0 start/end-frame bridge)
+project: hjeron-dark-blues-storyboard
+code:
+  path: hjeron-dark-blues-storyboard/tools/assemble.py
+  flag: null
+  page: null
+  note: >-
+    The take is the augment test t_bridge (Kling 3.0 job dd8467ff, prompt mv-projects/hjeron-dark-blues-augment/p_bridge.txt,
+    local only), reused as shot 09 at 1.26x after the real spire shot 08 (#47).
+rules:
+  - Start frame = the last frame of his real spire clip (#47), end frame = the first frame of his real dune clip
+  - One continuous camera move: lift off the spire, glide low over the desert at golden hour, settle on the figure on the dune crest
+  - Prompt the look of both frames throughout (aged sepia stock, grain, dust, scratches, light leaks, torn burned border)
+  - Only one bridge per video; it is the signature transition
+  - Kling 3.0 std 5 s 720x1280, about 10 credits
+palette: []
+reference: Hjeron's own sepia torn-photo footage (#47 spire, #36/#37 dunes)
+proof:
+  renders:
+    - mv-projects/hjeron-dark-blues-augment/t_bridge.url (local)
+    - hjeron-dark-blues-storyboard/output/dream-of-fire_storyboard-cut_f0000-f2342_24fps_9x16_master.mp4 (shots 08-09)
+  pr: []
+  youtube:
+    - 5J-ST917WGc
+    - uH7Y8q0xpHc
+verdict: >-
+  "all good tests.. i like it.. especially that zoom out transition" (Robin, 2026-09-28, on the continue, bridge and
+  lip-sync tests; the zoom out is this bridge)
+related:
+  - hj-live
+  - hj-sepia
+  - hj-genmontage
