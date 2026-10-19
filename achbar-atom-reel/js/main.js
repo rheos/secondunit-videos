@@ -18,6 +18,8 @@ function renderFrame(t) {
   if (fin < 1) { O.fillStyle = `rgba(0,0,0,${1 - fin})`; O.fillRect(0, 0, W, H); }
 }
 window.__frameJPEG = (t, q = .93) => { renderFrame(t); return out.toDataURL('image/jpeg', q); };
+// cues.mjs: draw every frame with collection on and hand back the animation events (type.js)
+window.__collectCues = (t0, t1, fps) => { window.__collect = true; CUES.length = 0; CUEKEYS.clear(); for (let i = 0; i <= Math.round((t1 - t0) * fps); i++) renderFrame(t0 + i / fps); window.__collect = false; return CUES.slice().sort((a, b) => a.t - b.t); };
 const FONTS = ['900 100px Archivo', '800 100px Archivo', '400 100px "JetBrains Mono"', '700 100px "JetBrains Mono"', 'italic 400 100px "Instrument Serif"'];
 window.__ready = Promise.all([loadImgs(), ...FONTS.map((f) => document.fonts.load(f))]).then(() => document.fonts.ready).then(() => true);
 if (!/offline=1/.test(location.search)) {

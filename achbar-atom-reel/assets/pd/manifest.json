@@ -106,5 +106,16 @@
   "author": "",
   "sha256": "cd439d09974872be619cd180839b5940606e470e45d9c6d98d09bc8be0d889df",
   "bytes": 2047671
+ },
+ {
+  "file": "la-602.jpg",
+  "title": null,
+  "url": "https://web.archive.org/web/20250106225146id_/https://sgp.fas.org/othergov/doe/lanl/docs1/00329010.pdf",
+  "page": "https://sgp.fas.org/othergov/doe/lanl/docs1/00329010.pdf",
+  "description": "LA-602, Ignition of the Atmosphere with Nuclear Bombs, Konopinski, Marvin, Teller, Los Alamos, 14 August 1946; title page (page 2 of the PDF) rasterised at 220 dpi with pdftoppm. Declassified 1979 (stamps on the scan).",
+  "author": "Los Alamos Scientific Laboratory (U.S. government work)",
+  "licence": "Public domain: U.S. government work, 17 USC 105; marked Approved for Public Release / Publicly Releasable",
+  "sha256": "d766cefa6c634290c447608511f483d03380230bf52194ddd4d1a3e9bf010b65",
+  "note": "FAS itself answers bot checks with an empty 202; fetch from the Internet Archive capture. fetch-pd.py renders the page with pdftoppm."
  }
 ]

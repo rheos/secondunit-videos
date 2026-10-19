@@ -4,14 +4,14 @@
 // The schematic annotations around them are drawn on top, crisp, by the shots.
 'use strict';
 const IMG = {};
-const PD = ['trinity', 'eniac-beck-snyder', 'atoms-for-peace-stamp', 'breactor-pile', 'trinity-haer-fireball', 'trinity-haer-bomb'];
+const PD = ['trinity', 'eniac-beck-snyder', 'atoms-for-peace-stamp', 'breactor-pile', 'trinity-haer-fireball', 'trinity-haer-bomb', 'la-602'];
 function loadImgs() {
   return Promise.all(PD.map((k) => new Promise((res) => {
     const i = new Image(); i.onload = () => { IMG[k] = i; res(); }; i.onerror = () => { console.error('missing image ' + k); res(); }; i.src = 'assets/pd/' + k + '.jpg';
   })));
 }
 // crop windows (u0, v0, u1, v1) per image: the drawings' scans carry film borders and grey scales we leave out
-const CROP = { 'breactor-pile': [.075, .176, .935, .86] };
+const CROP = { 'breactor-pile': [.075, .176, .935, .86], 'la-602': [.08, .30, .92, .70] };
 const crop = (key) => CROP[key] || [0, 0, 1, 1];
 // frame size of a print of width w
 const printH = (key, w) => { const im = IMG[key], c = crop(key); return im ? w * (im.height * (c[3] - c[1])) / (im.width * (c[2] - c[0])) : w * .6; };

@@ -18,9 +18,17 @@ function txt(str, x, y, o = {}) {
   const w = X.measureText(str).width; resetFont(); return w;
 }
 const typed = (str, t, t0, cps = 38) => str.slice(0, Math.max(0, Math.floor((t - t0) * cps)));
+// Cue collection: when window.__collect is set (cues.mjs), every typed character, every kinetic letter and every
+// leader reports its time once, so sfx.py can voice the animation events themselves. Keyed so a frame that is
+// drawn twice reports once.
+const CUES = [], CUEKEYS = new Set();
+function cue(key, k, t, size, extra) { if (!window.__collect || CUEKEYS.has(key)) return; CUEKEYS.add(key); CUES.push({ k, t: +t.toFixed(4), size, ...extra }); }
+function cueTyped(str, t0, cps, size) { const key = 'T|' + str + '|' + t0.toFixed(3); if (!window.__collect || CUEKEYS.has(key)) return; CUEKEYS.add(key); [...str].forEach((c, i) => { if (c !== ' ') CUES.push({ k: 'type', t: +(t0 + i / cps).toFixed(4), size }); }); }
+function cueLetters(str, t0, stag, size) { const key = 'K|' + str + '|' + t0.toFixed(3); if (!window.__collect || CUEKEYS.has(key)) return; CUEKEYS.add(key); [...str].forEach((c, i) => { if (c !== ' ') CUES.push({ k: 'slam', t: +(t0 + i * stag).toFixed(4), size }); }); }
 // typed caption with a block cursor while it types
 function caption(str, x, y, t, t0, o = {}) {
   if (t < t0) return;
+  if ((o.alpha ?? 1) > .05) cueTyped(str, t0, o.cps || 38, o.size || 20);
   const s = typed(str, t, t0, o.cps || 38), w = txt(s, x, y, o);
   const done = s.length >= str.length;
   if (!done || (t - t0 - str.length / (o.cps || 38)) < .5) { if (Math.floor(t * 5) % 2 === 0) { X.fillStyle = o.color || C.white; X.globalAlpha = o.alpha ?? 1; X.fillRect(x + w + 3, y - (o.size || 20) * .8, (o.size || 20) * .55, (o.size || 20) * .9); X.globalAlpha = 1; } }
@@ -47,6 +55,7 @@ function letters(str, x, y, o, fn) {
 function kin(str, x, y, t, t0, o = {}) {
   if (t < t0) return 0;
   const stag = o.stag ?? .028, dur = o.dur ?? .2, n = str.length;
+  if ((o.alpha ?? 1) > .05) cueLetters(str, t0, stag, o.size);
   return letters(str, x, y, o, (i) => {
     const k = eo(seg(t, t0 + i * stag, t0 + i * stag + dur));
     let alpha = k * (o.alpha ?? 1), sc = 1, dy = 0;
