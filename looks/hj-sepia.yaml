@@ -30,7 +30,7 @@ rules:
     his border plate multiplied over the frame, 1 to 2 px gate weave
   - His real footage is never restyled; only generated shots are graded toward it
 palette: []
-reference: Hjeron's own sepia torn-photo clips (#11-#16,
+reference: "Hjeron's own sepia torn-photo clips (#11-#16 and #37); the generated shots were graded to match them"
 proof:
   renders:
     - >-
