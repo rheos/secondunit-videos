@@ -213,3 +213,34 @@ wheel radius 0.2 m. Camera at (-1, -14.5, 12.5) aimed at (0, -1.1, 0.4), 44 mm.
 `reviews/take-04_canvas_contact.jpg`.
 
 **Verdict.** Not reviewed yet.
+
+## Takes 05-08: four pixel-world look tests for Real Thing (2026-10-19)
+
+**Brief.** Robin: the pixel Blender style might suit Bob Wiseman's Real Thing, maybe as the opposite of the real
+thing; the gorilla stays if Bob wants it, but more proposals would help. Bob's own brief (note on draft 1): an
+entirely different story that makes us think about the lyric, never the lyric illustrated. Each take compresses a
+whole-film idea into the 28 s of song 21.0-49.3 (the same stretch as the 2D gorilla look test). Issue #244.
+
+**Kit.** `film_kit.py` on top of `canvas_kit.py`: frames numbered by song frame, one camera per shot cut by
+timeline markers, voxel people (`person()`, walk/stand/sit poses), and the pixel look in the compositor: a
+Pixelate node whose Size is keyed per frame with constant steps, plus a cryptomatte list of objects that stay
+sharp. 1280x720 EEVEE, about 0.7 s a frame on this Mac. `tools/film_encode.sh` muxes the song from the same song
+time. Four builders worked in parallel, one script each; the coordinator reviewed every contact sheet.
+
+| Take | Script | Idea | Pixel use |
+|---|---|---|---|
+| 05 | `realthing_connection.py` | Bad connection: a grandfather's frozen video call; he drives to his granddaughter's porch | resolution is distance: size 8 at home, 6, 4 on the road, 2, then 1 exactly on the hug |
+| 06 | `realthing_pet.py` | The pet: a keychain pixel pet dies while the real dog waits with the leash | pixels only on the LCD (sprite frames as box objects switched by show()); the room renders sharp |
+| 07 | `realthing_respawn.py` | Respawn: a game shopkeeper sells the same sword forever, walks off the map into a grid void, finds a crack onto a real sunrise | world at size 6; the sunrise (`CL_sr_*`) in the sharp list stays crisp |
+| 08 | `realthing_gorilla.py` | Bob's gorilla story, draft 3's verse beats and times, as a voxel jungle | whole frame at size 5 |
+
+**Renders** (`out/film/take-0N/take-0N_f00504-f01183_24fps_draft.mp4`, 680 frames each, song muxed; reel
+`out/film/reel/realthing_pixel-looks_takes05-08_review.mp4`, 116 s). Contact sheets: `reviews/take-0N_realthing_contact.jpg`.
+badframes: 0 on 06-08; 3 on 05 at the cut onto the night road, which are dark frames, not faults.
+
+**Known faults.** 05: the opening room is dark and muddy at size 8, his face doesn't read there; the car reads as a
+golf cart; he appears beside the car instead of getting out. 06: the pile jumps from his feet to the door between
+shots; the sleeping dog is small. 07: hero 3 crosses close to camera for a few frames; the apron is a white slab.
+08: the banana reads like a crown seen end-on; his legs are big dark blocks in the lying shots.
+
+**Verdict.** Waiting on Robin.
