@@ -70,5 +70,32 @@
   "author": "Nuclear Regulatory Commission from US",
   "sha256": "1ba1985e072bbd0da861ca69ffa688efb71c3c065f069827f348328af9eaebc7",
   "bytes": 235830
+ },
+ {
+  "file": "breactor-pile.jpg",
+  "title": "File:An external view of the B Reactor's graphite pile. (HTM 1945- 405) - B Reactor, Richland, Benton County, WA HAER WA-164-8.tif",
+  "page": "https://commons.wikimedia.org/wiki/File:An_external_view_of_the_B_Reactor%27s_graphite_pile._(HTM_1945-_405)_-_B_Reactor,_Richland,_Benton_County,_WA_HAER_WA-164-8.tif",
+  "license": "Public domain",
+  "author": "",
+  "sha256": "70296e10358902e867b04b9ca98d6daf2232b418ac1aa700606addb8e5356ea9",
+  "bytes": 1823740
+ },
+ {
+  "file": "breactor-cutaway.jpg",
+  "title": "File:A cutaway view of the graphite pile. (HTM 1945- 406) - B Reactor, Richland, Benton County, WA HAER WA-164-9.tif",
+  "page": "https://commons.wikimedia.org/wiki/File:A_cutaway_view_of_the_graphite_pile._(HTM_1945-_406)_-_B_Reactor,_Richland,_Benton_County,_WA_HAER_WA-164-9.tif",
+  "license": "Public domain",
+  "author": "",
+  "sha256": "6fe48a5fd07605ca2eb47ed8e3833115a173172d9037e246680bbf1fc2c32077",
+  "bytes": 1919181
+ },
+ {
+  "file": "trinity-haer-fireball.jpg",
+  "title": "File:White Sands Missile Range, Trinity Site, Vicinity of Routes 13 and 20, White Sands, Dona Ana County, NM HAER NM,27-ALMOG.V,1A- (sheet 4 of 11).tif",
+  "page": "https://commons.wikimedia.org/wiki/File:White_Sands_Missile_Range,_Trinity_Site,_Vicinity_of_Routes_13_and_20,_White_Sands,_Dona_Ana_County,_NM_HAER_NM,27-ALMOG.V,1A-_(sheet_4_of_11).tif",
+  "license": "Public domain",
+  "author": "",
+  "sha256": "ab51a500bc2468ab242f13468dcf3a238aa6585cdf8930b205be7998931436e1",
+  "bytes": 1978285
  }
 ]

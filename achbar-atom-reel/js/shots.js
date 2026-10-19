@@ -8,7 +8,7 @@ const B0 = 6.41, HB = (53.55 - 6.41) / 138, BEAT = 2 * HB, BAR = 4 * BEAT;
 const bar = (n) => B0 + n * BAR, bt = (n) => B0 + n * BEAT;
 const pr = (t, a, b) => cl((t - a) / (b - a));
 C.mag = '#ff3d9a';
-const PLATE = { A: 0, B: bar(1), C: bar(5), D: bar(8), E: bar(12), F: bar(15), END: 60 };
+const PLATE = { A: 0, B: bar(1), C: bar(5), D: bar(8) + 2 * BEAT, E: bar(12), F: bar(15), END: 60 };
 const TITLE = 'ROMANCING THE ATOM';
 
 // ---------- shared marks ----------
@@ -57,27 +57,45 @@ function plateLabel(n, title, sub, t, t0) {
 }
 
 // ---------- I. title ----------
+function band(t, t0, t1, title, sub) {
+  // a navy caption band along the bottom, typed
+  const bk = pr(t, t0, t0 + .35) * (1 - pr(t, t1, t1 + .3)); if (bk <= 0) return;
+  X.globalAlpha = .9 * bk; X.fillStyle = C.navy2; X.fillRect(0, 930, W * eo(pr(t, t0, t0 + .35)), 150); X.globalAlpha = 1;
+  gl(0, 930, W * eo(pr(t, t0, t0 + .35)), 930, C.cyan, .8 * bk, 1.2);
+  caption(title, 120, 990, t, t0 + .3, { size: 26, weight: 700, color: C.white, alpha: bk, cps: 60 });
+  if (sub) caption(sub, 120, 1030, t, t0 + .5, { size: 17, color: C.lav, alpha: bk, cps: 150 });
+}
 function plateA(t) {
   schBG(); X.globalAlpha = 1;
-  const ax = 960, ay = 430;
-  lattice(ax, ay, 46, 6, C.lav, .07 * pr(t, 1.5, 4));
-  graticule(960, 540, 1680, 860, 60, C.lav, .05 * pr(t, 1, 3));
+  const ax = 960, ay = 430, PW = 1340, PY0 = 548, PZ = lerp(1, 1.06, pr(t, 0, 5));
+  // the declassified 1945 drawing, as scanned; our line traces the pile; then its own lines become the blueprint
+  // a scan bar sweeps the sheet like a blueprint machine: paper ahead of it, linework behind
+  const inv = eio(pr(t, 3.3, 4.6)), gone = pr(t, 8.2, 9.14), PH0 = printH('breactor-pile', PW) * PZ, sx = lerp(960 - PW * PZ / 2 - 30, 960 + PW * PZ / 2 + 30, inv);
+  if (inv < 1) print('breactor-pile', 960, PY0, PW, { z: PZ, mount: 10, clip: [sx, 0, W, H] });
+  if (inv > 0) print('breactor-pile', 960, PY0, PW, { z: PZ, mount: 0, lines: true, clip: [0, 0, sx, H], alpha: lerp(1, .3, eio(pr(t, 4.6, 5.8))) * (1 - gone) });
+  if (inv > 0 && inv < 1) { const y0 = PY0 - PH0 / 2 - 20, y1 = PY0 + PH0 / 2 + 20; X.save(); X.globalCompositeOperation = 'lighter'; const g = X.createLinearGradient(sx - 90, 0, sx, 0); g.addColorStop(0, 'rgba(143,227,255,0)'); g.addColorStop(1, 'rgba(143,227,255,.35)'); X.fillStyle = g; X.fillRect(sx - 90, y0, 90, y1 - y0); X.restore(); gl(sx, y0, sx, y1, C.white, .95, 2.5); }
+  const P = (u, v) => printPt('breactor-pile', 960, PY0, PW, u, v, { z: PZ });
+  const FLT = P(.18, .327), FRT = P(.552, .327), FLB = P(.18, .883), FRB = P(.552, .883), BLT = P(.366, .099), BRT = P(.788, .117), BRB = P(.788, .671);
+  const edges = [[FLT, FRT], [FRT, FRB], [FRB, FLB], [FLB, FLT], [FLT, BLT], [BLT, BRT], [BRT, FRT], [BRT, BRB], [BRB, FRB]];
+  const tk = pr(t, .9, 2.9), ta = 1 - pr(t, 4.4, 5.2);
+  edges.forEach(([a, b], i) => { const k = eo(seg(tk, i / edges.length * .75, i / edges.length * .75 + .3)); if (k > 0) path([a, [lerp(a[0], b[0], k), lerp(a[1], b[1], k)]], C.cyan, 3.2, .95 * ta); });
+  band(t, 1.6, 3.9, 'HANFORD B REACTOR · THE GRAPHITE PILE, 1945', 'DRAWING HTM 1945-405 · DECLASSIFIED · LIBRARY OF CONGRESS, HAER WA-164');
   schFrame('0', '', '', C.lav);
-  plateLabel('FIG. 0', 'ROMANCING THE ATOM · A GRAPHICS TEST', '', t, 2.2);
-  const k = pr(t, 2.1, 4.6), out = pr(t, 8.6, 9.14);
-  atom(ax, ay, 360, 118, k, t, { pulse: bt(0), a: 1 });
-  if (k > .4) { bracket(ax - 360, ay + 190, ax + 360, ay + 190, C.lav, .6 * pr(t, 3, 3.6), 'ORBIT  r = 360'); bracket(ax + 420, ay - 118, ax + 420, ay + 118, C.lav, .6 * pr(t, 3.3, 3.9), '236'); }
+  plateLabel('FIG. 0', 'ROMANCING THE ATOM · A GRAPHICS TEST', '', t, .8);
+  const k = pr(t, 3.7, 5.9), out = pr(t, 8.6, 9.14);
+  atom(ax, ay, 360, 118, k, t, { pulse: bt(1), a: 1 });
+  if (k > .4) { bracket(ax - 360, ay + 190, ax + 360, ay + 190, C.lav, .6 * pr(t, 4.6, 5.2) * (1 - out), 'ORBIT  r = 360'); bracket(ax + 420, ay - 118, ax + 420, ay + 118, C.lav, .6 * pr(t, 4.9, 5.5) * (1 - out), '236'); }
   // romance, constructed: a heart built from two circles and two tangents around the nucleus
-  const hk = pr(t, bt(0), bt(0) + 1.2), hx = ax, hy = ay - 8, hr = 34;
+  const hk = pr(t, bt(1), bt(1) + 1.1), hx = ax, hy = ay - 8, hr = 34;
   if (hk > 0) {
     gc(hx - hr * .72, hy - hr * .35, hr * .75, C.lav, .5 * (1 - out), 1, [3, 4]); gc(hx + hr * .72, hy - hr * .35, hr * .75, C.lav, .5 * (1 - out), 1, [3, 4]);
-    const P = []; for (let i = 0; i <= 80; i++) { const a = i / 80 * TAU; P.push([hx + 16 * Math.pow(Math.sin(a), 3) * hr / 15, hy - (13 * Math.cos(a) - 5 * Math.cos(2 * a) - 2 * Math.cos(3 * a) - Math.cos(4 * a)) * hr / 15]); }
-    path(P.slice(0, Math.max(2, Math.round(80 * eo(hk)))), C.mag, 2.4, 1 - out);
-    if (hk >= 1) lab(hx + 70, hy - 62, 'ROMANCE (CONSTRUCTED)', C.mag, .9 * (1 - out), 12);
+    const H = []; for (let i = 0; i <= 80; i++) { const a = i / 80 * TAU; H.push([hx + 16 * Math.pow(Math.sin(a), 3) * hr / 15, hy - (13 * Math.cos(a) - 5 * Math.cos(2 * a) - 2 * Math.cos(3 * a) - Math.cos(4 * a)) * hr / 15]); }
+    path(H.slice(0, Math.max(2, Math.round(80 * eo(hk)))), C.mag, 2.4, 1 - out);
+    if (hk >= 1) lab(hx + 70, hy - 62, 'ROMANCE (CONSTRUCTED)', C.mag, .9 * (1 - out), 14);
   }
   const tsz = fit('ROMANCING', 1240, 200, { fam: FT.d, weight: 900, stretch: 'expanded' });
-  kin('ROMANCING', 960, 790, t, 4.05, { size: tsz, weight: 900, stretch: 'expanded', align: 'center', stag: .045, out: 8.55 });
-  kin('the atom', 960, 905, t, 5.35, { fam: FT.s, size: 120, weight: 400, italic: true, align: 'center', style: 'rise', stag: .05, dur: .35, out: 8.65 });
+  kin('ROMANCING', 960, 790, t, 4.95, { size: tsz, weight: 900, stretch: 'expanded', align: 'center', stag: .045, out: 8.55 });
+  kin('the atom', 960, 905, t, 5.95, { fam: FT.s, size: 120, weight: 400, italic: true, align: 'center', style: 'rise', stag: .05, dur: .35, out: 8.65 });
 }
 
 // ---------- II. the promise ----------
@@ -129,17 +147,32 @@ const TRI = { cx: 960, cy: 530, w: 1560, u: .48, v: .43 };
 const ENI = { cx: 960, cy: 545, w: 1170, u: .36, v: .42 };
 function plateC(t) {
   const t0 = PLATE.C; schBG(); schFrame('2', '', '', C.lav);
-  const swap = bar(6) + .75, close1 = swap - .8; // fireball closes to a point, ENIAC opens from it
-  // Trinity: an iris opens from the network's output node onto the fireball
+  const swap = bar(6) + .75 + 2 * BEAT, close1 = swap - .8; // fireball closes to a point, ENIAC opens from it
+  // Trinity: an iris opens from the network's output node onto HAER sheet 4 (1985), whose drawn fireball is
+  // set at the same place and size as the photograph's; the drawing's panel then becomes the photograph
   if (t < swap) {
     const z = lerp(1, 1.07, pr(t, t0, swap)), fb = printPt('trinity', TRI.cx, TRI.cy, TRI.w, TRI.u, TRI.v, { z, fx: TRI.u, fy: TRI.v });
+    const SW = 1190, SH = printH('trinity-haer-fireball', SW), scx = fb[0], scy = fb[1] + .03 * SH;
     const open = eo(pr(t, t0, t0 + 1.0)), shut = eio(pr(t, close1, swap));
     const ix = lerp(1580, fb[0], open), iy = lerp(470, fb[1], open), ir = lerp(8, 1150, open) * (1 - shut) + 2 * shut;
-    print('trinity', TRI.cx, TRI.cy, TRI.w, { z, fx: TRI.u, fy: TRI.v, iris: { x: ix, y: iy, r: ir }, mount: 0 });
+    const ph0 = t0 + 1.9, phk = eio(pr(t, ph0 + .25, ph0 + .85));
+    const S = (u, v) => printPt('trinity-haer-fireball', scx, scy, SW, u, v);
+    if (phk < 1) print('trinity-haer-fireball', scx, scy, SW, { iris: { x: ix, y: iy, r: ir }, mount: 8 });
+    if (t > ph0) {
+      const p0 = S(.28, .18), p1 = S(.72, .72), clip = [lerp(p0[0], 0, phk), lerp(p0[1], 0, phk), lerp(p1[0] - p0[0], W, phk), lerp(p1[1] - p0[1], H, phk)];
+      X.save(); X.beginPath(); X.arc(ix, iy, Math.max(0, ir), 0, TAU); X.clip();
+      print('trinity', TRI.cx, TRI.cy, TRI.w, { z, fx: TRI.u, fy: TRI.v, clip, mount: 0, alpha: pr(t, ph0, ph0 + .3) });
+      if (phk < 1) { X.strokeStyle = C.cyan; X.lineWidth = 1.5; X.globalAlpha = .8; X.strokeRect(...clip); X.globalAlpha = 1; }
+      X.restore();
+    }
     gc(ix, iy, ir, C.cyan, .8, 1.5);
-    if (open >= 1 && shut === 0) {
-      sight(fb[0], fb[1], 120, t, pr(t, t0 + 1.1, t0 + 1.5));
-      leader(fb[0] + 120, fb[1] - 60, 1340, 230, 'TRINITY · NEW MEXICO', '16 JULY 1945 · 05:29 · U.S. DEPT. OF ENERGY PHOTO', t, t0 + 1.4);
+    if (open >= 1 && t < ph0) {
+      const gz = S(.5, .61); sight(gz[0], gz[1], 46, t, pr(t, t0 + 1.0, t0 + 1.3));
+    }
+    band(t, t0 + .75, ph0 + .75, 'JULY 16, 1945 · TRINITY SITE, SHEET 4', 'DRAWN 1985 BY ROSSANA H. SANTOS · HISTORIC AMERICAN ENGINEERING RECORD, LIBRARY OF CONGRESS');
+    if (phk >= 1 && shut === 0) {
+      sight(fb[0], fb[1], 120, t, pr(t, ph0 + .85, ph0 + 1.1));
+      leader(fb[0] + 120, fb[1] - 60, 1340, 230, 'TRINITY · NEW MEXICO', '16 JULY 1945 · 05:29 · U.S. DEPT. OF ENERGY PHOTO', t, ph0 + .9);
     }
     if (shut > .8) star(fb[0], fb[1], 6, C.white, 1);
   } else {
@@ -318,7 +351,7 @@ function titleBlock(t) {
   kin('ROMANCING THE ATOM', x0 + 34, y + 190, t, t0 + .5, { size: s, weight: 900, stretch: 'expanded', stag: .03 });
   caption('A GRAPHICS TEST FOR MARK ACHBAR’S DOCUMENTARY', x0 + 34, y + 305, t, t0 + .8, { cps: 70, size: 28, color: C.white });
   caption('DRAWN IN CODE BY NOVADIEM · NOVADIEM.COM', x0 + 34, y + 385, t, t0 + 1.2, { cps: 70, size: 27, color: C.cyan, weight: 700 });
-  caption('ARCHIVAL PHOTOS: U.S. DEPT. OF ENERGY, U.S. ARMY, U.S. POST OFFICE · PUBLIC DOMAIN', x0 + 34, y + 465, t, t0 + 1.5, { size: 19, color: C.lav, cps: 110 });
+  caption('ARCHIVAL: U.S. DOE, U.S. ARMY, U.S. POST OFFICE, LIBRARY OF CONGRESS · PUBLIC DOMAIN', x0 + 34, y + 465, t, t0 + 1.5, { size: 19, color: C.lav, cps: 110 });
   caption('DATA: FAS VIA OUR WORLD IN DATA · BULLETIN OF THE ATOMIC SCIENTISTS · APS NEWS', x0 + 34, y + 545, t, t0 + 1.8, { size: 19, color: C.lav, cps: 110 });
   caption('MUSIC: GLASSY ART POP, TAKE 2 (ELEVENLABS)', x0 + 34, y + 625, t, t0 + 2.1, { size: 19, color: C.lav, cps: 110 });
   if (t > t0 + 1.3) { atom(1540, y + 470, 110, 36, pr(t, t0 + 1.3, t0 + 2.6), t, { nr: 4 }); lab(1540, y + 640, 'TEST 01 · 2026-10-19', C.lav, .8 * pr(t, t0 + 2.4, t0 + 2.8), 16, 'center'); }

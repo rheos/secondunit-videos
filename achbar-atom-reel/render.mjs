@@ -24,5 +24,5 @@ await b.close();
 if (errs.length) console.log('ERRORS:\n' + [...new Set(errs)].slice(0, 20).join('\n'));
 const vf = SCALE < 1 ? `-vf scale=${Math.round(1920 * SCALE / 2) * 2}:${Math.round(1080 * SCALE / 2) * 2}:flags=lanczos` : '';
 const crf = SCALE < 1 ? 24 : 17;
-execSync(`ffmpeg -y -loglevel error -framerate ${FPS} -i ${dir}/f_%06d.jpg -ss ${t0} -t ${t1 - t0} -i assets/song.wav ${vf} -c:v libx264 -preset medium -crf ${crf} -pix_fmt yuv420p -c:a aac -b:a 256k -t ${t1 - t0} -movflags +faststart ${out}`);
+execSync(`ffmpeg -y -loglevel error -framerate ${FPS} -i ${dir}/f_%06d.jpg -ss ${t0} -t ${t1 - t0} -i ${process.env.AUDIO || 'assets/song.wav'} ${vf} -c:v libx264 -preset medium -crf ${crf} -pix_fmt yuv420p -c:a aac -b:a 256k -t ${t1 - t0} -movflags +faststart ${out}`);
 console.log('wrote', out, `${((Date.now() - start) / 1000).toFixed(0)}s`);
