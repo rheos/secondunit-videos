@@ -253,7 +253,7 @@ def build_window():
         push = ramp(t, 25.4, 31.2) * .35
         away = ramp(t, 31.26, 33.0) ** .8
         eye = Vector((-.3, -6.0 + 2.2 * push, 1.35)).lerp(Vector((-.6, -26, 4.5)), away)
-        aim(cam, eye, (.2, 0, 1.15)); key(cam, "location", f); key(cam, "rotation_euler", f)
+        aim(cam, eye, (.2, 0, 1.78)); key(cam, "location", f); key(cam, "rotation_euler", f)   # face sits below the rocket
         p.rotation_euler = (0, 0, math.radians(6) * math.sin(t * .8)); key(p, "rotation_euler", f)
     bake(frames, anim)
     return frames
@@ -279,7 +279,7 @@ def build_cat():
     mouth = sphere("mouth", .045, toon("#7a2e3a"), (0, -.24, -.08), (1, .3, .2), parent=head)
     tail = [sphere(f"tail{i}", .07, toon(P["cat"]), (.45 + i * .1, .05, .2 + i * .05)) for i in range(6)]
     for s_ in tail: s_.parent = cat
-    aim(cam, (-.4, -5.6, 1.3), (-.15, 0, .45))
+    aim(cam, (-.4, -5.6, 1.3), (-.15, 0, 1.0))
     a, b = TM["portals"][3]["render"]; frames = range(frame_of(a), frame_of(b) + 1)
     def anim(t, f):
         turn = ramp(t, 39.92, 40.6) - .55 * ramp(t, 41.2, 41.6)   # won't: the head turns away, then half back to yawn at us
@@ -289,7 +289,7 @@ def build_cat():
         for e in eyes: e.scale = (1, 1, 1 - .85 * max(yawn, .0)); key(e, "scale", f)
         for i, s_ in enumerate(tail):
             s_.location = (.45 + i * .1, .05, .2 + i * .05 + .06 * math.sin(t * 2.2 - i * .6) * (i / 5)); key(s_, "location", f)
-        aim(cam, (-.4 + .12 * math.sin(t * .5), -5.6, 1.3), (-.15, 0, .45)); key(cam, "location", f); key(cam, "rotation_euler", f)
+        aim(cam, (-.4 + .12 * math.sin(t * .5), -5.6, 1.3), (-.15, 0, 1.0)); key(cam, "location", f); key(cam, "rotation_euler", f)   # cat below the rocket
     bake(frames, anim)
     return frames
 
