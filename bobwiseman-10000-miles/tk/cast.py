@@ -117,7 +117,9 @@ def figure(name, loc=(0, 0, 0), S=PERSON, parent=None, scale=1.0):
         lids = [K.sphere(name + f"Lid{s}", er * .66, skin, (s * ex, fy - er * .45, r * .08 + er * .55), (1.05, .3, 1.2), parent=head) for s in (-1, 1)]
         for l in lids: l.scale = (1.05, .3, .0001)
         brows = [K.cube(name + f"Brow{s}", (S["brow_w"], .025, .026), ink, (s * ex, fy - er * .3, r * .08 + er * .95), parent=head, bevel=.3) for s in (-1, 1)]
-        mouth = tube(name + "Mouth", [(-.075 * r / .3, fy - .02, -r * .34), (0, fy - .035, -r * .41), (.075 * r / .3, fy - .02, -r * .34)], .0095, ink, head)
+        # the mouth tube's origin is the mouth itself, so scaling it (smile strength) keeps it in place
+        mouth = tube(name + "Mouth", [(-.075 * r / .3, 0, r * .035), (0, -.015, -r * .035), (.075 * r / .3, 0, r * .035)], .0095, ink, head)
+        mouth.location = (0, fy - .02, -r * .375)
         mouthOpen = K.sphere(name + "MouthOpen", r * .15, flat("#7a2e3a"), (0, fy - .02, -r * .38), (1, .3, 1), parent=head); mouthOpen.scale = (0.0001, .3, 0.0001)
         hair = cap = None
         if S["hair"]:
