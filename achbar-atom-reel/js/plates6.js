@@ -152,10 +152,10 @@ function cardFront(c, t, a = 1) {
   X.fillStyle = C.navy; X.fillRect(-CW / 2 + 22, -CH / 2 + 70, CW - 44, 140);
   if (c.mark === 'atom') atom(0, -CH / 2 + 140, 92, 30, 1, t, { electrons: false, nr: 4, col: C.cyan }); else miniNet(0, -CH / 2 + 140, 170, 100, C.cyan, 1, t);
   txt(c.yr, CW / 2 - 30, -CH / 2 + 100, { fam: FT.m, size: 20, weight: 700, color: C.white, align: 'right' });
-  txt(c.role, 0, -CH / 2 + 236, { fam: FT.m, size: fit(c.role, CW - 40, 14), weight: 700, color: C.ink, align: 'center' });
+  txt(c.role, 0, -CH / 2 + 238, { fam: FT.m, size: fit(c.role, CW - 36, 16), weight: 700, color: C.ink, align: 'center' });
   const ns = Math.min(64, ...c.num.map((s) => fit(s, CW - 50, 64, { fam: FT.d, weight: 900, stretch: 'semi-condensed' })));
   c.num.forEach((s, i) => txt(s, 0, -CH / 2 + 300 + i * ns * .95 - (c.num.length - 1) * 16, { fam: FT.d, size: ns, weight: 900, stretch: 'semi-condensed', color: c.odds === null ? C.ink : C.brick, align: 'center' }));
-  txt(c.q, 0, CH / 2 - 60, { fam: FT.m, size: fit(c.q, CW - 36, 14), weight: 400, color: C.ink, align: 'center' });
+  txt(c.q, 0, CH / 2 - 60, { fam: FT.m, size: fit(c.q, CW - 32, 16), weight: 400, color: C.ink, align: 'center' });
   lab(0, CH / 2 - 28, 'p(doom) ALL-STARS · SERIES 1', C.ink, .6, 10, 'center');
   X.restore();
 }
@@ -180,7 +180,7 @@ function cardBack(c, t, a = 1) {
   const note = c.odds === null ? 'DID NOT PLAY' : c.odds < .001 ? (c.odds * 100).toFixed(4) + '% · NOT VISIBLE AT THIS SCALE' : (c.odds * 100) + '% (MIDPOINT)';
   txt(note, 0, -CH / 2 + 240, { fam: FT.m, size: fit(note, CW - 60, 12), weight: 700, color: C.brick, align: 'center' });
   lab(-CW / 2 + 40, -CH / 2 + 290, 'SOURCE', C.ink, .85, 13);
-  c.src.forEach((s, i) => txt(s, -CW / 2 + 32, -CH / 2 + 314 + i * 24, { fam: FT.m, size: fit(s, CW - 64, 14), weight: 400, color: C.ink }));
+  c.src.forEach((s, i) => txt(s, -CW / 2 + 30, -CH / 2 + 316 + i * 26, { fam: FT.m, size: fit(s, CW - 60, 16), weight: 400, color: C.ink }));
   lab(0, CH / 2 - 28, 'p(doom) ALL-STARS · SERIES 1', C.ink, .6, 10, 'center');
   X.restore();
 }
@@ -223,10 +223,10 @@ function plateP(t) {
   }
   // part 2: the cards, dealt from the dot
   if (t >= b(12)) {
-    const stack = eio(pr(t, b(26.5), b(28) - .1));
+    const stack = eio(pr(t, b(25.5), b(28) - .1));
     if (stack < 1) CARDS.forEach((c, i) => {
-      const td = b(12 + 1.5 * i), k = eio(pr(t, td, td + .5)); if (k <= 0) return;
-      const flipBack = eio(pr(t, b(21) + i * .25, b(21) + i * .25 + .4));
+      const td = b(12 + 1.2 * i), k = eio(pr(t, td, td + .5)); if (k <= 0) return;
+      const flipBack = eio(pr(t, b(19.5) + i * .25, b(19.5) + i * .25 + .4));
       const f = Math.cos(Math.PI * (1 - k) + Math.PI * flipBack);
       const x = lerp(960, slotX(i), k), y = lerp(560, SLOT_Y, k), s = lerp(.3, 1, k);
       card(c, lerp(x, 960, stack), lerp(y, 560, stack), f, lerp(s, .92, stack), lerp(0, (i - 2) * .06, stack), t, 1);
@@ -234,10 +234,10 @@ function plateP(t) {
     if (stack >= 1) cardStack(1, t, 1);
     if (t < b(12.4)) star(960, 560, 6 * (1 - pr(t, b(12), b(12.4))), C.white, 1);
     const hs = fit('p(doom) ALL-STARS', 1100, 86, { fam: FT.d, weight: 900, stretch: 'expanded' });
-    kin('p(doom) ALL-STARS', 960, 180, t, b(19), { size: hs, weight: 900, stretch: 'expanded', align: 'center', hot: [0, 7, C.mag], stag: .03, out: b(26.5) });
+    kin('p(doom) ALL-STARS', 960, 180, t, b(17.5), { size: hs, weight: 900, stretch: 'expanded', align: 'center', hot: [0, 7, C.mag], stag: .03, out: b(25.5) });
     const sub = 'A SET, AFTER MANUFACTURING CONSENT’S PHILOSOPHER ALL-STARS (1992) · NO LIKENESSES, EACH PERSON’S INSTRUMENT INSTEAD';
-    caption(sub, 960 - meas(sub, { size: 18 }) / 2, 226, t, b(19) + .3, { size: 18, color: C.lav, cps: 220, alpha: 1 - pr(t, b(26.5), b(26.8)) });
-    band(t, b(23), b(28) - .4, 'THE FIRST NUMBER CAME FROM THE PEOPLE BUILDING THE BOMB. THE NEW ONES COME FROM THE PEOPLE BUILDING AI.', 'EVERY FIGURE AS THE PERSON SAID IT, DATED AND SOURCED ON THE BACK OF THE CARD');
+    caption(sub, 960 - meas(sub, { size: 21 }) / 2, 228, t, b(17.5) + .3, { size: 21, color: C.lav, cps: 240, alpha: 1 - pr(t, b(25.5), b(25.8)) });
+    band(t, b(21), b(28) - .4, 'THE FIRST NUMBER CAME FROM THE PEOPLE BUILDING THE BOMB. THE NEW ONES COME FROM THE PEOPLE BUILDING AI.', 'EVERY FIGURE AS THE PERSON SAID IT, DATED AND SOURCED ON THE BACK OF THE CARD');
   }
   plateLabel(FIG.P, 'p(doom)', '', t, t0 + .2);
 }

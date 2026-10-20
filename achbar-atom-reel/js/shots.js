@@ -11,7 +11,7 @@ C.mag = '#ff3d9a';
 // plate starts (pass 2): title, the tapes, promise, metaphors, the fields, same lab, machine, scope, the day
 // after, clock, the restart, p(doom), red flags, title block. The score is the 119 s take looped at bar lines
 // (sfx.py BARMAP) so the music's own changes still land on the scope's sync loss and the p(doom) cards.
-const PLATE = { A: 0, T: bar(4), B: bar(9), M: bar(14), X: bar(19), C: bar(24), N: bar(29), D: bar(34), Y: bar(39), E: bar(44), Z: bar(48), P: bar(53), F: bar(61), G: bar(66) };
+const PLATE = { A: 0, T: bar(4), B: bar(10), M: bar(14), X: bar(19), C: bar(24), N: bar(29), D: bar(34), Y: bar(39), E: bar(44), Z: bar(48), P: bar(53), F: bar(60), G: bar(63) };   // red flags sit in the music's quiet stretch; the slide to the title block starts as it comes back (bar 63)
 const END = 172.0;
 const FIG = { A: 'FIG. 0', T: 'FIG. 1', B: 'FIG. 2', M: 'FIG. 3', X: 'FIG. 4', C: 'FIG. 5', N: 'FIG. 6', D: 'FIG. 7', Y: 'FIG. 8', E: 'FIG. 9', Z: 'FIG. 10', P: 'FIG. 11', F: 'FIG. 12', G: 'SHEET 1' };
 const TITLE = 'ROMANCING THE ATOM';
@@ -67,10 +67,10 @@ function plateLabel(n, title, sub, t, t0) {
 // a navy caption band along the bottom, typed
 function band(t, t0, t1, title, sub) {
   const bk = pr(t, t0, t0 + .35) * (1 - pr(t, t1, t1 + .3)); if (bk <= 0) return;
-  X.globalAlpha = .9 * bk; X.fillStyle = C.navy2; X.fillRect(0, 930, W * eo(pr(t, t0, t0 + .35)), 150); X.globalAlpha = 1;
-  gl(0, 930, W * eo(pr(t, t0, t0 + .35)), 930, C.cyan, .8 * bk, 1.2);
-  caption(title, 120, 984, t, t0 + .3, { size: 29, weight: 700, color: C.white, alpha: bk, cps: 60 });
-  if (sub) captionW(sub, 120, 1022, t, t0 + .5, { size: 20, color: C.lav, alpha: bk, cps: 170 }, 1680, 27);
+  X.globalAlpha = .97 * bk; X.fillStyle = C.navy2; X.fillRect(0, 896, W * eo(pr(t, t0, t0 + .35)), 184); X.globalAlpha = 1;
+  gl(0, 896, W * eo(pr(t, t0, t0 + .35)), 896, C.cyan, .8 * bk, 1.2);
+  caption(title, 120, 952, t, t0 + .3, { size: 32, weight: 700, color: C.white, alpha: bk, cps: 60 });
+  if (sub) captionW(sub, 120, 994, t, t0 + .5, { size: 24, color: C.lav, alpha: bk, cps: 190 }, 1680, 31);
 }
 
 // ---------- 0. the drafting, then the title ----------
@@ -280,7 +280,7 @@ function plateD(t) {
     }
   }
   // CH2: training compute of notable AI systems (Epoch AI via Our World in Data), log scale, amber, drawn after CH1
-  const c0 = b(9) + .3, c1 = b(13.5), ck = pr(t, c0, c1), ra2 = (1 - sync) * pr(t, c0, c0 + .3);
+  const c0 = b(9) + .3, c1 = b(13.5), ck = pr(t, c0, c1), ra2 = (1 - pr(t, b(15), b(16) - .25)) * pr(t, c0, c0 + .3);   // out before the green morphs
   if (ck > 0 && sync < 1) {
     const CY = (pf) => TB.cy + TB.h / 2 - 90 - (Math.log10(pf) + 10) / 22 * (TB.h - 200);   // 1e-10 .. 1e12 petaFLOP
     const yrEnd = lerp(1950, 2026, ck), P = []; for (const [yr, pf] of COMPUTE) { if (yr > yrEnd) break; P.push([PX(yr), CY(pf)]); }
@@ -404,7 +404,7 @@ function formRF(t) {
   gl(x0, ty - 30, lerp(x0, x1, eo(hk)), ty - 30, C.white, .9, 1.6);
   if (hk > .5) { lab(cA, ty - 48, 'THE ATOM', C.white, .9, 19, 'center'); lab(cB, ty - 48, 'AI', C.white, .9, 19, 'center'); }
   ROWS.forEach(([r, src], i) => {
-    const rt = b(1.4 + i * 1.3), y = ty + 56 + i * rh;
+    const rt = b(1.0 + i * 1.0), y = ty + 56 + i * rh;
     if (t < rt - .2) return;
     gl(x0, y + 46, lerp(x0, x1, eo(pr(t, rt - .2, rt + .2))), y + 46, C.lav, .45, 1);
     kin(r, x0, y + 4, t, rt, { size: 46, weight: 800, stretch: 'semi-condensed', style: 'rise' });
@@ -420,7 +420,7 @@ function formRF(t) {
     });
   });
   // the stamp
-  const sk = b(8) - .2;   // the music comes back here (bar 63 of the take): the stamp lands with it
+  const sk = b(10.8) - .1;   // the stamp lands in the music's dip (151.5 s); the camera slides on the return, bar 63
   if (t > sk) {
     const k = eo(pr(t, sk, sk + .18)); X.save(); X.translate(1260, ty + 600); X.rotate(-.12); X.scale(lerp(1.6, 1, k), lerp(1.6, 1, k)); X.globalAlpha = k;
     X.strokeStyle = C.mag; X.lineWidth = 5; X.strokeRect(-330, -62, 660, 124); X.lineWidth = 2; X.strokeRect(-318, -50, 636, 100);

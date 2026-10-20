@@ -158,20 +158,20 @@ function plateZ(t) {
   print(TMI.key, TMI.cx, TMI.cy, TMI.w, { z, mount: 10, alpha: dim });
   if (open >= 1 && t < b(8)) { const p = printPt(TMI.key, TMI.cx, TMI.cy, TMI.w, .5, .5, { z }); sight(p[0], p[1], 70, t, pr(t, t0 + .9, t0 + 1.2)); }
   if (t >= b(8)) {
-    X.globalAlpha = .9 * pr(t, b(8) - .15, b(8)); X.fillStyle = C.navy; X.fillRect(0, 300, W, 420); X.globalAlpha = 1;
+    X.globalAlpha = .9 * pr(t, b(8) - .15, b(8)); X.fillStyle = C.navy; X.fillRect(0, 300, W, 430); X.globalAlpha = 1;
     const hs = fit('RESTARTING FOR AI', 1500, 170, { fam: FT.d, weight: 900, stretch: 'semi-condensed' });
     kin('RESTARTING FOR AI', 960, 470, t, b(8), { size: hs, weight: 900, stretch: 'semi-condensed', align: 'center', hot: [0, 10, C.mag], stag: .03 });
     const c1 = '20 SEPTEMBER 2024 · CONSTELLATION: UNIT 1, OFF SINCE 2019, TO RETURN AS THE CRANE CLEAN ENERGY CENTER, ABOUT 835 MW · 20 YEARS OF POWER TO MICROSOFT’S DATA CENTRES';
-    captionW(c1, 960, 540, t, b(9), { size: 22, color: C.white, cps: 240, align: 'center' }, 1500, 30);
+    captionW(c1, 960, 536, t, b(9), { size: 26, color: C.white, cps: 260, align: 'center' }, 1560, 34);
     const c2 = 'UNIT 2 WAS THE 1979 ACCIDENT. DEL TREDICI’S SECOND BOOK WAS THE PEOPLE OF THREE MILE ISLAND (1980).';
-    captionW(c2, 960, 622, t, b(10), { size: 22, color: C.lav, cps: 240, align: 'center' }, 1500, 30);
+    captionW(c2, 960, 626, t, b(10), { size: 26, color: C.lav, cps: 260, align: 'center' }, 1560, 34);
   }
   X.restore();
   gc(ix, lerp(iy, 540, shut), ir, C.cyan, .8, 1.5);
   if (t >= b(11) && shut < 1) {
-    X.globalAlpha = .85 * (1 - shut) * pr(t, b(11), b(11) + .2); X.fillStyle = C.navy; X.fillRect(0, 752, W, 160); X.globalAlpha = 1;
-    const rows = [['AMAZON', 'A DATA CENTRE CAMPUS AT THE SUSQUEHANNA PLANT, PENNSYLVANIA', 'MARCH 2024'], ['GOOGLE', 'UP TO 500 MW OF SMALL REACTORS FROM KAIROS POWER', 'OCTOBER 2024'], ['META', 'A CALL FOR 1 TO 4 GW OF NUCLEAR POWER; CLINTON, ILLINOIS, SIGNED', 'DEC 2024 · JUNE 2025']];
-    rows.forEach((r, i) => { const tr = b(11 + i * .8); if (t < tr) return; const y = 786 + i * 48, a = (1 - shut) * pr(t, tr, tr + .2); gl(300, y + 16, lerp(300, 1620, eo(pr(t, tr, tr + .3))), y + 16, C.lav, .4, 1); lab(300, y + 7, r[0], C.mag, a, 21); caption(r[1], 470, y + 7, t, tr + .1, { size: 20, color: C.white, cps: 220, alpha: a }); lab(1620, y + 7, r[2], C.lav, a, 18, 'right'); });
+    X.globalAlpha = .85 * (1 - shut) * pr(t, b(11), b(11) + .2); X.fillStyle = C.navy; X.fillRect(0, 740, W, 170); X.globalAlpha = 1;
+    const rows = [['AMAZON', 'A DATA CENTRE CAMPUS AT THE SUSQUEHANNA PLANT, PENNSYLVANIA', 'MARCH 2024'], ['GOOGLE', 'UP TO 500 MW OF SMALL REACTORS FROM KAIROS POWER', 'OCTOBER 2024'], ['META', 'A CALL FOR 1 TO 4 GW; CLINTON, ILLINOIS, SIGNED', 'DEC 2024 · JUN 2025']];
+    rows.forEach((r, i) => { const tr = b(11 + i * .8); if (t < tr) return; const y = 778 + i * 52, a = (1 - shut) * pr(t, tr, tr + .2); gl(300, y + 18, lerp(300, 1620, eo(pr(t, tr, tr + .3))), y + 18, C.lav, .4, 1); lab(300, y + 8, r[0], C.mag, a, 24); caption(r[1], 480, y + 8, t, tr + .1, { size: 23, color: C.white, cps: 240, alpha: a }); lab(1620, y + 8, r[2], C.lav, a, 21, 'right'); });
   }
   band(t, t0 + 1.0, b(7) + .6, 'THREE MILE ISLAND, PENNSYLVANIA · THE NEW ROMANCE NEEDS POWER: THE REACTORS THE LAST ONE LEFT BEHIND', 'CDC PHOTOGRAPH · THE UN INTERVIEWEE WHO REFUSED MARK OVER GENERATIVE AI CITED URANIUM DEMAND; THIS IS WHAT SHE MEANT');
   if (shut > .8) star(960, 540, 6, C.white, 1);

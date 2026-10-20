@@ -193,5 +193,12 @@ taint the canvas and `toDataURL` throws.
   span re-rendered. -14.9 LUFS, peak -1.9 dBFS, flash PASS. Uploaded unlisted https://youtu.be/6cYcut5zq-A, round 48.
   The studio page now lists the last draft's notes with seek links (novadiem-files #72/#73). 7f approved by Robin;
   Mark gets his own page, https://files.novadiem.com/cf8dae3c4effbc6f/ (round 48 re-titled "Graphics test 01", watch-only,
-  the 720p file as a download). Later cuts go there as new rounds; no new links to Mark. 6d (Robin: flags instead of check boxes, yes, but not as bullets too): the bullet flags are gone;
+  the 720p file as a download). Later cuts go there as new rounds; no new links to Mark.
+- Draft 7h (2026-10-19 evening, Robin's six studio notes on 7f, #23-28): the tapes plate is six bars and the promise
+  four again, so the clip completes on "life" and holds two seconds before the hand-off; the scope's tone is 4 dB
+  louder with a 5 Hz pitch wobble; CH2 fades out before the green morph; the restart's captions, schedule and the
+  p(doom) captions, cards and every caption band are bigger (band 32/24 px, 184 tall, sub up to three lines); red
+  flags moved to bars 60-63 so the rows and ticks sit in the take's quiet stretch, SOUND FAMILIAR? lands in the dip
+  at 151.5 s and the camera slides to the title block on the music's return (bar 63, 152.2 s); p(doom) is seven bars.
+  A 7g (the first five notes, old end) was uploaded by an orphaned process and is superseded. 172 s. 6d (Robin: flags instead of check boxes, yes, but not as bullets too): the bullet flags are gone;
   each column flag flies, then folds down into its box and the tick draws in red, with a flap, a fold and a tick.

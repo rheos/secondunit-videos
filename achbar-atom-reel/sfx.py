@@ -10,7 +10,7 @@ SR = 48000; DUR = 172.0; N = int(SR * DUR); FR = 1 / 24
 here = os.path.dirname(os.path.abspath(__file__))
 B0 = 17.211; BEAT = 0.53574; BAR = 4 * BEAT       # js/shots.js
 bar = lambda n: B0 + n * BAR; bt = lambda n: B0 + n * BEAT
-PL = dict(A=0, T=bar(4), B=bar(9), M=bar(14), X=bar(19), C=bar(24), N=bar(29), D=bar(34), Y=bar(39), E=bar(44), Z=bar(48), P=bar(53), F=bar(61), G=bar(66))
+PL = dict(A=0, T=bar(4), B=bar(10), M=bar(14), X=bar(19), C=bar(24), N=bar(29), D=bar(34), Y=bar(39), E=bar(44), Z=bar(48), P=bar(53), F=bar(60), G=bar(63))
 # the score: the 119 s take looped at bar lines so its changes at bars 24 and 32 land on the sync loss (film bar 35)
 # and the cards (film bar 52): (film bar, source bar, bars)
 BARMAP = [(0, 0, 20), (20, 9, 11), (31, 20, 4), (35, 9, 3), (38, 24, 10), (48, 24, 9), (57, 32, 8), (65, 39, 1), (66, 40, None)]
@@ -94,10 +94,10 @@ def flap():                               # a flag running up its pole and snapp
     return x * fl * .7 + bp(noise(.3), 3000, 7000) * env(n, .001, .012) * .4
 def blip(f):                              # a neuron firing
     n = int(.1 * SR); return tone(f, .1) * env(n, .002, .025) * .5
-def glide(f_of_t, sec, gain=.3):          # a tone whose pitch follows a curve (the beam drawing the warhead count)
-    n = int(sec * SR); t = np.arange(n) / SR; f = f_of_t(t / sec)
+def glide(f_of_t, sec, gain=.3):          # a tone whose pitch follows a curve (the beam drawing the warhead count), a little warbly
+    n = int(sec * SR); t = np.arange(n) / SR; f = f_of_t(t / sec) * (1 + .018 * np.sin(2 * np.pi * 5.3 * t) + .006 * np.sin(2 * np.pi * 11.7 * t))
     x = np.sin(2 * np.pi * np.cumsum(f) / SR) + .25 * np.sin(2 * np.pi * 2 * np.cumsum(f) / SR)
-    trem = .85 + .15 * np.sin(2 * np.pi * 7 * t)
+    trem = .8 + .2 * np.sin(2 * np.pi * 6.5 * t)
     return x * trem * np.minimum(1, t / .12) * np.minimum(1, (sec - t) / .08) * gain
 
 # --- the animation events the page reports (node cues.mjs -> assets/cues.json): every typed character, every
@@ -192,10 +192,10 @@ put(PL['N'] + 19 * BEAT, whoosh(.55, rev=True), -22)   # the net collapses to th
 put(PL['D'], crt_on(), -14)                            # scope powers on
 put(PL['D'] + .2, hum(PL['Y'] - PL['D'] - .2), -27)    # tube hum under the plate
 c0, c1 = PL['D'] + 9 * BEAT + .3, PL['D'] + 13.5 * BEAT      # CH2: the compute curve, a second tone an octave up
-put(c0, glide(lambda u: 330 + 900 * u ** 2.2, c1 - c0, .22), -26, pan=-.2)
+put(c0, glide(lambda u: 330 + 900 * u ** 2.2, c1 - c0, .22), -23, pan=-.2)
 put(PL['D'] + 16 * BEAT - .2, static(1.6), -20)        # sync lost (the music's own change, bar 35)
 d0, d1 = PL['D'] + 1.3, PL['D'] + 9 * BEAT              # the beam draws the curve: a tone follows the count
-put(d0, glide(lambda u: 170 + 720 * np.array([warheads_at(1945 + 81 * v) for v in u]) / 75000, d1 - d0), -22, pan=.15)
+put(d0, glide(lambda u: 170 + 720 * np.array([warheads_at(1945 + 81 * v) for v in u]) / 75000, d1 - d0), -18, pan=.15)
 # Y. the day after: a television
 put(PL['Y'], crt_on(), -18)
 put(PL['Y'] + .2, hum(PL['E'] - PL['Y'] - .2, 60), -30)
@@ -223,21 +223,22 @@ put(PL['P'] + .9, ping(), -23)                         # crosshair on the report
 put(PL['P'] + 3 * BEAT, thump(.6), -17)                # THE FIRST p(doom)
 put(PL['P'] + 6.5 * BEAT, thump(1.1), -12)             # < 3 IN 1,000,000
 put(PL['P'] + 11 * BEAT, whoosh(.55, rev=True), -22)   # iris shuts to the dot
-for i in range(5): put(PL['P'] + (12 + 1.5 * i) * BEAT + .3, snap(), -16, pan=-.4 + .2 * i)   # cards dealt
-put(PL['P'] + 19 * BEAT, thump(.8), -14)               # p(doom) ALL-STARS
-for i in range(5): put(PL['P'] + 21 * BEAT + i * .25 + .2, tick(2200, .02), -19, pan=-.4 + .2 * i)   # cards flipped
-put(PL['P'] + 23 * BEAT, tick(4500, .015), -20)        # the band
-put(PL['P'] + 26.5 * BEAT, slide(.7), -20)             # the stack gathers
+for i in range(5): put(PL['P'] + (12 + 1.2 * i) * BEAT + .3, snap(), -16, pan=-.4 + .2 * i)   # cards dealt
+put(PL['P'] + 17.5 * BEAT, thump(.8), -14)             # p(doom) ALL-STARS
+for i in range(5): put(PL['P'] + 19.5 * BEAT + i * .25 + .2, tick(2200, .02), -19, pan=-.4 + .2 * i)   # cards flipped
+put(PL['P'] + 21 * BEAT, tick(4500, .015), -20)        # the band
+put(PL['P'] + 25.5 * BEAT, slide(.7), -20)             # the stack gathers
 put(PL['P'] + 28 * BEAT - .15, snap(), -18)
 # 8. red flags
 put(PL['F'] + .3, thump(.7), -16)                      # RED FLAGS
 for i in range(5):
-    rt = PL['F'] + (1.4 + i * 1.3) * BEAT
+    rt = PL['F'] + (1.0 + i * 1.0) * BEAT
     put(rt, tick(4500, .015), -21, pan=-.2)             # the row rules itself
     put(rt + .25, flap(), -17, pan=.15); put(rt + .43, flap(), -17, pan=.35)   # the column flags fly
     put(rt + 1.0, slide(.3), -24, pan=.15); put(rt + 1.18, slide(.3), -24, pan=.35)   # and fold into their boxes
     put(rt + 1.3, tick(6000, .02), -17, pan=.15); put(rt + 1.48, tick(6000, .02), -17, pan=.35)   # ticked
-put(PL['F'] + 8 * BEAT - .2, thump(.9), -12, pan=.2)   # SOUND FAMILIAR? lands as the music comes back (bar 63)
+put(PL['F'] + 10.8 * BEAT - .1, thump(.9), -12, pan=.2)   # SOUND FAMILIAR? lands in the music's dip
+put(PL['G'], thump(1.0), -13)                          # the slide down the sheet starts as the music comes back (bar 63)
 # 9. the title block
 put(PL['G'] - .05, whoosh(1.1), -22)
 put(PL['G'] + .6, pen(1.4), -26)                       # title block ruled
@@ -247,7 +248,7 @@ IKE = os.path.join(here, 'assets', 'ike.wav')
 if os.path.exists(IKE):
     v, vsr = sf.read(IKE); assert vsr == SR
     if v.ndim == 2: v = v.mean(1)
-    put(PL['T'] + .6, v, 1.5)                                                   # the voice (TAPE_T0 in js/tape-data.js = PL['T'] + .6)
+    put(PL['T'] + .3, v, 1.5)                                                   # the voice (TAPE_T0 in js/tape-data.js = PL['T'] + .3)
 sf.write(os.path.join(here, 'assets', 'sfx.wav'), out.astype(np.float32), SR)
 take, sr = sf.read(os.path.join(here, 'assets', 'song7.wav')); assert sr == SR   # atom-drive take-07, made to the 66-bar plan: played straight
 edit = take
