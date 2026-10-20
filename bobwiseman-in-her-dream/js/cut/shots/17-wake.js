@@ -165,7 +165,7 @@ const T = { a: 268.4, slide0: 271.35, slide1: 272.1, lift0: 272.0, lift1: 272.95
 const OR = 30;                                       // the orange's radius
 // the orange lies at the back of the oilcloth in the lamp's pool, hidden under her head while she sleeps
 const ORANGE = { x: 895, y: TY - TB - 4 };
-const RAISED = [900, 548], CHEEK = [802, 612];       // held up to the light; drawn in to her cheek
+const RAISED = [900, 548], CHEEK = [748, 590];       // held up to the light; drawn in to her cheek
 // 01's doze (01-kitchen.js DOZE): head down on forearms folded on the TOP of the table, far arm over the top
 const DOZE = { lean: .66, head: -.85, near: [2.0, 3.15], far: [2.2, 2.9 - Math.PI * 2] };
 const UP = { lean: .1, head: -.1 }, FAR0 = [1.0, .62];
