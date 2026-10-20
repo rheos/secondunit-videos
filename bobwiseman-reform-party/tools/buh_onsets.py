@@ -18,8 +18,8 @@ song, voc, nov, out_js = sys.argv[1:5]
 marks = json.load(open(sys.argv[sys.argv.index('--marks') + 1])) if '--marks' in sys.argv else None
 SR, HOP = 22050, 64
 FR = SR / HOP
-# run starts (the draft 25 times) and ends (Robin by ear, draft 28)
-RUNS = [(37.57, 55.1), (95.47, 113.0), (171.97, 180.0)]
+# run starts (the draft 25 times) and ends (Robin by ear: draft 28, and the 2:52 run on to 3:05 in draft 30)
+RUNS = [(37.57, 55.1), (95.47, 113.0), (171.97, 185.0)]
 SNAP = .02
 
 def env_of(path):
