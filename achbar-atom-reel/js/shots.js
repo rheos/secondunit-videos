@@ -11,12 +11,12 @@ C.mag = '#ff3d9a';
 // plate starts (pass 2): title, the tapes, promise, metaphors, the fields, same lab, machine, scope, the day
 // after, clock, the restart, p(doom), red flags, title block. The score is the 119 s take looped at bar lines
 // (sfx.py BARMAP) so the music's own changes still land on the scope's sync loss and the p(doom) cards.
-const PLATE = { A: 0, T: bar(4), B: bar(10), M: bar(14), X: bar(19), C: bar(24), N: bar(29), D: bar(34), Y: bar(39), E: bar(44), Z: bar(48), P: bar(53), F: bar(60), G: bar(63) };   // red flags sit in the music's quiet stretch; the slide to the title block starts as it comes back (bar 63)
+const PLATE = { A: 0, T: bar(4), B: bar(10), M: bar(14), X: bar(19), C: bar(24), N: bar(29), D: bar(34), Y: bar(39), E: bar(44), Z: bar(48), P: bar(53), F: bar(60), I: bar(63), G: bar(66) };   // red flags sit in the music's quiet stretch; the camera slides to the index as it comes back (bar 63, 152.2 s); the title block holds 13.4 s, as in 7f
 const END = 172.0;
-const FIG = { A: 'FIG. 0', T: 'FIG. 1', B: 'FIG. 2', M: 'FIG. 3', X: 'FIG. 4', C: 'FIG. 5', N: 'FIG. 6', D: 'FIG. 7', Y: 'FIG. 8', E: 'FIG. 9', Z: 'FIG. 10', P: 'FIG. 11', F: 'FIG. 12', G: 'SHEET 1' };
+const FIG = { A: 'FIG. 0', T: 'FIG. 1', B: 'FIG. 2', M: 'FIG. 3', X: 'FIG. 4', C: 'FIG. 5', N: 'FIG. 6', D: 'FIG. 7', Y: 'FIG. 8', E: 'FIG. 9', Z: 'FIG. 10', P: 'FIG. 11', F: 'FIG. 12', I: 'SHEET 1', G: 'SHEET 2' };
 const TITLE = 'ROMANCING THE ATOM';
 // chapter numbers, after The Corporation's clinical cards: diagnosis to prognosis
-const CHAP = { 'SHEET 1': 'CH. 13' }; for (let i = 0; i <= 12; i++) CHAP['FIG. ' + i] = 'CH. ' + String(i).padStart(2, '0');
+const CHAP = { 'SHEET 1': 'CH. 13', 'SHEET 2': 'CH. 14' }; for (let i = 0; i <= 12; i++) CHAP['FIG. ' + i] = 'CH. ' + String(i).padStart(2, '0');
 
 // ---------- shared marks ----------
 function ellPt(cx, cy, rx, ry, rot, a) { const c = Math.cos(rot), s = Math.sin(rot), x = Math.cos(a) * rx, y = Math.sin(a) * ry; return [cx + x * c - y * s, cy + x * s + y * c]; }
@@ -69,7 +69,7 @@ function band(t, t0, t1, title, sub) {
   const bk = pr(t, t0, t0 + .35) * (1 - pr(t, t1, t1 + .3)); if (bk <= 0) return;
   X.globalAlpha = .97 * bk; X.fillStyle = C.navy2; X.fillRect(0, 896, W * eo(pr(t, t0, t0 + .35)), 184); X.globalAlpha = 1;
   gl(0, 896, W * eo(pr(t, t0, t0 + .35)), 896, C.cyan, .8 * bk, 1.2);
-  caption(title, 120, 952, t, t0 + .3, { size: 32, weight: 700, color: C.white, alpha: bk, cps: 60 });
+  caption(title, 120, 952, t, t0 + .3, { size: fit(title, 1680, 32, { weight: 700 }), weight: 700, color: C.white, alpha: bk, cps: 60 });   // a long title shrinks to stay inside the band
   if (sub) captionW(sub, 120, 994, t, t0 + .5, { size: 24, color: C.lav, alpha: bk, cps: 190 }, 1680, 31);
 }
 
@@ -297,13 +297,14 @@ function hash1(n) { n = (n ^ 61) ^ (n >>> 16); n = n + (n << 3); n = n ^ (n >>> 
 
 // ---------- 6. the clock, 8. red flags, 9. title block: one sheet, the camera travels down it ----------
 const CK = { x: 960, y: 520, r: 330 };
-const FORM_Y = 2100, BLOCK_Y = 3400;
+const FORM_Y = 2100, INDEX_Y = 3400, BLOCK_Y = 4700;
 function camAt(t) {
   const t0 = PLATE.E, tip = [CK.x, CK.y - CK.r]; let c = [960, 540, 1];
   const go = (k, to) => { c = [lerp(c[0], to[0], k), lerp(c[1], to[1], k), Math.exp(lerp(Math.log(c[2]), Math.log(to[2]), k))]; };
   go(eio(pr(t, t0 + 4.6, t0 + 5.9)), [tip[0] - 40, tip[1] + 50, 3.1]);
   go(eio(pr(t, t0 + 6.3, t0 + 7.3)), [960, 760, .4]);                                  // out: the clock is on a scoreboard
   go(eio(pr(t, PLATE.Z - .3, PLATE.Z)), [960, FORM_Y - 80 + 540, 1]);                  // (hidden behind the restart and p(doom) plates)
+  go(eio(pr(t, PLATE.I - .03, PLATE.I + .85)), [960, INDEX_Y + 540, 1]);              // on the music's return
   go(eio(pr(t, PLATE.G - .05, PLATE.G + 1.0)), [960, BLOCK_Y - 170 + 540, 1]);
   return c;
 }
@@ -371,6 +372,7 @@ function plateEFG(t) {
   }
   scoreboard(t);
   formRF(t);
+  indexSheet(t);
   titleBlock(t);
   X.restore();
   // screen-space words for the clock
@@ -384,8 +386,9 @@ function plateEFG(t) {
   }
   // the p(doom) stack's back, fading out over the form it became
   if (t >= PLATE.F && t < PLATE.F + .5) cardStackBack(t, 1 - pr(t, PLATE.F, PLATE.F + .5));
-  plateLabel(t < PLATE.Z ? FIG.E : t < PLATE.G ? FIG.F : FIG.G, t < PLATE.Z ? 'THE CLOCK' : t < PLATE.G ? 'RED FLAGS' : 'TITLE BLOCK', '', t, t < PLATE.Z ? t0 + .2 : t < PLATE.G ? PLATE.F + .5 : PLATE.G + .6);
-  schFrame(t < PLATE.Z ? '9' : t < PLATE.G ? '12' : '13', '', '', C.lav);
+  const L = t < PLATE.Z ? [FIG.E, 'THE CLOCK', t0 + .2, '9'] : t < PLATE.I ? [FIG.F, 'RED FLAGS', PLATE.F + .5, '12'] : t < PLATE.G ? [FIG.I, 'THE INDEX', PLATE.I + .6, '13'] : [FIG.G, 'TITLE BLOCK', PLATE.G + .6, '14'];
+  plateLabel(L[0], L[1], '', t, L[2]);
+  schFrame(L[3], '', '', C.lav);
 }
 const ROWS = [
   ['TOO CHEAP TO METER', 'ATOM: STRAUSS, AEC, 1954  ·  AI: ALTMAN, OPENAI, 2025'],
@@ -443,6 +446,28 @@ function kinStamp(t, sk, ty) {
   X.save(); X.translate(1260, ty + 600); X.rotate(-.12); const k = eo(pr(t, sk, sk + .18)); X.scale(lerp(1.6, 1, k), lerp(1.6, 1, k)); X.globalAlpha = k;
   txt('SOUND FAMILIAR?', 0, 22, { fam: FT.d, size: fit('SOUND FAMILIAR?', 600, 70, { fam: FT.d, weight: 900 }), weight: 900, color: C.mag, align: 'center' });
   X.restore();
+}
+// 13. the index: the twelve figures dealt onto the sheet, one every three quarters of a beat, from the music's
+// return; stills of the reel's own plates (assets/index, from draft 7h)
+const IDX_NAMES = ['THE TAPES', 'THE PROMISE', 'THE METAPHORS', 'THE FIELDS', 'THE SAME LAB', 'THE MACHINE', 'THE SCOPE', 'THE DAY AFTER', 'THE CLOCK', 'THE RESTART', 'p(doom)', 'RED FLAGS'];
+const IDX_DEAL = (i) => PLATE.I + (1 + .75 * i) * BEAT;
+function indexSheet(t) {
+  const t0 = PLATE.I, y = INDEX_Y; if (t < t0 - 1.5 || t > PLATE.G + 2) return;
+  const w = 352, h = 198, x0 = 190, gx = 44, rows = [y + 210, y + 468, y + 726];
+  caption('INDEX OF FIGURES · ROMANCING THE ATOM, TEST 01', x0, y + 168, t, t0 + .5, { size: 22, color: C.lav, cps: 90 });
+  gl(x0, y + 184, lerp(x0, x0 + 4 * w + 3 * gx, eo(pr(t, t0 + .4, t0 + 1.1))), y + 184, C.lav, .5, 1);
+  IDX.forEach((key, i) => {
+    const td = IDX_DEAL(i); if (t < td) return;
+    const k = eo(pr(t, td, td + .28)), x = x0 + (i % 4) * (w + gx), yy = rows[Math.floor(i / 4)] - 34 * (1 - k), sc = lerp(1.12, 1, k);
+    X.save(); X.translate(x + w / 2, yy + h / 2); X.scale(sc, sc); X.rotate(.04 * (1 - k) * (i % 2 ? 1 : -1)); X.globalAlpha = k;
+    X.fillStyle = C.navy2; X.fillRect(-w / 2 + 8, -h / 2 + 8, w, h);
+    if (IMG[key]) X.drawImage(IMG[key], -w / 2, -h / 2, w, h);
+    X.restore();
+    iBox(x, yy, w, h, C.white, 1.5, .85 * k, false);
+    const num = String(i + 1).padStart(2, '0');
+    lab(x, rows[Math.floor(i / 4)] + h + 32, num, C.mag, k, 20);
+    caption(IDX_NAMES[i], x + 40, rows[Math.floor(i / 4)] + h + 32, t, td + .12, { size: 20, color: C.white, cps: 90 });
+  });
 }
 function titleBlock(t) {
   const t0 = PLATE.G + .1, y = BLOCK_Y; if (t < t0 - 1.5) return;

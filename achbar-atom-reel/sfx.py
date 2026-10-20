@@ -10,7 +10,7 @@ SR = 48000; DUR = 172.0; N = int(SR * DUR); FR = 1 / 24
 here = os.path.dirname(os.path.abspath(__file__))
 B0 = 17.211; BEAT = 0.53574; BAR = 4 * BEAT       # js/shots.js
 bar = lambda n: B0 + n * BAR; bt = lambda n: B0 + n * BEAT
-PL = dict(A=0, T=bar(4), B=bar(10), M=bar(14), X=bar(19), C=bar(24), N=bar(29), D=bar(34), Y=bar(39), E=bar(44), Z=bar(48), P=bar(53), F=bar(60), G=bar(63))
+PL = dict(A=0, T=bar(4), B=bar(10), M=bar(14), X=bar(19), C=bar(24), N=bar(29), D=bar(34), Y=bar(39), E=bar(44), Z=bar(48), P=bar(53), F=bar(60), I=bar(63), G=bar(66))
 # the score: the 119 s take looped at bar lines so its changes at bars 24 and 32 land on the sync loss (film bar 35)
 # and the cards (film bar 52): (film bar, source bar, bars)
 BARMAP = [(0, 0, 20), (20, 9, 11), (31, 20, 4), (35, 9, 3), (38, 24, 10), (48, 24, 9), (57, 32, 8), (65, 39, 1), (66, 40, None)]
@@ -214,6 +214,9 @@ put(PL['E'] + 6.3, crowd(2.4), -24)                    # pull back: the stadium,
 # Z. the restart
 put(PL['Z'], whoosh(.9), -18)                                                  # iris onto Three Mile Island
 put(PL['Z'] + .9, ping(), -23)                                                 # crosshair on the towers
+put(PL['Z'] + 4 * BEAT, crt_on(), -15)                                         # the plant comes on with the music (bar 49)
+put(PL['Z'] + 4 * BEAT + .02, thump(1.0), -13)                                 # BACK ON stamped
+put(PL['Z'] + 4 * BEAT + .35, ping(1500), -22, pan=.35)                        # the sight settles on Unit 1
 put(PL['Z'] + 8 * BEAT, thump(1.1), -12)                                       # RESTARTING FOR AI
 for i in range(3): put(PL['Z'] + (11 + i * .8) * BEAT, tick(4500, .015), -21, pan=-.2 + .2 * i)   # the schedule
 put(PL['P'] - .55, whoosh(.55, rev=True), -22)                                 # iris shuts to the dot
@@ -238,7 +241,9 @@ for i in range(5):
     put(rt + 1.0, slide(.3), -24, pan=.15); put(rt + 1.18, slide(.3), -24, pan=.35)   # and fold into their boxes
     put(rt + 1.3, tick(6000, .02), -17, pan=.15); put(rt + 1.48, tick(6000, .02), -17, pan=.35)   # ticked
 put(PL['F'] + 10.8 * BEAT - .1, thump(.9), -12, pan=.2)   # SOUND FAMILIAR? lands in the music's dip
-put(PL['G'], thump(1.0), -13)                          # the slide down the sheet starts as the music comes back (bar 63)
+put(PL['I'], thump(1.0), -13)                          # the slide down the sheet to the index starts as the music comes back (bar 63)
+put(PL['I'] - .03, whoosh(.9), -22)
+for i in range(12): put(PL['I'] + (1 + .75 * i) * BEAT + .02, snap(), -19, pan=-.45 + .3 * (i % 4))   # the twelve figures dealt
 # 9. the title block
 put(PL['G'] - .05, whoosh(1.1), -22)
 put(PL['G'] + .6, pen(1.4), -26)                       # title block ruled

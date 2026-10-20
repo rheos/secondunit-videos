@@ -200,5 +200,14 @@ taint the canvas and `toDataURL` throws.
   p(doom) captions, cards and every caption band are bigger (band 32/24 px, 184 tall, sub up to three lines); red
   flags moved to bars 60-63 so the rows and ticks sit in the take's quiet stretch, SOUND FAMILIAR? lands in the dip
   at 151.5 s and the camera slides to the title block on the music's return (bar 63, 152.2 s); p(doom) is seven bars.
-  A 7g (the first five notes, old end) was uploaded by an orphaned process and is superseded. 172 s. 6d (Robin: flags instead of check boxes, yes, but not as bullets too): the bullet flags are gone;
+  A 7g (the first five notes, old end) was uploaded by an orphaned process and is superseded. 172 s.
+- Draft 7i (2026-10-20, Robin's two studio notes on 7h, #29-30): (#29, 122 s) the music drops out as the restart's
+  iris opens and comes back on bar 49 (122.18 s): the TMI print now sits dim through the silence and comes on with
+  the music (a short flash, three rings from Unit 1's steaming towers, the sight moves onto them, a magenta BACK ON
+  stamp until the headline; crt_on, thump and ping in sfx.py). (#30) No plate had been deleted: 7h took two bars
+  from red flags and one from p(doom) and the title block absorbed them (19.8 s). A new plate, CH. 13 THE INDEX,
+  fills bars 63-66: the camera slides down the sheet to it on the music's return (152.2 s) and the twelve figures
+  are dealt onto it, one every three quarters of a beat with a snap (stills of the reel's own plates from 7h, in
+  `assets/index/`). The title block is CH. 14 from bar 66 (158.65 s), 13.4 s as in 7f. Also: band titles shrink to
+  fit (7h's bigger band cut off the restart's title). 6d (Robin: flags instead of check boxes, yes, but not as bullets too): the bullet flags are gone;
   each column flag flies, then folds down into its box and the tick draws in red, with a flap, a fold and a tick.

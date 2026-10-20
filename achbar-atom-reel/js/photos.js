@@ -8,8 +8,12 @@ const PD = ['trinity', 'eniac-beck-snyder', 'atoms-for-peace-stamp', 'breactor-p
 function loadImgs() {
   return Promise.all(PD.map((k) => new Promise((res) => {
     const i = new Image(); i.onload = () => { IMG[k] = i; res(); }; i.onerror = () => { console.error('missing image ' + k); res(); }; i.src = 'assets/pd/' + k + '.jpg';
-  })));
+  })).concat(IDX.map((k) => new Promise((res) => {
+    const i = new Image(); i.onload = () => { IMG[k] = i; res(); }; i.onerror = () => { console.error('missing image ' + k); res(); }; i.src = 'assets/index/' + k + '.jpg';
+  }))));
 }
+// the index plate's thumbnails: stills of the reel's own twelve figures (draft 7h, 640x360), not archival
+const IDX = Array.from({ length: 12 }, (_, i) => 'fig' + String(i + 1).padStart(2, '0'));
 // crop windows (u0, v0, u1, v1) per image: the drawings' scans carry film borders and grey scales we leave out
 const CROP = { 'breactor-pile': [.075, .176, .935, .86], 'la-602': [.08, .30, .92, .70] };
 const crop = (key) => CROP[key] || [0, 0, 1, 1];

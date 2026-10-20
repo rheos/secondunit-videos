@@ -155,8 +155,14 @@ function plateZ(t) {
   const ix = 960, iy = lerp(444, TMI.cy, open), ir = lerp(8, 1400, open) * (1 - shut) + 2 * shut;
   const z = lerp(1, 1.06, pr(t, t0, tEnd)), dim = lerp(1, .35, eio(pr(t, b(8) - .2, b(8) + .3)));
   X.save(); X.beginPath(); X.arc(ix, lerp(iy, 540, shut), Math.max(0, ir), 0, TAU); X.clip();
-  print(TMI.key, TMI.cx, TMI.cy, TMI.w, { z, mount: 10, alpha: dim });
-  if (open >= 1 && t < b(8)) { const p = printPt(TMI.key, TMI.cx, TMI.cy, TMI.w, .5, .5, { z }); sight(p[0], p[1], 70, t, pr(t, t0 + .9, t0 + 1.2)); }
+  // the music drops out as the iris opens and comes back on b(4) (bar 49, 122.2 s): the plant is dim in the silence
+  // and comes on with the music, the sight moves onto Unit 1's steaming towers, rings go out and BACK ON is stamped
+  const on = b(4), pwr = eo(pr(t, on - .02, on + .14));
+  print(TMI.key, TMI.cx, TMI.cy, TMI.w, { z, mount: 10, alpha: dim * lerp(.45, 1, pwr) });
+  const u1 = printPt(TMI.key, TMI.cx, TMI.cy, TMI.w, .83, .42, { z });
+  if (t >= on && t < on + .5) { X.globalAlpha = .2 * (1 - pr(t, on, on + .5)); X.fillStyle = C.white; X.fillRect(0, 0, W, 1080); X.globalAlpha = 1; }
+  for (let j = 0; j < 3; j++) { const r0 = on + j * HB, rk = pr(t, r0, r0 + 1.1); if (rk > 0 && rk < 1) gc(u1[0], u1[1], lerp(40, 620, eo(rk)), j ? C.cyan : C.white, .85 * (1 - rk), 2.5 - j * .6); }
+  if (open >= 1 && t < b(8)) { const c = printPt(TMI.key, TMI.cx, TMI.cy, TMI.w, .5, .5, { z }), m = eio(pr(t, on, on + .35)); sight(lerp(c[0], u1[0], m), lerp(c[1], u1[1], m), 70, t, pr(t, t0 + .9, t0 + 1.2)); }
   if (t >= b(8)) {
     X.globalAlpha = .9 * pr(t, b(8) - .15, b(8)); X.fillStyle = C.navy; X.fillRect(0, 300, W, 430); X.globalAlpha = 1;
     const hs = fit('RESTARTING FOR AI', 1500, 170, { fam: FT.d, weight: 900, stretch: 'semi-condensed' });
@@ -167,6 +173,13 @@ function plateZ(t) {
     captionW(c2, 960, 626, t, b(10), { size: 26, color: C.lav, cps: 260, align: 'center' }, 1560, 34);
   }
   X.restore();
+  if (t > on - .02 && t < b(8)) {
+    const k = eo(pr(t, on, on + .16)), a = k * (1 - pr(t, b(8) - .4, b(8) - .1));
+    X.save(); X.translate(1330, 168); X.rotate(-.1); X.scale(lerp(1.6, 1, k), lerp(1.6, 1, k)); X.globalAlpha = a;
+    X.strokeStyle = C.mag; X.lineWidth = 5; X.strokeRect(-230, -58, 460, 116); X.lineWidth = 2; X.strokeRect(-218, -46, 436, 92);
+    txt('BACK ON', 0, 24, { fam: FT.d, size: fit('BACK ON', 380, 72, { fam: FT.d, weight: 900 }), weight: 900, color: C.mag, align: 'center', alpha: a });
+    X.restore(); X.globalAlpha = 1;
+  }
   gc(ix, lerp(iy, 540, shut), ir, C.cyan, .8, 1.5);
   if (t >= b(11) && shut < 1) {
     X.globalAlpha = .85 * (1 - shut) * pr(t, b(11), b(11) + .2); X.fillStyle = C.navy; X.fillRect(0, 740, W, 170); X.globalAlpha = 1;
