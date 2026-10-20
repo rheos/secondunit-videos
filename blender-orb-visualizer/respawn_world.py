@@ -241,6 +241,9 @@ def build(F0, F1, out, res=(1280, 720)):
                    bpy.data.materials["CL_skyDay"])
     skyWest = plane("skyWest", [(WEST - .05, 40, -1.5), (WEST - .05, -90, -1.5), (WEST - .05, -90, 90), (WEST - .05, 40, 90)],
                     bpy.data.materials["CL_skyDay"])
+    skySouth = plane("skySouth", [(EDGE, -40.05, -1.5), (WEST, -40.05, -1.5), (WEST, -40.05, 90), (EDGE, -40.05, 90)],
+                     bpy.data.materials["CL_skyDay"])
+    W.skySouth = skySouth
     # two stage props hold the sky card up from behind (seen only from the void)
     for i, x in enumerate((WEST + 8, EDGE - 8)):
         box(f"skyProp{i}", (.5, 14, .5), (x, 47, 10), M["wood2"], rot=(R(-60), 0, 0))
@@ -491,6 +494,34 @@ def build(F0, F1, out, res=(1280, 720)):
     W.SR = SR
 
     # ==================================================================================================
+    # posing
+    # ==================================================================================================
+    def pose(d, f, pos, yaw, lean=0., neck=(0., 0.), shL=(0., 0.), shR=(0., 0.), hips=(0., 0.)):
+        key(d["root"], f, loc=pos, rot=(0, R(lean), R(yaw)))
+        key(d["neck"], f, rot=(0, R(neck[0]), R(neck[1])))
+        key(d["shL"], f, rot=(R(shL[0]), R(shL[1]), 0)); key(d["shR"], f, rot=(R(shR[0]), R(shR[1]), 0))
+        key(d["hipL"], f, rot=(0, R(hips[0]), 0)); key(d["hipR"], f, rot=(0, R(hips[1]), 0))
+    W.pose = pose
+
+    def sit(d, f, pos, yaw, lean=4., neck=(0., 0.), shL=(0., -30.), shR=(0., -30.), knees=True):
+        """sitting on the ground: hips folded forward, root dropped so the seat is on the floor"""
+        key(d["root"], f, loc=(pos[0], pos[1], pos[2] - .68 * d["H"]), rot=(0, R(lean), R(yaw)))
+        key(d["neck"], f, rot=(0, R(neck[0]), R(neck[1])))
+        key(d["shL"], f, rot=(R(shL[0]), R(shL[1]), 0)); key(d["shR"], f, rot=(R(shR[0]), R(shR[1]), 0))
+        a = -90 if knees else -80
+        key(d["hipL"], f, rot=(0, R(a), 0)); key(d["hipR"], f, rot=(0, R(a), 0))
+    W.sit = sit
+
+    def world_at(ob, f):
+        scene.frame_set(f); return ob.matrix_world.translation.copy()
+    W.world_at = world_at
+
+    def park_all(f):
+        for d in [W.keeper, W.seller, W.fisher, W.mayor, W.guard] + W.heroes + W.guards: pose(d, f, PARK, 0)
+        key(W.prompt, f, loc=(0, 0, -60))
+    W.park_all = park_all
+
+    # ==================================================================================================
     # people
     # ==================================================================================================
     def figure(nm, coat, trouser, skin, shoes, H=1.0, W_=1.0, head=.42, belly=0.0, skirt=False):
@@ -620,10 +651,8 @@ def build(F0, F1, out, res=(1280, 720)):
     W.refl = dict(root=rroot, neck=rneck)
     W.REFL_NAMES = [o.name for o in [rroot] + list(rroot.children_recursive) if o.type == "MESH"]
 
-    # ----- the heroes (take 07): three, the same hero really -----
-    HEROES = []
-    for i, plume in enumerate(("#c8341e", "#3f6f8f", "#e8b23a")):
-        nm = f"hero{i}"
+    # ----- the heroes (take 07): three built here, the same hero really; acts add more with W.make_hero -----
+    def make_hero(nm, plume="#c8341e"):
         h = figure(nm, "#7d8fa3", "#4c5a6a", "#efd9b9", "#3a4452", H=1.0, W_=1.05, head=.4)
         Mh = h["M"]; hn = h["neck"]
         helm = Mh("helm", "#b3c0cc", .04)
@@ -638,7 +667,10 @@ def build(F0, F1, out, res=(1280, 720)):
         box(nm + "_shieldRim", (.56, .04, .68), (0, -.015, 0), Mh("rim", "#e8b23a", .02), shield)
         box(nm + "_shieldBoss", (.14, .05, .14), (0, .04, 0), Mh("rim", "#e8b23a", .02), shield)
         h["sword"] = sword(nm + "_sword", h["shR"], (0, 0, -.6), (R(180), 0, 0))
-        HEROES.append(h)
+        vis(h["sword"], F0, False); pose(h, F0, PARK, 0)
+        return h
+    W.make_hero = make_hero
+    HEROES = [make_hero(f"hero{i}", plume) for i, plume in enumerate(("#c8341e", "#3f6f8f", "#e8b23a"))]
     W.heroes = HEROES
 
     # ----- the flower seller: green dress, straw hat, a watering can in her right hand -----
@@ -707,6 +739,9 @@ def build(F0, F1, out, res=(1280, 720)):
     MY["scroll"] = scroll
     W.mayor = MY
 
+    # ----- the bird: two blocks that cross the sky on the same path every 8 s -----
+    bird = blocks("bird", [((.3, .08, .06), (0, 0, 0)), ((.1, .5, .05), (-.05, 0, .03))], M["ink"]); W.bird = bird
+
     # ----- the prompt: "Continue?" with one button, floating over a head; off by default -----
     prompt = empty("prompt", (0, 0, -60))
     box("prompt_panel", (.06, 1.1, .5), (0, 0, 0), M["panel"], prompt)
@@ -717,34 +752,55 @@ def build(F0, F1, out, res=(1280, 720)):
     box("prompt_btnText", (.075, .22, .04), (.01, .25, -.12), M["white"], prompt)
     W.prompt = prompt
 
+
     # ==================================================================================================
-    # posing
+    # the loops: every NPC on rails, the same motion every period. Acts call village_loops(f0, f1) once.
     # ==================================================================================================
-    def pose(d, f, pos, yaw, lean=0., neck=(0., 0.), shL=(0., 0.), shR=(0., 0.), hips=(0., 0.)):
-        key(d["root"], f, loc=pos, rot=(0, R(lean), R(yaw)))
-        key(d["neck"], f, rot=(0, R(neck[0]), R(neck[1])))
-        key(d["shL"], f, rot=(R(shL[0]), R(shL[1]), 0)); key(d["shR"], f, rot=(R(shR[0]), R(shR[1]), 0))
-        key(d["hipL"], f, rot=(0, R(hips[0]), 0)); key(d["hipR"], f, rot=(0, R(hips[1]), 0))
-    W.pose = pose
+    LOOP = dict(guard=4.0, seller=3.0, fisher=6.0, fish=8.0, mayor=6.0, bird=8.0)
+    def seller_wave(f0, f1, strength=1.0):
+        """her wave on cue: the left arm up, two beats, down; the same count every time (an act keys it over the loop)"""
+        for f in range(f0, f1 + 1):
+            u = seg(f, f0, f1); up = ease(seg(u, 0, .25)) * (1 - ease(seg(u, .75, 1.0)))
+            wag = 14 * math.sin((f - f0) / 2.0) * up
+            pose(W.seller, f, (W.FS[0] - .95, W.FS[1] + .05, 0), -25 + 60 * up * strength, lean=2, neck=(4, 0), shL=(4 + 140 * up * strength + wag, 0), shR=(0, -62))
+    W.seller_wave = seller_wave
 
-    def sit(d, f, pos, yaw, lean=4., neck=(0., 0.), shL=(0., -30.), shR=(0., -30.), knees=True):
-        """sitting on the ground: hips folded forward, root dropped so the seat is on the floor"""
-        key(d["root"], f, loc=(pos[0], pos[1], pos[2] - .68 * d["H"]), rot=(0, R(lean), R(yaw)))
-        key(d["neck"], f, rot=(0, R(neck[0]), R(neck[1])))
-        key(d["shL"], f, rot=(R(shL[0]), R(shL[1]), 0)); key(d["shR"], f, rot=(R(shR[0]), R(shR[1]), 0))
-        a = -90 if knees else -80
-        key(d["hipL"], f, rot=(0, R(a), 0)); key(d["hipR"], f, rot=(0, R(a), 0))
-    W.sit = sit
-
-    def world_at(ob, f):
-        scene.frame_set(f); return ob.matrix_world.translation.copy()
-    W.world_at = world_at
-
-    def park_all(f):
-        for d in [SK, FL, FI, MY, W.guard] + HEROES + W.guards: pose(d, f, PARK, 0)
-        key(prompt, f, loc=(0, 0, -60))
-    W.park_all = park_all
-
+    def village_loops(f0, f1, keeper_home=True):
+        """key the village's background loops for [f0, f1]: the guard's four steps and back on the east road, the
+        seller watering her pot, the fisher's cast, the fish sprite's lap, the Mayor's scroll, the bird. Song-timed,
+        so the same frame always shows the same beat of each loop."""
+        H2 = W.HOUSES[2]
+        for f in range(f0, f1 + 1):
+            t = f / 24.0
+            # guard: 4 steps east (2 s), turn, 4 steps west
+            u = (t % LOOP["guard"]) / LOOP["guard"]
+            if u < .5: x, yaw, d = 26.5 + 2.8 * (u / .5), 0, 2.8 * (u / .5)
+            else: x, yaw, d = 29.3 - 2.8 * ((u - .5) / .5), 180, 2.8 * ((u - .5) / .5)
+            sw, bob = swing(d)
+            pose(W.guard, f, (x, -1.6, bob), yaw, hips=(sw, -sw), shL=(6, -sw * .3), shR=(-8, 0))
+            # seller: tips the can over the pot, then back; the same count every time
+            u = (t % LOOP["seller"]) / LOOP["seller"]; tip = ease(seg(u, .1, .35)) * (1 - ease(seg(u, .7, .95)))
+            pose(W.seller, f, (W.FS[0] - .95, W.FS[1] + .05, 0), -25, lean=2 + 3 * tip, neck=(8 + 8 * tip, 0), shL=(0, -8), shR=(0, -62 - 40 * tip))
+            # fisher: sits on the dock's end; the rod lifts and drops once a loop, the float bobs
+            u = (t % LOOP["fisher"]) / LOOP["fisher"]; lift = math.sin(math.pi * seg(u, .55, .8))
+            sit(W.fisher, f, (W.PC[0] - 2.5, W.PC[1] - .45, .12), 0, lean=2, neck=(8 - 10 * lift, 0), shL=(0, -20), shR=(0, -62 + 50 * lift))
+            key(W.rodFloat, f, loc=(W.PC[0] - .4, W.PC[1] + .25, -.01 + .02 * math.sin(t * 2.5)))
+            # fish: one lap of an ellipse under the surface
+            u = (t % LOOP["fish"]) / LOOP["fish"]; a = 2 * math.pi * u
+            key(W.fish, f, loc=(W.PC[0] + 1.6 * math.cos(a), W.PC[1] + .9 * math.sin(a), -.14), rot=(0, 0, a + math.pi / 2))
+            # mayor: reads, nods on the half, lifts the scroll on the whole
+            u = (t % LOOP["mayor"]) / LOOP["mayor"]; nod = math.sin(math.pi * seg(u, .4, .6)); lift = math.sin(math.pi * seg(u, .85, 1.0))
+            pose(W.mayor, f, (H2[0] - .2, H2[1] - H2[3] / 2 - .5, H2[4] - .22), -90, neck=(16 + 10 * nod, 0), shL=(0, -70 - 30 * lift), shR=(0, -64))
+            # bird: the same arc across the square, left to right, once a loop, parked the rest of the time
+            u = (t % LOOP["bird"]) / LOOP["bird"]
+            if u < .45:
+                v = u / .45; flap = .12 * math.sin(t * 18)
+                key(W.bird, f, loc=(-20 + 44 * v, 14 - 6 * v, 9 + 1.5 * math.sin(math.pi * v) + flap), rot=(0, 0, R(-8)))
+            else: key(W.bird, f, loc=PARK)
+            if keeper_home:
+                pose(W.keeper, f, (-.6, .85, .006 * math.sin(f / 9.0)), -82, shL=(9, 0), shR=(-9, 0))
+    W.village_loops = village_loops
+    W.LOOP = LOOP
     # ==================================================================================================
     # light and world: states, keyed by the acts
     # ==================================================================================================
@@ -814,7 +870,7 @@ def build(F0, F1, out, res=(1280, 720)):
 
     # defaults: everything parked, the skies up, the far set hidden, the game faces on
     park_all(F0)
-    vis(skyEnd, F0, True); vis(skyWest, F0, True); vis(shutter, F0, False)
+    vis(skyEnd, F0, True); vis(skyWest, F0, True); vis(skySouth, F0, True); vis(shutter, F0, False)
     for ob in [W.wallLo, W.wallHi, W.rimLo, W.rimHi] + SR: vis(ob, F0, False)
     vis(rroot, F0, False)
     for g in W.guards: vis(g["root"], F0, False)
