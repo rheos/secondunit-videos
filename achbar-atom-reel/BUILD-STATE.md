@@ -209,5 +209,6 @@ taint the canvas and `toDataURL` throws.
   fills bars 63-66: the camera slides down the sheet to it on the music's return (152.2 s) and the twelve figures
   are dealt onto it, one every three quarters of a beat with a snap (stills of the reel's own plates from 7h, in
   `assets/index/`). The title block is CH. 14 from bar 66 (158.65 s), 13.4 s as in 7f. Also: band titles shrink to
-  fit (7h's bigger band cut off the restart's title). 6d (Robin: flags instead of check boxes, yes, but not as bullets too): the bullet flags are gone;
+  fit (7h's bigger band cut off the restart's title). Posted 2026-10-20 as v2 for Mark: unlisted https://youtu.be/fFduw53zfkA,
+  round 52 "Graphics test 01 · v2" on his page (same link, same copy), the download file replaced with 7i. 6d (Robin: flags instead of check boxes, yes, but not as bullets too): the bullet flags are gone;
   each column flag flies, then folds down into its box and the tick draws in red, with a flap, a fold and a tick.
