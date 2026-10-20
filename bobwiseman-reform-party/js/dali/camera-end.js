@@ -55,7 +55,7 @@ function camEnd(t) {
 // The run is one long transit: its speed ramps up and down on quintic eases (no jerk) with a steady cruise between;
 // every other channel is a sum of quintic eases.
 const TRUN = { run: [201, 206.0], ramp: .3, alt: [201, 202.2], climb: [205.0, AIR.top], home: [205.6, AIR.top], down: [205.45, AIR.top - .1], lock: [203.4, 205.3],
-  zoom: [201, 202.4], out: [205.2, AIR.top], aim: [201, 201.9], H: 13, ZE: -745, XM: 312, XT: 334, F: 820 };
+  zoom: [201, 202.4], out: [205.2, AIR.top], aim: [201, 201.9], dip: [201, 201.75], rise: [203.3, 204.4], DX: 300, DY: 5.5, H: 13, ZE: -745, XM: 312, XT: 334, F: 820 };
 const s5 = (t, ab) => { const u = clamp((t - ab[0]) / (ab[1] - ab[0])); return u * u * u * (u * (6 * u - 15) + 10); };
 const I5 = (x) => x * x * x * x * (x * (x - 3) + 2.5); // the integral of the quintic ease, 0..1 -> 0..0.5
 function cruise(t, ab, r) { // 0..1 over ab: speed eased up over the first r, steady, eased down over the last r
@@ -67,7 +67,10 @@ function templeRun(t, q, yTop) {
   const pos = (t) => { const a = cruise(t, R.run, R.ramp), z = lerp(q.z, R.ZE, a), sa = (u, u0, u1) => { const v = clamp((u - u0) / (u1 - u0)); return v * v * v * (v * (6 * v - 15) + 10); };
     const x = q.x + (R.XM - q.x) * sa(a, 0, .35) + (R.XT - R.XM) * sa(a, .55, .85), ly0 = Math.log(q.y) + (Math.log(R.H) - Math.log(q.y)) * s5(t, R.alt);
     const ly = ly0 + .12 * Math.sin(a * Math.PI * 2) * (1 - s5(t, R.climb)) + (Math.log(AIR.D) - Math.log(R.H)) * s5(t, R.climb), h = s5(t, R.home);
-    return [lerp(x, MAN.x, h), Math.exp(ly), lerp(z, MAN.z, h)]; };
+    // draft 27 (Robin, option A): on the slow first second of the run the drone dips to head height beside the 12:00
+    // Lamplighters' left file and runs along it, robes and lanterns going by on the right, then climbs back into the run
+    const lo = s5(t, R.dip) * (1 - s5(t, R.rise)), xl = lerp(x, R.DX, lo), yl = Math.exp(lerp(ly, Math.log(R.DY), lo));
+    return [lerp(xl, MAN.x, h), yl, lerp(z, MAN.z, h)]; };
   const [x, y, z] = pos(t);
   // the aim: straight down the run, a little ahead of the Temple, so the art slides past on both sides and the Temple
   // swings by on the left; once the crane starts it eases evenly to straight down for the map
