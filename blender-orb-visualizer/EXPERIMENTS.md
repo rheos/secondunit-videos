@@ -256,3 +256,11 @@ Plan 2 (same day, Robin: "as much symbolism in the lyrics", emotive expression, 
 rhymes that never illustrate (a fishless pond with a fisher NPC, a daily "Continue?" prompt, a fixed price tag, a
 painted sky), a swappable face library with an eye highlight for the two who wake, and the matrix shape in game terms
 (the loop, a guard who is every guard, the construct, the crack as the exit). Still waiting on Robin's go.
+**Stills (2026-10-20, Robin's go on plan 2):** `respawn_world.py` (take 07's world as functions, the village one tile from
+x -34 to 50, a basin-cut pond with a fisher and a fish sprite, the keeper's smooth reflection head, the flower seller,
+the guard and four board doubles, the Mayor's balcony, the edge sign, shutters, price tag, "Continue?" prompt, a sand
+shore past the crack, and a nine-face library with an eye highlight), `film_kit.pixel_groups` (one pixel size per object
+group, the matte pixelated with the fill) and `respawn_stills.py`. Four stills in `out/film/respawn/stills/` (pond 75 s,
+guard line 96.5 s, tile 113.5 s, crossing 146 s), about 13 s each locally. Learned: the water has to be alpha-blended for
+the fish to show, and a reflection under blended water loses its cryptomatte, so the reflection lies ON the surface as a
+flattened face-up head (scale z .14), which also reads right. Sent to Robin; waiting on his notes.
