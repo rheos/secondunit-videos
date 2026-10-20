@@ -220,6 +220,7 @@ function renderFrame(t) {
   const fin = 1 - smooth(lin(rt, PORTAL.t0, PORTAL.t0 + .75));
   bloom(g, tod.I * (1 - .7 * fin));
   drawShafts(g, t, tod, 1 - fin);
+  if (typeof drawCrowd === 'function') drawCrowd(g, rt, tod); // draft 14: the crowd keeps coming, row on row (finale-crowd.js)
   drawDaisy(g, t, tod, rt);
   drawPipHeads(g, rt, tod); // the refrains: the Pips stick their heads in (pip-heads.js)
   drawFinaleHeads(g, rt, tod); // draft 12: the faces at the sides for the long held phrase (pip-finale.js)

@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>You Don't Love Me, draft 14 crowd: every character side by side</title>
+<style> html, body { margin: 0; background: #000; } canvas { width: 100vw; display: block; } </style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<script>window.PF_VARIANT = 'C';</script>
+<script src="../js/common/core.js"></script>
+<script src="../js/glass/timing.js"></script>
+<script src="../js/glass/glass.js"></script>
+<script src="../js/glass/bridge-timing.js"></script>
+<script src="../js/glass/bridge-trio.js"></script>
+<script src="../js/glass/pip-heads.js"></script>
+<script src="../js/glass/pip-finale.js"></script>
+<script src="../js/glass/finale-chorus.js"></script>
+<script src="../js/glass/crowd-base.js"></script>
+<script src="../js/glass/crowd-a.js"></script>
+<script src="../js/glass/crowd-b.js"></script>
+<script src="../js/glass/crowd-c.js"></script>
+<script>if (new URLSearchParams(location.search).has("demo")) for (const [k, f] of Object.entries(CH_DRAW)) { CROWD_DRAW[k] = (g, m) => f(g, m); CROWD_META[k] = { group: "a" }; }</script>
+<script>
+// Preview for the crowd builders. renderFrame(t): t's whole part picks the colour variant v, its fraction the mouth m.
+// ?group=a|b|c shows only that builder's characters; ?keys=k1,k2 only those. Six to a row at size .8, each over a
+// slice of the nave's wall colour, its key written under it. check.mjs --full renders it at 1920x1080 (two rows).
+const out = document.getElementById('c'); out.width = W; out.height = H; const g = out.getContext('2d');
+const QP = new URLSearchParams(location.search);
+function keysShown() {
+  let k = Object.keys(CROWD_DRAW);
+  if (QP.get('group')) k = k.filter((x) => CROWD_META[x]?.group === QP.get('group'));
+  if (QP.get('keys')) k = QP.get('keys').split(',');
+  return k;
+}
+function renderFrame(t) {
+  g.setTransform(1, 0, 0, 1, 0, 0); g.filter = 'none'; g.globalAlpha = 1;
+  g.fillStyle = '#3a3430'; g.fillRect(0, 0, W, H);
+  const keys = keysShown(), v = Math.floor(t), m = t - v, page = +(QP.get('page') || 0), per = 12;
+  keys.slice(page * per, page * per + per).forEach((k, i) => {
+    const cx = 160 + (i % 6) * 320, cy = 250 + Math.floor(i / 6) * 540;
+    g.save(); g.beginPath(); g.rect(cx - 160, cy - 250, 320, 540); g.clip();
+    g.translate(cx, cy); g.scale(.8, .8);
+    if (CROWD_DRAW[k]) CROWD_DRAW[k](g, m, 210 + t, v);
+    g.restore();
+    g.fillStyle = '#000'; g.fillRect(cx - 160, cy + 236, 320, 40);
+    g.fillStyle = '#fff'; g.font = '22px sans-serif'; g.textAlign = 'center'; g.fillText(k + ' v' + v + ' m' + m.toFixed(1), cx, cy + 264);
+  });
+}
+startPage(out, renderFrame, 0, 1);
+</script>
+</body>
+</html>
