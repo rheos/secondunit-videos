@@ -252,3 +252,7 @@ gitignored `STORYBOARD-respawn.md` here: eight acts over the 165.9 s song, the t
 pixelated at size 6, the real world sharp), the sketch's sunrise moved to refrain 3 as the climax. A flower seller
 who follows him off the map is the one new character. Nothing built or rendered yet; waiting on Robin's go.
 Long renders go to Modal, not this Mac.
+Plan 2 (same day, Robin: "as much symbolism in the lyrics", emotive expression, "escaping the matrix"): lyric
+rhymes that never illustrate (a fishless pond with a fisher NPC, a daily "Continue?" prompt, a fixed price tag, a
+painted sky), a swappable face library with an eye highlight for the two who wake, and the matrix shape in game terms
+(the loop, a guard who is every guard, the construct, the crack as the exit). Still waiting on Robin's go.
