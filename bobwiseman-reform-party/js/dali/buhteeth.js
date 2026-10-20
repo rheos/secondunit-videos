@@ -3,9 +3,9 @@
 // of the frame, clacks once on each of the eleven "buh"s, and hops back down out of frame (it moves in and out, never
 // fades). The eleven fall on the song's eighth-note grid (100 bpm, 0.3 s), starting about 1.7 s into each "they want
 // to control the blues" line. BUH.starts are the first clack of each run; nudge them here if the sync is off.
-// draft 28 (Robin: "the buh buh actually continue until about 1:53"): each run goes on to about the same point in its
-// refrain, 4.2 s into "there will be no facts without spin"; BUH.ends are the last clack of each run
-const BUH = { starts: [37.57, 95.47, 171.97], ends: [55.1, 113.0, 189.8], step: .3, inT: .45, outT: .45, size: 250 };
+// draft 28 (Robin: "the buh buh actually continue until about 1:53", and "the second time ... to about 3:00"): BUH.ends
+// are the last clack of each run; the 0:37 run ends at the same point in its refrain as the 1:33 one (a guess, unheard)
+const BUH = { starts: [37.57, 95.47, 171.97], ends: [55.1, 113.0, 180.0], step: .3, inT: .45, outT: .45, size: 250 };
 function buhTeeth(t) {
   BUH.starts.forEach((s0, r) => {
     const n = Math.round((BUH.ends[r] - s0) / BUH.step) + 1, s1 = s0 + (n - 1) * BUH.step; if (t < s0 - BUH.inT - .1 || t > s1 + BUH.step + BUH.outT) return;
