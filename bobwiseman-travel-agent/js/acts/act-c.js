@@ -582,7 +582,9 @@ SU.c_stairs = { mode: 'ill', f(q, p, a, T) {
   const top = P[n - 1]; path([[top[0], top[1] - 40], [px - Math.cos(an) * 180, py - Math.sin(an) * 180]], C.orange, 2.4, .9, [10, 8]);
   // him, a step at a time, case in hand, cloud over him
   const ti = Math.min(n - fresh - 2, 6 + Math.floor(p * 8)), [mx, my] = P[ti];
-  traveller(mx + 14, my, 1.1, { look: 1, legs: (FD >> 1) % 2 ? .9 : -.6, case: true, armL: [.3, -.3] }); cloud(mx + 14, my - 500, .6, { rain: true });
+  // draft 17 (js/draft17.js): he stops on the sixth step, sets the case down and plays the violin
+  if (typeof d17stairs === 'function') d17stairs(P, Math.min(n - fresh - 2, 6), T);
+  else { traveller(mx + 14, my, 1.1, { look: 1, legs: (FD >> 1) % 2 ? .9 : -.6, case: true, armL: [.3, -.3] }); cloud(mx + 14, my - 500, .6, { rain: true }); }
   for (let i = 0; i < 3; i++) gc(px, py, 120 + i * 30 + ((FD * 5) % 30), C.teal, .4, 1.6);
   consL([[0, 960, W, 960], [C_PA[0], C_PA[1], C_PD[0], C_PD[1]]]);
 } };

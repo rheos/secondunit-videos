@@ -54,7 +54,7 @@ function traveller(x, y, s, o = {}) {
   const fx1 = o.sit ? 60 : -12 + Math.sin(-sw) * 150, fx2 = o.sit ? 84 : 12 + Math.sin(sw) * 150;
   for (const fx of [fx1, fx2]) { const sp = PE(fx + 12, -6, 22, 9); S.F(sp, '#2b1d14'); S.OL(fx + 12, -6, 22, 9, 0, 2); }
   // back arm
-  const aL = o.armL || [.15, -.2]; limb(armIK(-26, -262, aL[0], aL[1], -1), 13, o, k, o.sleeve || '#356c69');
+  const aL = o.armL || [.15, -.2]; limb(armIK(-26, -262, aL[0], aL[1], -1, o.handToL || null), 13, o, k, o.sleeve || '#356c69'); // o.handToL: back-hand target (draft 17 violin)
   // coat
   const cp = [[-34, -276], [34, -276], [46, -130], [50, -118], [-50, -118], [-46, -130]];
   const cpath = PP(cp); S.F(cpath, coat); S.SH(cpath, 0, -200, 110, [16, -6], .9, 5.5); S.OP(dens(cp, 26, true));

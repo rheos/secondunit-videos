@@ -38,7 +38,7 @@ function violin(x, y, s, rot, o = {}) {
   // strings: they shiver while the bow is on them
   const on = o.bow !== undefined;
   for (let i = 0; i < 4; i++) { const xb = lerp(-14, 14, i / 3), xt = lerp(-6, 6, i / 3); X.beginPath(); X.moveTo(xb, -78); X.lineTo(lerp(xb, xt, .5) + (on ? jit(1.6) : 0), -280); X.lineTo(xt, -486); stroke(sch ? S.col : C.cream, 1.1 * k, .9); }
-  if (on) {
+  if (on && !o.noBow) {
     // the bow: contact between the bridge and the fingerboard, travel u along its length
     const cy = -160, ba = .1, dx = Math.cos(ba), dy = Math.sin(ba), L = 330, cx0 = -o.bow * 250 * dx, cy0 = cy - o.bow * 250 * dy;
     const h0 = [cx0 - dx * L, cy0 - dy * L], h1 = [cx0 + dx * L, cy0 + dy * L], nx = dy, ny = -dx;
@@ -47,7 +47,10 @@ function violin(x, y, s, rot, o = {}) {
     X.beginPath(); X.moveTo(h1[0] + nx * 12, h1[1] + ny * 12); X.lineTo(h1[0], h1[1]); stroke(S.INK, 3 * k, 1);
     const fr = PP([[h0[0], h0[1]], [h0[0] + dx * 34, h0[1] + dy * 34], [h0[0] + dx * 34 + nx * 18, h0[1] + dy * 34 + ny * 18], [h0[0] + nx * 18, h0[1] + ny * 18]]);
     S.F(fr, '#2a2320'); S.OP([[h0[0], h0[1]], [h0[0] + dx * 34, h0[1] + dy * 34], [h0[0] + dx * 34 + nx * 18, h0[1] + dy * 34 + ny * 18], [h0[0] + nx * 18, h0[1] + ny * 18]], true, 1.4);
+  }
+  if (on) {
     // sound off the strings
+    const cy = -160;
     for (let i = 0; i < 3; i++) { const r = 70 + i * 34 + ((FD * 7) % 34); X.beginPath(); X.arc(0, cy, r, -.5, .5); stroke(sch ? S.col : C.teal, 1.8 * k, .7 - i * .18); X.beginPath(); X.arc(0, cy, r, Math.PI - .5, Math.PI + .5); stroke(sch ? S.col : C.teal, 1.8 * k, .7 - i * .18); }
   }
   X.restore();
@@ -227,7 +230,7 @@ function d14post(key, fn) {
 }
 // Violin 1 (126.4): it rises out of the record, beside him, and plays itself
 d14post('b_groove', (q, p, a, T) => {
-  if (T < 126.3) return; const e = eo(seg(T, 126.3, 126.8));
+  if (typeof D17 !== 'undefined' || T < 126.3) return; const e = eo(seg(T, 126.3, 126.8)); // draft 17: he plays it in b_fiddle
   popRings(600, 800, T, 126.3, C.cream, 1.2);
   violin(600, 800 + (1 - e) * 140, .62 * e, -.2, { bow: bowU(T, V1) });
 });
@@ -246,7 +249,7 @@ d14post('b_luggage', (q, p, a, T) => {
 });
 // Violin 2 (241.9, Bob's 4:04): it appears in the airfield sky as the plane leaves without him
 d14post('c_stairs', (q, p, a, T) => {
-  const e = eo(seg(T, 242.35, 242.85)); if (e <= 0) return;
+  const e = eo(seg(T, 242.35, 242.85)); if (e <= 0 || typeof D17 !== 'undefined') return; // draft 17: he plays it on the stairs
   popRings(330, 520, T, 242.35, C.ink, 1);
   violin(330, 680, .54 * e, .1, { bow: bowU(T, V2) });
 });
