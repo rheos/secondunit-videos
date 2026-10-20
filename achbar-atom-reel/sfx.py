@@ -247,15 +247,15 @@ IKE = os.path.join(here, 'assets', 'ike.wav')
 if os.path.exists(IKE):
     v, vsr = sf.read(IKE); assert vsr == SR
     if v.ndim == 2: v = v.mean(1)
-    put(PL['T'] + .6, v, -1)                                                   # the voice (TAPE_T0 in js/tape-data.js = PL['T'] + .6)
+    put(PL['T'] + .6, v, 1.5)                                                   # the voice (TAPE_T0 in js/tape-data.js = PL['T'] + .6)
 sf.write(os.path.join(here, 'assets', 'sfx.wav'), out.astype(np.float32), SR)
 take, sr = sf.read(os.path.join(here, 'assets', 'song7.wav')); assert sr == SR   # atom-drive take-07, made to the 66-bar plan: played straight
 edit = take
 song = np.zeros((N, 2)); song[:min(N, len(edit))] = edit[:N]
-song *= 10 ** (-3 / 20)                                 # the score a touch lower throughout (Robin: no duck under the voice, lift the voice instead)
+song *= 10 ** (-1 / 20)                                 # the score barely lower; the voice is lifted instead of ducking (Robin, 7d and 7e notes)
 print('score edit', round(len(edit) / SR, 2), 's')
 sf.write(os.path.join(here, 'assets', 'score-edit.wav'), song.astype(np.float32), SR)
 m = song + out
-m = m / max(1.0, np.max(np.abs(m)) / .84) * 10 ** (1.4 / 20)   # about -14 LUFS integrated; ffmpeg's limiter does the rest
+m = m / max(1.0, np.max(np.abs(m)) / .84) * 10 ** (-0.3 / 20)   # about -14 LUFS integrated; ffmpeg's limiter does the rest
 sf.write(os.path.join(here, 'assets', 'mix.wav'), m.astype(np.float32), SR)
 print('sfx peak', np.max(np.abs(out)).round(3), 'mix written')

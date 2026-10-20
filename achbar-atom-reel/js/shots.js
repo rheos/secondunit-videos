@@ -102,11 +102,13 @@ function titleSeq(t) {
   const hk = pr(t, bar(1), bar(1) + 1.2), hx = ax, hy = ay - 8;
   if (hk > 0) {
     const beatPh = ((t - B0) % BEAT) / BEAT, thump = Math.exp(-7 * beatPh) * (t >= bar(2) ? 1 : 0);
-    const hr = lerp(34, 84, eo(hk)) * (1 + .09 * thump);
+    const hr = lerp(34, 84, eo(hk)) * (1 + .2 * thump);
     const heart = (r) => { const P = []; for (let i = 0; i <= 90; i++) { const a = i / 90 * TAU; P.push([hx + 16 * Math.pow(Math.sin(a), 3) * r / 15, hy - (13 * Math.cos(a) - 5 * Math.cos(2 * a) - 2 * Math.cos(3 * a) - Math.cos(4 * a)) * r / 15]); } return P; };
     gc(hx - hr * .72, hy - hr * .35, hr * .75, C.lav, .45 * (1 - out) * (1 - thump * .5), 1, [3, 4]); gc(hx + hr * .72, hy - hr * .35, hr * .75, C.lav, .45 * (1 - out) * (1 - thump * .5), 1, [3, 4]);
-    // neon rings: one leaves on every beat and fades as it grows
-    if (t >= bar(2)) for (let k = 0; k < 3; k++) { const age = beatPh + k; const sc = 1 + age * .75, al = Math.max(0, .55 - age * .22) * (1 - out); if (al > 0) { X.save(); X.shadowColor = C.mag; X.shadowBlur = 18; path(heart(hr * sc), C.mag, 2.2 - k * .5, al); X.restore(); } }
+    // the bloom: a soft magenta flash behind the heart on every beat
+    if (t >= bar(2) && thump > .02) { X.save(); X.globalCompositeOperation = 'lighter'; const g = X.createRadialGradient(hx, hy, 0, hx, hy, hr * 2.2); g.addColorStop(0, `rgba(255,61,154,${.45 * thump * (1 - out)})`); g.addColorStop(1, 'rgba(255,61,154,0)'); X.fillStyle = g; X.beginPath(); X.arc(hx, hy, hr * 2.2, 0, TAU); X.fill(); X.restore(); }
+    // neon rings: one leaves on every beat, travels out through the orbits and fades
+    if (t >= bar(2)) for (let k = 0; k < 4; k++) { const age = beatPh + k; const sc = 1 + age * 1.1, al = Math.max(0, .95 - age * .26) * (1 - out); if (al > 0) { X.save(); X.shadowColor = C.mag; X.shadowBlur = 26; path(heart(hr * sc), C.mag, 2.8 - k * .5, al); X.restore(); } }
     X.save(); X.shadowColor = C.mag; X.shadowBlur = 24 + 30 * thump;
     path(heart(hr).slice(0, Math.max(2, Math.round(90 * eo(hk)))), C.mag, 3.2, 1 - out);
     X.restore();

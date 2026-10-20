@@ -186,5 +186,10 @@ taint the canvas and `toDataURL` throws.
   30/27/26, cards' small print 14, credits 20 (#17, #19, #20); SOUND FAMILIAR? lands two frames before bar 63, where
   take-07 comes back after its pause at 151.5 s, the rows rising in the pause (#21); the picture fades to black
   168.3-171.2 s with the music and the film ends at 172 s (#22). holdcheck 0 short. -14.3 LUFS, peak -1.7 dBFS, flash
-  PASS. Uploaded unlisted https://youtu.be/maSUTV9OljE, round 46 on the reel's page. Not sent to Mark. 6d (Robin: flags instead of check boxes, yes, but not as bullets too): the bullet flags are gone;
+  PASS. Uploaded unlisted https://youtu.be/maSUTV9OljE, round 47 on the reel's page. Not sent to Mark.
+- Draft 7f (2026-10-19, Robin on 7e: the heart's pulse and the voice/score balance still read as unchanged): the beat
+  swell is 20% with a magenta bloom behind the heart on every beat and four rings at up to .95 alpha travelling out
+  through the orbits; the score sits 1 dB down instead of 3 and the voice is 2.5 dB louder than in 7e. Only the title
+  span re-rendered. -14.9 LUFS, peak -1.9 dBFS, flash PASS. Uploaded unlisted https://youtu.be/6cYcut5zq-A, round 48.
+  The studio page now lists the last draft's notes with seek links (novadiem-files #72/#73). 6d (Robin: flags instead of check boxes, yes, but not as bullets too): the bullet flags are gone;
   each column flag flies, then folds down into its box and the tick draws in red, with a flap, a fold and a tick.
