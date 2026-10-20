@@ -244,3 +244,11 @@ shots; the sleeping dog is small. 07: hero 3 crosses close to camera for a few f
 08: the banana reads like a crown seen end-on; his legs are big dark blocks in the lying shots.
 
 **Verdict.** Waiting on Robin.
+
+## Take 07 to whole song: Respawn plan (2026-10-20)
+
+Robin wants the Respawn idea (take 07) developed for all of Real Thing, alongside the gorilla film. Plan 1 is a
+gitignored `STORYBOARD-respawn.md` here: eight acts over the 165.9 s song, the take-07 look and pixel rule kept (game
+pixelated at size 6, the real world sharp), the sketch's sunrise moved to refrain 3 as the climax. A flower seller
+who follows him off the map is the one new character. Nothing built or rendered yet; waiting on Robin's go.
+Long renders go to Modal, not this Mac.
