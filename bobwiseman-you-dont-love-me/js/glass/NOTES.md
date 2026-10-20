@@ -190,3 +190,25 @@ build both finale entries and give Bob the choice (one round, versions A and B).
   stage that drops in at 139.84 and lifts out at 148.0 now holds the turning rose window, each sung hit turning
   it on a notch, with a warm glow from the daisy at its heart.
 - Cuts: `out/_render_d13.sh` + `out/_assemble_d13.sh`, file `out/ydlm_full-v15_*`.
+
+## Draft 14: the crowd keeps coming (Bob, 2026-10-20)
+
+- Bob on draft 13 (round 46): "I love adding on to the end, can you keep it going like the way More gets more and more
+  dense. It's much more amusing and cute. Could be other characters too from other videos if you run out of people."
+- `finale-crowd.js` (page `looks/glass-finale-d.html`): after draft 13's seven heads, five more rows of faces stand up
+  from below, each row behind the one in front and a little smaller, bottom of the frame to the top, until the nave is
+  a wall of singing faces. The pace is More's chorus pile: from 207.73 one face a beat (row 1), then two a beat (rows 2
+  and 3), then four a beat (rows 4 and 5), all in by about 226.3. Inside a row they pop up all over, not left to right.
+  The daisy roundel's corner stays clear. From 228.40 they sit back down out of sight, the back row first, a row
+  every half beat, alongside draft 13's exits, before the light goes.
+- Cast (`crowd-base.js` is the registry and the drawing contract): first this film's own people (`crowd-a.js`: the
+  sibyl, the host with his owl puppet, a window saint, the verse-2 doctor, a sheepdog, a dachshund, a pug, a donkey, a
+  woman electrician, a young plumber), then Bob's other films, alternating (`crowd-b.js`: More's customer, waiter and
+  two elders, We Got Time's man, typist and a clerk, Satisfied Mind's three goths; `crowd-c.js`: the Airplane, the Real
+  Thing gorilla, two 10,000 Miles people, Reform Party's horse-headed diva and a Lamplighter, In Her Dream's dreamer,
+  the Travel Agent traveller, Libelous's judge, All The Trees' Sol and fox), then everyone again in a second colour
+  (`v`) to fill the rows. Left out on purpose: little Bob (Bob asked twice), and anyone real (Holiday Tavern and Me and
+  Jimi are all real people; Giulietta Masina; All The Trees' named people; the Libelous king; the Reform Party suits).
+- The heads draw on one offscreen layer lit once (a canvas filter per pane on 50 heads cost 35 s a frame).
+  `looks/crowd-preview.html` shows every character side by side (`?group=a`, `?keys=`, `?page=`; t = v + m).
+- Cuts: `out/_render_d14.sh` (cloud-render, 4680-5593) + `out/_assemble_d14.sh` (v15 to 4680), file `out/ydlm_full-v16_*`.
