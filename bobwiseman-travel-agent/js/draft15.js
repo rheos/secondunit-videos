@@ -61,4 +61,5 @@ const HER_THREAD = [
   ['e_appInside', 366.2, 368.2, [[290, 660], [420, 560], [560, 580], [640, 470], [690, 380]]],
   ['e_sPhoneCage', 368.3, 371.8, [[240, 700], [480, 560], [700, 420], ...herArc(960, 510, 290, 470, Math.PI * 1.1, Math.PI * 2.9, 10)]],
 ];
-for (const [key, ta, tb, P] of HER_THREAD) { const sch = SU[key].mode === 'sch'; d14post(key, (q, p, a, T) => herThread(T, ta, tb, P, sch)); }
+// draft 17 installs the threads itself, after her portrait (js/draft17.js); without it they go in here
+if (!document.querySelector('script[src*="draft17"]')) for (const [key, ta, tb, P] of HER_THREAD) { const sch = SU[key].mode === 'sch'; d14post(key, (q, p, a, T) => herThread(T, ta, tb, P, sch)); }
