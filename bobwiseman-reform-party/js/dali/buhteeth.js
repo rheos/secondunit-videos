@@ -3,18 +3,20 @@
 // of the frame, clacks once on each of the eleven "buh"s, and hops back down out of frame (it moves in and out, never
 // fades). The eleven fall on the song's eighth-note grid (100 bpm, 0.3 s), starting about 1.7 s into each "they want
 // to control the blues" line. BUH.starts are the first clack of each run; nudge them here if the sync is off.
-const BUH = { starts: [37.57, 95.47, 171.97], n: 11, step: .3, inT: .45, outT: .45, size: 250 };
+// draft 28 (Robin: "the buh buh actually continue until about 1:53"): each run goes on to about the same point in its
+// refrain, 4.2 s into "there will be no facts without spin"; BUH.ends are the last clack of each run
+const BUH = { starts: [37.57, 95.47, 171.97], ends: [55.1, 113.0, 189.8], step: .3, inT: .45, outT: .45, size: 250 };
 function buhTeeth(t) {
-  for (const s0 of BUH.starts) {
-    const s1 = s0 + (BUH.n - 1) * BUH.step; if (t < s0 - BUH.inT - .1 || t > s1 + BUH.step + BUH.outT) continue;
+  BUH.starts.forEach((s0, r) => {
+    const n = Math.round((BUH.ends[r] - s0) / BUH.step) + 1, s1 = s0 + (n - 1) * BUH.step; if (t < s0 - BUH.inT - .1 || t > s1 + BUH.step + BUH.outT) return;
     const up = ease(t, s0 - BUH.inT, s0 - .05) * (1 - ease(t, s1 + BUH.step * .6, s1 + BUH.step * .6 + BUH.outT));
     // which clack we are on, and how far through it (jaw snaps shut on the beat, springs open between)
-    const u = (t - s0) / BUH.step, i = Math.floor(u), ph = u - i, live = i >= 0 && i < BUH.n;
+    const u = (t - s0) / BUH.step, i = Math.floor(u), ph = u - i, live = i >= 0 && i < n;
     const open = live ? (ph < .18 ? ph / .18 * .05 : .05 + .95 * Math.sin(Math.min(1, (ph - .18) / .6) * Math.PI / 2)) : .35;
     const hop = live ? Math.max(0, Math.sin(ph * Math.PI)) * .05 : 0; // a small hop as the jaw springs open
     const S = BUH.size, x = W - S * 1.05, y = H + S * .2 - up * S * 1.25 - hop * S * .35, rot = 0;
     g.save(); g.translate(x, y); g.rotate(rot); drawWindupTeeth(S, open, t); g.restore();
-  }
+  });
 }
 function drawWindupTeeth(S, open, t) {
   const k = S / 100; // drawn on a 100-unit box, the hinge at the back
