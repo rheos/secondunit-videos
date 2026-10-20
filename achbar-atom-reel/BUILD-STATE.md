@@ -191,5 +191,7 @@ taint the canvas and `toDataURL` throws.
   swell is 20% with a magenta bloom behind the heart on every beat and four rings at up to .95 alpha travelling out
   through the orbits; the score sits 1 dB down instead of 3 and the voice is 2.5 dB louder than in 7e. Only the title
   span re-rendered. -14.9 LUFS, peak -1.9 dBFS, flash PASS. Uploaded unlisted https://youtu.be/6cYcut5zq-A, round 48.
-  The studio page now lists the last draft's notes with seek links (novadiem-files #72/#73). 6d (Robin: flags instead of check boxes, yes, but not as bullets too): the bullet flags are gone;
+  The studio page now lists the last draft's notes with seek links (novadiem-files #72/#73). 7f approved by Robin;
+  Mark gets his own page, https://files.novadiem.com/cf8dae3c4effbc6f/ (round 48 re-titled "Graphics test 01", watch-only,
+  the 720p file as a download). Later cuts go there as new rounds; no new links to Mark. 6d (Robin: flags instead of check boxes, yes, but not as bullets too): the bullet flags are gone;
   each column flag flies, then folds down into its box and the tick draws in red, with a flap, a fold and a tick.
