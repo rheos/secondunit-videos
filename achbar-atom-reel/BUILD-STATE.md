@@ -165,5 +165,10 @@ taint the canvas and `toDataURL` throws.
   cards CH. 00-13. Score: provisional, take-03 looped at bar lines (BARMAP in sfx.py); the forked session owns the
   real track (plan of fourteen sections at 111 BPM; assets/song7.wav when chosen). Facts for every new line:
   `scratchpad` report folded into the table above. `tape.py` builds the clip and js/tape-data.js. Flash PASS (worst
-  1.5/s), -14.7 LUFS, peak -4.2 dBFS. Not uploaded; Robin watches first. 6d (Robin: flags instead of check boxes, yes, but not as bullets too): the bullet flags are gone;
+  1.5/s), -14.7 LUFS, peak -4.2 dBFS. Not uploaded; Robin watches first.
+  7b (Robin: slides left too soon after their last word; and no, the usual audit would not have caught it): a
+  reading-time rule, measured from the cue data (`holdcheck.py`, now in the pipeline and in the video-production
+  review checklist): every plate holds at least 1.5 s after its last typed character. Promise, metaphors, same lab,
+  day after, restart and red flags each gained a bar; the machine's parameter count, the p(doom) number, the CH2
+  label and the clock's sub moved earlier. 66 bars after the downbeat, 175 s; the provisional loop edit follows. 6d (Robin: flags instead of check boxes, yes, but not as bullets too): the bullet flags are gone;
   each column flag flies, then folds down into its box and the tick draws in red, with a flap, a fold and a tick.

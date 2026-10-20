@@ -6,14 +6,14 @@
 # film runs a little past the music's fade so the title block can hold.
 import os, numpy as np, soundfile as sf
 from scipy.signal import butter, sosfilt
-SR = 48000; DUR = 162.5; N = int(SR * DUR); FR = 1 / 24
+SR = 48000; DUR = 175.0; N = int(SR * DUR); FR = 1 / 24
 here = os.path.dirname(os.path.abspath(__file__))
 B0 = 16.851; BEAT = 0.54054; BAR = 4 * BEAT       # js/shots.js
 bar = lambda n: B0 + n * BAR; bt = lambda n: B0 + n * BEAT
-PL = dict(A=0, T=bar(4), B=bar(9), M=bar(13), X=bar(17), C=bar(22), N=bar(26), D=bar(31), Y=bar(36), E=bar(40), Z=bar(44), P=bar(48), F=bar(56), G=bar(60))
+PL = dict(A=0, T=bar(4), B=bar(9), M=bar(14), X=bar(19), C=bar(24), N=bar(29), D=bar(34), Y=bar(39), E=bar(44), Z=bar(48), P=bar(53), F=bar(61), G=bar(66))
 # the score: the 119 s take looped at bar lines so its changes at bars 24 and 32 land on the sync loss (film bar 35)
 # and the cards (film bar 52): (film bar, source bar, bars)
-BARMAP = [(0, 0, 20), (20, 9, 11), (31, 20, 4), (35, 24, 9), (44, 24, 8), (52, 32, 8), (60, 40, None)]
+BARMAP = [(0, 0, 20), (20, 9, 11), (31, 20, 4), (35, 9, 3), (38, 24, 10), (48, 24, 9), (57, 32, 8), (65, 39, 1), (66, 40, None)]
 rng = np.random.default_rng(7)
 out = np.zeros((N, 2))
 
@@ -156,11 +156,11 @@ put(PL['M'] + .5, slide(.6), -20, pan=-.5); put(PL['M'] + .5, slide(.6), -20, pa
 put(PL['M'] + 1.0, thump(.4), -22)                     # they land
 for i in range(6): put(PL['M'] + (2 + 2 * i) * BEAT, tick(5200 if i % 2 else 3200, .012), -19, pan=-.35 if i % 2 == 0 else .35)   # each quote
 put(PL['M'] + 14 * BEAT, tick(4500, .015), -20)        # the band
-put(PL['M'] + 16 * BEAT - .5, slide(.5), -21, pan=-.5); put(PL['M'] + 16 * BEAT - .5, slide(.5), -21, pan=.5)   # the panels leave
+put(PL['M'] + 20 * BEAT - .5, slide(.5), -21, pan=-.5); put(PL['M'] + 20 * BEAT - .5, slide(.5), -21, pan=.5)   # the panels leave
 # X. the fields: the map drawn, the pins, the hot pins
 put(PL['X'], pen(1.6), -24, pan=-.1)                                           # the map in the pen
 for i in range(12): put(PL['X'] + (3 + i * .6) * BEAT, tick(3600, .02), -20, pan=-.4 + .07 * i)   # the sites of the bomb
-for i in range(6): put(PL['X'] + (13 + i * .8) * BEAT, blip(1320), -19, pan=.3 - .1 * i)          # the new sites
+for i in range(5): put(PL['X'] + (12.5 + i * .6) * BEAT, blip(1320), -19, pan=.3 - .1 * i)         # the new sites
 put(PL['X'] + 12 * BEAT, tick(4500, .015), -20)                                # the band changes
 put(PL['C'] - .6, ping(1500), -24)                                             # the Los Alamos pin
 # 3. the same lab
@@ -184,14 +184,14 @@ put(PL['N'] + 8 * BEAT, relays(5 * BEAT, 16), -25, pan=.1)   # the net fires
 for k in range(8, 19):                                 # neurons firing on each beat
     for j, f in enumerate(rng.choice([440, 523, 587, 659, 784, 880, 1047], 3, replace=False)): put(PL['N'] + k * BEAT + j * .03, blip(f), -24 - 2 * j, pan=-.3 + .3 * j)
 put(PL['N'] + 8 * BEAT, tick(4500, .015), -20)         # the 1958 band
-odometer(PL['N'] + 13 * BEAT, PL['N'] + 14 * BEAT)     # GPT-2
-odometer(PL['N'] + 15 * BEAT, PL['N'] + 16.5 * BEAT, 40)   # GPT-3
-put(PL['N'] + 17.5 * BEAT, thump(.5), -18, pan=.3)     # the redaction bar
+odometer(PL['N'] + 11 * BEAT, PL['N'] + 12 * BEAT)     # GPT-2
+odometer(PL['N'] + 12.5 * BEAT, PL['N'] + 14 * BEAT, 40)   # GPT-3
+put(PL['N'] + 15 * BEAT, thump(.5), -18, pan=.3)       # the redaction bar
 put(PL['N'] + 19 * BEAT, whoosh(.55, rev=True), -22)   # the net collapses to the beam spot
 # 5. the scope
 put(PL['D'], crt_on(), -14)                            # scope powers on
 put(PL['D'] + .2, hum(PL['Y'] - PL['D'] - .2), -27)    # tube hum under the plate
-c0, c1 = PL['D'] + 9 * BEAT + .3, PL['D'] + 15 * BEAT - .2   # CH2: the compute curve, a second tone an octave up
+c0, c1 = PL['D'] + 9 * BEAT + .3, PL['D'] + 13.5 * BEAT      # CH2: the compute curve, a second tone an octave up
 put(c0, glide(lambda u: 330 + 900 * u ** 2.2, c1 - c0, .22), -26, pan=-.2)
 put(PL['D'] + 16 * BEAT - .2, static(1.6), -20)        # sync lost (the music's own change, bar 35)
 d0, d1 = PL['D'] + 1.3, PL['D'] + 9 * BEAT              # the beam draws the curve: a tone follows the count
@@ -199,10 +199,10 @@ put(d0, glide(lambda u: 170 + 720 * np.array([warheads_at(1945 + 81 * v) for v i
 # Y. the day after: a television
 put(PL['Y'], crt_on(), -18)
 put(PL['Y'] + .2, hum(PL['E'] - PL['Y'] - .2, 60), -30)
-for k in (3, 8, 10): put(PL['Y'] + k * BEAT - .1, static(.25), -18)           # the channel changes
-odometer(PL['Y'] + 3 * BEAT, PL['Y'] + 4.5 * BEAT, 36)                         # the audience counts up
-put(PL['Y'] + 8 * BEAT, chime(1320, .6), -22)                                  # the station's sting
-put(PL['Y'] + 10.5 * BEAT, thump(.6), -18); put(PL['Y'] + 11 * BEAT, thump(.6), -18)   # the diary lines
+for k in (5, 11, 13): put(PL['Y'] + k * BEAT - .1, static(.25), -18)          # the channel changes
+odometer(PL['Y'] + 5 * BEAT, PL['Y'] + 6.5 * BEAT, 36)                         # the audience counts up
+put(PL['Y'] + 11 * BEAT, chime(1320, .6), -22)                                 # the station's sting
+put(PL['Y'] + 13.5 * BEAT, thump(.6), -18); put(PL['Y'] + 14 * BEAT, thump(.6), -18)   # the diary lines
 put(PL['E'] - .5, blip_down(), -16)                                            # the set goes off
 # 6. the clock
 put(PL['E'], blip_down(), -20)                         # back to blueprint
@@ -216,12 +216,12 @@ put(PL['Z'], whoosh(.9), -18)                                                  #
 put(PL['Z'] + .9, ping(), -23)                                                 # crosshair on the towers
 put(PL['Z'] + 8 * BEAT, thump(1.1), -12)                                       # RESTARTING FOR AI
 for i in range(3): put(PL['Z'] + (11 + i * .8) * BEAT, tick(4500, .015), -21, pan=-.2 + .2 * i)   # the schedule
-put(PL['P'] - .7, whoosh(.6, rev=True), -22)                                   # iris shuts to the dot
+put(PL['P'] - .55, whoosh(.55, rev=True), -22)                                 # iris shuts to the dot
 # 7. p(doom)
 put(PL['P'], whoosh(.9), -18)                          # iris onto LA-602
 put(PL['P'] + .9, ping(), -23)                         # crosshair on the report's title
-put(PL['P'] + 4 * BEAT, thump(.6), -17)                # THE FIRST p(doom)
-put(PL['P'] + 8 * BEAT, thump(1.1), -12)               # < 3 IN 1,000,000
+put(PL['P'] + 3 * BEAT, thump(.6), -17)                # THE FIRST p(doom)
+put(PL['P'] + 6.5 * BEAT, thump(1.1), -12)             # < 3 IN 1,000,000
 put(PL['P'] + 11 * BEAT, whoosh(.55, rev=True), -22)   # iris shuts to the dot
 for i in range(5): put(PL['P'] + (12 + 1.5 * i) * BEAT + .3, snap(), -16, pan=-.4 + .2 * i)   # cards dealt
 put(PL['P'] + 19 * BEAT, thump(.8), -14)               # p(doom) ALL-STARS

@@ -18,7 +18,7 @@ const PAN = { A: [120, 900], I: [1020, 1800], y0: 150, y1: 920 };
 function plateM(t) {
   const t0 = PLATE.M, b = (n) => t0 + n * BEAT; schBG(); schFrame('3', '', '', C.lav);
   // the promise's output node runs to the top and rules the divider down the middle
-  const k1 = eo(pr(t, t0, t0 + .35)), k2 = eo(pr(t, t0 + .3, t0 + .8)), ek = eio(pr(t, b(16) - .5, b(16)));
+  const k1 = eo(pr(t, t0, t0 + .35)), k2 = eo(pr(t, t0 + .3, t0 + .8)), ek = eio(pr(t, b(20) - .5, b(20)));
   const dx = lerp(1580, 960, k1), dy = lerp(470, 120, k1);
   if (k1 < 1) { gl(1580, 470, dx, dy, C.cyan, .8, 1.5); star(dx, dy, 6, C.white, 1); }
   else { gl(960, 120, 960, lerp(120, 960, k2), C.cyan, .8 * (1 - ek), 1.5); if (k2 < 1) star(960, lerp(120, 960, k2), 6, C.white, 1); }
@@ -56,7 +56,7 @@ function plateM(t) {
     });
     X.restore();
   }
-  band(t, b(14), b(16) - .45, 'THE METAPHOR DESCRIBES THE SPEAKER', 'AFTER THE CORPORATION (2003): EVERY CEO AND CRITIC WAS ASKED FOR THEIR IMAGE OF THE CORPORATION, AND THE ANSWERS WERE CUT TOGETHER');
+  band(t, b(14), b(20) - .45, 'THE METAPHOR DESCRIBES THE SPEAKER', 'AFTER THE CORPORATION (2003): EVERY CEO AND CRITIC WAS ASKED FOR THEIR IMAGE OF THE CORPORATION, AND THE ANSWERS WERE CUT TOGETHER');
   plateLabel(FIG.M, 'THE METAPHORS', '', t, t0 + .2);
 }
 
@@ -82,7 +82,7 @@ function plateN(t) {
     X.setLineDash([]);
   }
   // 2. nodes, layer by layer; 3. weights, inked between the layers
-  const stage = t < b(13) ? 0 : t < b(15) ? pr(t, b(13), b(14)) : t < b(17.5) ? 1 + pr(t, b(15), b(16.5)) : 2;   // parameter stages thicken the weights
+  const stage = t < b(11) ? 0 : t < b(12.5) ? pr(t, b(11), b(12)) : t < b(15) ? 1 + pr(t, b(12.5), b(14)) : 2;   // parameter stages thicken the weights
   for (let L = 0; L < 3; L++) {
     const wk = pr(t, t0 + 1.6 + L * .5, t0 + 2.3 + L * .5); if (wk <= 0) continue;
     for (let i = 0; i < NET.ns[L]; i++) for (let j = 0; j < NET.ns[L + 1]; j++) {
@@ -112,21 +112,21 @@ function plateN(t) {
   // 5. 1958: the promise, from the newspaper of record
   band(t, b(8), b(13) - .3, '“… WILL BE ABLE TO WALK, TALK, SEE, WRITE, REPRODUCE ITSELF AND BE CONSCIOUS OF ITS EXISTENCE”', '8 JULY 1958 · THE NEW YORK TIMES ON THE PERCEPTRON · ROSENBLATT, CORNELL AERONAUTICAL LABORATORY, FUNDED BY THE U.S. OFFICE OF NAVAL RESEARCH');
   // 6. the parameter count, rolling, then redacted
-  if (t >= b(13) && col < 1) {
-    const bx = 1320, by = 130, bw = 520, bh = 180, ba = pr(t, b(13), b(13) + .3) * fade;
+  if (t >= b(11) && col < 1) {
+    const bx = 1320, by = 130, bw = 520, bh = 180, ba = pr(t, b(11), b(11) + .3) * fade;
     X.globalAlpha = .85 * ba; X.fillStyle = C.navy2; X.fillRect(bx, by, bw, bh); X.globalAlpha = 1; iBox(bx, by, bw, bh, C.lav, 1.2, .7 * ba, false);
     lab(bx + 24, by + 34, 'PARAMETERS (WEIGHTS)', C.lav, .85 * ba, 15);
     let n, who;
-    if (t < b(15)) { n = 1.5e9 * eo(pr(t, b(13), b(14))); who = 'GPT-2 · OPENAI, 2019'; }
-    else if (t < b(17.5)) { n = lerp(1.5e9, 175e9, eo(pr(t, b(15), b(16.5)))); who = 'GPT-3 · OPENAI, 2020'; }
+    if (t < b(12.5)) { n = 1.5e9 * eo(pr(t, b(11), b(12))); who = 'GPT-2 · OPENAI, 2019'; }
+    else if (t < b(15)) { n = lerp(1.5e9, 175e9, eo(pr(t, b(12.5), b(14)))); who = 'GPT-3 · OPENAI, 2020'; }
     else { n = 175e9; who = 'GPT-4 · OPENAI, 2023'; }
     lab(bx + bw - 24, by + 34, who, C.white, .95 * ba, 16, 'right');
     txt(fmt(n), bx + bw - 24, by + 118, { fam: FT.m, size: 44, weight: 700, color: C.cyan, align: 'right', alpha: ba });
-    if (t >= b(17.5)) {
-      const rk = eo(pr(t, b(17.5), b(17.5) + .4));
+    if (t >= b(15)) {
+      const rk = eo(pr(t, b(15), b(15) + .4));
       X.globalAlpha = ba; X.fillStyle = '#000'; X.fillRect(bx + bw - 24 - 460 * rk, by + 74, 460 * rk, 58); X.globalAlpha = 1;
-      if (rk >= 1) { lab(bx + bw - 24, by + 114, 'NOT DISCLOSED', C.white, .95 * ba, 30, 'right'); caption('“NO FURTHER DETAILS ABOUT THE ARCHITECTURE (INCLUDING MODEL SIZE)” · GPT-4 TECHNICAL REPORT', bx + 24, by + 158, t, b(17.5) + .4, { size: 13, color: C.lav, cps: 200, alpha: ba }); }
-    } else lab(bx + 24, by + 158, t < b(15) ? '“A 1.5B PARAMETER TRANSFORMER” · RADFORD ET AL.' : '“175 BILLION PARAMETERS” · BROWN ET AL.', C.lav, .8 * ba, 13);
+      if (rk >= 1) { lab(bx + bw - 24, by + 114, 'NOT DISCLOSED', C.white, .95 * ba, 30, 'right'); caption('“NO FURTHER DETAILS ABOUT THE ARCHITECTURE (INCLUDING MODEL SIZE)” · GPT-4 TECHNICAL REPORT', bx + 24, by + 158, t, b(15) + .4, { size: 13, color: C.lav, cps: 300, alpha: ba }); }
+    } else lab(bx + 24, by + 158, t < b(12.5) ? '“A 1.5B PARAMETER TRANSFORMER” · RADFORD ET AL.' : '“175 BILLION PARAMETERS” · BROWN ET AL.', C.lav, .8 * ba, 13);
   }
   if (col > .85) star(960, 520, 6 * cl((col - .85) / .15), C.white, 1);
   plateLabel(FIG.N, 'THE MACHINE', '', t, t0 + .2);
@@ -202,23 +202,23 @@ function plateP(t) {
   if (shut < 1) {
     // part 1: the report, irised open from the clock's centre on the scoreboard
     const open = eo(pr(t, t0, t0 + .9)), ix = 960, iy = 470, ir = lerp(8, 1400, open) * (1 - shut) + 2 * shut;
-    const z = lerp(1, 1.05, pr(t, t0, b(11))), dim = lerp(1, .3, eio(pr(t, b(8) - .2, b(8) + .3)));
+    const z = lerp(1, 1.05, pr(t, t0, b(11))), dim = lerp(1, .3, eio(pr(t, b(6.5) - .2, b(6.5) + .3)));
     X.save(); X.beginPath(); X.arc(ix, iy, Math.max(0, ir), 0, TAU); X.clip();
     print('la-602', 960, 470, 1000, { z, mount: 10, alpha: dim });
     const tl = printPt('la-602', 960, 470, 1000, .5, .525, { z });
-    if (open >= 1 && t < b(8)) sight(tl[0], tl[1], 60, t, pr(t, t0 + .9, t0 + 1.2));
+    if (open >= 1 && t < b(6.5)) sight(tl[0], tl[1], 60, t, pr(t, t0 + .9, t0 + 1.2));
     const hs = fit('THE FIRST p(doom)', 1500, 78, { fam: FT.d, weight: 900 });
-    kin('THE FIRST p(doom)', 960, 128, t, b(4), { size: hs, weight: 900, align: 'center', hot: [10, 17, C.mag], stag: .03 });
-    if (t >= b(8)) {
-      X.globalAlpha = .9 * pr(t, b(8) - .15, b(8)); X.fillStyle = C.navy; X.fillRect(0, 420, W, 300); X.globalAlpha = 1;
+    kin('THE FIRST p(doom)', 960, 128, t, b(3), { size: hs, weight: 900, align: 'center', hot: [10, 17, C.mag], stag: .03 });
+    if (t >= b(6.5)) {
+      X.globalAlpha = .9 * pr(t, b(6.5) - .15, b(6.5)); X.fillStyle = C.navy; X.fillRect(0, 420, W, 300); X.globalAlpha = 1;
       const ns = fit('< 3 IN 1,000,000', 1500, 190, { fam: FT.d, weight: 900, stretch: 'semi-condensed' });
-      kin('< 3 IN 1,000,000', 960, 600, t, b(8), { size: ns, weight: 900, stretch: 'semi-condensed', align: 'center', color: C.mag, stag: .03 });
+      kin('< 3 IN 1,000,000', 960, 600, t, b(6.5), { size: ns, weight: 900, stretch: 'semi-condensed', align: 'center', color: C.mag, stag: .03 });
       const cq = 'ARTHUR COMPTON’S CEILING FOR THE CHANCE OF IGNITING THE ATMOSPHERE · AS TOLD TO PEARL S. BUCK, THE AMERICAN WEEKLY, 1959';
-            caption(cq, 960 - meas(cq, { size: 18 }) / 2, 680, t, b(9), { size: 18, color: C.white, cps: 200 });
+            caption(cq, 960 - meas(cq, { size: 18 }) / 2, 680, t, b(7.5), { size: 18, color: C.white, cps: 200 });
     }
     X.restore();
     gc(ix, iy, ir, C.cyan, .8, 1.5);
-    band(t, t0 + 1.0, b(7) + .4, 'LA-602 · “IGNITION OF THE ATMOSPHERE WITH NUCLEAR BOMBS” · LOS ALAMOS, 14 AUGUST 1946', 'KONOPINSKI, MARVIN, TELLER · DECLASSIFIED 1979 · TELLER RAISED THE QUESTION AT BERKELEY IN 1942; BETHE FOUND IT WILDLY UNLIKELY; FERMI TOOK BETS AT TRINITY (U.S. DOE HISTORY)');
+    band(t, t0 + 1.0, b(6) + .2, 'LA-602 · “IGNITION OF THE ATMOSPHERE WITH NUCLEAR BOMBS” · LOS ALAMOS, 14 AUGUST 1946', 'KONOPINSKI, MARVIN, TELLER · DECLASSIFIED 1979 · TELLER RAISED THE QUESTION AT BERKELEY IN 1942; BETHE FOUND IT WILDLY UNLIKELY; FERMI TOOK BETS AT TRINITY (U.S. DOE HISTORY)');
     if (shut > .8) star(ix, iy, 6, C.white, 1);
   }
   // part 2: the cards, dealt from the dot

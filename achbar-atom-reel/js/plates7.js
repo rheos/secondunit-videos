@@ -88,7 +88,7 @@ function plateX(t) {
   // then the new romance: reactors restarted and data centres, in the hot colour; the east-coast cluster gets callouts
   let col = 0;
   SITES_AI.forEach(([name, deal, lon, lat], i) => {
-    const tp = b(13 + i * .8); if (t < tp) return;
+    const tp = b(12.5 + i * .6); if (t < tp) return;
     const [x, y] = lonlat(lon, lat), k = eo(pr(t, tp, tp + .3));
     gc(x, y, 14 * k, C.mag, .95, 2); gc(x, y, 26 * k * (1 + .15 * Math.sin(t * 6)), C.mag, .35, 1); star(x, y, 3.5, C.white, 1);
     if (x > 1000) {
@@ -117,15 +117,15 @@ function plateY(t) {
   tube(TB.cx, TB.cy, TB.w, TB.h, 1, { bezel: false });
   X.save(); X.beginPath(); X.roundRect(TB.cx - TB.w / 2, TB.cy - TB.h / 2, TB.w, TB.h, 46); X.clip();
   // the broadcast: a slate, then the number, then the station interrupts itself, then the diary
-  const ph = t < b(3) ? 0 : t < b(8) ? 1 : t < b(10) ? 2 : 3;
+  const ph = t < b(5) ? 0 : t < b(11) ? 1 : t < b(13) ? 2 : 3;
   if (ph === 0) {
-    ptxt('ABC · SUNDAY 20 NOVEMBER 1983 · 8 PM', TB.cx, TB.cy - 150, { size: 30, align: 'center', c: PH.g, alpha: pr(t, t0 + .5, t0 + .8) });
-    ptxt('THE DAY AFTER', TB.cx, TB.cy - 30, { fam: FT.d, size: 120, weight: 900, align: 'center', c: PH.g, alpha: pr(t, t0 + .9, t0 + 1.2), blur: 26 });
-    ptxt('DIRECTED BY NICHOLAS MEYER', TB.cx, TB.cy + 60, { size: 26, align: 'center', c: PH.g, alpha: pr(t, t0 + 1.3, t0 + 1.6) });
+    ptxt('ABC · SUNDAY 20 NOVEMBER 1983 · 8 PM', TB.cx, TB.cy - 150, { size: 30, align: 'center', c: PH.g, alpha: pr(t, t0 + .3, t0 + .6) });
+    ptxt('THE DAY AFTER', TB.cx, TB.cy - 30, { fam: FT.d, size: 120, weight: 900, align: 'center', c: PH.g, alpha: pr(t, t0 + .6, t0 + .9), blur: 26 });
+    ptxt('DIRECTED BY NICHOLAS MEYER', TB.cx, TB.cy + 60, { size: 26, align: 'center', c: PH.g, alpha: pr(t, t0 + .9, t0 + 1.2) });
   } else if (ph === 1) {
-    ptxt(fmt(1e8 * eo(pr(t, b(3), b(4.5)))), TB.cx, TB.cy - 20, { fam: FT.d, size: 160, weight: 900, align: 'center', c: PH.g, blur: 30 });
-    ptxt('VIEWERS, ONE NIGHT', TB.cx, TB.cy + 80, { size: 34, align: 'center', c: PH.a, alpha: pr(t, b(4.5), b(5)) });
-    ptxt('NIELSEN: A 46 RATING, A 62 SHARE, MORE THAN 100 MILLION PEOPLE', TB.cx, TB.cy + 140, { size: 22, align: 'center', c: PH.a, alpha: .8 * pr(t, b(5), b(5.5)), blur: 8 });
+    ptxt(fmt(1e8 * eo(pr(t, b(5), b(6.5)))), TB.cx, TB.cy - 20, { fam: FT.d, size: 160, weight: 900, align: 'center', c: PH.g, blur: 30 });
+    ptxt('VIEWERS, ONE NIGHT', TB.cx, TB.cy + 80, { size: 34, align: 'center', c: PH.a, alpha: pr(t, b(6.5), b(7)) });
+    ptxt('NIELSEN: A 46 RATING, A 62 SHARE, MORE THAN 100 MILLION PEOPLE', TB.cx, TB.cy + 140, { size: 22, align: 'center', c: PH.a, alpha: .8 * pr(t, b(7), b(7.5)), blur: 8 });
   } else if (ph === 2) {
     // MC09: the broadcaster interrupts itself
     X.fillStyle = '#efe5cd'; X.fillRect(TB.cx - TB.w / 2, TB.cy - TB.h / 2, TB.w, TB.h);
@@ -134,15 +134,15 @@ function plateY(t) {
     X.globalAlpha = .18; X.fillStyle = '#000'; for (let y = TB.cy - TB.h / 2; y < TB.cy + TB.h / 2; y += 3) X.fillRect(TB.cx - TB.w / 2, y, TB.w, 1.5); X.globalAlpha = 1;
   } else {
     const off = pr(t, tEnd - .5, tEnd);
-    ptxt('PRESIDENT REAGAN’S DIARY, 10 OCTOBER 1983, AFTER A SCREENING:', TB.cx, TB.cy - 170, { size: 24, align: 'center', c: PH.a, alpha: (1 - off) * pr(t, b(10), b(10.4)) });
-    ptxt('“VERY EFFECTIVE & LEFT ME', TB.cx, TB.cy - 50, { fam: FT.d, size: 72, weight: 900, align: 'center', c: PH.g, alpha: (1 - off) * pr(t, b(10.5), b(10.8)), blur: 20 });
-    ptxt('GREATLY DEPRESSED”', TB.cx, TB.cy + 50, { fam: FT.d, size: 72, weight: 900, align: 'center', c: PH.g, alpha: (1 - off) * pr(t, b(11), b(11.3)), blur: 20 });
-    ptxt('HIS NEXT LINE: DO ALL WE CAN TO SEE THERE IS NEVER A NUCLEAR WAR · REAGAN FOUNDATION TRANSCRIPTION', TB.cx, TB.cy + 150, { size: 20, align: 'center', c: PH.a, alpha: .85 * (1 - off) * pr(t, b(12), b(12.4)), blur: 8 });
+    ptxt('PRESIDENT REAGAN’S DIARY, 10 OCTOBER 1983, AFTER A SCREENING:', TB.cx, TB.cy - 170, { size: 24, align: 'center', c: PH.a, alpha: (1 - off) * pr(t, b(13), b(13.4)) });
+    ptxt('“VERY EFFECTIVE & LEFT ME', TB.cx, TB.cy - 50, { fam: FT.d, size: 72, weight: 900, align: 'center', c: PH.g, alpha: (1 - off) * pr(t, b(13.5), b(13.8)), blur: 20 });
+    ptxt('GREATLY DEPRESSED”', TB.cx, TB.cy + 50, { fam: FT.d, size: 72, weight: 900, align: 'center', c: PH.g, alpha: (1 - off) * pr(t, b(14), b(14.3)), blur: 20 });
+    ptxt('HIS NEXT LINE: DO ALL WE CAN TO SEE THERE IS NEVER A NUCLEAR WAR · REAGAN FOUNDATION TRANSCRIPTION', TB.cx, TB.cy + 150, { size: 20, align: 'center', c: PH.a, alpha: .85 * (1 - off) * pr(t, b(15), b(15.4)), blur: 8 });
     if (off > 0) { X.fillStyle = '#000'; X.globalAlpha = off; X.fillRect(TB.cx - TB.w / 2, TB.cy - TB.h / 2, TB.w, TB.h); X.globalAlpha = 1; beamDot(TB.cx, TB.cy, 6 * (1 - off) + 2, 1); }
   }
   X.restore();
   // static between the phases
-  for (const edge of [b(3), b(8), b(10)]) { const s = Math.abs(t - edge); if (s < .1) { X.save(); X.beginPath(); X.roundRect(TB.cx - TB.w / 2, TB.cy - TB.h / 2, TB.w, TB.h, 46); X.clip(); const r0 = M32(Math.floor(t * 24)); X.globalAlpha = .5 * (1 - s / .1); for (let i = 0; i < 1400; i++) { X.fillStyle = r0() < .5 ? '#fff' : '#000'; X.fillRect(TB.cx - TB.w / 2 + r0() * TB.w, TB.cy - TB.h / 2 + r0() * TB.h, 6, 2); } X.restore(); } }
+  for (const edge of [b(5), b(11), b(13)]) { const s = Math.abs(t - edge); if (s < .1) { X.save(); X.beginPath(); X.roundRect(TB.cx - TB.w / 2, TB.cy - TB.h / 2, TB.w, TB.h, 46); X.clip(); const r0 = M32(Math.floor(t * 24)); X.globalAlpha = .5 * (1 - s / .1); for (let i = 0; i < 1400; i++) { X.fillStyle = r0() < .5 ? '#fff' : '#000'; X.fillRect(TB.cx - TB.w / 2 + r0() * TB.w, TB.cy - TB.h / 2 + r0() * TB.h, 6, 2); } X.restore(); } }
   tubeGlass(TB.cx, TB.cy, TB.w, TB.h, t);
   // the room, in the glow: a lamp and the back of a sofa, in blueprint lines over the black
   X.save(); X.globalAlpha = .55 * cab; X.strokeStyle = C.lav; X.lineWidth = 1.2;
@@ -156,7 +156,7 @@ function plateY(t) {
 const TMI = { key: 'tmi', cx: 960, cy: 470, w: 1300 };
 function plateZ(t) {
   const t0 = PLATE.Z, b = (n) => t0 + n * BEAT, tEnd = PLATE.P; schBG(); schFrame('10', '', '', C.lav);
-  const open = eo(pr(t, t0, t0 + .9)), shut = eio(pr(t, tEnd - .7, tEnd));
+  const open = eo(pr(t, t0, t0 + .9)), shut = eio(pr(t, tEnd - .55, tEnd));
   const ix = 960, iy = lerp(444, TMI.cy, open), ir = lerp(8, 1400, open) * (1 - shut) + 2 * shut;
   const z = lerp(1, 1.06, pr(t, t0, tEnd)), dim = lerp(1, .35, eio(pr(t, b(8) - .2, b(8) + .3)));
   X.save(); X.beginPath(); X.arc(ix, lerp(iy, 540, shut), Math.max(0, ir), 0, TAU); X.clip();

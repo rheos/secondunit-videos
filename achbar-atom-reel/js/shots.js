@@ -11,8 +11,8 @@ C.mag = '#ff3d9a';
 // plate starts (pass 2): title, the tapes, promise, metaphors, the fields, same lab, machine, scope, the day
 // after, clock, the restart, p(doom), red flags, title block. The score is the 119 s take looped at bar lines
 // (sfx.py BARMAP) so the music's own changes still land on the scope's sync loss and the p(doom) cards.
-const PLATE = { A: 0, T: bar(4), B: bar(9), M: bar(13), X: bar(17), C: bar(22), N: bar(26), D: bar(31), Y: bar(36), E: bar(40), Z: bar(44), P: bar(48), F: bar(56), G: bar(60) };
-const END = 162.0;
+const PLATE = { A: 0, T: bar(4), B: bar(9), M: bar(14), X: bar(19), C: bar(24), N: bar(29), D: bar(34), Y: bar(39), E: bar(44), Z: bar(48), P: bar(53), F: bar(61), G: bar(66) };
+const END = 175.0;
 const FIG = { A: 'FIG. 0', T: 'FIG. 1', B: 'FIG. 2', M: 'FIG. 3', X: 'FIG. 4', C: 'FIG. 5', N: 'FIG. 6', D: 'FIG. 7', Y: 'FIG. 8', E: 'FIG. 9', Z: 'FIG. 10', P: 'FIG. 11', F: 'FIG. 12', G: 'SHEET 1' };
 const TITLE = 'ROMANCING THE ATOM';
 // chapter numbers, after The Corporation's clinical cards: diagnosis to prognosis
@@ -140,7 +140,7 @@ function plateB(t) {
       const A = nodes.filter((d) => d.c === c), Bn = nodes.filter((d) => d.c === c + 1), kk = eo(seg(nk, .2 + c * .18, .45 + c * .18));
       if (kk > 0) A.forEach((a) => Bn.forEach((b2) => gl(a.x, a.y, lerp(a.x, b2.x, kk), lerp(a.y, b2.y, kk), C.cyan, .28, 1)));
     }
-    nodes.forEach((d) => { const kk = seg(nk, .1 + d.c * .18, .3 + d.c * .18); if (kk <= 0) return; if (d.c === 4) { star(d.x, d.y, 7 * (1 + .6 * pr(t, b(16) - .6, b(16))), C.white, kk); } else { const hp = hexPts(d.x, d.y, 16 * eo(kk)); fillP(PP(hp), C.navy); iP(hp, true, C.white, 1.3, .9, false, .3); } });
+    nodes.forEach((d) => { const kk = seg(nk, .1 + d.c * .18, .3 + d.c * .18); if (kk <= 0) return; if (d.c === 4) { star(d.x, d.y, 7 * (1 + .6 * pr(t, b(20) - .6, b(20))), C.white, kk); } else { const hp = hexPts(d.x, d.y, 16 * eo(kk)); fillP(PP(hp), C.navy); iP(hp, true, C.white, 1.3, .9, false, .3); } });
     // signals running through on the beat
     if (nk >= 1) for (let s = 0; s < 6; s++) { const ph = (t * .9 + s / 6) % 1, c = Math.floor(ph * 4), u = ph * 4 - c, A = nodes.filter((d) => d.c === c), Bn = nodes.filter((d) => d.c === c + 1); if (!A.length || !Bn.length) continue; const a = A[(s * 3 + 1) % A.length], b2 = Bn[(s * 5 + 2) % Bn.length]; star(lerp(a.x, b2.x, u), lerp(a.y, b2.y, u), 2.4, C.cyan, .9); }
     if (nk > .6) lab(1580, 380, 'OUTPUT', C.lav, .7 * pr(nk, .6, 1), 12, 'center');
@@ -149,7 +149,7 @@ function plateB(t) {
   const QS = { fam: FT.d, size: 54, weight: 800, stretch: 'semi-condensed' }, QX = 990;
   const pA = '“ELECTRICAL ENERGY ', pB = '“INTELLIGENCE ', tail = 'TOO CHEAP TO METER', eA = '.”', eB = ' …”';
   const wA = meas(pA, QS), wB = meas(pB, QS), wT = meas(tail, QS);
-  const s1 = b(8) + .3, s2 = b(10), qo = b(16) - .45, y1 = 830, y2 = 980, qa = 1 - pr(t, qo, qo + .3);
+  const s1 = b(8) + .3, s2 = b(10), qo = b(20) - .45, y1 = 830, y2 = 980, qa = 1 - pr(t, qo, qo + .3);
   const cA1 = '1954 · LEWIS STRAUSS, ATOMIC ENERGY COMMISSION', cB1 = '2025 · SAM ALTMAN, OPENAI, “THE GENTLE SINGULARITY”';
   caption(cA1, QX - 30 - meas(cA1, { size: 17 }), y1 - 62, t, s1 - .2, { size: 17, color: C.lav, alpha: qa });
   kin(pA + tail + eA, QX - wA, y1, t, s1, { ...QS, stag: .018, hot: [pA.length, pA.length + tail.length, C.mag], out: qo });
@@ -271,7 +271,7 @@ function plateD(t) {
     }
   }
   // CH2: training compute of notable AI systems (Epoch AI via Our World in Data), log scale, amber, drawn after CH1
-  const c0 = b(9) + .3, c1 = b(15) - .2, ck = pr(t, c0, c1), ra2 = (1 - sync) * pr(t, c0, c0 + .3);
+  const c0 = b(9) + .3, c1 = b(13.5), ck = pr(t, c0, c1), ra2 = (1 - sync) * pr(t, c0, c0 + .3);
   if (ck > 0 && sync < 1) {
     const CY = (pf) => TB.cy + TB.h / 2 - 90 - (Math.log10(pf) + 10) / 22 * (TB.h - 200);   // 1e-10 .. 1e12 petaFLOP
     const yrEnd = lerp(1950, 2026, ck), P = []; for (const [yr, pf] of COMPUTE) { if (yr > yrEnd) break; P.push([PX(yr), CY(pf)]); }
@@ -371,7 +371,7 @@ function plateEFG(t) {
     const s = fit('85 SECONDS TO MIDNIGHT', 1680, 130, { fam: FT.d, weight: 900, stretch: 'semi-condensed' });
     X.globalAlpha = .95 * pr(t, k0 - .2, k0 + .1) * (1 - pr(t, out, out + .4)); X.fillStyle = C.navy2; X.fillRect(0, 836, W, 244); X.globalAlpha = 1;
     kin('85 SECONDS TO MIDNIGHT', 120, 1000, t, k0 + .25, { size: s, weight: 900, stretch: 'semi-condensed', hot: [0, 2, C.mag], out });
-    caption('THE CLOSEST IT HAS BEEN. THE BULLETIN’S STATEMENT CALLS FOR INTERNATIONAL GUIDELINES ON AI.', 120, 1050, t, k0 + .9, { size: 18, color: C.lav, cps: 70, alpha: 1 - pr(t, out, out + .3) });
+    caption('THE CLOSEST IT HAS BEEN. THE BULLETIN’S STATEMENT CALLS FOR INTERNATIONAL GUIDELINES ON AI.', 120, 1050, t, k0 + .6, { size: 18, color: C.lav, cps: 150, alpha: 1 - pr(t, out, out + .3) });
   }
   // the p(doom) stack's back, fading out over the form it became
   if (t >= PLATE.F && t < PLATE.F + .5) cardStackBack(t, 1 - pr(t, PLATE.F, PLATE.F + .5));
