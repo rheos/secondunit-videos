@@ -5,7 +5,7 @@
 // scattered flowers), one paper grain over the frame. drawFrame(g, t) is a pure function of song time t.
 'use strict';
 const W = 1920, H = 1080, TAU = Math.PI * 2;
-const INK = '#2b211c', LW = 5;
+let INK = '#2b211c', LW = 5; // let, so a restyle (js/styles/) can swap the ink and line weight
 const cl = (v, a = 0, b = 1) => Math.max(a, Math.min(b, v)), lerp = (a, b, t) => a + (b - a) * t;
 const seg = (t, a, b) => cl((t - a) / (b - a));
 const eio = (t) => { t = cl(t); return t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; };
