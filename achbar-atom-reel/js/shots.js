@@ -8,10 +8,15 @@ const B0 = 16.851, BEAT = 0.54054, BAR = 4 * BEAT, HB = BEAT / 2;
 const bar = (n) => B0 + n * BAR, bt = (n) => B0 + n * BEAT;
 const pr = (t, a, b) => cl((t - a) / (b - a));
 C.mag = '#ff3d9a';
-// plate starts: title, promise, metaphors, same lab, machine, scope, clock, p(doom), red flags, title block
-const PLATE = { A: 0, B: bar(4), M: bar(8), C: bar(12), N: bar(16), D: bar(21), E: bar(25), P: bar(29), F: bar(36), G: bar(40) };
-const END = 118.0;
+// plate starts (pass 2): title, the tapes, promise, metaphors, the fields, same lab, machine, scope, the day
+// after, clock, the restart, p(doom), red flags, title block. The score is the 119 s take looped at bar lines
+// (sfx.py BARMAP) so the music's own changes still land on the scope's sync loss and the p(doom) cards.
+const PLATE = { A: 0, T: bar(4), B: bar(9), M: bar(13), X: bar(17), C: bar(22), N: bar(26), D: bar(31), Y: bar(36), E: bar(40), Z: bar(44), P: bar(48), F: bar(56), G: bar(60) };
+const END = 162.0;
+const FIG = { A: 'FIG. 0', T: 'FIG. 1', B: 'FIG. 2', M: 'FIG. 3', X: 'FIG. 4', C: 'FIG. 5', N: 'FIG. 6', D: 'FIG. 7', Y: 'FIG. 8', E: 'FIG. 9', Z: 'FIG. 10', P: 'FIG. 11', F: 'FIG. 12', G: 'SHEET 1' };
 const TITLE = 'ROMANCING THE ATOM';
+// chapter numbers, after The Corporation's clinical cards: diagnosis to prognosis
+const CHAP = { 'SHEET 1': 'CH. 13' }; for (let i = 0; i <= 12; i++) CHAP['FIG. ' + i] = 'CH. ' + String(i).padStart(2, '0');
 
 // ---------- shared marks ----------
 function ellPt(cx, cy, rx, ry, rot, a) { const c = Math.cos(rot), s = Math.sin(rot), x = Math.cos(a) * rx, y = Math.sin(a) * ry; return [cx + x * c - y * s, cy + x * s + y * c]; }
@@ -54,6 +59,7 @@ function schDress() {
   stipRect(0, 0, W, H, 600, C.lav, .22, 1.2);
 }
 function plateLabel(n, title, sub, t, t0) {
+  n = CHAP[n] || n;
   lab(80, 74, n, C.lav, .85, 19); caption(title, 80 + meas(n, { size: 19 }) * 1.3 + 26, 74, t, t0, { size: 19, color: C.white, cps: 46 });
   if (sub) lab(80, 96, sub, C.lav, .55, 12);
   lab(W - 80, 74, TITLE, C.lav, .6, 16, 'right');
@@ -87,7 +93,7 @@ function plateA(t) {
 // the title: the atom draws itself before the drums, ROMANCING slams on the first downbeat
 function titleSeq(t) {
   const ax = 960, ay = 430, T0 = bar(0);
-  const k = pr(t, 14.8, 17.3), out = pr(t, bar(3) + 2 * BEAT, bar(3) + 3 * BEAT);
+  const k = pr(t, 14.8, 17.3), out = pr(t, bar(3) + BEAT, bar(3) + 2 * BEAT);   // the words leave; the atom stays for the tapes
   if (k <= 0) return;
   atom(ax, ay, 360, 118, k, t, { pulse: T0, a: 1 - out * .6 });
   if (k > .4) { bracket(ax - 360, ay + 190, ax + 360, ay + 190, C.lav, .6 * pr(t, 15.8, 16.4) * (1 - out), 'ORBIT  r = 360'); bracket(ax + 420, ay - 118, ax + 420, ay + 118, C.lav, .6 * pr(t, 16.1, 16.7) * (1 - out), '236'); }
@@ -100,19 +106,19 @@ function titleSeq(t) {
     if (hk >= 1) lab(hx + 70, hy - 62, 'ROMANCE (CONSTRUCTED)', C.mag, .9 * (1 - out), 14);
   }
   const tsz = fit('ROMANCING', 1240, 200, { fam: FT.d, weight: 900, stretch: 'expanded' });
-  kin('ROMANCING', 960, 790, t, T0, { size: tsz, weight: 900, stretch: 'expanded', align: 'center', stag: .045, out: bar(3) + 2 * BEAT });
-  kin('the atom', 960, 905, t, T0 + 2 * BEAT, { fam: FT.s, size: 120, weight: 400, italic: true, align: 'center', style: 'rise', stag: .05, dur: .35, out: bar(3) + 2 * BEAT + .1 });
+  kin('ROMANCING', 960, 790, t, T0, { size: tsz, weight: 900, stretch: 'expanded', align: 'center', stag: .045, out: bar(3) + BEAT });
+  kin('the atom', 960, 905, t, T0 + 2 * BEAT, { fam: FT.s, size: 120, weight: 400, italic: true, align: 'center', style: 'rise', stag: .05, dur: .35, out: bar(3) + BEAT + .1 });
 }
 
 // ---------- 1. the promise ----------
 function plateB(t) {
-  const t0 = PLATE.B, b = (n) => t0 + n * BEAT; schBG(); schFrame('1', '', '', C.lav);
-  plateLabel('FIG. 1', 'THE PROMISE', '', t, t0 + .1);
+  const t0 = PLATE.B, b = (n) => t0 + n * BEAT; schBG(); schFrame('2', '', '', C.lav);
+  plateLabel(FIG.B, 'THE PROMISE', '', t, t0 + .1);
   // orbits from the title shrink onto the stamp's printed orbits
   const m = eio(pr(t, t0, t0 + .9)), sp = eio(pr(t, b(8), b(8) + .9));
   const sw = lerp(760, 470, sp), sx = lerp(600, 330, sp), sy = lerp(470, 470, sp);
   print('atoms-for-peace-stamp', sx, sy, sw, { alpha: pr(t, t0 + .25, t0 + .8), mount: 0 });
-  if (m < 1) atom(lerp(960, sx, m), lerp(430, sy, m), lerp(360, sw * .42, m), lerp(118, sw * .13, m), 1, t, { a: 1 - pr(t, t0 + .5, t0 + .9), nucleus: true, electrons: false });
+  // (the tapes plate hands over by moving the photograph onto this spot; the stamp prints over it)
   const ann = pr(t, t0 + 1, t0 + 1.4) * (1 - sp);
   if (ann > 0) { const h = printH('atoms-for-peace-stamp', sw); bracket(sx - sw / 2, sy + h / 2 + 34, sx + sw / 2, sy + h / 2 + 34, C.white, .8 * ann, '3¢ U.S. POSTAGE · ATOMS FOR PEACE · 1955'); }
   // quote 1: Lewis Strauss, 1954
@@ -162,7 +168,7 @@ function plateB(t) {
 const TRI = { cx: 960, cy: 530, w: 1560, u: .48, v: .43 };
 const ENI = { cx: 960, cy: 545, w: 1170, u: .36, v: .42 };
 function plateC(t) {
-  const t0 = PLATE.C, b = (n) => t0 + n * BEAT; schBG(); schFrame('3', '', '', C.lav);
+  const t0 = PLATE.C, b = (n) => t0 + n * BEAT; schBG(); schFrame('5', '', '', C.lav);
   const swap = b(8), close1 = swap - .8, tEnd = PLATE.N; // fireball closes to a point, ENIAC opens from it
   // Trinity: an iris opens from the metaphors' divider onto HAER sheet 4 (1985), whose drawn fireball is
   // set at the same place and size as the photograph's; the drawing's panel then becomes the photograph
@@ -170,7 +176,7 @@ function plateC(t) {
     const z = lerp(1, 1.07, pr(t, t0, swap)), fb = printPt('trinity', TRI.cx, TRI.cy, TRI.w, TRI.u, TRI.v, { z, fx: TRI.u, fy: TRI.v });
     const SW = 1190, SH = printH('trinity-haer-fireball', SW), scx = fb[0], scy = fb[1] + .03 * SH;
     const open = eo(pr(t, t0, t0 + .9)), shut = eio(pr(t, close1, swap));
-    const ix = lerp(960, fb[0], open), iy = lerp(540, fb[1], open), ir = lerp(8, 1150, open) * (1 - shut) + 2 * shut;
+    const ix = lerp(LA_PIN[0], fb[0], open), iy = lerp(LA_PIN[1], fb[1], open), ir = lerp(8, 1150, open) * (1 - shut) + 2 * shut;
     const ph0 = t0 + 1.6, phk = eio(pr(t, ph0 + .25, ph0 + .85));
     const S = (u, v) => printPt('trinity-haer-fireball', scx, scy, SW, u, v);
     if (phk < 1) print('trinity-haer-fireball', scx, scy, SW, { iris: { x: ix, y: iy, r: ir }, mount: 8 });
@@ -216,7 +222,7 @@ function plateC(t) {
     }
     if (shut > .7) star(cx, cy, 6, C.white, 1);
   }
-  plateLabel('FIG. 3', 'THE SAME LAB', '', t, t0 + .2);
+  plateLabel(FIG.C, 'THE SAME LAB', '', t, t0 + .2);
 }
 
 // ---------- 5. the oscilloscope ----------
@@ -229,12 +235,12 @@ const fmt = (n) => Math.round(n).toLocaleString('en-US');
 // three-orbit Lissajous atom the trace falls into when sync is lost
 function lissPt(s, rx, ry) { const ring = Math.floor(s * 3) % 3, u = (s * 3) % 1, rot = [0, Math.PI / 3, -Math.PI / 3][ring]; return ellPt(TB.cx, TB.cy, rx, ry, rot, u * TAU); }
 function plateD(t) {
-  const t0 = PLATE.D, b = (n) => t0 + n * BEAT, tEnd = PLATE.E;
+  const t0 = PLATE.D, b = (n) => t0 + n * BEAT, tEnd = PLATE.Y;
   X.fillStyle = '#000'; X.fillRect(0, 0, W, H);
   const on = pr(t, t0, t0 + .8);
   tube(TB.cx, TB.cy, TB.w, TB.h, on);
   if (on < 1) { beamDot(TB.cx, TB.cy, 5, 1); if (on > .02) beam([[TB.cx - TB.w / 2 * eo(cl(on / .5)), TB.cy], [TB.cx + TB.w / 2 * eo(cl(on / .5)), TB.cy]], .9); }
-  const y0 = 1945, d0 = t0 + 1.3, d1 = b(10), yr = lerp(y0, 2026, pr(t, d0, d1)), sync = eio(pr(t, b(12) - .2, b(12) + 1.4));
+  const y0 = 1945, d0 = t0 + 1.3, d1 = b(9), yr = lerp(y0, 2026, pr(t, d0, d1)), sync = eio(pr(t, b(16) - .2, b(16) + 1.4));
   const ax = pr(t, t0 + .9, t0 + 1.3);
   if (ax > 0) {
     ptxt('CH1  NUCLEAR WARHEADS, WORLD', TB.cx - TB.w / 2 + 60, TB.cy - TB.h / 2 + 66, { size: 24, alpha: ax * (1 - sync) });
@@ -264,6 +270,18 @@ function plateD(t) {
       if (t > d1) { const k = eo(pr(t, d1, d1 + .3)); const x = PX(2026), y = PY(12187); beam([[x, y - 18], [x, y - 18 - 70 * k]], .8 * ra, PH.a, 1.6); if (k >= 1) ptxt('12,187 · 2026', x - 14, y - 98, { size: 26, align: 'right', alpha: ra }); }
     }
   }
+  // CH2: training compute of notable AI systems (Epoch AI via Our World in Data), log scale, amber, drawn after CH1
+  const c0 = b(9) + .3, c1 = b(15) - .2, ck = pr(t, c0, c1), ra2 = (1 - sync) * pr(t, c0, c0 + .3);
+  if (ck > 0 && sync < 1) {
+    const CY = (pf) => TB.cy + TB.h / 2 - 90 - (Math.log10(pf) + 10) / 22 * (TB.h - 200);   // 1e-10 .. 1e12 petaFLOP
+    const yrEnd = lerp(1950, 2026, ck), P = []; for (const [yr, pf] of COMPUTE) { if (yr > yrEnd) break; P.push([PX(yr), CY(pf)]); }
+    for (let i = 1; i < P.length; i++) { const age = (P.length - i) / 10; beam([P[i - 1], P[i]], lerp(1, .4, cl(age)) * ra2, PH.a, 2.4); }
+    if (P.length) { const hd = P[P.length - 1]; if (ck < 1) beamDot(hd[0], hd[1], 5, ra2, PH.a); }
+    ptxt('CH2  TRAINING COMPUTE, NOTABLE AI SYSTEMS (LOG)', TB.cx - TB.w / 2 + 60, TB.cy - TB.h / 2 + 130, { size: 20, alpha: ra2, c: PH.a });
+    ptxt('EPOCH AI VIA OUR WORLD IN DATA · PETAFLOP', TB.cx - TB.w / 2 + 60, TB.cy - TB.h / 2 + 158, { size: 15, alpha: .7 * ra2, c: PH.a, blur: 8 });
+    for (const [nm, yr, pf] of [['PERCEPTRON', 1957, 6.95e-10], ['ALEXNET', 2012, 470], ['GPT-4', 2023, 2.1e10]]) if (yr <= yrEnd) { const x = PX(yr), y = CY(pf); beam([[x + 10, y], [x + 40, y - 20]], .7 * ra2, PH.a, 1.4); ptxt(nm, x + 46, y - 24, { size: 16, alpha: .9 * ra2, c: PH.a, blur: 8 }); }
+    if (ck >= 1) { const mx = Math.max(...COMPUTE.map((r) => r[1])); ptxt('10^' + Math.round(Math.log10(mx / 6.95e-10)) + ' TIMES THE PERCEPTRON', TB.cx + TB.w / 2 - 70, TB.cy - TB.h / 2 + 230, { size: 20, align: 'right', alpha: ra2 * pr(t, c1, c1 + .3), c: PH.a }); }
+  }
   tubeGlass(TB.cx, TB.cy, TB.w, TB.h, t);
 }
 function hash1(n) { n = (n ^ 61) ^ (n >>> 16); n = n + (n << 3); n = n ^ (n >>> 4); n = Math.imul(n, 0x27d4eb2d); n = n ^ (n >>> 15); return (n >>> 0) / 4294967296; }
@@ -276,7 +294,7 @@ function camAt(t) {
   const go = (k, to) => { c = [lerp(c[0], to[0], k), lerp(c[1], to[1], k), Math.exp(lerp(Math.log(c[2]), Math.log(to[2]), k))]; };
   go(eio(pr(t, t0 + 4.6, t0 + 5.9)), [tip[0] - 40, tip[1] + 50, 3.1]);
   go(eio(pr(t, t0 + 6.3, t0 + 7.3)), [960, 760, .4]);                                  // out: the clock is on a scoreboard
-  go(eio(pr(t, PLATE.P - .3, PLATE.P)), [960, FORM_Y - 80 + 540, 1]);                  // (hidden behind the p(doom) plate)
+  go(eio(pr(t, PLATE.Z - .3, PLATE.Z)), [960, FORM_Y - 80 + 540, 1]);                  // (hidden behind the restart and p(doom) plates)
   go(eio(pr(t, PLATE.G - .05, PLATE.G + 1.0)), [960, BLOCK_Y - 170 + 540, 1]);
   return c;
 }
@@ -347,8 +365,8 @@ function plateEFG(t) {
   titleBlock(t);
   X.restore();
   // screen-space words for the clock
-  if (t < PLATE.P) {
-    const k0 = t0 + 5.4, out = PLATE.P - .45;
+  if (t < PLATE.Z) {
+    const k0 = t0 + 5.4, out = PLATE.Z - .45;
     caption('27 JANUARY 2026 · BULLETIN OF THE ATOMIC SCIENTISTS', 120, 878, t, k0, { size: 20, color: C.lav, alpha: 1 - pr(t, out, out + .3) });
     const s = fit('85 SECONDS TO MIDNIGHT', 1680, 130, { fam: FT.d, weight: 900, stretch: 'semi-condensed' });
     X.globalAlpha = .95 * pr(t, k0 - .2, k0 + .1) * (1 - pr(t, out, out + .4)); X.fillStyle = C.navy2; X.fillRect(0, 836, W, 244); X.globalAlpha = 1;
@@ -357,8 +375,8 @@ function plateEFG(t) {
   }
   // the p(doom) stack's back, fading out over the form it became
   if (t >= PLATE.F && t < PLATE.F + .5) cardStackBack(t, 1 - pr(t, PLATE.F, PLATE.F + .5));
-  plateLabel(t < PLATE.P ? 'FIG. 6' : t < PLATE.G ? 'FIG. 8' : 'SHEET 1', t < PLATE.P ? 'THE CLOCK' : t < PLATE.G ? 'RED FLAGS' : 'TITLE BLOCK', '', t, t < PLATE.P ? t0 + .2 : t < PLATE.G ? PLATE.F + .5 : PLATE.G + .6);
-  schFrame(t < PLATE.P ? '6' : t < PLATE.G ? '8' : '9', '', '', C.lav);
+  plateLabel(t < PLATE.Z ? FIG.E : t < PLATE.G ? FIG.F : FIG.G, t < PLATE.Z ? 'THE CLOCK' : t < PLATE.G ? 'RED FLAGS' : 'TITLE BLOCK', '', t, t < PLATE.Z ? t0 + .2 : t < PLATE.G ? PLATE.F + .5 : PLATE.G + .6);
+  schFrame(t < PLATE.Z ? '9' : t < PLATE.G ? '12' : '13', '', '', C.lav);
 }
 const ROWS = [
   ['TOO CHEAP TO METER', 'ATOM: STRAUSS, AEC, 1954  ·  AI: ALTMAN, OPENAI, 2025'],
@@ -429,19 +447,23 @@ function titleBlock(t) {
   caption('DRAWN IN CODE BY NOVADIEM · NOVADIEM.COM', x0 + 34, y + 385, t, t0 + 1.2, { cps: 70, size: 27, color: C.cyan, weight: 700 });
   caption('ARCHIVAL: U.S. DOE, U.S. ARMY, U.S. POST OFFICE, LIBRARY OF CONGRESS, LOS ALAMOS (LA-602) · PUBLIC DOMAIN', x0 + 34, y + 465, t, t0 + 1.5, { size: 18, color: C.lav, cps: 110 });
   caption('DATA: FAS VIA OUR WORLD IN DATA · BULLETIN OF THE ATOMIC SCIENTISTS · APS NEWS · EVERY QUOTE DATED AND SOURCED', x0 + 34, y + 545, t, t0 + 1.8, { size: 18, color: C.lav, cps: 110 });
-  caption('MUSIC: ATOM DRIVE, TAKE 2 (ELEVENLABS MUSIC) · SOUND SYNTHESISED IN CODE', x0 + 34, y + 625, t, t0 + 2.1, { size: 18, color: C.lav, cps: 110 });
-  if (t > t0 + 1.3) { atom(1540, y + 470, 110, 36, pr(t, t0 + 1.3, t0 + 2.6), t, { nr: 4 }); lab(1540, y + 640, 'TEST 01 · DRAFT 6 · 2026-10-19', C.lav, .8 * pr(t, t0 + 2.4, t0 + 2.8), 16, 'center'); }
+  caption('MUSIC: ATOM DRIVE, TAKE 3 (ELEVENLABS MUSIC), CUT AT THE BARS · SOUND SYNTHESISED IN CODE', x0 + 34, y + 625, t, t0 + 2.1, { size: 18, color: C.lav, cps: 110 });
+  if (t > t0 + 1.3) { atom(1540, y + 470, 110, 36, pr(t, t0 + 1.3, t0 + 2.6), t, { nr: 4 }); lab(1540, y + 640, 'TEST 01 · DRAFT 7 · 2026-10-19', C.lav, .8 * pr(t, t0 + 2.4, t0 + 2.8), 16, 'center'); }
 }
 
 function buildShots() {
   return [
-    { t0: 0, t1: PLATE.B, draw: plateA },
+    { t0: 0, t1: PLATE.T, draw: plateA },
+    { t0: PLATE.T, t1: PLATE.B, draw: plateT },
     { t0: PLATE.B, t1: PLATE.M, draw: plateB },
-    { t0: PLATE.M, t1: PLATE.C, draw: plateM },
+    { t0: PLATE.M, t1: PLATE.X, draw: plateM },
+    { t0: PLATE.X, t1: PLATE.C, draw: plateX },
     { t0: PLATE.C, t1: PLATE.N, draw: plateC },
     { t0: PLATE.N, t1: PLATE.D, draw: plateN },
-    { t0: PLATE.D, t1: PLATE.E, draw: plateD, mode: 'scope' },
-    { t0: PLATE.E, t1: PLATE.P, draw: plateEFG },
+    { t0: PLATE.D, t1: PLATE.Y, draw: plateD, mode: 'scope' },
+    { t0: PLATE.Y, t1: PLATE.E, draw: plateY },
+    { t0: PLATE.E, t1: PLATE.Z, draw: plateEFG },
+    { t0: PLATE.Z, t1: PLATE.P, draw: plateZ },
     { t0: PLATE.P, t1: PLATE.F, draw: plateP },
     { t0: PLATE.F, t1: END, draw: plateEFG },
   ];

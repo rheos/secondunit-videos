@@ -16,7 +16,7 @@ const MQ = [   // side, lines, hot word, attribution, beat
 ];
 const PAN = { A: [120, 900], I: [1020, 1800], y0: 150, y1: 920 };
 function plateM(t) {
-  const t0 = PLATE.M, b = (n) => t0 + n * BEAT; schBG(); schFrame('2', '', '', C.lav);
+  const t0 = PLATE.M, b = (n) => t0 + n * BEAT; schBG(); schFrame('3', '', '', C.lav);
   // the promise's output node runs to the top and rules the divider down the middle
   const k1 = eo(pr(t, t0, t0 + .35)), k2 = eo(pr(t, t0 + .3, t0 + .8)), ek = eio(pr(t, b(16) - .5, b(16)));
   const dx = lerp(1580, 960, k1), dy = lerp(470, 120, k1);
@@ -57,7 +57,7 @@ function plateM(t) {
     X.restore();
   }
   band(t, b(14), b(16) - .45, 'THE METAPHOR DESCRIBES THE SPEAKER', 'AFTER THE CORPORATION (2003): EVERY CEO AND CRITIC WAS ASKED FOR THEIR IMAGE OF THE CORPORATION, AND THE ANSWERS WERE CUT TOGETHER');
-  plateLabel('FIG. 2', 'THE METAPHORS', '', t, t0 + .2);
+  plateLabel(FIG.M, 'THE METAPHORS', '', t, t0 + .2);
 }
 
 // ---------- 4. the machine: a neural network drafted in the bomb's pen ----------
@@ -70,7 +70,7 @@ function miniNet(cx, cy, w, h, col, a, t) {
   for (let L = 0; L < 3; L++) for (let i = 0; i < ns[L]; i++) { const p = P(L, i); gc(p[0], p[1], 7, col, .9 * a, 1.4); if (t !== undefined) star(p[0], p[1], 2.5 * (1 + Math.exp(-8 * ((t - B0) % BEAT))), col, .8 * a); }
 }
 function plateN(t) {
-  const t0 = PLATE.N, b = (n) => t0 + n * BEAT, tEnd = PLATE.D; schBG(); schFrame('4', '', '', C.lav);
+  const t0 = PLATE.N, b = (n) => t0 + n * BEAT, tEnd = PLATE.D; schBG(); schFrame('6', '', '', C.lav);
   const ink = C.white, fine = C.lav, col = eio(pr(t, b(19), b(20)));   // col: the net collapses to the scope's beam spot
   const at = (p) => [lerp(p[0], 960, col), lerp(p[1], 520, col)], fade = 1 - col;
   // 1. construction: a dashed axis per layer and the centre line
@@ -129,7 +129,7 @@ function plateN(t) {
     } else lab(bx + 24, by + 158, t < b(15) ? '“A 1.5B PARAMETER TRANSFORMER” · RADFORD ET AL.' : '“175 BILLION PARAMETERS” · BROWN ET AL.', C.lav, .8 * ba, 13);
   }
   if (col > .85) star(960, 520, 6 * cl((col - .85) / .15), C.white, 1);
-  plateLabel('FIG. 4', 'THE MACHINE', '', t, t0 + .2);
+  plateLabel(FIG.N, 'THE MACHINE', '', t, t0 + .2);
 }
 
 // ---------- 7. p(doom): the first one came from Los Alamos ----------
@@ -197,11 +197,11 @@ function cardStack(k, t, a = 1) {   // the five cards gathered into one stack, b
 }
 function cardStackBack(t, a) { cardStack(1, t, a); }
 function plateP(t) {
-  const t0 = PLATE.P, b = (n) => t0 + n * BEAT; schBG(); schFrame('7', '', '', C.lav);
+  const t0 = PLATE.P, b = (n) => t0 + n * BEAT; schBG(); schFrame('11', '', '', C.lav);
   const shut = eio(pr(t, b(11), b(12)));
   if (shut < 1) {
     // part 1: the report, irised open from the clock's centre on the scoreboard
-    const open = eo(pr(t, t0, t0 + .9)), ix = lerp(960, 960, open), iy = lerp(444, 470, open), ir = lerp(8, 1400, open) * (1 - shut) + 2 * shut;
+    const open = eo(pr(t, t0, t0 + .9)), ix = 960, iy = 470, ir = lerp(8, 1400, open) * (1 - shut) + 2 * shut;
     const z = lerp(1, 1.05, pr(t, t0, b(11))), dim = lerp(1, .3, eio(pr(t, b(8) - .2, b(8) + .3)));
     X.save(); X.beginPath(); X.arc(ix, iy, Math.max(0, ir), 0, TAU); X.clip();
     print('la-602', 960, 470, 1000, { z, mount: 10, alpha: dim });
@@ -239,5 +239,5 @@ function plateP(t) {
     caption(sub, 960 - meas(sub, { size: 15 }) / 2, 222, t, b(19) + .3, { size: 15, color: C.lav, cps: 220, alpha: 1 - pr(t, b(26.5), b(26.8)) });
     band(t, b(23), b(28) - .4, 'THE FIRST NUMBER CAME FROM THE PEOPLE BUILDING THE BOMB. THE NEW ONES COME FROM THE PEOPLE BUILDING AI.', 'EVERY FIGURE AS THE PERSON SAID IT, DATED AND SOURCED ON THE BACK OF THE CARD');
   }
-  plateLabel('FIG. 7', 'p(doom)', '', t, t0 + .2);
+  plateLabel(FIG.P, 'p(doom)', '', t, t0 + .2);
 }

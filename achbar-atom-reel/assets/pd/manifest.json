@@ -117,5 +117,14 @@
   "licence": "Public domain: U.S. government work, 17 USC 105; marked Approved for Public Release / Publicly Releasable",
   "sha256": "d766cefa6c634290c447608511f483d03380230bf52194ddd4d1a3e9bf010b65",
   "note": "FAS itself answers bot checks with an empty 202; fetch from the Internet Archive capture. fetch-pd.py renders the page with pdftoppm."
+ },
+ {
+  "file": "tmi.jpg",
+  "title": "File:Three Mile Island nuclear power plant.jpg",
+  "page": "https://commons.wikimedia.org/wiki/File:Three_Mile_Island_nuclear_power_plant.jpg",
+  "license": "Public domain (US government work: CDC Public Health Image Library ID 1194)",
+  "author": "Centers for Disease Control and Prevention",
+  "sha256": "ac72c08443c6ba89bf12a43ef2562e3de133cd06c32e84377d614c274dedcd58",
+  "bytes": 3093667
  }
 ]

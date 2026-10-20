@@ -35,6 +35,13 @@ the film. Issue rheos/secondunit-videos#252. Made 2026-10-19, 0 credits.
 | Amodei 10-25% "something goes catastrophically wrong", Oct 2023 | The Logan Bartlett Show EP 82, 6 Oct 2023 (Newcomer, Manifold); wording likely, clip not viewed |
 | Musk "about 10% or 20% or something like that", Great AI Debate, Abundance Summit, Mar 2024 | Business Insider, Mar 2024. Written "10 or 20%", never "10 to 20" |
 | LeCun: no number; "complete B.S." | TechCrunch 12 Oct 2024. The "<0.01%, less than an asteroid" figure is a PauseAI compilation, not his words, so his card has no number ("did not play") |
+| The tapes (draft 7): Eisenhower, "Atoms for Peace", UN General Assembly, 8 Dec 1953; the clip "to find the way by which the miraculous inventiveness of man shall not be dedicated to his death, but consecrated to his life" | archive.org item dde_1953_1208 (Eisenhower Library White House recording via the Miller Center), 25:22-25:32 of 26:06; wording checked against the Voices of Democracy transcript. U.S. government recording, public domain. Photo: Commons "Preisdent Eisenhower delivers Atoms for Peace proposal (14678902765).jpg", NRC, PD |
+| The fields: the U.S. sites of At Work in the Fields of the Bomb (1987): Hanford, Idaho, Nevada Test Site, Rocky Flats, White Sands/Trinity, Kirtland AFB, Pantex, Kansas City Plant, Mound, Fernald, Portsmouth, Ashtabula, Oak Ridge Y-12, Savannah River, Pinellas | The book's own plate list (106 captions, Nuclear Age Peace Foundation mirror via the Wayback Machine). Los Alamos, Lawrence Livermore, Sandia and Paducah are NOT photographed in the book, so they are not pinned. Map: US Census 2010 cartographic boundary file (public domain), Albers projection |
+| The fields, the new sites: Three Mile Island (Microsoft, 20 Sep 2024), Susquehanna (Amazon campus, Mar 2024), Richland WA (Amazon, four X-energy reactors, 16 Oct 2024), Clinton IL (Meta, 20 years, 3 Jun 2025), Duane Arnold IA (Google, 27 Oct 2025) | Constellation release 20 Sep 2024; Talen/AWS 4 Mar 2024; Amazon/X-energy/Energy Northwest 16 Oct 2024; Meta/Constellation 3 Jun 2025; NextEra/Google release 27 Oct 2025. Palisades is left off: its restart is for co-op buyers, not AI, and had no restart date as of Jul 2026 |
+| The Day After: ABC, 20 Nov 1983, directed by Nicholas Meyer; Nielsen 46 rating / 62 share, "more than 100 million"; Reagan's diary, 10 Oct 1983: "It's very effective & left me greatly depressed", then that we must do all we can to see there is never a nuclear war | Reagan Foundation transcription of the diary; CNN/Lowry 2023 via WRAL and Wikipedia for the ratings. The "your movie had a part in this" telegram story is reported (Arms Control Today 2019) but Meyer called it a myth in 2010, so it is not on screen |
+| The restart: TMI Unit 1 off since 20 Sep 2019; Constellation, 20 Sep 2024: the Crane Clean Energy Center, about 835 MW, a 20-year PPA with Microsoft, online 2028 (2027 mentioned later) | Constellation press release (primary); WITF/NPR for the 2019 shutdown. Photo: Commons "Three Mile Island nuclear power plant.jpg", CDC PHIL 1194, PD-USGov |
+| The restart schedule: Google/Kairos up to 500 MW (14 Oct 2024); Meta RFP for 1-4 GW (3 Dec 2024) and Clinton (3 Jun 2025) | Google and Meta releases, Constellation release |
+| CH2 on the scope: training compute of notable AI systems, petaFLOP, log scale; the Perceptron Mark I (1957 in the dataset) to Grok 4 (2025, 5e11 petaFLOP) | Epoch AI (2026) with major processing by Our World in Data, CC BY, `js/compute-data.js` |
 
 The clock is our own drawing, not the Bulletin's artwork. The hand sweeps straight from 7 minutes to 85 s; the
 real setting moved back and forth over the decades, and the reel does not claim otherwise.
@@ -50,25 +57,31 @@ Archival photos are never recoloured (`js/photos.js`): paper mount, push-in, iri
 
 Sound: `sfx.py` synthesises every hit (pen on paper, stamp thump, relay clicks, CRT power-on and hum, static, clock ratchet, checkmark ticks), each one frame after its visual, and mixes them under the score into `assets/mix.wav`. Render with `AUDIO=assets/mix.wav`. Its cue times mirror `js/shots.js`; change both together.
 
-Plates and handovers (draft 6, real seconds on atom-drive take-03; B0 = 16.851 s, bar = 2.162 s):
+Plates and handovers (draft 7, bars from the first downbeat B0 = 16.851 s, bar = 2.162 s; the score under it is
+provisional, atom-drive take-03 looped at bar lines by sfx.py's BARMAP, until the music session delivers
+`assets/song7.wav` to this 14-section plan):
 
-| Plate | Bars from B0 | Time | Hands over by |
-|---|---|---|---|
-| 0 Drafting: HAER Trinity sheet 3 "The Bomb" drafted, the original swept in; then the atom, the constructed heart, ROMANCING on the first downbeat | before 0 to 4 | 0-25.5 | orbits shrink onto the stamp's printed orbits |
-| 1 The promise: stamp + Strauss, the network, the matching quote strips | 4-8 | 25.5-34.1 | the output node runs up and rules the divider |
-| 2 The metaphors: poster vs keynote, six dated quotes | 8-12 | 34.1-42.8 | the panels slide out, the iris opens from the divider |
-| 3 The same lab: HAER sheet 4 to the Trinity photo, ENIAC, the redacted purpose | 12-16 | 42.8-51.4 | ENIAC closes to a point |
-| 4 The machine: the network drafted, 1958, the parameter count | 16-21 | 51.4-62.3 | the net collapses to the beam spot |
-| 5 Scope: the warhead curve, sync lost on the music's change at bar 24 | 21-25 | 62.3-70.9 | the trace falls into an atom |
-| 6 Clock: 1947, the sweep, 85 s, the scoreboard | 25-29 | 70.9-79.6 | iris from the clock on the scoreboard |
-| 7 p(doom): LA-602, Compton's number, the cards on the music's change at bar 32 | 29-36 | 79.6-94.7 | the stack's back fades over the form |
-| 8 Red flags, five rows, SOUND FAMILIAR? | 36-40 | 94.7-103.3 | the camera travels down the sheet |
-| 9 Title block | 40 to end | 103.3-118 | end |
+| Plate | Bars | Hands over by |
+|---|---|---|
+| 00 Drafting: HAER sheet 3 drafted, the original swept in; the atom, the heart, ROMANCING on the downbeat | before 0 to 4 | the words leave; the atom stays |
+| 01 The tapes: Eisenhower at the UN, 1953, breathing with his own recording; the words land as spoken | 4-9 | the photograph slides onto the stamp's place |
+| 02 The promise: stamp + Strauss, the network, the matching strips | 9-13 | the output node rules the divider |
+| 03 The metaphors: poster vs keynote, six dated quotes | 13-17 | the panels slide out |
+| 04 The fields: the US drawn in the pen, Del Tredici's sites, then the reactors restarted and data centres | 17-22 | the Los Alamos pin is the lab's iris |
+| 05 The same lab: HAER sheet 4 to Trinity, ENIAC, the redacted purpose | 22-26 | ENIAC closes to a point |
+| 06 The machine: the network drafted, 1958, the parameter count | 26-31 | the net collapses to the beam spot |
+| 07 Scope: CH1 warheads, CH2 training compute (log), sync lost at bar 35 | 31-36 | the trace falls into an atom |
+| 08 The day after: the scope's tube is a 1983 television; 100,000,000; the station interrupts itself; Reagan's diary | 36-40 | the set goes off |
+| 09 Clock: 1947, the sweep, 85 s, the scoreboard | 40-44 | iris from the clock |
+| 10 The restart: Three Mile Island, back on for Microsoft; the other deals | 44-48 | iris shuts to a dot |
+| 11 p(doom): LA-602, Compton's number, the cards at bar 52 | 48-56 | the stack's back fades over the form |
+| 12 Red flags, five rows, the column flags fold into ticked boxes | 56-60 | the camera travels down the sheet |
+| 13 Title block | 60 to 162 s | end |
 
 ## Files
 
 - `index.html` the page; open it in Chrome to play with the score (click), arrows scrub, `?t=SECONDS`.
-- `js/data.js` warhead series (generated). `js/shots.js` the grid and the plates; `js/plates6.js` the metaphors, the machine and p(doom); `js/bomb.js` the drafting. `cues.mjs` collects the animation events for `sfx.py`.
+- `js/data.js` warhead series (generated); `js/map-data.js` the lower 48 projected (US Census 2010 cartographic boundaries, public domain; Albers; `lonlat()`); `js/compute-data.js` training compute per year (Epoch AI via Our World in Data, CC BY); `js/tape-data.js` the Eisenhower clip's envelope and word times (`tape.py`). `js/shots.js` the grid and the plates; `js/plates6.js` the metaphors, the machine and p(doom); `js/plates7.js` the tapes, the fields, the day after, the restart; `js/bomb.js` the drafting. `cues.mjs` collects the animation events for `sfx.py`.
 - `assets/pd/manifest.json` every archival photo with Commons page, licence, author, sha256. The JPEGs are
   gitignored; `python3 -I fetch-pd.py` gets them back. Only trinity, eniac-beck-snyder and the stamp are used;
   the others (Crossroads Baker, Castle Bravo, Oppenheimer and Groves, Eisenhower at the UN, a second ENIAC) are
@@ -137,5 +150,20 @@ taint the canvas and `toDataURL` throws.
   red flags as the bullets?"): the check boxes became red pennants that run up their poles and flutter, one as
   each row's bullet and one per column, with a cloth snap each; the form header reads EVERY FLAG SOURCED.
   Only the changed plates were re-rendered (render.mjs on the span, frames copied into out/frames_index_0_118,
-  then one encode). 6d (Robin: flags instead of check boxes, yes, but not as bullets too): the bullet flags are gone;
+  then one encode).
+- Draft 7 (2026-10-19 evening, pass 2 from OUTLINE-speculative.md; Robin: "proceed", extend as needed, a new track
+  later): 162.5 s, fourteen plates. New in `js/plates7.js`: CH. 01 THE TAPES (Eisenhower's own 1953 recording of the
+  "miraculous inventiveness of man" sentence under the NRC photograph of him at the UN rostrum, a reel deck, a VU
+  needle and a scrolling waveform on the voice's envelope, the words landing on whisper word times; the photograph
+  then slides onto the stamp's place, where the stamp prints the same sentence); CH. 04 THE FIELDS (the lower 48
+  drawn in the pen from the Census boundary file, the fifteen U.S. sites in Del Tredici's own plate list, then the
+  five nuclear-for-AI sites in magenta with callouts; the Trinity pin becomes the lab's iris); CH. 08 THE DAY AFTER
+  (the scope's tube becomes a 1983 television: slate, 100,000,000 counting up with the Nielsen figures, the station
+  interrupting itself, Reagan's diary line with its ampersand); CH. 10 THE RESTART (the CDC aerial of Three Mile
+  Island, RESTARTING FOR AI, Constellation's numbers, the Amazon/Google/Meta schedule). CH2 training compute (Epoch
+  AI via OWID, log scale) draws on the scope beside the warheads with a second tone; labels are clinical chapter
+  cards CH. 00-13. Score: provisional, take-03 looped at bar lines (BARMAP in sfx.py); the forked session owns the
+  real track (plan of fourteen sections at 111 BPM; assets/song7.wav when chosen). Facts for every new line:
+  `scratchpad` report folded into the table above. `tape.py` builds the clip and js/tape-data.js. Flash PASS (worst
+  1.5/s), -14.7 LUFS, peak -4.2 dBFS. Not uploaded; Robin watches first. 6d (Robin: flags instead of check boxes, yes, but not as bullets too): the bullet flags are gone;
   each column flag flies, then folds down into its box and the tick draws in red, with a flap, a fold and a tick.

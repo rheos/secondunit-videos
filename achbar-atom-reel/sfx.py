@@ -6,11 +6,14 @@
 # film runs a little past the music's fade so the title block can hold.
 import os, numpy as np, soundfile as sf
 from scipy.signal import butter, sosfilt
-SR = 48000; DUR = 118.5; N = int(SR * DUR); FR = 1 / 24
+SR = 48000; DUR = 162.5; N = int(SR * DUR); FR = 1 / 24
 here = os.path.dirname(os.path.abspath(__file__))
 B0 = 16.851; BEAT = 0.54054; BAR = 4 * BEAT       # js/shots.js
 bar = lambda n: B0 + n * BAR; bt = lambda n: B0 + n * BEAT
-PL = dict(A=0, B=bar(4), M=bar(8), C=bar(12), N=bar(16), D=bar(21), E=bar(25), P=bar(29), F=bar(36), G=bar(40))
+PL = dict(A=0, T=bar(4), B=bar(9), M=bar(13), X=bar(17), C=bar(22), N=bar(26), D=bar(31), Y=bar(36), E=bar(40), Z=bar(44), P=bar(48), F=bar(56), G=bar(60))
+# the score: the 119 s take looped at bar lines so its changes at bars 24 and 32 land on the sync loss (film bar 35)
+# and the cards (film bar 52): (film bar, source bar, bars)
+BARMAP = [(0, 0, 20), (20, 9, 11), (31, 20, 4), (35, 24, 9), (44, 24, 8), (52, 32, 8), (60, 40, None)]
 rng = np.random.default_rng(7)
 out = np.zeros((N, 2))
 
@@ -133,6 +136,12 @@ put(13.95, whoosh(.6, rev=True), -23)                  # paper swept off
 put(14.8, pen(2.2), -27, pan=.2)                       # the atom draws itself
 put(bar(0), thump(1.0), -13)                           # ROMANCING, on the first downbeat
 put(bar(1), chime(880), -20)                           # the heart
+# T. the tapes: the deck runs, the reels turn, the voice (assets/ike.wav, placed below if present), the hand-off
+put(PL['T'] + .2, hum(PL['B'] - PL['T'] - .4, 50), -34)                      # the deck's motor
+put(PL['T'] + .2, bp(noise(PL['B'] - PL['T'] - .4), 3000, 9000) * .12, -30)  # tape hiss
+put(PL['T'] + .3, tick(2200, .03), -18)                                        # play
+put(PL['T'] + .9, ping(1100), -24, pan=.3)                                     # crosshair on the photograph
+put(PL['B'] - .8, whoosh(.8, rev=True), -24)                                   # the photograph slides to the stamp's place
 # 1. the promise
 put(PL['B'] + .8, thump(.7), -16, pan=-.3)             # the stamp lands
 for k in (2, 3, 4): put(PL['B'] + k * BEAT, tick(5000, .01), -20, pan=.3)   # quote lines
@@ -148,6 +157,12 @@ put(PL['M'] + 1.0, thump(.4), -22)                     # they land
 for i in range(6): put(PL['M'] + (2 + 2 * i) * BEAT, tick(5200 if i % 2 else 3200, .012), -19, pan=-.35 if i % 2 == 0 else .35)   # each quote
 put(PL['M'] + 14 * BEAT, tick(4500, .015), -20)        # the band
 put(PL['M'] + 16 * BEAT - .5, slide(.5), -21, pan=-.5); put(PL['M'] + 16 * BEAT - .5, slide(.5), -21, pan=.5)   # the panels leave
+# X. the fields: the map drawn, the pins, the hot pins
+put(PL['X'], pen(1.6), -24, pan=-.1)                                           # the map in the pen
+for i in range(12): put(PL['X'] + (3 + i * .6) * BEAT, tick(3600, .02), -20, pan=-.4 + .07 * i)   # the sites of the bomb
+for i in range(6): put(PL['X'] + (13 + i * .8) * BEAT, blip(1320), -19, pan=.3 - .1 * i)          # the new sites
+put(PL['X'] + 12 * BEAT, tick(4500, .015), -20)                                # the band changes
+put(PL['C'] - .6, ping(1500), -24)                                             # the Los Alamos pin
 # 3. the same lab
 put(PL['C'], whoosh(.9), -18)                          # iris onto the HAER sheet
 put(PL['C'] + .9, ping(), -23, pan=-.1)                # crosshair on the drawn fireball
@@ -175,17 +190,33 @@ put(PL['N'] + 17.5 * BEAT, thump(.5), -18, pan=.3)     # the redaction bar
 put(PL['N'] + 19 * BEAT, whoosh(.55, rev=True), -22)   # the net collapses to the beam spot
 # 5. the scope
 put(PL['D'], crt_on(), -14)                            # scope powers on
-put(PL['D'] + .2, hum(PL['E'] - PL['D'] - .2), -27)    # tube hum under the plate
-put(PL['D'] + 12 * BEAT - .2, static(1.6), -20)        # sync lost
-d0, d1 = PL['D'] + 1.3, PL['D'] + 10 * BEAT             # the beam draws the curve: a tone follows the count
+put(PL['D'] + .2, hum(PL['Y'] - PL['D'] - .2), -27)    # tube hum under the plate
+c0, c1 = PL['D'] + 9 * BEAT + .3, PL['D'] + 15 * BEAT - .2   # CH2: the compute curve, a second tone an octave up
+put(c0, glide(lambda u: 330 + 900 * u ** 2.2, c1 - c0, .22), -26, pan=-.2)
+put(PL['D'] + 16 * BEAT - .2, static(1.6), -20)        # sync lost (the music's own change, bar 35)
+d0, d1 = PL['D'] + 1.3, PL['D'] + 9 * BEAT              # the beam draws the curve: a tone follows the count
 put(d0, glide(lambda u: 170 + 720 * np.array([warheads_at(1945 + 81 * v) for v in u]) / 75000, d1 - d0), -22, pan=.15)
+# Y. the day after: a television
+put(PL['Y'], crt_on(), -18)
+put(PL['Y'] + .2, hum(PL['E'] - PL['Y'] - .2, 60), -30)
+for k in (3, 8, 10): put(PL['Y'] + k * BEAT - .1, static(.25), -18)           # the channel changes
+odometer(PL['Y'] + 3 * BEAT, PL['Y'] + 4.5 * BEAT, 36)                         # the audience counts up
+put(PL['Y'] + 8 * BEAT, chime(1320, .6), -22)                                  # the station's sting
+put(PL['Y'] + 10.5 * BEAT, thump(.6), -18); put(PL['Y'] + 11 * BEAT, thump(.6), -18)   # the diary lines
+put(PL['E'] - .5, blip_down(), -16)                                            # the set goes off
 # 6. the clock
-put(PL['E'], blip_down(), -16)                         # tube off, back to blueprint
+put(PL['E'], blip_down(), -20)                         # back to blueprint
 for k in range(20): put(PL['E'] + 1.3 + .7 * (1 - (1 - k / 20) ** 3), tick(5000, .005), -29, pan=.2)   # the dial's ticks
 put(PL['E'] + 1.8, tick(2800, .03), -16)               # hands appear
 ratchet(PL['E'] + 3.3, PL['E'] + 4.9)                  # the sweep to 85 s
 put(PL['E'] + 5.4, thump(1.1), -13)                    # 85 SECONDS TO MIDNIGHT
 put(PL['E'] + 6.3, crowd(2.4), -24)                    # pull back: the stadium, nobody looking up
+# Z. the restart
+put(PL['Z'], whoosh(.9), -18)                                                  # iris onto Three Mile Island
+put(PL['Z'] + .9, ping(), -23)                                                 # crosshair on the towers
+put(PL['Z'] + 8 * BEAT, thump(1.1), -12)                                       # RESTARTING FOR AI
+for i in range(3): put(PL['Z'] + (11 + i * .8) * BEAT, tick(4500, .015), -21, pan=-.2 + .2 * i)   # the schedule
+put(PL['P'] - .7, whoosh(.6, rev=True), -22)                                   # iris shuts to the dot
 # 7. p(doom)
 put(PL['P'], whoosh(.9), -18)                          # iris onto LA-602
 put(PL['P'] + .9, ping(), -23)                         # crosshair on the report's title
@@ -212,9 +243,28 @@ put(PL['G'] - .05, whoosh(1.1), -22)
 put(PL['G'] + .6, pen(1.4), -26)                       # title block ruled
 put(PL['G'] + 1.3, pen(1.3), -29, pan=.4)              # the little atom draws itself
 
+IKE = os.path.join(here, 'assets', 'ike.wav')
+if os.path.exists(IKE):
+    v, vsr = sf.read(IKE); assert vsr == SR
+    if v.ndim == 2: v = v.mean(1)
+    put(PL['T'] + .6, v, -5)                                                   # the voice (TAPE_T0 in js/tape-data.js = PL['T'] + .6)
 sf.write(os.path.join(here, 'assets', 'sfx.wav'), out.astype(np.float32), SR)
 take, sr = sf.read(os.path.join(here, 'assets', 'song6.wav')); assert sr == SR
-song = np.zeros((N, 2)); song[:min(N, len(take))] = take[:N]
+cut = lambda a, b: take[int(round(a * SR)):int(round(b * SR))].copy()
+XF = int(.012 * SR)
+def join(x, y):                                        # 12 ms equal-power crossfade at a bar line
+    r = np.linspace(0, 1, XF)[:, None]; return np.concatenate([x[:-XF], x[-XF:] * np.cos(r * np.pi / 2) + y[:XF] * np.sin(r * np.pi / 2), y[XF:]])
+edit = cut(0, bar(0))                                  # the drafting intro, before the first downbeat
+for fb, sb, n in BARMAP:
+    seg = cut(bar(sb), bar(sb + n)) if n else cut(bar(sb), len(take) / SR)
+    edit = join(edit, seg)
+song = np.zeros((N, 2)); song[:min(N, len(edit))] = edit[:N]
+if os.path.exists(IKE):                                 # duck the score under the voice
+    d0, d1 = PL['T'] + .4, PL['T'] + .6 + len(v) / SR + .3; g = np.ones(N)
+    i0, i1 = int(d0 * SR), int(d1 * SR); r = int(.4 * SR)
+    g[i0 + r:i1 - r] = 10 ** (-9 / 20); g[i0:i0 + r] = np.linspace(1, 10 ** (-9 / 20), r); g[i1 - r:i1] = np.linspace(10 ** (-9 / 20), 1, r)
+    song *= g[:, None]
+print('score edit', round(len(edit) / SR, 2), 's')
 sf.write(os.path.join(here, 'assets', 'score-edit.wav'), song.astype(np.float32), SR)
 m = song + out
 m = m / max(1.0, np.max(np.abs(m)) / .84) * 10 ** (-2.6 / 20)   # about -14 LUFS integrated; ffmpeg's limiter does the rest

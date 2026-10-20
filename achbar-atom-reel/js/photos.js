@@ -4,7 +4,7 @@
 // The schematic annotations around them are drawn on top, crisp, by the shots.
 'use strict';
 const IMG = {};
-const PD = ['trinity', 'eniac-beck-snyder', 'atoms-for-peace-stamp', 'breactor-pile', 'trinity-haer-fireball', 'trinity-haer-bomb', 'la-602'];
+const PD = ['trinity', 'eniac-beck-snyder', 'atoms-for-peace-stamp', 'breactor-pile', 'trinity-haer-fireball', 'trinity-haer-bomb', 'la-602', 'eisenhower-un-1953', 'tmi'];
 function loadImgs() {
   return Promise.all(PD.map((k) => new Promise((res) => {
     const i = new Image(); i.onload = () => { IMG[k] = i; res(); }; i.onerror = () => { console.error('missing image ' + k); res(); }; i.src = 'assets/pd/' + k + '.jpg';
