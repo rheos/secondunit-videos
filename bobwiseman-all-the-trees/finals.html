@@ -1,0 +1,55 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><title>All The Trees finals compositor</title>
+<style>html,body{margin:0;background:#171b1c}canvas{display:block}</style>
+<canvas id="c"></canvas>
+<script>
+/* Finals compositor (Bob signed off draft 4b, 2026-10-19: "1080, 740, 9x16 and 3 sections no more than 30 secs with
+   lyrics"). It never redraws the film: it takes a finished 1920x1080 frame of the cut and lays the lyric over it.
+   wide: the frame with the sung line on an engraved ribbon at the foot of the plate.
+   tall: an emblem-book page, 1080x1920. Motto (the title) above, the plate (the whole 16:9 film) in the middle,
+         the verse (the sung line) below, the way a 17th-century emblem is printed.
+   Type is Hoefler Text, an old-style face close to the period. Lines come from source/lines.json (local only, it
+   quotes the lyric). Driven by tools/finals.mjs. */
+const C={paper:'#f3e7c8',ink:'#27261d',ribbon:'#f6ecd0',fold:'#ddc99a',gold:'#b5791f'};
+const cv=document.getElementById('c'),g=cv.getContext('2d');
+let LINES=[],MODE='wide',paper=null;
+const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
+const noise=n=>{const x=Math.sin(n*127.1+311.7)*43758.5453;return x-Math.floor(x)};
+function makePaper(w,h){const p=document.createElement('canvas');p.width=w;p.height=h;const q=p.getContext('2d');q.fillStyle=C.paper;q.fillRect(0,0,w,h);
+ for(let i=0;i<w*h/32;i++){const a=noise(i+237);q.globalAlpha=.03+a*.07;q.fillStyle=i%3?'#87794c':'#fff9ed';q.fillRect(noise(i+812)*w,noise(i+522)*h,1+a*2,1)}q.globalAlpha=1;return p}
+// The line showing at song time t, with its fade (4 frames in, 6 out), or null.
+function lineAt(t){for(const l of LINES){if(t<l.a-.01||t>l.b+.25)continue;const k=Math.min(clamp((t-l.a+.01)/.17),clamp((l.b+.25-t)/.25));if(k>0)return {text:l.text,k}}return null}
+function wrap(text,max){const greedy=wrapGreedy(text,max);if(greedy.length!==2)return greedy;const w=text.split(' ');let best=null;
+ for(let k=1;k<w.length;k++){const a=w.slice(0,k).join(' '),b=w.slice(k).join(' '),m=Math.max(g.measureText(a).width,g.measureText(b).width);if(m<=max&&(!best||m<best.m))best={m,ls:[a,b]}}return best?best.ls:greedy}
+function wrapGreedy(text,max){const words=text.split(' '),out=[];let cur='';for(const w of words){const n=cur?cur+' '+w:w;if(g.measureText(n).width>max&&cur){out.push(cur);cur=w}else cur=n}if(cur)out.push(cur);return out}
+// An engraved banderole: cream ribbon, ink outline, folded tails behind both ends, a little hatching under the rim.
+function ribbon(cx,cy,w,h){const tail=h*.9,x0=cx-w/2,x1=cx+w/2;
+ for(const s of [-1,1]){const xe=s<0?x0:x1;g.beginPath();g.moveTo(xe,cy-h*.3);g.lineTo(xe+s*tail,cy-h*.3+h*.18);g.lineTo(xe+s*tail*.62,cy+h*.12);g.lineTo(xe+s*tail,cy+h*.62);g.lineTo(xe,cy+h*.55);g.closePath();
+  g.fillStyle=C.fold;g.fill();g.strokeStyle=C.ink;g.lineWidth=1.6;g.stroke();
+  for(let j=1;j<6;j++){const u=j/6;g.beginPath();g.moveTo(xe+s*tail*u*.6,cy-h*.25+h*.15*u);g.lineTo(xe+s*tail*u*.6,cy+h*.5);g.strokeStyle='rgba(39,38,29,.35)';g.lineWidth=.8;g.stroke()}}
+ g.beginPath();g.moveTo(x0,cy-h/2);g.quadraticCurveTo(cx,cy-h/2-8,x1,cy-h/2);g.lineTo(x1,cy+h/2);g.quadraticCurveTo(cx,cy+h/2-8,x0,cy+h/2);g.closePath();
+ g.fillStyle=C.ribbon;g.fill();g.strokeStyle=C.ink;g.lineWidth=1.8;g.stroke();
+ g.save();g.clip();for(let x=x0+6;x<x1;x+=7){g.beginPath();g.moveTo(x,cy+h/2-9);g.lineTo(x+5,cy+h/2+2);g.strokeStyle='rgba(39,38,29,.22)';g.lineWidth=.7;g.stroke()}g.restore()}
+function rule(cx,y,w){g.strokeStyle=C.ink;g.lineWidth=1.4;g.beginPath();g.moveTo(cx-w/2,y);g.lineTo(cx+w/2,y);g.stroke();g.lineWidth=.6;g.beginPath();g.moveTo(cx-w/2,y+5);g.lineTo(cx+w/2,y+5);g.stroke();
+ g.font='34px "Hoefler Text Ornaments"';g.fillStyle=C.paper;g.fillRect(cx-34,y-18,68,40);g.fillStyle=C.ink;g.textAlign='center';g.textBaseline='middle';g.fillText('❦',cx,y+3)}
+function wide(img,t){cv.width=1920;cv.height=1080;g.drawImage(img,0,0);const L=lineAt(t);if(!L)return;
+ g.save();g.globalAlpha=L.k;g.font='italic 44px "Hoefler Text"';const w=Math.min(1640,g.measureText(L.text).width+110);ribbon(960,946,w,70);
+ g.fillStyle=C.ink;g.textAlign='center';g.textBaseline='middle';g.fillText(L.text,960,944);g.restore()}
+// The verse sits on plain paper below the plate, so it can be laid on a finished page later (mode tallcap).
+function verse(t){const L=lineAt(t);if(!L)return;g.save();g.globalAlpha=L.k;g.fillStyle=C.ink;g.textAlign='center';g.textBaseline='alphabetic';g.font='italic 60px "Hoefler Text"';
+ const ls=wrap(L.text,880),lh=78,y0=1400-(ls.length-1)*lh/2;ls.forEach((s,i)=>g.fillText(s,540,y0+i*lh));g.restore()}
+function tallcap(img,t){cv.width=1080;cv.height=1920;g.drawImage(img,0,0);verse(t)}
+function tall(img,t,noLyric=false){cv.width=1080;cv.height=1920;if(!paper)paper=makePaper(1080,1920);g.drawImage(paper,0,0);
+ g.strokeStyle=C.ink;g.lineWidth=2.2;g.strokeRect(36,36,1008,1848);g.lineWidth=.8;g.strokeRect(46,46,988,1828);
+ g.fillStyle=C.ink;g.textAlign='center';g.textBaseline='alphabetic';
+ g.font='92px "Hoefler Text"';g.letterSpacing='10px';g.fillText('ALL THE TREES',540,360);g.letterSpacing='0px';
+ g.font='italic 52px "Hoefler Text"';g.fillText('Bob Wiseman',540,440);rule(540,512,520);
+ // The plate: the film's own frame, cropped to its outer border, 1000 wide.
+ // The plate sits inside the inner border (46..1034).
+ const sx=49,sy=42,sw=1822,sh=986,dw=940,dh=dw*sh/sw,dx=70,dy=600;g.drawImage(img,sx,sy,sw,sh,dx,dy,dw,dh);
+ rule(540,dy+dh+62,520);
+ if(!noLyric)verse(t);
+ g.font='40px "Hoefler Text Ornaments"';g.fillText('❧  ❦  ❧',540,1780)}
+window.__setup=(lines,mode)=>{LINES=lines;MODE=mode;return document.fonts.load('italic 44px "Hoefler Text"').then(()=>document.fonts.load('34px "Hoefler Text Ornaments"')).then(()=>true)};
+window.__compose=async(src,t,q=.93)=>{const img=new Image();img.src=src;await img.decode();MODE==='wide'?wide(img,t):MODE==='tallcap'?tallcap(img,t):tall(img,t,MODE==='tallbase');return cv.toDataURL('image/jpeg',q)};
+window.__showing=t=>!!lineAt(t);
+</script></html>
