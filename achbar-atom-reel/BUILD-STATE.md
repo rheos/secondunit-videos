@@ -170,5 +170,11 @@ taint the canvas and `toDataURL` throws.
   reading-time rule, measured from the cue data (`holdcheck.py`, now in the pipeline and in the video-production
   review checklist): every plate holds at least 1.5 s after its last typed character. Promise, metaphors, same lab,
   day after, restart and red flags each gained a bar; the machine's parameter count, the p(doom) number, the CH2
-  label and the clock's sub moved earlier. 66 bars after the downbeat, 175 s; the provisional loop edit follows. 6d (Robin: flags instead of check boxes, yes, but not as bullets too): the bullet flags are gone;
+  label and the clock's sub moved earlier. 66 bars after the downbeat, 175 s; the provisional loop edit follows.
+  7c: on the real score, score-library atom-drive take-05 (Music v2.5 to the 66-bar plan; the music session's). 7d
+  (2026-10-19 18:17): on Robin's pick, take-07 (112 BPM, faded from 163 s), grid re-pinned (B0 17.211, beat 0.53574),
+  the clip re-cut; -16.3 LUFS because the take fades over the title block; flash PASS. Uploaded unlisted
+  https://youtu.be/IVTBFG87FjM for Robin's own notes and opened as round 45 on the reel's review page
+  (files.novadiem.com/cf8dae3c4effbc6f/, workspace 10 "achbar-reel", Robin is its owner); his studio notes go to
+  studio.novadiem.com/achbar/. Not sent to Mark. 6d (Robin: flags instead of check boxes, yes, but not as bullets too): the bullet flags are gone;
   each column flag flies, then folds down into its box and the tick draws in red, with a flap, a fold and a tick.
