@@ -612,21 +612,26 @@ function crowdInto(t, list) {
 // The protected 3:18 golden wide keeps its moment: the 12:00 group hangs the first pair (60 m) at 198 and 198.2, walking
 // out toward the Temple, toward the camera.
 // lampLitT(X, Z): the song time the spire at (X, Z) gets its lantern (Infinity if never); playa.js lampLit uses it.
-const LL = { N: 5, V: 1.19, GAP: 5.2, HANG: 2.2, lat: LL_LAT, SP: 20, D0: 60, SEG: 3 };
+// Draft 28 (Robin: "they don't go all the way down the road.. they are closer together in a line and probably only
+// lighting no more than 4 posts at a time"): one procession per promenade, close in a line (2.4 m apart), lighting the
+// two spire pairs nearest the Man; the spires further out are lit while no spire is on screen (LL.FAR, 3:05.5-3:12.5),
+// so nobody walks the far road and no lantern pops on in view.
+// On the 12:00, walking out toward the Temple, the road ahead of them stays dark until the drone is up in the climb (AHEAD).
+const LL = { N: 5, V: 1.19, GAP: 2.4, HANG: 2.2, lat: LL_LAT, SP: 20, D0: 60, SEG: 2, FAR: 187, S12: 0, T12: 198, AHEAD: 206.2 };
 LL.PAIR = LL.SP / LL.V + LL.HANG; // about 19 s from one spire to the next: walk 20 m, hang the lantern
 const LL_ESP = typeof BRC !== 'undefined' && BRC.ESP ? BRC.ESP : 760;
 const LL_PROMS = [{ a: 12, out: 1, r1: 722 }, { a: 6, out: 0, r1: 846 }, { a: 3, out: 0, r1: LL_ESP }, { a: 9, out: 0, r1: LL_ESP }]
   .map((p) => ({ ...p, u: CLOCK(p.a), n: Math.floor((p.r1 - LL.D0) / LL.SP + 1e-6) + 1 }));
-const llSegT0 = (pr, s) => pr.a === 12 && s === 0 ? 198 : 184 + 14 * rnd(pr.a, s, 7); // when a group hangs its first lantern
+const llSegT0 = (pr, s) => pr.a === 12 ? LL.T12 : 184 + 14 * rnd(pr.a, s, 7) + (pr.a === 6 ? -1.5 : pr.a === 9 ? -9 : 0); // draft 28: the 6:00 and 9:00 files nudged clear of the art they pass // draft 28: the 6:00 and 9:00 files nudged clear of the art they pass // draft 28: the 6:00 and 9:00 files nudged clear of the art they pass // when a group hangs its first lantern
 function llOrder(pr, n) { const s = Math.floor(n / LL.SEG), cnt = Math.min(LL.SEG, pr.n - s * LL.SEG), o = n - s * LL.SEG; return [s, pr.out ? o : cnt - 1 - o, cnt]; }
 function lampLitT(X, Z) {
   const dx = X - MAN.x, dz = Z - MAN.z;
   for (const pr of LL_PROMS) { const al = dx * pr.u[0] + dz * pr.u[1], lat = -dx * pr.u[1] + dz * pr.u[0]; if (al < LL.D0 - 12 || Math.abs(lat) > 12) continue;
-    const n = Math.round((al - LL.D0) / LL.SP); if (n < 0 || n >= pr.n) return Infinity; const [s, k] = llOrder(pr, n); return llSegT0(pr, s) + k * LL.PAIR + (lat > 0 ? .2 : 0); }
+    const n = Math.round((al - LL.D0) / LL.SP); if (n < 0 || n >= pr.n) return Infinity; const [s, k] = llOrder(pr, n), s0 = pr.a === 12 ? LL.S12 : 0; if (s !== s0) return (s < s0 || !pr.out ? LL.FAR : LL.AHEAD) + (n % 10) * .3 + (lat > 0 ? .1 : 0); return llSegT0(pr, s) + k * LL.PAIR + (lat > 0 ? .2 : 0); }
   return Infinity;
 }
 // the groups: one per stretch of three spire pairs on each promenade
-const LL_GROUPS = []; LL_PROMS.forEach((pr) => { for (let s = 0; s * LL.SEG < pr.n; s++) { const cnt = Math.min(LL.SEG, pr.n - s * LL.SEG), ds = [];
+const LL_GROUPS = []; LL_PROMS.forEach((pr) => { for (let s = pr.a === 12 ? LL.S12 : 0, s1 = s + 1; s < s1; s++) { const cnt = Math.min(LL.SEG, pr.n - s * LL.SEG), ds = [];
   for (let k = 0; k < cnt; k++) ds.push(LL.D0 + LL.SP * (s * LL.SEG + (pr.out ? k : cnt - 1 - k))); LL_GROUPS.push({ pr, s, ds, T0: llSegT0(pr, s), dir: pr.out ? 1 : -1, i: LL_GROUPS.length }); } });
 function llLead(gp, f, t) { // the leader of file f: distance from the Man along the promenade, and how far through a hang (-1 if not hanging)
   const off = f ? .2 : 0, A = (k) => gp.T0 + k * LL.PAIR + off - .55 * LL.HANG, n = gp.ds.length;
