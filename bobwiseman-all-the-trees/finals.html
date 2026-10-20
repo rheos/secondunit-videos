@@ -38,18 +38,18 @@ function wide(img,t){cv.width=1920;cv.height=1080;g.drawImage(img,0,0);const L=l
 function verse(t){const L=lineAt(t);if(!L)return;g.save();g.globalAlpha=L.k;g.fillStyle=C.ink;g.textAlign='center';g.textBaseline='alphabetic';g.font='italic 60px "Hoefler Text"';
  const ls=wrap(L.text,880),lh=78,y0=1400-(ls.length-1)*lh/2;ls.forEach((s,i)=>g.fillText(s,540,y0+i*lh));g.restore()}
 function tallcap(img,t){cv.width=1080;cv.height=1920;g.drawImage(img,0,0);verse(t)}
-function tall(img,t,noLyric=false){cv.width=1080;cv.height=1920;if(!paper)paper=makePaper(1080,1920);g.drawImage(paper,0,0);
+// plain: no verse at all (Robin, 2026-10-19: finals without lyrics), so the motto and plate sit centred on the page.
+function tall(img,t,noLyric=false,plain=false){const oy=plain?170:0;cv.width=1080;cv.height=1920;if(!paper)paper=makePaper(1080,1920);g.drawImage(paper,0,0);
  g.strokeStyle=C.ink;g.lineWidth=2.2;g.strokeRect(36,36,1008,1848);g.lineWidth=.8;g.strokeRect(46,46,988,1828);
  g.fillStyle=C.ink;g.textAlign='center';g.textBaseline='alphabetic';
- g.font='92px "Hoefler Text"';g.letterSpacing='10px';g.fillText('ALL THE TREES',540,360);g.letterSpacing='0px';
- g.font='italic 52px "Hoefler Text"';g.fillText('Bob Wiseman',540,440);rule(540,512,520);
- // The plate: the film's own frame, cropped to its outer border, 1000 wide.
- // The plate sits inside the inner border (46..1034).
- const sx=49,sy=42,sw=1822,sh=986,dw=940,dh=dw*sh/sw,dx=70,dy=600;g.drawImage(img,sx,sy,sw,sh,dx,dy,dw,dh);
+ g.font='92px "Hoefler Text"';g.letterSpacing='10px';g.fillText('ALL THE TREES',540,360+oy);g.letterSpacing='0px';
+ g.font='italic 52px "Hoefler Text"';g.fillText('Bob Wiseman',540,440+oy);rule(540,512+oy,520);
+ // The plate: the film's own frame, cropped to its outer border, 940 wide so it sits inside the inner border (46..1034).
+ const sx=49,sy=42,sw=1822,sh=986,dw=940,dh=dw*sh/sw,dx=70,dy=600+oy;g.drawImage(img,sx,sy,sw,sh,dx,dy,dw,dh);
  rule(540,dy+dh+62,520);
  if(!noLyric)verse(t);
  g.font='40px "Hoefler Text Ornaments"';g.fillText('❧  ❦  ❧',540,1780)}
 window.__setup=(lines,mode)=>{LINES=lines;MODE=mode;return document.fonts.load('italic 44px "Hoefler Text"').then(()=>document.fonts.load('34px "Hoefler Text Ornaments"')).then(()=>true)};
-window.__compose=async(src,t,q=.93)=>{const img=new Image();img.src=src;await img.decode();MODE==='wide'?wide(img,t):MODE==='tallcap'?tallcap(img,t):tall(img,t,MODE==='tallbase');return cv.toDataURL('image/jpeg',q)};
+window.__compose=async(src,t,q=.93)=>{const img=new Image();img.src=src;await img.decode();MODE==='wide'?wide(img,t):MODE==='tallcap'?tallcap(img,t):tall(img,t,MODE==='tallbase'||MODE==='tallplain',MODE==='tallplain');return cv.toDataURL('image/jpeg',q)};
 window.__showing=t=>!!lineAt(t);
 </script></html>
