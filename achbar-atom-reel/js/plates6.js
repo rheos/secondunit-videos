@@ -52,7 +52,7 @@ function plateM(t) {
       const sty = poster ? { fam: FT.d, weight: 900, stretch: 'semi-condensed' } : { fam: FT.d, weight: 400 };
       const size = Math.min(48, ...lines.map((ln) => fit(ln, w - 100, 48, sty)));
       lines.forEach((ln, j) => { const h = ln.indexOf(hot); kin(ln, px, y + j * size * 1.12, t, tq + j * .14, { ...sty, size, color: poster ? C.ink : C.white, hot: h >= 0 ? [h, h + hot.length, poster ? C.brick : C.mag] : undefined, stag: .02 }); });
-      caption(attr, px, y + lines.length * size * 1.12 + 18, t, tq + .3, { size: 14, color: poster ? C.ink : '#9a9a9a', alpha: poster ? .8 : 1, cps: 160 });
+      captionW(attr, px, y + lines.length * size * 1.12 + 20, t, tq + .3, { size: 16, color: poster ? C.ink : '#9a9a9a', alpha: poster ? .85 : 1, cps: 180 }, w - 100, 21);
     });
     X.restore();
   }
@@ -113,7 +113,7 @@ function plateN(t) {
   band(t, b(8), b(13) - .3, '“… WILL BE ABLE TO WALK, TALK, SEE, WRITE, REPRODUCE ITSELF AND BE CONSCIOUS OF ITS EXISTENCE”', '8 JULY 1958 · THE NEW YORK TIMES ON THE PERCEPTRON · ROSENBLATT, CORNELL AERONAUTICAL LABORATORY, FUNDED BY THE U.S. OFFICE OF NAVAL RESEARCH');
   // 6. the parameter count, rolling, then redacted
   if (t >= b(11) && col < 1) {
-    const bx = 1320, by = 130, bw = 520, bh = 180, ba = pr(t, b(11), b(11) + .3) * fade;
+    const bx = 1320, by = 130, bw = 520, bh = 222, ba = pr(t, b(11), b(11) + .3) * fade;
     X.globalAlpha = .85 * ba; X.fillStyle = C.navy2; X.fillRect(bx, by, bw, bh); X.globalAlpha = 1; iBox(bx, by, bw, bh, C.lav, 1.2, .7 * ba, false);
     lab(bx + 24, by + 34, 'PARAMETERS (WEIGHTS)', C.lav, .85 * ba, 15);
     let n, who;
@@ -125,8 +125,8 @@ function plateN(t) {
     if (t >= b(15)) {
       const rk = eo(pr(t, b(15), b(15) + .4));
       X.globalAlpha = ba; X.fillStyle = '#000'; X.fillRect(bx + bw - 24 - 460 * rk, by + 74, 460 * rk, 58); X.globalAlpha = 1;
-      if (rk >= 1) { lab(bx + bw - 24, by + 114, 'NOT DISCLOSED', C.white, .95 * ba, 30, 'right'); caption('“NO FURTHER DETAILS ABOUT THE ARCHITECTURE (INCLUDING MODEL SIZE)” · GPT-4 TECHNICAL REPORT', bx + 24, by + 158, t, b(15) + .4, { size: 13, color: C.lav, cps: 300, alpha: ba }); }
-    } else lab(bx + 24, by + 158, t < b(12.5) ? '“A 1.5B PARAMETER TRANSFORMER” · RADFORD ET AL.' : '“175 BILLION PARAMETERS” · BROWN ET AL.', C.lav, .8 * ba, 13);
+      if (rk >= 1) { lab(bx + bw - 24, by + 114, 'NOT DISCLOSED', C.white, .95 * ba, 30, 'right'); captionW('“NO FURTHER DETAILS ABOUT THE ARCHITECTURE (INCLUDING MODEL SIZE)” · GPT-4 TECHNICAL REPORT, 2023', bx + 24, by + 160, t, b(15) + .4, { size: 15, color: C.lav, cps: 300, alpha: ba }, bw - 48, 22); }
+    } else lab(bx + 24, by + 160, t < b(12.5) ? '“A 1.5B PARAMETER TRANSFORMER” · RADFORD ET AL., 2019' : '“175 BILLION PARAMETERS” · BROWN ET AL., 2020', C.lav, .85 * ba, 15);
   }
   if (col > .85) star(960, 520, 6 * cl((col - .85) / .15), C.white, 1);
   plateLabel(FIG.N, 'THE MACHINE', '', t, t0 + .2);
@@ -152,10 +152,10 @@ function cardFront(c, t, a = 1) {
   X.fillStyle = C.navy; X.fillRect(-CW / 2 + 22, -CH / 2 + 70, CW - 44, 140);
   if (c.mark === 'atom') atom(0, -CH / 2 + 140, 92, 30, 1, t, { electrons: false, nr: 4, col: C.cyan }); else miniNet(0, -CH / 2 + 140, 170, 100, C.cyan, 1, t);
   txt(c.yr, CW / 2 - 30, -CH / 2 + 100, { fam: FT.m, size: 20, weight: 700, color: C.white, align: 'right' });
-  txt(c.role, 0, -CH / 2 + 236, { fam: FT.m, size: fit(c.role, CW - 44, 12), weight: 700, color: C.ink, align: 'center' });
+  txt(c.role, 0, -CH / 2 + 236, { fam: FT.m, size: fit(c.role, CW - 40, 14), weight: 700, color: C.ink, align: 'center' });
   const ns = Math.min(64, ...c.num.map((s) => fit(s, CW - 50, 64, { fam: FT.d, weight: 900, stretch: 'semi-condensed' })));
   c.num.forEach((s, i) => txt(s, 0, -CH / 2 + 300 + i * ns * .95 - (c.num.length - 1) * 16, { fam: FT.d, size: ns, weight: 900, stretch: 'semi-condensed', color: c.odds === null ? C.ink : C.brick, align: 'center' }));
-  txt(c.q, 0, CH / 2 - 60, { fam: FT.m, size: fit(c.q, CW - 44, 12), weight: 400, color: C.ink, align: 'center' });
+  txt(c.q, 0, CH / 2 - 60, { fam: FT.m, size: fit(c.q, CW - 36, 14), weight: 400, color: C.ink, align: 'center' });
   lab(0, CH / 2 - 28, 'p(doom) ALL-STARS · SERIES 1', C.ink, .6, 10, 'center');
   X.restore();
 }
@@ -171,7 +171,7 @@ function cardBack(c, t, a = 1) {
   if (!c) { txt('p(doom)', 0, -20, { fam: FT.d, size: 56, weight: 900, color: C.ink, align: 'center' }); txt('ALL-STARS', 0, 30, { fam: FT.d, size: 34, weight: 900, stretch: 'expanded', color: C.ink, align: 'center' }); lab(0, 90, 'SERIES 1 · 1945-2024', C.ink, .7, 12, 'center'); X.restore(); return; }
   txt('STATS', 0, -CH / 2 + 100, { fam: FT.d, size: 26, weight: 900, color: C.ink, align: 'center' });
   gl(-CW / 2 + 40, -CH / 2 + 112, CW / 2 - 40, -CH / 2 + 112, C.ink, .8, 1.2);
-  lab(-CW / 2 + 40, -CH / 2 + 150, 'CHANCE OF CATASTROPHE', C.ink, .8, 11);
+  lab(-CW / 2 + 40, -CH / 2 + 150, 'CHANCE OF CATASTROPHE', C.ink, .85, 13);
   // the odds as a bar on a 0-100 scale: Compton's is thinner than a line
   const bw = CW - 80; X.strokeStyle = C.ink; X.lineWidth = 1.2; X.globalAlpha = .8 * a; X.strokeRect(-CW / 2 + 40, -CH / 2 + 162, bw, 22); X.globalAlpha = a;
   if (c.odds !== null) { X.fillStyle = C.brick; X.fillRect(-CW / 2 + 40, -CH / 2 + 162, Math.max(0, bw * c.odds), 22); }
@@ -179,8 +179,8 @@ function cardBack(c, t, a = 1) {
   lab(-CW / 2 + 40, -CH / 2 + 206, '0%', C.ink, .7, 10); lab(CW / 2 - 40, -CH / 2 + 206, '100%', C.ink, .7, 10, 'right');
   const note = c.odds === null ? 'DID NOT PLAY' : c.odds < .001 ? (c.odds * 100).toFixed(4) + '% · NOT VISIBLE AT THIS SCALE' : (c.odds * 100) + '% (MIDPOINT)';
   txt(note, 0, -CH / 2 + 240, { fam: FT.m, size: fit(note, CW - 60, 12), weight: 700, color: C.brick, align: 'center' });
-  lab(-CW / 2 + 40, -CH / 2 + 290, 'SOURCE', C.ink, .8, 11);
-  c.src.forEach((s, i) => txt(s, -CW / 2 + 40, -CH / 2 + 314 + i * 22, { fam: FT.m, size: fit(s, CW - 80, 12), weight: 400, color: C.ink }));
+  lab(-CW / 2 + 40, -CH / 2 + 290, 'SOURCE', C.ink, .85, 13);
+  c.src.forEach((s, i) => txt(s, -CW / 2 + 32, -CH / 2 + 314 + i * 24, { fam: FT.m, size: fit(s, CW - 64, 14), weight: 400, color: C.ink }));
   lab(0, CH / 2 - 28, 'p(doom) ALL-STARS · SERIES 1', C.ink, .6, 10, 'center');
   X.restore();
 }
@@ -236,7 +236,7 @@ function plateP(t) {
     const hs = fit('p(doom) ALL-STARS', 1100, 86, { fam: FT.d, weight: 900, stretch: 'expanded' });
     kin('p(doom) ALL-STARS', 960, 180, t, b(19), { size: hs, weight: 900, stretch: 'expanded', align: 'center', hot: [0, 7, C.mag], stag: .03, out: b(26.5) });
     const sub = 'A SET, AFTER MANUFACTURING CONSENT’S PHILOSOPHER ALL-STARS (1992) · NO LIKENESSES, EACH PERSON’S INSTRUMENT INSTEAD';
-    caption(sub, 960 - meas(sub, { size: 15 }) / 2, 222, t, b(19) + .3, { size: 15, color: C.lav, cps: 220, alpha: 1 - pr(t, b(26.5), b(26.8)) });
+    caption(sub, 960 - meas(sub, { size: 18 }) / 2, 226, t, b(19) + .3, { size: 18, color: C.lav, cps: 220, alpha: 1 - pr(t, b(26.5), b(26.8)) });
     band(t, b(23), b(28) - .4, 'THE FIRST NUMBER CAME FROM THE PEOPLE BUILDING THE BOMB. THE NEW ONES COME FROM THE PEOPLE BUILDING AI.', 'EVERY FIGURE AS THE PERSON SAID IT, DATED AND SOURCED ON THE BACK OF THE CARD');
   }
   plateLabel(FIG.P, 'p(doom)', '', t, t0 + .2);

@@ -54,9 +54,9 @@ function plateT(t) {
 // ---------- X. the fields of the bomb: where Del Tredici pointed the camera, then where the new romance is built ----------
 const SITES_BOMB = [   // name, state, lon, lat, label side: sites photographed in At Work in the Fields of the Bomb (1987), from its plate list
   ['HANFORD', 'WA', -119.49, 46.55, 'l'], ['IDAHO', 'ID', -112.90, 43.50, 'l'], ['NEVADA TEST SITE', 'NV', -116.05, 37.10, 'l'],
-  ['ROCKY FLATS', 'CO', -105.23, 39.89, 'r'], ['WHITE SANDS · TRINITY', 'NM', -106.48, 33.68, 'r'], ['KIRTLAND AFB', 'NM', -106.55, 35.05, 'r'],
-  ['PANTEX', 'TX', -101.56, 35.31, 'r'], ['KANSAS CITY PLANT', 'MO', -94.55, 38.90, 'r'], ['MOUND', 'OH', -84.29, 39.63, 'l'],
-  ['FERNALD', 'OH', -84.69, 39.30, 'l'], ['PORTSMOUTH', 'OH', -83.00, 39.00, 'r'], ['ASHTABULA', 'OH', -80.79, 41.87, 'r'],
+  ['ROCKY FLATS', 'CO', -105.23, 39.89, 'r'], ['WHITE SANDS · TRINITY', 'NM', -106.48, 33.68, 'r'], ['KIRTLAND AFB', 'NM', -106.55, 35.05, 'l'],
+  ['PANTEX', 'TX', -101.56, 35.31, 'r'], ['KANSAS CITY PLANT', 'MO', -94.55, 38.90, 'r'], ['MOUND', 'OH', -84.29, 39.63, 'r', -16],
+  ['FERNALD', 'OH', -84.69, 39.30, 'l'], ['PORTSMOUTH', 'OH', -83.00, 39.00, 'r', 16], ['ASHTABULA', 'OH', -80.79, 41.87, 'r'],
   ['OAK RIDGE · Y-12', 'TN', -84.27, 36.01, 'r'], ['SAVANNAH RIVER', 'SC', -81.65, 33.30, 'r'], ['PINELLAS', 'FL', -82.70, 27.90, 'r'],
 ];
 const SITES_AI = [   // name, deal, lon, lat: primary releases and trade press, see BUILD-STATE.md
@@ -75,30 +75,30 @@ function plateX(t) {
   US_STATES.forEach((ring, i) => { const kk = seg(mk, (i % 17) * .03, .5 + (i % 17) * .03); strokeTo(ring.concat([ring[0]]), kk, C.lav, 1, .55, false); });
   if (mk >= 1) { for (const ring of US_STATES) iP(ring, true, C.lav, .6, .25, false, .4); }
   // the sites of the bomb, pinned on the beats
-  SITES_BOMB.forEach(([name, st, lon, lat, side], i) => {
-    const tp = b(3 + i * .5); if (t < tp) return;
-    const [x, y] = lonlat(lon, lat), k = eo(pr(t, tp, tp + .3)), fade = 1 - .55 * pr(t, b(12), b(12) + .5);
+  SITES_BOMB.forEach(([name, st, lon, lat, side, dy = 0], i) => {
+    const tp = b(2 + i * .45); if (t < tp) return;
+    const [x, y] = lonlat(lon, lat), k = eo(pr(t, tp, tp + .3)), fade = 1 - .55 * pr(t, b(10.5), b(10.5) + .5);
     const hp = hexPts(x, y, 11 * k); fillP(PP(hp), C.navy); iP(hp, true, C.white, 1.3, .95 * fade, false, .3); star(x, y, 3, C.white, fade);
     const lx = x + (side === 'l' ? -26 : 26);
-    lab(lx, y + 5, name, C.white, .95 * fade * k, 14, side === 'l' ? 'right' : 'left');
+    lab(lx, y + 6 + dy, name, C.white, .95 * fade * k, 17, side === 'l' ? 'right' : 'left');
   });
   const h1 = 'THE FIELDS OF THE BOMB · WHERE DEL TREDICI POINTED THE CAMERA, 1980-1987';
-  caption(h1, 120, 1000, t, b(2), { size: 24, weight: 700, color: C.white, alpha: 1 - pr(t, b(12) - .3, b(12)) });
-  caption('AT WORK IN THE FIELDS OF THE BOMB (1987) · THE U.S. SITES IN THE BOOK’S OWN PLATE LIST (IT ALSO GOES TO JAPAN, CANADA, BRITAIN AND FRANCE)', 120, 1036, t, b(2) + .4, { size: 16, color: C.lav, cps: 150, alpha: 1 - pr(t, b(12) - .3, b(12)) });
+  caption(h1, 120, 998, t, b(1.5), { size: 27, weight: 700, color: C.white, alpha: 1 - pr(t, b(10.5) - .3, b(10.5)) });
+  caption('AT WORK IN THE FIELDS OF THE BOMB (1987) · THE U.S. SITES IN THE BOOK’S OWN PLATE LIST (IT ALSO GOES TO JAPAN, CANADA, BRITAIN AND FRANCE)', 120, 1036, t, b(1.5) + .4, { size: 19, color: C.lav, cps: 170, alpha: 1 - pr(t, b(10.5) - .3, b(10.5)) });
   // then the new romance: reactors restarted and data centres, in the hot colour; the east-coast cluster gets callouts
   let col = 0;
   SITES_AI.forEach(([name, deal, lon, lat], i) => {
-    const tp = b(12.5 + i * .6); if (t < tp) return;
+    const tp = b(11 + i * .55); if (t < tp) return;
     const [x, y] = lonlat(lon, lat), k = eo(pr(t, tp, tp + .3));
     gc(x, y, 14 * k, C.mag, .95, 2); gc(x, y, 26 * k * (1 + .15 * Math.sin(t * 6)), C.mag, .35, 1); star(x, y, 3.5, C.white, 1);
     if (x > 1000) {
-      const ly = 300 + col * 78; col++;
+      const ly = 290 + col * 86; col++;
       gl(x, y, lerp(x, 1560, k), lerp(y, ly - 8, k), C.mag, .6, 1);
-      if (k >= 1) { gl(1560, ly - 8, 1600, ly - 8, C.mag, .6, 1); lab(1610, ly - 2, name, C.mag, .95, 15); lab(1610, ly + 18, deal, C.lav, .8, 11); }
-    } else { lab(x + 34, y + 2, name, C.mag, .95 * k, 14); lab(x + 34, y + 20, deal, C.lav, .8 * k, 11); }
+      if (k >= 1) { gl(1560, ly - 8, 1600, ly - 8, C.mag, .6, 1); lab(1610, ly - 2, name, C.mag, .95, 18); lab(1610, ly + 22, deal, C.lav, .85, 14); }
+    } else { lab(x + 34, y + 2, name, C.mag, .95 * k, 17); lab(x + 34, y + 24, deal, C.lav, .85 * k, 14); }
   });
-  caption('AND WHERE THE NEW ROMANCE IS BEING BUILT: REACTORS RESTARTED FOR AI, DATA CENTRES ON THE SAME MAP', 120, 1000, t, b(12), { size: 24, weight: 700, color: C.mag });
-  caption('CONSTELLATION · TALEN/AMAZON · AMAZON/X-ENERGY · META/CONSTELLATION · NEXTERA/GOOGLE · SEE THE RESTART, CH. 10', 120, 1036, t, b(12) + .4, { size: 16, color: C.lav, cps: 150 });
+  caption('AND WHERE THE NEW ROMANCE IS BEING BUILT: REACTORS RESTARTED FOR AI, DATA CENTRES ON THE SAME MAP', 120, 998, t, b(10.5), { size: 27, weight: 700, color: C.mag });
+  caption('CONSTELLATION · TALEN/AMAZON · AMAZON/X-ENERGY · META/CONSTELLATION · NEXTERA/GOOGLE · SEE THE RESTART, CH. 10', 120, 1036, t, b(10.5) + .4, { size: 19, color: C.lav, cps: 170 });
   // hand over: the Los Alamos pin is where the lab's iris opens
   if (t > tEnd - .6) { const k = pr(t, tEnd - .6, tEnd); gc(LA_PIN[0], LA_PIN[1], 11 + 30 * k, C.cyan, .9 * k, 1.5); star(LA_PIN[0], LA_PIN[1], 6, C.white, 1); }
   plateLabel(FIG.X, 'THE FIELDS', '', t, t0 + .2);
@@ -119,13 +119,13 @@ function plateY(t) {
   // the broadcast: a slate, then the number, then the station interrupts itself, then the diary
   const ph = t < b(5) ? 0 : t < b(11) ? 1 : t < b(13) ? 2 : 3;
   if (ph === 0) {
-    ptxt('ABC · SUNDAY 20 NOVEMBER 1983 · 8 PM', TB.cx, TB.cy - 150, { size: 30, align: 'center', c: PH.g, alpha: pr(t, t0 + .3, t0 + .6) });
+    ptxt('ABC · SUNDAY 20 NOVEMBER 1983 · 8 PM', TB.cx, TB.cy - 150, { size: 34, align: 'center', c: PH.g, alpha: pr(t, t0 + .3, t0 + .6) });
     ptxt('THE DAY AFTER', TB.cx, TB.cy - 30, { fam: FT.d, size: 120, weight: 900, align: 'center', c: PH.g, alpha: pr(t, t0 + .6, t0 + .9), blur: 26 });
-    ptxt('DIRECTED BY NICHOLAS MEYER', TB.cx, TB.cy + 60, { size: 26, align: 'center', c: PH.g, alpha: pr(t, t0 + .9, t0 + 1.2) });
+    ptxt('DIRECTED BY NICHOLAS MEYER', TB.cx, TB.cy + 64, { size: 30, align: 'center', c: PH.g, alpha: pr(t, t0 + .9, t0 + 1.2) });
   } else if (ph === 1) {
     ptxt(fmt(1e8 * eo(pr(t, b(5), b(6.5)))), TB.cx, TB.cy - 20, { fam: FT.d, size: 160, weight: 900, align: 'center', c: PH.g, blur: 30 });
-    ptxt('VIEWERS, ONE NIGHT', TB.cx, TB.cy + 80, { size: 34, align: 'center', c: PH.a, alpha: pr(t, b(6.5), b(7)) });
-    ptxt('NIELSEN: A 46 RATING, A 62 SHARE, MORE THAN 100 MILLION PEOPLE', TB.cx, TB.cy + 140, { size: 22, align: 'center', c: PH.a, alpha: .8 * pr(t, b(7), b(7.5)), blur: 8 });
+    ptxt('VIEWERS, ONE NIGHT', TB.cx, TB.cy + 80, { size: 38, align: 'center', c: PH.a, alpha: pr(t, b(6.5), b(7)) });
+    ptxt('NIELSEN: A 46 RATING, A 62 SHARE, MORE THAN 100 MILLION PEOPLE', TB.cx, TB.cy + 146, { size: 27, align: 'center', c: PH.a, alpha: .8 * pr(t, b(7), b(7.5)), blur: 8 });
   } else if (ph === 2) {
     // MC09: the broadcaster interrupts itself
     X.fillStyle = '#efe5cd'; X.fillRect(TB.cx - TB.w / 2, TB.cy - TB.h / 2, TB.w, TB.h);
@@ -134,22 +134,17 @@ function plateY(t) {
     X.globalAlpha = .18; X.fillStyle = '#000'; for (let y = TB.cy - TB.h / 2; y < TB.cy + TB.h / 2; y += 3) X.fillRect(TB.cx - TB.w / 2, y, TB.w, 1.5); X.globalAlpha = 1;
   } else {
     const off = pr(t, tEnd - .5, tEnd);
-    ptxt('PRESIDENT REAGAN’S DIARY, 10 OCTOBER 1983, AFTER A SCREENING:', TB.cx, TB.cy - 170, { size: 24, align: 'center', c: PH.a, alpha: (1 - off) * pr(t, b(13), b(13.4)) });
+    ptxt('PRESIDENT REAGAN’S DIARY, 10 OCTOBER 1983, AFTER A SCREENING:', TB.cx, TB.cy - 176, { size: 30, align: 'center', c: PH.a, alpha: (1 - off) * pr(t, b(13), b(13.4)) });
     ptxt('“VERY EFFECTIVE & LEFT ME', TB.cx, TB.cy - 50, { fam: FT.d, size: 72, weight: 900, align: 'center', c: PH.g, alpha: (1 - off) * pr(t, b(13.5), b(13.8)), blur: 20 });
     ptxt('GREATLY DEPRESSED”', TB.cx, TB.cy + 50, { fam: FT.d, size: 72, weight: 900, align: 'center', c: PH.g, alpha: (1 - off) * pr(t, b(14), b(14.3)), blur: 20 });
-    ptxt('HIS NEXT LINE: DO ALL WE CAN TO SEE THERE IS NEVER A NUCLEAR WAR · REAGAN FOUNDATION TRANSCRIPTION', TB.cx, TB.cy + 150, { size: 20, align: 'center', c: PH.a, alpha: .85 * (1 - off) * pr(t, b(15), b(15.4)), blur: 8 });
+    ptxt('HIS NEXT LINE: DO ALL WE CAN TO SEE THERE IS NEVER A NUCLEAR WAR', TB.cx, TB.cy + 150, { size: 26, align: 'center', c: PH.a, alpha: .85 * (1 - off) * pr(t, b(15), b(15.4)), blur: 8 });
+    ptxt('THE REAGAN FOUNDATION’S TRANSCRIPTION OF THE DIARY', TB.cx, TB.cy + 192, { size: 22, align: 'center', c: PH.a, alpha: .75 * (1 - off) * pr(t, b(15.3), b(15.7)), blur: 8 });
     if (off > 0) { X.fillStyle = '#000'; X.globalAlpha = off; X.fillRect(TB.cx - TB.w / 2, TB.cy - TB.h / 2, TB.w, TB.h); X.globalAlpha = 1; beamDot(TB.cx, TB.cy, 6 * (1 - off) + 2, 1); }
   }
   X.restore();
   // static between the phases
   for (const edge of [b(5), b(11), b(13)]) { const s = Math.abs(t - edge); if (s < .1) { X.save(); X.beginPath(); X.roundRect(TB.cx - TB.w / 2, TB.cy - TB.h / 2, TB.w, TB.h, 46); X.clip(); const r0 = M32(Math.floor(t * 24)); X.globalAlpha = .5 * (1 - s / .1); for (let i = 0; i < 1400; i++) { X.fillStyle = r0() < .5 ? '#fff' : '#000'; X.fillRect(TB.cx - TB.w / 2 + r0() * TB.w, TB.cy - TB.h / 2 + r0() * TB.h, 6, 2); } X.restore(); } }
   tubeGlass(TB.cx, TB.cy, TB.w, TB.h, t);
-  // the room, in the glow: a lamp and the back of a sofa, in blueprint lines over the black
-  X.save(); X.globalAlpha = .55 * cab; X.strokeStyle = C.lav; X.lineWidth = 1.2;
-  X.beginPath(); X.moveTo(0, 1010); X.lineTo(W, 1010); X.stroke();                                      // floor
-  X.beginPath(); X.moveTo(80, 1010); X.lineTo(80, 700); X.lineTo(60, 700); X.lineTo(120, 560); X.lineTo(200, 560); X.lineTo(260, 700); X.lineTo(80, 700); X.stroke();   // lamp
-  X.beginPath(); X.roundRect(560, 960, 800, 120, 30); X.stroke(); X.beginPath(); X.roundRect(600, 985, 330, 60, 14); X.stroke(); X.beginPath(); X.roundRect(990, 985, 330, 60, 14); X.stroke();   // sofa back
-  X.restore();
 }
 
 // ---------- Z. the restart: Three Mile Island, back on for AI ----------
@@ -167,15 +162,16 @@ function plateZ(t) {
     const hs = fit('RESTARTING FOR AI', 1500, 170, { fam: FT.d, weight: 900, stretch: 'semi-condensed' });
     kin('RESTARTING FOR AI', 960, 470, t, b(8), { size: hs, weight: 900, stretch: 'semi-condensed', align: 'center', hot: [0, 10, C.mag], stag: .03 });
     const c1 = '20 SEPTEMBER 2024 · CONSTELLATION: UNIT 1, OFF SINCE 2019, TO RETURN AS THE CRANE CLEAN ENERGY CENTER, ABOUT 835 MW · 20 YEARS OF POWER TO MICROSOFT’S DATA CENTRES';
-    caption(c1, 960 - meas(c1, { size: 18 }) / 2, 560, t, b(9), { size: 18, color: C.white, cps: 220 });
+    captionW(c1, 960, 540, t, b(9), { size: 22, color: C.white, cps: 240, align: 'center' }, 1500, 30);
     const c2 = 'UNIT 2 WAS THE 1979 ACCIDENT. DEL TREDICI’S SECOND BOOK WAS THE PEOPLE OF THREE MILE ISLAND (1980).';
-    caption(c2, 960 - meas(c2, { size: 18 }) / 2, 600, t, b(10), { size: 18, color: C.lav, cps: 220 });
+    captionW(c2, 960, 622, t, b(10), { size: 22, color: C.lav, cps: 240, align: 'center' }, 1500, 30);
   }
   X.restore();
   gc(ix, lerp(iy, 540, shut), ir, C.cyan, .8, 1.5);
   if (t >= b(11) && shut < 1) {
+    X.globalAlpha = .85 * (1 - shut) * pr(t, b(11), b(11) + .2); X.fillStyle = C.navy; X.fillRect(0, 752, W, 160); X.globalAlpha = 1;
     const rows = [['AMAZON', 'A DATA CENTRE CAMPUS AT THE SUSQUEHANNA PLANT, PENNSYLVANIA', 'MARCH 2024'], ['GOOGLE', 'UP TO 500 MW OF SMALL REACTORS FROM KAIROS POWER', 'OCTOBER 2024'], ['META', 'A CALL FOR 1 TO 4 GW OF NUCLEAR POWER; CLINTON, ILLINOIS, SIGNED', 'DEC 2024 · JUNE 2025']];
-    rows.forEach((r, i) => { const tr = b(11 + i * .8); if (t < tr) return; const y = 790 + i * 44, a = (1 - shut) * pr(t, tr, tr + .2); gl(300, y + 14, lerp(300, 1620, eo(pr(t, tr, tr + .3))), y + 14, C.lav, .4, 1); lab(300, y + 6, r[0], C.mag, a, 18); caption(r[1], 470, y + 6, t, tr + .1, { size: 17, color: C.white, cps: 200, alpha: a }); lab(1620, y + 6, r[2], C.lav, a, 15, 'right'); });
+    rows.forEach((r, i) => { const tr = b(11 + i * .8); if (t < tr) return; const y = 786 + i * 48, a = (1 - shut) * pr(t, tr, tr + .2); gl(300, y + 16, lerp(300, 1620, eo(pr(t, tr, tr + .3))), y + 16, C.lav, .4, 1); lab(300, y + 7, r[0], C.mag, a, 21); caption(r[1], 470, y + 7, t, tr + .1, { size: 20, color: C.white, cps: 220, alpha: a }); lab(1620, y + 7, r[2], C.lav, a, 18, 'right'); });
   }
   band(t, t0 + 1.0, b(7) + .6, 'THREE MILE ISLAND, PENNSYLVANIA · THE NEW ROMANCE NEEDS POWER: THE REACTORS THE LAST ONE LEFT BEHIND', 'CDC PHOTOGRAPH · THE UN INTERVIEWEE WHO REFUSED MARK OVER GENERATIVE AI CITED URANIUM DEMAND; THIS IS WHAT SHE MEANT');
   if (shut > .8) star(960, 540, 6, C.white, 1);

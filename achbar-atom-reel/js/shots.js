@@ -12,7 +12,7 @@ C.mag = '#ff3d9a';
 // after, clock, the restart, p(doom), red flags, title block. The score is the 119 s take looped at bar lines
 // (sfx.py BARMAP) so the music's own changes still land on the scope's sync loss and the p(doom) cards.
 const PLATE = { A: 0, T: bar(4), B: bar(9), M: bar(14), X: bar(19), C: bar(24), N: bar(29), D: bar(34), Y: bar(39), E: bar(44), Z: bar(48), P: bar(53), F: bar(61), G: bar(66) };
-const END = 175.0;
+const END = 172.0;
 const FIG = { A: 'FIG. 0', T: 'FIG. 1', B: 'FIG. 2', M: 'FIG. 3', X: 'FIG. 4', C: 'FIG. 5', N: 'FIG. 6', D: 'FIG. 7', Y: 'FIG. 8', E: 'FIG. 9', Z: 'FIG. 10', P: 'FIG. 11', F: 'FIG. 12', G: 'SHEET 1' };
 const TITLE = 'ROMANCING THE ATOM';
 // chapter numbers, after The Corporation's clinical cards: diagnosis to prognosis
@@ -42,7 +42,7 @@ function leader(x, y, lx, ly, title, sub, t, t0, o = {}) {
     gl(lx, ly, lx + (right ? 40 : -40), ly, o.col || C.white, .85, 1.2);
     const tx = lx + (right ? 52 : -52), al = right ? 'left' : 'right';
     caption(title, right ? tx : tx - meas(title, { size: o.size || 24, weight: 700 }), ly + 8, t, t0 + .35, { size: o.size || 24, weight: 700, color: o.hot ? C.mag : C.white });
-    if (sub) caption(sub, right ? tx : tx - meas(sub, { size: 17 }), ly + 38, t, t0 + .7, { size: 17, color: C.lav, alpha: .85 });
+    if (sub) caption(sub, right ? tx : tx - meas(sub, { size: 20 }), ly + 40, t, t0 + .7, { size: 20, color: C.lav, alpha: .85 });
   }
 }
 // crosshair ring with turning ticks
@@ -69,8 +69,8 @@ function band(t, t0, t1, title, sub) {
   const bk = pr(t, t0, t0 + .35) * (1 - pr(t, t1, t1 + .3)); if (bk <= 0) return;
   X.globalAlpha = .9 * bk; X.fillStyle = C.navy2; X.fillRect(0, 930, W * eo(pr(t, t0, t0 + .35)), 150); X.globalAlpha = 1;
   gl(0, 930, W * eo(pr(t, t0, t0 + .35)), 930, C.cyan, .8 * bk, 1.2);
-  caption(title, 120, 990, t, t0 + .3, { size: 26, weight: 700, color: C.white, alpha: bk, cps: 60 });
-  if (sub) caption(sub, 120, 1030, t, t0 + .5, { size: 17, color: C.lav, alpha: bk, cps: 150 });
+  caption(title, 120, 984, t, t0 + .3, { size: 29, weight: 700, color: C.white, alpha: bk, cps: 60 });
+  if (sub) captionW(sub, 120, 1022, t, t0 + .5, { size: 20, color: C.lav, alpha: bk, cps: 170 }, 1680, 27);
 }
 
 // ---------- 0. the drafting, then the title ----------
@@ -97,13 +97,20 @@ function titleSeq(t) {
   if (k <= 0) return;
   atom(ax, ay, 360, 118, k, t, { pulse: T0, a: 1 - out * .6 });
   if (k > .4) { bracket(ax - 360, ay + 190, ax + 360, ay + 190, C.lav, .6 * pr(t, 15.8, 16.4) * (1 - out), 'ORBIT  r = 360'); bracket(ax + 420, ay - 118, ax + 420, ay + 118, C.lav, .6 * pr(t, 16.1, 16.7) * (1 - out), '236'); }
-  // romance, constructed: a heart built from two circles and two tangents around the nucleus
-  const hk = pr(t, bar(1), bar(1) + 1.0), hx = ax, hy = ay - 8, hr = 34;
+  // romance, constructed: a heart built from two circles and two tangents around the nucleus. It grows, beats on the
+  // beat, and pulses neon outlines out through the orbits (Robin, 7d notes: "a bigger deal")
+  const hk = pr(t, bar(1), bar(1) + 1.2), hx = ax, hy = ay - 8;
   if (hk > 0) {
-    gc(hx - hr * .72, hy - hr * .35, hr * .75, C.lav, .5 * (1 - out), 1, [3, 4]); gc(hx + hr * .72, hy - hr * .35, hr * .75, C.lav, .5 * (1 - out), 1, [3, 4]);
-    const Hh = []; for (let i = 0; i <= 80; i++) { const a = i / 80 * TAU; Hh.push([hx + 16 * Math.pow(Math.sin(a), 3) * hr / 15, hy - (13 * Math.cos(a) - 5 * Math.cos(2 * a) - 2 * Math.cos(3 * a) - Math.cos(4 * a)) * hr / 15]); }
-    path(Hh.slice(0, Math.max(2, Math.round(80 * eo(hk)))), C.mag, 2.4, 1 - out);
-    if (hk >= 1) lab(hx + 70, hy - 62, 'ROMANCE (CONSTRUCTED)', C.mag, .9 * (1 - out), 14);
+    const beatPh = ((t - B0) % BEAT) / BEAT, thump = Math.exp(-7 * beatPh) * (t >= bar(2) ? 1 : 0);
+    const hr = lerp(34, 84, eo(hk)) * (1 + .09 * thump);
+    const heart = (r) => { const P = []; for (let i = 0; i <= 90; i++) { const a = i / 90 * TAU; P.push([hx + 16 * Math.pow(Math.sin(a), 3) * r / 15, hy - (13 * Math.cos(a) - 5 * Math.cos(2 * a) - 2 * Math.cos(3 * a) - Math.cos(4 * a)) * r / 15]); } return P; };
+    gc(hx - hr * .72, hy - hr * .35, hr * .75, C.lav, .45 * (1 - out) * (1 - thump * .5), 1, [3, 4]); gc(hx + hr * .72, hy - hr * .35, hr * .75, C.lav, .45 * (1 - out) * (1 - thump * .5), 1, [3, 4]);
+    // neon rings: one leaves on every beat and fades as it grows
+    if (t >= bar(2)) for (let k = 0; k < 3; k++) { const age = beatPh + k; const sc = 1 + age * .75, al = Math.max(0, .55 - age * .22) * (1 - out); if (al > 0) { X.save(); X.shadowColor = C.mag; X.shadowBlur = 18; path(heart(hr * sc), C.mag, 2.2 - k * .5, al); X.restore(); } }
+    X.save(); X.shadowColor = C.mag; X.shadowBlur = 24 + 30 * thump;
+    path(heart(hr).slice(0, Math.max(2, Math.round(90 * eo(hk)))), C.mag, 3.2, 1 - out);
+    X.restore();
+    if (hk >= 1) lab(hx + hr + 36, hy - hr * .55, 'ROMANCE (CONSTRUCTED)', C.mag, .9 * (1 - out), 15);
   }
   const tsz = fit('ROMANCING', 1240, 200, { fam: FT.d, weight: 900, stretch: 'expanded' });
   kin('ROMANCING', 960, 790, t, T0, { size: tsz, weight: 900, stretch: 'expanded', align: 'center', stag: .045, out: bar(3) + BEAT });
@@ -367,11 +374,11 @@ function plateEFG(t) {
   // screen-space words for the clock
   if (t < PLATE.Z) {
     const k0 = t0 + 5.4, out = PLATE.Z - .45;
-    caption('27 JANUARY 2026 · BULLETIN OF THE ATOMIC SCIENTISTS', 120, 878, t, k0, { size: 20, color: C.lav, alpha: 1 - pr(t, out, out + .3) });
+    caption('27 JANUARY 2026 · BULLETIN OF THE ATOMIC SCIENTISTS', 120, 878, t, k0, { size: 22, color: C.lav, alpha: 1 - pr(t, out, out + .3) });
     const s = fit('85 SECONDS TO MIDNIGHT', 1680, 130, { fam: FT.d, weight: 900, stretch: 'semi-condensed' });
     X.globalAlpha = .95 * pr(t, k0 - .2, k0 + .1) * (1 - pr(t, out, out + .4)); X.fillStyle = C.navy2; X.fillRect(0, 836, W, 244); X.globalAlpha = 1;
     kin('85 SECONDS TO MIDNIGHT', 120, 1000, t, k0 + .25, { size: s, weight: 900, stretch: 'semi-condensed', hot: [0, 2, C.mag], out });
-    caption('THE CLOSEST IT HAS BEEN. THE BULLETIN’S STATEMENT CALLS FOR INTERNATIONAL GUIDELINES ON AI.', 120, 1050, t, k0 + .6, { size: 18, color: C.lav, cps: 150, alpha: 1 - pr(t, out, out + .3) });
+    caption('THE CLOSEST IT HAS BEEN. THE BULLETIN’S STATEMENT CALLS FOR INTERNATIONAL GUIDELINES ON AI.', 120, 1052, t, k0 + .6, { size: 21, color: C.lav, cps: 150, alpha: 1 - pr(t, out, out + .3) });
   }
   // the p(doom) stack's back, fading out over the form it became
   if (t >= PLATE.F && t < PLATE.F + .5) cardStackBack(t, 1 - pr(t, PLATE.F, PLATE.F + .5));
@@ -390,28 +397,28 @@ function formRF(t) {
   const x0 = 300, x1 = 1620, cA = 1260, cB = 1480, rh = 100, ty = y0 + 300;
   lab(x0, y0 + 60, 'FORM RF-1 · RELATIONSHIP ASSESSMENT · EVERY FLAG SOURCED', C.lav, .85, 19);
   const ts = fit('RED FLAGS', 900, 170, { fam: FT.d, weight: 900, stretch: 'expanded' });
-  kin('RED FLAGS', x0 - 6, y0 + 190, t, t0 + .6, { size: ts, weight: 900, stretch: 'expanded', stag: .05 });
-  const hk = pr(t, t0 + .9, t0 + 1.4);
+  kin('RED FLAGS', x0 - 6, y0 + 190, t, t0 + .3, { size: ts, weight: 900, stretch: 'expanded', stag: .05 });
+  const hk = pr(t, t0 + .5, t0 + .9);
   gl(x0, ty - 30, lerp(x0, x1, eo(hk)), ty - 30, C.white, .9, 1.6);
   if (hk > .5) { lab(cA, ty - 48, 'THE ATOM', C.white, .9, 19, 'center'); lab(cB, ty - 48, 'AI', C.white, .9, 19, 'center'); }
   ROWS.forEach(([r, src], i) => {
-    const rt = b(3 + i * 2), y = ty + 56 + i * rh;
+    const rt = b(1.4 + i * 1.3), y = ty + 56 + i * rh;
     if (t < rt - .2) return;
     gl(x0, y + 46, lerp(x0, x1, eo(pr(t, rt - .2, rt + .2))), y + 46, C.lav, .45, 1);
     kin(r, x0, y + 4, t, rt, { size: 46, weight: 800, stretch: 'semi-condensed', style: 'rise' });
-    caption(src, x0, y + 34, t, rt + .2, { size: 16, color: C.lav, cps: 140 });
+    caption(src, x0, y + 36, t, rt + .2, { size: 18, color: C.lav, cps: 170 });
     [cA, cB].forEach((cx, j) => {
       // a red flag runs up its pole in the column, flutters, then folds down into the ticked box
-      const d = j * .18, up = eo(pr(t, rt + .3 + d, rt + .65 + d)), fold = eio(pr(t, rt + 1.25 + d, rt + 1.6 + d));
+      const d = j * .18, up = eo(pr(t, rt + .25 + d, rt + .55 + d)), fold = eio(pr(t, rt + 1.0 + d, rt + 1.3 + d));
       const bx = cx - 26, by = y - 30;
       if (fold < 1) { const pa = pr(t, rt, rt + .2) * (1 - fold); gl(cx - 8, y + 36, cx - 8, lerp(y - 32, y + 36, fold), C.white, .5 * pa, 1.6); flag(cx - 8, y + 36, 68 * (1 - fold), up, t, i * 7 + j * 11, 1 - fold); }
       if (fold > 0) { X.strokeStyle = C.white; X.lineWidth = 2; X.globalAlpha = .9 * fold; X.strokeRect(bx, by, 52 * fold, 52); X.globalAlpha = 1; }
-      const ck = eo(pr(t, rt + 1.6 + d, rt + 1.85 + d));
+      const ck = eo(pr(t, rt + 1.3 + d, rt + 1.55 + d));
       if (ck > 0) { const P = [[bx + 10, by + 28], [bx + 22, by + 41], [bx + 46, by + 8]]; const L1 = Math.hypot(12, 13), L2 = Math.hypot(24, 33), dd = ck * (L1 + L2); const pts = dd <= L1 ? [P[0], [lerp(P[0][0], P[1][0], dd / L1), lerp(P[0][1], P[1][1], dd / L1)]] : [P[0], P[1], [lerp(P[1][0], P[2][0], (dd - L1) / L2), lerp(P[1][1], P[2][1], (dd - L1) / L2)]]; path(pts, RED, 6, 1); }
     });
   });
   // the stamp
-  const sk = b(13) + .1;
+  const sk = b(8) - .2;   // the music comes back here (bar 63 of the take): the stamp lands with it
   if (t > sk) {
     const k = eo(pr(t, sk, sk + .18)); X.save(); X.translate(1260, ty + 600); X.rotate(-.12); X.scale(lerp(1.6, 1, k), lerp(1.6, 1, k)); X.globalAlpha = k;
     X.strokeStyle = C.mag; X.lineWidth = 5; X.strokeRect(-330, -62, 660, 124); X.lineWidth = 2; X.strokeRect(-318, -50, 636, 100);
@@ -445,10 +452,10 @@ function titleBlock(t) {
   kin('ROMANCING THE ATOM', x0 + 34, y + 190, t, t0 + .5, { size: s, weight: 900, stretch: 'expanded', stag: .03 });
   caption('A GRAPHICS TEST FOR MARK ACHBAR’S DOCUMENTARY', x0 + 34, y + 305, t, t0 + .8, { cps: 70, size: 28, color: C.white });
   caption('DRAWN IN CODE BY NOVADIEM · NOVADIEM.COM', x0 + 34, y + 385, t, t0 + 1.2, { cps: 70, size: 27, color: C.cyan, weight: 700 });
-  caption('ARCHIVAL: U.S. DOE, U.S. ARMY, U.S. POST OFFICE, LIBRARY OF CONGRESS, LOS ALAMOS (LA-602) · PUBLIC DOMAIN', x0 + 34, y + 465, t, t0 + 1.5, { size: 18, color: C.lav, cps: 110 });
-  caption('DATA: FAS VIA OUR WORLD IN DATA · BULLETIN OF THE ATOMIC SCIENTISTS · APS NEWS · EVERY QUOTE DATED AND SOURCED', x0 + 34, y + 545, t, t0 + 1.8, { size: 18, color: C.lav, cps: 110 });
-  caption('MUSIC: ATOM DRIVE, TAKE 3 (ELEVENLABS MUSIC), CUT AT THE BARS · SOUND SYNTHESISED IN CODE', x0 + 34, y + 625, t, t0 + 2.1, { size: 18, color: C.lav, cps: 110 });
-  if (t > t0 + 1.3) { atom(1540, y + 470, 110, 36, pr(t, t0 + 1.3, t0 + 2.6), t, { nr: 4 }); lab(1540, y + 640, 'TEST 01 · DRAFT 7 · 2026-10-19', C.lav, .8 * pr(t, t0 + 2.4, t0 + 2.8), 16, 'center'); }
+  caption('ARCHIVAL: U.S. DOE, U.S. ARMY, U.S. POST OFFICE, LIBRARY OF CONGRESS, LOS ALAMOS, NRC, CDC · PUBLIC DOMAIN', x0 + 34, y + 465, t, t0 + 1.5, { size: 20, color: C.lav, cps: 130 });
+  caption('DATA: FAS AND EPOCH AI VIA OUR WORLD IN DATA · BULLETIN OF THE ATOMIC SCIENTISTS · EVERY QUOTE DATED AND SOURCED', x0 + 34, y + 545, t, t0 + 1.8, { size: 20, color: C.lav, cps: 130 });
+  caption('MUSIC: ATOM DRIVE, TAKE 7 (ELEVENLABS MUSIC) · SOUND SYNTHESISED IN CODE FROM THE ANIMATION’S OWN EVENTS', x0 + 34, y + 625, t, t0 + 2.1, { size: 20, color: C.lav, cps: 130 });
+  if (t > t0 + 1.3) { atom(1540, y + 470, 110, 36, pr(t, t0 + 1.3, t0 + 2.6), t, { nr: 4 }); lab(1540, y + 690, 'TEST 01 · DRAFT 7 · 2026-10-19', C.lav, .8 * pr(t, t0 + 2.4, t0 + 2.8), 16, 'center'); }
 }
 
 function buildShots() {

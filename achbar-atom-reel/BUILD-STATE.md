@@ -176,5 +176,15 @@ taint the canvas and `toDataURL` throws.
   the clip re-cut; -16.3 LUFS because the take fades over the title block; flash PASS. Uploaded unlisted
   https://youtu.be/IVTBFG87FjM for Robin's own notes and opened as round 45 on the reel's review page
   (files.novadiem.com/cf8dae3c4effbc6f/, workspace 10 "achbar-reel", Robin is its owner); his studio notes go to
-  studio.novadiem.com/achbar/. Not sent to Mark. 6d (Robin: flags instead of check boxes, yes, but not as bullets too): the bullet flags are gone;
+  studio.novadiem.com/achbar/. Not sent to Mark.
+- Draft 7e (2026-10-19, Robin's ten studio notes on 7d, read from `studio_note` for workspace 10): the title's heart
+  grows to 84 px, beats on the beat and pulses neon rings out through the orbits (#13); the score is 3 dB lower
+  throughout, the voice 4 dB louder and no duck under the tapes (#14); the fields plate's pins and captions come a
+  beat earlier for reading time (#15); the parameter box is taller and the GPT-4 line wraps (#16); the Day After's
+  faint room lines are gone (#18); a legibility pass: bands 29/20 px with the sub wrapped to two lines (`captionW`
+  in js/type.js), leader subs 20, map labels 17/14, restart captions 22 wrapped, schedule 20 on a navy field, Day After
+  30/27/26, cards' small print 14, credits 20 (#17, #19, #20); SOUND FAMILIAR? lands two frames before bar 63, where
+  take-07 comes back after its pause at 151.5 s, the rows rising in the pause (#21); the picture fades to black
+  168.3-171.2 s with the music and the film ends at 172 s (#22). holdcheck 0 short. -14.3 LUFS, peak -1.7 dBFS, flash
+  PASS. Uploaded unlisted https://youtu.be/maSUTV9OljE, round 46 on the reel's page. Not sent to Mark. 6d (Robin: flags instead of check boxes, yes, but not as bullets too): the bullet flags are gone;
   each column flag flies, then folds down into its box and the tick draws in red, with a flap, a fold and a tick.

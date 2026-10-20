@@ -33,6 +33,17 @@ function caption(str, x, y, t, t0, o = {}) {
   const done = s.length >= str.length;
   if (!done || (t - t0 - str.length / (o.cps || 38)) < .5) { if (Math.floor(t * 5) % 2 === 0) { X.fillStyle = o.color || C.white; X.globalAlpha = o.alpha ?? 1; X.fillRect(x + w + 3, y - (o.size || 20) * .8, (o.size || 20) * .55, (o.size || 20) * .9); X.globalAlpha = 1; } }
 }
+// wrap a string into lines no wider than maxW (measured in the caption's font); captionW types them line by line
+function wrapLines(str, maxW, o = {}) {
+  const words = str.split(' '), lines = []; let cur = '';
+  for (const w of words) { const tryS = cur ? cur + ' ' + w : w; if (cur && meas(tryS, o) > maxW) { lines.push(cur); cur = w; } else cur = tryS; }
+  if (cur) lines.push(cur); return lines;
+}
+function captionW(str, x, y, t, t0, o = {}, maxW = 1680, lh) {
+  const lines = wrapLines(str, maxW, o), cps = o.cps || 38, h = lh || (o.size || 20) * 1.3; let tt = t0;
+  lines.forEach((ln, i) => { const lx = o.align === 'center' ? x - meas(ln, o) / 2 : x; caption(ln, lx, y + i * h, t, tt, { ...o, align: 'left' }); tt += ln.length / cps; });
+  return lines.length;
+}
 // letters(str, x, y, o, fn): fn(i, ch) -> {dx, dy, sc, rot, alpha, color}. Returns total width.
 function letters(str, x, y, o, fn) {
   setFont(o.fam || FT.d, o.size, o.weight || 900, o);

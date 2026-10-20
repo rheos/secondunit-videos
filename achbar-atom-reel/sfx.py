@@ -6,7 +6,7 @@
 # played straight; B0 and BEAT below are its measured first downbeat and beat.
 import os, numpy as np, soundfile as sf
 from scipy.signal import butter, sosfilt
-SR = 48000; DUR = 175.0; N = int(SR * DUR); FR = 1 / 24
+SR = 48000; DUR = 172.0; N = int(SR * DUR); FR = 1 / 24
 here = os.path.dirname(os.path.abspath(__file__))
 B0 = 17.211; BEAT = 0.53574; BAR = 4 * BEAT       # js/shots.js
 bar = lambda n: B0 + n * BAR; bt = lambda n: B0 + n * BEAT
@@ -230,14 +230,14 @@ put(PL['P'] + 23 * BEAT, tick(4500, .015), -20)        # the band
 put(PL['P'] + 26.5 * BEAT, slide(.7), -20)             # the stack gathers
 put(PL['P'] + 28 * BEAT - .15, snap(), -18)
 # 8. red flags
-put(PL['F'] + .6, thump(.7), -16)                      # RED FLAGS
+put(PL['F'] + .3, thump(.7), -16)                      # RED FLAGS
 for i in range(5):
-    rt = PL['F'] + (3 + i * 2) * BEAT
+    rt = PL['F'] + (1.4 + i * 1.3) * BEAT
     put(rt, tick(4500, .015), -21, pan=-.2)             # the row rules itself
-    put(rt + .3, flap(), -17, pan=.15); put(rt + .48, flap(), -17, pan=.35)   # the column flags fly
-    put(rt + 1.25, slide(.35), -24, pan=.15); put(rt + 1.43, slide(.35), -24, pan=.35)   # and fold into their boxes
-    put(rt + 1.6, tick(6000, .02), -17, pan=.15); put(rt + 1.78, tick(6000, .02), -17, pan=.35)   # ticked
-put(PL['F'] + 13 * BEAT + .1, thump(.9), -12, pan=.2)  # SOUND FAMILIAR?
+    put(rt + .25, flap(), -17, pan=.15); put(rt + .43, flap(), -17, pan=.35)   # the column flags fly
+    put(rt + 1.0, slide(.3), -24, pan=.15); put(rt + 1.18, slide(.3), -24, pan=.35)   # and fold into their boxes
+    put(rt + 1.3, tick(6000, .02), -17, pan=.15); put(rt + 1.48, tick(6000, .02), -17, pan=.35)   # ticked
+put(PL['F'] + 8 * BEAT - .2, thump(.9), -12, pan=.2)   # SOUND FAMILIAR? lands as the music comes back (bar 63)
 # 9. the title block
 put(PL['G'] - .05, whoosh(1.1), -22)
 put(PL['G'] + .6, pen(1.4), -26)                       # title block ruled
@@ -247,19 +247,15 @@ IKE = os.path.join(here, 'assets', 'ike.wav')
 if os.path.exists(IKE):
     v, vsr = sf.read(IKE); assert vsr == SR
     if v.ndim == 2: v = v.mean(1)
-    put(PL['T'] + .6, v, -5)                                                   # the voice (TAPE_T0 in js/tape-data.js = PL['T'] + .6)
+    put(PL['T'] + .6, v, -1)                                                   # the voice (TAPE_T0 in js/tape-data.js = PL['T'] + .6)
 sf.write(os.path.join(here, 'assets', 'sfx.wav'), out.astype(np.float32), SR)
 take, sr = sf.read(os.path.join(here, 'assets', 'song7.wav')); assert sr == SR   # atom-drive take-07, made to the 66-bar plan: played straight
 edit = take
 song = np.zeros((N, 2)); song[:min(N, len(edit))] = edit[:N]
-if os.path.exists(IKE):                                 # duck the score under the voice
-    d0, d1 = PL['T'] + .4, PL['T'] + .6 + len(v) / SR + .3; g = np.ones(N)
-    i0, i1 = int(d0 * SR), int(d1 * SR); r = int(.4 * SR)
-    g[i0 + r:i1 - r] = 10 ** (-9 / 20); g[i0:i0 + r] = np.linspace(1, 10 ** (-9 / 20), r); g[i1 - r:i1] = np.linspace(10 ** (-9 / 20), 1, r)
-    song *= g[:, None]
+song *= 10 ** (-3 / 20)                                 # the score a touch lower throughout (Robin: no duck under the voice, lift the voice instead)
 print('score edit', round(len(edit) / SR, 2), 's')
 sf.write(os.path.join(here, 'assets', 'score-edit.wav'), song.astype(np.float32), SR)
 m = song + out
-m = m / max(1.0, np.max(np.abs(m)) / .84) * 10 ** (-2.6 / 20)   # about -14 LUFS integrated; ffmpeg's limiter does the rest
+m = m / max(1.0, np.max(np.abs(m)) / .84) * 10 ** (1.4 / 20)   # about -14 LUFS integrated; ffmpeg's limiter does the rest
 sf.write(os.path.join(here, 'assets', 'mix.wav'), m.astype(np.float32), SR)
 print('sfx peak', np.max(np.abs(out)).round(3), 'mix written')
