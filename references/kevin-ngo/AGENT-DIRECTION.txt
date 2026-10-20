@@ -1,0 +1,47 @@
+WHAT WOULD NGO ADD?
+Story and motion direction informed by Kevin Ngo's code-drawn short films (2026)
+Updated 2026-10-20
+
+PURPOSE
+Use Ngo's films as a reference for making a small object carry a whole story, in one locked look, with no model-generated frames. Keep the project's own visual surface unless the brief asks for his (then add STYLE-BRIEF.txt). This is our reading of the posted films and his own "How this was made" notes (works-index.json). It is not written in his voice and does not claim to know how he would direct this film.
+
+CORE PRINCIPLE
+Give the object its own body language, lock one look for the whole film, and let the world do the rest. His films have no narrator and almost no text. A paperclip, a paper boat, a blue orb: one small thing with a face or a path, a world built from things everyone owns, one colour arc, and an ending that rhymes with the opening.
+
+READ THE OBJECT FIRST
+Name the protagonist as an object and write down (a) what it is made of, (b) what it can do with its own body and nothing else, (c) what its job is in the real world. The paperclip is one wire; it can bend; its job is to hold paper. If the brief's protagonist has hands, a voice or a costume, Ngo has little to add; try Mark Von Ulrich (give the idea a body) or Nakamura (a story inside the object) instead.
+
+TRY ONE OR TWO OF THESE MOVES
+1. One body, many tools. Solve every obstacle by re-forming the object's own body (heart, hook, bicycle, spring, wings, clip). The re-forming is the gag; no limbs. (K10 P01)
+2. Pair it with a drifter. Give the active object a passive partner that can only be moved (a sticky note, a goldfish in a boat). The partner's face carries the worry; the active one's inventions stay legible. (K10 P02, K04)
+3. Make the object's job the climax. End with the thing doing what it exists to do, literally (the clip clips the note). Not a metaphor for love; the act itself. (K10 P03)
+4. Repeat one symbol three times at rising cost: a private gesture, an orchestrated one in a wide shot, a permanent one in the last shot. First and last shot rhyme with one visible change. (K10 P04)
+5. Make the room a landscape. Desk edge as cliff, cord as rope, vacuum as beast, window as the way out. Shoot from object height; invent nothing, re-scale by point of view. (K10 P05)
+6. Let the world take their side after the threshold. Threats on the desk (glue, edge, machine), helpers once outside (paper folds itself, flocks form shapes, dawn comes). (K10 P06, K04)
+7. Run one colour arc across the film and pay it off indoors. Night to a thin dawn line behind the character to a full dawn sky to a room lit by it. Time passes without a clock. (K10 P07, K04)
+8. Draw the outside on the paper. Exteriors as ragged marker rectangles with the paper showing; interiors full bleed with walls the colour of the paper. One world, two framings. (K10 P08)
+9. Follow a prop between shots. A cord, a window, a ring around the orb carries the camera from one place to the next; cuts land on a frame grid. (K10 P11 P12, K02)
+10. Journey out, journey home. Leave from one spot under one light, pass through a chain of places, return to the same spot changed. (K04, K10 P09)
+
+REFERENCE ANCHORS (see works-index.json; watch the post before using one)
+K10 Paperclip and sticky note (2026-10-20, 60 s, 1:1): all of P01-P14 in STUDY-paperclip-and-sticky-note.md.
+K04 A paper boat goes on a journey (subscriber post, 2026-10-19): the journey-home chain, day-night-dawn arc, water reflections. Study only.
+K02 Orb and portals (2026-10-13, Blender): one element dead centre for the whole film; places open as circle portals around it; every cut anchored on it.
+K01 UI animations (2026-10-19): the clean vector look (one navy outline, flat fill plus one shade band plus one highlight, spring motion). Already built as our clean-vector test.
+K06 Robot arm GIF (2026-10-15): heavy even navy ink, grainy fills set off their line, pencil cast shadows. Built as our arm look.
+K12 Loop GIFs (Jul-Oct 2026): symmetry turn, Droste zoom, self-resetting machine, maker becomes the made, build then unbuild. See the Canvas loops notes.
+
+HOW MUCH TO ADD
+Accent: one move inside an existing shot (a face on the object, a prop carrying the cut, the paper frame on one exterior).
+Device: rebuild a sequence around one move (the object re-forming to solve three beats; the symbol three times).
+Film: the whole structure (object, drifter, threshold, world helps, colour arc, home). Only for a new short with no song to follow.
+Default to Accent or Device. Our films follow a song; his follow a score he wrote to fit, so his cut grid is his to set and ours is the audio's.
+
+RETURN
+Name the object: material, what its body can do, its real job. Name the drifter if there is one. Give two options; for each: the move and its anchor (K-id, P-id), what the viewer sees in order, which shot the symbol lands in, what carries each cut, and where the colour arc is at that point. Recommend one. Say what in the current shot stays. Flag anything that needs a model-generated frame; his films have none, and that is part of why they read as clean.
+
+CHECK
+Does the object solve things with its own body, or did a hand sneak in? Is there exactly one look from first frame to last (his films never switch style mid-film)? Does the ending rhyme with the opening with one visible change? Can the face be read at 60 px? Does every exterior sit on the same paper, same seed? Is the colour arc monotonic (night to dawn, not back and forth)? Would the beat survive with the sound off? Never commit his frames; never republish subscriber material; and credit him when the manner is his.
+
+WITH THE OTHER PROFILES
+Mark Von Ulrich gives the idea a body. Joel Nakamura puts a story inside an object. Terry Gilliam cuts a respectable thing out and makes it misbehave. Mark Achbar measures the claim in public. Ngo gives the object a body of its own and sends it on a journey in one look. Run Ngo first on anything whose hero is a thing rather than a person.
