@@ -2,13 +2,13 @@
 # visual event it belongs to, then mixed under the score and limited.
 #   viralvision venv python -I sfx.py   ->  assets/sfx.wav, assets/mix.wav (render with AUDIO=assets/mix.wav)
 # Event times mirror js/shots.js, js/plates6.js and js/bomb.js (same beat grid constants); change them together.
-# The score (draft 7c): score-library atom-drive take-05 (assets/song7.wav, Music v2.5 on the 66-bar plan, limited),
+# The score (draft 7c): score-library atom-drive take-07 (assets/song7.wav, Music v2.5 on the 66-bar plan at 112 BPM, limited, faded from 163 s),
 # played straight; B0 and BEAT below are its measured first downbeat and beat.
 import os, numpy as np, soundfile as sf
 from scipy.signal import butter, sosfilt
 SR = 48000; DUR = 175.0; N = int(SR * DUR); FR = 1 / 24
 here = os.path.dirname(os.path.abspath(__file__))
-B0 = 17.356; BEAT = 0.54056; BAR = 4 * BEAT       # js/shots.js
+B0 = 17.211; BEAT = 0.53574; BAR = 4 * BEAT       # js/shots.js
 bar = lambda n: B0 + n * BAR; bt = lambda n: B0 + n * BEAT
 PL = dict(A=0, T=bar(4), B=bar(9), M=bar(14), X=bar(19), C=bar(24), N=bar(29), D=bar(34), Y=bar(39), E=bar(44), Z=bar(48), P=bar(53), F=bar(61), G=bar(66))
 # the score: the 119 s take looped at bar lines so its changes at bars 24 and 32 land on the sync loss (film bar 35)
@@ -249,7 +249,7 @@ if os.path.exists(IKE):
     if v.ndim == 2: v = v.mean(1)
     put(PL['T'] + .6, v, -5)                                                   # the voice (TAPE_T0 in js/tape-data.js = PL['T'] + .6)
 sf.write(os.path.join(here, 'assets', 'sfx.wav'), out.astype(np.float32), SR)
-take, sr = sf.read(os.path.join(here, 'assets', 'song7.wav')); assert sr == SR   # atom-drive take-05, made to the 66-bar plan: played straight
+take, sr = sf.read(os.path.join(here, 'assets', 'song7.wav')); assert sr == SR   # atom-drive take-07, made to the 66-bar plan: played straight
 edit = take
 song = np.zeros((N, 2)); song[:min(N, len(edit))] = edit[:N]
 if os.path.exists(IKE):                                 # duck the score under the voice

@@ -4,7 +4,7 @@
 // The three plates added in draft 6 (the metaphors, the machine, p(doom)) live in js/plates6.js.
 // Facts on screen, with sources: BUILD-STATE.md.
 'use strict';
-const B0 = 17.356, BEAT = 0.54056, BAR = 4 * BEAT, HB = BEAT / 2;
+const B0 = 17.211, BEAT = 0.53574, BAR = 4 * BEAT, HB = BEAT / 2;
 const bar = (n) => B0 + n * BAR, bt = (n) => B0 + n * BEAT;
 const pr = (t, a, b) => cl((t - a) / (b - a));
 C.mag = '#ff3d9a';
