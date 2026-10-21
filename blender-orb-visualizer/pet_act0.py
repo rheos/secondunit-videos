@@ -151,7 +151,7 @@ show(W.HLCD, F0, False); show(W.HLCD, sec(.6), True)               # black, then
 BG = W.scene.world.node_tree.nodes["Background"].inputs["Strength"]   # the close is dark: no sky until the wide
 BG.default_value = 0.0; BG.keyframe_insert("default_value", frame=F0); BG.keyframe_insert("default_value", frame=sec(5.5) - 1)
 BG.default_value = .6; BG.keyframe_insert("default_value", frame=sec(5.5))
-show(W.blanket, F0, True); show(W.blanket, sec(16.0), False)       # kicked off across the cut
+show(W.blanket, F0, False)                     # no blanket (Robin, d1: it read as a board he lay inside)
 
 # ---------- cameras ----------
 cS0 = shot_camera("a0_egg", W.hp((.05, -4.4, .2)), W.hp((0, 0, .35)), 50)

@@ -57,7 +57,7 @@ def render(sid, t):
 
 # A, 8.0: blue dawn. He's asleep on the couch with the toy on his chest; the dog at the window watches the park.
 def still_A():
-    reset(); lights("dawn", sun=(.9, -1.0, -.35)); vis(W.blanket, True)
+    reset(); lights("dawn", sun=(.9, -1.0, -.35))
     W.pose_man(x=1.0, y=2.45, z=.68, pitch=-90, hd=0, pz=.55, hip=0, knee=12, lean=0, np=-8, ny=-20,
                shL=(-10, -40), shR=(10, -40), elL=-110, elR=-110, blink=.12)
     chest = MAN["torso"].matrix_world @ Vector((0, 0, .38))
