@@ -1,0 +1,34 @@
+slug: portrait-hall
+title: Hall of moving portraits
+note: >-
+  A hall of gilt frames on an oxblood damask wall. Each frame holds a two-ink halftone soul-sleeve photograph,
+  and only the pictures move, like the moving portraits in Harry Potter. Figures cross from frame to frame.
+used: No One's Coming to the Rescue stills, Bob Wiseman
+cost: free
+group: code
+order: 245
+clip: null
+tall: false
+status: test
+engine: pil
+project: bobwiseman-no-ones-coming-to-the-rescue
+code:
+  path: bobwiseman-no-ones-coming-to-the-rescue/tools/stills.py
+  flag: null
+  page: null
+  note: Key stills only so far; the animated page is not built.
+rules:
+  - Nothing outside the frames moves except a slow dolly down the hall
+  - "Photos are two-ink halftone: ink black plus one ink per portrait (teal, mustard, violet)"
+  - Figures are invented, faceless, back views and silhouettes; no likeness of anyone
+  - Harm is shown by objects (cracked glass, a crooked frame), never a blow
+  - Emergency red only in the 911 verse and the refrains
+  - Plaques stay blank brass until the refrain lights them
+palette: ["#5c161c", "#c49848", "#181214", "#ece0c4", "#267074", "#ce9828", "#624080", "#ce241e"]
+reference: Harry Potter moving portraits (Bob's hint); 1960s soul record sleeves
+proof:
+  renders:
+    - bobwiseman-no-ones-coming-to-the-rescue/out/stills/nocr_look_still1.png
+  pr: []
+  youtube: []
+verdict: null
