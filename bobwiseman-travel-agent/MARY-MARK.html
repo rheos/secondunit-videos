@@ -37,6 +37,7 @@ td.t{font-variant-numeric:tabular-nums;white-space:nowrap;cursor:pointer;color:v
 td.s{font-family:ui-monospace,Menlo,monospace;font-size:12px;color:var(--dim)}
 td input{width:100%;font:inherit;color:var(--fg);background:#22302f;border:1px solid #3d4a48;border-radius:4px;padding:4px 6px}
 td select{padding:4px 6px;font-size:13px}
+button.del{padding:3px 9px;font-size:13px}button.del:hover{border-color:#d9573f;color:#ffb3a3}
 tr.cur td{background:#2a2a1c}
 .now{color:var(--rose);font-size:12px}.hole{color:var(--burn);font-size:12px}
 #msg{color:var(--gold);font-size:14px;min-height:20px}
@@ -57,7 +58,7 @@ tr.cur td{background:#2a2a1c}
       <b>X</b> hold = erase while it plays<br>
       <b>Enter</b> or <b>K</b> = play / pause<br>
       <b>← →</b> 2 s, with <b>Shift</b> 10 s<br>
-      <b>Delete</b> = remove the picked mark<br>
+      <b>Delete</b> = remove the picked mark (click a bar in the close-up strip to pick it), or use Delete in its table row<br>
       <b>Z</b> = undo<br>
       Close-up strip: drag a bar's end to move it, drag on the empty gold track to draw one, click a bar to pick it.
     </div>
@@ -84,7 +85,7 @@ tr.cur td{background:#2a2a1c}
   <span>Top: whole song. Bottom: 16 s around the playhead.</span>
 </div>
 
-<table><thead><tr><th>Mark</th><th>Length</th><th>Shots on screen</th><th>She is…</th><th style="width:34%">Idea for this spot</th></tr></thead><tbody id="rows"></tbody></table>
+<table><thead><tr><th>Mark</th><th>Length</th><th>Shots on screen</th><th>She is…</th><th style="width:34%">Idea for this spot</th><th></th></tr></thead><tbody id="rows"></tbody></table>
 </main>
 
 <script>
@@ -184,10 +185,11 @@ function table() {
     const tr = document.createElement('tr'), n = noteFor(a, b) || {}, film = IN_FILM.some(([p, r]) => r > a && p < b), hl = holeIn(a, b);
     tr.innerHTML = `<td class="t">${fmt(a)} – ${fmt(b)}</td><td>${(b - a).toFixed(1)} s</td>`
       + `<td class="s">${shotsIn(a, b).join(' · ')}${film ? ' <span class="now">(Mary in film)</span>' : ''}${hl > 0 ? ` <span class="hole">(holes ${hl > .5 ? 'big' : 'small'})</span>` : ''}</td>`
-      + `<td><select>${WAYS.map(([k, l]) => `<option value="${k}">${l}</option>`).join('')}</select></td><td><input placeholder="what could she do here?"></td>`;
+      + `<td><select>${WAYS.map(([k, l]) => `<option value="${k}">${l}</option>`).join('')}</select></td><td><input placeholder="what could she do here?"></td><td><button class="del" title="delete this mark">Delete</button></td>`;
     tr.querySelector('.t').onclick = () => { v.currentTime = Math.max(0, a - 1); sel = i; };
     const se = tr.querySelector('select'); se.value = n.way || ''; se.onchange = () => setNote(a, b, 'way', se.value);
     const inp = tr.querySelector('input'); inp.value = n.text || ''; inp.onchange = () => setNote(a, b, 'text', inp.value.trim());
+    tr.querySelector('.del').onclick = () => { snapshot(); marks.splice(i, 1); sel = -1; tidy(); msg.textContent = 'Deleted ' + fmt(a) + '. Z or Undo brings it back.'; };
     tb.appendChild(tr);
   });
 }
