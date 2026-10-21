@@ -1,0 +1,146 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #b6 { position: absolute; inset: 0; }
+      </style>
+      <div data-hf-id="hf-rc70" id="b6" data-composition-id="b6" data-width="1920" data-height="1080">
+        <div data-hf-id="hf-rc71" id="b6-content" class="layer">
+          <div data-hf-id="hf-rc72" id="b6-lab-l" class="plate-label left">FIG. VI</div>
+          <div data-hf-id="hf-rc73" id="b6-lab-r" class="plate-label right">THE APPARATUS OF RECALL</div>
+          <svg data-hf-id="hf-rc74" id="b6-svg" class="full" viewBox="0 0 1920 1080"></svg>
+          <div data-hf-id="hf-rc75" class="statement">
+            <span data-hf-id="hf-rc76" id="b6-s1" class="phrase">By the word and by the sense,</span>
+            <span data-hf-id="hf-rc77" id="b6-s2" class="phrase accent">ranked as one.</span>
+          </div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text } = BP;
+          const tl = gsap.timeline({ paused: true });
+          const S = 80.72;
+          const K = BP.kit(tl, S, "VI");
+          const R = (t) => K.R(t);
+          const W = (w, n) => R(VO.w("VI", w, n));
+          const svg = K.$("b6-svg");
+
+          // a stage: a box, a label and a line under it, plus its own drawing (icon)
+          const stage = (x, y, w, h, label, sub) => {
+            const g = el("g", {}, svg);
+            const box = el("rect", { class: "ln line-strong", x, y, width: w, height: h }, g);
+            const t = text(label, { class: "lab sm", x: x + w / 2, y: y + h + 34, "text-anchor": "middle" }, g);
+            const s = sub ? text(sub, { class: "ty sm", x: x + w / 2, y: y + h + 62, "text-anchor": "middle" }, g) : null;
+            return { g, box, t, s, icon: el("g", {}, g) };
+          };
+
+          // the question (made up)
+          const q = el("rect", { class: "ln line-strong fill-raised", x: 140, y: 150, width: 520, height: 60 }, svg);
+          const qT = text("Which Postgres is staging on?", { class: "ty", x: 162, y: 189 }, svg);
+
+          const cab = stage(140, 290, 220, 170, "THE CABINET");
+          [0, 1, 2].forEach((i) => {
+            el("rect", { class: "ln thin line", x: 158, y: 304 + i * 52, width: 184, height: 42 }, cab.icon);
+            el("path", { class: "ln line", d: `M232 ${334 + i * 52}q18 10 36 0` }, cab.icon);
+          });
+          const gate = stage(420, 290, 200, 170, "THE GATE", "yours, and current");
+          for (let k = 0; k < 6; k++) el("path", { class: "ln line", d: `M${446 + k * 30} 304V446` }, gate.icon);
+          el("path", { class: "ln line", d: "M432 340H608M432 410H608" }, gate.icon);
+          const aside = el("rect", { class: "ln thin line-strong", x: 420, y: 570, width: 200, height: 120 }, svg);
+          const asideT = text("SET ASIDE", { class: "lab sm", x: 520, y: 726, "text-anchor": "middle" }, svg);
+          const chute = el("path", { class: "ln thin line", d: "M520 460V570" }, svg);
+          const chipA = text("NOT YOURS", { class: "cm on", x: 520, y: 612, "text-anchor": "middle" }, svg);
+          const chipB = text("RETIRED", { class: "cm on", x: 520, y: 652, "text-anchor": "middle" }, svg);
+
+          const word = stage(690, 200, 240, 130, "BY THE WORD", "");
+          for (let r = 0; r < 3; r++) for (let c = 0; c < 6; c++) el("rect", { class: "ln thin line", x: 706 + c * 36, y: 214 + r * 36, width: 32, height: 32 }, word.icon);
+          ["s", "t", "a", "g", "e"].forEach((ch, i) => text(ch, { class: "cb", x: 716 + i * 36, y: 237 }, word.icon));
+          const sense = stage(690, 450, 240, 130, "BY THE SENSE", "");
+          const comp = el("circle", { class: "ln line", cx: 810, cy: 515, r: 52 }, sense.icon);
+          el("path", { class: "ln thin line", d: "M810 455V575M750 515H870" }, sense.icon);
+          const needle = el("path", { class: "ln line-strong", d: "M810 515L846 482", style: "stroke-width: 3" }, sense.icon);
+          const comb = stage(1010, 300, 230, 170, "COMBINED", "1 / (60 + rank)");
+          el("path", { class: "ln line", d: "M1040 340H1210M1040 385H1180M1040 430H1150" }, comb.icon);
+          const insp = stage(1310, 300, 200, 170, "EVERY SOURCE", "inspected");
+          el("circle", { class: "ln line-strong", cx: 1400, cy: 370, r: 42 }, insp.icon);
+          el("path", { class: "ln line-strong", d: "M1430 400L1470 440", style: "stroke-width: 6" }, insp.icon);
+          const read = stage(1580, 300, 220, 170, "A SECOND READER", "on the premises");
+          el("circle", { class: "ln line-strong", cx: 1650, cy: 380, r: 28 }, read.icon);
+          el("circle", { class: "ln line-strong", cx: 1730, cy: 380, r: 28 }, read.icon);
+          el("path", { class: "ln line-strong", d: "M1678 380q12 -12 24 0M1622 380H1600" }, read.icon);
+
+          const pipe = el("path", { class: "ln line", d: "M360 375H420M620 375H655V265H690M655 375V515H690M930 265H970V385H1010M930 515H970V385M1240 385H1310M1510 385H1580" }, svg);
+          const best = el("rect", { class: "ln line-strong fill-raised", x: 1140, y: 590, width: 660, height: 150 }, svg);
+          const bestT = text("BEST FIRST", { class: "lab sm", x: 1160, y: 624 }, svg);
+          const down = el("path", { class: "ln line-strong", d: "M1690 548V588" }, svg);
+          const L = ["1  Staging runs Postgres 18.", "2  Staging deploys from main.", "3  Production runs Postgres 16."].map((s, i) => text(s, { class: "cb", x: 1160, y: 662 + i * 30 }, svg));
+
+          // chips riding the pipe
+          const chip = (d) => {
+            const g = el("g", { opacity: 0 }, svg);
+            el("rect", { class: "ln line-strong fill-raised", x: -22, y: -15, width: 44, height: 30 }, g);
+            el("path", { class: "ln thin line", d: "M-12 -4h24M-12 5h16" }, g);
+            return { g, path: el("path", { d, fill: "none", stroke: "none" }, svg) };
+          };
+          const c1 = chip("M360 375H655V265H930H970V385H1240H1580H1690V525");
+          const c2 = chip("M360 375H655V515H930H970V385H1010");
+          const cOut = chip("M520 375V600");
+
+          K.fade(K.$("b6-lab-l"), R(81.5), 0.4);
+          K.fade(K.$("b6-lab-r"), R(81.5), 0.4);
+          K.stamp(q, W("ask") - 0.2, { origin: "400 180", sound: "card", from: 1.12 });
+          K.typed(qT, W("question") - 0.1, { cps: 36 });
+          const show = (st, at) => {
+            K.draw(st.box, at, 0.5);
+            K.fade(st.icon, at + 0.2, 0.35);
+            K.typed(st.t, at + 0.3, { cps: 36, cursor: false });
+            if (st.s && st.s.textContent) K.typed(st.s, at + 0.7, { cps: 36, cursor: false });
+          };
+          show(cab, W("first") - 0.6);
+          show(gate, W("sets"));
+          K.draw(pipe, W("sets"), 3.0, "none", false);
+          [chute, aside].forEach((n, i) => K.draw(n, W("aside") + i * 0.1, 0.4));
+          K.typed(asideT, W("aside") + 0.3, { cps: 36, cursor: false });
+          K.fade(cOut.g, W("read") - 0.4, 0.1);
+          K.travel(cOut.g, cOut.path, W("read") - 0.4, 0.45, "power2.in");
+          tl.to(cOut.g, { opacity: 0, duration: 0.1 }, W("read") + 0.05);
+          K.stamp(chipA, W("read"), { origin: "520 606", sound: "card" });
+          K.stamp(chipB, W("retired"), { origin: "520 646", sound: "card" });
+          show(word, W("words") - 0.5);
+          show(sense, W("sense") - 0.5);
+          K.move(needle, W("sense"), 1.2, { rotation: 0, svgOrigin: "810 515" }, { rotation: 230, svgOrigin: "810 515" }, { ease: "back.out(1.2)", sound: "crank" });
+          [c1, c2].forEach((c, i) => {
+            K.fade(c.g, W("searches") + i * 0.2, 0.1);
+          });
+          K.travel(c1.g, c1.path, W("searches"), 8.4, "none");
+          K.travel(c2.g, c2.path, W("searches") + 0.2, 3.3, "none");
+          tl.to(c2.g, { opacity: 0, duration: 0.1 }, W("searches") + 3.5);
+          show(comb, W("combines") - 0.3);
+          show(insp, W("inspects") - 0.3);
+          K.sfx("ping", W("source"));
+          show(read, W("second") - 0.3);
+          K.pulse(read.icon, W("premises"), 2, 0.35, 0.06, { origin: "1690 380" });
+          K.draw(down, W("puts") - 0.2, 0.3);
+          tl.to(c1.g, { opacity: 0, duration: 0.15 }, W("puts") + 0.1);
+          K.fade(best, W("puts"), 0.3);
+          K.draw(best, W("puts"), 0.5);
+          K.typed(bestT, W("puts") + 0.1, { cps: 36, cursor: false });
+          L.forEach((l, i) => K.typed(l, W("puts") + 0.2 + i * 0.25, { cps: 90, cursor: false }));
+          K.slam(K.$("b6-s1"), W("combines") - 0.2, { stagger: 0.03 });
+          K.slam(K.$("b6-s2"), W("two") + 0.2, { stagger: 0.04 });
+
+          // hand-off: the best line lifts out and carries on into plate VII
+          const out = R(100.2);
+          K.sfx("out", out);
+          tl.to(K.$("b6-content"), { opacity: 0, duration: 0.45 }, out);
+          window.__timelines["b6"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>
