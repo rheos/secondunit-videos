@@ -1,0 +1,7 @@
+{
+  "name": "indieagent-cable-and-stub",
+  "private": true,
+  "type": "module",
+  "description": "IndieAgent object short in Kevin Ngo manner: a guitar cable and a ticket stub, every frame canvas code.",
+  "devDependencies": { "playwright": "^1.55.0" }
+}
