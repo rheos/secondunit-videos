@@ -13,7 +13,7 @@ per film. First used by `novadiem-rheostream`.
 - Plate labels top-left and top-right. One accent phrase per plate, never more.
 - A progress bar along the bottom (stations at score times) and an optional sheet counter.
 - Cues are written in score seconds and snapped to the score's beat grid. Draws ease `power2.out` or
-  `none`. No bounce, no glow, no gradients, no characters.
+  `none`. No glow, no gradients, no characters. Since the engagement layer (below) a stamp or a set letter may settle with a small overshoot.
 
 ## What a theme sets
 
@@ -29,6 +29,7 @@ mono). The themes so far:
 | `orchardly` | navy and canopy green on the brand's pale day surface, navy field with fruit orange, Bricolage Grotesque | novadiem-orchardly |
 | `foaf` | navy ink and FOAF blue on a cool pale sheet, pink accent, navy field, Red Hat Display | novadiem-foaf-client |
 | `cyanotype` | pale line work on Prussian blue (a classic blueprint), amber accent, cream field, Space Grotesk display, JetBrains Mono labels | novadiem-self-hosting |
+| `patent` | an Edison-era patent office: cyanotype sheets, a cream broadsheet field in ink and oxblood (after recallatron.com), IM Fell English display and labels, Special Elite typewriter captions | novadiem-recallatron (draft 2) |
 
 Add a theme by copying one file in `themes/` and changing the tokens.
 
@@ -70,3 +71,45 @@ HyperFrames has no downscale flag, so this is how a draft gets rendered small. O
 
 Edit the kit here, then re-run `sync.sh` for each project that should pick up the change. A
 project's `kit/` copy is never edited by hand.
+
+## Making it engaging: motion, type and sound (2026-10-21)
+
+Learned from the Romancing the Atom reel (`achbar-atom-reel/`). Robin: the point is "how much more engaging
+it is.. the transitions.. the sound.. the typography.. animations", in one style held for the whole film.
+`kit(tl, slotStart, plate)` now has, beside `draw`/`fade`/`reveal`/`out`/`travel`:
+
+| Helper | What it does |
+|---|---|
+| `typed(node, at, {cps, cursor})` | a typewriter caption, HTML or SVG text: characters appear one by one, a `_` cursor blinks while typing. Returns the time the last character lands |
+| `slam(node, at, {stagger})` | set type (HTML only): each letter drops into place, a little large and turned, and settles |
+| `drop(node, at)` | the letters fall away in reading order (HTML only); the exit for slam or typed text |
+| `stamp(node, at, {origin, sound})` | a rubber stamp or a filed card: big and faint to full size with a small overshoot |
+| `move(node, at, dur, from, to, {ease, sound})` | any explicit `fromTo` move, with an optional cue |
+| `camera(layer, at, dur, from, to)` | a push-in or travel of a whole plate layer, for hand-offs |
+| `pulse(node, at, n, gap, amount)` | beat-locked swells |
+| `sfx(kind, at, extra)` | a cue with no animation (a bell, a tick) |
+
+Every helper reports its event in score seconds to `BP.CUES` (typed characters, set letters, pen strokes, stamps,
+cards, slides, whooshes, plate exits). Nothing plays from the page. The sound is built offline:
+
+```bash
+cd tools/blueprint-kit && npm install                       # once (playwright-core, uses the installed Chrome)
+node tools/blueprint-kit/cues.mjs <project>                 # -> <project>/cues.json
+python3 tools/blueprint-kit/holdcheck.py <project>          # every plate holds 1.5 s after its last text
+<viralvision venv python> -I tools/blueprint-kit/sfx.py <project> [--voice _in/voice.wav] [--end SEC] [--score-db -15]
+                                                            # -> _in/sfx.wav and _in/mix.wav (score ducked under the voice)
+```
+
+The root `<audio>` then points at `_in/mix.wav`. Re-run all three after any timing change, so the sound can't
+drift from the picture. `sfx.py` synthesises an office of the period (typewriter keys, set type, a steel pen,
+rubber stamp, index card, card drawer, desk bell, pneumatic tube, clockwork); add a kind there and report it with
+`K.sfx`. A plate that leaves by a move rather than `out` should call `K.sfx("out", t)` so holdcheck knows.
+
+Rules learned on the first film: transforms don't apply to SVG `<tspan>`, so letters that slam or drop must be
+HTML; give each slot an early start (0.6 s) and late end so one plate can hand an element to the next; don't
+animate `scale` with `svgOrigin` twice on one SVG group with `x` moves in between (GSAP compensates the origin
+and the group drifts): move with `x`/`y` only, or wrap it.
+
+**Narration.** When a film is narrated, the voice is the clock: record per plate, time the words with
+faster-whisper, place them, and cue plates on words (`novadiem-recallatron/vo/`: `vo.py`, `align.py`,
+`place.py` -> `vo/words.js`, `VO.w(plate, word)`).
