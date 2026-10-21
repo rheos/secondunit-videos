@@ -24,6 +24,9 @@ function buhMouth(run, t) {
   if (!isFinite(next)) return { open: .6 * Math.min(1, since / .05), press: 0, pop }; // after the last b: hangs part-open
   const g = next - prev, shut = Math.min(.07, Math.max(.043, g * .3)); // at least one 24 fps frame shut before each b
   if (t >= next - shut) return { open: 0, press: 1, pop };
+  // draft 31: between phrases (Bob: "the buh buh buh finishes each time prior to the chatter") the last b of the phrase
+  // pops open once and the lips close and rest, still, until the next phrase's first b
+  if (g > .4) return { open: since < .05 ? since / .05 : Math.max(0, 1 - (since - .05) / .12), press: 0, pop };
   const rest = g - shut, rise = Math.min(.03, rest * .3), fall = Math.min(.05, rest * .4), amp = Math.min(1, Math.max(.85, g / .2));
   let open = amp * Math.min(1, since / rise);
   const fs = next - shut - fall; if (t > fs) open *= 1 - smooth01((t - fs) / fall);

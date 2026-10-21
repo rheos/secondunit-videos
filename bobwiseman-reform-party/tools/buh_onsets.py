@@ -19,7 +19,12 @@ marks = json.load(open(sys.argv[sys.argv.index('--marks') + 1])) if '--marks' in
 SR, HOP = 22050, 64
 FR = SR / HOP
 # run starts (the draft 25 times) and ends (Robin by ear: draft 28, and the 2:52 run on to 3:05 in draft 30)
-RUNS = [(37.57, 55.1), (95.47, 113.0), (171.97, 185.0)]
+RUNS = [(37.57, 46.4), (95.47, 113.9), (171.97, 185.6)]  # runs 2 and 3 end on a whole phrase (Robin heard about 1:53 and 3:05)
+# draft 31 (Bob on d29: "the buh buh buh finishes each time prior to the chatter. finish @39 and @41 and @43 and @46"):
+# the buhs are phrases, one per bar: 11 sixteenths on (Bob's "11 times"), then 5 off. The run 1 phrases end at 39.1,
+# 41.5, 44.0 and 46.4 on that grid, which is where Bob hears them finish; the stems' 16th-note periodicity drops out in
+# the same places. Bob's four finishes also end run 1 at 0:46 (draft 28's 0:55 was a guess).
+ON, BAR = 11, 16
 SNAP = .02
 
 def env_of(path):
@@ -42,8 +47,8 @@ for a, z in RUNS:
     if marks:  # Robin's held spans; a hold starts a touch late, so a slot up to 0.1 s before it counts
         ons += [snap(s) for s in slots if any(m0 - .1 <= s <= m1 for m0, m1 in marks) and a - 3 <= s <= z + 3]
     else:
-        s0 = slots[np.argmin(abs(slots - a))]; s1 = slots[np.argmin(abs(slots - z))]
-        ons += [snap(s) for s in slots[(slots >= s0) & (slots <= s1)]]
+        i0 = int(np.argmin(abs(slots - a))); i1 = int(np.argmin(abs(slots - z)))
+        ons += [snap(slots[i]) for i in range(i0, i1 + 1) if (i - i0) % BAR < ON]
 ons = sorted(round(t, 3) for t in ons)
 d = np.diff(ons); d = d[d < 1]
 print(f'{len(ons)} clacks, spacing median {np.median(d):.3f} s, min {d.min():.3f} s')
