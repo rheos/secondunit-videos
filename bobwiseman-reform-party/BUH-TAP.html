@@ -14,35 +14,38 @@ output{font-variant-numeric:tabular-nums}#done{color:var(--gold)}
 </style>
 <main>
 <h1>Hold while the backing voice goes buh buh buh</h1>
-<p>Jump to a run, press Play, then hold the space bar (or hold the box with the mouse) for as long as you hear the buh buh buh, and let go whenever it stops, even for a moment. The teeth chatter on every 16th note inside what you hold and stay shut where you let go, snapped to the real onsets afterwards. Mark it under Bob's lines too. Three runs: about 0:37-0:55, 1:35-1:53 and 2:52-3:00.</p>
-<nav><button id="play">Play</button><button id="back">Back 5 s</button><button id="redo">Clear marks</button><button data-j="35">Run 1 (0:35)</button><button data-j="93">Run 2 (1:33)</button><button data-j="170">Run 3 (2:50)</button>
+<p>Pick a run, press Play, and hold the space bar (or hold the box with the mouse) for as long as you hear buh buh buh. Let go whenever it stops, even for a moment, and hold again when it comes back. Each run plays its own stretch of the song: run 1 from 0:35, run 2 from 1:33, run 3 from 2:50, about 22 seconds each. Keep going past where you think it ends so the last phrase is caught. Picking a run again clears that run's marks and replays it.</p>
+<nav><button data-r="1" data-j="35">Run 1 (0:35)</button><button data-r="2" data-j="93">Run 2 (1:33)</button><button data-r="3" data-j="170">Run 3 (2:50)</button><button id="play">Play</button>
 <label>Speed <select id="speed"><option value="1">1×</option><option value="0.75">0.75×</option></select></label>
-<button id="copy">Copy marks</button> <output id="time">0.0 s</output> <span id="done"></span></nav>
-<div id="pad">hold space while you hear buh buh buh</div>
-<canvas id="tl" width="2000" height="90" aria-label="Song timeline with the marked buh passages"></canvas>
-<audio id="a" src="assets/song.wav" preload="auto"></audio>
+<button id="copy">Copy marks</button> <output id="time">-</output> <span id="done"></span></nav>
+<div id="pad">pick a run, then hold space while you hear buh buh buh</div>
+<canvas id="tl" width="2000" height="90" aria-label="The run's timeline with the marked buh passages"></canvas>
+<pre id="list"></pre>
+<audio id="a" preload="auto"></audio>
 </main>
 <script>
-const a=document.getElementById('a'),pad=document.getElementById('pad'),tl=document.getElementById('tl'),g=tl.getContext('2d');
-window.marks=[];let down=null;
-try{const s=JSON.parse(localStorage.getItem('rp-buh-marks')||'[]');if(Array.isArray(s))window.marks=s}catch{}
-const save=()=>{try{localStorage.setItem('rp-buh-marks',JSON.stringify(window.marks))}catch{}};
-function press(){if(down!==null||a.paused)return;down=a.currentTime;pad.classList.add('on')}
-function release(){if(down===null)return;const end=Math.max(a.currentTime,down+.05);window.marks.push([+down.toFixed(3),+end.toFixed(3)]);window.marks.sort((x,y)=>x[0]-y[0]);down=null;pad.classList.remove('on');save()}
+// draft 31 tap pass: each run is its own clip (assets/runN.mp3, cut at the run's start), because the local server
+// can't seek in one long file; marks are stored in song time (clip time + the run's start)
+const a=document.getElementById('a'),pad=document.getElementById('pad'),tl=document.getElementById('tl'),g=tl.getContext('2d'),list=document.getElementById('list');
+window.marks=[];let down=null,off=0,run=0;const T=()=>off+a.currentTime;
+try{const s=JSON.parse(localStorage.getItem('rp-buh-marks-d31')||'[]');if(Array.isArray(s))window.marks=s}catch{}
+const show=()=>{list.textContent=[1,2,3].map(r=>{const o=[35,93,170][r-1],m=window.marks.filter(x=>x[0]>=o-1&&x[0]<o+30);return `Run ${r}: ${m.length} holds  `+m.map(x=>x[0].toFixed(2)+'-'+x[1].toFixed(2)).join('  ')}).join('\n')};
+const save=()=>{try{localStorage.setItem('rp-buh-marks-d31',JSON.stringify(window.marks))}catch{};show()};show();
+function press(){if(down!==null||a.paused||!run)return;down=T();pad.classList.add('on')}
+function release(){if(down===null)return;const end=Math.max(T(),down+.05);window.marks.push([+down.toFixed(3),+end.toFixed(3)]);window.marks.sort((x,y)=>x[0]-y[0]);down=null;pad.classList.remove('on');save()}
 addEventListener('keydown',e=>{if(e.code==='Space'){e.preventDefault();if(!e.repeat)press()}});
 addEventListener('keyup',e=>{if(e.code==='Space'){e.preventDefault();release()}});
 pad.addEventListener('pointerdown',press);addEventListener('pointerup',release);
-document.getElementById('play').onclick=e=>{e.target.blur();if(a.paused){a.play();e.target.textContent='Pause'}else{release();a.pause();e.target.textContent='Play'}};
-document.getElementById('back').onclick=e=>{e.target.blur();release();const t=Math.max(0,a.currentTime-5);window.marks=window.marks.filter(m=>m[0]<t);a.currentTime=t;save()};
-document.getElementById('redo').onclick=e=>{e.target.blur();release();window.marks=[];save()};
-document.querySelectorAll('[data-j]').forEach(b=>b.onclick=e=>{e.target.blur();release();const t=+b.dataset.j;window.marks=window.marks.filter(m=>m[1]<t-.5||m[0]>t+30);a.currentTime=t;save()});
+const playBtn=document.getElementById('play');
+playBtn.onclick=e=>{e.target.blur();if(!run)return;if(a.paused){a.play();playBtn.textContent='Pause'}else{release();a.pause();playBtn.textContent='Play'}};
+document.querySelectorAll('[data-r]').forEach(b=>b.onclick=e=>{e.target.blur();release();run=+b.dataset.r;off=+b.dataset.j;window.marks=window.marks.filter(m=>m[0]<off-1||m[0]>off+30);save();a.src='assets/run'+run+'.mp3';a.playbackRate=+document.getElementById('speed').value;a.currentTime=0;a.play();playBtn.textContent='Pause';pad.textContent='hold space while you hear buh buh buh'});
 document.getElementById('copy').onclick=e=>{e.target.blur();navigator.clipboard.writeText(JSON.stringify(window.marks)).then(()=>{e.target.textContent='Copied'},()=>{e.target.textContent='Copy failed'})};
 document.getElementById('speed').onchange=e=>{a.playbackRate=+e.target.value;e.target.blur()};
-a.onended=()=>{release();document.getElementById('play').textContent='Play';document.getElementById('done').textContent=`Done: ${window.marks.length} passages marked. Copy marks and paste them to Claude.`};
-function draw(){const W=tl.width,H=tl.height,d=a.duration||268.99;g.fillStyle='#101718';g.fillRect(0,0,W,H);
- g.fillStyle='#e5af33';for(const [s,e] of window.marks)g.fillRect(s/d*W,10,Math.max(2,(e-s)/d*W),H-20);
- if(down!==null){g.fillStyle='#d9573f';g.fillRect(down/d*W,10,Math.max(2,(a.currentTime-down)/d*W),H-20)}
- g.fillStyle='#c9cfc4';for(let s=0;s<d;s+=30){g.fillRect(s/d*W,0,1,8);g.font='34px system-ui';g.fillText(s,s/d*W+4,H-6)}
- g.fillStyle='#fff';g.fillRect(a.currentTime/d*W,0,3,H);document.getElementById('time').textContent=a.currentTime.toFixed(1)+' s';requestAnimationFrame(draw)}
+a.onended=()=>{release();playBtn.textContent='Play';document.getElementById('done').textContent=`Run ${run} done. Pick the next run, or tell Claude "done" when all three are marked.`};
+function draw(){const W=tl.width,H=tl.height,d=a.duration||24,o=off;g.fillStyle='#101718';g.fillRect(0,0,W,H);
+ g.fillStyle='#e5af33';for(const [s,e] of window.marks)if(s>=o-1&&s<o+d)g.fillRect((s-o)/d*W,10,Math.max(2,(e-s)/d*W),H-20);
+ if(down!==null){g.fillStyle='#d9573f';g.fillRect((down-o)/d*W,10,Math.max(2,(T()-down)/d*W),H-20)}
+ g.fillStyle='#c9cfc4';g.font='30px system-ui';for(let s=Math.ceil(o);s<o+d;s++){g.fillRect((s-o)/d*W,0,1,8);if(s%2==0){const m=Math.floor(s/60),ss=String(s%60).padStart(2,'0');g.fillText(m+':'+ss,(s-o)/d*W+4,H-6)}}
+ g.fillStyle='#fff';g.fillRect(a.currentTime/d*W,0,3,H);const tt=T();document.getElementById('time').textContent=run?Math.floor(tt/60)+':'+(tt%60).toFixed(1).padStart(4,'0'):'-';requestAnimationFrame(draw)}
 draw();
 </script></html>
