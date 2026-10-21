@@ -49,13 +49,27 @@ def snap(t):
 
 ons = []
 if taps:
+    # draft 31c (Robin: "i might be a bit off.. are you able to align it?"): his taps sit +-1-2 sixteenths either side of
+    # the grid, with no constant lag, and the stems can't pick the edges (every 16th has a drum onset as strong as a buh).
+    # The song's own structure can: phrases start on the downbeat and run 11 sixteenths (Bob's "11 times"), and his lone
+    # taps fall on the beats. So a phrase starts on the nearest downbeat (the nearest beat if no downbeat is within 3
+    # sixteenths), a phrase he tapped 8+ sixteenths long runs the full 11, a shorter one ends on his last tap, and a
+    # lone tap moves to the nearest beat. Bar phase: the run-1 first buh (37.616) is a downbeat.
+    ref = int(np.argmin(abs(slots - 37.616)))
+    near = lambda t: int(np.argmin(abs(slots - t)))
+    def snap_to(k, every, reach):
+        best = min(range(k - reach, k + reach + 1), key=lambda j: (((j - ref) % every) != 0, abs(j - k)))
+        return best if (best - ref) % every == 0 else k
     phrases = [[taps[0]]]
     for x in taps[1:]:
         if x - phrases[-1][-1] < PHRASE: phrases[-1].append(x)
         else: phrases.append([x])
     for ph in phrases:
-        if len(ph) == 1: ons.append(snap(slots[np.argmin(abs(slots - ph[0]))]))
-        else: ons += [snap(x) for x in slots if ph[0] - .08 <= x <= ph[-1] + .08]
+        k0, k1 = near(ph[0]), near(ph[-1])
+        if len(ph) == 1: ons.append(snap(slots[snap_to(k0, 4, 2)])); continue
+        a0 = snap_to(k0, 16, 3); a0 = a0 if (a0 - ref) % 16 == 0 else snap_to(k0, 4, 2)
+        a1 = a0 + ON - 1 if k1 - k0 + 1 >= 8 else max(a0 + 1, k1)
+        ons += [snap(slots[i]) for i in range(a0, a1 + 1)]
     RUNS = []
 for a, z in RUNS:
     if marks:  # Robin's held spans; a hold starts a touch late, so a slot up to 0.1 s before it counts
