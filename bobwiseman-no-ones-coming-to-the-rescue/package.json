@@ -1,0 +1,7 @@
+{
+  "name": "bobwiseman-no-ones-coming-to-the-rescue",
+  "private": true,
+  "type": "module",
+  "description": "Bob Wiseman, No One's Coming to the Rescue: look tests drawn in code, one page per look under looks/.",
+  "devDependencies": { "playwright": "^1.55.0" }
+}
