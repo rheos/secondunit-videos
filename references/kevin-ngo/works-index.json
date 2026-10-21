@@ -1,0 +1,135 @@
+{
+  "person": "Kevin Ngo",
+  "handle": "@kevin_t_ngo",
+  "profile": "https://x.com/kevin_t_ngo",
+  "note": "Posts we have studied, with stable IDs for the direction file. Status IDs are given where recorded; subscriber posts (K04, K05, K07) are study only and must never be republished. No frames are committed in this profile.",
+  "updated": "2026-10-20",
+  "works": [
+    {
+      "id": "K01",
+      "title": "UI animations made with Opus 5.5 and Clayzo",
+      "date": "2026-10-19",
+      "url": "https://x.com/kevin_t_ngo/status/2111974919353544757",
+      "format": "1080x1080, 25 s, 2x2 grid then each panel solo",
+      "made_with": "Hand-coded SVG/CSS components, screen-recorded with a cursor; no image or video model (his reply: 'These are real UI components')",
+      "observed": "One dark navy outline at one weight; flat fill plus one shade band plus one white highlight streak; halftone dots on the shadow side; soft ellipse ground shadow; one pastel background per panel; 4-point sparkle stars; spring motion with squash and stretch and shape morphs.",
+      "ours": "Built as mv-projects/indieagent-clean-vector-test (ticket stub stamped BOOKED), rheos/secondunit-videos PR #232. Robin: 'the look lands'."
+    },
+    {
+      "id": "K02",
+      "title": "Orb and portals",
+      "date": "2026-10-13",
+      "url": "https://x.com/kevin_t_ngo/status/2110010240825737683",
+      "format": "16:9, 28 s, with sound; Python + Blender, flat toon shading with paper grain",
+      "observed": "A blue orb stays dead centre for the whole film. Sound arrives as ripple arcs; a ring around the orb opens as a circle portal onto a place that makes a sound (pond, cricket, jellyfish, owl, frogs, radio, whale, storm, koi, bicycle bell, wind chimes), about 1.4 s each. After about 16 s every place returns as a mosaic of circles. A pink orb arrives; they orbit on a tilted ground; the frame fills with pairs; ends on 'opus 5.5 / claude'.",
+      "ours": "Compare blender-orb-visualizer take 01: same premise, abstract scenes; his anchors every cut on the orb and makes the scenes concrete."
+    },
+    {
+      "id": "K03",
+      "title": "Honey bee film (prompt shared)",
+      "date": "2026-09 (id not recorded)",
+      "url": null,
+      "observed": "Outlines in a darker shade of each object's colour, organic curves with detail, in-shape gradients and form-following lines, pressure-ribbon strokes, atmospheric depth. Compared against our Travel Agent frames 2026-10-19.",
+      "ours": "bobwiseman-travel-agent was built from his prompt ('Kevin Ngo manner' in its README). Gaps listed in the clean-vector memory."
+    },
+    {
+      "id": "K04",
+      "title": "A paper boat goes on a journey",
+      "date": "2026-10-19",
+      "url": "subscriber post (x.com/kevin_t_ngo/subs); study only, never republish",
+      "format": "1:1, 60 s, Opus",
+      "observed": "A black cat's paper boat with a goldfish leaves a canal windowsill, passes about 15 places (canal bridge, windmill polder with heron, cliff waterfall, jungle, lantern festival, storm, waterspout, moonlit clouds, dawn town) and comes home to the sleeping cat. Flat shapes with grain, water reflections everywhere, one day-to-night-to-dawn colour arc.",
+      "ours": "The journey-home structure is Travel Agent's premise."
+    },
+    {
+      "id": "K05",
+      "title": "An outage told with objects",
+      "date": "2026-10-11",
+      "url": "subscriber post; study only",
+      "format": "59 s, Sonnet",
+      "observed": "Cream paper; server rack, big red button, crashing chart, calendar X's, stacking coffee cups, tangled dependency lines, empty chairs for people, green checks at the end. Felt-marker outlines with scribble-hatched colour; each object sketched in pencil first, then inked and coloured."
+    },
+    {
+      "id": "K06",
+      "title": "Robot arm drawing GIF",
+      "date": "2026-10-15",
+      "url": "id not recorded",
+      "observed": "One heavy, even navy ink (#25264a); flat grainy fills set a little off their line; coloured-pencil cast shadows hatched on the paper (down-right, never on objects); light pencil streaks instead of ink hatching. The arm draws a drawing of itself (Droste loop).",
+      "ours": "Built as bobwiseman-travel-agent/js/arm.js (?look=arm, &ground=plain), PR #239. Kept as an option for other films; Travel Agent stays on draft 16's look."
+    },
+    {
+      "id": "K07",
+      "title": "Impasto planet GIF",
+      "date": "2026-10-03",
+      "url": "subscriber post; study only",
+      "format": "12 s loop, Opus",
+      "observed": "An impasto-painted planet whose moons collide into a ring and break back into moons (build-then-unbuild loop)."
+    },
+    {
+      "id": "K08",
+      "title": "Mona Lisa process post",
+      "date": "2026 (id not recorded)",
+      "url": null,
+      "observed": "His 'How this was made' reply: a reference photo, a JS painter that compares canvas to photo, a custom brush; Claude renders, zooms in on the face, compares and revises. The 2D JS film was handed to a second Claude as exact choreography for a Blender 3D version."
+    },
+    {
+      "id": "K09",
+      "title": "Escher waterfall on a Penrose triangle (loop)",
+      "date": "2026 (id not recorded)",
+      "url": null,
+      "observed": "Impossible-geometry loop; his most liked GIF when surveyed (about 2.8k likes)."
+    },
+    {
+      "id": "K10",
+      "title": "A short film about a paperclip and a sticky note",
+      "date": "2026-10-20",
+      "url": "https://x.com/kevin_t_ngo/status/2112584730856366140",
+      "format": "1080x1080, 24 fps, 59.6 s, with score; 'Every frame drawn in code by Claude Opus 5.5'",
+      "observed": "See STUDY-paperclip-and-sticky-note.md (shot list S1-S20, recipes P01-P14).",
+      "ours": "Not yet applied."
+    },
+    {
+      "id": "K11",
+      "title": "The story of the One Ring",
+      "date": "2026-10-14",
+      "url": "https://x.com/kevin_t_ngo/status/2110385144846840172",
+      "observed": "His caption: characters drawn by Opus 5.5, backgrounds by Haiku 5.5, every frame JavaScript. Two models split by layer. Not studied frame by frame."
+    },
+    {
+      "id": "K12",
+      "title": "Loop GIFs, Jul-Oct 2026 (15 surveyed 2026-10-19)",
+      "date": "2026-07 to 2026-10",
+      "url": "profile feed",
+      "observed": "Loop mechanisms: symmetry turn (tesseract); Droste zoom (robot arm, Clawd at a desk); tunnel of self-similar rings (pixel invaders); impossible geometry (K09); conveyor of identical objects moving one spacing (marble machine, paper chain); self-resetting machine (Rube Goldberg, cuckoo clock); maker becomes the made; exit one edge, enter the other; build then unbuild (pixel heart, peekaboo kids); periodic noise field (crayon dabs). Looks: pixel voxel, toy diorama with depth of field, clockwork wood and brass, ink and marker comic, graphite on cream, coloured pencil on a photographed notebook.",
+      "ours": "Feeds the Canvas loops offer (secondunit/CANVAS-LOOPS-OFFER.md)."
+    },
+    {
+      "id": "K13",
+      "title": "Unofficial Tesla Roadster commercial, with 'How this was made'",
+      "date": "2026-10-18",
+      "url": "https://x.com/kevin_t_ngo/status/2111887585639624828",
+      "observed": "His process reply (status 2111887587317305477): Blender + Cycles every shot; the car modelled from photos and checked edge by edge from the same camera angles; the garage placed by Python scripts; Poly Haven and ambientCG CC0 assets; Mantaflow smoke; procedural volumes in code; ElevenLabs narrator and SFX plus some synthesized in code; score composed note by note in code on CC0 orchestra samples (VSCO 2, VCSL); edit, film look (bloom, halation, grain) and subtitles in Python frame by frame."
+    },
+    {
+      "id": "K14",
+      "title": "Unofficial Apple HomeView commercial, with 'How this was made'",
+      "date": "2026-10-15",
+      "url": "https://x.com/kevin_t_ngo/status/2110722582689546297",
+      "observed": "His process reply (status 2110730812014592434): Blender; every screen a web page captured frame by frame in Chrome and mapped onto 3D glass; Midjourney stills and image-to-video for a few shots; NASA photos; Depth Anything V2 for a depth map; ElevenLabs voices; a public-domain tune composed in code on VSCO 2 / VCSL. The one film in this list that uses generated images."
+    },
+    {
+      "id": "K15",
+      "title": "Mascot GIF offer",
+      "date": "2026-10-15",
+      "url": "https://x.com/kevin_t_ngo/status/2110844474599555540",
+      "observed": "Offers animated GIFs of startup mascots, every frame drawn in code; 2D for non-subscribers, 3D for subscribers. A productised version of the loop GIFs."
+    },
+    {
+      "id": "K16",
+      "title": "Code mirrors",
+      "date": "2026",
+      "url": "github mirrors: qq89987112/slow-square, qq89987112/tapioca-animation, aaronvg/figure-sheet, aaronvg/math_class, bimohxh/cyber-crowd (his kengocodes account is gone)",
+      "observed": "One HTML file, Canvas 2D, no libraries; mulberry32 seeded RNG per subsystem; lines drawn as filled ribbons with sine-sum wobble and pressure; paper rendered once per seed; slow-square is a pure function of t (window.SLOW.draw(t)); he scores 40 seeds and keeps the best."
+    }
+  ]
+}
