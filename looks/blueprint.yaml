@@ -6,7 +6,8 @@ note: >-
 used: Travel Agent, Bob Wiseman
 cost: free
 group: code
-order: 400
+collection: clean-line
+order: 350
 clip: blueprint.mp4
 tall: false
 status: draft

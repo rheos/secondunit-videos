@@ -6,7 +6,8 @@ note: >-
 used: IndieAgent test
 cost: free
 group: code
-order: 430
+collection: clean-line
+order: 300
 clip: outlinecartoon.mp4
 tall: false
 status: test

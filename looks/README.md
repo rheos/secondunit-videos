@@ -21,6 +21,7 @@ Public: these go to the styles page. Write them for a client to read.
 | `cost` | `free` (every frame drawn or rendered by our code), `credits` (paid generation), `hybrid` (both), `live action`, or a number such as `34 credits`. |
 | `group` | `code` (Drawn in code), `generated`, or `live` (Live action with matched AI). |
 | `order` | Position inside its group on the page, in tens. |
+| `collection` | Optional. `clean-line` lifts the look out of its group into the Clean line section at the top of the styles page (the bold, clean code-drawn looks). The look keeps its `group`; `order` then sets its place in that section. |
 | `clip` | The 6 s muted preview in rheos/novadiem.com `public/video/styles/`: 640x360, or 360x640 when `tall`. |
 | `tall` | `true` for 9:16 clips. |
 
