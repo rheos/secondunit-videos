@@ -1,0 +1,7 @@
+{
+  "name": "bobwiseman-real-thing",
+  "private": true,
+  "type": "module",
+  "description": "Bob Wiseman, Real Thing: code-painted look tests (real vs fake: brochure, placards, pencil, tear-through).",
+  "devDependencies": { "playwright": "^1.55.0" }
+}

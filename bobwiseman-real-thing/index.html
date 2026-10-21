@@ -1,0 +1,14 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Real Thing look tests</title>
+<style>html,body{margin:0;background:#111}canvas{width:100vw;height:auto;display:block}</style></head>
+<body><canvas id="c" width="1920" height="1080"></canvas>
+<script src="js/kit.js"></script><script src="js/bob.js"></script><script src="js/looks.js"></script>
+<script>
+const C = document.getElementById('c'), G = C.getContext('2d');
+buildTextures();
+window.__draw = (t) => { G.save(); G.setTransform(1, 0, 0, 1, 0, 0); G.clearRect(0, 0, W, H); drawFrame(G, t); G.restore(); };
+window.__frameJPEG = (t, q) => { window.__draw(t); return C.toDataURL('image/jpeg', q); };
+window.__ready = document.fonts.ready.then(() => true);
+const qs = new URLSearchParams(location.search);
+if (!qs.has('offline')) { const t = Number(qs.get('t') || 25); window.__draw(t); }
+</script></body></html>
