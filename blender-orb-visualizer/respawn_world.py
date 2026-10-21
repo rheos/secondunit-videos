@@ -723,7 +723,7 @@ def build(F0, F1, out, res=(1280, 720)):
     eyes(FI, "fisher_eye", .24, .07, w=.07, y=.085)
     box("fisher_mouth", (.03, .08, .03), (FI["HX"], 0, .08), M["ink"], FI["neck"])
     rod = empty("rod", (0, 0, -.6), FI["shR"])
-    box("rod_shaft", (.04, .04, 1.9), (0, 0, .7), M["wood2"], rod); rod.rotation_euler = (0, R(-55), 0)
+    box("rod_shaft", (.04, .04, 1.9), (0, 0, .7), M["wood2"], rod); rod.rotation_euler = (0, R(118), 0)   # the rod points forward over the water from the lowered arm
     FI["rod"] = rod
     W.fisher = FI
 
