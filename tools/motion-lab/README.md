@@ -2,6 +2,10 @@
 
 Tools and numbers for code-drawn looks, adapted from Florence's "Opus 5.5 Motion Lab" article
 (x.com/flxrnc/status/2105311836190978392, 2026-09-30) and tested on `example/` and on Mind The Sheep.
+The reference-clip procedure, the LAYOUT line, the correction template, the longest-copy check and the
+boundary states came from beamnxw's "Motion Engineering with Opus 5.5" thread
+(x.com/beamnxw/status/2108616740846420354, 2026-10-09; studied 2026-10-20, rheos/secondunit-videos#275).
+The rest of that thread repeats Florence's and was not re-adopted.
 They work on any look that keeps the mv-projects contract: `window.__ready` and
 `window.__frameJPEG(t, q)`. Run them from the look's folder, which has Playwright installed.
 
@@ -65,6 +69,7 @@ GOAL: what the viewer should feel or do, one sentence
 OUTPUT: engine, W x H, fps
 TIME: seconds x fps = frames; loop yes or no; BPM and frames per beat
 LOOK: palette in hex, one accent, typeface + weight + size
+LAYOUT: origin top-left in canvas pixels; every box as x, y, w, h; outer margin; layer order back to front
 MOTION: easings by name, springs as damping ratio + Hz, durations in frames
 SHOTS: frame ranges, one hero move per shot, how each shot hands off
 KEEP: what may not change (character proportions, the approved drawing)
@@ -79,6 +84,40 @@ fade-and-slide-up on every element, centred everything, text that moves while it
 
 **One hero per shot.** Secondary moves travel 50 to 70% as far and start 100 to 200 ms after it;
 ambient motion stays under 5% of the hero's travel on a slow sine and never stops.
+
+## Reference clip into numbers
+
+When a brief points at a clip ("make the card land like this"), give the reference one job (an entrance
+with a controlled landing, a transition that keeps the subject in view, a cursor action that makes the
+result obvious) and measure that job. Everything else in the clip is noise. This is the reusable form of
+the Kevin Ngo paperclip study (`references/kevin-ngo/STUDY-paperclip-and-sticky-note.md`), which was done
+by hand.
+
+Save the clip as `source/refs/<name>.mp4` (never commit a clip that is not ours) and read its facts first:
+
+```bash
+ffprobe -v error -select_streams v:0 -show_entries stream=width,height,avg_frame_rate,nb_frames,duration -of json source/refs/<name>.mp4
+ffmpeg -v error -i source/refs/<name>.mp4 -vf "fps=2,scale=960:-2" out/ref/<name>-%04d.jpg          # overview
+ffmpeg -v error -ss <t0> -t <dur> -i source/refs/<name>.mp4 -vf scale=960:-2 out/ref/<name>-ev-%04d.jpg   # every source frame around the event
+```
+
+Then Read the images and write `REFERENCE-<name>.md` with:
+
+- Source frame numbers at the source frame rate (keep it labelled: a half-second move is 15 frames at 30
+  and 12 on our 24 grid; convert once, at the end) for the entrance, the landing, the readable hold and
+  the cut.
+- The subject's bounding box at its first visible frame and at its landing, in source pixels.
+- Direction, duration, scale change, opacity change and any visible overshoot (frames past the landing
+  before it settles).
+- The order in which the subject, the headline and the supporting labels appear.
+- The readable hold, and the state the shot carries into the next one.
+- Three labels, never mixed: measured (read off a frame), estimate (judged by eye between frames) and
+  proposed (our own choice for our shot). For any value still uncertain, name the frames that would
+  settle it and extract them before building.
+
+Claude's spatial estimates are approximate: check every position that matters against the extracted
+frame, not against the description of it. Then write our own shot as numbers in the brief (SHOTS and
+MOTION lines), with our logo, copy and typeface: the reference lends the movement, never the surface.
 
 ## Numbers
 
@@ -117,6 +156,32 @@ fix the spacing; plot the hero's speed and fix the dead stops with the easing to
 
 Onion skins on a look whose paint boils pick up the stroke re-rolls too: crop to the subject.
 
+**A correction has four fields.** Where (the frame and the element), what is wrong (observed, not
+felt), the one change, and what stays fixed. Then the frames to prove it: stills at the named frames and
+a short preview across the surrounding boundary, checked for overlap and jumps in between.
+
+    Observed defect: the cursor overlaps the result label at frame 210.
+    Change only the cursor's path after the press: leave at 204, rest by 210, inside the card with 24 px
+    clear of the label, clear of the label all the way.
+    Keep: the press at 195, the reveal at 210, the card geometry, the copy, the sound cues.
+    Prove it: stills at 195, 210, 222, 240 and a preview of 180-249. Report the new path and the files.
+
+Fix in this order: missing information and unreadable text first, then timing, then visual detail. A
+beautiful move on a line nobody can read is a wasted round.
+
+**Lay out with the longest copy.** Before the motion pass, set the layout with the longest line it will
+ever have to take (the longest lyric line, the longest product name, the client's longest title). Three
+lines means stop: shorten the copy, widen the box, or move the extra to another shot. Record the limits
+beside the look (available width, maximum lines, space reserved for the logo, the settled positions),
+check the real typeface in a rendered frame (weight and spacing, not the CSS), and re-render the landing
+frame after any copy change before judging the entrance in motion.
+
+**Scenes declare their boundary states.** Each scene has an incoming state and an outgoing state (the
+subject's position, scale and what is highlighted), and the next scene starts from exactly that. After a
+local edit, sheet both neighbouring boundaries and render the range across each cut, not just the edited
+span. Transitions that overlap two scenes count once in the total length. The builder brief's match-cut
+rule (shared element unchanged in the first and last 1.0 s) is this rule between two builders.
+
 ## Receipts
 
 Each piece keeps `docs/RECEIPTS.md`: the brief as sent, then every follow-up note verbatim with its
@@ -129,3 +194,10 @@ Our songs are the clock, so this applies to effects and to scores made for a pic
 promos). Each hit lands 1 frame after its visual event, never before. Hits sit 3 to 6 dB over the bed.
 Check the mix on the phone band: energy under 60 Hz plays as nothing on a phone, and a first mix can
 put most of its energy there. Check sync by decoding the finished MP4, not by listening.
+
+A cue file's audible hit is rarely at its first sample (a soft lead-in, a breath of silence): find the
+transient on the waveform and offset the clip so the hit, not the file start, lands on its frame. Keep
+the cue list beside the visual events (`BUTTON PRESS frame 195 click`, `REVEAL frame 210 accent`) so a
+timing change moves both, or let the drawing report its events (`cues.mjs`). Before sign-off, play the
+loudest event, the quietest cue that still has to be heard, and the ending on headphones and on a phone
+speaker.
