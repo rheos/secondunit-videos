@@ -54,7 +54,8 @@ mp4 = out / f"realthing_{a.take}_f{first:05d}-f{last:05d}_24fps_draft.mp4"
 ss = first / 24
 cmd = ["ffmpeg", "-nostdin", "-loglevel", "error", "-y", "-f", "concat", "-safe", "0", "-i", str(listing),
        "-ss", f"{ss:.6f}", "-t", f"{(last - first + 1) / 24:.6f}", "-i", a.song,
-       "-map", "0:v", "-map", "1:a", "-fps_mode", "cfr", "-r", "24", "-vf", "format=yuv420p",
+       "-map", "0:v", "-map", "1:a", "-fps_mode", "cfr", "-r", "24",
+       "-vf", "format=yuv420p" + (f",fade=t=out:st={(last - first + 1) / 24 - 1:.3f}:d=1" if last == 3980 else ""),
        "-c:v", "libx264", "-preset", "medium", "-crf", "20", "-maxrate", "6M", "-bufsize", "12M",
        "-c:a", "aac", "-b:a", "192k", "-shortest", "-movflags", "+faststart", str(mp4)]
 subprocess.run(cmd, check=True)
