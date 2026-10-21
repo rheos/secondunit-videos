@@ -1,0 +1,92 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Reform Party · buh sync</title>
+<style>
+:root{--bg:#171e20;--fg:#f5e9cf;--dim:#b9bfb4;--gold:#e5af33;--red:#d9573f}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.45 system-ui}
+main{max-width:1180px;margin:auto;padding:20px}
+h1{font-size:24px;margin:0 0 4px}p{color:var(--dim);margin:4px 0 10px;max-width:900px}
+#stage{position:relative;width:100%;aspect-ratio:16/9;background:#000;border-radius:6px;overflow:hidden}
+#stage video,#stage canvas{position:absolute;inset:0;width:100%;height:100%}
+nav{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:10px 0}
+button,select{font:inherit;color:inherit;background:#2a3639;border:1px solid #738077;border-radius:6px;padding:6px 12px;cursor:pointer}
+button.on{background:var(--gold);color:#1b1b14}
+#tl{width:100%;height:110px;display:block;background:#101718;border-radius:6px;cursor:pointer;margin-top:8px}
+table{border-collapse:collapse;margin-top:10px;font-variant-numeric:tabular-nums}
+td{padding:3px 8px;border-bottom:1px solid #2a3639}
+td button{padding:2px 9px}
+output{font-variant-numeric:tabular-nums}
+</style>
+<main>
+<h1>Buh sync: the teeth live over the picture</h1>
+<p>Pick a run. The video plays with the song, and the teeth are drawn live on top, so any change shows straight away. Click the timeline to jump; slow it down to check an edge. Each row below is one phrase of buhs: the arrows move its first or last buh by one 16th note. "Whole run" shifts every buh in the run by 10 ms. Tap the space bar along with the buhs if you like; your taps show as red ticks on the timeline. When it looks right, tell Claude "done".</p>
+<nav>
+<button data-r="0">Run 1 (0:35)</button><button data-r="1">Run 2 (1:33)</button><button data-r="2">Run 3 (2:50)</button>
+<button id="play">Play</button>
+<label>Speed <select id="speed"><option>1</option><option>0.75</option><option>0.5</option></select></label>
+<span>Whole run <button id="sl">-10 ms</button> <output id="sh">0 ms</output> <button id="sr">+10 ms</button></span>
+<button id="reset">Reset this run</button>
+<output id="time"></output>
+</nav>
+<div id="stage"><video id="v" muted playsinline preload="auto"></video><canvas id="ov" width="1920" height="1080"></canvas></div>
+<canvas id="tl" width="2200" height="110"></canvas>
+<table id="rows"></table>
+<audio id="a" preload="auto"></audio>
+</main>
+<script src="js/common/core.js"></script>
+<script>var g;</script>
+<script src="js/dali/buh-onsets.js"></script>
+<script src="js/dali/buhteeth.js"></script>
+<script>
+const RUNS=[{off:35,len:24},{off:93,len:24},{off:170,len:22}],STEP=60/99.4/4;
+const a=document.getElementById('a'),v=document.getElementById('v'),ov=document.getElementById('ov'),tl=document.getElementById('tl'),tg=tl.getContext('2d');
+g=ov.getContext('2d');
+const ORIG=BUH_ONSETS.slice();
+const group=ons=>{const ph=[];for(const o of ons){const p=ph[ph.length-1];if(p&&o-p[p.length-1]<=.25)p.push(o);else ph.push([o])}return ph};
+const inRun=(t,r)=>t>=RUNS[r].off-1&&t<RUNS[r].off+RUNS[r].len;
+let state;try{state=JSON.parse(localStorage.getItem('rp-buh-sync')||'null')}catch{}
+if(!state)state={ph:[0,1,2].map(r=>group(ORIG.filter(t=>inRun(t,r)))),shift:[0,0,0],taps:[[],[],[]]};
+window.SYNC=state;
+let run=-1;
+const save=()=>{try{localStorage.setItem('rp-buh-sync',JSON.stringify(state))}catch{};apply();rows()};
+function apply(){const ons=[];state.ph.forEach((r,i)=>r.forEach(p=>p.forEach(t=>ons.push(+(t+state.shift[i]/1000).toFixed(3)))));ons.sort((x,y)=>x-y);
+ BUH_RUNS.length=0;for(const o of ons){const r=BUH_RUNS[BUH_RUNS.length-1];if(r&&o-r[r.length-1]<=BUH.runGap)r.push(o);else BUH_RUNS.push([o])}window.SYNC_ONSETS=ons}
+const fmt=t=>Math.floor(t/60)+':'+(t%60).toFixed(2).padStart(5,'0');
+function rows(){const tb=document.getElementById('rows');tb.innerHTML='';if(run<0)return;
+ state.ph[run].forEach((p,i)=>{const tr=document.createElement('tr');
+  tr.innerHTML=`<td>${p.length>1?'phrase':'single'} ${i+1}</td><td>start <button data-a="s-">&larr;</button> ${fmt(p[0])} <button data-a="s+">&rarr;</button></td>`+(p.length>1?`<td>end <button data-a="e-">&larr;</button> ${fmt(p[p.length-1])} <button data-a="e+">&rarr;</button></td>`:'<td></td>')+`<td>${p.length} buh${p.length>1?'s':''}</td><td><button data-a="go">play from here</button></td>`;
+  tr.querySelectorAll('button').forEach(b=>b.onclick=e=>{e.target.blur();const k=b.dataset.a;
+   if(k==='go'){seek(p[0]-1.2);if(a.paused)toggle();return}
+   if(k==='s-')p.unshift(+(p[0]-STEP).toFixed(3));
+   if(k==='s+'&&p.length>1)p.shift(); else if(k==='s+')p[0]=+(p[0]+STEP).toFixed(3);
+   if(k==='e+')p.push(+(p[p.length-1]+STEP).toFixed(3));
+   if(k==='e-'&&p.length>1)p.pop();
+   save()});
+  tb.appendChild(tr)})}
+function load(r){run=r;document.querySelectorAll('[data-r]').forEach(b=>b.classList.toggle('on',+b.dataset.r===r));
+ a.src='assets/run'+(r+1)+'.mp3';v.src='assets/run'+(r+1)+'.mp4';a.playbackRate=v.playbackRate=+document.getElementById('speed').value;
+ document.getElementById('sh').textContent=state.shift[r]+' ms';rows()}
+document.querySelectorAll('[data-r]').forEach(b=>b.onclick=e=>{e.target.blur();load(+b.dataset.r);toggle(true)});
+const playB=document.getElementById('play');
+function toggle(force){if(run<0)return;if(force||a.paused){a.play();v.play();playB.textContent='Pause'}else{a.pause();v.pause();playB.textContent='Play'}}
+playB.onclick=e=>{e.target.blur();toggle()};
+function seek(t){if(run<0)return;const c=Math.max(0,Math.min(RUNS[run].len-.05,t-RUNS[run].off));a.currentTime=c;v.currentTime=c}
+document.getElementById('speed').onchange=e=>{a.playbackRate=v.playbackRate=+e.target.value;e.target.blur()};
+document.getElementById('sl').onclick=e=>{e.target.blur();if(run>=0){state.shift[run]-=10;document.getElementById('sh').textContent=state.shift[run]+' ms';save()}};
+document.getElementById('sr').onclick=e=>{e.target.blur();if(run>=0){state.shift[run]+=10;document.getElementById('sh').textContent=state.shift[run]+' ms';save()}};
+document.getElementById('reset').onclick=e=>{e.target.blur();if(run<0)return;state.ph[run]=group(ORIG.filter(t=>inRun(t,run)));state.shift[run]=0;state.taps[run]=[];document.getElementById('sh').textContent='0 ms';save()};
+addEventListener('keydown',e=>{if(e.code==='Space'){e.preventDefault();if(!e.repeat&&run>=0&&!a.paused){state.taps[run].push(+(RUNS[run].off+a.currentTime).toFixed(3));save()}}});
+a.onended=()=>{v.pause();playB.textContent='Play'};
+tl.onclick=e=>{if(run<0)return;const R=tl.getBoundingClientRect();seek(RUNS[run].off+(e.clientX-R.left)/R.width*RUNS[run].len)};
+apply();
+function frame(){requestAnimationFrame(frame);g.setTransform(1,0,0,1,0,0);g.clearRect(0,0,W,H);
+ if(run<0)return;const R=RUNS[run],t=R.off+a.currentTime;
+ if(Math.abs(v.currentTime-a.currentTime)>.04&&v.readyState>1)v.currentTime=a.currentTime;
+ buhTeeth(t);document.getElementById('time').textContent=fmt(t);
+ const Wt=tl.width,Ht=tl.height,x=s=>(s-R.off)/R.len*Wt;tg.fillStyle='#101718';tg.fillRect(0,0,Wt,Ht);
+ tg.fillStyle='#c9cfc4';tg.font='22px system-ui';for(let s=Math.ceil(R.off);s<R.off+R.len;s++){tg.fillRect(x(s),0,1,10);tg.fillText(fmt(s).slice(0,-3),x(s)+3,Ht-6)}
+ state.ph[run].forEach(p=>{const sh=state.shift[run]/1000;tg.fillStyle='#e5af33';tg.fillRect(x(p[0]+sh)-2,22,Math.max(5,x(p[p.length-1]+sh)-x(p[0]+sh)+4),40);
+  tg.fillStyle='#1b1b14';for(const c of p)tg.fillRect(x(c+sh),30,2,24)});
+ tg.fillStyle='#d9573f';for(const s of state.taps[run])tg.fillRect(x(s)-1,66,3,18);
+ tg.fillStyle='#fff';tg.fillRect(x(t),0,3,Ht)}
+frame();
+</script></html>
