@@ -523,3 +523,89 @@ def toy_in_hands(toy_ob, scale=.045):
 def still_camera(name, loc, target, lens):
     c = shot_camera(name, loc, target, lens=lens); scene.camera = c
     return c
+
+# =====================================================================================================
+# ACTS: per-act setup and keyed versions of the pose setters (one key per song frame, like take 06)
+# =====================================================================================================
+from film_kit import pixel_look            # unused (no Pixelate in this film); kept so acts import one place
+ACT_FRAMES = {0: (0, 503), 1: (504, 1183), 2: (1183, 1654), 3: (1654, 1956), 4: (1956, 2539), 5: (2539, 3130),
+              6: (3130, 3396), 7: (3396, 3980)}   # neighbours share the boundary frame; the later act wins it
+
+def act_setup(n):
+    """frame range and output folder for act n; returns (F0, F1, OUT). Frames land in out/film/pet/act<n>/frames/."""
+    f0, f1 = ACT_FRAMES[n]
+    out = os.path.join(HERE, "out", "film", "pet", f"act{n}")
+    film_setup(out, f0, f1)
+    for o in list(scene.objects):
+        if o.type == "CAMERA" and o.name.startswith("CL_cam_"): bpy.data.objects.remove(o)
+    return f0, f1, out
+
+_MAN_KEYED = ["root", "pel", "hipL", "hipR", "kneeL", "kneeR", "torso", "neck", "shL", "shR", "elL", "elR"]
+def key_man(fr, **kw):
+    """pose_man(**kw) and key every joint on song frame fr"""
+    p = pose_man(**kw)
+    for n in _MAN_KEYED:
+        ob = MAN[n]; ob.keyframe_insert("location", frame=fr); ob.keyframe_insert("rotation_euler", frame=fr)
+    for e in MAN["eyes"]: e.keyframe_insert("scale", frame=fr)
+    return p
+
+_dog_shut = {}
+def key_dog(fr, pos, head, pose, z=0.0, shut=False, wag=0.0, legs=None):
+    """pose_dog(...) and key it on song frame fr; eyes open/shut are keyed with show() only when they change"""
+    G = DOG
+    pose_dog(pos, head, pose, z=z, shut=shut, wag=wag, legs=legs)
+    for ob in [G["root"], G["body"], G["neck"], G["tail"]] + list(G["legs"].values()) + [ep for _, ep in G["ears"]]:
+        ob.keyframe_insert("location", frame=fr); ob.keyframe_insert("rotation_euler", frame=fr)
+    G["root"].keyframe_insert("scale", frame=fr); G["body"].keyframe_insert("scale", frame=fr)
+    if _dog_shut.get("v") != shut:
+        show(G["open"], fr, not shut); show(G["shut"], fr, shut); _dog_shut["v"] = shut
+
+def key_obj(ob, fr, loc=None, rot=None, scale=None):
+    key(ob, fr, loc=loc, rot=rot, scale=scale)
+
+def finish(out):
+    """constant interpolation on every visibility key, frame 0 of the act, then run() (--stills / --render)"""
+    for ob in scene.objects: const_keys(ob)
+    scene.frame_set(scene.frame_start)
+    run(out)
+
+# ---------- the close-up set (take 06): the toy at 22x in his hands over his lap, in its own closed box at x=100 ----------
+H = Vector((100, 0, 0)); HC = H + Vector((0, 0, 3.0)); HROT = Euler((R(-40), 0, 0))
+hero = toy("htoy"); hero.location = HC; hero.rotation_euler = HROT
+sprites = {n: blocks("hpet_" + n, sum((lcd_parts(r_, ox, oy) for r_, ox, oy in parts), []), M["pix"], hero) for n, parts in FRAMES.items()}
+bang = blocks("hpet_bang", lcd_parts(BANG, 2, 3), M["pix"], hero)
+thumbs = {}
+for s in (-1, 1):                                     # s = -1 his left hand (screen left), +1 right
+    blocks(f"hpalm{s}", [((.42, .9, 1.25), (1.78 * s, .1, -1.0)), ((1.1, .4, 1.4), (1.3 * s, .85, -.8))], M["skin"], hero)
+    base, tip = Vector((1.55 * s, -.98, -1.8)), Vector((.72 * s, -.99, -1.17))
+    piv = empty(f"hthumbP{s}", base, hero); piv.rotation_euler = (tip - base).to_track_quat('X', 'Z').to_euler()
+    pr = empty(f"hthumb{s}", (0, 0, 0), piv)
+    L = (tip - base).length
+    box(f"hthumbB{s}", (L + .1, .36, .38), (L / 2, 0, 0), M["skin"], pr)
+    box(f"hnail{s}", (.22, .02, .24), (L - .1, .19 * s, 0), M["skin2"], pr)
+    thumbs[s] = pr
+    beam(f"hsleeve{s}", (2.0 * s, .1, -1.6), (2.9 * s, -2.6, -4.2), 1.05, 1.05, M["hood"], hero)
+    beam(f"hcuff{s}", (1.98 * s, .06, -1.55), (2.12 * s, -.3, -1.95), 1.12, 1.12, M["hood2"], hero)
+for s in (-1, 1):
+    box(f"hthigh{s}", (4.25, 13.0, 2.0), H + Vector((2.2 * s, 3.5, -.4)), M["jeans"])
+    box(f"hcouch{s}", (4.0, 13.0, 1.6), H + Vector((6.4 * s, 3.5, -.2)), M["rust2"])
+box("hgap", (.3, 13, .5), H + Vector((0, 3.5, -.6)), M["dark"])
+box("hbelly", (8.0, 2.0, 5.0), H + Vector((0, -4.5, -1.0)), M["hood"])
+for i, (sz, c) in enumerate((((30, 30, .5), (0, 0, -3)), ((30, 30, .5), (0, 0, 16)), ((.5, 30, 20), (-15, 0, 6)),
+                             ((.5, 30, 20), (15, 0, 6)), ((30, .5, 20), (0, 15, 6)), ((30, .5, 20), (0, -15, 6)))):
+    box(f"hencl{i}", sz, H + Vector(c), M["cream"])
+area("hkey", H + Vector((-4.5, -6.5, 10.5)), HC, 6.0, 1150, (1.0, .95, .86))
+area("hrim", H + Vector((5.0, 6.0, 9.0)), HC, 5.0, 600, (1.0, .9, .75))
+area("hfill", H + Vector((3.0, -8.0, 4.0)), HC, 6.0, 480, (.95, .97, 1.0))
+
+HSCREENS = dict(sprites, egg=screen("hpet_egg", [(EGG, 9, 5)], hero), walk=screen("hpet_walk", WALK_SCREEN, hero),
+                batt=screen("hpet_batt", [(BATT, 10, 7)], hero),
+                newegg=screen("hpet_newegg", [(EGG, 9, 3), ([".##.", "#..#", "..#.", ".#..", "....", ".#.."], 19, 5)], hero))
+HLCD = [o for o in hero.children if o.name == "CL_htoy_lcd"][0]
+def hero_screen(name, fr=None, grey=False):
+    """close-up LCD: show one screen (None = empty); with fr, keyed with show() on that frame"""
+    for n, ob in HSCREENS.items():
+        if fr is None: vis(ob, n == name)
+        else: show(ob, fr, n == name)
+    vis(bang, False) if fr is None else None
+def hp(v): return HC + HROT.to_matrix() @ Vector(v)
