@@ -55,7 +55,10 @@ function sitter(x, y, s, col, p, layer) {
     if (p.farFront) {      // 17: the far arm never shows in front of the oilcloth's hanging front (it is behind it)
       g.save(); g.rotate(-p.lean); g.scale(1 / s, 1 / s); g.translate(-x, -y);
       const cl = new Path2D(); cl.rect(-3000, -3000, 9000, 9000); cl.rect(TX0 - 6, TY - 1, TX1 - TX0, 400); g.clip(cl, 'evenodd');
-      g.translate(x, y); g.scale(s, s); g.rotate(p.lean); g.translate(-8, -212); arm(p.far[0], p.far[1], col, p.holdFar); g.restore(); }
+      g.translate(x, y); g.scale(s, s); g.rotate(p.lean); g.translate(-8, -212); arm(p.far[0], p.far[1], col, p.holdFar); g.restore();
+      // her body goes back on top of her left (far) arm, so the arm comes from behind her, not across her
+      // front: drawn over it, both arms read as leaving the near shoulder (Robin, finals, 4:43)
+      cut(BODICE, col, { sh: .6, grain: .26, lift: .2 }); }
     if (p.postFar) { g.save(); g.rotate(-p.lean); g.scale(1 / s, 1 / s); g.translate(-x, -y); p.postFar(); g.restore(); }
     g.save(); g.translate(10, -250); head('her', null, col, .265, p.head || 0, 0);
     if (p.eye > 0) {        // a small closed, smiling eye cut out of the head (the 04 crescent)
@@ -73,10 +76,13 @@ function sitter(x, y, s, col, p, layer) {
 // world point of a hip-local point for a lean
 const W_ = (lean, x, y) => [HX + (x * Math.cos(lean) - y * Math.sin(lean)) * S, HY + (x * Math.sin(lean) + y * Math.cos(lean)) * S];
 // an arm pose [sh, el] that puts the hand point (01's handAt) at a world point; side = 8 near, -8 far
-function reachTo(lean, wx, wy, side = 8, neg = false) {
+// hang: when the hand comes within reach of the shoulder itself (the orange at her cheek) the aim at the
+// target swings wildly and the folded arm whips round; blend the aim to this angle so the elbow stays down
+function reachTo(lean, wx, wy, side = 8, neg = false, hang = null) {
   const ux = (wx - HX) / S, uy = (wy - HY) / S;
   const lx = ux * Math.cos(-lean) - uy * Math.sin(-lean) - side, ly = ux * Math.sin(-lean) + uy * Math.cos(-lean) + 212;
-  const a1 = 168, a2 = 182; const d = clamp(Math.hypot(lx, ly), 30, a1 + a2 - .5), th = Math.atan2(lx, ly);
+  const a1 = 168, a2 = 182; const d = clamp(Math.hypot(lx, ly), 30, a1 + a2 - .5);
+  let th = Math.atan2(lx, ly); if (hang !== null) th = lerp(hang, th, ss(40, 110, Math.hypot(lx, ly)));
   const E = Math.acos(clamp((d * d - a1 * a1 - a2 * a2) / (2 * a1 * a2), -1, 1));
   return neg ? [th + Math.atan2(a2 * Math.sin(E), a1 + a2 * Math.cos(E)), -E] : [th - Math.atan2(a2 * Math.sin(E), a1 + a2 * Math.cos(E)), E];
 }
@@ -166,6 +172,7 @@ const OR = 30;                                       // the orange's radius
 // the orange lies at the back of the oilcloth in the lamp's pool, hidden under her head while she sleeps
 const ORANGE = { x: 895, y: TY - TB - 4 };
 const RAISED = [900, 548], CHEEK = [748, 590];       // held up to the light; drawn in to her cheek
+const HANG = 2.1;                                    // at the cheek: the aim that keeps her elbow down
 // 01's doze (01-kitchen.js DOZE): head down on forearms folded on the TOP of the table, far arm over the top
 const DOZE = { lean: .66, head: -.85, near: [2.0, 3.15], far: [2.2, 2.9 - Math.PI * 2] };
 const UP = { lean: .1, head: -.1 }, FAR0 = [1.0, .62];
@@ -256,7 +263,7 @@ SHOT(T.a, T.end, 'wake', (t) => {
   // arm angles: 01's doze angles, then targets
   const dn = [DOZE.near[0] - breath * .9 * sleepK, DOZE.near[1]];
   const nearArmK = eio((t - T.lift0) / (T.lift1 - T.lift0 - .2));
-  const near = nearArmK <= 0 ? dn : nearArmK < 1 ? lerp2(dn, reachTo(lean, NREST[0], NREST[1]), nearArmK) : reachTo(lean, nearT[0], nearT[1]);
+  const near = nearArmK <= 0 ? dn : nearArmK < 1 ? lerp2(dn, reachTo(lean, NREST[0], NREST[1]), nearArmK) : reachTo(lean, nearT[0], nearT[1], 8, false, t > T.dream2 - 1.4 ? HANG : null);
   const df = [DOZE.far[0] - breath * .9 * sleepK, DOZE.far[1]];
   const slide = eio((t - T.slide0) / (T.slide1 - T.slide0));
   const billK = eio((t - T.open - .12) / .55);
