@@ -248,6 +248,9 @@ def build(F0, F1, out, res=(1280, 720)):
     for i, x in enumerate((WEST + 8, EDGE - 8)):
         box(f"skyProp{i}", (.5, 14, .5), (x, 47, 10), M["wood2"], rot=(R(-60), 0, 0))
     W.skyWall, W.skyEnd, W.skyWest = skyWall, skyEnd, skyWest
+    # the painted sky is a backdrop: it must not shadow the village (the south and west cards stand in the sun's way)
+    for card in (skyWall, skyEnd, skyWest, skySouth):
+        card.visible_shadow = False
 
     def vcloud(nm, x, z, w):
         parts = [((w, 1, 1.2), (0, 0, 0)), ((w * .55, 1, .8), (-w * .12, 0, .9)), ((w * .3, 1, .6), (w * .25, 0, .7))]
@@ -705,6 +708,8 @@ def build(F0, F1, out, res=(1280, 720)):
         g["spear"] = spear
         return g
     W.guard = guard("guard")
+    gst = box("guard_stand", (1.6, .12, .12), (-.8, 0, .06), M["wood2"], W.guard["root"], rot=(0, R(-70), 0))
+    gst.hide_render = True; gst.hide_viewport = True; W.guard["stand"] = gst
     # four more guards for the line (act 4): the same model; `board` turns one into a cut-out on a prop stand
     W.guards = [guard(f"guard{i}") for i in range(1, 5)]
     for g in W.guards:
@@ -820,7 +825,7 @@ def build(F0, F1, out, res=(1280, 720)):
 
     LIGHT = dict(
         noon=dict(sun=(3.6, "#fff4e2"), bg=("#a6cbe6", 1.0), spill=0, glow=0),
-        night=dict(sun=(.5, "#8fa3d8"), bg=("#101a3a", 1.0), spill=0, glow=0),           # the game's night: one frame
+        night=dict(sun=(1.5, "#9fb0e0"), bg=("#34467a", 1.6), spill=0, glow=0),          # the game's night: one frame (act 2's values)
         edge=dict(sun=(2.2, "#dfe6ff"), bg=("#0c1430", 1.0), spill=0, glow=0),
         void=dict(sun=(.9, "#c9d4ff"), bg=("#0c1430", 1.0), spill=1500, glow=25),
     )
