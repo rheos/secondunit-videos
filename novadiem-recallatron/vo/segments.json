@@ -1,0 +1,72 @@
+[
+ {
+  "plate": "I",
+  "file": "seg-00.mp3",
+  "seconds": 12.48,
+  "chars": 238,
+  "sha256": "2227084d9044014317e3ba76c8c397459b2c988e5cc68d2d366f39b158536097"
+ },
+ {
+  "plate": "II",
+  "file": "seg-01.mp3",
+  "seconds": 14.88,
+  "chars": 203,
+  "sha256": "95e8db1688e67b9a9b555f7916c5fc73c48cfdf98fa8ccd638b3cd6666077727"
+ },
+ {
+  "plate": "III",
+  "file": "seg-02.mp3",
+  "seconds": 14.96,
+  "chars": 213,
+  "sha256": "714d4b3e715ff65f3ffdd1b9892c12e817f64170a7fef85b89b8bcb10ccad84b"
+ },
+ {
+  "plate": "IV",
+  "file": "seg-03.mp3",
+  "seconds": 17.44,
+  "chars": 245,
+  "sha256": "ee7e30a48e295cd4b4724ef8d003007a4f2992b11d190208fc224422d84bbbbc"
+ },
+ {
+  "plate": "V",
+  "file": "seg-04.mp3",
+  "seconds": 14.72,
+  "chars": 206,
+  "sha256": "597da0dc8845e8ca132e54095174a87b673ea45fa7a9bfc2a8f807622caac1c6"
+ },
+ {
+  "plate": "VI",
+  "file": "seg-05.mp3",
+  "seconds": 17.84,
+  "chars": 246,
+  "sha256": "2c99d5e8b570d2ba38b5a01bd3f25cfd8ac1a09b34bc234626d9652f15758a47"
+ },
+ {
+  "plate": "VII",
+  "file": "seg-06.mp3",
+  "seconds": 9.6,
+  "chars": 137,
+  "sha256": "e4281f2fd9d65b0e3c2810fc9b081aa668707b782608563b67510312b496c40a"
+ },
+ {
+  "plate": "VIII",
+  "file": "seg-07.mp3",
+  "seconds": 13.84,
+  "chars": 202,
+  "sha256": "adeb69c711707fe0b088823be143bd656a3b88b56069ecae0a66be74a428cb36"
+ },
+ {
+  "plate": "IX",
+  "file": "seg-08.mp3",
+  "seconds": 11.68,
+  "chars": 157,
+  "sha256": "7be9ee46f57cc308b2cab19bc17c3c4c1b8c4b13d9ce46b05fe4de669e03c1f3"
+ },
+ {
+  "plate": "X",
+  "file": "seg-09.mp3",
+  "seconds": 5.2,
+  "chars": 64,
+  "sha256": "855492f0cf8ab8afaacc75a4f743d7b0cb6133bbdd40a5aaee316a27456efc33"
+ }
+]

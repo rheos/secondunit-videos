@@ -1,0 +1,124 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #b9 { position: absolute; inset: 0; }
+        .b9-cal { position: absolute; left: 0; width: 360px; text-align: center; color: var(--ink); }
+        #b9-mon { left: 160px; top: 252px; font-family: var(--font-label); font-size: 34px; letter-spacing: 0.16em; }
+        #b9-day { left: 160px; top: 290px; font-family: var(--font-display); font-size: 210px; line-height: 1; }
+        #b9-yr { left: 160px; top: 510px; font-family: var(--font-label); font-size: 34px; letter-spacing: 0.3em; }
+      </style>
+      <div data-hf-id="hf-rca0" id="b9" data-composition-id="b9" data-width="1920" data-height="1080">
+        <div data-hf-id="hf-rca1" id="b9-content" class="layer">
+          <div data-hf-id="hf-rca2" id="b9-lab-l" class="plate-label left">FIG. IX</div>
+          <div data-hf-id="hf-rca3" id="b9-lab-r" class="plate-label right">IN OPERATION</div>
+          <svg data-hf-id="hf-rca4" id="b9-svg" class="full" viewBox="0 0 1920 1080"></svg>
+          <div data-hf-id="hf-rca5" id="b9-mon" class="b9-cal">SEPTEMBER</div>
+          <div data-hf-id="hf-rca6" id="b9-day" class="b9-cal">30</div>
+          <div data-hf-id="hf-rca7" id="b9-yr" class="b9-cal">2026</div>
+          <div data-hf-id="hf-rca8" class="statement">
+            <span data-hf-id="hf-rca9" id="b9-s1" class="phrase">No promise.</span>
+            <span data-hf-id="hf-rcaa" id="b9-s2" class="phrase accent">In operation.</span>
+          </div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text } = BP;
+          const tl = gsap.timeline({ paused: true });
+          const S = 125.24;
+          const K = BP.kit(tl, S, "IX");
+          const R = (t) => K.R(t);
+          const W = (w, n) => R(VO.w("IX", w, n));
+          const svg = K.$("b9-svg");
+
+          // the calendar leaf
+          const leaf = el("rect", { class: "ln line-strong fill-raised", x: 160, y: 220, width: 360, height: 360 }, svg);
+          const rings = el("path", { class: "ln line-strong", d: "M250 206V236M430 206V236" }, svg);
+          // the move: the older store into the engine, counted (the counts are private, so no number is shown)
+          const old = el("g", {}, svg);
+          const oldBox = el("rect", { class: "ln line", x: 640, y: 290, width: 240, height: 260 }, old);
+          [0, 1, 2, 3].forEach((i) => el("path", { class: "ln thin line", d: `M660 ${330 + i * 56}H860` }, old));
+          const oldT = text("THE OLDER STORE", { class: "lab sm", x: 760, y: 590, "text-anchor": "middle" }, svg);
+          const eng = el("g", {}, svg);
+          const engBox = el("rect", { class: "ln line-strong", x: 1300, y: 290, width: 260, height: 260 }, eng);
+          [0, 1, 2].forEach((i) => {
+            el("rect", { class: "ln thin line-strong", x: 1320, y: 306 + i * 78, width: 220, height: 64 }, eng);
+            el("path", { class: "ln line-strong", d: `M1405 ${350 + i * 78}q25 12 50 0` }, eng);
+          });
+          const engT = text("THE RECALLATRON", { class: "lab sm", x: 1430, y: 590, "text-anchor": "middle" }, svg);
+          const flow = el("path", { class: "ln line-strong", d: "M880 420H1290" }, svg);
+          const flowH = RC.head(svg, 1292, 420, "r");
+          const route = el("path", { d: "M880 420H1290", fill: "none", stroke: "none" }, svg);
+          const riders = [0, 1, 2, 3, 4, 5].map(() => {
+            const g = el("g", { opacity: 0 }, svg);
+            el("rect", { class: "ln line-strong fill-raised", x: -26, y: -17, width: 52, height: 34 }, g);
+            return g;
+          });
+          // the tally: strokes in fives, no total
+          const tally = el("g", {}, svg);
+          const strokes = [];
+          for (let grp = 0; grp < 4; grp++) {
+            for (let k = 0; k < 4; k++) strokes.push(el("path", { class: "ln line-strong", d: `M${930 + grp * 84 + k * 14} 470V530` }, tally));
+            strokes.push(el("path", { class: "ln line-strong", d: `M${922 + grp * 84} 522L${986 + grp * 84} 478` }, tally));
+          }
+          const counted = text("EVERY RECORD COUNTED", { class: "lab sm", x: 1090, y: 590, "text-anchor": "middle" }, svg);
+          // the lamp: in operation
+          const lamp = el("circle", { class: "ln line-strong", cx: 1720, cy: 400, r: 56 }, svg);
+          const glow = el("circle", { class: "fill-acc", cx: 1720, cy: 400, r: 36, opacity: 0 }, svg);
+          const rays = el("path", { class: "ln acc-s", d: "M1720 320V296M1800 400H1824M1640 400H1616M1777 343L1794 326M1663 343L1646 326M1777 457L1794 474M1663 457L1646 474", opacity: 0 }, svg);
+          const lampT = text("EVER SINCE", { class: "lab sm", x: 1720, y: 500, "text-anchor": "middle" }, svg);
+
+          K.fade(K.$("b9-lab-l"), R(126.3), 0.4);
+          K.fade(K.$("b9-lab-r"), R(126.3), 0.4);
+          K.slam(K.$("b9-s1"), W("no") - 0.2, { stagger: 0.05 });
+          // "On the thirtieth of September, twenty twenty-six"
+          K.stamp(leaf, W("on") - 0.4, { origin: "340 400", sound: "card", from: 1.15 });
+          K.draw(rings, W("on") - 0.2, 0.3, "power2.out", false);
+          K.slam(K.$("b9-day"), W("30th") - 0.05, { stagger: 0.08 });
+          K.typed(K.$("b9-mon"), W("september") - 0.3, { cps: 26, cursor: false });
+          K.typed(K.$("b9-yr"), W("2026"), { cps: 14, cursor: false });
+          // "an older store was moved in, every record counted"
+          K.draw(oldBox, W("an") - 0.3, 0.5);
+          K.fade(old, W("an") - 0.2, 0.3);
+          K.typed(oldT, W("older"), { cps: 34, cursor: false });
+          K.draw(engBox, W("store") - 0.1, 0.5);
+          K.fade(eng, W("store"), 0.3);
+          K.typed(engT, W("store") + 0.2, { cps: 34, cursor: false });
+          K.draw(flow, W("moved") - 0.1, 0.4);
+          K.draw(flowH, W("moved") + 0.25, 0.15);
+          riders.forEach((g, i) => {
+            const t = W("moved") + 0.1 + i * 0.3;
+            K.fade(g, t, 0.08);
+            K.travel(g, route, t, 0.6, "power1.in");
+            tl.to(g, { opacity: 0, duration: 0.08 }, t + 0.58);
+            K.sfx("card", t + 0.55);
+          });
+          strokes.forEach((s, i) => {
+            K.draw(s, W("every") - 0.4 + i * 0.07, 0.08, "none", false);
+            K.sfx("tick", W("every") - 0.4 + i * 0.07);
+          });
+          K.typed(counted, W("counted") - 0.3, { cps: 36, cursor: false });
+          // "It has been in operation ever since."
+          K.draw(lamp, W("it") - 0.3, 0.5);
+          tl.fromTo(glow, { opacity: 0 }, { opacity: 1, duration: 0.25 }, W("operation") - 0.1);
+          tl.fromTo(rays, { opacity: 0 }, { opacity: 1, duration: 0.25 }, W("operation") - 0.05);
+          K.sfx("bell", W("operation") - 0.1);
+          K.pulse(glow, W("operation") + 0.3, 3, 0.65, 0.12, { origin: "1720 400" });
+          K.typed(lampT, W("ever") - 0.1, { cps: 30, cursor: false });
+          K.slam(K.$("b9-s2"), W("operation") - 0.1, { stagger: 0.05 });
+
+          const out = R(138.35);
+          K.sfx("out", out);
+          tl.to(K.$("b9-content"), { opacity: 0, duration: 0.5 }, out);
+          window.__timelines["b9"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

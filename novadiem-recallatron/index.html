@@ -5,67 +5,110 @@
     <meta name="viewport" content="width=1280, height=720" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;700&display=block" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=IM+Fell+English+SC&family=Special+Elite&display=block" />
     <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
     <!-- Series kit (tools/blueprint-kit, copied by sync.sh). Theme first, then structure. -->
-    <link rel="stylesheet" href="kit/themes/rheo.css" />
+    <link rel="stylesheet" href="kit/themes/patent.css" />
     <link rel="stylesheet" href="kit/kit.css" />
     <script src="kit/kit.js"></script>
+    <!-- the narration's word times, in film seconds (vo/place.py): VO.w(plate, word) -->
+    <script src="vo/words.js"></script>
     <script>
-      // Beat grid of the score (beats.json): librosa beats 7.70-84.30 at ~94 BPM, extended to both ends at 0.639 s.
-      BP.grid({ beats: [0.04, 0.68, 1.31, 1.95, 2.59, 3.23, 3.87, 4.51, 5.15, 5.78, 6.42, 7.06, 7.7, 8.34, 8.97, 9.61, 10.25, 10.89, 11.53, 12.17, 12.81, 13.44, 14.08, 14.72, 15.36, 16.0, 16.64, 17.28, 17.91, 18.55, 19.19, 19.83, 20.47, 21.11, 21.75, 22.38, 23.02, 23.66, 24.3, 24.94, 25.58, 26.2, 26.85, 27.49, 28.12, 28.76, 29.4, 30.04, 30.69, 31.31, 31.95, 32.59, 33.23, 33.87, 34.5, 35.14, 35.78, 36.42, 37.06, 37.7, 38.34, 38.97, 39.61, 40.25, 40.89, 41.53, 42.17, 42.81, 43.44, 44.08, 44.72, 45.36, 46.0, 46.64, 47.28, 47.91, 48.55, 49.19, 49.83, 50.47, 51.11, 51.75, 52.38, 53.02, 53.66, 54.3, 54.94, 55.58, 56.22, 56.85, 57.48, 58.12, 58.76, 59.41, 60.04, 60.67, 61.31, 61.95, 62.59, 63.23, 63.87, 64.51, 65.14, 65.78, 66.42, 67.06, 67.7, 68.34, 68.97, 69.61, 70.25, 70.89, 71.53, 72.17, 72.81, 73.44, 74.08, 74.72, 75.36, 76.0, 76.64, 77.28, 77.91, 78.55, 79.19, 79.83, 80.47, 81.11, 81.75, 82.38, 83.02, 83.66, 84.3, 84.94, 85.58, 86.22, 86.85, 87.49, 88.13, 88.77, 89.41] });
+      // The narration is the clock; plates cue on its words with K.R(VO.w(...)), unsnapped. The grid is only a fallback.
+      BP.grid({ bpm: 92, offset: 0, length: 150 });
     </script>
     <style>
-      /* memory cards and plate type, shared by every plate */
-      svg text.ct { font-family: var(--font-mono); font-size: 22px; font-weight: 700; letter-spacing: 0; fill: var(--ink); }
-      svg text.cb { font-family: var(--font-mono); font-size: 20px; font-weight: 400; letter-spacing: 0; fill: var(--ink); }
-      svg text.cm { font-family: var(--font-mono); font-size: 15px; font-weight: 400; letter-spacing: 0.1em; fill: var(--ink-dim); }
-      svg text.cm.on { fill: var(--line-strong); font-weight: 700; }
-      svg text.stamp-t { font-family: var(--font-mono); font-size: 18px; font-weight: 700; letter-spacing: 0.16em; fill: var(--line-strong); }
-      svg text.mono.mint { fill: var(--line-strong); }
+      /* type on the patent sheets */
+      svg text.ct { font-family: var(--font-mono); font-size: 25px; fill: var(--ink); }
+      svg text.cb { font-family: var(--font-mono); font-size: 21px; fill: var(--ink); }
+      svg text.cm { font-family: var(--font-label); font-size: 19px; letter-spacing: 0.08em; fill: var(--ink-dim); }
+      svg text.cm.on { fill: var(--line-strong); }
+      svg text.lab { font-family: var(--font-label); font-size: 25px; letter-spacing: 0.06em; fill: var(--line-strong); }
+      svg text.lab.sm { font-size: 20px; }
+      svg text.ty { font-family: var(--font-mono); font-size: 23px; fill: var(--ink); }
+      svg text.ty.sm { font-size: 19px; fill: var(--ink-dim); }
+      svg text.fig { font-family: var(--font-display); font-style: italic; font-size: 26px; fill: var(--ink-dim); }
+      svg text.acc { fill: var(--accent); }
+      svg text.stamp-t { font-family: var(--font-label); font-size: 24px; letter-spacing: 0.14em; fill: var(--accent); }
       .fill-strong { fill: var(--line-strong); }
-      .statement.two { top: 790px; flex-direction: column; align-items: center; font-size: 60px; row-gap: 6px; }
+      .fill-acc { fill: var(--accent); }
+      .acc-s { stroke: var(--accent); }
+      .statement { font-size: 76px; letter-spacing: 0; top: 812px; }
+      .statement.two { top: 778px; flex-direction: column; align-items: center; font-size: 66px; row-gap: 2px; }
+      .plate-label { letter-spacing: 0.12em; }
+      /* the broadsheet field (plates I and X): cream, ink and oxblood, after recallatron.com */
+      .sheet { position: absolute; inset: 0; background: var(--field); }
+      .sheet .plate-label, .sheet .title, .sheet .statement { color: var(--ink-field); }
+      .sheet .statement .accent { color: var(--accent-field); }
+      .sheet svg text.lab { fill: var(--ink-field); }
+      .sheet svg text.ty { fill: var(--ink-field); }
+      .sheet svg text.ty.sm { fill: var(--line-field); }
+      .sheet svg text.fig { fill: var(--line-field); }
+      .sheet svg text.stamp-t { fill: var(--accent-field); }
+      .sheet .ink-s { stroke: var(--ink-field); }
+      .sheet .acc-s { stroke: var(--accent-field); }
+      .sheet .fill-ink { fill: var(--ink-field); }
+      .sheet .fill-paper { fill: var(--field); }
+      .kick { position: absolute; left: 0; right: 0; text-align: center; font-family: var(--font-label); letter-spacing: 0.2em; color: var(--accent-field); }
     </style>
     <script>
-      // RC.card(parent, x, y, spec): one memory, as an index card 460 x 200 in local coords.
-      // The returned .root is an untransformed <g> so plates can move it with fromTo x/y;
-      // the card's own position sits on an inner <g>. Memory contents are made up.
+      // RC: the film's drawing parts, shared by the plates. Memory contents are made up.
       window.RC = (() => {
         const { el, text } = BP;
-        const W = 460,
-          H = 200;
+        const W = 440,
+          H = 220;
+        // an index card (a memorandum): kind and revision in the header, title, body, a foot line
         function card(parent, x, y, s) {
           const root = el("g", {}, parent);
           const g = el("g", { transform: `translate(${x} ${y})` }, root);
           const P = { root, g, x, y, W, H };
           P.bg = el("rect", { class: "fill-raised", x: 0, y: 0, width: W, height: H }, g);
           P.frame = el("rect", { class: s.strong ? "ln line-strong" : "ln line", x: 0, y: 0, width: W, height: H }, g);
-          P.rule1 = el("path", { class: "ln thin line", d: `M0 44H${W}` }, g);
-          P.rule2 = el("path", { class: "ln thin line", d: `M0 150H${W}` }, g);
-          P.kind = text(s.kind, { class: "cm on", x: 20, y: 29 }, g);
-          P.rev = text(`REV ${s.rev || 1}`, { class: "cm", x: W - 20, y: 29, "text-anchor": "end" }, g);
-          P.title = text(s.title, { class: "ct", x: 20, y: 84 }, g);
-          P.body = text(s.body, { class: "cb", x: 20, y: 122 }, g);
-          P.foot = text(s.foot, { class: "cm", x: 20, y: 181 }, g);
+          P.rule1 = el("path", { class: "ln line-strong", d: `M0 46H${W}` }, g);
+          P.rules = [94, 132, 170].map((yy) => el("path", { class: "ln thin line", d: `M18 ${yy + 8}H${W - 18}`, opacity: 0.35 }, g));
+          P.kind = text(s.kind, { class: "cm on", x: 18, y: 31 }, g);
+          P.rev = text(`REV. ${s.rev || 1}`, { class: "cm", x: W - 18, y: 31, "text-anchor": "end" }, g);
+          P.title = text(s.title, { class: "ct", x: 18, y: 92 }, g);
+          P.body = text(s.body, { class: "cb", x: 18, y: 131 }, g);
+          P.foot = text(s.foot || "", { class: "cm", x: 18, y: 200 }, g);
           return P;
         }
-        // draw a card in: paper, frame, rules, then the text a beat-fraction apart
-        function drawIn(K, P, at, quick) {
-          const k = quick ? 0.5 : 1;
-          K.fade(P.bg, at, 0.3);
-          K.draw(P.frame, at, 0.7 * k);
-          K.draw(P.rule1, at + 0.25 * k, 0.4 * k);
-          K.draw(P.rule2, at + 0.35 * k, 0.4 * k);
-          [P.kind, P.rev, P.title, P.body, P.foot].forEach((t, i) => K.fade(t, at + (0.3 + i * 0.12) * k, 0.3));
+        // draw a card in: the card lands (a filed card), then its text is typed
+        function drawIn(K, P, at, o = {}) {
+          K.stamp(P.root, at, { origin: `${P.x + W / 2} ${P.y + H / 2}`, sound: "card", from: o.from || 1.25, dur: 0.24 });
+          K.draw(P.rule1, at + 0.15, 0.3, "power2.out", false);
+          P.rules.forEach((r, i) => K.draw(r, at + 0.2 + i * 0.05, 0.3, "power2.out", false));
+          const k = o.cps || 40;
+          let t = at + 0.25;
+          K.fade(P.kind, t, 0.2);
+          K.fade(P.rev, t, 0.2);
+          if (o.type === false) {
+            [P.title, P.body, P.foot].forEach((n, i) => K.fade(n, t + 0.1 + i * 0.1, 0.25));
+            return t + 0.5;
+          }
+          t = K.typed(P.title, t + 0.1, { cps: k, cursor: false }) + 0.08;
+          t = K.typed(P.body, t, { cps: k }) + 0.08;
+          if (P.foot.textContent) t = K.typed(P.foot, t, { cps: k * 1.4, cursor: false });
+          return t;
         }
-        // a rubber stamp across a card (local coords of the card's inner <g>)
-        function stamp(P, label, cx, cy, w) {
-          const s = el("g", { transform: `rotate(-6 ${cx} ${cy})` }, P.g);
-          const r = el("rect", { class: "ln line-strong", x: cx - w / 2, y: cy - 22, width: w, height: 44 }, s);
-          const t = text(label, { class: "stamp-t", x: cx, y: cy + 6, "text-anchor": "middle" }, s);
-          return { s, r, t };
+        // a callout: a leader line from a point to a label, the label typed after the line lands
+        function callout(parent, x1, y1, x2, y2, label, o = {}) {
+          const g = el("g", {}, parent);
+          const dot = el("circle", { class: "fill-strong", cx: x1, cy: y1, r: 5 }, g);
+          const line = el("path", { class: "ln thin line-strong", d: `M${x1} ${y1}L${x2} ${y2}H${x2 + (o.left ? -24 : 24)}` }, g);
+          const t = text(label, { class: o.cls || "lab sm", x: x2 + (o.left ? -32 : 32), y: y2 + 7, "text-anchor": o.left ? "end" : "start" }, g);
+          const sub = o.sub ? text(o.sub, { class: "ty sm", x: x2 + (o.left ? -32 : 32), y: y2 + 36, "text-anchor": o.left ? "end" : "start" }, g) : null;
+          return { g, dot, line, t, sub };
         }
-        // arrowhead pointing along (dx, dy) at (x, y)
+        function showCallout(K, c, at) {
+          K.fade(c.dot, at, 0.15);
+          K.draw(c.line, at, 0.3, "power2.out", false);
+          K.sfx("tick", at);
+          let e = K.typed(c.t, at + 0.3, { cps: 32, cursor: false });
+          if (c.sub) e = K.typed(c.sub, e + 0.1, { cps: 38, cursor: false });
+          return e;
+        }
+        // an arrowhead pointing r, l, u or d at (x, y)
         function head(parent, x, y, dir, cls) {
           const d = {
             l: `M${x + 14} ${y - 8}L${x} ${y}L${x + 14} ${y + 8}`,
@@ -73,9 +116,25 @@
             u: `M${x - 8} ${y + 14}L${x} ${y}L${x + 8} ${y + 14}`,
             d: `M${x - 8} ${y - 14}L${x} ${y}L${x + 8} ${y - 14}`,
           }[dir];
-          return el("path", { class: cls || "ln line", d }, parent);
+          return el("path", { class: cls || "ln line-strong", d }, parent);
         }
-        return { card, drawIn, stamp, head, W, H };
+        // a rubber stamp: a box of text, turned a little
+        function stampBox(parent, label, cx, cy, w, o = {}) {
+          const g = el("g", { transform: `rotate(${o.rot || -5} ${cx} ${cy})` }, parent);
+          const r = el("rect", { class: `ln ${o.cls || "acc-s"}`, x: cx - w / 2, y: cy - 23, width: w, height: 46, style: "stroke-width: 3" }, g);
+          const t = text(label, { class: "stamp-t", x: cx, y: cy + 8, "text-anchor": "middle" }, g);
+          return { g, r, t, cx, cy };
+        }
+        // the card cabinet: a drawer front with a label holder and a pull
+        function drawer(parent, x, y, w, h, label) {
+          const g = el("g", {}, parent);
+          const box = el("rect", { class: "ln line-strong", x, y, width: w, height: h }, g);
+          const holder = el("rect", { class: "ln thin line-strong", x: x + w / 2 - 90, y: y + 18, width: 180, height: 40 }, g);
+          const t = text(label, { class: "lab sm", x: x + w / 2, y: y + 45, "text-anchor": "middle" }, g);
+          const pull = el("path", { class: "ln line-strong", d: `M${x + w / 2 - 40} ${y + h - 30}q40 26 80 0`, style: "stroke-width: 4" }, g);
+          return { g, box, holder, t, pull };
+        }
+        return { card, drawIn, callout, showCallout, head, stampBox, drawer, W, H };
       })();
     </script>
   </head>
@@ -84,30 +143,35 @@
       id="root"
       data-composition-id="main"
       data-start="0"
-      data-duration="89.9"
+      data-duration="147.92"
       data-width="1280"
       data-height="720"
     >
-      <!-- Score: score-library drafting-table-recallatron take-01, sha256 cca47485...ee1c, the clock for every cue -->
+      <!-- One track: George's narration, the exhibition-hall-recallatron score ducked under it and the sound on the
+           picture (tools/blueprint-kit/sfx.py -> _in/mix.wav). The narration is the clock for every cue. -->
       <audio data-hf-id="hf-rc02"
         id="score"
-        src="_in/score.mp3"
+        src="_in/mix.wav"
         data-start="0"
-        data-duration="89.9"
-        data-track-index="9"
+        data-duration="147.92"
+        data-track-index="20"
         data-volume="1"
       ></audio>
 
-      <!-- every plate draws on a 1920x1080 stage; drafts scale it to 720p (kit.css, stage.sh) -->
+      <!-- every plate draws on a 1920x1080 stage; drafts scale it to 720p (kit.css, stage.sh).
+           Each slot opens 0.6 s before its plate and closes 0.8 s after the next one starts, so plates can hand over; earlier plates sit on top. -->
       <div class="stage">
-        <div data-hf-id="hf-rc03" id="slot-furniture" data-composition-id="furniture" data-composition-src="compositions/furniture.html" data-start="0" data-duration="89.9" data-track-index="0" data-width="1920" data-height="1080"></div>
-        <div data-hf-id="hf-rc04" id="slot-b1" data-composition-id="b1" data-composition-src="compositions/b1-move.html" data-start="0" data-duration="12.86" data-track-index="1" data-width="1920" data-height="1080"></div>
-        <div data-hf-id="hf-rc05" id="slot-b2" data-composition-id="b2" data-composition-src="compositions/b2-saved.html" data-start="12.81" data-duration="13.44" data-track-index="2" data-width="1920" data-height="1080"></div>
-        <div data-hf-id="hf-rc06" id="slot-b3" data-composition-id="b3" data-composition-src="compositions/b3-superseded.html" data-start="26.2" data-duration="14.1" data-track-index="3" data-width="1920" data-height="1080"></div>
-        <div data-hf-id="hf-rc07" id="slot-b4" data-composition-id="b4" data-composition-src="compositions/b4-corrected.html" data-start="40.25" data-duration="12.82" data-track-index="4" data-width="1920" data-height="1080"></div>
-        <div data-hf-id="hf-rc08" id="slot-b5" data-composition-id="b5" data-composition-src="compositions/b5-recall.html" data-start="53.02" data-duration="14.73" data-track-index="5" data-width="1920" data-height="1080"></div>
-        <div data-hf-id="hf-rc09" id="slot-b6" data-composition-id="b6" data-composition-src="compositions/b6-next-session.html" data-start="67.7" data-duration="12.18" data-track-index="6" data-width="1920" data-height="1080"></div>
-        <div data-hf-id="hf-rc0a" id="slot-b7" data-composition-id="b7" data-composition-src="compositions/b7-colophon.html" data-start="79.83" data-duration="10.07" data-track-index="7" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-rc03" id="slot-furniture" data-composition-id="furniture" data-composition-src="compositions/furniture.html" data-start="0" data-duration="147.92" data-track-index="0" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-rc04" id="slot-b1" data-composition-id="b1" data-composition-src="compositions/b1-affliction.html" data-start="0" data-duration="15.52" data-track-index="1" data-width="1920" data-height="1080" style="z-index: 19"></div>
+        <div data-hf-id="hf-rc05" id="slot-b2" data-composition-id="b2" data-composition-src="compositions/b2-worse.html" data-start="14.12" data-duration="17.4" data-track-index="2" data-width="1920" data-height="1080" style="z-index: 18"></div>
+        <div data-hf-id="hf-rc06" id="slot-b3" data-composition-id="b3" data-composition-src="compositions/b3-anatomy.html" data-start="30.12" data-duration="17.68" data-track-index="3" data-width="1920" data-height="1080" style="z-index: 17"></div>
+        <div data-hf-id="hf-rc07" id="slot-b4" data-composition-id="b4" data-composition-src="compositions/b4-recording.html" data-start="46.4" data-duration="19.88" data-track-index="4" data-width="1920" data-height="1080" style="z-index: 16"></div>
+        <div data-hf-id="hf-rc08" id="slot-b5" data-composition-id="b5" data-composition-src="compositions/b5-amend.html" data-start="64.88" data-duration="17.24" data-track-index="5" data-width="1920" data-height="1080" style="z-index: 15"></div>
+        <div data-hf-id="hf-rc09" id="slot-b6" data-composition-id="b6" data-composition-src="compositions/b6-recall.html" data-start="80.72" data-duration="20.34" data-track-index="6" data-width="1920" data-height="1080" style="z-index: 14"></div>
+        <div data-hf-id="hf-rc0a" id="slot-b7" data-composition-id="b7" data-composition-src="compositions/b7-sitting.html" data-start="99.66" data-duration="11.98" data-track-index="7" data-width="1920" data-height="1080" style="z-index: 13"></div>
+        <div data-hf-id="hf-rc0b" id="slot-b8" data-composition-id="b8" data-composition-src="compositions/b8-forgetting.html" data-start="110.24" data-duration="16.4" data-track-index="8" data-width="1920" data-height="1080" style="z-index: 12"></div>
+        <div data-hf-id="hf-rc0c" id="slot-b9" data-composition-id="b9" data-composition-src="compositions/b9-operation.html" data-start="125.24" data-duration="14.08" data-track-index="9" data-width="1920" data-height="1080" style="z-index: 11"></div>
+        <div data-hf-id="hf-rc0d" id="slot-b10" data-composition-id="b10" data-composition-src="compositions/b10-broadsheet.html" data-start="137.92" data-duration="10.0" data-track-index="10" data-width="1920" data-height="1080" style="z-index: 10"></div>
       </div>
     </div>
 

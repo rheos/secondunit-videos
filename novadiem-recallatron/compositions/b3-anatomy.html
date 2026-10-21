@@ -1,0 +1,123 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #b3 { position: absolute; inset: 0; }
+      </style>
+      <div data-hf-id="hf-rc40" id="b3" data-composition-id="b3" data-width="1920" data-height="1080">
+        <div data-hf-id="hf-rc41" id="b3-content" class="layer">
+          <div data-hf-id="hf-rc42" id="b3-lab-l" class="plate-label left">FIG. III</div>
+          <div data-hf-id="hf-rc43" id="b3-lab-r" class="plate-label right">ANATOMY OF A MEMORANDUM</div>
+          <svg data-hf-id="hf-rc44" id="b3-svg" class="full" viewBox="0 0 1920 1080"></svg>
+          <div data-hf-id="hf-rc45" class="statement">
+            <span data-hf-id="hf-rc46" id="b3-s1" class="phrase">Who may read it,</span>
+            <span data-hf-id="hf-rc47" id="b3-s2" class="phrase accent">and to what end.</span>
+          </div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text } = BP;
+          const tl = gsap.timeline({ paused: true });
+          const S = 30.12;
+          const K = BP.kit(tl, S, "III");
+          const R = (t) => K.R(t);
+          const W = (w, n) => R(VO.w("III", w, n));
+          const svg = K.$("b3-svg");
+
+          // one memorandum, drawn large: every part of the record (memory.md, the memory table)
+          const X = 620, Y = 200, CW = 680, CH = 470;
+          const C = el("g", {}, svg);
+          const bg = el("rect", { class: "fill-raised", x: X, y: Y, width: CW, height: CH }, C);
+          const frame = el("rect", { class: "ln line-strong", x: X, y: Y, width: CW, height: CH }, C);
+          const head = el("path", { class: "ln line-strong", d: `M${X} ${Y + 56}H${X + CW}` }, C);
+          const mid = el("path", { class: "ln thin line", d: `M${X + 24} ${Y + 196}H${X + CW - 24}` }, C);
+          const kind = text("FACT", { class: "lab", x: X + 26, y: Y + 38 }, C);
+          const rev = text("REV. 1", { class: "lab", x: X + CW - 26, y: Y + 38, "text-anchor": "end" }, C);
+          const title = text("Staging database", { class: "ct", x: X + 26, y: Y + 112 }, C);
+          const body = text("Staging runs Postgres 17.", { class: "cb", x: X + 26, y: Y + 160 }, C);
+          const ROWS = [["AUDIENCE", "the whole workspace"], ["PURPOSES", "respond · follow up"], ["ORIGIN", "told"], ["SOURCES", "session of 2026-10-09"]];
+          const rows = ROWS.map(([a, b], i) => ({
+            a: text(a, { class: "lab sm", x: X + 26, y: Y + 250 + i * 54 }, C),
+            b: text(b, { class: "ty", x: X + 230, y: Y + 250 + i * 54 }, C),
+          }));
+
+          // callouts, each typed as George names the part
+          const co = [
+            RC.callout(svg, X + 120, Y + 28, 520, 250, "KIND", { left: true, sub: "note · fact · decision · summary" }),
+            RC.callout(svg, X + 20, Y + 244, 520, 400, "WHO MAY READ IT", { left: true, sub: "the workspace, or one member" }),
+            RC.callout(svg, X + 20, Y + 298, 520, 550, "TO WHAT ENDS", { left: true, sub: "one or more of four purposes" }),
+            RC.callout(svg, X + CW - 20, Y + 352, 1400, 470, "WHERE IT CAME FROM", { sub: "told · derived · migrated" }),
+            RC.callout(svg, X + CW - 140, Y + 28, 1400, 250, "REVISIONS COUNTED", { sub: "every change checks the count" }),
+          ];
+
+          // derivation narrows, never widens: workspace + private gives private
+          const D = el("g", {}, svg);
+          const small = (x, y, aud) => {
+            const g = el("g", { opacity: 0 }, D);
+            el("rect", { class: "ln line fill-raised", x, y, width: 300, height: 120 }, g);
+            el("path", { class: "ln line-strong", d: `M${x} ${y + 36}H${x + 300}` }, g);
+            text("NOTE", { class: "cm on", x: x + 14, y: y + 25 }, g);
+            text("AUDIENCE", { class: "cm", x: x + 14, y: y + 70 }, g);
+            text(aud, { class: "ty sm", x: x + 14, y: y + 102 }, g);
+            return g;
+          };
+          const pa = small(1120, 230, "the whole workspace");
+          const pb = small(1120, 430, "one member only");
+          const arrows = el("path", { class: "ln line-strong", d: "M1420 290H1470V400M1420 490H1470V400H1520" }, D);
+          const ah = RC.head(D, 1522, 400, "r");
+          const deriv = text("DERIVED", { class: "lab sm", x: 1470, y: 272, "text-anchor": "middle" }, D);
+          const nc = small(1530, 340, "one member only");
+          const priv = RC.stampBox(D, "PRIVATE", 1680, 498, 200, { cls: "line-strong", rot: -6 });
+
+          K.fade(K.$("b3-lab-l"), R(31.0), 0.4);
+          K.fade(K.$("b3-lab-r"), R(31.0), 0.4);
+          // the card arrives from plate II's last position and opens up to full size
+          K.move(C, R(30.95), 0.75, { opacity: 0, x: -240 }, { opacity: 1, x: 0 }, { ease: "power3.out", sound: "slide" });
+          [head, mid].forEach((n, i) => K.draw(n, R(31.5) + i * 0.1, 0.4, "power2.out", false));
+          K.fade(kind, R(31.7), 0.25);
+          K.fade(rev, R(31.7), 0.25);
+          let e = K.typed(title, W("keeps"), { cps: 36, cursor: false });
+          K.typed(body, e + 0.05, { cps: 36 });
+          rows.forEach((r) => K.fade(r.a, W("record") - 0.1, 0.3));
+          // KIND, AUDIENCE, PURPOSES, ORIGIN + SOURCES, REVISION as George names them
+          RC.showCallout(K, co[0], W("kind") - 0.1);
+          K.typed(rows[0].b, W("who"), { cps: 34, cursor: false });
+          RC.showCallout(K, co[1], W("who") + 0.1);
+          K.typed(rows[1].b, W("ends") - 0.2, { cps: 34, cursor: false });
+          RC.showCallout(K, co[2], W("ends") - 0.1);
+          K.typed(rows[2].b, W("came"), { cps: 34, cursor: false });
+          K.typed(rows[3].b, W("came") + 0.3, { cps: 34, cursor: false });
+          RC.showCallout(K, co[3], W("came") - 0.1);
+          RC.showCallout(K, co[4], W("revised") - 0.3);
+          K.pulse(rev, W("revised"), 2, 0.3, 0.18, { origin: `${X + CW - 60} ${Y + 30}`, sound: "tick" });
+          K.slam(K.$("b3-s1"), W("ends") - 0.6, { stagger: 0.035 });
+          K.slam(K.$("b3-s2"), W("ends") + 0.1, { stagger: 0.035 });
+
+          // "Draw a memory from a private one, and it stays private": the card steps aside for the derivation
+          const dAt = W("draw") - 0.3;
+          co.forEach((c) => tl.to(c.g, { opacity: 0, duration: 0.3 }, dAt));
+          K.move(C, dAt, 0.7, { x: 0 }, { x: -540 }, { ease: "power2.inOut", sound: "slide" });
+          K.stamp(pa, W("memory", 2) - 0.1, { origin: "1270 290", sound: "card" });
+          K.stamp(pb, W("private") - 0.1, { origin: "1270 490", sound: "card" });
+          K.draw(arrows, W("one") - 0.1, 0.5);
+          K.draw(ah, W("one") + 0.35, 0.15);
+          K.typed(deriv, W("one"), { cps: 30, cursor: false });
+          K.stamp(nc, W("stays") - 0.2, { origin: "1680 400", sound: "card" });
+          K.stamp(priv.g, W("private", 2), { origin: "1680 498" });
+
+          // hand-off: the sheet slides left, and plate IV's apparatus comes in from the right
+          const out = R(46.7);
+          K.sfx("out", out);
+          K.camera(K.$("b3-content"), out, 0.9, { x: 0, opacity: 1 }, { x: -1920, opacity: 1 }, { ease: "power2.in" });
+          window.__timelines["b3"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

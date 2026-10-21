@@ -1,0 +1,143 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #b4 { position: absolute; inset: 0; }
+      </style>
+      <div data-hf-id="hf-rc50" id="b4" data-composition-id="b4" data-width="1920" data-height="1080">
+        <div data-hf-id="hf-rc51" id="b4-content" class="layer">
+          <div data-hf-id="hf-rc52" id="b4-lab-l" class="plate-label left">FIG. IV</div>
+          <div data-hf-id="hf-rc53" id="b4-lab-r" class="plate-label right">THE RECORDING APPARATUS</div>
+          <svg data-hf-id="hf-rc54" id="b4-svg" class="full" viewBox="0 0 1920 1080"></svg>
+          <div data-hf-id="hf-rc55" class="statement two">
+            <span data-hf-id="hf-rc56" id="b4-s1" class="phrase">It takes down your words,</span>
+            <span data-hf-id="hf-rc57" id="b4-s2" class="phrase accent">and nothing of your whereabouts.</span>
+          </div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text } = BP;
+          const tl = gsap.timeline({ paused: true });
+          const S = 46.4;
+          const K = BP.kit(tl, S, "IV");
+          const R = (t) => K.R(t);
+          const W = (w, n) => R(VO.w("IV", w, n));
+          const svg = K.$("b4-svg");
+
+          // the premises: your own machine (apps/bridge runs here)
+          const prem = el("rect", { class: "ln thin line-strong", x: 110, y: 140, width: 930, height: 580 }, svg);
+          const premT = text("YOUR OWN MACHINE", { class: "lab sm", x: 132, y: 176 }, svg);
+          // a session (the lines are made up)
+          const pan = el("rect", { class: "ln line", x: 150, y: 200, width: 540, height: 280 }, svg);
+          const panR = el("path", { class: "ln thin line", d: "M150 240H690" }, svg);
+          const panT = text("SESSION  ·  2026-10-02", { class: "cm", x: 168, y: 228 }, svg);
+          const LINES = [["YOU", "Staging runs Postgres 17 now."], ["AGENT", "Noted. Updating the notes."], ["YOU", "And the dashboard next."], ["AGENT", "Opening it now."]];
+          const lines = LINES.map(([who, s], i) => {
+            const g = el("g", {}, svg);
+            text(who, { class: "cm on", x: 168, y: 288 + i * 50 }, g);
+            text(s, { class: "cb", x: 252, y: 288 + i * 50 }, g);
+            return { g, you: who === "YOU", y: 288 + i * 50 };
+          });
+          const ends = RC.stampBox(svg, "SESSION ENDS", 560, 452, 240, { cls: "line-strong", rot: -4 });
+          // the apparatus: the bridge's hook and worker
+          const app = el("g", {}, svg);
+          const appBox = el("rect", { class: "ln line-strong", x: 740, y: 230, width: 250, height: 190 }, app);
+          const g1 = el("circle", { class: "ln line", cx: 815, cy: 320, r: 42 }, app);
+          const g2 = el("circle", { class: "ln line", cx: 905, cy: 352, r: 30 }, app);
+          const spokes = el("path", { class: "ln thin line", d: "M815 278V362M773 320H857M905 322V382M875 352H935" }, app);
+          const appT = text("THE APPARATUS", { class: "lab sm", x: 865, y: 455, "text-anchor": "middle" }, app);
+          const feed = el("path", { class: "ln line", d: "M690 340H740" }, app);
+          // the scrubber: a bar that passes over the lines you typed
+          const scrub = el("rect", { class: "fill-strong", x: 150, y: 262, width: 14, height: 196, opacity: 0 }, svg);
+          const scrT = text("SCRUBBED", { class: "ty sm", x: 600, y: 520, "text-anchor": "middle" }, svg);
+          // what stays on the premises
+          const stay = [["SESSION ID", 560], ["FOLDER PATHS", 610], ["PROJECT NAME", 660]].map(([s, y]) => ({
+            t: text(s, { class: "lab sm", x: 170, y }, svg),
+            x: el("path", { class: "ln line-strong", d: `M166 ${y - 8}H${180 + s.length * 15}` }, svg),
+          }));
+          const stayT = text("STAYS HERE", { class: "ty", x: 470, y: 612 }, svg);
+          // the gate and the envelope that leaves: a keyed record and nothing else
+          const gate = el("path", { class: "ln line-strong", d: "M1040 300V380M1040 440V520", style: "stroke-width: 5" }, svg);
+          const route = el("path", { d: "M990 330C1040 330 1040 410 1090 410H1230", fill: "none", stroke: "none" }, svg);
+          const env = el("g", { opacity: 0 }, svg);
+          el("rect", { class: "ln line-strong fill-raised", x: -60, y: -34, width: 120, height: 68 }, env);
+          el("path", { class: "ln thin line-strong", d: "M-60 -34L0 6L60 -34" }, env);
+          const keyT = text("cc1:7f3a 9e1c …", { class: "ty sm", x: 1135, y: 470, "text-anchor": "middle" }, svg);
+          // the engine: scrubbed again, one extraction, at most one memorandum, and a receipt
+          const eng = el("rect", { class: "ln line-strong", x: 1230, y: 140, width: 580, height: 580 }, svg);
+          const engT = text("THE RECALLATRON", { class: "lab sm", x: 1252, y: 176 }, svg);
+          const steps = ["SCRUBBED AGAIN", "ONE MODEL CALL", "ONE MEMORY AT MOST"].map((s, i) => ({
+            box: el("rect", { class: "ln line", x: 1270, y: 200 + i * 66, width: 340, height: 48 }, svg),
+            t: text(s, { class: "lab sm", x: 1290, y: 232 + i * 66 }, svg),
+          }));
+          const card = RC.card(svg, 1300, 420, { kind: "FACT", title: "Staging database", body: "Staging runs Postgres 17.", foot: "2026-10-02  ·  AUTOMATIC", strong: true });
+          const rcpt = el("g", {}, svg);
+          el("rect", { class: "ln thin line-strong", x: 1640, y: 240, width: 150, height: 120 }, rcpt);
+          text("RECEIPT", { class: "cm on", x: 1715, y: 272, "text-anchor": "middle" }, rcpt);
+          text("no content", { class: "ty sm", x: 1715, y: 306, "text-anchor": "middle" }, rcpt);
+          text("no replay", { class: "ty sm", x: 1715, y: 334, "text-anchor": "middle" }, rcpt);
+
+          K.fade(K.$("b4-lab-l"), R(47.3), 0.4);
+          K.fade(K.$("b4-lab-r"), R(47.3), 0.4);
+          // the sheet travels in from the right (plate III left to the left)
+          K.camera(K.$("b4-content"), R(46.7), 0.9, { x: 1920 }, { x: 0 }, { ease: "power2.out", sound: false });
+          K.draw(prem, R(47.6), 0.9, "none");
+          K.typed(premT, R(47.8), { cps: 34, cursor: false });
+          [pan, panR].forEach((n, i) => K.draw(n, W("remembers") + i * 0.2, 0.5));
+          K.typed(panT, W("without"), { cps: 40, cursor: false });
+          lines.forEach((l, i) => K.fade(l.g, W("without") + 0.3 + i * 0.35, 0.3));
+          K.stamp(ends.g, W("ends") - 0.05, { origin: "560 452" });
+          K.sfx("bell", W("ends") - 0.05);
+          [appBox, g1, g2, spokes, feed].forEach((n, i) => K.draw(n, W("apparatus") - 0.2 + i * 0.1, 0.5));
+          K.typed(appT, W("machine") - 0.2, { cps: 34, cursor: false });
+          K.move(g1, W("reads"), 2.4, { rotation: 0, svgOrigin: "815 320" }, { rotation: 360, svgOrigin: "815 320" }, { ease: "none", sound: "crank" });
+          K.move(g2, W("reads"), 2.4, { rotation: 0, svgOrigin: "905 352" }, { rotation: -480, svgOrigin: "905 352" }, { ease: "none" });
+          // "reads only the lines you typed": the agent's lines dim out
+          lines.filter((l) => !l.you).forEach((l) => tl.to(l.g, { opacity: 0.25, duration: 0.4 }, W("lines")));
+          // "and scrubs them"
+          K.move(scrub, W("scrubs") - 0.1, 0.8, { x: 0, opacity: 0.9 }, { x: 520, opacity: 0.9 }, { ease: "power1.inOut", sound: "slide" });
+          tl.to(scrub, { opacity: 0, duration: 0.2 }, W("scrubs") + 0.7);
+          K.typed(scrT, W("them") + 0.2, { cps: 34, cursor: false });
+          // "Nothing that leaves names your session, your folders or your project"
+          K.draw(gate, W("nothing") - 0.3, 0.4);
+          K.fade(env, W("leaves") - 0.2, 0.1);
+          K.travel(env, route, W("leaves") - 0.2, 1.0, "power2.inOut");
+          K.sfx("slide", W("leaves") - 0.1, { d: 0.9 });
+          K.typed(keyT, W("names"), { cps: 30, cursor: false });
+          K.typed(stay[0].t, W("session", 2) - 0.1, { cps: 34, cursor: false });
+          K.draw(stay[0].x, W("session", 2) + 0.35, 0.2, "power2.out", false);
+          K.typed(stay[1].t, W("folders") - 0.1, { cps: 34, cursor: false });
+          K.draw(stay[1].x, W("folders") + 0.4, 0.2, "power2.out", false);
+          K.typed(stay[2].t, W("project") - 0.1, { cps: 34, cursor: false });
+          K.draw(stay[2].x, W("project") + 0.4, 0.2, "power2.out", false);
+          K.typed(stayT, W("project") + 0.6, { cps: 30, cursor: false });
+          K.slam(K.$("b4-s1"), W("names") - 0.6, { stagger: 0.03 });
+          K.slam(K.$("b4-s2"), W("project") + 0.2, { stagger: 0.03 });
+          // the engine side
+          [eng].forEach((n) => K.draw(n, W("nothing"), 0.9, "none"));
+          K.typed(engT, W("nothing") + 0.3, { cps: 34, cursor: false });
+          tl.to(env, { opacity: 0, duration: 0.2 }, W("leaves") + 0.8);
+          steps.forEach((s, i) => {
+            const t = R(61.0) + i * 0.45;
+            K.draw(s.box, t, 0.35);
+            K.typed(s.t, t + 0.1, { cps: 40, cursor: false });
+          });
+          RC.drawIn(K, card, W("passage") - 0.2, { cps: 60 });
+          K.stamp(rcpt, W("most"), { origin: "1715 300", sound: "stamp" });
+
+          // hand-off: everything leaves but the memorandum, which plate V picks up
+          const out = R(65.15);
+          K.sfx("out", out);
+          tl.to(K.$("b4-content"), { opacity: 0, duration: 0.4 }, out);
+          window.__timelines["b4"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>
