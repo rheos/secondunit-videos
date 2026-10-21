@@ -29,7 +29,7 @@ const S1L = pageCanvas(g => {
   g.fillStyle = P.ink; g.beginPath(); g.arc(240, 482, 7, 0, 7); g.fill();
   print(g, P.yel, g => { g.beginPath(); g.rect(500, 570, 120, 16); g.rect(505, 490, 16, 160); g.rect(602, 586, 14, 64); g.rect(505, 586, 14, 64); });
   textC(g, 'Look in the window.', 240, 640 + 60, CAP); textC(g, 'Knock on the door.', 560, 700, CAP);
-  textC(g, '8', PGW / 2, PGH - 50, CAP);
+  textC(g, '8', PGW / 2, PGH - 26, CAP);
 });
 const S1R = pageCanvas(g => {
   // sky band, house, garden path, gate
@@ -47,22 +47,22 @@ const S1R = pageCanvas(g => {
   // the slot, die-cut through the page
   g.strokeStyle = '#2a2018'; g.lineWidth = 12; g.lineCap = 'round'; g.beginPath(); SLOT.forEach(([x, y], i) => i ? g.lineTo(x, y) : g.moveTo(x, y)); g.stroke();
   g.strokeStyle = 'rgba(255,255,255,.35)'; g.lineWidth = 2; g.beginPath(); SLOT.forEach(([x, y], i) => i ? g.lineTo(x, y + 6) : g.moveTo(x, y + 6)); g.stroke();
-  textC(g, 'Find the way out.', PGW / 2, 790, CAP); textC(g, '9', PGW / 2, PGH - 50, CAP);
+  textC(g, 'Find the way out.', PGW / 2, 790, CAP); textC(g, '9', PGW / 2, PGH - 26, CAP);
 });
 const S2L = pageCanvas(g => {
   textC(g, 'WHO DO YOU CALL?', PGW / 2, 120, HEAD, P.blue); lines(g, 120, 180, PGW - 240, 2);
   g.strokeStyle = 'rgba(30,26,26,.3)'; g.setLineDash([10, 8]); g.lineWidth = 3; g.strokeRect(220, 640, 360, 30); g.setLineDash([]);
-  textC(g, 'Dial slowly and clearly.', PGW / 2, 790, CAP); textC(g, '10', PGW / 2, PGH - 50, CAP);
+  textC(g, 'Dial slowly and clearly.', PGW / 2, 790, CAP); textC(g, '10', PGW / 2, PGH - 26, CAP);
 });
 const FLAPS = [[90, 380], [320, 380], [550, 380]], FW2 = 190, FH2 = 220;
 const S2R = pageCanvas(g => {
-  textC(g, 'WHO COMES TO HELP?', PGW / 2, 110, HEAD, P.red);
+  textC(g, 'WHO COMES TO HELP?', PGW / 2, 110, '800 54px "Futura", sans-serif', P.red);
   for (const [x, y] of FLAPS) { g.fillStyle = '#e4d8bc'; g.fillRect(x, y, FW2, FH2);
     // a dashed "cut here" outline where a helper should be
     g.strokeStyle = 'rgba(30,26,26,.45)'; g.lineWidth = 3; g.setLineDash([9, 7]); g.beginPath();
     g.arc(x + FW2 / 2, y + 50, 22, 0, 7); g.moveTo(x + FW2 / 2 - 34, y + 84); g.lineTo(x + FW2 / 2 + 34, y + 84); g.lineTo(x + FW2 / 2 + 40, y + 190);
     g.lineTo(x + FW2 / 2 - 40, y + 190); g.closePath(); g.stroke(); g.setLineDash([]); }
-  textC(g, 'Lift each flap.', PGW / 2, 830, CAP); textC(g, '11', PGW / 2, PGH - 50, CAP);
+  textC(g, 'Lift each flap.', PGW / 2, 815, CAP); textC(g, '11', PGW / 2, PGH - 26, CAP);
 });
 
 // ---- paper doll on brads: side view, faceless; legs and arms swing on split pins
