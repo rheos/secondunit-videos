@@ -153,11 +153,11 @@ const MARY_AT = {
   d_heartGiant: [1730, 830, .78], d_mirror: [300, 300, .78],
   d_featherFall: [1730, 830, .78], d_sFeather: [250, 740, .78], e_appInside: [500, 700, .62], e_sPhoneCage: [230, 830, .78],
   // draft 18: the rest of Robin's marks, each in a corner clear of the action (kept in one corner across a mark where it fits)
-  a_sHold: [1600, 700, .78], a_stampWorld: [1250, 790, .7],
+  a_sHold: [1640, 880, .78], a_stampWorld: [1250, 790, .7],
   b_balloons: [1730, 420, .7], muleCircle: [1770, 200, .62], b_grab: [1730, 260, .7], b_whisper: [1740, 250, .7],
   b_peas: [220, 230, .7], b_order: [1750, 240, .7], sHead: [1690, 600, .7], c_pills: [180, 330, .62], c_sDose: [230, 430, .7],
   c_bellFar: [230, 250, .7], sSeesaw: [1680, 330, .7], d_appTower: [430, 280, .62], d_sApp: [1690, 300, .7], d_bigButton: [190, 640, .62],
-  d_coatMap: [210, 230, .66], treadmill: [210, 230, .66], d_dolls: [210, 230, .66], d_sRib: [280, 560, .7], e_sTyping: [1600, 330, .7],
+  d_coatMap: [210, 230, .66], treadmill: [210, 230, .66], d_dolls: [210, 230, .66], d_sRib: [280, 560, .7], e_sTyping: [1720, 330, .7],
 };
 // draft 18: a short thread from a portrait toward the middle of the frame, for the shots with no drawn path of their own
 function herAuto([x, y, R]) { const dx = x < W / 2 ? 1 : -1, dy = y < H / 2 ? 1 : -1, u = 1.4 - R * .6;
