@@ -244,3 +244,24 @@ shots; the sleeping dog is small. 07: hero 3 crosses close to camera for a few f
 08: the banana reads like a crown seen end-on; his legs are big dark blocks in the lying shots.
 
 **Verdict.** Waiting on Robin.
+
+## The pet: whole-song plan and key stills (2026-10-20)
+
+**Brief.** Bob ticked The pet (take 06) on round 41: "brilliant. I like both. can't go wrong." Robin: storyboard it for
+the whole song first, show stills, build after his go. Issue #277, branch `realthing-pet` (stacked on #246).
+
+**Plan.** `STORYBOARD-pet.md` (gitignored): eight acts on the Respawn act grid. The dog piles his offers on the door
+mat while the man hatches pet after pet; the pet's "walk" on the LCD while the real dog holds the real leash; the
+battery dies; he finds a coin cell under the dog's pile, they look at each other, the leash goes on, the door opens
+on the park the dog has watched through the window all film. Pixels only on the LCD.
+
+**Code.** `pet_world.py` (take 06's room, toy, rigs + the park outside, the pile table, new LCD screens, light looks,
+direct pose setters; dog 1.3x) and `pet_stills.py` (six key stills A-F, 64 samples). Render:
+`tools/render_lock.sh blender -b --factory-startup --python pet_stills.py -- --only A,B,C,D,E,F` (about 1.5 min for six).
+
+**Rough spots in the stills (for the build).** A: the sleeping pose is a plank with arms out, toy too small to read.
+B: the curled dog on the pile reads as a dark block; pile items hard to read at night. C: the dog's head is cut by the
+frame top and the leash loop hides his face. D: the battery is a small white square. E: the man is half hidden behind
+the leaping dog. F: the grey screen barely reads at this size.
+
+**Verdict.** Waiting on Robin.
