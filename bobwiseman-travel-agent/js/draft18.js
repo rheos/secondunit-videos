@@ -79,3 +79,9 @@ function leakAfter(T, edges) {
     const x = c.h.x + Math.cos(an) * R0 * .9 + side * u * 60, y = c.h.y + Math.sin(an) * R0 * .9 - u * 150, f = Math.sin(u * Math.PI) * al;
     if (f > .05) { X.save(); X.globalAlpha = 1; a_noteGlyph(x, y, .9 + .3 * (1 - u), `rgba(196,103,90,${f})`, .15 * side); X.restore(); } }
 }
+
+// the burn must not eat her portrait on the burnt shots she hangs in (a box round frame, nail and plaque)
+for (const k of ['d_appTower', 'd_bigButton', 'd_coatMap', 'treadmill', 'd_dolls']) {
+  const [x, y, R] = MARY_AT[k], box = ['rect', x - 135 * R, y - 190 * R, x + 135 * R, y + 200 * R];
+  if (typeof LEAK_CLEAR[k] === 'function') { const f = LEAK_CLEAR[k]; LEAK_CLEAR[k] = (T) => [...f(T), box]; } else (LEAK_CLEAR[k] = LEAK_CLEAR[k] || []).push(box);
+}
