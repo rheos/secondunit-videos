@@ -265,3 +265,20 @@ frame top and the leash loop hides his face. D: the battery is a small white squ
 the leaping dog. F: the grey screen barely reads at this size.
 
 **Verdict.** Waiting on Robin.
+
+## The pet: draft 1, whole song (2026-10-21)
+
+Robin's go on the storyboard with a $10 cap. Eight acts (`pet_act0.py`..`pet_act7.py`) by parallel builders on
+`pet_world.py` (keyed helpers, the close-up set), each checked in stills behind `tools/render_lock.sh`. Rendered on
+Modal CPU with `cloud/modal_pet.py` (8 containers per act), joined with `tools/pet_join.py`: 3981 frames, 0 missing.
+Modal upper estimates per act: .85 .87 .75 .43 .71 .87 .41 .74 = about $5.63 (the free monthly credit is shared with
+Respawn's renders the same day). Review cut `out/film/pet/join/realthing_pet-d1_f00000-f03980_24fps_draft.mp4`.
+
+**Builders' rough spots for draft 2.** Act 0: blanket is a board, sit-up stiff mid-move. Act 1: leash carry to the mat
+is a turn on the spot; the rise at 47.24 is small. Act 2: the pile in the night wide is hidden by the dog; the shoe-on-knee
+reads as a nuzzle. Act 3: no green spill on the dog's face in the reverse; chin-on-knee hidden by the dog's body. Act 4:
+pet wraps instead of scrolling; laps read fast. Act 5: lifted items fly on arcs, not in his hands. Act 6: the flood is a
+soft wash; leash line thin. Act 7: the leash on the collar doesn't show in the unclip; the mat patch is a spot light.
+Pile floor spots differ slightly between acts 5, 6 and 7.
+
+**Verdict.** Waiting on Robin.
