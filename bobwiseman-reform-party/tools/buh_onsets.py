@@ -16,6 +16,11 @@ import sys, json, numpy as np, librosa
 
 song, voc, nov, out_js = sys.argv[1:5]
 marks = json.load(open(sys.argv[sys.argv.index('--marks') + 1])) if '--marks' in sys.argv else None
+# draft 31b: --taps <json> is Robin's tap pass on BUH-TAP.html (2026-10-20, one tap per buh he hears, tools/buh-taps-robin.json).
+# Taps under PHRASE s apart are one phrase, filled with every 16th from its first tap to its last (he can't tap 16ths,
+# and Bob wants the chatter as fast as the buhs); a tap on its own is one clack.
+taps = [m[0] for m in json.load(open(sys.argv[sys.argv.index('--taps') + 1]))] if '--taps' in sys.argv else None
+PHRASE = .5
 SR, HOP = 22050, 64
 FR = SR / HOP
 # run starts (the draft 25 times) and ends (Robin by ear: draft 28, and the 2:52 run on to 3:05 in draft 30)
@@ -43,6 +48,15 @@ def snap(t):
     return j / FR if env[j] >= 1.6 else t
 
 ons = []
+if taps:
+    phrases = [[taps[0]]]
+    for x in taps[1:]:
+        if x - phrases[-1][-1] < PHRASE: phrases[-1].append(x)
+        else: phrases.append([x])
+    for ph in phrases:
+        if len(ph) == 1: ons.append(snap(slots[np.argmin(abs(slots - ph[0]))]))
+        else: ons += [snap(x) for x in slots if ph[0] - .08 <= x <= ph[-1] + .08]
+    RUNS = []
 for a, z in RUNS:
     if marks:  # Robin's held spans; a hold starts a touch late, so a slot up to 0.1 s before it counts
         ons += [snap(s) for s in slots if any(m0 - .1 <= s <= m1 for m0, m1 in marks) and a - 3 <= s <= z + 3]
