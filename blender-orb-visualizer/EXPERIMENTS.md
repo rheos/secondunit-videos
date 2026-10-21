@@ -264,3 +264,14 @@ group, the matte pixelated with the fill) and `respawn_stills.py`. Four stills i
 guard line 96.5 s, tile 113.5 s, crossing 146 s), about 13 s each locally. Learned: the water has to be alpha-blended for
 the fish to show, and a reflection under blended water loses its cryptomatte, so the reflection lies ON the surface as a
 flattened face-up head (scale z .14), which also reads right. Sent to Robin; waiting on his notes.
+**Acts (2026-10-20, Robin's go on the stills):** `respawn_act0.py` to `respawn_act7.py`, one per storyboard act on the
+shared world; act 1 by the coordinator as the template, acts 0 and 2-7 by seven parallel builders, each checked on
+stills through `tools/render_lock.sh` (one Blender at a time) and a contact sheet in `out/film/respawn/actN/stills/`.
+World changes the builders surfaced: the south and west sky cards (90 m tall) shadowed the whole village, so the four
+cards no longer cast shadows (sun and cast shadows back, as in the sketch); the fisher's rod points over the water; a
+brighter game night (act 2's values); a stand for the main guard. Renders: `cloud/modal_respawn.py` (Blender 4.5 bpy
+wheel on Modal CPU, the lab mounted, 8 chunks an act, ~6-30 s a frame, about a cent a frame) into each act's frames/;
+`tools/respawn_join.py` joins the acts (the later act wins the shared boundary frame) on the song at 720p, crf 20, with
+a one-second fade at the end. Known rough spots from the builders' reports, left for draft 2: three cut-jumps in act 4
+(stall to stand, stand to road, road to edge), the act 6 flower hand-off is cramped and in profile, the hand flower is
+hidden between their bodies in act 7's behind shots, the prompt is small in the act 5 tile wide.
