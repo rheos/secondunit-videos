@@ -244,3 +244,34 @@ shots; the sleeping dog is small. 07: hero 3 crosses close to camera for a few f
 08: the banana reads like a crown seen end-on; his legs are big dark blocks in the lying shots.
 
 **Verdict.** Waiting on Robin.
+
+## Take 07 to whole song: Respawn plan (2026-10-20)
+
+Robin wants the Respawn idea (take 07) developed for all of Real Thing, alongside the gorilla film. Plan 1 is a
+gitignored `STORYBOARD-respawn.md` here: eight acts over the 165.9 s song, the take-07 look and pixel rule kept (game
+pixelated at size 6, the real world sharp), the sketch's sunrise moved to refrain 3 as the climax. A flower seller
+who follows him off the map is the one new character. Nothing built or rendered yet; waiting on Robin's go.
+Long renders go to Modal, not this Mac.
+Plan 2 (same day, Robin: "as much symbolism in the lyrics", emotive expression, "escaping the matrix"): lyric
+rhymes that never illustrate (a fishless pond with a fisher NPC, a daily "Continue?" prompt, a fixed price tag, a
+painted sky), a swappable face library with an eye highlight for the two who wake, and the matrix shape in game terms
+(the loop, a guard who is every guard, the construct, the crack as the exit). Still waiting on Robin's go.
+**Stills (2026-10-20, Robin's go on plan 2):** `respawn_world.py` (take 07's world as functions, the village one tile from
+x -34 to 50, a basin-cut pond with a fisher and a fish sprite, the keeper's smooth reflection head, the flower seller,
+the guard and four board doubles, the Mayor's balcony, the edge sign, shutters, price tag, "Continue?" prompt, a sand
+shore past the crack, and a nine-face library with an eye highlight), `film_kit.pixel_groups` (one pixel size per object
+group, the matte pixelated with the fill) and `respawn_stills.py`. Four stills in `out/film/respawn/stills/` (pond 75 s,
+guard line 96.5 s, tile 113.5 s, crossing 146 s), about 13 s each locally. Learned: the water has to be alpha-blended for
+the fish to show, and a reflection under blended water loses its cryptomatte, so the reflection lies ON the surface as a
+flattened face-up head (scale z .14), which also reads right. Sent to Robin; waiting on his notes.
+**Acts (2026-10-20, Robin's go on the stills):** `respawn_act0.py` to `respawn_act7.py`, one per storyboard act on the
+shared world; act 1 by the coordinator as the template, acts 0 and 2-7 by seven parallel builders, each checked on
+stills through `tools/render_lock.sh` (one Blender at a time) and a contact sheet in `out/film/respawn/actN/stills/`.
+World changes the builders surfaced: the south and west sky cards (90 m tall) shadowed the whole village, so the four
+cards no longer cast shadows (sun and cast shadows back, as in the sketch); the fisher's rod points over the water; a
+brighter game night (act 2's values); a stand for the main guard. Renders: `cloud/modal_respawn.py` (Blender 4.5 bpy
+wheel on Modal CPU, the lab mounted, 8 chunks an act, ~6-30 s a frame, about a cent a frame) into each act's frames/;
+`tools/respawn_join.py` joins the acts (the later act wins the shared boundary frame) on the song at 720p, crf 20, with
+a one-second fade at the end. Known rough spots from the builders' reports, left for draft 2: three cut-jumps in act 4
+(stall to stand, stand to road, road to edge), the act 6 flower hand-off is cramped and in profile, the hand flower is
+hidden between their bodies in act 7's behind shots, the prompt is small in the act 5 tile wide.

@@ -157,3 +157,40 @@ def run(out):
         r.filepath = os.path.join(out, "frames", "")
     elif "--render" in argv:
         bpy.ops.render.render(animation=True)
+
+def pixel_groups(base_keys, groups):
+    """Compositor with one pixel size per object group: the whole frame at `base_keys` ([(frame, size), ...]), then
+    for each (names, size_keys) in `groups` those objects at their own size (a constant 1 = sharp, the raw render),
+    with the cryptomatte matte pixelated at the same size so the silhouette steps with the fill. Later groups win."""
+    scene = bpy.context.scene; scene.use_nodes = True; nt = scene.node_tree
+    nt.animation_data_clear(); nt.nodes.clear()
+    scene.view_layers[0].use_pass_cryptomatte_object = True
+    rl = nt.nodes.new("CompositorNodeRLayers"); comp = nt.nodes.new("CompositorNodeComposite")
+    def keyed_pixelate(src, keys, nm):
+        px = nt.nodes.new("CompositorNodePixelate"); px.name = nm
+        nt.links.new(src, px.inputs["Color"])
+        sock = px.inputs["Size"]
+        for f, s in keys:
+            sock.default_value = s; sock.keyframe_insert("default_value", frame=f)
+        return px.outputs["Color"]
+    prev = keyed_pixelate(rl.outputs["Image"], base_keys, "CL_px_base")
+    for i, (names, keys) in enumerate(groups):
+        if isinstance(keys, (int, float)): keys = [(scene.frame_start, keys)]
+        cm = nt.nodes.new("CompositorNodeCryptomatteV2"); cm.source = "RENDER"; cm.scene = scene
+        cm.matte_id = ",".join("CL_" + n if not n.startswith("CL_") else n for n in names)
+        nt.links.new(rl.outputs["Image"], cm.inputs["Image"])
+        sharp = len(keys) == 1 and keys[0][1] <= 1
+        img = rl.outputs["Image"] if sharp else keyed_pixelate(rl.outputs["Image"], keys, f"CL_px_g{i}")
+        matte = cm.outputs["Matte"] if sharp else keyed_pixelate(cm.outputs["Matte"], keys, f"CL_pxm_g{i}")
+        mix = nt.nodes.new("CompositorNodeMixRGB")
+        nt.links.new(matte, mix.inputs["Fac"]); nt.links.new(prev, mix.inputs[1]); nt.links.new(img, mix.inputs[2])
+        prev = mix.outputs[0]
+    if nt.animation_data and nt.animation_data.action:
+        act = nt.animation_data.action; fcs = []
+        for layer in getattr(act, "layers", []):
+            for strip in layer.strips:
+                for cb in strip.channelbags: fcs += list(cb.fcurves)
+        if hasattr(act, "fcurves"): fcs += list(act.fcurves)
+        for fc in fcs:
+            for kp in fc.keyframe_points: kp.interpolation = "CONSTANT"
+    nt.links.new(prev, comp.inputs["Image"])
