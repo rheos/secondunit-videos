@@ -35,6 +35,14 @@ holdcheck 0 short; frames from the MP4 match the snapshots. Not yet heard by Rob
 (score 15 dB down, ducked) and the sound-effect level are set by measurement, not by ear. Whisper hears the
 name as "Recallertron" in plate III; check George's "Recallatron" by ear.
 
+## Delivery (2026-10-21)
+
+Robin approved draft 2 and asked for it public. On Novadiem Studio, **public**: https://youtu.be/wl3MufrPWZY
+("The Recallatron: AI memory you can inspect, correct and trust"; uploaded unlisted by yt_upload.py, then switched
+to public with the channel's manage token on Robin's word). On novadiem.com/video/explainers as its own group
+between GrowOperative and the blueprint explainers (rheos/novadiem.com#213, deployed), and first on the library
+page. Draft 1 (c6BcVui7Pbs) is retired from both lists.
+
 ## Draft 2: plates
 
 - **I · The Affliction (broadsheet).** LADIES & GENTLEMEN · WITNESS, the masthead set in type, a knife switch
