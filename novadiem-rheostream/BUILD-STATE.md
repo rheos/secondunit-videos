@@ -82,6 +82,12 @@ names, keys or numbers. "Not ten" on plate VIII is the approved line, rhetorical
 
 ## Draft 2: the cut
 
-See the status line in `~/Code/novadiem/assistant/ideas/rheostream-video.md` for the link. Renders and the
-score copy stay in this worktree, outside git. Not yet heard by Robin: the voice/score balance (score 15 dB down,
+https://youtu.be/T7i6fdqUPzc (unlisted, Novadiem Studio, uploaded 8:22 pm Oct 21; link sent to Telegram),
+169 s at 720p (`renders/rheostream_draft2_720p.mp4`, sha256 `93c16cf2...b5f1`). flashcheck PASS (0 flashes);
+-14.6 LUFS, peak -1.2 dBFS; holdcheck 0 short; frames from the MP4 match the snapshots. Renders and the score
+copy stay in this worktree, outside git.
+
+Cost: narration 1,987 ElevenLabs credits (two takes of 2,263 characters; v4 bills about 0.44 a character; the
+first take, with an "unhurried" tag, is kept in `_in/take1/`), score 2,323 credits. 4,310 in all, against an
+estimate of about 4,500. Not yet heard by Robin: the voice/score balance (score 15 dB down,
 ducked), the effects level, the 1.1 pace and George's "Ree-oh Stream".
