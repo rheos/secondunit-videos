@@ -137,8 +137,8 @@ function maryCameo(cx, cy, R, T, al, sch, o = {}) {
   const mh = 4 + mo * 10; fillP(PE(0, 22, 8 + mo * 2, mh), sch ? '#f2b8b0' : '#5a2a22', al); iE(0, 22, 8 + mo * 2, mh, 0, ink, 1.6 * k, al, false);
   X.restore();
   // the plaque (drawn shots) or the voice label (blueprints)
-  if (!sch) { const pq = PR(-58, ry + 26, 116, 34); fillP(pq, C.wax, al); iBox(-58, ry + 26, 116, 34, C.ink, 2, al); lab(0, ry + 44, 'MARY', C.ink, al, 22, 'center', 'middle', 'bold'); }
-  else { lab(0, ry + 44, 'VOICE · MARY MARGARET O\'HARA', '#f2b8b0', al * .95, 16, 'center', 'middle', 'bold'); }
+  // draft 18 (Bob on draft 17: "I don't think we need to see the name"): no plaque; the blueprints just say VOICE
+  if (sch) lab(0, ry + 44, 'VOICE', '#f2b8b0', al * .95, 16, 'center', 'middle', 'bold');
   X.restore();
   // her mouth on screen
   const a = Math.sin(T * 1.1) * .03; return [cx - Math.sin(a) * 22 * R, cy + Math.cos(a) * 22 * R];
@@ -152,16 +152,28 @@ const MARY_AT = {
   c_corridorLoop: [200, 250, .78], c_sQueue: [190, 880, .78], c_holdSpiral: [200, 250, .78],
   d_heartGiant: [1730, 830, .78], d_mirror: [300, 300, .78],
   d_featherFall: [1730, 830, .78], d_sFeather: [250, 740, .78], e_appInside: [500, 700, .62], e_sPhoneCage: [230, 830, .78],
+  // draft 18: the rest of Robin's marks, each in a corner clear of the action (kept in one corner across a mark where it fits)
+  a_sHold: [1640, 880, .78], a_stampWorld: [1250, 790, .7],
+  b_balloons: [1730, 420, .7], muleCircle: [1770, 200, .62], b_grab: [1730, 260, .7], b_whisper: [1740, 250, .7],
+  b_peas: [220, 230, .7], b_order: [1750, 240, .7], sHead: [1690, 600, .7], c_pills: [180, 330, .62], c_sDose: [230, 430, .7],
+  c_bellFar: [230, 250, .7], sSeesaw: [1680, 330, .7], d_appTower: [430, 280, .62], d_sApp: [1690, 300, .7], d_bigButton: [190, 640, .62],
+  sPassport: [230, 520, .7], c_holdSky: [330, 560, .62], c_lifebuoy: [1730, 870, .62], // draft 19
+  phoneApp: [1760, 340, .66], d_ticketPrint: [220, 230, .66], d_sDose: [160, 560, .6], d_casePlane: [230, 760, .66],
+  d_coatMap: [210, 230, .66], treadmill: [210, 230, .66], d_dolls: [210, 230, .66], d_sRib: [280, 560, .7], e_sTyping: [1720, 330, .7],
 };
+// draft 18: a short thread from a portrait toward the middle of the frame, for the shots with no drawn path of their own
+function herAuto([x, y, R]) { const dx = x < W / 2 ? 1 : -1, dy = y < H / 2 ? 1 : -1, u = 1.4 - R * .6;
+  return [[x, y], [x + dx * 150 * u, y + dy * 20], [x + dx * 290 * u, y - dy * 40], [x + dx * 430 * u, y + dy * 30], [x + dx * 560 * u, y - dy * 10]]; }
 // her portrait first, then the thread (draft15's herThread) pouring out of her mouth over it
 for (const [key, ta, tb, P0] of HER_THREAD) {
-  const at = MARY_AT[key], sch = SU[key].mode === 'sch', P = P0.slice();
+  const at = MARY_AT[key], sch = SU[key].mode === 'sch', P = P0 ? P0.slice() : herAuto(at);
   d14post(key, (q, p, a, T) => {
     const al = maryAlpha(T, ta, tb);
     if (at && al > 0) P[0] = maryCameo(at[0], at[1] + (1 - al) * 20, at[2], T, al, sch);
     herThread(T, ta, tb, P, sch);
+    if (typeof herMore === 'function') herMore(T, ta, tb, P, sch); // draft 19: more lines as she gets wilder
   });
 }
 // the burn-through must not eat her portrait in the two burnt shots she is in
-LEAK_CLEAR.e_appInside.push(['rect', 390, 520, 610, 900]);
+// draft 18: e_appInside no longer has her portrait, so its burn is back to draft 16's
 LEAK_CLEAR.d_featherFall.push(['rect', 1600, 650, 1860, 1050]);

@@ -1,0 +1,243 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Travel Agent · where is Mary</title>
+<!-- Robin marks every place he hears Mary Margaret O'Hara over draft 17's own picture, and picks what she does in each
+     spot: behind the paper in a burn hole (his idea, 2026-10-21), a picture frame like draft 17, or something else.
+     Starts from his 2026-10-15 hold-space marks with the theremin taken out (work/ohara-map.json "her").
+     Serve this folder with a server that does range requests (npx http-server), or the video can't seek. The video
+     comes from ?video=<url> (default: out/ in this folder). The cut list and the burn holes are read from
+     looks/film.html, so they match the film. Claude reads the result off the page (window.MARY) or the Copy button. -->
+<style>
+:root{--bg:#171e20;--panel:#1f2a2c;--fg:#f5e9cf;--dim:#9fa89f;--gold:#e5af33;--rose:#e48fa0;--grey:#5d6763;--burn:#c4562d;--line:#34413f}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.45 system-ui}
+main{max-width:1280px;margin:auto;padding:18px 20px 60px}
+h1{font-size:24px;margin:0 0 4px}
+p.lead{color:var(--dim);margin:0 0 12px;max-width:1040px}
+.top{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:16px;align-items:start}
+video{width:100%;aspect-ratio:16/9;background:#000;border-radius:8px;display:block}
+.side{background:var(--panel);border-radius:8px;padding:14px}
+.big{font-size:34px;font-variant-numeric:tabular-nums;font-weight:600}
+#shot{color:var(--dim);font-family:ui-monospace,Menlo,monospace;font-size:14px;min-height:40px;word-break:break-all}
+#lamp{margin:12px 0;padding:10px;border-radius:8px;text-align:center;font-weight:700;letter-spacing:.08em;background:#263133;color:#5d6763;border:2px solid #34413f}
+#lamp.on{background:var(--gold);color:#1b1b14;border-color:var(--gold)}
+#lamp.rec{background:#d9573f;color:#fff;border-color:#d9573f}
+#lamp.erase{background:#5d6763;color:#fff;border-color:#5d6763}
+.keys{font-size:13px;color:var(--dim)}.keys b{color:var(--fg);font-weight:600}
+nav{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:12px 0 8px}
+button,select{font:inherit;font-size:14px;color:inherit;background:#2a3639;border:1px solid #6f7d74;border-radius:6px;padding:6px 12px;cursor:pointer}
+button:hover{border-color:var(--gold)}
+canvas{width:100%;display:block;background:#101718;border-radius:6px;margin-top:8px;touch-action:none}
+#ov{height:120px}#zm{height:150px}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:13px;color:var(--dim);margin-top:6px}
+.sw{display:inline-block;width:14px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+table{width:100%;border-collapse:collapse;margin-top:14px;font-size:14px}
+th{text-align:left;color:var(--dim);font-weight:500;border-bottom:1px solid var(--line);padding:6px}
+td{border-bottom:1px solid var(--line);padding:5px 6px;vertical-align:top}
+td.t{font-variant-numeric:tabular-nums;white-space:nowrap;cursor:pointer;color:var(--gold)}
+td.s{font-family:ui-monospace,Menlo,monospace;font-size:12px;color:var(--dim)}
+td input{width:100%;font:inherit;color:var(--fg);background:#22302f;border:1px solid #3d4a48;border-radius:4px;padding:4px 6px}
+td select{padding:4px 6px;font-size:13px}
+button.del{padding:3px 9px;font-size:13px}button.del:hover{border-color:#d9573f;color:#ffb3a3}
+tr.cur td{background:#2a2a1c}
+.now{color:var(--rose);font-size:12px}.hole{color:var(--burn);font-size:12px}
+#msg{color:var(--gold);font-size:14px;min-height:20px}
+@media (max-width:900px){.top{grid-template-columns:1fr}}
+</style>
+<main>
+<h1>Where is Mary?</h1>
+<p class="lead">Draft 17 plays with its picture. Hold <b>space</b> while you hear Mary Margaret O'Hara and let go when she stops, under Bob's lines too. The gold bars start as your Oct 15 marks with the theremin taken out, so you're fixing them, not starting over. Rose is where she's in the film now. Orange is where the paper has burned through, so she could sing back there in a hole. In the table, pick what she does for each mark and add an idea if you have one.</p>
+
+<div class="top">
+  <video id="v" preload="auto" playsinline></video>
+  <div class="side">
+    <div class="big" id="clock">0:00.0</div>
+    <div id="shot">loading the cut list…</div>
+    <div id="lamp">MARY</div>
+    <div class="keys">
+      <b>Space</b> hold = Mary is singing<br>
+      <b>X</b> hold = erase while it plays<br>
+      <b>Enter</b> or <b>K</b> = play / pause<br>
+      <b>← →</b> 2 s, with <b>Shift</b> 10 s<br>
+      <b>Delete</b> = remove the picked mark (click a bar in the close-up strip to pick it), or use Delete in its table row<br>
+      <b>Z</b> = undo<br>
+      Close-up strip: drag a bar's end to move it, drag on the empty gold track to draw one, click a bar to pick it.
+    </div>
+  </div>
+</div>
+
+<nav>
+  <button id="play">Play</button>
+  <select id="rate"><option value="1">Speed 1</option><option value="0.75">Speed 0.75</option><option value="0.5">Speed 0.5</option></select>
+  <button id="undo">Undo</button>
+  <button id="copy">Copy marks</button>
+  <button id="reset">Back to Oct 15 marks</button>
+  <button id="clear">Clear all</button>
+  <span id="msg"></span>
+</nav>
+
+<canvas id="ov"></canvas>
+<canvas id="zm"></canvas>
+<div class="legend">
+  <span><span class="sw" style="background:var(--gold)"></span>your marks</span>
+  <span><span class="sw" style="background:var(--rose)"></span>Mary in the film now (draft 17)</span>
+  <span><span class="sw" style="background:var(--burn)"></span>burn holes open (brighter = bigger)</span>
+  <span><span class="sw" style="background:var(--grey)"></span>taken out on Oct 15 as the theremin; mark it again if it's really her</span>
+  <span>Top: whole song. Bottom: 16 s around the playhead.</span>
+</div>
+
+<table><thead><tr><th>Mark</th><th>Length</th><th>Shots on screen</th><th>She is…</th><th style="width:34%">Idea for this spot</th><th></th></tr></thead><tbody id="rows"></tbody></table>
+</main>
+
+<script>
+'use strict';
+const DUR = 403.42;
+const OCT15 = [[75.2,78.3],[91.2,110.1],[153.8,159.2],[159.6,163.4],[167.6,168.0],[174.6,178.7],[200.1,204.1],[208.6,211.8],[212.1,214.0],[214.9,215.8],[220.6,226.9],[227.6,232.5],[286.3,288.0],[288.3,293.3],[294.9,297.6],[311.6,313.2],[324.7,326.9],[334.9,336.9],[337.3,343.5],[345.3,351.9],[354.8,355.4],[356.5,357.4],[359.1,360.5],[361.0,365.5],[366.2,389.4]];
+const THEREMIN = [[163.4,167.6],[211.8,212.1],[214.0,214.9],[215.6,216.6],[293.3,294.9],[297.6,311.6],[351.9,352.9],[353.8,354.8],[356.1,356.5],[357.4,359.1],[360.5,361.0],[365.5,366.2]];
+const IN_FILM = [[75.2,78.0],[91.2,93.6],[93.7,95.4],[95.5,99.6],[220.6,223.3],[223.4,225.4],[225.5,226.9],[286.4,290.3],[290.4,293.3],[359.1,363.2],[363.3,365.4],[366.2,368.2],[368.3,371.8]];
+const WAYS = [['', '—'], ['hole', 'in a burn hole'], ['frame', 'in a picture frame'], ['other', 'something else (idea)'], ['skip', 'leave her out']];
+const KEY = 'ta-mary-marks-v1';
+const q = new URLSearchParams(location.search);
+const v = document.getElementById('v'); v.src = q.get('video') || 'out/ta_film-v17_f00000-f09682_24fps_draft.mp4';
+const ov = document.getElementById('ov'), zm = document.getElementById('zm'), lamp = document.getElementById('lamp'), msg = document.getElementById('msg');
+let marks, notes, shots = [], holes = null, sel = -1, hold = null, drag = null, undoStack = [];
+
+function load() {
+  try { const s = JSON.parse(localStorage.getItem(KEY)); if (s && Array.isArray(s.marks)) { marks = s.marks; notes = s.notes || []; return; } } catch (e) {}
+  marks = OCT15.map((m) => m.slice()); notes = [];
+}
+function publish() { window.MARY = { marks, notes: notes.filter((n) => n.text || n.way), saved: new Date().toISOString() }; }
+function save() { try { localStorage.setItem(KEY, JSON.stringify({ marks, notes })); } catch (e) {} publish(); }
+function snapshot() { undoStack.push(JSON.stringify({ marks, notes })); if (undoStack.length > 200) undoStack.shift(); }
+function undo() { const s = undoStack.pop(); if (!s) return; const o = JSON.parse(s); marks = o.marks; notes = o.notes; sel = -1; tidy(); }
+// sort, merge overlapping or touching spans, drop slivers
+function tidy() {
+  marks = marks.map(([a, b]) => [Math.max(0, Math.min(a, b)), Math.min(DUR, Math.max(a, b))]).filter(([a, b]) => b - a >= .08).sort((x, y) => x[0] - y[0]);
+  const out = []; for (const m of marks) { const l = out[out.length - 1]; if (l && m[0] <= l[1] + .05) l[1] = Math.max(l[1], m[1]); else out.push(m.slice()); }
+  marks = out.map(([a, b]) => [Math.round(a * 1000) / 1000, Math.round(b * 1000) / 1000]); save(); table();
+}
+function addSpan(a, b) { marks.push([a, b]); tidy(); }
+function eraseSpan(a, b) { const out = []; for (const [x, y] of marks) { if (y <= a || x >= b) out.push([x, y]); else { if (x < a) out.push([x, a]); if (y > b) out.push([b, y]); } } marks = out; tidy(); }
+const fmt = (t) => { const m = Math.floor(t / 60), s = t - m * 60; return m + ':' + s.toFixed(1).padStart(4, '0'); };
+const inSpans = (t, L) => L.some(([a, b]) => t >= a && t < b);
+const shotAt = (t) => { for (const s of shots) if (t >= s.t0 && t < s.t1) return s; return null; };
+const shotsIn = (a, b) => shots.filter((s) => s.t1 > a && s.t0 < b).map((s) => s.key);
+const holeAt = (t) => (holes ? holes[Math.max(0, Math.min(holes.length - 1, Math.round(t * 4)))] : 0);
+const holeIn = (a, b) => { let m = 0; for (let t = a; t < b; t += .25) m = Math.max(m, holeAt(t)); return m; };
+
+// ---------- the cut list and the burn holes, read from the film page itself ----------
+(function readFilm() {
+  const f = document.createElement('iframe'); f.style.cssText = 'position:absolute;width:10px;height:10px;left:-99px;top:0'; f.src = 'looks/film.html?offline=1';
+  f.onload = () => {
+    try {
+      const w = f.contentWindow; shots = w.buildShots().map((s) => ({ t0: s.t0, t1: s.t1, key: s.key, mode: s.mode }));
+      // how much paper is burned away at each quarter second: the same hole list, growth and heal the film uses;
+      // zero on schematics and on the shots buildShots() keeps clear of the burn
+      const skip = ['shopClosed', 'droste', 'e_droste', 'mvu_droste', 'e_fromInside'];
+      holes = w.eval(`(() => { const out = []; for (let i = 0; i * .25 <= ${DUR}; i++) { const T = i * .25; if (T <= LEAK_T0) { out.push(0); continue; }
+        const a = leakProgress(T); let s = 0; LEAK_HOLES.forEach((h, k) => { const g = Math.max(0, Math.min(1, (a - h.born) / (1 - h.born))); s += g * h.Rmax * (1 - leakHeal(k, T)); }); out.push(s); } return out; })()`);
+      const mx = Math.max(...holes) || 1; holes = holes.map((x, i) => { const s = shotAt(i * .25); return s && s.mode === 'ill' && !skip.includes(s.key) ? x / mx : 0; });
+    } catch (e) { console.error(e); document.getElementById('shot').textContent = 'could not read the film page'; }
+    f.remove(); table();
+  };
+  document.body.appendChild(f);
+})();
+
+// ---------- drawing ----------
+const ROWS = { shot: [4, 20], film: [28, 10], burn: [42, 8], mark: [54, 38], ther: [96, 8] }; // in 120-unit rows
+function fit(c) { const r = c.getBoundingClientRect(), d = devicePixelRatio || 1; const w = Math.round(r.width * d), h = Math.round(r.height * d); if (c.width !== w || c.height !== h) { c.width = w; c.height = h; } return d; }
+function drawStrip(c, t0, t1, zoom) {
+  if (zoom && drag) { t0 = drag.base; t1 = drag.base + 16; } // the close-up holds still while you drag
+  const d = fit(c), g = c.getContext('2d'), Wd = c.width, Hd = c.height, ky = Hd / 120;
+  g.setTransform(1, 0, 0, 1, 0, 0); g.clearRect(0, 0, Wd, Hd);
+  const X = (t) => (t - t0) / (t1 - t0) * Wd, row = (k) => [ROWS[k][0] * ky, ROWS[k][1] * ky];
+  const [ys, hs] = row('shot');
+  shots.forEach((s) => { if (s.t1 < t0 || s.t0 > t1) return; const x0 = X(s.t0), x1 = X(s.t1); g.fillStyle = s.mode === 'sch' ? '#1d2c4d' : '#3a3428'; g.fillRect(x0, ys, x1 - x0 - 1, hs);
+    if (zoom && x1 - x0 > 60) { g.save(); g.beginPath(); g.rect(x0, ys, x1 - x0 - 4, hs); g.clip(); g.fillStyle = '#c9c2ad'; g.font = `${12 * d}px ui-monospace,Menlo,monospace`; g.fillText(s.key, x0 + 4 * d, ys + hs * .72); g.restore(); } });
+  const span = (L, k, col) => { const [y, h] = row(k); g.fillStyle = col; for (const [p, r] of L) { if (r < t0 || p > t1) continue; g.fillRect(X(p), y, Math.max(1, X(r) - X(p)), h); } };
+  span(IN_FILM, 'film', '#e48fa0');
+  if (holes) { const [y, h] = row('burn'); for (let i = Math.max(0, Math.floor(t0 * 4)); i < Math.min(holes.length, Math.ceil(t1 * 4)); i++) { const k = holes[i]; if (k <= 0) continue; g.globalAlpha = .25 + .75 * k; g.fillStyle = '#c4562d'; g.fillRect(X(i * .25), y, Math.max(1, X((i + 1) * .25) - X(i * .25)), h); } g.globalAlpha = 1; }
+  span(THEREMIN, 'ther', '#5d6763');
+  span(marks, 'mark', '#e5af33');
+  if (sel >= 0 && marks[sel]) { const [y, h] = row('mark'), [p, r] = marks[sel]; g.strokeStyle = '#fff'; g.lineWidth = 2 * d; g.strokeRect(X(p), y, X(r) - X(p), h); }
+  if (hold) { const [y, h] = row('mark'), a = Math.min(hold.t, v.currentTime), b = Math.max(hold.t, v.currentTime); g.fillStyle = hold.erase ? 'rgba(255,255,255,.4)' : '#d9573f'; g.fillRect(X(a), y, Math.max(2, X(b) - X(a)), h); }
+  g.fillStyle = '#7d877f'; g.font = `${11 * d}px system-ui`; const step = zoom ? 1 : 15;
+  for (let t = Math.ceil(t0 / step) * step; t <= t1; t += step) { const x = X(t), big = zoom ? t % 5 === 0 : t % 60 === 0; g.fillRect(x, Hd - (big ? 12 : 6) * d, 1, (big ? 12 : 6) * d); if (big || (!zoom && t % 30 === 0)) g.fillText(fmt(t).replace(/\.0$/, ''), x + 3 * d, Hd - 2 * d); }
+  const px = X(v.currentTime); g.fillStyle = '#fff'; g.fillRect(px - d, 0, 2 * d, Hd);
+  if (!zoom) { const zx0 = X(v.currentTime - 8), zx1 = X(v.currentTime + 8); g.strokeStyle = 'rgba(255,255,255,.45)'; g.lineWidth = d; g.strokeRect(zx0, 1, zx1 - zx0, Hd - 2); }
+}
+function frame() {
+  const t = v.currentTime; document.getElementById('clock').textContent = fmt(t);
+  const s = shotAt(t); if (shots.length) document.getElementById('shot').textContent = s ? s.key + (inSpans(t, IN_FILM) ? ' · Mary in film' : '') + (holeAt(t) > 0 ? ' · holes open' : '') : '';
+  lamp.className = hold ? (hold.erase ? 'erase' : 'rec') : inSpans(t, marks) ? 'on' : '';
+  lamp.textContent = hold ? (hold.erase ? 'ERASING' : 'MARKING') : 'MARY';
+  drawStrip(ov, 0, DUR, false); drawStrip(zm, t - 8, t + 8, true);
+  const cur = marks.findIndex(([a, b]) => t >= a && t < b); document.querySelectorAll('#rows tr').forEach((tr, i) => tr.classList.toggle('cur', i === cur));
+  requestAnimationFrame(frame);
+}
+
+// ---------- the table: one row per mark, the shots under it, what she does there, Robin's idea ----------
+// a note is pinned to a time inside its mark, so it follows the mark when its ends move
+const noteFor = (a, b) => notes.find((n) => n.t >= a && n.t < b);
+function setNote(a, b, k, val) { let n = noteFor(a, b); if (!n) { n = { t: Math.round((a + b) / 2 * 1000) / 1000, way: '', text: '' }; notes.push(n); } n[k] = val; notes = notes.filter((x) => x.text || x.way); save(); }
+function table() {
+  const tb = document.getElementById('rows'); tb.innerHTML = '';
+  marks.forEach(([a, b], i) => {
+    const tr = document.createElement('tr'), n = noteFor(a, b) || {}, film = IN_FILM.some(([p, r]) => r > a && p < b), hl = holeIn(a, b);
+    tr.innerHTML = `<td class="t">${fmt(a)} – ${fmt(b)}</td><td>${(b - a).toFixed(1)} s</td>`
+      + `<td class="s">${shotsIn(a, b).join(' · ')}${film ? ' <span class="now">(Mary in film)</span>' : ''}${hl > 0 ? ` <span class="hole">(holes ${hl > .5 ? 'big' : 'small'})</span>` : ''}</td>`
+      + `<td><select>${WAYS.map(([k, l]) => `<option value="${k}">${l}</option>`).join('')}</select></td><td><input placeholder="what could she do here?"></td><td><button class="del" title="delete this mark">Delete</button></td>`;
+    tr.querySelector('.t').onclick = () => { v.currentTime = Math.max(0, a - 1); sel = i; };
+    const se = tr.querySelector('select'); se.value = n.way || ''; se.onchange = () => setNote(a, b, 'way', se.value);
+    const inp = tr.querySelector('input'); inp.value = n.text || ''; inp.onchange = () => setNote(a, b, 'text', inp.value.trim());
+    tr.querySelector('.del').onclick = () => { snapshot(); marks.splice(i, 1); sel = -1; tidy(); msg.textContent = 'Deleted ' + fmt(a) + '. Z or Undo brings it back.'; };
+    tb.appendChild(tr);
+  });
+}
+
+// ---------- keys ----------
+const typing = () => { const a = document.activeElement; return a && (a.tagName === 'INPUT' || a.tagName === 'SELECT'); };
+addEventListener('keydown', (e) => {
+  if (typing()) { if (e.code === 'Escape') document.activeElement.blur(); return; }
+  if (e.code === 'Space' || e.code === 'KeyX') { e.preventDefault(); if (!e.repeat && !hold) { snapshot(); hold = { t: v.currentTime, erase: e.code === 'KeyX', key: e.code }; if (v.paused) v.play(); } return; }
+  if (e.code === 'Enter' || e.code === 'KeyK') { e.preventDefault(); v.paused ? v.play() : v.pause(); }
+  if (e.code === 'ArrowRight') v.currentTime = Math.min(DUR, v.currentTime + (e.shiftKey ? 10 : 2));
+  if (e.code === 'ArrowLeft') v.currentTime = Math.max(0, v.currentTime - (e.shiftKey ? 10 : 2));
+  if ((e.code === 'Delete' || e.code === 'Backspace') && sel >= 0) { e.preventDefault(); snapshot(); marks.splice(sel, 1); sel = -1; tidy(); }
+  if (e.code === 'KeyZ') undo();
+});
+addEventListener('keyup', (e) => {
+  if (!hold || e.code !== hold.key) return;
+  const a = Math.min(hold.t, v.currentTime), b = Math.max(hold.t, v.currentTime);
+  if (hold.erase) eraseSpan(a, b); else addSpan(a, Math.max(b, a + .15)); // a tap still leaves a short mark
+  hold = null;
+});
+
+// ---------- mouse: the whole-song strip seeks; the close-up strip edits ----------
+const tAt = (c, e, t0, t1) => { const r = c.getBoundingClientRect(); return t0 + (e.clientX - r.left) / r.width * (t1 - t0); };
+ov.addEventListener('pointerdown', (e) => { v.currentTime = Math.max(0, Math.min(DUR, tAt(ov, e, 0, DUR))); });
+zm.addEventListener('pointerdown', (e) => {
+  const t0 = v.currentTime - 8, t = tAt(zm, e, t0, t0 + 16), r = zm.getBoundingClientRect(), y = (e.clientY - r.top) / r.height * 120;
+  const tol = 7 / r.width * 16; // ~7 px, in seconds
+  if (y < ROWS.mark[0] - 4 || y > ROWS.mark[0] + ROWS.mark[1] + 4) { v.currentTime = Math.max(0, Math.min(DUR, t)); return; }
+  zm.setPointerCapture(e.pointerId); snapshot();
+  for (let i = 0; i < marks.length; i++) { const [a, b] = marks[i];
+    if (Math.abs(t - a) < tol) { drag = { i, end: 0, base: t0 }; sel = i; return; }
+    if (Math.abs(t - b) < tol) { drag = { i, end: 1, base: t0 }; sel = i; return; }
+    if (t > a && t < b) { sel = i; undoStack.pop(); return; } }
+  marks.push([t, t]); sel = marks.length - 1; drag = { i: sel, end: 1, base: t0, fresh: true };
+});
+zm.addEventListener('pointermove', (e) => { if (drag) marks[drag.i][drag.end] = Math.max(0, Math.min(DUR, tAt(zm, e, drag.base, drag.base + 16))); });
+zm.addEventListener('pointerup', () => { if (!drag) return; const m = marks[drag.i]; if (drag.fresh && Math.abs(m[1] - m[0]) < .08) { marks.splice(drag.i, 1); undoStack.pop(); sel = -1; } drag = null; tidy(); });
+
+// ---------- buttons ----------
+const play = document.getElementById('play');
+play.onclick = () => (v.paused ? v.play() : v.pause());
+v.onplay = () => (play.textContent = 'Pause'); v.onpause = () => (play.textContent = 'Play');
+document.getElementById('rate').onchange = (e) => (v.playbackRate = +e.target.value);
+document.getElementById('undo').onclick = undo;
+document.getElementById('copy').onclick = async () => { publish(); try { await navigator.clipboard.writeText(JSON.stringify(window.MARY)); msg.textContent = 'Copied ' + marks.length + ' marks.'; } catch (e) { msg.textContent = 'Copy was blocked; Claude can read them off the page.'; } };
+document.getElementById('reset').onclick = () => { if (!confirm('Go back to the Oct 15 marks? (Undo brings your changes back.)')) return; snapshot(); marks = OCT15.map((m) => m.slice()); sel = -1; tidy(); };
+document.getElementById('clear').onclick = () => { if (!confirm('Clear every mark? (Undo brings them back.)')) return; snapshot(); marks = []; sel = -1; tidy(); };
+
+load(); tidy(); requestAnimationFrame(frame);
+</script>

@@ -92,11 +92,13 @@ function leak(a, clear, T = TNOW) {
     gl(x, y - 140, x, y + 140, C.cyan, .3, 1);
     star(x, y, 4, C.white, .8);
   }
+  if (typeof leakBehind === 'function') leakBehind(T, edges); // draft 18: Mary sings on the sheet behind the paper
   for (const { h, R0, heal } of edges) { // snow settling into a hole that is closing, drawn on twos
     if (heal <= 0) continue; const r = M32(4000 + Math.round(h.x) + FD), n = Math.round(10 + heal * 60);
     for (let k = 0; k < n; k++) { const an = r() * TAU, d = Math.sqrt(r()) * R0 * 1.05; fillP(PE(h.x + Math.cos(an) * d, h.y + Math.sin(an) * d, 2 + r() * 3, 2 + r() * 3), C.white, .55 + heal * .4); }
   }
   X.restore(); X.restore();
+  if (typeof leakAfter === 'function') leakAfter(T, edges); // draft 18: her notes rise out of the hole onto the paper
 }
 // ---------- act 2: one impossible thing ----------
 SU.roadCarpet = { mode: 'ill', f(q, p, a, T) { // the road rolls itself up behind the car

@@ -84,7 +84,7 @@ SU.c_dinerLift = { mode: 'ill', f(q, p, a, T) {
   // the floor carries them on through the doorway and down the corridor (shrinking toward its horizon, y = 383)
   const fz = Math.pow(.12, pz), mx = lerp(lerp(840, 1260, st), 1500, eo(seg(pz, 0, .33))), my = 383 + 597 * fz;
   X.save(); if (fz < .5) X.clip(PR(dx0, dy0, dw, dh));
-  chair(mx - 40 * fz, my, fz); c_man(mx, my, 1.3 * fz, { sit: 1, look: .3, armR: [.5, .8], armL: [.4, .6] });
+  chair(mx - 40 * fz, my, fz); c_man(mx, my, 1.3 * fz, { sit: 1, look: .3, armR: [.5, .8], armL: [.4, .6], strait: 1, coat: '#d4c49c' }); // draft 19: a straitjacket
   c_ord(mx - 230 * fz, my + 30 * fz, 1.3 * fz, { look: .6, legs: walkPh(), armR: [1.45, .25] });
   c_ord(mx + 250 * fz, my + 30 * fz, 1.3 * fz, { look: .8, legs: walkPh() + 2, armL: [.3, -.2] });
   X.restore();
@@ -120,7 +120,7 @@ SU.c_shadowStay = { mode: 'ill', f(q, p, a, T) {
   hatch(sh, 600, 700, 900, .75, 3.4, C.ink, 1, .8); hatch(sh, 600, 700, 900, -.6, 5, C.ink, .9, .6);
   iE(330, 470, 30, 36, 0, C.ink, 1.4, .6, false);
   c_ord(gx - 200, 1000, 1.2, { look: .7, legs: c_stride(wd, 1.2, F), armR: [1.35, .3] });
-  c_man(gx, 1004, 1.2, { look: -.8, legs: c_stride(wd + F * .9, 1.2, F), armL: [.1, 0], armR: [-.15, .1] });
+  c_man(gx, 1004, 1.2, { look: -.8, legs: c_stride(wd + F * .9, 1.2, F), armL: [.1, 0], armR: [-.15, .1], strait: 1, coat: '#d4c49c' }); // draft 19: still in the straitjacket
   c_ord(gx + 200, 1000, 1.2, { look: .9, legs: c_stride(wd + F * 1.7, 1.2, F), armL: [-.2, .1] });
   X.setLineDash([3, 10]); X.beginPath(); X.moveTo(gx - 40, 600); X.quadraticCurveTo((gx + 360) / 2, 300, 380, 440); stroke(C.orange, 3, .9); X.setLineDash([]);
   gc(340, 560, 120, C.orange, .7, 2);
