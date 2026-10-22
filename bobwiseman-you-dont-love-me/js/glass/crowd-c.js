@@ -87,8 +87,7 @@ CROWD_DRAW.rt_gorilla = (g, m, t, v) => {
   pane(g, smoothPath(limbPts([[140, 150], [160, 40], [146, -60]], [76, 64, 58])), fur, 40103, { ew: 20, shade: .3, lw: 7 });
   pane(g, smoothPath([[84, -128], [114, -146], [178, -142], [200, -126], [186, -118], [116, -122], [92, -112]]), CC.banana, 40104, { ew: 8, shade: .22, lw: 5 });
   pane(g, polyPath([[196, -130], [208, -134], [208, -124], [198, -122]]), [104, 72, 40], 40105, { ew: 3, shade: .1, lw: 3 });
-  pane(g, circPath(146, -96, 34), fur, 40106, { ew: 12, shade: .3, lw: 7 }); // the fist
-  paint(g, 3, .5); for (const k of [-1, 0, 1]) { g.beginPath(); g.moveTo(134 + k * 12, -118); g.lineTo(132 + k * 12, -100); g.stroke(); }
+  glassHand(g, 146, -74, -Math.PI / 2, 1.5, fur, 40106, { pose: 'grip', side: 1, lw: 4 }); // the fist round the banana, fingers showing (draft 15)
   // the head: a dome with a peak on the crown, little ears
   for (const sd of [-1, 1]) pane(g, ellPath(sd * 80, 4, 16, 20), fur2, 40107 + sd, { ew: 8, shade: .3, lw: 5 });
   pane(g, smoothPath([[0, -122], [36, -108], [74, -66], [86, -10], [80, 44], [52, 76], [0, 86], [-52, 76], [-80, 44], [-86, -10], [-74, -66], [-36, -108]]), fur, 40110, { ew: 26, shade: .3, lw: 7 });
@@ -191,7 +190,7 @@ CROWD_DRAW.rp_diva = (g, m, t, v) => {
   pane(g, polyPath([[52, 100], [66, 100], [70, 176], [56, 176]]), [36, 34, 40], 40322, { ew: 4, shade: .1, lw: 4 });
   pane(g, circPath(58, 92, 19), [200, 204, 212], 40323, { ew: 6, shade: .25, lw: 5 });
   paint(g, 1.6, .5); for (const k of [-1, 0, 1]) { g.beginPath(); g.moveTo(44, 92 + k * 7); g.lineTo(72, 92 + k * 7); g.stroke(); }
-  pane(g, ellPath(64, 150, 20, 24), [236, 182, 40], 40324, { ew: 6, shade: .2, lw: 5 });
+  glassHand(g, 92, 150, Math.PI, 1.1, [236, 182, 40], 40324, { pose: 'grip', side: 1 }); // the glove round the handle, fingers showing (draft 15)
 };
 CROWD_META.rp_diva = { group: 'c', film: 'The Reform Party at Burning Man', who: 'the horse-headed singer with the flaming mane and the microphone' };
 
@@ -226,7 +225,7 @@ CROWD_DRAW.rp_lamp = (g, m, t, v) => {
   pane(g, polyPath([[-26, 86], [26, 86], [20, 96], [-20, 96]]), [210, 160, 60], 40409, { ew: 4, shade: .2, lw: 4 });
   g.restore();
   // his hand round the pole
-  pane(g, ellPath(-121, 70, 22, 26, -.4), CC.skin, 40410, { ew: 8, shade: .25, lw: 5 });
+  glassHand(g, -98, 84, Math.PI + .45, 1.15, CC.skin, 40410, { pose: 'grip', side: -1 }); // draft 15: fingers round the pole (cleese.js)
 };
 CROWD_META.rp_lamp = { group: 'c', film: 'The Reform Party at Burning Man', who: 'a Lamplighter with his lantern pole' };
 
