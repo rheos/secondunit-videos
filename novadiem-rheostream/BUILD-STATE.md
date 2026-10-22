@@ -47,6 +47,13 @@ Made up for the screen: the inquiry (Avery Lund, avery@lund.example, "Lund studi
 the same name, the draft reply, the alert ("backup check failed"), the note, the memory's reason. No real
 names, keys or numbers. "Not ten" on plate VIII is the approved line, rhetorical.
 
+## Delivery (2026-10-21)
+
+Robin approved draft 2 for the sites. YouTube title changed to "How rheoStream works, by design" (still unlisted,
+Novadiem Studio). Placed on novadiem.com/video/explainers in its own narrated group (rheos/novadiem.com#221,
+deployed), rheo.stream's explainer section (rheos/rheo-stream-site#52, deployed) and the rheostream README
+(rheos/rheostream#453); draft 1 is off all three. Upwork and MOL still link draft 1.
+
 ## Draft 2: plates
 
 - **I · The Pile.** Five pools in section with streamlines that dead-end at their walls; FINDS THE WORK,
