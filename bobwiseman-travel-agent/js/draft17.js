@@ -137,8 +137,8 @@ function maryCameo(cx, cy, R, T, al, sch, o = {}) {
   const mh = 4 + mo * 10; fillP(PE(0, 22, 8 + mo * 2, mh), sch ? '#f2b8b0' : '#5a2a22', al); iE(0, 22, 8 + mo * 2, mh, 0, ink, 1.6 * k, al, false);
   X.restore();
   // the plaque (drawn shots) or the voice label (blueprints)
-  if (!sch) { const pq = PR(-58, ry + 26, 116, 34); fillP(pq, C.wax, al); iBox(-58, ry + 26, 116, 34, C.ink, 2, al); lab(0, ry + 44, 'MARY', C.ink, al, 22, 'center', 'middle', 'bold'); }
-  else { lab(0, ry + 44, 'VOICE · MARY MARGARET O\'HARA', '#f2b8b0', al * .95, 16, 'center', 'middle', 'bold'); }
+  // draft 18 (Bob on draft 17: "I don't think we need to see the name"): no plaque; the blueprints just say VOICE
+  if (sch) lab(0, ry + 44, 'VOICE', '#f2b8b0', al * .95, 16, 'center', 'middle', 'bold');
   X.restore();
   // her mouth on screen
   const a = Math.sin(T * 1.1) * .03; return [cx - Math.sin(a) * 22 * R, cy + Math.cos(a) * 22 * R];
