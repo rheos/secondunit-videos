@@ -5,7 +5,8 @@
         [--voice _in/voice.wav] [--end 147.9] [--sfx-db 0] [--score-db -10]
 
 Reads <project>/cues.json (tools/blueprint-kit/cues.mjs): every animation event the kit's helpers report. Each
-sound is synthesised here (no samples, no licences) and placed one frame after its event, thinned to one per frame
+sound is synthesised here (no samples, no licences: an Edison-era office, and since rheoStream
+draft 2 a waterworks: gate, valve, water, chime) and placed one frame after its event, thinned to one per frame
 per kind. Writes <project>/_in/sfx.wav, then mixes score + voice + sfx into <project>/_in/mix.wav: the score ducks
 under the voice when there is one, and the sum is normalised to -14 LUFS, true peak -1.5 dB.
 The root page's <audio> points at _in/mix.wav.
@@ -124,6 +125,34 @@ def crank(sec):  # a crank or ratchet: ticks
     return x
 
 
+# --- waterworks (rheoStream draft 2): a lock gate, a valve, running water, a soft modern chime ---
+def gate():  # a lock gate closing: a heavy low thump with a short wooden ring and a splash of water
+    n = int(.9 * SR); t = np.arange(n) / SR; f = 48 + 40 * np.exp(-t * 18)
+    body = np.sin(2 * np.pi * np.cumsum(f) / SR) * env(n, .003, .18)
+    ring = bp(noise(.9), 180, 900) * env(n, .002, .09) * .5
+    splash = bp(noise(.9), 1200, 6000) * env(n, .03, .22) * .18
+    return body + ring + splash
+
+
+def valve(sec=.6):  # a valve turning: a short hiss that opens up, then a metal click
+    sec = max(.25, min(sec, 1.2)); x = bp(noise(sec), 2500, 9000); t = np.arange(len(x)) / SR
+    hiss = x * np.minimum(1, t / (sec * .4)) * np.minimum(1, np.maximum(0, sec - t) / .08) * .22
+    c = tick(5000, .006); hiss[: len(c)] += c * .8
+    return hiss
+
+
+def water(sec=1.0):  # water running through a channel: a low soft rush that swells and settles
+    sec = max(.3, min(sec, 3.0)); x = noise(sec); t = np.arange(len(x)) / SR
+    e = np.sin(np.pi * t / sec) ** 1.4
+    gurgle = 1 + .35 * np.sin(2 * np.pi * 5.3 * t + 2 * np.sin(2 * np.pi * 1.7 * t))
+    return (lp(x, 700) * 1.1 + bp(x, 900, 3200) * .25) * e * gurgle * .5
+
+
+def chime(f=1318.5):  # the inquiry arriving: a soft, clean two-partial chime (a fifth above)
+    n = int(1.2 * SR)
+    return (tone(f, 1.2) + .45 * tone(f * 1.5, 1.2) + .12 * tone(f * 3, 1.2)) * env(n, .004, .38) * .18
+
+
 # --- place them ---
 last = {}
 for c in sorted(cues, key=lambda c: c["t"]):
@@ -149,6 +178,10 @@ for c in sorted(cues, key=lambda c: c["t"]):
     elif k == "tick": put(t, tick(3600, .01), -28, pan)
     elif k == "ping": put(t, ping(), -26, pan)
     elif k == "crank": put(t, crank(d), -28, pan)
+    elif k == "gate": put(t, gate(), -17, pan * .5)
+    elif k == "valve": put(t, valve(d), -26, pan)
+    elif k == "water": put(t, water(d), -24, pan * .5)
+    elif k == "chime": put(t, chime(), -24, pan * .4)
 
 peak = np.abs(out).max()
 if peak > .98: out *= .98 / peak
