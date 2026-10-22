@@ -24,7 +24,7 @@ output{font-variant-numeric:tabular-nums}
 <nav id="runs"></nav>
 <nav><button id="play">Play</button>
 <label>Speed <select id="speed"><option>1</option><option>0.75</option><option>0.5</option></select></label>
-<button id="early">Run earlier by a 16th</button><button id="late">Run later by a 16th</button><button id="reset">Reset this run</button><button id="copy">Copy cells</button>
+<button id="early">Run earlier by a 16th</button><button id="late">Run later by a 16th</button><button id="reset">Reset this run</button><button id="copy">Copy cells</button><button id="send" hidden>Send to the studio</button>
 <output id="time"></output></nav>
 <div id="stage"><video id="v" muted playsinline preload="auto"></video><canvas id="ov"></canvas></div>
 <div id="wrap"><canvas id="tl" height="120"></canvas></div>
@@ -37,6 +37,7 @@ const loadScript=src=>new Promise((ok,no)=>{const s=document.createElement('scri
  if(!CFG_URL){document.querySelector('p').textContent='Add ?c=/path/to/config.js to the address (see tools/beat-sync/README.md).';return}
  await loadScript(CFG_URL);const C=window.BEATSYNC;for(const s of C.scripts||[])await loadScript(s);
  if(C.init)C.init();
+ if(C.intro)document.querySelector('p').textContent=C.intro;
  document.title=C.title||'Beat sync';document.getElementById('title').textContent=C.title||'Beat sync';
  const GRID=C.grid(),REF=C.ref(),STEP=C.step||.15,CW=18,RUL=24,KEY=C.storageKey||('beatsync:'+CFG_URL);
  const a=document.getElementById('a'),v=document.getElementById('v'),ov=document.getElementById('ov'),og=ov.getContext('2d'),tl=document.getElementById('tl'),tg=tl.getContext('2d'),wrap=document.getElementById('wrap');
@@ -64,6 +65,14 @@ const loadScript=src=>new Promise((ok,no)=>{const s=document.createElement('scri
  const shiftRun=d=>{if(run<0)return;cells[run]=cells[run].map(k=>k+d);save()};
  document.getElementById('early').onclick=e=>{e.target.blur();shiftRun(-1)};document.getElementById('late').onclick=e=>{e.target.blur();shiftRun(1)};
  document.getElementById('reset').onclick=e=>{e.target.blur();if(run<0)return;cells[run]=fresh()[run];save()};
+ // send: post the grid as a note on the client's review round, the same fields as the page's note form (novadiem-files
+ // saveAnswer: action=note, round, text). The text lists the hits as cell ranges, which Claude turns back into cells.
+ const ranges=()=>{const out=[];for(const k of all()){const l=out[out.length-1];if(l&&k===l[1]+1)l[1]=k;else out.push([k,k])}return out.map(([a,b])=>a===b?String(a):a+'-'+b).join(',')};
+ if(C.send){const sb=document.getElementById('send');sb.hidden=false;if(C.send.label)sb.textContent=C.send.label;
+  sb.onclick=async e=>{e.target.blur();sb.disabled=true;sb.textContent='Sending...';
+   const fd=new FormData();fd.set('action','note');fd.set('round',String(C.send.round));fd.set('text',(C.send.prefix||'Timing from the sync tool')+' ('+all().length+' hits). Grid: '+ranges());
+   try{const r=await fetch(C.send.url,{method:'POST',body:fd});if(!r.ok)throw new Error(r.status);sb.textContent=C.send.done||'Sent. Thank you!'}
+   catch(err){sb.disabled=false;sb.textContent="Didn't send, try again"}}}
  document.getElementById('copy').onclick=e=>{e.target.blur();navigator.clipboard.writeText(JSON.stringify(all())).then(()=>{e.target.textContent='Copied'},()=>{e.target.textContent='Copy failed'})};
  let paint=null;
  const cellAt=e=>{const R=tl.getBoundingClientRect();return{k:span(run)[0]+Math.floor((e.clientX-R.left)/R.width*tl.width/CW),y:(e.clientY-R.top)/R.height*tl.height}};
