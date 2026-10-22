@@ -1,0 +1,570 @@
+<!doctype html>
+<html lang="sr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=720, height=1280" />
+    <title>Road Safety Spec</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&display=block" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      /* Spec shot for a road-safety brief (phone while driving), in the clean vector look
+         (after Kevin Ngo's Opus UI animations; our first build: indieagent-clean-vector-test).
+         One navy outline weight, flat fill + one shade band + one highlight, halftone on the
+         shade side, soft ground shadows, 4-point sparkles as the only ornament, spring motion.
+         Story moves from the Ngo profile: the notification is the symbol, three times at rising
+         cost; the brake light's red carries the cut from the insert back to the side view. */
+      :root {
+        --ground: #F7EFE7;
+        --ink: #2A2940;
+        --butter: #FFD36E;
+        --pink: #F7A8B8;
+        --lilac: #B9A7F2;
+        --coral: #F27D6B;
+        --red: #C8341E;
+        --sky: #7CC6F2;
+        --mint: #86DBB0;
+        --skin: #F5CBA7;
+        --glass: #DDF1FB;
+      }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body { background: var(--ground); }
+      #root { position: relative; width: 100%; height: 100%; overflow: hidden; background: var(--ground); }
+      .clip { position: absolute; inset: 0; overflow: hidden; }
+      svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+      .ol { stroke: var(--ink); stroke-width: 6; stroke-linejoin: round; stroke-linecap: round; }
+      .t { font-family: "Nunito", sans-serif; fill: var(--ink); }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-width="720" data-height="1280" data-duration="7.5">
+      <!-- side view: the road, world time runs 0-6 s; the insert sits on top of it from 2.0 to 3.6 -->
+      <div id="side" class="clip" data-start="0" data-duration="6" data-track-index="0">
+        <svg viewBox="0 0 1080 1920">
+          <defs>
+            <pattern id="dots" width="12" height="12" patternUnits="userSpaceOnUse">
+              <circle cx="3" cy="3" r="2.1" fill="#2A2940" />
+              <circle cx="9" cy="9" r="2.1" fill="#2A2940" />
+            </pattern>
+            <path id="spark" d="M0 -1 C0.12 -0.12 0.12 -0.12 1 0 C0.12 0.12 0.12 0.12 0 1 C-0.12 0.12 -0.12 0.12 -1 0 C-0.12 -0.12 -0.12 -0.12 0 -1 Z" />
+          </defs>
+          <g transform="translate(-100 -420) scale(1.25)"><g id="cam">
+            <rect x="-400" y="-400" width="1880" height="1580" fill="#CDE9F8" />
+            <g id="sun">
+              <circle cx="836" cy="330" r="92" fill="var(--butter)" class="ol" />
+              <path d="M778 300 Q786 262 820 252" fill="none" stroke="#fff" stroke-width="11" stroke-linecap="round" />
+            </g>
+            <g id="clouds"></g>
+            <g id="hills"></g>
+            <g id="trees"></g>
+            <!-- road -->
+            <rect x="-400" y="1180" width="1880" height="340" fill="#C9C5D8" />
+            <rect x="-400" y="1470" width="1880" height="50" fill="#2A2940" opacity="0.12" />
+            <rect x="-400" y="1470" width="1880" height="50" fill="url(#dots)" opacity="0.12" />
+            <line x1="-400" y1="1180" x2="1480" y2="1180" class="ol" />
+            <line x1="-400" y1="1520" x2="1480" y2="1520" class="ol" />
+            <g id="farDash"></g>
+            <!-- verge -->
+            <rect x="-400" y="1523" width="1880" height="800" fill="#A8DDB5" />
+            <rect x="-400" y="1780" width="1880" height="400" fill="#2D7A55" opacity="0.14" />
+            <rect x="-400" y="1780" width="1880" height="400" fill="url(#dots)" opacity="0.12" />
+            <g id="tufts"></g>
+            <g id="carB"></g>
+            <g id="skid"></g>
+            <g id="carA"></g>
+            <g id="nearDash"></g>
+            <g id="shards"></g>
+            <g id="burst"></g>
+            <g id="steam"></g>
+          </g></g>
+          <g id="ping1"></g>
+          <g id="ping3"></g>
+        </svg>
+      </div>
+
+      <!-- insert: inside the car, the phone in the foreground, the danger small in the windshield -->
+      <div id="insert" class="clip" data-start="2" data-duration="1.6" data-track-index="1">
+        <svg viewBox="0 0 1080 1920">
+          <g id="icam">
+            <rect x="-200" y="-200" width="1480" height="1300" fill="#CDE9F8" />
+            <circle cx="300" cy="420" r="52" fill="var(--butter)" class="ol" />
+            <polygon points="-200,640 1280,640 1280,1100 -200,1100" fill="#A8DDB5" />
+            <polygon points="455,640 625,640 1320,1100 -240,1100" fill="#C9C5D8" class="ol" />
+            <line x1="-200" y1="640" x2="1280" y2="640" class="ol" />
+            <g id="iDash"></g>
+            <g id="iCarB"></g>
+            <!-- windshield frame: roof, pillars, mirror -->
+            <path d="M-200 -200 H1280 V110 Q540 60 -200 110 Z" fill="#4A4868" class="ol" />
+            <path d="M-200 100 L120 100 L-60 1000 L-200 1000 Z" fill="#4A4868" class="ol" />
+            <path d="M1280 100 L960 100 L1140 1000 L1280 1000 Z" fill="#4A4868" class="ol" />
+            <line x1="540" y1="80" x2="540" y2="150" stroke="var(--ink)" stroke-width="12" stroke-linecap="round" />
+            <rect x="440" y="140" width="200" height="74" rx="26" fill="#6E6A8C" class="ol" />
+            <path d="M462 166 H520" stroke="#fff" stroke-width="8" stroke-linecap="round" opacity="0.7" />
+            <!-- dashboard -->
+            <path d="M-200 960 Q540 880 1280 960 V2200 H-200 Z" fill="#8F86C2" class="ol" />
+            <path d="M-200 1040 Q540 960 1280 1040 V2200 H-200 Z" fill="#2A2940" opacity="0.18" />
+            <path d="M-200 1040 Q540 960 1280 1040 V2200 H-200 Z" fill="url(#dots)" opacity="0.1" />
+            <!-- steering wheel, one hand on it -->
+            <g id="wheel">
+              <circle cx="300" cy="1640" r="340" fill="none" stroke="var(--ink)" stroke-width="84" />
+              <circle cx="300" cy="1640" r="340" fill="none" stroke="#6E6A8C" stroke-width="58" />
+              <path d="M90 1400 Q140 1340 210 1316" fill="none" stroke="#fff" stroke-width="10" stroke-linecap="round" opacity="0.8" />
+              <path d="M300 1640 L20 1700 M300 1640 L580 1700 M300 1640 V1960" stroke="var(--ink)" stroke-width="64" stroke-linecap="round" />
+              <path d="M300 1640 L20 1700 M300 1640 L580 1700 M300 1640 V1960" stroke="#6E6A8C" stroke-width="40" stroke-linecap="round" />
+              <circle cx="300" cy="1640" r="110" fill="#B9A7F2" class="ol" />
+              <path d="M240 1590 Q258 1562 292 1556" fill="none" stroke="#fff" stroke-width="10" stroke-linecap="round" />
+              <path d="M-36 1546 C-60 1500 -20 1440 30 1452 C80 1462 92 1520 70 1560 C50 1596 -14 1590 -36 1546 Z" fill="var(--skin)" class="ol" />
+            </g>
+            <!-- phone in the other hand -->
+            <g id="phoneHalo"><circle cx="760" cy="1420" r="420" fill="#BFF5FF" opacity="0.35" /></g>
+            <g id="phone">
+              <g transform="translate(760 1440) rotate(-9)">
+                <rect x="-176" y="-340" width="352" height="680" rx="44" fill="var(--ink)" />
+                <rect x="-152" y="-312" width="304" height="624" rx="28" fill="#EEF7FF" />
+                <rect x="-46" y="-300" width="92" height="18" rx="9" fill="var(--ink)" />
+                <!-- chat -->
+                <rect x="-130" y="-250" width="190" height="64" rx="26" fill="#D9D5E6" class="ol" />
+                <rect x="-40" y="-160" width="168" height="64" rx="26" fill="var(--sky)" class="ol" />
+                <rect x="-130" y="-70" width="150" height="64" rx="26" fill="#D9D5E6" class="ol" />
+                <g id="msg2">
+                  <rect x="-60" y="20" width="188" height="96" rx="30" fill="var(--pink)" class="ol" />
+                  <circle cx="-16" cy="68" r="10" fill="var(--ink)" />
+                  <circle cx="34" cy="68" r="10" fill="var(--ink)" />
+                  <circle cx="84" cy="68" r="10" fill="var(--ink)" />
+                </g>
+                <rect id="redWash" x="-152" y="-312" width="304" height="624" rx="28" fill="var(--red)" opacity="0" />
+                <rect x="-176" y="-340" width="352" height="680" rx="44" fill="none" class="ol" />
+                <path d="M-150 -250 Q-150 -300 -110 -312" fill="none" stroke="#fff" stroke-width="10" stroke-linecap="round" opacity="0.9" />
+                <g id="badge2" transform="translate(166 -330)">
+                  <g id="badge2In">
+                    <circle r="44" fill="var(--red)" class="ol" />
+                    <text class="t" x="0" y="17" text-anchor="middle" font-size="50" font-weight="900" fill="#fff">2</text>
+                  </g>
+                </g>
+              </g>
+              <!-- hand: palm under the phone, thumb over its left edge -->
+              <path d="M600 1700 C640 1640 760 1630 880 1660 C960 1690 980 1800 940 1900 L940 2000 H560 Z" fill="var(--skin)" class="ol" />
+              <g id="thumb"><path d="M600 1660 C560 1600 580 1530 630 1500 C676 1474 716 1500 716 1540 C716 1580 690 1620 650 1660 Z" fill="var(--skin)" class="ol" /></g>
+            </g>
+            <g id="buzz">
+              <path d="M520 1080 Q490 1110 506 1150" fill="none" class="ol" />
+              <path d="M480 1050 Q430 1110 460 1176" fill="none" class="ol" />
+              <path d="M1010 1110 Q1040 1150 1020 1190" fill="none" class="ol" />
+              <path d="M1052 1080 Q1100 1150 1066 1222" fill="none" class="ol" />
+            </g>
+          </g>
+          <circle id="irisOut" cx="0" cy="0" r="60" fill="var(--red)" />
+        </svg>
+      </div>
+
+      <!-- the red carries the cut back to the side view and shrinks into the brake light -->
+      <div id="irisClip" class="clip" data-start="3.6" data-duration="0.4" data-track-index="2">
+        <svg viewBox="0 0 1080 1920"><circle id="irisIn" cx="0" cy="0" r="60" fill="var(--red)" /></svg>
+      </div>
+
+      <!-- closing screen: the client supplies the final Serbian text and logo -->
+      <div id="end" class="clip" data-start="6" data-duration="1.5" data-track-index="3">
+        <svg viewBox="0 0 1080 1920">
+          <rect width="1080" height="1920" fill="var(--ground)" />
+          <ellipse id="endShadow" cx="540" cy="1060" rx="170" ry="18" fill="#2A2940" opacity="0.12" />
+          <g id="endPhone">
+            <g transform="translate(540 790)">
+              <rect x="-120" y="-220" width="240" height="440" rx="36" fill="var(--ink)" />
+              <rect x="-100" y="-196" width="200" height="392" rx="22" fill="var(--butter)" />
+              <rect x="-100" y="80" width="200" height="116" fill="#B4661E" opacity="0.22" />
+              <rect x="-100" y="80" width="200" height="116" fill="url(#dots2)" opacity="0.14" />
+              <rect x="-120" y="-220" width="240" height="440" rx="36" fill="none" class="ol" />
+              <path d="M-84 -140 Q-84 -178 -50 -184" fill="none" stroke="#fff" stroke-width="10" stroke-linecap="round" />
+            </g>
+          </g>
+          <defs>
+            <pattern id="dots2" width="12" height="12" patternUnits="userSpaceOnUse">
+              <circle cx="3" cy="3" r="2.1" fill="#2A2940" /><circle cx="9" cy="9" r="2.1" fill="#2A2940" />
+            </pattern>
+          </defs>
+          <g id="slash" transform="translate(540 790)">
+            <circle id="slashRing" r="300" fill="none" stroke="var(--red)" stroke-width="44" />
+            <line id="slashBar" x1="-212" y1="-212" x2="212" y2="212" stroke="var(--red)" stroke-width="44" stroke-linecap="round" />
+          </g>
+          <g id="endText"><text class="t" x="540" y="1290" text-anchor="middle" font-size="112" font-weight="900">Очи на путу</text><text class="t" x="540" y="1374" text-anchor="middle" font-size="54" font-weight="800" opacity="0.7">Eyes on the road</text></g>
+          <g id="endLogo">
+            <rect x="390" y="1470" width="300" height="140" rx="28" fill="none" stroke="var(--ink)" stroke-width="5" stroke-dasharray="18 14" opacity="0.55" />
+            <text class="t" x="540" y="1556" text-anchor="middle" font-size="48" font-weight="800" opacity="0.55" letter-spacing="4">LOGO</text>
+          </g>
+          <g id="endSparks"></g>
+        </svg>
+      </div>
+    </div>
+
+    <script>
+      const NS = "http://www.w3.org/2000/svg";
+      const $ = (id) => document.getElementById(id);
+      const el = (tag, attrs, parent) => {
+        const n = document.createElementNS(NS, tag);
+        for (const k in attrs) n.setAttribute(k, attrs[k]);
+        parent.appendChild(n);
+        return n;
+      };
+      const sparkle = (parent, x, y, size, fill) => {
+        const g = el("g", { transform: `translate(${x} ${y})` }, parent);
+        const s = el("g", {}, g);
+        el("use", { href: "#spark", transform: `scale(${size})`, fill, stroke: "#2A2940", "stroke-width": 3.2 / size, "stroke-linejoin": "round" }, s);
+        return s;
+      };
+      // seeded RNG so every render draws the same world (mulberry32)
+      const rng = (a) => () => { a |= 0; a = (a + 0x6d2b79f5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+
+      // ---------- timing (seconds) ----------
+      const PING1 = 0.6, LOOK_DOWN = 1.0, PING2 = 2.4, BRAKE = 2.6, LOOK_UP = 3.8, LOCK = 3.85, HIT = 4.1, PING3 = 5.0;
+      const SPEED = 1000; // px/s of road under our car
+      const BASE = 1396;  // wheel contact line
+
+      // ---------- side view: world layers ----------
+      const R = rng(7);
+      // hills: one long wavy band
+      {
+        let d = "M-400 1180 L-400 1040";
+        for (let x = -400; x <= 2400; x += 40) d += ` L${x} ${1040 - 46 * Math.sin(x / 210) - 22 * Math.sin(x / 77)}`;
+        d += " L2400 1180 Z";
+        el("path", { d, fill: "#B9E8CC", class: "ol" }, $("hills"));
+      }
+      // clouds
+      [[170, 520, 1], [620, 640, 0.8], [1120, 470, 1.1], [1600, 600, 0.9]].forEach(([x, y, s]) => {
+        const g = el("g", { transform: `translate(${x} ${y}) scale(${s})` }, $("clouds"));
+        el("path", { d: "M-110 30 C-140 30 -140 -16 -104 -18 C-100 -60 -40 -70 -20 -38 C0 -80 80 -70 82 -20 C130 -24 136 30 100 30 Z", fill: "#fff", class: "ol" }, g);
+      });
+      // trees on the far verge
+      for (let x = -200, i = 0; x < 4600; x += 300 + R() * 140, i++) {
+        const g = el("g", { transform: `translate(${x.toFixed(0)} 1180)` }, $("trees"));
+        const h = 120 + R() * 50, r = 62 + R() * 18;
+        el("ellipse", { cx: 0, cy: 4, rx: r * 0.9, ry: 8, fill: "#2A2940", opacity: 0.1 }, g);
+        el("rect", { x: -11, y: -h + 20, width: 22, height: h - 20, rx: 6, fill: "#C98E5A", class: "ol" }, g);
+        el("circle", { cx: 0, cy: -h, r, fill: i % 3 === 1 ? "#86DBB0" : "#6CCB98", class: "ol" }, g);
+        el("path", { d: `M${-r * 0.55} ${-h - r * 0.25} Q${-r * 0.45} ${-h - r * 0.62} ${-r * 0.1} ${-h - r * 0.7}`, fill: "none", stroke: "#fff", "stroke-width": 9, "stroke-linecap": "round" }, g);
+      }
+      // lane dashes, far and near
+      for (let x = -400; x < 6200; x += 220) {
+        el("rect", { x, y: 1236, width: 96, height: 12, rx: 6, fill: "#fff", stroke: "#2A2940", "stroke-width": 4 }, $("farDash"));
+        el("rect", { x: x + 60, y: 1452, width: 120, height: 18, rx: 9, fill: "#fff", stroke: "#2A2940", "stroke-width": 5 }, $("nearDash"));
+      }
+      // grass tufts in the foreground
+      for (let x = -300; x < 7200; x += 180 + R() * 160) {
+        const y = 1600 + R() * 240;
+        el("path", { d: `M${x} ${y} l12 -46 l10 34 l12 -54 l12 54 l10 -34 l12 46`, fill: "none", stroke: "#2D7A55", "stroke-width": 6, "stroke-linejoin": "round", "stroke-linecap": "round" }, $("tufts"));
+      }
+
+      // ---------- cars (side view, facing right; origin at rear bottom; 400 long) ----------
+      const REAR = { intact: "M14 -48 Q2 -48 2 -68 V-128 Q2 -150 26 -152", dent: "M36 -48 L20 -62 L38 -82 L18 -100 L36 -118 L22 -136 L44 -152" };
+      const TOP = " L56 -156 L98 -250 Q105 -262 122 -262 H226 Q242 -262 251 -250";
+      const FRONT = {
+        intact: " L296 -162 L380 -156 Q398 -152 398 -130 V-70 Q398 -48 384 -48 Z",
+        crumple: " L296 -162 L322 -168 L344 -198 L370 -158 L350 -140 L378 -120 L356 -100 L376 -80 L360 -62 L368 -48 Z",
+      };
+      const shell = (id, fill, shade, d, idx) => `
+        <clipPath id="${id}c${idx}"><path d="${d}"/></clipPath>
+        <path d="${d}" fill="${fill}"/>
+        <g clip-path="url(#${id}c${idx})">
+          <rect x="-10" y="-86" width="420" height="40" fill="${shade}" opacity="0.26"/>
+          <rect x="-10" y="-86" width="420" height="40" fill="url(#dots)" opacity="0.16"/>
+        </g>
+        <path d="${d}" fill="none" class="ol"/>`;
+      const head = (id) => `
+        <g id="${id}Head">
+          <path d="M236 -150 Q240 -178 276 -180 Q312 -178 316 -150 Z" fill="#5C6BC0" class="ol"/>
+          <circle cx="276" cy="-200" r="28" fill="var(--skin)" class="ol"/>
+          <path d="M250 -214 Q256 -234 280 -232 Q298 -230 302 -216 Q284 -220 268 -208 Q262 -196 252 -196 Z" fill="var(--ink)"/>
+          <g id="${id}Calm"><circle cx="291" cy="-200" r="4.6" fill="var(--ink)"/><path d="M292 -184 Q298 -182 302 -186" fill="none" stroke="var(--ink)" stroke-width="4" stroke-linecap="round"/></g>
+          <g id="${id}Shock" opacity="0"><circle cx="291" cy="-202" r="9" fill="#fff" stroke="var(--ink)" stroke-width="4"/><circle cx="294" cy="-202" r="4" fill="var(--ink)"/><ellipse cx="299" cy="-183" rx="5" ry="7" fill="var(--ink)"/></g>
+        </g>`;
+      function car(root, id, fill, shade, crushed) {
+        const dA = REAR.intact + TOP + FRONT.intact;
+        const dB = id === "a" ? REAR.intact + TOP + FRONT.crumple : REAR.dent + TOP + FRONT.intact;
+        root.innerHTML = `
+          <ellipse id="${id}Shadow" cx="200" cy="4" rx="214" ry="14" fill="#2A2940" opacity="0.14"/>
+          <g id="${id}Pitch"><g id="${id}Squash">
+            <g id="${id}Intact">${shell(id, fill, shade, dA, 0)}</g>
+            <g id="${id}Hurt" opacity="0">${shell(id, fill, shade, dB, 1)}</g>
+            <clipPath id="${id}Win"><path d="M178 -160 V-242 H222 Q234 -242 240 -234 L280 -160 Z"/></clipPath>
+            <path d="M66 -160 L106 -242 H164 V-160 Z" fill="var(--glass)" class="ol"/>
+            <path d="M178 -160 V-242 H222 Q234 -242 240 -234 L280 -160 Z" fill="var(--glass)"/>
+            <g clip-path="url(#${id}Win)"><g transform="translate(-62 0)">${head(id)}
+              <g id="${id}Glow" opacity="0"><circle cx="306" cy="-174" r="18" fill="#BFF5FF" opacity="0.5"/><rect x="298" y="-182" width="14" height="22" rx="3" fill="#EEFBFF" stroke="var(--ink)" stroke-width="4"/></g>
+            </g></g>
+            <path d="M178 -160 V-242 H222 Q234 -242 240 -234 L280 -160 Z" fill="none" class="ol"/>
+            <path d="M88 -176 L114 -222" stroke="#fff" stroke-width="7" stroke-linecap="round" opacity="0.85"/>
+            <g id="${id}Crack" opacity="0"><path d="M256 -206 L268 -190 L260 -180 L276 -168 M268 -190 L280 -196" fill="none" stroke="var(--ink)" stroke-width="4" stroke-linecap="round"/></g>
+            <path d="M171 -150 V-64" stroke="var(--ink)" stroke-width="5" stroke-linecap="round"/>
+            <rect x="188" y="-134" width="30" height="9" rx="4" fill="var(--ink)"/>
+            <path d="M134 -248 H200" stroke="#fff" stroke-width="9" stroke-linecap="round"/>
+            <g id="${id}Head1"><ellipse cx="389" cy="-118" rx="8" ry="13" fill="var(--butter)" stroke="var(--ink)" stroke-width="4"/></g>
+            <g id="${id}Tail"><rect x="3" y="-134" width="14" height="32" rx="4" fill="var(--red)" stroke="var(--ink)" stroke-width="4"/></g>
+            <g id="${id}Brake" opacity="0">
+              <circle cx="10" cy="-118" r="64" fill="var(--red)" opacity="0.16"/>
+              <circle cx="10" cy="-118" r="34" fill="var(--red)" opacity="0.32"/>
+            </g>
+          </g></g>
+          <g id="${id}W0" transform="translate(92 -40)"><g id="${id}S0">${wheel()}</g></g>
+          <g id="${id}W1" transform="translate(312 -40)"><g id="${id}S1">${wheel()}</g></g>`;
+      }
+      const wheel = () => `<circle r="44" fill="var(--ink)"/><circle r="20" fill="#E9E6F2" stroke="var(--ink)" stroke-width="5"/>
+        <path d="M0 -20 V-34 M17 10 L29 17 M-17 10 L-29 17" stroke="#E9E6F2" stroke-width="7" stroke-linecap="round"/>`;
+      car($("carA"), "a", "var(--mint)", "#1E6B4A");
+      car($("carB"), "b", "var(--butter)", "#B4661E");
+      // car ahead: a red sparkle on each brake flare
+      const brakeSpark = sparkle($("bBrake"), 10, -190, 26, "var(--red)");
+
+      // wind lines behind our car
+      const wind = el("g", { id: "wind" }, $("carA"));
+      [[-30, -200, 70], [-60, -140, 100], [-24, -90, 60]].forEach(([x, y, w]) => el("line", { x1: x - w, y1: y, x2: x, y2: y, stroke: "#2A2940", "stroke-width": 6, "stroke-linecap": "round", opacity: 0.55 }, wind));
+
+      // skid marks (car space: grow behind the locked wheels)
+      const skids = [92, 312].map((wx) => el("rect", { x: 0, y: BASE + 2, width: 1, height: 12, rx: 6, fill: "#2A2940", opacity: 0.55 }, $("skid")));
+
+      // ---------- ping bubble (the symbol) ----------
+      function ping(root, n) {
+        root.innerHTML = `
+          <g id="pg${n}" transform="translate(${n === 3 ? "700 430" : "380 830"})"><g id="pg${n}In">
+            <path d="M-170 -150 H170 Q200 -150 200 -120 V40 Q200 70 170 70 H20 L-30 140 L-40 70 H-170 Q-200 70 -200 40 V-120 Q-200 -150 -170 -150 Z" fill="#fff" class="ol"/>
+            <rect x="-160" y="-110" width="74" height="130" rx="14" fill="var(--ink)"/>
+            <rect x="-150" y="-98" width="54" height="104" rx="8" fill="var(--sky)"/>
+            <rect x="-62" y="-96" width="200" height="30" rx="15" fill="#D9D5E6"/>
+            <rect x="-62" y="-48" width="150" height="30" rx="15" fill="#D9D5E6"/>
+            <rect x="-62" y="0" width="176" height="30" rx="15" fill="var(--pink)"/>
+            <g transform="translate(186 -142)"><circle r="46" fill="var(--red)" class="ol"/>
+              <text class="t" x="0" y="18" text-anchor="middle" font-size="54" font-weight="900" fill="#fff">${n}</text></g>
+          </g></g>`;
+      }
+      ping($("ping1"), 1);
+      ping($("ping3"), 3);
+      const p1s = [[110, 720, 20, "var(--sky)"], [670, 650, 16, "var(--butter)"], [650, 940, 12, "var(--pink)"]].map(([x, y, s, c]) => sparkle($("ping1"), x, y, s, c));
+      const p3s = [[440, 300, 22, "var(--pink)"], [1000, 600, 18, "var(--sky)"], [460, 560, 14, "var(--butter)"]].map(([x, y, s, c]) => sparkle($("ping3"), x, y, s, c));
+
+      // ---------- insert: car ahead from behind ----------
+      $("iCarB").innerHTML = `
+        <g transform="translate(540 760)"><g id="ib"><g id="ibS">
+          <ellipse cx="0" cy="6" rx="210" ry="18" fill="#2A2940" opacity="0.16"/>
+          <rect x="-196" y="-40" width="56" height="50" rx="14" fill="var(--ink)"/><rect x="140" y="-40" width="56" height="50" rx="14" fill="var(--ink)"/>
+          <path d="M-120 -170 L-96 -262 Q-90 -280 -70 -280 H70 Q90 -280 96 -262 L120 -170 Z" fill="var(--butter)" class="ol"/>
+          <path d="M-96 -178 L-78 -252 H78 L96 -178 Z" fill="var(--glass)" class="ol"/>
+          <circle cx="-20" cy="-206" r="26" fill="var(--ink)"/>
+          <rect x="-200" y="-180" width="400" height="160" rx="34" fill="var(--butter)"/>
+          <rect x="-200" y="-70" width="400" height="50" fill="#B4661E" opacity="0.26"/>
+          <rect x="-200" y="-70" width="400" height="50" fill="url(#dots)" opacity="0.16"/>
+          <rect x="-200" y="-180" width="400" height="160" rx="34" fill="none" class="ol"/>
+          <path d="M-170 -150 Q-166 -168 -140 -170" fill="none" stroke="#fff" stroke-width="9" stroke-linecap="round"/>
+          <rect x="-50" y="-110" width="100" height="40" rx="8" fill="#fff" stroke="var(--ink)" stroke-width="5"/>
+          <rect x="-184" y="-150" width="44" height="46" rx="10" fill="var(--red)" stroke="var(--ink)" stroke-width="5"/>
+          <rect x="140" y="-150" width="44" height="46" rx="10" fill="var(--red)" stroke="var(--ink)" stroke-width="5"/>
+          <g id="ibBrake" opacity="0">
+            <circle cx="-162" cy="-127" r="110" fill="var(--red)" opacity="0.16"/><circle cx="-162" cy="-127" r="58" fill="var(--red)" opacity="0.32"/>
+            <circle cx="162" cy="-127" r="110" fill="var(--red)" opacity="0.16"/><circle cx="162" cy="-127" r="58" fill="var(--red)" opacity="0.32"/>
+          </g>
+        </g></g></g>`;
+      const ibSparks = [[-162, -230], [162, -230]].map(([x, y]) => sparkle($("ibS"), x, y, 34, "var(--red)"));
+      for (let i = 0; i < 6; i++) {
+        const y0 = 660 + i * 80, y1 = y0 + 40, k0 = (y0 - 640) / 460, k1 = (y1 - 640) / 460;
+        const w0 = 4 + 18 * k0, w1 = 4 + 18 * k1;
+        el("polygon", { points: `${540 - w0},${y0} ${540 + w0},${y0} ${540 + w1},${y1} ${540 - w1},${y1}`, fill: "#fff", stroke: "#2A2940", "stroke-width": 3 }, $("iDash"));
+      }
+
+      // ---------- impact burst, shards, steam ----------
+      const IMP = { x: 520, y: 1270 }; // contact point in world space before the camera push
+      const BURST = [[380, 1040, 26, "var(--butter)"], [520, 980, 20, "var(--sky)"], [680, 1030, 30, "var(--pink)"], [780, 1140, 18, "var(--mint)"], [300, 1150, 18, "var(--pink)"], [760, 1300, 14, "var(--butter)"]];
+      const bursts = BURST.map(([x, y, s, c]) => ({ node: sparkle($("burst"), x, y, s, c), dx: IMP.x - x, dy: IMP.y - y }));
+      const dashes = [-150, -118, -86, -54, -22, 10, 42].map((a) => {
+        const r = (a * Math.PI) / 180;
+        return el("line", { x1: IMP.x + Math.cos(r) * 90, y1: IMP.y + Math.sin(r) * 90, x2: IMP.x + Math.cos(r) * 150, y2: IMP.y + Math.sin(r) * 150, stroke: "#2A2940", "stroke-width": 7, "stroke-linecap": "round", opacity: 0 }, $("burst"));
+      });
+      const RS = rng(31);
+      const shards = Array.from({ length: 9 }, (_, i) => {
+        const g = el("g", { transform: `translate(${IMP.x} ${IMP.y - 20})` }, $("shards"));
+        const s = el("g", {}, g);
+        const c = i % 3 === 0 ? "var(--glass)" : i % 3 === 1 ? "var(--mint)" : "var(--butter)";
+        el("path", { d: "M0 -14 L13 9 L-11 7 Z", fill: c, stroke: "#2A2940", "stroke-width": 4, "stroke-linejoin": "round" }, s);
+        return { s, dx: (RS() - 0.4) * 520, up: 120 + RS() * 160, land: BASE - (IMP.y - 20) + 10 + RS() * 40, rot: (RS() - 0.5) * 720 };
+      });
+      const steams = Array.from({ length: 5 }, () => el("circle", { cx: 0, cy: 0, r: 22, fill: "#fff", stroke: "#2A2940", "stroke-width": 5 }, $("steam")));
+
+      const endSparks = [[250, 520, 26, "var(--sky)"], [840, 560, 22, "var(--pink)"], [210, 1060, 16, "var(--mint)"], [870, 1010, 18, "var(--butter)"]].map(([x, y, s, c]) => sparkle($("endSparks"), x, y, s, c));
+
+      // ================= timeline =================
+      const tl = gsap.timeline({ paused: true });
+      const ease = (name, p) => gsap.parseEase(name)(Math.min(1, Math.max(0, p)));
+
+      // --- world scroll (camera rides with our car) ---
+      const D = SPEED * HIT, SETTLE = 70;
+      [["#farDash", 1], ["#nearDash", 1], ["#tufts", 1.25], ["#trees", 0.62], ["#hills", 0.18], ["#clouds", 0.05]].forEach(([s, f]) => {
+        tl.fromTo(s, { x: 0 }, { x: -f * D, duration: HIT, ease: "none" }, 0);
+        tl.to(s, { x: -f * (D + SETTLE), duration: 0.45, ease: "power2.out" }, HIT);
+      });
+
+      // --- our car ---
+      tl.set("#carA", { x: 120, y: BASE }, 0);
+      tl.fromTo(["#aS0", "#aS1"], { rotation: 0, transformOrigin: "50% 50%" }, { rotation: (SPEED / 276) * 360 * LOCK, duration: LOCK, ease: "none" }, 0);
+      // a gentle ride bob while cruising
+      tl.fromTo("#aPitch", { y: 0 }, { y: -4, duration: 0.25, ease: "sine.inOut", yoyo: true, repeat: 13 }, 0);
+      // phone in the lap: look down
+      tl.to("#aHead", { rotation: 24, svgOrigin: "272 -170", duration: 0.35, ease: "back.out(2)" }, LOOK_DOWN);
+      tl.to("#aGlow", { opacity: 1, duration: 0.2 }, LOOK_DOWN + 0.1);
+      tl.to("#aGlow", { opacity: 0.7, duration: 0.3, ease: "sine.inOut", yoyo: true, repeat: 7 }, LOOK_DOWN + 0.35);
+      // too late: look up, shock
+      tl.to("#aHead", { rotation: -6, duration: 0.12, ease: "power3.out" }, LOOK_UP);
+      tl.set("#aCalm", { opacity: 0 }, LOOK_UP);
+      tl.set("#aShock", { opacity: 1 }, LOOK_UP);
+      tl.to("#aGlow", { opacity: 0, duration: 0.1 }, LOOK_UP);
+      // brakes slam: nose dives, wheels lock, skid marks grow, wind lines go
+      tl.to("#aPitch", { rotation: 3, svgOrigin: "312 -40", duration: 0.2, ease: "power2.out" }, LOCK);
+      tl.to("#wind", { opacity: 0, duration: 0.15 }, LOCK);
+      skids.forEach((r, i) => {
+        const wx = [92, 312][i] + 120;
+        tl.fromTo(r, { attr: { x: wx, width: 1 } }, { attr: { x: wx - SPEED * (HIT - LOCK), width: SPEED * (HIT - LOCK) }, duration: HIT - LOCK, ease: "none" }, LOCK);
+        tl.to(r, { attr: { x: wx - SPEED * (HIT - LOCK) - SETTLE }, duration: 0.45, ease: "power2.out" }, HIT);
+      });
+      // impact
+      tl.set("#aIntact", { opacity: 0 }, HIT);
+      tl.set(["#aHurt", "#aCrack"], { opacity: 1 }, HIT);
+      tl.set("#aHead1", { opacity: 0 }, HIT);
+      tl.fromTo("#aSquash", { scaleX: 1, scaleY: 1, svgOrigin: "0 -48" }, { scaleX: 0.9, scaleY: 1.07, duration: 0.06, ease: "power1.out", immediateRender: false }, HIT);
+      tl.to("#aSquash", { scaleX: 1, scaleY: 1, duration: 0.7, ease: "elastic.out(1, 0.35)" }, HIT + 0.06);
+      tl.to("#carA", { x: 92, duration: 0.5, ease: "power3.out" }, HIT);
+      tl.to("#aPitch", { rotation: -2, duration: 0.18, ease: "power2.out" }, HIT + 0.05);
+      tl.to("#aPitch", { rotation: 0, duration: 0.8, ease: "elastic.out(1, 0.4)" }, HIT + 0.23);
+      tl.to("#aHead", { rotation: 18, duration: 0.08, ease: "power2.out" }, HIT);
+      tl.to("#aHead", { rotation: 0, duration: 0.6, ease: "elastic.out(1, 0.4)" }, HIT + 0.08);
+
+      // --- car ahead ---
+      const bX = (t) => 720 - 200 * ease("power2.in", (t - BRAKE) / (HIT - BRAKE)); // its rear, until impact
+      tl.set("#carB", { x: 720, y: BASE }, 0);
+      tl.fromTo(["#bS0", "#bS1"], { rotation: 0, transformOrigin: "50% 50%" }, { rotation: (SPEED / 276) * 360 * BRAKE, duration: BRAKE, ease: "none" }, 0);
+      tl.to(["#bS0", "#bS1"], { rotation: "+=420", duration: HIT - BRAKE, ease: "power2.out" }, BRAKE);
+      tl.fromTo("#bPitch", { y: 0 }, { y: -4, duration: 0.25, ease: "sine.inOut", yoyo: true, repeat: 9 }, 0.12);
+      tl.to("#carB", { x: 520, duration: HIT - BRAKE, ease: "power2.in" }, BRAKE);
+      tl.to("#bPitch", { rotation: 2.5, svgOrigin: "312 -40", duration: 0.25, ease: "power2.out" }, BRAKE);
+      tl.fromTo("#bBrake", { opacity: 0 }, { opacity: 1, duration: 0.08, immediateRender: false }, BRAKE);
+      tl.fromTo(brakeSpark, { scale: 0, rotation: -45, transformOrigin: "50% 50%" }, { scale: 1, rotation: 0, duration: 0.3, ease: "back.out(3)", immediateRender: false }, BRAKE);
+      tl.set(brakeSpark, { scale: 0 }, 0);
+      tl.to("#bBrake", { opacity: 0.65, duration: 0.18, ease: "sine.inOut", yoyo: true, repeat: 7 }, BRAKE + 0.1);
+      // hit from behind: jolts forward, rear lifts, light breaks
+      tl.set("#bIntact", { opacity: 0 }, HIT);
+      tl.set("#bHurt", { opacity: 1 }, HIT);
+      tl.set(["#bTail", "#bBrake"], { opacity: 0 }, HIT);
+      tl.to("#carB", { x: 610, duration: 0.55, ease: "power3.out" }, HIT);
+      tl.to("#bPitch", { rotation: -4, svgOrigin: "312 -40", duration: 0.1, ease: "power2.out" }, HIT);
+      tl.to("#bPitch", { rotation: 0, duration: 0.8, ease: "elastic.out(1, 0.35)" }, HIT + 0.1);
+      tl.to("#bHead", { rotation: -16, svgOrigin: "272 -170", duration: 0.08 }, HIT);
+      tl.to("#bHead", { rotation: 0, duration: 0.6, ease: "elastic.out(1, 0.4)" }, HIT + 0.08);
+
+      // --- burst, shards, steam ---
+      tl.set(bursts.map((b) => b.node), { scale: 0, transformOrigin: "50% 50%" }, 0);
+      bursts.forEach(({ node, dx, dy }, i) => {
+        tl.fromTo(node, { scale: 0, rotation: -60, x: dx, y: dy }, { scale: 1, rotation: 0, x: 0, y: 0, duration: 0.4, ease: "power3.out", immediateRender: false }, HIT + 0.03 + i * 0.02);
+        tl.to(node, { scale: 0, rotation: 45, duration: 0.35, ease: "power2.in" }, HIT + 0.7 + i * 0.03);
+      });
+      dashes.forEach((d, i) => {
+        tl.set(d, { opacity: 1 }, HIT + 0.01 + i * 0.012);
+        tl.fromTo(d, { scale: 0.4, svgOrigin: `${IMP.x} ${IMP.y}` }, { scale: 1.25, duration: 0.3, ease: "power2.out", immediateRender: false }, HIT + 0.01 + i * 0.012);
+        tl.set(d, { opacity: 0 }, HIT + 0.34 + i * 0.012);
+      });
+      tl.set(shards.map((s) => s.s), { opacity: 0 }, 0);
+      shards.forEach(({ s, dx, up, land, rot }, i) => {
+        const t0 = HIT + 0.02 + i * 0.015;
+        tl.set(s, { opacity: 1 }, t0);
+        tl.fromTo(s, { x: 0, rotation: 0 }, { x: dx, rotation: rot, duration: 0.8, ease: "power1.out", immediateRender: false }, t0);
+        tl.fromTo(s, { y: 0 }, { y: -up, duration: 0.28, ease: "power2.out", immediateRender: false }, t0);
+        tl.to(s, { y: land, duration: 0.5, ease: "power2.in" }, t0 + 0.28);
+        tl.to(s, { y: land - 14, duration: 0.12, ease: "power2.out", yoyo: true, repeat: 1 }, t0 + 0.78);
+      });
+      tl.set(steams, { opacity: 0 }, 0);
+      steams.forEach((c, i) => {
+        const t0 = HIT + 0.3 + i * 0.32;
+        tl.fromTo(c, { opacity: 1, attr: { cx: 92 + 352, cy: BASE - 186, r: 18 } },
+          { attr: { cx: 92 + 340 + (i % 2 ? 40 : -30), cy: BASE - 320, r: 50 }, duration: 1.4, ease: "power1.out", immediateRender: false }, t0);
+        tl.to(c, { opacity: 0, duration: 0.5, ease: "power1.in" }, t0 + 0.9);
+      });
+
+      // --- camera: slow push after the cut back, shake on the hit ---
+      tl.fromTo("#cam", { scale: 1, svgOrigin: "560 1300" }, { scale: 1.16, duration: 2.0, ease: "power2.out", immediateRender: false }, 3.95);
+      tl.to("#cam", { keyframes: [{ x: -18, y: 10, duration: 0.04 }, { x: 14, y: -8, duration: 0.05 }, { x: -9, y: 6, duration: 0.05 }, { x: 5, y: -3, duration: 0.06 }, { x: 0, y: 0, duration: 0.08 }] }, HIT);
+
+      // --- ping 1 and ping 3 (the symbol, first and last) ---
+      const pingIn = (n, sparks, t, out) => {
+        tl.fromTo(`#pg${n}In`, { scale: 0, rotation: -8, transformOrigin: "30% 100%", opacity: 0 }, { scale: 1, rotation: 0, opacity: 1, duration: 0.6, ease: "elastic.out(1, 0.5)", immediateRender: false }, t);
+        tl.set(`#pg${n}In`, { opacity: 0 }, 0);
+        tl.to(`#pg${n}In`, { rotation: 4, duration: 0.07, yoyo: true, repeat: 5, ease: "sine.inOut" }, t + 0.45);
+        tl.set(sparks, { scale: 0, transformOrigin: "50% 50%" }, 0);
+        sparks.forEach((s, i) => {
+          tl.to(s, { scale: 1, rotation: 90, duration: 0.3, ease: "back.out(3)" }, t + 0.08 + i * 0.07);
+          tl.to(s, { scale: 0, rotation: 180, duration: 0.3, ease: "power2.in" }, t + 0.7 + i * 0.05);
+        });
+        if (out) tl.to(`#pg${n}In`, { scale: 0.85, opacity: 0, y: -30, duration: 0.3, ease: "power2.in" }, out);
+      };
+      pingIn(1, p1s, PING1, 1.75);
+      pingIn(3, p3s, PING3, null);
+
+      // --- insert (world time 2.0-3.6) ---
+      const ibScale = (t) => 0.5 + 0.9 * ease("power2.in", (t - 2.0) / 1.6);
+      tl.fromTo("#ibS", { scale: 0.5, svgOrigin: "0 0" }, { scale: 1.4, duration: 1.6, ease: "power2.in", immediateRender: false }, 2.0);
+      tl.set("#ibS", { scale: 0.5, svgOrigin: "0 0" }, 0);
+      tl.fromTo("#ib", { y: 0 }, { y: 120, duration: 1.6, ease: "power2.in", immediateRender: false }, 2.0);
+      tl.fromTo("#iDash", { y: 0 }, { y: 80, duration: 0.2, ease: "none", repeat: 7 }, 2.0);
+      tl.fromTo("#ibBrake", { opacity: 0 }, { opacity: 1, duration: 0.08, immediateRender: false }, BRAKE);
+      tl.set(ibSparks, { scale: 0, transformOrigin: "50% 50%" }, 0);
+      ibSparks.forEach((s) => tl.to(s, { scale: 1, rotation: 90, duration: 0.3, ease: "back.out(3)" }, BRAKE));
+      tl.to("#ibBrake", { opacity: 0.6, duration: 0.16, ease: "sine.inOut", yoyo: true, repeat: 5 }, BRAKE + 0.1);
+      tl.fromTo("#icam", { scale: 1.04, svgOrigin: "760 1440" }, { scale: 1.12, duration: 1.6, ease: "none", immediateRender: false }, 2.0);
+      // the phone: second ping
+      tl.set("#msg2", { opacity: 0 }, 0);
+      tl.fromTo("#msg2", { opacity: 1, scale: 0.2, transformOrigin: "100% 50%" }, { scale: 1, duration: 0.5, ease: "elastic.out(1, 0.5)", immediateRender: false }, PING2);
+      tl.set("#badge2In", { scale: 0, transformOrigin: "50% 50%" }, 0);
+      tl.to("#badge2In", { scale: 1, duration: 0.45, ease: "elastic.out(1.2, 0.45)" }, PING2 + 0.05);
+      tl.to("#phone", { keyframes: [{ x: -8, duration: 0.04 }, { x: 8, duration: 0.04 }, { x: -6, duration: 0.04 }, { x: 6, duration: 0.04 }, { x: -3, duration: 0.04 }, { x: 0, duration: 0.04 }] }, PING2);
+      tl.set("#buzz", { opacity: 0 }, 0);
+      tl.set("#buzz", { opacity: 1 }, PING2);
+      tl.set("#buzz", { opacity: 0 }, PING2 + 0.3);
+      tl.fromTo("#thumb", { y: 0 }, { y: -14, duration: 0.11, ease: "sine.inOut", yoyo: true, repeat: 7 }, 2.62);
+      tl.to("#phoneHalo", { opacity: 0.6, duration: 0.2, yoyo: true, repeat: 1 }, PING2);
+      // the brake light's red reaches the phone, then takes the frame
+      tl.to("#redWash", { opacity: 0.3, duration: 0.3, ease: "power2.in" }, 3.1);
+      const IRIS0 = 3.3;
+      {
+        // left tail light of the car ahead in insert space at IRIS0
+        const s = ibScale(IRIS0), y = 760 + 120 * ease("power2.in", (IRIS0 - 2.0) / 1.6);
+        const c = 1.04 + 0.08 * (IRIS0 - 2.0) / 1.6; // insert camera scale about (760, 1440)
+        const lx = 760 + c * (540 - 162 * s - 760), ly = 1440 + c * (y - 127 * s - 1440);
+        tl.set("#irisOut", { attr: { cx: lx, cy: ly }, scale: 0, svgOrigin: `${lx} ${ly}` }, 0);
+        tl.to("#irisOut", { scale: 40, duration: 0.3, ease: "power3.in" }, IRIS0);
+      }
+      // side view: the red shrinks into the car ahead's brake light
+      {
+        const t1 = 3.92, lx = 1.25 * (bX(t1) + 10) - 100, ly = 1.25 * (BASE - 118) - 420;
+        tl.set("#irisIn", { attr: { cx: lx, cy: ly }, scale: 40, svgOrigin: `${lx} ${ly}` }, 0);
+        tl.to("#irisIn", { scale: 0.55, duration: t1 - 3.6, ease: "power3.out" }, 3.6);
+        tl.to("#irisIn", { opacity: 0, duration: 0.06 }, t1 - 0.02);
+      }
+
+      // --- closing screen ---
+      tl.fromTo("#endPhone", { scale: 0.3, y: 60, opacity: 0, svgOrigin: "540 1010" }, { scale: 1, y: 0, opacity: 1, duration: 0.7, ease: "elastic.out(1, 0.55)", immediateRender: false }, 6.05);
+      tl.fromTo("#endShadow", { scale: 0.3, opacity: 0, svgOrigin: "540 1060" }, { scale: 1, opacity: 0.12, duration: 0.5, ease: "back.out(2)", immediateRender: false }, 6.1);
+      {
+        const ringLen = 2 * Math.PI * 300, barLen = 600;
+        tl.set("#slashRing", { attr: { "stroke-dasharray": `${ringLen} ${ringLen}`, "stroke-dashoffset": ringLen } }, 0);
+        tl.set("#slashBar", { attr: { "stroke-dasharray": `${barLen} ${barLen}`, "stroke-dashoffset": barLen } }, 0);
+        tl.to("#slashRing", { attr: { "stroke-dashoffset": 0 }, duration: 0.4, ease: "power2.inOut" }, 6.35);
+        tl.to("#slashBar", { attr: { "stroke-dashoffset": 0 }, duration: 0.18, ease: "power2.out" }, 6.72);
+        tl.fromTo("#slash", { scale: 1 }, { scale: 1.06, transformOrigin: "50% 50%", duration: 0.08, yoyo: true, repeat: 1, immediateRender: false }, 6.9);
+      }
+      tl.fromTo("#endText", { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: "back.out(2.2)", immediateRender: false }, 6.75);
+      tl.set("#endText", { opacity: 0 }, 0);
+      tl.fromTo("#endLogo", { opacity: 0 }, { opacity: 1, duration: 0.3, immediateRender: false }, 6.95);
+      tl.set("#endLogo", { opacity: 0 }, 0);
+      tl.set(endSparks, { scale: 0, transformOrigin: "50% 50%" }, 0);
+      endSparks.forEach((s, i) => {
+        tl.to(s, { scale: 1, rotation: 90, duration: 0.35, ease: "back.out(3)" }, 6.9 + i * 0.1);
+        tl.to(s, { scale: 0.6, rotation: 135, duration: 0.4, ease: "sine.inOut", yoyo: true, repeat: 1 }, 7.25 + i * 0.05);
+      });
+
+      tl.to({}, { duration: 0.01 }, 7.49);
+      window.__timelines["main"] = tl;
+    </script>
+  </body>
+</html>
