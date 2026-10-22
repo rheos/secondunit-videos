@@ -212,3 +212,23 @@ build both finale entries and give Bob the choice (one round, versions A and B).
 - The heads draw on one offscreen layer lit once (a canvas filter per pane on 50 heads cost 35 s a frame).
   `looks/crowd-preview.html` shows every character side by side (`?group=a`, `?keys=`, `?page=`; t = v + m).
 - Cuts: `out/_render_d14.sh` (cloud-render, 4680-5593) + `out/_assemble_d14.sh` (v15 to 4680), file `out/ydlm_full-v16_*`.
+
+## Draft 15: the tea-leaf reader as John Cleese, and hands with fingers (Bob, 2026-10-20, note 42 on round 55)
+
+- Bob: "everything works for me except the tea leaf reader. if thats eric idle, it doesn't work for me. I also wish his
+  hand was not a ball shape but had fingers. can you make him like john cleese with an english hat like in silly walks".
+  Robin (2026-10-21): as much like John Cleese as we can, a warm caricature in the stained glass, never mocked or hurt;
+  the bowler and the silly walk are the point.
+- `cleese.js` (new): `cleeseHead` drawn from two 1989 photos after Robin's "rounder face" and then "not that round"
+  (long face, heavy jaw and chin, low thick brows with frown creases, small hooded eyes drooping at the corners, a big
+  round-tipped nose, a long upper lip, a thin flat mouth), a black bowler; `cleeseBust` (pinstripe city suit, white shirt,
+  striped tie); `glassHand` (palm, four fingers, a thumb; open, grip or point); `drawSillyWalk` (main.js, 217.36 to
+  227.02, seven strides left to right across the front of the finale crowd, the kick well above the hip, briefcase low in
+  the front hand, matched to the sketch's still).
+- `bridge-show.js`: the host is Cleese in a pinstripe suit, fingered hands, the teabag lands on the bowler. Bridge page
+  `looks/glass-bridge-d15.html` (local, loads cleese.js; d7a, d7b and d13 load it too).
+- Finale: in the chorus the Eric Idle-type gent's slot is a knight in the manner of the Knights Who Say Ni (Robin: only
+  as a second figure if it fits); in the crowd the host's entry is his owl puppet with his pinstripe sleeve inside, so
+  Cleese is only the walker. Ball hands now have fingers: the young plumber's, Edna's on the cane, the gorilla's fist on
+  the banana, the Lamplighter's on the pole, the diva's glove on the microphone (the 10,000 Miles toys keep their mitts).
+- Cuts: `out/_render_d15.sh` + `out/_assemble_d15.sh`, file `out/ydlm_full-v17_*`.

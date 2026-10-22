@@ -12,7 +12,7 @@
 // Slots: head centre (screen px), rot (tilt of the whole figure), from (unit vector from the head to the edge it comes
 // in from), ti / to (in and out times), sc (size). Order = the order they arrive.
 const CH_SLOTS = [
-  { who: 'gent', x: 470, y: H - 196, rot: .07, from: [0, 1], ti: PF_B[6], to: PF_B[51], sc: 1.12 },
+  { who: 'knight', x: 470, y: H - 196, rot: .07, from: [0, 1], ti: PF_B[6], to: PF_B[51], sc: 1.12 }, // draft 15: was the gent
   { who: 'basset', x: 1420, y: H - 150, rot: -.08, from: [0, 1], ti: PF_B[8], to: PF_B[50] + .34, sc: 1.1 },
   { who: 'horse', x: 690, y: 250, rot: -.06, from: [0, -1], ti: PF_B[10], to: PF_B[50], sc: 1.12 },
   { who: 'sparky', x: W - 150, y: H * .40, rot: -1.22, from: [1, 0], ti: PF_B[12], to: PF_B[49] + .34, sc: 1.05 },
@@ -213,7 +213,38 @@ function chHorse(g, m, grey) {
   for (const sd of [-1, 1]) { chEye(g, sd * 44, -32, 8, [sd * -.4, .3]); chLid(g, sd * 44, -32, 8, .2, c1); }
 }
 
-const CH_DRAW = { gent: chGent, sparky: chSparky, plumber: chPlumber, basset: chBasset, poodle: chPoodle, horse: (g, m) => chHorse(g, m, 0), grey: (g, m) => chHorse(g, m, 1) };
+// ---- draft 15: a knight in the manner of the Knights Who Say Ni (Bob named the sketch; Robin, 2026-10-21: in only if it
+// fits as a second figure, so he takes the Eric Idle-type gent's place). An invented knight, not any actor: a tall dark
+// helm with a pair of antlers, a chain-mail coif round his face, a great bushy beard, and the mouth in the beard ----
+function chKnight(g, m) {
+  const mail = [150, 152, 162], mail2 = [116, 118, 128], steel = [72, 76, 88], beard = [118, 96, 78], bone = [222, 206, 172];
+  const ring = (path, x0, x1, y0, y1) => { g.save(); g.clip(path); g.strokeStyle = 'rgba(40,40,52,.35)'; g.lineWidth = 2;
+    for (let y = y0, r = 0; y < y1; y += 9, r++) for (let x = x0 + (r % 2) * 5; x < x1; x += 10) { g.beginPath(); g.arc(x, y, 4, .3, Math.PI - .3); g.stroke(); } g.restore(); };
+  const body = polyPath([[-60, 70], [-186, 120], [-210, 420], [210, 420], [186, 120], [60, 70]]);
+  pane(g, body, mail, 9901, { ew: 30, shade: .32, lw: 8 }); ring(body, -210, 210, 70, 420);
+  pane(g, polyPath([[-96, 150], [96, 150], [110, 420], [-110, 420]]), [36, 34, 40], 9902, { ew: 18, shade: .3, lw: 7 }); // a black tabard
+  // the coif round the face
+  const coif = smoothPath([[-70, -40], [-74, 30], [-62, 90], [0, 112], [62, 90], [74, 30], [70, -40], [0, -64]]);
+  pane(g, coif, mail2, 9903, { ew: 20, shade: .3, lw: 7 }); ring(coif, -80, 80, -70, 116);
+  pane(g, ellPath(0, 4, 46, 56), CH.skin, 9904, { ew: 18, shade: .24, lw: 6 });
+  for (const sd of [-1, 1]) { chEye(g, sd * 18, -10, 7, [0, -.2]); paint(g, 5, .85); g.beginPath(); g.moveTo(sd * 6, -26 - 4 * m); g.lineTo(sd * 30, -24 - 6 * m); g.stroke(); }
+  paint(g, 3, .7); g.beginPath(); g.moveTo(-2, -8); g.quadraticCurveTo(-7, 12, -9, 18); g.quadraticCurveTo(0, 23, 9, 18); g.stroke();
+  // the great beard, and the mouth open in it
+  pane(g, smoothPath([[-48, 18], [-30, 26], [0, 22], [30, 26], [48, 18], [56, 70], [34, 116], [0, 136], [-34, 116], [-56, 70]]), beard, 9905, { ew: 16, shade: .26, lw: 6 });
+  paint(g, 2, .35); for (let k = -4; k <= 4; k++) { g.beginPath(); g.moveTo(k * 10, 46); g.quadraticCurveTo(k * 12, 86, k * 9, 122); g.stroke(); }
+  const h = 6 + 26 * m, mp = ellPath(0, 46 + h / 2, 15 + 4 * m, h / 2 + 2);
+  g.fillStyle = rgb(CH.mouth, .96); g.fill(mp); paint(g, 3, .8); g.stroke(mp);
+  pane(g, smoothPath([[-40, 34], [-18, 26], [0, 32], [18, 26], [40, 34], [22, 42], [0, 38], [-22, 42]]), beard, 9906, { ew: 6, shade: .25, lw: 5 }); // moustache
+  // the tall helm and its antlers
+  pane(g, smoothPath([[-54, -40], [-58, -150], [-46, -196], [0, -206], [46, -196], [58, -150], [54, -40]]), steel, 9907, { ew: 22, shade: .32, lw: 7, amt: .3 });
+  pane(g, polyPath([[-56, -54], [56, -54], [56, -38], [-56, -38]]), mix(steel, [0, 0, 0], .2), 9908, { ew: 5, shade: .2, lw: 5 });
+  g.strokeStyle = 'rgba(255,255,255,.2)'; g.lineWidth = 6; g.beginPath(); g.moveTo(-34, -60); g.quadraticCurveTo(-40, -140, -26, -190); g.stroke();
+  for (const sd of [-1, 1]) {
+    const tines = [[[sd * 30, -196], [sd * 70, -250], [sd * 92, -320]], [[sd * 58, -238], [sd * 104, -246]], [[sd * 78, -282], [sd * 120, -300]], [[sd * 88, -306], [sd * 84, -352]]];
+    for (const [q, pts] of tines.entries()) for (let k = 0; k + 1 < pts.length; k++) pane(g, glassCapsule(pts[k][0], pts[k][1], pts[k + 1][0], pts[k + 1][1], q ? 8 : 11), bone, 9910 + q * 4 + k + (sd > 0 ? 40 : 0), { ew: 6, shade: .22, lw: 4 });
+  }
+}
+const CH_DRAW = { knight: chKnight, sparky: chSparky, plumber: chPlumber, basset: chBasset, poodle: chPoodle, horse: (g, m) => chHorse(g, m, 0), grey: (g, m) => chHorse(g, m, 1) };
 function drawChorus(g, t, tod) {
   if (PF_VARIANT !== 'C' || t < CH_SLOTS[0].ti - .05) return;
   const L = .35 + .65 * tod.I, br = L * (tod.col[0] + tod.col[1] + tod.col[2]) / 765, m = pipSingMouth(t);

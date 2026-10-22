@@ -58,9 +58,13 @@ const HOST = { shY: -548, shX: 100, up: 150, lo: 138, headY: -662, headRx: 60, h
 // Python-era Eric Idle type: thick sandy hair with a heavy fringe and sideburns, arched brows that go up, the big
 // cheeky grin, a brown tweed sports jacket with ordinary flap pockets, a pale blue shirt and a wide maroon tie.
 // His moves, timing and the teabag are as before.
-const COAT = [128, 92, 60], COAT2 = [98, 66, 42], POCKET = [118, 84, 54], POCKET2 = [98, 66, 42], TROUS = [70, 62, 58];
-const HSKIN = [242, 208, 182], HAIR = [176, 132, 76], SHIRT2 = [196, 214, 232], TIE2 = [124, 26, 44];
-const HAIR_TOP = 1.3; // the hair's crown, in head heights above the centre (the teabag lands on it)
+// Draft 15 (Bob, 2026-10-20: "if thats eric idle, it doesn't work for me. I also wish his hand was not a ball shape but
+// had fingers. can you make him like john cleese with an english hat"): he is now the John Cleese caricature from
+// cleese.js (head, bowler, fingered hands) in a dark pinstripe city suit with a white shirt and a striped tie. The page
+// loads cleese.js. Moves, timing and the teabag (now on the bowler) as before.
+const COAT = [44, 46, 56], COAT2 = [34, 36, 46], POCKET = [40, 42, 52], POCKET2 = [34, 36, 46], TROUS = [92, 94, 104];
+const HSKIN = [238, 204, 178], HAIR = [66, 50, 42], SHIRT2 = [242, 242, 236], TIE2 = [36, 48, 104];
+const HAIR_TOP = 1.66; // the bowler's crown, in head heights above the centre (the teabag lands on it; cleese.js CL_HAT_TOP)
 const REST_L = [-205, -300], REST_R = [205, -300], STIFF_L = [-150, -320], STIFF_R = [150, -320];
 const HK = {
   lh: [[118, REST_L, .01], [SH.pocket + .2, [-105, -400], .3], [120.15, [-215, -520], .2], [120.38, [-250, -430], .16], [120.62, REST_L, .2], [121.0, [-268, -520], .25], [121.5, [-268, -520], .01], [121.85, REST_L, .3],
@@ -110,52 +114,13 @@ function drawPocket(g, side, seed) { // an ordinary flap pocket on the tweed (dr
   pane(g, polyPath([[xa - 2, -330], [xb + 2, -332], [xb, -300], [xa, -298]]), POCKET2, seed + 1, { ew: 6, shade: .25, lw: 5 });
   paint(g, 2, .35); g.setLineDash([6, 6]); g.beginPath(); g.moveTo(xa + 6, -322); g.lineTo(xb - 6, -323); g.stroke(); g.setLineDash([]);
 }
-function drawHostHand(g, pts, seed) {
-  const [hx, hy] = pts[2], [ex, ey] = pts[1], a = Math.atan2(hy - ey, hx - ex);
+function drawHostHand(g, pts, seed) { // draft 15: a hand with fingers (cleese.js glassHand), thumb toward his middle
+  const [hx, hy] = pts[2], [ex, ey] = pts[1], a = Math.atan2(hy - ey, hx - ex), sd = hx < 0 ? -1 : 1;
   pane(g, circPath(hx - Math.cos(a) * 4, hy - Math.sin(a) * 4, 15), [240, 240, 232], seed + 6, { ew: 6, shade: .15, lw: 4 }); // cuff
-  pane(g, blobAt(hx + Math.cos(a) * 14, hy + Math.sin(a) * 14, 19, 21, seed, 9), HSKIN, seed + 7, { ew: 10, shade: .22, lw: 5 });
+  glassHand(g, hx + Math.cos(a) * 2, hy + Math.sin(a) * 2, a, 1.05, HSKIN, seed + 7, { side: Math.sin(a) >= 0 ? -sd : sd });
 }
-function hostHead(g, t, H) {
-  const rx = HOST.headRx * .96, ry = HOST.headRy * 1.05, [lx, ly] = H.look, lid = H.lid * .45, mo = H.mouth;
-  const hp = (pts) => smoothPath(pts.map(([x, y]) => [x * rx, y * ry]));
-  // the hair behind: thick and shaggy, over the ears, to the collar, flicking out at the ends
-  const shag = [];
-  for (let k = 0; k <= 22; k++) { // over the crown, left to right, a little wavy
-    const a = Math.PI - k / 22 * Math.PI, w = 1 + .05 * Math.sin(k * 2.7) + .04 * Math.sin(k * 5.3);
-    shag.push([Math.cos(a) * 1.3 * w, -.1 - Math.sin(a) * (HAIR_TOP - .1) * w]);
-  }
-  pane(g, hp([...shag, [1.32, .22], [1.24, .62], [1.4, .92], [1.08, .88], [.74, .42], [-.74, .42], [-1.08, .88], [-1.4, .92], [-1.24, .62], [-1.32, .22]]), HAIR, 9714, { ew: 26, shade: .3, lw: 7 });
-  pane(g, ellPath(0, 0, rx, ry), HSKIN, 9712, { ew: 26, shade: .26, lw: 7 });
-  g.fillStyle = 'rgba(232,120,120,.3)'; for (const sd of [-1, 1]) { g.beginPath(); g.arc(sd * 36, 24, 13, 0, TAU); g.fill(); }
-  // sideburns, and a heavy ragged fringe swept a little to his left
-  for (const sd of [-1, 1]) pane(g, hp([[sd * .82, -.5], [sd * 1.04, -.4], [sd * 1.02, .3], [sd * .94, .36], [sd * .86, -.08]]), HAIR, 9716 + sd, { ew: 8, shade: .24, lw: 5 });
-  const fr = [[-1.1, -.1], [-1.06, -.8], [-.52, -1.2], [.1, -1.27], [.68, -1.12], [1.06, -.76], [1.1, -.1]];
-  for (let k = 0; k <= 9; k++) { const u = 1 - k / 9, x = lerp(-.98, 1.0, u), y = -.3 - .14 * Math.sin(u * Math.PI) - (k % 2 ? .1 : 0) + .06 * (u - .5); fr.push([x, y]); }
-  pane(g, hp(fr), HAIR, 9718, { ew: 14, shade: .22, lw: 6 });
-  paint(g, 2.6, .45); for (const u of [-.75, -.45, -.15, .15, .45, .75]) { g.beginPath(); g.moveTo(u * rx, -ry * 1.14); g.quadraticCurveTo((u + .14) * rx, -ry * .8, (u + .22) * rx, -ry * .42); g.stroke(); }
-  g.strokeStyle = 'rgba(232,206,156,.55)'; g.lineWidth = 3.5; g.lineCap = 'round';
-  for (const u of [-.6, -.3, .3, .6]) { g.beginPath(); g.moveTo(u * rx, -ry * 1.06); g.quadraticCurveTo((u + .1) * rx, -ry * .86, (u + .16) * rx, -ry * .66); g.stroke(); }
-  // eyes, bright and open; brows arched, going up (one higher) when he talks
-  const up = .5 + .5 * Math.min(1, mo * 3);
-  for (const sd of [-1, 1]) {
-    const ex = sd * 23, ey = -6;
-    g.fillStyle = 'rgba(244,240,228,1)'; g.beginPath(); g.ellipse(ex, ey, 11, 8, 0, 0, TAU); g.fill();
-    g.fillStyle = 'rgba(52,84,110,1)'; g.beginPath(); g.arc(ex + lx * 4.5, ey + ly * 3, 4.8, 0, TAU); g.fill();
-    g.fillStyle = 'rgba(16,12,10,1)'; g.beginPath(); g.arc(ex + lx * 4.5, ey + ly * 3, 2.2, 0, TAU); g.fill();
-    if (lid > .02) { g.fillStyle = rgb(mix(HSKIN, [200, 150, 130], .25)); g.beginPath(); g.rect(ex - 13, ey - 10, 26, 18 * lid); g.fill(); }
-    paint(g, 2.4, .9); g.beginPath(); g.moveTo(ex - 12, ey - 6 + 16 * lid); g.quadraticCurveTo(ex, ey - 11 + 16 * lid, ex + 12, ey - 6 + 16 * lid); g.stroke();
-    const by = ey - 22 - (sd > 0 ? 8 : 3) * up; // brows
-    paint(g, 4, .8); g.beginPath(); g.moveTo(ex - 13, by + 4); g.quadraticCurveTo(ex, by - 6, ex + 12, by + 2); g.stroke();
-  }
-  // a longish nose
-  paint(g, 3, .7); g.beginPath(); g.moveTo(-2, -6); g.quadraticCurveTo(-6, 16, -9, 22); g.quadraticCurveTo(0, 27, 9, 22); g.stroke();
-  // the grin: wide, teeth showing; talking, it opens around them
-  const mw = 24, my = 40, oh = 4 + 10 * mo;
-  const grin = new Path2D(); grin.moveTo(-mw, my - 4); grin.quadraticCurveTo(0, my + 10 + oh, mw, my - 4); grin.quadraticCurveTo(0, my + 2, -mw, my - 4); grin.closePath();
-  g.fillStyle = 'rgba(70,16,20,.95)'; g.fill(grin);
-  g.save(); g.clip(grin); g.fillStyle = 'rgba(246,242,230,1)'; g.fillRect(-mw, my - 6, 2 * mw, 7 + 2 * mo); g.restore();
-  paint(g, 3, .85); g.stroke(grin);
-  paint(g, 2.2, .55); for (const sd of [-1, 1]) { g.beginPath(); g.arc(sd * (mw + 5), my - 4, 6, sd > 0 ? -.6 : Math.PI - .6 + 1.2, sd > 0 ? .6 : Math.PI + .6 + 1.2); g.stroke(); }
+function hostHead(g, t, H) { // draft 15: the Cleese head (cleese.js); deadpan, the mouth opening when he talks
+  cleeseHead(g, { m: Math.min(1, H.mouth * 1.4), lid: H.lid * .45, look: H.look, brow: Math.min(1, H.mouth * 3) * .6, seed: 9712 });
 }
 function hatShape(g, seed) { // his felt hat (the lover's, as draft 6's leaf hat): crown, ruby band, wide brim; brim at y = 0
   const o = { ew: 10, lw: 5, amt: .35, shade: .3 };
@@ -193,9 +158,8 @@ function drawHost(g, t, H = hostState(t), M = hostXf(t), o = {}) {
   pane(g, polyPath([[-66, -590], [-108, -560], [-128, -420], [-150, -196], [-18, -206], [0, -280], [18, -206], [150, -196], [128, -420], [108, -560], [66, -590]]), COAT, 9750, { ew: 34, shade: .34, lw: 8 });
   pane(g, polyPath([[-34, -592], [34, -592], [0, -470]]), SHIRT2, 9751, { ew: 8, shade: .12, lw: 5 });
   for (const sd of [-1, 1]) pane(g, polyPath([[sd * 34, -592], [sd * 68, -588], [sd * 54, -470], [0, -440], [0, -470]]), COAT2, 9752 + sd, { ew: 10, shade: .25, lw: 5 });
-  pane(g, polyPath([[-11, -590], [11, -590], [8, -572], [-8, -572]]), TIE2, 9755, { ew: 4, shade: .2, lw: 4 }); // a wide 70s tie
-  pane(g, polyPath([[-8, -572], [8, -572], [22, -500], [0, -472], [-22, -500]]), TIE2, 9756, { ew: 8, shade: .22, lw: 4 });
-  g.fillStyle = 'rgba(70,46,28,.4)'; for (let q = 0; q < 70; q++) { const x = lerp(-130, 130, rnd(q, 9740)), y = lerp(-570, -210, rnd(q, 9741)); g.fillRect(x, y, 5, 2.5); } // tweed flecks
+  clTie(g, 0, -590, -476, 18, 9755); // a narrow striped tie (cleese.js)
+  clPinstripes(g, polyPath([[-108, -560], [-128, -420], [-150, -196], [150, -196], [128, -420], [108, -560], [66, -590], [34, -592], [0, -470], [-34, -592], [-66, -590]]), -150, 150, -600, -190, 15); // the city suit's pinstripes
   for (const y of [-430, -360]) pane(g, circPath(-10, y, 9), [70, 46, 30], 9758 + y, { ew: 5, shade: .25, lw: 4 });
   const pdy = o.pocketDy || 0;
   g.translate(0, pdy); drawPocket(g, -1, 9760); drawPocket(g, 1, 9765); g.translate(0, -pdy);

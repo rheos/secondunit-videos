@@ -75,57 +75,14 @@ CROWD_DRAW.sibyl = (g, m, t, v) => {
 };
 CROWD_META.sibyl = { group: 'a', film: "You Don't Love Me", who: 'the tea-leaf reader from the bridge' };
 
-// ---- 2. host: the morning-show host as himself: felt hat with the band, the grin, tweed and his owl puppet singing too ----
+// ---- 2. host. Draft 15: the host (the John Cleese caricature, cleese.js) does his silly walk across the front of the
+// crowd (drawSillyWalk), so in the rows his owl puppet sings on its own, his pinstripe sleeve and cuff inside it ----
 CROWD_DRAW.host = (g, m, t, v) => {
-  const tie = caV(CA.tie, v), band = caV(CA.hatBand, v);
-  const body = caShoulders(g, CA.tweed, 21001, { w0: 58, w1: 176, w2: 214 });
-  g.fillStyle = 'rgba(70,46,28,.4)'; for (let q = 0; q < 50; q++) g.fillRect(lerp(-190, 190, rnd(q, 21002)), lerp(120, 410, rnd(q, 21003)), 5, 2.5);
-  pane(g, polyPath([[-36, 70], [36, 70], [0, 196]]), CA.shirt, 21004, { ew: 8, shade: .12, lw: 5 });
-  for (const sd of [-1, 1]) pane(g, polyPath([[sd * 36, 70], [sd * 80, 80], [sd * 62, 220], [0, 250], [0, 196]]), CA.tweed2, 21005 + sd, { ew: 10, shade: .25, lw: 5 });
-  pane(g, polyPath([[-13, 74], [13, 74], [10, 94], [-10, 94]]), tie, 21008, { ew: 4, shade: .2, lw: 4 });
-  pane(g, polyPath([[-10, 94], [10, 94], [24, 186], [0, 212], [-24, 186]]), tie, 21009, { ew: 8, shade: .22, lw: 4 });
-  pane(g, polyPath([[-150, 300], [-60, 298], [-60, 330], [-150, 332]]), CA.tweed2, 21010, { ew: 6, shade: .25, lw: 5 }); // a pocket flap
-  pane(g, polyPath([[-100, 228], [-70, 226], [-74, 252], [-100, 252]]), [244, 238, 226], 21011, { ew: 4, shade: .15, lw: 4 }); // hankie
-  caNeck(g, CA.skin, 21012, 16);
-  // the head, as bridge-show.js hostHead: shaggy hair to the collar, fringe, sideburns, blue eyes
-  const rx = 57, ry = 72, hp = (pts) => smoothPath(pts.map(([x, y]) => [x * rx, y * ry]));
-  const shag = []; for (let k = 0; k <= 22; k++) { const a = Math.PI - k / 22 * Math.PI, w = 1 + .05 * Math.sin(k * 2.7) + .04 * Math.sin(k * 5.3); shag.push([Math.cos(a) * 1.3 * w, -.1 - Math.sin(a) * 1.1 * w]); }
-  pane(g, hp([...shag, [1.32, .22], [1.24, .62], [1.4, .92], [1.08, .88], [.74, .42], [-.74, .42], [-1.08, .88], [-1.4, .92], [-1.24, .62], [-1.32, .22]]), [176, 132, 76], 21013, { ew: 26, shade: .3, lw: 7 });
-  pane(g, ellPath(0, 0, rx, ry), [242, 208, 182], 21014, { ew: 26, shade: .26, lw: 7 });
-  caCheeks(g, 36, 24, 13);
-  for (const sd of [-1, 1]) pane(g, hp([[sd * .82, -.5], [sd * 1.04, -.4], [sd * 1.02, .3], [sd * .94, .36], [sd * .86, -.08]]), [176, 132, 76], 21015 + sd, { ew: 8, shade: .24, lw: 5 });
-  const fr = [[-1.06, -.2], [-1.0, -.62], [1.0, -.62], [1.06, -.2]];
-  for (let k = 0; k <= 9; k++) { const u = 1 - k / 9; fr.push([lerp(-.98, 1.0, u), -.32 - .1 * Math.sin(u * Math.PI) - (k % 2 ? .1 : 0)]); }
-  pane(g, hp(fr), [176, 132, 76], 21018, { ew: 12, shade: .22, lw: 6 });
-  const up = .5 + .5 * Math.min(1, m * 3);
-  for (const sd of [-1, 1]) {
-    const ex = sd * 23, ey = -4;
-    g.fillStyle = 'rgba(244,240,228,1)'; g.beginPath(); g.ellipse(ex, ey, 11, 8.5, 0, 0, TAU); g.fill();
-    g.fillStyle = 'rgba(52,84,110,1)'; g.beginPath(); g.arc(ex + sd * 2.5, ey - 1, 5.2, 0, TAU); g.fill();
-    g.fillStyle = 'rgba(16,12,10,1)'; g.beginPath(); g.arc(ex + sd * 2.5, ey - 1, 2.4, 0, TAU); g.fill();
-    g.fillStyle = 'rgba(255,255,255,.85)'; g.beginPath(); g.arc(ex + sd * 2.5 - 1.6, ey - 3, 1.5, 0, TAU); g.fill();
-    paint(g, 2.6, .9); g.beginPath(); g.ellipse(ex, ey, 11, 8.5, 0, 0, TAU); g.stroke();
-    caBrow(g, ex, ey - 20 - (sd > 0 ? 7 : 3) * up, 26, 2, sd, 4);
-  }
-  paint(g, 3, .7); g.beginPath(); g.moveTo(-2, -4); g.quadraticCurveTo(-6, 16, -9, 22); g.quadraticCurveTo(0, 27, 9, 22); g.stroke();
-  // his grin, opening wide to sing round the top teeth
-  const mw = 25, my = 38, oh = 6 + 26 * m;
-  const grin = new Path2D(); grin.moveTo(-mw, my - 4); grin.quadraticCurveTo(0, my + 8 + oh, mw, my - 4); grin.quadraticCurveTo(0, my + 2, -mw, my - 4); grin.closePath();
-  g.fillStyle = 'rgba(70,16,20,.96)'; g.fill(grin);
-  g.save(); g.clip(grin); g.fillStyle = rgb(CH.tooth); g.fillRect(-mw, my - 6, 2 * mw, 8 + 2 * m); g.fillStyle = rgb(CH.tongue); g.beginPath(); g.ellipse(0, my + 4 + oh * .62, 13, 3 + 5 * m, 0, 0, TAU); g.fill(); g.restore();
-  paint(g, 3, .85); g.stroke(grin);
-  paint(g, 2.2, .55); for (const sd of [-1, 1]) { g.beginPath(); g.arc(sd * (mw + 5), my - 4, 6, sd > 0 ? -.6 : Math.PI - .6, sd > 0 ? .6 : Math.PI + .6); g.stroke(); }
-  // his felt hat, low over the fringe
-  g.save(); g.translate(0, -50); g.scale(.98, .96);
-  pane(g, smoothPath([[-62, -2], [-58, -62], [-38, -100], [-12, -88], [0, -96], [12, -88], [38, -100], [58, -62], [62, -2]]), CA.felt, 21020, { ew: 14, shade: .3, lw: 6 });
-  pane(g, polyPath([[-63, -2], [63, -2], [61, -30], [-61, -30]]), band, 21021, { ew: 8, shade: .25, lw: 5 });
-  pane(g, smoothPath([[-104, 4], [-80, -10], [0, -14], [80, -10], [104, 4], [84, 16], [0, 20], [-84, 16]]), CA.felt2, 21022, { ew: 8, shade: .3, lw: 6 });
-  paint(g, 3, .55); g.beginPath(); g.moveTo(0, -90); g.quadraticCurveTo(-5, -60, 0, -34); g.stroke();
-  g.restore();
-  // the owl puppet on his right hand (our left), up by his shoulder, beak open with him
-  const bob = 4 * Math.sin(t * 3.1), ox = -150, oy = 70 + bob;
-  pane(g, smoothPath(limbPts([[-190, 420], [-196, 300], [-160, oy + 110]], [74, 66, 58])), CA.tweed, 21030, { ew: 22, shade: .36, lw: 7 });
-  pane(g, ellPath(-160, oy + 108, 34, 12), [240, 240, 232], 21031, { ew: 4, shade: .15, lw: 4 }); // shirt cuff
+  const sleeve = polyPath([[-112, 214], [112, 214], [196, 430], [-196, 430]]);
+  pane(g, sleeve, CL.suit, 21001, { ew: 30, shade: .34, lw: 8 }); clPinstripes(g, sleeve, -200, 200, 200, 430);
+  pane(g, smoothPath([[-104, 186], [104, 186], [110, 226], [-110, 226]]), CL.shirt, 21002, { ew: 6, shade: .15, lw: 5 }); // the cuff
+  const bob = 4 * Math.sin(t * 3.1), ox = 0, oy = bob;
+  g.save(); g.scale(2.3, 2.3); g.translate(0, -8); // the owl's eyes on (0, 0)
   pane(g, smoothPath([[ox - 44, oy + 104], [ox - 48, oy + 30], [ox - 36, oy - 12], [ox, oy - 22], [ox + 36, oy - 12], [ox + 48, oy + 30], [ox + 44, oy + 104]]), CA.owl, 21032, { ew: 16, shade: .3, lw: 6 });
   pane(g, smoothPath([[ox - 26, oy + 104], [ox - 30, oy + 52], [ox, oy + 40], [ox + 30, oy + 52], [ox + 26, oy + 104]]), CA.belly, 21033, { ew: 8, shade: .2, lw: 4 });
   paint(g, 2, .5); for (let r = 0; r < 2; r++) for (let c = -1; c <= 0; c++) { g.beginPath(); g.arc(ox + c * 14 + 7 + (r % 2) * 7 - 7, oy + 64 + r * 16, 6, .2, Math.PI - .2); g.stroke(); }
@@ -135,8 +92,9 @@ CROWD_DRAW.host = (g, m, t, v) => {
   pane(g, polyPath([[ox - 9, oy + 22], [ox + 9, oy + 22], [ox, oy + 34]]), C.amber, 21040, { ew: 4, shade: .2, lw: 3 });
   g.fillStyle = rgb(CH.mouth); g.beginPath(); g.moveTo(ox - 8, oy + 30); g.lineTo(ox + 8, oy + 30); g.lineTo(ox, oy + 30 + bk); g.closePath(); g.fill();
   pane(g, polyPath([[ox - 7, oy + 30 + bk * .4], [ox + 7, oy + 30 + bk * .4], [ox, oy + 36 + bk]]), C.amber, 21041, { ew: 4, shade: .2, lw: 3 });
+  g.restore();
 };
-CROWD_META.host = { group: 'a', film: "You Don't Love Me", who: 'the morning-show host from the bridge, with his owl' };
+CROWD_META.host = { group: 'a', film: "You Don't Love Me", who: 'the owl puppet from the bridge, the host\'s sleeve inside it' };
 
 // ---- 3. saint: the woman of the windows as a bust: auburn hair, fringe, gold collar, ruby gown, mantle, a nimbus ----
 CROWD_DRAW.saint = (g, m, t, v) => {
@@ -406,7 +364,7 @@ CROWD_DRAW.plumber2 = (g, m, t, v) => {
   g.restore();
   // his hand on the plunger handle over the shoulder
   pane(g, smoothPath(limbPts([[150, 420], [190, 300], [150, 210]], [76, 66, 56])), mix(shirt, [0, 0, 0], .12), 29010, { ew: 20, shade: .34, lw: 7 });
-  pane(g, smoothPath([[122, 206], [126, 176], [150, 168], [170, 180], [168, 208], [144, 216]]), skin, 29011, { ew: 8, shade: .25, lw: 5 });
+  glassHand(g, 176, 194, Math.PI, 1.25, skin, 29011, { pose: 'grip', side: -1 }); // draft 15: fingers round the handle (cleese.js)
   caNeck(g, skin, 29012, 16);
   for (const sd of [-1, 1]) pane(g, ellPath(sd * 58, 8, 12, 19), skin, 29013 + sd, { ew: 8, shade: .3, lw: 5 });
   // messy hair at the sides, the face

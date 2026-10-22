@@ -103,7 +103,7 @@ CROWD_DRAW.more_edna = (g, m, t, v) => {
   pane(g, circPath(158, 4, 20), [34, 30, 34], 30212, { ew: 6, shade: .1, lw: 5 });
   pane(g, circPath(158, 4, 7), C.gold, 30213, { ew: 3, shade: .1, lw: 3 });
   pane(g, polyPath(limbPts([[70, 230], [120, 190], [150, 160]], [60, 54, 48])), card, 30215, { ew: 8, shade: .3, lw: 6 });
-  pane(g, smoothPath([[136, 140], [180, 138], [184, 166], [158, 176], [134, 166]]), skin, 30214, { ew: 6, shade: .2, lw: 5 }); // her hand on it
+  glassHand(g, 136, 160, 0, 1.2, skin, 30214, { pose: 'grip', side: 1 }); // her hand on it, fingers round it (draft 15, cleese.js)
   paint(g, 2.4, .6); for (const y of [150, 160]) { g.beginPath(); g.moveTo(150, y); g.lineTo(178, y); g.stroke(); }
   cbNeck(g, skin, 30216);
   // white hair puffed round the head, the bun on top
