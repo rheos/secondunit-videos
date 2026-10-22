@@ -14,7 +14,7 @@ and see the result at once, without a render in between.
   live on top by the same code the film uses.
 - The beat grid under the picture: one cell per 16th note, a thin line on each beat, a thick line on each bar. Gold
   cells are hits. Click to add or remove one; drag to paint several in or out; click the ruler to jump.
-- Space plays and pauses. Speed 1, 0.75 or 0.5. Reset puts the run back to where it started.
+- Space plays and pauses. Speed 1, 0.75 or 0.5. Reset puts the run back to where it started. "Run earlier/later by a 16th" moves every hit in the run one cell, for a run that feels late or early as a whole.
 - His edits save in the browser as he goes. Claude reads them off the page (`window.BEATSYNC_CELLS`), or he presses
   Copy cells.
 
