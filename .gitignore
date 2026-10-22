@@ -76,5 +76,6 @@
 **/output
 **/tmp
 !/indieagent-one-show/
+!/indieagent-cable-and-stub/
 !/indieagent-clean-vector-test/
 !/indieagent-gigcaravan/

@@ -1,0 +1,52 @@
+slug: marker-paper
+title: Marker and ink on cream paper
+note: Flat colour laid down as visible marker strokes with one ink line around everything, on cream paper. Outdoor scenes sit inside a ragged marker rectangle with the paper showing at the edges; indoor scenes fill the frame.
+used: The cable and the stub, IndieAgent, test
+cost: free
+group: code
+order: 370
+clip: marker-paper.mp4
+tall: false
+status: test
+engine: canvas2d
+project: indieagent-cable-and-stub
+code:
+  path: indieagent-cable-and-stub/js/kit.js
+  flag: null
+  page: indieagent-cable-and-stub/index.html
+  note: >-
+    kit.js holds the marks (marker fills as stroke bands, one-weight ink, the paper frame mask, faces, the ticket
+    stub, and the cable as morphing spline poses); scenes.js the stage and the exteriors; shots.js the thirteen
+    one-bar shots. Textures are seeded per element, never per frame, so fills hold still.
+rules:
+  - One ink line at one weight (5 px at 1080) around every solid object; nothing seen in the distance gets an outline
+  - Fills are parallel marker strokes with ragged ends and a little tone variation; stroke direction is the texture (vertical sky, horizontal floor, diagonal hatch on paper things)
+  - One highlight per material (a pale band on brass, one white streak on the cable, a lighter underside on a lifted corner); no gradients except pools of light
+  - Exteriors inside a ragged paper-frame mask, the same seed for the whole run; interiors full bleed with walls the colour of the paper
+  - Faces are two dots and a mouth on the object's flattest plane, four states (calm, worry, shock, happy), readable at 60 px
+  - The shape-shifter is one spline morphed between poses (coil, hook, wheel, spring, pole, lasso, line); the drifter only moves and turns
+  - Cuts on the bar (2.5 s at 96 BPM), one shot per bar, locked camera; interiors drawn through a 1.25x camera so the objects fill the square
+  - IndieAgent red is the only accent (the stub's ADMIT ONE and star, the amp's pilot lamp); one colour arc from night navy to warm stage light
+palette:
+  - "#eee9dd"
+  - "#222338"
+  - "#32355b"
+  - "#ebcf46"
+  - "#C8341E"
+  - "#ca9e50"
+  - "#8e8fa0"
+  - "#a29a8d"
+  - "#f0c56a"
+  - "#7a3b3f"
+reference: Kevin Ngo's paperclip-and-sticky-note film (2026-10-20), see references/kevin-ngo/STYLE-BRIEF.txt
+proof:
+  renders:
+    - indieagent-cable-and-stub/out/cable-stub_draft1b_720.mp4
+  pr:
+    - rheos/secondunit-videos#274
+  youtube: []
+  note: draft 1, 2026-10-20; the styles clip is cut (out/marker-paper.mp4) but not yet in rheos/novadiem.com
+verdict: null
+related:
+  - armink
+  - crisp-line
