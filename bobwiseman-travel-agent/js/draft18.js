@@ -81,7 +81,7 @@ function leakAfter(T, edges) {
 }
 
 // the burn must not eat her portrait on the burnt shots she hangs in (a box round frame, nail and plaque)
-for (const k of ['d_appTower', 'd_bigButton', 'd_coatMap', 'treadmill', 'd_dolls']) {
+for (const k of ['d_appTower', 'd_bigButton', 'd_coatMap', 'treadmill', 'd_dolls', 'phoneApp', 'd_ticketPrint', 'd_casePlane']) {
   const [x, y, R] = MARY_AT[k], box = ['rect', x - 135 * R, y - 190 * R, x + 135 * R, y + 200 * R];
   if (typeof LEAK_CLEAR[k] === 'function') { const f = LEAK_CLEAR[k]; LEAK_CLEAR[k] = (T) => [...f(T), box]; } else (LEAK_CLEAR[k] = LEAK_CLEAR[k] || []).push(box);
 }

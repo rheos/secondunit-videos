@@ -157,6 +157,8 @@ const MARY_AT = {
   b_balloons: [1730, 420, .7], muleCircle: [1770, 200, .62], b_grab: [1730, 260, .7], b_whisper: [1740, 250, .7],
   b_peas: [220, 230, .7], b_order: [1750, 240, .7], sHead: [1690, 600, .7], c_pills: [180, 330, .62], c_sDose: [230, 430, .7],
   c_bellFar: [230, 250, .7], sSeesaw: [1680, 330, .7], d_appTower: [430, 280, .62], d_sApp: [1690, 300, .7], d_bigButton: [190, 640, .62],
+  sPassport: [230, 520, .7], c_holdSky: [330, 560, .62], c_lifebuoy: [1730, 870, .62], // draft 19
+  phoneApp: [1760, 340, .66], d_ticketPrint: [220, 230, .66], d_sDose: [160, 560, .6], d_casePlane: [230, 760, .66],
   d_coatMap: [210, 230, .66], treadmill: [210, 230, .66], d_dolls: [210, 230, .66], d_sRib: [280, 560, .7], e_sTyping: [1720, 330, .7],
 };
 // draft 18: a short thread from a portrait toward the middle of the frame, for the shots with no drawn path of their own
@@ -169,6 +171,7 @@ for (const [key, ta, tb, P0] of HER_THREAD) {
     const al = maryAlpha(T, ta, tb);
     if (at && al > 0) P[0] = maryCameo(at[0], at[1] + (1 - al) * 20, at[2], T, al, sch);
     herThread(T, ta, tb, P, sch);
+    if (typeof herMore === 'function') herMore(T, ta, tb, P, sch); // draft 19: more lines as she gets wilder
   });
 }
 // the burn-through must not eat her portrait in the two burnt shots she is in

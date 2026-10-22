@@ -54,7 +54,7 @@ function traveller(x, y, s, o = {}) {
   const fx1 = o.sit ? 60 : -12 + Math.sin(-sw) * 150, fx2 = o.sit ? 84 : 12 + Math.sin(sw) * 150;
   for (const fx of [fx1, fx2]) { const sp = PE(fx + 12, -6, 22, 9); S.F(sp, '#2b1d14'); S.OL(fx + 12, -6, 22, 9, 0, 2); }
   // back arm
-  const aL = o.armL || [.15, -.2]; limb(armIK(-26, -262, aL[0], aL[1], -1, o.handToL || null), 13, o, k, o.sleeve || '#356c69'); // o.handToL: back-hand target (draft 17 violin)
+  const aL = o.armL || [.15, -.2]; if (!o.strait) limb(armIK(-26, -262, aL[0], aL[1], -1, o.handToL || null), 13, o, k, o.sleeve || '#356c69'); // o.handToL: back-hand target (draft 17 violin)
   // coat
   const cp = [[-34, -276], [34, -276], [46, -130], [50, -118], [-50, -118], [-46, -130]];
   const cpath = PP(cp); S.F(cpath, coat); S.SH(cpath, 0, -200, 110, [16, -6], .9, 5.5); S.OP(dens(cp, 26, true));
@@ -79,6 +79,7 @@ function traveller(x, y, s, o = {}) {
   const aR = o.armR || [-.12, .25];
   // o.phone: 'handset' (a payphone receiver) or 'mobile' held against his right ear, his hand on it
   const ear = o.phone ? [lk + 36, -300] : null;
+  if (o.strait) { travStrait(S, k, o); X.restore(); return; } // draft 19: bound in a straitjacket (Bob's note), no free arms
   const ap = armIK(26, -262, aR[0], aR[1], 1, ear ? [ear[0] + 6, ear[1] + 8] : (o.handTo || null)); limb(ap, 13, o, k, o.sleeve || '#3a7a76'); // o.handTo: a local hand target for a held prop
   if (o.phone === 'handset') { const top = [lk + 36, -328], bot = [lk + 30, -272]; X.beginPath(); X.moveTo(top[0], top[1]); X.lineTo(bot[0], bot[1]); stroke(S.INK, 11 * k / k, 1); for (const [cx, cy] of [top, bot]) { const cup = PE(cx + 4, cy, 9, 7, .2); S.F(cup, '#2b2420'); S.OL(cx + 4, cy, 9, 7, .2, 1.8); } }
   if (o.phone === 'mobile') { const mp = PP([[lk + 26, -326], [lk + 44, -324], [lk + 42, -284], [lk + 24, -286]]); S.F(mp, '#2b2420'); S.OP([[lk + 26, -326], [lk + 44, -324], [lk + 42, -284], [lk + 24, -286]], true, 1.8); if (!S.sch) fillP(PP([[lk + 28, -322], [lk + 41, -320], [lk + 40, -290], [lk + 27, -292]]), '#cfe6e2', .9); }
@@ -86,6 +87,25 @@ function traveller(x, y, s, o = {}) {
   fillP(PE(hx, hy + 4, 8, 9), S.sch ? C.navy : '#efd9b9'); S.OL(hx, hy + 4, 8, 9, 0, 1.6);
   if (o.case) suitcase(hx, hy + 10, 1, { ...o, flip: false, handle: true }, k);
   X.restore();
+}
+// Draft 19 (Bob on draft 18: "can he be in a straight jacket when the hospital people are moving him?"): his arms are
+// folded across his chest inside canvas sleeves that wrap round to his back, two leather straps with buckles over them.
+// Called from traveller() with o.strait, in its local units, after the coat and head; the coat colour is the canvas.
+function travStrait(S, k, o) {
+  const cv = o.coat || '#d4c49c', sh = '#b9a97f';
+  // the sleeves: each from its shoulder across the chest to the far side, where it wraps round out of sight
+  for (const [a, b, c] of [[[-30, -258], [6, -214], [44, -200]], [[30, -258], [-4, -222], [-44, -210]]]) {
+    X.beginPath(); X.moveTo(a[0], a[1]); X.quadraticCurveTo(b[0], b[1], c[0], c[1]); stroke(S.INK, 21 * k, 1);
+    X.beginPath(); X.moveTo(a[0], a[1]); X.quadraticCurveTo(b[0], b[1], c[0], c[1]); stroke(cv, 15 * k, 1);
+    X.beginPath(); X.moveTo(a[0] + 2, a[1] + 4); X.quadraticCurveTo(b[0] + 2, b[1] + 5, c[0], c[1] + 4); stroke(sh, 3 * k, .9);
+  }
+  // the straps: one over the folded arms, one at the waist, each with its buckle on his left side
+  for (const y of [-212, -168]) {
+    const w = y < -190 ? 42 : 46; X.beginPath(); X.moveTo(-w, y); X.lineTo(w, y + 2); stroke(S.INK, 9 * k, 1); X.beginPath(); X.moveTo(-w, y); X.lineTo(w, y + 2); stroke('#7a5634', 6 * k, 1);
+    const bx = -w * .55; S.F(PR(bx - 6, y - 6, 12, 12), '#c9c2ad'); S.OP([[bx - 6, y - 6], [bx + 6, y - 6], [bx + 6, y + 6], [bx - 6, y + 6]], true, 1.4);
+  }
+  // a strap down the front, the jacket's long ties
+  X.beginPath(); X.moveTo(0, -150); X.lineTo(2, -120); stroke(S.INK, 5 * k, .9);
 }
 // suitcase hung from (x,y) handle point; scale inherits the caller (k passed in local units)
 function suitcase(x, y, sc = 1, o = {}, kk) {

@@ -937,9 +937,9 @@ SU.a_sNoCar = { mode: 'sch', f(q,p,a,T) {
   schBG(); cam(960,540,1); graticule(960,540,1800,950,80,C.lav,.1);
   car(550,600,2.8,{sch:true,col:C.white}); bracket(245,760,870,760,C.cyan,.9,'VEHICLE 01');
   lab(1230,265,'PERMITTED',C.white,1,34,'center');
-  const places=['BEACH','ISLAND','VILLAGE','MOUNTAIN','MOON'];
+  const places=['COLLEGE & SPADINA','ISLAND','VILLAGE','MOUNTAIN','MOON'];
   places.forEach((name,i)=>{const y=370+i*95; lab(1060,y,name,C.white,.95,31);
-    const u=cl((T-78.3-.13-i*.22)/.16); if(u>0) gl(1040,y-12,1040+390*u,y-12,C.mag,1,4);
+    const u=cl((T-78.3-.13-i*.22)/.16); if(u>0) gl(1040,y-12,1040+Math.max(390,name.length*26)*u,y-12,C.mag,1,4); // the line covers the longest name
   });
   screen(); schFrame('08A','ACCESS','NO ENTRY');
 } };

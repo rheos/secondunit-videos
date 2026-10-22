@@ -61,12 +61,15 @@ const HER_THREAD = [
   // draft 18: Robin's marks (2026-10-21) have her silent from 365.0 to 374.9, so e_appInside and e_sPhoneCage lose her.
   // draft 18: the rest of his marks; null = a short thread drawn from the portrait toward the middle (herAuto, draft17.js)
   ['a_sHold', 100.0, 104.15, null], ['a_stampWorld', 104.2, 108.8, null],
-  ['b_balloons', 153.55, 155.1, null], ['muleCircle', 155.14, 157.35, null], ['b_grab', 157.4, 160.1, null], ['b_whisper', 160.14, 162.73, null],
+  ['b_balloons', 152.0, 155.1, null], ['muleCircle', 155.14, 157.35, null], ['b_grab', 157.4, 160.1, null], ['b_whisper', 160.14, 162.73, null],
   ['b_peas', 173.7, 174.55, null], ['b_order', 174.58, 178.47, null],
   ['sHead', 208.6, 209.25, null], ['c_pills', 209.28, 211.3, null], ['c_sDose', 211.34, 212.28, null],
-  ['c_bellFar', 228.16, 229.73, null],
-  ['sSeesaw', 284.4, 286.25, null], ['d_appTower', 297.0, 300.05, null], ['d_sApp', 300.1, 302.55, null], ['d_bigButton', 306.7, 310.0, null],
-  ['d_coatMap', 324.7, 325.45, null], ['treadmill', 325.5, 329.55, null], ['d_dolls', 329.6, 330.45, null],
+  ['c_bellFar', 228.16, 230.95, null],
+  // draft 19 (Bob on draft 18): her portrait stays until 4:00, and on through 5:11-5:23
+  ['sPassport', 231.0, 234.0, null], ['c_holdSky', 234.06, 239.25, null], ['c_lifebuoy', 239.3, 240.0, null],
+  ['sSeesaw', 284.4, 286.25, null], ['d_appTower', 297.0, 300.05, null], ['d_sApp', 300.1, 302.55, null], ['d_bigButton', 306.7, 310.05, null],
+  ['phoneApp', 310.06, 313.55, null], ['d_ticketPrint', 313.6, 315.95, null], ['d_sDose', 316.0, 319.47, null], ['d_casePlane', 319.52, 322.7, null],
+  ['d_coatMap', 322.76, 325.45, null], ['treadmill', 325.5, 329.55, null], ['d_dolls', 329.6, 330.45, null],
   ['d_sRib', 343.98, 346.55, null], ['e_sTyping', 382.46, 385.15, null],
 ];
 // draft 17 installs the threads itself, after her portrait (js/draft17.js); without it they go in here
