@@ -255,10 +255,10 @@
 
       // ---------- cars (side view, facing right; origin at rear bottom; 400 long) ----------
       const REAR = { intact: "M14 -48 Q2 -48 2 -68 V-128 Q2 -150 26 -152", dent: "M36 -48 L20 -62 L38 -82 L18 -100 L36 -118 L22 -136 L44 -152" };
-      const TOP = " L112 -156 L160 -250 Q167 -262 184 -262 H288 Q304 -262 313 -250";
+      const TOP = " L56 -156 L98 -250 Q105 -262 122 -262 H226 Q242 -262 251 -250";
       const FRONT = {
-        intact: " L358 -160 L380 -156 Q398 -152 398 -130 V-70 Q398 -48 384 -48 Z",
-        crumple: " L340 -166 L354 -196 L374 -156 L354 -140 L378 -120 L356 -100 L376 -80 L360 -62 L368 -48 Z",
+        intact: " L296 -162 L380 -156 Q398 -152 398 -130 V-70 Q398 -48 384 -48 Z",
+        crumple: " L296 -162 L322 -168 L344 -198 L370 -158 L350 -140 L378 -120 L356 -100 L376 -80 L360 -62 L368 -48 Z",
       };
       const shell = (id, fill, shade, d, idx) => `
         <clipPath id="${id}c${idx}"><path d="${d}"/></clipPath>
@@ -284,18 +284,18 @@
           <g id="${id}Pitch"><g id="${id}Squash">
             <g id="${id}Intact">${shell(id, fill, shade, dA, 0)}</g>
             <g id="${id}Hurt" opacity="0">${shell(id, fill, shade, dB, 1)}</g>
-            <clipPath id="${id}Win"><path d="M240 -160 V-242 H284 Q296 -242 302 -234 L342 -160 Z"/></clipPath>
-            <path d="M128 -160 L168 -242 H226 V-160 Z" fill="var(--glass)" class="ol"/>
-            <path d="M240 -160 V-242 H284 Q296 -242 302 -234 L342 -160 Z" fill="var(--glass)"/>
-            <g clip-path="url(#${id}Win)">${head(id)}
+            <clipPath id="${id}Win"><path d="M178 -160 V-242 H222 Q234 -242 240 -234 L280 -160 Z"/></clipPath>
+            <path d="M66 -160 L106 -242 H164 V-160 Z" fill="var(--glass)" class="ol"/>
+            <path d="M178 -160 V-242 H222 Q234 -242 240 -234 L280 -160 Z" fill="var(--glass)"/>
+            <g clip-path="url(#${id}Win)"><g transform="translate(-62 0)">${head(id)}
               <g id="${id}Glow" opacity="0"><circle cx="306" cy="-174" r="18" fill="#BFF5FF" opacity="0.5"/><rect x="298" y="-182" width="14" height="22" rx="3" fill="#EEFBFF" stroke="var(--ink)" stroke-width="4"/></g>
-            </g>
-            <path d="M240 -160 V-242 H284 Q296 -242 302 -234 L342 -160 Z" fill="none" class="ol"/>
-            <path d="M150 -176 L176 -222" stroke="#fff" stroke-width="7" stroke-linecap="round" opacity="0.85"/>
-            <g id="${id}Crack" opacity="0"><path d="M318 -206 L330 -190 L322 -180 L338 -168 M330 -190 L342 -196" fill="none" stroke="var(--ink)" stroke-width="4" stroke-linecap="round"/></g>
-            <path d="M234 -150 V-64" stroke="var(--ink)" stroke-width="5" stroke-linecap="round"/>
-            <rect x="252" y="-134" width="30" height="9" rx="4" fill="var(--ink)"/>
-            <path d="M196 -248 H262" stroke="#fff" stroke-width="9" stroke-linecap="round"/>
+            </g></g>
+            <path d="M178 -160 V-242 H222 Q234 -242 240 -234 L280 -160 Z" fill="none" class="ol"/>
+            <path d="M88 -176 L114 -222" stroke="#fff" stroke-width="7" stroke-linecap="round" opacity="0.85"/>
+            <g id="${id}Crack" opacity="0"><path d="M256 -206 L268 -190 L260 -180 L276 -168 M268 -190 L280 -196" fill="none" stroke="var(--ink)" stroke-width="4" stroke-linecap="round"/></g>
+            <path d="M171 -150 V-64" stroke="var(--ink)" stroke-width="5" stroke-linecap="round"/>
+            <rect x="188" y="-134" width="30" height="9" rx="4" fill="var(--ink)"/>
+            <path d="M134 -248 H200" stroke="#fff" stroke-width="9" stroke-linecap="round"/>
             <g id="${id}Head1"><ellipse cx="389" cy="-118" rx="8" ry="13" fill="var(--butter)" stroke="var(--ink)" stroke-width="4"/></g>
             <g id="${id}Tail"><rect x="3" y="-134" width="14" height="32" rx="4" fill="var(--red)" stroke="var(--ink)" stroke-width="4"/></g>
             <g id="${id}Brake" opacity="0">
@@ -323,7 +323,7 @@
       // ---------- ping bubble (the symbol) ----------
       function ping(root, n) {
         root.innerHTML = `
-          <g id="pg${n}" transform="translate(${n === 3 ? "700 430" : "470 830"})"><g id="pg${n}In">
+          <g id="pg${n}" transform="translate(${n === 3 ? "700 430" : "380 830"})"><g id="pg${n}In">
             <path d="M-170 -150 H170 Q200 -150 200 -120 V40 Q200 70 170 70 H20 L-30 140 L-40 70 H-170 Q-200 70 -200 40 V-120 Q-200 -150 -170 -150 Z" fill="#fff" class="ol"/>
             <rect x="-160" y="-110" width="74" height="130" rx="14" fill="var(--ink)"/>
             <rect x="-150" y="-98" width="54" height="104" rx="8" fill="var(--sky)"/>
@@ -336,7 +336,7 @@
       }
       ping($("ping1"), 1);
       ping($("ping3"), 3);
-      const p1s = [[200, 720, 20, "var(--sky)"], [760, 650, 16, "var(--butter)"], [740, 940, 12, "var(--pink)"]].map(([x, y, s, c]) => sparkle($("ping1"), x, y, s, c));
+      const p1s = [[110, 720, 20, "var(--sky)"], [670, 650, 16, "var(--butter)"], [650, 940, 12, "var(--pink)"]].map(([x, y, s, c]) => sparkle($("ping1"), x, y, s, c));
       const p3s = [[440, 300, 22, "var(--pink)"], [1000, 600, 18, "var(--sky)"], [460, 560, 14, "var(--butter)"]].map(([x, y, s, c]) => sparkle($("ping3"), x, y, s, c));
 
       // ---------- insert: car ahead from behind ----------
