@@ -57,7 +57,7 @@ const loadScript=src=>new Promise((ok,no)=>{const s=document.createElement('scri
   a.src=C.runs[r].audio;v.src=C.runs[r].video||'';a.playbackRate=v.playbackRate=+document.getElementById('speed').value;
   const[i0,i1]=span(r);tl.width=(i1-i0+1)*CW;wrap.scrollLeft=0}
  const playB=document.getElementById('play');
- function toggle(force){if(run<0)return;if(force||a.paused){a.play();if(v.src)v.play();playB.textContent='Pause'}else{a.pause();v.pause();playB.textContent='Play'}}
+ function toggle(force){if(run<0)return;if(force||a.paused){if(a.ended||a.currentTime>=a.duration-.06){a.currentTime=0;if(v.src)v.currentTime=0}a.play();if(v.src)v.play();playB.textContent='Pause'}else{a.pause();v.pause();playB.textContent='Play'}}
  playB.onclick=e=>{e.target.blur();toggle()};
  addEventListener('keydown',e=>{if(e.code==='Space'){e.preventDefault();toggle()}});
  function seek(t){if(run<0)return;const c=Math.max(0,Math.min(C.runs[run].len-.05,t-C.runs[run].off));a.currentTime=c;if(v.src)v.currentTime=c}
@@ -83,9 +83,11 @@ const loadScript=src=>new Promise((ok,no)=>{const s=document.createElement('scri
  addEventListener('pointerup',()=>{if(paint!==null){paint=null;save()}});
  a.onended=()=>{v.pause();playB.textContent='Play'};
  apply();
+ // open on the first run, paused, so the picture and grid show and Play works before a run is picked
+ load(0);
  (function frame(){requestAnimationFrame(frame);og.setTransform(1,0,0,1,0,0);og.clearRect(0,0,ov.width,ov.height);
   if(run<0)return;const R=C.runs[run],t=R.off+a.currentTime;
-  if(v.src&&Math.abs(v.currentTime-a.currentTime)>.04&&v.readyState>1)v.currentTime=a.currentTime;
+  if(v.src&&!a.paused&&v.paused&&v.currentTime<v.duration-.06)v.play();if(v.src&&!v.seeking&&Math.abs(v.currentTime-a.currentTime)>.04&&v.readyState>1)v.currentTime=a.currentTime;
   C.draw(og,t);document.getElementById('time').textContent=fmt(t);
   const[i0,i1]=span(run),Ht=tl.height,on=new Set(cells[run]);tg.fillStyle='#101718';tg.fillRect(0,0,tl.width,Ht);tg.fillStyle='#1f2a2c';tg.fillRect(0,0,tl.width,RUL);
   for(let k=i0;k<=i1;k++){const x=(k-i0)*CW,p=((k-REF)%16+16)%16;
