@@ -17,6 +17,7 @@ They work on any look that keeps the mv-projects contract: `window.__ready` and
 | `views.mjs speed` | x, y, height and speed of a probed box per frame, plus a list of dead stops, dead starts and linear runs. |
 | `render.mjs` | Renders any look to MP4 on the song grid. `--shutter n` adds film-shutter motion blur. |
 | `flashcheck.py` | Flash safety on a finished cut: fails above 3 flashes in any second (WCAG 2.3.1). |
+| `vendor/` | Remotion's MIT helpers (paths, noise, shapes) bundled as `window.RPaths`, `RNoise`, `RShapes` for a look to load with script tags. See [Vendored helpers](#vendored-helpers). |
 
 ```bash
 node ../tools/motion-lab/audit.mjs index.html 51.0 69.2 --spec audit.spec.mjs
@@ -28,6 +29,8 @@ $MV_PYTHON ../tools/motion-lab/flashcheck.py out/final.mp4
 
 Try them on the example: `example/index.html` passes, `example/index.html?bug=1` fails three ways
 (text overflows its sign, the ball leaves the frame, a landing is 2 frames late).
+`example/vendor-demo.html` uses the vendored helpers: a star drawn on, morphed into a heart, a dot riding
+the outline, the camera drifting on noise (`--spec example/vendor-demo.spec.mjs`).
 
 ## Probing a look
 
@@ -125,6 +128,7 @@ MOTION lines), with our logo, copy and typeface: the reference lends the movemen
 |---|---|
 | Enter / exit / cross | ease-out (`EASE.outExpo`, `outQuint`) / ease-in, 40 to 50% shorter (`inExpo`) / ease-in-out (`inOutQuart`) |
 | Linear | only rotation, progress bars and loop phase |
+| Bounce / elastic | `EASE.outBounce` for a dropped object meeting a floor, `EASE.outElastic` for a plucked or released thing (it overshoots by 37%, then settles); position, scale and rotation only. Never on text, opacity or colour: there it reads as a glitch. The in and inOut forms wind up first, which reads as hesitation; use them on a deliberate wind-up only |
 | Springs (damping ratio) | 1 no bounce, 0.7 to 0.85 premium, 0.4 to 0.6 playful, under 0.3 cartoon. Position and size may bounce; opacity and colour never |
 | Durations | feedback 0.1 to 0.2 s, moves 0.2 to 0.5 s, hero reveals 0.6 to 0.9 s |
 | Stagger | letters 1 frame, words 60 to 120 ms, items 40 to 80 ms; start the next at 30 to 50% of the previous |
@@ -144,6 +148,29 @@ MOTION lines), with our logo, copy and typeface: the reference lends the movemen
 | It drags | shorten each hold by one beat, so cuts stay on the grid |
 | It feels busy | one hero move at a time; the rest 150 ms later at 60% of its travel |
 | It looks like AI | list the defaults it used by name, ban each one, render again |
+
+## Vendored helpers
+
+`vendor/` holds three of Remotion's packages bundled as plain scripts, pinned to one version (see
+`vendor/README.md` for the function list, sizes and the licence note). A look loads them after `motion.js`
+and gets `window.RPaths`, `window.RNoise` and `window.RShapes`; everything is a pure function on strings and
+numbers, drawn with `new Path2D(d)`. They help where a look has been hand-rolling geometry: a transition
+that morphs one element into the next scene (`RPaths.interpolatePath` between two centred paths, the
+rule in `transitions-follow-an-element`), a prop following a path with its nose on the tangent
+(`getPointAtLength`, `getTangentAtLength`), a stroke drawing itself on (`evolvePath` into `setLineDash`),
+and drone-camera drift that never stops and never repeats (`RNoise.noise2D` on a fixed seed, a few
+pixels, slow). Cloud-render packages the project folder only, so a look copies the three `.min.js` files
+into its own folder (a `vendor/` of its own is fine; the licence files stay here) or references them from
+`tools/motion-lab/vendor` for local renders. Rebuild after a version bump with
+`cd tools/motion-lab/vendor && npm install && npm run build`; the build runs a smoke test and refuses
+mismatched versions.
+
+```html
+<script src="../motion.js"></script>
+<script src="vendor/remotion-paths.min.js"></script>
+<script src="vendor/remotion-noise.min.js"></script>
+<script src="vendor/remotion-shapes.min.js"></script>
+```
 
 ## Review loop
 

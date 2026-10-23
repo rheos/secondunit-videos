@@ -23,6 +23,21 @@
     };
   }
 
+  const clamp01 = (t) => (t <= 0 ? 0 : t >= 1 ? 1 : t);
+  // Bounce: four parabolic arcs, each 1/4 the height of the one before, over 1/2.75 of the time (Penner).
+  function outBounce(t) {
+    let u = clamp01(t); const n = 7.5625, d = 2.75;
+    if (u < 1 / d) return n * u * u;
+    if (u < 2 / d) return n * (u -= 1.5 / d) * u + 0.75;
+    if (u < 2.5 / d) return n * (u -= 2.25 / d) * u + 0.9375;
+    return n * (u -= 2.625 / d) * u + 0.984375;
+  }
+  // Elastic: a sine at 3 cycles per unit, decaying by 2^-10t, so it overshoots by ~37% then settles (Penner).
+  function outElastic(t) {
+    const u = clamp01(t); if (u <= 0) return 0; if (u >= 1) return 1;
+    return 2 ** (-10 * u) * Math.sin((10 * u - 0.75) * (2 * Math.PI / 3)) + 1;
+  }
+
   // Enter with ease-out, exit with ease-in (and 40 to 50% shorter), cross the screen with ease-in-out.
   // Linear only for rotation, progress bars and the phase of a loop. Values: easings.net (Sitnik).
   const EASE = {
@@ -32,6 +47,17 @@
     inExpo: bezier(0.7, 0, 0.84, 0),        // fast exits
     outBack: bezier(0.34, 1.56, 0.64, 1),   // a playful pop with overshoot
     inOutSine: bezier(0.37, 0, 0.63, 1),    // ambient drift, the softest camera moves
+    // Not beziers: closed-form Penner curves, clamped to 0..1 like the rest. A bounce is a dropped object
+    // meeting the floor, an elastic is a plucked thing settling. Position, scale and rotation only;
+    // on text, opacity or colour they read as a glitch. "out" is the usual one; the "in" forms wind up.
+    outBounce, inBounce: (t) => 1 - outBounce(1 - clamp01(t)),
+    inOutBounce: (t) => { const u = clamp01(t); return u < 0.5 ? (1 - outBounce(1 - 2 * u)) / 2 : (1 + outBounce(2 * u - 1)) / 2; },
+    outElastic, inElastic: (t) => 1 - outElastic(1 - clamp01(t)),
+    inOutElastic: (t) => {
+      const u = clamp01(t); if (u <= 0) return 0; if (u >= 1) return 1;
+      const s = Math.sin((20 * u - 11.125) * (2 * Math.PI / 4.5));
+      return u < 0.5 ? -(2 ** (20 * u - 10)) * s / 2 : (2 ** (-20 * u + 10)) * s / 2 + 1;
+    },
   };
 
   // A spring from 0 to 1 as a pure function of time, no simulation.
