@@ -32,12 +32,19 @@
     "logo_settled": 435,
     "wordmark_settled": 450,
     "line_settled": 456,
-    "end": 599
+    "end": 599,
+    "slot_gone": 215,
+    "list_new": 300,
+    "list_new_settled": 312
   },
   "copy": {
     "headline": "One show. Entered once.",
     "cardTitle": "YOUR TOUR",
-    "list": ["OCT 30 · KAMLOOPS", "NOV 5 · KELOWNA", "NOV 8 · REVELSTOKE"],
+    "list": [
+      "OCT 30 · KAMLOOPS",
+      "NOV 5 · KELOWNA",
+      "NOV 8 · REVELSTOKE"
+    ],
     "dateLabel": "DATE",
     "venueLabel": "VENUE",
     "dateValue": "NOV 12",
@@ -50,7 +57,9 @@
     "stubNo": "NO.",
     "stubSerial": "054",
     "wordmark": "IndieAgent",
-    "line": "Your tour, kept straight."
+    "line": "Your tour, kept straight.",
+    "slotLabel": "NEXT SHOW",
+    "listNew": "NOV 12 · NELSON"
   },
   "palette": {
     "paper": "#F2EADB",
@@ -64,16 +73,96 @@
   },
   "layout": {
     "margin": 72,
-    "headline": { "x": 72, "y": 96, "w": 936, "h": 72 },
-    "card": { "x": 140, "y": 220, "w": 800, "h": 640, "rx": 16, "titleBar": 44 },
-    "list": { "x": 172, "y": 300, "w": 300, "h": 64, "step": 78 },
-    "dateField": { "x": 520, "y": 300, "w": 388, "h": 56 },
-    "venueField": { "x": 520, "y": 400, "w": 388, "h": 56 },
-    "button": { "x": 520, "y": 492, "w": 388, "h": 72, "rx": 10 },
-    "stub": { "x": 190, "y": 620, "w": 700, "h": 200, "perf": 690, "r": 14 },
-    "cursor": { "height": 36, "start": [1000, 1000], "park": [990, 905], "buttonOffset": [6, 4] },
-    "logo": { "cx": 540, "cy": 440, "size": 160 },
+    "headline": {
+      "x": 72,
+      "y": 96,
+      "w": 936,
+      "h": 72
+    },
+    "card": {
+      "x": 140,
+      "y": 220,
+      "w": 800,
+      "h": 640,
+      "rx": 16,
+      "titleBar": 44
+    },
+    "list": {
+      "x": 172,
+      "y": 300,
+      "w": 300,
+      "h": 64,
+      "step": 78
+    },
+    "dateField": {
+      "x": 520,
+      "y": 300,
+      "w": 388,
+      "h": 56
+    },
+    "venueField": {
+      "x": 520,
+      "y": 400,
+      "w": 388,
+      "h": 56
+    },
+    "button": {
+      "x": 520,
+      "y": 492,
+      "w": 388,
+      "h": 72,
+      "rx": 10
+    },
+    "stub": {
+      "x": 190,
+      "y": 620,
+      "w": 700,
+      "h": 200,
+      "perf": 690,
+      "r": 14,
+      "leftColumn": {
+        "x": 220,
+        "w": 440
+      },
+      "rightColumn": {
+        "x": 720,
+        "w": 140
+      }
+    },
+    "cursor": {
+      "height": 36,
+      "start": [
+        1120,
+        1120
+      ],
+      "park": [
+        990,
+        905
+      ],
+      "buttonOffset": [
+        6,
+        4
+      ]
+    },
+    "logo": {
+      "cx": 540,
+      "cy": 440,
+      "size": 160
+    },
     "wordmarkBaseline": 590,
-    "lineBaseline": 650
-  }
+    "lineBaseline": 650,
+    "fieldInner": 356,
+    "listInner": 260,
+    "buttonInner": 356,
+    "slot": {
+      "x": 190,
+      "y": 620,
+      "w": 700,
+      "h": 200,
+      "perf": 690,
+      "r": 14,
+      "labelBaseline": 726
+    }
+  },
+  "convention": "An event frame is the first frame that shows the change. A tween that begins at event e starts at frame e-1 and a tween that must be done 'by' e ends at e. Frames are at 30 fps; seconds = frame / 30."
 }

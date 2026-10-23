@@ -10,7 +10,9 @@ this file is the human version of the same numbers.
 GOAL: an artist sees their own tour screen, adds one show, and gets a ticket stub back: one show,
       entered once. They should feel "that is all it takes" and read the IndieAgent name at the end.
 OUTPUT: 1080 x 1080, 30 fps, 600 frames (frame 0 to 599), silent. Review render at 720 x 720.
-TIME: 20.0 s x 30 fps = 600 frames; no loop; no music, so no BPM. Event frames are fixed:
+TIME: 20.0 s x 30 fps = 600 frames; no loop; no music, so no BPM. An event frame is the first frame
+      that shows the change (a tween starting at 195 begins at frame 194); "by" means done on that
+      frame. Event frames are fixed:
       headline fully in by 18; card settled by 42; cursor reaches the button at 180; press at 195
       (down 195 to 198, release 198 to 212); stub appears at 210; stub readable by 234 (text at full
       opacity, scale settled); closing cut at 420 (hard cut); logo settled by 435, wordmark by 450,
@@ -25,7 +27,10 @@ LAYOUT: origin top-left, 1080 x 1080 canvas, outer margin 72 (safe area).
       headline      x 72   y 96   w 936  h 72    Archivo 800 56 px, centred, one line, ink
       card          x 140  y 220  w 800  h 640   rx 16, fill card, stroke line 1.6; title bar h 44,
                                                  label "YOUR TOUR" 15 px at x 168 y 248
-      list column   x 172  y 300  w 300          three mini tickets 300 x 64, step 78, mono 16 px
+      list column   x 172  y 300  w 300          three mini tickets 300 x 64, step 78, mono 16 px; a fourth
+                                                 (the new show, accent outline) at y 534 from frame 300
+      slot          x 190  y 620  w 700  h 200   dashed ticket outline where the stub lands, label "NEXT SHOW"
+                                                 13 px centred, baseline y 726; gone by 215 (round 1)
       date field    x 520  y 300  w 388  h 56    label "DATE" 13 px above at y 290, mono 20 px value
       venue field   x 520  y 400  w 388  h 56    label "VENUE" at y 390
       button        x 520  y 492  w 388  h 72    rx 10, accent fill, "Add show" Archivo 600 24 px paper
@@ -36,6 +41,7 @@ LAYOUT: origin top-left, 1080 x 1080 canvas, outer margin 72 (safe area).
         admit       x 720  y 668                 label 14 px "ADMIT ONE"
         no.         x 720  y 740                 label 14 px "NO."
         serial      x 720  y 795                 mono 500 48 px "054", accent text
+      stub columns  left text x 220 w 440 (30 px clear of the edge and the perforation); right x 720 w 140
       cursor        36 px tall arrow, ink fill, paper outline 2 px, hot spot at the tip
       closing card  logo 160 x 160 centred at (540, 440); wordmark "IndieAgent" Archivo 800 64 px
                     centred, baseline y 590; line "Your tour, kept straight." Archivo 500 30 px label
@@ -45,7 +51,7 @@ MOTION: easings by name; springs as damping ratio + Hz; durations in frames at 3
       headline in      0 to 18     opacity 0 to 1, y +16 to 0, outExpo
       card in          12 to 42    scale 0.96 to 1, opacity 0 to 1, spring 0.85 at 2 Hz (no bounce
                                    visible), list and fields ride with the card
-      cursor enters    54 to 72    from (1000, 1000) to the date field (560, 328), outQuint
+      cursor enters    54 to 72    from off stage (1120, 1120) to the date field (560, 328), outQuint
       click date       78          cursor scale 0.86 for 3 frames and back, caret appears
       type "NOV 12"    84 to 108   4 frames per character, steps, caret blinks every 15 frames
       cursor to venue  110 to 124  outQuint
@@ -60,8 +66,11 @@ MOTION: easings by name; springs as damping ratio + Hz; durations in frames at 3
       cursor parks     204 to 218  outQuint to (990, 905), clear of the stub
       stub in          210 to 231  scale 0.6 to 1, y +24 to 0, opacity 0 to 1, power3.out, origin
                                    top centre (it grows out of the button); text in 216 to 234
-      hold             234 to 420  nothing moves (186 frames = 6.2 s; readHold of the stub's five
-                                   lines is 0.3 x 9 words + 0.5 = 3.2 s)
+      slot fades       209 to 215  opacity 1 to 0 as the stub grows over it (round 1)
+      new list row     300 to 312  "NOV 12 · NELSON" opacity 0 to 1, y +12 to 0, outExpo: the one
+                                   secondary move in the hold (round 1)
+      hold             234 to 420  186 frames = 6.2 s; readHold of the stub's five lines is
+                                   0.3 x 9 words + 0.5 = 3.2 s; nothing else moves after 312
       closing cut      420         hard cut to paper
       logo in          420 to 435  scale 0.6 to 1, opacity, power3.out
       wordmark in      438 to 450  opacity, y +12 to 0, outExpo
@@ -91,9 +100,9 @@ QA: stills at 60, 195, 210, 234, 540 from each build at 1080 (frames 194, 209 an
 | headline | "One show. Entered once." (23 chars, Archivo 800 56 px) | about 700 px | 936 px | 30 characters, one line |
 | date field | "NOV 12" (mono 20 px, 12 px per char) | 72 px | 356 px | 29 characters |
 | venue field | "The Royal, Nelson" (17 chars) | 204 px | 356 px | 29 characters |
-| stub city | "NELSON, BC" (Archivo 800 54 px, about 0.62 em per char) | about 335 px | 470 px | 13 characters |
-| stub venue | "THE ROYAL" (Archivo 600 26 px) | about 150 px | 470 px | 28 characters |
-| stub date | "THU · NOV 12 · 2026" (mono 26 px, 19 chars) | 296 px | 470 px | 30 characters |
+| stub city | "NELSON, BC" (Archivo 800 54 px, about 0.62 em per char) | about 335 px | 440 px | 13 characters |
+| stub venue | "THE ROYAL" (Archivo 600 26 px) | about 150 px | 440 px | 27 characters |
+| stub date | "THU · NOV 12 · 2026" (mono 26 px, 19 chars) | 296 px | 440 px | 28 characters |
 | closing line | "Your tour, kept straight." (Archivo 500 30 px) | about 360 px | 936 px | 55 characters |
 
 The real typeface is checked in a rendered frame at 234 and 540 (weight and spacing, not the CSS), with
@@ -103,7 +112,8 @@ the containers outlined. A copy change re-renders the landing frame before any m
 
 - Headline: `One show. Entered once.`
 - Card title: `YOUR TOUR`
-- List: `OCT 30 · KAMLOOPS`, `NOV 5 · KELOWNA`, `NOV 8 · REVELSTOKE`
+- List: `OCT 30 · KAMLOOPS`, `NOV 5 · KELOWNA`, `NOV 8 · REVELSTOKE`, then `NOV 12 · NELSON` (round 1)
+- Slot label: `NEXT SHOW` (round 1)
 - Field labels: `DATE`, `VENUE`; typed values `NOV 12`, `The Royal, Nelson`
 - Button: `Add show`
 - Stub: `THU · NOV 12 · 2026`, `NELSON, BC`, `THE ROYAL`, `ADMIT ONE`, `NO.`, `054`
