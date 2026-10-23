@@ -1,0 +1,285 @@
+<!doctype html>
+<html
+  lang="en"
+  data-resolution="square"
+  data-composition-variables='[
+    { "id": "debug", "type": "boolean", "role": "style", "label": "Debug", "description": "Outline the brief&#39;s boxes and print the measured width of every line.", "default": false }
+  ]'
+>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1080" />
+    <title>One Show launch clip</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;800&family=JetBrains+Mono:wght@400;500&display=block"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <!-- every number comes from ../shared/spec.json (the brief as numbers); shared/sync.mjs writes spec.js -->
+    <script src="spec.js"></script>
+    <style>
+      :root {
+        --paper: #f2eadb;
+        --paper-edge: #e2d4ba;
+        --line: #8a7350;
+        --ink: #1e1a14;
+        --label: #5e4e33;
+        --card: #f5eee1;
+        --accent: #c8341e;
+        --accent-text: #a82b18;
+        --pressed: #bc311c; /* the accent darkened 6% toward the ink: the hover state */
+        --archivo: "Archivo", sans-serif;
+        --mono: "JetBrains Mono", monospace;
+      }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 1080px; height: 1080px; overflow: hidden; background: var(--paper); }
+      #root {
+        position: relative; width: 100%; height: 100%; overflow: hidden;
+        background: radial-gradient(ellipse at 50% 45%, var(--paper) 55%, var(--paper-edge) 100%);
+        font-family: var(--archivo);
+      }
+      .clip { position: absolute; inset: 0; }
+      .label { font: 600 13px var(--archivo); letter-spacing: 0.16em; text-transform: uppercase; color: var(--label); line-height: 13px; }
+      #headline {
+        position: absolute; left: 72px; top: 96px; width: 936px; height: 72px; text-align: center; font: 800 56px/72px var(--archivo); letter-spacing: -0.01em; color: var(--ink); white-space: nowrap;
+      }
+      #card {
+        position: absolute; left: 140px; top: 220px; width: 800px; height: 640px; border-radius: 16px;
+        background: var(--card); border: 1.6px solid var(--line); transform-origin: 50% 50%;
+      }
+      #card .rule { position: absolute; left: 0; right: 0; top: 43px; height: 1px; background: var(--line); }
+      #card .title { position: absolute; left: 28px; top: 0; height: 44px; font: 600 15px/44px var(--archivo); letter-spacing: 0.16em; text-transform: uppercase; color: var(--label); }
+      .mini { position: absolute; left: 32px; width: 300px; height: 64px; }
+      .mini svg { position: absolute; inset: 0; overflow: visible; }
+      .mini .txt { position: absolute; left: 20px; top: 0; width: 260px; height: 64px; font: 400 16px/64px var(--mono); color: var(--ink); white-space: nowrap; }
+      .mini.new { opacity: 0; }
+      .mini.new .tk { stroke: var(--accent) !important; stroke-width: 1.6 !important; }
+      #slot { position: absolute; left: 50px; top: 400px; width: 700px; height: 200px; overflow: visible; }
+      .field { position: absolute; left: 380px; width: 388px; height: 56px; }
+      .field .lbl { position: absolute; left: 0; top: -24px; }
+      .field .box { position: absolute; inset: 0; border-radius: 8px; background: var(--paper); border: 1.6px solid var(--line); }
+      .field .val { position: absolute; left: 16px; top: 0; width: 356px; height: 56px; font: 400 20px/56px var(--mono); color: var(--ink); white-space: pre; }
+      /* typed text: the catalog typewriter's clip, in ch units so each step is one monospace character */
+      .field .val .typed { display: inline-block; overflow: hidden; vertical-align: top; white-space: pre; max-width: calc(var(--n, 0) * 1ch); }
+      .field .val .caret { display: inline-block; width: 2px; height: 24px; background: var(--ink); vertical-align: -5px; margin-left: 1px; opacity: 0; }
+      #button {
+        position: absolute; left: 380px; top: 272px; width: 388px; height: 72px; border-radius: 10px;
+        text-align: center; font: 600 24px/72px var(--archivo); color: var(--paper); background: var(--accent); transform-origin: 50% 50%;
+      }
+      #ripple { position: absolute; inset: 0; width: 1080px; height: 1080px; overflow: visible; }
+      #ripple circle { fill: none; stroke: var(--accent); stroke-width: 2; opacity: 0; }
+      #stub { position: absolute; left: 190px; top: 620px; width: 700px; height: 200px; overflow: visible; opacity: 0; transform-origin: 524px -92px; }
+      #stub text { opacity: 0; }
+      #cursor { position: absolute; left: -7.5px; top: -4.5px; width: 36px; height: 36px; overflow: visible; transform-origin: 7.5px 4.5px; opacity: 0; }
+      #logo { position: absolute; left: 460px; top: 360px; width: 160px; height: 160px; transform-origin: 50% 50%; }
+      #closing-text { position: absolute; inset: 0; width: 1080px; height: 1080px; }
+      #debug { position: absolute; inset: 0; width: 1080px; height: 1080px; pointer-events: none; }
+    </style>
+  </head>
+  <body>
+    <div
+      id="root"
+      data-composition-id="main"
+      data-start="0"
+      data-duration="20"
+      data-fps="30"
+      data-width="1080"
+      data-height="1080"
+    >
+      <!-- the screen: frames 0 to 419 (0 to 14 s) -->
+      <div id="screen" class="clip" data-start="0" data-duration="14" data-track-index="0">
+        <div id="card">
+          <div class="rule"></div>
+          <div class="title">YOUR TOUR</div>
+          <div class="mini" style="top: 80px">
+            <svg width="300" height="64"><path class="tk" /><path class="pf" /></svg>
+            <div class="txt">OCT 30 · KAMLOOPS</div>
+          </div>
+          <div class="mini" style="top: 158px">
+            <svg width="300" height="64"><path class="tk" /><path class="pf" /></svg>
+            <div class="txt">NOV 5 · KELOWNA</div>
+          </div>
+          <div class="mini" style="top: 236px">
+            <svg width="300" height="64"><path class="tk" /><path class="pf" /></svg>
+            <div class="txt">NOV 8 · REVELSTOKE</div>
+          </div>
+          <!-- round 1: the new show files itself into the list at 300 -->
+          <div class="mini new" id="mini-new" style="top: 314px">
+            <svg width="300" height="64"><path class="tk" /><path class="pf" /></svg>
+            <div class="txt">NOV 12 · NELSON</div>
+          </div>
+          <!-- round 1: the empty slot where the stub will land -->
+          <svg id="slot" width="700" height="200">
+            <path id="slot-shape" fill="none" stroke="var(--line)" stroke-width="1.2" stroke-dasharray="6 6" opacity="0.7" />
+            <text x="350" y="106" text-anchor="middle" font-family="Archivo" font-weight="600" font-size="13" letter-spacing="0.16em" fill="var(--label)" opacity="0.8">NEXT SHOW</text>
+          </svg>
+          <div class="field" id="date-field" style="top: 80px">
+            <div class="lbl label">DATE</div>
+            <div class="box"></div>
+            <div class="val"><span class="typed">NOV 12</span><i class="caret"></i></div>
+          </div>
+          <div class="field" id="venue-field" style="top: 180px">
+            <div class="lbl label">VENUE</div>
+            <div class="box"></div>
+            <div class="val"><span class="typed">The Royal, Nelson</span><i class="caret"></i></div>
+          </div>
+          <div id="button">Add show</div>
+        </div>
+        <svg id="ripple"><circle cx="720" cy="532" r="16" /></svg>
+        <svg id="stub" width="700" height="200">
+          <path id="stub-shape" fill="var(--card)" stroke="var(--line)" stroke-width="2" />
+          <path d="M500,24 V176" fill="none" stroke="var(--line)" stroke-width="1.6" stroke-dasharray="2 9" stroke-linecap="round" />
+          <text class="l0" x="30" y="48" font-family="JetBrains Mono" font-size="26" letter-spacing="0.04em" fill="var(--ink)">THU · NOV 12 · 2026</text>
+          <text class="l1" x="30" y="115" font-family="Archivo" font-weight="800" font-size="54" letter-spacing="-0.01em" fill="var(--ink)">NELSON, BC</text>
+          <text class="l2" x="30" y="160" font-family="Archivo" font-weight="600" font-size="26" letter-spacing="0.04em" fill="var(--ink)">THE ROYAL</text>
+          <text class="l3" x="530" y="48" font-family="Archivo" font-weight="600" font-size="14" letter-spacing="0.16em" fill="var(--label)">ADMIT ONE</text>
+          <text class="l4" x="530" y="120" font-family="Archivo" font-weight="600" font-size="14" letter-spacing="0.16em" fill="var(--label)">NO.</text>
+          <text class="l5" x="530" y="175" font-family="JetBrains Mono" font-weight="500" font-size="48" fill="var(--accent-text)">054</text>
+        </svg>
+        <svg id="cursor" viewBox="0 0 24 24">
+          <path d="M5 3 L5 19 L9 15 L12 22 L15 20.5 L11.5 14 L18 14 Z" fill="var(--ink)" stroke="var(--paper)" stroke-width="1.4" stroke-linejoin="round" />
+        </svg>
+        <div id="headline">One show. Entered once.</div>
+      </div>
+
+      <!-- the closing card: frames 420 to 599 (14 to 20 s), a hard cut -->
+      <div id="closing" class="clip" data-start="14" data-duration="6" data-track-index="1">
+        <img id="logo" src="assets/indieagent-mark.svg" alt="" />
+        <svg id="closing-text">
+          <text id="wordmark" x="540" y="590" text-anchor="middle" font-family="Archivo" font-weight="800" font-size="64" letter-spacing="-0.02em" fill="var(--ink)">IndieAgent</text>
+          <text id="line" x="540" y="650" text-anchor="middle" font-family="Archivo" font-weight="500" font-size="30" fill="var(--label)">Your tour, kept straight.</text>
+        </svg>
+      </div>
+
+      <svg id="debug"></svg>
+    </div>
+
+    <script>
+      (() => {
+        const SPEC = window.ONESHOW_SPEC;
+        const E = SPEC.events, L = SPEC.layout, C = SPEC.copy, FPS = SPEC.fps;
+        const s = (f) => f / FPS; // frame to seconds
+        const ticketPath = (x, y, w, h, px, r) =>
+          `M${x},${y} H${px - r} A${r} ${r} 0 0 0 ${px + r},${y} H${x + w} V${y + h} H${px + r} A${r} ${r} 0 0 0 ${px - r},${y + h} H${x} Z`;
+
+        // static geometry from the spec
+        document.querySelectorAll(".mini .tk").forEach((p) => { p.setAttribute("d", ticketPath(0.5, 0.5, 299, 63, 230, 6)); p.setAttribute("fill", "var(--paper)"); p.setAttribute("stroke", "var(--line)"); p.setAttribute("stroke-width", "1.2"); });
+        document.querySelectorAll(".mini .pf").forEach((p) => { p.setAttribute("d", "M230,12 V52"); p.setAttribute("fill", "none"); p.setAttribute("stroke", "var(--line)"); p.setAttribute("stroke-width", "1.2"); p.setAttribute("stroke-dasharray", "2 6"); p.setAttribute("stroke-linecap", "round"); });
+        document.getElementById("stub-shape").setAttribute("d", ticketPath(1, 1, L.stub.w - 2, L.stub.h - 2, L.stub.perf - L.stub.x, L.stub.r));
+        document.getElementById("slot-shape").setAttribute("d", ticketPath(1, 1, L.slot.w - 2, L.slot.h - 2, L.slot.perf - L.slot.x, L.slot.r));
+
+        // a damped spring from 0 to 1 as a pure function of time (motion-lab motion.js), used as a GSAP ease
+        const spring = (t, zeta, hz) => {
+          if (t <= 0) return 0;
+          const w = 2 * Math.PI * hz;
+          if (zeta >= 1) return 1 - Math.exp(-w * t) * (1 + w * t);
+          const wd = w * Math.sqrt(1 - zeta * zeta);
+          return 1 - Math.exp(-zeta * w * t) * (Math.cos(wd * t) + ((zeta * w) / wd) * Math.sin(wd * t));
+        };
+        const springEase = (zeta, hz, seconds) => (p) => spring(p * seconds, zeta, hz) / spring(seconds, zeta, hz);
+        // typing: one character per k frames, the first on the tween's first frame; N characters in all
+        const typeEase = (frames, k, N) => (p) => Math.min(N, Math.floor((p * frames) / k) + 1) / N;
+        // caret: 15 frames on, 15 off, from the focus frame; off once the window ends
+        const blinkEase = (frames) => (p) => { const f = Math.floor(p * frames); return f >= frames ? 0 : Math.floor(f / 15) % 2 === 0 ? 1 : 0; };
+
+        const tl = gsap.timeline({ paused: true });
+        const later = { immediateRender: false };
+
+        // headline in by 18
+        tl.fromTo("#headline", { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: s(E.headline_in), ease: "expo.out" }, 0);
+        // card settles by 42: damping ratio 0.85 at 2 Hz over 30 frames
+        tl.fromTo("#card", { opacity: 0, scale: 0.96 }, { opacity: 1, scale: 1, duration: s(30), ease: springEase(0.85, 2, 1.0) }, s(E.card_settled - 30));
+
+        // the cursor: tip coordinates; it enters from off stage and arrives, never passes through
+        const date = { x: L.dateField.x + 40, y: L.dateField.y + 28 };
+        const venue = { x: L.venueField.x + 40, y: L.venueField.y + 28 };
+        const btn = { x: L.button.x + L.button.w / 2 + L.cursor.buttonOffset[0], y: L.button.y + L.button.h / 2 + L.cursor.buttonOffset[1] };
+        tl.set("#cursor", { opacity: 1 }, s(E.cursor_enter));
+        tl.fromTo("#cursor", { x: L.cursor.start[0], y: L.cursor.start[1] }, { x: date.x, y: date.y, duration: s(E.cursor_at_date - E.cursor_enter), ease: "power4.out" }, s(E.cursor_enter));
+        tl.to("#cursor", { x: venue.x, y: venue.y, duration: s(E.cursor_at_venue - 110), ease: "power4.out" }, s(110));
+        tl.to("#cursor", { x: btn.x, y: btn.y, duration: s(E.cursor_at_button - E.cursor_leave_venue), ease: "power4.out" }, s(E.cursor_leave_venue));
+        tl.to("#cursor", { x: L.cursor.park[0], y: L.cursor.park[1], duration: s(E.cursor_parked - E.cursor_park_start), ease: "power4.out" }, s(E.cursor_park_start));
+        // two small clicks on the fields
+        for (const f of [E.click_date, E.click_venue]) {
+          tl.fromTo("#cursor", { scale: 1 }, { scale: 0.86, duration: s(3), ease: "none", ...later }, s(f - 1));
+          tl.to("#cursor", { scale: 1, duration: s(3), ease: "none" }, s(f + 2));
+        }
+        // focus rings and typing
+        tl.set("#date-field .box", { borderColor: "var(--accent)", borderWidth: 2 }, s(E.click_date));
+        tl.set("#date-field .box", { borderColor: "var(--line)", borderWidth: 1.6 }, s(E.click_venue));
+        tl.set("#venue-field .box", { borderColor: "var(--accent)", borderWidth: 2 }, s(E.click_venue));
+        tl.set("#venue-field .box", { borderColor: "var(--line)", borderWidth: 1.6 }, s(E.press));
+        tl.fromTo("#date-field .caret", { opacity: 0 }, { opacity: 1, duration: s(E.click_venue - E.click_date), ease: blinkEase(E.click_venue - E.click_date), ...later }, s(E.click_date));
+        tl.fromTo("#venue-field .caret", { opacity: 0 }, { opacity: 1, duration: s(E.press - E.click_venue), ease: blinkEase(E.press - E.click_venue), ...later }, s(E.click_venue));
+        const dateFrames = E.type_date_end - E.type_date_start, venueFrames = E.type_venue_end - E.type_venue_start;
+        tl.fromTo("#date-field .typed", { "--n": 0 }, { "--n": C.dateValue.length, duration: s(dateFrames), ease: typeEase(dateFrames, 4, C.dateValue.length) }, s(E.type_date_start));
+        tl.fromTo("#venue-field .typed", { "--n": 0 }, { "--n": C.venueValue.length, duration: s(venueFrames), ease: typeEase(venueFrames, 2, C.venueValue.length) }, s(E.type_venue_start));
+
+        // hover, press, release: linear down over 3 frames, back.out(1.6) over 14, adjacent so the state carries
+        tl.to("#button", { backgroundColor: "#bc311c", duration: s(3), ease: "none" }, s(E.hover - 1));
+        tl.fromTo(["#button", "#cursor"], { scale: 1 }, { scale: (i) => (i === 0 ? 0.94 : 0.86), duration: s(E.release - E.press), ease: "none", ...later }, s(E.press - 1));
+        tl.to(["#button", "#cursor"], { scale: 1, duration: s(E.release_settled - E.release), ease: "back.out(1.6)" }, s(E.release - 1));
+        // one ring from the click point
+        tl.fromTo("#ripple circle", { attr: { r: 16 }, opacity: 1 }, { attr: { r: 64 }, opacity: 0, duration: s(E.ripple_end - E.ripple_start), ease: "power1.out", ...later }, s(E.ripple_start - 1));
+        // the form clears
+        tl.to(".field .val", { opacity: 0, duration: s(6), ease: "none" }, s(E.release_settled));
+
+        // round 1: the slot fades as the stub grows over it; the new show files itself into the list at 300
+        tl.to("#slot", { opacity: 0, duration: s(E.slot_gone - E.stub), ease: "none" }, s(E.stub - 1));
+        tl.fromTo("#mini-new", { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: s(E.list_new_settled - E.list_new), ease: "expo.out", ...later }, s(E.list_new - 1));
+        // the stub grows out of the button, then its five lines come in two frames apart; readable by 234
+        tl.fromTo("#stub", { scale: 0.6, y: 24 }, { scale: 1, y: 0, duration: s(E.stub_settled - E.stub), ease: "power3.out", ...later }, s(E.stub - 1));
+        tl.fromTo("#stub", { opacity: 0 }, { opacity: 1, duration: s(8), ease: "power1.out", ...later }, s(E.stub - 1));
+        for (let i = 0; i < 6; i++) {
+          tl.fromTo(`#stub .l${i}`, { opacity: 0 }, { opacity: 1, duration: s(8), ease: "power1.out", ...later }, s(E.stub_readable - 19 + i * 2));
+        }
+
+        // the closing card: a hard cut at 420 (the clip boundary), logo settled by 435, wordmark by 450, line by 456
+        tl.fromTo("#logo", { scale: 0.6 }, { scale: 1, duration: s(E.logo_settled - E.closing_cut), ease: "power3.out", ...later }, s(E.closing_cut - 1));
+        tl.fromTo("#logo", { opacity: 0 }, { opacity: 1, duration: s(8), ease: "power1.out", ...later }, s(E.closing_cut - 1));
+        tl.fromTo("#wordmark", { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: s(12), ease: "expo.out", ...later }, s(E.wordmark_settled - 13));
+        tl.fromTo("#line", { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: s(12), ease: "expo.out", ...later }, s(E.line_settled - 13));
+
+        window.__timelines["main"] = tl;
+        tl.seek(0);
+
+        // debug: the brief's boxes and the measured width of every line, so text fit is a number
+        const vars = window.__hyperframes && window.__hyperframes.getVariables ? window.__hyperframes.getVariables() : {};
+        const DEBUG = vars.debug === true || /[?&]debug=1/.test(location.search);
+        if (DEBUG) {
+          const S = L.stub;
+          const rows = [
+            { text: C.headline, font: "800 56px Archivo", ls: -0.56, box: [L.headline.x, L.headline.y, L.headline.w, L.headline.h] },
+            { text: C.list[2], font: "400 16px 'JetBrains Mono'", ls: 0, box: [L.list.x + 20, L.list.y + 2 * L.list.step, L.listInner, L.list.h] },
+            { text: C.dateValue, font: "400 20px 'JetBrains Mono'", ls: 0, box: [L.dateField.x + 16, L.dateField.y, L.fieldInner, L.dateField.h] },
+            { text: C.venueValue, font: "400 20px 'JetBrains Mono'", ls: 0, box: [L.venueField.x + 16, L.venueField.y, L.fieldInner, L.venueField.h] },
+            { text: C.button, font: "600 24px Archivo", ls: 0, box: [L.button.x + 16, L.button.y, L.buttonInner, L.button.h] },
+            { text: C.stubDate, font: "400 26px 'JetBrains Mono'", ls: 1.04, box: [S.leftColumn.x, S.y + 22, S.leftColumn.w, 34] },
+            { text: C.stubCity, font: "800 54px Archivo", ls: -0.54, box: [S.leftColumn.x, S.y + 62, S.leftColumn.w, 60] },
+            { text: C.stubVenue, font: "600 26px Archivo", ls: 1.04, box: [S.leftColumn.x, S.y + 134, S.leftColumn.w, 34] },
+            { text: C.stubAdmit, font: "600 14px Archivo", ls: 2.24, box: [S.rightColumn.x, S.y + 30, S.rightColumn.w, 24] },
+            { text: C.stubSerial, font: "500 48px 'JetBrains Mono'", ls: 0, box: [S.rightColumn.x, S.y + 128, S.rightColumn.w, 54] },
+            { text: C.wordmark, font: "800 64px Archivo", ls: -1.28, box: [72, 540, 936, 70] },
+            { text: C.line, font: "500 30px Archivo", ls: 0, box: [72, 620, 936, 40] },
+          ];
+          const boxes = [[L.card.x, L.card.y, L.card.w, L.card.h], [L.button.x, L.button.y, L.button.w, L.button.h], [S.x, S.y, S.w, S.h], [L.logo.cx - 80, L.logo.cy - 80, 160, 160]];
+          const NS = "http://www.w3.org/2000/svg";
+          const dbg = document.getElementById("debug");
+          const el = (tag, attrs, txt) => { const n = document.createElementNS(NS, tag); for (const k in attrs) n.setAttribute(k, attrs[k]); if (txt) n.textContent = txt; dbg.appendChild(n); return n; };
+          const draw = () => {
+            const g = document.createElement("canvas").getContext("2d");
+            for (const b of boxes) el("rect", { x: b[0], y: b[1], width: b[2], height: b[3], fill: "none", stroke: "#1E90FF", "stroke-width": 1, "stroke-dasharray": "6 4" });
+            for (const m of rows) {
+              g.font = m.font; g.letterSpacing = `${m.ls}px`;
+              const w = g.measureText(m.text).width, ok = w <= m.box[2], c = ok ? "#1E90FF" : "#FF0040";
+              el("rect", { x: m.box[0], y: m.box[1], width: m.box[2], height: m.box[3], fill: "none", stroke: c, "stroke-width": 1.5, "stroke-dasharray": "4 3" });
+              el("text", { x: m.box[0] + m.box[2], y: m.box[1] - 3, "text-anchor": "end", "font-family": "JetBrains Mono", "font-size": 11, fill: c }, `${Math.round(w)} / ${m.box[2]} px`);
+            }
+          };
+          document.fonts.ready.then(draw);
+        }
+      })();
+    </script>
+  </body>
+</html>
