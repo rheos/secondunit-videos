@@ -17,6 +17,10 @@ Times are Pacific. The verdict is `../VERDICT.md`.
 | 5:14 pm | HyperFrames build written (index.html, 1 file), lint 0 errors 2 warnings, check passed |
 | 5:17 pm | Remotion event-frame stills (8 frames, 106 s with bundling); HyperFrames snapshots (8 frames, 7 s) |
 | 5:20 pm | round 1 notes written from the stills (below) |
+| 5:22 pm | round 1 applied to both; Remotion stills 6 s (bundle cached), HyperFrames check 8 s |
+| 5:24 pm | review renders: Remotion `--scale` refused a non-integer height, so 1080 (21 s) then ffmpeg to 720 (2 s); HyperFrames 1080 in 24 s of render (29 s wall) then ffmpeg to 720 (2 s) |
+| 5:27 pm | motion-lab audit tried on both: neither can report probes without an adapter (VERDICT.md) |
+| 5:29 pm | HyperFrames re-rendered as d1b (the ease fix had landed after its compile); both cuts opened in one VLC for Robin |
 
 ## Round 1 (my own audit of the first stills, before Robin sees anything)
 
