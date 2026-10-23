@@ -1,0 +1,39 @@
+{
+  "remotion": "4.0.538",
+  "esbuild": "0.28.2",
+  "built": "2026-10-22",
+  "bundles": [
+    {
+      "file": "remotion-paths.min.js",
+      "global": "RPaths",
+      "total": 71421,
+      "by": {
+        "entry": 482,
+        "remotion (dist/esm/no-react.mjs)": 24856,
+        "@remotion/paths": 45463
+      }
+    },
+    {
+      "file": "remotion-noise.min.js",
+      "global": "RNoise",
+      "total": 9189,
+      "by": {
+        "entry": 64,
+        "remotion (dist/esm/no-react.mjs)": 4188,
+        "simplex-noise": 3821,
+        "@remotion/noise": 496
+      }
+    },
+    {
+      "file": "remotion-shapes.min.js",
+      "global": "RShapes",
+      "total": 54128,
+      "by": {
+        "entry": 595,
+        "remotion (dist/esm/no-react.mjs)": 3702,
+        "@remotion/paths": 26146,
+        "@remotion/shapes": 23061
+      }
+    }
+  ]
+}
