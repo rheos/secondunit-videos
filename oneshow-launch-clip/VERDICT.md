@@ -19,6 +19,14 @@ they match to text antialiasing: PSNR between the two builds' stills is 31 to 38
 flat colour is identical to the hex, and every measured line reports the same width in both
 (headline 678 of 936 px, stub city 341 of 440, serial 86 of 140, closing line 309 of 936).
 
+## Robin's reaction
+
+Robin watched both review cuts, the Remotion d1 and the HyperFrames d1b 720 x 720 MP4s, back to back in
+one VLC window on 2026-10-22 at about 5:35 pm (the whole 20 s of each, no stills), and said: "looks
+about the same." That is the designed result: both builds read the same spec, so the picture was never
+the thing being compared. No round 2 is spent on making them differ; the comparison stands on the
+non-picture measures below (time, rounds, reuse, render and cloud path, the vendor skill).
+
 ## Gates
 
 | Gate | Remotion | HyperFrames |

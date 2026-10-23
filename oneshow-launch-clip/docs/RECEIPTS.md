@@ -47,3 +47,9 @@ Technical fixes:
   darkening and the form clear), while the Remotion interpolate for the same moves is linear; frame
   214 showed the cleared field lighter in HyperFrames. Both now say `ease: "none"`. Lesson for the
   parity contract: name every ease, including "none".
+
+## Round 2 (Robin, 2026-10-22, about 5:35 pm, relayed by the parent session)
+
+Looking at: the two 720 x 720 review cuts (Remotion d1, HyperFrames d1b) played back to back in one VLC
+window. His words: "looks about the same." No change requested; none made. The picture is identical by
+design, so the verdict rests on the four non-picture measures.
