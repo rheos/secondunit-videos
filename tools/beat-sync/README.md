@@ -62,8 +62,10 @@ and see the result at once, without a render in between.
 The page runs from any static host, so a client can use it from their own review folder (Bob, 2026-10-22):
 
 1. Copy beat-sync.html, a config, the element's scripts and the run clips into one folder and upload it under the
-   client's drop folder as `<folder>/sync/` (wrangler r2 object put with the right content types; the bucket serves
-   byte ranges, so seeking works). Paths in the config are absolute from the host root (`/<folder>/sync/...`).
+   client's drop folder as `<folder>/sync/` (wrangler r2 object put with the right content types and `--cache-control no-cache`; the bucket serves
+   byte ranges, so seeking works). Without no-cache the Worker sends no cache header, Chrome keeps the first copy it
+   saw, and a fixed page never reaches anyone who opened the old one (2026-10-22: the tool "worked in the side panel
+   but not in my Chrome"). Paths in the config are absolute from the host root (`/<folder>/sync/...`).
 2. In the config, `intro` replaces the instructions with plain words for the client, `storageKey` keeps their edits
    apart from Robin's, and `send: {url: '/<folder>/review', round, prefix, done}` adds a Send to the studio button.
    It posts the grid as a note on that round with the same fields as the review page's note form, so it pings the
