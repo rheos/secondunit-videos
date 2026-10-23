@@ -17,6 +17,9 @@ studied for new animation design recipes. The notes had lived only in session me
   recommendation, and what stays.
 - `STUDY-paperclip-and-sticky-note.md`: the shot list of the 2026-10-20 film (S1-S20, with the cut
   grid) and the fourteen recipes read off it (P01-P14), plus where each bears on our films.
+- `STUDY-paper-boat.md`: the shot list of the 2026-10-18 paper boat film (B1-B24, hard cuts on a
+  2.5 s grid), its look (flat fills with one speckle grain, ink only on the boat and the cat, mirrored
+  water) and recipes P15-P22, numbered after the paperclip study's.
 - `works-index.json`: the posts we have studied, K01-K16, with status IDs where recorded and the
   process facts from his own "How this was made" replies.
 - `STYLE-BRIEF.txt`: the marker-and-ink-on-cream-paper surface of the paperclip film, for when the

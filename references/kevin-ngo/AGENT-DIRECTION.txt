@@ -25,7 +25,7 @@ TRY ONE OR TWO OF THESE MOVES
 
 REFERENCE ANCHORS (see works-index.json; watch the post before using one)
 K10 Paperclip and sticky note (2026-10-20, 60 s, 1:1): all of P01-P14 in STUDY-paperclip-and-sticky-note.md.
-K04 A paper boat goes on a journey (subscriber post, 2026-10-19): the journey-home chain, day-night-dawn arc, water reflections. Study only.
+K04 A paper boat goes on a journey (subscriber post, 2026-10-18, 60 s, 1:1): P15-P22 in STUDY-paper-boat.md (mirror every place in water, one prop that never changes, each place one postcard, home keeps time, peril then the world lifts, end on the first frame). Study only.
 K02 Orb and portals (2026-10-13, Blender): one element dead centre for the whole film; places open as circle portals around it; every cut anchored on it.
 K01 UI animations (2026-10-19): the clean vector look (one navy outline, flat fill plus one shade band plus one highlight, spring motion). Already built as our clean-vector test.
 K06 Robot arm GIF (2026-10-15): heavy even navy ink, grainy fills set off their line, pencil cast shadows. Built as our arm look.

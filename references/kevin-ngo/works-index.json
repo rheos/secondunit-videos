@@ -3,7 +3,7 @@
   "handle": "@kevin_t_ngo",
   "profile": "https://x.com/kevin_t_ngo",
   "note": "Posts we have studied, with stable IDs for the direction file. Status IDs are given where recorded; subscriber posts (K04, K05, K07) are study only and must never be republished. No frames are committed in this profile.",
-  "updated": "2026-10-20",
+  "updated": "2026-10-21",
   "works": [
     {
       "id": "K01",
@@ -35,11 +35,12 @@
     {
       "id": "K04",
       "title": "A paper boat goes on a journey",
-      "date": "2026-10-19",
-      "url": "subscriber post (x.com/kevin_t_ngo/subs); study only, never republish",
-      "format": "1:1, 60 s, Opus",
+      "date": "2026-10-18",
+      "url": "https://x.com/kevin_t_ngo/status/2112023450340757997 (subscriber post; study only, never republish)",
+      "format": "1:1, 1080x1080, 24 fps, 60.0 s, with sound; \"drawn every frame using JavaScript\" by Opus 5.5",
       "observed": "A black cat's paper boat with a goldfish leaves a canal windowsill, passes about 15 places (canal bridge, windmill polder with heron, cliff waterfall, jungle, lantern festival, storm, waterspout, moonlit clouds, dawn town) and comes home to the sleeping cat. Flat shapes with grain, water reflections everywhere, one day-to-night-to-dawn colour arc.",
-      "ours": "The journey-home structure is Travel Agent's premise."
+      "ours": "The journey-home structure is Travel Agent's premise.",
+      "study": "STUDY-paper-boat.md (B1-B24, recipes P15-P22), 2026-10-21"
     },
     {
       "id": "K05",
