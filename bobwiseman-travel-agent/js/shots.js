@@ -17,8 +17,11 @@ function poster(x, y, w, h, kind) {
   else { plane(x + w * .5, y + h * .3, .36, -.18); for (let i = 0; i < 3; i++) iE(x + w * (.2 + i * .3), y + h * .52, 30, 10, 0, C.ink, 1.2, .6, false); }
   X.restore();
   iBox(x, y, w, h, C.ink, 2.2); iline(x, y + h * .62, x + w, y + h * .62, C.ink, 1.6, 1, false);
-  lab(x + w / 2, y + h * .78, kind === 'palm' ? 'VISIT THE SUN' : 'FLY AWAY', C.ink, .9, 15, 'center', 'middle', 'bold');
-  lab(x + w / 2, y + h * .9, 'BOOK NOW', C.brick, .9, 11, 'center', 'middle');
+  // draft 20 (Bob): the sun poster's tagline sets up the later lyric about the car-free place, as a joke
+  const sun = kind === 'palm';
+  lab(x + w / 2, y + h * (sun ? .735 : .78), sun ? 'VISIT THE SUN' : 'FLY AWAY', C.ink, .9, 15, 'center', 'middle', 'bold');
+  if (sun) lab(x + w / 2, y + h * .825, 'WHERE NO CARS ALLOWED', C.ink, .85, 10, 'center', 'middle');
+  lab(x + w / 2, y + h * (sun ? .92 : .9), 'BOOK NOW', C.brick, .9, 11, 'center', 'middle');
 }
 function chair(x, y, s = 1) { // seat at (x, y-150*s), legs to y
   X.save(); X.translate(x, y); X.scale(s, s);

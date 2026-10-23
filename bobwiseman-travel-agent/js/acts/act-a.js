@@ -698,7 +698,7 @@ SU.a_posterCU = { mode: 'ill', f(q, p, a, T) {
   const fr = new Path2D(); fr.rect(wx - 40, wy - 40, ww + 80, wh + 80); fr.rect(wx, wy, ww, wh); fillP(fr, '#7a5634'); X.save(); X.clip(fr, 'evenodd'); hatch(PR(wx - 40, wy - 40, ww + 80, wh + 80), 960, 540, 900, 1.2, 6, C.ink, .8, .5); X.restore();
   // behind the glass: the shop's back wall and the poster
   fillP(win, '#e3e6d8'); X.save(); X.clip(win); hatch(win, 960, 540, 800, 1.57, 22, C.ink, .8, .12);
-  a_withPunch({ 'VISIT THE SUN': 44 }, () => poster(560, 40, 800, 1000, 'palm')); // draft 11: the punchline label, phone-legible
+  a_withPunch({ 'VISIT THE SUN': 44, 'WHERE NO CARS ALLOWED': 28 }, () => poster(560, 40, 800, 1000, 'palm')); // draft 11: the punchline label, phone-legible; draft 20: Bob's tagline
   // the sun on the poster, its rings dimming as the water sheets over it
   const sx = 1104, sy = 240, dim = eo(seg(p, .15, 1));
   for (let i = 0; i < 4; i++) gc(sx, sy, 150 + i * 40 + ((FD * 5) % 40), C.orange, .6 * (1 - dim * .85), 2);
