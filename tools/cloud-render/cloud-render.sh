@@ -21,7 +21,7 @@
 # 2. Starts .github/workflows/cloud-render.yml: N runners each draw their frames and encode a silent slice.
 # 3. The workflow's join job checks each slice's frame count and joins them with the concat filter; this Mac
 #    downloads that one video and muxes the project's assets/song.wav for t0..t1 onto it (video copied, no encode).
-# 4. Runs badframes, then deletes the release. Uses about 3 Actions minutes per slice.
+# 4. Runs badframes and frame forensics (a warning), then deletes the release. Uses about 3 Actions minutes per slice.
 set -e -o pipefail
 draft=${CR_DRAFT:-0}; tall=${CR_TALL:-0}
 while [[ $1 == --(draft|tall) ]]; do [[ $1 == --draft ]] && draft=1 || tall=1; shift; done
@@ -170,6 +170,10 @@ ffmpeg -y -loglevel error -i $tmp/film/film.mp4 -ss $t0 -t $(( t1 - t0 )) -i $so
 got=$(ffprobe -v error -count_frames -select_streams v:0 -show_entries stream=nb_read_frames -of csv=p=0 $out | tr -d ',')
 (( got == frames )) || { echo "video has $got frames, want $frames"; exit 1; }
 
-# 4. scan
+# 4. scan. Forensics (pops, jumps, holds) only warns: hard cuts read as jumps, so check the frames it names.
+#    The seams are each slice's first frame, where a look that carries state between frames would restart.
 $py $here/badframes.py $out
+seams=(); for (( k = 1; k < slices; k++ )); do seams+=($(( k * frames / slices ))); done
+$py ${here:h}/motion-lab/forensics.py --seams "${(j:,:)seams}" --max-hold $hold $out \
+  || echo "forensics: WARNING only (a cut shows as a jump); look at the frames above"
 echo "wrote $out"
