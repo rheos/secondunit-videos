@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Ink Wash Canvas</title>
+<!-- Spotify Canvas loop in the ink-wash look (8 s, 9:16). Render with tools/canvas-loop/loop-render.mjs,
+     which opens this page as ?offline=1&w=720&h=1280&loop=1 and calls window.__framePNG(t).
+     Opened by hand it plays the loop. -->
+<style>html, body { margin: 0; background: #efe7dc; } canvas { display: block; }</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<script src="../tools/motion-lab/vendor/remotion-noise.min.js"></script>
+<script src="../tools/canvas-loop/loopnoise.js"></script>
+<script src="../indieagent-ink-wash/js/inkkit.js"></script>
+<script src="js/scene.js"></script>
+<script>
+(() => {
+  const q = new URLSearchParams(location.search);
+  const cv = document.getElementById('c');
+  cv.width = +q.get('w') || 720;
+  cv.height = +q.get('h') || 1280;
+  const ctx = cv.getContext('2d', { willReadFrequently: true });
+  window.__ready = new Promise((res) => setTimeout(() => { INKCANVAS.build(cv.width, cv.height); res(true); }, 0));
+  window.__framePNG = (t) => { INKCANVAS.draw(ctx, t); return cv.toDataURL('image/png'); };
+  if (!q.has('offline')) {
+    window.__ready.then(() => {
+      const t0 = performance.now();
+      const tick = () => { INKCANVAS.draw(ctx, ((performance.now() - t0) / 1000) % INKCANVAS.LOOP); requestAnimationFrame(tick); };
+      requestAnimationFrame(tick);
+    });
+  }
+})();
+</script>
+</body>
+</html>
