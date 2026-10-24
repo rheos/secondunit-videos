@@ -1,11 +1,11 @@
 // Render a seamless Spotify Canvas loop from any code-drawn page, and prove the seam.
 //
 //   cd <project folder>      (the one with node_modules/playwright, i.e. any mv-projects film)
-//   node <this file> <page.html> <out dir> [--w 720] [--h 1280] [--seconds 8] [--fps 24] [--song assets/song.wav --at 90]
+//   node <this file> <page.html> <out dir> [--w 720] [--h 1280] [--seconds 8] [--fps 24] [--song assets/song.wav --at 90] [--q 'a=1&b=2']
 //
 // The page must expose window.__ready (a promise) and window.__frameJPEG(t, q) or, better, window.__framePNG(t),
 // drawing time t in seconds as a pure function, with the loop period equal to --seconds (t = seconds is t = 0).
-// It is opened as page?offline=1&w=W&h=H&loop=1.
+// It is opened as page?offline=1&w=W&h=H&loop=1, plus anything given with --q (extra query for the page).
 //
 // Writes into <out dir>: frames/0001.png.., canvas_<W>x<H>.mp4 (silent H.264, the Canvas), loop_<W/2>x<H/2>.gif,
 // contact.jpg (one frame a second), seam.json, and with --song a review cut that plays the loop four times over the song.
@@ -34,7 +34,7 @@ fs.rmSync(frames, { recursive: true, force: true }); fs.mkdirSync(frames, { recu
 const b = await chromium.launch({ channel: 'chrome', headless: true, args: ['--use-angle=metal', '--ignore-gpu-blocklist', '--enable-gpu'] });
 const p = await b.newPage({ viewport: { width: W, height: H } });
 const errs = []; p.on('console', (m) => { if (m.type() === 'error') errs.push(m.text()); }); p.on('pageerror', (e) => errs.push(String(e)));
-await p.goto(`file://${path.resolve(page)}?offline=1&w=${W}&h=${H}&loop=1`); await p.evaluate(() => window.__ready);
+const extraQ = opt('q', ''); await p.goto(`file://${path.resolve(page)}?offline=1&w=${W}&h=${H}&loop=1${extraQ ? '&' + extraQ : ''}`); await p.evaluate(() => window.__ready);
 const t0 = Date.now();
 for (let i = 0; i < N; i++) {
   const url = await p.evaluate((t) => (window.__framePNG ? window.__framePNG(t) : window.__frameJPEG(t, .95)), i / FPS);
