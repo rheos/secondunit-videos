@@ -1,6 +1,6 @@
 WHAT WOULD NGO ADD?
 Story and motion direction informed by Kevin Ngo's code-drawn short films (2026)
-Updated 2026-10-20
+Updated 2026-10-23
 
 PURPOSE
 Use Ngo's films as a reference for making a small object carry a whole story, in one locked look, with no model-generated frames. Keep the project's own visual surface unless the brief asks for his (then add STYLE-BRIEF.txt). This is our reading of the posted films and his own "How this was made" notes (works-index.json). It is not written in his voice and does not claim to know how he would direct this film.
@@ -22,9 +22,11 @@ TRY ONE OR TWO OF THESE MOVES
 8. Draw the outside on the paper. Exteriors as ragged marker rectangles with the paper showing; interiors full bleed with walls the colour of the paper. One world, two framings. (K10 P08)
 9. Follow a prop between shots. A cord, a window, a ring around the orb carries the camera from one place to the next; cuts land on a frame grid. (K10 P11 P12, K02)
 10. Journey out, journey home. Leave from one spot under one light, pass through a chain of places, return to the same spot changed. (K04, K10 P09)
+11. When the brief is a real conversation (an interview, a call, a voice memo), draw the frame the audio already lives in, put ink only on the people, and punch in on the listener's reaction. (K17 V01-V08)
 
 REFERENCE ANCHORS (see works-index.json; watch the post before using one)
 K10 Paperclip and sticky note (2026-10-20, 60 s, 1:1): all of P01-P14 in STUDY-paperclip-and-sticky-note.md.
+K17 Dessa demo call (2026-10-23, 2:17, 16:9): a real recorded conversation animated inside a drawn video call; V01-V08 in STUDY-video-call.md. The exception to "READ THE OBJECT FIRST": here the heroes are two people, and the frame (the call) is the object.
 K04 A paper boat goes on a journey (subscriber post, 2026-10-19): the journey-home chain, day-night-dawn arc, water reflections. Study only.
 K02 Orb and portals (2026-10-13, Blender): one element dead centre for the whole film; places open as circle portals around it; every cut anchored on it.
 K01 UI animations (2026-10-19): the clean vector look (one navy outline, flat fill plus one shade band plus one highlight, spring motion). Already built as our clean-vector test.
