@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Libelous, TV news, the case to the closedown, backing-vocal look test</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #000; overflow: hidden; }
+  canvas { width: 100vw; height: 100vh; object-fit: contain; display: block; cursor: pointer; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<audio id="a" src="../assets/song.wav" preload="auto"></audio>
+<!-- the TV kit, loaded read-only (round 1 and round 2 files, unchanged) -->
+<script src="../js/common/core.js"></script>
+<script src="../js/tv/gen/lines.js"></script>
+<script src="../js/tv/gen/lines_r2.js"></script>
+<script src="../js/tv/timing.js"></script>
+<script src="../js/tv/r2_timing.js"></script>
+<script src="../js/tv/crt.js"></script>
+<script src="../js/tv/captions.js"></script>
+<script src="../js/tv/show.js"></script>
+<script src="../js/tv/ad.js"></script>
+<script src="../js/tv/room.js"></script>
+<script src="../js/tv/news.js"></script>
+<script src="../js/tv/r2_captions.js"></script>
+<!-- round 3, agent tv-C: stanzas 12-14 -->
+<script src="../gen/r3c_lines.js"></script>
+<script src="../js/tv/r3c-timing.js"></script>
+<script src="../js/tv/r3c-captions.js"></script>
+<script src="../js/tv/r3c-sketch.js"></script>
+<script src="../js/tv/r3c-scenes.js"></script>
+<script src="../js/tv/r3c-main.js"></script>
+<!-- look test: the backing singer's sung title (BACKING-VOCAL.md) -->
+<script src="../js/common/bv-onsets.js"></script>
+<script src="../js/tv/bv-inset.js"></script>
+<script src="../js/tv/bv-r3c.js"></script>
+</body>
+</html>
