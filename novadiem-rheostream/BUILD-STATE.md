@@ -54,14 +54,28 @@ Novadiem Studio). Placed on novadiem.com/video/explainers in its own narrated gr
 deployed), rheo.stream's explainer section (rheos/rheo-stream-site#52, deployed) and the rheostream README
 (rheos/rheostream#453); draft 1 is off all three. Upwork and MOL still link draft 1.
 
+## Draft 3 (2026-10-24)
+
+Robin: don't make a beat of "every workspace is its own database"; most people run one workspace locally, and
+separate databases only matter for the hosted architecture. Plate II's line is now "Your records live in your own
+Postgres" (only segment II re-recorded, lead 1.4 s; plate starts unchanged, so the score and every later cue stay
+put). The second workspace box and its blocked probe are gone; a Postgres cylinder labelled YOUR RECORDS sits beside
+the core. Ownership as a beat is plate X (one file, same identifiers). Draft 2's plate II voice files are kept in
+`_in/draft2-vo/`.
+
+https://youtu.be/pFBLNHC59XU (unlisted, Novadiem Studio, link sent to Telegram), 169 s at 720p
+(`renders/rheostream_draft3_720p.mp4`). Checks: lint and check pass, holdcheck 0 short, flashcheck PASS, -14.5 LUFS,
+peak -1.3 dBFS, MP4 frames match the snapshots. Re-recording cost about 90 credits. Draft 2 (T7i6fdqUPzc) is retitled
+"(draft 2, superseded)" and points at draft 3. Draft 3 replaced draft 2 on novadiem.com (rheos/novadiem.com#233),
+rheo.stream (rheos/rheo-stream-site#61) and the README (rheos/rheostream#474).
+
 ## Draft 2: plates
 
 - **I · The Pile.** Five pools in section with streamlines that dead-end at their walls; FINDS THE WORK,
   TRACKS IT, REMEMBERS; agent routines stitched between them; the lids come down ("trap your history");
   LEAD reaches for PROJECT and is crossed out. "Your working life, in a pile of tools."
-- **II · One Current.** The lids lift and the pools drain into one channel inside ONE SYSTEM YOU OWN (a
-  workspace, its own database); ANOTHER WORKSPACE beside it, a probe crossed at the wall: CANNOT READ ITS
-  ROWS. Four mill houses (Leads, Relationships, Current, Recallatron) on the CORE; agents come down ONE DOOR.
+- **II · One Current.** The lids lift and the pools drain into one channel inside ONE SYSTEM YOU OWN (your
+  records in your own Postgres, drawn as a cylinder beside the core; draft 2 had a second workspace here). Four mill houses (Leads, Relationships, Current, Recallatron) on the CORE; agents come down ONE DOOR.
   The particle appears at the inlet. Push in on it.
 - **III · The Intake.** Your website seals the inquiry (signed with its key), the sluice checks connection,
   timestamp, signature, then opens; receipt, payload and event land in one chamber, ONE COMMIT; only then
