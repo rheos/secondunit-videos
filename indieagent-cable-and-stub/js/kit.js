@@ -24,6 +24,18 @@ const eio = (t) => { t = cl(t); return t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 
 const seg = (p, a, b) => cl((p - a) / (b - a));
 // small overshoot for bends: lands at 1 with one bounce
 const spr = (t) => { t = cl(t); return 1 - Math.pow(1 - t, 3) * Math.cos(t * 9) ; };
+
+// ---------- sound cues ----------
+// With ?cues=1 the shots report their animation events; cues.mjs walks every frame and writes assets/cues.json for
+// tools/sfx-bank/bank.py. An event's time comes from the same numbers that drive its motion, so retiming a move
+// moves its sound. SHOT0 is the film time of the drawing shot's u = 0 (main.js sets it).
+const CUE_ON = typeof location !== 'undefined' && /[?&]cues=1/.test(location.search);
+const CUES = new Map(); let SHOT0 = 0;
+const cue = (k, u, size = 0) => { if (!CUE_ON) return; const t = +(SHOT0 + u * BAR).toFixed(4); CUES.set(k + '@' + t, { k, t, size }); };
+// seg() that also reports its start; size = the move's length in ms, so the map can pick a longer sound for a longer move
+const segc = (k, p, a, b) => { cue(k, a, Math.round((b - a) * BAR * 1000)); return seg(p, a, b); };
+// report the first u in [0, 1] where a rising fn(u) passes target (a bulb lighting, a threshold crossing); none if it never does
+const cueWhen = (k, fn, target, size = 0) => { if (!CUE_ON || fn(1) <= target) return; let lo = 0, hi = 1; for (let i = 0; i < 30; i++) { const m = (lo + hi) / 2; if (fn(m) > target) hi = m; else lo = m; } cue(k, hi, size); };
 const mix = (a, b, t) => { const p = (c) => [parseInt(c.slice(1, 3), 16), parseInt(c.slice(3, 5), 16), parseInt(c.slice(5, 7), 16)]; const A = p(a), B = p(b); return `rgb(${A.map((v, i) => Math.round(lerp(v, B[i], t))).join(',')})`; };
 
 let X = null;

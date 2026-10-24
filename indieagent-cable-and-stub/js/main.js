@@ -8,11 +8,12 @@
     const bar = Math.min(12, Math.floor(t / BAR)), u = (t - bar * BAR) / BAR;
     ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
     paper();
-    SHOTS[bar](u, t);
+    SHOT0 = bar * BAR; SHOTS[bar](u, t);
     // fade with the music at the very end
     const fo = seg(t, DUR - 1.2, DUR - .05); if (fo > 0) { ctx.fillStyle = C.ink; ctx.globalAlpha = fo; ctx.fillRect(0, 0, W, H); ctx.globalAlpha = 1; }
   }
   window.drawFrame = drawFrame;
+  window.__cues = () => [...CUES.values()].sort((a, b) => a.t - b.t || a.k.localeCompare(b.k));
   window.__frameJPEG = (t, q = .92) => { drawFrame(t); return cv.toDataURL('image/jpeg', q); };
   const offline = new URLSearchParams(location.search).has('offline');
   const ready = document.fonts ? document.fonts.load('700 22px "Archivo"').catch(() => 0) : Promise.resolve();

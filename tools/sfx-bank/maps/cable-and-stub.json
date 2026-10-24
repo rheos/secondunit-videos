@@ -1,0 +1,321 @@
+{
+  "_about": "Cue kind -> earshot bank sound for The cable and the stub (indieagent-cable-and-stub, draft 1c). Its assets/cues.json comes from cues.mjs: each shot reports its own moves through cue()/segc()/cueWhen() in js/kit.js. For a move (segc), size is the move's length in ms, so bands pick a longer take for a longer move; for bulb it is the bulb's index; for loop and plug it is which one (1, 2, 3). The score under it (drafting-table take-01, bars 23-35) is C major at 96 BPM, so every pitched sound sits in C. Paper and air for the stub, rubber and brass for the cable, glass for the lights. Levels are set on the phone band (300-3400 Hz), each sound alone at its loudest 100 ms against the score there: hits about 10 dB under the score, moves about 13 dB under, the slow drags and the skid about 16 dB under. The score drops out under the last bar and a half, so the plug-in, the lamp, the lights and the amp hum carry the ending on their own.",
+  "fps": 24,
+  "kinds": {
+    "breath": {
+      "_why": "the cable asleep on the amp, one slow breath under the opening",
+      "id": "reverse_swell/breath",
+      "peak": -26
+    },
+    "door": {
+      "_why": "the stage door sliding open a crack",
+      "id": "swipe/glide",
+      "dur": 0.75,
+      "peak": -19
+    },
+    "gust": {
+      "_why": "the wind that carries the stub: in under the door, out again, up the fence",
+      "seeds": [
+        31,
+        32
+      ],
+      "bands": [
+        {
+          "size_max": 1200,
+          "id": "whoosh_big/gust",
+          "dur": 1.15,
+          "peak": -23
+        },
+        {
+          "id": "whoosh_big/gust",
+          "dur": 2.4,
+          "peak": -23
+        }
+      ]
+    },
+    "flutter": {
+      "_why": "the stub in flight: paper turning over in the air",
+      "pan": 0.3,
+      "seeds": [
+        41,
+        42,
+        43
+      ],
+      "bands": [
+        {
+          "size_max": 1100,
+          "id": "swipe/paper",
+          "dur": 1.0,
+          "peak": -19
+        },
+        {
+          "id": "swipe/paper",
+          "dur": 1.25,
+          "peak": -19
+        }
+      ]
+    },
+    "land": {
+      "_why": "the stub settling in the ghost light's pool: a soft finger tap (the paper-ish takes had almost nothing on the phone band)",
+      "id": "tap/finger",
+      "peak": -11
+    },
+    "bounce": {
+      "_why": "the stub touching down as it tumbles down the alley",
+      "pan": 0.3,
+      "seeds": [
+        51,
+        52
+      ],
+      "id": "tap/finger",
+      "peak": -12
+    },
+    "wake": {
+      "_why": "the cable's eyes open",
+      "id": "pro_pop/bloop",
+      "pitch": "G5",
+      "peak": -20
+    },
+    "reform": {
+      "_why": "the cable changing shape (coil, hook, wheel, spring, pole, the swing up into the amp): a rubber swish as long as the move",
+      "pan": 0.2,
+      "seeds": [
+        61,
+        62,
+        63
+      ],
+      "bands": [
+        {
+          "size_max": 600,
+          "id": "swish/soft",
+          "dur": 0.5,
+          "peak": -18
+        },
+        {
+          "size_max": 1100,
+          "id": "swish/soft",
+          "dur": 0.85,
+          "peak": -18
+        },
+        {
+          "id": "swish/soft",
+          "dur": 1.4,
+          "peak": -18
+        }
+      ]
+    },
+    "loop": {
+      "_why": "the symbol each time it closes: a glockenspiel note rising through the C triad (the score has glockenspiel accents)",
+      "bands": [
+        {
+          "size_max": 1,
+          "id": "mallet/glock",
+          "pitch": "E6",
+          "peak": -21
+        },
+        {
+          "size_max": 2,
+          "id": "mallet/glock",
+          "pitch": "G6",
+          "peak": -21
+        },
+        {
+          "id": "mallet/glock",
+          "pitch": "C7",
+          "peak": -23
+        }
+      ]
+    },
+    "knock": {
+      "_why": "the hook catching the door frame",
+      "id": "knock/wood",
+      "pitch": "C5",
+      "peak": -15
+    },
+    "whip": {
+      "_why": "the cable whipping out of the door after the stub",
+      "id": "whoosh_fast/whip",
+      "dur": 0.7,
+      "peak": -18
+    },
+    "roll": {
+      "_why": "the cable rolling down the alley as a wheel",
+      "id": "swipe/glide",
+      "dur": 1.45,
+      "peak": -22
+    },
+    "skid": {
+      "_why": "the stub skating across the puddle on its edge",
+      "id": "swipe/velvet",
+      "dur": 2.4,
+      "peak": -21
+    },
+    "squash": {
+      "_why": "the spring squashing down at the kerb",
+      "id": "pro_zip/down_warm",
+      "dur": 0.6,
+      "peak": -30
+    },
+    "boing": {
+      "_why": "the spring's vault over the lot, a rising arc",
+      "id": "pro_zip/arc",
+      "dur": 0.95,
+      "pitch": "C6",
+      "peak": -30
+    },
+    "thud": {
+      "_why": "the spring landing",
+      "id": "knock/desk",
+      "pitch": "C4",
+      "peak": -11
+    },
+    "stretch": {
+      "_why": "the cable growing tall as a pole",
+      "id": "pro_zip/up",
+      "dur": 1.0,
+      "peak": -34
+    },
+    "lasso": {
+      "_why": "the lasso flying up to the stub",
+      "id": "whoosh_big/cape",
+      "dur": 1.25,
+      "peak": -18
+    },
+    "cinch": {
+      "_why": "the loop pulling tight",
+      "id": "pro_zip/down",
+      "dur": 0.55,
+      "peak": -23
+    },
+    "sparkle": {
+      "_why": "the sparkles when the stub is caught",
+      "id": "pro_shimmer/m3",
+      "peak": -19
+    },
+    "swing": {
+      "_why": "the swing down from the fire escape",
+      "id": "whoosh_big/swell",
+      "dur": 2.4,
+      "apex": 1.5,
+      "peak": -20
+    },
+    "bulb": {
+      "_why": "each marquee bulb on the string lighting, left to right: a celesta climbing the C scale (size = the bulb's index)",
+      "bands": [
+        {
+          "size_max": 0,
+          "id": "mallet/celesta",
+          "pitch": "C5",
+          "peak": -25
+        },
+        {
+          "size_max": 1,
+          "id": "mallet/celesta",
+          "pitch": "D5",
+          "peak": -25
+        },
+        {
+          "size_max": 2,
+          "id": "mallet/celesta",
+          "pitch": "E5",
+          "peak": -25
+        },
+        {
+          "size_max": 3,
+          "id": "mallet/celesta",
+          "pitch": "F5",
+          "peak": -25
+        },
+        {
+          "size_max": 4,
+          "id": "mallet/celesta",
+          "pitch": "G5",
+          "peak": -25
+        },
+        {
+          "size_max": 5,
+          "id": "mallet/celesta",
+          "pitch": "A5",
+          "peak": -25
+        },
+        {
+          "size_max": 6,
+          "id": "mallet/celesta",
+          "pitch": "B5",
+          "peak": -25
+        },
+        {
+          "size_max": 7,
+          "id": "mallet/celesta",
+          "pitch": "C6",
+          "peak": -25
+        },
+        {
+          "size_max": 8,
+          "id": "mallet/celesta",
+          "pitch": "D6",
+          "peak": -25
+        },
+        {
+          "size_max": 9,
+          "id": "mallet/celesta",
+          "pitch": "E6",
+          "peak": -25
+        },
+        {
+          "id": "mallet/celesta",
+          "pitch": "G6",
+          "peak": -24
+        }
+      ]
+    },
+    "drag": {
+      "_why": "the cable towing the stub under the door and across the stage",
+      "seeds": [
+        71,
+        72
+      ],
+      "id": "swipe/paper",
+      "dur": 2.4,
+      "peak": -23
+    },
+    "plug": {
+      "_why": "the cable's job: a jack seating in the guitar, then in the amp",
+      "bands": [
+        {
+          "size_max": 1,
+          "id": "toggle/rocker",
+          "peak": -13
+        },
+        {
+          "id": "knock/double",
+          "peak": -12
+        }
+      ]
+    },
+    "lamp": {
+      "_why": "the amp's pilot lamp switching on",
+      "id": "toggle/on",
+      "peak": -14
+    },
+    "hum": {
+      "_why": "the amp coming alive under the pilot lamp, held through the last bar where the score has stopped",
+      "id": "pro_logo_sting/chirp_hum",
+      "pitch": "C2",
+      "peak": -21,
+      "dur": 2.9
+    },
+    "lights": {
+      "_why": "the stage lights coming up: a soft airy thump",
+      "id": "whoosh_big/thump_airy",
+      "dur": 0.9,
+      "peak": -18
+    },
+    "blink": {
+      "_why": "the stub's blink in the last shot",
+      "id": "pro_pop/tink",
+      "pitch": "C6",
+      "peak": -18
+    }
+  }
+}

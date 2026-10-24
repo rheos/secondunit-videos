@@ -133,6 +133,7 @@ function skyScene(o = {}) { // open night sky, the marquee's glow rising from th
   nightSky(0, H, 140); if (o.glow) pool(540, 1120, 700, 420, C.amberL, .6 * o.glow);
   X.beginPath(); X.arc(900, 150, 44, 0, TAU); X.fillStyle = C.white; X.fill();
 }
+const SWING_BULBS = 12;
 function swingScene(o = {}) { // the alley seen low from the lot side: fire escape at right, a bulb string along the venue wall at top
   nightSky(0, H, 160); cityStrip(500, 760, 161, C.navyD, 220, 700);
   marker(rectPts(0, 760, W, 320), C.greyD, 'h', 12, 162, 1, .06); ink([[0, 760], [W, 760]], false, 4, C.ink, 163, .6);
@@ -140,7 +141,7 @@ function swingScene(o = {}) { // the alley seen low from the lot side: fire esca
   for (let y = 120; y < 760; y += 160) { ink([[700, y], [1080, y]], false, 5, C.ink, 166 + y); for (let x = 716; x < 1080; x += 26) ink([[x, y], [x, y - 50]], false, 2.5, C.ink, 167 + x + y, .8); ink([[700, y - 50], [1080, y - 50]], false, 3, C.ink, 168 + y); }
   marker(rectPts(0, 0, 220, 760), C.navyL, 'v', 12, 169, 1, .05); flat(rectPts(0, 0, 220, 760), C.navyL, .6); ink([[220, 0], [220, 760]], false, 5, C.ink, 170);
   // the bulb string: lights up left to right with o.on
-  ink([[220, 90], [700, 60]], false, 4, C.ink, 171); bulbs(240, 680, 76, 12, o.on || 0, 172);
+  ink([[220, 90], [700, 60]], false, 4, C.ink, 171); bulbs(240, 680, 76, SWING_BULBS, o.on || 0, 172);
   if (o.on) { X.fillStyle = C.amber; X.globalAlpha = .16 * o.on; X.fillRect(0, 0, W, H); X.globalAlpha = 1; }
 }
 function doorScene(o = {}) { // the stage door from outside, low and close: the gap at its foot with light leaking through

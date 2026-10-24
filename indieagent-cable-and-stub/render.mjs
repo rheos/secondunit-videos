@@ -2,6 +2,7 @@
 // node render.mjs <t0> <t1> <out.mp4> [workers] [fps] [scale]
 // Renders song time t0..t1 on the 24 fps song grid (frame i = t0 + i/fps), muxes the song audio for the same span.
 // scale < 1 encodes a review file at that size (0.6667 = 720x720, crf 24); frames are always drawn at 1080x1080.
+// AUDIO=assets/mix.wav muxes that file instead of the bare score (the score plus the event sound, from mix.sh).
 import { chromium } from 'playwright';
 import fs from 'fs'; import { execSync } from 'child_process';
 const [t0, t1] = [Number(process.argv[2]), Number(process.argv[3])]; const out = process.argv[4];
@@ -24,5 +25,5 @@ await b.close();
 if (errs.length) console.log('ERRORS:\n' + [...new Set(errs)].slice(0, 20).join('\n'));
 const vf = SCALE < 1 ? `-vf scale=${Math.round(1080 * SCALE / 2) * 2}:${Math.round(1080 * SCALE / 2) * 2}:flags=lanczos` : '';
 const crf = SCALE < 1 ? 24 : 17;
-execSync(`ffmpeg -y -loglevel error -framerate ${FPS} -i ${dir}/f_%06d.jpg -ss ${t0} -t ${t1 - t0} -i assets/song.wav ${vf} -c:v libx264 -preset medium -crf ${crf} -pix_fmt yuv420p -c:a aac -b:a 256k -t ${t1 - t0} -movflags +faststart ${out}`);
+execSync(`ffmpeg -y -loglevel error -framerate ${FPS} -i ${dir}/f_%06d.jpg -ss ${t0} -t ${t1 - t0} -i ${process.env.AUDIO || 'assets/song.wav'} ${vf} -c:v libx264 -preset medium -crf ${crf} -pix_fmt yuv420p -c:a aac -b:a 256k -t ${t1 - t0} -movflags +faststart ${out}`);
 console.log('wrote', out, `${((Date.now() - start) / 1000).toFixed(0)}s`);
