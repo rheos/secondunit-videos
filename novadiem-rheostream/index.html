@@ -3,46 +3,202 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=1280, height=720" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;700&display=block" />
     <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
     <!-- Series kit (tools/blueprint-kit, copied by sync.sh). Theme first, then structure. -->
     <link rel="stylesheet" href="kit/themes/rheo.css" />
     <link rel="stylesheet" href="kit/kit.css" />
     <script src="kit/kit.js"></script>
+    <!-- the narration's word times, in film seconds (vo/place.py): VO.w(plate, word) -->
+    <script src="vo/words.js"></script>
     <script>
-      // Beat grid of the score (beats.json): librosa beats 15.05-95.04, extended at both ends at 0.63 s.
-      BP.grid({ beats: [0.56, 1.19, 1.82, 2.45, 3.08, 3.71, 4.34, 4.97, 5.6, 6.23, 6.86, 7.49, 8.12, 8.75, 9.38, 10.01, 10.64, 11.27, 11.9, 12.53, 13.16, 13.79, 14.42, 15.05, 15.67, 16.3, 16.93, 17.55, 18.18, 18.81, 19.44, 20.04, 20.67, 21.29, 21.92, 22.55, 23.17, 23.8, 24.43, 25.05, 25.68, 26.31, 26.94, 27.54, 28.17, 28.79, 29.42, 30.05, 30.67, 31.3, 31.93, 32.55, 33.18, 33.81, 34.44, 35.04, 35.69, 36.29, 36.92, 37.55, 38.17, 38.8, 39.43, 40.03, 40.68, 41.31, 41.91, 42.54, 43.17, 43.79, 44.42, 45.05, 45.67, 46.3, 46.93, 47.55, 48.18, 48.81, 49.41, 50.04, 50.67, 51.29, 51.92, 52.55, 53.17, 53.8, 54.43, 55.05, 55.68, 56.29, 56.91, 57.54, 58.19, 58.82, 59.42, 60.05, 60.67, 61.3, 61.93, 62.55, 63.18, 63.81, 64.44, 65.04, 65.67, 66.29, 66.92, 67.55, 68.17, 68.8, 69.43, 70.05, 70.68, 71.31, 71.91, 72.54, 73.17, 73.79, 74.42, 75.05, 75.67, 76.3, 76.93, 77.55, 78.18, 78.81, 79.41, 80.04, 80.67, 81.29, 81.92, 82.55, 83.17, 83.8, 84.43, 85.05, 85.68, 86.31, 86.91, 87.54, 88.17, 88.79, 89.42, 90.05, 90.67, 91.3, 91.93, 92.55, 93.18, 93.81, 94.41, 95.04, 95.67, 96.3, 96.93, 97.56, 98.19, 98.82, 99.45, 100.08, 100.71, 101.34, 101.97] });
+      // The narration is the clock; plates cue on its words with K.R(VO.w(...)), unsnapped. The grid is only a fallback.
+      BP.grid({ bpm: 90, offset: 0, length: 170 });
+    </script>
+    <style>
+      /* type on the sheets */
+      svg text.lab { font-family: var(--font-label); font-size: 22px; font-weight: 500; letter-spacing: 0.14em; fill: var(--line-strong); }
+      svg text.lab.sm { font-size: 18px; letter-spacing: 0.12em; }
+      svg text.lab.dim { fill: var(--ink-dim); }
+      svg text.ty { font-family: var(--font-mono); font-size: 22px; fill: var(--ink); }
+      svg text.ty.sm { font-size: 18px; fill: var(--ink-dim); }
+      svg text.ty.b { font-weight: 700; }
+      svg text.acc { fill: var(--accent); }
+      svg text.stamp-t { font-family: var(--font-label); font-size: 22px; font-weight: 700; letter-spacing: 0.14em; fill: var(--accent); }
+      svg text.stamp-t.ok { fill: var(--line-strong); }
+      .fill-strong { fill: var(--line-strong); }
+      .fill-ink { fill: var(--ink); }
+      .fill-acc { fill: var(--accent); }
+      .acc-s { stroke: var(--accent); }
+      .water { fill: var(--line); opacity: 0.16; }
+      .solid { fill: var(--bg-raised); }
+      .statement { font-size: 66px; top: 812px; }
+      .statement.two { top: 772px; flex-direction: column; align-items: center; font-size: 58px; row-gap: 4px; }
+      .plate-label { font-weight: 500; }
+    </style>
+    <script>
+      // RS: the film's drawing parts, shared by the plates: hydraulic works drawn in section, and the inquiry,
+      // one bright particle that carries every hand-off. Everything shown on screen is made up.
+      window.RS = (() => {
+        const { el, text } = BP;
+        // the inquiry: a bright core and a ring. Moved with x/y (gsap) from its own origin at 0 0.
+        function dot(parent) {
+          const g = el("g", { opacity: 0 }, parent);
+          const halo = el("circle", { class: "fill-strong", cx: 0, cy: 0, r: 22, opacity: 0.18 }, g);
+          const ring = el("circle", { class: "ln line-strong", cx: 0, cy: 0, r: 17 }, g);
+          const core = el("circle", { class: "fill-ink", cx: 0, cy: 0, r: 9 }, g);
+          return { g, halo, ring, core, x: 0, y: 0 };
+        }
+        // place the dot at (x, y) at time `at` (shown), with an arrival chime when asked
+        function put(K, tl, P, x, y, at, o = {}) {
+          tl.set(P.g, { x, y }, at);
+          if (o.show !== false) tl.fromTo(P.g, { opacity: 0 }, { opacity: 1, duration: o.fade || 0.25, immediateRender: false }, at);
+          P.x = x; P.y = y;
+          if (o.chime) arrive(K, P, at);
+        }
+        // ride: straight segments through pts at `speed` px/s; returns the plate time it arrives
+        function ride(K, P, pts, at, o = {}) {
+          const speed = o.speed || 700;
+          let t = at, x = P.x, y = P.y;
+          const total = pts.reduce((a, [px, py], i) => a + Math.hypot(px - (i ? pts[i - 1][0] : x), py - (i ? pts[i - 1][1] : y)), 0);
+          if (o.sound !== false) K.sfx(o.sound || "water", at, { d: Math.min(3, total / speed) });
+          pts.forEach(([px, py], i) => {
+            const d = Math.max(0.05, Math.hypot(px - x, py - y) / speed);
+            const ease = pts.length === 1 ? "power2.inOut" : i === 0 ? "power1.in" : i === pts.length - 1 ? "power1.out" : "none";
+            K.move(P.g, t, d, { x, y }, { x: px, y: py }, { ease });
+            t += d; x = px; y = py;
+          });
+          P.x = x; P.y = y;
+          if (o.chime) arrive(K, P, t);
+          return t;
+        }
+        function arrive(K, P, at) {
+          K.sfx("chime", at);
+          K.move(P.halo, at, 0.5, { scale: 1, opacity: 0.5, svgOrigin: "0 0" }, { scale: 2.6, opacity: 0, svgOrigin: "0 0" }, { ease: "power2.out" });
+        }
+        // a channel or basin in section: a U of wall, the water body and its surface. Returns parts for drawing.
+        function basin(parent, x, y, w, h, o = {}) {
+          const g = el("g", {}, parent);
+          const lvl = o.level == null ? 0.55 : o.level;
+          const wy = y + h * (1 - lvl);
+          const water = el("rect", { class: "water", x: x + 2, y: wy, width: w - 4, height: y + h - wy - 2 }, g);
+          const wall = el("path", { class: `ln ${o.cls || "line"}`, d: `M${x} ${y}V${y + h}H${x + w}V${y}` }, g);
+          const lip = el("path", { class: `ln ${o.cls || "line"}`, d: `M${x - 14} ${y}H${x}M${x + w} ${y}H${x + w + 14}` }, g);
+          const surf = el("path", { class: "ln thin line-strong", d: `M${x + 2} ${wy}H${x + w - 2}` }, g);
+          return { g, water, wall, lip, surf, x, y, w, h, wy };
+        }
+        function showBasin(K, B, at, dur = 0.6) {
+          K.draw(B.wall, at, dur);
+          K.draw(B.lip, at + dur * 0.6, 0.2, "power2.out", false);
+          K.fade(B.water, at + dur * 0.5, 0.4, 0.16);
+          K.draw(B.surf, at + dur * 0.5, 0.4, "power2.out", false);
+          return at + dur;
+        }
+        // a sluice or lock gate: a plate in a frame. Returns { g, frame, plate }; move plate with y to open
+        function gate(parent, x, y, h, o = {}) {
+          const g = el("g", {}, parent);
+          const frame = el("path", { class: "ln thin line", d: `M${x - 16} ${y - 30}V${y + h}M${x + 16} ${y - 30}V${y + h}M${x - 30} ${y - 30}H${x + 30}` }, g);
+          const plate = el("rect", { class: `ln ${o.cls || "line-strong"} solid`, x: x - 10, y, width: 20, height: h }, g);
+          return { g, frame, plate };
+        }
+        // a small house on the works (a mill house, a building), with an optional label under its roof
+        function house(parent, x, y, w, h, label, o = {}) {
+          const g = el("g", {}, parent);
+          const body = el("path", { class: `ln ${o.cls || "line"}`, d: `M${x} ${y + h}V${y + h * 0.32}L${x + w / 2} ${y}L${x + w} ${y + h * 0.32}V${y + h}` }, g);
+          const t = label ? text(label, { class: "lab sm", x: x + w / 2, y: y + h * 0.72, "text-anchor": "middle" }, g) : null;
+          return { g, body, t };
+        }
+        // a record card: a header and lines of mono text
+        function card(parent, x, y, w, head, lines, o = {}) {
+          const g = el("g", {}, parent);
+          const h = o.h || 56 + lines.length * 32;
+          const bg = el("rect", { class: "solid", x, y, width: w, height: h }, g);
+          const box = el("rect", { class: `ln ${o.cls || "line"}`, x, y, width: w, height: h }, g);
+          const rule = el("path", { class: "ln thin line", d: `M${x} ${y + 40}H${x + w}` }, g);
+          const hd = text(head, { class: "lab sm", x: x + 16, y: y + 28 }, g);
+          const ls = lines.map((s, i) => text(s, { class: "ty sm", x: x + 16, y: y + 72 + i * 32 }, g));
+          return { g, bg, box, rule, hd, ls, x, y, w, h };
+        }
+        function showCard(K, C, at, o = {}) {
+          K.stamp(C.g, at, { origin: `${C.x + C.w / 2} ${C.y + C.h / 2}`, sound: o.sound || "card", from: 1.2, dur: 0.24 });
+          K.draw(C.rule, at + 0.15, 0.3, "power2.out", false);
+          let t = K.typed(C.hd, at + 0.2, { cps: o.cps || 40, cursor: false }) + 0.06;
+          C.ls.forEach((n) => { t = K.typed(n, t, { cps: o.cps || 44, cursor: false }) + 0.06; });
+          return t;
+        }
+        // a callout: a leader line from a point to a label, the label typed after the line lands
+        function callout(parent, x1, y1, x2, y2, label, o = {}) {
+          const g = el("g", {}, parent);
+          const dotc = el("circle", { class: "fill-strong", cx: x1, cy: y1, r: 5 }, g);
+          const line = el("path", { class: "ln thin line-strong", d: `M${x1} ${y1}L${x2} ${y2}H${x2 + (o.left ? -20 : 20)}` }, g);
+          const t = text(label, { class: o.cls || "lab sm", x: x2 + (o.left ? -28 : 28), y: y2 + 7, "text-anchor": o.left ? "end" : "start" }, g);
+          const sub = o.sub ? text(o.sub, { class: "ty sm", x: x2 + (o.left ? -28 : 28), y: y2 + 36, "text-anchor": o.left ? "end" : "start" }, g) : null;
+          return { g, dot: dotc, line, t, sub };
+        }
+        function showCallout(K, c, at) {
+          K.fade(c.dot, at, 0.15);
+          K.draw(c.line, at, 0.3, "power2.out", false);
+          K.sfx("tick", at);
+          let e = K.typed(c.t, at + 0.3, { cps: 34, cursor: false });
+          if (c.sub) e = K.typed(c.sub, e + 0.1, { cps: 40, cursor: false });
+          return e;
+        }
+        // an arrowhead pointing r, l, u or d at (x, y)
+        function head(parent, x, y, dir, cls) {
+          const d = { l: `M${x + 14} ${y - 8}L${x} ${y}L${x + 14} ${y + 8}`, r: `M${x - 14} ${y - 8}L${x} ${y}L${x - 14} ${y + 8}`,
+            u: `M${x - 8} ${y + 14}L${x} ${y}L${x + 8} ${y + 14}`, d: `M${x - 8} ${y - 14}L${x} ${y}L${x + 8} ${y - 14}` }[dir];
+          return el("path", { class: cls || "ln line-strong", d }, parent);
+        }
+        // a stamp: a box of text, turned a little (accent unless o.ok)
+        function stampBox(parent, label, cx, cy, w, o = {}) {
+          const g = el("g", { transform: `rotate(${o.rot == null ? -4 : o.rot} ${cx} ${cy})` }, parent);
+          el("rect", { class: "solid", x: cx - w / 2, y: cy - 22, width: w, height: 44 }, g);
+          el("rect", { class: `ln ${o.ok ? "line-strong" : "acc-s"}`, x: cx - w / 2, y: cy - 22, width: w, height: 44, style: "stroke-width: 3" }, g);
+          text(label, { class: `stamp-t${o.ok ? " ok" : ""}`, x: cx, y: cy + 8, "text-anchor": "middle" }, g);
+          return { g, cx, cy };
+        }
+        const cross = (parent, x, y, s = 16) => el("path", { class: "ln acc-s", d: `M${x - s} ${y - s}L${x + s} ${y + s}M${x + s} ${y - s}L${x - s} ${y + s}`, style: "stroke-width: 3" }, parent);
+        const check = (parent, x, y) => el("path", { class: "ln line-strong", d: `M${x - 10} ${y}L${x - 3} ${y + 8}L${x + 12} ${y - 10}`, style: "stroke-width: 3" }, parent);
+        return { dot, put, ride, arrive, basin, showBasin, gate, house, card, showCard, callout, showCallout, head, stampBox, cross, check };
+      })();
     </script>
   </head>
   <body>
-    <div data-hf-id="hf-r88i"
+    <div data-hf-id="hf-rs01"
       id="root"
       data-composition-id="main"
       data-start="0"
-      data-duration="102.5"
+      data-duration="168.94"
       data-width="1280"
       data-height="720"
     >
-      <!-- Score: score-library drafting-table-rheostream take-01, sha256 8b13e494...57bf, the clock for every cue -->
-      <audio data-hf-id="hf-85s3"
+      <!-- One track: George's narration, the current-rheostream score ducked under it and the sound on the picture
+           (tools/blueprint-kit/sfx.py -> _in/mix.wav). The narration is the clock for every cue. -->
+      <audio data-hf-id="hf-rs02"
         id="score"
-        src="_in/score.mp3"
+        src="_in/mix.wav"
         data-start="0"
-        data-duration="102.5"
-        data-track-index="9"
+        data-duration="168.94"
+        data-track-index="20"
         data-volume="1"
-        data-automation='{"version":1,"lanes":[{"target":"volume","points":[{"t":0,"v":1},{"t":101,"v":1},{"t":102.5,"v":0}]}]}'
       ></audio>
 
-      <!-- every plate draws on a 1920x1080 stage; drafts scale it to 720p (kit.css, stage.sh) -->
+      <!-- every plate draws on a 1920x1080 stage; drafts scale it to 720p (kit.css, stage.sh).
+           Each slot opens 0.6 s before its plate and closes 0.8 s after the next one starts, so plates can hand over; earlier plates sit on top. -->
       <div class="stage">
-        <div data-hf-id="hf-dp9u" id="slot-furniture" data-composition-id="furniture" data-composition-src="compositions/furniture.html" data-start="0" data-duration="102.5" data-track-index="0" data-width="1920" data-height="1080"></div>
-        <div data-hf-id="hf-nqin" id="slot-b1" data-composition-id="b1" data-composition-src="compositions/b1-title.html" data-start="0" data-duration="7.5" data-track-index="1" data-width="1920" data-height="1080"></div>
-        <div data-hf-id="hf-saux" id="slot-b2" data-composition-id="b2" data-composition-src="compositions/b2-scatter.html" data-start="7.5" data-duration="12.5" data-track-index="2" data-width="1920" data-height="1080"></div>
-        <div data-hf-id="hf-vwef" id="slot-b3" data-composition-id="b3" data-composition-src="compositions/b3-building.html" data-start="20" data-duration="20" data-track-index="3" data-width="1920" data-height="1080"></div>
-        <div data-hf-id="hf-68yl" id="slot-b4" data-composition-id="b4" data-composition-src="compositions/b4-door.html" data-start="40" data-duration="15" data-track-index="4" data-width="1920" data-height="1080"></div>
-        <div data-hf-id="hf-xhk6" id="slot-b5" data-composition-id="b5" data-composition-src="compositions/b5-work.html" data-start="55" data-duration="20" data-track-index="5" data-width="1920" data-height="1080"></div>
-        <div data-hf-id="hf-aucq" id="slot-b6" data-composition-id="b6" data-composition-src="compositions/b6-gate.html" data-start="75" data-duration="15" data-track-index="6" data-width="1920" data-height="1080"></div>
-        <div data-hf-id="hf-d2fg" id="slot-b7" data-composition-id="b7" data-composition-src="compositions/b7-status.html" data-start="90" data-duration="12.5" data-track-index="7" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-rs03" id="slot-furniture" data-composition-id="furniture" data-composition-src="compositions/furniture.html" data-start="0" data-duration="168.94" data-track-index="0" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-rs04" id="slot-b1" data-composition-id="b1" data-composition-src="compositions/b1-pile.html" data-start="0" data-duration="18.94" data-track-index="1" data-width="1920" data-height="1080" style="z-index: 20"></div>
+        <div data-hf-id="hf-rs05" id="slot-b2" data-composition-id="b2" data-composition-src="compositions/b2-current.html" data-start="17.54" data-duration="18.74" data-track-index="2" data-width="1920" data-height="1080" style="z-index: 19"></div>
+        <div data-hf-id="hf-rs06" id="slot-b3" data-composition-id="b3" data-composition-src="compositions/b3-intake.html" data-start="34.88" data-duration="18.0" data-track-index="3" data-width="1920" data-height="1080" style="z-index: 18"></div>
+        <div data-hf-id="hf-rs07" id="slot-b4" data-composition-id="b4" data-composition-src="compositions/b4-lock.html" data-start="51.48" data-duration="19.5" data-track-index="4" data-width="1920" data-height="1080" style="z-index: 17"></div>
+        <div data-hf-id="hf-rs08" id="slot-b5" data-composition-id="b5" data-composition-src="compositions/b5-junction.html" data-start="69.58" data-duration="17.56" data-track-index="5" data-width="1920" data-height="1080" style="z-index: 16"></div>
+        <div data-hf-id="hf-rs09" id="slot-b6" data-composition-id="b6" data-composition-src="compositions/b6-door.html" data-start="85.74" data-duration="20.44" data-track-index="6" data-width="1920" data-height="1080" style="z-index: 15"></div>
+        <div data-hf-id="hf-rs0a" id="slot-b7" data-composition-id="b7" data-composition-src="compositions/b7-gate.html" data-start="104.78" data-duration="19.08" data-track-index="7" data-width="1920" data-height="1080" style="z-index: 14"></div>
+        <div data-hf-id="hf-rs0b" id="slot-b8" data-composition-id="b8" data-composition-src="compositions/b8-channel.html" data-start="122.46" data-duration="14.82" data-track-index="8" data-width="1920" data-height="1080" style="z-index: 13"></div>
+        <div data-hf-id="hf-rs0c" id="slot-b9" data-composition-id="b9" data-composition-src="compositions/b9-reservoir.html" data-start="135.88" data-duration="13.56" data-track-index="9" data-width="1920" data-height="1080" style="z-index: 12"></div>
+        <div data-hf-id="hf-rs0d" id="slot-b10" data-composition-id="b10" data-composition-src="compositions/b10-yours.html" data-start="148.04" data-duration="20.9" data-track-index="10" data-width="1920" data-height="1080" style="z-index: 11"></div>
       </div>
     </div>
 

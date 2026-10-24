@@ -1,5 +1,12 @@
 # Design: rheoStream, One System You Own
 
+**Draft 2 (2026-10-21):** same palette and type, a new concept. The plates are hydraulic works drawn in section
+(pools, a sluice, a lock, a junction, a culvert through the workspace wall, a lock gate, the channel, the
+reservoir), after rheo.stream's "one current". The inquiry is one bright particle (an ink core, a mint ring and
+halo) that carries every hand-off. Nothing is drawn dashed: the film presents the design in present tense and
+the end card says so ("How rheoStream works, by design"). Shared parts are `window.RS` in `index.html`. The
+draft 1 notes below still describe the palette and type.
+
 Concept angle: the framework drawn as a set of construction sheets for one building, so the
 architecture reads as something you could build and own, not a cloud service.
 

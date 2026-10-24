@@ -1,0 +1,123 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #b6 { position: absolute; inset: 0; }
+      </style>
+      <div data-hf-id="hf-rs70" id="b6" data-composition-id="b6" data-width="1920" data-height="1080">
+        <div data-hf-id="hf-rs71" id="b6-content" class="layer">
+          <div data-hf-id="hf-rs72" id="b6-lab-l" class="plate-label left">FIG. VI</div>
+          <div data-hf-id="hf-rs73" id="b6-lab-r" class="plate-label right">THE DOOR</div>
+          <svg data-hf-id="hf-rs74" id="b6-svg" class="full" viewBox="0 0 1920 1080"></svg>
+          <div data-hf-id="hf-rs75" class="statement">
+            <span data-hf-id="hf-rs76" id="b6-s1" class="phrase">Every surface,</span>
+            <span data-hf-id="hf-rs77" id="b6-s2" class="phrase accent">one door.</span>
+          </div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text } = BP;
+          const tl = gsap.timeline({ paused: true });
+          const S = 85.74;
+          const K = BP.kit(tl, S, "VI");
+          const R = (t) => K.R(t);
+          const W = (w, n) => R(VO.w("VI", w, n));
+          const svg = K.$("b6-svg");
+
+          // three surfaces, one culvert through the workspace wall
+          const CH = [
+            ["CLAUDE", "M120 236H460C560 236 590 418 740 422", 216],
+            ["TELEGRAM", "M120 435H740", 415],
+            ["VOICE", "M120 634H460C560 634 590 452 740 448", 614],
+          ];
+          const chans = CH.map(([name, d, ly]) => ({ p: el("path", { class: "ln line", d }, svg), t: text(name, { class: "lab sm", x: 120, y: ly }, svg) }));
+          const ask = text("“What came in today?”", { class: "ty", x: 120, y: 160 }, svg);
+          const wall = el("path", { class: "ln line-strong", d: "M740 150V405M780 150V405M740 465V720M780 465V720M740 150H780M740 720H780M740 405H780M740 465H780" }, svg);
+          const doorT = text("ONE DOOR", { class: "lab", x: 760, y: 128, "text-anchor": "middle" }, svg);
+          // the key it carries
+          const key = RS.card(svg, 830, 150, 470, "ITS KEY", ["one workspace", "read · qualify · draft"], { cls: "line-strong" });
+          const keyLine = el("path", { class: "ln thin line-strong", d: "M900 270V330L786 420" }, svg);
+          // rheo, behind the door, with a runtime that swaps
+          const rheo = RS.house(svg, 860, 330, 200, 170, null, { cls: "line-strong" });
+          const rheoT = text("RHEO", { class: "lab", x: 960, y: 456, "text-anchor": "middle" }, svg);
+          const slot = el("rect", { class: "ln line", x: 860, y: 530, width: 200, height: 44 }, svg);
+          const RT = ["CLAUDE CLI", "OPENROUTER", "CODEX CLI"].map((s) => text(s, { class: "lab sm", x: 960, y: 559, "text-anchor": "middle", opacity: 0 }, svg));
+          const rtT = text("ANY RUNTIME FITS", { class: "ty sm", x: 960, y: 610, "text-anchor": "middle" }, svg);
+          // the lead it reads, the draft it writes, the outlet that stays shut
+          const lead = RS.basin(svg, 1160, 360, 320, 160, { level: 0.6 });
+          const leadT = text("THE LEAD", { class: "lab sm", x: 1320, y: 550, "text-anchor": "middle" }, svg);
+          const readL = el("path", { class: "ln line-strong", d: "M1062 420H1140" }, svg);
+          const readH = RS.head(svg, 1150, 420, "r");
+          const draft = RS.card(svg, 1160, 584, 420, "DRAFT REPLY", ["Thanks for writing, Avery."]);
+          const rec = RS.stampBox(svg, "A RECORD", 1370, 712, 200, { ok: true, rot: -3 });
+          const outlet = el("path", { class: "ln line", d: "M1494 420H1870M1494 470H1870" }, svg);
+          const G = RS.gate(svg, 1650, 410, 70);
+          const noneT = text("NOTHING LEAVES", { class: "lab sm acc", x: 1650, y: 350, "text-anchor": "middle" }, svg);
+          const qs = CH.map(() => { const q = RS.dot(svg); q.core.setAttribute("r", 6); q.ring.setAttribute("r", 11); q.halo.setAttribute("r", 14); return q; });
+          const P = RS.dot(svg);
+
+          // the inquiry waits in its basin: the lead
+          RS.showBasin(K, lead, R(86.0), 0.6);
+          RS.put(K, tl, P, 1320, 440, R(86.2), { fade: 0.4 });
+          K.typed(leadT, R(86.4), { cps: 34, cursor: false });
+          K.fade(K.$("b6-lab-l"), R(86.4), 0.4);
+          K.fade(K.$("b6-lab-r"), R(86.4), 0.4);
+          K.draw(wall, R(86.3), 0.9, "power1.inOut");
+          // "ask rheo what came in today: from Claude, from Telegram, or out loud"
+          K.typed(ask, W("what") - 0.1, { cps: 30 });
+          const at = [W("claude") - 0.1, W("telegram") - 0.1, W("loud") - 0.25];
+          chans.forEach((c, i) => { K.draw(c.p, at[i], 0.5); K.typed(c.t, at[i] + 0.1, { cps: 34, cursor: false }); });
+          // "every surface comes through one door"
+          K.typed(doorT, W("every") - 0.2, { cps: 30, cursor: false });
+          const ends = [[740, 422], [740, 435], [740, 448]];
+          const starts = [[120, 236], [120, 435], [120, 634]];
+          const mids = [[[460, 236], [600, 380]], [], [[460, 634], [600, 490]]];
+          qs.forEach((q, i) => {
+            RS.put(K, tl, q, starts[i][0], starts[i][1], at[i] + 0.3, { fade: 0.2 });
+            RS.ride(K, q, [...mids[i], ends[i], [860, 430]], W("surface") + i * 0.1, { speed: 650, sound: i ? false : "water" });
+            tl.to(q.g, { opacity: 0, duration: 0.25 }, W("door") + 0.3 + i * 0.05);
+          });
+          K.slam(K.$("b6-s1"), W("surface") + 0.1, { stagger: 0.035 });
+          K.slam(K.$("b6-s2"), W("door") - 0.05, { stagger: 0.05 });
+          // "with a key for one workspace and a short list of operations"
+          RS.showCard(K, key, W("key") - 0.2, { cps: 46 });
+          K.draw(keyLine, W("workspace"), 0.45);
+          // "rheo reads the lead and drafts a reply"
+          K.draw(rheo.body, W("door") + 0.4, 0.7);
+          K.typed(rheoT, W("door") + 0.8, { cps: 30, cursor: false });
+          K.draw(slot, W("operations"), 0.4);
+          K.typed(rtT, W("operations") + 0.3, { cps: 40, cursor: false });
+          RT.forEach((t, i) => {
+            const on = W("operations") + 0.4 + i * 0.75;
+            tl.fromTo(t, { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.2, immediateRender: false }, on);
+            K.sfx("tick", on);
+            if (i < RT.length - 1) tl.to(t, { opacity: 0, y: -14, duration: 0.2 }, on + 0.6);
+          });
+          K.draw(readL, W("reads") - 0.1, 0.3);
+          K.draw(readH, W("reads") + 0.15, 0.12, "power2.out", false);
+          RS.arrive(K, P, W("lead") - 0.1);
+          RS.showCard(K, draft, W("drafts") - 0.1, { cps: 46 });
+          // "the draft is a record. Nothing leaves."
+          K.stamp(rec.g, W("record") - 0.05, { origin: "1370 712" });
+          K.draw(outlet, W("draft", 1) - 0.4, 0.5);
+          K.draw(G.frame, W("draft", 1) - 0.1, 0.3, "power2.out", false);
+          K.move(G.plate, W("nothing") - 0.2, 0.25, { opacity: 0, y: -60 }, { opacity: 1, y: 0 }, { ease: "power3.in" });
+          K.sfx("gate", W("nothing") + 0.05);
+          K.typed(noneT, W("nothing") - 0.1, { cps: 40, cursor: false });
+
+          // hand-off: push in on the lead, which rheo proposes to hand on (plate VII)
+          const out = R(105.0);
+          K.sfx("out", out);
+          K.camera(K.$("b6-content"), out, 0.9, { scale: 1, opacity: 1 }, { scale: 2.2, opacity: 0 }, { origin: "1320px 440px", ease: "power2.in" });
+          window.__timelines["b6"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

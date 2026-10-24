@@ -1,0 +1,138 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #b2 { position: absolute; inset: 0; }
+      </style>
+      <div data-hf-id="hf-rs30" id="b2" data-composition-id="b2" data-width="1920" data-height="1080">
+        <div data-hf-id="hf-rs31" id="b2-content" class="layer">
+          <div data-hf-id="hf-rs32" id="b2-lab-l" class="plate-label left">II</div>
+          <div data-hf-id="hf-rs33" id="b2-lab-r" class="plate-label right">ONE CURRENT</div>
+          <svg data-hf-id="hf-rs34" id="b2-svg" class="full" viewBox="0 0 1920 1080"></svg>
+          <div data-hf-id="hf-rs35" class="statement two">
+            <span data-hf-id="hf-rs36" id="b2-s1" class="phrase">Leads enter the stream. Current carries the work.</span>
+            <span data-hf-id="hf-rs37" id="b2-s2" class="phrase accent">Recallatron remembers.</span>
+          </div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text } = BP;
+          const tl = gsap.timeline({ paused: true });
+          const S = 17.54;
+          const K = BP.kit(tl, S, "II");
+          const R = (t) => K.R(t);
+          const W = (w, n) => R(VO.w("II", w, n));
+          const svg = K.$("b2-svg");
+
+          // plate I's pools, as plate I left them (lids shut), drawn already
+          const POOLS = [
+            [190, 300, 280, 150],
+            [600, 210, 300, 170],
+            [1040, 330, 260, 140],
+            [1440, 210, 230, 120],
+            [1350, 520, 330, 150],
+          ];
+          const old = POOLS.map(([x, y, w, h], i) => {
+            const B = RS.basin(svg, x, y, w, h, { level: [0.5, 0.6, 0.45, 0.55, 0.5][i] });
+            const lid = el("rect", { class: "ln line-strong solid", x: x - 16, y: y - 10, width: w + 32, height: 16 }, B.g);
+            return Object.assign(B, { lid });
+          });
+
+          // one system: the workspace, its channel, four mills on a small core, one door
+          const box = el("rect", { class: "ln line-strong", x: 150, y: 150, width: 1340, height: 580 }, svg);
+          const sysT = text("ONE SYSTEM YOU OWN", { class: "lab", x: 180, y: 196 }, svg);
+          const dbT = text("A WORKSPACE · ITS OWN DATABASE", { class: "ty sm", x: 180, y: 228 }, svg);
+          const ch = RS.basin(svg, 200, 420, 1240, 80, { level: 0.5, cls: "line-strong" });
+          const MILLS = [
+            [250, "LEADS"],
+            [540, "RELATIONSHIPS"],
+            [830, "CURRENT"],
+            [1120, "RECALLATRON"],
+          ];
+          const mills = MILLS.map(([x, name]) => {
+            const H = RS.house(svg, x, 300, 200, 120, null, { cls: "line-strong" });
+            const wheel = el("circle", { class: "ln line", cx: x + 100, cy: 460, r: 34 }, svg);
+            const spokes = el("path", { class: "ln thin line", d: `M${x + 66} 460H${x + 134}M${x + 100} 426V494` }, svg);
+            const t = text(name, { class: "lab sm", x: x + 100, y: 548, "text-anchor": "middle" }, svg);
+            return { H, wheel, spokes, t, x };
+          });
+          const core = el("rect", { class: "ln line", x: 200, y: 580, width: 1240, height: 56 }, svg);
+          const coreT = text("CORE", { class: "lab", x: 820, y: 616, "text-anchor": "middle" }, svg);
+          const door = el("path", { class: "ln line-strong", d: "M1372 150V128H1428V150M1386 150V420M1414 150V420" }, svg);
+          const doorT = text("ONE DOOR", { class: "lab sm", x: 1360, y: 200, "text-anchor": "end" }, svg);
+          const agents = [1360, 1400, 1440].map((x, i) => ({ l: el("path", { class: "ln thin line-strong", d: `M${x} 100L1400 124` }, svg) }));
+          // another workspace, sealed off: a connection to this one cannot read that one's rows
+          const box2 = el("rect", { class: "ln line", x: 1560, y: 150, width: 290, height: 580 }, svg);
+          const ch2 = RS.basin(svg, 1600, 420, 210, 80, { level: 0.5 });
+          const box2T = text("ANOTHER", { class: "lab sm dim", x: 1705, y: 196, "text-anchor": "middle" }, svg);
+          const box2T2 = text("WORKSPACE", { class: "lab sm dim", x: 1705, y: 224, "text-anchor": "middle" }, svg);
+          const probe = el("path", { class: "ln line-strong", d: "M1436 290H1515" }, svg);
+          const probeH = RS.head(svg, 1522, 290, "r");
+          const xx = RS.cross(svg, 1525, 290, 15);
+          const noT = text("CANNOT READ", { class: "lab sm acc", x: 1705, y: 600, "text-anchor": "middle" }, svg);
+          const noT2 = text("ITS ROWS", { class: "lab sm acc", x: 1705, y: 628, "text-anchor": "middle" }, svg);
+          // the inquiry, at the inlet
+          const P = RS.dot(svg);
+
+          K.fade(K.$("b2-lab-l"), R(18.75), 0.4);
+          K.fade(K.$("b2-lab-r"), R(18.75), 0.4);
+          // "rebuilds those parts as one system": the lids lift and every pool drains into one channel
+          RS.showBasin(K, ch, W("reostream") + 0.2, 0.8);
+          old.forEach((B, i) => {
+            const t = W("rebuilds") + i * 0.16;
+            K.move(B.lid, t, 0.35, { y: 0, opacity: 1 }, { y: -50, opacity: 0 }, { ease: "power2.in" });
+            K.move(B.g, t + 0.25, 0.75, { x: 0, y: 0, scale: 1, opacity: 1, svgOrigin: `${B.x + B.w / 2} ${B.y + B.h}` },
+              { x: 300 + i * 230 - (B.x + B.w / 2), y: 500 - (B.y + B.h), scale: 0.25, opacity: 0, svgOrigin: `${B.x + B.w / 2} ${B.y + B.h}` }, { ease: "power2.in" });
+          });
+          K.sfx("water", W("rebuilds") + 0.3, { d: 1.6 });
+          K.draw(box, W("one"), 1.0, "power1.inOut");
+          K.typed(sysT, W("system") - 0.1, { cps: 36, cursor: false });
+          // "each workspace is its own database, so one can never read another's rows"
+          K.typed(dbT, W("workspace"), { cps: 40, cursor: false });
+          K.draw(box2, W("database") + 0.2, 0.8);
+          RS.showBasin(K, ch2, W("database") + 0.5, 0.5);
+          K.typed(box2T, W("database") + 0.7, { cps: 34, cursor: false });
+          K.typed(box2T2, W("database") + 1.0, { cps: 34, cursor: false });
+          K.draw(probe, W("never") - 0.1, 0.3, "power1.in");
+          K.draw(probeH, W("never") + 0.2, 0.12, "power2.out", false);
+          K.stamp(xx, W("read") + 0.05, { origin: "1525 290", from: 1.8 });
+          K.typed(noT, W("another's") + 0.1, { cps: 34, cursor: false });
+          K.typed(noT2, W("rows"), { cps: 34, cursor: false });
+          // "four modules sit on a small core"
+          mills.forEach((m, i) => {
+            const t = W("four") + i * 0.3;
+            K.draw(m.H.body, t, 0.45);
+            K.draw(m.wheel, t + 0.2, 0.35, "power2.out", false);
+            K.draw(m.spokes, t + 0.3, 0.25, "power2.out", false);
+            K.typed(m.t, t + 0.25, { cps: 40, cursor: false });
+          });
+          K.slam(K.$("b2-s1"), W("four") + 0.4, { stagger: 0.022 });
+          K.draw(core, W("small") - 0.2, 0.6, "none");
+          K.typed(coreT, W("core"), { cps: 30, cursor: false });
+          // "and agents come in through one door"
+          K.draw(door, W("agents") - 0.1, 0.5);
+          agents.forEach((a, i) => K.draw(a.l, W("come") + i * 0.12, 0.3, "power2.out", false));
+          K.typed(doorT, W("door") - 0.2, { cps: 34, cursor: false });
+          K.slam(K.$("b2-s2"), W("door") + 0.2, { stagger: 0.035 });
+          // the wheels turn: the system is running
+          mills.forEach((m) => tl.fromTo(m.spokes, { rotation: 0, svgOrigin: `${m.x + 100} 460` }, { rotation: 180, svgOrigin: `${m.x + 100} 460`, duration: 5, ease: "none", immediateRender: false }, W("door") + 0.4));
+          // "follow one inquiry through it": a bright particle at the inlet
+          RS.put(K, tl, P, 96, 460, W("follow") - 0.1);
+          RS.ride(K, P, [[232, 460]], W("inquiry") - 0.25, { speed: 260, chime: true });
+
+          // hand-off: push in on the inlet, where plate III's website sends it
+          const out = R(35.0);
+          K.sfx("out", out);
+          K.camera(K.$("b2-content"), out, 0.9, { scale: 1, opacity: 1 }, { scale: 2.6, opacity: 0 }, { origin: "232px 460px", ease: "power2.in" });
+          window.__timelines["b2"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

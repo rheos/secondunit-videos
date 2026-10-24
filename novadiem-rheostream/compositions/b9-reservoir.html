@@ -1,0 +1,85 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #b9 { position: absolute; inset: 0; }
+      </style>
+      <div data-hf-id="hf-rsa0" id="b9" data-composition-id="b9" data-width="1920" data-height="1080">
+        <div data-hf-id="hf-rsa1" id="b9-content" class="layer">
+          <div data-hf-id="hf-rsa2" id="b9-lab-l" class="plate-label left">FIG. IX</div>
+          <div data-hf-id="hf-rsa3" id="b9-lab-r" class="plate-label right">THE RESERVOIR</div>
+          <svg data-hf-id="hf-rsa4" id="b9-svg" class="full" viewBox="0 0 1920 1080"></svg>
+          <div data-hf-id="hf-rsa5" class="statement">
+            <span data-hf-id="hf-rsa6" id="b9-s1" class="phrase">Memory carries</span>
+            <span data-hf-id="hf-rsa7" id="b9-s2" class="phrase accent">its own permissions.</span>
+          </div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text } = BP;
+          const tl = gsap.timeline({ paused: true });
+          const S = 135.88;
+          const K = BP.kit(tl, S, "IX");
+          const R = (t) => K.R(t);
+          const W = (w, n) => R(VO.w("IX", w, n));
+          const svg = K.$("b9-svg");
+
+          // the channel from Current, and Recallatron's reservoir
+          const chan = el("path", { class: "ln line", d: "M120 440H760M120 500H760" }, svg);
+          const chanW = el("rect", { class: "water", x: 120, y: 458, width: 640, height: 41 }, svg);
+          const res = RS.basin(svg, 760, 270, 880, 370, { level: 0.75, cls: "line-strong" });
+          const resT = text("RECALLATRON", { class: "lab", x: 1200, y: 250, "text-anchor": "middle" }, svg);
+          const opp = RS.card(svg, 140, 250, 440, "THE OPPORTUNITY", ["Lund studio site"], { cls: "line-strong" });
+          const oppL = el("path", { class: "ln thin line", d: "M360 338V452" }, svg);
+          // the memory: why you took it, who may read it, for what, and where it came from
+          const mem = RS.card(svg, 900, 392, 600, "A MEMORY", ["why: their brief fits our focus", "who may read it: this workspace", "for what: respond, follow up", "from: this opportunity"], { cls: "line-strong" });
+          const link = el("path", { class: "ln line-strong", d: "M900 560C720 560 560 470 386 470" }, svg);
+          const xx = RS.cross(svg, 360, 470, 26);
+          const gone = RS.stampBox(svg, "ERASED TOGETHER", 1200, 500, 330, { rot: -4 });
+          const P = RS.dot(svg);
+
+          // the work arrives from Current
+          K.draw(chan, R(136.3), 0.6, "power1.out");
+          K.fade(chanW, R(136.5), 0.4, 0.16);
+          RS.put(K, tl, P, -30, 470, R(136.4), { fade: 0.1 });
+          RS.ride(K, P, [[360, 470]], R(136.5), { speed: 1100, chime: true });
+          K.fade(K.$("b9-lab-l"), R(136.8), 0.4);
+          K.fade(K.$("b9-lab-r"), R(136.8), 0.4);
+          K.draw(oppL, R(137.0), 0.2, "power2.out", false);
+          RS.showCard(K, opp, R(137.05), { cps: 54 });
+          // "the Recallatron remembers why you took it on"
+          RS.showBasin(K, res, W("recolletron") - 0.3, 0.9);
+          K.typed(resT, W("recolletron"), { cps: 30, cursor: false });
+          K.move(mem.g, W("remembers"), 0.7, { y: -360, opacity: 0 }, { y: 0, opacity: 1 }, { ease: "power2.out", sound: "water" });
+          K.draw(mem.rule, W("remembers") + 0.5, 0.3, "power2.out", false);
+          K.typed(mem.hd, W("remembers") + 0.4, { cps: 40, cursor: false });
+          const lineAt = [W("why"), W("who") - 0.05, W("for") - 0.05, W("where") - 0.05];
+          mem.ls.forEach((n, i) => K.typed(n, lineAt[i], { cps: 48, cursor: false }));
+          K.slam(K.$("b9-s1"), W("knows") - 0.1, { stagger: 0.035 });
+          K.slam(K.$("b9-s2"), W("read") + 0.05, { stagger: 0.035 });
+          K.draw(link, W("came") - 0.1, 0.6);
+          // "erase the lead, and the memory goes with it"
+          K.stamp(xx, W("erase") + 0.05, { origin: "360 470", from: 2 });
+          tl.to([P.g, opp.g, oppL], { opacity: 0.25, duration: 0.3 }, W("lead") - 0.05);
+          K.pulse(link, W("memory", 2) - 0.2, 1, 0.3, 0.02);
+          tl.to(mem.g, { y: 140, opacity: 0, duration: 0.7, ease: "power2.in" }, W("goes") - 0.1);
+          tl.to(link, { opacity: 0, duration: 0.4 }, W("goes"));
+          K.sfx("water", W("goes"), { d: 0.8 });
+          K.stamp(gone.g, W("with") - 0.05, { origin: "1200 500" });
+
+          // hand-off: pull back; plate X shows the whole workspace
+          const out = R(148.2);
+          K.sfx("out", out);
+          K.camera(K.$("b9-content"), out, 0.8, { scale: 1, opacity: 1 }, { scale: 0.5, opacity: 0 }, { ease: "power2.in" });
+          window.__timelines["b9"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>
