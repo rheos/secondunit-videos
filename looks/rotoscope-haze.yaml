@@ -1,0 +1,45 @@
+slug: rotoscope-haze
+title: Hazy traced rotoscope
+note: >-
+  Soft traced figures in washed-out greys: suited men on floating planks roll brochure blue over a dull grey
+  lake. A haze sits over the whole frame and the lines never quite hold still.
+used: Real Thing, Bob Wiseman
+cost: free
+group: code
+order: 470
+clip: rotoscope-haze.mp4
+tall: false
+status: test
+engine: canvas2d + webgl
+project: bobwiseman-real-thing
+code:
+  path: bobwiseman-real-thing/js/roto/look.js
+  flag: null
+  page: bobwiseman-real-thing/roto.html
+  note: >-
+    On branch real-thing-roto (draft PR #203), not merged. Kit copied from
+    bobwiseman-airplane-v1/sections/dream-j into js/roto/kit.js; look.js is the WebGL finishing shader (adds
+    grey and warm for Real Thing).
+rules:
+  - Traced figures in a wobbling line, fills a little off register
+  - No paper; it reads as digitally painted video
+  - The whole frame breathes with a slow low-frequency warp, with a little film softness and grain
+  - Washed colour with lifted blacks and a hue that drifts (skin takes a fifth of the drift)
+  - Grey drains the colour from the fake lake and the dirt; warm brings the dawn at the end
+palette: []
+reference: Waking Life-style rotoscope, by way of the Airplane on the Highway rotoscope-dream kit
+proof:
+  renders:
+    - bobwiseman-real-thing/out/real-thing-2026_roto-animatic-d1c_f00000-f03981_24fps_review-720p.mp4
+  pr:
+    - rheos/secondunit-videos#203
+  youtube:
+    - mnsk9RJPPv0
+    - 3HrnInepTs0
+    - c03aDYNT3lA
+verdict: >-
+  Bob, 2026-10-19, on draft 1: the canoe story is "too paired with the metaphors"; he asked for a different
+  story, and the gorilla film replaced it.
+related:
+  - wakinglife
+  - crisp-line

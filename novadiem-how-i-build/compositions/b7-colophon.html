@@ -1,0 +1,76 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #b7 {
+          position: absolute;
+          inset: 0;
+        }
+        #b7 svg text.mono.faint {
+          fill: var(--ink-dim);
+          font-weight: 400;
+        }
+        #b7 .statement.three {
+          top: 470px;
+          flex-direction: column;
+          align-items: center;
+          font-size: 64px;
+          row-gap: 8px;
+        }
+        #b7 .statement.three .row {
+          display: flex;
+        }
+      </style>
+      <div id="b7" data-composition-id="b7" data-width="1920" data-height="1080">
+        <svg class="full" viewBox="0 0 1920 1080">
+          <g id="b7-pipe"></g>
+          <text id="b7-site" class="mono" x="960" y="800" text-anchor="middle">novadiem.com</text>
+        </svg>
+        <div id="b7-label-l" class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate VII</div>
+        <div id="b7-label-r" class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>Colophon</div>
+        <div class="statement three" data-layout-allow-overlap data-layout-allow-occlusion>
+          <div class="row"><span id="b7-st-a" class="phrase">Every change has a record.</span></div>
+          <div class="row"><span id="b7-st-b" class="phrase">An independent check where it matters.</span></div>
+          <div class="row"><span id="b7-st-c" class="phrase red">And a deploy you can see.</span></div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text, kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 75);
+
+          K.fade(K.$("b7-label-l"), K.T(75.05), 0.4);
+          K.fade(K.$("b7-label-r"), K.T(75.05), 0.4);
+
+          // the whole flow, left as construction lines
+          const pipe = K.$("b7-pipe");
+          ["ISSUE", "BRANCH", "DRAFT PR", "CHECKS", "MERGE", "DEPLOY"].forEach((s, i) => {
+            const cx = 360 + i * 240;
+            const box = el("rect", { class: "ln line construct", x: cx - 95, y: 300, width: 190, height: 70 }, pipe);
+            const lab = text(s, { class: "mono faint", x: cx, y: 342, "text-anchor": "middle" }, pipe);
+            const at = K.T(75.67) + i * 0.15;
+            K.sweep(box, at, 0.4);
+            K.fade(lab, at + 0.2, 0.3, 0.8);
+            if (i < 5) {
+              const arrow = el("path", { class: "ln line construct", d: `M${cx + 101} 335H${cx + 139}` }, pipe);
+              K.sweep(arrow, at + 0.3, 0.2);
+            }
+          });
+
+          K.reveal(K.$("b7-st-a"), K.T(76.3), 0.6);
+          K.reveal(K.$("b7-st-b"), K.T(76.93), 0.7);
+          K.reveal(K.$("b7-st-c"), K.T(77.55), 0.7);
+          K.fade(K.$("b7-site"), K.T(78.81), 0.5);
+
+          window.__timelines["b7"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

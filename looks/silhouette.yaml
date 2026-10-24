@@ -1,0 +1,45 @@
+slug: silhouette
+title: Silhouette cut-paper
+note: Lacy black paper puppets in layers against a glowing, tinted sky.
+used: Airplane on the Highway test
+cost: free
+group: code
+order: 290
+clip: silhouette.mp4
+tall: false
+status: test
+engine: canvas2d
+project: bobwiseman-airplane-silhouette
+code:
+  path: bobwiseman-airplane-silhouette/js/cut.js
+  flag: null
+  page: bobwiseman-airplane-silhouette/silhouette.html
+  note: cut.js is the cut-paper kit (sheets, holes, light-box palettes), js/look.js the film finish.
+rules:
+  - "Every figure is black card (#120a06) on a light box; holes cut in a sheet show whatever is behind it"
+  - Layered sheets, far planes paler, nearer the glow; each shot picks a light-box palette (amber, rose, violet, blue, green)
+  - Lace cut-outs and ornament (lace trees, doilies, onion domes); puppets on twos, moving at hinges
+  - "Finish: gate weave, light-box flicker, backlight bleeding over the paper edges, grain, dust, heavy iris vignette"
+  - The outline alone must say airplane (tail fin, tailplane, wings out of the outline, no jaw); this test failed that
+palette:
+  - "#120a06"
+  - "#7e3a14"
+  - "#eaa65a"
+  - "#fff1c8"
+  - "#1c0c3e"
+  - "#9a4a8c"
+  - "#08142e"
+  - "#41709e"
+reference: Lotte Reiniger, The Adventures of Prince Achmed (1926)
+proof:
+  renders:
+    - bobwiseman-airplane-silhouette/out/aoh_silhouette-test_f01704-f02184_24fps_review-720p.mp4
+  pr: []
+  youtube:
+    - 5ZL6_CBjbio
+  note: out/ is archived on Bertha, /Volumes/Bertha/secondunit-archive/mv-projects/<project>/out/
+verdict: "Robin, 2026-10-03 (bobwiseman-airplane-v1/FACE.md): the plane read as a fish or whale (bulbous body, hinged jaw, wings lost in the shape)."
+related:
+  - papersilhouette
+  - shadow
+  - cutpaper

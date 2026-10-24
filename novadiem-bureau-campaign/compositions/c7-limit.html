@@ -1,0 +1,105 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #c7 {
+          position: absolute;
+          inset: 0;
+        }
+        #c7 .statement {
+          font-size: 60px;
+        }
+        #c7 .statement.one {
+          top: 440px;
+        }
+        #c7 .statement.two {
+          top: 526px;
+        }
+        #c7 .fine {
+          position: absolute;
+          left: 0;
+          right: 0;
+          text-align: center;
+          font-size: 20px;
+          color: var(--ink);
+        }
+        #c7 .fine.a {
+          top: 650px;
+        }
+        #c7 .fine.b {
+          top: 686px;
+          color: var(--ink-dim);
+        }
+        #c7 .colo {
+          position: absolute;
+          left: 0;
+          right: 0;
+          text-align: center;
+          color: var(--ink);
+        }
+        #c7 .colo.a {
+          top: 800px;
+          font-size: 24px;
+          font-weight: 700;
+        }
+        #c7 .colo.b {
+          top: 842px;
+          font-size: 18px;
+          color: var(--ink-dim);
+        }
+      </style>
+      <div id="c7" data-composition-id="c7" data-width="1920" data-height="1080">
+        <div class="layer">
+          <svg class="full" viewBox="0 0 1920 1080">
+            <g id="c7-art"></g>
+            <path id="c7-rule" class="ln line" d="M760 766H1160M760 756V776M1160 756V776" />
+          </svg>
+          <div class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate VII</div>
+          <div class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>The Limit</div>
+          <div id="c7-st-a" class="statement one"><span class="phrase">The Envoy supervises.</span></div>
+          <div id="c7-st-b" class="statement two"><span class="phrase red">It doesn't build or grade its own work.</span></div>
+          <div id="c7-fine-a" class="fine a mono">ONE ACTIVE PRODUCT RUN IS THE NORMAL PATTERN</div>
+          <div id="c7-fine-b" class="fine b mono">DONE WHEN THE MAP IS DONE, OR PARKED CLEANLY AT THE TOKEN BUDGET</div>
+          <div id="c7-colo-a" class="colo a mono">THE BUREAU · THEBUREAU.DEV · NOVADIEM.COM</div>
+          <div id="c7-colo-b" class="colo b mono">INSIDE THE BUREAU · 8 · THE CAMPAIGN</div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el } = BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = BP.kit(tl, 72.68);
+          const art = K.$("c7-art");
+
+          // plate VI's end state, static
+          const M = CM.map(art, { id: "c7", status: { 3: "MERGED", 4: "ACTIVE", 5: "WAITS ON 4" }, envoyName: "A FRESH ENVOY", envoySub: "PICKS UP FROM THE BOOKS" });
+          CM.hide([M.parkAll.g]);
+          M.cells[4].stat.setAttribute("class", "mono small gold-t");
+          CM.met(art, "e34");
+          el("rect", { class: "ln line-strong", x: 796, y: 376, width: 178, height: 100, style: "stroke-width:3" }, art);
+          CM.callout(art, 885, 426, 112, "B", "M997 426H1100V300H1220");
+          const I2 = CM.inset(art, "B", 4, { prev: 3, only: "delegate" });
+          CM.hide([I2.pr.g, I2.prNote]);
+          CM.route(art);
+
+          // step back: what the Envoy is, and what it is not
+          CM.out(tl, art, K.R(74.44), 0.6);
+          K.reveal(K.$("c7-st-a"), K.T(75.63), 0.7);
+          K.reveal(K.$("c7-st-b"), K.T(76.81), 0.9);
+          K.reveal(K.$("c7-fine-a"), K.T(78.58), 0.7);
+          K.reveal(K.$("c7-fine-b"), K.T(79.74), 0.8);
+          K.draw(K.$("c7-rule"), K.T(80.92), 0.6);
+          K.fade(K.$("c7-colo-a"), K.T(81.5), 0.5);
+          K.fade(K.$("c7-colo-b"), K.T(82.11), 0.5);
+
+          window.__timelines["c7"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

@@ -1,0 +1,124 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #b2 {
+          position: absolute;
+          inset: 0;
+        }
+        #b2 svg text.key {
+          font-family: var(--font-mono);
+          font-size: 18px;
+          font-weight: 400;
+          letter-spacing: 0.04em;
+          fill: var(--ink-dim);
+        }
+        #b2 svg text.jval {
+          font-family: var(--font-mono);
+          font-size: 20px;
+          font-weight: 700;
+          letter-spacing: 0.06em;
+          fill: var(--ink);
+        }
+      </style>
+      <div id="b2" data-composition-id="b2" data-width="1920" data-height="1080">
+        <svg class="full" viewBox="0 0 1920 1080">
+          <g id="b2-move"><g id="b2-sheet" transform="translate(740 150)"></g></g>
+          <text id="b2-tag" class="mono small" x="260" y="134">TEXT LAYER · COLUMNS KEPT</text>
+          <path id="b2-scan" class="ln line" d="M252 150H708" />
+          <g id="b2-marks"></g>
+
+          <g id="b2-panel">
+            <rect id="b2-frame" class="ln line" x="900" y="150" width="820" height="580" />
+            <text id="b2-file" class="mono head" x="930" y="194">bill.json</text>
+            <path id="b2-rule" class="ln thin line" d="M900 214H1720" />
+            <path id="b2-rule2" class="ln thin line" d="M900 676H1720" />
+            <g id="b2-rows"></g>
+            <text id="b2-nr-k" class="key" x="940" y="710">"needs_review":</text>
+            <text id="b2-nr-v" class="jval" x="1690" y="710" text-anchor="end">false</text>
+            <text id="b2-valid" class="mono small gold-t" x="1720" y="756" text-anchor="end">SCHEMA-VALID · 10 OF 10 FIELDS</text>
+          </g>
+          <g id="b2-fly"></g>
+        </svg>
+        <div id="b2-label-l" class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate II</div>
+        <div id="b2-label-r" class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>The Schema</div>
+        <div class="statement two" data-layout-allow-overlap data-layout-allow-occlusion>
+          <div class="row">
+            <span id="b2-st-a" class="phrase">One PDF in.</span>
+            <span id="b2-st-b" class="phrase red">Validated JSON</span>
+            <span id="b2-st-c" class="phrase">out.</span>
+          </div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text, kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 8);
+          DX.sheet(K.$("b2-sheet")); // fully drawn: plate I handed it over at 8.0
+
+          const SX = 260,
+            SY = 150; // where the sheet ends up
+          K.fade(K.$("b2-label-l"), K.T(8.12), 0.4);
+          K.fade(K.$("b2-label-r"), K.T(8.12), 0.4);
+          tl.fromTo(K.$("b2-move"), { x: 0 }, { x: SX - 740, duration: 0.9, ease: "power2.inOut" }, K.T(8.12) + 0.1);
+
+          // pdftotext: the page becomes a text layer, columns kept
+          const scan = K.$("b2-scan");
+          tl.fromTo(scan, { opacity: 0 }, { opacity: 1, duration: 0.15 }, K.T(9.38));
+          tl.fromTo(scan, { y: 0 }, { y: 570, duration: 1.1, ease: "none" }, K.T(9.38));
+          tl.to(scan, { opacity: 0, duration: 0.2 }, K.T(9.38) + 1.1);
+          K.fade(K.$("b2-tag"), K.T(9.38) + 0.2, 0.4);
+          K.reveal(K.$("b2-st-a"), K.T(9.38), 0.5);
+
+          // the schema panel
+          K.draw(K.$("b2-frame"), K.T(10.01), 0.8, "none");
+          K.fade(K.$("b2-file"), K.T(10.01) + 0.3, 0.3);
+          K.draw(K.$("b2-rule"), K.T(10.01) + 0.4, 0.4, "none");
+
+          // ten values lift off the sheet and land in their rows
+          const rows = K.$("b2-rows"),
+            fly = K.$("b2-fly"),
+            marks = K.$("b2-marks");
+          DX.ORDER.forEach((name, i) => {
+            const b = DX.box(name);
+            const y = 248 + i * 42;
+            const key = text(`"${name}":`, { class: "key", x: 940, y }, rows);
+            const shown = name === "usage_charges" ? "[1.40]" : name === "data_used_mb" ? "2310.4" : name === "bill_date" || name === "due_date" ? `"${b.value}"` : b.value;
+            const val = text(shown, { class: "jval", x: 1690, y, "text-anchor": "end" }, rows);
+            const mark = el("rect", { class: "ln line-strong", x: SX + b.x, y: SY + b.y, width: b.w, height: b.h }, marks);
+            const clone = text(b.value, { class: "sht val", x: SX + b.endX, y: SY + b.baseY, "text-anchor": "end", opacity: 0 }, fly);
+
+            const at = K.T(10.64) + i * 0.63;
+            K.draw(mark, at, 0.25, "none");
+            K.fade(key, at, 0.3);
+            tl.set(clone, { opacity: 1 }, at + 0.15);
+            tl.fromTo(clone, { x: 0, y: 0 }, { x: 1690 - (SX + b.endX), y: y - (SY + b.baseY), duration: 0.5, ease: "power2.inOut" }, at + 0.15);
+            tl.set(clone, { opacity: 0 }, at + 0.65);
+            tl.fromTo(val, { opacity: 0 }, { opacity: 1, duration: 0.12 }, at + 0.62);
+            tl.to(mark, { opacity: 0.35, duration: 0.4 }, at + 0.7);
+          });
+
+          // validated
+          K.draw(K.$("b2-rule2"), K.T(17.55), 0.4, "none");
+          K.fade(K.$("b2-nr-k"), K.T(17.55) + 0.2, 0.3);
+          K.fade(K.$("b2-nr-v"), K.T(17.55) + 0.3, 0.3);
+          K.fade(K.$("b2-valid"), K.T(18.18), 0.4);
+          K.reveal(K.$("b2-st-b"), K.T(18.18), 0.6);
+          K.reveal(K.$("b2-st-c"), K.T(18.18) + 0.5, 0.3);
+
+          // clear down to the sheet; plate III slides it back to the centre
+          ["b2-panel", "b2-marks", "b2-tag", "b2-label-l", "b2-label-r"].forEach((id) => K.out(K.$(id), K.T(21.42), 0.4));
+          tl.to("#b2 .statement", { opacity: 0, duration: 0.4, ease: "power1.in" }, K.T(21.42));
+
+          window.__timelines["b2"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

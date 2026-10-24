@@ -1,0 +1,107 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #b6 {
+          position: absolute;
+          inset: 0;
+        }
+        #b6 .faint-bars { stroke: var(--ink-faint); }
+      </style>
+      <div id="b6" data-composition-id="b6" data-width="1920" data-height="1080">
+        <svg class="full" viewBox="0 0 1920 1080">
+          <g id="b6-card" transform="translate(130 150)"></g>
+          <g id="b6-pas" transform="translate(960 150)"></g>
+          <g id="b6-rows"></g>
+          <path id="b6-brk" class="ln ink" d="M952 214H938V470H952" />
+          <g id="b6-threads"></g>
+          <text id="b6-refs" class="jval" x="990" y="508">turn_refs: [12, 13, 14, 15]</text>
+
+          <g id="b6-audio">
+            <g id="b6-ticks"></g>
+            <rect id="b6-strip" class="ln thin planned" x="150" y="490" width="670" height="76" />
+            <g id="b6-wave"></g>
+            <g id="b6-times"></g>
+            <text id="b6-plan" class="mono small planned-t" x="150" y="640">TIME IN THE RECORDING · PLANNED</text>
+          </g>
+
+          <g id="b6-bad">
+            <rect id="b6-bad-f" class="ln thin ink" x="960" y="560" width="810" height="150" />
+            <text id="b6-bad-1" class="hd" x="990" y="598">PASSAGE 2</text>
+            <text id="b6-bad-2" class="jval" x="1740" y="598" text-anchor="end">turn_refs: [ ]</text>
+            <path class="ln thin ink b6-hatch" d="M990 630H1510" opacity="0.4" />
+            <path class="ln thin ink b6-hatch" d="M990 654H1450" opacity="0.4" />
+            <path class="ln thin ink b6-hatch" d="M990 678H1200" opacity="0.4" />
+            <text id="b6-bad-3" class="mono small gold-t" x="1740" y="690" text-anchor="end">NO SOURCE · HELD FROM READERS</text>
+          </g>
+        </svg>
+        <div id="b6-label-l" class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate VI</div>
+        <div id="b6-label-r" class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>The Thread</div>
+        <div class="statement two" data-layout-allow-overlap data-layout-allow-occlusion>
+          <div class="row"><span id="b6-st-a" class="phrase">Every passage</span></div>
+          <div class="row"><span id="b6-st-b" class="phrase red">points to what was said.</span></div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text, kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 61.29);
+          const C = MQ.card(K.$("b6-card"), MQ.S1);
+          MQ.passage(K.$("b6-pas"));
+
+          K.fade(K.$("b6-label-l"), K.T(61.29) + 0.1, 0.4);
+          K.fade(K.$("b6-label-r"), K.T(61.29) + 0.1, 0.4);
+
+          // PassageProvenance: the passage resolves to the raw turns it was drawn from
+          K.draw(K.$("b6-brk"), K.T(62.54), 0.5, "none");
+          K.fade(K.$("b6-refs"), K.T(63.17), 0.4);
+          K.reveal(K.$("b6-st-a"), K.T(63.8), 0.5);
+          C.rows.forEach((r, i) => {
+            const y = 150 + (r.top + r.bot) / 2;
+            const th = el("path", { class: "ln line-strong", d: `M938 342C882 342 882 ${y} 826 ${y}` }, K.$("b6-threads"));
+            const dot = el("circle", { class: "fill-line", cx: 826, cy: y, r: 5 }, K.$("b6-threads"));
+            const box = el("rect", { class: "ln thin line-strong", x: 140, y: 150 + r.top - 4, width: 670, height: r.bot - r.top + 8 }, K.$("b6-rows"));
+            const at = K.T(63.8) + i * 0.62;
+            K.draw(th, at, 0.5);
+            K.fade(dot, at + 0.4, 0.2);
+            K.draw(box, at + 0.4, 0.4, "none");
+          });
+          K.reveal(K.$("b6-st-b"), K.T(66.29), 0.7);
+
+          // not built yet: a turn knows its place in the audio (start_offset_s stays empty on today's import paths)
+          const xs = [[170, 300], [330, 560], [590, 720], [745, 800]];
+          const TIMES = ["12 · 0:38", "13 · 0:41", "14 · 0:47", "15 · 0:53"];
+          K.sweep(K.$("b6-strip"), K.T(68.79), 0.6);
+          const wv = MQ.wave(K.$("b6-wave"), 166, 804, 528, xs.map(([a, b]) => [a, b, 24]), "ln thin faint-bars", 6);
+          K.sweep(wv, K.T(68.79) + 0.3, 0.8);
+          xs.forEach(([a], i) => {
+            const tk = el("path", { class: "ln thin planned", d: `M${a + 4} 452V490` }, K.$("b6-ticks"));
+            const t = text(TIMES[i], { class: "mono small planned-t", x: a + 4, y: 594 }, K.$("b6-times"));
+            K.sweep(tk, K.T(69.42) + i * 0.15, 0.3);
+            K.fade(t, K.T(69.42) + i * 0.15, 0.3);
+          });
+          K.fade(K.$("b6-plan"), K.T(70.04), 0.4);
+
+          // a passage that resolves to no turns is untraceable: it is flagged and held
+          K.draw(K.$("b6-bad-f"), K.T(71.3), 0.6, "none");
+          K.fade(K.$("b6-bad-1"), K.T(71.3) + 0.3, 0.3);
+          tl.fromTo("#b6 .b6-hatch", { opacity: 0 }, { opacity: 0.4, duration: 0.3, stagger: 0.1 }, K.T(71.3) + 0.3);
+          K.fade(K.$("b6-bad-2"), K.T(71.91), 0.3);
+          K.fade(K.$("b6-bad-3"), K.T(71.91) + 0.3, 0.4);
+
+          tl.to("#b6 svg > *", { opacity: 0, duration: 0.45, ease: "power1.in" }, K.T(74.41));
+          ["b6-label-l", "b6-label-r"].forEach((id) => K.out(K.$(id), K.T(74.41), 0.4));
+          tl.to("#b6 .statement", { opacity: 0, duration: 0.4, ease: "power1.in" }, K.T(74.41));
+
+          window.__timelines["b6"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

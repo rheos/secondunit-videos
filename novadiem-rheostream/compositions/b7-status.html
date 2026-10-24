@@ -1,0 +1,91 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #b7 {
+          position: absolute;
+          inset: 0;
+        }
+      </style>
+      <div data-hf-id="hf-46ix" id="b7" data-composition-id="b7" data-width="1920" data-height="1080">
+        <div data-hf-id="hf-35d0" id="b7-content" class="layer">
+          <div data-hf-id="hf-dqxu" id="b7-lab-l" class="plate-label left">PLATE VII</div>
+          <div data-hf-id="hf-ujf9" id="b7-lab-r" class="plate-label right">STATUS</div>
+          <svg data-hf-id="hf-vkvu" id="b7-svg" class="full" viewBox="0 0 1920 1080"></svg>
+          <div data-hf-id="hf-mwwv" class="statement">
+            <span data-hf-id="hf-wtbr" id="b7-s1" class="phrase">Inspect it.</span>
+            <span data-hf-id="hf-ich2" id="b7-s2" class="phrase">Export it.</span>
+            <span data-hf-id="hf-bmrz" id="b7-s3" class="phrase accent">Own it.</span>
+          </div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text } = BP;
+          const tl = gsap.timeline({ paused: true });
+          const S = 90;
+          const K = BP.kit(tl, S);
+          const svg = K.$("b7-svg");
+
+          // a drawing schedule: what is built (solid) and what is planned (dashed)
+          const X0 = 560,
+            X1 = 1360,
+            Y0 = 150,
+            RH = 40;
+          const ROWS = [
+            ["CORE  ·  WORKER  ·  SHELL", true],
+            ["RECALLATRON", true],
+            ["LEADS", true],
+            ["CURRENT", true],
+            ["RELATIONSHIPS", true],
+            ["MCP", true],
+            ["EXPORT  ·  RESTORE", true],
+            ["RHEO AGENT", false],
+            ["CONNECTORS  ·  CHANNELS", false],
+            ["VOICE", false],
+          ];
+          const frame = el("rect", { class: "ln line", x: X0, y: Y0, width: X1 - X0, height: RH * (ROWS.length + 1) }, svg);
+          const head = el("path", { class: "ln line", d: `M${X0} ${Y0 + RH}H${X1}M${X1 - 200} ${Y0}V${Y0 + RH * (ROWS.length + 1)}` }, svg);
+          const hT1 = text("ITEM", { class: "mono small", x: X0 + 24, y: Y0 + 26 }, svg);
+          const hT2 = text("STATE", { class: "mono small", x: X1 - 100, y: Y0 + 26, "text-anchor": "middle" }, svg);
+          const rows = ROWS.map(([name, built], i) => {
+            const y = Y0 + RH * (i + 1);
+            const rule = i < ROWS.length - 1 ? el("path", { class: "ln thin line", d: `M${X0} ${y + RH}H${X1}`, opacity: 0.35 }, svg) : null;
+            const t = text(name, { class: built ? "mono small" : "mono small planned-t", x: X0 + 24, y: y + 26 }, svg);
+            const sw = el("path", { class: built ? "ln line" : "ln planned", d: `M${X1 - 180} ${y + 20}h40` }, svg);
+            const st = text(built ? "BUILT" : "PLANNED", { class: built ? "mono small" : "mono small planned-t", x: X1 - 24, y: y + 26, "text-anchor": "end" }, svg);
+            return { rule, t, sw, st };
+          });
+          const creditRule = el("path", { class: "ln line", d: "M640 640H1280M640 630V650M1280 630V650" }, svg);
+          const credit = text("RHEO.STREAM  ·  GITHUB.COM/RHEOS/RHEOSTREAM  ·  AGPL-3.0", { class: "mono", x: 960, y: 700, "text-anchor": "middle" }, svg);
+
+          K.fade(K.$("b7-lab-l"), K.T(90.05), 0.4);
+          K.fade(K.$("b7-lab-r"), K.T(90.05), 0.4);
+          K.draw(frame, K.T(90.05), 0.8);
+          K.draw(head, K.T(90.67), 0.5);
+          K.fade(hT1, K.T(90.67), 0.3);
+          K.fade(hT2, K.T(90.67), 0.3);
+          rows.forEach((r, i) => {
+            const at = K.T(91.3) + i * 0.315; // one row per half beat
+            if (r.rule) K.draw(r.rule, at, 0.3, "none");
+            K.fade(r.t, at, 0.25);
+            K.fade(r.sw, at + 0.1, 0.25);
+            K.fade(r.st, at + 0.15, 0.25);
+          });
+          K.reveal(K.$("b7-s1"), K.T(95.04), 0.5);
+          K.reveal(K.$("b7-s2"), K.T(95.67), 0.5);
+          K.reveal(K.$("b7-s3"), K.T(96.3), 0.6);
+          K.draw(creditRule, K.T(96.93), 0.6);
+          K.fade(credit, K.T(97.56), 0.5);
+          // holds to the end; the score fades 101-102.5
+          window.__timelines["b7"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

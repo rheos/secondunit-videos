@@ -1,0 +1,38 @@
+JOEL NAKAMURA — MATERIAL AND COMPOSITION REFERENCE
+Updated 2026-10-13
+
+SCOPE
+This guide describes features observed in the downloaded references, with a suggested code-rendering approach. It is not a recovered technical recipe. The collection spans several treatments: painted and ornamented panels, open illustrative compositions, and flatter arrangements of glyph-like figures. Select the relevant family before rendering.
+
+MATERIAL EVIDENCE
+Published profiles describe polymer paint on tin, and current portfolio records also identify acrylic on canvas and hand-tooled panels. Medium varies by work. Do not assign tin or a particular paint to a file without a source that identifies it. The irregular edges and patterned frames in the references can inform a material study without establishing the material of every example.
+
+VISIBLE QUALITIES
+Use a strong, readable silhouette containing a second level of activity: inhabitants, small objects, landscapes, diagrams, or repeated symbols. Heads, animals, vessels, and instruments can each become a setting.
+
+Many works use frontal, emblem-like figures, oval enclosures, arcs, spirals, and borders. Other works use side views, scenes, or scattered glyphs. Keep a coherent hierarchy rather than requiring symmetry in every piece.
+
+Color can be saturated and luminous: blue or violet grounds against yellow, orange, red, or green figures. Tone often changes gradually within a shape. Outlines and local halos separate overlapping forms. Light can appear to come from an object, with a concentrated bright center or glow around a contour.
+
+Fine marks, short repeated strokes, dotted fields, and small pictorial forms fill surfaces. Inspect a higher-resolution reference before treating JPEG noise or scanning artifacts as intentional marks. Preserve clean focal shapes within the dense detail.
+
+When a frame belongs to the selected treatment, give it the presence of a made object: uneven contour, patterned rim, alternating dents or raised marks, restrained highlights and shadow. Use the frame to contain or echo the scene.
+
+PROPOSED CODE APPROACH
+Separate silhouette, internal scene, contour, fine pattern, and panel/frame into layers. Author marks in each object's local coordinates. Use deterministic seeds for irregularity so a surface retains its identity when moved. Material highlights should follow the geometry of the imagined surface; a metal rim and painted interior need different responses to light.
+
+Use enough resolution for small inhabitants and fine marks. Choose working dimensions according to detail and display size. There is no established 72-dpi, 256-color, or ordered-dither requirement for Nakamura in these sources. Those belong to Robin's separate Von Ulrich reconstruction brief.
+
+ANIMATION EXTENSION
+Let an internal action affect its container, or let a visible path carry something between figures. Keep surface marks attached to objects. Give reactions time to read. These are proposed motion principles, not claims about Nakamura's animation practice.
+
+ACCEPTANCE
+- At small size, the main character and action remain legible.
+- At close range, the second layer rewards inspection.
+- The chosen material has consistent edges, marks, and light.
+- Texture enriches authored forms; it does not substitute for them.
+- A proposed animation explains a relationship or change.
+- The symbolism remains useful even when the rendering medium changes.
+
+READING ORDER
+AGENT-DIRECTION.txt for a fast conceptual pass; director-guide.html for examples and interpretation; index.html and artwork-index.json for source context; biography.html for documented process.

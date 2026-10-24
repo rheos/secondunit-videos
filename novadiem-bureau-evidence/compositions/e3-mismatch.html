@@ -1,0 +1,88 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #e3 {
+          position: absolute;
+          inset: 0;
+        }
+      </style>
+      <div id="e3" data-composition-id="e3" data-width="1920" data-height="1080">
+        <div id="e3-all" class="layer">
+          <svg class="full" viewBox="0 0 1920 1080">
+            <g id="e3-art"></g>
+          </svg>
+          <div class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate III</div>
+          <div class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>Mismatch</div>
+          <div id="e3-st" class="statement">
+            <span id="e3-st-a" class="phrase">One line changed.</span>
+            <span id="e3-st-b" class="phrase">Review it again.</span>
+          </div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text, kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 18.88);
+          const root = K.$("e3-art");
+
+          // plan.md as it is now: line 2 edited after the review
+          const D = FP.doc(root, 120, 300, "plan.md", FP.PLAN2, { w: 600 });
+          FP.showDoc(K, D, K.T(18.88));
+          const edited = el("path", { class: "ln line-strong", d: `M108 ${D.lineY(2) - 26}V${D.lineY(2) + 10}` }, root);
+          K.draw(edited, K.T(19.46), 0.3);
+
+          // the fingerprint in the verdict
+          const A = FP.glyph(root, FP.DIG.plan1, 1000, 430, 130);
+          FP.showGlyph(K, A, K.T(19.46), 0.4);
+          const labA = text("IN THE VERDICT", { class: "mono", x: 1000, y: 610, "text-anchor": "middle" }, root);
+          K.fade(labA, K.T(19.46) + 0.2, 0.4);
+
+          // before the run moves on, the Delegate takes the fingerprint again
+          const scan = el("line", { class: "ln line", x1: 108, x2: 732, y1: 300, y2: 300, style: "stroke-width:3" }, root);
+          tl.fromTo(scan, { attr: { y1: 300, y2: 300 }, opacity: 1 }, { attr: { y1: 584, y2: 584 }, duration: 1.1, ease: "none" }, K.T(20.06));
+          tl.fromTo(scan, { opacity: 1 }, { opacity: 0, duration: 0.2, immediateRender: false }, K.T(20.06) + 1.1);
+          const note = text("THE DELEGATE CHECKS IT AGAINST THE FILE", { class: "mono small dim", x: 120, y: 636 }, root);
+          K.fade(note, K.T(20.06), 0.4);
+
+          const B = FP.glyph(root, FP.DIG.plan2, 1480, 430, 130);
+          FP.drawGlyph(K, B, K.T(21.22), 1.5);
+          const labB = text("PLAN.MD NOW", { class: "mono", x: 1480, y: 610, "text-anchor": "middle" }, root);
+          K.fade(labB, K.T(21.22) + 0.2, 0.4);
+
+          // compare digit by digit: almost every mark moved
+          let differ = 0;
+          B.marks.forEach((m, i) => {
+            if (FP.DIG.plan1[i] === FP.DIG.plan2[i]) return;
+            tl.fromTo(m, { stroke: "#8c6e22" }, { stroke: "#b3261e", duration: 0.15, immediateRender: false }, K.T(23.59) + differ * 0.014);
+            differ++;
+          });
+          const neq = el("path", { class: "ln accent-s", d: "M1214 418H1266M1214 442H1266M1252 398L1228 462", style: "stroke-width:3" }, root);
+          const noMatch = text("NO MATCH", { class: "mono red-t", x: 1240, y: 500, "text-anchor": "middle" }, root);
+          K.draw(neq, K.T(24.75), 0.4);
+          K.fade(noMatch, K.T(24.75) + 0.2, 0.3);
+          const tally = text(`${differ} OF 64 MARKS DIFFER`, { class: "mono small dim", x: 1480, y: 640, "text-anchor": "middle" }, root);
+          K.fade(tally, K.T(25.33), 0.4);
+
+          // the old verdict is discarded; a fresh reviewer gets the new version
+          const S = FP.stamp(root, "DISCARD", 1000, 430, 230);
+          FP.slam(tl, S, K.T(25.94));
+          const re = text("A FRESH REVIEWER READS THE NEW VERSION", { class: "mono small gold-t", x: 1240, y: 700, "text-anchor": "middle" }, root);
+          K.reveal(re, K.T(28.28), 0.6);
+
+          K.reveal(K.$("e3-st-a"), K.T(26.52), 0.55);
+          K.reveal(K.$("e3-st-b"), K.T(27.12), 0.55);
+
+          K.out(K.$("e3-all"), K.R(30.2), 0.45);
+          window.__timelines["e3"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

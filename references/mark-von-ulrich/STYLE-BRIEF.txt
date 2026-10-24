@@ -1,0 +1,39 @@
+MARK VON ULRICH REFERENCE — RASTER STYLE AND ANIMATION BRIEF
+Updated: 2026-10-13
+
+SYMBOLIC DIRECTION
+For what the illustration should say and how its forms express that idea, read AGENT-DIRECTION.txt first; director-guide.html provides illustrated reasoning and article links. Those conceptual choices can also be used in other visual media. The requirements below apply when Robin's early Mac raster treatment is requested.
+
+Authoritative target supplied by Robin:
+“A 72-dpi illustration style from an early color Mac, with the 256-color system palette, ordered dithering (for stability across animation frames), and fine pixel edges rather than chunky 8-bit blocks.”
+
+RENDERING TARGET
+Build a full-color raster illustration from geometric shapes, drawn contours, dense fine patterns, and shaded interiors. Preserve fine stair-step edges at the drawing’s native pixel grid. Color and silhouette carry the picture; the pixel grid gives them their surface character.
+
+Use the specified classic Mac 256-color system palette as one fixed palette throughout a shot. Palette-quantize the shaded artwork; use ordered dithering to express intermediate colors and tonal ramps. A fixed ordered threshold pattern must produce the same result when the same image is rendered again.
+
+Keep enough native raster detail for one-pixel outlines, narrow zigzags, dense grids, concentric curves, small facial details, and closely spaced hatch/dither patterns. Select the working pixel dimensions from the reference detail and intended display size. “72 dpi” describes the reference’s print density; it does not by itself determine a Canvas width or height. Do not collapse the composition to an arbitrarily tiny raster.
+
+Shade within the silhouettes using gradients or tonal ramps, then resolve those tones through the fixed palette and ordered dither. Retain clean, finely stepped outer contours. Keep authored decorative zigzags and grids distinct from the dithering used to create intermediate tones.
+
+ANIMATION STABILITY
+Keep palette, threshold matrix, threshold phase, and rendering parameters deterministic. Do not generate a new texture, palette, noise field, or dither phase for each frame.
+
+For moving objects, anchor the dither pattern in the object’s local raster coordinates so its surface travels with it. For stationary backgrounds, use a fixed background grid. Integer-pixel translation of cached raster layers preserves their fine edges and texture; where shapes deform or rotate, use a consistent rasterization and sampling rule. Validate moving edges, gradients, and thin patterns in motion for shimmer.
+
+Start from the symbolic illustration: a body made of interfaces, an ear embodying listening, nested containers, or hands framing a device. Animate those relationships through joint movement, sliding panels, scale changes, and controlled transformations. The surface must remain recognizable as colored raster illustration throughout the movement.
+
+EXCLUSION CRITERIA
+Reject ASCII or Unicode glyph rendering, terminal aesthetics, text characters used as shading, character-cell grids, chunky game sprites, enlarged pixel tiles, coarse mosaic filters, and generic “8-bit retro” treatments. Reject smooth vector edges that erase the fine raster contour. Typography may be used as actual typography; it is not the image-rendering medium.
+
+ACCEPTANCE CHECK
+- At normal viewing size, it reads as an illustration with saturated color and shaded volume.
+- Close inspection reveals fine pixel steps and organized dither patterns.
+- Fine linework and facial details survive.
+- Gradients resolve through the fixed palette rather than unrestricted smooth color.
+- A stationary frame remains identical across repeated renders.
+- A moving object’s dither remains attached to its surface, without randomized sparkle.
+- The silhouette and symbolism still communicate when the texture is temporarily hidden.
+
+PROVENANCE
+Robin’s 2005 correspondence with Mark documents SuperPaint drawing, Photoshop painting, deliberate pixelation, and reproduction at 72 dpi. The 256-color system palette and ordered-dither animation strategy are Robin’s specified reconstruction target; they have not been independently established as Mark’s exact historical palette or dithering algorithm.

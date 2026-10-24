@@ -1,0 +1,47 @@
+slug: crayon
+title: Crayon and wet paint
+note: A child's crayon drawing, then wet paint floods over it. The lollipop tree pours down into a willow.
+used: More, Bob Wiseman
+cost: free
+group: code
+order: 100
+clip: crayon.mp4
+tall: false
+status: draft
+engine: canvas2d
+project: bobwiseman-more
+code:
+  path: bobwiseman-more/js/look-crayon.js
+  flag: null
+  page: bobwiseman-more/crayon.html
+  note: "on branch more-1 (draft PR #18), not on main"
+rules:
+  - "A child's crayon drawing: waxy broken strokes in 2-3 thin overlapping passes, pressure gaps, paper tooth"
+  - Outlines boil on every beat
+  - On each line's upgrade word, wet gouache floods over the drawing
+  - The crayon wax resists the paint where they overlap
+  - Bright primary crayon colours; a child colours around the figures
+palette:
+  - "#2f86d6"
+  - "#3e9e3a"
+  - "#f7c21a"
+  - "#ef7f16"
+  - "#8b5a2b"
+  - "#47a83f"
+  - "#f0b48c"
+  - "#1f1d22"
+reference: null
+proof:
+  renders:
+    - bobwiseman-more/out/more_crayon-v1_f00000-f00852_24fps_draft.mp4
+    - bobwiseman-more/out/more_full-v6_f00000-f05466_24fps_draft.mp4
+  pr:
+    - rheos/secondunit-videos#18
+  youtube:
+    - _HGiGwHkLz8
+    - hHcHt3kURdI
+    - pakBYyvf7KE
+verdict: "Bob, 2026-10-06, on draft 3: \"Yes this More version great\""
+related:
+  - hose
+  - cutpaper

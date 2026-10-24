@@ -1,0 +1,44 @@
+slug: cutout
+title: Cut-out collage
+note: A hinged paper puppet plane over photo-collage scenery; giant scissors snip the sky.
+used: Airplane on the Highway test
+cost: hybrid
+group: code
+order: 70
+clip: cutout.mp4
+tall: false
+status: test
+engine: canvas2d
+project: bobwiseman-airplane-cutout
+code:
+  path: bobwiseman-airplane-cutout/js/cutout.js
+  flag: null
+  page: bobwiseman-airplane-cutout/index.html
+  note: >-
+    js/look.js is the rostrum-camera finish. Built from images on disk (gitignored): assets/plane.png, a
+    2688x1520 still keyed in code, and two collage plates, assets/plate-a.png and plate-b.png.
+rules:
+  - >-
+    The plane still is keyed and cut into hinged puppet pieces that move on their own; the body is the still
+    minus the moving parts
+  - Collage plates cut into parallax strips and scissor-cut photo panels with hand-wobbled edges
+  - "Every piece gets a white scissor rim and a dark ink silhouette shadow (paper #f3eee0, ink #1d150e)"
+  - 12 drawings a second; every drawing gets its own misregistration nudge, exposure flicker and grain
+  - "Finish: 45 degree halftone screen, warm paper cast, paper tooth, uneven table light, vignette"
+palette:
+  - "#f3eee0"
+  - "#1d150e"
+reference: Terry Gilliam's cut-out animation ("in the Gilliam manner", js/cutout.js)
+proof:
+  renders:
+    - bobwiseman-airplane-cutout/out/aoh_cutout-test_f01704-f02184_24fps_review-720p.mp4
+  pr: []
+  youtube:
+    - VIyiaezCx-k
+  note: out/ is archived on Bertha, /Volumes/Bertha/secondunit-archive/mv-projects/<project>/out/
+verdict: null
+related:
+  - gilliam
+  - collage
+  - junk
+  - scrap

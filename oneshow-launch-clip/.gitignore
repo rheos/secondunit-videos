@@ -1,0 +1,9 @@
+node_modules/
+out/
+renders/
+.hyperframes/
+*.log
+.remotion-start
+.hyperframes-start
+remotion/out/
+.hf-check-start

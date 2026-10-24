@@ -1,0 +1,139 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #b3 {
+          position: absolute;
+          inset: 0;
+        }
+      </style>
+      <div id="b3" data-composition-id="b3" data-width="1920" data-height="1080">
+        <svg class="full" viewBox="0 0 1920 1080">
+          <g id="b3-move"><g id="b3-sheet" transform="translate(740 150)"></g></g>
+
+          <!-- same panels as plate IV, on paper -->
+          <text id="b3-p-head" class="mono head" x="150" y="200">FIXED-RULE PARSER</text>
+          <text id="b3-p-sub" class="mono note" x="150" y="230">reads fixed positions</text>
+          <text id="b3-m-head" class="mono head" x="1280" y="200">MODEL</text>
+          <text id="b3-m-sub" class="mono note" x="1280" y="230">reads the page</text>
+          <g id="b3-rows"></g>
+          <g id="b3-finds"></g>
+          <g id="b3-stencils"></g>
+          <g id="b3-lens" opacity="0">
+            <circle class="ln line-strong" cx="0" cy="0" r="40" />
+            <circle class="ln thin line" cx="0" cy="0" r="46" opacity="0.6" />
+            <path class="ln line-strong" d="M30 30L58 58" stroke-width="4" />
+          </g>
+          <text id="b3-note-p" class="mono gold-t" x="150" y="640">THE ANSWER KEY</text>
+          <text id="b3-note-m" class="mono gold-t" x="1280" y="640">THE EXTRACTOR</text>
+          <text id="b3-note-n" class="mono note" x="960" y="760" text-anchor="middle">4 of the 10 fields shown</text>
+        </svg>
+        <div id="b3-label-l" class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate III</div>
+        <div id="b3-label-r" class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>Two Readers</div>
+        <div class="statement two" data-layout-allow-overlap data-layout-allow-occlusion>
+          <div class="row"><span id="b3-st-a" class="phrase">A model reads it.</span></div>
+          <div class="row"><span id="b3-st-b" class="phrase">A fixed-rule parser checks it.</span></div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text, kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 22);
+          DX.sheet(K.$("b3-sheet"));
+
+          // the sheet comes back to the centre from where plate II left it
+          // explicit from/to so a renderer that seeks straight to any frame gets the same answer
+          tl.fromTo(K.$("b3-move"), { x: -480 }, { x: 0, duration: 0.8, ease: "power2.inOut" }, K.T(22.11));
+          K.fade(K.$("b3-label-l"), K.T(22.11), 0.4);
+          K.fade(K.$("b3-label-r"), K.T(22.11), 0.4);
+
+          const ROWS = [290, 370, 450, 530];
+          // the parser's rules: where the 2026 layout keeps each field (plate IV's stencil uses the same boxes)
+          const F = [
+            { name: "bill_date", rule: [950, 228, 222, 28] },
+            { name: "current_charges", rule: [760, 492, 190, 28] },
+            { name: "total_due", rule: [970, 340, 190, 28] },
+            { name: "due_date", rule: [970, 400, 190, 28] },
+          ];
+          const rows = K.$("b3-rows");
+          const tick = (x, y) => el("path", { class: "ln line-strong", d: `M${x} ${y}l7 8l14 -17`, "stroke-width": 3 }, rows);
+          F.forEach((f, i) => {
+            const y = ROWS[i];
+            const b = DX.box(f.name);
+            f.b = b;
+            f.pName = text(`${i + 1} ${f.name}`, { class: "mono small", x: 150, y }, rows);
+            f.pBox = el("rect", { class: "ln thin line", x: 410, y: y - 30, width: 220, height: 44 }, rows);
+            f.pVal = text(b.value, { class: "mono", x: 520, y: y - 1, "text-anchor": "middle", opacity: 0 }, rows);
+            f.pTick = tick(646, y - 6);
+            f.mName = text(`${i + 1} ${f.name}`, { class: "mono small", x: 1280, y }, rows);
+            f.mBox = el("rect", { class: "ln thin line", x: 1530, y: y - 30, width: 220, height: 44 }, rows);
+            f.mVal = text(b.value, { class: "mono", x: 1640, y: y - 1, "text-anchor": "middle", opacity: 0 }, rows);
+            f.mTick = tick(1766, y - 6);
+            f.find = el("rect", { class: "ln line-strong", x: 740 + b.x - 4, y: 150 + b.y - 3, width: b.w + 8, height: b.h + 6 }, K.$("b3-finds"));
+            const [rx, ry, rw, rh] = f.rule;
+            f.st = el("g", {}, K.$("b3-stencils"));
+            el("rect", { class: "stencil-p", x: rx, y: ry, width: rw, height: rh }, f.st);
+            text(String(i + 1), { class: "mono small gold-t", x: rx - 6, y: ry + 19, "text-anchor": "end" }, f.st);
+          });
+
+          // panels
+          K.fade(K.$("b3-m-head"), K.T(23.17), 0.4);
+          K.fade(K.$("b3-m-sub"), K.T(23.17) + 0.2, 0.4);
+          K.fade(K.$("b3-p-head"), K.T(23.17) + 0.3, 0.4);
+          K.fade(K.$("b3-p-sub"), K.T(23.17) + 0.5, 0.4);
+          F.forEach((f, i) => {
+            const at = K.T(23.8) + i * 0.12;
+            K.fade(f.mName, at, 0.3);
+            K.draw(f.mBox, at, 0.4, "none");
+            K.fade(f.pName, at + 0.1, 0.3);
+            K.draw(f.pBox, at + 0.1, 0.4, "none");
+          });
+
+          // the model reads it: the lens finds each field
+          const lens = K.$("b3-lens");
+          tl.set(lens, { x: 1226, y: 176 }, 0);
+          K.fade(lens, K.T(24.43), 0.3);
+          K.reveal(K.$("b3-st-a"), K.T(24.43), 0.6);
+          const stops = [
+            [1110, 241],
+            [921, 507],
+            [1129, 355],
+            [1104, 415],
+          ];
+          F.forEach((f, i) => {
+            const go = K.T(25.05) + i * 0.63;
+            tl.to(lens, { x: stops[i][0], y: stops[i][1], duration: 0.36, ease: "power2.inOut" }, go);
+            K.draw(f.find, go + 0.36, 0.3, "none");
+            K.fade(f.mVal, go + 0.4, 0.25);
+          });
+          K.out(lens, K.T(27.54), 0.4);
+
+          // a fixed-rule parser checks it: its stencil lands on the same cells
+          K.reveal(K.$("b3-st-b"), K.T(28.17), 0.7);
+          F.forEach((f, i) => {
+            tl.fromTo(f.st, { opacity: 0, y: -24 }, { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, K.T(28.17) + i * 0.15);
+            K.fade(f.pVal, K.T(29.42) + i * 0.3, 0.25);
+          });
+          // both agree, field by field
+          F.forEach((f, i) => {
+            const at = K.T(30.67) + i * 0.32;
+            K.draw(f.pTick, at, 0.25, "none");
+            K.draw(f.mTick, at + 0.08, 0.25, "none");
+          });
+          K.fade(K.$("b3-note-p"), K.T(32.55), 0.4);
+          K.fade(K.$("b3-note-m"), K.T(32.55) + 0.3, 0.4);
+          K.fade(K.$("b3-note-n"), K.T(33.18), 0.4, 0.75);
+
+          // plate IV's night field wipes over this from the left (35.69 -> 36.32)
+          window.__timelines["b3"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

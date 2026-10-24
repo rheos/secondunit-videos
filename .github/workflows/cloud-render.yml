@@ -1,6 +1,7 @@
 # Render a code-drawn look in parallel slices. Started by tools/cloud-render/cloud-render.sh, which uploads the
 # project's page code as a draft release asset (it can quote lyrics, so it never enters git) and deletes it
-# afterwards. No audio comes here: each slice returns silent video and the song is muxed on the Mac.
+# afterwards. No audio comes here: the slices are joined here into ONE silent video (artifact "film"), and the
+# Mac only muxes the song onto it with the video stream copied (no encode on the Mac).
 # Inputs reach shell scripts only through environment variables, and numbers are validated first.
 name: cloud-render
 run-name: "cloud-render ${{ inputs.label }}"
@@ -16,6 +17,9 @@ on:
       fps: { description: "frames per second", required: true, default: "24" }
       width: { description: "encoded width", required: true, default: "1280" }
       height: { description: "encoded height", required: true, default: "720" }
+      crf: { description: "x264 crf for the slices (18 master, 23 draft)", required: false, default: "18" }
+      maxrate: { description: "x264 -maxrate in kbit/s, bufsize twice it (4500 for 9:16); empty for no cap", required: false, default: "" }
+      maxhold: { description: "longest run of identical frames the join accepts (48 = 2 s; explainers hold longer)", required: false, default: "48" }
 permissions:
   contents: write   # a draft release (the package) is only visible with write access
 jobs:
@@ -34,10 +38,14 @@ jobs:
           ASSET: ${{ inputs.asset_id }}
           T0: ${{ inputs.t0 }}
           PAGE: ${{ inputs.page }}
+          CRF: ${{ inputs.crf || '18' }}
+          MAXRATE: ${{ inputs.maxrate }}
+          MAXHOLD: ${{ inputs.maxhold || '48' }}
         run: |
-          for v in "$FRAMES" "$SLICES" "$FPS" "$WIDTH" "$HEIGHT" "$ASSET"; do
+          for v in "$FRAMES" "$SLICES" "$FPS" "$WIDTH" "$HEIGHT" "$ASSET" "$CRF" "$MAXHOLD"; do
             [[ "$v" =~ ^[0-9]+$ ]] || { echo "not a whole number: $v"; exit 1; }
           done
+          [[ "$MAXRATE" =~ ^[0-9]*$ ]] || { echo "bad maxrate: $MAXRATE"; exit 1; }
           [[ "$T0" =~ ^[0-9]+(\.[0-9]+)?$ ]] || { echo "bad t0: $T0"; exit 1; }
           [[ "$PAGE" =~ ^[A-Za-z0-9._/-]+\.html$ && "$PAGE" != *..* ]] || { echo "bad page: $PAGE"; exit 1; }
           max=$(( FRAMES < 20 ? FRAMES : 20 ))
@@ -59,6 +67,8 @@ jobs:
       FPS: ${{ inputs.fps }}
       WIDTH: ${{ inputs.width }}
       HEIGHT: ${{ inputs.height }}
+      CRF: ${{ inputs.crf || '18' }}
+      MAXRATE: ${{ inputs.maxrate }}
       N: ${{ matrix.n }}
     steps:
       - uses: actions/checkout@v4
@@ -66,7 +76,7 @@ jobs:
           sparse-checkout: tools/cloud-render
           persist-credentials: false
       - uses: actions/setup-node@v4
-        with: { node-version: 22 }
+        with: { node-version-file: .nvmrc }
       - name: Fetch package
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -79,19 +89,95 @@ jobs:
         working-directory: pkg
         run: |
           sudo apt-get -qq update && sudo apt-get -qq install -y --no-install-recommends ffmpeg > /dev/null
+          # Mac Chrome draws Courier New, Arial, Georgia and the other Microsoft core fonts from the copies Apple
+          # ships. The runner has none, and fontconfig quietly swaps in a look-alike, so install the same families.
+          # The installer fetches Microsoft's own files; the EULA is accepted here so it does not prompt. Its
+          # download can fail without failing apt, so check for the font and retry, then refuse to draw without it.
+          echo "ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true" | sudo debconf-set-selections
+          sudo DEBIAN_FRONTEND=noninteractive apt-get -qq install -y --no-install-recommends ttf-mscorefonts-installer > /dev/null 2>&1 || true
+          for try in 1 2 3; do
+            fc-list : family | grep -qx "Courier New" && break
+            sleep 10; sudo DEBIAN_FRONTEND=noninteractive dpkg-reconfigure ttf-mscorefonts-installer > /dev/null 2>&1 || true
+          done
+          fc-list : family | grep -qx "Courier New" || { echo "::error::the Microsoft core fonts did not install"; exit 1; }
+          sudo fc-cache -f
+          echo "Courier New is $(fc-match -f '%{file}' 'Courier New:bold')"
           npm init -y > /dev/null && npm install --silent playwright@1.55.0 && npx playwright install --with-deps chromium > /dev/null
       - name: Render and encode
         working-directory: pkg
         run: |
           a=$(( N * FRAMES / SLICES )); b=$(( (N + 1) * FRAMES / SLICES ))
-          node render-slice.mjs "$PAGE" "$T0" "$FPS" "$a" "$b" 2
+          node render-slice.mjs "$PAGE" "$T0" "$FPS" "$a" "$b" 2 "${WIDTH}x${HEIGHT}"
           mkdir -p out
+          vbv=(); [[ -n "$MAXRATE" ]] && vbv=(-maxrate "${MAXRATE}k" -bufsize "$(( MAXRATE * 2 ))k")
           ffmpeg -y -loglevel error -framerate "$FPS" -start_number "$a" -i frames/f_%06d.jpg -frames:v $(( b - a )) \
-            -vf "scale=${WIDTH}:${HEIGHT}:flags=lanczos" -c:v libx264 -preset medium -crf 18 -pix_fmt yuv420p \
+            -vf "scale=${WIDTH}:${HEIGHT}:flags=lanczos" -c:v libx264 -preset medium -crf "$CRF" "${vbv[@]}" -pix_fmt yuv420p \
             "out/slice_$(printf %03d "$N")_f$(printf %06d "$a")-f$(printf %06d "$b").mp4"
       - uses: actions/upload-artifact@v4
         with:
           name: slice-${{ matrix.n }}
           path: pkg/out/
+          retention-days: 2
+          compression-level: 0
+  join:
+    # Join the slices here so the Mac downloads one file. Same concat FILTER the Mac used (the concat demuxer
+    # froze frames on Airplane v4), each slice's frame count checked first, the joined count checked after.
+    needs: [plan, slice]
+    runs-on: ubuntu-latest
+    env:
+      FRAMES: ${{ inputs.frames }}
+      SLICES: ${{ inputs.slices }}
+      CRF: ${{ inputs.crf || '18' }}
+      MAXRATE: ${{ inputs.maxrate }}
+      MAXHOLD: ${{ inputs.maxhold || '48' }}
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: slice-*
+          path: slices
+          merge-multiple: true
+      - name: Join
+        run: |
+          sudo apt-get -qq update && sudo apt-get -qq install -y --no-install-recommends ffmpeg > /dev/null
+          mapfile -t files < <(ls slices/slice_*.mp4 | sort)
+          (( ${#files[@]} == SLICES )) || { echo "got ${#files[@]} of $SLICES slices"; exit 1; }
+          ins=(); filt=""; cat=""; k=0
+          for f in "${files[@]}"; do
+            n=${f##*/}; a=${n#*_f}; a=${a%%-*}; b=${n##*-f}; b=${b%.mp4}; want=$(( 10#$b - 10#$a ))
+            have=$(ffprobe -v error -count_frames -select_streams v:0 -show_entries stream=nb_read_frames -of csv=p=0 "$f" | tr -d ',')
+            (( have == want )) || { echo "$n: $have frames, want $want"; exit 1; }
+            ins+=(-i "$f"); filt+="[${k}:v]setpts=PTS-STARTPTS[v${k}];"; cat+="[v${k}]"; k=$(( k + 1 ))
+          done
+          mkdir -p film
+          if (( CRF > 18 )); then
+            # draft: copy the slices' video streams end to end (seconds, no second encode, smallest file). The
+            # Airplane freeze came from the concat demuxer WITH an fps filter; here nothing is retimed, and the
+            # frozen-run scan below would catch a freeze anyway.
+            for f in "${files[@]}"; do echo "file '$PWD/$f'"; done > list.txt
+            ffmpeg -y -loglevel error -f concat -safe 0 -i list.txt -c copy -movflags +faststart film/film.mp4
+          else
+            vbv=(); [[ -n "$MAXRATE" ]] && vbv=(-maxrate "${MAXRATE}k" -bufsize "$(( MAXRATE * 2 ))k")
+            ffmpeg -y -loglevel error "${ins[@]}" -filter_complex "${filt}${cat}concat=n=${k}:v=1:a=0[v]" -map "[v]" \
+              -c:v libx264 -preset medium -crf "$CRF" "${vbv[@]}" -pix_fmt yuv420p -movflags +faststart film/film.mp4
+          fi
+          got=$(ffprobe -v error -count_frames -select_streams v:0 -show_entries stream=nb_read_frames -of csv=p=0 film/film.mp4 | tr -d ',')
+          (( got == FRAMES )) || { echo "joined video has $got frames, want $FRAMES"; exit 1; }
+          # frozen-run scan: no run of identical frames longer than MAXHOLD (2 s for looks; an explainer's
+          # HyperFrames render itself holds still for up to ~4.3 s, so cloud-render.sh allows 6 s there)
+          python3 -c "import numpy" 2>/dev/null || pip install -q numpy
+          python3 - <<'PY'
+          import os, subprocess, numpy as np
+          hold = int(os.environ["MAXHOLD"])
+          raw = subprocess.run(['ffmpeg','-v','error','-i','film/film.mp4','-vf','scale=64:36,format=gray','-f','rawvideo','-'], capture_output=True).stdout
+          a = np.frombuffer(raw, np.uint8).reshape(-1, 36, 64).astype(np.int16); d = np.abs(np.diff(a, axis=0)).mean(axis=(1, 2))
+          run = best = 0
+          for v in d: run = run + 1 if v < .05 else 0; best = max(best, run)
+          print(f"longest identical run: {best} frames"); assert best <= hold, f"frozen run longer than {hold} frames (CR_HOLD)"
+          PY
+          echo "joined $got frames, $(du -h film/film.mp4 | cut -f1)"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: film
+          path: film/film.mp4
           retention-days: 2
           compression-level: 0

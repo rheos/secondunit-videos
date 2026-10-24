@@ -1,0 +1,81 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #b6 {
+          position: absolute;
+          inset: 0;
+        }
+      </style>
+      <div id="b6" data-composition-id="b6" data-width="1920" data-height="1080">
+        <div class="layer">
+          <svg class="full" viewBox="0 0 1920 1080">
+            <g id="b6-map"></g>
+            <g id="b6-top"></g>
+          </svg>
+          <div class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate VI</div>
+          <div class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>The Gate</div>
+          <div id="b6-st" class="statement">
+            <span id="b6-st-a" class="phrase">Product choices go</span>
+            <span id="b6-st-b" class="phrase red">back to the owner.</span>
+          </div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text, kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 65);
+          const P = BM.build(K.$("b6-map"), 6);
+          const top = K.$("b6-top");
+          const transient = [];
+          const keep = (n) => (transient.push(n), n);
+
+          // the reviewed plan comes up to the Delegate's checkpoint
+          const plan = BM.token(top, "REVIEWED PLAN", 490, 210);
+          K.fade(plan, K.T(65.43) - 0.3, 0.3);
+          K.travel(plan, el("path", { d: "M490 210V184H1350V246" }), K.T(65.43), 1.3);
+          const cp = keep(text("CHECKPOINT", { class: "mono small", x: 1094, y: 214 }, top));
+          K.fade(cp, K.T(66.76), 0.4);
+
+          // a product choice is not the Delegate's to make: out to the owner and back
+          const out = keep(el("path", { class: "ln line", d: "M1350 222V196H1670" }, top));
+          K.draw(out, K.T(67.64), 0.7);
+          const pc = keep(text("PRODUCT CHOICE", { class: "mono small gold-t", x: 1500, y: 184, "text-anchor": "middle" }, top));
+          K.fade(pc, K.T(67.64) + 0.3, 0.4);
+          const q = BM.sheet(top, 0, 0);
+          tl.fromTo(q, { opacity: 0 }, { opacity: 1, duration: 0.15 }, K.T(68.08));
+          K.travel(q, el("path", { d: "M1350 222V196H1660" }), K.T(68.08), 0.9);
+          const halo = keep(el("circle", { class: "ln line-strong", cx: 1700, cy: 200, r: 42 }, top));
+          K.draw(halo, K.T(68.96), 0.6, "none");
+          const decides = keep(text("DECIDES", { class: "mono small", x: 1700, y: 272, "text-anchor": "middle" }, top));
+          K.fade(decides, K.T(69.4), 0.4);
+          K.travel(q, el("path", { d: "M1660 196H1350V222" }), K.T(69.85), 0.9);
+          tl.to(q, { opacity: 0, duration: 0.2 }, K.T(69.85) + 0.9);
+
+          K.reveal(K.$("b6-st-a"), K.T(70.29), 0.6);
+          K.reveal(K.$("b6-st-b"), K.T(70.73), 0.9);
+
+          // routine checks pass: the gate opens, the plan goes out, the gate closes
+          const ok = keep(text("ROUTINE CHECKS PASS", { class: "mono small", x: 1094, y: 240 }, top));
+          K.fade(ok, K.T(71.61), 0.4);
+          const arm = P.delegate.arm;
+          tl.fromTo(arm, { rotation: 0, svgOrigin: "1420 294" }, { rotation: 90, svgOrigin: "1420 294", duration: 0.8, ease: "power2.inOut" }, K.T(72.05));
+          K.travel(plan, el("path", { d: "M1350 246H1580" }), K.T(72.93), 1.0);
+          tl.fromTo(arm, { rotation: 90, svgOrigin: "1420 294" }, { rotation: 0, svgOrigin: "1420 294", duration: 0.6, ease: "power2.inOut", immediateRender: false }, K.T(74.26));
+
+          const end = 75.0 - 65;
+          K.out(K.$("b6-st"), end, 0.45);
+          K.out(plan, end, 0.45);
+          transient.forEach((n) => K.out(n, end, 0.45));
+          window.__timelines["b6"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

@@ -1,0 +1,110 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #b7 {
+          position: absolute;
+          inset: 0;
+        }
+        #b7 .statement {
+          top: 606px;
+        }
+        #b7 .colo {
+          position: absolute;
+          left: 0;
+          right: 0;
+          text-align: center;
+          color: var(--ink);
+        }
+        #b7 .colo.a {
+          top: 760px;
+          font-size: 24px;
+          font-weight: 700;
+        }
+        #b7 .colo.b {
+          top: 802px;
+          font-size: 18px;
+          color: var(--ink-dim);
+        }
+      </style>
+      <div id="b7" data-composition-id="b7" data-width="1920" data-height="1080">
+        <div class="layer">
+          <svg class="full" viewBox="0 0 1920 1080">
+            <g id="b7-zoom"><g id="b7-map"></g><g id="b7-top"></g></g>
+            <path id="b7-rule" class="ln line" d="M760 728H1160M760 718V738M1160 718V738" />
+          </svg>
+          <div class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate VII</div>
+          <div class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>Continue</div>
+          <div class="statement">
+            <span id="b7-st-a" class="phrase">The run</span>
+            <span id="b7-st-b" class="phrase red">outlives the session.</span>
+          </div>
+          <div id="b7-colo-a" class="colo a mono">THE BUREAU · THEBUREAU.DEV · NOVADIEM.COM</div>
+          <div id="b7-colo-b" class="colo b mono">INSIDE THE BUREAU · 3 · WHAT SURVIVES</div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text, kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 77.69);
+          const map = K.$("b7-map");
+          const top = K.$("b7-top");
+          const { carry } = AM.cues(K, tl, top);
+
+          AM.session(map, 2);
+          const C = AM.conductor(map, "NEW CTX");
+          AM.READ.forEach(([k, v], i) => AM.row(C.g, k, v, i));
+          AM.row(C.g, "decided", "auth: session cookie", 5);
+          const D = AM.disk(map);
+          text("resumed_legs: 1", { class: "mono tiny gold-t", x: 420, y: 744, "text-anchor": "middle" }, D.g);
+
+          // the run picks up where state.json says: next is the Challenger's second round, in a fresh context (workflows/feature.md step 9)
+          const spawn = el("path", { class: "ln thin ink", d: "M860 300H1060", opacity: 0.7 }, top);
+          K.draw(spawn, K.T(77.69) + 0.05, 0.4);
+          const R = { g: el("g", {}, top) };
+          R.outer = el("rect", { class: "ln ink", x: 1060, y: 190, width: 300, height: 240 }, R.g);
+          R.inner = el("rect", { class: "ln thin ink", x: 1066, y: 196, width: 288, height: 228 }, R.g);
+          R.label = text("CHALLENGER", { class: "mono tiny", x: 1210, y: 412, "text-anchor": "middle" }, R.g);
+          R.ctx = text("CTX·05", { class: "mono tiny", x: 1078, y: 224, opacity: 0.6 }, R.g);
+          R.task = text("reviews prompts.md", { class: "mono small", x: 1210, y: 316, "text-anchor": "middle" }, R.g);
+          K.draw(R.outer, K.T(78.3) - 0.2, 0.5, "none");
+          K.draw(R.inner, K.T(78.3), 0.4, "none");
+          K.fade(R.label, K.T(78.3), 0.3);
+          K.fade(R.ctx, K.T(78.3), 0.3, 0.6);
+          carry("M1500 600V470H1210V430", K.T(78.3), 0.7);
+          K.fade(R.task, K.T(78.88), 0.3);
+          const entry = text("+ spawn logged", { class: "mono tiny gold-t", x: 690, y: 744, "text-anchor": "middle" }, D.g);
+          K.fade(entry, K.T(78.88), 0.3);
+
+          // the whole drawing steps back
+          const zoom = K.$("b7-zoom");
+          const z = { e: 0 };
+          tl.fromTo(
+            z,
+            { e: 0 },
+            {
+              e: 1,
+              duration: 1.1,
+              ease: "power2.inOut",
+              onUpdate: () => zoom.setAttribute("transform", `translate(${(365 * z.e).toFixed(2)} ${(60 * z.e).toFixed(2)}) scale(${(1 - 0.38 * z.e).toFixed(4)})`),
+            },
+            K.T(79.46)
+          );
+
+          K.reveal(K.$("b7-st-a"), K.T(80.64), 0.5);
+          K.reveal(K.$("b7-st-b"), K.T(81.22), 0.7);
+          K.draw(K.$("b7-rule"), K.T(81.8), 0.6);
+          K.fade(K.$("b7-colo-a"), K.T(82.41), 0.5);
+          K.fade(K.$("b7-colo-b"), K.T(82.99), 0.5);
+          window.__timelines["b7"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

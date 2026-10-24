@@ -1,0 +1,136 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #b2 { position: absolute; inset: 0; }
+      </style>
+      <div data-hf-id="hf-rc30" id="b2" data-composition-id="b2" data-width="1920" data-height="1080">
+        <div data-hf-id="hf-rc31" id="b2-content" class="layer">
+          <div data-hf-id="hf-rc32" id="b2-lab-l" class="plate-label left">FIG. II</div>
+          <div data-hf-id="hf-rc33" id="b2-lab-r" class="plate-label right">A WORSE AFFLICTION</div>
+          <svg data-hf-id="hf-rc34" id="b2-svg" class="full" viewBox="0 0 1920 1080"></svg>
+          <div data-hf-id="hf-rc35" class="statement">
+            <span data-hf-id="hf-rc36" id="b2-s1" class="phrase">A memory you cannot inspect</span>
+            <span data-hf-id="hf-rc37" id="b2-s2" class="phrase accent">is worse than none.</span>
+          </div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text } = BP;
+          const tl = gsap.timeline({ paused: true });
+          const S = 14.12;
+          const K = BP.kit(tl, S, "II");
+          const R = (t) => K.R(t);
+          const W = (w, n) => R(VO.w("II", w, n));
+          const svg = K.$("b2-svg");
+
+          // the heap: loose notes in a box, then a cover over them (out of sight)
+          const box = el("path", { class: "ln line-strong", d: "M250 470V720H790V470" }, svg);
+          const boxT = text("A MEMORY OF SORTS", { class: "lab sm", x: 520, y: 760, "text-anchor": "middle" }, svg);
+          const SPOTS = [[300, 600, -14], [420, 620, 9], [540, 596, -5], [650, 612, 13], [360, 548, 7], [480, 540, -11], [600, 552, 4], [430, 486, -3], [560, 492, 15]];
+          const notes = SPOTS.map(([x, y, r], i) => {
+            const g = el("g", { opacity: 0 }, svg);
+            const inner = el("g", { transform: `translate(${x} ${y}) rotate(${r})` }, g);
+            el("rect", { class: "ln line fill-raised", x: -80, y: -48, width: 160, height: 96 }, inner);
+            el("path", { class: "ln thin line", d: "M-62 -18h110M-62 6h90M-62 28h120", opacity: 0.6 }, inner);
+            return { g, x, y };
+          });
+          const cover = el("g", {}, svg);
+          el("rect", { class: "fill-raised", x: 250, y: 440, width: 540, height: 280 }, cover);
+          el("rect", { class: "ln line-strong", x: 250, y: 440, width: 540, height: 280 }, cover);
+          for (let k = 0; k < 13; k++) el("path", { class: "ln thin line", d: `M${270 + k * 40} 700L${310 + k * 40} 460`, opacity: 0.45 }, cover);
+          const coverT = text("OUT OF SIGHT", { class: "lab", x: 520, y: 592, "text-anchor": "middle" }, cover);
+
+          // an old fact comes back up as if it were new, with nothing to say where it came from
+          const old = RC.card(svg, 300, 150, { kind: "FACT", title: "Staging database", body: "Staging runs Postgres 15.", foot: "WRITTEN: ?   SOURCE: ?" });
+          const tag = RC.stampBox(svg, "AS IF NEW", 860, 250, 220, { cls: "line-strong", rot: -6 });
+
+          // a private note travels by pneumatic tube to the wrong desk
+          const tube = el("path", { class: "ln line", d: "M790 520C1010 520 1030 330 1230 330", style: "stroke-width: 10; opacity: 0.25" }, svg);
+          const tubeL = el("path", { class: "ln thin line-strong", d: "M790 512C1006 512 1026 322 1230 322M790 528C1014 528 1034 338 1230 338" }, svg);
+          const route = el("path", { d: "M790 520C1010 520 1030 330 1230 330", fill: "none", stroke: "none" }, svg);
+          const carrier = el("g", { opacity: 0 }, svg);
+          el("rect", { class: "ln line-strong fill-raised", x: -46, y: -22, width: 92, height: 44, rx: 20 }, carrier);
+          text("PRIVATE", { class: "cm on", x: 0, y: 6, "text-anchor": "middle" }, carrier);
+          const desk = el("g", {}, svg);
+          const deskTop = el("path", { class: "ln line-strong", d: "M1240 360H1720M1270 360V560M1690 360V560M1270 430H1480V560" }, desk);
+          const plateD = el("rect", { class: "ln thin line-strong", x: 1380, y: 280, width: 260, height: 54 }, desk);
+          const deskT = text("ANOTHER MEMBER", { class: "lab sm", x: 1510, y: 315, "text-anchor": "middle" }, desk);
+          const landed = el("g", { opacity: 0 }, svg);
+          el("rect", { class: "ln line-strong fill-raised", x: 1300, y: 372, width: 150, height: 46 }, landed);
+          text("PRIVATE", { class: "cm on", x: 1375, y: 401, "text-anchor": "middle" }, landed);
+          const wrong = text("THE WRONG DESK", { class: "ty", x: 1500, y: 470 }, svg);
+
+          // and the machine cannot say why it believes what it does
+          const mach = el("g", {}, svg);
+          const cab = el("rect", { class: "ln line-strong", x: 1290, y: 600, width: 300, height: 150 }, mach);
+          const dial = el("circle", { class: "ln line", cx: 1360, cy: 675, r: 40 }, mach);
+          const needle = el("path", { class: "ln line-strong", d: "M1360 675L1388 648" }, mach);
+          const horn = el("path", { class: "ln line", d: "M1590 650L1680 600V750L1590 700" }, mach);
+          const machT = text("THE MACHINE", { class: "lab sm", x: 1440, y: 785, "text-anchor": "middle" }, mach);
+          const why = text("WHY DOES IT BELIEVE THIS?", { class: "ty", x: 1290, y: 584 }, svg);
+
+          K.fade(K.$("b2-lab-l"), R(15.0), 0.4);
+          K.fade(K.$("b2-lab-r"), R(15.0), 0.4);
+          K.draw(box, W("memory") - 0.3, 0.7);
+          K.typed(boxT, W("sorts") - 0.2, { cps: 30, cursor: false });
+          notes.forEach((n, i) => {
+            const t = W("heap") - 0.2 + i * 0.14;
+            K.move(n.g, t, 0.32, { opacity: 0, y: -260 }, { opacity: 1, y: 0 }, { ease: "power2.in" });
+            K.sfx("card", t + 0.3);
+          });
+          K.move(cover, W("out") - 0.1, 0.5, { opacity: 0, y: -300 }, { opacity: 1, y: 0 }, { ease: "power3.in", sound: "slide" });
+          K.sfx("stamp", W("out") + 0.38);
+
+          const oldAt = W("old") - 0.25;
+          K.move(old.root, oldAt, 0.45, { opacity: 0, y: 260 }, { opacity: 1, y: 0 }, { ease: "back.out(1.4)", sound: "whoosh" });
+          [old.kind, old.rev].forEach((n) => K.fade(n, oldAt + 0.3, 0.2));
+          K.draw(old.rule1, oldAt + 0.3, 0.3, "power2.out", false);
+          old.rules.forEach((r) => K.draw(r, oldAt + 0.35, 0.3, "power2.out", false));
+          let e = K.typed(old.title, oldAt + 0.4, { cps: 40, cursor: false });
+          e = K.typed(old.body, e + 0.05, { cps: 40 });
+          K.typed(old.foot, e + 0.1, { cps: 30, cursor: false });
+          K.stamp(tag.g, W("new") - 0.05, { origin: "860 250" });
+
+          K.draw(tubeL, W("private") - 0.5, 0.6);
+          K.fade(tube, W("private") - 0.4, 0.4, 0.25);
+          [deskTop, plateD].forEach((n, i) => K.draw(n, W("private") - 0.4 + i * 0.15, 0.5));
+          K.typed(deskT, W("private") - 0.1, { cps: 34, cursor: false });
+          const go = W("note");
+          K.fade(carrier, go, 0.1);
+          K.travel(carrier, route, go, 0.9, "power2.in");
+          tl.to(carrier, { opacity: 0, duration: 0.1 }, go + 0.9);
+          K.sfx("tube", go + 0.25);
+          K.stamp(landed, go + 0.9, { origin: "1375 395", sound: "card" });
+          K.typed(wrong, W("wrong"), { cps: 30, cursor: false });
+
+          [cab, dial, horn].forEach((n, i) => K.draw(n, W("nobody") - 0.5 + i * 0.12, 0.5));
+          K.fade(needle, W("nobody") - 0.2, 0.2);
+          K.typed(machT, W("nobody") - 0.1, { cps: 34, cursor: false });
+          K.move(needle, W("why"), 0.5, { rotation: 0, svgOrigin: "1360 675" }, { rotation: 200, svgOrigin: "1360 675" }, { ease: "power1.inOut", sound: "crank" });
+          K.move(needle, W("why") + 0.5, 0.5, { rotation: 200, svgOrigin: "1360 675" }, { rotation: 80, svgOrigin: "1360 675" }, { ease: "power1.inOut" });
+          K.typed(why, W("believes") - 0.2, { cps: 30 });
+          K.slam(K.$("b2-s1"), W("nobody") - 0.3, { stagger: 0.03 });
+          K.slam(K.$("b2-s2"), W("why"), { stagger: 0.035 });
+
+          // hand-off: everything but the old card leaves, and the old card moves to the middle of the sheet,
+          // where plate III takes it apart
+          const handAt = R(30.45);
+          K.sfx("out", handAt);
+          [box, boxT, cover, tag.g, tube, tubeL, desk, landed, wrong, mach, why].forEach((n) => tl.to(n, { opacity: 0, duration: 0.35 }, handAt));
+          notes.forEach((n) => tl.to(n.g, { opacity: 0, duration: 0.3 }, handAt));
+          tl.to([K.$("b2-lab-l"), K.$("b2-lab-r"), K.$("b2-s1"), K.$("b2-s2")], { opacity: 0, duration: 0.35 }, handAt);
+          K.move(old.root, handAt, 0.7, { x: 0, y: 0, scale: 1, svgOrigin: "520 260" }, { x: 220, y: 150, scale: 1.0, svgOrigin: "520 260" }, { ease: "power2.inOut", sound: "slide" });
+          tl.to(old.root, { opacity: 0, duration: 0.25 }, handAt + 0.75);
+          window.__timelines["b2"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

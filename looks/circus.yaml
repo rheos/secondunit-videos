@@ -1,0 +1,46 @@
+slug: circus
+title: Circus chromolithograph
+note: >-
+  Glittery red, blue and gold ink on cream stock: big top, tightrope walker, bunting and a prize wheel, with
+  the words strung up as banners.
+used: Giulietta Masina test, Bob Wiseman
+cost: free
+group: code
+order: 230
+clip: circus.mp4
+tall: false
+status: test
+engine: canvas2d
+project: bobwiseman-giulietta-masina
+code:
+  path: bobwiseman-giulietta-masina/js/circus/ink.js
+  flag: null
+  page: bobwiseman-giulietta-masina/looks/circus.html
+  note: >-
+    On branch giulietta-masina (draft PR #90), not merged. ink.js is the stone-printing engine; bill.js, main.js
+    and timing.js stay local. Not in the signed-off film: the 8 1/2 dream replaced it on 60-92.5 s (2026-10-11).
+rules:
+  - Four stones (yellow, red, ultramarine, black key), each a flat black mask on its own layer
+  - Each layer is grained with a litho-crayon tooth, given a soft roll-ink blotch, coloured and multiplied onto cream paper
+  - A fixed misregister per stone, plus short jolts when a stone lands
+  - Shading is crayon stipple from the same granules; overprints mix as on press (red over yellow orange, blue over yellow green, red over blue purple)
+  - "Wood type: Rockwell 900 condensed to 0.84, red face, blue block shadow, key outline, yellow stipple highlight"
+  - No words on the bill except lyric words
+palette:
+  - "#f3c21e"
+  - "#d42e26"
+  - "#223e96"
+  - "#201917"
+  - "#eee2c2"
+reference: Chromolithograph circus bills with wood-type lettering
+proof:
+  renders: []
+  pr:
+    - rheos/secondunit-videos#90
+  youtube:
+    - e4CjHyhGUMk
+verdict: null
+related:
+  - filmposter
+  - paparazzi
+  - riso

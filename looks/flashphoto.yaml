@@ -1,0 +1,45 @@
+slug: flashphoto
+title: Flash-photo cutouts
+note: >-
+  1980s point-and-shoot snapshots cut out and hinged as paper puppets: harsh flash, red-eye, orange date
+  stamp.
+used: Holiday Tavern test, Bob Wiseman
+cost: free
+group: code
+order: 150
+clip: flashphoto.mp4
+tall: false
+status: option
+engine: canvas2d
+project: bobwiseman-holiday-tavern
+code:
+  path: bobwiseman-holiday-tavern/js/flash/photo.js
+  flag: null
+  page: bobwiseman-holiday-tavern/looks/flash.html
+  note: >-
+    local only: js/flash/ is not committed on any branch (draft PR #39, branch holiday-tavern, holds only
+    README, CAST.md and tools). cast.js cuts the people at every joint.
+rules:
+  - >-
+    People photographed with a harsh on-camera flash: hot spot, falloff, a hard flash shadow cut out with the
+    piece
+  - Cut out at every joint with a white paper margin and pinned with brass split pins as puppets
+  - Red-eye from the flash bouncing off the retina
+  - Full prints get a white border, warm cast, grain and an orange date stamp
+  - Pieces laid on a dark brown ground; flash pops on the drum bars
+palette: []
+reference: 1980s point-and-shoot flash snapshots
+proof:
+  renders:
+    - bobwiseman-holiday-tavern/out/holiday-tavern_draft3_f00000-f05011_24fps_draft.mp4
+  pr:
+    - rheos/secondunit-videos#39
+  youtube:
+    - PTTro8rezBc
+    - VuVoPQeNq74
+verdict: null
+related:
+  - cutout
+  - scrap
+  - paparazzi
+  - charcoal

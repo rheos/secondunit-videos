@@ -1,0 +1,44 @@
+slug: water
+title: Watercolour bleed
+note: Washes that bleed wet into wet and pool where they dry. The whole 18-second test.
+used: Look test for Gemma Luna
+cost: free
+group: code
+order: 570
+clip: water.mp4
+tall: true
+status: test
+engine: canvas2d
+project: gemmaluna-clap-hands
+code:
+  path: gemmaluna-clap-hands/js/looks/water.js
+  flag: null
+  page: gemmaluna-clap-hands/water.html
+  note: the LOOK.frag shader in water.js does the bleed; js/gl.js runs it
+rules:
+  - The canvas is white paper; every wash multiplies over it as a transparent glaze
+  - Lights are bare paper, or lifted back out with white
+  - Thin dark ink lines (#3a2a22) that wobble with the paint
+  - Shader bleeds washes wet-into-wet along a fractal front, pools pigment at drying edges, adds back-runs
+  - Granulation in the darks, mottled washes, cold-press paper tooth
+  - The paint re-settles on twos
+palette:
+  - "#5b6a9c"
+  - "#4a5466"
+  - "#3d55b8"
+  - "#c23a5a"
+  - "#e0b25a"
+  - "#c46a3a"
+  - "#6f9a4a"
+  - "#3f8f7f"
+reference: null
+proof:
+  renders:
+    - gemmaluna-clap-hands/out/gmc_water-probe_f00905-f01344_24fps_composite.mp4
+  pr: []
+  youtube:
+    - wSYmciv4t2g
+verdict: null
+related:
+  - kawaii
+  - nouveau

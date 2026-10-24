@@ -25,7 +25,7 @@
   "dow": "THU",
   "date": "OCT 22",
   "city": "Saint John, NB",
-  "venue": "Venue TBA",
+  "venue": "Saint John Arts Centre",
   "slug": "oct-22-saint-john",
   "iso": "2026-10-22"
  },
@@ -35,7 +35,7 @@
   "dow": "FRI",
   "date": "OCT 23",
   "city": "Miramichi, NB",
-  "venue": "Water Street Dinner Theatre",
+  "venue": "Three Dog Distilling",
   "slug": "oct-23-miramichi",
   "iso": "2026-10-23"
  },
@@ -58,6 +58,16 @@
   "venue": "Marigold Centre",
   "slug": "oct-25-truro",
   "iso": "2026-10-25"
+ },
+ {
+  "act": "TWO PIANOS NO RODEO",
+  "with": "Bob Wiseman & Mike Boguski",
+  "dow": "MON",
+  "date": "OCT 26",
+  "city": "Sydney River, NS",
+  "venue": "The Red Farm",
+  "slug": "oct-26-sydney-river",
+  "iso": "2026-10-26"
  },
  {
   "act": "TWO PIANOS NO RODEO",

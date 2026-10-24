@@ -1,0 +1,79 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #b2 {
+          position: absolute;
+          inset: 0;
+        }
+      </style>
+      <div id="b2" data-composition-id="b2" data-width="1920" data-height="1080">
+        <div class="layer">
+          <svg class="full" viewBox="0 0 1920 1080">
+            <g id="b2-map"></g>
+            <g id="b2-top"></g>
+          </svg>
+          <div class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate II</div>
+          <div class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>On Disk</div>
+          <div id="b2-st" class="statement">
+            <span id="b2-st-a" class="phrase">Every handoff was</span>
+            <span id="b2-st-b" class="phrase red">written to a file.</span>
+          </div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text, kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 8.89);
+          const map = K.$("b2-map");
+          const top = K.$("b2-top");
+          const { carry, fileIn, ghost } = AM.cues(K, tl, top);
+          const transient = [];
+          const keep = (n) => (transient.push(n), n);
+
+          // standing: the ended session, as ghosts
+          const S = AM.session(map, 1);
+          const C = AM.conductor(map);
+          const SP = AM.specialists(map);
+          ghost([S.g, C.g, ...SP.map((r) => r.g)]);
+
+          // below the disk line, the run dir is still there
+          const D = AM.disk(map, ["log", "spec", "plan", "prompts"]);
+          K.draw(D.line, K.T(9.47), 0.8, "none");
+          K.fade(D.word, K.T(9.47) + 0.4, 0.3);
+          D.hatch.forEach((h, i) => K.fade(h, K.T(10.05) + i * 0.03, 0.2, 0.6));
+          K.draw(D.walls, K.T(10.05), 1.0, "none");
+          K.fade(D.label, K.T(10.66), 0.3);
+          K.fade(D.path, K.T(11.24), 0.4);
+
+          // each specialist context had ended normally; what it made went to disk first
+          const lands = [11.84, 13.58, 15.35, 17.11];
+          SP.forEach((R, i) => {
+            const land = K.T(lands[i]);
+            const f = D.plates[R.file];
+            tl.fromTo(R.g, { opacity: 0.22 }, { opacity: 1, duration: 0.3 }, land - 1.0);
+            carry(`M${R.cx} 430V470H${f.cx}V606`, land - 0.9, 0.9);
+            fileIn(f, land);
+            tl.to(R.g, { opacity: 0.22, duration: 0.5 }, land + 0.9);
+            const to = keep(text(`→ ${AM.PLATES[R.file][1]}`, { class: "mono tiny gold-t", x: R.cx, y: 456, "text-anchor": "middle" }, top));
+            K.fade(to, land - 0.6, 0.3);
+          });
+
+          K.reveal(K.$("b2-st-a"), K.T(18.3), 0.6);
+          K.reveal(K.$("b2-st-b"), K.T(18.88), 0.7);
+
+          const end = 22.0 - 8.89;
+          K.out(K.$("b2-st"), end, 0.4);
+          transient.forEach((n) => K.out(n, end, 0.4));
+          window.__timelines["b2"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

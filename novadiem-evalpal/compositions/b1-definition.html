@@ -1,0 +1,94 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #b1 {
+          position: absolute;
+          inset: 0;
+        }
+      </style>
+      <div id="b1" data-composition-id="b1" data-width="1920" data-height="1080">
+        <svg class="full" viewBox="0 0 1920 1080">
+          <g id="b1-card" transform="translate(730 150)"></g>
+          <g id="b1-calls"></g>
+        </svg>
+        <div id="b1-label-l" class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate I</div>
+        <div id="b1-label-r" class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>EvalPal · Instruments as Data</div>
+        <div class="statement two" data-layout-allow-overlap data-layout-allow-occlusion>
+          <div class="row">
+            <span id="b1-st-a" class="phrase">One questionnaire,</span>
+            <span id="b1-st-b" class="phrase red">written as data.</span>
+          </div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text, kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 0);
+          const CX = 730,
+            CY = 150;
+          const C = EP.card(K.$("b1-card"), EP.PHQ9);
+
+          K.fade(K.$("b1-label-l"), K.T(0.93), 0.4);
+          K.fade(K.$("b1-label-r"), K.T(0.93), 0.4);
+
+          // the definition draws itself
+          K.draw(C.frame, K.T(0.93), 0.9, "none");
+          K.fade(C.paper, K.T(1.6), 0.4, 0.94);
+          C.rules.forEach((r, i) => K.draw(r, K.T(1.6) + i * 0.08, 0.35, "none"));
+          K.fade(C.head, K.T(1.6) + 0.2, 0.35);
+          K.fade(C.scale, K.T(2.25), 0.35);
+          K.fade(C.itemsHead, K.T(2.25) + 0.2, 0.3);
+          C.items.forEach((r, i) => K.fade(r, K.T(2.25) + 0.3 + i * 0.06, 0.25));
+          K.fade(C.scoring, K.T(2.9) + 0.3, 0.3);
+          K.fade(C.bands, K.T(2.9) + 0.45, 0.3);
+          K.fade(C.safety, K.T(2.9) + 0.6, 0.3);
+
+          K.reveal(K.$("b1-st-a"), K.T(4.2), 0.6);
+          K.reveal(K.$("b1-st-b"), K.T(4.85), 0.7);
+
+          // callouts: every part of the questionnaire is a row of data
+          const calls = K.$("b1-calls");
+          const Z = EP.ZONES;
+          const CALLS = [
+            { z: "scale", side: "l", label: "SCALE · 4 OPTIONS", at: 5.5 },
+            { z: "items", side: "l", label: "ITEMS · 9 IN THE TOTAL", at: 6.15 },
+            { z: "scoring", side: "r", label: "RULE · SUM", at: 6.8, dy: -14 },
+            { z: "bands", side: "r", label: "BANDS · 5 RANGES", at: 7.48, dy: 14 },
+            { z: "safety", side: "r", label: "SAFETY RULE · ALSO DATA", at: 8.1, dy: 34 },
+          ];
+          CALLS.forEach((c) => {
+            const [x, y, w, h] = Z[c.z];
+            const box = el("rect", { class: "ln line-strong", x: CX + x - 4, y: CY + y - 2, width: w + 8, height: h + 4 }, calls);
+            const my = CY + y + h / 2;
+            const ly = my + (c.dy || 0);
+            const x0 = c.side === "l" ? CX + x - 4 : CX + x + w + 4;
+            const x1 = c.side === "l" ? CX - 70 : CX + EP.W + 70;
+            const lead = el("path", { class: "ln thin line-strong", d: `M${x0} ${my}L${(x0 + x1) / 2} ${ly}H${x1}` }, calls);
+            const lab = text(c.label, { class: "mono small gold-t", x: c.side === "l" ? x1 - 10 : x1 + 10, y: ly + 6, "text-anchor": c.side === "l" ? "end" : "start" }, calls);
+            const at = K.T(c.at);
+            K.draw(box, at, 0.3, "none");
+            K.draw(lead, at + 0.15, 0.3, "none");
+            K.fade(lab, at + 0.3, 0.3);
+          });
+
+          // clear down to the card; plate II takes it over at 11.0
+          K.out(K.$("b1-calls"), K.T(10.73), 0.4);
+          K.out(K.$("b1-label-l"), K.T(10.73), 0.4);
+          K.out(K.$("b1-label-r"), K.T(10.73), 0.4);
+          tl.to("#b1 .statement", { opacity: 0, duration: 0.4, ease: "power1.in" }, K.T(10.73));
+
+          tl.set(K.$("b1-card"), { opacity: 0 }, K.R(11.0)); // plate II draws the same card from here
+
+          window.__timelines["b1"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

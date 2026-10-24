@@ -1,0 +1,145 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #p6 {
+          position: absolute;
+          inset: 0;
+        }
+        #p6 svg text.doc {
+          font-family: var(--font-mono);
+          font-size: 17px;
+          letter-spacing: 0.02em;
+          fill: var(--ink);
+        }
+        #p6 svg text.doc.h {
+          font-family: var(--font-label);
+          font-weight: 800;
+          font-size: 30px;
+        }
+        #p6 svg text.doc.dim {
+          fill: var(--ink-dim);
+        }
+        #p6 svg text.ext {
+          font-family: var(--font-mono);
+          font-size: 24px;
+          font-weight: 700;
+          letter-spacing: 0.08em;
+          fill: var(--ink);
+        }
+      </style>
+      <div id="p6" data-composition-id="p6" data-width="1920" data-height="1080">
+        <svg class="full" viewBox="0 0 1920 1080">
+          <rect id="p6-page" class="ln ink fill-bg" x="250" y="120" width="495" height="640" />
+          <text id="p6-page-l" class="mono small" x="497" y="104" text-anchor="middle">AVERY 5163 · 2 × 5 ON US LETTER</text>
+          <g id="p6-cuts"></g>
+          <g id="p6-minis" data-layout-allow-overlap></g>
+          <g id="p6-move" data-layout-allow-overlap data-layout-allow-occlusion><g id="p6-big" transform="translate(720 140)"></g></g>
+          <g id="p6-files"></g>
+          <g id="p6-audit"></g>
+        </svg>
+        <div id="p6-label-l" class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate VI</div>
+        <div id="p6-label-r" class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>The Sheet</div>
+        <div class="statement two" data-layout-allow-overlap data-layout-allow-occlusion>
+          <div class="row"><span id="p6-st-a" class="phrase">Print-ready, ten to a sheet,</span></div>
+          <div class="row"><span id="p6-st-b" class="phrase red">with every number traced to its source.</span></div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text, kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 68);
+          const $ = K.$;
+
+          // plate V's table, fully drawn, shrinks and turns into the sheet's first label
+          NF.table($("p6-big"));
+          K.fade($("p6-label-l"), K.T(68.51), 0.4);
+          K.fade($("p6-label-r"), K.T(68.51), 0.4);
+
+          // label_sheet.py AVERY_5163, laid out as Nutrifax's own preview (label-previews/avery_5163.png):
+          // two columns of five, each table turned on its side
+          const PX = 250, PY = 120, S = 640 / 1584;
+          const COLS = [68, 672], ROWS = [90, 378, 666, 954, 1242];
+          const CW = 484 * S, CH = 252 * S;
+          const MS = CH / 480; // the turned table fits the label's height
+          const cells = [];
+          ROWS.forEach((ry) => COLS.forEach((cx) => cells.push({ x: PX + cx * S, y: PY + ry * S })));
+
+          K.draw($("p6-page"), K.T(68.51), 0.7, "none");
+          K.fade($("p6-page-l"), K.T(69.17), 0.4);
+          cells.forEach((c, i) => {
+            const cut = el("rect", { class: "ln thin ink", x: c.x, y: c.y, width: CW, height: CH, opacity: 0.35 }, $("p6-cuts"));
+            K.draw(cut, K.T(69.17) + i * 0.05, 0.3, "none");
+          });
+
+          const cx0 = cells[0].x + (616 * MS) / 2, cy0 = cells[0].y + CH / 2;
+          tl.fromTo(
+            $("p6-move"),
+            { x: 0, y: 0, scale: 1, rotation: 0, svgOrigin: "960 448" },
+            { x: cx0 - 960, y: cy0 - 448, scale: MS, rotation: -90, svgOrigin: "960 448", duration: 1.0, ease: "power2.inOut" },
+            K.T(69.17)
+          );
+
+          cells.slice(1).forEach((c, i) => {
+            const g = el("g", { transform: `translate(${c.x.toFixed(2)} ${(c.y + CH).toFixed(2)}) rotate(-90) scale(${MS.toFixed(4)})` }, $("p6-minis"));
+            NF.table(g);
+            K.fade(g, K.T(70.47) + i * 0.13, 0.25);
+          });
+
+          // the files: the label as PDF or PNG
+          const files = $("p6-files");
+          ["PDF", "PNG"].forEach((ext, i) => {
+            const x = 860, y = 190 + i * 170;
+            const g = el("g", {}, files);
+            const f = el("path", { class: "ln ink", d: `M${x} ${y}H${x + 92}L${x + 124} ${y + 32}V${y + 140}H${x}Z M${x + 92} ${y}V${y + 32}H${x + 124}` }, g);
+            const t = text(ext, { class: "ext", x: x + 62, y: y + 96, "text-anchor": "middle" }, g);
+            K.draw(f, K.T(71.12) + i * 0.3, 0.5, "none");
+            K.fade(t, K.T(71.12) + i * 0.3 + 0.3, 0.3);
+          });
+
+          // the audit report (audit_report.py): per-ingredient summary and the audit trail behind each value
+          const au = $("p6-audit");
+          [[1104, 154], [1092, 166]].forEach(([x, y], i) => K.draw(el("rect", { class: "ln thin ink", x, y, width: 600, height: 560, opacity: 0.5 }, au), K.T(72.43) + i * 0.1, 0.5, "none"));
+          const front = el("rect", { class: "ln ink fill-bg", x: 1080, y: 178, width: 600, height: 560 }, au);
+          K.draw(front, K.T(72.43) + 0.2, 0.6, "none");
+          K.fade(front, K.T(72.43) + 0.2, 0.3);
+          const doc = el("g", {}, au);
+          text("Nutrition Audit Report", { class: "doc h", x: 1104, y: 226 }, doc);
+          text("SODIUM · AUDIT TRAIL", { class: "doc dim", x: 1104, y: 266 }, doc);
+          el("path", { class: "ln thin ink", d: "M1104 282H1656" }, doc);
+          const TRAIL = [
+            ["Salt, table", "6.1 g", "2372.8 mg"],
+            ["Sweets, syrups, maple, bulk", "166.4 g", "15.0 mg"],
+            ["Grains, oats", "400.0 g", "8.0 mg"],
+            ["Seeds, sunflower seed kernels", "74.0 g", "6.7 mg"],
+            ["Nuts, almonds, dried", "150.0 g", "1.5 mg"],
+            ["Vegetable oil, canola", "56.8 g", "0.0 mg"],
+          ];
+          TRAIL.forEach(([a, b, c], i) => {
+            const y = 318 + i * 40;
+            text(a, { class: "doc", x: 1104, y }, doc);
+            text(b, { class: "doc dim", x: 1530, y, "text-anchor": "end" }, doc);
+            text(c, { class: "doc", x: 1656, y, "text-anchor": "end" }, doc);
+          });
+          el("path", { class: "ln thin ink", d: "M1104 556H1656" }, doc);
+          text("RECIPE TOTAL", { class: "doc dim", x: 1104, y: 590 }, doc);
+          text("2403.9 mg", { class: "doc", x: 1656, y: 590, "text-anchor": "end" }, doc);
+          text("SOURCE: CANADIAN NUTRIENT FILE", { class: "doc dim", x: 1104, y: 700 }, doc);
+          K.fade(doc, K.T(73.08), 0.5);
+
+          K.reveal($("p6-st-a"), K.T(71.12), 0.7);
+          K.reveal($("p6-st-b"), K.T(73.72), 0.9);
+
+          tl.to("#p6 svg, #p6 .plate-label, #p6 .statement", { opacity: 0, duration: 0.4, ease: "power1.in" }, K.T(77.65));
+          window.__timelines["p6"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

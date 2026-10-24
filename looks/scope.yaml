@@ -1,0 +1,39 @@
+slug: scope
+title: Oscilloscope
+note: Green vector lines on a lab scope, with afterglow trails and Lissajous collapses.
+used: Airplane on the Highway test
+cost: free
+group: code
+order: 310
+clip: scope.mp4
+tall: false
+status: test
+engine: canvas2d
+project: bobwiseman-airplane-scope
+code:
+  path: bobwiseman-airplane-scope/js/beam.js
+  flag: null
+  page: bobwiseman-airplane-scope/scope.html
+  note: beam.js is the vector beam (paths in screen space or 3D), js/look.js the tube, js/ch/01-airplane.js the shots.
+rules:
+  - Line only, no fills; scenes emit polylines (screen space or 3D through a camera) that one beam strokes on black
+  - Intensity in red = green P31 phosphor, in green = amber phosphor; the tube shader colours, blooms and mixes them
+  - Strokes use lighten so crossings don't double; corners and line ends get a brighter dwell dot; each path jitters a hair
+  - "Afterglow: the last 9 sub-frames redrawn, each dimmer, as a pure function of t"
+  - "Losing sync: the picture tears and rolls, turns amber and collapses into one Lissajous figure, then a single trace"
+  - "Tube finish: white-hot cores, halation, dark faceplate glass, etched graticule, bulged rounded-square tube in a metal bezel, mains hum"
+palette:
+  - "#4cff61"
+  - "#ff8f1a"
+reference: A 1960s lab oscilloscope (vector display)
+proof:
+  renders:
+    - bobwiseman-airplane-scope/out/aoh_scope-test_f01704-f02184_24fps_review-720p.mp4
+  pr: []
+  youtube:
+    - fWvfqLYhnpU
+  note: out/ is archived on Bertha, /Volumes/Bertha/secondunit-archive/mv-projects/<project>/out/
+verdict: null
+related:
+  - blueprint
+  - neon

@@ -1,0 +1,64 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>motion-lab example</title>
+<!-- A tiny look that keeps the mv-projects contract (window.__ready, window.__frameJPEG) and calls
+     ML.probe, so the motion-lab tools can be tried on it. ?bug=1 breaks it on purpose: the sign text
+     overflows, the last hop leaves the frame and the second landing is 2 frames late. -->
+<style>html, body { margin: 0; background: #111; } canvas { width: 100vw; }</style>
+<canvas id="c" width="1920" height="1080"></canvas>
+<script src="../motion.js"></script>
+<script>
+(() => {
+  const g = document.getElementById('c').getContext('2d');
+  const bug = new URLSearchParams(location.search).has('bug');
+  const FPS = 24, FLOOR = 820, AIR = 0.6, R = 70;
+  // landings at 1, 2 and 3 s = song frames 24, 48, 72; the brief in spec.mjs says so too
+  const lands = [1, bug ? 2 + 2 / FPS : 2, 3], xs = [300, 700, 1100, bug ? 1950 : 1500];
+  const { EASE, spring, probe } = ML;
+
+  function ball(t) {
+    let x = xs[0], y = FLOOR, sx = 1, sy = 1;
+    for (let k = 0; k < lands.length; k++) {
+      const up = lands[k] - AIR, u = (t - up) / AIR;
+      if (t >= lands[k]) {   // landed: squash, then settle on a playful spring
+        x = xs[k + 1]; const s = t - lands[k];
+        const k2 = s < 0.05 ? 1 : 1 - spring(s - 0.05, 0.5, 3);
+        sx = 1 + 0.25 * k2; sy = 1 - 0.3 * k2;
+      } else if (u >= 0) {   // in the air: an arc, stretched along the climb
+        x = xs[k] + (xs[k + 1] - xs[k]) * EASE.inOutSine(u); y = FLOOR - 320 * 4 * u * (1 - u);
+        sx = 0.88; sy = 1.2; break;
+      } else if (t >= up - 0.25) {   // anticipation: a 6-frame crouch before takeoff
+        const c = Math.sin(Math.PI * (t - (up - 0.25)) / 0.25 / 2); sx = 1 + 0.2 * c; sy = 1 - 0.25 * c; break;
+      } else break;
+    }
+    return { x, y, sx, sy };
+  }
+  function draw(t) {
+    g.setTransform(1, 0, 0, 1, 0, 0);
+    g.fillStyle = '#f4f1ec'; g.fillRect(0, 0, 1920, 1080);
+    g.fillStyle = '#dedad3'; g.fillRect(0, FLOOR, 1920, 1080 - FLOOR);
+    // the sign: text inside its board
+    const board = [120, 90, 560, 140];
+    g.fillStyle = '#1c1b1a'; g.fillRect(...board);
+    g.font = 'bold 72px Helvetica, Arial, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+    const word = bug ? 'MOTION LABORATORY' : 'MOTION LAB';
+    g.fillStyle = '#d97757'; g.fillText(word, 400, 162);
+    probe.text(g, 'sign', word, 400, 162, board);
+    // the ball, drawn through a transform so the probe has to follow it
+    const b = ball(t);
+    g.save(); g.translate(b.x, b.y); g.scale(b.sx, b.sy);
+    g.fillStyle = '#d97757'; g.beginPath(); g.arc(0, -R, R, 0, 2 * Math.PI); g.fill();
+    probe.box(g, 'ball', -R, -2 * R, 2 * R, 2 * R, { keep: true });
+    g.restore();
+    // the landing fires from the geometry: on the floor now, in the air one frame ago
+    probe.edge('land', b.y >= FLOOR - 0.5, ball(ML.prevT(t, FPS)).y >= FLOOR - 0.5);
+    probe.value('squash', b.sy);
+  }
+
+  window.__ready = document.fonts.ready;
+  window.__frameJPEG = (t, q = 0.92) => { draw(t); return g.canvas.toDataURL('image/jpeg', q); };
+  if (!new URLSearchParams(location.search).has('offline')) {
+    const t0 = performance.now(); const loop = () => { draw(((performance.now() - t0) / 1000) % 4); requestAnimationFrame(loop); }; loop();
+  }
+})();
+</script>

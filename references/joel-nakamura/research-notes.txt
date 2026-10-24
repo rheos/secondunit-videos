@@ -1,0 +1,24 @@
+RESEARCH NOTES — JOEL NAKAMURA
+Updated 2026-10-13
+
+COLLECTED
+Four user JPEGs preserved byte-for-byte. Fifty artist-portfolio images downloaded and validated. Metadata retains source links and original upload records; upload dates are not used as creation dates.
+
+UNRESOLVED ORIGINALS
+Compared the four supplied images with the 50 collected gallery entries and 109 further print-catalogue thumbnails. No exact match found. N01–N04 titles are descriptive labels; attribution remains provisional rather than independently publication-matched.
+
+DOCUMENTED PROCESS
+Design by Nature, publisher excerpt: Nakamura study at PDF pages 11–12, printed pages 12–13. Both pages were rendered and visually inspected. Dream Catcher is captioned ©1998.
+Discover Nikkei: Joel Nakamura Mixes the Ancient and the Modern with Compassion... and Spam?, Mia Nakaji Monnier, June 22, 2010. Full text readable through web retrieval; direct source-file download returned HTTP 403. Source URL remains in sources.json.
+Official biography and New Mexico PBS provide career context. The 1985 Los Angeles Times report supplies early teaching and commercial-client evidence. Exact birth date not established.
+
+FURTHER ARTICLE LEAD
+Rethinking: The New Science of Thriving, Christina Bethell, Hopkins Bloomberg Public Health Magazine, 2016:
+https://magazine.publichealth.jhu.edu/2016/rethinking-the-new-science-of-thriving
+Search results credit illustrations to Joel Nakamura. Full-page retrieval failed; no collected image has been assigned to this article.
+
+LIMITS
+Artist portfolio captions identify clients, subjects, or exhibitions. They do not establish the exact magazine issue or article title for every editorial image. Ownership and availability are not treated as current facts. The collection does not include all of Nakamura's portfolio categories or every print in his shop.
+
+ARTICLE RESEARCH UPDATE — 2026-10-13
+The earlier unresolved Spring 2016 Hopkins lead is now visually verified using the issue PDF hosted by CASE (PDF pages 11–12, printed 18–21). See articles.html for seven verified image/article pairings and one further credited article without a recovered image. The four user originals remain unmatched. Six complete source issue PDFs are saved in sources/articles; rendered relevant pages are in articles. Source scans preserve the editorial layouts and credits.

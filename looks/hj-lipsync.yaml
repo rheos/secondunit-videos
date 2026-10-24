@@ -1,0 +1,43 @@
+slug: hj-lipsync
+title: Lip-sync from his real footage
+note: His real frame made to sing the line, veil down, graded to match.
+used: Dream of Fire, The Wyrd One
+cost: credits
+group: live
+order: 40
+clip: hj-lipsync.mp4
+tall: true
+status: approved
+engine: generated (MiniMax H3 Max) + local grade
+project: hjeron-dark-blues-storyboard
+code:
+  path: hjeron-dark-blues-storyboard/tools/grade.py
+  flag: null
+  page: null
+  note: >-
+    grade.py --look sepia|neon --ref <clip> matches the take to a real clip; jobs submitted by tools/gen.py. The clip
+    is LSV1 (job 1b5fd44f, shots 10 and 12) cut against his real dune walk (#36, shot 11).
+rules:
+  - H3 Max 6 s 768p 9:16, image reference = one frame of his real in-character day take (veil down, frontal or 3/4) + the vocal stem slice at song time
+  - No profile; the head barely turns and phrases with the vocal; no face, lips or beard
+  - Each take starts on a song frame so take frame = song frame minus its start
+  - "Graded locally to the clip it sits between: histogram-matched luminance, his colour table, his grain, plus the torn sepia border or his flame overlay"
+  - Singing shots run 2 to 3 s, hard cut on the first sung word, intercut with real footage
+  - 15 credits per 6 s take
+palette: []
+reference: Hjeron's real day take in character and his sepia and neon clips
+proof:
+  renders:
+    - hjeron-dark-blues-storyboard/output/dream-of-fire_storyboard-cut_f0000-f2342_24fps_9x16_master.mp4 (shots 10-12)
+    - mv-projects/hjeron-dark-blues-augment/t_lip.url (method test, H3 job 8055a92e)
+  pr: []
+  youtube:
+    - 5J-ST917WGc
+    - uH7Y8q0xpHc
+verdict: >-
+  "works well too.. we can take other guitar playing clips and turn them into lip sync" (Robin, 2026-09-28, on the
+  lip-sync-from-a-real-frame test)
+related:
+  - hj-veil
+  - hj-genmontage
+  - hj-rattle

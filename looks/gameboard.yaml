@@ -1,0 +1,51 @@
+slug: gameboard
+title: Vintage board game
+note: >-
+  Printed cardboard from separate ink plates: halftone dots, slight misregistration, worn edges. Turned wooden
+  pawns hop, wobble and dance on the board.
+used: Satisfied Mind, Bob Wiseman
+cost: free
+group: code
+order: 170
+clip: gameboard.mp4
+tall: false
+status: approved
+engine: canvas2d
+project: bobwiseman-satisfied-mind
+code:
+  path: bobwiseman-satisfied-mind/js/boardgame/core.js
+  flag: null
+  page: bobwiseman-satisfied-mind/looks/boardgame.html
+  note: >-
+    On branch satisfied-mind (draft PR #84), not merged. core.js is the print shop that builds every printed
+    texture; scene.js, world.js and break1.js (the pawn dance) draw the shots. world5.js (verse 5) and art.js
+    stay local.
+rules:
+  - Every printed piece (board, box lid, cards, money, standees) is built once from separate spot-colour plates with halftone tints
+  - Plates print slightly off register, with ink voids and worn edges, on cream board
+  - A short set of period spot inks (red, blue, yellow, green, black), each a little off, as printed on cream board
+  - Turned wooden pawns with faint lathe rings and paint chips showing raw wood; they hop, land with a wobble and topple
+  - One world, one plain wooden table; shots are camera moves (top-down, a low 3/4 chase, a tabletop dolly)
+  - Seeded randomness only; every frame is a pure function of song time
+palette:
+  - "#c3372b"
+  - "#22599f"
+  - "#efbd2c"
+  - "#2c8546"
+  - "#221d1a"
+  - "#efe3c4"
+reference: 1950s printed family board games (spot-colour plates and halftone tints on cardboard)
+proof:
+  renders:
+    - bobwiseman-satisfied-mind/out/boardgame_test-v5_f0-f1500_24fps_draft.mp4
+  pr:
+    - rheos/secondunit-videos#84
+    - rheos/secondunit-videos#86
+  youtube:
+    - PpGUzik5i2o
+    - puldjVp8I7U
+verdict: 'Bob, 2026-10-09, on draft 3: "hilarious, so fast" (he loved the toy piano, the Juno and the red pawn leaving the board).'
+related:
+  - tarotdeck
+  - engraving
+  - crossstitch

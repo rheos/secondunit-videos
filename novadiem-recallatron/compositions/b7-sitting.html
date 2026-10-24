@@ -1,0 +1,85 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #b7 { position: absolute; inset: 0; }
+      </style>
+      <div data-hf-id="hf-rc80" id="b7" data-composition-id="b7" data-width="1920" data-height="1080">
+        <div data-hf-id="hf-rc81" id="b7-content" class="layer">
+          <div data-hf-id="hf-rc82" id="b7-lab-l" class="plate-label left">FIG. VII</div>
+          <div data-hf-id="hf-rc83" id="b7-lab-r" class="plate-label right">AT THE NEXT SITTING</div>
+          <svg data-hf-id="hf-rc84" id="b7-svg" class="full" viewBox="0 0 1920 1080"></svg>
+          <div data-hf-id="hf-rc85" class="statement">
+            <span data-hf-id="hf-rc86" id="b7-s1" class="phrase">A dated claim,</span>
+            <span data-hf-id="hf-rc87" id="b7-s2" class="phrase accent">never an order.</span>
+          </div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text } = BP;
+          const tl = gsap.timeline({ paused: true });
+          const S = 99.66;
+          const K = BP.kit(tl, S, "VII");
+          const R = (t) => K.R(t);
+          const W = (w, n) => R(VO.w("VII", w, n));
+          const svg = K.$("b7-svg");
+
+          // a new session's first prompt (made up); the recall hook runs once per session, on this prompt
+          const pan = el("rect", { class: "ln line", x: 130, y: 200, width: 640, height: 230 }, svg);
+          const panR = el("path", { class: "ln thin line", d: "M130 244H770" }, svg);
+          const panT = text("NEW SESSION  ·  FIRST PROMPT", { class: "cm", x: 150, y: 230 }, svg);
+          const you = text("YOU", { class: "cm on", x: 150, y: 300 }, svg);
+          const ask = text("Bump the staging database driver.", { class: "cb", x: 214, y: 300 }, svg);
+          const hook = text("the hook asks recall, once", { class: "ty sm", x: 150, y: 400 }, svg);
+          const arrow = el("path", { class: "ln line-strong", d: "M770 320H850" }, svg);
+          const ah = RC.head(svg, 852, 320, "r");
+
+          // laid before the machine, under the header the hook writes
+          const tray = el("rect", { class: "ln line-strong", x: 860, y: 170, width: 940, height: 560 }, svg);
+          const trayT = text("LAID BEFORE THE MACHINE", { class: "lab sm", x: 884, y: 206 }, svg);
+          const hdr = text("Dated claims recorded earlier, not current truth.", { class: "ty sm", x: 884, y: 244 }, svg);
+          const c1 = RC.card(svg, 890, 280, { kind: "FACT", title: "Staging database", body: "Staging runs Postgres 18.", foot: "", strong: true });
+          const c2 = RC.card(svg, 1350, 300, { kind: "NOTE", title: "Deploys", body: "Staging deploys from main.", foot: "" });
+          const d1 = RC.stampBox(svg, "DATED 2026-10-09", 1110, 560, 300, { cls: "line-strong", rot: -4 });
+          const d2 = RC.stampBox(svg, "DATED 2026-09-22", 1570, 580, 300, { cls: "line-strong", rot: 3 });
+          const claim = text("A CLAIM TO CHECK", { class: "lab", x: 1330, y: 680, "text-anchor": "middle" }, svg);
+          const instr = text("INSTRUCTION", { class: "lab", x: 450, y: 560, "text-anchor": "middle" }, svg);
+          const strike = el("path", { class: "ln acc-s", d: "M340 552H560", style: "stroke-width: 4" }, svg);
+
+          K.fade(K.$("b7-lab-l"), R(100.4), 0.4);
+          K.fade(K.$("b7-lab-r"), R(100.4), 0.4);
+          [pan, panR].forEach((n, i) => K.draw(n, R(100.3) + i * 0.15, 0.5));
+          K.typed(panT, W("next"), { cps: 40, cursor: false });
+          K.fade(you, W("session") - 0.2, 0.2);
+          K.typed(ask, W("session"), { cps: 34 });
+          K.typed(hook, W("relevant") + 0.2, { cps: 36, cursor: false });
+          K.draw(arrow, W("memories"), 0.3);
+          K.draw(ah, W("memories") + 0.25, 0.15);
+          K.draw(tray, W("memories"), 0.7);
+          K.typed(trayT, W("memories") + 0.3, { cps: 36, cursor: false });
+          RC.drawIn(K, c1, W("laid") - 0.1, { cps: 54 });
+          RC.drawIn(K, c2, W("laid") + 0.35, { cps: 54 });
+          K.typed(hdr, W("machine") - 0.1, { cps: 44, cursor: false });
+          K.stamp(d1.g, W("dated") - 0.1, { origin: "1110 560" });
+          K.stamp(d2.g, W("dated") + 0.25, { origin: "1570 580" });
+          K.typed(claim, W("claim") - 0.1, { cps: 30, cursor: false });
+          K.typed(instr, W("never") - 0.3, { cps: 30, cursor: false });
+          K.draw(strike, W("instruction") + 0.2, 0.3);
+          K.slam(K.$("b7-s1"), W("dated") + 0.3, { stagger: 0.04 });
+          K.slam(K.$("b7-s2"), W("claim"), { stagger: 0.04 });
+
+          const out = R(110.75);
+          K.sfx("out", out);
+          K.camera(K.$("b7-content"), out, 0.7, { x: 0, opacity: 1 }, { x: 0, y: -60, opacity: 0 }, { ease: "power2.in" });
+          window.__timelines["b7"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

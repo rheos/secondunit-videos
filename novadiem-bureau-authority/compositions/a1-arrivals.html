@@ -1,0 +1,87 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #a1 {
+          position: absolute;
+          inset: 0;
+        }
+        #a1 .title {
+          top: 150px;
+          font-family: var(--font-label);
+          font-size: 120px;
+          letter-spacing: 0.08em;
+        }
+        #a1 .sub {
+          position: absolute;
+          left: 0;
+          right: 0;
+          top: 330px;
+          text-align: center;
+          font-size: 26px;
+          color: var(--ink);
+        }
+      </style>
+      <div id="a1" data-composition-id="a1" data-width="1920" data-height="1080">
+        <div id="a1-all" class="layer">
+          <svg class="full" viewBox="0 0 1920 1080">
+            <path id="a1-rule" class="ln line" d="M660 302H1260M660 292V312M1260 292V312" />
+            <g id="a1-art"></g>
+          </svg>
+          <div class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate I</div>
+          <div class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>Inside the Bureau · 7</div>
+          <div id="a1-title" class="title">THE CONTROL POINT</div>
+          <div id="a1-sub" class="sub mono">WHAT THE BUREAU DECIDES, AND WHAT GOES TO THE OWNER</div>
+          <div id="a1-st" class="statement"><span class="phrase red">Which one waits for the owner?</span></div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text, kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 0);
+
+          K.reveal(K.$("a1-title"), K.T(0.65), 1.1);
+          K.draw(K.$("a1-rule"), K.T(1.23), 0.8);
+          K.reveal(K.$("a1-sub"), K.T(1.81), 0.8);
+
+          // two lanes from the Conductor meet the Delegate's gate at the same moment
+          const art = K.$("a1-art");
+          const lanes = [520, 650];
+          const laneLines = lanes.map((y) => el("path", { class: "ln ink", d: `M380 ${y}H1140` }, art));
+          const src = el("rect", { class: "ln ink", x: 120, y: 470, width: 260, height: 230 }, art);
+          const srcL = text("CONDUCTOR", { class: "mono", x: 250, y: 592, "text-anchor": "middle" }, art);
+          const post = el("path", { class: "ln ink", d: "M1160 470V700" }, art);
+          const postL = text("DELEGATE", { class: "mono", x: 1160, y: 452, "text-anchor": "middle" }, art);
+          K.draw(src, K.T(2.41), 0.6, "none");
+          K.fade(srcL, K.T(2.41) + 0.3, 0.3);
+          laneLines.forEach((l, i) => K.draw(l, K.T(2.41) + 0.4 + i * 0.12, 0.6));
+          K.draw(post, K.T(3.0), 0.4);
+          K.fade(postL, K.T(3.0) + 0.2, 0.3);
+
+          const A = AG.packet(art, "CHECKPOINT 03", 250, lanes[0]);
+          const B = AG.packet(art, "FORK", 250, lanes[1]);
+          AG.appear(tl, A, K.T(3.58));
+          AG.appear(tl, B, K.T(3.58));
+          AG.move(K, tl, A, `M250 ${lanes[0]}H1000`, K.T(3.58), 1.2);
+          AG.move(K, tl, B, `M250 ${lanes[1]}H1080`, K.T(3.58), 1.2);
+
+          // what each one is
+          const tA = text("routine: tests and review", { class: "mono small dim", x: 1210, y: lanes[0] + 6 }, art);
+          const tB = text("a product choice: free tier, or a trial?", { class: "mono small dim", x: 1210, y: lanes[1] + 6 }, art);
+          K.fade(tA, K.T(4.76), 0.35);
+          K.fade(tB, K.T(5.34), 0.35);
+
+          K.reveal(K.$("a1-st"), K.T(5.94), 0.8);
+          K.out(K.$("a1-all"), K.R(9.0), 0.45);
+          window.__timelines["a1"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

@@ -1,0 +1,9 @@
+{
+  "name": "blueprint-kit-tools",
+  "private": true,
+  "type": "module",
+  "description": "Node side of the blueprint kit's sound tools (cues.mjs). Run npm install here once.",
+  "dependencies": {
+    "playwright-core": "1.64.1"
+  }
+}

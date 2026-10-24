@@ -1,0 +1,315 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #b4 {
+          position: absolute;
+          inset: 0;
+        }
+        /* the drawn statement: small sheet type, one weight lighter than the kit's mono */
+        #b4 svg text.sheet {
+          font-family: var(--font-mono);
+          font-size: 15px;
+          font-weight: 400;
+          letter-spacing: 0.06em;
+          fill: var(--ink-field);
+        }
+        #b4 svg text.sheet.val {
+          font-weight: 700;
+        }
+        #b4 svg text.sheet.dim {
+          opacity: 0.6;
+        }
+        #b4 svg text.mono.head {
+          font-size: 22px;
+        }
+        #b4 svg text.mono.gold-t {
+          fill: var(--line-field);
+        }
+        #b4 svg text.mono.red-t {
+          fill: var(--accent-field);
+        }
+        #b4 .stencil {
+          fill: none;
+          stroke: var(--line-field);
+          stroke-width: 2;
+          stroke-dasharray: 7 5;
+        }
+        #b4 .bad-s {
+          stroke: var(--accent-field);
+        }
+        #b4 .statement.two {
+          top: 790px;
+          flex-direction: column;
+          align-items: center;
+          font-size: 60px;
+          row-gap: 6px;
+        }
+        #b4 .statement.two .row {
+          display: flex;
+          column-gap: 0.3em;
+        }
+      </style>
+      <div id="b4" data-composition-id="b4" data-width="1920" data-height="1080">
+        <div id="b4-night" class="layer field" data-layout-allow-overlap data-layout-allow-occlusion>
+          <svg class="full" viewBox="0 0 1920 1080">
+            <defs>
+              <pattern id="b4-grid" width="60" height="60" patternUnits="userSpaceOnUse" x="48" y="48">
+                <path d="M60 0H0V60" fill="none" stroke="#c9a54a" stroke-width="1" opacity="0.07" />
+              </pattern>
+            </defs>
+            <rect x="48" y="48" width="1824" height="984" fill="url(#b4-grid)" />
+            <rect class="ln thin gold-n" x="48" y="48" width="1824" height="984" opacity="0.6" />
+
+            <!-- night copy of the furniture bar: the tick sits at MODEL, sheet 04 / 07 -->
+            <g id="b4-bar" data-layout-allow-overlap data-layout-allow-occlusion>
+              <path class="ln thin paper-s" d="M260 985H1520" opacity="0.35" />
+              <path class="ln gold-n" d="M260 985H890" />
+              <g id="b4-stations"></g>
+              <path d="M-9 -14H9L0 0Z" fill="#c9a54a" transform="translate(890 971)" />
+              <rect class="ln thin gold-n" x="1610" y="958" width="230" height="50" />
+              <path class="ln thin gold-n" d="M1690 958V1008" opacity="0.6" />
+              <text class="mono small" x="1650" y="990" text-anchor="middle">SHEET</text>
+              <text class="mono" x="1765" y="991" text-anchor="middle">04 / 07</text>
+            </g>
+
+            <!-- the older bill (synthetic: made-up values, no vendor) -->
+            <g id="b4-sheet">
+              <rect id="b4-sh-frame" class="ln paper-s" x="740" y="150" width="440" height="570" />
+              <text id="b4-sh-title" class="sheet val" x="764" y="192">MONTHLY STATEMENT</text>
+              <path id="b4-sh-rule1" class="ln thin paper-s" d="M740 212H1180" />
+              <g id="b4-sh-head">
+                <text class="sheet dim" x="764" y="246">ACCOUNT &#183;&#183;&#183;&#183;</text>
+                <text class="sheet dim" x="958" y="246">BILL DATE</text>
+                <text class="sheet val" x="1160" y="246" text-anchor="end">2025-11-14</text>
+              </g>
+              <path id="b4-sh-rule2" class="ln thin paper-s" d="M740 266H1180" />
+
+              <!-- old layout: totals on the LEFT, charges on the RIGHT -->
+              <rect id="b4-sh-totals" class="ln thin paper-s" x="756" y="286" width="198" height="190" />
+              <g id="b4-sh-totals-t">
+                <text class="sheet dim" x="772" y="306">CURRENT CHARGES</text>
+                <text class="sheet val" x="772" y="334">58.40</text>
+                <text class="sheet dim" x="772" y="362">TOTAL DUE</text>
+                <text class="sheet val" x="772" y="390">58.40</text>
+                <text class="sheet dim" x="772" y="418">DUE DATE</text>
+                <text class="sheet val" x="772" y="446">2025-12-05</text>
+              </g>
+              <rect id="b4-sh-charges" class="ln thin paper-s" x="970" y="286" width="194" height="190" />
+              <g id="b4-sh-charges-t">
+                <text class="sheet dim" x="984" y="312">CHARGES</text>
+                <text class="sheet" x="984" y="358">PLAN</text>
+                <text class="sheet val" x="1150" y="358" text-anchor="end">45.00</text>
+                <text class="sheet" x="984" y="388">DEVICE</text>
+                <text class="sheet val" x="1150" y="388" text-anchor="end">12.00</text>
+                <text class="sheet" x="984" y="418">LONG DIST</text>
+                <text class="sheet val" x="1150" y="418" text-anchor="end">1.40</text>
+              </g>
+              <path id="b4-sh-crule" class="ln thin paper-s" d="M970 324H1164" />
+              <g id="b4-sh-hatch"></g>
+            </g>
+
+            <!-- left: the fixed-rule parser -->
+            <g id="b4-parser">
+              <text id="b4-p-head" class="mono head" x="150" y="200">FIXED-RULE PARSER</text>
+              <text id="b4-p-sub" class="mono note" x="150" y="230">reads fixed positions</text>
+            </g>
+            <!-- right: the model -->
+            <g id="b4-model">
+              <text id="b4-m-head" class="mono head" x="1280" y="200">MODEL</text>
+              <text id="b4-m-sub" class="mono note" x="1280" y="230">reads the page</text>
+            </g>
+            <g id="b4-rows"></g>
+            <g id="b4-stencils"></g>
+            <g id="b4-finds"></g>
+
+            <!-- the model's reading lens -->
+            <g id="b4-lens" opacity="0">
+              <circle class="ln gold-n" cx="0" cy="0" r="40" />
+              <circle class="ln thin gold-n" cx="0" cy="0" r="46" opacity="0.5" />
+              <path class="ln gold-n" d="M30 30L58 58" stroke-width="4" />
+            </g>
+
+            <text id="b4-note-p" class="mono gold-t" x="150" y="640" opacity="0">PARSER: CODE FIX</text>
+            <text id="b4-note-m" class="mono gold-t" x="1280" y="640" opacity="0">MODEL: NO CHANGE</text>
+          </svg>
+          <div id="b4-label-l" class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate IV</div>
+          <div id="b4-label-r" class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>The Old Layout</div>
+          <div class="statement two" data-layout-allow-overlap data-layout-allow-occlusion>
+            <div class="row">
+              <span id="b4-st-a" class="phrase">The old layout</span>
+              <span id="b4-st-b" class="phrase red">broke the parser.</span>
+            </div>
+            <div class="row">
+              <span id="b4-st-c" class="phrase">The model read it unchanged.</span>
+            </div>
+          </div>
+        </div>
+        <div id="b4-edge" class="wipe-edge"></div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text, kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 35.4);
+
+          // night bar stations (same x as the furniture: 260 + i * 315)
+          const st = K.$("b4-stations");
+          ["PDF", "TEXT", "MODEL", "CHECK", "JSON"].forEach((s, i) => {
+            const x = 260 + i * 315;
+            el("path", { class: "ln thin paper-s", d: `M${x} 979V991` }, st);
+            text(s, { class: "mono small", x, y: 1014, "text-anchor": "middle" }, st);
+          });
+
+          // body text of the bill, drawn as ruled lines (nothing readable)
+          const hatch = K.$("b4-sh-hatch");
+          const lens = [372, 330, 388, 250, 364, 300, 392, 210];
+          const hatchLines = lens.map((w, i) => el("path", { class: "ln thin paper-s", d: `M764 ${502 + i * 26}h${w}`, opacity: 0.45 }, hatch));
+
+          // the four fields: where the 2026 layout had them (the parser's rules) and where this bill has them
+          const ROWS = [290, 370, 450, 530];
+          const F = [
+            { name: "bill_date", rule: [950, 228, 222, 28], truth: [950, 228, 222, 28], read: "2025-11-14", got: "2025-11-14", ok: true },
+            { name: "current_charges", rule: [760, 492, 190, 28], truth: [766, 320, 178, 20], read: "58.40", got: "—", ok: false },
+            { name: "total_due", rule: [970, 340, 190, 28], truth: [766, 376, 178, 20], read: "58.40", got: "45.00", ok: false },
+            { name: "due_date", rule: [970, 400, 190, 28], truth: [766, 432, 178, 20], read: "2025-12-05", got: "—", ok: false },
+          ];
+          const rows = K.$("b4-rows"),
+            stencils = K.$("b4-stencils"),
+            finds = K.$("b4-finds");
+          const tick = (x, y, parent) => el("path", { class: "ln gold-n", d: `M${x} ${y}l7 8l14 -17`, "stroke-width": 3 }, parent);
+          const cross = (x, y, parent) => el("path", { d: `M${x} ${y - 9}l16 16M${x + 16} ${y - 9}l-16 16`, fill: "none", stroke: "#d9473b", "stroke-width": 3 }, parent);
+
+          F.forEach((f, i) => {
+            const y = ROWS[i];
+            f.pName = text(`${i + 1} ${f.name}`, { class: "mono small", x: 150, y }, rows);
+            f.pBox = el("rect", { class: "ln thin gold-n", x: 410, y: y - 30, width: 220, height: 44 }, rows);
+            f.pBad = el("rect", { class: "ln bad-s", x: 410, y: y - 30, width: 220, height: 44, opacity: 0 }, rows);
+            f.pGot = text(f.got, { class: `mono ${f.ok ? "" : "red-t"}`, x: 520, y: y - 1, "text-anchor": "middle", opacity: 0 }, rows);
+            f.pFix = text(f.read, { class: "mono", x: 520, y: y - 1, "text-anchor": "middle", opacity: 0 }, rows);
+            f.pMark = f.ok ? tick(646, y - 6, rows) : cross(648, y - 6, rows);
+            f.pTick = f.ok ? null : tick(646, y - 6, rows);
+
+            f.mName = text(`${i + 1} ${f.name}`, { class: "mono small", x: 1280, y }, rows);
+            f.mBox = el("rect", { class: "ln thin gold-n", x: 1530, y: y - 30, width: 220, height: 44 }, rows);
+            f.mVal = text(f.read, { class: "mono", x: 1640, y: y - 1, "text-anchor": "middle", opacity: 0 }, rows);
+            f.mTick = tick(1766, y - 6, rows);
+
+            const [rx, ry, rw, rh] = f.rule;
+            f.st = el("g", {}, stencils);
+            f.stBox = el("rect", { class: "stencil", x: rx, y: ry, width: rw, height: rh }, f.st);
+            f.stNum = text(String(i + 1), { class: "mono small gold-t", x: rx - 6, y: ry + 19, "text-anchor": "end" }, f.st);
+
+            const [tx, ty, tw, th] = f.truth;
+            f.find = el("rect", { class: "ln gold-n", x: tx - 4, y: ty - 3, width: tw + 8, height: th + 6 }, finds);
+          });
+
+          // ---- the plate turns to night from the left (35.69 -> 36.32) ----
+          const inA = K.T(35.69),
+            inB = K.T(36.32);
+          tl.fromTo("#b4-night", { clipPath: "inset(0 100% 0 0)" }, { clipPath: "inset(0 0% 0 0)", duration: inB - inA, ease: "power2.inOut" }, inA);
+          tl.fromTo("#b4-edge", { x: 0 }, { x: 1918, duration: inB - inA, ease: "power2.inOut" }, inA);
+          tl.fromTo("#b4-edge", { opacity: 0 }, { opacity: 1, duration: 0.08 }, inA);
+          tl.to("#b4-edge", { opacity: 0, duration: 0.12 }, inB - 0.08);
+          K.fade(K.$("b4-label-l"), K.T(36.94), 0.4);
+          K.fade(K.$("b4-label-r"), K.T(36.94), 0.4);
+
+          // ---- the older bill draws itself ----
+          K.draw(K.$("b4-sh-frame"), K.T(37.57), 0.9, "none");
+          K.fade(K.$("b4-sh-title"), K.T(38.2), 0.4);
+          K.draw(K.$("b4-sh-rule1"), K.T(38.2) + 0.2, 0.4, "none");
+          K.fade(K.$("b4-sh-head"), K.T(38.5), 0.4);
+          K.draw(K.$("b4-sh-rule2"), K.T(38.5) + 0.2, 0.4, "none");
+          K.draw(K.$("b4-sh-totals"), K.T(38.82), 0.6, "none");
+          K.fade(K.$("b4-sh-totals-t"), K.T(38.82) + 0.4, 0.4);
+          K.draw(K.$("b4-sh-charges"), K.T(39.45), 0.6, "none");
+          K.draw(K.$("b4-sh-crule"), K.T(39.45) + 0.4, 0.3, "none");
+          K.fade(K.$("b4-sh-charges-t"), K.T(39.45) + 0.5, 0.4);
+          hatchLines.forEach((h, i) => K.draw(h, K.T(39.7) + i * 0.05, 0.35, "none"));
+
+          // ---- two readers set up ----
+          K.fade(K.$("b4-p-head"), K.T(40.68), 0.4);
+          K.fade(K.$("b4-p-sub"), K.T(40.68) + 0.2, 0.4);
+          K.fade(K.$("b4-m-head"), K.T(40.68) + 0.3, 0.4);
+          K.fade(K.$("b4-m-sub"), K.T(40.68) + 0.5, 0.4);
+          F.forEach((f, i) => {
+            const at = K.T(41.0) + i * 0.12;
+            K.fade(f.pName, at, 0.3);
+            K.draw(f.pBox, at, 0.4, "none");
+            K.fade(f.mName, at + 0.1, 0.3);
+            K.draw(f.mBox, at + 0.1, 0.4, "none");
+          });
+
+          // ---- the parser's stencil lands where the new layout kept each field ----
+          F.forEach((f, i) => {
+            const at = K.T(41.94) + i * 0.15;
+            tl.fromTo(f.st, { opacity: 0, y: -24 }, { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, at);
+          });
+          // and reads what's under it: one right, three wrong
+          F.forEach((f, i) => {
+            const at = K.T(43.19) + i * 0.3;
+            K.fade(f.pGot, at, 0.25);
+            K.draw(f.pMark, at + 0.1, 0.25, "none");
+            if (!f.ok) {
+              K.fade(f.pBad, at, 0.2);
+              tl.to(f.stBox, { stroke: "#d9473b", duration: 0.2 }, at);
+            }
+          });
+          K.reveal(K.$("b4-st-a"), K.T(44.44), 0.6);
+          K.reveal(K.$("b4-st-b"), K.T(45.07), 0.6);
+
+          // ---- the model's lens reads the page: every field, wherever it sits ----
+          const lensEl = K.$("b4-lens");
+          tl.set(lensEl, { x: 1226, y: 176 }, 0);
+          K.fade(lensEl, K.T(45.07), 0.3);
+          const stops = [
+            [1100, 241],
+            [855, 328],
+            [855, 384],
+            [855, 440],
+          ];
+          F.forEach((f, i) => {
+            const go = K.T(45.7) + i * 0.63;
+            tl.to(lensEl, { x: stops[i][0], y: stops[i][1], duration: 0.36, ease: "power2.inOut" }, go);
+            K.draw(f.find, go + 0.36, 0.3, "none");
+            K.fade(f.mVal, go + 0.4, 0.25);
+            K.draw(f.mTick, go + 0.5, 0.25, "none");
+          });
+          K.out(lensEl, K.T(48.18), 0.4);
+          K.reveal(K.$("b4-st-c"), K.T(48.18), 0.8);
+
+          // ---- the parser needed a code fix; the model did not ----
+          F.forEach((f, i) => {
+            if (f.ok) return;
+            const at = K.T(48.81) + (i - 1) * 0.12;
+            const [tx, ty, tw, th] = f.truth;
+            tl.to(f.stBox, { attr: { x: tx, y: ty, width: tw, height: th }, stroke: "#c9a54a", duration: 0.6, ease: "power2.inOut" }, at);
+            tl.to(f.stNum, { attr: { x: tx - 8, y: ty + 15 }, duration: 0.6, ease: "power2.inOut" }, at);
+            K.out(f.pGot, at + 0.6, 0.2);
+            K.out(f.pBad, at + 0.6, 0.25);
+            K.out(f.pMark, at + 0.6, 0.2);
+            K.fade(f.pFix, at + 0.75, 0.25);
+            K.draw(f.pTick, at + 0.85, 0.25, "none");
+          });
+          K.fade(K.$("b4-note-p"), K.T(49.44), 0.4);
+          K.fade(K.$("b4-note-m"), K.T(50.06), 0.4);
+
+          // ---- the cutaway closes onto plate V (51.94 -> 52.57) ----
+          const outA = K.T(51.94),
+            outB = K.T(52.57);
+          tl.to("#b4-night", { clipPath: "inset(0 0 0 100%)", duration: outB - outA, ease: "power2.inOut" }, outA);
+          tl.fromTo("#b4-edge", { x: 0 }, { x: 1918, duration: outB - outA, ease: "power2.inOut", immediateRender: false }, outA);
+          tl.to("#b4-edge", { opacity: 1, duration: 0.08 }, outA);
+          tl.to("#b4-edge", { opacity: 0, duration: 0.12 }, outB - 0.08);
+
+          window.__timelines["b4"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

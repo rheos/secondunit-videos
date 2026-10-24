@@ -1,0 +1,61 @@
+slug: nouveau
+title: Art Nouveau
+note: Flowing line, arched panels, stained-glass light.
+used: Clap Hands, Gemma Luna
+cost: free
+group: code
+order: 560
+clip: nouveau.mp4
+tall: true
+status: approved
+engine: brushstroke
+project: gemmaluna-clap-hands
+code:
+  path: gemmaluna-clap-hands/js/world.js
+  flag: null
+  page: gemmaluna-clap-hands/index.html
+  note: >-
+    world.js is the kit (palette C, whip, vine, lily, halo, guimard, glassPanel, border, clapPair); chapters
+    js/ch/c00-c10.js (c02 is the reference); js/paint.js is the GPU brushstroke renderer (from
+    functional-emotions-video, MIT); js/cast.js the Lautrec-style cast. ANIMATION_GUIDE.md is the look bible.
+rules:
+  - >-
+    Paint a flat underpainting with heavy umber contours (12 to 24 px); the brushstroke pass dissolves
+    anything under ~8 px
+  - >-
+    Muted Mucha palette: sage, gold, dusty rose, cream on teal, plum and night blue; ruby and amber for
+    lamplight; no pure black or white
+  - Curves are whiplash curves ending in a spiral; straight lines are rare
+  - "Ornament grows with the music: vines, tendrils and lily petals unfurl"
+  - "Lights go on a separate additive layer with bloom: lamps, lit glass, rain glints"
+  - A Mucha arched border on every shot; camera always drifting or pushing, shots 1.5 to 4 s
+  - Clapping hands as three key drawings (open, three-quarter, palm to palm at the hit)
+palette:
+  - "#efe2c4"
+  - "#c9a046"
+  - "#93a274"
+  - "#c98a7a"
+  - "#2f5a55"
+  - "#5e3b4e"
+  - "#1e2a40"
+  - "#33241a"
+  - "#a8402e"
+  - "#f0b04a"
+reference: >-
+  Art Nouveau: Guimard's Metro ironwork and lily-bud lamps, Galle glass, Tiffany stained glass, Mucha halos
+  and arched borders; the cast after Lautrec's cabaret caricature
+proof:
+  renders:
+    - gemmaluna-clap-hands/out/gmc-v2_nouveau-full-v4_f00264-f04728_24fps_review-720p.mp4
+  pr: []
+  youtube:
+    - PTHUQ-Chp0U
+    - u8W_bUnjd4o
+    - zrF0lSdU57o
+verdict: "Robin, 2026-10-01, on the three-key-drawing hands probe: \"go ahead with the rest of it\""
+related:
+  - peacock-paper
+  - brushhjeron
+  - brushsheep
+  - paint
+  - stainedglass

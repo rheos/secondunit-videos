@@ -1,0 +1,384 @@
+<!doctype html>
+<html class="draft" lang="en" data-resolution="landscape">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1280, height=720" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=IBM+Plex+Mono:wght@400;700&display=block" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <!-- Series kit (tools/blueprint-kit, copied by sync.sh). Theme first, then structure. -->
+    <link rel="stylesheet" href="kit/themes/paper.css" />
+    <link rel="stylesheet" href="kit/kit.css" />
+    <script src="kit/kit.js"></script>
+    <script>
+      // Beat grid of the score (beats.json): librosa beats of take-01-edit at a 0.5805 s median gap, extended to both ends.
+      BP.grid({ beats: [0.07,0.65,1.23,1.81,2.41,3.0,3.6,4.18,4.76,5.36,5.94,6.52,7.13,7.71,8.29,8.87,9.47,10.05,10.66,11.24,11.82,12.4,13.0,13.58,14.19,14.77,15.35,15.93,16.53,17.11,17.69,18.3,18.88,19.46,20.06,20.64,21.25,21.83,22.41,23.01,23.59,24.17,24.78,25.36,25.94,26.54,27.12,27.7,28.31,28.89,29.47,30.05,30.65,31.23,31.83,32.42,33.0,33.58,34.18,34.76,35.34,35.94,36.52,37.11,37.71,38.24,38.85,39.43,40.01,40.59,41.19,41.77,42.38,42.96,43.54,44.12,44.72,45.3,45.88,46.49,47.07,47.65,48.23,48.79,49.37,49.95,50.53,51.11,51.66,52.22,52.78,53.34,53.92,54.5,55.08,55.66,56.22,56.8,57.4,57.98,58.56,59.16,59.74,60.33,60.93,61.51,62.09,62.69,63.27,63.85,64.46,65.04,65.62,66.22,66.8,67.38,67.99,68.57,69.15,69.73,70.33,70.91,71.52,72.1,72.68,73.28,73.86,74.44,75.05,75.63,76.23,76.81,77.39,77.97,78.58,79.16,79.74,80.34,80.92,81.5,82.11,82.69,83.27,83.87,84.45,85.03,85.61,86.19,86.77,87.35,87.93,88.51,89.09] });
+    </script>
+    <style>
+      svg text.mono.head { font-size: 22px; }
+      svg text.mono.big { font-size: 26px; }
+      svg text.mono.huge { font-size: 34px; }
+      svg text.mono.gold-t { fill: #6b5416; } /* line-strong is 3.5:1 on paper; small type needs 4.5:1 */
+      svg text.mono.red-t { fill: var(--accent); }
+      .fill-ink { fill: var(--ink); }
+      .fill-gold { fill: var(--line); }
+      .stamp-t { font-family: var(--font-mono); font-size: 30px; font-weight: 700; letter-spacing: 0.16em; fill: var(--ink); }
+    </style>
+    <script>
+      // CM: the one device of this film, the campaign map. INDEX.md drawn as a map of runs and their
+      // dependencies, the Envoy above it with its books, and a detail view that enlarges the one active
+      // run out of the map (an engineering "DETAIL A" callout). Blocked runs sit in a hatched PARKED zone.
+      // The series is illustrative: five runs, no real campaign.
+      window.CM = (() => {
+        const { el, text } = BP;
+
+        // where the five runs sit on the map (cell top-left), and their dependency edges
+        const CELL = { w: 170, h: 92 };
+        const POS = { 1: [160, 494], 2: [370, 494], 3: [580, 494], 4: [800, 380], 5: [960, 590] };
+        const EDGES = {
+          e12: ["M330 540H366", 370, 540, "r"],
+          e23: ["M540 540H576", 580, 540, "r"],
+          e34: ["M750 540H775V426H796", 800, 426, "r"],
+          e35: ["M750 540H775V636H956", 960, 636, "r"],
+          e45: ["M885 472V531H1045V586", 1045, 590, "d"],
+        };
+        const head = (x, y, dir) =>
+          dir === "d" ? `M${x - 6} ${y - 10}L${x} ${y}L${x + 6} ${y - 10}` : `M${x - 10} ${y - 6}L${x} ${y}L${x - 10} ${y + 6}`;
+
+        // an arrow: edge(parent, d, hx, hy, dir, cls)
+        function edge(parent, d, hx, hy, dir, cls = "ink") {
+          const g = el("g", {}, parent);
+          return { g, line: el("path", { class: `ln ${cls}`, d }, g), head: el("path", { class: `ln ${cls}`, d: head(hx, hy, dir) }, g) };
+        }
+        function drawEdge(K, E, at, dur = 0.45) {
+          K.draw(E.line, at, dur, "none");
+          K.draw(E.head, at + dur, 0.15, "none");
+        }
+
+        const check = (parent, x, y, cls = "line-strong") => el("path", { class: `ln ${cls}`, d: `M${x - 12} ${y}l8 9l16 -20`, style: "stroke-width:3" }, parent);
+        const cross = (parent, x, y, cls = "ink") => el("path", { class: `ln ${cls}`, d: `M${x - 12} ${y - 12}l24 24M${x + 12} ${y - 12}l-24 24`, style: "stroke-width:3" }, parent);
+
+        // a run on the map: cell(parent, n, status) -> { g, rect, name, stat, tick? }
+        function cell(parent, n, status, x, y) {
+          if (x === undefined) [x, y] = POS[n];
+          const C = { g: el("g", {}, parent), x, y, cx: x + CELL.w / 2, cy: y + CELL.h / 2 };
+          C.paper = el("rect", { class: "fill-bg", x, y, width: CELL.w, height: CELL.h }, C.g);
+          C.rect = el("rect", { class: "ln ink", x, y, width: CELL.w, height: CELL.h }, C.g);
+          C.name = text(`RUN ${n}`, { class: "mono", x: C.cx, y: y + 40, "text-anchor": "middle" }, C.g);
+          C.stat = text(status, { class: `mono small ${status === "MERGED" ? "gold-t" : "dim"}`, x: C.cx, y: y + 70, "text-anchor": "middle" }, C.g);
+          if (status === "MERGED") C.tick = check(C.g, x + CELL.w - 22, y + 24);
+          return C;
+        }
+        function drawCell(K, C, at) {
+          K.fade(C.paper, at, 0.2);
+          K.draw(C.rect, at, 0.55, "none");
+          K.fade(C.name, at + 0.2, 0.3);
+          K.fade(C.stat, at + 0.35, 0.3);
+          if (C.tick) K.draw(C.tick, at + 0.45, 0.3);
+        }
+        // swap a cell's status line in place
+        function restat(K, tl, C, word, at, cls = "dim") {
+          const n = text(word, { class: `mono small ${cls}`, x: C.cx, y: C.y + 70, "text-anchor": "middle" }, C.g);
+          tl.fromTo(C.stat, { opacity: 1 }, { opacity: 0, duration: 0.2, immediateRender: false }, at);
+          K.fade(n, at + 0.2, 0.3);
+          C.stat = n;
+          return n;
+        }
+
+        // the crescent of XVIII, The Moon (agents/envoy.md): envoy(parent, name, sub)
+        function envoy(parent, name = "THE ENVOY", sub = "SUPERVISES THE SERIES") {
+          const cx = 180, cy = 210, R = 30;
+          const E = { g: el("g", {}, parent) };
+          E.moon = el("path", { class: "ln ink", d: `M${cx} ${cy - R}A${R} ${R} 0 0 0 ${cx} ${cy + R}A${R * 1.4} ${R * 1.4} 0 0 1 ${cx} ${cy - R}Z`, style: "stroke-width:2.5" }, E.g);
+          E.ring = el("circle", { class: "ln thin line", cx: cx - 6, cy, r: R + 12 }, E.g);
+          E.name = text(name, { class: "mono head", x: 238, y: 206 }, E.g);
+          E.sub = text(sub, { class: "mono small dim", x: 238, y: 232 }, E.g);
+          return E;
+        }
+        function drawEnvoy(K, E, at) {
+          K.draw(E.ring, at, 0.6, "none");
+          K.draw(E.moon, at + 0.2, 0.7);
+          K.reveal(E.name, at + 0.4, 0.5);
+          K.fade(E.sub, at + 0.6, 0.3);
+        }
+
+        // a small sheet icon
+        function sheet(parent, x, y, cls = "line") {
+          const t = el("g", { transform: `translate(${x} ${y})` }, parent);
+          el("path", { class: "fill-bg", d: "M-12 -15H5L12 -8V15H-12Z" }, t);
+          el("path", { class: `ln ${cls}`, d: "M-12 -15H5L12 -8V15H-12Z" }, t);
+          el("path", { class: `ln thin ${cls}`, d: "M-6 -4H6M-6 3H6M-6 10H2" }, t);
+          return t;
+        }
+        // the Envoy's books (agents/envoy.md startup read scope): charter, current watch, the cross-run baton
+        const BOOKS = [
+          [600, "SUPERVISOR.md", "CHARTER"],
+          [860, "SUPERVISOR-STATE.md", "CURRENT WATCH"],
+          [1090, "HANDOFF.md", "THE BATON"],
+        ];
+        function books(parent) {
+          return BOOKS.map(([x, name, role]) => {
+            const B = { g: el("g", {}, parent), x };
+            B.icon = sheet(B.g, x, 190, "ink");
+            B.name = text(name, { class: "mono small", x, y: 238, "text-anchor": "middle" }, B.g);
+            B.role = text(role, { class: "mono small gold-t", x, y: 262, "text-anchor": "middle" }, B.g);
+            return B;
+          });
+        }
+        function drawBook(K, B, at) {
+          K.fade(B.icon, at, 0.3);
+          K.reveal(B.name, at + 0.15, 0.4);
+          K.fade(B.role, at + 0.35, 0.3);
+        }
+
+        // hatched PARKED zone: parked(parent, id, x, y, w, h, label)
+        function parked(parent, id, x, y, w, h, label) {
+          const P = { g: el("g", {}, parent) };
+          const defs = el("defs", {}, P.g);
+          const pat = el("pattern", { id, width: 14, height: 14, patternUnits: "userSpaceOnUse", patternTransform: "rotate(45)" }, defs);
+          el("path", { d: "M0 0V14", class: "ln thin line-strong" }, pat);
+          P.fill = el("rect", { x, y, width: w, height: h, fill: `url(#${id})`, opacity: 0.45 }, P.g);
+          P.frame = el("rect", { class: "ln thin ink", x, y, width: w, height: h, style: "stroke-dasharray:4 4" }, P.g);
+          P.label = text(label, { class: "mono small", x: x + 14, y: y + h - 14 }, P.g);
+          return P;
+        }
+
+        // the whole map: map(parent, { id, status: {n: word}, parkedAll }) -> handles
+        function map(parent, o = {}) {
+          const id = o.id || "cm";
+          const st = Object.assign({ 1: "MERGED", 2: "MERGED", 3: "NEXT", 4: "WAITS ON 3", 5: "WAITS ON 3, 4" }, o.status || {});
+          const M = { g: el("g", {}, parent) };
+          M.frame = el("rect", { class: "ln ink", x: 120, y: 330, width: 1040, height: 400 }, M.g);
+          M.label = text("INDEX.md · AN ILLUSTRATIVE SERIES", { class: "mono small", x: 120, y: 316 }, M.g);
+          M.parkAll = parked(M.g, `${id}-h1`, 786, 362, 360, 356, "PARKED · WAITS ON RUN 3");
+          M.park5 = parked(M.g, `${id}-h2`, 946, 572, 200, 146, "PARKED");
+          M.edges = {};
+          for (const k in EDGES) {
+            const [d, hx, hy, dir] = EDGES[k];
+            M.edges[k] = edge(M.g, d, hx, hy, dir);
+          }
+          M.cells = {};
+          for (let n = 1; n <= 5; n++) M.cells[n] = cell(M.g, n, st[n]);
+          M.read = el("path", { class: "ln ink construct", d: "M180 254V300" }, M.g);
+          M.envoy = envoy(parent, o.envoyName, o.envoySub);
+          M.books = books(parent);
+          return M;
+        }
+
+        // the detail callout on the map: callout(parent, cx, cy, r, letter, leaderD)
+        function callout(parent, cx, cy, r, letter, leaderD) {
+          const D = { g: el("g", {}, parent) };
+          D.circle = el("circle", { class: "ln line-strong", cx, cy, r, style: "stroke-width:2.5" }, D.g);
+          const a = -Math.PI / 4;
+          const tx = cx + Math.cos(a) * r,
+            ty = cy + Math.sin(a) * r;
+          D.tag = el("g", {}, D.g);
+          el("circle", { class: "fill-bg", cx: tx, cy: ty, r: 17 }, D.tag);
+          el("circle", { class: "ln line-strong", cx: tx, cy: ty, r: 17 }, D.tag);
+          text(letter, { class: "mono", x: tx, y: ty + 7, "text-anchor": "middle" }, D.tag);
+          D.leader = el("path", { class: "ln thin line-strong", d: leaderD }, D.g);
+          return D;
+        }
+        function drawCallout(K, D, at) {
+          K.draw(D.circle, at, 0.6);
+          K.fade(D.tag, at + 0.45, 0.3);
+          K.draw(D.leader, at + 0.6, 0.6, "none");
+        }
+
+        // the enlarged run: inset(parent, letter, run, { prev, only }) -> handles. Fixed at x 1220-1820, y 150-770.
+        // only: "delegate" draws just the new Delegate; the rest is construction line (not started yet).
+        function box(parent, x, y, w, h, name, sub, cls = "ink") {
+          const B = { g: el("g", {}, parent) };
+          B.paper = el("rect", { class: "fill-bg", x, y, width: w, height: h }, B.g);
+          B.rect = el("rect", { class: `ln ${cls}`, x, y, width: w, height: h }, B.g);
+          if (name) B.name = text(name, { class: "mono", x: x + w / 2, y: sub ? y + 28 : y + h / 2 + 7, "text-anchor": "middle" }, B.g);
+          if (sub) B.sub = text(sub, { class: "mono small dim", x: x + w / 2, y: y + 52, "text-anchor": "middle" }, B.g);
+          return B;
+        }
+        function drawBox(K, B, at) {
+          K.fade(B.paper, at, 0.2);
+          K.draw(B.rect, at, 0.55, "none");
+          if (B.name) K.fade(B.name, at + 0.2, 0.3);
+          if (B.sub) K.fade(B.sub, at + 0.35, 0.3);
+        }
+        function inset(parent, letter, run, o = {}) {
+          const I = { g: el("g", {}, parent) };
+          const g = I.g;
+          I.paper = el("rect", { class: "fill-bg", x: 1220, y: 150, width: 600, height: 620 }, g);
+          I.frame = el("rect", { class: "ln line-strong", x: 1220, y: 150, width: 600, height: 620, style: "stroke-width:2.5" }, g);
+          I.title = text(`DETAIL ${letter} · RUN ${run}`, { class: "mono", x: 1244, y: 190 }, g);
+          I.scale = text("SCALE 4:1", { class: "mono small dim", x: 1796, y: 190, "text-anchor": "end" }, g);
+          I.rule = el("path", { class: "ln thin ink", d: "M1244 208H1796" }, g);
+          I.del = box(g, 1300, 236, 440, 64, "DELEGATE", "ONE RUN'S CHECKPOINTS");
+          I.work = el("g", {}, g); // everything below the Delegate
+          const fresh = o.only === "delegate";
+          const c = fresh ? "thin ink construct" : "ink";
+          I.dc = el("path", { class: `ln ${c}`, d: "M1520 300V336" }, I.work);
+          I.cond = box(I.work, 1300, 336, 440, 64, fresh ? "" : "CONDUCTOR", fresh ? "" : "DISPATCH AND STATE", c);
+          I.branch = el("path", { class: `ln ${c}`, d: "M1520 400V424M1340 450V424H1700V450M1520 424V450" }, I.work);
+          I.specs = [1265, 1445, 1625].map((x) => box(I.work, x, 450, 150, 56, fresh ? "" : "SPECIALIST", "", c));
+          I.specs.forEach((S) => S.name && S.name.setAttribute("class", "mono small"));
+          I.bus = el("path", { class: `ln ${c}`, d: "M1340 506V538M1520 506V538M1700 506V538M1340 538H1700M1430 538V574" }, I.work);
+          I.dir = text(fresh ? "" : "RUN DIR", { class: "mono small dim", x: 1252, y: 566 }, I.work);
+          I.files = [
+            [1360, "state.json"],
+            [1500, "log.md"],
+          ].map(([x, name]) => {
+            const F = { g: el("g", {}, I.work), x };
+            F.icon = sheet(F.g, x, 602, fresh ? "ink construct" : "line");
+            F.name = text(fresh ? "" : name, { class: "mono small", x, y: 648, "text-anchor": "middle" }, F.g);
+            return F;
+          });
+          I.pr = box(g, 1640, 578, 140, 56, "PR", "");
+          I.prNote = text("FINAL GATE GREEN", { class: "mono small gold-t", x: 1710, y: 660, "text-anchor": "middle" }, g);
+          I.note = text(`FRESH SESSION · NOTHING CARRIED OVER FROM RUN ${o.prev}`, { class: "mono small", x: 1520, y: 742, "text-anchor": "middle" }, g);
+          return I;
+        }
+        function drawInsetFrame(K, I, at) {
+          K.fade(I.paper, at, 0.2);
+          K.draw(I.frame, at, 0.8, "none");
+          K.reveal(I.title, at + 0.3, 0.5);
+          K.fade(I.scale, at + 0.5, 0.3);
+          K.draw(I.rule, at + 0.4, 0.5);
+        }
+
+        // a dependency met: the edge redrawn thick in gold
+        function met(parent, k) {
+          const [d, hx, hy, dir] = EDGES[k];
+          const E = edge(parent, d, hx, hy, dir, "line-strong");
+          [E.line, E.head].forEach((n) => n.setAttribute("style", "stroke-width:4"));
+          return E;
+        }
+
+        // Envoy -> Delegate spawn route along the top margin
+        function route(parent, cls = "ink") {
+          return edge(parent, "M180 176V128H1520V232", 1520, 236, "d", cls);
+        }
+
+        // a sheet in transit along a path
+        function carry(K, tl, parent, d, at, dur) {
+          const s = sheet(parent, 0, 0);
+          tl.fromTo(s, { opacity: 0 }, { opacity: 1, duration: 0.15 }, at);
+          K.travel(s, el("path", { d }), at, dur);
+          tl.fromTo(s, { opacity: 1 }, { opacity: 0, duration: 0.2, immediateRender: false }, at + dur);
+          return s;
+        }
+
+        // a framed card with a title
+        function card(parent, x, y, w, h, title) {
+          const C = { g: el("g", {}, parent), x, y, w, h };
+          C.paper = el("rect", { class: "fill-bg", x, y, width: w, height: h }, C.g);
+          C.frame = el("rect", { class: "ln ink", x, y, width: w, height: h }, C.g);
+          C.title = text(title, { class: "mono head", x: x + 24, y: y + 40 }, C.g);
+          C.rule = el("path", { class: "ln thin ink", d: `M${x + 24} ${y + 58}H${x + w - 24}` }, C.g);
+          return C;
+        }
+        function drawCard(K, C, at) {
+          K.fade(C.paper, at, 0.2);
+          K.draw(C.frame, at, 0.6, "none");
+          K.fade(C.title, at + 0.25, 0.3);
+          K.draw(C.rule, at + 0.3, 0.4);
+        }
+
+        // a fresh, read-only reviewer: a double-walled room
+        function room(parent, x, y, w, h, name, sub) {
+          const R = { g: el("g", {}, parent), x, y, w, h };
+          R.paper = el("rect", { class: "fill-bg", x, y, width: w, height: h }, R.g);
+          R.outer = el("rect", { class: "ln ink", x, y, width: w, height: h }, R.g);
+          R.inner = el("rect", { class: "ln thin ink", x: x + 8, y: y + 8, width: w - 16, height: h - 16 }, R.g);
+          R.glyph = el("path", { class: "ln line", d: `M${x + w / 2} ${y + 30}l22 22l-22 22l-22 -22Z` }, R.g);
+          R.name = text(name, { class: "mono", x: x + w / 2, y: y + h - 46, "text-anchor": "middle" }, R.g);
+          R.sub = text(sub, { class: "mono small dim", x: x + w / 2, y: y + h - 22, "text-anchor": "middle" }, R.g);
+          return R;
+        }
+        function drawRoom(K, R, at) {
+          K.fade(R.paper, at, 0.2);
+          K.draw(R.outer, at, 0.7, "none");
+          K.draw(R.inner, at + 0.3, 0.5, "none");
+          K.draw(R.glyph, at + 0.4, 0.5);
+          K.fade(R.name, at + 0.5, 0.3);
+          K.fade(R.sub, at + 0.6, 0.3);
+        }
+
+        // a stamp, tilted
+        function stamp(parent, word, cx, cy, w = 220) {
+          const tilt = el("g", { transform: `rotate(-6 ${cx} ${cy})`, "data-layout-allow-overlap": "" }, parent);
+          const g = el("g", {}, tilt);
+          el("rect", { class: "fill-bg", x: cx - w / 2, y: cy - 27, width: w, height: 54, opacity: 0.92 }, g);
+          el("rect", { class: "ln ink", x: cx - w / 2, y: cy - 27, width: w, height: 54, style: "stroke-width:3" }, g);
+          text(word, { class: "stamp-t", x: cx, y: cy + 11, "text-anchor": "middle" }, g);
+          return { g, cx, cy };
+        }
+        function slam(tl, S, at) {
+          tl.fromTo(S.g, { opacity: 0, scale: 1.25, svgOrigin: `${S.cx} ${S.cy}` }, { opacity: 1, scale: 1, svgOrigin: `${S.cx} ${S.cy}`, duration: 0.25, ease: "power2.in" }, at);
+        }
+
+        // the close-out checklist the Envoy runs itself (workflows/run-series.md step 3)
+        const CLOSE = ["state.json says complete", "required checks green", "main untouched", "diff inside the run card", "publication safety"];
+        function checklist(parent) {
+          const C = card(parent, 140, 330, 600, 360, "CLOSE-OUT · THE ENVOY'S OWN CHECK");
+          C.rows = CLOSE.map((t, i) => {
+            const y = 430 + i * 54;
+            return { t: text(t, { class: "mono", x: 168, y }, C.g), ok: check(C.g, 700, y - 4) };
+          });
+          return C;
+        }
+        // the verdict card of the second-pass review
+        function verdict(parent) {
+          const V = card(parent, 800, 540, 340, 230, "VERDICT");
+          V.rows = ["proceed", "revise", "escalate"].map((w, i) => text(w, { class: `mono ${i ? "dim" : ""}`, x: 860, y: 636 + i * 34 }, V.g));
+          V.ok = check(V.g, 832, 632);
+          V.n1 = text("COUNTS ONLY BESIDE A GREEN", { class: "mono small dim", x: 970, y: 732, "text-anchor": "middle" }, V.g);
+          V.n2 = text("FINAL GATE, SAME COMMIT", { class: "mono small dim", x: 970, y: 754, "text-anchor": "middle" }, V.g);
+          return V;
+        }
+        // a one-line note in the top margin, under the spawn route
+        const topNote = (parent, str) => text(str, { class: "mono small", x: 300, y: 158 }, parent);
+
+        // out(): fade a node out with an explicit from-value (seek-safe)
+        const out = (tl, node, at, dur = 0.4, from = 1) => tl.fromTo(node, { opacity: from }, { opacity: 0, duration: dur, immediateRender: false, ease: "power1.in" }, at);
+        const dim = (tl, node, at, to, dur = 0.5, from = 1) => tl.fromTo(node, { opacity: from }, { opacity: to, duration: dur, immediateRender: false, ease: "power1.inOut" }, at);
+        const hide = (nodes) => nodes.forEach((n) => n && n.setAttribute("display", "none"));
+
+        return { CELL, POS, EDGES, edge, met, drawEdge, check, cross, cell, drawCell, restat, envoy, drawEnvoy, sheet, books, drawBook, parked, map, callout, drawCallout, box, drawBox, inset, drawInsetFrame, route, carry, card, drawCard, room, drawRoom, stamp, slam, checklist, verdict, topNote, out, dim, hide };
+      })();
+    </script>
+  </head>
+  <body>
+    <div data-hf-id="hf-bc01"
+      id="root"
+      data-composition-id="main"
+      data-start="0"
+      data-duration="86.5"
+      data-width="1280"
+      data-height="720"
+    >
+      <!-- Score: score-library bureau-art-pop-bureau-campaign take-01-edit, sha256 42a50307...c905, the clock for every cue -->
+      <audio data-hf-id="hf-bc02"
+        id="score"
+        src="_in/score.mp3"
+        data-start="0"
+        data-duration="86.5"
+        data-track-index="9"
+        data-volume="1"
+      ></audio>
+
+      <!-- every plate draws on a 1920x1080 stage; drafts scale it to 720p (kit.css, stage.sh) -->
+      <div class="stage">
+        <div data-hf-id="hf-bc03" id="slot-furniture" data-composition-id="furniture" data-composition-src="compositions/furniture.html" data-start="0" data-duration="86.5" data-track-index="0" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-bc04" id="slot-c1" data-composition-id="c1" data-composition-src="compositions/c1-merged.html" data-start="0" data-duration="9.47" data-track-index="1" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-bc05" id="slot-c2" data-composition-id="c2" data-composition-src="compositions/c2-map.html" data-start="9.47" data-duration="9.99" data-track-index="2" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-bc06" id="slot-c3" data-composition-id="c3" data-composition-src="compositions/c3-launch.html" data-start="19.46" data-duration="13.54" data-track-index="3" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-bc07" id="slot-c4" data-composition-id="c4" data-composition-src="compositions/c4-watch.html" data-start="33" data-duration="10.54" data-track-index="4" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-bc08" id="slot-c5" data-composition-id="c5" data-composition-src="compositions/c5-review.html" data-start="43.54" data-duration="12.68" data-track-index="5" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-bc09" id="slot-c6" data-composition-id="c6" data-composition-src="compositions/c6-advance.html" data-start="56.22" data-duration="16.46" data-track-index="6" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-bc0a" id="slot-c7" data-composition-id="c7" data-composition-src="compositions/c7-limit.html" data-start="72.68" data-duration="13.82" data-track-index="7" data-width="1920" data-height="1080"></div>
+      </div>
+    </div>
+
+    <script>
+      window.__timelines["main"] = gsap.timeline({ paused: true });
+    </script>
+  </body>
+</html>

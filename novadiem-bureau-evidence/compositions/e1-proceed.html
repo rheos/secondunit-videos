@@ -1,0 +1,79 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #e1 {
+          position: absolute;
+          inset: 0;
+        }
+        #e1 .title {
+          top: 150px;
+          font-family: var(--font-label);
+          font-size: 120px;
+          letter-spacing: 0.08em;
+        }
+        #e1 .sub {
+          position: absolute;
+          left: 0;
+          right: 0;
+          top: 330px;
+          text-align: center;
+          font-size: 26px;
+          color: var(--ink);
+        }
+      </style>
+      <div id="e1" data-composition-id="e1" data-width="1920" data-height="1080">
+        <div id="e1-all" class="layer">
+          <svg class="full" viewBox="0 0 1920 1080">
+            <path id="e1-rule" class="ln line" d="M660 302H1260M660 292V312M1260 292V312" />
+            <g id="e1-doc"></g>
+          </svg>
+          <div class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate I</div>
+          <div class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>Inside the Bureau · 5</div>
+          <div id="e1-title" class="title">THE FINGERPRINT</div>
+          <div id="e1-sub" class="sub mono">HOW THE BUREAU TIES A VERDICT TO THE BYTES IT READ</div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text, kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 0);
+
+          K.reveal(K.$("e1-title"), K.T(0.63), 1.1);
+          K.draw(K.$("e1-rule"), K.T(1.23), 0.8);
+          K.reveal(K.$("e1-sub"), K.T(1.81), 0.8);
+
+          // plan.md, reviewed: the verdict says proceed
+          const root = K.$("e1-doc");
+          const D = FP.doc(root, 620, 430, "plan.md", FP.PLAN1, { w: 640 });
+          FP.drawDoc(K, D, K.T(2.41));
+          const S = FP.stamp(root, "PROCEED", 1490, 470, 236);
+          FP.slam(tl, S, K.T(4.18));
+
+          // then one line of it changes
+          const ly = D.lineY(2);
+          const strike = el("path", { class: "ln ink", d: `M644 ${ly - 7}H1064`, style: "stroke-width:3" }, root);
+          K.draw(strike, K.T(5.34), 0.35);
+          const now = text(FP.PLAN2[2], { class: "mono src", x: 648, y: ly }, root);
+          tl.fromTo(D.lines[2], { opacity: 1 }, { opacity: 0, duration: 0.25, immediateRender: false }, K.T(5.92));
+          tl.fromTo(strike, { opacity: 1 }, { opacity: 0, duration: 0.25, immediateRender: false }, K.T(5.92));
+          K.reveal(now, K.T(5.92) + 0.15, 0.5);
+
+          const tickMark = el("path", { class: "ln accent-s", d: `M1284 ${ly - 26}H1300V${ly + 12}H1284M1300 ${ly - 7}H1336` }, root);
+          const changed = text("ONE LINE CHANGED", { class: "mono red-t", x: 1350, y: ly }, root);
+          K.draw(tickMark, K.T(6.52), 0.4);
+          K.reveal(changed, K.T(6.52) + 0.2, 0.5);
+
+          K.out(K.$("e1-all"), K.R(8.4), 0.45);
+          window.__timelines["e1"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

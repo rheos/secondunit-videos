@@ -1,0 +1,108 @@
+{
+  "updated": "2026-10-13",
+  "name": "Mark Von Ulrich",
+  "death": {
+    "date": "2018-02-19",
+    "place": "New York City",
+    "age": 65,
+    "source_id": "obituary",
+    "year_basis": "The obituary states February 19 and was published April 8, 2018."
+  },
+  "sources": {
+    "obituary": {
+      "title": "New York Times obituary, published April 8, 2018",
+      "url": "https://www.legacy.com/us/obituaries/nytimes/name/mark-ulrich-obituary?id=8953649"
+    },
+    "pamela": {
+      "title": "Pamela Von Ulrich obituary, published October 13, 2024",
+      "url": "https://www.legacy.com/us/obituaries/legacyremembers/pamela-von-ulrich-obituary?id=56522082"
+    },
+    "linkedin": {
+      "title": "Mark Von Ulrich — LinkedIn education record",
+      "url": "https://www.linkedin.com/in/mark-von-ulrich-26247b6"
+    },
+    "email": {
+      "title": "Mark’s email to Robin, July 13, 2005",
+      "url": "https://mail.google.com/mail/u/?authuser=rgoodwin%40gmail.com#all/10512219b6d7a7fc",
+      "access": "Private correspondence; firsthand recollection. Full email is not copied into this collection."
+    },
+    "uhf": {
+      "title": "United Hospital Fund annual report 2017, design credit",
+      "url": "https://media.uhfnyc.org/filer_public/cc/dd/ccdd1ff6-f14f-435d-91b2-f08cbb16580e/uhf_annualreport2017_final_spreads_1.pdf"
+    }
+  },
+  "sections": [
+    {
+      "title": "Life and career",
+      "facts": [
+        {
+          "text": "He died in New York City on February 19, 2018, aged 65. The notice appeared on April 8; that is the publication date, not his death date.",
+          "source_id": "obituary"
+        },
+        {
+          "text": "Originally from Toledo, Ohio, he studied at Columbus College of Art and Design, taught drawing at Ohio State University, and moved to New York in 1983.",
+          "source_id": "obituary"
+        },
+        {
+          "text": "His LinkedIn profile lists college attendance in 1971–1975.",
+          "source_id": "linkedin"
+        },
+        {
+          "text": "He worked at Tony Russell Design, founded Designthing, and served as creative director at Campbell Lewis.",
+          "source_id": "obituary"
+        },
+        {
+          "text": "His illustration clients included MacWorld, Wired, Playboy, The New York Times, and Harvard Business Review.",
+          "source_id": "obituary"
+        },
+        {
+          "text": "He collected contemporary and outsider art, including William Hawkins, Martín Ramírez, Ken Grimes, and Johann Hauser. His obituary connects his illustrations to circus posters and folk art.",
+          "source_id": "obituary"
+        },
+        {
+          "text": "Friends knew him as “thing.” He served on the board of St. Andrew’s Golf Club.",
+          "source_id": "obituary"
+        },
+        {
+          "text": "A 2017 United Hospital Fund report credits design to Mark Von Ulrich and Maria Kerdel-De Marco.",
+          "source_id": "uhf"
+        }
+      ]
+    },
+    {
+      "title": "Pamela and their collections",
+      "facts": [
+        {
+          "text": "Pamela, his wife, met him through styling work. Her obituary says they developed Designthing together and supported emerging, contemporary, and outsider artists.",
+          "source_id": "pamela"
+        },
+        {
+          "text": "They also collected found and made objects, notably objects depicting hands. The obituary identifies the hand collection as an early interest of Pamela’s.",
+          "source_id": "pamela"
+        }
+      ]
+    },
+    {
+      "title": "His own account of the digital work",
+      "facts": [
+        {
+          "text": "In his 2005 email to Robin, he recalled attending art school with Alex Grey, whom he remembered as Alex Velsy.",
+          "source_id": "email"
+        },
+        {
+          "text": "He dated his introduction to the Macintosh to 1984, through his friend Nilo Rodis, then described buying a Mac and illustrating for MacWorld alongside John Hersey and Scott Baldwin.",
+          "source_id": "email"
+        },
+        {
+          "text": "He described drawing in an old SuperPaint version, painting in Photoshop, and deliberately preserving pixelation even as publishers favored smoother vector artwork.",
+          "source_id": "email"
+        }
+      ]
+    }
+  ],
+  "research_notes": [
+    "The hand collection is a useful biographical connection to the recurring hands in the reference images. It does not establish that a particular illustration was inspired by a collected object.",
+    "Circus posters, folk art, and outsider-art collecting provide documented context for studying theatrical figures and dense patterning. Any link to a specific symbol remains an interpretation.",
+    "An exact birth date, cause of death, and artist-authored explanations of the individual symbols were not established by these sources."
+  ]
+}

@@ -1,8 +1,9 @@
 // Core: time, audio features, rng, keyframes, shot registry, frame assembly.
 // Every frame is a pure function of song time t (frames render in parallel and out of order):
-// no state between frames, no Math.random(). A shot draws onto the 2D canvas `s` (1920 x 1080, 16:9),
+// no state between frames, no Math.random(). A shot draws onto the 2D canvas `s` (W x H: 1920 x 1080 for the
+// 16:9 master; a per-ratio page sets window.CANVAS first, e.g. [864, 1080] in kinetic-4x5.html),
 // then the look's WebGL shader turns that into the finished frame.
-const W = 1920, H = 1080;
+const W = (window.CANVAS || [1920, 1080])[0], H = (window.CANVAS || [1920, 1080])[1];
 const RS = parseFloat(new URLSearchParams(location.search).get('scale')) || 1;
 const DUR = 366.83; // Airplane on the Highway, 2026 recording
 const TAU = Math.PI * 2;

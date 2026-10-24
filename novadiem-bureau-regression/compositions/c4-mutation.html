@@ -1,0 +1,74 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #c4 {
+          position: absolute;
+          inset: 0;
+        }
+        #c4 .statement {
+          top: 742px;
+          font-size: 58px;
+        }
+      </style>
+      <div id="c4" data-composition-id="c4" data-width="1920" data-height="1080">
+        <div id="c4-all" class="layer">
+          <svg class="full" viewBox="0 0 1920 1080">
+            <g id="c4-art"></g>
+          </svg>
+          <div class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate IV</div>
+          <div class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>The Mutation Test</div>
+          <div id="c4-st" class="statement"><span class="phrase">Break the guarantee.</span><span class="phrase red">The check must fail.</span></div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text, kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 31.25);
+          const art = K.$("c4-art");
+
+          // the author breaks the guarantee on purpose: mutation A, from fixture 135's expected field
+          const C = TW.card(art, 160, 160, 1000, 220, "scripts/log-append.sh", { right: "BEFORE IT IS ACCEPTED" });
+          TW.drawCard(K, C, K.T(31.83));
+          const good = text('TS="$(date -u +%Y-%m-%dT%H:%M:%SZ)"', { class: "mono code b", x: 196, y: 260 }, art);
+          K.reveal(good, K.T(32.44), 0.6);
+          const strike = el("path", { class: "ln ink", d: "M190 253H626", style: "stroke-width:3" }, art);
+          K.draw(strike, K.T(33.62), 0.4);
+          const bad = text('TS="2026-01-01T00:00:00Z"', { class: "mono code b", x: 196, y: 326 }, art);
+          const badMark = text("+", { class: "mono code b", x: 176, y: 326 }, art);
+          K.reveal(bad, K.T(34.2), 0.6);
+          K.fade(badMark, K.T(34.2), 0.3);
+          const tag = text("MUTATION A: A HARDCODED STAMP", { class: "mono cap b gold-t", x: 1132, y: 326, "text-anchor": "end" }, art);
+          K.reveal(tag, K.T(34.81), 0.6);
+
+          // run the suite against the broken script
+          const link = el("path", { class: "ln ink", d: "M660 380V452" }, art);
+          K.draw(link, K.T(35.39), 0.35);
+          const ah = TW.arrow(art, 660, 462, "d");
+          K.fade(ah, K.T(35.39) + 0.3, 0.2);
+          const R = TW.card(art, 160, 470, 1600, 200, "$ sh .bureau/regression/run.sh");
+          TW.drawCard(K, R, K.T(35.99));
+          const f1 = text("FAIL exit=1 135-log-append-real-timestamp.md", { class: "mono code b", x: 196, y: 568 }, art);
+          const f2 = text("    last output: FAIL: TS1 is 00:00:00Z placeholder, not a real clock read", { class: "mono code", x: 196, y: 622 }, art);
+          K.reveal(f1, K.T(36.57), 0.6);
+          K.reveal(f2, K.T(37.18), 0.8);
+          const x = TW.cross(art, 1700, 568, 14);
+          K.draw(x, K.T(37.78), 0.3);
+
+          K.reveal(K.$("c4-st"), K.T(38.96), 0.9);
+          const note = text("EVERY FIXTURE IS MUTATION-TESTED BY ITS AUTHOR. THEN THE LINE GOES BACK.", { class: "mono small dim", x: 960, y: 880, "text-anchor": "middle" }, art);
+          K.fade(note, K.T(40.15), 0.5);
+
+          K.out(K.$("c4-all"), K.R(42.65), 0.45);
+          window.__timelines["c4"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

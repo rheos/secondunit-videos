@@ -1,0 +1,22 @@
+{
+ "edits": [
+  {
+   "f0": 1040,
+   "f1": 1078,
+   "cx": 900,
+   "why": "poster crying close: centre on her eyes and the tear (x 900), not the measured face box that starts at 0"
+  },
+  {
+   "f0": 933,
+   "f1": 1040,
+   "cx": 1380,
+   "why": "poster 'at the Oscars': the strip rips at the right to show the statuette; hold on her small figure and the statuette (x 1140-1640), not the big head, which leaves no room for the snipe in 9:16"
+  },
+  {
+   "f0": 1744,
+   "f1": 1797,
+   "cx": 820,
+   "why": "dream farm, the boy's face closing his eyes: hold on his head (x 630-990 over the shot), not the pan toward the small doll at the right, which slid his face out of the window by f1796"
+  }
+ ]
+}

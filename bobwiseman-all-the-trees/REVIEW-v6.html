@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>All The Trees — a connected grove · v6</title>
+<style>
+  body{margin:0;background:#161c1d;color:#f0e6cc;font:17px/1.5 system-ui}
+  main{max-width:1200px;margin:auto;padding:28px}
+  h1{font-size:28px;margin:0 0 8px}p{max-width:900px;color:#c9c7b7}
+  video{width:100%;background:#101414;display:block}
+  nav{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0}
+  button,a{color:#f0e6cc}button{background:#293639;border:1px solid #78877d;border-radius:5px;padding:10px 14px;cursor:pointer;font:inherit}
+  button:hover,button:focus-visible{background:#3e514b}output{font-variant-numeric:tabular-nums}
+  small{color:#b6b9ac}.previous{font-size:15px}#status{min-height:1.5em}
+</style>
+<main>
+  <h1>A connected grove</h1>
+  <p>Full song · v6. The hidden trumpets emerge, birds put weight on branches, and a gold pulse travels through the roots. The heart sends that energy onward; each recipient keeps new gold buds.</p>
+  <video id="v" controls playsinline preload="metadata" aria-label="All The Trees, full v6 review" src="out/att_alchemy-v6-full_f00000-f03674_24fps_draft.mp4"></video>
+  <nav aria-label="Review moments">
+    <button data-time="0">From the beginning</button>
+    <button data-time="8.5">Hidden trumpets</button>
+    <button data-time="32.5">Distant grove</button>
+    <button data-time="36.5">Below ground</button>
+    <button data-time="48.5">Both people arrive</button>
+    <button data-time="56">Separate branch reveals</button>
+    <button data-time="63.7">Root exchange</button>
+    <button data-time="67.5">Birds land</button>
+    <button data-time="72">Wind and shelter</button>
+    <button data-time="77.7">Returning bird</button>
+    <button data-time="99.5">Heart sends warmth</button>
+    <button data-time="110">Brass passage</button>
+    <button data-time="129.5">Final relay</button>
+    <button data-time="136">A place to perch</button>
+  </nav>
+  <output id="time">Song time 0.00 s</output>
+  <p><small>The fifty-tree landscape, camera move underground and separate branch reveals are carried forward from v5. The cast now has different responses: listeners turn, carriers bend and caretakers open a canopy.</small></p>
+  <p><small>2 min 33 s · 24 fps · working cut. Trumpet accents and phrase timings remain provisional for listening review.</small></p>
+  <p class="previous"><a href="REVIEW-v5.html">Compare the v5 grove excerpt</a> · <a href="AUDIT-v4.html">Earlier directing audit</a></p>
+  <p id="status" role="status"></p>
+</main>
+<script>
+  const v=document.querySelector('video'),out=document.querySelector('output'),status=document.querySelector('#status');
+  document.querySelectorAll('button').forEach(b=>b.onclick=async()=>{
+    status.textContent='';v.currentTime=Number(b.dataset.time);
+    try{await v.play()}catch{status.textContent='Press play in the video controls to continue.'}
+  });
+  v.ontimeupdate=()=>out.textContent='Song time '+v.currentTime.toFixed(2)+' s';
+  v.onerror=()=>{status.textContent='The local movie could not be loaded. Check that the project preview server is running.'};
+</script>
+</html>

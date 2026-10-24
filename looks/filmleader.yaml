@@ -1,0 +1,43 @@
+slug: filmleader
+title: Film-leader countdown
+note: >-
+  Scratched grey academy leader with the sweeping wipe. Each number opens on a small scene, and the count runs
+  to eight and a half.
+used: Giulietta Masina test, Bob Wiseman
+cost: free
+group: code
+order: 240
+clip: filmleader.mp4
+tall: false
+status: approved
+engine: canvas2d
+project: bobwiseman-giulietta-masina
+code:
+  path: bobwiseman-giulietta-masina/js/leader/views.js
+  flag: null
+  page: bobwiseman-giulietta-masina/looks/leader.html
+  note: >-
+    On branch giulietta-masina (draft PR #90), not merged. views.js holds the three framings; leader.js,
+    pictures.js, main.js and timing.js stay local. leader-cap.html and leader-9x16-cap.html add the lyrics.
+rules:
+  - "Academy-style leader on grey stock: a darker clock-wipe wedge once per number, crosshair, two rings, aperture corner ticks, a big Helvetica numeral, a cue flash on each number's first frame"
+  - "Film damage every frame: density flicker, gate weave, wandering white and dark scratches, dust, a hair in the gate, fibres, emulsion flecks, grain"
+  - "One place in three framings: the dark cinema with the beam through smoke, the strip in the projector gate, the projected frame"
+  - Pictures are small frames of old black-and-white film painted in tone, laid in the leader circle under the wedge and crosshair
+  - On each picture word the numeral shrinks and lifts to the top of the ring
+  - Black and white only
+palette: []
+reference: Academy film-leader countdowns; Bob's 8 1/2 trailer (BFI 2015) for the scaffold that rises on "eight and a half"
+proof:
+  renders:
+    - bobwiseman-giulietta-masina/out/gm_leader-v2_f02220-f03337_24fps_draft.mp4
+  pr:
+    - rheos/secondunit-videos#90
+  youtube:
+    - e4CjHyhGUMk
+    - dW37ldfayw0
+    - 8eEP0rJv4RM
+verdict: 'Bob, 2026-10-11, on reel v2: "more interesting" (he singled out the countdown outro). Signed off 2026-10-14: "I am good with giulietta".'
+related:
+  - paparazzi
+  - filmposter

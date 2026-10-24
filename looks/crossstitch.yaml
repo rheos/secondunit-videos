@@ -1,0 +1,51 @@
+slug: crossstitch
+title: Cross-stitch sampler
+note: >-
+  Every X is two thread strokes with sheen on even-weave linen. The needle stitches each picture in; a cold
+  blue heart is unpicked and restitched red.
+used: Satisfied Mind, Bob Wiseman
+cost: free
+group: code
+order: 190
+clip: crossstitch.mp4
+tall: false
+status: approved
+engine: canvas2d
+project: bobwiseman-satisfied-mind
+code:
+  path: bobwiseman-satisfied-mind/js/crossstitch/core.js
+  flag: null
+  page: bobwiseman-satisfied-mind/looks/crossstitch.html
+  note: >-
+    On branch satisfied-mind (draft PR #84), not merged. core.js is the engine (linen, thread, backstitch,
+    needle, hoop); main.js and patterns.js (the motifs) stay local.
+rules:
+  - Aida even-weave linen with a hole at every cell corner; world units are stitch cells, integer coordinates are holes
+  - Every X is two legs, each leg two twisted thread strands with a sheen
+  - Lines in backstitch (smoke, snowflakes), French-knot eyes, cream running stitch round patches
+  - A DMC-like thread palette; words in the sampler's 5x7 alphabet
+  - Pictures stitch in pass by pass; changes are made by unpicking and restitching (the cold blue heart goes red)
+  - One sampler in a wooden hoop on a walnut table; the border runs round as the verse goes on
+  - Seeded only, no Math.random, no state carried between frames
+palette:
+  - "#e4d9c1"
+  - "#232026"
+  - "#bd2a30"
+  - "#2f62a8"
+  - "#a8d6f0"
+  - "#4a8c3c"
+  - "#e8b83a"
+reference: Alphabet samplers in counted cross-stitch on Aida cloth
+proof:
+  renders:
+    - bobwiseman-satisfied-mind/out/crossstitch_test-v2_f3300-f4752_24fps_draft.mp4
+  pr:
+    - rheos/secondunit-videos#84
+  youtube:
+    - PpGUzik5i2o
+    - puldjVp8I7U
+verdict: null
+related:
+  - engraving
+  - gameboard
+  - tarotdeck

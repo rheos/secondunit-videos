@@ -1,0 +1,42 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #furniture {
+          position: absolute;
+          inset: 0;
+          background: var(--bg);
+        }
+      </style>
+      <div data-hf-id="hf-be10" id="furniture" data-composition-id="furniture" data-width="1920" data-height="1080">
+        <svg data-hf-id="hf-be11" id="fu-ground" class="full" viewBox="0 0 1920 1080" aria-hidden="true" style="will-change: transform"></svg>
+        <svg data-hf-id="hf-be12" id="fu-frame" class="full" viewBox="0 0 1920 1080"></svg>
+      </div>
+
+      <script>
+        (() => {
+          const tl = gsap.timeline({ paused: true });
+          const K = BP.kit(tl, 0);
+          // stations are the Delegate's steps for one cold review (agents/delegate.md, main manager loop 3-9), the stage of the story, not live progress
+          BP.furniture(K, tl, {
+            stations: [
+              { label: "STAGE", at: 0 },
+              { label: "FINGERPRINT", at: 8.87 },
+              { label: "COLD REVIEW", at: 13.58 },
+              { label: "HASH MATCH", at: 18.88 },
+              { label: "COVERAGE", at: 30.65 },
+              { label: "LEDGER", at: 77.69 },
+            ],
+            sheets: [0, 8.87, 18.88, 30.65, 44.16, 56.54, 75.35],
+          });
+          window.__timelines["furniture"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>
+

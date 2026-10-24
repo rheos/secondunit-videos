@@ -1,0 +1,45 @@
+slug: blueprint
+title: Blueprint schematic
+note: >-
+  Pale linework on navy: maps, dials and brackets that draw themselves in, with magenta for whatever changes.
+  It cuts in against the paper scenes on the beat.
+used: Travel Agent, Bob Wiseman
+cost: free
+group: code
+collection: clean-line
+order: 350
+clip: blueprint.mp4
+tall: false
+status: draft
+engine: canvas2d
+project: bobwiseman-travel-agent
+code:
+  path: bobwiseman-travel-agent/js/kit.js
+  flag: null
+  page: bobwiseman-travel-agent/looks/film.html
+  note: schBG(), schFrame(), sty({sch:true}) and the sch shots in js/acts/
+rules:
+  - Navy ground (#0c1430) with a faint grid and corner marks
+  - Pale lavender and cyan linework, crisp, never pixelated, never boiling
+  - Maps, dials, brackets, hex lattices and stipple that draw themselves in
+  - Magenta (#ff3d9a) only for what changes
+  - Small monospace labels, plate numbers, measurement ticks
+  - Cuts against the paper scenes on the beat; in the last third the blueprint burns through the paper
+palette:
+  - "#0c1430"
+  - "#c9c6ff"
+  - "#8fe3ff"
+  - "#ff3d9a"
+  - "#f2f0ff"
+reference: Kevin Ngo's honey bee and fruit fly films, which cut paper scenes against dark schematic plates
+proof:
+  renders:
+    - bobwiseman-travel-agent/out/ta_film-v16_f00000-f09682_24fps_draft.mp4
+  pr:
+    - rheos/secondunit-videos#113
+  youtube:
+    - DZHAbJ2Ho3M
+verdict: null
+related:
+  - fieldguide
+  - surveyplate

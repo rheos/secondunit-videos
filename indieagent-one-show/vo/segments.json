@@ -1,0 +1,50 @@
+[
+ {
+  "plate": "I",
+  "file": "seg-00.mp3",
+  "seconds": 11.52,
+  "chars": 166
+ },
+ {
+  "plate": "II",
+  "file": "seg-01.mp3",
+  "seconds": 10.72,
+  "chars": 146
+ },
+ {
+  "plate": "III",
+  "file": "seg-02.mp3",
+  "seconds": 7.44,
+  "chars": 99
+ },
+ {
+  "plate": "IV",
+  "file": "seg-03.mp3",
+  "seconds": 4.16,
+  "chars": 49
+ },
+ {
+  "plate": "V",
+  "file": "seg-04.mp3",
+  "seconds": 8.24,
+  "chars": 119
+ },
+ {
+  "plate": "VI",
+  "file": "seg-05.mp3",
+  "seconds": 24.64,
+  "chars": 330
+ },
+ {
+  "plate": "VII",
+  "file": "seg-06.mp3",
+  "seconds": 11.28,
+  "chars": 158
+ },
+ {
+  "plate": "C",
+  "file": "seg-07.mp3",
+  "seconds": 4.64,
+  "chars": 51
+ }
+]

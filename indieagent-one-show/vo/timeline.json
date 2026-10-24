@@ -1,0 +1,6 @@
+{
+ "note": "Plate starts (s) and where each plate's voice line starts inside it. index.html and mix.py both read this; vo/embed.py copies it into index.html.",
+ "T": {"I": 0, "II": 12.5, "III": 25, "IV": 33.75, "V": 40, "VI": 50, "VII": 75, "C": 87.5},
+ "VO": {"I": 0.4, "II": 0.3, "III": 0.3, "IV": 0.25, "V": 0.3, "VI": 0.3, "VII": 0.3, "C": 0.4},
+ "END": 95
+}

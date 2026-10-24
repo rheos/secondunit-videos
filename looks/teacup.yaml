@@ -1,0 +1,49 @@
+slug: teacup
+title: Tea leaves
+note: >-
+  Overhead on a gingham cloth. The leaves in the cup gather into shapes, a hand turns the cup, and they swirl
+  into the next reading.
+used: You Don't Love Me test, Bob Wiseman
+cost: free
+group: code
+order: 270
+clip: teacup.mp4
+tall: false
+status: rejected
+engine: canvas2d
+project: bobwiseman-you-dont-love-me
+code:
+  path: bobwiseman-you-dont-love-me/js/teacup/cup.js
+  flag: null
+  page: bobwiseman-you-dont-love-me/looks/teacup.html
+  note: >-
+    On branch you-dont-love-me (draft PR #92), not merged; main.js and timing.js stay local. It was the bridge in
+    draft 1; on Bob's note (no little female figures, tell it in stained glass) draft 2 replaced it with
+    looks/glass-bridge.html.
+rules:
+  - Straight down on a tea-leaf reader's table, one location
+  - China cup and saucer with a daisy-chain rim band, gingham oilcloth, a bud vase with a daisy, a spoon
+  - Hand-drawn circles whose radius wobbles a little, so nothing looks compass-perfect
+  - Glaze highlights stay fixed to the light (top left) and never turn with the cup
+  - The leaves swirl and settle into tea-stain pictograms on each line; the reader's hand turns the cup and taps the rim
+palette:
+  - "#efe3cf"
+  - "#c9675b"
+  - "#fbf7ee"
+  - "#c69a3e"
+  - "#5f86b8"
+  - "#3a2414"
+  - "#b06a2a"
+  - "#c0293a"
+reference: Tea-leaf reading
+proof:
+  renders:
+    - bobwiseman-you-dont-love-me/out/ydlm_teacup-v1_f2808-f3648_24fps_draft.mp4
+  pr:
+    - rheos/secondunit-videos#92
+  youtube:
+    - hmi7b9OBc94
+    - kHeS0CbEZVY
+verdict: null
+related:
+  - stainedglass

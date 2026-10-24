@@ -1,0 +1,40 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #furniture {
+          position: absolute;
+          inset: 0;
+          background: var(--bg);
+        }
+      </style>
+      <div data-hf-id="hf-rc10" id="furniture" data-composition-id="furniture" data-width="1920" data-height="1080">
+        <svg data-hf-id="hf-rc11" id="fu-ground" class="full" viewBox="0 0 1920 1080" aria-hidden="true" style="will-change: transform"></svg>
+        <svg data-hf-id="hf-rc12" id="fu-frame" class="full" viewBox="0 0 1920 1080"></svg>
+      </div>
+
+      <script>
+        (() => {
+          const tl = gsap.timeline({ paused: true });
+          const K = BP.kit(tl, 0, "furniture");
+          // stations are a memory's life in the engine: recorded, amended, recalled, forgotten (plates IV-VIII);
+          // the tick appears at RECORD, so the bar stays empty while plates I-III set out the problem
+          BP.furniture(K, tl, {
+            stations: [
+              { label: "RECORD", at: 47.0 },
+              { label: "AMEND", at: 65.48 },
+              { label: "RECALL", at: 81.32 },
+              { label: "FORGET", at: 110.84 },
+            ],
+            sheets: [0, 14.72, 30.72, 47.0, 65.48, 81.32, 100.26, 110.84, 125.84, 138.52],
+          });
+          window.__timelines["furniture"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

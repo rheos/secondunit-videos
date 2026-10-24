@@ -1,0 +1,86 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #c3 {
+          position: absolute;
+          inset: 0;
+        }
+      </style>
+      <div id="c3" data-composition-id="c3" data-width="1920" data-height="1080">
+        <div id="c3-all" class="layer">
+          <svg class="full" viewBox="0 0 1920 1080">
+            <g id="c3-art"></g>
+          </svg>
+          <div class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate III</div>
+          <div class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>Launch</div>
+          <div class="statement">
+            <span id="c3-st-a" class="phrase">One run active,</span>
+            <span id="c3-st-b" class="phrase red">the rest parked.</span>
+          </div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text } = BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = BP.kit(tl, 19.46);
+          const art = K.$("c3-art");
+
+          // plate II's end state, static
+          const M = CM.map(art, { id: "c3" });
+          CM.hide([M.park5.g]);
+
+          // run 2 has merged, so run 3's dependency is met
+          const ok23 = CM.met(art, "e23");
+          CM.drawEdge(K, ok23, K.T(19.46), 0.35);
+          const lit = el("rect", { class: "ln line-strong", x: 576, y: 490, width: 178, height: 100, style: "stroke-width:3" }, art);
+          K.draw(lit, K.T(19.46) + 0.4, 0.5, "none");
+
+          // run 3 is enlarged out of the map: DETAIL A
+          const A = CM.callout(art, 665, 540, 118, "A", "M665 422V350H1220");
+          CM.drawCallout(K, A, K.T(20.06));
+          const I = CM.inset(art, "A", 3, { prev: 2 });
+          CM.hide([I.pr.g, I.prNote]);
+          CM.drawInsetFrame(K, I, K.T(21.25));
+
+          // the Envoy spawns run 3's Delegate as a subagent, a fresh session
+          const R = CM.route(art);
+          CM.drawEdge(K, R, K.T(21.83), 0.8);
+          CM.carry(K, tl, art, "M180 176V128H1520V236", K.T(22.41), 1.1);
+          const n1 = CM.topNote(art, "THE ENVOY SPAWNS RUN 3'S DELEGATE");
+          K.reveal(n1, K.T(22.41), 0.5);
+          CM.drawBox(K, I.del, K.T(23.59));
+          K.draw(I.dc, K.T(24.17), 0.25);
+          CM.drawBox(K, I.cond, K.T(24.17) + 0.2);
+          K.draw(I.branch, K.T(24.78), 0.5, "none");
+          I.specs.forEach((S, i) => CM.drawBox(K, S, K.T(25.36) + i * 0.15));
+          K.draw(I.bus, K.T(25.94), 0.5, "none");
+          K.fade(I.dir, K.T(25.94) + 0.2, 0.3);
+          I.files.forEach((F, i) => {
+            K.fade(F.icon, K.T(26.54) + i * 0.2, 0.3);
+            K.fade(F.name, K.T(26.54) + i * 0.2 + 0.1, 0.3);
+          });
+          K.reveal(I.note, K.T(27.12), 0.6);
+
+          // the runs that wait on it are parked, in plain view
+          K.fade(M.parkAll.fill, K.T(27.7), 0.5, 0.45);
+          K.draw(M.parkAll.frame, K.T(27.7), 0.8, "none");
+          K.reveal(M.parkAll.label, K.T(28.31), 0.5);
+
+          K.reveal(K.$("c3-st-a"), K.T(28.31), 0.55);
+          K.reveal(K.$("c3-st-b"), K.T(28.89), 0.55);
+          CM.out(tl, n1, K.R(32.4), 0.4);
+          CM.out(tl, ok23.g, K.R(31.8), 0.5);
+          CM.out(tl, K.$("c3-st-a").parentNode, K.R(32.4), 0.4);
+          window.__timelines["c3"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

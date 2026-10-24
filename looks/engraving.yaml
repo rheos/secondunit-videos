@@ -1,0 +1,46 @@
+slug: engraving
+title: Banknote engraving
+note: >-
+  Fine parallel lines whose width carries the shading, spirograph rosettes and red serials on cream security
+  paper. He swells until the note bends.
+used: Satisfied Mind, Bob Wiseman
+cost: free
+group: code
+order: 180
+clip: engraving.mp4
+tall: false
+status: approved
+engine: canvas2d + webgl
+project: bobwiseman-satisfied-mind
+code:
+  path: bobwiseman-satisfied-mind/js/banknote/core.js
+  flag: null
+  page: bobwiseman-satisfied-mind/looks/banknote.html
+  note: >-
+    On branch satisfied-mind (draft PR #84), not merged; shots.js stays local. Verse 2 is in the film. The
+    guitar-solo line drawing (break.js) was cut on Bob's organ-solo note.
+rules:
+  - Shapes are painted into three tone maps (darkness, hatch angle, form height); a WebGL pass turns them into line engraving
+  - Parallel lines whose width carries the tone, cross-hatch in the darks, lines swelling over the form
+  - Guilloche rosettes, lettering, features and serials are crisp 2D ink drawn on top in the same camera
+  - One currency-green ink plus red-brown serials, on cream security paper with fibres and a watermark
+  - Portraits sit in oval vignettes; a numbering machine stamps serials; the note's border bows as he swells
+palette:
+  - "#184234"
+  - "#80281e"
+  - "#efe8d3"
+reference: Banknote security printing (line engraving, guilloche rosettes, numbering-machine serials)
+proof:
+  renders:
+    - bobwiseman-satisfied-mind/out/banknote_sheet1.jpg
+  pr:
+    - rheos/secondunit-videos#84
+  youtube:
+    - PpGUzik5i2o
+    - puldjVp8I7U
+verdict: null
+related:
+  - gameboard
+  - crossstitch
+  - medical
+  - alchemy

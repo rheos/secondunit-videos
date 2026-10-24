@@ -1,0 +1,107 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #b4 {
+          position: absolute;
+          inset: 0;
+        }
+      </style>
+      <div id="b4" data-composition-id="b4" data-width="1920" data-height="1080">
+        <svg class="full" viewBox="0 0 1920 1080">
+          <g id="b4-rig" data-layout-allow-overlap data-layout-allow-occlusion></g>
+          <g id="b4-pair"></g>
+
+          <!-- write: FoafLedgerClient#updateTrustline, signed for the creditor -->
+          <g id="b4-w">
+            <rect id="b4-w-f" class="ln ink" x="540" y="540" width="840" height="190" />
+            <text id="b4-w-h" class="mono gold-t" x="568" y="578">WRITE · SIGNED</text>
+            <text id="b4-w-1" class="code b" x="568" y="620">ledger.updateTrustline({ creditlineGiven: "50.00",</text>
+            <text id="b4-w-2" class="code b" x="568" y="652">                         creditlineReceived: "50.00" })</text>
+            <text id="b4-w-3" class="code" x="568" y="696"><tspan class="dim">POST</tspan> /api/v1/networks/:net/trustlines/update <tspan class="dim">+ X-Signature</tspan></text>
+          </g>
+
+          <!-- read: FoafLedgerClient#userTrustlines, rows already in the viewer's frame -->
+          <g id="b4-r">
+            <rect id="b4-r-f" class="ln line-strong" x="540" y="540" width="840" height="190" />
+            <text id="b4-r-h" class="mono gold-t" x="568" y="578">READ · YOUR FRAME</text>
+            <text id="b4-r-1" class="code b" x="568" y="620">ledger.userTrustlines(net, you)</text>
+            <text id="b4-r-2" class="code" x="568" y="656"><tspan class="dim">balance</tspan> 0.00   <tspan class="dim">given</tspan> 50.00   <tspan class="dim">received</tspan> 50.00</text>
+            <text id="b4-r-3" class="code dim" x="568" y="696">balance is yours: negative means you owe</text>
+          </g>
+        </svg>
+        <div id="b4-label-l" class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate IV</div>
+        <div id="b4-label-r" class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>The Trustline</div>
+        <div class="statement two" data-layout-allow-overlap data-layout-allow-occlusion>
+          <div class="row"><span id="b4-st-a" class="phrase">A signed write sets the credit line.</span></div>
+          <div class="row"><span id="b4-st-b" class="phrase red">Every row reads from your side.</span></div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text, kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 38);
+          const R = FC.rig(K.$("b4-rig"));
+          const L = FC.light(R, "ledger");
+          const S = FC.lightSvc(R, "api");
+
+          K.fade(K.$("b4-label-l"), K.T(38.0), 0.4);
+          K.fade(K.$("b4-label-r"), K.T(38.0), 0.4);
+          FC.on(K, L, K.T(38.6));
+          FC.on(K, S, K.T(38.6) + 0.3);
+
+          // you and Mira (a confirmed contact from plate III), joined by a FOAF trustline
+          const pair = K.$("b4-pair");
+          const Y = 440;
+          const person = (x, nm) => {
+            const head = el("circle", { class: "ln ink", cx: x, cy: Y - 22, r: 28 }, pair);
+            const body = el("path", { class: "ln ink", d: `M${x - 54} ${Y + 58}C${x - 54} ${Y + 14} ${x + 54} ${Y + 14} ${x + 54} ${Y + 58}` }, pair);
+            const t = text(nm, { class: "who", x, y: Y + 92, "text-anchor": "middle" }, pair);
+            return [head, body, t];
+          };
+          const you = person(380, "YOU");
+          const mira = person(1540, "MIRA");
+          const line = el("path", { class: "ln line", d: `M460 ${Y}H1460`, style: "stroke-width: 3" }, pair);
+          const ends = el("path", { class: "ln line", d: `M460 ${Y - 10}V${Y + 10}M1460 ${Y - 10}V${Y + 10}` }, pair);
+          const tag = text("FOAF TRUSTLINE", { class: "mono small", x: 960, y: Y - 18, "text-anchor": "middle" }, pair);
+          const cr = text("CREDIT 50.00 EACH WAY", { class: "mono small gold-t", x: 960, y: Y + 34, "text-anchor": "middle" }, pair);
+          [you, mira].forEach(([h, b, t], i) => {
+            const at = K.T(39.25) + i * 0.3;
+            K.draw(h, at, 0.5);
+            K.draw(b, at + 0.15, 0.5);
+            K.fade(t, at + 0.3, 0.3);
+          });
+          K.draw(line, K.T(39.85), 0.9, "power2.inOut");
+          K.draw(ends, K.T(39.85) + 0.7, 0.3, "none");
+          K.fade(tag, K.T(40.5), 0.4);
+
+          // the write
+          K.draw(K.$("b4-w-f"), K.T(41.1), 0.7, "none");
+          K.fade(K.$("b4-w-h"), K.T(41.1) + 0.3, 0.3);
+          ["b4-w-1", "b4-w-2", "b4-w-3"].forEach((id, i) => K.reveal(K.$(id), K.T(41.75) + i * 0.45, 0.55));
+          K.reveal(K.$("b4-st-a"), K.T(42.4), 0.8);
+          K.fade(cr, K.T(43.65), 0.4);
+
+          // the read replaces it in the same frame
+          K.out(K.$("b4-w"), K.T(45.55), 0.35);
+          K.draw(K.$("b4-r-f"), K.T(46.15), 0.7, "none");
+          K.fade(K.$("b4-r-h"), K.T(46.15) + 0.3, 0.3);
+          ["b4-r-1", "b4-r-2", "b4-r-3"].forEach((id, i) => K.reveal(K.$(id), K.T(46.8) + i * 0.6, 0.55));
+          K.reveal(K.$("b4-st-b"), K.T(48.05), 0.9);
+
+          ["b4-pair", "b4-r", "b4-label-l", "b4-label-r"].forEach((id) => K.out(K.$(id), K.T(51.6), 0.35));
+          [L.fill, L.edge, S.fill, S.edge].forEach((n) => K.out(n, K.T(51.6), 0.35));
+          tl.to("#b4 .statement", { opacity: 0, duration: 0.35, ease: "power1.in" }, K.T(51.6));
+
+          window.__timelines["b4"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

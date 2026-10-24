@@ -1,0 +1,135 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #b6 {
+          position: absolute;
+          inset: 0;
+        }
+        #b6 svg text.acc {
+          fill: var(--accent);
+        }
+      </style>
+      <div data-hf-id="hf-s6kf" id="b6" data-composition-id="b6" data-width="1920" data-height="1080">
+        <div data-hf-id="hf-76z1" id="b6-content" class="layer">
+          <div data-hf-id="hf-gx3q" id="b6-lab-l" class="plate-label left">PLATE VI</div>
+          <div data-hf-id="hf-ii8o" id="b6-lab-r" class="plate-label right">SAFETY CLASSES</div>
+          <svg data-hf-id="hf-g1gj" id="b6-svg" class="full" viewBox="0 0 1920 1080"></svg>
+          <div data-hf-id="hf-mwwv" class="statement">
+            <span data-hf-id="hf-q0ol" id="b6-s1" class="phrase">Risky calls wait</span>
+            <span data-hf-id="hf-57au" id="b6-s2" class="phrase accent">for you.</span>
+          </div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text } = BP;
+          const tl = gsap.timeline({ paused: true });
+          const S = 75;
+          const K = BP.kit(tl, S);
+          const svg = K.$("b6-svg");
+
+          const XA = 300,
+            XG = 1100,
+            XB = 1640;
+          // six classes, lower three pass, upper three meet the gate
+          const CLASSES = [
+            ["READ", 290, "pass"],
+            ["DRAFT", 360, "audit"],
+            ["MUTATE", 430, "audit"],
+            ["DESTRUCTIVE", 540, "gate"],
+            ["EXTERNAL", 610, "gate-planned"],
+            ["FINANCIAL", 680, "gate-planned"],
+          ];
+          const rows = CLASSES.map(([name, y, kind]) => {
+            const lab = text(name, { class: "mono", x: XA - 24, y: y + 7, "text-anchor": "end" }, svg);
+            const upper = kind.startsWith("gate");
+            const lane = el("path", { class: "ln line", d: `M${XA} ${y}H${upper ? XG : XB}` }, svg);
+            const rest = upper ? el("path", { class: kind === "gate" ? "ln line" : "ln planned", d: `M${XG} ${y}H${XB}` }, svg) : null;
+            const tok = el("circle", { r: 8, class: "fill-line", opacity: 0, transform: `translate(${XA} ${y})` }, svg);
+            const full = el("path", { d: `M${XA} ${y}H${XB}`, fill: "none" }, svg);
+            const toGate = el("path", { d: `M${XA} ${y}H${XG - 20}`, fill: "none" }, svg);
+            const past = el("path", { d: `M${XG - 20} ${y}H${XB}`, fill: "none" }, svg);
+            let stamp = null;
+            if (kind === "audit") {
+              stamp = el("g", { opacity: 0 }, svg);
+              el("rect", { class: "ln thin line-strong", x: 1380, y: y - 30, width: 84, height: 22 }, stamp);
+              text("AUDIT", { class: "mono small", x: 1422, y: y - 13, "text-anchor": "middle", style: "font-size:13px" }, stamp);
+            }
+            return { name, y, kind, lab, lane, rest, tok, full, toGate, past, stamp };
+          });
+          const divider = el("path", { class: "ln line-strong", d: "M140 485H1720", style: "stroke-width:3" }, svg);
+          const divT = text("BELOW: STANDING GRANTS ALLOWED", { class: "mono small dim", x: 1720, y: 474, "text-anchor": "end" }, svg);
+
+          // the gate
+          const gate = el("g", {}, svg);
+          const post = el("path", { class: "ln line-strong", d: `M${XG} 505V715` }, svg);
+          const boom = el("g", {}, gate);
+          el("rect", { class: "ln line-strong", x: XG - 8, y: 510, width: 16, height: 200 }, boom);
+          for (let y = 520; y < 710; y += 24) el("path", { class: "ln thin line-strong", d: `M${XG - 8} ${y + 12}L${XG + 8} ${y}` }, boom);
+          const gateT = text("APPROVAL  ·  THIS EXACT CALL", { class: "mono small", x: XG, y: 745, "text-anchor": "middle" }, svg);
+          const held = text("APPROVAL_REQUIRED", { class: "mono small acc", x: XG + 22, y: 518, "data-layout-allow-overlap": "" }, svg);
+          const ok = text("APPROVED", { class: "mono small", x: XG + 52, y: 518, opacity: 0, "data-layout-allow-overlap": "" }, svg);
+          const tickBox = el("rect", { class: "ln thin line-strong", x: XG + 22, y: 503, width: 18, height: 18, opacity: 0 }, svg);
+          const tick = el("path", { class: "ln line-strong", d: `M${XG + 25} 512l5 5l9 -10` }, svg);
+          const never = text("NEVER A STANDING GRANT", { class: "mono small", x: XB, y: 745, "text-anchor": "end" }, svg);
+          const bracket = el("path", { class: "ln thin line", d: `M${XB + 20} 530h10V690h-10` }, svg);
+          const planT = text("EXECUTION PATH  ·  PLANNED", { class: "mono small planned-t", x: XB, y: 650, "text-anchor": "end" }, svg);
+
+          // cues
+          K.fade(K.$("b6-lab-l"), K.T(75.67), 0.4);
+          K.fade(K.$("b6-lab-r"), K.T(75.67), 0.4);
+          rows.forEach((r, i) => {
+            const at = K.T(75.67) + i * 0.16;
+            K.fade(r.lab, at, 0.3);
+            K.draw(r.lane, at + 0.1, 0.9, "none");
+            if (r.rest) r.kind === "gate" ? K.draw(r.rest, at + 0.9, 0.5, "none") : K.sweep(r.rest, at + 0.9, 0.5);
+          });
+          K.draw(divider, K.T(76.93), 0.8, "none");
+          K.fade(divT, K.T(77.55), 0.35);
+          K.draw(post, K.T(76.93), 0.4);
+          K.fade(boom, K.T(77.55), 0.3);
+          K.fade(gateT, K.T(77.55), 0.35);
+
+          // lower three pass; draft and mutate get the audit stamp on the way
+          rows.slice(0, 3).forEach((r, i) => {
+            const at = K.T(78.18 + i * 0.63);
+            tl.to(r.tok, { opacity: 1, duration: 0.15 }, at);
+            K.travel(r.tok, r.full, at, 1.8, "none");
+            if (r.stamp) K.fade(r.stamp, at + 1.4, 0.2);
+            tl.to(r.tok, { opacity: 0, duration: 0.2 }, at + 1.75);
+          });
+          // upper three stop at the gate
+          rows.slice(3).forEach((r, i) => {
+            const at = K.T(80.04 + i * 0.63);
+            tl.to(r.tok, { opacity: 1, duration: 0.15 }, at);
+            K.travel(r.tok, r.toGate, at, 1.2, "power2.out");
+          });
+          K.fade(held, K.T(81.93), 0.3);
+          K.fade(never, K.T(82.55), 0.35);
+          K.draw(bracket, K.T(82.55), 0.4);
+          K.fade(tickBox, K.T(83.8), 0.2);
+          K.draw(tick, K.T(83.8), 0.35);
+          tl.to(held, { opacity: 0, duration: 0.2 }, K.T(84.43));
+          tl.to(ok, { opacity: 1, duration: 0.25 }, K.T(84.43) + 0.2);
+          // the boom lifts: destructive passes; external and financial have no execution path yet
+          tl.to(boom, { scaleY: 0.08, svgOrigin: `${XG} 510`, duration: 0.7, ease: "power2.inOut" }, K.T(84.43));
+          K.travel(rows[3].tok, rows[3].past, K.T(85.05), 1.1, "power1.in");
+          tl.to(rows[3].tok, { opacity: 0, duration: 0.2 }, K.T(85.05) + 1.05);
+          tl.to([rows[4].tok, rows[5].tok], { opacity: 0.3, duration: 0.4 }, K.T(85.05));
+          K.fade(planT, K.T(85.68), 0.35);
+          K.reveal(K.$("b6-s1"), K.T(86.31), 0.6);
+          K.reveal(K.$("b6-s2"), K.T(86.91), 0.6);
+
+          K.out(K.$("b6-content"), K.R(89.42), 0.45);
+          window.__timelines["b6"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>
