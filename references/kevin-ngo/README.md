@@ -17,7 +17,10 @@ studied for new animation design recipes. The notes had lived only in session me
   recommendation, and what stays.
 - `STUDY-paperclip-and-sticky-note.md`: the shot list of the 2026-10-20 film (S1-S20, with the cut
   grid) and the fourteen recipes read off it (P01-P14), plus where each bears on our films.
-- `works-index.json`: the posts we have studied, K01-K16, with status IDs where recorded and the
+- `STUDY-video-call.md`: the 2026-10-23 animation over a real recorded conversation (a person and
+  the Dessa voice model) inside a drawn video call: shot grid S1-S14 and recipes V01-V08. The one
+  film here built on someone else's audio; the format for animating any real conversation.
+- `works-index.json`: the posts we have studied, K01-K17, with status IDs where recorded and the
   process facts from his own "How this was made" replies.
 - `STYLE-BRIEF.txt`: the marker-and-ink-on-cream-paper surface of the paperclip film, for when the
   look is wanted as well as the thinking.
@@ -55,6 +58,7 @@ why they read as clean.
 | `mv-projects/bobwiseman-travel-agent` | Built from his honey-bee prompt ("Kevin Ngo manner" in its README); gaps against his bee listed in the clean-vector memory. | drafts 1-17 |
 | `bobwiseman-travel-agent/js/arm.js` | The K06 robot-arm look as a switchable option (`?look=arm`). Kept for other films. | PR #239 |
 | `blender-orb-visualizer` | Take 01 shares K02's premise; his version anchors every cut on the orb. | takes 01-04 |
+| `mv-projects/indieagent-call-toon` | The K17 video-call format: an artist and their IndieAgent agent on a drawn call, mouths from the audio. Look test. | issue #306 |
 | `secondunit/CANVAS-LOOPS-OFFER.md` | Loop mechanisms from K12 feed the Canvas loops offer. | scoping doc |
 
 ## Sources

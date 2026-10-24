@@ -3,7 +3,7 @@
   "handle": "@kevin_t_ngo",
   "profile": "https://x.com/kevin_t_ngo",
   "note": "Posts we have studied, with stable IDs for the direction file. Status IDs are given where recorded; subscriber posts (K04, K05, K07) are study only and must never be republished. No frames are committed in this profile.",
-  "updated": "2026-10-20",
+  "updated": "2026-10-23",
   "works": [
     {
       "id": "K01",
@@ -130,6 +130,15 @@
       "date": "2026",
       "url": "github mirrors: qq89987112/slow-square, qq89987112/tapioca-animation, aaronvg/figure-sheet, aaronvg/math_class, bimohxh/cyber-crowd (his kengocodes account is gone)",
       "observed": "One HTML file, Canvas 2D, no libraries; mulberry32 seeded RNG per subsystem; lines drawn as filled ribbons with sine-sum wobble and pressure; paper rendered once per seed; slow-square is a pure function of t (window.SLOW.draw(t)); he scores 40 seeds and keeps the best."
+    },
+    {
+      "id": "K17",
+      "title": "Animation over a Dessa demo conversation",
+      "date": "2026-10-23",
+      "url": "https://x.com/kevin_t_ngo/status/2113826699402219999",
+      "format": "1920x1080, 30 fps, 2:17.6, with sound (Block's published Dessa demo audio)",
+      "observed": "A drawn video-call window: two tiles, name pills, speaking indicator, live captions with speaker labels, toolbar. Flat-vector characters with heavy black outlines on outline-free flat rooms (warm for the person, cool for the AI); mouths cycle with the voice; black mitt hands appear only for gestures. Static two-up for up to 42 s, four 2-3 s punch-ins (three on the listener), one push-in and one truck across the tiles, end card naming both speakers. Study: STUDY-video-call.md (V01-V08).",
+      "ours": "Look test mv-projects/indieagent-call-toon, issue #306."
     }
   ]
 }

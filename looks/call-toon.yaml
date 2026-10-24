@@ -1,0 +1,57 @@
+slug: call-toon
+title: Animated video call
+note: >-
+  A real conversation played over a drawn video call. Two tiles, two bold-outline characters in flat rooms, live
+  captions, and mouths that move with each voice.
+used: IndieAgent test
+cost: free
+group: code
+collection: clean-line
+order: 370
+clip: call-toon.mp4
+tall: false
+status: test
+engine: hyperframes
+project: indieagent-call-toon
+code:
+  path: indieagent-call-toon/index.html
+  flag: null
+  page: indieagent-call-toon/index.html
+  note: >-
+    tools/build_audio.py turns script.json into one stem per speaker plus cues.js (lines, word times, per-frame
+    levels); the page draws every frame from t in one GSAP driver (draw(t)), so any frame renders on its own.
+    Swap the audio for a real recording and rerun build_audio.py; the direction (gestures, punch-ins, overrides)
+    is the constants block in index.html.
+rules:
+  - "The frame is the call: dark call window, two rounded tiles, name pills, speaking ring and badge, live captions with speaker labels, a toolbar; our own chrome, never a real app's"
+  - Heavy even black ink (5 px at 720) on the characters only; the rooms are flat colour with no outline
+  - One room and one colour family per speaker (warm for the artist, cool for the agent)
+  - "Faces: white disc or oval, dot eyes in white circles, arched brows, one mouth at a time from seven shapes"
+  - Mouth from that speaker's own stem level, one shape per 3 frames (100 ms); listeners smile, nod and glance at the other tile
+  - Black mitt hands appear only for a gesture (wave, palms out, hands on head) and leave; no arms at rest
+  - Static two-up most of the time; a slow push on a long speech; hard punch-ins of 2 to 3 s, mostly on the listener's reaction
+  - Captions roll in chunks of up to 52 characters, word by word from the audio; talk-over shows as two stacked lines
+  - Open on one person waiting and the other joining; close on a card that names both
+palette:
+  - "#1e1f24"
+  - "#15151a"
+  - "#f5c9a2"
+  - "#2f8f83"
+  - "#e9b23f"
+  - "#b8cde6"
+  - "#2e3f73"
+  - "#c8341e"
+  - "#3dba7a"
+reference: >-
+  Kevin Ngo's animation over Block's Dessa demo conversation (K17, x.com/kevin_t_ngo/status/2113826699402219999);
+  study in references/kevin-ngo/STUDY-video-call.md
+proof:
+  renders:
+    - indieagent-call-toon/out/call-toon_test02b_720.mp4 (ElevenLabs voices)
+    - indieagent-call-toon/out/call-toon_test01_720.mp4 (placeholder voices)
+  pr:
+    - rheos/secondunit-videos#307
+  youtube: []
+verdict: "Robin, 2026-10-24, on test02 (ElevenLabs voices): \"Test 02 lands.\""
+related:
+  - outlinecartoon
