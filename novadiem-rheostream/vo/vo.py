@@ -9,7 +9,7 @@ KEY = (pathlib.Path.home() / "Documents/novadiem/keys/elevenlabs/api.txt").read_
 VOICE = "JBFqnCBsd6RMkjVDRZzb"  # George, the Recallatron film's narrator (Robin, 2026-10-21: "George again")
 SEGS = [
  ("I", "[calm, warm] Working alone means living in a pile of tools. One finds the work, one tracks it, one remembers, and a few agent routines are stitched between them. Each is useful. Together, they trap your history: the lead knows nothing of the project it became."),
- ("II", "Ree-oh Stream rebuilds those parts as one system you own. Each workspace is its own database, so one can never read another's rows. Four modules sit on a small core, and agents come in through one door. Follow one inquiry through it."),
+ ("II", "Ree-oh Stream rebuilds those parts as one system you own. Your records live in your own Postgres. Four modules sit on a small core, and agents come in through one door. Follow one inquiry through it."),
  ("III", "Your website signs the inquiry and sends it in. Ree-oh Stream checks the signature before it writes a thing, stores a receipt, the payload and an event in one commit, and only then says yes. Send it twice, and it is still one lead."),
  ("IV", "The save and its announcement are a single commit. A worker leases the job. If the process dies halfway, the lease runs out and the work runs again: safely, never twice. No broker, no workflow engine. Ordinary tables carry everything."),
  ("V", "Who sent it? Ree-oh Stream links a person only on evidence a connection proved. A matching name is a question for you, not an answer, because a wrong match shows one person's history to another. And every merge can be undone."),

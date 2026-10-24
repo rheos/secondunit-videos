@@ -45,9 +45,9 @@
           });
 
           // one system: the workspace, its channel, four mills on a small core, one door
-          const box = el("rect", { class: "ln line-strong", x: 150, y: 150, width: 1340, height: 580 }, svg);
+          const box = el("rect", { class: "ln line-strong", x: 150, y: 150, width: 1620, height: 580 }, svg);
           const sysT = text("ONE SYSTEM YOU OWN", { class: "lab", x: 180, y: 196 }, svg);
-          const dbT = text("A WORKSPACE · ITS OWN DATABASE", { class: "ty sm", x: 180, y: 228 }, svg);
+          const dbT = text("YOUR RECORDS IN YOUR OWN POSTGRES", { class: "ty sm", x: 180, y: 228 }, svg);
           const ch = RS.basin(svg, 200, 420, 1240, 80, { level: 0.5, cls: "line-strong" });
           const MILLS = [
             [250, "LEADS"],
@@ -67,16 +67,13 @@
           const door = el("path", { class: "ln line-strong", d: "M1372 150V128H1428V150M1386 150V420M1414 150V420" }, svg);
           const doorT = text("ONE DOOR", { class: "lab sm", x: 1360, y: 200, "text-anchor": "end" }, svg);
           const agents = [1360, 1400, 1440].map((x, i) => ({ l: el("path", { class: "ln thin line-strong", d: `M${x} 100L1400 124` }, svg) }));
-          // another workspace, sealed off: a connection to this one cannot read that one's rows
-          const box2 = el("rect", { class: "ln line", x: 1560, y: 150, width: 290, height: 580 }, svg);
-          const ch2 = RS.basin(svg, 1600, 420, 210, 80, { level: 0.5 });
-          const box2T = text("ANOTHER", { class: "lab sm dim", x: 1705, y: 196, "text-anchor": "middle" }, svg);
-          const box2T2 = text("WORKSPACE", { class: "lab sm dim", x: 1705, y: 224, "text-anchor": "middle" }, svg);
-          const probe = el("path", { class: "ln line-strong", d: "M1436 290H1515" }, svg);
-          const probeH = RS.head(svg, 1522, 290, "r");
-          const xx = RS.cross(svg, 1525, 290, 15);
-          const noT = text("CANNOT READ", { class: "lab sm acc", x: 1705, y: 600, "text-anchor": "middle" }, svg);
-          const noT2 = text("ITS ROWS", { class: "lab sm acc", x: 1705, y: 628, "text-anchor": "middle" }, svg);
+          // your own Postgres, under the core: where every record lives
+          const pg = el("path", { class: "ln line-strong", d: "M1560 452V600A80 22 0 0 0 1720 600V452" }, svg);
+          const pgTop = el("ellipse", { class: "ln line-strong", cx: 1640, cy: 452, rx: 80, ry: 22 }, svg);
+          const pgRows = el("path", { class: "ln thin line", d: "M1580 510H1700M1580 540H1700M1580 570H1700" }, svg);
+          const pgT = text("POSTGRES", { class: "lab sm", x: 1640, y: 404, "text-anchor": "middle" }, svg);
+          const pgPipe = el("path", { class: "ln line", d: "M1440 608H1560" }, svg);
+          const pgT2 = text("YOUR RECORDS", { class: "ty sm", x: 1640, y: 664, "text-anchor": "middle" }, svg);
           // the inquiry, at the inlet
           const P = RS.dot(svg);
 
@@ -94,16 +91,12 @@
           K.draw(box, W("one"), 1.0, "power1.inOut");
           K.typed(sysT, W("system") - 0.1, { cps: 36, cursor: false });
           // "each workspace is its own database, so one can never read another's rows"
-          K.typed(dbT, W("workspace"), { cps: 40, cursor: false });
-          K.draw(box2, W("database") + 0.2, 0.8);
-          RS.showBasin(K, ch2, W("database") + 0.5, 0.5);
-          K.typed(box2T, W("database") + 0.7, { cps: 34, cursor: false });
-          K.typed(box2T2, W("database") + 1.0, { cps: 34, cursor: false });
-          K.draw(probe, W("never") - 0.1, 0.3, "power1.in");
-          K.draw(probeH, W("never") + 0.2, 0.12, "power2.out", false);
-          K.stamp(xx, W("read") + 0.05, { origin: "1525 290", from: 1.8 });
-          K.typed(noT, W("another's") + 0.1, { cps: 34, cursor: false });
-          K.typed(noT2, W("rows"), { cps: 34, cursor: false });
+          K.typed(dbT, W("records") - 0.1, { cps: 46, cursor: false });
+          K.draw(pgTop, W("records") - 0.2, 0.4);
+          K.draw(pg, W("records"), 0.6);
+          K.draw(pgRows, W("live"), 0.5, "none", false);
+          K.typed(pgT, W("postgres") - 0.1, { cps: 34, cursor: false });
+          K.typed(pgT2, W("postgres") + 0.3, { cps: 40, cursor: false });
           // "four modules sit on a small core"
           mills.forEach((m, i) => {
             const t = W("four") + i * 0.3;
@@ -114,6 +107,7 @@
           });
           K.slam(K.$("b2-s1"), W("four") + 0.4, { stagger: 0.022 });
           K.draw(core, W("small") - 0.2, 0.6, "none");
+          K.draw(pgPipe, W("core"), 0.3, "power2.out", false);
           K.typed(coreT, W("core"), { cps: 30, cursor: false });
           // "and agents come in through one door"
           K.draw(door, W("agents") - 0.1, 0.5);

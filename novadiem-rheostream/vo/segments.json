@@ -11,9 +11,9 @@
  {
   "plate": "II",
   "file": "seg-01-p.wav",
-  "seconds": 15.495,
-  "chars": 233,
-  "sha256": "068692577fc3cd5a457d148b3a282cf0eb591265df1f8df1f555c284002ffe72",
+  "seconds": 13.388,
+  "chars": 199,
+  "sha256": "ae7f562b9eacde81ccd0c2b394fcfbba63de7f3fcace18fad7c06f9bb70bd484",
   "source": "seg-01.mp3",
   "tempo": 1.1
  },
