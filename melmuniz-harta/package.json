@@ -1,0 +1,7 @@
+{
+  "name": "melmuniz-harta",
+  "private": true,
+  "type": "module",
+  "description": "Mel Muñiz, Harta: cut-paper music video with timed Spanish captions, forked from the In Her Dream cut-paper kit.",
+  "devDependencies": { "playwright": "^1.55.0" }
+}
