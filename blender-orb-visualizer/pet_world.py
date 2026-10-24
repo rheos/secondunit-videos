@@ -434,6 +434,65 @@ def pile_items(n):
     vis(hook_keys, n < 4); vis(hook_scarf, n < 5); vis(hook_coat, n < 6)
     return PILE_ORDER[:n]
 
+# ---------- draft 2: the wall clock over the door and the tear-off calendar over the couch ----------
+# Bob (d1b, round 58) didn't read refrain 1 as days going by. These two say it in every shot that sees the back wall:
+# the clock spins in the time-lapses, the calendar drops a page each dawn. Other acts set them once (clock_at, cal_day).
+mm("calred", "#c8483a", .03, .05); mm("page", "#f4eedf", .02, .06)
+CLOCK = Vector((2.4, 2.985, 2.47))
+def _stepped_disc(name, r, y, material, parent, step=.03):
+    parts = []
+    for k in range(int(2 * r / step)):
+        z = -r + (k + .5) * step
+        hw = round(math.sqrt(max(0.0, r * r - z * z)) / step) * step
+        if hw > 0: parts.append(((2 * hw, .02, step), (0, y, z)))
+    return blocks(name, parts, material, parent)
+clock = empty("clock", CLOCK)
+_stepped_disc("clockRim", .23, .0, M["wood"], clock); _stepped_disc("clockFace", .2, -.015, M["cream"], clock)
+blocks("clockTicks", [((.03, .01, .06), (0, -.03, .16)), ((.03, .01, .06), (0, -.03, -.16)), ((.06, .01, .03), (.16, -.03, 0)),
+                      ((.06, .01, .03), (-.16, -.03, 0))], M["ink"], clock)
+clock_h = empty("clockH", (0, -.035, 0), clock); box("clockHB", (.035, .012, .11), (0, 0, .045), M["ink"], clock_h)
+clock_m = empty("clockM", (0, -.045, 0), clock); box("clockMB", (.022, .012, .16), (0, 0, .07), M["ink"], clock_m)
+box("clockPin", (.03, .015, .03), (0, -.055, 0), M["brass"], clock)
+def clock_at(fr, hours, spin=1.0):
+    """key the hands to `hours` (float, 0-24) on frame fr; spin > 1 runs the minute hand slower than true so a
+    time-lapse reads as fast without strobing (true speed would turn it 12x per hour-hand turn)"""
+    key(clock_h, fr, rot=(0, R(30 * hours), 0)); key(clock_m, fr, rot=(0, R(360 * hours / spin), 0))
+
+CAL = Vector((-.85, 2.99, 1.74))                  # over the couch, left of the picture, near his head
+calendar = empty("calendar", CAL)
+box("calBack", (.46, .02, .62), (0, .0, 0), M["wood"], calendar); box("calHead", (.44, .03, .13), (0, -.02, .23), M["calred"], calendar)
+box("calNail", (.03, .03, .03), (0, -.035, .33), M["brass"], calendar)
+CAL_PAGES = {}
+def cal_page(n):
+    """the page for day n (two big digits), an empty in front of the pad; built once per number"""
+    if n in CAL_PAGES: return CAL_PAGES[n]
+    pg = empty(f"calPage{n}", (0, 0, 0), calendar)
+    box(f"calPageB{n}", (.42, .015, .42), (0, -.025, -.06), M["page"], pg)
+    s = f"{n:02d}"; c = .05; parts = []
+    for i, ch in enumerate(s):
+        for j, row in enumerate(DIG[ch]):
+            for k, px in enumerate(row):
+                if px == "#": parts.append(((c * .92, .012, c * .92), ((i * 4 + k - 3) * c, -.035, -.06 + (2 - j) * c)))
+    blocks(f"calPageD{n}", parts, M["ink"], pg)
+    CAL_PAGES[n] = pg
+    return pg
+def cal_day(n):
+    """static: page n on the pad, every other page hidden (stills and acts that hold one day)"""
+    pg = cal_page(n)
+    for m, ob in CAL_PAGES.items(): vis(ob, m == n)
+    pg.location = (0, 0, 0); pg.rotation_euler = (0, 0, 0)
+    return pg
+def cal_flip(n, t0, dur=.4):
+    """keyed: page n tears off at song second t0 and flutters down behind the couch back in `dur` s while page
+    n + 1 shows under it"""
+    a, b = cal_page(n), cal_page(n + 1)
+    f0, f1 = sec(t0), sec(t0 + dur)
+    show(b, f0, True)
+    key(a, f0, loc=(0, -.006, 0), rot=(0, 0, 0))
+    key(a, (f0 + f1) // 2, loc=(.12, -.09, -.4), rot=(R(-25), R(30), 0))
+    key(a, f1, loc=(.06, -.01, -1.0), rot=(R(-10), R(-15), 0))
+    show(a, f1, False)
+
 # ---------- extra LCD screens (26 x 18 dots) ----------
 DIG = {"0": ["###", "#.#", "#.#", "#.#", "###"], "1": [".#.", "##.", ".#.", ".#.", "###"], "2": ["###", "..#", "###", "#..", "###"],
        "3": ["###", "..#", ".##", "..#", "###"], "4": ["#.#", "#.#", "###", "..#", "..#"], "5": ["###", "#..", "###", "..#", "###"],
@@ -538,7 +597,13 @@ def act_setup(n):
     film_setup(out, f0, f1)
     for o in list(scene.objects):
         if o.type == "CAMERA" and o.name.startswith("CL_cam_"): bpy.data.objects.remove(o)
+    if ACT_CAL[n] is not None: cal_day(ACT_CAL[n])
+    clock_h.rotation_euler = (0, R(30 * ACT_CLOCK[n]), 0); clock_m.rotation_euler = (0, R(360 * ACT_CLOCK[n]), 0)
     return f0, f1, out
+# draft 2: what the calendar and clock show in each act (act 2 keys its own time-lapse, 12 -> 17; act 5 keys the
+# search running from morning into the night; act 6 goes on from that night; act 7's outro is the next day)
+ACT_CAL = {0: 12, 1: 12, 2: None, 3: 17, 4: 17, 5: 17, 6: 17, 7: 18}
+ACT_CLOCK = {0: 7.0, 1: 7.25, 2: 7.5, 3: 7.6, 4: 7.75, 5: 8.0, 6: 21.1, 7: 10.0}
 
 _MAN_KEYED = ["root", "pel", "hipL", "hipR", "kneeL", "kneeR", "torso", "neck", "shL", "shR", "elL", "elR"]
 def key_man(fr, **kw):

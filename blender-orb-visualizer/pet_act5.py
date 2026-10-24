@@ -220,6 +220,13 @@ for f in range(F0, F1 + 1):
     for i, el in enumerate(RAMP):
         el.color = (*[lerp(b, a, day) for a, b in zip(SKY_DAY[i], SKY_NIGHT[i])], 1); el.keyframe_insert("color", frame=f)
     scene.view_settings.exposure = expo; scene.view_settings.keyframe_insert("exposure", frame=f)
+    # draft 2: the same time-lapse device as refrain 1. The search takes the whole day: the clock runs 8:00 -> 21:00
+    # over the held voice and the sun's patch walks the floor as it does there (pet_act2.sun_dir).
+    hrs = 8.0 + 13.0 * clamp((t - 105.8) / 15.2) + max(0.0, t - 121.0) / 3600
+    key(W.clock_h, f, rot=(0, R(30 * hrs), 0)); key(W.clock_m, f, rot=(0, R(360 * hrs), 0))
+    v = clamp((hrs - 6.0) / 13.5); a, e = R(lerp(-55, 55, v)), R(20 + 35 * math.sin(math.pi * v))
+    W.sunob.rotation_euler = Vector((math.sin(a) * math.cos(e), -math.cos(a) * math.cos(e), -math.sin(e))).to_track_quat('-Z', 'Y').to_euler()
+    W.sunob.keyframe_insert("rotation_euler", frame=f)
 
     W.key_man(f, **man_pose(t))
     hand = MAN["handR"].matrix_world.translation.copy()
