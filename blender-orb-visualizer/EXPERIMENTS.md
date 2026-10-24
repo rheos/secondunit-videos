@@ -282,3 +282,39 @@ soft wash; leash line thin. Act 7: the leash on the collar doesn't show in the u
 Pile floor spots differ slightly between acts 5, 6 and 7.
 
 **Verdict.** Waiting on Robin.
+
+## The pet: draft 2, the days read as days (2026-10-23)
+
+**Brief.** Bob on d1b (round 58, 2026-10-21): he likes the pet most, but "49 - 1:03 I don't get it". On 2026-10-23 he
+called it the winner. Robin's reading: refrain 1 is meant to show days going by, and d1 didn't say so. Make the passing
+of days unmistakable there without changing the story, and use the same device in every chorus.
+
+**Why d1 failed.** Its time-lapse was a low side wide where the window was a sliver at the frame edge; the light change
+was a colour wash over the whole room; the man and dog jumped between poses each quarter-day, which read as glitches;
+three LCD cut-ins broke it into pieces; the pile was hidden behind the dog at night.
+
+**What d2 does.** Act 2 is one front-on wide with a slow push from 51.0 to 63.77: window left, the man centre, the
+door, mat and hooks right. Five days, each shorter than the last (2.9, 2.5, 2.15, 1.95, 1.8 s), then real time again at
+62.3 on the sixth morning. Each day: the sun's patch walks the floor left to right (azimuth -55 to 55, elevation 20-55),
+dusk goes orange, night goes blue with only the LCD lighting his face; a wall clock over the door spins (the minute
+hand at a quarter of true speed so it doesn't strobe); a tear-off calendar over the couch drops a page each dawn,
+12 to 17, the page fluttering down behind the couch back; the sill plant droops a step. The man never moves but for a
+slow slump and a hunch at night. The dog does one errand a day at time-lapse speed: the shoe from his feet (act 1's
+end), then the keys, the scarf and the coat off the hooks (he rears up with his paws on the side table), each onto the
+mat; he sits by the pile facing the man, his ears drop at nightfall, he sleeps on the pile. Day five he only lifts his
+head. One LCD insert on the third night: the pet dies, a new egg, a new pet.
+
+**The other choruses.** Refrain 2 (act 5, the search) now runs the same device: the clock goes 8:00 to 21:00 over the
+held voice and the sun patch walks the floor, so the search visibly takes all day. Refrain 3 (act 7) is the park, one
+bright morning, the payoff; no time-lapse there on purpose.
+
+**Continuity.** The clock and calendar live in `pet_world.py` and every act sets them (`ACT_CAL`, `ACT_CLOCK`: 12 in
+acts 0-1, 17 after the time-lapse, 18 in the outro). `tools/vis_check.py` builds each act and ray-casts sample points
+on both from every frame's camera; only frames that see them were re-rendered (2,183 of 3,981, spans padded 3 frames;
+the d1b frames they replaced are in `act<N>/d1b-frames/`). Stills: `~/Downloads/pet-d2-stills/`.
+
+**Render.** Robin's go, cap $5. Modal per act, logs `out/film/pet/modal_d2_act<N>.log`.
+The first run (00:03 Pacific, Oct 24) died with the Mac's GUI at about 00:09, 9 minutes into act 2; no frame came back,
+because a container returns its frames only when its whole batch is done (~$0.45 spent for nothing). `modal_pet.py`
+now also writes every frame to the Modal volume `pet-frames` (`/vol/act<N>/`) and the re-run uses `modal run
+--detach`, so a crash leaves the frames fetchable (`modal volume get pet-frames act<N> ...`).

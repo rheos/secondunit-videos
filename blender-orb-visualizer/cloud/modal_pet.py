@@ -27,9 +27,13 @@ IMG = (modal.Image.debian_slim(python_version="3.11").apt_install(*APT).uv_pip_i
        .add_local_dir(ROOT, remote_path="/lab", ignore=lambda p: not (p.name in LAB)))
 
 app = modal.App("pet-render")
+# Every frame is also saved to this volume as it renders, so a Mac crash mid-run loses nothing (2026-10-24: the client
+# died 9 min into act 2 and the containers' finished frames, held for the return, went with it). Run with
+# `modal run --detach ...` and fetch afterwards: modal volume get pet-frames act2 out/film/pet/act2/vol
+VOL = modal.Volume.from_name("pet-frames", create_if_missing=True)
 
 
-@app.function(image=IMG, cpu=8, memory=8192, timeout=3 * 3600)
+@app.function(image=IMG, cpu=8, memory=8192, timeout=3 * 3600, volumes={"/vol": VOL})
 def render_act(act: int, frames: list[int], res: int, samples: int):
     """Build the act's scene (the script runs to run(OUT), which renders nothing without --render/--stills) and render
     the given frames one by one; returns {frame: png bytes} plus timings."""
@@ -54,7 +58,11 @@ def render_act(act: int, frames: list[int], res: int, samples: int):
         scn.render.filepath = f"/tmp/{f:05d}.png"
         bpy.ops.render.render(write_still=True)
         out[f] = pathlib.Path(scn.render.filepath).read_bytes()
+        d = pathlib.Path(f"/vol/act{act}"); d.mkdir(parents=True, exist_ok=True)
+        (d / f"{f:05d}.png").write_bytes(out[f])
+        if len(out) % 3 == 0: VOL.commit()
         times.append(round(time.time() - t, 1))
+    VOL.commit()
     try:
         import gpu
         renderer = gpu.platform.renderer_get()
