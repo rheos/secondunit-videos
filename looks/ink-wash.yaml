@@ -1,0 +1,51 @@
+slug: ink-wash
+title: Ink-wash landscape
+note: >-
+  Ink on warm rice paper. Near rocks in true black, karst peaks textured with fine brush strokes, far ranges
+  dissolving into drifting mist. One small red.
+used: IndieAgent test
+cost: free
+group: code
+order: 380
+clip: ink-wash.mp4
+tall: false
+status: test
+engine: canvas2d (CPU) in hyperframes
+project: indieagent-ink-wash
+code:
+  path: indieagent-ink-wash/js/inkkit.js
+  flag: null
+  page: indieagent-ink-wash/index.html
+  note: >-
+    inkkit.js is the reusable part: brush (pressure stroke, dry brush, blob, moss dots, tone), inkify (wet edge,
+    granulation, bleed) run once per baked card, paperField, and unify (edge wobble along paper fibres, wicking,
+    paper texture, vignette, dither) run on every frame. scene.js is this test's subject. All CPU Canvas2D, no
+    WebGL, so it renders headless anywhere, the cloud render included; about 0.8 s a frame at 720p.
+rules:
+  - Warm rice paper (#efe7dc) is the sky, the mist and the water; never pure white, never flat (fibre field)
+  - Every grey is ink diluted toward the paper colour (tone 0 ink to 1 paper), never a neutral grey
+  - "Three distances: near mass in true black, peaks at tone 0.35 to 0.6, far ranges 0.7 to 0.8 with no inner detail"
+  - "Peaks are built from a spire plus lower shoulders behind and in front; hemp-fibre strokes run down the slope; a dark pressure contour on the shadow side; moss dots and tiny pines on the top"
+  - Every mass fades into mist from its base; texture stops where the ink stops
+  - "Cards are baked once and inkified: wet edge 0.4 to 0.5, granulation 0.2 to 0.26, bleed 1 to 1.2 px (far ranges 0.1, 0.1, 0.5)"
+  - "Whole-frame unify on every frame: edges wobble along the paper fibres, dark ink wicks into lighter paper, 1 LSB dither"
+  - "Mist is wisps, not a band: domain-warped noise stretched sideways, drifting, at the base of each depth plane"
+  - Paint-in by value at the open, darkest ink first
+  - Red under 2 percent of the frame
+palette:
+  - "#efe7dc"
+  - "#0b0906"
+  - "#c8341e"
+reference: >-
+  Chinese shan shui ink-wash painting; method studied from Leon Lin's shanshui (github.com/Leonxlnx/shanshui, MIT),
+  references/leon-lin/STUDY-shanshui.md
+proof:
+  renders:
+    - indieagent-ink-wash/out/ink-wash_test01_720.mp4
+  pr: []
+  youtube: []
+verdict: null
+related:
+  - water
+  - woodcut
+  - charcoal
