@@ -1,0 +1,29 @@
+---
+- name: stand
+  image: stand2
+  seconds: 10
+  key: green
+  engine: kling
+  elements:
+  - frontal: refs/wyrd-front.png
+    refs:
+    - refs/wyrd-side.png
+    - refs/wyrd-back.png
+    - refs/wyrd-head.png
+  prompt: "@Element1, the Wyrd One, exactly as his reference sheet: wide-brim hat,
+    dense matte black cord-fringe veil hiding the whole face (never a face or mouth),
+    long dark wavy hair, long shredded duster, black Les Paul with two pickups and
+    the white antlered-wolf headstock. Full body, front view the whole time. Starting
+    from the first frame he plays the Les Paul hard on a slow heavy groove for five
+    seconds, head rocking on the beats, coat hem stirring. Then he stops playing,
+    lets the guitar hang on its strap, and slowly looks down at the ground at his
+    boots; in the last two seconds he lifts his head and spreads his arms slightly
+    out from his sides, palms down, as if feeling heat rising from the ground, the
+    coat and hair lifting in a rising draft. Locked camera, no camera movement, no
+    zoom, no cuts, one continuous shot that keeps the same view the whole time, the
+    whole figure stays inside the frame, perfectly flat chroma green #00B140 background
+    throughout, no shadows, no floor, no text, no other figures. Exact two-tone scratchboard
+    style: white engraved lines on pure black, no grey, no colour."
+- name: fire
+  source: output/s04/04_clip_fire.mp4
+  key: green

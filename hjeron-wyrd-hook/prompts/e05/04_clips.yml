@@ -1,0 +1,6 @@
+- name: stand
+  source: output/e02/04_clip_stand.mp4
+  key: green
+- name: lie
+  source: output/e04/04_clip_lie.mp4
+  key: green
