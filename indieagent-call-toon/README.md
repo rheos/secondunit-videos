@@ -1,6 +1,6 @@
 # Animated video call: look test
 
-A 28 s test of the format in Kevin Ngo's animation over the Dessa demo conversation (K17;
+A 33 s test of the format in Kevin Ngo's animation over the Dessa demo conversation (K17;
 `references/kevin-ngo/STUDY-video-call.md`): a recorded conversation played over a drawn video
 call. Here it is Rae, an artist, booking a Montreal date with her IndieAgent agent. Issue #306.
 
@@ -9,8 +9,10 @@ Everything is drawn in code (inline SVG and DOM, HyperFrames); no image or video
 ## How it is made
 
 1. `script.json` holds the words and who says them. The audio is the clock.
-2. `tools/build_audio.py` speaks each line (placeholder: macOS `say`, Samantha and Daniel), lays
-   them on the clock, and writes one stem per speaker plus the mix (`assets/`, gitignored) and
+2. `tools/build_audio.py` speaks each line with ElevenLabs eleven_v4 (Rae: Gabby, IndieAgent: the
+   "IA audition adam" voice; audio tags such as `[laughs]` sit in each line's `tts` field, captions
+   use `text`), caches each line by voice, model and text in `assets/tts/` so a rebuild never pays
+   twice, lays them on the clock, and writes one stem per speaker plus the mix (`assets/`, gitignored) and
    `cues.js`: every line with word start times (faster-whisper on that line's own audio; the words
    come from the script) and a per-frame loudness for each speaker.
 3. `index.html` draws every frame from `t` alone (`draw(t)` on one GSAP driver), so frames render in
@@ -21,7 +23,7 @@ Everything is drawn in code (inline SVG and DOM, HyperFrames); no image or video
 ```bash
 ~/Code/novadiem/indieagent/viralvision/viralvision-worker/.venv/bin/python tools/build_audio.py
 npx --yes hyperframes@0.8.174 check
-npx --yes hyperframes@0.8.174 render . -q high -o out/call-toon_test01_720.mp4
+npx --yes hyperframes@0.8.174 render . -q high -o out/call-toon_test02b_720.mp4
 ```
 
 ## For a real recording
@@ -32,15 +34,22 @@ each mouth follows only its own voice. With a single mixed track, split it by sp
 from a checked transcript and the times from the audio. The voices belong to the people on the
 call: consent before anything is published.
 
-## Shot plan (test01)
+Spend: test02 (2026-10-23) sent 392 characters to eleven_v4 (1 credit per character); the account
+counter showed 172 used right after. test01 used macOS `say` (free).
+
+All direction in `index.html` is anchored to line and word times (`L[i].start`, `word(i, w)`), so
+new audio keeps every beat without retiming by hand. Only the root `data-duration` is a literal: set
+it to the `duration` in `cues.js` after a rebuild.
+
+## Shot plan (test02)
 
 | Time | Shot |
 |---|---|
 | 0-1.15 | Rae alone in one centred tile, eyes closed, waiting |
 | 1.0-1.8 | "IndieAgent joined": her tile slides left, his arrives; she waves |
-| 1.6-8.2 | Two-up |
-| 8.2-12.3 | Slow push toward IndieAgent's tile while he offers the room |
-| 12.3-21.25 | Two-up; his palms on "door split", hers on "Yes! Hold it." |
-| 21.25-23.4 | Punch-in on Rae as she hears "It's held", hands on her head |
-| 23.4-25.25 | Two-up, talk-over in stacked captions, both laugh |
-| 25.25-27.9 | End card |
+| 1.6-9.3 | Two-up |
+| 9.3-14.2 | Slow push toward IndieAgent's tile while he offers the room |
+| 14.2-23.9 | Two-up; his palms on "Door split", hers on "Yes! Hold it." |
+| 23.9-26.3 | Punch-in on Rae as she hears "It's held", hands on her head |
+| 26.3-30.3 | Two-up, talk-over in stacked captions, both laugh |
+| 30.3-32.9 | End card |

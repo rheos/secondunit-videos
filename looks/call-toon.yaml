@@ -47,8 +47,10 @@ reference: >-
   study in references/kevin-ngo/STUDY-video-call.md
 proof:
   renders:
-    - indieagent-call-toon/out/call-toon_test01_720.mp4
-  pr: []
+    - indieagent-call-toon/out/call-toon_test02b_720.mp4 (ElevenLabs voices)
+    - indieagent-call-toon/out/call-toon_test01_720.mp4 (placeholder voices)
+  pr:
+    - rheos/secondunit-videos#307
   youtube: []
 verdict: null
 related:

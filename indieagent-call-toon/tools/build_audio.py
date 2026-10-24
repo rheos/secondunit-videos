@@ -1,6 +1,6 @@
 """Build the call's audio and cue file from script.json.
 
-Each line is spoken on its own (placeholder: macOS `say`), laid on the clock with the script's gaps,
+Each line is spoken on its own (ElevenLabs eleven_v4 when script.json says engine: elevenlabs, else macOS `say`), laid on the clock with the script's gaps,
 one stem per speaker so each mouth follows only its own voice. Writes:
 
   assets/voice_artist.wav, assets/voice_agent.wav   stems, same length (gitignored)
@@ -38,6 +38,28 @@ def say_line(text, voice, rate, out_wav):
             "-af", "silenceremove=start_periods=1:start_threshold=-50dB,areverse,"
                    "silenceremove=start_periods=1:start_threshold=-50dB,areverse",
             str(out_wav))
+
+
+TRIM = ("silenceremove=start_periods=1:start_threshold=-50dB,areverse,"
+        "silenceremove=start_periods=1:start_threshold=-50dB,areverse")
+
+
+def eleven_line(text, voice, model, stability, out_wav, cache_dir):
+    """One ElevenLabs request per line, cached by (voice, model, stability, text) so a rebuild never pays twice."""
+    import hashlib
+    import urllib.request
+    key = hashlib.sha256(json.dumps([voice, model, stability, text]).encode()).hexdigest()[:16]
+    mp3 = cache_dir / f"{key}.mp3"
+    if not mp3.exists():
+        api = (Path.home() / "Documents/novadiem/keys/elevenlabs/api.txt").read_text().strip()
+        body = {"text": text, "model_id": model, "voice_settings": {"stability": stability}}
+        req = urllib.request.Request(
+            f"https://api.elevenlabs.io/v1/text-to-speech/{voice}?output_format=mp3_44100_192",
+            data=json.dumps(body).encode(), headers={"xi-api-key": api, "Content-Type": "application/json"})
+        cache_dir.mkdir(parents=True, exist_ok=True)
+        mp3.write_bytes(urllib.request.urlopen(req, timeout=300).read())
+        print(f"  billed {len(text)} chars -> {mp3.name}")
+    run("ffmpeg", "-y", "-v", "error", "-i", str(mp3), "-ac", "1", "-ar", str(SR), "-af", TRIM, str(out_wav))
 
 
 def read_wav(p):
@@ -86,7 +108,11 @@ def main():
         for i, line in enumerate(spec["lines"]):
             v = spec["voices"][line["who"]]
             p = Path(td) / f"line{i:02d}.wav"
-            say_line(line["text"], v["say"], v["rate"], p)
+            if spec.get("engine") == "elevenlabs":
+                eleven_line(line.get("tts", line["text"]), v["eleven"], spec["model"], v.get("stability", 0.5),
+                            p, assets / "tts")
+            else:
+                say_line(line["text"], v["say"], v["rate"], p)
             audio = read_wav(p)
             dur = len(audio) / SR
             words = line["text"].split()

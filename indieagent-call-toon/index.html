@@ -61,8 +61,8 @@
     </style>
   </head>
   <body>
-    <div id="root" data-composition-id="main" data-start="0" data-width="1280" data-height="720" data-duration="27.89">
-      <div id="scene" class="clip" data-start="0" data-duration="27.89" data-track-index="0">
+    <div id="root" data-composition-id="main" data-start="0" data-width="1280" data-height="720" data-duration="32.858">
+      <div id="scene" class="clip" data-start="0" data-duration="32.858" data-track-index="0">
         <div id="stage">
           <div class="tile" id="tileA"><svg viewBox="0 0 619 440" id="svgA"></svg><div class="ring"></div><div class="name">Rae</div><div class="badge"><i></i><i></i><i></i></div></div>
           <div class="tile" id="tileB"><svg viewBox="0 0 619 440" id="svgB"></svg><div class="ring"></div><div class="name">IndieAgent</div><div class="badge"><i></i><i></i><i></i></div></div>
@@ -78,7 +78,7 @@
           <div class="pills"><span><b>Rae</b>an artist</span><span><b>IndieAgent</b>her agent</span></div>
         </div>
       </div>
-      <audio id="voices" src="assets/call.wav" data-start="0" data-duration="27.89" data-track-index="1" data-volume="1"></audio>
+      <audio id="voices" src="assets/call.wav" data-start="0" data-duration="32.858" data-track-index="1" data-volume="1"></audio>
     </div>
 
     <script>
@@ -235,27 +235,34 @@
           `<g transform="translate(224 116) rotate(-40)">${MITT}</g><g transform="translate(396 116) rotate(40) scale(-1 1)">${MITT}</g>`,
       };
 
-      // ---------- direction ----------
+      // ---------- direction, anchored to the lines so new audio keeps every beat ----------
+      const L = C.lines;
+      const word = (i, w) => L[i].word_starts[w];
+      const END = Math.max(...L.map((l) => l.end));
+      const PUNCH = { t0: L[5].start + 0.25, t1: L[6].start, s: W / TW, x: -16 * (W / TW), y: -121 };
+      const CARD = END + 0.8;
       const OVERRIDE = {
         artist: [
           { t0: 0, t1: 1.45, eyes: "happy", rest: "smile" },
-          { t0: 21.25, t1: 23.4, eyes: "wide", rest: "grin", lift: 5 },
-          { t0: 24.4, t1: 27.9, eyes: "happy", rest: "grin" },
+          { t0: PUNCH.t0, t1: PUNCH.t1, eyes: "wide", rest: "grin", lift: 5 },
+          { t0: L[6].start + 0.9, t1: C.duration, eyes: "happy", rest: "grin" },
         ],
         agent: [
-          { t0: 14.6, t1: 15.3, lift: 4 },
-          { t0: 24.55, t1: 27.9, eyes: "happy", rest: "smile" },
+          { t0: L[3].start, t1: L[3].start + 0.7, lift: 4 },
+          { t0: L[7].end - 0.2, t1: C.duration, eyes: "happy", rest: "smile" },
         ],
       };
       const GESTURES = {
-        artist: [{ kind: "wave", t0: 1.45, t1: 3.1 }, { kind: "palms", t0: 19.45, t1: 20.9 }, { kind: "headhands", t0: 21.55, t1: 23.35 }],
-        agent: [{ kind: "palms", t0: 15.5, t1: 17.1 }],
+        artist: [
+          { kind: "wave", t0: 1.45, t1: 3.1 },
+          { kind: "palms", t0: L[4].start - 0.1, t1: L[4].end + 0.2 },
+          { kind: "headhands", t0: PUNCH.t0 + 0.3, t1: PUNCH.t1 - 0.05 },
+        ],
+        agent: [{ kind: "palms", t0: word(3, 3) - 0.1, t1: word(3, 3) + 1.6 }], // "Door split"
       };
-      const PUSH = { t0: 8.2, t1: 11.9, cut: 12.34, s: 1.32, fx: 955, fy: 223 };
-      const PUNCH = { t0: 21.25, t1: 23.4, s: W / TW, x: -16 * (W / TW), y: -121 };
+      const PUSH = { t0: L[1].start + 2.0, t1: L[1].end - 0.1, cut: L[2].start, s: 1.32, fx: 955, fy: 223 };
       const SPLIT = { t0: 1.15, t1: 1.55 };
       const TOAST = { t0: 1.0, t1: 3.6 };
-      const CARD = 25.25;
 
       // seeded blinks
       function rng(seed) { return () => ((seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296); }
@@ -391,7 +398,8 @@
         return `<b>${C.voices[l.who]}</b>${shown}`;
       }
       function drawCaptions(t, el) {
-        const started = C.lines.filter((l) => l.start <= t);
+        // a caption appears with its first word, not with a laugh or breath before it
+        const started = C.lines.filter((l) => l.word_starts[0] <= t);
         const last = started.slice(-2);
         const spans = el.querySelectorAll(".cap");
         const rows = last.length === 2 ? last : [null, ...last];
