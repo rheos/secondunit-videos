@@ -18,9 +18,15 @@ It recovers from lost WebGL contexts by reopening the browser, which tells you h
 card.
 
 Timing test, 2026-10-24: Chromium in a Linux container with SwiftShader (software WebGL), 4 CPUs to
-match a GitHub runner, 1280x720, `q=high`. Page setup took 11 s. The first 15 warm-up frames of the
-calm act (t = 7.5 to 8 s) had not finished after RESULT_MINUTES minutes, so over RESULT_SPF s a frame.
-A 10 s plate at 30 fps is 300 frames plus a warm-up per slice: many hours per runner. Not viable.
+match a GitHub runner, 1280x720, `q=high`. Page setup took 11 s. The calm act at t = 8 s: 15 warm-up
+frames took 903 s (60 s each), then 56 s a frame. The storm frame (t = 42 s) was stopped at the
+20-minute cap, still in its warm-up. The calm still itself came out right: golden-hour glitter, swell
+and cumulus, near photoreal (the clouds a little grainy after only 0.5 s of accumulation, not the
+renderer's 4 s). So software WebGL gives the right picture, just far too slowly.
+
+What that costs: a 10 s plate at 30 fps is 300 frames, about 4.7 hours on one runner. Split across
+20 slices, each slice also pays a 4 s warm-up (120 frames, about 2 hours), so roughly 50 runner-hours
+for 10 s of sea: more than a month of a private repo's included Actions minutes. Not viable.
 
 Where it can run:
 - **Modal GPU** (Robin's Modal account already runs Blender 5.2 on CPU). GPU functions need a card on
