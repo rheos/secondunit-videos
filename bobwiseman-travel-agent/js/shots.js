@@ -58,7 +58,7 @@ function bird(x, y, s, wing = 0, o = {}) {
   for (const lx of [-8, 10]) S.OP([[lx, 30], [lx - 4, 54], [lx + 8, 56]], false, 2);
   X.restore();
 }
-function snowFlakes(n, T, col = '#ffffff', a = .9, sz = 3) { X.fillStyle = col; X.globalAlpha = a; const r = M32(77); for (let i = 0; i < n; i++) { const x0 = r() * W, sp = 40 + r() * 80, y = ((r() * H + T * sp) % (H + 40)) - 20, x = x0 + Math.sin(T * 1.3 + i) * 20, s = sz * (.5 + r()); X.fillRect(x, y, s, s); } X.globalAlpha = 1; }
+function snowFlakes(n, T, col = '#ffffff', a = .9, sz = 3) { X.fillStyle = col; X.globalAlpha = a; const r = M32(77); for (let i = 0; i < n; i++) { const x0 = r() * W, sp = 40 + r() * 80, y = ((r() * H + T * sp) % (H + 40)) - 20, x = x0 + Math.sin(T * 1.3 + i) * 20, s = sz * (.5 + r()); X.beginPath(); X.ellipse(x, y, s * .6, s * .5, i, 0, TAU); X.fill(); } X.globalAlpha = 1; } // draft 11: round drawn flakes, never pixel squares on the paper
 function rain(x, y, w, h, n, col = C.teal, a = .7) { X.beginPath(); for (let i = 0; i < n; i++) { const rx = x + R() * w, ry = y + R() * h, L = 30 + R() * 50; X.moveTo(rx, ry); X.lineTo(rx - L * .2, ry + L); } stroke(col, 1.5, a); }
 function walkPh() { return FD * .55; }
 
@@ -125,14 +125,25 @@ SU.desk = { mode: 'ill', f(q, p, a, T) {
   X.setLineDash([10, 9]); X.beginPath(); X.moveTo(600, 520); X.quadraticCurveTo(900, 330, 1165, 470); stroke(C.teal, 1.8, .8); X.setLineDash([]);
 } };
 
+// Nakamura (draft 10): "which way is the farthest away": a procession of hims walks the globe's rim, standing out
+// from it like figures round a medallion, away from a tiny shop, upside down at the antipode, and back to the shop.
+function globeRoute(cx, cy, r, T) {
+  const sh = Math.atan2(230 - cy, 330 - cx); // the shop sits where his cloud's dashed line meets the globe
+  const at = (an, sc, f) => { X.save(); X.translate(cx + Math.cos(an) * r, cy + Math.sin(an) * r); X.rotate(an + Math.PI / 2); f(sc); X.restore(); };
+  at(sh, 1, () => { fillP(PR(-30, -46, 60, 46), C.brick); iBox(-30, -46, 60, 46, C.ink, 2); fillP(PR(-36, -56, 72, 11), C.cream); iBox(-36, -56, 72, 11, C.ink, 1.6); fillP(PR(8, -28, 12, 28), C.teal); iBox(8, -28, 12, 28, C.ink, 1.2); fillP(PR(-22, -36, 22, 16), '#cfe0da'); iBox(-22, -36, 22, 16, C.ink, 1.2); });
+  // draft 11: a single file with one straggler gap, not evenly spaced (they read as clock ticks)
+  for (let i = 0; i < 7; i++) { const an = sh + .32 + ((T * .06 + .55 - i * .04 - (i > 3 ? .06 : 0)) % 1 + 1) % 1 * (TAU - .64);
+    at(an, .13, (sc) => { traveller(0, 0, sc, { legs: walkPh() + i * 1.3, case: true, look: 1 }); cloud(0, -470 * sc, .5 * sc, { rain: true, band: false }); }); }
+}
 SU.globeSpin = { mode: 'ill', f(q, p, a, T) {
   stripes(C.paper, '#dfe3cc', 160, -.62, 0, C.sage);
-  cam(960, 560, lerp(a.z || 1, (a.z || 1) * 1.12, eo(p)));
+  cam(960, 545, lerp(a.z || 1, (a.z || 1) * 1.05, eo(p))); // draft 11: gentler push, the stand stays in frame
   consL([[0, 560, W, 560], [960, 0, 960, H], [500, 1080, 1420, 0]]); consC([[960, 560, 470], [960, 560, 540]]);
   iE(960, 560, 440, 440, -.35, C.ink, 4, 1, true, 1.2, -Math.PI * .85, Math.PI * .15);
   iline(960, 980, 960, 1040, C.ink, 6); const b = PE(960, 1050, 200, 34); fillP(b, '#6b4a2e'); shade(b, 960, 1050, 210, [0, -10], .4, 5); iE(960, 1050, 200, 34, 0, C.ink, 2.4);
   globe(960, 560, 400, (a.fast ? 4 : 1.4) * T);
   for (let i = 0; i < 3; i++) { const a0 = -2.4 + i * .9 + T * 2; gc(960, 560, 470 + i * 26, C.orange, .85, 2.2, null, a0, a0 + .7); }
+  if (a.route) globeRoute(960, 560, 400, T);
   if (a.cloud) { cloud(330, 230, .7, { rain: true }); gl(330, 260, 960, 560, C.teal, .7, 1.6, [8, 8]); }
   if (a.far) { const [hx, hy] = [960 - 160, 560 - 120]; fillP(PE(hx, hy, 12, 12), C.brick); iE(hx, hy, 12, 12, 0, C.ink, 2); gc(hx, hy, 30 + 60 * eo(p), C.orange, .9, 2); lab(hx + 24, hy - 20, 'YOU ARE HERE', C.ink, .9, 15, 'left', 'alphabetic', 'bold'); }
 } };
@@ -147,7 +158,7 @@ SU.cloudWalk = { mode: 'ill', f(q, p, a, T) {
   const tx = 900, s = a.s || 1.2; traveller(tx, gy + 20, s, { legs: walkPh() * 1.4, case: true, look: 1, mouth: sing(T) });
   const cy = gy + 20 - 470 * s; cloud(tx, cy, .9 * s / 1.2 + .2, { rain: true });
   gl(tx + 150, cy, tx + 150, gy - 380 * s, C.teal, .9, 1.4, [6, 6]); bracket(tx + 190, cy + 40, tx + 190, gy + 20 - 360 * s, C.ink, .8);
-  lab(tx + 220, (cy + gy - 360 * s) / 2 + 30, 'ALWAYS 1 M', C.ink, .85, 14, 'left');
+  lab(tx + 220, (cy + gy - 360 * s) / 2 + 30, 'ALWAYS 1 M', C.ink, .95, 30, 'left', 'alphabetic', 'bold');
   for (let i = 0; i < 3; i++) { const a0 = Math.PI * .9 + i * .25; gc(tx, cy, 200 + i * 22, C.orange, .7, 1.6, null, a0, a0 + .5); }
 } };
 
@@ -482,16 +493,17 @@ SU.sMap = { mode: 'sch', f(q, p, a, T) {
   screen(); schFrame('08', a.half ? 'MOTION' : 'ROUTE', a.half ? 'KEEP MOVING' : 'BY LAND');
 } };
 
-SU.sCarrot = { mode: 'sch', f(q, p, a, T) {
-  schBG(); cam(960, 540, lerp(1, 1.08, eo(p)));
-  lattice(960, 540, 70, 12, C.lav, .06); gl(0, 900, W, 900, C.lav, .4);
-  const step = (T * .8) % 1;
-  for (let g = 0; g < 4; g++) { const off = g * 160 - step * 160, hx = 420 + off, a2 = g === 3 ? .95 : .18; traveller(hx, 900, 1, { sch: 1, col: g === 3 ? C.lav : C.lav, legs: walkPh() + g, case: false }); if (g < 3) continue; }
-  const hx = 420 + 480 - step * 160, hy = 900 - 360, px = hx + 520, py = hy - 70, sw = Math.sin(T * 2.4) * .18, cx = px + Math.sin(sw) * 300, cy = py + Math.cos(sw) * 300;
-  gl(hx, hy, px, py, C.white, .9, 2); gl(px, py, cx, cy, C.white, .9, 1.2); gc(px, py, 300, C.lav, .5, 1, [3, 6], Math.PI / 2 - .3, Math.PI / 2 + .3);
-  const cp = PP([[cx - 14, cy], [cx + 14, cy], [cx, cy + 100]]); fillP(cp, C.navy); stip(cp, cx, cy + 40, 60, 400, C.mag, .9, 1.5); iP([[cx - 14, cy], [cx + 14, cy], [cx, cy + 100]], true, C.mag, 1.4, .95, false, .3);
-  gl(hx + 20, hy + 50, cx, cy + 40, C.mag, .9, 1.4, [6, 6]); bracket(hx + 20, 960, cx, 960, C.cyan, .85, 'GAP = CONSTANT');
-  lab(px + 20, py - 16, 'STRING · VISIBLE', C.white, .9, 14); lab(cx + 30, cy + 60, 'CARROT', C.mag, .95, 14);
+SU.sCarrot = { mode: 'sch', f(q, p, a, T) { // draft 11: a plan view of the ring (it was a 4th profile-walk-with-carrot)
+  schBG(); cam(960, 560, lerp(1.1, 1, eo(p)));
+  lattice(960, 560, 70, 12, C.lav, .06); const cx = 960, cy = 560, R = 300, rot = T * .35;
+  gc(cx, cy, R, C.lav, .5, 1.2, [4, 8]); gc(cx, cy, R + 120, C.lav, .25, 1, [2, 10]); ticks(cx, cy, R + 120, 72, 6, C.lav, .4, 1, 9);
+  for (let i = 0; i < 8; i++) { const an = rot + i / 8 * TAU, hx = cx + Math.cos(an) * R, hy = cy + Math.sin(an) * R, tx = -Math.sin(an), ty = Math.cos(an);
+    gc(hx, hy, 26, C.lav, .9, 1.6); gc(hx, hy, 12, C.white, .9, 1.4); // a hat seen from above
+    const rx = hx + tx * 120, ry = hy + ty * 120; gl(hx, hy, rx, ry, C.white, .8, 1.4); // the rod, held out ahead
+    const cp = PP([[rx - tx * 4 - ty * 9, ry - ty * 4 + tx * 9], [rx - tx * 4 + ty * 9, ry - ty * 4 - tx * 9], [rx + tx * 40, ry + ty * 40]]); fillP(cp, C.navy); stip(cp, rx + tx * 14, ry + ty * 14, 30, 120, C.mag, .9, 1.4); X.strokeStyle = C.mag; X.lineWidth = 1.4; X.stroke(cp);
+    if (i === 0) gc(hx, hy, 40 + ((FD * 3) % 18), C.mag, .8, 1.6); }
+  X.setLineDash([3, 6]); gc(cx, cy, R - 46, C.cyan, .7, 1.4, null, rot + .1, rot + TAU / 8 - .1); X.setLineDash([]);
+  lab(cx, cy - 20, 'GAP = CONSTANT', C.white, .95, 30, 'center', 'alphabetic', 'bold'); lab(cx, cy + 22, 'CARROTS CAUGHT: 0', C.mag, .9, 16, 'center');
   screen(); schFrame('09', 'MOTIVATION', 'MULE, TALENTED');
 } };
 
@@ -501,7 +513,7 @@ SU.sSetting = { mode: 'sch', f(q, p, a, T) {
   gc(960, 540, 250, C.white, .9, 1.6); gc(960, 540, 180, C.lav, .6); gc(960, 540, 60, C.lav, .3, 1, [2, 5]);
   X.strokeStyle = C.white; X.lineWidth = 1.4; X.strokeRect(1280, 340, 26, 400); X.strokeRect(1360, 330, 30, 120); gc(1375, 300, 32, C.white, .8);
   X.setLineDash([8, 8]); X.strokeStyle = C.mag; X.globalAlpha = (FD >> 2) % 2 ? 1 : .45; X.lineWidth = 2; X.strokeRect(600, 340, 26, 300); for (let i = 0; i < 4; i++) X.strokeRect(596 + i * 9, 250, 4, 90); X.globalAlpha = 1; X.setLineDash([]);
-  lab(613, 700, 'FORK', C.mag, .95, 16, 'center'); lab(613, 724, 'NOT FOUND', C.mag, .8, 12, 'center');
+  lab(613, 700, 'FORK', C.mag, .95, 18, 'center'); lab(613, 732, 'NOT FOUND', C.mag, .95, 28, 'center', 'alphabetic', 'bold');
   gc(1560, 260, 70, C.cyan, .8, 1.2); lab(1560, 370, 'GLASS', C.cyan, .8, 12, 'center');
   bracket(710, 860, 1210, 860, C.cyan, .8, 'Ø 270 MM'); bracket(560, 200, 660, 200, C.mag, .8, '?');
   screen(); schFrame('10', 'PLACE SETTING', 'ITEMS: 3 OF 4');
@@ -533,7 +545,7 @@ SU.sWard = { mode: 'sch', f(q, p, a, T) {
   path([[200, 540], [px, py]].length && d < 1090 ? [[200, 540], [px, py]] : [[200, 540], [1290, 540], [px, py]], C.cyan, 1.6, .9, [6, 6]);
   star(px, py, 5, C.white, 1); star(px - 40, py - 26, 3, C.lav, .7); star(px - 40, py + 26, 3, C.lav, .7);
   bracket(260, 960, 1680, 960, C.cyan, .7, 'WARD 3 · 48 M');
-  screen(); schFrame('12', 'ADMISSION', 'CONSENT: NOT GIVEN');
+  screen(); schFrame('12', 'ADMISSION', 'BEDS 10 · LOCKED 10');
 } };
 
 const PROFILE = [[0, -260], [70, -250], [120, -210], [140, -150], [150, -90], [170, -50], [150, -30], [160, 10], [146, 30], [150, 60], [120, 90], [80, 100], [60, 160], [-60, 170], [-90, 90], [-140, 20], [-150, -80], [-120, -190], [-70, -245]];
@@ -541,24 +553,30 @@ SU.sHead = { mode: 'sch', f(q, p, a, T) {
   schBG(); cam(960, 540, lerp(1.12, 1, eo(p)));
   gc(900, 500, 430, C.lav, .15); gl(0, 500, W, 500, C.lav, .15);
   const hp = PROFILE.map(([x, y]) => [900 + x * 1.6, 520 + y * 1.6]), hpp = PP(hp);
-  fillP(hpp, C.navy); X.save(); X.clip(PE(890, 330, 230, 170)); lattice(890, 330, 22, 10, C.lav, .55); X.restore(); iP(hp, true, C.white, 1.6, .9, false, .3);
+  fillP(hpp, C.navy); X.save(); X.clip(PE(890, 330, 230, 170)); lattice(890, 330, 22, 10, C.lav, .55);
+  { const by = lerp(150, 510, (T * .9) % 1); X.globalAlpha = .22; X.fillStyle = C.mag; X.fillRect(640, by - 26, 520, 52); X.globalAlpha = 1; gl(640, by, 1160, by, C.mag, .7, 1.4); } // draft 9: the scan sweeps the cells
+  X.restore(); iP(hp, true, C.white, 1.6, .9, false, .3);
   stip(hpp, 900, 600, 300, 900, C.lav, .35, 1.4);
   const zap = (FD >> 1) % 4 === 0 && q > .2; for (const ex2 of [[1120, 360], [700, 360]]) { gc(ex2[0], ex2[1], 18, C.mag, .95, 2); }
   if (zap) { X.beginPath(); X.moveTo(1120, 360); for (let i = 1; i <= 10; i++) X.lineTo(lerp(1120, 700, i / 10), 360 + jit(26)); stroke(C.mag, 2.4, 1); star(890, 330, 8, C.mag, 1); }
   for (let i = 0; i < 5; i++) { const t = cl(q * 1.4 - i * .12), px = 1500 - t * 420, py = 160 + i * 140 + Math.sin(t * 3) * 20; const pp = PE(px, py, 40, 17, .3); fillP(pp, C.navy); stip(pp, px, py, 42, 200, C.cyan, .9, 1.4); iE(px, py, 40, 17, .3, C.cyan, 1.2, .9, false, .3); gl(px - 10, py - 16, px + 10, py + 16, C.cyan, .6); }
   lab(1520, 120, 'DOSE · 3 × DAILY', C.cyan, .9, 14); lab(1140, 330, 'ELECTRODE', C.mag, .9, 13);
-  screen(); schFrame('13', 'TREATMENT', 'CONSENT: NOT GIVEN');
+  lab(1520, 960, 'CONSENT: NOT GIVEN', C.mag, .95, 28, 'center', 'alphabetic', 'bold');
+  screen(); schFrame('13', 'TREATMENT', 'ELECTRODES · 2');
 } };
 
-SU.sPlaneW = { mode: 'sch', f(q, p, a, T) {
-  schBG(); cam(960, 540, lerp(1, 1.12, eo(p)));
-  lattice(960, 540, 80, 10, C.lav, .06); for (let i = 0; i < 12; i++) { gl(120, 140 + i * 70, 160, 140 + i * 70, C.lav, .6); lab(170, 145 + i * 70, String((11 - i) * 1000) + ' M', C.lav, .5, 11); }
-  const A = [300, 900], B = [800, 860], Cc = [1200, 400], D = [1800, 200], u = lerp(.3, .75, a.byP ? p : q);
-  path(bzPts(A, B, Cc, D, 0, u), C.mag, 2, .95); path(bzPts(A, B, Cc, D, u, 1), C.lav, 1, .5, [4, 8]);
-  const [px, py] = bz(A, B, Cc, D, u), [nx, ny] = bz(A, B, Cc, D, u + .01);
-  plane(px, py, 1.1, Math.atan2(ny - py, nx - px), { sch: 1, col: C.lav }); star(px + 260, py - 40, 4, C.white, .9);
-  bracket(px - 290, py + 140, px + 290, py + 140, C.cyan, .8, '58.6 M'); gl(px, py, px, 1000, C.lav, .4, 1, [3, 6]);
-  screen(); schFrame('14', 'DEPARTURE', 'CLIMB · 2,000 FT/MIN');
+SU.sPlaneW = { mode: 'sch', f(q, p, a, T) { // draft 11: the stairs, not a 4th climbing plane: the steps grow, the door gets farther
+  schBG(); cam(960, 560, lerp(1, 1.08, eo(p)));
+  lattice(960, 540, 80, 10, C.lav, .06); gl(0, 900, W, 900, C.lav, .6, 1.4);
+  X.strokeStyle = C.lav; X.lineWidth = 1.4; X.strokeRect(300, 820, 360, 60); gc(360, 900, 22, C.lav, .9, 1.4); gc(600, 900, 22, C.lav, .9, 1.4); // the truck
+  const n = 16 + Math.floor(eo(p) * 8), st = 18, x0 = 460, y0 = 820; X.beginPath(); X.moveTo(x0, y0);
+  for (let i = 0; i < n; i++) { X.lineTo(x0 + i * st * 1.6, y0 - i * st); X.lineTo(x0 + (i + 1) * st * 1.6, y0 - i * st); } stroke(C.white, 1.6, .9);
+  const topX = x0 + n * st * 1.6, topY = y0 - n * st, doorX = topX + 260 + eo(p) * 120, doorY = topY - 80 - eo(p) * 60;
+  X.strokeStyle = C.lav; X.globalAlpha = .8; X.strokeRect(doorX - 40, doorY - 110, 80, 110); X.globalAlpha = 1; gl(doorX - 220, doorY, doorX + 400, doorY - 60, C.lav, .6, 1.2); // door + fuselage line
+  gl(topX, topY, doorX - 40, doorY, C.mag, .9, 1.6, [6, 6]); star(topX, topY, 5, C.white, 1);
+  bracket(topX + 30, topY, topX + 30, doorY, C.cyan, .85); lab(topX + 60, (topY + doorY) / 2 + 10, 'GAP: ' + (4 + eo(p) * 3).toFixed(1) + ' M', C.mag, .95, 28, 'left', 'alphabetic', 'bold');
+  lab(x0, y0 + 60, 'STEPS: ' + n, C.lav, .8, 16);
+  screen(); schFrame('14', 'BOARDING', 'STEPS ADDED · DOOR RECEDING');
 } };
 
 SU.sProjector = { mode: 'sch', f(q, p, a, T) {
@@ -581,7 +599,7 @@ SU.sFilm = { mode: 'sch', f(q, p, a, T) {
   for (let k = -1; k < 6; k++) { const fx = k * 420 - off, real = (k + Math.floor((T * 220) / 420)) % 2 !== 0, col = real ? C.mag : C.cyan; X.strokeStyle = col; X.lineWidth = 1.4; X.strokeRect(fx + 30, y + 60, 360, h - 120);
     stip(PR(fx + 30, y + 60, 360, h - 120), fx + 210, y + h / 2, 260, 500, col, .35, 1.4);
     traveller(fx + 210, y + h - 70, .85, { sch: 1, col, hat: real, look: 0, armR: real ? [-.4, .6] : [2.8, 0], armL: real ? [.2, 0] : [-2.8, 0] });
-    if (real) fillP(PR(fx + 180, y + h - 70 - 322 * .85, 60, 12), col); lab(fx + 210, y + 100, real ? 'REAL' : 'MAKE-BELIEVE', col, .95, 16, 'center');
+    if (real) fillP(PR(fx + 180, y + h - 70 - 322 * .85, 60, 12), col); lab(fx + 210, y + 100, real ? 'CAST' : 'PROP', col, .95, 22, 'center', 'alphabetic', 'bold'); // draft 11: not the sung words
     lab(fx + 40, y + h - 70, String(1000 + k), C.lav, .5, 11); }
   screen(); schFrame('16', 'CASTING', 'HEROES 0 · CROOKS ∞');
 } };
@@ -618,7 +636,7 @@ SU.sSnow = { mode: 'sch', f(q, p, a, T) {
     for (let k = 1; k <= 5; k++) { const d = L * k / 6, bl = (L - d) * .35; for (const s of [-1, 1]) { const bx = 960 + Math.cos(an) * d, by = 540 + Math.sin(an) * d; X.moveTo(bx, by); X.lineTo(bx + Math.cos(an + s * Math.PI / 3) * bl, by + Math.sin(an + s * Math.PI / 3) * bl); } } }
   stroke(C.white, 1.6, .95); iP(hexPts(960, 540, 60 * g, 0), true, C.cyan, 1.4, .9, false, .2); star(960, 540, 6, C.white, 1);
   snowFlakes(220, T, C.lav, .7, 2.4);
-  traveller(1500, 940, .9, { sch: 1, col: C.lav, hat: false, look: 0 }); lab(1500, 990, 'CLOTHING: NONE', C.mag, .9, 13, 'center');
+  traveller(1500, 940, .9, { sch: 1, col: C.lav, hat: false, look: 0 }); lab(1500, 470, 'CLOTHING: NONE', C.mag, .95, 28, 'center', 'alphabetic', 'bold');
   screen(); schFrame('19', 'CRYSTAL', '6-FOLD · −15 °C');
 } };
 
