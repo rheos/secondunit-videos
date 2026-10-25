@@ -408,6 +408,19 @@ const RAC = (() => {
         g.strokeStyle = 'rgba(239,231,214,.4)'; g.lineWidth = .9 * h;
         for (const [x2, y2] of [[132, 2], [134, 13], [128, 23]]) { g.beginPath(); g.moveTo(...hp(96, 11)); g.quadraticCurveTo(...hp((96 + x2) / 2, (11 + y2) / 2 - 3), ...hp(x2, y2)); g.stroke(); }
       });
+      // a crayfish to wash: segmented tail and fan, carapace, two big claws forward, feelers
+      mk('cray', { x: -40 * l, y: -24 * l, w: 92 * l, h: 48 * l }, (g) => {
+        const P = (pts) => pts.map(([x, y]) => [x * l, y * l]), C = ['#5e281d', '#7a3a26', '#94502f'];
+        g.strokeStyle = 'rgba(150,80,50,.7)'; g.lineWidth = .9 * l;
+        for (const k of [-1, 1]) { g.beginPath(); g.moveTo(16 * l, -2 * l); g.quadraticCurveTo(34 * l, (-14 + k * 4) * l, 48 * l, (-6 + k * 10) * l); g.stroke(); }
+        for (let i = 3; i >= 0; i--) PD.cutp(g, smoothPath(ellipsePts((-6 - i * 7) * l, (1 + i * .8) * l, 6 * l, (6 - i * .6) * l, 12)), C[i & 1], { light, sh: .4, blur: 2, dist: 1, bev: { width: .7 * l } });
+        PD.cutp(g, polyPath(P([[-34, 2], [-44, -6], [-46, 4], [-44, 12], [-34, 7]])), C[0], { light, sh: .4, blur: 2, dist: 1, bev: { width: .7 * l } });
+        PD.cutp(g, smoothPath(P([[-4, -6], [14, -8], [20, -2], [14, 6], [-4, 7]]), .6), C[2], { light, sh: .5, blur: 2, dist: 1, bev: { width: .8 * l } });
+        for (const k of [-1, 1]) {
+          PD.cutp(g, polyPath(P([[10, k * 2], [24, k * 9], [26, k * 7]])), C[1], { light, sh: .4 });
+          PD.cutp(g, smoothPath(P([[24, k * 6], [36, k * 12], [44, k * 9], [40, k * 5], [30, k * 4]]), .5), C[k > 0 ? 1 : 2], { light, sh: .5, blur: 2, dist: 1, bev: { width: .7 * l } });
+        }
+      }, { mat: 'smooth' });
       // ears: rounded, the white core at their torn rims
       const ek = h * S.ear;
       for (const far of [false, true]) {
@@ -453,19 +466,23 @@ const RAC = (() => {
     // ---------------- pose ----------------
     function pose(st) {
       const { d, t } = st, walk = st.walk ?? 0, paw = st.paw ?? 0, settle = st.settle ?? -1, bo = S.bounce * walk;
+      // two-handed acting at the water: wash (both paws down in the water), rub (their circling), lift (both paws up
+      // in front of the chest, holding something), dip (extra depth, for the kit's slap), shake (a head shake)
+      const wash = st.wash ?? 0, rub = st.rub ?? 0, lift = st.lift ?? 0, dip = st.dip ?? 0, shake = st.shake ?? 0, reach = Math.max(wash, lift);
       const feet = FEET.map((F) => ({ F, ...foot(d, F, walk) }));
       const uNH = feet[0].u, uNF = feet[2].u;
       const bobH = Math.cos(4 * Math.PI * (uNH - DUTY / 2)), bobF = Math.cos(4 * Math.PI * (uNF - DUTY / 2));
       const breath = Math.sin(t / S.breathT * Math.PI * 2);
       const sway = nz.n1(t * .35) * 3 * b * (1 - walk) - 5 * b * paw;                         // weight shift when standing
-      const hip = [d + sway, HIPY - 4.5 * l * bobH * bo + .8 * breath * b];
+      const hip = [d + sway, HIPY - 4.5 * l * bobH * bo + .8 * breath * b + 36 * l * wash * (1 - lift) + 14 * l * lift];   // squats to reach the water
       // the body pitches with the bob of the hind and front feet; the rump rocks with each hind step (the waddle)
       const pitch = -4 * l * (bobF - bobH) / (172 * b) * bo - .035 * paw + .008 * nz.n1(t * .2 + 9);
       const hike = .05 * Math.sin(2 * Math.PI * uNH) * bo;
       const MR = new DOMMatrix().translate(hip[0], hip[1]).rotate((pitch + hike) * 180 / Math.PI)
         .translate(BELLY[0], BELLY[1]).scale(1 + .006 * breath, 1 + .013 * breath).translate(-BELLY[0], -BELLY[1]);
       // the back bends at the spine joint against the rump's rock, and lifts the shoulders when a paw comes up
-      const bend = .06 * Math.sin(2 * Math.PI * uNF + 1.2) * bo - hike * .8 - .05 * paw + .015 * nz.n1(t * .4 + 2) * (1 - walk) + .006 * breath;
+      const bend = .06 * Math.sin(2 * Math.PI * uNF + 1.2) * bo - hike * .8 - .05 * paw + .015 * nz.n1(t * .4 + 2) * (1 - walk) + .006 * breath
+        + .2 * wash * (1 - lift) + .04 * lift + .025 * Math.sin(t * 7.5) * rub * wash;
       const MF = MR.translate(SPINE[0], SPINE[1]).rotate(bend * 180 / Math.PI).translate(-SPINE[0], -SPINE[1]);
       const sho = xf(MF, SHO), neck = xf(MF, NECK);
       // the near front paw is the acting hand: an idle flick when standing, or lifted to test something, fingers tapping
@@ -479,6 +496,15 @@ const RAC = (() => {
           ankle = [lerp(f.x, up[0], paw) - 1.5 * l * Math.abs(flick), lerp(f.y, up[1], paw) - 3 * l * Math.abs(flick)];
           a = f.a - .95 * paw + .35 * pat * paw - .22 * flick;
         }
+        if (f.F.front && reach > 0) {
+          // both paws forward: down into the water circling against each other, or up in front of the chest
+          const far = i === 3, ph = t * 7.5 + (far ? Math.PI : 0);
+          const water = [sho[0] + (72 - (far ? 10 : 0)) * l + 7 * l * Math.sin(ph) * rub, ((st.depth ?? 24) + 5 * Math.cos(ph) * rub + dip) * l];
+          const up = [sho[0] + (86 - (far ? 9 : 0)) * l + 2 * l * Math.sin(t * 3), sho[1] + (36 + (far ? 3 : 0)) * l];
+          const tgt = [lerp(water[0], up[0], lift), lerp(water[1], up[1], lift)];
+          ankle = [lerp(ankle[0], tgt[0], reach), lerp(ankle[1], tgt[1], reach)];
+          a = lerp(a, lerp(.7 + .25 * Math.sin(ph) * rub, -.45 + .1 * Math.sin(t * 3), lift), reach);
+        }
         const root = f.F.front ? sho : hip;
         const mid = f.F.front ? ik2(root, ankle, FL1, FL2, 1) : ik2(root, ankle, L1, L2, -1);
         return { root, mid, ankle, a, F: f.F };
@@ -487,12 +513,14 @@ const RAC = (() => {
       // lifted paw, up to sniff the air
       const nodPh = 4 * Math.PI * (uNF - DUTY / 2) + 1.4;
       const headAng = .2 + .09 * Math.cos(nodPh) * bo + .045 * nz.n1(t * .45 + 3) - .1 * Math.max(0, nz.n1(t * .17 + 7)) * (1 - walk)
-        + (st.look ?? 0) + .16 * paw + .03 * Math.sin(t * 26) * (st.sniff ?? 0);
+        + (st.look ?? 0) + .16 * paw + .03 * Math.sin(t * 26) * (st.sniff ?? 0) + .3 * wash * (1 - lift) - .06 * lift + .16 * Math.sin(t * 30) * shake;
       // ears flick at irregular times and lag the nod
       const ears = {
         F: EARS.F.rest + twitch(t, kind + 'earF', 4.9, .34) + .12 * Math.cos(nodPh - .9) * bo,
         N: EARS.N.rest + twitch(t, kind + 'earN', 3.6, .42) + .14 * Math.cos(nodPh - 1.2) * bo,
       };
+      ears.F += .5 * Math.sin(t * 30 - 1) * shake; ears.N += .6 * Math.sin(t * 30 - 1.3) * shake;
+      if (st.flinch) { ears.F -= .35 * st.flinch; ears.N -= .45 * st.flinch; }
       // tail: each segment repeats the sway of the one before it later and bigger; it rises a little and swings with
       // the waddle when walking, drifts when standing, settles with a damped swing after a stop
       const ph = 2 * Math.PI * uNH;
@@ -505,7 +533,7 @@ const RAC = (() => {
         M = M.translate(p[0], p[1]).rotate(r * 180 / Math.PI).translate(-p[0], -p[1]);
         MT.push(M);
       }
-      return { hip, MR, MF, pitch, bend, legs, neck, headAng, ears, MT };
+      return { hip, MR, MF, pitch, bend, legs, neck, headAng, ears, MT, hold: st.hold ?? 0 };
     }
 
     // ---------------- composing ----------------
@@ -537,7 +565,10 @@ const RAC = (() => {
       // far legs, near legs (their tops under the body), the rump, the tail over the rump with loose tufts over its
       // root, the shoulders lapping over the rump, then the head
       leg(FH, 'F'); leg(FF, 'F');
-      inner(.26); leg(NH, 'N'); leg(NF, 'N');
+      inner(.26); leg(NH, 'N');
+      // whatever the paws hold sits between them: in front of the far paw, behind the near one
+      if (ps.hold > 0 && parts.cray) { g.save(); g.globalAlpha *= ps.hold; noShadow(); g.save(); g.translate(NF.ankle[0] + 8 * l, NF.ankle[1] + 7 * l); g.rotate(NF.a * .5 - .15); g.scale(1.45, 1.45); g.drawImage(parts.cray.canvas, parts.cray.x, parts.cray.y, parts.cray.w, parts.cray.h); g.restore(); g.restore(); inner(.26); }
+      leg(NF, 'N');
       inner(.32); putM(g, parts.rear, ps.MR);
       inner(.3); for (let i = 2; i >= 0; i--) putM(g, parts['tail' + i], ps.MT[i]);
       inner(.28); putM(g, parts.croup, ps.MR);

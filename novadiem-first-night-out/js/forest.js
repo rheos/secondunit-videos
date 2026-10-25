@@ -310,5 +310,7 @@ const FOREST = (() => {
     } })] : [])]);
     return planes;
   }
-  return { build };
+  // the drawing helpers, for the film's scenes
+  const H = { circ, star4, form, haze, mist, pine, cedar, bush, rock, fern, grassTuft, foxglove, daisy, bunchberry, mushroom, bigLeaf, puffBank };
+  return { build, H };
 })();

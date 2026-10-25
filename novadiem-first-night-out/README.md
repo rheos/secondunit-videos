@@ -57,6 +57,33 @@ big fronds and leaves sweeping past the lens and one old trunk crossing the whol
 stand and breathe; the parent lifts a paw to test the air and the kit copies; the parent walks off and the kit
 follows a beat later; they stop, the parent lifts its head to sniff and the kit copies.
 
+## Scene 2: the creek (`creek.html`, `js/creek.js`)
+
+The cast was signed off on d2 (12:45 am Sun Oct 25). The creek is the look test for night paper and bloom: 3 bars at
+80 BPM, 9 s. The parent stands on a flat rock at the water and washes a crayfish; the kit, on a lower rock in front,
+copies every move a beat late, but where the parent lifts the crayfish to look at it the kit's paws come up empty and
+slap the water: a splash, the parent flinches, the kit shakes its head, then goes back to washing nothing, still a
+beat late. Fireflies over the water.
+
+- Seventeen planes: sky with stars and the moon, cloud banks, peaks, a pine ridge, the far bank (cedars, pines,
+  bushes, ferns, a mossy lip, boulders), the far water with the bank's trees reflected and mist drifting low,
+  stepping stones with foam and a fallen log, mid water, fireflies, the parent's rock, the parent, the water in front
+  of it, the kit's rock, the kit, the near water, reeds and skunk cabbage, a cedar bough and ferns at the lens.
+- Water is stacked opaque bands, each nearer band starting lower in frame and flowing faster (tileable strip sheets
+  scrolled per plane). The moon's reflection is a broken column of torn cream pieces running down through every band,
+  and with the fireflies, the foam and the splash it is the bright paper the bloom works on.
+- The paws go under the water's surface plane; rings spread from them while they are in. The splash is a crown of
+  torn water, 44 paper drops on ballistic arcs and three big rings.
+- New rig inputs for this (all default 0, so the signed-off drawing and walk are unchanged): `wash`, `rub`, `lift`,
+  `depth`, `dip`, `hold` (a crayfish between the paws), `shake`, `flinch`.
+
+```bash
+open creek.html
+nice -n 15 node ../tools/motion-lab/render.mjs "creek.html?w=1280" 0 9 out/draft/fno_s2-creek_dN_f0-f216_24fps_draft.mp4 --width 1280 --height 720
+```
+
+The change out of the creek (the moon's reflection rises and becomes the porch light) is built with scene 3.
+
 ## Taken from paper-fox (MIT, Copyright (c) 2026 Leonxlnx; notice in `LICENSE-paper-fox.md`)
 
 `js/paper.js` is copied unchanged from the paper-depth look test (`indieagent-paper-depth/js/paper.js`, the port
@@ -65,8 +92,8 @@ core, baked shadows, the multiplane camera, bloom and grain. The rig techniques 
 chains, planted-foot IK, one composite shadow) follow paper-fox's `elements/fox.js` and `fox-rig.js` by way of the
 paper-depth musician. Not taken: the fox drawing, any scene, any audio.
 
-## Next (after Robin signs off the cast)
+## Next
 
-1. The creek, end to end, as the look test for night paper and bloom.
+1. Robin's notes on the creek.
 2. Score plan and take.
-3. The rest, each scene rendered as it lands; transitions after the cast is locked.
+3. The rest, each scene rendered as it lands, with its transitions.
