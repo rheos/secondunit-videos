@@ -208,8 +208,8 @@ function singerMakes(ctx, t, phase, x, f, hip, kinds, hue) {
 const CHORUS = [[892, 'bells', P.mint], [822, P.butter, P.pink], [752, 'pom', P.lilac]];
 // the offerings the chorus cheers: the adept's at 3.2 and 9.2, the seer's at 6.2 and 0.2 (each about 1.2 s)
 const cheerAt = (t) => Math.max(...[3.2, 9.2, 6.2, 0.2].map((a) => loopBump(t, a - 0.1, 1.4)));
-// the arms swing in opposition, one up while the other is down, crossing in front of the chest as they swap
-// sides; each elf runs a quarter second behind the one to its left, so the swing rolls along the row as a wave.
+// scissor arms: crossed in front of the chest, one rising while the other falls; each elf runs a quarter second
+// behind the one beside it, so the swing rolls along the row as a wave.
 // An offering makes the wave bigger and the hop higher.
 const WAVE = { period: 1.5, lag: 0.25 };
 function chorusPose(t, i, x) {
@@ -217,11 +217,12 @@ function chorusPose(t, i, x) {
   const ph = t / WAVE.period - i * WAVE.lag / WAVE.period, sw = Math.sin(TAU * ph), amp = 1 + 0.3 * ch;
   // a hop at each end of the swing, when the arms are furthest apart
   const b = (3 + 7 * ch) * k * Math.abs(sw);
-  // each hand runs a diagonal from high on one side to low on the other; the two meet and cross at the chest
-  const mid = hip - 32 * k, bow = 5 * k * (1 - sw * sw);
-  const up = (q) => (q > 0 ? 46 : 24) * q;                               // high overhead at the top, at the hip at the bottom
-  const lead = [x - 24 * k * sw * amp, mid - up(sw) * k * amp - bow];    // passes just above the other at the cross
-  const other = [x + 24 * k * sw * amp, mid + up(-sw) * k * amp * -1 + bow];
+  // scissors: each arm reaches across the body to the far side and stays there, moving straight up and down; the
+  // two move in opposition, so the arms make an X in front of the chest and slide past each other as they switch
+  // the hands aim past the body's edges at full stretch, so the arms run straight and the X opens wide
+  const mid = hip - 38 * k, reach = 34 * k * amp;
+  const lead = [x + 30 * k, mid - reach * sw];    // from the left shoulder, out on the right side
+  const other = [x - 30 * k, mid + reach * sw];   // from the right shoulder, out on the left side
   return { hip: [x, hip - b], feet: [[x - 7 * k, GROUND - b * 0.6], [x + 7 * k, GROUND - b * 0.6]], facing: 1, scale: k, turn: 0.85, lean: 0,
     hands: [lead, other].map((h) => [h[0], h[1] - b]), headTilt: 0, armsFront: true,
     shift: loopBump(t, 1.1 + i * 1.9, 0.9), shiftKind: ['ico', 'cube', 'octa'][i % 3], shiftSpin: TAU * t / 2 };
