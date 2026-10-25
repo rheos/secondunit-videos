@@ -145,3 +145,23 @@ floats still: pendants work as accordions, chevron stacks fan open and fold, sol
 back. The chorus does scissor arms: crossed in front of the chest, each hand on its own side, one rising as the
 other falls, rolling along the row. The lantern is a spinning mechanism of parts: rays reaching and retracting in a
 wave, window rings turning against each other and breathing.
+
+## Sound (draft 9d, s1)
+
+Synthesized in code, after Robin: "ambient glitchy and ethereal noises with a strange kind of harmony in what sounds
+like the bellows of an accordion or harmonium".
+
+```bash
+node tools/bundle.mjs src/loop.js build/loop.js && node tools/cues.mjs         # the page's events -> out/loop-cues.json
+~/Code/novadiem/indieagent/viralvision/viralvision-worker/.venv/bin/python -I tools/sound.py   # -> out/audio/reliefloop_loop.wav
+```
+
+- `window.FILM.cues()` in `src/loop.js` lists every event from the same schedules the picture uses (sung glyphs,
+  sigil circles closing, folds, solids forming, offerings, releases, drops into the funnel, pipe bulges, chorus
+  scissor crossings, heads popping, levers, released cubes); mirrored twins give a cue on each side.
+- `tools/sound.py`: a reed organ (two beating reeds a note, voiced toward a nasal reed formant) breathing like
+  bellows, one swell per 3 s chord; the chords are major sevenths with a sharp eleven sliding in parallel (D, Bb, C,
+  Ab); air hisses through at each change; glitch stutters cut from the organ and bit-crushed; each event its own
+  synthesized sound, one frame after its picture event, panned to where it happens; a long circular hall.
+- Seamless by construction: every oscillator runs whole cycles in 12 s, noise filtering and reverb are circular,
+  every sound that runs past the end wraps to the start.

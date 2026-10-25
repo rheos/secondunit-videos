@@ -274,6 +274,44 @@ function scene() {
   });
 }
 
+// ---------------- the cue list: every event in the loop, for the sound to land on ----------------
+// Each cue: { t (s, within the loop), kind, x (authored px, for the stereo position), dur?, n? }. Mirrored twins
+// give a cue on each side. Computed from the same schedules the picture uses, so the two cannot drift apart.
+function cues() {
+  const out = [], add = (t, kind, x, extra = {}) => out.push({ t: +mod(t, LOOP).toFixed(4), kind, x, ...extra });
+  const both = (t, kind, x, extra) => { add(t, kind, x, extra); add(t, kind, 1920 - x, extra); };
+  // the funnel: eight things round it every 6 s, odd ones down the right pipe
+  for (let n = 0; n < 8; n++) for (const k of [0, 1]) {
+    const t0 = 6 * k - 0.75 * n, side = n % 2 ? 1 : -1;
+    add(t0 + 2.2, 'bulge', 960 + side * 200, { dur: 3.2, side });
+    add(t0 + 5.4, 'release', 960 + side * 56);
+    add(t0 + 6.0, 'drop', 960, { n });
+  }
+  // the singers: the adept pair (phase 0) on the ground, the seer pair (phase 3) on the islands
+  for (const [phase, x] of [[0, 170], [3, 300]]) for (let j = 0; j < 2; j++) {
+    const c0 = phase + 6 * j, kind = ['ico', 'dodeca', 'star', 'octa'][(phase ? 2 : 0) + j];
+    let e = 0;
+    for (let c = T.sing[0]; c < T.sing[1] - 1e-6; c += 0.1, e++) both(c0 + c, 'glyph', x, { n: e });
+    // the circle of the sigil closes partway through the song
+    const strokes = SIGILS[kind], lens = strokes.map(slen), total = lens.reduce((a, b) => a + b, 0) + HOP * (strokes.length - 1);
+    let kc = 0; while (kc < 1 && E.smooth(kc) * total < lens[0]) kc += 0.005;
+    both(c0 + T.sing[0] + kc * (T.sing[1] - T.sing[0]), 'chime', x);
+    both(c0 + T.fold[0], 'fold', x, { dur: 0.5 });
+    both(c0 + T.fold[1], 'form', x);
+    both(c0 + T.offer[0], 'offer', x, { dur: 1.2 });
+    both(c0 + T.offer[1], 'rise', x);
+  }
+  // the chorus: a tick as each pair of scissor arms crosses, pitched by the elf's place in the row
+  CHORUS.forEach(([x], i) => { for (let m = 0; m < LOOP / 0.75; m++) both(0.75 * m + WAVE.lag * i, 'tick', x, { n: i }); });
+  // heads popping into solids
+  both(7.3, 'pop', 566); both(4.6, 'pop', 318); both(10.7, 'pop', 170); both(1.6, 'pop', 300);
+  CHORUS.forEach(([x], i) => both(1.1 + i * 1.9, 'pop', x));
+  // the consoles' levers, the instruments' released cubes
+  for (const q of [1.6, 4.6, 7.6, 10.6]) both(q, 'lever', 612);
+  both(7.0, 'cube', 384);
+  return out.sort((a, b) => a.t - b.t);
+}
+
 // ---------------- the page hooks our renderers use ----------------
 const params = new URLSearchParams(location.search);
 const OUT_W = parseInt(params.get('w') || '1280', 10);
@@ -292,7 +330,7 @@ function frame(t) {
 window.__frameJPEG = (t, q = 0.93) => { frame(t); return cv.toDataURL('image/jpeg', q); };
 window.__framePNG = (t) => { frame(t); return cv.toDataURL('image/png'); };
 window.__ready = Promise.resolve(true);
-window.FILM = { DURATION: LOOP, frame, scene: S };
+window.FILM = { DURATION: LOOP, frame, scene: S, cues };
 if (!params.has('offline')) {
   const t0 = performance.now(), start = parseFloat(params.get('t') || 0);
   (function loop() { frame(start + (performance.now() - t0) / 1000); requestAnimationFrame(loop); })();
