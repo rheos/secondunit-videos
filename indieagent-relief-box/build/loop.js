@@ -2743,6 +2743,19 @@ function ringClip(c, w) {
   }
   return clip;
 }
+// The fork (Robin: "I don't want to see this seam... it should just be a fork in the pipe"). The two pipes are the
+// left pipe drawn twice, once mirrored, so their corners overlapped on the centre line in a seam. The junction is
+// drawn once, unmirrored, over both: one straight crossbar running into both branches, the stem coming down into it
+// with a rounded end, and the colour rings carried across by arc length along the pipe, the same on both sides.
+const FORK = { half: 150, keep: 112, y: 800 };
+const arcAt = (x, y) => { let b = 0, bd = Infinity; DUCT.path.forEach((p, i) => { const d = (p[0] - x) ** 2 + (p[1] - y) ** 2; if (d < bd) { bd = d; b = i; } }); return ACC[b]; };
+// the colour of a ring at arc length s (mint, butter, pink in turn); the fork's rings: across the bar by the arc
+// length of the matching point on the left pipe (so both sides agree), down the stem by its height
+const ringOf = (sArc) => Math.floor(sArc / RING) % 3;
+const barClip = (c, w) => { const p = new Path2D(); for (let x = AXIS - FORK.keep; x < AXIS + FORK.keep; x += 2) if (ringOf(arcAt(AXIS - Math.abs(x + 1 - AXIS), FORK.y)) === c) p.rect(x, FORK.y - w - 8, 2.2, 2 * w + 16); return p; };
+const stemClip = (c, w) => { const p = new Path2D(); for (let y = 640; y < FORK.y + w + 2; y += 2) if (ringOf(Math.min(y, FORK.y) - 640) === c) p.rect(AXIS - w - 8, y, 2 * w + 16, 2.2); return p; };
+// the fork's box: inside it a passing bulge takes the fork's rings, outside the pipe's own
+const FORK_BOX = [AXIS - FORK.keep, 630, 2 * FORK.keep, FORK.y + 60 - 630];
 // a stretch of pipe swollen around s0: the same rolled tube, wider in a smooth bump, in the same colour rings
 const BULGE = { sigma: 17, amp: 0.45 };
 function drawBulge(ctx, s0, amp, clips) {
@@ -2758,10 +2771,16 @@ function drawBulge(ctx, s0, amp, clips) {
   const win = new Path2D(), o0 = tubeOutline(mid, DUCT.w * (1 + BULGE.amp) + 10, { caps: false });
   win.moveTo(o0[0][0], o0[0][1]); for (const q of o0.slice(1)) win.lineTo(q[0], q[1]); win.closePath();
   const o = { shadow: false, caps: false, size: DUCT.w * 2 };
-  ctx.save(); ctx.clip(win);
-  tube(ctx, seg, ws, RING_COLS[0], o);
-  for (let c = 1; c < 3; c++) { ctx.save(); ctx.clip(clips[c]); tube(ctx, seg, ws, RING_COLS[c], o); ctx.restore(); }
-  ctx.restore();
+  // outside the fork's box the pipe's own colour rings, inside it the fork's (both symmetric, so a right-side bulge
+  // drawn reflected lands on the same colours)
+  const box = new Path2D(); box.rect(...FORK_BOX);
+  const outside = new Path2D(); outside.rect(-4000, -4000, 9000, 9000); outside.addPath(box);
+  for (const [region, rule, cl] of [[outside, 'evenodd', clips.ring], [box, 'nonzero', clips.fork]]) {
+    ctx.save(); ctx.clip(win); ctx.clip(region, rule);
+    tube(ctx, seg, ws, RING_COLS[0], o);
+    for (let c = 1; c < 3; c++) { ctx.save(); ctx.clip(cl[c]); tube(ctx, seg, ws, RING_COLS[c], o); ctx.restore(); }
+    ctx.restore();
+  }
 }
 const SPOUT = DUCT.path[DUCT.path.length - 1];
 
@@ -2777,6 +2796,19 @@ function drawPipe(g) {
   for (let c = 1; c < 3; c++) { g.save(); g.clip(ringClip(c, DUCT.w + 6)); tube(g, DUCT.path, DUCT.w, RING_COLS[c], { shadow: false }); g.restore(); }
   // the spout: a square collar at the pipe's end
   clayForm(g, [[SPOUT[0] - 30, SPOUT[1] - 6], [SPOUT[0] + 30, SPOUT[1] - 6], [SPOUT[0] + 26, SPOUT[1] + 10], [SPOUT[0] - 26, SPOUT[1] + 10]], shade(P.mint, 0.12), { smooth: false, size: 14, sheen: 0.2 });
+}
+function drawFork(g) {
+  const Y = FORK.y, w = DUCT.w, bar = [], stem = [];
+  for (let x = AXIS - FORK.half; x <= AXIS + FORK.half + 0.1; x += 4) bar.push([x, Y]);
+  for (let y = 640; y <= Y + 0.1; y += 4) stem.push([AXIS, y]);
+  // the crossbar: drawn longer than it shows and cut to the middle, so its cut ends (where tube shading turns) never show
+  const win = new Path2D(); win.rect(AXIS - FORK.keep, Y - w - 10, 2 * FORK.keep, 2 * w + 20);
+  g.save(); g.clip(win);
+  tube(g, bar, w, P.mint, { caps: false, shadow: false });
+  for (let c = 1; c < 3; c++) { g.save(); g.clip(barClip(c, w)); tube(g, bar, w, RING_COLS[c], { caps: false, shadow: false }); g.restore(); }
+  g.restore();
+  tube(g, stem, w, P.mint, { shadow: false });
+  for (let c = 1; c < 3; c++) { g.save(); g.clip(stemClip(c, w)); tube(g, stem, w, RING_COLS[c], { shadow: false }); g.restore(); }
 }
 function drawFunnelBack(g) {
   // the funnel's front facets (the ones turned toward us), each a flat cut of clay
@@ -2836,9 +2868,11 @@ const sliderK = (t) => 0.5 + 0.45 * Math.sin(TAU * t / 4);
 function addMachines(S) {
   const sp = (name, box, draw, o = {}) => S.sprite({ name, ...box, res: o.res ?? 1.25, mat: CLAY_MAT, edge: CLAY_EDGE, shadow: { blur: shadowBlur(o.blur ?? 18) }, draw });
   const pipe = sp('pipe', { x: AXIS - 330, y: 170, w: 360, h: 690 }, drawPipe, { blur: 18 });
+  const fork = sp('pipe-fork', { x: AXIS - 160, y: 600, w: 320, h: 250 }, drawFork, { blur: 18 });
   const back = sp('funnel', { x: AXIS - 230, y: 300, w: 460, h: 400 }, drawFunnelBack, { blur: 22 });
   const front = sp('funnel-lip', { x: AXIS - 220, y: 310, w: 440, h: 130 }, drawFunnelFront, { blur: 10 });
-  const clips = [null, ringClip(1, DUCT.w * (1 + BULGE.amp) + 8), ringClip(2, DUCT.w * (1 + BULGE.amp) + 8)];
+  const bw = DUCT.w * (1 + BULGE.amp) + 8, forkClip = (c) => { const p = new Path2D(); p.addPath(barClip(c, bw)); p.addPath(stemClip(c, bw)); return p; };
+  const clips = { ring: [null, ringClip(1, bw), ringClip(2, bw)], fork: [null, forkClip(1), forkClip(2)] };
   const consoleS = sp('console', { x: 470, y: 760, w: 380, h: 240 }, drawConsole);
   const instr = sp('instrument', { x: INSTR.x - 80, y: 780, w: 160, h: 220 }, drawInstrumentBase);
 
@@ -2846,6 +2880,7 @@ function addMachines(S) {
   const KINDS = ['octa', 'cube', 'tetra', 'ico'], COLS = [P.pink, P.butter, P.lilac, P.aqua, P.mint, P.pinkDeep, P.blush, P.butterDeep];
   S.add({ name: 'funnel', z: 1000, shadow: { dx: 10, dy: 18, alpha: 0.4 }, anim: (t) => ({ sx: 1 + 0.006 * cyc(t, 2), sy: 1 + 0.006 * cyc(t, 2), ox: RIM.x, oy: 520 }), render(ctx, t, env) {
     mirrored(ctx, () => drawSprites(ctx, [{ s: pipe }], env.shadow));
+    drawSprites(ctx, [{ s: fork, shadow: false }], env.shadow);
     drawSprites(ctx, [{ s: back }], env.shadow);
     const swell = [], late = [];   // swell: [arc length, strength, right side?] of each bulge in a pipe
     const pulse = 0.5 + 0.5 * Math.cos(TAU * mod(t, 0.75) / 0.75);
