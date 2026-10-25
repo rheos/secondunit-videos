@@ -12,7 +12,10 @@ import { Scene } from '../vendor/paper-fox/core/stage.js';
 import { drawSprites } from '../vendor/paper-fox/core/sprite.js';
 import { finish } from '../vendor/paper-fox/core/post.js';
 import { E, lerp, smoothstep } from '../vendor/paper-fox/core/ease.js';
-import { LIGHT, PAL } from './kit.js';
+import { LIGHT, PAL, setFinish } from './kit.js';
+
+// draft 9: the crisp, constructed finish (set before anything is baked)
+setFinish('crisp');
 import { ISLAND } from './props.js';
 import { LOOP, cyc, addWorld, addNear } from './loop-world.js';
 import { CONSOLE, INSTR, knobAngle, leverAngle, sliderK, addMachines, mirrored } from './loop-machine.js';
@@ -230,8 +233,9 @@ function scene() {
     duration: LOOP,
     background: '#f6e4d8',
     light: LIGHT,
-    shadow: { alpha: 0.42, dist: 10, blur: 16 },
-    post: { bloom: 0.22, threshold: 0.74, bloomRadius: 1.4, vignette: 0.16, grain: 0.035, grade: { color: '#ffd8b4', amount: 0.08, mode: 'soft-light' } },
+    shadow: { alpha: 0.44, dist: 10, blur: 6 },
+    // less haze: a trace of bloom on the brightest parts, barely any grain, a light vignette
+    post: { bloom: 0.06, threshold: 0.86, bloomRadius: 1, vignette: 0.08, grain: 0.012, grade: { color: '#ffd8b4', amount: 0.03, mode: 'soft-light' } },
     // on the centre line, breathing in and out, so the symmetry holds
     camera: (t) => ({ x: 0, y: 6 * cyc(t, 1, 0.21), z: 30 + 24 * cyc(t, 1, 0.1), roll: 0 }),
     build(S) {

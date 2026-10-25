@@ -8,7 +8,7 @@ import { linear, glow, piece } from '../vendor/paper-fox/core/piece.js';
 import { mix, shade, vary, rgba } from '../vendor/paper-fox/core/color.js';
 import { drawSprites } from '../vendor/paper-fox/core/sprite.js';
 import { transform } from '../vendor/paper-fox/core/geom.js';
-import { LIGHT, PAL, CLAY_MAT, CLAY_EDGE, clayForm, tube, steps, dot } from './kit.js';
+import { LIGHT, PAL, CLAY_MAT, CLAY_EDGE, shadowBlur, clayForm, tube, steps, dot } from './kit.js';
 import { rosette, curl } from './density.js';
 import { drawSun, drawIsland, drawCity, SUN, ISLAND, CITY } from './props.js';
 import { drawSolid, drawTesseract } from './loop-shapes.js';
@@ -65,13 +65,13 @@ function floater(g, kind, x, y, s, rng) {
 }
 
 export function addWorld(S) {
-  const sp = (name, box, draw, o = {}) => S.sprite({ name, ...box, res: o.res ?? 1, mat: o.mat ?? CLAY_MAT, edge: o.edge ?? CLAY_EDGE, shadow: o.shadow ?? { blur: 18 }, draw });
+  const sp = (name, box, draw, o = {}) => S.sprite({ name, ...box, res: o.res ?? 1, mat: o.mat ?? CLAY_MAT, edge: o.edge ?? CLAY_EDGE, shadow: o.shadow ?? { blur: shadowBlur(18) }, draw });
 
   // the backdrop is the turning honeycomb dome (loop-dome.js)
   addDome(S, LOOP);
 
   // the window-wheel sun hangs at the top of the dome as its lantern
-  const sun = sp('sun', { x: SUN.x - SUN.r - 70, y: -SUN.r - 70, w: SUN.r * 2 + 140, h: SUN.r * 2 + 140 }, drawSun, { res: 1.1, shadow: { blur: 24 } });
+  const sun = sp('sun', { x: SUN.x - SUN.r - 70, y: -SUN.r - 70, w: SUN.r * 2 + 140, h: SUN.r * 2 + 140 }, drawSun, { res: 1.1, shadow: { blur: shadowBlur(24) } });
   S.add({ name: 'lantern-glow', z: 5010, blend: 'lighter', render(ctx, t) {
     glow(ctx, 960, 70, 640, '#ffd9a0', 0.2 + 0.03 * cyc(t, 2));
     glow(ctx, 960, 70, 240, '#fff0c8', 0.3);
@@ -105,7 +105,7 @@ export function addWorld(S) {
   const COLS = [P.mint, P.pink, P.butter, P.lilac, P.aqua];
   spots.forEach(([x, y, z, kind], i) => {
     if (kind === 'pendant' || kind === 'chevron') {
-      const s = sp(`float-${i}`, { x: x - 70, y: y - 60, w: 140, h: 130 }, (g) => floater(g, kind, x, y, 1, frng), { res: 1.3, shadow: { blur: 12 } });
+      const s = sp(`float-${i}`, { x: x - 70, y: y - 60, w: 140, h: 130 }, (g) => floater(g, kind, x, y, 1, frng), { res: 1.3, shadow: { blur: shadowBlur(12) } });
       S.add({ name: `float-${i}`, z, shadow: { dx: 10, dy: 18, alpha: 0.22 }, sprites: pair(s), anim: (t) => ({ y: 10 * cyc(t, 1, i * 0.17) }) });
     } else if (kind === 'tess') {
       S.add({ name: `float-${i}`, z, anim: (t) => ({ y: 10 * cyc(t, 1, i * 0.17) }), render(ctx, t) { mirror(ctx, () => drawTesseract(ctx, x, y, 22, TAU * (i % 2 ? 2 : -1) * t / LOOP, TAU * t / LOOP + i, { outer: COLS[i % 5], inner: COLS[(i + 2) % 5] })); } });
@@ -123,7 +123,7 @@ export function addWorld(S) {
 
 // The near world in front of the machine: low mounds with coral curls and rosette bushes, then the lens plane.
 export function addNear(S) {
-  const sp = (name, box, draw, o = {}) => S.sprite({ name, ...box, res: o.res ?? 1.1, mat: CLAY_MAT, edge: CLAY_EDGE, shadow: { blur: 22 }, draw });
+  const sp = (name, box, draw, o = {}) => S.sprite({ name, ...box, res: o.res ?? 1.1, mat: CLAY_MAT, edge: CLAY_EDGE, shadow: { blur: shadowBlur(22) }, draw });
   const rng = new RNG('near');
   const near = sp('near', { x: -600, y: 880, w: 1300, h: 560 }, (g) => {
     mounds(g, { x0: -600, x1: 400, base: 1070, amp: 70, bottom: 1440, colors: [P.pinkDeep, P.pink], fade: 0, seed: 5, trees: 0 });

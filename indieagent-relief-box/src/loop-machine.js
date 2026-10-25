@@ -17,7 +17,7 @@ import { mix, shade, rgba } from '../vendor/paper-fox/core/color.js';
 import { drawSprites } from '../vendor/paper-fox/core/sprite.js';
 import { along } from '../vendor/paper-fox/core/geom.js';
 import { lerp, smoothstep, E } from '../vendor/paper-fox/core/ease.js';
-import { PAL, CLAY_MAT, CLAY_EDGE, clayForm, tube, tubeOutline, steps, dot } from './kit.js';
+import { PAL, CLAY_MAT, CLAY_EDGE, shadowBlur, clayForm, tube, tubeOutline, steps, dot } from './kit.js';
 import { LOOP, cyc } from './loop-world.js';
 import { drawSolid } from './loop-shapes.js';
 import { MK, MK_RAMP, markLayer, paintMarkSolid, paintBurst, paintGlyph } from './loop-mark.js';
@@ -161,7 +161,7 @@ export const leverAngle = (t) => { const q = mod(t, 3); return q < 1.6 ? -0.5 : 
 export const sliderK = (t) => 0.5 + 0.45 * Math.sin(TAU * t / 4);
 
 export function addMachines(S) {
-  const sp = (name, box, draw, o = {}) => S.sprite({ name, ...box, res: o.res ?? 1.25, mat: CLAY_MAT, edge: CLAY_EDGE, shadow: { blur: o.blur ?? 18 }, draw });
+  const sp = (name, box, draw, o = {}) => S.sprite({ name, ...box, res: o.res ?? 1.25, mat: CLAY_MAT, edge: CLAY_EDGE, shadow: { blur: shadowBlur(o.blur ?? 18) }, draw });
   const pipe = sp('pipe', { x: AXIS - 330, y: 170, w: 360, h: 690 }, drawPipe, { blur: 18 });
   const back = sp('funnel', { x: AXIS - 230, y: 300, w: 460, h: 400 }, drawFunnelBack, { blur: 22 });
   const front = sp('funnel-lip', { x: AXIS - 220, y: 310, w: 440, h: 130 }, drawFunnelFront, { blur: 10 });

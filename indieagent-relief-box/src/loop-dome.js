@@ -49,13 +49,21 @@ export function addDome(S, loop) {
         const wave = 0.5 + 0.5 * Math.sin(TAU * t / 4 - rel * 6 - r / 1.4);
         const lit = 0.18 + 0.5 * Math.min(1, phi / 1.1) - 0.25 * Math.abs(rel) / 1.35 + 0.08 * wave + tint[r * 2 + (c & 1)];
         const base = mix(mix(P.wallLight, P.blush, 0.35), '#fff6ea', Math.max(0, lit));
-        ctx.beginPath(); pts.forEach(([x, y], i) => (i ? ctx.lineTo(x, y) : ctx.moveTo(x, y))); ctx.closePath();
-        ctx.fillStyle = base; ctx.fill();
-        // a lit edge toward the lantern and a shaded edge away from it: each cell stands proud of the shell
-        const w = Math.max(0.6, 2.4 * pts[0][2]);
-        ctx.strokeStyle = rgba(shade(base, -0.22), 0.5); ctx.lineWidth = w; ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(pts[3][0], pts[3][1]); ctx.lineTo(pts[4][0], pts[4][1]); ctx.lineTo(pts[5][0], pts[5][1]);
-        ctx.strokeStyle = rgba('#fffaf0', 0.5); ctx.lineWidth = w; ctx.stroke();
+        // each cell an exact raised hexagon: a bevelled rim in the shell's tone, a flat top face set inside it, a
+        // bright edge on the sides toward the lantern and a dark edge on the sides away from it
+        const cx = pts.reduce((a, q) => a + q[0], 0) / 6, cy = pts.reduce((a, q) => a + q[1], 0) / 6;
+        const top = pts.map(([x, y]) => [cx + (x - cx) * 0.8, cy + (y - cy) * 0.8]);
+        const poly = (q) => { ctx.beginPath(); q.forEach(([x, y], i) => (i ? ctx.lineTo(x, y) : ctx.moveTo(x, y))); ctx.closePath(); };
+        poly(pts); ctx.fillStyle = shade(base, -0.07); ctx.fill();
+        poly(top); ctx.fillStyle = base; ctx.fill();
+        const w = Math.max(0.6, 2.2 * pts[0][2]);
+        ctx.lineWidth = w; ctx.lineJoin = 'miter'; ctx.lineCap = 'butt';
+        // vertices 3, 4, 5 are the upper edges (toward the lantern), 0, 1, 2 the lower ones
+        ctx.beginPath(); ctx.moveTo(...top[3]); ctx.lineTo(...top[4]); ctx.lineTo(...top[5]); ctx.lineTo(...top[0]);
+        ctx.strokeStyle = rgba('#ffffff', 0.8); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(...top[0]); ctx.lineTo(...top[1]); ctx.lineTo(...top[2]); ctx.lineTo(...top[3]);
+        ctx.strokeStyle = rgba(shade(base, -0.35), 0.55); ctx.stroke();
+        poly(pts); ctx.strokeStyle = rgba(shade(base, -0.28), 0.6); ctx.lineWidth = w * 0.8; ctx.stroke();
       }
     }
     // the lantern's light pooled at the top of the dome

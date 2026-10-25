@@ -1333,6 +1333,17 @@ const PAL = {
 const CLAY_MAT = [{ tex: 'fiber', amt: 0.16 }];
 const CLAY_EDGE = { width: 1.3, hi: 0.14, lo: 0.2, soft: 1.4 };
 
+// The finish: 'soft' is the approved relief-box clay (soft falloff, thumbed surface); 'crisp' is the living loop's
+// from draft 9 (Robin: solid material with a crisp, projected construction): shading in defined planes with a
+// clean terminator, a sharp highlight along each lit edge, tight shadows, a finer surface. Set it before baking.
+let FINISH = 'soft';
+function setFinish(f) {
+  FINISH = f;
+  Object.assign(CLAY_EDGE, f === 'crisp' ? { width: 1.1, hi: 0.32, lo: 0.3, soft: 0.25 } : { width: 1.3, hi: 0.14, lo: 0.2, soft: 1.4 });
+}
+// a sprite's drop-shadow blur under the current finish
+const shadowBlur = (b) => (FINISH === 'crisp' ? b * 0.4 : b);
+
 // The clay surface, made once: fine grain, a scatter of fingerprint whorls and tiny pits, centred on mid grey so
 // it soft-lights in without shifting the colour.
 let clayTex = null;
@@ -1385,7 +1396,9 @@ function chaikin(line, rounds = 3) {
 // One sculpted clay piece. size is the thickness the shading is scaled to (default: the shorter side of the
 // outline's box); round 0..1 how domed it is; sheen the matte highlight. Older options (tiers, step, reach) are
 // accepted and ignored so earlier call sites keep working.
-function clayForm(ctx, pts, fill, { light = LIGHT, smooth = true, shadow = true, size = null, round = 1, sheen = 0.22 } = {}) {
+function clayForm(ctx, pts, fill, opts = {}) {
+  if (FINISH === 'crisp') return crispForm(ctx, pts, fill, opts);
+  const { light = LIGHT, smooth = true, shadow = true, size = null, round = 1, sheen = 0.22 } = opts;
   const res = ctx.__res || 1, B = bbox(pts), S = size ?? Math.max(4, Math.min(B.w, B.h));
   const path = pathOf(pts, { smooth });
   ctx.save();
@@ -1424,6 +1437,45 @@ function clayForm(ctx, pts, fill, { light = LIGHT, smooth = true, shadow = true,
   return path;
 }
 
+// The crisp finish of the same piece: a lit plane, a shadow plane with a clean terminator, a thin core line, a
+// sharp highlight along the lit edge and a small hard glint; tight shadows; the surface grain only faint.
+function crispForm(ctx, pts, fill, { light = LIGHT, smooth = true, shadow = true, size = null, round = 1, sheen = 0.22 } = {}) {
+  const res = ctx.__res || 1, B = bbox(pts), S = size ?? Math.max(4, Math.min(B.w, B.h));
+  const path = pathOf(pts, { smooth });
+  ctx.save();
+  if (shadow) {
+    setShadow(ctx, { color: 'rgba(60,38,46,0.22)', blur: Math.min(8, 1.5 + S * 0.07), x: -light[0] * Math.min(8, 2 + S * 0.08), y: -light[1] * Math.min(8, 2 + S * 0.08) });
+    ctx.fillStyle = fill; ctx.fill(path);
+    setShadow(ctx, { color: 'rgba(50,30,38,0.38)', blur: 1, x: -light[0] * 1.1, y: -light[1] * 1.1 });
+  }
+  ctx.fillStyle = fill; ctx.fill(path);
+  clearShadow(ctx);
+  ctx.clip(path);
+  const band = (d, color, alpha, blur) => {
+    const p = new Path2D(); p.rect(B.x0 - S * 2, B.y0 - S * 2, B.w + S * 4, B.h + S * 4); p.addPath(pathOf(shift(pts, d), { smooth }));
+    ctx.save(); if (blur > 0) ctx.filter = `blur(${blur * res}px)`; ctx.fillStyle = rgba(color, alpha); ctx.fill(p, 'evenodd'); ctx.restore();
+  };
+  // the plane away from the light, cut with a clean terminator
+  band([light[0] * S * 0.3 * round, light[1] * S * 0.3 * round], shade(fill, -0.32), 0.62, 0.5);
+  // a thin core line where the turn is sharpest
+  band([light[0] * S * 0.06, light[1] * S * 0.06], shade(fill, -0.5), 0.45, 0);
+  // the lit plane toward the light
+  band([-light[0] * S * 0.17 * round, -light[1] * S * 0.17 * round], mix(fill, '#fffaf0', 0.55), 0.55, 0.5);
+  // the sharp highlight running along the lit edge
+  band([-light[0] * 1.4, -light[1] * 1.4], '#ffffff', 0.8, 0);
+  // a small hard glint high on the lit side
+  if (sheen > 0) {
+    const cx = (B.x0 + B.x1) / 2 + light[0] * B.w * 0.26, cy = (B.y0 + B.y1) / 2 + light[1] * B.h * 0.26, rr = Math.max(0.8, S * 0.09);
+    ctx.fillStyle = `rgba(255,255,255,${Math.min(0.85, sheen * 3)})`; ctx.beginPath(); ctx.ellipse(cx, cy, rr * 1.3, rr, -0.5, 0, Math.PI * 2); ctx.fill();
+  }
+  const pat = ctx.createPattern(claySurface(), 'repeat');
+  pat.setTransform(new DOMMatrix().scale(0.7));
+  ctx.globalCompositeOperation = 'soft-light'; ctx.globalAlpha = 0.22; ctx.fillStyle = pat;
+  ctx.fillRect(B.x0 - 2, B.y0 - 2, B.w + 4, B.h + 4);
+  ctx.restore();
+  return path;
+}
+
 // A tube along a polyline (a coil, a stem, a rod): offset both sides by the width at each point, round caps.
 // widths: one number or one per point.
 function tubeOutline(line, widths, { caps = true, n = 8 } = {}) {
@@ -1447,9 +1499,9 @@ function tubeOutline(line, widths, { caps = true, n = 8 } = {}) {
 }
 
 // A rolled clay tube: the outline shaded as a lump whose thickness is the tube's width.
-function tube(ctx, line, widths, fill, { light = LIGHT, shadow = true } = {}) {
+function tube(ctx, line, widths, fill, { light = LIGHT, shadow = true, caps = true, size = null } = {}) {
   const w = Array.isArray(widths) ? Math.max(...widths) : widths;
-  return clayForm(ctx, tubeOutline(line, widths), fill, { light, shadow, size: w * 2, sheen: 0.18 });
+  return clayForm(ctx, tubeOutline(line, widths, { caps }), fill, { light, shadow, size: size ?? w * 2, sheen: 0.18 });
 }
 
 // A stepped stack (pyramids, tiers, the islands' undersides): slabs of decreasing width, each a rounded clay bar.
@@ -1470,7 +1522,7 @@ function dot(ctx, x, y, r, fill, light = LIGHT) {
 }
 
 
-return { LIGHT, PAL, CLAY_MAT, CLAY_EDGE, chaikin, clayForm, tubeOutline, tube, steps, dot };
+return { LIGHT, PAL, CLAY_MAT, CLAY_EDGE, setFinish, shadowBlur, chaikin, clayForm, tubeOutline, tube, steps, dot };
 })();
 __m["src/box.js"] = (() => {
 // The shadowbox: a honeycomb back wall, four inner walls drawn through the camera so they hold their

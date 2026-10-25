@@ -5,7 +5,7 @@
 
 import { mix, shade, rgba } from '../vendor/paper-fox/core/color.js';
 import { drawSprites } from '../vendor/paper-fox/core/sprite.js';
-import { LIGHT, PAL, CLAY_MAT, CLAY_EDGE, clayForm, dot } from './kit.js';
+import { LIGHT, PAL, CLAY_MAT, CLAY_EDGE, shadowBlur, clayForm, dot } from './kit.js';
 import { drawSolid } from './loop-shapes.js';
 
 const lerpN = (a, b, k) => a + (b - a) * k;
@@ -24,7 +24,7 @@ export function ik2(a, b, l1, l2, bend) {
 // cap: a colour for a little stepped hat, 'pom' for a bobble hat, or 'bells' for a two-pointed jester cap.
 // harlequin: diamonds on the body, in that colour.
 export function makeFigure(S, { name, color, cap, harlequin = null, res = 1.6 }) {
-  const torso = S.sprite({ name: `${name}-torso`, x: -22, y: -50, w: 44, h: 58, res, mat: CLAY_MAT, edge: CLAY_EDGE, shadow: { blur: 8 }, draw(g) {
+  const torso = S.sprite({ name: `${name}-torso`, x: -22, y: -50, w: 44, h: 58, res, mat: CLAY_MAT, edge: CLAY_EDGE, shadow: { blur: shadowBlur(8) }, draw(g) {
     const body = [[-12, 4], [-14, -14], [-12, -32], [-7, -40], [7, -40], [12, -32], [14, -14], [12, 4], [0, 7]];
     const path = clayForm(g, body, color, { size: 24, sheen: 0.22 });
     if (harlequin) {
@@ -49,7 +49,7 @@ export function makeFigure(S, { name, color, cap, harlequin = null, res = 1.6 })
     } else { clayForm(g, [[-13, -10], [13, -10], [13, -6], [-13, -6]], shade(cap, -0.1), { smooth: false, size: 6 }); clayForm(g, [[-9, -10], [9, -10], [7, -22], [-7, -22]], cap, { smooth: false, size: 12 }); }
   };
   const eye = (g, ex) => { g.fillStyle = P.ink; g.beginPath(); g.ellipse(ex, -2, 1.9, 2.6, 0, 0, TAU); g.fill(); g.fillStyle = 'rgba(255,255,255,0.9)'; g.beginPath(); g.arc(ex - 0.6, -3, 0.7, 0, TAU); g.fill(); };
-  const headBox = { x: -30, y: -40, w: 60, h: 58, res, mat: CLAY_MAT, edge: CLAY_EDGE, shadow: { blur: 8 } };
+  const headBox = { x: -30, y: -40, w: 60, h: 58, res, mat: CLAY_MAT, edge: CLAY_EDGE, shadow: { blur: shadowBlur(8) } };
   // in profile (baked facing right): eyes toward the facing side, a blush, a nose bump
   const head = S.sprite({ name: `${name}-head`, ...headBox, draw(g) {
     clayForm(g, circle(0, 0, BODY.head, 36), P.bone, { sheen: 0.28 });

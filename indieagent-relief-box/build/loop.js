@@ -1333,6 +1333,17 @@ const PAL = {
 const CLAY_MAT = [{ tex: 'fiber', amt: 0.16 }];
 const CLAY_EDGE = { width: 1.3, hi: 0.14, lo: 0.2, soft: 1.4 };
 
+// The finish: 'soft' is the approved relief-box clay (soft falloff, thumbed surface); 'crisp' is the living loop's
+// from draft 9 (Robin: solid material with a crisp, projected construction): shading in defined planes with a
+// clean terminator, a sharp highlight along each lit edge, tight shadows, a finer surface. Set it before baking.
+let FINISH = 'soft';
+function setFinish(f) {
+  FINISH = f;
+  Object.assign(CLAY_EDGE, f === 'crisp' ? { width: 1.1, hi: 0.32, lo: 0.3, soft: 0.25 } : { width: 1.3, hi: 0.14, lo: 0.2, soft: 1.4 });
+}
+// a sprite's drop-shadow blur under the current finish
+const shadowBlur = (b) => (FINISH === 'crisp' ? b * 0.4 : b);
+
 // The clay surface, made once: fine grain, a scatter of fingerprint whorls and tiny pits, centred on mid grey so
 // it soft-lights in without shifting the colour.
 let clayTex = null;
@@ -1385,7 +1396,9 @@ function chaikin(line, rounds = 3) {
 // One sculpted clay piece. size is the thickness the shading is scaled to (default: the shorter side of the
 // outline's box); round 0..1 how domed it is; sheen the matte highlight. Older options (tiers, step, reach) are
 // accepted and ignored so earlier call sites keep working.
-function clayForm(ctx, pts, fill, { light = LIGHT, smooth = true, shadow = true, size = null, round = 1, sheen = 0.22 } = {}) {
+function clayForm(ctx, pts, fill, opts = {}) {
+  if (FINISH === 'crisp') return crispForm(ctx, pts, fill, opts);
+  const { light = LIGHT, smooth = true, shadow = true, size = null, round = 1, sheen = 0.22 } = opts;
   const res = ctx.__res || 1, B = bbox(pts), S = size ?? Math.max(4, Math.min(B.w, B.h));
   const path = pathOf(pts, { smooth });
   ctx.save();
@@ -1419,6 +1432,45 @@ function clayForm(ctx, pts, fill, { light = LIGHT, smooth = true, shadow = true,
   const pat = ctx.createPattern(claySurface(), 'repeat');
   pat.setTransform(new DOMMatrix().scale(0.7));
   ctx.globalCompositeOperation = 'soft-light'; ctx.globalAlpha = 0.55; ctx.fillStyle = pat;
+  ctx.fillRect(B.x0 - 2, B.y0 - 2, B.w + 4, B.h + 4);
+  ctx.restore();
+  return path;
+}
+
+// The crisp finish of the same piece: a lit plane, a shadow plane with a clean terminator, a thin core line, a
+// sharp highlight along the lit edge and a small hard glint; tight shadows; the surface grain only faint.
+function crispForm(ctx, pts, fill, { light = LIGHT, smooth = true, shadow = true, size = null, round = 1, sheen = 0.22 } = {}) {
+  const res = ctx.__res || 1, B = bbox(pts), S = size ?? Math.max(4, Math.min(B.w, B.h));
+  const path = pathOf(pts, { smooth });
+  ctx.save();
+  if (shadow) {
+    setShadow(ctx, { color: 'rgba(60,38,46,0.22)', blur: Math.min(8, 1.5 + S * 0.07), x: -light[0] * Math.min(8, 2 + S * 0.08), y: -light[1] * Math.min(8, 2 + S * 0.08) });
+    ctx.fillStyle = fill; ctx.fill(path);
+    setShadow(ctx, { color: 'rgba(50,30,38,0.38)', blur: 1, x: -light[0] * 1.1, y: -light[1] * 1.1 });
+  }
+  ctx.fillStyle = fill; ctx.fill(path);
+  clearShadow(ctx);
+  ctx.clip(path);
+  const band = (d, color, alpha, blur) => {
+    const p = new Path2D(); p.rect(B.x0 - S * 2, B.y0 - S * 2, B.w + S * 4, B.h + S * 4); p.addPath(pathOf(shift(pts, d), { smooth }));
+    ctx.save(); if (blur > 0) ctx.filter = `blur(${blur * res}px)`; ctx.fillStyle = rgba(color, alpha); ctx.fill(p, 'evenodd'); ctx.restore();
+  };
+  // the plane away from the light, cut with a clean terminator
+  band([light[0] * S * 0.3 * round, light[1] * S * 0.3 * round], shade(fill, -0.32), 0.62, 0.5);
+  // a thin core line where the turn is sharpest
+  band([light[0] * S * 0.06, light[1] * S * 0.06], shade(fill, -0.5), 0.45, 0);
+  // the lit plane toward the light
+  band([-light[0] * S * 0.17 * round, -light[1] * S * 0.17 * round], mix(fill, '#fffaf0', 0.55), 0.55, 0.5);
+  // the sharp highlight running along the lit edge
+  band([-light[0] * 1.4, -light[1] * 1.4], '#ffffff', 0.8, 0);
+  // a small hard glint high on the lit side
+  if (sheen > 0) {
+    const cx = (B.x0 + B.x1) / 2 + light[0] * B.w * 0.26, cy = (B.y0 + B.y1) / 2 + light[1] * B.h * 0.26, rr = Math.max(0.8, S * 0.09);
+    ctx.fillStyle = `rgba(255,255,255,${Math.min(0.85, sheen * 3)})`; ctx.beginPath(); ctx.ellipse(cx, cy, rr * 1.3, rr, -0.5, 0, Math.PI * 2); ctx.fill();
+  }
+  const pat = ctx.createPattern(claySurface(), 'repeat');
+  pat.setTransform(new DOMMatrix().scale(0.7));
+  ctx.globalCompositeOperation = 'soft-light'; ctx.globalAlpha = 0.22; ctx.fillStyle = pat;
   ctx.fillRect(B.x0 - 2, B.y0 - 2, B.w + 4, B.h + 4);
   ctx.restore();
   return path;
@@ -1470,7 +1522,7 @@ function dot(ctx, x, y, r, fill, light = LIGHT) {
 }
 
 
-return { LIGHT, PAL, CLAY_MAT, CLAY_EDGE, chaikin, clayForm, tubeOutline, tube, steps, dot };
+return { LIGHT, PAL, CLAY_MAT, CLAY_EDGE, setFinish, shadowBlur, chaikin, clayForm, tubeOutline, tube, steps, dot };
 })();
 __m["src/props.js"] = (() => {
 // The box's landmarks: a sun made of a wheel of lit windows, two floating islands on stepped roots (a pink
@@ -2163,13 +2215,21 @@ function addDome(S, loop) {
         const wave = 0.5 + 0.5 * Math.sin(TAU * t / 4 - rel * 6 - r / 1.4);
         const lit = 0.18 + 0.5 * Math.min(1, phi / 1.1) - 0.25 * Math.abs(rel) / 1.35 + 0.08 * wave + tint[r * 2 + (c & 1)];
         const base = mix(mix(P.wallLight, P.blush, 0.35), '#fff6ea', Math.max(0, lit));
-        ctx.beginPath(); pts.forEach(([x, y], i) => (i ? ctx.lineTo(x, y) : ctx.moveTo(x, y))); ctx.closePath();
-        ctx.fillStyle = base; ctx.fill();
-        // a lit edge toward the lantern and a shaded edge away from it: each cell stands proud of the shell
-        const w = Math.max(0.6, 2.4 * pts[0][2]);
-        ctx.strokeStyle = rgba(shade(base, -0.22), 0.5); ctx.lineWidth = w; ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(pts[3][0], pts[3][1]); ctx.lineTo(pts[4][0], pts[4][1]); ctx.lineTo(pts[5][0], pts[5][1]);
-        ctx.strokeStyle = rgba('#fffaf0', 0.5); ctx.lineWidth = w; ctx.stroke();
+        // each cell an exact raised hexagon: a bevelled rim in the shell's tone, a flat top face set inside it, a
+        // bright edge on the sides toward the lantern and a dark edge on the sides away from it
+        const cx = pts.reduce((a, q) => a + q[0], 0) / 6, cy = pts.reduce((a, q) => a + q[1], 0) / 6;
+        const top = pts.map(([x, y]) => [cx + (x - cx) * 0.8, cy + (y - cy) * 0.8]);
+        const poly = (q) => { ctx.beginPath(); q.forEach(([x, y], i) => (i ? ctx.lineTo(x, y) : ctx.moveTo(x, y))); ctx.closePath(); };
+        poly(pts); ctx.fillStyle = shade(base, -0.07); ctx.fill();
+        poly(top); ctx.fillStyle = base; ctx.fill();
+        const w = Math.max(0.6, 2.2 * pts[0][2]);
+        ctx.lineWidth = w; ctx.lineJoin = 'miter'; ctx.lineCap = 'butt';
+        // vertices 3, 4, 5 are the upper edges (toward the lantern), 0, 1, 2 the lower ones
+        ctx.beginPath(); ctx.moveTo(...top[3]); ctx.lineTo(...top[4]); ctx.lineTo(...top[5]); ctx.lineTo(...top[0]);
+        ctx.strokeStyle = rgba('#ffffff', 0.8); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(...top[0]); ctx.lineTo(...top[1]); ctx.lineTo(...top[2]); ctx.lineTo(...top[3]);
+        ctx.strokeStyle = rgba(shade(base, -0.35), 0.55); ctx.stroke();
+        poly(pts); ctx.strokeStyle = rgba(shade(base, -0.28), 0.6); ctx.lineWidth = w * 0.8; ctx.stroke();
       }
     }
     // the lantern's light pooled at the top of the dome
@@ -2192,7 +2252,7 @@ const { linear, glow, piece } = __m["vendor/paper-fox/core/piece.js"];
 const { mix, shade, vary, rgba } = __m["vendor/paper-fox/core/color.js"];
 const { drawSprites } = __m["vendor/paper-fox/core/sprite.js"];
 const { transform } = __m["vendor/paper-fox/core/geom.js"];
-const { LIGHT, PAL, CLAY_MAT, CLAY_EDGE, clayForm, tube, steps, dot } = __m["src/kit.js"];
+const { LIGHT, PAL, CLAY_MAT, CLAY_EDGE, shadowBlur, clayForm, tube, steps, dot } = __m["src/kit.js"];
 const { rosette, curl } = __m["src/density.js"];
 const { drawSun, drawIsland, drawCity, SUN, ISLAND, CITY } = __m["src/props.js"];
 const { drawSolid, drawTesseract } = __m["src/loop-shapes.js"];
@@ -2248,13 +2308,13 @@ function floater(g, kind, x, y, s, rng) {
 }
 
 function addWorld(S) {
-  const sp = (name, box, draw, o = {}) => S.sprite({ name, ...box, res: o.res ?? 1, mat: o.mat ?? CLAY_MAT, edge: o.edge ?? CLAY_EDGE, shadow: o.shadow ?? { blur: 18 }, draw });
+  const sp = (name, box, draw, o = {}) => S.sprite({ name, ...box, res: o.res ?? 1, mat: o.mat ?? CLAY_MAT, edge: o.edge ?? CLAY_EDGE, shadow: o.shadow ?? { blur: shadowBlur(18) }, draw });
 
   // the backdrop is the turning honeycomb dome (loop-dome.js)
   addDome(S, LOOP);
 
   // the window-wheel sun hangs at the top of the dome as its lantern
-  const sun = sp('sun', { x: SUN.x - SUN.r - 70, y: -SUN.r - 70, w: SUN.r * 2 + 140, h: SUN.r * 2 + 140 }, drawSun, { res: 1.1, shadow: { blur: 24 } });
+  const sun = sp('sun', { x: SUN.x - SUN.r - 70, y: -SUN.r - 70, w: SUN.r * 2 + 140, h: SUN.r * 2 + 140 }, drawSun, { res: 1.1, shadow: { blur: shadowBlur(24) } });
   S.add({ name: 'lantern-glow', z: 5010, blend: 'lighter', render(ctx, t) {
     glow(ctx, 960, 70, 640, '#ffd9a0', 0.2 + 0.03 * cyc(t, 2));
     glow(ctx, 960, 70, 240, '#fff0c8', 0.3);
@@ -2288,7 +2348,7 @@ function addWorld(S) {
   const COLS = [P.mint, P.pink, P.butter, P.lilac, P.aqua];
   spots.forEach(([x, y, z, kind], i) => {
     if (kind === 'pendant' || kind === 'chevron') {
-      const s = sp(`float-${i}`, { x: x - 70, y: y - 60, w: 140, h: 130 }, (g) => floater(g, kind, x, y, 1, frng), { res: 1.3, shadow: { blur: 12 } });
+      const s = sp(`float-${i}`, { x: x - 70, y: y - 60, w: 140, h: 130 }, (g) => floater(g, kind, x, y, 1, frng), { res: 1.3, shadow: { blur: shadowBlur(12) } });
       S.add({ name: `float-${i}`, z, shadow: { dx: 10, dy: 18, alpha: 0.22 }, sprites: pair(s), anim: (t) => ({ y: 10 * cyc(t, 1, i * 0.17) }) });
     } else if (kind === 'tess') {
       S.add({ name: `float-${i}`, z, anim: (t) => ({ y: 10 * cyc(t, 1, i * 0.17) }), render(ctx, t) { mirror(ctx, () => drawTesseract(ctx, x, y, 22, TAU * (i % 2 ? 2 : -1) * t / LOOP, TAU * t / LOOP + i, { outer: COLS[i % 5], inner: COLS[(i + 2) % 5] })); } });
@@ -2306,7 +2366,7 @@ function addWorld(S) {
 
 // The near world in front of the machine: low mounds with coral curls and rosette bushes, then the lens plane.
 function addNear(S) {
-  const sp = (name, box, draw, o = {}) => S.sprite({ name, ...box, res: o.res ?? 1.1, mat: CLAY_MAT, edge: CLAY_EDGE, shadow: { blur: 22 }, draw });
+  const sp = (name, box, draw, o = {}) => S.sprite({ name, ...box, res: o.res ?? 1.1, mat: CLAY_MAT, edge: CLAY_EDGE, shadow: { blur: shadowBlur(22) }, draw });
   const rng = new RNG('near');
   const near = sp('near', { x: -600, y: 880, w: 1300, h: 560 }, (g) => {
     mounds(g, { x0: -600, x1: 400, base: 1070, amp: 70, bottom: 1440, colors: [P.pinkDeep, P.pink], fade: 0, seed: 5, trees: 0 });
@@ -2466,7 +2526,7 @@ const { mix, shade, rgba } = __m["vendor/paper-fox/core/color.js"];
 const { drawSprites } = __m["vendor/paper-fox/core/sprite.js"];
 const { along } = __m["vendor/paper-fox/core/geom.js"];
 const { lerp, smoothstep, E } = __m["vendor/paper-fox/core/ease.js"];
-const { PAL, CLAY_MAT, CLAY_EDGE, clayForm, tube, tubeOutline, steps, dot } = __m["src/kit.js"];
+const { PAL, CLAY_MAT, CLAY_EDGE, shadowBlur, clayForm, tube, tubeOutline, steps, dot } = __m["src/kit.js"];
 const { LOOP, cyc } = __m["src/loop-world.js"];
 const { drawSolid } = __m["src/loop-shapes.js"];
 const { MK, MK_RAMP, markLayer, paintMarkSolid, paintBurst, paintGlyph } = __m["src/loop-mark.js"];
@@ -2609,7 +2669,7 @@ const leverAngle = (t) => { const q = mod(t, 3); return q < 1.6 ? -0.5 : q < 2.2
 const sliderK = (t) => 0.5 + 0.45 * Math.sin(TAU * t / 4);
 
 function addMachines(S) {
-  const sp = (name, box, draw, o = {}) => S.sprite({ name, ...box, res: o.res ?? 1.25, mat: CLAY_MAT, edge: CLAY_EDGE, shadow: { blur: o.blur ?? 18 }, draw });
+  const sp = (name, box, draw, o = {}) => S.sprite({ name, ...box, res: o.res ?? 1.25, mat: CLAY_MAT, edge: CLAY_EDGE, shadow: { blur: shadowBlur(o.blur ?? 18) }, draw });
   const pipe = sp('pipe', { x: AXIS - 330, y: 170, w: 360, h: 690 }, drawPipe, { blur: 18 });
   const back = sp('funnel', { x: AXIS - 230, y: 300, w: 460, h: 400 }, drawFunnelBack, { blur: 22 });
   const front = sp('funnel-lip', { x: AXIS - 220, y: 310, w: 440, h: 130 }, drawFunnelFront, { blur: 10 });
@@ -2731,7 +2791,7 @@ __m["src/loop-figures.js"] = (() => {
 
 const { mix, shade, rgba } = __m["vendor/paper-fox/core/color.js"];
 const { drawSprites } = __m["vendor/paper-fox/core/sprite.js"];
-const { LIGHT, PAL, CLAY_MAT, CLAY_EDGE, clayForm, dot } = __m["src/kit.js"];
+const { LIGHT, PAL, CLAY_MAT, CLAY_EDGE, shadowBlur, clayForm, dot } = __m["src/kit.js"];
 const { drawSolid } = __m["src/loop-shapes.js"];
 const lerpN = (a, b, k) => a + (b - a) * k;
 
@@ -2749,7 +2809,7 @@ function ik2(a, b, l1, l2, bend) {
 // cap: a colour for a little stepped hat, 'pom' for a bobble hat, or 'bells' for a two-pointed jester cap.
 // harlequin: diamonds on the body, in that colour.
 function makeFigure(S, { name, color, cap, harlequin = null, res = 1.6 }) {
-  const torso = S.sprite({ name: `${name}-torso`, x: -22, y: -50, w: 44, h: 58, res, mat: CLAY_MAT, edge: CLAY_EDGE, shadow: { blur: 8 }, draw(g) {
+  const torso = S.sprite({ name: `${name}-torso`, x: -22, y: -50, w: 44, h: 58, res, mat: CLAY_MAT, edge: CLAY_EDGE, shadow: { blur: shadowBlur(8) }, draw(g) {
     const body = [[-12, 4], [-14, -14], [-12, -32], [-7, -40], [7, -40], [12, -32], [14, -14], [12, 4], [0, 7]];
     const path = clayForm(g, body, color, { size: 24, sheen: 0.22 });
     if (harlequin) {
@@ -2774,7 +2834,7 @@ function makeFigure(S, { name, color, cap, harlequin = null, res = 1.6 }) {
     } else { clayForm(g, [[-13, -10], [13, -10], [13, -6], [-13, -6]], shade(cap, -0.1), { smooth: false, size: 6 }); clayForm(g, [[-9, -10], [9, -10], [7, -22], [-7, -22]], cap, { smooth: false, size: 12 }); }
   };
   const eye = (g, ex) => { g.fillStyle = P.ink; g.beginPath(); g.ellipse(ex, -2, 1.9, 2.6, 0, 0, TAU); g.fill(); g.fillStyle = 'rgba(255,255,255,0.9)'; g.beginPath(); g.arc(ex - 0.6, -3, 0.7, 0, TAU); g.fill(); };
-  const headBox = { x: -30, y: -40, w: 60, h: 58, res, mat: CLAY_MAT, edge: CLAY_EDGE, shadow: { blur: 8 } };
+  const headBox = { x: -30, y: -40, w: 60, h: 58, res, mat: CLAY_MAT, edge: CLAY_EDGE, shadow: { blur: shadowBlur(8) } };
   // in profile (baked facing right): eyes toward the facing side, a blush, a nose bump
   const head = S.sprite({ name: `${name}-head`, ...headBox, draw(g) {
     clayForm(g, circle(0, 0, BODY.head, 36), P.bone, { sheen: 0.28 });
@@ -2882,7 +2942,9 @@ const { Scene } = __m["vendor/paper-fox/core/stage.js"];
 const { drawSprites } = __m["vendor/paper-fox/core/sprite.js"];
 const { finish } = __m["vendor/paper-fox/core/post.js"];
 const { E, lerp, smoothstep } = __m["vendor/paper-fox/core/ease.js"];
-const { LIGHT, PAL } = __m["src/kit.js"];
+const { LIGHT, PAL, setFinish } = __m["src/kit.js"];
+// draft 9: the crisp, constructed finish (set before anything is baked)
+setFinish('crisp');
 const { ISLAND } = __m["src/props.js"];
 const { LOOP, cyc, addWorld, addNear } = __m["src/loop-world.js"];
 const { CONSOLE, INSTR, knobAngle, leverAngle, sliderK, addMachines, mirrored } = __m["src/loop-machine.js"];
@@ -3099,8 +3161,9 @@ function scene() {
     duration: LOOP,
     background: '#f6e4d8',
     light: LIGHT,
-    shadow: { alpha: 0.42, dist: 10, blur: 16 },
-    post: { bloom: 0.22, threshold: 0.74, bloomRadius: 1.4, vignette: 0.16, grain: 0.035, grade: { color: '#ffd8b4', amount: 0.08, mode: 'soft-light' } },
+    shadow: { alpha: 0.44, dist: 10, blur: 6 },
+    // less haze: a trace of bloom on the brightest parts, barely any grain, a light vignette
+    post: { bloom: 0.06, threshold: 0.86, bloomRadius: 1, vignette: 0.08, grain: 0.012, grade: { color: '#ffd8b4', amount: 0.03, mode: 'soft-light' } },
     // on the centre line, breathing in and out, so the symmetry holds
     camera: (t) => ({ x: 0, y: 6 * cyc(t, 1, 0.21), z: 30 + 24 * cyc(t, 1, 0.1), roll: 0 }),
     build(S) {
