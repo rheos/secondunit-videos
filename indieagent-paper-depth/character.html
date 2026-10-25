@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Paper depth, the musician (lock sheet)</title>
+<style>html, body { margin: 0; background: #111; } canvas { width: 100vw; display: block; }</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<script src="js/paper.js"></script>
+<script src="js/musician.js"></script>
+<script>
+// Character lock sheet: the rest pose large, then eight phases of one walk cycle on a ground line,
+// each foot's planted position marked so a skating foot shows.
+const Q = parseFloat(new URLSearchParams(location.search).get('q') || 1);
+const cv = document.getElementById('c'); cv.width = 1920 * Q; cv.height = 1080 * Q; const X = cv.getContext('2d');
+const LIGHT = [-.5, -.85];
+MUS.build(Q * 1.3, LIGHT);
+function frame() {
+  X.setTransform(Q, 0, 0, Q, 0, 0);
+  X.fillStyle = '#efe4cf'; X.fillRect(0, 0, 1920, 1080);
+  X.fillStyle = '#d9c9a8'; X.fillRect(0, 980, 1920, 100);
+  X.save(); X.translate(260, 960); X.scale(1.6, 1.6); MUS.draw(X, 0, 0, { d: 0, t: 0, walk: 0 }); X.restore();
+  // one cycle, eight phases, on its own ground line
+  for (let i = 0; i < 8; i++) {
+    const d = i / 8 * MUS.LC;
+    X.save(); X.translate(640 + i * 160 - d * .62, 560); X.scale(.62, .62);
+    MUS.draw(X, 0, 0, { d, t: i * .14, walk: 1 });
+    X.restore();
+  }
+  X.fillStyle = '#b9a787'; X.fillRect(560, 570, 1340, 3);
+  // a second row: the same phases on one shared ground, so planted feet must overlap exactly
+  for (let i = 0; i < 8; i++) {
+    const d = i / 8 * MUS.LC;
+    X.save(); X.translate(640, 950); X.scale(.62, .62); X.globalAlpha = .55;
+    MUS.draw(X, 0, 0, { d, t: i * .14, walk: 1 }, { shadowAlpha: 0 });
+    X.restore();
+  }
+}
+frame();
+window.__frameJPEG = (t, q = .93) => { frame(); return cv.toDataURL('image/jpeg', q); };
+window.__ready = Promise.resolve(true);
+</script>
+</body>
+</html>

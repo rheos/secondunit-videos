@@ -79,6 +79,7 @@
 **/output
 **/tmp
 !/indieagent-one-show/
+!/indieagent-paper-depth/
 !/oneshow-launch-clip/
 !/indieagent-clean-vector-test/
 !/indieagent-call-toon/
