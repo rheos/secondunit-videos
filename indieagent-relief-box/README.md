@@ -66,3 +66,28 @@ Robin asked for rounder forms, softer light and a finer surface. `src/kit.js` no
 - The hills are rows of rounded mounds instead of torn paper strata.
 
 Draft 2 built form the paper way, with tiers cut inside each shape (commit 7cbb8a4).
+
+## The living loop (`loop.html`, issue #329)
+
+Robin, 2026-10-25, after approving the look: smaller figures instead of a big one, a living sculpture in the
+middle shaped like the recycle symbol (a funnel feeding back into itself, part of a system that feeds back into
+itself), and an open world instead of a framed diorama, with decorations floating in mid-air rather than hanging.
+
+```bash
+node tools/bundle.mjs src/loop.js build/loop.js
+nice -n 15 node ../tools/motion-lab/render.mjs "loop.html?w=1280" 0 12.0417 out/draft/reliefloop_dN_seamcheck.mp4 --width 1280 --height 720 --workers 2
+```
+
+A seamless 12 s loop: every motion is periodic in 12 s or a divisor of it (`cyc()` in `src/loop-world.js`), and
+the page wraps t, so frame 288 is frame 0. Render 289 frames and compare the first and last to check the seam.
+
+- `src/loop-world.js`: sky, clay clouds, three rows of hills into the haze, the terrace, a floating city, and
+  fourteen decorations floating at depths from 1300 to 3200, each bobbing and turning on its own phase.
+- `src/loop-machine.js`: the sculpture (three funnel arms around a triangle, each spout pouring into the next
+  mouth; beads circulate two laps a loop, swelling along the arms and hopping the gaps), the spigot, the piping, the
+  tree, the bucket lift and the crank. Every 4 s one item goes round the wider system: bead out of the spigot, along
+  the piping, into the tree, a bloom, picked, loaded, lifted, poured back into the top mouth.
+- `src/loop-figures.js`: small clay figures (about 100 px), body and head baked, each limb one rolled tube bending
+  through its joint, knees and elbows by two-bone IK, hands held to the arm's reach.
+- `src/loop.js`: the picker (tree to lift and back, every 4 s), the cranker (one turn every 2 s) and the watcher
+  on the floating island (telescope on the sun, a look and a wave at the machine mid-loop).
