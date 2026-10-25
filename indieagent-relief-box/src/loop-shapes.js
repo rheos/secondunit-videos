@@ -75,3 +75,45 @@ export function drawSolid(ctx, kind, x, y, r, ang, color, { glowK = 0, alpha = 1
 }
 
 export const SHAPE_COLORS = [P.mint, P.pink, P.butter, P.lilac, P.aqua];
+
+// A tesseract (the 4D cube): its sixteen corners turned in two 4D planes at once, seen in perspective from the
+// fourth dimension (the inner cube is the far side in w), then drawn as rolled clay rods and balls, far to near.
+// a, b: rotation angles in the XW and YZ planes. inner and outer colours split the edges by their depth in w.
+const T4 = [];
+for (let i = 0; i < 16; i++) T4.push([i & 1 ? 1 : -1, i & 2 ? 1 : -1, i & 4 ? 1 : -1, i & 8 ? 1 : -1]);
+const T4E = [];
+for (let i = 0; i < 16; i++) for (let k = 0; k < 4; k++) { const j = i ^ (1 << k); if (j > i) T4E.push([i, j]); }
+export function drawTesseract(ctx, x, y, r, a, b, { outer = P.mint, inner = P.pink, alpha = 1, glowK = 0, tilt = [0.42, 0.55] } = {}) {
+  if (alpha <= 0.01) return;
+  const pts = T4.map(([px, py, pz, pw]) => {
+    let X = px * Math.cos(a) - pw * Math.sin(a), W = px * Math.sin(a) + pw * Math.cos(a);
+    let Y = py * Math.cos(b) - pz * Math.sin(b), Z = py * Math.sin(b) + pz * Math.cos(b);
+    const s = 1 / (2.8 - W);                                   // perspective out of the fourth dimension
+    X *= s; Y *= s; Z *= s;
+    const [p, q] = tilt;                                       // a fixed 3D view tilt so it never sits flat on
+    const y1 = Y * Math.cos(p) - Z * Math.sin(p), z1 = Y * Math.sin(p) + Z * Math.cos(p);
+    const x2 = X * Math.cos(q) + z1 * Math.sin(q), z2 = -X * Math.sin(q) + z1 * Math.cos(q);
+    return { sx: x + x2 * r * 2.2, sy: y + y1 * r * 2.2, z: z2, w: W };
+  });
+  ctx.save();
+  ctx.globalAlpha *= alpha;
+  if (glowK > 0) glow(ctx, x, y, r * 2.6, '#ffe6c0', 0.45 * glowK);
+  ctx.lineCap = 'round';
+  const edges = T4E.map(([i, j]) => ({ i, j, z: (pts[i].z + pts[j].z) / 2, w: (pts[i].w + pts[j].w) / 2 })).sort((m, n) => m.z - n.z);
+  const lw = Math.max(1.2, r * 0.07);
+  for (const e of edges) {
+    const A = pts[e.i], B = pts[e.j], c = mix(inner, outer, (e.w + 1) / 2), wk = lw * (0.85 + 0.3 * (e.z + 0.5));
+    const line = (dx, dy) => { ctx.beginPath(); ctx.moveTo(A.sx + dx, A.sy + dy); ctx.lineTo(B.sx + dx, B.sy + dy); ctx.stroke(); };
+    ctx.strokeStyle = 'rgba(70,40,50,0.12)'; ctx.lineWidth = wk; line(wk * 0.5, wk * 0.9);
+    ctx.strokeStyle = shade(c, -0.22); ctx.lineWidth = wk; line(0, 0);
+    ctx.strokeStyle = c; ctx.lineWidth = wk * 0.7; line(0, 0);
+    ctx.strokeStyle = rgba(mix(c, '#fffaf0', 0.6), 0.8); ctx.lineWidth = wk * 0.28; line(-wk * 0.15, -wk * 0.2);
+  }
+  for (const p of [...pts].sort((m, n) => m.z - n.z)) {
+    const c = mix(inner, outer, (p.w + 1) / 2), rr = lw * 0.95;
+    const g = ctx.createRadialGradient(p.sx - rr * 0.35, p.sy - rr * 0.4, 0, p.sx, p.sy, rr);
+    g.addColorStop(0, mix(c, '#fffaf0', 0.6)); g.addColorStop(1, shade(c, -0.15));
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(p.sx, p.sy, rr, 0, Math.PI * 2); ctx.fill();
+  }
+  ctx.restore();
+}

@@ -1,10 +1,9 @@
 // The living loop, the machines (draft 2). All timing is periodic in LOOP (12 s) so the film loops without a seam.
 //
-//   the funnel     one funnel that feeds itself: material gathers in the wide top and swirls down; it leaves by a
-//                  duct at the bottom that turns right, climbs past the funnel's lip, turns left over it and drops
-//                  back in. Beads go round it for ever (a lap every 6 s, eight beads); in the duct a bead shows as a
-//                  swelling that travels along it and lights two windows in the riser. The funnel glows faintly
-//                  from inside and breathes.
+//   the funnel     one faceted octagonal funnel that feeds itself: what gathers in the top swirls down; it leaves by
+//                  a thick pipe at the bottom that turns square corners (right, up past the lip, left, down) and
+//                  drops back in. Eight small solids go round it for ever (a lap every 6 s); in the pipe each shows
+//                  as a swelling that travels along it. The funnel glows faintly from inside.
 //   the console    a desk of knobs, a lever, a row of lights and a round screen with a turning shape; a cable from
 //                  it droops across to the duct's elbow.
 //   the instrument three nested rings turning on different axes above a stepped plinth, a small solid hovering
@@ -16,7 +15,6 @@ import { drawSprites } from '../vendor/paper-fox/core/sprite.js';
 import { along } from '../vendor/paper-fox/core/geom.js';
 import { lerp, smoothstep, E } from '../vendor/paper-fox/core/ease.js';
 import { PAL, CLAY_MAT, CLAY_EDGE, clayForm, tube, steps, dot, chaikin } from './kit.js';
-import { drawBead } from './density.js';
 import { LOOP, cyc } from './loop-world.js';
 import { drawSolid } from './loop-shapes.js';
 
@@ -26,55 +24,72 @@ const mod = (x, m) => ((x % m) + m) % m;
 const plen = (pts) => pts.reduce((a, p, i) => i ? a + Math.hypot(p[0] - pts[i - 1][0], p[1] - pts[i - 1][1]) : 0, 0);
 
 // ---------------- the funnel ----------------
-export const RIM = { x: 880, y: 372, rx: 188, ry: 44 };
-const THROAT = [880, 640], TW = 15;
-export const DUCT = { w: 15, path: chaikin([[880, 630], [880, 782], [1196, 782], [1196, 246], [906, 246], [906, 296]], 4) };
+// An octagonal funnel cut in flat clay facets, each facet lit by how it turns to the light, with a collar at the
+// rim and a band at the throat. The pipe is a thick rolled tube that runs straight and turns square corners with a
+// small round fillet: down, right, up past the lip, left, down into the mouth.
+export const RIM = { x: 880, y: 372, rx: 190, ry: 46 };
+const THROAT = { y: 642, rx: 26, ry: 6 }, SIDES = 8;
+const FILLET = 34;
+// a polyline through waypoints whose corners are rounded with a fillet of radius rc and straight between
+function squarePath(way, rc = FILLET, step = 6) {
+  const out = [way[0]];
+  for (let i = 1; i < way.length - 1; i++) {
+    const [p, c, n] = [way[i - 1], way[i], way[i + 1]];
+    const din = [c[0] - p[0], c[1] - p[1]], dout = [n[0] - c[0], n[1] - c[1]], li = Math.hypot(...din), lo = Math.hypot(...dout);
+    const r = Math.min(rc, li / 2, lo / 2), a = [c[0] - din[0] / li * r, c[1] - din[1] / li * r], e = [c[0] + dout[0] / lo * r, c[1] + dout[1] / lo * r];
+    out.push(a);
+    for (let k = 1; k < 8; k++) { const u = k / 8; out.push([(1 - u) ** 2 * a[0] + 2 * (1 - u) * u * c[0] + u * u * e[0], (1 - u) ** 2 * a[1] + 2 * (1 - u) * u * c[1] + u * u * e[1]]); }
+    out.push(e);
+  }
+  out.push(way[way.length - 1]);
+  // resample so things moving along it keep an even speed
+  const res = [out[0]];
+  for (let i = 1; i < out.length; i++) { const [p, q] = [out[i - 1], out[i]], n = Math.max(1, Math.ceil(Math.hypot(q[0] - p[0], q[1] - p[1]) / step)); for (let k = 1; k <= n; k++) res.push([p[0] + (q[0] - p[0]) * k / n, p[1] + (q[1] - p[1]) * k / n]); }
+  return res;
+}
+export const DUCT = { w: 23, path: squarePath([[880, 640], [880, 800], [1226, 800], [1226, 226], [904, 226], [904, 300]]) };
 const DUCT_LEN = plen(DUCT.path);
 const SPOUT = DUCT.path[DUCT.path.length - 1];
-const WINDOWS = [[1196, 640], [1196, 470]];
 
-// the funnel's wall: concave sides from the rim to the throat
-function wall() {
-  const L = [], R = [];
-  for (let i = 0; i <= 24; i++) {
-    const u = i / 24, k = 1 - (1 - u) ** 1.8, hw = lerp(RIM.rx, TW, k), y = lerp(RIM.y, THROAT[1], u);
-    L.push([RIM.x - hw, y]); R.push([RIM.x + hw, y]);
-  }
-  return [...L, ...R.reverse()];
-}
-const rimPts = (k = 1, from = 0, to = TAU, n = 48) => [...Array(n + 1)].map((_, i) => { const a = from + (to - from) * i / n; return [RIM.x + Math.cos(a) * RIM.rx * k, RIM.y + Math.sin(a) * RIM.ry * k]; });
+const ring = (cy, rx, ry, k) => { const a = (k + 0.5) / SIDES * TAU; return [RIM.x + Math.cos(a) * rx, cy + Math.sin(a) * ry]; };
+const rimV = (k) => ring(RIM.y, RIM.rx, RIM.ry, k), thrV = (k) => ring(THROAT.y, THROAT.rx, THROAT.ry, k);
+// facet tone: the facet's outward direction in plan is the angle of its middle; light comes from the upper left
+const facetTone = (k, base) => { const a = (k + 1) / SIDES * TAU, lit = -Math.cos(a) * 0.46 + Math.sin(a) * 0.2; return lit > 0 ? mix(base, '#fffaf0', lit * 0.5) : shade(base, lit * 0.32); };
 
 function drawFunnelBack(g) {
-  // the duct first (it passes behind the funnel on its way round), then the funnel
+  // the pipe first: it passes behind the funnel on its way round
   tube(g, DUCT.path, DUCT.w, P.mint);
-  for (let s = 30; s < DUCT_LEN - 20; s += 30) {
-    const { p, ang } = along(DUCT.path, s / DUCT_LEN), n = [-Math.sin(ang), Math.cos(ang)];
-    g.strokeStyle = rgba(shade(P.mint, -0.3), 0.32); g.lineWidth = 1.5;
-    g.beginPath(); g.moveTo(p[0] + n[0] * DUCT.w * 0.9, p[1] + n[1] * DUCT.w * 0.9); g.lineTo(p[0] - n[0] * DUCT.w * 0.9, p[1] - n[1] * DUCT.w * 0.9); g.stroke();
+  for (let s = 40; s < DUCT_LEN - 30; s += 46) {               // banded joints along the pipe, square to its run
+    const { p, ang } = along(DUCT.path, s / DUCT_LEN), n = [-Math.sin(ang), Math.cos(ang)], t = [Math.cos(ang), Math.sin(ang)], w = DUCT.w + 3;
+    clayForm(g, [[p[0] + n[0] * w - t[0] * 4, p[1] + n[1] * w - t[1] * 4], [p[0] + n[0] * w + t[0] * 4, p[1] + n[1] * w + t[1] * 4], [p[0] - n[0] * w + t[0] * 4, p[1] - n[1] * w + t[1] * 4], [p[0] - n[0] * w - t[0] * 4, p[1] - n[1] * w - t[1] * 4]], shade(P.mint, 0.1), { smooth: false, size: 8, sheen: 0.15 });
   }
-  for (const [x, y] of WINDOWS) {
-    clayForm(g, circle(x, y, 22, 32), P.bone, { sheen: 0.25 });
-    g.fillStyle = radial(g, x - 4, y - 4, 2, 16, ['#3b4876', P.navy]); g.beginPath(); g.arc(x, y, 15, 0, TAU); g.fill();
+  // the spout: a square collar at the pipe's end
+  clayForm(g, [[SPOUT[0] - 30, SPOUT[1] - 6], [SPOUT[0] + 30, SPOUT[1] - 6], [SPOUT[0] + 26, SPOUT[1] + 10], [SPOUT[0] - 26, SPOUT[1] + 10]], shade(P.mint, 0.12), { smooth: false, size: 14, sheen: 0.2 });
+  // the funnel's front facets (the ones turned toward us), each a flat cut of clay
+  for (let k = 0; k < SIDES; k++) {
+    const mid = (k + 1) / SIDES * TAU;
+    if (Math.sin(mid) < -0.05) continue;
+    clayForm(g, [rimV(k), rimV(k + 1), thrV(k + 1), thrV(k)], facetTone(k, P.butter), { smooth: false, size: 60, sheen: 0.12, round: 0.35 });
   }
-  clayForm(g, circle(SPOUT[0], SPOUT[1] + 2, 19, 30), shade(P.mint, 0.08), { sheen: 0.25 });
-  dot(g, SPOUT[0], SPOUT[1] + 4, 9, shade(P.mint, -0.6));
-  // the funnel: wall, then the dark inside seen through the mouth, then the back of the rim
-  clayForm(g, wall(), P.butter, { size: 120, sheen: 0.2 });
-  for (let k = 1; k < 7; k++) {                               // thrown rings around the wall
-    const u = k / 7, kk = 1 - (1 - u) ** 1.8, hw = lerp(RIM.rx, TW, kk), y = lerp(RIM.y, THROAT[1], u);
-    g.strokeStyle = rgba(shade(P.butter, -0.25), 0.35); g.lineWidth = 1.6;
-    g.beginPath(); g.ellipse(RIM.x, y, hw, Math.max(2, RIM.ry * hw / RIM.rx), 0, 0.1, Math.PI - 0.1); g.stroke();
-  }
-  const mouth = rimPts(0.94);
-  g.fillStyle = radial(g, RIM.x, RIM.y + 6, 4, RIM.rx, ['#2a2340', '#4a3a52', shade(P.butter, -0.45)]);
+  // the throat band and a short octagonal neck down into the pipe
+  clayForm(g, [[RIM.x - 30, THROAT.y - 4], [RIM.x + 30, THROAT.y - 4], [RIM.x + 30, THROAT.y + 16], [RIM.x - 30, THROAT.y + 16]], P.pink, { smooth: false, size: 14, sheen: 0.18 });
+  // the inside, seen through the mouth: the far facets, lit from inside, in deepening lilac
+  const mouth = [...Array(SIDES)].map((_, k) => ring(RIM.y, RIM.rx * 0.93, RIM.ry * 0.93, k));
+  g.fillStyle = radial(g, RIM.x, RIM.y + 14, 4, RIM.rx * 0.95, [shade(P.lilac, -0.55), shade(P.lilac, -0.3), mix(P.lilac, '#ffe9d0', 0.25)]);
   g.beginPath(); mouth.forEach(([x, y], i) => (i ? g.lineTo(x, y) : g.moveTo(x, y))); g.closePath(); g.fill();
-  const back = [...rimPts(1.06, Math.PI, TAU, 30), ...rimPts(0.93, TAU, Math.PI, 30)];
-  clayForm(g, back, shade(P.pink, 0.04), { size: 18, sheen: 0.2, smooth: false });
+  for (let k = 0; k < SIDES; k++) {                            // inner facet seams converging on the throat
+    const [x, y] = mouth[k];
+    g.strokeStyle = rgba(shade(P.lilac, -0.35), 0.35); g.lineWidth = 1.4;
+    g.beginPath(); g.moveTo(x, y); g.lineTo(RIM.x + (x - RIM.x) * 0.12, RIM.y + 18); g.stroke();
+  }
+  // the collar's far half: vertices 3..7 and 0 run round the back of the octagon
+  const band = (ks) => [...ks.map((k) => ring(RIM.y, RIM.rx * 1.07, RIM.ry * 1.07, k)), ...ks.slice().reverse().map((k) => ring(RIM.y, RIM.rx * 0.93, RIM.ry * 0.93, k))];
+  clayForm(g, band([3, 4, 5, 6, 7, 0]), shade(P.pink, 0.04), { smooth: false, size: 16, sheen: 0.15 });
 }
 function drawFunnelFront(g) {
-  // the front half of the lip, drawn after the beads that drop into the mouth
-  const front = [...rimPts(1.06, 0, Math.PI, 30), ...rimPts(0.93, Math.PI, 0, 30)];
-  clayForm(g, front, P.pink, { size: 20, sheen: 0.28, smooth: false });
+  // the collar's near half (vertices 7, 0..4), drawn after what drops into the mouth
+  const band = (ks) => [...ks.map((k) => ring(RIM.y, RIM.rx * 1.07, RIM.ry * 1.07, k)), ...ks.slice().reverse().map((k) => ring(RIM.y, RIM.rx * 0.93, RIM.ry * 0.93, k))];
+  clayForm(g, band([7, 0, 1, 2, 3, 4]), P.pink, { smooth: false, size: 18, sheen: 0.24 });
 }
 
 // ---------------- the console ----------------
@@ -106,43 +121,35 @@ export const sliderK = (t) => 0.5 + 0.45 * Math.sin(TAU * t / 4);
 
 export function addMachines(S) {
   const sp = (name, box, draw, o = {}) => S.sprite({ name, ...box, res: o.res ?? 1.25, mat: CLAY_MAT, edge: CLAY_EDGE, shadow: { blur: o.blur ?? 18 }, draw });
-  const back = sp('funnel', { x: 640, y: 200, w: 620, h: 640 }, drawFunnelBack, { blur: 22 });
+  const back = sp('funnel', { x: 640, y: 160, w: 660, h: 700 }, drawFunnelBack, { blur: 22 });
   const front = sp('funnel-lip', { x: 670, y: 310, w: 420, h: 130 }, drawFunnelFront, { blur: 10 });
   const lump = sp('lump', { x: -26, y: -26, w: 52, h: 52 }, (g) => clayForm(g, circle(0, 0, 20, 32), shade(P.mint, 0.06), { sheen: 0.3 }), { blur: 6 });
-  const beads = [P.pink, P.butter, P.lilac, P.aqua, P.pinkDeep, P.mint, '#c6d957', P.blush].map((c, i) => sp(`fbead-${i}`, { x: -20, y: -20, w: 40, h: 40 }, (g) => drawBead(g, c), { res: 1.5, blur: 8 }));
   const consoleS = sp('console', { x: 470, y: 760, w: 430, h: 240 }, drawConsole);
   const instr = sp('instrument', { x: 1390, y: 780, w: 160, h: 220 }, drawInstrumentBase);
 
-  // the funnel: glow inside, beads swirling down in the mouth, swellings along the duct, beads dropping from the spout
-  S.add({ name: 'funnel', z: 1000, shadow: { dx: 10, dy: 18, alpha: 0.4 }, anim: (t) => ({ sx: 1 + 0.01 * cyc(t, 2), sy: 1 + 0.01 * cyc(t, 2), ox: RIM.x, oy: 520 }), render(ctx, t, env) {
+  // the funnel: small solids swirl down the mouth, swell along the pipe as it carries them, and drop from the spout
+  const KINDS = ['octa', 'cube', 'tetra', 'ico'], COLS = [P.pink, P.butter, P.lilac, P.aqua, P.mint, P.pinkDeep, P.blush, P.butterDeep];
+  S.add({ name: 'funnel', z: 1000, shadow: { dx: 10, dy: 18, alpha: 0.4 }, anim: (t) => ({ sx: 1 + 0.006 * cyc(t, 2), sy: 1 + 0.006 * cyc(t, 2), ox: RIM.x, oy: 520 }), render(ctx, t, env) {
     drawSprites(ctx, [{ s: back }], env.shadow);
-    const swirl = [], swell = [], fall = [];
+    const swell = [], late = [];
+    const pulse = 0.5 + 0.5 * Math.cos(TAU * mod(t, 0.75) / 0.75);
+    ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, RIM.x, RIM.y + 6, 150, '#ffd9b0', 0.14 + 0.06 * pulse); ctx.restore();
     for (let n = 0; n < 8; n++) {
-      const u = mod(t + n * 0.75, 6), b = beads[n];
-      if (u < 1.6) {                                       // swirling inward and down inside the mouth
+      const u = mod(t + n * 0.75, 6), kind = KINDS[n % 4], col = COLS[n], ang = [TAU * t / 3 + n, TAU * t / 2, n];
+      if (u < 1.6) {                                       // spiralling in and down inside the mouth
         const k = u / 1.6, a = n * 1.3 + k * TAU * 1.25, rr = (1 - k) * 0.78 + 0.08;
-        swirl.push({ s: b, x: RIM.x + Math.cos(a) * RIM.rx * rr, y: RIM.y + 6 + Math.sin(a) * RIM.ry * rr + k * 14, sx: 0.75 - 0.35 * k, sy: 0.75 - 0.35 * k, rot: a * 2, alpha: 1 - smoothstep(0.7, 1, k) });
-      } else if (u >= 2.2 && u < 5.4) {                    // travelling the duct
-        const s = DUCT_LEN * (u - 2.2) / 3.2, { p, ang } = along(DUCT.path, s / DUCT_LEN);
-        swell.push({ s: lump, x: p[0], y: p[1], rot: ang, sx: 1.25, sy: 0.92, alpha: smoothstep(0, 30, s) * smoothstep(DUCT_LEN, DUCT_LEN - 30, s) });
+        drawSolid(ctx, kind, RIM.x + Math.cos(a) * RIM.rx * rr, RIM.y + 8 + Math.sin(a) * RIM.ry * rr + k * 14, 9 * (1 - 0.5 * k), ang, col, { alpha: 1 - smoothstep(0.7, 1, k) });
+      } else if (u >= 2.2 && u < 5.4) {                    // carried round the pipe
+        const s = DUCT_LEN * (u - 2.2) / 3.2, { p, ang: a } = along(DUCT.path, s / DUCT_LEN);
+        swell.push({ s: lump, x: p[0], y: p[1], rot: a, sx: 1.35, sy: 1.22, alpha: smoothstep(0, 30, s) * smoothstep(DUCT_LEN, DUCT_LEN - 30, s) });
       } else if (u >= 5.4) {                               // dropping from the spout into the mouth
         const k = (u - 5.4) / 0.6;
-        fall.push({ s: b, x: lerp(SPOUT[0], RIM.x + 14, k), y: lerp(SPOUT[1] + 14, RIM.y + 8, E.in(k)), rot: k * 3, sx: 0.8, sy: 0.8 });
+        late.push(() => drawSolid(ctx, kind, lerp(SPOUT[0], RIM.x + 10, k), lerp(SPOUT[1] + 18, RIM.y + 10, E.in(k)), 9, ang, col, { glowK: 0.3 }));
       }
     }
-    // light from inside the funnel, pulsing with each bead that drops in
-    const pulse = 0.5 + 0.5 * Math.cos(TAU * mod(t, 0.75) / 0.75);
-    ctx.save(); ctx.globalCompositeOperation = 'lighter';
-    glow(ctx, RIM.x, RIM.y + 4, 140, '#ffc9a0', 0.16 + 0.06 * pulse);
-    ctx.restore();
-    drawSprites(ctx, swirl, { ...env.shadow, alpha: 0 });
     drawSprites(ctx, [{ s: front }], { ...env.shadow, dx: 3, dy: 5 });
     drawSprites(ctx, swell, { ...env.shadow, alpha: 0 });
-    for (const [wx, wy] of WINDOWS) for (const it of swell) {   // a window lights as a bead passes behind it
-      const d = Math.hypot(it.x - wx, it.y - wy);
-      if (d < 26) { ctx.save(); ctx.globalAlpha = 1 - d / 26; ctx.globalCompositeOperation = 'lighter'; glow(ctx, wx, wy, 26, '#bfe8ff', 0.6); ctx.restore(); }
-    }
-    drawSprites(ctx, fall, { ...env.shadow, dx: 4, dy: 7 });
+    for (const f of late) f();
   } });
 
   // the console: lights in a slow pattern, the knobs' marks, the lever, and a turning shape on the screen

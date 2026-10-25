@@ -1957,165 +1957,6 @@ function addDensity(S) {
 
 return { curl, rosette, ROSETTES, TRACK, BEADS, drawBead, addDensity };
 })();
-__m["src/loop-world.js"] = (() => {
-// The living loop, the world: an open pastel world in the approved clay language, no box and no frame. A sky
-// that pales toward the horizon, clay clouds, three rows of rounded hills going back into the haze, the terrace
-// the machine stands on, two floating islands, and decorations floating free in mid-air at many depths.
-// Every motion here is periodic in the loop period, so the film loops without a seam.
-
-const { RNG, noise } = __m["vendor/paper-fox/core/rng.js"];
-const { linear, glow, piece } = __m["vendor/paper-fox/core/piece.js"];
-const { mix, shade, vary, rgba } = __m["vendor/paper-fox/core/color.js"];
-const { drawSprites } = __m["vendor/paper-fox/core/sprite.js"];
-const { transform } = __m["vendor/paper-fox/core/geom.js"];
-const { LIGHT, PAL, CLAY_MAT, CLAY_EDGE, clayForm, tube, steps, dot } = __m["src/kit.js"];
-const { rosette, curl } = __m["src/density.js"];
-const { drawSun, drawIsland, drawCity, SUN, ISLAND, CITY } = __m["src/props.js"];
-const P = PAL;
-const TAU = Math.PI * 2;
-const circle = (cx, cy, r, n = 36) => [...Array(n)].map((_, i) => [cx + Math.cos(i / n * TAU) * r, cy + Math.sin(i / n * TAU) * r]);
-const LOOP = 12;
-const cyc = (t, n = 1, ph = 0) => Math.sin(TAU * (n * t / LOOP + ph));
-
-// a row of rounded clay mounds from x0 to x1, crowns around base, closed down to bottom; rolled trees on some
-function mounds(g, { x0, x1, base, amp, bottom, colors, fade, seed, trees = 0.5 }) {
-  const rng = new RNG(`mounds:${seed}`), tops = [];
-  for (let x = x0 - 60; x < x1 + 60;) {
-    const w = rng.range(150, 300), h = amp * rng.range(0.6, 1.25), cx = x + w / 2, y = base + rng.range(-10, 10);
-    const pts = [];
-    for (let i = 0; i <= 24; i++) { const a = Math.PI + i / 24 * Math.PI; pts.push([cx + Math.cos(a) * w * 0.62, y + Math.sin(a) * h]); }
-    pts.push([cx + w * 0.62, bottom], [cx - w * 0.62, bottom]);
-    clayForm(g, pts, vary(mix(colors[tops.length % colors.length], '#f7ece4', fade), rng, 0.05), { size: h * 1.6, sheen: 0.12 });
-    tops.push([cx, y - h, w]);
-    x += w * rng.range(0.7, 0.95);
-  }
-  for (const [cx, ty, w] of tops) {
-    if (!rng.chance(trees)) continue;
-    const x = cx + rng.range(-w * 0.2, w * 0.2), h = rng.range(26, 50), c = vary(mix(rng.pick(['#ef8c5f', P.mintDeep, '#f6a678', P.mint]), '#f7ece4', fade * 0.8), rng, 0.06);
-    if (rng.chance(0.6)) clayForm(g, [[x - h * 0.3, ty + 8], [x - h * 0.16, ty - h * 0.55], [x, ty - h], [x + h * 0.16, ty - h * 0.55], [x + h * 0.3, ty + 8]], c, { size: h * 0.5, sheen: 0.12 });
-    else { tube(g, [[x, ty + 8], [x, ty - h * 0.6]], 2.6, '#a08b80', { shadow: false }); clayForm(g, circle(x, ty - h * 0.75, h * 0.3, 28), c, { sheen: 0.18 }); }
-  }
-}
-
-// a soft clay cloud: overlapping puffs on a flat base
-function cloud(g, cx, cy, w, rng, c = '#fbf3ee') {
-  const n = Math.round(w / 46);
-  for (let i = 0; i < n; i++) {
-    const k = i / Math.max(1, n - 1), r = w * (0.14 + 0.12 * Math.sin(Math.PI * k)) * rng.range(0.85, 1.15);
-    clayForm(g, circle(cx - w / 2 + w * k, cy - r * 0.35, r, 32), vary(c, rng, 0.03), { size: r * 1.6, sheen: 0.2 });
-  }
-}
-
-// decorations that float in mid-air: a stepped pendant, a dotted ball, a short bead strand, a dotted disc, a chevron
-function floater(g, kind, x, y, s, rng) {
-  if (kind === 'pendant') {
-    steps(g, x, y, { n: 4, w0: 18 * s, w1: 52 * s, h: 9 * s, gap: 1, colors: [P.pink, P.mint, P.butter] });
-    clayForm(g, [[x - 26 * s, y + 2], [x, y + 30 * s], [x + 26 * s, y + 2]], P.pinkDeep, { smooth: false, size: 22 * s });
-  } else if (kind === 'ball') {
-    const c = rng.pick([P.lilac, P.butter, P.mint, P.blush]);
-    clayForm(g, circle(x, y, 18 * s, 30), c, { sheen: 0.25 });
-    for (let k = 0; k < 6; k++) dot(g, x + Math.cos(k * 1.05) * 10 * s, y + Math.sin(k * 1.05) * 10 * s, 2 * s, shade(c, -0.3));
-  } else if (kind === 'strand') {
-    const a = rng.range(-0.5, 0.5);
-    for (let i = 0; i < 6; i++) { const d = (i - 2.5) * 16 * s; clayForm(g, circle(x + Math.cos(a) * d, y + Math.sin(a) * d + Math.sin(i) * 4 * s, 7 * s, 18), rng.pick([P.mint, P.pink, P.butter, P.aqua]), { sheen: 0.22 }); }
-  } else if (kind === 'disc') {
-    const rr = 24 * s;
-    clayForm(g, circle(x, y, rr, 36), '#fbf6ee', { size: rr * 1.2, round: 0.6, sheen: 0.15 });
-    for (let k = 0; k < 10; k++) { const a = k / 10 * TAU; g.fillStyle = P.ink; g.beginPath(); g.arc(x + Math.cos(a) * rr * 0.58, y + Math.sin(a) * rr * 0.58, rr * 0.1, 0, TAU); g.fill(); }
-  } else {
-    for (let i = 0; i < 3; i++) clayForm(g, transform([[-30, 0], [0, 22], [30, 0], [22, -8], [0, 10], [-22, -8]], { x, y: y + i * 13 * s, sx: s, sy: s }), [P.mint, P.butter, P.pink][i], { smooth: false, size: 14 * s });
-  }
-}
-
-function addWorld(S) {
-  const sp = (name, box, draw, o = {}) => S.sprite({ name, ...box, res: o.res ?? 1, mat: o.mat ?? CLAY_MAT, edge: o.edge ?? CLAY_EDGE, shadow: o.shadow ?? { blur: 18 }, draw });
-
-  // the backdrop: warm card with the embossed honeycomb from the relief box, each cell its own soft piece, fading
-  // toward the hills. No box and no frame: it simply goes on behind the world.
-  S.plane(20000, { name: 'honeycomb', x: -620, y: -520, w: 3160, h: 2120, mat: 'smooth', edge: false, shadow: false, draw(g) {
-    g.fillStyle = linear(g, 0, -520, 0, 1100, [mix(P.wall, P.pink, 0.22), P.wallLight, '#fbeee2']); g.fillRect(-620, -520, 3160, 2120);
-    const r = 34, dx = r * Math.sqrt(3), dy = r * 1.5, hr = new RNG('hex-world');
-    for (let row = 0, y = -540; y < 980; row++, y += dy) for (let x = -660 + (row & 1) * dx / 2; x < 2580; x += dx) {
-      const fade = 1 - Math.max(0, (y - 380) / 520);
-      if (fade <= 0.04 || hr.chance(0.05)) continue;
-      const hex = [...Array(6)].map((_, i) => { const a = Math.PI / 6 + i * Math.PI / 3; return [x + Math.cos(a) * (r - 3.4), y + Math.sin(a) * (r - 3.4)]; });
-      piece(g, hex, { fill: rgba(vary(mix(P.wallLight, P.blush, 0.35), hr, 0.05), 0.55 + 0.45 * fade), bevel: { light: LIGHT, width: 2.2, hi: 0.32 * fade, lo: 0.18 * fade, soft: 1.6 }, shadow: { color: `rgba(120,70,60,${0.16 * fade})`, blur: 6, x: 1.6, y: 3 } });
-    }
-  } });
-
-  // the sun, high on the right, its windows breathing with light
-  const sun = sp('sun', { x: SUN.x - SUN.r - 70, y: -SUN.r - 70, w: SUN.r * 2 + 140, h: SUN.r * 2 + 140 }, drawSun, { res: 1.1, shadow: { blur: 24 } });
-  S.add({ name: 'sun-glow', z: 9010, blend: 'lighter', render(ctx, t) {
-    glow(ctx, 1600, 230, 700, '#ffd9a0', 0.2 + 0.03 * cyc(t, 2));
-    glow(ctx, 1600, 230, 260, '#fff0c8', 0.3);
-  } });
-  S.add({ name: 'sun', z: 9000, shadow: { dx: 8, dy: 14, alpha: 0.25 }, render(ctx, t, env) {
-    drawSprites(ctx, [{ s: sun, ax: SUN.x, ay: 0, x: 1600, y: 230 + 4 * cyc(t, 1), sx: 0.82, sy: 0.82 }], env.shadow);
-  } });
-
-  // clouds drift and come back within the loop
-  const crng = new RNG('clouds');
-  const clouds = [[300, 210, 300, 7000], [1150, 140, 260, 7600], [1900, 300, 340, 6400], [-150, 420, 240, 5600], [1420, 600, 190, 5200]];
-  clouds.forEach(([x, y, w, z], i) => {
-    const s = sp(`cloud-${i}`, { x: x - w * 0.7, y: y - w * 0.45, w: w * 1.4, h: w * 0.6 }, (g) => cloud(g, x, y, w, crng));
-    S.add({ name: `cloud-${i}`, z, shadow: { dx: 8, dy: 14, alpha: 0.18 }, sprites: [{ s }], anim: (t) => ({ x: 26 * cyc(t, 1, i * 0.21), y: 5 * cyc(t, 2, i * 0.13) }) });
-  });
-
-  // three rows of hills, palest and farthest first
-  S.plane(3600, { name: 'hills-far', x: -900, y: 500, w: 3720, h: 760, draw: (g) => mounds(g, { x0: -900, x1: 2820, base: 830, amp: 58, bottom: 1250, colors: [P.lilac, P.blush], fade: 0.55, seed: 1, trees: 0.3 }) }, { shadow: { dx: 6, dy: 10, alpha: 0.2 } });
-  S.plane(2400, { name: 'hills-mid', x: -700, y: 600, w: 3320, h: 700, draw: (g) => mounds(g, { x0: -700, x1: 2620, base: 880, amp: 50, bottom: 1300, colors: [P.blush, P.aqua], fade: 0.35, seed: 2 }) }, { shadow: { dx: 8, dy: 12, alpha: 0.3 } });
-  S.plane(1600, { name: 'hills-near', x: -600, y: 680, w: 3120, h: 700, draw: (g) => mounds(g, { x0: -600, x1: 2520, base: 930, amp: 42, bottom: 1350, colors: [P.pink, P.blush], fade: 0.15, seed: 3 }) }, { shadow: { dx: 9, dy: 14, alpha: 0.36 } });
-
-  // the islands float in the middle distance
-  const island = sp('island', { x: ISLAND.x - 200, y: ISLAND.y - 200, w: 400, h: 340 }, drawIsland, { res: 1.2 });
-  const city = sp('city', { x: CITY.x - 150, y: CITY.y - 130, w: 300, h: 230 }, drawCity, { res: 1.2 });
-  S.add({ name: 'city', z: 2200, shadow: { dx: 10, dy: 22, alpha: 0.3 }, sprites: [{ s: city, ax: CITY.x, ay: CITY.y, x: 260, y: 300 }], anim: (t) => ({ x: 12 * cyc(t, 1, 0.3), y: 8 * cyc(t, 2, 0.6) }) });
-
-  // decorations floating in mid-air at many depths, each bobbing and turning a little on its own phase
-  const frng = new RNG('floaters');
-  const kinds = ['pendant', 'ball', 'strand', 'disc', 'chevron'];
-  const spots = [[180, 160, 2600], [470, 120, 1900], [700, 230, 3000], [1250, 120, 2100], [1430, 420, 2700], [1820, 520, 1700], [120, 560, 1500], [1720, 120, 1450],
-    [560, 640, 2800], [1340, 600, 3200], [880, 140, 1500], [2000, 220, 2400], [-60, 300, 2000], [1560, 660, 1300]];
-  const floaters = spots.map(([x, y, z], i) => {
-    const kind = kinds[i % kinds.length], s = sp(`float-${i}`, { x: x - 70, y: y - 60, w: 140, h: 130 }, (g) => floater(g, kind, x, y, 1, frng), { res: 1.3, shadow: { blur: 12 } });
-    return S.add({ name: `float-${i}`, z, shadow: { dx: 10, dy: 18, alpha: 0.22 }, sprites: [{ s }], anim: (t) => ({ y: 10 * cyc(t, 1, i * 0.17), rot: 0.08 * cyc(t, 1, i * 0.31 + 0.2), ox: x, oy: y }) });
-  });
-
-  // the terrace the machine stands on: a band of broad clay mounds, and the ground line at y 985
-  S.plane(1080, { name: 'terrace', x: -500, y: 860, w: 2920, h: 560, res: 1.1, draw(g) {
-    mounds(g, { x0: -500, x1: 2420, base: 1000, amp: 30, bottom: 1420, colors: [mix(P.pink, P.butter, 0.4), mix(P.blush, P.butter, 0.3)], fade: 0.05, seed: 4, trees: 0 });
-  } }, { shadow: { dx: 8, dy: 14, alpha: 0.38 } });
-
-  return { island };
-}
-
-// The near world in front of the machine: low mounds with coral curls and rosette bushes, then the lens plane.
-function addNear(S) {
-  const sp = (name, box, draw, o = {}) => S.sprite({ name, ...box, res: o.res ?? 1.1, mat: CLAY_MAT, edge: CLAY_EDGE, shadow: { blur: 22 }, draw });
-  const rng = new RNG('near');
-  const near = sp('near', { x: -600, y: 880, w: 3120, h: 560 }, (g) => {
-    mounds(g, { x0: -600, x1: 400, base: 1070, amp: 70, bottom: 1440, colors: [P.pinkDeep, P.pink], fade: 0, seed: 5, trees: 0 });
-    mounds(g, { x0: 1560, x1: 2520, base: 1080, amp: 60, bottom: 1440, colors: [P.pink, P.pinkDeep], fade: 0, seed: 6, trees: 0 });
-    for (const [cx, cy, n] of [[120, 1010, 22], [260, 1040, 14], [1720, 1020, 18]]) for (let i = 0; i < n; i++) {
-      const a = rng.next() * TAU, d = Math.sqrt(rng.next()) * 60;
-      curl(g, cx + Math.cos(a) * d, cy + Math.sin(a) * d * 0.7, rng.range(9, 15), rng.range(1.2, 1.8), vary('#7d8597', rng, 0.08));
-    }
-    for (const [x, y, r, c] of [[1860, 990, 46, P.slate], [1950, 1030, 40, P.mintDeep], [-20, 990, 44, P.slateDeep]]) rosette(g, x, y, r, c, rng);
-  });
-  S.add({ name: 'near', z: 760, shadow: { dx: 12, dy: 20, alpha: 0.45 }, sprites: [{ s: near }] });
-  const lens = sp('lens', { x: -500, y: 820, w: 2920, h: 560 }, (g) => {
-    for (const [x, y, r, c] of [[-120, 1080, 120, P.slate], [40, 1150, 90, P.mintDeep], [2060, 1100, 110, P.slateDeep], [1930, 1170, 80, mix(P.slate, P.lilac, 0.4)]]) rosette(g, x, y, r, c, rng);
-    for (let i = 0; i < 40; i++) {
-      const a = -Math.PI * 0.55 + rng.range(-0.4, 0.4), len = rng.range(110, 210), x = 240 + rng.range(-40, 60), y = 1140 + rng.range(-20, 20);
-      clayForm(g, transform([[-8, 0], [-5, -len * 0.6], [0, -len], [5, -len * 0.6], [8, 0]], { x, y, rot: a + Math.PI / 2 }), vary(mix(P.blush, '#fff2ee', rng.next() * 0.6), rng, 0.05), { size: 16, sheen: 0.1 });
-    }
-  });
-  S.add({ name: 'lens', z: 520, shadow: { dx: 14, dy: 24, alpha: 0.45 }, sprites: [{ s: lens }] });
-}
-
-
-return { LOOP, cyc, addWorld, addNear };
-})();
 __m["src/loop-shapes.js"] = (() => {
 // The living loop, the manifested shapes: small faceted solids the figures call up with their hands and release.
 // Drawn each frame as clay polyhedra: vertices rotated in 3D, back faces culled, faces painted far to near, each
@@ -2194,16 +2035,219 @@ function drawSolid(ctx, kind, x, y, r, ang, color, { glowK = 0, alpha = 1, glowC
 
 const SHAPE_COLORS = [P.mint, P.pink, P.butter, P.lilac, P.aqua];
 
-return { drawSolid, SHAPE_COLORS };
+// A tesseract (the 4D cube): its sixteen corners turned in two 4D planes at once, seen in perspective from the
+// fourth dimension (the inner cube is the far side in w), then drawn as rolled clay rods and balls, far to near.
+// a, b: rotation angles in the XW and YZ planes. inner and outer colours split the edges by their depth in w.
+const T4 = [];
+for (let i = 0; i < 16; i++) T4.push([i & 1 ? 1 : -1, i & 2 ? 1 : -1, i & 4 ? 1 : -1, i & 8 ? 1 : -1]);
+const T4E = [];
+for (let i = 0; i < 16; i++) for (let k = 0; k < 4; k++) { const j = i ^ (1 << k); if (j > i) T4E.push([i, j]); }
+function drawTesseract(ctx, x, y, r, a, b, { outer = P.mint, inner = P.pink, alpha = 1, glowK = 0, tilt = [0.42, 0.55] } = {}) {
+  if (alpha <= 0.01) return;
+  const pts = T4.map(([px, py, pz, pw]) => {
+    let X = px * Math.cos(a) - pw * Math.sin(a), W = px * Math.sin(a) + pw * Math.cos(a);
+    let Y = py * Math.cos(b) - pz * Math.sin(b), Z = py * Math.sin(b) + pz * Math.cos(b);
+    const s = 1 / (2.8 - W);                                   // perspective out of the fourth dimension
+    X *= s; Y *= s; Z *= s;
+    const [p, q] = tilt;                                       // a fixed 3D view tilt so it never sits flat on
+    const y1 = Y * Math.cos(p) - Z * Math.sin(p), z1 = Y * Math.sin(p) + Z * Math.cos(p);
+    const x2 = X * Math.cos(q) + z1 * Math.sin(q), z2 = -X * Math.sin(q) + z1 * Math.cos(q);
+    return { sx: x + x2 * r * 2.2, sy: y + y1 * r * 2.2, z: z2, w: W };
+  });
+  ctx.save();
+  ctx.globalAlpha *= alpha;
+  if (glowK > 0) glow(ctx, x, y, r * 2.6, '#ffe6c0', 0.45 * glowK);
+  ctx.lineCap = 'round';
+  const edges = T4E.map(([i, j]) => ({ i, j, z: (pts[i].z + pts[j].z) / 2, w: (pts[i].w + pts[j].w) / 2 })).sort((m, n) => m.z - n.z);
+  const lw = Math.max(1.2, r * 0.07);
+  for (const e of edges) {
+    const A = pts[e.i], B = pts[e.j], c = mix(inner, outer, (e.w + 1) / 2), wk = lw * (0.85 + 0.3 * (e.z + 0.5));
+    const line = (dx, dy) => { ctx.beginPath(); ctx.moveTo(A.sx + dx, A.sy + dy); ctx.lineTo(B.sx + dx, B.sy + dy); ctx.stroke(); };
+    ctx.strokeStyle = 'rgba(70,40,50,0.12)'; ctx.lineWidth = wk; line(wk * 0.5, wk * 0.9);
+    ctx.strokeStyle = shade(c, -0.22); ctx.lineWidth = wk; line(0, 0);
+    ctx.strokeStyle = c; ctx.lineWidth = wk * 0.7; line(0, 0);
+    ctx.strokeStyle = rgba(mix(c, '#fffaf0', 0.6), 0.8); ctx.lineWidth = wk * 0.28; line(-wk * 0.15, -wk * 0.2);
+  }
+  for (const p of [...pts].sort((m, n) => m.z - n.z)) {
+    const c = mix(inner, outer, (p.w + 1) / 2), rr = lw * 0.95;
+    const g = ctx.createRadialGradient(p.sx - rr * 0.35, p.sy - rr * 0.4, 0, p.sx, p.sy, rr);
+    g.addColorStop(0, mix(c, '#fffaf0', 0.6)); g.addColorStop(1, shade(c, -0.15));
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(p.sx, p.sy, rr, 0, Math.PI * 2); ctx.fill();
+  }
+  ctx.restore();
+}
+
+return { drawSolid, SHAPE_COLORS, drawTesseract };
+})();
+__m["src/loop-world.js"] = (() => {
+// The living loop, the world: an open pastel world in the approved clay language, no box and no frame. A sky
+// that pales toward the horizon, clay clouds, three rows of rounded hills going back into the haze, the terrace
+// the machine stands on, two floating islands, and decorations floating free in mid-air at many depths.
+// Every motion here is periodic in the loop period, so the film loops without a seam.
+
+const { RNG, noise } = __m["vendor/paper-fox/core/rng.js"];
+const { linear, glow, piece } = __m["vendor/paper-fox/core/piece.js"];
+const { mix, shade, vary, rgba } = __m["vendor/paper-fox/core/color.js"];
+const { drawSprites } = __m["vendor/paper-fox/core/sprite.js"];
+const { transform } = __m["vendor/paper-fox/core/geom.js"];
+const { LIGHT, PAL, CLAY_MAT, CLAY_EDGE, clayForm, tube, steps, dot } = __m["src/kit.js"];
+const { rosette, curl } = __m["src/density.js"];
+const { drawSun, drawIsland, drawCity, SUN, ISLAND, CITY } = __m["src/props.js"];
+const { drawSolid, drawTesseract } = __m["src/loop-shapes.js"];
+const P = PAL;
+const TAU = Math.PI * 2;
+const circle = (cx, cy, r, n = 36) => [...Array(n)].map((_, i) => [cx + Math.cos(i / n * TAU) * r, cy + Math.sin(i / n * TAU) * r]);
+const LOOP = 12;
+const cyc = (t, n = 1, ph = 0) => Math.sin(TAU * (n * t / LOOP + ph));
+
+// a row of rounded clay mounds from x0 to x1, crowns around base, closed down to bottom; rolled trees on some
+function mounds(g, { x0, x1, base, amp, bottom, colors, fade, seed, trees = 0.5 }) {
+  const rng = new RNG(`mounds:${seed}`), tops = [];
+  for (let x = x0 - 60; x < x1 + 60;) {
+    const w = rng.range(150, 300), h = amp * rng.range(0.6, 1.25), cx = x + w / 2, y = base + rng.range(-10, 10);
+    const pts = [];
+    for (let i = 0; i <= 24; i++) { const a = Math.PI + i / 24 * Math.PI; pts.push([cx + Math.cos(a) * w * 0.62, y + Math.sin(a) * h]); }
+    pts.push([cx + w * 0.62, bottom], [cx - w * 0.62, bottom]);
+    clayForm(g, pts, vary(mix(colors[tops.length % colors.length], '#f7ece4', fade), rng, 0.05), { size: h * 1.6, sheen: 0.12 });
+    tops.push([cx, y - h, w]);
+    x += w * rng.range(0.7, 0.95);
+  }
+  for (const [cx, ty, w] of tops) {
+    if (!rng.chance(trees)) continue;
+    const x = cx + rng.range(-w * 0.2, w * 0.2), h = rng.range(26, 50), c = vary(mix(rng.pick(['#ef8c5f', P.mintDeep, '#f6a678', P.mint]), '#f7ece4', fade * 0.8), rng, 0.06);
+    if (rng.chance(0.6)) clayForm(g, [[x - h * 0.3, ty + 8], [x - h * 0.16, ty - h * 0.55], [x, ty - h], [x + h * 0.16, ty - h * 0.55], [x + h * 0.3, ty + 8]], c, { size: h * 0.5, sheen: 0.12 });
+    else { tube(g, [[x, ty + 8], [x, ty - h * 0.6]], 2.6, '#a08b80', { shadow: false }); clayForm(g, circle(x, ty - h * 0.75, h * 0.3, 28), c, { sheen: 0.18 }); }
+  }
+}
+
+// a soft clay cloud: overlapping puffs on a flat base
+function cloud(g, cx, cy, w, rng, c = '#fbf3ee') {
+  const n = Math.round(w / 46);
+  for (let i = 0; i < n; i++) {
+    const k = i / Math.max(1, n - 1), r = w * (0.14 + 0.12 * Math.sin(Math.PI * k)) * rng.range(0.85, 1.15);
+    clayForm(g, circle(cx - w / 2 + w * k, cy - r * 0.35, r, 32), vary(c, rng, 0.03), { size: r * 1.6, sheen: 0.2 });
+  }
+}
+
+// baked decorations that float in mid-air: a stepped pendant or a stack of chevrons
+function floater(g, kind, x, y, s, rng) {
+  if (kind === 'pendant') {
+    steps(g, x, y, { n: 4, w0: 18 * s, w1: 52 * s, h: 9 * s, gap: 1, colors: [P.pink, P.mint, P.butter] });
+    clayForm(g, [[x - 26 * s, y + 2], [x, y + 30 * s], [x + 26 * s, y + 2]], P.pinkDeep, { smooth: false, size: 22 * s });
+  } else {
+    for (let i = 0; i < 3; i++) clayForm(g, transform([[-30, 0], [0, 22], [30, 0], [22, -8], [0, 10], [-22, -8]], { x, y: y + i * 13 * s, sx: s, sy: s }), [P.mint, P.butter, P.pink][i], { smooth: false, size: 14 * s });
+  }
+}
+
+function addWorld(S) {
+  const sp = (name, box, draw, o = {}) => S.sprite({ name, ...box, res: o.res ?? 1, mat: o.mat ?? CLAY_MAT, edge: o.edge ?? CLAY_EDGE, shadow: o.shadow ?? { blur: 18 }, draw });
+
+  // the backdrop: warm card with the embossed honeycomb from the relief box, each cell its own soft piece, fading
+  // toward the hills. No box and no frame: it simply goes on behind the world.
+  S.plane(20000, { name: 'honeycomb', x: -620, y: -520, w: 3160, h: 2120, mat: 'smooth', edge: false, shadow: false, draw(g) {
+    g.fillStyle = linear(g, 0, -520, 0, 1100, [mix(P.wall, P.pink, 0.22), P.wallLight, '#fbeee2']); g.fillRect(-620, -520, 3160, 2120);
+    const r = 34, dx = r * Math.sqrt(3), dy = r * 1.5, hr = new RNG('hex-world');
+    for (let row = 0, y = -540; y < 980; row++, y += dy) for (let x = -660 + (row & 1) * dx / 2; x < 2580; x += dx) {
+      const fade = 1 - Math.max(0, (y - 380) / 520);
+      if (fade <= 0.04 || hr.chance(0.05)) continue;
+      const hex = [...Array(6)].map((_, i) => { const a = Math.PI / 6 + i * Math.PI / 3; return [x + Math.cos(a) * (r - 3.4), y + Math.sin(a) * (r - 3.4)]; });
+      piece(g, hex, { fill: rgba(vary(mix(P.wallLight, P.blush, 0.35), hr, 0.05), 0.55 + 0.45 * fade), bevel: { light: LIGHT, width: 2.2, hi: 0.32 * fade, lo: 0.18 * fade, soft: 1.6 }, shadow: { color: `rgba(120,70,60,${0.16 * fade})`, blur: 6, x: 1.6, y: 3 } });
+    }
+  } });
+
+  // the sun, high on the right, its windows breathing with light
+  const sun = sp('sun', { x: SUN.x - SUN.r - 70, y: -SUN.r - 70, w: SUN.r * 2 + 140, h: SUN.r * 2 + 140 }, drawSun, { res: 1.1, shadow: { blur: 24 } });
+  S.add({ name: 'sun-glow', z: 9010, blend: 'lighter', render(ctx, t) {
+    glow(ctx, 1600, 230, 700, '#ffd9a0', 0.2 + 0.03 * cyc(t, 2));
+    glow(ctx, 1600, 230, 260, '#fff0c8', 0.3);
+  } });
+  S.add({ name: 'sun', z: 9000, shadow: { dx: 8, dy: 14, alpha: 0.25 }, render(ctx, t, env) {
+    drawSprites(ctx, [{ s: sun, ax: SUN.x, ay: 0, x: 1600, y: 230 + 4 * cyc(t, 1), sx: 0.82, sy: 0.82 }], env.shadow);
+  } });
+
+  // clouds drift and come back within the loop
+  const crng = new RNG('clouds');
+  const clouds = [[200, 90, 260, 7000], [1150, 140, 260, 7600], [1900, 300, 340, 6400], [-150, 420, 240, 5600], [1420, 600, 190, 5200]];
+  clouds.forEach(([x, y, w, z], i) => {
+    const s = sp(`cloud-${i}`, { x: x - w * 0.7, y: y - w * 0.45, w: w * 1.4, h: w * 0.6 }, (g) => cloud(g, x, y, w, crng));
+    S.add({ name: `cloud-${i}`, z, shadow: { dx: 8, dy: 14, alpha: 0.18 }, sprites: [{ s }], anim: (t) => ({ x: 26 * cyc(t, 1, i * 0.21), y: 5 * cyc(t, 2, i * 0.13) }) });
+  });
+
+  // three rows of hills, palest and farthest first
+  S.plane(3600, { name: 'hills-far', x: -900, y: 500, w: 3720, h: 760, draw: (g) => mounds(g, { x0: -900, x1: 2820, base: 830, amp: 58, bottom: 1250, colors: [P.lilac, P.blush], fade: 0.55, seed: 1, trees: 0.3 }) }, { shadow: { dx: 6, dy: 10, alpha: 0.2 } });
+  S.plane(2400, { name: 'hills-mid', x: -700, y: 600, w: 3320, h: 700, draw: (g) => mounds(g, { x0: -700, x1: 2620, base: 880, amp: 50, bottom: 1300, colors: [P.blush, P.aqua], fade: 0.35, seed: 2 }) }, { shadow: { dx: 8, dy: 12, alpha: 0.3 } });
+  S.plane(1600, { name: 'hills-near', x: -600, y: 680, w: 3120, h: 700, draw: (g) => mounds(g, { x0: -600, x1: 2520, base: 930, amp: 42, bottom: 1350, colors: [P.pink, P.blush], fade: 0.15, seed: 3 }) }, { shadow: { dx: 9, dy: 14, alpha: 0.36 } });
+
+  // the islands float in the middle distance
+  const island = sp('island', { x: ISLAND.x - 200, y: ISLAND.y - 200, w: 400, h: 340 }, drawIsland, { res: 1.2 });
+  const city = sp('city', { x: CITY.x - 150, y: CITY.y - 130, w: 300, h: 230 }, drawCity, { res: 1.2 });
+  S.add({ name: 'city', z: 2200, shadow: { dx: 10, dy: 22, alpha: 0.3 }, sprites: [{ s: city, ax: CITY.x, ay: CITY.y, x: 260, y: 300 }], anim: (t) => ({ x: 12 * cyc(t, 1, 0.3), y: 8 * cyc(t, 2, 0.6) }) });
+
+  // a large tesseract hangs in the sky, turning through the fourth dimension once a loop: the world's anchor
+  S.add({ name: 'tesseract', z: 2800, render(ctx, t) {
+    drawTesseract(ctx, 520, 250, 92, TAU * t / LOOP, TAU * 2 * t / LOOP, { outer: P.mint, inner: P.pink, glowK: 0.6 + 0.15 * cyc(t, 2) });
+  } });
+
+  // floating geometry at many depths: baked stepped pendants and chevrons, and solids and small tesseracts drawn
+  // turning each frame. Every one bobs on its own phase; rotations close within the loop.
+  const frng = new RNG('floaters');
+  const spots = [[180, 160, 2600, 'pendant'], [880, 120, 1900, 'tess'], [700, 560, 3000, 'octa'], [1250, 120, 2100, 'chevron'], [1430, 420, 2700, 'tess'], [1820, 520, 1700, 'cube'],
+    [120, 560, 1500, 'ico'], [1720, 120, 1450, 'pendant'], [560, 640, 2800, 'chevron'], [1340, 600, 3200, 'star'], [1060, 470, 1500, 'tetra'], [2000, 220, 2400, 'tess'], [-60, 300, 2000, 'cube'], [1560, 660, 1300, 'octa']];
+  const COLS = [P.mint, P.pink, P.butter, P.lilac, P.aqua];
+  spots.forEach(([x, y, z, kind], i) => {
+    const bob = (t) => ({ y: 10 * cyc(t, 1, i * 0.17), rot: 0.08 * cyc(t, 1, i * 0.31 + 0.2), ox: x, oy: y });
+    if (kind === 'pendant' || kind === 'chevron') {
+      const s = sp(`float-${i}`, { x: x - 70, y: y - 60, w: 140, h: 130 }, (g) => floater(g, kind, x, y, 1, frng), { res: 1.3, shadow: { blur: 12 } });
+      S.add({ name: `float-${i}`, z, shadow: { dx: 10, dy: 18, alpha: 0.22 }, sprites: [{ s }], anim: bob });
+    } else if (kind === 'tess') {
+      S.add({ name: `float-${i}`, z, anim: (t) => ({ y: 10 * cyc(t, 1, i * 0.17) }), render(ctx, t) { drawTesseract(ctx, x, y, 22, TAU * (i % 2 ? 2 : -1) * t / LOOP, TAU * t / LOOP + i, { outer: COLS[i % 5], inner: COLS[(i + 2) % 5] }); } });
+    } else {
+      S.add({ name: `float-${i}`, z, anim: (t) => ({ y: 10 * cyc(t, 1, i * 0.17) }), render(ctx, t) { drawSolid(ctx, kind, x, y, 20, [TAU * t / LOOP * (1 + i % 3), TAU * 2 * t / LOOP, i], COLS[i % 5]); } });
+    }
+  });
+
+  // the terrace the machine stands on: a band of broad clay mounds, and the ground line at y 985
+  S.plane(1080, { name: 'terrace', x: -500, y: 860, w: 2920, h: 560, res: 1.1, draw(g) {
+    mounds(g, { x0: -500, x1: 2420, base: 1000, amp: 30, bottom: 1420, colors: [mix(P.pink, P.butter, 0.4), mix(P.blush, P.butter, 0.3)], fade: 0.05, seed: 4, trees: 0 });
+  } }, { shadow: { dx: 8, dy: 14, alpha: 0.38 } });
+
+  return { island };
+}
+
+// The near world in front of the machine: low mounds with coral curls and rosette bushes, then the lens plane.
+function addNear(S) {
+  const sp = (name, box, draw, o = {}) => S.sprite({ name, ...box, res: o.res ?? 1.1, mat: CLAY_MAT, edge: CLAY_EDGE, shadow: { blur: 22 }, draw });
+  const rng = new RNG('near');
+  const near = sp('near', { x: -600, y: 880, w: 3120, h: 560 }, (g) => {
+    mounds(g, { x0: -600, x1: 400, base: 1070, amp: 70, bottom: 1440, colors: [P.pinkDeep, P.pink], fade: 0, seed: 5, trees: 0 });
+    mounds(g, { x0: 1560, x1: 2520, base: 1080, amp: 60, bottom: 1440, colors: [P.pink, P.pinkDeep], fade: 0, seed: 6, trees: 0 });
+    for (const [cx, cy, n] of [[120, 1010, 22], [260, 1040, 14], [1720, 1020, 18]]) for (let i = 0; i < n; i++) {
+      const a = rng.next() * TAU, d = Math.sqrt(rng.next()) * 60;
+      curl(g, cx + Math.cos(a) * d, cy + Math.sin(a) * d * 0.7, rng.range(9, 15), rng.range(1.2, 1.8), vary('#7d8597', rng, 0.08));
+    }
+    for (const [x, y, r, c] of [[1860, 990, 46, P.slate], [1950, 1030, 40, P.mintDeep], [-20, 990, 44, P.slateDeep]]) rosette(g, x, y, r, c, rng);
+  });
+  S.add({ name: 'near', z: 760, shadow: { dx: 12, dy: 20, alpha: 0.45 }, sprites: [{ s: near }] });
+  const lens = sp('lens', { x: -500, y: 820, w: 2920, h: 560 }, (g) => {
+    for (const [x, y, r, c] of [[-120, 1080, 120, P.slate], [40, 1150, 90, P.mintDeep], [2060, 1100, 110, P.slateDeep], [1930, 1170, 80, mix(P.slate, P.lilac, 0.4)]]) rosette(g, x, y, r, c, rng);
+    for (let i = 0; i < 40; i++) {
+      const a = -Math.PI * 0.55 + rng.range(-0.4, 0.4), len = rng.range(110, 210), x = 240 + rng.range(-40, 60), y = 1140 + rng.range(-20, 20);
+      clayForm(g, transform([[-8, 0], [-5, -len * 0.6], [0, -len], [5, -len * 0.6], [8, 0]], { x, y, rot: a + Math.PI / 2 }), vary(mix(P.blush, '#fff2ee', rng.next() * 0.6), rng, 0.05), { size: 16, sheen: 0.1 });
+    }
+  });
+  S.add({ name: 'lens', z: 520, shadow: { dx: 14, dy: 24, alpha: 0.45 }, sprites: [{ s: lens }] });
+}
+
+
+return { LOOP, cyc, addWorld, addNear };
 })();
 __m["src/loop-machine.js"] = (() => {
 // The living loop, the machines (draft 2). All timing is periodic in LOOP (12 s) so the film loops without a seam.
 //
-//   the funnel     one funnel that feeds itself: material gathers in the wide top and swirls down; it leaves by a
-//                  duct at the bottom that turns right, climbs past the funnel's lip, turns left over it and drops
-//                  back in. Beads go round it for ever (a lap every 6 s, eight beads); in the duct a bead shows as a
-//                  swelling that travels along it and lights two windows in the riser. The funnel glows faintly
-//                  from inside and breathes.
+//   the funnel     one faceted octagonal funnel that feeds itself: what gathers in the top swirls down; it leaves by
+//                  a thick pipe at the bottom that turns square corners (right, up past the lip, left, down) and
+//                  drops back in. Eight small solids go round it for ever (a lap every 6 s); in the pipe each shows
+//                  as a swelling that travels along it. The funnel glows faintly from inside.
 //   the console    a desk of knobs, a lever, a row of lights and a round screen with a turning shape; a cable from
 //                  it droops across to the duct's elbow.
 //   the instrument three nested rings turning on different axes above a stepped plinth, a small solid hovering
@@ -2215,7 +2259,6 @@ const { drawSprites } = __m["vendor/paper-fox/core/sprite.js"];
 const { along } = __m["vendor/paper-fox/core/geom.js"];
 const { lerp, smoothstep, E } = __m["vendor/paper-fox/core/ease.js"];
 const { PAL, CLAY_MAT, CLAY_EDGE, clayForm, tube, steps, dot, chaikin } = __m["src/kit.js"];
-const { drawBead } = __m["src/density.js"];
 const { LOOP, cyc } = __m["src/loop-world.js"];
 const { drawSolid } = __m["src/loop-shapes.js"];
 const P = PAL, TAU = Math.PI * 2;
@@ -2224,55 +2267,72 @@ const mod = (x, m) => ((x % m) + m) % m;
 const plen = (pts) => pts.reduce((a, p, i) => i ? a + Math.hypot(p[0] - pts[i - 1][0], p[1] - pts[i - 1][1]) : 0, 0);
 
 // ---------------- the funnel ----------------
-const RIM = { x: 880, y: 372, rx: 188, ry: 44 };
-const THROAT = [880, 640], TW = 15;
-const DUCT = { w: 15, path: chaikin([[880, 630], [880, 782], [1196, 782], [1196, 246], [906, 246], [906, 296]], 4) };
+// An octagonal funnel cut in flat clay facets, each facet lit by how it turns to the light, with a collar at the
+// rim and a band at the throat. The pipe is a thick rolled tube that runs straight and turns square corners with a
+// small round fillet: down, right, up past the lip, left, down into the mouth.
+const RIM = { x: 880, y: 372, rx: 190, ry: 46 };
+const THROAT = { y: 642, rx: 26, ry: 6 }, SIDES = 8;
+const FILLET = 34;
+// a polyline through waypoints whose corners are rounded with a fillet of radius rc and straight between
+function squarePath(way, rc = FILLET, step = 6) {
+  const out = [way[0]];
+  for (let i = 1; i < way.length - 1; i++) {
+    const [p, c, n] = [way[i - 1], way[i], way[i + 1]];
+    const din = [c[0] - p[0], c[1] - p[1]], dout = [n[0] - c[0], n[1] - c[1]], li = Math.hypot(...din), lo = Math.hypot(...dout);
+    const r = Math.min(rc, li / 2, lo / 2), a = [c[0] - din[0] / li * r, c[1] - din[1] / li * r], e = [c[0] + dout[0] / lo * r, c[1] + dout[1] / lo * r];
+    out.push(a);
+    for (let k = 1; k < 8; k++) { const u = k / 8; out.push([(1 - u) ** 2 * a[0] + 2 * (1 - u) * u * c[0] + u * u * e[0], (1 - u) ** 2 * a[1] + 2 * (1 - u) * u * c[1] + u * u * e[1]]); }
+    out.push(e);
+  }
+  out.push(way[way.length - 1]);
+  // resample so things moving along it keep an even speed
+  const res = [out[0]];
+  for (let i = 1; i < out.length; i++) { const [p, q] = [out[i - 1], out[i]], n = Math.max(1, Math.ceil(Math.hypot(q[0] - p[0], q[1] - p[1]) / step)); for (let k = 1; k <= n; k++) res.push([p[0] + (q[0] - p[0]) * k / n, p[1] + (q[1] - p[1]) * k / n]); }
+  return res;
+}
+const DUCT = { w: 23, path: squarePath([[880, 640], [880, 800], [1226, 800], [1226, 226], [904, 226], [904, 300]]) };
 const DUCT_LEN = plen(DUCT.path);
 const SPOUT = DUCT.path[DUCT.path.length - 1];
-const WINDOWS = [[1196, 640], [1196, 470]];
 
-// the funnel's wall: concave sides from the rim to the throat
-function wall() {
-  const L = [], R = [];
-  for (let i = 0; i <= 24; i++) {
-    const u = i / 24, k = 1 - (1 - u) ** 1.8, hw = lerp(RIM.rx, TW, k), y = lerp(RIM.y, THROAT[1], u);
-    L.push([RIM.x - hw, y]); R.push([RIM.x + hw, y]);
-  }
-  return [...L, ...R.reverse()];
-}
-const rimPts = (k = 1, from = 0, to = TAU, n = 48) => [...Array(n + 1)].map((_, i) => { const a = from + (to - from) * i / n; return [RIM.x + Math.cos(a) * RIM.rx * k, RIM.y + Math.sin(a) * RIM.ry * k]; });
+const ring = (cy, rx, ry, k) => { const a = (k + 0.5) / SIDES * TAU; return [RIM.x + Math.cos(a) * rx, cy + Math.sin(a) * ry]; };
+const rimV = (k) => ring(RIM.y, RIM.rx, RIM.ry, k), thrV = (k) => ring(THROAT.y, THROAT.rx, THROAT.ry, k);
+// facet tone: the facet's outward direction in plan is the angle of its middle; light comes from the upper left
+const facetTone = (k, base) => { const a = (k + 1) / SIDES * TAU, lit = -Math.cos(a) * 0.46 + Math.sin(a) * 0.2; return lit > 0 ? mix(base, '#fffaf0', lit * 0.5) : shade(base, lit * 0.32); };
 
 function drawFunnelBack(g) {
-  // the duct first (it passes behind the funnel on its way round), then the funnel
+  // the pipe first: it passes behind the funnel on its way round
   tube(g, DUCT.path, DUCT.w, P.mint);
-  for (let s = 30; s < DUCT_LEN - 20; s += 30) {
-    const { p, ang } = along(DUCT.path, s / DUCT_LEN), n = [-Math.sin(ang), Math.cos(ang)];
-    g.strokeStyle = rgba(shade(P.mint, -0.3), 0.32); g.lineWidth = 1.5;
-    g.beginPath(); g.moveTo(p[0] + n[0] * DUCT.w * 0.9, p[1] + n[1] * DUCT.w * 0.9); g.lineTo(p[0] - n[0] * DUCT.w * 0.9, p[1] - n[1] * DUCT.w * 0.9); g.stroke();
+  for (let s = 40; s < DUCT_LEN - 30; s += 46) {               // banded joints along the pipe, square to its run
+    const { p, ang } = along(DUCT.path, s / DUCT_LEN), n = [-Math.sin(ang), Math.cos(ang)], t = [Math.cos(ang), Math.sin(ang)], w = DUCT.w + 3;
+    clayForm(g, [[p[0] + n[0] * w - t[0] * 4, p[1] + n[1] * w - t[1] * 4], [p[0] + n[0] * w + t[0] * 4, p[1] + n[1] * w + t[1] * 4], [p[0] - n[0] * w + t[0] * 4, p[1] - n[1] * w + t[1] * 4], [p[0] - n[0] * w - t[0] * 4, p[1] - n[1] * w - t[1] * 4]], shade(P.mint, 0.1), { smooth: false, size: 8, sheen: 0.15 });
   }
-  for (const [x, y] of WINDOWS) {
-    clayForm(g, circle(x, y, 22, 32), P.bone, { sheen: 0.25 });
-    g.fillStyle = radial(g, x - 4, y - 4, 2, 16, ['#3b4876', P.navy]); g.beginPath(); g.arc(x, y, 15, 0, TAU); g.fill();
+  // the spout: a square collar at the pipe's end
+  clayForm(g, [[SPOUT[0] - 30, SPOUT[1] - 6], [SPOUT[0] + 30, SPOUT[1] - 6], [SPOUT[0] + 26, SPOUT[1] + 10], [SPOUT[0] - 26, SPOUT[1] + 10]], shade(P.mint, 0.12), { smooth: false, size: 14, sheen: 0.2 });
+  // the funnel's front facets (the ones turned toward us), each a flat cut of clay
+  for (let k = 0; k < SIDES; k++) {
+    const mid = (k + 1) / SIDES * TAU;
+    if (Math.sin(mid) < -0.05) continue;
+    clayForm(g, [rimV(k), rimV(k + 1), thrV(k + 1), thrV(k)], facetTone(k, P.butter), { smooth: false, size: 60, sheen: 0.12, round: 0.35 });
   }
-  clayForm(g, circle(SPOUT[0], SPOUT[1] + 2, 19, 30), shade(P.mint, 0.08), { sheen: 0.25 });
-  dot(g, SPOUT[0], SPOUT[1] + 4, 9, shade(P.mint, -0.6));
-  // the funnel: wall, then the dark inside seen through the mouth, then the back of the rim
-  clayForm(g, wall(), P.butter, { size: 120, sheen: 0.2 });
-  for (let k = 1; k < 7; k++) {                               // thrown rings around the wall
-    const u = k / 7, kk = 1 - (1 - u) ** 1.8, hw = lerp(RIM.rx, TW, kk), y = lerp(RIM.y, THROAT[1], u);
-    g.strokeStyle = rgba(shade(P.butter, -0.25), 0.35); g.lineWidth = 1.6;
-    g.beginPath(); g.ellipse(RIM.x, y, hw, Math.max(2, RIM.ry * hw / RIM.rx), 0, 0.1, Math.PI - 0.1); g.stroke();
-  }
-  const mouth = rimPts(0.94);
-  g.fillStyle = radial(g, RIM.x, RIM.y + 6, 4, RIM.rx, ['#2a2340', '#4a3a52', shade(P.butter, -0.45)]);
+  // the throat band and a short octagonal neck down into the pipe
+  clayForm(g, [[RIM.x - 30, THROAT.y - 4], [RIM.x + 30, THROAT.y - 4], [RIM.x + 30, THROAT.y + 16], [RIM.x - 30, THROAT.y + 16]], P.pink, { smooth: false, size: 14, sheen: 0.18 });
+  // the inside, seen through the mouth: the far facets, lit from inside, in deepening lilac
+  const mouth = [...Array(SIDES)].map((_, k) => ring(RIM.y, RIM.rx * 0.93, RIM.ry * 0.93, k));
+  g.fillStyle = radial(g, RIM.x, RIM.y + 14, 4, RIM.rx * 0.95, [shade(P.lilac, -0.55), shade(P.lilac, -0.3), mix(P.lilac, '#ffe9d0', 0.25)]);
   g.beginPath(); mouth.forEach(([x, y], i) => (i ? g.lineTo(x, y) : g.moveTo(x, y))); g.closePath(); g.fill();
-  const back = [...rimPts(1.06, Math.PI, TAU, 30), ...rimPts(0.93, TAU, Math.PI, 30)];
-  clayForm(g, back, shade(P.pink, 0.04), { size: 18, sheen: 0.2, smooth: false });
+  for (let k = 0; k < SIDES; k++) {                            // inner facet seams converging on the throat
+    const [x, y] = mouth[k];
+    g.strokeStyle = rgba(shade(P.lilac, -0.35), 0.35); g.lineWidth = 1.4;
+    g.beginPath(); g.moveTo(x, y); g.lineTo(RIM.x + (x - RIM.x) * 0.12, RIM.y + 18); g.stroke();
+  }
+  // the collar's far half: vertices 3..7 and 0 run round the back of the octagon
+  const band = (ks) => [...ks.map((k) => ring(RIM.y, RIM.rx * 1.07, RIM.ry * 1.07, k)), ...ks.slice().reverse().map((k) => ring(RIM.y, RIM.rx * 0.93, RIM.ry * 0.93, k))];
+  clayForm(g, band([3, 4, 5, 6, 7, 0]), shade(P.pink, 0.04), { smooth: false, size: 16, sheen: 0.15 });
 }
 function drawFunnelFront(g) {
-  // the front half of the lip, drawn after the beads that drop into the mouth
-  const front = [...rimPts(1.06, 0, Math.PI, 30), ...rimPts(0.93, Math.PI, 0, 30)];
-  clayForm(g, front, P.pink, { size: 20, sheen: 0.28, smooth: false });
+  // the collar's near half (vertices 7, 0..4), drawn after what drops into the mouth
+  const band = (ks) => [...ks.map((k) => ring(RIM.y, RIM.rx * 1.07, RIM.ry * 1.07, k)), ...ks.slice().reverse().map((k) => ring(RIM.y, RIM.rx * 0.93, RIM.ry * 0.93, k))];
+  clayForm(g, band([7, 0, 1, 2, 3, 4]), P.pink, { smooth: false, size: 18, sheen: 0.24 });
 }
 
 // ---------------- the console ----------------
@@ -2304,43 +2364,35 @@ const sliderK = (t) => 0.5 + 0.45 * Math.sin(TAU * t / 4);
 
 function addMachines(S) {
   const sp = (name, box, draw, o = {}) => S.sprite({ name, ...box, res: o.res ?? 1.25, mat: CLAY_MAT, edge: CLAY_EDGE, shadow: { blur: o.blur ?? 18 }, draw });
-  const back = sp('funnel', { x: 640, y: 200, w: 620, h: 640 }, drawFunnelBack, { blur: 22 });
+  const back = sp('funnel', { x: 640, y: 160, w: 660, h: 700 }, drawFunnelBack, { blur: 22 });
   const front = sp('funnel-lip', { x: 670, y: 310, w: 420, h: 130 }, drawFunnelFront, { blur: 10 });
   const lump = sp('lump', { x: -26, y: -26, w: 52, h: 52 }, (g) => clayForm(g, circle(0, 0, 20, 32), shade(P.mint, 0.06), { sheen: 0.3 }), { blur: 6 });
-  const beads = [P.pink, P.butter, P.lilac, P.aqua, P.pinkDeep, P.mint, '#c6d957', P.blush].map((c, i) => sp(`fbead-${i}`, { x: -20, y: -20, w: 40, h: 40 }, (g) => drawBead(g, c), { res: 1.5, blur: 8 }));
   const consoleS = sp('console', { x: 470, y: 760, w: 430, h: 240 }, drawConsole);
   const instr = sp('instrument', { x: 1390, y: 780, w: 160, h: 220 }, drawInstrumentBase);
 
-  // the funnel: glow inside, beads swirling down in the mouth, swellings along the duct, beads dropping from the spout
-  S.add({ name: 'funnel', z: 1000, shadow: { dx: 10, dy: 18, alpha: 0.4 }, anim: (t) => ({ sx: 1 + 0.01 * cyc(t, 2), sy: 1 + 0.01 * cyc(t, 2), ox: RIM.x, oy: 520 }), render(ctx, t, env) {
+  // the funnel: small solids swirl down the mouth, swell along the pipe as it carries them, and drop from the spout
+  const KINDS = ['octa', 'cube', 'tetra', 'ico'], COLS = [P.pink, P.butter, P.lilac, P.aqua, P.mint, P.pinkDeep, P.blush, P.butterDeep];
+  S.add({ name: 'funnel', z: 1000, shadow: { dx: 10, dy: 18, alpha: 0.4 }, anim: (t) => ({ sx: 1 + 0.006 * cyc(t, 2), sy: 1 + 0.006 * cyc(t, 2), ox: RIM.x, oy: 520 }), render(ctx, t, env) {
     drawSprites(ctx, [{ s: back }], env.shadow);
-    const swirl = [], swell = [], fall = [];
+    const swell = [], late = [];
+    const pulse = 0.5 + 0.5 * Math.cos(TAU * mod(t, 0.75) / 0.75);
+    ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, RIM.x, RIM.y + 6, 150, '#ffd9b0', 0.14 + 0.06 * pulse); ctx.restore();
     for (let n = 0; n < 8; n++) {
-      const u = mod(t + n * 0.75, 6), b = beads[n];
-      if (u < 1.6) {                                       // swirling inward and down inside the mouth
+      const u = mod(t + n * 0.75, 6), kind = KINDS[n % 4], col = COLS[n], ang = [TAU * t / 3 + n, TAU * t / 2, n];
+      if (u < 1.6) {                                       // spiralling in and down inside the mouth
         const k = u / 1.6, a = n * 1.3 + k * TAU * 1.25, rr = (1 - k) * 0.78 + 0.08;
-        swirl.push({ s: b, x: RIM.x + Math.cos(a) * RIM.rx * rr, y: RIM.y + 6 + Math.sin(a) * RIM.ry * rr + k * 14, sx: 0.75 - 0.35 * k, sy: 0.75 - 0.35 * k, rot: a * 2, alpha: 1 - smoothstep(0.7, 1, k) });
-      } else if (u >= 2.2 && u < 5.4) {                    // travelling the duct
-        const s = DUCT_LEN * (u - 2.2) / 3.2, { p, ang } = along(DUCT.path, s / DUCT_LEN);
-        swell.push({ s: lump, x: p[0], y: p[1], rot: ang, sx: 1.25, sy: 0.92, alpha: smoothstep(0, 30, s) * smoothstep(DUCT_LEN, DUCT_LEN - 30, s) });
+        drawSolid(ctx, kind, RIM.x + Math.cos(a) * RIM.rx * rr, RIM.y + 8 + Math.sin(a) * RIM.ry * rr + k * 14, 9 * (1 - 0.5 * k), ang, col, { alpha: 1 - smoothstep(0.7, 1, k) });
+      } else if (u >= 2.2 && u < 5.4) {                    // carried round the pipe
+        const s = DUCT_LEN * (u - 2.2) / 3.2, { p, ang: a } = along(DUCT.path, s / DUCT_LEN);
+        swell.push({ s: lump, x: p[0], y: p[1], rot: a, sx: 1.35, sy: 1.22, alpha: smoothstep(0, 30, s) * smoothstep(DUCT_LEN, DUCT_LEN - 30, s) });
       } else if (u >= 5.4) {                               // dropping from the spout into the mouth
         const k = (u - 5.4) / 0.6;
-        fall.push({ s: b, x: lerp(SPOUT[0], RIM.x + 14, k), y: lerp(SPOUT[1] + 14, RIM.y + 8, E.in(k)), rot: k * 3, sx: 0.8, sy: 0.8 });
+        late.push(() => drawSolid(ctx, kind, lerp(SPOUT[0], RIM.x + 10, k), lerp(SPOUT[1] + 18, RIM.y + 10, E.in(k)), 9, ang, col, { glowK: 0.3 }));
       }
     }
-    // light from inside the funnel, pulsing with each bead that drops in
-    const pulse = 0.5 + 0.5 * Math.cos(TAU * mod(t, 0.75) / 0.75);
-    ctx.save(); ctx.globalCompositeOperation = 'lighter';
-    glow(ctx, RIM.x, RIM.y + 4, 140, '#ffc9a0', 0.16 + 0.06 * pulse);
-    ctx.restore();
-    drawSprites(ctx, swirl, { ...env.shadow, alpha: 0 });
     drawSprites(ctx, [{ s: front }], { ...env.shadow, dx: 3, dy: 5 });
     drawSprites(ctx, swell, { ...env.shadow, alpha: 0 });
-    for (const [wx, wy] of WINDOWS) for (const it of swell) {   // a window lights as a bead passes behind it
-      const d = Math.hypot(it.x - wx, it.y - wy);
-      if (d < 26) { ctx.save(); ctx.globalAlpha = 1 - d / 26; ctx.globalCompositeOperation = 'lighter'; glow(ctx, wx, wy, 26, '#bfe8ff', 0.6); ctx.restore(); }
-    }
-    drawSprites(ctx, fall, { ...env.shadow, dx: 4, dy: 7 });
+    for (const f of late) f();
   } });
 
   // the console: lights in a slow pattern, the knobs' marks, the lever, and a turning shape on the screen

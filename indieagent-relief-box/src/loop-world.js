@@ -11,6 +11,7 @@ import { transform } from '../vendor/paper-fox/core/geom.js';
 import { LIGHT, PAL, CLAY_MAT, CLAY_EDGE, clayForm, tube, steps, dot } from './kit.js';
 import { rosette, curl } from './density.js';
 import { drawSun, drawIsland, drawCity, SUN, ISLAND, CITY } from './props.js';
+import { drawSolid, drawTesseract } from './loop-shapes.js';
 
 const P = PAL;
 const TAU = Math.PI * 2;
@@ -47,22 +48,11 @@ function cloud(g, cx, cy, w, rng, c = '#fbf3ee') {
   }
 }
 
-// decorations that float in mid-air: a stepped pendant, a dotted ball, a short bead strand, a dotted disc, a chevron
+// baked decorations that float in mid-air: a stepped pendant or a stack of chevrons
 function floater(g, kind, x, y, s, rng) {
   if (kind === 'pendant') {
     steps(g, x, y, { n: 4, w0: 18 * s, w1: 52 * s, h: 9 * s, gap: 1, colors: [P.pink, P.mint, P.butter] });
     clayForm(g, [[x - 26 * s, y + 2], [x, y + 30 * s], [x + 26 * s, y + 2]], P.pinkDeep, { smooth: false, size: 22 * s });
-  } else if (kind === 'ball') {
-    const c = rng.pick([P.lilac, P.butter, P.mint, P.blush]);
-    clayForm(g, circle(x, y, 18 * s, 30), c, { sheen: 0.25 });
-    for (let k = 0; k < 6; k++) dot(g, x + Math.cos(k * 1.05) * 10 * s, y + Math.sin(k * 1.05) * 10 * s, 2 * s, shade(c, -0.3));
-  } else if (kind === 'strand') {
-    const a = rng.range(-0.5, 0.5);
-    for (let i = 0; i < 6; i++) { const d = (i - 2.5) * 16 * s; clayForm(g, circle(x + Math.cos(a) * d, y + Math.sin(a) * d + Math.sin(i) * 4 * s, 7 * s, 18), rng.pick([P.mint, P.pink, P.butter, P.aqua]), { sheen: 0.22 }); }
-  } else if (kind === 'disc') {
-    const rr = 24 * s;
-    clayForm(g, circle(x, y, rr, 36), '#fbf6ee', { size: rr * 1.2, round: 0.6, sheen: 0.15 });
-    for (let k = 0; k < 10; k++) { const a = k / 10 * TAU; g.fillStyle = P.ink; g.beginPath(); g.arc(x + Math.cos(a) * rr * 0.58, y + Math.sin(a) * rr * 0.58, rr * 0.1, 0, TAU); g.fill(); }
   } else {
     for (let i = 0; i < 3; i++) clayForm(g, transform([[-30, 0], [0, 22], [30, 0], [22, -8], [0, 10], [-22, -8]], { x, y: y + i * 13 * s, sx: s, sy: s }), [P.mint, P.butter, P.pink][i], { smooth: false, size: 14 * s });
   }
@@ -96,7 +86,7 @@ export function addWorld(S) {
 
   // clouds drift and come back within the loop
   const crng = new RNG('clouds');
-  const clouds = [[300, 210, 300, 7000], [1150, 140, 260, 7600], [1900, 300, 340, 6400], [-150, 420, 240, 5600], [1420, 600, 190, 5200]];
+  const clouds = [[200, 90, 260, 7000], [1150, 140, 260, 7600], [1900, 300, 340, 6400], [-150, 420, 240, 5600], [1420, 600, 190, 5200]];
   clouds.forEach(([x, y, w, z], i) => {
     const s = sp(`cloud-${i}`, { x: x - w * 0.7, y: y - w * 0.45, w: w * 1.4, h: w * 0.6 }, (g) => cloud(g, x, y, w, crng));
     S.add({ name: `cloud-${i}`, z, shadow: { dx: 8, dy: 14, alpha: 0.18 }, sprites: [{ s }], anim: (t) => ({ x: 26 * cyc(t, 1, i * 0.21), y: 5 * cyc(t, 2, i * 0.13) }) });
@@ -112,14 +102,27 @@ export function addWorld(S) {
   const city = sp('city', { x: CITY.x - 150, y: CITY.y - 130, w: 300, h: 230 }, drawCity, { res: 1.2 });
   S.add({ name: 'city', z: 2200, shadow: { dx: 10, dy: 22, alpha: 0.3 }, sprites: [{ s: city, ax: CITY.x, ay: CITY.y, x: 260, y: 300 }], anim: (t) => ({ x: 12 * cyc(t, 1, 0.3), y: 8 * cyc(t, 2, 0.6) }) });
 
-  // decorations floating in mid-air at many depths, each bobbing and turning a little on its own phase
+  // a large tesseract hangs in the sky, turning through the fourth dimension once a loop: the world's anchor
+  S.add({ name: 'tesseract', z: 2800, render(ctx, t) {
+    drawTesseract(ctx, 520, 250, 92, TAU * t / LOOP, TAU * 2 * t / LOOP, { outer: P.mint, inner: P.pink, glowK: 0.6 + 0.15 * cyc(t, 2) });
+  } });
+
+  // floating geometry at many depths: baked stepped pendants and chevrons, and solids and small tesseracts drawn
+  // turning each frame. Every one bobs on its own phase; rotations close within the loop.
   const frng = new RNG('floaters');
-  const kinds = ['pendant', 'ball', 'strand', 'disc', 'chevron'];
-  const spots = [[180, 160, 2600], [470, 120, 1900], [700, 230, 3000], [1250, 120, 2100], [1430, 420, 2700], [1820, 520, 1700], [120, 560, 1500], [1720, 120, 1450],
-    [560, 640, 2800], [1340, 600, 3200], [880, 140, 1500], [2000, 220, 2400], [-60, 300, 2000], [1560, 660, 1300]];
-  const floaters = spots.map(([x, y, z], i) => {
-    const kind = kinds[i % kinds.length], s = sp(`float-${i}`, { x: x - 70, y: y - 60, w: 140, h: 130 }, (g) => floater(g, kind, x, y, 1, frng), { res: 1.3, shadow: { blur: 12 } });
-    return S.add({ name: `float-${i}`, z, shadow: { dx: 10, dy: 18, alpha: 0.22 }, sprites: [{ s }], anim: (t) => ({ y: 10 * cyc(t, 1, i * 0.17), rot: 0.08 * cyc(t, 1, i * 0.31 + 0.2), ox: x, oy: y }) });
+  const spots = [[180, 160, 2600, 'pendant'], [880, 120, 1900, 'tess'], [700, 560, 3000, 'octa'], [1250, 120, 2100, 'chevron'], [1430, 420, 2700, 'tess'], [1820, 520, 1700, 'cube'],
+    [120, 560, 1500, 'ico'], [1720, 120, 1450, 'pendant'], [560, 640, 2800, 'chevron'], [1340, 600, 3200, 'star'], [1060, 470, 1500, 'tetra'], [2000, 220, 2400, 'tess'], [-60, 300, 2000, 'cube'], [1560, 660, 1300, 'octa']];
+  const COLS = [P.mint, P.pink, P.butter, P.lilac, P.aqua];
+  spots.forEach(([x, y, z, kind], i) => {
+    const bob = (t) => ({ y: 10 * cyc(t, 1, i * 0.17), rot: 0.08 * cyc(t, 1, i * 0.31 + 0.2), ox: x, oy: y });
+    if (kind === 'pendant' || kind === 'chevron') {
+      const s = sp(`float-${i}`, { x: x - 70, y: y - 60, w: 140, h: 130 }, (g) => floater(g, kind, x, y, 1, frng), { res: 1.3, shadow: { blur: 12 } });
+      S.add({ name: `float-${i}`, z, shadow: { dx: 10, dy: 18, alpha: 0.22 }, sprites: [{ s }], anim: bob });
+    } else if (kind === 'tess') {
+      S.add({ name: `float-${i}`, z, anim: (t) => ({ y: 10 * cyc(t, 1, i * 0.17) }), render(ctx, t) { drawTesseract(ctx, x, y, 22, TAU * (i % 2 ? 2 : -1) * t / LOOP, TAU * t / LOOP + i, { outer: COLS[i % 5], inner: COLS[(i + 2) % 5] }); } });
+    } else {
+      S.add({ name: `float-${i}`, z, anim: (t) => ({ y: 10 * cyc(t, 1, i * 0.17) }), render(ctx, t) { drawSolid(ctx, kind, x, y, 20, [TAU * t / LOOP * (1 + i % 3), TAU * 2 * t / LOOP, i], COLS[i % 5]); } });
+    }
   });
 
   // the terrace the machine stands on: a band of broad clay mounds, and the ground line at y 985
