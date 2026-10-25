@@ -161,8 +161,13 @@ node tools/bundle.mjs src/loop.js build/loop.js && node tools/cues.mjs         #
   scissor crossings, heads popping, levers, released cubes); mirrored twins give a cue on each side.
 - `tools/sound.py`: a reed organ (two beating reeds a note, voiced toward a nasal reed formant) breathing like
   bellows in two long breaths per loop (s2, Robin: longer breaths), the chords changing legato every 3 s inside them;
-  the chords are major sevenths with a sharp eleven sliding in parallel (D, Bb, C,
-  Ab); air hisses through at each change; glitch stutters cut from the organ and bit-crushed; each event its own
-  synthesized sound, one frame after its picture event, panned to where it happens; a long circular hall.
+  air hisses through at each change; glitch stutters cut from the organ and bit-crushed; each event its own
+  synthesized sound, one frame after its picture event, panned to where it happens; a long circular hall with a
+  ping-pong delay (s5, s6).
+- Shepard chords (s7, Robin: "each chord a minor third lower, falling forever"): the same major-seventh-sharp-eleven
+  voicing on D, B, Ab, F, each a minor third below the last, so four chords fall one octave and the loop lands back on
+  D. Every note is a stack of octaves from 38 Hz to 4.2 kHz under one fixed bell of loudness centred near 330 Hz:
+  as the chords fall, the low octaves fade out and new high ones fade in, so the ear hears a fall that never arrives.
+  The event notes come from the current chord, folded into a fixed register, so they fall with it.
 - Seamless by construction: every oscillator runs whole cycles in 12 s, noise filtering and reverb are circular,
   every sound that runs past the end wraps to the start.
