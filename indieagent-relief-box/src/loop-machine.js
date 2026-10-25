@@ -111,10 +111,23 @@ function drawBulge(ctx, s0, amp, clips) {
 }
 const SPOUT = DUCT.path[DUCT.path.length - 1];
 
-const ring = (cy, rx, ry, k) => { const a = (k + 0.5) / SIDES * TAU; return [RIM.x + Math.cos(a) * rx, cy + Math.sin(a) * ry]; };
-const rimV = (k) => ring(RIM.y, RIM.rx, RIM.ry, k), thrV = (k) => ring(THROAT.y, THROAT.rx, THROAT.ry, k);
-// facet tone: the facet's outward direction in plan is the angle of its middle; light comes from the upper left
-const facetTone = (k, base) => { const a = (k + 1) / SIDES * TAU, lit = -Math.cos(a) * 0.46 + Math.sin(a) * 0.2; return lit > 0 ? mix(base, '#fffaf0', lit * 0.5) : shade(base, lit * 0.32); };
+// The funnel turns (Robin: "rotating the opposite direction the portal is... the panels alternating colours"): half a
+// turn every 12 s against the portal's whole turn, so its two-colour pattern comes round at the seam. ph is its turn.
+const funnelTurn = (t) => -TAU * 0.5 * t / LOOP;
+const FACET_COLS = [P.butter, P.aqua];
+const ring = (cy, rx, ry, k, ph = 0) => { const a = (k + 0.5) / SIDES * TAU + ph; return [RIM.x + Math.cos(a) * rx, cy + Math.sin(a) * ry]; };
+const rimV = (k, ph) => ring(RIM.y, RIM.rx, RIM.ry, k, ph), thrV = (k, ph) => ring(THROAT.y, THROAT.rx, THROAT.ry, k, ph);
+// facet tone: the facet's outward direction in plan is the angle of its middle; light comes from the upper left and
+// stays put while the facets turn through it
+const facetTone = (k, base, ph = 0) => { const a = (k + 1) / SIDES * TAU + ph, lit = -Math.cos(a) * 0.46 + Math.sin(a) * 0.2; return lit > 0 ? mix(base, '#fffaf0', lit * 0.5) : shade(base, lit * 0.32); };
+// a point on the turned octagon (rx, ry) at angle th, for the collar's two halves
+function octAt(cy, rx, ry, th, ph) {
+  const u = mod((th - ph) / TAU * SIDES - 0.5, SIDES), k = Math.floor(u), f = u - k;
+  const [a, b] = [ring(cy, rx, ry, k, ph), ring(cy, rx, ry, k + 1, ph)];
+  return [lerp(a[0], b[0], f), lerp(a[1], b[1], f)];
+}
+// the collar's half from angle th0 to th1 (far half: PI..2PI, the top of the ellipse; near half: 0..PI)
+const collar = (th0, th1, ph) => { const o = [], i = []; for (let q = 0; q <= 32; q++) { const th = lerp(th0, th1, q / 32); o.push(octAt(RIM.y, RIM.rx * 1.07, RIM.ry * 1.07, th, ph)); i.push(octAt(RIM.y, RIM.rx * 0.93, RIM.ry * 0.93, th, ph)); } return [...o, ...i.reverse()]; };
 
 function drawPipe(g) {
   // flat ends: the top one runs into the fork's stem, the bottom one under the egg-laying tip
@@ -216,17 +229,17 @@ function drawFork(g) {
   tube(g, stem, w, P.mint, { shadow: false });
   for (let c = 1; c < 3; c++) { g.save(); g.clip(stemClip(c, w)); tube(g, stem, w, RING_COLS[c], { shadow: false }); g.restore(); }
 }
-function drawFunnelBack(g) {
-  // the funnel's front facets (the ones turned toward us), each a flat cut of clay
-  for (let k = 0; k < SIDES; k++) {
-    const mid = (k + 1) / SIDES * TAU;
-    if (Math.sin(mid) < -0.05) continue;
-    clayForm(g, [rimV(k), rimV(k + 1), thrV(k + 1), thrV(k)], facetTone(k, P.butter), { smooth: false, size: 60, sheen: 0.12, round: 0.35 });
+function drawFunnelBack(g, ph) {
+  // the funnel's facets, each a flat cut of clay in alternating colours, far ones first so the near ones cover them
+  const order = [...Array(SIDES).keys()].sort((a, b) => Math.sin((a + 1) / SIDES * TAU + ph) - Math.sin((b + 1) / SIDES * TAU + ph));
+  for (const k of order) {
+    if (Math.sin((k + 1) / SIDES * TAU + ph) < -0.5) continue;
+    clayForm(g, [rimV(k, ph), rimV(k + 1, ph), thrV(k + 1, ph), thrV(k, ph)], facetTone(k, FACET_COLS[k % 2], ph), { smooth: false, size: 60, sheen: 0.12, round: 0.35 });
   }
   // the throat band and a short octagonal neck down into the pipe
   clayForm(g, [[RIM.x - 30, THROAT.y - 4], [RIM.x + 30, THROAT.y - 4], [RIM.x + 30, THROAT.y + 16], [RIM.x - 30, THROAT.y + 16]], P.pink, { smooth: false, size: 14, sheen: 0.18 });
   // the inside, seen through the mouth: the far facets, lit from inside, in deepening lilac
-  const mouth = [...Array(SIDES)].map((_, k) => ring(RIM.y, RIM.rx * 0.93, RIM.ry * 0.93, k));
+  const mouth = [...Array(SIDES)].map((_, k) => ring(RIM.y, RIM.rx * 0.93, RIM.ry * 0.93, k, ph));
   g.fillStyle = radial(g, RIM.x, RIM.y + 14, 4, RIM.rx * 0.95, [shade(P.lilac, -0.55), shade(P.lilac, -0.3), mix(P.lilac, '#ffe9d0', 0.25)]);
   g.beginPath(); mouth.forEach(([x, y], i) => (i ? g.lineTo(x, y) : g.moveTo(x, y))); g.closePath(); g.fill();
   for (let k = 0; k < SIDES; k++) {                            // inner facet seams converging on the throat
@@ -234,14 +247,12 @@ function drawFunnelBack(g) {
     g.strokeStyle = rgba(shade(P.lilac, -0.35), 0.35); g.lineWidth = 1.4;
     g.beginPath(); g.moveTo(x, y); g.lineTo(RIM.x + (x - RIM.x) * 0.12, RIM.y + 18); g.stroke();
   }
-  // the collar's far half: vertices 3..7 and 0 run round the back of the octagon
-  const band = (ks) => [...ks.map((k) => ring(RIM.y, RIM.rx * 1.07, RIM.ry * 1.07, k)), ...ks.slice().reverse().map((k) => ring(RIM.y, RIM.rx * 0.93, RIM.ry * 0.93, k))];
-  clayForm(g, band([3, 4, 5, 6, 7, 0]), shade(P.pink, 0.04), { smooth: false, size: 16, sheen: 0.15 });
+  // the collar's far half, round the back of the octagon
+  clayForm(g, collar(Math.PI - 0.05, TAU + 0.05, ph), shade(P.pink, 0.04), { smooth: false, size: 16, sheen: 0.15 });
 }
-function drawFunnelFront(g) {
-  // the collar's near half (vertices 7, 0..4), drawn after what drops into the mouth
-  const band = (ks) => [...ks.map((k) => ring(RIM.y, RIM.rx * 1.07, RIM.ry * 1.07, k)), ...ks.slice().reverse().map((k) => ring(RIM.y, RIM.rx * 0.93, RIM.ry * 0.93, k))];
-  clayForm(g, band([7, 0, 1, 2, 3, 4]), P.pink, { smooth: false, size: 18, sheen: 0.24 });
+function drawFunnelFront(g, ph) {
+  // the collar's near half, drawn after what drops into the mouth
+  clayForm(g, collar(-0.05, Math.PI + 0.05, ph), P.pink, { smooth: false, size: 18, sheen: 0.24 });
 }
 
 // ---------------- the console ----------------
@@ -275,8 +286,6 @@ export function addMachines(S) {
   const sp = (name, box, draw, o = {}) => S.sprite({ name, ...box, res: o.res ?? 1.25, mat: CLAY_MAT, edge: CLAY_EDGE, shadow: { blur: shadowBlur(o.blur ?? 18) }, draw });
   const pipe = sp('pipe', { x: AXIS - 330, y: 170, w: 360, h: 690 }, drawPipe, { blur: 18 });
   const fork = sp('pipe-fork', { x: AXIS - 160, y: 600, w: 320, h: 250 }, drawFork, { blur: 18 });
-  const back = sp('funnel', { x: AXIS - 230, y: 300, w: 460, h: 400 }, drawFunnelBack, { blur: 22 });
-  const front = sp('funnel-lip', { x: AXIS - 220, y: 310, w: 440, h: 130 }, drawFunnelFront, { blur: 10 });
   const bw = DUCT.w * (1 + BULGE.amp) + 8, forkClip = (c) => { const p = new Path2D(); p.addPath(barClip(c, bw)); p.addPath(stemClip(c, bw)); return p; };
   const clips = { ring: [null, ringClip(1, bw), ringClip(2, bw)], fork: [null, forkClip(1), forkClip(2)] };
   const consoleS = sp('console', { x: 470, y: 760, w: 380, h: 240 }, drawConsole);
@@ -287,13 +296,14 @@ export function addMachines(S) {
   S.add({ name: 'funnel', z: 1000, shadow: { dx: 10, dy: 18, alpha: 0.4 }, anim: (t) => ({ sx: 1 + 0.006 * cyc(t, 2), sy: 1 + 0.006 * cyc(t, 2), ox: RIM.x, oy: 520 }), render(ctx, t, env) {
     mirrored(ctx, () => drawSprites(ctx, [{ s: pipe }], env.shadow));
     drawSprites(ctx, [{ s: fork, shadow: false }], env.shadow);
-    drawSprites(ctx, [{ s: back }], env.shadow);
+    const ph = funnelTurn(t);
+    drawFunnelBack(ctx, ph);
     const swell = [], late = [];   // swell: [arc length, strength, right side?] of each bulge in a pipe
     const pulse = 0.5 + 0.5 * Math.cos(TAU * mod(t, 0.75) / 0.75);
     ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, RIM.x, RIM.y + 6, 150, '#ffd9b0', 0.14 + 0.06 * pulse); ctx.restore();
     // inside the mouth is Mark's world: deep blue going to black, zigzag rings turning, a burst at the throat, and the
     // solids spiralling down through it, all in his early-Mac colours
-    const mouthPts = [...Array(SIDES)].map((_, k) => ring(RIM.y, RIM.rx * 0.93, RIM.ry * 0.93, k));
+    const mouthPts = [...Array(SIDES)].map((_, k) => ring(RIM.y, RIM.rx * 0.93, RIM.ry * 0.93, k, ph));
     markLayer(ctx, RIM.x, RIM.y, RIM.rx * 2, RIM.ry * 2 + 12, (g) => {
       const clip = new Path2D(); mouthPts.forEach(([x, y], i) => (i ? clip.lineTo(x, y) : clip.moveTo(x, y))); clip.closePath();
       g.save(); g.clip(clip);
@@ -328,7 +338,7 @@ export function addMachines(S) {
       ctx.save(); ctx.clip(clip);
       for (let n = 0; n < 8; n++) drawSplash(ctx, RIM.x + (n % 2 ? 10 : -10), RIM.y + 8, mod(t + n * 0.75, 6), n);
       ctx.restore(); }
-    drawSprites(ctx, [{ s: front }], { ...env.shadow, dx: 3, dy: 5 });
+    drawFunnelFront(ctx, ph);
     // the pipe swells as each one passes; a right-side one is drawn reflected
     for (const [s0, amp, right] of swell) if (amp > 0.01) {
       if (!right) drawBulge(ctx, s0, amp, clips);
