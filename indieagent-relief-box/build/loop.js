@@ -1980,6 +1980,20 @@ const SOLIDS = {
     f: [[0, 11, 5], [0, 5, 1], [0, 1, 7], [0, 7, 10], [0, 10, 11], [1, 5, 9], [5, 11, 4], [11, 10, 2], [10, 7, 6], [7, 1, 8], [3, 9, 4], [3, 4, 2], [3, 2, 6], [3, 6, 8], [3, 8, 9], [4, 9, 5], [2, 4, 11], [6, 2, 10], [8, 6, 7], [9, 8, 1]],
   },
 };
+// the dodecahedron, as the icosahedron's dual: one pentagonal face for each icosahedron corner, made of the five
+// dodecahedron corners nearest that direction, put in order round it
+{
+  const ip = 1 / phi, v = [];
+  for (const a of [-1, 1]) for (const b of [-1, 1]) for (const c of [-1, 1]) v.push([a, b, c]);
+  for (const a of [-1, 1]) for (const b of [-1, 1]) { v.push([0, a * ip, b * phi]); v.push([a * ip, b * phi, 0]); v.push([a * phi, 0, b * ip]); }
+  const V = v.map(norm), f = SOLIDS.ico.v.map((d) => {
+    const n = norm(d), near = V.map((p, i) => [p[0] * n[0] + p[1] * n[1] + p[2] * n[2], i]).sort((a, b) => b[0] - a[0]).slice(0, 5).map(([, i]) => i);
+    const ref = Math.abs(n[0]) < 0.9 ? [1, 0, 0] : [0, 1, 0];
+    const u = norm([n[1] * ref[2] - n[2] * ref[1], n[2] * ref[0] - n[0] * ref[2], n[0] * ref[1] - n[1] * ref[0]]), w = [n[1] * u[2] - n[2] * u[1], n[2] * u[0] - n[0] * u[2], n[0] * u[1] - n[1] * u[0]];
+    return near.sort((a, b) => Math.atan2(V[a][0] * w[0] + V[a][1] * w[1] + V[a][2] * w[2], V[a][0] * u[0] + V[a][1] * u[1] + V[a][2] * u[2]) - Math.atan2(V[b][0] * w[0] + V[b][1] * w[1] + V[b][2] * w[2], V[b][0] * u[0] + V[b][1] * u[1] + V[b][2] * u[2]));
+  });
+  SOLIDS.dodeca = { v: V, f };
+}
 // two interlocked tetrahedra
 SOLIDS.star = { v: [...SOLIDS.tetra.v, ...SOLIDS.tetra.v.map(([x, y, z]) => [-x, -y, -z])], f: [...SOLIDS.tetra.f, ...SOLIDS.tetra.f.map((f) => f.map((i) => i + 4))] };
 for (const S of Object.values(SOLIDS)) S.v = S.v.map(norm);
@@ -2005,6 +2019,19 @@ function solidFaces(kind, ang) {
     return { f, n, z: m[2], lit: n[0] * L3[0] + n[1] * L3[1] + n[2] * L3[2] };
   }).filter((F) => F.n[2] > 0).sort((p, q) => p.z - q.z);
   return { V, faces };
+}
+
+// A solid's visible edges (those of the faces turned toward the viewer) seen from angle ang, flattened to unit
+// screen coordinates and ordered round the centre so a hand can trace them in a sweep: [[x0, y0], [x1, y1]] each.
+function solidEdges(kind, ang) {
+  const { V, faces } = solidFaces(kind, ang), seen = new Set(), out = [];
+  for (const { f } of faces) for (let i = 0; i < f.length; i++) {
+    const a = f[i], b = f[(i + 1) % f.length], key = a < b ? `${a}-${b}` : `${b}-${a}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push({ e: [[V[a][0], V[a][1]], [V[b][0], V[b][1]]], z: (V[a][2] + V[b][2]) / 2, ang: Math.atan2((V[a][1] + V[b][1]) / 2, (V[a][0] + V[b][0]) / 2) });
+  }
+  return out.sort((p, q) => p.ang - q.ang).map((o) => o.e);
 }
 
 // Draw one solid. kind: tetra | octa | cube | ico | star | ring. r: radius in px. ang: [a, b, c] rotation.
@@ -2083,7 +2110,7 @@ function drawTesseract(ctx, x, y, r, a, b, { outer = P.mint, inner = P.pink, alp
   ctx.restore();
 }
 
-return { solidFaces, drawSolid, SHAPE_COLORS, drawTesseract };
+return { solidFaces, solidEdges, drawSolid, SHAPE_COLORS, drawTesseract };
 })();
 __m["src/loop-dome.js"] = (() => {
 // The living loop, the dome: the honeycomb curves up and over the world into a dome that turns slowly as one
@@ -2830,6 +2857,7 @@ const { ISLAND } = __m["src/props.js"];
 const { LOOP, cyc, addWorld, addNear } = __m["src/loop-world.js"];
 const { CONSOLE, INSTR, knobAngle, leverAngle, sliderK, addMachines } = __m["src/loop-machine.js"];
 const { makeFigure, drawFigure } = __m["src/loop-figures.js"];
+const { solidEdges } = __m["src/loop-shapes.js"];
 const { MK, MK_RAMP, PS, markLayer, paintMarkSolid, paintBurst, paintGlyph, paintLines } = __m["src/loop-mark.js"];
 // the figures stand a little taller than draft 1's so their hands read, still small against the funnel
 const P = PAL, TAU = Math.PI * 2, GROUND = 985, FS = 1.2, HIP = GROUND - 33 * FS;
@@ -2880,15 +2908,18 @@ function tunerPose(t) {
 //   us, tilting it, a burst flaring behind it; 4.4-4.9 they let it go upward; 4.6-5.0 turn back; 5.0-6.0 bounce.
 const T = { sing: [0.3, 2.3], fold: [2.3, 2.8], turn: [2.8, 3.2], offer: [3.2, 4.4] };
 const poly = (n, rot = -Math.PI / 2, r = 1) => [...Array(n + 1)].map((_, i) => [Math.cos(rot + i / n * TAU) * r, Math.sin(rot + i / n * TAU) * r]);
-const star = (n, step) => [...Array(n + 1)].map((_, i) => { const a = -Math.PI / 2 + (i * step % n) / n * TAU; return [Math.cos(a) * 0.86, Math.sin(a) * 0.86]; });
+const SIGIL_VIEW = [0.42, 0.62, 0.18];
 const SIGILS = {
   tetra: [poly(48), poly(3, -Math.PI / 2, 0.86)],
-  ico: [poly(48), star(5, 2)],
+  // the five-fold solids are drawn as themselves: the circle, then every edge of the solid as seen from one angle
+  ico: [poly(48), ...solidEdges('ico', SIGIL_VIEW).map((e) => e.map(([u, v]) => [u * 0.86, v * 0.86]))],
+  dodeca: [poly(48), ...solidEdges('dodeca', SIGIL_VIEW).map((e) => e.map(([u, v]) => [u * 0.86, v * 0.86]))],
   star: [poly(48), poly(3, -Math.PI / 2, 0.86), poly(3, Math.PI / 2, 0.86)],
   octa: [poly(48), poly(4, -Math.PI / 2, 0.86), poly(48, -Math.PI / 2, 0.42)],
 };
 const slen = (pl) => pl.reduce((a, p, i) => i ? a + Math.hypot(p[0] - pl[i - 1][0], p[1] - pl[i - 1][1]) : 0, 0);
-const HOP = 0.4;
+// the pen lifts between strokes: a short hop, so a sigil of thirty edges still draws in one song
+const HOP = 0.12;
 // where the pen is after fraction k of the whole sigil (pen-up hops between strokes count as short moves)
 function sigilAt(kind, k) {
   const strokes = SIGILS[kind], lens = strokes.map(slen), total = lens.reduce((a, b) => a + b, 0) + HOP * (strokes.length - 1);
@@ -2918,7 +2949,7 @@ function sigilDrawn(kind, k) {
 const cycleOf = (t, phase) => { const L = mod(t - phase, LOOP); return { c: mod(L, 6), j: Math.floor(L / 6) }; };
 // where things are, relative to a singer at x facing f with its hip at hip
 const geo = (x, f, hip) => ({
-  sigil: [x + f * 50 * FS, hip - 86 * FS], sr: 20 * FS,           // the sigil hangs up and ahead, in the air
+  sigil: [x + f * 62 * FS, hip - 104 * FS], sr: 30 * FS,          // the sigil hangs up and ahead, in the air, clear of the head
   conduct: [x + f * 22 * FS, hip - 46 * FS], cr: 11 * FS,         // the hand conducts the same figure, small
   mouth: [x + f * 12 * FS, hip - 56 * FS],
   hold: [x, hip - 24 * FS],                                       // held at the chest once they face us, face clear
@@ -2983,8 +3014,10 @@ function singerMakes(ctx, t, phase, x, f, hip, kinds, hue) {
     const R = G.sr * (1 - 0.9 * E.in(fold)), spin = TAU * 0.6 * E.in(fold) * -f;
     const P2 = ([u, v]) => [G.sigil[0] + (u * Math.cos(spin) - v * Math.sin(spin)) * R, G.sigil[1] + (u * Math.sin(spin) + v * Math.cos(spin)) * R];
     const lo = Math.min(G.mouth[0], G.sigil[0]) - 44, hi = Math.max(G.mouth[0], G.sigil[0]) + 44;
-    markLayer(ctx, (lo + hi) / 2, (G.sigil[1] + G.mouth[1]) / 2, hi - lo, G.mouth[1] - G.sigil[1] + 96, (g) => {
-      paintLines(g, paths.map((p) => p.map(P2)), 2.6 * PS, MK.magenta, MK.yellow);
+    markLayer(ctx, (lo + hi) / 2, (G.sigil[1] + G.mouth[1]) / 2, hi - lo + 40, G.mouth[1] - G.sigil[1] + 130, (g) => {
+      // the circle bold, the figure inside it finer, so a solid's thirty edges still read as its shape
+      paintLines(g, paths.slice(0, 1).map((p) => p.map(P2)), 2.6 * PS, MK.magenta, MK.yellow);
+      paintLines(g, paths.slice(1).map((p) => p.map(P2)), 1.4 * PS, MK.magenta, MK.yellow);
       if (circleDone) for (let q = 0; q < 12; q++) { const a = q / 12 * TAU; paintLines(g, [[P2([Math.cos(a) * 1.14, Math.sin(a) * 1.14]), P2([Math.cos(a) * 1.34, Math.sin(a) * 1.34])]], 1.6 * PS, MK.cyan, MK.white); }
       // the sung glyphs: one leaves the mouth every 0.1 s and flies up into the sigil where it is being drawn
       for (let e = T.sing[0]; e < Math.min(c, T.sing[1]); e += 0.1) {
@@ -3053,7 +3086,7 @@ function scene() {
       S.add({ name: 'chorus', z: 978, render(ctx, t, env) { CHORUS.forEach(([x], i) => drawFigure(ctx, chorus[i], chorusPose(t, i, x), env)); } });
       S.add({ name: 'figures', z: 985, render(ctx, t, env) {
         drawFigure(ctx, tuner, { ...tunerPose(t), shift: loopBump(t, 4.6, 0.9), shiftKind: 'ico', shiftSpin: TAU * t / 2 }, env);
-        const x = 1700, kinds = ['tetra', 'ico'];
+        const x = 1700, kinds = ['ico', 'dodeca'];
         singerBurst(ctx, t, 0, x, -1, HIP);
         drawFigure(ctx, adept, singerPose(t, 0, x, -1, HIP, [[x + 7, GROUND], [x - 8, GROUND]], kinds, 10.7), env);
         singerMakes(ctx, t, 0, x, -1, HIP, kinds, 0);

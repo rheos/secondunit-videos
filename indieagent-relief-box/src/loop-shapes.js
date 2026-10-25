@@ -21,6 +21,20 @@ const SOLIDS = {
     f: [[0, 11, 5], [0, 5, 1], [0, 1, 7], [0, 7, 10], [0, 10, 11], [1, 5, 9], [5, 11, 4], [11, 10, 2], [10, 7, 6], [7, 1, 8], [3, 9, 4], [3, 4, 2], [3, 2, 6], [3, 6, 8], [3, 8, 9], [4, 9, 5], [2, 4, 11], [6, 2, 10], [8, 6, 7], [9, 8, 1]],
   },
 };
+// the dodecahedron, as the icosahedron's dual: one pentagonal face for each icosahedron corner, made of the five
+// dodecahedron corners nearest that direction, put in order round it
+{
+  const ip = 1 / phi, v = [];
+  for (const a of [-1, 1]) for (const b of [-1, 1]) for (const c of [-1, 1]) v.push([a, b, c]);
+  for (const a of [-1, 1]) for (const b of [-1, 1]) { v.push([0, a * ip, b * phi]); v.push([a * ip, b * phi, 0]); v.push([a * phi, 0, b * ip]); }
+  const V = v.map(norm), f = SOLIDS.ico.v.map((d) => {
+    const n = norm(d), near = V.map((p, i) => [p[0] * n[0] + p[1] * n[1] + p[2] * n[2], i]).sort((a, b) => b[0] - a[0]).slice(0, 5).map(([, i]) => i);
+    const ref = Math.abs(n[0]) < 0.9 ? [1, 0, 0] : [0, 1, 0];
+    const u = norm([n[1] * ref[2] - n[2] * ref[1], n[2] * ref[0] - n[0] * ref[2], n[0] * ref[1] - n[1] * ref[0]]), w = [n[1] * u[2] - n[2] * u[1], n[2] * u[0] - n[0] * u[2], n[0] * u[1] - n[1] * u[0]];
+    return near.sort((a, b) => Math.atan2(V[a][0] * w[0] + V[a][1] * w[1] + V[a][2] * w[2], V[a][0] * u[0] + V[a][1] * u[1] + V[a][2] * u[2]) - Math.atan2(V[b][0] * w[0] + V[b][1] * w[1] + V[b][2] * w[2], V[b][0] * u[0] + V[b][1] * u[1] + V[b][2] * u[2]));
+  });
+  SOLIDS.dodeca = { v: V, f };
+}
 // two interlocked tetrahedra
 SOLIDS.star = { v: [...SOLIDS.tetra.v, ...SOLIDS.tetra.v.map(([x, y, z]) => [-x, -y, -z])], f: [...SOLIDS.tetra.f, ...SOLIDS.tetra.f.map((f) => f.map((i) => i + 4))] };
 for (const S of Object.values(SOLIDS)) S.v = S.v.map(norm);
@@ -46,6 +60,19 @@ export function solidFaces(kind, ang) {
     return { f, n, z: m[2], lit: n[0] * L3[0] + n[1] * L3[1] + n[2] * L3[2] };
   }).filter((F) => F.n[2] > 0).sort((p, q) => p.z - q.z);
   return { V, faces };
+}
+
+// A solid's visible edges (those of the faces turned toward the viewer) seen from angle ang, flattened to unit
+// screen coordinates and ordered round the centre so a hand can trace them in a sweep: [[x0, y0], [x1, y1]] each.
+export function solidEdges(kind, ang) {
+  const { V, faces } = solidFaces(kind, ang), seen = new Set(), out = [];
+  for (const { f } of faces) for (let i = 0; i < f.length; i++) {
+    const a = f[i], b = f[(i + 1) % f.length], key = a < b ? `${a}-${b}` : `${b}-${a}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push({ e: [[V[a][0], V[a][1]], [V[b][0], V[b][1]]], z: (V[a][2] + V[b][2]) / 2, ang: Math.atan2((V[a][1] + V[b][1]) / 2, (V[a][0] + V[b][0]) / 2) });
+  }
+  return out.sort((p, q) => p.ang - q.ang).map((o) => o.e);
 }
 
 // Draw one solid. kind: tetra | octa | cube | ico | star | ring. r: radius in px. ang: [a, b, c] rotation.

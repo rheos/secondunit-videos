@@ -17,6 +17,7 @@ import { ISLAND } from './props.js';
 import { LOOP, cyc, addWorld, addNear } from './loop-world.js';
 import { CONSOLE, INSTR, knobAngle, leverAngle, sliderK, addMachines } from './loop-machine.js';
 import { makeFigure, drawFigure } from './loop-figures.js';
+import { solidEdges } from './loop-shapes.js';
 import { MK, MK_RAMP, PS, markLayer, paintMarkSolid, paintBurst, paintGlyph, paintLines } from './loop-mark.js';
 
 // the figures stand a little taller than draft 1's so their hands read, still small against the funnel
@@ -68,15 +69,18 @@ function tunerPose(t) {
 //   us, tilting it, a burst flaring behind it; 4.4-4.9 they let it go upward; 4.6-5.0 turn back; 5.0-6.0 bounce.
 const T = { sing: [0.3, 2.3], fold: [2.3, 2.8], turn: [2.8, 3.2], offer: [3.2, 4.4] };
 const poly = (n, rot = -Math.PI / 2, r = 1) => [...Array(n + 1)].map((_, i) => [Math.cos(rot + i / n * TAU) * r, Math.sin(rot + i / n * TAU) * r]);
-const star = (n, step) => [...Array(n + 1)].map((_, i) => { const a = -Math.PI / 2 + (i * step % n) / n * TAU; return [Math.cos(a) * 0.86, Math.sin(a) * 0.86]; });
+const SIGIL_VIEW = [0.42, 0.62, 0.18];
 const SIGILS = {
   tetra: [poly(48), poly(3, -Math.PI / 2, 0.86)],
-  ico: [poly(48), star(5, 2)],
+  // the five-fold solids are drawn as themselves: the circle, then every edge of the solid as seen from one angle
+  ico: [poly(48), ...solidEdges('ico', SIGIL_VIEW).map((e) => e.map(([u, v]) => [u * 0.86, v * 0.86]))],
+  dodeca: [poly(48), ...solidEdges('dodeca', SIGIL_VIEW).map((e) => e.map(([u, v]) => [u * 0.86, v * 0.86]))],
   star: [poly(48), poly(3, -Math.PI / 2, 0.86), poly(3, Math.PI / 2, 0.86)],
   octa: [poly(48), poly(4, -Math.PI / 2, 0.86), poly(48, -Math.PI / 2, 0.42)],
 };
 const slen = (pl) => pl.reduce((a, p, i) => i ? a + Math.hypot(p[0] - pl[i - 1][0], p[1] - pl[i - 1][1]) : 0, 0);
-const HOP = 0.4;
+// the pen lifts between strokes: a short hop, so a sigil of thirty edges still draws in one song
+const HOP = 0.12;
 // where the pen is after fraction k of the whole sigil (pen-up hops between strokes count as short moves)
 function sigilAt(kind, k) {
   const strokes = SIGILS[kind], lens = strokes.map(slen), total = lens.reduce((a, b) => a + b, 0) + HOP * (strokes.length - 1);
@@ -106,7 +110,7 @@ function sigilDrawn(kind, k) {
 const cycleOf = (t, phase) => { const L = mod(t - phase, LOOP); return { c: mod(L, 6), j: Math.floor(L / 6) }; };
 // where things are, relative to a singer at x facing f with its hip at hip
 const geo = (x, f, hip) => ({
-  sigil: [x + f * 50 * FS, hip - 86 * FS], sr: 20 * FS,           // the sigil hangs up and ahead, in the air
+  sigil: [x + f * 62 * FS, hip - 104 * FS], sr: 30 * FS,          // the sigil hangs up and ahead, in the air, clear of the head
   conduct: [x + f * 22 * FS, hip - 46 * FS], cr: 11 * FS,         // the hand conducts the same figure, small
   mouth: [x + f * 12 * FS, hip - 56 * FS],
   hold: [x, hip - 24 * FS],                                       // held at the chest once they face us, face clear
@@ -171,8 +175,10 @@ function singerMakes(ctx, t, phase, x, f, hip, kinds, hue) {
     const R = G.sr * (1 - 0.9 * E.in(fold)), spin = TAU * 0.6 * E.in(fold) * -f;
     const P2 = ([u, v]) => [G.sigil[0] + (u * Math.cos(spin) - v * Math.sin(spin)) * R, G.sigil[1] + (u * Math.sin(spin) + v * Math.cos(spin)) * R];
     const lo = Math.min(G.mouth[0], G.sigil[0]) - 44, hi = Math.max(G.mouth[0], G.sigil[0]) + 44;
-    markLayer(ctx, (lo + hi) / 2, (G.sigil[1] + G.mouth[1]) / 2, hi - lo, G.mouth[1] - G.sigil[1] + 96, (g) => {
-      paintLines(g, paths.map((p) => p.map(P2)), 2.6 * PS, MK.magenta, MK.yellow);
+    markLayer(ctx, (lo + hi) / 2, (G.sigil[1] + G.mouth[1]) / 2, hi - lo + 40, G.mouth[1] - G.sigil[1] + 130, (g) => {
+      // the circle bold, the figure inside it finer, so a solid's thirty edges still read as its shape
+      paintLines(g, paths.slice(0, 1).map((p) => p.map(P2)), 2.6 * PS, MK.magenta, MK.yellow);
+      paintLines(g, paths.slice(1).map((p) => p.map(P2)), 1.4 * PS, MK.magenta, MK.yellow);
       if (circleDone) for (let q = 0; q < 12; q++) { const a = q / 12 * TAU; paintLines(g, [[P2([Math.cos(a) * 1.14, Math.sin(a) * 1.14]), P2([Math.cos(a) * 1.34, Math.sin(a) * 1.34])]], 1.6 * PS, MK.cyan, MK.white); }
       // the sung glyphs: one leaves the mouth every 0.1 s and flies up into the sigil where it is being drawn
       for (let e = T.sing[0]; e < Math.min(c, T.sing[1]); e += 0.1) {
@@ -241,7 +247,7 @@ function scene() {
       S.add({ name: 'chorus', z: 978, render(ctx, t, env) { CHORUS.forEach(([x], i) => drawFigure(ctx, chorus[i], chorusPose(t, i, x), env)); } });
       S.add({ name: 'figures', z: 985, render(ctx, t, env) {
         drawFigure(ctx, tuner, { ...tunerPose(t), shift: loopBump(t, 4.6, 0.9), shiftKind: 'ico', shiftSpin: TAU * t / 2 }, env);
-        const x = 1700, kinds = ['tetra', 'ico'];
+        const x = 1700, kinds = ['ico', 'dodeca'];
         singerBurst(ctx, t, 0, x, -1, HIP);
         drawFigure(ctx, adept, singerPose(t, 0, x, -1, HIP, [[x + 7, GROUND], [x - 8, GROUND]], kinds, 10.7), env);
         singerMakes(ctx, t, 0, x, -1, HIP, kinds, 0);
