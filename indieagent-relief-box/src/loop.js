@@ -330,7 +330,9 @@ function scene() {
       // outward from their center, in a tighter cluster, like a mandala", then "move those shapes... over top of the
       // control panels"): eight half-size fans round one centre, their points facing in, each stacking outward along
       // its spoke, opening and folding in a wave that runs round
-      if (CHEV_RADIAL) S.add({ name: 'mandala', z: 989, anim: (t) => ({ y: 4 * cyc(t, 2, 0.3) }), render(ctx, t, env) { mirrored(ctx, () => {
+      // it floats, bobbing up and down over 6 s and swaying a little sideways on a 4 s beat (Robin: "float a bit,
+      // getting a bit higher and lower")
+      if (CHEV_RADIAL) S.add({ name: 'mandala', z: 989, anim: (t) => ({ y: 14 * cyc(t, 2, 0.3), x: 4 * Math.sin(TAU * t / 4) }), render(ctx, t, env) { mirrored(ctx, () => {
         const n = 8, mx = (PANEL.x0 + PANEL.x1) / 2, my = PANEL.y0 - 62;
         for (let i = 0; i < n; i++) { const a = i / n * TAU - Math.PI / 2; world.chevronFan(ctx, mx + Math.cos(a) * 24, my + Math.sin(a) * 24, a + Math.PI / 2, t, i / n, env, 1, 0.52); }
       }); } });
