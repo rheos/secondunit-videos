@@ -274,11 +274,12 @@ def events(cues):
             s = crush(tone(f, 0.05, 'tri', d=0.025), bits=6, hold=2)
             place(out, t, s, p, 0.10)
         elif k == 'chime':
-            pass    # the sigil's circle closing is sung now (voices())
+            place(out, t, bell(midi(tone_of(c['t'], 4, 1)), 1.6), p, 0.20)
         elif k == 'fold':
             place(out, t, crush(sweep(1800, 300, 0.45, 'square', d=0.3), bits=5, hold=3), p, 0.09)
         elif k == 'form':
             place(out, t, sweep(300, 900, 0.22, d=0.12), p, 0.18)
+            place(out, t + 0.02, bell(midi(tone_of(c['t'], 2, 2)), 1.0, ratio=2.0, index=1.2), p, 0.10)
         elif k == 'offer':
             n = int(SR * c.get('dur', 1.2))
             sw = sum(tone(midi(tone_of(c['t'], q, 1)), c.get('dur', 1.2), 'tri', a=0.5, d=0.9) for q in (0, 2, 3, 4))
@@ -302,9 +303,11 @@ def events(cues):
             # each elf its own chord tone; the high crossing a little brighter than the low
             place(out, t, tone(midi(tone_of(c['t'], 2 + c['n'], 1)), 0.05, 'tri', d=0.02), p, 0.045 if c.get('high') else 0.03)
         elif k == 'swap':
-            # the chorus changing places: the hop's air, and on a chord change the chord's root plucked low under
-            # it (the elf reaching the front is sung, in voices())
+            # the chorus changing places: the hop's air, an elf newly at the front sounding its own note of the
+            # chord, and on a chord change the chord's root plucked low under it
             place(out, t - 0.3, noise_sweep(0.35, 500, 2500, 0.05), 0.0)
+            if c.get('newFront', True):
+                place(out, t, bell(midi(tone_of(c['t'], c['n'] % 5, 2)), 1.1, ratio=2.0, index=1.0), 0.0, 0.13)
             if c.get('chord'):
                 place(out, t, pluck(midi(tone_of(c['t'], 0, 0)), 0.9), 0.0, 0.2)
         elif k == 'piston':
@@ -318,6 +321,7 @@ def events(cues):
             place(out, t, cfilter_short(click, 1500), p, 0.18)
             place(out, t + 0.09, cfilter_short(click, 900), p, 0.12)
         elif k == 'cube':
+            place(out, t, bell(midi(tone_of(c['t'], 3, 2)), 1.2, ratio=1.5), p, 0.12)
             place(out, t + 0.1, noise_sweep(0.8, 1000, 6000, 0.08), p)
     return out
 
@@ -332,7 +336,8 @@ def voices(cues):
     """the voice under the breath: one long-tailed syllable for each of a few picture events, never in bursts.
     "doiy" when the chorus trades places, "dee" when a sigil's circle closes and when a solid forms out of it, a
     low "doiy" for the released
-    cube (Robin: "every time an object appears or a gnome changes place"). Each is short, the event moment and its
+    cube (Robin: "every time an object appears or a gnome changes place"). They lie over the bells, which stay
+    (Robin: "we can still have some bell chime.. but i want those samples layed in too"). Each is short, the event moment and its
     ring, about a second; its own echo carries it out after that (Robin: "just a delay that carries it out")"""
     out = np.zeros((N, 2))
     pan = lambda x: float(np.clip((x - 960) / 960, -1, 1)) * 0.6
