@@ -18,6 +18,20 @@ const P = PAL;
 const TAU = Math.PI * 2;
 const circle = (cx, cy, r, n = 36) => [...Array(n)].map((_, i) => [cx + Math.cos(i / n * TAU) * r, cy + Math.sin(i / n * TAU) * r]);
 export const LOOP = 12;
+// a sprite as made, and again reflected in the centre line x = 960
+const pair = (sp) => [{ s: sp }, { s: sp, ax: 960, ay: 0, x: 960, y: 0, sx: -1, sy: 1 }];
+// a plane whose sprite crosses the centre line: the left half drawn as made and the right half reflected, each
+// clipped at the axis, so the two meet without the cut edge of either showing
+function addPair(S, name, z, sprite, shadow) {
+  const half = (ctx, right) => { const p = new Path2D(); p.rect(right ? 960 : -4000, -4000, 4000 + (right ? 0 : 960), 9000); ctx.save(); ctx.clip(p); };
+  return S.add({ name, z, render(ctx, t, env) {
+    const [a, b] = pair(sprite), sh = { ...env.shadow, ...shadow };
+    half(ctx, false); drawSprites(ctx, [a], sh); ctx.restore();
+    half(ctx, true); drawSprites(ctx, [b], sh); ctx.restore();
+  } });
+}
+// draw fn, then again reflected in the centre line
+const mirror = (ctx, fn) => { fn(); ctx.save(); ctx.translate(1920, 0); ctx.scale(-1, 1); fn(); ctx.restore(); };
 export const cyc = (t, n = 1, ph = 0) => Math.sin(TAU * (n * t / LOOP + ph));
 
 // a row of rounded clay mounds from x0 to x1, crowns around base, closed down to bottom; rolled trees on some
@@ -67,39 +81,42 @@ export function addWorld(S) {
   } });
 
   // the dome's floor: two rows of hills
-  S.plane(2400, { name: 'hills-mid', x: -700, y: 600, w: 3320, h: 700, draw: (g) => mounds(g, { x0: -700, x1: 2620, base: 880, amp: 50, bottom: 1300, colors: [P.blush, P.aqua], fade: 0.35, seed: 2 }) }, { shadow: { dx: 8, dy: 12, alpha: 0.3 } });
-  S.plane(1600, { name: 'hills-near', x: -600, y: 680, w: 3120, h: 700, draw: (g) => mounds(g, { x0: -600, x1: 2520, base: 930, amp: 42, bottom: 1350, colors: [P.pink, P.blush], fade: 0.15, seed: 3 }) }, { shadow: { dx: 9, dy: 14, alpha: 0.36 } });
+  // (each made for the left half and laid down again reflected, like everything off the centre line)
+  const hillsMid = sp('hills-mid', { x: -700, y: 600, w: 1760, h: 700 }, (g) => mounds(g, { x0: -700, x1: 1040, base: 880, amp: 50, bottom: 1300, colors: [P.blush, P.aqua], fade: 0.35, seed: 2 }));
+  addPair(S, 'hills-mid', 2400, hillsMid, { dx: 8, dy: 12, alpha: 0.3 });
+  const hillsNear = sp('hills-near', { x: -600, y: 680, w: 1660, h: 700 }, (g) => mounds(g, { x0: -600, x1: 1040, base: 930, amp: 42, bottom: 1350, colors: [P.pink, P.blush], fade: 0.15, seed: 3 }));
+  addPair(S, 'hills-near', 1600, hillsNear, { dx: 9, dy: 14, alpha: 0.36 });
 
   // the islands float in the middle distance
   const island = sp('island', { x: ISLAND.x - 200, y: ISLAND.y - 200, w: 400, h: 340 }, drawIsland, { res: 1.2 });
 
-  // a large tesseract hangs in the sky, turning through the fourth dimension once a loop: the world's anchor
+  // a pair of large tesseracts hangs either side of the lantern, turning through the fourth dimension once a loop,
+  // one the mirror of the other
   S.add({ name: 'tesseract', z: 2800, render(ctx, t) {
-    drawTesseract(ctx, 520, 250, 92, TAU * t / LOOP, TAU * 2 * t / LOOP, { outer: P.mint, inner: P.pink, glowK: 0.6 + 0.15 * cyc(t, 2) });
+    mirror(ctx, () => drawTesseract(ctx, 470, 240, 78, TAU * t / LOOP, TAU * 2 * t / LOOP, { outer: P.mint, inner: P.pink, glowK: 0.6 + 0.15 * cyc(t, 2) }));
   } });
 
   // floating geometry at many depths: baked stepped pendants and chevrons, and solids and small tesseracts drawn
   // turning each frame. Every one bobs on its own phase; rotations close within the loop.
   const frng = new RNG('floaters');
-  const spots = [[180, 160, 2600, 'pendant'], [880, 120, 1900, 'tess'], [700, 560, 3000, 'octa'], [1250, 120, 2100, 'chevron'], [1430, 420, 2700, 'tess'], [1820, 520, 1700, 'cube'],
-    [120, 560, 1500, 'ico'], [1720, 120, 1450, 'pendant'], [560, 640, 2800, 'chevron'], [1340, 600, 3200, 'star'], [1060, 470, 1500, 'tetra'], [2000, 220, 2400, 'tess'], [-60, 300, 2000, 'cube'], [1560, 660, 1300, 'octa']];
+  // the left half's floaters; each is drawn again reflected on the right
+  const spots = [[180, 150, 2600, 'pendant'], [820, 130, 1900, 'tess'], [700, 560, 3000, 'octa'], [120, 560, 1500, 'ico'], [560, 640, 2800, 'chevron'],
+    [880, 520, 1500, 'tetra'], [-60, 300, 2000, 'cube'], [300, 380, 2400, 'star'], [640, 420, 1700, 'chevron']];
   const COLS = [P.mint, P.pink, P.butter, P.lilac, P.aqua];
   spots.forEach(([x, y, z, kind], i) => {
-    const bob = (t) => ({ y: 10 * cyc(t, 1, i * 0.17), rot: 0.08 * cyc(t, 1, i * 0.31 + 0.2), ox: x, oy: y });
     if (kind === 'pendant' || kind === 'chevron') {
       const s = sp(`float-${i}`, { x: x - 70, y: y - 60, w: 140, h: 130 }, (g) => floater(g, kind, x, y, 1, frng), { res: 1.3, shadow: { blur: 12 } });
-      S.add({ name: `float-${i}`, z, shadow: { dx: 10, dy: 18, alpha: 0.22 }, sprites: [{ s }], anim: bob });
+      S.add({ name: `float-${i}`, z, shadow: { dx: 10, dy: 18, alpha: 0.22 }, sprites: pair(s), anim: (t) => ({ y: 10 * cyc(t, 1, i * 0.17) }) });
     } else if (kind === 'tess') {
-      S.add({ name: `float-${i}`, z, anim: (t) => ({ y: 10 * cyc(t, 1, i * 0.17) }), render(ctx, t) { drawTesseract(ctx, x, y, 22, TAU * (i % 2 ? 2 : -1) * t / LOOP, TAU * t / LOOP + i, { outer: COLS[i % 5], inner: COLS[(i + 2) % 5] }); } });
+      S.add({ name: `float-${i}`, z, anim: (t) => ({ y: 10 * cyc(t, 1, i * 0.17) }), render(ctx, t) { mirror(ctx, () => drawTesseract(ctx, x, y, 22, TAU * (i % 2 ? 2 : -1) * t / LOOP, TAU * t / LOOP + i, { outer: COLS[i % 5], inner: COLS[(i + 2) % 5] })); } });
     } else {
-      S.add({ name: `float-${i}`, z, anim: (t) => ({ y: 10 * cyc(t, 1, i * 0.17) }), render(ctx, t) { drawSolid(ctx, kind, x, y, 20, [TAU * t / LOOP * (1 + i % 3), TAU * 2 * t / LOOP, i], COLS[i % 5]); } });
+      S.add({ name: `float-${i}`, z, anim: (t) => ({ y: 10 * cyc(t, 1, i * 0.17) }), render(ctx, t) { mirror(ctx, () => drawSolid(ctx, kind, x, y, 20, [TAU * t / LOOP * (1 + i % 3), TAU * 2 * t / LOOP, i], COLS[i % 5])); } });
     }
   });
 
   // the terrace the machine stands on: a band of broad clay mounds, and the ground line at y 985
-  S.plane(1080, { name: 'terrace', x: -500, y: 860, w: 2920, h: 560, res: 1.1, draw(g) {
-    mounds(g, { x0: -500, x1: 2420, base: 1000, amp: 30, bottom: 1420, colors: [mix(P.pink, P.butter, 0.4), mix(P.blush, P.butter, 0.3)], fade: 0.05, seed: 4, trees: 0 });
-  } }, { shadow: { dx: 8, dy: 14, alpha: 0.38 } });
+  const terrace = sp('terrace', { x: -500, y: 860, w: 1560, h: 560, res: 1.1 }, (g) => mounds(g, { x0: -500, x1: 1040, base: 1000, amp: 30, bottom: 1420, colors: [mix(P.pink, P.butter, 0.4), mix(P.blush, P.butter, 0.3)], fade: 0.05, seed: 4, trees: 0 }));
+  addPair(S, 'terrace', 1080, terrace, { dx: 8, dy: 14, alpha: 0.38 });
 
   return { island };
 }
@@ -108,23 +125,22 @@ export function addWorld(S) {
 export function addNear(S) {
   const sp = (name, box, draw, o = {}) => S.sprite({ name, ...box, res: o.res ?? 1.1, mat: CLAY_MAT, edge: CLAY_EDGE, shadow: { blur: 22 }, draw });
   const rng = new RNG('near');
-  const near = sp('near', { x: -600, y: 880, w: 3120, h: 560 }, (g) => {
+  const near = sp('near', { x: -600, y: 880, w: 1300, h: 560 }, (g) => {
     mounds(g, { x0: -600, x1: 400, base: 1070, amp: 70, bottom: 1440, colors: [P.pinkDeep, P.pink], fade: 0, seed: 5, trees: 0 });
-    mounds(g, { x0: 1560, x1: 2520, base: 1080, amp: 60, bottom: 1440, colors: [P.pink, P.pinkDeep], fade: 0, seed: 6, trees: 0 });
-    for (const [cx, cy, n] of [[120, 1010, 22], [260, 1040, 14], [1720, 1020, 18]]) for (let i = 0; i < n; i++) {
+    for (const [cx, cy, n] of [[120, 1010, 22], [260, 1040, 14]]) for (let i = 0; i < n; i++) {
       const a = rng.next() * TAU, d = Math.sqrt(rng.next()) * 60;
       curl(g, cx + Math.cos(a) * d, cy + Math.sin(a) * d * 0.7, rng.range(9, 15), rng.range(1.2, 1.8), vary('#7d8597', rng, 0.08));
     }
-    for (const [x, y, r, c] of [[1860, 990, 46, P.slate], [1950, 1030, 40, P.mintDeep], [-20, 990, 44, P.slateDeep]]) rosette(g, x, y, r, c, rng);
+    for (const [x, y, r, c] of [[-20, 990, 44, P.slateDeep], [60, 1030, 40, P.mintDeep]]) rosette(g, x, y, r, c, rng);
   });
-  S.add({ name: 'near', z: 760, shadow: { dx: 12, dy: 20, alpha: 0.45 }, sprites: [{ s: near }] });
-  const lens = sp('lens', { x: -500, y: 820, w: 2920, h: 560 }, (g) => {
-    for (const [x, y, r, c] of [[-120, 1080, 120, P.slate], [40, 1150, 90, P.mintDeep], [2060, 1100, 110, P.slateDeep], [1930, 1170, 80, mix(P.slate, P.lilac, 0.4)]]) rosette(g, x, y, r, c, rng);
+  S.add({ name: 'near', z: 760, shadow: { dx: 12, dy: 20, alpha: 0.45 }, sprites: pair(near) });
+  const lens = sp('lens', { x: -500, y: 820, w: 1460, h: 560 }, (g) => {
+    for (const [x, y, r, c] of [[-120, 1080, 120, P.slate], [40, 1150, 90, P.mintDeep]]) rosette(g, x, y, r, c, rng);
     for (let i = 0; i < 40; i++) {
       const a = -Math.PI * 0.55 + rng.range(-0.4, 0.4), len = rng.range(110, 210), x = 240 + rng.range(-40, 60), y = 1140 + rng.range(-20, 20);
       clayForm(g, transform([[-8, 0], [-5, -len * 0.6], [0, -len], [5, -len * 0.6], [8, 0]], { x, y, rot: a + Math.PI / 2 }), vary(mix(P.blush, '#fff2ee', rng.next() * 0.6), rng, 0.05), { size: 16, sheen: 0.1 });
     }
   });
-  S.add({ name: 'lens', z: 520, shadow: { dx: 14, dy: 24, alpha: 0.45 }, sprites: [{ s: lens }] });
+  S.add({ name: 'lens', z: 520, shadow: { dx: 14, dy: 24, alpha: 0.45 }, sprites: pair(lens) });
 }
 

@@ -1,4 +1,4 @@
-// The living loop (draft 6): a seamless 12 s loop at 24 fps in the approved relief-box clay language, inside a
+// The living loop (draft 8, symmetric about the centre line): a seamless 12 s loop at 24 fps in the approved relief-box clay language, inside a
 // turning honeycomb dome. This is Robin's memory of the machine-elf space (research notes: RESEARCH-machine-elves.md).
 // In the middle a faceted funnel feeds itself through a ringed pipe that swells as things pass. Around it small clay
 // elves at play-work: one plays a console, one tunes a ring instrument, two sing shapes into being (a stream of
@@ -15,7 +15,7 @@ import { E, lerp, smoothstep } from '../vendor/paper-fox/core/ease.js';
 import { LIGHT, PAL } from './kit.js';
 import { ISLAND } from './props.js';
 import { LOOP, cyc, addWorld, addNear } from './loop-world.js';
-import { CONSOLE, INSTR, knobAngle, leverAngle, sliderK, addMachines } from './loop-machine.js';
+import { CONSOLE, INSTR, knobAngle, leverAngle, sliderK, addMachines, mirrored } from './loop-machine.js';
 import { makeFigure, drawFigure } from './loop-figures.js';
 import { solidEdges } from './loop-shapes.js';
 import { MK, MK_RAMP, PS, markLayer, paintMarkSolid, paintBurst, paintGlyph, paintLines } from './loop-mark.js';
@@ -51,7 +51,7 @@ function operatorPose(t) {
 
 // ---------------- the tuner at the ring instrument; every 6 s turns to us and beckons ----------------
 function tunerPose(t) {
-  const x = 1404, [a, b] = INSTR.slider, sl = [lerp(a[0], b[0], sliderK(t)), a[1] - 2];
+  const x = INSTR.x - 66, [a, b] = INSTR.slider, sl = [lerp(a[0], b[0], sliderK(t)), a[1] - 2];
   const beckon = bump(mod(t, 6), 1.2, 2.6);
   if (beckon > 0) {
     const k = Math.min(1, beckon * 2.5), curl = Math.sin(TAU * 3 * mod(t, 6));
@@ -201,7 +201,8 @@ function singerMakes(ctx, t, phase, x, f, hip, kinds, hue) {
 }
 
 // ---------------- the chorus at the funnel's foot: bounce, cheer each offering, pop into solids ----------------
-const CHORUS = [[722, 'bells', P.mint], [792, P.butter, P.pink], [862, 'pom', P.lilac], [1018, P.pink, P.aqua], [1088, 'bells', P.butter], [1158, P.mint, P.blush]];
+// the left half of the chorus, innermost first; the right half is its reflection. The wave runs outward from the middle.
+const CHORUS = [[892, 'bells', P.mint], [822, P.butter, P.pink], [752, 'pom', P.lilac]];
 // the offerings the chorus cheers: the adept's at 3.2 and 9.2, the seer's at 6.2 and 0.2 (each about 1.2 s)
 const cheerAt = (t) => Math.max(...[3.2, 9.2, 6.2, 0.2].map((a) => loopBump(t, a - 0.1, 1.4)));
 // the arms swing in opposition, one up while the other is down, crossing in front of the chest as they swap
@@ -218,7 +219,7 @@ function chorusPose(t, i, x) {
   const up = (q) => (q > 0 ? 46 : 24) * q;                               // high overhead at the top, at the hip at the bottom
   const lead = [x - 24 * k * sw * amp, mid - up(sw) * k * amp - bow];    // passes just above the other at the cross
   const other = [x + 24 * k * sw * amp, mid + up(-sw) * k * amp * -1 + bow];
-  return { hip: [x, hip - b], feet: [[x - 7 * k, GROUND - b * 0.6], [x + 7 * k, GROUND - b * 0.6]], facing: i % 2 ? 1 : -1, scale: k, turn: 0.85, lean: 0,
+  return { hip: [x, hip - b], feet: [[x - 7 * k, GROUND - b * 0.6], [x + 7 * k, GROUND - b * 0.6]], facing: 1, scale: k, turn: 0.85, lean: 0,
     hands: [lead, other].map((h) => [h[0], h[1] - b]), headTilt: 0, armsFront: true,
     shift: loopBump(t, 1.1 + i * 1.9, 0.9), shiftKind: ['ico', 'cube', 'octa'][i % 3], shiftSpin: TAU * t / 2 };
 }
@@ -231,7 +232,8 @@ function scene() {
     light: LIGHT,
     shadow: { alpha: 0.42, dist: 10, blur: 16 },
     post: { bloom: 0.22, threshold: 0.74, bloomRadius: 1.4, vignette: 0.16, grain: 0.035, grade: { color: '#ffd8b4', amount: 0.08, mode: 'soft-light' } },
-    camera: (t) => ({ x: 50 * cyc(t, 1), y: 6 * cyc(t, 1, 0.21), z: 30 + 20 * cyc(t, 1, 0.1), roll: 0.0012 * cyc(t, 1, 0.4) }),
+    // on the centre line, breathing in and out, so the symmetry holds
+    camera: (t) => ({ x: 0, y: 6 * cyc(t, 1, 0.21), z: 30 + 24 * cyc(t, 1, 0.1), roll: 0 }),
     build(S) {
       const world = addWorld(S);
       addMachines(S);
@@ -243,25 +245,26 @@ function scene() {
       const chorus = CHORUS.map(([, cap, col], i) => makeFigure(S, { name: `chorus-${i}`, color: col, cap, harlequin: cap === 'bells' ? P.pinkDeep : null }));
 
       // the operator stands behind the console, so it draws before the desk
-      S.add({ name: 'operator', z: 995, render(ctx, t, env) { drawFigure(ctx, operator, { ...operatorPose(t), shift: loopBump(t, 7.3, 0.9), shiftKind: 'cube', shiftSpin: TAU * t / 2 }, env); } });
-      S.add({ name: 'chorus', z: 978, render(ctx, t, env) { CHORUS.forEach(([x], i) => drawFigure(ctx, chorus[i], chorusPose(t, i, x), env)); } });
-      S.add({ name: 'figures', z: 985, render(ctx, t, env) {
+      // every figure off the centre line is drawn for the left half and again reflected: twins in mirror unison
+      S.add({ name: 'operator', z: 995, render(ctx, t, env) { mirrored(ctx, () => drawFigure(ctx, operator, { ...operatorPose(t), shift: loopBump(t, 7.3, 0.9), shiftKind: 'cube', shiftSpin: TAU * t / 2 }, env)); } });
+      S.add({ name: 'chorus', z: 978, render(ctx, t, env) { mirrored(ctx, () => CHORUS.forEach(([x], i) => drawFigure(ctx, chorus[i], chorusPose(t, i, x), env))); } });
+      S.add({ name: 'figures', z: 985, render(ctx, t, env) { mirrored(ctx, () => {
         drawFigure(ctx, tuner, { ...tunerPose(t), shift: loopBump(t, 4.6, 0.9), shiftKind: 'ico', shiftSpin: TAU * t / 2 }, env);
-        const x = 1700, kinds = ['ico', 'dodeca'];
-        singerBurst(ctx, t, 0, x, -1, HIP);
-        drawFigure(ctx, adept, singerPose(t, 0, x, -1, HIP, [[x + 7, GROUND], [x - 8, GROUND]], kinds, 10.7), env);
-        singerMakes(ctx, t, 0, x, -1, HIP, kinds, 0);
-      } });
+        const x = 170, kinds = ['ico', 'dodeca'];
+        singerBurst(ctx, t, 0, x, 1, HIP);
+        drawFigure(ctx, adept, singerPose(t, 0, x, 1, HIP, [[x - 7, GROUND], [x + 8, GROUND]], kinds, 10.7), env);
+        singerMakes(ctx, t, 0, x, 1, HIP, kinds, 0);
+      }); } });
 
       // the seer sits on the floating island, singing the same song three seconds behind the adept
       const IX = -120, IY = 90;
-      S.add({ name: 'island', z: 1500, shadow: { dx: 10, dy: 22, alpha: 0.32 }, anim: (t) => ({ y: 8 * cyc(t, 1, 0.55), rot: 0.008 * cyc(t, 1, 0.8), ox: ISLAND.x + IX, oy: ISLAND.y + IY }), render(ctx, t, env) {
+      S.add({ name: 'island', z: 1500, shadow: { dx: 10, dy: 22, alpha: 0.32 }, anim: (t) => ({ y: 8 * cyc(t, 1, 0.55) }), render(ctx, t, env) { mirrored(ctx, () => {
         drawSprites(ctx, [{ s: world.island, ax: ISLAND.x, ay: ISLAND.y, x: ISLAND.x + IX, y: ISLAND.y + IY }], env.shadow);
         const ground = ISLAND.y - 4 + IY, x = 300, hip = ground - 14 * FS, kinds = ['star', 'octa'];
         singerBurst(ctx, t, 3, x, 1, hip);
         drawFigure(ctx, seer, singerPose(t, 3, x, 1, hip, [[x + 16, ground + 4], [x + 22, ground + 6]], kinds, 1.6), env);
         singerMakes(ctx, t, 3, x, 1, hip, kinds, 4);
-      } });
+      }); } });
     },
   });
 }

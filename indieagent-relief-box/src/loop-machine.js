@@ -1,13 +1,16 @@
-// The living loop, the machines (draft 2). All timing is periodic in LOOP (12 s) so the film loops without a seam.
+// The living loop, the machines (draft 8, symmetric). All timing is periodic in LOOP (12 s) so the film loops
+// without a seam. The picture is built about a centre line at x = 960: everything off the axis is made for the left
+// half and drawn again mirrored (mirrored()), so the right half is its exact reflection, moving in mirror unison.
 //
-//   the funnel     one faceted octagonal funnel that feeds itself: what gathers in the top swirls down; it leaves by
-//                  a thick pipe at the bottom that turns square corners (right, up past the lip, left, down) and
-//                  drops back in. Eight small solids go round it for ever (a lap every 6 s); inside the pipe they are
-//                  not seen, the pipe itself swells in a bulge that travels along it. The funnel glows faintly inside.
-//   the console    a desk of knobs, a lever, a row of lights and a round screen with a turning shape; a cable from
-//                  it droops across to the duct's elbow.
-//   the instrument three nested rings turning on different axes above a stepped plinth, a small solid hovering
-//                  over them; once a loop it lets a cube go.
+//   the funnel     one faceted octagonal funnel on the axis that feeds itself from both sides: what gathers in the
+//                  top swirls down; a stem leaves the bottom and splits into two pipes that turn square corners (out,
+//                  up past the lip, in, down) and drop back into the mouth. Eight small solids go round for ever (a lap
+//                  every 6 s), turn and turn about down the left and right pipes; inside a pipe the pipe itself swells
+//                  in a bulge that travels along it. The funnel glows faintly inside.
+//   the consoles   a desk of knobs, a lever, a row of lights and a round screen with a turning shape; a cable from
+//                  it droops across to the pipe. One each side.
+//   the instruments three nested rings turning on different axes above a stepped plinth, a small solid hovering
+//                  over them; once a loop each lets a cube go. One each side.
 
 import { radial, glow } from '../vendor/paper-fox/core/piece.js';
 import { mix, shade, rgba } from '../vendor/paper-fox/core/color.js';
@@ -22,13 +25,16 @@ import { MK, MK_RAMP, markLayer, paintMarkSolid, paintBurst, paintGlyph } from '
 const P = PAL, TAU = Math.PI * 2;
 const circle = (cx, cy, r, n = 36) => [...Array(n)].map((_, i) => [cx + Math.cos(i / n * TAU) * r, cy + Math.sin(i / n * TAU) * r]);
 const mod = (x, m) => ((x % m) + m) % m;
+// draw fn, then again reflected in the centre line
+export const AXIS = 960;
+export function mirrored(ctx, fn) { fn(); ctx.save(); ctx.translate(2 * AXIS, 0); ctx.scale(-1, 1); fn(); ctx.restore(); }
 const plen = (pts) => pts.reduce((a, p, i) => i ? a + Math.hypot(p[0] - pts[i - 1][0], p[1] - pts[i - 1][1]) : 0, 0);
 
 // ---------------- the funnel ----------------
 // An octagonal funnel cut in flat clay facets, each facet lit by how it turns to the light, with a collar at the
 // rim and a band at the throat. The pipe is a thick rolled tube that runs straight and turns square corners with a
-// small round fillet: down, right, up past the lip, left, down into the mouth.
-export const RIM = { x: 880, y: 372, rx: 190, ry: 46 };
+// small round fillet. DUCT is the left pipe: down from the throat, out, up past the lip, in, down into the mouth.
+export const RIM = { x: AXIS, y: 372, rx: 190, ry: 46 };
 const THROAT = { y: 642, rx: 26, ry: 6 }, SIDES = 8;
 const FILLET = 34;
 // a polyline through waypoints whose corners are rounded with a fillet of radius rc and straight between
@@ -48,7 +54,7 @@ function squarePath(way, rc = FILLET, step = 6) {
   for (let i = 1; i < out.length; i++) { const [p, q] = [out[i - 1], out[i]], n = Math.max(1, Math.ceil(Math.hypot(q[0] - p[0], q[1] - p[1]) / step)); for (let k = 1; k <= n; k++) res.push([p[0] + (q[0] - p[0]) * k / n, p[1] + (q[1] - p[1]) * k / n]); }
   return res;
 }
-export const DUCT = { w: 23, path: squarePath([[880, 640], [880, 800], [1226, 800], [1226, 226], [904, 226], [904, 300]]) };
+export const DUCT = { w: 23, path: squarePath([[AXIS, 640], [AXIS, 800], [AXIS - 266, 800], [AXIS - 266, 226], [AXIS - 56, 226], [AXIS - 56, 300]]) };
 const DUCT_LEN = plen(DUCT.path);
 // arc length at each point of the pipe, and the colour rings along it (mint is the pipe itself; butter and pink
 // rings are laid over it, every third ring each)
@@ -91,14 +97,15 @@ const rimV = (k) => ring(RIM.y, RIM.rx, RIM.ry, k), thrV = (k) => ring(THROAT.y,
 // facet tone: the facet's outward direction in plan is the angle of its middle; light comes from the upper left
 const facetTone = (k, base) => { const a = (k + 1) / SIDES * TAU, lit = -Math.cos(a) * 0.46 + Math.sin(a) * 0.2; return lit > 0 ? mix(base, '#fffaf0', lit * 0.5) : shade(base, lit * 0.32); };
 
-function drawFunnelBack(g) {
-  // the pipe first: it passes behind the funnel on its way round
+function drawPipe(g) {
   tube(g, DUCT.path, DUCT.w, P.mint);
   // rings of colour along the pipe: the whole pipe is shaded once per colour and clipped to that colour's rings, so
   // the shading runs smoothly through every ring
   for (let c = 1; c < 3; c++) { g.save(); g.clip(ringClip(c, DUCT.w + 6)); tube(g, DUCT.path, DUCT.w, RING_COLS[c], { shadow: false }); g.restore(); }
   // the spout: a square collar at the pipe's end
   clayForm(g, [[SPOUT[0] - 30, SPOUT[1] - 6], [SPOUT[0] + 30, SPOUT[1] - 6], [SPOUT[0] + 26, SPOUT[1] + 10], [SPOUT[0] - 26, SPOUT[1] + 10]], shade(P.mint, 0.12), { smooth: false, size: 14, sheen: 0.2 });
+}
+function drawFunnelBack(g) {
   // the funnel's front facets (the ones turned toward us), each a flat cut of clay
   for (let k = 0; k < SIDES; k++) {
     const mid = (k + 1) / SIDES * TAU;
@@ -136,12 +143,12 @@ function drawConsole(g) {
   for (const [x, y] of CONSOLE.knobs) clayForm(g, circle(x, y, 8, 24), P.butter, { sheen: 0.3 });
   tube(g, [[CONSOLE.lever[0] - 8, CONSOLE.lever[1]], [CONSOLE.lever[0] + 8, CONSOLE.lever[1]]], 4, P.slateDeep);
   const cable = [];
-  for (let i = 0; i <= 20; i++) { const u = i / 20; cable.push([lerp(636, 872, u), lerp(930, 786, u) + 70 * Math.sin(Math.PI * u)]); }
+  for (let i = 0; i <= 20; i++) { const u = i / 20; cable.push([lerp(636, AXIS - 150, u), lerp(930, 788, u) + 60 * Math.sin(Math.PI * u)]); }
   tube(g, cable, 4, P.lilac);
 }
 
 // ---------------- the instrument ----------------
-export const INSTR = { x: 1470, ringY: 800, slider: [[1430, 942], [1470, 942]] };
+export const INSTR = { x: 384, ringY: 800, slider: [[344, 942], [384, 942]] };
 function drawInstrumentBase(g) {
   steps(g, INSTR.x, 985, { n: 4, w0: 110, w1: 54, h: 13, gap: 1, colors: [P.slateDeep, P.slate, P.lilac] });
   tube(g, [[INSTR.x, 935], [INSTR.x, INSTR.ringY + 6]], 5, P.slate);
@@ -155,17 +162,19 @@ export const sliderK = (t) => 0.5 + 0.45 * Math.sin(TAU * t / 4);
 
 export function addMachines(S) {
   const sp = (name, box, draw, o = {}) => S.sprite({ name, ...box, res: o.res ?? 1.25, mat: CLAY_MAT, edge: CLAY_EDGE, shadow: { blur: o.blur ?? 18 }, draw });
-  const back = sp('funnel', { x: 640, y: 160, w: 660, h: 700 }, drawFunnelBack, { blur: 22 });
-  const front = sp('funnel-lip', { x: 670, y: 310, w: 420, h: 130 }, drawFunnelFront, { blur: 10 });
+  const pipe = sp('pipe', { x: AXIS - 330, y: 170, w: 360, h: 690 }, drawPipe, { blur: 18 });
+  const back = sp('funnel', { x: AXIS - 230, y: 300, w: 460, h: 400 }, drawFunnelBack, { blur: 22 });
+  const front = sp('funnel-lip', { x: AXIS - 220, y: 310, w: 440, h: 130 }, drawFunnelFront, { blur: 10 });
   const clips = [null, ringClip(1, DUCT.w * (1 + BULGE.amp) + 8), ringClip(2, DUCT.w * (1 + BULGE.amp) + 8)];
-  const consoleS = sp('console', { x: 470, y: 760, w: 430, h: 240 }, drawConsole);
-  const instr = sp('instrument', { x: 1390, y: 780, w: 160, h: 220 }, drawInstrumentBase);
+  const consoleS = sp('console', { x: 470, y: 760, w: 380, h: 240 }, drawConsole);
+  const instr = sp('instrument', { x: INSTR.x - 80, y: 780, w: 160, h: 220 }, drawInstrumentBase);
 
   // the funnel: small solids swirl down the mouth, swell along the pipe as it carries them, and drop from the spout
   const KINDS = ['octa', 'cube', 'tetra', 'ico'], COLS = [P.pink, P.butter, P.lilac, P.aqua, P.mint, P.pinkDeep, P.blush, P.butterDeep];
   S.add({ name: 'funnel', z: 1000, shadow: { dx: 10, dy: 18, alpha: 0.4 }, anim: (t) => ({ sx: 1 + 0.006 * cyc(t, 2), sy: 1 + 0.006 * cyc(t, 2), ox: RIM.x, oy: 520 }), render(ctx, t, env) {
+    mirrored(ctx, () => drawSprites(ctx, [{ s: pipe }], env.shadow));
     drawSprites(ctx, [{ s: back }], env.shadow);
-    const swell = [], late = [];   // swell: [arc length, strength] of each bulge in the pipe
+    const swell = [], late = [];   // swell: [arc length, strength, right side?] of each bulge in a pipe
     const pulse = 0.5 + 0.5 * Math.cos(TAU * mod(t, 0.75) / 0.75);
     ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, RIM.x, RIM.y + 6, 150, '#ffd9b0', 0.14 + 0.06 * pulse); ctx.restore();
     // inside the mouth is Mark's world: deep blue going to black, zigzag rings turning, a burst at the throat, and the
@@ -197,20 +206,25 @@ export function addMachines(S) {
       if (u < 1.6) continue;                               // inside the mouth: drawn in Mark's world above
       else if (u >= 2.2 && u < 5.4) {                    // carried round the pipe
         const s = DUCT_LEN * (u - 2.2) / 3.2;
-        swell.push([s, smoothstep(30, 70, s) * smoothstep(DUCT_LEN - 20, DUCT_LEN - 60, s)]);
+        swell.push([s, smoothstep(30, 70, s) * smoothstep(DUCT_LEN - 20, DUCT_LEN - 60, s), n % 2]);   // odd ones take the right pipe
       } else if (u >= 5.4) {                               // dropping from the spout into the mouth
         const k = (u - 5.4) / 0.6;
-        const x = lerp(SPOUT[0], RIM.x + 10, k), y = lerp(SPOUT[1] + 18, RIM.y + 10, E.in(k));
+        const right = n % 2, sx = right ? 2 * AXIS - SPOUT[0] : SPOUT[0];
+        const x = lerp(sx, RIM.x + (right ? 10 : -10), k), y = lerp(SPOUT[1] + 18, RIM.y + 10, E.in(k));
         late.push(() => markLayer(ctx, x, y, 34, 34, (g) => paintMarkSolid(g, kind, x, y, 9, ang, n)));
       }
     }
     drawSprites(ctx, [{ s: front }], { ...env.shadow, dx: 3, dy: 5 });
-    for (const [s0, amp] of swell) if (amp > 0.01) drawBulge(ctx, s0, amp, clips);   // the pipe swells as each one passes
+    // the pipe swells as each one passes; a right-side one is drawn reflected
+    for (const [s0, amp, right] of swell) if (amp > 0.01) {
+      if (!right) drawBulge(ctx, s0, amp, clips);
+      else { ctx.save(); ctx.translate(2 * AXIS, 0); ctx.scale(-1, 1); drawBulge(ctx, s0, amp, clips); ctx.restore(); }
+    }
     for (const f of late) f();
   } });
 
   // the console: lights in a slow pattern, the knobs' marks, the lever, and a turning shape on the screen
-  S.add({ name: 'console', z: 990, shadow: { dx: 8, dy: 14, alpha: 0.42 }, render(ctx, t, env) {
+  S.add({ name: 'console', z: 990, shadow: { dx: 8, dy: 14, alpha: 0.42 }, render(ctx, t, env) { mirrored(ctx, () => {
     drawSprites(ctx, [{ s: consoleS }], env.shadow);
     CONSOLE.lights.forEach(([x, y], i) => {
       const on = 0.5 + 0.5 * Math.sin(TAU * (t / 3 + i / 6));
@@ -232,10 +246,10 @@ export function addMachines(S) {
       paintGlyph(g, Math.floor(mod(t, 3) * 2) % 6, sx, sy + 9, 7, MK_RAMP[Math.floor(mod(t, 3) * 2) % 8]);
       paintMarkSolid(g, 'octa', sx, sy - 4, 7, [TAU * t / 6, TAU * t / 12, 0.3], 2);
     });
-  } });
+  }); } });
 
   // the instrument: three rings turning on their own axes, a hovering solid, and once a loop a cube let go
-  S.add({ name: 'instrument', z: 990, shadow: { dx: 8, dy: 14, alpha: 0.42 }, render(ctx, t, env) {
+  S.add({ name: 'instrument', z: 990, shadow: { dx: 8, dy: 14, alpha: 0.42 }, render(ctx, t, env) { mirrored(ctx, () => {
     drawSprites(ctx, [{ s: instr }], env.shadow);
     const [a, b] = INSTR.slider, k = sliderK(t);
     ctx.fillStyle = P.butter; ctx.beginPath(); ctx.roundRect(lerp(a[0], b[0], k) - 5, a[1] - 7, 10, 14, 3); ctx.fill();
@@ -256,5 +270,5 @@ export function addMachines(S) {
       const grow = smoothstep(0, 0.8, u), f = smoothstep(0.8, 10.5, u);
       drawSolid(ctx, 'cube', cx - 60 * f - 40 * Math.sin(f * 3), cy - 60 * grow - 560 * E.outSoft(f), 13 * grow * (1 - 0.45 * f), [TAU * t / 6, TAU * t / 4, 0.4], P.aqua, { glowK: 1 - smoothstep(0.8, 2.5, u), alpha: 1 - smoothstep(0.82, 1, f) });
     }
-  } });
+  }); } });
 }
