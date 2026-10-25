@@ -92,7 +92,10 @@ const SIGILS = {
   // the five-fold solids are drawn as themselves: the circle, then every edge of the solid as seen from one angle
   ico: [poly(48), ...solidEdges('ico', SIGIL_VIEW).map((e) => e.map(([u, v]) => [u * 0.86, v * 0.86]))],
   dodeca: [poly(48), ...solidEdges('dodeca', SIGIL_VIEW).map((e) => e.map(([u, v]) => [u * 0.86, v * 0.86]))],
-  star: [poly(48), poly(3, -Math.PI / 2, 0.86), poly(3, Math.PI / 2, 0.86)],
+  // the star tetrahedron as itself too, seen from the same oblique angle (never the flat two-triangle star: Robin,
+  // no Star of David and no pentagram or pentacle anywhere)
+  // (from near a cube face: from most angles its outline still reads as a six-pointed star, from here it doesn't)
+  star: [poly(48), ...solidEdges('star', [0.3, 0.2, 0]).map((e) => e.map(([u, v]) => [u * 0.86, v * 0.86]))],
   octa: [poly(48), poly(4, -Math.PI / 2, 0.86), poly(48, -Math.PI / 2, 0.42)],
 };
 const slen = (pl) => pl.reduce((a, p, i) => i ? a + Math.hypot(p[0] - pl[i - 1][0], p[1] - pl[i - 1][1]) : 0, 0);
