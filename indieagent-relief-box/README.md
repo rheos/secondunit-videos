@@ -160,7 +160,8 @@ node tools/bundle.mjs src/loop.js build/loop.js && node tools/cues.mjs         #
   sigil circles closing, folds, solids forming, offerings, releases, drops into the funnel, pipe bulges, chorus
   scissor crossings, heads popping, levers, released cubes); mirrored twins give a cue on each side.
 - `tools/sound.py`: a reed organ (two beating reeds a note, voiced toward a nasal reed formant) breathing like
-  bellows, one swell per 3 s chord; the chords are major sevenths with a sharp eleven sliding in parallel (D, Bb, C,
+  bellows in two long breaths per loop (s2, Robin: longer breaths), the chords changing legato every 3 s inside them;
+  the chords are major sevenths with a sharp eleven sliding in parallel (D, Bb, C,
   Ab); air hisses through at each change; glitch stutters cut from the organ and bit-crushed; each event its own
   synthesized sound, one frame after its picture event, panned to where it happens; a long circular hall.
 - Seamless by construction: every oscillator runs whole cycles in 12 s, noise filtering and reverb are circular,
