@@ -235,9 +235,17 @@ def noise_sweep(dur, f0, f1, gain=1.0):
     return out / (np.abs(out).max() + 1e-9) * np.sin(np.pi * np.arange(n) / n) * gain
 
 
+# --reverse-breath: the bellows (organ and air) play backwards while every event still plays forwards (Robin,
+# 2026-10-25: "played the breath backwards but the other sounds forward"). The bed is reflected about t = 0, so
+# its chords change on the same beats, in reverse order.
+REVERSE_BREATH = '--reverse-breath' in sys.argv
+
+
 def chord_at(t):
     """the chord sounding at time t: every voiced event plays a note of it, so each note belongs to something
     happening in the picture and sits in the bellows' harmony"""
+    if REVERSE_BREATH:
+        t = LOOP - (t % LOOP) - 1e-6
     return CHORDS[int((t % LOOP) // BAR) % len(CHORDS)]
 
 
@@ -313,11 +321,15 @@ def cfilter_short(x, fc):
 
 def main():
     root = Path(__file__).resolve().parent.parent
-    cues_path = root / (sys.argv[1] if len(sys.argv) > 1 else 'out/loop-cues.json')
-    out_path = root / (sys.argv[2] if len(sys.argv) > 2 else 'out/audio/reliefloop_loop.wav')
+    args = [a for a in sys.argv[1:] if not a.startswith('--')]
+    cues_path = root / (args[0] if args else 'out/loop-cues.json')
+    out_path = root / (args[1] if len(args) > 1 else 'out/audio/reliefloop_loop.wav')
     cues = json.loads(cues_path.read_text())['cues']
 
     bed = organ()
+    if REVERSE_BREATH:
+        # x[(-n) mod N]: time-reversed on the loop's circle, so sample 0 stays put and the seam stays closed
+        bed = np.roll(bed[::-1], 1, axis=0)
     glitch = glitches(bed)
     ev = events(cues)
     dry = 0.5 * bed + 0.2 * glitch + ev
