@@ -22,6 +22,10 @@ from pathlib import Path
 
 import numpy as np
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import voice  # noqa: E402  (the doiy / dee syllables, after the Sohan icaro)
+voice.TUNE = 0.0        # sung in the loop's own tuning, not the recording's 17 cents sharp
+
 SR = 48000
 LOOP = 24.0
 N = int(SR * LOOP)
@@ -322,6 +326,29 @@ def events(cues):
     return out
 
 
+def sung(t, k):
+    """a note of the chord sounding at t, folded into her register (A#3 up to A4): the k-th, counting up"""
+    notes = sorted({(m - 58) % 12 + 58 for m in chord_at(t)})
+    return notes[k % len(notes)]
+
+
+def voices(cues):
+    """the voice under the breath: one long-tailed syllable for each of a few picture events, never in bursts.
+    "doiy" when the chorus trades places, "dee" when a solid forms out of a sigil, a low "doiy" for the released
+    cube (Robin: "every time an object appears or a gnome changes place")"""
+    out = np.zeros((N, 2))
+    pan = lambda x: float(np.clip((x - 960) / 960, -1, 1)) * 0.6
+    for c in cues:
+        t, k = c['t'] + FRAME, c['kind']
+        if k == 'swap':
+            place(out, t, voice.syllable(sung(c['t'], c['n'] % 5), 'doiy', dur=0.2), 0.0, 0.5 if c.get('newFront', True) else 0.3)
+        elif k == 'form':
+            place(out, t, voice.syllable(sung(c['t'], 2 + int(c['x'] > 960)), 'dee', dur=0.19), pan(c['x']), 0.32)
+        elif k == 'cube':
+            place(out, t, voice.syllable(sung(c['t'], 0) - 12, 'doiy', dur=0.24, tail=1.4), pan(c['x']), 0.45)
+    return out
+
+
 def cfilter_short(x, fc):
     X = np.fft.rfft(x)
     f = np.fft.rfftfreq(len(x), 1 / SR)
@@ -342,10 +369,11 @@ def main():
         bed = np.roll(bed[::-1], 1, axis=0)
     glitch = glitches(bed)
     ev = events(cues)
-    dry = 0.5 * bed + 0.2 * glitch + ev
+    vo = voices(cues)
+    dry = 0.5 * bed + 0.2 * glitch + ev + 0.35 * vo
     # a ping-pong echo on the events and glitches (and a little of the organ), then everything into a long hall
-    echo = cdelay(0.75 * ev + 0.6 * glitch + 0.12 * bed)
-    wet = creverb(0.5 * bed + 0.35 * glitch + 0.9 * ev + 0.6 * echo, decay=6.0, pre=0.04)
+    echo = cdelay(0.75 * ev + 0.6 * glitch + 0.12 * bed + 0.5 * vo)
+    wet = creverb(0.5 * bed + 0.35 * glitch + 0.9 * ev + 0.5 * vo + 0.6 * echo, decay=6.0, pre=0.04)
     mix = dry + 0.45 * echo + 0.95 * wet
     mix = cfilter(mix, lo=35, hi=15000)
     # level: about -18 dBFS RMS, peaks held under -1 dBFS by a soft clip
