@@ -168,6 +168,10 @@ node tools/bundle.mjs src/loop.js build/loop.js && node tools/cues.mjs         #
   voicing on D, B, Ab, F, each a minor third below the last, so four chords fall one octave and the loop lands back on
   D. Every note is a stack of octaves from 38 Hz to 4.2 kHz under one fixed bell of loudness centred near 330 Hz:
   as the chords fall, the low octaves fade out and new high ones fade in, so the ear hears a fall that never arrives.
-  The event notes come from the current chord, folded into a fixed register, so they fall with it.
+  The event notes come from the current chord, folded into a fixed register, so they fall with it. Set aside
+  (Robin: "they were better before"); s8 is back on the s6 chords, and s7 stays in git (30961b2) for reference.
+- Draft 10 / s8: the chorus is eight elves on three tiers (1, 3, 4) trading places every 1.5 s along a closed
+  path, so a new elf takes the front on each chord change and half chord; each swap is a cue (the arriving elf's
+  chord note, and the root plucked on a chord change).
 - Seamless by construction: every oscillator runs whole cycles in 12 s, noise filtering and reverb are circular,
   every sound that runs past the end wraps to the start.

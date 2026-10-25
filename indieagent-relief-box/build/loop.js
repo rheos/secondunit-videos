@@ -3053,7 +3053,8 @@ const { Scene } = __m["vendor/paper-fox/core/stage.js"];
 const { drawSprites } = __m["vendor/paper-fox/core/sprite.js"];
 const { finish } = __m["vendor/paper-fox/core/post.js"];
 const { E, lerp, smoothstep } = __m["vendor/paper-fox/core/ease.js"];
-const { LIGHT, PAL, setFinish } = __m["src/kit.js"];
+const { LIGHT, PAL, setFinish, clayForm } = __m["src/kit.js"];
+const { shade } = __m["vendor/paper-fox/core/color.js"];
 // draft 9: the crisp, constructed finish (set before anything is baked)
 setFinish('crisp');
 const { ISLAND } = __m["src/props.js"];
@@ -3243,30 +3244,66 @@ function singerMakes(ctx, t, phase, x, f, hip, kinds, hue) {
 }
 
 // ---------------- the chorus at the funnel's foot: bounce, cheer each offering, pop into solids ----------------
-// the left half of the chorus, innermost first; the right half is its reflection. The wave runs outward from the middle.
-const CHORUS = [[892, 'bells', P.mint], [822, P.butter, P.pink], [752, 'pom', P.lilac]];
+// Eight elves on three tiers of pedestals: one in front, three behind, four at the back. Every 1.5 s (each chord
+// change and each half chord) they all hop one place along a closed path through the eight places, so a new elf
+// comes to the front each time and each has the front once a loop. The path, as [x off the centre line, tier]:
+// the front, up the right side, along the back, down to the middle, along the back the other way, down the left.
+const CHORUS_CAST = [['bells', P.mint, P.pinkDeep], [P.butter, P.pink], ['pom', P.lilac], ['bells', P.butter, P.iris]];
+const CHORUS_N = 8, SWAP = 1.5, MOVE = 0.6, RISE = 46;
+const PLACES = [[0, 0], [140, 1], [210, 2], [70, 2], [0, 1], [-70, 2], [-210, 2], [-140, 1]];
+const PEDESTAL = [P.butter, P.aqua, P.blush];
+// where elf j stands at t: its place, the tier as a smooth number (for drawing order and the wave), and the hop
+function chorusPlace(t, j) {
+  const k0 = Math.floor(mod(t, LOOP) / SWAP), next = SWAP * (k0 + 1);
+  const p = smoothstep(next - MOVE, next, mod(t, LOOP));
+  const [xa, ra] = PLACES[(j + k0) % CHORUS_N], [xb, rb] = PLACES[(j + k0 + 1) % CHORUS_N];
+  return { x: 960 + lerp(xa, xb, p), tier: lerp(ra, rb, p), hop: Math.sin(Math.PI * p) * (10 + 10 * Math.abs(rb - ra)) };
+}
+// the front at each swap: elf (-k mod 8) arrives there at k * SWAP
+const frontAt = (k) => mod(-k, CHORUS_N);
 // the offerings the chorus cheers: the adept's at 3.2 and 9.2, the seer's at 6.2 and 0.2 (each about 1.2 s)
 const cheerAt = (t) => Math.max(...[3.2, 9.2, 6.2, 0.2].map((a) => loopBump(t, a - 0.1, 1.4)));
 // poi spinning without the poi: each arm held straight at full stretch swings a big circle from its shoulder, the two
 // in opposite directions (mirror images), never stopping or reversing; twice a turn the outstretched arms cross in an
 // X, once high and once low, out at arm's length.
-// Each elf runs a quarter second behind the one beside it, so the turning rolls along the row as a wave.
-// An offering makes the circles bigger and the hop higher.
-// one full turn every 3 s, one chord of the sound; CROSS puts the centre pair's high crossing on each chord change
+// Each tier runs a quarter second behind the one in front of it, so the turning rolls back through the tiers as a
+// wave; an elf changing tiers slides smoothly onto its new tier's timing. An offering makes the hop higher.
+// one full turn every 3 s, one chord of the sound; CROSS puts the front elf's high crossing on each chord change
 const WAVE = { period: 3, lag: 0.25 };
 const CROSS = Math.acos(9.2 / 35.2) / TAU;
-function chorusPose(t, i, x) {
-  const ch = cheerAt(t), k = 0.85 * FS, hip = GROUND - 33 * k;
-  const th = TAU * ((t - i * WAVE.lag) / WAVE.period - CROSS), amp = 1 + 0.3 * ch;
-  // a small hop twice a turn, at the top and bottom of the circle
-  const b = (2 + 6 * ch) * k * Math.abs(Math.sin(th));
+const chorusTheta = (t, tier) => TAU * ((t - tier * WAVE.lag) / WAVE.period - CROSS);
+function chorusPose(t, j) {
+  const { x, tier, hop } = chorusPlace(t, j);
+  const ch = cheerAt(t), k = 0.85 * FS * (1 - 0.06 * tier), base = GROUND - tier * RISE, hip = base - 33 * k;
+  const th = chorusTheta(t, tier);
+  // a small bounce twice a turn, at the top and bottom of the circle, on top of the hop from place to place
+  const bounce = (2 + 6 * ch) * k * Math.abs(Math.sin(th)), b = bounce + hop;
   // the shoulders (from loop-figures' body) and a radius just inside the arm's full reach, so the arms run straight
   const shY = hip - 33.6 * k, shX = 9.2 * k, r = 35.2 * k;
   const lead = [x - shX + r * Math.cos(th), shY + r * Math.sin(th)];    // the left arm, turning one way
   const other = [x + shX - r * Math.cos(th), shY + r * Math.sin(th)];   // the right arm, its mirror, turning the other
-  return { hip: [x, hip - b], feet: [[x - 7 * k, GROUND - b * 0.6], [x + 7 * k, GROUND - b * 0.6]], facing: 1, scale: k, turn: 0.85, lean: 0,
+  const fy = base - hop - bounce * 0.6;
+  return { hip: [x, hip - b], feet: [[x - 7 * k, fy], [x + 7 * k, fy]], facing: 1, scale: k, turn: 0.85, lean: 0,
     hands: [lead, other].map((h) => [h[0], h[1] - b]), headTilt: 0, armsFront: true,
-    shift: loopBump(t, 1.1 + i * 1.9, 0.9), shiftKind: ['ico', 'cube', 'octa'][i % 3], shiftSpin: TAU * t / 2 };
+    shift: loopBump(t, 0.05 + (j + 1) * SWAP, 0.8), shiftKind: ['ico', 'cube', 'octa', 'dodeca'][j % 4], shiftSpin: TAU * t / 2 };
+}
+
+// a pedestal for each place: a short hexagonal column whose top is the tier the elf stands on
+function pedestal(ctx, x, tier) {
+  const top = GROUND - tier * RISE + 2, s = 1 - 0.06 * tier, rx = 30 * s, ry = 8 * s, bot = GROUND + 16;
+  const hex = (y) => [0, 1, 2, 3, 4, 5].map((q) => [x + rx * Math.cos(q * Math.PI / 3), y + ry * Math.sin(q * Math.PI / 3)]);
+  const T0 = hex(top), B0 = hex(bot);
+  // the front faces of the column (the three lower edges of the hexagon dropped to the floor), then the top
+  clayForm(ctx, [T0[0], T0[1], T0[2], T0[3], B0[3], B0[2], B0[1], B0[0]], shade(PEDESTAL[tier], -0.12), { size: 20, smooth: false });
+  clayForm(ctx, T0, PEDESTAL[tier], { size: 14, smooth: false });
+}
+
+function drawChorus(ctx, t, env, chorus) {
+  // back to front: each tier's pedestals, then the elves standing on it (an elf is drawn just in front of the
+  // pedestals of the tier it is on, so one hopping down passes in front of the lower tier only once it is half way)
+  const items = PLACES.map(([dx, tier]) => ({ depth: tier, draw: () => pedestal(ctx, 960 + dx, tier) }));
+  for (let j = 0; j < CHORUS_N; j++) items.push({ depth: chorusPlace(t, j).tier - 0.5, draw: () => drawFigure(ctx, chorus[j], chorusPose(t, j), env) });
+  items.sort((a, b) => b.depth - a.depth).forEach((it) => it.draw());
 }
 
 function scene() {
@@ -3288,12 +3325,12 @@ function scene() {
       const tuner = makeFigure(S, { name: 'tuner', color: P.lilac, cap: P.butter });
       const adept = makeFigure(S, { name: 'adept', color: P.mint, cap: P.pink });
       const seer = makeFigure(S, { name: 'seer', color: P.butter, cap: P.mintDeep });
-      const chorus = CHORUS.map(([, cap, col], i) => makeFigure(S, { name: `chorus-${i}`, color: col, cap, harlequin: cap === 'bells' ? P.pinkDeep : null }));
+      const chorus = [...Array(CHORUS_N)].map((_, j) => { const [cap, color, harlequin = null] = CHORUS_CAST[j % 4]; return makeFigure(S, { name: `chorus-${j}`, color, cap, harlequin }); });
 
       // the operator stands behind the console, so it draws before the desk
       // every figure off the centre line is drawn for the left half and again reflected: twins in mirror unison
       S.add({ name: 'operator', z: 995, render(ctx, t, env) { mirrored(ctx, () => drawFigure(ctx, operator, { ...operatorPose(t), shift: loopBump(t, 7.3, 0.9), shiftKind: 'cube', shiftSpin: TAU * t / 2 }, env)); } });
-      S.add({ name: 'chorus', z: 978, render(ctx, t, env) { mirrored(ctx, () => CHORUS.forEach(([x], i) => drawFigure(ctx, chorus[i], chorusPose(t, i, x), env))); } });
+      S.add({ name: 'chorus', z: 978, render(ctx, t, env) { drawChorus(ctx, t, env, chorus); } });
       S.add({ name: 'figures', z: 985, render(ctx, t, env) { mirrored(ctx, () => {
         drawFigure(ctx, tuner, { ...tunerPose(t), shift: loopBump(t, 4.6, 0.9), shiftKind: 'ico', shiftSpin: TAU * t / 2 }, env);
         const x = 170, kinds = ['ico', 'dodeca'];
@@ -3342,12 +3379,19 @@ function cues() {
     both(c0 + T.offer[0], 'offer', x, { dur: 1.2 });
     both(c0 + T.offer[1], 'rise', x);
   }
-  // the chorus: a tick each time an elf's outstretched arms cross (twice a turn, high and low), pitched by its place
-  // (the high crossing at t = i * lag + 3m, the low one 2 * CROSS of a turn later)
-  CHORUS.forEach(([x], i) => { for (let m = 0; m < LOOP / WAVE.period; m++) for (const q of [0, 2 * CROSS]) both(WAVE.period * (m + q) + WAVE.lag * i, 'tick', x, { n: i, high: q === 0 }); });
+  // the chorus: each swap of places, with the elf arriving at the front and whether a chord changes on it
+  for (let k = 0; k < LOOP / SWAP; k++) add(k * SWAP, 'swap', 960, { n: frontAt(k), chord: k % 2 === 0 });
+  // a tick each time an elf's outstretched arms cross (twice a turn, high and low), pitched by its tier. An elf
+  // changing tiers changes timing, so the crossings are found by stepping its arm angle through the loop.
+  const DT = 1 / 480;
+  for (let j = 0; j < CHORUS_N; j++) for (let s = 0; s < LOOP / DT; s++) {
+    const t0 = s * DT, t1 = t0 + DT, a = chorusPlace(t0, j), b = chorusPlace(t1, j);
+    const u0 = chorusTheta(t0, a.tier) / TAU, u1 = chorusTheta(t1, b.tier) / TAU;
+    for (const [q, high] of [[0, true], [2 * CROSS, false]]) if (Math.floor(u1 - q) > Math.floor(u0 - q)) add(t1, 'tick', b.x, { n: Math.round(b.tier), high });
+  }
   // heads popping into solids
   both(7.3, 'pop', 566); both(4.6, 'pop', 318); both(10.7, 'pop', 170); both(1.6, 'pop', 300);
-  CHORUS.forEach(([x], i) => both(1.1 + i * 1.9, 'pop', x));
+  for (let j = 0; j < CHORUS_N; j++) { const tp = 0.05 + (j + 1) * SWAP + 0.4; add(tp, 'pop', chorusPlace(tp, j).x); }
   // the consoles' levers, the instruments' released cubes
   for (const q of [1.6, 4.6, 7.6, 10.6]) both(q, 'lever', 612);
   both(7.0, 'cube', 384);
