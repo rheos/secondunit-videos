@@ -235,7 +235,16 @@ def noise_sweep(dur, f0, f1, gain=1.0):
     return out / (np.abs(out).max() + 1e-9) * np.sin(np.pi * np.arange(n) / n) * gain
 
 
-PENTA = [74, 76, 78, 81, 83, 86, 88, 90, 93, 95]   # D lydian pentatonic, upper register, for the sung glyphs
+def chord_at(t):
+    """the chord sounding at time t: every voiced event plays a note of it, so each note belongs to something
+    happening in the picture and sits in the bellows' harmony"""
+    return CHORDS[int((t % LOOP) // BAR) % len(CHORDS)]
+
+
+def tone_of(t, k, octave=2):
+    """the k-th note (counting up through the chord, wrapping into the next octave) of the chord at time t"""
+    ch = sorted(chord_at(t))
+    return ch[k % len(ch)] + 12 * (octave + k // len(ch))
 
 
 def events(cues):
@@ -244,26 +253,26 @@ def events(cues):
     for c in cues:
         t, k, p = c['t'] + FRAME, c['kind'], pan(c['x'])
         if k == 'glyph':
-            f = midi(PENTA[c['n'] % len(PENTA)])
+            f = midi(tone_of(c['t'], c['n'] % 10, 1))          # climbing up through the chord as the song goes
             s = crush(tone(f, 0.05, 'tri', d=0.025), bits=6, hold=2)
             place(out, t, s, p, 0.10)
         elif k == 'chime':
-            place(out, t, bell(midi(81), 1.6), p, 0.20)
+            place(out, t, bell(midi(tone_of(c['t'], 4, 1)), 1.6), p, 0.20)
         elif k == 'fold':
             place(out, t, crush(sweep(1800, 300, 0.45, 'square', d=0.3), bits=5, hold=3), p, 0.09)
         elif k == 'form':
             place(out, t, sweep(300, 900, 0.22, d=0.12), p, 0.18)
-            place(out, t + 0.02, bell(midi(86), 1.0, ratio=2.0, index=1.2), p, 0.10)
+            place(out, t + 0.02, bell(midi(tone_of(c['t'], 2, 2)), 1.0, ratio=2.0, index=1.2), p, 0.10)
         elif k == 'offer':
             n = int(SR * c.get('dur', 1.2))
-            sw = sum(tone(midi(m), c.get('dur', 1.2), 'tri', a=0.5, d=0.9) for m in (74, 78, 81, 85))
+            sw = sum(tone(midi(tone_of(c['t'], q, 1)), c.get('dur', 1.2), 'tri', a=0.5, d=0.9) for q in (0, 2, 3, 4))
             place(out, t, sw * np.sin(np.pi * np.arange(n) / n), p, 0.05)
         elif k == 'rise':
             place(out, t, noise_sweep(0.7, 800, 5000, 0.12), p)
         elif k == 'drop':
-            place(out, t, pluck(midi([62, 69, 66, 74][c['n'] % 4]), 0.7), 0.0, 0.22)
+            place(out, t, pluck(midi(tone_of(c['t'], [0, 1, 0, 2][c['n'] % 4], 1)), 0.7), 0.0, 0.22)
         elif k == 'release':
-            place(out, t, crush(tone(midi(93), 0.03, 'sine', d=0.012), bits=4, hold=4), p, 0.07)
+            place(out, t, crush(tone(midi(tone_of(c['t'], 4, 2)), 0.03, 'sine', d=0.012), bits=4, hold=4), p, 0.07)
         elif k == 'bulge':
             dur, side = c.get('dur', 3.2), c.get('side', 1)
             place(out, t, sweep(140, 70, 0.3, d=0.14), side * 0.2, 0.22)
@@ -274,7 +283,8 @@ def events(cues):
             a = (pp + 1) * np.pi / 4
             place(out, t, np.stack([body * np.cos(a), body * np.sin(a)], axis=1), 0, 1.0)
         elif k == 'tick':
-            place(out, t, tone(midi([86, 90, 93][c['n'] % 3]), 0.04, 'tri', d=0.015), p, 0.035)
+            # each elf its own chord tone; the high crossing a little brighter than the low
+            place(out, t, tone(midi(tone_of(c['t'], 2 + c['n'], 1)), 0.05, 'tri', d=0.02), p, 0.045 if c.get('high') else 0.03)
         elif k == 'pop':
             place(out, t, crush(sweep(1200, 180, 0.12, d=0.06), bits=6, hold=2), p, 0.16)
         elif k == 'lever':
@@ -282,7 +292,7 @@ def events(cues):
             place(out, t, cfilter_short(click, 1500), p, 0.18)
             place(out, t + 0.09, cfilter_short(click, 900), p, 0.12)
         elif k == 'cube':
-            place(out, t, bell(midi(88), 1.2, ratio=1.5), p, 0.12)
+            place(out, t, bell(midi(tone_of(c['t'], 3, 2)), 1.2, ratio=1.5), p, 0.12)
             place(out, t + 0.1, noise_sweep(0.8, 1000, 6000, 0.08), p)
     return out
 

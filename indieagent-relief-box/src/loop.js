@@ -213,10 +213,12 @@ const cheerAt = (t) => Math.max(...[3.2, 9.2, 6.2, 0.2].map((a) => loopBump(t, a
 // X, once high and once low, out at arm's length.
 // Each elf runs a quarter second behind the one beside it, so the turning rolls along the row as a wave.
 // An offering makes the circles bigger and the hop higher.
-const WAVE = { period: 1.5, lag: 0.25 };
+// one full turn every 3 s, one chord of the sound; CROSS puts the centre pair's high crossing on each chord change
+const WAVE = { period: 3, lag: 0.25 };
+const CROSS = Math.acos(9.2 / 35.2) / TAU;
 function chorusPose(t, i, x) {
   const ch = cheerAt(t), k = 0.85 * FS, hip = GROUND - 33 * k;
-  const th = TAU * (t / WAVE.period - i * WAVE.lag / WAVE.period), amp = 1 + 0.3 * ch;
+  const th = TAU * ((t - i * WAVE.lag) / WAVE.period - CROSS), amp = 1 + 0.3 * ch;
   // a small hop twice a turn, at the top and bottom of the circle
   const b = (2 + 6 * ch) * k * Math.abs(Math.sin(th));
   // the shoulders (from loop-figures' body) and a radius just inside the arm's full reach, so the arms run straight
@@ -302,8 +304,8 @@ function cues() {
     both(c0 + T.offer[1], 'rise', x);
   }
   // the chorus: a tick each time an elf's outstretched arms cross (twice a turn, high and low), pitched by its place
-  const cross = Math.acos(9.2 / 35.2) / TAU;
-  CHORUS.forEach(([x], i) => { for (let m = 0; m < LOOP / WAVE.period; m++) for (const q of [-cross, cross]) both(WAVE.period * (m + q) + WAVE.lag * i, 'tick', x, { n: i }); });
+  // (the high crossing at t = i * lag + 3m, the low one 2 * CROSS of a turn later)
+  CHORUS.forEach(([x], i) => { for (let m = 0; m < LOOP / WAVE.period; m++) for (const q of [0, 2 * CROSS]) both(WAVE.period * (m + q) + WAVE.lag * i, 'tick', x, { n: i, high: q === 0 }); });
   // heads popping into solids
   both(7.3, 'pop', 566); both(4.6, 'pop', 318); both(10.7, 'pop', 170); both(1.6, 'pop', 300);
   CHORUS.forEach(([x], i) => both(1.1 + i * 1.9, 'pop', x));

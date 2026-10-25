@@ -2362,18 +2362,18 @@ function addWorld(S) {
     glow(ctx, LX, LY, 700, '#ffd9a0', 0.2 + 0.03 * cyc(t, 2));
     glow(ctx, LX, LY, 260, '#fff0c8', 0.3);
   } });
-  // the third sun, furthest back and largest, rose and lilac: turning with the front one, growing as the middle one
-  // shrinks, so the three breathe against each other ring by ring
+  // the third sun, furthest back and largest, rose and lilac: turning with the front one, swelling as the bellows
+  // empty (at 0 and 6 s) while the middle one swells as they fill (at 3 and 9 s): they breathe with the sound
   S.add({ name: 'farsun', z: 5800, shadow: { dx: 8, dy: 14, alpha: 0.18 }, render(ctx, t, env) {
-    drawSprites(ctx, sunItems(far, t, { spin: TAU * (3 / 18) * t / LOOP, scale: 1 - 0.18 * Math.sin(TAU * t / 6), rays: 18 }), env.shadow);
+    drawSprites(ctx, sunItems(far, t, { spin: TAU * (3 / 18) * t / LOOP, scale: 1 + 0.18 * Math.cos(TAU * t / 6), rays: 18 }), env.shadow);
   } });
-  // the sun behind: larger, cooler, turning the other way, growing and shrinking on a 6 s beat
+  // the sun behind: larger, cooler, turning the other way, swelling with each breath of the bellows (6 s)
   S.add({ name: 'backsun', z: 5600, shadow: { dx: 8, dy: 14, alpha: 0.22 }, render(ctx, t, env) {
-    drawSprites(ctx, sunItems(back, t, { spin: -TAU * (4 / 18) * t / LOOP, scale: 1 + 0.22 * Math.sin(TAU * t / 6), dir: -1 }), env.shadow);
+    drawSprites(ctx, sunItems(back, t, { spin: -TAU * (4 / 18) * t / LOOP, scale: 1 - 0.22 * Math.cos(TAU * t / 6), dir: -1 }), env.shadow);
   } });
-  // the front sun: spinning, and rocking back and forth as it goes on a 3 s beat
+  // the front sun: spinning, and rocking back and forth as it goes, turning back at each chord change (every 3 s)
   S.add({ name: 'lantern', z: 5000, shadow: { dx: 8, dy: 14, alpha: 0.25 }, anim: (t) => ({ y: 4 * cyc(t, 1) }), render(ctx, t, env) {
-    drawSprites(ctx, sunItems(front, t, { spin: TAU * (6 / 18) * t / LOOP, rock: 0.35 * Math.sin(TAU * t / 3), scale: 1 + 0.05 * Math.sin(TAU * t / 1.5) }), env.shadow);
+    drawSprites(ctx, sunItems(front, t, { spin: TAU * (6 / 18) * t / LOOP, rock: 0.35 * Math.cos(TAU * t / 3), scale: 1 + 0.05 * Math.sin(TAU * t / 1.5) }), env.shadow);
   } });
   // two rings of small solids orbiting the pair in opposite directions, one turn a loop each, tipped into
   // ellipses; each solid tumbles and swells as it goes
@@ -3238,10 +3238,12 @@ const cheerAt = (t) => Math.max(...[3.2, 9.2, 6.2, 0.2].map((a) => loopBump(t, a
 // X, once high and once low, out at arm's length.
 // Each elf runs a quarter second behind the one beside it, so the turning rolls along the row as a wave.
 // An offering makes the circles bigger and the hop higher.
-const WAVE = { period: 1.5, lag: 0.25 };
+// one full turn every 3 s, one chord of the sound; CROSS puts the centre pair's high crossing on each chord change
+const WAVE = { period: 3, lag: 0.25 };
+const CROSS = Math.acos(9.2 / 35.2) / TAU;
 function chorusPose(t, i, x) {
   const ch = cheerAt(t), k = 0.85 * FS, hip = GROUND - 33 * k;
-  const th = TAU * (t / WAVE.period - i * WAVE.lag / WAVE.period), amp = 1 + 0.3 * ch;
+  const th = TAU * ((t - i * WAVE.lag) / WAVE.period - CROSS), amp = 1 + 0.3 * ch;
   // a small hop twice a turn, at the top and bottom of the circle
   const b = (2 + 6 * ch) * k * Math.abs(Math.sin(th));
   // the shoulders (from loop-figures' body) and a radius just inside the arm's full reach, so the arms run straight
@@ -3327,8 +3329,8 @@ function cues() {
     both(c0 + T.offer[1], 'rise', x);
   }
   // the chorus: a tick each time an elf's outstretched arms cross (twice a turn, high and low), pitched by its place
-  const cross = Math.acos(9.2 / 35.2) / TAU;
-  CHORUS.forEach(([x], i) => { for (let m = 0; m < LOOP / WAVE.period; m++) for (const q of [-cross, cross]) both(WAVE.period * (m + q) + WAVE.lag * i, 'tick', x, { n: i }); });
+  // (the high crossing at t = i * lag + 3m, the low one 2 * CROSS of a turn later)
+  CHORUS.forEach(([x], i) => { for (let m = 0; m < LOOP / WAVE.period; m++) for (const q of [0, 2 * CROSS]) both(WAVE.period * (m + q) + WAVE.lag * i, 'tick', x, { n: i, high: q === 0 }); });
   // heads popping into solids
   both(7.3, 'pop', 566); both(4.6, 'pop', 318); both(10.7, 'pop', 170); both(1.6, 'pop', 300);
   CHORUS.forEach(([x], i) => both(1.1 + i * 1.9, 'pop', x));

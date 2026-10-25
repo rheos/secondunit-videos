@@ -119,18 +119,18 @@ export function addWorld(S) {
     glow(ctx, LX, LY, 700, '#ffd9a0', 0.2 + 0.03 * cyc(t, 2));
     glow(ctx, LX, LY, 260, '#fff0c8', 0.3);
   } });
-  // the third sun, furthest back and largest, rose and lilac: turning with the front one, growing as the middle one
-  // shrinks, so the three breathe against each other ring by ring
+  // the third sun, furthest back and largest, rose and lilac: turning with the front one, swelling as the bellows
+  // empty (at 0 and 6 s) while the middle one swells as they fill (at 3 and 9 s): they breathe with the sound
   S.add({ name: 'farsun', z: 5800, shadow: { dx: 8, dy: 14, alpha: 0.18 }, render(ctx, t, env) {
-    drawSprites(ctx, sunItems(far, t, { spin: TAU * (3 / 18) * t / LOOP, scale: 1 - 0.18 * Math.sin(TAU * t / 6), rays: 18 }), env.shadow);
+    drawSprites(ctx, sunItems(far, t, { spin: TAU * (3 / 18) * t / LOOP, scale: 1 + 0.18 * Math.cos(TAU * t / 6), rays: 18 }), env.shadow);
   } });
-  // the sun behind: larger, cooler, turning the other way, growing and shrinking on a 6 s beat
+  // the sun behind: larger, cooler, turning the other way, swelling with each breath of the bellows (6 s)
   S.add({ name: 'backsun', z: 5600, shadow: { dx: 8, dy: 14, alpha: 0.22 }, render(ctx, t, env) {
-    drawSprites(ctx, sunItems(back, t, { spin: -TAU * (4 / 18) * t / LOOP, scale: 1 + 0.22 * Math.sin(TAU * t / 6), dir: -1 }), env.shadow);
+    drawSprites(ctx, sunItems(back, t, { spin: -TAU * (4 / 18) * t / LOOP, scale: 1 - 0.22 * Math.cos(TAU * t / 6), dir: -1 }), env.shadow);
   } });
-  // the front sun: spinning, and rocking back and forth as it goes on a 3 s beat
+  // the front sun: spinning, and rocking back and forth as it goes, turning back at each chord change (every 3 s)
   S.add({ name: 'lantern', z: 5000, shadow: { dx: 8, dy: 14, alpha: 0.25 }, anim: (t) => ({ y: 4 * cyc(t, 1) }), render(ctx, t, env) {
-    drawSprites(ctx, sunItems(front, t, { spin: TAU * (6 / 18) * t / LOOP, rock: 0.35 * Math.sin(TAU * t / 3), scale: 1 + 0.05 * Math.sin(TAU * t / 1.5) }), env.shadow);
+    drawSprites(ctx, sunItems(front, t, { spin: TAU * (6 / 18) * t / LOOP, rock: 0.35 * Math.cos(TAU * t / 3), scale: 1 + 0.05 * Math.sin(TAU * t / 1.5) }), env.shadow);
   } });
   // two rings of small solids orbiting the pair in opposite directions, one turn a loop each, tipped into
   // ellipses; each solid tumbles and swells as it goes
