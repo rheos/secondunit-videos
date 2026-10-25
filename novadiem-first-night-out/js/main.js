@@ -47,51 +47,9 @@ parent.build(Q * SC * 1.15, LIGHT); kit.build(Q * SC * 1.15, LIGHT);
 parent.setGait(parentX(0) / SC, parentX(END) / SC, 1);
 kit.setGait(kitX(0) / SC, kitX(END) / SC, 1);
 
-const span = travel(END) + 600;
-const R = Q * 1.15;
-const sky = PD.sprite({ x: -300, y: -60, w: 2600, h: 1200, res: R, seed: 'sky', mat: 'sky', light: LIGHT, edge: false, shadow: false, draw(g) {
-  const gr = g.createLinearGradient(0, -60, 0, 1100); gr.addColorStop(0, '#0e1230'); gr.addColorStop(.7, '#1d2450'); gr.addColorStop(1, '#262d5c');
-  g.fillStyle = gr; g.fillRect(-300, -60, 2600, 1200);
-} });
-const moon = PD.sprite({ x: 260, y: 110, w: 200, h: 200, res: R, seed: 'moon', mat: 'paper', light: LIGHT, shadow: { blur: 8 }, draw(g) {
-  PD.piece(g, PD.ellipsePts(360, 210, 66, 66, 48), { fill: '#f1e6c8', torn: { amp: 1.6, freq: .12, seed: 3 } });
-  g.fillStyle = 'rgba(190,170,130,.25)'; g.beginPath(); g.arc(380, 196, 14, 0, 7); g.arc(342, 236, 9, 0, 7); g.fill();
-} });
-const ridgeSprite = (name, z, base, amp, fill, seed) => {
-  const w = 1920 + span * (1000 / z) + 900;
-  return PD.sprite({ x: -400, y: base - amp - 40, w, h: 1180 - base + amp + 40, res: R, seed: name, light: LIGHT, shadow: { blur: 14 }, draw(g) {
-    g.fillStyle = fill; g.fill(PD.polyPath(PD.tear(PD.ridge(-400, w - 400, base, 1180, { amp, freq: .0016, sharp: .15, seed }), { amp: 3, freq: .05, seed })));
-  } });
-};
-const farHills = ridgeSprite('far', 2400, 700, 170, '#2a3166', 11), nearHills = ridgeSprite('near', 1600, 800, 110, '#1b2152', 23);
-const ground = PD.sprite({ x: -400, y: 860, w: 1920 + span + 900, h: 240, res: R, seed: 'ground', light: LIGHT, shadow: { blur: 10 }, draw(g) {
-  const x1 = 1920 + span + 500, rs = new PD.RNG('ground');
-  g.fillStyle = '#141938'; g.fill(PD.polyPath(PD.tear([[-400, 884], [x1, 884], [x1, 1100], [-400, 1100]], { amp: 4, freq: .03, seed: 5 })));
-  g.fillStyle = '#1f2550'; g.fill(PD.polyPath(PD.tear([[-400, 880], [x1, 880], [x1, 896], [-400, 898]], { amp: 2.5, freq: .05, seed: 6 })));
-  for (let x = -380; x < x1; x += rs.range(60, 160)) {   // pebbles and torn scraps on the path, so travel reads
-    const y = rs.range(920, 1060), w = rs.range(8, 22);
-    PD.piece(g, PD.ellipsePts(x, y, w, w * .45, 10), { fill: rs.pick(['#1f2550', '#0f1330', '#262d5a']), torn: { amp: 1.5, freq: .3, seed: rs.int(1, 9999) } });
-  }
-} });
-const tufts = PD.sprite({ x: -400, y: 900, w: 1920 + span * 1.6 + 900, h: 200, res: R, seed: 'tufts', light: LIGHT, shadow: { blur: 12 }, draw(g) {
-  const rs = new PD.RNG('tufts');
-  for (let x = -300; x < 1920 + span * 1.6 + 400; x += rs.range(380, 700)) {
-    g.fillStyle = rs.pick(['#0b0f26', '#0e1330']);
-    const n = rs.int(5, 9), pts = [];
-    for (let i = 0; i <= n; i++) { const bx = x + i * 14; pts.push([bx - 6, 1100], [bx + rs.range(-10, 14), 1100 - rs.range(70, 150)], [bx + 6, 1100]); }
-    g.fill(PD.polyPath(pts));
-  }
-} });
+// the night forest, wide enough for the camera's whole move; the old trunk crosses the lens mid-walk
 const CHAR = { name: 'char', z: 1000 };
-const planes = [
-  { name: 'sky', z: 4000, sprites: [{ s: sky, shadow: false }], draw(g) { PD.glow(g, 360, 210, 230, 'rgba(255,236,190,.35)'); } },
-  { name: 'moon', z: 3900, sprites: [{ s: moon }] },
-  { name: 'far', z: 2400, sprites: [{ s: farHills }] },
-  { name: 'near', z: 1600, sprites: [{ s: nearHills }] },
-  { name: 'ground', z: 1000.5, sprites: [{ s: ground }] },
-  CHAR,
-  { name: 'tufts', z: 640, sprites: [{ s: tufts }] },
-];
+const planes = [...FOREST.build(Q, camX(0), camX(END), { trunkAt: camX(8.4) }), CHAR].sort((a, b) => b.z - a.z);
 
 // ---------------- one frame ----------------
 function frame(t) {
@@ -100,7 +58,7 @@ function frame(t) {
     kit.draw(g, 0, KGROUND, stateAt(t - LAG, kitX(t), t + 1.7), { scale: SC, light: LIGHT, shadow: [8, 4] });
   };
   X.setTransform(1, 0, 0, 1, 0, 0);
-  X.fillStyle = '#0e1230'; X.fillRect(0, 0, cv.width, cv.height);
+  X.fillStyle = '#080c26'; X.fillRect(0, 0, cv.width, cv.height);
   PD.renderPlanes(X, planes, cam(t), t, { q: Q, light: LIGHT, shadowAlpha: .5 });
   PD.finish(X, { bloom: .4, threshold: .7, vignette: .3, grain: .05, frame: Math.round(t * 24), grade: { color: '#3c4c9a', amount: .12, mode: 'soft-light' } });
 }

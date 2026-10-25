@@ -13,7 +13,7 @@ nice -n 15 node ../tools/motion-lab/render.mjs "index.html?w=1280" 0 16 out/draf
 ```
 
 Playwright comes from a sibling look (`ln -s ../bobwiseman-in-her-dream/node_modules`). The 16 s test renders
-in about 30 s on the Intel Mac.
+in about 65 s on the Intel Mac.
 
 ## The cast (`js/raccoon.js`)
 
@@ -23,14 +23,19 @@ faster breathing and a shorter stride.
 
 - **Mask:** one black torn scrap across the eyes with the white core of the paper at its torn edge; white brows,
   cheeks and muzzle, a dark stripe down the bridge, an eye with a catchlight inside the mask.
+- **Fur, after paper-fox's fox (d2):** each part is one smooth cut-out under rows of torn, pointed, many-tipped tufts
+  with quill bases, laid from the rump toward the head so each row laps over the one behind it, each row casting one
+  soft shadow on the row beneath, the tips breaking the outline. A darker saddle, light upper flanks, a darker
+  belly, the haunch and shoulder lit on top, the odd pale or dark tuft for grizzle; a ruff of tufts behind the cheek
+  and white cheek tufts under the mask.
 - **Body:** one body, not a marionette. A pear: the rump high over the hind legs, the back falling to low
-  shoulders, the belly slung low, so the hips sit higher than the shoulders. The coat is torn scraps laid like
-  shingles in rows that follow the back, bottom rows first and back to front (the fur lies toward the tail), most
-  scraps showing the white core at their torn edge. A darker saddle, lighter upper flanks, darker belly. The haunch
-  and shoulder are the coat again on a raised mass with a soft shadow. Legs are single bending tubes, grey above,
-  dark below, their tops under the body. The lit and unlit cut edge goes on the outer silhouette only.
-- **Tail:** a follow-through chain of torn rings, light and dark, the tip black. Each ring repeats the sway of the
-  one before it, later and bigger; it rides the hip bob, drifts when standing and settles with a damped swing.
+  shoulders, the belly slung low. The spine bends: the rump hangs off the hip and rocks with each hind step, the
+  shoulders, neck and head hang off a spine joint and bend against it; the shoulders' first rows lap back over the
+  rump through a ragged join. Legs are single bending tubes, grey above, dark below, their tops under the body.
+- **Tail:** three long segments along a curved spine, drawn over the rump, with loose rump tufts laid over its root
+  so it grows out of the coat. Light and dark rings feathered by the chevron rows of tufts that cross them, the tip
+  black. Each segment repeats the sway of the one before it, later and bigger; it rises and swings with the waddle,
+  drifts when standing and settles with a damped swing.
 - **Hands:** the near front paw is the acting hand: an idle flick when standing, lifted forward to test something
   with the head dipping to look at it, fingers tapping (`paw`, `pat`).
 - **Walk:** a slow lateral-sequence walk (near hind, near front, far hind, far front), each foot planted for 75%
@@ -42,12 +47,15 @@ faster breathing and a shorter stride.
 - **The kit copies the parent a beat late:** in `js/main.js` every curve the kit gets (walk, paw, look, sniff,
   where it is) is the parent's curve read at `t - 0.75 s`, one beat at 80 BPM.
 
-## The character test (`index.html`, `js/main.js`)
+## The character test (`index.html`, `js/main.js`, `js/forest.js`)
 
-16 s on a plain night-paper strip (sky, moon, two torn ridges, the path, a few near grass tufts): both stand and
-breathe; the parent lifts a paw to test the air and the kit copies; the parent walks off and the kit follows a
-beat later; they stop, the parent lifts its head to sniff and the kit copies. The strip is only there so travel
-reads; it is not a scene of the film.
+16 s in a night forest built as paper-fox builds its worlds (Robin, d1 notes: the look is "how busy it is... many
+objects and many layers"): eleven planes from a starry sky with a crumpled moon, lavender cloud banks and snowy
+peaks, through two ridges of saw-toothed pines with mist between, big cedars, an understory of bushes, mossy
+boulders, ferns and foxgloves, the path, fireflies, a band of grass, ferns, daisies, bunchberry and mushrooms, to
+big fronds and leaves sweeping past the lens and one old trunk crossing the whole frame mid-walk. Both raccoons
+stand and breathe; the parent lifts a paw to test the air and the kit copies; the parent walks off and the kit
+follows a beat later; they stop, the parent lifts its head to sniff and the kit copies.
 
 ## Taken from paper-fox (MIT, Copyright (c) 2026 Leonxlnx; notice in `LICENSE-paper-fox.md`)
 
