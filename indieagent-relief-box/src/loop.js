@@ -28,6 +28,7 @@ import { MK, MK_RAMP, PS, markLayer, paintMarkSolid, paintBurst, paintGlyph, pai
 // the figures stand a little taller than draft 1's so their hands read, still small against the funnel
 const P = PAL, TAU = Math.PI * 2, GROUND = 985, FS = 1.2, HIP = GROUND - 33 * FS;
 const mod = (x, m) => ((x % m) + m) % m;
+const CHEV_RADIAL = typeof location !== 'undefined' && new URLSearchParams(location.search).get('chev') === 'radial';
 const mixPt = (a, b, k) => [lerp(a[0], b[0], k), lerp(a[1], b[1], k)];
 // a bump that rises and falls over [a, b]: 0 outside, 1 at the middle
 const bump = (t, a, b) => (t <= a || t >= b ? 0 : Math.sin(Math.PI * (t - a) / (b - a)));
@@ -341,12 +342,19 @@ function scene() {
       // the seer sits on the floating island, singing the same song three seconds behind the adept
       const IX = -120, IY = 90;
       S.add({ name: 'island', z: 1500, shadow: { dx: 10, dy: 22, alpha: 0.32 }, anim: (t) => ({ y: 8 * cyc(t, 1, 0.55) }), render(ctx, t, env) { mirrored(ctx, () => {
+        // chevron fans at the island (Robin: "on the other side of the floating mountain... and the mirror of it...
+        // along the contour of the mountain base"): one either side of the stepped roots, its chevrons running along
+        // the slope of the roots toward the tip, one the mirror of the other. ?chev=radial instead clones the fan
+        // round a ring behind the island, each pointing outward, opening in a wave that runs round the ring.
+        const cx = ISLAND.x + IX, cy = ISLAND.y + IY, along = Math.atan2(96, 130) - Math.PI / 2;
+        if (CHEV_RADIAL) {
+          // the ring hangs behind the island
+          const n = 12, R = 235;
+          for (let i = 0; i < n; i++) { const a = i / n * TAU; world.chevronFan(ctx, cx + Math.cos(a) * R, cy + 10 + Math.sin(a) * R * 0.6, a - Math.PI / 2, t, i / n, env); }
+        }
         drawSprites(ctx, [{ s: world.island, ax: ISLAND.x, ay: ISLAND.y, x: ISLAND.x + IX, y: ISLAND.y + IY }], env.shadow);
-        // a chevron fan either side of the island's stepped roots, each turned to follow the slope of the roots and
-        // fanning out away from them, one the mirror of the other (Robin: "on the other side of the floating
-        // mountain... and the mirror of it... arc with the contour of the mountain base")
-        const cx = ISLAND.x + IX, cy = ISLAND.y + IY, slope = Math.atan2(96, 130);
-        for (const sd of [-1, 1]) world.chevronFan(ctx, cx + sd * 112, cy + 92, -sd * slope, t, 0.31, env, sd);
+        if (!CHEV_RADIAL) for (const sd of [-1, 1]) world.chevronFan(ctx, cx + sd * 100, cy + 84, -sd * along, t, 0.31, env, sd);
+
         const ground = ISLAND.y - 4 + IY, x = 300, hip = ground - 14 * FS, kinds = ['star', 'octa'];
         singerBurst(ctx, t, 3, x, 1, hip);
         drawFigure(ctx, seer, singerPose(t, 3, x, 1, hip, [[x + 16, ground + 4], [x + 22, ground + 6]], kinds, 1.6), env);
