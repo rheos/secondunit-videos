@@ -32,6 +32,7 @@ function addPair(S, name, z, sprite, shadow) {
 }
 // draw fn, then again reflected in the centre line
 const mirror = (ctx, fn) => { fn(); ctx.save(); ctx.translate(1920, 0); ctx.scale(-1, 1); fn(); ctx.restore(); };
+const COLS_ORBIT = [PAL.pink, PAL.mint, PAL.butter, PAL.lilac, PAL.aqua];
 export const cyc = (t, n = 1, ph = 0) => Math.sin(TAU * (n * t / LOOP + ph));
 
 // a row of rounded clay mounds from x0 to x1, crowns around base, closed down to bottom; rolled trees on some
@@ -70,47 +71,71 @@ export function addWorld(S) {
   // the backdrop is the turning honeycomb dome (loop-dome.js)
   addDome(S, LOOP);
 
-  // the lantern at the top of the dome: a spinning mechanism of parts, not a fixed wheel. The disc and its rays
-  // turn one way, each ring of windows turns at its own speed and way round, the rings breathe in and out out of
-  // step, and the rays reach out and draw back in a wave running round the rim. Every turn is a whole number of
+  // The lantern at the top of the dome: two suns, each a mechanism of parts. The disc and its rays turn, each ring
+  // of windows turns at its own speed and way round, the rings breathe, and the rays reach out and draw back in a
+  // wave round the rim. The front sun spins and rocks; a larger, cooler sun behind it turns the other way and grows
+  // and shrinks; two rings of small solids orbit the pair in opposite directions. Every turn is a whole number of
   // its own part spacings per loop, so the pattern comes back to itself at the seam.
-  const LX = 960, LY = 70, LR = 92;
+  const LX = 960, LY = 100;
   const lsp = (name, w, h, draw) => S.sprite({ name, x: -w / 2, y: -h / 2, w, h, res: 1.4, mat: CLAY_MAT, edge: CLAY_EDGE, shadow: { blur: shadowBlur(10) }, draw });
-  const plate = lsp('lantern-plate', LR * 2 + 20, LR * 2 + 20, (g) => clayForm(g, circle(0, 0, LR, 64), mix(P.butter, '#f6c36a', 0.4), { sheen: 0.18 }));
-  const hub = lsp('lantern-hub', 50, 50, (g) => { clayForm(g, circle(0, 0, LR * 0.2, 36), '#f6c36a', { sheen: 0.3 }); clayForm(g, circle(0, 0, LR * 0.09, 24), P.pink, { sheen: 0.3 }); });
-  // a ray of three stepped points, pointing up (out) from its foot at the origin
-  const ray = lsp('lantern-ray', 36, 50, (g) => { for (let k = 0; k < 3; k++) { const w = 11 - k * 3, y0 = 20 - k * 8; clayForm(g, [[-w, y0], [0, y0 - 10], [w, y0]], [P.butter, '#f6c36a', '#f29d5c'][k], { smooth: false, size: 10 }); } });
-  const glassC = ['#ffe2a0', '#ffd27e', '#fff0c8'];
-  const win = glassC.map((c, k) => lsp(`lantern-win-${k}`, 20, 20, (g) => {
-    clayForm(g, [[-7, -7], [7, -7], [7, 7], [-7, 7]], P.butterDeep, { smooth: false, size: 8 });
-    g.fillStyle = c; g.fillRect(-4.8, -4.8, 9.6, 9.6);
-    g.fillStyle = 'rgba(150,80,30,0.3)'; g.fillRect(-4.8, -4.8, 9.6, 2.4);
-  }));
+  function makeSun(name, R, pal) {
+    const plate = lsp(`${name}-plate`, R * 2 + 20, R * 2 + 20, (g) => clayForm(g, circle(0, 0, R, 64), pal.plate, { sheen: 0.18 }));
+    const hub = lsp(`${name}-hub`, R * 0.5, R * 0.5, (g) => { clayForm(g, circle(0, 0, R * 0.2, 36), pal.hub, { sheen: 0.3 }); clayForm(g, circle(0, 0, R * 0.09, 24), pal.eye, { sheen: 0.3 }); });
+    // a ray of three stepped points, pointing out from its foot at the origin
+    const ray = lsp(`${name}-ray`, 36, 50, (g) => { for (let k = 0; k < 3; k++) { const w = 11 - k * 3, y0 = 20 - k * 8; clayForm(g, [[-w, y0], [0, y0 - 10], [w, y0]], pal.rays[k], { smooth: false, size: 10 }); } });
+    const win = pal.glass.map((c, k) => lsp(`${name}-win-${k}`, 20, 20, (g) => {
+      clayForm(g, [[-7, -7], [7, -7], [7, 7], [-7, 7]], pal.sill, { smooth: false, size: 8 });
+      g.fillStyle = c; g.fillRect(-4.8, -4.8, 9.6, 9.6);
+      g.fillStyle = 'rgba(60,40,60,0.25)'; g.fillRect(-4.8, -4.8, 9.6, 2.4);
+    }));
+    return { R, plate, hub, ray, win };
+  }
   // rings: [radius, windows, window scale, turns per loop (in window spacings: sign gives the way round)]
   const RINGS = [[0.8, 18, 1.15, -6], [0.57, 13, 1.0, 4], [0.35, 8, 0.85, -3]];
-  S.add({ name: 'lantern-glow', z: 5010, blend: 'lighter', render(ctx, t) {
-    glow(ctx, LX, LY, 640, '#ffd9a0', 0.2 + 0.03 * cyc(t, 2));
-    glow(ctx, LX, LY, 240, '#fff0c8', 0.3);
-  } });
-  S.add({ name: 'lantern', z: 5000, shadow: { dx: 8, dy: 14, alpha: 0.25 }, anim: (t) => ({ y: 4 * cyc(t, 1) }), render(ctx, t, env) {
-    const spin = TAU * (6 / 18) * t / LOOP, items = [];
-    // rays: 18 round the rim, turning with the disc, each reaching out and drawing back as a wave passes
-    for (let i = 0; i < 18; i++) {
-      const a = spin + i / 18 * TAU, reach = 1 + 0.45 * Math.sin(TAU * (t / 3 - i * 3 / 18));
-      const d = LR + 2 + 6 * (reach - 1);
-      items.push({ s: ray, ax: 0, ay: 20, x: LX + Math.cos(a) * d, y: LY + Math.sin(a) * d, rot: a + Math.PI / 2, sx: 1, sy: Math.max(0.3, reach) });
+  // spin: the rays' turn (a whole number of ray spacings per loop); rock: a back-and-forth added to rays and rings;
+  // the plate and hub stay unturned (their glints would otherwise come round to a different place at the seam)
+  function sunItems(sun, t, { spin, rock = 0, scale = 1, dir = 1, rays = 18 }) {
+    const { R } = sun, items = [];
+    for (let i = 0; i < rays; i++) {
+      const a = spin + rock + i / rays * TAU, reach = 1 + 0.45 * Math.sin(TAU * (t / 3 - i * 3 / rays));
+      const d = (R + 2 + 6 * (reach - 1)) * scale;
+      items.push({ s: sun.ray, ax: 0, ay: 20, x: LX + Math.cos(a) * d, y: LY + Math.sin(a) * d, rot: a + Math.PI / 2, sx: scale, sy: scale * Math.max(0.3, reach) });
     }
-    items.push({ s: plate, x: LX, y: LY });
+    items.push({ s: sun.plate, x: LX, y: LY, sx: scale, sy: scale });
     RINGS.forEach(([rk, n, ws, turns], ri) => {
-      const breathe = 1 + 0.16 * Math.sin(TAU * (t / 4 + ri / 3)), turn = TAU * turns / n * t / LOOP;
+      const breathe = 1 + 0.16 * Math.sin(TAU * (t / 4 + ri / 3)), turn = dir * TAU * turns / n * t / LOOP + rock * 0.5;
       for (let i = 0; i < n; i++) {
-        const a = turn + i / n * TAU, rr = LR * rk * breathe, sz = ws * (1 + 0.25 * Math.sin(TAU * (t / 2 + i / n + ri / 3)));
-        items.push({ s: win[(i + ri) % 3], x: LX + Math.cos(a) * rr, y: LY + Math.sin(a) * rr, rot: a, sx: sz, sy: sz });
+        const a = turn + i / n * TAU, rr = R * rk * breathe * scale, sz = ws * scale * (1 + 0.25 * Math.sin(TAU * (t / 2 + i / n + ri / 3)));
+        items.push({ s: sun.win[(i + ri) % 3], x: LX + Math.cos(a) * rr, y: LY + Math.sin(a) * rr, rot: a, sx: sz, sy: sz });
       }
     });
-    items.push({ s: hub, x: LX, y: LY, rot: -spin * 2 });
-    drawSprites(ctx, items, env.shadow);
+    items.push({ s: sun.hub, x: LX, y: LY, sx: scale, sy: scale });
+    return items;
+  }
+  const front = makeSun('lantern', 92, { plate: mix(P.butter, '#f6c36a', 0.4), hub: '#f6c36a', eye: P.pink, rays: [P.butter, '#f6c36a', '#f29d5c'], sill: P.butterDeep, glass: ['#ffe2a0', '#ffd27e', '#fff0c8'] });
+  const back = makeSun('backsun', 150, { plate: mix(P.mint, P.aqua, 0.5), hub: P.lilac, eye: P.butter, rays: [P.aqua, P.mint, P.lilac], sill: P.mintDeep, glass: ['#e8fbf6', '#d6f2ff', '#efe6ff'] });
+  S.add({ name: 'lantern-glow', z: 5610, blend: 'lighter', render(ctx, t) {
+    glow(ctx, LX, LY, 700, '#ffd9a0', 0.2 + 0.03 * cyc(t, 2));
+    glow(ctx, LX, LY, 260, '#fff0c8', 0.3);
   } });
+  // the sun behind: larger, cooler, turning the other way, growing and shrinking on a 6 s beat
+  S.add({ name: 'backsun', z: 5600, shadow: { dx: 8, dy: 14, alpha: 0.22 }, render(ctx, t, env) {
+    drawSprites(ctx, sunItems(back, t, { spin: -TAU * (4 / 18) * t / LOOP, scale: 1 + 0.22 * Math.sin(TAU * t / 6), dir: -1 }), env.shadow);
+  } });
+  // the front sun: spinning, and rocking back and forth as it goes on a 3 s beat
+  S.add({ name: 'lantern', z: 5000, shadow: { dx: 8, dy: 14, alpha: 0.25 }, anim: (t) => ({ y: 4 * cyc(t, 1) }), render(ctx, t, env) {
+    drawSprites(ctx, sunItems(front, t, { spin: TAU * (6 / 18) * t / LOOP, rock: 0.35 * Math.sin(TAU * t / 3), scale: 1 + 0.05 * Math.sin(TAU * t / 1.5) }), env.shadow);
+  } });
+  // two rings of small solids orbiting the pair in opposite directions, one turn a loop each, tipped into
+  // ellipses; each solid tumbles and swells as it goes
+  const ORBIT_KINDS = ['octa', 'cube', 'ico', 'tetra', 'dodeca', 'star'];
+  S.add({ name: 'orbits', z: 4900, render(ctx, t) {
+    for (const [rx, ry, dir, n, r0, ph] of [[300, 96, 1, 6, 12, 0], [380, 132, -1, 8, 9, 0.5]]) {
+      const pts = [...Array(n)].map((_, i) => { const a = dir * TAU * t / LOOP + (i + ph) / n * TAU; return { i, a, x: LX + Math.cos(a) * rx, y: LY + 40 + Math.sin(a) * ry, z: Math.sin(a) }; }).sort((p, q) => p.z - q.z);
+      for (const p of pts) drawSolid(ctx, ORBIT_KINDS[p.i % 6], p.x, p.y, r0 * (0.8 + 0.25 * p.z) * (1 + 0.2 * Math.sin(TAU * t / 3 + p.i)), [TAU * t / 4 + p.i, TAU * t / 6, p.i], COLS_ORBIT[p.i % 5]);
+    }
+  } });
+
 
 
   // the dome's floor: two rows of hills
