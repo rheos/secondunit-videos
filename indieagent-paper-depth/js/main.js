@@ -1,9 +1,9 @@
 // Paper depth, the film: 18 s at 24 fps. Every frame is a pure function of t.
-//   0.0 - 8.0   A  the road at dusk; the camera trucks right with her, the planes slide past at their depths
+//   0.0 - 8.0   A  the road at dusk; the camera trucks right with him, the planes slide past at their depths
 //   8.0 - 10.2  the pop-up book: A's cut-outs fold flat onto the page front to back, the night backdrop drops
-//               in, B's cut-outs spring up back to front; she keeps walking on the page through all of it
-//   10.2 - 18.0 B  the venue at night; she slows and stops by the door, the camera dollies in, the door opens
-//               and its light spills over her
+//               in, B's cut-outs spring up back to front; he keeps walking on the page through all of it
+//   10.2 - 18.0 B  the venue at night; he slows and stops by the door, the camera dollies in, the door opens
+//               and its light spills over him
 // The pop-up transition follows paper-fox's (src/film/transitions.js popup; MIT, Copyright (c) 2026 Leonxlnx,
 // notice in LICENSE-paper-fox.md): fold front to back, spring up back to front, a page that shows in between.
 const params = new URLSearchParams(location.search);
@@ -20,9 +20,9 @@ function charX(t) {
   return X0 + V * (DEC0 + (DEC1 - DEC0) * (k - (k ** 3 - k ** 4 / 2)));   // speed eases out with a smoothstep
 }
 const walkAmt = (t) => 1 - ss(DEC0, DEC1, t);
-// she stops in the middle of a double support, both feet down
+// he stops in the middle of a double support, both feet down
 MUS.setPhase((((.06 - (charX(99) / SC / MUS.LC) % 1) % 1) + 1) % 1);
-// her place on screen drifts right through the film; the camera follows, then dollies in on B
+// his place on screen drifts right through the film; the camera follows, then dollies in on B
 const screenX = (t) => 640 + 510 * E.sine(t / 15);
 const camX = (t) => charX(t) - screenX(t);
 const camZ = (t) => t < 12 ? 0 : 130 * E.sine((t - 12) / 7.5);
@@ -64,6 +64,7 @@ function frame(t) {
   const shadowK = ss(.3, .7, p);
   CHAR.draw = (g) => MUS.draw(g, 0, 915, charState(t), {
     shadow: [lerp(6, -6, shadowK), 6], shadowAlpha: .38, scale: SC,
+    light: [lerp(SCENES.LA[0], SCENES.LB[0], shadowK), lerp(SCENES.LA[1], SCENES.LB[1], shadowK)],
     rim: doorK > 0 ? { dir: [1, -.15], width: 3.2, color: '#ffd38a', alpha: .85 * doorK, wash: .07 * doorK } : null,
   });
   list.push(CHAR);

@@ -1,7 +1,7 @@
 // Paper depth, the two scenes. Every plane is baked once into textured, bevelled paper sprites (js/paper.js) and
 // only moved per frame. Planes are authored as they look on screen with the camera at the scene's reference x.
 //   A  the road out of town at dusk: sky, clouds, two mountain ranges, hills with a small town, a fenced field,
-//      the road she walks on, wild grass in front. Light low from the left.
+//      the road he walks on, wild grass in front. Light low from the left.
 //   B  the venue at night: sky with moon and stars, skyline, rooftops, the alley with the tour van, the street
 //      front with the marquee and door, the sidewalk, a lamp post and hydrant in front. Light from the right.
 const SCENES = (() => {
