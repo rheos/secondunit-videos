@@ -1964,8 +1964,8 @@ __m["src/loop-world.js"] = (() => {
 // Every motion here is periodic in the loop period, so the film loops without a seam.
 
 const { RNG, noise } = __m["vendor/paper-fox/core/rng.js"];
-const { linear, glow } = __m["vendor/paper-fox/core/piece.js"];
-const { mix, shade, vary } = __m["vendor/paper-fox/core/color.js"];
+const { linear, glow, piece } = __m["vendor/paper-fox/core/piece.js"];
+const { mix, shade, vary, rgba } = __m["vendor/paper-fox/core/color.js"];
 const { drawSprites } = __m["vendor/paper-fox/core/sprite.js"];
 const { transform } = __m["vendor/paper-fox/core/geom.js"];
 const { LIGHT, PAL, CLAY_MAT, CLAY_EDGE, clayForm, tube, steps, dot } = __m["src/kit.js"];
@@ -2030,16 +2030,17 @@ function floater(g, kind, x, y, s, rng) {
 function addWorld(S) {
   const sp = (name, box, draw, o = {}) => S.sprite({ name, ...box, res: o.res ?? 1, mat: o.mat ?? CLAY_MAT, edge: o.edge ?? CLAY_EDGE, shadow: o.shadow ?? { blur: 18 }, draw });
 
-  // sky: warm cream at the horizon to a soft lilac-pink overhead, with a faint honeycomb pressed into it
-  S.plane(20000, { name: 'sky', x: -600, y: -500, w: 3120, h: 2100, mat: 'smooth', edge: false, shadow: false, draw(g) {
-    g.fillStyle = linear(g, 0, -500, 0, 1100, ['#e6c7d6', '#f1d4d2', '#fbe7da', '#fdf1e4']); g.fillRect(-600, -500, 3120, 2100);
-    const r = 40, dx = r * Math.sqrt(3), dy = r * 1.5;
-    g.strokeStyle = 'rgba(255,255,255,0.22)'; g.lineWidth = 2;
-    for (let row = 0, y = -500; y < 700; row++, y += dy) for (let x = -600 + (row & 1) * dx / 2; x < 2520; x += dx) {
-      g.globalAlpha = Math.max(0, 1 - (y + 500) / 1100);
-      g.beginPath(); for (let i = 0; i < 6; i++) { const a = Math.PI / 6 + i * Math.PI / 3; g.lineTo(x + Math.cos(a) * (r - 4), y + Math.sin(a) * (r - 4)); } g.closePath(); g.stroke();
+  // the backdrop: warm card with the embossed honeycomb from the relief box, each cell its own soft piece, fading
+  // toward the hills. No box and no frame: it simply goes on behind the world.
+  S.plane(20000, { name: 'honeycomb', x: -620, y: -520, w: 3160, h: 2120, mat: 'smooth', edge: false, shadow: false, draw(g) {
+    g.fillStyle = linear(g, 0, -520, 0, 1100, [mix(P.wall, P.pink, 0.22), P.wallLight, '#fbeee2']); g.fillRect(-620, -520, 3160, 2120);
+    const r = 34, dx = r * Math.sqrt(3), dy = r * 1.5, hr = new RNG('hex-world');
+    for (let row = 0, y = -540; y < 980; row++, y += dy) for (let x = -660 + (row & 1) * dx / 2; x < 2580; x += dx) {
+      const fade = 1 - Math.max(0, (y - 380) / 520);
+      if (fade <= 0.04 || hr.chance(0.05)) continue;
+      const hex = [...Array(6)].map((_, i) => { const a = Math.PI / 6 + i * Math.PI / 3; return [x + Math.cos(a) * (r - 3.4), y + Math.sin(a) * (r - 3.4)]; });
+      piece(g, hex, { fill: rgba(vary(mix(P.wallLight, P.blush, 0.35), hr, 0.05), 0.55 + 0.45 * fade), bevel: { light: LIGHT, width: 2.2, hi: 0.32 * fade, lo: 0.18 * fade, soft: 1.6 }, shadow: { color: `rgba(120,70,60,${0.16 * fade})`, blur: 6, x: 1.6, y: 3 } });
     }
-    g.globalAlpha = 1;
   } });
 
   // the sun, high on the right, its windows breathing with light
@@ -2054,7 +2055,7 @@ function addWorld(S) {
 
   // clouds drift and come back within the loop
   const crng = new RNG('clouds');
-  const clouds = [[300, 210, 300, 7000], [1150, 140, 260, 7600], [1900, 300, 340, 6400], [-150, 420, 240, 5600], [760, 330, 200, 5200]];
+  const clouds = [[300, 210, 300, 7000], [1150, 140, 260, 7600], [1900, 300, 340, 6400], [-150, 420, 240, 5600], [1420, 600, 190, 5200]];
   clouds.forEach(([x, y, w, z], i) => {
     const s = sp(`cloud-${i}`, { x: x - w * 0.7, y: y - w * 0.45, w: w * 1.4, h: w * 0.6 }, (g) => cloud(g, x, y, w, crng));
     S.add({ name: `cloud-${i}`, z, shadow: { dx: 8, dy: 14, alpha: 0.18 }, sprites: [{ s }], anim: (t) => ({ x: 26 * cyc(t, 1, i * 0.21), y: 5 * cyc(t, 2, i * 0.13) }) });
@@ -2115,289 +2116,280 @@ function addNear(S) {
 
 return { LOOP, cyc, addWorld, addNear };
 })();
-__m["src/loop-machine.js"] = (() => {
-// The living loop, the machine. All timing is periodic in LOOP (12 s) so the film loops without a seam.
-//
-//   the sculpture  three funnel arms in a recycle-symbol loop around C. Each arm flares into a mouth and narrows to
-//                  a spout that pours into the next arm's mouth. Beads circulate around it for ever (two laps a
-//                  loop); inside an arm a bead shows as a swelling that travels along it, in a gap as a bead in
-//                  flight. It breathes.
-//   the system     every 4 s one item goes round the wider loop, three in flight at once (phases 0, 4, 8 s):
-//                    u 0.0-0.4   a bead drops from the spigot under the bottom arm onto the piping
-//                    u 0.4-3.2   it rolls along the piping to the tree
-//                    u 3.2-3.6   it drops into the crown; at 3.6 a rosette blooms in its slot
-//                    u 6.0-8.0   the picker takes the rosette and loads it into a bucket on the lift
-//                    u 8.0-~11.3 the bucket climbs, tips over the top and pours it into the top mouth
-//   the crank      a figure turns a crank (one turn every 2 s) whose belt drives the sculpture's hub
+__m["src/loop-shapes.js"] = (() => {
+// The living loop, the manifested shapes: small faceted solids the figures call up with their hands and release.
+// Drawn each frame as clay polyhedra: vertices rotated in 3D, back faces culled, faces painted far to near, each
+// face's tone from how it turns to the key light, with a lit cut along its edges. A glow wraps a shape while it is
+// being made and fades once it is let go.
 
-const { RNG } = __m["vendor/paper-fox/core/rng.js"];
-const { radial } = __m["vendor/paper-fox/core/piece.js"];
-const { mix, shade, rgba, vary } = __m["vendor/paper-fox/core/color.js"];
+const { mix, shade, rgba } = __m["vendor/paper-fox/core/color.js"];
+const { glow } = __m["vendor/paper-fox/core/piece.js"];
+const { PAL } = __m["src/kit.js"];
+const P = PAL;
+const L3 = (() => { const v = [-0.46, -0.79, 0.4], n = Math.hypot(...v); return v.map((x) => x / n); })();
+const phi = (1 + Math.sqrt(5)) / 2;
+
+const norm = (v) => { const n = Math.hypot(...v); return v.map((x) => x / n); };
+const SOLIDS = {
+  tetra: { v: [[1, 1, 1], [1, -1, -1], [-1, 1, -1], [-1, -1, 1]], f: [[0, 1, 2], [0, 3, 1], [0, 2, 3], [1, 3, 2]] },
+  octa: { v: [[1, 0, 0], [-1, 0, 0], [0, 1, 0], [0, -1, 0], [0, 0, 1], [0, 0, -1]], f: [[0, 2, 4], [2, 1, 4], [1, 3, 4], [3, 0, 4], [2, 0, 5], [1, 2, 5], [3, 1, 5], [0, 3, 5]] },
+  cube: { v: [[-1, -1, -1], [1, -1, -1], [1, 1, -1], [-1, 1, -1], [-1, -1, 1], [1, -1, 1], [1, 1, 1], [-1, 1, 1]], f: [[0, 3, 2, 1], [4, 5, 6, 7], [0, 1, 5, 4], [2, 3, 7, 6], [1, 2, 6, 5], [0, 4, 7, 3]] },
+  ico: {
+    v: [[-1, phi, 0], [1, phi, 0], [-1, -phi, 0], [1, -phi, 0], [0, -1, phi], [0, 1, phi], [0, -1, -phi], [0, 1, -phi], [phi, 0, -1], [phi, 0, 1], [-phi, 0, -1], [-phi, 0, 1]],
+    f: [[0, 11, 5], [0, 5, 1], [0, 1, 7], [0, 7, 10], [0, 10, 11], [1, 5, 9], [5, 11, 4], [11, 10, 2], [10, 7, 6], [7, 1, 8], [3, 9, 4], [3, 4, 2], [3, 2, 6], [3, 6, 8], [3, 8, 9], [4, 9, 5], [2, 4, 11], [6, 2, 10], [8, 6, 7], [9, 8, 1]],
+  },
+};
+// two interlocked tetrahedra
+SOLIDS.star = { v: [...SOLIDS.tetra.v, ...SOLIDS.tetra.v.map(([x, y, z]) => [-x, -y, -z])], f: [...SOLIDS.tetra.f, ...SOLIDS.tetra.f.map((f) => f.map((i) => i + 4))] };
+for (const S of Object.values(SOLIDS)) S.v = S.v.map(norm);
+
+function rot([x, y, z], a, b, c) {
+  let t;
+  t = y * Math.cos(a) - z * Math.sin(a); z = y * Math.sin(a) + z * Math.cos(a); y = t;
+  t = x * Math.cos(b) + z * Math.sin(b); z = -x * Math.sin(b) + z * Math.cos(b); x = t;
+  t = x * Math.cos(c) - y * Math.sin(c); y = x * Math.sin(c) + y * Math.cos(c); x = t;
+  return [x, y, z];
+}
+
+// Draw one solid. kind: tetra | octa | cube | ico | star | ring. r: radius in px. ang: [a, b, c] rotation.
+// glowK 0..1: how much making-light wraps it. alpha: overall fade.
+function drawSolid(ctx, kind, x, y, r, ang, color, { glowK = 0, alpha = 1, glowColor = '#fff1c8' } = {}) {
+  if (alpha <= 0.01 || r < 0.5) return;
+  ctx.save();
+  ctx.globalAlpha *= alpha;
+  if (glowK > 0) glow(ctx, x, y, r * 3.2, glowColor, 0.55 * glowK);
+  // a soft shadow below, as if cast on the air's haze
+  ctx.fillStyle = 'rgba(70,40,50,0.12)'; ctx.beginPath(); ctx.ellipse(x + r * 0.35, y + r * 1.5, r * 0.9, r * 0.25, 0, 0, Math.PI * 2); ctx.fill();
+  if (kind === 'ring') {
+    // a torus seen at an angle: two ellipses of clay with a lit inner edge
+    const tilt = Math.abs(Math.cos(ang[0])) * 0.85 + 0.15;
+    ctx.lineCap = 'round';
+    for (const [w, c] of [[r * 0.46, shade(color, -0.22)], [r * 0.36, color], [r * 0.14, mix(color, '#fffaf0', 0.55)]]) {
+      ctx.strokeStyle = c; ctx.lineWidth = w;
+      ctx.beginPath(); ctx.ellipse(x - (c === color ? 0 : 0), y - (w < r * 0.2 ? r * 0.06 : 0), r, r * tilt, ang[2], 0, Math.PI * 2); ctx.stroke();
+    }
+  } else {
+    const S = SOLIDS[kind], V = S.v.map((v) => rot(v, ang[0], ang[1], ang[2]));
+    const faces = S.f.map((f) => {
+      const a = V[f[0]], b = V[f[1]], c = V[f[2]];
+      const u = [b[0] - a[0], b[1] - a[1], b[2] - a[2]], w = [c[0] - a[0], c[1] - a[1], c[2] - a[2]];
+      let n = norm([u[1] * w[2] - u[2] * w[1], u[2] * w[0] - u[0] * w[2], u[0] * w[1] - u[1] * w[0]]);
+      // every solid is centred on the origin: an outward normal points the same way as the face's centre
+      const m = [0, 1, 2].map((d) => f.reduce((s, i) => s + V[i][d], 0) / f.length);
+      if (n[0] * m[0] + n[1] * m[1] + n[2] * m[2] < 0) n = n.map((x) => -x);
+      return { f, n, z: m[2] };
+    }).filter((F) => F.n[2] > 0).sort((p, q) => p.z - q.z);
+    for (const F of faces) {
+      const lit = F.n[0] * L3[0] + F.n[1] * L3[1] + F.n[2] * L3[2];
+      const tone = lit > 0 ? mix(color, '#fffaf0', lit * 0.55) : shade(color, lit * 0.45);
+      ctx.beginPath();
+      F.f.forEach((i, k) => { const px = x + V[i][0] * r, py = y + V[i][1] * r; k ? ctx.lineTo(px, py) : ctx.moveTo(px, py); });
+      ctx.closePath();
+      ctx.fillStyle = tone; ctx.fill();
+      ctx.strokeStyle = rgba(mix(tone, '#fffaf0', 0.5), 0.7); ctx.lineWidth = Math.max(0.8, r * 0.05); ctx.lineJoin = 'round'; ctx.stroke();
+    }
+  }
+  ctx.restore();
+}
+
+const SHAPE_COLORS = [P.mint, P.pink, P.butter, P.lilac, P.aqua];
+
+return { drawSolid, SHAPE_COLORS };
+})();
+__m["src/loop-machine.js"] = (() => {
+// The living loop, the machines (draft 2). All timing is periodic in LOOP (12 s) so the film loops without a seam.
+//
+//   the funnel     one funnel that feeds itself: material gathers in the wide top and swirls down; it leaves by a
+//                  duct at the bottom that turns right, climbs past the funnel's lip, turns left over it and drops
+//                  back in. Beads go round it for ever (a lap every 6 s, eight beads); in the duct a bead shows as a
+//                  swelling that travels along it and lights two windows in the riser. The funnel glows faintly
+//                  from inside and breathes.
+//   the console    a desk of knobs, a lever, a row of lights and a round screen with a turning shape; a cable from
+//                  it droops across to the duct's elbow.
+//   the instrument three nested rings turning on different axes above a stepped plinth, a small solid hovering
+//                  over them; once a loop it lets a cube go.
+
+const { radial, glow } = __m["vendor/paper-fox/core/piece.js"];
+const { mix, shade, rgba } = __m["vendor/paper-fox/core/color.js"];
 const { drawSprites } = __m["vendor/paper-fox/core/sprite.js"];
 const { along } = __m["vendor/paper-fox/core/geom.js"];
-const { clamp, lerp, smoothstep, E } = __m["vendor/paper-fox/core/ease.js"];
-const { LIGHT, PAL, CLAY_MAT, CLAY_EDGE, clayForm, tube, tubeOutline, steps, dot, chaikin } = __m["src/kit.js"];
-const { rosette, drawBead } = __m["src/density.js"];
+const { lerp, smoothstep, E } = __m["vendor/paper-fox/core/ease.js"];
+const { PAL, CLAY_MAT, CLAY_EDGE, clayForm, tube, steps, dot, chaikin } = __m["src/kit.js"];
+const { drawBead } = __m["src/density.js"];
 const { LOOP, cyc } = __m["src/loop-world.js"];
+const { drawSolid } = __m["src/loop-shapes.js"];
 const P = PAL, TAU = Math.PI * 2;
 const circle = (cx, cy, r, n = 36) => [...Array(n)].map((_, i) => [cx + Math.cos(i / n * TAU) * r, cy + Math.sin(i / n * TAU) * r]);
-const sub = (a, b) => [a[0] - b[0], a[1] - b[1]], add = (a, b) => [a[0] + b[0], a[1] + b[1]], mul = (a, k) => [a[0] * k, a[1] * k];
-const len = (a) => Math.hypot(a[0], a[1]), unit = (a) => mul(a, 1 / (len(a) || 1));
 const mod = (x, m) => ((x % m) + m) % m;
-const popSpring = (x) => x <= 0 ? 0 : x >= 1 ? 1 : 1 - Math.exp(-5.2 * x) * Math.cos(x * 8.2);
+const plen = (pts) => pts.reduce((a, p, i) => i ? a + Math.hypot(p[0] - pts[i - 1][0], p[1] - pts[i - 1][1]) : 0, 0);
 
-// ---------------- the sculpture ----------------
-const C = [960, 470], R = 232, GAP = 62;
-const ARM_COLORS = [P.mint, P.pink, P.butter];
-const V = [-90, 30, 150].map((a) => [C[0] + Math.cos(a * Math.PI / 180) * R, C[1] + Math.sin(a * Math.PI / 180) * R]);
-const qb = (p0, p1, p2, u) => [(1 - u) ** 2 * p0[0] + 2 * (1 - u) * u * p1[0] + u * u * p2[0], (1 - u) ** 2 * p0[1] + 2 * (1 - u) * u * p1[1] + u * u * p2[1]];
-const width = (u) => 11 + 30 * (1 - u) ** 3;
-const ARMS = V.map((v0, k) => {
-  const v1 = V[(k + 1) % 3], mid = mul(add(v0, v1), 0.5), out = unit(sub(mid, C));
-  const p1 = add(mid, mul(out, R * 0.14)), p2 = sub(v1, mul(unit(sub(v1, p1)), GAP));
-  const pts = [...Array(41)].map((_, i) => qb(v0, p1, p2, i / 40));
-  let L = 0; const acc = [0];
-  for (let i = 1; i < pts.length; i++) { L += len(sub(pts[i], pts[i - 1])); acc.push(L); }
-  return { k, v0, p1, p2, pts, acc, L, next: v1, color: ARM_COLORS[k] };
-});
-const LOOP_LEN = ARMS.reduce((a, A) => a + A.L + GAP, 0);
-// point, tangent and width at s px along arm A
-function armAt(A, s) {
-  const u = clamp(s / A.L), i = Math.min(39, Math.floor(u * 40)), f = u * 40 - i;
-  const p = [lerp(A.pts[i][0], A.pts[i + 1][0], f), lerp(A.pts[i][1], A.pts[i + 1][1], f)];
-  return { p, ang: Math.atan2(A.pts[i + 1][1] - A.pts[i][1], A.pts[i + 1][0] - A.pts[i][0]), w: width(u) };
-}
+// ---------------- the funnel ----------------
+const RIM = { x: 880, y: 372, rx: 188, ry: 44 };
+const THROAT = [880, 640], TW = 15;
+const DUCT = { w: 15, path: chaikin([[880, 630], [880, 782], [1196, 782], [1196, 246], [906, 246], [906, 296]], 4) };
+const DUCT_LEN = plen(DUCT.path);
+const SPOUT = DUCT.path[DUCT.path.length - 1];
+const WINDOWS = [[1196, 640], [1196, 470]];
 
-function drawArm(g, A) {
-  const ws = A.pts.map((_, i) => width(i / 40));
-  // the arm, rolled from one piece of clay, flaring at the mouth
-  tube(g, A.pts, ws, A.color);
-  // pressed rings along the arm, like a coiled pot
-  for (let s = 40; s < A.L - 20; s += 34) {
-    const { p, ang, w } = armAt(A, s), n = [-Math.sin(ang), Math.cos(ang)];
-    g.strokeStyle = rgba(shade(A.color, -0.28), 0.35); g.lineWidth = 1.6;
-    g.beginPath(); g.moveTo(p[0] + n[0] * w * 0.9, p[1] + n[1] * w * 0.9); g.quadraticCurveTo(p[0] + Math.cos(ang) * 4, p[1] + Math.sin(ang) * 4, p[0] - n[0] * w * 0.9, p[1] - n[1] * w * 0.9); g.stroke();
+// the funnel's wall: concave sides from the rim to the throat
+function wall() {
+  const L = [], R = [];
+  for (let i = 0; i <= 24; i++) {
+    const u = i / 24, k = 1 - (1 - u) ** 1.8, hw = lerp(RIM.rx, TW, k), y = lerp(RIM.y, THROAT[1], u);
+    L.push([RIM.x - hw, y]); R.push([RIM.x + hw, y]);
   }
-  // the mouth: a thick lip around a dark opening, set across the arm's start
-  const { ang } = armAt(A, 2), n = [-Math.sin(ang), Math.cos(ang)], w0 = width(0) + 4;
-  const lip = [...Array(40)].map((_, i) => { const a = i / 40 * TAU; return add(A.v0, add(mul(n, Math.cos(a) * w0), mul([Math.cos(ang), Math.sin(ang)], Math.sin(a) * w0 * 0.42))); });
-  clayForm(g, lip, shade(A.color, 0.08), { size: 30, sheen: 0.25 });
-  const hole = lip.map((q) => add(A.v0, mul(sub(q, A.v0), 0.72)));
-  g.fillStyle = radial(g, A.v0[0], A.v0[1], 2, w0, [shade(A.color, -0.7), shade(A.color, -0.45)]);
-  g.beginPath(); hole.forEach((q, i) => (i ? g.lineTo(q[0], q[1]) : g.moveTo(q[0], q[1]))); g.closePath(); g.fill();
-  // the spout's lip
-  const e = armAt(A, A.L);
-  clayForm(g, circle(e.p[0], e.p[1], e.w + 3, 28), shade(A.color, 0.1), { size: 14, sheen: 0.2 });
-  dot(g, e.p[0], e.p[1], e.w * 0.55, shade(A.color, -0.6));
+  return [...L, ...R.reverse()];
 }
+const rimPts = (k = 1, from = 0, to = TAU, n = 48) => [...Array(n + 1)].map((_, i) => { const a = from + (to - from) * i / n; return [RIM.x + Math.cos(a) * RIM.rx * k, RIM.y + Math.sin(a) * RIM.ry * k]; });
 
-// the spigot under the bottom arm, and the hub the crank belt drives
-const BOTTOM = ARMS[1];
-const SPIGOT = (() => { const { p, w } = armAt(BOTTOM, BOTTOM.L * 0.48); return { top: add(p, [0, w * 0.6]), tip: add(p, [0, w + 36]) }; })();
-const HUB = [V[2][0] - 10, V[2][1] + 62];
-
-function drawSculpture(g) {
-  // the sculpture floats: no stand. A small pulley under the lower-left corner takes the crank's belt
-  tube(g, [HUB, V[2]], 5, P.slate);
-  clayForm(g, circle(HUB[0], HUB[1], 15, 30), P.slate, { sheen: 0.25 });
-  dot(g, HUB[0], HUB[1], 5, P.butter);
-  // the arms, the one whose spout pours into the top mouth last so the overlaps stack in flow order
-  for (const A of [ARMS[1], ARMS[2], ARMS[0]]) drawArm(g, A);
-  // the spigot: a short pipe with a valve knob
-  tube(g, [SPIGOT.top, SPIGOT.tip], 7, P.slate);
-  clayForm(g, circle(SPIGOT.tip[0] + 14, SPIGOT.tip[1] - 14, 7, 20), P.butter, { sheen: 0.3 });
-  // a core in the middle, held by three spokes, its centre a slow eye of windows
-  for (const v of V) tube(g, [C, add(C, mul(sub(v, C), 0.55))], 5, mix(P.bone, P.slate, 0.25));
-  clayForm(g, circle(C[0], C[1], 46, 40), P.bone, { sheen: 0.25 });
-  for (let i = 0; i < 8; i++) { const a = i / 8 * TAU; clayForm(g, circle(C[0] + Math.cos(a) * 30, C[1] + Math.sin(a) * 30, 6, 16), i % 2 ? P.mint : P.pink, { sheen: 0.2 }); }
-  dot(g, C[0], C[1], 12, P.butter);
-}
-
-// ---------------- the piping and the tree ----------------
-const TRACK_Y = SPIGOT.tip[1] + 44;
-const TRACK = { w: 6, path: chaikin([[SPIGOT.tip[0] - 30, TRACK_Y], [1200, TRACK_Y], [1250, TRACK_Y + 30], [1590, TRACK_Y + 30]], 3) };
-const TRACK_LEN = TRACK.path.reduce((a, p, i) => i ? a + len(sub(p, TRACK.path[i - 1])) : 0, 0);
-const TREE = { x: 1610, base: 985 };
-// every item blooms in the same spot within the picker's reach: one bloom is only ever open at a time
-const SLOTS = [[1566, 888], [1566, 888], [1566, 888]];
-const TREE_FIXED = [[1640, 900, 30, P.slate], [1700, 905, 28, P.mintDeep], [1606, 850, 26, mix(P.slate, P.mint, 0.4)], [1666, 846, 24, P.slateDeep]];
-function drawTree(g) {
-  const rng = new RNG('loop-tree');
-  for (let i = 0; i < 4; i++) {
-    const y = TREE.base - i * 22, w = 40 - i * 4;
-    clayForm(g, [[TREE.x - w / 2, y], [TREE.x - w / 2 + 3, y - 22], [TREE.x + w / 2 - 3, y - 22], [TREE.x + w / 2, y]], vary(i % 2 ? '#8d7a72' : '#a08b80', rng, 0.05), { smooth: false, size: 18 });
+function drawFunnelBack(g) {
+  // the duct first (it passes behind the funnel on its way round), then the funnel
+  tube(g, DUCT.path, DUCT.w, P.mint);
+  for (let s = 30; s < DUCT_LEN - 20; s += 30) {
+    const { p, ang } = along(DUCT.path, s / DUCT_LEN), n = [-Math.sin(ang), Math.cos(ang)];
+    g.strokeStyle = rgba(shade(P.mint, -0.3), 0.32); g.lineWidth = 1.5;
+    g.beginPath(); g.moveTo(p[0] + n[0] * DUCT.w * 0.9, p[1] + n[1] * DUCT.w * 0.9); g.lineTo(p[0] - n[0] * DUCT.w * 0.9, p[1] - n[1] * DUCT.w * 0.9); g.stroke();
   }
-  for (const b of [[[TREE.x, 905], [1586, 893], [1570, 888]], [[TREE.x, 900], [1660, 884], [1690, 872]], [[TREE.x, 900], [1612, 862]]]) tube(g, b, [6, 4.5, 3.5].slice(0, b.length), '#8d7a72');
-  for (const [x, y, r, c] of TREE_FIXED) rosette(g, x, y, r, c, rng);
+  for (const [x, y] of WINDOWS) {
+    clayForm(g, circle(x, y, 22, 32), P.bone, { sheen: 0.25 });
+    g.fillStyle = radial(g, x - 4, y - 4, 2, 16, ['#3b4876', P.navy]); g.beginPath(); g.arc(x, y, 15, 0, TAU); g.fill();
+  }
+  clayForm(g, circle(SPOUT[0], SPOUT[1] + 2, 19, 30), shade(P.mint, 0.08), { sheen: 0.25 });
+  dot(g, SPOUT[0], SPOUT[1] + 4, 9, shade(P.mint, -0.6));
+  // the funnel: wall, then the dark inside seen through the mouth, then the back of the rim
+  clayForm(g, wall(), P.butter, { size: 120, sheen: 0.2 });
+  for (let k = 1; k < 7; k++) {                               // thrown rings around the wall
+    const u = k / 7, kk = 1 - (1 - u) ** 1.8, hw = lerp(RIM.rx, TW, kk), y = lerp(RIM.y, THROAT[1], u);
+    g.strokeStyle = rgba(shade(P.butter, -0.25), 0.35); g.lineWidth = 1.6;
+    g.beginPath(); g.ellipse(RIM.x, y, hw, Math.max(2, RIM.ry * hw / RIM.rx), 0, 0.1, Math.PI - 0.1); g.stroke();
+  }
+  const mouth = rimPts(0.94);
+  g.fillStyle = radial(g, RIM.x, RIM.y + 6, 4, RIM.rx, ['#2a2340', '#4a3a52', shade(P.butter, -0.45)]);
+  g.beginPath(); mouth.forEach(([x, y], i) => (i ? g.lineTo(x, y) : g.moveTo(x, y))); g.closePath(); g.fill();
+  const back = [...rimPts(1.06, Math.PI, TAU, 30), ...rimPts(0.93, TAU, Math.PI, 30)];
+  clayForm(g, back, shade(P.pink, 0.04), { size: 18, sheen: 0.2, smooth: false });
 }
-function drawPiping(g) {
-  tube(g, TRACK.path, TRACK.w, P.butter);
-  clayForm(g, circle(TRACK.path[0][0], TRACK.path[0][1], 12, 24), P.butter, { sheen: 0.25 });
-}
-
-// ---------------- the lift ----------------
-const LIFT = { B: [1336, 952], T: [1160, 236], r: 30 };
-const LD = unit(sub(LIFT.T, LIFT.B)), LN = [-LD[1], LD[0]];   // LN points to the right of the upward run
-const LL = len(sub(LIFT.T, LIFT.B)), BELT = 2 * LL + TAU * LIFT.r, BV = (BELT / 2) / 4, P_LOAD = 46;
-// belt position p (0 at the bottom of the rising right-hand run) -> point, outward normal, bucket rotation
-function beltAt(p) {
-  p = mod(p, BELT);
-  const { B, T, r } = LIFT, a0 = Math.atan2(LN[1], LN[0]);
-  if (p < LL) return { q: add(add(B, mul(LN, r)), mul(LD, p)), out: LN, rot: 0 };
-  p -= LL;
-  if (p < Math.PI * r) { const a = a0 - p / r; const out = [Math.cos(a), Math.sin(a)]; return { q: add(T, mul(out, r)), out, rot: -p / r }; }
-  p -= Math.PI * r;
-  if (p < LL) return { q: sub(add(T, mul(LN, -r)), mul(LD, p)), out: mul(LN, -1), rot: -Math.PI };
-  p -= LL;
-  const a = a0 + Math.PI - p / r, out = [Math.cos(a), Math.sin(a)];
-  return { q: add(B, mul(out, r)), out, rot: -Math.PI - p / r };
-}
-// bucket j's belt position at time t: a bucket is at the loading point at every t = 0 mod 4
-const bucketP = (t, j) => P_LOAD + BV * t + j * BELT / 2;
-const T_TIP = (LL - P_LOAD) / BV;                        // seconds from loading to the start of the top turn
-function drawLiftFrame(g) {
-  const { B, T, r } = LIFT;
-  // two posts and the pulleys
-  tube(g, [add(B, [0, 0]), [B[0], 985]], 6, P.slateDeep);
-  for (const c of [B, T]) { clayForm(g, circle(c[0], c[1], r + 6, 32), P.slate, { sheen: 0.25 }); dot(g, c[0], c[1], 7, P.butter); }
-}
-function drawBucket(g) {
-  // a little clay cup, open at the top, origin at its rim centre
-  clayForm(g, [[-15, -2], [15, -2], [11, 20], [-11, 20]], P.aqua, { size: 18, sheen: 0.22 });
-  clayForm(g, [[-17, -5], [17, -5], [17, 1], [-17, 1]], shade(P.aqua, 0.1), { smooth: false, size: 6 });
+function drawFunnelFront(g) {
+  // the front half of the lip, drawn after the beads that drop into the mouth
+  const front = [...rimPts(1.06, 0, Math.PI, 30), ...rimPts(0.93, Math.PI, 0, 30)];
+  clayForm(g, front, P.pink, { size: 20, sheen: 0.28, smooth: false });
 }
 
-// ---------------- the crank ----------------
-const CRANK = { c: [672, 905], r: 16 };
-const crankAngle = (t) => TAU * t / 2;
+// ---------------- the console ----------------
+const CONSOLE = { knobs: [[520, 912], [548, 906]], lever: [612, 904], screen: [580, 876], lights: [[512, 934], [526, 933], [540, 932], [554, 931], [568, 930], [582, 929]] };
+function drawConsole(g) {
+  // legs, a slanted desk, a raised screen housing, and the cable to the duct
+  tube(g, [[506, 945], [500, 985]], 4, P.slateDeep); tube(g, [[626, 945], [632, 985]], 4, P.slateDeep);
+  clayForm(g, [[492, 948], [496, 916], [632, 900], [640, 946]], P.slate, { smooth: false, size: 40, sheen: 0.18 });
+  clayForm(g, [[562, 902], [568, 852], [594, 850], [600, 898]], shade(P.slate, -0.05), { smooth: false, size: 24 });
+  for (const [x, y] of CONSOLE.knobs) clayForm(g, circle(x, y, 8, 24), P.butter, { sheen: 0.3 });
+  tube(g, [[CONSOLE.lever[0] - 8, CONSOLE.lever[1]], [CONSOLE.lever[0] + 8, CONSOLE.lever[1]]], 4, P.slateDeep);
+  const cable = [];
+  for (let i = 0; i <= 20; i++) { const u = i / 20; cable.push([lerp(636, 872, u), lerp(930, 786, u) + 70 * Math.sin(Math.PI * u)]); }
+  tube(g, cable, 4, P.lilac);
+}
 
-function addMachine(S) {
+// ---------------- the instrument ----------------
+const INSTR = { x: 1470, ringY: 800, slider: [[1430, 942], [1470, 942]] };
+function drawInstrumentBase(g) {
+  steps(g, INSTR.x, 985, { n: 4, w0: 110, w1: 54, h: 13, gap: 1, colors: [P.slateDeep, P.slate, P.lilac] });
+  tube(g, [[INSTR.x, 935], [INSTR.x, INSTR.ringY + 6]], 5, P.slate);
+  tube(g, INSTR.slider, 3, P.slateDeep, { shadow: false });
+}
+
+// the operators' rhythms, shared with the figures that work them
+const knobAngle = (t, i) => (i === 0 ? 0.9 * Math.sin(TAU * t / 3) : -0.5 + 0.5 * Math.sin(TAU * t / 6));
+const leverAngle = (t) => { const q = mod(t, 3); return q < 1.6 ? -0.5 : q < 2.2 ? lerp(-0.5, 0.6, E.outSoft((q - 1.6) / 0.6)) : lerp(0.6, -0.5, E.smooth((q - 2.2) / 0.8)); };
+const sliderK = (t) => 0.5 + 0.45 * Math.sin(TAU * t / 4);
+
+function addMachines(S) {
   const sp = (name, box, draw, o = {}) => S.sprite({ name, ...box, res: o.res ?? 1.25, mat: CLAY_MAT, edge: CLAY_EDGE, shadow: { blur: o.blur ?? 18 }, draw });
-  const sculpt = sp('sculpture', { x: C[0] - R - 120, y: C[1] - R - 90, w: (R + 120) * 2, h: R * 2 + 220 }, drawSculpture, { blur: 22 });
-  const lumps = ARMS.map((A) => sp(`lump-${A.k}`, { x: -26, y: -26, w: 52, h: 52 }, (g) => clayForm(g, circle(0, 0, 20, 32), shade(A.color, 0.05), { sheen: 0.3 }), { blur: 6 }));
-  const beads = [P.mint, P.pink, P.butter, P.lilac, P.aqua, P.pinkDeep, '#c6d957'].map((c, i) => sp(`lbead-${i}`, { x: -20, y: -20, w: 40, h: 40 }, (g) => drawBead(g, c), { res: 1.5, blur: 8 }));
-  const tree = sp('tree', { x: 1460, y: 800, w: 300, h: 200 }, drawTree);
-  const blooms = SLOTS.map(([x, y], i) => sp(`bloom-${i}`, { x: x - 50, y: y - 50, w: 100, h: 100 }, (g) => rosette(g, x, y, 28, [P.mint, P.pink, P.butter][i], new RNG(`bloom-${i}`)), { blur: 10 }));
-  const piping = sp('piping', { x: 900, y: TRACK_Y - 40, w: 760, h: 120 }, drawPiping);
-  const liftFrame = sp('lift', { x: 1000, y: 160, w: 380, h: 840 }, drawLiftFrame);
-  const bucket = sp('bucket', { x: -24, y: -12, w: 48, h: 40 }, drawBucket, { res: 1.5, blur: 8 });
-  const crank = sp('crank', { x: 600, y: 860, w: 140, h: 140 }, (g) => {
-    tube(g, [[CRANK.c[0], CRANK.c[1]], [CRANK.c[0] - 8, 985]], 6, P.slateDeep);
-    tube(g, [[CRANK.c[0], CRANK.c[1]], [CRANK.c[0] + 10, 985]], 6, P.slateDeep);
-    clayForm(g, circle(CRANK.c[0], CRANK.c[1], CRANK.r + 6, 36), P.butter, { sheen: 0.25 });
-    for (let i = 0; i < 6; i++) { const a = i / 6 * TAU; dot(g, CRANK.c[0] + Math.cos(a) * CRANK.r * 0.62, CRANK.c[1] + Math.sin(a) * CRANK.r * 0.62, 4, P.butterDeep); }
-  });
-  const handle = sp('handle', { x: -12, y: -12, w: 24, h: 24 }, (g) => clayForm(g, circle(0, 0, 7, 20), P.pinkDeep, { sheen: 0.3 }), { res: 1.5, blur: 6 });
+  const back = sp('funnel', { x: 640, y: 200, w: 620, h: 640 }, drawFunnelBack, { blur: 22 });
+  const front = sp('funnel-lip', { x: 670, y: 310, w: 420, h: 130 }, drawFunnelFront, { blur: 10 });
+  const lump = sp('lump', { x: -26, y: -26, w: 52, h: 52 }, (g) => clayForm(g, circle(0, 0, 20, 32), shade(P.mint, 0.06), { sheen: 0.3 }), { blur: 6 });
+  const beads = [P.pink, P.butter, P.lilac, P.aqua, P.pinkDeep, P.mint, '#c6d957', P.blush].map((c, i) => sp(`fbead-${i}`, { x: -20, y: -20, w: 40, h: 40 }, (g) => drawBead(g, c), { res: 1.5, blur: 8 }));
+  const consoleS = sp('console', { x: 470, y: 760, w: 430, h: 240 }, drawConsole);
+  const instr = sp('instrument', { x: 1390, y: 780, w: 160, h: 220 }, drawInstrumentBase);
 
-  // the tree, its blooms, and the piping with the beads rolling on it
-  S.add({ name: 'tree', z: 1030, shadow: { dx: 9, dy: 15, alpha: 0.4 }, render(ctx, t, env) {
-    const items = [{ s: tree }];
-    SLOTS.forEach(([x, y], i) => {
-      const u = mod(t - 4 * i, LOOP);
-      if (u < 3.6 || u >= 6.4) return;
-      const k = popSpring((u - 3.6) / 0.9);
-      items.push({ s: blooms[i], ax: x, ay: y, x, y, sx: 0.15 + 0.85 * k, sy: 0.15 + 0.85 * k, rot: -0.7 * (1 - k) });
-    });
-    drawSprites(ctx, items, env.shadow);
-  } });
-  S.add({ name: 'piping', z: 1015, shadow: { dx: 8, dy: 14, alpha: 0.42 }, render(ctx, t, env) {
-    const items = [{ s: piping }];
-    for (let i = 0; i < 3; i++) {
-      const u = mod(t - 4 * i, LOOP), b = beads[i * 2];
-      if (u < 0.4) { const f = E.in(u / 0.4); items.push({ s: b, x: SPIGOT.tip[0], y: lerp(SPIGOT.tip[1] + 4, TRACK_Y - TRACK.w - 13, f), rot: 0 }); }
-      else if (u < 3.2) {
-        const s = TRACK_LEN * E.smooth((u - 0.4) / 2.8), { p, ang } = along(TRACK.path, s / TRACK_LEN), d = TRACK.w + 13;
-        items.push({ s: b, x: p[0] + Math.sin(ang) * d, y: p[1] - Math.cos(ang) * d, rot: s / 13 });
-      } else if (u < 3.6) {
-        const f = (u - 3.2) / 0.4, e = TRACK.path[TRACK.path.length - 1];
-        items.push({ s: b, x: lerp(e[0] + 4, SLOTS[i][0], f), y: lerp(e[1] - 19, SLOTS[i][1], E.in(f)) - 30 * Math.sin(Math.PI * f), rot: 9 + f * 3, alpha: 1 - smoothstep(0.75, 1, f) });
+  // the funnel: glow inside, beads swirling down in the mouth, swellings along the duct, beads dropping from the spout
+  S.add({ name: 'funnel', z: 1000, shadow: { dx: 10, dy: 18, alpha: 0.4 }, anim: (t) => ({ sx: 1 + 0.01 * cyc(t, 2), sy: 1 + 0.01 * cyc(t, 2), ox: RIM.x, oy: 520 }), render(ctx, t, env) {
+    drawSprites(ctx, [{ s: back }], env.shadow);
+    const swirl = [], swell = [], fall = [];
+    for (let n = 0; n < 8; n++) {
+      const u = mod(t + n * 0.75, 6), b = beads[n];
+      if (u < 1.6) {                                       // swirling inward and down inside the mouth
+        const k = u / 1.6, a = n * 1.3 + k * TAU * 1.25, rr = (1 - k) * 0.78 + 0.08;
+        swirl.push({ s: b, x: RIM.x + Math.cos(a) * RIM.rx * rr, y: RIM.y + 6 + Math.sin(a) * RIM.ry * rr + k * 14, sx: 0.75 - 0.35 * k, sy: 0.75 - 0.35 * k, rot: a * 2, alpha: 1 - smoothstep(0.7, 1, k) });
+      } else if (u >= 2.2 && u < 5.4) {                    // travelling the duct
+        const s = DUCT_LEN * (u - 2.2) / 3.2, { p, ang } = along(DUCT.path, s / DUCT_LEN);
+        swell.push({ s: lump, x: p[0], y: p[1], rot: ang, sx: 1.25, sy: 0.92, alpha: smoothstep(0, 30, s) * smoothstep(DUCT_LEN, DUCT_LEN - 30, s) });
+      } else if (u >= 5.4) {                               // dropping from the spout into the mouth
+        const k = (u - 5.4) / 0.6;
+        fall.push({ s: b, x: lerp(SPOUT[0], RIM.x + 14, k), y: lerp(SPOUT[1] + 14, RIM.y + 8, E.in(k)), rot: k * 3, sx: 0.8, sy: 0.8 });
       }
     }
-    drawSprites(ctx, items, { ...env.shadow, dx: 4, dy: 7 });
-  } });
-
-  // the lift: frame, belt, buckets, and the bloom each bucket carries up and pours into the top mouth
-  S.add({ name: 'lift', z: 995, shadow: { dx: 8, dy: 14, alpha: 0.4 }, render(ctx, t, env) {
-    drawSprites(ctx, [{ s: liftFrame }], env.shadow);
-    // the belt: a cord with bead marks that move with it
-    ctx.save();
-    ctx.strokeStyle = shade(P.slateDeep, -0.1); ctx.lineWidth = 4; ctx.lineCap = 'round';
-    ctx.beginPath(); for (let p = 0; p <= BELT; p += 8) { const { q } = beltAt(p); p ? ctx.lineTo(q[0], q[1]) : ctx.moveTo(q[0], q[1]); } ctx.closePath(); ctx.stroke();
-    // marks spaced an even fraction of the belt, so the 1.5 belt-turns in a loop land them back on their places
-    const MS = BELT / (2 * Math.round(BELT / 52));
-    for (let p = mod(BV * t, MS); p < BELT; p += MS) { const { q } = beltAt(p); ctx.fillStyle = P.mint; ctx.beginPath(); ctx.arc(q[0], q[1], 3, 0, TAU); ctx.fill(); }
+    // light from inside the funnel, pulsing with each bead that drops in
+    const pulse = 0.5 + 0.5 * Math.cos(TAU * mod(t, 0.75) / 0.75);
+    ctx.save(); ctx.globalCompositeOperation = 'lighter';
+    glow(ctx, RIM.x, RIM.y + 4, 140, '#ffc9a0', 0.16 + 0.06 * pulse);
     ctx.restore();
-    const items = [];
-    for (let j = 0; j < 2; j++) {
-      const { q, out, rot } = beltAt(bucketP(t, j)), at = add(q, mul(out, 14));
-      items.push({ s: bucket, x: at[0], y: at[1], rot });
-    }
-    drawSprites(ctx, items, env.shadow);
-    // blooms riding in buckets, then pouring into the top mouth
-    const ride = [];
-    for (let i = 0; i < 3; i++) {
-      const u = mod(t - 4 * i, LOOP), since = u - 8.0;
-      if (since < 0) continue;
-      const j = mod(Math.round((t - since) / 4), 2), tipAt = T_TIP + 0.25;
-      if (since < tipAt) {
-        const { q, out, rot } = beltAt(bucketP(t, j)), at = add(add(q, mul(out, 14)), [Math.sin(rot) * 6, -Math.cos(rot) * 6]);
-        ride.push({ s: blooms[i], ax: SLOTS[i][0], ay: SLOTS[i][1], x: at[0], y: at[1], sx: 0.5, sy: 0.5, rot });
-      } else if (since < tipAt + 0.5) {
-        const f = (since - tipAt) / 0.5, { q, out } = beltAt(LL + BV * 0.25), from = add(q, mul(out, 20)), to = add(V[0], [0, 6]);
-        ride.push({ s: blooms[i], ax: SLOTS[i][0], ay: SLOTS[i][1], x: lerp(from[0], to[0], f), y: lerp(from[1], to[1], E.in(f)) - 40 * Math.sin(Math.PI * f), sx: 0.5 * (1 - 0.6 * f), sy: 0.5 * (1 - 0.6 * f), rot: -2 - f * 2, alpha: 1 - smoothstep(0.8, 1, f) });
-      }
-    }
-    drawSprites(ctx, ride, { ...env.shadow, dx: 4, dy: 7 });
-  } });
-
-  // the sculpture breathes; beads swell along its arms and hop the gaps between spout and mouth
-  S.add({ name: 'sculpture', z: 1000, shadow: { dx: 10, dy: 18, alpha: 0.42 }, anim: (t) => ({ sx: 1 + 0.012 * cyc(t, 3), sy: 1 + 0.012 * cyc(t, 3), ox: C[0], oy: C[1] }), render(ctx, t, env) {
-    drawSprites(ctx, [{ s: sculpt }], env.shadow);
-    const N = 15, s0 = (LOOP_LEN / 6) * t, swell = [], fly = [];
-    for (let n = 0; n < N; n++) {
-      let s = mod(s0 + n * LOOP_LEN / N, LOOP_LEN);
-      for (const A of ARMS) {
-        if (s < A.L) {
-          const { p, ang, w } = armAt(A, s);
-          swell.push({ s: lumps[A.k], x: p[0], y: p[1], rot: ang, sx: 1.5 * w / 20 * 1.05, sy: w / 20 * 1.12, alpha: smoothstep(0, 30, s) * smoothstep(A.L, A.L - 30, s) * 0.9 });
-          break;
-        }
-        s -= A.L;
-        if (s < GAP) {
-          const f = s / GAP, e = armAt(A, A.L).p;
-          fly.push({ s: beads[n % beads.length], x: lerp(e[0], A.next[0], f), y: lerp(e[1], A.next[1], f) - 18 * Math.sin(Math.PI * f), rot: f * 4, sx: 0.8, sy: 0.8 });
-          break;
-        }
-        s -= GAP;
-      }
-    }
+    drawSprites(ctx, swirl, { ...env.shadow, alpha: 0 });
+    drawSprites(ctx, [{ s: front }], { ...env.shadow, dx: 3, dy: 5 });
     drawSprites(ctx, swell, { ...env.shadow, alpha: 0 });
-    drawSprites(ctx, fly, { ...env.shadow, dx: 4, dy: 7 });
-  } });
-
-  // the crank, its turning handle, and the belt from it to the sculpture's hub
-  S.add({ name: 'crank', z: 990, shadow: { dx: 8, dy: 14, alpha: 0.42 }, render(ctx, t, env) {
-    const a = crankAngle(t), h = add(CRANK.c, [Math.cos(a) * CRANK.r, Math.sin(a) * CRANK.r]);
-    ctx.save();
-    ctx.strokeStyle = shade(P.slateDeep, -0.1); ctx.lineWidth = 3.5;
-    const ang = Math.atan2(HUB[1] - CRANK.c[1], HUB[0] - CRANK.c[0]), n = [-Math.sin(ang), Math.cos(ang)];
-    for (const sgn of [1, -1]) { ctx.beginPath(); ctx.moveTo(CRANK.c[0] + n[0] * 16 * sgn, CRANK.c[1] + n[1] * 16 * sgn); ctx.lineTo(HUB[0] + n[0] * 9 * sgn, HUB[1] + n[1] * 9 * sgn); ctx.stroke(); }
-    const d = len(sub(HUB, CRANK.c));
-    for (let k = mod(t * 110, 22); k < d; k += 22) for (const sgn of [1, -1]) {   // 110 px/s: 60 marks a loop
-      const kk = sgn > 0 ? k : d - k, q = add(add(CRANK.c, mul(unit(sub(HUB, CRANK.c)), kk)), mul(n, (16 + (9 - 16) * kk / d) * sgn));
-      ctx.fillStyle = P.butter; ctx.beginPath(); ctx.arc(q[0], q[1], 2.6, 0, TAU); ctx.fill();
+    for (const [wx, wy] of WINDOWS) for (const it of swell) {   // a window lights as a bead passes behind it
+      const d = Math.hypot(it.x - wx, it.y - wy);
+      if (d < 26) { ctx.save(); ctx.globalAlpha = 1 - d / 26; ctx.globalCompositeOperation = 'lighter'; glow(ctx, wx, wy, 26, '#bfe8ff', 0.6); ctx.restore(); }
     }
-    ctx.restore();
-    drawSprites(ctx, [{ s: crank }, { s: handle, x: h[0], y: h[1] }], env.shadow);
+    drawSprites(ctx, fall, { ...env.shadow, dx: 4, dy: 7 });
   } });
 
-  return { V, ARMS, blooms };
+  // the console: lights in a slow pattern, the knobs' marks, the lever, and a turning shape on the screen
+  S.add({ name: 'console', z: 990, shadow: { dx: 8, dy: 14, alpha: 0.42 }, render(ctx, t, env) {
+    drawSprites(ctx, [{ s: consoleS }], env.shadow);
+    CONSOLE.lights.forEach(([x, y], i) => {
+      const on = 0.5 + 0.5 * Math.sin(TAU * (t / 3 + i / 6));
+      ctx.fillStyle = mix(shade(P.mint, -0.3), '#fff4c8', on); ctx.beginPath(); ctx.arc(x, y, 3.2, 0, TAU); ctx.fill();
+      if (on > 0.7) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, x, y, 9, '#fff1c0', (on - 0.7) * 1.4); ctx.restore(); }
+    });
+    CONSOLE.knobs.forEach(([x, y], i) => {
+      const a = knobAngle(t, i);
+      ctx.strokeStyle = shade(P.butter, -0.45); ctx.lineWidth = 2; ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + Math.sin(a) * 6, y - Math.cos(a) * 6); ctx.stroke();
+    });
+    const la = leverAngle(t), [lx, ly] = CONSOLE.lever, tip = [lx + Math.sin(la) * 24, ly - Math.cos(la) * 24];
+    ctx.strokeStyle = P.slateDeep; ctx.lineWidth = 4; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(lx, ly); ctx.lineTo(...tip); ctx.stroke();
+    ctx.fillStyle = P.pinkDeep; ctx.beginPath(); ctx.arc(tip[0], tip[1], 5, 0, TAU); ctx.fill();
+    const [sx, sy] = CONSOLE.screen;
+    ctx.fillStyle = radial(ctx, sx - 3, sy - 3, 1, 14, ['#3d4b80', P.navy]); ctx.beginPath(); ctx.ellipse(sx, sy, 12, 18, 0, 0, TAU); ctx.fill();
+    drawSolid(ctx, 'octa', sx, sy, 7, [TAU * t / 6, TAU * t / 12, 0.3], '#bfe8ff', { glowK: 0.4, glowColor: '#9fd8ff' });
+  } });
+
+  // the instrument: three rings turning on their own axes, a hovering solid, and once a loop a cube let go
+  S.add({ name: 'instrument', z: 990, shadow: { dx: 8, dy: 14, alpha: 0.42 }, render(ctx, t, env) {
+    drawSprites(ctx, [{ s: instr }], env.shadow);
+    const [a, b] = INSTR.slider, k = sliderK(t);
+    ctx.fillStyle = P.butter; ctx.beginPath(); ctx.roundRect(lerp(a[0], b[0], k) - 5, a[1] - 7, 10, 14, 3); ctx.fill();
+    const cx = INSTR.x, cy = INSTR.ringY;
+    ctx.lineCap = 'round';
+    for (const [r, c, rate, axis] of [[44, P.pink, 1, 0], [34, P.mint, -2, 1], [24, P.butter, 3, 2]]) {
+      const sq = Math.abs(Math.cos(TAU * rate * t / LOOP)) * 0.9 + 0.1;
+      for (const [w, col] of [[7, shade(c, -0.25)], [5, c], [2, mix(c, '#fffaf0', 0.6)]]) {
+        ctx.strokeStyle = col; ctx.lineWidth = w; ctx.beginPath();
+        if (axis === 0) ctx.ellipse(cx, cy, r * sq, r, 0, 0, TAU);
+        else ctx.ellipse(cx, cy, r, r * sq, axis === 1 ? 0 : Math.PI / 4, 0, TAU);
+        ctx.stroke();
+      }
+    }
+    drawSolid(ctx, 'octa', cx, cy, 11, [TAU * t / 4, TAU * t / 6, 0], P.lilac, { glowK: 0.5 + 0.2 * cyc(t, 3) });
+    const u = mod(t - 7.0, LOOP);
+    if (u < 10.5) {
+      const grow = smoothstep(0, 0.8, u), f = smoothstep(0.8, 10.5, u);
+      drawSolid(ctx, 'cube', cx - 60 * f - 40 * Math.sin(f * 3), cy - 60 * grow - 560 * E.outSoft(f), 13 * grow * (1 - 0.45 * f), [TAU * t / 6, TAU * t / 4, 0.4], P.aqua, { glowK: 1 - smoothstep(0.8, 2.5, u), alpha: 1 - smoothstep(0.82, 1, f) });
+    }
+  } });
 }
 
-// where the picker loads: the bucket's position on the rising run at the loading point
-const LOAD_AT = (() => { const { q, out } = beltAt(P_LOAD); return add(q, mul(out, 14)); })();
-
-return { popSpring, C, ARMS, SPIGOT, HUB, TRACK_Y, TRACK, TREE, SLOTS, LIFT, CRANK, crankAngle, addMachine, LOAD_AT };
+return { RIM, DUCT, CONSOLE, INSTR, knobAngle, leverAngle, sliderK, addMachines };
 })();
 __m["src/loop-figures.js"] = (() => {
 // The living loop, the small figures: clay people about 100 px tall. Body and head are baked clay sprites; arms
@@ -2495,75 +2487,83 @@ function drawFigure(ctx, F, pose, env) {
 return { BODY, ik2, makeFigure, drawFigure };
 })();
 __m["src/loop.js"] = (() => {
-// The living loop: a seamless 12 s loop at 24 fps in the approved relief-box clay language, as an open world.
-// A recycle-symbol sculpture feeds back into itself, and a wider system around it does the same: beads leave the
-// sculpture, roll to a tree, the tree blooms, a small figure loads the bloom onto a lift, the lift pours it back
-// in. A second figure turns the crank that drives the sculpture; a third watches the sun through a telescope from
-// a floating island. Every motion is periodic in 12 s (or a divisor of it), so frame 288 is frame 0.
+// The living loop (draft 2): a seamless 12 s loop at 24 fps in the approved relief-box clay language, an open
+// world on the honeycomb backdrop. In the middle a funnel feeds itself: what gathers in its mouth runs out of a
+// duct at the bottom, right, up past the lip, left, and drops back in. Around it four small figures do quiet,
+// unexplained work: one plays a console of knobs and a lever, one tunes a ring instrument, and two practise
+// mudras, calling geometric solids into being between their hands and letting them go into the world.
+// Every motion is periodic in 12 s (or a divisor of it), so frame 288 is frame 0.
 // Built on Leon Lin's paper-fox core (vendor/paper-fox, MIT, Copyright (c) 2026 Leonxlnx).
 
 const { Scene } = __m["vendor/paper-fox/core/stage.js"];
 const { drawSprites } = __m["vendor/paper-fox/core/sprite.js"];
 const { finish } = __m["vendor/paper-fox/core/post.js"];
-const { mix } = __m["vendor/paper-fox/core/color.js"];
 const { E, lerp, smoothstep } = __m["vendor/paper-fox/core/ease.js"];
 const { LIGHT, PAL } = __m["src/kit.js"];
 const { ISLAND } = __m["src/props.js"];
 const { LOOP, cyc, addWorld, addNear } = __m["src/loop-world.js"];
-const { SLOTS, LOAD_AT, CRANK, crankAngle, addMachine } = __m["src/loop-machine.js"];
+const { CONSOLE, INSTR, knobAngle, leverAngle, sliderK, addMachines } = __m["src/loop-machine.js"];
+const { drawSolid } = __m["src/loop-shapes.js"];
 const { makeFigure, drawFigure } = __m["src/loop-figures.js"];
-const P = PAL, TAU = Math.PI * 2, GROUND = 985, HIP = GROUND - 33;
+// the figures stand a little taller than draft 1's so their hands read, still small against the funnel
+const P = PAL, TAU = Math.PI * 2, GROUND = 985, FS = 1.2, HIP = GROUND - 33 * FS;
 const mod = (x, m) => ((x % m) + m) % m;
+const mixPt = (a, b, k) => [lerp(a[0], b[0], k), lerp(a[1], b[1], k)];
 
-// a walking stance at x: feet swing about the hip, the hip bobs; d is the distance walked so far
-function walk(x, d, facing, scale = 1) {
-  const stride = 26 * scale, ph = d / stride * Math.PI;
-  const feet = [0, 1].map((k) => { const a = ph + k * Math.PI; return [x + facing * Math.sin(a) * stride * 0.5, GROUND - Math.max(0, Math.cos(a)) * 6]; });
-  return { hip: [x, HIP - 1.5 * Math.abs(Math.sin(ph))], feet };
-}
-const stand = (x, facing) => ({ hip: [x, HIP], feet: [[x - facing * 6, GROUND], [x + facing * 7, GROUND]] });
-
-// ---------------- the picker: picks a bloom, carries it to the lift, loads it, walks back (every 4 s) --------------
-const X_HOME = 1528, X_LOAD = LOAD_AT[0] + 34;
-function pickerPose(t, blooms) {
-  const q = mod(t, 4), i = mod(Math.round((t - q + 2 - 6) / 4), 3);
-  const chest = (x, f, h) => [x + f * 13, h - 22];
-  let pose, carry = null;
-  if (q < 1) {                                  // walking back to the tree
-    const k = E.smooth(q), x = lerp(X_LOAD, X_HOME, k);
-    pose = { ...walk(x, Math.abs(x - X_LOAD), 1), facing: 1, lean: 0.06 };
-    pose.hands = [[x - 8, HIP + 2], [x + 10, HIP + 4]];
-  } else if (q < 2) {                           // waiting under the tree, looking up at it
-    pose = { ...stand(X_HOME, 1), facing: 1, lean: -0.02 + 0.02 * Math.sin(TAU * q), headTilt: -0.3 };
-    pose.hands = [[X_HOME - 9, HIP + 6], [X_HOME + 9, HIP + 6]];
-  } else if (q < 2.6) {                         // reaching up into the tree for the bloom, then drawing it in
-    const s = SLOTS[i], reach = smoothstep(2.0, 2.32, q) * (1 - smoothstep(2.42, 2.6, q));
-    pose = { ...stand(X_HOME, 1), facing: 1, lean: 0.12 * reach, headTilt: -0.45 * reach };
-    pose.hip[1] -= 3 * reach;
-    const c = chest(X_HOME, 1, pose.hip[1]);
-    pose.hands = [[lerp(X_HOME - 6, c[0] - 3, smoothstep(2.4, 2.6, q)), lerp(HIP + 6, c[1], smoothstep(2.4, 2.6, q))], [lerp(c[0], s[0], reach), lerp(c[1], s[1], reach)]];
-    if (q >= 2.4) carry = pose.hands[1];
-  } else if (q < 3.6) {                         // carrying it to the lift
-    const k = E.smooth(q - 2.6), x = lerp(X_HOME, X_LOAD, k);
-    pose = { ...walk(x, Math.abs(x - X_HOME), -1), facing: -1, lean: 0.05 };
-    const c = chest(x, -1, pose.hip[1]);
-    pose.hands = [[c[0] + 5, c[1] + 2], [c[0] - 2, c[1] - 1]];
-    carry = [c[0] - 4, c[1] - 6];
-  } else {                                      // setting it in the bucket as the bucket arrives
-    const k = smoothstep(3.6, 3.95, q);
-    pose = { ...stand(X_LOAD, -1), facing: -1, lean: 0.14 * k };
-    const c = chest(X_LOAD, -1, HIP), b = [LOAD_AT[0], LOAD_AT[1] - 10];
-    pose.hands = [[lerp(c[0] + 5, b[0] + 8, k), lerp(c[1] + 2, b[1] + 2, k)], [lerp(c[0] - 2, b[0] - 2, k), lerp(c[1] - 1, b[1] - 3, k)]];
-    carry = [lerp(c[0] - 4, b[0], k), lerp(c[1] - 6, b[1] - 6, k)];
+// keyframed hands: keys are [time, back hand, front hand]; eased between, held after the last key
+function keyed(q, keys) {
+  if (q <= keys[0][0]) return [keys[0][1], keys[0][2]];
+  for (let i = 0; i < keys.length - 1; i++) {
+    const [t0, a0, b0] = keys[i], [t1, a1, b1] = keys[i + 1];
+    if (q < t1) { const k = E.smooth((q - t0) / (t1 - t0)); return [mixPt(a0, a1, k), mixPt(b0, b1, k)]; }
   }
-  if (carry) pose.carry = (ctx, env, hands) => { const h = hands[1]; drawSprites(ctx, [{ s: blooms[i], ax: SLOTS[i][0], ay: SLOTS[i][1], x: h[0] - 2, y: h[1] - 8, sx: 0.5, sy: 0.5 }], { ...env.shadow, dx: 3, dy: 5 }); };
-  return pose;
+  const last = keys[keys.length - 1];
+  return [last[1], last[2]];
 }
 
-// ---------------- the cranker: both hands on the handle, the body rocking with each turn ----------------
-function crankerPose(t) {
-  const a = crankAngle(t), h = [CRANK.c[0] + Math.cos(a) * CRANK.r, CRANK.c[1] + Math.sin(a) * CRANK.r], x = CRANK.c[0] - 26;
-  return { hip: [x + 2 * Math.cos(a), HIP + 1.5 * Math.sin(a)], feet: [[x - 10, GROUND], [x + 9, GROUND]], facing: 1, lean: 0.16 + 0.07 * Math.cos(a), hands: [[h[0] - 2, h[1] + 1], [h[0] + 2, h[1] - 1]] };
+// ---------------- the console operator, behind the desk ----------------
+function operatorPose(t) {
+  const q = mod(t, 3), x = 566;
+  const k1 = CONSOLE.knobs[0], k2 = CONSOLE.knobs[1], la = leverAngle(t), lev = [CONSOLE.lever[0] + Math.sin(la) * 22, CONSOLE.lever[1] - Math.cos(la) * 22];
+  const a1 = knobAngle(t, 0), knobHand = [k1[0] + Math.sin(a1) * 3, k1[1] - 4];
+  if (q < 1.4) return { hip: [x, HIP], feet: [[x + 6, GROUND], [x - 7, GROUND]], facing: -1, scale: FS, lean: 0.14, headTilt: 0.15, hands: [[k2[0] + 2, k2[1] - 4], knobHand] };
+  if (q < 2.4) { const k = smoothstep(1.4, 1.6, q); return { hip: [x, HIP], feet: [[x - 6, GROUND], [x + 7, GROUND]], facing: 1, scale: FS, lean: 0.12, headTilt: 0.1, hands: [mixPt([x - 4, 912], [x + 8, 906], k), mixPt([x + 20, 905], lev, k)] }; }
+  const [sx, sy] = CONSOLE.screen, k = smoothstep(2.4, 2.6, q) * (1 - smoothstep(2.85, 3.0, q));
+  return { hip: [x, HIP], feet: [[x - 6, GROUND], [x + 7, GROUND]], facing: 1, scale: FS, lean: 0.06, headTilt: -0.1, hands: [mixPt([x + 8, 906], [sx - 10, sy - 6 + 3 * Math.sin(TAU * q * 2)], k), mixPt(lev, [sx + 10, sy - 8 + 3 * Math.cos(TAU * q * 2)], k)] };
+}
+
+// ---------------- the instrument tuner ----------------
+function tunerPose(t) {
+  const x = 1404, [a, b] = INSTR.slider, sl = [lerp(a[0], b[0], sliderK(t)), a[1] - 2];
+  const q = mod(t, 4), reach = smoothstep(2.0, 2.5, q) * (1 - smoothstep(3.0, 3.5, q));
+  return { hip: [x, HIP], feet: [[x - 7, GROUND], [x + 7, GROUND]], facing: 1, scale: FS, lean: 0.1 + 0.04 * reach, headTilt: -0.35 * reach,
+    hands: [mixPt([x + 14, 930], [INSTR.x - 22, INSTR.ringY + 20 + 4 * Math.sin(TAU * q)], reach), sl] };
+}
+
+// ---------------- the mudra: a 6 s practice that makes one solid ----------------
+//   0.0-0.8 rest, 0.8-1.8 palms meet at the chest, 1.8-2.4 lifted overhead, 2.4-3.6 parted into a frame while the
+//   solid forms between them, 3.6-4.4 arms open and it is let go, 4.4-6.0 hands come down, head follows it up
+function mudraHands(c, x, f, hip) {
+  const k = FS, rest = [[x - f * 7 * k, hip + 4 * k], [x + f * 9 * k, hip + 4 * k]], chest = [[x + f * 6 * k, hip - 22 * k], [x + f * 9 * k, hip - 23 * k]];
+  const over = [[x + f * k, hip - 72 * k], [x + f * 5 * k, hip - 73 * k]], frame = [[x + (-13 + f * 3) * k, hip - 68 * k], [x + (13 + f * 3) * k, hip - 69 * k]], open = [[x - 32 * k, hip - 58 * k], [x + 32 * k, hip - 59 * k]];
+  const sw = (pair) => (f > 0 ? pair : [pair[1], pair[0]]);
+  return keyed(c, [[0, ...rest], [0.8, ...rest], [1.8, ...chest], [2.4, ...over], [2.9, ...sw(frame)], [3.6, ...sw(frame)], [4.4, ...open], [5.4, ...rest]]);
+}
+function mudraPose(t, phase, x, f, hip, feet) {
+  const c = mod(t - phase, 6), up = smoothstep(1.8, 2.4, c) * (1 - smoothstep(4.4, 5.4, c));
+  return { hip: [x, hip], feet, facing: f, scale: FS, lean: -0.08 * up, headTilt: -0.35 * up - 0.25 * smoothstep(3.6, 4.4, c) * (1 - smoothstep(5.4, 6, c)), hands: mudraHands(c, x, f, hip) };
+}
+// the solids each practitioner has made: born at 2.4 of each cycle, let go at 3.6, gone by 10.5 s after birth
+function mudraSolids(ctx, t, phase, x, f, hip, kinds, colors, drift) {
+  for (let j = 0; j < 2; j++) {
+    const born = phase + 2.4 + 6 * j, u = mod(t - born, LOOP);
+    if (u >= 10.5) continue;
+    const at = [x + f * 3 * FS, hip - 96 * FS], grow = E.outSoft(smoothstep(0, 1.2, u)), f2 = smoothstep(1.2, 10.5, u);
+    const px = at[0] + drift * (170 * f2 + 26 * Math.sin(f2 * 5)), py = at[1] - 600 * E.outSoft(f2);
+    drawSolid(ctx, kinds[j], px, py, 24 * grow * (1 - 0.4 * f2), [TAU * t / 6 + j, TAU * t / 4, 0.3 * j], colors[j], { glowK: smoothstep(0, 0.6, u) * (1 - smoothstep(1.2, 3.0, u)), alpha: 1 - smoothstep(0.82, 1, f2) });
+    // the light between the hands while it forms
+    if (u < 1.2) drawSolid(ctx, 'ring', at[0], at[1], 30 * grow, [TAU * t / 2, 0, TAU * t / 3], '#fff1c8', { alpha: 0.5 * (1 - u / 1.2) });
+  }
 }
 
 function scene() {
@@ -2574,40 +2574,32 @@ function scene() {
     light: LIGHT,
     shadow: { alpha: 0.42, dist: 10, blur: 16 },
     post: { bloom: 0.22, threshold: 0.74, bloomRadius: 1.4, vignette: 0.16, grain: 0.035, grade: { color: '#ffd8b4', amount: 0.08, mode: 'soft-light' } },
-    camera: (t) => ({ x: 60 * cyc(t, 1), y: 6 * cyc(t, 1, 0.21), z: 25 + 25 * cyc(t, 1, 0.1), roll: 0.0012 * cyc(t, 1, 0.4) }),
+    camera: (t) => ({ x: 50 * cyc(t, 1), y: 6 * cyc(t, 1, 0.21), z: 30 + 20 * cyc(t, 1, 0.1), roll: 0.0012 * cyc(t, 1, 0.4) }),
     build(S) {
       const world = addWorld(S);
-      const M = addMachine(S);
+      addMachines(S);
       addNear(S);
-      const picker = makeFigure(S, { name: 'picker', color: P.mint, cap: P.pink });
-      const cranker = makeFigure(S, { name: 'cranker', color: P.pink, cap: 'pom' });
-      const watcher = makeFigure(S, { name: 'watcher', color: P.butter, cap: P.mintDeep });
+      const operator = makeFigure(S, { name: 'operator', color: P.pink, cap: 'pom' });
+      const tuner = makeFigure(S, { name: 'tuner', color: P.lilac, cap: P.butter });
+      const adept = makeFigure(S, { name: 'adept', color: P.mint, cap: P.pink });
+      const seer = makeFigure(S, { name: 'seer', color: P.butter, cap: P.mintDeep });
 
+      // the operator stands behind the console, so it draws before the desk
+      S.add({ name: 'operator', z: 995, render(ctx, t, env) { drawFigure(ctx, operator, operatorPose(t), env); } });
       S.add({ name: 'figures', z: 985, render(ctx, t, env) {
-        const pp = pickerPose(t, M.blooms), carry = pp.carry;
-        drawFigure(ctx, cranker, crankerPose(t), env);
-        drawFigure(ctx, picker, { ...pp, carry: carry ? (hands) => carry(ctx, env, hands) : null }, env);
+        drawFigure(ctx, tuner, tunerPose(t), env);
+        const x = 1700;
+        drawFigure(ctx, adept, mudraPose(t, 0, x, -1, HIP, [[x + 7, GROUND], [x - 8, GROUND]]), env);
+        mudraSolids(ctx, t, 0, x, -1, HIP, ['tetra', 'ico'], [P.pink, P.butter], -1);
       } });
 
-      // the island with the watcher on it, telescope to the sun; halfway through the loop the watcher lowers it
-      // and points at the machine, then goes back to the sun
+      // the seer sits on the floating island, practising the same mudra three seconds behind the adept
       const IX = -120, IY = 90;
       S.add({ name: 'island', z: 1500, shadow: { dx: 10, dy: 22, alpha: 0.32 }, anim: (t) => ({ y: 8 * cyc(t, 1, 0.55), rot: 0.008 * cyc(t, 1, 0.8), ox: ISLAND.x + IX, oy: ISLAND.y + IY }), render(ctx, t, env) {
         drawSprites(ctx, [{ s: world.island, ax: ISLAND.x, ay: ISLAND.y, x: ISLAND.x + IX, y: ISLAND.y + IY }], env.shadow);
-        const ground = ISLAND.y - 4 + IY, x = 282, look = smoothstep(4.8, 5.6, t) * (1 - smoothstep(8.2, 9.0, t));
-        // tripod and telescope tube
-        ctx.save(); ctx.lineCap = 'round';
-        for (const dx of [-8, 8]) { ctx.strokeStyle = P.slateDeep; ctx.lineWidth = 2.6; ctx.beginPath(); ctx.moveTo(x + 30, ground - 26); ctx.lineTo(x + 30 + dx, ground); ctx.stroke(); }
-        const tilt = -0.42 + 0.03 * cyc(t, 2);
-        const t0 = [x + 30 - Math.cos(tilt) * 16, ground - 26 - Math.sin(tilt) * 16], t1 = [x + 30 + Math.cos(tilt) * 30, ground - 26 + Math.sin(tilt) * 30];
-        ctx.strokeStyle = mix(P.butterDeep, P.slate, 0.3); ctx.lineWidth = 9; ctx.beginPath(); ctx.moveTo(...t0); ctx.lineTo(...t1); ctx.stroke();
-        ctx.strokeStyle = P.butter; ctx.lineWidth = 6; ctx.beginPath(); ctx.moveTo(...t0); ctx.lineTo(...t1); ctx.stroke();
-        ctx.restore();
-        const sitHip = [x, ground - 14];
-        drawFigure(ctx, watcher, {
-          hip: sitHip, feet: [[x + 14, ground + 6], [x + 20, ground + 8]], facing: 1, lean: lerp(0.3, -0.05, look), headTilt: lerp(-0.25, 0.15, look),
-          hands: [[lerp(t0[0] + 2, x + 8, look), lerp(t0[1] + 4, ground - 4, look)], [lerp(t0[0] + 14, x + 34, look), lerp(t0[1] - 2, ground - 30 + 6 * Math.sin(TAU * t), look)]], scale: 0.95,
-        }, env);
+        const ground = ISLAND.y - 4 + IY, x = 300, hip = ground - 14 * FS;
+        drawFigure(ctx, seer, mudraPose(t, 3, x, 1, hip, [[x + 16, ground + 4], [x + 22, ground + 6]]), env);
+        mudraSolids(ctx, t, 3, x, 1, hip, ['star', 'octa'], [P.lilac, P.aqua], 1);
       } });
     },
   });

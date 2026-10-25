@@ -4,8 +4,8 @@
 // Every motion here is periodic in the loop period, so the film loops without a seam.
 
 import { RNG, noise } from '../vendor/paper-fox/core/rng.js';
-import { linear, glow } from '../vendor/paper-fox/core/piece.js';
-import { mix, shade, vary } from '../vendor/paper-fox/core/color.js';
+import { linear, glow, piece } from '../vendor/paper-fox/core/piece.js';
+import { mix, shade, vary, rgba } from '../vendor/paper-fox/core/color.js';
 import { drawSprites } from '../vendor/paper-fox/core/sprite.js';
 import { transform } from '../vendor/paper-fox/core/geom.js';
 import { LIGHT, PAL, CLAY_MAT, CLAY_EDGE, clayForm, tube, steps, dot } from './kit.js';
@@ -71,16 +71,17 @@ function floater(g, kind, x, y, s, rng) {
 export function addWorld(S) {
   const sp = (name, box, draw, o = {}) => S.sprite({ name, ...box, res: o.res ?? 1, mat: o.mat ?? CLAY_MAT, edge: o.edge ?? CLAY_EDGE, shadow: o.shadow ?? { blur: 18 }, draw });
 
-  // sky: warm cream at the horizon to a soft lilac-pink overhead, with a faint honeycomb pressed into it
-  S.plane(20000, { name: 'sky', x: -600, y: -500, w: 3120, h: 2100, mat: 'smooth', edge: false, shadow: false, draw(g) {
-    g.fillStyle = linear(g, 0, -500, 0, 1100, ['#e6c7d6', '#f1d4d2', '#fbe7da', '#fdf1e4']); g.fillRect(-600, -500, 3120, 2100);
-    const r = 40, dx = r * Math.sqrt(3), dy = r * 1.5;
-    g.strokeStyle = 'rgba(255,255,255,0.22)'; g.lineWidth = 2;
-    for (let row = 0, y = -500; y < 700; row++, y += dy) for (let x = -600 + (row & 1) * dx / 2; x < 2520; x += dx) {
-      g.globalAlpha = Math.max(0, 1 - (y + 500) / 1100);
-      g.beginPath(); for (let i = 0; i < 6; i++) { const a = Math.PI / 6 + i * Math.PI / 3; g.lineTo(x + Math.cos(a) * (r - 4), y + Math.sin(a) * (r - 4)); } g.closePath(); g.stroke();
+  // the backdrop: warm card with the embossed honeycomb from the relief box, each cell its own soft piece, fading
+  // toward the hills. No box and no frame: it simply goes on behind the world.
+  S.plane(20000, { name: 'honeycomb', x: -620, y: -520, w: 3160, h: 2120, mat: 'smooth', edge: false, shadow: false, draw(g) {
+    g.fillStyle = linear(g, 0, -520, 0, 1100, [mix(P.wall, P.pink, 0.22), P.wallLight, '#fbeee2']); g.fillRect(-620, -520, 3160, 2120);
+    const r = 34, dx = r * Math.sqrt(3), dy = r * 1.5, hr = new RNG('hex-world');
+    for (let row = 0, y = -540; y < 980; row++, y += dy) for (let x = -660 + (row & 1) * dx / 2; x < 2580; x += dx) {
+      const fade = 1 - Math.max(0, (y - 380) / 520);
+      if (fade <= 0.04 || hr.chance(0.05)) continue;
+      const hex = [...Array(6)].map((_, i) => { const a = Math.PI / 6 + i * Math.PI / 3; return [x + Math.cos(a) * (r - 3.4), y + Math.sin(a) * (r - 3.4)]; });
+      piece(g, hex, { fill: rgba(vary(mix(P.wallLight, P.blush, 0.35), hr, 0.05), 0.55 + 0.45 * fade), bevel: { light: LIGHT, width: 2.2, hi: 0.32 * fade, lo: 0.18 * fade, soft: 1.6 }, shadow: { color: `rgba(120,70,60,${0.16 * fade})`, blur: 6, x: 1.6, y: 3 } });
     }
-    g.globalAlpha = 1;
   } });
 
   // the sun, high on the right, its windows breathing with light
@@ -95,7 +96,7 @@ export function addWorld(S) {
 
   // clouds drift and come back within the loop
   const crng = new RNG('clouds');
-  const clouds = [[300, 210, 300, 7000], [1150, 140, 260, 7600], [1900, 300, 340, 6400], [-150, 420, 240, 5600], [760, 330, 200, 5200]];
+  const clouds = [[300, 210, 300, 7000], [1150, 140, 260, 7600], [1900, 300, 340, 6400], [-150, 420, 240, 5600], [1420, 600, 190, 5200]];
   clouds.forEach(([x, y, w, z], i) => {
     const s = sp(`cloud-${i}`, { x: x - w * 0.7, y: y - w * 0.45, w: w * 1.4, h: w * 0.6 }, (g) => cloud(g, x, y, w, crng));
     S.add({ name: `cloud-${i}`, z, shadow: { dx: 8, dy: 14, alpha: 0.18 }, sprites: [{ s }], anim: (t) => ({ x: 26 * cyc(t, 1, i * 0.21), y: 5 * cyc(t, 2, i * 0.13) }) });

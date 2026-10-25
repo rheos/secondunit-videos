@@ -1,73 +1,81 @@
-// The living loop: a seamless 12 s loop at 24 fps in the approved relief-box clay language, as an open world.
-// A recycle-symbol sculpture feeds back into itself, and a wider system around it does the same: beads leave the
-// sculpture, roll to a tree, the tree blooms, a small figure loads the bloom onto a lift, the lift pours it back
-// in. A second figure turns the crank that drives the sculpture; a third watches the sun through a telescope from
-// a floating island. Every motion is periodic in 12 s (or a divisor of it), so frame 288 is frame 0.
+// The living loop (draft 2): a seamless 12 s loop at 24 fps in the approved relief-box clay language, an open
+// world on the honeycomb backdrop. In the middle a funnel feeds itself: what gathers in its mouth runs out of a
+// duct at the bottom, right, up past the lip, left, and drops back in. Around it four small figures do quiet,
+// unexplained work: one plays a console of knobs and a lever, one tunes a ring instrument, and two practise
+// mudras, calling geometric solids into being between their hands and letting them go into the world.
+// Every motion is periodic in 12 s (or a divisor of it), so frame 288 is frame 0.
 // Built on Leon Lin's paper-fox core (vendor/paper-fox, MIT, Copyright (c) 2026 Leonxlnx).
 
 import { Scene } from '../vendor/paper-fox/core/stage.js';
 import { drawSprites } from '../vendor/paper-fox/core/sprite.js';
 import { finish } from '../vendor/paper-fox/core/post.js';
-import { mix } from '../vendor/paper-fox/core/color.js';
 import { E, lerp, smoothstep } from '../vendor/paper-fox/core/ease.js';
 import { LIGHT, PAL } from './kit.js';
 import { ISLAND } from './props.js';
 import { LOOP, cyc, addWorld, addNear } from './loop-world.js';
-import { SLOTS, LOAD_AT, CRANK, crankAngle, addMachine } from './loop-machine.js';
+import { CONSOLE, INSTR, knobAngle, leverAngle, sliderK, addMachines } from './loop-machine.js';
+import { drawSolid } from './loop-shapes.js';
 import { makeFigure, drawFigure } from './loop-figures.js';
 
-const P = PAL, TAU = Math.PI * 2, GROUND = 985, HIP = GROUND - 33;
+// the figures stand a little taller than draft 1's so their hands read, still small against the funnel
+const P = PAL, TAU = Math.PI * 2, GROUND = 985, FS = 1.2, HIP = GROUND - 33 * FS;
 const mod = (x, m) => ((x % m) + m) % m;
+const mixPt = (a, b, k) => [lerp(a[0], b[0], k), lerp(a[1], b[1], k)];
 
-// a walking stance at x: feet swing about the hip, the hip bobs; d is the distance walked so far
-function walk(x, d, facing, scale = 1) {
-  const stride = 26 * scale, ph = d / stride * Math.PI;
-  const feet = [0, 1].map((k) => { const a = ph + k * Math.PI; return [x + facing * Math.sin(a) * stride * 0.5, GROUND - Math.max(0, Math.cos(a)) * 6]; });
-  return { hip: [x, HIP - 1.5 * Math.abs(Math.sin(ph))], feet };
-}
-const stand = (x, facing) => ({ hip: [x, HIP], feet: [[x - facing * 6, GROUND], [x + facing * 7, GROUND]] });
-
-// ---------------- the picker: picks a bloom, carries it to the lift, loads it, walks back (every 4 s) --------------
-const X_HOME = 1528, X_LOAD = LOAD_AT[0] + 34;
-function pickerPose(t, blooms) {
-  const q = mod(t, 4), i = mod(Math.round((t - q + 2 - 6) / 4), 3);
-  const chest = (x, f, h) => [x + f * 13, h - 22];
-  let pose, carry = null;
-  if (q < 1) {                                  // walking back to the tree
-    const k = E.smooth(q), x = lerp(X_LOAD, X_HOME, k);
-    pose = { ...walk(x, Math.abs(x - X_LOAD), 1), facing: 1, lean: 0.06 };
-    pose.hands = [[x - 8, HIP + 2], [x + 10, HIP + 4]];
-  } else if (q < 2) {                           // waiting under the tree, looking up at it
-    pose = { ...stand(X_HOME, 1), facing: 1, lean: -0.02 + 0.02 * Math.sin(TAU * q), headTilt: -0.3 };
-    pose.hands = [[X_HOME - 9, HIP + 6], [X_HOME + 9, HIP + 6]];
-  } else if (q < 2.6) {                         // reaching up into the tree for the bloom, then drawing it in
-    const s = SLOTS[i], reach = smoothstep(2.0, 2.32, q) * (1 - smoothstep(2.42, 2.6, q));
-    pose = { ...stand(X_HOME, 1), facing: 1, lean: 0.12 * reach, headTilt: -0.45 * reach };
-    pose.hip[1] -= 3 * reach;
-    const c = chest(X_HOME, 1, pose.hip[1]);
-    pose.hands = [[lerp(X_HOME - 6, c[0] - 3, smoothstep(2.4, 2.6, q)), lerp(HIP + 6, c[1], smoothstep(2.4, 2.6, q))], [lerp(c[0], s[0], reach), lerp(c[1], s[1], reach)]];
-    if (q >= 2.4) carry = pose.hands[1];
-  } else if (q < 3.6) {                         // carrying it to the lift
-    const k = E.smooth(q - 2.6), x = lerp(X_HOME, X_LOAD, k);
-    pose = { ...walk(x, Math.abs(x - X_HOME), -1), facing: -1, lean: 0.05 };
-    const c = chest(x, -1, pose.hip[1]);
-    pose.hands = [[c[0] + 5, c[1] + 2], [c[0] - 2, c[1] - 1]];
-    carry = [c[0] - 4, c[1] - 6];
-  } else {                                      // setting it in the bucket as the bucket arrives
-    const k = smoothstep(3.6, 3.95, q);
-    pose = { ...stand(X_LOAD, -1), facing: -1, lean: 0.14 * k };
-    const c = chest(X_LOAD, -1, HIP), b = [LOAD_AT[0], LOAD_AT[1] - 10];
-    pose.hands = [[lerp(c[0] + 5, b[0] + 8, k), lerp(c[1] + 2, b[1] + 2, k)], [lerp(c[0] - 2, b[0] - 2, k), lerp(c[1] - 1, b[1] - 3, k)]];
-    carry = [lerp(c[0] - 4, b[0], k), lerp(c[1] - 6, b[1] - 6, k)];
+// keyframed hands: keys are [time, back hand, front hand]; eased between, held after the last key
+function keyed(q, keys) {
+  if (q <= keys[0][0]) return [keys[0][1], keys[0][2]];
+  for (let i = 0; i < keys.length - 1; i++) {
+    const [t0, a0, b0] = keys[i], [t1, a1, b1] = keys[i + 1];
+    if (q < t1) { const k = E.smooth((q - t0) / (t1 - t0)); return [mixPt(a0, a1, k), mixPt(b0, b1, k)]; }
   }
-  if (carry) pose.carry = (ctx, env, hands) => { const h = hands[1]; drawSprites(ctx, [{ s: blooms[i], ax: SLOTS[i][0], ay: SLOTS[i][1], x: h[0] - 2, y: h[1] - 8, sx: 0.5, sy: 0.5 }], { ...env.shadow, dx: 3, dy: 5 }); };
-  return pose;
+  const last = keys[keys.length - 1];
+  return [last[1], last[2]];
 }
 
-// ---------------- the cranker: both hands on the handle, the body rocking with each turn ----------------
-function crankerPose(t) {
-  const a = crankAngle(t), h = [CRANK.c[0] + Math.cos(a) * CRANK.r, CRANK.c[1] + Math.sin(a) * CRANK.r], x = CRANK.c[0] - 26;
-  return { hip: [x + 2 * Math.cos(a), HIP + 1.5 * Math.sin(a)], feet: [[x - 10, GROUND], [x + 9, GROUND]], facing: 1, lean: 0.16 + 0.07 * Math.cos(a), hands: [[h[0] - 2, h[1] + 1], [h[0] + 2, h[1] - 1]] };
+// ---------------- the console operator, behind the desk ----------------
+function operatorPose(t) {
+  const q = mod(t, 3), x = 566;
+  const k1 = CONSOLE.knobs[0], k2 = CONSOLE.knobs[1], la = leverAngle(t), lev = [CONSOLE.lever[0] + Math.sin(la) * 22, CONSOLE.lever[1] - Math.cos(la) * 22];
+  const a1 = knobAngle(t, 0), knobHand = [k1[0] + Math.sin(a1) * 3, k1[1] - 4];
+  if (q < 1.4) return { hip: [x, HIP], feet: [[x + 6, GROUND], [x - 7, GROUND]], facing: -1, scale: FS, lean: 0.14, headTilt: 0.15, hands: [[k2[0] + 2, k2[1] - 4], knobHand] };
+  if (q < 2.4) { const k = smoothstep(1.4, 1.6, q); return { hip: [x, HIP], feet: [[x - 6, GROUND], [x + 7, GROUND]], facing: 1, scale: FS, lean: 0.12, headTilt: 0.1, hands: [mixPt([x - 4, 912], [x + 8, 906], k), mixPt([x + 20, 905], lev, k)] }; }
+  const [sx, sy] = CONSOLE.screen, k = smoothstep(2.4, 2.6, q) * (1 - smoothstep(2.85, 3.0, q));
+  return { hip: [x, HIP], feet: [[x - 6, GROUND], [x + 7, GROUND]], facing: 1, scale: FS, lean: 0.06, headTilt: -0.1, hands: [mixPt([x + 8, 906], [sx - 10, sy - 6 + 3 * Math.sin(TAU * q * 2)], k), mixPt(lev, [sx + 10, sy - 8 + 3 * Math.cos(TAU * q * 2)], k)] };
+}
+
+// ---------------- the instrument tuner ----------------
+function tunerPose(t) {
+  const x = 1404, [a, b] = INSTR.slider, sl = [lerp(a[0], b[0], sliderK(t)), a[1] - 2];
+  const q = mod(t, 4), reach = smoothstep(2.0, 2.5, q) * (1 - smoothstep(3.0, 3.5, q));
+  return { hip: [x, HIP], feet: [[x - 7, GROUND], [x + 7, GROUND]], facing: 1, scale: FS, lean: 0.1 + 0.04 * reach, headTilt: -0.35 * reach,
+    hands: [mixPt([x + 14, 930], [INSTR.x - 22, INSTR.ringY + 20 + 4 * Math.sin(TAU * q)], reach), sl] };
+}
+
+// ---------------- the mudra: a 6 s practice that makes one solid ----------------
+//   0.0-0.8 rest, 0.8-1.8 palms meet at the chest, 1.8-2.4 lifted overhead, 2.4-3.6 parted into a frame while the
+//   solid forms between them, 3.6-4.4 arms open and it is let go, 4.4-6.0 hands come down, head follows it up
+function mudraHands(c, x, f, hip) {
+  const k = FS, rest = [[x - f * 7 * k, hip + 4 * k], [x + f * 9 * k, hip + 4 * k]], chest = [[x + f * 6 * k, hip - 22 * k], [x + f * 9 * k, hip - 23 * k]];
+  const over = [[x + f * k, hip - 72 * k], [x + f * 5 * k, hip - 73 * k]], frame = [[x + (-13 + f * 3) * k, hip - 68 * k], [x + (13 + f * 3) * k, hip - 69 * k]], open = [[x - 32 * k, hip - 58 * k], [x + 32 * k, hip - 59 * k]];
+  const sw = (pair) => (f > 0 ? pair : [pair[1], pair[0]]);
+  return keyed(c, [[0, ...rest], [0.8, ...rest], [1.8, ...chest], [2.4, ...over], [2.9, ...sw(frame)], [3.6, ...sw(frame)], [4.4, ...open], [5.4, ...rest]]);
+}
+function mudraPose(t, phase, x, f, hip, feet) {
+  const c = mod(t - phase, 6), up = smoothstep(1.8, 2.4, c) * (1 - smoothstep(4.4, 5.4, c));
+  return { hip: [x, hip], feet, facing: f, scale: FS, lean: -0.08 * up, headTilt: -0.35 * up - 0.25 * smoothstep(3.6, 4.4, c) * (1 - smoothstep(5.4, 6, c)), hands: mudraHands(c, x, f, hip) };
+}
+// the solids each practitioner has made: born at 2.4 of each cycle, let go at 3.6, gone by 10.5 s after birth
+function mudraSolids(ctx, t, phase, x, f, hip, kinds, colors, drift) {
+  for (let j = 0; j < 2; j++) {
+    const born = phase + 2.4 + 6 * j, u = mod(t - born, LOOP);
+    if (u >= 10.5) continue;
+    const at = [x + f * 3 * FS, hip - 96 * FS], grow = E.outSoft(smoothstep(0, 1.2, u)), f2 = smoothstep(1.2, 10.5, u);
+    const px = at[0] + drift * (170 * f2 + 26 * Math.sin(f2 * 5)), py = at[1] - 600 * E.outSoft(f2);
+    drawSolid(ctx, kinds[j], px, py, 24 * grow * (1 - 0.4 * f2), [TAU * t / 6 + j, TAU * t / 4, 0.3 * j], colors[j], { glowK: smoothstep(0, 0.6, u) * (1 - smoothstep(1.2, 3.0, u)), alpha: 1 - smoothstep(0.82, 1, f2) });
+    // the light between the hands while it forms
+    if (u < 1.2) drawSolid(ctx, 'ring', at[0], at[1], 30 * grow, [TAU * t / 2, 0, TAU * t / 3], '#fff1c8', { alpha: 0.5 * (1 - u / 1.2) });
+  }
 }
 
 function scene() {
@@ -78,40 +86,32 @@ function scene() {
     light: LIGHT,
     shadow: { alpha: 0.42, dist: 10, blur: 16 },
     post: { bloom: 0.22, threshold: 0.74, bloomRadius: 1.4, vignette: 0.16, grain: 0.035, grade: { color: '#ffd8b4', amount: 0.08, mode: 'soft-light' } },
-    camera: (t) => ({ x: 60 * cyc(t, 1), y: 6 * cyc(t, 1, 0.21), z: 25 + 25 * cyc(t, 1, 0.1), roll: 0.0012 * cyc(t, 1, 0.4) }),
+    camera: (t) => ({ x: 50 * cyc(t, 1), y: 6 * cyc(t, 1, 0.21), z: 30 + 20 * cyc(t, 1, 0.1), roll: 0.0012 * cyc(t, 1, 0.4) }),
     build(S) {
       const world = addWorld(S);
-      const M = addMachine(S);
+      addMachines(S);
       addNear(S);
-      const picker = makeFigure(S, { name: 'picker', color: P.mint, cap: P.pink });
-      const cranker = makeFigure(S, { name: 'cranker', color: P.pink, cap: 'pom' });
-      const watcher = makeFigure(S, { name: 'watcher', color: P.butter, cap: P.mintDeep });
+      const operator = makeFigure(S, { name: 'operator', color: P.pink, cap: 'pom' });
+      const tuner = makeFigure(S, { name: 'tuner', color: P.lilac, cap: P.butter });
+      const adept = makeFigure(S, { name: 'adept', color: P.mint, cap: P.pink });
+      const seer = makeFigure(S, { name: 'seer', color: P.butter, cap: P.mintDeep });
 
+      // the operator stands behind the console, so it draws before the desk
+      S.add({ name: 'operator', z: 995, render(ctx, t, env) { drawFigure(ctx, operator, operatorPose(t), env); } });
       S.add({ name: 'figures', z: 985, render(ctx, t, env) {
-        const pp = pickerPose(t, M.blooms), carry = pp.carry;
-        drawFigure(ctx, cranker, crankerPose(t), env);
-        drawFigure(ctx, picker, { ...pp, carry: carry ? (hands) => carry(ctx, env, hands) : null }, env);
+        drawFigure(ctx, tuner, tunerPose(t), env);
+        const x = 1700;
+        drawFigure(ctx, adept, mudraPose(t, 0, x, -1, HIP, [[x + 7, GROUND], [x - 8, GROUND]]), env);
+        mudraSolids(ctx, t, 0, x, -1, HIP, ['tetra', 'ico'], [P.pink, P.butter], -1);
       } });
 
-      // the island with the watcher on it, telescope to the sun; halfway through the loop the watcher lowers it
-      // and points at the machine, then goes back to the sun
+      // the seer sits on the floating island, practising the same mudra three seconds behind the adept
       const IX = -120, IY = 90;
       S.add({ name: 'island', z: 1500, shadow: { dx: 10, dy: 22, alpha: 0.32 }, anim: (t) => ({ y: 8 * cyc(t, 1, 0.55), rot: 0.008 * cyc(t, 1, 0.8), ox: ISLAND.x + IX, oy: ISLAND.y + IY }), render(ctx, t, env) {
         drawSprites(ctx, [{ s: world.island, ax: ISLAND.x, ay: ISLAND.y, x: ISLAND.x + IX, y: ISLAND.y + IY }], env.shadow);
-        const ground = ISLAND.y - 4 + IY, x = 282, look = smoothstep(4.8, 5.6, t) * (1 - smoothstep(8.2, 9.0, t));
-        // tripod and telescope tube
-        ctx.save(); ctx.lineCap = 'round';
-        for (const dx of [-8, 8]) { ctx.strokeStyle = P.slateDeep; ctx.lineWidth = 2.6; ctx.beginPath(); ctx.moveTo(x + 30, ground - 26); ctx.lineTo(x + 30 + dx, ground); ctx.stroke(); }
-        const tilt = -0.42 + 0.03 * cyc(t, 2);
-        const t0 = [x + 30 - Math.cos(tilt) * 16, ground - 26 - Math.sin(tilt) * 16], t1 = [x + 30 + Math.cos(tilt) * 30, ground - 26 + Math.sin(tilt) * 30];
-        ctx.strokeStyle = mix(P.butterDeep, P.slate, 0.3); ctx.lineWidth = 9; ctx.beginPath(); ctx.moveTo(...t0); ctx.lineTo(...t1); ctx.stroke();
-        ctx.strokeStyle = P.butter; ctx.lineWidth = 6; ctx.beginPath(); ctx.moveTo(...t0); ctx.lineTo(...t1); ctx.stroke();
-        ctx.restore();
-        const sitHip = [x, ground - 14];
-        drawFigure(ctx, watcher, {
-          hip: sitHip, feet: [[x + 14, ground + 6], [x + 20, ground + 8]], facing: 1, lean: lerp(0.3, -0.05, look), headTilt: lerp(-0.25, 0.15, look),
-          hands: [[lerp(t0[0] + 2, x + 8, look), lerp(t0[1] + 4, ground - 4, look)], [lerp(t0[0] + 14, x + 34, look), lerp(t0[1] - 2, ground - 30 + 6 * Math.sin(TAU * t), look)]], scale: 0.95,
-        }, env);
+        const ground = ISLAND.y - 4 + IY, x = 300, hip = ground - 14 * FS;
+        drawFigure(ctx, seer, mudraPose(t, 3, x, 1, hip, [[x + 16, ground + 4], [x + 22, ground + 6]]), env);
+        mudraSolids(ctx, t, 3, x, 1, hip, ['star', 'octa'], [P.lilac, P.aqua], 1);
       } });
     },
   });
