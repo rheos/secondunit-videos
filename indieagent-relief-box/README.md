@@ -173,5 +173,8 @@ node tools/bundle.mjs src/loop.js build/loop.js && node tools/cues.mjs         #
 - Draft 10 / s8: the chorus is eight elves on three tiers (1, 3, 4) trading places every 1.5 s along a closed
   path, so a new elf takes the front on each chord change and half chord; each swap is a cue (the arriving elf's
   chord note, and the root plucked on a chord change).
+- s9 (kept): the breath plays backwards and every other sound forwards. The bed is reflected on the loop's circle,
+  so the chords change on the same beats in reverse order (Ab, C, Bb, D) and the events follow them. It is the
+  default now; `--forward-breath` gives s8.
 - Seamless by construction: every oscillator runs whole cycles in 12 s, noise filtering and reverb are circular,
   every sound that runs past the end wraps to the start.

@@ -235,10 +235,10 @@ def noise_sweep(dur, f0, f1, gain=1.0):
     return out / (np.abs(out).max() + 1e-9) * np.sin(np.pi * np.arange(n) / n) * gain
 
 
-# --reverse-breath: the bellows (organ and air) play backwards while every event still plays forwards (Robin,
-# 2026-10-25: "played the breath backwards but the other sounds forward"). The bed is reflected about t = 0, so
-# its chords change on the same beats, in reverse order.
-REVERSE_BREATH = '--reverse-breath' in sys.argv
+# The bellows (organ and air) play backwards while every event still plays forwards (Robin, 2026-10-25: "played the
+# breath backwards but the other sounds forward"; kept as s9). The bed is reflected about t = 0, so its chords change
+# on the same beats, in reverse order. --forward-breath gives the earlier s8.
+REVERSE_BREATH = '--forward-breath' not in sys.argv
 
 
 def chord_at(t):
