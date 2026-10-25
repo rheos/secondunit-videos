@@ -3714,8 +3714,9 @@ function scene() {
       // its spoke, opening and folding in a wave that runs round
       // it floats, bobbing up and down over 6 s and swaying a little sideways on a 4 s beat (Robin: "float a bit,
       // getting a bit higher and lower")
-      if (CHEV_RADIAL) S.add({ name: 'mandala', z: 989, anim: (t) => ({ y: 14 * cyc(t, 2, 0.3), x: 4 * Math.sin(TAU * t / 4) }), render(ctx, t, env) { mirrored(ctx, () => {
-        const n = 8, mx = (PANEL.x0 + PANEL.x1) / 2, my = PANEL.y0 - 62;
+      if (CHEV_RADIAL) S.add({ name: 'mandala', z: 989, anim: (t) => ({ y: 14 * cyc(t, 2, 0.3) }), render(ctx, t, env) { mirrored(ctx, () => {
+        // the sway inside the mirror, so the two sway as mirror images
+        const n = 8, mx = (PANEL.x0 + PANEL.x1) / 2 + 4 * Math.sin(TAU * t / 4), my = PANEL.y0 - 62;
         for (let i = 0; i < n; i++) { const a = i / n * TAU - Math.PI / 2; world.chevronFan(ctx, mx + Math.cos(a) * 24, my + Math.sin(a) * 24, a + Math.PI / 2, t, i / n, env, 1, 0.52); }
       }); } });
       S.add({ name: 'operator', z: 988, render(ctx, t, env) { mirrored(ctx, () => drawFigure(ctx, operator, { ...operatorPose(t), shift: loopBump(t, 7.3, 0.9), shiftKind: 'cube', shiftSpin: TAU * t / 2 }, env)); } });
