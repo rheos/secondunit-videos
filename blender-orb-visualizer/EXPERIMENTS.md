@@ -244,3 +244,85 @@ shots; the sleeping dog is small. 07: hero 3 crosses close to camera for a few f
 08: the banana reads like a crown seen end-on; his legs are big dark blocks in the lying shots.
 
 **Verdict.** Waiting on Robin.
+
+## The pet: whole-song plan and key stills (2026-10-20)
+
+**Brief.** Bob ticked The pet (take 06) on round 41: "brilliant. I like both. can't go wrong." Robin: storyboard it for
+the whole song first, show stills, build after his go. Issue #277, branch `realthing-pet` (stacked on #246).
+
+**Plan.** `STORYBOARD-pet.md` (gitignored): eight acts on the Respawn act grid. The dog piles his offers on the door
+mat while the man hatches pet after pet; the pet's "walk" on the LCD while the real dog holds the real leash; the
+battery dies; he finds a coin cell under the dog's pile, they look at each other, the leash goes on, the door opens
+on the park the dog has watched through the window all film. Pixels only on the LCD.
+
+**Code.** `pet_world.py` (take 06's room, toy, rigs + the park outside, the pile table, new LCD screens, light looks,
+direct pose setters; dog 1.3x) and `pet_stills.py` (six key stills A-F, 64 samples). Render:
+`tools/render_lock.sh blender -b --factory-startup --python pet_stills.py -- --only A,B,C,D,E,F` (about 1.5 min for six).
+
+**Rough spots in the stills (for the build).** A: the sleeping pose is a plank with arms out, toy too small to read.
+B: the curled dog on the pile reads as a dark block; pile items hard to read at night. C: the dog's head is cut by the
+frame top and the leash loop hides his face. D: the battery is a small white square. E: the man is half hidden behind
+the leaping dog. F: the grey screen barely reads at this size.
+
+**Verdict.** Waiting on Robin.
+
+## The pet: draft 1, whole song (2026-10-21)
+
+Robin's go on the storyboard with a $10 cap. Eight acts (`pet_act0.py`..`pet_act7.py`) by parallel builders on
+`pet_world.py` (keyed helpers, the close-up set), each checked in stills behind `tools/render_lock.sh`. Rendered on
+Modal CPU with `cloud/modal_pet.py` (8 containers per act), joined with `tools/pet_join.py`: 3981 frames, 0 missing.
+Modal upper estimates per act: .85 .87 .75 .43 .71 .87 .41 .74 = about $5.63 (the free monthly credit is shared with
+Respawn's renders the same day). Review cut `out/film/pet/join/realthing_pet-d1_f00000-f03980_24fps_draft.mp4`.
+
+**Builders' rough spots for draft 2.** Act 0: blanket is a board, sit-up stiff mid-move. Act 1: leash carry to the mat
+is a turn on the spot; the rise at 47.24 is small. Act 2: the pile in the night wide is hidden by the dog; the shoe-on-knee
+reads as a nuzzle. Act 3: no green spill on the dog's face in the reverse; chin-on-knee hidden by the dog's body. Act 4:
+pet wraps instead of scrolling; laps read fast. Act 5: lifted items fly on arcs, not in his hands. Act 6: the flood is a
+soft wash; leash line thin. Act 7: the leash on the collar doesn't show in the unclip; the mat patch is a spot light.
+Pile floor spots differ slightly between acts 5, 6 and 7.
+
+**Verdict.** Waiting on Robin.
+
+## The pet: draft 2, the days read as days (2026-10-23)
+
+**Brief.** Bob on d1b (round 58, 2026-10-21): he likes the pet most, but "49 - 1:03 I don't get it". On 2026-10-23 he
+called it the winner. Robin's reading: refrain 1 is meant to show days going by, and d1 didn't say so. Make the passing
+of days unmistakable there without changing the story, and use the same device in every chorus.
+
+**Why d1 failed.** Its time-lapse was a low side wide where the window was a sliver at the frame edge; the light change
+was a colour wash over the whole room; the man and dog jumped between poses each quarter-day, which read as glitches;
+three LCD cut-ins broke it into pieces; the pile was hidden behind the dog at night.
+
+**What d2 does.** Act 2 is one front-on wide with a slow push from 51.0 to 63.77: window left, the man centre, the
+door, mat and hooks right. Five days, each shorter than the last (2.9, 2.5, 2.15, 1.95, 1.8 s), then real time again at
+62.3 on the sixth morning. Each day: the sun's patch walks the floor left to right (azimuth -55 to 55, elevation 20-55),
+dusk goes orange, night goes blue with only the LCD lighting his face; a wall clock over the door spins (the minute
+hand at a quarter of true speed so it doesn't strobe); a tear-off calendar over the couch drops a page each dawn,
+12 to 17, the page fluttering down behind the couch back; the sill plant droops a step. The man never moves but for a
+slow slump and a hunch at night. The dog does one errand a day at time-lapse speed: the shoe from his feet (act 1's
+end), then the keys, the scarf and the coat off the hooks (he rears up with his paws on the side table), each onto the
+mat; he sits by the pile facing the man, his ears drop at nightfall, he sleeps on the pile. Day five he only lifts his
+head. One LCD insert on the third night: the pet dies, a new egg, a new pet.
+
+**The other choruses.** Refrain 2 (act 5, the search) now runs the same device: the clock goes 8:00 to 21:00 over the
+held voice and the sun patch walks the floor, so the search visibly takes all day. Refrain 3 (act 7) is the park, one
+bright morning, the payoff; no time-lapse there on purpose.
+
+**Continuity.** The clock and calendar live in `pet_world.py` and every act sets them (`ACT_CAL`, `ACT_CLOCK`: 12 in
+acts 0-1, 17 after the time-lapse, 18 in the outro). `tools/vis_check.py` builds each act and ray-casts sample points
+on both from every frame's camera; only frames that see them were re-rendered (2,183 of 3,981, spans padded 3 frames;
+the d1b frames they replaced are in `act<N>/d1b-frames/`). Stills: `~/Downloads/pet-d2-stills/`.
+
+**Render.** Robin's go, cap $5. Modal per act, logs `out/film/pet/modal_d2_act<N>.log`.
+The first run (00:03 Pacific, Oct 24) died with the Mac's GUI at about 00:09, 9 minutes into act 2; no frame came back,
+because a container returns its frames only when its whole batch is done (~$0.45 spent for nothing). `modal_pet.py`
+now also writes every frame to the Modal volume `pet-frames` (`/vol/act<N>/`) and the re-run uses `modal run
+--detach`, so a crash leaves the frames fetchable (`modal volume get pet-frames act<N> ...`).
+The re-run (00:39) kept 127 act-2 frames on the volume (`pet-frames/act2/`, frames 1183-1654 partly) before that
+session ended too. Real Modal billing (`modal billing report`): $1.00 for the first run, $0.43 for the second, so
+$1.43 of Robin's $5 cap is spent and nothing is joined. Draft 1 really cost $8.19 (the script's "~$" line under-reads
+by about 1.45x; real rate about $0.002 a frame). The 2,056 frames left would bring d2 to about $5.50-6.20, and October's
+free Modal credit is used up ($29.88 metered vs $29.57 credit), so further renders are billed. **Robin: hold
+(2026-10-24).** To resume: fetch `modal volume get pet-frames act2 ...`, render only the missing frames of the spans in
+the d2 notes above, launch with nohup so the loop outlives the Claude session, and join with
+`tools/pet_join.py --take pet-d2`.
