@@ -118,6 +118,6 @@ paper-depth musician. Not taken: the fox drawing, any scene, any audio.
 ## Next
 
 1. Robin's notes on the transitions reel.
-2. Night sound for the creek (no score: Robin, 1:20 am Sun Oct 25): crickets, the creek, dabbling, the splash,
+2. Night sound for the creek (no score: Robin, about 1 am Sun Oct 25): crickets, the creek, dabbling, the splash,
    chitters, placed on cues the scene reports.
 3. The rest, each scene rendered as it lands, with its transitions. Growing up can come later as more episodes.
