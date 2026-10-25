@@ -1,9 +1,10 @@
 slug: relief-box
 title: Sculpted shadowbox relief
 note: >-
-  A deep box of sculpted pastel pieces filmed by a slow camera: a doll that splits down the middle, a column of
-  small ornaments that stacks up through the gap, plumes, floating islands and a thought bubble on a lead. Every
-  piece is cut in tiers so it reads as rounded clay, and casts a soft shadow on what sits behind it.
+  A deep box of sculpted pastel pieces at dawn, filmed by a camera that slides across it: a sun made of lit
+  windows rises over stepped hills, trees bloom rosette by rosette, a train of beads rolls along piping between
+  two portholes. Every piece is cut in tiers so it reads as rounded clay, and casts a soft shadow on what sits
+  behind it.
 used: Relief box, test
 cost: free
 group: code
@@ -26,10 +27,10 @@ rules:
   - One shadowbox per shot. Back wall, four inner walls drawn through the camera each frame, a moulded frame at the front whose shadow falls into the box
   - Every sculpted piece is cut again in two or three inner tiers, each smaller, lighter and shifted toward the light, with a darker flank away from it (kit.js clayForm); limbs, coils and leads are tubes with a highlight tube along the lit side
   - Pastel palette on bone white: mint, pink, butter, slate, a little lilac; one dark accent (navy) inside the bubble only
-  - "Paper-fox density: many small pieces on many planes (back wall 1500, islands 1180-1320, plumes 1045, spine 1022, figure 1000, floor 790, frame 720), each casting a drop shadow onto what is behind"
-  - Ornaments are mirror symmetric and built from a few repeated shapes (chevrons, stepped tiers, hexagon lattices, molecule rings, eye spheres in petals, buttons)
-  - Plumes are hundreds of thin barbs in two passes, darker under, paler over
-  - Motion is mechanical and calm: halves slide apart, ornaments spring into place one per 0.3 s, a wheel turns, islands bob; the camera drifts and pushes in slowly
+  - "Paper-fox density: twelve-plus planes from the back wall to a lens plane in front of the frame (1500 wall, 1480 sun, 1460/1400 hills, 1430 discs, 1290/1180 islands, 1240 coral, 1150 trees, 1100 track, 900 garland, 830/790 floor rows, 720 frame, 560 lens), every plane packed, each casting a drop shadow onto what is behind"
+  - "A language, not a copy: the vocabulary of the reference set (honeycomb walls, stepped tiers and roots, windows in a wheel, ruffle rosettes, dotted discs, curl clusters, tubes, beads, chevrons) in scenes of our own; no reference's composition or central figure"
+  - Motion is mechanical and calm: a sun climbs and turns, rosettes spring open one by one, beads roll along piping, islands drift and bob, the garland swings; the camera trucks across the box (x -120 to 110) and pushes in a little
+  - One light arc per shot (here a cool half-dark that lifts to warm light as the sun rises)
   - Every frame a pure function of t, seeded randomness only
 palette:
   - "#f1e9dd"
@@ -46,8 +47,9 @@ reference: >-
   paper-fox (github.com/Leonxlnx/paper-fox, MIT).
 proof:
   renders:
-    - indieagent-relief-box/out/draft/reliefbox_d1_f0-f264_24fps_draft.mp4
-  pr: []
+    - indieagent-relief-box/out/draft/reliefbox_d2_f0-f264_24fps_draft.mp4
+  pr:
+    - rheos/secondunit-videos#328
   youtube: []
 verdict: null
 related:

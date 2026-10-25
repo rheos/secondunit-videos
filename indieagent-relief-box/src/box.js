@@ -13,7 +13,7 @@ export const BACK = { z: 1500, x0: 300, y0: 110, x1: 1620, y1: 990 };
 export const FRONT = { z: 720, x0: 110, y0: 34, x1: 1810, y1: 1052 };
 export const FLOOR_Y = 990;
 
-// the back wall: warm card, a field of embossed hexagons fading out toward the floor, clusters of dotted discs
+// the back wall: warm card and a field of embossed hexagons fading out toward the floor (the discs stand off it, in density.js)
 export function addBackWall(S) {
   const { x0, y0, x1, y1, z } = BACK, pad = 260;
   S.plane(z, {
@@ -33,22 +33,6 @@ export function addBackWall(S) {
             bevel: { light: LIGHT, width: 1.6, hi: 0.4 * fade, lo: 0.2 * fade },
             shadow: { color: `rgba(120,70,60,${0.18 * fade})`, blur: 3, x: 1.2, y: 2 },
           });
-        }
-      }
-      // dotted discs, after the dandelion clocks in the first box
-      const clusters = [[370, 760, 9], [1530, 690, 8], [520, 900, 5], [1420, 880, 6]];
-      for (const [cx, cy, n] of clusters) {
-        const cr = new RNG(`discs:${cx}`);
-        for (let i = 0; i < n; i++) {
-          const x = cx + cr.range(-110, 110), y = cy + cr.range(-70, 70), rr = cr.range(16, 30);
-          piece(ctx, ellipsePts(x, y, rr, rr), { fill: '#fbf6ee', shadow: { color: 'rgba(90,60,60,0.3)', blur: 5, x: 2, y: 3.5 }, bevel: { light: LIGHT, width: 1.5, hi: 0.3, lo: 0.2 } });
-          const m = 7 + Math.round(rr / 5);
-          for (let k = 0; k < m; k++) {
-            const a = k / m * Math.PI * 2 + cr.next(), d = rr * 0.58;
-            ctx.fillStyle = PAL.ink;
-            ctx.beginPath(); ctx.arc(x + Math.cos(a) * d, y + Math.sin(a) * d, rr * 0.11, 0, Math.PI * 2); ctx.fill();
-          }
-          ctx.fillStyle = PAL.ink; ctx.beginPath(); ctx.arc(x, y, rr * 0.13, 0, Math.PI * 2); ctx.fill();
         }
       }
     },

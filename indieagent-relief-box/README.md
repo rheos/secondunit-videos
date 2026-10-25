@@ -1,8 +1,7 @@
 # Relief box (look test)
 
-An 11 s look test at 720p, 24 fps, asked for by Robin on 2026-10-25 (issue #327): how close can code get to
-sculpted clay relief panels in shadowboxes, drawn in the language of Leon Lin's paper-fox, with other elements
-mixed in. Recipe: `looks/relief-box.yaml`.
+An 11 s look test at 720p, 24 fps, asked for by Robin on 2026-10-25 (issue #327): a visual language built from
+photographs of sculpted clay relief panels in shadowboxes, drawn in the language of Leon Lin's paper-fox. Recipe: `looks/relief-box.yaml`.
 
 ```bash
 node tools/bundle.mjs           # after every edit in src/: writes build/film.js
@@ -23,24 +22,34 @@ blurred silhouette for the drop shadow), `drawSprites` for anything that moves, 
 Nothing of paper-fox's fox, scenes or audio is used. Our renderers open pages from `file://`, where ES modules
 don't load, so `tools/bundle.mjs` joins the modules into one classic script.
 
-## What is on screen
+## What is on screen (draft 2)
 
-- **The box.** A honeycomb back wall with dotted discs, four inner walls projected through the camera so they keep
-  their perspective as it drifts, and a moulded frame whose shadow falls into the box.
-- **The doll** (`src/figure.js`), cut down the middle. Each half carries half a head with one heavy-lidded eye
-  looking outward, half a jacket, an arm bent up to a hand behind the head, a leg with an ankle band, and an
-  ostrich plume behind the shoulder.
-- **The spine** (`src/spine.js`): a rod and fourteen mirror-symmetric ornaments in mint, pink and butter.
-- **Mixed in** (`src/props.js`): a turning wheel of square windows, a floating pink mountain town and a terracotta
-  city on stepped roots, a thought bubble on a white lead with an emblem inside, and small things along the floor.
+Draft 1 rebuilt one reference photo too closely (a split doll with an ornament spine, plumes, a thought bubble).
+Robin, 2026-10-25: we are making a language, not copying a work, so draft 2 leaves the figure out and uses the
+reference set's vocabulary in a scene of our own, with paper-fox's density: many pieces on many planes.
+
+| z | Plane |
+|---|---|
+| 1500 | back wall: warm card, embossed honeycomb (`box.js`) |
+| 1480 | the sun, a wheel of lit windows with stepped rays, and its glow (`props.js`) |
+| 1460, 1400 | two ranges of stepped pastel hills with torn white edges and cone trees (`density.js`) |
+| 1430 | dotted discs standing off the wall |
+| 1290, 1180 | a terracotta city and a pink mountain town on floating islands with stepped roots |
+| 1240 | coral: grey curl clusters, wheat fronds, lime beads |
+| 1150 | two stepped-trunk trees whose rosettes bloom |
+| 1100 | butter piping from a porthole in the left wall to one in the right, and the bead train |
+| 900 | a garland hanging from the top of the box: bead strings, stepped pendants, dotted balls |
+| 830, 790 | two rows of small things along the floor |
+| 720 | the moulded frame |
+| 560 | the lens plane, in front of the frame: rosettes, plume tips and a dotted ball in the lower corners |
 
 | Time | Beat |
 |---|---|
-| 0-1.4 s | the box at rest, the doll closed |
-| 1.4-3.6 s | the halves slide apart |
-| 2.6-7.4 s | the rod rises, the ornaments spring in bottom to top, the eyes light as they land |
-| 6.9-8.8 s | the lead runs from the head to the bubble, the bubble pops open, the emblem springs up inside |
-| 8.8-11 s | hold while the camera finishes its push |
+| 0-6 s | the sun rises over the hills and turns; a cool half-dark lifts to warm light |
+| 2.4-9.4 s | seven beads roll out of the left porthole, along the piping, into the right one |
+| 4-7.4 s | the trees bloom, nearest the sun first |
+| all through | islands drift and bob, the garland swings, the camera trucks right and pushes in |
+| 9.4-11 s | hold |
 
 ## How a flat cut-out reads as clay
 

@@ -1,6 +1,6 @@
-// What else stands in the box, mixed in from the other photographs: a turning wheel of square windows and a
-// floating island with stepped roots and a pink mountain town (the first box), a thought bubble on a white
-// lead with an emblem inside (the blue box), and small sculpted things along the floor at the front.
+// The box's landmarks: a sun made of a wheel of lit windows, two floating islands on stepped roots (a pink
+// mountain town, a terracotta city), and small sculpted things along the floor at the front. Motifs from the
+// reference set, arranged as our own scene.
 
 import { RNG } from '../vendor/paper-fox/core/rng.js';
 import { piece, linear, radial } from '../vendor/paper-fox/core/piece.js';
@@ -13,27 +13,34 @@ const sh = (k = 1) => ({ color: `rgba(70,40,50,${0.3 * k})`, blur: 4, x: -LIGHT[
 const bev = { light: LIGHT, width: 1.6, hi: 0.36, lo: 0.24 };
 const circle = (cx, cy, r, n = 48) => [...Array(n)].map((_, i) => [cx + Math.cos(i / n * Math.PI * 2) * r, cy + Math.sin(i / n * Math.PI * 2) * r]);
 
-// ---------------- the wheel of windows ----------------
-export const WHEEL = { x: 420, y: 360, r: 170, z: 1320 };
-function drawWheel(g) {
-  const { x, y, r } = WHEEL, rng = new RNG('wheel');
-  clayForm(g, circle(x, y, r), mix(P.butter, '#c9d98a', 0.5), { tiers: 1, step: 0.04, reach: 3 });
-  // three rings of square windows, each a recessed cell with a yellow sill
-  for (const [rr, n, s] of [[r * 0.82, 20, 22], [r * 0.6, 15, 19], [r * 0.38, 9, 16]]) {
+// ---------------- the sun: a wheel of windows ----------------
+// It rises behind the ranges and turns slowly; its windows are lit from inside and a ring of stepped rays sits on its rim.
+export const SUN = { x: 960, y: 0, r: 132, z: 1480 };
+function drawSun(g) {
+  const { x, y, r } = SUN, rng = new RNG('sun');
+  for (let i = 0; i < 18; i++) {
+    const a = i / 18 * Math.PI * 2;
+    for (let k = 0; k < 3; k++) {
+      const d = r + 8 + k * 11, w = 15 - k * 4;
+      piece(g, transform([[-w, 0], [0, -13], [w, 0]], { x: x + Math.cos(a) * d, y: y + Math.sin(a) * d, rot: a + Math.PI / 2 }), { fill: [P.butter, '#f6c36a', '#f29d5c'][k], shadow: sh(0.6), bevel: bev });
+    }
+  }
+  clayForm(g, circle(x, y, r), mix(P.butter, '#f6c36a', 0.4), { tiers: 1, step: 0.04, reach: 3 });
+  for (const [rr, n, s] of [[r * 0.8, 18, 18], [r * 0.57, 13, 16], [r * 0.35, 8, 13]]) {
     for (let i = 0; i < n; i++) {
       const a = i / n * Math.PI * 2, cx = x + Math.cos(a) * rr, cy = y + Math.sin(a) * rr;
       const sq = (k) => transform([[-k, -k], [k, -k], [k, k], [-k, k]], { x: cx, y: cy, rot: a });
       piece(g, sq(s * 0.62), { fill: P.butterDeep, shadow: sh(0.8), bevel: bev });
-      piece(g, sq(s * 0.42), { fill: vary(mix(P.mintDeep, P.slate, 0.4), rng, 0.06) });
-      piece(g, transform([[-s * 0.42, -s * 0.42], [s * 0.42, -s * 0.42], [s * 0.3, -s * 0.28], [-s * 0.3, -s * 0.28]], { x: cx, y: cy, rot: a }), { fill: 'rgba(30,40,40,0.35)' });
+      piece(g, sq(s * 0.42), { fill: vary(rng.pick(['#ffe2a0', '#ffd27e', '#fff0c8']), rng, 0.04) });
+      piece(g, transform([[-s * 0.42, -s * 0.42], [s * 0.42, -s * 0.42], [s * 0.3, -s * 0.28], [-s * 0.3, -s * 0.28]], { x: cx, y: cy, rot: a }), { fill: 'rgba(150,80,30,0.3)' });
     }
   }
-  clayForm(g, circle(x, y, r * 0.2), P.butter, { tiers: 2, reach: 2 });
+  clayForm(g, circle(x, y, r * 0.2), '#f6c36a', { tiers: 2, reach: 2 });
   clayForm(g, circle(x, y, r * 0.09), P.pink, { tiers: 1, reach: 1 });
 }
 
 // ---------------- the floating island ----------------
-export const ISLAND = { x: 470, y: 650, z: 1180 };
+export const ISLAND = { x: 540, y: 470, z: 1180 };
 function drawIsland(g) {
   const { x, y } = ISLAND, rng = new RNG('island');
   // stepped roots hanging under it, darker as they go down
@@ -77,37 +84,6 @@ function drawCity(g) {
   }
 }
 
-// ---------------- the thought bubble ----------------
-export const BUBBLE = { x: 1520, y: 600, r: 150, z: 1120 };
-export const LEAD = [[1210, 336], [1282, 366], [1334, 420], [1362, 490], [1372, 556]];
-function drawBubble(g) {
-  const { x, y, r } = BUBBLE;
-  // a thick white rim, then the dark inside with a faint shine
-  clayForm(g, circle(x, y, r), P.bone, { tiers: 1, step: 0.03, reach: 3 });
-  piece(g, circle(x, y, r - 14), { fill: radial(g, x - 40, y - 50, 10, r, [mix(P.navy, P.slateDeep, 0.5), P.navy, shade(P.navy, -0.3)]) });
-  // inner bevel: the rim stands proud of the dark inside
-  piece(g, circle(x, y, r - 14), { fill: 'rgba(0,0,0,0)', bevel: { light: [-LIGHT[0], -LIGHT[1]], width: 4, hi: 0.25, lo: 0.4 } });
-}
-// the emblem that appears inside: a stepped cross in mint, butter and pink around an eye
-function drawEmblem(g) {
-  const { x, y } = BUBBLE;
-  for (const rot of [0, Math.PI / 2, Math.PI, Math.PI * 1.5]) {
-    const pts = (w, d) => transform([[-w, -d], [w, -d], [w * 0.3, -d - w * 0.9]], { x, y, rot });
-    piece(g, pts(30, 34), { fill: P.mint, shadow: sh(), bevel: bev });
-    piece(g, pts(18, 54), { fill: P.butter, shadow: sh(), bevel: bev });
-  }
-  steps(g, x, y + 24, { n: 4, w0: 84, w1: 30, h: 10, gap: 1, colors: [P.pink, P.mint, P.butter] });
-  steps(g, x, y - 24, { n: 4, w0: 84, w1: 30, h: 10, gap: 1, up: false, colors: [P.pink, P.mint, P.butter] });
-  clayForm(g, circle(x, y, 16), P.bone, { tiers: 2, reach: 1.5 });
-  dot(g, x, y, 5.5, P.iris); dot(g, x, y, 2.4, P.navy);
-}
-function drawLead(g) {
-  // the lead is a flat white strip with a slate core stripe, like the cable in the blue box
-  const out = tubeOutline(LEAD, 9, { caps: false });
-  piece(g, out, { fill: P.bone, shadow: { color: 'rgba(60,40,40,0.4)', blur: 6, x: 2, y: 4 }, bevel: bev });
-  tube(g, LEAD, 3, P.mintDeep, { shadow: false });
-}
-
 // ---------------- along the floor ----------------
 function drawFloorLeft(g) {
   const rng = new RNG('floor-l'), y = 1032;
@@ -139,12 +115,9 @@ function drawFloorRight(g) {
 export function addProps(S) {
   const s = (name, box, draw, o = {}) => S.sprite({ name, ...box, res: o.res ?? 1.2, mat: o.mat ?? 'smooth', edge: { width: 1.6, hi: 0.35, lo: 0.3 }, shadow: { blur: o.blur ?? 12 }, draw });
   return {
-    wheel: s('wheel', { x: WHEEL.x - WHEEL.r - 20, y: WHEEL.y - WHEEL.r - 20, w: WHEEL.r * 2 + 40, h: WHEEL.r * 2 + 40 }, drawWheel),
+    sun: s('sun', { x: SUN.x - SUN.r - 70, y: SUN.y - SUN.r - 70, w: SUN.r * 2 + 140, h: SUN.r * 2 + 140 }, drawSun, { blur: 16 }),
     city: s('city', { x: CITY.x - 150, y: CITY.y - 130, w: 300, h: 230 }, drawCity),
     island: s('island', { x: ISLAND.x - 200, y: ISLAND.y - 200, w: 400, h: 340 }, drawIsland),
-    bubble: s('bubble', { x: BUBBLE.x - BUBBLE.r - 20, y: BUBBLE.y - BUBBLE.r - 20, w: BUBBLE.r * 2 + 40, h: BUBBLE.r * 2 + 40 }, drawBubble, { blur: 16 }),
-    emblem: s('emblem', { x: BUBBLE.x - 100, y: BUBBLE.y - 100, w: 200, h: 200 }, drawEmblem, { res: 1.4, blur: 8 }),
-    lead: s('lead', { x: 1190, y: 310, w: 210, h: 270 }, drawLead, { blur: 8 }),
     floorL: s('floor-left', { x: 120, y: 900, w: 760, h: 170 }, drawFloorLeft, { res: 1.3 }),
     floorR: s('floor-right', { x: 1250, y: 900, w: 560, h: 170 }, drawFloorRight, { res: 1.3 }),
   };

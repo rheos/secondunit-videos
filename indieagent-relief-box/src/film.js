@@ -1,31 +1,37 @@
-// Relief box, the film: 11 s at 24 fps, one shadowbox. Every frame is a pure function of t.
-//   0.0 - 1.4   the box at rest: the doll closed, plumes stirring, the wheel turning, the island bobbing
-//   1.4 - 3.6   the doll's halves slide apart and show the gap down its middle
-//   2.6 - 7.4   the spine threads up through the gap: the rod rises, then fourteen ornaments spring into
-//               place bottom to top; the eyes in it light as they land
-//   6.9 - 8.8   a white lead runs from the doll's head to a thought bubble, which pops open; an emblem
-//               springs up inside it
-//   8.8 - 11    hold; the camera finishes its slow push into the box
+// Relief box, the film: 11 s at 24 fps, one shadowbox at dawn. Every frame is a pure function of t.
+//   0.0 - 6.0   a sun made of a wheel of lit windows rises from behind the ranges and turns; the box warms from
+//               a cool half-dark to full light as it climbs
+//   2.4 - 9.4   a train of seven beads rolls out of a porthole in the left wall, along the butter piping, and
+//               into a porthole in the right wall
+//   4.0 - 7.4   the ruffle trees bloom, rosette by rosette, as the light reaches them
+//   all through the islands drift and bob, the garland swings, the camera trucks right across the box and
+//               pushes in a little, so every plane slides past at its own depth
+//   9.4 - 11    hold
 // Built on Leon Lin's paper-fox core (vendor/paper-fox, MIT, Copyright (c) 2026 Leonxlnx): the Scene, its planes
 // and camera, paper baking, drop shadows and the film finish are paper-fox's, unchanged.
 
-import { Scene } from '../vendor/paper-fox/core/stage.js';
+import { Scene, layerMatrix } from '../vendor/paper-fox/core/stage.js';
 import { drawSprites } from '../vendor/paper-fox/core/sprite.js';
-import { glow } from '../vendor/paper-fox/core/piece.js';
+import { glow, radial } from '../vendor/paper-fox/core/piece.js';
 import { finish } from '../vendor/paper-fox/core/post.js';
-import { E, prog, osc, clamp, lerp, invLerp, smoothstep } from '../vendor/paper-fox/core/ease.js';
+import { mix, rgba } from '../vendor/paper-fox/core/color.js';
+import { along } from '../vendor/paper-fox/core/geom.js';
+import { E, prog, osc, clamp, lerp, smoothstep } from '../vendor/paper-fox/core/ease.js';
 import { noise } from '../vendor/paper-fox/core/rng.js';
 import { LIGHT } from './kit.js';
-import { BACK, addBackWall, addInnerWalls, addFrame, addBoxLight } from './box.js';
-import { CX, addFigure } from './figure.js';
-import { addSpine } from './spine.js';
-import { WHEEL, ISLAND, CITY, BUBBLE, addProps } from './props.js';
+import { addBackWall, addInnerWalls, addFrame, addBoxLight } from './box.js';
+import { SUN, ISLAND, CITY, addProps } from './props.js';
+import { TRACK, addDensity } from './density.js';
 
 const DURATION = 11;
-const OPEN = 128;
-const open = (t) => prog(t, 1.4, 3.6, E.smooth);
 const popSpring = (x) => x <= 0 ? 0 : x >= 1 ? 1 : 1 - Math.exp(-5.2 * x) * Math.cos(x * 8.2);
-const LAND0 = 3.05, LAND_STEP = 0.3, POP = 0.85;
+const sunY = (t) => lerp(1010, 318, E.outSoft(prog(t, 0.2, 6.2, E.smooth)));
+const dawn = (t) => smoothstep(0.4, 6.6, t);
+
+// the track's length, and where a bead is after s px along it, riding on top of the piping
+const TRACK_LEN = TRACK.path.reduce((a, p, i) => i ? a + Math.hypot(p[0] - TRACK.path[i - 1][0], p[1] - TRACK.path[i - 1][1]) : 0, 0);
+const TRAIN0 = 2.4, SPEED = 260, GAP = 34, RAMP = 0.35;
+const trainS = (t) => { const u = t - TRAIN0; return u <= 0 ? 0 : SPEED * (u - RAMP + RAMP * Math.exp(-u / RAMP)); };
 
 function scene() {
   return new Scene({
@@ -34,85 +40,54 @@ function scene() {
     background: '#3b2c2a',
     light: LIGHT,
     shadow: { alpha: 0.48, dist: 10, blur: 11 },
-    post: { bloom: 0.16, threshold: 0.8, vignette: 0.16, grain: 0.045, grade: { color: '#ffd9b8', amount: 0.1, mode: 'soft-light' } },
+    post: { bloom: 0.18, threshold: 0.78, vignette: 0.18, grain: 0.045 },
     camera: (t) => {
-      const k = E.smooth(t / DURATION);
-      return { x: lerp(-40, 26, k) + 4 * noise('cam').n1(t * 0.21), y: lerp(-6, 14, k) + 3 * noise('cam').n1(t * 0.17 + 9), z: 55 * E.dolly(t / DURATION), roll: 0.0016 * osc(t, 9.5) };
+      const k = E.cam(t / DURATION);
+      return { x: lerp(-120, 110, k) + 4 * noise('cam').n1(t * 0.21), y: lerp(-8, 10, k) + 3 * noise('cam').n1(t * 0.17 + 9), z: 70 * E.dolly(t / DURATION), roll: 0.0016 * osc(t, 9.5) };
     },
     build(S) {
       addBackWall(S);
       addInnerWalls(S);
       addBoxLight(S);
       const props = addProps(S);
-      const fig = addFigure(S);
-      const spine = addSpine(S);
 
-      // the wheel turns once every 90 s or so; a turning piece keeps its shadow straight down-right
-      S.add({ name: 'wheel', z: WHEEL.z, render(ctx, t, env) {
-        drawSprites(ctx, [{ s: props.wheel, ax: WHEEL.x, ay: WHEEL.y, x: WHEEL.x, y: WHEEL.y, rot: 0.07 * t }], env.shadow);
+      // the sun, behind the ranges: it climbs, turns, and lights the back wall around it
+      S.add({ name: 'sun-glow', z: SUN.z + 5, blend: 'lighter', render(ctx, t) {
+        const y = sunY(t), k = dawn(t);
+        glow(ctx, SUN.x, y, 620, '#ffd9a0', 0.22 * k);
+        glow(ctx, SUN.x, y, 260, '#fff0c8', 0.3 * k);
       } });
-      S.add({ name: 'island', z: ISLAND.z, shadow: { dx: 10, dy: 22, alpha: 0.42 }, sprites: [{ s: props.island }], anim: (t) => ({ y: 7 * osc(t, 5.6, 0.2), rot: 0.006 * osc(t, 7.3) , ox: ISLAND.x, oy: ISLAND.y }) });
-
-      S.add({ name: 'city', z: CITY.z, shadow: { dx: 10, dy: 22, alpha: 0.4 }, sprites: [{ s: props.city }], anim: (t) => ({ y: 6 * osc(t, 6.4, 0.6) }) });
-
-      // the bubble and its lead
-      S.add({ name: 'bubble', z: BUBBLE.z, shadow: { dx: 9, dy: 18 }, render(ctx, t, env) {
-        const k = popSpring(clamp((t - 7.45) / POP));
-        if (k <= 0.001) return;
-        drawSprites(ctx, [{ s: props.bubble, ax: BUBBLE.x, ay: BUBBLE.y, x: BUBBLE.x, y: BUBBLE.y, sx: k, sy: k, alpha: smoothstep(0, 0.2, k) }], env.shadow);
-        const e = popSpring(clamp((t - 8.0) / POP));
-        if (e > 0.001) drawSprites(ctx, [{ s: props.emblem, ax: BUBBLE.x, ay: BUBBLE.y, x: BUBBLE.x, y: BUBBLE.y + 30 * (1 - e), sx: e, sy: e, alpha: smoothstep(0, 0.25, e) }], { ...env.shadow, dx: 3, dy: 6 });
-      } });
-      S.add({ name: 'lead', z: 990, shadow: { dx: 6, dy: 12 }, render(ctx, t, env) {
-        const k = prog(t, 6.9, 7.7, E.outSoft);
-        if (k <= 0.001) return;
-        ctx.save();
-        const p = new Path2D(); p.rect(1200, 290, 20 + 200 * k, 300); ctx.clip(p);
-        drawSprites(ctx, [{ s: props.lead }], env.shadow);
-        ctx.restore();
+      S.add({ name: 'sun', z: SUN.z, shadow: { dx: 6, dy: 12, alpha: 0.35 }, render(ctx, t, env) {
+        drawSprites(ctx, [{ s: props.sun, ax: SUN.x, ay: 0, x: SUN.x, y: sunY(t), rot: 0.05 * t }], env.shadow);
       } });
 
-      // the plumes ride with the halves and stir about their quills
-      S.add({ name: 'plumes', z: 1045, shadow: { dx: 8, dy: 16, alpha: 0.4 }, render(ctx, t, env) {
-        const o = OPEN * open(t);
-        drawSprites(ctx, [
-          { s: fig.plumes.left, ax: CX - 60, ay: 420, x: CX - 60 - o, y: 420, rot: 0.035 * osc(t, 4.1) - 0.02 },
-          { s: fig.plumes.right, ax: CX + 60, ay: 420, x: CX + 60 + o, y: 420, rot: 0.035 * osc(t, 4.4, 0.35) + 0.02 },
-        ], env.shadow);
+      const D = addDensity(S);
+
+      S.add({ name: 'city', z: CITY.z, shadow: { dx: 10, dy: 22, alpha: 0.4 }, sprites: [{ s: props.city }], anim: (t) => ({ x: 10 * osc(t, 9, 0.3), y: 6 * osc(t, 6.4, 0.6) }) });
+      S.add({ name: 'island', z: ISLAND.z, shadow: { dx: 10, dy: 22, alpha: 0.42 }, sprites: [{ s: props.island }], anim: (t) => ({ x: -14 * osc(t, 10, 0.1), y: 7 * osc(t, 5.6, 0.2), rot: 0.006 * osc(t, 7.3), ox: ISLAND.x, oy: ISLAND.y }) });
+
+      // the rosettes open as the light reaches them, farthest from the sun last
+      const order = D.rosettes.map((r, i) => ({ r, d: Math.hypot(r.x - SUN.x, r.y - 320), i })).sort((a, b) => a.d - b.d);
+      S.add({ name: 'bloom', z: 1145, shadow: { dx: 8, dy: 14, alpha: 0.44 }, render(ctx, t, env) {
+        drawSprites(ctx, order.map(({ r }, j) => {
+          const x = (t - (4.0 + j * 0.38)) / 0.9, k = popSpring(clamp(x));
+          return { s: r.s, ax: r.x, ay: r.y, x: r.x, y: r.y, sx: 0.2 + 0.8 * k, sy: 0.2 + 0.8 * k, rot: -0.6 * (1 - k), alpha: smoothstep(0, 0.12, x) };
+        }).filter((it) => it.alpha > 0), env.shadow);
       } });
 
-      // the spine, behind the halves
-      S.add({ name: 'spine', z: 1022, shadow: { dx: 7, dy: 13, alpha: 0.46 }, render(ctx, t, env) {
-        const r = prog(t, 2.6, 3.4, E.outSoft);
-        if (r > 0.001) drawSprites(ctx, [{ s: spine.rod, ax: CX, ay: 1010, x: CX, y: 1010, sy: r }], env.shadow);
-        const items = [];
-        spine.orn.forEach((o, i) => {
-          const x = (t - (LAND0 + i * LAND_STEP)) / POP;
-          if (x <= 0) return;
-          const k = popSpring(clamp(x));
-          items.push({ s: o.s, ax: CX, ay: o.y, x: CX, y: o.y - 46 * (1 - E.outSoft(clamp(x * 1.4))), sx: k, sy: k, alpha: smoothstep(0, 0.18, x) });
+      // the piping and the bead train
+      S.add({ name: 'track', z: TRACK.z, shadow: { dx: 8, dy: 14, alpha: 0.44 }, render(ctx, t, env) {
+        drawSprites(ctx, [{ s: D.track }], env.shadow);
+        const s0 = trainS(t), items = [];
+        D.beads.forEach((b, i) => {
+          const s = s0 - i * GAP;
+          if (s <= 0 || s >= TRACK_LEN) return;
+          const { p, ang } = along(TRACK.path, s / TRACK_LEN), d = TRACK.w + 13;
+          items.push({ s: b, x: p[0] + Math.sin(ang) * d, y: p[1] - Math.cos(ang) * d, rot: s / 14, alpha: smoothstep(0, 26, s) * smoothstep(TRACK_LEN, TRACK_LEN - 26, s) });
         });
-        drawSprites(ctx, items, env.shadow);
-      } });
-      // the eyes in the spine and the bubble wake with a soft blue light, then breathe
-      S.add({ name: 'eye-light', z: 1020, blend: 'lighter', render(ctx, t) {
-        const eyes = [[CX, 810, LAND0 + 3 * LAND_STEP], [CX, 546, LAND0 + 7 * LAND_STEP], [BUBBLE.x, BUBBLE.y, 8.0]];
-        for (const [x, y, t0] of eyes) {
-          const k = smoothstep(t0 + 0.4, t0 + 1.2, t) * (0.85 + 0.15 * osc(t, 3.2, x * 0.001));
-          if (k > 0.01) glow(ctx, x, y, 70, '#bfe2ff', 0.32 * k);
-        }
+        drawSprites(ctx, items, { ...env.shadow, dx: 4, dy: 7 });
       } });
 
-      // the halves
-      S.add({ name: 'figure', z: 1000, shadow: { dx: 10, dy: 17, alpha: 0.5 }, render(ctx, t, env) {
-        const o = OPEN * open(t), lean = 0.012 * open(t);
-        drawSprites(ctx, [
-          { s: fig.halves.left, ax: CX, ay: 1000, x: CX - o, y: 1000, rot: -lean },
-          { s: fig.halves.right, ax: CX, ay: 1000, x: CX + o, y: 1000, rot: lean },
-        ], env.shadow);
-      } });
-
-      S.add({ name: 'floor', z: 790, shadow: { dx: 6, dy: 10, alpha: 0.5 }, sprites: [{ s: props.floorL }, { s: props.floorR }] });
       addFrame(S);
     },
   });
@@ -129,12 +104,22 @@ S.build();
 
 function frame(t) {
   S.render(ctx, t);
-  finish(ctx, { ...S.post, frame: Math.round(t * 24) });
+  // the light arc: a cool half-dark that lifts as the sun climbs, opening first around the sun
+  const k = dawn(t), dark = 0.5 * (1 - k);
+  if (dark > 0.004) {
+    const m = layerMatrix(S.camera(t), SUN.z, cv.width / 1920), sx = m.a * SUN.x + m.e, sy = m.d * sunY(t) + m.f;
+    ctx.save();
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.fillStyle = radial(ctx, sx, sy, cv.width * 0.05, cv.width * 0.75, [rgba('#1c1a3a', dark * 0.25), rgba('#1c1a3a', dark)]);
+    ctx.fillRect(0, 0, cv.width, cv.height);
+    ctx.restore();
+  }
+  finish(ctx, { ...S.post, frame: Math.round(t * 24), grade: { color: mix('#9fb0e0', '#ffd2a8', k), amount: 0.12, mode: 'soft-light' } });
 }
 
 window.__frameJPEG = (t, q = 0.93) => { frame(t); return cv.toDataURL('image/jpeg', q); };
 window.__ready = Promise.resolve(true);
-window.FILM = { DURATION, frame, scene: S, BACK };
+window.FILM = { DURATION, frame, scene: S, TRACK_LEN };
 if (!params.has('offline')) {
   const t0 = performance.now(), start = parseFloat(params.get('t') || 0);
   (function loop() { frame((start + (performance.now() - t0) / 1000) % DURATION); requestAnimationFrame(loop); })();
