@@ -114,9 +114,15 @@ export function addWorld(S) {
   }
   const front = makeSun('lantern', 92, { plate: mix(P.butter, '#f6c36a', 0.4), hub: '#f6c36a', eye: P.pink, rays: [P.butter, '#f6c36a', '#f29d5c'], sill: P.butterDeep, glass: ['#ffe2a0', '#ffd27e', '#fff0c8'] });
   const back = makeSun('backsun', 150, { plate: mix(P.mint, P.aqua, 0.5), hub: P.lilac, eye: P.butter, rays: [P.aqua, P.mint, P.lilac], sill: P.mintDeep, glass: ['#e8fbf6', '#d6f2ff', '#efe6ff'] });
-  S.add({ name: 'lantern-glow', z: 5610, blend: 'lighter', render(ctx, t) {
+  const far = makeSun('farsun', 220, { plate: mix(P.pink, P.lilac, 0.45), hub: P.blush, eye: P.mint, rays: [P.blush, P.pink, P.lilac], sill: P.pinkDeep, glass: ['#fff0f4', '#f6e2ff', '#ffe8ee'] });
+  S.add({ name: 'lantern-glow', z: 5810, blend: 'lighter', render(ctx, t) {
     glow(ctx, LX, LY, 700, '#ffd9a0', 0.2 + 0.03 * cyc(t, 2));
     glow(ctx, LX, LY, 260, '#fff0c8', 0.3);
+  } });
+  // the third sun, furthest back and largest, rose and lilac: turning with the front one, growing as the middle one
+  // shrinks, so the three breathe against each other ring by ring
+  S.add({ name: 'farsun', z: 5800, shadow: { dx: 8, dy: 14, alpha: 0.18 }, render(ctx, t, env) {
+    drawSprites(ctx, sunItems(far, t, { spin: TAU * (3 / 18) * t / LOOP, scale: 1 - 0.18 * Math.sin(TAU * t / 6), rays: 18 }), env.shadow);
   } });
   // the sun behind: larger, cooler, turning the other way, growing and shrinking on a 6 s beat
   S.add({ name: 'backsun', z: 5600, shadow: { dx: 8, dy: 14, alpha: 0.22 }, render(ctx, t, env) {
