@@ -208,8 +208,9 @@ function singerMakes(ctx, t, phase, x, f, hip, kinds, hue) {
 const CHORUS = [[892, 'bells', P.mint], [822, P.butter, P.pink], [752, 'pom', P.lilac]];
 // the offerings the chorus cheers: the adept's at 3.2 and 9.2, the seer's at 6.2 and 0.2 (each about 1.2 s)
 const cheerAt = (t) => Math.max(...[3.2, 9.2, 6.2, 0.2].map((a) => loopBump(t, a - 0.1, 1.4)));
-// circling arms: each hand turns a continuous circle beside its shoulder, the two in opposite directions (mirror
-// images), so the arms never stop or reverse; once a turn the hands pass across each other in front of the chest.
+// poi spinning without the poi: each arm held straight at full stretch swings a big circle from its shoulder, the two
+// in opposite directions (mirror images), never stopping or reversing; twice a turn the outstretched arms cross in an
+// X, once high and once low, out at arm's length.
 // Each elf runs a quarter second behind the one beside it, so the turning rolls along the row as a wave.
 // An offering makes the circles bigger and the hop higher.
 const WAVE = { period: 1.5, lag: 0.25 };
@@ -218,9 +219,10 @@ function chorusPose(t, i, x) {
   const th = TAU * (t / WAVE.period - i * WAVE.lag / WAVE.period), amp = 1 + 0.3 * ch;
   // a small hop twice a turn, at the top and bottom of the circle
   const b = (2 + 6 * ch) * k * Math.abs(Math.sin(th));
-  const r = 20 * k * amp, cy = hip - 42 * k;
-  const lead = [x - 12 * k + r * Math.cos(th), cy + r * Math.sin(th)];    // the left hand, turning one way
-  const other = [x + 12 * k - r * Math.cos(th), cy + r * Math.sin(th)];   // the right hand, its mirror, turning the other
+  // the shoulders (from loop-figures' body) and a radius just inside the arm's full reach, so the arms run straight
+  const shY = hip - 33.6 * k, shX = 9.2 * k, r = 35.2 * k;
+  const lead = [x - shX + r * Math.cos(th), shY + r * Math.sin(th)];    // the left arm, turning one way
+  const other = [x + shX - r * Math.cos(th), shY + r * Math.sin(th)];   // the right arm, its mirror, turning the other
   return { hip: [x, hip - b], feet: [[x - 7 * k, GROUND - b * 0.6], [x + 7 * k, GROUND - b * 0.6]], facing: 1, scale: k, turn: 0.85, lean: 0,
     hands: [lead, other].map((h) => [h[0], h[1] - b]), headTilt: 0, armsFront: true,
     shift: loopBump(t, 1.1 + i * 1.9, 0.9), shiftKind: ['ico', 'cube', 'octa'][i % 3], shiftSpin: TAU * t / 2 };
@@ -299,8 +301,9 @@ function cues() {
     both(c0 + T.offer[0], 'offer', x, { dur: 1.2 });
     both(c0 + T.offer[1], 'rise', x);
   }
-  // the chorus: a tick as each elf's circling hands pass across each other (once a turn), pitched by its place
-  CHORUS.forEach(([x], i) => { for (let m = 0; m < LOOP / WAVE.period; m++) both(WAVE.period * m + WAVE.lag * i, 'tick', x, { n: i }); });
+  // the chorus: a tick each time an elf's outstretched arms cross (twice a turn, high and low), pitched by its place
+  const cross = Math.acos(9.2 / 35.2) / TAU;
+  CHORUS.forEach(([x], i) => { for (let m = 0; m < LOOP / WAVE.period; m++) for (const q of [-cross, cross]) both(WAVE.period * (m + q) + WAVE.lag * i, 'tick', x, { n: i }); });
   // heads popping into solids
   both(7.3, 'pop', 566); both(4.6, 'pop', 318); both(10.7, 'pop', 170); both(1.6, 'pop', 300);
   CHORUS.forEach(([x], i) => both(1.1 + i * 1.9, 'pop', x));
