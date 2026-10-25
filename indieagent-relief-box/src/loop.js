@@ -28,7 +28,8 @@ import { MK, MK_RAMP, PS, markLayer, paintMarkSolid, paintBurst, paintGlyph, pai
 // the figures stand a little taller than draft 1's so their hands read, still small against the funnel
 const P = PAL, TAU = Math.PI * 2, GROUND = 985, FS = 1.2, HIP = GROUND - 33 * FS;
 const mod = (x, m) => ((x % m) + m) % m;
-const CHEV_RADIAL = typeof location !== 'undefined' && new URLSearchParams(location.search).get('chev') === 'radial';
+// the radial ring of chevrons round each island is the choice (Robin, 2026-10-25); ?chev=pair shows the slope pair
+const CHEV_RADIAL = !(typeof location !== 'undefined' && new URLSearchParams(location.search).get('chev') === 'pair');
 const mixPt = (a, b, k) => [lerp(a[0], b[0], k), lerp(a[1], b[1], k)];
 // a bump that rises and falls over [a, b]: 0 outside, 1 at the middle
 const bump = (t, a, b) => (t <= a || t >= b ? 0 : Math.sin(Math.PI * (t - a) / (b - a)));
@@ -344,7 +345,7 @@ function scene() {
       S.add({ name: 'island', z: 1500, shadow: { dx: 10, dy: 22, alpha: 0.32 }, anim: (t) => ({ y: 8 * cyc(t, 1, 0.55) }), render(ctx, t, env) { mirrored(ctx, () => {
         // chevron fans at the island (Robin: "on the other side of the floating mountain... and the mirror of it...
         // along the contour of the mountain base"): one either side of the stepped roots, its chevrons running along
-        // the slope of the roots toward the tip, one the mirror of the other. ?chev=radial instead clones the fan
+        // the slope of the roots toward the tip, one the mirror of the other (?chev=pair). Chosen instead: the fan cloned
         // round a ring behind the island, each pointing outward, opening in a wave that runs round the ring.
         const cx = ISLAND.x + IX, cy = ISLAND.y + IY, along = Math.atan2(96, 130) - Math.PI / 2;
         if (CHEV_RADIAL) {
