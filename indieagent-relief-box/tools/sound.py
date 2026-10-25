@@ -6,8 +6,8 @@ Robin, 2026-10-25: "ambient glitchy and ethereal noises with a strange kind of h
 bellows of an accordion or harmonium". So the bed is a reed organ: every note two slightly mistuned reeds that beat
 against each other (the accordion's shimmer), voiced toward a nasal reed tone; each chord swells and fades like a
 slow push and pull of the bellows, with air hissing through as the bellows turn. The harmony is four bright,
-airy major-seventh-sharp-eleven Shepard chords, each a minor third below the last, falling for ever (an octave a
-loop), one per 3 s, changing legato inside two long breaths of the bellows per loop. Around it: glitch stutters
+airy major-seventh-sharp-eleven chords sliding in parallel by odd steps, one per 3 s, changing legato inside two
+long breaths of the bellows per loop. Around it: glitch stutters
 cut from the organ itself, and the events the page reports (tools/cues.mjs), each panned to where it happens.
 
 The 12 s loop is seamless by construction: every oscillator runs a whole number of cycles in the loop (frequencies
@@ -112,16 +112,14 @@ def reed(f, n_harm=40, nasal=1400):
     return out
 
 
-# Shepard chords (s7, Robin: the endlessly falling progression): four chords, a bar of 3 s each, each a minor
-# third below the last (D, B, Ab, F, then D again), so the loop falls exactly an octave and comes back to itself.
-# A chord is a set of pitch classes (a major seventh with a sharp eleven: root, fifth, ninth, sharp eleven, major
-# seventh); every pitch class sounds in every octave at once under one fixed loudness curve, which is what lets
-# the fall go on for ever.
-SHAPE = [0, 7, 2, 6, 11]
-ROOTS = [2, 11, 8, 5]
-CHORDS = [[(r + i) % 12 for i in SHAPE] for r in ROOTS]
+# four chords, a bar of 3 s each: major seventh with a sharp eleven, sliding in parallel by odd steps
+CHORDS = [
+    [50, 57, 64, 68, 73],    # D:  D A E G# C#
+    [46, 53, 60, 64, 69],    # Bb: Bb F C E A   (down a major third)
+    [48, 55, 62, 66, 71],    # C:  C G D F# B   (up a tone)
+    [44, 51, 58, 62, 67],    # Ab: Ab Eb Bb D G (down a major third: the strangest, a tritone from home)
+]
 BAR = LOOP / len(CHORDS)
-SHEP_CENTRE, SHEP_WIDTH = np.log2(330.0), 1.15      # the loudness curve: centred near E4, about an octave each way
 
 
 BREATH = LOOP / 2      # two long breaths of the bellows per loop (Robin: longer breaths)
@@ -144,35 +142,20 @@ def chord_gate(i, xf=0.6):
     return up * down * (t < BAR + xf)
 
 
-def shepard_reed(f):
-    """a reed voice for a Shepard stack: a few harmonics only (more would blur which octave is which)"""
-    out = np.zeros(N)
-    for k, w in ((1, 1.0), (2, 0.45), (3, 0.3), (4, 0.12)):
-        out += w * np.sin(2 * np.pi * snap(f * k) * T + RNG.uniform(0, 2 * np.pi))
-    return out
-
-
 def organ():
     out = np.zeros((N, 2))
     wind = breath(0) + breath(1)
     for i, chord in enumerate(CHORDS):
         b = chord_gate(i) * wind
-        for j, pc in enumerate(chord):
-            # every octave of the pitch class, from about 40 Hz to 4 kHz, weighted by the fixed loudness curve
-            f0 = 440.0 * 2 ** ((pc - 9) / 12)
-            for octv in range(-4, 4):
-                f = f0 * 2 ** octv
-                if not 38 < f < 4200:
-                    continue
-                w = np.exp(-0.5 * ((np.log2(f) - SHEP_CENTRE) / SHEP_WIDTH) ** 2)
-                if w < 0.02:
-                    continue
-                # two reeds a few hertz apart: the beating shimmer of an accordion's musette
-                beat = (2.2 + 0.5 * j) * (f / 330) ** 0.5
-                lo, hi = shepard_reed(snap(f - beat / 2)), shepard_reed(snap(f + beat / 2))
-                g = w * 0.9 / (1 + 0.15 * j)
-                out[:, 0] += (lo + 0.8 * hi) * b * g
-                out[:, 1] += (hi + 0.8 * lo) * b * g
+        for j, m in enumerate(chord):
+            f = midi(m)
+            # two reeds a few hertz apart: the beating shimmer of an accordion's musette
+            beat = 2.4 + 0.6 * j
+            lo, hi = reed(snap(f - beat / 2)), reed(snap(f + beat / 2))
+            l, r = lo + 0.8 * hi, hi + 0.8 * lo
+            g = 0.9 / (1 + 0.25 * j)
+            out[:, 0] += l * b * g
+            out[:, 1] += r * b * g
     out = cfilter(out, lo=70, hi=5200)
     # air through the bellows: breathy noise that rushes as the bellows turn, between the two breaths
     air = cfilter(RNG.standard_normal((N, 2)), lo=900, hi=5000)
@@ -259,11 +242,9 @@ def chord_at(t):
 
 
 def tone_of(t, k, octave=2):
-    """the k-th note (counting up through the chord's pitch classes, wrapping into the next octave) of the chord at
-    time t, folded into a fixed register from C(4 + octave) up, so event notes fall with the harmony and never jump"""
-    base = 12 * (5 + octave)
-    ch = sorted(base + pc for pc in chord_at(t))
-    return ch[k % len(ch)] + 12 * (k // len(ch))
+    """the k-th note (counting up through the chord, wrapping into the next octave) of the chord at time t"""
+    ch = sorted(chord_at(t))
+    return ch[k % len(ch)] + 12 * (octave + k // len(ch))
 
 
 def events(cues):
@@ -304,6 +285,13 @@ def events(cues):
         elif k == 'tick':
             # each elf its own chord tone; the high crossing a little brighter than the low
             place(out, t, tone(midi(tone_of(c['t'], 2 + c['n'], 1)), 0.05, 'tri', d=0.02), p, 0.045 if c.get('high') else 0.03)
+        elif k == 'swap':
+            # the chorus changing places: the hop's air, the elf reaching the front sounding its own note of the
+            # chord, and on a chord change the chord's root plucked low under it
+            place(out, t - 0.3, noise_sweep(0.35, 500, 2500, 0.05), 0.0)
+            place(out, t, bell(midi(tone_of(c['t'], c['n'] % 5, 2)), 1.1, ratio=2.0, index=1.0), 0.0, 0.13)
+            if c.get('chord'):
+                place(out, t, pluck(midi(tone_of(c['t'], 0, 0)), 0.9), 0.0, 0.2)
         elif k == 'pop':
             place(out, t, crush(sweep(1200, 180, 0.12, d=0.06), bits=6, hold=2), p, 0.16)
         elif k == 'lever':
