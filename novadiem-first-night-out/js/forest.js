@@ -308,6 +308,7 @@ const FOREST = (() => {
       g.restore();
       form(g, p, { w: 30, steps: 2, lit: 'rgba(255,215,190,.1)', shade: 'rgba(0,0,6,.4)' });
     } })] : [])]);
+    planes.moon = [moonX, moonY];                                       // for the transitions: the light, at camera x 0
     return planes;
   }
   // the drawing helpers, for the film's scenes

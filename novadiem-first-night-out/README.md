@@ -7,6 +7,7 @@ folder is at **step 1, the character sheet**: the cast is locked before any scen
 ```bash
 open character.html             # the lock sheet; ?t=3 moves the breathing and twitches, ?q=2 renders it at 4K
 open index.html                 # the 16 s character test; ?t=4 starts at 4 s, ?w=1920 renders 1080p
+open transitions.html           # the transitions reel (33 s)
 node tools/still.mjs character.html out/check/sheet 0
 node tools/planted.mjs          # planted feet: how far any foot moves while flat on the ground (must be 0)
 nice -n 15 node ../tools/motion-lab/render.mjs "index.html?w=1280" 0 16 out/draft/fno_charsheet_dN_f0-f384_24fps_draft.mp4 --width 1280 --height 720
@@ -84,6 +85,28 @@ nice -n 15 node ../tools/motion-lab/render.mjs "creek.html?w=1280" 0 9 out/draft
 
 The change out of the creek (the moon's reflection rises and becomes the porch light) is built with scene 3.
 
+## The transitions (`js/transitions.js`, `js/film.js`, `transitions.html`)
+
+A port of paper-fox's `src/film/transitions.js` with the parts of `compose.js` and `props.js` it uses (MIT). The rule
+is paper-fox's: the cut from one scene to the next always happens behind something from the story world, so a
+character is never seen twice. The moves, timings and eases are paper-fox's; the props are ours (a cedar trunk and
+cedar sprays, torn-paper boulders, a forest-floor page, drawn with `js/forest.js`'s helpers).
+
+| Move | What hides the cut | Its place in the film |
+|---|---|---|
+| `intro` | the cut-outs drop onto their stands, far first, nearest last | the opening |
+| `throughBranches` | the camera pushes into cedar sprays; they fill the lens and part | the hollow, down into the cedar |
+| `trackPine` | the camera keeps tracking; an old cedar sweeps across the lens with the next world behind it | down the cedar to the creek |
+| `lightFlood` | the scene's light floods the frame and draws back into the next scene's light | creek to garden: the moon's reflection becomes the porch light |
+| `lightFlash` | the light flares, turns cold, and is the flash that opens the next | garden to lost: the motion-sensor light |
+| `rockIris` | a ring of rock closes on the hero, shut for a fifth of a second, opens on the next | lost to found: the iris on the drainpipe |
+| `popup` | every cut-out folds flat onto a page front to back, the sky turns, the next world springs up back to front | found to dawn |
+
+Scenes are now objects (`js/scene.js`: `SCENES.walk`, `SCENES.creek`), so a transition can draw two at once, each
+plane with its own scene's camera and time (`PD.renderPlanes` takes `camOf`, `tOf`, `offset` for this). `js/film.js`
+lays scenes and transitions out as a plan; `transitions.html` is a 33 s reel that cuts between the two built worlds
+with each move, until the scenes around each move exist. The creek renders byte-identical after the refactor.
+
 ## Taken from paper-fox (MIT, Copyright (c) 2026 Leonxlnx; notice in `LICENSE-paper-fox.md`)
 
 `js/paper.js` is copied unchanged from the paper-depth look test (`indieagent-paper-depth/js/paper.js`, the port
@@ -94,6 +117,7 @@ paper-depth musician. Not taken: the fox drawing, any scene, any audio.
 
 ## Next
 
-1. Robin's notes on the creek.
-2. Score plan and take.
-3. The rest, each scene rendered as it lands, with its transitions.
+1. Robin's notes on the transitions reel.
+2. Night sound for the creek (no score: Robin, 1:20 am Sun Oct 25): crickets, the creek, dabbling, the splash,
+   chitters, placed on cues the scene reports.
+3. The rest, each scene rendered as it lands, with its transitions. Growing up can come later as more episodes.

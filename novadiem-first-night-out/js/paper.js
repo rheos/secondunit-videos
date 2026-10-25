@@ -350,11 +350,14 @@ const PD = (() => {
   // Each plane casts the shadows of its sprites onto whatever is already drawn behind it, offset away from the
   // light by an amount that grows with the gap to the plane behind (and, being drawn through the plane's
   // matrix, scales with the camera). fold(plane) returns { k } for the pop-up book: 0 standing, 1 flat.
-  function renderPlanes(ctx, planes, cam, t, { light = [-.5, -.85], shadowAlpha = .42, fold = null, alpha = null, q = 1 } = {}) {
+  // For transitions (after paper-fox film/compose.js composePlanes), planes of two scenes can be drawn interleaved by
+  // depth: camOf(P) and tOf(P) give each plane its own scene's camera and time, offset(P) moves it ({ dx, dy }).
+  function renderPlanes(ctx, planes, cam0, t0, { light = [-.5, -.85], shadowAlpha = .42, fold = null, alpha = null, q = 1, camOf = null, tOf = null, offset = null } = {}) {
     for (let i = 0; i < planes.length; i++) {
       const P = planes[i];
       const a = alpha ? alpha(P) : 1;
       if (a <= .001) continue;
+      const cam = camOf ? camOf(P) : cam0, t = tOf ? tOf(P) : t0;
       const m = layerMatrix(cam, P.z, q);
       if (!m) continue;
       ctx.save();
@@ -362,6 +365,7 @@ const PD = (() => {
       ctx.globalAlpha = a;
       if (P.ox) ctx.translate(P.ox, 0);
       if (P.anim) { const o = P.anim(t); ctx.translate(o.x || 0, o.y || 0); }
+      if (offset) { const o = offset(P); if (o) ctx.translate(o.dx || 0, o.dy || 0); }
       const k = fold ? fold(P) : 0;
       if (k > 0) {
         // fold the plane flat about its hinge line: it lies back onto the page, so it squashes toward the hinge
