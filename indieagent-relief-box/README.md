@@ -136,3 +136,12 @@ between them. Everything off the axis is made for the left half and drawn again 
 instruments, singers, floating islands with singers, chorus halves, hills, floaters and a pair of large
 tesseracts, all moving in mirror unison. The chorus wave runs outward from the middle. The camera no longer drifts
 sideways; it breathes in and out on the axis.
+
+Draft 9 to 9d (Robin's notes on draft 8): the space is "solid material with a crisp projected construct", so the
+loop switches the kit to its crisp finish (`setFinish('crisp')` in `src/kit.js`: defined planes and a clean
+terminator, a sharp highlight on each lit edge, tight shadows, a finer surface; the approved relief-box film keeps
+the soft clay). Haze is cut (little bloom, grain or vignette), the dome's cells are exact raised hexagons. Nothing
+floats still: pendants work as accordions, chevron stacks fan open and fold, solids squash, flatten and spring
+back. The chorus does scissor arms: crossed in front of the chest, each hand on its own side, one rising as the
+other falls, rolling along the row. The lantern is a spinning mechanism of parts: rays reaching and retracting in a
+wave, window rings turning against each other and breathing.
