@@ -359,7 +359,16 @@ def voices(cues):
     pan = lambda x: float(np.clip((x - 960) / 960, -1, 1)) * 0.6
     for c in cues:
         t, k = c['t'] + FRAME, c['kind']
-        if k == 'swap':
+        if k == 'glyph' and c['n'] % 2 == 0:
+            # a singer speaking an object into being (Robin: "a doiy doiy doiy doiy when the character is speaking the
+            # object"): a doiy on every other glyph (0.2 s apart, her bursts are 192 ms), two runs of four with a breath
+            # between, walking her figure (up a step, back, down) through the chord
+            m = c['n'] // 2
+            if m in (4, 9):
+                continue
+            fig = [2, 3, 2, 1, 2, 3, 4, 3, 2, 1][m % 10]
+            place(out, t, voice.syllable(sung(c['t'], fig), 'doiy', dur=0.17, tail=0.45, decay=0.16), pan(c['x']), 0.2)
+        elif k == 'swap':
             place(out, t, voice.syllable(sung(c['t'], c['n'] % 5), 'doiy', dur=0.2, tail=0.8, decay=0.28), 0.0, 0.5 if c.get('newFront', True) else 0.3)
         elif k == 'form':
             place(out, t, voice.syllable(sung(c['t'], 2 + int(c['x'] > 960)), 'dee', dur=0.19, tail=0.8, decay=0.28), pan(c['x']), 0.32)

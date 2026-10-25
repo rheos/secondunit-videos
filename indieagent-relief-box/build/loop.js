@@ -2483,8 +2483,10 @@ function addWorld(S) {
 
   // a pair of large tesseracts hangs either side of the lantern, turning through the fourth dimension once a loop,
   // one the mirror of the other
+  // centred over the mountain on the floating island below it (Robin: "more centered over the mountain")
+  const TESS_X = 390;
   S.add({ name: 'tesseract', z: 2800, render(ctx, t) {
-    mirror(ctx, () => drawTesseract(ctx, 470, 240, 78, TAU * t / LOOP, TAU * 2 * t / LOOP, { outer: P.mint, inner: P.pink, glowK: 0.6 + 0.15 * cyc(t, 2) }));
+    mirror(ctx, () => drawTesseract(ctx, TESS_X, 240, 78, TAU * t / LOOP, TAU * 2 * t / LOOP, { outer: P.mint, inner: P.pink, glowK: 0.6 + 0.15 * cyc(t, 2) }));
   } });
 
   // floating geometry at many depths: baked stepped pendants and chevrons, and solids and small tesseracts drawn
@@ -3622,7 +3624,9 @@ function scene() {
     // less haze: a trace of bloom on the brightest parts, barely any grain, a light vignette
     post: { bloom: 0.06, threshold: 0.86, bloomRadius: 1, vignette: 0.08, grain: 0.012, grade: { color: '#ffd8b4', amount: 0.03, mode: 'soft-light' } },
     // on the centre line, breathing in and out, so the symmetry holds
-    camera: (t) => ({ x: 0, y: 6 * cyc(t, 1, 0.21), z: 30 + 24 * cyc(t, 1, 0.1), roll: 0 }),
+    // and breathing with the drone (Robin: "zoom out and zoom in a bit, in rhythm to the drone"): in to its closest at
+    // the middle of each push of the bellows (6 s into each 8 s breath, the breath played backwards), out at the pull
+    camera: (t) => ({ x: 0, y: 6 * cyc(t, 1, 0.21), z: 55 + 50 * Math.cos(TAU * (t - 6) / 8), roll: 0 }),
     build(S) {
       const world = addWorld(S);
       addMachines(S);
