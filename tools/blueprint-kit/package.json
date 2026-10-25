@@ -2,8 +2,13 @@
   "name": "blueprint-kit-tools",
   "private": true,
   "type": "module",
-  "description": "Node side of the blueprint kit's sound tools (cues.mjs). Run npm install here once.",
+  "description": "Node side of the blueprint kit: the sound tools (cues.mjs) and the diagram vendor build (pele, Hershey letters). Run npm install here once.",
   "dependencies": {
+    "hersheytext": "2.0.0",
+    "pele": "1.10.0",
     "playwright-core": "1.64.1"
+  },
+  "scripts": {
+    "vendor": "node vendor/build.mjs"
   }
 }
