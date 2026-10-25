@@ -414,6 +414,8 @@ function cues() {
     const u0 = chorusTheta(t0, a.tier) / TAU, u1 = chorusTheta(t1, b.tier) / TAU;
     for (const [q, high] of [[0, true], [2 * CROSS, false]]) if (Math.floor(u1 - q) > Math.floor(u0 - q)) add24(t1, 'tick', b.x, { n: Math.round(b.tier), high });
   }
+  // the double-pointed pendant bursting open (a pop) every 6 s and slamming shut (a click)
+  for (const k of [0, 6]) { both(k, 'pop', 180); both(k + 4.2, 'press', 180, { n: 0 }); }
   // heads popping into solids
   both(7.3, 'pop', 566); both(4.6, 'pop', 318); both(10.7, 'pop', 170); both(1.6, 'pop', 300);
   for (let j = 0; j < CHORUS_N; j++) for (const r of [0, LOOP]) { const tp = 0.05 + (j + 1) * SWAP + 0.4 + r; add24(tp, 'pop', chorusPlace(tp, j).x); }

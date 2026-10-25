@@ -2284,7 +2284,7 @@ __m["src/loop-world.js"] = (() => {
 const { RNG, noise } = __m["vendor/paper-fox/core/rng.js"];
 const { linear, glow, piece } = __m["vendor/paper-fox/core/piece.js"];
 const { mix, shade, vary, rgba } = __m["vendor/paper-fox/core/color.js"];
-const { E, lerp } = __m["vendor/paper-fox/core/ease.js"];
+const { E, lerp, smoothstep } = __m["vendor/paper-fox/core/ease.js"];
 const { drawSprites } = __m["vendor/paper-fox/core/sprite.js"];
 const { transform } = __m["vendor/paper-fox/core/geom.js"];
 const { LIGHT, PAL, CLAY_MAT, CLAY_EDGE, shadowBlur, clayForm, tube, steps, dot } = __m["src/kit.js"];
@@ -2294,6 +2294,7 @@ const { drawSolid, drawTesseract } = __m["src/loop-shapes.js"];
 const { addDome } = __m["src/loop-dome.js"];
 const P = PAL;
 const TAU = Math.PI * 2;
+const mod = (x, m) => ((x % m) + m) % m;
 const circle = (cx, cy, r, n = 36) => [...Array(n)].map((_, i) => [cx + Math.cos(i / n * TAU) * r, cy + Math.sin(i / n * TAU) * r]);
 const LOOP = 12;
 // the film wraps at 24 s: three 8 s breaths of the bellows (4 s each way, Robin); everything else repeats every 12 s
@@ -2530,12 +2531,17 @@ function addWorld(S) {
   spots.forEach(([x, y, z, kind], i) => {
     const ph = i * 0.137, bob = (t) => ({ y: 10 * cyc(t, 1, i * 0.17) });
     if (kind === 'pendant') {
-      // an accordion: the stack spreads apart and slams flat on a 6 s beat, while each bar stretches wide and pinches
-      // narrow on a 3 s beat that ripples down the stack; the point stretches as the stack flattens
+      // a double-pointed accordion (Robin: "a cone piece on top like on the bottom, and when it retracts it's a closed
+      // single double pointed shape, then it opens up again to explode / expand"): once every 6 s the two cones fly
+      // apart with an overshoot and the bars spread out between them, rippling wide and narrow; then it slams shut,
+      // the bars vanish inside, and the cones meet base to base in one closed diamond until the next burst
       S.add({ name: `float-${i}`, z, anim: bob, render(ctx, t, env) { mirror(ctx, () => {
-        const v = W(t, 6, ph), gap = 1 + 12 * Math.max(0, v) - 8 * Math.max(0, -v), items = [];
-        BAR_W.forEach((_, k) => items.push({ s: bars[k], x, y: y - k * (9 + gap), sx: Math.max(0.15, 1 + 0.6 * W(t, 3, ph + k * 0.1)), sy: 1 }));
-        items.push({ s: point, x, y: y + 18 + 4 * Math.max(0, -v), sx: 1 - 0.3 * Math.max(0, -v), sy: 1 + 0.9 * Math.max(0, -v) });
+        const q = mod(t / 6 + ph, 1);
+        const o = smoothstep(0, 0.1, q) * (1 + 0.3 * Math.exp(-(((q - 0.12) / 0.06) ** 2))) * (1 - smoothstep(0.55, 0.7, q));
+        const gap = lerp(-9, 10, o), H = BAR_W.length * (9 + gap), items = [];
+        BAR_W.forEach((_, k) => items.push({ s: bars[k], x, y: y + H / 2 - (k + 0.5) * (9 + gap), sx: Math.max(0.05, o * (1 + 0.5 * W(t, 3, ph + k * 0.1))), sy: Math.max(0.05, o) }));
+        items.push({ s: point, x, y: y + H / 2 + 14 });
+        items.push({ s: point, x, y: y - H / 2 - 14, rot: Math.PI });
         drawSprites(ctx, items, fsh(env));
       }); } });
     } else if (kind === 'chevron') {
@@ -3817,6 +3823,8 @@ function cues() {
     const u0 = chorusTheta(t0, a.tier) / TAU, u1 = chorusTheta(t1, b.tier) / TAU;
     for (const [q, high] of [[0, true], [2 * CROSS, false]]) if (Math.floor(u1 - q) > Math.floor(u0 - q)) add24(t1, 'tick', b.x, { n: Math.round(b.tier), high });
   }
+  // the double-pointed pendant bursting open (a pop) every 6 s and slamming shut (a click)
+  for (const k of [0, 6]) { both(k, 'pop', 180); both(k + 4.2, 'press', 180, { n: 0 }); }
   // heads popping into solids
   both(7.3, 'pop', 566); both(4.6, 'pop', 318); both(10.7, 'pop', 170); both(1.6, 'pop', 300);
   for (let j = 0; j < CHORUS_N; j++) for (const r of [0, LOOP]) { const tp = 0.05 + (j + 1) * SWAP + 0.4 + r; add24(tp, 'pop', chorusPlace(tp, j).x); }

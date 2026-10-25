@@ -6,7 +6,7 @@
 import { RNG, noise } from '../vendor/paper-fox/core/rng.js';
 import { linear, glow, piece } from '../vendor/paper-fox/core/piece.js';
 import { mix, shade, vary, rgba } from '../vendor/paper-fox/core/color.js';
-import { E, lerp } from '../vendor/paper-fox/core/ease.js';
+import { E, lerp, smoothstep } from '../vendor/paper-fox/core/ease.js';
 import { drawSprites } from '../vendor/paper-fox/core/sprite.js';
 import { transform } from '../vendor/paper-fox/core/geom.js';
 import { LIGHT, PAL, CLAY_MAT, CLAY_EDGE, shadowBlur, clayForm, tube, steps, dot } from './kit.js';
@@ -17,6 +17,7 @@ import { addDome } from './loop-dome.js';
 
 const P = PAL;
 const TAU = Math.PI * 2;
+const mod = (x, m) => ((x % m) + m) % m;
 const circle = (cx, cy, r, n = 36) => [...Array(n)].map((_, i) => [cx + Math.cos(i / n * TAU) * r, cy + Math.sin(i / n * TAU) * r]);
 export const LOOP = 12;
 // the film wraps at 24 s: three 8 s breaths of the bellows (4 s each way, Robin); everything else repeats every 12 s
@@ -253,12 +254,17 @@ export function addWorld(S) {
   spots.forEach(([x, y, z, kind], i) => {
     const ph = i * 0.137, bob = (t) => ({ y: 10 * cyc(t, 1, i * 0.17) });
     if (kind === 'pendant') {
-      // an accordion: the stack spreads apart and slams flat on a 6 s beat, while each bar stretches wide and pinches
-      // narrow on a 3 s beat that ripples down the stack; the point stretches as the stack flattens
+      // a double-pointed accordion (Robin: "a cone piece on top like on the bottom, and when it retracts it's a closed
+      // single double pointed shape, then it opens up again to explode / expand"): once every 6 s the two cones fly
+      // apart with an overshoot and the bars spread out between them, rippling wide and narrow; then it slams shut,
+      // the bars vanish inside, and the cones meet base to base in one closed diamond until the next burst
       S.add({ name: `float-${i}`, z, anim: bob, render(ctx, t, env) { mirror(ctx, () => {
-        const v = W(t, 6, ph), gap = 1 + 12 * Math.max(0, v) - 8 * Math.max(0, -v), items = [];
-        BAR_W.forEach((_, k) => items.push({ s: bars[k], x, y: y - k * (9 + gap), sx: Math.max(0.15, 1 + 0.6 * W(t, 3, ph + k * 0.1)), sy: 1 }));
-        items.push({ s: point, x, y: y + 18 + 4 * Math.max(0, -v), sx: 1 - 0.3 * Math.max(0, -v), sy: 1 + 0.9 * Math.max(0, -v) });
+        const q = mod(t / 6 + ph, 1);
+        const o = smoothstep(0, 0.1, q) * (1 + 0.3 * Math.exp(-(((q - 0.12) / 0.06) ** 2))) * (1 - smoothstep(0.55, 0.7, q));
+        const gap = lerp(-9, 10, o), H = BAR_W.length * (9 + gap), items = [];
+        BAR_W.forEach((_, k) => items.push({ s: bars[k], x, y: y + H / 2 - (k + 0.5) * (9 + gap), sx: Math.max(0.05, o * (1 + 0.5 * W(t, 3, ph + k * 0.1))), sy: Math.max(0.05, o) }));
+        items.push({ s: point, x, y: y + H / 2 + 14 });
+        items.push({ s: point, x, y: y - H / 2 - 14, rot: Math.PI });
         drawSprites(ctx, items, fsh(env));
       }); } });
     } else if (kind === 'chevron') {
