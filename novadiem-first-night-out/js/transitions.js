@@ -226,7 +226,7 @@ const TRANS = (() => {
       const farZ = Math.max(...[...A.planes, ...B.planes].filter((P) => !isSky(P)).map((P) => P.z));
       const horizon = lerp(A.meta.horizon ?? 600, B.meta.horizon ?? 600, skyMix), pageAlpha = ss(.2, .36, p) * (1 - ss(.56, .74, p));
       const PAGE = { name: 'page', z: farZ * 1.001, draw(c) { if (pageAlpha > .002) place(c, pageSprite(ctx.canvas.width / W), 0, horizon, { alpha: pageAlpha, sh: .4, dx: 0, dy: -10 }); } };
-      const list = [...A.planes, ...B.planes].filter(keep).concat([PAGE]).sort((a, b) => b.z - a.z);
+      const list = [...A.planes, ...B.planes].filter(keep).concat([PAGE]).sort((a, b) => (b.sortZ ?? b.z) - (a.sortZ ?? a.z));   // sortZ: a plane drawn out of its depth order
       const camA = A.camera(tA), camB = B.camera(tB);
       ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.fillStyle = A.background; ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
       ctx.globalAlpha = skyMix; ctx.fillStyle = B.background; ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height); ctx.restore();

@@ -7,7 +7,9 @@
 // (plane-1000 px). Each plane is authored as seen with the camera at x 0 and is wide enough for its own parallax.
 const FOREST = (() => {
   const { lerp, clamp, ss, RNG, noise, sprite, tear, polyPath, smoothPath, ellipsePts, ridge, cutp, glow } = PD;
-  const LT = [-.5, -.85];
+  // the key light the helpers cut their lit and shaded sides by; a scene lit from elsewhere sets it while it builds
+  let LT = [-.5, -.85];
+  const setLight = (l) => { LT = l; };
 
   // ---------------- drawing helpers (inside a sprite's draw, authored px) ----------------
   const circ = (x, y, r) => smoothPath(ellipsePts(x, y, r, r, 24));
@@ -312,6 +314,6 @@ const FOREST = (() => {
     return planes;
   }
   // the drawing helpers, for the film's scenes
-  const H = { circ, star4, form, haze, mist, pine, cedar, bush, rock, fern, grassTuft, foxglove, daisy, bunchberry, mushroom, bigLeaf, puffBank };
+  const H = { setLight, circ, star4, form, haze, mist, pine, cedar, bush, rock, fern, grassTuft, foxglove, daisy, bunchberry, mushroom, bigLeaf, puffBank };
   return { build, H };
 })();
