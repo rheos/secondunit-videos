@@ -2970,6 +2970,15 @@ function drawFunnelFront(g, ph) {
   clayForm(g, collar(-0.05, Math.PI + 0.05, ph), P.pink, { smooth: false, size: 18, sheen: 0.24 });
 }
 
+// The funnel machine drifts away toward the sun and back (Robin: "the funnel going further away towards the sun and
+// coming back"): once every 12 s it shrinks to about two thirds toward the lantern above it, and returns. The whole
+// layer goes (funnel, pipes, fork, hose ends, globs), with its old faint breathing on top.
+const FUNNEL_FAR = { every: 12, s: 0.34, ox: AXIS, oy: 110 };
+function funnelXf(t) {
+  const k = 0.5 - 0.5 * Math.cos(TAU * t / FUNNEL_FAR.every), s = (1 + 0.006 * cyc(t, 2)) * (1 - FUNNEL_FAR.s * E.smooth(k));
+  return { s, ox: FUNNEL_FAR.ox, oy: FUNNEL_FAR.oy, at: ([x, y]) => [FUNNEL_FAR.ox + (x - FUNNEL_FAR.ox) * s, FUNNEL_FAR.oy + (y - FUNNEL_FAR.oy) * s] };
+}
+
 // ---------------- the console ----------------
 // After Mark Von Ulrich's control panels (his "machine elves" piece), in our own clay colours. A cabinet stands on the
 // floor with a sloping desk on top and an upright board above it (Robin: "on a cabinet with more controls on it, and
@@ -3015,10 +3024,12 @@ function drawConsole(g) {
   for (const [x, y] of LAMPS) clayForm(g, circle(x, y, 3.6, 16), P.slateDeep, { sheen: 0.1, shadow: false });
   for (const [x, y] of TOGGLES) clayForm(g, [[x - 5, y - 6], [x + 5, y - 6], [x + 5, y + 6], [x - 5, y + 6]], shade(P.slate, -0.1), { smooth: false, size: 6, shadow: false });
   BUTTONS.forEach(([x, y]) => clayForm(g, circle(x, y, 8, 24), P.slateDeep, { sheen: 0.15, shadow: false }));
-  // the cable from the cabinet's side to the duct
-  const cable = [];
-  for (let i = 0; i <= 20; i++) { const u = i / 20; cable.push([lerp(x1 + 2, AXIS - 150, u), lerp(930, 788, u) + 60 * Math.sin(Math.PI * u)]); }
-  tube(g, cable, 4, P.lilac);
+}
+// the cable from the cabinet's side to the duct, drawn live so its far end stays on the pipe as the funnel drifts
+function drawCable(ctx, t) {
+  const end = funnelXf(t).at([AXIS - 150, 788]), a = [PANEL.x1 + 2, 930], cable = [];
+  for (let i = 0; i <= 20; i++) { const u = i / 20; cable.push([lerp(a[0], end[0], u), lerp(a[1], end[1], u) + 60 * Math.sin(Math.PI * u)]); }
+  tube(ctx, cable, 4, P.lilac, { shadow: false });
 }
 // the moving parts, drawn live
 function drawPanelKeys(ctx, t) {
@@ -3089,7 +3100,7 @@ function addMachines(S) {
 
   // the funnel: small solids swirl down the mouth, swell along the pipe as it carries them, and drop from the spout
   const KINDS = ['octa', 'cube', 'tetra', 'ico'], COLS = [P.pink, P.butter, P.lilac, P.aqua, P.mint, P.pinkDeep, P.blush, P.butterDeep];
-  S.add({ name: 'funnel', z: 1000, shadow: { dx: 10, dy: 18, alpha: 0.4 }, anim: (t) => ({ sx: 1 + 0.006 * cyc(t, 2), sy: 1 + 0.006 * cyc(t, 2), ox: RIM.x, oy: 520 }), render(ctx, t, env) {
+  S.add({ name: 'funnel', z: 1000, shadow: { dx: 10, dy: 18, alpha: 0.4 }, anim: (t) => { const f = funnelXf(t); return { sx: f.s, sy: f.s, ox: f.ox, oy: f.oy }; }, render(ctx, t, env) {
     mirrored(ctx, () => drawSprites(ctx, [{ s: pipe }], env.shadow));
     drawSprites(ctx, [{ s: fork, shadow: false }], env.shadow);
     const ph = funnelTurn(t);
@@ -3163,6 +3174,7 @@ function addMachines(S) {
 
   // the console: lights in a slow pattern, the knobs' marks, the lever, and a turning shape on the screen
   S.add({ name: 'console', z: 990, shadow: { dx: 8, dy: 14, alpha: 0.42 }, render(ctx, t, env) { mirrored(ctx, () => {
+    drawCable(ctx, t);
     drawSprites(ctx, [{ s: consoleS }], env.shadow);
     drawPanelKeys(ctx, t);
   }); } });
@@ -3192,7 +3204,7 @@ function addMachines(S) {
   }); } });
 }
 
-return { AXIS, mirrored, RIM, DUCT, PANEL, PRESSES, pressAt, INSTR, knobAngle, leverAngle, sliderK, addMachines };
+return { AXIS, mirrored, RIM, DUCT, FUNNEL_FAR, funnelXf, PANEL, PRESSES, pressAt, INSTR, knobAngle, leverAngle, sliderK, addMachines };
 })();
 __m["src/loop-figures.js"] = (() => {
 // The living loop, the small figures: clay people about 100 px tall. Body and head are baked clay sprites; arms
