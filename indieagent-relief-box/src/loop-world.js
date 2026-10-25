@@ -88,13 +88,19 @@ export function addWorld(S) {
       g.fillStyle = c; g.fillRect(-4.8, -4.8, 9.6, 9.6);
       g.fillStyle = 'rgba(60,40,60,0.25)'; g.fillRect(-4.8, -4.8, 9.6, 2.4);
     }));
-    return { R, plate, hub, ray, win };
+    const tri = pal.glass.map((c, k) => lsp(`${name}-tri-${k}`, 20, 20, (g) => clayForm(g, [[-6, 5], [0, -7], [6, 5]], k ? pal.rays[k % 3] : pal.sill, { smooth: false, size: 7 })));
+    const dia = pal.glass.map((c, k) => lsp(`${name}-dia-${k}`, 20, 20, (g) => clayForm(g, [[0, -7], [5, 0], [0, 7], [-5, 0]], pal.rays[(k + 1) % 3], { smooth: false, size: 7 })));
+    const stud = pal.glass.map((c, k) => lsp(`${name}-stud-${k}`, 16, 16, (g) => clayForm(g, circle(0, 0, 4.5, 20), k === 1 ? pal.sill : pal.rays[k], { sheen: 0.3 })));
+    return { R, plate, hub, ray, win, tri, dia, stud };
   }
   // rings: [radius, windows, window scale, turns per loop (in window spacings: sign gives the way round)]
   const RINGS = [[0.8, 18, 1.15, -6], [0.57, 13, 1.0, 4], [0.35, 8, 0.85, -3]];
   // spin: the rays' turn (a whole number of ray spacings per loop); rock: a back-and-forth added to rays and rings;
   // the plate and hub stay unturned (their glints would otherwise come round to a different place at the seam)
-  function sunItems(sun, t, { spin, rock = 0, scale = 1, dir = 1, rays = 18 }) {
+  // the back suns' dense rings: [radius, count, shape, size, turns per loop (in spacings; the sign is the way round)]
+  const DENSE = [[0.93, 40, 'tri', 1.5, 5], [0.84, 36, 'stud', 1.5, -4], [0.75, 32, 'win', 1.4, 3], [0.66, 28, 'dia', 1.5, -3],
+    [0.57, 24, 'tri', 1.35, 2], [0.48, 20, 'win', 1.3, -2], [0.39, 16, 'stud', 1.25, 2], [0.3, 12, 'dia', 1.2, -1]];
+  function sunItems(sun, t, { spin, rock = 0, scale = 1, dir = 1, rays = 18, rings = null }) {
     const { R } = sun, items = [];
     for (let i = 0; i < rays; i++) {
       const a = spin + rock + i / rays * TAU, reach = 1 + 0.45 * Math.sin(TAU * (t / 3 - i * 3 / rays));
@@ -102,7 +108,15 @@ export function addWorld(S) {
       items.push({ s: sun.ray, ax: 0, ay: 20, x: LX + Math.cos(a) * d, y: LY + Math.sin(a) * d, rot: a + Math.PI / 2, sx: scale, sy: scale * Math.max(0.3, reach) });
     }
     items.push({ s: sun.plate, x: LX, y: LY, sx: scale, sy: scale });
-    RINGS.forEach(([rk, n, ws, turns], ri) => {
+    if (rings) rings.forEach(([rk, n, shape, ws, turns], ri) => {
+      // each ring turns its own way; a breath runs outward ring by ring; a swell spirals round each ring
+      const breathe = 1 + 0.07 * Math.sin(TAU * (t / 3 - ri / 8)), turn = dir * TAU * turns / n * t / LOOP;
+      for (let i = 0; i < n; i++) {
+        const a = turn + i / n * TAU, rr = R * rk * breathe * scale, sz = ws * scale * (0.75 + 0.5 * Math.max(0, Math.sin(TAU * (t / 3 + 2 * i / n - ri / 8))));
+        items.push({ s: sun[shape][(i + ri) % 3], x: LX + Math.cos(a) * rr, y: LY + Math.sin(a) * rr, rot: a + Math.PI / 2, sx: sz, sy: sz });
+      }
+    });
+    else RINGS.forEach(([rk, n, ws, turns], ri) => {
       const breathe = 1 + 0.16 * Math.sin(TAU * (t / 4 + ri / 3)), turn = dir * TAU * turns / n * t / LOOP + rock * 0.5;
       for (let i = 0; i < n; i++) {
         const a = turn + i / n * TAU, rr = R * rk * breathe * scale, sz = ws * scale * (1 + 0.25 * Math.sin(TAU * (t / 2 + i / n + ri / 3)));
@@ -122,11 +136,11 @@ export function addWorld(S) {
   // the third sun, furthest back and largest, rose and lilac: turning with the front one, swelling as the bellows
   // empty (at 0 and 6 s) while the middle one swells as they fill (at 3 and 9 s): they breathe with the sound
   S.add({ name: 'farsun', z: 5800, shadow: { dx: 8, dy: 14, alpha: 0.18 }, render(ctx, t, env) {
-    drawSprites(ctx, sunItems(far, t, { spin: TAU * (3 / 18) * t / LOOP, scale: 1 + 0.18 * Math.cos(TAU * t / 6), rays: 18 }), env.shadow);
+    drawSprites(ctx, sunItems(far, t, { spin: TAU * (3 / 18) * t / LOOP, scale: 1 + 0.18 * Math.cos(TAU * t / 6), rays: 18, rings: DENSE }), env.shadow);
   } });
   // the sun behind: larger, cooler, turning the other way, swelling with each breath of the bellows (6 s)
   S.add({ name: 'backsun', z: 5600, shadow: { dx: 8, dy: 14, alpha: 0.22 }, render(ctx, t, env) {
-    drawSprites(ctx, sunItems(back, t, { spin: -TAU * (4 / 18) * t / LOOP, scale: 1 - 0.22 * Math.cos(TAU * t / 6), dir: -1 }), env.shadow);
+    drawSprites(ctx, sunItems(back, t, { spin: -TAU * (4 / 18) * t / LOOP, scale: 1 - 0.22 * Math.cos(TAU * t / 6), dir: -1, rings: DENSE.slice(0, 6).map(([r, n, sh, w, tu]) => [r, Math.round(n * 0.75), sh, w * 0.9, tu]) }), env.shadow);
   } });
   // the front sun: spinning, and rocking back and forth as it goes, turning back at each chord change (every 3 s)
   S.add({ name: 'lantern', z: 5000, shadow: { dx: 8, dy: 14, alpha: 0.25 }, anim: (t) => ({ y: 4 * cyc(t, 1) }), render(ctx, t, env) {
