@@ -2745,11 +2745,20 @@ const DUCT_LEN = plen(DUCT.path);
 // rings are laid over it, every third ring each)
 const ACC = DUCT.path.reduce((a, p, i) => { a.push(i ? a[i - 1] + Math.hypot(p[0] - DUCT.path[i - 1][0], p[1] - DUCT.path[i - 1][1]) : 0); return a; }, []);
 // the pipe's rings: mint, butter and an apricot orange (Robin chose orange for the pipe rings only, 2026-10-25)
-const RING = 42, RING_COLS = [P.mint, P.butter, '#f6b27e'];
+// Equal-length rings, a whole number of them along the pipe (Robin: "green yellow orange all the way around..
+// equal length segments"), each cut at its exact arc length so neighbours butt with no sliver of the base between.
+const RINGS_N = Math.round(DUCT_LEN / 42), RING = DUCT_LEN / RINGS_N, RING_COLS = [P.mint, P.butter, '#f6b27e'];
+// the point at arc length s along the pipe
+function pointAt(sArc) {
+  let i = 1; while (i < ACC.length - 1 && ACC[i] < sArc) i++;
+  const k = (sArc - ACC[i - 1]) / Math.max(1e-6, ACC[i] - ACC[i - 1]), a = DUCT.path[i - 1], b = DUCT.path[i];
+  return [lerp(a[0], b[0], k), lerp(a[1], b[1], k)];
+}
 function ringClip(c, w) {
   const clip = new Path2D();
-  for (let r = c, s0 = r * RING; s0 < DUCT_LEN - 8; r += 3, s0 = r * RING) {
-    const seg = DUCT.path.filter((_, i) => ACC[i] >= s0 - 0.01 && ACC[i] <= Math.min(DUCT_LEN, s0 + RING) + 0.01);
+  for (let r = c, s0 = r * RING; r < RINGS_N; r += 3, s0 = r * RING) {
+    const s1 = Math.min(DUCT_LEN, s0 + RING), a = Math.max(0, s0 - 0.5), b = Math.min(DUCT_LEN, s1 + 0.5);
+    const seg = [pointAt(a), ...DUCT.path.filter((_, i) => ACC[i] > a + 0.1 && ACC[i] < b - 0.1), pointAt(b)];
     if (seg.length < 2) continue;
     const o = tubeOutline(seg, w, { caps: false });
     clip.moveTo(o[0][0], o[0][1]); for (const q of o.slice(1)) clip.lineTo(q[0], q[1]); clip.closePath();
@@ -2764,7 +2773,7 @@ const FORK = { half: 150, keep: 112, y: 800 };
 const arcAt = (x, y) => { let b = 0, bd = Infinity; DUCT.path.forEach((p, i) => { const d = (p[0] - x) ** 2 + (p[1] - y) ** 2; if (d < bd) { bd = d; b = i; } }); return ACC[b]; };
 // the colour of a ring at arc length s (mint, butter, pink in turn); the fork's rings: across the bar by the arc
 // length of the matching point on the left pipe (so both sides agree), down the stem by its height
-const ringOf = (sArc) => Math.floor(sArc / RING) % 3;
+const ringOf = (sArc) => Math.min(RINGS_N - 1, Math.floor(sArc / RING)) % 3;
 const barClip = (c, w) => { const p = new Path2D(); for (let x = AXIS - FORK.keep; x < AXIS + FORK.keep; x += 2) if (ringOf(arcAt(AXIS - Math.abs(x + 1 - AXIS), FORK.y)) === c) p.rect(x, FORK.y - w - 8, 2.2, 2 * w + 16); return p; };
 const stemClip = (c, w) => { const p = new Path2D(); for (let y = 640; y < FORK.y + w + 2; y += 2) if (ringOf(Math.min(y, FORK.y) - 640) === c) p.rect(AXIS - w - 8, y, 2 * w + 16, 2.2); return p; };
 // the fork's box: inside it a passing bulge takes the fork's rings, outside the pipe's own
@@ -2853,7 +2862,7 @@ function drawHoseEnd(ctx, x, y0, bulges, m, open, clips) {
     const sw = bulges.reduce((mx, [s0, amp]) => Math.max(mx, BULGE.amp * amp * Math.exp(-(((sArc - s0) / BULGE.sigma) ** 2))), 0);
     line.push([x, y]); ws.push(w * narrow * (1 + sw));
   }
-  const cEnd = Math.floor(DUCT_LEN / RING) % 3, o = { shadow: false, size: w * 2 };
+  const cEnd = (RINGS_N - 1) % 3, o = { shadow: false, size: w * 2 };
   ctx.save(); const keep = new Path2D(); keep.rect(x - 80, y0 - 0.5, 160, 120); ctx.clip(keep);
   tube(ctx, line, ws, RING_COLS[cEnd], o);
   ctx.restore();

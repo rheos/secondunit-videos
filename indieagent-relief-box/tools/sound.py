@@ -264,8 +264,15 @@ def tone_of(t, k, octave=2):
     return ch[k % len(ch)] + 12 * (octave + k // len(ch))
 
 
-def events(cues):
+# the machine rhythm (Robin's name for it): the glyph blips, the chorus's arm ticks and the pistons, with the
+# glitches; on its own bus so it can sit just under the drone
+MACHINE = ('glyph', 'tick', 'piston')
+
+
+def events(cues, kinds=None, skip=()):
+    """the picture's events as sound; kinds: only these kinds; skip: not these"""
     out = np.zeros((N, 2))
+    cues = [c for c in cues if (kinds is None or c['kind'] in kinds) and c['kind'] not in skip]
     pan = lambda x: float(np.clip((x - 960) / 960, -1, 1)) * 0.85
     for c in cues:
         t, k, p = c['t'] + FRAME, c['kind'], pan(c['x'])
@@ -303,7 +310,7 @@ def events(cues):
             place(out, t, np.stack([body * np.cos(a), body * np.sin(a)], axis=1), 0, 1.0)
         elif k == 'tick':
             # each elf its own chord tone; the high crossing a little brighter than the low
-            place(out, t, tone(midi(tone_of(c['t'], 2 + c['n'], 1)), 0.05, 'tri', d=0.02), p, 0.025 if c.get('high') else 0.016)
+            place(out, t, tone(midi(tone_of(c['t'], 2 + c['n'], 1)), 0.05, 'tri', d=0.02), p, 0.034 if c.get('high') else 0.022)
         elif k == 'swap':
             # the chorus changing places: the hop's air, an elf newly at the front sounding its own note of the
             # chord, and on a chord change the chord's root plucked low under it
@@ -315,9 +322,9 @@ def events(cues):
         elif k == 'piston':
             # a piston shooting up (eight a chord, in the firing order): the rod's thunk at its stop, a puff of air
             # from the sleeve, and a chord tone pitched by its tier, loud enough to follow (Robin: synced, audible)
-            place(out, t, sweep(190 - 30 * c['n'], 85, 0.07, d=0.045), p, 0.17)
-            place(out, t - 0.02, noise_sweep(0.12, 2600, 700, 0.035), p)
-            place(out, t, crush(tone(midi(tone_of(c['t'], 4 - c['n'], 1)), 0.07, 'tri', d=0.04), bits=7, hold=1), p, 0.05)
+            place(out, t, sweep(190 - 30 * c['n'], 85, 0.07, d=0.045), p, 0.23)
+            place(out, t - 0.02, noise_sweep(0.12, 2600, 700, 0.05), p)
+            place(out, t, crush(tone(midi(tone_of(c['t'], 4 - c['n'], 1)), 0.07, 'tri', d=0.04), bits=7, hold=1), p, 0.07)
         elif k == 'pop':
             place(out, t, crush(sweep(1200, 180, 0.12, d=0.06), bits=6, hold=2), p, 0.16)
         elif k == 'lever':
@@ -377,15 +384,16 @@ def main():
         # x[(-n) mod N]: time-reversed on the loop's circle, so sample 0 stays put and the seam stays closed
         bed = np.roll(bed[::-1], 1, axis=0)
     glitch = glitches(bed)
-    ev = events(cues)
+    ev = events(cues, skip=MACHINE)
+    mr = events(cues, kinds=MACHINE)
     vo = voices(cues)
     # the voice's own echo: ping-pong on the 3/8 s grid, long feedback, so each short syllable is carried out
     vecho = cdelay(vo, step=0.375, feedback=0.62, repeats=12, darken=0.82)
     # the drone forward, the rest thinned (Robin: "too busy and not enough drone")
-    dry = 0.95 * bed + 0.1 * glitch + 0.6 * ev + 0.6 * vo + 0.35 * vecho
+    dry = 0.95 * bed + 0.14 * glitch + 0.6 * ev + 0.77 * mr + 0.6 * vo + 0.35 * vecho
     # a ping-pong echo on the events and glitches (and a little of the organ), then everything into a long hall
-    echo = cdelay(0.45 * ev + 0.3 * glitch + 0.12 * bed)
-    wet = creverb(0.8 * bed + 0.2 * glitch + 0.55 * ev + 0.45 * vo + 0.3 * vecho + 0.6 * echo, decay=6.0, pre=0.04)
+    echo = cdelay(0.45 * ev + 0.55 * mr + 0.42 * glitch + 0.12 * bed)
+    wet = creverb(0.8 * bed + 0.28 * glitch + 0.55 * ev + 0.7 * mr + 0.45 * vo + 0.3 * vecho + 0.6 * echo, decay=6.0, pre=0.04)
     mix = dry + 0.45 * echo + 0.95 * wet
     mix = cfilter(mix, lo=35, hi=15000)
     # level: about -18 dBFS RMS, peaks held under -1 dBFS by a soft clip
