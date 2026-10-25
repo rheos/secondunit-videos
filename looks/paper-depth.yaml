@@ -7,9 +7,9 @@ used: Paper depth, test
 cost: free
 group: code
 order: 310
-clip: null
+clip: paper-depth.mp4
 tall: false
-status: test
+status: approved
 engine: canvas2d
 project: indieagent-paper-depth
 code:
@@ -50,7 +50,7 @@ proof:
   pr:
     - rheos/secondunit-videos#323
   youtube: []
-verdict: null
+verdict: 'Robin, 2026-10-24, on drafts 4 and 5: "that looks pretty good"; "I like the clip... I like the sets". The character lock (one body, no marionette) approved from lock sheet v2.'
 related:
   - papersilhouette
   - cutpaper
