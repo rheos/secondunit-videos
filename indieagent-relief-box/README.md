@@ -99,3 +99,10 @@ mysterious, not fetching and carrying. The honeycomb backdrop comes back; only t
   the instrument (slider, a reach toward the rings), and two practitioners of the same 6 s mudra, three seconds
   apart (palms at the chest, lifted overhead, parted into a frame while a solid forms between them, released, arms
   open, head following it up); one stands on the terrace, one sits on the floating island.
+
+Draft 3 (Robin's notes on draft 2): a more geometric, purposeful world, toward a four-dimensional space. The funnel
+is an octagonal frustum of flat lit facets with a collar and a throat band; the pipe is thicker, runs straight and
+turns square corners with small round fillets (`squarePath`), with banded joints; no dark windows. Small faceted
+solids circulate instead of dotted beads. The dotted discs and balls are gone; floating geometry is pendants,
+chevrons, turning polyhedra and small tesseracts, and a large tesseract (`drawTesseract` in `src/loop-shapes.js`:
+sixteen corners turned in the XW and YZ planes, seen in perspective out of w) turns once a loop in the sky.
