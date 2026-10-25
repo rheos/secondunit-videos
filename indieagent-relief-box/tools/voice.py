@@ -36,14 +36,14 @@ def hz(midi):
     return 440.0 * 2 ** ((midi + TUNE - 69) / 12)
 
 
-def syllable(midi, kind='doiy', dur=0.19, tail=1.1, decay=0.38, wobble=18.0, twang=0.9, gain=1.0):
+def syllable(midi, kind='doiy', dur=0.19, tail=1.1, decay=0.38, wobble=17.0, twang=1.25, gain=1.0):
     """one sung syllable, mono: the vowel shapes over the first dur seconds, then rings on for `tail` more,
     decaying (time constant `decay`); `twang` semitones of spring wobble at `wobble` Hz, dying away"""
     nv = int(SR * (dur + tail))
     n = nv
     t = np.arange(nv) / SR
     # pitch: a quick scoop up into the note, the spring's twang dying away, and a whisper of jitter
-    spring = twang * np.exp(-t / 0.22) * np.sin(2 * np.pi * wobble * t)
+    spring = twang * np.exp(-t / 0.3) * np.sin(2 * np.pi * wobble * t)    # springier: wider, rings a little longer
     f0 = hz(midi) * 2 ** ((-0.35 * np.exp(-t / 0.018) + spring + 0.03 * np.cumsum(RNG.standard_normal(nv)) / np.sqrt(np.arange(1, nv + 1)) * 0.2) / 12)
     ph = 2 * np.pi * np.cumsum(f0) / SR
     src = np.zeros(nv)

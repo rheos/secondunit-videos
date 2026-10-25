@@ -274,12 +274,12 @@ def events(cues):
             s = crush(tone(f, 0.05, 'tri', d=0.025), bits=6, hold=2)
             place(out, t, s, p, 0.10)
         elif k == 'chime':
-            place(out, t, bell(midi(tone_of(c['t'], 4, 1)), 1.6), p, 0.20)
+            place(out, t, bell(midi(tone_of(c['t'], 4, 1)), 1.6), p, 0.09)
         elif k == 'fold':
             place(out, t, crush(sweep(1800, 300, 0.45, 'square', d=0.3), bits=5, hold=3), p, 0.09)
         elif k == 'form':
             place(out, t, sweep(300, 900, 0.22, d=0.12), p, 0.18)
-            place(out, t + 0.02, bell(midi(tone_of(c['t'], 2, 2)), 1.0, ratio=2.0, index=1.2), p, 0.10)
+            place(out, t + 0.02, bell(midi(tone_of(c['t'], 2, 2)), 1.0, ratio=2.0, index=1.2), p, 0.045)
         elif k == 'offer':
             n = int(SR * c.get('dur', 1.2))
             sw = sum(tone(midi(tone_of(c['t'], q, 1)), c.get('dur', 1.2), 'tri', a=0.5, d=0.9) for q in (0, 2, 3, 4))
@@ -307,7 +307,7 @@ def events(cues):
             # chord, and on a chord change the chord's root plucked low under it
             place(out, t - 0.3, noise_sweep(0.35, 500, 2500, 0.05), 0.0)
             if c.get('newFront', True):
-                place(out, t, bell(midi(tone_of(c['t'], c['n'] % 5, 2)), 1.1, ratio=2.0, index=1.0), 0.0, 0.13)
+                place(out, t, bell(midi(tone_of(c['t'], c['n'] % 5, 2)), 1.1, ratio=2.0, index=1.0), 0.0, 0.06)
             if c.get('chord'):
                 place(out, t, pluck(midi(tone_of(c['t'], 0, 0)), 0.9), 0.0, 0.2)
         elif k == 'piston':
@@ -323,7 +323,7 @@ def events(cues):
             place(out, t, cfilter_short(click, 1500), p, 0.18)
             place(out, t + 0.09, cfilter_short(click, 900), p, 0.12)
         elif k == 'cube':
-            place(out, t, bell(midi(tone_of(c['t'], 3, 2)), 1.2, ratio=1.5), p, 0.12)
+            place(out, t, bell(midi(tone_of(c['t'], 3, 2)), 1.2, ratio=1.5), p, 0.055)
             place(out, t + 0.1, noise_sweep(0.8, 1000, 6000, 0.08), p)
     return out
 
@@ -349,6 +349,10 @@ def voices(cues):
             place(out, t, voice.syllable(sung(c['t'], c['n'] % 5), 'doiy', dur=0.2, tail=0.8, decay=0.28), 0.0, 0.5 if c.get('newFront', True) else 0.3)
         elif k == 'form':
             place(out, t, voice.syllable(sung(c['t'], 2 + int(c['x'] > 960)), 'dee', dur=0.19, tail=0.8, decay=0.28), pan(c['x']), 0.32)
+        elif k == 'drop':
+            # a glob of paint sinking into the portal: doiy from the left spout, dee from the right
+            kind = 'dee' if c['n'] % 2 else 'doiy'
+            place(out, t, voice.syllable(sung(c['t'], c['n'] % 5), kind, dur=0.19, tail=0.8, decay=0.26), 0.0, 0.3)
         elif k == 'chime':
             place(out, t, voice.syllable(sung(c['t'], 4), 'dee', dur=0.17, tail=0.8, decay=0.25), pan(c['x']), 0.3)
         elif k == 'cube':
@@ -379,10 +383,10 @@ def main():
     vo = voices(cues)
     # the voice's own echo: ping-pong on the 3/8 s grid, long feedback, so each short syllable is carried out
     vecho = cdelay(vo, step=0.375, feedback=0.62, repeats=12, darken=0.82)
-    dry = 0.5 * bed + 0.2 * glitch + ev + 0.35 * vo + 0.3 * vecho
+    dry = 0.5 * bed + 0.2 * glitch + ev + 0.7 * vo + 0.45 * vecho
     # a ping-pong echo on the events and glitches (and a little of the organ), then everything into a long hall
     echo = cdelay(0.75 * ev + 0.6 * glitch + 0.12 * bed)
-    wet = creverb(0.5 * bed + 0.35 * glitch + 0.9 * ev + 0.4 * vo + 0.3 * vecho + 0.6 * echo, decay=6.0, pre=0.04)
+    wet = creverb(0.5 * bed + 0.35 * glitch + 0.9 * ev + 0.5 * vo + 0.35 * vecho + 0.6 * echo, decay=6.0, pre=0.04)
     mix = dry + 0.45 * echo + 0.95 * wet
     mix = cfilter(mix, lo=35, hi=15000)
     # level: about -18 dBFS RMS, peaks held under -1 dBFS by a soft clip
