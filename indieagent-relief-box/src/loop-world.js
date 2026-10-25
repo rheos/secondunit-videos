@@ -339,7 +339,7 @@ export function addWorld(S) {
     drawSprites(ctx, chevs.map((c, k) => ({ s: c, x: (k - 1) * 14 * open, y: (k - 1) * 13 * (1 + 1.3 * open - shut * 0.95), rot: (k - 1) * 0.5 * open, sx: 1 + 0.45 * W(t, 6, ph + k / 3), sy: 1 })), fsh(env));
     ctx.restore();
   };
-  return { island, chevronFan, TREE_SPOTS, ZONE_X };
+  return { island, chevronFan, TREE_SPOTS, ZONE_X, treeUp };
 }
 
 // The near world in front of the machine: low mounds with coral curls and rosette bushes, then the lens plane.
