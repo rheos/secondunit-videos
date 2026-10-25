@@ -72,6 +72,11 @@ beat late. Fireflies over the water.
   toward the vanishing point, a cedar on the left edge, the biggest flowers bottom left, rocks and foam bottom right,
   one slow push in, the moon lighting the raccoons' faces. The paws go under by drawing the creek a second time in
   front of each raccoon, clipped below its waterline. The acting is draft 1's. The notes below describe draft 1.
+- **Draft 3 (richness):** bright moonlit water with long white streaks riding the flow, three small cascades where the
+  creek steps down, foam along both banks and round the rocks; mossy rock ledges stepping back along both banks toward
+  the vanishing point (lit moss tops with a hanging lip and moss cushions, cliff faces lit on the side toward the moon),
+  pines standing on them, two thin falls spilling off the left ledges; a violet glow at the horizon, lavender peaks,
+  brighter greens, lupins, daisies and red berries along the water.
 - Seventeen planes: sky with stars and the moon, cloud banks, peaks, a pine ridge, the far bank (cedars, pines,
   bushes, ferns, a mossy lip, boulders), the far water with the bank's trees reflected and mist drifting low,
   stepping stones with foam and a fallen log, mid water, fireflies, the parent's rock, the parent, the water in front

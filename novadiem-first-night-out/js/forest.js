@@ -102,10 +102,14 @@ const FOREST = (() => {
     g.fillStyle = '#383542'; g.fill(polyPath([o[3], o[4], o[5], [x + w * .1, y + 4], top]));
     for (let i = 0; i < w * h / 90; i++) { g.fillStyle = R.chance(.5) ? 'rgba(255,255,255,.12)' : 'rgba(0,0,0,.18)'; g.beginPath(); g.arc(x + R.range(-w / 2, w / 2), y - R.range(0, h), R.range(.6, 1.6), 0, 7); g.fill(); }
     g.restore();
-    for (let i = 0; i < 3; i++) {
-      const mx = x + R.range(-w * .35, w * .2), my = y - h * R.range(.75, .95) + i * 4, mw = w * R.range(.12, .22);
-      const moss = polyPath(tear(ellipsePts(mx, my, mw, mw * .32, 16), { amp: 2.2, freq: .2, seed: R.int(1, 1e6) }));
-      cutp(g, moss, i ? '#5d8a3f' : '#46733a', { light: LT, sh: .6, blur: 3, dist: 2, bev: { width: 1 } });
+    for (let i = 0; i < 3; i++) moss(g, x + R.range(-w * .35, w * .2), y - h * R.range(.8, .97) + i * 4, w * R.range(.18, .32), R);
+  }
+  // a moss clump: a low mound of overlapping torn bumps, the top ones lighter, so it reads as a cushion, not a pad
+  function moss(g, x, y, w, R, cols = ['#355c2e', '#3f6a34', '#4f7f3c', '#62903f']) {
+    const n = Math.max(3, Math.round(w / 9));
+    for (let i = 0; i < n; i++) {
+      const u = n === 1 ? 0 : i / (n - 1) * 2 - 1, r = w * R.range(.16, .26) * (1 - .45 * u * u), bx = x + u * w * .45, by = y - r * .35 - (1 - u * u) * w * .08;
+      cutp(g, polyPath(tear(ellipsePts(bx, by, r, r * .78, 14).filter(([, py]) => py < y + 2), { amp: r * .14, freq: .4, seed: R.int(1, 1e6) })), cols[Math.min(cols.length - 1, Math.round((1 - Math.abs(u)) * (cols.length - 1)) + (R.chance(.3) ? -1 : 0))] || cols[0], { light: LT, sh: .5, blur: 2, dist: 1.2, bev: { width: .8, hi: .25 } });
     }
   }
   // a fern frond: a drooping rachis with pointed leaflets on both sides, shrinking to the tip
@@ -314,6 +318,6 @@ const FOREST = (() => {
     return planes;
   }
   // the drawing helpers, for the film's scenes
-  const H = { setLight, circ, star4, form, haze, mist, pine, cedar, bush, rock, fern, grassTuft, foxglove, daisy, bunchberry, mushroom, bigLeaf, puffBank };
+  const H = { setLight, moss, circ, star4, form, haze, mist, pine, cedar, bush, rock, fern, grassTuft, foxglove, daisy, bunchberry, mushroom, bigLeaf, puffBank };
   return { build, H };
 })();
