@@ -113,3 +113,7 @@ like spell-casters: the leading hand traces a precise sigil of light in the air 
 then the solid's figure: triangle, pentagram, hexagram or diamond with an inner circle) while the other hand turns
 small steady circles at the chest; both hands push in, the sigil spins down to its centre, the solid forms there
 and is released (`castPose`, `drawSigil`, `castSolids` in `src/loop.js`).
+
+Draft 5 (Robin, on draft 4): no balls seen in the pipe; the pipe itself swells in a bulge that travels along it.
+`drawBulge` in `src/loop-machine.js` redraws a stretch of the pipe each frame with a gaussian swell in its width,
+in the same colour rings and at the pipe's own shading scale, clipped to the swollen middle so its ends never show.
