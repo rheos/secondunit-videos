@@ -1,0 +1,55 @@
+slug: paper-depth
+title: Cut paper with depth
+note: >-
+  A paper diorama filmed by a moving camera: every piece is textured card with a lit cut edge, casting a soft
+  shadow on the layer behind. Scenes change like a pop-up book, folding flat and springing up around the character.
+used: Paper depth, test
+cost: free
+group: code
+order: 310
+clip: null
+tall: false
+status: test
+engine: canvas2d
+project: indieagent-paper-depth
+code:
+  path: indieagent-paper-depth/js/paper.js
+  flag: null
+  page: indieagent-paper-depth/index.html
+  note: >-
+    js/paper.js is the engine (adapted from Leon Lin's paper-fox src/core, MIT, notice in LICENSE-paper-fox.md),
+    js/musician.js the character rig, js/scenes.js the two scenes, js/main.js the timeline, camera and pop-up
+    transition. character.html is the lock sheet. Branch look/paper-depth, draft PR #323.
+rules:
+  - Every piece is baked once as textured paper (crumple facets plus fibre) so the grain moves with the piece, never a screen-locked overlay
+  - Every cut edge has a 1-2 px warm lit band toward the key light and a dark band away from it
+  - Each plane casts a blurred-silhouette shadow onto the plane behind, offset away from the light and growing with the gap; drawn through the camera so it scales with depth
+  - Torn edges on land, clouds and verges show a white paper core
+  - Five or more planes at real depths; one slow camera move per scene (truck, dolly), always drifting a little
+  - Scene changes happen inside a paper object (pop-up book fold and spring, a dropped backdrop), never a plain fade
+  - Characters are jointed paper puppets with breathing, follow-through on loose parts and planted feet (two-bone IK)
+  - Every frame a pure function of t, seeded randomness only
+palette:
+  - "#35366f"
+  - "#f2b38a"
+  - "#6c66a5"
+  - "#5f8350"
+  - "#23636b"
+  - "#e9ae3a"
+  - "#7e3b2f"
+  - "#1f2755"
+reference: >-
+  Leon Lin's paper-fox (github.com/Leonxlnx/paper-fox, MIT), studied in references/leon-lin/STUDY-paper-fox.md.
+  Techniques only; our scenes and character.
+proof:
+  renders:
+    - indieagent-paper-depth/out/draft/paperdepth_d4_f0-f432_24fps_draft.mp4
+  pr:
+    - rheos/secondunit-videos#323
+  youtube: []
+verdict: null
+related:
+  - papersilhouette
+  - cutpaper
+  - peacock-paper
+  - storybook

@@ -60,6 +60,11 @@ const SCENES = (() => {
     p.moveTo(x, y - r); p.quadraticCurveTo(x + k * .3, y - k * .3, x + r, y); p.quadraticCurveTo(x + k * .3, y + k * .3, x, y + r);
     p.quadraticCurveTo(x - k * .3, y + k * .3, x - r, y); p.quadraticCurveTo(x - k * .3, y - k * .3, x, y - r); p.closePath(); return p;
   }
+  // a torn piece showing the white paper core along its torn edge
+  function torn(g, pts, fill, seed, light, { amp = 2.5, core = 2.6, ...o } = {}) {
+    g.fillStyle = '#f5eddc'; g.fill(polyPath(tear(pts, { amp: amp + core, freq: .09, seed: seed + 17 })));
+    return cutp(g, polyPath(tear(pts, { amp, seed })), fill, { light, ...o });
+  }
   const vgrad = (g, y0, y1, stops) => { const gr = g.createLinearGradient(0, y0, 0, y1); stops.forEach(([o, c]) => gr.addColorStop(o, c)); return gr; };
 
   // ---------------- scene A: the road out of town at dusk ----------------
@@ -109,7 +114,7 @@ const SCENES = (() => {
     const rh = new RNG('hills');
     planes.push({ name: 'hills', z: 2600, hinge: 920, sprites: [{ s: sp({ x: -280, y: 520, w: 3160, h: 420, res: R(.9), seed: 'hills', shadow: { blur: 12 }, draw(g) {
       for (let i = 0; i < 26; i++) { const x = rh.range(-240, 2840), y = ridgeY(hBack, x); cutp(g, smoothPath(ellipsePts(x, y - 30, 11, 36, 16)), rh.pick(['#4f7350', '#5d8259', '#456a48']), { light: LA, blur: 3, dist: 2, bev: { width: 1.5 } }); }
-      cutp(g, polyPath(tear(hBack, { amp: 2.5, seed: 21 })), '#9fae74', { light: LA, sh: 0, bev: { width: 2.2 } });
+      torn(g, hBack, '#9fae74', 21, LA, { sh: 0, bev: { width: 2.2 } });
       // the town on the back hill
       const town = [[1120, 34, 30, '#efe2c4', '#b84b3a'], [1160, 28, 24, '#e6cfa1', '#3f6f78'], [1196, 40, 34, '#d9e0df', '#8a4f6a'], [1246, 30, 28, '#efe2c4', '#b84b3a'], [1330, 44, 30, '#e6cfa1', '#3f6f78'], [1380, 30, 26, '#efe2c4', '#8a4f6a'], [1418, 36, 30, '#d9e0df', '#b84b3a'], [1470, 26, 22, '#e6cfa1', '#3f6f78']];
       for (const [x, w, h, wall, roof] of town) house(g, x, ridgeY(hBack, x + w / 2) + 6, w, h, wall, roof, rh, LA);
@@ -120,7 +125,7 @@ const SCENES = (() => {
       g.fillStyle = '#6b5446'; for (const dx of [-14, 14]) g.fillRect(wx + dx - 2, wy - 50, 4, 50);
       cutp(g, smoothPath([[wx - 22, wy - 84], [wx + 22, wy - 84], [wx + 24, wy - 52], [wx - 24, wy - 52]], .2), '#c9b48c', { light: LA, blur: 3, dist: 2, bev: { width: 1.6 } });
       cutp(g, polyPath([[wx - 25, wy - 82], [wx, wy - 100], [wx + 25, wy - 82]]), '#8a4f6a', { light: LA, blur: 3, dist: 2, bev: { width: 1.4 } });
-      cutp(g, polyPath(tear(hFront, { amp: 2.5, seed: 22 })), '#7c9861', { light: LA, blur: 8, dist: 5, bev: { width: 2.2 } });
+      torn(g, hFront, '#7c9861', 22, LA, { blur: 8, dist: 5, bev: { width: 2.2 } });
       // telephone poles and the sagging wire
       const poles = []; for (let x = -220; x < 2860; x += 250) poles.push([x, ridgeY(hFront, x) + 12]);
       g.strokeStyle = 'rgba(48,34,36,.75)'; g.lineWidth = 1.6;
@@ -132,9 +137,9 @@ const SCENES = (() => {
     const fTop = ridge(-380, 3360, 838, 1090, { amp: 14, freq: .003, sharp: 0, seed: 31, oct: 2 });
     planes.push({ name: 'field', z: 1500, hinge: 1090, sprites: [{ s: sp({ x: -400, y: 520, w: 3780, h: 580, res: R(1), seed: 'field', shadow: { blur: 10 }, draw(g) {
       for (const tx of [380, 1240, 2280, 2960]) tree(g, tx + rf.range(-40, 40), ridgeY(fTop, tx) + 30, rf.range(1.15, 1.45), rf, LA);
-      cutp(g, polyPath(tear(fTop, { amp: 3, seed: 32 })), '#5f8350', { light: LA, sh: 0, bev: { width: 2.4 } });
+      torn(g, fTop, '#5f8350', 32, LA, { amp: 3, sh: 0, bev: { width: 2.4 } });
       const rows = fTop.slice(0, -2).map(([x, y]) => [x, y + 70]); rows.push([3360, 1090], [-380, 1090]);
-      cutp(g, polyPath(tear(rows, { amp: 4, seed: 33 })), '#557a48', { light: LA, blur: 6, dist: 4 });
+      torn(g, rows, '#557a48', 33, LA, { amp: 4, core: 2, blur: 6, dist: 4 });
       // fence: rails first, then posts
       for (const dy of [-62, -34]) { const pts = []; for (let x = -380; x <= 3360; x += 40) pts.push([x, ridgeY(fTop, x) + dy + rf.range(-1, 1)]); const lo = pts.map(([x, y]) => [x, y + 7]).reverse(); cutp(g, polyPath([...pts, ...lo]), '#8a6440', { light: LA, blur: 3, dist: 3, bev: { width: 1.4 } }); }
       for (let x = -360; x < 3360; x += 118) { const y = ridgeY(fTop, x) + 6, h = 84 + rf.range(-6, 6); cutp(g, polyPath([[x - 5, y], [x - 5, y - h + 4], [x, y - h], [x + 5, y - h + 4], [x + 5, y]]), '#7b5737', { light: LA, blur: 4, dist: 3, bev: { width: 1.5 } }); }
@@ -148,7 +153,7 @@ const SCENES = (() => {
     const rr = new RNG('road');
     planes.push({ name: 'roadA', z: 1000, hinge: 1090, sprites: [{ s: sp({ x: -520, y: 850, w: 4560, h: 240, res: R(1.15), seed: 'roadA', shadow: { blur: 8 }, draw(g) {
       const verge = []; for (let x = -520; x <= 4040; x += 30) verge.push([x, 872 + Math.sin(x * .011) * 3]);
-      cutp(g, polyPath(tear([...verge, [4040, 1090], [-520, 1090]], { amp: 3.5, freq: .1, seed: 41 })), '#6d8a4c', { light: LA, sh: 0, bev: { width: 2.2 } });
+      torn(g, [...verge, [4040, 1090], [-520, 1090]], '#6d8a4c', 41, LA, { amp: 3.5, sh: 0, bev: { width: 2.2 } });
       cutp(g, polyPath(tear([[-520, 890], [4040, 890], [4040, 1090], [-520, 1090]], { amp: 2, freq: .05, seed: 42 })), '#6d6366', { light: LA, blur: 6, dist: 4, bev: { width: 2.4 } });
       for (let i = 0; i < 70; i++) { const x = rr.range(-500, 4000), y = rr.range(905, 1070); cutp(g, smoothPath(ellipsePts(x, y, rr.range(20, 70), rr.range(4, 9), 14)), rr.pick(['#766c6e', '#625a5d']), { light: LA, sh: 0, bev: { width: 1, hi: .15, lo: .12 } }); }
       for (let x = -500; x < 4040; x += 150) cutp(g, cutRect(x, 990, 82, 10, rr, 1), '#efe2c4', { light: LA, blur: 2, dist: 1.5, bev: { width: 1.2 } });
@@ -176,7 +181,7 @@ const SCENES = (() => {
     const sp = (o) => sprite({ light: LB, ...o });
     const rs = new RNG('skyB');
     planes.push({ name: 'skyB', z: 20000, sky: true, sprites: [{ s: sp({ x: -160, y: -280, w: 2240, h: 1140, res: R(.8), mat: 'sky', seed: 'skyB', shadow: { blur: 16 }, edge: { width: 2.6, hi: .3, lo: .5 }, draw(g) {
-      g.fillStyle = vgrad(g, -280, 860, [[0, '#0f1431'], [.45, '#1f2755'], [.8, '#343a72'], [1, '#46508a']]);
+      g.fillStyle = vgrad(g, -280, 860, [[0, '#0f1431'], [.45, '#222b5c'], [.75, '#3b4380'], [1, '#56609c']]);
       g.fill(polyPath(tear([[-160, -280], [2080, -280], [2080, 850], [-160, 850]], { amp: 3, seed: 51 })));
       for (const [r, c] of [[118, '#2f3a6e'], [86, '#3d4a80']]) cutp(g, circ(330, 200, r), c, { light: LB, sh: .4, blur: 10, dist: 4, bev: { width: 2, hi: .25 } });
       const moon = new Path2D(); moon.addPath(circ(330, 200, 62)); cutp(g, moon, '#f4ecd2', { light: LB, sh: .5, blur: 8, dist: 3, bev: { width: 2.2, hi: .5 } });
@@ -186,14 +191,14 @@ const SCENES = (() => {
     const rk = new RNG('skyline');
     planes.push({ name: 'skyline', z: 6000, hinge: 820, sprites: [{ s: sp({ x: -420, y: 180, w: 2780, h: 660, res: R(.85), seed: 'skyline', shadow: { blur: 12 }, draw(g) {
       for (let x = -400; x < 2340;) {
-        const w = rk.range(50, 130), h = rk.range(330, 560), top = 820 - h, col = rk.pick(['#2b3160', '#323766', '#272c58']);
+        const w = rk.range(50, 130), h = rk.range(330, 560), top = 820 - h, col = rk.pick(['#171b3c', '#1c2045', '#141836']);
         const pts = [[x, 820], [x, top], [x + w, top], [x + w, 820]];
         if (rk.chance(.3)) pts.splice(2, 0, [x + w * .35, top], [x + w * .5, top - rk.range(20, 50)], [x + w * .65, top]);
         cutp(g, polyPath(pts), col, { light: LB, blur: 4, dist: 3, bev: { width: 1.6, hi: .25 } });
         for (let wy = top + 14; wy < 800; wy += 22) for (let wx = x + 8; wx < x + w - 10; wx += 18) if (rk.chance(.12)) { g.fillStyle = `rgba(233,196,106,${rk.range(.45, .85)})`; g.fillRect(wx, wy, 6, 8); }
         x += w + rk.range(-6, 10);
       }
-      cutp(g, polyPath([[1520, 820], [1534, 180], [1540, 180], [1554, 820]]), '#252a54', { light: LB, blur: 4, dist: 3 });   // a radio mast
+      cutp(g, polyPath([[1520, 820], [1534, 180], [1540, 180], [1554, 820]]), '#141836', { light: LB, blur: 4, dist: 3 });   // a radio mast
     } }) }] });
     const rb = new RNG('roofs');
     planes.push({ name: 'roofs', z: 2500, hinge: 920, sprites: [{ s: sp({ x: -900, y: 220, w: 3340, h: 720, res: R(.9), seed: 'roofs', shadow: { blur: 12 }, draw(g) {
@@ -232,7 +237,7 @@ const SCENES = (() => {
     } }) }] });
     // the street front: a shop, the alley gap, the venue
     const rv = new RNG('venue');
-    const FAC = { door: [1270, 652, 160, 254], marquee: [1120, 470, 470, 126] };
+    const FAC = { door: [1205, 652, 160, 254], marquee: [1050, 392, 470, 126], lamp: [1410, 632] };
     const facade = sp({ x: -1500, y: 140, w: 3640, h: 780, res: R(1.15), seed: 'facade', shadow: { blur: 9 }, draw(g) {
       // the shop
       cutp(g, cutRect(-1480, 470, 1760, 440, rv, 1.5), '#55657f', { light: LB, sh: 0, bev: { width: 2.4 } });
@@ -272,8 +277,8 @@ const SCENES = (() => {
       g.fillStyle = 'rgba(70,30,20,.75)'; g.fillRect(dx + 104, dy + 96, 4, 150); g.fill(circ(dx + 106, dy + 92, 7)); g.fillRect(dx + 88, dy + 244, 36, 5);
       for (let i = 0; i < 8; i++) { g.fillStyle = '#fff4d0'; g.fill(circ(dx + 10 + i * 20, dy + 24 + Math.sin(i * 1.3) * 6, 3)); }
       // the wall lamp
-      cutp(g, polyPath([[1470, 632], [1500, 632], [1494, 660], [1476, 660]]), '#2a1c18', { light: LB, blur: 3, dist: 2, bev: { width: 1.4 } });
-      cutp(g, circ(1485, 668, 10), '#ffe6a6', { light: LB, sh: .3, bev: { width: 1.2, hi: .5 } });
+      cutp(g, polyPath([[FAC.lamp[0] - 15, 632], [FAC.lamp[0] + 15, 632], [FAC.lamp[0] + 9, 660], [FAC.lamp[0] - 9, 660]]), '#2a1c18', { light: LB, blur: 3, dist: 2, bev: { width: 1.4 } });
+      cutp(g, circ(FAC.lamp[0], 668, 10), '#ffe6a6', { light: LB, sh: .3, bev: { width: 1.2, hi: .5 } });
     } });
     const door = sp({ x: FAC.door[0] - 4, y: FAC.door[1] - 4, w: FAC.door[2] + 8, h: FAC.door[3] + 8, res: R(1.15), seed: 'door', shadow: { blur: 6 }, draw(g) {
       const [dx, dy, dw, dh] = FAC.door;
@@ -316,7 +321,7 @@ const SCENES = (() => {
         g.fillStyle = `rgb(${Math.round(200 + 55 * b)},${Math.round(160 + 70 * b)},${Math.round(90 + 60 * b)})`; g.beginPath(); g.arc(bx, by, 5.5, 0, 7); g.fill();
         PD.glow(g, bx, by, 22, 'rgba(255,214,140,.5)', b * .7);
       });
-      PD.glow(g, 1485, 668, 90, 'rgba(255,214,150,.45)', .8 + .1 * Math.sin(t * 2));
+      PD.glow(g, FAC.lamp[0], 668, 90, 'rgba(255,214,150,.45)', .8 + .1 * Math.sin(t * 2));
     } });
     // the sidewalk
     const rw = new RNG('walk');
