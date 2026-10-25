@@ -311,9 +311,11 @@ def events(cues):
             if c.get('chord'):
                 place(out, t, pluck(midi(tone_of(c['t'], 0, 0)), 0.9), 0.0, 0.2)
         elif k == 'piston':
-            # a piston shooting up: a soft pneumatic tok, a chord tone pitched by its tier
-            place(out, t, crush(tone(midi(tone_of(c['t'], 4 - c['n'], 1)), 0.06, 'sine', d=0.03), bits=7, hold=1), p, 0.05)
-            place(out, t, noise_sweep(0.08, 3000, 900, 0.02), p)
+            # a piston shooting up (eight a chord, in the firing order): the rod's thunk at its stop, a puff of air
+            # from the sleeve, and a chord tone pitched by its tier, loud enough to follow (Robin: synced, audible)
+            place(out, t, sweep(190 - 30 * c['n'], 85, 0.07, d=0.045), p, 0.30)
+            place(out, t - 0.02, noise_sweep(0.12, 2600, 700, 0.07), p)
+            place(out, t, crush(tone(midi(tone_of(c['t'], 4 - c['n'], 1)), 0.07, 'tri', d=0.04), bits=7, hold=1), p, 0.10)
         elif k == 'pop':
             place(out, t, crush(sweep(1200, 180, 0.12, d=0.06), bits=6, hold=2), p, 0.16)
         elif k == 'lever':
