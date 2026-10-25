@@ -144,9 +144,9 @@ export function tubeOutline(line, widths, { caps = true, n = 8 } = {}) {
 }
 
 // A rolled clay tube: the outline shaded as a lump whose thickness is the tube's width.
-export function tube(ctx, line, widths, fill, { light = LIGHT, shadow = true, caps = true } = {}) {
+export function tube(ctx, line, widths, fill, { light = LIGHT, shadow = true, caps = true, size = null } = {}) {
   const w = Array.isArray(widths) ? Math.max(...widths) : widths;
-  return clayForm(ctx, tubeOutline(line, widths, { caps }), fill, { light, shadow, size: w * 2, sheen: 0.18 });
+  return clayForm(ctx, tubeOutline(line, widths, { caps }), fill, { light, shadow, size: size ?? w * 2, sheen: 0.18 });
 }
 
 // A stepped stack (pyramids, tiers, the islands' undersides): slabs of decreasing width, each a rounded clay bar.

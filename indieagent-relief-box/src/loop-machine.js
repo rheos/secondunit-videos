@@ -2,8 +2,8 @@
 //
 //   the funnel     one faceted octagonal funnel that feeds itself: what gathers in the top swirls down; it leaves by
 //                  a thick pipe at the bottom that turns square corners (right, up past the lip, left, down) and
-//                  drops back in. Eight small solids go round it for ever (a lap every 6 s); in the pipe each shows
-//                  as a swelling that travels along it. The funnel glows faintly from inside.
+//                  drops back in. Eight small solids go round it for ever (a lap every 6 s); inside the pipe they are
+//                  not seen, the pipe itself swells in a bulge that travels along it. The funnel glows faintly inside.
 //   the console    a desk of knobs, a lever, a row of lights and a round screen with a turning shape; a cable from
 //                  it droops across to the duct's elbow.
 //   the instrument three nested rings turning on different axes above a stepped plinth, a small solid hovering
@@ -49,6 +49,40 @@ function squarePath(way, rc = FILLET, step = 6) {
 }
 export const DUCT = { w: 23, path: squarePath([[880, 640], [880, 800], [1226, 800], [1226, 226], [904, 226], [904, 300]]) };
 const DUCT_LEN = plen(DUCT.path);
+// arc length at each point of the pipe, and the colour rings along it (mint is the pipe itself; butter and pink
+// rings are laid over it, every third ring each)
+const ACC = DUCT.path.reduce((a, p, i) => { a.push(i ? a[i - 1] + Math.hypot(p[0] - DUCT.path[i - 1][0], p[1] - DUCT.path[i - 1][1]) : 0); return a; }, []);
+const RING = 42, RING_COLS = [P.mint, P.butter, P.pink];
+function ringClip(c, w) {
+  const clip = new Path2D();
+  for (let r = c, s0 = r * RING; s0 < DUCT_LEN - 8; r += 3, s0 = r * RING) {
+    const seg = DUCT.path.filter((_, i) => ACC[i] >= s0 - 0.01 && ACC[i] <= Math.min(DUCT_LEN, s0 + RING) + 0.01);
+    if (seg.length < 2) continue;
+    const o = tubeOutline(seg, w, { caps: false });
+    clip.moveTo(o[0][0], o[0][1]); for (const q of o.slice(1)) clip.lineTo(q[0], q[1]); clip.closePath();
+  }
+  return clip;
+}
+// a stretch of pipe swollen around s0: the same rolled tube, wider in a smooth bump, in the same colour rings
+const BULGE = { sigma: 17, amp: 0.45 };
+function drawBulge(ctx, s0, amp, clips) {
+  // drawn over a long stretch, but only the swollen middle is let through, so the cut ends of the stretch (where its
+  // shading turns at the cut) never show; at the clip's edge the swell has already melted back into the pipe
+  const span = BULGE.sigma * 5, keep = BULGE.sigma * 2.4, seg = [], ws = [], mid = [];
+  DUCT.path.forEach((p, i) => {
+    const d = ACC[i] - s0;
+    if (Math.abs(d) <= span) { seg.push(p); ws.push(DUCT.w * (1 + BULGE.amp * amp * Math.exp(-((d / BULGE.sigma) ** 2)))); }
+    if (Math.abs(d) <= keep) mid.push(p);
+  });
+  if (seg.length < 3 || mid.length < 2) return;
+  const win = new Path2D(), o0 = tubeOutline(mid, DUCT.w * (1 + BULGE.amp) + 10, { caps: false });
+  win.moveTo(o0[0][0], o0[0][1]); for (const q of o0.slice(1)) win.lineTo(q[0], q[1]); win.closePath();
+  const o = { shadow: false, caps: false, size: DUCT.w * 2 };
+  ctx.save(); ctx.clip(win);
+  tube(ctx, seg, ws, RING_COLS[0], o);
+  for (let c = 1; c < 3; c++) { ctx.save(); ctx.clip(clips[c]); tube(ctx, seg, ws, RING_COLS[c], o); ctx.restore(); }
+  ctx.restore();
+}
 const SPOUT = DUCT.path[DUCT.path.length - 1];
 
 const ring = (cy, rx, ry, k) => { const a = (k + 0.5) / SIDES * TAU; return [RIM.x + Math.cos(a) * rx, cy + Math.sin(a) * ry]; };
@@ -59,21 +93,9 @@ const facetTone = (k, base) => { const a = (k + 1) / SIDES * TAU, lit = -Math.co
 function drawFunnelBack(g) {
   // the pipe first: it passes behind the funnel on its way round
   tube(g, DUCT.path, DUCT.w, P.mint);
-  // rings of colour along the pipe, mint, butter and pink in turn: the whole pipe is shaded once per colour and
-  // clipped to that colour's rings, so the shading runs smoothly through every ring
-  const acc = [0];
-  for (let i = 1; i < DUCT.path.length; i++) acc.push(acc[i - 1] + Math.hypot(DUCT.path[i][0] - DUCT.path[i - 1][0], DUCT.path[i][1] - DUCT.path[i - 1][1]));
-  const RING = 42, RING_COLS = [P.mint, P.butter, P.pink];
-  for (let c = 1; c < 3; c++) {
-    const clip = new Path2D();
-    for (let r = c, s0 = r * RING; s0 < DUCT_LEN - 8; r += 3, s0 = r * RING) {
-      const seg = DUCT.path.filter((_, i) => acc[i] >= s0 - 0.01 && acc[i] <= Math.min(DUCT_LEN, s0 + RING) + 0.01);
-      if (seg.length < 2) continue;
-      const o = tubeOutline(seg, DUCT.w + 6, { caps: false });
-      clip.moveTo(o[0][0], o[0][1]); for (const q of o.slice(1)) clip.lineTo(q[0], q[1]); clip.closePath();
-    }
-    g.save(); g.clip(clip); tube(g, DUCT.path, DUCT.w, RING_COLS[c], { shadow: false }); g.restore();
-  }
+  // rings of colour along the pipe: the whole pipe is shaded once per colour and clipped to that colour's rings, so
+  // the shading runs smoothly through every ring
+  for (let c = 1; c < 3; c++) { g.save(); g.clip(ringClip(c, DUCT.w + 6)); tube(g, DUCT.path, DUCT.w, RING_COLS[c], { shadow: false }); g.restore(); }
   // the spout: a square collar at the pipe's end
   clayForm(g, [[SPOUT[0] - 30, SPOUT[1] - 6], [SPOUT[0] + 30, SPOUT[1] - 6], [SPOUT[0] + 26, SPOUT[1] + 10], [SPOUT[0] - 26, SPOUT[1] + 10]], shade(P.mint, 0.12), { smooth: false, size: 14, sheen: 0.2 });
   // the funnel's front facets (the ones turned toward us), each a flat cut of clay
@@ -134,7 +156,7 @@ export function addMachines(S) {
   const sp = (name, box, draw, o = {}) => S.sprite({ name, ...box, res: o.res ?? 1.25, mat: CLAY_MAT, edge: CLAY_EDGE, shadow: { blur: o.blur ?? 18 }, draw });
   const back = sp('funnel', { x: 640, y: 160, w: 660, h: 700 }, drawFunnelBack, { blur: 22 });
   const front = sp('funnel-lip', { x: 670, y: 310, w: 420, h: 130 }, drawFunnelFront, { blur: 10 });
-  const lump = sp('lump', { x: -26, y: -26, w: 52, h: 52 }, (g) => clayForm(g, circle(0, 0, 20, 32), P.bone, { sheen: 0.3 }), { blur: 6 });
+  const clips = [null, ringClip(1, DUCT.w * (1 + BULGE.amp) + 8), ringClip(2, DUCT.w * (1 + BULGE.amp) + 8)];
   const consoleS = sp('console', { x: 470, y: 760, w: 430, h: 240 }, drawConsole);
   const instr = sp('instrument', { x: 1390, y: 780, w: 160, h: 220 }, drawInstrumentBase);
 
@@ -142,7 +164,7 @@ export function addMachines(S) {
   const KINDS = ['octa', 'cube', 'tetra', 'ico'], COLS = [P.pink, P.butter, P.lilac, P.aqua, P.mint, P.pinkDeep, P.blush, P.butterDeep];
   S.add({ name: 'funnel', z: 1000, shadow: { dx: 10, dy: 18, alpha: 0.4 }, anim: (t) => ({ sx: 1 + 0.006 * cyc(t, 2), sy: 1 + 0.006 * cyc(t, 2), ox: RIM.x, oy: 520 }), render(ctx, t, env) {
     drawSprites(ctx, [{ s: back }], env.shadow);
-    const swell = [], late = [];
+    const swell = [], late = [];   // swell: [arc length, strength] of each bulge in the pipe
     const pulse = 0.5 + 0.5 * Math.cos(TAU * mod(t, 0.75) / 0.75);
     ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, RIM.x, RIM.y + 6, 150, '#ffd9b0', 0.14 + 0.06 * pulse); ctx.restore();
     for (let n = 0; n < 8; n++) {
@@ -151,15 +173,15 @@ export function addMachines(S) {
         const k = u / 1.6, a = n * 1.3 + k * TAU * 1.25, rr = (1 - k) * 0.78 + 0.08;
         drawSolid(ctx, kind, RIM.x + Math.cos(a) * RIM.rx * rr, RIM.y + 8 + Math.sin(a) * RIM.ry * rr + k * 14, 9 * (1 - 0.5 * k), ang, col, { alpha: 1 - smoothstep(0.7, 1, k) });
       } else if (u >= 2.2 && u < 5.4) {                    // carried round the pipe
-        const s = DUCT_LEN * (u - 2.2) / 3.2, { p, ang: a } = along(DUCT.path, s / DUCT_LEN);
-        swell.push({ s: lump, x: p[0], y: p[1], rot: a, sx: 1.35, sy: 1.22, alpha: smoothstep(0, 30, s) * smoothstep(DUCT_LEN, DUCT_LEN - 30, s) });
+        const s = DUCT_LEN * (u - 2.2) / 3.2;
+        swell.push([s, smoothstep(30, 70, s) * smoothstep(DUCT_LEN - 20, DUCT_LEN - 60, s)]);
       } else if (u >= 5.4) {                               // dropping from the spout into the mouth
         const k = (u - 5.4) / 0.6;
         late.push(() => drawSolid(ctx, kind, lerp(SPOUT[0], RIM.x + 10, k), lerp(SPOUT[1] + 18, RIM.y + 10, E.in(k)), 9, ang, col, { glowK: 0.3 }));
       }
     }
     drawSprites(ctx, [{ s: front }], { ...env.shadow, dx: 3, dy: 5 });
-    drawSprites(ctx, swell, { ...env.shadow, alpha: 0 });
+    for (const [s0, amp] of swell) if (amp > 0.01) drawBulge(ctx, s0, amp, clips);   // the pipe swells as each one passes
     for (const f of late) f();
   } });
 
