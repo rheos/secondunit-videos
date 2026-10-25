@@ -70,15 +70,48 @@ export function addWorld(S) {
   // the backdrop is the turning honeycomb dome (loop-dome.js)
   addDome(S, LOOP);
 
-  // the window-wheel sun hangs at the top of the dome as its lantern
-  const sun = sp('sun', { x: SUN.x - SUN.r - 70, y: -SUN.r - 70, w: SUN.r * 2 + 140, h: SUN.r * 2 + 140 }, drawSun, { res: 1.1, shadow: { blur: shadowBlur(24) } });
+  // the lantern at the top of the dome: a spinning mechanism of parts, not a fixed wheel. The disc and its rays
+  // turn one way, each ring of windows turns at its own speed and way round, the rings breathe in and out out of
+  // step, and the rays reach out and draw back in a wave running round the rim. Every turn is a whole number of
+  // its own part spacings per loop, so the pattern comes back to itself at the seam.
+  const LX = 960, LY = 70, LR = 92;
+  const lsp = (name, w, h, draw) => S.sprite({ name, x: -w / 2, y: -h / 2, w, h, res: 1.4, mat: CLAY_MAT, edge: CLAY_EDGE, shadow: { blur: shadowBlur(10) }, draw });
+  const plate = lsp('lantern-plate', LR * 2 + 20, LR * 2 + 20, (g) => clayForm(g, circle(0, 0, LR, 64), mix(P.butter, '#f6c36a', 0.4), { sheen: 0.18 }));
+  const hub = lsp('lantern-hub', 50, 50, (g) => { clayForm(g, circle(0, 0, LR * 0.2, 36), '#f6c36a', { sheen: 0.3 }); clayForm(g, circle(0, 0, LR * 0.09, 24), P.pink, { sheen: 0.3 }); });
+  // a ray of three stepped points, pointing up (out) from its foot at the origin
+  const ray = lsp('lantern-ray', 36, 50, (g) => { for (let k = 0; k < 3; k++) { const w = 11 - k * 3, y0 = 20 - k * 8; clayForm(g, [[-w, y0], [0, y0 - 10], [w, y0]], [P.butter, '#f6c36a', '#f29d5c'][k], { smooth: false, size: 10 }); } });
+  const glassC = ['#ffe2a0', '#ffd27e', '#fff0c8'];
+  const win = glassC.map((c, k) => lsp(`lantern-win-${k}`, 20, 20, (g) => {
+    clayForm(g, [[-7, -7], [7, -7], [7, 7], [-7, 7]], P.butterDeep, { smooth: false, size: 8 });
+    g.fillStyle = c; g.fillRect(-4.8, -4.8, 9.6, 9.6);
+    g.fillStyle = 'rgba(150,80,30,0.3)'; g.fillRect(-4.8, -4.8, 9.6, 2.4);
+  }));
+  // rings: [radius, windows, window scale, turns per loop (in window spacings: sign gives the way round)]
+  const RINGS = [[0.8, 18, 1.15, -6], [0.57, 13, 1.0, 4], [0.35, 8, 0.85, -3]];
   S.add({ name: 'lantern-glow', z: 5010, blend: 'lighter', render(ctx, t) {
-    glow(ctx, 960, 70, 640, '#ffd9a0', 0.2 + 0.03 * cyc(t, 2));
-    glow(ctx, 960, 70, 240, '#fff0c8', 0.3);
+    glow(ctx, LX, LY, 640, '#ffd9a0', 0.2 + 0.03 * cyc(t, 2));
+    glow(ctx, LX, LY, 240, '#fff0c8', 0.3);
   } });
-  S.add({ name: 'lantern', z: 5000, shadow: { dx: 8, dy: 14, alpha: 0.25 }, render(ctx, t, env) {
-    drawSprites(ctx, [{ s: sun, ax: SUN.x, ay: 0, x: 960, y: 70 + 4 * cyc(t, 1), sx: 0.7, sy: 0.7 }], env.shadow);
+  S.add({ name: 'lantern', z: 5000, shadow: { dx: 8, dy: 14, alpha: 0.25 }, anim: (t) => ({ y: 4 * cyc(t, 1) }), render(ctx, t, env) {
+    const spin = TAU * (6 / 18) * t / LOOP, items = [];
+    // rays: 18 round the rim, turning with the disc, each reaching out and drawing back as a wave passes
+    for (let i = 0; i < 18; i++) {
+      const a = spin + i / 18 * TAU, reach = 1 + 0.45 * Math.sin(TAU * (t / 3 - i * 3 / 18));
+      const d = LR + 2 + 6 * (reach - 1);
+      items.push({ s: ray, ax: 0, ay: 20, x: LX + Math.cos(a) * d, y: LY + Math.sin(a) * d, rot: a + Math.PI / 2, sx: 1, sy: Math.max(0.3, reach) });
+    }
+    items.push({ s: plate, x: LX, y: LY });
+    RINGS.forEach(([rk, n, ws, turns], ri) => {
+      const breathe = 1 + 0.16 * Math.sin(TAU * (t / 4 + ri / 3)), turn = TAU * turns / n * t / LOOP;
+      for (let i = 0; i < n; i++) {
+        const a = turn + i / n * TAU, rr = LR * rk * breathe, sz = ws * (1 + 0.25 * Math.sin(TAU * (t / 2 + i / n + ri / 3)));
+        items.push({ s: win[(i + ri) % 3], x: LX + Math.cos(a) * rr, y: LY + Math.sin(a) * rr, rot: a, sx: sz, sy: sz });
+      }
+    });
+    items.push({ s: hub, x: LX, y: LY, rot: -spin * 2 });
+    drawSprites(ctx, items, env.shadow);
   } });
+
 
   // the dome's floor: two rows of hills
   // (each made for the left half and laid down again reflected, like everything off the centre line)
