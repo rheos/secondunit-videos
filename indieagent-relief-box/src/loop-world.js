@@ -239,7 +239,7 @@ export function addWorld(S) {
   const frng = new RNG('floaters');
   // the left half's floaters; each is drawn again reflected on the right
   const spots = [[180, 150, 2600, 'pendant'], [820, 130, 1900, 'tess'], [700, 560, 3000, 'octa'], [120, 560, 1500, 'ico'], [560, 640, 2800, 'chevron'],
-    [880, 520, 1500, 'tetra'], [-60, 300, 2000, 'cube'], [300, 380, 2400, 'star'], [640, 420, 1700, 'chevron']];
+    [880, 520, 1500, 'tetra'], [-60, 300, 2000, 'cube'], [300, 380, 2400, 'star']];
   const COLS = [P.mint, P.pink, P.butter, P.lilac, P.aqua];
   // Nothing floats still: each floater is a small mechanism whose parts collapse and expand along different
   // directions in turn. Parts are baked once and moved each frame; every rhythm divides the loop.
@@ -289,7 +289,15 @@ export function addWorld(S) {
   const terrace = sp('terrace', { x: -500, y: 860, w: 1560, h: 560, res: 1.1 }, (g) => mounds(g, { x0: -500, x1: 1040, base: 1000, amp: 30, bottom: 1420, colors: [mix(P.pink, P.butter, 0.4), mix(P.blush, P.butter, 0.3)], fade: 0.05, seed: 4, trees: 0 }));
   addPair(S, 'terrace', 1080, terrace, { dx: 8, dy: 14, alpha: 0.38 });
 
-  return { island };
+  // a chevron fan anywhere (the island hangs a pair either side of its roots, loop.js): the same opening and folding,
+  // turned by rot, flip -1 for the mirror one
+  const chevronFan = (ctx, x, y, rot, t, ph, env, flip = 1) => {
+    const fan = W(t, 4, ph), open = Math.max(0, fan), shut = Math.max(0, -fan);
+    ctx.save(); ctx.translate(x, y); ctx.rotate(rot); ctx.scale(flip, 1);
+    drawSprites(ctx, chevs.map((c, k) => ({ s: c, x: (k - 1) * 14 * open, y: (k - 1) * 13 * (1 + 1.3 * open - shut * 0.95), rot: (k - 1) * 0.5 * open, sx: 1 + 0.45 * W(t, 6, ph + k / 3), sy: 1 })), fsh(env));
+    ctx.restore();
+  };
+  return { island, chevronFan };
 }
 
 // The near world in front of the machine: low mounds with coral curls and rosette bushes, then the lens plane.

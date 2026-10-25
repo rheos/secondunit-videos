@@ -10,7 +10,8 @@ import { mix, shade, rgba } from '../vendor/paper-fox/core/color.js';
 import { PAL } from './kit.js';
 
 const P = PAL, TAU = Math.PI * 2;
-const COLS = 96, DA = TAU / COLS, DPHI = DA * 0.86, ROWS = 26, PITCH = 0.26, FOCAL = 760;
+// DOWN rows run on below the horizon, so no bare shell shows above the hills (Robin: no gap in the hex tiles)
+const COLS = 96, DA = TAU / COLS, DPHI = DA * 0.86, ROWS = 26, DOWN = 6, PITCH = 0.26, FOCAL = 760;
 const CX = 960, CY = 540;
 
 // a direction on the dome (theta round, phi up) to authored screen coordinates, or null when behind the eye
@@ -25,14 +26,14 @@ function proj(theta, phi) {
 export function addDome(S, loop) {
   const rng = new RNG('dome');
   // a little variation between cells that repeats every two columns, so the dome's two-column turn closes the loop
-  const tint = [...Array(2 * ROWS)].map(() => rng.range(-0.04, 0.04));
+  const tint = [...Array(2 * (ROWS + DOWN))].map(() => rng.range(-0.04, 0.04));
   S.add({ name: 'dome', z: 6000, render(ctx, t) {
     const turn = DA * 2 * t / loop;
     // the shell behind the cells
     ctx.fillStyle = mix(P.wall, P.pink, 0.18); ctx.fillRect(-600, -500, 3120, 2100);
     ctx.lineJoin = 'round';
-    for (let r = 0; r < ROWS; r++) {
-      const phi = -0.04 + r * DPHI, off = (r & 1) * DA / 2;
+    for (let r = 0; r < ROWS + DOWN; r++) {
+      const phi = -0.04 + (r - DOWN) * DPHI, off = (r & 1) * DA / 2;
       for (let c = 0; c < COLS; c++) {
         const th = c * DA + off + turn, rel = Math.atan2(Math.sin(th), Math.cos(th));
         if (Math.abs(rel) > 1.35) continue;
@@ -47,7 +48,7 @@ export function addDome(S, loop) {
         // light from the lantern overhead, and a slow wave of light running round the dome
         // the wave is pinned to where a cell is on screen, not to the cell, so it too comes round each loop
         const wave = 0.5 + 0.5 * Math.sin(TAU * t / 4 - rel * 6 - r / 1.4);
-        const lit = 0.18 + 0.5 * Math.min(1, phi / 1.1) - 0.25 * Math.abs(rel) / 1.35 + 0.08 * wave + tint[r * 2 + (c & 1)];
+        const lit = 0.18 + 0.5 * Math.min(1, Math.max(-0.15, phi) / 1.1) - 0.25 * Math.abs(rel) / 1.35 + 0.08 * wave + tint[r * 2 + (c & 1)];
         const base = mix(mix(P.wallLight, P.blush, 0.35), '#fff6ea', Math.max(0, lit));
         // each cell an exact raised hexagon: a bevelled rim in the shell's tone, a flat top face set inside it, a
         // bright edge on the sides toward the lantern and a dark edge on the sides away from it

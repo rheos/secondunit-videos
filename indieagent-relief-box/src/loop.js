@@ -342,6 +342,11 @@ function scene() {
       const IX = -120, IY = 90;
       S.add({ name: 'island', z: 1500, shadow: { dx: 10, dy: 22, alpha: 0.32 }, anim: (t) => ({ y: 8 * cyc(t, 1, 0.55) }), render(ctx, t, env) { mirrored(ctx, () => {
         drawSprites(ctx, [{ s: world.island, ax: ISLAND.x, ay: ISLAND.y, x: ISLAND.x + IX, y: ISLAND.y + IY }], env.shadow);
+        // a chevron fan either side of the island's stepped roots, each turned to follow the slope of the roots and
+        // fanning out away from them, one the mirror of the other (Robin: "on the other side of the floating
+        // mountain... and the mirror of it... arc with the contour of the mountain base")
+        const cx = ISLAND.x + IX, cy = ISLAND.y + IY, slope = Math.atan2(96, 130);
+        for (const sd of [-1, 1]) world.chevronFan(ctx, cx + sd * 112, cy + 92, -sd * slope, t, 0.31, env, sd);
         const ground = ISLAND.y - 4 + IY, x = 300, hip = ground - 14 * FS, kinds = ['star', 'octa'];
         singerBurst(ctx, t, 3, x, 1, hip);
         drawFigure(ctx, seer, singerPose(t, 3, x, 1, hip, [[x + 16, ground + 4], [x + 22, ground + 6]], kinds, 1.6), env);
