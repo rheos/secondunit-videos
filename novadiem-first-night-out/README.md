@@ -100,6 +100,25 @@ nice -n 15 node ../tools/motion-lab/render.mjs "creek.html?w=1280" 0 9 out/draft
 
 The change out of the creek (the moon's reflection rises and becomes the porch light) is built with scene 3.
 
+## Night sound (`tools/cues.mjs`, `tools/nightsound.py`, `tools/soundcheck.py`)
+
+No score (Robin, Oct 25): the scenes play on night sound alone, all made in code. The scene reports its own sound
+cues from the same curves it draws with (`S.cues()`: paws into and out of the water, each washing stroke, sniffs, the
+slap and every splash drop landing, the voices at their acting beats), so a timing change can't desync the sound.
+`nightsound.py` lays a bed (the creek's water and bubbles, crickets near and far, a chorus frog, one distant owl)
+under the events (plops, drips, sloshes, sniffs, the splash, drop plinks, a churr, chitters, a squeak, a huff, a
+sneeze, a head shake), each landing one frame after its cue and panned by where it happens. `soundcheck.py` checks
+every event stands over the bed on a phone (300-3400 Hz): the creek's events stand 5 to 20 dB over it.
+
+```bash
+node tools/cues.mjs creek
+<viralvision venv python> -I tools/nightsound.py assets/creek_cues.json -o assets/creek_sound.wav --stems
+<viralvision venv python> -I tools/soundcheck.py assets/creek_sound
+ffmpeg -i out/draft/<cut>.mp4 -i assets/creek_sound.wav -map 0:v -map 1:a -c:v copy -af volume=4.4dB -c:a aac -b:a 256k -shortest out/draft/<cut>_sound1.mp4
+```
+
+The mix sits at -22 LUFS, peak -1.4 dBFS: quiet, as a night is. Audio stays out of git.
+
 ## The transitions (`js/transitions.js`, `js/film.js`, `transitions.html`)
 
 A port of paper-fox's `src/film/transitions.js` with the parts of `compose.js` and `props.js` it uses (MIT). The rule
@@ -133,6 +152,5 @@ paper-depth musician. Not taken: the fox drawing, any scene, any audio.
 ## Next
 
 1. Robin's notes on the transitions reel.
-2. Night sound for the creek (no score: Robin, about 1 am Sun Oct 25): crickets, the creek, dabbling, the splash,
-   chitters, placed on cues the scene reports.
+2. Robin's notes on the creek's night sound.
 3. The rest, each scene rendered as it lands, with its transitions. Growing up can come later as more episodes.

@@ -408,7 +408,36 @@ SCENES.creek = (Q) => {
     CHAR_K.draw = (g) => kit.draw(g, 0, KG, { ...K, d: KX }, { scale: SC, light: LT, shadow: [-8, 4], edge: rim });
   }
   // meta for the transitions: where the parent's head is, the moon, the bright water, the horizon
-  return { name: 'creek', END, planes, camera: cam, prepare, background: '#070b24', light: LT, shadowAlpha: .5,
+  // ---------------- sound cues ----------------
+  // The scene reports its own sound events from the same curves it draws with, so a timing change can't desync the
+  // sound: paws going into and out of the water, each washing stroke, sniffs, the slap and every drop landing, and
+  // the voices at their acting beats. x is film px (for the pan). tools/cues.mjs writes them to assets/creek_cues.json.
+  function cues(fps = 96) {
+    const out = [], who = [['parent', parentState, parent, PG, WLP], ['kit', kitState, kit, KG, WLK]], prev = {};
+    for (let i = 0; i <= END * fps; i++) {
+      const t = i / fps;
+      for (const [name, stateOf, rig, ground, wl] of who) {
+        const st = stateOf(t), paws = pawsOf(rig.pose({ ...st }), ground), pt = st.t;
+        const P = prev[name] || { under: paws.map((q) => q[1] > wl + 2), stroke: Math.floor(pt * 7.5 / Math.PI), sniff: Math.floor(pt * 26 / (Math.PI * 2)) };
+        const under = paws.map((q, j) => P.under[j] ? q[1] > wl - 4 : q[1] > wl + 8);   // in once clearly under, out once clearly clear
+        paws.forEach((q, j) => { if (under[j] && !P.under[j]) out.push({ k: 'pawIn', t, who: name, x: q[0] }); if (!under[j] && P.under[j]) out.push({ k: 'pawOut', t, who: name, x: q[0] }); });
+        const stroke = Math.floor(pt * 7.5 / Math.PI);                     // each half turn of the circling paws
+        if (stroke !== P.stroke && (st.rub ?? 0) > .3 && under.some(Boolean)) out.push({ k: 'dab', t, who: name, x: paws[stroke & 1][0] });
+        const sn = Math.floor(pt * 26 / (Math.PI * 2));
+        if (sn !== P.sniff && (st.sniff ?? 0) > .3) out.push({ k: 'sniff', t, who: name, x: (name === 'parent' ? PX + 330 * SC : KX + 190 * SC) });
+        prev[name] = { under, stroke, sniff: sn };
+      }
+    }
+    const ps = kit.pose({ ...kitState(TS) }), sx = ((ps.legs[2].ankle[0] + ps.legs[3].ankle[0]) / 2) * SC;
+    out.push({ k: 'splash', t: TS, who: 'kit', x: sx });
+    for (const d of SPLASH) { const tt = (-d.vy + Math.sqrt(d.vy * d.vy + 4 * 1100 * 10)) / 2200; out.push({ k: 'drop', t: TS + tt, x: sx + d.vx * tt, size: d.r }); }
+    const ph = PX + 330 * SC, kh = KX + 190 * SC;
+    out.push({ k: 'churr', t: 3.62, who: 'parent', x: ph }, { k: 'chitter', t: 3.95, who: 'kit', x: kh }, { k: 'squeak', t: TS + .04, who: 'kit', x: kh },
+      { k: 'huff', t: TS + .06, who: 'parent', x: ph }, { k: 'sneeze', t: TS + .3, who: 'kit', x: kh }, { k: 'shake', t: TS + .45, dur: .6, who: 'kit', x: kh },
+      { k: 'chitter', t: 6.05, who: 'kit', x: kh }, { k: 'churr', t: 6.5, who: 'parent', x: ph });
+    return out.sort((a, b) => a.t - b.t);
+  }
+  return { name: 'creek', END, planes, camera: cam, prepare, cues, background: '#070b24', light: LT, shadowAlpha: .5,
     post: { bloom: .55, threshold: .62, vignette: .3, grain: .05, grade: { color: '#3c4c9a', amount: .1, mode: 'soft-light' } },
     meta: { hero: [PX + 330 * SC, PG - 150 * SC], light: [MOON[0], MOON[1]], water: [MOON[0], LAKE.y + 14], horizon: HZ },
     parent, kit, parentState, kitState };
