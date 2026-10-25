@@ -2708,8 +2708,8 @@ __m["src/loop-machine.js"] = (() => {
 //                  up past the lip, in, down) and drop back into the mouth. Eight small solids go round for ever (a lap
 //                  every 6 s), turn and turn about down the left and right pipes; inside a pipe the pipe itself swells
 //                  in a bulge that travels along it. The funnel glows faintly inside.
-//   the consoles   a desk of knobs, a lever, a row of lights and a round screen with a turning shape; a cable from
-//                  it droops across to the pipe. One each side.
+//   the consoles   a cabinet with a desk and an upright board of varied controls, worked by an operator seen from
+//                  behind (no cable: Robin found it distracting). One each side.
 //   the instruments three nested rings turning on different axes above a stepped plinth, a small solid hovering
 //                  over them; once a loop each lets a cube go. One each side.
 
@@ -3036,12 +3036,6 @@ function drawConsole(g) {
   for (const [x, y] of TOGGLES) clayForm(g, [[x - 5, y - 6], [x + 5, y - 6], [x + 5, y + 6], [x - 5, y + 6]], shade(P.slate, -0.1), { smooth: false, size: 6, shadow: false });
   BUTTONS.forEach(([x, y]) => clayForm(g, circle(x, y, 8, 24), P.slateDeep, { sheen: 0.15, shadow: false }));
 }
-// the cable from the cabinet's side to the duct, drawn live so its far end stays on the pipe as the funnel drifts
-function drawCable(ctx, t) {
-  const end = funnelXf(t).at([AXIS - 150, 788]), a = [PANEL.x1 + 2, 930], cable = [];
-  for (let i = 0; i <= 20; i++) { const u = i / 20; cable.push([lerp(a[0], end[0], u), lerp(a[1], end[1], u) + 60 * Math.sin(Math.PI * u)]); }
-  tube(ctx, cable, 4, P.lilac, { shadow: false });
-}
 // the moving parts, drawn live
 function drawPanelKeys(ctx, t) {
   // the meter's needle swings with the drone's breath (8 s), with a flicker on the machine rhythm
@@ -3185,7 +3179,6 @@ function addMachines(S) {
 
   // the console: lights in a slow pattern, the knobs' marks, the lever, and a turning shape on the screen
   S.add({ name: 'console', z: 990, shadow: { dx: 8, dy: 14, alpha: 0.42 }, render(ctx, t, env) { mirrored(ctx, () => {
-    drawCable(ctx, t);
     drawSprites(ctx, [{ s: consoleS }], env.shadow);
     drawPanelKeys(ctx, t);
   }); } });
