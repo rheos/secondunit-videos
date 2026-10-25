@@ -25,7 +25,7 @@ function drawHalf(ctx, side) {
   clayForm(ctx, m([[22, 948], [58, 948], [74, 972], [70, 994], [28, 996], [20, 980]]), clay, { tiers: 2, reach: 3 });  // foot
   // jacket half: square shoulder, straight hem, the cut edge on the inside
   const jacket = m([[0, 392], [70, 396], [112, 410], [126, 440], [122, 560], [116, 660], [60, 668], [0, 664]]);
-  clayForm(ctx, jacket, clay, { tiers: 3, step: 0.1, reach: 7, smooth: true });
+  clayForm(ctx, jacket, clay, { tiers: 2, step: 0.07, reach: 5, smooth: true });
   // the lapel crease and a pocket flap, pressed into the clay
   piece(ctx, m([[0, 400], [34, 404], [12, 520], [0, 560]]), { fill: shade(clay, -0.05), bevel: { light: L, width: 1.4, hi: 0.3, lo: 0.25 } });
   piece(ctx, m([[66, 590], [110, 588], [108, 604], [66, 606]]), { fill: shade(clay, 0.03), shadow: { color: 'rgba(60,40,40,0.25)', blur: 3, x: 1, y: 2 }, bevel: { light: L, width: 1.2, hi: 0.3, lo: 0.25 } });
@@ -33,8 +33,8 @@ function drawHalf(ctx, side) {
   tube(ctx, m([[14, 372], [14, 402]]), 16, shade(clay, -0.02), { shadow: false });
   // arm: shoulder out to the elbow, forearm back to a hand tucked behind the head (drawn before the head)
   tube(ctx, m([[104, 426], [170, 386], [214, 340]]), [24, 21, 19], clay);
-  tube(ctx, m([[214, 340], [168, 296], [112, 262]]), [19, 17, 16], clay);
-  clayForm(ctx, m([[78, 244], [116, 238], [130, 262], [112, 282], [80, 276]]), clay, { tiers: 1, reach: 2 });     // hand
+  tube(ctx, m([[214, 340], [166, 300], [104, 276]]), [19, 17, 15], clay);
+  clayForm(ctx, m([[66, 262], [98, 258], [110, 276], [96, 292], [68, 288]]), clay, { tiers: 1, reach: 2 });     // hand, tucked behind the head
   // half head: flat cut on the inside, the crown round, a long nose pushed outward
   const head = m([[0, 212], ...arc(0, 300, 92, 90, -Math.PI / 2, -0.3, 10), [96, 300], [128, 316], [134, 330], [118, 338], [84, 346], ...arc(0, 300, 86, 92, 0.75, Math.PI / 2, 8), [0, 392]]);
   clayForm(ctx, head, clay, { tiers: 3, step: 0.12, reach: 8, smooth: true });

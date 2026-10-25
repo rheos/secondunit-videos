@@ -118,7 +118,7 @@ export const ORNAMENTS = [
 export function addSpine(S) {
   // the rod everything is threaded on: slate grey, a lighter stripe, set into the floor
   const rod = S.sprite({ name: 'rod', x: CX - 30, y: 90, w: 60, h: 930, res: 1.2, mat: 'smooth', draw(g) {
-    tube(g, [[CX, 110], [CX, 1000]], 9, P.slate);
+    tube(g, [[CX, 110], [CX, 1000]], 6, mix(P.slate, P.bone, 0.45));
   } });
   const orn = ORNAMENTS.map(([name, y, hw, hh, draw]) => ({
     name, y,

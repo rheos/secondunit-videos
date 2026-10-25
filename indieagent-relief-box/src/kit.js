@@ -19,7 +19,7 @@ export const PAL = {
   slate: '#8d9db3', slateDeep: '#5f6f88', navy: '#2b3557',
   lilac: '#c7b7d9',
   wall: '#ecd2bf', wallLight: '#f6e4d4', wallShade: '#cfae98',
-  box: '#d9bca6', boxDeep: '#b8977f',
+  box: '#e6c8b6', boxDeep: '#c4a08c',
   iris: '#7fa7d8', ink: '#3a3340',
 };
 

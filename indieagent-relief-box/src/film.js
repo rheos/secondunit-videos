@@ -19,10 +19,10 @@ import { LIGHT } from './kit.js';
 import { BACK, addBackWall, addInnerWalls, addFrame, addBoxLight } from './box.js';
 import { CX, addFigure } from './figure.js';
 import { addSpine } from './spine.js';
-import { WHEEL, ISLAND, BUBBLE, addProps } from './props.js';
+import { WHEEL, ISLAND, CITY, BUBBLE, addProps } from './props.js';
 
 const DURATION = 11;
-const OPEN = 150;
+const OPEN = 128;
 const open = (t) => prog(t, 1.4, 3.6, E.smooth);
 const popSpring = (x) => x <= 0 ? 0 : x >= 1 ? 1 : 1 - Math.exp(-5.2 * x) * Math.cos(x * 8.2);
 const LAND0 = 3.05, LAND_STEP = 0.3, POP = 0.85;
@@ -34,10 +34,10 @@ function scene() {
     background: '#3b2c2a',
     light: LIGHT,
     shadow: { alpha: 0.48, dist: 10, blur: 11 },
-    post: { bloom: 0.14, threshold: 0.84, vignette: 0.24, grain: 0.045, grade: { color: '#ffd9b8', amount: 0.1, mode: 'soft-light' } },
+    post: { bloom: 0.16, threshold: 0.8, vignette: 0.16, grain: 0.045, grade: { color: '#ffd9b8', amount: 0.1, mode: 'soft-light' } },
     camera: (t) => {
       const k = E.smooth(t / DURATION);
-      return { x: lerp(-40, 26, k) + 4 * noise('cam').n1(t * 0.21), y: lerp(4, -10, k) + 3 * noise('cam').n1(t * 0.17 + 9), z: 120 * E.dolly(t / DURATION), roll: 0.0016 * osc(t, 9.5) };
+      return { x: lerp(-40, 26, k) + 4 * noise('cam').n1(t * 0.21), y: lerp(-6, 14, k) + 3 * noise('cam').n1(t * 0.17 + 9), z: 55 * E.dolly(t / DURATION), roll: 0.0016 * osc(t, 9.5) };
     },
     build(S) {
       addBackWall(S);
@@ -53,6 +53,8 @@ function scene() {
       } });
       S.add({ name: 'island', z: ISLAND.z, shadow: { dx: 10, dy: 22, alpha: 0.42 }, sprites: [{ s: props.island }], anim: (t) => ({ y: 7 * osc(t, 5.6, 0.2), rot: 0.006 * osc(t, 7.3) , ox: ISLAND.x, oy: ISLAND.y }) });
 
+      S.add({ name: 'city', z: CITY.z, shadow: { dx: 10, dy: 22, alpha: 0.4 }, sprites: [{ s: props.city }], anim: (t) => ({ y: 6 * osc(t, 6.4, 0.6) }) });
+
       // the bubble and its lead
       S.add({ name: 'bubble', z: BUBBLE.z, shadow: { dx: 9, dy: 18 }, render(ctx, t, env) {
         const k = popSpring(clamp((t - 7.45) / POP));
@@ -61,11 +63,11 @@ function scene() {
         const e = popSpring(clamp((t - 8.0) / POP));
         if (e > 0.001) drawSprites(ctx, [{ s: props.emblem, ax: BUBBLE.x, ay: BUBBLE.y, x: BUBBLE.x, y: BUBBLE.y + 30 * (1 - e), sx: e, sy: e, alpha: smoothstep(0, 0.25, e) }], { ...env.shadow, dx: 3, dy: 6 });
       } });
-      S.add({ name: 'lead', z: 1060, shadow: { dx: 6, dy: 12 }, render(ctx, t, env) {
+      S.add({ name: 'lead', z: 990, shadow: { dx: 6, dy: 12 }, render(ctx, t, env) {
         const k = prog(t, 6.9, 7.7, E.outSoft);
         if (k <= 0.001) return;
         ctx.save();
-        const p = new Path2D(); p.rect(1150, 280, 30 + 240 * k, 300); ctx.clip(p);
+        const p = new Path2D(); p.rect(1200, 290, 20 + 200 * k, 300); ctx.clip(p);
         drawSprites(ctx, [{ s: props.lead }], env.shadow);
         ctx.restore();
       } });

@@ -1322,7 +1322,7 @@ const PAL = {
   slate: '#8d9db3', slateDeep: '#5f6f88', navy: '#2b3557',
   lilac: '#c7b7d9',
   wall: '#ecd2bf', wallLight: '#f6e4d4', wallShade: '#cfae98',
-  box: '#d9bca6', boxDeep: '#b8977f',
+  box: '#e6c8b6', boxDeep: '#c4a08c',
   iris: '#7fa7d8', ink: '#3a3340',
 };
 
@@ -1599,7 +1599,7 @@ function drawHalf(ctx, side) {
   clayForm(ctx, m([[22, 948], [58, 948], [74, 972], [70, 994], [28, 996], [20, 980]]), clay, { tiers: 2, reach: 3 });  // foot
   // jacket half: square shoulder, straight hem, the cut edge on the inside
   const jacket = m([[0, 392], [70, 396], [112, 410], [126, 440], [122, 560], [116, 660], [60, 668], [0, 664]]);
-  clayForm(ctx, jacket, clay, { tiers: 3, step: 0.1, reach: 7, smooth: true });
+  clayForm(ctx, jacket, clay, { tiers: 2, step: 0.07, reach: 5, smooth: true });
   // the lapel crease and a pocket flap, pressed into the clay
   piece(ctx, m([[0, 400], [34, 404], [12, 520], [0, 560]]), { fill: shade(clay, -0.05), bevel: { light: L, width: 1.4, hi: 0.3, lo: 0.25 } });
   piece(ctx, m([[66, 590], [110, 588], [108, 604], [66, 606]]), { fill: shade(clay, 0.03), shadow: { color: 'rgba(60,40,40,0.25)', blur: 3, x: 1, y: 2 }, bevel: { light: L, width: 1.2, hi: 0.3, lo: 0.25 } });
@@ -1607,8 +1607,8 @@ function drawHalf(ctx, side) {
   tube(ctx, m([[14, 372], [14, 402]]), 16, shade(clay, -0.02), { shadow: false });
   // arm: shoulder out to the elbow, forearm back to a hand tucked behind the head (drawn before the head)
   tube(ctx, m([[104, 426], [170, 386], [214, 340]]), [24, 21, 19], clay);
-  tube(ctx, m([[214, 340], [168, 296], [112, 262]]), [19, 17, 16], clay);
-  clayForm(ctx, m([[78, 244], [116, 238], [130, 262], [112, 282], [80, 276]]), clay, { tiers: 1, reach: 2 });     // hand
+  tube(ctx, m([[214, 340], [166, 300], [104, 276]]), [19, 17, 15], clay);
+  clayForm(ctx, m([[66, 262], [98, 258], [110, 276], [96, 292], [68, 288]]), clay, { tiers: 1, reach: 2 });     // hand, tucked behind the head
   // half head: flat cut on the inside, the crown round, a long nose pushed outward
   const head = m([[0, 212], ...arc(0, 300, 92, 90, -Math.PI / 2, -0.3, 10), [96, 300], [128, 316], [134, 330], [118, 338], [84, 346], ...arc(0, 300, 86, 92, 0.75, Math.PI / 2, 8), [0, 392]]);
   clayForm(ctx, head, clay, { tiers: 3, step: 0.12, reach: 8, smooth: true });
@@ -1776,7 +1776,7 @@ const ORNAMENTS = [
 function addSpine(S) {
   // the rod everything is threaded on: slate grey, a lighter stripe, set into the floor
   const rod = S.sprite({ name: 'rod', x: CX - 30, y: 90, w: 60, h: 930, res: 1.2, mat: 'smooth', draw(g) {
-    tube(g, [[CX, 110], [CX, 1000]], 9, P.slate);
+    tube(g, [[CX, 110], [CX, 1000]], 6, mix(P.slate, P.bone, 0.45));
   } });
   const orn = ORNAMENTS.map(([name, y, hw, hh, draw]) => ({
     name, y,
@@ -1851,9 +1851,25 @@ function drawIsland(g) {
   }
 }
 
+// a second, smaller island high on the right: a terracotta city on stepped butter roots
+const CITY = { x: 1552, y: 382, z: 1290 };
+function drawCity(g) {
+  const { x, y } = CITY, rng = new RNG('city');
+  steps(g, x, y + 10, { n: 5, w0: 230, w1: 36, h: 12, up: false, colors: [P.butterDeep, P.butter, mix(P.butterDeep, P.pink, 0.3)] });
+  clayForm(g, [[x - 124, y - 2], [x + 124, y - 2], [x + 116, y + 10], [x - 116, y + 10]], P.butter, { smooth: false, tiers: 1, reach: 2 });
+  for (let i = 0; i < 11; i++) {
+    const bx = x - 112 + i * 21 + rng.range(-3, 3), bw = rng.range(14, 22), bh = rng.range(24, 78) * (1 - Math.abs(i - 5) / 9);
+    const c = vary(i % 3 ? '#e48a6a' : '#d9735e', rng, 0.08);
+    piece(g, [[bx, y - 2], [bx, y - 2 - bh], [bx + bw, y - 2 - bh], [bx + bw, y - 2]], { fill: c, shadow: sh(0.8), bevel: bev });
+    piece(g, [[bx + bw * 0.6, y - 2 - bh], [bx + bw, y - 2 - bh], [bx + bw, y - 2], [bx + bw * 0.6, y - 2]], { fill: shade(c, -0.1) });
+    if (i === 5) piece(g, [[bx - 2, y - 2 - bh], [bx + bw / 2, y - 26 - bh], [bx + bw + 2, y - 2 - bh]], { fill: P.pinkDeep, shadow: sh(0.6), bevel: bev });
+    for (let k = 0; k < bh / 12 - 1; k++) { g.fillStyle = shade(c, -0.28); g.fillRect(bx + 3, y - bh + k * 12, 4, 5); g.fillRect(bx + bw - 9, y - bh + k * 12, 3, 5); }
+  }
+}
+
 // ---------------- the thought bubble ----------------
 const BUBBLE = { x: 1520, y: 600, r: 150, z: 1120 };
-const LEAD = [[1188, 330], [1260, 340], [1330, 380], [1366, 450], [1374, 540]];
+const LEAD = [[1210, 336], [1282, 366], [1334, 420], [1362, 490], [1372, 556]];
 function drawBubble(g) {
   const { x, y, r } = BUBBLE;
   // a thick white rim, then the dark inside with a faint shine
@@ -1914,17 +1930,18 @@ function addProps(S) {
   const s = (name, box, draw, o = {}) => S.sprite({ name, ...box, res: o.res ?? 1.2, mat: o.mat ?? 'smooth', edge: { width: 1.6, hi: 0.35, lo: 0.3 }, shadow: { blur: o.blur ?? 12 }, draw });
   return {
     wheel: s('wheel', { x: WHEEL.x - WHEEL.r - 20, y: WHEEL.y - WHEEL.r - 20, w: WHEEL.r * 2 + 40, h: WHEEL.r * 2 + 40 }, drawWheel),
+    city: s('city', { x: CITY.x - 150, y: CITY.y - 130, w: 300, h: 230 }, drawCity),
     island: s('island', { x: ISLAND.x - 200, y: ISLAND.y - 200, w: 400, h: 340 }, drawIsland),
     bubble: s('bubble', { x: BUBBLE.x - BUBBLE.r - 20, y: BUBBLE.y - BUBBLE.r - 20, w: BUBBLE.r * 2 + 40, h: BUBBLE.r * 2 + 40 }, drawBubble, { blur: 16 }),
     emblem: s('emblem', { x: BUBBLE.x - 100, y: BUBBLE.y - 100, w: 200, h: 200 }, drawEmblem, { res: 1.4, blur: 8 }),
-    lead: s('lead', { x: 1160, y: 300, w: 240, h: 260 }, drawLead, { blur: 8 }),
+    lead: s('lead', { x: 1190, y: 310, w: 210, h: 270 }, drawLead, { blur: 8 }),
     floorL: s('floor-left', { x: 120, y: 900, w: 760, h: 170 }, drawFloorLeft, { res: 1.3 }),
     floorR: s('floor-right', { x: 1250, y: 900, w: 560, h: 170 }, drawFloorRight, { res: 1.3 }),
   };
 }
 
 
-return { WHEEL, ISLAND, BUBBLE, LEAD, addProps };
+return { WHEEL, ISLAND, CITY, BUBBLE, LEAD, addProps };
 })();
 __m["src/film.js"] = (() => {
 // Relief box, the film: 11 s at 24 fps, one shadowbox. Every frame is a pure function of t.
@@ -1948,9 +1965,9 @@ const { LIGHT } = __m["src/kit.js"];
 const { BACK, addBackWall, addInnerWalls, addFrame, addBoxLight } = __m["src/box.js"];
 const { CX, addFigure } = __m["src/figure.js"];
 const { addSpine } = __m["src/spine.js"];
-const { WHEEL, ISLAND, BUBBLE, addProps } = __m["src/props.js"];
+const { WHEEL, ISLAND, CITY, BUBBLE, addProps } = __m["src/props.js"];
 const DURATION = 11;
-const OPEN = 150;
+const OPEN = 128;
 const open = (t) => prog(t, 1.4, 3.6, E.smooth);
 const popSpring = (x) => x <= 0 ? 0 : x >= 1 ? 1 : 1 - Math.exp(-5.2 * x) * Math.cos(x * 8.2);
 const LAND0 = 3.05, LAND_STEP = 0.3, POP = 0.85;
@@ -1962,10 +1979,10 @@ function scene() {
     background: '#3b2c2a',
     light: LIGHT,
     shadow: { alpha: 0.48, dist: 10, blur: 11 },
-    post: { bloom: 0.14, threshold: 0.84, vignette: 0.24, grain: 0.045, grade: { color: '#ffd9b8', amount: 0.1, mode: 'soft-light' } },
+    post: { bloom: 0.16, threshold: 0.8, vignette: 0.16, grain: 0.045, grade: { color: '#ffd9b8', amount: 0.1, mode: 'soft-light' } },
     camera: (t) => {
       const k = E.smooth(t / DURATION);
-      return { x: lerp(-40, 26, k) + 4 * noise('cam').n1(t * 0.21), y: lerp(4, -10, k) + 3 * noise('cam').n1(t * 0.17 + 9), z: 120 * E.dolly(t / DURATION), roll: 0.0016 * osc(t, 9.5) };
+      return { x: lerp(-40, 26, k) + 4 * noise('cam').n1(t * 0.21), y: lerp(-6, 14, k) + 3 * noise('cam').n1(t * 0.17 + 9), z: 55 * E.dolly(t / DURATION), roll: 0.0016 * osc(t, 9.5) };
     },
     build(S) {
       addBackWall(S);
@@ -1981,6 +1998,8 @@ function scene() {
       } });
       S.add({ name: 'island', z: ISLAND.z, shadow: { dx: 10, dy: 22, alpha: 0.42 }, sprites: [{ s: props.island }], anim: (t) => ({ y: 7 * osc(t, 5.6, 0.2), rot: 0.006 * osc(t, 7.3) , ox: ISLAND.x, oy: ISLAND.y }) });
 
+      S.add({ name: 'city', z: CITY.z, shadow: { dx: 10, dy: 22, alpha: 0.4 }, sprites: [{ s: props.city }], anim: (t) => ({ y: 6 * osc(t, 6.4, 0.6) }) });
+
       // the bubble and its lead
       S.add({ name: 'bubble', z: BUBBLE.z, shadow: { dx: 9, dy: 18 }, render(ctx, t, env) {
         const k = popSpring(clamp((t - 7.45) / POP));
@@ -1989,11 +2008,11 @@ function scene() {
         const e = popSpring(clamp((t - 8.0) / POP));
         if (e > 0.001) drawSprites(ctx, [{ s: props.emblem, ax: BUBBLE.x, ay: BUBBLE.y, x: BUBBLE.x, y: BUBBLE.y + 30 * (1 - e), sx: e, sy: e, alpha: smoothstep(0, 0.25, e) }], { ...env.shadow, dx: 3, dy: 6 });
       } });
-      S.add({ name: 'lead', z: 1060, shadow: { dx: 6, dy: 12 }, render(ctx, t, env) {
+      S.add({ name: 'lead', z: 990, shadow: { dx: 6, dy: 12 }, render(ctx, t, env) {
         const k = prog(t, 6.9, 7.7, E.outSoft);
         if (k <= 0.001) return;
         ctx.save();
-        const p = new Path2D(); p.rect(1150, 280, 30 + 240 * k, 300); ctx.clip(p);
+        const p = new Path2D(); p.rect(1200, 290, 20 + 200 * k, 300); ctx.clip(p);
         drawSprites(ctx, [{ s: props.lead }], env.shadow);
         ctx.restore();
       } });

@@ -1,0 +1,56 @@
+slug: relief-box
+title: Sculpted shadowbox relief
+note: >-
+  A deep box of sculpted pastel pieces filmed by a slow camera: a doll that splits down the middle, a column of
+  small ornaments that stacks up through the gap, plumes, floating islands and a thought bubble on a lead. Every
+  piece is cut in tiers so it reads as rounded clay, and casts a soft shadow on what sits behind it.
+used: Relief box, test
+cost: free
+group: code
+order: 315
+clip: null
+tall: false
+status: test
+engine: canvas2d (paper-fox core)
+project: indieagent-relief-box
+code:
+  path: indieagent-relief-box/src/film.js
+  flag: null
+  page: indieagent-relief-box/index.html
+  note: >-
+    Built directly on Leon Lin's paper-fox engine: vendor/paper-fox/core is his src/core, unchanged (MIT, LICENSE
+    beside it). src/ holds our scene as ES modules in paper-fox's idiom (Scene, planes at depth z, baked sprites,
+    drawSprites). tools/bundle.mjs joins them into build/film.js so the page opens from file:// for render.mjs and
+    the cloud render; run it after every src edit. Branch look/relief-box, issue #327.
+rules:
+  - One shadowbox per shot. Back wall, four inner walls drawn through the camera each frame, a moulded frame at the front whose shadow falls into the box
+  - Every sculpted piece is cut again in two or three inner tiers, each smaller, lighter and shifted toward the light, with a darker flank away from it (kit.js clayForm); limbs, coils and leads are tubes with a highlight tube along the lit side
+  - Pastel palette on bone white: mint, pink, butter, slate, a little lilac; one dark accent (navy) inside the bubble only
+  - "Paper-fox density: many small pieces on many planes (back wall 1500, islands 1180-1320, plumes 1045, spine 1022, figure 1000, floor 790, frame 720), each casting a drop shadow onto what is behind"
+  - Ornaments are mirror symmetric and built from a few repeated shapes (chevrons, stepped tiers, hexagon lattices, molecule rings, eye spheres in petals, buttons)
+  - Plumes are hundreds of thin barbs in two passes, darker under, paler over
+  - Motion is mechanical and calm: halves slide apart, ornaments spring into place one per 0.3 s, a wheel turns, islands bob; the camera drifts and pushes in slowly
+  - Every frame a pure function of t, seeded randomness only
+palette:
+  - "#f1e9dd"
+  - "#8fd4cf"
+  - "#f3a9b6"
+  - "#f4e39b"
+  - "#8d9db3"
+  - "#ecd2bf"
+  - "#e6c8b6"
+  - "#2b3557"
+reference: >-
+  Photographs of sculpted clay relief panels in shadowboxes that Robin shared on 2026-10-25 (artist not yet
+  identified): studied for technique and motifs only, no piece copied. Engine and depth language from Leon Lin's
+  paper-fox (github.com/Leonxlnx/paper-fox, MIT).
+proof:
+  renders:
+    - indieagent-relief-box/out/draft/reliefbox_d1_f0-f264_24fps_draft.mp4
+  pr: []
+  youtube: []
+verdict: null
+related:
+  - paper-depth
+  - claymation
+  - felt

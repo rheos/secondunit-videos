@@ -61,9 +61,25 @@ function drawIsland(g) {
   }
 }
 
+// a second, smaller island high on the right: a terracotta city on stepped butter roots
+export const CITY = { x: 1552, y: 382, z: 1290 };
+function drawCity(g) {
+  const { x, y } = CITY, rng = new RNG('city');
+  steps(g, x, y + 10, { n: 5, w0: 230, w1: 36, h: 12, up: false, colors: [P.butterDeep, P.butter, mix(P.butterDeep, P.pink, 0.3)] });
+  clayForm(g, [[x - 124, y - 2], [x + 124, y - 2], [x + 116, y + 10], [x - 116, y + 10]], P.butter, { smooth: false, tiers: 1, reach: 2 });
+  for (let i = 0; i < 11; i++) {
+    const bx = x - 112 + i * 21 + rng.range(-3, 3), bw = rng.range(14, 22), bh = rng.range(24, 78) * (1 - Math.abs(i - 5) / 9);
+    const c = vary(i % 3 ? '#e48a6a' : '#d9735e', rng, 0.08);
+    piece(g, [[bx, y - 2], [bx, y - 2 - bh], [bx + bw, y - 2 - bh], [bx + bw, y - 2]], { fill: c, shadow: sh(0.8), bevel: bev });
+    piece(g, [[bx + bw * 0.6, y - 2 - bh], [bx + bw, y - 2 - bh], [bx + bw, y - 2], [bx + bw * 0.6, y - 2]], { fill: shade(c, -0.1) });
+    if (i === 5) piece(g, [[bx - 2, y - 2 - bh], [bx + bw / 2, y - 26 - bh], [bx + bw + 2, y - 2 - bh]], { fill: P.pinkDeep, shadow: sh(0.6), bevel: bev });
+    for (let k = 0; k < bh / 12 - 1; k++) { g.fillStyle = shade(c, -0.28); g.fillRect(bx + 3, y - bh + k * 12, 4, 5); g.fillRect(bx + bw - 9, y - bh + k * 12, 3, 5); }
+  }
+}
+
 // ---------------- the thought bubble ----------------
 export const BUBBLE = { x: 1520, y: 600, r: 150, z: 1120 };
-export const LEAD = [[1188, 330], [1260, 340], [1330, 380], [1366, 450], [1374, 540]];
+export const LEAD = [[1210, 336], [1282, 366], [1334, 420], [1362, 490], [1372, 556]];
 function drawBubble(g) {
   const { x, y, r } = BUBBLE;
   // a thick white rim, then the dark inside with a faint shine
@@ -124,10 +140,11 @@ export function addProps(S) {
   const s = (name, box, draw, o = {}) => S.sprite({ name, ...box, res: o.res ?? 1.2, mat: o.mat ?? 'smooth', edge: { width: 1.6, hi: 0.35, lo: 0.3 }, shadow: { blur: o.blur ?? 12 }, draw });
   return {
     wheel: s('wheel', { x: WHEEL.x - WHEEL.r - 20, y: WHEEL.y - WHEEL.r - 20, w: WHEEL.r * 2 + 40, h: WHEEL.r * 2 + 40 }, drawWheel),
+    city: s('city', { x: CITY.x - 150, y: CITY.y - 130, w: 300, h: 230 }, drawCity),
     island: s('island', { x: ISLAND.x - 200, y: ISLAND.y - 200, w: 400, h: 340 }, drawIsland),
     bubble: s('bubble', { x: BUBBLE.x - BUBBLE.r - 20, y: BUBBLE.y - BUBBLE.r - 20, w: BUBBLE.r * 2 + 40, h: BUBBLE.r * 2 + 40 }, drawBubble, { blur: 16 }),
     emblem: s('emblem', { x: BUBBLE.x - 100, y: BUBBLE.y - 100, w: 200, h: 200 }, drawEmblem, { res: 1.4, blur: 8 }),
-    lead: s('lead', { x: 1160, y: 300, w: 240, h: 260 }, drawLead, { blur: 8 }),
+    lead: s('lead', { x: 1190, y: 310, w: 210, h: 270 }, drawLead, { blur: 8 }),
     floorL: s('floor-left', { x: 120, y: 900, w: 760, h: 170 }, drawFloorLeft, { res: 1.3 }),
     floorR: s('floor-right', { x: 1250, y: 900, w: 560, h: 170 }, drawFloorRight, { res: 1.3 }),
   };
