@@ -9,7 +9,7 @@
 // Built on Leon Lin's paper-fox core (vendor/paper-fox, MIT, Copyright (c) 2026 Leonxlnx).
 
 import { LOOP_PAL } from './loop-palette.js';
-import { Scene } from '../vendor/paper-fox/core/stage.js';
+import { Scene, layerMatrix } from '../vendor/paper-fox/core/stage.js';
 import { drawSprites } from '../vendor/paper-fox/core/sprite.js';
 import { finish } from '../vendor/paper-fox/core/post.js';
 import { E, lerp, smoothstep } from '../vendor/paper-fox/core/ease.js';
@@ -31,6 +31,9 @@ const mod = (x, m) => ((x % m) + m) % m;
 // the radial ring of chevrons round each island is the choice (Robin, 2026-10-25); ?chev=pair shows the slope pair
 // the horizon trees' left-half x positions and the funnel zone (the same as TREE_SPOTS / ZONE_X in loop-world.js)
 const TREE_SPOTS_L = [[-90], [20], [130], [240], [350], [460], [570], [700], [800], [900]], TREE_ZONE = 650;
+// the camera: on the centre line, and breathing with the drone, in to its closest at the middle of each push of the
+// bellows (6 s into each 8 s breath, the breath played backwards), out at the pull
+const camAt = (t) => ({ x: 0, y: 6 * cyc(t, 1, 0.21), z: 55 + 50 * Math.cos(TAU * (t - 6) / 8), roll: 0 });
 const CHEV_RADIAL = !(typeof location !== 'undefined' && new URLSearchParams(location.search).get('chev') === 'pair');
 const mixPt = (a, b, k) => [lerp(a[0], b[0], k), lerp(a[1], b[1], k)];
 // a bump that rises and falls over [a, b]: 0 outside, 1 at the middle
@@ -316,7 +319,7 @@ function scene() {
     // on the centre line, breathing in and out, so the symmetry holds
     // and breathing with the drone (Robin: "zoom out and zoom in a bit, in rhythm to the drone"): in to its closest at
     // the middle of each push of the bellows (6 s into each 8 s breath, the breath played backwards), out at the pull
-    camera: (t) => ({ x: 0, y: 6 * cyc(t, 1, 0.21), z: 55 + 50 * Math.cos(TAU * (t - 6) / 8), roll: 0 }),
+    camera: camAt,
     build(S) {
       const world = addWorld(S);
       addMachines(S);
@@ -335,10 +338,31 @@ function scene() {
       // its spoke, opening and folding in a wave that runs round
       // it floats, bobbing up and down over 6 s and swaying a little sideways on a 4 s beat (Robin: "float a bit,
       // getting a bit higher and lower")
-      if (CHEV_RADIAL) S.add({ name: 'mandala', z: 989, anim: (t) => ({ y: 14 * cyc(t, 2, 0.3) }), render(ctx, t, env) { mirrored(ctx, () => {
+      // Before the fir behind the console pops up, the mandala rises off the panel to where the fir's tip will be and
+      // waits there as its star, a little smaller; once the fir has folded down again it floats back to the panel
+      // (Robin). The fir and the mandala are at different depths, so the tip is found on screen each frame (through
+      // the camera) and brought into the mandala's own layer.
+      const MANDALA_Z = 989, FIR = { x: 570, tip: 846 - 108 * 1.7 - 14, z: 2500, i: 6 };
+      const mandalaBob = (t) => 14 * cyc(t, 2, 0.3);
+      // the fir is up from 4.5 s into each 6 s until it folds at 7.9 (1.9); the star goes up before and comes down after
+      const starK = (t) => {
+        const q = mod(t - FIR.i * 0.75, 6);   // the fir unfolds at q 0, folds from 3.4 and is flat by 3.95
+        if (q >= 5.2) return E.smooth((q - 5.2) / 0.7);
+        if (q < 4.05) return 1;
+        return q < 4.75 ? 1 - E.smooth((q - 4.05) / 0.7) : 0;
+      };
+      const tipLocal = (t) => {
+        const cam = camAt(t), A = layerMatrix(cam, FIR.z), B = layerMatrix(cam, MANDALA_Z);
+        const sx = A.a * FIR.x + A.e, sy = A.d * FIR.tip + A.f;
+        return [(sx - B.e) / B.a, (sy - B.f) / B.d - mandalaBob(t)];
+      };
+      if (CHEV_RADIAL) S.add({ name: 'mandala', z: MANDALA_Z, anim: (t) => ({ y: mandalaBob(t) }), render(ctx, t, env) { mirrored(ctx, () => {
         // the sway inside the mirror, so the two sway as mirror images
-        const n = 8, mx = (PANEL.x0 + PANEL.x1) / 2 + 4 * Math.sin(TAU * t / 4), my = PANEL.y0 - 62;
-        for (let i = 0; i < n; i++) { const a = i / n * TAU - Math.PI / 2; world.chevronFan(ctx, mx + Math.cos(a) * 24, my + Math.sin(a) * 24, a + Math.PI / 2, t, i / n, env, 1, 0.52); }
+        const k = Math.min(1, starK(t)), tip = tipLocal(t), n = 8;
+        const mx = lerp((PANEL.x0 + PANEL.x1) / 2 + 4 * Math.sin(TAU * t / 4), tip[0], k), my = lerp(PANEL.y0 - 62, tip[1], k), sc = lerp(1, 0.62, k);
+        ctx.save(); ctx.translate(mx, my); ctx.scale(sc, sc);
+        for (let i = 0; i < n; i++) { const a = i / n * TAU - Math.PI / 2; world.chevronFan(ctx, Math.cos(a) * 24, Math.sin(a) * 24, a + Math.PI / 2, t, i / n, env, 1, 0.52); }
+        ctx.restore();
       }); } });
       S.add({ name: 'operator', z: 988, render(ctx, t, env) { mirrored(ctx, () => drawFigure(ctx, operator, { ...operatorPose(t), shift: loopBump(t, 7.3, 0.9), shiftKind: 'cube', shiftSpin: TAU * t / 2 }, env)); } });
       S.add({ name: 'chorus', z: 978, render(ctx, t, env) { drawChorus(ctx, t, env, chorus); } });

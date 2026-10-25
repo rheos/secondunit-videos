@@ -239,7 +239,8 @@ export function addWorld(S) {
   // turning each frame. Every one bobs on its own phase; rotations close within the loop.
   const frng = new RNG('floaters');
   // the left half's floaters; each is drawn again reflected on the right
-  const spots = [[180, 150, 2600, 'pendant'], [820, 130, 1900, 'tess'], [700, 560, 3000, 'octa'], [120, 560, 1500, 'ico'],
+  // (the small tesseract pair moved off the lantern, out to the open space at the far edges: Robin)
+  const spots = [[180, 150, 2600, 'pendant'], [40, 440, 1900, 'tess'], [700, 560, 3000, 'octa'], [120, 560, 1500, 'ico'],
     [880, 520, 1500, 'tetra'], [-60, 300, 2000, 'cube'], [300, 380, 2400, 'star']];
   const COLS = [P.mint, P.pink, P.butter, P.lilac, P.aqua];
   // Nothing floats still: each floater is a small mechanism whose parts collapse and expand along different
