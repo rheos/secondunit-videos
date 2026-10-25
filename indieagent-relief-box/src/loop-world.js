@@ -6,7 +6,7 @@
 import { RNG, noise } from '../vendor/paper-fox/core/rng.js';
 import { linear, glow, piece } from '../vendor/paper-fox/core/piece.js';
 import { mix, shade, vary, rgba } from '../vendor/paper-fox/core/color.js';
-import { E } from '../vendor/paper-fox/core/ease.js';
+import { E, lerp } from '../vendor/paper-fox/core/ease.js';
 import { drawSprites } from '../vendor/paper-fox/core/sprite.js';
 import { transform } from '../vendor/paper-fox/core/geom.js';
 import { LIGHT, PAL, CLAY_MAT, CLAY_EDGE, shadowBlur, clayForm, tube, steps, dot } from './kit.js';
@@ -139,11 +139,15 @@ export function addWorld(S) {
   // crowd out toward the rim and spread back in, with a ripple running inward. In the middle a new centre disc is
   // born every 3 s (each chord change) and grows over the old one until it has swallowed it. Four colours and eight
   // births a loop, so the pattern comes round at the seam.
-  const CENTRE = { every: 3, r: 0.24 };
+  const CENTRE = { every: 3, r: 0.24, over: 2.0 };
   // the centre: the current disc at full size (rcen), the next one growing over it from nothing until it has
   // swallowed it, one every 3 s; each carries a ring of diamonds and a stud at its heart
   function centreItems(sun, t, rcen) {
-    const items = [], nb = sun.discs.length, u = t / CENTRE.every, j = Math.floor(u), g = E.smooth(u - j);
+    // each new centre grows past the old one and out over the next layer (Robin: "should engulf also the next layer
+    // out from it"), to about twice the centre's size by 70% of its 3 s, then eases back to the centre's size, letting
+    // that layer out from under it again just as the next one starts; so it ends where the next begins
+    const items = [], nb = sun.discs.length, u = t / CENTRE.every, j = Math.floor(u), q = u - j;
+    const g = q < 0.7 ? CENTRE.over * E.smooth(q / 0.7) : lerp(CENTRE.over, 1, E.smooth((q - 0.7) / 0.3));
     for (const [k, f] of [[j - 1, 1], [j, g]]) {
       const r = rcen * f, st = ((k % nb) + nb) % nb;
       if (r < 0.5) continue;

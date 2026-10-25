@@ -280,17 +280,43 @@ function drawFunnelFront(g, ph) {
 }
 
 // ---------------- the console ----------------
-export const CONSOLE = { knobs: [[520, 912], [548, 906]], lever: [612, 904], screen: [580, 876], lights: [[512, 934], [526, 933], [540, 932], [554, 931], [568, 930], [582, 929]] };
+// After Mark Von Ulrich's control panels (his "machine elves" piece: a board of square buttons held up and worked by
+// hand), in our own clay colours (Robin: "not in Mark's colours"). The panel stands upright facing us; its operator
+// stands on our side of it, back to us, pressing buttons on the machine rhythm. A grid of 6 by 4 buttons, a run of
+// lights chasing along the top row, a dial; a button lights as it is pressed and fades.
+export const PANEL = { x0: 506, x1: 628, y0: 834, y1: 930, cols: [518, 536, 554, 578, 596, 614], rows: [858, 874, 890, 906] };
+const BTN_COLS = [P.mint, P.butter, '#f6b27e', P.lilac, P.aqua, P.butter];
+export const btn = (c, r) => [PANEL.cols[c], PANEL.rows[r]];
+// the presses in each 3 s: [time, hand (0 left, 1 right), col, row]; at 1.6 both hands come down together on the
+// two big middle-row keys (the old lever's beat); the rest fall on the 3/8 s grid of the machine rhythm
+export const PRESSES = [[0.1, 0, 1, 2], [0.475, 1, 4, 2], [0.85, 0, 0, 3], [1.225, 1, 5, 3], [1.6, 0, 1, 1], [1.6, 1, 4, 1], [2.35, 1, 4, 3], [2.725, 0, 1, 3]];
+const lit = (t, c, r) => PRESSES.reduce((m, [pt, , pc, pr]) => (pc === c && pr === r ? Math.max(m, Math.exp(-mod(t - pt, 3) / 0.35)) : m), 0);
 function drawConsole(g) {
-  // legs, a slanted desk, a raised screen housing, and the cable to the duct
-  tube(g, [[506, 945], [500, 985]], 4, P.slateDeep); tube(g, [[626, 945], [632, 985]], 4, P.slateDeep);
-  clayForm(g, [[492, 948], [496, 916], [632, 900], [640, 946]], P.slate, { smooth: false, size: 40, sheen: 0.18 });
-  clayForm(g, [[562, 902], [568, 852], [594, 850], [600, 898]], shade(P.slate, -0.05), { smooth: false, size: 24 });
-  for (const [x, y] of CONSOLE.knobs) clayForm(g, circle(x, y, 8, 24), P.butter, { sheen: 0.3 });
-  tube(g, [[CONSOLE.lever[0] - 8, CONSOLE.lever[1]], [CONSOLE.lever[0] + 8, CONSOLE.lever[1]]], 4, P.slateDeep);
+  const { x0, x1, y0, y1 } = PANEL, ins = 6;
+  // two legs, the board (a little narrower at the top: it leans back), its face inset, and the cable to the duct
+  tube(g, [[x0 + 14, y1 - 4], [x0 + 8, 985]], 4, P.slateDeep); tube(g, [[x1 - 14, y1 - 4], [x1 - 8, 985]], 4, P.slateDeep);
+  clayForm(g, [[x0 + 4, y0], [x1 - 4, y0], [x1, y1], [x0, y1]], P.slate, { smooth: false, size: 30, sheen: 0.16 });
+  clayForm(g, [[x0 + 4 + ins, y0 + ins], [x1 - 4 - ins, y0 + ins], [x1 - ins, y1 - ins], [x0 + ins, y1 - ins]], mix(P.butter, P.bone, 0.5), { smooth: false, size: 20, sheen: 0.1 });
+  // the dial, top left of the face
+  clayForm(g, circle(x0 + 22, y0 + 16, 7, 24), P.slateDeep, { sheen: 0.2 });
   const cable = [];
-  for (let i = 0; i <= 20; i++) { const u = i / 20; cable.push([lerp(636, AXIS - 150, u), lerp(930, 788, u) + 60 * Math.sin(Math.PI * u)]); }
+  for (let i = 0; i <= 20; i++) { const u = i / 20; cable.push([lerp(x1 + 2, AXIS - 150, u), lerp(915, 788, u) + 60 * Math.sin(Math.PI * u)]); }
   tube(g, cable, 4, P.lilac);
+}
+// the buttons, drawn live: each a little square key in its colour, lit warm when pressed; the top row chases
+function drawPanelKeys(ctx, t) {
+  PANEL.cols.forEach((x, c) => PANEL.rows.forEach((y, r) => {
+    const chase = r === 0 ? Math.max(0, 1 - mod(t / 0.375 - c, 6) / 1.2) : 0, on = Math.max(lit(t, c, r), chase * 0.8);
+    const base = BTN_COLS[(c + r * 2) % BTN_COLS.length], col = mix(base, '#fff4d6', 0.55 * on), w = 6.5;
+    const pressIn = lit(t, c, r) > 0.85 ? 1.2 : 0;
+    ctx.fillStyle = shade(base, -0.35); ctx.fillRect(x - w + 1, y - w + 2, w * 2, w * 2);
+    ctx.fillStyle = col; ctx.fillRect(x - w, y - w + pressIn, w * 2 - 1, w * 2 - 1);
+    ctx.fillStyle = rgba('#ffffff', 0.45); ctx.fillRect(x - w + 1.5, y - w + 1.5 + pressIn, w * 2 - 4, 2);
+    if (on > 0.25) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, x, y, 12, '#fff0c0', 0.5 * on); ctx.restore(); }
+  }));
+  // the dial's needle sweeps with the chords
+  const dx = PANEL.x0 + 22, dy = PANEL.y0 + 16, a = -0.9 + 1.8 * (0.5 + 0.5 * Math.sin(TAU * t / 3));
+  ctx.strokeStyle = '#fff4d6'; ctx.lineWidth = 1.6; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(dx, dy); ctx.lineTo(dx + Math.sin(a) * 5.5, dy - Math.cos(a) * 5.5); ctx.stroke();
 }
 
 // ---------------- the instrument ----------------
@@ -392,26 +418,7 @@ export function addMachines(S) {
   // the console: lights in a slow pattern, the knobs' marks, the lever, and a turning shape on the screen
   S.add({ name: 'console', z: 990, shadow: { dx: 8, dy: 14, alpha: 0.42 }, render(ctx, t, env) { mirrored(ctx, () => {
     drawSprites(ctx, [{ s: consoleS }], env.shadow);
-    CONSOLE.lights.forEach(([x, y], i) => {
-      const on = 0.5 + 0.5 * Math.sin(TAU * (t / 3 + i / 6));
-      ctx.fillStyle = mix(shade(P.mint, -0.3), '#fff4c8', on); ctx.beginPath(); ctx.arc(x, y, 3.2, 0, TAU); ctx.fill();
-      if (on > 0.7) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, x, y, 9, '#fff1c0', (on - 0.7) * 1.4); ctx.restore(); }
-    });
-    CONSOLE.knobs.forEach(([x, y], i) => {
-      const a = knobAngle(t, i);
-      ctx.strokeStyle = shade(P.butter, -0.45); ctx.lineWidth = 2; ctx.lineCap = 'round';
-      ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + Math.sin(a) * 6, y - Math.cos(a) * 6); ctx.stroke();
-    });
-    const la = leverAngle(t), [lx, ly] = CONSOLE.lever, tip = [lx + Math.sin(la) * 24, ly - Math.cos(la) * 24];
-    ctx.strokeStyle = P.slateDeep; ctx.lineWidth = 4; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(lx, ly); ctx.lineTo(...tip); ctx.stroke();
-    ctx.fillStyle = P.pinkDeep; ctx.beginPath(); ctx.arc(tip[0], tip[1], 5, 0, TAU); ctx.fill();
-    // the screen shows Mark's world: a turning octahedron over a cycling glyph, on black
-    const [sx, sy] = CONSOLE.screen;
-    markLayer(ctx, sx, sy, 30, 40, (g) => {
-      g.fillStyle = MK.ink; g.beginPath(); g.ellipse(sx, sy, 12, 18, 0, 0, TAU); g.fill();
-      paintGlyph(g, Math.floor(mod(t, 3) * 2) % 6, sx, sy + 9, 7, MK_RAMP[Math.floor(mod(t, 3) * 2) % 8]);
-      paintMarkSolid(g, 'octa', sx, sy - 4, 7, [TAU * t / 6, TAU * t / 12, 0.3], 2);
-    });
+    drawPanelKeys(ctx, t);
   }); } });
 
   // the instrument: three rings turning on their own axes, a hovering solid, and once a loop a cube let go

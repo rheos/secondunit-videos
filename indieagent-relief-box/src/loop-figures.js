@@ -66,7 +66,33 @@ export function makeFigure(S, { name, color, cap, harlequin = null, res = 1.6 })
     clayForm(g, circle(0, 2, 2.4, 12), P.bone, { sheen: 0.2, shadow: false });
     hat(g);
   } });
-  return { name, color, torso, head, front };
+  // from behind (Robin: the console operator "has his back to us"): the back of the head under the cap, no face,
+  // and the back of the clothes, plain
+  const back = S.sprite({ name: `${name}-back`, ...headBox, draw(g) {
+    clayForm(g, circle(0, 0, BODY.head, 36), shade(P.bone, -0.04), { sheen: 0.22 });
+    hat(g);
+  } });
+  const torsoBack = S.sprite({ name: `${name}-torso-back`, x: -22, y: -50, w: 44, h: 58, res, mat: CLAY_MAT, edge: CLAY_EDGE, shadow: { blur: shadowBlur(8) }, draw(g) {
+    clayForm(g, [[-12, 4], [-14, -14], [-12, -32], [-7, -40], [7, -40], [12, -32], [14, -14], [12, 4], [0, 7]], shade(color, -0.04), { size: 24, sheen: 0.16 });
+    clayForm(g, [[-8, -42], [8, -42], [6, -37], [-6, -37]], mix(color, '#ffffff', 0.3), { smooth: false, size: 6 });
+  } });
+  return { name, color, torso, head, front, back, torsoBack };
+}
+
+// seen from behind, reaching away from us: legs, then both arms (the body covers where they leave the shoulders, the
+// hands show either side), then the back of the body and of the head
+function drawFromBehind(ctx, F, pose, env, { s, hip, neck, up, legs, arms, trousers }) {
+  const B = BODY;
+  ctx.save();
+  ctx.fillStyle = 'rgba(70,40,45,0.22)'; ctx.beginPath(); ctx.ellipse(hip[0] + 4, Math.max(...pose.feet.map((p) => p[1])) + 2, 22 * s, 5 * s, 0, 0, TAU); ctx.fill();
+  for (const L of legs) { limb(ctx, L.h, L.k, L.ft, 9 * s, trousers); foot(ctx, L.ft, 1, P.slateDeep); }
+  for (const A of arms) { limb(ctx, A.sp, A.e, A.hd, 7.5 * s, shade(F.color, -0.08)); ball(ctx, A.hd, 4.4 * s, P.bone); }
+  drawSprites(ctx, [{ s: F.torsoBack, x: hip[0], y: hip[1], sx: s, sy: s }], { ...env.shadow, dx: 3, dy: 5, alpha: 0.25 });
+  const hc = [neck[0] + up[0] * (B.head + 1) * s, neck[1] + up[1] * (B.head + 1) * s], shift = pose.shift ?? 0, hs = s * (1 - shift);
+  if (hs > 0.02) drawSprites(ctx, [{ s: F.back, x: hc[0], y: hc[1], rot: (pose.headTilt ?? 0) * 0.5, sx: hs, sy: hs }], { ...env.shadow, dx: 3, dy: 5, alpha: 0.25 });
+  if (shift > 0.01) drawSolid(ctx, pose.shiftKind ?? 'ico', hc[0], hc[1], B.head * s * 1.1 * shift, [pose.shiftSpin ?? 0, 0.6, 0.2], F.color);
+  ctx.restore();
+  return { neck, head: hc, hands: arms.map((a) => a.hd) };
 }
 
 function limb(ctx, a, m, b, w, color, light = LIGHT) {
@@ -109,6 +135,7 @@ export function drawFigure(ctx, F, pose, env) {
     return { sp, e: ik2(sp, hd, B.arm1 * s, B.arm2 * s, f > 0 ? 1 : -1), hd };
   });
   const trousers = shade(F.color, -0.12);
+  if (pose.back) return drawFromBehind(ctx, F, pose, env, { s, hip, neck, up, legs, arms, trousers });
   ctx.save();
   ctx.fillStyle = 'rgba(70,40,45,0.22)'; ctx.beginPath(); ctx.ellipse(hip[0] + 4, Math.max(...pose.feet.map((p) => p[1])) + 2, 22 * s, 5 * s, 0, 0, TAU); ctx.fill();
   limb(ctx, legs[0].h, legs[0].k, legs[0].ft, 9 * s, shade(trousers, -0.08)); foot(ctx, legs[0].ft, f, P.slateDeep);

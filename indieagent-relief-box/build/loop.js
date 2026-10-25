@@ -2262,7 +2262,7 @@ __m["src/loop-world.js"] = (() => {
 const { RNG, noise } = __m["vendor/paper-fox/core/rng.js"];
 const { linear, glow, piece } = __m["vendor/paper-fox/core/piece.js"];
 const { mix, shade, vary, rgba } = __m["vendor/paper-fox/core/color.js"];
-const { E } = __m["vendor/paper-fox/core/ease.js"];
+const { E, lerp } = __m["vendor/paper-fox/core/ease.js"];
 const { drawSprites } = __m["vendor/paper-fox/core/sprite.js"];
 const { transform } = __m["vendor/paper-fox/core/geom.js"];
 const { LIGHT, PAL, CLAY_MAT, CLAY_EDGE, shadowBlur, clayForm, tube, steps, dot } = __m["src/kit.js"];
@@ -2394,11 +2394,15 @@ function addWorld(S) {
   // crowd out toward the rim and spread back in, with a ripple running inward. In the middle a new centre disc is
   // born every 3 s (each chord change) and grows over the old one until it has swallowed it. Four colours and eight
   // births a loop, so the pattern comes round at the seam.
-  const CENTRE = { every: 3, r: 0.24 };
+  const CENTRE = { every: 3, r: 0.24, over: 2.0 };
   // the centre: the current disc at full size (rcen), the next one growing over it from nothing until it has
   // swallowed it, one every 3 s; each carries a ring of diamonds and a stud at its heart
   function centreItems(sun, t, rcen) {
-    const items = [], nb = sun.discs.length, u = t / CENTRE.every, j = Math.floor(u), g = E.smooth(u - j);
+    // each new centre grows past the old one and out over the next layer (Robin: "should engulf also the next layer
+    // out from it"), to about twice the centre's size by 70% of its 3 s, then eases back to the centre's size, letting
+    // that layer out from under it again just as the next one starts; so it ends where the next begins
+    const items = [], nb = sun.discs.length, u = t / CENTRE.every, j = Math.floor(u), q = u - j;
+    const g = q < 0.7 ? CENTRE.over * E.smooth(q / 0.7) : lerp(CENTRE.over, 1, E.smooth((q - 0.7) / 0.3));
     for (const [k, f] of [[j - 1, 1], [j, g]]) {
       const r = rcen * f, st = ((k % nb) + nb) % nb;
       if (r < 0.5) continue;
@@ -2965,17 +2969,43 @@ function drawFunnelFront(g, ph) {
 }
 
 // ---------------- the console ----------------
-const CONSOLE = { knobs: [[520, 912], [548, 906]], lever: [612, 904], screen: [580, 876], lights: [[512, 934], [526, 933], [540, 932], [554, 931], [568, 930], [582, 929]] };
+// After Mark Von Ulrich's control panels (his "machine elves" piece: a board of square buttons held up and worked by
+// hand), in our own clay colours (Robin: "not in Mark's colours"). The panel stands upright facing us; its operator
+// stands on our side of it, back to us, pressing buttons on the machine rhythm. A grid of 6 by 4 buttons, a run of
+// lights chasing along the top row, a dial; a button lights as it is pressed and fades.
+const PANEL = { x0: 506, x1: 628, y0: 834, y1: 930, cols: [518, 536, 554, 578, 596, 614], rows: [858, 874, 890, 906] };
+const BTN_COLS = [P.mint, P.butter, '#f6b27e', P.lilac, P.aqua, P.butter];
+const btn = (c, r) => [PANEL.cols[c], PANEL.rows[r]];
+// the presses in each 3 s: [time, hand (0 left, 1 right), col, row]; at 1.6 both hands come down together on the
+// two big middle-row keys (the old lever's beat); the rest fall on the 3/8 s grid of the machine rhythm
+const PRESSES = [[0.1, 0, 1, 2], [0.475, 1, 4, 2], [0.85, 0, 0, 3], [1.225, 1, 5, 3], [1.6, 0, 1, 1], [1.6, 1, 4, 1], [2.35, 1, 4, 3], [2.725, 0, 1, 3]];
+const lit = (t, c, r) => PRESSES.reduce((m, [pt, , pc, pr]) => (pc === c && pr === r ? Math.max(m, Math.exp(-mod(t - pt, 3) / 0.35)) : m), 0);
 function drawConsole(g) {
-  // legs, a slanted desk, a raised screen housing, and the cable to the duct
-  tube(g, [[506, 945], [500, 985]], 4, P.slateDeep); tube(g, [[626, 945], [632, 985]], 4, P.slateDeep);
-  clayForm(g, [[492, 948], [496, 916], [632, 900], [640, 946]], P.slate, { smooth: false, size: 40, sheen: 0.18 });
-  clayForm(g, [[562, 902], [568, 852], [594, 850], [600, 898]], shade(P.slate, -0.05), { smooth: false, size: 24 });
-  for (const [x, y] of CONSOLE.knobs) clayForm(g, circle(x, y, 8, 24), P.butter, { sheen: 0.3 });
-  tube(g, [[CONSOLE.lever[0] - 8, CONSOLE.lever[1]], [CONSOLE.lever[0] + 8, CONSOLE.lever[1]]], 4, P.slateDeep);
+  const { x0, x1, y0, y1 } = PANEL, ins = 6;
+  // two legs, the board (a little narrower at the top: it leans back), its face inset, and the cable to the duct
+  tube(g, [[x0 + 14, y1 - 4], [x0 + 8, 985]], 4, P.slateDeep); tube(g, [[x1 - 14, y1 - 4], [x1 - 8, 985]], 4, P.slateDeep);
+  clayForm(g, [[x0 + 4, y0], [x1 - 4, y0], [x1, y1], [x0, y1]], P.slate, { smooth: false, size: 30, sheen: 0.16 });
+  clayForm(g, [[x0 + 4 + ins, y0 + ins], [x1 - 4 - ins, y0 + ins], [x1 - ins, y1 - ins], [x0 + ins, y1 - ins]], mix(P.butter, P.bone, 0.5), { smooth: false, size: 20, sheen: 0.1 });
+  // the dial, top left of the face
+  clayForm(g, circle(x0 + 22, y0 + 16, 7, 24), P.slateDeep, { sheen: 0.2 });
   const cable = [];
-  for (let i = 0; i <= 20; i++) { const u = i / 20; cable.push([lerp(636, AXIS - 150, u), lerp(930, 788, u) + 60 * Math.sin(Math.PI * u)]); }
+  for (let i = 0; i <= 20; i++) { const u = i / 20; cable.push([lerp(x1 + 2, AXIS - 150, u), lerp(915, 788, u) + 60 * Math.sin(Math.PI * u)]); }
   tube(g, cable, 4, P.lilac);
+}
+// the buttons, drawn live: each a little square key in its colour, lit warm when pressed; the top row chases
+function drawPanelKeys(ctx, t) {
+  PANEL.cols.forEach((x, c) => PANEL.rows.forEach((y, r) => {
+    const chase = r === 0 ? Math.max(0, 1 - mod(t / 0.375 - c, 6) / 1.2) : 0, on = Math.max(lit(t, c, r), chase * 0.8);
+    const base = BTN_COLS[(c + r * 2) % BTN_COLS.length], col = mix(base, '#fff4d6', 0.55 * on), w = 6.5;
+    const pressIn = lit(t, c, r) > 0.85 ? 1.2 : 0;
+    ctx.fillStyle = shade(base, -0.35); ctx.fillRect(x - w + 1, y - w + 2, w * 2, w * 2);
+    ctx.fillStyle = col; ctx.fillRect(x - w, y - w + pressIn, w * 2 - 1, w * 2 - 1);
+    ctx.fillStyle = rgba('#ffffff', 0.45); ctx.fillRect(x - w + 1.5, y - w + 1.5 + pressIn, w * 2 - 4, 2);
+    if (on > 0.25) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, x, y, 12, '#fff0c0', 0.5 * on); ctx.restore(); }
+  }));
+  // the dial's needle sweeps with the chords
+  const dx = PANEL.x0 + 22, dy = PANEL.y0 + 16, a = -0.9 + 1.8 * (0.5 + 0.5 * Math.sin(TAU * t / 3));
+  ctx.strokeStyle = '#fff4d6'; ctx.lineWidth = 1.6; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(dx, dy); ctx.lineTo(dx + Math.sin(a) * 5.5, dy - Math.cos(a) * 5.5); ctx.stroke();
 }
 
 // ---------------- the instrument ----------------
@@ -3077,26 +3107,7 @@ function addMachines(S) {
   // the console: lights in a slow pattern, the knobs' marks, the lever, and a turning shape on the screen
   S.add({ name: 'console', z: 990, shadow: { dx: 8, dy: 14, alpha: 0.42 }, render(ctx, t, env) { mirrored(ctx, () => {
     drawSprites(ctx, [{ s: consoleS }], env.shadow);
-    CONSOLE.lights.forEach(([x, y], i) => {
-      const on = 0.5 + 0.5 * Math.sin(TAU * (t / 3 + i / 6));
-      ctx.fillStyle = mix(shade(P.mint, -0.3), '#fff4c8', on); ctx.beginPath(); ctx.arc(x, y, 3.2, 0, TAU); ctx.fill();
-      if (on > 0.7) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, x, y, 9, '#fff1c0', (on - 0.7) * 1.4); ctx.restore(); }
-    });
-    CONSOLE.knobs.forEach(([x, y], i) => {
-      const a = knobAngle(t, i);
-      ctx.strokeStyle = shade(P.butter, -0.45); ctx.lineWidth = 2; ctx.lineCap = 'round';
-      ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + Math.sin(a) * 6, y - Math.cos(a) * 6); ctx.stroke();
-    });
-    const la = leverAngle(t), [lx, ly] = CONSOLE.lever, tip = [lx + Math.sin(la) * 24, ly - Math.cos(la) * 24];
-    ctx.strokeStyle = P.slateDeep; ctx.lineWidth = 4; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(lx, ly); ctx.lineTo(...tip); ctx.stroke();
-    ctx.fillStyle = P.pinkDeep; ctx.beginPath(); ctx.arc(tip[0], tip[1], 5, 0, TAU); ctx.fill();
-    // the screen shows Mark's world: a turning octahedron over a cycling glyph, on black
-    const [sx, sy] = CONSOLE.screen;
-    markLayer(ctx, sx, sy, 30, 40, (g) => {
-      g.fillStyle = MK.ink; g.beginPath(); g.ellipse(sx, sy, 12, 18, 0, 0, TAU); g.fill();
-      paintGlyph(g, Math.floor(mod(t, 3) * 2) % 6, sx, sy + 9, 7, MK_RAMP[Math.floor(mod(t, 3) * 2) % 8]);
-      paintMarkSolid(g, 'octa', sx, sy - 4, 7, [TAU * t / 6, TAU * t / 12, 0.3], 2);
-    });
+    drawPanelKeys(ctx, t);
   }); } });
 
   // the instrument: three rings turning on their own axes, a hovering solid, and once a loop a cube let go
@@ -3124,7 +3135,7 @@ function addMachines(S) {
   }); } });
 }
 
-return { AXIS, mirrored, RIM, DUCT, CONSOLE, INSTR, knobAngle, leverAngle, sliderK, addMachines };
+return { AXIS, mirrored, RIM, DUCT, PANEL, btn, PRESSES, INSTR, knobAngle, leverAngle, sliderK, addMachines };
 })();
 __m["src/loop-figures.js"] = (() => {
 // The living loop, the small figures: clay people about 100 px tall. Body and head are baked clay sprites; arms
@@ -3194,7 +3205,33 @@ function makeFigure(S, { name, color, cap, harlequin = null, res = 1.6 }) {
     clayForm(g, circle(0, 2, 2.4, 12), P.bone, { sheen: 0.2, shadow: false });
     hat(g);
   } });
-  return { name, color, torso, head, front };
+  // from behind (Robin: the console operator "has his back to us"): the back of the head under the cap, no face,
+  // and the back of the clothes, plain
+  const back = S.sprite({ name: `${name}-back`, ...headBox, draw(g) {
+    clayForm(g, circle(0, 0, BODY.head, 36), shade(P.bone, -0.04), { sheen: 0.22 });
+    hat(g);
+  } });
+  const torsoBack = S.sprite({ name: `${name}-torso-back`, x: -22, y: -50, w: 44, h: 58, res, mat: CLAY_MAT, edge: CLAY_EDGE, shadow: { blur: shadowBlur(8) }, draw(g) {
+    clayForm(g, [[-12, 4], [-14, -14], [-12, -32], [-7, -40], [7, -40], [12, -32], [14, -14], [12, 4], [0, 7]], shade(color, -0.04), { size: 24, sheen: 0.16 });
+    clayForm(g, [[-8, -42], [8, -42], [6, -37], [-6, -37]], mix(color, '#ffffff', 0.3), { smooth: false, size: 6 });
+  } });
+  return { name, color, torso, head, front, back, torsoBack };
+}
+
+// seen from behind, reaching away from us: legs, then both arms (the body covers where they leave the shoulders, the
+// hands show either side), then the back of the body and of the head
+function drawFromBehind(ctx, F, pose, env, { s, hip, neck, up, legs, arms, trousers }) {
+  const B = BODY;
+  ctx.save();
+  ctx.fillStyle = 'rgba(70,40,45,0.22)'; ctx.beginPath(); ctx.ellipse(hip[0] + 4, Math.max(...pose.feet.map((p) => p[1])) + 2, 22 * s, 5 * s, 0, 0, TAU); ctx.fill();
+  for (const L of legs) { limb(ctx, L.h, L.k, L.ft, 9 * s, trousers); foot(ctx, L.ft, 1, P.slateDeep); }
+  for (const A of arms) { limb(ctx, A.sp, A.e, A.hd, 7.5 * s, shade(F.color, -0.08)); ball(ctx, A.hd, 4.4 * s, P.bone); }
+  drawSprites(ctx, [{ s: F.torsoBack, x: hip[0], y: hip[1], sx: s, sy: s }], { ...env.shadow, dx: 3, dy: 5, alpha: 0.25 });
+  const hc = [neck[0] + up[0] * (B.head + 1) * s, neck[1] + up[1] * (B.head + 1) * s], shift = pose.shift ?? 0, hs = s * (1 - shift);
+  if (hs > 0.02) drawSprites(ctx, [{ s: F.back, x: hc[0], y: hc[1], rot: (pose.headTilt ?? 0) * 0.5, sx: hs, sy: hs }], { ...env.shadow, dx: 3, dy: 5, alpha: 0.25 });
+  if (shift > 0.01) drawSolid(ctx, pose.shiftKind ?? 'ico', hc[0], hc[1], B.head * s * 1.1 * shift, [pose.shiftSpin ?? 0, 0.6, 0.2], F.color);
+  ctx.restore();
+  return { neck, head: hc, hands: arms.map((a) => a.hd) };
 }
 
 function limb(ctx, a, m, b, w, color, light = LIGHT) {
@@ -3237,6 +3274,7 @@ function drawFigure(ctx, F, pose, env) {
     return { sp, e: ik2(sp, hd, B.arm1 * s, B.arm2 * s, f > 0 ? 1 : -1), hd };
   });
   const trousers = shade(F.color, -0.12);
+  if (pose.back) return drawFromBehind(ctx, F, pose, env, { s, hip, neck, up, legs, arms, trousers });
   ctx.save();
   ctx.fillStyle = 'rgba(70,40,45,0.22)'; ctx.beginPath(); ctx.ellipse(hip[0] + 4, Math.max(...pose.feet.map((p) => p[1])) + 2, 22 * s, 5 * s, 0, 0, TAU); ctx.fill();
   limb(ctx, legs[0].h, legs[0].k, legs[0].ft, 9 * s, shade(trousers, -0.08)); foot(ctx, legs[0].ft, f, P.slateDeep);
@@ -3292,7 +3330,7 @@ const { shade, mix } = __m["vendor/paper-fox/core/color.js"];
 setFinish('crisp');
 const { ISLAND } = __m["src/props.js"];
 const { LOOP, FILM_LOOP, cyc, addWorld, addNear } = __m["src/loop-world.js"];
-const { CONSOLE, INSTR, knobAngle, leverAngle, sliderK, addMachines, mirrored } = __m["src/loop-machine.js"];
+const { PANEL, PRESSES, btn, INSTR, sliderK, addMachines, mirrored } = __m["src/loop-machine.js"];
 const { makeFigure, drawFigure } = __m["src/loop-figures.js"];
 const { solidEdges } = __m["src/loop-shapes.js"];
 const { MK, MK_RAMP, PS, markLayer, paintMarkSolid, paintBurst, paintGlyph, paintLines } = __m["src/loop-mark.js"];
@@ -3308,21 +3346,26 @@ const loopBump = (t, a, len) => bump(mod(t - a, LOOP), 0, len);
 const hop = (t, period, ph, h) => h * Math.abs(Math.sin(TAU * (t / period + ph) / 2));
 
 
-// ---------------- the console operator, behind the desk; every 6 s turns to us and beckons ----------------
+// ---------------- the console operator, on our side of the panel with its back to us ----------------
+// Each hand goes from key to key on the presses (PRESSES in loop-machine.js): it lands a moment before the press,
+// holds through it, and sets off for its next key; at 1.6 both hands come down together. The head turns a little
+// toward the hand that is working.
+const OPX = 566;
+const HAND_PRESSES = [0, 1].map((h) => PRESSES.filter(([, hh]) => hh === h).map(([pt, , c, r]) => [pt, btn(c, r)]).sort((a, b) => a[0] - b[0]));
+function handAt(q, h) {
+  const list = HAND_PRESSES[h], n = list.length;
+  let i = list.findIndex(([pt]) => pt > q); if (i < 0) i = n;
+  const [tp, a] = list[(i - 1 + n) % n], [tn, b] = list[i % n];
+  const since = mod(q - tp, 3), gap = mod(tn - tp, 3) || 3;
+  const k = smoothstep(0.14, gap - 0.06, since);
+  // a little dip toward the panel as it presses (down and in, seen from behind)
+  const dip = Math.max(0, 1 - Math.abs(since) / 0.12) * 2;
+  return [lerp(a[0], b[0], k), lerp(a[1], b[1], k) + dip];
+}
 function operatorPose(t) {
-  const q = mod(t, 3), x = 566;
-  const beckon = bump(mod(t, 6), 4.3, 5.7);
-  if (beckon > 0) {
-    const k = Math.min(1, beckon * 2.5), curl = Math.sin(TAU * 3 * mod(t, 6));
-    return { hip: [x, HIP], feet: [[x - 6, GROUND], [x + 7, GROUND]], facing: 1, scale: FS, lean: 0, turn: k, headTilt: 0,
-      hands: [[x - 10, HIP + 2], [x + 12, HIP - 34 - 4 * curl]] };
-  }
-  const k1 = CONSOLE.knobs[0], k2 = CONSOLE.knobs[1], la = leverAngle(t), lev = [CONSOLE.lever[0] + Math.sin(la) * 22, CONSOLE.lever[1] - Math.cos(la) * 22];
-  const a1 = knobAngle(t, 0), knobHand = [k1[0] + Math.sin(a1) * 3, k1[1] - 4];
-  if (q < 1.4) return { hip: [x, HIP], feet: [[x + 6, GROUND], [x - 7, GROUND]], facing: -1, scale: FS, lean: 0.14, headTilt: 0.15, hands: [[k2[0] + 2, k2[1] - 4], knobHand] };
-  if (q < 2.4) { const k = smoothstep(1.4, 1.6, q); return { hip: [x, HIP], feet: [[x - 6, GROUND], [x + 7, GROUND]], facing: 1, scale: FS, lean: 0.12, headTilt: 0.1, hands: [mixPt([x - 4, 912], [x + 8, 906], k), mixPt([x + 20, 905], lev, k)] }; }
-  const [sx, sy] = CONSOLE.screen, k = smoothstep(2.4, 2.6, q) * (1 - smoothstep(2.85, 3.0, q));
-  return { hip: [x, HIP], feet: [[x - 6, GROUND], [x + 7, GROUND]], facing: 1, scale: FS, lean: 0.06, headTilt: -0.1, hands: [mixPt([x + 8, 906], [sx - 10, sy - 6 + 3 * Math.sin(TAU * q * 2)], k), mixPt(lev, [sx + 10, sy - 8 + 3 * Math.cos(TAU * q * 2)], k)] };
+  const q = mod(t, 3), x = OPX, l = handAt(q, 0), r = handAt(q, 1);
+  const lean = 0.08 * ((l[0] + r[0]) / 2 - x) / 30;
+  return { back: true, hip: [x, HIP], feet: [[x - 7, GROUND], [x + 7, GROUND]], facing: 1, scale: FS, lean, headTilt: lean * 2, hands: [l, r] };
 }
 
 // ---------------- the tuner at the ring instrument; every 6 s turns to us and beckons ----------------
@@ -3590,9 +3633,9 @@ function scene() {
       const seer = makeFigure(S, { name: 'seer', color: P.butter, cap: P.mintDeep });
       const chorus = [...Array(CHORUS_N)].map((_, j) => { const [cap, color, harlequin = null] = CHORUS_CAST[j % 4]; return makeFigure(S, { name: `chorus-${j}`, color, cap, harlequin }); });
 
-      // the operator stands behind the console, so it draws before the desk
+      // the operator stands on our side of the panel, back to us, so it draws after (in front of) the console
       // every figure off the centre line is drawn for the left half and again reflected: twins in mirror unison
-      S.add({ name: 'operator', z: 995, render(ctx, t, env) { mirrored(ctx, () => drawFigure(ctx, operator, { ...operatorPose(t), shift: loopBump(t, 7.3, 0.9), shiftKind: 'cube', shiftSpin: TAU * t / 2 }, env)); } });
+      S.add({ name: 'operator', z: 988, render(ctx, t, env) { mirrored(ctx, () => drawFigure(ctx, operator, { ...operatorPose(t), shift: loopBump(t, 7.3, 0.9), shiftKind: 'cube', shiftSpin: TAU * t / 2 }, env)); } });
       S.add({ name: 'chorus', z: 978, render(ctx, t, env) { drawChorus(ctx, t, env, chorus); } });
       S.add({ name: 'figures', z: 985, render(ctx, t, env) { mirrored(ctx, () => {
         drawFigure(ctx, tuner, { ...tunerPose(t), shift: loopBump(t, 4.6, 0.9), shiftKind: 'ico', shiftSpin: TAU * t / 2 }, env);
@@ -3661,7 +3704,9 @@ function cues() {
   both(7.3, 'pop', 566); both(4.6, 'pop', 318); both(10.7, 'pop', 170); both(1.6, 'pop', 300);
   for (let j = 0; j < CHORUS_N; j++) for (const r of [0, LOOP]) { const tp = 0.05 + (j + 1) * SWAP + 0.4 + r; add24(tp, 'pop', chorusPlace(tp, j).x); }
   // the consoles' levers, the instruments' released cubes
-  for (const q of [1.6, 4.6, 7.6, 10.6]) both(q, 'lever', 612);
+  // the operators' presses: the two-handed one at 1.6 in each 3 s keeps the old lever's sound; the rest are presses
+  for (let bar = 0; bar < LOOP / 3; bar++) for (const [pt, , c, r] of PRESSES) if (pt !== 1.6) both(3 * bar + pt, 'press', btn(c, r)[0], { n: c + r });
+  for (const q of [1.6, 4.6, 7.6, 10.6]) both(q, 'lever', OPX);
   both(7.0, 'cube', 384);
   return out.sort((a, b) => a.t - b.t);
 }

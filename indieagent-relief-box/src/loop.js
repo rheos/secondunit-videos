@@ -20,7 +20,7 @@ import { shade, mix } from '../vendor/paper-fox/core/color.js';
 setFinish('crisp');
 import { ISLAND } from './props.js';
 import { LOOP, FILM_LOOP, cyc, addWorld, addNear } from './loop-world.js';
-import { CONSOLE, INSTR, knobAngle, leverAngle, sliderK, addMachines, mirrored } from './loop-machine.js';
+import { PANEL, PRESSES, btn, INSTR, sliderK, addMachines, mirrored } from './loop-machine.js';
 import { makeFigure, drawFigure } from './loop-figures.js';
 import { solidEdges } from './loop-shapes.js';
 import { MK, MK_RAMP, PS, markLayer, paintMarkSolid, paintBurst, paintGlyph, paintLines } from './loop-mark.js';
@@ -37,21 +37,26 @@ const loopBump = (t, a, len) => bump(mod(t - a, LOOP), 0, len);
 const hop = (t, period, ph, h) => h * Math.abs(Math.sin(TAU * (t / period + ph) / 2));
 
 
-// ---------------- the console operator, behind the desk; every 6 s turns to us and beckons ----------------
+// ---------------- the console operator, on our side of the panel with its back to us ----------------
+// Each hand goes from key to key on the presses (PRESSES in loop-machine.js): it lands a moment before the press,
+// holds through it, and sets off for its next key; at 1.6 both hands come down together. The head turns a little
+// toward the hand that is working.
+const OPX = 566;
+const HAND_PRESSES = [0, 1].map((h) => PRESSES.filter(([, hh]) => hh === h).map(([pt, , c, r]) => [pt, btn(c, r)]).sort((a, b) => a[0] - b[0]));
+function handAt(q, h) {
+  const list = HAND_PRESSES[h], n = list.length;
+  let i = list.findIndex(([pt]) => pt > q); if (i < 0) i = n;
+  const [tp, a] = list[(i - 1 + n) % n], [tn, b] = list[i % n];
+  const since = mod(q - tp, 3), gap = mod(tn - tp, 3) || 3;
+  const k = smoothstep(0.14, gap - 0.06, since);
+  // a little dip toward the panel as it presses (down and in, seen from behind)
+  const dip = Math.max(0, 1 - Math.abs(since) / 0.12) * 2;
+  return [lerp(a[0], b[0], k), lerp(a[1], b[1], k) + dip];
+}
 function operatorPose(t) {
-  const q = mod(t, 3), x = 566;
-  const beckon = bump(mod(t, 6), 4.3, 5.7);
-  if (beckon > 0) {
-    const k = Math.min(1, beckon * 2.5), curl = Math.sin(TAU * 3 * mod(t, 6));
-    return { hip: [x, HIP], feet: [[x - 6, GROUND], [x + 7, GROUND]], facing: 1, scale: FS, lean: 0, turn: k, headTilt: 0,
-      hands: [[x - 10, HIP + 2], [x + 12, HIP - 34 - 4 * curl]] };
-  }
-  const k1 = CONSOLE.knobs[0], k2 = CONSOLE.knobs[1], la = leverAngle(t), lev = [CONSOLE.lever[0] + Math.sin(la) * 22, CONSOLE.lever[1] - Math.cos(la) * 22];
-  const a1 = knobAngle(t, 0), knobHand = [k1[0] + Math.sin(a1) * 3, k1[1] - 4];
-  if (q < 1.4) return { hip: [x, HIP], feet: [[x + 6, GROUND], [x - 7, GROUND]], facing: -1, scale: FS, lean: 0.14, headTilt: 0.15, hands: [[k2[0] + 2, k2[1] - 4], knobHand] };
-  if (q < 2.4) { const k = smoothstep(1.4, 1.6, q); return { hip: [x, HIP], feet: [[x - 6, GROUND], [x + 7, GROUND]], facing: 1, scale: FS, lean: 0.12, headTilt: 0.1, hands: [mixPt([x - 4, 912], [x + 8, 906], k), mixPt([x + 20, 905], lev, k)] }; }
-  const [sx, sy] = CONSOLE.screen, k = smoothstep(2.4, 2.6, q) * (1 - smoothstep(2.85, 3.0, q));
-  return { hip: [x, HIP], feet: [[x - 6, GROUND], [x + 7, GROUND]], facing: 1, scale: FS, lean: 0.06, headTilt: -0.1, hands: [mixPt([x + 8, 906], [sx - 10, sy - 6 + 3 * Math.sin(TAU * q * 2)], k), mixPt(lev, [sx + 10, sy - 8 + 3 * Math.cos(TAU * q * 2)], k)] };
+  const q = mod(t, 3), x = OPX, l = handAt(q, 0), r = handAt(q, 1);
+  const lean = 0.08 * ((l[0] + r[0]) / 2 - x) / 30;
+  return { back: true, hip: [x, HIP], feet: [[x - 7, GROUND], [x + 7, GROUND]], facing: 1, scale: FS, lean, headTilt: lean * 2, hands: [l, r] };
 }
 
 // ---------------- the tuner at the ring instrument; every 6 s turns to us and beckons ----------------
@@ -319,9 +324,9 @@ function scene() {
       const seer = makeFigure(S, { name: 'seer', color: P.butter, cap: P.mintDeep });
       const chorus = [...Array(CHORUS_N)].map((_, j) => { const [cap, color, harlequin = null] = CHORUS_CAST[j % 4]; return makeFigure(S, { name: `chorus-${j}`, color, cap, harlequin }); });
 
-      // the operator stands behind the console, so it draws before the desk
+      // the operator stands on our side of the panel, back to us, so it draws after (in front of) the console
       // every figure off the centre line is drawn for the left half and again reflected: twins in mirror unison
-      S.add({ name: 'operator', z: 995, render(ctx, t, env) { mirrored(ctx, () => drawFigure(ctx, operator, { ...operatorPose(t), shift: loopBump(t, 7.3, 0.9), shiftKind: 'cube', shiftSpin: TAU * t / 2 }, env)); } });
+      S.add({ name: 'operator', z: 988, render(ctx, t, env) { mirrored(ctx, () => drawFigure(ctx, operator, { ...operatorPose(t), shift: loopBump(t, 7.3, 0.9), shiftKind: 'cube', shiftSpin: TAU * t / 2 }, env)); } });
       S.add({ name: 'chorus', z: 978, render(ctx, t, env) { drawChorus(ctx, t, env, chorus); } });
       S.add({ name: 'figures', z: 985, render(ctx, t, env) { mirrored(ctx, () => {
         drawFigure(ctx, tuner, { ...tunerPose(t), shift: loopBump(t, 4.6, 0.9), shiftKind: 'ico', shiftSpin: TAU * t / 2 }, env);
@@ -390,7 +395,9 @@ function cues() {
   both(7.3, 'pop', 566); both(4.6, 'pop', 318); both(10.7, 'pop', 170); both(1.6, 'pop', 300);
   for (let j = 0; j < CHORUS_N; j++) for (const r of [0, LOOP]) { const tp = 0.05 + (j + 1) * SWAP + 0.4 + r; add24(tp, 'pop', chorusPlace(tp, j).x); }
   // the consoles' levers, the instruments' released cubes
-  for (const q of [1.6, 4.6, 7.6, 10.6]) both(q, 'lever', 612);
+  // the operators' presses: the two-handed one at 1.6 in each 3 s keeps the old lever's sound; the rest are presses
+  for (let bar = 0; bar < LOOP / 3; bar++) for (const [pt, , c, r] of PRESSES) if (pt !== 1.6) both(3 * bar + pt, 'press', btn(c, r)[0], { n: c + r });
+  for (const q of [1.6, 4.6, 7.6, 10.6]) both(q, 'lever', OPX);
   both(7.0, 'cube', 384);
   return out.sort((a, b) => a.t - b.t);
 }
