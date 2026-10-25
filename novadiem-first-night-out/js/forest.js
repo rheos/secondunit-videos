@@ -133,7 +133,7 @@ const FOREST = (() => {
     }
   }
   function foxglove(g, x, y, h, R) {
-    cutp(g, polyPath([[x - 3.5, y], [x - 2, y - h], [x + 2, y - h], [x + 3.5, y]]), '#2f5c36', { light: LT, sh: .5 });
+    cutp(g, polyPath([[x - 5, y], [x - 2.5, y - h], [x + 2.5, y - h], [x + 5, y]]), '#2f5c36', { light: LT, sh: .5 });
     for (let i = 0; i < 4; i++) fern(g, x, y - 4, h * .28, [Math.PI - .15, Math.PI + .35, .15, -.35][i], R, ['#2c5a34', '#356840', '#3f7646']);   // the leaf rosette
     for (let i = 0; i < 9; i++) {
       const yy = y - h * .45 - i * h * .055, side = i & 1 ? 1 : -1, bx = x + side * 4, s = 10 - i * .6;

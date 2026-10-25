@@ -66,6 +66,12 @@ copies every move a beat late, but where the parent lifts the crayfish to look a
 slap the water: a splash, the parent flinches, the kit shakes its head, then goes back to washing nothing, still a
 beat late. Fireflies over the water.
 
+- **Draft 2 (composition):** restaged on paper-fox's rules (`COMPOSITION.md`): a high vantage over a vista, the creek a
+  ribbon winding from a vanishing point under the moon (upper right) to the bottom of frame, the parent perched at the
+  left third on a rock at the water, the kit on a stone in the river, the banks stepping back with pines shrinking
+  toward the vanishing point, a cedar on the left edge, the biggest flowers bottom left, rocks and foam bottom right,
+  one slow push in, the moon lighting the raccoons' faces. The paws go under by drawing the creek a second time in
+  front of each raccoon, clipped below its waterline. The acting is draft 1's. The notes below describe draft 1.
 - Seventeen planes: sky with stars and the moon, cloud banks, peaks, a pine ridge, the far bank (cedars, pines,
   bushes, ferns, a mossy lip, boulders), the far water with the bank's trees reflected and mist drifting low,
   stepping stones with foam and a fallen log, mid water, fireflies, the parent's rock, the parent, the water in front
