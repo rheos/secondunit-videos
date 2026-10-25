@@ -1992,6 +1992,21 @@ function rot([x, y, z], a, b, c) {
   return [x, y, z];
 }
 
+// The visible faces of a solid turned by ang, far to near: { V (rotated unit vertices), faces: [{ f, n, z, lit }] }
+function solidFaces(kind, ang) {
+  const S = SOLIDS[kind], V = S.v.map((v) => rot(v, ang[0], ang[1], ang[2]));
+  const faces = S.f.map((f) => {
+    const a = V[f[0]], b = V[f[1]], c = V[f[2]];
+    const u = [b[0] - a[0], b[1] - a[1], b[2] - a[2]], w = [c[0] - a[0], c[1] - a[1], c[2] - a[2]];
+    let n = norm([u[1] * w[2] - u[2] * w[1], u[2] * w[0] - u[0] * w[2], u[0] * w[1] - u[1] * w[0]]);
+    // every solid is centred on the origin: an outward normal points the same way as the face's centre
+    const m = [0, 1, 2].map((d) => f.reduce((s, i) => s + V[i][d], 0) / f.length);
+    if (n[0] * m[0] + n[1] * m[1] + n[2] * m[2] < 0) n = n.map((x) => -x);
+    return { f, n, z: m[2], lit: n[0] * L3[0] + n[1] * L3[1] + n[2] * L3[2] };
+  }).filter((F) => F.n[2] > 0).sort((p, q) => p.z - q.z);
+  return { V, faces };
+}
+
 // Draw one solid. kind: tetra | octa | cube | ico | star | ring. r: radius in px. ang: [a, b, c] rotation.
 // glowK 0..1: how much making-light wraps it. alpha: overall fade.
 function drawSolid(ctx, kind, x, y, r, ang, color, { glowK = 0, alpha = 1, glowColor = '#fff1c8' } = {}) {
@@ -2010,16 +2025,7 @@ function drawSolid(ctx, kind, x, y, r, ang, color, { glowK = 0, alpha = 1, glowC
       ctx.beginPath(); ctx.ellipse(x - (c === color ? 0 : 0), y - (w < r * 0.2 ? r * 0.06 : 0), r, r * tilt, ang[2], 0, Math.PI * 2); ctx.stroke();
     }
   } else {
-    const S = SOLIDS[kind], V = S.v.map((v) => rot(v, ang[0], ang[1], ang[2]));
-    const faces = S.f.map((f) => {
-      const a = V[f[0]], b = V[f[1]], c = V[f[2]];
-      const u = [b[0] - a[0], b[1] - a[1], b[2] - a[2]], w = [c[0] - a[0], c[1] - a[1], c[2] - a[2]];
-      let n = norm([u[1] * w[2] - u[2] * w[1], u[2] * w[0] - u[0] * w[2], u[0] * w[1] - u[1] * w[0]]);
-      // every solid is centred on the origin: an outward normal points the same way as the face's centre
-      const m = [0, 1, 2].map((d) => f.reduce((s, i) => s + V[i][d], 0) / f.length);
-      if (n[0] * m[0] + n[1] * m[1] + n[2] * m[2] < 0) n = n.map((x) => -x);
-      return { f, n, z: m[2] };
-    }).filter((F) => F.n[2] > 0).sort((p, q) => p.z - q.z);
+    const { V, faces } = solidFaces(kind, ang);
     for (const F of faces) {
       const lit = F.n[0] * L3[0] + F.n[1] * L3[1] + F.n[2] * L3[2];
       const tone = lit > 0 ? mix(color, '#fffaf0', lit * 0.55) : shade(color, lit * 0.45);
@@ -2077,12 +2083,79 @@ function drawTesseract(ctx, x, y, r, a, b, { outer = P.mint, inner = P.pink, alp
   ctx.restore();
 }
 
-return { drawSolid, SHAPE_COLORS, drawTesseract };
+return { solidFaces, drawSolid, SHAPE_COLORS, drawTesseract };
+})();
+__m["src/loop-dome.js"] = (() => {
+// The living loop, the dome: the honeycomb curves up and over the world into a dome that turns slowly as one
+// piece (McKenna's elf space is enclosed and domed, a room that turns). Seen from inside, looking a little up: each
+// cell is a hexagon on the sphere, projected in perspective, so the cells run small and close toward the horizon
+// and widen overhead. All columns share one angular width, so turning the dome by two columns closes the loop.
+// The cells breathe in slow waves of light; the window-wheel sun hangs at the top as the dome's lantern.
+
+const { RNG } = __m["vendor/paper-fox/core/rng.js"];
+const { glow } = __m["vendor/paper-fox/core/piece.js"];
+const { mix, shade, rgba } = __m["vendor/paper-fox/core/color.js"];
+const { PAL } = __m["src/kit.js"];
+const P = PAL, TAU = Math.PI * 2;
+const COLS = 96, DA = TAU / COLS, DPHI = DA * 0.86, ROWS = 26, PITCH = 0.26, FOCAL = 760;
+const CX = 960, CY = 540;
+
+// a direction on the dome (theta round, phi up) to authored screen coordinates, or null when behind the eye
+function proj(theta, phi) {
+  const x = Math.cos(phi) * Math.sin(theta), y = Math.sin(phi), z = Math.cos(phi) * Math.cos(theta);
+  const y1 = y * Math.cos(PITCH) - z * Math.sin(PITCH), z1 = y * Math.sin(PITCH) + z * Math.cos(PITCH);
+  if (z1 < 0.08) return null;
+  return [CX + FOCAL * x / z1, CY - FOCAL * y1 / z1, z1];
+}
+
+// loop: the film's loop length in seconds (passed in: the world module imports this one)
+function addDome(S, loop) {
+  const rng = new RNG('dome');
+  const tint = [...Array(COLS * ROWS)].map(() => rng.range(-0.04, 0.04));
+  S.add({ name: 'dome', z: 6000, render(ctx, t) {
+    const turn = DA * 2 * t / loop;
+    // the shell behind the cells
+    ctx.fillStyle = mix(P.wall, P.pink, 0.18); ctx.fillRect(-600, -500, 3120, 2100);
+    ctx.lineJoin = 'round';
+    for (let r = 0; r < ROWS; r++) {
+      const phi = -0.04 + r * DPHI, off = (r & 1) * DA / 2;
+      for (let c = 0; c < COLS; c++) {
+        const th = c * DA + off + turn, rel = Math.atan2(Math.sin(th), Math.cos(th));
+        if (Math.abs(rel) > 1.35) continue;
+        const pts = [];
+        let ok = true;
+        for (let k = 0; k < 6; k++) {
+          const a = Math.PI / 6 + k * Math.PI / 3, q = proj(rel + Math.cos(a) * DA * 0.5, phi + Math.sin(a) * DPHI * 0.62);
+          if (!q) { ok = false; break; }
+          pts.push(q);
+        }
+        if (!ok) continue;
+        // light from the lantern overhead, and a slow wave of light running round the dome
+        const wave = 0.5 + 0.5 * Math.sin(TAU * (t / 4 - c / 12 - r / 9));
+        const lit = 0.18 + 0.5 * Math.min(1, phi / 1.1) - 0.25 * Math.abs(rel) / 1.35 + 0.08 * wave + tint[r * COLS + c];
+        const base = mix(mix(P.wallLight, P.blush, 0.35), '#fff6ea', Math.max(0, lit));
+        ctx.beginPath(); pts.forEach(([x, y], i) => (i ? ctx.lineTo(x, y) : ctx.moveTo(x, y))); ctx.closePath();
+        ctx.fillStyle = base; ctx.fill();
+        // a lit edge toward the lantern and a shaded edge away from it: each cell stands proud of the shell
+        const w = Math.max(0.6, 2.4 * pts[0][2]);
+        ctx.strokeStyle = rgba(shade(base, -0.22), 0.5); ctx.lineWidth = w; ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(pts[3][0], pts[3][1]); ctx.lineTo(pts[4][0], pts[4][1]); ctx.lineTo(pts[5][0], pts[5][1]);
+        ctx.strokeStyle = rgba('#fffaf0', 0.5); ctx.lineWidth = w; ctx.stroke();
+      }
+    }
+    // the lantern's light pooled at the top of the dome
+    ctx.save(); ctx.globalCompositeOperation = 'soft-light';
+    glow(ctx, CX, -40, 900, '#fff0d8', 0.6);
+    ctx.restore();
+  } });
+}
+
+return { addDome };
 })();
 __m["src/loop-world.js"] = (() => {
-// The living loop, the world: an open pastel world in the approved clay language, no box and no frame. A sky
-// that pales toward the horizon, clay clouds, three rows of rounded hills going back into the haze, the terrace
-// the machine stands on, two floating islands, and decorations floating free in mid-air at many depths.
+// The living loop, the world: the approved clay language inside a turning honeycomb dome (draft 6), no box and
+// no frame. The window-wheel sun is the dome's lantern; two rows of rounded hills are its floor; the terrace the
+// machine stands on; a floating island; a large tesseract; and geometry floating free in mid-air at many depths.
 // Every motion here is periodic in the loop period, so the film loops without a seam.
 
 const { RNG, noise } = __m["vendor/paper-fox/core/rng.js"];
@@ -2094,6 +2167,7 @@ const { LIGHT, PAL, CLAY_MAT, CLAY_EDGE, clayForm, tube, steps, dot } = __m["src
 const { rosette, curl } = __m["src/density.js"];
 const { drawSun, drawIsland, drawCity, SUN, ISLAND, CITY } = __m["src/props.js"];
 const { drawSolid, drawTesseract } = __m["src/loop-shapes.js"];
+const { addDome } = __m["src/loop-dome.js"];
 const P = PAL;
 const TAU = Math.PI * 2;
 const circle = (cx, cy, r, n = 36) => [...Array(n)].map((_, i) => [cx + Math.cos(i / n * TAU) * r, cy + Math.sin(i / n * TAU) * r]);
@@ -2120,15 +2194,6 @@ function mounds(g, { x0, x1, base, amp, bottom, colors, fade, seed, trees = 0.5 
   }
 }
 
-// a soft clay cloud: overlapping puffs on a flat base
-function cloud(g, cx, cy, w, rng, c = '#fbf3ee') {
-  const n = Math.round(w / 46);
-  for (let i = 0; i < n; i++) {
-    const k = i / Math.max(1, n - 1), r = w * (0.14 + 0.12 * Math.sin(Math.PI * k)) * rng.range(0.85, 1.15);
-    clayForm(g, circle(cx - w / 2 + w * k, cy - r * 0.35, r, 32), vary(c, rng, 0.03), { size: r * 1.6, sheen: 0.2 });
-  }
-}
-
 // baked decorations that float in mid-air: a stepped pendant or a stack of chevrons
 function floater(g, kind, x, y, s, rng) {
   if (kind === 'pendant') {
@@ -2142,46 +2207,25 @@ function floater(g, kind, x, y, s, rng) {
 function addWorld(S) {
   const sp = (name, box, draw, o = {}) => S.sprite({ name, ...box, res: o.res ?? 1, mat: o.mat ?? CLAY_MAT, edge: o.edge ?? CLAY_EDGE, shadow: o.shadow ?? { blur: 18 }, draw });
 
-  // the backdrop: warm card with the embossed honeycomb from the relief box, each cell its own soft piece, fading
-  // toward the hills. No box and no frame: it simply goes on behind the world.
-  S.plane(20000, { name: 'honeycomb', x: -620, y: -520, w: 3160, h: 2120, mat: 'smooth', edge: false, shadow: false, draw(g) {
-    g.fillStyle = linear(g, 0, -520, 0, 1100, [mix(P.wall, P.pink, 0.22), P.wallLight, '#fbeee2']); g.fillRect(-620, -520, 3160, 2120);
-    const r = 34, dx = r * Math.sqrt(3), dy = r * 1.5, hr = new RNG('hex-world');
-    for (let row = 0, y = -540; y < 980; row++, y += dy) for (let x = -660 + (row & 1) * dx / 2; x < 2580; x += dx) {
-      const fade = 1 - Math.max(0, (y - 380) / 520);
-      if (fade <= 0.04 || hr.chance(0.05)) continue;
-      const hex = [...Array(6)].map((_, i) => { const a = Math.PI / 6 + i * Math.PI / 3; return [x + Math.cos(a) * (r - 3.4), y + Math.sin(a) * (r - 3.4)]; });
-      piece(g, hex, { fill: rgba(vary(mix(P.wallLight, P.blush, 0.35), hr, 0.05), 0.55 + 0.45 * fade), bevel: { light: LIGHT, width: 2.2, hi: 0.32 * fade, lo: 0.18 * fade, soft: 1.6 }, shadow: { color: `rgba(120,70,60,${0.16 * fade})`, blur: 6, x: 1.6, y: 3 } });
-    }
-  } });
+  // the backdrop is the turning honeycomb dome (loop-dome.js)
+  addDome(S, LOOP);
 
-  // the sun, high on the right, its windows breathing with light
+  // the window-wheel sun hangs at the top of the dome as its lantern
   const sun = sp('sun', { x: SUN.x - SUN.r - 70, y: -SUN.r - 70, w: SUN.r * 2 + 140, h: SUN.r * 2 + 140 }, drawSun, { res: 1.1, shadow: { blur: 24 } });
-  S.add({ name: 'sun-glow', z: 9010, blend: 'lighter', render(ctx, t) {
-    glow(ctx, 1600, 230, 700, '#ffd9a0', 0.2 + 0.03 * cyc(t, 2));
-    glow(ctx, 1600, 230, 260, '#fff0c8', 0.3);
+  S.add({ name: 'lantern-glow', z: 5010, blend: 'lighter', render(ctx, t) {
+    glow(ctx, 960, 70, 640, '#ffd9a0', 0.2 + 0.03 * cyc(t, 2));
+    glow(ctx, 960, 70, 240, '#fff0c8', 0.3);
   } });
-  S.add({ name: 'sun', z: 9000, shadow: { dx: 8, dy: 14, alpha: 0.25 }, render(ctx, t, env) {
-    drawSprites(ctx, [{ s: sun, ax: SUN.x, ay: 0, x: 1600, y: 230 + 4 * cyc(t, 1), sx: 0.82, sy: 0.82 }], env.shadow);
+  S.add({ name: 'lantern', z: 5000, shadow: { dx: 8, dy: 14, alpha: 0.25 }, render(ctx, t, env) {
+    drawSprites(ctx, [{ s: sun, ax: SUN.x, ay: 0, x: 960, y: 70 + 4 * cyc(t, 1), sx: 0.7, sy: 0.7 }], env.shadow);
   } });
 
-  // clouds drift and come back within the loop
-  const crng = new RNG('clouds');
-  const clouds = [[200, 90, 260, 7000], [1150, 140, 260, 7600], [1900, 300, 340, 6400], [-150, 420, 240, 5600], [1420, 600, 190, 5200]];
-  clouds.forEach(([x, y, w, z], i) => {
-    const s = sp(`cloud-${i}`, { x: x - w * 0.7, y: y - w * 0.45, w: w * 1.4, h: w * 0.6 }, (g) => cloud(g, x, y, w, crng));
-    S.add({ name: `cloud-${i}`, z, shadow: { dx: 8, dy: 14, alpha: 0.18 }, sprites: [{ s }], anim: (t) => ({ x: 26 * cyc(t, 1, i * 0.21), y: 5 * cyc(t, 2, i * 0.13) }) });
-  });
-
-  // three rows of hills, palest and farthest first
-  S.plane(3600, { name: 'hills-far', x: -900, y: 500, w: 3720, h: 760, draw: (g) => mounds(g, { x0: -900, x1: 2820, base: 830, amp: 58, bottom: 1250, colors: [P.lilac, P.blush], fade: 0.55, seed: 1, trees: 0.3 }) }, { shadow: { dx: 6, dy: 10, alpha: 0.2 } });
+  // the dome's floor: two rows of hills
   S.plane(2400, { name: 'hills-mid', x: -700, y: 600, w: 3320, h: 700, draw: (g) => mounds(g, { x0: -700, x1: 2620, base: 880, amp: 50, bottom: 1300, colors: [P.blush, P.aqua], fade: 0.35, seed: 2 }) }, { shadow: { dx: 8, dy: 12, alpha: 0.3 } });
   S.plane(1600, { name: 'hills-near', x: -600, y: 680, w: 3120, h: 700, draw: (g) => mounds(g, { x0: -600, x1: 2520, base: 930, amp: 42, bottom: 1350, colors: [P.pink, P.blush], fade: 0.15, seed: 3 }) }, { shadow: { dx: 9, dy: 14, alpha: 0.36 } });
 
   // the islands float in the middle distance
   const island = sp('island', { x: ISLAND.x - 200, y: ISLAND.y - 200, w: 400, h: 340 }, drawIsland, { res: 1.2 });
-  const city = sp('city', { x: CITY.x - 150, y: CITY.y - 130, w: 300, h: 230 }, drawCity, { res: 1.2 });
-  S.add({ name: 'city', z: 2200, shadow: { dx: 10, dy: 22, alpha: 0.3 }, sprites: [{ s: city, ax: CITY.x, ay: CITY.y, x: 260, y: 300 }], anim: (t) => ({ x: 12 * cyc(t, 1, 0.3), y: 8 * cyc(t, 2, 0.6) }) });
 
   // a large tesseract hangs in the sky, turning through the fourth dimension once a loop: the world's anchor
   S.add({ name: 'tesseract', z: 2800, render(ctx, t) {
@@ -2241,6 +2285,122 @@ function addNear(S) {
 
 return { LOOP, cyc, addWorld, addNear };
 })();
+__m["src/loop-mark.js"] = (() => {
+// The living loop, Mark's world: what the elves make and show (glyphs, sigils, solids, the funnel's inside, the
+// console display) is drawn in Mark Von Ulrich's early colour Mac language, after the brief in
+// references/mark-von-ulrich/STYLE-BRIEF.txt: saturated colour, one-pixel black contours, the fixed 256-colour
+// system palette (here its 6x6x6 colour cube) and a 4x4 ordered dither. Each element is painted into a small
+// offscreen raster at one output pixel per pixel, its alpha cut hard and its colour quantized through the cube with
+// the dither anchored in the element's own raster, so the texture travels with it and never sparkles.
+// It is a reconstruction of the look Robin asked for, not Mark's documented method.
+
+const { surface } = __m["vendor/paper-fox/core/canvas.js"];
+const { solidFaces } = __m["src/loop-shapes.js"];
+const TAU = Math.PI * 2;
+const MK = {
+  magenta: '#ff00cc', pink: '#ff66cc', red: '#ff3300', orange: '#ff9900', yellow: '#ffff00', lime: '#99ff00',
+  green: '#00cc66', cyan: '#00ffff', sky: '#3399ff', blue: '#3300ff', violet: '#9900ff', ink: '#000000', deep: '#000033', white: '#ffffff',
+};
+const MK_RAMP = [MK.magenta, MK.cyan, MK.yellow, MK.lime, MK.orange, MK.violet, MK.sky, MK.pink];
+
+const BAYER = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5].map((v) => (v + 0.5) / 16);
+// authored px per raster pixel: one output pixel at the 1280 px render
+const PS = 1.5;
+const pool = new Map();
+function buffer(w, h) {
+  const k = `${w}x${h}`;
+  if (!pool.has(k)) { const s = surface(w, h); s.ctx.willReadFrequently = true; pool.set(k, s); }
+  return pool.get(k);
+}
+
+// Paint draw(g) (authored coordinates) into a raster around (cx, cy) of size w x h authored px, quantize it, and
+// lay it onto ctx with nearest-neighbour sampling. alpha fades the finished raster.
+function markLayer(ctx, cx, cy, w, h, draw, { alpha = 1 } = {}) {
+  if (alpha <= 0.01) return;
+  const W = Math.max(2, Math.ceil(w / PS)), H = Math.max(2, Math.ceil(h / PS)), { canvas, ctx: g } = buffer(W, H);
+  const x0 = cx - (W * PS) / 2, y0 = cy - (H * PS) / 2;
+  g.setTransform(1, 0, 0, 1, 0, 0); g.clearRect(0, 0, W, H);
+  g.setTransform(1 / PS, 0, 0, 1 / PS, -x0 / PS, -y0 / PS);
+  draw(g);
+  g.setTransform(1, 0, 0, 1, 0, 0);
+  const img = g.getImageData(0, 0, W, H), d = img.data;
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+    const i = (y * W + x) * 4, a = d[i + 3];
+    if (a < 110) { d[i + 3] = 0; continue; }
+    const th = BAYER[(y & 3) * 4 + (x & 3)];
+    // getImageData gives straight (not premultiplied) colour
+    for (let c = 0; c < 3; c++) { const v = d[i + c] / 51; d[i + c] = Math.min(5, Math.floor(v + th)) * 51; }
+    d[i + 3] = 255;
+  }
+  g.putImageData(img, 0, 0);
+  ctx.save();
+  ctx.globalAlpha *= alpha;
+  ctx.imageSmoothingEnabled = false;
+  ctx.drawImage(canvas, x0, y0, W * PS, H * PS);
+  ctx.restore();
+}
+
+// A solid in Mark's colours: each face its own saturated hue, lit faces toward white, unlit toward deep blue,
+// a one-pixel black contour round every face.
+function paintMarkSolid(g, kind, x, y, r, ang, hue = 0) {
+  const { V, faces } = solidFaces(kind, ang);
+  faces.forEach((F, i) => {
+    const base = MK_RAMP[(hue + i) % MK_RAMP.length];
+    g.beginPath(); F.f.forEach((v, k) => { const px = x + V[v][0] * r, py = y + V[v][1] * r; k ? g.lineTo(px, py) : g.moveTo(px, py); }); g.closePath();
+    const gr = g.createLinearGradient(x - r, y - r, x + r, y + r);
+    gr.addColorStop(0, F.lit > 0 ? mixHex(base, '#ffffff', 0.25 + F.lit * 0.3) : base);
+    gr.addColorStop(1, F.lit > 0 ? base : mixHex(base, MK.deep, 0.35 - F.lit * 0.3));
+    g.fillStyle = gr; g.fill();
+    g.strokeStyle = MK.ink; g.lineWidth = PS; g.lineJoin = 'miter'; g.stroke();
+  });
+}
+function markSolid(ctx, kind, x, y, r, ang, { hue = 0, alpha = 1 } = {}) {
+  if (r < 0.5) return;
+  markLayer(ctx, x, y, r * 2.6 + 6, r * 2.6 + 6, (g) => paintMarkSolid(g, kind, x, y, r, ang, hue), { alpha });
+}
+
+// A sawtooth starburst, Mark's way of staging a focal object: yellow points round a red-orange core.
+function paintBurst(g, x, y, r, n = 18, rot = 0) {
+  for (const [k, col] of [[1, MK.yellow], [0.62, MK.orange]]) {
+    g.beginPath();
+    for (let i = 0; i < n * 2; i++) { const a = rot + i / (n * 2) * TAU, rr = r * k * (i % 2 ? 0.62 : 1); g.lineTo(x + Math.cos(a) * rr, y + Math.sin(a) * rr); }
+    g.closePath(); g.fillStyle = col; g.fill(); g.strokeStyle = MK.ink; g.lineWidth = PS; g.stroke();
+  }
+}
+
+// Tiny glyphs for the sung stream: square, cross, zigzag, dot ring, triangle, eye. s is the glyph's size.
+function paintGlyph(g, kind, x, y, s, col, rot = 0) {
+  g.save(); g.translate(x, y); g.rotate(rot);
+  g.fillStyle = col; g.strokeStyle = MK.ink; g.lineWidth = PS; g.lineJoin = 'miter';
+  const h = s / 2;
+  g.beginPath();
+  if (kind === 0) g.rect(-h * 0.8, -h * 0.8, h * 1.6, h * 1.6);
+  else if (kind === 1) { g.rect(-h, -h * 0.3, h * 2, h * 0.6); g.rect(-h * 0.3, -h, h * 0.6, h * 2); }
+  else if (kind === 2) { g.moveTo(-h, h * 0.4); for (let i = 1; i <= 4; i++) g.lineTo(-h + i * h / 2, i % 2 ? -h * 0.4 : h * 0.4); g.lineWidth = PS * 2.4; g.strokeStyle = col; g.stroke(); g.restore(); return; }
+  else if (kind === 3) { g.arc(0, 0, h, 0, TAU); g.moveTo(h * 0.4, 0); g.arc(0, 0, h * 0.4, 0, TAU, true); }
+  else if (kind === 4) { g.moveTo(0, -h); g.lineTo(h, h * 0.8); g.lineTo(-h, h * 0.8); g.closePath(); }
+  else { g.ellipse(0, 0, h, h * 0.55, 0, 0, TAU); }
+  g.fill('evenodd'); g.stroke();
+  if (kind === 5) { g.fillStyle = MK.ink; g.beginPath(); g.arc(0, 0, h * 0.3, 0, TAU); g.fill(); }
+  g.restore();
+}
+
+// Lines in Mark's manner: a black contour, a saturated body, a hot core.
+function paintLines(g, paths, width, col, core = MK.white) {
+  g.lineCap = 'square'; g.lineJoin = 'miter';
+  for (const [w, c] of [[width + PS * 2, MK.ink], [width, col], [Math.max(PS, width * 0.34), core]]) {
+    g.strokeStyle = c; g.lineWidth = w;
+    for (const p of paths) { g.beginPath(); p.forEach(([x, y], i) => (i ? g.lineTo(x, y) : g.moveTo(x, y))); g.stroke(); }
+  }
+}
+
+function mixHex(a, b, t) {
+  const h = (c) => [1, 3, 5].map((i) => parseInt(c.slice(i, i + 2), 16)), A = h(a), B = h(b);
+  return '#' + A.map((v, i) => Math.round(v + (B[i] - v) * Math.max(0, Math.min(1, t))).toString(16).padStart(2, '0')).join('');
+}
+
+return { MK, MK_RAMP, PS, markLayer, paintMarkSolid, markSolid, paintBurst, paintGlyph, paintLines, mixHex };
+})();
 __m["src/loop-machine.js"] = (() => {
 // The living loop, the machines (draft 2). All timing is periodic in LOOP (12 s) so the film loops without a seam.
 //
@@ -2261,6 +2421,7 @@ const { lerp, smoothstep, E } = __m["vendor/paper-fox/core/ease.js"];
 const { PAL, CLAY_MAT, CLAY_EDGE, clayForm, tube, tubeOutline, steps, dot } = __m["src/kit.js"];
 const { LOOP, cyc } = __m["src/loop-world.js"];
 const { drawSolid } = __m["src/loop-shapes.js"];
+const { MK, MK_RAMP, markLayer, paintMarkSolid, paintBurst, paintGlyph } = __m["src/loop-mark.js"];
 const P = PAL, TAU = Math.PI * 2;
 const circle = (cx, cy, r, n = 36) => [...Array(n)].map((_, i) => [cx + Math.cos(i / n * TAU) * r, cy + Math.sin(i / n * TAU) * r]);
 const mod = (x, m) => ((x % m) + m) % m;
@@ -2410,17 +2571,40 @@ function addMachines(S) {
     const swell = [], late = [];   // swell: [arc length, strength] of each bulge in the pipe
     const pulse = 0.5 + 0.5 * Math.cos(TAU * mod(t, 0.75) / 0.75);
     ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, RIM.x, RIM.y + 6, 150, '#ffd9b0', 0.14 + 0.06 * pulse); ctx.restore();
-    for (let n = 0; n < 8; n++) {
-      const u = mod(t + n * 0.75, 6), kind = KINDS[n % 4], col = COLS[n], ang = [TAU * t / 3 + n, TAU * t / 2, n];
-      if (u < 1.6) {                                       // spiralling in and down inside the mouth
+    // inside the mouth is Mark's world: deep blue going to black, zigzag rings turning, a burst at the throat, and the
+    // solids spiralling down through it, all in his early-Mac colours
+    const mouthPts = [...Array(SIDES)].map((_, k) => ring(RIM.y, RIM.rx * 0.93, RIM.ry * 0.93, k));
+    markLayer(ctx, RIM.x, RIM.y, RIM.rx * 2, RIM.ry * 2 + 12, (g) => {
+      const clip = new Path2D(); mouthPts.forEach(([x, y], i) => (i ? clip.lineTo(x, y) : clip.moveTo(x, y))); clip.closePath();
+      g.save(); g.clip(clip);
+      const bg = g.createRadialGradient(RIM.x, RIM.y + 6, 2, RIM.x, RIM.y, RIM.rx);
+      bg.addColorStop(0, MK.deep); bg.addColorStop(0.5, MK.blue); bg.addColorStop(1, MK.violet);
+      g.fillStyle = bg; g.fillRect(RIM.x - RIM.rx, RIM.y - RIM.ry - 6, RIM.rx * 2, RIM.ry * 2 + 12);
+      for (let k = 0; k < 4; k++) {                          // zigzag rings shrinking toward the throat, turning
+        const kk = mod(k + t / 1.5, 4) / 4, rx = RIM.rx * (0.9 - 0.75 * kk), ry = RIM.ry * (0.9 - 0.75 * kk), n = 40;
+        g.beginPath();
+        for (let i = 0; i <= n; i++) { const a = i / n * TAU + t * 0.5, z = i % 2 ? 0.86 : 1; g.lineTo(RIM.x + Math.cos(a) * rx * z, RIM.y + 6 + Math.sin(a) * ry * z); }
+        g.strokeStyle = [MK.magenta, MK.cyan, MK.yellow, MK.lime][k]; g.lineWidth = 1.5; g.stroke();
+      }
+      paintBurst(g, RIM.x, RIM.y + 8, 14 + 2 * Math.sin(TAU * t / 0.75), 12, TAU * t / 6);
+      for (let n = 0; n < 8; n++) {
+        const u = mod(t + n * 0.75, 6);
+        if (u >= 1.6) continue;
         const k = u / 1.6, a = n * 1.3 + k * TAU * 1.25, rr = (1 - k) * 0.78 + 0.08;
-        drawSolid(ctx, kind, RIM.x + Math.cos(a) * RIM.rx * rr, RIM.y + 8 + Math.sin(a) * RIM.ry * rr + k * 14, 9 * (1 - 0.5 * k), ang, col, { alpha: 1 - smoothstep(0.7, 1, k) });
-      } else if (u >= 2.2 && u < 5.4) {                    // carried round the pipe
+        paintMarkSolid(g, KINDS[n % 4], RIM.x + Math.cos(a) * RIM.rx * rr, RIM.y + 8 + Math.sin(a) * RIM.ry * rr + k * 14, 9 * (1 - 0.5 * k), [TAU * t / 3 + n, TAU * t / 2, n], n);
+      }
+      g.restore();
+    });
+    for (let n = 0; n < 8; n++) {
+      const u = mod(t + n * 0.75, 6), kind = KINDS[n % 4], ang = [TAU * t / 3 + n, TAU * t / 2, n];
+      if (u < 1.6) continue;                               // inside the mouth: drawn in Mark's world above
+      else if (u >= 2.2 && u < 5.4) {                    // carried round the pipe
         const s = DUCT_LEN * (u - 2.2) / 3.2;
         swell.push([s, smoothstep(30, 70, s) * smoothstep(DUCT_LEN - 20, DUCT_LEN - 60, s)]);
       } else if (u >= 5.4) {                               // dropping from the spout into the mouth
         const k = (u - 5.4) / 0.6;
-        late.push(() => drawSolid(ctx, kind, lerp(SPOUT[0], RIM.x + 10, k), lerp(SPOUT[1] + 18, RIM.y + 10, E.in(k)), 9, ang, col, { glowK: 0.3 }));
+        const x = lerp(SPOUT[0], RIM.x + 10, k), y = lerp(SPOUT[1] + 18, RIM.y + 10, E.in(k));
+        late.push(() => markLayer(ctx, x, y, 34, 34, (g) => paintMarkSolid(g, kind, x, y, 9, ang, n)));
       }
     }
     drawSprites(ctx, [{ s: front }], { ...env.shadow, dx: 3, dy: 5 });
@@ -2444,9 +2628,13 @@ function addMachines(S) {
     const la = leverAngle(t), [lx, ly] = CONSOLE.lever, tip = [lx + Math.sin(la) * 24, ly - Math.cos(la) * 24];
     ctx.strokeStyle = P.slateDeep; ctx.lineWidth = 4; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(lx, ly); ctx.lineTo(...tip); ctx.stroke();
     ctx.fillStyle = P.pinkDeep; ctx.beginPath(); ctx.arc(tip[0], tip[1], 5, 0, TAU); ctx.fill();
+    // the screen shows Mark's world: a turning octahedron over a cycling glyph, on black
     const [sx, sy] = CONSOLE.screen;
-    ctx.fillStyle = radial(ctx, sx - 3, sy - 3, 1, 14, ['#3d4b80', P.navy]); ctx.beginPath(); ctx.ellipse(sx, sy, 12, 18, 0, 0, TAU); ctx.fill();
-    drawSolid(ctx, 'octa', sx, sy, 7, [TAU * t / 6, TAU * t / 12, 0.3], '#bfe8ff', { glowK: 0.4, glowColor: '#9fd8ff' });
+    markLayer(ctx, sx, sy, 30, 40, (g) => {
+      g.fillStyle = MK.ink; g.beginPath(); g.ellipse(sx, sy, 12, 18, 0, 0, TAU); g.fill();
+      paintGlyph(g, Math.floor(mod(t, 3) * 2) % 6, sx, sy + 9, 7, MK_RAMP[Math.floor(mod(t, 3) * 2) % 8]);
+      paintMarkSolid(g, 'octa', sx, sy - 4, 7, [TAU * t / 6, TAU * t / 12, 0.3], 2);
+    });
   } });
 
   // the instrument: three rings turning on their own axes, a hovering solid, and once a loop a cube let go
@@ -2485,6 +2673,9 @@ __m["src/loop-figures.js"] = (() => {
 const { mix, shade, rgba } = __m["vendor/paper-fox/core/color.js"];
 const { drawSprites } = __m["vendor/paper-fox/core/sprite.js"];
 const { LIGHT, PAL, CLAY_MAT, CLAY_EDGE, clayForm, dot } = __m["src/kit.js"];
+const { drawSolid } = __m["src/loop-shapes.js"];
+const lerpN = (a, b, k) => a + (b - a) * k;
+
 const P = PAL, TAU = Math.PI * 2;
 const circle = (cx, cy, r, n = 32) => [...Array(n)].map((_, i) => [cx + Math.cos(i / n * TAU) * r, cy + Math.sin(i / n * TAU) * r]);
 const BODY = { leg1: 18, leg2: 17, arm1: 18, arm2: 18, torso: 38, head: 15, hipW: 5, shoulderW: 9 };
@@ -2496,23 +2687,52 @@ function ik2(a, b, l1, l2, bend) {
   return [a[0] + Math.cos(base + bend * A) * l1, a[1] + Math.sin(base + bend * A) * l1];
 }
 
-function makeFigure(S, { name, color, cap, res = 1.6 }) {
+// cap: a colour for a little stepped hat, 'pom' for a bobble hat, or 'bells' for a two-pointed jester cap.
+// harlequin: diamonds on the body, in that colour.
+function makeFigure(S, { name, color, cap, harlequin = null, res = 1.6 }) {
   const torso = S.sprite({ name: `${name}-torso`, x: -22, y: -50, w: 44, h: 58, res, mat: CLAY_MAT, edge: CLAY_EDGE, shadow: { blur: 8 }, draw(g) {
-    clayForm(g, [[-12, 4], [-14, -14], [-12, -32], [-7, -40], [7, -40], [12, -32], [14, -14], [12, 4], [0, 7]], color, { size: 24, sheen: 0.22 });
-    dot(g, 0, -24, 2.4, shade(color, -0.3)); dot(g, 0, -14, 2.4, shade(color, -0.3));
+    const body = [[-12, 4], [-14, -14], [-12, -32], [-7, -40], [7, -40], [12, -32], [14, -14], [12, 4], [0, 7]];
+    const path = clayForm(g, body, color, { size: 24, sheen: 0.22 });
+    if (harlequin) {
+      g.save(); g.clip(path);
+      for (let row = 0; row < 5; row++) for (let col = -2; col <= 2; col++) {
+        if ((row + col) & 1) continue;
+        const cx = col * 8, cy = -36 + row * 9;
+        g.fillStyle = rgba(harlequin, 0.85); g.beginPath(); g.moveTo(cx, cy - 5); g.lineTo(cx + 4, cy); g.lineTo(cx, cy + 5); g.lineTo(cx - 4, cy); g.closePath(); g.fill();
+      }
+      g.restore();
+    } else { dot(g, 0, -24, 2.4, shade(color, -0.3)); dot(g, 0, -14, 2.4, shade(color, -0.3)); }
     clayForm(g, [[-8, -42], [8, -42], [6, -36], [-6, -36]], mix(color, '#ffffff', 0.4), { smooth: false, size: 6 });
   } });
-  const head = S.sprite({ name: `${name}-head`, x: -24, y: -34, w: 48, h: 52, res, mat: CLAY_MAT, edge: CLAY_EDGE, shadow: { blur: 8 }, draw(g) {
+  const hat = (g) => {
+    if (cap === 'pom') { clayForm(g, [[-14, -8], [-10, -16], [0, -19], [10, -16], [14, -8]], P.butter, { size: 10 }); clayForm(g, circle(0, -21, 5, 18), P.pinkDeep, { sheen: 0.3 }); }
+    else if (cap === 'bells') {
+      for (const s of [-1, 1]) {
+        clayForm(g, [[0, -8], [s * 13, -8], [s * 22, -26], [s * 6, -15]], s < 0 ? P.pink : P.mint, { smooth: false, size: 10 });
+        clayForm(g, circle(s * 23, -28, 3.6, 16), P.butter, { sheen: 0.35 });
+      }
+      clayForm(g, [[-14, -10], [14, -10], [13, -6], [-13, -6]], P.lilac, { smooth: false, size: 6 });
+    } else { clayForm(g, [[-13, -10], [13, -10], [13, -6], [-13, -6]], shade(cap, -0.1), { smooth: false, size: 6 }); clayForm(g, [[-9, -10], [9, -10], [7, -22], [-7, -22]], cap, { smooth: false, size: 12 }); }
+  };
+  const eye = (g, ex) => { g.fillStyle = P.ink; g.beginPath(); g.ellipse(ex, -2, 1.9, 2.6, 0, 0, TAU); g.fill(); g.fillStyle = 'rgba(255,255,255,0.9)'; g.beginPath(); g.arc(ex - 0.6, -3, 0.7, 0, TAU); g.fill(); };
+  const headBox = { x: -30, y: -40, w: 60, h: 58, res, mat: CLAY_MAT, edge: CLAY_EDGE, shadow: { blur: 8 } };
+  // in profile (baked facing right): eyes toward the facing side, a blush, a nose bump
+  const head = S.sprite({ name: `${name}-head`, ...headBox, draw(g) {
     clayForm(g, circle(0, 0, BODY.head, 36), P.bone, { sheen: 0.28 });
-    // eyes set toward the facing side (baked facing right), a blush, a tiny nose bump
-    for (const ex of [2, 10]) { g.fillStyle = P.ink; g.beginPath(); g.ellipse(ex, -2, 1.9, 2.6, 0, 0, TAU); g.fill(); g.fillStyle = 'rgba(255,255,255,0.9)'; g.beginPath(); g.arc(ex - 0.6, -3, 0.7, 0, TAU); g.fill(); }
+    eye(g, 2); eye(g, 10);
     g.fillStyle = rgba(P.pink, 0.55); g.beginPath(); g.ellipse(9, 5, 3.4, 2.2, 0, 0, TAU); g.fill();
     clayForm(g, circle(14, 1, 3, 14), P.bone, { sheen: 0.2, shadow: false });
-    // the cap: a little stepped hat or a pom
-    if (cap === 'pom') { clayForm(g, [[-14, -8], [-10, -16], [0, -19], [10, -16], [14, -8]], cap === 'pom' ? P.butter : P.mint, { size: 10 }); clayForm(g, circle(0, -21, 5, 18), P.pinkDeep, { sheen: 0.3 }); }
-    else { clayForm(g, [[-13, -10], [13, -10], [13, -6], [-13, -6]], shade(cap, -0.1), { smooth: false, size: 6 }); clayForm(g, [[-9, -10], [9, -10], [7, -22], [-7, -22]], cap, { smooth: false, size: 12 }); }
+    hat(g);
   } });
-  return { name, color, torso, head };
+  // facing us: eyes either side of the middle, two blushes
+  const front = S.sprite({ name: `${name}-front`, ...headBox, draw(g) {
+    clayForm(g, circle(0, 0, BODY.head, 36), P.bone, { sheen: 0.28 });
+    eye(g, -5); eye(g, 5);
+    g.fillStyle = rgba(P.pink, 0.55); for (const x of [-9, 9]) { g.beginPath(); g.ellipse(x, 5, 3.2, 2, 0, 0, TAU); g.fill(); }
+    clayForm(g, circle(0, 2, 2.4, 12), P.bone, { sheen: 0.2, shadow: false });
+    hat(g);
+  } });
+  return { name, color, torso, head, front };
 }
 
 function limb(ctx, a, m, b, w, color, light = LIGHT) {
@@ -2538,7 +2758,8 @@ function foot(ctx, p, facing, color) {
 }
 
 // pose: { hip, lean (rad, + leans toward facing), facing (1 right, -1 left), feet: [back, front], hands: [back, front],
-//         headTilt, scale }. Everything in the plane's authored coordinates.
+//         headTilt, scale, turn (0 profile .. 1 facing us), sing (0..1 mouth open), shift (0..1: the head becomes a
+//         faceted ball), shiftKind }. Everything in the plane's authored coordinates.
 function drawFigure(ctx, F, pose, env) {
   const s = pose.scale ?? 1, f = pose.facing, B = BODY, lean = pose.lean * f;
   const up = [Math.sin(lean), -Math.cos(lean)], side = [Math.cos(lean), Math.sin(lean)];
@@ -2546,7 +2767,7 @@ function drawFigure(ctx, F, pose, env) {
   const sh = (k) => [neck[0] + side[0] * B.shoulderW * k * s + up[0] * -5 * s, neck[1] + side[1] * B.shoulderW * k * s + up[1] * -5 * s];
   const hipAt = (k) => [hip[0] + side[0] * B.hipW * k * s, hip[1] + side[1] * B.hipW * k * s];
   // back limbs are on the side away from the viewer's facing; draw them first
-  const legs = pose.feet.map((ft, i) => { const h = hipAt(i ? f : -f); return { h, k: ik2(h, ft, B.leg1 * s, B.leg2 * s, f > 0 ? -1 : 1), ft }; });
+  const legs = pose.feet.map((ft, i) => { const h = hipAt(i ? f : -f), bend = (pose.turn ?? 0) > 0.5 ? (ft[0] < hip[0] ? 1 : -1) : (f > 0 ? -1 : 1); return { h, k: ik2(h, ft, B.leg1 * s, B.leg2 * s, bend), ft }; });
   // a hand never leaves the arm: an out-of-reach target is pulled back to the full stretch
   const arms = pose.hands.map((target, i) => {
     const sp = sh(i ? f : -f), reach = (B.arm1 + B.arm2) * s * 0.98, dx = target[0] - sp[0], dy = target[1] - sp[1], d = Math.hypot(dx, dy);
@@ -2564,7 +2785,21 @@ function drawFigure(ctx, F, pose, env) {
   if (pose.carry) pose.carry(arms.map((a) => a.hd));
   limb(ctx, arms[1].sp, arms[1].e, arms[1].hd, 7.5 * s, F.color); ball(ctx, arms[1].hd, 4.4 * s, P.bone);
   const hc = [neck[0] + up[0] * (B.head + 1) * s, neck[1] + up[1] * (B.head + 1) * s];
-  drawSprites(ctx, [{ s: F.head, x: hc[0], y: hc[1], rot: lean * 0.6 + (pose.headTilt ?? 0) * f, sx: f * s, sy: s }], { ...env.shadow, dx: 3, dy: 5, alpha: 0.25 });
+  const turn = pose.turn ?? 0, shift = pose.shift ?? 0, rot = lean * 0.6 + (pose.headTilt ?? 0) * f * (1 - turn);
+  const hs = s * (1 - shift);
+  if (hs > 0.02) {
+    const heads = [];
+    if (turn < 0.999) heads.push({ s: F.head, x: hc[0], y: hc[1], rot, sx: f * hs, sy: hs, alpha: 1 - turn });
+    if (turn > 0.001) heads.push({ s: F.front, x: hc[0], y: hc[1], rot: rot * 0.3, sx: hs, sy: hs, alpha: turn });
+    drawSprites(ctx, heads, { ...env.shadow, dx: 3, dy: 5, alpha: 0.25 });
+    // singing: a round mouth that opens and closes
+    if ((pose.sing ?? 0) > 0.02) {
+      const mx = hc[0] + (lerpN(10, 0, turn)) * f * hs, my = hc[1] + 7 * hs, mr = 2.6 * hs * pose.sing;
+      ctx.fillStyle = shade(P.pinkDeep, -0.45); ctx.beginPath(); ctx.ellipse(mx, my, mr * 0.8, mr, 0, 0, TAU); ctx.fill();
+    }
+  }
+  // shape-shifting: the head pops into a faceted ball and back
+  if (shift > 0.01) drawSolid(ctx, pose.shiftKind ?? 'ico', hc[0], hc[1], B.head * s * 1.1 * shift, [pose.shiftSpin ?? 0, 0.6, 0.2], F.color);
   ctx.restore();
   return { neck, head: hc, hands: arms.map((a) => a.hd) };
 }
@@ -2572,11 +2807,13 @@ function drawFigure(ctx, F, pose, env) {
 return { BODY, ik2, makeFigure, drawFigure };
 })();
 __m["src/loop.js"] = (() => {
-// The living loop (draft 4): a seamless 12 s loop at 24 fps in the approved relief-box clay language, an open
-// world on the honeycomb backdrop. In the middle a funnel feeds itself: what gathers in its mouth runs out of a
-// duct at the bottom, right, up past the lip, left, and drops back in. Around it four small figures do quiet,
-// unexplained work: one plays a console of knobs and a lever, one tunes a ring instrument, and two cast: a hand
-// traces a precise sigil of light in the air, the sigil folds down into a geometric solid, and they let it go.
+// The living loop (draft 6): a seamless 12 s loop at 24 fps in the approved relief-box clay language, inside a
+// turning honeycomb dome. This is Robin's memory of the machine-elf space (research notes: RESEARCH-machine-elves.md).
+// In the middle a faceted funnel feeds itself through a ringed pipe that swells as things pass. Around it small clay
+// elves at play-work: one plays a console, one tunes a ring instrument, two sing shapes into being (a stream of
+// glyphs leaves the mouth while the hands conduct; the sigil folds into a solid; they turn to us, hold it out, and
+// let it go), a chorus at the funnel's foot bounces and cheers each offering, and now and then a head pops into a
+// faceted ball. What they make and show is drawn in Mark Von Ulrich's saturated early-Mac pixel language.
 // Every motion is periodic in 12 s (or a divisor of it), so frame 288 is frame 0.
 // Built on Leon Lin's paper-fox core (vendor/paper-fox, MIT, Copyright (c) 2026 Leonxlnx).
 
@@ -2588,27 +2825,28 @@ const { LIGHT, PAL } = __m["src/kit.js"];
 const { ISLAND } = __m["src/props.js"];
 const { LOOP, cyc, addWorld, addNear } = __m["src/loop-world.js"];
 const { CONSOLE, INSTR, knobAngle, leverAngle, sliderK, addMachines } = __m["src/loop-machine.js"];
-const { drawSolid } = __m["src/loop-shapes.js"];
 const { makeFigure, drawFigure } = __m["src/loop-figures.js"];
+const { MK, MK_RAMP, PS, markLayer, paintMarkSolid, paintBurst, paintGlyph, paintLines } = __m["src/loop-mark.js"];
 // the figures stand a little taller than draft 1's so their hands read, still small against the funnel
 const P = PAL, TAU = Math.PI * 2, GROUND = 985, FS = 1.2, HIP = GROUND - 33 * FS;
 const mod = (x, m) => ((x % m) + m) % m;
 const mixPt = (a, b, k) => [lerp(a[0], b[0], k), lerp(a[1], b[1], k)];
+// a bump that rises and falls over [a, b]: 0 outside, 1 at the middle
+const bump = (t, a, b) => (t <= a || t >= b ? 0 : Math.sin(Math.PI * (t - a) / (b - a)));
+// a bump on the loop's circle, so one that wraps past 12 s still closes the seam
+const loopBump = (t, a, len) => bump(mod(t - a, LOOP), 0, len);
+// hopping like a ball: how high the body is off the ground (the period divides the loop)
+const hop = (t, period, ph, h) => h * Math.abs(Math.sin(TAU * (t / period + ph) / 2));
 
-// keyframed hands: keys are [time, back hand, front hand]; eased between, held after the last key
-function keyed(q, keys) {
-  if (q <= keys[0][0]) return [keys[0][1], keys[0][2]];
-  for (let i = 0; i < keys.length - 1; i++) {
-    const [t0, a0, b0] = keys[i], [t1, a1, b1] = keys[i + 1];
-    if (q < t1) { const k = E.smooth((q - t0) / (t1 - t0)); return [mixPt(a0, a1, k), mixPt(b0, b1, k)]; }
-  }
-  const last = keys[keys.length - 1];
-  return [last[1], last[2]];
-}
-
-// ---------------- the console operator, behind the desk ----------------
+// ---------------- the console operator, behind the desk; every 6 s turns to us and beckons ----------------
 function operatorPose(t) {
   const q = mod(t, 3), x = 566;
+  const beckon = bump(mod(t, 6), 4.3, 5.7);
+  if (beckon > 0) {
+    const k = Math.min(1, beckon * 2.5), curl = Math.sin(TAU * 3 * mod(t, 6));
+    return { hip: [x, HIP], feet: [[x - 6, GROUND], [x + 7, GROUND]], facing: 1, scale: FS, lean: 0, turn: k, headTilt: 0,
+      hands: [[x - 10, HIP + 2], [x + 12, HIP - 34 - 4 * curl]] };
+  }
   const k1 = CONSOLE.knobs[0], k2 = CONSOLE.knobs[1], la = leverAngle(t), lev = [CONSOLE.lever[0] + Math.sin(la) * 22, CONSOLE.lever[1] - Math.cos(la) * 22];
   const a1 = knobAngle(t, 0), knobHand = [k1[0] + Math.sin(a1) * 3, k1[1] - 4];
   if (q < 1.4) return { hip: [x, HIP], feet: [[x + 6, GROUND], [x - 7, GROUND]], facing: -1, scale: FS, lean: 0.14, headTilt: 0.15, hands: [[k2[0] + 2, k2[1] - 4], knobHand] };
@@ -2617,108 +2855,163 @@ function operatorPose(t) {
   return { hip: [x, HIP], feet: [[x - 6, GROUND], [x + 7, GROUND]], facing: 1, scale: FS, lean: 0.06, headTilt: -0.1, hands: [mixPt([x + 8, 906], [sx - 10, sy - 6 + 3 * Math.sin(TAU * q * 2)], k), mixPt(lev, [sx + 10, sy - 8 + 3 * Math.cos(TAU * q * 2)], k)] };
 }
 
-// ---------------- the instrument tuner ----------------
+// ---------------- the tuner at the ring instrument; every 6 s turns to us and beckons ----------------
 function tunerPose(t) {
   const x = 1404, [a, b] = INSTR.slider, sl = [lerp(a[0], b[0], sliderK(t)), a[1] - 2];
+  const beckon = bump(mod(t, 6), 1.2, 2.6);
+  if (beckon > 0) {
+    const k = Math.min(1, beckon * 2.5), curl = Math.sin(TAU * 3 * mod(t, 6));
+    return { hip: [x, HIP], feet: [[x - 7, GROUND], [x + 7, GROUND]], facing: 1, scale: FS, lean: 0, turn: k, hands: [[x - 12, HIP - 32 - 4 * curl], sl] };
+  }
   const q = mod(t, 4), reach = smoothstep(2.0, 2.5, q) * (1 - smoothstep(3.0, 3.5, q));
   return { hip: [x, HIP], feet: [[x - 7, GROUND], [x + 7, GROUND]], facing: 1, scale: FS, lean: 0.1 + 0.04 * reach, headTilt: -0.35 * reach,
     hands: [mixPt([x + 14, 930], [INSTR.x - 22, INSTR.ringY + 20 + 4 * Math.sin(TAU * q)], reach), sl] };
 }
 
-// ---------------- the casting: a 6 s spell that makes one solid ----------------
-//   0.0-0.4 rest, 0.4-0.7 the leading hand rises to the sigil's first point, 0.7-2.7 it traces the sigil in the air
-//   (a circle, a ring of ticks, then the solid's own figure inside), leaving a line of light, while the other hand
-//   turns small steady circles at the chest; 2.7-3.3 both hands push in, the sigil spins down to its centre and the
-//   solid forms there; 3.3-3.9 arms open and it is let go; 3.9-6.0 hands come down, the head follows it up.
-const T_TRACE = [0.7, 2.7], T_FORM = [2.7, 3.3], T_OPEN = [3.3, 3.9];
+// ---------------- the singers: a 6 s song that makes one solid and offers it to us ----------------
+//   0.0-0.3 rest; 0.3-2.3 sing: glyphs stream from the mouth up into a sigil that draws itself in the air while
+//   the leading hand conducts the same figure small and the other hand turns circles at the chest; 2.3-2.8 the
+//   sigil folds into a solid; 2.8-3.2 they turn to face us and bring it to the chest; 3.2-4.4 they hold it out to
+//   us, tilting it, a burst flaring behind it; 4.4-4.9 they let it go upward; 4.6-5.0 turn back; 5.0-6.0 bounce.
+const T = { sing: [0.3, 2.3], fold: [2.3, 2.8], turn: [2.8, 3.2], offer: [3.2, 4.4] };
 const poly = (n, rot = -Math.PI / 2, r = 1) => [...Array(n + 1)].map((_, i) => [Math.cos(rot + i / n * TAU) * r, Math.sin(rot + i / n * TAU) * r]);
-const star = (n, step) => [...Array(n + 1)].map((_, i) => { const a = -Math.PI / 2 + (i * step % n) / n * TAU; return [Math.cos(a), Math.sin(a)]; });
-// each sigil is a list of strokes in unit coordinates; the circle comes first, then the figure for the solid
+const star = (n, step) => [...Array(n + 1)].map((_, i) => { const a = -Math.PI / 2 + (i * step % n) / n * TAU; return [Math.cos(a) * 0.86, Math.sin(a) * 0.86]; });
 const SIGILS = {
-  tetra: [poly(48, -Math.PI / 2), poly(3, -Math.PI / 2, 0.86)],
-  ico: [poly(48, -Math.PI / 2), star(5, 2).map(([x, y]) => [x * 0.86, y * 0.86])],
-  star: [poly(48, -Math.PI / 2), poly(3, -Math.PI / 2, 0.86), poly(3, Math.PI / 2, 0.86)],
-  octa: [poly(48, -Math.PI / 2), poly(4, -Math.PI / 2, 0.86), poly(48, -Math.PI / 2, 0.42)],
+  tetra: [poly(48), poly(3, -Math.PI / 2, 0.86)],
+  ico: [poly(48), star(5, 2)],
+  star: [poly(48), poly(3, -Math.PI / 2, 0.86), poly(3, Math.PI / 2, 0.86)],
+  octa: [poly(48), poly(4, -Math.PI / 2, 0.86), poly(48, -Math.PI / 2, 0.42)],
 };
 const slen = (pl) => pl.reduce((a, p, i) => i ? a + Math.hypot(p[0] - pl[i - 1][0], p[1] - pl[i - 1][1]) : 0, 0);
+const HOP = 0.4;
 // where the pen is after fraction k of the whole sigil (pen-up hops between strokes count as short moves)
 function sigilAt(kind, k) {
-  const strokes = SIGILS[kind], lens = strokes.map(slen), hop = 0.4, total = lens.reduce((a, b) => a + b, 0) + hop * (strokes.length - 1);
+  const strokes = SIGILS[kind], lens = strokes.map(slen), total = lens.reduce((a, b) => a + b, 0) + HOP * (strokes.length - 1);
   let d = k * total;
   for (let i = 0; i < strokes.length; i++) {
-    if (d <= lens[i]) { const pl = strokes[i]; for (let j = 1; j < pl.length; j++) { const seg = Math.hypot(pl[j][0] - pl[j - 1][0], pl[j][1] - pl[j - 1][1]); if (d <= seg) return { p: mixPt(pl[j - 1], pl[j], d / seg), stroke: i, d: null }; d -= seg; } return { p: pl[pl.length - 1], stroke: i }; }
+    if (d <= lens[i]) { const pl = strokes[i]; for (let j = 1; j < pl.length; j++) { const seg = Math.hypot(pl[j][0] - pl[j - 1][0], pl[j][1] - pl[j - 1][1]); if (d <= seg) return mixPt(pl[j - 1], pl[j], d / seg); d -= seg; } return pl[pl.length - 1]; }
     d -= lens[i];
-    if (i < strokes.length - 1) { if (d <= hop) return { p: mixPt(strokes[i][strokes[i].length - 1], strokes[i + 1][0], d / hop), stroke: i + 0.5 }; d -= hop; }
+    if (i < strokes.length - 1) { if (d <= HOP) return mixPt(strokes[i][strokes[i].length - 1], strokes[i + 1][0], d / HOP); d -= HOP; }
   }
   const last = strokes[strokes.length - 1];
-  return { p: last[last.length - 1], stroke: strokes.length };
+  return last[last.length - 1];
+}
+// the part of the sigil drawn after fraction k, as polylines in unit coordinates
+function sigilDrawn(kind, k) {
+  const strokes = SIGILS[kind], lens = strokes.map(slen), total = lens.reduce((a, b) => a + b, 0) + HOP * (strokes.length - 1);
+  let left = k * total;
+  const out = [];
+  strokes.forEach((pl) => {
+    if (left <= 0) return;
+    const o = [pl[0]];
+    for (let q = 1; q < pl.length && left > 0; q++) { const seg = Math.hypot(pl[q][0] - pl[q - 1][0], pl[q][1] - pl[q - 1][1]); if (left >= seg) { o.push(pl[q]); left -= seg; } else { o.push(mixPt(pl[q - 1], pl[q], left / seg)); left = 0; } }
+    out.push(o);
+    left -= HOP;
+  });
+  return { paths: out, circleDone: k * total >= lens[0] };
 }
 const cycleOf = (t, phase) => { const L = mod(t - phase, LOOP); return { c: mod(L, 6), j: Math.floor(L / 6) }; };
-// in front of the leading shoulder, clear of the face, every point of it within the hand's reach
-const sigilCentre = (x, f, hip) => [x + f * 29 * FS, hip - 47 * FS];
-const SR = 14 * FS;
+// where things are, relative to a singer at x facing f with its hip at hip
+const geo = (x, f, hip) => ({
+  sigil: [x + f * 50 * FS, hip - 86 * FS], sr: 20 * FS,           // the sigil hangs up and ahead, in the air
+  conduct: [x + f * 22 * FS, hip - 46 * FS], cr: 11 * FS,         // the hand conducts the same figure, small
+  mouth: [x + f * 12 * FS, hip - 56 * FS],
+  hold: [x, hip - 24 * FS],                                       // held at the chest once they face us, face clear
+});
+const offerAt = (c) => E.outSoft(smoothstep(T.offer[0], T.offer[0] + 0.5, c));
 
-function castPose(t, phase, x, f, hip, feet, kinds) {
-  const { c, j } = cycleOf(t, phase), kind = kinds[j], C = sigilCentre(x, f, hip), k = FS;
+function singerPose(t, phase, x, f, hip, feet, kinds, shiftAt) {
+  const { c, j } = cycleOf(t, phase), kind = kinds[j], G = geo(x, f, hip), k = FS;
   const rest = [[x - f * 7 * k, hip + 4 * k], [x + f * 9 * k, hip + 4 * k]];
-  const lead = (kk) => { const p = sigilAt(kind, kk).p; return [C[0] + p[0] * SR, C[1] + p[1] * SR]; };
-  const turn = [x + f * 6 * k + Math.cos(TAU * 2 * c) * 6 * k, hip - 26 * k + Math.sin(TAU * 2 * c) * 6 * k];
+  const lead = (kk) => { const p = sigilAt(kind, kk); return [G.conduct[0] + p[0] * G.cr, G.conduct[1] + p[1] * G.cr]; };
+  const turnC = [x + f * 6 * k + Math.cos(TAU * 2 * c) * 6 * k, hip - 26 * k + Math.sin(TAU * 2 * c) * 6 * k];
+  // holding hands either side of the solid: lead hand on the facing side
+  const holdLead = [G.hold[0] + f * 11 * k, G.hold[1] + 4], holdBack = [G.hold[0] - f * 11 * k, G.hold[1] + 4];
+  const upLead = [x + f * 30 * k, hip - 62 * k], upBack = [x - f * 30 * k, hip - 62 * k];
   let back = rest[0], front = rest[1];
-  if (c < 0.4) { /* rest */ }
-  else if (c < T_TRACE[0]) { const e = E.smooth((c - 0.4) / 0.3); front = mixPt(rest[1], lead(0), e); back = mixPt(rest[0], turn, e); }
-  else if (c < T_TRACE[1]) { front = lead(E.smooth((c - T_TRACE[0]) / (T_TRACE[1] - T_TRACE[0]))); back = turn; }
-  else if (c < T_FORM[1]) { const e = E.smooth((c - T_FORM[0]) / (T_FORM[1] - T_FORM[0])); front = mixPt(lead(1), [C[0] + f * 9 * k, C[1] + 4 * k], e); back = mixPt(turn, [C[0] - f * 9 * k, C[1] + 5 * k], e); }
-  else if (c < T_OPEN[1]) { const e = E.outSoft((c - T_OPEN[0]) / (T_OPEN[1] - T_OPEN[0])); front = mixPt([C[0] + f * 9 * k, C[1] + 4 * k], [x + f * 32 * k, hip - 58 * k], e); back = mixPt([C[0] - f * 9 * k, C[1] + 5 * k], [x - f * 26 * k, hip - 54 * k], e); }
-  else { const e = E.smooth((c - T_OPEN[1]) / 1.5); front = mixPt([x + f * 32 * k, hip - 58 * k], rest[1], e); back = mixPt([x - f * 26 * k, hip - 54 * k], rest[0], e); }
-  const casting = smoothstep(0.4, 0.7, c) * (1 - smoothstep(T_OPEN[0], T_OPEN[1], c)), watch = smoothstep(T_OPEN[0], T_OPEN[1], c) * (1 - smoothstep(5.2, 6, c));
-  return { hip: [x, hip], feet, facing: f, scale: FS, lean: 0.06 * casting - 0.06 * watch, headTilt: -0.1 * casting - 0.4 * watch, hands: f > 0 ? [back, front] : [back, front] };
-}
-
-// the line of light the hand leaves, then the sigil spinning down into the solid
-function drawSigil(ctx, t, phase, x, f, hip, kinds) {
-  const { c, j } = cycleOf(t, phase);
-  if (c < T_TRACE[0] || c > T_FORM[1] + 0.05) return;
-  const kind = kinds[j], C = sigilCentre(x, f, hip), drawn = c < T_TRACE[1] ? E.smooth((c - T_TRACE[0]) / (T_TRACE[1] - T_TRACE[0])) : 1;
-  const fold = smoothstep(T_FORM[0], T_FORM[1], c), R = SR * (1 - 0.92 * E.in(fold)), spin = TAU * 0.6 * E.in(fold) * -f;
-  const strokes = SIGILS[kind], lens = strokes.map(slen), total = lens.reduce((a, b) => a + b, 0) + 0.4 * (strokes.length - 1);
-  let left = drawn * total;
-  const P2 = ([u, v]) => { const cs = Math.cos(spin), sn = Math.sin(spin); return [C[0] + (u * cs - v * sn) * R, C[1] + (u * sn + v * cs) * R]; };
-  const paths = [];
-  strokes.forEach((pl, i) => {
-    if (left <= 0) return;
-    const out = [pl[0]];
-    for (let q = 1; q < pl.length && left > 0; q++) { const seg = Math.hypot(pl[q][0] - pl[q - 1][0], pl[q][1] - pl[q - 1][1]); if (left >= seg) { out.push(pl[q]); left -= seg; } else { out.push(mixPt(pl[q - 1], pl[q], left / seg)); left = 0; } }
-    paths.push(out.map(P2));
-    left -= 0.4;
-  });
-  // the ring of ticks appears once the circle is closed
-  const ticks = drawn * total > lens[0] ? smoothstep(lens[0], lens[0] + 0.6, drawn * total) : 0;
-  ctx.save();
-  ctx.lineCap = 'round'; ctx.lineJoin = 'round';
-  const fade = 1 - smoothstep(0.6, 1, fold);
-  const strokeAll = () => {
-    for (const pth of paths) { ctx.beginPath(); pth.forEach(([px, py], q) => (q ? ctx.lineTo(px, py) : ctx.moveTo(px, py))); ctx.stroke(); }
-    if (ticks > 0) for (let q = 0; q < 12; q++) {
-      const a0 = q / 12 * TAU, p0 = P2([Math.cos(a0) * 1.14, Math.sin(a0) * 1.14]), p1 = P2([Math.cos(a0) * (1.14 + 0.2 * ticks), Math.sin(a0) * (1.14 + 0.2 * ticks)]);
-      ctx.beginPath(); ctx.moveTo(...p0); ctx.lineTo(...p1); ctx.stroke();
-    }
-  };
-  // a warm halo, then a saturated gold line, then a hot core: it has to read against a pale world
-  ctx.globalCompositeOperation = 'lighter'; ctx.strokeStyle = '#ffc070'; ctx.globalAlpha = 0.3 * fade; ctx.lineWidth = 8 * FS; strokeAll();
-  ctx.globalCompositeOperation = 'source-over'; ctx.strokeStyle = '#e8932e'; ctx.globalAlpha = 0.95 * fade; ctx.lineWidth = 2.6 * FS * (1 - 0.4 * fold); strokeAll();
-  ctx.strokeStyle = '#fff3d6'; ctx.globalAlpha = 0.9 * fade; ctx.lineWidth = 0.9 * FS; strokeAll();
-  ctx.restore();
-}
-
-// the solids each caster has made: formed at the sigil's centre from 2.7, let go at 3.3, gone 10.5 s after forming
-function castSolids(ctx, t, phase, x, f, hip, kinds, colors, drift) {
-  for (let j = 0; j < 2; j++) {
-    const born = phase + T_FORM[0] + 6 * j, u = mod(t - born, LOOP);
-    if (u >= 10.5) continue;
-    const at = sigilCentre(x, f, hip), grow = E.outSoft(smoothstep(0.1, 0.6, u)), f2 = smoothstep(0.6, 10.5, u);
-    const px = at[0] + drift * (170 * f2 + 26 * Math.sin(f2 * 5)), py = at[1] - 600 * E.outSoft(f2);
-    drawSolid(ctx, kinds[j], px, py, 24 * grow * (1 - 0.4 * f2), [TAU * t / 6 + j, TAU * t / 4, 0.3 * j], colors[j], { glowK: smoothstep(0, 0.4, u) * (1 - smoothstep(0.8, 2.8, u)), alpha: 1 - smoothstep(0.82, 1, f2) });
+  const songK = (c - T.sing[0]) / (T.sing[1] - T.sing[0]);
+  if (c < T.sing[0]) { /* rest */ }
+  else if (c < T.sing[1]) { const e = smoothstep(0.3, 0.6, c); front = mixPt(rest[1], lead(E.smooth(Math.max(0, songK))), e); back = mixPt(rest[0], turnC, e); }
+  else if (c < T.turn[1]) { const e = E.smooth((c - T.fold[0]) / (T.turn[1] - T.fold[0])); front = mixPt(lead(1), holdLead, e); back = mixPt(turnC, holdBack, e); }
+  else if (c < T.offer[1]) { const o = offerAt(c), bob = 3 * Math.sin(TAU * (c - T.offer[0]) / 1.2); front = [holdLead[0] + f * 4 * o, holdLead[1] - 6 * o + bob]; back = [holdBack[0] - f * 4 * o, holdBack[1] - 6 * o + bob]; }
+  else {
+    const e = Math.min(1, E.outSoft((c - T.offer[1]) / 0.6)), d = smoothstep(4.9, 5.6, c);
+    front = mixPt(mixPt([holdLead[0] + f * 4, holdLead[1] - 6], upLead, e), rest[1], d);
+    back = mixPt(mixPt([holdBack[0] - f * 4, holdBack[1] - 6], upBack, e), rest[0], d);
   }
+  const turn = smoothstep(T.turn[0], T.turn[1], c) * (1 - smoothstep(4.6, 5.0, c));
+  const sing = c > T.sing[0] && c < T.sing[1] ? 0.35 + 0.65 * Math.abs(Math.sin(TAU * 3 * c)) : 0;
+  const bounce = c > 5.0 || c < 0.3 ? hop(t, 0.5, 0, 6 * k) : 0;
+  return { hip: [x, hip - bounce], feet: feet.map((p) => [p[0], p[1] - bounce * 0.6]), facing: f, scale: FS, turn, sing,
+    lean: songK > 0 && songK < 1 ? 0.05 : 0, headTilt: c < T.sing[1] ? -0.25 : 0, hands: [back, front].map((h) => [h[0], h[1] - bounce]),
+    shift: loopBump(t, shiftAt, 0.9), shiftKind: 'octa', shiftSpin: TAU * t / 2 };
+}
+
+// where solid jj of a singer is at time t: position, radius, how far it has drifted, and its burst strength
+function solidAt(t, phase, x, f, hip, jj) {
+  const G = geo(x, f, hip), born = phase + T.fold[0] + 6 * jj, u = mod(t - born, LOOP);
+  if (u >= 10.5) return null;
+  const grow = E.outSoft(smoothstep(0.1, 0.5, u)), toHold = E.smooth(smoothstep(0.5, 0.9, u)), offer = offerAt(u + T.fold[0]);
+  const drift = smoothstep(2.1, 10.5, u), freeK = E.outSoft(drift);
+  const at = mixPt(G.sigil, [G.hold[0], G.hold[1] - 6], toHold);
+  const p = [at[0] + f * (170 * drift + 26 * Math.sin(drift * 5)), at[1] - 600 * freeK];
+  const r = 13 * FS * grow * (1 + 0.35 * offer * (1 - smoothstep(2.1, 2.6, u))) * (1 - 0.4 * drift);
+  return { p, r, drift, burst: u > 0.9 && u < 2.4 ? bump(u, 0.9, 2.4) : 0 };
+}
+// the burst that stages an offered solid, drawn behind the singer
+function singerBurst(ctx, t, phase, x, f, hip) {
+  for (let jj = 0; jj < 2; jj++) {
+    const S0 = solidAt(t, phase, x, f, hip, jj);
+    if (!S0 || S0.burst <= 0) continue;
+    const { p, r } = S0, R = r * 1.9 * (0.7 + 0.3 * S0.burst);
+    markLayer(ctx, p[0], p[1], R * 2.3, R * 2.3, (g) => paintBurst(g, p[0], p[1], R, 18, TAU * t / 6), { alpha: S0.burst });
+  }
+}
+
+// what a singer makes, in Mark's colours: the glyph stream and the sigil during the song, then the solid from the
+// fold through the offering to its drift away. Drawn after the figure so it sits in front.
+function singerMakes(ctx, t, phase, x, f, hip, kinds, hue) {
+  const { c, j } = cycleOf(t, phase), G = geo(x, f, hip);
+  if (c > T.sing[0] && c < T.fold[1]) {
+    const songK = Math.min(1, Math.max(0, (c - T.sing[0]) / (T.sing[1] - T.sing[0]))), fold = smoothstep(T.fold[0], T.fold[1], c);
+    const { paths, circleDone } = sigilDrawn(kinds[j], E.smooth(songK));
+    const R = G.sr * (1 - 0.9 * E.in(fold)), spin = TAU * 0.6 * E.in(fold) * -f;
+    const P2 = ([u, v]) => [G.sigil[0] + (u * Math.cos(spin) - v * Math.sin(spin)) * R, G.sigil[1] + (u * Math.sin(spin) + v * Math.cos(spin)) * R];
+    const lo = Math.min(G.mouth[0], G.sigil[0]) - 44, hi = Math.max(G.mouth[0], G.sigil[0]) + 44;
+    markLayer(ctx, (lo + hi) / 2, (G.sigil[1] + G.mouth[1]) / 2, hi - lo, G.mouth[1] - G.sigil[1] + 96, (g) => {
+      paintLines(g, paths.map((p) => p.map(P2)), 2.6 * PS, MK.magenta, MK.yellow);
+      if (circleDone) for (let q = 0; q < 12; q++) { const a = q / 12 * TAU; paintLines(g, [[P2([Math.cos(a) * 1.14, Math.sin(a) * 1.14]), P2([Math.cos(a) * 1.34, Math.sin(a) * 1.34])]], 1.6 * PS, MK.cyan, MK.white); }
+      // the sung glyphs: one leaves the mouth every 0.1 s and flies up into the sigil where it is being drawn
+      for (let e = T.sing[0]; e < Math.min(c, T.sing[1]); e += 0.1) {
+        const a = (c - e) / 0.55;
+        if (a < 0 || a > 1) continue;
+        const n = Math.round(e * 10), to = P2(sigilAt(kinds[j], Math.min(1, E.smooth((e + 0.55 - T.sing[0]) / (T.sing[1] - T.sing[0])))));
+        const ctl = [(G.mouth[0] + to[0]) / 2 + f * 6, Math.min(G.mouth[1], to[1]) - 18];
+        const p = [(1 - a) ** 2 * G.mouth[0] + 2 * (1 - a) * a * ctl[0] + a * a * to[0], (1 - a) ** 2 * G.mouth[1] + 2 * (1 - a) * a * ctl[1] + a * a * to[1]];
+        paintGlyph(g, n % 6, p[0], p[1], (5 + 3 * Math.sin(Math.PI * a)) * FS, MK_RAMP[(n + hue) % MK_RAMP.length], a * 3);
+      }
+    }, { alpha: 1 - smoothstep(0.7, 1, fold) });
+  }
+  // the solids: forming at the sigil, carried up before the face, held out to us, then drifting away
+  for (let jj = 0; jj < 2; jj++) {
+    const S0 = solidAt(t, phase, x, f, hip, jj);
+    if (!S0 || S0.r < 0.5) continue;
+    const { p, r } = S0;
+    markLayer(ctx, p[0], p[1], r * 2.6 + 8, r * 2.6 + 8, (g) => paintMarkSolid(g, kinds[jj], p[0], p[1], r, [TAU * t / 6 + jj, TAU * t / 4, 0.3 * jj], hue + jj * 3), { alpha: 1 - smoothstep(0.82, 1, S0.drift) });
+  }
+}
+
+// ---------------- the chorus at the funnel's foot: bounce, cheer each offering, pop into solids ----------------
+const CHORUS = [[722, 'bells', P.mint], [792, P.butter, P.pink], [862, 'pom', P.lilac], [1018, P.pink, P.aqua], [1088, 'bells', P.butter], [1158, P.mint, P.blush]];
+// the offerings the chorus cheers: the adept's at 3.2 and 9.2, the seer's at 6.2 and 0.2 (each about 1.2 s)
+const cheerAt = (t) => Math.max(...[3.2, 9.2, 6.2, 0.2].map((a) => loopBump(t, a - 0.1, 1.4)));
+function chorusPose(t, i, x) {
+  const ch = cheerAt(t), k = 0.85 * FS, hip = GROUND - 33 * k, b = hop(t, 0.6, i * 0.17, (4 + 8 * ch) * k);
+  const wave = Math.sin(TAU * (t / 0.6 + i * 0.17));
+  const down = [[x - 9 * k, hip + 4 * k + 2 * wave], [x + 9 * k, hip + 4 * k - 2 * wave]], upH = [[x - 20 * k, hip - 64 * k + 4 * wave], [x + 20 * k, hip - 64 * k - 4 * wave]];
+  const hands = [mixPt(down[0], upH[0], ch), mixPt(down[1], upH[1], ch)].map((h) => [h[0], h[1] - b]);
+  return { hip: [x, hip - b], feet: [[x - 7 * k, GROUND - b * 0.6], [x + 7 * k, GROUND - b * 0.6]], facing: i % 2 ? 1 : -1, scale: k, turn: 0.85, lean: 0, hands,
+    shift: loopBump(t, 1.1 + i * 1.9, 0.9), shiftKind: ['ico', 'cube', 'octa'][i % 3], shiftSpin: TAU * t / 2 };
 }
 
 function scene() {
@@ -2738,27 +3031,27 @@ function scene() {
       const tuner = makeFigure(S, { name: 'tuner', color: P.lilac, cap: P.butter });
       const adept = makeFigure(S, { name: 'adept', color: P.mint, cap: P.pink });
       const seer = makeFigure(S, { name: 'seer', color: P.butter, cap: P.mintDeep });
+      const chorus = CHORUS.map(([, cap, col], i) => makeFigure(S, { name: `chorus-${i}`, color: col, cap, harlequin: cap === 'bells' ? P.pinkDeep : null }));
 
       // the operator stands behind the console, so it draws before the desk
-      S.add({ name: 'operator', z: 995, render(ctx, t, env) { drawFigure(ctx, operator, operatorPose(t), env); } });
+      S.add({ name: 'operator', z: 995, render(ctx, t, env) { drawFigure(ctx, operator, { ...operatorPose(t), shift: loopBump(t, 7.3, 0.9), shiftKind: 'cube', shiftSpin: TAU * t / 2 }, env); } });
+      S.add({ name: 'chorus', z: 978, render(ctx, t, env) { CHORUS.forEach(([x], i) => drawFigure(ctx, chorus[i], chorusPose(t, i, x), env)); } });
       S.add({ name: 'figures', z: 985, render(ctx, t, env) {
-        drawFigure(ctx, tuner, tunerPose(t), env);
-        const x = 1700;
-        const kinds = ['tetra', 'ico'];
-        drawFigure(ctx, adept, castPose(t, 0, x, -1, HIP, [[x + 7, GROUND], [x - 8, GROUND]], kinds), env);
-        drawSigil(ctx, t, 0, x, -1, HIP, kinds);
-        castSolids(ctx, t, 0, x, -1, HIP, kinds, [P.pink, P.butter], -1);
+        drawFigure(ctx, tuner, { ...tunerPose(t), shift: loopBump(t, 4.6, 0.9), shiftKind: 'ico', shiftSpin: TAU * t / 2 }, env);
+        const x = 1700, kinds = ['tetra', 'ico'];
+        singerBurst(ctx, t, 0, x, -1, HIP);
+        drawFigure(ctx, adept, singerPose(t, 0, x, -1, HIP, [[x + 7, GROUND], [x - 8, GROUND]], kinds, 10.7), env);
+        singerMakes(ctx, t, 0, x, -1, HIP, kinds, 0);
       } });
 
-      // the seer sits on the floating island, casting the same spell three seconds behind the adept
+      // the seer sits on the floating island, singing the same song three seconds behind the adept
       const IX = -120, IY = 90;
       S.add({ name: 'island', z: 1500, shadow: { dx: 10, dy: 22, alpha: 0.32 }, anim: (t) => ({ y: 8 * cyc(t, 1, 0.55), rot: 0.008 * cyc(t, 1, 0.8), ox: ISLAND.x + IX, oy: ISLAND.y + IY }), render(ctx, t, env) {
         drawSprites(ctx, [{ s: world.island, ax: ISLAND.x, ay: ISLAND.y, x: ISLAND.x + IX, y: ISLAND.y + IY }], env.shadow);
-        const ground = ISLAND.y - 4 + IY, x = 300, hip = ground - 14 * FS;
-        const kinds = ['star', 'octa'];
-        drawFigure(ctx, seer, castPose(t, 3, x, 1, hip, [[x + 16, ground + 4], [x + 22, ground + 6]], kinds), env);
-        drawSigil(ctx, t, 3, x, 1, hip, kinds);
-        castSolids(ctx, t, 3, x, 1, hip, kinds, [P.lilac, P.aqua], 1);
+        const ground = ISLAND.y - 4 + IY, x = 300, hip = ground - 14 * FS, kinds = ['star', 'octa'];
+        singerBurst(ctx, t, 3, x, 1, hip);
+        drawFigure(ctx, seer, singerPose(t, 3, x, 1, hip, [[x + 16, ground + 4], [x + 22, ground + 6]], kinds, 1.6), env);
+        singerMakes(ctx, t, 3, x, 1, hip, kinds, 4);
       } });
     },
   });

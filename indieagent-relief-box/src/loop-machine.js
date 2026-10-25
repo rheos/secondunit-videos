@@ -17,6 +17,7 @@ import { lerp, smoothstep, E } from '../vendor/paper-fox/core/ease.js';
 import { PAL, CLAY_MAT, CLAY_EDGE, clayForm, tube, tubeOutline, steps, dot } from './kit.js';
 import { LOOP, cyc } from './loop-world.js';
 import { drawSolid } from './loop-shapes.js';
+import { MK, MK_RAMP, markLayer, paintMarkSolid, paintBurst, paintGlyph } from './loop-mark.js';
 
 const P = PAL, TAU = Math.PI * 2;
 const circle = (cx, cy, r, n = 36) => [...Array(n)].map((_, i) => [cx + Math.cos(i / n * TAU) * r, cy + Math.sin(i / n * TAU) * r]);
@@ -167,17 +168,40 @@ export function addMachines(S) {
     const swell = [], late = [];   // swell: [arc length, strength] of each bulge in the pipe
     const pulse = 0.5 + 0.5 * Math.cos(TAU * mod(t, 0.75) / 0.75);
     ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, RIM.x, RIM.y + 6, 150, '#ffd9b0', 0.14 + 0.06 * pulse); ctx.restore();
-    for (let n = 0; n < 8; n++) {
-      const u = mod(t + n * 0.75, 6), kind = KINDS[n % 4], col = COLS[n], ang = [TAU * t / 3 + n, TAU * t / 2, n];
-      if (u < 1.6) {                                       // spiralling in and down inside the mouth
+    // inside the mouth is Mark's world: deep blue going to black, zigzag rings turning, a burst at the throat, and the
+    // solids spiralling down through it, all in his early-Mac colours
+    const mouthPts = [...Array(SIDES)].map((_, k) => ring(RIM.y, RIM.rx * 0.93, RIM.ry * 0.93, k));
+    markLayer(ctx, RIM.x, RIM.y, RIM.rx * 2, RIM.ry * 2 + 12, (g) => {
+      const clip = new Path2D(); mouthPts.forEach(([x, y], i) => (i ? clip.lineTo(x, y) : clip.moveTo(x, y))); clip.closePath();
+      g.save(); g.clip(clip);
+      const bg = g.createRadialGradient(RIM.x, RIM.y + 6, 2, RIM.x, RIM.y, RIM.rx);
+      bg.addColorStop(0, MK.deep); bg.addColorStop(0.5, MK.blue); bg.addColorStop(1, MK.violet);
+      g.fillStyle = bg; g.fillRect(RIM.x - RIM.rx, RIM.y - RIM.ry - 6, RIM.rx * 2, RIM.ry * 2 + 12);
+      for (let k = 0; k < 4; k++) {                          // zigzag rings shrinking toward the throat, turning
+        const kk = mod(k + t / 1.5, 4) / 4, rx = RIM.rx * (0.9 - 0.75 * kk), ry = RIM.ry * (0.9 - 0.75 * kk), n = 40;
+        g.beginPath();
+        for (let i = 0; i <= n; i++) { const a = i / n * TAU + t * 0.5, z = i % 2 ? 0.86 : 1; g.lineTo(RIM.x + Math.cos(a) * rx * z, RIM.y + 6 + Math.sin(a) * ry * z); }
+        g.strokeStyle = [MK.magenta, MK.cyan, MK.yellow, MK.lime][k]; g.lineWidth = 1.5; g.stroke();
+      }
+      paintBurst(g, RIM.x, RIM.y + 8, 14 + 2 * Math.sin(TAU * t / 0.75), 12, TAU * t / 6);
+      for (let n = 0; n < 8; n++) {
+        const u = mod(t + n * 0.75, 6);
+        if (u >= 1.6) continue;
         const k = u / 1.6, a = n * 1.3 + k * TAU * 1.25, rr = (1 - k) * 0.78 + 0.08;
-        drawSolid(ctx, kind, RIM.x + Math.cos(a) * RIM.rx * rr, RIM.y + 8 + Math.sin(a) * RIM.ry * rr + k * 14, 9 * (1 - 0.5 * k), ang, col, { alpha: 1 - smoothstep(0.7, 1, k) });
-      } else if (u >= 2.2 && u < 5.4) {                    // carried round the pipe
+        paintMarkSolid(g, KINDS[n % 4], RIM.x + Math.cos(a) * RIM.rx * rr, RIM.y + 8 + Math.sin(a) * RIM.ry * rr + k * 14, 9 * (1 - 0.5 * k), [TAU * t / 3 + n, TAU * t / 2, n], n);
+      }
+      g.restore();
+    });
+    for (let n = 0; n < 8; n++) {
+      const u = mod(t + n * 0.75, 6), kind = KINDS[n % 4], ang = [TAU * t / 3 + n, TAU * t / 2, n];
+      if (u < 1.6) continue;                               // inside the mouth: drawn in Mark's world above
+      else if (u >= 2.2 && u < 5.4) {                    // carried round the pipe
         const s = DUCT_LEN * (u - 2.2) / 3.2;
         swell.push([s, smoothstep(30, 70, s) * smoothstep(DUCT_LEN - 20, DUCT_LEN - 60, s)]);
       } else if (u >= 5.4) {                               // dropping from the spout into the mouth
         const k = (u - 5.4) / 0.6;
-        late.push(() => drawSolid(ctx, kind, lerp(SPOUT[0], RIM.x + 10, k), lerp(SPOUT[1] + 18, RIM.y + 10, E.in(k)), 9, ang, col, { glowK: 0.3 }));
+        const x = lerp(SPOUT[0], RIM.x + 10, k), y = lerp(SPOUT[1] + 18, RIM.y + 10, E.in(k));
+        late.push(() => markLayer(ctx, x, y, 34, 34, (g) => paintMarkSolid(g, kind, x, y, 9, ang, n)));
       }
     }
     drawSprites(ctx, [{ s: front }], { ...env.shadow, dx: 3, dy: 5 });
@@ -201,9 +225,13 @@ export function addMachines(S) {
     const la = leverAngle(t), [lx, ly] = CONSOLE.lever, tip = [lx + Math.sin(la) * 24, ly - Math.cos(la) * 24];
     ctx.strokeStyle = P.slateDeep; ctx.lineWidth = 4; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(lx, ly); ctx.lineTo(...tip); ctx.stroke();
     ctx.fillStyle = P.pinkDeep; ctx.beginPath(); ctx.arc(tip[0], tip[1], 5, 0, TAU); ctx.fill();
+    // the screen shows Mark's world: a turning octahedron over a cycling glyph, on black
     const [sx, sy] = CONSOLE.screen;
-    ctx.fillStyle = radial(ctx, sx - 3, sy - 3, 1, 14, ['#3d4b80', P.navy]); ctx.beginPath(); ctx.ellipse(sx, sy, 12, 18, 0, 0, TAU); ctx.fill();
-    drawSolid(ctx, 'octa', sx, sy, 7, [TAU * t / 6, TAU * t / 12, 0.3], '#bfe8ff', { glowK: 0.4, glowColor: '#9fd8ff' });
+    markLayer(ctx, sx, sy, 30, 40, (g) => {
+      g.fillStyle = MK.ink; g.beginPath(); g.ellipse(sx, sy, 12, 18, 0, 0, TAU); g.fill();
+      paintGlyph(g, Math.floor(mod(t, 3) * 2) % 6, sx, sy + 9, 7, MK_RAMP[Math.floor(mod(t, 3) * 2) % 8]);
+      paintMarkSolid(g, 'octa', sx, sy - 4, 7, [TAU * t / 6, TAU * t / 12, 0.3], 2);
+    });
   } });
 
   // the instrument: three rings turning on their own axes, a hovering solid, and once a loop a cube let go

@@ -33,6 +33,21 @@ function rot([x, y, z], a, b, c) {
   return [x, y, z];
 }
 
+// The visible faces of a solid turned by ang, far to near: { V (rotated unit vertices), faces: [{ f, n, z, lit }] }
+export function solidFaces(kind, ang) {
+  const S = SOLIDS[kind], V = S.v.map((v) => rot(v, ang[0], ang[1], ang[2]));
+  const faces = S.f.map((f) => {
+    const a = V[f[0]], b = V[f[1]], c = V[f[2]];
+    const u = [b[0] - a[0], b[1] - a[1], b[2] - a[2]], w = [c[0] - a[0], c[1] - a[1], c[2] - a[2]];
+    let n = norm([u[1] * w[2] - u[2] * w[1], u[2] * w[0] - u[0] * w[2], u[0] * w[1] - u[1] * w[0]]);
+    // every solid is centred on the origin: an outward normal points the same way as the face's centre
+    const m = [0, 1, 2].map((d) => f.reduce((s, i) => s + V[i][d], 0) / f.length);
+    if (n[0] * m[0] + n[1] * m[1] + n[2] * m[2] < 0) n = n.map((x) => -x);
+    return { f, n, z: m[2], lit: n[0] * L3[0] + n[1] * L3[1] + n[2] * L3[2] };
+  }).filter((F) => F.n[2] > 0).sort((p, q) => p.z - q.z);
+  return { V, faces };
+}
+
 // Draw one solid. kind: tetra | octa | cube | ico | star | ring. r: radius in px. ang: [a, b, c] rotation.
 // glowK 0..1: how much making-light wraps it. alpha: overall fade.
 export function drawSolid(ctx, kind, x, y, r, ang, color, { glowK = 0, alpha = 1, glowColor = '#fff1c8' } = {}) {
@@ -51,16 +66,7 @@ export function drawSolid(ctx, kind, x, y, r, ang, color, { glowK = 0, alpha = 1
       ctx.beginPath(); ctx.ellipse(x - (c === color ? 0 : 0), y - (w < r * 0.2 ? r * 0.06 : 0), r, r * tilt, ang[2], 0, Math.PI * 2); ctx.stroke();
     }
   } else {
-    const S = SOLIDS[kind], V = S.v.map((v) => rot(v, ang[0], ang[1], ang[2]));
-    const faces = S.f.map((f) => {
-      const a = V[f[0]], b = V[f[1]], c = V[f[2]];
-      const u = [b[0] - a[0], b[1] - a[1], b[2] - a[2]], w = [c[0] - a[0], c[1] - a[1], c[2] - a[2]];
-      let n = norm([u[1] * w[2] - u[2] * w[1], u[2] * w[0] - u[0] * w[2], u[0] * w[1] - u[1] * w[0]]);
-      // every solid is centred on the origin: an outward normal points the same way as the face's centre
-      const m = [0, 1, 2].map((d) => f.reduce((s, i) => s + V[i][d], 0) / f.length);
-      if (n[0] * m[0] + n[1] * m[1] + n[2] * m[2] < 0) n = n.map((x) => -x);
-      return { f, n, z: m[2] };
-    }).filter((F) => F.n[2] > 0).sort((p, q) => p.z - q.z);
+    const { V, faces } = solidFaces(kind, ang);
     for (const F of faces) {
       const lit = F.n[0] * L3[0] + F.n[1] * L3[1] + F.n[2] * L3[2];
       const tone = lit > 0 ? mix(color, '#fffaf0', lit * 0.55) : shade(color, lit * 0.45);

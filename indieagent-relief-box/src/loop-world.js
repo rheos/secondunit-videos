@@ -1,6 +1,6 @@
-// The living loop, the world: an open pastel world in the approved clay language, no box and no frame. A sky
-// that pales toward the horizon, clay clouds, three rows of rounded hills going back into the haze, the terrace
-// the machine stands on, two floating islands, and decorations floating free in mid-air at many depths.
+// The living loop, the world: the approved clay language inside a turning honeycomb dome (draft 6), no box and
+// no frame. The window-wheel sun is the dome's lantern; two rows of rounded hills are its floor; the terrace the
+// machine stands on; a floating island; a large tesseract; and geometry floating free in mid-air at many depths.
 // Every motion here is periodic in the loop period, so the film loops without a seam.
 
 import { RNG, noise } from '../vendor/paper-fox/core/rng.js';
@@ -12,6 +12,7 @@ import { LIGHT, PAL, CLAY_MAT, CLAY_EDGE, clayForm, tube, steps, dot } from './k
 import { rosette, curl } from './density.js';
 import { drawSun, drawIsland, drawCity, SUN, ISLAND, CITY } from './props.js';
 import { drawSolid, drawTesseract } from './loop-shapes.js';
+import { addDome } from './loop-dome.js';
 
 const P = PAL;
 const TAU = Math.PI * 2;
@@ -39,15 +40,6 @@ function mounds(g, { x0, x1, base, amp, bottom, colors, fade, seed, trees = 0.5 
   }
 }
 
-// a soft clay cloud: overlapping puffs on a flat base
-function cloud(g, cx, cy, w, rng, c = '#fbf3ee') {
-  const n = Math.round(w / 46);
-  for (let i = 0; i < n; i++) {
-    const k = i / Math.max(1, n - 1), r = w * (0.14 + 0.12 * Math.sin(Math.PI * k)) * rng.range(0.85, 1.15);
-    clayForm(g, circle(cx - w / 2 + w * k, cy - r * 0.35, r, 32), vary(c, rng, 0.03), { size: r * 1.6, sheen: 0.2 });
-  }
-}
-
 // baked decorations that float in mid-air: a stepped pendant or a stack of chevrons
 function floater(g, kind, x, y, s, rng) {
   if (kind === 'pendant') {
@@ -61,46 +53,25 @@ function floater(g, kind, x, y, s, rng) {
 export function addWorld(S) {
   const sp = (name, box, draw, o = {}) => S.sprite({ name, ...box, res: o.res ?? 1, mat: o.mat ?? CLAY_MAT, edge: o.edge ?? CLAY_EDGE, shadow: o.shadow ?? { blur: 18 }, draw });
 
-  // the backdrop: warm card with the embossed honeycomb from the relief box, each cell its own soft piece, fading
-  // toward the hills. No box and no frame: it simply goes on behind the world.
-  S.plane(20000, { name: 'honeycomb', x: -620, y: -520, w: 3160, h: 2120, mat: 'smooth', edge: false, shadow: false, draw(g) {
-    g.fillStyle = linear(g, 0, -520, 0, 1100, [mix(P.wall, P.pink, 0.22), P.wallLight, '#fbeee2']); g.fillRect(-620, -520, 3160, 2120);
-    const r = 34, dx = r * Math.sqrt(3), dy = r * 1.5, hr = new RNG('hex-world');
-    for (let row = 0, y = -540; y < 980; row++, y += dy) for (let x = -660 + (row & 1) * dx / 2; x < 2580; x += dx) {
-      const fade = 1 - Math.max(0, (y - 380) / 520);
-      if (fade <= 0.04 || hr.chance(0.05)) continue;
-      const hex = [...Array(6)].map((_, i) => { const a = Math.PI / 6 + i * Math.PI / 3; return [x + Math.cos(a) * (r - 3.4), y + Math.sin(a) * (r - 3.4)]; });
-      piece(g, hex, { fill: rgba(vary(mix(P.wallLight, P.blush, 0.35), hr, 0.05), 0.55 + 0.45 * fade), bevel: { light: LIGHT, width: 2.2, hi: 0.32 * fade, lo: 0.18 * fade, soft: 1.6 }, shadow: { color: `rgba(120,70,60,${0.16 * fade})`, blur: 6, x: 1.6, y: 3 } });
-    }
-  } });
+  // the backdrop is the turning honeycomb dome (loop-dome.js)
+  addDome(S, LOOP);
 
-  // the sun, high on the right, its windows breathing with light
+  // the window-wheel sun hangs at the top of the dome as its lantern
   const sun = sp('sun', { x: SUN.x - SUN.r - 70, y: -SUN.r - 70, w: SUN.r * 2 + 140, h: SUN.r * 2 + 140 }, drawSun, { res: 1.1, shadow: { blur: 24 } });
-  S.add({ name: 'sun-glow', z: 9010, blend: 'lighter', render(ctx, t) {
-    glow(ctx, 1600, 230, 700, '#ffd9a0', 0.2 + 0.03 * cyc(t, 2));
-    glow(ctx, 1600, 230, 260, '#fff0c8', 0.3);
+  S.add({ name: 'lantern-glow', z: 5010, blend: 'lighter', render(ctx, t) {
+    glow(ctx, 960, 70, 640, '#ffd9a0', 0.2 + 0.03 * cyc(t, 2));
+    glow(ctx, 960, 70, 240, '#fff0c8', 0.3);
   } });
-  S.add({ name: 'sun', z: 9000, shadow: { dx: 8, dy: 14, alpha: 0.25 }, render(ctx, t, env) {
-    drawSprites(ctx, [{ s: sun, ax: SUN.x, ay: 0, x: 1600, y: 230 + 4 * cyc(t, 1), sx: 0.82, sy: 0.82 }], env.shadow);
+  S.add({ name: 'lantern', z: 5000, shadow: { dx: 8, dy: 14, alpha: 0.25 }, render(ctx, t, env) {
+    drawSprites(ctx, [{ s: sun, ax: SUN.x, ay: 0, x: 960, y: 70 + 4 * cyc(t, 1), sx: 0.7, sy: 0.7 }], env.shadow);
   } });
 
-  // clouds drift and come back within the loop
-  const crng = new RNG('clouds');
-  const clouds = [[200, 90, 260, 7000], [1150, 140, 260, 7600], [1900, 300, 340, 6400], [-150, 420, 240, 5600], [1420, 600, 190, 5200]];
-  clouds.forEach(([x, y, w, z], i) => {
-    const s = sp(`cloud-${i}`, { x: x - w * 0.7, y: y - w * 0.45, w: w * 1.4, h: w * 0.6 }, (g) => cloud(g, x, y, w, crng));
-    S.add({ name: `cloud-${i}`, z, shadow: { dx: 8, dy: 14, alpha: 0.18 }, sprites: [{ s }], anim: (t) => ({ x: 26 * cyc(t, 1, i * 0.21), y: 5 * cyc(t, 2, i * 0.13) }) });
-  });
-
-  // three rows of hills, palest and farthest first
-  S.plane(3600, { name: 'hills-far', x: -900, y: 500, w: 3720, h: 760, draw: (g) => mounds(g, { x0: -900, x1: 2820, base: 830, amp: 58, bottom: 1250, colors: [P.lilac, P.blush], fade: 0.55, seed: 1, trees: 0.3 }) }, { shadow: { dx: 6, dy: 10, alpha: 0.2 } });
+  // the dome's floor: two rows of hills
   S.plane(2400, { name: 'hills-mid', x: -700, y: 600, w: 3320, h: 700, draw: (g) => mounds(g, { x0: -700, x1: 2620, base: 880, amp: 50, bottom: 1300, colors: [P.blush, P.aqua], fade: 0.35, seed: 2 }) }, { shadow: { dx: 8, dy: 12, alpha: 0.3 } });
   S.plane(1600, { name: 'hills-near', x: -600, y: 680, w: 3120, h: 700, draw: (g) => mounds(g, { x0: -600, x1: 2520, base: 930, amp: 42, bottom: 1350, colors: [P.pink, P.blush], fade: 0.15, seed: 3 }) }, { shadow: { dx: 9, dy: 14, alpha: 0.36 } });
 
   // the islands float in the middle distance
   const island = sp('island', { x: ISLAND.x - 200, y: ISLAND.y - 200, w: 400, h: 340 }, drawIsland, { res: 1.2 });
-  const city = sp('city', { x: CITY.x - 150, y: CITY.y - 130, w: 300, h: 230 }, drawCity, { res: 1.2 });
-  S.add({ name: 'city', z: 2200, shadow: { dx: 10, dy: 22, alpha: 0.3 }, sprites: [{ s: city, ax: CITY.x, ay: CITY.y, x: 260, y: 300 }], anim: (t) => ({ x: 12 * cyc(t, 1, 0.3), y: 8 * cyc(t, 2, 0.6) }) });
 
   // a large tesseract hangs in the sky, turning through the fourth dimension once a loop: the world's anchor
   S.add({ name: 'tesseract', z: 2800, render(ctx, t) {
