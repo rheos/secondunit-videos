@@ -103,16 +103,49 @@ export function addWorld(S) {
   const spots = [[180, 150, 2600, 'pendant'], [820, 130, 1900, 'tess'], [700, 560, 3000, 'octa'], [120, 560, 1500, 'ico'], [560, 640, 2800, 'chevron'],
     [880, 520, 1500, 'tetra'], [-60, 300, 2000, 'cube'], [300, 380, 2400, 'star'], [640, 420, 1700, 'chevron']];
   const COLS = [P.mint, P.pink, P.butter, P.lilac, P.aqua];
+  // Nothing floats still: each floater is a small mechanism whose parts collapse and expand along different
+  // directions in turn. Parts are baked once and moved each frame; every rhythm divides the loop.
+  const partSp = (name, w, h, draw) => S.sprite({ name, x: -w / 2, y: -h / 2, w, h, res: 1.4, mat: CLAY_MAT, edge: CLAY_EDGE, shadow: { blur: shadowBlur(10) }, draw });
+  const BAR_W = [18, 29, 41, 52], BAR_C = [P.pink, P.mint, P.butter, P.pink];
+  const bars = BAR_W.map((w, k) => partSp(`pend-bar-${k}`, w + 12, 22, (g) => steps(g, 0, 4.5, { n: 1, w0: w, w1: w, h: 9, colors: [BAR_C[k]] })));
+  const point = partSp('pend-point', 64, 44, (g) => clayForm(g, [[-26, -14], [0, 14], [26, -14]], P.pinkDeep, { smooth: false, size: 22 }));
+  const chevs = [P.mint, P.butter, P.pink].map((c, k) => partSp(`chev-${k}`, 72, 40, (g) => clayForm(g, [[-30, -6], [0, 16], [30, -6], [22, -14], [0, 4], [-22, -14]], c, { smooth: false, size: 14 })));
+  const fsh = (env) => ({ ...env.shadow, dx: 10, dy: 18, alpha: 0.22 });
+  const W = (t, period, ph) => Math.sin(TAU * (t / period + ph));
   spots.forEach(([x, y, z, kind], i) => {
-    if (kind === 'pendant' || kind === 'chevron') {
-      const s = sp(`float-${i}`, { x: x - 70, y: y - 60, w: 140, h: 130 }, (g) => floater(g, kind, x, y, 1, frng), { res: 1.3, shadow: { blur: shadowBlur(12) } });
-      S.add({ name: `float-${i}`, z, shadow: { dx: 10, dy: 18, alpha: 0.22 }, sprites: pair(s), anim: (t) => ({ y: 10 * cyc(t, 1, i * 0.17) }) });
+    const ph = i * 0.137, bob = (t) => ({ y: 10 * cyc(t, 1, i * 0.17) });
+    if (kind === 'pendant') {
+      // an accordion: the stack spreads apart and slams flat on a 6 s beat, while each bar stretches wide and pinches
+      // narrow on a 3 s beat that ripples down the stack; the point stretches as the stack flattens
+      S.add({ name: `float-${i}`, z, anim: bob, render(ctx, t, env) { mirror(ctx, () => {
+        const v = W(t, 6, ph), gap = 1 + 12 * Math.max(0, v) - 8 * Math.max(0, -v), items = [];
+        BAR_W.forEach((_, k) => items.push({ s: bars[k], x, y: y - k * (9 + gap), sx: Math.max(0.15, 1 + 0.6 * W(t, 3, ph + k * 0.1)), sy: 1 }));
+        items.push({ s: point, x, y: y + 18 + 4 * Math.max(0, -v), sx: 1 - 0.3 * Math.max(0, -v), sy: 1 + 0.9 * Math.max(0, -v) });
+        drawSprites(ctx, items, fsh(env));
+      }); } });
+    } else if (kind === 'chevron') {
+      // a fan: on a 4 s beat the three chevrons swing open, each in its own direction, and fold back into one; on a
+      // 6 s beat they stretch and squeeze sideways out of step with each other
+      S.add({ name: `float-${i}`, z, anim: bob, render(ctx, t, env) { mirror(ctx, () => {
+        const fan = W(t, 4, ph), open = Math.max(0, fan), shut = Math.max(0, -fan);
+        drawSprites(ctx, chevs.map((c, k) => ({ s: c, x: x + (k - 1) * 14 * open, y: y + (k - 1) * 13 * (1 + 1.3 * open - shut * 0.95), rot: (k - 1) * 0.5 * open, sx: 1 + 0.45 * W(t, 6, ph + k / 3), sy: 1 })), fsh(env));
+      }); } });
     } else if (kind === 'tess') {
-      S.add({ name: `float-${i}`, z, anim: (t) => ({ y: 10 * cyc(t, 1, i * 0.17) }), render(ctx, t) { mirror(ctx, () => drawTesseract(ctx, x, y, 22, TAU * (i % 2 ? 2 : -1) * t / LOOP, TAU * t / LOOP + i, { outer: COLS[i % 5], inner: COLS[(i + 2) % 5] })); } });
+      S.add({ name: `float-${i}`, z, anim: bob, render(ctx, t) { mirror(ctx, () => drawTesseract(ctx, x, y, 22 * (1 + 0.25 * W(t, 3, ph)), TAU * (i % 2 ? 2 : -1) * t / LOOP, TAU * t / LOOP + i, { outer: COLS[i % 5], inner: COLS[(i + 2) % 5] })); } });
     } else {
-      S.add({ name: `float-${i}`, z, anim: (t) => ({ y: 10 * cyc(t, 1, i * 0.17) }), render(ctx, t) { mirror(ctx, () => drawSolid(ctx, kind, x, y, 20, [TAU * t / LOOP * (1 + i % 3), TAU * 2 * t / LOOP, i], COLS[i % 5])); } });
+      // a solid that squashes and stretches along alternating axes and, once a loop, flattens almost to a plane and
+      // springs back out past its size
+      S.add({ name: `float-${i}`, z, anim: bob, render(ctx, t) { mirror(ctx, () => {
+        const sq = W(t, 4, ph), flat = Math.max(0, Math.sin(Math.PI * Math.min(1, ((t - 2 * i) % LOOP + LOOP) % LOOP / 1.4)));
+        const after = ((t - 2 * i) % LOOP + LOOP) % LOOP, spring = after > 1.4 && after < 3.4 ? 0.3 * Math.sin(TAU * (after - 1.4) / 0.8) * (1 - (after - 1.4) / 2) : 0;
+        const sx = (1 + 0.35 * sq) * (1 + 0.6 * flat + spring), sy = (1 - 0.35 * sq) * (1 - 0.88 * flat - spring);
+        ctx.save(); ctx.translate(x, y); ctx.scale(sx, Math.max(0.06, sy)); ctx.translate(-x, -y);
+        drawSolid(ctx, kind, x, y, 20, [TAU * t / LOOP * (1 + i % 3), TAU * 2 * t / LOOP, i], COLS[i % 5]);
+        ctx.restore();
+      }); } });
     }
   });
+
 
   // the terrace the machine stands on: a band of broad clay mounds, and the ground line at y 985
   const terrace = sp('terrace', { x: -500, y: 860, w: 1560, h: 560, res: 1.1 }, (g) => mounds(g, { x0: -500, x1: 1040, base: 1000, amp: 30, bottom: 1420, colors: [mix(P.pink, P.butter, 0.4), mix(P.blush, P.butter, 0.3)], fade: 0.05, seed: 4, trees: 0 }));
