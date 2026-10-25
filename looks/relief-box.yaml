@@ -9,9 +9,9 @@ used: Relief box, test
 cost: free
 group: code
 order: 315
-clip: null
+clip: relief-box.mp4
 tall: false
-status: test
+status: approved
 engine: canvas2d (paper-fox core)
 project: indieagent-relief-box
 code:
@@ -54,7 +54,7 @@ proof:
   pr:
     - rheos/secondunit-videos#328
   youtube: []
-verdict: null
+verdict: 'Robin, 2026-10-25, on draft 3 (figure-free, clay): "The clay look works. Approve it." Drafts 1-2 led to the rule: build a language from the reference set, never copy one piece.'
 related:
   - paper-depth
   - claymation
