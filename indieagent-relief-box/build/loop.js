@@ -2910,7 +2910,11 @@ function drawFunnelBack(g, ph) {
     clayForm(g, [rimV(k, ph), rimV(k + 1, ph), thrV(k + 1, ph), thrV(k, ph)], facetTone(k, FACET_COLS[k % 2], ph), { smooth: false, size: 60, sheen: 0.12, round: 0.35 });
   }
   // the throat band and a short octagonal neck down into the pipe
-  clayForm(g, [[RIM.x - 30, THROAT.y - 4], [RIM.x + 30, THROAT.y - 4], [RIM.x + 30, THROAT.y + 16], [RIM.x - 30, THROAT.y + 16]], P.pink, { smooth: false, size: 14, sheen: 0.18 });
+  // (rounded, Robin: the front of a short round collar, its top and bottom edges following the throat's ellipse)
+  const band = [];
+  for (let q = 0; q <= 24; q++) { const th = Math.PI * (1 - q / 24); band.push([RIM.x + Math.cos(th) * 31, THROAT.y - 4 + Math.sin(th) * 7]); }
+  for (let q = 0; q <= 24; q++) { const th = Math.PI * q / 24; band.push([RIM.x + Math.cos(th) * 29, THROAT.y + 15 + Math.sin(th) * 7]); }
+  clayForm(g, band, P.pink, { smooth: true, size: 22, sheen: 0.28, round: 1 });
   // the inside, seen through the mouth: the far facets, lit from inside, in deepening lilac
   const mouth = [...Array(SIDES)].map((_, k) => ring(RIM.y, RIM.rx * 0.93, RIM.ry * 0.93, k, ph));
   g.fillStyle = radial(g, RIM.x, RIM.y + 14, 4, RIM.rx * 0.95, [shade(P.lilac, -0.55), shade(P.lilac, -0.3), mix(P.lilac, '#ffe9d0', 0.25)]);
