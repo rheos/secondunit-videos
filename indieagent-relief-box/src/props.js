@@ -16,7 +16,7 @@ const circle = (cx, cy, r, n = 48) => [...Array(n)].map((_, i) => [cx + Math.cos
 // ---------------- the sun: a wheel of windows ----------------
 // It rises behind the ranges and turns slowly; its windows are lit from inside and a ring of stepped rays sits on its rim.
 export const SUN = { x: 960, y: 0, r: 132, z: 1480 };
-function drawSun(g) {
+export function drawSun(g) {
   const { x, y, r } = SUN, rng = new RNG('sun');
   for (let i = 0; i < 18; i++) {
     const a = i / 18 * Math.PI * 2;
@@ -41,7 +41,7 @@ function drawSun(g) {
 
 // ---------------- the floating island ----------------
 export const ISLAND = { x: 540, y: 470, z: 1180 };
-function drawIsland(g) {
+export function drawIsland(g) {
   const { x, y } = ISLAND, rng = new RNG('island');
   // stepped roots hanging under it, darker as they go down
   steps(g, x, y + 16, { n: 6, w0: 300, w1: 40, h: 16, up: false, colors: [P.pinkDeep, shade(P.pinkDeep, -0.08), mix(P.pinkDeep, P.lilac, 0.4)] });
@@ -70,7 +70,7 @@ function drawIsland(g) {
 
 // a second, smaller island high on the right: a terracotta city on stepped butter roots
 export const CITY = { x: 1552, y: 382, z: 1290 };
-function drawCity(g) {
+export function drawCity(g) {
   const { x, y } = CITY, rng = new RNG('city');
   steps(g, x, y + 10, { n: 5, w0: 230, w1: 36, h: 12, up: false, colors: [P.butterDeep, P.butter, mix(P.butterDeep, P.pink, 0.3)] });
   clayForm(g, [[x - 124, y - 2], [x + 124, y - 2], [x + 116, y + 10], [x - 116, y + 10]], P.butter, { smooth: false, tiers: 1, reach: 2 });

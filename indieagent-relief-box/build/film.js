@@ -1720,7 +1720,7 @@ function addProps(S) {
 }
 
 
-return { SUN, ISLAND, CITY, addProps };
+return { SUN, drawSun, ISLAND, drawIsland, CITY, drawCity, addProps };
 })();
 __m["src/density.js"] = (() => {
 // Draft 2, paper-fox's density: more pieces on more planes, from the back wall out past the frame.
@@ -1955,7 +1955,7 @@ function addDensity(S) {
   return { rosettes, track, beads };
 }
 
-return { ROSETTES, TRACK, BEADS, addDensity };
+return { curl, rosette, ROSETTES, TRACK, BEADS, drawBead, addDensity };
 })();
 __m["src/film.js"] = (() => {
 // Relief box, the film (draft 3, clay): 11 s at 24 fps, one shadowbox at dawn. Every frame is a pure function of t.
