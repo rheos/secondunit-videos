@@ -8,6 +8,7 @@
 // Every motion is periodic in 12 s (or a divisor of it), so frame 288 is frame 0.
 // Built on Leon Lin's paper-fox core (vendor/paper-fox, MIT, Copyright (c) 2026 Leonxlnx).
 
+import { LOOP_PAL } from './loop-palette.js';
 import { Scene } from '../vendor/paper-fox/core/stage.js';
 import { drawSprites } from '../vendor/paper-fox/core/sprite.js';
 import { finish } from '../vendor/paper-fox/core/post.js';
