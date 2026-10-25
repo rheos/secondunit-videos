@@ -117,12 +117,40 @@ const rimV = (k) => ring(RIM.y, RIM.rx, RIM.ry, k), thrV = (k) => ring(THROAT.y,
 const facetTone = (k, base) => { const a = (k + 1) / SIDES * TAU, lit = -Math.cos(a) * 0.46 + Math.sin(a) * 0.2; return lit > 0 ? mix(base, '#fffaf0', lit * 0.5) : shade(base, lit * 0.32); };
 
 function drawPipe(g) {
-  tube(g, DUCT.path, DUCT.w, P.mint);
+  // flat ends: the top one runs into the fork's stem, the bottom one under the egg-laying tip
+  tube(g, DUCT.path, DUCT.w, P.mint, { caps: false });
   // rings of colour along the pipe: the whole pipe is shaded once per colour and clipped to that colour's rings, so
   // the shading runs smoothly through every ring
-  for (let c = 1; c < 3; c++) { g.save(); g.clip(ringClip(c, DUCT.w + 6)); tube(g, DUCT.path, DUCT.w, RING_COLS[c], { shadow: false }); g.restore(); }
-  // the spout: a square collar at the pipe's end
-  clayForm(g, [[SPOUT[0] - 30, SPOUT[1] - 6], [SPOUT[0] + 30, SPOUT[1] - 6], [SPOUT[0] + 26, SPOUT[1] + 10], [SPOUT[0] - 26, SPOUT[1] + 10]], shade(P.mint, 0.12), { smooth: false, size: 14, sheen: 0.2 });
+  for (let c = 1; c < 3; c++) { g.save(); g.clip(ringClip(c, DUCT.w + 6)); tube(g, DUCT.path, DUCT.w, RING_COLS[c], { shadow: false, caps: false }); g.restore(); }
+}
+
+// The pipe ends (Robin: "less like plumbing attachments... more organic, like something that is laying eggs, like an
+// insect does... more like a sphincter"). Each pipe ends in a tapering tip of three soft segments and a puckered
+// opening. Before a solid comes out, a squeeze runs down the segments; the opening dilates as it passes and closes
+// behind it. open and squeeze[0..2] are 0..1.
+const ell = (cx, cy, rx, ry, n = 28) => [...Array(n)].map((_, i) => { const a = i / n * TAU; return [cx + Math.cos(a) * rx, cy + Math.sin(a) * ry]; });
+function drawTip(ctx, x, y0, open, squeeze) {
+  const segs = [[DUCT.w + 2, 11, 0], [19, 9.5, 11], [14.5, 8, 21]];
+  // the segments, top to bottom, each a soft band a little narrower than the last, pinched by the squeeze
+  segs.forEach(([rx, ry, dy], k) => {
+    const pinch = 1 - 0.22 * squeeze[k] + 0.12 * open * (k === 2 ? 1 : 0);
+    clayForm(ctx, ell(x, y0 + dy, rx * pinch, ry), mix(P.blush, P.pink, 0.3 + 0.25 * k), { size: 12, sheen: 0.26 });
+  });
+  // the opening: a puckered rim, folds drawn in toward the middle, and the dark aperture that dilates
+  const yb = y0 + 29, rr = 9.5 + 3 * open;
+  clayForm(ctx, ell(x, yb, rr, rr * 0.45), mix(P.pink, P.pinkDeep, 0.45), { size: 8, sheen: 0.3 });
+  const ax = 1.2 + 6.5 * open, ay = 0.6 + 2.8 * open;
+  ctx.save();
+  ctx.strokeStyle = rgba(shade(P.pinkDeep, -0.35), 0.55); ctx.lineWidth = 1.1; ctx.lineCap = 'round';
+  for (let i = 0; i < 8; i++) {
+    const a = i / 8 * TAU + 0.25 * (1 - open);
+    ctx.beginPath();
+    ctx.moveTo(x + Math.cos(a) * rr * 0.92, yb + Math.sin(a) * rr * 0.45 * 0.92);
+    ctx.quadraticCurveTo(x + Math.cos(a + 0.35) * rr * 0.6, yb + Math.sin(a + 0.35) * rr * 0.27, x + Math.cos(a) * (ax + 0.8), yb + Math.sin(a) * (ay + 0.4));
+    ctx.stroke();
+  }
+  ctx.fillStyle = '#4a2236'; ctx.beginPath(); ctx.ellipse(x, yb, ax, ay, 0, 0, TAU); ctx.fill();
+  ctx.restore();
 }
 function drawFork(g) {
   const Y = FORK.y, w = DUCT.w, bar = [], stem = [];
@@ -254,6 +282,20 @@ export function addMachines(S) {
     for (const [s0, amp, right] of swell) if (amp > 0.01) {
       if (!right) drawBulge(ctx, s0, amp, clips);
       else { ctx.save(); ctx.translate(2 * AXIS, 0); ctx.scale(-1, 1); drawBulge(ctx, s0, amp, clips); ctx.restore(); }
+    }
+    // the tips: even solids leave by the left one, odd by the right, each 5.4 s into its trip (every 1.5 s a side);
+    // the squeeze runs down the three segments just before, the opening dilates as the solid comes out
+    for (const right of [0, 1]) {
+      let open = 0; const sq = [0, 0, 0];
+      for (let n = right; n < 8; n += 2) {
+        const u = mod(t + n * 0.75, 6);
+        open = Math.max(open, smoothstep(5.2, 5.42, u) * (1 - smoothstep(5.5, 5.85, u)));
+        for (let k = 0; k < 3; k++) { const c = 4.95 + 0.12 * k; sq[k] = Math.max(sq[k], Math.max(0, 1 - Math.abs(u - c) / 0.16)); }
+      }
+      ctx.save();
+      if (right) { ctx.translate(2 * AXIS, 0); ctx.scale(-1, 1); }
+      drawTip(ctx, SPOUT[0], SPOUT[1] - 10, open, sq);
+      ctx.restore();
     }
     for (const f of late) f();
   } });
