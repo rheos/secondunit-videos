@@ -371,7 +371,7 @@ const PD = (() => {
       const behind = planes[i - 1];
       const gap = behind ? clamp((behind.z - P.z) / 1500, .15, 1.6) : 0;
       const Lt = P.light || light;
-      const sd = P.shadowDist ?? 6 + 8 * Math.sqrt(gap), dx = -Lt[0] * sd, dy = -Lt[1] * sd;
+      const sd = P.shadowDist ?? 8 + 11 * Math.sqrt(gap), dx = -Lt[0] * sd, dy = -Lt[1] * sd;
       const env = { t, cam, light: Lt, plane: P, dx, dy, shadowAlpha: shadowAlpha * (1 - k * .7) * (P.shadowAlpha ?? 1), k };
       // an item may sway about its own origin (grass in the wind)
       const place = (it) => { if (it.x || it.y) ctx.translate(it.x || 0, it.y || 0); if (it.sway) ctx.rotate(it.sway(t)); };

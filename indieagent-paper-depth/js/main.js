@@ -32,8 +32,8 @@ const CAMREF = camX(99);
 // ---------------- build (baked once) ----------------
 MUS.build(Q * 1.35, [-.3, -.95]);
 const A = SCENES.buildA(Q), B = SCENES.buildB(Q, CAMREF);
-const A_RANK = { fgA: 0, roadA: 1, field: 2, hills: 3, mtnNear: 4, mtnFar: 5 };
-const B_RANK = { skyline: 0, roofs: 1, alley: 2, facade: 3, walkB: 4, nearB: 5 };
+const A_RANK = { nearA: 0, fgA: .6, roadA: 1.2, field: 2, hills: 3, mtnNear: 4, mtnFar: 5 };
+const B_RANK = { skyline: 0, roofs: 1, alley: 2, facade: 3, walkB: 4, nearB: 5, lensB: 5.5 };
 // a flat lowered on a fly line: falls, lands, bounces once
 const drop = (k) => k < .7 ? (k / .7) ** 2 : 1 - .05 * Math.sin(Math.PI * (k - .7) / .3) * (1 - (k - .7) / .3);
 const popSpring = (x) => x <= 0 ? 0 : x >= 1 ? 1 : 1 - Math.exp(-5.2 * x) * Math.cos(x * 8.2);
@@ -86,7 +86,7 @@ function frame(t) {
 
   X.setTransform(1, 0, 0, 1, 0, 0);
   X.fillStyle = '#1b1e3c'; X.fillRect(0, 0, cv.width, cv.height);
-  PD.renderPlanes(X, list, C, t, { fold, alpha, q: Q, shadowAlpha: lerp(.42, .36, shadowK) });
+  PD.renderPlanes(X, list, C, t, { fold, alpha, q: Q, shadowAlpha: lerp(.5, .44, shadowK) });
 
   const night = ss(.35, .75, p);
   PD.finish(X, {

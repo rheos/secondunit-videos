@@ -25,6 +25,9 @@ rules:
   - Every cut edge has a 1-2 px warm lit band toward the key light and a dark band away from it
   - Each plane casts a blurred-silhouette shadow onto the plane behind, offset away from the light and growing with the gap; drawn through the camera so it scales with depth
   - Torn edges on land, clouds and verges show a white paper core
+  - Form in paper on every object, after paper-fox: stepped parallel cuts lighter toward the light and darker away; mountains get a darker face away from the light from each peak
+  - Far planes drift toward the horizon air colour, more at their base, with torn mist strips between ranges; a layer of big leaves and flowers sits right at the lens
+  - Characters read as one body: bendy limbs as single shapes, joints under clothing, coat of torn scraps lighter at the top, cut edge on the outer silhouette only
   - Five or more planes at real depths; one slow camera move per scene (truck, dolly), always drifting a little
   - Scene changes happen inside a paper object (pop-up book fold and spring, a dropped backdrop), never a plain fade
   - Characters are jointed paper puppets with breathing, follow-through on loose parts and planted feet (two-bone IK)
@@ -43,7 +46,7 @@ reference: >-
   Techniques only; our scenes and character.
 proof:
   renders:
-    - indieagent-paper-depth/out/draft/paperdepth_d4_f0-f432_24fps_draft.mp4
+    - indieagent-paper-depth/out/draft/paperdepth_d5c_f0-f432_24fps_draft.mp4
   pr:
     - rheos/secondunit-videos#323
   youtube: []

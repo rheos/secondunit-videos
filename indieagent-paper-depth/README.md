@@ -44,6 +44,20 @@ Playwright comes from a sibling look's `node_modules` (`ln -s ../bobwiseman-in-h
 
 Not taken: the fox drawing (traced from AI references), any scene, any audio.
 
+## The depth pass (draft 5)
+
+What makes paper-fox feel 3D is mostly in the pieces, not the camera, so draft 5 adds it to every object:
+
+- `form()` in `js/scenes.js`: a shape is cut again in stepped parallel layers, lighter toward the light and darker
+  away from it (trees, hills, field, clouds, signs, posts, walls, marquee, posters, van, lamp post, hydrant, moon).
+- `faces()`: every mountain peak gets a darker face on the side away from the light.
+- `haze()` plus torn mist strips: the far ranges, the skyline and the rooftops drift toward the air colour at the
+  horizon, more at their base.
+- Denser near layers: thicker grass, a new plane at z 420 (A) and 430 (B) with big leaves, poppies, daisies, a
+  planter and a bin that sweep past the lens. Each crosses him for well under a second, never over the door light.
+- Tree crowns are lit by position on the crown, with leaf scraps; town houses have a shaded side wall; grass blades
+  have a shaded half; the pavement darkens where it meets the wall. Plane shadows are a little stronger and further.
+
 ## Ours
 
 - The musician (he): beanie with pom-pom, mustard scarf with two fringed tails, teal coat, guitar case with tour
