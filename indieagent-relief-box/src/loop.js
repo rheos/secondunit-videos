@@ -215,14 +215,16 @@ function singerMakes(ctx, t, phase, x, f, hip, kinds, hue) {
 // ---------------- the chorus at the funnel's foot: bounce, cheer each offering, pop into solids ----------------
 // Five elves on eight pistons, on three tiers: one place in front, three behind, four at the back (Robin: "only have as
 // many as is needed so that whenever a piston is up one jumps over to it so it goes back down.. piston never goes up
-// with a gnome standing on it.. never goes down unless one is"). An empty piston stands up; an elf jumps onto a raised
-// one and rides it down, and the one it left rises behind it. One jump every 0.75 s, on the machine rhythm, in a
+// with a gnome standing on it.. never goes down unless one is", then: "they all work on a schedule.. they don't come
+// up as soon as the gnome gets off.. he goes to it because it came up"). Every 0.75 s, on the machine rhythm, one
+// empty piston rises on the schedule; an elf jumps over to it because it came up and rides it down. The piston it
+// left stays down until its own turn. The schedule runs in a
 // sequence of 32 (found by search: short hops to neighbouring pistons, never straight back, nobody twice running)
 // that brings every elf back to its own piston at the seam. Places, as [x off the centre line, tier], in order:
 // the front, middle right, back right outer, back right inner, middle centre, back left inner, back left outer,
 // middle left.
 const CHORUS_CAST = [['bells', P.mint, P.pinkDeep], [P.butter, P.pink], ['pom', P.lilac], ['bells', P.butter, P.iris], [P.mint, P.lilac]];
-const CHORUS_N = 5, SWAP = 1.5, JUMP = 0.75, LEAVE = 0.1, LAND = 0.55, RISE = 46;
+const CHORUS_N = 5, SWAP = 1.5, JUMP = 0.75, LEAVE = 0.24, LAND = 0.6, RISE = 46;
 const PLACES = [[0, 0], [140, 1], [210, 2], [70, 2], [0, 1], [-70, 2], [-210, 2], [-140, 1]];
 const PEDESTAL = [P.butter, P.aqua, P.blush];
 // [elf, from, to] for each jump; STATE[k][elf] = its piston before jump k (STATE[32] is STATE[0] again)
@@ -230,15 +232,14 @@ const JUMPS = [[2, 7, 6], [4, 5, 4], [0, 0, 5], [1, 1, 2], [0, 5, 0], [3, 3, 1],
   [0, 3, 5], [2, 6, 7], [4, 0, 4], [1, 1, 0], [2, 7, 6], [0, 5, 7], [3, 2, 1], [4, 4, 3], [2, 6, 5], [1, 0, 4], [0, 7, 0], [2, 5, 6], [4, 3, 5], [2, 6, 7], [3, 1, 3], [1, 4, 1]];
 const STATE = [[0, 1, 7, 3, 5]];
 for (const [g, , to] of JUMPS) { const st = STATE[STATE.length - 1].slice(); st[g] = to; STATE.push(st); }
-// a piston's height above its rest: up when empty, down under an elf; it starts rising as an elf leaves it and drops
-// as one lands on it
+// a piston's height above its rest: down, except the one whose turn it is, which rises at the start of the step
+// (empty), holds while an elf jumps over, and goes down under it as it lands
 const UP = 24, DOWN = -6;
 const stepAt = (t) => { const tt = mod(t, FILM_LOOP), k = Math.floor(tt / JUMP) % JUMPS.length; return { k, u: tt - k * JUMP }; };
 function lift(place, t) {
-  const { k, u } = stepAt(t), [, from, to] = JUMPS[k];
-  if (place === from) return lerp(DOWN, UP, E.smooth(Math.min(1, Math.max(0, (u - LEAVE) / 0.35))));
-  if (place === to) return lerp(UP, DOWN, E.smooth(Math.min(1, Math.max(0, (u - LAND) / 0.18))));
-  return STATE[k].includes(place) ? DOWN : UP;
+  const { k, u } = stepAt(t), [, , to] = JUMPS[k];
+  if (place !== to) return DOWN;
+  return u < LAND ? lerp(DOWN, UP, E.outSoft(Math.min(1, u / 0.2))) : lerp(UP, DOWN, E.smooth(Math.min(1, (u - LAND) / 0.13)));
 }
 // where elf j stands at t: its place, the tier as a smooth number (for drawing order and the wave), the piston
 // height under it, and the hop when it jumps
@@ -398,8 +399,10 @@ function cues() {
     both(c0 + T.offer[1], 'rise', x);
   }
   // the chorus: each swap of places, with the elf arriving at the front and whether a chord changes on it
-  // each jump: the elf landing (its doiy and the hop's air, 'swap'), and the piston going down under it with a thunk
+  // each step: the scheduled piston rising (a puff, 'lift'); the elf landing on it (its doiy and the hop's air,
+  // 'swap'), and the piston going down under it with a thunk
   JUMPS.forEach(([g, , to], k) => {
+    add24(k * JUMP, 'lift', 960 + PLACES[to][0], { n: PLACES[to][1] });
     add24(k * JUMP + LAND, 'swap', 960 + PLACES[to][0], { n: g, newFront: to === 0 });
     add24(k * JUMP + LAND, 'piston', 960 + PLACES[to][0], { n: PLACES[to][1] });
   });

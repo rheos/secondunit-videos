@@ -266,7 +266,7 @@ def tone_of(t, k, octave=2):
 
 # the machine rhythm (Robin's name for it): the glyph blips, the chorus's arm ticks and the pistons, with the
 # glitches; on its own bus so it can sit just under the drone
-MACHINE = ('glyph', 'tick', 'piston', 'press')
+MACHINE = ('glyph', 'tick', 'piston', 'press', 'lift')
 
 
 def events(cues, kinds=None, skip=()):
@@ -327,6 +327,9 @@ def events(cues, kinds=None, skip=()):
             place(out, t, crush(tone(midi(tone_of(c['t'], 4 - c['n'], 1)), 0.07, 'tri', d=0.04), bits=7, hold=1), p, 0.07)
         elif k == 'pop':
             place(out, t, crush(sweep(1200, 180, 0.12, d=0.06), bits=6, hold=2), p, 0.16)
+        elif k == 'lift':
+            # a piston coming up on its schedule: a short pneumatic puff rising
+            place(out, t, noise_sweep(0.18, 600, 2400, 0.045), p)
         elif k == 'press':
             # an operator's key going down: a small plastic click and a short blip of the chord
             click = RNG.standard_normal(int(SR * 0.012)) * env(int(SR * 0.012), 0.0004, 0.003)
