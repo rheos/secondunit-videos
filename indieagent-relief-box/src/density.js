@@ -15,7 +15,7 @@ import { leaf, transform, ridge, closeDown, along } from '../vendor/paper-fox/co
 import { mix, shade, vary, rgba } from '../vendor/paper-fox/core/color.js';
 import { osc } from '../vendor/paper-fox/core/ease.js';
 import { drawSprites } from '../vendor/paper-fox/core/sprite.js';
-import { LIGHT, PAL, clayForm, tube, steps, dot } from './kit.js';
+import { LIGHT, PAL, CLAY_MAT, CLAY_EDGE, clayForm, tube, steps, dot, chaikin } from './kit.js';
 import { BACK } from './box.js';
 
 const P = PAL;
@@ -25,20 +25,27 @@ const circle = (cx, cy, r, n = 40) => [...Array(n)].map((_, i) => [cx + Math.cos
 const LIME = '#c6d957', CORAL = '#7d8597';
 
 // ---------------- low ranges along the back wall ----------------
+// Rounded clay mounds pressed side by side in two rows, the back row paler, with little rolled trees on them.
 function drawRange(g, { seed, base, amp, colors, haze }) {
-  const top = ridge(BACK.x0 - 240, BACK.x1 + 240, base, { amp, freq: 0.006, sharp: 0.75, seed, step: 6 });
-  piece(g, closeDown(top, BACK.y1 + 40), { fill: mix(colors[0], P.wallLight, haze), torn: { amp: 1.5, freq: 0.1, seed }, rim: { color: '#fbf3ea', width: 1.5 }, shadow: sh(0.8), bevel: bev });
-  // stepped strata across the hills, each band a cut lighter toward the top
-  for (let i = 1; i < 4; i++) {
-    const t2 = top.map(([x, y]) => [x, y + i * amp * 0.34 + 8 * noise(seed + i).n1(x * 0.01)]);
-    piece(g, closeDown(t2, BACK.y1 + 40), { fill: mix(shade(colors[i % colors.length], -0.04 * i), P.wallLight, haze * 0.8), torn: { amp: 1.2, freq: 0.12, seed: seed + i }, shadow: sh(0.5), bevel: { ...bev, hi: 0.25 } });
-  }
-  // cone trees standing along the crest
-  const rng = new RNG(`trees:${seed}`);
-  for (let k = 0; k < top.length; k += 9) {
-    if (!rng.chance(0.45)) continue;
-    const [x, y] = top[k], h = rng.range(18, 40);
-    piece(g, [[x - h * 0.28, y + 4], [x, y - h], [x + h * 0.28, y + 4]], { fill: vary(mix(rng.pick(['#ef8c5f', P.mintDeep, '#f6a678']), P.wallLight, haze * 0.7), rng, 0.06), shadow: sh(0.6), bevel: bev });
+  const rng = new RNG(`range:${seed}`), x0 = BACK.x0 - 240, x1 = BACK.x1 + 240, bottom = BACK.y1 + 40;
+  for (const [row, lift, fade] of [[0, amp * 0.55, haze * 0.75 + 0.08], [1, 0, haze * 0.6]]) {
+    const tops = [];
+    for (let x = x0 - 60; x < x1 + 60;) {
+      const w = rng.range(120, 260), h = amp * rng.range(0.6, 1.25), cx = x + w / 2, y = base - lift + rng.range(-8, 8);
+      const pts = [];
+      for (let i = 0; i <= 24; i++) { const a = Math.PI + i / 24 * Math.PI; pts.push([cx + Math.cos(a) * w * 0.62, y + Math.sin(a) * h]); }
+      pts.push([cx + w * 0.62, bottom], [cx - w * 0.62, bottom]);
+      clayForm(g, pts, vary(mix(colors[(row + tops.length) % colors.length], P.wallLight, fade), rng, 0.05), { size: h * 1.6, sheen: 0.14 });
+      tops.push([cx, y - h, w]);
+      x += w * rng.range(0.7, 0.95);
+    }
+    // rolled trees on some of the crowns: cones with soft tips, and balls on sticks
+    for (const [cx, ty, w] of tops) {
+      if (!rng.chance(0.55)) continue;
+      const x = cx + rng.range(-w * 0.2, w * 0.2), h = rng.range(22, 42), c = vary(mix(rng.pick(['#ef8c5f', P.mintDeep, '#f6a678', P.mint]), P.wallLight, fade * 0.7), rng, 0.06);
+      if (rng.chance(0.6)) clayForm(g, [[x - h * 0.3, ty + 6], [x - h * 0.16, ty - h * 0.55], [x, ty - h], [x + h * 0.16, ty - h * 0.55], [x + h * 0.3, ty + 6]], c, { size: h * 0.5, sheen: 0.12 });
+      else { tube(g, [[x, ty + 6], [x, ty - h * 0.6]], 2.4, '#a08b80', { shadow: false }); clayForm(g, circle(x, ty - h * 0.75, h * 0.3, 28), c, { sheen: 0.18 }); }
+    }
   }
 }
 
@@ -49,7 +56,7 @@ function drawDiscs(g) {
     const cr = new RNG(`discs:${cx}`);
     for (let i = 0; i < n; i++) {
       const x = cx + cr.range(-90, 90), y = cy + cr.range(-60, 60), rr = cr.range(14, 28);
-      piece(g, circle(x, y, rr, 36), { fill: '#fbf6ee', shadow: { color: 'rgba(90,60,60,0.3)', blur: 5, x: 2, y: 3.5 }, bevel: bev });
+      clayForm(g, circle(x, y, rr, 36), '#fbf6ee', { size: rr * 1.2, round: 0.6, sheen: 0.15 });
       const m = 7 + Math.round(rr / 5);
       for (let k = 0; k < m; k++) {
         const a = k / m * Math.PI * 2 + cr.next(), d = rr * 0.58;
@@ -76,13 +83,12 @@ function drawCoral(g) {
       curl(g, cx + Math.cos(a) * d, cy + Math.sin(a) * d * 0.8, rng.range(9, 16), rng.range(1.2, 1.9), vary(CORAL, rng, 0.08));
     }
   }
-  // wheat fronds rising out of the cloud
+  // rolled stalks rising out of the cloud, each ending in a lime ball
   for (const [x, y, len, lean] of [[380, 720, 170, -0.12], [420, 740, 140, 0.08], [520, 800, 120, 0.2], [240, 820, 110, -0.25]]) {
-    const n = Math.round(len / 9);
-    for (let i = 0; i < n; i++) {
-      const k = i / n, px = x + Math.sin(lean) * len * k, py = y - Math.cos(lean) * len * k;
-      for (const s of [-1, 1]) piece(g, transform(leaf(16 - 8 * k, 4.5, { belly: 0.4, tipRound: 0.2 }), { x: px, y: py, rot: lean + s * 0.7 }), { fill: vary('#b07d52', rng, 0.06), smooth: true, shadow: sh(0.5) });
-    }
+    const line = [...Array(12)].map((_, i) => { const k = i / 11; return [x + Math.sin(lean) * len * k + 6 * Math.sin(k * 5 + x), y - Math.cos(lean) * len * k]; });
+    tube(g, line, line.map((_, i) => 5.5 - i * 0.22), vary('#b07d52', rng, 0.05));
+    const e = line[11];
+    clayForm(g, circle(e[0], e[1] - 6, 11, 28), LIME, { sheen: 0.25 });
   }
   // lime bead clusters
   for (let i = 0; i < 14; i++) { const x = rng.range(160, 620), y = rng.range(640, 960), r = rng.range(6, 13); clayForm(g, circle(x, y, r, 20), LIME, { tiers: 1, reach: 1 }); dot(g, x, y, r * 0.45, shade(LIME, -0.2)); }
@@ -95,7 +101,7 @@ function rosette(g, cx, cy, r, base, rng) {
     for (let i = 0; i < n; i++) {
       const a = i / n * Math.PI * 2 + ring * 0.4 + rng.range(-0.1, 0.1);
       const pts = transform(leaf(rr, rr * 0.42, { belly: 0.55, tipRound: 0.6, curl: rng.range(-0.15, 0.15) }), { x: cx, y: cy, rot: a + Math.PI / 2 });
-      piece(g, pts, { fill: vary(shade(base, ring * 0.08), rng, 0.05), smooth: true, shadow: sh(0.7), bevel: bev });
+      clayForm(g, pts, vary(shade(base, ring * 0.08), rng, 0.05), { smooth: true });
       // the ruffle: a crimp line along each petal
       g.strokeStyle = rgba(shade(base, -0.3), 0.35); g.lineWidth = 1;
       g.beginPath(); g.moveTo(cx, cy); g.lineTo(cx + Math.cos(a) * rr * 0.8, cy + Math.sin(a) * rr * 0.8); g.stroke();
@@ -118,7 +124,7 @@ function drawTrees(g) {
   for (const T of TREES) {
     for (let i = 0; i < T.n; i++) {
       const y = T.base - i * 30, w = T.w - i * 3;
-      piece(g, [[T.x - w / 2, y], [T.x - w / 2 + 3, y - 30], [T.x + w / 2 - 3, y - 30], [T.x + w / 2, y]], { fill: vary(i % 2 ? '#8d7a72' : '#a08b80', rng, 0.05), shadow: sh(), bevel: bev });
+      clayForm(g, [[T.x - w / 2, y], [T.x - w / 2 + 3, y - 30], [T.x + w / 2 - 3, y - 30], [T.x + w / 2, y]], vary(i % 2 ? '#8d7a72' : '#a08b80', rng, 0.05), { smooth: false });
       for (let k = 0; k < 3; k++) { g.fillStyle = 'rgba(60,40,40,0.3)'; g.fillRect(T.x - w / 2 + 6 + k * (w / 3), y - 22, 5, 10); }
     }
     for (const b of T.branches) tube(g, b, [T.w * 0.22, T.w * 0.16, T.w * 0.12], '#8d7a72');
@@ -139,7 +145,7 @@ function drawTrack(g) {
     if (Math.abs(a[1] - b[1]) > 2) continue;
     for (let x = Math.min(a[0], b[0]) + 40; x < Math.max(a[0], b[0]) - 20; x += 120) tube(g, [[x, a[1]], [x, a[1] + 34]], 4, P.slate, { shadow: false });
   }
-  tube(g, TRACK.path, TRACK.w, P.butter);
+  tube(g, chaikin(TRACK.path, 3), TRACK.w, P.butter);
 }
 export const BEADS = [P.mint, P.pink, P.butter, P.lilac, P.aqua, P.pinkDeep, LIME];
 function drawBead(g, c) {
@@ -158,7 +164,7 @@ function drawString(g, x, len, kind, rng) {
     for (let y = y0 + 30; y < y1; y += 17) clayForm(g, circle(x, y, 7, 18), rng.pick([P.mint, P.pink, P.butter, P.aqua]), { tiers: 1, reach: 1 });
   } else if (kind === 'pendant') {
     steps(g, x, y1 + 10, { n: 4, w0: 18, w1: 52, h: 9, gap: 1, colors: [P.pink, P.mint, P.butter] });
-    piece(g, [[x - 26, y1 + 12], [x, y1 + 40], [x + 26, y1 + 12]], { fill: P.pinkDeep, shadow: sh(), bevel: bev });
+    clayForm(g, [[x - 26, y1 + 12], [x, y1 + 40], [x + 26, y1 + 12]], P.pinkDeep, { smooth: false });
   } else {
     const c = rng.pick([P.lilac, P.butter, P.mint]);
     clayForm(g, circle(x, y1, 18, 30), c, { tiers: 2, reach: 2 });
@@ -177,11 +183,11 @@ function drawFloorBack(g) {
     const c = vary(rng.pick([P.pink, P.mint, P.butter, P.blush, '#e48a6a']), rng, 0.06);
     if (kind === 'house') {
       const w = rng.range(18, 28), h = rng.range(18, 30);
-      piece(g, [[x - w / 2, y], [x - w / 2, y - h], [x, y - h - w * 0.6], [x + w / 2, y - h], [x + w / 2, y]], { fill: c, shadow: sh(), bevel: bev });
+      clayForm(g, [[x - w / 2, y], [x - w / 2, y - h], [x, y - h - w * 0.6], [x + w / 2, y - h], [x + w / 2, y]], c, { smooth: false });
       g.fillStyle = shade(c, -0.3); g.fillRect(x - 3, y - 10, 6, 10);
     } else if (kind === 'cone') {
       const h = rng.range(24, 48);
-      piece(g, [[x - h * 0.3, y], [x, y - h], [x + h * 0.3, y]], { fill: c, shadow: sh(), bevel: bev });
+      clayForm(g, [[x - h * 0.3, y], [x, y - h], [x + h * 0.3, y]], c, { smooth: false });
     } else if (kind === 'plinth') steps(g, x, y, { n: 3, w0: 44, w1: 20, h: 9, gap: 1, colors: [c, shade(c, 0.12)] });
     else clayForm(g, circle(x, y - 12, 12, 24), c, { tiers: 2, reach: 1.5 });
   }
@@ -195,7 +201,7 @@ function drawLens(g) {
   // lower right: pink plume tips and a big dotted ball
   for (let i = 0; i < 70; i++) {
     const a = -Math.PI * 0.6 + rng.range(-0.35, 0.35), len = rng.range(120, 230), x = 1880 + rng.range(-40, 40), y = 1100 + rng.range(-30, 30);
-    piece(g, transform(leaf(len, rng.range(6, 10), { belly: 0.35, curl: rng.range(-0.3, 0.3), tipRound: 0.2 }), { x, y, rot: a + Math.PI / 2 }), { fill: rgba(vary(mix(P.blush, '#fff2ee', rng.next() * 0.6), rng, 0.05), 0.85), smooth: true, shadow: sh(0.4) });
+    clayForm(g, transform(leaf(len, rng.range(7, 11), { belly: 0.35, curl: rng.range(-0.3, 0.3), tipRound: 0.4 }), { x, y, rot: a + Math.PI / 2 }), vary(mix(P.blush, '#fff2ee', rng.next() * 0.6), rng, 0.05), { size: 18, sheen: 0.12 });
   }
   clayForm(g, circle(1740, 1060, 70, 48), P.butter, { tiers: 3, reach: 4 });
   for (let k = 0; k < 14; k++) dot(g, 1740 + Math.cos(k * 0.9) * 46 * ((k % 2) ? 1 : 0.6), 1060 + Math.sin(k * 0.9) * 46 * ((k % 2) ? 1 : 0.6), 4, P.butterDeep);
@@ -203,17 +209,17 @@ function drawLens(g) {
 
 export function addDensity(S) {
   // returns the pieces the film animates: rosettes, the track and its beads
-  const sp = (name, box, draw, o = {}) => S.sprite({ name, ...box, res: o.res ?? 1.2, mat: o.mat ?? 'smooth', edge: { width: 1.6, hi: 0.35, lo: 0.3 }, shadow: { blur: o.blur ?? 12 }, draw });
+  const sp = (name, box, draw, o = {}) => S.sprite({ name, ...box, res: o.res ?? 1.2, mat: o.mat ?? CLAY_MAT, edge: CLAY_EDGE, shadow: { blur: (o.blur ?? 12) * 1.5 }, draw });
   const wide = { x: BACK.x0 - 260, w: BACK.x1 - BACK.x0 + 520 };
-  S.plane(1460, { name: 'range-far', ...wide, y: 700, h: 360, mat: 'paper', res: 1, draw: (g) => drawRange(g, { seed: 41, base: 870, amp: 70, colors: [P.lilac, P.blush, P.lilac], haze: 0.45 }) }, { shadow: { dx: 6, dy: 12, alpha: 0.35 } });
-  S.plane(1430, { name: 'discs', x: 120, y: 360, w: 1600, h: 520, draw: drawDiscs }, { shadow: { dx: 7, dy: 13, alpha: 0.4 } });
-  S.plane(1400, { name: 'range-near', ...wide, y: 760, h: 300, mat: 'paper', res: 1, draw: (g) => drawRange(g, { seed: 77, base: 930, amp: 46, colors: [P.pink, P.blush, P.pinkDeep], haze: 0.2 }) }, { shadow: { dx: 8, dy: 14, alpha: 0.4 } });
+  S.plane(1460, { name: 'range-far', ...wide, y: 700, h: 360, mat: CLAY_MAT, edge: CLAY_EDGE, res: 1, draw: (g) => drawRange(g, { seed: 41, base: 870, amp: 70, colors: [P.lilac, P.blush, P.lilac], haze: 0.45 }) }, { shadow: { dx: 6, dy: 12, alpha: 0.35 } });
+  S.plane(1430, { name: 'discs', x: 120, y: 120, w: 1600, h: 560, mat: CLAY_MAT, edge: CLAY_EDGE, shadow: { blur: 18 }, draw: drawDiscs }, { shadow: { dx: 7, dy: 13, alpha: 0.4 } });
+  S.plane(1400, { name: 'range-near', ...wide, y: 760, h: 300, mat: CLAY_MAT, edge: CLAY_EDGE, res: 1, draw: (g) => drawRange(g, { seed: 77, base: 930, amp: 46, colors: [P.pink, P.blush, P.pinkDeep], haze: 0.2 }) }, { shadow: { dx: 8, dy: 14, alpha: 0.4 } });
   S.add({ name: 'coral', z: 1240, shadow: { dx: 9, dy: 16, alpha: 0.42 }, sprites: [{ s: sp('coral', { x: 80, y: 520, w: 680, h: 500 }, drawCoral, { res: 1.25 }) }] });
   S.add({ name: 'trees', z: 1150, shadow: { dx: 9, dy: 16, alpha: 0.42 }, sprites: [{ s: sp('trees', { x: 1100, y: 640, w: 700, h: 380 }, drawTrees, { res: 1.25 }) }] });
   const rr = new RNG('rosettes');
   const rosettes = ROSETTES.map(([x, y, r, c], i) => ({ x, y, s: sp(`ros-${i}`, { x: x - r - 20, y: y - r - 20, w: r * 2 + 40, h: r * 2 + 40 }, (g) => rosette(g, x, y, r, c, rr), { blur: 8, res: 1.3 }) }));
   const track = sp('track', { x: 150, y: 540, w: 1640, h: 300 }, drawTrack, { blur: 10 });
-  const beads = BEADS.map((c, i) => S.sprite({ name: `bead-${i}`, x: -20, y: -20, w: 40, h: 40, res: 1.5, mat: 'smooth', edge: { width: 1.2, hi: 0.35, lo: 0.3 }, shadow: { blur: 6 }, draw: (g) => drawBead(g, c) }));
+  const beads = BEADS.map((c, i) => S.sprite({ name: `bead-${i}`, x: -20, y: -20, w: 40, h: 40, res: 1.5, mat: CLAY_MAT, edge: CLAY_EDGE, shadow: { blur: 9 }, draw: (g) => drawBead(g, c) }));
   // the garland swings a little, each string on its own phase
   const rng = new RNG('garland');
   const strings = STRINGS.map(([x, len, kind]) => ({ x, s: sp(`str-${x}`, { x: x - 40, y: 0, w: 80, h: len + 70 }, (g) => drawString(g, x, len, kind, rng), { blur: 8, res: 1.3 }) }));

@@ -1,12 +1,15 @@
-// Relief box, the shared kit: palette, the key light, and the two ways a shape gets its sculpted form in paper.
+// Relief box, the shared kit: palette, the key light, and how a shape gets its sculpted form.
 // Built on Leon Lin's paper-fox core (vendor/paper-fox, MIT); this file only adds helpers on top of it.
 //
-// The reference is clay relief in a shadowbox. Paper-fox's language for form is layers of cut paper: a shape is
-// cut again in smaller tiers, each a shade lighter and shifted toward the light, so a flat cut-out reads as a
-// rounded, sculpted piece. clayForm() does that for any outline, tube() for limbs, coils and stems.
+// Draft 1 and 2 built form the paper way, tiers cut inside each shape. Draft 3 moves toward clay: every shape is
+// shaded as a rounded lump, with a soft falloff into shadow on the side away from the light, a soft lit shoulder
+// toward it, a faint matte sheen, a fine clay surface (grain, fingerprint whorls, pits) and two shadows under it,
+// a tight contact shadow and a wide soft one. Paper-fox's baking, edge light and drop shadows still do the rest.
 
 import { piece, bevelBands, setShadow, clearShadow, pathOf } from '../vendor/paper-fox/core/piece.js';
-import { mix, shade } from '../vendor/paper-fox/core/color.js';
+import { mix, shade, rgba } from '../vendor/paper-fox/core/color.js';
+import { surface } from '../vendor/paper-fox/core/canvas.js';
+import { mulberry32 } from '../vendor/paper-fox/core/rng.js';
 
 // toward the key light: upper left, as in the photographed boxes
 export const LIGHT = [-0.46, -0.89];
@@ -23,49 +26,102 @@ export const PAL = {
   iris: '#7fa7d8', ink: '#3a3340',
 };
 
-const centroid = (pts) => {
-  let x = 0, y = 0;
-  for (const p of pts) { x += p[0]; y += p[1]; }
-  return [x / pts.length, y / pts.length];
-};
+// Sprite settings for clay: a barely-there paper fibre under our own clay surface, a soft cut edge, soft shadows.
+export const CLAY_MAT = [{ tex: 'fiber', amt: 0.16 }];
+export const CLAY_EDGE = { width: 1.3, hi: 0.14, lo: 0.2, soft: 1.4 };
 
-// Scale an outline about its centre and shift it, for the inner tiers of a sculpted piece.
-export function inset(pts, k, shift = [0, 0]) {
-  const [cx, cy] = centroid(pts);
-  return pts.map(([x, y]) => [cx + (x - cx) * k + shift[0], cy + (y - cy) * k + shift[1]]);
-}
-
-// One sculpted piece: the cut-out with its contact shadow and cut edge, then tiers cut again inside it, each
-// smaller, lighter and nearer the light, and a dark crescent on the side away from the light.
-//   tiers  how many inner cuts; step  how much each shrinks; lift  how much lighter each gets; reach  px toward the light
-export function clayForm(ctx, pts, fill, { light = LIGHT, tiers = 3, step = 0.14, lift = 0.07, reach = 6, smooth = true, shadow = true, bevel = true, rim = null } = {}) {
-  const path = piece(ctx, pts, {
-    fill, smooth, rim,
-    shadow: shadow ? { color: 'rgba(60,40,40,0.34)', blur: 7, x: -light[0] * 4, y: -light[1] * 4 } : null,
-    bevel: bevel ? { light, width: 1.8, hi: 0.32, lo: 0.2, soft: 0.4 } : null,
-  });
-  ctx.save();
-  ctx.clip(path);
-  // the unlit flank: the outline again, shifted away from the light, darker
-  ctx.fillStyle = shade(fill, -0.1);
-  ctx.globalAlpha = 0.55;
-  const away = inset(pts, 1, [-light[0] * -reach * 1.6, -light[1] * -reach * 1.6]);
-  const flank = new Path2D(); flank.rect(-1e5, -1e5, 2e5, 2e5); flank.addPath(pathOf(away, { smooth }));
-  ctx.fill(flank, 'evenodd');
-  ctx.globalAlpha = 1;
-  for (let i = 1; i <= tiers; i++) {
-    const k = 1 - step * i, sh = [light[0] * reach * i, light[1] * reach * i];
-    piece(ctx, inset(pts, k, sh), {
-      fill: shade(fill, lift * i), smooth,
-      shadow: { color: 'rgba(60,40,40,0.16)', blur: 4, x: -light[0] * 1.5, y: -light[1] * 1.5 },
-      bevel: { light, width: 1.2, hi: 0.22, lo: 0.08 },
+// The clay surface, made once: fine grain, a scatter of fingerprint whorls and tiny pits, centred on mid grey so
+// it soft-lights in without shifting the colour.
+let clayTex = null;
+function claySurface() {
+  if (clayTex) return clayTex;
+  const N = 384, { canvas, ctx } = surface(N, N), r = mulberry32(5150), img = ctx.createImageData(N, N);
+  for (let i = 0; i < N * N; i++) { const v = 128 + (r() + r() - 1) * 14; img.data[i * 4] = img.data[i * 4 + 1] = img.data[i * 4 + 2] = v; img.data[i * 4 + 3] = 255; }
+  ctx.putImageData(img, 0, 0);
+  ctx.filter = 'blur(0.6px)'; ctx.drawImage(canvas, 0, 0); ctx.filter = 'none';
+  const wrap = (x, y, fn) => { for (const ox of [-N, 0, N]) for (const oy of [-N, 0, N]) fn(x + ox, y + oy); };
+  for (let k = 0; k < 9; k++) {
+    const x = r() * N, y = r() * N, rot = r() * Math.PI, n = 6 + Math.floor(r() * 6), rx = 2.2 + r(), ry = 1.4 + r() * 0.6;
+    wrap(x, y, (X, Y) => {
+      for (let i = 1; i <= n; i++) {
+        ctx.strokeStyle = `rgba(${i % 2 ? 255 : 0},${i % 2 ? 255 : 0},${i % 2 ? 255 : 0},0.07)`; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.ellipse(X, Y, i * rx, i * ry, rot, 0.3 + r() * 0.4, Math.PI * (1.4 + r() * 0.5)); ctx.stroke();
+      }
     });
   }
+  for (let k = 0; k < 260; k++) {
+    const x = r() * N, y = r() * N, rad = 0.5 + r() * r() * 1.6;
+    wrap(x, y, (X, Y) => { ctx.fillStyle = 'rgba(0,0,0,0.22)'; ctx.beginPath(); ctx.arc(X, Y, rad, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = 'rgba(255,255,255,0.18)'; ctx.beginPath(); ctx.arc(X - rad * 0.5, Y - rad * 0.6, rad * 0.7, 0, Math.PI * 2); ctx.fill(); });
+  }
+  clayTex = canvas;
+  return clayTex;
+}
+
+const bbox = (pts) => {
+  let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9;
+  for (const [x, y] of pts) { x0 = Math.min(x0, x); y0 = Math.min(y0, y); x1 = Math.max(x1, x); y1 = Math.max(y1, y); }
+  return { x0, y0, x1, y1, w: x1 - x0, h: y1 - y0 };
+};
+const shift = (pts, d) => pts.map(([x, y]) => [x + d[0], y + d[1]]);
+
+// Chaikin corner cutting: rounds the corners of an open polyline (piping, bent rods) so a tube never kinks.
+export function chaikin(line, rounds = 3) {
+  let p = line;
+  for (let k = 0; k < rounds; k++) {
+    const out = [p[0]];
+    for (let i = 0; i < p.length - 1; i++) {
+      const [a, b] = [p[i], p[i + 1]];
+      out.push([a[0] * 0.75 + b[0] * 0.25, a[1] * 0.75 + b[1] * 0.25], [a[0] * 0.25 + b[0] * 0.75, a[1] * 0.25 + b[1] * 0.75]);
+    }
+    out.push(p[p.length - 1]);
+    p = out;
+  }
+  return p;
+}
+
+// One sculpted clay piece. size is the thickness the shading is scaled to (default: the shorter side of the
+// outline's box); round 0..1 how domed it is; sheen the matte highlight. Older options (tiers, step, reach) are
+// accepted and ignored so earlier call sites keep working.
+export function clayForm(ctx, pts, fill, { light = LIGHT, smooth = true, shadow = true, size = null, round = 1, sheen = 0.22 } = {}) {
+  const res = ctx.__res || 1, B = bbox(pts), S = size ?? Math.max(4, Math.min(B.w, B.h));
+  const path = pathOf(pts, { smooth });
+  ctx.save();
+  if (shadow) {
+    // the wide soft shadow, then the tight one where the piece meets what is under it
+    setShadow(ctx, { color: 'rgba(70,45,50,0.2)', blur: Math.min(22, 4 + S * 0.22), x: -light[0] * Math.min(9, 2 + S * 0.08), y: -light[1] * Math.min(9, 2 + S * 0.08) });
+    ctx.fillStyle = fill; ctx.fill(path);
+    setShadow(ctx, { color: 'rgba(60,35,40,0.32)', blur: 2.5, x: -light[0] * 1.2, y: -light[1] * 1.2 });
+  }
+  ctx.fillStyle = fill; ctx.fill(path);
+  clearShadow(ctx);
+  ctx.clip(path);
+  const band = (d, color, alpha, blur) => {
+    const p = new Path2D(); p.rect(B.x0 - S * 2, B.y0 - S * 2, B.w + S * 4, B.h + S * 4); p.addPath(pathOf(shift(pts, d), { smooth }));
+    ctx.save(); ctx.filter = `blur(${Math.max(0.5, blur * res)}px)`; ctx.fillStyle = rgba(color, alpha); ctx.fill(p, 'evenodd'); ctx.restore();
+  };
+  // shadow side: the outline pushed toward the light leaves the far side uncovered; blurred, it is a soft falloff
+  band([light[0] * S * 0.32 * round, light[1] * S * 0.32 * round], shade(fill, -0.42), 0.5, S * 0.2);
+  // core shadow tucked right under the far edge
+  band([light[0] * S * 0.08, light[1] * S * 0.08], shade(fill, -0.5), 0.35, S * 0.05 + 0.6);
+  // lit shoulder: pushed away from the light, it leaves the near edge, blurred and pale
+  band([-light[0] * S * 0.2 * round, -light[1] * S * 0.2 * round], mix(fill, '#fffaf0', 0.7), 0.42, S * 0.14);
+  // matte sheen, high on the lit side
+  if (sheen > 0) {
+    const cx = (B.x0 + B.x1) / 2 + light[0] * B.w * 0.22, cy = (B.y0 + B.y1) / 2 + light[1] * B.h * 0.22, rr = S * 0.36;
+    const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, rr);
+    g.addColorStop(0, `rgba(255,252,244,${sheen})`); g.addColorStop(1, 'rgba(255,252,244,0)');
+    ctx.fillStyle = g; ctx.fillRect(cx - rr, cy - rr, rr * 2, rr * 2);
+  }
+  // the clay surface
+  const pat = ctx.createPattern(claySurface(), 'repeat');
+  pat.setTransform(new DOMMatrix().scale(0.7));
+  ctx.globalCompositeOperation = 'soft-light'; ctx.globalAlpha = 0.55; ctx.fillStyle = pat;
+  ctx.fillRect(B.x0 - 2, B.y0 - 2, B.w + 4, B.h + 4);
   ctx.restore();
   return path;
 }
 
-// A tube along a polyline (an arm, a leg, a coil): offset both sides by the width at each point, round caps.
+// A tube along a polyline (a coil, a stem, a rod): offset both sides by the width at each point, round caps.
 // widths: one number or one per point.
 export function tubeOutline(line, widths, { caps = true, n = 8 } = {}) {
   const W = (i) => (Array.isArray(widths) ? widths[i] : widths);
@@ -87,44 +143,26 @@ export function tubeOutline(line, widths, { caps = true, n = 8 } = {}) {
   return [...L, ...cap(L[last], R[last], line[last], W(last), -1), ...R.reverse(), ...cap(R[R.length - 1], L[0], line[0], W(0), -1)];
 }
 
-// A sculpted tube: the outline as a clay piece, then a highlight tube along the side toward the light.
-export function tube(ctx, line, widths, fill, { light = LIGHT, shadow = true, hi = 0.11 } = {}) {
-  const W = (i) => (Array.isArray(widths) ? widths[i] : widths);
-  const path = clayForm(ctx, tubeOutline(line, widths), fill, { light, tiers: 0, shadow, reach: 4 });
-  ctx.save();
-  ctx.clip(path);
-  for (let k = 1; k <= 2; k++) {
-    const off = line.map((p, i) => [p[0] + light[0] * W(i) * 0.22 * k, p[1] + light[1] * W(i) * 0.22 * k]);
-    piece(ctx, tubeOutline(off, line.map((_, i) => W(i) * (1 - 0.3 * k))), {
-      fill: shade(fill, hi * k), smooth: true,
-      shadow: { color: 'rgba(60,40,40,0.12)', blur: 3, x: -light[0], y: -light[1] },
-    });
-  }
-  ctx.restore();
-  return path;
+// A rolled clay tube: the outline shaded as a lump whose thickness is the tube's width.
+export function tube(ctx, line, widths, fill, { light = LIGHT, shadow = true } = {}) {
+  const w = Array.isArray(widths) ? Math.max(...widths) : widths;
+  return clayForm(ctx, tubeOutline(line, widths), fill, { light, shadow, size: w * 2, sheen: 0.18 });
 }
 
-// A stepped stack (pyramids, tiers, the islands' undersides): bars of decreasing width, each its own cut piece.
+// A stepped stack (pyramids, tiers, the islands' undersides): slabs of decreasing width, each a rounded clay bar.
 export function steps(ctx, cx, y, { n = 5, w0 = 140, w1 = 30, h = 14, gap = 0, up = true, colors = [PAL.pink], light = LIGHT, round = 3 } = {}) {
   for (let i = 0; i < n; i++) {
     const k = n === 1 ? 0 : i / (n - 1), w = w0 + (w1 - w0) * k, yy = up ? y - i * (h + gap) : y + i * (h + gap);
-    const c = colors[i % colors.length];
-    const r = Math.min(round, h / 2);
+    const c = colors[i % colors.length], r = Math.min(Math.max(round, h * 0.45), h / 2);
     const pts = [[cx - w / 2 + r, yy - h], [cx + w / 2 - r, yy - h], [cx + w / 2, yy - h + r], [cx + w / 2, yy - r], [cx + w / 2 - r, yy], [cx - w / 2 + r, yy], [cx - w / 2, yy - r], [cx - w / 2, yy - h + r]];
-    piece(ctx, pts, {
-      fill: c,
-      shadow: { color: 'rgba(60,40,40,0.3)', blur: 4, x: -light[0] * 2.5, y: -light[1] * 2.5 },
-      bevel: { light, width: 1.6, hi: 0.34, lo: 0.22 },
-    });
-    // a lit top face on every step: the bar is a block, not a strip
-    piece(ctx, [[cx - w / 2 + r, yy - h], [cx + w / 2 - r, yy - h], [cx + w / 2 - r - 2, yy - h + h * 0.32], [cx - w / 2 + r + 2, yy - h + h * 0.32]], { fill: mix(c, '#ffffff', 0.32) });
+    clayForm(ctx, pts, c, { light, size: h * 1.3, sheen: 0.16 });
   }
 }
 
-// A crisp painted detail on a sculpted piece (an iris, dots): no shadow, a faint bevel only.
+// A painted or pressed-in detail on a clay piece (an eye, dots): a soft dimple, no hard bevel.
 export function dot(ctx, x, y, r, fill, light = LIGHT) {
   const p = new Path2D(); p.ellipse(x, y, r, r, 0, 0, Math.PI * 2);
   ctx.fillStyle = fill; ctx.fill(p);
-  bevelBands(ctx, p, { light, width: Math.max(0.6, r * 0.18), hi: 0.25, lo: 0.25 });
+  bevelBands(ctx, p, { light: [-light[0], -light[1]], width: Math.max(0.6, r * 0.25), hi: 0.16, lo: 0.22, soft: 0.6 });
 }
 

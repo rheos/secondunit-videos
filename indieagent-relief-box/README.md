@@ -51,8 +51,18 @@ reference set's vocabulary in a scene of our own, with paper-fox's density: many
 | all through | islands drift and bob, the garland swings, the camera trucks right and pushes in |
 | 9.4-11 s | hold |
 
-## How a flat cut-out reads as clay
+## How a flat cut-out reads as clay (draft 3)
 
-`src/kit.js` adds two helpers on top of paper-fox's `piece()`: `clayForm()` cuts a shape again in smaller tiers,
-each lighter and nearer the light, with a darker flank on the far side, which is paper-fox's own way of building
-form from layers; `tube()` does the same for limbs, coils and leads with a highlight tube along the lit side.
+Robin asked for rounder forms, softer light and a finer surface. `src/kit.js` now shades every shape as a lump:
+
+- `clayForm()`: the outline is filled, then, inside it, the outline pushed toward the light leaves the far side
+  uncovered; that sliver, heavily blurred and darker, is the soft falloff into shadow. A smaller one tucked under
+  the far edge is the core shadow; the outline pushed away from the light gives a pale lit shoulder; a faint radial
+  sheen sits high on the lit side. The shading scales with `size`, the piece's thickness.
+- Under each piece, two shadows: a tight contact shadow and a wide soft one.
+- A clay surface made once (fine grain, fingerprint whorls, tiny pits) is soft-lit into every piece; paper-fox's
+  fibre stays underneath at a low amount (`CLAY_MAT`), and the baked cut edge is soft (`CLAY_EDGE`).
+- `tube()` rolls coils, stalks and the piping with the same shading; `chaikin()` rounds the piping's corners.
+- The hills are rows of rounded mounds instead of torn paper strata.
+
+Draft 2 built form the paper way, with tiers cut inside each shape (commit 7cbb8a4).

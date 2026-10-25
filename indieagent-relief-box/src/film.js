@@ -1,4 +1,4 @@
-// Relief box, the film: 11 s at 24 fps, one shadowbox at dawn. Every frame is a pure function of t.
+// Relief box, the film (draft 3, clay): 11 s at 24 fps, one shadowbox at dawn. Every frame is a pure function of t.
 //   0.0 - 6.0   a sun made of a wheel of lit windows rises from behind the ranges and turns; the box warms from
 //               a cool half-dark to full light as it climbs
 //   2.4 - 9.4   a train of seven beads rolls out of a porthole in the left wall, along the butter piping, and
@@ -39,8 +39,8 @@ function scene() {
     duration: DURATION,
     background: '#3b2c2a',
     light: LIGHT,
-    shadow: { alpha: 0.48, dist: 10, blur: 11 },
-    post: { bloom: 0.18, threshold: 0.78, vignette: 0.18, grain: 0.045 },
+    shadow: { alpha: 0.42, dist: 10, blur: 16 },
+    post: { bloom: 0.24, threshold: 0.72, bloomRadius: 1.4, vignette: 0.2, grain: 0.035 },
     camera: (t) => {
       const k = E.cam(t / DURATION);
       return { x: lerp(-120, 110, k) + 4 * noise('cam').n1(t * 0.21), y: lerp(-8, 10, k) + 3 * noise('cam').n1(t * 0.17 + 9), z: 70 * E.dolly(t / DURATION), roll: 0.0016 * osc(t, 9.5) };

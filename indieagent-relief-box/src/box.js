@@ -17,7 +17,7 @@ export const FLOOR_Y = 990;
 export function addBackWall(S) {
   const { x0, y0, x1, y1, z } = BACK, pad = 260;
   S.plane(z, {
-    name: 'back-wall', x: x0 - pad, y: y0 - pad, w: x1 - x0 + pad * 2, h: y1 - y0 + pad * 2, mat: 'paper', edge: false, shadow: false,
+    name: 'back-wall', x: x0 - pad, y: y0 - pad, w: x1 - x0 + pad * 2, h: y1 - y0 + pad * 2, mat: 'smooth', edge: false, shadow: false,
     draw(ctx) {
       ctx.fillStyle = linear(ctx, 0, y0, 0, y1, [PAL.wallLight, PAL.wall, mix(PAL.wall, PAL.pink, 0.18)]);
       ctx.fillRect(x0 - pad, y0 - pad, x1 - x0 + pad * 2, y1 - y0 + pad * 2);
@@ -30,8 +30,8 @@ export function addBackWall(S) {
           const hex = [...Array(6)].map((_, i) => { const a = Math.PI / 6 + i * Math.PI / 3; return [x + Math.cos(a) * (r - 3.2), y + Math.sin(a) * (r - 3.2)]; });
           piece(ctx, hex, {
             fill: rgba(vary(mix(PAL.wallLight, PAL.blush, 0.35), rng, 0.05), 0.55 + 0.45 * fade),
-            bevel: { light: LIGHT, width: 1.6, hi: 0.4 * fade, lo: 0.2 * fade },
-            shadow: { color: `rgba(120,70,60,${0.18 * fade})`, blur: 3, x: 1.2, y: 2 },
+            bevel: { light: LIGHT, width: 2.2, hi: 0.32 * fade, lo: 0.18 * fade, soft: 1.6 },
+            shadow: { color: `rgba(120,70,60,${0.16 * fade})`, blur: 6, x: 1.6, y: 3 },
           });
         }
       }
@@ -94,7 +94,7 @@ export function addFrame(S) {
   };
   S.plane(z, {
     name: 'frame', x: x0 - pad, y: y0 - pad, w: x1 - x0 + pad * 2, h: y1 - y0 + pad * 2, mat: 'paper', res: 1,
-    edge: { width: 2.4, hi: 0.4, lo: 0.4, soft: 0.6 }, shadow: { blur: 22 },
+    edge: { width: 2.4, hi: 0.28, lo: 0.3, soft: 1.4 }, shadow: { blur: 30 },
     draw(ctx) {
       piece(ctx, ring(pad, 0), { fill: shade(PAL.box, 0.06) });
       piece(ctx, ring(34, 0), { fill: linear(ctx, x0, y0, x1, y1, [shade(PAL.box, 0.16), PAL.box, shade(PAL.box, -0.08)]), bevel: { light: LIGHT, width: 2.4, hi: 0.4, lo: 0.3 }, shadow: { color: 'rgba(60,40,30,0.35)', blur: 8, x: 2, y: 4 } });

@@ -1302,15 +1302,18 @@ const osc = (t, period, phase = 0) => Math.sin(((t / period) + phase) * Math.PI 
 return { clamp, lerp, invLerp, remap, smoothstep, smootherstep, lmix, bezier, E, prog, osc };
 })();
 __m["src/kit.js"] = (() => {
-// Relief box, the shared kit: palette, the key light, and the two ways a shape gets its sculpted form in paper.
+// Relief box, the shared kit: palette, the key light, and how a shape gets its sculpted form.
 // Built on Leon Lin's paper-fox core (vendor/paper-fox, MIT); this file only adds helpers on top of it.
 //
-// The reference is clay relief in a shadowbox. Paper-fox's language for form is layers of cut paper: a shape is
-// cut again in smaller tiers, each a shade lighter and shifted toward the light, so a flat cut-out reads as a
-// rounded, sculpted piece. clayForm() does that for any outline, tube() for limbs, coils and stems.
+// Draft 1 and 2 built form the paper way, tiers cut inside each shape. Draft 3 moves toward clay: every shape is
+// shaded as a rounded lump, with a soft falloff into shadow on the side away from the light, a soft lit shoulder
+// toward it, a faint matte sheen, a fine clay surface (grain, fingerprint whorls, pits) and two shadows under it,
+// a tight contact shadow and a wide soft one. Paper-fox's baking, edge light and drop shadows still do the rest.
 
 const { piece, bevelBands, setShadow, clearShadow, pathOf } = __m["vendor/paper-fox/core/piece.js"];
-const { mix, shade } = __m["vendor/paper-fox/core/color.js"];
+const { mix, shade, rgba } = __m["vendor/paper-fox/core/color.js"];
+const { surface } = __m["vendor/paper-fox/core/canvas.js"];
+const { mulberry32 } = __m["vendor/paper-fox/core/rng.js"];
 // toward the key light: upper left, as in the photographed boxes
 const LIGHT = [-0.46, -0.89];
 
@@ -1326,49 +1329,102 @@ const PAL = {
   iris: '#7fa7d8', ink: '#3a3340',
 };
 
-const centroid = (pts) => {
-  let x = 0, y = 0;
-  for (const p of pts) { x += p[0]; y += p[1]; }
-  return [x / pts.length, y / pts.length];
-};
+// Sprite settings for clay: a barely-there paper fibre under our own clay surface, a soft cut edge, soft shadows.
+const CLAY_MAT = [{ tex: 'fiber', amt: 0.16 }];
+const CLAY_EDGE = { width: 1.3, hi: 0.14, lo: 0.2, soft: 1.4 };
 
-// Scale an outline about its centre and shift it, for the inner tiers of a sculpted piece.
-function inset(pts, k, shift = [0, 0]) {
-  const [cx, cy] = centroid(pts);
-  return pts.map(([x, y]) => [cx + (x - cx) * k + shift[0], cy + (y - cy) * k + shift[1]]);
-}
-
-// One sculpted piece: the cut-out with its contact shadow and cut edge, then tiers cut again inside it, each
-// smaller, lighter and nearer the light, and a dark crescent on the side away from the light.
-//   tiers  how many inner cuts; step  how much each shrinks; lift  how much lighter each gets; reach  px toward the light
-function clayForm(ctx, pts, fill, { light = LIGHT, tiers = 3, step = 0.14, lift = 0.07, reach = 6, smooth = true, shadow = true, bevel = true, rim = null } = {}) {
-  const path = piece(ctx, pts, {
-    fill, smooth, rim,
-    shadow: shadow ? { color: 'rgba(60,40,40,0.34)', blur: 7, x: -light[0] * 4, y: -light[1] * 4 } : null,
-    bevel: bevel ? { light, width: 1.8, hi: 0.32, lo: 0.2, soft: 0.4 } : null,
-  });
-  ctx.save();
-  ctx.clip(path);
-  // the unlit flank: the outline again, shifted away from the light, darker
-  ctx.fillStyle = shade(fill, -0.1);
-  ctx.globalAlpha = 0.55;
-  const away = inset(pts, 1, [-light[0] * -reach * 1.6, -light[1] * -reach * 1.6]);
-  const flank = new Path2D(); flank.rect(-1e5, -1e5, 2e5, 2e5); flank.addPath(pathOf(away, { smooth }));
-  ctx.fill(flank, 'evenodd');
-  ctx.globalAlpha = 1;
-  for (let i = 1; i <= tiers; i++) {
-    const k = 1 - step * i, sh = [light[0] * reach * i, light[1] * reach * i];
-    piece(ctx, inset(pts, k, sh), {
-      fill: shade(fill, lift * i), smooth,
-      shadow: { color: 'rgba(60,40,40,0.16)', blur: 4, x: -light[0] * 1.5, y: -light[1] * 1.5 },
-      bevel: { light, width: 1.2, hi: 0.22, lo: 0.08 },
+// The clay surface, made once: fine grain, a scatter of fingerprint whorls and tiny pits, centred on mid grey so
+// it soft-lights in without shifting the colour.
+let clayTex = null;
+function claySurface() {
+  if (clayTex) return clayTex;
+  const N = 384, { canvas, ctx } = surface(N, N), r = mulberry32(5150), img = ctx.createImageData(N, N);
+  for (let i = 0; i < N * N; i++) { const v = 128 + (r() + r() - 1) * 14; img.data[i * 4] = img.data[i * 4 + 1] = img.data[i * 4 + 2] = v; img.data[i * 4 + 3] = 255; }
+  ctx.putImageData(img, 0, 0);
+  ctx.filter = 'blur(0.6px)'; ctx.drawImage(canvas, 0, 0); ctx.filter = 'none';
+  const wrap = (x, y, fn) => { for (const ox of [-N, 0, N]) for (const oy of [-N, 0, N]) fn(x + ox, y + oy); };
+  for (let k = 0; k < 9; k++) {
+    const x = r() * N, y = r() * N, rot = r() * Math.PI, n = 6 + Math.floor(r() * 6), rx = 2.2 + r(), ry = 1.4 + r() * 0.6;
+    wrap(x, y, (X, Y) => {
+      for (let i = 1; i <= n; i++) {
+        ctx.strokeStyle = `rgba(${i % 2 ? 255 : 0},${i % 2 ? 255 : 0},${i % 2 ? 255 : 0},0.07)`; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.ellipse(X, Y, i * rx, i * ry, rot, 0.3 + r() * 0.4, Math.PI * (1.4 + r() * 0.5)); ctx.stroke();
+      }
     });
   }
+  for (let k = 0; k < 260; k++) {
+    const x = r() * N, y = r() * N, rad = 0.5 + r() * r() * 1.6;
+    wrap(x, y, (X, Y) => { ctx.fillStyle = 'rgba(0,0,0,0.22)'; ctx.beginPath(); ctx.arc(X, Y, rad, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = 'rgba(255,255,255,0.18)'; ctx.beginPath(); ctx.arc(X - rad * 0.5, Y - rad * 0.6, rad * 0.7, 0, Math.PI * 2); ctx.fill(); });
+  }
+  clayTex = canvas;
+  return clayTex;
+}
+
+const bbox = (pts) => {
+  let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9;
+  for (const [x, y] of pts) { x0 = Math.min(x0, x); y0 = Math.min(y0, y); x1 = Math.max(x1, x); y1 = Math.max(y1, y); }
+  return { x0, y0, x1, y1, w: x1 - x0, h: y1 - y0 };
+};
+const shift = (pts, d) => pts.map(([x, y]) => [x + d[0], y + d[1]]);
+
+// Chaikin corner cutting: rounds the corners of an open polyline (piping, bent rods) so a tube never kinks.
+function chaikin(line, rounds = 3) {
+  let p = line;
+  for (let k = 0; k < rounds; k++) {
+    const out = [p[0]];
+    for (let i = 0; i < p.length - 1; i++) {
+      const [a, b] = [p[i], p[i + 1]];
+      out.push([a[0] * 0.75 + b[0] * 0.25, a[1] * 0.75 + b[1] * 0.25], [a[0] * 0.25 + b[0] * 0.75, a[1] * 0.25 + b[1] * 0.75]);
+    }
+    out.push(p[p.length - 1]);
+    p = out;
+  }
+  return p;
+}
+
+// One sculpted clay piece. size is the thickness the shading is scaled to (default: the shorter side of the
+// outline's box); round 0..1 how domed it is; sheen the matte highlight. Older options (tiers, step, reach) are
+// accepted and ignored so earlier call sites keep working.
+function clayForm(ctx, pts, fill, { light = LIGHT, smooth = true, shadow = true, size = null, round = 1, sheen = 0.22 } = {}) {
+  const res = ctx.__res || 1, B = bbox(pts), S = size ?? Math.max(4, Math.min(B.w, B.h));
+  const path = pathOf(pts, { smooth });
+  ctx.save();
+  if (shadow) {
+    // the wide soft shadow, then the tight one where the piece meets what is under it
+    setShadow(ctx, { color: 'rgba(70,45,50,0.2)', blur: Math.min(22, 4 + S * 0.22), x: -light[0] * Math.min(9, 2 + S * 0.08), y: -light[1] * Math.min(9, 2 + S * 0.08) });
+    ctx.fillStyle = fill; ctx.fill(path);
+    setShadow(ctx, { color: 'rgba(60,35,40,0.32)', blur: 2.5, x: -light[0] * 1.2, y: -light[1] * 1.2 });
+  }
+  ctx.fillStyle = fill; ctx.fill(path);
+  clearShadow(ctx);
+  ctx.clip(path);
+  const band = (d, color, alpha, blur) => {
+    const p = new Path2D(); p.rect(B.x0 - S * 2, B.y0 - S * 2, B.w + S * 4, B.h + S * 4); p.addPath(pathOf(shift(pts, d), { smooth }));
+    ctx.save(); ctx.filter = `blur(${Math.max(0.5, blur * res)}px)`; ctx.fillStyle = rgba(color, alpha); ctx.fill(p, 'evenodd'); ctx.restore();
+  };
+  // shadow side: the outline pushed toward the light leaves the far side uncovered; blurred, it is a soft falloff
+  band([light[0] * S * 0.32 * round, light[1] * S * 0.32 * round], shade(fill, -0.42), 0.5, S * 0.2);
+  // core shadow tucked right under the far edge
+  band([light[0] * S * 0.08, light[1] * S * 0.08], shade(fill, -0.5), 0.35, S * 0.05 + 0.6);
+  // lit shoulder: pushed away from the light, it leaves the near edge, blurred and pale
+  band([-light[0] * S * 0.2 * round, -light[1] * S * 0.2 * round], mix(fill, '#fffaf0', 0.7), 0.42, S * 0.14);
+  // matte sheen, high on the lit side
+  if (sheen > 0) {
+    const cx = (B.x0 + B.x1) / 2 + light[0] * B.w * 0.22, cy = (B.y0 + B.y1) / 2 + light[1] * B.h * 0.22, rr = S * 0.36;
+    const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, rr);
+    g.addColorStop(0, `rgba(255,252,244,${sheen})`); g.addColorStop(1, 'rgba(255,252,244,0)');
+    ctx.fillStyle = g; ctx.fillRect(cx - rr, cy - rr, rr * 2, rr * 2);
+  }
+  // the clay surface
+  const pat = ctx.createPattern(claySurface(), 'repeat');
+  pat.setTransform(new DOMMatrix().scale(0.7));
+  ctx.globalCompositeOperation = 'soft-light'; ctx.globalAlpha = 0.55; ctx.fillStyle = pat;
+  ctx.fillRect(B.x0 - 2, B.y0 - 2, B.w + 4, B.h + 4);
   ctx.restore();
   return path;
 }
 
-// A tube along a polyline (an arm, a leg, a coil): offset both sides by the width at each point, round caps.
+// A tube along a polyline (a coil, a stem, a rod): offset both sides by the width at each point, round caps.
 // widths: one number or one per point.
 function tubeOutline(line, widths, { caps = true, n = 8 } = {}) {
   const W = (i) => (Array.isArray(widths) ? widths[i] : widths);
@@ -1390,49 +1446,31 @@ function tubeOutline(line, widths, { caps = true, n = 8 } = {}) {
   return [...L, ...cap(L[last], R[last], line[last], W(last), -1), ...R.reverse(), ...cap(R[R.length - 1], L[0], line[0], W(0), -1)];
 }
 
-// A sculpted tube: the outline as a clay piece, then a highlight tube along the side toward the light.
-function tube(ctx, line, widths, fill, { light = LIGHT, shadow = true, hi = 0.11 } = {}) {
-  const W = (i) => (Array.isArray(widths) ? widths[i] : widths);
-  const path = clayForm(ctx, tubeOutline(line, widths), fill, { light, tiers: 0, shadow, reach: 4 });
-  ctx.save();
-  ctx.clip(path);
-  for (let k = 1; k <= 2; k++) {
-    const off = line.map((p, i) => [p[0] + light[0] * W(i) * 0.22 * k, p[1] + light[1] * W(i) * 0.22 * k]);
-    piece(ctx, tubeOutline(off, line.map((_, i) => W(i) * (1 - 0.3 * k))), {
-      fill: shade(fill, hi * k), smooth: true,
-      shadow: { color: 'rgba(60,40,40,0.12)', blur: 3, x: -light[0], y: -light[1] },
-    });
-  }
-  ctx.restore();
-  return path;
+// A rolled clay tube: the outline shaded as a lump whose thickness is the tube's width.
+function tube(ctx, line, widths, fill, { light = LIGHT, shadow = true } = {}) {
+  const w = Array.isArray(widths) ? Math.max(...widths) : widths;
+  return clayForm(ctx, tubeOutline(line, widths), fill, { light, shadow, size: w * 2, sheen: 0.18 });
 }
 
-// A stepped stack (pyramids, tiers, the islands' undersides): bars of decreasing width, each its own cut piece.
+// A stepped stack (pyramids, tiers, the islands' undersides): slabs of decreasing width, each a rounded clay bar.
 function steps(ctx, cx, y, { n = 5, w0 = 140, w1 = 30, h = 14, gap = 0, up = true, colors = [PAL.pink], light = LIGHT, round = 3 } = {}) {
   for (let i = 0; i < n; i++) {
     const k = n === 1 ? 0 : i / (n - 1), w = w0 + (w1 - w0) * k, yy = up ? y - i * (h + gap) : y + i * (h + gap);
-    const c = colors[i % colors.length];
-    const r = Math.min(round, h / 2);
+    const c = colors[i % colors.length], r = Math.min(Math.max(round, h * 0.45), h / 2);
     const pts = [[cx - w / 2 + r, yy - h], [cx + w / 2 - r, yy - h], [cx + w / 2, yy - h + r], [cx + w / 2, yy - r], [cx + w / 2 - r, yy], [cx - w / 2 + r, yy], [cx - w / 2, yy - r], [cx - w / 2, yy - h + r]];
-    piece(ctx, pts, {
-      fill: c,
-      shadow: { color: 'rgba(60,40,40,0.3)', blur: 4, x: -light[0] * 2.5, y: -light[1] * 2.5 },
-      bevel: { light, width: 1.6, hi: 0.34, lo: 0.22 },
-    });
-    // a lit top face on every step: the bar is a block, not a strip
-    piece(ctx, [[cx - w / 2 + r, yy - h], [cx + w / 2 - r, yy - h], [cx + w / 2 - r - 2, yy - h + h * 0.32], [cx - w / 2 + r + 2, yy - h + h * 0.32]], { fill: mix(c, '#ffffff', 0.32) });
+    clayForm(ctx, pts, c, { light, size: h * 1.3, sheen: 0.16 });
   }
 }
 
-// A crisp painted detail on a sculpted piece (an iris, dots): no shadow, a faint bevel only.
+// A painted or pressed-in detail on a clay piece (an eye, dots): a soft dimple, no hard bevel.
 function dot(ctx, x, y, r, fill, light = LIGHT) {
   const p = new Path2D(); p.ellipse(x, y, r, r, 0, 0, Math.PI * 2);
   ctx.fillStyle = fill; ctx.fill(p);
-  bevelBands(ctx, p, { light, width: Math.max(0.6, r * 0.18), hi: 0.25, lo: 0.25 });
+  bevelBands(ctx, p, { light: [-light[0], -light[1]], width: Math.max(0.6, r * 0.25), hi: 0.16, lo: 0.22, soft: 0.6 });
 }
 
 
-return { LIGHT, PAL, inset, clayForm, tubeOutline, tube, steps, dot };
+return { LIGHT, PAL, CLAY_MAT, CLAY_EDGE, chaikin, clayForm, tubeOutline, tube, steps, dot };
 })();
 __m["src/box.js"] = (() => {
 // The shadowbox: a honeycomb back wall, four inner walls drawn through the camera so they hold their
@@ -1453,7 +1491,7 @@ const FLOOR_Y = 990;
 function addBackWall(S) {
   const { x0, y0, x1, y1, z } = BACK, pad = 260;
   S.plane(z, {
-    name: 'back-wall', x: x0 - pad, y: y0 - pad, w: x1 - x0 + pad * 2, h: y1 - y0 + pad * 2, mat: 'paper', edge: false, shadow: false,
+    name: 'back-wall', x: x0 - pad, y: y0 - pad, w: x1 - x0 + pad * 2, h: y1 - y0 + pad * 2, mat: 'smooth', edge: false, shadow: false,
     draw(ctx) {
       ctx.fillStyle = linear(ctx, 0, y0, 0, y1, [PAL.wallLight, PAL.wall, mix(PAL.wall, PAL.pink, 0.18)]);
       ctx.fillRect(x0 - pad, y0 - pad, x1 - x0 + pad * 2, y1 - y0 + pad * 2);
@@ -1466,8 +1504,8 @@ function addBackWall(S) {
           const hex = [...Array(6)].map((_, i) => { const a = Math.PI / 6 + i * Math.PI / 3; return [x + Math.cos(a) * (r - 3.2), y + Math.sin(a) * (r - 3.2)]; });
           piece(ctx, hex, {
             fill: rgba(vary(mix(PAL.wallLight, PAL.blush, 0.35), rng, 0.05), 0.55 + 0.45 * fade),
-            bevel: { light: LIGHT, width: 1.6, hi: 0.4 * fade, lo: 0.2 * fade },
-            shadow: { color: `rgba(120,70,60,${0.18 * fade})`, blur: 3, x: 1.2, y: 2 },
+            bevel: { light: LIGHT, width: 2.2, hi: 0.32 * fade, lo: 0.18 * fade, soft: 1.6 },
+            shadow: { color: `rgba(120,70,60,${0.16 * fade})`, blur: 6, x: 1.6, y: 3 },
           });
         }
       }
@@ -1530,7 +1568,7 @@ function addFrame(S) {
   };
   S.plane(z, {
     name: 'frame', x: x0 - pad, y: y0 - pad, w: x1 - x0 + pad * 2, h: y1 - y0 + pad * 2, mat: 'paper', res: 1,
-    edge: { width: 2.4, hi: 0.4, lo: 0.4, soft: 0.6 }, shadow: { blur: 22 },
+    edge: { width: 2.4, hi: 0.28, lo: 0.3, soft: 1.4 }, shadow: { blur: 30 },
     draw(ctx) {
       piece(ctx, ring(pad, 0), { fill: shade(PAL.box, 0.06) });
       piece(ctx, ring(34, 0), { fill: linear(ctx, x0, y0, x1, y1, [shade(PAL.box, 0.16), PAL.box, shade(PAL.box, -0.08)]), bevel: { light: LIGHT, width: 2.4, hi: 0.4, lo: 0.3 }, shadow: { color: 'rgba(60,40,30,0.35)', blur: 8, x: 2, y: 4 } });
@@ -1565,7 +1603,7 @@ const { RNG } = __m["vendor/paper-fox/core/rng.js"];
 const { piece, linear, radial } = __m["vendor/paper-fox/core/piece.js"];
 const { leaf, transform } = __m["vendor/paper-fox/core/geom.js"];
 const { mix, shade, vary } = __m["vendor/paper-fox/core/color.js"];
-const { LIGHT, PAL, clayForm, tube, tubeOutline, steps, dot } = __m["src/kit.js"];
+const { LIGHT, PAL, CLAY_MAT, CLAY_EDGE, clayForm, tube, tubeOutline, steps, dot } = __m["src/kit.js"];
 const P = PAL;
 const sh = (k = 1) => ({ color: `rgba(70,40,50,${0.3 * k})`, blur: 4, x: -LIGHT[0] * 2.5, y: -LIGHT[1] * 2.5 });
 const bev = { light: LIGHT, width: 1.6, hi: 0.36, lo: 0.24 };
@@ -1580,7 +1618,7 @@ function drawSun(g) {
     const a = i / 18 * Math.PI * 2;
     for (let k = 0; k < 3; k++) {
       const d = r + 8 + k * 11, w = 15 - k * 4;
-      piece(g, transform([[-w, 0], [0, -13], [w, 0]], { x: x + Math.cos(a) * d, y: y + Math.sin(a) * d, rot: a + Math.PI / 2 }), { fill: [P.butter, '#f6c36a', '#f29d5c'][k], shadow: sh(0.6), bevel: bev });
+      clayForm(g, transform([[-w, 0], [0, -13], [w, 0]], { x: x + Math.cos(a) * d, y: y + Math.sin(a) * d, rot: a + Math.PI / 2 }), [P.butter, '#f6c36a', '#f29d5c'][k], { smooth: false });
     }
   }
   clayForm(g, circle(x, y, r), mix(P.butter, '#f6c36a', 0.4), { tiers: 1, step: 0.04, reach: 3 });
@@ -1588,7 +1626,7 @@ function drawSun(g) {
     for (let i = 0; i < n; i++) {
       const a = i / n * Math.PI * 2, cx = x + Math.cos(a) * rr, cy = y + Math.sin(a) * rr;
       const sq = (k) => transform([[-k, -k], [k, -k], [k, k], [-k, k]], { x: cx, y: cy, rot: a });
-      piece(g, sq(s * 0.62), { fill: P.butterDeep, shadow: sh(0.8), bevel: bev });
+      clayForm(g, sq(s * 0.62), P.butterDeep, { smooth: false });
       piece(g, sq(s * 0.42), { fill: vary(rng.pick(['#ffe2a0', '#ffd27e', '#fff0c8']), rng, 0.04) });
       piece(g, transform([[-s * 0.42, -s * 0.42], [s * 0.42, -s * 0.42], [s * 0.3, -s * 0.28], [-s * 0.3, -s * 0.28]], { x: cx, y: cy, rot: a }), { fill: 'rgba(150,80,30,0.3)' });
     }
@@ -1608,21 +1646,21 @@ function drawIsland(g) {
   // mountains with snowy tops, back to front
   for (const [mx, h, w, c] of [[x - 90, 120, 90, mix(P.pink, P.lilac, 0.4)], [x + 70, 96, 80, mix(P.pink, P.lilac, 0.3)], [x - 10, 150, 104, P.pink], [x + 130, 70, 56, P.pinkDeep]]) {
     const top = [mx, y - 6 - h];
-    piece(g, [[mx - w, y - 4], top, [mx + w, y - 4]], { fill: c, shadow: sh(), bevel: bev });
+    clayForm(g, [[mx - w, y - 4], top, [mx + w, y - 4]], c, { smooth: false });
     piece(g, [[mx, y - 6 - h], [mx + w, y - 4], [mx + w * 0.15, y - 4]], { fill: shade(c, -0.12) });     // face away from the light
-    piece(g, [[mx - w * 0.3, y - 6 - h * 0.7], top, [mx + w * 0.3, y - 6 - h * 0.7], [mx + w * 0.12, y - 6 - h * 0.62], [mx, y - 6 - h * 0.72], [mx - w * 0.14, y - 6 - h * 0.6]], { fill: P.blush, shadow: sh(0.5), bevel: bev });
+    clayForm(g, [[mx - w * 0.3, y - 6 - h * 0.7], top, [mx + w * 0.3, y - 6 - h * 0.7], [mx + w * 0.12, y - 6 - h * 0.62], [mx, y - 6 - h * 0.72], [mx - w * 0.14, y - 6 - h * 0.6]], P.blush, { smooth: false });
   }
   // a little town on the right of the slab: blocks, a tower, windows
   for (let i = 0; i < 7; i++) {
     const bx = x + 40 + i * 18 + rng.range(-3, 3), bw = rng.range(12, 20), bh = rng.range(20, 56);
     const c = vary(mix(P.pinkDeep, '#e48a6a', 0.5), rng, 0.08);
-    piece(g, [[bx, y - 4], [bx, y - 4 - bh], [bx + bw, y - 4 - bh], [bx + bw, y - 4]], { fill: c, shadow: sh(0.8), bevel: bev });
+    clayForm(g, [[bx, y - 4], [bx, y - 4 - bh], [bx + bw, y - 4 - bh], [bx + bw, y - 4]], c, { smooth: false });
     for (let k = 0; k < bh / 12 - 1; k++) { g.fillStyle = shade(c, -0.25); g.fillRect(bx + 3, y - bh + k * 12, 4, 5); }
   }
   // orange cone trees along the left edge
   for (let i = 0; i < 5; i++) {
     const tx = x - 160 + i * 22, th = 26 + (i % 2) * 8;
-    piece(g, [[tx - 9, y - 4], [tx, y - 4 - th], [tx + 9, y - 4]], { fill: i % 2 ? '#e8835a' : '#f09a6c', shadow: sh(0.7), bevel: bev });
+    clayForm(g, [[tx - 9, y - 4], [tx, y - 4 - th], [tx + 9, y - 4]], i % 2 ? '#e8835a' : '#f09a6c', { smooth: false });
   }
 }
 
@@ -1635,9 +1673,9 @@ function drawCity(g) {
   for (let i = 0; i < 11; i++) {
     const bx = x - 112 + i * 21 + rng.range(-3, 3), bw = rng.range(14, 22), bh = rng.range(24, 78) * (1 - Math.abs(i - 5) / 9);
     const c = vary(i % 3 ? '#e48a6a' : '#d9735e', rng, 0.08);
-    piece(g, [[bx, y - 2], [bx, y - 2 - bh], [bx + bw, y - 2 - bh], [bx + bw, y - 2]], { fill: c, shadow: sh(0.8), bevel: bev });
+    clayForm(g, [[bx, y - 2], [bx, y - 2 - bh], [bx + bw, y - 2 - bh], [bx + bw, y - 2]], c, { smooth: false });
     piece(g, [[bx + bw * 0.6, y - 2 - bh], [bx + bw, y - 2 - bh], [bx + bw, y - 2], [bx + bw * 0.6, y - 2]], { fill: shade(c, -0.1) });
-    if (i === 5) piece(g, [[bx - 2, y - 2 - bh], [bx + bw / 2, y - 26 - bh], [bx + bw + 2, y - 2 - bh]], { fill: P.pinkDeep, shadow: sh(0.6), bevel: bev });
+    if (i === 5) clayForm(g, [[bx - 2, y - 2 - bh], [bx + bw / 2, y - 26 - bh], [bx + bw + 2, y - 2 - bh]], P.pinkDeep, { smooth: false });
     for (let k = 0; k < bh / 12 - 1; k++) { g.fillStyle = shade(c, -0.28); g.fillRect(bx + 3, y - bh + k * 12, 4, 5); g.fillRect(bx + bw - 9, y - bh + k * 12, 3, 5); }
   }
 }
@@ -1647,13 +1685,13 @@ function drawFloorLeft(g) {
   const rng = new RNG('floor-l'), y = 1032;
   // a small range of pink pyramids, a fringe of cone trees, a string of beads
   for (const [x, h, w] of [[250, 90, 70], [340, 60, 50], [420, 110, 80], [520, 70, 56]]) {
-    piece(g, [[x - w, y], [x, y - h], [x + w, y]], { fill: mix(P.pink, P.butter, 0.15), shadow: sh(), bevel: bev });
+    clayForm(g, [[x - w, y], [x, y - h], [x + w, y]], mix(P.pink, P.butter, 0.15), { smooth: false });
     piece(g, [[x, y - h], [x + w, y], [x + w * 0.2, y]], { fill: shade(P.pink, -0.12) });
     for (let k = 1; k < 4; k++) { g.strokeStyle = 'rgba(150,80,90,0.35)'; g.lineWidth = 1.2; g.beginPath(); g.moveTo(x - w + k * w / 2, y); g.lineTo(x, y - h); g.stroke(); }
   }
   for (let i = 0; i < 9; i++) {
     const x = 170 + i * 46 + rng.range(-6, 6), h = rng.range(26, 46);
-    piece(g, [[x - 10, y + 6], [x, y + 6 - h], [x + 10, y + 6]], { fill: i % 2 ? '#ef8c5f' : '#f6a678', shadow: sh(0.8), bevel: bev });
+    clayForm(g, [[x - 10, y + 6], [x, y + 6 - h], [x + 10, y + 6]], i % 2 ? '#ef8c5f' : '#f6a678', { smooth: false });
   }
   for (let i = 0; i < 12; i++) clayForm(g, circle(600 + i * 19, y - 4 - Math.sin(i * 0.5) * 6, 8, 20), i % 3 ? P.mint : P.butter, { tiers: 1, reach: 1.5 });
 }
@@ -1671,7 +1709,7 @@ function drawFloorRight(g) {
 }
 
 function addProps(S) {
-  const s = (name, box, draw, o = {}) => S.sprite({ name, ...box, res: o.res ?? 1.2, mat: o.mat ?? 'smooth', edge: { width: 1.6, hi: 0.35, lo: 0.3 }, shadow: { blur: o.blur ?? 12 }, draw });
+  const s = (name, box, draw, o = {}) => S.sprite({ name, ...box, res: o.res ?? 1.2, mat: o.mat ?? CLAY_MAT, edge: CLAY_EDGE, shadow: { blur: (o.blur ?? 12) * 1.5 }, draw });
   return {
     sun: s('sun', { x: SUN.x - SUN.r - 70, y: SUN.y - SUN.r - 70, w: SUN.r * 2 + 140, h: SUN.r * 2 + 140 }, drawSun, { blur: 16 }),
     city: s('city', { x: CITY.x - 150, y: CITY.y - 130, w: 300, h: 230 }, drawCity),
@@ -1702,7 +1740,7 @@ const { leaf, transform, ridge, closeDown, along } = __m["vendor/paper-fox/core/
 const { mix, shade, vary, rgba } = __m["vendor/paper-fox/core/color.js"];
 const { osc } = __m["vendor/paper-fox/core/ease.js"];
 const { drawSprites } = __m["vendor/paper-fox/core/sprite.js"];
-const { LIGHT, PAL, clayForm, tube, steps, dot } = __m["src/kit.js"];
+const { LIGHT, PAL, CLAY_MAT, CLAY_EDGE, clayForm, tube, steps, dot, chaikin } = __m["src/kit.js"];
 const { BACK } = __m["src/box.js"];
 const P = PAL;
 const sh = (k = 1) => ({ color: `rgba(70,40,50,${0.3 * k})`, blur: 4, x: -LIGHT[0] * 2.5, y: -LIGHT[1] * 2.5 });
@@ -1711,20 +1749,27 @@ const circle = (cx, cy, r, n = 40) => [...Array(n)].map((_, i) => [cx + Math.cos
 const LIME = '#c6d957', CORAL = '#7d8597';
 
 // ---------------- low ranges along the back wall ----------------
+// Rounded clay mounds pressed side by side in two rows, the back row paler, with little rolled trees on them.
 function drawRange(g, { seed, base, amp, colors, haze }) {
-  const top = ridge(BACK.x0 - 240, BACK.x1 + 240, base, { amp, freq: 0.006, sharp: 0.75, seed, step: 6 });
-  piece(g, closeDown(top, BACK.y1 + 40), { fill: mix(colors[0], P.wallLight, haze), torn: { amp: 1.5, freq: 0.1, seed }, rim: { color: '#fbf3ea', width: 1.5 }, shadow: sh(0.8), bevel: bev });
-  // stepped strata across the hills, each band a cut lighter toward the top
-  for (let i = 1; i < 4; i++) {
-    const t2 = top.map(([x, y]) => [x, y + i * amp * 0.34 + 8 * noise(seed + i).n1(x * 0.01)]);
-    piece(g, closeDown(t2, BACK.y1 + 40), { fill: mix(shade(colors[i % colors.length], -0.04 * i), P.wallLight, haze * 0.8), torn: { amp: 1.2, freq: 0.12, seed: seed + i }, shadow: sh(0.5), bevel: { ...bev, hi: 0.25 } });
-  }
-  // cone trees standing along the crest
-  const rng = new RNG(`trees:${seed}`);
-  for (let k = 0; k < top.length; k += 9) {
-    if (!rng.chance(0.45)) continue;
-    const [x, y] = top[k], h = rng.range(18, 40);
-    piece(g, [[x - h * 0.28, y + 4], [x, y - h], [x + h * 0.28, y + 4]], { fill: vary(mix(rng.pick(['#ef8c5f', P.mintDeep, '#f6a678']), P.wallLight, haze * 0.7), rng, 0.06), shadow: sh(0.6), bevel: bev });
+  const rng = new RNG(`range:${seed}`), x0 = BACK.x0 - 240, x1 = BACK.x1 + 240, bottom = BACK.y1 + 40;
+  for (const [row, lift, fade] of [[0, amp * 0.55, haze * 0.75 + 0.08], [1, 0, haze * 0.6]]) {
+    const tops = [];
+    for (let x = x0 - 60; x < x1 + 60;) {
+      const w = rng.range(120, 260), h = amp * rng.range(0.6, 1.25), cx = x + w / 2, y = base - lift + rng.range(-8, 8);
+      const pts = [];
+      for (let i = 0; i <= 24; i++) { const a = Math.PI + i / 24 * Math.PI; pts.push([cx + Math.cos(a) * w * 0.62, y + Math.sin(a) * h]); }
+      pts.push([cx + w * 0.62, bottom], [cx - w * 0.62, bottom]);
+      clayForm(g, pts, vary(mix(colors[(row + tops.length) % colors.length], P.wallLight, fade), rng, 0.05), { size: h * 1.6, sheen: 0.14 });
+      tops.push([cx, y - h, w]);
+      x += w * rng.range(0.7, 0.95);
+    }
+    // rolled trees on some of the crowns: cones with soft tips, and balls on sticks
+    for (const [cx, ty, w] of tops) {
+      if (!rng.chance(0.55)) continue;
+      const x = cx + rng.range(-w * 0.2, w * 0.2), h = rng.range(22, 42), c = vary(mix(rng.pick(['#ef8c5f', P.mintDeep, '#f6a678', P.mint]), P.wallLight, fade * 0.7), rng, 0.06);
+      if (rng.chance(0.6)) clayForm(g, [[x - h * 0.3, ty + 6], [x - h * 0.16, ty - h * 0.55], [x, ty - h], [x + h * 0.16, ty - h * 0.55], [x + h * 0.3, ty + 6]], c, { size: h * 0.5, sheen: 0.12 });
+      else { tube(g, [[x, ty + 6], [x, ty - h * 0.6]], 2.4, '#a08b80', { shadow: false }); clayForm(g, circle(x, ty - h * 0.75, h * 0.3, 28), c, { sheen: 0.18 }); }
+    }
   }
 }
 
@@ -1735,7 +1780,7 @@ function drawDiscs(g) {
     const cr = new RNG(`discs:${cx}`);
     for (let i = 0; i < n; i++) {
       const x = cx + cr.range(-90, 90), y = cy + cr.range(-60, 60), rr = cr.range(14, 28);
-      piece(g, circle(x, y, rr, 36), { fill: '#fbf6ee', shadow: { color: 'rgba(90,60,60,0.3)', blur: 5, x: 2, y: 3.5 }, bevel: bev });
+      clayForm(g, circle(x, y, rr, 36), '#fbf6ee', { size: rr * 1.2, round: 0.6, sheen: 0.15 });
       const m = 7 + Math.round(rr / 5);
       for (let k = 0; k < m; k++) {
         const a = k / m * Math.PI * 2 + cr.next(), d = rr * 0.58;
@@ -1762,13 +1807,12 @@ function drawCoral(g) {
       curl(g, cx + Math.cos(a) * d, cy + Math.sin(a) * d * 0.8, rng.range(9, 16), rng.range(1.2, 1.9), vary(CORAL, rng, 0.08));
     }
   }
-  // wheat fronds rising out of the cloud
+  // rolled stalks rising out of the cloud, each ending in a lime ball
   for (const [x, y, len, lean] of [[380, 720, 170, -0.12], [420, 740, 140, 0.08], [520, 800, 120, 0.2], [240, 820, 110, -0.25]]) {
-    const n = Math.round(len / 9);
-    for (let i = 0; i < n; i++) {
-      const k = i / n, px = x + Math.sin(lean) * len * k, py = y - Math.cos(lean) * len * k;
-      for (const s of [-1, 1]) piece(g, transform(leaf(16 - 8 * k, 4.5, { belly: 0.4, tipRound: 0.2 }), { x: px, y: py, rot: lean + s * 0.7 }), { fill: vary('#b07d52', rng, 0.06), smooth: true, shadow: sh(0.5) });
-    }
+    const line = [...Array(12)].map((_, i) => { const k = i / 11; return [x + Math.sin(lean) * len * k + 6 * Math.sin(k * 5 + x), y - Math.cos(lean) * len * k]; });
+    tube(g, line, line.map((_, i) => 5.5 - i * 0.22), vary('#b07d52', rng, 0.05));
+    const e = line[11];
+    clayForm(g, circle(e[0], e[1] - 6, 11, 28), LIME, { sheen: 0.25 });
   }
   // lime bead clusters
   for (let i = 0; i < 14; i++) { const x = rng.range(160, 620), y = rng.range(640, 960), r = rng.range(6, 13); clayForm(g, circle(x, y, r, 20), LIME, { tiers: 1, reach: 1 }); dot(g, x, y, r * 0.45, shade(LIME, -0.2)); }
@@ -1781,7 +1825,7 @@ function rosette(g, cx, cy, r, base, rng) {
     for (let i = 0; i < n; i++) {
       const a = i / n * Math.PI * 2 + ring * 0.4 + rng.range(-0.1, 0.1);
       const pts = transform(leaf(rr, rr * 0.42, { belly: 0.55, tipRound: 0.6, curl: rng.range(-0.15, 0.15) }), { x: cx, y: cy, rot: a + Math.PI / 2 });
-      piece(g, pts, { fill: vary(shade(base, ring * 0.08), rng, 0.05), smooth: true, shadow: sh(0.7), bevel: bev });
+      clayForm(g, pts, vary(shade(base, ring * 0.08), rng, 0.05), { smooth: true });
       // the ruffle: a crimp line along each petal
       g.strokeStyle = rgba(shade(base, -0.3), 0.35); g.lineWidth = 1;
       g.beginPath(); g.moveTo(cx, cy); g.lineTo(cx + Math.cos(a) * rr * 0.8, cy + Math.sin(a) * rr * 0.8); g.stroke();
@@ -1804,7 +1848,7 @@ function drawTrees(g) {
   for (const T of TREES) {
     for (let i = 0; i < T.n; i++) {
       const y = T.base - i * 30, w = T.w - i * 3;
-      piece(g, [[T.x - w / 2, y], [T.x - w / 2 + 3, y - 30], [T.x + w / 2 - 3, y - 30], [T.x + w / 2, y]], { fill: vary(i % 2 ? '#8d7a72' : '#a08b80', rng, 0.05), shadow: sh(), bevel: bev });
+      clayForm(g, [[T.x - w / 2, y], [T.x - w / 2 + 3, y - 30], [T.x + w / 2 - 3, y - 30], [T.x + w / 2, y]], vary(i % 2 ? '#8d7a72' : '#a08b80', rng, 0.05), { smooth: false });
       for (let k = 0; k < 3; k++) { g.fillStyle = 'rgba(60,40,40,0.3)'; g.fillRect(T.x - w / 2 + 6 + k * (w / 3), y - 22, 5, 10); }
     }
     for (const b of T.branches) tube(g, b, [T.w * 0.22, T.w * 0.16, T.w * 0.12], '#8d7a72');
@@ -1825,7 +1869,7 @@ function drawTrack(g) {
     if (Math.abs(a[1] - b[1]) > 2) continue;
     for (let x = Math.min(a[0], b[0]) + 40; x < Math.max(a[0], b[0]) - 20; x += 120) tube(g, [[x, a[1]], [x, a[1] + 34]], 4, P.slate, { shadow: false });
   }
-  tube(g, TRACK.path, TRACK.w, P.butter);
+  tube(g, chaikin(TRACK.path, 3), TRACK.w, P.butter);
 }
 const BEADS = [P.mint, P.pink, P.butter, P.lilac, P.aqua, P.pinkDeep, LIME];
 function drawBead(g, c) {
@@ -1844,7 +1888,7 @@ function drawString(g, x, len, kind, rng) {
     for (let y = y0 + 30; y < y1; y += 17) clayForm(g, circle(x, y, 7, 18), rng.pick([P.mint, P.pink, P.butter, P.aqua]), { tiers: 1, reach: 1 });
   } else if (kind === 'pendant') {
     steps(g, x, y1 + 10, { n: 4, w0: 18, w1: 52, h: 9, gap: 1, colors: [P.pink, P.mint, P.butter] });
-    piece(g, [[x - 26, y1 + 12], [x, y1 + 40], [x + 26, y1 + 12]], { fill: P.pinkDeep, shadow: sh(), bevel: bev });
+    clayForm(g, [[x - 26, y1 + 12], [x, y1 + 40], [x + 26, y1 + 12]], P.pinkDeep, { smooth: false });
   } else {
     const c = rng.pick([P.lilac, P.butter, P.mint]);
     clayForm(g, circle(x, y1, 18, 30), c, { tiers: 2, reach: 2 });
@@ -1863,11 +1907,11 @@ function drawFloorBack(g) {
     const c = vary(rng.pick([P.pink, P.mint, P.butter, P.blush, '#e48a6a']), rng, 0.06);
     if (kind === 'house') {
       const w = rng.range(18, 28), h = rng.range(18, 30);
-      piece(g, [[x - w / 2, y], [x - w / 2, y - h], [x, y - h - w * 0.6], [x + w / 2, y - h], [x + w / 2, y]], { fill: c, shadow: sh(), bevel: bev });
+      clayForm(g, [[x - w / 2, y], [x - w / 2, y - h], [x, y - h - w * 0.6], [x + w / 2, y - h], [x + w / 2, y]], c, { smooth: false });
       g.fillStyle = shade(c, -0.3); g.fillRect(x - 3, y - 10, 6, 10);
     } else if (kind === 'cone') {
       const h = rng.range(24, 48);
-      piece(g, [[x - h * 0.3, y], [x, y - h], [x + h * 0.3, y]], { fill: c, shadow: sh(), bevel: bev });
+      clayForm(g, [[x - h * 0.3, y], [x, y - h], [x + h * 0.3, y]], c, { smooth: false });
     } else if (kind === 'plinth') steps(g, x, y, { n: 3, w0: 44, w1: 20, h: 9, gap: 1, colors: [c, shade(c, 0.12)] });
     else clayForm(g, circle(x, y - 12, 12, 24), c, { tiers: 2, reach: 1.5 });
   }
@@ -1881,7 +1925,7 @@ function drawLens(g) {
   // lower right: pink plume tips and a big dotted ball
   for (let i = 0; i < 70; i++) {
     const a = -Math.PI * 0.6 + rng.range(-0.35, 0.35), len = rng.range(120, 230), x = 1880 + rng.range(-40, 40), y = 1100 + rng.range(-30, 30);
-    piece(g, transform(leaf(len, rng.range(6, 10), { belly: 0.35, curl: rng.range(-0.3, 0.3), tipRound: 0.2 }), { x, y, rot: a + Math.PI / 2 }), { fill: rgba(vary(mix(P.blush, '#fff2ee', rng.next() * 0.6), rng, 0.05), 0.85), smooth: true, shadow: sh(0.4) });
+    clayForm(g, transform(leaf(len, rng.range(7, 11), { belly: 0.35, curl: rng.range(-0.3, 0.3), tipRound: 0.4 }), { x, y, rot: a + Math.PI / 2 }), vary(mix(P.blush, '#fff2ee', rng.next() * 0.6), rng, 0.05), { size: 18, sheen: 0.12 });
   }
   clayForm(g, circle(1740, 1060, 70, 48), P.butter, { tiers: 3, reach: 4 });
   for (let k = 0; k < 14; k++) dot(g, 1740 + Math.cos(k * 0.9) * 46 * ((k % 2) ? 1 : 0.6), 1060 + Math.sin(k * 0.9) * 46 * ((k % 2) ? 1 : 0.6), 4, P.butterDeep);
@@ -1889,17 +1933,17 @@ function drawLens(g) {
 
 function addDensity(S) {
   // returns the pieces the film animates: rosettes, the track and its beads
-  const sp = (name, box, draw, o = {}) => S.sprite({ name, ...box, res: o.res ?? 1.2, mat: o.mat ?? 'smooth', edge: { width: 1.6, hi: 0.35, lo: 0.3 }, shadow: { blur: o.blur ?? 12 }, draw });
+  const sp = (name, box, draw, o = {}) => S.sprite({ name, ...box, res: o.res ?? 1.2, mat: o.mat ?? CLAY_MAT, edge: CLAY_EDGE, shadow: { blur: (o.blur ?? 12) * 1.5 }, draw });
   const wide = { x: BACK.x0 - 260, w: BACK.x1 - BACK.x0 + 520 };
-  S.plane(1460, { name: 'range-far', ...wide, y: 700, h: 360, mat: 'paper', res: 1, draw: (g) => drawRange(g, { seed: 41, base: 870, amp: 70, colors: [P.lilac, P.blush, P.lilac], haze: 0.45 }) }, { shadow: { dx: 6, dy: 12, alpha: 0.35 } });
-  S.plane(1430, { name: 'discs', x: 120, y: 360, w: 1600, h: 520, draw: drawDiscs }, { shadow: { dx: 7, dy: 13, alpha: 0.4 } });
-  S.plane(1400, { name: 'range-near', ...wide, y: 760, h: 300, mat: 'paper', res: 1, draw: (g) => drawRange(g, { seed: 77, base: 930, amp: 46, colors: [P.pink, P.blush, P.pinkDeep], haze: 0.2 }) }, { shadow: { dx: 8, dy: 14, alpha: 0.4 } });
+  S.plane(1460, { name: 'range-far', ...wide, y: 700, h: 360, mat: CLAY_MAT, edge: CLAY_EDGE, res: 1, draw: (g) => drawRange(g, { seed: 41, base: 870, amp: 70, colors: [P.lilac, P.blush, P.lilac], haze: 0.45 }) }, { shadow: { dx: 6, dy: 12, alpha: 0.35 } });
+  S.plane(1430, { name: 'discs', x: 120, y: 120, w: 1600, h: 560, mat: CLAY_MAT, edge: CLAY_EDGE, shadow: { blur: 18 }, draw: drawDiscs }, { shadow: { dx: 7, dy: 13, alpha: 0.4 } });
+  S.plane(1400, { name: 'range-near', ...wide, y: 760, h: 300, mat: CLAY_MAT, edge: CLAY_EDGE, res: 1, draw: (g) => drawRange(g, { seed: 77, base: 930, amp: 46, colors: [P.pink, P.blush, P.pinkDeep], haze: 0.2 }) }, { shadow: { dx: 8, dy: 14, alpha: 0.4 } });
   S.add({ name: 'coral', z: 1240, shadow: { dx: 9, dy: 16, alpha: 0.42 }, sprites: [{ s: sp('coral', { x: 80, y: 520, w: 680, h: 500 }, drawCoral, { res: 1.25 }) }] });
   S.add({ name: 'trees', z: 1150, shadow: { dx: 9, dy: 16, alpha: 0.42 }, sprites: [{ s: sp('trees', { x: 1100, y: 640, w: 700, h: 380 }, drawTrees, { res: 1.25 }) }] });
   const rr = new RNG('rosettes');
   const rosettes = ROSETTES.map(([x, y, r, c], i) => ({ x, y, s: sp(`ros-${i}`, { x: x - r - 20, y: y - r - 20, w: r * 2 + 40, h: r * 2 + 40 }, (g) => rosette(g, x, y, r, c, rr), { blur: 8, res: 1.3 }) }));
   const track = sp('track', { x: 150, y: 540, w: 1640, h: 300 }, drawTrack, { blur: 10 });
-  const beads = BEADS.map((c, i) => S.sprite({ name: `bead-${i}`, x: -20, y: -20, w: 40, h: 40, res: 1.5, mat: 'smooth', edge: { width: 1.2, hi: 0.35, lo: 0.3 }, shadow: { blur: 6 }, draw: (g) => drawBead(g, c) }));
+  const beads = BEADS.map((c, i) => S.sprite({ name: `bead-${i}`, x: -20, y: -20, w: 40, h: 40, res: 1.5, mat: CLAY_MAT, edge: CLAY_EDGE, shadow: { blur: 9 }, draw: (g) => drawBead(g, c) }));
   // the garland swings a little, each string on its own phase
   const rng = new RNG('garland');
   const strings = STRINGS.map(([x, len, kind]) => ({ x, s: sp(`str-${x}`, { x: x - 40, y: 0, w: 80, h: len + 70 }, (g) => drawString(g, x, len, kind, rng), { blur: 8, res: 1.3 }) }));
@@ -1914,7 +1958,7 @@ function addDensity(S) {
 return { ROSETTES, TRACK, BEADS, addDensity };
 })();
 __m["src/film.js"] = (() => {
-// Relief box, the film: 11 s at 24 fps, one shadowbox at dawn. Every frame is a pure function of t.
+// Relief box, the film (draft 3, clay): 11 s at 24 fps, one shadowbox at dawn. Every frame is a pure function of t.
 //   0.0 - 6.0   a sun made of a wheel of lit windows rises from behind the ranges and turns; the box warms from
 //               a cool half-dark to full light as it climbs
 //   2.4 - 9.4   a train of seven beads rolls out of a porthole in the left wall, along the butter piping, and
@@ -1954,8 +1998,8 @@ function scene() {
     duration: DURATION,
     background: '#3b2c2a',
     light: LIGHT,
-    shadow: { alpha: 0.48, dist: 10, blur: 11 },
-    post: { bloom: 0.18, threshold: 0.78, vignette: 0.18, grain: 0.045 },
+    shadow: { alpha: 0.42, dist: 10, blur: 16 },
+    post: { bloom: 0.24, threshold: 0.72, bloomRadius: 1.4, vignette: 0.2, grain: 0.035 },
     camera: (t) => {
       const k = E.cam(t / DURATION);
       return { x: lerp(-120, 110, k) + 4 * noise('cam').n1(t * 0.21), y: lerp(-8, 10, k) + 3 * noise('cam').n1(t * 0.17 + 9), z: 70 * E.dolly(t / DURATION), roll: 0.0016 * osc(t, 9.5) };

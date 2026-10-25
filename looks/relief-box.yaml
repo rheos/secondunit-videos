@@ -25,7 +25,10 @@ code:
     the cloud render; run it after every src edit. Branch look/relief-box, issue #327.
 rules:
   - One shadowbox per shot. Back wall, four inner walls drawn through the camera each frame, a moulded frame at the front whose shadow falls into the box
-  - Every sculpted piece is cut again in two or three inner tiers, each smaller, lighter and shifted toward the light, with a darker flank away from it (kit.js clayForm); limbs, coils and leads are tubes with a highlight tube along the lit side
+  - "Clay, not cut paper (draft 3): every piece is shaded as a rounded lump (kit.js clayForm): a blurred falloff into shadow away from the light, a tucked core shadow, a soft lit shoulder, a faint matte sheen; coils, stalks and piping are rolled tubes; corners are rounded (chaikin)"
+  - "Fine clay surface soft-lit into every piece: grain, faint fingerprint whorls, tiny pits; paper fibre kept barely visible underneath"
+  - "Soft light: two shadows under every piece (tight contact, wide soft), soft cut edges, bloom on the light parts, a gentle vignette"
+  - Hills are rows of rounded mounds pressed side by side, the back row paler
   - Pastel palette on bone white: mint, pink, butter, slate, a little lilac; one dark accent (navy) inside the bubble only
   - "Paper-fox density: twelve-plus planes from the back wall to a lens plane in front of the frame (1500 wall, 1480 sun, 1460/1400 hills, 1430 discs, 1290/1180 islands, 1240 coral, 1150 trees, 1100 track, 900 garland, 830/790 floor rows, 720 frame, 560 lens), every plane packed, each casting a drop shadow onto what is behind"
   - "A language, not a copy: the vocabulary of the reference set (honeycomb walls, stepped tiers and roots, windows in a wheel, ruffle rosettes, dotted discs, curl clusters, tubes, beads, chevrons) in scenes of our own; no reference's composition or central figure"
@@ -47,7 +50,7 @@ reference: >-
   paper-fox (github.com/Leonxlnx/paper-fox, MIT).
 proof:
   renders:
-    - indieagent-relief-box/out/draft/reliefbox_d2_f0-f264_24fps_draft.mp4
+    - indieagent-relief-box/out/draft/reliefbox_d3_f0-f264_24fps_draft.mp4
   pr:
     - rheos/secondunit-videos#328
   youtube: []
