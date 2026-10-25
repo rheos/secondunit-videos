@@ -127,3 +127,12 @@ chorus at the funnel's foot (two in harlequin diamonds and bell caps) hops and c
 head pops into a faceted ball. Mark Von Ulrich's world lives in what the elves make: glyphs, sigils, the offered
 solids, the funnel's inside and the console screen are drawn in `src/loop-mark.js` (6x6x6 colour cube, 4x4 ordered
 dither anchored to each element, one-pixel black contours), after his STYLE-BRIEF.
+
+Draft 8 (Robin, on draft 7b: too much open space on the right; the space has a sense of symmetry and a strange
+order, a living machine): the picture is built about the centre line at x = 960. The funnel sits on the axis and
+feeds itself from both sides through two mirrored pipes (the stem splits under the throat); material alternates
+between them. Everything off the axis is made for the left half and drawn again reflected (`mirrored()` in
+`src/loop-machine.js`, `pair()` / `addPair()` / `mirror()` in `src/loop-world.js`): twin consoles, ring
+instruments, singers, floating islands with singers, chorus halves, hills, floaters and a pair of large
+tesseracts, all moving in mirror unison. The chorus wave runs outward from the middle. The camera no longer drifts
+sideways; it breathes in and out on the axis.

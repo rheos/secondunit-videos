@@ -63,3 +63,21 @@ holding placards with the same shape.
   who showed him swirling geometric scenes on placards (reached through a secondary summary,
   https://psychedelicpress.substack.com/p/faerie-dmt, not the book text).
 - The unison relay down a receding road appears to be Robin's own detail; nothing in the literature contradicts it.
+
+## Colour (follow-up)
+
+Robin's sense: his memory of the space is close to Mark Von Ulrich's palette, perhaps a bit off.
+
+- The studies say colour is vivid but rarely which colours: Lawrence's single code ("vivid, novel, neon, beautiful,
+  hyperintense") covers 25.2% of reports, with no hue subcodes; coloured rooms and landscapes are each 0.5-2%.
+  "Pastel" and "matte" appear in none of the sources read.
+- Groupings (from single accounts, mostly Michael 2021, not cross-tabulated): multicolour on dark goes with the
+  carnival, toy, digital and chrysanthemum material (very coloured toys, Space-Invader icons on conveyor belts,
+  neon-green code on black, Windows 98 screensavers); white or gold light goes with the divine and void material.
+- Material: synthetic textures 42% in Michael (holographic, CGI-like, cartoony, organic-mechanical), shimmering,
+  crystalline, metallic; McKenna's colours migrate and transform and his elves are "jeweled".
+- Against Mark's palette: saturated hues on black and early-computer graphics fit the carnival/digital accounts.
+  What's off: reported colour moves (palette cycling, rotating the colour table, would carry that in his idiom),
+  surfaces glow, and dithering is his signature rather than anything reported.
+- Where it pushes the scene: the pastel matte clay world is the outlier; darkness belongs in the world, not only
+  in the objects; objects want self-lit edges and colour cycling; white and gold only as accents.
