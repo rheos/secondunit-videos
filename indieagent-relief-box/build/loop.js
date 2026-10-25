@@ -2139,7 +2139,15 @@ const T4 = [];
 for (let i = 0; i < 16; i++) T4.push([i & 1 ? 1 : -1, i & 2 ? 1 : -1, i & 4 ? 1 : -1, i & 8 ? 1 : -1]);
 const T4E = [];
 for (let i = 0; i < 16; i++) for (let k = 0; k < 4; k++) { const j = i ^ (1 << k); if (j > i) T4E.push([i, j]); }
-function drawTesseract(ctx, x, y, r, a, b, { outer = P.mint, inner = P.pink, alpha = 1, glowK = 0, tilt = [0.42, 0.55] } = {}) {
+// its 24 square faces: for each pair of axes, the four squares spanned by them (the other two coordinates fixed)
+const T4F = [];
+for (let k1 = 0; k1 < 4; k1++) for (let k2 = k1 + 1; k2 < 4; k2++) for (let i = 0; i < 16; i++) {
+  if (i & (1 << k1) || i & (1 << k2)) continue;
+  T4F.push([i, i | (1 << k1), i | (1 << k1) | (1 << k2), i | (1 << k2)]);
+}
+// faces: fill the 24 square faces (Robin: "solid sides"), far ones first, each in the colour of its place in the fourth
+// dimension, brighter as it turns toward us, a little see-through so the cube inside the cube still shows
+function drawTesseract(ctx, x, y, r, a, b, { outer = P.mint, inner = P.pink, alpha = 1, glowK = 0, tilt = [0.42, 0.55], faces = false, faceAlpha = 0.62 } = {}) {
   if (alpha <= 0.01) return;
   const pts = T4.map(([px, py, pz, pw]) => {
     let X = px * Math.cos(a) - pw * Math.sin(a), W = px * Math.sin(a) + pw * Math.cos(a);
@@ -2155,6 +2163,19 @@ function drawTesseract(ctx, x, y, r, a, b, { outer = P.mint, inner = P.pink, alp
   ctx.globalAlpha *= alpha;
   if (glowK > 0) glow(ctx, x, y, r * 2.6, '#ffe6c0', 0.45 * glowK);
   ctx.lineCap = 'round';
+  if (faces) {
+    const fs = T4F.map((f) => ({ f, z: f.reduce((m, i) => m + pts[i].z, 0) / 4, w: f.reduce((m, i) => m + pts[i].w, 0) / 4 })).sort((m, n) => m.z - n.z);
+    for (const { f, z, w } of fs) {
+      const q = f.map((i) => pts[i]);
+      // how squarely it faces us: its projected area against a full face's, and which way round it winds
+      const area = 0.5 * ((q[1].sx - q[0].sx) * (q[3].sy - q[0].sy) - (q[3].sx - q[0].sx) * (q[1].sy - q[0].sy)) + 0.5 * ((q[3].sx - q[2].sx) * (q[1].sy - q[2].sy) - (q[1].sx - q[2].sx) * (q[3].sy - q[2].sy));
+      const face = Math.min(1, Math.abs(area) / (r * r * 1.6)), base = mix(inner, outer, (w + 1) / 2);
+      const lit = mix(base, '#fffaf0', 0.22 + 0.38 * face - (area > 0 ? 0 : 0.12));
+      ctx.globalAlpha = alpha * faceAlpha * (0.75 + 0.25 * (z + 0.5));
+      ctx.fillStyle = lit; ctx.beginPath(); q.forEach((p, k) => (k ? ctx.lineTo(p.sx, p.sy) : ctx.moveTo(p.sx, p.sy))); ctx.closePath(); ctx.fill();
+    }
+    ctx.globalAlpha = alpha;
+  }
   const edges = T4E.map(([i, j]) => ({ i, j, z: (pts[i].z + pts[j].z) / 2, w: (pts[i].w + pts[j].w) / 2 })).sort((m, n) => m.z - n.z);
   const lw = Math.max(1.2, r * 0.07);
   for (const e of edges) {
@@ -2487,7 +2508,7 @@ function addWorld(S) {
   // centred over the mountain on the floating island below it (Robin: "more centered over the mountain")
   const TESS_X = 390;
   S.add({ name: 'tesseract', z: 2800, render(ctx, t) {
-    mirror(ctx, () => drawTesseract(ctx, TESS_X, 240, 78, TAU * t / LOOP, TAU * 2 * t / LOOP, { outer: P.mint, inner: P.pink, glowK: 0.6 + 0.15 * cyc(t, 2) }));
+    mirror(ctx, () => drawTesseract(ctx, TESS_X, 240, 78, TAU * t / LOOP, TAU * 2 * t / LOOP, { outer: P.mint, inner: P.pink, glowK: 0.6 + 0.15 * cyc(t, 2), faces: true }));
   } });
 
   // floating geometry at many depths: baked stepped pendants and chevrons, and solids and small tesseracts drawn

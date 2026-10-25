@@ -231,7 +231,7 @@ export function addWorld(S) {
   // centred over the mountain on the floating island below it (Robin: "more centered over the mountain")
   const TESS_X = 390;
   S.add({ name: 'tesseract', z: 2800, render(ctx, t) {
-    mirror(ctx, () => drawTesseract(ctx, TESS_X, 240, 78, TAU * t / LOOP, TAU * 2 * t / LOOP, { outer: P.mint, inner: P.pink, glowK: 0.6 + 0.15 * cyc(t, 2) }));
+    mirror(ctx, () => drawTesseract(ctx, TESS_X, 240, 78, TAU * t / LOOP, TAU * 2 * t / LOOP, { outer: P.mint, inner: P.pink, glowK: 0.6 + 0.15 * cyc(t, 2), faces: true }));
   } });
 
   // floating geometry at many depths: baked stepped pendants and chevrons, and solids and small tesseracts drawn
