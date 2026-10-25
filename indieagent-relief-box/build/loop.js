@@ -3708,6 +3708,14 @@ function scene() {
 
       // the operator stands on our side of the panel, back to us, so it draws after (in front of) the console
       // every figure off the centre line is drawn for the left half and again reflected: twins in mirror unison
+      // a chevron mandala hanging over each control panel (Robin: "around the points of the chevrons, so they extend
+      // outward from their center, in a tighter cluster, like a mandala", then "move those shapes... over top of the
+      // control panels"): eight half-size fans round one centre, their points facing in, each stacking outward along
+      // its spoke, opening and folding in a wave that runs round
+      if (CHEV_RADIAL) S.add({ name: 'mandala', z: 989, anim: (t) => ({ y: 4 * cyc(t, 2, 0.3) }), render(ctx, t, env) { mirrored(ctx, () => {
+        const n = 8, mx = (PANEL.x0 + PANEL.x1) / 2, my = PANEL.y0 - 62;
+        for (let i = 0; i < n; i++) { const a = i / n * TAU - Math.PI / 2; world.chevronFan(ctx, mx + Math.cos(a) * 24, my + Math.sin(a) * 24, a + Math.PI / 2, t, i / n, env, 1, 0.52); }
+      }); } });
       S.add({ name: 'operator', z: 988, render(ctx, t, env) { mirrored(ctx, () => drawFigure(ctx, operator, { ...operatorPose(t), shift: loopBump(t, 7.3, 0.9), shiftKind: 'cube', shiftSpin: TAU * t / 2 }, env)); } });
       S.add({ name: 'chorus', z: 978, render(ctx, t, env) { drawChorus(ctx, t, env, chorus); } });
       S.add({ name: 'figures', z: 985, render(ctx, t, env) { mirrored(ctx, () => {
@@ -3727,13 +3735,7 @@ function scene() {
         // round a centre under the roots, a mandala.
         const cx = ISLAND.x + IX, cy = ISLAND.y + IY, along = Math.atan2(96, 130) - Math.PI / 2;
         drawSprites(ctx, [{ s: world.island, ax: ISLAND.x, ay: ISLAND.y, x: ISLAND.x + IX, y: ISLAND.y + IY }], env.shadow);
-        if (CHEV_RADIAL) {
-          // a mandala hanging under the roots' tip (Robin: "around the points of the chevrons, so they extend outward
-          // from their center, in a tighter cluster, like a mandala"): eight fans round one centre, their chevrons'
-          // points facing in, each stacking outward along its spoke, opening and folding in a wave that runs round
-          const n = 8, mx = cx, my = cy + 158;
-          for (let i = 0; i < n; i++) { const a = i / n * TAU - Math.PI / 2; world.chevronFan(ctx, mx + Math.cos(a) * 24, my + Math.sin(a) * 24, a + Math.PI / 2, t, i / n, env, 1, 0.52); }
-        } else for (const sd of [-1, 1]) world.chevronFan(ctx, cx + sd * 100, cy + 84, -sd * along, t, 0.31, env, sd);
+        if (!CHEV_RADIAL) for (const sd of [-1, 1]) world.chevronFan(ctx, cx + sd * 100, cy + 84, -sd * along, t, 0.31, env, sd);
 
         const ground = ISLAND.y - 4 + IY, x = 300, hip = ground - 14 * FS, kinds = ['star', 'octa'];
         singerBurst(ctx, t, 3, x, 1, hip);
