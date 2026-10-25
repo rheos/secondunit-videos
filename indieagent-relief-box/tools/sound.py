@@ -270,6 +270,8 @@ def events(cues):
     for c in cues:
         t, k, p = c['t'] + FRAME, c['kind'], pan(c['x'])
         if k == 'glyph':
+            if c['n'] % 2:
+                continue    # every other one (Robin: too busy)
             f = midi(tone_of(c['t'], c['n'] % 10, 1))          # climbing up through the chord as the song goes
             s = crush(tone(f, 0.05, 'tri', d=0.025), bits=6, hold=2)
             place(out, t, s, p, 0.10)
@@ -301,7 +303,7 @@ def events(cues):
             place(out, t, np.stack([body * np.cos(a), body * np.sin(a)], axis=1), 0, 1.0)
         elif k == 'tick':
             # each elf its own chord tone; the high crossing a little brighter than the low
-            place(out, t, tone(midi(tone_of(c['t'], 2 + c['n'], 1)), 0.05, 'tri', d=0.02), p, 0.045 if c.get('high') else 0.03)
+            place(out, t, tone(midi(tone_of(c['t'], 2 + c['n'], 1)), 0.05, 'tri', d=0.02), p, 0.025 if c.get('high') else 0.016)
         elif k == 'swap':
             # the chorus changing places: the hop's air, an elf newly at the front sounding its own note of the
             # chord, and on a chord change the chord's root plucked low under it
@@ -313,9 +315,9 @@ def events(cues):
         elif k == 'piston':
             # a piston shooting up (eight a chord, in the firing order): the rod's thunk at its stop, a puff of air
             # from the sleeve, and a chord tone pitched by its tier, loud enough to follow (Robin: synced, audible)
-            place(out, t, sweep(190 - 30 * c['n'], 85, 0.07, d=0.045), p, 0.30)
-            place(out, t - 0.02, noise_sweep(0.12, 2600, 700, 0.07), p)
-            place(out, t, crush(tone(midi(tone_of(c['t'], 4 - c['n'], 1)), 0.07, 'tri', d=0.04), bits=7, hold=1), p, 0.10)
+            place(out, t, sweep(190 - 30 * c['n'], 85, 0.07, d=0.045), p, 0.17)
+            place(out, t - 0.02, noise_sweep(0.12, 2600, 700, 0.035), p)
+            place(out, t, crush(tone(midi(tone_of(c['t'], 4 - c['n'], 1)), 0.07, 'tri', d=0.04), bits=7, hold=1), p, 0.05)
         elif k == 'pop':
             place(out, t, crush(sweep(1200, 180, 0.12, d=0.06), bits=6, hold=2), p, 0.16)
         elif k == 'lever':
@@ -349,10 +351,6 @@ def voices(cues):
             place(out, t, voice.syllable(sung(c['t'], c['n'] % 5), 'doiy', dur=0.2, tail=0.8, decay=0.28), 0.0, 0.5 if c.get('newFront', True) else 0.3)
         elif k == 'form':
             place(out, t, voice.syllable(sung(c['t'], 2 + int(c['x'] > 960)), 'dee', dur=0.19, tail=0.8, decay=0.28), pan(c['x']), 0.32)
-        elif k == 'drop':
-            # a glob of paint sinking into the portal: doiy from the left spout, dee from the right
-            kind = 'dee' if c['n'] % 2 else 'doiy'
-            place(out, t, voice.syllable(sung(c['t'], c['n'] % 5), kind, dur=0.19, tail=0.8, decay=0.26), 0.0, 0.3)
         elif k == 'chime':
             place(out, t, voice.syllable(sung(c['t'], 4), 'dee', dur=0.17, tail=0.8, decay=0.25), pan(c['x']), 0.3)
         elif k == 'cube':
@@ -383,10 +381,11 @@ def main():
     vo = voices(cues)
     # the voice's own echo: ping-pong on the 3/8 s grid, long feedback, so each short syllable is carried out
     vecho = cdelay(vo, step=0.375, feedback=0.62, repeats=12, darken=0.82)
-    dry = 0.5 * bed + 0.2 * glitch + ev + 0.7 * vo + 0.45 * vecho
+    # the drone forward, the rest thinned (Robin: "too busy and not enough drone")
+    dry = 0.95 * bed + 0.1 * glitch + 0.6 * ev + 0.6 * vo + 0.35 * vecho
     # a ping-pong echo on the events and glitches (and a little of the organ), then everything into a long hall
-    echo = cdelay(0.75 * ev + 0.6 * glitch + 0.12 * bed)
-    wet = creverb(0.5 * bed + 0.35 * glitch + 0.9 * ev + 0.5 * vo + 0.35 * vecho + 0.6 * echo, decay=6.0, pre=0.04)
+    echo = cdelay(0.45 * ev + 0.3 * glitch + 0.12 * bed)
+    wet = creverb(0.8 * bed + 0.2 * glitch + 0.55 * ev + 0.45 * vo + 0.3 * vecho + 0.6 * echo, decay=6.0, pre=0.04)
     mix = dry + 0.45 * echo + 0.95 * wet
     mix = cfilter(mix, lo=35, hi=15000)
     # level: about -18 dBFS RMS, peaks held under -1 dBFS by a soft clip
