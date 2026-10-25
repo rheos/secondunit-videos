@@ -2761,7 +2761,7 @@ function foot(ctx, p, facing, color) {
 
 // pose: { hip, lean (rad, + leans toward facing), facing (1 right, -1 left), feet: [back, front], hands: [back, front],
 //         headTilt, scale, turn (0 profile .. 1 facing us), sing (0..1 mouth open), shift (0..1: the head becomes a
-//         faceted ball), shiftKind }. Everything in the plane's authored coordinates.
+//         faceted ball), shiftKind, armsFront (both arms drawn in front of the body) }. Everything in the plane's authored coordinates.
 function drawFigure(ctx, F, pose, env) {
   const s = pose.scale ?? 1, f = pose.facing, B = BODY, lean = pose.lean * f;
   const up = [Math.sin(lean), -Math.cos(lean)], side = [Math.cos(lean), Math.sin(lean)];
@@ -2780,11 +2780,13 @@ function drawFigure(ctx, F, pose, env) {
   ctx.save();
   ctx.fillStyle = 'rgba(70,40,45,0.22)'; ctx.beginPath(); ctx.ellipse(hip[0] + 4, Math.max(...pose.feet.map((p) => p[1])) + 2, 22 * s, 5 * s, 0, 0, TAU); ctx.fill();
   limb(ctx, legs[0].h, legs[0].k, legs[0].ft, 9 * s, shade(trousers, -0.08)); foot(ctx, legs[0].ft, f, P.slateDeep);
-  limb(ctx, arms[0].sp, arms[0].e, arms[0].hd, 7.5 * s, shade(F.color, -0.1)); ball(ctx, arms[0].hd, 4.4 * s, P.bone);
+  if (!pose.armsFront) { limb(ctx, arms[0].sp, arms[0].e, arms[0].hd, 7.5 * s, shade(F.color, -0.1)); ball(ctx, arms[0].hd, 4.4 * s, P.bone); }
   limb(ctx, legs[1].h, legs[1].k, legs[1].ft, 9 * s, trousers); foot(ctx, legs[1].ft, f, P.slateDeep);
   const bodyItems = [{ s: F.torso, x: hip[0], y: hip[1], rot: lean, sx: s, sy: s }];
   drawSprites(ctx, bodyItems, { ...env.shadow, dx: 3, dy: 5, alpha: 0.25 });
   if (pose.carry) pose.carry(arms.map((a) => a.hd));
+  // facing us with both arms working in front (the chorus's crossing wave): the back arm comes in front of the body too
+  if (pose.armsFront) { limb(ctx, arms[0].sp, arms[0].e, arms[0].hd, 7.5 * s, shade(F.color, -0.06)); ball(ctx, arms[0].hd, 4.4 * s, P.bone); }
   limb(ctx, arms[1].sp, arms[1].e, arms[1].hd, 7.5 * s, F.color); ball(ctx, arms[1].hd, 4.4 * s, P.bone);
   const hc = [neck[0] + up[0] * (B.head + 1) * s, neck[1] + up[1] * (B.head + 1) * s];
   const turn = pose.turn ?? 0, shift = pose.shift ?? 0, rot = lean * 0.6 + (pose.headTilt ?? 0) * f * (1 - turn);
@@ -2839,6 +2841,7 @@ const bump = (t, a, b) => (t <= a || t >= b ? 0 : Math.sin(Math.PI * (t - a) / (
 const loopBump = (t, a, len) => bump(mod(t - a, LOOP), 0, len);
 // hopping like a ball: how high the body is off the ground (the period divides the loop)
 const hop = (t, period, ph, h) => h * Math.abs(Math.sin(TAU * (t / period + ph) / 2));
+
 
 // ---------------- the console operator, behind the desk; every 6 s turns to us and beckons ----------------
 function operatorPose(t) {
@@ -3007,12 +3010,22 @@ function singerMakes(ctx, t, phase, x, f, hip, kinds, hue) {
 const CHORUS = [[722, 'bells', P.mint], [792, P.butter, P.pink], [862, 'pom', P.lilac], [1018, P.pink, P.aqua], [1088, 'bells', P.butter], [1158, P.mint, P.blush]];
 // the offerings the chorus cheers: the adept's at 3.2 and 9.2, the seer's at 6.2 and 0.2 (each about 1.2 s)
 const cheerAt = (t) => Math.max(...[3.2, 9.2, 6.2, 0.2].map((a) => loopBump(t, a - 0.1, 1.4)));
+// the arms swing in opposition, one up while the other is down, crossing in front of the chest as they swap
+// sides; each elf runs a quarter second behind the one to its left, so the swing rolls along the row as a wave.
+// An offering makes the wave bigger and the hop higher.
+const WAVE = { period: 1.5, lag: 0.25 };
 function chorusPose(t, i, x) {
-  const ch = cheerAt(t), k = 0.85 * FS, hip = GROUND - 33 * k, b = hop(t, 0.6, i * 0.17, (4 + 8 * ch) * k);
-  const wave = Math.sin(TAU * (t / 0.6 + i * 0.17));
-  const down = [[x - 9 * k, hip + 4 * k + 2 * wave], [x + 9 * k, hip + 4 * k - 2 * wave]], upH = [[x - 20 * k, hip - 64 * k + 4 * wave], [x + 20 * k, hip - 64 * k - 4 * wave]];
-  const hands = [mixPt(down[0], upH[0], ch), mixPt(down[1], upH[1], ch)].map((h) => [h[0], h[1] - b]);
-  return { hip: [x, hip - b], feet: [[x - 7 * k, GROUND - b * 0.6], [x + 7 * k, GROUND - b * 0.6]], facing: i % 2 ? 1 : -1, scale: k, turn: 0.85, lean: 0, hands,
+  const ch = cheerAt(t), k = 0.85 * FS, hip = GROUND - 33 * k;
+  const ph = t / WAVE.period - i * WAVE.lag / WAVE.period, sw = Math.sin(TAU * ph), amp = 1 + 0.3 * ch;
+  // a hop at each end of the swing, when the arms are furthest apart
+  const b = (3 + 7 * ch) * k * Math.abs(sw);
+  // each hand runs a diagonal from high on one side to low on the other; the two meet and cross at the chest
+  const mid = hip - 32 * k, bow = 5 * k * (1 - sw * sw);
+  const up = (q) => (q > 0 ? 46 : 24) * q;                               // high overhead at the top, at the hip at the bottom
+  const lead = [x - 24 * k * sw * amp, mid - up(sw) * k * amp - bow];    // passes just above the other at the cross
+  const other = [x + 24 * k * sw * amp, mid + up(-sw) * k * amp * -1 + bow];
+  return { hip: [x, hip - b], feet: [[x - 7 * k, GROUND - b * 0.6], [x + 7 * k, GROUND - b * 0.6]], facing: i % 2 ? 1 : -1, scale: k, turn: 0.85, lean: 0,
+    hands: [lead, other].map((h) => [h[0], h[1] - b]), headTilt: 0, armsFront: true,
     shift: loopBump(t, 1.1 + i * 1.9, 0.9), shiftKind: ['ico', 'cube', 'octa'][i % 3], shiftSpin: TAU * t / 2 };
 }
 

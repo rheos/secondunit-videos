@@ -93,7 +93,7 @@ function foot(ctx, p, facing, color) {
 
 // pose: { hip, lean (rad, + leans toward facing), facing (1 right, -1 left), feet: [back, front], hands: [back, front],
 //         headTilt, scale, turn (0 profile .. 1 facing us), sing (0..1 mouth open), shift (0..1: the head becomes a
-//         faceted ball), shiftKind }. Everything in the plane's authored coordinates.
+//         faceted ball), shiftKind, armsFront (both arms drawn in front of the body) }. Everything in the plane's authored coordinates.
 export function drawFigure(ctx, F, pose, env) {
   const s = pose.scale ?? 1, f = pose.facing, B = BODY, lean = pose.lean * f;
   const up = [Math.sin(lean), -Math.cos(lean)], side = [Math.cos(lean), Math.sin(lean)];
@@ -112,11 +112,13 @@ export function drawFigure(ctx, F, pose, env) {
   ctx.save();
   ctx.fillStyle = 'rgba(70,40,45,0.22)'; ctx.beginPath(); ctx.ellipse(hip[0] + 4, Math.max(...pose.feet.map((p) => p[1])) + 2, 22 * s, 5 * s, 0, 0, TAU); ctx.fill();
   limb(ctx, legs[0].h, legs[0].k, legs[0].ft, 9 * s, shade(trousers, -0.08)); foot(ctx, legs[0].ft, f, P.slateDeep);
-  limb(ctx, arms[0].sp, arms[0].e, arms[0].hd, 7.5 * s, shade(F.color, -0.1)); ball(ctx, arms[0].hd, 4.4 * s, P.bone);
+  if (!pose.armsFront) { limb(ctx, arms[0].sp, arms[0].e, arms[0].hd, 7.5 * s, shade(F.color, -0.1)); ball(ctx, arms[0].hd, 4.4 * s, P.bone); }
   limb(ctx, legs[1].h, legs[1].k, legs[1].ft, 9 * s, trousers); foot(ctx, legs[1].ft, f, P.slateDeep);
   const bodyItems = [{ s: F.torso, x: hip[0], y: hip[1], rot: lean, sx: s, sy: s }];
   drawSprites(ctx, bodyItems, { ...env.shadow, dx: 3, dy: 5, alpha: 0.25 });
   if (pose.carry) pose.carry(arms.map((a) => a.hd));
+  // facing us with both arms working in front (the chorus's crossing wave): the back arm comes in front of the body too
+  if (pose.armsFront) { limb(ctx, arms[0].sp, arms[0].e, arms[0].hd, 7.5 * s, shade(F.color, -0.06)); ball(ctx, arms[0].hd, 4.4 * s, P.bone); }
   limb(ctx, arms[1].sp, arms[1].e, arms[1].hd, 7.5 * s, F.color); ball(ctx, arms[1].hd, 4.4 * s, P.bone);
   const hc = [neck[0] + up[0] * (B.head + 1) * s, neck[1] + up[1] * (B.head + 1) * s];
   const turn = pose.turn ?? 0, shift = pose.shift ?? 0, rot = lean * 0.6 + (pose.headTilt ?? 0) * f * (1 - turn);
