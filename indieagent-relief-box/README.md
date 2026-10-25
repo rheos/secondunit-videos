@@ -81,13 +81,21 @@ nice -n 15 node ../tools/motion-lab/render.mjs "loop.html?w=1280" 0 12.0417 out/
 A seamless 12 s loop: every motion is periodic in 12 s or a divisor of it (`cyc()` in `src/loop-world.js`), and
 the page wraps t, so frame 288 is frame 0. Render 289 frames and compare the first and last to check the seam.
 
-- `src/loop-world.js`: sky, clay clouds, three rows of hills into the haze, the terrace, a floating city, and
-  fourteen decorations floating at depths from 1300 to 3200, each bobbing and turning on its own phase.
-- `src/loop-machine.js`: the sculpture (three funnel arms around a triangle, each spout pouring into the next
-  mouth; beads circulate two laps a loop, swelling along the arms and hopping the gaps), the spigot, the piping, the
-  tree, the bucket lift and the crank. Every 4 s one item goes round the wider system: bead out of the spigot, along
-  the piping, into the tree, a bloom, picked, loaded, lifted, poured back into the top mouth.
-- `src/loop-figures.js`: small clay figures (about 100 px), body and head baked, each limb one rolled tube bending
-  through its joint, knees and elbows by two-bone IK, hands held to the arm's reach.
-- `src/loop.js`: the picker (tree to lift and back, every 4 s), the cranker (one turn every 2 s) and the watcher
-  on the floating island (telescope on the sun, a look and a wave at the machine mid-loop).
+Draft 2 (Robin's notes on draft 1): the recycle shape is one funnel that feeds itself, and the figures' work is
+mysterious, not fetching and carrying. The honeycomb backdrop comes back; only the frame and box stay out.
+
+- `src/loop-world.js`: the honeycomb backdrop, the sun, clay clouds, three rows of hills into the haze, the
+  terrace, a floating city, and fourteen decorations floating at depths from 1300 to 3200.
+- `src/loop-machine.js`: the funnel (it gathers at the top; a duct leaves the bottom, turns right, climbs past the
+  lip, turns left and drops back in; eight beads swirl down the mouth, swell along the duct, light two windows in
+  the riser and drop from the spout), the console (knobs, lever, lights, a screen with a turning octahedron, a
+  cable to the duct) and the ring instrument (three rings on different axes, a hovering solid, a cube let go once a
+  loop).
+- `src/loop-shapes.js`: faceted clay solids drawn each frame (tetrahedron, octahedron, cube, icosahedron, a star
+  of two tetrahedra, a ring), lit per face, with a making-glow.
+- `src/loop-figures.js`: small clay figures, body and head baked, each limb one rolled tube bending through its
+  joint, knees and elbows by two-bone IK, hands held to the arm's reach.
+- `src/loop.js`: the operator behind the console (knobs, lever, hands over the screen, every 3 s), the tuner at
+  the instrument (slider, a reach toward the rings), and two practitioners of the same 6 s mudra, three seconds
+  apart (palms at the chest, lifted overhead, parted into a frame while a solid forms between them, released, arms
+  open, head following it up); one stands on the terrace, one sits on the floating island.
