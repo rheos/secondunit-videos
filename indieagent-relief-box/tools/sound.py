@@ -65,6 +65,18 @@ def creverb(x, decay=3.2, pre=0.02, bright=6000):
     return np.fft.irfft(X * np.fft.rfft(ir, axis=0), n=N, axis=0)
 
 
+def cdelay(x, step=0.375, feedback=0.55, repeats=8, darken=0.75):
+    """a ping-pong echo locked to the loop (3/8 s, 32 repeats a loop): each repeat swaps sides, fades and darkens;
+    the repeats wrap round, so the loop stays seamless"""
+    out = np.zeros_like(x)
+    cur = x.copy()
+    for k in range(1, repeats + 1):
+        cur = cfilter(cur, hi=7000 * darken ** k)
+        echo = np.roll(cur, int(round(step * k * SR)), axis=0) * feedback ** k
+        out += echo[:, ::-1] if k % 2 else echo
+    return out
+
+
 def place(buf, t, sig, pan=0.0, gain=1.0):
     """add a mono or stereo sound at time t, wrapping round the loop; pan -1 left .. 1 right"""
     if sig.ndim == 1:
@@ -291,9 +303,11 @@ def main():
     bed = organ()
     glitch = glitches(bed)
     ev = events(cues)
-    dry = 0.55 * bed + 0.22 * glitch + ev
-    wet = creverb(0.45 * bed + 0.3 * glitch + 0.8 * ev, decay=3.6)
-    mix = dry + 0.55 * wet
+    dry = 0.5 * bed + 0.2 * glitch + ev
+    # a ping-pong echo on the events and glitches (and a little of the organ), then everything into a long hall
+    echo = cdelay(0.75 * ev + 0.6 * glitch + 0.12 * bed)
+    wet = creverb(0.5 * bed + 0.35 * glitch + 0.9 * ev + 0.6 * echo, decay=6.0, pre=0.04)
+    mix = dry + 0.45 * echo + 0.95 * wet
     mix = cfilter(mix, lo=35, hi=15000)
     # level: about -18 dBFS RMS, peaks held under -1 dBFS by a soft clip
     mix *= 10 ** (-18 / 20) / np.sqrt((mix ** 2).mean())
