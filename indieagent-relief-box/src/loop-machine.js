@@ -142,8 +142,15 @@ function drawPipe(g) {
 // attachment... when it comes out it should drop out like a glob of paint into the portal"). The hose just narrows a
 // little to a soft open end; the bulge runs right to it and swells it, and a glob of paint comes out: it bulges from
 // the opening, hangs on a stretching neck, pinches off, falls as a teardrop, and splashes into the portal in rings.
-const HOSE = { len: 10, end: 0.86, back: 40 };   // the end runs 10 past the pipe, narrowing a little; drawn from 40 up
+// Robin, on draft 15: "the birthing membrane should retract to the lip above after it births the glob, and the glob
+// must be bigger to justify the bulge, and... just go straight down into the swirling digital portal". So the hose's
+// end is a membrane: it pushes out as the bulge arrives, stretches with the glob, and after the glob pinches off it
+// draws back up to the lip and closes. The glob grows to the swollen pipe's width and drops straight down, sinking
+// into the portal where it splashes. Times are u, seconds into a solid's 6 s trip (the bulge reaches the end at 5.4).
+const HOSE = { ext: 15, end: 0.86 };
 const GLOB = [MK.magenta, MK.cyan, MK.yellow, MK.lime, MK.orange, MK.sky, MK.pink, MK.violet];
+const SURF = RIM.y + 6;            // the portal's surface, where a glob sinks in
+const membrane = (u) => smoothstep(4.95, 5.3, u) * (1 - smoothstep(5.62, 5.92, u)) + 0.35 * smoothstep(5.42, 5.6, u) * (1 - smoothstep(5.6, 5.75, u));
 // a wet paint fill: a highlight high on the left, the colour, a darker rim, and a specular glint
 function paint(ctx, path, col, x, y, r) {
   const g = ctx.createRadialGradient(x - r * 0.35, y - r * 0.4, r * 0.1, x, y, r * 1.3);
@@ -151,70 +158,73 @@ function paint(ctx, path, col, x, y, r) {
   ctx.fillStyle = g; ctx.fill(path);
   ctx.fillStyle = 'rgba(255,255,255,0.75)'; ctx.beginPath(); ctx.ellipse(x - r * 0.35, y - r * 0.38, r * 0.22, r * 0.14, -0.5, 0, TAU); ctx.fill();
 }
-// the hose's last stretch, drawn again over the pipe from `back` up so the swell can run right to the end: the
-// same tube in the same colour rings, narrowing a little to a rounded end. bulges: arc lengths of bulges near the end
-function drawHoseEnd(ctx, x, y0, bulges, open, clips) {
-  const w = DUCT.w, line = [], ws = [], top = y0 - HOSE.back, n = 16;
+// the membrane below the lip at y0: out by m (0..1.35) of HOSE.ext, narrowing a little, swollen where a bulge is; when
+// drawn back it is just a low dome closing the end. Returns the y of its opening.
+function drawHoseEnd(ctx, x, y0, bulges, m, open, clips) {
+  const w = DUCT.w, ext = 3 + HOSE.ext * m, line = [], ws = [], n = 12;
   for (let i = 0; i <= n; i++) {
-    const y = top + (HOSE.back + HOSE.len) * i / n, sArc = DUCT_LEN + (y - y0);
-    const narrow = lerp(1, HOSE.end, E.smooth(Math.max(0, (y - (y0 - 8)) / (HOSE.len + 8))));
-    const sw = bulges.reduce((m, [s0, amp]) => Math.max(m, BULGE.amp * amp * Math.exp(-(((sArc - s0) / BULGE.sigma) ** 2))), 0);
+    const y = y0 - 2 + (ext + 2) * i / n, sArc = DUCT_LEN + (y - y0);
+    const narrow = lerp(1, HOSE.end, E.smooth(i / n));
+    const sw = bulges.reduce((mx, [s0, amp]) => Math.max(mx, BULGE.amp * amp * Math.exp(-(((sArc - s0) / BULGE.sigma) ** 2))), 0);
     line.push([x, y]); ws.push(w * narrow * (1 + sw));
   }
-  const cEnd = Math.floor(DUCT_LEN / RING) % 3, below = new Path2D(); below.rect(x - 60, y0, 120, 60);
-  const o = { shadow: false, size: w * 2 };
-  // only from the pipe's end down: above it the baked pipe and the bulge (which runs right to the end) show
+  const cEnd = Math.floor(DUCT_LEN / RING) % 3, o = { shadow: false, size: w * 2 };
   ctx.save(); const keep = new Path2D(); keep.rect(x - 80, y0 - 0.5, 160, 120); ctx.clip(keep);
-  tube(ctx, line, ws, RING_COLS[0], o);
-  for (let c = 1; c < 3; c++) {
-    const cl = new Path2D(); cl.addPath(clips.ring[c]); if (c === cEnd) cl.addPath(below);
-    ctx.save(); ctx.clip(cl); tube(ctx, line, ws, RING_COLS[c], o); ctx.restore();
-  }
+  tube(ctx, line, ws, RING_COLS[cEnd], o);
   ctx.restore();
-  // the open end, seen from a little above: a dark ellipse that stretches as the glob comes out
-  const ye = y0 + HOSE.len, rx = ws[n] * (0.5 + 0.35 * open);
-  ctx.fillStyle = '#3b2131'; ctx.beginPath(); ctx.ellipse(x, ye + ws[n] * 0.35, rx, rx * 0.32, 0, 0, TAU); ctx.fill();
-  return ye + ws[n] * 0.35;
+  // the opening, seen from a little above: dilating for the glob, then shrinking to nothing as the membrane sucks
+  // back up (Robin: "the holes should shrink and disappear as it sucks back up")
+  const ye = y0 + ext + ws[n] * 0.3, rx = ws[n] * (0.42 * Math.min(1, m) + 0.3 * open) * smoothstep(0.05, 0.45, m);
+  if (rx > 0.4) { ctx.fillStyle = '#3b2131'; ctx.beginPath(); ctx.ellipse(x, ye, rx, rx * 0.3 * (0.5 + 0.5 * open), 0, 0, TAU); ctx.fill(); }
+  return ye;
 }
-// the glob of solid n at u (seconds into its trip): hanging from the end, then falling; null when not out
-function drawGlob(ctx, x, ye, u, n, toX) {
+// the glob of solid n: hanging from the opening and growing, pinching off, falling straight down, sinking in
+const GLOB_R = 15;
+// ye: where the opening is now (the glob hangs from it); once it falls it keeps its own line down
+const DROP_Y = SPOUT[1] + 3 + HOSE.ext * 1.35 + DUCT.w * HOSE.end * 0.3;
+function drawGlob(ctx, x, ye, u, n) {
   const col = GLOB[n % 8];
-  if (u >= 5.28 && u < 5.56) {
-    const e = smoothstep(5.28, 5.5, u), r = 3 + 6.5 * e, L = 3 + 9 * smoothstep(5.38, 5.56, u);
-    const nw = 8 * (1 - 0.9 * smoothstep(5.44, 5.56, u)), cy = ye + L + r;
+  if (u >= 5.22 && u < 5.62) {
+    const e = smoothstep(5.22, 5.5, u), r = 4 + (GLOB_R - 4) * e, L = 2 + 12 * smoothstep(5.42, 5.62, u);
+    const nw = 9 * (1 - 0.92 * smoothstep(5.5, 5.62, u)), cy = ye + L + r * 0.92;
     const p = new Path2D();
     p.moveTo(x - nw, ye); p.bezierCurveTo(x - nw, ye + L * 0.6, x - r, cy - r * 0.9, x - r, cy);
     p.arc(x, cy, r, Math.PI, 0, true);
     p.bezierCurveTo(x + r, cy - r * 0.9, x + nw, ye + L * 0.6, x + nw, ye); p.closePath();
     paint(ctx, p, col, x, cy, r);
-  } else if (u >= 5.56 && u < 6) {
-    const k = (u - 5.56) / 0.44, r = 9.5, y = lerp(ye + 21, RIM.y + 8, k * k), xx = lerp(x, toX, k);
-    const rx = r * (0.9 - 0.1 * k), ry = r * (1.05 + 0.35 * k);
-    const p = new Path2D();
-    p.moveTo(xx, y - ry * 1.75);
-    p.bezierCurveTo(xx + rx * 0.35, y - ry * 1.1, xx + rx, y - ry * 0.7, xx + rx, y);
-    p.ellipse(xx, y, rx, ry, 0, 0, Math.PI, false);
-    p.bezierCurveTo(xx - rx, y - ry * 0.7, xx - rx * 0.35, y - ry * 1.1, xx, y - ry * 1.75); p.closePath();
-    paint(ctx, p, col, xx, y, r);
+    return;
   }
+  // falling from where it pinched off (5.62) to the surface (6.0), then sinking out of sight below it (to 6.2)
+  const v = u < 1 ? u + 6 : u;
+  if (v < 5.62 || v >= 6.2) return;
+  const y1 = DROP_Y + 14 + GLOB_R, k = Math.min(1, (v - 5.62) / 0.38), y = v < 6 ? lerp(y1, SURF, k * k) : SURF + (v - 6) * 90;
+  const rx = GLOB_R * (0.92 - 0.08 * k), ry = GLOB_R * (1.05 + 0.25 * k);
+  const p = new Path2D();
+  p.moveTo(x, y - ry * 1.6);
+  p.bezierCurveTo(x + rx * 0.35, y - ry * 1.05, x + rx, y - ry * 0.7, x + rx, y);
+  p.ellipse(x, y, rx, ry, 0, 0, Math.PI, false);
+  p.bezierCurveTo(x - rx, y - ry * 0.7, x - rx * 0.35, y - ry * 1.05, x, y - ry * 1.6); p.closePath();
+  ctx.save();
+  // below the surface it is inside the portal, so only what is still above shows
+  const above = new Path2D(); above.rect(x - 60, SURF - 400, 120, 400); ctx.clip(above);
+  paint(ctx, p, col, x, y, GLOB_R);
+  ctx.restore();
 }
-// the splash where it lands in the portal: two rings spreading on the surface and a crown of droplets, fading
+// the splash where it sinks into the portal: two rings spreading on the surface and a crown of droplets, fading
 function drawSplash(ctx, x, y, u, n) {
   if (u >= 0.7) return;
   const col = GLOB[n % 8], k = u / 0.7;
-  ctx.save();
   for (const j of [0, 0.35]) {
     const q = Math.min(1, k * 1.2 + j * 0.3) - j * 0.3; if (q <= 0) continue;
-    const rx = 5 + 46 * E.out(q);
-    ctx.strokeStyle = rgba(col, 0.85 * (1 - q)); ctx.lineWidth = 3 * (1 - q) + 0.8;
+    const rx = 8 + 52 * E.out(q);
+    ctx.strokeStyle = rgba(col, 0.85 * (1 - q)); ctx.lineWidth = 3.5 * (1 - q) + 0.8;
     ctx.beginPath(); ctx.ellipse(x, y, rx, rx * 0.24, 0, 0, TAU); ctx.stroke();
   }
-  for (let i = 0; i < 6; i++) {
-    const a = (i + 0.5) / 6 * TAU, d = 30 * k, h = 26 * k * (1 - k) * 4 * (0.7 + 0.3 * (i % 2));
-    const dx = x + Math.cos(a) * d, dy = y + Math.sin(a) * d * 0.24 - h, rr = 2.6 * (1 - k) + 0.6;
+  for (let i = 0; i < 7; i++) {
+    const a = (i + 0.5) / 7 * TAU, d = 34 * k, h = 30 * k * (1 - k) * 4 * (0.7 + 0.3 * (i % 2));
+    const dx = x + Math.cos(a) * d, dy = y + Math.sin(a) * d * 0.24 - h, rr = 3.2 * (1 - k) + 0.6;
     const p = new Path2D(); p.arc(dx, dy, rr, 0, TAU); paint(ctx, p, col, dx, dy, rr);
   }
-  ctx.restore();
 }
 
 function drawFork(g) {
@@ -341,7 +351,7 @@ export function addMachines(S) {
     // each glob's splash where it lands, inside the portal
     { const clip = new Path2D(); mouthPts.forEach(([x, y], i) => (i ? clip.lineTo(x, y) : clip.moveTo(x, y))); clip.closePath();
       ctx.save(); ctx.clip(clip);
-      for (let n = 0; n < 8; n++) drawSplash(ctx, RIM.x + (n % 2 ? 10 : -10), RIM.y + 8, mod(t + n * 0.75, 6), n);
+      for (let n = 0; n < 8; n++) drawSplash(ctx, n % 2 ? 2 * AXIS - SPOUT[0] : SPOUT[0], SURF, mod(t + n * 0.75, 6), n);
       ctx.restore(); }
     drawFunnelFront(ctx, ph);
     // the pipe swells as each one passes; a right-side one is drawn reflected
@@ -352,17 +362,19 @@ export function addMachines(S) {
     // the hose ends: even ones leave by the left, odd by the right, 5.4 s into the trip (every 1.5 s a side); the end
     // swells as the bulge reaches it, opens as the glob comes out, and the glob drops into the portal
     for (const right of [0, 1]) {
-      let open = 0; const near = [];
+      let open = 0, m = 0; const near = [];
       for (let n = right; n < 8; n += 2) {
         const u = mod(t + n * 0.75, 6);
-        // the bulge carries on past the pipe's end into the hose end (the same speed), then the paint comes out
+        // the bulge carries on past the pipe's end into the membrane (the same speed), then the paint comes out
         if (u >= 4.6 && u < 5.6) near.push([DUCT_LEN * (u - 2.2) / 3.2, 1 - smoothstep(5.4, 5.6, u)]);
-        open = Math.max(open, smoothstep(5.28, 5.42, u) * (1 - smoothstep(5.5, 5.62, u)));
+        open = Math.max(open, smoothstep(5.22, 5.4, u) * (1 - smoothstep(5.56, 5.7, u)));
+        m = Math.max(m, membrane(u));
       }
       ctx.save();
       if (right) { ctx.translate(2 * AXIS, 0); ctx.scale(-1, 1); }
-      const ye = drawHoseEnd(ctx, SPOUT[0], SPOUT[1], near, open, clips);
-      for (let n = right; n < 8; n += 2) drawGlob(ctx, SPOUT[0], ye, mod(t + n * 0.75, 6), n, RIM.x - 10);
+      const ye = drawHoseEnd(ctx, SPOUT[0], SPOUT[1], near, m, open, clips);
+      // the glob hangs from where the opening is while it is out; once it falls it keeps its own line
+      for (let n = right; n < 8; n += 2) drawGlob(ctx, SPOUT[0], ye, mod(t + n * 0.75, 6), n);
       ctx.restore();
     }
     for (const f of late) f();
