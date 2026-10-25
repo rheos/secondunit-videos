@@ -77,6 +77,10 @@ beat late. Fireflies over the water.
   the vanishing point (lit moss tops with a hanging lip and moss cushions, cliff faces lit on the side toward the moon),
   pines standing on them, two thin falls spilling off the left ledges; a violet glow at the horizon, lavender peaks,
   brighter greens, lupins, daisies and red berries along the water.
+- **Draft 4 (no vanishing point):** Robin found draft 3's vanishing point too obvious, all sharp lines running at it.
+  Restaged as the night-lake poster is: the creek zigzags out from behind a forest mass, swings past the perch rock
+  and crosses the foreground; the moon's reflection lies on a level lake with its far shore of tiny pines, seen
+  through a gap in rounded, overlapping hills; ledges, pines and night-muted yellow shrubs stand as irregular masses.
 - Seventeen planes: sky with stars and the moon, cloud banks, peaks, a pine ridge, the far bank (cedars, pines,
   bushes, ferns, a mossy lip, boulders), the far water with the bank's trees reflected and mist drifting low,
   stepping stones with foam and a fallen log, mid water, fireflies, the parent's rock, the parent, the water in front

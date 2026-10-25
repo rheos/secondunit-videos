@@ -21,9 +21,9 @@ SCENES.creek = (Q) => {
 
   // ---------------- timeline (the acting is draft 1's, approved) ----------------
   const END = 9, LAG = .75, SC = .9, TS = 4.6;
-  const PX = 640, PG = 760, KX = 990, KG = 950;      // the parent's hip x on its perch rock, the rock's top; the kit's on its stone
+  const PX = 500, PG = 760, KX = 760, KG = 950;      // the parent's hip x on its perch rock, the rock's top; the kit's on its stone
   const WLP = 786, WLK = 960;                          // where each one's paws go under the water
-  const MOON = [1450, 205, 76], VP = [1398, 556];      // the moon, and the creek's vanishing point under it
+  const MOON = [1450, 205, 76], HZ = 650;              // the moon; the line where the near ground meets the far lake and hills
   const washAt = (t) => ss(.8, 1.4, t);
   const liftAt = (t) => ss(3.1, 3.6, t) - ss(5.6, 6.1, t);
   const rubAt = (t) => (ss(1.3, 1.6, t) - ss(3, 3.2, t)) + (ss(6.1, 6.4, t) - ss(8.4, 8.8, t));
@@ -52,11 +52,13 @@ SCENES.creek = (Q) => {
   const mk = (name, y0, y1, res, draw, o = {}) => sprite({ x: o.x0 ?? X0, y: y0, w: (o.x1 ?? X1) - (o.x0 ?? X0), h: y1 - y0, res: Q * res, seed: name, light: LT, mat: o.mat ?? 'paper', edge: o.edge, shadow: o.shadow ?? { blur: 12 }, draw: (g) => draw(g, new RNG('creek:' + name)) });
   // isPointInPath tests device pixels: map an authored point through the sprite's transform first
   const inPath = (g, p, x, y) => { const q = g.getTransform().transformPoint(new DOMPoint(x, y)); return g.isPointInPath(p, q.x, q.y); };
-  const depthK = (y) => clamp((y - VP[1]) / (1080 - VP[1]));          // 0 at the vanishing point, 1 at the bottom of frame
+  const depthK = (y) => clamp((y - HZ + 90) / (1080 - HZ + 90));      // 0 far back, 1 at the bottom of frame
 
   // ---- the creek: a ribbon along a spline, narrow at the vanishing point, wide at the bottom edge ----
   const chaikin = (pts, it) => { for (let k = 0; k < it; k++) { const o = [pts[0]]; for (let i = 0; i < pts.length - 1; i++) { const a = pts[i], b = pts[i + 1]; o.push(a.map((v, j) => v * .75 + b[j] * .25), a.map((v, j) => v * .25 + b[j] * .75)); } o.push(pts[pts.length - 1]); pts = o; } return pts; };
-  const RS = chaikin([[1398, 556, 8], [1360, 586, 30], [1250, 630, 70], [1100, 690, 124], [960, 770, 190], [930, 850, 270], [990, 944, 380], [1110, 1040, 520], [1240, 1160, 700]], 4)
+  // it zigzags, as paper-fox's water does: comes out from behind a forest mass, swings left past the perch rock, then
+  // across the foreground and out of frame at the right. No vanishing point: its far end is hidden.
+  const RS = chaikin([[1240, 690, 30], [1080, 708, 60], [910, 740, 100], [770, 792, 150], [710, 862, 190], [790, 942, 240], [1030, 1004, 290], [1380, 1056, 330], [1780, 1096, 370], [2240, 1118, 400]], 4)
     .map(([x, y, w]) => ({ x, y, w }));
   let L = 0, Sg = 0;
   RS.forEach((p, i) => {
@@ -78,10 +80,10 @@ SCENES.creek = (Q) => {
   const STRIPS = [...Array(440)].map((_, i) => { const R = new RNG('strip' + i); return { q0: R.next(), v: R.range(-.94, .94), len: R.range(.5, 1.6), th: R.range(.5, 1.4), col: R.pick(['#3e78d8', '#5a92ea', '#2a5cbc', '#3368c8', '#76aaf0', '#2550aa']), white: R.chance(.26) }; });
   const nzR = noise('refl');
   // small cascades where the creek steps down: a dark lip, then a torn white band of falling water
-  const CASCADES = [.2, .43, .66].map((sc, j) => { const R = new RNG('cascade' + j); return { sc, jit: [...Array(17)].map(() => R.range(.55, 1.15)), seed: R.int(1, 1e6) }; });
+  const CASCADES = [.07, .74].map((sc, j) => { const R = new RNG('cascade' + j); return { sc, jit: [...Array(17)].map(() => R.range(.55, 1.15)), seed: R.int(1, 1e6) }; });
   function drawRiver(g, t) {
-    const gr = g.createLinearGradient(0, VP[1], 0, 1100);
-    gr.addColorStop(0, '#a3aee6'); gr.addColorStop(.14, '#5a86dc'); gr.addColorStop(.45, '#2f5fc0'); gr.addColorStop(1, '#1d438f');
+    const gr = g.createLinearGradient(0, 680, 0, 1100);
+    gr.addColorStop(0, '#5c86d8'); gr.addColorStop(.4, '#3466c6'); gr.addColorStop(1, '#1f4898');
     g.save(); g.fillStyle = gr; g.fill(RIB); g.clip(RIB);
     // paper strips riding the flow toward us, longer and thicker where the creek is wide; about a quarter of them
     // long thin white streaks, the way paper-fox cuts moving water
@@ -93,15 +95,6 @@ SCENES.creek = (Q) => {
       const A = [cx - p.tx * len / 2, cy - p.ty * len / 2], B = [cx + p.tx * len / 2, cy + p.ty * len / 2];
       g.fillStyle = st.white ? 'rgba(236,244,255,.85)' : st.col;
       g.fill(polyPath([A, [cx + p.nx * th * .5, cy + p.ny * th * .5], B, [cx - p.nx * th * .7, cy - p.ny * th * .7]]));
-    }
-    // the moon's reflection down the far stretch of the creek, broken by the flow
-    let i = 0;
-    for (let s = .004; s < .5; s += .006 + s * .016, i++) {
-      const p = sample('s', s), w = p.w * (.08 + .2 * Math.abs(nzR.n2(i * .9, t * .9))) * (1 - ss(.3, .5, s));
-      if (nzR.n2(i * 1.3, t * .7) < -.5) continue;
-      const cx = p.x + p.nx * p.w * .12 * nzR.n2(i * .5 + 7, t * .6), cy = p.y + p.ny * p.w * .12 * nzR.n2(i * .5 + 7, t * .6), th = 1.2 + p.w * .016;
-      g.fillStyle = `rgba(255,240,200,${.75 + .25 * Math.abs(nzR.n2(i * .3, t * 1.5))})`;
-      g.fill(polyPath([[cx - w, cy], [cx - w * .35, cy - th * .7], [cx + w * .4, cy - th * .5], [cx + w, cy + th * .1], [cx + w * .3, cy + th * .6], [cx - w * .4, cy + th * .5]]));
     }
     for (const c of CASCADES) {
       const p = sample('s', c.sc), k = depthK(p.y), h = 8 + 46 * k, lip = [], low = [];
@@ -117,7 +110,6 @@ SCENES.creek = (Q) => {
     // mist drifting low over the far water
     for (let j = 0; j < 4; j++) { const x = ((j * 520 + t * 16) % 2400) - 300, y = 578 + j * 16; g.fillStyle = 'rgba(190,196,235,.16)'; g.fill(polyPath(tear([[x, y], [x + 560, y - 4], [x + 580, y + 16], [x, y + 20]], { amp: 6, freq: .012, seed: 70 + j, step: 14 }))); }
     g.restore();
-    glow(g, VP[0], VP[1] + 20, 180, 'rgba(255,236,190,.3)');
     // foam on the water: along both banks, the perch rock's lip and round the stones
     g.fillStyle = 'rgba(236,244,255,.85)';
     for (const f of FOAM) g.fill(f);
@@ -125,9 +117,8 @@ SCENES.creek = (Q) => {
   const FOAM = [];
   { const R = new RNG('foam');
     const crescent = (x, y, w, h, a = 0) => { const c = Math.cos(a), s = Math.sin(a), P = (u, v) => [x + u * c - v * s, y + u * s + v * c]; return polyPath(tear([P(-w, 0), P(-w * .4, -h), P(w * .5, -h * .8), P(w, 0), P(w * .3, -h * .35), P(-w * .5, -h * .3)], { amp: 1.4, freq: .2, seed: R.int(1, 1e6) })); };
-    for (let y = 800; y < 1000; y += 30) { const p = EL[RS.findIndex((q) => q.y >= y)] || EL[EL.length - 1]; FOAM.push(crescent(p[0] + 18, y, 26 + (y - 800) * .08, 6, -.6)); }
-    for (let j = 0; j < 5; j++) FOAM.push(crescent(950 + j * 34, KG + 14 + (j & 1) * 6, 30, 7, .05 * j));
-    for (const [E, sgn] of [[EL, 1], [ER, -1]]) for (let i = 6; i < E.length - 2; i += 3) { const p = RS[i], k = depthK(p.y); if (sgn > 0 && p.y > 780) continue; FOAM.push(crescent(E[i][0] - sgn * p.nx * (4 + 10 * k), E[i][1] - sgn * p.ny * (4 + 10 * k), 6 + 26 * k, 2 + 5 * k, Math.atan2(p.ty, p.tx))); }   // along the banks
+    for (let j = 0; j < 5; j++) FOAM.push(crescent(720 + j * 34, KG + 14 + (j & 1) * 6, 30, 7, .05 * j));
+    for (const [E, sgn] of [[EL, 1], [ER, -1]]) for (let i = 6; i < E.length - 2; i += 3) { const p = RS[i], k = depthK(p.y); FOAM.push(crescent(E[i][0] - sgn * p.nx * (4 + 10 * k), E[i][1] - sgn * p.ny * (4 + 10 * k), 6 + 26 * k, 2 + 5 * k, Math.atan2(p.ty, p.tx))); }   // along the banks
   }
 
   const planes = [];
@@ -165,117 +156,103 @@ SCENES.creek = (Q) => {
     g.restore();
     H.haze(g, 300, 180, X1 - 300, 520, 'rgba(96,84,160,A)', 0, .6);
   }, { mat: 'crumpled' }) }] });
-  // two ranges of hills stepping down on diagonals to the vanishing point, pines on them shrinking as they go
-  const hills = (name, z, lines, cols, pineCols, sizeAt, dens) => mk(name, 380, 760, .9, (g, R) => {
-    for (const [pts, col] of lines.map((l, i) => [l, cols[i]])) {
-      const poly = [...pts, [pts[pts.length - 1][0], 760], [pts[0][0], 760]];
-      cutp(g, polyPath(tear(poly, { amp: 2, freq: .04, seed: R.int(1, 1e6) })), col, { light: LT, blur: 5, dist: 3 });
-      for (let i = 0; i < pts.length - 1; i++) for (let x = Math.min(pts[i][0], pts[i + 1][0]); x < Math.max(pts[i][0], pts[i + 1][0]); x += R.range(...dens)) {
-        const y = lerp(pts[i][1], pts[i + 1][1], (x - pts[i][0]) / (pts[i + 1][0] - pts[i][0] || 1)) + 8;
-        H.pine(g, x, y, sizeAt(x) * R.range(.75, 1.15), pineCols, R, { sh: .5 });
-      }
+  // hills as rounded humps overlapping in layers, paper-fox's way: depth from overlap, size and haze, no lines
+  // running to a point. The far range is lighter and bluer; a gap in the near range shows the lake.
+  const humps = (name, base, list, pineCols, pineSize) => mk(name, 380, base + 20, .9, (g, R) => {
+    for (const [cx, top, hw, col] of list) {
+      const pts = []; for (let i = 0; i <= 40; i++) { const th = Math.PI * i / 40; pts.push([cx - Math.cos(th) * hw, base - Math.sin(th) ** .8 * (base - top)]); }
+      const path = polyPath(tear(pts, { amp: 2, freq: .04, seed: R.int(1, 1e6) }));
+      cutp(g, path, col, { light: LT, blur: 5, dist: 3 });
+      H.form(g, path, { w: 6, steps: 2, lit: 'rgba(200,215,255,.08)', shade: 'rgba(5,10,30,.14)' });
+      for (let i = 2; i < 39; i += 1) { if (R.chance(.45)) continue; const th = Math.PI * i / 40; H.pine(g, cx - Math.cos(th) * hw + R.range(-6, 6), base - Math.sin(th) ** .8 * (base - top) + 6, pineSize * R.range(.7, 1.2), pineCols, R, { sh: .5 }); }
+      for (let i = 0; i < hw / 30; i++) { const th = R.range(.15, .85) * Math.PI, f = R.range(.2, .85), x = cx - Math.cos(th) * hw * f, y = base - Math.sin(th) ** .8 * (base - top) * f + 6; H.pine(g, x, y, pineSize * R.range(.8, 1.3), pineCols, R, { sh: .5 }); }
     }
-    H.haze(g, X0, 380, X1 - X0, 380, 'rgba(80,84,150,A)', .2, .45);
+    H.haze(g, X0, 380, X1 - X0, base - 360, 'rgba(84,88,160,A)', .18, .4);
   });
-  const farFromVP = (x) => clamp(Math.abs(x - VP[0]) / 1300);
-  planes.push({ name: 'farhills', z: 3200, sprites: [{ s: hills('farhills', 3200,
-    [[[X0, 400], [300, 430], [800, 482], [1200, 536], [VP[0] - 10, 562]], [[VP[0] + 10, 562], [1650, 528], [2000, 470], [X1, 440]]],
-    ['#33557a', '#315274'], ['#27506a', '#2f5c74', '#386a80'], (x) => 14 + 56 * farFromVP(x), [12, 26]) }] });
-  planes.push({ name: 'midhills', z: 2000, sprites: [{ s: hills('midhills', 2000,
-    [[[X0, 500], [200, 516], [700, 556], [1150, 590], [VP[0] - 30, 600]], [[VP[0] + 40, 598], [1650, 572], [2000, 530], [X1, 512]]],
-    ['#1f4a52', '#1e474e'], ['#1d4f48', '#255d52', '#2e6c5c'], (x) => 26 + 120 * farFromVP(x), [22, 46]) }] });
-  // the creek, behind everything near: the banks, the rocks and the raccoons stand in front of it
-  // a water-blue underlay below the horizon, so a seam between the creek's and the banks' torn outlines reads as water
-  planes.push({ name: 'underlay', z: 1080.2, draw(g) { g.fillStyle = '#1d438f'; g.fillRect(X0, 640, X1 - X0, 640); } });
+  planes.push({ name: 'farhills', z: 3200, sprites: [{ s: humps('farhills', 700,
+    [[300, 470, 560, '#36597e'], [1000, 500, 470, '#3a5e84'], [1720, 488, 540, '#33557a'], [2260, 462, 430, '#375a80']], ['#27506a', '#2f5c74', '#386a80'], 26) }] });
+  // the lake under the moon: a level band of water with its far shore of tiny pines and the moon's broken reflection
+  const LAKE = { y: 612, x0: 700 };
+  planes.push({ name: 'lake', z: 2600, sprites: [{ s: mk('lake', 560, 700, .9, (g, R) => {
+    const p = polyPath(tear([[LAKE.x0, LAKE.y], [X1, LAKE.y - 4], [X1, 700], [LAKE.x0 - 40, 700]], { amp: 3, freq: .03, seed: 501 }));
+    const gr = g.createLinearGradient(0, LAKE.y, 0, 690); gr.addColorStop(0, '#93a6e4'); gr.addColorStop(1, '#4a72cc');
+    cutp(g, p, gr, { light: LT, blur: 3, dist: 2 });
+    g.save(); g.clip(p);
+    for (let i = 0; i < 160; i++) { const x = R.range(LAKE.x0, X1), y = R.range(LAKE.y + 3, 690), w = R.range(20, 90); g.fillStyle = R.pick(['rgba(230,240,255,.5)', 'rgba(60,100,200,.45)', 'rgba(150,175,235,.5)']); g.fillRect(x, y, w, 1.2 + (y - LAKE.y) * .03); }
+    g.restore();
+    for (let x = LAKE.x0 + 20; x < X1; x += R.range(9, 18)) H.pine(g, x, LAKE.y + 3, R.range(14, 26), ['#21425a', '#284d64'], R, { sh: .4 });
+  }) }], draw(g, t) {
+    const nz = noise('lakerefl');
+    for (let i = 0; i < 9; i++) { const y = LAKE.y + 8 + i * 6, w = (16 + i * 6) * (.5 + .7 * Math.abs(nz.n2(i * .9, t * .8))); g.fillStyle = `rgba(255,242,205,${.8 - i * .04})`; g.fillRect(MOON[0] - w + 6 * nz.n2(i, t * .5), y, w * 2, 2 + i * .3); }
+    glow(g, MOON[0], LAKE.y + 30, 140, 'rgba(255,236,190,.35)');
+  } });
+  planes.push({ name: 'midhills', z: 2000, sprites: [{ s: humps('midhills', 760,
+    [[-80, 540, 560, '#22505a'], [560, 566, 430, '#24555c'], [2340, 548, 560, '#22515a'], [1130, 616, 230, '#3f6e4a']], ['#1d4f48', '#255d52', '#2e6c5c'], 54) }] });
+  // the near ground the creek runs through, then the creek, then everything standing on the ground
+  const inRiver = (g, x, y) => { const q = g.getTransform().transformPoint(new DOMPoint(x, y)); return g.isPointInPath(RIB, q.x, q.y); };
+  planes.push({ name: 'ground', z: 1080.4, sprites: [{ s: mk('ground', 600, 1220, 1.05, (g, R) => {
+    const top = []; for (let x = X0; x <= X1; x += 40) top.push([x, HZ + 10 * Math.sin(x * .006) + R.range(-3, 3)]);
+    const p = polyPath(tear([...top, [X1, 1220], [X0, 1220]], { amp: 3, freq: .04, seed: 601 }));
+    const gr = g.createLinearGradient(0, HZ, 0, 1100); gr.addColorStop(0, '#2d4e5e'); gr.addColorStop(.25, '#2a5a3e'); gr.addColorStop(1, '#1f4a2c');
+    cutp(g, p, gr, { light: LT, blur: 4, dist: 2 });
+    for (let i = 0; i < 520; i++) {
+      const x = R.range(X0, X1), y = R.range(HZ + 8, 1110), k = depthK(y);
+      if (inRiver(g, x, y)) continue;
+      if (R.chance(.25)) cutp(g, polyPath(tear([[x - 6 - 30 * k, y], [x, y - 3 - 8 * k], [x + 8 + 34 * k, y - 1], [x + 2, y + 3 + 4 * k]], { amp: .8 + 2 * k, freq: .3, seed: R.int(1, 1e6) })), R.pick(['#3a7a44', '#4a8a4e', '#2f6a3e']), { light: LT, sh: .5, blur: 2, dist: 1.5, bev: { width: .8 } });
+      else H.grassTuft(g, x, y, 8 + 70 * k * k, R, ['#2f6a3e', '#3a7a46', '#4a8a4e']);
+    }
+  }, { shadow: false }), shadow: false }] });
   const RIVER = { name: 'river', z: 1080, draw(g, t) { drawRiver(g, t); } };
   planes.push(RIVER);
-  // the banks either side of it: ground, then mossy rock ledges stepping back along the creek toward the vanishing
-  // point (lit moss on top, cliff faces below, lit on the side toward the moon), pines standing on them and on the
-  // ground between, flowers and rocks at the water's edge. Everything is drawn far to near, sized by its distance.
-  const LEDGES = [];
-  function ledgeAt(sc, side, out, R) {
-    const p = sample('s', sc), k = depthK(p.y), w = 70 + 620 * k, h = 14 + 150 * k, d = 8 + 46 * k;
-    const ex = p.x + p.nx * side * (p.w / 2), ey = p.y + p.ny * side * (p.w / 2);   // where the bank meets the water
-    const cx = ex - side * ((w / 2 - 12) + out * w * .7);                              // the ledge stands back from it
-    return { cx, y: ey - out * h * .55, w, h, d, k, side, seed: R.int(1, 1e6) };
-  }
-  { const R = new RNG('ledges');
-    for (const sc of [.06, .13, .22, .32, .42]) { LEDGES.push(ledgeAt(sc, 1, 0, R)); LEDGES.push(ledgeAt(sc - .03, 1, 1, R)); LEDGES.push(ledgeAt(sc - .05, 1, 2.1, R)); }
-    for (const sc of [.09, .17, .27, .38, .5, .62]) { LEDGES.push(ledgeAt(sc, -1, 0, R)); LEDGES.push(ledgeAt(sc - .03, -1, 1, R)); }
-  }
+  // what stands on the ground, far to near: stands of pines as masses (one hides the creek's far end), a few mossy
+  // ledges of different sizes, night-muted yellow shrubs (paper-fox's tansy), rocks and flowers at the water's edge
   function drawLedge(g, L, R) {
     const { cx, y, w, h, d, k } = L, x0 = cx - w / 2, x1 = cx + w / 2;
     const face = polyPath(tear([[x0 - 4, y + 2], [x1 + 6, y], [x1 + 2, y + h], [x0, y + h + 4]], { amp: 1.5 + 3 * k, freq: .05, seed: L.seed }));
     cutp(g, face, '#56536a', { light: LT, blur: 3 + 6 * k, dist: 2 + 4 * k });
     g.save(); g.clip(face);
     for (let x = x0 + R.range(0, 40) * k; x < x1; x += (30 + 110 * k) * R.range(.7, 1.3)) { g.fillStyle = R.pick(['rgba(170,166,200,.3)', 'rgba(8,6,22,.3)', 'rgba(120,116,150,.18)']); g.fill(polyPath([[x, y], [x + (24 + 90 * k) * R.range(.6, 1.2), y], [x + (18 + 70 * k) * R.range(.4, 1.2), y + h + 6], [x - 10 * k, y + h + 6]])); }
-    const lit = polyPath([[x1 - w * .28, y], [x1 + 8, y], [x1 + 4, y + h + 6], [x1 - w * .22, y + h + 6]]);
-    g.fillStyle = 'rgba(190,186,225,.28)'; g.fill(lit);                                              // the face toward the moon
+    g.fillStyle = 'rgba(190,186,225,.26)'; g.fill(polyPath([[x1 - w * .28, y], [x1 + 8, y], [x1 + 4, y + h + 6], [x1 - w * .22, y + h + 6]]));   // the face toward the moon
     g.restore();
-    const top = polyPath(tear([[x0, y - d], [x1, y - d - w * .03], [x1 + 6, y + 1], [x0 - 4, y + 3]], { amp: 1.5 + 2 * k, freq: .06, seed: L.seed + 1 }));
     const tg = g.createLinearGradient(0, y - d, 0, y); tg.addColorStop(0, '#3a6232'); tg.addColorStop(1, '#4a7a3a');
-    cutp(g, top, tg, { light: LT, sh: .6, blur: 3, dist: 2, bev: { width: 1 + 1.5 * k, hi: .3 } });
-    // the moss lip hanging over the edge, and yellow-green moss clumps along it
+    cutp(g, polyPath(tear([[x0, y - d], [x1, y - d - w * .03], [x1 + 6, y + 1], [x0 - 4, y + 3]], { amp: 1.5 + 2 * k, freq: .06, seed: L.seed + 1 })), tg, { light: LT, sh: .6, blur: 3, dist: 2, bev: { width: 1 + 1.5 * k, hi: .3 } });
     const lip = [[x0 - 4, y - 2]];
     for (let x = x0; x <= x1 + 4; x += 6 + 18 * k) lip.push([x, y + (R.chance(.4) ? (6 + 22 * k) * R.next() : 2 + 4 * k)]);
     lip.push([x1 + 6, y - 2]);
     cutp(g, polyPath(lip), '#4e8038', { light: LT, sh: .5, blur: 2, dist: 1.5, bev: { width: 1, hi: .3 } });
-    for (let x = x0 + R.range(0, 60) * k; x < x1; x += (50 + 150 * k) * R.range(.8, 1.8)) cutp(g, polyPath(tear(ellipsePts(x, y - d * .3, 4 + 14 * k, 2 + 6 * k, 14), { amp: 1 + 2 * k, freq: .3, seed: R.int(1, 1e6) })), R.pick(['#8ea83e', '#9db04a', '#7a9a3a']), { light: LT, sh: .5, blur: 2, dist: 1.5, bev: { width: .9, hi: .3 } });
+    for (let x = x0 + R.range(0, 60) * k; x < x1; x += (60 + 160 * k) * R.range(.8, 1.8)) H.moss(g, x, y - d * .3, 14 + 40 * k, R);
   }
+  const LEDGES = [[1560, 900, 440, 120], [2000, 770, 280, 74], [420, 704, 280, 58]].map(([cx, y, w, h], i) => ({ cx, y, w, h, d: 8 + 40 * depthK(y), k: depthK(y), seed: 700 + i }));
   const lupine = (g, x, y, h, R) => {
     cutp(g, polyPath([[x - 1.5, y], [x - 1, y - h], [x + 1, y - h], [x + 1.5, y]]), '#2f5c36', { light: LT, sh: .5 });
     for (let i = 0; i < 10; i++) cutp(g, H.circ(x + (i & 1 ? 1 : -1) * h * .03, y - h * .35 - i * h * .065, h * (.06 - i * .004)), i < 3 ? '#b49aee' : '#8a6ad6', { light: LT, sh: .45, blur: 1.5, dist: 1, bev: { width: .8 } });
   };
-  planes.push({ name: 'banks', z: 1079.5, sprites: [{ s: mk('banks', 470, 1220, 1.05, (g, R) => {
-    const left = polyPath(tear([[X0, 596], [600, 578], [1100, 566], [VP[0] - 4, 558], ...EL, [EL[EL.length - 1][0], 1220], [X0, 1220]], { amp: 2, freq: .04, seed: 211 }));
-    const right = polyPath(tear([[VP[0] + 4, 558], [1800, 572], [X1, 588], [X1, 1220], [ER[ER.length - 1][0], 1220], ...ER.slice().reverse()], { amp: 2, freq: .04, seed: 212 }));
-    const gr = g.createLinearGradient(0, 556, 0, 1100); gr.addColorStop(0, '#34507a'); gr.addColorStop(.3, '#2a5a3e'); gr.addColorStop(1, '#1f4a2c');
-    for (const p of [left, right]) cutp(g, p, gr, { light: LT, blur: 4, dist: 2 });
-    for (let i = 0; i < 520; i++) {                                  // ground cover, sized to its distance
-      const x = R.range(X0, X1), y = R.range(570, 1110), k = depthK(y);
-      if (!inPath(g, left, x, y) && !inPath(g, right, x, y)) continue;
-      if (R.chance(.25)) cutp(g, polyPath(tear([[x - 6 - 30 * k, y], [x, y - 3 - 8 * k], [x + 8 + 34 * k, y - 1], [x + 2, y + 3 + 4 * k]], { amp: .8 + 2 * k, freq: .3, seed: R.int(1, 1e6) })), R.pick(['#3a7a44', '#4a8a4e', '#2f6a3e']), { light: LT, sh: .5, blur: 2, dist: 1.5, bev: { width: .8 } });
-      else H.grassTuft(g, x, y, 8 + 70 * k * k, R, ['#2f6a3e', '#3a7a46', '#4a8a4e']);
-    }
-    // everything standing on the banks, far first
-    // ledges are clipped to their own bank (extended up into the sky), so a cliff face never hangs over the water
-    const bankClip = { 1: polyPath([[X0, -400], [VP[0], -400], [VP[0] - 4, 558], ...EL, [EL[EL.length - 1][0], 1220], [X0, 1220]]), [-1]: polyPath([[VP[0], -400], [X1, -400], [X1, 1220], [ER[ER.length - 1][0], 1220], ...ER.slice().reverse(), [VP[0] + 4, 558]]) };
-    const items = LEDGES.map((L) => ({ y: L.y, draw: () => { g.save(); g.clip(bankClip[L.side]); drawLedge(g, L, R); g.restore(); for (let j = 0; j < R.int(0, 3); j++) H.pine(g, L.cx + R.range(-.4, .4) * L.w, L.y - L.d * .6, (18 + 520 * Math.pow(L.k, 1.5)) * R.range(.7, 1.1), ['#1b4a3a', '#235842', '#2c664c'], R, { sh: .6 }); } }));
-    for (let c = 0; c < 22; c++) {                                   // stands of pines, each a clump, far ones small
-      const cy = 574 + Math.pow(R.next(), 1.5) * 240, cx = R.range(X0, X1), n = R.int(3, 8), k = depthK(cy);
-      for (let i = 0; i < n; i++) {
-        const x = cx + R.range(-1, 1) * (30 + 160 * k), y = cy + R.range(-6, 10) * (1 + 3 * k), inL = inPath(g, left, x, y), inR = inPath(g, right, x, y);
-        if (!inL && !inR) continue;
-        if (inL && x > 180 && y > 680) continue;                   // keep the parent's rock and its sky clear
-        const ex = (inL ? EL : ER)[RS.findIndex((q) => q.y >= y)] || [0, 0];
-        if (Math.abs(x - ex[0]) < 40 + 160 * depthK(y)) continue;    // and the water's edge, where the ledges are
-        items.push({ y, draw: () => H.pine(g, x, y, (22 + 640 * Math.pow(depthK(y), 1.5)) * R.range(.8, 1.2), ['#1b4a3a', '#235842', '#2c664c'], R, { sh: .6 }) });
-      }
-    }
-    // flowers along the water's edge and on the ledges: lupins, foxgloves, daisies, red berries
-    for (const [E, side] of [[EL, 1], [ER, -1]]) for (let i = 10; i < E.length; i += 4) {
-      const p = RS[i], k = depthK(p.y);
-      if (side > 0 && p.y > 720) continue;
-      if (p.y > 940 || R.chance(.35)) continue;
-      const x = E[i][0] - side * (10 + 50 * k), y = E[i][1] + 2, r = R.next();   // just back from the water
-      items.push({ y: y + .5, draw: () => {
-        if (r < .4) for (let j = 0; j < 3; j++) lupine(g, x + j * (6 + 14 * k), y, 20 + 110 * k, R);
-        else if (r < .65) H.daisy(g, x, y - (8 + 30 * k), .4 + 1.2 * k, R);
-        else for (let j = 0; j < 6; j++) cutp(g, H.circ(x + R.range(-1, 1) * (4 + 16 * k), y - R.range(2, 20) * (.4 + k), 1.5 + 4 * k), '#c4302c', { light: LT, sh: .5, blur: 1.5, dist: 1, bev: { width: .7 } });
+  const TANSY = ['#4e5a26', '#66722c', '#7e8a34', '#97a03e', '#acb44a'];
+  planes.push({ name: 'bankitems', z: 1079.5, sprites: [{ s: mk('bankitems', 380, 1180, 1.05, (g, R) => {
+    const items = [];
+    const stand = (cx, cy, sx, sy, n, hmin, hmax) => { for (let i = 0; i < n; i++) { const x = cx + R.range(-sx, sx), y = cy + R.range(-sy, sy); if (inRiver(g, x, y + 4)) continue; const h = R.range(hmin, hmax); items.push({ y, draw: () => H.pine(g, x, y, h, ['#1b4a3a', '#235842', '#2c664c'], R, { sh: .6 }) }); } };
+    stand(1250, 704, 190, 12, 16, 80, 170);                         // the mass the creek comes out from behind
+    stand(220, 700, 220, 18, 12, 90, 180);                          // behind the perch rock
+    stand(980, 696, 90, 8, 5, 50, 100);
+    stand(2080, 820, 220, 70, 12, 160, 330);                        // the right bank's wood, clear of the lake under the moon
+    for (const L of LEDGES) items.push({ y: L.y, draw: () => { drawLedge(g, L, R); for (let j = 0; j < R.int(1, 3); j++) H.pine(g, L.cx + R.range(-.4, .4) * L.w, L.y - L.d * .6, (40 + 360 * Math.pow(L.k, 1.4)) * R.range(.7, 1.1), ['#1b4a3a', '#235842', '#2c664c'], R, { sh: .6 }); } });
+    for (const [x, y, w, h] of [[1060, 772, 200, 100], [1380, 820, 220, 110], [1760, 958, 260, 150], [560, 708, 180, 90]]) if (!inRiver(g, x, y)) items.push({ y, draw: () => H.bush(g, x, y, w, h, R, TANSY) });
+    for (const [E, side] of [[EL, 1], [ER, -1]]) for (let i = 6; i < E.length; i += 5) {
+      const p = RS[i], k = depthK(p.y), x = E[i][0] + p.nx * side * (10 + 30 * k), y = E[i][1] + p.ny * side * (10 + 30 * k) + 4;
+      if (inRiver(g, x, y) || (x < 760 && y > 740)) continue;        // the perch rock and the kit's stone are there
+      const r = R.next();
+      items.push({ y, draw: () => {
+        if (r < .4) H.rock(g, x, y + 4, 24 + 120 * k, 14 + 60 * k, R);
+        else if (r < .68) for (let j = 0; j < 3; j++) lupine(g, x + j * (6 + 14 * k), y, 20 + 110 * k, R);
+        else if (r < .74) for (let j = 0; j < 5; j++) cutp(g, H.circ(x + R.range(-1, 1) * (4 + 16 * k), y - R.range(2, 20) * (.4 + k), 1.5 + 4 * k), '#c4302c', { light: LT, sh: .5, blur: 1.5, dist: 1, bev: { width: .7 } });
+        else for (let j = 0; j < 4; j++) H.fern(g, x, y, 20 + 110 * k, -Math.PI / 2 + R.range(-1.2, 1.2), R);
       } });
     }
     items.sort((a, b) => a.y - b.y);
     for (const it of items) it.draw();
-    // the water's edge on the right, near: rocks and bushes
-    for (let i = 8; i < ER.length; i += 8) {
-      const [x, y] = ER[i], k = depthK(y);
-      if (y > 930 || y < 740) continue;
-      const w = 40 + 140 * k;
-      if (R.chance(.75)) H.rock(g, x + w * .55, y + 6, w, 16 + 60 * k, R); else H.bush(g, x + w * .6, y + 4, w * .7, 20 + 60 * k, R);
-    }
   }) }] });
-  // two thin falls spilling off left-bank ledges into the creek (drawn live: the water moves)
-  const FALLS = LEDGES.filter((L) => L.side > 0 && L.k > .08 && L.k < .3).slice(0, 2).map((L, j) => ({ x: L.cx + L.w * (.12 + .18 * j), top: L.y - L.d * .4, bot: L.y + L.h + 4, w: 6 + 26 * L.k, k: L.k }));
+  // a thin fall spilling off the near ledge into the creek (drawn live: the water moves)
+  const FALLS = [{ x: LEDGES[0].cx - LEDGES[0].w * .38, top: LEDGES[0].y - LEDGES[0].d * .4, bot: 1012, w: 26, k: LEDGES[0].k }];
   planes.push({ name: 'falls', z: 1079.4, sortZ: 1079.4, draw(g, t) {
     for (const [j, f] of FALLS.entries()) {
       const R = new RNG('fall' + j), body = polyPath([[f.x - f.w / 2, f.top], [f.x + f.w / 2, f.top], [f.x + f.w * .62, f.bot], [f.x - f.w * .62, f.bot]]);
@@ -328,8 +305,8 @@ SCENES.creek = (Q) => {
     });
   }
   planes.push({ name: 'prock', z: 1000.5, sprites: [{ s: rockSprite('prock',
-    [[180, 1120], [210, 900], [252, PG + 8], [350, PG], [832, PG], [856, PG + 24], [882, 838], [860, 900], [886, 968], [840, 1050], [810, 1120]],
-    [[280, PG + 4], [330, PG - 52], [420, PG - 74], [520, PG - 50], [580, PG + 4]], PG, 301) }] });
+    [[-60, 1120], [-30, 900], [12, PG + 8], [110, PG], [690, PG], [712, PG + 24], [736, 838], [716, 900], [738, 968], [690, 1050], [660, 1120]],
+    [[100, PG + 4], [150, PG - 52], [240, PG - 74], [340, PG - 50], [400, PG + 4]], PG, 301) }] });
   const CHAR_P = { name: 'parent', z: 1000 };
   planes.push(CHAR_P);
   // the water again in front of the parent, only below its waterline round its paws, and the rings where they go in
@@ -348,8 +325,8 @@ SCENES.creek = (Q) => {
   }
   planes.push({ name: 'pdip', z: 1080, sortZ: 999.8, draw(g, t) { dipPatch(g, t, pawsOf(FRAME.pp, PG), WLP); } });
   planes.push({ name: 'kstone', z: 975, sprites: [{ s: rockSprite('kstone',
-    [[906, 1060], [916, 990], [932, KG + 8], [970, KG], [1088, KG], [1114, KG + 16], [1130, 1004], [1116, 1060]],
-    [[900, KG + 4], [918, KG - 34], [960, KG - 44], [1000, KG - 26], [1016, KG + 4]], KG, 311) }] });
+    [[676, 1060], [686, 990], [702, KG + 8], [740, KG], [858, KG], [884, KG + 16], [900, 1004], [886, 1060]],
+    [[670, KG + 4], [688, KG - 34], [730, KG - 44], [770, KG - 26], [786, KG + 4]], KG, 311) }] });
   const CHAR_K = { name: 'kit', z: 970 };
   planes.push(CHAR_K);
   // the splash: a crown of torn water, paper drops flying and falling, big rings
@@ -396,11 +373,11 @@ SCENES.creek = (Q) => {
   }, { shadow: { blur: 20 } }) }] });
   // growth round the perch rock's foot, so only its top and shoulder show, as paper-fox's perches do
   planes.push({ name: 'rockfoot', z: 840, sprites: [{ s: mk('rockfoot', 700, 1180, 1.1, (g, R) => {
-    for (let x = 120; x < 800; x += R.range(90, 150)) {
+    for (let x = 60; x < 600; x += R.range(90, 150)) {
       if (R.chance(.55)) H.bush(g, x, 1150, R.range(220, 330), R.range(170, 250), R);
       else for (let j = 0; j < 6; j++) H.fern(g, x, 1150, R.range(220, 320), -Math.PI / 2 + R.range(-1.1, 1.1), R, ['#24532f', '#2e6338', '#3a7342']);
     }
-    for (const [x, y] of [[300, 960], [560, 990], [740, 1010]]) H.bunchberry(g, x, y, 2.2, R);
+    for (const [x, y] of [[200, 960], [420, 990], [560, 1010]]) H.bunchberry(g, x, y, 2.2, R);
   }) }] });
   // bottom right: rocks standing in the near water with foam piled on their upstream side, skunk cabbage at the edge
   planes.push({ name: 'nearright', z: 760, sprites: [{ s: mk('nearright', 760, 1180, 1.1, (g, R) => {
@@ -431,9 +408,8 @@ SCENES.creek = (Q) => {
     CHAR_K.draw = (g) => kit.draw(g, 0, KG, { ...K, d: KX }, { scale: SC, light: LT, shadow: [-8, 4], edge: rim });
   }
   // meta for the transitions: where the parent's head is, the moon, the bright water, the horizon
-  const wpt = sample('s', .42);
   return { name: 'creek', END, planes, camera: cam, prepare, background: '#070b24', light: LT, shadowAlpha: .5,
     post: { bloom: .55, threshold: .62, vignette: .3, grain: .05, grade: { color: '#3c4c9a', amount: .1, mode: 'soft-light' } },
-    meta: { hero: [PX + 330 * SC, PG - 150 * SC], light: [MOON[0], MOON[1]], water: [wpt.x, wpt.y], horizon: VP[1] },
+    meta: { hero: [PX + 330 * SC, PG - 150 * SC], light: [MOON[0], MOON[1]], water: [MOON[0], LAKE.y + 14], horizon: HZ },
     parent, kit, parentState, kitState };
 };

@@ -31,15 +31,22 @@ Film px at camera rest (1920 x 1080). Fox = where its feet stand. Light = the ta
    fox faces it. Its gaze line, fox to light, rises from lower left to upper right at 15 to 35 degrees in every
    frame: the picture's main diagonal. The key light comes from there too (light vector x +.3 to +.8), so it lights
    the fox's face. (Only the canyon has a moon at the upper left, and the fox still looks right, at the star.)
-3. **A leading line into depth under the light.** Nine of ten have water (a stream, a river, a pool, waves) that
-   enters wide at the bottom and narrows back toward the light; the tenth has a path. The water carries the light's
-   reflection back down the line toward us. Rivers are ribbons along a spline, narrow far, wide near, their texture
-   growing with their width (`water-flow.js ribbon`, `warp`).
+3. **Water zigzags back in layers; nothing converges.** Nine of ten have water, but it does not run at a vanishing
+   point. In the night-lake poster the river crosses the bottom of the frame, disappears behind a mass of shrubs and
+   pines, and comes back higher up as a level band of lake; the far end of every stretch is hidden. Each layer
+   (flowers, rocks, shrubs, a forest mass, a rounded hill, the lake, the far shore, the mountains) is a soft, mostly
+   level band with rounded humps, and depth comes from those bands overlapping, getting smaller and hazier. The light
+   sits over the far water, not at the end of a line. (Robin, after creek draft 3: "you are making the vanishing point
+   too obvious.. you have all these sharp lines running towards it. i think in the original paper fox compositions
+   they were more subtle." He was right; draft 3 had straight ridges, rows of ledges and smooth river edges all
+   funnelling to one point.) Rivers are still ribbons along a spline (`water-flow.js ribbon`), but the spline
+   zigzags across the frame and its far end goes behind something.
 4. **Framing.** A tall trunk or pines on the left edge, cut off by the top, in eight of ten (the other two are
    enclosed by trunks or crystals all round). The biggest pieces in the picture, flowers, berries, crystals or
    mushrooms, sit in the bottom-left corner in all ten. The bottom right is rocks, foam or more flowers.
-5. **Scale gradient and diagonals.** The same kind of thing at many sizes, from the trunk at the edge to tiny pines on
-   far hills; banks, ledges and cliffs step back on diagonals toward the light. Only the far horizon runs flat.
+5. **Scale gradient and overlap.** The same kind of thing at many sizes, from the trunk at the edge to tiny pines on far
+   hills. Banks and ledges are irregular masses that overlap; hills are rounded humps. Only gentle diagonals; no rows
+   of things lined up toward a point.
 6. **Atmosphere.** Far layers lighter, bluer, lower in contrast; warmer near the light.
 7. **One gentle camera move per scene**, 8.5 s long, at rest at its middle. No side-scrolling; travel is the transitions.
 8. **One warm accent.** The fox is the only saturated warm thing besides the light, so it reads first in every frame.
@@ -69,7 +76,7 @@ from alternating open and enclosed, the camera move and the raccoons' size.
 |---|---|---|---|---|---|---|---|
 | 0 | The hollow, dusk | half enclosed: the cedar fills the left 40% | faces in the hollow at x 620, y 560, scale .95 | the evening star, upper right | the valley falling away right | the trunk, sprays across the top | push in |
 | 1 | Down the cedar | vertical | parent climbing down the trunk's diagonal, the kit above; .8 | the moon rising, upper right | the trunk itself, down to the creek glinting below right | branches | crane down |
-| 2 | The creek | open | parent on a perch rock, x 800, y 760; the kit on a stone in the river below; 1.05 | the moon, 1450, 205 | the creek, winding back to the moon | cedar at the left edge, ferns bottom left, rocks and foam bottom right | push in |
+| 2 | The creek | open | parent on a perch rock, x 500, y 760; the kit on a stone in the creek below; .9 | the moon over the lake, 1450, 205 | the creek zigzags out from behind a forest mass; the lake lies level under the moon | cedar at the left edge, ferns bottom left, rocks and foam bottom right | push in |
 | 3 | The garden | open, diagonal | walking the fence's diagonal; the kit drifts to the moth; .8 | the porch light, at the vanishing point | the fence and the vegetable rows converging on the light | apple tree left, cabbages bottom left | drift right |
 | 4 | Lost | enclosed, low | the kit alone, the smallest in the film, .6 | headlights sweeping in from the right | the deck posts and planks receding | the deck frames the top | slow creep in |
 | 5 | Found | enclosed | the kit in the pipe; the parent's mask at its mouth; the biggest in the film, 1.1 | the porch light behind the parent | the pipe's rings | the pipe mouth as a circle | pull back out of the pipe |
