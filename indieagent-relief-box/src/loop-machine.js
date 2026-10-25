@@ -35,7 +35,8 @@ const plen = (pts) => pts.reduce((a, p, i) => i ? a + Math.hypot(p[0] - pts[i - 
 // rim and a band at the throat. The pipe is a thick rolled tube that runs straight and turns square corners with a
 // small round fillet. DUCT is the left pipe: down from the throat, out, up past the lip, in, down into the mouth.
 export const RIM = { x: AXIS, y: 372, rx: 190, ry: 46 };
-const THROAT = { y: 642, rx: 26, ry: 6 }, SIDES = 8;
+// a hexagon (Robin: orange in the panels too, and six sides so the pipe's three colours go round it evenly)
+const THROAT = { y: 642, rx: 26, ry: 6 }, SIDES = 6;
 const FILLET = 34;
 // a polyline through waypoints whose corners are rounded with a fillet of radius rc and straight between
 function squarePath(way, rc = FILLET, step = 6) {
@@ -122,9 +123,10 @@ function drawBulge(ctx, s0, amp, clips) {
 const SPOUT = DUCT.path[DUCT.path.length - 1];
 
 // The funnel turns (Robin: "rotating the opposite direction the portal is... the panels alternating colours"): half a
-// turn every 12 s against the portal's whole turn, so its two-colour pattern comes round at the seam. ph is its turn.
+// turn every 12 s against the portal's whole turn; three panels are half the hexagon, so its three-colour pattern
+// comes round at the seam. ph is its turn.
 const funnelTurn = (t) => -TAU * 0.5 * t / LOOP;
-const FACET_COLS = [P.butter, P.aqua];
+const FACET_COLS = RING_COLS;   // mint, butter, orange, as the pipe; twice round the hexagon
 const ring = (cy, rx, ry, k, ph = 0) => { const a = (k + 0.5) / SIDES * TAU + ph; return [RIM.x + Math.cos(a) * rx, cy + Math.sin(a) * ry]; };
 const rimV = (k, ph) => ring(RIM.y, RIM.rx, RIM.ry, k, ph), thrV = (k, ph) => ring(THROAT.y, THROAT.rx, THROAT.ry, k, ph);
 // facet tone: the facet's outward direction in plan is the angle of its middle; light comes from the upper left and
@@ -254,7 +256,7 @@ function drawFunnelBack(g, ph) {
   const order = [...Array(SIDES).keys()].sort((a, b) => Math.sin((a + 1) / SIDES * TAU + ph) - Math.sin((b + 1) / SIDES * TAU + ph));
   for (const k of order) {
     if (Math.sin((k + 1) / SIDES * TAU + ph) < -0.5) continue;
-    clayForm(g, [rimV(k, ph), rimV(k + 1, ph), thrV(k + 1, ph), thrV(k, ph)], facetTone(k, FACET_COLS[k % 2], ph), { smooth: false, size: 60, sheen: 0.12, round: 0.35 });
+    clayForm(g, [rimV(k, ph), rimV(k + 1, ph), thrV(k + 1, ph), thrV(k, ph)], facetTone(k, FACET_COLS[k % 3], ph), { smooth: false, size: 60, sheen: 0.12, round: 0.35 });
   }
   // the throat band and a short octagonal neck down into the pipe
   // (rounded, Robin: the front of a short round collar, its top and bottom edges following the throat's ellipse)

@@ -2188,7 +2188,8 @@ const { glow } = __m["vendor/paper-fox/core/piece.js"];
 const { mix, shade, rgba } = __m["vendor/paper-fox/core/color.js"];
 const { PAL } = __m["src/kit.js"];
 const P = PAL, TAU = Math.PI * 2;
-const COLS = 96, DA = TAU / COLS, DPHI = DA * 0.86, ROWS = 26, PITCH = 0.26, FOCAL = 760;
+// DOWN rows run on below the horizon, so no bare shell shows above the hills (Robin: no gap in the hex tiles)
+const COLS = 96, DA = TAU / COLS, DPHI = DA * 0.86, ROWS = 26, DOWN = 6, PITCH = 0.26, FOCAL = 760;
 const CX = 960, CY = 540;
 
 // a direction on the dome (theta round, phi up) to authored screen coordinates, or null when behind the eye
@@ -2203,14 +2204,14 @@ function proj(theta, phi) {
 function addDome(S, loop) {
   const rng = new RNG('dome');
   // a little variation between cells that repeats every two columns, so the dome's two-column turn closes the loop
-  const tint = [...Array(2 * ROWS)].map(() => rng.range(-0.04, 0.04));
+  const tint = [...Array(2 * (ROWS + DOWN))].map(() => rng.range(-0.04, 0.04));
   S.add({ name: 'dome', z: 6000, render(ctx, t) {
     const turn = DA * 2 * t / loop;
     // the shell behind the cells
     ctx.fillStyle = mix(P.wall, P.pink, 0.18); ctx.fillRect(-600, -500, 3120, 2100);
     ctx.lineJoin = 'round';
-    for (let r = 0; r < ROWS; r++) {
-      const phi = -0.04 + r * DPHI, off = (r & 1) * DA / 2;
+    for (let r = 0; r < ROWS + DOWN; r++) {
+      const phi = -0.04 + (r - DOWN) * DPHI, off = (r & 1) * DA / 2;
       for (let c = 0; c < COLS; c++) {
         const th = c * DA + off + turn, rel = Math.atan2(Math.sin(th), Math.cos(th));
         if (Math.abs(rel) > 1.35) continue;
@@ -2225,7 +2226,7 @@ function addDome(S, loop) {
         // light from the lantern overhead, and a slow wave of light running round the dome
         // the wave is pinned to where a cell is on screen, not to the cell, so it too comes round each loop
         const wave = 0.5 + 0.5 * Math.sin(TAU * t / 4 - rel * 6 - r / 1.4);
-        const lit = 0.18 + 0.5 * Math.min(1, phi / 1.1) - 0.25 * Math.abs(rel) / 1.35 + 0.08 * wave + tint[r * 2 + (c & 1)];
+        const lit = 0.18 + 0.5 * Math.min(1, Math.max(-0.15, phi) / 1.1) - 0.25 * Math.abs(rel) / 1.35 + 0.08 * wave + tint[r * 2 + (c & 1)];
         const base = mix(mix(P.wallLight, P.blush, 0.35), '#fff6ea', Math.max(0, lit));
         // each cell an exact raised hexagon: a bevelled rim in the shell's tone, a flat top face set inside it, a
         // bright edge on the sides toward the lantern and a dark edge on the sides away from it
@@ -2494,7 +2495,7 @@ function addWorld(S) {
   const frng = new RNG('floaters');
   // the left half's floaters; each is drawn again reflected on the right
   const spots = [[180, 150, 2600, 'pendant'], [820, 130, 1900, 'tess'], [700, 560, 3000, 'octa'], [120, 560, 1500, 'ico'], [560, 640, 2800, 'chevron'],
-    [880, 520, 1500, 'tetra'], [-60, 300, 2000, 'cube'], [300, 380, 2400, 'star'], [640, 420, 1700, 'chevron']];
+    [880, 520, 1500, 'tetra'], [-60, 300, 2000, 'cube'], [300, 380, 2400, 'star']];
   const COLS = [P.mint, P.pink, P.butter, P.lilac, P.aqua];
   // Nothing floats still: each floater is a small mechanism whose parts collapse and expand along different
   // directions in turn. Parts are baked once and moved each frame; every rhythm divides the loop.
@@ -2544,7 +2545,15 @@ function addWorld(S) {
   const terrace = sp('terrace', { x: -500, y: 860, w: 1560, h: 560, res: 1.1 }, (g) => mounds(g, { x0: -500, x1: 1040, base: 1000, amp: 30, bottom: 1420, colors: [mix(P.pink, P.butter, 0.4), mix(P.blush, P.butter, 0.3)], fade: 0.05, seed: 4, trees: 0 }));
   addPair(S, 'terrace', 1080, terrace, { dx: 8, dy: 14, alpha: 0.38 });
 
-  return { island };
+  // a chevron fan anywhere (the island hangs a pair either side of its roots, loop.js): the same opening and folding,
+  // turned by rot, flip -1 for the mirror one
+  const chevronFan = (ctx, x, y, rot, t, ph, env, flip = 1) => {
+    const fan = W(t, 4, ph), open = Math.max(0, fan), shut = Math.max(0, -fan);
+    ctx.save(); ctx.translate(x, y); ctx.rotate(rot); ctx.scale(flip, 1);
+    drawSprites(ctx, chevs.map((c, k) => ({ s: c, x: (k - 1) * 14 * open, y: (k - 1) * 13 * (1 + 1.3 * open - shut * 0.95), rot: (k - 1) * 0.5 * open, sx: 1 + 0.45 * W(t, 6, ph + k / 3), sy: 1 })), fsh(env));
+    ctx.restore();
+  };
+  return { island, chevronFan };
 }
 
 // The near world in front of the machine: low mounds with coral curls and rosette bushes, then the lens plane.
@@ -2726,7 +2735,8 @@ const plen = (pts) => pts.reduce((a, p, i) => i ? a + Math.hypot(p[0] - pts[i - 
 // rim and a band at the throat. The pipe is a thick rolled tube that runs straight and turns square corners with a
 // small round fillet. DUCT is the left pipe: down from the throat, out, up past the lip, in, down into the mouth.
 const RIM = { x: AXIS, y: 372, rx: 190, ry: 46 };
-const THROAT = { y: 642, rx: 26, ry: 6 }, SIDES = 8;
+// a hexagon (Robin: orange in the panels too, and six sides so the pipe's three colours go round it evenly)
+const THROAT = { y: 642, rx: 26, ry: 6 }, SIDES = 6;
 const FILLET = 34;
 // a polyline through waypoints whose corners are rounded with a fillet of radius rc and straight between
 function squarePath(way, rc = FILLET, step = 6) {
@@ -2813,9 +2823,10 @@ function drawBulge(ctx, s0, amp, clips) {
 const SPOUT = DUCT.path[DUCT.path.length - 1];
 
 // The funnel turns (Robin: "rotating the opposite direction the portal is... the panels alternating colours"): half a
-// turn every 12 s against the portal's whole turn, so its two-colour pattern comes round at the seam. ph is its turn.
+// turn every 12 s against the portal's whole turn; three panels are half the hexagon, so its three-colour pattern
+// comes round at the seam. ph is its turn.
 const funnelTurn = (t) => -TAU * 0.5 * t / LOOP;
-const FACET_COLS = [P.butter, P.aqua];
+const FACET_COLS = RING_COLS;   // mint, butter, orange, as the pipe; twice round the hexagon
 const ring = (cy, rx, ry, k, ph = 0) => { const a = (k + 0.5) / SIDES * TAU + ph; return [RIM.x + Math.cos(a) * rx, cy + Math.sin(a) * ry]; };
 const rimV = (k, ph) => ring(RIM.y, RIM.rx, RIM.ry, k, ph), thrV = (k, ph) => ring(THROAT.y, THROAT.rx, THROAT.ry, k, ph);
 // facet tone: the facet's outward direction in plan is the angle of its middle; light comes from the upper left and
@@ -2945,7 +2956,7 @@ function drawFunnelBack(g, ph) {
   const order = [...Array(SIDES).keys()].sort((a, b) => Math.sin((a + 1) / SIDES * TAU + ph) - Math.sin((b + 1) / SIDES * TAU + ph));
   for (const k of order) {
     if (Math.sin((k + 1) / SIDES * TAU + ph) < -0.5) continue;
-    clayForm(g, [rimV(k, ph), rimV(k + 1, ph), thrV(k + 1, ph), thrV(k, ph)], facetTone(k, FACET_COLS[k % 2], ph), { smooth: false, size: 60, sheen: 0.12, round: 0.35 });
+    clayForm(g, [rimV(k, ph), rimV(k + 1, ph), thrV(k + 1, ph), thrV(k, ph)], facetTone(k, FACET_COLS[k % 3], ph), { smooth: false, size: 60, sheen: 0.12, round: 0.35 });
   }
   // the throat band and a short octagonal neck down into the pipe
   // (rounded, Robin: the front of a short round collar, its top and bottom edges following the throat's ellipse)
@@ -3720,6 +3731,11 @@ function scene() {
       const IX = -120, IY = 90;
       S.add({ name: 'island', z: 1500, shadow: { dx: 10, dy: 22, alpha: 0.32 }, anim: (t) => ({ y: 8 * cyc(t, 1, 0.55) }), render(ctx, t, env) { mirrored(ctx, () => {
         drawSprites(ctx, [{ s: world.island, ax: ISLAND.x, ay: ISLAND.y, x: ISLAND.x + IX, y: ISLAND.y + IY }], env.shadow);
+        // a chevron fan either side of the island's stepped roots, each turned to follow the slope of the roots and
+        // fanning out away from them, one the mirror of the other (Robin: "on the other side of the floating
+        // mountain... and the mirror of it... arc with the contour of the mountain base")
+        const cx = ISLAND.x + IX, cy = ISLAND.y + IY, slope = Math.atan2(96, 130);
+        for (const sd of [-1, 1]) world.chevronFan(ctx, cx + sd * 112, cy + 92, -sd * slope, t, 0.31, env, sd);
         const ground = ISLAND.y - 4 + IY, x = 300, hip = ground - 14 * FS, kinds = ['star', 'octa'];
         singerBurst(ctx, t, 3, x, 1, hip);
         drawFigure(ctx, seer, singerPose(t, 3, x, 1, hip, [[x + 16, ground + 4], [x + 22, ground + 6]], kinds, 1.6), env);
