@@ -44,7 +44,7 @@ proof:
     - indieagent-diagram-plate/out/fifty-three-nights_d1_still_1920x1080.png
     - indieagent-diagram-plate/out/diagram-plate.mp4
   pr:
-    - rheos/secondunit-videos#321
+    - rheos/secondunit-videos#324
   youtube: []
 verdict: null
 related:
