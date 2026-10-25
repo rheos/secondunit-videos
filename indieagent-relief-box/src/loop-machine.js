@@ -59,7 +59,8 @@ const DUCT_LEN = plen(DUCT.path);
 // arc length at each point of the pipe, and the colour rings along it (mint is the pipe itself; butter and pink
 // rings are laid over it, every third ring each)
 const ACC = DUCT.path.reduce((a, p, i) => { a.push(i ? a[i - 1] + Math.hypot(p[0] - DUCT.path[i - 1][0], p[1] - DUCT.path[i - 1][1]) : 0); return a; }, []);
-const RING = 42, RING_COLS = [P.mint, P.butter, P.pink];
+// the pipe's rings: mint, butter and an apricot orange (Robin chose orange for the pipe rings only, 2026-10-25)
+const RING = 42, RING_COLS = [P.mint, P.butter, '#f6b27e'];
 function ringClip(c, w) {
   const clip = new Path2D();
   for (let r = c, s0 = r * RING; s0 < DUCT_LEN - 8; r += 3, s0 = r * RING) {
