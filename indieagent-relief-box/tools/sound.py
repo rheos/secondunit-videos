@@ -5,8 +5,9 @@
 Robin, 2026-10-25: "ambient glitchy and ethereal noises with a strange kind of harmony in what sounds like the
 bellows of an accordion or harmonium". So the bed is a reed organ: every note two slightly mistuned reeds that beat
 against each other (the accordion's shimmer), voiced toward a nasal reed tone; each chord swells and fades like a
-push and pull of the bellows, with air hissing through on every change of direction. The harmony is four bright,
-airy major-seventh-sharp-eleven chords sliding in parallel by odd steps, one per 3 s. Around it: glitch stutters
+slow push and pull of the bellows, with air hissing through as the bellows turn. The harmony is four bright,
+airy major-seventh-sharp-eleven chords sliding in parallel by odd steps, one per 3 s, changing legato inside two
+long breaths of the bellows per loop. Around it: glitch stutters
 cut from the organ itself, and the events the page reports (tools/cues.mjs), each panned to where it happens.
 
 The 12 s loop is seamless by construction: every oscillator runs a whole number of cycles in the loop (frequencies
@@ -109,19 +110,31 @@ CHORDS = [
 BAR = LOOP / len(CHORDS)
 
 
-def bellows(i):
-    """the swell of chord i: in over 0.7 s, a slight push mid-bar, out across the change (wrapping round)"""
-    t = (T - i * BAR) % LOOP
-    up = np.clip(t / 0.7, 0, 1) ** 1.5
-    down = np.clip((BAR + 0.35 - t) / 0.7, 0, 1)
-    swell = 1 + 0.12 * np.sin(np.pi * np.clip(t / BAR, 0, 1))
-    return up * down * swell * (t < BAR + 0.35)
+BREATH = LOOP / 2      # two long breaths of the bellows per loop (Robin: longer breaths)
+
+
+def breath(k):
+    """breath k: drawn in slowly over 2.4 s, swelling a little through the middle, let out slowly into the next"""
+    t = (T - k * BREATH) % LOOP
+    rise = 0.5 - 0.5 * np.cos(np.pi * np.clip(t / 2.4, 0, 1))
+    fall = 0.5 + 0.5 * np.cos(np.pi * np.clip((t - (BREATH - 1.2)) / 2.4, 0, 1))
+    swell = 1 + 0.15 * np.sin(np.pi * np.clip(t / (BREATH + 1.2), 0, 1))
+    return rise * fall * swell * (t < BREATH + 1.2)
+
+
+def chord_gate(i, xf=0.6):
+    """chord i sounds through its bar, crossfading legato into the next (raised cosine, wrapping round)"""
+    t = (T - i * BAR + xf / 2) % LOOP
+    up = 0.5 - 0.5 * np.cos(np.pi * np.clip(t / xf, 0, 1))
+    down = 0.5 + 0.5 * np.cos(np.pi * np.clip((t - BAR) / xf, 0, 1))
+    return up * down * (t < BAR + xf)
 
 
 def organ():
     out = np.zeros((N, 2))
+    wind = breath(0) + breath(1)
     for i, chord in enumerate(CHORDS):
-        b = bellows(i)
+        b = chord_gate(i) * wind
         for j, m in enumerate(chord):
             f = midi(m)
             # two reeds a few hertz apart: the beating shimmer of an accordion's musette
@@ -132,9 +145,9 @@ def organ():
             out[:, 0] += l * b * g
             out[:, 1] += r * b * g
     out = cfilter(out, lo=70, hi=5200)
-    # air through the bellows: breathy noise that rushes at each change of direction
+    # air through the bellows: breathy noise that rushes as the bellows turn, between the two breaths
     air = cfilter(RNG.standard_normal((N, 2)), lo=900, hi=5000)
-    rush = sum(np.exp(-(((T - i * BAR + LOOP / 2) % LOOP - LOOP / 2) / 0.18) ** 2) for i in range(len(CHORDS)))
+    rush = sum(np.exp(-(((T - k * BREATH - BREATH + 0.2 + LOOP / 2) % LOOP - LOOP / 2) / 0.45) ** 2) for k in range(2))
     out += air * (0.05 + 0.35 * rush)[:, None] * np.abs(out).mean() / (np.abs(air).mean() + 1e-9) * 0.25
     return out / np.abs(out).max()
 
