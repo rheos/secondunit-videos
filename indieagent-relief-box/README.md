@@ -106,3 +106,10 @@ turns square corners with small round fillets (`squarePath`), with banded joints
 solids circulate instead of dotted beads. The dotted discs and balls are gone; floating geometry is pendants,
 chevrons, turning polyhedra and small tesseracts, and a large tesseract (`drawTesseract` in `src/loop-shapes.js`:
 sixteen corners turned in the XW and YZ planes, seen in perspective out of w) turns once a loop in the sky.
+
+Draft 4 (Robin's notes on draft 3): no raised ridges on the pipe; it carries smooth rings of alternating colour
+(mint, butter, pink; the whole pipe shaded once per colour and clipped to that colour's rings). The casters work
+like spell-casters: the leading hand traces a precise sigil of light in the air (a circle, a ring of twelve ticks,
+then the solid's figure: triangle, pentagram, hexagram or diamond with an inner circle) while the other hand turns
+small steady circles at the chest; both hands push in, the sigil spins down to its centre, the solid forms there
+and is released (`castPose`, `drawSigil`, `castSolids` in `src/loop.js`).
