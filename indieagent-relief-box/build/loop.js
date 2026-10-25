@@ -2848,24 +2848,26 @@ function ringClip(c, w, path = DUCT.path) {
 // left pipe drawn twice, once mirrored, so their corners overlapped on the centre line in a seam. The junction is
 // drawn once, unmirrored, over both: one straight crossbar running into both branches, the stem coming down into it
 // with a rounded end, and the colour rings carried across by arc length along the pipe, the same on both sides.
-const FORK = { half: 150, keep: 112, y: 800 };
+const FORK = { half: 150, keep: 112, y: 800, out: 266 };
 const arcAt = (x, y) => { let b = 0, bd = Infinity; DUCT.path.forEach((p, i) => { const d = (p[0] - x) ** 2 + (p[1] - y) ** 2; if (d < bd) { bd = d; b = i; } }); return ACC[b]; };
 // the colour of a ring at arc length s (mint, butter, pink in turn); the fork's rings: across the bar by the arc
 // length of the matching point on the left pipe (so both sides agree), down the stem by its height
 const ringOf = (sArc) => Math.min(RINGS_N - 1, Math.floor(sArc / RING)) % 3;
 // sc: how much of its width the turning frame shows (the crossbar narrows as the frame turns edge-on)
-const barClip = (c, w, sc = 1) => { const p = new Path2D(), a = Math.max(0.02, Math.abs(sc)); for (let x = AXIS - FORK.keep * a; x < AXIS + FORK.keep * a; x += 2) if (ringOf(arcAt(AXIS - Math.abs(x + 1 - AXIS) / a, FORK.y)) === c) p.rect(x, FORK.y - w - 8, 2.2, 2 * w + 16); return p; };
+const barClip = (c, w, sc = 1) => { const p = new Path2D(), a = Math.max(0.02, Math.abs(sc)), h = FORK.out * a + w + 4; for (let x = AXIS - h; x < AXIS + h; x += 2) if (ringOf(arcAt(AXIS - Math.min(FORK.out, Math.abs(x + 1 - AXIS) / a), FORK.y)) === c) p.rect(x, FORK.y - w - 8, 2.2, 2 * w + 16); return p; };
 const stemClip = (c, w) => { const p = new Path2D(); for (let y = 640; y < FORK.y + w + 2; y += 2) if (ringOf(Math.min(y, FORK.y) - 640) === c) p.rect(AXIS - w - 8, y, 2 * w + 16, 2.2); return p; };
 // the fork's box: inside it a passing bulge takes the fork's rings, outside the pipe's own
-const forkBox = (sc = 1) => { const h = Math.max(42, FORK.keep * Math.abs(sc)); return [AXIS - h, 630, 2 * h, FORK.y + 60 - 630]; };
+// where each upright starts, just above its bottom corner: below it the stem and the crossbar stand for the pipe
+const CORNER_END = arcAt(AXIS - FORK.out, FORK.y - FILLET - 2);
+const forkBox = (sc = 1) => { const h = Math.max(42, FORK.out * Math.abs(sc) + DUCT.w + 4); return [AXIS - h, 630, 2 * h, FORK.y + 60 - 630]; };
 // a stretch of pipe swollen around s0: the same rolled tube, wider in a smooth bump, in the same colour rings
 const BULGE = { sigma: 17, amp: 0.45 };
-function drawBulge(ctx, s0, amp, clips, path = DUCT.path, sc = 1) {
+function drawBulge(ctx, s0, amp, clips, path = DUCT.path, sc = 1, acc = ACC) {
   // drawn over a long stretch, but only the swollen middle is let through, so the cut ends of the stretch (where its
   // shading turns at the cut) never show; at the clip's edge the swell has already melted back into the pipe
   const span = BULGE.sigma * 5, keep = BULGE.sigma * 2.4, seg = [], ws = [], mid = [];
   path.forEach((p, i) => {
-    const d = ACC[i] - s0;
+    const d = acc[i] - s0;
     if (Math.abs(d) <= span) { seg.push(p); ws.push(DUCT.w * (1 + BULGE.amp * amp * Math.exp(-((d / BULGE.sigma) ** 2)))); }
     if (Math.abs(d) <= keep) mid.push(p);
   });
@@ -2911,13 +2913,15 @@ function octAt(cy, rx, ry, th, ph) {
 // the collar's half from angle th0 to th1 (far half: PI..2PI, the top of the ellipse; near half: 0..PI)
 const collar = (th0, th1, ph) => { const o = [], i = []; for (let q = 0; q <= 32; q++) { const th = lerp(th0, th1, q / 32); o.push(octAt(RIM.y, RIM.rx * 1.07, RIM.ry * 1.07, th, ph)); i.push(octAt(RIM.y, RIM.rx * 0.93, RIM.ry * 0.93, th, ph)); } return [...o, ...i.reverse()]; };
 
-// one pipe along its (turned) path, drawn live
-function drawPipe(g, path = DUCT.path) {
+// one pipe along its (turned) path, drawn live; from: arc length to start at (the front pipe starts below the
+// funnel's throat collar, so it never covers it; the stem's top is drawn behind the funnel)
+function drawPipe(g, full = DUCT.path, from = 0) {
+  const path = from > 0 ? full.filter((_, i) => ACC[i] >= from) : full;
   // flat ends: the top one runs into the fork's stem, the bottom one under the egg-laying tip
   tube(g, path, DUCT.w, P.mint, { caps: false });
   // rings of colour along the pipe: the whole pipe is shaded once per colour and clipped to that colour's rings, so
   // the shading runs smoothly through every ring
-  for (let c = 1; c < 3; c++) { g.save(); g.clip(ringClip(c, DUCT.w + 6, path)); tube(g, path, DUCT.w, RING_COLS[c], { shadow: false, caps: false }); g.restore(); }
+  for (let c = 1; c < 3; c++) { g.save(); g.clip(ringClip(c, DUCT.w + 6, full)); tube(g, path, DUCT.w, RING_COLS[c], { shadow: false, caps: false }); g.restore(); }
 }
 
 // The pipe ends (Robin: "not really fleshy... more like a rubber hose with a bulge of water passing through with no
@@ -3009,21 +3013,31 @@ function drawSplash(ctx, x, y, u, n) {
   }
 }
 
-function drawFork(g, sc = 1) {
-  const Y = FORK.y, w = DUCT.w, bar = [], stem = [], a = Math.abs(sc);
-  for (let x = AXIS - FORK.half; x <= AXIS + FORK.half + 0.1; x += 4) bar.push([AXIS + (x - AXIS) * a, Y]);
+// part: 'stem' (the whole stem, drawn before the funnel so its collar covers the top), 'bar' (the crossbar and the
+// stem's lower part over it, drawn after the pipes)
+function drawFork(g, sc = 1, part = 'all') {
+  const Y = FORK.y, w = DUCT.w, bar = [], stem = [], a = Math.abs(sc), half = Math.max(1, FORK.out * a);
+  for (let k = 0; k <= 32; k++) bar.push([AXIS - half + 2 * half * k / 32, Y]);
   for (let y = 640; y <= Y + 0.1; y += 4) stem.push([AXIS, y]);
-  // the crossbar: drawn longer than it shows and cut to the middle, so its cut ends (where tube shading turns) never
-  // show; it narrows to nothing as the frame turns edge-on
-  if (a > 0.04) {
-    const win = new Path2D(); win.rect(AXIS - FORK.keep * a, Y - w - 10, 2 * FORK.keep * a, 2 * w + 20);
-    g.save(); g.clip(win);
-    tube(g, bar, w, P.mint, { caps: false, shadow: false });
-    for (let c = 1; c < 3; c++) { g.save(); g.clip(barClip(c, w, sc)); tube(g, bar, w, RING_COLS[c], { caps: false, shadow: false }); g.restore(); }
-    g.restore();
+  // the crossbar: one straight tube out to both uprights, its rounded ends making the elbows; it shortens as the
+  // frame turns edge-on (straight, so nothing has to bend tighter than the pipe is thick)
+  if (part !== 'stem') {
+    tube(g, bar, w, P.mint, { shadow: false });
+    for (let c = 1; c < 3; c++) { g.save(); g.clip(barClip(c, w, sc)); tube(g, bar, w, RING_COLS[c], { shadow: false }); g.restore(); }
   }
+  g.save();
+  if (part === 'bar') { const low = new Path2D(); low.rect(AXIS - 80, THROAT.y + 60, 160, 400); g.clip(low); }
   tube(g, stem, w, P.mint, { shadow: false });
   for (let c = 1; c < 3; c++) { g.save(); g.clip(stemClip(c, w)); tube(g, stem, w, RING_COLS[c], { shadow: false }); g.restore(); }
+  g.restore();
+}
+// the throat band: the front of a short round collar, its top and bottom edges following the throat's ellipse (Robin:
+// rounded). Drawn with the funnel and again over the front pipe, whose path starts up at the throat
+function drawCollar(g) {
+  const band = [];
+  for (let q = 0; q <= 24; q++) { const th = Math.PI * (1 - q / 24); band.push([RIM.x + Math.cos(th) * 31, THROAT.y - 4 + Math.sin(th) * 7]); }
+  for (let q = 0; q <= 24; q++) { const th = Math.PI * q / 24; band.push([RIM.x + Math.cos(th) * 29, THROAT.y + 15 + Math.sin(th) * 7]); }
+  clayForm(g, band, P.pink, { smooth: true, size: 22, sheen: 0.28, round: 1 });
 }
 function drawFunnelBack(g, ph) {
   // the funnel's facets, each a flat cut of clay in alternating colours, far ones first so the near ones cover them
@@ -3032,12 +3046,7 @@ function drawFunnelBack(g, ph) {
     if (Math.sin((k + 1) / SIDES * TAU + ph) < -0.5) continue;
     clayForm(g, [rimV(k, ph), rimV(k + 1, ph), thrV(k + 1, ph), thrV(k, ph)], facetTone(k, FACET_COLS[k % 3], ph), { smooth: false, size: 60, sheen: 0.12, round: 0.35 });
   }
-  // the throat band and a short octagonal neck down into the pipe
-  // (rounded, Robin: the front of a short round collar, its top and bottom edges following the throat's ellipse)
-  const band = [];
-  for (let q = 0; q <= 24; q++) { const th = Math.PI * (1 - q / 24); band.push([RIM.x + Math.cos(th) * 31, THROAT.y - 4 + Math.sin(th) * 7]); }
-  for (let q = 0; q <= 24; q++) { const th = Math.PI * q / 24; band.push([RIM.x + Math.cos(th) * 29, THROAT.y + 15 + Math.sin(th) * 7]); }
-  clayForm(g, band, P.pink, { smooth: true, size: 22, sheen: 0.28, round: 1 });
+  drawCollar(g);
   // the inside, seen through the mouth: the far facets, lit from inside, in deepening lilac
   const mouth = [...Array(SIDES)].map((_, k) => ring(RIM.y, RIM.rx * 0.93, RIM.ry * 0.93, k, ph));
   g.fillStyle = radial(g, RIM.x, RIM.y + 14, 4, RIM.rx * 0.95, [shade(P.lilac, -0.55), shade(P.lilac, -0.3), mix(P.lilac, '#ffe9d0', 0.25)]);
@@ -3184,9 +3193,24 @@ function addMachines(S) {
     const th = frameTurn(t), cf = Math.cos(th), sf = Math.sin(th);
     const pipes = [framePipe(cf), framePipe(-cf)], backI = sf >= 0 ? 0 : 1, frontI = 1 - backI;
     const spoutX = (i) => AXIS + (SPOUT[0] - AXIS) * pipes[i].sc;
-    // a bulge low in the pipe (in the stem or the crossbar) is drawn after the fork, with the front pipe
-    const LOW = 330;
-    const bulgesOf = (i, low) => { for (const [s0, amp, right] of swell) if (amp > 0.01 && right === i && (s0 < LOW) === low) drawBulge(ctx, s0, amp, pipes[i].clips, pipes[i].path, pipes[i].sc); };
+    // a bulge low in the pipe (in the stem or the crossbar) is drawn after the fork, along the stem and the straight
+    // crossbar toward its own upright; higher up, along the pipe
+    const LOW = CORNER_END;
+    const lowPath = (i) => {
+      const sc = pipes[i].sc, end = AXIS + (FORK.out * sc) * -1, path = squarePath([[AXIS, 640], [AXIS, FORK.y], [end, FORK.y], [end, FORK.y - FILLET - 2]], 16, 4);
+      const acc = path.reduce((m, p, k) => { m.push(k ? m[k - 1] + Math.hypot(p[0] - path[k - 1][0], p[1] - path[k - 1][1]) : 0); return m; }, []);
+      const L = acc[acc.length - 1] || 1;
+      return { path, acc: acc.map((v) => v / L * CORNER_END) };
+    };
+    const bulgesOf = (i, low) => { for (const [s0, amp, right] of swell) if (amp > 0.01 && right === i && (s0 < LOW) === low) {
+      if (low) { const lp = lowPath(i); drawBulge(ctx, s0, amp, pipes[i].clips, lp.path, pipes[i].sc, lp.acc); }
+      else drawBulge(ctx, s0, amp, pipes[i].clips, pipes[i].path, pipes[i].sc);
+    } };
+    // each upright drawn from just above its bottom corner, its cut end tucked under the crossbar's band
+    const upright = (i) => {
+      const h = FORK.out * Math.abs(cf) + DUCT.w + 6, win = new Path2D(); win.rect(-4000, -4000, 9000, 9000); win.rect(AXIS - h, FORK.y - DUCT.w - 1, 2 * h, 60);
+      ctx.save(); ctx.clip(win, 'evenodd'); drawPipe(ctx, pipes[i].path, CORNER_END - 14); ctx.restore();
+    };
     const hoseOf = (i) => {
       let open = 0, m = 0; const near = [];
       for (let n = i; n < 8; n += 2) {
@@ -3205,7 +3229,8 @@ function addMachines(S) {
       const u = mod(t + n * 0.75, 6);
       if (u >= 2.2 && u < 5.4) { const s0 = DUCT_LEN * (u - 2.2) / 3.2; swell.push([s0, smoothstep(30, 70, s0), n % 2]); }   // odd ones take the right pipe
     }
-    drawPipe(ctx, pipes[backI].path);
+    upright(backI);
+    drawFork(ctx, cf, 'stem');
     bulgesOf(backI, false);
     hoseOf(backI);
     const ph = funnelTurn(t);
@@ -3243,8 +3268,13 @@ function addMachines(S) {
       ctx.restore(); }
     drawFunnelFront(ctx, ph);
     // the front pipe, the fork over both pipes' meeting, the low bulges of both, the front pipe's bulges and hose end
-    drawPipe(ctx, pipes[frontI].path);
-    drawFork(ctx, cf);
+    // the fork's crossbar and the stem's lower part, then the front pipe on top. The fork stands for that pipe's stem,
+    // corner and crossbar, so the front pipe is drawn only from where the crossbar ends, its cut end tucked under it
+    drawFork(ctx, cf, 'bar');
+    upright(frontI);
+    // the collar back over the front pipe's top (except when the frame is near edge-on and that pipe's upright run
+    // really does pass in front of it)
+    if (Math.abs(cf) > 0.22) drawCollar(ctx);
     bulgesOf(0, true); bulgesOf(1, true);
     bulgesOf(frontI, false);
     hoseOf(frontI);
