@@ -14,7 +14,7 @@ import { mix, shade, rgba } from '../vendor/paper-fox/core/color.js';
 import { drawSprites } from '../vendor/paper-fox/core/sprite.js';
 import { along } from '../vendor/paper-fox/core/geom.js';
 import { lerp, smoothstep, E } from '../vendor/paper-fox/core/ease.js';
-import { PAL, CLAY_MAT, CLAY_EDGE, clayForm, tube, steps, dot, chaikin } from './kit.js';
+import { PAL, CLAY_MAT, CLAY_EDGE, clayForm, tube, tubeOutline, steps, dot } from './kit.js';
 import { LOOP, cyc } from './loop-world.js';
 import { drawSolid } from './loop-shapes.js';
 
@@ -59,9 +59,20 @@ const facetTone = (k, base) => { const a = (k + 1) / SIDES * TAU, lit = -Math.co
 function drawFunnelBack(g) {
   // the pipe first: it passes behind the funnel on its way round
   tube(g, DUCT.path, DUCT.w, P.mint);
-  for (let s = 40; s < DUCT_LEN - 30; s += 46) {               // banded joints along the pipe, square to its run
-    const { p, ang } = along(DUCT.path, s / DUCT_LEN), n = [-Math.sin(ang), Math.cos(ang)], t = [Math.cos(ang), Math.sin(ang)], w = DUCT.w + 3;
-    clayForm(g, [[p[0] + n[0] * w - t[0] * 4, p[1] + n[1] * w - t[1] * 4], [p[0] + n[0] * w + t[0] * 4, p[1] + n[1] * w + t[1] * 4], [p[0] - n[0] * w + t[0] * 4, p[1] - n[1] * w + t[1] * 4], [p[0] - n[0] * w - t[0] * 4, p[1] - n[1] * w - t[1] * 4]], shade(P.mint, 0.1), { smooth: false, size: 8, sheen: 0.15 });
+  // rings of colour along the pipe, mint, butter and pink in turn: the whole pipe is shaded once per colour and
+  // clipped to that colour's rings, so the shading runs smoothly through every ring
+  const acc = [0];
+  for (let i = 1; i < DUCT.path.length; i++) acc.push(acc[i - 1] + Math.hypot(DUCT.path[i][0] - DUCT.path[i - 1][0], DUCT.path[i][1] - DUCT.path[i - 1][1]));
+  const RING = 42, RING_COLS = [P.mint, P.butter, P.pink];
+  for (let c = 1; c < 3; c++) {
+    const clip = new Path2D();
+    for (let r = c, s0 = r * RING; s0 < DUCT_LEN - 8; r += 3, s0 = r * RING) {
+      const seg = DUCT.path.filter((_, i) => acc[i] >= s0 - 0.01 && acc[i] <= Math.min(DUCT_LEN, s0 + RING) + 0.01);
+      if (seg.length < 2) continue;
+      const o = tubeOutline(seg, DUCT.w + 6, { caps: false });
+      clip.moveTo(o[0][0], o[0][1]); for (const q of o.slice(1)) clip.lineTo(q[0], q[1]); clip.closePath();
+    }
+    g.save(); g.clip(clip); tube(g, DUCT.path, DUCT.w, RING_COLS[c], { shadow: false }); g.restore();
   }
   // the spout: a square collar at the pipe's end
   clayForm(g, [[SPOUT[0] - 30, SPOUT[1] - 6], [SPOUT[0] + 30, SPOUT[1] - 6], [SPOUT[0] + 26, SPOUT[1] + 10], [SPOUT[0] - 26, SPOUT[1] + 10]], shade(P.mint, 0.12), { smooth: false, size: 14, sheen: 0.2 });
@@ -123,7 +134,7 @@ export function addMachines(S) {
   const sp = (name, box, draw, o = {}) => S.sprite({ name, ...box, res: o.res ?? 1.25, mat: CLAY_MAT, edge: CLAY_EDGE, shadow: { blur: o.blur ?? 18 }, draw });
   const back = sp('funnel', { x: 640, y: 160, w: 660, h: 700 }, drawFunnelBack, { blur: 22 });
   const front = sp('funnel-lip', { x: 670, y: 310, w: 420, h: 130 }, drawFunnelFront, { blur: 10 });
-  const lump = sp('lump', { x: -26, y: -26, w: 52, h: 52 }, (g) => clayForm(g, circle(0, 0, 20, 32), shade(P.mint, 0.06), { sheen: 0.3 }), { blur: 6 });
+  const lump = sp('lump', { x: -26, y: -26, w: 52, h: 52 }, (g) => clayForm(g, circle(0, 0, 20, 32), P.bone, { sheen: 0.3 }), { blur: 6 });
   const consoleS = sp('console', { x: 470, y: 760, w: 430, h: 240 }, drawConsole);
   const instr = sp('instrument', { x: 1390, y: 780, w: 160, h: 220 }, drawInstrumentBase);
 
