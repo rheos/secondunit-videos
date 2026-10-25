@@ -2111,7 +2111,8 @@ function proj(theta, phi) {
 // loop: the film's loop length in seconds (passed in: the world module imports this one)
 function addDome(S, loop) {
   const rng = new RNG('dome');
-  const tint = [...Array(COLS * ROWS)].map(() => rng.range(-0.04, 0.04));
+  // a little variation between cells that repeats every two columns, so the dome's two-column turn closes the loop
+  const tint = [...Array(2 * ROWS)].map(() => rng.range(-0.04, 0.04));
   S.add({ name: 'dome', z: 6000, render(ctx, t) {
     const turn = DA * 2 * t / loop;
     // the shell behind the cells
@@ -2131,8 +2132,9 @@ function addDome(S, loop) {
         }
         if (!ok) continue;
         // light from the lantern overhead, and a slow wave of light running round the dome
-        const wave = 0.5 + 0.5 * Math.sin(TAU * (t / 4 - c / 12 - r / 9));
-        const lit = 0.18 + 0.5 * Math.min(1, phi / 1.1) - 0.25 * Math.abs(rel) / 1.35 + 0.08 * wave + tint[r * COLS + c];
+        // the wave is pinned to where a cell is on screen, not to the cell, so it too comes round each loop
+        const wave = 0.5 + 0.5 * Math.sin(TAU * t / 4 - rel * 6 - r / 1.4);
+        const lit = 0.18 + 0.5 * Math.min(1, phi / 1.1) - 0.25 * Math.abs(rel) / 1.35 + 0.08 * wave + tint[r * 2 + (c & 1)];
         const base = mix(mix(P.wallLight, P.blush, 0.35), '#fff6ea', Math.max(0, lit));
         ctx.beginPath(); pts.forEach(([x, y], i) => (i ? ctx.lineTo(x, y) : ctx.moveTo(x, y))); ctx.closePath();
         ctx.fillStyle = base; ctx.fill();
@@ -2583,7 +2585,7 @@ function addMachines(S) {
       for (let k = 0; k < 4; k++) {                          // zigzag rings shrinking toward the throat, turning
         const kk = mod(k + t / 1.5, 4) / 4, rx = RIM.rx * (0.9 - 0.75 * kk), ry = RIM.ry * (0.9 - 0.75 * kk), n = 40;
         g.beginPath();
-        for (let i = 0; i <= n; i++) { const a = i / n * TAU + t * 0.5, z = i % 2 ? 0.86 : 1; g.lineTo(RIM.x + Math.cos(a) * rx * z, RIM.y + 6 + Math.sin(a) * ry * z); }
+        for (let i = 0; i <= n; i++) { const a = i / n * TAU + TAU * t / LOOP, z = i % 2 ? 0.86 : 1; g.lineTo(RIM.x + Math.cos(a) * rx * z, RIM.y + 6 + Math.sin(a) * ry * z); }
         g.strokeStyle = [MK.magenta, MK.cyan, MK.yellow, MK.lime][k]; g.lineWidth = 1.5; g.stroke();
       }
       paintBurst(g, RIM.x, RIM.y + 8, 14 + 2 * Math.sin(TAU * t / 0.75), 12, TAU * t / 6);

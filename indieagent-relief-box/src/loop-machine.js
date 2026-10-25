@@ -180,7 +180,7 @@ export function addMachines(S) {
       for (let k = 0; k < 4; k++) {                          // zigzag rings shrinking toward the throat, turning
         const kk = mod(k + t / 1.5, 4) / 4, rx = RIM.rx * (0.9 - 0.75 * kk), ry = RIM.ry * (0.9 - 0.75 * kk), n = 40;
         g.beginPath();
-        for (let i = 0; i <= n; i++) { const a = i / n * TAU + t * 0.5, z = i % 2 ? 0.86 : 1; g.lineTo(RIM.x + Math.cos(a) * rx * z, RIM.y + 6 + Math.sin(a) * ry * z); }
+        for (let i = 0; i <= n; i++) { const a = i / n * TAU + TAU * t / LOOP, z = i % 2 ? 0.86 : 1; g.lineTo(RIM.x + Math.cos(a) * rx * z, RIM.y + 6 + Math.sin(a) * ry * z); }
         g.strokeStyle = [MK.magenta, MK.cyan, MK.yellow, MK.lime][k]; g.lineWidth = 1.5; g.stroke();
       }
       paintBurst(g, RIM.x, RIM.y + 8, 14 + 2 * Math.sin(TAU * t / 0.75), 12, TAU * t / 6);

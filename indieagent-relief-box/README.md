@@ -117,3 +117,13 @@ and is released (`castPose`, `drawSigil`, `castSolids` in `src/loop.js`).
 Draft 5 (Robin, on draft 4): no balls seen in the pipe; the pipe itself swells in a bulge that travels along it.
 `drawBulge` in `src/loop-machine.js` redraws a stretch of the pipe each frame with a gaussian swell in its width,
 in the same colour rings and at the pipe's own shading scale, clipped to the swollen middle so its ends never show.
+
+Draft 6 (Robin's choices after the research in `RESEARCH-machine-elves.md`; the loop is his memory of the DMT
+machine-elf space): the world closes into a turning honeycomb dome (`src/loop-dome.js`) with the window-wheel sun as
+its lantern; clouds, far hills and open sky are gone. The two singers sing their shapes: glyphs stream from the
+mouth into a sigil drawn in the air while the hands conduct; the sigil folds into a solid; they turn to face us and
+hold it out, a burst flaring behind, before letting it go. The operator and the tuner turn and beckon every 6 s. A
+chorus at the funnel's foot (two in harlequin diamonds and bell caps) hops and cheers each offering; now and then a
+head pops into a faceted ball. Mark Von Ulrich's world lives in what the elves make: glyphs, sigils, the offered
+solids, the funnel's inside and the console screen are drawn in `src/loop-mark.js` (6x6x6 colour cube, 4x4 ordered
+dither anchored to each element, one-pixel black contours), after his STYLE-BRIEF.
