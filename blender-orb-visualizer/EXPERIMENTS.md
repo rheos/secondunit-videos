@@ -318,3 +318,11 @@ The first run (00:03 Pacific, Oct 24) died with the Mac's GUI at about 00:09, 9 
 because a container returns its frames only when its whole batch is done (~$0.45 spent for nothing). `modal_pet.py`
 now also writes every frame to the Modal volume `pet-frames` (`/vol/act<N>/`) and the re-run uses `modal run
 --detach`, so a crash leaves the frames fetchable (`modal volume get pet-frames act<N> ...`).
+The re-run (00:39) kept 127 act-2 frames on the volume (`pet-frames/act2/`, frames 1183-1654 partly) before that
+session ended too. Real Modal billing (`modal billing report`): $1.00 for the first run, $0.43 for the second, so
+$1.43 of Robin's $5 cap is spent and nothing is joined. Draft 1 really cost $8.19 (the script's "~$" line under-reads
+by about 1.45x; real rate about $0.002 a frame). The 2,056 frames left would bring d2 to about $5.50-6.20, and October's
+free Modal credit is used up ($29.88 metered vs $29.57 credit), so further renders are billed. **Robin: hold
+(2026-10-24).** To resume: fetch `modal volume get pet-frames act2 ...`, render only the missing frames of the spans in
+the d2 notes above, launch with nohup so the loop outlives the Claude session, and join with
+`tools/pet_join.py --take pet-d2`.
