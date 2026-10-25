@@ -3595,47 +3595,43 @@ function singerMakes(ctx, t, phase, x, f, hip, kinds, hue) {
 }
 
 // ---------------- the chorus at the funnel's foot: bounce, cheer each offering, pop into solids ----------------
-// Eight elves on three tiers of pedestals: one in front, three behind, four at the back. Every 1.5 s (each chord
-// change and each half chord) some of them trade places, by one of eight moves: left and right trading across the
-// centre line, the front and middle trading up the spine, triangles on one side, diagonals, crossings behind, outer
-// and inner trading at the back. The moves run in a 16-step phrase (24 s) that brings everyone home at the seam;
-// six different elves take the front in it. Places, as [x off the centre line, tier], in this order:
+// Five elves on eight pistons, on three tiers: one place in front, three behind, four at the back (Robin: "only have as
+// many as is needed so that whenever a piston is up one jumps over to it so it goes back down.. piston never goes up
+// with a gnome standing on it.. never goes down unless one is"). An empty piston stands up; an elf jumps onto a raised
+// one and rides it down, and the one it left rises behind it. One jump every 0.75 s, on the machine rhythm, in a
+// sequence of 32 (found by search: short hops to neighbouring pistons, never straight back, nobody twice running)
+// that brings every elf back to its own piston at the seam. Places, as [x off the centre line, tier], in order:
 // the front, middle right, back right outer, back right inner, middle centre, back left inner, back left outer,
 // middle left.
-const CHORUS_CAST = [['bells', P.mint, P.pinkDeep], [P.butter, P.pink], ['pom', P.lilac], ['bells', P.butter, P.iris]];
-const CHORUS_N = 8, SWAP = 1.5, MOVE = 0.6, RISE = 46;
+const CHORUS_CAST = [['bells', P.mint, P.pinkDeep], [P.butter, P.pink], ['pom', P.lilac], ['bells', P.butter, P.iris], [P.mint, P.lilac]];
+const CHORUS_N = 5, SWAP = 1.5, JUMP = 0.75, LEAVE = 0.1, LAND = 0.55, RISE = 46;
 const PLACES = [[0, 0], [140, 1], [210, 2], [70, 2], [0, 1], [-70, 2], [-210, 2], [-140, 1]];
 const PEDESTAL = [P.butter, P.aqua, P.blush];
-const MOVES = {
-  mirror: [[1, 7], [2, 6], [3, 5]], spine: [[0, 4]], outerin: [[2, 3], [6, 5]], wings: [[1, 2], [7, 6]],
-  diag: [[1, 3], [7, 5], [0, 4]], triL: [[0, 7], [4, 5]], triR: [[0, 1], [4, 3]], cross: [[6, 3], [2, 5]],
-};
-const PHRASE = ['triL', 'diag', 'triR', 'spine', 'triL', 'diag', 'mirror', 'triR', 'spine', 'triR', 'cross', 'mirror', 'triL', 'triR', 'triL', 'outerin'];
-// who stands where after each step: AT[k][place] = elf, WHERE[k][elf] = place (AT[16] is AT[0] again)
-const AT = [[0, 1, 2, 3, 4, 5, 6, 7]];
-for (const mv of PHRASE) { const p = AT[AT.length - 1].slice(); for (const [a, b] of MOVES[mv]) [p[a], p[b]] = [p[b], p[a]]; AT.push(p); }
-const WHERE = AT.map((p) => { const w = []; p.forEach((e, pl) => { w[e] = pl; }); return w; });
-// The pedestals are pistons: each fires once a chord (3 s), in a firing order that skips back and forth across the
-// tiers, one every 3/8 s; it shoots up, holds, and sinks back below its rest height before the next firing.
-const FIRING = [0, 5, 2, 7, 4, 1, 6, 3], FIRE_GAP = 3 / 8;
+// [elf, from, to] for each jump; STATE[k][elf] = its piston before jump k (STATE[32] is STATE[0] again)
+const JUMPS = [[2, 7, 6], [4, 5, 4], [0, 0, 5], [1, 1, 2], [0, 5, 0], [3, 3, 1], [4, 4, 7], [0, 0, 5], [3, 1, 4], [1, 2, 3], [3, 4, 1], [1, 3, 4], [0, 5, 3], [3, 1, 2], [4, 7, 0], [1, 4, 1],
+  [0, 3, 5], [2, 6, 7], [4, 0, 4], [1, 1, 0], [2, 7, 6], [0, 5, 7], [3, 2, 1], [4, 4, 3], [2, 6, 5], [1, 0, 4], [0, 7, 0], [2, 5, 6], [4, 3, 5], [2, 6, 7], [3, 1, 3], [1, 4, 1]];
+const STATE = [[0, 1, 7, 3, 5]];
+for (const [g, , to] of JUMPS) { const st = STATE[STATE.length - 1].slice(); st[g] = to; STATE.push(st); }
+// a piston's height above its rest: up when empty, down under an elf; it starts rising as an elf leaves it and drops
+// as one lands on it
+const UP = 24, DOWN = -6;
+const stepAt = (t) => { const tt = mod(t, FILM_LOOP), k = Math.floor(tt / JUMP) % JUMPS.length; return { k, u: tt - k * JUMP }; };
 function lift(place, t) {
-  const u = mod(t - FIRING.indexOf(place) * FIRE_GAP, 3);
-  const ext = smoothstep(0, 0.1, u) * (1 - smoothstep(0.6, 1.4, u));
-  return (ext - 0.35) * 26;
+  const { k, u } = stepAt(t), [, from, to] = JUMPS[k];
+  if (place === from) return lerp(DOWN, UP, E.smooth(Math.min(1, Math.max(0, (u - LEAVE) / 0.35))));
+  if (place === to) return lerp(UP, DOWN, E.smooth(Math.min(1, Math.max(0, (u - LAND) / 0.18))));
+  return STATE[k].includes(place) ? DOWN : UP;
 }
 // where elf j stands at t: its place, the tier as a smooth number (for drawing order and the wave), the piston
-// height under it, and the hop when it moves
+// height under it, and the hop when it jumps
 function chorusPlace(t, j) {
-  const tt = mod(t, FILM_LOOP), k0 = Math.floor(tt / SWAP), next = SWAP * (k0 + 1);
-  const pa = WHERE[k0 % 16][j], pb = WHERE[(k0 + 1) % 16][j];
-  const p = pa === pb ? 0 : smoothstep(next - MOVE, next, tt);
-  const [xa, ra] = PLACES[pa], [xb, rb] = PLACES[pb];
+  const { k, u } = stepAt(t), [g, from, to] = JUMPS[k], a = STATE[k][j];
+  const p = g === j ? E.smooth(Math.min(1, Math.max(0, (u - LEAVE) / (LAND - LEAVE)))) : 0, b = g === j ? to : a;
+  const [xa, ra] = PLACES[a], [xb, rb] = PLACES[b];
   const run = Math.hypot(xb - xa, (rb - ra) * RISE);
-  return { x: 960 + lerp(xa, xb, p), tier: lerp(ra, rb, p), lift: lerp(lift(pa, t), lift(pb, t), p),
-    hop: Math.sin(Math.PI * p) * (10 + run * 0.08), moving: pa !== pb };
+  return { x: 960 + lerp(xa, xb, p), tier: lerp(ra, rb, p), lift: lerp(lift(a, t), lift(b, t), p),
+    hop: Math.sin(Math.PI * p) * (18 + run * 0.12), moving: g === j && from === a };
 }
-// the front after step k: the elf now standing in place 0
-const frontAt = (k) => AT[mod(k, 16)][0];
 // the offerings the chorus cheers: the adept's at 3.2 and 9.2, the seer's at 6.2 and 0.2 (each about 1.2 s)
 const cheerAt = (t) => Math.max(...[3.2, 9.2, 6.2, 0.2].map((a) => loopBump(t, a - 0.1, 1.4)));
 // poi spinning without the poi: each arm held straight at full stretch swings a big circle from its shoulder, the two
@@ -3778,9 +3774,11 @@ function cues() {
     both(c0 + T.offer[1], 'rise', x);
   }
   // the chorus: each swap of places, with the elf arriving at the front and whether a chord changes on it
-  for (let k = 0; k < FILM_LOOP / SWAP; k++) add24(k * SWAP, 'swap', 960, { n: frontAt(k), chord: k % 2 === 0, newFront: frontAt(k) !== frontAt(k - 1) });
-  // the pistons firing, eight a chord, pitched by tier
-  for (let bar = 0; bar < LOOP / 3; bar++) FIRING.forEach((pl, i) => add(3 * bar + i * FIRE_GAP, 'piston', 960 + PLACES[pl][0], { n: PLACES[pl][1] }));
+  // each jump: the elf landing (its doiy and the hop's air, 'swap'), and the piston going down under it with a thunk
+  JUMPS.forEach(([g, , to], k) => {
+    add24(k * JUMP + LAND, 'swap', 960 + PLACES[to][0], { n: g, newFront: to === 0 });
+    add24(k * JUMP + LAND, 'piston', 960 + PLACES[to][0], { n: PLACES[to][1] });
+  });
   // a tick each time an elf's outstretched arms cross (twice a turn, high and low), pitched by its tier. An elf
   // changing tiers changes timing, so the crossings are found by stepping its arm angle through the loop.
   const DT = 1 / 480;
