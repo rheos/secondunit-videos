@@ -335,17 +335,18 @@ def sung(t, k):
 def voices(cues):
     """the voice under the breath: one long-tailed syllable for each of a few picture events, never in bursts.
     "doiy" when the chorus trades places, "dee" when a solid forms out of a sigil, a low "doiy" for the released
-    cube (Robin: "every time an object appears or a gnome changes place")"""
+    cube (Robin: "every time an object appears or a gnome changes place"). Each is short, the event moment and its
+    ring, about a second; its own echo carries it out after that (Robin: "just a delay that carries it out")"""
     out = np.zeros((N, 2))
     pan = lambda x: float(np.clip((x - 960) / 960, -1, 1)) * 0.6
     for c in cues:
         t, k = c['t'] + FRAME, c['kind']
         if k == 'swap':
-            place(out, t, voice.syllable(sung(c['t'], c['n'] % 5), 'doiy', dur=0.2), 0.0, 0.5 if c.get('newFront', True) else 0.3)
+            place(out, t, voice.syllable(sung(c['t'], c['n'] % 5), 'doiy', dur=0.2, tail=0.8, decay=0.28), 0.0, 0.5 if c.get('newFront', True) else 0.3)
         elif k == 'form':
-            place(out, t, voice.syllable(sung(c['t'], 2 + int(c['x'] > 960)), 'dee', dur=0.19), pan(c['x']), 0.32)
+            place(out, t, voice.syllable(sung(c['t'], 2 + int(c['x'] > 960)), 'dee', dur=0.19, tail=0.8, decay=0.28), pan(c['x']), 0.32)
         elif k == 'cube':
-            place(out, t, voice.syllable(sung(c['t'], 0) - 12, 'doiy', dur=0.24, tail=1.4), pan(c['x']), 0.45)
+            place(out, t, voice.syllable(sung(c['t'], 0) - 12, 'doiy', dur=0.24, tail=0.76, decay=0.3), pan(c['x']), 0.45)
     return out
 
 
@@ -370,10 +371,12 @@ def main():
     glitch = glitches(bed)
     ev = events(cues)
     vo = voices(cues)
-    dry = 0.5 * bed + 0.2 * glitch + ev + 0.35 * vo
+    # the voice's own echo: ping-pong on the 3/8 s grid, long feedback, so each short syllable is carried out
+    vecho = cdelay(vo, step=0.375, feedback=0.62, repeats=12, darken=0.82)
+    dry = 0.5 * bed + 0.2 * glitch + ev + 0.35 * vo + 0.3 * vecho
     # a ping-pong echo on the events and glitches (and a little of the organ), then everything into a long hall
-    echo = cdelay(0.75 * ev + 0.6 * glitch + 0.12 * bed + 0.5 * vo)
-    wet = creverb(0.5 * bed + 0.35 * glitch + 0.9 * ev + 0.5 * vo + 0.6 * echo, decay=6.0, pre=0.04)
+    echo = cdelay(0.75 * ev + 0.6 * glitch + 0.12 * bed)
+    wet = creverb(0.5 * bed + 0.35 * glitch + 0.9 * ev + 0.4 * vo + 0.3 * vecho + 0.6 * echo, decay=6.0, pre=0.04)
     mix = dry + 0.45 * echo + 0.95 * wet
     mix = cfilter(mix, lo=35, hi=15000)
     # level: about -18 dBFS RMS, peaks held under -1 dBFS by a soft clip
