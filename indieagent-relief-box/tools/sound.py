@@ -10,8 +10,9 @@ airy major-seventh-sharp-eleven chords sliding in parallel by odd steps, one per
 long breaths of the bellows per loop. Around it: glitch stutters
 cut from the organ itself, and the events the page reports (tools/cues.mjs), each panned to where it happens.
 
-The 12 s loop is seamless by construction: every oscillator runs a whole number of cycles in the loop (frequencies
-snapped to multiples of 1/12 Hz), noise and reverb are filtered and convolved circularly (in the FFT domain over
+The loop is 24 s (Robin: "a full breath cycle is 8 seconds.. 4 seconds each way"): three breaths of the bellows,
+each a 4 s push and a 4 s pull, while the picture's events (a 12 s cycle) come round twice. It is seamless by
+construction: every oscillator runs a whole number of cycles in the loop (frequencies snapped to multiples of 1/24 Hz), noise and reverb are filtered and convolved circularly (in the FFT domain over
 the whole loop), and every sound that runs past the end wraps round to the start.
 """
 import json
@@ -22,7 +23,7 @@ from pathlib import Path
 import numpy as np
 
 SR = 48000
-LOOP = 12.0
+LOOP = 24.0
 N = int(SR * LOOP)
 T = np.arange(N) / SR
 RNG = np.random.default_rng(1919)
@@ -119,14 +120,16 @@ CHORDS = [
     [48, 55, 62, 66, 71],    # C:  C G D F# B   (up a tone)
     [44, 51, 58, 62, 67],    # Ab: Ab Eb Bb D G (down a major third: the strangest, a tritone from home)
 ]
-BAR = LOOP / len(CHORDS)
+BAR = 3.0
+BARS = int(LOOP / BAR)
 
 
-BREATH = LOOP / 2      # two long breaths of the bellows per loop (Robin: longer breaths)
+STROKE = 4.0           # each way of the bellows; a full breath is a push and a pull, 8 s, three to a loop
+STROKES = int(LOOP / STROKE)
 
 
-def breath(k):
-    """breath k: drawn in slowly over 2.4 s, swelling a little through the middle, let out slowly into the next"""
+def breath(k, BREATH=STROKE):
+    """stroke k: drawn in slowly over 2.4 s, swelling a little through the middle, let out slowly into the next"""
     t = (T - k * BREATH) % LOOP
     rise = 0.5 - 0.5 * np.cos(np.pi * np.clip(t / 2.4, 0, 1))
     fall = 0.5 + 0.5 * np.cos(np.pi * np.clip((t - (BREATH - 1.2)) / 2.4, 0, 1))
@@ -134,7 +137,7 @@ def breath(k):
     return rise * fall * swell * (t < BREATH + 1.2)
 
 
-def chord_gate(i, xf=0.6):
+def chord_gate(i, xf=0.6):  # i counts bars through the loop; the chords cycle every four
     """chord i sounds through its bar, crossfading legato into the next (raised cosine, wrapping round)"""
     t = (T - i * BAR + xf / 2) % LOOP
     up = 0.5 - 0.5 * np.cos(np.pi * np.clip(t / xf, 0, 1))
@@ -144,8 +147,10 @@ def chord_gate(i, xf=0.6):
 
 def organ():
     out = np.zeros((N, 2))
-    wind = breath(0) + breath(1)
-    for i, chord in enumerate(CHORDS):
+    # the push (even strokes) full, the pull a little softer, so the 8 s breath is heard as one in-and-out
+    wind = sum(breath(k) * (1.0 if k % 2 == 0 else 0.82) for k in range(STROKES))
+    for i in range(BARS):
+        chord = CHORDS[i % len(CHORDS)]
         b = chord_gate(i) * wind
         for j, m in enumerate(chord):
             f = midi(m)
@@ -157,9 +162,9 @@ def organ():
             out[:, 0] += l * b * g
             out[:, 1] += r * b * g
     out = cfilter(out, lo=70, hi=5200)
-    # air through the bellows: breathy noise that rushes as the bellows turn, between the two breaths
+    # air through the bellows: breathy noise that rushes as the bellows turn, strongest at the end of each full breath
     air = cfilter(RNG.standard_normal((N, 2)), lo=900, hi=5000)
-    rush = sum(np.exp(-(((T - k * BREATH - BREATH + 0.2 + LOOP / 2) % LOOP - LOOP / 2) / 0.45) ** 2) for k in range(2))
+    rush = sum((1.0 if k % 2 else 0.6) * np.exp(-(((T - (k + 1) * STROKE + 0.2 + LOOP / 2) % LOOP - LOOP / 2) / 0.45) ** 2) for k in range(STROKES))
     out += air * (0.05 + 0.35 * rush)[:, None] * np.abs(out).mean() / (np.abs(air).mean() + 1e-9) * 0.25
     return out / np.abs(out).max()
 
@@ -294,12 +299,17 @@ def events(cues):
             # each elf its own chord tone; the high crossing a little brighter than the low
             place(out, t, tone(midi(tone_of(c['t'], 2 + c['n'], 1)), 0.05, 'tri', d=0.02), p, 0.045 if c.get('high') else 0.03)
         elif k == 'swap':
-            # the chorus changing places: the hop's air, the elf reaching the front sounding its own note of the
+            # the chorus changing places: the hop's air, an elf newly at the front sounding its own note of the
             # chord, and on a chord change the chord's root plucked low under it
             place(out, t - 0.3, noise_sweep(0.35, 500, 2500, 0.05), 0.0)
-            place(out, t, bell(midi(tone_of(c['t'], c['n'] % 5, 2)), 1.1, ratio=2.0, index=1.0), 0.0, 0.13)
+            if c.get('newFront', True):
+                place(out, t, bell(midi(tone_of(c['t'], c['n'] % 5, 2)), 1.1, ratio=2.0, index=1.0), 0.0, 0.13)
             if c.get('chord'):
                 place(out, t, pluck(midi(tone_of(c['t'], 0, 0)), 0.9), 0.0, 0.2)
+        elif k == 'piston':
+            # a piston shooting up: a soft pneumatic tok, a chord tone pitched by its tier
+            place(out, t, crush(tone(midi(tone_of(c['t'], 4 - c['n'], 1)), 0.06, 'sine', d=0.03), bits=7, hold=1), p, 0.05)
+            place(out, t, noise_sweep(0.08, 3000, 900, 0.02), p)
         elif k == 'pop':
             place(out, t, crush(sweep(1200, 180, 0.12, d=0.06), bits=6, hold=2), p, 0.16)
         elif k == 'lever':

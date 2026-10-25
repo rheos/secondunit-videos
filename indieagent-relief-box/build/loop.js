@@ -2250,6 +2250,7 @@ __m["src/loop-world.js"] = (() => {
 const { RNG, noise } = __m["vendor/paper-fox/core/rng.js"];
 const { linear, glow, piece } = __m["vendor/paper-fox/core/piece.js"];
 const { mix, shade, vary, rgba } = __m["vendor/paper-fox/core/color.js"];
+const { E } = __m["vendor/paper-fox/core/ease.js"];
 const { drawSprites } = __m["vendor/paper-fox/core/sprite.js"];
 const { transform } = __m["vendor/paper-fox/core/geom.js"];
 const { LIGHT, PAL, CLAY_MAT, CLAY_EDGE, shadowBlur, clayForm, tube, steps, dot } = __m["src/kit.js"];
@@ -2261,6 +2262,8 @@ const P = PAL;
 const TAU = Math.PI * 2;
 const circle = (cx, cy, r, n = 36) => [...Array(n)].map((_, i) => [cx + Math.cos(i / n * TAU) * r, cy + Math.sin(i / n * TAU) * r]);
 const LOOP = 12;
+// the film wraps at 24 s: three 8 s breaths of the bellows (4 s each way, Robin); everything else repeats every 12 s
+const FILM_LOOP = 24, BREATH = 8;
 // a sprite as made, and again reflected in the centre line x = 960
 const pair = (sp) => [{ s: sp }, { s: sp, ax: 960, ay: 0, x: 960, y: 0, sx: -1, sy: 1 }];
 // a plane whose sprite crosses the centre line: the left half drawn as made and the right half reflected, each
@@ -2334,7 +2337,9 @@ function addWorld(S) {
     const tri = pal.glass.map((c, k) => lsp(`${name}-tri-${k}`, 20, 20, (g) => clayForm(g, [[-6, 5], [0, -7], [6, 5]], k ? pal.rays[k % 3] : pal.sill, { smooth: false, size: 7 })));
     const dia = pal.glass.map((c, k) => lsp(`${name}-dia-${k}`, 20, 20, (g) => clayForm(g, [[0, -7], [5, 0], [0, 7], [-5, 0]], pal.rays[(k + 1) % 3], { smooth: false, size: 7 })));
     const stud = pal.glass.map((c, k) => lsp(`${name}-stud-${k}`, 16, 16, (g) => clayForm(g, circle(0, 0, 4.5, 20), k === 1 ? pal.sill : pal.rays[k], { sheen: 0.3 })));
-    return { R, plate, hub, ray, win, tri, dia, stud };
+    // the tunnel suns' ring discs: one clay disc per band colour, scaled to each ring's radius
+    const discs = (pal.bands || []).map((c, k) => lsp(`${name}-disc-${k}`, R * 2 + 20, R * 2 + 20, (g) => clayForm(g, circle(0, 0, R, 64), c, { sheen: 0.14 })));
+    return { R, plate, hub, ray, win, tri, dia, stud, discs };
   }
   // rings: [radius, windows, window scale, turns per loop (in window spacings: sign gives the way round)]
   const RINGS = [[0.8, 18, 1.15, -6], [0.57, 13, 1.0, 4], [0.35, 8, 0.85, -3]];
@@ -2366,24 +2371,73 @@ function addWorld(S) {
         items.push({ s: sun.win[(i + ri) % 3], x: LX + Math.cos(a) * rr, y: LY + Math.sin(a) * rr, rot: a, sx: sz, sy: sz });
       }
     });
-    items.push({ s: sun.hub, x: LX, y: LY, sx: scale, sy: scale });
+    if (sun.discs.length) items.push(...centreItems(sun, t, sun.R * 0.24 * scale));
+    else items.push({ s: sun.hub, x: LX, y: LY, sx: scale, sy: scale });
     return items;
   }
-  const front = makeSun('lantern', 92, { plate: mix(P.butter, '#f6c36a', 0.4), hub: '#f6c36a', eye: P.pink, rays: [P.butter, '#f6c36a', '#f29d5c'], sill: P.butterDeep, glass: ['#ffe2a0', '#ffd27e', '#fff0c8'] });
-  const back = makeSun('backsun', 150, { plate: mix(P.mint, P.aqua, 0.5), hub: P.lilac, eye: P.butter, rays: [P.aqua, P.mint, P.lilac], sill: P.mintDeep, glass: ['#e8fbf6', '#d6f2ff', '#efe6ff'] });
-  const far = makeSun('farsun', 220, { plate: mix(P.pink, P.lilac, 0.45), hub: P.blush, eye: P.mint, rays: [P.blush, P.pink, P.lilac], sill: P.pinkDeep, glass: ['#fff0f4', '#f6e2ff', '#ffe8ee'] });
+  // The layered suns (Robin: "endless layers of oscillating sun rings, collapsing into each other and expanding
+  // again, and in the middle new ones keep growing and engulfing the center one"; the centre grows only as far as it
+  // does already). Every ring is a solid clay disc, drawn largest first, so the bands are all colour and nothing
+  // behind shows through. The bands stay in their places and breathe with the bellows (8 s): their inner edges
+  // crowd out toward the rim and spread back in, with a ripple running inward. In the middle a new centre disc is
+  // born every 3 s (each chord change) and grows over the old one until it has swallowed it. Four colours and eight
+  // births a loop, so the pattern comes round at the seam.
+  const CENTRE = { every: 3, r: 0.24 };
+  // the centre: the current disc at full size (rcen), the next one growing over it from nothing until it has
+  // swallowed it, one every 3 s; each carries a ring of diamonds and a stud at its heart
+  function centreItems(sun, t, rcen) {
+    const items = [], nb = sun.discs.length, u = t / CENTRE.every, j = Math.floor(u), g = E.smooth(u - j);
+    for (const [k, f] of [[j - 1, 1], [j, g]]) {
+      const r = rcen * f, st = ((k % nb) + nb) % nb;
+      if (r < 0.5) continue;
+      items.push({ s: sun.discs[st], x: LX, y: LY, sx: r / sun.R, sy: r / sun.R });
+      for (let i = 0; i < 8; i++) {
+        const an = (k % 2 ? -1 : 1) * TAU * t / 6 + i / 8 * TAU;
+        items.push({ s: sun.dia[(i + st) % 3], x: LX + Math.cos(an) * r * 0.62, y: LY + Math.sin(an) * r * 0.62, rot: an + Math.PI / 2, sx: r / 40, sy: r / 40 });
+      }
+      items.push({ s: sun.stud[st % 3], x: LX, y: LY, sx: r / 14, sy: r / 14 });
+    }
+    return items;
+  }
+  function layeredItems(sun, t, { spin, scale = 1, breath = 0, rays = 18, rings = DENSE }) {
+    const R = sun.R * scale, items = [], nb = sun.discs.length;
+    for (let i = 0; i < rays; i++) {
+      const a = spin + i / rays * TAU, reach = 1 + 0.45 * Math.sin(TAU * (t / 3 - i * 3 / rays));
+      const d = (sun.R + 2 + 6 * (reach - 1)) * scale;
+      items.push({ s: sun.ray, ax: 0, ay: 20, x: LX + Math.cos(a) * d, y: LY + Math.sin(a) * d, rot: a + Math.PI / 2, sx: scale, sy: scale * Math.max(0.3, reach) });
+    }
+    items.push({ s: sun.plate, x: LX, y: LY, sx: scale, sy: scale });
+    // a band's radius, as a fraction of the rim: squeezed toward the rim on the in-breath, let back on the out
+    const rad = (rk, ri) => 1 - (1 - rk) * (1 - 0.32 * breath) + 0.025 * Math.sin(TAU * (t / 3 + ri / 6));
+    const radii = rings.map(([rk], ri) => rad(rk, ri)), inner = [...radii.slice(1), CENTRE.r * (1 - 0.2 * breath)];
+    rings.forEach(([, n, shape, ws, turns], ri) => {
+      const r = R * radii[ri], rin = R * inner[ri];
+      items.push({ s: sun.discs[ri % nb], x: LX, y: LY, sx: r / sun.R, sy: r / sun.R });
+      const rc = (r + rin) / 2, sz = Math.min(ws * scale, (r - rin) * 0.75 / 12), turn = TAU * turns / n * t / LOOP;
+      for (let i = 0; i < n; i++) {
+        const an = turn + i / n * TAU, pulse = 0.75 + 0.5 * Math.max(0, Math.sin(TAU * (t / 3 + 2 * i / n - ri / 8)));
+        items.push({ s: sun[shape][(i + ri) % 3], x: LX + Math.cos(an) * rc, y: LY + Math.sin(an) * rc, rot: an + Math.PI / 2, sx: sz * pulse, sy: sz * pulse });
+      }
+    });
+    items.push(...centreItems(sun, t, R * inner[inner.length - 1]));
+    return items;
+  }
+  const front = makeSun('lantern', 92, { bands: ['#f6c36a', P.pink, '#f29d5c', P.butter], plate: mix(P.butter, '#f6c36a', 0.4), hub: '#f6c36a', eye: P.pink, rays: [P.butter, '#f6c36a', '#f29d5c'], sill: P.butterDeep, glass: ['#ffe2a0', '#ffd27e', '#fff0c8'] });
+  const back = makeSun('backsun', 150, { bands: [P.mint, P.aqua, mix(P.mint, P.lilac, 0.5), '#d6f2ec'], plate: mix(P.mint, P.aqua, 0.5), hub: P.lilac, eye: P.butter, rays: [P.aqua, P.mint, P.lilac], sill: P.mintDeep, glass: ['#e8fbf6', '#d6f2ff', '#efe6ff'] });
+  const far = makeSun('farsun', 290, { bands: [P.pink, P.lilac, P.blush, mix(P.pink, P.lilac, 0.5)], plate: mix(P.pink, P.lilac, 0.45), hub: P.blush, eye: P.mint, rays: [P.blush, P.pink, P.lilac], sill: P.pinkDeep, glass: ['#fff0f4', '#f6e2ff', '#ffe8ee'] });
   S.add({ name: 'lantern-glow', z: 5810, blend: 'lighter', render(ctx, t) {
     glow(ctx, LX, LY, 700, '#ffd9a0', 0.2 + 0.03 * cyc(t, 2));
     glow(ctx, LX, LY, 260, '#fff0c8', 0.3);
   } });
-  // the third sun, furthest back and largest, rose and lilac: turning with the front one, swelling as the bellows
-  // empty (at 0 and 6 s) while the middle one swells as they fill (at 3 and 9 s): they breathe with the sound
+  // the third sun, furthest back and largest, rose and lilac: turning with the front one, swelling with the
+  // bellows' pull (fullest 2 s into each 8 s breath) while the middle one swells with the push (6 s in): with the
+  // breath played backwards the pull comes first, 0-4 s, and the push 4-8 s
   S.add({ name: 'farsun', z: 5800, shadow: { dx: 8, dy: 14, alpha: 0.18 }, render(ctx, t, env) {
-    drawSprites(ctx, sunItems(far, t, { spin: TAU * (3 / 18) * t / LOOP, scale: 1 + 0.18 * Math.cos(TAU * t / 6), rays: 18, rings: DENSE }), env.shadow);
+    drawSprites(ctx, layeredItems(far, t, { spin: TAU * (3 / 18) * t / LOOP, scale: 1 + 0.1 * Math.cos(TAU * (t - 2) / BREATH), breath: Math.cos(TAU * (t - 6) / BREATH) }), env.shadow);
   } });
-  // the sun behind: larger, cooler, turning the other way, swelling with each breath of the bellows (6 s)
+  // the sun behind: larger, cooler, turning the other way, swelling with each push of the bellows
   S.add({ name: 'backsun', z: 5600, shadow: { dx: 8, dy: 14, alpha: 0.22 }, render(ctx, t, env) {
-    drawSprites(ctx, sunItems(back, t, { spin: -TAU * (4 / 18) * t / LOOP, scale: 1 - 0.22 * Math.cos(TAU * t / 6), dir: -1, rings: DENSE.slice(0, 6).map(([r, n, sh, w, tu]) => [r, Math.round(n * 0.75), sh, w * 0.9, tu]) }), env.shadow);
+    drawSprites(ctx, layeredItems(back, t, { spin: -TAU * (4 / 18) * t / LOOP, scale: 1 + 0.22 * Math.cos(TAU * (t - 6) / BREATH), breath: Math.cos(TAU * (t - 2) / BREATH), rings: DENSE.slice(0, 6).map(([r, n, sh, w, tu]) => [r, Math.round(n * 0.75), sh, w * 0.9, tu]) }), env.shadow);
   } });
   // the front sun: spinning, and rocking back and forth as it goes, turning back at each chord change (every 3 s)
   S.add({ name: 'lantern', z: 5000, shadow: { dx: 8, dy: 14, alpha: 0.25 }, anim: (t) => ({ y: 4 * cyc(t, 1) }), render(ctx, t, env) {
@@ -2499,7 +2553,7 @@ function addNear(S) {
 }
 
 
-return { LOOP, cyc, addWorld, addNear };
+return { LOOP, FILM_LOOP, cyc, addWorld, addNear };
 })();
 __m["src/loop-mark.js"] = (() => {
 // The living loop, Mark's world: what the elves make and show (glyphs, sigils, solids, the funnel's inside, the
@@ -3054,11 +3108,11 @@ const { drawSprites } = __m["vendor/paper-fox/core/sprite.js"];
 const { finish } = __m["vendor/paper-fox/core/post.js"];
 const { E, lerp, smoothstep } = __m["vendor/paper-fox/core/ease.js"];
 const { LIGHT, PAL, setFinish, clayForm } = __m["src/kit.js"];
-const { shade } = __m["vendor/paper-fox/core/color.js"];
+const { shade, mix } = __m["vendor/paper-fox/core/color.js"];
 // draft 9: the crisp, constructed finish (set before anything is baked)
 setFinish('crisp');
 const { ISLAND } = __m["src/props.js"];
-const { LOOP, cyc, addWorld, addNear } = __m["src/loop-world.js"];
+const { LOOP, FILM_LOOP, cyc, addWorld, addNear } = __m["src/loop-world.js"];
 const { CONSOLE, INSTR, knobAngle, leverAngle, sliderK, addMachines, mirrored } = __m["src/loop-machine.js"];
 const { makeFigure, drawFigure } = __m["src/loop-figures.js"];
 const { solidEdges } = __m["src/loop-shapes.js"];
@@ -3245,22 +3299,46 @@ function singerMakes(ctx, t, phase, x, f, hip, kinds, hue) {
 
 // ---------------- the chorus at the funnel's foot: bounce, cheer each offering, pop into solids ----------------
 // Eight elves on three tiers of pedestals: one in front, three behind, four at the back. Every 1.5 s (each chord
-// change and each half chord) they all hop one place along a closed path through the eight places, so a new elf
-// comes to the front each time and each has the front once a loop. The path, as [x off the centre line, tier]:
-// the front, up the right side, along the back, down to the middle, along the back the other way, down the left.
+// change and each half chord) some of them trade places, by one of eight moves: left and right trading across the
+// centre line, the front and middle trading up the spine, triangles on one side, diagonals, crossings behind, outer
+// and inner trading at the back. The moves run in a 16-step phrase (24 s) that brings everyone home at the seam;
+// six different elves take the front in it. Places, as [x off the centre line, tier], in this order:
+// the front, middle right, back right outer, back right inner, middle centre, back left inner, back left outer,
+// middle left.
 const CHORUS_CAST = [['bells', P.mint, P.pinkDeep], [P.butter, P.pink], ['pom', P.lilac], ['bells', P.butter, P.iris]];
 const CHORUS_N = 8, SWAP = 1.5, MOVE = 0.6, RISE = 46;
 const PLACES = [[0, 0], [140, 1], [210, 2], [70, 2], [0, 1], [-70, 2], [-210, 2], [-140, 1]];
 const PEDESTAL = [P.butter, P.aqua, P.blush];
-// where elf j stands at t: its place, the tier as a smooth number (for drawing order and the wave), and the hop
-function chorusPlace(t, j) {
-  const k0 = Math.floor(mod(t, LOOP) / SWAP), next = SWAP * (k0 + 1);
-  const p = smoothstep(next - MOVE, next, mod(t, LOOP));
-  const [xa, ra] = PLACES[(j + k0) % CHORUS_N], [xb, rb] = PLACES[(j + k0 + 1) % CHORUS_N];
-  return { x: 960 + lerp(xa, xb, p), tier: lerp(ra, rb, p), hop: Math.sin(Math.PI * p) * (10 + 10 * Math.abs(rb - ra)) };
+const MOVES = {
+  mirror: [[1, 7], [2, 6], [3, 5]], spine: [[0, 4]], outerin: [[2, 3], [6, 5]], wings: [[1, 2], [7, 6]],
+  diag: [[1, 3], [7, 5], [0, 4]], triL: [[0, 7], [4, 5]], triR: [[0, 1], [4, 3]], cross: [[6, 3], [2, 5]],
+};
+const PHRASE = ['triL', 'diag', 'triR', 'spine', 'triL', 'diag', 'mirror', 'triR', 'spine', 'triR', 'cross', 'mirror', 'triL', 'triR', 'triL', 'outerin'];
+// who stands where after each step: AT[k][place] = elf, WHERE[k][elf] = place (AT[16] is AT[0] again)
+const AT = [[0, 1, 2, 3, 4, 5, 6, 7]];
+for (const mv of PHRASE) { const p = AT[AT.length - 1].slice(); for (const [a, b] of MOVES[mv]) [p[a], p[b]] = [p[b], p[a]]; AT.push(p); }
+const WHERE = AT.map((p) => { const w = []; p.forEach((e, pl) => { w[e] = pl; }); return w; });
+// The pedestals are pistons: each fires once a chord (3 s), in a firing order that skips back and forth across the
+// tiers, one every 3/8 s; it shoots up, holds, and sinks back below its rest height before the next firing.
+const FIRING = [0, 5, 2, 7, 4, 1, 6, 3], FIRE_GAP = 3 / 8;
+function lift(place, t) {
+  const u = mod(t - FIRING.indexOf(place) * FIRE_GAP, 3);
+  const ext = smoothstep(0, 0.1, u) * (1 - smoothstep(0.6, 1.4, u));
+  return (ext - 0.35) * 26;
 }
-// the front at each swap: elf (-k mod 8) arrives there at k * SWAP
-const frontAt = (k) => mod(-k, CHORUS_N);
+// where elf j stands at t: its place, the tier as a smooth number (for drawing order and the wave), the piston
+// height under it, and the hop when it moves
+function chorusPlace(t, j) {
+  const tt = mod(t, FILM_LOOP), k0 = Math.floor(tt / SWAP), next = SWAP * (k0 + 1);
+  const pa = WHERE[k0 % 16][j], pb = WHERE[(k0 + 1) % 16][j];
+  const p = pa === pb ? 0 : smoothstep(next - MOVE, next, tt);
+  const [xa, ra] = PLACES[pa], [xb, rb] = PLACES[pb];
+  const run = Math.hypot(xb - xa, (rb - ra) * RISE);
+  return { x: 960 + lerp(xa, xb, p), tier: lerp(ra, rb, p), lift: lerp(lift(pa, t), lift(pb, t), p),
+    hop: Math.sin(Math.PI * p) * (10 + run * 0.08), moving: pa !== pb };
+}
+// the front after step k: the elf now standing in place 0
+const frontAt = (k) => AT[mod(k, 16)][0];
 // the offerings the chorus cheers: the adept's at 3.2 and 9.2, the seer's at 6.2 and 0.2 (each about 1.2 s)
 const cheerAt = (t) => Math.max(...[3.2, 9.2, 6.2, 0.2].map((a) => loopBump(t, a - 0.1, 1.4)));
 // poi spinning without the poi: each arm held straight at full stretch swings a big circle from its shoulder, the two
@@ -3273,8 +3351,8 @@ const WAVE = { period: 3, lag: 0.25 };
 const CROSS = Math.acos(9.2 / 35.2) / TAU;
 const chorusTheta = (t, tier) => TAU * ((t - tier * WAVE.lag) / WAVE.period - CROSS);
 function chorusPose(t, j) {
-  const { x, tier, hop } = chorusPlace(t, j);
-  const ch = cheerAt(t), k = 0.85 * FS * (1 - 0.06 * tier), base = GROUND - tier * RISE, hip = base - 33 * k;
+  const { x, tier, hop, lift: up } = chorusPlace(t, j);
+  const ch = cheerAt(t), k = 0.85 * FS * (1 - 0.06 * tier), base = GROUND - tier * RISE - up, hip = base - 33 * k;
   const th = chorusTheta(t, tier);
   // a small bounce twice a turn, at the top and bottom of the circle, on top of the hop from place to place
   const bounce = (2 + 6 * ch) * k * Math.abs(Math.sin(th)), b = bounce + hop;
@@ -3288,20 +3366,26 @@ function chorusPose(t, j) {
     shift: loopBump(t, 0.05 + (j + 1) * SWAP, 0.8), shiftKind: ['ico', 'cube', 'octa', 'dodeca'][j % 4], shiftSpin: TAU * t / 2 };
 }
 
-// a pedestal for each place: a short hexagonal column whose top is the tier the elf stands on
-function pedestal(ctx, x, tier) {
-  const top = GROUND - tier * RISE + 2, s = 1 - 0.06 * tier, rx = 30 * s, ry = 8 * s, bot = GROUND + 16;
-  const hex = (y) => [0, 1, 2, 3, 4, 5].map((q) => [x + rx * Math.cos(q * Math.PI / 3), y + ry * Math.sin(q * Math.PI / 3)]);
-  const T0 = hex(top), B0 = hex(bot);
-  // the front faces of the column (the three lower edges of the hexagon dropped to the floor), then the top
-  clayForm(ctx, [T0[0], T0[1], T0[2], T0[3], B0[3], B0[2], B0[1], B0[0]], shade(PEDESTAL[tier], -0.12), { size: 20, smooth: false });
-  clayForm(ctx, T0, PEDESTAL[tier], { size: 14, smooth: false });
+// a piston for each place: a hexagonal sleeve standing on the floor, a narrower rod, and a cap the elf stands on
+function pedestal(ctx, place, t) {
+  const [dx, tier] = PLACES[place], x = 960 + dx, rest = GROUND - tier * RISE + 2, top = rest - lift(place, t);
+  const s = 1 - 0.06 * tier, rx = 30 * s, ry = 8 * s, bot = GROUND + 16, sleeve = rest + 14, col = PEDESTAL[tier];
+  const hex = (y, w = 1) => [0, 1, 2, 3, 4, 5].map((q) => [x + rx * w * Math.cos(q * Math.PI / 3), y + ry * w * Math.sin(q * Math.PI / 3)]);
+  // the front faces of a prism from y0 down to y1 (the three lower edges of the hexagon dropped), then its top
+  const prism = (y0, y1, w, fill) => {
+    const T0 = hex(y0, w), B0 = hex(y1, w);
+    if (y1 > y0 + 0.5) clayForm(ctx, [T0[0], T0[1], T0[2], T0[3], B0[3], B0[2], B0[1], B0[0]], shade(fill, -0.12), { size: 20, smooth: false });
+    clayForm(ctx, T0, fill, { size: 14, smooth: false });
+  };
+  if (sleeve < bot) prism(sleeve, bot, 1, shade(col, -0.05));
+  prism(top + 5, sleeve, 0.62, mix(col, '#ffffff', 0.25));
+  prism(top, top + 5, 1.04, col);
 }
 
 function drawChorus(ctx, t, env, chorus) {
-  // back to front: each tier's pedestals, then the elves standing on it (an elf is drawn just in front of the
-  // pedestals of the tier it is on, so one hopping down passes in front of the lower tier only once it is half way)
-  const items = PLACES.map(([dx, tier]) => ({ depth: tier, draw: () => pedestal(ctx, 960 + dx, tier) }));
+  // back to front: each tier's pistons, then the elves standing on it (an elf is drawn just in front of the
+  // pistons of the tier it is on, so one hopping down passes in front of the lower tier only once it is half way)
+  const items = PLACES.map(([, tier], pl) => ({ depth: tier, draw: () => pedestal(ctx, pl, t) }));
   for (let j = 0; j < CHORUS_N; j++) items.push({ depth: chorusPlace(t, j).tier - 0.5, draw: () => drawFigure(ctx, chorus[j], chorusPose(t, j), env) });
   items.sort((a, b) => b.depth - a.depth).forEach((it) => it.draw());
 }
@@ -3309,7 +3393,7 @@ function drawChorus(ctx, t, env, chorus) {
 function scene() {
   return new Scene({
     id: 'relief-loop',
-    duration: LOOP,
+    duration: FILM_LOOP,
     background: '#f6e4d8',
     light: LIGHT,
     shadow: { alpha: 0.44, dist: 10, blur: 6 },
@@ -3353,10 +3437,13 @@ function scene() {
 }
 
 // ---------------- the cue list: every event in the loop, for the sound to land on ----------------
-// Each cue: { t (s, within the loop), kind, x (authored px, for the stereo position), dur?, n? }. Mirrored twins
-// give a cue on each side. Computed from the same schedules the picture uses, so the two cannot drift apart.
+// Each cue: { t (s, within the 24 s film), kind, x (authored px, for the stereo position), dur?, n? }. Mirrored
+// twins give a cue on each side. Computed from the same schedules the picture uses, so the two cannot drift apart.
+// Most of the film repeats every 12 s, so add() lists an event at t and t + 12; the chorus's phrase runs the whole
+// 24 s, so its cues go in once each with add24().
 function cues() {
-  const out = [], add = (t, kind, x, extra = {}) => out.push({ t: +mod(t, LOOP).toFixed(4), kind, x, ...extra });
+  const out = [], add24 = (t, kind, x, extra = {}) => out.push({ t: +mod(t, FILM_LOOP).toFixed(4), kind, x, ...extra });
+  const add = (t, kind, x, extra = {}) => { add24(mod(t, LOOP), kind, x, extra); add24(mod(t, LOOP) + LOOP, kind, x, extra); };
   const both = (t, kind, x, extra) => { add(t, kind, x, extra); add(t, kind, 1920 - x, extra); };
   // the funnel: eight things round it every 6 s, odd ones down the right pipe
   for (let n = 0; n < 8; n++) for (const k of [0, 1]) {
@@ -3380,18 +3467,20 @@ function cues() {
     both(c0 + T.offer[1], 'rise', x);
   }
   // the chorus: each swap of places, with the elf arriving at the front and whether a chord changes on it
-  for (let k = 0; k < LOOP / SWAP; k++) add(k * SWAP, 'swap', 960, { n: frontAt(k), chord: k % 2 === 0 });
+  for (let k = 0; k < FILM_LOOP / SWAP; k++) add24(k * SWAP, 'swap', 960, { n: frontAt(k), chord: k % 2 === 0, newFront: frontAt(k) !== frontAt(k - 1) });
+  // the pistons firing, eight a chord, pitched by tier
+  for (let bar = 0; bar < LOOP / 3; bar++) FIRING.forEach((pl, i) => add(3 * bar + i * FIRE_GAP, 'piston', 960 + PLACES[pl][0], { n: PLACES[pl][1] }));
   // a tick each time an elf's outstretched arms cross (twice a turn, high and low), pitched by its tier. An elf
   // changing tiers changes timing, so the crossings are found by stepping its arm angle through the loop.
   const DT = 1 / 480;
-  for (let j = 0; j < CHORUS_N; j++) for (let s = 0; s < LOOP / DT; s++) {
+  for (let j = 0; j < CHORUS_N; j++) for (let s = 0; s < FILM_LOOP / DT; s++) {
     const t0 = s * DT, t1 = t0 + DT, a = chorusPlace(t0, j), b = chorusPlace(t1, j);
     const u0 = chorusTheta(t0, a.tier) / TAU, u1 = chorusTheta(t1, b.tier) / TAU;
-    for (const [q, high] of [[0, true], [2 * CROSS, false]]) if (Math.floor(u1 - q) > Math.floor(u0 - q)) add(t1, 'tick', b.x, { n: Math.round(b.tier), high });
+    for (const [q, high] of [[0, true], [2 * CROSS, false]]) if (Math.floor(u1 - q) > Math.floor(u0 - q)) add24(t1, 'tick', b.x, { n: Math.round(b.tier), high });
   }
   // heads popping into solids
   both(7.3, 'pop', 566); both(4.6, 'pop', 318); both(10.7, 'pop', 170); both(1.6, 'pop', 300);
-  for (let j = 0; j < CHORUS_N; j++) { const tp = 0.05 + (j + 1) * SWAP + 0.4; add(tp, 'pop', chorusPlace(tp, j).x); }
+  for (let j = 0; j < CHORUS_N; j++) for (const r of [0, LOOP]) { const tp = 0.05 + (j + 1) * SWAP + 0.4 + r; add24(tp, 'pop', chorusPlace(tp, j).x); }
   // the consoles' levers, the instruments' released cubes
   for (const q of [1.6, 4.6, 7.6, 10.6]) both(q, 'lever', 612);
   both(7.0, 'cube', 384);
@@ -3408,7 +3497,7 @@ const S = scene();
 S.build();
 
 function frame(t) {
-  t = mod(t, LOOP);
+  t = mod(t, FILM_LOOP);
   S.render(ctx, t);
   finish(ctx, { ...S.post, frame: Math.round(t * 24) });
 }
@@ -3416,7 +3505,7 @@ function frame(t) {
 window.__frameJPEG = (t, q = 0.93) => { frame(t); return cv.toDataURL('image/jpeg', q); };
 window.__framePNG = (t) => { frame(t); return cv.toDataURL('image/png'); };
 window.__ready = Promise.resolve(true);
-window.FILM = { DURATION: LOOP, frame, scene: S, cues };
+window.FILM = { DURATION: FILM_LOOP, frame, scene: S, cues };
 if (!params.has('offline')) {
   const t0 = performance.now(), start = parseFloat(params.get('t') || 0);
   (function loop() { frame(start + (performance.now() - t0) / 1000); requestAnimationFrame(loop); })();

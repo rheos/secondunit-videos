@@ -6,6 +6,7 @@
 import { RNG, noise } from '../vendor/paper-fox/core/rng.js';
 import { linear, glow, piece } from '../vendor/paper-fox/core/piece.js';
 import { mix, shade, vary, rgba } from '../vendor/paper-fox/core/color.js';
+import { E } from '../vendor/paper-fox/core/ease.js';
 import { drawSprites } from '../vendor/paper-fox/core/sprite.js';
 import { transform } from '../vendor/paper-fox/core/geom.js';
 import { LIGHT, PAL, CLAY_MAT, CLAY_EDGE, shadowBlur, clayForm, tube, steps, dot } from './kit.js';
@@ -18,6 +19,8 @@ const P = PAL;
 const TAU = Math.PI * 2;
 const circle = (cx, cy, r, n = 36) => [...Array(n)].map((_, i) => [cx + Math.cos(i / n * TAU) * r, cy + Math.sin(i / n * TAU) * r]);
 export const LOOP = 12;
+// the film wraps at 24 s: three 8 s breaths of the bellows (4 s each way, Robin); everything else repeats every 12 s
+export const FILM_LOOP = 24, BREATH = 8;
 // a sprite as made, and again reflected in the centre line x = 960
 const pair = (sp) => [{ s: sp }, { s: sp, ax: 960, ay: 0, x: 960, y: 0, sx: -1, sy: 1 }];
 // a plane whose sprite crosses the centre line: the left half drawn as made and the right half reflected, each
@@ -91,7 +94,9 @@ export function addWorld(S) {
     const tri = pal.glass.map((c, k) => lsp(`${name}-tri-${k}`, 20, 20, (g) => clayForm(g, [[-6, 5], [0, -7], [6, 5]], k ? pal.rays[k % 3] : pal.sill, { smooth: false, size: 7 })));
     const dia = pal.glass.map((c, k) => lsp(`${name}-dia-${k}`, 20, 20, (g) => clayForm(g, [[0, -7], [5, 0], [0, 7], [-5, 0]], pal.rays[(k + 1) % 3], { smooth: false, size: 7 })));
     const stud = pal.glass.map((c, k) => lsp(`${name}-stud-${k}`, 16, 16, (g) => clayForm(g, circle(0, 0, 4.5, 20), k === 1 ? pal.sill : pal.rays[k], { sheen: 0.3 })));
-    return { R, plate, hub, ray, win, tri, dia, stud };
+    // the tunnel suns' ring discs: one clay disc per band colour, scaled to each ring's radius
+    const discs = (pal.bands || []).map((c, k) => lsp(`${name}-disc-${k}`, R * 2 + 20, R * 2 + 20, (g) => clayForm(g, circle(0, 0, R, 64), c, { sheen: 0.14 })));
+    return { R, plate, hub, ray, win, tri, dia, stud, discs };
   }
   // rings: [radius, windows, window scale, turns per loop (in window spacings: sign gives the way round)]
   const RINGS = [[0.8, 18, 1.15, -6], [0.57, 13, 1.0, 4], [0.35, 8, 0.85, -3]];
@@ -123,24 +128,73 @@ export function addWorld(S) {
         items.push({ s: sun.win[(i + ri) % 3], x: LX + Math.cos(a) * rr, y: LY + Math.sin(a) * rr, rot: a, sx: sz, sy: sz });
       }
     });
-    items.push({ s: sun.hub, x: LX, y: LY, sx: scale, sy: scale });
+    if (sun.discs.length) items.push(...centreItems(sun, t, sun.R * 0.24 * scale));
+    else items.push({ s: sun.hub, x: LX, y: LY, sx: scale, sy: scale });
     return items;
   }
-  const front = makeSun('lantern', 92, { plate: mix(P.butter, '#f6c36a', 0.4), hub: '#f6c36a', eye: P.pink, rays: [P.butter, '#f6c36a', '#f29d5c'], sill: P.butterDeep, glass: ['#ffe2a0', '#ffd27e', '#fff0c8'] });
-  const back = makeSun('backsun', 150, { plate: mix(P.mint, P.aqua, 0.5), hub: P.lilac, eye: P.butter, rays: [P.aqua, P.mint, P.lilac], sill: P.mintDeep, glass: ['#e8fbf6', '#d6f2ff', '#efe6ff'] });
-  const far = makeSun('farsun', 220, { plate: mix(P.pink, P.lilac, 0.45), hub: P.blush, eye: P.mint, rays: [P.blush, P.pink, P.lilac], sill: P.pinkDeep, glass: ['#fff0f4', '#f6e2ff', '#ffe8ee'] });
+  // The layered suns (Robin: "endless layers of oscillating sun rings, collapsing into each other and expanding
+  // again, and in the middle new ones keep growing and engulfing the center one"; the centre grows only as far as it
+  // does already). Every ring is a solid clay disc, drawn largest first, so the bands are all colour and nothing
+  // behind shows through. The bands stay in their places and breathe with the bellows (8 s): their inner edges
+  // crowd out toward the rim and spread back in, with a ripple running inward. In the middle a new centre disc is
+  // born every 3 s (each chord change) and grows over the old one until it has swallowed it. Four colours and eight
+  // births a loop, so the pattern comes round at the seam.
+  const CENTRE = { every: 3, r: 0.24 };
+  // the centre: the current disc at full size (rcen), the next one growing over it from nothing until it has
+  // swallowed it, one every 3 s; each carries a ring of diamonds and a stud at its heart
+  function centreItems(sun, t, rcen) {
+    const items = [], nb = sun.discs.length, u = t / CENTRE.every, j = Math.floor(u), g = E.smooth(u - j);
+    for (const [k, f] of [[j - 1, 1], [j, g]]) {
+      const r = rcen * f, st = ((k % nb) + nb) % nb;
+      if (r < 0.5) continue;
+      items.push({ s: sun.discs[st], x: LX, y: LY, sx: r / sun.R, sy: r / sun.R });
+      for (let i = 0; i < 8; i++) {
+        const an = (k % 2 ? -1 : 1) * TAU * t / 6 + i / 8 * TAU;
+        items.push({ s: sun.dia[(i + st) % 3], x: LX + Math.cos(an) * r * 0.62, y: LY + Math.sin(an) * r * 0.62, rot: an + Math.PI / 2, sx: r / 40, sy: r / 40 });
+      }
+      items.push({ s: sun.stud[st % 3], x: LX, y: LY, sx: r / 14, sy: r / 14 });
+    }
+    return items;
+  }
+  function layeredItems(sun, t, { spin, scale = 1, breath = 0, rays = 18, rings = DENSE }) {
+    const R = sun.R * scale, items = [], nb = sun.discs.length;
+    for (let i = 0; i < rays; i++) {
+      const a = spin + i / rays * TAU, reach = 1 + 0.45 * Math.sin(TAU * (t / 3 - i * 3 / rays));
+      const d = (sun.R + 2 + 6 * (reach - 1)) * scale;
+      items.push({ s: sun.ray, ax: 0, ay: 20, x: LX + Math.cos(a) * d, y: LY + Math.sin(a) * d, rot: a + Math.PI / 2, sx: scale, sy: scale * Math.max(0.3, reach) });
+    }
+    items.push({ s: sun.plate, x: LX, y: LY, sx: scale, sy: scale });
+    // a band's radius, as a fraction of the rim: squeezed toward the rim on the in-breath, let back on the out
+    const rad = (rk, ri) => 1 - (1 - rk) * (1 - 0.32 * breath) + 0.025 * Math.sin(TAU * (t / 3 + ri / 6));
+    const radii = rings.map(([rk], ri) => rad(rk, ri)), inner = [...radii.slice(1), CENTRE.r * (1 - 0.2 * breath)];
+    rings.forEach(([, n, shape, ws, turns], ri) => {
+      const r = R * radii[ri], rin = R * inner[ri];
+      items.push({ s: sun.discs[ri % nb], x: LX, y: LY, sx: r / sun.R, sy: r / sun.R });
+      const rc = (r + rin) / 2, sz = Math.min(ws * scale, (r - rin) * 0.75 / 12), turn = TAU * turns / n * t / LOOP;
+      for (let i = 0; i < n; i++) {
+        const an = turn + i / n * TAU, pulse = 0.75 + 0.5 * Math.max(0, Math.sin(TAU * (t / 3 + 2 * i / n - ri / 8)));
+        items.push({ s: sun[shape][(i + ri) % 3], x: LX + Math.cos(an) * rc, y: LY + Math.sin(an) * rc, rot: an + Math.PI / 2, sx: sz * pulse, sy: sz * pulse });
+      }
+    });
+    items.push(...centreItems(sun, t, R * inner[inner.length - 1]));
+    return items;
+  }
+  const front = makeSun('lantern', 92, { bands: ['#f6c36a', P.pink, '#f29d5c', P.butter], plate: mix(P.butter, '#f6c36a', 0.4), hub: '#f6c36a', eye: P.pink, rays: [P.butter, '#f6c36a', '#f29d5c'], sill: P.butterDeep, glass: ['#ffe2a0', '#ffd27e', '#fff0c8'] });
+  const back = makeSun('backsun', 150, { bands: [P.mint, P.aqua, mix(P.mint, P.lilac, 0.5), '#d6f2ec'], plate: mix(P.mint, P.aqua, 0.5), hub: P.lilac, eye: P.butter, rays: [P.aqua, P.mint, P.lilac], sill: P.mintDeep, glass: ['#e8fbf6', '#d6f2ff', '#efe6ff'] });
+  const far = makeSun('farsun', 290, { bands: [P.pink, P.lilac, P.blush, mix(P.pink, P.lilac, 0.5)], plate: mix(P.pink, P.lilac, 0.45), hub: P.blush, eye: P.mint, rays: [P.blush, P.pink, P.lilac], sill: P.pinkDeep, glass: ['#fff0f4', '#f6e2ff', '#ffe8ee'] });
   S.add({ name: 'lantern-glow', z: 5810, blend: 'lighter', render(ctx, t) {
     glow(ctx, LX, LY, 700, '#ffd9a0', 0.2 + 0.03 * cyc(t, 2));
     glow(ctx, LX, LY, 260, '#fff0c8', 0.3);
   } });
-  // the third sun, furthest back and largest, rose and lilac: turning with the front one, swelling as the bellows
-  // empty (at 0 and 6 s) while the middle one swells as they fill (at 3 and 9 s): they breathe with the sound
+  // the third sun, furthest back and largest, rose and lilac: turning with the front one, swelling with the
+  // bellows' pull (fullest 2 s into each 8 s breath) while the middle one swells with the push (6 s in): with the
+  // breath played backwards the pull comes first, 0-4 s, and the push 4-8 s
   S.add({ name: 'farsun', z: 5800, shadow: { dx: 8, dy: 14, alpha: 0.18 }, render(ctx, t, env) {
-    drawSprites(ctx, sunItems(far, t, { spin: TAU * (3 / 18) * t / LOOP, scale: 1 + 0.18 * Math.cos(TAU * t / 6), rays: 18, rings: DENSE }), env.shadow);
+    drawSprites(ctx, layeredItems(far, t, { spin: TAU * (3 / 18) * t / LOOP, scale: 1 + 0.1 * Math.cos(TAU * (t - 2) / BREATH), breath: Math.cos(TAU * (t - 6) / BREATH) }), env.shadow);
   } });
-  // the sun behind: larger, cooler, turning the other way, swelling with each breath of the bellows (6 s)
+  // the sun behind: larger, cooler, turning the other way, swelling with each push of the bellows
   S.add({ name: 'backsun', z: 5600, shadow: { dx: 8, dy: 14, alpha: 0.22 }, render(ctx, t, env) {
-    drawSprites(ctx, sunItems(back, t, { spin: -TAU * (4 / 18) * t / LOOP, scale: 1 - 0.22 * Math.cos(TAU * t / 6), dir: -1, rings: DENSE.slice(0, 6).map(([r, n, sh, w, tu]) => [r, Math.round(n * 0.75), sh, w * 0.9, tu]) }), env.shadow);
+    drawSprites(ctx, layeredItems(back, t, { spin: -TAU * (4 / 18) * t / LOOP, scale: 1 + 0.22 * Math.cos(TAU * (t - 6) / BREATH), breath: Math.cos(TAU * (t - 2) / BREATH), rings: DENSE.slice(0, 6).map(([r, n, sh, w, tu]) => [r, Math.round(n * 0.75), sh, w * 0.9, tu]) }), env.shadow);
   } });
   // the front sun: spinning, and rocking back and forth as it goes, turning back at each chord change (every 3 s)
   S.add({ name: 'lantern', z: 5000, shadow: { dx: 8, dy: 14, alpha: 0.25 }, anim: (t) => ({ y: 4 * cyc(t, 1) }), render(ctx, t, env) {

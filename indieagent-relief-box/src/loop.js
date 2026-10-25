@@ -13,12 +13,12 @@ import { drawSprites } from '../vendor/paper-fox/core/sprite.js';
 import { finish } from '../vendor/paper-fox/core/post.js';
 import { E, lerp, smoothstep } from '../vendor/paper-fox/core/ease.js';
 import { LIGHT, PAL, setFinish, clayForm } from './kit.js';
-import { shade } from '../vendor/paper-fox/core/color.js';
+import { shade, mix } from '../vendor/paper-fox/core/color.js';
 
 // draft 9: the crisp, constructed finish (set before anything is baked)
 setFinish('crisp');
 import { ISLAND } from './props.js';
-import { LOOP, cyc, addWorld, addNear } from './loop-world.js';
+import { LOOP, FILM_LOOP, cyc, addWorld, addNear } from './loop-world.js';
 import { CONSOLE, INSTR, knobAngle, leverAngle, sliderK, addMachines, mirrored } from './loop-machine.js';
 import { makeFigure, drawFigure } from './loop-figures.js';
 import { solidEdges } from './loop-shapes.js';
@@ -206,22 +206,46 @@ function singerMakes(ctx, t, phase, x, f, hip, kinds, hue) {
 
 // ---------------- the chorus at the funnel's foot: bounce, cheer each offering, pop into solids ----------------
 // Eight elves on three tiers of pedestals: one in front, three behind, four at the back. Every 1.5 s (each chord
-// change and each half chord) they all hop one place along a closed path through the eight places, so a new elf
-// comes to the front each time and each has the front once a loop. The path, as [x off the centre line, tier]:
-// the front, up the right side, along the back, down to the middle, along the back the other way, down the left.
+// change and each half chord) some of them trade places, by one of eight moves: left and right trading across the
+// centre line, the front and middle trading up the spine, triangles on one side, diagonals, crossings behind, outer
+// and inner trading at the back. The moves run in a 16-step phrase (24 s) that brings everyone home at the seam;
+// six different elves take the front in it. Places, as [x off the centre line, tier], in this order:
+// the front, middle right, back right outer, back right inner, middle centre, back left inner, back left outer,
+// middle left.
 const CHORUS_CAST = [['bells', P.mint, P.pinkDeep], [P.butter, P.pink], ['pom', P.lilac], ['bells', P.butter, P.iris]];
 const CHORUS_N = 8, SWAP = 1.5, MOVE = 0.6, RISE = 46;
 const PLACES = [[0, 0], [140, 1], [210, 2], [70, 2], [0, 1], [-70, 2], [-210, 2], [-140, 1]];
 const PEDESTAL = [P.butter, P.aqua, P.blush];
-// where elf j stands at t: its place, the tier as a smooth number (for drawing order and the wave), and the hop
-function chorusPlace(t, j) {
-  const k0 = Math.floor(mod(t, LOOP) / SWAP), next = SWAP * (k0 + 1);
-  const p = smoothstep(next - MOVE, next, mod(t, LOOP));
-  const [xa, ra] = PLACES[(j + k0) % CHORUS_N], [xb, rb] = PLACES[(j + k0 + 1) % CHORUS_N];
-  return { x: 960 + lerp(xa, xb, p), tier: lerp(ra, rb, p), hop: Math.sin(Math.PI * p) * (10 + 10 * Math.abs(rb - ra)) };
+const MOVES = {
+  mirror: [[1, 7], [2, 6], [3, 5]], spine: [[0, 4]], outerin: [[2, 3], [6, 5]], wings: [[1, 2], [7, 6]],
+  diag: [[1, 3], [7, 5], [0, 4]], triL: [[0, 7], [4, 5]], triR: [[0, 1], [4, 3]], cross: [[6, 3], [2, 5]],
+};
+const PHRASE = ['triL', 'diag', 'triR', 'spine', 'triL', 'diag', 'mirror', 'triR', 'spine', 'triR', 'cross', 'mirror', 'triL', 'triR', 'triL', 'outerin'];
+// who stands where after each step: AT[k][place] = elf, WHERE[k][elf] = place (AT[16] is AT[0] again)
+const AT = [[0, 1, 2, 3, 4, 5, 6, 7]];
+for (const mv of PHRASE) { const p = AT[AT.length - 1].slice(); for (const [a, b] of MOVES[mv]) [p[a], p[b]] = [p[b], p[a]]; AT.push(p); }
+const WHERE = AT.map((p) => { const w = []; p.forEach((e, pl) => { w[e] = pl; }); return w; });
+// The pedestals are pistons: each fires once a chord (3 s), in a firing order that skips back and forth across the
+// tiers, one every 3/8 s; it shoots up, holds, and sinks back below its rest height before the next firing.
+const FIRING = [0, 5, 2, 7, 4, 1, 6, 3], FIRE_GAP = 3 / 8;
+function lift(place, t) {
+  const u = mod(t - FIRING.indexOf(place) * FIRE_GAP, 3);
+  const ext = smoothstep(0, 0.1, u) * (1 - smoothstep(0.6, 1.4, u));
+  return (ext - 0.35) * 26;
 }
-// the front at each swap: elf (-k mod 8) arrives there at k * SWAP
-const frontAt = (k) => mod(-k, CHORUS_N);
+// where elf j stands at t: its place, the tier as a smooth number (for drawing order and the wave), the piston
+// height under it, and the hop when it moves
+function chorusPlace(t, j) {
+  const tt = mod(t, FILM_LOOP), k0 = Math.floor(tt / SWAP), next = SWAP * (k0 + 1);
+  const pa = WHERE[k0 % 16][j], pb = WHERE[(k0 + 1) % 16][j];
+  const p = pa === pb ? 0 : smoothstep(next - MOVE, next, tt);
+  const [xa, ra] = PLACES[pa], [xb, rb] = PLACES[pb];
+  const run = Math.hypot(xb - xa, (rb - ra) * RISE);
+  return { x: 960 + lerp(xa, xb, p), tier: lerp(ra, rb, p), lift: lerp(lift(pa, t), lift(pb, t), p),
+    hop: Math.sin(Math.PI * p) * (10 + run * 0.08), moving: pa !== pb };
+}
+// the front after step k: the elf now standing in place 0
+const frontAt = (k) => AT[mod(k, 16)][0];
 // the offerings the chorus cheers: the adept's at 3.2 and 9.2, the seer's at 6.2 and 0.2 (each about 1.2 s)
 const cheerAt = (t) => Math.max(...[3.2, 9.2, 6.2, 0.2].map((a) => loopBump(t, a - 0.1, 1.4)));
 // poi spinning without the poi: each arm held straight at full stretch swings a big circle from its shoulder, the two
@@ -234,8 +258,8 @@ const WAVE = { period: 3, lag: 0.25 };
 const CROSS = Math.acos(9.2 / 35.2) / TAU;
 const chorusTheta = (t, tier) => TAU * ((t - tier * WAVE.lag) / WAVE.period - CROSS);
 function chorusPose(t, j) {
-  const { x, tier, hop } = chorusPlace(t, j);
-  const ch = cheerAt(t), k = 0.85 * FS * (1 - 0.06 * tier), base = GROUND - tier * RISE, hip = base - 33 * k;
+  const { x, tier, hop, lift: up } = chorusPlace(t, j);
+  const ch = cheerAt(t), k = 0.85 * FS * (1 - 0.06 * tier), base = GROUND - tier * RISE - up, hip = base - 33 * k;
   const th = chorusTheta(t, tier);
   // a small bounce twice a turn, at the top and bottom of the circle, on top of the hop from place to place
   const bounce = (2 + 6 * ch) * k * Math.abs(Math.sin(th)), b = bounce + hop;
@@ -249,20 +273,26 @@ function chorusPose(t, j) {
     shift: loopBump(t, 0.05 + (j + 1) * SWAP, 0.8), shiftKind: ['ico', 'cube', 'octa', 'dodeca'][j % 4], shiftSpin: TAU * t / 2 };
 }
 
-// a pedestal for each place: a short hexagonal column whose top is the tier the elf stands on
-function pedestal(ctx, x, tier) {
-  const top = GROUND - tier * RISE + 2, s = 1 - 0.06 * tier, rx = 30 * s, ry = 8 * s, bot = GROUND + 16;
-  const hex = (y) => [0, 1, 2, 3, 4, 5].map((q) => [x + rx * Math.cos(q * Math.PI / 3), y + ry * Math.sin(q * Math.PI / 3)]);
-  const T0 = hex(top), B0 = hex(bot);
-  // the front faces of the column (the three lower edges of the hexagon dropped to the floor), then the top
-  clayForm(ctx, [T0[0], T0[1], T0[2], T0[3], B0[3], B0[2], B0[1], B0[0]], shade(PEDESTAL[tier], -0.12), { size: 20, smooth: false });
-  clayForm(ctx, T0, PEDESTAL[tier], { size: 14, smooth: false });
+// a piston for each place: a hexagonal sleeve standing on the floor, a narrower rod, and a cap the elf stands on
+function pedestal(ctx, place, t) {
+  const [dx, tier] = PLACES[place], x = 960 + dx, rest = GROUND - tier * RISE + 2, top = rest - lift(place, t);
+  const s = 1 - 0.06 * tier, rx = 30 * s, ry = 8 * s, bot = GROUND + 16, sleeve = rest + 14, col = PEDESTAL[tier];
+  const hex = (y, w = 1) => [0, 1, 2, 3, 4, 5].map((q) => [x + rx * w * Math.cos(q * Math.PI / 3), y + ry * w * Math.sin(q * Math.PI / 3)]);
+  // the front faces of a prism from y0 down to y1 (the three lower edges of the hexagon dropped), then its top
+  const prism = (y0, y1, w, fill) => {
+    const T0 = hex(y0, w), B0 = hex(y1, w);
+    if (y1 > y0 + 0.5) clayForm(ctx, [T0[0], T0[1], T0[2], T0[3], B0[3], B0[2], B0[1], B0[0]], shade(fill, -0.12), { size: 20, smooth: false });
+    clayForm(ctx, T0, fill, { size: 14, smooth: false });
+  };
+  if (sleeve < bot) prism(sleeve, bot, 1, shade(col, -0.05));
+  prism(top + 5, sleeve, 0.62, mix(col, '#ffffff', 0.25));
+  prism(top, top + 5, 1.04, col);
 }
 
 function drawChorus(ctx, t, env, chorus) {
-  // back to front: each tier's pedestals, then the elves standing on it (an elf is drawn just in front of the
-  // pedestals of the tier it is on, so one hopping down passes in front of the lower tier only once it is half way)
-  const items = PLACES.map(([dx, tier]) => ({ depth: tier, draw: () => pedestal(ctx, 960 + dx, tier) }));
+  // back to front: each tier's pistons, then the elves standing on it (an elf is drawn just in front of the
+  // pistons of the tier it is on, so one hopping down passes in front of the lower tier only once it is half way)
+  const items = PLACES.map(([, tier], pl) => ({ depth: tier, draw: () => pedestal(ctx, pl, t) }));
   for (let j = 0; j < CHORUS_N; j++) items.push({ depth: chorusPlace(t, j).tier - 0.5, draw: () => drawFigure(ctx, chorus[j], chorusPose(t, j), env) });
   items.sort((a, b) => b.depth - a.depth).forEach((it) => it.draw());
 }
@@ -270,7 +300,7 @@ function drawChorus(ctx, t, env, chorus) {
 function scene() {
   return new Scene({
     id: 'relief-loop',
-    duration: LOOP,
+    duration: FILM_LOOP,
     background: '#f6e4d8',
     light: LIGHT,
     shadow: { alpha: 0.44, dist: 10, blur: 6 },
@@ -314,10 +344,13 @@ function scene() {
 }
 
 // ---------------- the cue list: every event in the loop, for the sound to land on ----------------
-// Each cue: { t (s, within the loop), kind, x (authored px, for the stereo position), dur?, n? }. Mirrored twins
-// give a cue on each side. Computed from the same schedules the picture uses, so the two cannot drift apart.
+// Each cue: { t (s, within the 24 s film), kind, x (authored px, for the stereo position), dur?, n? }. Mirrored
+// twins give a cue on each side. Computed from the same schedules the picture uses, so the two cannot drift apart.
+// Most of the film repeats every 12 s, so add() lists an event at t and t + 12; the chorus's phrase runs the whole
+// 24 s, so its cues go in once each with add24().
 function cues() {
-  const out = [], add = (t, kind, x, extra = {}) => out.push({ t: +mod(t, LOOP).toFixed(4), kind, x, ...extra });
+  const out = [], add24 = (t, kind, x, extra = {}) => out.push({ t: +mod(t, FILM_LOOP).toFixed(4), kind, x, ...extra });
+  const add = (t, kind, x, extra = {}) => { add24(mod(t, LOOP), kind, x, extra); add24(mod(t, LOOP) + LOOP, kind, x, extra); };
   const both = (t, kind, x, extra) => { add(t, kind, x, extra); add(t, kind, 1920 - x, extra); };
   // the funnel: eight things round it every 6 s, odd ones down the right pipe
   for (let n = 0; n < 8; n++) for (const k of [0, 1]) {
@@ -341,18 +374,20 @@ function cues() {
     both(c0 + T.offer[1], 'rise', x);
   }
   // the chorus: each swap of places, with the elf arriving at the front and whether a chord changes on it
-  for (let k = 0; k < LOOP / SWAP; k++) add(k * SWAP, 'swap', 960, { n: frontAt(k), chord: k % 2 === 0 });
+  for (let k = 0; k < FILM_LOOP / SWAP; k++) add24(k * SWAP, 'swap', 960, { n: frontAt(k), chord: k % 2 === 0, newFront: frontAt(k) !== frontAt(k - 1) });
+  // the pistons firing, eight a chord, pitched by tier
+  for (let bar = 0; bar < LOOP / 3; bar++) FIRING.forEach((pl, i) => add(3 * bar + i * FIRE_GAP, 'piston', 960 + PLACES[pl][0], { n: PLACES[pl][1] }));
   // a tick each time an elf's outstretched arms cross (twice a turn, high and low), pitched by its tier. An elf
   // changing tiers changes timing, so the crossings are found by stepping its arm angle through the loop.
   const DT = 1 / 480;
-  for (let j = 0; j < CHORUS_N; j++) for (let s = 0; s < LOOP / DT; s++) {
+  for (let j = 0; j < CHORUS_N; j++) for (let s = 0; s < FILM_LOOP / DT; s++) {
     const t0 = s * DT, t1 = t0 + DT, a = chorusPlace(t0, j), b = chorusPlace(t1, j);
     const u0 = chorusTheta(t0, a.tier) / TAU, u1 = chorusTheta(t1, b.tier) / TAU;
-    for (const [q, high] of [[0, true], [2 * CROSS, false]]) if (Math.floor(u1 - q) > Math.floor(u0 - q)) add(t1, 'tick', b.x, { n: Math.round(b.tier), high });
+    for (const [q, high] of [[0, true], [2 * CROSS, false]]) if (Math.floor(u1 - q) > Math.floor(u0 - q)) add24(t1, 'tick', b.x, { n: Math.round(b.tier), high });
   }
   // heads popping into solids
   both(7.3, 'pop', 566); both(4.6, 'pop', 318); both(10.7, 'pop', 170); both(1.6, 'pop', 300);
-  for (let j = 0; j < CHORUS_N; j++) { const tp = 0.05 + (j + 1) * SWAP + 0.4; add(tp, 'pop', chorusPlace(tp, j).x); }
+  for (let j = 0; j < CHORUS_N; j++) for (const r of [0, LOOP]) { const tp = 0.05 + (j + 1) * SWAP + 0.4 + r; add24(tp, 'pop', chorusPlace(tp, j).x); }
   // the consoles' levers, the instruments' released cubes
   for (const q of [1.6, 4.6, 7.6, 10.6]) both(q, 'lever', 612);
   both(7.0, 'cube', 384);
@@ -369,7 +404,7 @@ const S = scene();
 S.build();
 
 function frame(t) {
-  t = mod(t, LOOP);
+  t = mod(t, FILM_LOOP);
   S.render(ctx, t);
   finish(ctx, { ...S.post, frame: Math.round(t * 24) });
 }
@@ -377,7 +412,7 @@ function frame(t) {
 window.__frameJPEG = (t, q = 0.93) => { frame(t); return cv.toDataURL('image/jpeg', q); };
 window.__framePNG = (t) => { frame(t); return cv.toDataURL('image/png'); };
 window.__ready = Promise.resolve(true);
-window.FILM = { DURATION: LOOP, frame, scene: S, cues };
+window.FILM = { DURATION: FILM_LOOP, frame, scene: S, cues };
 if (!params.has('offline')) {
   const t0 = performance.now(), start = parseFloat(params.get('t') || 0);
   (function loop() { frame(start + (performance.now() - t0) / 1000); requestAnimationFrame(loop); })();
