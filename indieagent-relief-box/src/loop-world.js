@@ -291,9 +291,9 @@ export function addWorld(S) {
 
   // a chevron fan anywhere (the island hangs a pair either side of its roots, loop.js): the same opening and folding,
   // turned by rot, flip -1 for the mirror one
-  const chevronFan = (ctx, x, y, rot, t, ph, env, flip = 1) => {
+  const chevronFan = (ctx, x, y, rot, t, ph, env, flip = 1, sc = 1) => {
     const fan = W(t, 4, ph), open = Math.max(0, fan), shut = Math.max(0, -fan);
-    ctx.save(); ctx.translate(x, y); ctx.rotate(rot); ctx.scale(flip, 1);
+    ctx.save(); ctx.translate(x, y); ctx.rotate(rot); ctx.scale(flip * sc, sc);
     drawSprites(ctx, chevs.map((c, k) => ({ s: c, x: (k - 1) * 14 * open, y: (k - 1) * 13 * (1 + 1.3 * open - shut * 0.95), rot: (k - 1) * 0.5 * open, sx: 1 + 0.45 * W(t, 6, ph + k / 3), sy: 1 })), fsh(env));
     ctx.restore();
   };

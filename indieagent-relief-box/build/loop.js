@@ -2547,9 +2547,9 @@ function addWorld(S) {
 
   // a chevron fan anywhere (the island hangs a pair either side of its roots, loop.js): the same opening and folding,
   // turned by rot, flip -1 for the mirror one
-  const chevronFan = (ctx, x, y, rot, t, ph, env, flip = 1) => {
+  const chevronFan = (ctx, x, y, rot, t, ph, env, flip = 1, sc = 1) => {
     const fan = W(t, 4, ph), open = Math.max(0, fan), shut = Math.max(0, -fan);
-    ctx.save(); ctx.translate(x, y); ctx.rotate(rot); ctx.scale(flip, 1);
+    ctx.save(); ctx.translate(x, y); ctx.rotate(rot); ctx.scale(flip * sc, sc);
     drawSprites(ctx, chevs.map((c, k) => ({ s: c, x: (k - 1) * 14 * open, y: (k - 1) * 13 * (1 + 1.3 * open - shut * 0.95), rot: (k - 1) * 0.5 * open, sx: 1 + 0.45 * W(t, 6, ph + k / 3), sy: 1 })), fsh(env));
     ctx.restore();
   };
@@ -3724,15 +3724,16 @@ function scene() {
         // chevron fans at the island (Robin: "on the other side of the floating mountain... and the mirror of it...
         // along the contour of the mountain base"): one either side of the stepped roots, its chevrons running along
         // the slope of the roots toward the tip, one the mirror of the other (?chev=pair). Chosen instead: the fan cloned
-        // round a ring behind the island, each pointing outward, opening in a wave that runs round the ring.
+        // round a centre under the roots, a mandala.
         const cx = ISLAND.x + IX, cy = ISLAND.y + IY, along = Math.atan2(96, 130) - Math.PI / 2;
-        if (CHEV_RADIAL) {
-          // the ring hangs behind the island
-          const n = 12, R = 235;
-          for (let i = 0; i < n; i++) { const a = i / n * TAU; world.chevronFan(ctx, cx + Math.cos(a) * R, cy + 10 + Math.sin(a) * R * 0.6, a - Math.PI / 2, t, i / n, env); }
-        }
         drawSprites(ctx, [{ s: world.island, ax: ISLAND.x, ay: ISLAND.y, x: ISLAND.x + IX, y: ISLAND.y + IY }], env.shadow);
-        if (!CHEV_RADIAL) for (const sd of [-1, 1]) world.chevronFan(ctx, cx + sd * 100, cy + 84, -sd * along, t, 0.31, env, sd);
+        if (CHEV_RADIAL) {
+          // a mandala hanging under the roots' tip (Robin: "around the points of the chevrons, so they extend outward
+          // from their center, in a tighter cluster, like a mandala"): eight fans round one centre, their chevrons'
+          // points facing in, each stacking outward along its spoke, opening and folding in a wave that runs round
+          const n = 8, mx = cx, my = cy + 158;
+          for (let i = 0; i < n; i++) { const a = i / n * TAU - Math.PI / 2; world.chevronFan(ctx, mx + Math.cos(a) * 24, my + Math.sin(a) * 24, a + Math.PI / 2, t, i / n, env, 1, 0.52); }
+        } else for (const sd of [-1, 1]) world.chevronFan(ctx, cx + sd * 100, cy + 84, -sd * along, t, 0.31, env, sd);
 
         const ground = ISLAND.y - 4 + IY, x = 300, hip = ground - 14 * FS, kinds = ['star', 'octa'];
         singerBurst(ctx, t, 3, x, 1, hip);
