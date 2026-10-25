@@ -20,7 +20,7 @@ import { shade, mix } from '../vendor/paper-fox/core/color.js';
 setFinish('crisp');
 import { ISLAND } from './props.js';
 import { LOOP, FILM_LOOP, cyc, addWorld, addNear } from './loop-world.js';
-import { PANEL, PRESSES, btn, INSTR, sliderK, addMachines, mirrored } from './loop-machine.js';
+import { PANEL, PRESSES, pressAt, INSTR, sliderK, addMachines, mirrored } from './loop-machine.js';
 import { makeFigure, drawFigure } from './loop-figures.js';
 import { solidEdges } from './loop-shapes.js';
 import { MK, MK_RAMP, PS, markLayer, paintMarkSolid, paintBurst, paintGlyph, paintLines } from './loop-mark.js';
@@ -42,7 +42,7 @@ const hop = (t, period, ph, h) => h * Math.abs(Math.sin(TAU * (t / period + ph) 
 // holds through it, and sets off for its next key; at 1.6 both hands come down together. The head turns a little
 // toward the hand that is working.
 const OPX = 566;
-const HAND_PRESSES = [0, 1].map((h) => PRESSES.filter(([, hh]) => hh === h).map(([pt, , c, r]) => [pt, btn(c, r)]).sort((a, b) => a[0] - b[0]));
+const HAND_PRESSES = [0, 1].map((h) => PRESSES.filter(([, hh]) => hh === h).map((p) => [p[0], pressAt(p)]).sort((a, b) => a[0] - b[0]));
 function handAt(q, h) {
   const list = HAND_PRESSES[h], n = list.length;
   let i = list.findIndex(([pt]) => pt > q); if (i < 0) i = n;
@@ -398,7 +398,7 @@ function cues() {
   for (let j = 0; j < CHORUS_N; j++) for (const r of [0, LOOP]) { const tp = 0.05 + (j + 1) * SWAP + 0.4 + r; add24(tp, 'pop', chorusPlace(tp, j).x); }
   // the consoles' levers, the instruments' released cubes
   // the operators' presses: the two-handed one at 1.6 in each 3 s keeps the old lever's sound; the rest are presses
-  for (let bar = 0; bar < LOOP / 3; bar++) for (const [pt, , c, r] of PRESSES) if (pt !== 1.6) both(3 * bar + pt, 'press', btn(c, r)[0], { n: c + r });
+  for (let bar = 0; bar < LOOP / 3; bar++) PRESSES.forEach((p, i) => { if (p[0] !== 1.6) both(3 * bar + p[0], 'press', pressAt(p)[0], { n: i }); });
   for (const q of [1.6, 4.6, 7.6, 10.6]) both(q, 'lever', OPX);
   both(7.0, 'cube', 384);
   return out.sort((a, b) => a.t - b.t);

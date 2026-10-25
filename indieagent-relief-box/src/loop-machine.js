@@ -280,43 +280,98 @@ function drawFunnelFront(g, ph) {
 }
 
 // ---------------- the console ----------------
-// After Mark Von Ulrich's control panels (his "machine elves" piece: a board of square buttons held up and worked by
-// hand), in our own clay colours (Robin: "not in Mark's colours"). The panel stands upright facing us; its operator
-// stands on our side of it, back to us, pressing buttons on the machine rhythm. A grid of 6 by 4 buttons, a run of
-// lights chasing along the top row, a dial; a button lights as it is pressed and fades.
-export const PANEL = { x0: 506, x1: 628, y0: 834, y1: 930, cols: [518, 536, 554, 578, 596, 614], rows: [858, 874, 890, 906] };
-const BTN_COLS = [P.mint, P.butter, '#f6b27e', P.lilac, P.aqua, P.butter];
-export const btn = (c, r) => [PANEL.cols[c], PANEL.rows[r]];
-// the presses in each 3 s: [time, hand (0 left, 1 right), col, row]; at 1.6 both hands come down together on the
-// two big middle-row keys (the old lever's beat); the rest fall on the 3/8 s grid of the machine rhythm
-export const PRESSES = [[0.1, 0, 1, 2], [0.475, 1, 4, 2], [0.85, 0, 0, 3], [1.225, 1, 5, 3], [1.6, 0, 1, 1], [1.6, 1, 4, 1], [2.35, 1, 4, 3], [2.725, 0, 1, 3]];
-const lit = (t, c, r) => PRESSES.reduce((m, [pt, , pc, pr]) => (pc === c && pr === r ? Math.max(m, Math.exp(-mod(t - pt, 3) / 0.35)) : m), 0);
+// After Mark Von Ulrich's control panels (his "machine elves" piece), in our own clay colours. A cabinet stands on the
+// floor with a sloping desk on top and an upright board above it (Robin: "on a cabinet with more controls on it, and
+// varied controls, not just little squares"). The board: a round meter whose needle swings with the drone's breath, a
+// scope screen with a running trace, two turning knobs, a row of chasing lamps. The desk: toggle switches and round
+// push buttons, worked by the operator who stands on our side, back to us. The cabinet front: sliders riding up and
+// down, small lamps, door panels.
+export const PANEL = { x0: 500, x1: 634, y0: 828, y1: 890, desk: 908, cab: 985 };
+const METER = [522, 852], SCOPE = [550, 836, 584, 858], KNOBS = [[606, 848], [624, 848]];
+const LAMPS = [...Array(9)].map((_, i) => [514 + i * 13.3, 870]);
+const TOGGLES = [[516, 882], [530, 882], [544, 882], [588, 882], [602, 882], [616, 882]];
+const BUTTONS = [[526, 899], [546, 899], [586, 899], [606, 899]];
+const BTN_FILL = ['#f6b27e', P.mint, P.butter, P.lilac];
+const SLIDERS = [[512, 918, 952], [524, 918, 952], [608, 918, 952], [620, 918, 952]];
+// the presses in each 3 s: [time, hand (0 left, 1 right), control, index]; at 1.6 both hands come down together on
+// the two outer push buttons (the old lever's beat); the rest fall on the 3/8 s grid of the machine rhythm
+export const PRESSES = [[0.1, 0, 'btn', 1], [0.475, 1, 'tog', 4], [0.85, 0, 'tog', 1], [1.225, 1, 'btn', 3], [1.6, 0, 'btn', 0], [1.6, 1, 'btn', 2], [2.35, 1, 'tog', 3], [2.725, 0, 'tog', 2]];
+export const pressAt = ([, , kind, i]) => (kind === 'btn' ? BUTTONS[i] : TOGGLES[i]);
+const pressed = (t, kind, i) => PRESSES.reduce((m, p) => (p[2] === kind && p[3] === i ? Math.max(m, Math.exp(-mod(t - p[0], 3) / 0.35)) : m), 0);
+// a toggle flips each time it is pressed (once a chord: four flips in 12 s, so it comes back to itself at the seam)
+const toggleOn = (t, i) => { const p = PRESSES.find((q) => q[2] === 'tog' && q[3] === i); return p ? (Math.floor((mod(t, LOOP) - p[0] + 3) / 3) + i) % 2 : i % 2; };
+
 function drawConsole(g) {
-  const { x0, x1, y0, y1 } = PANEL, ins = 6;
-  // two legs, the board (a little narrower at the top: it leans back), its face inset, and the cable to the duct
-  tube(g, [[x0 + 14, y1 - 4], [x0 + 8, 985]], 4, P.slateDeep); tube(g, [[x1 - 14, y1 - 4], [x1 - 8, 985]], 4, P.slateDeep);
-  clayForm(g, [[x0 + 4, y0], [x1 - 4, y0], [x1, y1], [x0, y1]], P.slate, { smooth: false, size: 30, sheen: 0.16 });
-  clayForm(g, [[x0 + 4 + ins, y0 + ins], [x1 - 4 - ins, y0 + ins], [x1 - ins, y1 - ins], [x0 + ins, y1 - ins]], mix(P.butter, P.bone, 0.5), { smooth: false, size: 20, sheen: 0.1 });
-  // the dial, top left of the face
-  clayForm(g, circle(x0 + 22, y0 + 16, 7, 24), P.slateDeep, { sheen: 0.2 });
+  const { x0, x1, y0, y1, desk, cab } = PANEL;
+  // the cabinet: a box down to the floor, two door panels with handles, a plinth
+  clayForm(g, [[x0 + 2, desk], [x1 - 2, desk], [x1 - 2, cab], [x0 + 2, cab]], mix(P.slate, P.lilac, 0.35), { smooth: false, size: 36, sheen: 0.14 });
+  for (const [a, b] of [[x0 + 8, (x0 + x1) / 2 - 3], [(x0 + x1) / 2 + 3, x1 - 8]]) {
+    clayForm(g, [[a, desk + 6], [b, desk + 6], [b, cab - 10], [a, cab - 10]], mix(P.slate, P.lilac, 0.5), { smooth: false, size: 18, sheen: 0.1 });
+  }
+  clayForm(g, [[x0 - 2, cab - 6], [x1 + 2, cab - 6], [x1 + 2, cab + 2], [x0 - 2, cab + 2]], P.slateDeep, { smooth: false, size: 10 });
+  for (const [x0s, y0s, y1s] of SLIDERS) clayForm(g, [[x0s - 2, y0s], [x0s + 2, y0s], [x0s + 2, y1s], [x0s - 2, y1s]], P.slateDeep, { smooth: false, size: 4, shadow: false });
+  // the sloping desk
+  clayForm(g, [[x0 - 4, y1 + 2], [x1 + 4, y1 + 2], [x1 + 2, desk + 2], [x0 - 2, desk + 2]], P.slate, { smooth: false, size: 20, sheen: 0.2 });
+  // the upright board, leaning back a little, and its face
+  clayForm(g, [[x0 + 6, y0], [x1 - 6, y0], [x1 - 2, y1 + 4], [x0 + 2, y1 + 4]], P.slate, { smooth: false, size: 26, sheen: 0.16 });
+  clayForm(g, [[x0 + 11, y0 + 5], [x1 - 11, y0 + 5], [x1 - 7, y1 - 1], [x0 + 7, y1 - 1]], mix(P.butter, P.bone, 0.5), { smooth: false, size: 18, sheen: 0.1 });
+  // bezels: the meter's round face, the scope's frame, the knobs, the lamps' sockets, the toggles' plates, the buttons' rims
+  clayForm(g, circle(METER[0], METER[1], 13, 32), P.slateDeep, { sheen: 0.2 });
+  clayForm(g, circle(METER[0], METER[1], 10.5, 32), '#fff6e2', { sheen: 0.1, shadow: false });
+  const [sx0, sy0, sx1, sy1] = SCOPE;
+  clayForm(g, [[sx0 - 3, sy0 - 3], [sx1 + 3, sy0 - 3], [sx1 + 3, sy1 + 3], [sx0 - 3, sy1 + 3]], P.slateDeep, { smooth: false, size: 10 });
+  for (const [x, y] of KNOBS) clayForm(g, circle(x, y, 7.5, 24), '#f6b27e', { sheen: 0.32 });
+  for (const [x, y] of LAMPS) clayForm(g, circle(x, y, 3.6, 16), P.slateDeep, { sheen: 0.1, shadow: false });
+  for (const [x, y] of TOGGLES) clayForm(g, [[x - 5, y - 6], [x + 5, y - 6], [x + 5, y + 6], [x - 5, y + 6]], shade(P.slate, -0.1), { smooth: false, size: 6, shadow: false });
+  BUTTONS.forEach(([x, y]) => clayForm(g, circle(x, y, 8, 24), P.slateDeep, { sheen: 0.15, shadow: false }));
+  // the cable from the cabinet's side to the duct
   const cable = [];
-  for (let i = 0; i <= 20; i++) { const u = i / 20; cable.push([lerp(x1 + 2, AXIS - 150, u), lerp(915, 788, u) + 60 * Math.sin(Math.PI * u)]); }
+  for (let i = 0; i <= 20; i++) { const u = i / 20; cable.push([lerp(x1 + 2, AXIS - 150, u), lerp(930, 788, u) + 60 * Math.sin(Math.PI * u)]); }
   tube(g, cable, 4, P.lilac);
 }
-// the buttons, drawn live: each a little square key in its colour, lit warm when pressed; the top row chases
+// the moving parts, drawn live
 function drawPanelKeys(ctx, t) {
-  PANEL.cols.forEach((x, c) => PANEL.rows.forEach((y, r) => {
-    const chase = r === 0 ? Math.max(0, 1 - mod(t / 0.375 - c, 6) / 1.2) : 0, on = Math.max(lit(t, c, r), chase * 0.8);
-    const base = BTN_COLS[(c + r * 2) % BTN_COLS.length], col = mix(base, '#fff4d6', 0.55 * on), w = 6.5;
-    const pressIn = lit(t, c, r) > 0.85 ? 1.2 : 0;
-    ctx.fillStyle = shade(base, -0.35); ctx.fillRect(x - w + 1, y - w + 2, w * 2, w * 2);
-    ctx.fillStyle = col; ctx.fillRect(x - w, y - w + pressIn, w * 2 - 1, w * 2 - 1);
-    ctx.fillStyle = rgba('#ffffff', 0.45); ctx.fillRect(x - w + 1.5, y - w + 1.5 + pressIn, w * 2 - 4, 2);
-    if (on > 0.25) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, x, y, 12, '#fff0c0', 0.5 * on); ctx.restore(); }
-  }));
-  // the dial's needle sweeps with the chords
-  const dx = PANEL.x0 + 22, dy = PANEL.y0 + 16, a = -0.9 + 1.8 * (0.5 + 0.5 * Math.sin(TAU * t / 3));
-  ctx.strokeStyle = '#fff4d6'; ctx.lineWidth = 1.6; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(dx, dy); ctx.lineTo(dx + Math.sin(a) * 5.5, dy - Math.cos(a) * 5.5); ctx.stroke();
+  // the meter's needle swings with the drone's breath (8 s), with a flicker on the machine rhythm
+  const a = -1.1 + 2.2 * (0.5 + 0.5 * Math.cos(TAU * (t - 6) / 8)) + 0.06 * Math.sin(TAU * t / 0.375);
+  ctx.strokeStyle = P.pinkDeep; ctx.lineWidth = 1.6; ctx.lineCap = 'round';
+  ctx.beginPath(); ctx.moveTo(METER[0], METER[1] + 4); ctx.lineTo(METER[0] + Math.sin(a) * 9, METER[1] + 4 - Math.cos(a) * 9); ctx.stroke();
+  // the scope: a dark screen with a butter trace, a wave that runs along at the machine rhythm's pace
+  const [sx0, sy0, sx1, sy1] = SCOPE;
+  ctx.fillStyle = shade(P.slateDeep, -0.35); ctx.fillRect(sx0, sy0, sx1 - sx0, sy1 - sy0);
+  ctx.strokeStyle = '#ffe9a0'; ctx.lineWidth = 1.3; ctx.beginPath();
+  for (let x = sx0 + 1; x <= sx1 - 1; x += 1) { const u = (x - sx0) / (sx1 - sx0), y = (sy0 + sy1) / 2 + 6.5 * Math.sin(TAU * (u * 2 - t / 0.75)) * (0.6 + 0.4 * Math.cos(TAU * (t - 6) / 8)); x === sx0 + 1 ? ctx.moveTo(x, y) : ctx.lineTo(x, y); }
+  ctx.stroke();
+  // the knobs turn, one each way
+  KNOBS.forEach(([x, y], i) => {
+    const r = (i ? -1 : 1) * TAU * t / 6;
+    ctx.strokeStyle = shade('#f6b27e', -0.45); ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + Math.sin(r) * 6, y - Math.cos(r) * 6); ctx.stroke();
+  });
+  // the lamps chase along the row on the machine rhythm
+  LAMPS.forEach(([x, y], i) => {
+    const on = Math.max(0, 1 - mod(t / 0.375 - i, 9) / 1.5);
+    ctx.fillStyle = mix(shade(P.mint, -0.2), '#fff4c8', on); ctx.beginPath(); ctx.arc(x, y, 2.6, 0, TAU); ctx.fill();
+    if (on > 0.4) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, x, y, 8, '#fff1c0', on * 0.6); ctx.restore(); }
+  });
+  // the toggles: a little bat up or down, flipped by the operator; a lit dot over the ones that are on
+  TOGGLES.forEach(([x, y], i) => {
+    const on = toggleOn(t, i), d = on ? -1 : 1;
+    ctx.strokeStyle = P.bone; ctx.lineWidth = 2.6; ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x, y + d * 5); ctx.stroke();
+    ctx.fillStyle = P.bone; ctx.beginPath(); ctx.arc(x, y + d * 5.5, 2, 0, TAU); ctx.fill();
+    ctx.fillStyle = on ? '#ffb070' : shade(P.slate, -0.3); ctx.beginPath(); ctx.arc(x, y - 9, 1.4, 0, TAU); ctx.fill();
+  });
+  // the push buttons, lit and pushed in when pressed
+  BUTTONS.forEach(([x, y], i) => {
+    const on = pressed(t, 'btn', i), dip = on > 0.85 ? 1.2 : 0, col = BTN_FILL[i];
+    const gr = ctx.createRadialGradient(x - 2, y - 2 + dip, 0.5, x, y + dip, 6.5);
+    gr.addColorStop(0, mix(col, '#ffffff', 0.5 + 0.3 * on)); gr.addColorStop(1, shade(col, -0.25 + 0.2 * on));
+    ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(x, y + dip, 6.2, 0, TAU); ctx.fill();
+    if (on > 0.3) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, x, y, 14, '#fff0c0', 0.5 * on); ctx.restore(); }
+  });
+  // the cabinet's sliders ride up and down, each its own way, on the drone's breath and the chords
+  SLIDERS.forEach(([x, y0s, y1s], i) => {
+    const k = 0.5 + 0.45 * Math.sin(TAU * (t / (i % 2 ? 3 : 8) + i * 0.25)), y = lerp(y1s - 4, y0s + 4, k);
+    clayForm(ctx, [[x - 5, y - 3], [x + 5, y - 3], [x + 5, y + 3], [x - 5, y + 3]], i % 2 ? P.butter : P.aqua, { smooth: false, size: 5, shadow: false });
+  });
 }
 
 // ---------------- the instrument ----------------
