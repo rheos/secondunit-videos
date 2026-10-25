@@ -291,6 +291,41 @@ export function addWorld(S) {
   });
 
 
+  // Trees along the horizon, just behind the middle hills (Robin: "trees of a few varieties folding up and down along
+  // the horizon but never conflicting with the funnel space; they can come up when it's away but the ones in that
+  // zone must fold down again before it's back"). Five kinds, baked once with their base at the origin, folding up
+  // from flat like pop-up pieces (with a little overshoot) and back down. Out of the funnel's zone they run on a
+  // staggered 6 s schedule on the machine rhythm's grid; in it (the three nearest the middle each side) they come up
+  // only once the funnel has drifted well away (3.6 s into its 12 s) and are flat again by 8.4 s, before it is back.
+  const treeSp = (name, draw) => S.sprite({ name, x: -46, y: -150, w: 92, h: 158, res: 1.3, mat: CLAY_MAT, edge: CLAY_EDGE, shadow: { blur: shadowBlur(8) }, draw });
+  const trunk = (g, h, c = P.boneDeep) => clayForm(g, [[-3, 0], [-2.4, -h], [2.4, -h], [3, 0]], c, { smooth: false, size: 6 });
+  const TREES = [
+    treeSp('tree-fir', (g) => { trunk(g, 22); for (let k = 0; k < 3; k++) { const y0 = -16 - k * 26, w = 30 - k * 7; clayForm(g, [[-w, y0], [0, y0 - 40], [w, y0]], k % 2 ? P.mintDeep : P.mint, { smooth: false, size: 18 }); } }),
+    treeSp('tree-lolly', (g) => { trunk(g, 60); clayForm(g, circle(0, -82, 28, 36), '#f6b27e', { sheen: 0.28 }); clayForm(g, circle(-8, -90, 9, 18), mix('#f6b27e', '#fff4d6', 0.4), { sheen: 0.2, shadow: false }); }),
+    treeSp('tree-pagoda', (g) => { trunk(g, 96); for (let k = 0; k < 3; k++) { const y0 = -38 - k * 30, w = 34 - k * 8; clayForm(g, [[-w, y0], [w, y0], [w * 0.6, y0 - 10], [-w * 0.6, y0 - 10]], k === 1 ? P.lilac : mix(P.lilac, P.blush, 0.5), { smooth: false, size: 10 }); } }),
+    treeSp('tree-topiary', (g) => { trunk(g, 30); [[22, -44], [16, -82], [10, -108], [5, -122]].forEach(([r, y], k) => clayForm(g, circle(0, y, r, 28), k % 2 ? P.aqua : P.mint, { sheen: 0.3 })); }),
+    treeSp('tree-cypress', (g) => { trunk(g, 14); clayForm(g, [[-13, -10], [-15, -60], [-9, -112], [0, -140], [9, -112], [15, -60], [13, -10]], mix(P.mintDeep, P.slate, 0.3), { size: 22, sheen: 0.18 }); }),
+  ];
+  // the left half's trees, [x, base y, kind, size]; each is drawn again reflected on the right. ZONE: x past 650
+  const TREE_SPOTS = [[-90, 862, 4, 1], [20, 868, 0, 0.9], [130, 860, 1, 0.95], [240, 866, 3, 0.85], [350, 862, 2, 1], [460, 868, 4, 0.9],
+    [570, 860, 0, 1], [700, 866, 1, 0.9], [800, 862, 3, 0.95], [900, 868, 2, 0.85]];
+  const ZONE_X = 650;
+  const unfold = (u) => (u <= 0 ? 0 : u >= 1 ? 1 : 1 + 2.2 * (u - 1) ** 3 + 1.2 * (u - 1) ** 2);   // with an overshoot
+  const treeUp = (t, i, x) => {
+    if (x > ZONE_X) {
+      const q = mod(t, 12), j = TREE_SPOTS.filter(([tx]) => tx > ZONE_X).findIndex(([tx]) => tx === x);
+      return unfold((q - 3.6 - 0.15 * j) / 0.55) * (1 - E.smooth(Math.min(1, Math.max(0, (q - 7.7 - 0.15 * (2 - j)) / 0.55))));
+    }
+    const q = mod(t - i * 0.75, 6);
+    return unfold(q / 0.55) * (1 - E.smooth(Math.min(1, Math.max(0, (q - 3.4) / 0.55))));
+  };
+  S.add({ name: 'horizon-trees', z: 2500, shadow: { dx: 6, dy: 10, alpha: 0.2 }, render(ctx, t, env) { mirror(ctx, () => {
+    const items = [];
+    // stood a little up the ridge and drawn large enough to read over the middle hills
+    TREE_SPOTS.forEach(([x, y, kind, sz], i) => { const f = treeUp(t, i, x), k = sz * 1.7; if (f > 0.01) items.push({ s: TREES[kind], ax: 0, ay: 0, x, y: y - 14, sx: k, sy: k * f }); });
+    drawSprites(ctx, items, { ...env.shadow, dx: 6, dy: 10, alpha: 0.2 });
+  }); } });
+
   // the terrace the machine stands on: a band of broad clay mounds, and the ground line at y 985
   const terrace = sp('terrace', { x: -500, y: 860, w: 1560, h: 560, res: 1.1 }, (g) => mounds(g, { x0: -500, x1: 1040, base: 1000, amp: 30, bottom: 1420, colors: [mix(P.pink, P.butter, 0.4), mix(P.blush, P.butter, 0.3)], fade: 0.05, seed: 4, trees: 0 }));
   addPair(S, 'terrace', 1080, terrace, { dx: 8, dy: 14, alpha: 0.38 });
@@ -303,7 +338,7 @@ export function addWorld(S) {
     drawSprites(ctx, chevs.map((c, k) => ({ s: c, x: (k - 1) * 14 * open, y: (k - 1) * 13 * (1 + 1.3 * open - shut * 0.95), rot: (k - 1) * 0.5 * open, sx: 1 + 0.45 * W(t, 6, ph + k / 3), sy: 1 })), fsh(env));
     ctx.restore();
   };
-  return { island, chevronFan };
+  return { island, chevronFan, TREE_SPOTS, ZONE_X };
 }
 
 // The near world in front of the machine: low mounds with coral curls and rosette bushes, then the lens plane.

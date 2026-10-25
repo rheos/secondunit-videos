@@ -29,6 +29,8 @@ import { MK, MK_RAMP, PS, markLayer, paintMarkSolid, paintBurst, paintGlyph, pai
 const P = PAL, TAU = Math.PI * 2, GROUND = 985, FS = 1.2, HIP = GROUND - 33 * FS;
 const mod = (x, m) => ((x % m) + m) % m;
 // the radial ring of chevrons round each island is the choice (Robin, 2026-10-25); ?chev=pair shows the slope pair
+// the horizon trees' left-half x positions and the funnel zone (the same as TREE_SPOTS / ZONE_X in loop-world.js)
+const TREE_SPOTS_L = [[-90], [20], [130], [240], [350], [460], [570], [700], [800], [900]], TREE_ZONE = 650;
 const CHEV_RADIAL = !(typeof location !== 'undefined' && new URLSearchParams(location.search).get('chev') === 'pair');
 const mixPt = (a, b, k) => [lerp(a[0], b[0], k), lerp(a[1], b[1], k)];
 // a bump that rises and falls over [a, b]: 0 outside, 1 at the middle
@@ -414,6 +416,12 @@ function cues() {
     const u0 = chorusTheta(t0, a.tier) / TAU, u1 = chorusTheta(t1, b.tier) / TAU;
     for (const [q, high] of [[0, true], [2 * CROSS, false]]) if (Math.floor(u1 - q) > Math.floor(u0 - q)) add24(t1, 'tick', b.x, { n: Math.round(b.tier), high });
   }
+  // the horizon trees folding up (a soft paper flap): out of the funnel's zone on a staggered 6 s schedule, in it once
+  // every 12 s while the funnel is away
+  { let j = 0; TREE_SPOTS_L.forEach(([x], i) => {
+    if (x > TREE_ZONE) { for (const r of [0, 12]) both(3.6 + 0.15 * j + r, 'flap', x); j++; }
+    else for (const r of [0, 6]) both(i * 0.75 + r, 'flap', x);
+  }); }
   // the double-pointed pendant bursting open (a pop) every 6 s and slamming shut (a click)
   for (const k of [0, 6]) { both(k, 'pop', 180); both(k + 4.2, 'press', 180, { n: 0 }); }
   // heads popping into solids
