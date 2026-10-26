@@ -2818,7 +2818,7 @@ function squarePath(way, rc = FILLET, step = 6) {
   for (let i = 1; i < out.length; i++) { const [p, q] = [out[i - 1], out[i]], n = Math.max(1, Math.ceil(Math.hypot(q[0] - p[0], q[1] - p[1]) / step)); for (let k = 1; k <= n; k++) res.push([p[0] + (q[0] - p[0]) * k / n, p[1] + (q[1] - p[1]) * k / n]); }
   return res;
 }
-const DUCT = { w: 23, path: squarePath([[AXIS, 640], [AXIS, 800], [AXIS - 266, 800], [AXIS - 266, 226], [AXIS - 56, 226], [AXIS - 56, 316]]) };
+const DUCT = { w: 23, path: squarePath([[AXIS, 640], [AXIS, 800], [AXIS - 266, 800], [AXIS - 266, 226], [AXIS - 16, 226], [AXIS - 16, 310]]) };
 const DUCT_LEN = plen(DUCT.path);
 // arc length at each point of the pipe, and the colour rings along it (mint is the pipe itself; butter and pink
 // rings are laid over it, every third ring each)
@@ -2931,11 +2931,12 @@ const collar = (th0, th1, ph) => { const o = [], i = []; for (let q = 0; q <= 32
 // into the portal where it splashes. Times are u, seconds into a solid's 6 s trip (the bulge reaches the end at 5.4).
 const HOSE = { ext: 15, end: 0.86 };
 const GLOB = [MK.magenta, MK.cyan, MK.yellow, MK.lime, MK.orange, MK.sky, MK.pink, MK.violet];
-// Where a glob lands (Robin, draft 36: "there are moments when the dripping does not appear to be over the portal").
-// The camera looks down at the mouth from about 14 degrees, so a hose hanging over its middle sits at the far rim's
-// height in the picture, and a short fall to the centre line read as dripping onto the collar. The spouts now hang
-// 16 px lower, inside the mouth's picture, and the glob falls to the near half of the mouth, well inside the blue.
-const SURF = RIM.y + 24;
+// Where a glob lands (Robin, drafts 36 and 37: "there are moments when the dripping does not appear to be over the
+// portal"). The portal is the swirl at the centre of the mouth, so both hoses come in over the lip to hang side by
+// side right over it (the spouts 16 px either side of the axis, so the turning frame never carries them off it), and
+// a glob falls into the burst at the centre. The spouts hang low enough that the hose ends sit inside the mouth's
+// picture (the camera sees the mouth from about 14 degrees, so the far rim's line is only 43 px below the lip).
+const SURF = RIM.y + 14;
 const membrane = (u) => smoothstep(4.95, 5.3, u) * (1 - smoothstep(5.62, 5.92, u)) + 0.35 * smoothstep(5.42, 5.6, u) * (1 - smoothstep(5.6, 5.75, u));
 // a wet paint fill: a highlight high on the left, the colour, a darker rim, and a specular glint
 function paint(ctx, path, col, x, y, r) {
@@ -2971,7 +2972,7 @@ const DROP_Y = SPOUT[1] + 3 + HOSE.ext * 1.35 + DUCT.w * HOSE.end * 0.3;
 function drawGlob(ctx, x, ye, u, n) {
   const col = GLOB[n % 8];
   if (u >= 5.22 && u < 5.62) {
-    const e = smoothstep(5.22, 5.5, u), r = 4 + (GLOB_R - 4) * e, L = 2 + 12 * smoothstep(5.42, 5.62, u);
+    const e = smoothstep(5.22, 5.5, u), r = 4 + (GLOB_R - 4) * e, L = 2 + 8 * smoothstep(5.42, 5.62, u);
     const nw = 9 * (1 - 0.92 * smoothstep(5.5, 5.62, u)), cy = ye + L + r * 0.92;
     const p = new Path2D();
     p.moveTo(x - nw, ye); p.bezierCurveTo(x - nw, ye + L * 0.6, x - r, cy - r * 0.9, x - r, cy);
@@ -2983,7 +2984,7 @@ function drawGlob(ctx, x, ye, u, n) {
   // falling from where it pinched off (5.62) to the surface (6.0), then sinking out of sight below it (to 6.2)
   const v = u < 1 ? u + 6 : u;
   if (v < 5.62 || v >= 6.2) return;
-  const y1 = DROP_Y + 14 + GLOB_R, k = Math.min(1, (v - 5.62) / 0.38), y = v < 6 ? lerp(y1, SURF, k * k) : SURF + (v - 6) * 90;
+  const y1 = DROP_Y + 10 + GLOB_R * 0.92, k = Math.min(1, (v - 5.62) / 0.38), y = v < 6 ? lerp(y1, SURF, k * k) : SURF + (v - 6) * 90;
   const rx = GLOB_R * (0.92 - 0.08 * k), ry = GLOB_R * (1.05 + 0.25 * k);
   const p = new Path2D();
   p.moveTo(x, y - ry * 1.6);
