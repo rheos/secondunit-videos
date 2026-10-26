@@ -2599,7 +2599,11 @@ function addWorld(S) {
   ];
   // the left half's trees, [x, base y, kind, size]; each is drawn again reflected on the right. ZONE: x past 650
   const TREE_SPOTS = [[-90, 862, 4, 1], [20, 868, 0, 0.9], [130, 860, 1, 0.95], [240, 866, 3, 0.85], [350, 862, 2, 1], [460, 868, 4, 0.9],
-    [570, 860, 0, 1], [700, 866, 1, 0.9], [800, 862, 3, 0.95], [900, 868, 2, 0.85]];
+    [570, 860, 0, 1], [700, 866, 1, 0.9], [800, 862, 3, 0.95], [900, 868, 2, 0.85],
+    // a sapling fir behind the console's far edge, on the paper flap at 4.5 s that the big fir left when it moved to
+    // the seer's bell (draft 42): a fifth field gives a spot its own phase on the 6 s schedule. No cue of its own: the
+    // sound is frozen and several actions on one sound is good (Robin, 2026-10-26)
+    [625, 868, 0, 0.55, 4.5]];
   const ZONE_X = 650;
   const unfold = (u) => (u <= 0 ? 0 : u >= 1 ? 1 : 1 + 2.2 * (u - 1) ** 3 + 1.2 * (u - 1) ** 2);   // with an overshoot
   const treeUp = (t, i, x) => {
@@ -2613,7 +2617,7 @@ function addWorld(S) {
       const q = mod(t, 12), j = TREE_SPOTS.filter(([tx]) => tx > ZONE_X).findIndex(([tx]) => tx === x);
       return unfold((q - 3.6 - 0.15 * j) / 0.55) * (1 - E.smooth(Math.min(1, Math.max(0, (q - 7.7 - 0.15 * (2 - j)) / 0.55))));
     }
-    const q = mod(t - i * 0.75, 6);
+    const q = mod(t - (TREE_SPOTS[i][4] ?? i * 0.75), 6);
     return unfold(q / 0.55) * (1 - E.smooth(Math.min(1, Math.max(0, (q - 3.4) / 0.55))));
   };
   S.add({ name: 'horizon-trees', z: 2500, shadow: { dx: 6, dy: 10, alpha: 0.2 }, render(ctx, t, env) { mirror(ctx, () => {
