@@ -55,7 +55,7 @@ function squarePath(way, rc = FILLET, step = 6) {
   for (let i = 1; i < out.length; i++) { const [p, q] = [out[i - 1], out[i]], n = Math.max(1, Math.ceil(Math.hypot(q[0] - p[0], q[1] - p[1]) / step)); for (let k = 1; k <= n; k++) res.push([p[0] + (q[0] - p[0]) * k / n, p[1] + (q[1] - p[1]) * k / n]); }
   return res;
 }
-export const DUCT = { w: 23, path: squarePath([[AXIS, 640], [AXIS, 800], [AXIS - 266, 800], [AXIS - 266, 226], [AXIS - 16, 226], [AXIS - 16, 310]]) };
+export const DUCT = { w: 23, path: squarePath([[AXIS, 640], [AXIS, 800], [AXIS - 266, 800], [AXIS - 266, 226], [AXIS - 56, 226], [AXIS - 56, 310]]) };
 const DUCT_LEN = plen(DUCT.path);
 // arc length at each point of the pipe, and the colour rings along it (mint is the pipe itself; butter and pink
 // rings are laid over it, every third ring each)
@@ -168,12 +168,13 @@ const collar = (th0, th1, ph) => { const o = [], i = []; for (let q = 0; q <= 32
 // into the portal where it splashes. Times are u, seconds into a solid's 6 s trip (the bulge reaches the end at 5.4).
 const HOSE = { ext: 15, end: 0.86 };
 const GLOB = [MK.magenta, MK.cyan, MK.yellow, MK.lime, MK.orange, MK.sky, MK.pink, MK.violet];
-// Where a glob lands (Robin, drafts 36 and 37: "there are moments when the dripping does not appear to be over the
-// portal"). The portal is the swirl at the centre of the mouth, so both hoses come in over the lip to hang side by
-// side right over it (the spouts 16 px either side of the axis, so the turning frame never carries them off it), and
-// a glob falls into the burst at the centre. The spouts hang low enough that the hose ends sit inside the mouth's
-// picture (the camera sees the mouth from about 14 degrees, so the far rim's line is only 43 px below the lip).
-const SURF = RIM.y + 14;
+// Where a glob lands: on the mouth's surface, a little below its centre line. Robin, drafts 36 to 38 ("there are
+// moments when the dripping does not appear to be over the portal", "this is 100% a layer issue"): the hose ends and
+// globs hang over the mouth, so both are drawn AFTER the mouth and its swirl (see addMachines); until draft 38 the
+// back pipe's hose end and globs were drawn before the funnel and the swirl painted over them, so half the drips
+// showed only where they stuck up above the mouth's far edge. Drafts 37 and 38 moved the spouts about instead and
+// made the elbows collide; the spouts are back at 56 px either side.
+const SURF = RIM.y + 10;
 const membrane = (u) => smoothstep(4.95, 5.3, u) * (1 - smoothstep(5.62, 5.92, u)) + 0.35 * smoothstep(5.42, 5.6, u) * (1 - smoothstep(5.6, 5.75, u));
 // a wet paint fill: a highlight high on the left, the colour, a darker rim, and a specular glint
 function paint(ctx, path, col, x, y, r) {
@@ -434,7 +435,6 @@ export function addMachines(S) {
     const bulgeList = (i) => swell.filter(([, , right]) => right === i).map(([s0, amp]) => [s0, amp]);
     // the pipe swinging away, whole (its stem too, behind the funnel's collar), with its bulges
     drawFramePipe(ctx, pipes[backI].path, 0, bulgeList(backI));
-    hoseOf(backI);
     const ph = funnelTurn(t);
     drawFunnelBack(ctx, ph);
     const pulse = 0.5 + 0.5 * Math.cos(TAU * mod(t, 0.75) / 0.75);
@@ -469,6 +469,9 @@ export function addMachines(S) {
       for (let n = 0; n < 8; n++) drawSplash(ctx, spoutX(n % 2), SURF, mod(t + n * 0.75, 6), n);
       ctx.restore(); }
     drawFunnelFront(ctx, ph);
+    // the swinging-away pipe's hose end and globs hang over the mouth, so they come after it (and before the pipe
+    // swinging toward us, which really is in front of them)
+    hoseOf(backI);
     // the pipe swinging toward us, from below the collar (the stem's top is behind the funnel), then the swinging-away
     // pipe's bulges down in the shared stem, so they show over it
     drawFramePipe(ctx, pipes[frontI].path, 62, bulgeList(frontI));
