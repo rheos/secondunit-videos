@@ -178,3 +178,61 @@ node tools/bundle.mjs src/loop.js build/loop.js && node tools/cues.mjs         #
   default now; `--forward-breath` gives s8.
 - Seamless by construction: every oscillator runs whole cycles in 12 s, noise filtering and reverb are circular,
   every sound that runs past the end wraps to the start.
+
+## Drafts 11 to 37 (2026-10-25, all Robin's notes on the day)
+
+The loop is now 24 s (`FILM_LOOP` in `src/loop-world.js`: three 8 s breaths of the bellows, while the picture's 12 s
+cycle comes round twice). The render chain the drafts use:
+
+```bash
+node tools/bundle.mjs src/loop.js build/loop.js
+nice -n 15 node ../tools/motion-lab/render.mjs "loop.html?w=1280" 0 24.0417 out/draft/reliefloop_dN_seamcheck.mp4 --width 1280 --height 720 --workers 2
+# seam: frame 0 against frame 576 (PSNR), then cut 576 frames, mux the sound, double it for review
+ffmpeg -i out/draft/reliefloop_dN_seamcheck.mp4 -frames:v 576 -c:v libx264 -crf 18 -pix_fmt yuv420p out/draft/reliefloop_dN_f0-f576_24fps_loop.mp4
+ffmpeg -i out/draft/reliefloop_dN_f0-f576_24fps_loop.mp4 -i out/audio/reliefloop_loop_s25.wav -map 0:v -map 1:a -c:v copy -c:a aac -b:a 192k -shortest out/draft/reliefloop_dN_s25_f0-f576_24fps_loop.mp4
+ffmpeg -stream_loop 1 -i out/draft/reliefloop_dN_s25_f0-f576_24fps_loop.mp4 -c copy out/draft/reliefloop_dN_s25_x2_review.mp4
+```
+
+The sound (s25) is `node tools/cues.mjs` then `tools/sound.py` (the viralvision venv's python, `-I`), which calls
+`tools/voice.py`. Every note is tied to a picture cue, so a timing change in the page cannot desync it.
+
+**The picture, drafts 11 to 37.**
+
+- 11: the 24 s loop; layered suns; a chorus phrase; pistons under the chorus.
+- 12 to 17, the pipe ends: the two pipes meet in one fork with no seam on the centre line (12); the ends became
+  egg-laying tips (13, Robin: "less like plumbing attachments... like something laying eggs"), then rubber hose ends
+  that lay paint globs (14, "not really fleshy... a rubber hose with a bulge of water passing through"); a birthing
+  membrane that pushes out with the bulge, births a bigger glob, and retracts to the lip while its hole shrinks to
+  nothing; the glob drops straight down into the portal (17).
+- 15, 23: the funnel turns against the portal with panels in alternating colours; its throat band is a rounded
+  collar; from 23 it is a hexagon in the pipe's three colours (mint, butter, orange).
+- 16: orange, in the pipe rings only (fork, bulges and hose ends follow); pink stays elsewhere.
+- 18: clean equal pipe rings. 19, 21: the console is a Mark-style button panel facing us, its operator with his back
+  to us, in our clay colours (Robin: "no, not in Mark's colours"), on a cabinet with varied controls, no cables.
+- 20: the camera breathes in and out with the drone; tesseracts over the mountains.
+- 22: the whole funnel machine drifts away toward the sun and back every 12 s (`funnelXf`).
+- 23 to 27, the chevrons: fans beside each island's roots, then a radial ring round the island (Robin's pick), then a
+  tighter cluster "like a mandala", moved over the control panels, floating and bobbing, swaying as mirror images.
+- 25, 27, the pistons: five elves on eight pistons; a piston rises only when empty and sinks only under an elf; then
+  the pistons rise on their own schedule and an elf jumps to one because it came up (Robin: "he goes to it because
+  it came up"); a 32-jump closed sequence.
+- 28: the big tesseracts have solid sides. 29: the pendant is a double-pointed accordion that bursts open and slams
+  shut (Robin's sketch: a cone on top as on the bottom).
+- 30: trees of a few kinds fold up and down along the horizon and never meet the funnel: those in its zone come up
+  only while it is away and fold before it is back. Uploaded unlisted (Robin G) as "The Living Loop (draft 30)".
+- 31 to 33: the frame of pipes turns about the upright axis, the other way from the funnel, half a turn per 12 s;
+  the pipes are stroked rather than outlined, so bends and the fork join cleanly edge-on (31 and 32 broke them).
+- 34, 35: the mandalas rise to be the stars of the firs behind the consoles, driven by the fir's own fold, so they
+  reach the tip with the tree and drop with it; the small tesseracts moved off the sun to the far edges.
+- 36: no Star of David anywhere (nor pentacle or pentagram): the seer's star sigil is the star tetrahedron drawn
+  from near a cube face, where its outline does not read as a hexagram. Icosahedron, dodecahedron, star tetrahedron
+  stay.
+- 37: the drips hang inside the mouth and fall to its near half (Robin: "there are moments when the dripping does
+  not appear to be over the portal anymore"); see the note at `SURF` in `src/loop-machine.js`.
+
+**The sound, s10 to s25.** s10 the 24 s loop; s11 to s14 the Sohan "doiy" and "dee" voice (`tools/voice.py`,
+measured on the icaro recording), one syllable per picture event, with long doorstop-spring tails and its own
+ping-pong echo, first replacing the bells, then laid over them; s15 the pistons heard (a thunk, a puff of air, a
+chord tone); s16 less bell, more Sohan; s17 more drone, less busy; s18 the machine rhythm (Robin's name: glyph
+blips, arm ticks, pistons, key presses, glitches) on its own bus, halfway back up; s19 and s20 the doiy runs as
+objects are sung, the camera breathing with the drone; s21 to s25 event and mix adjustments to the drafts above.
