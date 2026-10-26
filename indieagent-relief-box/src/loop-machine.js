@@ -55,7 +55,7 @@ function squarePath(way, rc = FILLET, step = 6) {
   for (let i = 1; i < out.length; i++) { const [p, q] = [out[i - 1], out[i]], n = Math.max(1, Math.ceil(Math.hypot(q[0] - p[0], q[1] - p[1]) / step)); for (let k = 1; k <= n; k++) res.push([p[0] + (q[0] - p[0]) * k / n, p[1] + (q[1] - p[1]) * k / n]); }
   return res;
 }
-export const DUCT = { w: 23, path: squarePath([[AXIS, 640], [AXIS, 800], [AXIS - 266, 800], [AXIS - 266, 226], [AXIS - 56, 226], [AXIS - 56, 300]]) };
+export const DUCT = { w: 23, path: squarePath([[AXIS, 640], [AXIS, 800], [AXIS - 266, 800], [AXIS - 266, 226], [AXIS - 56, 226], [AXIS - 56, 316]]) };
 const DUCT_LEN = plen(DUCT.path);
 // arc length at each point of the pipe, and the colour rings along it (mint is the pipe itself; butter and pink
 // rings are laid over it, every third ring each)
@@ -168,7 +168,11 @@ const collar = (th0, th1, ph) => { const o = [], i = []; for (let q = 0; q <= 32
 // into the portal where it splashes. Times are u, seconds into a solid's 6 s trip (the bulge reaches the end at 5.4).
 const HOSE = { ext: 15, end: 0.86 };
 const GLOB = [MK.magenta, MK.cyan, MK.yellow, MK.lime, MK.orange, MK.sky, MK.pink, MK.violet];
-const SURF = RIM.y + 6;            // the portal's surface, where a glob sinks in
+// Where a glob lands (Robin, draft 36: "there are moments when the dripping does not appear to be over the portal").
+// The camera looks down at the mouth from about 14 degrees, so a hose hanging over its middle sits at the far rim's
+// height in the picture, and a short fall to the centre line read as dripping onto the collar. The spouts now hang
+// 16 px lower, inside the mouth's picture, and the glob falls to the near half of the mouth, well inside the blue.
+const SURF = RIM.y + 24;
 const membrane = (u) => smoothstep(4.95, 5.3, u) * (1 - smoothstep(5.62, 5.92, u)) + 0.35 * smoothstep(5.42, 5.6, u) * (1 - smoothstep(5.6, 5.75, u));
 // a wet paint fill: a highlight high on the left, the colour, a darker rim, and a specular glint
 function paint(ctx, path, col, x, y, r) {
