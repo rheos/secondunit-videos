@@ -266,6 +266,17 @@ s25 and s26 are kept in `audio-keep/` (gitignored) and `~/Downloads/living-loop-
   pipe and funnel (lollipops, mound cones, console knobs and button went pink); no glow on the released cube; mint
   curls and rosettes in the near corners; end-on elbow ellipses at the near corners near edge-on. Sound s26 from the
   new cue list.
+- 42 (Robin, on 41: "at 0:04 where the christmas tree comes up it comes up a bit early to be in good sync with the
+  sound... timed to a sound" without adding sound; "sync more things up, like the movement in the sun, the way the
+  rings expand and collapse"): the fir behind the console rises on the seer pair's bells (the sigil-closing 'chime'
+  at 4.19 and 10.27 s, computed in loop.js by `bellTime` and passed to the world with `setFirRise`; it starts 0.3 s
+  before each bell, so it is full a frame ahead; its flap cue follows, so s27 has the flap there). The suns on the
+  sound's grid (`beatPulse` in `src/loop-world.js`): the back suns' rings expand on each chord change (3 s bar
+  lines) in a wave running outward ring by ring and collapse slowly; the lantern's rings breathe with the bellows,
+  fullest 2 s and 6 s into each 8 s breath, outer ring first; the rays flare on the chord change; the lantern's scale
+  pulse peaks on the 0.75 s machine rhythm. Reviewed on s26w (the mastered s26), whose fir flap still sits at 4.5 s;
+  s27 and its x3 upload file are made for the next Kits pass. `references/README.md` begins (Robin's first reference
+  painting for the project).
 
 **The sound, s10 to s25.** s10 the 24 s loop; s11 to s14 the Sohan "doiy" and "dee" voice (`tools/voice.py`,
 measured on the icaro recording), one syllable per picture event, with long doorstop-spring tails and its own
