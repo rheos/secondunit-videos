@@ -2875,35 +2875,44 @@ function strokePieces(ctx, pieces) {
   pass(0.12, 0.24, (c) => rgba(mix(c, '#ffffff', 0.7), 0.7));
 }
 // the ring pieces of a stretch of pipe [a, b] at a given width
-const ringPieces = (path, a, b, width) => {
+const ringPieces = (path, a, b, width, ws = () => 1) => {
   const out = [];
   for (let r = Math.max(0, Math.floor(a / RING)); r <= Math.floor(b / RING) && r < RINGS_N; r++) {
     const ra = Math.max(a, r * RING), rb = Math.min(b, (r + 1) * RING);
-    if (rb > ra) out.push({ pts: sub(path, ra - 0.6, rb + 0.6), width, color: RING_COLS[r % 3] });
+    if (rb > ra) out.push({ pts: sub(path, ra - 0.6, rb + 0.6), width: width * ws((ra + rb) / 2), color: RING_COLS[r % 3] });
   }
   return out;
 };
 // bulges as stacked windows of wider stroke (wide and low first, then narrower and higher), cut into their rings
-function bulgePieces(path, bulges, from = 0) {
+function bulgePieces(path, bulges, from = 0, ws = () => 1) {
   const w2 = DUCT.w * 2, out = [];
   for (const [s0, amp] of bulges) {
     if (amp < 0.01) continue;
     for (let k = 1; k <= 10; k++) {
       const hw = BULGE.sigma * 2.2 * (1 - k / 11), wid = w2 * (1 + BULGE.amp * amp * Math.exp(-((hw / BULGE.sigma) ** 2)));
       const a = Math.max(from, s0 - hw), b = Math.min(DUCT_LEN, s0 + hw);
-      if (b > a) out.push(...ringPieces(path, a, b, wid));
+      if (b > a) out.push(...ringPieces(path, a, b, wid, ws));
     }
   }
   return out;
 }
 // one pipe of the frame along its turned path, from arc length `from`, with its bulges ([arc, strength]) swelling it
-function drawFramePipe(ctx, path, from, bulges) {
-  const w2 = DUCT.w * 2;
+function drawFramePipe(ctx, pipe, from, bulges) {
+  const { path, ws } = pipe, w2 = DUCT.w * 2;
   ctx.save(); ctx.translate(10, 18); ctx.lineJoin = 'round'; ctx.lineCap = 'round'; ctx.strokeStyle = 'rgba(70,40,50,0.16)'; ctx.lineWidth = w2;
   const sp = new Path2D(); sub(path, from, DUCT_LEN).forEach(([x, y], i) => (i ? sp.lineTo(x, y) : sp.moveTo(x, y))); ctx.stroke(sp); ctx.restore();
-  strokePieces(ctx, [...ringPieces(path, from, DUCT_LEN, w2), ...bulgePieces(path, bulges, from)]);
+  strokePieces(ctx, [...ringPieces(path, from, DUCT_LEN, w2, ws), ...bulgePieces(path, bulges, from, ws)]);
 }
-const warp = (path, sc) => path.map(([x, y]) => [AXIS + (x - AXIS) * sc, y]);
+// The frame turns in depth (Robin, draft 39: "looks janky still... this may be headed to blender"): until draft 39 the
+// turn only squeezed x, so at edge-on a pipe slid over the funnel like a paper cutout. Now a point of the frame xf
+// from the axis turns to depth z = xf * sin(th) (toward us positive). The camera sees the mouth from about 14 degrees
+// (RIM.ry / RIM.rx), so a nearer point sits lower in the picture by z * K, and a little bigger (D is the camera's
+// distance): the near side of the frame drops and thickens as it swings toward us, the far side rises and thins.
+const DEPTH = { K: RIM.ry / RIM.rx, D: 2400, cy: RIM.y };
+function project(xf, y, sf, cf) {
+  const z = xf * sf, s = DEPTH.D / (DEPTH.D - z);
+  return { x: AXIS + xf * cf * s, y: DEPTH.cy + (y - DEPTH.cy) * s + z * DEPTH.K, s, z };
+}
 const FACET_COLS = RING_COLS;   // mint, butter, orange, as the pipe; twice round the hexagon
 const ring = (cy, rx, ry, k, ph = 0) => { const a = (k + 0.5) / SIDES * TAU + ph; return [RIM.x + Math.cos(a) * rx, cy + Math.sin(a) * ry]; };
 const rimV = (k, ph) => ring(RIM.y, RIM.rx, RIM.ry, k, ph), thrV = (k, ph) => ring(THROAT.y, THROAT.rx, THROAT.ry, k, ph);
@@ -2970,8 +2979,8 @@ function drawHoseEnd(ctx, x, y0, bulges, m, open, clips) {
 const GLOB_R = 15;
 // ye: where the opening is now (the glob hangs from it); once it falls it keeps its own line down
 const DROP_Y = SPOUT[1] + 3 + HOSE.ext * 1.35 + DUCT.w * HOSE.end * 0.3;
-function drawGlob(ctx, x, ye, u, n) {
-  const col = GLOB[n % 8];
+function drawGlob(ctx, x, ye, u, n, dy = 0) {
+  const col = GLOB[n % 8], surf = SURF + dy;
   if (u >= 5.22 && u < 5.62) {
     const e = smoothstep(5.22, 5.5, u), r = 4 + (GLOB_R - 4) * e, L = 2 + 8 * smoothstep(5.42, 5.62, u);
     const nw = 9 * (1 - 0.92 * smoothstep(5.5, 5.62, u)), cy = ye + L + r * 0.92;
@@ -2985,7 +2994,7 @@ function drawGlob(ctx, x, ye, u, n) {
   // falling from where it pinched off (5.62) to the surface (6.0), then sinking out of sight below it (to 6.2)
   const v = u < 1 ? u + 6 : u;
   if (v < 5.62 || v >= 6.2) return;
-  const y1 = DROP_Y + 10 + GLOB_R * 0.92, k = Math.min(1, (v - 5.62) / 0.38), y = v < 6 ? lerp(y1, SURF, k * k) : SURF + (v - 6) * 90;
+  const y1 = DROP_Y + dy + 10 + GLOB_R * 0.92, k = Math.min(1, (v - 5.62) / 0.38), y = v < 6 ? lerp(y1, surf, k * k) : surf + (v - 6) * 90;
   const rx = GLOB_R * (0.92 - 0.08 * k), ry = GLOB_R * (1.05 + 0.25 * k);
   const p = new Path2D();
   p.moveTo(x, y - ry * 1.6);
@@ -2994,7 +3003,7 @@ function drawGlob(ctx, x, ye, u, n) {
   p.bezierCurveTo(x - rx, y - ry * 0.7, x - rx * 0.35, y - ry * 1.05, x, y - ry * 1.6); p.closePath();
   ctx.save();
   // below the surface it is inside the portal, so only what is still above shows
-  const above = new Path2D(); above.rect(x - 60, SURF - 400, 120, 400); ctx.clip(above);
+  const above = new Path2D(); above.rect(x - 60, surf - 400, 120, 400); ctx.clip(above);
   paint(ctx, p, col, x, y, GLOB_R);
   ctx.restore();
 }
@@ -3165,7 +3174,15 @@ function addMachines(S) {
   const sp = (name, box, draw, o = {}) => S.sprite({ name, ...box, res: o.res ?? 1.25, mat: CLAY_MAT, edge: CLAY_EDGE, shadow: { blur: shadowBlur(o.blur ?? 18) }, draw });
   const bw = DUCT.w * (1 + BULGE.amp) + 8;
   // each pipe of the turning frame: its turned path, and the colour-ring clips its hose end uses
-  const framePipe = (sc) => { const path = warp(DUCT.path, sc); return { sc, path, clips: { ring: [null, ringClip(1, bw, path), ringClip(2, bw, path)] } }; };
+  // pipe g (+1 the left pipe, -1 its mirror) at the frame's turn th: its projected path, a width scale along the arc,
+  // its spout in the picture (with dy, how far the shear moved it), and the colour-ring clips its hose end uses
+  const framePipe = (g, sf, cf) => {
+    const xf = (x) => g * (x - AXIS);
+    const path = DUCT.path.map(([x, y]) => { const q = project(xf(x), y, sf, cf); return [q.x, q.y]; });
+    const ws = (sArc) => project(xf(pointAt(sArc)[0]), 0, sf, cf).s;
+    const sp = project(xf(SPOUT[0]), SPOUT[1], sf, cf), spout = { x: sp.x, y: sp.y, dy: sp.z * DEPTH.K };
+    return { path, ws, spout, clips: { ring: [null, ringClip(1, bw, path), ringClip(2, bw, path)] } };
+  };
   const consoleS = sp('console', { x: 470, y: 760, w: 380, h: 240 }, drawConsole);
   const instr = sp('instrument', { x: INSTR.x - 80, y: 780, w: 160, h: 220 }, drawInstrumentBase);
 
@@ -3175,8 +3192,8 @@ function addMachines(S) {
     // the frame's two pipes this frame: the left one (odd solids take the right) and its mirror; the one swinging away
     // is drawn now, behind the funnel, the other after it
     const th = frameTurn(t), cf = Math.cos(th), sf = Math.sin(th);
-    const pipes = [framePipe(cf), framePipe(-cf)], backI = sf >= 0 ? 0 : 1, frontI = 1 - backI;
-    const spoutX = (i) => AXIS + (SPOUT[0] - AXIS) * pipes[i].sc;
+    const pipes = [framePipe(1, sf, cf), framePipe(-1, sf, cf)], backI = sf >= 0 ? 0 : 1, frontI = 1 - backI;
+    const spoutX = (i) => pipes[i].spout.x;
     const hoseOf = (i) => {
       let open = 0, m = 0; const near = [];
       for (let n = i; n < 8; n += 2) {
@@ -3186,9 +3203,10 @@ function addMachines(S) {
         open = Math.max(open, smoothstep(5.22, 5.4, u) * (1 - smoothstep(5.56, 5.7, u)));
         m = Math.max(m, membrane(u));
       }
-      const ye = drawHoseEnd(ctx, spoutX(i), SPOUT[1], near, m, open, pipes[i].clips);
-      // the glob hangs from where the opening is while it is out; once it falls it keeps its own line
-      for (let n = i; n < 8; n += 2) drawGlob(ctx, spoutX(i), ye, mod(t + n * 0.75, 6), n);
+      const ye = drawHoseEnd(ctx, spoutX(i), pipes[i].spout.y, near, m, open, pipes[i].clips);
+      // the glob hangs from where the opening is while it is out; once it falls it keeps its own line, down to the
+      // mouth's surface at this hose's depth
+      for (let n = i; n < 8; n += 2) drawGlob(ctx, spoutX(i), ye, mod(t + n * 0.75, 6), n, pipes[i].spout.dy);
     };
     const swell = [], late = [];   // swell: [arc length, strength, right side?] of each bulge in a pipe
     for (let n = 0; n < 8; n++) {
@@ -3197,7 +3215,7 @@ function addMachines(S) {
     }
     const bulgeList = (i) => swell.filter(([, , right]) => right === i).map(([s0, amp]) => [s0, amp]);
     // the pipe swinging away, whole (its stem too, behind the funnel's collar), with its bulges
-    drawFramePipe(ctx, pipes[backI].path, 0, bulgeList(backI));
+    drawFramePipe(ctx, pipes[backI], 0, bulgeList(backI));
     const ph = funnelTurn(t);
     drawFunnelBack(ctx, ph);
     const pulse = 0.5 + 0.5 * Math.cos(TAU * mod(t, 0.75) / 0.75);
@@ -3229,20 +3247,20 @@ function addMachines(S) {
     // each glob's splash where it lands, inside the portal
     { const clip = new Path2D(); mouthPts.forEach(([x, y], i) => (i ? clip.lineTo(x, y) : clip.moveTo(x, y))); clip.closePath();
       ctx.save(); ctx.clip(clip);
-      for (let n = 0; n < 8; n++) drawSplash(ctx, spoutX(n % 2), SURF, mod(t + n * 0.75, 6), n);
+      for (let n = 0; n < 8; n++) drawSplash(ctx, spoutX(n % 2), SURF + pipes[n % 2].spout.dy, mod(t + n * 0.75, 6), n);
       ctx.restore(); }
     drawFunnelFront(ctx, ph);
-    // the swinging-away pipe's hose end and globs hang over the mouth, so they come after it (and before the pipe
-    // swinging toward us, which really is in front of them)
+    // both hose ends and their globs hang over the mouth, so they come after it, and before the pipe swinging toward
+    // us, whose upright run is nearer than either and passes in front of them for the edge-on second
     hoseOf(backI);
+    hoseOf(frontI);
     // the pipe swinging toward us, from below the collar (the stem's top is behind the funnel), then the swinging-away
     // pipe's bulges down in the shared stem, so they show over it
-    drawFramePipe(ctx, pipes[frontI].path, 62, bulgeList(frontI));
-    strokePieces(ctx, bulgePieces(pipes[backI].path, bulgeList(backI).filter(([s0]) => s0 < 175), 62));
+    drawFramePipe(ctx, pipes[frontI], 62, bulgeList(frontI));
+    strokePieces(ctx, bulgePieces(pipes[backI].path, bulgeList(backI).filter(([s0]) => s0 < 175), 62, pipes[backI].ws));
     // the collar back over the front pipe's top (except when the frame is near edge-on and that pipe's upright run
     // really does pass in front of it)
     if (Math.abs(cf) > 0.22) drawCollar(ctx);
-    hoseOf(frontI);
     for (const f of late) f();
   } });
 
