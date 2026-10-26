@@ -18,5 +18,5 @@ window.BEATSYNC = {
   initialTimes: () => BUH_ONSETS,
   setTimes(ts) { BUH_RUNS.length = 0; for (const o of ts) { const r = BUH_RUNS[BUH_RUNS.length - 1]; if (r && o - r[r.length - 1] <= BUH.runGap) r.push(o); else BUH_RUNS.push([o]); } },
   draw(ctx, t) { window.g = ctx; buhTeeth(t); },
-  send: { url: '/d23bb3f3f30a1172/review', round: 68, prefix: 'Buh timing from the sync tool', done: 'Sent. Thank you, we have it.' },
+  send: { url: '/d23bb3f3f30a1172/review', round: 70, prefix: 'Buh timing from the sync tool', done: 'Sent. Thank you, we have it.' },
 };
