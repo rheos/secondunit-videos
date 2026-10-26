@@ -120,15 +120,17 @@ const ringPieces = (path, a, b, width, ws = () => 1) => {
   }
   return out;
 };
-// bulges as stacked windows of wider stroke (wide and low first, then narrower and higher), cut into their rings
+// a bulge as short pieces along the arc, each at the swell's width there (a variable-width tube in 4 px steps), so
+// it rounds an elbow with the path instead of denting it (draft 40's stacked windows met the fillet at different
+// angles and cut a notch into the shoulder)
 function bulgePieces(path, bulges, from = 0, ws = () => 1) {
-  const w2 = DUCT.w * 2, out = [];
+  const w2 = DUCT.w * 2, out = [], step = 4;
   for (const [s0, amp] of bulges) {
     if (amp < 0.01) continue;
-    for (let k = 1; k <= 10; k++) {
-      const hw = BULGE.sigma * 2.2 * (1 - k / 11), wid = w2 * (1 + BULGE.amp * amp * Math.exp(-((hw / BULGE.sigma) ** 2)));
-      const a = Math.max(from, s0 - hw), b = Math.min(DUCT_LEN, s0 + hw);
-      if (b > a) out.push(...ringPieces(path, a, b, wid, ws));
+    const a0 = Math.max(from, s0 - BULGE.sigma * 2.2), b0 = Math.min(DUCT_LEN, s0 + BULGE.sigma * 2.2);
+    for (let a = a0; a < b0; a += step) {
+      const b = Math.min(b0, a + step), mid = (a + b) / 2, wid = w2 * (1 + BULGE.amp * amp * Math.exp(-(((mid - s0) / BULGE.sigma) ** 2)));
+      out.push(...ringPieces(path, a, b, wid, ws));
     }
   }
   return out;
@@ -146,9 +148,11 @@ function drawFramePipe(ctx, pipe, from, bulges) {
 // (RIM.ry / RIM.rx), so a nearer point sits lower in the picture by z * K, and a little bigger (D is the camera's
 // distance): the near side of the frame drops and thickens as it swings toward us, the far side rises and thins.
 const DEPTH = { K: RIM.ry / RIM.rx, D: 2400, cy: RIM.y };
+// The far side rises by less than the near side drops (0.4 K): with the full shear the far top corner rose into
+// the sun's hub at edge-on (audit of draft 40).
 function project(xf, y, sf, cf) {
-  const z = xf * sf, s = DEPTH.D / (DEPTH.D - z);
-  return { x: AXIS + xf * cf * s, y: DEPTH.cy + (y - DEPTH.cy) * s + z * DEPTH.K, s, z };
+  const z = xf * sf, s = DEPTH.D / (DEPTH.D - z), k = z < 0 ? DEPTH.K * 0.4 : DEPTH.K;
+  return { x: AXIS + xf * cf * s, y: DEPTH.cy + (y - DEPTH.cy) * s + z * k, s, z };
 }
 const FACET_COLS = RING_COLS;   // mint, butter, orange, as the pipe; twice round the hexagon
 const ring = (cy, rx, ry, k, ph = 0) => { const a = (k + 0.5) / SIDES * TAU + ph; return [RIM.x + Math.cos(a) * rx, cy + Math.sin(a) * ry]; };
@@ -315,7 +319,7 @@ const METER = [522, 852], SCOPE = [550, 836, 584, 858], KNOBS = [[606, 848], [62
 const LAMPS = [...Array(9)].map((_, i) => [514 + i * 13.3, 870]);
 const TOGGLES = [[516, 882], [530, 882], [544, 882], [588, 882], [602, 882], [616, 882]];
 const BUTTONS = [[526, 899], [546, 899], [586, 899], [606, 899]];
-const BTN_FILL = ['#f6b27e', P.mint, P.butter, P.lilac];
+const BTN_FILL = [P.pink, P.mint, P.butter, P.lilac];   // no orange off the pipe and funnel (Robin)
 const SLIDERS = [[512, 918, 952], [524, 918, 952], [608, 918, 952], [620, 918, 952]];
 // the presses in each 3 s: [time, hand (0 left, 1 right), control, index]; at 1.6 both hands come down together on
 // the two outer push buttons (the old lever's beat); the rest fall on the 3/8 s grid of the machine rhythm
@@ -344,7 +348,7 @@ function drawConsole(g) {
   clayForm(g, circle(METER[0], METER[1], 10.5, 32), '#fff6e2', { sheen: 0.1, shadow: false });
   const [sx0, sy0, sx1, sy1] = SCOPE;
   clayForm(g, [[sx0 - 3, sy0 - 3], [sx1 + 3, sy0 - 3], [sx1 + 3, sy1 + 3], [sx0 - 3, sy1 + 3]], P.slateDeep, { smooth: false, size: 10 });
-  for (const [x, y] of KNOBS) clayForm(g, circle(x, y, 7.5, 24), '#f6b27e', { sheen: 0.32 });
+  for (const [x, y] of KNOBS) clayForm(g, circle(x, y, 7.5, 24), P.pinkDeep, { sheen: 0.32 });
   for (const [x, y] of LAMPS) clayForm(g, circle(x, y, 3.6, 16), P.slateDeep, { sheen: 0.1, shadow: false });
   for (const [x, y] of TOGGLES) clayForm(g, [[x - 5, y - 6], [x + 5, y - 6], [x + 5, y + 6], [x - 5, y + 6]], shade(P.slate, -0.1), { smooth: false, size: 6, shadow: false });
   BUTTONS.forEach(([x, y]) => clayForm(g, circle(x, y, 8, 24), P.slateDeep, { sheen: 0.15, shadow: false }));
@@ -364,7 +368,7 @@ function drawPanelKeys(ctx, t) {
   // the knobs turn, one each way
   KNOBS.forEach(([x, y], i) => {
     const r = (i ? -1 : 1) * TAU * t / 6;
-    ctx.strokeStyle = shade('#f6b27e', -0.45); ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + Math.sin(r) * 6, y - Math.cos(r) * 6); ctx.stroke();
+    ctx.strokeStyle = shade(P.pinkDeep, -0.45); ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + Math.sin(r) * 6, y - Math.cos(r) * 6); ctx.stroke();
   });
   // the lamps chase along the row on the machine rhythm
   LAMPS.forEach(([x, y], i) => {
@@ -430,6 +434,9 @@ export function addMachines(S) {
     // is drawn now, behind the funnel, the other after it
     const th = frameTurn(t), cf = Math.cos(th), sf = Math.sin(th);
     const pipes = [framePipe(1, sf, cf), framePipe(-1, sf, cf)], backI = sf >= 0 ? 0 : 1, frontI = 1 - backI;
+    // near edge-on the far hose end sits behind the near one (their spouts are 56 px either side of the axis) and
+    // the pair read as one lumpy two-nozzle fitting (audit d40): the far one and its globs stay hidden while covered
+    const hideBack = Math.abs(cf) < 0.2;
     const spoutX = (i) => pipes[i].spout.x;
     const hoseOf = (i) => {
       let open = 0, m = 0; const near = [];
@@ -484,16 +491,26 @@ export function addMachines(S) {
     // each glob's splash where it lands, inside the portal
     { const clip = new Path2D(); mouthPts.forEach(([x, y], i) => (i ? clip.lineTo(x, y) : clip.moveTo(x, y))); clip.closePath();
       ctx.save(); ctx.clip(clip);
-      for (let n = 0; n < 8; n++) drawSplash(ctx, spoutX(n % 2), SURF + pipes[n % 2].spout.dy, mod(t + n * 0.75, 6), n);
+      for (let n = 0; n < 8; n++) if (!(hideBack && n % 2 === backI)) drawSplash(ctx, spoutX(n % 2), SURF + pipes[n % 2].spout.dy, mod(t + n * 0.75, 6), n);
       ctx.restore(); }
     drawFunnelFront(ctx, ph);
     // both hose ends and their globs hang over the mouth, so they come after it, and before the pipe swinging toward
     // us, whose upright run is nearer than either and passes in front of them for the edge-on second
-    hoseOf(backI);
+    if (!hideBack) hoseOf(backI);
     hoseOf(frontI);
     // the pipe swinging toward us, from below the collar (the stem's top is behind the funnel), then the swinging-away
     // pipe's bulges down in the shared stem, so they show over it
     drawFramePipe(ctx, pipes[frontI], 62, bulgeList(frontI));
+    // near edge-on the near corners are seen end-on and the column ended in a plain round cap (audit d40): a small
+    // shaded ellipse at each marks the bend's underside
+    if (Math.abs(cf) < 0.2) {
+      const g = frontI === 0 ? 1 : -1, k = 1 - Math.abs(cf) / 0.2;
+      for (const [wx, wy, arc] of [[AXIS - 266, 800, 426], [AXIS - 266, 226, 1000]]) {
+        const q = project(g * (wx - AXIS), wy, sf, cf), rx = DUCT.w * q.s * 0.92, col = RING_COLS[Math.floor(arc / RING) % 3];
+        ctx.save(); ctx.globalAlpha = 0.85 * k; ctx.fillStyle = shade(col, -0.3); ctx.beginPath(); ctx.ellipse(q.x, q.y, rx, rx * 0.38, 0, 0, TAU); ctx.fill();
+        ctx.fillStyle = shade(col, -0.5); ctx.beginPath(); ctx.ellipse(q.x, q.y, rx * 0.55, rx * 0.2, 0, 0, TAU); ctx.fill(); ctx.restore();
+      }
+    }
     strokePieces(ctx, bulgePieces(pipes[backI].path, bulgeList(backI).filter(([s0]) => s0 < 175), 62, pipes[backI].ws));
     // the collar back over the front pipe's top (except when the frame is near edge-on and that pipe's upright run
     // really does pass in front of it)
@@ -527,7 +544,7 @@ export function addMachines(S) {
     const u = mod(t - 7.0, LOOP);
     if (u < 10.5) {
       const grow = smoothstep(0, 0.8, u), f = smoothstep(0.8, 10.5, u);
-      drawSolid(ctx, 'cube', cx - 60 * f - 40 * Math.sin(f * 3), cy - 60 * grow - 560 * E.outSoft(f), 13 * grow * (1 - 0.45 * f), [TAU * t / 6, TAU * t / 4, 0.4], P.aqua, { glowK: 1 - smoothstep(0.8, 2.5, u), alpha: 1 - smoothstep(0.82, 1, f) });
+      drawSolid(ctx, 'cube', cx - 60 * f - 40 * Math.sin(f * 3), cy - 60 * grow - 560 * E.outSoft(f), 13 * grow * (1 - 0.45 * f), [TAU * t / 6, TAU * t / 4, 0.4], P.aqua, { glowK: 0, alpha: 1 - smoothstep(0.82, 1, f) });   // no soft glow: the only blur in a crisp world (audit d40)
     }
   }); } });
 }

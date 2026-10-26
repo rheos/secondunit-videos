@@ -53,7 +53,7 @@ function mounds(g, { x0, x1, base, amp, bottom, colors, fade, seed, trees = 0.5 
   }
   for (const [cx, ty, w] of tops) {
     if (!rng.chance(trees)) continue;
-    const x = cx + rng.range(-w * 0.2, w * 0.2), h = rng.range(26, 50), c = vary(mix(rng.pick(['#ef8c5f', P.mintDeep, '#f6a678', P.mint]), '#f7ece4', fade * 0.8), rng, 0.06);
+    const x = cx + rng.range(-w * 0.2, w * 0.2), h = rng.range(26, 50), c = vary(mix(rng.pick([P.pinkDeep, P.mintDeep, P.pink, P.mint]), '#f7ece4', fade * 0.8), rng, 0.06);   // no orange cones: orange stays in the pipe and funnel (Robin)
     if (rng.chance(0.6)) clayForm(g, [[x - h * 0.3, ty + 8], [x - h * 0.16, ty - h * 0.55], [x, ty - h], [x + h * 0.16, ty - h * 0.55], [x + h * 0.3, ty + 8]], c, { size: h * 0.5, sheen: 0.12 });
     else { tube(g, [[x, ty + 8], [x, ty - h * 0.6]], 2.6, '#a08b80', { shadow: false }); clayForm(g, circle(x, ty - h * 0.75, h * 0.3, 28), c, { sheen: 0.18 }); }
   }
@@ -302,7 +302,7 @@ export function addWorld(S) {
   const trunk = (g, h, c = P.boneDeep) => clayForm(g, [[-3, 0], [-2.4, -h], [2.4, -h], [3, 0]], c, { smooth: false, size: 6 });
   const TREES = [
     treeSp('tree-fir', (g) => { trunk(g, 22); for (let k = 0; k < 3; k++) { const y0 = -16 - k * 26, w = 30 - k * 7; clayForm(g, [[-w, y0], [0, y0 - 40], [w, y0]], k % 2 ? P.mintDeep : P.mint, { smooth: false, size: 18 }); } }),
-    treeSp('tree-lolly', (g) => { trunk(g, 60); clayForm(g, circle(0, -82, 28, 36), '#f6b27e', { sheen: 0.28 }); clayForm(g, circle(-8, -90, 9, 18), mix('#f6b27e', '#fff4d6', 0.4), { sheen: 0.2, shadow: false }); }),
+    treeSp('tree-lolly', (g) => { trunk(g, 60); clayForm(g, circle(0, -82, 28, 36), P.pink, { sheen: 0.28 }); clayForm(g, circle(-8, -90, 9, 18), mix(P.pink, '#fff4d6', 0.4), { sheen: 0.2, shadow: false }); }),   // pink, not orange: orange stays in the pipe and funnel (Robin)
     treeSp('tree-pagoda', (g) => { trunk(g, 96); for (let k = 0; k < 3; k++) { const y0 = -38 - k * 30, w = 34 - k * 8; clayForm(g, [[-w, y0], [w, y0], [w * 0.6, y0 - 10], [-w * 0.6, y0 - 10]], k === 1 ? P.lilac : mix(P.lilac, P.blush, 0.5), { smooth: false, size: 10 }); } }),
     treeSp('tree-topiary', (g) => { trunk(g, 30); [[22, -44], [16, -82], [10, -108], [5, -122]].forEach(([r, y], k) => clayForm(g, circle(0, y, r, 28), k % 2 ? P.aqua : P.mint, { sheen: 0.3 })); }),
     treeSp('tree-cypress', (g) => { trunk(g, 14); clayForm(g, [[-13, -10], [-15, -60], [-9, -112], [0, -140], [9, -112], [15, -60], [13, -10]], mix(P.mintDeep, P.slate, 0.3), { size: 22, sheen: 0.18 }); }),
@@ -350,13 +350,13 @@ export function addNear(S) {
     mounds(g, { x0: -600, x1: 400, base: 1070, amp: 70, bottom: 1440, colors: [P.pinkDeep, P.pink], fade: 0, seed: 5, trees: 0 });
     for (const [cx, cy, n] of [[120, 1010, 22], [260, 1040, 14]]) for (let i = 0; i < n; i++) {
       const a = rng.next() * TAU, d = Math.sqrt(rng.next()) * 60;
-      curl(g, cx + Math.cos(a) * d, cy + Math.sin(a) * d * 0.7, rng.range(9, 15), rng.range(1.2, 1.8), vary('#7d8597', rng, 0.08));
+      curl(g, cx + Math.cos(a) * d, cy + Math.sin(a) * d * 0.7, rng.range(9, 15), rng.range(1.2, 1.8), vary(P.mintDeep, rng, 0.08));   // was a murky slate (audit d40)
     }
-    for (const [x, y, r, c] of [[-20, 990, 44, P.slateDeep], [60, 1030, 40, P.mintDeep]]) rosette(g, x, y, r, c, rng);
+    for (const [x, y, r, c] of [[-20, 990, 44, P.mintDeep], [60, 1030, 40, P.mint]]) rosette(g, x, y, r, c, rng);
   });
   S.add({ name: 'near', z: 760, shadow: { dx: 12, dy: 20, alpha: 0.45 }, sprites: pair(near) });
   const lens = sp('lens', { x: -500, y: 820, w: 1460, h: 560 }, (g) => {
-    for (const [x, y, r, c] of [[-120, 1080, 120, P.slate], [40, 1150, 90, P.mintDeep]]) rosette(g, x, y, r, c, rng);
+    for (const [x, y, r, c] of [[-120, 1080, 120, P.mintDeep], [40, 1150, 90, P.mint]]) rosette(g, x, y, r, c, rng);
     for (let i = 0; i < 40; i++) {
       const a = -Math.PI * 0.55 + rng.range(-0.4, 0.4), len = rng.range(110, 210), x = 240 + rng.range(-40, 60), y = 1140 + rng.range(-20, 20);
       clayForm(g, transform([[-8, 0], [-5, -len * 0.6], [0, -len], [5, -len * 0.6], [8, 0]], { x, y, rot: a + Math.PI / 2 }), vary(mix(P.blush, '#fff2ee', rng.next() * 0.6), rng, 0.05), { size: 16, sheen: 0.1 });

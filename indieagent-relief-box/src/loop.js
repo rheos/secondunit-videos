@@ -227,8 +227,10 @@ function singerMakes(ctx, t, phase, x, f, hip, kinds, hue) {
 // up as soon as the gnome gets off.. he goes to it because it came up"). Every 0.75 s, on the machine rhythm, one
 // empty piston rises on the schedule; an elf jumps over to it because it came up and rides it down. The piston it
 // left stays down until its own turn. The schedule runs in a
-// sequence of 32 (found by search: short hops to neighbouring pistons, never straight back, nobody twice running)
-// that brings every elf back to its own piston at the seam. Places, as [x off the centre line, tier], in order:
+// sequence of 32 (found by search: short hops to neighbouring pistons, never straight back, nobody twice running,
+// and, since draft 41, the front place and the middle-centre place behind it are never both taken: they share an x,
+// so two elves there read as one standing on the other's hat, the audit of draft 40's worst defect) that brings
+// every elf back to its own piston at the seam. Places, as [x off the centre line, tier], in order:
 // the front, middle right, back right outer, back right inner, middle centre, back left inner, back left outer,
 // middle left.
 const CHORUS_CAST = [['bells', P.mint, P.pinkDeep], [P.butter, P.pink], ['pom', P.lilac], ['bells', P.butter, P.iris], [P.mint, P.lilac]];
@@ -236,8 +238,8 @@ const CHORUS_N = 5, SWAP = 1.5, JUMP = 0.75, LEAVE = 0.24, LAND = 0.6, RISE = 46
 const PLACES = [[0, 0], [140, 1], [210, 2], [70, 2], [0, 1], [-70, 2], [-210, 2], [-140, 1]];
 const PEDESTAL = [P.butter, P.aqua, P.blush];
 // [elf, from, to] for each jump; STATE[k][elf] = its piston before jump k (STATE[32] is STATE[0] again)
-const JUMPS = [[2, 7, 6], [4, 5, 4], [0, 0, 5], [1, 1, 2], [0, 5, 0], [3, 3, 1], [4, 4, 7], [0, 0, 5], [3, 1, 4], [1, 2, 3], [3, 4, 1], [1, 3, 4], [0, 5, 3], [3, 1, 2], [4, 7, 0], [1, 4, 1],
-  [0, 3, 5], [2, 6, 7], [4, 0, 4], [1, 1, 0], [2, 7, 6], [0, 5, 7], [3, 2, 1], [4, 4, 3], [2, 6, 5], [1, 0, 4], [0, 7, 0], [2, 5, 6], [4, 3, 5], [2, 6, 7], [3, 1, 3], [1, 4, 1]];
+const JUMPS = [[4, 5, 6], [1, 1, 2], [0, 0, 4], [3, 3, 5], [0, 4, 1], [2, 7, 4], [3, 5, 7], [2, 4, 5], [3, 7, 0], [2, 5, 3], [4, 6, 7], [3, 0, 5], [2, 3, 4], [0, 1, 3], [2, 4, 0], [3, 5, 6],
+  [2, 0, 5], [0, 3, 0], [1, 2, 3], [0, 0, 1], [4, 7, 4], [3, 6, 7], [2, 5, 6], [4, 4, 0], [3, 7, 5], [4, 0, 7], [0, 1, 4], [1, 3, 1], [3, 5, 3], [0, 4, 0], [4, 7, 5], [2, 6, 7]];
 const STATE = [[0, 1, 7, 3, 5]];
 for (const [g, , to] of JUMPS) { const st = STATE[STATE.length - 1].slice(); st[g] = to; STATE.push(st); }
 // a piston's height above its rest: down, except the one whose turn it is, which rises at the start of the step
