@@ -67,7 +67,11 @@ Robin asked for rounder forms, softer light and a finer surface. `src/kit.js` no
 
 Draft 2 built form the paper way, with tiers cut inside each shape (commit 7cbb8a4).
 
-## The living loop (`loop.html`, issue #329)
+## This Goes Into This, the living loop (`loop.html`, issue #329)
+
+Title chosen 2026-10-25 (Robin's own phrase, from his notes on the machine-elf space: the funnel feeds itself, the
+singers put what they sing into the portal, the whole system feeds back). "The living loop" stays as the working
+name in files and code (`loop.html`, `reliefloop_*`).
 
 Robin, 2026-10-25, after approving the look: smaller figures instead of a big one, a living sculpture in the
 middle shaped like the recycle symbol (a funnel feeding back into itself, part of a system that feeds back into
