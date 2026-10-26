@@ -280,6 +280,12 @@ s25 and s26 are kept in `audio-keep/` (gitignored) and `~/Downloads/living-loop-
   fullest 2 s and 6 s into each 8 s breath, outer ring first; the rays flare on the chord change; the lantern's scale
   pulse peaks on the 0.75 s machine rhythm. `references/README.md` begins (Robin's first reference painting for the
   project).
+- 43 (Robin, 2026-10-26: moving the picture rather than the sound is because other things may be synced to a sound,
+  and "it's ok if multiple things are synced to the same sound.. better in fact"): the paper flap at 4.5 and 10.5 s
+  that the big fir left behind now has a sapling fir behind the console's far edge rising on it (a `TREE_SPOTS`
+  entry may carry its own phase as a fifth field). No cue added; the cue list is unchanged and the sound stays s26w.
+  cinetic's `check-sync.py` (references/leon-lin) passes on the muxed loop: lag 0 ms; true peak -0.38 dBTP after
+  AAC, so leave a decibel more headroom in `master.py` when the mix is next reopened.
 
 **The sound, s10 to s25.** s10 the 24 s loop; s11 to s14 the Sohan "doiy" and "dee" voice (`tools/voice.py`,
 measured on the icaro recording), one syllable per picture event, with long doorstop-spring tails and its own
