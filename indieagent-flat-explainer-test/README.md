@@ -43,5 +43,6 @@ timeline so HyperFrames can seek it. Grain is four seeded noise tiles chosen by 
     npx --yes hyperframes@0.8.174 render . -q high -o out/back-row-delay_d1_720.mp4
     ffmpeg -i out/back-row-delay_d1_720.mp4 -c:v libx264 -crf 23 -maxrate 4.5M -bufsize 9M -pix_fmt yuv420p -an out/back-row-delay_d1_review_720.mp4
 
-Renders at 1280x720, 30 fps, in about 35 s on the Mac (vector explainers stay 720p). Draft 1 is not
-yet watched by Robin; it is not on YouTube, the looks catalogue or novadiem.com.
+Renders at 1280x720, 30 fps, in about 35 s on the Mac (vector explainers stay 720p). Robin on draft 1
+(2026-10-26): "the look lands." In the looks catalogue as `looks/flat-explainer.yaml`; styles-page clip
+on rheos/novadiem.com#255 (not deployed). Not on YouTube.

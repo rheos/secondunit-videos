@@ -24,7 +24,7 @@ clip plus general familiarity with the channel, and is labelled inference.
 
 | Where | What | Record |
 |---|---|---|
-| `indieagent-flat-explainer-test` | 13 s, 16:9: a drummer hits a cymbal at a festival; light reaches the back of a 100 m field at once, the sound front takes 0.29 s (shown 10x slower, labelled). Odometer tied to the front's position; heads nod as it passes. Draft 1, Robin not yet watched. | rheos/secondunit-videos#333 |
+| `indieagent-flat-explainer-test` | 13 s, 16:9: a drummer hits a cymbal at a festival; light reaches the back of a 100 m field at once, the sound front takes 0.29 s (shown 10x slower, labelled). Odometer tied to the front's position; heads nod as it passes. Draft 1; Robin: "the look lands" (2026-10-26). Look `flat-explainer`. | rheos/secondunit-videos#333 |
 
 ## Rights
 
