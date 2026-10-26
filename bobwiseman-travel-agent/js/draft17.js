@@ -21,25 +21,27 @@ function fidPt(vx, vy) { const c = Math.cos(FID.rot), s = Math.sin(FID.rot); ret
 // u: bow travel -0.8..0.8 (bowU); e: 0..1 the violin popping into his hands
 function fiddler(x, y, s, T, u, e = 1, o = {}) {
   const neck = fidPt(0, FID.neck), C0 = fidPt(0, -160), d = FID.bowDir, f = .5 + .38 * (u / .8);
+  // draft 21: on a blueprint (o.sch) everything is drawn in o.col on navy, as the schematic traveller is
+  const SCH = !!o.sch, CO = o.col || C.lav, INK = SCH ? CO : C.ink, HAIR = SCH ? CO : '#f2ead6', SKIN = SCH ? C.navy : '#efd9b9', FROG = SCH ? C.navy : '#2a2320', NOTE = SCH ? CO : C.teal;
   const frog = [C0[0] + d[0] * FID.bowL * f, C0[1] + d[1] * FID.bowL * f], tip = [frog[0] - d[0] * FID.bowL, frog[1] - d[1] * FID.bowL];
   const play = e > .5;
   traveller(x, y, s, Object.assign({ look: -1, case: false, mouth: 0 }, o, play ? { handToL: neck, handTo: [frog[0] - 4, frog[1] - 8] } : {}));
   if (e <= 0) return;
   X.save(); X.translate(x, y); X.scale(s, s); const k = 1 / s;
-  violin(FID.A[0], FID.A[1], FID.vs * e, FID.rot, { bow: u, noBow: 1 });
+  violin(FID.A[0], FID.A[1], FID.vs * e, FID.rot, SCH ? { bow: u, noBow: 1, sch: 1, col: CO } : { bow: u, noBow: 1 });
   if (play) {
     // the bow: hair, then the stick bowed slightly away from it, the frog in his hand, a small tip
     const nx = -d[1], ny = d[0];
-    X.beginPath(); X.moveTo(frog[0], frog[1]); X.lineTo(tip[0], tip[1]); stroke('#f2ead6', 2.4 * k + 1.2, .95);
-    X.beginPath(); X.moveTo(frog[0] + nx * 5, frog[1] + ny * 5); X.quadraticCurveTo((frog[0] + tip[0]) / 2 + nx * 2, (frog[1] + tip[1]) / 2 + ny * 2, tip[0] + nx * 4, tip[1] + ny * 4); stroke(C.ink, 2.6, 1);
-    X.beginPath(); X.moveTo(tip[0] + nx * 4, tip[1] + ny * 4); X.lineTo(tip[0], tip[1]); stroke(C.ink, 2, 1);
+    X.beginPath(); X.moveTo(frog[0], frog[1]); X.lineTo(tip[0], tip[1]); stroke(HAIR, 2.4 * k + 1.2, .95);
+    X.beginPath(); X.moveTo(frog[0] + nx * 5, frog[1] + ny * 5); X.quadraticCurveTo((frog[0] + tip[0]) / 2 + nx * 2, (frog[1] + tip[1]) / 2 + ny * 2, tip[0] + nx * 4, tip[1] + ny * 4); stroke(INK, 2.6, 1);
+    X.beginPath(); X.moveTo(tip[0] + nx * 4, tip[1] + ny * 4); X.lineTo(tip[0], tip[1]); stroke(INK, 2, 1);
     const fr = PP([[frog[0] - d[0] * 6, frog[1] - d[1] * 6], [frog[0] - d[0] * 18, frog[1] - d[1] * 18], [frog[0] - d[0] * 18 + nx * 7, frog[1] - d[1] * 18 + ny * 7], [frog[0] - d[0] * 6 + nx * 7, frog[1] - d[1] * 6 + ny * 7]]);
-    fillP(fr, '#2a2320');
+    fillP(fr, FROG); if (SCH) iP([[frog[0] - d[0] * 6, frog[1] - d[1] * 6], [frog[0] - d[0] * 18, frog[1] - d[1] * 18], [frog[0] - d[0] * 18 + nx * 7, frog[1] - d[1] * 18 + ny * 7], [frog[0] - d[0] * 6 + nx * 7, frog[1] - d[1] * 6 + ny * 7]], true, INK, 1.2 * k, .9, false);
     // his hands over it: the back hand round the neck, the front hand on the frog
-    for (const [hx, hy] of [neck, [frog[0] - 4, frog[1] - 4]]) { fillP(PE(hx, hy + 2, 8, 9), '#efd9b9'); iE(hx, hy + 2, 8, 9, 0, C.ink, 1.6 * k + .4, 1, false); }
+    for (const [hx, hy] of [neck, [frog[0] - 4, frog[1] - 4]]) { fillP(PE(hx, hy + 2, 8, 9), SKIN); iE(hx, hy + 2, 8, 9, 0, INK, 1.6 * k + .4, 1, false); }
     // the notes he plays drift up off the strings
     for (let i = 0; i < 4; i++) { const ph = (T * .7 + i / 4) % 1, nxp = C0[0] - 20 - ph * 60 + Math.sin(ph * 6 + i) * 14, nyp = C0[1] - 30 - ph * 190;
-      X.save(); X.translate(nxp, nyp); X.rotate(-.3); fillP(PE(0, 0, 7, 5.5, -.4), C.teal, 1 - ph); X.restore(); iline(nxp + 6, nyp - 1, nxp + 6, nyp - 26, C.teal, 2, 1 - ph, false); }
+      X.save(); X.translate(nxp, nyp); X.rotate(-.3); fillP(PE(0, 0, 7, 5.5, -.4), NOTE, 1 - ph); X.restore(); iline(nxp + 6, nyp - 1, nxp + 6, nyp - 26, NOTE, 2, 1 - ph, false); }
   }
   X.restore();
 }

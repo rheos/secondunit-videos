@@ -937,7 +937,7 @@ SU.a_sNoCar = { mode: 'sch', f(q,p,a,T) {
   schBG(); cam(960,540,1); graticule(960,540,1800,950,80,C.lav,.1);
   car(550,600,2.8,{sch:true,col:C.white}); bracket(245,760,870,760,C.cyan,.9,'VEHICLE 01');
   lab(1230,265,'PERMITTED',C.white,1,34,'center');
-  const places=['COLLEGE & SPADINA','ISLAND','VILLAGE','MOUNTAIN','MOON'];
+  const places=['COLLEGE & SPADINA','ISLAND','SPRING GREEN','MOUNTAIN','MOON']; // draft 21 (Bob): SPRING GREEN for VILLAGE
   places.forEach((name,i)=>{const y=370+i*95; lab(1060,y,name,C.white,.95,31);
     const u=cl((T-78.3-.13-i*.22)/.16); if(u>0) gl(1040,y-12,1040+Math.max(390,name.length*26)*u,y-12,C.mag,1,4); // the line covers the longest name
   });
@@ -960,6 +960,7 @@ SU.a_carMoon = { mode: 'ill', f(q,p,a,T) {
   const exit=cl((dt-.85)/.65), hopTime=Math.max(0,dt-1.5), hop=hopTime/1.05, hx=hop-Math.floor(hop);
   const tx=exit<1?lerp(522.6,890,exit):890+hopTime*250, ty=exit<1?lerp(941.4,1015,exit):1015-110*4*hx*(1-hx);
   const dOpen=eo(cl((dt-.55)/.5));
+  if(typeof d21aliens==='function') d21aliens(T, exit===0?560:tx, exit===0?855:ty); // draft 21: two little aliens on the horizon, watching him
   if(exit===0) { a_carDriver(510,855,1.8); a_carDoorway(510,855,1.8,dOpen); } else {
     car(510,855,1.8); a_carDoorway(510,855,1.8,dOpen);
     traveller(tx,ty,.72,{case:true,look:1,sit:exit<.45,legs:exit<1?exit*Math.PI:hx*Math.PI*2});
