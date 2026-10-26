@@ -286,6 +286,12 @@ s25 and s26 are kept in `audio-keep/` (gitignored) and `~/Downloads/living-loop-
   entry may carry its own phase as a fifth field). No cue added; the cue list is unchanged and the sound stays s26w.
   cinetic's `check-sync.py` (references/leon-lin) passes on the muxed loop: lag 0 ms; true peak -0.38 dBTP after
   AAC, so leave a decibel more headroom in `master.py` when the mix is next reopened.
+- 44 (Robin, 2026-10-26: "the dodecahedron is screwed up here.. grab the hero from novadiem.com as reference"): the
+  dodecahedron drew 42 edges with bent faces, because it took the five nearest corners from a vertex list in another
+  orientation. It is now the icosahedron's dual, built as the novadiem.com hero builds it (12 flat faces, 30 equal
+  edges), in the seer's sigil and every solid. The sigil pen's total is pinned (`SIGIL_PIN`, 19.72) so the circle and
+  its bell keep their frame; the cue list is byte-identical. The hero is filed as `references/ref-02-*`.
+  The 1080p master, the seamless-loop page on novadiem.com and the X post are of draft 43.
 
 **The sound, s10 to s25.** s10 the 24 s loop; s11 to s14 the Sohan "doiy" and "dee" voice (`tools/voice.py`,
 measured on the icaro recording), one syllable per picture event, with long doorstop-spring tails and its own
