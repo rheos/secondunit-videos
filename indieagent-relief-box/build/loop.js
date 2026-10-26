@@ -2044,17 +2044,20 @@ const SOLIDS = {
     f: [[0, 11, 5], [0, 5, 1], [0, 1, 7], [0, 7, 10], [0, 10, 11], [1, 5, 9], [5, 11, 4], [11, 10, 2], [10, 7, 6], [7, 1, 8], [3, 9, 4], [3, 4, 2], [3, 2, 6], [3, 6, 8], [3, 8, 9], [4, 9, 5], [2, 4, 11], [6, 2, 10], [8, 6, 7], [9, 8, 1]],
   },
 };
-// the dodecahedron, as the icosahedron's dual: one pentagonal face for each icosahedron corner, made of the five
-// dodecahedron corners nearest that direction, put in order round it
+// the dodecahedron, built the way the novadiem.com hero builds it (public/polyhedra-toy.js): as the icosahedron's
+// dual. Its 20 corners are the centres of the icosahedron's 20 faces, and each of its 12 faces is the five of those
+// centres round one icosahedron corner, put in order round it. (Until draft 44 it took the five nearest corners from
+// a separately written vertex list in a different orientation, which gave 42 edges, faces that were not flat and
+// long diagonals through the inside: Robin, "the dodecahedron is screwed up".)
 {
-  const ip = 1 / phi, v = [];
-  for (const a of [-1, 1]) for (const b of [-1, 1]) for (const c of [-1, 1]) v.push([a, b, c]);
-  for (const a of [-1, 1]) for (const b of [-1, 1]) { v.push([0, a * ip, b * phi]); v.push([a * ip, b * phi, 0]); v.push([a * phi, 0, b * ip]); }
-  const V = v.map(norm), f = SOLIDS.ico.v.map((d) => {
-    const n = norm(d), near = V.map((p, i) => [p[0] * n[0] + p[1] * n[1] + p[2] * n[2], i]).sort((a, b) => b[0] - a[0]).slice(0, 5).map(([, i]) => i);
+  const IV = SOLIDS.ico.v.map(norm), IF = SOLIDS.ico.f;
+  const V = IF.map((f) => norm([0, 1, 2].map((k) => (IV[f[0]][k] + IV[f[1]][k] + IV[f[2]][k]) / 3)));
+  const f = IV.map((n, i) => {
+    const round = IF.map((F, fi) => (F.includes(i) ? fi : -1)).filter((fi) => fi >= 0);
     const ref = Math.abs(n[0]) < 0.9 ? [1, 0, 0] : [0, 1, 0];
     const u = norm([n[1] * ref[2] - n[2] * ref[1], n[2] * ref[0] - n[0] * ref[2], n[0] * ref[1] - n[1] * ref[0]]), w = [n[1] * u[2] - n[2] * u[1], n[2] * u[0] - n[0] * u[2], n[0] * u[1] - n[1] * u[0]];
-    return near.sort((a, b) => Math.atan2(V[a][0] * w[0] + V[a][1] * w[1] + V[a][2] * w[2], V[a][0] * u[0] + V[a][1] * u[1] + V[a][2] * u[2]) - Math.atan2(V[b][0] * w[0] + V[b][1] * w[1] + V[b][2] * w[2], V[b][0] * u[0] + V[b][1] * u[1] + V[b][2] * u[2]));
+    const at = (j) => Math.atan2(V[j][0] * w[0] + V[j][1] * w[1] + V[j][2] * w[2], V[j][0] * u[0] + V[j][1] * u[1] + V[j][2] * u[2]);
+    return round.sort((a, b) => at(a) - at(b));
   });
   SOLIDS.dodeca = { v: V, f };
 }
@@ -3598,7 +3601,7 @@ const T = { sing: [0.3, 2.3], fold: [2.3, 2.8], turn: [2.8, 3.2], offer: [3.2, 4
 // console pops on the seer pair's bells (Robin, draft 41), 0.3 s after it starts to rise (full at 0.25, peak 0.35).
 const bellTime = (phase, j) => {
   const c0 = phase + 6 * j, kind = ['ico', 'dodeca', 'star', 'octa'][(phase ? 2 : 0) + j];
-  const strokes = SIGILS[kind], lens = strokes.map(slen), total = lens.reduce((a, b) => a + b, 0) + HOP * (strokes.length - 1);
+  const { strokes, lens, total } = sigilLen(kind);
   let kc = 0; while (kc < 1 && E.smooth(kc) * total < lens[0]) kc += 0.005;
   return c0 + T.sing[0] + kc * (T.sing[1] - T.sing[0]);
 };
@@ -3618,12 +3621,23 @@ const SIGILS = {
   octa: [poly(48), poly(4, -Math.PI / 2, 0.86), poly(48, -Math.PI / 2, 0.42)],
 };
 const slen = (pl) => pl.reduce((a, p, i) => i ? a + Math.hypot(p[0] - pl[i - 1][0], p[1] - pl[i - 1][1]) : 0, 0);
+// A sigil's pen runs its total length over the song; the bell rings as its circle closes. The sound is frozen at
+// s26 (Robin: move the picture, never the sound), so a sigil whose strokes change keeps the total its bell was timed
+// to: the circle draws exactly as before, and the strokes after it are paced to fill the same time. The dodecahedron's
+// edges were corrected in draft 44 (30 true edges instead of 42); 19.72 is its total in draft 43.
+const SIGIL_PIN = { dodeca: 19.720724061311167 };
+function sigilLen(kind) {
+  const strokes = SIGILS[kind], lens = strokes.map(slen), real = lens.reduce((a, b) => a + b, 0) + HOP * (strokes.length - 1);
+  return { strokes, lens, real, total: SIGIL_PIN[kind] ?? real };
+}
+// how far along the real strokes the pen is at fraction k of the song: unchanged through the circle, then paced
+const penAt = (kind, k) => { const { lens, real, total } = sigilLen(kind), d = k * total; return d <= lens[0] ? d : lens[0] + (d - lens[0]) * (real - lens[0]) / (total - lens[0]); };
 // the pen lifts between strokes: a short hop, so a sigil of thirty edges still draws in one song
 const HOP = 0.12;
 // where the pen is after fraction k of the whole sigil (pen-up hops between strokes count as short moves)
 function sigilAt(kind, k) {
-  const strokes = SIGILS[kind], lens = strokes.map(slen), total = lens.reduce((a, b) => a + b, 0) + HOP * (strokes.length - 1);
-  let d = k * total;
+  const { strokes, lens } = sigilLen(kind);
+  let d = penAt(kind, k);
   for (let i = 0; i < strokes.length; i++) {
     if (d <= lens[i]) { const pl = strokes[i]; for (let j = 1; j < pl.length; j++) { const seg = Math.hypot(pl[j][0] - pl[j - 1][0], pl[j][1] - pl[j - 1][1]); if (d <= seg) return mixPt(pl[j - 1], pl[j], d / seg); d -= seg; } return pl[pl.length - 1]; }
     d -= lens[i];
@@ -3634,8 +3648,8 @@ function sigilAt(kind, k) {
 }
 // the part of the sigil drawn after fraction k, as polylines in unit coordinates
 function sigilDrawn(kind, k) {
-  const strokes = SIGILS[kind], lens = strokes.map(slen), total = lens.reduce((a, b) => a + b, 0) + HOP * (strokes.length - 1);
-  let left = k * total;
+  const { strokes, lens, total } = sigilLen(kind);
+  let left = penAt(kind, k);
   const out = [];
   strokes.forEach((pl) => {
     if (left <= 0) return;
@@ -3937,7 +3951,7 @@ function cues() {
     let e = 0;
     for (let c = T.sing[0]; c < T.sing[1] - 1e-6; c += 0.1, e++) both(c0 + c, 'glyph', x, { n: e });
     // the circle of the sigil closes partway through the song
-    const strokes = SIGILS[kind], lens = strokes.map(slen), total = lens.reduce((a, b) => a + b, 0) + HOP * (strokes.length - 1);
+    const { strokes, lens, total } = sigilLen(kind);
     let kc = 0; while (kc < 1 && E.smooth(kc) * total < lens[0]) kc += 0.005;
     both(c0 + T.sing[0] + kc * (T.sing[1] - T.sing[0]), 'chime', x);
     both(c0 + T.fold[0], 'fold', x, { dur: 0.5 });

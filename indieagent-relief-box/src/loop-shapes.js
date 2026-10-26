@@ -21,17 +21,20 @@ const SOLIDS = {
     f: [[0, 11, 5], [0, 5, 1], [0, 1, 7], [0, 7, 10], [0, 10, 11], [1, 5, 9], [5, 11, 4], [11, 10, 2], [10, 7, 6], [7, 1, 8], [3, 9, 4], [3, 4, 2], [3, 2, 6], [3, 6, 8], [3, 8, 9], [4, 9, 5], [2, 4, 11], [6, 2, 10], [8, 6, 7], [9, 8, 1]],
   },
 };
-// the dodecahedron, as the icosahedron's dual: one pentagonal face for each icosahedron corner, made of the five
-// dodecahedron corners nearest that direction, put in order round it
+// the dodecahedron, built the way the novadiem.com hero builds it (public/polyhedra-toy.js): as the icosahedron's
+// dual. Its 20 corners are the centres of the icosahedron's 20 faces, and each of its 12 faces is the five of those
+// centres round one icosahedron corner, put in order round it. (Until draft 44 it took the five nearest corners from
+// a separately written vertex list in a different orientation, which gave 42 edges, faces that were not flat and
+// long diagonals through the inside: Robin, "the dodecahedron is screwed up".)
 {
-  const ip = 1 / phi, v = [];
-  for (const a of [-1, 1]) for (const b of [-1, 1]) for (const c of [-1, 1]) v.push([a, b, c]);
-  for (const a of [-1, 1]) for (const b of [-1, 1]) { v.push([0, a * ip, b * phi]); v.push([a * ip, b * phi, 0]); v.push([a * phi, 0, b * ip]); }
-  const V = v.map(norm), f = SOLIDS.ico.v.map((d) => {
-    const n = norm(d), near = V.map((p, i) => [p[0] * n[0] + p[1] * n[1] + p[2] * n[2], i]).sort((a, b) => b[0] - a[0]).slice(0, 5).map(([, i]) => i);
+  const IV = SOLIDS.ico.v.map(norm), IF = SOLIDS.ico.f;
+  const V = IF.map((f) => norm([0, 1, 2].map((k) => (IV[f[0]][k] + IV[f[1]][k] + IV[f[2]][k]) / 3)));
+  const f = IV.map((n, i) => {
+    const round = IF.map((F, fi) => (F.includes(i) ? fi : -1)).filter((fi) => fi >= 0);
     const ref = Math.abs(n[0]) < 0.9 ? [1, 0, 0] : [0, 1, 0];
     const u = norm([n[1] * ref[2] - n[2] * ref[1], n[2] * ref[0] - n[0] * ref[2], n[0] * ref[1] - n[1] * ref[0]]), w = [n[1] * u[2] - n[2] * u[1], n[2] * u[0] - n[0] * u[2], n[0] * u[1] - n[1] * u[0]];
-    return near.sort((a, b) => Math.atan2(V[a][0] * w[0] + V[a][1] * w[1] + V[a][2] * w[2], V[a][0] * u[0] + V[a][1] * u[1] + V[a][2] * u[2]) - Math.atan2(V[b][0] * w[0] + V[b][1] * w[1] + V[b][2] * w[2], V[b][0] * u[0] + V[b][1] * u[1] + V[b][2] * u[2]));
+    const at = (j) => Math.atan2(V[j][0] * w[0] + V[j][1] * w[1] + V[j][2] * w[2], V[j][0] * u[0] + V[j][1] * u[1] + V[j][2] * u[2]);
+    return round.sort((a, b) => at(a) - at(b));
   });
   SOLIDS.dodeca = { v: V, f };
 }

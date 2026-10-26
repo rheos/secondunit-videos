@@ -27,3 +27,23 @@ What it offers:
   shapes and the colour, rendered crisp in our kit.
 
 Not to take: the exact figure, the Ryden face, the composition.
+
+## ref-02-novadiem-hero-{1,2,3}.png (2026-10-26, Robin: "the whole thing would be a good reference for later")
+
+The novadiem.com home hero, captured headless at three moments (the interactive SVG `#scene`). Code: rheos/novadiem.com
+`public/polyhedra-toy.js` (361 lines) with the markup in `src/pages/index.astro`.
+
+What it is: an icosahedron and a dodecahedron nested as duals, one turning into the other (a "shape" control runs
+icosa, spokes, dots, dodeca), the dodecahedron in teal line and the icosahedron in gold line on deep navy; edges split
+at the centre plane so the back halves draw behind and dimmer than the front; spokes from each icosahedron corner to the
+centres of its faces; the Novadiem sunburst mark held still at the core and kept inside the dodecahedron's inner
+sphere, so the turning cage never touches it; an outer orbit ring with tick marks and small dots travelling round it.
+
+What it offers this film and later ones:
+- **Correct dual geometry.** The dodecahedron is built from the icosahedron's face centres, which can't come out wrong.
+  Draft 44 rebuilt our dodecahedron the same way (`src/loop-shapes.js`) after the old one drew 42 edges.
+- **A still centre inside a moving cage**: a mark or a figure that holds while the geometry turns around it, bounded
+  by the inner sphere.
+- **Front and back halves** of a wireframe at different weights, which reads as depth without shading.
+- **The morph between duals** as a transformation the beings could perform, and the orbit ring with ticks as a
+  clock-like frame for a sigil.

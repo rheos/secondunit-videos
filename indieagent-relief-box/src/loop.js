@@ -89,7 +89,7 @@ const T = { sing: [0.3, 2.3], fold: [2.3, 2.8], turn: [2.8, 3.2], offer: [3.2, 4
 // console pops on the seer pair's bells (Robin, draft 41), 0.3 s after it starts to rise (full at 0.25, peak 0.35).
 const bellTime = (phase, j) => {
   const c0 = phase + 6 * j, kind = ['ico', 'dodeca', 'star', 'octa'][(phase ? 2 : 0) + j];
-  const strokes = SIGILS[kind], lens = strokes.map(slen), total = lens.reduce((a, b) => a + b, 0) + HOP * (strokes.length - 1);
+  const { strokes, lens, total } = sigilLen(kind);
   let kc = 0; while (kc < 1 && E.smooth(kc) * total < lens[0]) kc += 0.005;
   return c0 + T.sing[0] + kc * (T.sing[1] - T.sing[0]);
 };
@@ -109,12 +109,23 @@ const SIGILS = {
   octa: [poly(48), poly(4, -Math.PI / 2, 0.86), poly(48, -Math.PI / 2, 0.42)],
 };
 const slen = (pl) => pl.reduce((a, p, i) => i ? a + Math.hypot(p[0] - pl[i - 1][0], p[1] - pl[i - 1][1]) : 0, 0);
+// A sigil's pen runs its total length over the song; the bell rings as its circle closes. The sound is frozen at
+// s26 (Robin: move the picture, never the sound), so a sigil whose strokes change keeps the total its bell was timed
+// to: the circle draws exactly as before, and the strokes after it are paced to fill the same time. The dodecahedron's
+// edges were corrected in draft 44 (30 true edges instead of 42); 19.72 is its total in draft 43.
+const SIGIL_PIN = { dodeca: 19.720724061311167 };
+function sigilLen(kind) {
+  const strokes = SIGILS[kind], lens = strokes.map(slen), real = lens.reduce((a, b) => a + b, 0) + HOP * (strokes.length - 1);
+  return { strokes, lens, real, total: SIGIL_PIN[kind] ?? real };
+}
+// how far along the real strokes the pen is at fraction k of the song: unchanged through the circle, then paced
+const penAt = (kind, k) => { const { lens, real, total } = sigilLen(kind), d = k * total; return d <= lens[0] ? d : lens[0] + (d - lens[0]) * (real - lens[0]) / (total - lens[0]); };
 // the pen lifts between strokes: a short hop, so a sigil of thirty edges still draws in one song
 const HOP = 0.12;
 // where the pen is after fraction k of the whole sigil (pen-up hops between strokes count as short moves)
 function sigilAt(kind, k) {
-  const strokes = SIGILS[kind], lens = strokes.map(slen), total = lens.reduce((a, b) => a + b, 0) + HOP * (strokes.length - 1);
-  let d = k * total;
+  const { strokes, lens } = sigilLen(kind);
+  let d = penAt(kind, k);
   for (let i = 0; i < strokes.length; i++) {
     if (d <= lens[i]) { const pl = strokes[i]; for (let j = 1; j < pl.length; j++) { const seg = Math.hypot(pl[j][0] - pl[j - 1][0], pl[j][1] - pl[j - 1][1]); if (d <= seg) return mixPt(pl[j - 1], pl[j], d / seg); d -= seg; } return pl[pl.length - 1]; }
     d -= lens[i];
@@ -125,8 +136,8 @@ function sigilAt(kind, k) {
 }
 // the part of the sigil drawn after fraction k, as polylines in unit coordinates
 function sigilDrawn(kind, k) {
-  const strokes = SIGILS[kind], lens = strokes.map(slen), total = lens.reduce((a, b) => a + b, 0) + HOP * (strokes.length - 1);
-  let left = k * total;
+  const { strokes, lens, total } = sigilLen(kind);
+  let left = penAt(kind, k);
   const out = [];
   strokes.forEach((pl) => {
     if (left <= 0) return;
@@ -428,7 +439,7 @@ function cues() {
     let e = 0;
     for (let c = T.sing[0]; c < T.sing[1] - 1e-6; c += 0.1, e++) both(c0 + c, 'glyph', x, { n: e });
     // the circle of the sigil closes partway through the song
-    const strokes = SIGILS[kind], lens = strokes.map(slen), total = lens.reduce((a, b) => a + b, 0) + HOP * (strokes.length - 1);
+    const { strokes, lens, total } = sigilLen(kind);
     let kc = 0; while (kc < 1 && E.smooth(kc) * total < lens[0]) kc += 0.005;
     both(c0 + T.sing[0] + kc * (T.sing[1] - T.sing[0]), 'chime', x);
     both(c0 + T.fold[0], 'fold', x, { dur: 0.5 });
