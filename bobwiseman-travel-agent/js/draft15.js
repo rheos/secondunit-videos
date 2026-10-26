@@ -43,8 +43,8 @@ const herArc = (cx, cy, rx, ry, a0, a1, n = 10, shrink = 0) => [...Array(n + 1).
 const HER_THREAD = [
   // 1:15, her first entry: she drifts in over the village steeple
   ['a_noCarVillage', 73.7, 78.3, [[1960, 130], [1700, 200], [1560, 280], [1440, 210], [1490, 140], [1580, 210], [1360, 320], [1100, 270], [860, 340]]],
-  // chorus 1: down the telephone line to the phone; along the drawn wire to his ear; along the wire to her pole-top desk
-  ['a_payphone', 91.2, 93.6, [[1930, 545], [1700, 500], [1460, 450], [1200, 400], [1020, 360], [905, 330]]],
+  // chorus 1 (draft 21: from the cut at 90.8, Bob's 1:30; her entry is on a_sFootpath, draft21.js): down the telephone line to the phone; along the drawn wire to his ear; along the wire to her pole-top desk
+  ['a_payphone', 90.8, 93.6, [[1930, 545], [1700, 500], [1460, 450], [1200, 400], [1020, 360], [905, 330]]],
   ['a_sWire', 93.7, 95.4, [[1890, 575], [1660, 480], [1440, 420], [1200, 380], [900, 330], [640, 470], [585, 520]]],
   ['a_poleDesk', 95.5, 99.95, [[1940, 770], [1600, 790], [1300, 770], [1080, 740], [1000, 640], [985, 560], [930, 470]]],
   // chorus 2, on hold: she loops the wheel, runs over the queue, spirals in to the phone at the centre of the waiting room
