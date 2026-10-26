@@ -189,11 +189,11 @@ node tools/bundle.mjs src/loop.js build/loop.js
 nice -n 15 node ../tools/motion-lab/render.mjs "loop.html?w=1280" 0 24.0417 out/draft/reliefloop_dN_seamcheck.mp4 --width 1280 --height 720 --workers 2
 # seam: frame 0 against frame 576 (PSNR), then cut 576 frames, mux the sound, double it for review
 ffmpeg -i out/draft/reliefloop_dN_seamcheck.mp4 -frames:v 576 -c:v libx264 -crf 18 -pix_fmt yuv420p out/draft/reliefloop_dN_f0-f576_24fps_loop.mp4
-ffmpeg -i out/draft/reliefloop_dN_f0-f576_24fps_loop.mp4 -i out/audio/reliefloop_loop_s25.wav -map 0:v -map 1:a -c:v copy -c:a aac -b:a 192k -shortest out/draft/reliefloop_dN_s25_f0-f576_24fps_loop.mp4
-ffmpeg -stream_loop 1 -i out/draft/reliefloop_dN_s25_f0-f576_24fps_loop.mp4 -c copy out/draft/reliefloop_dN_s25_x2_review.mp4
+ffmpeg -i out/draft/reliefloop_dN_f0-f576_24fps_loop.mp4 -i out/audio/reliefloop_loop_s26.wav -map 0:v -map 1:a -c:v copy -c:a aac -b:a 192k -shortest out/draft/reliefloop_dN_s26_f0-f576_24fps_loop.mp4
+ffmpeg -stream_loop 1 -i out/draft/reliefloop_dN_s26_f0-f576_24fps_loop.mp4 -c copy out/draft/reliefloop_dN_s26_x2_review.mp4
 ```
 
-The sound (s25) is `node tools/cues.mjs` then `tools/sound.py` (the viralvision venv's python, `-I`), which calls
+The sound (s26) is `node tools/cues.mjs` then `tools/sound.py` (the viralvision venv's python, `-I`), which calls
 `tools/voice.py`. Every note is tied to a picture cue, so a timing change in the page cannot desync it.
 
 **The picture, drafts 11 to 37.**
@@ -242,6 +242,15 @@ The sound (s25) is `node tools/cues.mjs` then `tools/sound.py` (the viralvision 
   the frame is projected at its depth, nearer points lower by the mouth's own tilt and a little bigger, each stroke
   piece's width scaled by its depth, the hoses hanging and the globs landing at their own depth. Until 39 the turn
   only squeezed x, so at edge-on a pipe slid over the funnel like a paper cutout.
+- Audit of 40 (`AUDIT-d40.md`: mechanical checks, three cold critics, every finding verified at 1:1) and draft 41,
+  which takes its eight confirmed defects and leaves the direction calls (glassy tesseracts, the visible 12 s repeat
+  and flat light, the pale palette, the back-wall camera breath) for Robin: a new chorus sequence that never puts an
+  elf on the middle-centre piston while the front one is taken (they share an x, so two there read as a stack); the
+  frame's far side rises by 0.4 of the shear so its top clears the sun at edge-on; the far hose end hides while the
+  near one covers it; bulges are 4 px variable-width pieces that round an elbow without a dent; orange only in the
+  pipe and funnel (lollipops, mound cones, console knobs and button went pink); no glow on the released cube; mint
+  curls and rosettes in the near corners; end-on elbow ellipses at the near corners near edge-on. Sound s26 from the
+  new cue list.
 
 **The sound, s10 to s25.** s10 the 24 s loop; s11 to s14 the Sohan "doiy" and "dee" voice (`tools/voice.py`,
 measured on the icaro recording), one syllable per picture event, with long doorstop-spring tails and its own
