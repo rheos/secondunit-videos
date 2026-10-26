@@ -189,12 +189,23 @@ node tools/bundle.mjs src/loop.js build/loop.js
 nice -n 15 node ../tools/motion-lab/render.mjs "loop.html?w=1280" 0 24.0417 out/draft/reliefloop_dN_seamcheck.mp4 --width 1280 --height 720 --workers 2
 # seam: frame 0 against frame 576 (PSNR), then cut 576 frames, mux the sound, double it for review
 ffmpeg -i out/draft/reliefloop_dN_seamcheck.mp4 -frames:v 576 -c:v libx264 -crf 18 -pix_fmt yuv420p out/draft/reliefloop_dN_f0-f576_24fps_loop.mp4
-ffmpeg -i out/draft/reliefloop_dN_f0-f576_24fps_loop.mp4 -i out/audio/reliefloop_loop_s26.wav -map 0:v -map 1:a -c:v copy -c:a aac -b:a 192k -shortest out/draft/reliefloop_dN_s26_f0-f576_24fps_loop.mp4
-ffmpeg -stream_loop 1 -i out/draft/reliefloop_dN_s26_f0-f576_24fps_loop.mp4 -c copy out/draft/reliefloop_dN_s26_x2_review.mp4
+ffmpeg -i out/draft/reliefloop_dN_f0-f576_24fps_loop.mp4 -i out/audio/reliefloop_loop_s26w.wav -map 0:v -map 1:a -c:v copy -c:a aac -b:a 192k -shortest out/draft/reliefloop_dN_s26w_f0-f576_24fps_loop.mp4
+ffmpeg -stream_loop 1 -i out/draft/reliefloop_dN_s26w_f0-f576_24fps_loop.mp4 -c copy out/draft/reliefloop_dN_s26w_x2_review.mp4
 ```
 
 The sound (s26) is `node tools/cues.mjs` then `tools/sound.py` (the viralvision venv's python, `-I`), which calls
 `tools/voice.py`. Every note is tied to a picture cue, so a timing change in the page cannot desync it.
+
+**Mastering (since draft 41, Robin: "can we master the sound somehow cool?").** Kits.ai's AI Mastering, by hand in
+the web app (its API has no mastering endpoint, and the free tier may not use the API; key in
+`keys/kits/kits.env`). `tools/master.py --x3 sNN.wav upload.wav` makes the upload (the loop three times), Robin
+masters it at app.kits.ai with a preset (Punch & Air, 2026-10-25) and downloads, then
+`tools/master.py sNN.wav <download>.wav sNNw.wav --keep-width` cuts the middle pass (steady-state processing at both
+ends, so the loop stays seamless), resamples to 48 kHz, and puts the original stereo width back: Punch & Air fixed
+the dull top (air from -32 to -17 dB of the total) and raised the level 9 dB, but folded the image to near mono
+(L/R correlation 0.23 -> 0.86) and clipped at full scale. s26w = the master's mid with the original side, 4 dB under
+the master, 5 dB over s26. Robin on s26w: "pretty good, let's go with that". Draft 41 ships with s26w; the unmastered
+s25 and s26 are kept in `audio-keep/` (gitignored) and `~/Downloads/living-loop-audio-keep/`.
 
 **The picture, drafts 11 to 37.**
 
