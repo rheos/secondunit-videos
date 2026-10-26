@@ -19,7 +19,7 @@ import { shade, mix } from '../vendor/paper-fox/core/color.js';
 // draft 9: the crisp, constructed finish (set before anything is baked)
 setFinish('crisp');
 import { ISLAND } from './props.js';
-import { LOOP, FILM_LOOP, cyc, addWorld, addNear } from './loop-world.js';
+import { LOOP, FILM_LOOP, cyc, addWorld, addNear, setFirRise, FIR_SPOT } from './loop-world.js';
 import { PANEL, PRESSES, pressAt, INSTR, sliderK, addMachines, mirrored } from './loop-machine.js';
 import { makeFigure, drawFigure } from './loop-figures.js';
 import { solidEdges } from './loop-shapes.js';
@@ -85,6 +85,16 @@ function tunerPose(t) {
 //   sigil folds into a solid; 2.8-3.2 they turn to face us and bring it to the chest; 3.2-4.4 they hold it out to
 //   us, tilting it, a burst flaring behind it; 4.4-4.9 they let it go upward; 4.6-5.0 turn back; 5.0-6.0 bounce.
 const T = { sing: [0.3, 2.3], fold: [2.3, 2.8], turn: [2.8, 3.2], offer: [3.2, 4.4] };
+// when a singer's sigil circle closes (the bell, 'chime'): the same formula the cue builder uses. The fir behind the
+// console pops on the seer pair's bells (Robin, draft 41), 0.3 s after it starts to rise (full at 0.25, peak 0.35).
+const bellTime = (phase, j) => {
+  const c0 = phase + 6 * j, kind = ['ico', 'dodeca', 'star', 'octa'][(phase ? 2 : 0) + j];
+  const strokes = SIGILS[kind], lens = strokes.map(slen), total = lens.reduce((a, b) => a + b, 0) + HOP * (strokes.length - 1);
+  let kc = 0; while (kc < 1 && E.smooth(kc) * total < lens[0]) kc += 0.005;
+  return c0 + T.sing[0] + kc * (T.sing[1] - T.sing[0]);
+};
+const FIR_LEAD = 0.3;
+const firRiseTimes = () => [0, 1].map((j) => bellTime(3, j) - FIR_LEAD);
 const poly = (n, rot = -Math.PI / 2, r = 1) => [...Array(n + 1)].map((_, i) => [Math.cos(rot + i / n * TAU) * r, Math.sin(rot + i / n * TAU) * r]);
 const SIGIL_VIEW = [0.42, 0.62, 0.18];
 const SIGILS = {
@@ -327,6 +337,7 @@ function scene() {
     camera: camAt,
     build(S) {
       const world = addWorld(S);
+      setFirRise(firRiseTimes());   // the fir behind the console pops on the seer's bells
       addMachines(S);
       addNear(S);
       const operator = makeFigure(S, { name: 'operator', color: P.pink, cap: 'pom' });
@@ -445,6 +456,7 @@ function cues() {
   // every 12 s while the funnel is away
   { let j = 0; TREE_SPOTS_L.forEach(([x], i) => {
     if (x > TREE_ZONE) { for (const r of [0, 12]) both(3.6 + 0.15 * j + r, 'flap', x); j++; }
+    else if (i === FIR_SPOT) for (const s0 of firRiseTimes()) both(s0, 'flap', x);
     else for (const r of [0, 6]) both(i * 0.75 + r, 'flap', x);
   }); }
   // the double-pointed pendant bursting open (a pop) every 6 s and slamming shut (a click)

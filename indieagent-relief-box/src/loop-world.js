@@ -69,6 +69,11 @@ function floater(g, kind, x, y, s, rng) {
   }
 }
 
+// when the fir behind the console rises (loop.js sets it from the seer's bell times); spot 6 of TREE_SPOTS
+export const FIR_SPOT = 6;
+let FIR_RISE = [3.89, 9.97];
+export const setFirRise = (ts) => { FIR_RISE = ts.slice(); };
+
 export function addWorld(S) {
   const sp = (name, box, draw, o = {}) => S.sprite({ name, ...box, res: o.res ?? 1, mat: o.mat ?? CLAY_MAT, edge: o.edge ?? CLAY_EDGE, shadow: o.shadow ?? { blur: shadowBlur(18) }, draw });
 
@@ -106,24 +111,32 @@ export function addWorld(S) {
   // the back suns' dense rings: [radius, count, shape, size, turns per loop (in spacings; the sign is the way round)]
   const DENSE = [[0.93, 40, 'tri', 1.5, 5], [0.84, 36, 'stud', 1.5, -4], [0.75, 32, 'win', 1.4, 3], [0.66, 28, 'dia', 1.5, -3],
     [0.57, 24, 'tri', 1.35, 2], [0.48, 20, 'win', 1.3, -2], [0.39, 16, 'stud', 1.25, 2], [0.3, 12, 'dia', 1.2, -1]];
+  // The sun on the sound's grid (Robin, draft 41: "sync more things up, like the movement in the sun, the way the
+  // rings expand and collapse"): the bellows' chords change every 3 s on the bar lines, each stroke of the bellows is
+  // 4 s and fullest 2 s and 6 s into the 8 s breath, the machine rhythm runs on 0.75 s. beatPulse is a hit on the bar
+  // line: a quick expansion (0.12 s) and a slow collapse (about 1 s), so the rings expand ON the chord change.
+  const beatPulse = (u, bar = 3, attack = 0.12, decay = 0.9) => { const q = mod(u, bar); return q < attack ? E.smooth(q / attack) : Math.exp(-(q - attack) / decay); };
   function sunItems(sun, t, { spin, rock = 0, scale = 1, dir = 1, rays = 18, rings = null }) {
     const { R } = sun, items = [];
+    const flare = 0.3 * beatPulse(t);   // every ray reaches a little further on the chord change
     for (let i = 0; i < rays; i++) {
-      const a = spin + rock + i / rays * TAU, reach = 1 + 0.45 * Math.sin(TAU * (t / 3 - i * 3 / rays));
+      const a = spin + rock + i / rays * TAU, reach = 1 + 0.45 * Math.sin(TAU * (t / 3 - i * 3 / rays)) + flare;
       const d = (R + 2 + 6 * (reach - 1)) * scale;
       items.push({ s: sun.ray, ax: 0, ay: 20, x: LX + Math.cos(a) * d, y: LY + Math.sin(a) * d, rot: a + Math.PI / 2, sx: scale, sy: scale * Math.max(0.3, reach) });
     }
     items.push({ s: sun.plate, x: LX, y: LY, sx: scale, sy: scale });
     if (rings) rings.forEach(([rk, n, shape, ws, turns], ri) => {
-      // each ring turns its own way; a breath runs outward ring by ring; a swell spirals round each ring
-      const breathe = 1 + 0.07 * Math.sin(TAU * (t / 3 - ri / 8)), turn = dir * TAU * turns / n * t / LOOP;
+      // each ring turns its own way; on each chord change an expansion runs outward ring by ring (0.09 s a ring) and
+      // collapses slowly; a swell spirals round each ring
+      const breathe = 1 + 0.09 * beatPulse(t - 0.09 * ri), turn = dir * TAU * turns / n * t / LOOP;
       for (let i = 0; i < n; i++) {
         const a = turn + i / n * TAU, rr = R * rk * breathe * scale, sz = ws * scale * (0.75 + 0.5 * Math.max(0, Math.sin(TAU * (t / 3 + 2 * i / n - ri / 8))));
         items.push({ s: sun[shape][(i + ri) % 3], x: LX + Math.cos(a) * rr, y: LY + Math.sin(a) * rr, rot: a + Math.PI / 2, sx: sz, sy: sz });
       }
     });
     else RINGS.forEach(([rk, n, ws, turns], ri) => {
-      const breathe = 1 + 0.16 * Math.sin(TAU * (t / 4 + ri / 3)), turn = dir * TAU * turns / n * t / LOOP + rock * 0.5;
+      // the lantern's rings breathe with the bellows: fullest 2 s and 6 s into each 8 s breath, outer ring first
+      const breathe = 1 + 0.16 * Math.cos(TAU * (t - 2 - 0.15 * ri) / 4), turn = dir * TAU * turns / n * t / LOOP + rock * 0.5;
       for (let i = 0; i < n; i++) {
         const a = turn + i / n * TAU, rr = R * rk * breathe * scale, sz = ws * scale * (1 + 0.25 * Math.sin(TAU * (t / 2 + i / n + ri / 3)));
         items.push({ s: sun.win[(i + ri) % 3], x: LX + Math.cos(a) * rr, y: LY + Math.sin(a) * rr, rot: a, sx: sz, sy: sz });
@@ -203,7 +216,7 @@ export function addWorld(S) {
   } });
   // the front sun: spinning, and rocking back and forth as it goes, turning back at each chord change (every 3 s)
   S.add({ name: 'lantern', z: 5000, shadow: { dx: 8, dy: 14, alpha: 0.25 }, anim: (t) => ({ y: 4 * cyc(t, 1) }), render(ctx, t, env) {
-    drawSprites(ctx, sunItems(front, t, { spin: TAU * (6 / 18) * t / LOOP, rock: 0.35 * Math.cos(TAU * t / 3), scale: 1 + 0.05 * Math.sin(TAU * t / 1.5) }), env.shadow);
+    drawSprites(ctx, sunItems(front, t, { spin: TAU * (6 / 18) * t / LOOP, rock: 0.35 * Math.cos(TAU * t / 3), scale: 1 + 0.05 * Math.cos(TAU * t / 1.5) }), env.shadow);   // the scale pulse peaks on the 0.75 s grid, not between beats
   } });
   // two rings of small solids orbiting the pair in opposite directions, one turn a loop each, tipped into
   // ellipses; each solid tumbles and swells as it goes
@@ -313,6 +326,12 @@ export function addWorld(S) {
   const ZONE_X = 650;
   const unfold = (u) => (u <= 0 ? 0 : u >= 1 ? 1 : 1 + 2.2 * (u - 1) ** 3 + 1.2 * (u - 1) ** 2);   // with an overshoot
   const treeUp = (t, i, x) => {
+    // the fir behind the console (spot 6) rises on the seer's bells (Robin, draft 41: "timed to a sound", the bell a
+    // moment before it): loop.js sets the times (setFirRise); it is full 0.25 s after a start and peaks at 0.35
+    if (i === FIR_SPOT) {
+      const q = Math.min(...FIR_RISE.map((s0) => mod(t - s0, 12)));
+      return unfold(q / 0.55) * (1 - E.smooth(Math.min(1, Math.max(0, (q - 3.4) / 0.55))));
+    }
     if (x > ZONE_X) {
       const q = mod(t, 12), j = TREE_SPOTS.filter(([tx]) => tx > ZONE_X).findIndex(([tx]) => tx === x);
       return unfold((q - 3.6 - 0.15 * j) / 0.55) * (1 - E.smooth(Math.min(1, Math.max(0, (q - 7.7 - 0.15 * (2 - j)) / 0.55))));

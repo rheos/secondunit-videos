@@ -2346,6 +2346,11 @@ function floater(g, kind, x, y, s, rng) {
   }
 }
 
+// when the fir behind the console rises (loop.js sets it from the seer's bell times); spot 6 of TREE_SPOTS
+const FIR_SPOT = 6;
+let FIR_RISE = [3.89, 9.97];
+const setFirRise = (ts) => { FIR_RISE = ts.slice(); };
+
 function addWorld(S) {
   const sp = (name, box, draw, o = {}) => S.sprite({ name, ...box, res: o.res ?? 1, mat: o.mat ?? CLAY_MAT, edge: o.edge ?? CLAY_EDGE, shadow: o.shadow ?? { blur: shadowBlur(18) }, draw });
 
@@ -2383,24 +2388,32 @@ function addWorld(S) {
   // the back suns' dense rings: [radius, count, shape, size, turns per loop (in spacings; the sign is the way round)]
   const DENSE = [[0.93, 40, 'tri', 1.5, 5], [0.84, 36, 'stud', 1.5, -4], [0.75, 32, 'win', 1.4, 3], [0.66, 28, 'dia', 1.5, -3],
     [0.57, 24, 'tri', 1.35, 2], [0.48, 20, 'win', 1.3, -2], [0.39, 16, 'stud', 1.25, 2], [0.3, 12, 'dia', 1.2, -1]];
+  // The sun on the sound's grid (Robin, draft 41: "sync more things up, like the movement in the sun, the way the
+  // rings expand and collapse"): the bellows' chords change every 3 s on the bar lines, each stroke of the bellows is
+  // 4 s and fullest 2 s and 6 s into the 8 s breath, the machine rhythm runs on 0.75 s. beatPulse is a hit on the bar
+  // line: a quick expansion (0.12 s) and a slow collapse (about 1 s), so the rings expand ON the chord change.
+  const beatPulse = (u, bar = 3, attack = 0.12, decay = 0.9) => { const q = mod(u, bar); return q < attack ? E.smooth(q / attack) : Math.exp(-(q - attack) / decay); };
   function sunItems(sun, t, { spin, rock = 0, scale = 1, dir = 1, rays = 18, rings = null }) {
     const { R } = sun, items = [];
+    const flare = 0.3 * beatPulse(t);   // every ray reaches a little further on the chord change
     for (let i = 0; i < rays; i++) {
-      const a = spin + rock + i / rays * TAU, reach = 1 + 0.45 * Math.sin(TAU * (t / 3 - i * 3 / rays));
+      const a = spin + rock + i / rays * TAU, reach = 1 + 0.45 * Math.sin(TAU * (t / 3 - i * 3 / rays)) + flare;
       const d = (R + 2 + 6 * (reach - 1)) * scale;
       items.push({ s: sun.ray, ax: 0, ay: 20, x: LX + Math.cos(a) * d, y: LY + Math.sin(a) * d, rot: a + Math.PI / 2, sx: scale, sy: scale * Math.max(0.3, reach) });
     }
     items.push({ s: sun.plate, x: LX, y: LY, sx: scale, sy: scale });
     if (rings) rings.forEach(([rk, n, shape, ws, turns], ri) => {
-      // each ring turns its own way; a breath runs outward ring by ring; a swell spirals round each ring
-      const breathe = 1 + 0.07 * Math.sin(TAU * (t / 3 - ri / 8)), turn = dir * TAU * turns / n * t / LOOP;
+      // each ring turns its own way; on each chord change an expansion runs outward ring by ring (0.09 s a ring) and
+      // collapses slowly; a swell spirals round each ring
+      const breathe = 1 + 0.09 * beatPulse(t - 0.09 * ri), turn = dir * TAU * turns / n * t / LOOP;
       for (let i = 0; i < n; i++) {
         const a = turn + i / n * TAU, rr = R * rk * breathe * scale, sz = ws * scale * (0.75 + 0.5 * Math.max(0, Math.sin(TAU * (t / 3 + 2 * i / n - ri / 8))));
         items.push({ s: sun[shape][(i + ri) % 3], x: LX + Math.cos(a) * rr, y: LY + Math.sin(a) * rr, rot: a + Math.PI / 2, sx: sz, sy: sz });
       }
     });
     else RINGS.forEach(([rk, n, ws, turns], ri) => {
-      const breathe = 1 + 0.16 * Math.sin(TAU * (t / 4 + ri / 3)), turn = dir * TAU * turns / n * t / LOOP + rock * 0.5;
+      // the lantern's rings breathe with the bellows: fullest 2 s and 6 s into each 8 s breath, outer ring first
+      const breathe = 1 + 0.16 * Math.cos(TAU * (t - 2 - 0.15 * ri) / 4), turn = dir * TAU * turns / n * t / LOOP + rock * 0.5;
       for (let i = 0; i < n; i++) {
         const a = turn + i / n * TAU, rr = R * rk * breathe * scale, sz = ws * scale * (1 + 0.25 * Math.sin(TAU * (t / 2 + i / n + ri / 3)));
         items.push({ s: sun.win[(i + ri) % 3], x: LX + Math.cos(a) * rr, y: LY + Math.sin(a) * rr, rot: a, sx: sz, sy: sz });
@@ -2480,7 +2493,7 @@ function addWorld(S) {
   } });
   // the front sun: spinning, and rocking back and forth as it goes, turning back at each chord change (every 3 s)
   S.add({ name: 'lantern', z: 5000, shadow: { dx: 8, dy: 14, alpha: 0.25 }, anim: (t) => ({ y: 4 * cyc(t, 1) }), render(ctx, t, env) {
-    drawSprites(ctx, sunItems(front, t, { spin: TAU * (6 / 18) * t / LOOP, rock: 0.35 * Math.cos(TAU * t / 3), scale: 1 + 0.05 * Math.sin(TAU * t / 1.5) }), env.shadow);
+    drawSprites(ctx, sunItems(front, t, { spin: TAU * (6 / 18) * t / LOOP, rock: 0.35 * Math.cos(TAU * t / 3), scale: 1 + 0.05 * Math.cos(TAU * t / 1.5) }), env.shadow);   // the scale pulse peaks on the 0.75 s grid, not between beats
   } });
   // two rings of small solids orbiting the pair in opposite directions, one turn a loop each, tipped into
   // ellipses; each solid tumbles and swells as it goes
@@ -2590,6 +2603,12 @@ function addWorld(S) {
   const ZONE_X = 650;
   const unfold = (u) => (u <= 0 ? 0 : u >= 1 ? 1 : 1 + 2.2 * (u - 1) ** 3 + 1.2 * (u - 1) ** 2);   // with an overshoot
   const treeUp = (t, i, x) => {
+    // the fir behind the console (spot 6) rises on the seer's bells (Robin, draft 41: "timed to a sound", the bell a
+    // moment before it): loop.js sets the times (setFirRise); it is full 0.25 s after a start and peaks at 0.35
+    if (i === FIR_SPOT) {
+      const q = Math.min(...FIR_RISE.map((s0) => mod(t - s0, 12)));
+      return unfold(q / 0.55) * (1 - E.smooth(Math.min(1, Math.max(0, (q - 3.4) / 0.55))));
+    }
     if (x > ZONE_X) {
       const q = mod(t, 12), j = TREE_SPOTS.filter(([tx]) => tx > ZONE_X).findIndex(([tx]) => tx === x);
       return unfold((q - 3.6 - 0.15 * j) / 0.55) * (1 - E.smooth(Math.min(1, Math.max(0, (q - 7.7 - 0.15 * (2 - j)) / 0.55))));
@@ -2643,7 +2662,7 @@ function addNear(S) {
 }
 
 
-return { LOOP, FILM_LOOP, cyc, addWorld, addNear };
+return { LOOP, FILM_LOOP, cyc, FIR_SPOT, setFirRise, addWorld, addNear };
 })();
 __m["src/loop-mark.js"] = (() => {
 // The living loop, Mark's world: what the elves make and show (glyphs, sigils, solids, the funnel's inside, the
@@ -3506,7 +3525,7 @@ const { shade, mix } = __m["vendor/paper-fox/core/color.js"];
 // draft 9: the crisp, constructed finish (set before anything is baked)
 setFinish('crisp');
 const { ISLAND } = __m["src/props.js"];
-const { LOOP, FILM_LOOP, cyc, addWorld, addNear } = __m["src/loop-world.js"];
+const { LOOP, FILM_LOOP, cyc, addWorld, addNear, setFirRise, FIR_SPOT } = __m["src/loop-world.js"];
 const { PANEL, PRESSES, pressAt, INSTR, sliderK, addMachines, mirrored } = __m["src/loop-machine.js"];
 const { makeFigure, drawFigure } = __m["src/loop-figures.js"];
 const { solidEdges } = __m["src/loop-shapes.js"];
@@ -3571,6 +3590,16 @@ function tunerPose(t) {
 //   sigil folds into a solid; 2.8-3.2 they turn to face us and bring it to the chest; 3.2-4.4 they hold it out to
 //   us, tilting it, a burst flaring behind it; 4.4-4.9 they let it go upward; 4.6-5.0 turn back; 5.0-6.0 bounce.
 const T = { sing: [0.3, 2.3], fold: [2.3, 2.8], turn: [2.8, 3.2], offer: [3.2, 4.4] };
+// when a singer's sigil circle closes (the bell, 'chime'): the same formula the cue builder uses. The fir behind the
+// console pops on the seer pair's bells (Robin, draft 41), 0.3 s after it starts to rise (full at 0.25, peak 0.35).
+const bellTime = (phase, j) => {
+  const c0 = phase + 6 * j, kind = ['ico', 'dodeca', 'star', 'octa'][(phase ? 2 : 0) + j];
+  const strokes = SIGILS[kind], lens = strokes.map(slen), total = lens.reduce((a, b) => a + b, 0) + HOP * (strokes.length - 1);
+  let kc = 0; while (kc < 1 && E.smooth(kc) * total < lens[0]) kc += 0.005;
+  return c0 + T.sing[0] + kc * (T.sing[1] - T.sing[0]);
+};
+const FIR_LEAD = 0.3;
+const firRiseTimes = () => [0, 1].map((j) => bellTime(3, j) - FIR_LEAD);
 const poly = (n, rot = -Math.PI / 2, r = 1) => [...Array(n + 1)].map((_, i) => [Math.cos(rot + i / n * TAU) * r, Math.sin(rot + i / n * TAU) * r]);
 const SIGIL_VIEW = [0.42, 0.62, 0.18];
 const SIGILS = {
@@ -3813,6 +3842,7 @@ function scene() {
     camera: camAt,
     build(S) {
       const world = addWorld(S);
+      setFirRise(firRiseTimes());   // the fir behind the console pops on the seer's bells
       addMachines(S);
       addNear(S);
       const operator = makeFigure(S, { name: 'operator', color: P.pink, cap: 'pom' });
@@ -3931,6 +3961,7 @@ function cues() {
   // every 12 s while the funnel is away
   { let j = 0; TREE_SPOTS_L.forEach(([x], i) => {
     if (x > TREE_ZONE) { for (const r of [0, 12]) both(3.6 + 0.15 * j + r, 'flap', x); j++; }
+    else if (i === FIR_SPOT) for (const s0 of firRiseTimes()) both(s0, 'flap', x);
     else for (const r of [0, 6]) both(i * 0.75 + r, 'flap', x);
   }); }
   // the double-pointed pendant bursting open (a pop) every 6 s and slamming shut (a click)
