@@ -235,6 +235,13 @@ The sound (s25) is `node tools/cues.mjs` then `tools/sound.py` (the viralvision 
   toward us). Drafts 37 and 38 had moved the spouts about instead (lower, then in to the centre, where the elbows
   collided); they are back at 56 px either side, with the lip 10 px lower so the closed hose end meets the mouth's
   edge, and a glob lands just below the centre line. See the note at `SURF` in `src/loop-machine.js`.
+- 40 (Robin, on 39: "fixed it up a bit but it looks janky still... this may be headed to blender", with the edge-on
+  moment where a glob sat glued to the front pipe): the front hose was still drawn after the front pipe; both hoses
+  now come after the mouth and before the front pipe, so they duck behind its upright for the half second it passes
+  in front of them. And the frame now turns in depth (`project`, `DEPTH` in `src/loop-machine.js`): every point of
+  the frame is projected at its depth, nearer points lower by the mouth's own tilt and a little bigger, each stroke
+  piece's width scaled by its depth, the hoses hanging and the globs landing at their own depth. Until 39 the turn
+  only squeezed x, so at edge-on a pipe slid over the funnel like a paper cutout.
 
 **The sound, s10 to s25.** s10 the 24 s loop; s11 to s14 the Sohan "doiy" and "dee" voice (`tools/voice.py`,
 measured on the icaro recording), one syllable per picture event, with long doorstop-spring tails and its own
