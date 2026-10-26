@@ -227,12 +227,14 @@ The sound (s25) is `node tools/cues.mjs` then `tools/sound.py` (the viralvision 
 - 36: no Star of David anywhere (nor pentacle or pentagram): the seer's star sigil is the star tetrahedron drawn
   from near a cube face, where its outline does not read as a hexagram. Icosahedron, dodecahedron, star tetrahedron
   stay.
-- 37, 38: the drips go into the portal (Robin: "there are moments when the dripping does not appear to be over the
-  portal anymore"; on 37, which only lowered the landing: "still broke in all the same places"). The portal is the
-  swirl at the centre of the mouth: both pipes now come in over the lip to hang as a pair 16 px either side of the
-  axis, and each glob falls into the burst at the centre from a shorter hang; see the note at `SURF` in
-  `src/loop-machine.js`. The turning frame never carries the pair off the centre; at its edge-on second the front
-  pipe passes in front of them.
+- 37 to 39, the drips (Robin: "there are moments when the dripping does not appear to be over the portal anymore";
+  on 37 "still broke in all the same places"; on 38 "making it worse... the pipes collide... this is 100% a layer
+  issue"). It was draw order: the hose end and globs of the pipe swinging away were drawn before the funnel, so the
+  mouth's swirl painted over them and half the drips showed only where they stuck up above the far edge. Draft 39
+  draws both hose ends and their globs after the mouth (the swinging-away pipe's still behind the pipe swinging
+  toward us). Drafts 37 and 38 had moved the spouts about instead (lower, then in to the centre, where the elbows
+  collided); they are back at 56 px either side, with the lip 10 px lower so the closed hose end meets the mouth's
+  edge, and a glob lands just below the centre line. See the note at `SURF` in `src/loop-machine.js`.
 
 **The sound, s10 to s25.** s10 the 24 s loop; s11 to s14 the Sohan "doiy" and "dee" voice (`tools/voice.py`,
 measured on the icaro recording), one syllable per picture event, with long doorstop-spring tails and its own
