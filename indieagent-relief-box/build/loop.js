@@ -3961,7 +3961,9 @@ function cues() {
   // every 12 s while the funnel is away
   { let j = 0; TREE_SPOTS_L.forEach(([x], i) => {
     if (x > TREE_ZONE) { for (const r of [0, 12]) both(3.6 + 0.15 * j + r, 'flap', x); j++; }
-    else if (i === FIR_SPOT) for (const s0 of firRiseTimes()) both(s0, 'flap', x);
+    // the fir behind the console (spot 6) rises on the seer's bells since draft 42, but its flap cue stays on the
+    // 0.75 s grid: the sound is frozen at s26 (Robin: do not touch the audio, move the action instead), so the cue
+    // list must stay exactly what s26 was mixed from
     else for (const r of [0, 6]) both(i * 0.75 + r, 'flap', x);
   }); }
   // the double-pointed pendant bursting open (a pop) every 6 s and slamming shut (a click)

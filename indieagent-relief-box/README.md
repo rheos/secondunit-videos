@@ -270,13 +270,16 @@ s25 and s26 are kept in `audio-keep/` (gitignored) and `~/Downloads/living-loop-
   sound... timed to a sound" without adding sound; "sync more things up, like the movement in the sun, the way the
   rings expand and collapse"): the fir behind the console rises on the seer pair's bells (the sigil-closing 'chime'
   at 4.19 and 10.27 s, computed in loop.js by `bellTime` and passed to the world with `setFirRise`; it starts 0.3 s
-  before each bell, so it is full a frame ahead; its flap cue follows, so s27 has the flap there). The suns on the
+  before each bell, so it is full a frame ahead). **The sound is frozen at s26w** (Robin: "i specifically said not to
+  touch the audio.. to move the action instead"): the cue list stays exactly what s26 was mixed from (proved by
+  regenerating the mix and comparing sample for sample), so the fir's own soft flap still sounds at 4.5 s, 0.6 s
+  after the fir now pops; if that ever reads loose, put another action on it, never move the mix. In this project a
+  cue IS a sound, so a picture retime that moves a cue is an audio change. The suns on the
   sound's grid (`beatPulse` in `src/loop-world.js`): the back suns' rings expand on each chord change (3 s bar
   lines) in a wave running outward ring by ring and collapse slowly; the lantern's rings breathe with the bellows,
   fullest 2 s and 6 s into each 8 s breath, outer ring first; the rays flare on the chord change; the lantern's scale
-  pulse peaks on the 0.75 s machine rhythm. Reviewed on s26w (the mastered s26), whose fir flap still sits at 4.5 s;
-  s27 and its x3 upload file are made for the next Kits pass. `references/README.md` begins (Robin's first reference
-  painting for the project).
+  pulse peaks on the 0.75 s machine rhythm. `references/README.md` begins (Robin's first reference painting for the
+  project).
 
 **The sound, s10 to s25.** s10 the 24 s loop; s11 to s14 the Sohan "doiy" and "dee" voice (`tools/voice.py`,
 measured on the icaro recording), one syllable per picture event, with long doorstop-spring tails and its own
