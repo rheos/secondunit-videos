@@ -1,0 +1,538 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1280, height=720" />
+    <title>Back Row Delay</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&display=block" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      /* Flat-vector science-explainer look (the Kurzgesagt manner, after Finn Ardley's code
+         recreation; profile in references/kurzgesagt/). Night gradient, star field, grain over
+         everything; bodies = flat fill + one soft highlight + thin bright rim + dark inner edge;
+         wide-tracked rounded capitals on leader lines; odometer numbers. One canvas, drawn by a
+         pure draw(t) so any frame can be rendered out of order. */
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body { background: #17143d; }
+      #root { position: relative; width: 1280px; height: 720px; overflow: hidden; background: #17143d; }
+      .clip { position: absolute; inset: 0; }
+      canvas { position: absolute; inset: 0; width: 1280px; height: 720px; }
+      #fontwarm { position: absolute; left: -9999px; font: 900 20px "Nunito"; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-width="1280" data-height="720" data-duration="13">
+      <div id="scene" class="clip" data-start="0" data-duration="13" data-track-index="0">
+        <canvas id="cv" width="1920" height="1080"></canvas>
+        <span id="fontwarm">0123456789 SEES HEARS <b>x</b></span>
+      </div>
+    </div>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const DUR = 13;
+      const W = 1920, H = 1080;
+      const cv = document.getElementById("cv");
+      const ctx = cv.getContext("2d");
+      const FONT = '"Nunito", sans-serif';
+
+      // ---- palette (ours: cooler indigo to wine, amber stage, lilac sound, gold for the number that matters)
+      const C = {
+        skyTop: "#141238", skyMid: "#251a52", skyLow: "#43204f",
+        hill: "#1d1640", hillRim: "#5d4a9a",
+        ground: "#1a1236", groundRim: "#7a66c8",
+        truss: "#2b2352", trussRim: "#6f5fb4",
+        amber: "#ff9d4d", amberHi: "#ffd08a",
+        person: "#2d2257", personBack: "#221a47", head: "#3b2e6e",
+        sound: "#c9b8ff", light: "#fff3c4", gold: "#ffc94a",
+        text: "#f4efff", textDim: "#b9addf",
+      };
+
+      // ---- timing (seconds of screen time)
+      const HIT = 2.8;               // stick meets cymbal
+      const SLOW = 10;               // the sound is shown 10x slower than real
+      const V_SOUND = 343;           // m/s
+      const LIGHT_SWEEP = 0.12;      // light shown as a near-instant sweep (real: 0.33 microseconds)
+
+      // ---- geometry (1920x1080 world)
+      const GY = 800;                // ground line
+      const SRC = { x: 325, y: 600 }; // where the sound leaves (the cymbal / kit)
+      const BACK_X = 1780;           // the back of the field
+
+      // deterministic RNG
+      function rng(seed) { let s = seed >>> 0; return () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; }; }
+      const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+      const lerp = (a, b, u) => a + (b - a) * u;
+      const smooth = (u) => { u = clamp(u, 0, 1); return u * u * (3 - 2 * u); };
+      const easeIO = (u) => { u = clamp(u, 0, 1); return u < 0.5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2; };
+      const easeOut = (u) => 1 - Math.pow(1 - clamp(u, 0, 1), 3);
+      const span = (t, a, b) => clamp((t - a) / (b - a), 0, 1);
+
+      // ---- crowd: two rows, front row ends with the listener at the back of the field
+      const crowd = [];
+      {
+        const r = rng(7);
+        for (let i = 0; i < 24; i++) {
+          const x = 690 + i * (BACK_X - 690) / 23 + (i === 23 ? 0 : (r() - 0.5) * 18);
+          crowd.push({ row: 0, x, h: 70 + r() * 16, hr: 19 + r() * 4, listener: i === 23 });
+        }
+        for (let i = 0; i < 23; i++) {
+          const x = 715 + i * (BACK_X - 740) / 22 + (r() - 0.5) * 20;
+          crowd.push({ row: 1, x, h: 80 + r() * 16, hr: 18 + r() * 3, listener: false });
+        }
+        crowd.sort((a, b) => b.row - a.row);
+        for (const p of crowd) {
+          p.base = p.row ? GY - 12 : GY;
+          p.hy = p.base - p.h - p.hr * 0.6;
+        }
+      }
+      const listener = crowd.find((p) => p.listener);
+      // the scale is set so the listener's head is exactly 100 m from the kit
+      const PX_PER_M = Math.hypot(listener.x - SRC.x, listener.hy - SRC.y) / 100;
+      const ARRIVE = HIT + (100 / V_SOUND) * SLOW;           // 5.715 s
+      const distM = (x, y) => Math.hypot(x - SRC.x, y - SRC.y) / PX_PER_M;
+      const hearT = (p) => HIT + (distM(p.x, p.hy) / V_SOUND) * SLOW;
+
+      // ---- stars, fixed
+      const stars = [];
+      { const r = rng(42); for (let i = 0; i < 260; i++) stars.push({ x: r() * W * 1.3 - W * 0.15, y: r() * 760, s: r() < 0.9 ? 0.8 + r() * 1.2 : 1.8 + r(), a: 0.25 + r() * 0.6, ph: r() * 6.28 }); }
+      const sparkles = [{ x: 610, y: 120, s: 9, ph: 0 }, { x: 1180, y: 330, s: 7, ph: 2 }, { x: 1760, y: 90, s: 10, ph: 4 }, { x: 230, y: 210, s: 6, ph: 1 }, { x: 1010, y: 70, s: 6, ph: 3 }];
+
+      // ---- moon craters (lat, lon, size as a fraction of radius) for an honest sphere
+      const craters = [];
+      { const r = rng(11); for (let i = 0; i < 16; i++) craters.push({ lat: (r() - 0.5) * 2.4, lon: r() * 6.283, s: 0.08 + r() * 0.13 }); }
+
+      // ---- film grain tiles, built once
+      const grain = [];
+      { for (let k = 0; k < 4; k++) {
+          const g = document.createElement("canvas"); g.width = g.height = 256;
+          const gx = g.getContext("2d"); const id = gx.createImageData(256, 256); const r = rng(100 + k);
+          for (let i = 0; i < id.data.length; i += 4) { const v = 128 + (r() + r() + r() - 1.5) * 120; id.data[i] = id.data[i + 1] = id.data[i + 2] = v; id.data[i + 3] = 255; }
+          gx.putImageData(id, 0, 0); grain.push(g);
+      } }
+
+      // ---------- drawing helpers ----------
+      function fourPoint(x, y, s, a) {
+        ctx.save(); ctx.globalAlpha = a; ctx.fillStyle = "#fffaf0"; ctx.beginPath();
+        ctx.moveTo(x, y - s); ctx.quadraticCurveTo(x, y, x + s, y); ctx.quadraticCurveTo(x, y, x, y + s);
+        ctx.quadraticCurveTo(x, y, x - s, y); ctx.quadraticCurveTo(x, y, x, y - s); ctx.fill(); ctx.restore();
+      }
+
+      // a body: flat fill, one soft highlight toward the light, dark inner edge, thin bright rim on the lit side
+      function body(x, y, r, fill, opts = {}) {
+        const lx = opts.lx ?? -0.55, ly = opts.ly ?? -0.45;
+        ctx.save();
+        ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fillStyle = fill; ctx.fill(); ctx.clip();
+        const hg = ctx.createRadialGradient(x + lx * r * 0.7, y + ly * r * 0.7, 0, x + lx * r * 0.7, y + ly * r * 0.7, r * 1.1);
+        hg.addColorStop(0, opts.hi || "rgba(255,255,255,0.28)"); hg.addColorStop(1, "rgba(255,255,255,0)");
+        ctx.fillStyle = hg; ctx.fillRect(x - r, y - r, 2 * r, 2 * r);
+        const eg = ctx.createRadialGradient(x, y, r * 0.72, x, y, r);
+        eg.addColorStop(0, "rgba(10,6,30,0)"); eg.addColorStop(1, opts.edge || "rgba(10,6,30,0.45)");
+        ctx.fillStyle = eg; ctx.fillRect(x - r, y - r, 2 * r, 2 * r);
+        ctx.restore();
+        const a0 = Math.atan2(ly, lx);
+        ctx.save(); ctx.lineCap = "round"; ctx.strokeStyle = opts.rim || "rgba(255,240,220,0.75)"; ctx.lineWidth = opts.rimW || 2.2;
+        ctx.beginPath(); ctx.arc(x, y, r - 1.2, a0 - 1.25, a0 + 1.25); ctx.stroke(); ctx.restore();
+      }
+
+      // label on a leader line: dot on the object, angled line to an elbow, then a flat underline with the text on it
+      function leader(t, t0, dot, elbow, endX, text, opts = {}) {
+        const u = span(t, t0, t0 + 0.55), v = span(t, t0 + 0.4, t0 + 0.8);
+        const out = opts.out ? 1 - span(t, opts.out, opts.out + 0.35) : 1;
+        if (u <= 0 || out <= 0) return;
+        ctx.save(); ctx.globalAlpha = out;
+        const col = opts.color || C.text;
+        ctx.strokeStyle = col; ctx.fillStyle = col; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.arc(dot.x, dot.y, 5 * easeOut(span(t, t0, t0 + 0.15)), 0, Math.PI * 2); ctx.fill();
+        const l1 = Math.hypot(elbow.x - dot.x, elbow.y - dot.y), l2 = Math.abs(endX - elbow.x), L = l1 + l2, d = easeOut(u) * L;
+        ctx.beginPath(); ctx.moveTo(dot.x, dot.y);
+        if (d <= l1) ctx.lineTo(lerp(dot.x, elbow.x, d / l1), lerp(dot.y, elbow.y, d / l1));
+        else { ctx.lineTo(elbow.x, elbow.y); ctx.lineTo(elbow.x + Math.sign(endX - elbow.x) * (d - l1), elbow.y); }
+        ctx.stroke();
+        if (v > 0) {
+          ctx.globalAlpha = out * smooth(v);
+          ctx.font = `800 ${opts.size || 22}px ${FONT}`; ctx.letterSpacing = "0.16em";
+          ctx.textBaseline = "alphabetic";
+          const right = endX < elbow.x;
+          ctx.textAlign = right ? "right" : "left";
+          ctx.fillText(text, (right ? endX : elbow.x + 4) + (1 - easeOut(v)) * (right ? 12 : -12), elbow.y - 12);
+          if (opts.sub) { ctx.font = `700 ${(opts.size || 22) - 5}px ${FONT}`; ctx.fillStyle = C.textDim; ctx.fillText(opts.sub, (right ? endX : elbow.x + 4), elbow.y + 26); }
+        }
+        ctx.restore();
+      }
+
+      const odoStrip = document.createElement("canvas");
+      // odometer: each digit column rolls; fast columns get motion blur (ghost copies along the roll)
+      function odometer(t, x, y, size, valueMs, vel, color) {
+        ctx.save();
+        ctx.font = `900 ${size}px ${FONT}`; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.letterSpacing = "0px";
+        const cw = size * 0.62, lh = size * 1.05;
+        const cols = [{ ch: "0" }, { ch: "." }, { k: 2 }, { k: 1 }, { k: 0 }];
+        const total = cols.length * cw + size * 0.5;
+        let cx = x - total / 2 + cw / 2;
+        for (const c of cols) {
+          if (c.ch) { ctx.fillStyle = color; ctx.fillText(c.ch, c.ch === "." ? cx - cw * 0.22 : cx, y); cx += c.ch === "." ? cw * 0.55 : cw; continue; }
+          const p = valueMs / Math.pow(10, c.k);
+          let d = Math.floor(p) % 10, frac = p - Math.floor(p);
+          // higher columns roll only during the last unit before they carry (292 never shows a half-turned 2)
+          if (c.k > 0) { const m = Math.pow(10, c.k); frac = clamp((valueMs % m) - (m - 1), 0, 1); }
+          const speed = vel / Math.pow(10, c.k);          // digits per second of screen time
+          const blur = clamp(speed / 40, 0, 1);
+          // each column is drawn on its own strip, then faded out top and bottom like a drum seen through a window
+          const sw = Math.ceil(cw), sh = Math.ceil(lh);
+          odoStrip.width = sw; odoStrip.height = sh;
+          const o = odoStrip.getContext("2d");
+          o.font = ctx.font; o.textAlign = "center"; o.textBaseline = "middle"; o.fillStyle = color;
+          const ghosts = blur > 0.05 ? 9 : 1;
+          for (let g = 0; g < ghosts; g++) {
+            const off = ghosts === 1 ? 0 : (g / (ghosts - 1) - 0.5) * blur * 0.55;
+            o.globalAlpha = ghosts === 1 ? 1 : 0.16 + 0.1 * (1 - Math.abs(g / (ghosts - 1) - 0.5) * 2);
+            const f = frac + off, my = sh / 2;
+            o.fillText(String((d + 10) % 10), sw / 2, my - f * lh);
+            o.fillText(String((d + 11) % 10), sw / 2, my - f * lh + lh);
+            o.fillText(String((d + 9) % 10), sw / 2, my - f * lh - lh);
+          }
+          o.globalAlpha = 1; o.globalCompositeOperation = "destination-in";
+          const fg = o.createLinearGradient(0, 0, 0, sh);
+          fg.addColorStop(0, "rgba(0,0,0,0)"); fg.addColorStop(0.16, "rgba(0,0,0,1)"); fg.addColorStop(0.84, "rgba(0,0,0,1)"); fg.addColorStop(1, "rgba(0,0,0,0)");
+          o.fillStyle = fg; o.fillRect(0, 0, sw, sh);
+          ctx.drawImage(odoStrip, cx - sw / 2, y - sh / 2);
+          cx += cw;
+        }
+        ctx.globalAlpha = 1; ctx.fillStyle = color; ctx.font = `800 ${size * 0.5}px ${FONT}`; ctx.textAlign = "left";
+        ctx.fillText("s", cx - cw / 2 + 6, y + size * 0.12);
+        ctx.restore();
+      }
+
+      function caps(text, x, y, size, color, align = "left", alpha = 1, track = "0.2em", weight = 800) {
+        ctx.save(); ctx.globalAlpha = alpha; ctx.fillStyle = color; ctx.font = `${weight} ${size}px ${FONT}`;
+        ctx.letterSpacing = track; ctx.textAlign = align; ctx.textBaseline = "alphabetic"; ctx.fillText(text, x, y); ctx.restore();
+      }
+
+      // ---------- the camera ----------
+      function camera(t) {
+        // wide with a slow push, then push to the back of the field, then pull back out for the card
+        const wide = { x: 960, y: 560, s: lerp(1.0, 1.045, span(t, 0, 5.8)) };
+        const close = { x: 1600 + Math.sin(t * 0.6) * 6, y: 660, s: lerp(2.05, 2.15, span(t, 7.0, 9.4)) };
+        const end = { x: 960, y: 560, s: lerp(1.0, 1.025, span(t, 10.6, 13)) };
+        let a = wide, b = close, u = easeIO(span(t, 5.95, 7.0));
+        if (t >= 9.4) { a = close; b = end; u = easeIO(span(t, 9.4, 10.6)); }
+        return { x: lerp(a.x, b.x, u), y: lerp(a.y, b.y, u), s: lerp(a.s, b.s, u) };
+      }
+      function applyCam(cam, par = 1) {
+        const s = 1 + (cam.s - 1) * par;
+        ctx.translate(W / 2, H / 2); ctx.scale(s, s);
+        ctx.translate(-(960 + (cam.x - 960) * par), -(540 + (cam.y - 540) * par));
+      }
+
+      // ---------- scene pieces ----------
+      function sky(t, cam) {
+        const g = ctx.createLinearGradient(0, 0, 0, H);
+        g.addColorStop(0, C.skyTop); g.addColorStop(0.55, C.skyMid); g.addColorStop(1, C.skyLow);
+        ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+        // faint stage glow on the low sky, left
+        const sg = ctx.createRadialGradient(300, 760, 0, 300, 760, 900);
+        sg.addColorStop(0, "rgba(255,140,80,0.16)"); sg.addColorStop(1, "rgba(255,140,80,0)");
+        ctx.fillStyle = sg; ctx.fillRect(0, 0, W, H);
+        ctx.save(); applyCam(cam, 0.25);
+        for (const s of stars) {
+          ctx.globalAlpha = s.a * (0.75 + 0.25 * Math.sin(t * 1.7 + s.ph));
+          ctx.fillStyle = "#efe9ff"; ctx.beginPath(); ctx.arc(s.x, s.y, s.s, 0, Math.PI * 2); ctx.fill();
+        }
+        ctx.globalAlpha = 1;
+        for (const s of sparkles) fourPoint(s.x, s.y, s.s * (0.75 + 0.25 * Math.sin(t * 2.1 + s.ph)), 0.85);
+        ctx.restore();
+      }
+
+      // moon: craters projected onto a turning sphere (they foreshorten at the limb and wrap round)
+      function moon(t, cam) {
+        ctx.save(); applyCam(cam, 0.45);
+        const x = 1480, y = 205, r = 62, rot = 0.6 + t * 0.12;
+        // halo
+        for (let i = 3; i >= 1; i--) { ctx.globalAlpha = 0.05; ctx.fillStyle = "#cfc6ff"; ctx.beginPath(); ctx.arc(x, y, r + i * 16, 0, Math.PI * 2); ctx.fill(); }
+        ctx.globalAlpha = 1;
+        ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fillStyle = "#dcd4f2"; ctx.fill();
+        ctx.save(); ctx.clip();
+        for (const c of craters) {
+          const lon = c.lon + rot, cl = Math.cos(c.lat);
+          const px = cl * Math.sin(lon), py = Math.sin(c.lat), pz = cl * Math.cos(lon);
+          if (pz < -0.05) continue;
+          const sx = x + px * r, sy = y - py * r, ang = Math.atan2(-py, px);
+          const rr = c.s * r, squash = Math.max(0.08, pz);
+          ctx.save(); ctx.translate(sx, sy); ctx.rotate(ang);
+          ctx.globalAlpha = smooth(pz * 4 + 0.2);
+          ctx.fillStyle = "#b4a9d8"; ctx.beginPath(); ctx.ellipse(0, 0, rr * squash, rr, 0, 0, Math.PI * 2); ctx.fill();
+          ctx.fillStyle = "#9c90c8"; ctx.beginPath(); ctx.ellipse(-rr * squash * 0.18, 0, rr * squash * 0.7, rr * 0.78, 0, 0, Math.PI * 2); ctx.fill();
+          ctx.restore();
+        }
+        ctx.globalAlpha = 1;
+        // soft terminator on the far side from the stage glow
+        const tg = ctx.createLinearGradient(x - r, y, x + r, y);
+        tg.addColorStop(0.5, "rgba(30,20,70,0)"); tg.addColorStop(0.78, "rgba(30,20,70,0.38)"); tg.addColorStop(1, "rgba(30,20,70,0.6)");
+        ctx.fillStyle = tg; ctx.fillRect(x - r, y - r, 2 * r, 2 * r);
+        ctx.restore();
+        body(x, y, r, "rgba(0,0,0,0)", { hi: "rgba(255,255,255,0.22)", rim: "rgba(255,255,255,0.85)", edge: "rgba(40,25,90,0.35)" });
+        ctx.restore();
+      }
+
+      function hills(cam) {
+        ctx.save(); applyCam(cam, 0.7);
+        ctx.fillStyle = C.hill; ctx.beginPath(); ctx.moveTo(-400, GY);
+        const pts = [[-400, 700], [0, 640], [350, 690], [800, 610], [1200, 680], [1600, 600], [2000, 660], [2400, 640]];
+        for (let i = 1; i < pts.length; i++) { const [x0, y0] = pts[i - 1], [x1, y1] = pts[i]; ctx.quadraticCurveTo(x0 + 120, y0 - 40, (x0 + x1) / 2, (y0 + y1) / 2); }
+        ctx.lineTo(2400, GY + 80); ctx.lineTo(-400, GY + 80); ctx.closePath(); ctx.fill();
+        ctx.strokeStyle = C.hillRim; ctx.globalAlpha = 0.35; ctx.lineWidth = 2; ctx.stroke();
+        ctx.restore();
+      }
+
+      function ground() {
+        ctx.fillStyle = C.ground; ctx.beginPath(); ctx.moveTo(-600, GY + 6);
+        ctx.quadraticCurveTo(960, GY - 14, 2600, GY + 6); ctx.lineTo(2600, 1600); ctx.lineTo(-600, 1600); ctx.closePath(); ctx.fill();
+        const g = ctx.createLinearGradient(0, GY, 0, GY + 260); g.addColorStop(0, "rgba(255,150,90,0.08)"); g.addColorStop(1, "rgba(0,0,0,0.25)");
+        ctx.fillStyle = g; ctx.fill();
+        ctx.strokeStyle = C.groundRim; ctx.globalAlpha = 0.7; ctx.lineWidth = 2.5;
+        ctx.beginPath(); ctx.moveTo(-600, GY + 6); ctx.quadraticCurveTo(960, GY - 14, 2600, GY + 6); ctx.stroke(); ctx.globalAlpha = 1;
+      }
+
+      function rrect(x, y, w, h, r) { ctx.beginPath(); ctx.roundRect(x, y, w, h, r); }
+
+      function stage(t) {
+        // backdrop disc: the stage's LED sun (orange disc, inner ring, halo rings, faint spokes)
+        const bx = 325, by = 500, br = 118;
+        const pulse = Math.exp(-Math.max(0, t - HIT) * 3) * (t >= HIT ? 1 : 0);
+        ctx.save();
+        for (let i = 0; i < 12; i++) {
+          const a = i / 12 * Math.PI * 2 + t * 0.05;
+          ctx.globalAlpha = 0.06 + 0.06 * pulse; ctx.strokeStyle = C.amberHi; ctx.lineWidth = 3;
+          ctx.beginPath(); ctx.moveTo(bx + Math.cos(a) * (br + 20), by + Math.sin(a) * (br + 20)); ctx.lineTo(bx + Math.cos(a) * (br + 150), by + Math.sin(a) * (br + 150)); ctx.stroke();
+        }
+        for (let i = 3; i >= 1; i--) { ctx.globalAlpha = 0.07 + 0.04 * pulse; ctx.fillStyle = C.amber; ctx.beginPath(); ctx.arc(bx, by, br + i * 30, 0, Math.PI * 2); ctx.fill(); }
+        ctx.restore();
+        body(bx, by, br, C.amber, { hi: "rgba(255,236,190,0.65)", lx: -0.2, ly: -0.35, rim: "rgba(255,240,210,0.9)", edge: "rgba(180,60,30,0.45)" });
+        ctx.save(); ctx.globalAlpha = 0.35; ctx.strokeStyle = C.amberHi; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(bx, by, br * 0.8, 0, Math.PI * 2); ctx.stroke(); ctx.restore();
+
+        // truss: two pillars and a roof bar
+        ctx.fillStyle = C.truss;
+        rrect(96, 330, 34, 370, 6); ctx.fill(); rrect(520, 330, 34, 370, 6); ctx.fill(); rrect(80, 312, 490, 34, 8); ctx.fill();
+        ctx.strokeStyle = C.trussRim; ctx.lineWidth = 2; ctx.globalAlpha = 0.8;
+        for (const [x, y, w, h] of [[96, 330, 34, 370], [520, 330, 34, 370], [80, 312, 490, 34]]) { rrect(x, y, w, h, 6); ctx.stroke(); }
+        ctx.globalAlpha = 0.35; ctx.beginPath();
+        for (let y = 360; y < 690; y += 36) { ctx.moveTo(98, y); ctx.lineTo(128, y + 36); ctx.moveTo(522, y); ctx.lineTo(552, y + 36); }
+        ctx.stroke(); ctx.globalAlpha = 1;
+        // small can lights on the roof bar
+        for (const lx of [170, 260, 390, 480]) body(lx, 360, 12, "#3d3270", { rim: "rgba(255,210,150,0.9)", lx: 0, ly: 0.9 });
+        // deck
+        ctx.fillStyle = "#30275c"; rrect(60, 688, 530, 22, 6); ctx.fill();
+        ctx.fillStyle = "#211a45"; ctx.fillRect(74, 710, 502, GY - 710);
+        ctx.strokeStyle = C.trussRim; ctx.globalAlpha = 0.7; ctx.lineWidth = 2; rrect(60, 688, 530, 22, 6); ctx.stroke(); ctx.globalAlpha = 1;
+      }
+
+      function drummer(t) {
+        const sx = 325, sy = 560;
+        const bob = Math.sin(t * 5.2) * 2;
+        // torso and head, dark against the disc, warm rim
+        ctx.fillStyle = "#1c1538";
+        ctx.beginPath(); ctx.moveTo(sx - 44, 690); ctx.quadraticCurveTo(sx - 46, sy + 20 + bob, sx, sy + 14 + bob); ctx.quadraticCurveTo(sx + 46, sy + 20 + bob, sx + 44, 690); ctx.closePath(); ctx.fill();
+        ctx.strokeStyle = "rgba(255,200,140,0.8)"; ctx.lineWidth = 2.5; ctx.stroke();
+        body(sx, sy - 18 + bob, 27, "#1c1538", { rim: "rgba(255,210,160,0.95)", lx: 0, ly: -1, hi: "rgba(255,180,120,0.12)", rimW: 2.6 });
+
+        // right arm: rests, winds up, strikes the cymbal at HIT, rebounds
+        const up = smooth(span(t, 2.2, 2.68)), down = span(t, 2.68, HIT);
+        let ang = -0.25 - 1.15 * up + 1.45 * down * down;                     // radians from horizontal
+        if (t > HIT) ang = 0.05 - 0.35 * Math.exp(-(t - HIT) * 4) * Math.sin((t - HIT) * 14) - 0.3 * smooth(span(t, HIT, HIT + 0.6));
+        const sh = { x: sx + 30, y: sy + 32 + bob };
+        const el = { x: sh.x + Math.cos(ang + 0.7) * 44, y: sh.y + Math.sin(ang + 0.7) * 44 };
+        const hand = { x: el.x + Math.cos(ang) * 40, y: el.y + Math.sin(ang) * 40 };
+        // left arm on the snare, small taps
+        const tap = Math.max(0, Math.sin(t * 9)) * 6;
+        const lsh = { x: sx - 30, y: sy + 32 + bob }, lel = { x: sx - 66, y: sy + 70 }, lhand = { x: sx - 52, y: sy + 92 - tap };
+
+        // kit: cymbal (wobbles after the hit), snare, kick drum facing us
+        const wob = t > HIT ? Math.exp(-(t - HIT) * 3) * Math.sin((t - HIT) * 22) * 0.18 : 0;
+        ctx.save(); ctx.translate(424, 600); ctx.rotate(-0.12 + wob);
+        ctx.fillStyle = "#e9b847"; ctx.beginPath(); ctx.ellipse(0, 0, 50, 9, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = "rgba(255,240,190,0.95)"; ctx.lineWidth = 2; ctx.beginPath(); ctx.ellipse(0, 0, 50, 9, 0, Math.PI, Math.PI * 2); ctx.stroke();
+        ctx.fillStyle = "#b4862a"; ctx.beginPath(); ctx.ellipse(0, 2, 10, 3, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.restore();
+        ctx.strokeStyle = "#a99ad6"; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(424, 604); ctx.lineTo(430, 688); ctx.stroke();
+
+        ctx.fillStyle = "#cfc4ee"; ctx.beginPath(); ctx.ellipse(250, 632, 40, 10, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = "#6b5aa8"; ctx.fillRect(210, 632, 80, 22); ctx.beginPath(); ctx.ellipse(250, 654, 40, 10, 0, 0, Math.PI); ctx.fill();
+
+        // arms over the kit
+        ctx.lineCap = "round"; ctx.lineJoin = "round"; ctx.strokeStyle = "#1c1538"; ctx.lineWidth = 16;
+        ctx.beginPath(); ctx.moveTo(sh.x, sh.y); ctx.lineTo(el.x, el.y); ctx.lineTo(hand.x, hand.y); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(lsh.x, lsh.y); ctx.lineTo(lel.x, lel.y); ctx.lineTo(lhand.x, lhand.y); ctx.stroke();
+        // sticks
+        ctx.strokeStyle = "#f3dcae"; ctx.lineWidth = 5;
+        ctx.beginPath(); ctx.moveTo(hand.x, hand.y); ctx.lineTo(hand.x + Math.cos(ang - 0.25) * 70, hand.y + Math.sin(ang - 0.25) * 70); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(lhand.x, lhand.y); ctx.lineTo(lhand.x - 40, lhand.y + 30); ctx.stroke();
+
+        body(325, 640, 52, "#efe6ff", { hi: "rgba(255,255,255,0.7)", lx: -0.4, ly: -0.5, rim: "rgba(255,255,255,0.95)", edge: "rgba(70,50,130,0.55)" });
+        ctx.save(); ctx.strokeStyle = "#5a4a9a"; ctx.lineWidth = 6; ctx.beginPath(); ctx.arc(325, 640, 52, 0, Math.PI * 2); ctx.stroke(); ctx.restore();
+        // the hit: a burst of four-point sparks off the cymbal edge
+        if (t >= HIT && t < HIT + 0.7) {
+          const u = span(t, HIT, HIT + 0.7);
+          for (let i = 0; i < 6; i++) { const a = -2.6 + i * 0.42; fourPoint(470 + Math.cos(a) * 60 * easeOut(u), 592 + Math.sin(a) * 60 * easeOut(u), 12 * (1 - u), 1 - u); }
+        }
+      }
+
+      function person(p, t) {
+        // light: everyone's rim flares together (sweep is near-instant); sound: each one nods as the front passes
+        const tl = HIT + LIGHT_SWEEP * clamp((p.x - SRC.x) / (W - SRC.x), 0, 1);
+        const flash = t >= tl ? Math.exp(-(t - tl) * 2.2) : 0;
+        const th = hearT(p);
+        const nu = span(t, th, th + 0.42);
+        const nod = (nu > 0 && nu < 1 ? Math.sin(nu * Math.PI) : 0) * 9;
+        const heard = t >= th ? Math.exp(-(t - th) * 3) : 0;
+        const base = p.base, top = p.base - p.h;
+        ctx.fillStyle = p.row ? C.personBack : C.person;
+        ctx.beginPath(); ctx.moveTo(p.x - 32, base); ctx.quadraticCurveTo(p.x - 34, top + 6 + nod * 0.4, p.x, top + nod * 0.4); ctx.quadraticCurveTo(p.x + 34, top + 6 + nod * 0.4, p.x + 32, base); ctx.closePath(); ctx.fill();
+        // rim on the stage side
+        ctx.save(); ctx.lineWidth = 2.2; ctx.strokeStyle = `rgba(255,${190 + 50 * flash | 0},${140 + 80 * flash | 0},${0.35 + 0.6 * flash})`;
+        ctx.beginPath(); ctx.moveTo(p.x - 32, base); ctx.quadraticCurveTo(p.x - 34, top + 6 + nod * 0.4, p.x, top + nod * 0.4); ctx.stroke(); ctx.restore();
+        const rim = flash > 0.02 ? `rgba(255,243,196,${0.5 + 0.5 * flash})` : heard > 0.02 ? `rgba(201,184,255,${0.55 + 0.45 * heard})` : "rgba(255,200,150,0.55)";
+        body(p.x, p.hy + nod, p.hr, p.row ? "#30265e" : C.head, { rim, lx: -0.85, ly: -0.35, hi: `rgba(255,190,140,${0.14 + 0.25 * flash})` });
+        if (p.listener) {
+          // the listener wears the gold: a thin ring under the head marks who we follow
+          const g = smooth(span(t, 0.9, 1.4));
+          ctx.save(); ctx.globalAlpha = g; ctx.strokeStyle = C.gold; ctx.lineWidth = 3;
+          ctx.beginPath(); ctx.arc(p.x, p.hy + nod, p.hr + 7, 0, Math.PI * 2); ctx.stroke(); ctx.restore();
+        }
+      }
+
+      function soundFront(t) {
+        if (t < HIT) return;
+        const R = (t - HIT) / SLOW * V_SOUND * PX_PER_M;
+        const fade = 1 - span(t, ARRIVE + 0.2, ARRIVE + 1.2);
+        if (fade <= 0) return;
+        ctx.save();
+        ctx.beginPath(); ctx.rect(-600, -400, 3200, GY + 400 - 2); ctx.clip();
+        for (let k = 0; k < 3; k++) {
+          const r = R - k * 26; if (r <= 4) continue;
+          ctx.globalAlpha = fade * [0.9, 0.35, 0.15][k];
+          ctx.strokeStyle = C.sound; ctx.lineWidth = [4, 3, 2][k];
+          ctx.setLineDash(k === 0 ? [] : [10, 10]);
+          ctx.beginPath(); ctx.arc(SRC.x, SRC.y, r, -1.25, 1.25); ctx.stroke();
+        }
+        ctx.restore();
+      }
+
+      function lightSweep(t) {
+        const u = span(t, HIT, HIT + LIGHT_SWEEP);
+        if (t < HIT || t > HIT + 0.6) return;
+        const x = lerp(SRC.x, W + 200, u);
+        const a = 1 - span(t, HIT + LIGHT_SWEEP, HIT + 0.6);
+        ctx.save();
+        const top = 380, g = ctx.createLinearGradient(x - 40, 0, x + 40, 0);
+        g.addColorStop(0, "rgba(255,243,196,0)"); g.addColorStop(0.5, `rgba(255,243,196,${0.35 * a})`); g.addColorStop(1, "rgba(255,243,196,0)");
+        ctx.fillStyle = g; ctx.fillRect(x - 40, top, 80, GY - top);
+        const lg = ctx.createLinearGradient(0, top, 0, GY);
+        lg.addColorStop(0, "rgba(255,243,196,0)"); lg.addColorStop(0.35, C.light); lg.addColorStop(1, C.light);
+        ctx.globalAlpha = a; ctx.strokeStyle = lg; ctx.lineWidth = 3;
+        ctx.beginPath(); ctx.moveTo(x, top); ctx.lineTo(x, GY); ctx.stroke();
+        ctx.restore();
+      }
+
+      // distance ruler along the ground: dashes draw on, a spark rides it with the sound front
+      function ruler(t) {
+        const y = 868, x0 = SRC.x, x1 = listener.x;
+        const u = easeOut(span(t, 1.1, 2.0));
+        if (u <= 0) return;
+        ctx.save(); ctx.strokeStyle = C.textDim; ctx.lineWidth = 2; ctx.setLineDash([10, 9]);
+        ctx.beginPath(); ctx.moveTo(x0, y); ctx.lineTo(lerp(x0, x1, u), y); ctx.stroke(); ctx.setLineDash([]);
+        for (let m = 0; m <= 100; m += 25) {
+          const x = x0 + (x1 - x0) * m / 100; if (x > lerp(x0, x1, u) + 1) continue;
+          ctx.beginPath(); ctx.moveTo(x, y - 10); ctx.lineTo(x, y + 10); ctx.stroke();
+          caps(`${m} M`, x, y + 42, 17, C.textDim, "center", smooth(span(t, 1.3 + m / 100 * 0.6, 1.6 + m / 100 * 0.6)), "0.14em");
+        }
+        if (t >= HIT) {
+          const m = clamp((t - HIT) / SLOW * V_SOUND, 0, 100);
+          const sx = x0 + (x1 - x0) * m / 100;
+          ctx.strokeStyle = C.sound; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(x0, y); ctx.lineTo(sx, y); ctx.stroke();
+          const g = ctx.createRadialGradient(sx, y, 0, sx, y, 26); g.addColorStop(0, "rgba(230,220,255,0.9)"); g.addColorStop(1, "rgba(230,220,255,0)");
+          ctx.fillStyle = g; ctx.beginPath(); ctx.arc(sx, y, 26, 0, Math.PI * 2); ctx.fill();
+          fourPoint(sx, y, 11, 1);
+        }
+        ctx.restore();
+      }
+
+      // ---------- frame ----------
+      function draw(t) {
+        t = clamp(t, 0, DUR);
+        const cam = camera(t);
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.globalAlpha = 1; ctx.globalCompositeOperation = "source-over";
+        sky(t, cam);
+        moon(t, cam);
+        hills(cam);
+
+        ctx.save(); applyCam(cam, 1);
+        ground();
+        stage(t);
+        drummer(t);
+        for (const p of crowd) person(p, t);
+        lightSweep(t);
+        soundFront(t);
+        ruler(t);
+        leader(t, 0.5, { x: 352, y: 528 }, { x: 452, y: 430 }, 700, "THE DRUMMER", { out: 5.6 });
+        leader(t, 1.2, { x: listener.x - 10, y: listener.hy - 22 }, { x: listener.x - 90, y: listener.hy - 150 }, listener.x - 380, "BACK OF THE FIELD", { out: 5.6 });
+        // close-up panel beside the listener: what reaches them, and when
+        const pu = span(t, 7.0, 7.6);
+        if (pu > 0 && t < 9.8) {
+          leader(t, 7.0, { x: listener.x - 16, y: listener.hy - 10 }, { x: listener.x - 70, y: listener.hy - 80 }, listener.x - 300, "SEES THE HIT", { size: 13, out: 9.3, color: C.light });
+          leader(t, 7.35, { x: listener.x - 18, y: listener.hy + 12 }, { x: listener.x - 70, y: listener.hy + 70 }, listener.x - 300, "HEARS IT", { size: 13, out: 9.3, color: C.gold });
+          const a = smooth(span(t, 7.3, 7.7)) * (1 - span(t, 9.3, 9.65));
+          caps("0.000 S", listener.x - 300, listener.hy - 54, 12, C.textDim, "left", a * (t > 7.3 ? 1 : 0), "0.14em", 700);
+          const b = smooth(span(t, 7.6, 7.75)) * (1 - span(t, 9.3, 9.65));
+          caps("0.292 S LATER", listener.x - 300, listener.hy + 96, 12, C.gold, "left", b, "0.14em", 800);
+        }
+        ctx.restore();
+
+        // screen-space type
+        if (t >= HIT - 0.2 && t < 7.0) {
+          const a = smooth(span(t, HIT - 0.2, HIT + 0.1)) * (1 - span(t, 6.2, 6.8));
+          const m = clamp((t - HIT) / SLOW * V_SOUND, 0, 100);
+          let ms = m / V_SOUND * 1000;
+          ms = lerp(ms, 292, smooth(span(t, ARRIVE, ARRIVE + 0.15)));   // land on the rounded value
+          const arrived = t >= ARRIVE;
+          const vel = arrived ? 0 : 1000 / SLOW;                           // ms of real time per second shown
+          ctx.save(); ctx.globalAlpha = a;
+          caps("SOUND, SINCE THE HIT", 1180, 142, 20, C.textDim, "center");
+          odometer(t, 1180, 222, 104, Math.max(0, ms), vel, arrived ? C.gold : C.text);
+          caps(`${Math.round(m)} M  ·  SHOWN 10× SLOWER`, 1180, 312, 18, C.textDim, "center", 1, "0.18em");
+          ctx.restore();
+          const la = smooth(span(t, HIT + 0.15, HIT + 0.45)) * (1 - span(t, 5.2, 5.6));
+          caps("LIGHT GETS THERE IN 0.0000003 S", 1180, 372, 18, C.light, "center", la * a, "0.18em");
+        }
+        if (t >= 10.0) {
+          const a = smooth(span(t, 10.0, 10.4)), b = smooth(span(t, 10.3, 10.7)), c2 = smooth(span(t, 10.7, 11.1));
+          caps("AT THE BACK OF A 100 M FIELD", 700, 176, 22, C.textDim, "left", a);
+          ctx.save(); ctx.globalAlpha = b; ctx.fillStyle = C.gold; ctx.font = `900 108px ${FONT}`; ctx.letterSpacing = "0px";
+          ctx.fillText("0.29 seconds", 692 + (1 - easeOut(b)) * -20, 290); ctx.restore();
+          caps("between seeing the hit and hearing it", 698, 350, 34, C.text, "left", c2, "0px", 800);
+          caps("LONGER THAN AN EIGHTH NOTE AT 120 BPM", 700, 410, 18, C.textDim, "left", smooth(span(t, 11.1, 11.5)), "0.18em");
+        }
+
+        // vignette, then grain over the whole frame
+        const vg = ctx.createRadialGradient(W / 2, H / 2, H * 0.35, W / 2, H / 2, H * 1.05);
+        vg.addColorStop(0, "rgba(8,4,24,0)"); vg.addColorStop(1, "rgba(8,4,24,0.5)");
+        ctx.fillStyle = vg; ctx.fillRect(0, 0, W, H);
+        const f = Math.round(t * 30), r = rng(f * 97 + 3);
+        ctx.save(); ctx.globalCompositeOperation = "overlay"; ctx.globalAlpha = 0.16;
+        const pat = ctx.createPattern(grain[f % 4], "repeat");
+        ctx.translate(-r() * 256, -r() * 256); ctx.fillStyle = pat; ctx.fillRect(0, 0, W + 256, H + 256);
+        ctx.restore();
+      }
+
+      // one paused timeline; a proxy tween drives draw(t) on every seek
+      const state = { t: 0 };
+      const tl = gsap.timeline({ paused: true });
+      tl.to(state, { t: DUR, duration: DUR, ease: "none", onUpdate: () => draw(state.t) }, 0);
+      window.__timelines["main"] = tl;
+      window.__draw = draw;
+      draw(0);
+      document.fonts.ready.then(() => draw(state.t));
+    </script>
+  </body>
+</html>

@@ -1,0 +1,36 @@
+MAKE THE FACT VISIBLE
+Explainer direction in the flat-vector science-explainer manner (Kurzgesagt; code recreation by Finn Ardley)
+Updated 2026-10-26
+
+PURPOSE
+Turn one true, surprising fact into a short where the viewer watches the fact happen, in the flat-vector explainer language. Keep the project's own subject, palette and characters. This is our reading of the manner (README.md, STUDY-finn-sun-vanished.md). It is not the studio's process and does not use its characters, bird, exact palette or compositions.
+
+CORE PRINCIPLE
+One fact, one number, made physical. Something moves across the frame (light, sound, a crowd, money, a signal) and the number is read off that movement. The card at the end only names what the viewer has already seen.
+
+READ THE CLAIM FIRST
+Write the claim as one sentence with one number and its unit ("the back of a 100 m field hears the drum 0.29 s after it sees it"). Check the number: compute it, write the formula in the project README. If there is no single number, this manner has little to add; try Mark Achbar (measure the claim in public) or Kevin Ngo (an object with a job).
+
+TRY ONE OR TWO OF THESE MOVES
+1. Two bodies and a gap. Put the cause and the place it arrives at on screen together, labelled, with the distance between them drawn as a dashed ruler.
+2. A wavefront you can follow. Draw what travels as a front (ring, sweep, dark disc) and let things it passes react on contact (heads nod, lights go out). The reaction is the proof.
+3. A spark on the line. A single bright point rides the dashed ruler at the front's position, so the eye can read progress without the number.
+4. An odometer tied to the motion. The on-screen number is computed from what is moving, frame by frame. Fast digits blur; the number turns gold when it arrives.
+5. Name the time compression. If screen time is not real time, say so on screen ("SHOWN 10x SLOWER"). Never let a count run at a speed the viewer will read as real.
+6. Collapse or flare. A body can shrink to a sparkle and go out, or flash once; use it for the cause.
+7. Push in on the one who notices. End the motion on the receiver, close, with two short labels (what they see, what they hear) before the card.
+8. A sphere is a sphere. Any planet, head, ball or moon that shows surface features projects them (foreshorten at the limb, hide behind, rotate), never a flat map on a disc.
+
+HOW MUCH TO ADD
+Accent: one move inside an existing explainer shot (a leader label, a spark on a line, an odometer).
+Device: one fact built as a 10-15 s beat (moves 1-5 and a card).
+Film: a narrated explainer of several facts, each its own beat, one palette and one grain throughout. Only with a script and a TTS clock.
+
+RETURN
+The claim sentence, the number and its formula. The two bodies and how they are drawn (fill, highlight, rim). What travels and how it is drawn. What reacts as it passes. Where the number lives and how it is computed from the motion, plus any compression label. The shot order with times. The card text. Flag anything that would need a face, a character drawing, or a model-generated frame.
+
+CHECK
+Does every on-screen number agree with what moves, or say plainly that time is compressed? Does every sphere rotate or foreshorten its features? Is grain over the whole frame, every frame? Is gold used on exactly one number per beat? Does each label's line draw before its text, and does text hold at least 1.5 s after it lands? Is anything a copy of a studio frame, character or exact palette? Credit Finn Ardley when the code recreation informed the build, and Kurzgesagt for the manner.
+
+WITH THE OTHER PROFILES
+Kevin Ngo gives an object a body and a job. Mark Achbar measures a claim in public with the machinery showing. This manner makes one physical fact visible and reads the number off the motion. Run it on facts with a distance, a speed or a count; run Achbar on arguments.
