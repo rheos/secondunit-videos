@@ -1,0 +1,25 @@
+slug: mediapipe-pose
+name: MediaPipe Pose Landmarker (heavy)
+kind: model
+status: available
+does: Finds 33 body landmarks per frame in a video, locally, so a generated or filmed clip can drive a code-drawn rig.
+keywords:
+- pose
+- motion-capture
+- tracing
+- character
+- walk
+- rig
+fits:
+- generate-then-trace (a video model's clip supplies the motion, our renderer redraws it)
+- hero moves on code-drawn characters (a stop, a stumble, a sit-down) where keyed motion reads as a marionette
+deterministic: n/a
+how: '`uv run --python 3.11 --with mediapipe --with opencv-python-headless python indieagent-trace-test/tools/pose.py <clip> <out.json>`; model file pose_landmarker_heavy.task from storage.googleapis.com/mediapipe-models (30 MB, kept in the project _in/). 0.10.21 runs on the Intel Mac, about 20 s for 121 frames at 480p.'
+cost: free
+url: https://ai.google.dev/edge/mediapipe/solutions/vision/pose_landmarker
+detail: 'indieagent-trace-test/README.md (cleanup needed on profile walks: leg identity swaps, foot locks, occlusion)'
+source: 'seeconvm X article on Opus 5.5 motion design (generate-then-trace), relayed 2026-10-28'
+verdict: '2026-10-28 (Claude, trace test #339): works for root, feet and lean on a profile walk after cleanup; swaps left and right legs in profile and invents limbs behind props. Optional recipe, not a default.'
+related:
+- motion-lab
+added: '2026-10-28'
