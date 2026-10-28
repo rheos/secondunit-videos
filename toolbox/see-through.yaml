@@ -1,0 +1,24 @@
+slug: see-through
+name: See-through
+kind: model
+status: candidate
+does: Splits one anime-style character drawing into about 23 depth-ordered body-part layers, with hidden areas painted in, saved as a PSD.
+keywords:
+- layer-decomposition
+- cut-out
+- rigging
+- character
+- psd
+- 2.5d
+fits:
+- cutting an approved character drawing into parts for a code-drawn rig (characters, not marionettes)
+- cut-paper and paper-depth looks that need a character on separate planes
+deterministic: n/a
+how: not installed; needs a 12-16 GB GPU (8 GB with NF4), so Modal, the Docker image, or the free HF Space (1-2 PSDs a day). The Intel Mac can't run it.
+cost: free (Apache-2.0); GPU time if run on Modal
+url: https://github.com/shitagaki-lab/see-through
+source: x.com/satounbd/status/2114875593162698894 (illustration to 3D animation pipeline, read 2026-10-28)
+verdict: 'Recommended for one test by Claude, 2026-10-28: run an approved character sheet through the HF Space and see whether the parts hold for a non-anime style (woodcut, Playmobil manner). Trained on anime, so other styles may fail.'
+related:
+- meshy
+added: '2026-10-28'
