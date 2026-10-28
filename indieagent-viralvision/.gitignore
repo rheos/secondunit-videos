@@ -1,0 +1,7 @@
+out/
+renders/
+.hyperframes/
+node_modules/
+assets/*.mp3
+assets/*.wav
+drafts/
