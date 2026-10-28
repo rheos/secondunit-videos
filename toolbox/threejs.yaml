@@ -1,0 +1,24 @@
+slug: threejs
+name: Three.js
+kind: library
+status: available
+does: 3D scenes in the browser; a HyperFrames runtime adapter.
+keywords:
+- 3d
+- webgl
+- scene
+- camera
+fits:
+- 3D shots inside HyperFrames
+- web pages
+deterministic: 'yes'
+how: HyperFrames adapter
+cost: free
+url: https://github.com/mrdoob/three.js
+detail: skill `hyperframes-animation`
+source: x.com/e1genqq/status/2114445900131013003 (20 open-source tools post, read 2026-10-27)
+related:
+- rapier
+- gltf-transform
+- blender
+added: '2026-10-27'

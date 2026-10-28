@@ -1,0 +1,19 @@
+slug: after-effects-premiere
+name: Adobe After Effects / Premiere Pro 2026
+kind: app
+status: available
+does: Hand finishing and timeline editing when Robin wants a timeline.
+keywords:
+- editing
+- timeline
+- finishing
+- compositing
+fits:
+- hand finishing
+deterministic: n/a
+how: '`/Applications`'
+cost: plan
+related:
+- opencut
+- lottie
+added: '2026-10-27'

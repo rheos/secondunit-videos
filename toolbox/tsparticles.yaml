@@ -1,0 +1,20 @@
+slug: tsparticles
+name: tsParticles
+kind: library
+status: candidate
+does: 'Config-driven particles: snow, stars, confetti, connected-dot networks.'
+keywords:
+- particles
+- confetti
+- snow
+- background
+fits:
+- site backgrounds (arowyn.ca, landing pages)
+deterministic: bake
+how: not installed; for video, check the HyperFrames registry's confetti first
+cost: free
+url: https://github.com/tsparticles/tsparticles
+source: x.com/e1genqq/status/2114445900131013003 (20 open-source tools post, read 2026-10-27)
+related:
+- pixijs
+added: '2026-10-27'

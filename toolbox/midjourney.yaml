@@ -1,0 +1,20 @@
+slug: midjourney
+name: Midjourney
+kind: service
+status: in-use
+does: Mood and look exploration; --sref and --oref style matching.
+keywords:
+- image
+- look-dev
+- style-reference
+- moodboard
+fits:
+- look tests
+- explainer art direction
+deterministic: n/a
+how: mj-gateway on Contabo, through the `mj_gateway` MCP or HTTP; drives the djrheo Discord account
+cost: plan
+detail: skill `midjourney`; memory `mj-gateway-stale-session`
+related:
+- gptimg
+added: '2026-10-27'

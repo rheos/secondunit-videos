@@ -1,0 +1,19 @@
+slug: motion-lab
+name: Motion lab
+kind: toolkit
+status: in-use
+does: 'Briefs, probes, audits and timing views for code-drawn looks: the look as numbers.'
+keywords:
+- audit
+- qc
+- springs
+- easing
+- timing
+- motion-blur
+fits:
+- every code-drawn piece
+deterministic: n/a
+how: '`tools/motion-lab/` in this repo'
+cost: free
+detail: video-production `references/motion-lab.md`
+added: '2026-10-27'

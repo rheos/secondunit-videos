@@ -1,0 +1,19 @@
+slug: ntsc-rs
+name: ntsc-rs
+kind: cli
+status: available
+does: 'The VHS/NTSC signal stage in scripts: composite noise, chroma bleed, head switching, tape speed.'
+keywords:
+- vhs
+- retro
+- analog
+- batch
+fits:
+- applying an NTSCRT look to every clip
+deterministic: n/a
+how: '`ntsc-rs-cli` on PATH, 0.9.7; NTSCRT presets work through it'
+cost: free
+detail: video-production `references/tools-catalogue.md` "VHS look in a script"
+related:
+- ntscrt
+added: '2026-10-27'

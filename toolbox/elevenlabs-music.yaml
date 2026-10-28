@@ -1,0 +1,17 @@
+slug: elevenlabs-music
+name: ElevenLabs Music + score library
+kind: service
+status: in-use
+does: Scores per style.
+keywords:
+- music
+- score
+- bgm
+fits:
+- explainer scores
+- blueprint series
+deterministic: n/a
+how: '`secondunit/score-library` (`gen.py`)'
+cost: plan
+detail: video-production SKILL.md "Score library"
+added: '2026-10-27'

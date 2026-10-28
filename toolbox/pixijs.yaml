@@ -1,0 +1,23 @@
+slug: pixijs
+name: PixiJS
+kind: library
+status: candidate
+does: Fast 2D WebGL renderer that keeps thousands of sprites smooth.
+keywords:
+- 2d
+- webgl
+- sprites
+- visualizer
+- particles
+fits:
+- ViralVision beat-synced visualizers
+- swarms and crowds
+deterministic: bake, or drive its render from t instead of its ticker
+how: not installed
+cost: free
+url: https://github.com/pixijs/pixijs
+source: x.com/e1genqq/status/2114445900131013003 (20 open-source tools post, read 2026-10-27)
+related:
+- matter-js
+- tsparticles
+added: '2026-10-27'

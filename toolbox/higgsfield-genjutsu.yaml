@@ -1,0 +1,19 @@
+slug: higgsfield-genjutsu
+name: Higgsfield Genjutsu
+kind: service
+status: available
+does: 'Motion transfer: takes the movement from a driving video and puts it on new characters.'
+keywords:
+- video-gen
+- motion-transfer
+- dance
+- choreography
+fits:
+- music videos
+deterministic: n/a
+how: '`higgsfield` CLI; prompts through skill `motiondojo-v1`'
+cost: plan credits
+detail: memory `genjutsu-motiondojo`
+related:
+- higgsfield-video
+added: '2026-10-27'

@@ -1,0 +1,19 @@
+slug: higgsfield-image
+name: Higgsfield image models
+kind: service
+status: available
+does: Backup image generation, brand kits, product shots.
+keywords:
+- image
+- brand-kit
+- product-shot
+fits:
+- promos
+- brand work
+deterministic: n/a
+how: '`higgsfield` CLI (signed in)'
+cost: plan credits
+detail: skills `higgsfield-*`
+related:
+- gptimg
+added: '2026-10-27'
