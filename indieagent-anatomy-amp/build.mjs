@@ -245,9 +245,10 @@ const tkFace = TK.y1;
 const perf = [];
 for (let x = TK.x0 + 1.5; x <= TK.x1 - 1.4; x += 2.2) perf.push(at([x, tkFace, 72]));
 const rules = [[96, 26], [91, 18], [86, 22], [66, 12]].map(([z, len]) => k.segment([TK.x0 + 4, tkFace, z], [TK.x0 + 4 + len, tkFace, z], P)).join("");
-const label = k.faceTextSvg(k.sideMatrix([TK.x0 + 4, tkFace], 78, P, "right"), "ADMIT ONE", { size: 3.4, tone: "mid" });
+const label = k.faceTextSvg(k.sideMatrix([TK.x0 + 4, tkFace], 78, P, "left"), "ADMIT ONE", { size: 3.4, tone: "mid" });
 boxAt("stand", tkPlan, TK.z0, TK.z1 - TK.z0, { tone: "hi" }, { name: "stand.ticket", bevel: 0, extra: Dots(perf, { size: 0.42, tone: "lo" }) + Ln(rules, { tone: "lo", free: true }) + label });
-boxAt("stand", plan(-16, -2, TK.y1, TK.y1 + 2.6, 0.6), 98, 14, { tone: "lo" }, { name: "stand.clip", extra: Ln(k.segment([-16, TK.y1 + 2.6, 105], [-2, TK.y1 + 2.6, 105], P), { tone: "faint" }) });
+const clipPlan = plan(-16, -2, TK.y1, TK.y1 + 2.6, 0.6);
+boxAt("stand", clipPlan, 98, 14, { tone: "lo" }, { name: "stand.clip", inner: seam(clipPlan, 105) });
 
 // ---- Settle the painter's keys from true depth, then write the page. ----
 A.settle(R, P);
@@ -274,6 +275,7 @@ const figure = `<svg xmlns="http://www.w3.org/2000/svg" class="iso-svg" viewBox=
 
 const CSS = `
 html,body{margin:0;background:var(--anatomy-card)}
+.iso-page{width:960px;margin:0}
 .amp{width:960px;height:540px;box-sizing:border-box;padding:0;margin:0;position:relative}
 .amp .iso-plate-corners{z-index:2}
 .amp .iso-plate{height:540px;box-sizing:border-box;padding:0;box-shadow:none}
@@ -383,14 +385,14 @@ function seek(t) {
   return t;
 }
 window.__duration = END;
-window.__seek = seek;
+window.__seek = (t) => { window.__hold = true; return seek(t); };
 window.__ready = Promise.resolve(true);
 const q = new URLSearchParams(location.search);
 if (q.has("t")) seek(Number(q.get("t")));
 else if (!q.has("still")) {
   // in a browser, play the tour on the wall clock (the render never uses this)
   const t0 = performance.now();
-  const loop = (now) => { seek(((now - t0) / 1000) % END); requestAnimationFrame(loop); };
+  const loop = (now) => { if (!window.__hold) seek(((now - t0) / 1000) % END); requestAnimationFrame(loop); };
   requestAnimationFrame(loop);
 } else seek(0);
 `;

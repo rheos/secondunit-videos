@@ -52,7 +52,6 @@ if (shots) {
   fs.mkdirSync(dir, { recursive: true });
   const n = Math.round(duration * FPS);
   const t0 = Date.now();
-  // render out of order first (proves seek is pure), then the run in order
   for (let i = 0; i < n; i++) await shoot(i / FPS, path.join(dir, String(i + 1).padStart(4, "0") + ".png"));
   console.log(`${n} frames in ${((Date.now() - t0) / 1000).toFixed(0)} s`);
   const out = path.resolve("out/amp-tour_720p.mp4");
