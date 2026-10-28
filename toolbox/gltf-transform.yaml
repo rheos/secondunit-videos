@@ -1,0 +1,22 @@
+slug: gltf-transform
+name: glTF Transform
+kind: cli
+status: candidate
+does: Compresses and optimizes 3D models (.glb/.gltf).
+keywords:
+- 3d
+- optimize
+- compress
+- glb
+fits:
+- Meshy or Blender assets going into Three.js scenes or web pages
+deterministic: n/a
+how: not installed; only needed once 3D assets go to the web
+cost: free
+url: https://github.com/donmccurdy/glTF-Transform
+source: x.com/e1genqq/status/2114445900131013003 (20 open-source tools post, read 2026-10-27)
+related:
+- threejs
+- meshy
+- blender
+added: '2026-10-27'

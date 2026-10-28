@@ -1,0 +1,23 @@
+slug: faster-whisper
+name: faster-whisper
+kind: library
+status: in-use
+does: Transcripts and word timing; `lyrics_align.py` aligns words to a lyric sheet.
+keywords:
+- transcribe
+- captions
+- word-timing
+- lyrics
+- whisper
+fits:
+- captions
+- lyric videos
+deterministic: n/a
+how: '`~/Code/novadiem/indieagent/viralvision/viralvision-worker/.venv/bin/python`. Already installed: never install whisper
+  again'
+cost: free
+url: https://github.com/SYSTRAN/faster-whisper
+detail: video-production `references/tools-catalogue.md` Whisper note
+source: x.com/e1genqq/status/2114445900131013003 (20 open-source tools post, read 2026-10-27)
+verdict: '"this is like the 5th time you have tried to install whisper" (Robin, 2026-10-02)'
+added: '2026-10-27'

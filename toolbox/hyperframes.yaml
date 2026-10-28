@@ -1,0 +1,25 @@
+slug: hyperframes
+name: HyperFrames
+kind: framework
+status: in-use
+does: 'HTML-composed video: titles, explainers, overlays, decks. Renders any frame from its timestamp.'
+keywords:
+- video
+- html
+- explainer
+- titles
+- captions
+- render
+fits:
+- blueprint explainers
+- promos
+- the studio films
+deterministic: 'yes'
+how: skills `hyperframes*`, `general-video`, `media-use`; `hyperframes` CLI
+cost: free
+url: https://github.com/heygen-com/hyperframes
+detail: skill `hyperframes`
+related:
+- gsap
+- remotion
+added: '2026-10-27'

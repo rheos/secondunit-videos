@@ -1,0 +1,15 @@
+slug: vlc
+name: VLC
+kind: app
+status: in-use
+does: Opens every render for Robin.
+keywords:
+- playback
+- review
+fits:
+- every render
+deterministic: n/a
+how: '`open -a VLC <file>`'
+cost: free
+detail: memory `open-media-automatically`
+added: '2026-10-27'

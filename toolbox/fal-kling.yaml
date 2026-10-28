@@ -1,0 +1,19 @@
+slug: fal-kling
+name: Fal (Kling v3 Pro and others)
+kind: service
+status: in-use
+does: Paid AI video shots of 3 to 15 s from character sheets.
+keywords:
+- video-gen
+- ai-shot
+- character
+fits:
+- Dreamberry
+- Second Unit music videos
+deterministic: n/a
+how: Fal API, key in `keys/fal/fal.env`; hosted Fal MCP
+cost: paid, Kling v3 Pro about $0.14/s
+detail: memory `fal-access`; dreamberry CLAUDE.md money rules
+related:
+- higgsfield-video
+added: '2026-10-27'

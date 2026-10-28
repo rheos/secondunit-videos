@@ -1,0 +1,16 @@
+slug: yt-upload
+name: yt_upload.py
+kind: script
+status: in-use
+does: Unlisted YouTube upload plus the link to Robin's Telegram.
+keywords:
+- upload
+- youtube
+- delivery
+fits:
+- every finished video
+deterministic: n/a
+how: '`secondunit/secondunit-worker/`'
+cost: free
+detail: video-production `references/publish.md`
+added: '2026-10-27'

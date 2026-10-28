@@ -1,0 +1,15 @@
+slug: file-drop
+name: file-drop
+kind: service
+status: in-use
+does: Big files by link through files.novadiem.com.
+keywords:
+- delivery
+- share
+- large-file
+fits:
+- masters for clients
+deterministic: n/a
+how: skill `file-drop`
+cost: free
+added: '2026-10-27'

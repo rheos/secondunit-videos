@@ -1,0 +1,20 @@
+slug: animejs
+name: Anime.js
+kind: library
+status: available
+does: Timeline choreography; a HyperFrames runtime adapter.
+keywords:
+- animation
+- timeline
+- stagger
+fits:
+- HyperFrames pieces that want its stagger helpers
+deterministic: 'yes'
+how: HyperFrames adapter
+cost: free
+url: https://github.com/juliangarnier/anime
+detail: skill `hyperframes-animation`
+source: x.com/e1genqq/status/2114445900131013003 (20 open-source tools post, read 2026-10-27)
+related:
+- gsap
+added: '2026-10-27'

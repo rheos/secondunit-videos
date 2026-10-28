@@ -1,0 +1,18 @@
+slug: fal-image-to-3d
+name: Fal image-to-3D (Hunyuan3D 2.1)
+kind: service
+status: available
+does: Prop models from isolated source panels.
+keywords:
+- 3d
+- image-to-3d
+- props
+fits:
+- props
+deterministic: n/a
+how: Fal API
+cost: paid
+detail: memory `image-to-3d-fal`
+related:
+- meshy
+added: '2026-10-27'

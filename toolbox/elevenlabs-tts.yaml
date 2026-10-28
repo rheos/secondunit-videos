@@ -1,0 +1,20 @@
+slug: elevenlabs-tts
+name: ElevenLabs TTS
+kind: service
+status: in-use
+does: Narration; professional voice clones on `eleven_v4`.
+keywords:
+- voiceover
+- tts
+- narration
+- voice-clone
+fits:
+- narrated explainers
+- promos
+deterministic: n/a
+how: '`tools/tts.py` per project, key in `keys/elevenlabs/`'
+cost: plan
+detail: video-production SKILL.md "ElevenLabs PVCs aren't v3"
+related:
+- chatterbox
+added: '2026-10-27'

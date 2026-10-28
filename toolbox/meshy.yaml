@@ -1,0 +1,22 @@
+slug: meshy
+name: Meshy
+kind: service
+status: available
+does: 3D models, textures, rigging and animation from text or images.
+keywords:
+- 3d
+- image-to-3d
+- text-to-3d
+- rigging
+- texture
+fits:
+- props and characters
+- 3D figures for code-drawn music videos
+deterministic: n/a
+how: on Fal (`meshy/v7.1/text-to-3d`), which Robin already pays for; skill `meshy-3d-generation` for the direct API
+cost: paid, about $1.52 per full figure on Fal (2026-10-24)
+detail: '`MESHY-3D-PIPELINE.md` in the secondunit folder (one real test figure, 2026-10-24)'
+related:
+- fal-image-to-3d
+- gltf-transform
+added: '2026-10-27'

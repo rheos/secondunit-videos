@@ -1,0 +1,20 @@
+slug: ffmpeg
+name: FFmpeg
+kind: cli
+status: in-use
+does: Cutting, muxing, encoding, contact sheets (`tile=`), freeze checks.
+keywords:
+- encode
+- cut
+- mux
+- contact-sheet
+- qc
+fits:
+- everything
+deterministic: n/a
+how: native
+cost: free
+url: https://github.com/FFmpeg/FFmpeg
+detail: video-production `references/editing.md`
+source: x.com/e1genqq/status/2114445900131013003 (20 open-source tools post, read 2026-10-27)
+added: '2026-10-27'

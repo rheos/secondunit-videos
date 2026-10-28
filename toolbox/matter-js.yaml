@@ -1,0 +1,25 @@
+slug: matter-js
+name: Matter.js
+kind: library
+status: candidate
+does: '2D physics: gravity, collisions, stacking, bouncing.'
+keywords:
+- physics
+- 2d
+- gravity
+- collision
+- falling
+- stacking
+fits:
+- explainers (tickets piling into M.O.T., coins dropping for OnLoan)
+- hits that bounce on the beat
+deterministic: bake (simulate once, record positions per frame, play back from t)
+how: not installed
+cost: free
+url: https://github.com/liabru/matter-js
+source: x.com/e1genqq/status/2114445900131013003 (20 open-source tools post, read 2026-10-27)
+verdict: 'first pick to try: physics is the one thing the current stack can''t fake (Claude, 2026-10-27)'
+related:
+- rapier
+- pixijs
+added: '2026-10-27'

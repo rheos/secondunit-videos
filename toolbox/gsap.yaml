@@ -1,0 +1,22 @@
+slug: gsap
+name: GSAP
+kind: library
+status: in-use
+does: Timeline animation; HyperFrames' default runtime adapter.
+keywords:
+- animation
+- timeline
+- easing
+- svg-draw
+- svg-morph
+fits:
+- every HyperFrames piece
+deterministic: 'yes'
+how: built into HyperFrames
+cost: free
+url: https://gsap.com
+detail: skill `hyperframes-animation`
+related:
+- hyperframes
+- animejs
+added: '2026-10-27'
