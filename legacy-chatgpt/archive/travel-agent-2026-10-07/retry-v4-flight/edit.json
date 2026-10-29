@@ -1,0 +1,82 @@
+[
+  {
+    "a": 0,
+    "b": 3,
+    "key": "first-window-breaks-away",
+    "id": 1,
+    "startFrame": 0,
+    "endFrame": 72
+  },
+  {
+    "a": 3,
+    "b": 6.6,
+    "key": "a-house-crosses-the-opening",
+    "id": 2,
+    "startFrame": 72,
+    "endFrame": 158.39999999999998
+  },
+  {
+    "a": 6.6,
+    "b": 14,
+    "key": "flock-and-city-lift",
+    "id": 3,
+    "startFrame": 158.39999999999998,
+    "endFrame": 336
+  },
+  {
+    "a": 14,
+    "b": 21,
+    "key": "among-flying-roofs",
+    "id": 4,
+    "startFrame": 336,
+    "endFrame": 504
+  },
+  {
+    "a": 21,
+    "b": 30,
+    "key": "close-building-pass",
+    "id": 5,
+    "startFrame": 504,
+    "endFrame": 720
+  },
+  {
+    "a": 30,
+    "b": 40,
+    "key": "islands-take-flight",
+    "id": 6,
+    "startFrame": 720,
+    "endFrame": 960
+  },
+  {
+    "a": 40,
+    "b": 48,
+    "key": "cross-traffic-over-water",
+    "id": 7,
+    "startFrame": 960,
+    "endFrame": 1152
+  },
+  {
+    "a": 48,
+    "b": 55,
+    "key": "rails-unlace-into-windows",
+    "id": 8,
+    "startFrame": 1152,
+    "endFrame": 1320
+  },
+  {
+    "a": 55,
+    "b": 64,
+    "key": "flock-leads-through-door",
+    "id": 9,
+    "startFrame": 1320,
+    "endFrame": 1536
+  },
+  {
+    "a": 64,
+    "b": 72,
+    "key": "join-the-departing-city",
+    "id": 10,
+    "startFrame": 1536,
+    "endFrame": 1728
+  }
+]

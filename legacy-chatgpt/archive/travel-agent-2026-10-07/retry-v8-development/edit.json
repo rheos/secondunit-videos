@@ -1,0 +1,298 @@
+[
+  {
+    "a": 0,
+    "b": 6,
+    "key": "window-release",
+    "id": 1,
+    "startFrame": 0,
+    "endFrame": 144
+  },
+  {
+    "a": 6,
+    "b": 15,
+    "key": "city-rises",
+    "id": 2,
+    "startFrame": 144,
+    "endFrame": 360
+  },
+  {
+    "a": 15,
+    "b": 23,
+    "key": "shore-departure",
+    "id": 3,
+    "startFrame": 360,
+    "endFrame": 552
+  },
+  {
+    "a": 23,
+    "b": 30,
+    "key": "island-approach",
+    "id": 4,
+    "startFrame": 552,
+    "endFrame": 720
+  },
+  {
+    "a": 30,
+    "b": 38,
+    "key": "vocal-shutters-answer",
+    "id": 5,
+    "startFrame": 720,
+    "endFrame": 912
+  },
+  {
+    "a": 38,
+    "b": 44.72,
+    "key": "take-lit-branch",
+    "id": 6,
+    "startFrame": 912,
+    "endFrame": 1073
+  },
+  {
+    "a": 44.72,
+    "b": 53.28,
+    "key": "memory-on-water",
+    "id": 7,
+    "startFrame": 1073,
+    "endFrame": 1279
+  },
+  {
+    "a": 53.28,
+    "b": 59.12,
+    "key": "door-approach",
+    "id": 8,
+    "startFrame": 1279,
+    "endFrame": 1419
+  },
+  {
+    "a": 59.12,
+    "b": 66,
+    "key": "sun-window-response",
+    "id": 9,
+    "startFrame": 1419,
+    "endFrame": 1584
+  },
+  {
+    "a": 66,
+    "b": 73.72,
+    "key": "pass-the-spectacle",
+    "id": 10,
+    "startFrame": 1584,
+    "endFrame": 1769
+  },
+  {
+    "a": 73.72,
+    "b": 84.14,
+    "key": "roads-curl-away",
+    "id": 11,
+    "startFrame": 1769,
+    "endFrame": 2019
+  },
+  {
+    "a": 84.14,
+    "b": 90,
+    "key": "landmark-returns",
+    "id": 12,
+    "startFrame": 2019,
+    "endFrame": 2160
+  },
+  {
+    "a": 90,
+    "b": 96,
+    "key": "next-route-offered",
+    "id": 13,
+    "startFrame": 2160,
+    "endFrame": 2304
+  },
+  {
+    "a": 96,
+    "b": 100,
+    "key": "approach-the-forks",
+    "id": 14,
+    "startFrame": 2304,
+    "endFrame": 2400
+  },
+  {
+    "a": 100,
+    "b": 103.86,
+    "key": "choose-a-false-exit",
+    "id": 15,
+    "startFrame": 2400,
+    "endFrame": 2493
+  },
+  {
+    "a": 103.86,
+    "b": 109.2,
+    "key": "exit-shuts-behind-us",
+    "id": 16,
+    "startFrame": 2493,
+    "endFrame": 2621
+  },
+  {
+    "a": 109.2,
+    "b": 113.4,
+    "key": "another-offer-closes",
+    "id": 17,
+    "startFrame": 2621,
+    "endFrame": 2722
+  },
+  {
+    "a": 113.4,
+    "b": 116.9,
+    "key": "the-lamp-returns",
+    "id": 18,
+    "startFrame": 2722,
+    "endFrame": 2806
+  },
+  {
+    "a": 116.9,
+    "b": 123.5,
+    "key": "see-the-entire-circuit",
+    "id": 19,
+    "startFrame": 2806,
+    "endFrame": 2964
+  },
+  {
+    "a": 123.5,
+    "b": 128,
+    "key": "warm-opening-beyond-the-loop",
+    "id": 20,
+    "startFrame": 2964,
+    "endFrame": 3072
+  },
+  {
+    "a": 128,
+    "b": 131.62,
+    "key": "pursuit-without-progress",
+    "id": 21,
+    "startFrame": 3072,
+    "endFrame": 3159
+  },
+  {
+    "a": 131.62,
+    "b": 138.5,
+    "key": "see-the-string-and-pulley",
+    "id": 22,
+    "startFrame": 3159,
+    "endFrame": 3324
+  },
+  {
+    "a": 138.5,
+    "b": 143.36,
+    "key": "the-route-powers-the-lure",
+    "id": 23,
+    "startFrame": 3324,
+    "endFrame": 3441
+  },
+  {
+    "a": 143.36,
+    "b": 146.42,
+    "key": "look-back-at-the-promise",
+    "id": 24,
+    "startFrame": 3441,
+    "endFrame": 3514
+  },
+  {
+    "a": 146.42,
+    "b": 155.16,
+    "key": "opening-becomes-dangling-reward",
+    "id": 25,
+    "startFrame": 3514,
+    "endFrame": 3724
+  },
+  {
+    "a": 155.16,
+    "b": 160,
+    "key": "follow-the-cable-into-service-building",
+    "id": 26,
+    "startFrame": 3724,
+    "endFrame": 3840
+  },
+  {
+    "a": 160,
+    "b": 168.72,
+    "key": "one-fork-refuses-its-mark",
+    "id": 27,
+    "startFrame": 3840,
+    "endFrame": 4049
+  },
+  {
+    "a": 168.72,
+    "b": 174.94,
+    "key": "a-scanner-notices",
+    "id": 28,
+    "startFrame": 4049,
+    "endFrame": 4199
+  },
+  {
+    "a": 174.94,
+    "b": 181.55,
+    "key": "bottle-works-its-own-cork",
+    "id": 29,
+    "startFrame": 4199,
+    "endFrame": 4357
+  },
+  {
+    "a": 181.55,
+    "b": 186.1,
+    "key": "release-and-an-unexpected-stain",
+    "id": 30,
+    "startFrame": 4357,
+    "endFrame": 4466
+  },
+  {
+    "a": 186.1,
+    "b": 188.78,
+    "key": "capture-the-place-setting",
+    "id": 31,
+    "startFrame": 4466,
+    "endFrame": 4531
+  },
+  {
+    "a": 188.78,
+    "b": 195.2,
+    "key": "track-becomes-compulsory",
+    "id": 32,
+    "startFrame": 4531,
+    "endFrame": 4685
+  },
+  {
+    "a": 195.2,
+    "b": 199.4,
+    "key": "confirm-the-doors-behind-us",
+    "id": 33,
+    "startFrame": 4685,
+    "endFrame": 4786
+  },
+  {
+    "a": 199.4,
+    "b": 203.4,
+    "key": "approach-the-correction-line",
+    "id": 34,
+    "startFrame": 4786,
+    "endFrame": 4882
+  },
+  {
+    "a": 203.4,
+    "b": 209,
+    "key": "warm-glass-is-pressed-flat",
+    "id": 35,
+    "startFrame": 4882,
+    "endFrame": 5016
+  },
+  {
+    "a": 209,
+    "b": 216,
+    "key": "everything-is-made-the-same",
+    "id": 36,
+    "startFrame": 5016,
+    "endFrame": 5184
+  },
+  {
+    "a": 216,
+    "b": 220,
+    "key": "one-hinge-interrupts-the-system",
+    "id": 37,
+    "startFrame": 5184,
+    "endFrame": 5280
+  }
+]

@@ -1,0 +1,629 @@
+{
+  "title": "Travel Agent: An Escape Brochure",
+  "artist": "Bob Wiseman",
+  "version": "full-length untitled first cut",
+  "fps": 24,
+  "frames": 9681,
+  "duration": 403.375,
+  "width": 1920,
+  "height": 1080,
+  "source_sha256": "78c9f34dc2bb94801693ed5ce4349733c0be25bfb610a1b061dbc9e10923f77d",
+  "source_url": "https://www.bobwiseman.ca/wp-content/uploads/2014/02/Bob_Wiseman_-_11_-_Travel_Agent.mp3",
+  "audio": "Complete original recording; no added music, effects, time stretching or editorial audio fades. AAC encoding.",
+  "picture": "Original deterministic Canvas2D animation. No song/artist titles or credit cards.",
+  "filename": "travel-agent_escape-brochure_f00000-f09681_24fps_full-notitles.mp4",
+  "signature": "a4a09431a1995753cdc1be8ccc13a1b121c98ae1bc43ebb5f7a0110ebf9e3d91",
+  "shots": [
+    {
+      "id": 1,
+      "startFrame": 0,
+      "endFrame": 127,
+      "start": 0,
+      "end": 5.291666666666667,
+      "key": "demo-agency",
+      "options": {}
+    },
+    {
+      "id": 2,
+      "startFrame": 127,
+      "endFrame": 246,
+      "start": 5.291666666666667,
+      "end": 10.25,
+      "key": "demo-flood",
+      "options": {}
+    },
+    {
+      "id": 3,
+      "startFrame": 246,
+      "endFrame": 346,
+      "start": 10.25,
+      "end": 14.416666666666666,
+      "key": "demo-map",
+      "options": {}
+    },
+    {
+      "id": 4,
+      "startFrame": 346,
+      "endFrame": 480,
+      "start": 14.416666666666666,
+      "end": 20,
+      "key": "demo-destination",
+      "options": {}
+    },
+    {
+      "id": 5,
+      "startFrame": 480,
+      "endFrame": 612,
+      "start": 20,
+      "end": 25.5,
+      "key": "arrival",
+      "options": {}
+    },
+    {
+      "id": 6,
+      "startFrame": 612,
+      "endFrame": 720,
+      "start": 25.5,
+      "end": 30,
+      "key": "threshold",
+      "options": {}
+    },
+    {
+      "id": 7,
+      "startFrame": 720,
+      "endFrame": 918,
+      "start": 30,
+      "end": 38.25,
+      "key": "counter",
+      "options": {}
+    },
+    {
+      "id": 8,
+      "startFrame": 918,
+      "endFrame": 1073,
+      "start": 38.25,
+      "end": 44.708333333333336,
+      "key": "mail",
+      "options": {}
+    },
+    {
+      "id": 9,
+      "startFrame": 1073,
+      "endFrame": 1279,
+      "start": 44.708333333333336,
+      "end": 53.291666666666664,
+      "key": "blues",
+      "options": {}
+    },
+    {
+      "id": 10,
+      "startFrame": 1279,
+      "endFrame": 1419,
+      "start": 53.291666666666664,
+      "end": 59.125,
+      "key": "distance",
+      "options": {}
+    },
+    {
+      "id": 11,
+      "startFrame": 1419,
+      "endFrame": 1578,
+      "start": 59.125,
+      "end": 65.75,
+      "key": "sunorgan",
+      "options": {}
+    },
+    {
+      "id": 12,
+      "startFrame": 1578,
+      "endFrame": 1697,
+      "start": 65.75,
+      "end": 70.70833333333333,
+      "key": "sunclose",
+      "options": {}
+    },
+    {
+      "id": 13,
+      "startFrame": 1697,
+      "endFrame": 1769,
+      "start": 70.70833333333333,
+      "end": 73.70833333333333,
+      "key": "flight",
+      "options": {}
+    },
+    {
+      "id": 14,
+      "startFrame": 1769,
+      "endFrame": 2020,
+      "start": 73.70833333333333,
+      "end": 84.16666666666667,
+      "key": "carfree",
+      "options": {}
+    },
+    {
+      "id": 15,
+      "startFrame": 2020,
+      "endFrame": 2178,
+      "start": 84.16666666666667,
+      "end": 90.75,
+      "key": "compass",
+      "options": {}
+    },
+    {
+      "id": 16,
+      "startFrame": 2178,
+      "endFrame": 2388,
+      "start": 90.75,
+      "end": 99.5,
+      "key": "counter",
+      "options": {
+        "flood": true
+      }
+    },
+    {
+      "id": 17,
+      "startFrame": 2388,
+      "endFrame": 2615,
+      "start": 99.5,
+      "end": 108.95833333333333,
+      "key": "stamp",
+      "options": {}
+    },
+    {
+      "id": 18,
+      "startFrame": 2615,
+      "endFrame": 2806,
+      "start": 108.95833333333333,
+      "end": 116.91666666666667,
+      "key": "hall",
+      "options": {}
+    },
+    {
+      "id": 19,
+      "startFrame": 2806,
+      "endFrame": 3019,
+      "start": 116.91666666666667,
+      "end": 125.79166666666667,
+      "key": "loop",
+      "options": {}
+    },
+    {
+      "id": 20,
+      "startFrame": 3019,
+      "endFrame": 3159,
+      "start": 125.79166666666667,
+      "end": 131.625,
+      "key": "loopclose",
+      "options": {}
+    },
+    {
+      "id": 21,
+      "startFrame": 3159,
+      "endFrame": 3324,
+      "start": 131.625,
+      "end": 138.5,
+      "key": "mule",
+      "options": {
+        "span": 11.75
+      }
+    },
+    {
+      "id": 22,
+      "startFrame": 3324,
+      "endFrame": 3441,
+      "start": 138.5,
+      "end": 143.375,
+      "key": "mule",
+      "options": {
+        "zoom": 1.22,
+        "focus": [
+          940,
+          579
+        ],
+        "offset": 6.875,
+        "span": 11.75
+      }
+    },
+    {
+      "id": 23,
+      "startFrame": 3441,
+      "endFrame": 3514,
+      "start": 143.375,
+      "end": 146.41666666666666,
+      "key": "thread",
+      "options": {}
+    },
+    {
+      "id": 24,
+      "startFrame": 3514,
+      "endFrame": 3724,
+      "start": 146.41666666666666,
+      "end": 155.16666666666666,
+      "key": "carrot",
+      "options": {}
+    },
+    {
+      "id": 25,
+      "startFrame": 3724,
+      "endFrame": 3840,
+      "start": 155.16666666666666,
+      "end": 160,
+      "key": "thread",
+      "options": {
+        "zoom": 1.3,
+        "focus": [
+          1050,
+          523
+        ]
+      }
+    },
+    {
+      "id": 26,
+      "startFrame": 3840,
+      "endFrame": 4050,
+      "start": 160,
+      "end": 168.75,
+      "key": "dining",
+      "options": {}
+    },
+    {
+      "id": 27,
+      "startFrame": 4050,
+      "endFrame": 4199,
+      "start": 168.75,
+      "end": 174.95833333333334,
+      "key": "place",
+      "options": {}
+    },
+    {
+      "id": 28,
+      "startFrame": 4199,
+      "endFrame": 4359,
+      "start": 174.95833333333334,
+      "end": 181.625,
+      "key": "cork",
+      "options": {
+        "span": 13.833333333
+      }
+    },
+    {
+      "id": 29,
+      "startFrame": 4359,
+      "endFrame": 4531,
+      "start": 181.625,
+      "end": 188.79166666666666,
+      "key": "cork",
+      "options": {
+        "zoom": 1.16,
+        "focus": [
+          999,
+          473
+        ],
+        "offset": 6.666666667,
+        "span": 13.833333333
+      }
+    },
+    {
+      "id": 30,
+      "startFrame": 4531,
+      "endFrame": 4704,
+      "start": 188.79166666666666,
+      "end": 196,
+      "key": "officials",
+      "options": {}
+    },
+    {
+      "id": 31,
+      "startFrame": 4704,
+      "endFrame": 4840,
+      "start": 196,
+      "end": 201.66666666666666,
+      "key": "filing",
+      "options": {}
+    },
+    {
+      "id": 32,
+      "startFrame": 4840,
+      "endFrame": 4882,
+      "start": 201.66666666666666,
+      "end": 203.41666666666666,
+      "key": "fileclose",
+      "options": {}
+    },
+    {
+      "id": 33,
+      "startFrame": 4882,
+      "endFrame": 5043,
+      "start": 203.41666666666666,
+      "end": 210.125,
+      "key": "circuit",
+      "options": {}
+    },
+    {
+      "id": 34,
+      "startFrame": 5043,
+      "endFrame": 5187,
+      "start": 210.125,
+      "end": 216.125,
+      "key": "pills",
+      "options": {}
+    },
+    {
+      "id": 35,
+      "startFrame": 5187,
+      "endFrame": 5289,
+      "start": 216.125,
+      "end": 220.375,
+      "key": "window",
+      "options": {}
+    },
+    {
+      "id": 36,
+      "startFrame": 5289,
+      "endFrame": 5541,
+      "start": 220.375,
+      "end": 230.875,
+      "key": "hall",
+      "options": {}
+    },
+    {
+      "id": 37,
+      "startFrame": 5541,
+      "endFrame": 5798,
+      "start": 230.875,
+      "end": 241.58333333333334,
+      "key": "window",
+      "options": {
+        "zoom": 1.075,
+        "focus": [
+          969,
+          542
+        ]
+      }
+    },
+    {
+      "id": 38,
+      "startFrame": 5798,
+      "endFrame": 5936,
+      "start": 241.58333333333334,
+      "end": 247.33333333333334,
+      "key": "reels",
+      "options": {}
+    },
+    {
+      "id": 39,
+      "startFrame": 5936,
+      "endFrame": 6158,
+      "start": 247.33333333333334,
+      "end": 256.5833333333333,
+      "key": "cinema",
+      "options": {}
+    },
+    {
+      "id": 40,
+      "startFrame": 6158,
+      "endFrame": 6290,
+      "start": 256.5833333333333,
+      "end": 262.0833333333333,
+      "key": "reels",
+      "options": {
+        "zoom": 1.13,
+        "focus": [
+          984,
+          528
+        ]
+      }
+    },
+    {
+      "id": 41,
+      "startFrame": 6290,
+      "endFrame": 6429,
+      "start": 262.0833333333333,
+      "end": 267.875,
+      "key": "hero",
+      "options": {}
+    },
+    {
+      "id": 42,
+      "startFrame": 6429,
+      "endFrame": 6566,
+      "start": 267.875,
+      "end": 273.5833333333333,
+      "key": "crooks",
+      "options": {}
+    },
+    {
+      "id": 43,
+      "startFrame": 6566,
+      "endFrame": 6625,
+      "start": 273.5833333333333,
+      "end": 276.0416666666667,
+      "key": "reels",
+      "options": {}
+    },
+    {
+      "id": 44,
+      "startFrame": 6625,
+      "endFrame": 6795,
+      "start": 276.0416666666667,
+      "end": 283.125,
+      "key": "heart",
+      "options": {
+        "span": 11.875
+      }
+    },
+    {
+      "id": 45,
+      "startFrame": 6795,
+      "endFrame": 6910,
+      "start": 283.125,
+      "end": 287.9166666666667,
+      "key": "heart",
+      "options": {
+        "zoom": 1.13,
+        "focus": [
+          1013,
+          524
+        ],
+        "offset": 7.083333333,
+        "span": 11.875
+      }
+    },
+    {
+      "id": 46,
+      "startFrame": 6910,
+      "endFrame": 7050,
+      "start": 287.9166666666667,
+      "end": 293.75,
+      "key": "compass",
+      "options": {
+        "zoom": 1.04
+      }
+    },
+    {
+      "id": 47,
+      "startFrame": 7050,
+      "endFrame": 7260,
+      "start": 293.75,
+      "end": 302.5,
+      "key": "tour",
+      "options": {}
+    },
+    {
+      "id": 48,
+      "startFrame": 7260,
+      "endFrame": 7486,
+      "start": 302.5,
+      "end": 311.9166666666667,
+      "key": "train",
+      "options": {}
+    },
+    {
+      "id": 49,
+      "startFrame": 7486,
+      "endFrame": 7671,
+      "start": 311.9166666666667,
+      "end": 319.625,
+      "key": "railwindow",
+      "options": {}
+    },
+    {
+      "id": 50,
+      "startFrame": 7671,
+      "endFrame": 7900,
+      "start": 319.625,
+      "end": 329.1666666666667,
+      "key": "moving",
+      "options": {}
+    },
+    {
+      "id": 51,
+      "startFrame": 7900,
+      "endFrame": 8118,
+      "start": 329.1666666666667,
+      "end": 338.25,
+      "key": "cage",
+      "options": {}
+    },
+    {
+      "id": 52,
+      "startFrame": 8118,
+      "endFrame": 8343,
+      "start": 338.25,
+      "end": 347.625,
+      "key": "cageclose",
+      "options": {
+        "span": 11.541666667
+      }
+    },
+    {
+      "id": 53,
+      "startFrame": 8343,
+      "endFrame": 8395,
+      "start": 347.625,
+      "end": 349.7916666666667,
+      "key": "cageclose",
+      "options": {
+        "zoom": 1.12,
+        "focus": [
+          1040,
+          598
+        ],
+        "offset": 9.375,
+        "span": 11.541666667
+      }
+    },
+    {
+      "id": 54,
+      "startFrame": 8395,
+      "endFrame": 8537,
+      "start": 349.7916666666667,
+      "end": 355.7083333333333,
+      "key": "wings",
+      "options": {}
+    },
+    {
+      "id": 55,
+      "startFrame": 8537,
+      "endFrame": 8724,
+      "start": 355.7083333333333,
+      "end": 363.5,
+      "key": "flight",
+      "options": {}
+    },
+    {
+      "id": 56,
+      "startFrame": 8724,
+      "endFrame": 8900,
+      "start": 363.5,
+      "end": 370.8333333333333,
+      "key": "garden",
+      "options": {}
+    },
+    {
+      "id": 57,
+      "startFrame": 8900,
+      "endFrame": 9084,
+      "start": 370.8333333333333,
+      "end": 378.5,
+      "key": "return",
+      "options": {}
+    },
+    {
+      "id": 58,
+      "startFrame": 9084,
+      "endFrame": 9250,
+      "start": 378.5,
+      "end": 385.4166666666667,
+      "key": "unfold",
+      "options": {}
+    },
+    {
+      "id": 59,
+      "startFrame": 9250,
+      "endFrame": 9412,
+      "start": 385.4166666666667,
+      "end": 392.1666666666667,
+      "key": "loose",
+      "options": {}
+    },
+    {
+      "id": 60,
+      "startFrame": 9412,
+      "endFrame": 9614,
+      "start": 392.1666666666667,
+      "end": 400.5833333333333,
+      "key": "snow",
+      "options": {}
+    },
+    {
+      "id": 61,
+      "startFrame": 9614,
+      "endFrame": 9681,
+      "start": 400.5833333333333,
+      "end": 403.375,
+      "key": "blank",
+      "options": {}
+    }
+  ]
+}
