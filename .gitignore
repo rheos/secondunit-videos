@@ -87,3 +87,6 @@
 !/indieagent-flat-explainer-test/
 !/indieagent-call-toon/
 !/indieagent-gigcaravan/
+
+# Historical animation-study source, with media kept outside Git.
+!/legacy-chatgpt/
