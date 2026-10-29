@@ -1,0 +1,364 @@
+<!doctype html>
+<html lang="en" data-resolution="portrait">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=720, height=1280" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@500;700&display=block" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <!-- George's word times in film seconds (vo/align.py): VO.w("harness") -->
+    <script src="vo/words.js"></script>
+    <style>
+      /* devweb palette: green = the model and "good", blue = tools and systems, amber = results, red = the failure */
+      :root {
+        --bg: #0d1117; --surface: #161c28; --surface2: #1b212d; --border: #2a3344; --text: #eef2f6; --text2: #c9d1d9;
+        --muted: #9aa6b6; --faint: #7b8593; --green: #6ad08a; --blue: #4f93d6; --amber: #d6a45a; --red: #e0675a;
+        --sans: "IBM Plex Sans", sans-serif; --mono: "IBM Plex Mono", monospace;
+      }
+      html, body { margin: 0; background: var(--bg); }
+      #root { position: relative; width: 720px; height: 1280px; overflow: hidden; color: var(--text); font-family: var(--sans);
+        background: radial-gradient(120% 70% at 50% 50%, #142030 0%, #0d1117 60%, #090c11 100%); }
+      .abs { position: absolute; }
+      .layer { position: absolute; inset: 0; }
+      .mono { font-family: var(--mono); }
+      .hide { opacity: 0; }
+      .chrome { left: 44px; right: 44px; top: 52px; display: flex; justify-content: space-between; align-items: center; font-family: var(--mono); font-size: 23px; font-weight: 500; }
+      .bar { left: 44px; right: 44px; bottom: 50px; height: 3px; background: #1c2333; }
+      .cap { left: 40px; right: 40px; top: 1030px; text-align: center; font-size: 46px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.15; }
+      .bubble { position: absolute; box-sizing: border-box; border-radius: 120px; display: flex; align-items: center; font-weight: 500; }
+      .node { position: absolute; box-sizing: border-box; border-radius: 22px; display: flex; align-items: center; justify-content: center; font-family: var(--mono); font-weight: 600; }
+      /* the isometric machine */
+      .iso-floor { position: absolute; left: 60px; top: 0; width: 600px; height: 600px; transform-style: preserve-3d; transform: rotateX(58deg) rotateZ(45deg);
+        background-image: linear-gradient(rgba(122,134,153,.14) 2px, transparent 2px), linear-gradient(90deg, rgba(122,134,153,.14) 2px, transparent 2px); background-size: 50px 50px; border: 2px solid #1c2333; }
+      .iso-bx { position: absolute; transform-style: preserve-3d; }
+      .iso-top { position: absolute; left: 0; top: 0; width: 100%; height: 100%; box-sizing: border-box; display: flex; align-items: center; justify-content: center; font-family: var(--mono); font-weight: 600; }
+      .iso-s { position: absolute; left: 0; width: 100%; transform-origin: top; transform: rotateX(90deg); }
+      .iso-e { position: absolute; top: 0; height: 100%; transform-origin: left; transform: rotateY(-90deg); }
+      .iso-card { position: absolute; left: 0; top: 0; width: 96px; height: 58px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-family: var(--mono); font-weight: 600; font-size: 13px; }
+      .pk { position: absolute; left: 0; top: 0; width: 22px; height: 22px; margin: -11px 0 0 -11px; border-radius: 50%; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="48.6" data-width="720" data-height="1280">
+      <!-- one track: George's narration plus the earshot sound on the picture (sfx_earshot.py -> _in/mix.wav) -->
+      <audio id="mix" src="_in/mix.wav" data-start="0" data-duration="48.6" data-track-index="20" data-volume="1"></audio>
+      <div id="stage" class="layer"></div>
+    </div>
+
+    <script>
+      (() => {
+        const tl = gsap.timeline({ paused: true });
+        const stage = document.getElementById("stage");
+        window.BP = window.BP || {};
+        BP.CUES = [];
+        const cue = (k, t, extra) => BP.CUES.push(Object.assign({ k, t: +t.toFixed(3) }, extra || {}));
+        const w = (word, n) => VO.w(word, n);
+        const e = (word, n) => VO.e(word, n);
+        // every tween is an explicit fromTo that never renders early, so frames can be rendered in any order
+        const F = (el, from, to, at) => tl.fromTo(el, from, Object.assign({ immediateRender: false }, to), at);
+        const mk = (tag, cls, css, parent, html) => {
+          const n = document.createElement(tag);
+          if (cls) n.className = cls;
+          if (css) n.style.cssText = css;
+          if (html != null) n.innerHTML = html;
+          (parent || stage).appendChild(n);
+          return n;
+        };
+        const show = (el, at, d = 0.3, y = 18) => F(el, { opacity: 0, y }, { opacity: 1, y: 0, duration: d, ease: "power3.out" }, at);
+        const hide = (el, at, d = 0.3) => F(el, { opacity: 1 }, { opacity: 0, duration: d, ease: "power2.in" }, at);
+        // blur-to-focus word rise (cinetic ty-blur-focus-word-rise)
+        const rise = (el, at, d = 0.45) => F(el, { opacity: 0, y: 26, filter: "blur(10px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: d, ease: "power3.out" }, at);
+        // a slam: big and turned to its place, one small overshoot
+        const slam = (el, at, from = 1.6) => { cue("slam", at + 0.16); return F(el, { opacity: 0, scale: from, rotate: -4 }, { opacity: 1, scale: 1, rotate: 0, duration: 0.3, ease: "back.out(1.6)" }, at); };
+        // typed text: one span per character, each a cue
+        const typed = (el, text, at, cps = 26, kind = "type") => {
+          el.textContent = "";
+          [...text].forEach((ch, i) => {
+            const s = mk("span", null, "opacity:0", el, ch === " " ? "&nbsp;" : ch.replace("<", "&lt;"));
+            const t = at + i / cps;
+            F(s, { opacity: 0 }, { opacity: 1, duration: 0.01 }, t);
+            if (ch !== " ") cue(kind, t);
+          });
+          return at + text.length / cps;
+        };
+
+        // ---------- chrome: lockup, topic tag, progress bar ----------
+        const chrome = mk("div", "abs chrome", "", stage, `<span><span style="color:var(--green)">~/</span>devweb</span><span style="color:var(--faint);font-size:20px">// tool calls</span>`);
+        const bar = mk("div", "abs bar");
+        const barIn = mk("div", null, "height:3px;background:var(--green);transform-origin:left;transform:scaleX(0)", bar);
+        F(barIn, { scaleX: 0 }, { scaleX: 1, duration: 48.6, ease: "none" }, 0);
+        hide(chrome, 44.2, 0.4);
+        hide(bar, 44.2, 0.4);
+
+        // ---------- captions: the script's phrases, timed by George (hidden where big type carries the line) ----------
+        const CAPS = [
+          [5.96, "Ask it for the weather in Nelson."], [7.94, "It doesn't check the sky."], [9.62, "It writes a request:"],
+          [11.2, "call get_weather, city: Nelson."], [14.02, "That's the whole move."], [15.68, "Something else picks that request up:"],
+          [18.02, "the harness."], [19.22, "It runs the tool,"], [20.42, "gets back 4°C and rain,"], [22.52, "and hands that to the model"],
+          [23.7, "as more text."], [25.2, "The model reads it, and decides:"], [27.44, "answer, or ask again."], [29.48, "That's the loop."],
+          [30.96, "Ask. Run. Read."], [33.46, "Again and again,"], [34.1, "until it stops asking."], [36.2, "So if an agent ever deletes a file,"],
+          [38.76, "the model didn't run that command."],
+        ];
+        CAPS.forEach(([t, text], i) => {
+          const c = mk("div", "abs cap hide", "", stage, text.replace(/(harness|text|loop)/, '<span style="color:var(--green)">$1</span>').replace(/(4°C and rain)/, '<span style="color:var(--amber)">$1</span>'));
+          const end = i + 1 < CAPS.length ? CAPS[i + 1][0] : 40.7;
+          rise(c, t - 0.05, 0.3);
+          hide(c, end - 0.12, 0.12);
+        });
+
+        // ================= I. HOOK (kinetic type): open cropped inside "runs", pull back to the line =================
+        const p1 = mk("div", "layer");
+        const cam1 = mk("div", "abs", "left:0;top:0;width:720px;height:1280px;transform-origin:0 0", p1);
+        const l1 = mk("div", "abs", "left:44px;top:330px;font-size:96px;font-weight:700;letter-spacing:-0.045em;line-height:1", cam1, "An AI never");
+        const l2 = mk("div", "abs", "left:44px;top:436px;font-size:96px;font-weight:700;letter-spacing:-0.045em;line-height:1;white-space:nowrap", cam1,
+          `<span style="position:relative;display:inline-block">runs<span id="strike" style="position:absolute;left:-6px;right:-6px;top:54%;height:9px;background:var(--red);transform-origin:left;transform:scaleX(0)"></span></span> a tool.`);
+        // cinetic oh-cropped-word-pull-back: frame 0 sits at 3.2x on "runs", its first glyph cut by the left edge; log-space pull back
+        const zoom = { p: 0 };
+        const camAt = (p) => { const k = Math.pow(3.2, 1 - p); const tx = -190 * (1 - p), ty = -1020 * (1 - p); cam1.style.transform = `translate(${tx}px,${ty}px) scale(${k})`; };
+        camAt(0);
+        tl.fromTo(zoom, { p: 0 }, { p: 1, duration: 1.15, ease: "power2.inOut", immediateRender: false, onUpdate: () => camAt(zoom.p) }, w("never") - 0.25);
+        cue("whoosh", w("never") - 0.2, { d: 1.1 });
+        const strike = l2.querySelector("#strike");
+        F(strike, { scaleX: 0 }, { scaleX: 1, duration: 0.22, ease: "power2.out" }, e("tool") + 0.05);
+        cue("strike", e("tool") + 0.05);
+        const cant = mk("div", "abs hide", "left:44px;top:600px;font-size:60px;font-weight:700;color:var(--muted);letter-spacing:-0.03em", p1, "It can't.");
+        rise(cant, w("can't") - 0.05);
+        const only = mk("div", "abs hide", "left:44px;top:690px;font-size:60px;font-weight:700;letter-spacing:-0.03em", p1, `It only writes <span style="color:var(--green)">text.</span>`);
+        rise(only, w("only") - 0.05);
+        cue("blip", w("text"));
+        F(p1, { opacity: 1, y: 0 }, { opacity: 0, y: -80, duration: 0.4, ease: "power2.in" }, 5.3);
+        cue("swipe", 5.3);
+
+        // ================= II. DIVE (camera): the chat, then into the reply to what the model really wrote =================
+        const p2 = mk("div", "layer hide");
+        F(p2, { opacity: 0 }, { opacity: 1, duration: 0.3 }, 5.55);
+        const S0 = 0.25; // world is 4x the screen; the overview shows it at 0.25
+        const world = mk("div", "abs", `left:0;top:0;width:2880px;height:5120px;transform-origin:0 0;transform:scale(${S0})`, p2);
+        const user = mk("div", "bubble hide", "left:760px;top:1040px;width:1960px;height:300px;padding:0 110px;background:var(--surface2);font-size:118px;justify-content:flex-end", world);
+        show(user, w("ask") - 0.15, 0.3, 60);
+        cue("pop", w("ask") - 0.1);
+        const userT = mk("span", null, "", user);
+        typed(userT, "What's the weather in Nelson?", w("ask"), 24);
+        const ai = mk("div", "bubble hide", "left:160px;top:1520px;width:1920px;height:740px;border-radius:110px;background:rgba(106,208,138,.08);border:8px solid rgba(106,208,138,.45);align-items:flex-start", world);
+        const aiT = mk("div", "abs", "left:110px;top:90px;font-size:118px;font-weight:500", ai, "Let me check.");
+        show(ai, w("it", 4) - 0.1, 0.35, 60);
+        cue("pop", w("it", 4) - 0.05);
+        // the card inside the reply: at overview size it's a dark chip; at the dive it reads
+        const card = mk("div", "abs", "left:96px;top:330px;width:1120px;height:340px;box-sizing:border-box;border-radius:30px;background:#0c0e11;border:6px solid var(--green);padding:56px 64px;font-family:var(--mono);font-size:62px;line-height:1.5;color:#b9f0c9;white-space:pre", ai);
+        const cardL1 = mk("div", null, "", card), cardL2 = mk("div", null, "", card);
+        // camera: dive from the overview to the card (card centre world 816,1984 -> screen 360,600 at 0.56)
+        const S1 = 0.56, tx1 = 360 - S1 * 816, ty1 = 600 - S1 * 1984;
+        F(world, { x: 0, y: 0, scale: S0 }, { x: tx1, y: ty1, scale: S1, duration: 1.2, ease: "power3.inOut" }, w("writes", 2) - 0.25);
+        cue("riser", w("writes", 2) - 0.6, { d: 0.6 });
+        cue("whoosh", w("writes", 2) - 0.2, { d: 1.2 });
+        F(aiT, { opacity: 1 }, { opacity: 0.25, duration: 0.6 }, w("writes", 2));
+        typed(cardL1, '{ "tool": "get_weather",', w("call") - 0.05, 22);
+        typed(cardL2, '  "city": "Nelson" }', w("city") - 0.05, 22);
+        const note2 = mk("div", "abs mono hide", "left:44px;top:250px;font-size:24px;color:var(--green)", p2, "// all the model makes: text");
+        show(note2, w("that's") - 0.1, 0.3, 10);
+        // the ghost handoff (cinetic mi-send-ghost-handoff): the card lifts off and leaves its ghost behind
+        const fly = mk("div", "abs hide", "left:46px;top:505px;width:627px;height:190px;box-sizing:border-box;border-radius:17px;background:var(--text);color:#0d1117;font-family:var(--mono);font-weight:600;font-size:30px;display:flex;align-items:center;justify-content:center", stage, "get_weather()");
+        const handAt = e("move") + 0.2;
+        F(fly, { opacity: 0 }, { opacity: 1, duration: 0.12 }, handAt);
+        F(card, { opacity: 1 }, { opacity: 0.25, duration: 0.2 }, handAt);
+        cue("zip", handAt + 0.05);
+        // path relay (cinetic tr-path-relay): the card carries the eye down into the machine and lands on the model
+        F(fly, { x: 0, y: 0, scaleX: 1, scaleY: 1 }, { x: -12, y: -40, scaleX: 1.04, scaleY: 1.04, duration: 0.18, ease: "power2.out" }, handAt);
+        F(fly, { x: -12, y: -40, scaleX: 1.04, scaleY: 1.04 }, { x: -160, y: 30, scaleX: 0.2, scaleY: 0.3, duration: 0.6, ease: "power3.inOut" }, handAt + 0.18);
+        F(p2, { opacity: 1 }, { opacity: 0, duration: 0.35 }, handAt + 0.25);
+        F(fly, { opacity: 1 }, { opacity: 0, duration: 0.15 }, handAt + 0.72);
+
+        // ================= III. THE MACHINE (isometric): the harness picks the request up and runs it =================
+        const p3 = mk("div", "layer hide");
+        F(p3, { opacity: 0 }, { opacity: 1, duration: 0.3 }, handAt + 0.4);
+        const isoWrap = mk("div", "abs", "left:0;top:300px;width:720px;height:600px;transform:scale(1.12);transform-origin:50% 40%", p3);
+        const floor = mk("div", "iso-floor", "", isoWrap);
+        // slow drone drift of the whole machine
+        F(floor, { rotationX: 58, rotationZ: 40 }, { rotationX: 55, rotationZ: 50, duration: 10, ease: "sine.inOut" }, handAt + 0.4);
+        const glow = (x, y, s, rgb) => mk("div", "abs", `left:${x}px;top:${y}px;width:${s}px;height:${s}px;border-radius:50%;background:radial-gradient(closest-side, rgba(${rgb},.38), rgba(${rgb},0));opacity:0`, floor);
+        const box = (x, y, s, h, top, s1, e1, label, fs, border) => {
+          const b = mk("div", "iso-bx", `left:${x}px;top:${y}px;width:${s}px;height:${s}px;opacity:0`, floor);
+          const t = mk("div", "iso-top", `transform:translateZ(${h}px);background:${top};border:2px solid ${border};font-size:${fs}px;color:var(--text)`, b, label);
+          mk("div", "iso-s", `top:${s}px;height:${h}px;background:${s1}`, b);
+          mk("div", "iso-e", `left:${s}px;width:${h}px;background:${e1}`, b);
+          const hot = mk("div", "abs", `left:0;top:0;width:100%;height:100%;transform:translateZ(${h + 1}px);opacity:0`, b);
+          return { b, t, hot };
+        };
+        const hGlow = glow(150, 150, 300, "106,208,138");
+        const tGlow = glow(270, 330, 260, "214,164,90");
+        const harness = box(216, 216, 166, 16, "#1b212d", "#121722", "#161c28", "harness", 24, "#2a3344");
+        const model = box(50, 50, 166, 116, "#234a33", "#12271b", "#1a3626", "model", 25, "#6ad08a");
+        const tools = [["search", 250], ["weather", 356], ["shell", 463]].map(([n, x]) => box(x, 416, 93, 56, "#1e3350", "#111d2e", "#172840", n, 17, "#4f93d6"));
+        harness.hot.style.cssText += ";border:3px solid var(--green);box-sizing:border-box";
+        tools[1].hot.style.cssText += ";background:rgba(214,164,90,.6);border:2px solid var(--amber);box-sizing:border-box";
+        model.hot.style.cssText += ";background:rgba(106,208,138,.5)";
+        // the machine builds: blocks rise in place
+        [model, harness, ...tools].forEach((bx, i) => {
+          const t = handAt + 0.5 + i * 0.09;
+          F(bx.b, { z: -140, opacity: 0 }, { z: 0, opacity: 1, duration: 0.45, ease: "back.out(1.4)" }, t);
+          cue("pop", t + 0.2, { i });
+        });
+        // the request card on the floor (white) and the result card (amber), with a shadow
+        const req = mk("div", "iso-card", "background:var(--text);color:#0d1117;opacity:0", floor, "get_weather()");
+        const res = mk("div", "iso-card", "background:#6b7280;color:#0d1117;opacity:0", floor, "4°C, rain");
+        const P = (x, y, z) => ({ x, y, z });
+        const fromModel = P(96, 222, 44), onHarness = P(262, 276, 26), overTool = P(366, 440, 104), onTool = P(366, 440, 62), overModel = P(96, 110, 172), onModel = P(96, 110, 120);
+        const pickAt = w("picks") - 0.1;
+        F(req, Object.assign({ opacity: 0 }, P(96, 205, 60)), Object.assign({ opacity: 1, duration: 0.3, ease: "power2.out" }, fromModel), pickAt);
+        F(req, fromModel, Object.assign({ duration: 0.9, ease: "power3.inOut" }, onHarness), pickAt + 0.35);
+        cue("slide", pickAt + 0.4, { d: 0.9 });
+        F(hGlow, { opacity: 0 }, { opacity: 1, duration: 0.3 }, w("harness") - 0.1);
+        F(harness.hot, { opacity: 0 }, { opacity: 1, duration: 0.2 }, w("harness") - 0.1);
+        cue("tick", w("harness"));
+        const harnessTag = mk("div", "abs mono hide", "left:44px;top:250px;font-size:24px;color:var(--green)", p3, "// the harness: not the model");
+        show(harnessTag, w("harness"), 0.3, 10);
+        const runAt = w("runs", 2) - 0.15;
+        F(req, onHarness, Object.assign({ duration: 0.45, ease: "power3.in" }, overTool), runAt);
+        F(req, overTool, Object.assign({ duration: 0.18, ease: "power2.in" }, onTool), runAt + 0.45);
+        cue("land", runAt + 0.63);
+        F(req, { opacity: 1 }, { opacity: 0, duration: 0.15 }, runAt + 0.66);
+        F(tools[1].hot, { opacity: 0 }, { opacity: 1, duration: 0.15 }, runAt + 0.6);
+        F(tGlow, { opacity: 0 }, { opacity: 1, duration: 0.25 }, runAt + 0.6);
+        F(tools[1].hot, { opacity: 1 }, { opacity: 0, duration: 0.5 }, w("hands") + 0.2);
+        F(tGlow, { opacity: 1 }, { opacity: 0, duration: 0.5 }, w("hands") + 0.2);
+        // the result rises off the tool and its colour resolves on arrival (cinetic cl-ink-resolve)
+        const resAt = w("four") - 0.15;
+        F(res, Object.assign({ opacity: 0 }, onTool), Object.assign({ opacity: 1, duration: 0.3, ease: "power2.out" }, P(366, 440, 92)), resAt);
+        F(res, { backgroundColor: "#6b7280" }, { backgroundColor: "#d6a45a", duration: 0.5, ease: "power2.out" }, resAt + 0.25);
+        cue("ding", resAt + 0.3);
+        const back = w("hands") - 0.05;
+        F(res, P(366, 440, 92), Object.assign({ duration: 0.9, ease: "power3.inOut" }, overModel), back);
+        cue("zipdown", back + 0.05);
+        F(res, overModel, Object.assign({ duration: 0.2, ease: "power2.in" }, onModel), back + 0.9);
+        F(res, { opacity: 1 }, { opacity: 0, duration: 0.15 }, back + 1.12);
+        F(model.hot, { opacity: 0 }, { opacity: 1, duration: 0.12 }, back + 1.08);
+        F(model.hot, { opacity: 1 }, { opacity: 0, duration: 0.5 }, back + 1.25);
+        cue("land", back + 1.1);
+        F(p3, { opacity: 1 }, { opacity: 0, duration: 0.35 }, w("reads") - 0.75);
+
+        // ================= IV. THE LOOP (light in the wires): ask, run, read, faster each lap =================
+        const p4 = mk("div", "layer hide");
+        const p4At = w("reads") - 0.6;
+        F(p4, { opacity: 0 }, { opacity: 1, duration: 0.35 }, p4At);
+        const cam4 = mk("div", "layer", "", p4);
+        const NS = "http://www.w3.org/2000/svg";
+        const svg = document.createElementNS(NS, "svg");
+        svg.setAttribute("width", "720"); svg.setAttribute("height", "1280"); svg.setAttribute("viewBox", "0 0 720 1280");
+        svg.style.cssText = "position:absolute;left:0;top:0;overflow:visible";
+        cam4.appendChild(svg);
+        const path = (d, stroke, sw, op, extra) => { const p = document.createElementNS(NS, "path"); p.setAttribute("d", d); p.setAttribute("fill", "none"); p.setAttribute("stroke", stroke); p.setAttribute("stroke-width", sw); p.setAttribute("stroke-opacity", op); p.setAttribute("stroke-linecap", "round"); if (extra) Object.entries(extra).forEach(([k, v]) => p.setAttribute(k, v)); svg.appendChild(p); return p; };
+        const RING = "M360 380 C560 380 640 600 560 720 C480 840 240 840 160 720 C80 600 160 380 360 380";
+        path(RING, "#6ad08a", 16, 0.12);
+        const ringLine = path(RING, "#6ad08a", 3, 0.6);
+        const ringLen = ringLine.getTotalLength();
+        ringLine.style.strokeDasharray = ringLen; ringLine.style.strokeDashoffset = ringLen;
+        F(ringLine, { strokeDashoffset: ringLen }, { strokeDashoffset: 0, duration: 0.9, ease: "power2.inOut" }, p4At + 0.1);
+        cue("draw", p4At + 0.1, { d: 0.9 });
+        const EXIT = "M360 380 L360 250";
+        const exitLine = path(EXIT, "#d6a45a", 3, 0.55, { "stroke-dasharray": "6 10" });
+        F(exitLine, { opacity: 0 }, { opacity: 1, duration: 0.3 }, w("answer") - 0.1);
+        const nodeAt = (x, y, wdt, label, col, bg) => mk("div", "node", `left:${x - wdt / 2}px;top:${y - 34}px;width:${wdt}px;height:68px;border:3px solid ${col};background:${bg};font-size:24px;color:var(--text);box-shadow:0 0 34px ${col}55;opacity:0`, cam4, label);
+        const nModel = nodeAt(360, 380, 190, "model", "#6ad08a", "#10241a");
+        const nHarness = nodeAt(560, 720, 200, "harness", "#9aa6b6", "#141a24");
+        const nTool = nodeAt(160, 720, 190, "weather", "#4f93d6", "#0f1d30");
+        [nModel, nHarness, nTool].forEach((n, i) => { F(n, { opacity: 0, scale: 0.6 }, { opacity: 1, scale: 1, duration: 0.35, ease: "back.out(1.6)" }, p4At + 0.15 + i * 0.12); cue("pop", p4At + 0.25 + i * 0.12, { i }); });
+        // the fork at the model: answer, or ask again
+        const fAns = mk("div", "abs mono hide", "left:384px;top:262px;font-size:22px;color:var(--amber)", cam4, "answer ↑");
+        const fAgain = mk("div", "abs mono hide", "left:260px;top:436px;width:200px;text-align:center;font-size:22px;color:var(--green)", cam4, "ask again ↻");
+        show(fAns, w("answer") - 0.05, 0.3, 8); cue("tick", w("answer"));
+        show(fAgain, w("again") - 0.25, 0.3, 8); cue("tick", w("again"));
+        // the progress spine words (cinetic ui-progress-spine-steps, retold as the loop's three steps)
+        const stepLab = (x, y, t, col) => mk("div", "abs hide", `left:${x}px;top:${y}px;font-size:54px;font-weight:700;letter-spacing:-0.03em;color:${col}`, cam4, t);
+        const sAsk = stepLab(560, 520, "Ask.", "var(--green)");
+        const sRun = stepLab(300, 820, "Run.", "var(--blue)");
+        const sRead = stepLab(40, 520, "Read.", "var(--amber)");
+        [[sAsk, "ask", 3], [sRun, "run"], [sRead, "read"]].forEach(([n, word, k]) => { slam(n, w(word, k) - 0.08, 1.4); });
+        [sAsk, sRun, sRead].forEach((n) => F(n, { opacity: 1 }, { opacity: 0.3, duration: 0.4 }, w("again", 2) - 0.1));
+        // the packet: laps the ring, each lap faster (cinetic ps-faster-each-repeat), the camera leans after it (cam-lead-follow)
+        const pk = mk("div", "pk", "background:#fff;box-shadow:0 0 16px 5px rgba(106,208,138,.95),0 0 50px 16px rgba(106,208,138,.45);opacity:0", cam4);
+        const trail = [1, 2, 3].map((i) => mk("div", "pk", `background:#b9f0c9;opacity:0;transform-origin:center;box-shadow:0 0 12px 3px rgba(106,208,138,${0.6 - i * 0.15})`, cam4));
+        const lap = { p: 0 };
+        const place = () => {
+          const at = (q) => ringLine.getPointAtLength((((q % 1) + 1) % 1) * ringLen);
+          const pt = at(lap.p);
+          pk.style.left = pt.x + "px"; pk.style.top = pt.y + "px";
+          trail.forEach((tn, i) => { const q = at(lap.p - (i + 1) * 0.018); tn.style.left = q.x + "px"; tn.style.top = q.y + "px"; tn.style.transform = `scale(${1 - i * 0.22})`; });
+          cam4.style.transform = `translate(${-(pt.x - 360) * 0.08}px, ${-(pt.y - 580) * 0.08}px)`;
+        };
+        place();
+        // lap plan: ask/run/read land on their words, then again and again ever faster; quarter points sit at the nodes
+        const LAPS = [[w("ask", 3) - 0.3, 0, 0.36], [w("run") - 0.05, 0.36, 0.64], [w("read") - 0.05, 0.64, 1.0], [w("again", 2) - 0.1, 1.0, 2.0], [null, 2.0, 3.0], [null, 3.0, 4.0]];
+        let tCur = 0;
+        const LAPDUR = [0.55, 0.7, 0.75, 0.62, 0.42, 0.3];
+        LAPS.forEach(([t0, a, b], i) => {
+          const t = t0 != null ? t0 : tCur;
+          tl.fromTo(lap, { p: a }, { p: b, duration: LAPDUR[i], ease: i < 3 ? "power2.inOut" : "none", immediateRender: false, onUpdate: place }, t);
+          tCur = t + LAPDUR[i];
+          if (i >= 3) cue("blip", t + 0.02, { lap: i });
+        });
+        F([pk, ...trail], { opacity: 0 }, { opacity: 1, duration: 0.15 }, LAPS[0][0]);
+        // until it stops asking: the packet leaves by the answer branch to an answer bubble
+        const out = { p: 0 };
+        const outAt = Math.max(tCur, w("stops") - 0.2);
+        tl.fromTo(out, { p: 0 }, { p: 1, duration: 0.45, ease: "power2.out", immediateRender: false, onUpdate: () => { pk.style.top = 380 - 130 * out.p + "px"; pk.style.left = "360px"; } }, outAt);
+        F(trail, { opacity: 1 }, { opacity: 0, duration: 0.1 }, outAt);
+        const answer = mk("div", "bubble hide", "left:120px;top:160px;width:480px;height:84px;padding:0 34px;border-radius:42px;background:rgba(214,164,90,.12);border:3px solid var(--amber);font-size:30px;justify-content:center", cam4, "4°C and rain in Nelson.");
+        F(answer, { opacity: 0, scale: 0.7 }, { opacity: 1, scale: 1, duration: 0.35, ease: "back.out(1.5)" }, outAt + 0.4);
+        F(pk, { opacity: 1 }, { opacity: 0, duration: 0.15 }, outAt + 0.42);
+        cue("ding", outAt + 0.45);
+        F(p4, { opacity: 1 }, { opacity: 0, duration: 0.35 }, w("so") - 0.3);
+
+        // ================= V. THE CLOSE (kinetic type): the harness did it, so the guardrails go there =================
+        const p5 = mk("div", "layer hide");
+        F(p5, { opacity: 0 }, { opacity: 1, duration: 0.3 }, w("so") - 0.1);
+        const term = mk("div", "abs", "left:44px;right:44px;top:300px;border-radius:6px;border:2px solid #1c2333;background:#0c0e11;overflow:hidden", p5);
+        mk("div", "mono", "display:flex;justify-content:space-between;padding:14px 22px;border-bottom:2px solid #1c2333;font-size:20px;color:var(--faint)", term, "<span>harness</span><span>// runs the commands</span>");
+        const tBody = mk("div", "mono", "padding:24px 22px 28px;font-size:30px;line-height:1.6", term);
+        const tLine = mk("div", null, "white-space:nowrap", tBody);
+        const tPrompt = mk("span", null, "color:var(--green)", tLine, "$ ");
+        const tCmd = mk("span", null, "", tLine);
+        const tOut = mk("div", "hide", "color:var(--red)", tBody, "removed notes.md");
+        show(term, w("so") - 0.05, 0.35, 30);
+        typed(tCmd, "rm notes.md", w("deletes") - 0.1, 18);
+        show(tOut, e("file") + 0.15, 0.2, 6);
+        cue("thud", e("file") + 0.15);
+        const rowM = mk("div", "abs mono hide", "left:44px;top:560px;font-size:30px;color:var(--text2)", p5, `<span style="color:var(--green)">model</span>   → wrote the request`);
+        const rowH = mk("div", "abs mono hide", "left:44px;top:612px;font-size:30px;color:var(--text2)", p5, `<span style="color:var(--amber)">harness</span> → ran it`);
+        rise(rowM, w("model", 3) - 0.05, 0.35);
+        rise(rowH, w("harness", 2) - 0.1, 0.35);
+        const did = mk("div", "abs hide", "left:44px;right:44px;top:740px;font-size:104px;font-weight:700;letter-spacing:-0.045em;line-height:1", p5, `The <span style="color:var(--green)">harness</span><br>did.`);
+        slam(did, w("harness", 2) - 0.08, 1.5);
+        // guardrails: two rails with posts close around the harness terminal
+        const rail = (top, from) => {
+          const r = mk("div", "abs", `left:24px;right:24px;top:${top}px;height:14px;opacity:0`, p5);
+          mk("div", "abs", "left:0;right:0;top:4px;height:6px;border-radius:3px;background:var(--amber)", r);
+          [0, 1, 2, 3, 4].forEach((i) => mk("div", "abs", `left:${i * 25}%;margin-left:${i === 4 ? -10 : 0}px;top:-10px;width:10px;height:34px;border-radius:2px;background:var(--amber)`, r));
+          F(r, { opacity: 0, x: from }, { opacity: 1, x: 0, duration: 0.4, ease: "back.out(1.3)" }, w("guardrails") - 0.15);
+          return r;
+        };
+        rail(270, -720); rail(520, 720);
+        cue("stamp", w("guardrails") + 0.22);
+        const gTag = mk("div", "abs mono hide", "left:44px;top:220px;font-size:24px;color:var(--amber)", p5, "// the guardrails go here");
+        show(gTag, w("guardrails") + 0.2, 0.3, 10);
+        // the end: the white request card (the story device) comes back and becomes the mark (cinetic le-device-becomes-mark)
+        const endAt = e("belong") + 0.35;
+        F(p5, { opacity: 1 }, { opacity: 0, duration: 0.35 }, endAt);
+        const markCard = mk("div", "abs hide", "left:210px;top:560px;width:300px;height:92px;box-sizing:border-box;border-radius:12px;background:var(--text);color:#0d1117;font-family:var(--mono);font-weight:600;font-size:28px;display:flex;align-items:center;justify-content:center", stage, "get_weather()");
+        F(markCard, { opacity: 0, y: 260, rotate: -8, scale: 0.6 }, { opacity: 1, y: 0, rotate: 0, scale: 1, duration: 0.5, ease: "power3.out" }, endAt + 0.15);
+        cue("zip", endAt + 0.15);
+        F(markCard, { backgroundColor: "#eef2f6", color: "#0d1117", width: 300, left: 210, borderRadius: 12 }, { backgroundColor: "#0d1117", color: "#eef2f6", width: 340, left: 190, borderRadius: 14, duration: 0.45, ease: "power2.inOut" }, endAt + 0.9);
+        F(markCard, { borderColor: "rgba(106,208,138,0)" }, { borderColor: "rgba(106,208,138,1)", duration: 0.45 }, endAt + 0.9);
+        markCard.style.border = "3px solid rgba(106,208,138,0)";
+        const markTxt = mk("div", "abs hide", "left:190px;top:560px;width:340px;height:92px;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-weight:600;font-size:44px", stage, `<span style="color:var(--green)">~/</span>devweb`);
+        F(markCard, { fontSize: 28 }, { fontSize: 0.01, duration: 0.2 }, endAt + 0.9);
+        F(markTxt, { opacity: 0, scale: 0.85 }, { opacity: 1, scale: 1, duration: 0.35, ease: "back.out(1.6)" }, endAt + 1.05);
+        cue("sting", endAt + 1.0);
+        const url = mk("div", "abs mono hide", "left:0;right:0;top:690px;text-align:center;font-size:28px;color:var(--text2)", stage, "devweb.org/glossary/tool-calling-loop");
+        rise(url, endAt + 1.45, 0.4);
+
+        window.__timelines["main"] = tl;
+      })();
+    </script>
+  </body>
+</html>

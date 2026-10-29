@@ -1,0 +1,27 @@
+{
+ "lines": [
+  [
+   "I",
+   "An AI never runs a tool. It can't. It only writes text."
+  ],
+  [
+   "II",
+   "Ask it for the weather in Nelson. It doesn't check the sky. It writes a request: call get weather, city, Nelson. That's the whole move."
+  ],
+  [
+   "III",
+   "Something else picks that request up: the harness. It runs the tool, gets back four degrees and rain, and hands that to the model as more text."
+  ],
+  [
+   "IV",
+   "The model reads it, and decides: answer, or ask again. That's the loop. Ask. Run. Read. Again and again, until it stops asking."
+  ],
+  [
+   "V",
+   "So if an agent ever deletes a file, the model didn't run that command. The harness did. That's where the guardrails belong."
+  ]
+ ],
+ "chars": 587,
+ "seconds": 43.6,
+ "sha256": "7131138a6b469a57269d2553307a3ace1dab7c3316c0b93cc46fcf19938f7624"
+}
