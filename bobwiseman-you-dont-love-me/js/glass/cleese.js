@@ -136,27 +136,55 @@ function cleeseBust(g, m, seed, o = {}) {
 }
 
 // ---- the silly walk across the front of the finale crowd ----
-// Two beats a stride: on the beat the right leg kicks up high and straight while he leans back; on the half the left
-// knee comes right up and he dips on the right; then the left foot reaches out and down. Briefcase in the left hand,
-// the right arm swinging stiff. Left to right across the frame, in front of everyone, deadpan to camera.
-const SW = { // t0 .. t1 = PF_B[32] .. PF_B[46] (217.36 .. 227.02, seven strides), read when drawn: PF_B is the finale's
+// Draft 16 (Bob, note 49: "each step he takes is the same. can you vary what he does?"): seven different steps, one
+// every two beats from PF_B[32], the biggest on the bar downbeats (32, 36, 40, 44; 44 is the song's hardest hit):
+// 32 the high kick | 34 a deep knee-bend shuffle | 36 the left leg swings up front, back, front | 38 a pause, one knee
+// up, frozen | 40 a lurch into a lunge | 42 heel flicks behind, right then left | 44 the highest kick, a tucked hop,
+// and a last kick out of frame. Briefcase low in the front hand, deadpan to camera throughout.
+const SW = { // t0 .. t1 = PF_B[32] .. PF_B[46] (217.36 .. 227.02), read when drawn: PF_B is the finale's
   x0: -260, x1: W + 260, ground: H - 16,
   th: 215, sh: 215, torso: 250, neck: 24, up: 165, lo: 150, head: 1.2,
 };
-// keys over one stride (u 0..1): [u, R thigh, R knee, L thigh, L knee, lean, R (front, briefcase) arm, R elbow, L (back) arm]
+// keys by beat from PF_B[32] (0..14): [beat, R thigh, R knee, L thigh, L knee, lean, R (front, briefcase) arm, R elbow,
+// L (back) arm, across (0..1 of x0..x1), air (px off the ground)]
 // thigh: angle from straight down, + forward (to screen right); knee: bend, the shin swings back by it
-const SW_KEYS = [ // (the sketch's photo: the kick well above the hip, the body upright, the briefcase low in the front hand)
-  [0, 2.1, 0, -.2, 0, -.12, .12, .05, -.5],
-  [.2, 1.1, 0, -.28, .1, -.06, .08, .05, -.3],
-  [.36, .25, .05, -.36, .5, 0, .02, .05, 0],
-  [.5, -.05, .55, 1.32, 2.2, .2, -.1, .05, .5],
-  [.7, -.25, .12, .72, .3, .05, -.05, .05, .3],
-  [.86, -.42, .2, .16, .05, -.06, .05, .05, -.2],
-  [1, 2.1, 0, -.2, 0, -.12, .12, .05, -.5],
+const SW_KEYS = [
+  [0, 2.1, 0, -.2, 0, -.12, .12, .05, -.5, 0, 0], // 32: the high kick, leaning back
+  [.6, 1, 0, -.28, .1, -.06, .08, .05, -.3, .04, 0],
+  [1, .2, .05, -.3, .3, 0, .02, .05, 0, .07, 0],
+  [2, .6, 1.3, .9, 1.4, .1, .1, .3, 0, .11, 0], // 34: down into a deep knee-bend
+  [2.5, .95, 1.55, .45, 1.2, .08, .15, .35, .2, .13, 0], // shuffling along low
+  [3, .45, 1.2, .95, 1.5, .1, .1, .3, -.1, .15, 0],
+  [3.5, .1, .3, .2, .5, 0, .05, .1, 0, .17, 0],
+  [4, -.1, .05, 1.9, .1, -.15, .1, .05, -.6, .2, 0], // 36: the left leg swings up in front
+  [4.6, -.05, .05, -.9, .2, .18, -.1, .05, .4, .23, 0], // ... right back behind
+  [5.2, -.1, .05, 1.2, .3, -.05, .05, .05, -.3, .26, 0], // ... and forward again
+  [5.7, -.3, .1, .3, .05, 0, 0, .05, 0, .29, 0],
+  [6, 1.5, 2, -.05, 0, -.04, .05, .05, -.1, .31, 0], // 38: the pause, right knee up, frozen
+  [7.4, 1.55, 2.1, -.05, 0, -.04, .05, .05, -.1, .31, 0],
+  [7.8, .6, .9, -.1, .05, .05, .05, .05, 0, .33, 0], // the foot comes down, carefully
+  [8, 1.1, 1.1, -.7, 0, .4, .5, .3, -.6, .43, 0], // 40: the lurch, into a lunge
+  [8.8, 1, 1.15, -.65, 0, .38, .45, .3, -.55, .45, 0],
+  [9.5, .1, .1, -.2, .2, 0, .05, .05, 0, .48, 0],
+  [10, -.3, 2.3, .1, .05, .22, .1, .05, -.3, .52, 0], // 42: a heel flick behind, right
+  [10.5, .05, .1, 0, .1, .05, .05, .05, 0, .54, 0],
+  [11, .1, .05, -.35, 2.3, .22, .1, .05, -.3, .57, 0], // ... and left
+  [11.5, 0, .1, .1, .1, 0, .05, .05, 0, .59, 0],
+  [12, 2.5, 0, -.15, 0, -.25, .3, .05, -.9, .63, 0], // 44: the highest kick
+  [12.7, 1, 1.6, .2, 1.8, 0, .1, .2, .3, .72, 70], // a tucked hop on the loudest beat
+  [13.2, .3, .4, -.2, .3, .05, .05, .05, 0, .8, 0],
+  [13.6, 1.9, 0, -.2, 0, -.12, .12, .05, -.5, .88, 0], // and one more kick, out of frame
+  [14, .6, 0, -.25, .1, -.05, .05, .05, -.2, 1, 0],
 ];
+function swBeat(t) { // song time -> beats from PF_B[32], linear between the beats
+  const B = PF_B; if (t <= B[32]) return (t - B[32]) / (B[33] - B[32]);
+  for (let i = 32; i < 46; i++) if (t < B[i + 1]) return i - 32 + (t - B[i]) / (B[i + 1] - B[i]);
+  return 14 + (t - B[46]) / (B[47] - B[46]);
+}
 function swPose(u) {
-  let i = 0; while (i + 2 < SW_KEYS.length && SW_KEYS[i + 1][0] <= u) i++;
-  const a = SW_KEYS[i], b = SW_KEYS[i + 1], f = (u - a[0]) / (b[0] - a[0]), e = .5 - .5 * Math.cos(Math.PI * clamp(f));
+  const K = SW_KEYS; if (u <= K[0][0]) return K[0].slice(); if (u >= K[K.length - 1][0]) return K[K.length - 1].slice();
+  let i = 0; while (K[i + 1][0] <= u) i++;
+  const a = K[i], b = K[i + 1], f = (u - a[0]) / (b[0] - a[0]), e = .5 - .5 * Math.cos(Math.PI * clamp(f));
   return a.map((v, k) => lerp(v, b[k], e));
 }
 function swLimb(g, A, B, w0, w1, col, seed, stripes) {
@@ -184,11 +212,9 @@ function drawSillyWalk(g, t, tod) {
   SW.t0 = PF_B[32]; SW.t1 = PF_B[46];
   if (t < SW.t0 - .1 || t > SW.t1 + .1) return;
   const L = .35 + .65 * tod.I, br = L * (tod.col[0] + tod.col[1] + tod.col[2]) / 765;
-  const n = (t - SW.t0) / (2 * PIP_HEAD_BEAT), u = ((n % 1) + 1) % 1, P = swPose(u);
-  const [, ra, rk, la, lk, lean, rA, rE, lA] = P;
-  // forward: steady, with a surge on each kick
-  const x = lerp(SW.x0, SW.x1, lin(t, SW.t0, SW.t1)) + 26 * Math.sin(TAU * u);
-  const hipY = SW.ground - Math.max(swFootDy(ra, rk), swFootDy(la, lk)) - 14;
+  const P = swPose(swBeat(t)), [, ra, rk, la, lk, lean, rA, rE, lA, xf, air] = P;
+  const x = lerp(SW.x0, SW.x1, xf);
+  const hipY = SW.ground - Math.max(swFootDy(ra, rk), swFootDy(la, lk)) - 14 - air;
   const hip = [x, hipY];
   const sx = x + Math.sin(lean) * SW.torso, sy = hipY - Math.cos(lean) * SW.torso; // shoulders
   const shR = [sx + 10, sy + 18], shL = [sx - 10, sy + 18];
