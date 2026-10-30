@@ -67,8 +67,8 @@ const KEYS = [
   [T.drops + 1.6, [0.4, 11.5, 4.5], [BX - 0.2, -1.5, -14.2], 40],
   [T.thats + 0.35, [0.4, 12.0, 5.0], [BX - 0.2, -1.5, -14.2], 40],
   // the receipt beside the gate
-  [T.load - 0.25, [BX - 0.4, 1.7, -4.6], [BX - 2.1, 1.0, -12.4], 36],
-  [T.role + 0.35, [BX - 0.5, 1.65, -4.8], [BX - 2.1, 1.0, -12.4], 36],
+  [T.load - 0.25, [BX - 0.9, 5.2, -2.0], [BX - 1.5, -0.4, -12.8], 38],
+  [T.role + 0.35, [BX - 1.0, 5.1, -2.2], [BX - 1.5, -0.4, -12.8], 38],
   // the file with no label: the gate holds it, stamps it private, bins it; one edit brings it back
   [T.label - 0.25, [BX - 6.2, 2.8, -7.6], [BX + 0.8, 0.0, -13.6], 38],
   [T.hiding - 0.3, [BX - 6.4, 2.9, -7.4], [BX + 0.8, 0.2, -13.6], 38],
@@ -79,9 +79,9 @@ const KEYS = [
   [T.says2 + 0.05, [0.15, 1.6, 11.1], [0.05, 1.28, 0], 36],
   [T.model3 - 0.2, [0.1, 1.6, 11.3], [0.05, 1.28, 0], 36],
   [T.given + 0.3, [0.1, 1.6, 11.6], [0.05, 1.28, 0], 36],
-  // the end frame: Blink above the mark
-  [T.given + 1.45, [0, 0, 14], [0, -1.86, 0], 36],
-  [T.END, [0, 0, 13.6], [0, -1.86, 0], 36],
+  // the end frame: crane up from Blink to the whole line, hopper at the top, the room at the bottom
+  [T.given + 1.9, [0.2, 15.5, 14.5], [BX - 0.5, -1.5, -9.4], 40],
+  [T.END, [0.2, 16.0, 15.0], [BX - 0.5, -1.5, -9.4], 40],
 ];
 const cameraAt = cameraPath(KEYS);
 
@@ -389,7 +389,6 @@ export async function buildWorld(canvas) {
       if (k2 > 0.5) qm.quaternion.copy(camQ); else { qm.rotation.set(-Math.PI / 2 * (1 - k2 * 2), 0, 0); }
       qm.scale.setScalar(mix(1, 0.85, k2));
     }
-    if (t > T.given + 0.4) { qm.scale.multiplyScalar(Math.max(0.001, 1 - r01(t, T.given + 0.4, 0.5))); qOn = qOn && t < T.given + 0.9; }
     qm.visible = qOn; if (qOn && t > T.priv - 0.3 && t < T.edit + 0.5) qm.scale.multiplyScalar(stampS);
     if (zq !== null && Math.abs(zq - GATE_Z) < nearD) { nearD = Math.abs(zq - GATE_Z); near = qFace; }
     const thinkA = r01(t, Q.atGate + 0.3, 0.15) * (1 - r01(t, T.priv - 0.1, 0.1));
@@ -403,7 +402,7 @@ export async function buildWorld(canvas) {
     paddle.rotation.y = -1.05 * kickP;
 
     // set B: after the gate, only files this role can see
-    const bA = r01(t, T.ask2 + 1.06, 0.5) * (1 - r01(t, T.given + 0.4, 0.5));
+    const bA = r01(t, T.ask2 + 1.06, 0.5);
     SETB.forEach((m, i) => { m.visible = bA > 0.001; if (!m.visible) return; m.position.copy(orbitPos(i + 1, 5, t)); m.position.y -= (1 - io(bA)) * 1.2; m.quaternion.copy(camQ); m.scale.setScalar(0.85); m.material.opacity = bA; });
 
     // the honest answer
@@ -413,7 +412,7 @@ export async function buildWorld(canvas) {
     nope.mesh.visible = nA > 0.01; nope.mesh.scale.setScalar(Math.max(0.01, nA)); nope.mesh.material.opacity = cl(nA);
 
     // the code panel
-    const cA = r01(t, T.load - 0.35, 0.3) * (1 - r01(t, T.label - 0.6, 0.3));
+    const cA = r01(t, T.load - 0.35, 0.3) * (1 - r01(t, T.label - 1.0, 0.25)); // gone before the camera swings to the gate
     code.mesh.visible = cA > 0; code.mesh.material.opacity = cA; code.mesh.scale.setScalar(mix(0.85, 1, back(r01(t, T.load - 0.35, 0.35))));
     code.set({ sig: typed(SIG, SIG_T0, SIG_CPS, t), c: Math.round(r01(t, T.role + 0.35, 0.3) * 12) / 12 }); // fades in: no one-frame pop
 
@@ -429,7 +428,6 @@ export async function buildWorld(canvas) {
     else if (t < T.i) { look = 0; lookY = 1.2; }
     else if (t < T.given + 0.3) { look = 0; lookY = 0.2; happy = r01(t, T.i + 0.6, 0.15) * 0.8; }
     else { happy = r01(t, T.given + 1.6, 0.12); }
-    ctxLabel.mesh.material.opacity = 1 - r01(t, T.given + 0.3, 0.5);
     blink.root.rotation.y = yaw;
     blink.face({ blink: blinkK, happy, look, lookY, think, phase: t * 1.6 });
     renderer.render(scene, cam);
