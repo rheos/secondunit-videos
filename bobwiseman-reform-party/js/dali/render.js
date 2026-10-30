@@ -1,35 +1,81 @@
 // Reform Party, Dali look: grade, captions and the frame. Loads last.
 // ---------- captions ----------
-// Gochi Hand (OFL, fonts/): upright hand lettering, Bob's note on draft 11 ("less italics, less perfect"); ships with
-// the page so the Mac and the cloud runners draw the same captions. Each word gets its own small fixed tilt and lift.
-const FONT = '{s}px "Gochi Hand", "Marker Felt", "Comic Sans MS", sans-serif';
-const FONT_READY = new FontFace('Gochi Hand', 'url(../fonts/GochiHand-Regular.ttf)').load().then((f) => { document.fonts.add(f); return true; }).catch(() => true);
+// Draft 35 (Bob, note 56 on d34: "The font. Just bugs me. Could you give me something wilder? or weirder?"; Robin: try
+// the typical Instagram font). Instagram Sans is Meta's own brand face and not licensed for other people's videos, so
+// the Instagram looks are drawn with free OFL lookalikes that ship in fonts/ (the Mac and the cloud runners draw the
+// same captions). CAP_STYLE picks one; ?cap=<name> overrides it for still sheets.
+//   gochi      draft 11-34: Gochi Hand, upright hand lettering, each word with its own small tilt and lift
+//   classic    Instagram Stories "Classic": Figtree Bold, white, straight
+//   reel       the Reels caption: Figtree Bold, black on a white rounded box that grows word by word
+//   strong     Stories "Strong": Anton caps, slanted, white with a dark edge
+//   typewriter Stories "Typewriter": Courier Prime Bold on a paper strip, each word typed letter by letter
+//   neon       Stories "Neon": Yellowtail script, white core, pink tube glow that flickers on each word
+// A line too long to sit on one row at 80% of the style's size wraps onto two rows (the lower row on CAP.y), the way
+// Instagram wraps its text, so no style has to shrink the long outro lines.
+const CAP_STYLE = new URLSearchParams(location.search).get('cap') || 'gochi';
+const CAP_FACES = [['Gochi Hand', 'GochiHand-Regular.ttf'], ['Figtree', 'Figtree-VF.ttf', { weight: '300 900' }], ['Anton', 'Anton-Regular.ttf'],
+  ['Courier Prime', 'CourierPrime-Bold.ttf', { weight: '700' }], ['Yellowtail', 'Yellowtail-Regular.ttf']];
+const FONT_READY = Promise.all(CAP_FACES.map(([n, f, d]) => new FontFace(n, `url(../fonts/${f})`, d || {}).load().then((ff) => document.fonts.add(ff)).catch(() => 0))).then(() => true);
+const CAPS = {
+  gochi: { font: '{s}px "Gochi Hand", "Marker Felt", sans-serif', size: 50, gap: .27, band: 1, wob: 1 },
+  classic: { font: '700 {s}px Figtree, Helvetica, sans-serif', size: 52, gap: .26, band: .8 },
+  reel: { font: '700 {s}px Figtree, Helvetica, sans-serif', size: 48, gap: .26, box: { fill: '#ffffff', ink: '#111111', padX: .42, padY: .3, r: .32, whole: 1 } },
+  strong: { font: '{s}px Anton, Impact, sans-serif', size: 62, gap: .22, caps: 1, skew: -.2, edge: 1, band: .7 },
+  typewriter: { font: '700 {s}px "Courier Prime", Courier, monospace', size: 46, gap: .6, type: 1, box: { fill: '#f6f1e4', ink: '#1a1612', padX: .4, padY: .28, r: .08, whole: 1 } },
+  neon: { font: '{s}px Yellowtail, cursive', size: 64, gap: .28, neon: '#ff3fb4', band: .9 },
+};
 const capWob = (li, wi, k) => { const v = Math.sin(li * 127.1 + wi * 311.7 + k * 74.7) * 43758.5453; return (v - Math.floor(v)) * 2 - 1; };
 // outro: the repeated last line stays uncaptioned until its final time (Bob's note on draft 11)
 const CAP_HIDE = new Set([35, 36, 37]);
-const CAP = { y: 1014, maxW: 1500, size: 50 }; // baseline inside the title-safe area; 210 px side margin at full size
+const CAP = { y: 1014, maxW: 1500 }; // baseline inside the title-safe area; 210 px side margin at full size
 // a soft dark band behind the caption line: feathered on all four sides, built once, stretched to the line
 const CAP_BAND = (() => { const c = mkCanvas(512, 96), b = c.getContext('2d');
   const v = b.createLinearGradient(0, 0, 0, 96); v.addColorStop(0, 'rgba(16,9,7,0)'); v.addColorStop(.32, 'rgba(16,9,7,.85)'); v.addColorStop(.62, 'rgba(16,9,7,1)'); v.addColorStop(1, 'rgba(16,9,7,0)');
   b.fillStyle = v; b.fillRect(0, 0, 512, 96);
   const hz = b.createLinearGradient(0, 0, 512, 0); hz.addColorStop(0, 'rgba(0,0,0,0)'); hz.addColorStop(.14, 'rgba(0,0,0,1)'); hz.addColorStop(.86, 'rgba(0,0,0,1)'); hz.addColorStop(1, 'rgba(0,0,0,0)');
   b.globalCompositeOperation = 'destination-in'; b.fillStyle = hz; b.fillRect(0, 0, 512, 96); return c; })();
+function rrect(x, y, w, h, r) { g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); }
 function captions(t) {
+  const S = CAPS[CAP_STYLE] || CAPS.gochi;
   let L = null, end = 0; for (let i = 0; i < LINES.length; i++) { const l = LINES[i], nx = LINES[i + 1]; const e = Math.min(l.e + .6, nx ? nx.s - .05 : 1e9); if (t >= l.s - .05 && t < e) { L = l; end = e; } }
   if (!L || CAP_HIDE.has(L.i)) return; const n = wordsShown(L, t + .05); if (!n) return;
-  // fit the whole line (words plus the gaps we actually draw) inside CAP.maxW, so every word sits inside the frame
-  const words = L.text.split(/\s+/); g.font = FONT.replace('{s}', CAP.size);
-  const w0 = words.reduce((a, w) => a + g.measureText(w).width, 0) + CAP.size * .27 * (words.length - 1);
-  const size = Math.max(18, Math.floor(CAP.size * Math.min(1, CAP.maxW / w0))); g.font = FONT.replace('{s}', size); g.textBaseline = 'alphabetic';
-  const gap = size * .27, widths = words.map((w) => g.measureText(w).width), tw = widths.reduce((a, b) => a + b, 0) + gap * (words.length - 1);
-  let x = W / 2 - tw / 2; const y = CAP.y;
-  // the band covers the full line from its first word, fades in and out with the line, and eases off at night
-  const ba = clamp((t - L.s + .05) / .2) * clamp((end - t) / .25) * (.48 - .16 * nightAmt(t));
-  if (ba > 0) { const pad = size * 1.6; g.save(); g.globalAlpha = ba; g.drawImage(CAP_BAND, x - pad, y - size * 1.42, tw + 2 * pad, size * 2.15); g.restore(); }
-  for (let i = 0; i < words.length; i++) { if (i < n) { const age = t - (L.words[i] ? L.words[i].s : L.s), a = clamp(age / .12 + .2);
-    g.save(); g.globalAlpha = a; g.shadowColor = 'rgba(20,10,5,.85)'; g.shadowBlur = 14; g.shadowOffsetY = 3; g.fillStyle = '#f7ecd3'; g.translate(x + widths[i] / 2, y + capWob(L.i, i, 1) * size * .05); g.rotate(capWob(L.i, i, 0) * .045); g.fillText(words[i], -widths[i] / 2, 0); g.restore();
-    probeWord(t, L.i, i, (tt) => i < wordsShown(L, tt + .05)); }
-    x += widths[i] + gap; }
+  // lay the line out: one row, or two rows split at the word nearest the middle; then fit the widest row (its words, the
+  // gaps we draw, the slant and any box padding) inside CAP.maxW, so every word and its box sit inside the frame
+  const words = L.text.split(/\s+/).map((w) => S.caps ? w.toUpperCase() : w); g.font = S.font.replace('{s}', S.size);
+  const w1 = words.map((w) => g.measureText(w).width), rowW = (a, b, s) => (w1.slice(a, b).reduce((x, y) => x + y, 0) + S.size * S.gap * (b - a - 1)) * s / S.size + (S.skew ? Math.abs(S.skew) * s : 0) + 2 * (S.box ? S.box.padX : 0) * s;
+  let rows = [[0, words.length]];
+  if (words.length > 2 && rowW(0, words.length, S.size) * .8 > CAP.maxW) { let best = 1, bd = 1e9; for (let k = 1; k < words.length; k++) { const d = Math.abs(rowW(0, k, S.size) - rowW(k, words.length, S.size)); if (d < bd) { bd = d; best = k; } } rows = [[0, best], [best, words.length]]; }
+  const size = Math.max(18, Math.floor(S.size * Math.min(1, ...rows.map(([a, b]) => CAP.maxW / rowW(a, b, S.size))))); g.font = S.font.replace('{s}', size); g.textBaseline = 'alphabetic';
+  const gap = size * S.gap, widths = words.map((w) => g.measureText(w).width), lead = size * (S.box ? 1.5 : 1.22);
+  const m = g.measureText('Hgjy'), asc = m.actualBoundingBoxAscent, dsc = m.actualBoundingBoxDescent;
+  const fadeIn = clamp((t - L.s + .05) / .2), fadeOut = clamp((end - t) / .25);
+  rows.forEach(([a, b], r) => {
+    const tw = widths.slice(a, b).reduce((x, y) => x + y, 0) + gap * (b - a - 1), y = CAP.y - (rows.length - 1 - r) * lead; let x = W / 2 - tw / 2;
+    // the band covers the full row from the line's first word, fades in and out with the line, and eases off at night
+    const ba = S.band ? fadeIn * fadeOut * (.48 - .16 * nightAmt(t)) * S.band : 0;
+    if (ba > 0 && (r === 0 || n > a)) { const pad = size * 1.6; g.save(); g.globalAlpha = ba; g.drawImage(CAP_BAND, x - pad, y - size * 1.42, tw + 2 * pad, size * 2.15); g.restore(); }
+    // a box style: one rounded box round the row's words shown so far, from the font's own ascent and descent
+    if (S.box && n > a) { let shownW = 0; for (let i = a; i < Math.min(n, b); i++) shownW += widths[i] + (i > a ? gap : 0);
+      const bx = x - S.box.padX * size, bw = shownW + 2 * S.box.padX * size, by = y - asc - S.box.padY * size, bh = asc + dsc + 2 * S.box.padY * size;
+      g.save(); g.globalAlpha = fadeOut; g.fillStyle = S.box.fill; g.shadowColor = 'rgba(0,0,0,.25)'; g.shadowBlur = 10; g.shadowOffsetY = 2; rrect(bx, by, bw, bh, S.box.r * size); g.fill(); g.restore(); }
+    for (let i = a; i < b; i++) { if (i < n) { const ws = L.words[i] ? L.words[i].s : L.s, age = t - ws, al = clamp(age / .12 + .2) * fadeOut;
+      let txt = words[i]; if (S.type) txt = txt.slice(0, Math.max(1, Math.ceil(clamp((age + .02) / Math.min(.3, .06 * txt.length)) * txt.length)));
+      g.save(); g.globalAlpha = al; g.translate(x + widths[i] / 2, y);
+      if (S.wob) { g.translate(0, capWob(L.i, i, 1) * size * .05); g.rotate(capWob(L.i, i, 0) * .045); }
+      if (S.skew) g.transform(1, 0, S.skew, 1, 0, 0);
+      const lx = -widths[i] / 2;
+      if (S.box) { g.fillStyle = S.box.ink; g.fillText(txt, lx, 0);
+      } else if (S.neon) { // tube glow: wide soft pink, tight pink, white core; a quick flicker as each word lights
+        const fl = age < .25 ? (Math.sin(age * 90) > -.2 ? 1 : .35) : 1; g.globalAlpha = al * fl;
+        g.fillStyle = S.neon; g.shadowColor = S.neon; g.shadowBlur = size * .5; g.fillText(txt, lx, 0); g.shadowBlur = size * .18; g.fillText(txt, lx, 0);
+        g.shadowBlur = size * .06; g.shadowColor = '#ffd0ee'; g.fillStyle = '#fff6fb'; g.fillText(txt, lx, 0);
+      } else {
+        if (S.edge) { g.lineJoin = 'round'; g.strokeStyle = 'rgba(20,10,5,.9)'; g.lineWidth = size * .09; g.strokeText(txt, lx, 0); }
+        g.shadowColor = 'rgba(20,10,5,.85)'; g.shadowBlur = 14; g.shadowOffsetY = 3; g.fillStyle = S.wob ? '#f7ecd3' : '#ffffff'; g.fillText(txt, lx, 0); }
+      g.restore();
+      probeWord(t, L.i, i, (tt) => i < wordsShown(L, tt + .05)); }
+      x += widths[i] + gap; }
+  });
 }
 
 // ---------- a world inside the table (guest pick 5, N27) ----------
