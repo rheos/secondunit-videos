@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>First Night Out, the transitions</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #070b24; overflow: hidden; }
+  canvas { width: 100vw; height: 100vh; object-fit: contain; display: block; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<script src="js/paper.js"></script>
+<script src="js/raccoon.js"></script>
+<script src="js/forest.js"></script>
+<script src="js/scene.js"></script>
+<script src="js/scene-walk.js"></script>
+<script src="js/scene-creek.js"></script>
+<script src="js/transitions.js"></script>
+<script src="js/film.js"></script>
+<script>
+// The transitions reel: paper-fox's moves, ported, cutting back and forth between our two built worlds (the forest
+// walk and the creek). Each move gets its real place in the film when the scenes around it are built:
+//   intro            the cut-outs settle onto their stands (the film's opening)
+//   trackPine        a cedar sweeps past the lens (cedar to creek in the film)
+//   lightFlood       the creek's moonlit water floods the frame (creek to garden: the reflection becomes the porch light)
+//   rockIris         a ring of rock closes on the parent (lost to found: the iris on the drainpipe)
+//   popup            the night folds flat and the next world springs up (found to dawn)
+//   throughBranches  the camera pushes through cedar sprays (the hollow, down into the cedar)
+//   lightFlash       the moon flares into a flash (garden to lost: the motion-sensor light)
+FILM.page([
+  { scene: 'walk', from: 0, dur: 6.6 },
+  { tr: 'trackPine', dur: 1.6 },
+  { scene: 'creek', from: 0, dur: 6.2 },
+  { tr: 'lightFlood', dur: 1.6, o: { light: 'water' } },
+  { scene: 'walk', from: 9.6, dur: 1.4 },
+  { tr: 'rockIris', dur: 1.4 },
+  { scene: 'creek', from: 2.0, dur: 2.6 },
+  { tr: 'popup', dur: 2.2 },
+  { scene: 'walk', from: 0, dur: 2.0 },
+  { tr: 'throughBranches', dur: 1.6 },
+  { scene: 'creek', from: .4, dur: 2.0 },
+  { tr: 'lightFlash', dur: 1.2 },
+  { scene: 'walk', from: 13.6, dur: 2.4 },
+], { intro: 1.8, outro: 1 });
+</script>
+</body>
+</html>
