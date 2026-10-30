@@ -40,7 +40,8 @@ const hash = (n) => { const s = Math.sin(n * 127.1 + 311.7) * 43758.5453; return
 // ---------- the camera path: [time, position, target, fov] ----------
 const KEYS = [
   // the hook: the note on its own, then pull back to Blink under it
-  [0, [0, 2.3, 6.1], [0, 2.25, 0.3], 34],
+  [0, [0.25, 2.55, 7.4], [0, 2.25, 0.3], 34],
+  [1.4, [0.05, 2.32, 6.1], [0, 2.25, 0.3], 34],
   [T.guar + 0.2, [0, 2.3, 5.7], [0, 2.25, 0.3], 34],
   [T.guar + 1.3, [0.15, 1.5, 10.6], [0.05, 1.2, 0], 36],
   [T.already - 0.1, [0.2, 1.5, 10.4], [0.05, 1.2, 0], 36],
@@ -124,7 +125,7 @@ export async function buildWorld(canvas) {
   // ---------- sound cues (times only; reported before any await so cues.mjs sees them) ----------
   const cue = (k, t, extra) => window.BP.CUES.push(Object.assign({ k, t: +t.toFixed(3) }, extra || {}));
   const ASKQ = "Ballpark, what do we pay?";
-  cue("whoosh", T.guar + 0.15, { d: 1.1 }); cue("tick", T.reads);
+  cue("land", 0.32); cue("whoosh", T.guar + 0.15, { d: 1.1 }); cue("tick", T.reads);
   cue("slide", T.already, { d: 0.55 }); cue("blip", T.secret);
   cue("pop", T.ask - 0.1); [...ASKQ].forEach((ch, i) => ch !== " " && cue("type", T.ask + i / 24));
   cue("zip", T.sums - 0.05); cue("pop", T.sums + 0.3); cue("draw", T.very, { d: 0.4 }); cue("strike", T.file1);
@@ -220,7 +221,7 @@ export async function buildWorld(canvas) {
     g.fillStyle = "#0c0e11"; rr(g, 6, 6, W - 12, H - 12, 34); g.fill(); g.strokeStyle = "#4f93d6"; g.lineWidth = 9; rr(g, 6, 6, W - 12, H - 12, 32); g.stroke();
     g.font = "500 60px 'IBM Plex Mono', monospace"; g.textBaseline = "middle"; g.textAlign = "left";
     s.sig.split("\n").forEach((ln, i) => { const y = 92 + i * 92; g.fillStyle = "#eef2f6"; g.fillText(ln, 56, y); const at = ln.indexOf("role"); if (at >= 0) { g.fillStyle = "#4f93d6"; g.fillText("role", 56 + g.measureText(ln.slice(0, at)).width, y); } });
-    if (s.c) { g.font = "500 32px 'IBM Plex Mono', monospace"; g.fillStyle = "#7b8593"; g.fillText("# drops what this role can't see", 56, H - 70); }
+    if (s.c) { g.globalAlpha = s.c; g.font = "500 32px 'IBM Plex Mono', monospace"; g.fillStyle = "#7b8593"; g.fillText("# drops what this role can't see", 56, H - 70); g.globalAlpha = 1; }
   });
   code.mesh.position.set(BX - 2.1, 1.35, -12.4); code.mesh.rotation.y = 0.45; scene.add(code.mesh);
 
@@ -303,6 +304,7 @@ export async function buildWorld(canvas) {
     const loose = t >= T.keep + 0.1, u = t - (T.keep + 0.1);
     notePivot.rotation.z = loose ? -0.42 * back(cl(u / 0.45)) + 0.07 * Math.sin(u * 9) * Math.exp(-u * 3) : 0;
     note.set({ pin: !loose });
+    const land = back(r01(t, 0, 0.4)); notePivot.scale.setScalar(mix(1.08, 1, land)); notePivot.position.y = NOTE.y + 0.475 + 0.18 * (1 - land);
     const noteA = 1 - r01(t, T.so - 0.1, 0.45);
     note.mesh.material.opacity = noteA; note.mesh.visible = noteA > 0;
 
@@ -413,7 +415,7 @@ export async function buildWorld(canvas) {
     // the code panel
     const cA = r01(t, T.load - 0.35, 0.3) * (1 - r01(t, T.label - 0.6, 0.3));
     code.mesh.visible = cA > 0; code.mesh.material.opacity = cA; code.mesh.scale.setScalar(mix(0.85, 1, back(r01(t, T.load - 0.35, 0.35))));
-    code.set({ sig: typed(SIG, SIG_T0, SIG_CPS, t), c: t >= T.role + 0.35 });
+    code.set({ sig: typed(SIG, SIG_T0, SIG_CPS, t), c: Math.round(r01(t, T.role + 0.35, 0.3) * 12) / 12 }); // fades in: no one-frame pop
 
     // Blink's face
     if (t < T.by) { lookY = 0.9 * r01(t, 0.3, 0.4); }
