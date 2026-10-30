@@ -150,11 +150,11 @@ export async function buildWorld(canvas) {
   const api = new THREE.Group(); scene.add(api);
   const cloudMat = toon("#cfe3ff", { transparent: true });
   [[0, 0, 0, 0.42], [0.42, 0.06, 0, 0.32], [-0.4, 0.02, 0, 0.3], [0.14, 0.3, 0, 0.33]].forEach(([x, y, z, r]) => { const m = new THREE.Mesh(new THREE.SphereGeometry(r, 24, 16), cloudMat); m.position.set(x, y, z); api.add(m); });
-  const apiLabel = panel(1.2, 0.3, 260, (g, W, H) => { g.fillStyle = "#c9d1d9"; g.font = "500 52px 'IBM Plex Mono', monospace"; g.textAlign = "center"; g.textBaseline = "middle"; g.fillText("weather API", W / 2, H / 2); });
-  apiLabel.set({}); apiLabel.mesh.position.set(0.1, -0.62, 0.3); api.add(apiLabel.mesh);
+  const apiLabel = panel(1.6, 0.3, 260, (g, W, H) => { g.fillStyle = "#c9d1d9"; g.font = "500 52px 'IBM Plex Mono', monospace"; g.textAlign = "center"; g.textBaseline = "middle"; g.fillText("weather API", W / 2, H / 2); });
+  apiLabel.set({}); apiLabel.mesh.position.set(0.2, -0.62, 0.3); api.add(apiLabel.mesh);
   const dropMat = new THREE.MeshBasicMaterial({ color: "#4f93d6", transparent: true });
   const drops = [-0.26, 0, 0.26, -0.13, 0.13].map((x, i) => { const d = new THREE.Mesh(new THREE.CylinderGeometry(0.022, 0.022, 0.16, 6), dropMat); d.position.set(x, -0.35, 0.1); api.add(d); return d; });
-  api.position.set(0.72, 1.7, -0.8);
+  api.position.set(0.55, 1.7, -0.8);
   const amberTex = glyphTexture(THREE, (g, W) => { const gr = g.createRadialGradient(W / 2, W / 2, 0, W / 2, W / 2, W / 2); gr.addColorStop(0, "rgba(255,220,160,0.95)"); gr.addColorStop(1, "rgba(214,164,90,0)"); g.fillStyle = gr; g.fillRect(0, 0, W, W); }, 128, 128);
   const sigOut = new THREE.Sprite(glowMat.clone()), sigBack = new THREE.Sprite(new THREE.SpriteMaterial({ map: amberTex, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true }));
   [sigOut, sigBack].forEach((sp) => { sp.scale.setScalar(0.55); sp.visible = false; scene.add(sp); });
@@ -271,8 +271,8 @@ export async function buildWorld(canvas) {
     const working = t >= T.runAt + 0.55 && t < T.backAt + 0.1;
     screen.mesh.visible = working;
     if (working) screen.set({ a: Math.floor((t - T.runAt) * 16) % 16, done: t >= T.resAt + 0.1 });
-    W.hot.material.opacity = 0.45 * r01(t, T.runAt + 0.6, 0.1) * (1 - r01(t, T.resAt + 0.3, 0.3));
-    const cloudA = r01(t, T.runAt - 0.2, 0.3) * (1 - r01(t, T.backAt + 0.3, 0.4));
+    W.hot.material.opacity = 0; /* the screen shows the work now; a glow box over the scaled tile read as a brown panel */
+    const cloudA = r01(t, T.runAt - 0.2, 0.3) * (1 - r01(t, T.resAt + 0.05, 0.3));
     api.visible = cloudA > 0; if (api.visible) { fadeAll(api, cloudA); api.position.y = 1.7 + 0.05 * Math.sin(t * 2.1); }
     const rain = r01(t, T.runAt + 1.1, 0.1) * (1 - r01(t, T.runAt + 1.75, 0.15));
     drops.forEach((d, i) => { d.visible = rain > 0; d.position.y = -0.35 - (((t - T.runAt) * 2.2 + i * 0.13) % 0.6); d.material.opacity = rain * cloudA; });
