@@ -268,8 +268,8 @@ export async function buildWorld(canvas) {
       const s0 = mix(1, 0.55, io(r01(t, T.dropAt, 0.5))) * r01(t, T.handoff + 0.55, 0.12);
       req.scale.set(s0 + 0.001, s0 * (1 - ins) + 0.001, 1);
     }
-    const working = t >= T.runAt + 0.55 && t < T.backAt + 0.1;
-    screen.mesh.visible = working;
+    const scrA = r01(t, T.runAt + 0.55, 0.12) * (1 - r01(t, T.backAt, 0.2)), working = scrA > 0;
+    screen.mesh.visible = working; screen.mesh.material.transparent = true; screen.mesh.material.opacity = scrA;
     if (working) screen.set({ a: Math.floor((t - T.runAt) * 16) % 16, done: t >= T.resAt + 0.1 });
     W.hot.material.opacity = 0; /* the screen shows the work now; a glow box over the scaled tile read as a brown panel */
     const cloudA = r01(t, T.runAt - 0.2, 0.3) * (1 - r01(t, T.resAt + 0.05, 0.3));
