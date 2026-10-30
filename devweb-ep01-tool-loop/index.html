@@ -9,6 +9,10 @@
     <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
     <!-- George's word times in film seconds (vo/align.py): VO.w("harness") -->
     <script src="vo/words.js"></script>
+    <script src="blink-geo.js"></script>
+    <script type="importmap">
+      { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.181.2/build/three.module.js", "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.181.2/examples/jsm/" } }
+    </script>
     <style>
       /* devweb palette: green = the model and "good", blue = tools and systems, amber = results, red = the failure */
       :root {
@@ -44,6 +48,7 @@
       <!-- one track: George's narration plus the earshot sound on the picture (sfx_earshot.py -> _in/mix.wav) -->
       <audio id="mix" src="_in/mix.wav" data-start="0" data-duration="45.32" data-track-index="20" data-volume="1"></audio>
       <div id="stage" class="layer"></div>
+      <canvas id="blink3d" width="720" height="1280" style="position:absolute;left:0;top:0;width:720px;height:1280px;pointer-events:none;opacity:0"></canvas>
       <div class="layer" style="pointer-events:none;opacity:.07;mix-blend-mode:overlay;background-image:url(&quot;data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='160' height='160' filter='url(%23n)'/></svg>&quot;)"></div>
     </div>
 
@@ -166,77 +171,39 @@
         cue("zip", handAt + 0.05);
         // path relay (cinetic tr-path-relay): the card carries the eye down into the machine and lands on the model
         F(fly, { x: 0, y: 0, scaleX: 1, scaleY: 1 }, { x: -12, y: -40, scaleX: 1.04, scaleY: 1.04, duration: 0.18, ease: "power2.out" }, handAt);
-        F(fly, { x: -12, y: -40, scaleX: 1.04, scaleY: 1.04 }, { x: -160, y: 30, scaleX: 0.2, scaleY: 0.3, duration: 0.6, ease: "power3.inOut" }, handAt + 0.18);
+        F(fly, { x: -12, y: -40, scaleX: 1.04, scaleY: 1.04 }, { x: 0, y: -10, scaleX: 0.3, scaleY: 0.34, duration: 0.6, ease: "power3.inOut" }, handAt + 0.18);
         F(p2, { opacity: 1 }, { opacity: 0, duration: 0.35 }, handAt + 0.25);
         F(fly, { opacity: 1 }, { opacity: 0, duration: 0.15 }, handAt + 0.72);
 
-        // ================= III. THE MACHINE (isometric): the harness picks the request up and runs it =================
+        // ================= III. THE HARNESS (Three.js): Blink has no hands; the harness belt runs the tool =================
+        // the drawing is in the module script below (blink3d.js); these are its beats, all on Chris's words
         const p3 = mk("div", "layer hide");
-        F(p3, { opacity: 0 }, { opacity: 1, duration: 0.3 }, handAt + 0.4);
-        const isoWrap = mk("div", "abs", "left:0;top:300px;width:720px;height:600px;transform:scale(1.12);transform-origin:50% 40%", p3);
-        const floor = mk("div", "iso-floor", "", isoWrap);
-        // slow drone drift of the whole machine
-        F(floor, { rotationX: 58, rotationZ: 40 }, { rotationX: 55, rotationZ: 50, duration: 10, ease: "sine.inOut" }, handAt + 0.4);
-        const glow = (x, y, s, rgb) => mk("div", "abs", `left:${x}px;top:${y}px;width:${s}px;height:${s}px;border-radius:50%;background:radial-gradient(closest-side, rgba(${rgb},.38), rgba(${rgb},0));opacity:0`, floor);
-        const box = (x, y, s, h, top, s1, e1, label, fs, border) => {
-          const b = mk("div", "iso-bx", `left:${x}px;top:${y}px;width:${s}px;height:${s}px;opacity:0`, floor);
-          const t = mk("div", "iso-top", `transform:translateZ(${h}px);background:${top};border:2px solid ${border};font-size:${fs}px;color:var(--text)`, b, label);
-          mk("div", "iso-s", `top:${s}px;height:${h}px;background:${s1}`, b);
-          mk("div", "iso-e", `left:${s}px;width:${h}px;background:${e1}`, b);
-          const hot = mk("div", "abs", `left:0;top:0;width:100%;height:100%;transform:translateZ(${h + 1}px);opacity:0`, b);
-          return { b, t, hot };
-        };
-        const hGlow = glow(150, 150, 300, "106,208,138");
-        const tGlow = glow(270, 330, 260, "214,164,90");
-        const harness = box(216, 216, 166, 16, "#1b212d", "#121722", "#161c28", "harness", 24, "#2a3344");
-        const model = box(50, 50, 166, 116, "#234a33", "#12271b", "#1a3626", "model", 25, "#6ad08a");
-        const tools = [["search", 250], ["weather", 356], ["shell", 463]].map(([n, x]) => box(x, 416, 93, 56, "#1e3350", "#111d2e", "#172840", n, 17, "#4f93d6"));
-        harness.hot.style.cssText += ";border:3px solid var(--green);box-sizing:border-box";
-        tools[1].hot.style.cssText += ";background:rgba(214,164,90,.6);border:2px solid var(--amber);box-sizing:border-box";
-        model.hot.style.cssText += ";background:rgba(106,208,138,.5)";
-        // the machine builds: blocks rise in place
-        [model, harness, ...tools].forEach((bx, i) => {
-          const t = handAt + 0.5 + i * 0.09;
-          F(bx.b, { z: -140, opacity: 0 }, { z: 0, opacity: 1, duration: 0.45, ease: "back.out(1.4)" }, t);
-          cue("pop", t + 0.2, { i });
+        const EP = (window.EP = {
+          p1In: w("can't") - 0.12, p1Happy: w("text") - 0.05, p1Out: w("ask") - 0.6,
+          p3In: handAt + 0.4, cardAt: handAt + 0.72, beltAt: w("harness") - 0.35, dropAt: w("harness") + 0.15, runAt: w("runs", 2) - 0.1,
+          resAt: w("four") - 0.15, backAt: w("hands") - 0.05, happyTo: e("text", 2) + 0.5, p3Out: w("reads") - 0.75, endIn: e("belong") + 1.35, END: VO.END,
         });
-        // the request card on the floor (white) and the result card (amber), with a shadow
-        const req = mk("div", "iso-card", "background:var(--text);color:#0d1117;opacity:0", floor, "get_weather()");
-        const res = mk("div", "iso-card", "background:#6b7280;color:#0d1117;opacity:0", floor, "4°C, rain");
-        const P = (x, y, z) => ({ x, y, z });
-        const fromModel = P(96, 222, 44), onHarness = P(262, 276, 26), overTool = P(366, 440, 104), onTool = P(366, 440, 62), overModel = P(96, 110, 172), onModel = P(96, 110, 120);
-        const pickAt = w("picks") - 0.1;
-        F(req, Object.assign({ opacity: 0 }, P(96, 205, 60)), Object.assign({ opacity: 1, duration: 0.3, ease: "power2.out" }, fromModel), pickAt);
-        F(req, fromModel, Object.assign({ duration: 0.9, ease: "power3.inOut" }, onHarness), pickAt + 0.35);
-        cue("slide", pickAt + 0.4, { d: 0.9 });
-        F(hGlow, { opacity: 0 }, { opacity: 1, duration: 0.3 }, w("harness") - 0.1);
-        F(harness.hot, { opacity: 0 }, { opacity: 1, duration: 0.2 }, w("harness") - 0.1);
+        F(p3, { opacity: 0 }, { opacity: 1, duration: 0.3 }, EP.p3In);
+        cue("pop", EP.p1In + 0.1);
+        cue("blip", EP.p1Happy + 0.05);
+        cue("pop", EP.p3In + 0.15);
+        cue("whoosh", EP.beltAt, { d: 0.35 });
+        cue("land", EP.beltAt + 0.35);
         cue("tick", w("harness"));
-        const harnessTag = mk("div", "abs mono hide", "left:44px;top:250px;font-size:24px;color:var(--green)", p3, "// the harness: not the model");
+        cue("slide", EP.dropAt, { d: 0.5 });
+        cue("slide", EP.runAt, { d: 0.45 });
+        cue("land", EP.runAt + 0.45);
+        cue("ding", EP.resAt + 0.3);
+        cue("zipdown", EP.backAt + 0.05);
+        cue("land", EP.backAt + 0.9);
+        cue("blip", EP.backAt + 0.95);
+        cue("pop", EP.endIn + 0.2);
+        const harnessTag = mk("div", "abs mono hide", "left:44px;top:250px;font-size:24px;color:var(--amber)", p3, "// the harness: not the model");
         show(harnessTag, w("harness"), 0.3, 10);
-        const runAt = w("runs", 2) - 0.15;
-        F(req, onHarness, Object.assign({ duration: 0.45, ease: "power3.in" }, overTool), runAt);
-        F(req, overTool, Object.assign({ duration: 0.18, ease: "power2.in" }, onTool), runAt + 0.45);
-        cue("land", runAt + 0.63);
-        F(req, { opacity: 1 }, { opacity: 0, duration: 0.15 }, runAt + 0.66);
-        F(tools[1].hot, { opacity: 0 }, { opacity: 1, duration: 0.15 }, runAt + 0.6);
-        F(tGlow, { opacity: 0 }, { opacity: 1, duration: 0.25 }, runAt + 0.6);
-        F(tools[1].hot, { opacity: 1 }, { opacity: 0, duration: 0.5 }, w("hands") + 0.2);
-        F(tGlow, { opacity: 1 }, { opacity: 0, duration: 0.5 }, w("hands") + 0.2);
-        // the result rises off the tool and its colour resolves on arrival (cinetic cl-ink-resolve)
-        const resAt = w("four") - 0.15;
-        F(res, Object.assign({ opacity: 0 }, onTool), Object.assign({ opacity: 1, duration: 0.3, ease: "power2.out" }, P(366, 440, 92)), resAt);
-        F(res, { backgroundColor: "#6b7280" }, { backgroundColor: "#d6a45a", duration: 0.5, ease: "power2.out" }, resAt + 0.25);
-        cue("ding", resAt + 0.3);
-        const back = w("hands") - 0.05;
-        F(res, P(366, 440, 92), Object.assign({ duration: 0.9, ease: "power3.inOut" }, overModel), back);
-        cue("zipdown", back + 0.05);
-        F(res, overModel, Object.assign({ duration: 0.2, ease: "power2.in" }, onModel), back + 0.9);
-        F(res, { opacity: 1 }, { opacity: 0, duration: 0.15 }, back + 1.12);
-        F(model.hot, { opacity: 0 }, { opacity: 1, duration: 0.12 }, back + 1.08);
-        F(model.hot, { opacity: 1 }, { opacity: 0, duration: 0.5 }, back + 1.25);
-        cue("land", back + 1.1);
-        F(p3, { opacity: 1 }, { opacity: 0, duration: 0.35 }, w("reads") - 0.75);
+        const modelTag = mk("div", "abs mono hide", "left:44px;top:250px;font-size:24px;color:var(--green)", p3, "// the model: it only writes");
+        show(modelTag, EP.p3In + 0.3, 0.3, 10);
+        hide(modelTag, w("harness") - 0.25, 0.2);
+        F(p3, { opacity: 1 }, { opacity: 0, duration: 0.35 }, EP.p3Out);
 
         // ================= IV. THE LOOP (light in the wires): ask, run, read, faster each lap =================
         const p4 = mk("div", "layer hide");
@@ -358,8 +325,128 @@
         const url = mk("div", "abs mono hide", "left:0;right:0;top:690px;text-align:center;font-size:28px;color:var(--text2)", stage, "devweb.org/glossary/tool-calling-loop");
         rise(url, endAt + 1.45, 0.4);
 
+        const clock3 = { t: 0 };
+        tl.fromTo(clock3, { t: 0 }, { t: VO.END, duration: VO.END, ease: "none", immediateRender: false, onUpdate: () => { if (window.renderThree) window.renderThree(clock3.t); } }, 0);
+        window.__timelines = window.__timelines || {};
         window.__timelines["main"] = tl;
       })();
+    </script>
+
+    <script type="module">
+      // Blink, toon shaded in Three.js (blink3d.js). Every pose is a pure function of film time t.
+      import * as THREE from "three";
+      import { toonRamp, makeBlink, makeHarness, glyphTexture } from "./blink3d.js";
+      const G = window.BLINK;
+      window.__hf = window.__hf || {};
+      window.__hf.buildReady = window.__hf.buildReady || {};
+      let ready;
+      window.__hf.buildReady["blink3d"] = new Promise((r) => (ready = r));
+      await document.fonts.ready;
+      const canvas = document.getElementById("blink3d");
+      const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true, preserveDrawingBuffer: true });
+      renderer.setSize(720, 1280, false);
+      renderer.setPixelRatio(1);
+      renderer.outputColorSpace = THREE.SRGBColorSpace;
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(36, 720 / 1280, 0.1, 60);
+      camera.position.set(0, 0.35, 7.6);
+      camera.lookAt(0, 0.1, 0);
+      const sun = new THREE.DirectionalLight("#ffffff", 2.4); sun.position.set(-3, 4, 5); scene.add(sun);
+      scene.add(new THREE.AmbientLight("#ffffff", 0.9));
+      const ramp = toonRamp(THREE);
+      const rig = new THREE.Group(); scene.add(rig);
+      const blink = makeBlink(THREE, G, ramp); rig.add(blink.root);
+      const harness = makeHarness(THREE, G, ramp); rig.add(harness.root);
+      const card = (text, bg, fg) => new THREE.Mesh(new THREE.PlaneGeometry(0.78, 0.28), new THREE.MeshBasicMaterial({ transparent: true, map: glyphTexture(THREE, (g, w, h) => {
+        g.fillStyle = bg; g.beginPath(); g.roundRect(4, 4, w - 8, h - 8, 26); g.fill();
+        g.fillStyle = fg; g.font = "600 64px 'IBM Plex Mono', monospace"; g.textAlign = "center"; g.textBaseline = "middle"; g.fillText(text, w / 2, h / 2 + 3);
+      }, 560, 200) }));
+      const req = card("get_weather()", "#eef2f6", "#0d1117"), res = card("4°C, rain", "#d6a45a", "#0d1117");
+      rig.add(req, res);
+      const shadow = new THREE.Mesh(new THREE.CircleGeometry(1, 48), new THREE.MeshBasicMaterial({ color: "#000", transparent: true, opacity: 0.4 }));
+      shadow.rotation.x = -Math.PI / 2; shadow.scale.set(1, 0.16, 1); rig.add(shadow);
+
+      const E = window.EP;
+      const cl = (x) => Math.max(0, Math.min(1, x));
+      const ease = (x) => { x = cl(x); return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2; };
+      const back = (x) => { x = cl(x); const c1 = 1.70158, c3 = c1 + 1; return 1 + c3 * Math.pow(x - 1, 3) + c1 * Math.pow(x - 1, 2); };
+      const ramp01 = (t, a, d) => cl((t - a) / d);
+      const mix = (a, b, k) => a + (b - a) * k;
+      const V3 = (x, y, z) => new THREE.Vector3(x, y, z);
+      const lerpV = (a, b, k) => a.clone().lerp(b, k);
+      const blinkAt = (t, list) => Math.max(0, ...list.map((c) => 1 - Math.abs(t - c) / 0.07));
+      const visorFront = V3(0, 0.25, 1.08), buckleFront = V3(0, -0.55, 1.2), tileFront = V3(0, -1.1, 1.18);
+
+      function shot(t) {
+        if (t >= E.p1In - 0.3 && t < E.p1Out + 0.45) return "I";
+        if (t >= E.p3In - 0.1 && t < E.p3Out + 0.4) return "III";
+        if (t >= E.endIn - 0.1) return "V";
+        return null;
+      }
+      window.renderThree = (t) => {
+        const S = shot(t);
+        let alpha = 0;
+        req.visible = res.visible = harness.root.visible = false;
+        harness.buckleGlow.material.opacity = 0;
+        Object.values(harness.tools).forEach((k) => { k.hot.material.opacity = 0; k.pivot.rotation.z = 0; });
+        const bob = 0.05 * Math.sin((t / 1.7) * Math.PI * 2);
+        let happy = 0, blinkK = 0, look = 0, yaw = 0.18 * Math.sin((t / 3.1) * Math.PI * 2);
+        if (S === "I") {
+          const k = back(ramp01(t, E.p1In, 0.4));
+          alpha = cl((t - (E.p1In - 0.05)) / 0.1) * (1 - cl((t - E.p1Out) / 0.4));
+          rig.position.set(0, -1.24 + bob * 0.5 - (1 - k) * 0.4, 0); rig.scale.setScalar(0.48 * Math.max(0.01, k));
+          // "It can't." a little shake of the head (it has no hands to shrug); then "only writes text": happy
+          yaw = t < E.p1Happy ? 0.22 * Math.sin((t - E.p1In) * 18) * (1 - cl((t - E.p1In - 0.6) / 0.4)) : yaw;
+          happy = cl((t - E.p1Happy) / 0.15);
+        } else if (S === "III") {
+          const k = back(ramp01(t, E.p3In, 0.45));
+          alpha = cl((t - E.p3In + 0.1) / 0.2) * (1 - cl((t - E.p3Out) / 0.35));
+          rig.position.set(0, 0.12 + bob * 0.8 - (1 - k) * 0.5, 0); rig.scale.setScalar(0.8 * Math.max(0.01, k));
+          // the harness cinches on: the belt and its tools drop into place
+          const hb = ease(ramp01(t, E.beltAt, 0.35));
+          harness.root.visible = t >= E.beltAt;
+          harness.root.position.y = (1 - hb) * 0.9; harness.root.scale.setScalar(mix(1.25, 1, hb));
+          harness.root.traverse((o) => { if (o.material && o.material.transparent && o !== harness.buckleGlow && !o.userData.keep) o.material.opacity = o.material.blending === THREE.AdditiveBlending ? o.material.opacity : hb; });
+          harness.buckleGlow.material.opacity = 0.8 * cl((t - E.dropAt - 0.4) / 0.1) * (1 - cl((t - E.runAt - 0.1) / 0.3));
+          // the request: Blink writes it (it floats at the visor), the harness takes it at the buckle, runs it at the tile
+          if (t >= E.cardAt && t < E.runAt + 0.5) {
+            req.visible = true;
+            const a = lerpV(visorFront, buckleFront, ease(ramp01(t, E.dropAt, 0.5)));
+            req.position.copy(lerpV(a, tileFront, ease(ramp01(t, E.runAt, 0.45))));
+            const sc = mix(1, 0.55, ease(ramp01(t, E.dropAt, 0.5)));
+            req.scale.setScalar(sc * (1 - cl((t - E.runAt - 0.4) / 0.1)) + 0.001);
+          }
+          const W = harness.tools.weather, run = t - E.runAt - 0.45;
+          if (run > 0) { W.hot.material.opacity = 0.75 * cl(run / 0.1) * (1 - cl((t - E.backAt - 0.3) / 0.5)); W.pivot.rotation.z = 0.25 * Math.exp(-run * 2.2) * Math.sin(run * 11); }
+          // the answer comes back as more text: amber card from the tile up to the visor
+          if (t >= E.resAt && t < E.backAt + 1.0) {
+            res.visible = true;
+            const up = ease(ramp01(t, E.backAt, 0.9));
+            res.position.copy(lerpV(V3(0, -1.0, 1.2), visorFront.clone().add(V3(0, 0, 0.05)), up));
+            res.scale.setScalar(mix(0.2, 0.6, ease(ramp01(t, E.resAt, 0.3))) * (1 - 0.6 * up) * (1 - cl((t - E.backAt - 0.9) / 0.1)) + 0.001);
+            res.material.color.setRGB(...[0, 1, 2].map(() => mix(0.55, 1, cl((t - E.resAt - 0.2) / 0.4))));
+          }
+          happy = cl((t - E.backAt - 0.85) / 0.12) * (1 - cl((t - E.happyTo) / 0.15));
+          look = t < E.dropAt ? 0 : t < E.backAt ? -0.6 * cl((t - E.dropAt) / 0.2) : 0;
+          blinkK = blinkAt(t, [E.p3In + 1.4, E.runAt + 1.2]);
+        } else if (S === "V") {
+          const k = back(ramp01(t, E.endIn, 0.45));
+          alpha = cl((t - E.endIn + 0.1) / 0.2);
+          rig.position.set(0, 1.18 + bob * 0.5 - (1 - k) * 0.6, 0); rig.scale.setScalar(0.45 * Math.max(0.01, k));
+          happy = cl((t - E.endIn - 1.6) / 0.12);
+          blinkK = blinkAt(t, [E.endIn + 0.9]);
+        }
+        canvas.style.opacity = alpha.toFixed(3);
+        blink.root.rotation.y = yaw;
+        harness.root.rotation.y = yaw;
+        blink.face({ blink: blinkK, happy, look });
+        shadow.position.set(0, -1.62, 0);
+        shadow.material.opacity = 0.4 - bob;
+        renderer.render(scene, camera);
+      };
+      window.addEventListener("hf-seek", (ev) => window.renderThree(ev.detail.time));
+      window.renderThree(window.__hfThreeTime || 0);
+      ready();
     </script>
   </body>
 </html>
