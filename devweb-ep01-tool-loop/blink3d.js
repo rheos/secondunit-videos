@@ -62,12 +62,12 @@ export function makeBlink(THREE, G, ramp) {
   // look / lookY move the eyes across the visor; think 0..1 swaps the eyes for three dots pulsing at phase
   function face({ blink = 0, happy = 0, look = 0, lookY = 0, think = 0, phase = 0 } = {}) {
     eyes.forEach((e) => {
-      e.g.visible = think < 0.5;
-      e.cap.scale.y = Math.max(0.08, (1 - 0.92 * blink) * (1 - 0.7 * happy));
+      e.g.visible = think < 0.98;
+      e.cap.scale.y = Math.max(0.08, (1 - 0.92 * blink) * (1 - 0.7 * happy) * (1 - think));
       e.halo.scale.y = e.cap.scale.y;
       e.g.position.set(e.base.x + look * 0.06, e.base.y + happy * 0.05 + lookY * 0.05, e.base.z);
     });
-    dots.forEach((d, i) => { d.visible = think >= 0.5; const k = 0.75 + 0.35 * Math.max(0, Math.sin((phase - i * 0.18) * Math.PI * 2)); d.scale.set(k, k, 0.4 * k); });
+    dots.forEach((d, i) => { d.visible = think > 0.02; const k = think * (0.75 + 0.35 * Math.max(0, Math.sin((phase - i * 0.18) * Math.PI * 2))); d.scale.set(k, k, 0.4 * k); });
     smile.visible = happy < 0.5;
     grin.visible = happy >= 0.5;
   }
