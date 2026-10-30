@@ -32,7 +32,7 @@ const MX = 0.5, MW = 2.4, MH = 3.4, MD = 1.8, MTOP = FLOOR + MH, MFRONT = MD / 2
 const SX = MX - 0.6; // the intake slot on its roof, left of where Blink sits
 const TRAY_Y = FLOOR + 0.32, TRAY_Z = MFRONT + 0.75; // the tray at its foot, sticking out toward the camera
 const BLINK_AT = V(MX + 0.64, MTOP + 0.88, -0.15), BLINK_S = 0.72; // Blink sits on the roof, watching the slot
-const CARD = V(MX, 5.7, 1.2), CW = 2.0, CH = 1.55; // the big card the camera dives into
+const CARD = V(MX, 6.1, 1.2), CW = 2.0, CH = 1.55; // the big card the camera dives into
 const TESTP = V(MX, 4.45, 0.9); // the real-input test panel (VI), over Blink
 
 // ---------- the drops: a card falls into the slot, then slips in ----------
@@ -53,16 +53,16 @@ const KEYS = [
   [T.reads + 0.2, ...RIG],
   [T.shipped - 0.1, [MX, 2.15, 12.4], [MX, 0.85, 0.6], 36],
   // production: closer, the lamps and the tray
-  [T.production + 0.6, [MX, 1.5, 8.6], [MX, 0.05, 1.0], 36],
-  [T.clean + 0.6, [MX + 0.1, 1.3, 8.1], [MX, -0.1, 1.1], 36],
-  [T.looked - 0.1, [MX + 0.1, 1.35, 8.0], [MX, -0.05, 1.1], 36],
+  [T.production + 0.6, [MX, 2.0, 10.9], [MX, 0.8, 0.6], 36],
+  [T.clean + 0.6, [MX + 0.1, 1.95, 10.4], [MX, 0.8, 0.6], 36],
+  [T.looked - 0.1, [MX + 0.1, 2.0, 10.3], [MX, 0.85, 0.6], 36],
   // the dive: up to the real log card (Blink's head just under it)
-  [T.field + 0.35, [MX + 0.05, 5.65, 7.85], [MX, 5.6, CARD.z], 34],
-  [T.inside - 0.1, [MX - 0.05, 5.6, 7.65], [MX, 5.55, CARD.z], 34],
-  [T.and2 - 0.2, [MX, 5.55, 7.55], [MX, 5.55, CARD.z], 34],
+  [T.field + 0.35, [MX + 0.05, 6.05, 7.85], [MX, 6.0, CARD.z], 34],
+  [T.inside - 0.1, [MX - 0.05, 6.0, 7.65], [MX, 5.95, CARD.z], 34],
+  [T.and2 - 0.2, [MX, 5.95, 7.55], [MX, 5.95, CARD.z], 34],
   // the fixture card takes its place
-  [T.expected + 0.4, [MX + 0.05, 5.6, 7.7], [MX, 5.6, CARD.z], 34],
-  [T.code3 + 0.1, [MX + 0.1, 5.8, 8.4], [MX, 5.4, CARD.z], 34],
+  [T.expected + 0.4, [MX + 0.05, 6.0, 7.7], [MX, 6.0, CARD.z], 34],
+  [T.code3 + 0.1, [MX + 0.1, 6.2, 8.4], [MX, 5.8, CARD.z], 34],
   // the mass moment: crane back and up over the field of made-up fixtures, looking down the whole way
   [T.wrong + 0.3, [0.5, 9.0, 12.5], [0.4, -0.6, -1.5], 38],
   [T.agreed - 0.4, [0.5, 15.5, 13.5], [0.4, -1.6, -4.5], 40],
@@ -74,16 +74,17 @@ const KEYS = [
   [T.zero2 - 0.1, [0.6, 1.9, 7.9], [MX, -1.0, 1.5], 36],
   [T.zero2E + 0.5, [0.6, 1.9, 7.8], [MX, -1.0, 1.5], 36],
   // the test that matters: the panel over Blink, the machine under it
-  [T.feeds + 0.1, [MX, 2.5, 13.2], [MX, 1.3, 0.6], 36],
-  [T.exactly - 0.2, [MX, 2.45, 13.0], [MX, 1.3, 0.6], 36],
+  [T.feeds + 0.1, [MX, 2.7, 14.6], [MX, 1.55, 0.6], 36],
+  [T.exactly - 0.2, [MX, 2.65, 14.4], [MX, 1.55, 0.6], 36],
   // the line lands
   [T.landsE + 0.3, [0.55, 2.0, 7.7], [MX, -1.05, 1.6], 36],
   [T.write + 0.2, [0.55, 2.0, 7.6], [MX, -1.05, 1.6], 36],
   // pull back for the lesson, then rise to look down on the station for the end
-  [T.forever + 0.4, ...RIG],
-  [T.invent + 0.4, [MX, 2.2, 12.2], [MX, 1.1, 0.6], 36],
-  [T.invent + 2.2, [MX - 0.1, 7.6, 9.4], [MX, -0.2, 0.5], 38],
-  [T.END, [MX - 0.1, 7.8, 9.6], [MX, -0.2, 0.5], 38],
+  [T.forever - 0.2, ...RIG],
+  [T.build + 0.3, [MX, 3.2, 12.4], [MX, 2.4, 0.6], 36],
+  [T.invent + 0.4, [MX, 3.2, 12.2], [MX, 2.5, 0.6], 36],
+  [T.invent + 2.2, [MX - 0.1, 7.4, 11.6], [MX, 0.9, 0.5], 38],
+  [T.END, [MX - 0.1, 7.6, 11.8], [MX, 0.9, 0.5], 38],
 ];
 const cameraAt = cameraPath(KEYS);
 
@@ -238,7 +239,7 @@ export async function buildWorld(canvas) {
     if (k < 0 || t > tIn + 0.24) { m.visible = false; return; }
     m.visible = true;
     const yIn = MTOP + 0.06 + CARD_S[1] / 2;
-    if (t < tIn) { const f = k * k; m.position.set(SX + jx * (1 - f), mix(yIn + 3.6, yIn, f), 0.02); m.rotation.z = jx * 0.3 * (1 - f); return; }
+    if (t < tIn) { const f = k * k; m.position.set(SX + jx * (1 - f), mix(yIn + 2.0, yIn, f), 0.02); m.rotation.z = jx * 0.3 * (1 - f); m.material.opacity = cl(k / 0.35); return; }
     const s = cl((t - tIn) / 0.22); // sink: the bottom edge stays on the slot, the card shortens into it
     m.position.set(SX, MTOP + 0.06 + (1 - s) * CARD_S[1] / 2, 0.02); m.scale.set(1, Math.max(0.01, 1 - s), 1);
   };
