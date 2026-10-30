@@ -29,7 +29,7 @@ const CAPS = {
   typewriter: { font: '700 {s}px "Courier Prime", Courier, monospace', size: 46, gap: .6, type: 1, box: { fill: '#f6f1e4', ink: '#1a1612', padX: .4, padY: .28, r: .08, whole: 1 } },
   vv: { font: '{s}px Anton, Impact, sans-serif', size: 60, gap: .25, caps: 1, full: 1, stroke: 1 / 6, drop: 1, accent: 'rgb(255,176,59)' },
   melt: { font: '{s}px "Rubik Wet Paint", Impact, sans-serif', size: 60, gap: .3, caps: 1, edge: 1, fill: '#fbeed0', band: .7 },
-  ransom: { font: '700 {s}px Figtree, sans-serif', size: 52, gap: .45, ransom: 1 },
+  ransom: { font: '700 {s}px Figtree, sans-serif', size: 54, gap: .6, ransom: 1, wrapAt: 1.25 }, // wraps sooner: chips need the size
   neon: { font: '{s}px Yellowtail, cursive', size: 64, gap: .28, neon: '#ff3fb4', band: .9 },
 };
 const capWob = (li, wi, k) => { const v = Math.sin(li * 127.1 + wi * 311.7 + k * 74.7) * 43758.5453; return (v - Math.floor(v)) * 2 - 1; };
@@ -70,7 +70,7 @@ function captions(t) {
   const words = L.text.split(/\s+/).map((w) => S.caps ? w.toUpperCase() : w); g.font = S.font.replace('{s}', S.size);
   const w1 = words.map((w, i) => S.ransom ? ransomLetters(w, S.size, L.i, i).w : g.measureText(w).width), rowW = (a, b, s) => (w1.slice(a, b).reduce((x, y) => x + y, 0) + S.size * S.gap * (b - a - 1)) * s / S.size + (S.skew ? Math.abs(S.skew) * s : 0) + 2 * (S.box ? S.box.padX : 0) * s + (S.stroke ? (S.stroke + .05) * s : 0);
   let rows = [[0, words.length]];
-  if (words.length > 2 && rowW(0, words.length, S.size) * .8 > CAP.maxW) { let best = 1, bd = 1e9; for (let k = 1; k < words.length; k++) { const d = Math.abs(rowW(0, k, S.size) - rowW(k, words.length, S.size)); if (d < bd) { bd = d; best = k; } } rows = [[0, best], [best, words.length]]; }
+  if (words.length > 2 && rowW(0, words.length, S.size) * (S.wrapAt || .8) > CAP.maxW) { let best = 1, bd = 1e9; for (let k = 1; k < words.length; k++) { const d = Math.abs(rowW(0, k, S.size) - rowW(k, words.length, S.size)); if (d < bd) { bd = d; best = k; } } rows = [[0, best], [best, words.length]]; }
   const size = Math.max(18, Math.floor(S.size * Math.min(1, ...rows.map(([a, b]) => CAP.maxW / rowW(a, b, S.size))))); g.font = S.font.replace('{s}', size); g.textBaseline = 'alphabetic';
   g.font = S.font.replace('{s}', size); const gap = size * S.gap, widths = words.map((w, i) => S.ransom ? ransomLetters(w, size, L.i, i).w : (g.font = S.font.replace('{s}', size), g.measureText(w).width)), lead = size * (S.box ? 1.5 : 1.22);
   g.font = S.font.replace('{s}', size); const m = g.measureText('Hgjy'), asc = m.actualBoundingBoxAscent, dsc = m.actualBoundingBoxDescent;
