@@ -1,0 +1,499 @@
+<!doctype html>
+<html lang="en" data-resolution="portrait">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=720, height=1280" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@500;700&display=block" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <!-- George's word times in film seconds (vo/align.py): VO.w("harness") -->
+    <script src="vo/words.js"></script>
+    <script src="blink-geo.js"></script>
+    <script type="importmap">
+      { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.181.2/build/three.module.js", "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.181.2/examples/jsm/" } }
+    </script>
+    <style>
+      /* devweb palette: green = the model and "good", blue = tools and systems, amber = results, red = the failure */
+      :root {
+        --bg: #0d1117; --surface: #161c28; --surface2: #1b212d; --border: #2a3344; --text: #eef2f6; --text2: #c9d1d9;
+        --muted: #9aa6b6; --faint: #7b8593; --green: #6ad08a; --blue: #4f93d6; --amber: #d6a45a; --red: #e0675a;
+        --sans: "IBM Plex Sans", sans-serif; --mono: "IBM Plex Mono", monospace;
+      }
+      html, body { margin: 0; background: var(--bg); }
+      #root { position: relative; width: 720px; height: 1280px; overflow: hidden; color: var(--text); font-family: var(--sans);
+        background: radial-gradient(120% 70% at 50% 50%, #142030 0%, #0d1117 60%, #090c11 100%); }
+      .abs { position: absolute; }
+      .layer { position: absolute; inset: 0; }
+      .mono { font-family: var(--mono); }
+      .hide { opacity: 0; }
+      .chrome { left: 44px; right: 44px; top: 52px; display: flex; justify-content: space-between; align-items: center; font-family: var(--mono); font-size: 23px; font-weight: 500; }
+      .bar { left: 44px; right: 44px; bottom: 50px; height: 3px; background: #1c2333; }
+      .cap { left: 40px; right: 40px; top: 1030px; text-align: center; font-size: 46px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.15; }
+      .bubble { position: absolute; box-sizing: border-box; border-radius: 120px; display: flex; align-items: center; font-weight: 500; }
+      .node { position: absolute; box-sizing: border-box; border-radius: 22px; display: flex; align-items: center; justify-content: center; font-family: var(--mono); font-weight: 600; }
+      /* the isometric machine */
+      .iso-floor { position: absolute; left: 60px; top: 0; width: 600px; height: 600px; transform-style: preserve-3d; transform: rotateX(58deg) rotateZ(45deg);
+        background-image: linear-gradient(rgba(122,134,153,.14) 2px, transparent 2px), linear-gradient(90deg, rgba(122,134,153,.14) 2px, transparent 2px); background-size: 50px 50px; border: 2px solid #1c2333; }
+      .iso-bx { position: absolute; transform-style: preserve-3d; }
+      .iso-top { position: absolute; left: 0; top: 0; width: 100%; height: 100%; box-sizing: border-box; display: flex; align-items: center; justify-content: center; font-family: var(--mono); font-weight: 600; }
+      .iso-s { position: absolute; left: 0; width: 100%; transform-origin: top; transform: rotateX(90deg); }
+      .iso-e { position: absolute; top: 0; height: 100%; transform-origin: left; transform: rotateY(-90deg); }
+      .iso-card { position: absolute; left: 0; top: 0; width: 96px; height: 58px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-family: var(--mono); font-weight: 600; font-size: 13px; }
+      .pk { position: absolute; left: 0; top: 0; width: 22px; height: 22px; margin: -11px 0 0 -11px; border-radius: 50%; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="45.32" data-width="720" data-height="1280">
+      <!-- one track: George's narration plus the earshot sound on the picture (sfx_earshot.py -> _in/mix.wav) -->
+      <audio id="mix" src="_in/mix.wav" data-start="0" data-duration="45.32" data-track-index="20" data-volume="1"></audio>
+      <div id="stage" class="layer"></div>
+      <canvas id="blink3d" width="720" height="1280" style="position:absolute;left:0;top:0;width:720px;height:1280px;pointer-events:none;opacity:0"></canvas>
+      <div class="layer" style="pointer-events:none;opacity:.07;mix-blend-mode:overlay;background-image:url(&quot;data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='160' height='160' filter='url(%23n)'/></svg>&quot;)"></div>
+    </div>
+
+    <script>
+      (() => {
+        const tl = gsap.timeline({ paused: true });
+        const stage = document.getElementById("stage");
+        window.BP = window.BP || {};
+        BP.CUES = [];
+        const cue = (k, t, extra) => BP.CUES.push(Object.assign({ k, t: +t.toFixed(3) }, extra || {}));
+        const w = (word, n) => VO.w(word, n);
+        const e = (word, n) => VO.e(word, n);
+        // every tween is an explicit fromTo that never renders early, so frames can be rendered in any order
+        const F = (el, from, to, at) => tl.fromTo(el, from, Object.assign({ immediateRender: false }, to), at);
+        const mk = (tag, cls, css, parent, html) => {
+          const n = document.createElement(tag);
+          if (cls) n.className = cls;
+          if (css) n.style.cssText = css;
+          if (html != null) n.innerHTML = html;
+          (parent || stage).appendChild(n);
+          return n;
+        };
+        const show = (el, at, d = 0.3, y = 18) => F(el, { opacity: 0, y }, { opacity: 1, y: 0, duration: d, ease: "power3.out" }, at);
+        const hide = (el, at, d = 0.3) => F(el, { opacity: 1 }, { opacity: 0, duration: d, ease: "power2.in" }, at);
+        // blur-to-focus word rise (cinetic ty-blur-focus-word-rise)
+        const rise = (el, at, d = 0.45) => F(el, { opacity: 0, y: 26, filter: "blur(10px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: d, ease: "power3.out" }, at);
+        // a slam: big and turned to its place, one small overshoot
+        const slam = (el, at, from = 1.6) => { cue("slam", at + 0.16); return F(el, { opacity: 0, scale: from, rotate: -4 }, { opacity: 1, scale: 1, rotate: 0, duration: 0.3, ease: "back.out(1.6)" }, at); };
+        // typed text: one span per character, each a cue
+        const typed = (el, text, at, cps = 26, kind = "type") => {
+          el.textContent = "";
+          [...text].forEach((ch, i) => {
+            const s = mk("span", null, "opacity:0", el, ch === " " ? "&nbsp;" : ch.replace("<", "&lt;"));
+            const t = at + i / cps;
+            F(s, { opacity: 0 }, { opacity: 1, duration: 0.01 }, t);
+            if (ch !== " ") cue(kind, t);
+          });
+          return at + text.length / cps;
+        };
+
+        // ---------- chrome: lockup, topic tag, progress bar ----------
+        const chrome = mk("div", "abs chrome", "", stage, `<span><span style="color:var(--green)">~/</span>devweb</span><span style="color:var(--faint);font-size:20px">// tool calls</span>`);
+        const bar = mk("div", "abs bar");
+        const barIn = mk("div", null, "height:3px;background:var(--green);transform-origin:left;transform:scaleX(0)", bar);
+        F(barIn, { scaleX: 0 }, { scaleX: 1, duration: VO.END, ease: "none" }, 0);
+        hide(chrome, e("belong") + 0.3, 0.4);
+        hide(bar, e("belong") + 0.3, 0.4);
+
+        // ---------- captions: the script's phrases, timed by George (hidden where big type carries the line) ----------
+        const CAPS = [
+          [w("ask"), "Ask it for the weather in Nelson."], [w("it", 4), "It doesn't check the sky."], [w("it", 5), "It writes a request:"],
+          [w("call"), "call get_weather, city: Nelson."], [w("that's"), "That's the whole move."], [w("something"), "Something else picks that request up:"],
+          [w("harness") - 0.2, "the harness."], [w("it", 6), "It runs the tool,"], [w("gets"), "gets back 4°C and rain,"], [w("hands") - 0.2, "and hands that to the model"],
+          [w("as"), "as more text."], [w("model", 2) - 0.2, "The model reads it, and decides:"], [w("answer"), "answer, or ask again."], [w("that's", 2), "That's the loop."],
+          [w("ask", 3), "Ask. Run. Read."], [w("again", 2), "Again and again,"], [w("until"), "until it stops asking."], [w("so"), "So if an agent ever deletes a file,"],
+          [w("model", 3) - 0.15, "the model didn't run that command."],
+        ];
+        CAPS.forEach(([t, text], i) => {
+          const c = mk("div", "abs cap hide", "", stage, text.replace(/(harness|text|loop)/, '<span style="color:var(--green)">$1</span>').replace(/(4°C and rain)/, '<span style="color:var(--amber)">$1</span>'));
+          const end = i + 1 < CAPS.length ? CAPS[i + 1][0] : w("harness", 2) - 0.25;
+          rise(c, t, 0.3);
+          hide(c, end - 0.2, 0.18);
+        });
+
+        // ================= I. HOOK (kinetic type): open cropped inside "runs", pull back to the line =================
+        const p1 = mk("div", "layer");
+        const cam1 = mk("div", "abs", "left:0;top:0;width:720px;height:1280px;transform-origin:0 0", p1);
+        const l1 = mk("div", "abs", "left:44px;top:330px;font-size:96px;font-weight:700;letter-spacing:-0.045em;line-height:1", cam1, "An AI never");
+        const l2 = mk("div", "abs", "left:44px;top:436px;font-size:96px;font-weight:700;letter-spacing:-0.045em;line-height:1;white-space:nowrap", cam1,
+          `<span style="position:relative;display:inline-block">runs<span id="strike" style="position:absolute;left:-6px;right:-6px;top:54%;height:9px;background:var(--red);transform-origin:left;transform:scaleX(0)"></span></span> a tool.`);
+        // cinetic oh-cropped-word-pull-back: frame 0 sits at 3.2x on "runs", its first glyph cut by the left edge; log-space pull back
+        const zoom = { p: 0 };
+        const camAt = (p) => { const k = Math.pow(3.2, 1 - p); const tx = -190 * (1 - p), ty = -1020 * (1 - p); cam1.style.transform = `translate(${tx}px,${ty}px) scale(${k})`; };
+        camAt(0);
+        tl.fromTo(zoom, { p: 0 }, { p: 1, duration: 1.15, ease: "power2.inOut", immediateRender: false, onUpdate: () => camAt(zoom.p) }, w("never") - 0.25);
+        cue("whoosh", w("never") - 0.2, { d: 1.1 });
+        const strike = l2.querySelector("#strike");
+        F(strike, { scaleX: 0 }, { scaleX: 1, duration: 0.22, ease: "power2.out" }, e("tool") + 0.05);
+        cue("strike", e("tool") + 0.05);
+        const cant = mk("div", "abs hide", "left:44px;top:600px;font-size:60px;font-weight:700;color:var(--muted);letter-spacing:-0.03em", p1, "It can't.");
+        rise(cant, w("can't") - 0.05);
+        const only = mk("div", "abs hide", "left:44px;top:690px;font-size:60px;font-weight:700;letter-spacing:-0.03em", p1, `It only writes <span style="color:var(--green)">text.</span>`);
+        rise(only, w("only") - 0.05);
+        cue("blip", w("text"));
+        F(p1, { opacity: 1, y: 0 }, { opacity: 0, y: -80, duration: 0.4, ease: "power2.in" }, w("ask") - 0.6);
+        cue("swipe", w("ask") - 0.6);
+
+        // ================= II. DIVE (camera): the chat, then into the reply to what the model really wrote =================
+        const p2 = mk("div", "layer hide");
+        F(p2, { opacity: 0 }, { opacity: 1, duration: 0.3 }, w("ask") - 0.35);
+        const S0 = 0.5; // world is 2x the screen (4x made a one-frame white tile mid-dive: texture too big); overview at 0.5
+        const world = mk("div", "abs", `left:0;top:0;width:1440px;height:2560px;transform-origin:0 0;transform:scale(${S0})`, p2);
+        const user = mk("div", "bubble hide", "left:380px;top:520px;width:980px;height:150px;padding:0 55px;background:var(--surface2);font-size:59px;justify-content:flex-end", world);
+        show(user, w("ask") - 0.15, 0.3, 30);
+        cue("pop", w("ask") - 0.1);
+        const userT = mk("span", null, "", user);
+        typed(userT, "What's the weather in Nelson?", w("ask"), 24);
+        const ai = mk("div", "bubble hide", "left:80px;top:760px;width:960px;height:370px;border-radius:55px;background:rgba(106,208,138,.08);border:4px solid rgba(106,208,138,.45);align-items:flex-start", world);
+        const aiT = mk("div", "abs", "left:55px;top:45px;font-size:59px;font-weight:500", ai, "Let me check.");
+        show(ai, w("it", 4) - 0.1, 0.35, 30);
+        cue("pop", w("it", 4) - 0.05);
+        // the card inside the reply: at overview size it's a dark chip; at the dive it reads
+        const card = mk("div", "abs", "left:48px;top:165px;width:560px;height:170px;box-sizing:border-box;border-radius:15px;background:#0c0e11;border:3px solid var(--green);padding:28px 32px;font-family:var(--mono);font-size:31px;line-height:1.5;color:#b9f0c9;white-space:pre", ai);
+        const cardL1 = mk("div", null, "", card), cardL2 = mk("div", null, "", card);
+        // camera: dive from the overview to the card (card centre world 408,1010 -> screen 360,600 at 1.12)
+        const S1 = 1.12, tx1 = 360 - S1 * 408, ty1 = 600 - S1 * 1010;
+        F(world, { x: 0, y: 0, scale: S0 }, { x: tx1, y: ty1, scale: S1, duration: 1.2, ease: "power3.inOut" }, w("writes", 2) - 0.25);
+        cue("riser", w("writes", 2) - 0.6, { d: 0.6 });
+        cue("whoosh", w("writes", 2) - 0.2, { d: 1.2 });
+        F(aiT, { opacity: 1 }, { opacity: 0.25, duration: 0.6 }, w("writes", 2));
+        typed(cardL1, '{ "tool": "get_weather",', w("call") - 0.05, 22);
+        typed(cardL2, '  "city": "Nelson" }', e("call") + 0.75, 22); // whisper fuses "get weather, city, Nelson" into one token
+        const note2 = mk("div", "abs mono hide", "left:44px;top:250px;font-size:24px;color:var(--green)", p2, "// all the model makes: text");
+        show(note2, w("that's") - 0.1, 0.3, 10);
+        // the ghost handoff (cinetic mi-send-ghost-handoff): the card lifts off and leaves its ghost behind
+        const fly = mk("div", "abs hide", "left:46px;top:505px;width:627px;height:190px;box-sizing:border-box;border-radius:17px;background:var(--text);color:#0d1117;font-family:var(--mono);font-weight:600;font-size:30px;display:flex;align-items:center;justify-content:center", stage, "get_weather()");
+        const handAt = e("move") + 0.2;
+        F(fly, { opacity: 0 }, { opacity: 1, duration: 0.12 }, handAt);
+        F(card, { opacity: 1 }, { opacity: 0.25, duration: 0.2 }, handAt);
+        cue("zip", handAt + 0.05);
+        // path relay (cinetic tr-path-relay): the card carries the eye down into the machine and lands on the model
+        F(fly, { x: 0, y: 0, scaleX: 1, scaleY: 1 }, { x: -12, y: -40, scaleX: 1.04, scaleY: 1.04, duration: 0.18, ease: "power2.out" }, handAt);
+        F(fly, { x: -12, y: -40, scaleX: 1.04, scaleY: 1.04 }, { x: 0, y: -10, scaleX: 0.3, scaleY: 0.34, duration: 0.6, ease: "power3.inOut" }, handAt + 0.18);
+        F(p2, { opacity: 1 }, { opacity: 0, duration: 0.35 }, handAt + 0.25);
+        F(fly, { opacity: 1 }, { opacity: 0, duration: 0.15 }, handAt + 0.72);
+
+        // ================= III. THE HARNESS (Three.js): Blink has no hands; the harness belt runs the tool =================
+        // the drawing is in the module script below (blink3d.js); these are its beats, all on Chris's words
+        const p3 = mk("div", "layer hide");
+        const EP = (window.EP = {
+          p1In: w("can't") - 0.12, p1Happy: w("text") - 0.05, p1Out: w("ask") - 0.6,
+          p3In: handAt + 0.4, cardAt: handAt + 0.72, beltAt: w("harness") - 0.35, dropAt: w("harness") + 0.15, runAt: w("runs", 2) - 0.1,
+          resAt: w("four") - 0.15, backAt: w("hands") - 0.05, happyTo: e("text", 2) + 0.5, p3Out: w("reads") - 0.75, endIn: e("belong") + 1.35, END: VO.END,
+        });
+        F(p3, { opacity: 0 }, { opacity: 1, duration: 0.3 }, EP.p3In);
+        cue("pop", EP.p1In + 0.1);
+        cue("blip", EP.p1Happy + 0.05);
+        cue("pop", EP.p3In + 0.15);
+        cue("whoosh", EP.beltAt, { d: 0.35 });
+        cue("land", EP.beltAt + 0.35);
+        cue("tick", w("harness"));
+        cue("slide", EP.dropAt, { d: 0.5 });
+        cue("slide", EP.runAt, { d: 0.45 });
+        cue("land", EP.runAt + 0.45);
+        cue("ding", EP.resAt + 0.3);
+        cue("zipdown", EP.backAt + 0.05);
+        cue("land", EP.backAt + 0.9);
+        cue("blip", EP.backAt + 0.95);
+        cue("pop", EP.endIn + 0.2);
+        const harnessTag = mk("div", "abs mono hide", "left:44px;top:250px;font-size:24px;color:var(--amber)", p3, "// the harness: not the model");
+        show(harnessTag, w("harness"), 0.3, 10);
+        const modelTag = mk("div", "abs mono hide", "left:44px;top:250px;font-size:24px;color:var(--green)", p3, "// the model: it only writes");
+        show(modelTag, EP.p3In + 0.3, 0.3, 10);
+        hide(modelTag, w("harness") - 0.25, 0.2);
+        F(p3, { opacity: 1 }, { opacity: 0, duration: 0.35 }, EP.p3Out);
+
+        // ================= IV. THE LOOP (light in the wires): ask, run, read, faster each lap =================
+        const p4 = mk("div", "layer hide");
+        const p4At = w("reads") - 0.6;
+        F(p4, { opacity: 0 }, { opacity: 1, duration: 0.35 }, p4At);
+        const cam4 = mk("div", "layer", "", p4);
+        const NS = "http://www.w3.org/2000/svg";
+        const svg = document.createElementNS(NS, "svg");
+        svg.setAttribute("width", "720"); svg.setAttribute("height", "1280"); svg.setAttribute("viewBox", "0 0 720 1280");
+        svg.style.cssText = "position:absolute;left:0;top:0;overflow:visible";
+        cam4.appendChild(svg);
+        const path = (d, stroke, sw, op, extra) => { const p = document.createElementNS(NS, "path"); p.setAttribute("d", d); p.setAttribute("fill", "none"); p.setAttribute("stroke", stroke); p.setAttribute("stroke-width", sw); p.setAttribute("stroke-opacity", op); p.setAttribute("stroke-linecap", "round"); if (extra) Object.entries(extra).forEach(([k, v]) => p.setAttribute(k, v)); svg.appendChild(p); return p; };
+        const RING = "M360 380 C560 380 640 600 560 720 C480 840 240 840 160 720 C80 600 160 380 360 380";
+        path(RING, "#6ad08a", 16, 0.12);
+        const ringLine = path(RING, "#6ad08a", 3, 0.6);
+        const ringLen = ringLine.getTotalLength();
+        ringLine.style.strokeDasharray = ringLen; ringLine.style.strokeDashoffset = ringLen;
+        F(ringLine, { strokeDashoffset: ringLen }, { strokeDashoffset: 0, duration: 0.9, ease: "power2.inOut" }, p4At + 0.1);
+        cue("draw", p4At + 0.1, { d: 0.9 });
+        const EXIT = "M440 300 L440 214"; // the way out: from Blink's shoulder up to the answer
+        const exitLine = path(EXIT, "#d6a45a", 3, 0.55, { "stroke-dasharray": "6 10" });
+        F(exitLine, { opacity: 0 }, { opacity: 1, duration: 0.3 }, w("answer") - 0.1);
+        const nodeAt = (x, y, wdt, label, col, bg) => mk("div", "node", `left:${x - wdt / 2}px;top:${y - 34}px;width:${wdt}px;height:68px;border:3px solid ${col};background:${bg};font-size:24px;color:var(--text);box-shadow:0 0 34px ${col}55;opacity:0`, cam4, label);
+        const nHarness = nodeAt(560, 720, 200, "harness", "#9aa6b6", "#141a24");
+        const nTool = nodeAt(160, 720, 190, "weather", "#4f93d6", "#0f1d30");
+        [nHarness, nTool].forEach((n, i) => { F(n, { opacity: 0, scale: 0.6 }, { opacity: 1, scale: 1, duration: 0.35, ease: "back.out(1.6)" }, p4At + 0.15 + i * 0.12); cue("pop", p4At + 0.25 + i * 0.12, { i }); });
+        // the fork at the model: answer, or ask again
+        const fAns = mk("div", "abs mono hide", "left:458px;top:250px;font-size:22px;color:var(--amber)", cam4, "answer ↑");
+        const fAgain = mk("div", "abs mono hide", "left:260px;top:540px;width:200px;text-align:center;font-size:22px;color:var(--green)", cam4, "ask again ↻");
+        show(fAns, w("answer") - 0.05, 0.3, 8); cue("tick", w("answer"));
+        show(fAgain, w("again") - 0.25, 0.3, 8); cue("tick", w("again"));
+        // the progress spine words (cinetic ui-progress-spine-steps, retold as the loop's three steps)
+        const stepLab = (x, y, t, col) => mk("div", "abs hide", `left:${x}px;top:${y}px;font-size:54px;font-weight:700;letter-spacing:-0.03em;color:${col}`, cam4, t);
+        const sAsk = stepLab(560, 520, "Ask.", "var(--green)");
+        const sRun = stepLab(300, 820, "Run.", "var(--blue)");
+        const sRead = stepLab(40, 520, "Read.", "var(--amber)");
+        [[sAsk, "ask", 3], [sRun, "run"], [sRead, "read"]].forEach(([n, word, k]) => { slam(n, w(word, k) - 0.08, 1.4); });
+        [sAsk, sRun, sRead].forEach((n) => F(n, { opacity: 1 }, { opacity: 0.3, duration: 0.4 }, w("again", 2) - 0.1));
+        // the packet: laps the ring, each lap faster (cinetic ps-faster-each-repeat), the camera leans after it (cam-lead-follow)
+        const pk = mk("div", "pk", "background:#fff;box-shadow:0 0 16px 5px rgba(106,208,138,.95),0 0 50px 16px rgba(106,208,138,.45);opacity:0", cam4);
+        const trail = [1, 2, 3].map((i) => mk("div", "pk", `background:#b9f0c9;opacity:0;transform-origin:center;box-shadow:0 0 12px 3px rgba(106,208,138,${0.6 - i * 0.15})`, cam4));
+        const lap = { p: 0 };
+        const place = () => {
+          const at = (q) => ringLine.getPointAtLength((((q % 1) + 1) % 1) * ringLen);
+          const pt = at(lap.p);
+          pk.style.left = pt.x + "px"; pk.style.top = pt.y + "px";
+          trail.forEach((tn, i) => { const q = at(lap.p - (i + 1) * 0.018); tn.style.left = q.x + "px"; tn.style.top = q.y + "px"; tn.style.transform = `scale(${1 - i * 0.22})`; });
+        };
+        place();
+        // lap plan: ask/run/read land on their words, then again and again ever faster; quarter points sit at the nodes
+        const LAPS = [[w("ask", 3) - 0.3, 0, 0.36], [w("run") - 0.05, 0.36, 0.64], [w("read") - 0.05, 0.64, 1.0], [w("again", 2) - 0.1, 1.0, 2.0], [null, 2.0, 3.0], [null, 3.0, 4.0]];
+        let tCur = 0;
+        const LAPDUR = [0.55, 0.7, 0.75, 0.62, 0.42, 0.3];
+        LAPS.forEach(([t0, a, b], i) => {
+          const t = t0 != null ? t0 : tCur;
+          tl.fromTo(lap, { p: a }, { p: b, duration: LAPDUR[i], ease: i < 3 ? "power2.inOut" : "none", immediateRender: false, onUpdate: place }, t);
+          tCur = t + LAPDUR[i];
+          if (i >= 3) cue("blip", t + 0.02, { lap: i });
+        });
+        F([pk, ...trail], { opacity: 0 }, { opacity: 1, duration: 0.15 }, LAPS[0][0]);
+        {
+          const io = (k) => (k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2);
+          const sched = []; let tc = 0;
+          LAPS.forEach(([t0, a, b], i) => { const t = t0 != null ? t0 : tc; sched.push([t, LAPDUR[i], a, b, i < 3]); tc = t + LAPDUR[i]; });
+          Object.assign(EP, {
+            p4In: p4At, p4Out: w("so") - 0.3, reads: w("reads"), decides: w("decides"), answer: w("answer"), askAgain: w("again"), loop: w("loop"),
+            ask: w("ask", 3), run: w("run"), read: w("read"), again2: w("again", 2), stops: w("stops"), lapsEnd: tc,
+            lapAt: (t) => { let p = null; for (const [t0, d, a, b, ez] of sched) { if (t < t0) break; const k = Math.min(1, (t - t0) / d); p = a + (b - a) * (ez ? io(k) : k); } return p; },
+            ringAt: (p) => { const q = ringLine.getPointAtLength((((p % 1) + 1) % 1) * ringLen); return [q.x, q.y]; },
+          });
+          cue("pop", p4At + 0.25);
+          cue("blip", w("decides"));
+          cue("tick", w("answer") + 0.1);
+        }
+        // until it stops asking: the packet leaves by the answer branch to an answer bubble
+        const out = { p: 0 };
+        const outAt = Math.max(tCur, w("stops") - 0.2);
+        EP.outAt = outAt;
+        tl.fromTo(out, { p: 0 }, { p: 1, duration: 0.45, ease: "power2.out", immediateRender: false, onUpdate: () => { pk.style.top = 300 - 86 * out.p + "px"; pk.style.left = "440px"; } }, outAt);
+        F(trail, { opacity: 1 }, { opacity: 0, duration: 0.1 }, outAt);
+        const answer = mk("div", "bubble hide", "left:120px;top:126px;width:480px;height:84px;padding:0 34px;border-radius:42px;background:rgba(214,164,90,.12);border:3px solid var(--amber);font-size:30px;justify-content:center", cam4, "4°C and rain in Nelson.");
+        F(answer, { opacity: 0, scale: 0.7 }, { opacity: 1, scale: 1, duration: 0.35, ease: "back.out(1.5)" }, outAt + 0.4);
+        F(pk, { opacity: 1 }, { opacity: 0, duration: 0.15 }, outAt + 0.42);
+        cue("ding", outAt + 0.45);
+        F(p4, { opacity: 1 }, { opacity: 0, duration: 0.35 }, w("so") - 0.3);
+
+        // ================= V. THE CLOSE (kinetic type): the harness did it, so the guardrails go there =================
+        const p5 = mk("div", "layer hide");
+        F(p5, { opacity: 0 }, { opacity: 1, duration: 0.3 }, w("so") - 0.1);
+        const term = mk("div", "abs", "left:44px;right:44px;top:300px;border-radius:6px;border:2px solid #1c2333;background:#0c0e11;overflow:hidden", p5);
+        mk("div", "mono", "display:flex;justify-content:space-between;padding:14px 22px;border-bottom:2px solid #1c2333;font-size:20px;color:var(--faint)", term, "<span>harness</span><span>// runs the commands</span>");
+        const tBody = mk("div", "mono", "padding:24px 22px 28px;font-size:30px;line-height:1.6", term);
+        const tLine = mk("div", null, "white-space:nowrap", tBody);
+        const tPrompt = mk("span", null, "color:var(--green)", tLine, "$ ");
+        const tCmd = mk("span", null, "", tLine);
+        const tOut = mk("div", "hide", "color:var(--red)", tBody, "removed notes.md");
+        show(term, w("so") - 0.05, 0.35, 30);
+        typed(tCmd, "rm notes.md", w("deletes") - 0.1, 18);
+        show(tOut, e("file") + 0.15, 0.2, 6);
+        cue("thud", e("file") + 0.15);
+        const rowM = mk("div", "abs mono hide", "left:44px;top:560px;font-size:30px;color:var(--text2)", p5, `<span style="color:var(--green)">model</span>   → wrote the request`);
+        const rowH = mk("div", "abs mono hide", "left:44px;top:612px;font-size:30px;color:var(--text2)", p5, `<span style="color:var(--amber)">harness</span> → ran it`);
+        rise(rowM, w("model", 3) - 0.05, 0.35);
+        rise(rowH, w("harness", 2) - 0.1, 0.35);
+        const did = mk("div", "abs hide", "left:44px;right:44px;top:740px;font-size:104px;font-weight:700;letter-spacing:-0.045em;line-height:1", p5, `The <span style="color:var(--green)">harness</span><br>did.`);
+        slam(did, w("harness", 2) - 0.08, 1.5);
+        // guardrails: two rails with posts close around the harness terminal
+        const rail = (top, from) => {
+          const r = mk("div", "abs", `left:24px;right:24px;top:${top}px;height:14px;opacity:0`, p5);
+          mk("div", "abs", "left:0;right:0;top:4px;height:6px;border-radius:3px;background:var(--amber)", r);
+          [0, 1, 2, 3, 4].forEach((i) => mk("div", "abs", `left:${i * 25}%;margin-left:${i === 4 ? -10 : 0}px;top:-10px;width:10px;height:34px;border-radius:2px;background:var(--amber)`, r));
+          F(r, { opacity: 0, x: from }, { opacity: 1, x: 0, duration: 0.4, ease: "back.out(1.3)" }, w("guardrails") - 0.15);
+          return r;
+        };
+        rail(270, -720); rail(520, 720);
+        cue("stamp", w("guardrails") + 0.22);
+        const gTag = mk("div", "abs mono hide", "left:44px;top:220px;font-size:24px;color:var(--amber)", p5, "// the guardrails go here");
+        show(gTag, w("guardrails") + 0.2, 0.3, 10);
+        // the end: the white request card (the story device) comes back and becomes the mark (cinetic le-device-becomes-mark)
+        const endAt = e("belong") + 0.35;
+        F(p5, { opacity: 1 }, { opacity: 0, duration: 0.35 }, endAt);
+        const markCard = mk("div", "abs hide", "left:210px;top:560px;width:300px;height:92px;box-sizing:border-box;border-radius:12px;background:var(--text);color:#0d1117;font-family:var(--mono);font-weight:600;font-size:28px;display:flex;align-items:center;justify-content:center", stage, "get_weather()");
+        F(markCard, { opacity: 0, y: 260, rotate: -8, scale: 0.6 }, { opacity: 1, y: 0, rotate: 0, scale: 1, duration: 0.5, ease: "power3.out" }, endAt + 0.15);
+        cue("zip", endAt + 0.15);
+        F(markCard, { backgroundColor: "#eef2f6", color: "#0d1117", width: 300, left: 210, borderRadius: 12 }, { backgroundColor: "#0d1117", color: "#eef2f6", width: 340, left: 190, borderRadius: 14, duration: 0.45, ease: "power2.inOut" }, endAt + 0.9);
+        F(markCard, { borderColor: "rgba(106,208,138,0)" }, { borderColor: "rgba(106,208,138,1)", duration: 0.45 }, endAt + 0.9);
+        markCard.style.border = "3px solid rgba(106,208,138,0)";
+        const markTxt = mk("div", "abs hide", "left:190px;top:560px;width:340px;height:92px;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-weight:600;font-size:44px", stage, `<span style="color:var(--green)">~/</span>devweb`);
+        F(markCard, { fontSize: 28 }, { fontSize: 0.01, duration: 0.2 }, endAt + 0.9);
+        F(markTxt, { opacity: 0, scale: 0.85 }, { opacity: 1, scale: 1, duration: 0.35, ease: "back.out(1.6)" }, endAt + 1.05);
+        cue("sting", endAt + 1.0);
+        const url = mk("div", "abs mono hide", "left:0;right:0;top:690px;text-align:center;font-size:28px;color:var(--text2)", stage, "devweb.org/glossary/tool-calling-loop");
+        rise(url, endAt + 1.45, 0.4);
+
+        const clock3 = { t: 0 };
+        tl.fromTo(clock3, { t: 0 }, { t: VO.END, duration: VO.END, ease: "none", immediateRender: false, onUpdate: () => { if (window.renderThree) window.renderThree(clock3.t); } }, 0);
+        window.__timelines = window.__timelines || {};
+        window.__timelines["main"] = tl;
+      })();
+    </script>
+
+    <script type="module">
+      // Blink, toon shaded in Three.js (blink3d.js). Every pose is a pure function of film time t.
+      import * as THREE from "three";
+      import { toonRamp, makeBlink, makeHarness, glyphTexture } from "./blink3d.js";
+      const G = window.BLINK;
+      window.__hf = window.__hf || {};
+      window.__hf.buildReady = window.__hf.buildReady || {};
+      let ready;
+      window.__hf.buildReady["blink3d"] = new Promise((r) => (ready = r));
+      await document.fonts.ready;
+      const canvas = document.getElementById("blink3d");
+      const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true, preserveDrawingBuffer: true });
+      renderer.setSize(720, 1280, false);
+      renderer.setPixelRatio(1);
+      renderer.outputColorSpace = THREE.SRGBColorSpace;
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(36, 720 / 1280, 0.1, 60);
+      camera.position.set(0, 0.35, 7.6);
+      camera.lookAt(0, 0.1, 0);
+      const sun = new THREE.DirectionalLight("#ffffff", 2.4); sun.position.set(-3, 4, 5); scene.add(sun);
+      scene.add(new THREE.AmbientLight("#ffffff", 0.9));
+      const ramp = toonRamp(THREE);
+      const rig = new THREE.Group(); scene.add(rig);
+      const blink = makeBlink(THREE, G, ramp); rig.add(blink.root);
+      const harness = makeHarness(THREE, G, ramp); rig.add(harness.root);
+      const card = (text, bg, fg) => new THREE.Mesh(new THREE.PlaneGeometry(0.78, 0.28), new THREE.MeshBasicMaterial({ transparent: true, map: glyphTexture(THREE, (g, w, h) => {
+        g.fillStyle = bg; g.beginPath(); g.roundRect(4, 4, w - 8, h - 8, 26); g.fill();
+        g.fillStyle = fg; g.font = "600 64px 'IBM Plex Mono', monospace"; g.textAlign = "center"; g.textBaseline = "middle"; g.fillText(text, w / 2, h / 2 + 3);
+      }, 560, 200) }));
+      const req = card("get_weather()", "#eef2f6", "#0d1117"), res = card("4°C, rain", "#d6a45a", "#0d1117");
+      rig.add(req, res);
+      const shadow = new THREE.Mesh(new THREE.CircleGeometry(1, 48), new THREE.MeshBasicMaterial({ color: "#000", transparent: true, opacity: 0.4 }));
+      shadow.rotation.x = -Math.PI / 2; shadow.scale.set(1, 0.16, 1); rig.add(shadow);
+
+      const E = window.EP;
+      const cl = (x) => Math.max(0, Math.min(1, x));
+      const ease = (x) => { x = cl(x); return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2; };
+      const back = (x) => { x = cl(x); const c1 = 1.70158, c3 = c1 + 1; return 1 + c3 * Math.pow(x - 1, 3) + c1 * Math.pow(x - 1, 2); };
+      const ramp01 = (t, a, d) => cl((t - a) / d);
+      const mix = (a, b, k) => a + (b - a) * k;
+      const V3 = (x, y, z) => new THREE.Vector3(x, y, z);
+      const lerpV = (a, b, k) => a.clone().lerp(b, k);
+      const blinkAt = (t, list) => Math.max(0, ...list.map((c) => 1 - Math.abs(t - c) / 0.07));
+      const visorFront = V3(0, 0.25, 1.08), buckleFront = V3(0, -0.55, 1.2), tileFront = V3(0, -1.1, 1.18);
+
+      function shot(t) {
+        if (t >= E.p1In - 0.3 && t < E.p1Out + 0.45) return "I";
+        if (t >= E.p3In - 0.1 && t < E.p3Out + 0.4) return "III";
+        if (t >= E.p4In - 0.1 && t < E.p4Out + 0.4) return "IV";
+        if (t >= E.endIn - 0.1) return "V";
+        return null;
+      }
+      window.renderThree = (t) => {
+        const S = shot(t);
+        let alpha = 0;
+        req.visible = res.visible = harness.root.visible = false;
+        harness.buckleGlow.material.opacity = 0;
+        Object.values(harness.tools).forEach((k) => { k.hot.material.opacity = 0; k.pivot.rotation.z = 0; });
+        const bob = 0.05 * Math.sin((t / 1.7) * Math.PI * 2);
+        let happy = 0, blinkK = 0, look = 0, yaw = 0.18 * Math.sin((t / 3.1) * Math.PI * 2);
+        if (S === "I") {
+          const k = back(ramp01(t, E.p1In, 0.4));
+          alpha = cl((t - (E.p1In - 0.05)) / 0.1) * (1 - cl((t - E.p1Out) / 0.4));
+          rig.position.set(0, -1.24 + bob * 0.5 - (1 - k) * 0.4, 0); rig.scale.setScalar(0.48 * Math.max(0.01, k));
+          // "It can't." a little shake of the head (it has no hands to shrug); then "only writes text": happy
+          yaw = t < E.p1Happy ? 0.22 * Math.sin((t - E.p1In) * 18) * (1 - cl((t - E.p1In - 0.6) / 0.4)) : yaw;
+          happy = cl((t - E.p1Happy) / 0.15);
+        } else if (S === "III") {
+          const k = back(ramp01(t, E.p3In, 0.45));
+          alpha = cl((t - E.p3In + 0.1) / 0.2) * (1 - cl((t - E.p3Out) / 0.35));
+          rig.position.set(0, 0.12 + bob * 0.8 - (1 - k) * 0.5, 0); rig.scale.setScalar(0.8 * Math.max(0.01, k));
+          // the harness cinches on: the belt and its tools drop into place
+          const hb = ease(ramp01(t, E.beltAt, 0.35));
+          harness.root.visible = t >= E.beltAt;
+          harness.root.position.y = -(1 - hb) * 0.35; harness.root.scale.setScalar(mix(1.2, 1, hb)); // rises into place from below, never across the face
+          harness.root.traverse((o) => { if (o.material && o.material.transparent && o.material.blending !== THREE.AdditiveBlending) { o.material.opacity = hb; o.material.depthWrite = hb > 0.98; } }); // a fading belt must not hide the card
+          harness.buckleGlow.material.opacity = 0.8 * cl((t - E.dropAt - 0.4) / 0.1) * (1 - cl((t - E.runAt - 0.1) / 0.3));
+          // the request: Blink writes it (it floats at the visor), the harness takes it at the buckle, runs it at the tile
+          if (t >= E.cardAt && t < E.runAt + 0.5) {
+            req.visible = true;
+            const a = lerpV(visorFront, buckleFront, ease(ramp01(t, E.dropAt, 0.5)));
+            req.position.copy(lerpV(a, tileFront, ease(ramp01(t, E.runAt, 0.45))));
+            const sc = mix(1, 0.55, ease(ramp01(t, E.dropAt, 0.5)));
+            req.scale.setScalar(sc * (1 - cl((t - E.runAt - 0.4) / 0.1)) + 0.001);
+          }
+          const W = harness.tools.weather, run = t - E.runAt - 0.45;
+          if (run > 0) { W.hot.material.opacity = 0.75 * cl(run / 0.1) * (1 - cl((t - E.backAt - 0.3) / 0.5)); W.pivot.rotation.z = 0.25 * Math.exp(-run * 2.2) * Math.sin(run * 11); }
+          // the answer comes back as more text: amber card from the tile up to the visor
+          if (t >= E.resAt && t < E.backAt + 1.0) {
+            res.visible = true;
+            const up = ease(ramp01(t, E.backAt, 0.9));
+            res.position.copy(lerpV(V3(0, -1.0, 1.2), visorFront.clone().add(V3(0, 0, 0.05)), up));
+            res.scale.setScalar(mix(0.2, 0.6, ease(ramp01(t, E.resAt, 0.3))) * (1 - 0.6 * up) * (1 - cl((t - E.backAt - 0.9) / 0.1)) + 0.001);
+            res.material.color.setRGB(...[0, 1, 2].map(() => mix(0.55, 1, cl((t - E.resAt - 0.2) / 0.4))));
+          }
+          happy = cl((t - E.backAt - 0.85) / 0.12) * (1 - cl((t - E.happyTo) / 0.15));
+          look = t < E.dropAt ? 0 : t < E.backAt ? -0.6 * cl((t - E.dropAt) / 0.2) : 0;
+          blinkK = blinkAt(t, [E.p3In + 1.4, E.runAt + 1.2]);
+        } else if (S === "IV") {
+          // Blink sits where the "model" node was (ring top, screen 360,380) and acts out what Chris says
+          const k = back(ramp01(t, E.p4In + 0.1, 0.4));
+          alpha = cl((t - E.p4In) / 0.2) * (1 - cl((t - E.p4Out) / 0.35));
+          const hop = (c) => Math.max(0, 1 - Math.abs(t - c) / 0.18);
+          const squash = 0.12 * Math.max(hop(E.ask), hop(E.run), hop(E.read));
+          rig.position.set(0, 1.08 + bob * 0.3 + squash * 0.25, 0);
+          rig.scale.set(0.42 * k * (1 + squash * 0.5), 0.42 * k * (1 - squash), 0.42 * k);
+          yaw = 0;
+          // "The model reads it": the amber answer held at the visor, eyes scanning it
+          if (t >= E.p4In && t < E.decides - 0.1) {
+            res.visible = true;
+            res.position.set(0, 0.0, 1.14); res.scale.setScalar(1.15 * back(ramp01(t, E.p4In + 0.25, 0.3)) * (1 - cl((t - E.decides + 0.3) / 0.2)) + 0.001);
+            res.material.color.setRGB(1, 1, 1);
+            look = 0.9 * Math.sin((t - E.p4In) * 7);
+          }
+          // "and decides": thinking dots
+          const think = cl((t - E.decides + 0.1) / 0.1) * (1 - cl((t - E.answer + 0.15) / 0.1)); // eyes shrink as the dots grow: no one-frame swap
+          // "answer, or ask again": a look up at the way out, then down at the loop
+          let lookY = 0;
+          if (t >= E.answer - 0.15 && t < E.askAgain - 0.15) { look = 1.2; lookY = 1.2; }
+          else if (t >= E.askAgain - 0.15 && t < E.ask - 0.4) { look = 0; lookY = -1.0; }
+          // ask, run, read and the faster laps: the eyes chase the packet round the ring
+          const p = E.lapAt(t);
+          if (p !== null && t < E.outAt + 0.1) {
+            const [px, py] = E.ringAt(p), dx = px - 360, dy = py - 380, L = Math.hypot(dx, dy) || 1;
+            look = (1.4 * dx) / Math.max(L, 120); lookY = (-1.4 * dy) / Math.max(L, 120);
+          }
+          // "until it stops asking": happy as the answer goes out
+          happy = cl((t - E.outAt - 0.3) / 0.12);
+          if (happy > 0) { look = 0; lookY = 0; }
+          blinkK = blinkAt(t, [E.loop + 0.1]);
+          blink.face({ blink: blinkK, happy, look, lookY, think, phase: t * 1.6 });
+        } else if (S === "V") {
+          const k = back(ramp01(t, E.endIn, 0.45));
+          alpha = cl((t - E.endIn + 0.1) / 0.2);
+          rig.position.set(0, 1.18 + bob * 0.5 - (1 - k) * 0.6, 0); rig.scale.setScalar(0.45 * Math.max(0.01, k));
+          happy = cl((t - E.endIn - 1.6) / 0.12);
+          blinkK = blinkAt(t, [E.endIn + 0.9]);
+        }
+        canvas.style.opacity = alpha.toFixed(3);
+        blink.root.rotation.y = yaw;
+        harness.root.rotation.y = yaw;
+        if (S !== "IV") blink.face({ blink: blinkK, happy, look });
+        shadow.position.set(0, -1.62, 0);
+        shadow.material.opacity = 0.4 - bob;
+        renderer.render(scene, camera);
+      };
+      window.addEventListener("hf-seek", (ev) => window.renderThree(ev.detail.time));
+      window.renderThree(window.__hfThreeTime || 0);
+      ready();
+    </script>
+  </body>
+</html>

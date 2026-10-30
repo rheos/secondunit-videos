@@ -1,0 +1,33 @@
+slug: devweb-world
+title: Toon world, one camera
+note: A soft toon-shaded 3D world drawn in code, with one camera that never cuts. A small mint robot anchors it while
+  the camera dives into chat panels, orbits, cranes and pulls back over a crowd.
+used: An AI never runs a tool, devweb
+cost: free
+group: code
+order: 200
+clip: pending
+tall: true
+status: draft
+engine: hyperframes + three.js
+project: devweb-ep01-oner
+code:
+  path: tools/devweb-kit/ (world.js, blink3d.js, blink-geo.js) and devweb-ep01-oner/oner.js
+  flag: null
+  page: devweb-ep01-oner/index.html
+  note: >-
+    One Three.js scene on a 1080x1920 canvas under DOM type overlays; the camera is a word-keyed path (cameraPath);
+    every pose is a pure function of film time. Finish with tools/devweb-kit/finish.sh (120 fps blended to 60).
+rules:
+  - One world, one continuous camera; stations keyed to the narrator's words, never a cut
+  - Toon shading with a 3-step ramp and a dark outline on the mascot; fog into a near-black navy floor grid
+  - Blink, the mascot, has no hands; the harness belt and its carabiner tools do the acting
+  - One mass moment per short (a crowd of Blinks), then back in close
+  - Type as overlay only (hook, caption fragments, a slam); green model, blue tools, amber results, red failure
+  - 1080x1920 at 60 fps with a 180-degree motion blur
+palette: ["#0d1117", "#6ad08a", "#4f93d6", "#d6a45a", "#e0675a", "#eef2f6"]
+reference: cinetic's gallery films (Leon Lin), for the continuous camera, the mass moment and the finish
+proof:
+  - https://youtu.be/uieKDwKfPzg (ep 1 draft 4)
+  - rheos/secondunit-videos#348
+verdict: '"i definitely like the 1 3D world. that''s great. that''s going to be our standard" (Robin, 2026-10-29)'
