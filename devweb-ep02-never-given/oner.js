@@ -368,7 +368,7 @@ export async function buildWorld(canvas) {
 
     // the no-label file
     const qFace = t < T.priv ? "q" : t < T.edit ? "r" : "g";
-    Object.entries(qMesh).forEach(([k, m]) => (m.visible = false));
+    Object.values(qMesh).forEach((m) => { m.visible = false; m.scale.setScalar(1); }); // set every frame: frames render in any order
     const qm = qMesh[qFace], qf = { jx: 0, yaw: 0.06, lx: QLAND.x, lz: QLAND.z, ly: QLAND.y, spin: 1 };
     const zq = qz(t);
     const stampS = 1 + 0.25 * Math.max(pulse(t, T.priv + 0.04, 0.12), pulse(t, T.edit + 0.04, 0.12));
