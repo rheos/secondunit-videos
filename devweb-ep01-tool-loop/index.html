@@ -405,8 +405,8 @@
           // the harness cinches on: the belt and its tools drop into place
           const hb = ease(ramp01(t, E.beltAt, 0.35));
           harness.root.visible = t >= E.beltAt;
-          harness.root.position.y = (1 - hb) * 0.9; harness.root.scale.setScalar(mix(1.25, 1, hb));
-          harness.root.traverse((o) => { if (o.material && o.material.transparent && o !== harness.buckleGlow && !o.userData.keep) o.material.opacity = o.material.blending === THREE.AdditiveBlending ? o.material.opacity : hb; });
+          harness.root.position.y = -(1 - hb) * 0.35; harness.root.scale.setScalar(mix(1.2, 1, hb)); // rises into place from below, never across the face
+          harness.root.traverse((o) => { if (o.material && o.material.transparent && o.material.blending !== THREE.AdditiveBlending) { o.material.opacity = hb; o.material.depthWrite = hb > 0.98; } }); // a fading belt must not hide the card
           harness.buckleGlow.material.opacity = 0.8 * cl((t - E.dropAt - 0.4) / 0.1) * (1 - cl((t - E.runAt - 0.1) / 0.3));
           // the request: Blink writes it (it floats at the visor), the harness takes it at the buckle, runs it at the tile
           if (t >= E.cardAt && t < E.runAt + 0.5) {
