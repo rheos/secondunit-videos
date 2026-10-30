@@ -113,8 +113,8 @@ export async function buildWorld(canvas) {
 
   await document.fonts.ready;
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, preserveDrawingBuffer: true });
-  renderer.setPixelRatio(window.devicePixelRatio || 1);
-  renderer.setSize(720, 1280, false);
+  renderer.setPixelRatio(1);
+  renderer.setSize(canvas.width, canvas.height, false); // the master is 1080x1920
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.setClearColor("#0d1117", 1);
   const scene = new THREE.Scene();

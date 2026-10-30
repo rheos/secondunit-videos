@@ -2,7 +2,7 @@
 <html lang="en" data-resolution="portrait">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=720, height=1280" />
+    <meta name="viewport" content="width=1080, height=1920" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@500;700&display=block" />
@@ -15,7 +15,7 @@
     <style>
       :root { --bg: #0d1117; --text: #eef2f6; --text2: #c9d1d9; --muted: #9aa6b6; --faint: #7b8593; --green: #6ad08a; --blue: #4f93d6; --amber: #d6a45a; --red: #e0675a; --sans: "IBM Plex Sans", sans-serif; --mono: "IBM Plex Mono", monospace; }
       html, body { margin: 0; background: var(--bg); }
-      #root { position: relative; width: 720px; height: 1280px; overflow: hidden; color: var(--text); font-family: var(--sans); background: var(--bg); }
+      #root { position: relative; width: 1080px; height: 1920px; overflow: hidden; color: var(--text); font-family: var(--sans); background: var(--bg); }
       .abs { position: absolute; }
       .layer { position: absolute; inset: 0; }
       .hide { opacity: 0; }
@@ -26,14 +26,17 @@
     </style>
   </head>
   <body>
-    <div id="root" data-composition-id="main" data-start="0" data-duration="45.32" data-width="720" data-height="1280">
+    <div id="root" data-composition-id="main" data-start="0" data-duration="45.32" data-width="1080" data-height="1920">
       <audio id="mix" src="_in/mix.wav" data-start="0" data-duration="45.32" data-track-index="20" data-volume="1"></audio>
       <!-- the world: one Three.js scene, one camera (oner.js) -->
-      <canvas id="world" width="720" height="1280" style="position:absolute;left:0;top:0;width:720px;height:1280px"></canvas>
+      <canvas id="world" width="1080" height="1920" style="position:absolute;left:0;top:0;width:1080px;height:1920px"></canvas>
+      <!-- the type is authored on a 720x1280 stage and scaled 1.5x as vectors; the 3D renders natively at 1080x1920 -->
+      <div id="scale" style="position:absolute;left:0;top:0;width:720px;height:1280px;transform:scale(1.5);transform-origin:0 0">
       <div class="layer" style="pointer-events:none;background:radial-gradient(110% 70% at 50% 50%, rgba(13,17,23,0) 55%, rgba(9,12,17,.75) 100%)"></div>
       <div class="layer" style="pointer-events:none;background:linear-gradient(rgba(13,17,23,0) 78%, rgba(13,17,23,.85) 92%)"></div>
       <div id="stage" class="layer"></div>
       <div class="layer" style="pointer-events:none;opacity:.06;mix-blend-mode:overlay;background-image:url(&quot;data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='160' height='160' filter='url(%23n)'/></svg>&quot;)"></div>
+      </div>
     </div>
 
     <script>
