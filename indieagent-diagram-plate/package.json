@@ -1,0 +1,7 @@
+{
+  "name": "indieagent-diagram-plate",
+  "private": true,
+  "type": "module",
+  "description": "Pen-and-pencil diagram plate look test: Bob Wiseman's tour as a sankey laid out by pele, drawn in canvas code.",
+  "devDependencies": { "playwright": "^1.55.0" }
+}

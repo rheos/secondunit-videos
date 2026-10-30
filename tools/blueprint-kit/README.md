@@ -113,3 +113,31 @@ and the group drifts): move with `x`/`y` only, or wrap it.
 **Narration.** When a film is narrated, the voice is the clock: record per plate, time the words with
 faster-whisper, place them, and cue plates on words (`novadiem-recallatron/vo/`: `vo.py`, `align.py`,
 `place.py` -> `vo/words.js`, `VO.w(plate, word)`).
+
+## Diagrams from text: pele and the marks layer (2026-10-24)
+
+`diagram.js` (window global `BPD`) turns a few lines of Mermaid into marks a shot can draw in any look. pele
+(MIT, obsidianmd/pele, `vendor/pele.global.js`) lays the diagram out; it measures every word with the Hershey
+letters the plate will draw (`vendor/hershey.js`, public-domain letters as packaged by hersheytext, MIT), so labels
+fit first time. The SVG is then flattened to marks: one record per element, a polyline in page px, tagged with
+pele's classes and ids.
+
+```html
+<script src="kit/vendor/pele.global.js"></script>
+<script src="kit/vendor/hershey.js"></script>
+<script src="kit/diagram.js"></script>
+<script>
+  const D = BPD.diagram(mmd, { x: 400, y: 350, w: 1000, h: 600 }, { fontSize: 24, config: { sankey: { nodeWidth: 34 } } });
+  D.sel('.pele-sankey-node');                 // every node: { tag, cls, id, P, closed, box, rect, fill, title }
+  D.sel('.pele-sankey-link', '#October->Quebec');  // args are ANDed; '.a, .b' in one string is OR
+  D.where((m) => m.id === 'P.E.I.');          // ids with . # < or , in them
+  BPD.letter('Nova Scotia', x, y, 26, { face: 'italic', anchor: 'middle' });  // Hershey strokes to draw
+  BPD.measure('Nova Scotia', 26, 'serif');    // width in px
+</script>
+```
+
+Curves are sampled with the browser's own geometry and thinned (Ramer-Douglas-Peucker); a path with several
+subpaths gives one mark per subpath. Text marks carry their string, baseline position, anchor, size and spans
+(pele's value numbers are `.pele-sankey-value` spans). Rebuild the vendored files after a version bump with
+`npm install && npm run vendor` here; `sync.sh` copies `diagram.js` and `vendor/` into a project's `kit/`.
+First used by `indieagent-diagram-plate` (look `diagram-plate`).

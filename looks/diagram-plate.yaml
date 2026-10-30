@@ -1,0 +1,54 @@
+slug: diagram-plate
+title: Pen-and-pencil diagram plate
+note: >-
+  A real chart drawn as an old hand-coloured plate: fine warm-black pen over light coloured pencil on cream paper,
+  the chart's boxes and bands turned into objects from a small invented world, every word lettered by hand.
+used: Bob Wiseman's tour, test
+cost: free
+group: code
+order: 610
+clip: diagram-plate.mp4
+tall: false
+status: test
+engine: canvas2d + pele
+project: indieagent-diagram-plate
+code:
+  path: indieagent-diagram-plate/js/plate.js
+  flag: null
+  page: indieagent-diagram-plate/plate.html
+  note: >-
+    Layout from pele through tools/blueprint-kit/diagram.js (BPD.diagram, marks by class and id); paper, pen,
+    pencil and boil in js/hand.js. ?play=1 plays, ?notext=1 for the words-off check, check.mjs is the gate.
+rules:
+  - The chart's layout comes from pele and its numbers stay true; decoration never moves a node or a band
+  - Each node is drawn as an object from the subject's world (ticket stubs on a spindle, a tally post), never a box
+  - One warm-black pen; colour only as light coloured pencil under the ink, through the paper's tooth
+  - Tone only from hatching that follows the form (along bands, down the fall of a slope, along a board); sky left bare
+  - Count marks are the data where they can be (one pen line, one stub, one tally notch per unit)
+  - Hand-lettered single-stroke words (Hershey Serif for names, italic for notes), measured for layout; nothing touches
+  - Draws itself far to near after a blue construction pencil pass, chart last, words last; the hold boils on twos
+palette:
+  - "#f0e4d0"
+  - "#2b2320"
+  - "#5f8aa6"
+  - "#bf7444"
+  - "#8a7fae"
+  - "#5e9a6a"
+  - "#6aa3c8"
+  - "#c99a2e"
+  - "#a07850"
+reference: pele-art-diagrams.vercel.app (Mermaid laid out by pele, redrawn as hand-coloured plates); study in references/pele-diagrams
+proof:
+  renders:
+    - indieagent-diagram-plate/out/fifty-three-nights_d1_f00000-f00336_24fps_review720.mp4
+    - indieagent-diagram-plate/out/fifty-three-nights_d1_still_1920x1080.png
+    - indieagent-diagram-plate/out/diagram-plate.mp4
+  pr:
+    - rheos/secondunit-videos#324
+  youtube: []
+verdict: null
+related:
+  - fieldguide
+  - engraving
+  - alchemy
+  - blueprint
