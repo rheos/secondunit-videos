@@ -7,25 +7,29 @@
 //   gochi      draft 11-34: Gochi Hand, upright hand lettering, each word with its own small tilt and lift
 //   classic    Instagram Stories "Classic": Figtree Bold, white, straight
 //   reel       the Reels caption: Figtree Bold, black on a white rounded box that grows word by word
-//   strong     Stories "Strong": Anton caps, slanted, white with a dark edge
+//   strong     Stories "Strong": Anton caps, slanted, white with a dark edge, the word being sung in amber (Robin)
 //   typewriter Stories "Typewriter": Courier Prime Bold on a paper strip, each word typed letter by letter
 //   vv         ViralVision's caption (MythMaker's first project, viralvision-worker/assembler.py): Anton caps, white
 //              with a heavy black stroke and a hard soft-black drop shadow, the whole line up at once, the word being
 //              sung in amber (255,176,59)
+//   melt       Rubik Wet Paint caps, dripping like the Dali watches, cream with a dark edge (a weirder one for Bob)
+//   ransom     a ransom note: every letter cut from a different face onto its own paper chip, tilted (Gilliam cut-outs)
 //   neon       Stories "Neon": Yellowtail script, white core, pink tube glow that flickers on each word
 // A line too long to sit on one row at 80% of the style's size wraps onto two rows (the lower row on CAP.y), the way
 // Instagram wraps its text, so no style has to shrink the long outro lines.
 const CAP_STYLE = new URLSearchParams(location.search).get('cap') || 'strong'; // Robin's pick for draft 35 (2026-10-30)
 const CAP_FACES = [['Gochi Hand', 'GochiHand-Regular.ttf'], ['Figtree', 'Figtree-VF.ttf', { weight: '300 900' }], ['Anton', 'Anton-Regular.ttf'],
-  ['Courier Prime', 'CourierPrime-Bold.ttf', { weight: '700' }], ['Yellowtail', 'Yellowtail-Regular.ttf']];
+  ['Courier Prime', 'CourierPrime-Bold.ttf', { weight: '700' }], ['Yellowtail', 'Yellowtail-Regular.ttf'], ['Rubik Wet Paint', 'RubikWetPaint-Regular.ttf']];
 const FONT_READY = Promise.all(CAP_FACES.map(([n, f, d]) => new FontFace(n, `url(../fonts/${f})`, d || {}).load().then((ff) => document.fonts.add(ff)).catch(() => 0))).then(() => true);
 const CAPS = {
   gochi: { font: '{s}px "Gochi Hand", "Marker Felt", sans-serif', size: 50, gap: .27, band: 1, wob: 1 },
   classic: { font: '700 {s}px Figtree, Helvetica, sans-serif', size: 52, gap: .26, band: .8 },
   reel: { font: '700 {s}px Figtree, Helvetica, sans-serif', size: 48, gap: .26, box: { fill: '#ffffff', ink: '#111111', padX: .42, padY: .3, r: .32, whole: 1 } },
-  strong: { font: '{s}px Anton, Impact, sans-serif', size: 62, gap: .22, caps: 1, skew: -.2, edge: 1, band: .7 },
+  strong: { font: '{s}px Anton, Impact, sans-serif', size: 62, gap: .22, caps: 1, skew: -.2, edge: 1, band: .7, accent: 'rgb(255,176,59)' }, // the sung word in ViralVision's amber (Robin)
   typewriter: { font: '700 {s}px "Courier Prime", Courier, monospace', size: 46, gap: .6, type: 1, box: { fill: '#f6f1e4', ink: '#1a1612', padX: .4, padY: .28, r: .08, whole: 1 } },
   vv: { font: '{s}px Anton, Impact, sans-serif', size: 60, gap: .25, caps: 1, full: 1, stroke: 1 / 6, drop: 1, accent: 'rgb(255,176,59)' },
+  melt: { font: '{s}px "Rubik Wet Paint", Impact, sans-serif', size: 60, gap: .3, caps: 1, edge: 1, fill: '#fbeed0', band: .7 },
+  ransom: { font: '700 {s}px Figtree, sans-serif', size: 52, gap: .45, ransom: 1 },
   neon: { font: '{s}px Yellowtail, cursive', size: 64, gap: .28, neon: '#ff3fb4', band: .9 },
 };
 const capWob = (li, wi, k) => { const v = Math.sin(li * 127.1 + wi * 311.7 + k * 74.7) * 43758.5453; return (v - Math.floor(v)) * 2 - 1; };
@@ -39,6 +43,24 @@ const CAP_BAND = (() => { const c = mkCanvas(512, 96), b = c.getContext('2d');
   const hz = b.createLinearGradient(0, 0, 512, 0); hz.addColorStop(0, 'rgba(0,0,0,0)'); hz.addColorStop(.14, 'rgba(0,0,0,1)'); hz.addColorStop(.86, 'rgba(0,0,0,1)'); hz.addColorStop(1, 'rgba(0,0,0,0)');
   b.globalCompositeOperation = 'destination-in'; b.fillStyle = hz; b.fillRect(0, 0, 512, 96); return c; })();
 function rrect(x, y, w, h, r) { g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); }
+// the ransom note: each letter's face, scale, chip colour and tilt come from a fixed hash of (line, word, letter)
+const RANSOM_FACES = ['{s}px Anton', '700 {s}px "Courier Prime"', '800 {s}px Figtree', '{s}px "Gochi Hand"', '{s}px Yellowtail', '{s}px "Rubik Wet Paint"'];
+const RANSOM_CHIPS = [['#efe6d2', '#1b1714'], ['#1b1714', '#f7f1e3'], ['#c8342c', '#fff4e6'], ['#f2c531', '#1b1714'], ['#e9e2f0', '#2b2350'], ['#fffaf0', '#c8342c']];
+const ransomPick = (li, wi, ci, k) => Math.floor((capWob(li, wi * 37 + ci, k) * .5 + .5) * 5.999);
+function ransomLetters(word, size, li, wi) { // [{ch, font, w, chipW, chip, ink, rot, dy}] and the word's total width
+  let x = 0; const out = [];
+  for (let ci = 0; ci < word.length; ci++) { const ch = word[ci], sc = .86 + .26 * (capWob(li, wi * 37 + ci, 5) * .5 + .5), sz = Math.round(size * sc);
+    const font = RANSOM_FACES[ransomPick(li, wi, ci, 3)].replace('{s}', sz); g.font = font; const w = g.measureText(ch).width, pad = size * .1;
+    const [chip, ink] = RANSOM_CHIPS[ransomPick(li, wi, ci, 4)]; const cw = w + 2 * pad;
+    out.push({ ch, font, w, cw, chip, ink, x, sz, rot: capWob(li, wi * 37 + ci, 6) * .13, dy: capWob(li, wi * 37 + ci, 7) * size * .07 }); x += cw + size * .03; }
+  return { letters: out, w: Math.max(0, x - size * .03) };
+}
+function drawRansom(word, cx, y, size, li, wi, al) {
+  const R = ransomLetters(word, size, li, wi); let x0 = cx - R.w / 2;
+  for (const L of R.letters) { g.save(); g.globalAlpha = al; g.translate(x0 + L.x + L.cw / 2, y - size * .34 + L.dy); g.rotate(L.rot);
+    const h = size * 1.12; g.fillStyle = L.chip; g.shadowColor = 'rgba(0,0,0,.35)'; g.shadowBlur = 6; g.shadowOffsetY = 2; g.fillRect(-L.cw / 2, -h / 2, L.cw, h);
+    g.shadowColor = 'transparent'; g.font = L.font; g.fillStyle = L.ink; g.textBaseline = 'middle'; g.textAlign = 'center'; g.fillText(L.ch, 0, size * .04); g.restore(); }
+}
 function captions(t) {
   const S = CAPS[CAP_STYLE] || CAPS.gochi;
   let L = null, end = 0; for (let i = 0; i < LINES.length; i++) { const l = LINES[i], nx = LINES[i + 1]; const e = Math.min(l.e + .6, nx ? nx.s - .05 : 1e9); if (t >= l.s - .05 && t < e) { L = l; end = e; } }
@@ -46,12 +68,12 @@ function captions(t) {
   // lay the line out: one row, or two rows split at the word nearest the middle; then fit the widest row (its words, the
   // gaps we draw, the slant and any box padding) inside CAP.maxW, so every word and its box sit inside the frame
   const words = L.text.split(/\s+/).map((w) => S.caps ? w.toUpperCase() : w); g.font = S.font.replace('{s}', S.size);
-  const w1 = words.map((w) => g.measureText(w).width), rowW = (a, b, s) => (w1.slice(a, b).reduce((x, y) => x + y, 0) + S.size * S.gap * (b - a - 1)) * s / S.size + (S.skew ? Math.abs(S.skew) * s : 0) + 2 * (S.box ? S.box.padX : 0) * s + (S.stroke ? (S.stroke + .05) * s : 0);
+  const w1 = words.map((w, i) => S.ransom ? ransomLetters(w, S.size, L.i, i).w : g.measureText(w).width), rowW = (a, b, s) => (w1.slice(a, b).reduce((x, y) => x + y, 0) + S.size * S.gap * (b - a - 1)) * s / S.size + (S.skew ? Math.abs(S.skew) * s : 0) + 2 * (S.box ? S.box.padX : 0) * s + (S.stroke ? (S.stroke + .05) * s : 0);
   let rows = [[0, words.length]];
   if (words.length > 2 && rowW(0, words.length, S.size) * .8 > CAP.maxW) { let best = 1, bd = 1e9; for (let k = 1; k < words.length; k++) { const d = Math.abs(rowW(0, k, S.size) - rowW(k, words.length, S.size)); if (d < bd) { bd = d; best = k; } } rows = [[0, best], [best, words.length]]; }
   const size = Math.max(18, Math.floor(S.size * Math.min(1, ...rows.map(([a, b]) => CAP.maxW / rowW(a, b, S.size))))); g.font = S.font.replace('{s}', size); g.textBaseline = 'alphabetic';
-  const gap = size * S.gap, widths = words.map((w) => g.measureText(w).width), lead = size * (S.box ? 1.5 : 1.22);
-  const m = g.measureText('Hgjy'), asc = m.actualBoundingBoxAscent, dsc = m.actualBoundingBoxDescent;
+  g.font = S.font.replace('{s}', size); const gap = size * S.gap, widths = words.map((w, i) => S.ransom ? ransomLetters(w, size, L.i, i).w : (g.font = S.font.replace('{s}', size), g.measureText(w).width)), lead = size * (S.box ? 1.5 : 1.22);
+  g.font = S.font.replace('{s}', size); const m = g.measureText('Hgjy'), asc = m.actualBoundingBoxAscent, dsc = m.actualBoundingBoxDescent;
   const fadeIn = clamp((t - L.s + .05) / .2), fadeOut = clamp((end - t) / .25);
   rows.forEach(([a, b], r) => {
     const tw = widths.slice(a, b).reduce((x, y) => x + y, 0) + gap * (b - a - 1), y = CAP.y - (rows.length - 1 - r) * lead; let x = W / 2 - tw / 2;
@@ -68,7 +90,8 @@ function captions(t) {
       if (S.wob) { g.translate(0, capWob(L.i, i, 1) * size * .05); g.rotate(capWob(L.i, i, 0) * .045); }
       if (S.skew) g.transform(1, 0, S.skew, 1, 0, 0);
       const lx = -widths[i] / 2;
-      if (S.box) { g.fillStyle = S.box.ink; g.fillText(txt, lx, 0);
+      if (S.ransom) { g.restore(); drawRansom(txt, x + widths[i] / 2, y, size, L.i, i, al); g.save();
+      } else if (S.box) { g.fillStyle = S.box.ink; g.fillText(txt, lx, 0);
       } else if (S.neon) { // tube glow: wide soft pink, tight pink, white core; a quick flicker as each word lights
         const fl = age < .25 ? (Math.sin(age * 90) > -.2 ? 1 : .35) : 1; g.globalAlpha = al * fl;
         g.fillStyle = S.neon; g.shadowColor = S.neon; g.shadowBlur = size * .5; g.fillText(txt, lx, 0); g.shadowBlur = size * .18; g.fillText(txt, lx, 0);
@@ -79,7 +102,7 @@ function captions(t) {
         g.fillStyle = S.accent && i === n - 1 ? S.accent : '#ffffff'; g.fillText(txt, lx, 0);
       } else {
         if (S.edge) { g.lineJoin = 'round'; g.strokeStyle = 'rgba(20,10,5,.9)'; g.lineWidth = size * .09; g.strokeText(txt, lx, 0); }
-        g.shadowColor = 'rgba(20,10,5,.85)'; g.shadowBlur = 14; g.shadowOffsetY = 3; g.fillStyle = S.wob ? '#f7ecd3' : '#ffffff'; g.fillText(txt, lx, 0); }
+        g.shadowColor = 'rgba(20,10,5,.85)'; g.shadowBlur = 14; g.shadowOffsetY = 3; g.fillStyle = S.accent && i === n - 1 ? S.accent : S.fill || (S.wob ? '#f7ecd3' : '#ffffff'); g.fillText(txt, lx, 0); }
       g.restore();
       probeWord(t, L.i, i, (tt) => i < wordsShown(L, tt + .05)); }
       x += widths[i] + gap; }
