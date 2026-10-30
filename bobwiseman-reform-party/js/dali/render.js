@@ -20,7 +20,9 @@
 // Instagram wraps its text, so no style has to shrink the long outro lines.
 const CAP_STYLE = new URLSearchParams(location.search).get('cap') || 'strong'; // Robin's pick for draft 35 (2026-10-30)
 const CAP_FACES = [['Gochi Hand', 'GochiHand-Regular.ttf'], ['Figtree', 'Figtree-VF.ttf', { weight: '300 900' }], ['Anton', 'Anton-Regular.ttf'],
-  ['Courier Prime', 'CourierPrime-Bold.ttf', { weight: '700' }], ['Yellowtail', 'Yellowtail-Regular.ttf'], ['Rubik Wet Paint', 'RubikWetPaint-Regular.ttf']];
+  ['Courier Prime', 'CourierPrime-Bold.ttf', { weight: '700' }], ['Yellowtail', 'Yellowtail-Regular.ttf'], ['Rubik Wet Paint', 'RubikWetPaint-Regular.ttf'],
+  // wild faces from Robin's own font library for Bob's options sheet (fonts/wild/, kept out of git: commercial or unclear licences)
+  ...['Shaman', 'Boecklin', 'Blazed', 'Destroya', 'Whizzbang', 'Samarkan', 'Dura3d'].map((n) => [n, `wild/${n}.ttf`])];
 const FONT_READY = Promise.all(CAP_FACES.map(([n, f, d]) => new FontFace(n, `url(../fonts/${f})`, d || {}).load().then((ff) => document.fonts.add(ff)).catch(() => 0))).then(() => true);
 const CAPS = {
   gochi: { font: '{s}px "Gochi Hand", "Marker Felt", sans-serif', size: 50, gap: .27, band: 1, wob: 1 },
@@ -31,6 +33,10 @@ const CAPS = {
   vv: { font: '{s}px Anton, Impact, sans-serif', size: 60, gap: .25, caps: 1, full: 1, stroke: 1 / 6, drop: 1, accent: 'rgb(255,176,59)' },
   melt: { font: '{s}px "Rubik Wet Paint", Impact, sans-serif', size: 60, gap: .3, caps: 1, edge: 1, fill: '#fbeed0', band: .7 },
   ransom: { font: '700 {s}px Figtree, sans-serif', size: 54, gap: .6, ransom: 1, wrapAt: 1.25 }, // wraps sooner: chips need the size
+  // the wild sheet: only the face changes; each keeps Strong's whole line, walking amber and dark edge
+  ...Object.fromEntries([['shaman', 'Shaman', 58, .3, 1], ['boecklin', 'Boecklin', 64, .28, 0], ['blazed', 'Blazed', 54, .3, 0], ['destroya', 'Destroya', 54, .35, 0],
+    ['whizzbang', 'Whizzbang', 62, .3, 0], ['samarkan', 'Samarkan', 64, .3, 0], ['dura3d', 'Dura3d', 56, .3, 1]].map(([k, f, size, gap, caps]) =>
+    [k, { font: `{s}px "${f}", Impact, sans-serif`, size, gap, caps, full: 1, edge: 1, band: .7, accent: 'rgb(255,176,59)' }])),
   neon: { font: '{s}px Yellowtail, cursive', size: 64, gap: .28, neon: '#ff3fb4', band: .9 },
 };
 const capWob = (li, wi, k) => { const v = Math.sin(li * 127.1 + wi * 311.7 + k * 74.7) * 43758.5453; return (v - Math.floor(v)) * 2 - 1; };
