@@ -73,3 +73,20 @@ Iterate with `npx hyperframes@0.8.162 snapshot --at ...` (contact sheets) before
   that adjusts it.
 - **Frame the camera outside the props.** A key that sits inside a gate post or over a bin reads as a wall of colour;
   check every key on the contact sheet, and route long camera travels around Blink and the stations, not through them.
+
+## Rules learned on episode 3
+
+- **Keep a long straight edge off the frame's outer few pixels.** Forensics' border check fails a run of frames where
+  the outer 1-3 px differ from the pixels just inside: on ep 3 the server's blue trim bars sat on the frame edge in four
+  shots while the camera drifted. Frame with a margin past any trim, bar or panel edge, top and bottom as well as the
+  sides.
+- **Two panels in one plane z-fight.** A card standing on a pulled-out drawer at the drawer face's depth flickered in
+  hatched stripes (ghosts and spikes at 22-24 s). Keep 0.1 units of clearance between facing panels.
+- **No per-frame shake.** A 14 Hz position jitter on a "glitching" card read as one-frame ghosts. Glitch the content
+  (values swapping every 0.1 s), not the position.
+- **Park props the camera passes close to.** From a pulled-back wall shot, the idle stamp and the server's label
+  became dark blurred blobs at the frame's foot. Retract a prop between its moments, or fade it by camera height.
+- **sfx_earshot now limits after loudnorm** (-2 dBFS). Single-pass loudnorm plus the AAC encode put ep 3's stamp hits
+  at -0.7 dBTP and probe failed.
+- **Snap the closing words to the voice.** Whisper put "make" 0.56 s early, before a silence; check the energy
+  envelope around every slam and stamp.
