@@ -1,0 +1,29 @@
+{
+ "lines": [
+  [
+   "I",
+   "Five tests passed. The code did nothing."
+  ],
+  [
+   "II",
+   "It was a small script. It reads an AI agent's log and writes one line for every job. It shipped, it passed every test, and in production it wrote nothing. No error. No warning. Just a clean exit."
+  ],
+  [
+   "III",
+   "It looked for a field called role at the top of each line. The real log keeps role one level down, inside message. So the script matched zero lines."
+  ],
+  [
+   "IV",
+   "And the five tests? Every one was made up, in the same flat shape the code expected. The code and the tests were wrong the same way, so the tests agreed with the bug."
+  ],
+  [
+   "V",
+   "What caught it was one real log. Run it through, count the lines that come out. Zero."
+  ],
+  [
+   "VI",
+   "The test that matters feeds in a real log and checks that exactly one line lands. Write your tests from the same guess as your code, and they'll agree with it forever. Build at least one from an input you didn't invent."
+  ]
+ ],
+ "facts": "Every claim is from devweb.org/articles/agent-run-cost-attribution (devweb content/articles/agent-run-cost-attribution.mdx), section 'Five tests passed. The hook wrote nothing.' I: the section title. II: the hook reads a subagent's transcript and 'appends one line to the run's log' per specialist (SPAWN-TOKEN-EVENT); 'shipped, passed its whole test suite, and did nothing in production'; 'it exited 0 and wrote nothing. No error. No warning. A clean exit that produced no output.' III: 'The selector read .role == \"user\"'; 'Real ... transcripts don't put role at the top level' ({\"type\":\"user\",\"message\":{\"role\":\"user\",...}}); 'The selector matched zero lines.' IV: 'The hook had five test fixtures, and all five passed ... every one had synthesized its user lines in the flat shape the hook expected ... the same wrong schema the code assumed. Code and fixtures were wrong in the same direction, so the fixtures confirmed the bug instead of catching it.' ('made up' = 'synthesized', not taken from a real transcript.) V: 'When someone finally ran a real subagent transcript through the hook and counted the SPAWN-TOKEN-EVENT lines, the count was zero.' VI: 'an end-to-end proof fixture: feed the hook a real-schema transcript with known content, then assert that exactly one SPAWN-TOKEN-EVENT line lands in the log'; 'the fixture and the code can be wrong together and agree with each other forever'; 'The only fixture that breaks the tie is one whose input you didn't invent.' Product names left out (the article names the harness and the framework). D96 (vectors-in-the-file, the green typecheck) left out: it is a different mechanism and crowded the minute."
+}
