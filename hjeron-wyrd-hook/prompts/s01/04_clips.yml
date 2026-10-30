@@ -1,0 +1,27 @@
+---
+- name: play_k
+  image: play
+  seconds: 5
+  key: green
+  engine: kling
+  elements:
+  - frontal: refs/wyrd-front.png
+    refs:
+    - refs/wyrd-side.png
+    - refs/wyrd-back.png
+    - refs/wyrd-head.png
+  prompt: "@Element1, the Wyrd One, exactly as his reference sheet: wide-brim hat,
+    dense matte black cord-fringe veil hiding the whole face (never a face, mouth
+    or eyes), long dark wavy hair, long shredded duster, black Les Paul with two pickups
+    and the white antlered-wolf headstock. Starting from the first frame, he plays
+    the Les Paul hard on a slow heavy blues groove at 75 bpm: the strumming hand hits
+    on every beat, the head rocks forward on the downbeats and lifts between them,
+    shoulders sway, the cord veil swings with the head, the coat hem stirs. Around
+    2 seconds in he leans back and lifts the guitar neck up, then drops back into
+    the groove. Locked camera, no camera movement, no zoom, the whole figure stays
+    inside the frame, perfectly flat chroma green #00B140 background throughout, no
+    shadows, no floor, no ground line, no text, no other figures. Keep the exact two-tone
+    style of @Element1: white engraved lines on pure black, no grey, no colour."
+- name: fire
+  source: output/s04/04_clip_fire.mp4
+  key: green

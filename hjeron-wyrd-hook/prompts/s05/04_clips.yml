@@ -1,0 +1,28 @@
+---
+- name: sit_k
+  image: sit
+  seconds: 5
+  key: green
+  engine: kling
+  elements:
+  - frontal: refs/wolf-front.png
+    refs:
+    - refs/wolf-side.png
+    - refs/wolf-head.png
+    - refs/wolf-back.png
+  prompt: "@Element1, the Antlered Wolf, exactly as its reference sheet: slender antlers
+    with one tine each, thick smoke-tipped tail, white engraved fur. Seen from behind,
+    sitting. Starting from the first frame it shifts its weight, curls its tail around
+    its paws, and turns its head up and to the left as if looking at a companion,
+    then holds still; thin smoke drifts off the antler tips. Locked camera, no camera
+    movement, no zoom, the whole figure stays inside the frame, perfectly flat chroma
+    green #00B140 background throughout, no shadows, no floor, no ground line, no
+    text, no other figures. Keep the exact two-tone style of @Element1: white engraved
+    lines on pure black, no grey, no colour."
+- name: back_late
+  source: output/s03/04_clip_back_k.mp4
+  key: green
+  start: 40
+- name: fire
+  source: output/s04/04_clip_fire.mp4
+  key: green
