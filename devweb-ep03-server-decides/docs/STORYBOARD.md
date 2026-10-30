@@ -1,13 +1,13 @@
 # devweb ep03: the server decides (storyboard, script gate)
 
 Title: "Telling the AI to be careful isn't a security rule." (episodes.md #30, D25, folds in #75/S12)
-Script: `vo/script.json` (facts traced there). Status: waiting on Robin's OK; the VO is not recorded.
+Script: `vo/script.json` (facts traced there). Status: script approved by Robin 2026-10-30; VO recorded (Chris, 58.9 s); draft 1 built.
 
 ## The world: the mailroom
 
 One Three.js world stacked for portrait, one camera that travels up and down it.
 
-- **Bottom: Blink's desk.** Blink writes request cards (white) with its sprout-pen; harness on.
+- **Bottom: Blink's desk.** The request card (white) appears over Blink and fills in as it "writes". No harness: no tools in this story.
 - **Middle: the server.** A blue stamping machine on a conveyor, with a red strike arm and an amber stamp.
 - **Top: the record wall.** A tall wall of blue drawers, one per chat, each message card filed inside with its chat
   printed on it. It fills the frame top to bottom whenever the camera is on it, so no shot leaves half the frame empty.
@@ -26,3 +26,11 @@ The white card is the story device: it travels from the desk, through the machin
 | VI close | "It won't prove... Make the server decide." | Back down to Blink choosing between two cards (green), the machine stamping (blue). Close lines as type. |
 
 No URL on screen (the article links go in the YouTube description). Captions keep the bottom 220 px.
+
+## Draft 1 notes
+
+- Hook times snapped to the voice: "crossed" 4.52 s, "out" 4.95 s. Whisper put "make" at 57.52 s, before a silence
+  (57.75 to 58.05 s); the voice says it at 58.08 s, so "Make the server decide." and the last stamp use 58.08 / 58.55 s.
+- The receipt panel lists write_memory's real six fields (type, content, source_turn_id, source_session_id,
+  confidence, reason) from the tool's inputSchema, and its description line split over three lines without the dash.
+- The crowd (six low-poly Blinks) is in for the mass moment and the end only; it would crowd the desk shots.
