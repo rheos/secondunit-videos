@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en" data-resolution="portrait">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=720, height=1280" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@500;700&display=block" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script src="vo/words.js"></script>
+    <script src="blink-geo.js"></script>
+    <script type="importmap">
+      { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.181.2/build/three.module.js", "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.181.2/examples/jsm/" } }
+    </script>
+    <style>
+      :root { --bg: #0d1117; --text: #eef2f6; --text2: #c9d1d9; --muted: #9aa6b6; --faint: #7b8593; --green: #6ad08a; --blue: #4f93d6; --amber: #d6a45a; --red: #e0675a; --sans: "IBM Plex Sans", sans-serif; --mono: "IBM Plex Mono", monospace; }
+      html, body { margin: 0; background: var(--bg); }
+      #root { position: relative; width: 720px; height: 1280px; overflow: hidden; color: var(--text); font-family: var(--sans); background: var(--bg); }
+      .abs { position: absolute; }
+      .layer { position: absolute; inset: 0; }
+      .hide { opacity: 0; }
+      .chrome { left: 44px; right: 44px; top: 52px; display: flex; justify-content: space-between; align-items: center; font-family: var(--mono); font-size: 23px; font-weight: 500; }
+      .bar { left: 44px; right: 44px; bottom: 50px; height: 3px; background: #1c2333; }
+      .cap { left: 40px; right: 40px; top: 1060px; text-align: center; font-size: 44px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.15; text-shadow: 0 2px 18px rgba(0,0,0,.8); }
+      .step { font-size: 86px; font-weight: 700; letter-spacing: -0.04em; text-shadow: 0 4px 30px rgba(0,0,0,.7); }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="45.32" data-width="720" data-height="1280">
+      <audio id="mix" src="_in/mix.wav" data-start="0" data-duration="45.32" data-track-index="20" data-volume="1"></audio>
+      <!-- the world: one Three.js scene, one camera (oner.js) -->
+      <canvas id="world" width="720" height="1280" style="position:absolute;left:0;top:0;width:720px;height:1280px"></canvas>
+      <div class="layer" style="pointer-events:none;background:radial-gradient(110% 70% at 50% 50%, rgba(13,17,23,0) 55%, rgba(9,12,17,.75) 100%)"></div>
+      <div class="layer" style="pointer-events:none;background:linear-gradient(rgba(13,17,23,0) 78%, rgba(13,17,23,.85) 92%)"></div>
+      <div id="stage" class="layer"></div>
+      <div class="layer" style="pointer-events:none;opacity:.06;mix-blend-mode:overlay;background-image:url(&quot;data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='160' height='160' filter='url(%23n)'/></svg>&quot;)"></div>
+    </div>
+
+    <script>
+      (() => {
+        const tl = gsap.timeline({ paused: true });
+        const stage = document.getElementById("stage");
+        window.BP = window.BP || {};
+        BP.CUES = BP.CUES || [];
+        const cue = (k, t, extra) => BP.CUES.push(Object.assign({ k, t: +t.toFixed(3) }, extra || {}));
+        const w = (word, n) => VO.w(word, n);
+        const e = (word, n) => VO.e(word, n);
+        const F = (el, from, to, at) => tl.fromTo(el, from, Object.assign({ immediateRender: false }, to), at);
+        const mk = (tag, cls, css, parent, html) => { const n = document.createElement(tag); if (cls) n.className = cls; if (css) n.style.cssText = css; if (html != null) n.innerHTML = html; (parent || stage).appendChild(n); return n; };
+        const show = (el, at, d = 0.3, y = 18) => F(el, { opacity: 0, y }, { opacity: 1, y: 0, duration: d, ease: "power3.out" }, at);
+        const hide = (el, at, d = 0.3) => F(el, { opacity: 1 }, { opacity: 0, duration: d, ease: "power2.in" }, at);
+        const rise = (el, at, d = 0.45) => F(el, { opacity: 0, y: 26, filter: "blur(10px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: d, ease: "power3.out" }, at);
+        const slam = (el, at, from = 1.6) => { cue("slam", at + 0.16); return F(el, { opacity: 0, scale: from, rotate: -4 }, { opacity: 1, scale: 1, rotate: 0, duration: 0.3, ease: "back.out(1.6)" }, at); };
+
+        // chrome: lockup, topic tag, progress
+        const chrome = mk("div", "abs chrome", "", stage, `<span><span style="color:var(--green)">~/</span>devweb</span><span style="color:var(--faint);font-size:20px">// tool calls</span>`);
+        const bar = mk("div", "abs bar");
+        const barIn = mk("div", null, "height:3px;background:var(--green);transform-origin:left;transform:scaleX(0)", bar);
+        F(barIn, { scaleX: 0 }, { scaleX: 1, duration: VO.END, ease: "none" }, 0);
+        hide(chrome, e("belong") + 0.3, 0.4); hide(bar, e("belong") + 0.3, 0.4);
+
+        // captions: fragments, never more than one line pair; none over the hook type or the slam
+        const CAPS = [
+          [w("ask"), "Ask it for the weather in Nelson."], [w("it", 4), "It doesn't check the sky."], [w("it", 5), "It writes a request."],
+          [w("that's"), "That's the whole move."], [w("something"), "Something else picks it up:"], [w("harness") - 0.2, "the harness."],
+          [w("it", 6), "It runs the tool,"], [w("gets"), "gets back 4°C and rain,"], [w("hands") - 0.2, "and hands it back as text."],
+          [w("model", 2) - 0.2, "The model reads it, and decides:"], [w("answer"), "answer, or ask again."], [w("that's", 2), "That's the loop."],
+          [w("again", 2), "Again and again,"], [w("until"), "until it stops asking."], [w("so"), "So if an agent ever deletes a file,"],
+          [w("model", 3) - 0.15, "the model didn't run that command."],
+        ];
+        CAPS.forEach(([t, text], i) => {
+          const c = mk("div", "abs cap hide", "", stage, text.replace(/(harness|text|loop)/, '<span style="color:var(--green)">$1</span>').replace(/(4°C and rain)/, '<span style="color:var(--amber)">$1</span>'));
+          const end = i + 1 < CAPS.length ? CAPS[i + 1][0] : w("harness", 2) - 0.25;
+          rise(c, t, 0.3); hide(c, end - 0.2, 0.18);
+        });
+
+        // ================= I. HOOK (kinetic type): open cropped inside "runs", pull back to the line =================
+        const p1 = mk("div", "layer");
+        const cam1 = mk("div", "abs", "left:0;top:0;width:720px;height:1280px;transform-origin:0 0", p1);
+        const l1 = mk("div", "abs", "left:44px;top:330px;font-size:96px;font-weight:700;letter-spacing:-0.045em;line-height:1", cam1, "An AI never");
+        const l2 = mk("div", "abs", "left:44px;top:436px;font-size:96px;font-weight:700;letter-spacing:-0.045em;line-height:1;white-space:nowrap", cam1,
+          `<span style="position:relative;display:inline-block">runs<span id="strike" style="position:absolute;left:-6px;right:-6px;top:54%;height:9px;background:var(--red);transform-origin:left;transform:scaleX(0)"></span></span> a tool.`);
+        // cinetic oh-cropped-word-pull-back: frame 0 sits at 3.2x on "runs", its first glyph cut by the left edge; log-space pull back
+        const zoom = { p: 0 };
+        const camAt = (p) => { const k = Math.pow(3.2, 1 - p); const tx = -190 * (1 - p), ty = -1020 * (1 - p); cam1.style.transform = `translate(${tx}px,${ty}px) scale(${k})`; };
+        camAt(0);
+        tl.fromTo(zoom, { p: 0 }, { p: 1, duration: 1.15, ease: "power2.inOut", immediateRender: false, onUpdate: () => camAt(zoom.p) }, w("never") - 0.25);
+        cue("whoosh", w("never") - 0.2, { d: 1.1 });
+        const strike = l2.querySelector("#strike");
+        F(strike, { scaleX: 0 }, { scaleX: 1, duration: 0.22, ease: "power2.out" }, e("tool") + 0.05);
+        cue("strike", e("tool") + 0.05);
+        const cant = mk("div", "abs hide", "left:44px;top:600px;font-size:60px;font-weight:700;color:var(--muted);letter-spacing:-0.03em", p1, "It can't.");
+        rise(cant, w("can't") - 0.05);
+        const only = mk("div", "abs hide", "left:44px;top:690px;font-size:60px;font-weight:700;letter-spacing:-0.03em", p1, `It only writes <span style="color:var(--green)">text.</span>`);
+        rise(only, w("only") - 0.05);
+        cue("blip", w("text"));
+        F(p1, { opacity: 1, y: 0 }, { opacity: 0, y: -80, duration: 0.4, ease: "power2.in" }, w("ask") - 0.6);
+        cue("swipe", w("ask") - 0.6);
+
+        // Ask. Run. Read. : big words over the loop
+        [["Ask.", w("ask", 3), "left:60px;top:880px;color:var(--green)"], ["Run.", w("run"), "left:250px;top:880px;color:var(--blue)"], ["Read.", w("read"), "left:450px;top:880px;color:var(--amber)"]].forEach(([s, t, css]) => {
+          const n = mk("div", "abs step hide", css, stage, s);
+          slam(n, t - 0.08, 1.4);
+          F(n, { opacity: 1 }, { opacity: 0, duration: 0.3 }, w("again", 2));
+        });
+        // the harness did.
+        const did = mk("div", "abs hide", "left:44px;right:44px;top:160px;font-size:104px;font-weight:700;letter-spacing:-0.045em;line-height:1;text-shadow:0 4px 30px rgba(0,0,0,.7)", stage, `The <span style="color:var(--green)">harness</span><br>did.`);
+        slam(did, w("harness", 2) - 0.08, 1.5);
+        hide(did, w("guardrails") - 0.15, 0.2);
+        const gTag = mk("div", "abs hide", "left:44px;right:44px;top:160px;font-size:96px;font-weight:700;letter-spacing:-0.045em;line-height:1;color:var(--amber);text-shadow:0 4px 30px rgba(0,0,0,.7)", stage, "Guardrails<br>go here.");
+        slam(gTag, w("guardrails") - 0.05, 1.4); hide(gTag, e("belong") + 0.2, 0.3);
+        // the end: the mark under Blink, the article's address
+        const endAt = e("belong") + 1.2;
+        const mark = mk("div", "abs hide", "left:190px;top:600px;width:340px;height:92px;box-sizing:border-box;border-radius:14px;border:3px solid var(--green);background:#0d1117;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-weight:600;font-size:44px", stage, `<span style="color:var(--green)">~/</span>devweb`);
+        F(mark, { opacity: 0, scale: 0.85 }, { opacity: 1, scale: 1, duration: 0.4, ease: "back.out(1.6)" }, endAt);
+        const url = mk("div", "abs hide", "left:0;right:0;top:730px;text-align:center;font-family:var(--mono);font-size:28px;color:var(--text2)", stage, "devweb.org/glossary/tool-calling-loop");
+        rise(url, endAt + 0.4, 0.4);
+
+        const clock3 = { t: 0 };
+        tl.fromTo(clock3, { t: 0 }, { t: VO.END, duration: VO.END, ease: "none", immediateRender: false, onUpdate: () => { if (window.renderWorld) window.renderWorld(clock3.t); } }, 0);
+        window.__timelines = window.__timelines || {};
+        window.__timelines["main"] = tl;
+      })();
+    </script>
+    <script type="module">
+      import { buildWorld } from "./oner.js";
+      window.__hf = window.__hf || {};
+      window.__hf.buildReady = window.__hf.buildReady || {};
+      let ready; window.__hf.buildReady["oner"] = new Promise((r) => (ready = r));
+      const render = await buildWorld(document.getElementById("world"));
+      window.renderWorld = render;
+      window.addEventListener("hf-seek", (ev) => render(ev.detail.time));
+      render(window.__hfThreeTime || 0);
+      ready();
+    </script>
+  </body>
+</html>
