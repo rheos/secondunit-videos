@@ -202,10 +202,10 @@ export async function buildWorld(canvas) {
   // the thinking dots over the no-label file
   const dotMat = new THREE.MeshBasicMaterial({ color: "#d6a45a", transparent: true });
   const dots = [-0.22, 0, 0.22].map((x) => { const m = new THREE.Mesh(new THREE.SphereGeometry(0.075, 14, 10), dotMat); m.position.set(x, 1.25, 0.2); gate.add(m); return m; });
-  // the paddle: a door hung on the gate's right post, shut across the belt at rest (files slip under it). On each kick
-  // it swings 90 degrees outward, away from the frame, to lie along the belt, sweeping the red file toward the bin
-  const paddle = new THREE.Group(); paddle.position.set(BX + 0.95, BELT_Y + 0.17, GATE_Z + 0.23); scene.add(paddle);
-  const arm = new THREE.Mesh(new RoundedBoxGeometry(1.8, 0.2, 0.1, 2, 0.03), blue); arm.position.set(-0.95, 0, 0); paddle.add(arm);
+  // the paddle: a door hung on the gate's left post, shut across the belt at rest (files slip under it). On each kick
+  // it swings 90 degrees outward, away from the frame, to lie along the belt
+  const paddle = new THREE.Group(); paddle.position.set(BX - 0.95, BELT_Y + 0.17, GATE_Z + 0.23); scene.add(paddle);
+  const arm = new THREE.Mesh(new RoundedBoxGeometry(1.8, 0.2, 0.1, 2, 0.03), blue); arm.position.set(0.95, 0, 0); paddle.add(arm);
   const hub = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 0.36, 16), blue); paddle.add(hub);
 
   // ---------- the bin ----------
@@ -402,7 +402,7 @@ export async function buildWorld(canvas) {
     const prox = near ? cl(1 - nearD / 0.6) : 0;
     scanMat.color.set(flooding || !near || prox === 0 ? "#4f93d6" : KIND[near].col);
     scanMat.opacity = (flooding ? 0.24 : 0.16 + 0.22 * prox) * cl(gk);
-    paddle.rotation.y = Math.PI / 2 * kickP; // 0 = shut across the belt, 1 = open along it, downstream (the flood's red files jump on their own: it can't swing 20 times a second)
+    paddle.rotation.y = -Math.PI / 2 * kickP; // 0 = shut across the belt, 1 = open along it, downstream (the flood's red files jump on their own: it can't swing 20 times a second)
 
     // set B: after the gate, only files this role can see
     const bA = r01(t, T.ask2 + 1.06, 0.5);
