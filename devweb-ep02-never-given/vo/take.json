@@ -2,7 +2,7 @@
  "lines": [
   [
    "I",
-   "Telling your AI \"don't reveal secrets\" is a hope with good phrasing."
+   "Telling your AI \"don't reveal secrets\" is a hope, not a guarantee."
   ],
   [
    "II",
@@ -25,7 +25,7 @@
    "Ask about a file it never got, and it just says: I don't have that. The model can't leak what it was never given."
   ]
  ],
- "chars": 724,
- "seconds": 47.12,
- "sha256": "addf46b9a7ef7e5b60bb99771f7229eaf6ffe0448e086e035279b0d53b3b2dca"
+ "chars": 722,
+ "seconds": 47.84,
+ "sha256": "70257860f4405c185cbbdb07c6179f177b00f85cb9757d6d08582fd623506ca9"
 }

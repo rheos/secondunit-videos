@@ -26,8 +26,8 @@
     </style>
   </head>
   <body>
-    <div id="root" data-composition-id="main" data-start="0" data-duration="52.12" data-width="1080" data-height="1920">
-      <audio id="mix" src="_in/mix.wav" data-start="0" data-duration="52.12" data-track-index="20" data-volume="1"></audio>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="52.84" data-width="1080" data-height="1920">
+      <audio id="mix" src="_in/mix.wav" data-start="0" data-duration="52.84" data-track-index="20" data-volume="1"></audio>
       <!-- the world: one Three.js scene, one camera (oner.js) -->
       <canvas id="world" width="1080" height="1920" style="position:absolute;left:0;top:0;width:1080px;height:1920px"></canvas>
       <!-- the type is authored on a 720x1280 stage and scaled 1.5x as vectors; the 3D renders natively at 1080x1920 -->
@@ -81,10 +81,10 @@
         // ================= I. HOOK: the note sits in the middle of the frame; the line wraps around it =================
         const hk = "left:44px;right:44px;font-weight:700;letter-spacing:-0.04em;line-height:1;text-shadow:0 4px 30px rgba(0,0,0,.7)";
         const h1 = mk("div", "abs", hk + ";top:330px;font-size:76px", stage, "Telling your AI");
-        const h2 = mk("div", "abs hide", hk + ";top:860px;font-size:80px", stage, `is a ${R("hope")}`);
-        const h3 = mk("div", "abs hide", hk + ";top:952px;font-size:60px;color:var(--text2)", stage, "with good phrasing.");
-        slam(h2, w("is") - 0.08, 1.4); rise(h3, w("with") - 0.05, 0.35);
-        [h1, h2, h3].forEach((n) => hide(n, e("phrasing") + 0.35, 0.3));
+        const h2 = mk("div", "abs hide", hk + ";top:860px;font-size:80px", stage, `is a ${R("hope")},`);
+        const h3 = mk("div", "abs hide", hk + ";top:952px;font-size:72px;color:var(--text2)", stage, "not a guarantee.");
+        slam(h2, w("is") - 0.08, 1.4); rise(h3, w("not") - 0.05, 0.35);
+        [h1, h2, h3].forEach((n) => hide(n, e("guarantee") + 0.35, 0.3));
 
         // ================= III. request vs fact =================
         const big = hk + ";font-size:84px";

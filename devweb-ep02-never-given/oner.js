@@ -14,7 +14,7 @@ const w = (x, n) => VO.w(x, n), e = (x, n) => VO.e(x, n);
 
 // ---------- the beats, all on Chris's words ----------
 export const T = {
-  is: w("is"), phrasing: e("phrasing"), by: w("by"), reads: w("reads"), already: w("already"), secret: w("secret"),
+  is: w("is"), guar: e("guarantee"), by: w("by"), reads: w("reads"), already: w("already"), secret: w("secret"),
   ask: w("ask"), sums: w("sums"), very: w("very"), file1: e("file"), keep: w("keep"), quiet: e("quiet"),
   rule2: w("rule", 2), request: w("request"), context: w("context"), fact: w("fact"),
   so: w("so"), door: w("door"), every: w("every"), forW: e("for"), loader: w("loader"), asking: w("asking"), drops: w("drops"),
@@ -28,7 +28,8 @@ const BIN = V(BX + 2.5, FLOOR, -12.6);
 const NOTE = V(0, 2.25, 0.3), HERO = V(1.12, 1.15, 1.35), ANS = V(0.05, 3.2, 0.5), ASK = V(0.05, 4.05, 0.2);
 
 // ---------- the belt: distance travelled as a pure function of t (speed table integrated once) ----------
-const SPEEDS = [[0, 0.9], [18.6, 0.9], [18.9, 1.0], [25.1, 1.0], [25.6, 7.5], [30.7, 7.5], [31.3, 1.0], [40.7, 1.0], [41.2, 5.2], [43.3, 5.2], [43.9, 0.8], [999, 0.8]];
+const SPEEDS = [[0, 0.9], [T.so + 0.3, 0.9], [T.so + 0.6, 1.0], [T.drops - 0.04, 1.0], [T.drops + 0.46, 7.5], [T.drops + 5.56, 7.5], [T.drops + 6.16, 1.0],
+  [T.ask2 - 0.74, 1.0], [T.ask2 - 0.24, 5.2], [T.says2 - 0.24, 5.2], [T.says2 + 0.36, 0.8], [999, 0.8]];
 const speedAt = (t) => { for (let i = 0; i < SPEEDS.length - 1; i++) { const [a, va] = SPEEDS[i], [b, vb] = SPEEDS[i + 1]; if (t < b) return mix(va, vb, cl((t - a) / Math.max(1e-6, b - a))); } return 0.8; };
 const HZ = 240, NT = Math.ceil((T.END + 2) * HZ), Dtab = new Float64Array(NT + 2);
 for (let i = 0; i <= NT; i++) Dtab[i + 1] = Dtab[i] + speedAt((i + 0.5) / HZ) / HZ;
@@ -40,8 +41,8 @@ const hash = (n) => { const s = Math.sin(n * 127.1 + 311.7) * 43758.5453; return
 const KEYS = [
   // the hook: the note on its own, then pull back to Blink under it
   [0, [0, 2.3, 6.1], [0, 2.25, 0.3], 34],
-  [T.phrasing + 0.2, [0, 2.3, 5.7], [0, 2.25, 0.3], 34],
-  [T.phrasing + 1.3, [0.15, 1.5, 10.6], [0.05, 1.2, 0], 36],
+  [T.guar + 0.2, [0, 2.3, 5.7], [0, 2.25, 0.3], 34],
+  [T.guar + 1.3, [0.15, 1.5, 10.6], [0.05, 1.2, 0], 36],
   [T.already - 0.1, [0.2, 1.5, 10.4], [0.05, 1.2, 0], 36],
   // the private file Blink already holds
   [T.secret + 0.35, [1.3, 1.35, 8.4], [0.6, 1.15, 0.7], 36],
@@ -71,9 +72,9 @@ const KEYS = [
   [T.label - 0.25, [BX - 6.2, 2.8, -7.6], [BX + 0.8, 0.0, -13.6], 38],
   [T.hiding - 0.3, [BX - 6.4, 2.9, -7.4], [BX + 0.8, 0.2, -13.6], 38],
   [T.edit + 0.8, [BX - 6.8, 3.2, -7.0], [BX + 0.8, 1.0, -13.4], 38],
-  [40.75, [BX + 3.2, 2.6, -7.4], [BX + 0.1, -0.5, -11.6], 38],
+  [T.ask2 - 0.69, [BX + 3.2, 2.6, -7.4], [BX + 0.1, -0.5, -11.6], 38],
   // ride with it to the room
-  [42.55, [BX + 2.4, 3.6, 6.2], [BX - 0.8, -0.3, -4.0], 38],
+  [T.ask2 + 1.11, [BX + 2.4, 3.6, 6.2], [BX - 0.8, -0.3, -4.0], 38],
   [T.says2 + 0.05, [0.15, 1.6, 11.1], [0.05, 1.28, 0], 36],
   [T.model3 - 0.2, [0.1, 1.6, 11.3], [0.05, 1.28, 0], 36],
   [T.given + 0.3, [0.1, 1.6, 11.6], [0.05, 1.28, 0], 36],
@@ -109,7 +110,7 @@ export async function buildWorld(canvas) {
   const onBelt = (d, t) => { const z = d.z0 + D(t); return z >= HOP_Z && z <= WALL_Z && t < d.kick ? z : null; };
   // drop belt files that would run into it while it waits at the gate or rides back to the room
   for (let i = docs.length - 1; i >= 0; i--) {
-    for (let t = Q.atGate - 2; t < 43.6; t += 0.04) { const a = qz(t), b = onBelt(docs[i], t); if (a !== null && b !== null && Math.abs(a - b) < 1.05) { docs.splice(i, 1); break; } }
+    for (let t = Q.atGate - 2; t < T.says2 + 0.1; t += 0.04) { const a = qz(t), b = onBelt(docs[i], t); if (a !== null && b !== null && Math.abs(a - b) < 1.05) { docs.splice(i, 1); break; } }
   }
   // the flood: files pour out of the hopper at seven units a second
   const flood = [];
@@ -123,7 +124,7 @@ export async function buildWorld(canvas) {
   // ---------- sound cues (times only; reported before any await so cues.mjs sees them) ----------
   const cue = (k, t, extra) => window.BP.CUES.push(Object.assign({ k, t: +t.toFixed(3) }, extra || {}));
   const ASKQ = "Ballpark, what do we pay?";
-  cue("whoosh", T.phrasing + 0.15, { d: 1.1 }); cue("tick", T.reads);
+  cue("whoosh", T.guar + 0.15, { d: 1.1 }); cue("tick", T.reads);
   cue("slide", T.already, { d: 0.55 }); cue("blip", T.secret);
   cue("pop", T.ask - 0.1); [...ASKQ].forEach((ch, i) => ch !== " " && cue("type", T.ask + i / 24));
   cue("zip", T.sums - 0.05); cue("pop", T.sums + 0.3); cue("draw", T.very, { d: 0.4 }); cue("strike", T.file1);
@@ -132,7 +133,7 @@ export async function buildWorld(canvas) {
   cue("whoosh", T.so, { d: 0.7 }); cue("riser", T.door - 0.45, { d: 0.45 }); cue("land", T.door + 0.38); cue("whoosh", T.door + 0.1, { d: 0.85 });
   cue("whoosh", T.every - 0.15, { d: 1.0 }); cue("whoosh", T.loader - 0.05, { d: 0.8 }); cue("blip", T.asking);
   docs.forEach((d) => {
-    const inQuiet = (x) => (x > GATE_ON && x < T.drops + 0.4) || (x > T.thats + 1.2 && x < 41);
+    const inQuiet = (x) => (x > GATE_ON && x < T.drops + 0.4) || (x > T.thats + 1.2 && x < T.ask2 - 0.4);
     if (inQuiet(d.tGate)) cue("tick", d.tGate);
     if (inQuiet(d.kick)) { cue("swipe", d.kick); cue("thud", d.kick + 0.55); }
   });
@@ -144,7 +145,7 @@ export async function buildWorld(canvas) {
   cue("whoosh", T.label - 0.3, { d: 0.9 }); cue("tick", Q.atGate + 0.1); cue("blip", Q.atGate + 0.45);
   cue("stamp", T.priv); cue("swipe", Q.kick); cue("thud", Q.kick + 0.55);
   cue("zip", Q.hop); cue("ding", T.edit + 0.05); cue("land", Q.back);
-  cue("whoosh", 40.8, { d: 1.8 });
+  cue("whoosh", T.ask2 - 0.64, { d: 1.8 });
   cue("pop", T.says2 - 0.75); [...ASKQ].forEach((ch, i) => ch !== " " && cue("type", T.says2 - 0.7 + i / 40));
   cue("pop", T.i - 0.05); cue("blip", T.i + 0.3);
   cue("whoosh", T.given + 0.3, { d: 1.1 }); cue("sting", T.given + 1.35);
@@ -293,7 +294,7 @@ export async function buildWorld(canvas) {
     let happy = 0, blinkK = 0, look = 0, lookY = 0, think = 0, yaw = 0.12 * Math.sin((t / 3.1) * Math.PI * 2);
     rig.position.set(0, bob, 0);
     shadow.material.opacity = 0.45 - bob; shadow.scale.setScalar(1 - bob);
-    blinkK = Math.max(pulse(t, 2.2, 0.07), pulse(t, 14.0, 0.07), pulse(t, 30.0, 0.07), pulse(t, 46.6, 0.07), pulse(t, T.given + 2.4, 0.07));
+    blinkK = Math.max(pulse(t, T.is - 0.6, 0.07), pulse(t, T.rule2 - 0.4, 0.07), pulse(t, T.thats + 1.4, 0.07), pulse(t, T.model3 + 1.1, 0.07), pulse(t, T.given + 2.4, 0.07));
 
     // the belt runs the whole film
     stripeTex.offset.y = -(D(t) / 2) % 1;
@@ -306,7 +307,7 @@ export async function buildWorld(canvas) {
     note.mesh.material.opacity = noteA; note.mesh.visible = noteA > 0;
 
     // set A: the context before the gate. The private file steps out of the orbit on "already" and comes back on "rule"
-    const aA = 1 - r01(t, T.so, 0.5);
+    const aA = r01(t, T.guar + 0.25, 0.6) * (1 - r01(t, T.so, 0.5)); // in after the hook line, so nothing sits behind it
     SETA.forEach((m, i) => {
       m.visible = aA > 0.001; if (!m.visible) return;
       let p = orbitPos(i, SETA.length, t), s = 0.85;
@@ -400,7 +401,7 @@ export async function buildWorld(canvas) {
     paddle.rotation.y = -1.05 * kickP;
 
     // set B: after the gate, only files this role can see
-    const bA = r01(t, 42.5, 0.5) * (1 - r01(t, T.given + 0.4, 0.5));
+    const bA = r01(t, T.ask2 + 1.06, 0.5) * (1 - r01(t, T.given + 0.4, 0.5));
     SETB.forEach((m, i) => { m.visible = bA > 0.001; if (!m.visible) return; m.position.copy(orbitPos(i + 1, 5, t)); m.position.y -= (1 - io(bA)) * 1.2; m.quaternion.copy(camQ); m.scale.setScalar(0.85); m.material.opacity = bA; });
 
     // the honest answer
@@ -421,7 +422,7 @@ export async function buildWorld(canvas) {
     else if (t < T.sums - 0.1) { look = 0; lookY = 1.25; }
     else if (t < T.keep) { happy = r01(t, T.sums - 0.1, 0.12); lookY = 0.4; }
     else if (t < T.rule2) { happy = 1 - r01(t, T.keep, 0.12); look = -0.6; lookY = 1.0; yaw += 0.2 * Math.sin((t - T.keep) * 14) * (1 - r01(t, T.keep + 0.2, 0.4)); }
-    else if (t < 40) { look = 0.8; lookY = 0.1; }
+    else if (t < T.ask2 - 1.4) { look = 0.8; lookY = 0.1; }
     else if (t < T.says2 - 0.8) { look = 0.9; lookY = -0.2; }
     else if (t < T.i) { look = 0; lookY = 1.2; }
     else if (t < T.given + 0.3) { look = 0; lookY = 0.2; happy = r01(t, T.i + 0.6, 0.15) * 0.8; }
