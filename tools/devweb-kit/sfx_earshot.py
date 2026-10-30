@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Sound on the picture from earshot's sound bank (Leon Lin, MIT; references/leon-lin/STUDY-earshot.md).
 
-    EARSHOT=<earshot clone> <viralvision venv python> -I sfx_earshot.py
+    EARSHOT=<earshot clone> <viralvision venv python> -I tools/devweb-kit/sfx_earshot.py <project-folder>
 
 Reads cues.json (tools/blueprint-kit/cues.mjs: every event the page reports), renders one take per cue kind with
 `earshot sfx render` (the bank is numpy only: no Docker, no torch, no models), places each hit one frame after its
@@ -12,7 +12,7 @@ import json, os, pathlib, subprocess, sys
 import numpy as np
 import soundfile as sf
 
-HERE = pathlib.Path(__file__).resolve().parent
+HERE = pathlib.Path(sys.argv[1]).resolve() if len(sys.argv) > 1 else pathlib.Path.cwd()
 EARSHOT = os.environ["EARSHOT"]
 SR, FPS = 48000, 30
 # kind -> (bank id, gain dB under a -1 dBFS take, seeds to rotate)
