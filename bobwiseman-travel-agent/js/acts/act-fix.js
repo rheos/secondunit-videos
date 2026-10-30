@@ -18,14 +18,15 @@ SU.f_knot = { mode: 'ill', f(q, p, a, T) {
 
 // "Heroes just make believe": the hero from behind, a cardboard flat on braces, labelled as a prop
 SU.f_heroFlat = { mode: 'ill', f(q, p, a, T) {
-  stripes('#e2d2c4', '#d4bfae', 140, -.62, 0, C.plum); cam(960, 540, lerp(1.1, 1, eo(p)));
-  const turn = eo(cl(p / .6)), sx = Math.cos(turn * Math.PI);
+  stripes('#e2d2c4', '#d4bfae', 140, -.62, 0, C.plum); cam(960, 560, lerp(1.03, 1, eo(p)));
+  // draft 11: the hero holds until "make" and turns edge-on on "believe" (265.86); he used to read for only .6 s
+  const turn = eio(seg(T, 265.45, 266.15)), sx = Math.cos(turn * Math.PI);
   fillP(PR(-200, 900, W + 400, 300), '#8a6a4a'); hatch(PR(-200, 900, W + 400, 300), 960, 1000, 1300, .1, 9, C.ink, .8, .4); iline(-200, 900, W + 200, 900, C.ink, 2.6);
   X.save(); X.translate(960, 900); X.scale(sx, 1);
-  if (sx > 0) { const cape = PP([[-120, -620], [120, -620], [300, -80], [-300, -80]]); fillP(cape, C.orange); shade(cape, 0, -350, 300, [20, -20], .8, 6); iP([[-120, -620], [120, -620], [300, -80], [-300, -80]], true, C.ink, 3); traveller(0, 0, 2.2, { hat: false, look: 0, armR: [2.8, 0], armL: [-2.8, 0] }); }
+  if (sx > 0) { const cape = PP([[-100, -520], [100, -520], [260, -80], [-260, -80]]); fillP(cape, C.orange); shade(cape, 0, -350, 300, [20, -20], .8, 6); iP([[-100, -520], [100, -520], [260, -80], [-260, -80]], true, C.ink, 3); traveller(0, 0, 1.75, { hat: false, look: 0, armR: [2.8, 0], armL: [-2.8, 0] }); }
   else { const back = PP([[-300, -900], [300, -900], [300, -40], [-300, -40]]); fillP(back, '#c9a978'); hatch(back, 0, -470, 520, .05, 14, C.brown || '#8a6a4a', 2, .5); hatch(back, 0, -470, 520, Math.PI / 2, 40, C.ink, 1.4, .25); iP(dens([[-300, -900], [300, -900], [300, -40], [-300, -40]], 40, true), true, C.ink, 3);
     for (const bx of [-200, 200]) { const br = PP([[bx, -600], [bx + 20, -600], [bx + 220 * Math.sign(-bx), 0], [bx + 190 * Math.sign(-bx), 0]]); fillP(br, '#8a5530'); iP([[bx, -600], [bx + 20, -600], [bx + 220 * Math.sign(-bx), 0], [bx + 190 * Math.sign(-bx), 0]], true, C.ink, 2.4); fillP(PR(bx - 60, -40, 140, 40), '#5a3a22'); iBox(bx - 60, -40, 140, 40, C.ink, 2); }
-    X.scale(-1, 1); const tag = PR(-150, -520, 300, 120); fillP(tag, C.cream); iBox(-150, -520, 300, 120, C.ink, 2.4); lab(0, -470, 'HERO', C.ink, 1, 40, 'center', 'alphabetic', 'bold'); lab(0, -430, 'PROP NO. 12 · CARDBOARD', C.brick, .9, 14, 'center'); }
+    X.scale(-1, 1); const tag = PR(-150, -520, 300, 120); fillP(tag, C.cream); iBox(-150, -520, 300, 120, C.ink, 2.4); lab(0, -478, 'HERO', C.ink, 1, 40, 'center', 'alphabetic', 'bold'); lab(0, -428, 'PROP NO. 12', C.brick, .95, 28, 'center', 'alphabetic', 'bold'); }
   X.restore();
   traveller(330, 1000, 1.1, { look: 1, mouth: sing(T) }); cloud(330, 440, .6, { rain: true });
   for (let i = 0; i < 4; i++) gc(960, 450, 360 + i * 40 + ((FD * 6) % 40), C.teal, .35, 1.6);
@@ -52,17 +53,10 @@ SU.f_dotStones = { mode: 'ill', f(q, p, a, T) {
   stripes('#ebe6da', '#dcd6c6', 150, -.62, 0, C.sky); cam(960, 560, lerp(1.08, 1, eo(p)));
   const g = PR(-200, 760, W + 400, 400); fillP(g, '#fbfbf6'); hatch(g, 960, 900, 1300, .1, 12, C.ink, .8, .2); iline(-200, 760, W + 200, 760, C.ink, 2.4);
   for (let i = 0; i < 3; i++) { const ph = ((T * 2.2) - i * .5), lift = Math.max(0, Math.sin(ph)) * 90, x = 620 + i * 340, y = 600 - lift, st = PE(x, y, 130, 130); fillP(PE(x, 770, 130 - lift * .4, 26), C.ink, .25); fillP(st, '#9a9692'); shade(st, x, y, 140, [26, -26], .7, 5); iE(x, y, 130, 130, 0, C.ink, 3.4); stip(st, x, y, 130, 300, C.ink, .4, 2); }
-  traveller(300, 1000, 1.05, { look: 1, mouth: sing(T), armR: [2.6, -1.9] }); phoneBody(325, 640, .12, -.2, (w, h) => appScreen(w, h, T, 'chat')); cloud(300, 470, .55, { rain: true });
+  traveller(300, 1000, 1.05, { look: 1, mouth: sing(T), armR: [2.6, -1.9] }); { const [hx, hy] = handAt(300, 1000, 1.05, [2.6, -1.9]); phoneBody(hx + 6, hy - 22, .12, -.2, (w, h) => appScreen(w, h, T, 'chat')); } cloud(300, 470, .55, { rain: true });
   snowFlakes(300, T, '#ffffff', .9, 3);
   lab(960, 960, 'SHE IS TYPING', C.ink, .8, 18, 'center', 'alphabetic', 'bold'); lab(960, 990, 'T+ ' + Math.max(0, T - 379.3).toFixed(1) + ' S', C.brick, .9, 15, 'center');
   consL([[0, 600, W, 600]]);
 } };
 
-// patch the cut lists
-(function () {
-  const swap = (list, t, key, args, post) => { const c = list.find((x) => Math.abs(x[0] - t) < .01); if (c) { c[1] = key; c[2] = args; c[3] = post; } };
-  if (window.CUTS_B) swap(CUTS_B, 146.22, 'f_knot', {});
-  if (window.CUTS_C) swap(CUTS_C, 262.64, 'f_heroFlat', {});
-  if (window.CUTS_D) swap(CUTS_D, 336.78, 'f_hatCage', {});
-  if (window.CUTS_E) swap(CUTS_E, 379.3, 'f_dotStones', {});
-})();
+// (slots now live directly in the act cut lists; see js/acts/act-*.js)
