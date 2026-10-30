@@ -12,7 +12,7 @@ const w = (x, n) => VO.w(x, n), e = (x, n) => VO.e(x, n);
 
 // ---------- the beats, all on Chris's words ----------
 export const T = {
-  blinkIn: w("can't") - 0.12, happy1: w("text") - 0.05,
+  blinkIn: w("can't") - 0.12, happy1: w("text") - 0.05, sky: w("it", 4), skyShake: w("it", 4) + 0.6,
   chatIn: w("ask") - 0.55, userType: w("ask"), replyIn: w("it", 4) - 0.1, dive: w("writes", 2) - 0.25,
   card1: w("call") - 0.05, card3: e("call") + 0.75, move: e("move"),
   handoff: e("move") + 0.2, beltAt: w("harness") - 0.35, dropAt: w("harness") + 0.15, runAt: w("runs", 2) - 0.1,
@@ -37,7 +37,9 @@ const KEYS = [
   [T.move + 0.1, [CARD.x - 0.1, CARD.y + 0.02, CARD.z + 6.2], [CARD.x, CARD.y, CARD.z], 34],
   // down to Blink and its harness, orbiting from three-quarter right to front-left
   [T.handoff + 1.0, [2.6, 0.5, 7.4], [0, -0.3, 0], 36],
-  [T.runAt, [1.4, 0.1, 7.3], [0, -0.45, 0], 36],
+  [T.runAt, [1.2, 0.1, 7.0], [0.2, -0.4, 0], 36],
+  [T.runAt + 0.9, [1.0, 0.6, 6.7], [0.45, 0.3, 0], 36],
+  [T.resAt + 0.7, [0.6, 0.0, 6.4], [0.2, -0.5, 0], 36],
   [T.backAt + 0.9, [-0.6, 0.2, 7.2], [0, -0.35, 0], 36],
   // crane up over the loop
   [T.loopIn + 1.1, [0, 8.6, 15.8], [0, -0.9, 1.9], 38],
@@ -49,8 +51,8 @@ const KEYS = [
   // the terminal, then the buckle
   [T.closeIn + 0.7, [-1.2, 1.5, 10.6], [0.6, 1.25, 0], 36],
   [T.harness2 - 0.35, [-0.9, 1.2, 9.8], [0.5, 1.0, 0], 36],
-  [T.harness2 + 0.55, [0.4, 0.4, 7.6], [0, 0.05, 0.5], 36],
-  [T.belong + 0.25, [0.4, 0.35, 7.9], [0, 0.05, 0.5], 36],
+  [T.harness2 + 0.55, [0.3, -0.05, 5.6], [0, -0.5, 0.6], 36],
+  [T.belong + 0.25, [0.3, -0.1, 5.8], [0, -0.5, 0.6], 36],
   // the end frame: Blink above the mark
   [T.belong + 1.45, [0, 0, 14], [0, -1.86, 0], 36],
   [T.END, [0, 0, 13.6], [0, -1.86, 0], 36],
@@ -69,7 +71,7 @@ export async function buildWorld(canvas) {
   [[J1, T.card1], [J2, T.card1 + J1.length / 22], [J3, T.card3]].forEach(([s, t0]) => [...s].forEach((ch, i) => ch !== " " && cue("type", t0 + i / 22)));
   cue("zip", T.handoff); cue("whoosh", T.handoff + 0.2, { d: 0.8 });
   cue("whoosh", T.beltAt, { d: 0.35 }); cue("land", T.beltAt + 0.35); cue("tick", w("harness"));
-  cue("slide", T.dropAt, { d: 0.5 }); cue("slide", T.runAt, { d: 0.45 }); cue("land", T.runAt + 0.45);
+  cue("slide", T.dropAt, { d: 0.5 }); cue("tick", T.runAt - 0.2); cue("slide", T.runAt + 0.1, { d: 0.35 }); cue("land", T.runAt + 0.62); cue("zip", T.runAt + 0.75); cue("blip", T.runAt + 1.12); cue("zipdown", T.runAt + 1.3); cue("land", T.backAt + 0.65);
   cue("ding", T.resAt + 0.3); cue("zipdown", T.backAt + 0.05); cue("land", T.backAt + 0.9); cue("blip", T.backAt + 0.95);
   cue("whoosh", T.loopIn + 0.2, { d: 1.0 }); cue("draw", T.loopIn + 0.4, { d: 0.9 });
   cue("blip", T.decides); cue("tick", T.answer + 0.1); cue("tick", T.askAgain);
@@ -90,11 +92,12 @@ export async function buildWorld(canvas) {
   const harness = makeHarness(THREE, G, ramp); rig.add(harness.root);
   const shadow = new THREE.Mesh(new THREE.CircleGeometry(1, 48), new THREE.MeshBasicMaterial({ color: "#000", transparent: true, opacity: 0.45, depthWrite: false }));
   shadow.rotation.x = -Math.PI / 2; shadow.position.y = -1.7; shadow.scale.set(1, 1, 1); scene.add(shadow);
-  const card = (text, bg, fg) => new THREE.Mesh(new THREE.PlaneGeometry(0.78, 0.28), new THREE.MeshBasicMaterial({ transparent: true, map: glyphTexture(THREE, (g, W, H) => {
+  const card = (text, bg, fg, border) => new THREE.Mesh(new THREE.PlaneGeometry(0.78, 0.28), new THREE.MeshBasicMaterial({ transparent: true, map: glyphTexture(THREE, (g, W, H) => {
     g.fillStyle = bg; rr(g, 4, 4, W - 8, H - 8, 26); g.fill();
+    if (border) { g.strokeStyle = border; g.lineWidth = 10; rr(g, 8, 8, W - 16, H - 16, 24); g.stroke(); }
     g.fillStyle = fg; g.font = "600 64px 'IBM Plex Mono', monospace"; g.textAlign = "center"; g.textBaseline = "middle"; g.fillText(text, W / 2, H / 2 + 3);
   }, 560, 200) }));
-  const req = card("get_weather()", "#eef2f6", "#0d1117"), res = card("4°C, rain", "#d6a45a", "#0d1117");
+  const req = card("get_weather()", "#0c0e11", "#b9f0c9", "#6ad08a"), res = card("4°C, rain", "#d6a45a", "#0d1117");
   rig.add(req, res);
 
   // ---------- the chat: two panels beside Blink, and the JSON card the camera dives into ----------
@@ -142,6 +145,29 @@ export async function buildWorld(canvas) {
   let tc = 0; const sched = LAPS.map(([t0, a, b, d, ez]) => { const t = t0 != null ? t0 : tc; tc = t + d; return [t, d, a, b, ez]; });
   const lapAt = (t) => { let p = null; for (const [t0, d, a, b, ez] of sched) { if (t < t0) break; const k = cl((t - t0) / d); p = a + (b - a) * (ez ? io(k) : k); } return p; };
   const lapsEnd = tc;
+
+  // ---------- the tool really running (Robin's note at 0:18): it calls a weather service, then prints the answer ----------
+  const api = new THREE.Group(); scene.add(api);
+  const cloudMat = toon("#cfe3ff", { transparent: true });
+  [[0, 0, 0, 0.42], [0.42, 0.06, 0, 0.32], [-0.4, 0.02, 0, 0.3], [0.14, 0.3, 0, 0.33]].forEach(([x, y, z, r]) => { const m = new THREE.Mesh(new THREE.SphereGeometry(r, 24, 16), cloudMat); m.position.set(x, y, z); api.add(m); });
+  const apiLabel = panel(1.2, 0.3, 260, (g, W, H) => { g.fillStyle = "#c9d1d9"; g.font = "500 52px 'IBM Plex Mono', monospace"; g.textAlign = "center"; g.textBaseline = "middle"; g.fillText("weather API", W / 2, H / 2); });
+  apiLabel.set({}); apiLabel.mesh.position.set(0.1, -0.62, 0.3); api.add(apiLabel.mesh);
+  const dropMat = new THREE.MeshBasicMaterial({ color: "#4f93d6", transparent: true });
+  const drops = [-0.26, 0, 0.26, -0.13, 0.13].map((x, i) => { const d = new THREE.Mesh(new THREE.CylinderGeometry(0.022, 0.022, 0.16, 6), dropMat); d.position.set(x, -0.35, 0.1); api.add(d); return d; });
+  api.position.set(0.72, 1.7, -0.8);
+  const amberTex = glyphTexture(THREE, (g, W) => { const gr = g.createRadialGradient(W / 2, W / 2, 0, W / 2, W / 2, W / 2); gr.addColorStop(0, "rgba(255,220,160,0.95)"); gr.addColorStop(1, "rgba(214,164,90,0)"); g.fillStyle = gr; g.fillRect(0, 0, W, W); }, 128, 128);
+  const sigOut = new THREE.Sprite(glowMat.clone()), sigBack = new THREE.Sprite(new THREE.SpriteMaterial({ map: amberTex, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true }));
+  [sigOut, sigBack].forEach((sp) => { sp.scale.setScalar(0.55); sp.visible = false; scene.add(sp); });
+  const screen = panel(0.3, 0.3, 800, (g, W, H, st) => {
+    g.fillStyle = "#0c0e11"; rr(g, 4, 4, W - 8, H - 8, 34); g.fill();
+    g.strokeStyle = "#6ad08a"; g.lineWidth = 8; rr(g, 6, 6, W - 12, H - 12, 32); g.stroke();
+    g.fillStyle = "#b9f0c9"; g.font = "600 30px 'IBM Plex Mono', monospace"; g.textAlign = "center"; g.textBaseline = "middle";
+    g.fillText("get_weather(", W / 2, H * 0.22); g.fillText('"Nelson")', W / 2, H * 0.36);
+    g.lineWidth = 12; g.lineCap = "round";
+    if (st.done) { g.strokeStyle = "#d6a45a"; g.beginPath(); g.moveTo(W * 0.36, H * 0.66); g.lineTo(W * 0.47, H * 0.77); g.lineTo(W * 0.66, H * 0.56); g.stroke(); }
+    else { g.strokeStyle = "#6ad08a"; const a = (st.a / 16) * Math.PI * 2; g.beginPath(); g.arc(W / 2, H * 0.67, H * 0.13, a, a + Math.PI * 1.3); g.stroke(); }
+  });
+  screen.mesh.position.set(0, -0.38, 0.052); screen.mesh.visible = false; harness.tools.weather.pivot.add(screen.mesh);
 
   // ---------- the mass moment: a field of Blinks, each running its own loop ----------
   const crowd = new THREE.Group(); scene.add(crowd);
@@ -208,6 +234,9 @@ export async function buildWorld(canvas) {
     json.mesh.material.opacity = repA > 0 || (t >= T.handoff && t < T.handoff + 0.7) ? Math.max(repA, 1 - r01(t, T.handoff + 0.55, 0.15)) : 0;
     json.mesh.visible = json.mesh.material.opacity > 0.001 && t >= T.replyIn;
     if (t >= T.chatIn && t < T.handoff) { look = 0.6; lookY = 0.3; }
+    // "It doesn't check the sky": a look up, then a shake of the head (Robin's note at 0:07)
+    if (t >= T.sky - 0.1 && t < T.skyShake) { look = 0; lookY = 1.4 * r01(t, T.sky - 0.1, 0.15); }
+    if (t >= T.skyShake && t < T.skyShake + 0.7) { look = 0; lookY = 0.3 * (1 - r01(t, T.skyShake, 0.2)); yaw = 0.28 * Math.sin((t - T.skyShake) * 17) * (1 - r01(t, T.skyShake + 0.35, 0.35)); }
 
     // the harness beat
     req.visible = res.visible = false;
@@ -216,22 +245,49 @@ export async function buildWorld(canvas) {
     harness.root.position.y = -(1 - hb) * 0.35; harness.root.scale.setScalar(mix(1.2, 1, hb));
     harness.root.traverse((o) => { if (o.material && o.material.transparent && o.material.blending !== THREE.AdditiveBlending) { o.material.opacity = hb; o.material.depthWrite = hb > 0.98; } });
     const buckleAmber = r01(t, T.harness2 - 0.1, 0.2) * (1 - r01(t, T.belong + 0.4, 0.4));
-    harness.buckleGlow.material.color.set(buckleAmber > 0 ? "#c8862e" : "#6ad08a");
-    harness.buckleGlow.material.opacity = Math.max(0.8 * r01(t, T.dropAt + 0.4, 0.1) * (1 - r01(t, T.runAt + 0.1, 0.3)), 0.35 * buckleAmber);
+    harness.buckleGlow.material.color.set(buckleAmber > 0 ? "#d6a45a" : "#6ad08a");
+    const blend = buckleAmber > 0 ? THREE.NormalBlending : THREE.AdditiveBlending;
+    if (harness.buckleGlow.material.blending !== blend) { harness.buckleGlow.material.blending = blend; harness.buckleGlow.material.needsUpdate = true; }
+    harness.buckleGlow.material.opacity = Math.max(0.8 * r01(t, T.dropAt + 0.4, 0.1) * (1 - r01(t, T.runAt + 0.1, 0.3)), 0.6 * buckleAmber);
     Object.values(harness.tools).forEach((k) => { k.hot.material.opacity = 0; k.pivot.rotation.z = 0; });
-    if (t >= T.handoff + 0.55 && t < T.runAt + 0.5) {
+    // the run: the weather tool unclips and swings up, the card slots into it, it calls the weather service, the
+    // answer prints out of its bottom, and the tool clips back on (Robin's note at 0:18)
+    const W = harness.tools.weather;
+    if (!W.base) W.base = W.pivot.position.clone();
+    const lift = io(r01(t, T.runAt - 0.25, 0.4)) * (1 - io(r01(t, T.backAt + 0.15, 0.5)));
+    W.pivot.position.copy(W.base).add(V(0, 1.0 * lift, 0.8 * lift));
+    W.pivot.scale.setScalar(1 + 0.9 * lift);
+    const pv = W.pivot.position, sc = W.pivot.scale.x;
+    const slotTop = V(pv.x, pv.y - 0.2 * sc, pv.z + 0.06), tileC = V(pv.x, pv.y - 0.38 * sc, pv.z + 0.12 * sc), tileBottom = V(pv.x, pv.y - 0.56 * sc, pv.z + 0.14);
+    if (t >= T.handoff + 0.55 && t < T.runAt + 0.7) {
       req.visible = true;
       const a = lerpV(visorFront, buckleFront, io(r01(t, T.dropAt, 0.5)));
-      req.position.copy(lerpV(a, tileFront, io(r01(t, T.runAt, 0.45))));
-      req.scale.setScalar(mix(1, 0.55, io(r01(t, T.dropAt, 0.5))) * r01(t, T.handoff + 0.55, 0.12) * (1 - r01(t, T.runAt + 0.4, 0.1)) + 0.001);
+      const b = lerpV(a, slotTop.clone().add(V(0, 0.22, 0)), io(r01(t, T.runAt + 0.05, 0.35)));
+      const ins = io(r01(t, T.runAt + 0.42, 0.25));
+      req.position.copy(lerpV(b, slotTop.clone().add(V(0, -0.06, 0)), ins));
+      const s0 = mix(1, 0.55, io(r01(t, T.dropAt, 0.5))) * r01(t, T.handoff + 0.55, 0.12);
+      req.scale.set(s0 + 0.001, s0 * (1 - ins) + 0.001, 1);
     }
-    const W = harness.tools.weather, run = t - T.runAt - 0.45;
-    if (run > 0 && t < T.loopIn) { W.hot.material.opacity = 0.75 * cl(run / 0.1) * (1 - r01(t, T.backAt + 0.3, 0.5)); W.pivot.rotation.z = 0.25 * Math.exp(-run * 2.2) * Math.sin(run * 11); }
+    const working = t >= T.runAt + 0.55 && t < T.backAt + 0.1;
+    screen.mesh.visible = working;
+    if (working) screen.set({ a: Math.floor((t - T.runAt) * 16) % 16, done: t >= T.resAt + 0.1 });
+    W.hot.material.opacity = 0.45 * r01(t, T.runAt + 0.6, 0.1) * (1 - r01(t, T.resAt + 0.3, 0.3));
+    const cloudA = r01(t, T.runAt - 0.2, 0.3) * (1 - r01(t, T.backAt + 0.3, 0.4));
+    api.visible = cloudA > 0; if (api.visible) { fadeAll(api, cloudA); api.position.y = 1.7 + 0.05 * Math.sin(t * 2.1); }
+    const rain = r01(t, T.runAt + 1.1, 0.1) * (1 - r01(t, T.runAt + 1.75, 0.15));
+    drops.forEach((d, i) => { d.visible = rain > 0; d.position.y = -0.35 - (((t - T.runAt) * 2.2 + i * 0.13) % 0.6); d.material.opacity = rain * cloudA; });
+    const tileW = rig.localToWorld(tileC.clone()), cloudW = api.position.clone();
+    const arc = (A, B, k) => { const m = A.clone().lerp(B, 0.5).add(V(0, 0.9, 0)); return A.clone().multiplyScalar((1 - k) * (1 - k)).add(m.multiplyScalar(2 * (1 - k) * k)).add(B.clone().multiplyScalar(k * k)); };
+    const ko = r01(t, T.runAt + 0.75, 0.37), kb = r01(t, T.runAt + 1.3, 0.35);
+    sigOut.visible = ko > 0 && ko < 1; if (sigOut.visible) sigOut.position.copy(arc(tileW, cloudW, io(ko)));
+    sigBack.visible = kb > 0 && kb < 1; if (sigBack.visible) sigBack.position.copy(arc(cloudW, tileW, io(kb)));
     if (t >= T.resAt && t < T.backAt + 1.0) {
       res.visible = true;
+      const printed = lerpV(tileC, tileBottom.clone().add(V(0, -0.16, 0.04)), io(r01(t, T.resAt, 0.4)));
       const up = io(r01(t, T.backAt, 0.9));
-      res.position.copy(lerpV(V(0, -1.0, 1.2), visorFront.clone().add(V(0, 0, 0.05)), up));
-      res.scale.setScalar(mix(0.2, 0.6, io(r01(t, T.resAt, 0.3))) * (1 - 0.6 * up) * (1 - r01(t, T.backAt + 0.9, 0.1)) + 0.001);
+      res.position.copy(lerpV(printed, visorFront.clone().add(V(0, 0, 0.05)), up));
+      const rs = 0.85 * (1 - 0.5 * up) * (1 - r01(t, T.backAt + 0.9, 0.1));
+      res.scale.set(rs + 0.001, rs * io(r01(t, T.resAt, 0.25)) + 0.001, 1);
     }
     if (t >= T.handoff && t < T.loopIn) {
       happy = r01(t, T.backAt + 0.85, 0.12) * (1 - r01(t, T.happyTo, 0.15));
@@ -293,6 +349,8 @@ export async function buildWorld(canvas) {
     rails.visible = railA > 0; railMat.opacity = railA;
     [railTop, railBot].forEach((r) => { r.position.x = r.userData.from * (1 - back(r01(t, T.guard - 0.15, 0.45))); });
 
+    const skyUp = r01(t, T.sky - 0.1, 0.2) * (1 - r01(t, T.skyShake - 0.05, 0.2));
+    blink.root.rotation.x = -0.32 * io(skyUp); // tips back to look at the sky
     blink.root.rotation.y = yaw; harness.root.rotation.y = yaw;
     blink.face({ blink: blinkK, happy, look, lookY, think, phase: t * 1.6 });
     renderer.render(scene, cam);
