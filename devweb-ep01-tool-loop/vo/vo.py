@@ -6,7 +6,7 @@ more context. The loop is that handoff, repeated until the model stops asking." 
 import json, pathlib, urllib.request, subprocess, hashlib
 HERE = pathlib.Path(__file__).parent
 KEY = (pathlib.Path.home() / "Documents/novadiem/keys/elevenlabs/api.txt").read_text().strip()
-VOICE = "JBFqnCBsd6RMkjVDRZzb"  # George - Warm, Captivating Storyteller (Robin's pick for narrated drafts, 2026-10-21)
+VOICE = "iP95p4xoKVk53GoZ742B"  # Chris - Charming, Down-to-Earth: the felt GrowOperative voice; Robin's pick for devweb 2026-10-29 (George was draft 1)
 LINES = [
  ("I", "An AI never runs a tool. It can't. It only writes text."),
  ("II", "Ask it for the weather in Nelson. It doesn't check the sky. It writes a request: call get weather, city, Nelson. That's the whole move."),
@@ -15,7 +15,7 @@ LINES = [
  ("V", "So if an agent ever deletes a file, the model didn't run that command. The harness did. That's where the guardrails belong."),
 ]
 text = " ".join(t for _, t in LINES)
-body = {"text": text, "model_id": "eleven_v4", "voice_settings": {"stability": 0.5}}
+body = {"text": text, "model_id": "eleven_v4", "voice_settings": {"stability": 0.5, "similarity_boost": 0.75}}
 req = urllib.request.Request(f"https://api.elevenlabs.io/v1/text-to-speech/{VOICE}?output_format=mp3_44100_192",
                              data=json.dumps(body).encode(), headers={"xi-api-key": KEY, "Content-Type": "application/json"})
 data = urllib.request.urlopen(req, timeout=300).read()
