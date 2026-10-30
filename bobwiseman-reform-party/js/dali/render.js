@@ -9,6 +9,9 @@
 //   reel       the Reels caption: Figtree Bold, black on a white rounded box that grows word by word
 //   strong     Stories "Strong": Anton caps, slanted, white with a dark edge
 //   typewriter Stories "Typewriter": Courier Prime Bold on a paper strip, each word typed letter by letter
+//   vv         ViralVision's caption (MythMaker's first project, viralvision-worker/assembler.py): Anton caps, white
+//              with a heavy black stroke and a hard soft-black drop shadow, the whole line up at once, the word being
+//              sung in amber (255,176,59)
 //   neon       Stories "Neon": Yellowtail script, white core, pink tube glow that flickers on each word
 // A line too long to sit on one row at 80% of the style's size wraps onto two rows (the lower row on CAP.y), the way
 // Instagram wraps its text, so no style has to shrink the long outro lines.
@@ -22,6 +25,7 @@ const CAPS = {
   reel: { font: '700 {s}px Figtree, Helvetica, sans-serif', size: 48, gap: .26, box: { fill: '#ffffff', ink: '#111111', padX: .42, padY: .3, r: .32, whole: 1 } },
   strong: { font: '{s}px Anton, Impact, sans-serif', size: 62, gap: .22, caps: 1, skew: -.2, edge: 1, band: .7 },
   typewriter: { font: '700 {s}px "Courier Prime", Courier, monospace', size: 46, gap: .6, type: 1, box: { fill: '#f6f1e4', ink: '#1a1612', padX: .4, padY: .28, r: .08, whole: 1 } },
+  vv: { font: '{s}px Anton, Impact, sans-serif', size: 60, gap: .25, caps: 1, full: 1, stroke: 1 / 6, drop: 1, accent: 'rgb(255,176,59)' },
   neon: { font: '{s}px Yellowtail, cursive', size: 64, gap: .28, neon: '#ff3fb4', band: .9 },
 };
 const capWob = (li, wi, k) => { const v = Math.sin(li * 127.1 + wi * 311.7 + k * 74.7) * 43758.5453; return (v - Math.floor(v)) * 2 - 1; };
@@ -42,7 +46,7 @@ function captions(t) {
   // lay the line out: one row, or two rows split at the word nearest the middle; then fit the widest row (its words, the
   // gaps we draw, the slant and any box padding) inside CAP.maxW, so every word and its box sit inside the frame
   const words = L.text.split(/\s+/).map((w) => S.caps ? w.toUpperCase() : w); g.font = S.font.replace('{s}', S.size);
-  const w1 = words.map((w) => g.measureText(w).width), rowW = (a, b, s) => (w1.slice(a, b).reduce((x, y) => x + y, 0) + S.size * S.gap * (b - a - 1)) * s / S.size + (S.skew ? Math.abs(S.skew) * s : 0) + 2 * (S.box ? S.box.padX : 0) * s;
+  const w1 = words.map((w) => g.measureText(w).width), rowW = (a, b, s) => (w1.slice(a, b).reduce((x, y) => x + y, 0) + S.size * S.gap * (b - a - 1)) * s / S.size + (S.skew ? Math.abs(S.skew) * s : 0) + 2 * (S.box ? S.box.padX : 0) * s + (S.stroke ? (S.stroke + .05) * s : 0);
   let rows = [[0, words.length]];
   if (words.length > 2 && rowW(0, words.length, S.size) * .8 > CAP.maxW) { let best = 1, bd = 1e9; for (let k = 1; k < words.length; k++) { const d = Math.abs(rowW(0, k, S.size) - rowW(k, words.length, S.size)); if (d < bd) { bd = d; best = k; } } rows = [[0, best], [best, words.length]]; }
   const size = Math.max(18, Math.floor(S.size * Math.min(1, ...rows.map(([a, b]) => CAP.maxW / rowW(a, b, S.size))))); g.font = S.font.replace('{s}', size); g.textBaseline = 'alphabetic';
@@ -58,7 +62,7 @@ function captions(t) {
     if (S.box && n > a) { let shownW = 0; for (let i = a; i < Math.min(n, b); i++) shownW += widths[i] + (i > a ? gap : 0);
       const bx = x - S.box.padX * size, bw = shownW + 2 * S.box.padX * size, by = y - asc - S.box.padY * size, bh = asc + dsc + 2 * S.box.padY * size;
       g.save(); g.globalAlpha = fadeOut; g.fillStyle = S.box.fill; g.shadowColor = 'rgba(0,0,0,.25)'; g.shadowBlur = 10; g.shadowOffsetY = 2; rrect(bx, by, bw, bh, S.box.r * size); g.fill(); g.restore(); }
-    for (let i = a; i < b; i++) { if (i < n) { const ws = L.words[i] ? L.words[i].s : L.s, age = t - ws, al = clamp(age / .12 + .2) * fadeOut;
+    for (let i = a; i < b; i++) { if (i < (S.full ? words.length : n)) { const ws = L.words[i] ? L.words[i].s : L.s, age = t - ws, al = S.full ? fadeIn * fadeOut : clamp(age / .12 + .2) * fadeOut;
       let txt = words[i]; if (S.type) txt = txt.slice(0, Math.max(1, Math.ceil(clamp((age + .02) / Math.min(.3, .06 * txt.length)) * txt.length)));
       g.save(); g.globalAlpha = al; g.translate(x + widths[i] / 2, y);
       if (S.wob) { g.translate(0, capWob(L.i, i, 1) * size * .05); g.rotate(capWob(L.i, i, 0) * .045); }
@@ -69,6 +73,10 @@ function captions(t) {
         const fl = age < .25 ? (Math.sin(age * 90) > -.2 ? 1 : .35) : 1; g.globalAlpha = al * fl;
         g.fillStyle = S.neon; g.shadowColor = S.neon; g.shadowBlur = size * .5; g.fillText(txt, lx, 0); g.shadowBlur = size * .18; g.fillText(txt, lx, 0);
         g.shadowBlur = size * .06; g.shadowColor = '#ffd0ee'; g.fillStyle = '#fff6fb'; g.fillText(txt, lx, 0);
+      } else if (S.stroke) { // ViralVision: drop shadow first, then a heavy black stroke under the fill
+        g.fillStyle = 'rgba(0,0,0,.43)'; g.fillText(txt, lx + .05 * size, .06 * size);
+        g.lineJoin = 'round'; g.strokeStyle = 'rgba(0,0,0,.94)'; g.lineWidth = size * S.stroke; g.strokeText(txt, lx, 0);
+        g.fillStyle = S.accent && i === n - 1 ? S.accent : '#ffffff'; g.fillText(txt, lx, 0);
       } else {
         if (S.edge) { g.lineJoin = 'round'; g.strokeStyle = 'rgba(20,10,5,.9)'; g.lineWidth = size * .09; g.strokeText(txt, lx, 0); }
         g.shadowColor = 'rgba(20,10,5,.85)'; g.shadowBlur = 14; g.shadowOffsetY = 3; g.fillStyle = S.wob ? '#f7ecd3' : '#ffffff'; g.fillText(txt, lx, 0); }
