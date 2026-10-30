@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="en" data-resolution="landscape">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1280, height=720" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@700&display=block" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script src="blink-geo.js"></script>
+    <script type="importmap">
+      { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.181.2/build/three.module.js", "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.181.2/examples/jsm/" } }
+    </script>
+    <style>
+      html, body { margin: 0; background: #0d1117; }
+      #root { position: relative; width: 1280px; height: 720px; overflow: hidden; color: #eef2f6; font-family: "IBM Plex Mono", monospace;
+        background: radial-gradient(60% 70% at 25% 50%, #13241b 0%, #0d1117 70%), #0d1117; }
+      .lab { position: absolute; top: 28px; font-size: 20px; font-weight: 500; }
+      .sub { position: absolute; top: 58px; font-size: 14px; color: #7b8593; }
+      #three { position: absolute; left: 0; top: 0; width: 640px; height: 720px; }
+      #rig { position: absolute; left: 640px; top: 0; width: 640px; height: 720px; }
+      #angle { position: absolute; left: 0; right: 0; bottom: 26px; text-align: center; font-size: 16px; color: #9aa6b6; }
+      .div { position: absolute; left: 639px; top: 90px; bottom: 70px; width: 2px; background: #1c2333; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="6" data-width="1280" data-height="720">
+      <canvas id="three" width="640" height="720"></canvas>
+      <svg id="rig" width="640" height="720" viewBox="0 0 640 720"></svg>
+      <div class="div"></div>
+      <div class="lab" style="left: 40px"><span style="color: #6ad08a">Three.js</span> · toon shaded</div>
+      <div class="sub" style="left: 40px">real 3D, flat colour bands, outline</div>
+      <div class="lab" style="left: 680px"><span style="color: #6ad08a">SVG rig</span> · flat vector</div>
+      <div class="sub" style="left: 680px">same maths, projected to paths</div>
+      <div id="angle">yaw 0°</div>
+    </div>
+
+    <script>
+      // SVG rig: project Blink's surface (blink-geo.js) to flat paths. Orthographic, same pose as the Three.js side.
+      (() => {
+        const G = window.BLINK, svg = document.getElementById("rig"), NS = "http://www.w3.org/2000/svg";
+        const S = 196, CX = 320, CY = 360, Y0 = 0.25;
+        const el = (tag, attrs, parent) => { const n = document.createElementNS(NS, tag); for (const k in attrs) n.setAttribute(k, attrs[k]); (parent || svg).appendChild(n); return n; };
+        const defs = el("defs", {});
+        const lg = el("linearGradient", { id: "rg", gradientUnits: "userSpaceOnUse", x1: 190, y1: 170, x2: 430, y2: 560 }, defs);
+        el("stop", { offset: 0, "stop-color": "#9af0b5" }, lg); el("stop", { offset: 0.55, "stop-color": "#6ad08a" }, lg); el("stop", { offset: 1, "stop-color": "#3fb86a" }, lg);
+        const glow = el("filter", { id: "rgl", x: "-80%", y: "-80%", width: "260%", height: "260%" }, defs);
+        el("feGaussianBlur", { stdDeviation: 4, result: "b" }, glow);
+        const mg = el("feMerge", {}, glow); el("feMergeNode", { in: "b" }, mg); el("feMergeNode", { in: "SourceGraphic" }, mg);
+        const shadow = el("ellipse", { cx: CX, cy: CY + (1.45 + Y0) * S, rx: 1.0 * S, ry: 12, fill: "#000", opacity: 0.45 });
+        const sproutStem = el("path", { fill: "none", stroke: "#7fe09b", "stroke-width": 0.1 * S, "stroke-linecap": "round" });
+        const sproutLeaf = el("path", { fill: "none", stroke: "#7fe09b", "stroke-width": 0.1 * S, "stroke-linecap": "round" });
+        const body = el("path", { fill: "url(#rg)", stroke: "#12331f", "stroke-width": 4, "stroke-linejoin": "round" });
+        const shine = el("path", { fill: "none", stroke: "#d6fbe1", "stroke-width": 9, "stroke-linecap": "round", opacity: 0.5 });
+        const visor = el("path", { fill: "#111a16" });
+        const eyes = [0, 1].map(() => el("rect", { fill: "#c4f7d3", filter: "url(#rgl)" }));
+        const smile = el("path", { fill: "none", stroke: "#c4f7d3", "stroke-width": 7, "stroke-linecap": "round", filter: "url(#rgl)" });
+
+        let c = 1, s = 0, bobY = 0;
+        const rot = (p) => [p[0] * c + p[2] * s, p[1], -p[0] * s + p[2] * c];
+        const scr = (q) => [CX + q[0] * S, CY - (q[1] + bobY - Y0) * S];
+        function hull(P) {
+          P = P.slice().sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+          const cr = (o, a, b) => (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]);
+          const lo = [], up = [];
+          for (const p of P) { while (lo.length >= 2 && cr(lo[lo.length - 2], lo[lo.length - 1], p) <= 0) lo.pop(); lo.push(p); }
+          for (let i = P.length - 1; i >= 0; i--) { const p = P[i]; while (up.length >= 2 && cr(up[up.length - 2], up[up.length - 1], p) <= 0) up.pop(); up.push(p); }
+          return lo.slice(0, -1).concat(up.slice(0, -1));
+        }
+        const poly = (pts) => "M" + pts.map((p) => p[0].toFixed(1) + " " + p[1].toFixed(1)).join("L") + "Z";
+        function limbX(H, Y, side) {
+          let best = null;
+          for (let i = 0; i < H.length; i++) {
+            const a = H[i], b = H[(i + 1) % H.length];
+            if ((a[1] - Y) * (b[1] - Y) <= 0 && a[1] !== b[1]) { const x = a[0] + ((Y - a[1]) / (b[1] - a[1])) * (b[0] - a[0]); if (best === null || (side > 0 ? x > best : x < best)) best = x; }
+          }
+          return best === null ? CX : best;
+        }
+        const catmull = (P, k = 10) => { const out = []; for (let i = 0; i < P.length - 1; i++) { const p0 = P[Math.max(0, i - 1)], p1 = P[i], p2 = P[i + 1], p3 = P[Math.min(P.length - 1, i + 2)]; for (let j = 0; j < k; j++) { const t = j / k, t2 = t * t, t3 = t2 * t; out.push([0, 1, 2].map((d) => 0.5 * (2 * p1[d] + (-p0[d] + p2[d]) * t + (2 * p0[d] - 5 * p1[d] + 4 * p2[d] - p3[d]) * t2 + (-p0[d] + 3 * p1[d] - 3 * p2[d] + p3[d]) * t3))); } } out.push(P[P.length - 1]); return out; };
+        const line = (pts) => "M" + pts.map((p) => p[0].toFixed(1) + " " + p[1].toFixed(1)).join("L");
+
+        window.renderRig = (t) => {
+          const P = G.pose(t);
+          c = Math.cos(P.yaw); s = Math.sin(P.yaw); bobY = P.bob;
+          const pts = [];
+          for (let i = 0; i < 90; i++) for (let j = 0; j <= 60; j++) pts.push(scr(rot(G.surf(-Math.PI + (2 * Math.PI * i) / 90, -Math.PI / 2 + (Math.PI * j) / 60))));
+          const H = hull(pts);
+          body.setAttribute("d", poly(H));
+          shadow.setAttribute("rx", (1.0 - P.bob * 2.2) * S); shadow.setAttribute("opacity", 0.45 - P.bob * 2);
+          sproutStem.setAttribute("d", line(catmull(G.SPROUT_STEM).map((p) => scr(rot(p)))));
+          sproutLeaf.setAttribute("d", line(catmull(G.SPROUT_LEAF).map((p) => scr(rot(p)))));
+          // shine: a short arc near the top-left of the silhouette (the light is fixed, so it stays put on screen)
+          const top = H.reduce((m, p) => (p[1] < m[1] ? p : m), H[0]);
+          shine.setAttribute("d", `M${CX - 0.62 * S} ${top[1] + 0.32 * S}Q${CX - 0.5 * S} ${top[1] + 0.12 * S} ${CX - 0.12 * S} ${top[1] + 0.1 * S}`);
+          // visor: its outline on the surface; parts that turn behind the body ride the silhouette's edge
+          const vo = G.visorOutline(160).map(([x, y]) => { const q = rot(G.onFront(x, y, 0.004).p); const sp = scr(q); return q[2] >= 0 ? sp : [limbX(H, sp[1], q[0] >= 0 ? 1 : -1), sp[1]]; });
+          const vc = rot(G.onFront(0, 0.33, 0).n)[2];
+          visor.setAttribute("d", vc > -0.25 ? poly(vo) : "");
+          // eyes: pills laid on the surface, drawn with the surface's own tangents (so they foreshorten as it turns)
+          G.EYES.forEach((E, k) => {
+            const f = G.onFront(E.x, E.y, 0.012), d = 0.01;
+            const tx = rot(G.onFront(E.x + d, E.y).p.map((v, i) => v - G.onFront(E.x - d, E.y).p[i])), ty = rot(G.onFront(E.x, E.y + d).p.map((v, i) => v - G.onFront(E.x, E.y - d).p[i]));
+            const lx = Math.hypot(...tx) || 1, ly = Math.hypot(...ty) || 1;
+            const n = rot(f.n), sp = scr(rot(f.p)), vis = Math.max(0, Math.min(1, n[2] * 5));
+            const w = G.EYE.w, h = G.EYE.h * (1 - 0.9 * P.blink);
+            const m = [(tx[0] / lx) * S, (-tx[1] / lx) * S, (ty[0] / ly) * S, (-ty[1] / ly) * S, sp[0], sp[1]];
+            Object.entries({ x: -w / 2, y: -h / 2, width: w, height: h, rx: w / 2, transform: `matrix(${m.map((v) => v.toFixed(3)).join(" ")})`, opacity: vis }).forEach(([a, v]) => eyes[k].setAttribute(a, v));
+          });
+          const sm = [];
+          for (let a = G.SMILE.a0; a <= G.SMILE.a1; a += 7) { const r = (a * Math.PI) / 180, q = rot(G.onFront(G.SMILE.x + G.SMILE.r * Math.cos(r), G.SMILE.y + G.SMILE.r * Math.sin(r), 0.012).p); if (q[2] > 0) sm.push(scr(q)); }
+          smile.setAttribute("d", sm.length > 1 ? line(sm) : "");
+          document.getElementById("angle").textContent = `yaw ${Math.round((-P.yaw * 180) / Math.PI) % 360}°`;
+        };
+        window.renderRig(0);
+        // the GSAP clock drives both halves, so any frame can be rendered in any order
+        const tl = gsap.timeline({ paused: true }), clock = { t: 0 };
+        tl.fromTo(clock, { t: 0 }, { t: 6, duration: 6, ease: "none", immediateRender: false, onUpdate: () => { window.renderRig(clock.t); if (window.renderThree) window.renderThree(clock.t); } }, 0);
+        window.__timelines = window.__timelines || {};
+        window.__timelines["main"] = tl;
+      })();
+    </script>
+
+    <script type="module">
+      // Three.js: the same superellipsoid as a mesh, toon shaded with an outline. Rendered only from HyperFrames time.
+      import * as THREE from "three";
+      import { ParametricGeometry } from "three/addons/geometries/ParametricGeometry.js";
+      const G = window.BLINK;
+      const canvas = document.getElementById("three");
+      const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true, preserveDrawingBuffer: true });
+      renderer.setSize(640, 720, false);
+      renderer.setPixelRatio(1);
+      renderer.outputColorSpace = THREE.SRGBColorSpace;
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(28, 640 / 720, 0.1, 50);
+      camera.position.set(0, 0.3, 7.4);
+      camera.lookAt(0, 0.25, 0);
+      const ramp = new THREE.DataTexture(new Uint8Array([90, 170, 255]), 3, 1, THREE.RedFormat);
+      ramp.minFilter = ramp.magFilter = THREE.NearestFilter; ramp.needsUpdate = true;
+
+      const geo = new ParametricGeometry((u, v, target) => { const p = G.surf(Math.PI - 2 * Math.PI * u, -Math.PI / 2 + Math.PI * v); /* u runs backwards so the faces wind outward */ target.set(p[0], p[1], p[2]); }, 220, 160);
+      geo.computeVertexNormals();
+      // the visor is painted in the fragment shader from the object-space position, so its edge is smooth
+      const bodyMat = new THREE.MeshToonMaterial({ color: "#6ad08a", gradientMap: ramp });
+      const V = G.VISOR;
+      bodyMat.onBeforeCompile = (sh) => {
+        sh.vertexShader = sh.vertexShader.replace("#include <common>", "#include <common>\nvarying vec3 vObj;").replace("#include <begin_vertex>", "#include <begin_vertex>\nvObj = position;");
+        sh.fragmentShader = sh.fragmentShader.replace("#include <common>", "#include <common>\nvarying vec3 vObj;").replace("#include <color_fragment>",
+          `#include <color_fragment>
+          float xp = vObj.x / (1.0 - 0.07 * (vObj.y / ${G.B.toFixed(3)}));
+          vec2 c = clamp(vec2(xp, vObj.y), vec2(${(V.x0 + V.r).toFixed(3)}, ${(V.y0 + V.r).toFixed(3)}), vec2(${(V.x1 - V.r).toFixed(3)}, ${(V.y1 - V.r).toFixed(3)}));
+          float d = length(vec2(xp, vObj.y) - c) - ${V.r.toFixed(3)};
+          float inV = (1.0 - smoothstep(-0.006, 0.006, d)) * step(0.0, vObj.z);
+          diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.0055, 0.0103, 0.0080), inV);`);
+      };
+      const blink = new THREE.Group();
+      blink.add(new THREE.Mesh(geo, bodyMat));
+      const outline = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color: "#12331f", side: THREE.BackSide }));
+      outline.scale.setScalar(1.03);
+      blink.add(outline);
+      const glowMat = new THREE.MeshBasicMaterial({ color: "#c4f7d3" });
+      const haloMat = new THREE.MeshBasicMaterial({ color: "#6ad08a", transparent: true, opacity: 0.16, blending: THREE.AdditiveBlending, depthWrite: false });
+      const eyes = G.EYES.map((E) => {
+        const f = G.onFront(E.x, E.y, 0.012), g = new THREE.Group();
+        g.position.set(...f.p);
+        g.lookAt(new THREE.Vector3(...f.p).add(new THREE.Vector3(...f.n)));
+        const cap = new THREE.Mesh(new THREE.CapsuleGeometry(G.EYE.w / 2, G.EYE.h - G.EYE.w, 8, 20), glowMat);
+        cap.scale.z = 0.35;
+        const halo = new THREE.Mesh(new THREE.CapsuleGeometry(G.EYE.w * 0.7, G.EYE.h - G.EYE.w, 8, 20), haloMat);
+        halo.scale.z = 0.2;
+        g.add(halo, cap);
+        blink.add(g);
+        return cap;
+      });
+      const arc = [];
+      for (let a = G.SMILE.a0; a <= G.SMILE.a1; a += 5) { const r = (a * Math.PI) / 180; arc.push(new THREE.Vector3(...G.onFront(G.SMILE.x + G.SMILE.r * Math.cos(r), G.SMILE.y + G.SMILE.r * Math.sin(r), 0.012).p)); }
+      blink.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(arc), 40, 0.018, 8), glowMat));
+      const sproutMat = new THREE.MeshToonMaterial({ color: "#7fe09b", gradientMap: ramp });
+      [G.SPROUT_STEM, G.SPROUT_LEAF].forEach((P) => blink.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(P.map((p) => new THREE.Vector3(...p))), 60, 0.05, 12), sproutMat)));
+      scene.add(blink);
+      const shadow = new THREE.Mesh(new THREE.CircleGeometry(1, 48), new THREE.MeshBasicMaterial({ color: "#000", transparent: true, opacity: 0.45 }));
+      shadow.rotation.x = -Math.PI / 2; shadow.position.y = -1.45; shadow.scale.set(1, 0.16, 1);
+      scene.add(shadow);
+      const sun = new THREE.DirectionalLight("#ffffff", 2.4); sun.position.set(-3, 4, 5); scene.add(sun);
+      scene.add(new THREE.AmbientLight("#ffffff", 0.9));
+
+      window.renderThree = (t) => {
+        const P = G.pose(t);
+        blink.rotation.y = P.yaw;
+        blink.position.y = P.bob;
+        eyes.forEach((e) => (e.scale.y = 1 - 0.9 * P.blink));
+        shadow.scale.set(1 - P.bob * 2.2, 0.16, 1);
+        shadow.material.opacity = 0.45 - P.bob * 2;
+        renderer.render(scene, camera);
+      };
+      window.addEventListener("hf-seek", (ev) => window.renderThree(ev.detail.time));
+      window.renderThree(window.__hfThreeTime || 0);
+    </script>
+  </body>
+</html>
