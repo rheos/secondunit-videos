@@ -12,25 +12,28 @@
           background: var(--bg);
         }
       </style>
-      <div data-hf-id="hf-8kov" id="furniture" data-composition-id="furniture" data-width="1920" data-height="1080">
-        <svg data-hf-id="hf-jqdz" id="fu-ground" class="full" viewBox="0 0 1920 1080" aria-hidden="true" style="will-change: transform"></svg>
-        <svg data-hf-id="hf-139h" id="fu-frame" class="full" viewBox="0 0 1920 1080"></svg>
+      <div data-hf-id="hf-rs10" id="furniture" data-composition-id="furniture" data-width="1920" data-height="1080">
+        <svg data-hf-id="hf-rs11" id="fu-ground" class="full" viewBox="0 0 1920 1080" aria-hidden="true" style="will-change: transform"></svg>
+        <svg data-hf-id="hf-rs12" id="fu-frame" class="full" viewBox="0 0 1920 1080"></svg>
       </div>
 
       <script>
         (() => {
           const tl = gsap.timeline({ paused: true });
-          const K = BP.kit(tl, 0);
+          const K = BP.kit(tl, 0, "furniture");
+          // stations are the inquiry's journey through the works (plates III-X); plates I and II set out the problem
           BP.furniture(K, tl, {
             stations: [
-              { label: "TOOLS", at: 7.5 },
-              { label: "SYSTEM", at: 20 },
-              { label: "DOOR", at: 40 },
-              { label: "WORK", at: 55 },
-              { label: "GATE", at: 75 },
-              { label: "STATUS", at: 90 },
+              { label: "INTAKE", at: 35.48 },
+              { label: "WORK", at: 52.08 },
+              { label: "PEOPLE", at: 70.18 },
+              { label: "DOOR", at: 86.34 },
+              { label: "GATE", at: 105.38 },
+              { label: "CURRENT", at: 123.06 },
+              { label: "MEMORY", at: 136.48 },
+              { label: "YOURS", at: 148.64 },
             ],
-            sheets: [0, 7.5, 20, 40, 55, 75, 90],
+            sheets: [0, 18.14, 35.48, 52.08, 70.18, 86.34, 105.38, 123.06, 136.48, 148.64],
           });
           window.__timelines["furniture"] = tl;
         })();
