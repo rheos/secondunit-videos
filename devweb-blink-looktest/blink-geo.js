@@ -42,9 +42,10 @@ window.BLINK = (() => {
   const SPROUT = [[0, B - 0.04, 0], [0.01, B + 0.12, 0], [0.04, B + 0.22, 0.02], [-0.12, B + 0.34, 0.02], [-0.3, B + 0.3, 0.0],
                   [0.04, B + 0.22, 0.02], [0.16, B + 0.2, 0.02], [0.3, B + 0.32, 0.0]];
   // the sprout as two strokes: stem + left curl, and the right curl (a tilde)
-  const SPROUT_STEM = [[0, B - 0.06, 0], [0.01, B + 0.1, 0], [0.04, B + 0.22, 0.02]];
-  // the curl has depth (left curl forward, right curl back) so the tilde still reads from the side
-  const SPROUT_LEAF = [[-0.32, B + 0.26, 0.16], [-0.22, B + 0.38, 0.12], [-0.06, B + 0.3, 0.05], [0.06, B + 0.2, -0.02], [0.2, B + 0.22, -0.1], [0.32, B + 0.36, -0.16]];
+  const SPROUT_STEM = [[0, B - 0.06, 0], [0.0, B + 0.14, 0.0], [0.0, B + 0.3, 0.0]];
+  // one tilde whose middle (its inflection) sits on the stem tip, like the GPT sheet; the curls have depth so it
+  // still reads from the side
+  const SPROUT_LEAF = [[-0.32, B + 0.3, 0.14], [-0.17, B + 0.42, 0.09], [0.0, B + 0.3, 0.0], [0.17, B + 0.18, -0.09], [0.32, B + 0.3, -0.14]];
   // the spin for the look test: a full turn in 4 s, then front; blink at 4.6 s and 5.3 s
   function pose(t) {
     const yaw = t < 4 ? -(t / 4) * Math.PI * 2 * (1 - 0) : 0;
