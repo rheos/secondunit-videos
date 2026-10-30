@@ -30,7 +30,7 @@ export const T = {
 // ---------- the layout ----------
 const FLOOR = -1.72;
 const FORM_DESK = V(0, 2.45, 0.3), CARD_M = V(0, 5.75, 0.3);
-const COLS = 9, ROWS = 22, CW = 1.0, CH = 0.72, WALL_Z = -4.0, FRONT_Z = WALL_Z + 0.3;
+const COLS = 9, ROWS = 21, CW = 1.0, CH = 0.72, WALL_Z = -4.0, FRONT_Z = WALL_Z + 0.3;
 const cellPos = (c, r) => V(-4 + c * CW, FLOOR + CH / 2 + r * CH, WALL_Z);
 const C7 = { c: 3, r: 14 }, C9 = { c: 5, r: 14 }, CENV = { c: 4, r: 18 };
 const P7 = cellPos(C7.c, C7.r), P9 = cellPos(C9.c, C9.r), PENV = cellPos(CENV.c, CENV.r);
@@ -66,8 +66,8 @@ const KEYS = [
   [T.stamps - 0.2, [-0.1, 6.65, 10.8], [-0.2, 6.6, -1.2], 36],
   [T.there - 0.3, [-0.1, 6.7, 10.6], [-0.2, 6.8, -1.2], 36],
   // the mass moment: the whole wall and the crowd, close enough to read the cards
-  [T.same2 + 0.1, [0, 6.9, 22], [0, 6.4, -2], 40],
-  [T.ws2 + 0.9, [0, 7.0, 22.6], [0, 6.4, -2], 40],
+  [T.same2 + 0.1, [0, 7.3, 22], [0, 6.9, -2], 40],
+  [T.ws2 + 0.9, [0, 7.4, 22.6], [0, 6.9, -2], 40],
   // who's signed in: the badge on the server
   [T.signed - 0.05, [0.25, 5.4, 8.6], [0, 5.2, 0], 36],
   [T.put + 0.6, [0.2, 5.6, 8.4], [0, 5.6, 0.2], 36],
