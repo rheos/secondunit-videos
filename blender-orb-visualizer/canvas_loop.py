@@ -10,98 +10,17 @@
 #
 #   blender -b --factory-startup --python canvas_loop.py -- --stills 1,49,97,145   (test stills)
 #   blender -b --factory-startup --python canvas_loop.py -- --render                (all 192 frames)
-# Frames land in out/canvas/take-02/frames/. Re-runnable in an open file (removes only CL_ datablocks).
-import bpy, bmesh, math, random, sys, os
-from mathutils import Vector
+# Frames land in out/canvas/take-02/frames/. Re-runnable in an open file (removes only CL_ datablocks). Helpers in canvas_kit.py.
+import math, sys, os
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)) if "__file__" in dir() else os.getcwd())
+import canvas_kit as K
+from canvas_kit import FPS, SECONDS, FRAMES, mat, specks, windows, stripes, box, empty, hex_lin
 
-FPS, SECONDS = 24, 8
-FRAMES = FPS * SECONDS                       # 192; frame 193 would equal frame 1
-RES = (180, 320)                             # x4 nearest = 720x1280
 A = 2.5                                      # half-size of the world cube (m)
 LANE_Y = -1.05                               # the traveller's lane, in front of the props
 HERE = os.path.dirname(os.path.abspath(__file__)) if "__file__" in dir() else os.getcwd()
 OUT = os.path.join(HERE, "out", "canvas", "take-02")
-
-# ---------- reset our own datablocks only ----------
-for coll in (bpy.data.objects, bpy.data.meshes, bpy.data.materials, bpy.data.images, bpy.data.cameras, bpy.data.lights, bpy.data.worlds, bpy.data.actions):
-    for d in list(coll):
-        if d.name.startswith("CL_"):
-            coll.remove(d)
-for o in list(bpy.data.objects):          # factory-startup cube, light, camera
-    if o.name in ("Cube", "Light", "Camera"):
-        bpy.data.objects.remove(o)
-scene = bpy.context.scene
-
-def hex_lin(h):
-    h = h.lstrip("#"); c = [int(h[i:i + 2], 16) / 255 for i in (0, 2, 4)]
-    return [x / 12.92 if x <= 0.04045 else ((x + 0.055) / 1.055) ** 2.4 for x in c]
-
-# ---------- pixel textures ----------
-def tex_image(name, base, jitter=0.07, seed=1, pattern=None, size=16):
-    img = bpy.data.images.new("CL_img_" + name, size, size, alpha=False)
-    rnd = random.Random(seed); px = []
-    b = hex_lin(base)
-    for y in range(size):
-        for x in range(size):
-            c = pattern(x, y, rnd) if pattern else None
-            if c is None:
-                k = 1 + (rnd.random() - .5) * 2 * jitter
-                c = [min(1, v * k) for v in b]
-            px += [c[0], c[1], c[2], 1.0]
-    img.pixels = px; img.pack()
-    return img
-
-MATS = {}
-def specks(c1, c2, p):
-    """dirt with stone pixels: a few grey pixels scattered through the brown"""
-    A1, A2 = hex_lin(c1), hex_lin(c2)
-    return lambda x, y, rnd: (A1 if rnd.random() < .6 else A2) if rnd.random() < p else None
-
-def mat(name, base, jitter=0.07, seed=1, texel=0.1, pattern=None, rough=0.95, emit=0.0):
-    """Principled material with a 16x16 image mapped in world metres (texel = metres per pixel), Closest."""
-    if name in MATS: return MATS[name]
-    m = bpy.data.materials.new("CL_" + name); m.use_nodes = True
-    nt = m.node_tree; nt.nodes.clear()
-    out = nt.nodes.new("ShaderNodeOutputMaterial"); bsdf = nt.nodes.new("ShaderNodeBsdfPrincipled")
-    bsdf.inputs["Roughness"].default_value = rough
-    tc = nt.nodes.new("ShaderNodeTexCoord"); mp = nt.nodes.new("ShaderNodeMapping")
-    s = 1 / (16 * texel); mp.inputs["Scale"].default_value = (s, s, s)
-    im = nt.nodes.new("ShaderNodeTexImage"); im.image = tex_image(name, base, jitter, seed, pattern)
-    im.interpolation = "Closest"; im.projection = "BOX"; im.extension = "REPEAT"
-    nt.links.new(tc.outputs["Object"], mp.inputs["Vector"]); nt.links.new(mp.outputs["Vector"], im.inputs["Vector"])
-    nt.links.new(im.outputs["Color"], bsdf.inputs["Base Color"])
-    if emit:
-        nt.links.new(im.outputs["Color"], bsdf.inputs["Emission Color"]); bsdf.inputs["Emission Strength"].default_value = emit
-    nt.links.new(bsdf.outputs["BSDF"], out.inputs["Surface"])
-    MATS[name] = m; return m
-
-def windows(base, lit):
-    B, L, D = hex_lin(base), hex_lin(lit), hex_lin("#3b3a4a")
-    def f(x, y, rnd):
-        if x % 4 in (1, 2) and y % 4 in (1, 2): return L if rnd.random() < .55 else D
-        return None
-    return f
-
-def stripes(c1, c2, w=2):
-    A1, A2 = hex_lin(c1), hex_lin(c2)
-    return lambda x, y, rnd: A1 if (x // w) % 2 == 0 else A2
-
-# ---------- boxes ----------
-def box(name, size, loc, material, parent=None):
-    me = bpy.data.meshes.new("CL_" + name); bm = bmesh.new()
-    bmesh.ops.create_cube(bm, size=1.0)
-    for v in bm.verts: v.co = Vector((v.co.x * size[0], v.co.y * size[1], v.co.z * size[2]))
-    bm.to_mesh(me); bm.free()
-    ob = bpy.data.objects.new("CL_" + name, me); scene.collection.objects.link(ob)
-    ob.location = loc; me.materials.append(material)
-    if parent: ob.parent = parent
-    return ob
-
-def empty(name, loc=(0, 0, 0), parent=None):
-    ob = bpy.data.objects.new("CL_" + name, None); scene.collection.objects.link(ob)
-    ob.location = loc
-    if parent: ob.parent = parent
-    return ob
+scene = K.reset()
 
 # ---------- palette (the film's own) ----------
 M = dict(
@@ -205,40 +124,10 @@ for i, x in enumerate(DROPX):
     drops.append(box(f"drop{i}", (.05, .05, .16), (x, 0, 0), M["rain"], cloud))
 
 # ---------- camera, light, world ----------
-cam_data = bpy.data.cameras.new("CL_cam"); cam_data.lens = 50; cam_data.sensor_fit = "VERTICAL"; cam_data.sensor_height = 24
-cam = bpy.data.objects.new("CL_cam", cam_data); scene.collection.objects.link(cam); scene.camera = cam
-cam.location = (-7.0, -23.0, 11.6)
-tgt = empty("camTarget", (.3, 0, 1.6))
-tr = cam.constraints.new("TRACK_TO"); tr.target = tgt; tr.track_axis = "TRACK_NEGATIVE_Z"; tr.up_axis = "UP_Y"
-
-sun_d = bpy.data.lights.new("CL_sun", "SUN"); sun_d.energy = 3.2; sun_d.angle = math.radians(6)
-sun_d.color = (1.0, .96, .9)
-sun = bpy.data.objects.new("CL_sun", sun_d); scene.collection.objects.link(sun)
-sun.rotation_euler = (math.radians(52), math.radians(-18), math.radians(-38))
-
-world = bpy.data.worlds.new("CL_world"); scene.world = world; world.use_nodes = True
-wn = world.node_tree; wn.nodes.clear()
-wo = wn.nodes.new("ShaderNodeOutputWorld"); bg = wn.nodes.new("ShaderNodeBackground")
-tc = wn.nodes.new("ShaderNodeTexCoord"); sep = wn.nodes.new("ShaderNodeSeparateXYZ"); ramp = wn.nodes.new("ShaderNodeValToRGB")
-# the sky is graded in screen space (bottom of frame to top), so it reads whatever the camera tilt
-wn.links.new(tc.outputs["Window"], sep.inputs["Vector"]); wn.links.new(sep.outputs["Y"], ramp.inputs["Fac"])
-ramp.color_ramp.elements[0].position = 0.05; ramp.color_ramp.elements[0].color = (*hex_lin("#f4dfc4"), 1)
-mid = ramp.color_ramp.elements.new(0.45); mid.color = (*hex_lin("#d9e4df"), 1)
-ramp.color_ramp.elements[2].position = 0.95; ramp.color_ramp.elements[2].color = (*hex_lin("#7fa9c4"), 1)
-wn.links.new(ramp.outputs["Color"], bg.inputs["Color"]); bg.inputs["Strength"].default_value = 1.0
-wn.links.new(bg.outputs["Background"], wo.inputs["Surface"])
-
-# ---------- render settings ----------
-r = scene.render
-r.engine = "BLENDER_EEVEE_NEXT" if "BLENDER_EEVEE_NEXT" in [e.identifier for e in bpy.types.RenderSettings.bl_rna.properties["engine"].enum_items] else "BLENDER_EEVEE"
-r.resolution_x, r.resolution_y, r.resolution_percentage = RES[0], RES[1], 100
-r.fps = FPS; r.filter_size = 0.6
-scene.eevee.taa_render_samples = 16
-scene.view_settings.view_transform = "Standard"
-r.image_settings.file_format = "PNG"; r.image_settings.color_mode = "RGB"
-scene.frame_start, scene.frame_end = 1, FRAMES
-os.makedirs(os.path.join(OUT, "frames"), exist_ok=True)
-r.filepath = os.path.join(OUT, "frames", "")
+K.camera((-7.0, -23.0, 11.6), (.3, 0, 1.6), lens=50)
+K.sun(3.2, (52, -18, -38))
+K.sky([(.05, "#f4dfc4"), (.45, "#d9e4df"), (.95, "#7fa9c4")])
+K.render_setup(OUT)
 
 # ---------- animation: everything keyed on every frame, all periods divide 8 s ----------
 def surface_height(theta):
@@ -266,26 +155,5 @@ for fr in range(1, FRAMES + 1):
         ph = ((t / .5) + i / len(drops)) % 1.0
         d.location = (DROPX[i], 0, -.25 - ph * 1.05); d.keyframe_insert("location", frame=fr)
 
-for ob in scene.objects:
-    ad = ob.animation_data
-    if ad and ad.action:
-        for layer in getattr(ad.action, "layers", []):
-            for strip in layer.strips:
-                for cb_ in strip.channelbags:
-                    for fc in cb_.fcurves:
-                        for kp in fc.keyframe_points: kp.interpolation = "LINEAR"
-        if hasattr(ad.action, "fcurves"):
-            for fc in ad.action.fcurves:
-                for kp in fc.keyframe_points: kp.interpolation = "LINEAR"
-
-# ---------- run ----------
-argv = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
-if "--stills" in argv:
-    frames = [int(x) for x in argv[argv.index("--stills") + 1].split(",")]
-    os.makedirs(os.path.join(OUT, "stills"), exist_ok=True)
-    for fr in frames:
-        scene.frame_set(fr); r.filepath = os.path.join(OUT, "stills", f"f{fr:04d}.png")
-        bpy.ops.render.render(write_still=True)
-    r.filepath = os.path.join(OUT, "frames", "")
-elif "--render" in argv:
-    bpy.ops.render.render(animation=True)
+K.linear_keys()
+K.run(OUT)
