@@ -68,7 +68,7 @@ function drawDiscs(g) {
 }
 
 // ---------------- coral, lower left ----------------
-function curl(g, cx, cy, r, turns, color, w = 3.2) {
+export function curl(g, cx, cy, r, turns, color, w = 3.2) {
   const pts = [];
   for (let i = 0; i <= 40; i++) { const k = i / 40, a = k * turns * Math.PI * 2; pts.push([cx + Math.cos(a) * r * (1 - k * 0.85), cy + Math.sin(a) * r * (1 - k * 0.85)]); }
   tube(g, pts, pts.map((_, i) => w * (1 - i / 60)), color, { shadow: false });
@@ -95,7 +95,7 @@ function drawCoral(g) {
 }
 
 // ---------------- ruffle tree, lower right ----------------
-function rosette(g, cx, cy, r, base, rng) {
+export function rosette(g, cx, cy, r, base, rng) {
   for (let ring = 0; ring < 3; ring++) {
     const n = 11 - ring * 2, rr = r * (1 - ring * 0.3);
     for (let i = 0; i < n; i++) {
@@ -148,7 +148,7 @@ function drawTrack(g) {
   tube(g, chaikin(TRACK.path, 3), TRACK.w, P.butter);
 }
 export const BEADS = [P.mint, P.pink, P.butter, P.lilac, P.aqua, P.pinkDeep, LIME];
-function drawBead(g, c) {
+export function drawBead(g, c) {
   clayForm(g, circle(0, 0, 14, 32), c, { tiers: 2, step: 0.2, reach: 1.5 });
   for (let k = 0; k < 5; k++) dot(g, Math.cos(k * 1.26) * 8, Math.sin(k * 1.26) * 8, 2.2, shade(c, -0.3));
 }
