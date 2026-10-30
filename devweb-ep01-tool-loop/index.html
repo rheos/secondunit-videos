@@ -44,6 +44,7 @@
       <!-- one track: George's narration plus the earshot sound on the picture (sfx_earshot.py -> _in/mix.wav) -->
       <audio id="mix" src="_in/mix.wav" data-start="0" data-duration="48.6" data-track-index="20" data-volume="1"></audio>
       <div id="stage" class="layer"></div>
+      <div class="layer" style="pointer-events:none;opacity:.07;mix-blend-mode:overlay;background-image:url(&quot;data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='160' height='160' filter='url(%23n)'/></svg>&quot;)"></div>
     </div>
 
     <script>
@@ -103,8 +104,8 @@
         CAPS.forEach(([t, text], i) => {
           const c = mk("div", "abs cap hide", "", stage, text.replace(/(harness|text|loop)/, '<span style="color:var(--green)">$1</span>').replace(/(4°C and rain)/, '<span style="color:var(--amber)">$1</span>'));
           const end = i + 1 < CAPS.length ? CAPS[i + 1][0] : 40.7;
-          rise(c, t - 0.05, 0.3);
-          hide(c, end - 0.12, 0.12);
+          rise(c, t, 0.3);
+          hide(c, end - 0.2, 0.18);
         });
 
         // ================= I. HOOK (kinetic type): open cropped inside "runs", pull back to the line =================
@@ -133,22 +134,22 @@
         // ================= II. DIVE (camera): the chat, then into the reply to what the model really wrote =================
         const p2 = mk("div", "layer hide");
         F(p2, { opacity: 0 }, { opacity: 1, duration: 0.3 }, 5.55);
-        const S0 = 0.25; // world is 4x the screen; the overview shows it at 0.25
-        const world = mk("div", "abs", `left:0;top:0;width:2880px;height:5120px;transform-origin:0 0;transform:scale(${S0})`, p2);
-        const user = mk("div", "bubble hide", "left:760px;top:1040px;width:1960px;height:300px;padding:0 110px;background:var(--surface2);font-size:118px;justify-content:flex-end", world);
-        show(user, w("ask") - 0.15, 0.3, 60);
+        const S0 = 0.5; // world is 2x the screen (4x made a one-frame white tile mid-dive: texture too big); overview at 0.5
+        const world = mk("div", "abs", `left:0;top:0;width:1440px;height:2560px;transform-origin:0 0;transform:scale(${S0})`, p2);
+        const user = mk("div", "bubble hide", "left:380px;top:520px;width:980px;height:150px;padding:0 55px;background:var(--surface2);font-size:59px;justify-content:flex-end", world);
+        show(user, w("ask") - 0.15, 0.3, 30);
         cue("pop", w("ask") - 0.1);
         const userT = mk("span", null, "", user);
         typed(userT, "What's the weather in Nelson?", w("ask"), 24);
-        const ai = mk("div", "bubble hide", "left:160px;top:1520px;width:1920px;height:740px;border-radius:110px;background:rgba(106,208,138,.08);border:8px solid rgba(106,208,138,.45);align-items:flex-start", world);
-        const aiT = mk("div", "abs", "left:110px;top:90px;font-size:118px;font-weight:500", ai, "Let me check.");
-        show(ai, w("it", 4) - 0.1, 0.35, 60);
+        const ai = mk("div", "bubble hide", "left:80px;top:760px;width:960px;height:370px;border-radius:55px;background:rgba(106,208,138,.08);border:4px solid rgba(106,208,138,.45);align-items:flex-start", world);
+        const aiT = mk("div", "abs", "left:55px;top:45px;font-size:59px;font-weight:500", ai, "Let me check.");
+        show(ai, w("it", 4) - 0.1, 0.35, 30);
         cue("pop", w("it", 4) - 0.05);
         // the card inside the reply: at overview size it's a dark chip; at the dive it reads
-        const card = mk("div", "abs", "left:96px;top:330px;width:1120px;height:340px;box-sizing:border-box;border-radius:30px;background:#0c0e11;border:6px solid var(--green);padding:56px 64px;font-family:var(--mono);font-size:62px;line-height:1.5;color:#b9f0c9;white-space:pre", ai);
+        const card = mk("div", "abs", "left:48px;top:165px;width:560px;height:170px;box-sizing:border-box;border-radius:15px;background:#0c0e11;border:3px solid var(--green);padding:28px 32px;font-family:var(--mono);font-size:31px;line-height:1.5;color:#b9f0c9;white-space:pre", ai);
         const cardL1 = mk("div", null, "", card), cardL2 = mk("div", null, "", card);
-        // camera: dive from the overview to the card (card centre world 816,1984 -> screen 360,600 at 0.56)
-        const S1 = 0.56, tx1 = 360 - S1 * 816, ty1 = 600 - S1 * 1984;
+        // camera: dive from the overview to the card (card centre world 408,1010 -> screen 360,600 at 1.12)
+        const S1 = 1.12, tx1 = 360 - S1 * 408, ty1 = 600 - S1 * 1010;
         F(world, { x: 0, y: 0, scale: S0 }, { x: tx1, y: ty1, scale: S1, duration: 1.2, ease: "power3.inOut" }, w("writes", 2) - 0.25);
         cue("riser", w("writes", 2) - 0.6, { d: 0.6 });
         cue("whoosh", w("writes", 2) - 0.2, { d: 1.2 });
