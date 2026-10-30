@@ -15,7 +15,7 @@ const w = (x, n) => VO.w(x, n), e = (x, n) => VO.e(x, n);
 // ---------- the beats, all on Chris's words ----------
 export const T = {
   is: w("is"), guar: e("guarantee"), by: w("by"), reads: w("reads"), already: w("already"), secret: w("secret"),
-  ask: w("ask"), sums: w("sums"), very: w("very"), file1: e("file"), keep: w("keep"), quiet: e("quiet"),
+  ask: w("ask"), sideways: w("sideways"), helpfully: w("helpfully"), sums: w("sums"), very: w("very"), file1: e("file"), keep: w("keep"), quiet: e("quiet"),
   rule2: w("rule", 2), request: w("request"), context: w("context"), fact: w("fact"),
   so: w("so"), door: w("door"), every: w("every"), forW: e("for"), loader: w("loader"), asking: w("asking"), drops: w("drops"),
   thats: w("that's"), load: w("load"), role: w("role"), label: w("label"), priv: w("private"), hiding: w("hiding"), edit: w("edit"),
@@ -293,7 +293,7 @@ export async function buildWorld(canvas) {
   function render(t) {
     cameraAt(t, cam); camQ.copy(cam.quaternion);
     const bob = 0.05 * Math.sin((t / 1.7) * Math.PI * 2);
-    let happy = 0, blinkK = 0, look = 0, lookY = 0, think = 0, yaw = 0.12 * Math.sin((t / 3.1) * Math.PI * 2);
+    let happy = 0, blinkK = 0, look = 0, lookY = 0, think = 0, skew = 0, eager = 0, tilt = 0, lean = 0, hop = 0, yaw = 0.12 * Math.sin((t / 3.1) * Math.PI * 2);
     rig.position.set(0, bob, 0);
     shadow.material.opacity = 0.45 - bob; shadow.scale.setScalar(1 - bob);
     blinkK = Math.max(pulse(t, T.is - 0.6, 0.07), pulse(t, T.rule2 - 0.4, 0.07), pulse(t, T.thats + 1.4, 0.07), pulse(t, T.model3 + 1.1, 0.07), pulse(t, T.given + 2.4, 0.07));
@@ -423,16 +423,20 @@ export async function buildWorld(canvas) {
     if (t < T.by) { lookY = 0.9 * r01(t, 0.3, 0.4); }
     else if (t < T.already) { lookY = 1.1; }
     else if (t < T.ask - 0.1) { look = 1.0; lookY = 0.2; }
-    else if (t < T.sums - 0.1) { look = 0; lookY = 1.25; }
-    else if (t < T.keep) { happy = r01(t, T.sums - 0.1, 0.12); lookY = 0.4; }
-    else if (t < T.rule2) { happy = 1 - r01(t, T.keep, 0.12); look = -0.6; lookY = 1.0; yaw += 0.2 * Math.sin((t - T.keep) * 14) * (1 - r01(t, T.keep + 0.2, 0.4)); }
+    else if (t < T.keep) {
+      // "ask sideways": a side-eye at the question, head cocked; "helpfully sums up": wide eyes, a grin, bouncing to please
+      const sw = io(r01(t, T.sideways - 0.05, 0.25)) * (1 - io(r01(t, T.helpfully - 0.15, 0.15))), eg = io(r01(t, T.helpfully - 0.1, 0.15));
+      look = 0.9 * sw; lookY = 1.25 - 0.55 * sw - 0.85 * eg; skew = 0.8 * sw; tilt = 0.2 * sw; yaw -= 0.3 * sw;
+      eager = eg; lean = 0.12 * eg; hop = 0.07 * eg * (1 - r01(t, T.keep - 0.25, 0.25)) * Math.abs(Math.sin(Math.PI * 3.2 * (t - T.helpfully)));
+    }
+    else if (t < T.rule2) { eager = 1 - r01(t, T.keep, 0.12); lean = 0.12 * (1 - r01(t, T.keep, 0.2)); look = -0.6; lookY = 1.0; yaw += 0.2 * Math.sin((t - T.keep) * 14) * (1 - r01(t, T.keep + 0.2, 0.4)); }
     else if (t < T.ask2 - 1.4) { look = 0.8; lookY = 0.1; }
     else if (t < T.says2 - 0.8) { look = 0.9; lookY = -0.2; }
     else if (t < T.i) { look = 0; lookY = 1.2; }
     else if (t < T.given + 0.3) { look = 0; lookY = 0.2; happy = r01(t, T.i + 0.6, 0.15) * 0.8; }
     else { happy = r01(t, T.given + 1.6, 0.12); }
-    blink.root.rotation.y = yaw;
-    blink.face({ blink: blinkK, happy, look, lookY, think, phase: t * 1.6 });
+    blink.root.rotation.set(lean, yaw, tilt); rig.position.y = bob + hop;
+    blink.face({ blink: blinkK, happy, look, lookY, think, skew, eager, phase: t * 1.6 });
     renderer.render(scene, cam);
   }
   return render;
