@@ -202,9 +202,10 @@ export async function buildWorld(canvas) {
   // the thinking dots over the no-label file
   const dotMat = new THREE.MeshBasicMaterial({ color: "#d6a45a", transparent: true });
   const dots = [-0.22, 0, 0.22].map((x) => { const m = new THREE.Mesh(new THREE.SphereGeometry(0.075, 14, 10), dotMat); m.position.set(x, 1.25, 0.2); gate.add(m); return m; });
-  // the paddle that kicks files into the bin
-  const paddle = new THREE.Group(); paddle.position.set(BX - 0.78, BELT_Y + 0.14, KZ - 0.35); scene.add(paddle);
-  const arm = new THREE.Mesh(new RoundedBoxGeometry(0.1, 0.24, 0.9, 2, 0.03), blue); arm.position.set(0, 0, 0.42); paddle.add(arm);
+  // the paddle that kicks files into the bin: hinged on the left rail past the kick point, it lies open along the rail
+  // and swings shut across the belt, meeting each red file from behind so the file flies on toward the bin
+  const paddle = new THREE.Group(); paddle.position.set(BX - 0.78, BELT_Y + 0.14, KZ + 0.9); scene.add(paddle);
+  const arm = new THREE.Mesh(new RoundedBoxGeometry(0.1, 0.24, 1.4, 2, 0.03), blue); arm.position.set(0, 0, -0.68); paddle.add(arm);
   const hub = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 0.3, 16), blue); paddle.add(hub);
 
   // ---------- the bin ----------
@@ -354,7 +355,10 @@ export async function buildWorld(canvas) {
       if (z > WALL_Z - 0.35) m.scale.setScalar(Math.max(0.01, 1 - (z - (WALL_Z - 0.35)) / 0.6)); // through the door into the room
       if (Math.abs(z - GATE_Z) < nearD) { nearD = Math.abs(z - GATE_Z); near = d.kind; }
     });
-    docs.forEach((d) => { kickP = Math.max(kickP, pulse(t, d.kick + 0.06, 0.22)); });
+    // shut in 0.22 s (it meets the file as the file leaves), back open in 0.35 s
+    const swing = (k) => t < k - 0.12 ? 0 : t < k + 0.1 ? io(r01(t, k - 0.12, 0.22)) : 1 - io(r01(t, k + 0.1, 0.35));
+    docs.forEach((d) => { if (d.kick < Infinity) kickP = Math.max(kickP, swing(d.kick)); });
+    kickP = Math.max(kickP, swing(Q.kick)); // the no-label file leaves from the gate itself; the paddle still answers its swipe
     // the flood
     Object.values(inst).forEach(({ m, list }) => {
       list.forEach((f, j) => {
@@ -364,7 +368,6 @@ export async function buildWorld(canvas) {
         if (t >= f.kick) kickPose(dummy, BX + f.jx * 0.5, KZ, cl((t - f.kick) / 0.55), f);
         else { dummy.position.set(BX + f.jx, BELT_Y + 0.015 + (j % 3) * 0.004, z); dummy.rotation.set(-Math.PI / 2, 0, f.yaw); if (z > WALL_Z - 0.35) dummy.scale.setScalar(0.85 * Math.max(0, 1 - (z - (WALL_Z - 0.35)) / 0.6)); }
         dummy.updateMatrix(); m.setMatrixAt(j, dummy.matrix);
-        if (f.kind === "r" && t < f.kick + 0.3) kickP = Math.max(kickP, pulse(t, f.kick + 0.06, 0.22));
       });
       m.instanceMatrix.needsUpdate = true;
     });
@@ -399,7 +402,7 @@ export async function buildWorld(canvas) {
     const prox = near ? cl(1 - nearD / 0.6) : 0;
     scanMat.color.set(flooding || !near || prox === 0 ? "#4f93d6" : KIND[near].col);
     scanMat.opacity = (flooding ? 0.24 : 0.16 + 0.22 * prox) * cl(gk);
-    paddle.rotation.y = -1.05 * kickP;
+    paddle.rotation.y = -Math.PI / 2 * kickP; // 0 = open along the rail, 1 = shut across the belt (the flood's red files jump on their own: it can't swing 20 times a second)
 
     // set B: after the gate, only files this role can see
     const bA = r01(t, T.ask2 + 1.06, 0.5);
