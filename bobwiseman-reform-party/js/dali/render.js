@@ -7,7 +7,8 @@
 //   gochi      draft 11-34: Gochi Hand, upright hand lettering, each word with its own small tilt and lift
 //   classic    Instagram Stories "Classic": Figtree Bold, white, straight
 //   reel       the Reels caption: Figtree Bold, black on a white rounded box that grows word by word
-//   strong     Stories "Strong": Anton caps, slanted, white with a dark edge, the word being sung in amber (Robin)
+//   strong     Stories "Strong": Anton caps, slanted, white with a dark edge; the whole line up at once and the word
+//              being sung in amber, walking the line (Robin: "otherwise there is no point of the amber word")
 //   typewriter Stories "Typewriter": Courier Prime Bold on a paper strip, each word typed letter by letter
 //   vv         ViralVision's caption (MythMaker's first project, viralvision-worker/assembler.py): Anton caps, white
 //              with a heavy black stroke and a hard soft-black drop shadow, the whole line up at once, the word being
@@ -25,7 +26,7 @@ const CAPS = {
   gochi: { font: '{s}px "Gochi Hand", "Marker Felt", sans-serif', size: 50, gap: .27, band: 1, wob: 1 },
   classic: { font: '700 {s}px Figtree, Helvetica, sans-serif', size: 52, gap: .26, band: .8 },
   reel: { font: '700 {s}px Figtree, Helvetica, sans-serif', size: 48, gap: .26, box: { fill: '#ffffff', ink: '#111111', padX: .42, padY: .3, r: .32, whole: 1 } },
-  strong: { font: '{s}px Anton, Impact, sans-serif', size: 62, gap: .22, caps: 1, skew: -.2, edge: 1, band: .7, accent: 'rgb(255,176,59)' }, // the sung word in ViralVision's amber (Robin)
+  strong: { font: '{s}px Anton, Impact, sans-serif', size: 62, gap: .22, caps: 1, skew: -.2, edge: 1, band: .7, accent: 'rgb(255,176,59)', full: 1 }, // the whole line up at once and ViralVision's amber walks it word by word (Robin)
   typewriter: { font: '700 {s}px "Courier Prime", Courier, monospace', size: 46, gap: .6, type: 1, box: { fill: '#f6f1e4', ink: '#1a1612', padX: .4, padY: .28, r: .08, whole: 1 } },
   vv: { font: '{s}px Anton, Impact, sans-serif', size: 60, gap: .25, caps: 1, full: 1, stroke: 1 / 6, drop: 1, accent: 'rgb(255,176,59)' },
   melt: { font: '{s}px "Rubik Wet Paint", Impact, sans-serif', size: 60, gap: .3, caps: 1, edge: 1, fill: '#fbeed0', band: .7 },
@@ -79,7 +80,7 @@ function captions(t) {
     const tw = widths.slice(a, b).reduce((x, y) => x + y, 0) + gap * (b - a - 1), y = CAP.y - (rows.length - 1 - r) * lead; let x = W / 2 - tw / 2;
     // the band covers the full row from the line's first word, fades in and out with the line, and eases off at night
     const ba = S.band ? fadeIn * fadeOut * (.48 - .16 * nightAmt(t)) * S.band : 0;
-    if (ba > 0 && (r === 0 || n > a)) { const pad = size * 1.6; g.save(); g.globalAlpha = ba; g.drawImage(CAP_BAND, x - pad, y - size * 1.42, tw + 2 * pad, size * 2.15); g.restore(); }
+    if (ba > 0 && (r === 0 || S.full || n > a)) { const pad = size * 1.6; g.save(); g.globalAlpha = ba; g.drawImage(CAP_BAND, x - pad, y - size * 1.42, tw + 2 * pad, size * 2.15); g.restore(); }
     // a box style: one rounded box round the row's words shown so far, from the font's own ascent and descent
     if (S.box && n > a) { let shownW = 0; for (let i = a; i < Math.min(n, b); i++) shownW += widths[i] + (i > a ? gap : 0);
       const bx = x - S.box.padX * size, bw = shownW + 2 * S.box.padX * size, by = y - asc - S.box.padY * size, bh = asc + dsc + 2 * S.box.padY * size;
