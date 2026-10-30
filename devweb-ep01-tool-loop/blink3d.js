@@ -52,13 +52,22 @@ export function makeBlink(THREE, G, ramp) {
   root.add(smile, grin);
   const sproutMat = new THREE.MeshToonMaterial({ color: "#7fe09b", gradientMap: ramp });
   [G.SPROUT_STEM, G.SPROUT_LEAF].forEach((P) => root.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(P.map((p) => new THREE.Vector3(...p))), 60, 0.05, 12), sproutMat)));
-  // expression: blink 0..1 closes the eyes; happy 0..1 squashes them into smiling slits and widens the smile
-  function face({ blink = 0, happy = 0, look = 0 } = {}) {
+  // thinking: three dots on the visor in place of the eyes
+  const dots = [-0.24, 0, 0.24].map((x) => {
+    const f = G.onFront(x, 0.24, 0.02), m = new THREE.Mesh(new THREE.SphereGeometry(0.075, 16, 12), glow);
+    m.position.set(...f.p); m.scale.z = 0.4; m.visible = false; root.add(m);
+    return m;
+  });
+  // expression: blink 0..1 closes the eyes; happy 0..1 squashes them into smiling slits and widens the smile;
+  // look / lookY move the eyes across the visor; think 0..1 swaps the eyes for three dots pulsing at phase
+  function face({ blink = 0, happy = 0, look = 0, lookY = 0, think = 0, phase = 0 } = {}) {
     eyes.forEach((e) => {
+      e.g.visible = think < 0.5;
       e.cap.scale.y = Math.max(0.08, (1 - 0.92 * blink) * (1 - 0.7 * happy));
       e.halo.scale.y = e.cap.scale.y;
-      e.g.position.set(e.base.x + look * 0.06, e.base.y + happy * 0.05, e.base.z);
+      e.g.position.set(e.base.x + look * 0.06, e.base.y + happy * 0.05 + lookY * 0.05, e.base.z);
     });
+    dots.forEach((d, i) => { d.visible = think >= 0.5; const k = 0.75 + 0.35 * Math.max(0, Math.sin((phase - i * 0.18) * Math.PI * 2)); d.scale.set(k, k, 0.4 * k); });
     smile.visible = happy < 0.5;
     grin.visible = happy >= 0.5;
   }

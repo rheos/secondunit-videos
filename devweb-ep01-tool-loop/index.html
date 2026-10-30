@@ -223,17 +223,16 @@
         ringLine.style.strokeDasharray = ringLen; ringLine.style.strokeDashoffset = ringLen;
         F(ringLine, { strokeDashoffset: ringLen }, { strokeDashoffset: 0, duration: 0.9, ease: "power2.inOut" }, p4At + 0.1);
         cue("draw", p4At + 0.1, { d: 0.9 });
-        const EXIT = "M360 380 L360 250";
+        const EXIT = "M440 300 L440 214"; // the way out: from Blink's shoulder up to the answer
         const exitLine = path(EXIT, "#d6a45a", 3, 0.55, { "stroke-dasharray": "6 10" });
         F(exitLine, { opacity: 0 }, { opacity: 1, duration: 0.3 }, w("answer") - 0.1);
         const nodeAt = (x, y, wdt, label, col, bg) => mk("div", "node", `left:${x - wdt / 2}px;top:${y - 34}px;width:${wdt}px;height:68px;border:3px solid ${col};background:${bg};font-size:24px;color:var(--text);box-shadow:0 0 34px ${col}55;opacity:0`, cam4, label);
-        const nModel = nodeAt(360, 380, 190, "model", "#6ad08a", "#10241a");
         const nHarness = nodeAt(560, 720, 200, "harness", "#9aa6b6", "#141a24");
         const nTool = nodeAt(160, 720, 190, "weather", "#4f93d6", "#0f1d30");
-        [nModel, nHarness, nTool].forEach((n, i) => { F(n, { opacity: 0, scale: 0.6 }, { opacity: 1, scale: 1, duration: 0.35, ease: "back.out(1.6)" }, p4At + 0.15 + i * 0.12); cue("pop", p4At + 0.25 + i * 0.12, { i }); });
+        [nHarness, nTool].forEach((n, i) => { F(n, { opacity: 0, scale: 0.6 }, { opacity: 1, scale: 1, duration: 0.35, ease: "back.out(1.6)" }, p4At + 0.15 + i * 0.12); cue("pop", p4At + 0.25 + i * 0.12, { i }); });
         // the fork at the model: answer, or ask again
-        const fAns = mk("div", "abs mono hide", "left:384px;top:262px;font-size:22px;color:var(--amber)", cam4, "answer ↑");
-        const fAgain = mk("div", "abs mono hide", "left:260px;top:436px;width:200px;text-align:center;font-size:22px;color:var(--green)", cam4, "ask again ↻");
+        const fAns = mk("div", "abs mono hide", "left:458px;top:250px;font-size:22px;color:var(--amber)", cam4, "answer ↑");
+        const fAgain = mk("div", "abs mono hide", "left:260px;top:540px;width:200px;text-align:center;font-size:22px;color:var(--green)", cam4, "ask again ↻");
         show(fAns, w("answer") - 0.05, 0.3, 8); cue("tick", w("answer"));
         show(fAgain, w("again") - 0.25, 0.3, 8); cue("tick", w("again"));
         // the progress spine words (cinetic ui-progress-spine-steps, retold as the loop's three steps)
@@ -252,7 +251,6 @@
           const pt = at(lap.p);
           pk.style.left = pt.x + "px"; pk.style.top = pt.y + "px";
           trail.forEach((tn, i) => { const q = at(lap.p - (i + 1) * 0.018); tn.style.left = q.x + "px"; tn.style.top = q.y + "px"; tn.style.transform = `scale(${1 - i * 0.22})`; });
-          cam4.style.transform = `translate(${-(pt.x - 360) * 0.08}px, ${-(pt.y - 580) * 0.08}px)`;
         };
         place();
         // lap plan: ask/run/read land on their words, then again and again ever faster; quarter points sit at the nodes
@@ -266,12 +264,27 @@
           if (i >= 3) cue("blip", t + 0.02, { lap: i });
         });
         F([pk, ...trail], { opacity: 0 }, { opacity: 1, duration: 0.15 }, LAPS[0][0]);
+        {
+          const io = (k) => (k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2);
+          const sched = []; let tc = 0;
+          LAPS.forEach(([t0, a, b], i) => { const t = t0 != null ? t0 : tc; sched.push([t, LAPDUR[i], a, b, i < 3]); tc = t + LAPDUR[i]; });
+          Object.assign(EP, {
+            p4In: p4At, p4Out: w("so") - 0.3, reads: w("reads"), decides: w("decides"), answer: w("answer"), askAgain: w("again"), loop: w("loop"),
+            ask: w("ask", 3), run: w("run"), read: w("read"), again2: w("again", 2), stops: w("stops"), lapsEnd: tc,
+            lapAt: (t) => { let p = null; for (const [t0, d, a, b, ez] of sched) { if (t < t0) break; const k = Math.min(1, (t - t0) / d); p = a + (b - a) * (ez ? io(k) : k); } return p; },
+            ringAt: (p) => { const q = ringLine.getPointAtLength((((p % 1) + 1) % 1) * ringLen); return [q.x, q.y]; },
+          });
+          cue("pop", p4At + 0.25);
+          cue("blip", w("decides"));
+          cue("tick", w("answer") + 0.1);
+        }
         // until it stops asking: the packet leaves by the answer branch to an answer bubble
         const out = { p: 0 };
         const outAt = Math.max(tCur, w("stops") - 0.2);
-        tl.fromTo(out, { p: 0 }, { p: 1, duration: 0.45, ease: "power2.out", immediateRender: false, onUpdate: () => { pk.style.top = 380 - 130 * out.p + "px"; pk.style.left = "360px"; } }, outAt);
+        EP.outAt = outAt;
+        tl.fromTo(out, { p: 0 }, { p: 1, duration: 0.45, ease: "power2.out", immediateRender: false, onUpdate: () => { pk.style.top = 300 - 86 * out.p + "px"; pk.style.left = "440px"; } }, outAt);
         F(trail, { opacity: 1 }, { opacity: 0, duration: 0.1 }, outAt);
-        const answer = mk("div", "bubble hide", "left:120px;top:160px;width:480px;height:84px;padding:0 34px;border-radius:42px;background:rgba(214,164,90,.12);border:3px solid var(--amber);font-size:30px;justify-content:center", cam4, "4°C and rain in Nelson.");
+        const answer = mk("div", "bubble hide", "left:120px;top:126px;width:480px;height:84px;padding:0 34px;border-radius:42px;background:rgba(214,164,90,.12);border:3px solid var(--amber);font-size:30px;justify-content:center", cam4, "4°C and rain in Nelson.");
         F(answer, { opacity: 0, scale: 0.7 }, { opacity: 1, scale: 1, duration: 0.35, ease: "back.out(1.5)" }, outAt + 0.4);
         F(pk, { opacity: 1 }, { opacity: 0, duration: 0.15 }, outAt + 0.42);
         cue("ding", outAt + 0.45);
@@ -380,6 +393,7 @@
       function shot(t) {
         if (t >= E.p1In - 0.3 && t < E.p1Out + 0.45) return "I";
         if (t >= E.p3In - 0.1 && t < E.p3Out + 0.4) return "III";
+        if (t >= E.p4In - 0.1 && t < E.p4Out + 0.4) return "IV";
         if (t >= E.endIn - 0.1) return "V";
         return null;
       }
@@ -429,6 +443,39 @@
           happy = cl((t - E.backAt - 0.85) / 0.12) * (1 - cl((t - E.happyTo) / 0.15));
           look = t < E.dropAt ? 0 : t < E.backAt ? -0.6 * cl((t - E.dropAt) / 0.2) : 0;
           blinkK = blinkAt(t, [E.p3In + 1.4, E.runAt + 1.2]);
+        } else if (S === "IV") {
+          // Blink sits where the "model" node was (ring top, screen 360,380) and acts out what Chris says
+          const k = back(ramp01(t, E.p4In + 0.1, 0.4));
+          alpha = cl((t - E.p4In) / 0.2) * (1 - cl((t - E.p4Out) / 0.35));
+          const hop = (c) => Math.max(0, 1 - Math.abs(t - c) / 0.18);
+          const squash = 0.12 * Math.max(hop(E.ask), hop(E.run), hop(E.read));
+          rig.position.set(0, 1.08 + bob * 0.3 + squash * 0.25, 0);
+          rig.scale.set(0.42 * k * (1 + squash * 0.5), 0.42 * k * (1 - squash), 0.42 * k);
+          yaw = 0;
+          // "The model reads it": the amber answer held at the visor, eyes scanning it
+          if (t >= E.p4In && t < E.decides - 0.1) {
+            res.visible = true;
+            res.position.set(0, 0.0, 1.14); res.scale.setScalar(1.15 * (1 - cl((t - E.decides + 0.3) / 0.2)) + 0.001);
+            res.material.color.setRGB(1, 1, 1);
+            look = 0.9 * Math.sin((t - E.p4In) * 7);
+          }
+          // "and decides": thinking dots
+          const think = t >= E.decides - 0.1 && t < E.answer - 0.15 ? 1 : 0;
+          // "answer, or ask again": a look up at the way out, then down at the loop
+          let lookY = 0;
+          if (t >= E.answer - 0.15 && t < E.askAgain - 0.15) { look = 1.2; lookY = 1.2; }
+          else if (t >= E.askAgain - 0.15 && t < E.ask - 0.4) { look = 0; lookY = -1.0; }
+          // ask, run, read and the faster laps: the eyes chase the packet round the ring
+          const p = E.lapAt(t);
+          if (p !== null && t < E.outAt + 0.1) {
+            const [px, py] = E.ringAt(p), dx = px - 360, dy = py - 380, L = Math.hypot(dx, dy) || 1;
+            look = (1.4 * dx) / Math.max(L, 120); lookY = (-1.4 * dy) / Math.max(L, 120);
+          }
+          // "until it stops asking": happy as the answer goes out
+          happy = cl((t - E.outAt - 0.3) / 0.12);
+          if (happy > 0) { look = 0; lookY = 0; }
+          blinkK = blinkAt(t, [E.loop + 0.1]);
+          blink.face({ blink: blinkK, happy, look, lookY, think, phase: t * 1.6 });
         } else if (S === "V") {
           const k = back(ramp01(t, E.endIn, 0.45));
           alpha = cl((t - E.endIn + 0.1) / 0.2);
@@ -439,7 +486,7 @@
         canvas.style.opacity = alpha.toFixed(3);
         blink.root.rotation.y = yaw;
         harness.root.rotation.y = yaw;
-        blink.face({ blink: blinkK, happy, look });
+        if (S !== "IV") blink.face({ blink: blinkK, happy, look });
         shadow.position.set(0, -1.62, 0);
         shadow.material.opacity = 0.4 - bob;
         renderer.render(scene, camera);
