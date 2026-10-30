@@ -34,33 +34,33 @@ const COLS = 9, ROWS = 21, CW = 1.0, CH = 0.72, WALL_Z = -4.0, FRONT_Z = WALL_Z 
 const cellPos = (c, r) => V(-4 + c * CW, FLOOR + CH / 2 + r * CH, WALL_Z);
 const C7 = { c: 3, r: 14 }, C9 = { c: 5, r: 14 }, CENV = { c: 4, r: 18 };
 const P7 = cellPos(C7.c, C7.r), P9 = cellPos(C9.c, C9.r), PENV = cellPos(CENV.c, CENV.r);
-const slot = (p) => V(p.x, p.y + 0.26, FRONT_Z + 0.55); // where a card stands on a pulled-out drawer
+const slot = (p) => V(p.x, p.y + 0.26, FRONT_Z + 0.67); // a card standing just in front of a pulled-out drawer's face (0.12 clear: no z-fight)
 const hash = (n) => { const s = Math.sin(n * 127.1 + 311.7) * 43758.5453; return s - Math.floor(s); };
 const special = (c, r) => (c === C7.c && r === C7.r) || (c === C9.c && r === C9.r) || (c === CENV.c && r === CENV.r);
 
 // ---------- the camera path: [time, position, target, fov] ----------
 const KEYS = [
   // the hook: tight on the request card at the server
-  [0, [0.2, 5.95, 9.0], [0, 5.85, 0.3], 34],
-  [2.9, [0.1, 5.9, 9.4], [0, 5.85, 0.3], 34],
-  [T.out + 0.3, [0, 5.85, 9.8], [0, 5.8, 0.3], 34],
+  [0, [0.15, 5.95, 9.8], [0, 5.85, 0.3], 34],
+  [2.9, [0.1, 5.9, 10.1], [0, 5.85, 0.3], 34],
+  [T.out + 0.3, [0, 5.85, 10.4], [0, 5.8, 0.3], 34],
   // down to Blink at its desk
-  [6.6, [0.25, 1.5, 10.4], [0, 1.25, 0], 36],
-  [12.0, [0.15, 1.45, 10.0], [0, 1.25, 0], 36],
-  [T.real - 0.1, [0.1, 1.45, 9.7], [0, 1.3, 0], 36],
+  [6.6, [0.25, 1.2, 10.4], [0, 0.95, 0], 36],
+  [12.0, [0.15, 1.15, 10.0], [0, 0.95, 0], 36],
+  [T.real - 0.1, [0.1, 1.15, 9.7], [0, 1.0, 0], 36],
   // ride up with the card past the server to the wrong drawer, pulled back so the server never fills the frame
   [T.real + 0.75, [0.8, 5.6, 13.5], [0.7, 6.2, -1.5], 36],
-  [T.chat2 + 0.15, [0.6, 9.0, 4.6], [0.4, 8.75, -3.75], 36],
-  [T.both - 0.2, [0.55, 8.95, 4.9], [0.4, 8.75, -3.75], 36],
+  [T.chat2 + 0.15, [0.6, 9.0, 5.4], [0.4, 8.75, -3.75], 36],
+  [T.both - 0.2, [0.55, 8.95, 5.7], [0.4, 8.75, -3.75], 36],
   // both ids from one writer: the whole stack, Blink to the drawer
   [T.both + 0.6, [0.5, 3.6, 16.6], [0.4, 3.5, -1.5], 40],
   [T.only - 0.35, [0.45, 3.7, 16.9], [0.4, 3.5, -1.5], 40],
   // the server's records: the drawer that really holds the message, the wrong one beside it
-  [T.records1 - 0.1, [-0.2, 9.05, 4.4], [-0.1, 8.75, -3.75], 36],
-  [T.so - 0.25, [-0.15, 9.0, 4.7], [-0.1, 8.75, -3.75], 36],
+  [T.records1 - 0.1, [-0.05, 9.05, 5.8], [0, 8.75, -3.75], 36],
+  [T.so - 0.25, [0, 9.0, 6.1], [0, 8.75, -3.75], 36],
   // back to Blink with the card
-  [T.so + 0.85, [0.25, 1.5, 10.2], [0, 1.25, 0], 36],
-  [T.model - 0.15, [0.15, 1.45, 9.8], [0, 1.3, 0], 36],
+  [T.so + 0.85, [0.25, 1.2, 10.2], [0, 0.95, 0], 36],
+  [T.model - 0.15, [0.15, 1.15, 9.8], [0, 1.0, 0], 36],
   // up to the server, the drawer above it
   [T.id + 0.2, [-0.15, 6.7, 11.2], [-0.2, 6.6, -1.2], 36],
   [T.stamps - 0.2, [-0.1, 6.65, 10.8], [-0.2, 6.6, -1.2], 36],
@@ -69,18 +69,18 @@ const KEYS = [
   [T.same2 + 0.1, [0, 7.3, 22], [0, 6.9, -2], 40],
   [T.ws2 + 0.9, [0, 7.4, 22.6], [0, 6.9, -2], 40],
   // who's signed in: the badge on the server
-  [T.signed - 0.05, [0.25, 5.4, 8.6], [0, 5.2, 0], 36],
-  [T.put + 0.6, [0.2, 5.6, 8.4], [0, 5.6, 0.2], 36],
-  [T.still + 0.05, [0.15, 5.8, 8.6], [0, 5.8, 0.2], 36],
+  [T.signed - 0.05, [0.15, 5.4, 9.6], [0, 5.2, 0], 36],
+  [T.put + 0.6, [0.1, 5.6, 9.4], [0, 5.6, 0.2], 36],
+  [T.still + 0.05, [0.05, 5.8, 9.6], [0, 5.8, 0.2], 36],
   // follow the envelope up into workspace A
   [T.a3 + 0.1, [0.1, 10.3, 10.5], [0, 11.4, -3.5], 38],
   [T.one3 - 0.1, [0.1, 10.3, 10.6], [0, 11.4, -3.5], 38],
   // the schema
-  [T.one3 + 0.75, [0, 6.25, 8.6], [0, 6.25, 1.0], 36],
-  [50.55, [0, 6.2, 8.2], [0, 6.2, 1.0], 36],
+  [T.one3 + 0.75, [0, 6.25, 9.6], [0, 6.25, 1.0], 36],
+  [50.55, [0, 6.2, 9.3], [0, 6.2, 1.0], 36],
   // back to Blink choosing
-  [51.4, [0.2, 1.4, 8.6], [0, 1.15, 0], 36],
-  [T.it6 - 0.1, [0.15, 1.35, 8.3], [0, 1.15, 0], 36],
+  [51.4, [0.2, 1.3, 8.6], [0, 1.05, 0], 36],
+  [T.it6 - 0.1, [0.15, 1.25, 8.3], [0, 1.05, 0], 36],
   // the stack: the picked card through the server into its own drawer; the wrong drawer stays shut
   [T.thing + 0.1, [0.6, 3.7, 16.6], [0.4, 3.6, -1.5], 40],
   [T.let - 0.3, [0.5, 3.8, 16.9], [0.4, 3.6, -1.5], 40],
@@ -355,7 +355,7 @@ export async function buildWorld(canvas) {
       const msg = typed("msg_481", T.msg1, 18, t);
       let chat = t < T.chat1 + 0.35 ? "" : typed("chat_9", T.chat1 + 0.35, 18, t);
       const glitch = t > T.buggy && t < T.buggy + 0.6;
-      if (glitch) { chat = ["chat_9", "chat_2", "chat_5", "chat_4", "chat_9", "chat_3"][Math.floor((t - T.buggy) * 10) % 6]; jit = 0.03 * Math.sin(t * 90); }
+      if (glitch) chat = ["chat_9", "chat_2", "chat_5", "chat_4", "chat_9", "chat_3"][Math.floor((t - T.buggy) * 10) % 6];
       const gap = Math.round(io(r01(t, T.nothing, 0.35)) * (1 - r01(t, T.so, 0.3)) * 10) / 10;
       const red = t >= T.wrong1 && t < T.stops;
       const strike = Math.round(io(r01(t, T.stops, 0.25)) * 20) / 20, chatA = Math.round((1 - io(r01(t, T.asking, 0.4))) * 10) / 10;
@@ -400,6 +400,8 @@ export async function buildWorld(canvas) {
       place(p, rec.mesh, s, a); rec.mesh.quaternion.identity();
     }
 
+    // the server's name fades while the camera is up at the wall (from there it is a blurred word at the frame's foot)
+    sLabel.mesh.material.opacity = 1 - r01(cam.position.y, 8.2, 0.5);
     // ---------- the server's lamp and badge ----------
     const amberHit = Math.max(...STAMPS.map((x) => pulse(t, x + 0.03, 0.25)), ...STREAM.map((f) => pulse(t, f.at + 0.05, 0.08)));
     const greenHit = pulse(t, T.real + 0.55, 0.3);
@@ -416,7 +418,9 @@ export async function buildWorld(canvas) {
         const k = t < ts ? io(r01(t, ts - 0.35, 0.33)) : 1 - io(r01(t, ts + 0.08, 0.3));
         p = bez(REST, V(mix(REST.x, tgt.x, 0.5), REST.y + 0.3, tgt.z + 0.9), tgt, k); rx = mix(0.3, Math.PI / 2, k); // +90 deg about x turns the face from -y to -z, onto the card
       });
-      p.y += 3 * io(r01(t, T.one3 - 0.3, 0.5)) * (1 - io(r01(t, 50.4, 0.5))); // up out of the schema's frame
+      // between slams it parks inside the server's body, so wall close-ups and the schema never show a stray handle
+      const near = Math.max(0, ...STAMPS.map((ts) => io(r01(t, ts - 1.1, 0.45)) * (1 - io(r01(t, ts + 0.5, 0.45)))));
+      p.y -= 1.6 * (1 - near); stamp.visible = near > 0.01;
       stamp.position.copy(p); stamp.rotation.set(rx, 0, 0);
     }
 
