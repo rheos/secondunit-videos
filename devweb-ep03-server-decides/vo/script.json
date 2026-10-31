@@ -2,28 +2,28 @@
  "lines": [
   [
    "I",
-   "The AI wrote workspace B on its request. The server crossed it out."
+   "You can ask an AI to be careful with your data. Or you can just not let it choose whose data it touches."
   ],
   [
    "II",
-   "To save a memory, an AI sends two ids: the message it came from, and its chat. Nothing ties them. One wrong guess, or one buggy client, and a real message lands in the wrong chat."
+   "Think of a withdrawal slip. You can write any account number you like. The bank still pays out of the card you swiped."
   ],
   [
    "III",
-   "Both ids come from the same writer. Only the server's records know which chat that message is in."
+   "An AI that saves a note for you sends the app a request: what to save, and where it goes. Let it fill in the where, and one wrong guess, or one sneaky request, puts your note in someone else's account."
   ],
   [
    "IV",
-   "So the server stops asking. The model sends the message id. The server looks it up in its own records and stamps the chat from there. Same rule for the workspace: it comes from who's signed in. Put B in the request, and the write still lands in A."
+   "Asking it to be careful won't stop that. The app can. It ignores the account the AI wrote and uses whoever is signed in. Send it a request naming someone else's account, and the write still lands in yours. Theirs isn't touched."
   ],
   [
    "V",
-   "One real memory tool asks for six fields, all required. Chat id isn't one of them. Its description says why: derived on the server."
+   "One real memory tool takes six fields from the AI. Which conversation the memory belongs to isn't one of them. The server looks that up itself."
   ],
   [
    "VI",
-   "It won't prove the AI picked the right message. It stops one thing: that message in the wrong chat. Let the model choose. Make the server decide."
+   "Let the AI decide what. Let the app decide whose."
   ]
  ],
- "facts": "Sources: devweb.org/articles/skills-subagents-mcp-where-logic-lives (devweb content/articles/skills-subagents-mcp-where-logic-lives.mdx) and devweb.org/articles/mcp-tool-design (mcp-tool-design.mdx); the workspace beat from the systems repo's storage-routing test (candidates-systems S12). I: S12, a dispatch whose payload names workspace B 'lands its write in workspace A (the context's) and leaves B unchanged'; routing comes 'from the authenticated context and from nothing a caller supplies'. II: where-logic-lives, 'the caller would supply a source-turn identifier but not a separate chat identifier' and the hazard it removes, a caller that could 'send a source-turn identifier and independently pair it with an arbitrary chat_id'; 'It does not stop a buggy or hostile client from sending inconsistent identifiers.' The model's guess: mcp-tool-design, chat_id is required on chat_log_turn and chat_recent, 'so a model that has learned the rest of this surface has decent reason to think it belongs here too.' III: where-logic-lives, 'The server would look up the source turn and derive chat_id from it.' IV: same, plus 'server-derived identifiers' as an enforcement at the data-owning boundary; workspace from the signed-in context per S12. V: mcp-tool-design, 'The inputSchema for write_memory declares six properties and requires all six. chat_id is not among them.' and the description line 'chat_id is NOT an input — it is derived server-side from source_turn_id.' VI: where-logic-lives, 'It would not prove the caller chose the right source turn' and 'name the exact failure it stops, and no more'; 'Let the model choose among safe actions. Reject unsafe states at a boundary the model cannot waive.' Not claimed: tenant isolation or per-user authorization from the chat_id derivation (the article says it does not establish them). Ep02 covered 'a prompt rule is a request'; this one is the server deriving identity and scope from its own record. Title: 'Telling the AI to be careful isn't a security rule.' (episodes.md #30, D25, folds in #75/S12)."
+ "facts": "Script v2 (Robin, 2026-10-30, after draft 1: 'no clue what this one is even talking about'; he chose a plain rewrite). II is an analogy, not a claim. III: where-logic-lives, rules that must hold 'if the caller is hostile' and a server that 'does not stop a buggy or hostile client from sending inconsistent identifiers' unless the identifier is derived; mcp-tool-design, a model 'has decent reason to think' chat_id belongs in write_memory (the wrong guess). IV: where-logic-lives, 'enforce it in service code or policy at the data-owning boundary'; workspace from the signed-in context, from the systems repo's storage-routing test (S12): a payload naming workspace B 'lands its write in workspace A (the context's) and leaves B unchanged'. V: mcp-tool-design, write_memory 'declares six properties and requires all six. chat_id is not among them', and its description 'chat_id is NOT an input, it is derived server-side from source_turn_id'. VI: where-logic-lives, 'Let the model choose among safe actions. Reject unsafe states at a boundary the model cannot waive.' Not claimed: that the chat_id derivation gives per-user authorization or tenant isolation (the article says it does not); the account/workspace claim rests on the S12 test only. Draft 1's script and take are kept in vo/audition/."
 }
