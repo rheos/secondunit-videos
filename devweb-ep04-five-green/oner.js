@@ -103,7 +103,7 @@ const KEYS = [
   [T.filedE + 0.3, [MX, 2.05, 11.2], [MX, 0.5, 0.8], 36],
   // VI. one sample in, then the five
   [T.hands - 0.2, ...MACH],
-  [T.someone + 0.5, ...STACK],
+  [T.someone + 0.2, ...STACK],
   [T.expected + 0.6, [MX, 5.18, 8.6], [MX, 5.13, 1.0], 34],
   // VII. the key and the lock
   [T.greenMeant - 0.35, [MX, 5.18, 8.6], [MX, 5.13, 1.0], 34],
@@ -154,7 +154,7 @@ export async function buildWorld(canvas) {
   cue("draw", T.inside1, { d: 0.6 }); cue("blip", T.message1); cue("strike", T.found + 0.1); cue("whoosh", T.entry - 0.2, { d: 0.8 });
   cue("draw", T.entry, { d: 0.9 }); cue("thud", T.noLedger + 0.1); cue("stamp", T.finished2); cue("thud", T.error + 0.1); cue("thud", T.warning + 0.1);
   cue("whoosh", T.why, { d: 0.8 }); cue("tick", SAMPLE_IN); cue("blip", T.checks + 0.1);
-  cue("whoosh", T.someone, { d: 1.0 }); [0, 1, 2, 3, 4].forEach((i) => cue("pop", T.five - 0.1 + i * 0.09));
+  cue("whoosh", T.someone - 0.3, { d: 1.0 }); [0, 1, 2, 3, 4].forEach((i) => cue("pop", T.someone + 0.35 + i * 0.3)); cue("blip", T.five + 0.1);
   cue("pop", T.guessed); cue("pop", T.written); cue("land", T.checked + 0.25); cue("slide", T.never2, { d: 0.5 }); cue("thud", T.realFile1 + 0.3);
   cue("riser", T.greenMeant - 0.6, { d: 0.7 }); cue("whoosh", T.greenMeant - 0.2, { d: 1.8 }); cue("draw", F0 + 0.3, { d: 2.0 });
   FIELD.forEach((f, i) => { if (i % 40 === 0) cue("blip", f.at); });
@@ -553,14 +553,14 @@ export async function buildWorld(canvas) {
     const nfA = back(r01(t, T.found, 0.25)) * (1 - r01(t, T.entry - 0.6, 0.3));
     if (show(notFound, nfA)) { notFound.mesh.position.copy(REAL_AT).add(V(0.62, 0.38, 0.2)); notFound.mesh.scale.setScalar(Math.max(0.01, nfA)); }
     // VI: the five samples, "who" on the face; IX: rebuilt with "who" inside "message"
-    const s1 = r01(t, T.five - 0.15, 0.3) * (1 - r01(t, T.guessed - 0.3, 0.3)), s2 = r01(t, T.rebuilt - 0.45, 0.3) * (1 - r01(t, T.mattered - 0.4, 0.3));
+    const s1 = r01(t, T.someone + 0.3, 0.3) * (1 - r01(t, T.guessed - 0.3, 0.3)), s2 = r01(t, T.rebuilt - 0.45, 0.3) * (1 - r01(t, T.mattered - 0.4, 0.3));
     samples.forEach((p, i) => {
       const inIX = t > T.fix;
-      const a = inIX ? s2 * r01(t, T.rebuilt - 0.45 + i * 0.09, 0.2) : s1 * r01(t, T.five - 0.15 + i * 0.09, 0.2);
+      const a = inIX ? s2 * r01(t, T.rebuilt - 0.45 + i * 0.09, 0.2) : s1 * r01(t, T.someone + 0.3 + i * 0.3, 0.25); // written one by one
       if (!show(p, a)) return;
       const ang = (i - 2) * 0.32, cy = inIX ? 6.2 : FAN_Y;
       p.mesh.position.set(MX + Math.sin(ang) * 1.3, cy - (1 - Math.cos(ang)) * 1.3, 1.25 + [0, 1, 4, 3, 2][i] * 0.03); p.mesh.rotation.z = -ang * 0.6;
-      p.mesh.scale.setScalar(mix(0.7, 1, back(r01(t, (inIX ? T.rebuilt - 0.45 : T.five - 0.15) + i * 0.09, 0.3))));
+      p.mesh.scale.setScalar(mix(0.7, 1, back(r01(t, inIX ? T.rebuilt - 0.45 + i * 0.09 : T.someone + 0.3 + i * 0.3, 0.3))) * (inIX ? 1 : 1 + 0.06 * pulse(t, T.five + 0.1, 0.2)));
       p.set(sampleCard(inIX, inIX ? r01(t, T.rebuilt, 0.3) : r01(t, T.who2 - 0.1, 0.3)));
     });
     // VII: the key and the lock
