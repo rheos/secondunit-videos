@@ -29,7 +29,7 @@ export const T = {
 // ---------- the layout ----------
 const FLOOR = -1.72;
 const FORM_DESK = V(0, 2.45, 0.3), CARD_M = V(0, 5.75, 0.3), BOARD = V(0, 11.2, -2.6);
-const API_AT = V(0, 3.85, 0.5), NOTE_AT = V(-1.0, 0.95, 1.0), BAD_AT = V(1.0, 1.0, 1.0);
+const API_AT = V(0, 2.5, 0.65), NOTE_AT = V(-0.85, 0.95, 1.0), BAD_AT = V(0.85, 1.0, 1.0); // the API card pops in front of the form; notes beside Blink, inside the frame
 const COLS = 9, ROWS = 21, CW = 1.0, CH = 0.72, WALL_Z = -4.0, FRONT_Z = WALL_Z + 0.3;
 const cellPos = (c, r) => V(-4 + c * CW, FLOOR + CH / 2 + r * CH, WALL_Z);
 const C7 = { c: 3, r: 14 }, C9 = { c: 5, r: 14 };
@@ -337,18 +337,18 @@ export async function buildWorld(canvas) {
     {
       const k = io(r01(t, T.api + 0.1, 0.45)); // drops into the form
       const a = r01(t, T.copy - 0.05, 0.2) * (1 - k);
-      place(V(API_AT.x, mix(API_AT.y, FORM_DESK.y, k), mix(API_AT.z, FORM_DESK.z + 0.05, k)), api.mesh, 0.5 * mix(1, 0.9, k) * mix(0.88, 1, back(r01(t, T.copy - 0.05, 0.35))), a);
+      place(V(API_AT.x, mix(API_AT.y, FORM_DESK.y, k), mix(API_AT.z, FORM_DESK.z + 0.05, k)), api.mesh, 0.8 * mix(1, 0.6, k) * mix(0.88, 1, back(r01(t, T.copy - 0.05, 0.35))), a);
       const pa = r01(t, T.tell, 0.25) * (1 - r01(t, T.saves, 0.3));
       const pk = io(r01(t, T.tell, 0.5));
-      place(V(NOTE_AT.x, mix(NOTE_AT.y + 1.2, NOTE_AT.y, pk), NOTE_AT.z), prompt.mesh, 0.45, pa);
+      place(V(NOTE_AT.x, mix(NOTE_AT.y + 1.2, NOTE_AT.y, pk), NOTE_AT.z), prompt.mesh, 0.58, pa);
       // the hostile note: planted beside Blink, later thrown at the fixed tool and bounced
       let bp = BAD_AT.clone(), ba = r01(t, T.hostile - 0.05, 0.2) * (1 - r01(t, T.saves, 0.3)), rz = 0.06;
       if (t > T.tool4 - 0.3) {
-        const f = io(r01(t, T.tool4, T.box - T.tool4)); bp = bez(V(1.9, 3.2, 1.2), V(1.6, 6.4, 1.6), V(0.35, 5.45, 0.5), f);
+        const f = io(r01(t, T.tool4, T.box - T.tool4)); bp = bez(V(0.8, 2.3, 1.0), V(1.4, 5.0, 1.6), V(0.35, 5.45, 0.5), f); // up from below the frame, never across its side
         ba = r01(t, T.tool4 - 0.3, 0.2);
         if (t > T.box) { const b = r01(t, T.box, 0.6); bp = V(0.35 + 1.6 * b, 5.45 + 1.0 * b - 3.2 * b * b, 0.5 + 0.6 * b); ba *= 1 - r01(t, T.box + 0.3, 0.3); rz = -2.2 * b; }
       }
-      place(bp, bad.mesh, 0.45, ba); bad.mesh.rotation.set(0, 0, rz);
+      place(bp, bad.mesh, 0.58, ba); bad.mesh.rotation.set(0, 0, rz);
     }
 
     // ---------- the fixed tool: text only; the server stamps the login ----------

@@ -84,8 +84,8 @@
         // ================= I. HOOK: the browser form at the server, then the AI's form at the desk =================
         const hk = "left:44px;right:44px;font-weight:700;letter-spacing:-0.04em;line-height:1;text-shadow:0 4px 30px rgba(0,0,0,.7)";
         const deep = ";text-shadow:0 4px 30px rgba(0,0,0,.95),0 0 50px rgba(13,17,23,.95)";
-        const h1 = mk("div", "abs hide", hk + ";top:110px;font-size:58px", stage, "You'd never trust a user ID");
-        const h2 = mk("div", "abs hide", hk + ";top:178px;font-size:58px", stage, `from a ${B("browser form.")}`);
+        const h1 = mk("div", "abs hide", hk + ";top:110px;font-size:46px", stage, "You'd never trust a user ID");
+        const h2 = mk("div", "abs hide", hk + ";top:166px;font-size:58px", stage, `from a ${B("browser form.")}`);
         const h3 = mk("div", "abs hide", hk + ";top:930px;font-size:64px;color:var(--text2)" + deep, stage, "So why trust");
         const h4 = mk("div", "abs hide", hk + ";top:1004px;font-size:80px" + deep, stage, `the one your ${Gr("AI")} typed?`);
         rise(h1, 0.4, 0.4); rise(h2, w("from") - 0.05, 0.35); rise(h3, w("so") - 0.05, 0.3); slam(h4, TYPED - 0.1, 1.4);
