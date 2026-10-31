@@ -84,8 +84,8 @@
         const hk = "left:44px;right:44px;font-weight:700;letter-spacing:-0.04em;line-height:1;text-shadow:0 4px 30px rgba(0,0,0,.7)";
         const h1 = mk("div", "abs hide", hk + ";top:120px;font-size:66px", stage, "If your AI's tools");
         const h2 = mk("div", "abs hide", hk + ";top:196px;font-size:66px", stage, `take a ${Am("user ID")},`);
-        const h3 = mk("div", "abs hide", hk + ";top:820px;font-size:64px;color:var(--text2)", stage, "you've already");
-        const h4 = mk("div", "abs hide", hk + ";top:894px;font-size:82px", stage, `written the ${R("bug.")}`);
+        const h3 = mk("div", "abs hide", hk + ";top:820px;font-size:64px;color:var(--text2);text-shadow:0 4px 30px rgba(0,0,0,.95),0 0 50px rgba(13,17,23,.95)", stage, "you've already");
+        const h4 = mk("div", "abs hide", hk + ";top:894px;font-size:82px;text-shadow:0 4px 30px rgba(0,0,0,.95),0 0 50px rgba(13,17,23,.95)", stage, `written the ${R("bug.")}`);
         rise(h1, 0.4, 0.4); rise(h2, w("take") - 0.05, 0.35); rise(h3, w("you've") - 0.05, 0.3); slam(h4, BUG - 0.1, 1.4);
         [h1, h2, h3, h4].forEach((n) => hide(n, w("the", 2) - 0.35, 0.3));
 

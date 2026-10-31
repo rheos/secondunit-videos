@@ -27,7 +27,7 @@ export const T = {
 
 // ---------- the layout ----------
 const FLOOR = -1.72;
-const FORM_DESK = V(0, 2.45, 0.3), CARD_M = V(0, 5.75, 0.3), BOARD = V(0, 12.6, -2.6);
+const FORM_DESK = V(0, 2.45, 0.3), CARD_M = V(0, 5.75, 0.3), BOARD = V(0, 11.2, -2.6);
 const COLS = 9, ROWS = 21, CW = 1.0, CH = 0.72, WALL_Z = -4.0, FRONT_Z = WALL_Z + 0.3;
 const cellPos = (c, r) => V(-4 + c * CW, FLOOR + CH / 2 + r * CH, WALL_Z);
 const C7 = { c: 3, r: 14 }, C9 = { c: 5, r: 14 };
@@ -50,8 +50,8 @@ const KEYS = [
   [T.data + 0.15, [0.6, 9.0, 5.4], [0.4, 8.75, -3.75], 36],
   [T.this - 0.1, [0.55, 8.95, 5.7], [0.4, 8.75, -3.75], 36],
   // up to the notice board
-  [T.y2025 - 0.2, [0, 12.65, 6.2], [0, 12.6, -2.6], 36],
-  [25.7, [0, 12.6, 6.6], [0, 12.6, -2.6], 36],
+  [T.y2025 - 0.2, [0, 11.25, 6.2], [0, 11.2, -2.6], 36],
+  [25.7, [0, 11.2, 6.6], [0, 11.2, -2.6], 36],
   // back down to Blink: the field goes
   [26.55, ...DESK, 36],
   [T.whos - 0.1, ...DESK2, 36],
@@ -332,10 +332,10 @@ export async function buildWorld(canvas) {
 
     // ---------- the notice board ----------
     {
-      const a = r01(t, T.this, 0.4) * (1 - r01(t, 26.0, 0.4));
+      const a = r01(t, T.y2025 - 0.6, 0.4) * (1 - r01(t, 26.0, 0.4)); // in just before its first line, never blank on screen
       const days = t < T.offline ? 0 : Math.min(13, Math.floor((t - T.offline - 0.1) / 0.03) + 1), x = t < T.two - 0.1 ? 0 : Math.min(13, Math.floor((t - (T.two - 0.1)) / 0.07) + 1);
       board.set({ yr: t >= T.y2025, name: t >= T.asana, off: t >= T.offline, days, x, l1: typed("a bug could expose data", T.a1, 40, t), l2: typed("to other organizations.", T.other - 0.25, 40, t) });
-      place(BOARD, board.mesh, mix(0.9, 1, back(r01(t, T.this, 0.4))), a);
+      place(BOARD, board.mesh, mix(0.9, 1, back(r01(t, T.y2025 - 0.6, 0.4))), a);
       if (t > T.y2025 - 0.05 && t < T.y2025 + 0.2) board.mesh.scale.multiplyScalar(1 + 0.03 * pulse(t, T.y2025 + 0.05, 0.1));
     }
 
