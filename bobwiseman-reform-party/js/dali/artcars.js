@@ -50,8 +50,11 @@ const ARTCARS = [
   // have gone: he is drawn over the fire's glow, so he must not pass anything nearer) and across the frame as it fades,
   // never nearer than 5 m to any rider or burn bike (checked against their tracks every 0.5 s, 250-268). He sets off at
   // 252, off frame while the drone is still coming down.
-  // front: drawn over the fire's glow (artcarsFront), which washes the other riders out; he should read as himself
-  { id: 'robin-end', kind: 'chopper', front: true, t0: 252, t1: 269, path: [[252, 349.6, 38.5], [269, 278.2, 38.5]] },
+  // d37c (Robin: "you made me stand out too much... it should be just as transparent as the other riders.. maybe only
+  // slightly less"): he rides in the scene like them, under the fire's glow that washes them out, and a faint second copy
+  // over the glow (front, alpha .22, no second shadow) lifts him a touch above them
+  { id: 'robin-end', kind: 'chopper', t0: 252, t1: 269, path: [[252, 349.6, 38.5], [269, 278.2, 38.5]] },
+  { id: 'robin-end-lift', kind: 'chopper', front: true, alpha: .22, noShadow: true, t0: 252, t1: 269, path: [[252, 349.6, 38.5], [269, 278.2, 38.5]] },
   // bridge, "they're ok with foul play" (151-160): the organ cart rolls left to right on the left of the long wide, clear of the
   // giant chess pieces, its player at the keys. Draft 11 (no fades): it comes into the frame as the drone tilts down off the
   // chess board (151.5), rolls on at 5 mph, swings away from the board toward the deep playa (157-160) and keeps going out
@@ -696,7 +699,7 @@ function acEntry(e, t, list) { // push one appearance into list; true when it wa
     const st = acState(e, t); if (!st) return false; const p = P(st.X, 0, st.Z), sz = AC_SIZE[e.kind];
     // draft 11: no car fades on screen any more; the near fade below only ever acts if a path comes within ~8 m of the lens,
     // and the note tells the actor check (tools/check-actors.mjs) exactly what is drawn, so a blink would show up there
-    const a = st.a * (e.kind === 'organ' || e.kind === 'horse' ? bmFade(p) : e.kind === 'chopper' ? clamp((p[2] - 1.6) / 1.2) : 1), drawn = p[2] >= 1.2 && kAt(p) >= .5;
+    const a = (e.alpha || 1) * st.a * (e.kind === 'organ' || e.kind === 'horse' ? bmFade(p) : e.kind === 'chopper' ? clamp((p[2] - 1.6) / 1.2) : 1), drawn = p[2] >= 1.2 && kAt(p) >= .5;
     ACT.note('artcars:' + e.id, st.X, st.Z, AC_R[e.kind], { h: sz[1], a: drawn ? a : 0, group: 'artcars' });
     if (!drawn || a <= .01) return false; const k = kAt(p);
     // off frame: the car and the tip of its shadow both past the same edge (draft 10 dropped Robin's shadow a frame after him)
@@ -707,7 +710,7 @@ function acEntry(e, t, list) { // push one appearance into list; true when it wa
     const K = AC_KIND[e.kind], wantGlow = K.glow && st.night > .02;
     list.push({ z: p[2], draw: () => { const q = P(st.X, 0, st.Z), kk = kAt(q); bmBegin(q[0], q[1], kk, d); if (a < 1) g.globalAlpha = a; K.draw(st, t, kk, sq); g.restore();
         if (wantGlow) { const box = acBox(q, kk, sz); if (box) AC_F.items.push({ e, st, p: q, k: kk, d, sq, box, A: g.getImageData(box[0], box[1], box[2], box[3]).data }); } },
-      shadow: () => K.shadow(st, t) });
+      shadow: () => { if (!e.noShadow) K.shadow(st, t); } });
     return wantGlow;
   }
 }
