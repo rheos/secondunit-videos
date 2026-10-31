@@ -369,7 +369,8 @@ export async function buildWorld(canvas) {
       const a = r01(t, T.y2025 - 0.6, 0.4) * (1 - r01(t, T.fix + 0.2, 0.4));
       const days = t < T.pulled ? 0 : Math.min(13, Math.floor((t - T.pulled - 0.1) / 0.03) + 1), x = t < T.two - 0.1 ? 0 : Math.min(13, Math.floor((t - (T.two - 0.1)) / 0.07) + 1);
       board.set({ yr: t >= T.y2025, name: t >= T.asana, off: t >= T.pulled, days, x, l1: typed("a bug could expose data", T.aBug, 40, t), l2: typed("to other organizations.", T.to2 - 0.2, 40, t) });
-      place(BOARD, board.mesh, mix(0.9, 1, back(r01(t, T.y2025 - 0.6, 0.4))), a);
+      place(V(BOARD.x, BOARD.y + 0.04 * Math.sin(t * 1.3), BOARD.z), board.mesh, mix(0.9, 1, back(r01(t, T.y2025 - 0.6, 0.4))) * (1 + 0.012 * Math.sin(t * 0.9)), a);
+      board.mesh.rotation.set(0, 0.035 * Math.sin(t * 0.7), 0); // a slow float: its holds between lines never read as frozen
     }
 
     // ---------- the drawers that move ----------
@@ -434,15 +435,14 @@ export async function buildWorld(canvas) {
       place(V(0, mix(5.7, 5.6, k), mix(-0.2, 1.0, k) - 1.2 * out), schema.mesh, mix(0.4, 1, k) * (1 - 0.5 * out), a);
     }
 
-    // ---------- Blink's face ----------
-    if (t < T.easy) { lookY = 1.2; eager = 0.4 * pulse(t, T.typed, 0.5); }
-    else if (t < T.tell) { lookY = 1.3; look = 0.1; }
-    else if (t < T.then) { look = -0.9; lookY = 0.3; } // reading the prompt note
-    else if (t < T.wrong - 0.1) { lookY = 1.15; happy = 0.4 * r01(t, T.fills + 0.5, 0.2); }
-    else if (t < T.hostile) { think = io(r01(t, T.wrong - 0.4, 0.1)) * (1 - io(r01(t, T.wrong + 0.05, 0.1))); lookY = 0.9; }
-    else if (t < T.saves) { look = 0.9; lookY = 0.4; skew = 0.6 * r01(t, T.hostile, 0.15); } // the planted note
-    else if (t < T.treat) { lookY = 1.4; look = 0.4; }
-    else { happy = r01(t, T.treat + 0.5, 0.15); lookY = 0.6; }
+    // ---------- Blink's face: every value eased between keys (a one-frame change of gaze reads as a pop) ----------
+    const K = (keys) => { if (t <= keys[0][0]) return keys[0][1]; for (let i = 0; i < keys.length - 1; i++) { const [t0, v0] = keys[i], [t1, v1] = keys[i + 1]; if (t < t1) return mix(v0, v1, io((t - t0) / Math.max(1e-3, t1 - t0))); } return keys[keys.length - 1][1]; };
+    lookY = K([[0, 1.2], [T.easy, 1.3], [T.tell, 1.3], [T.tell + 0.25, 0.3], [T.then - 0.1, 0.3], [T.then + 0.2, 1.15], [T.wrong - 0.2, 1.15], [T.wrong + 0.1, 0.9], [T.hostile, 0.9], [T.hostile + 0.25, 0.4], [T.saves - 0.1, 0.4], [T.saves + 0.3, 1.4], [T.treat, 1.4], [T.treat + 0.3, 0.6]]);
+    look = K([[0, 0], [T.easy, 0.1], [T.tell, 0.1], [T.tell + 0.25, -0.9], [T.then - 0.1, -0.9], [T.then + 0.2, 0], [T.hostile, 0], [T.hostile + 0.25, 0.9], [T.saves - 0.1, 0.9], [T.saves + 0.3, 0.4], [T.treat, 0.4], [T.treat + 0.3, 0]]);
+    happy = K([[0, 0], [T.fills + 0.5, 0], [T.fills + 0.7, 0.4], [T.wrong - 0.2, 0.4], [T.wrong + 0.1, 0], [T.treat + 0.5, 0], [T.treat + 0.65, 1]]);
+    skew = K([[0, 0], [T.hostile, 0], [T.hostile + 0.15, 0.6], [T.saves - 0.1, 0.6], [T.saves + 0.2, 0]]);
+    think = io(r01(t, T.wrong - 0.45, 0.2)) * (1 - io(r01(t, T.wrong + 0.05, 0.2)));
+    eager = 0.4 * pulse(t, T.typed, 0.5);
     blink.root.rotation.set(0, yaw, 0); rig.position.y = bob;
     blink.face({ blink: blinkK, happy, look, lookY, think, skew, eager, phase: t * 1.6 });
     renderer.render(scene, cam);
