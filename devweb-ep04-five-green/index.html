@@ -27,8 +27,8 @@
     </style>
   </head>
   <body>
-    <div id="root" data-composition-id="main" data-start="0" data-duration="62.36" data-width="1080" data-height="1920">
-      <audio id="mix" src="_in/mix.wav" data-start="0" data-duration="62.36" data-track-index="20" data-volume="1"></audio>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="59.96" data-width="1080" data-height="1920">
+      <audio id="mix" src="_in/mix.wav" data-start="0" data-duration="59.96" data-track-index="20" data-volume="1"></audio>
       <!-- the world: one Three.js scene, one camera (oner.js) -->
       <canvas id="world" width="1080" height="1920" style="position:absolute;left:0;top:0;width:1080px;height:1920px"></canvas>
       <!-- the type is authored on a 720x1280 stage and scaled 1.5x as vectors; the 3D renders natively at 1080x1920 -->
@@ -62,20 +62,20 @@
         const bar = mk("div", "abs bar");
         const barIn = mk("div", null, "height:3px;background:var(--green);transform-origin:left;transform:scaleX(0)", bar);
         F(barIn, { scaleX: 0 }, { scaleX: 1, duration: VO.END, ease: "none" }, 0);
-        hide(chrome, e("invent") + 0.3, 0.4); hide(bar, e("invent") + 0.3, 0.4);
+        hide(chrome, e("guess", 3) + 2.0, 0.4); hide(bar, e("guess", 3) + 2.0, 0.4);
 
         // captions: fragments, one line pair at most; none over the hook, the slams or the closing lines
         const R = (s) => `<span style="color:var(--red)">${s}</span>`, Gr = (s) => `<span style="color:var(--green)">${s}</span>`, B = (s) => `<span style="color:var(--blue)">${s}</span>`, A = (s) => `<span style="color:var(--amber)">${s}</span>`;
         const CAPS = [
-          [w("it"), "It was a small script."], [w("it", 2), "It reads an AI agent's log"], [w("and"), `and writes ${A("one line")} for every job.`],
-          [w("it", 3), "It shipped, it passed every test,"], [w("and", 2), `and in production it wrote ${R("nothing.")}`], [w("no"), "No error. No warning."], [w("just"), "Just a clean exit.", w("it", 6) - 0.15],
-          [w("it", 6), `It looked for a field called ${B("role")}`], [w("at"), "at the top of each line."], [w("real") - 0.16, `The real log keeps ${B("role")}`],
-          [w("one", 2), `one level down, inside ${A("message")}.`], [w("so"), `So the script matched ${R("zero lines.")}`, w("and", 3) - 0.15],
-          [w("and", 3), "And the five tests?"], [w("everyone"), `Every one was ${R("made up,")}`], [w("in", 2), "in the same flat shape the code expected."],
-          [w("code", 3) - 0.05, "The code and the tests"], [w("were"), "were wrong the same way,", w("agreed") - 0.2],
-          [w("what"), `What caught it was one ${A("real log.")}`], [w("run"), "Run it through,"], [w("count"), "count the lines that come out.", w("zero", 2) - 0.2],
-          [w("test", 2) - 0.16, "The test that matters"], [w("feeds"), `feeds in a ${A("real log")}`], [w("and", 5), `and checks that ${Gr("exactly one line")} lands.`, w("write") - 0.15],
-          [w("write"), "Write your tests from the same guess"], [w("as"), "as your code,"], [w("and", 6), "and they'll agree with it forever.", w("build") - 0.2],
+          [w("if"), "If an AI writes your code"], [w("and"), "and your tests in one go,"], [w("this"), "this can happen to you."],
+          [w("both"), `Both come from the same ${A("guess")} about your data,`], [w("so"), "so they agree with each other,"], [w("even"), `even when the guess is ${R("wrong.")}`, w("here's") - 0.15],
+          [w("here's"), "Here's a real one."], [w("a", 2), "A script was meant to log"], [w("what"), `what every AI job ${A("cost.")}`],
+          [w("it"), `It looked for a field called ${B("role")}`], [w("at"), "at the top of each record."], [w("the", 5), `The real records keep ${B("role")}`],
+          [w("one", 3), `one level down, inside ${A("message")}.`], [w("so", 2), `So it matched ${R("nothing,")}`], [w("wrote"), `wrote ${R("nothing,")}`], [w("and", 2), "and exited clean.", w("its") - 0.15],
+          [w("its"), "Its five tests used sample records"], [w("in", 2), "in the same flat shape the code expected.", w("so", 3) - 0.1],
+          [w("one", 4), `One ${A("real record")},`], [w("run"), "run through it:", w("zero") - 0.2],
+          [w("so", 4), "So before you trust the green,"], [w("give"), `give your AI one ${A("real example.")}`], [w("a", 4), "A real log,"], [w("a", 5), "a real API response,"],
+          [w("a", 6), "a real file."], [w("have"), "Have it build a test from that."], [w("your", 5), "Your tests should", w("start") - 0.15],
         ];
         CAPS.forEach(([t, text, end], i) => {
           const c = mk("div", "abs cap hide", "", stage, text);
@@ -89,24 +89,26 @@
         const hs = mk("div", "abs hide", "left:24px;right:24px;top:112px;height:270px;border-radius:22px;background:rgba(13,17,23,.8)", stage);
         stage.insertBefore(hs, h1);
         show(hs, w("the") - 0.1, 0.2, 0); slam(h2, w("the") - 0.08, 1.4);
-        [hs, h1, h2].forEach((n) => hide(n, w("it") - 0.1, 0.3));
+        [hs, h1, h2].forEach((n) => hide(n, w("if") - 0.1, 0.3));
 
         // ================= IV. the mass moment =================
         const big = hk + ";font-size:84px";
-        const m1 = mk("div", "abs hide scrim", big + ";top:130px;left:28px", stage, `The tests ${Gr("agreed")}<br>with the ${R("bug.")}`);
-        slam(m1, w("agreed") - 0.12, 1.4); hide(m1, w("what") - 0.2, 0.3);
+        const m1 = mk("div", "abs hide scrim", big + ";top:130px;left:28px", stage, `5 of 5 ${Gr("passed.")}`);
+        const m2 = mk("div", "abs hide scrim", big + ";top:262px;left:28px", stage, `0 jobs ${R("billed.")}`);
+        slam(m1, w("passed", 2) - 0.1, 1.4); slam(m2, e("passed", 2) + 0.25, 1.4);
+        [m1, m2].forEach((n) => hide(n, w("run") + 0.3, 0.3));
 
         // ================= V. zero =================
         const z1 = mk("div", "abs hide scrim", hk + ";top:130px;left:28px;font-size:150px;color:var(--red)", stage, "Zero.");
-        slam(z1, w("zero", 2) - 0.08, 1.5); hide(z1, w("matters") + 0.2, 0.3);
+        slam(z1, w("zero") - 0.08, 1.5); hide(z1, w("so", 4) + 0.3, 0.3);
 
         // ================= VI. the last line =================
-        const f1 = mk("div", "abs hide", hk + ";top:130px;font-size:84px", stage, "Build at least<br>one test");
-        const f2 = mk("div", "abs hide", hk + ";top:318px;font-size:62px;color:var(--text2)", stage, `from an input you<br>${Gr("didn't invent.")}`);
-        slam(f1, w("build") - 0.08, 1.4); rise(f2, w("from", 2) - 0.05, 0.35);
-        [f1, f2].forEach((n) => hide(n, e("invent") + 1.0, 0.3));
+        const f1 = mk("div", "abs hide scrim", hk + ";top:130px;left:28px;font-size:80px", stage, `Start from<br>${A("your data,")}`);
+        const f2 = mk("div", "abs hide scrim", hk + ";top:322px;left:28px;font-size:62px;color:var(--text2)", stage, "not from the guess.");
+        slam(f1, w("start") - 0.08, 1.4); rise(f2, w("not") - 0.05, 0.35);
+        [f1, f2].forEach((n) => hide(n, e("guess", 3) + 1.9, 0.3));
         // the end: the mark (the article link lives in the YouTube description, never on screen)
-        const endAt = e("invent") + 1.3;
+        const endAt = e("guess", 3) + 2.2;
         const mark = mk("div", "abs hide", "left:190px;top:110px;width:340px;height:92px;box-sizing:border-box;border-radius:14px;border:3px solid var(--green);background:#0d1117;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-weight:600;font-size:44px", stage, `<span style="color:var(--green)">~/</span>devweb`);
         F(mark, { opacity: 0, scale: 0.85 }, { opacity: 1, scale: 1, duration: 0.4, ease: "back.out(1.6)" }, endAt);
 
