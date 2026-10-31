@@ -342,7 +342,7 @@ export async function buildWorld(canvas) {
         const k = io(r01(t, a0, 0.65)); p = V(0, mix(2.6, CARD_M.y, k), mix(0.6, CARD_M.z, k)); a = r01(t, a0, 0.15); txt = "workspace: B";
         strike = io(r01(t, T.the14, 0.22)); A = t >= T.still + 0.03 ? 1 : 0;
         const f = io(r01(t, T.still + 0.08, T.a3 - T.still - 0.1)); if (f > 0) { p = bez(CARD_M, V(0.2, 9.8, 1.2), slot(PENV), f); s = mix(1, 0.42, f); }
-        const sink = r01(t, T.a3, 0.3); p.z -= 0.5 * sink; a *= 1 - sink;
+        const sink = r01(t, T.a3, 0.3); s *= 1 - 0.5 * sink; a *= 1 - sink; // shrink and fade in place: sliding back through the drawer's face popped
       }
       if (t > T.out - 0.05 && t < T.out + 0.12) s *= 1 - 0.05 * pulse(t, T.out + 0.02, 0.08);
       env.set({ txt, strike: Math.round(strike * 20) / 20, a: A }); place(p, env.mesh, s, a); env.mesh.quaternion.identity();
@@ -368,7 +368,7 @@ export async function buildWorld(canvas) {
       const toM = io(r01(t, T.model + 0.05, T.id - T.model + 0.1)), toD = io(r01(t, T.there - 0.05, 0.7));
       if (toM > 0) { p = bez(FORM_DESK, V(0, 4.2, 1.4), CARD_M, toM); s = 1; }
       if (toD > 0) { p = bez(CARD_M, V(-0.8, 8.4, 1.0), slot(P7), toD); s = mix(1, 0.42, toD); }
-      const sink = r01(t, T.there + 0.65, 0.3); p.z -= 0.5 * sink; a *= 1 - sink;
+      const sink = r01(t, T.there + 0.65, 0.3); s *= 1 - 0.5 * sink; a *= 1 - sink;
       if (t > T.stamps - 0.05 && t < T.stamps + 0.15) s *= 1 - 0.05 * pulse(t, T.stamps + 0.02, 0.08);
       p.x += jit;
       form.set(stamped ? { head, rows, msg, chat: "chat_7", gap: 0, red: false, strike: 0, chatA: 1, stamped } : { head, rows, msg, chat, gap, red, strike, chatA, stamped });
@@ -484,7 +484,7 @@ export async function buildWorld(canvas) {
       const toM = io(r01(t, T.it6, T.thing - T.it6 - 0.05)), toD = io(r01(t, T.thing + 0.15, 0.7));
       if (toM > 0) { pA = bez(V(-0.62, 2.55, 0.4), V(-0.4, 4.2, 1.4), CARD_M, toM); sA = mix(0.5, 1, toM); }
       if (toD > 0) { pA = bez(CARD_M, V(-0.8, 8.4, 1.0), slot(P7), toD); sA = mix(1, 0.42, toD); }
-      aA *= 1 - r01(t, T.thing + 0.85, 0.3); if (toD >= 1) pA.z -= 0.5 * r01(t, T.thing + 0.85, 0.3);
+      const sinkA = r01(t, T.thing + 0.85, 0.3); aA *= 1 - sinkA; sA *= 1 - 0.5 * sinkA;
       pickA.set({ head: "write_memory", rows: 2, msg: "msg_481", chat: "chat_7", gap: 0, red: false, strike: 0, chatA: stamped ? 1 : 0, stamped, sel });
       pickB.set({ head: "write_memory", rows: 1, msg: "msg_482", chat: "", gap: 0, red: false, strike: 0, chatA: 0, stamped: false });
       place(pA, pickA.mesh, sA, aA); place(pB, pickB.mesh, 0.5, aB);
