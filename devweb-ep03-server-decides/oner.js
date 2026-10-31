@@ -40,8 +40,8 @@ const special = (c, r) => (c === C7.c && r === C7.r) || (c === C9.c && r === C9.
 const DESK = [[0.25, 1.2, 10.4], [0, 0.95, 0]], DESK2 = [[0.1, 1.15, 9.7], [0, 1.0, 0]];
 const KEYS = [
   // the hook: the tool's form on its own, the user_id field in the middle of the frame
-  [0, [0.1, 2.5, 7.1], [0, 2.45, 0.3], 36],
-  [4.6, [0.05, 2.45, 7.4], [0, 2.4, 0.3], 36],
+  [0, [0.1, 2.3, 7.2], [0, 2.25, 0.3], 36], // frame top stays under the server's bottom trim (y 4.6)
+  [5.7, [0.05, 2.2, 7.5], [0, 2.15, 0.3], 36],
   // pull back to Blink filling it in
   [T.model + 0.2, ...DESK, 36],
   [T.point - 0.2, ...DESK2, 36],
@@ -100,7 +100,7 @@ export async function buildWorld(canvas) {
   // ---------- sound cues (times only; reported before any await so cues.mjs sees them) ----------
   const cue = (k, t, extra) => window.BP.CUES.push(Object.assign({ k, t: +t.toFixed(3) }, extra || {}));
   const TXT = "call Sam", U7 = "user_7", NEWS1 = "a bug could expose data", NEWS2 = "to other organizations.";
-  cue("pop", T.tools - 0.15); cue("blip", T.user); cue("slam", T.bug);
+  cue("pop", 0.05); cue("blip", T.user); cue("slam", T.bug);
   cue("whoosh", T.model - 0.3, { d: 1.0 });
   [...TXT].forEach((ch, i) => ch.trim() && cue("type", T.fills + i / 18)); [...U7].forEach((ch, i) => cue("type", T.every + 0.1 + i / 18));
   cue("blip", T.wrong); cue("type", T.wrong + 0.05); cue("swipe", T.hostile); cue("blip", T.hostile + 0.25);
@@ -176,7 +176,7 @@ export async function buildWorld(canvas) {
   const d7 = bigDrawer(P7, "user_7"), d9 = bigDrawer(P9, "user_9");
 
   // ---------- the notice board: the real stakes ----------
-  const board = panel(2.8, 3.6, 300, (g, W, H, s) => {
+  const board = panel(2.8, 2.7, 300, (g, W, H, s) => {
     g.fillStyle = "#0c0e11"; rr(g, 6, 6, W - 12, H - 12, 34); g.fill(); g.strokeStyle = "#e0675a"; g.lineWidth = 8; rr(g, 6, 6, W - 12, H - 12, 32); g.stroke();
     g.textBaseline = "middle"; g.textAlign = "left";
     if (s.yr) { g.font = "700 150px 'IBM Plex Sans', sans-serif"; g.fillStyle = "#d6a45a"; g.fillText("2025", 50, 150); }
@@ -297,7 +297,7 @@ export async function buildWorld(canvas) {
 
     // ---------- the form: filled in by the model, sent to the wrong drawer; later the field goes ----------
     {
-      let p = FORM_DESK.clone(), s = mix(0.88, 1, back(r01(t, T.tools - 0.15, 0.35))), a = r01(t, T.tools - 0.15, 0.2);
+      let p = FORM_DESK.clone(), s = mix(0.88, 1, back(r01(t, 0, 0.35))), a = r01(t, 0, 0.2); // on screen from the first frame
       const text = typed("call Sam", T.fills, 18, t);
       let uid = t < T.every + 0.1 ? "" : typed("user_7", T.every + 0.1, 18, t);
       if (t >= T.wrong) uid = "user_9";
