@@ -1,0 +1,31 @@
+{
+ "lines": [
+  [
+   "I",
+   "Five tests passed. The code did nothing."
+  ],
+  [
+   "II",
+   "If an AI writes your code and your tests in one go, this can happen to you. Both come from the same guess about your data, so they agree with each other, even when the guess is wrong."
+  ],
+  [
+   "III",
+   "Here's a real one. A script was meant to log what every AI job cost. It looked for a field called role at the top of each record. The real records keep role one level down, inside message. So it matched nothing, wrote nothing, and exited clean."
+  ],
+  [
+   "IV",
+   "Its five tests used sample records in the same flat shape the code expected. So all five passed."
+  ],
+  [
+   "V",
+   "One real record, run through it: zero lines."
+  ],
+  [
+   "VI",
+   "So before you trust the green, give your AI one real example. A real log, a real API response, a real file. Have it build a test from that. Your tests should start from your data, not from the guess."
+  ]
+ ],
+ "chars": 811,
+ "seconds": 54.96,
+ "sha256": "672c0ad0ad914c6efa94a8f7c15d98f4b7d2d496f4e3683f7ac7623f13a36b3a"
+}
