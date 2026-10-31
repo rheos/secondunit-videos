@@ -2,30 +2,46 @@
  "lines": [
   [
    "I",
-   "Five tests passed. The code did nothing."
+   "Five tests passed. Then it ran for real, and nothing came out."
   ],
   [
    "II",
-   "If an AI writes your code and your tests in one go, this can happen to you. Both come from the same guess about your data, so they agree with each other, even when the guess is wrong."
+   "You've got a real file. An export, a log. You ask your AI for a script that reads it and pulls something out. You describe the file, but you don't hand it over. It writes the script and the tests. All green. You stop checking."
   ],
   [
    "III",
-   "Here's a real one. A script was meant to log what every AI job cost. It looked for a field called role at the top of each record. The real records keep role one level down, inside message. So it matched nothing, wrote nothing, and exited clean."
+   "Here's a real case, from a different setup. A different AI was sent to do a job. When it finished, a script read that job's record and added up the tokens it used, the units AI is billed in. Then it filed one row in a ledger. One job in, one row out."
   ],
   [
    "IV",
-   "Its five tests used sample records in the same flat shape the code expected. So all five passed."
+   "The script needed the job's instructions. They say which ledger to file in. They come from the one who sent the AI, the job-giver. The record is a stack of entries, each like a form with labelled boxes. The job-giver's forms carry a \"who\" box saying who wrote them. So the script looked for the first form whose \"who\" box said job-giver. It assumed that box sat right on the face of the form."
   ],
   [
    "V",
-   "One real record, run through it: zero lines."
+   "But in the real record, that box sits inside another box, labelled message. So the script never found it, on any entry. No instructions, so no ledger. It decided there was nothing to do, and finished. No error, no warning. Nothing got filed."
   ],
   [
    "VI",
-   "So before you trust the green, give your AI one real example. A real log, a real API response, a real file. Have it build a test from that. Your tests should start from your data, not from the guess."
+   "So why did the tests pass? A test hands the code a sample and checks what comes out. Someone writes those samples. There were five, all with the \"who\" box right on the face, the way the code expected."
+  ],
+  [
+   "VII",
+   "The code guessed where that box sits. The samples were written from the same guess. So the tests checked the code against the guess, never against the real file. Green meant it works on the samples."
+  ],
+  [
+   "VIII",
+   "What caught it was one real record. Someone ran it through and counted the rows. Zero. One job in, no row out. That one count found the bug."
+  ],
+  [
+   "IX",
+   "The fix starts from the real layout. The script was changed to reach inside \"message\" for the instructions. That part was small. The samples were rebuilt the real way. Then came the test that mattered. It feeds in a record laid out like the real one, and checks that exactly one row lands. It doesn't check how the script works inside, just whether a real input gives a real output."
+  ],
+  [
+   "X",
+   "Back to you. Before you trust the green, hand the AI one real file from your system. Have it build a test from that file, and check that the right thing comes out. At least one test has to start from the real file, not your description of it."
   ]
  ],
- "chars": 811,
- "seconds": 54.96,
- "sha256": "672c0ad0ad914c6efa94a8f7c15d98f4b7d2d496f4e3683f7ac7623f13a36b3a"
+ "chars": 2342,
+ "seconds": 150.32,
+ "sha256": "0b1638c6327762ba0398232ffcc48879c87e87fdf93f4141304acc6eaf821119"
 }

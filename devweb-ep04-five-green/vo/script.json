@@ -2,28 +2,44 @@
  "lines": [
   [
    "I",
-   "Five tests passed. The code did nothing."
+   "Five tests passed. Then it ran for real, and nothing came out."
   ],
   [
    "II",
-   "If an AI writes your code and your tests in one go, this can happen to you. Both come from the same guess about your data, so they agree with each other, even when the guess is wrong."
+   "You've got a real file. An export, a log. You ask your AI for a script that reads it and pulls something out. You describe the file, but you don't hand it over. It writes the script and the tests. All green. You stop checking."
   ],
   [
    "III",
-   "Here's a real one. A script was meant to log what every AI job cost. It looked for a field called role at the top of each record. The real records keep role one level down, inside message. So it matched nothing, wrote nothing, and exited clean."
+   "Here's a real case, from a different setup. A different AI was sent to do a job. When it finished, a script read that job's record and added up the tokens it used, the units AI is billed in. Then it filed one row in a ledger. One job in, one row out."
   ],
   [
    "IV",
-   "Its five tests used sample records in the same flat shape the code expected. So all five passed."
+   "The script needed the job's instructions. They say which ledger to file in. They come from the one who sent the AI, the job-giver. The record is a stack of entries, each like a form with labelled boxes. The job-giver's forms carry a \"who\" box saying who wrote them. So the script looked for the first form whose \"who\" box said job-giver. It assumed that box sat right on the face of the form."
   ],
   [
    "V",
-   "One real record, run through it: zero lines."
+   "But in the real record, that box sits inside another box, labelled message. So the script never found it, on any entry. No instructions, so no ledger. It decided there was nothing to do, and finished. No error, no warning. Nothing got filed."
   ],
   [
    "VI",
-   "So before you trust the green, give your AI one real example. A real log, a real API response, a real file. Have it build a test from that. Your tests should start from your data, not from the guess."
+   "So why did the tests pass? A test hands the code a sample and checks what comes out. Someone writes those samples. There were five, all with the \"who\" box right on the face, the way the code expected."
+  ],
+  [
+   "VII",
+   "The code guessed where that box sits. The samples were written from the same guess. So the tests checked the code against the guess, never against the real file. Green meant it works on the samples."
+  ],
+  [
+   "VIII",
+   "What caught it was one real record. Someone ran it through and counted the rows. Zero. One job in, no row out. That one count found the bug."
+  ],
+  [
+   "IX",
+   "The fix starts from the real layout. The script was changed to reach inside \"message\" for the instructions. That part was small. The samples were rebuilt the real way. Then came the test that mattered. It feeds in a record laid out like the real one, and checks that exactly one row lands. It doesn't check how the script works inside, just whether a real input gives a real output."
+  ],
+  [
+   "X",
+   "Back to you. Before you trust the green, hand the AI one real file from your system. Have it build a test from that file, and check that the right thing comes out. At least one test has to start from the real file, not your description of it."
   ]
  ],
- "facts": "Draft 2 script (Robin's notes on draft 1, 2026-10-31: too abstract, 'made up' lost him, the video must relate to something viewers actually do). Every claim about the bug is from devweb.org/articles/agent-run-cost-attribution (devweb content/articles/agent-run-cost-attribution.mdx), section 'Five tests passed. The hook wrote nothing.' I: the section title. II: advice to the viewer, generalising the article's 'Any time you build a fixture from the same document that guided the implementation, the fixture and the code can be wrong together and agree with each other forever' and 'A schema you read once and encoded in both places is a single point of failure'. The article does not say an AI wrote these fixtures, so the script does not claim it. III: the hook reads each finished agent's transcript and appends its token usage to the run's log (cost attribution, SPAWN-TOKEN-EVENT); 'The selector read .role == \"user\"'; 'Real ... transcripts don't put role at the top level' ({\"type\":\"user\",\"message\":{\"role\":\"user\",...}}); 'The selector matched zero lines ... it exited 0 and wrote nothing.' IV: 'The hook had five test fixtures, and all five passed ... every one had synthesized its user lines in the flat shape the hook expected.' V: 'When someone finally ran a real subagent transcript through the hook and counted the SPAWN-TOKEN-EVENT lines, the count was zero.' VI: 'It's feeding the thing a real input'; 'an end-to-end proof fixture: feed the hook a real-schema transcript'; 'The only fixture that breaks the tie is one whose input you didn't invent.' On screen: the receipt 'job 1 · 84,749 tokens' is the article's example SPAWN-TOKEN-EVENT (processed 84749). Product names left out."
+ "facts": "Script written by the bureau's write-short-script workflow (run .bureau/runs/20261031-devweb-ep04-script): Counselor framing, Scribe drafts, four fresh cold readers (each explained the story back correctly; wording fixed), Counselor humanizer, three fact traces. Final trace (facts-3.md): 0 flags, 46 traced, 8 advice, against devweb.org/articles/agent-run-cost-attribution, section 'Five tests passed. The hook wrote nothing.' Key traces: five fixtures all passed in the flat shape the hook expected; the hook pulls the first user message (the spawn prompt, carrying the RUN_DIR line) and read .role == 'user'; real transcripts nest role inside message; the selector matched zero lines, exit 0, no error, no warning; one real transcript run through, count zero, 'the whole diagnosis'; the selector correction was small; fixtures regenerated from the real nested schema; end-to-end proof fixture asserts exactly one line lands. II and X are advice to the viewer (the article's 'one whose input you didn't invent'); who wrote the incident's code and samples is left unstated, as in the article. 'the units AI is billed in' is a general gloss for tokens. Stand-ins (ledger 7, job-giver, key and lock) are illustration."
 }
