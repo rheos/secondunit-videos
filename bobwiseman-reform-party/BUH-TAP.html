@@ -1,0 +1,51 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Reform Party · hold for the buh buh</title>
+<style>
+:root{--bg:#171e20;--fg:#f5e9cf;--dim:#b9bfb4;--gold:#e5af33;--mark:#d9573f}
+body{margin:0;background:var(--bg);color:var(--fg);font:18px/1.5 system-ui}
+main{max-width:1100px;margin:auto;padding:28px}
+h1{font-size:28px;margin:0 0 6px}p{color:var(--dim);max-width:820px}
+#pad{margin:22px 0;height:180px;border:2px solid #6f7d74;border-radius:10px;display:grid;place-items:center;font-size:26px;user-select:none;cursor:pointer;background:#22302f}
+#pad.on{background:var(--gold);color:#1b1b14;border-color:var(--gold)}
+canvas{width:100%;height:90px;display:block;background:#101718;border-radius:6px}
+nav{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:12px 0}
+button,select{font:inherit;color:inherit;background:#2a3639;border:1px solid #738077;border-radius:6px;padding:8px 14px;cursor:pointer}
+output{font-variant-numeric:tabular-nums}#done{color:var(--gold)}
+</style>
+<main>
+<h1>Hold while the backing voice goes buh buh buh</h1>
+<p>Pick a run, press Play, and hold the space bar (or hold the box with the mouse) for as long as you hear buh buh buh. Let go whenever it stops, even for a moment, and hold again when it comes back. Each run plays its own stretch of the song: run 1 from 0:35, run 2 from 1:33, run 3 from 2:50, about 22 seconds each. Keep going past where you think it ends so the last phrase is caught. Picking a run again clears that run's marks and replays it.</p>
+<nav><button data-r="1" data-j="35">Run 1 (0:35)</button><button data-r="2" data-j="93">Run 2 (1:33)</button><button data-r="3" data-j="170">Run 3 (2:50)</button><button id="play">Play</button>
+<label>Speed <select id="speed"><option value="1">1×</option><option value="0.75">0.75×</option></select></label>
+<button id="copy">Copy marks</button> <output id="time">-</output> <span id="done"></span></nav>
+<div id="pad">pick a run, then hold space while you hear buh buh buh</div>
+<canvas id="tl" width="2000" height="90" aria-label="The run's timeline with the marked buh passages"></canvas>
+<pre id="list"></pre>
+<audio id="a" preload="auto"></audio>
+</main>
+<script>
+// draft 31 tap pass: each run is its own clip (assets/runN.mp3, cut at the run's start), because the local server
+// can't seek in one long file; marks are stored in song time (clip time + the run's start)
+const a=document.getElementById('a'),pad=document.getElementById('pad'),tl=document.getElementById('tl'),g=tl.getContext('2d'),list=document.getElementById('list');
+window.marks=[];let down=null,off=0,run=0;const T=()=>off+a.currentTime;
+try{const s=JSON.parse(localStorage.getItem('rp-buh-marks-d31')||'[]');if(Array.isArray(s))window.marks=s}catch{}
+const show=()=>{list.textContent=[1,2,3].map(r=>{const o=[35,93,170][r-1],m=window.marks.filter(x=>x[0]>=o-1&&x[0]<o+30);return `Run ${r}: ${m.length} holds  `+m.map(x=>x[0].toFixed(2)+'-'+x[1].toFixed(2)).join('  ')}).join('\n')};
+const save=()=>{try{localStorage.setItem('rp-buh-marks-d31',JSON.stringify(window.marks))}catch{};show()};show();
+function press(){if(down!==null||a.paused||!run)return;down=T();pad.classList.add('on')}
+function release(){if(down===null)return;const end=Math.max(T(),down+.05);window.marks.push([+down.toFixed(3),+end.toFixed(3)]);window.marks.sort((x,y)=>x[0]-y[0]);down=null;pad.classList.remove('on');save()}
+addEventListener('keydown',e=>{if(e.code==='Space'){e.preventDefault();if(!e.repeat)press()}});
+addEventListener('keyup',e=>{if(e.code==='Space'){e.preventDefault();release()}});
+pad.addEventListener('pointerdown',press);addEventListener('pointerup',release);
+const playBtn=document.getElementById('play');
+playBtn.onclick=e=>{e.target.blur();if(!run)return;if(a.paused){a.play();playBtn.textContent='Pause'}else{release();a.pause();playBtn.textContent='Play'}};
+document.querySelectorAll('[data-r]').forEach(b=>b.onclick=e=>{e.target.blur();release();run=+b.dataset.r;off=+b.dataset.j;window.marks=window.marks.filter(m=>m[0]<off-1||m[0]>off+30);save();a.src='assets/run'+run+'.mp3';a.playbackRate=+document.getElementById('speed').value;a.currentTime=0;a.play();playBtn.textContent='Pause';pad.textContent='hold space while you hear buh buh buh'});
+document.getElementById('copy').onclick=e=>{e.target.blur();navigator.clipboard.writeText(JSON.stringify(window.marks)).then(()=>{e.target.textContent='Copied'},()=>{e.target.textContent='Copy failed'})};
+document.getElementById('speed').onchange=e=>{a.playbackRate=+e.target.value;e.target.blur()};
+a.onended=()=>{release();playBtn.textContent='Play';document.getElementById('done').textContent=`Run ${run} done. Pick the next run, or tell Claude "done" when all three are marked.`};
+function draw(){const W=tl.width,H=tl.height,d=a.duration||24,o=off;g.fillStyle='#101718';g.fillRect(0,0,W,H);
+ g.fillStyle='#e5af33';for(const [s,e] of window.marks)if(s>=o-1&&s<o+d)g.fillRect((s-o)/d*W,10,Math.max(2,(e-s)/d*W),H-20);
+ if(down!==null){g.fillStyle='#d9573f';g.fillRect((down-o)/d*W,10,Math.max(2,(T()-down)/d*W),H-20)}
+ g.fillStyle='#c9cfc4';g.font='30px system-ui';for(let s=Math.ceil(o);s<o+d;s++){g.fillRect((s-o)/d*W,0,1,8);if(s%2==0){const m=Math.floor(s/60),ss=String(s%60).padStart(2,'0');g.fillText(m+':'+ss,(s-o)/d*W+4,H-6)}}
+ g.fillStyle='#fff';g.fillRect(a.currentTime/d*W,0,3,H);const tt=T();document.getElementById('time').textContent=run?Math.floor(tt/60)+':'+(tt%60).toFixed(1).padStart(4,'0'):'-';requestAnimationFrame(draw)}
+draw();
+</script></html>
