@@ -47,8 +47,8 @@ const KEYS = [
   [0, [MX, 2.6, 10.6], [MX, 1.6, 0.6], 34],
   [T.did - 0.15, [MX, 2.5, 10.1], [MX, 1.5, 0.6], 34],
   // "did nothing": down to the counter and the empty tray
-  [T.nothingE + 0.15, [0.6, 1.9, 7.9], [MX, -1.0, 1.5], 36],
-  [T.small - 0.05, [0.6, 1.9, 7.8], [MX, -1.0, 1.5], 36],
+  [T.nothingE + 0.15, [MX + 0.05, 2.4, 8.9], [MX, -0.75, 1.5], 36],
+  [T.small - 0.05, [MX + 0.05, 2.4, 8.9], [MX, -0.75, 1.5], 36],
   // the whole station: Blink on the roof, the machine, the tray
   [T.reads + 0.2, ...RIG],
   [T.shipped - 0.1, [MX, 2.15, 12.4], [MX, 0.85, 0.6], 36],
@@ -71,14 +71,14 @@ const KEYS = [
   [T.real2 + 0.2, ...RIG],
   [T.count - 0.2, [MX, 2.15, 12.4], [MX, 0.85, 0.6], 36],
   // the counter
-  [T.zero2 - 0.1, [0.6, 1.9, 7.9], [MX, -1.0, 1.5], 36],
-  [T.zero2E + 0.5, [0.6, 1.9, 7.8], [MX, -1.0, 1.5], 36],
+  [T.zero2 - 0.1, [MX + 0.05, 2.4, 8.9], [MX, -0.75, 1.5], 36],
+  [T.zero2E + 0.5, [MX + 0.05, 2.4, 8.9], [MX, -0.75, 1.5], 36],
   // the test that matters: the panel over Blink, the machine under it
   [T.feeds + 0.1, [MX, 2.7, 14.6], [MX, 1.55, 0.6], 36],
   [T.exactly - 0.2, [MX, 2.65, 14.4], [MX, 1.55, 0.6], 36],
   // the line lands
-  [T.landsE + 0.3, [0.55, 2.0, 7.7], [MX, -1.05, 1.6], 36],
-  [T.write + 0.2, [0.55, 2.0, 7.6], [MX, -1.05, 1.6], 36],
+  [T.landsE + 0.3, [MX + 0.05, 2.4, 8.9], [MX, -0.75, 1.5], 36],
+  [T.write + 0.2, [MX + 0.05, 2.4, 8.9], [MX, -0.75, 1.5], 36],
   // pull back for the lesson, then rise to look down on the station for the end
   [T.forever - 0.2, ...RIG],
   [T.build + 0.3, [MX, 3.2, 12.4], [MX, 2.4, 0.6], 36],
@@ -371,28 +371,36 @@ export async function buildWorld(canvas) {
     empty.mesh.position.set(MX, MTOP + 3.5, 0.4); empty.mesh.quaternion.copy(cam.quaternion); empty.mesh.scale.setScalar(mix(0.8, 1, back(r01(t, T.wrong + 0.6, 0.4))));
 
     // the test that matters
-    const tA = r01(t, T.matters - 0.1, 0.25) * (1 - r01(t, T.write - 0.1, 0.4));
+    const tA = r01(t, T.matters - 0.1, 0.25) * (1 - r01(t, T.lands - 0.45, 0.3));
     testP.mesh.visible = tA > 0.01; testP.mesh.material.opacity = tA; testP.mesh.scale.setScalar(mix(0.85, 1, back(r01(t, T.matters - 0.1, 0.3))) * (1 + 0.06 * pulse(t, T.landsE + 0.15, 0.2)));
     testP.set({ l: [typed(TEST[0], T.matters, TCPS, t), typed(TEST[1], T.checks - 0.1, TCPS, t)], ok: t >= T.landsE + 0.05 });
 
     // Blink: by the tray, turned toward the machine
     blinkK = Math.max(pulse(t, 2.2, 0.07), pulse(t, T.shipped - 0.3, 0.07), pulse(t, T.what - 0.3, 0.07), pulse(t, T.write + 1.4, 0.07), pulse(t, T.invent + 2.6, 0.07));
-    yaw = -0.3 + 0.08 * Math.sin((t / 3.1) * Math.PI * 2); // turned toward the slot
-    if (t < T.did) { look = -0.9; lookY = -0.2; happy = 0.6 * r01(t, T.passed, 0.2) * (1 - r01(t, T.did - 0.2, 0.15)); }
-    else if (t < T.small) { look = -0.2; lookY = -1.2; eager = 0.5 * r01(t, T.nothing, 0.12); lean = 0.15 * r01(t, T.nothing, 0.2); }
-    else if (t < T.production) { look = t < T.writes ? -0.9 : -0.2; lookY = t < T.writes ? -0.2 : -1.2; happy = 0.5 * r01(t, T.passed2, 0.15) * (1 - r01(t, T.production - 0.3, 0.15)); }
-    else if (t < T.clean) { look = -0.8; lookY = t < T.wrote ? -0.3 : -1.2; lean = 0.12 * r01(t, T.wrote, 0.3); tilt = 0.12 * r01(t, T.wrote, 0.3); }
-    else if (t < T.looked) { look = 0; lookY = 0; skew = 0.7 * r01(t, T.clean + 0.2, 0.2); tilt = 0.15; }
-    else if (t < T.zero1) { look = -0.2; lookY = 1.2; think = r01(t, T.looked + 0.1, 0.12) * (1 - r01(t, T.inside, 0.12)); }
-    else if (t < T.what) { look = -0.2; lookY = 1.0; skew = 0.7 * r01(t, T.agreed - 0.1, 0.2); }
-    else if (t < T.zero2) { look = t < T.run ? -0.9 : -0.2; lookY = t < T.run ? -0.2 : -1.2; }
-    else if (t < T.matters) { look = -0.2; lookY = -1.2; tilt = -0.14 * r01(t, T.zero2, 0.2); lean = 0.12; }
-    else if (t < T.lands) { look = t < T.feeds + 0.3 ? 0 : -0.9; lookY = t < T.feeds + 0.3 ? 1.3 : -0.2; }
-    else if (t < T.write + 1.0) {
-      eager = r01(t, T.lands + 0.1, 0.12) * (1 - r01(t, T.write + 0.5, 0.3)); look = -0.2; lookY = -1.2;
-      hop = 0.08 * eager * Math.abs(Math.sin(Math.PI * 3 * (t - T.lands)));
-    }
-    else { happy = r01(t, T.write + 1.0, 0.15) * 0.9; look = 0; lookY = 0.3; yaw = -0.1 + 0.06 * Math.sin((t / 3.1) * Math.PI * 2); }
+    // Blink's face and pose as a function of time, averaged over the last 0.2 s so no state change snaps in one frame
+    const poseAt = (t) => {
+      let happy = 0, look = 0, lookY = 0, think = 0, skew = 0, eager = 0, tilt = 0, lean = 0, hop = 0, yaw = 0;
+      yaw = -0.3 + 0.08 * Math.sin((t / 3.1) * Math.PI * 2); // turned toward the slot
+      if (t < T.did) { look = -0.9; lookY = -0.2; happy = 0.6 * r01(t, T.passed, 0.2) * (1 - r01(t, T.did - 0.2, 0.15)); }
+      else if (t < T.small) { look = -0.2; lookY = -1.2; eager = 0.5 * r01(t, T.nothing, 0.12); lean = 0.15 * r01(t, T.nothing, 0.2); }
+      else if (t < T.production) { look = t < T.writes ? -0.9 : -0.2; lookY = t < T.writes ? -0.2 : -1.2; happy = 0.5 * r01(t, T.passed2, 0.15) * (1 - r01(t, T.production - 0.3, 0.15)); }
+      else if (t < T.clean) { look = -0.8; lookY = t < T.wrote ? -0.3 : -1.2; lean = 0.12 * r01(t, T.wrote, 0.3); tilt = 0.12 * r01(t, T.wrote, 0.3); }
+      else if (t < T.looked) { look = 0; lookY = 0; skew = 0.7 * r01(t, T.clean + 0.2, 0.2); tilt = 0.15; }
+      else if (t < T.zero1) { look = -0.2; lookY = 1.2; think = r01(t, T.looked + 0.1, 0.12) * (1 - r01(t, T.inside, 0.12)); }
+      else if (t < T.what) { look = -0.2; lookY = 1.0; skew = 0.7 * r01(t, T.agreed - 0.1, 0.2); }
+      else if (t < T.zero2) { look = t < T.run ? -0.9 : -0.2; lookY = t < T.run ? -0.2 : -1.2; }
+      else if (t < T.matters) { look = -0.2; lookY = -1.2; tilt = -0.14 * r01(t, T.zero2, 0.2); lean = 0.12; }
+      else if (t < T.lands) { look = t < T.feeds + 0.3 ? 0 : -0.9; lookY = t < T.feeds + 0.3 ? 1.3 : -0.2; }
+      else if (t < T.write + 1.0) {
+        eager = r01(t, T.lands + 0.1, 0.12) * (1 - r01(t, T.write + 0.5, 0.3)); look = -0.2; lookY = -1.2;
+        hop = 0.08 * eager * Math.abs(Math.sin(Math.PI * 3 * (t - T.lands)));
+      }
+      else { happy = r01(t, T.write + 1.0, 0.15) * 0.9; look = 0; lookY = 0.3; yaw = -0.1 + 0.06 * Math.sin((t / 3.1) * Math.PI * 2); }
+      return { happy, look, lookY, think, skew, eager, tilt, lean, hop, yaw };
+    };
+    const P = { happy: 0, look: 0, lookY: 0, think: 0, skew: 0, eager: 0, tilt: 0, lean: 0, hop: 0, yaw: 0 }, NS = 6;
+    for (let i = 0; i < NS; i++) { const q = poseAt(t - i * 0.04); for (const k in P) P[k] += q[k] / NS; }
+    ({ happy, look, lookY, think, skew, eager, tilt, lean, hop, yaw } = P);
     rig.position.set(BLINK_AT.x, BLINK_AT.y + bob + hop, BLINK_AT.z); rig.scale.setScalar(BLINK_S);
     shadow.material.opacity = 0.4 - bob; shadow.scale.setScalar((1 - bob) * BLINK_S * 0.75);
     blink.root.rotation.set(lean, yaw, tilt);
