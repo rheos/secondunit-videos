@@ -18,7 +18,7 @@
 //   neon       Stories "Neon": Yellowtail script, white core, pink tube glow that flickers on each word
 // A line too long to sit on one row at 80% of the style's size wraps onto two rows (the lower row on CAP.y), the way
 // Instagram wraps its text, so no style has to shrink the long outro lines.
-const CAP_STYLE = new URLSearchParams(location.search).get('cap') || 'strong'; // Robin's pick for draft 35 (2026-10-30)
+const CAP_STYLE = new URLSearchParams(location.search).get('cap') || 'boecklin'; // Bob's pick from the d35 font sheet (C, Arnold Boecklin), draft 36 (2026-10-30)
 const CAP_FACES = [['Gochi Hand', 'GochiHand-Regular.ttf'], ['Figtree', 'Figtree-VF.ttf', { weight: '300 900' }], ['Anton', 'Anton-Regular.ttf'],
   ['Courier Prime', 'CourierPrime-Bold.ttf', { weight: '700' }], ['Yellowtail', 'Yellowtail-Regular.ttf'], ['Rubik Wet Paint', 'RubikWetPaint-Regular.ttf'],
   // wild faces from Robin's own font library for Bob's options sheet (fonts/wild/, kept out of git: commercial or unclear licences)
