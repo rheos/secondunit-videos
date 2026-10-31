@@ -367,14 +367,14 @@ export async function buildWorld(canvas) {
   bubbleRing.set({}); scene.add(bubbleRing.mesh);
   [bubbleForm, realForm].forEach((p) => scene.add(p.mesh));
   const puffs = [0, 1, 2].map((i) => { const m = new THREE.Mesh(new THREE.CircleGeometry(0.06 + i * 0.02, 24), new THREE.MeshBasicMaterial({ color: "#9aa6b6", transparent: true })); scene.add(m); return m; });
-  const entries = [0, 1, 2, 3].map(() => { const p = formPanel(); p.set({ head: "entry", backside: 1 }); scene.add(p.mesh); return p; });
+  const entries = [0, 1, 2, 3].map((i) => { const p = formPanel(); p.set({ head: "entry", backside: 1 }); p.mesh.renderOrder = 20 + (3 - i); scene.add(p.mesh); return p; });
   // the pointer: what the script is looking at
   const pointer = panel(0.42, 0.42, 300, (g, W, H, s) => { g.fillStyle = s.red ? "#e0675a" : "#4f93d6"; g.beginPath(); g.moveTo(W * 0.15, H * 0.1); g.lineTo(W * 0.85, H * 0.55); g.lineTo(W * 0.5, H * 0.6); g.lineTo(W * 0.35, H * 0.92); g.closePath(); g.fill(); g.strokeStyle = "#0d1117"; g.lineWidth = 8; g.stroke(); });
   scene.add(pointer.mesh);
   const notFound = panel(0.55, 0.55, 300, (g, W, H) => { g.strokeStyle = "#e0675a"; g.lineWidth = 26; g.lineCap = "round"; g.beginPath(); g.moveTo(40, 40); g.lineTo(W - 40, H - 40); g.moveTo(W - 40, 40); g.lineTo(40, H - 40); g.stroke(); });
   notFound.set({}); scene.add(notFound.mesh);
   // the five samples (VI) and the samples rebuilt (IX)
-  const samples = [0, 1, 2, 3, 4].map(() => { const p = panel(0.84, 0.57, 400, (g, W, H, s) => drawForm(g, W, H, s)); scene.add(p.mesh); return p; });
+  const samples = [0, 1, 2, 3, 4].map((i) => { const p = panel(0.84, 0.57, 400, (g, W, H, s) => drawForm(g, W, H, s)); p.mesh.renderOrder = 20 + [0, 1, 4, 3, 2][i]; scene.add(p.mesh); return p; }); // fixed stacking: overlapping cards never swap
   const sampleCard = (nested, hlA = 0) => nested ? { head: "sample", headCol: "#5b8a6a", msg: 1, check: 1, whoHl: "#cdeed8", hlA } : { head: "sample", faceWho: 1, check: 1, whoHl: "#cfe2f6", hlA };
   // the key and the lock
   const keyLock = panel(2.5, 1.75, 400, (g, W, H, s) => {
@@ -440,7 +440,7 @@ export async function buildWorld(canvas) {
   const show = (p, a) => { p.mesh.visible = a > 0.01; p.mesh.material.opacity = cl(a); return a > 0.01; };
   function render(t) {
     cameraAt(t, cam);
-    cam.translateZ(-0.22 * Math.sin(t * 0.42)); cam.translateX(0.07 * Math.sin(t * 0.31 + 0.8)); // a slow breath, so no hold reads as a stalled player
+    cam.translateZ(-0.55 * Math.sin(t * 0.47)); cam.translateX(0.16 * Math.sin(t * 0.33 + 0.8)); cam.translateY(0.08 * Math.sin(t * 0.29 + 2.1)); // a slow breath, so no hold reads as a stalled player
     const bob = 0.05 * Math.sin((t / 1.7) * Math.PI * 2);
     let happy = 0, blinkK = 0, look = 0, lookY = 0, think = 0, skew = 0, eager = 0, tilt = 0, lean = 0, hop = 0, yaw = 0;
 
@@ -559,7 +559,7 @@ export async function buildWorld(canvas) {
       const a = inIX ? s2 * r01(t, T.rebuilt - 0.45 + i * 0.09, 0.2) : s1 * r01(t, T.five - 0.15 + i * 0.09, 0.2);
       if (!show(p, a)) return;
       const ang = (i - 2) * 0.32, cy = inIX ? 6.2 : FAN_Y;
-      p.mesh.position.set(MX + Math.sin(ang) * 1.45, cy - (1 - Math.cos(ang)) * 1.45, 1.25 + i * 0.002); p.mesh.rotation.z = -ang * 0.6;
+      p.mesh.position.set(MX + Math.sin(ang) * 1.3, cy - (1 - Math.cos(ang)) * 1.3, 1.25 + [0, 1, 4, 3, 2][i] * 0.03); p.mesh.rotation.z = -ang * 0.6;
       p.mesh.scale.setScalar(mix(0.7, 1, back(r01(t, (inIX ? T.rebuilt - 0.45 : T.five - 0.15) + i * 0.09, 0.3))));
       p.set(sampleCard(inIX, inIX ? r01(t, T.rebuilt, 0.3) : r01(t, T.who2 - 0.1, 0.3)));
     });
