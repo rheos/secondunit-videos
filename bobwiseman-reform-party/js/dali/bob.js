@@ -38,6 +38,7 @@ function bobGround(sx, sy) {
 }
 function bobWalk(t) {
   if (typeof rangerTorchPool === 'function') rangerTorchPool(t); // burn.js: the Rangers' torchlight on the board, over the car layer
+  if (!END_BOB) { saxEnd(t); return; }
   const cfg = bobEndCfg(); if (!LITTLE_BOB.active(cfg, t)) return;
   const k = cfg.h / 330, sx = LITTLE_BOB.xAt(cfg, t), { fx, fy, f } = fireLight(t);
   // the actor check: he, the piano and the Junos on their ropes are one body, from his front foot (+20) to the last Juno (-500)
@@ -72,3 +73,47 @@ function bobWalk(t) {
   LITTLE_BOB.draw(g, t, cfg);
 }
 
+// ---------- Draft 37: the sax rider plays the last lick, then the burn alone ----------
+// Bob (Messenger, 2026-10-31): "i dont like little bob ... at end. Seems more powerful final image to just let the set
+// breath", "Just final image burning is meaningful to me", and for the lick at the end, the bicyclist on sax. So the end
+// walk is off (END_BOB; its code above stays for putting him back) and the sax rider from 1:05 rides in along the same
+// screen line, coasts past the embers playing the lick (onsets 255.41 to 259.49 in the backing stem, ringing to about
+// 259.9), then pedals off right, so the last six seconds are the burn and nothing else. Lit the way little Bob was:
+// firelight multiplied in, a rim on the edge that faces the fire, a long shadow thrown toward us.
+const END_BOB = false;
+const SAX_OUTRO = { tIn: 254.75, lick: 255.41, last: 259.49, tOut: 262.4, k: 128, y: 994 };
+// screen x from a speed profile (px/s): in fast, slowed right down for the lick, then away. Integrated in fixed steps from
+// tIn, so it is a pure function of t.
+function saxOutroV(t) { const E = SAX_OUTRO; return lerp(1800, 60, ease(t, E.tIn, E.lick + .1)) + 1500 * ease(t, E.last + .45, E.tOut - .3) ** 1.6; }
+function saxOutroX(t) { const E = SAX_OUTRO, dt = 1 / 240; let x = -2.4 * E.k, s = E.tIn; for (; s + dt <= t; s += dt) x += saxOutroV(s + dt / 2) * dt; return x + saxOutroV(t) * (t - s); }
+const SAX_OUTC = mkCanvas(), sog = SAX_OUTC.getContext('2d');
+function saxEnd(t) {
+  const E = SAX_OUTRO; if (t < E.tIn || t > E.tOut) return;
+  const k = E.k, sx = saxOutroX(t), y0 = E.y, { fx, fy, f } = fireLight(t);
+  if (sx < -2.4 * k || sx > W + 2.4 * k) return;
+  if (ACT.on) { const q = bobGround(sx, y0); if (q) ACT.note('playa:sax-end', q[0], q[1], 1, { h: 2.3, group: 'rider' }); }
+  const bx0 = Math.max(0, Math.floor(sx - 2.3 * k)), bx1 = Math.min(W, Math.ceil(sx + 1.2 * k)), by0 = Math.max(0, Math.floor(y0 - 4.2 * k)), by1 = H;
+  if (bx1 <= bx0) return; const bw = bx1 - bx0, bh = by1 - by0, cy = y0 - 1.2 * k;
+  const reset = (c) => { c.setTransform(1, 0, 0, 1, 0, 0); c.globalCompositeOperation = 'source-over'; c.globalAlpha = 1; c.filter = 'none'; c.clearRect(bx0, by0, bw, bh); };
+  // a. the rider on his own layer (bmRider draws on g)
+  reset(sog); const g1 = g; g = sog; bmRider(sx, y0, k, 1, sx / k, t, BM_SAX, 1); g = g1;
+  // b. his long shadow on the playa, toward us and away from the fire
+  const hb = 2.3 * k, mg = manGeom(), gy = mg.p[2] > 1 ? Math.min(mg.p[1], y0 - 120) : y0 - 300;
+  const hx = lerp(clamp((sx - fx) / 700, -1.3, 1.3) * .5, clamp(.8 * (sx - fx) / hb, -1.3, 1.3), .5), hy = lerp(.5, Math.min(1.1, .8 * (y0 - gy) / hb), .5);
+  reset(bsg); bsg.drawImage(SAX_OUTC, bx0, by0, bw, bh, bx0, by0, bw, bh); bsg.globalCompositeOperation = 'source-in'; bsg.fillStyle = 'rgb(22,10,28)'; bsg.fillRect(bx0, by0, bw, bh);
+  g.save(); g.setTransform(1, 0, -hx, -hy, hx * y0, y0 * (1 + hy)); g.globalAlpha = .28 + .3 * f; g.filter = 'blur(2px)';
+  g.drawImage(BOB_SCR, bx0, by0, bw, bh, bx0, by0, bw, bh); g.restore();
+  // c. a copy of him, then the firelight multiplied over him (warm near the fire, night blue away), cut back to his shape
+  reset(bsg); bsg.drawImage(SAX_OUTC, bx0, by0, bw, bh, bx0, by0, bw, bh);
+  const night = [118, 108, 150], warm = mix(night, [255, 196, 152], f), cool = mix(night, [214, 168, 150], f * .55);
+  const rg = sog.createRadialGradient(fx, fy, 0, fx, fy, 1250); rg.addColorStop(0, rgb(warm)); rg.addColorStop(1, rgb(cool));
+  sog.globalCompositeOperation = 'multiply'; sog.fillStyle = rg; sog.fillRect(bx0, by0, bw, bh);
+  sog.globalCompositeOperation = 'destination-in'; sog.drawImage(BOB_SCR, bx0, by0, bw, bh, bx0, by0, bw, bh);
+  // d. the rim: his shape in the fire's colour, minus itself shifted toward the fire, added on
+  const dx = fx - sx, dy = fy - cy, dl = Math.hypot(dx, dy) || 1, ox = dx / dl * 4.5, oy = dy / dl * 4.5;
+  bsg.globalCompositeOperation = 'source-in'; bsg.fillStyle = 'rgb(255,168,86)'; bsg.fillRect(bx0, by0, bw, bh);
+  bsg.globalCompositeOperation = 'destination-out'; bsg.drawImage(SAX_OUTC, bx0 + ox, by0 + oy, bw, bh, bx0, by0, bw, bh);
+  sog.globalCompositeOperation = 'lighter'; sog.globalAlpha = .35 + .6 * f; sog.filter = 'blur(1px)'; sog.drawImage(BOB_SCR, bx0, by0, bw, bh, bx0, by0, bw, bh);
+  sog.filter = 'none'; sog.globalAlpha = 1; sog.globalCompositeOperation = 'source-over';
+  g.drawImage(SAX_OUTC, bx0, by0, bw, bh, bx0, by0, bw, bh);
+}

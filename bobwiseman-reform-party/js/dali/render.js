@@ -307,6 +307,7 @@ function render(t) {
   bobWalk(t);
   tableWorld(t);
   if (C.roll) rollFrame(C.roll); // draft 9: the "perverse" roll (camera.js camRoll)
+  spinDivas(t); // draft 37: the divas on "without spin" (rapper.js), upright over any roll
   vignette();
   drawGrain(g, t, .1);
   const fin = ease(t, END.s + .1, END.dark), fo = 1 - ease(t, 0, 1.2), blk = Math.max(fin, fo); if (blk > 0) { g.fillStyle = `rgba(0,0,0,${blk})`; g.fillRect(0, 0, W, H); }

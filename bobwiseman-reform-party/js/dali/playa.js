@@ -365,9 +365,10 @@ function bmSax(S, HD, t, det, c) { // drawn in the rider's local units (y up), i
   if (det) for (let i = 0; i < 5; i++) { const u = .15 + i * .15; bmDot(lerp(N[0], B1[0], u), lerp(N[1], B1[1], u), .022, '#fff3c4'); }
   bmLine([S, bmJoint(S, K1, .3, .3, 1, -.6), K1], .1, c.coat[0]); bmDot(K1[0], K1[1], .045, c.skin); bmDot(K2[0], K2[1], .045, c.skin);
   // notes puff out of the bell once the lick starts; none come out while the bell is corked (draft 9)
-  if (t >= SAX_IN) for (let i = 0; i < 4; i++) { const age = ((t - SAX_IN) * 1.6 + i * .25) % 1, te = t - age / 1.6; if (te > SAX_CORK[0] - .04 && te < SAX_CORK[1]) continue;
+  if (t >= SAX_IN) for (let i = 0; i < 4; i++) { const age = ((t - SAX_IN) * 1.6 + i * .25) % 1, te = t - age / 1.6; if (te > SAX_CORK[0] - .04 && te < SAX_CORK[1]) continue; if (te > 200 && (te < SAX_OUTRO.lick - .05 || te > SAX_OUTRO.last + .4)) continue; // draft 37: at the end, notes only during the lick
     const nx = BELL[0] + .1 - age * .9, ny = BELL[1] + .25 + age * .9 + Math.sin(age * 9 + i) * .06;
-    g.save(); g.globalAlpha *= (1 - age) * clamp((t - SAX_IN) * 4); bmOval(nx, ny, .06, .045, '#1c1a1e'); bmLine([[nx + .055, ny], [nx + .055, ny + .2]], .018, '#1c1a1e'); if (i % 2) bmLine([[nx + .055, ny + .2], [nx + .14, ny + .14]], .018, '#1c1a1e'); g.restore(); }
+    const nc = t > 200 ? '#fff0d0' : '#1c1a1e'; // cream at night, so they read against the dark playa
+    g.save(); g.globalAlpha *= (1 - age) * clamp((t - SAX_IN) * 4); bmOval(nx, ny, .06, .045, nc); bmLine([[nx + .055, ny], [nx + .055, ny + .2]], .018, nc); if (i % 2) bmLine([[nx + .055, ny + .2], [nx + .14, ny + .14]], .018, nc); g.restore(); }
   // the brass mute: in the bell from the cork to the pop, then it flies off spinning
   const M0 = [BELL[0] + .03, BELL[1] + .05];
   if (t >= SAX_CORK[0] && t < SAX_CORK[1]) bmMute(M0[0], M0[1] - .03, .12 + Math.sin(t * 7.5) * .03);

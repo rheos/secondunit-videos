@@ -47,9 +47,10 @@ function rapPlinth(lift) {
 function rapFlame(x, y, w, h, lean, a) {
   const gr = g.createLinearGradient(x, y, x + lean, y - h); gr.addColorStop(0, `rgba(255,90,20,${a})`); gr.addColorStop(.45, `rgba(255,170,40,${a * .9})`); gr.addColorStop(1, `rgba(255,240,150,${a * .5})`);
   g.fillStyle = gr; g.beginPath(); g.moveTo(x - w, y); g.quadraticCurveTo(x - w * .8, y - h * .55, x + lean, y - h); g.quadraticCurveTo(x + w * .9, y - h * .5, x + w, y); g.closePath(); g.fill(); }
-function rapFigure(t, f, k, rocket) {
-  const tab = PL(0, TOP, 0), s = tab[2] > .3 && tab[0] < f[0] ? -1 : 1; // she faces the board
-  const jaw = rapJaw(t), bob = rapBob(t), [gest, kind] = rapGesture(t), sway = n1(41, t * .9) * .03;
+function rapFigure(t, f, k, rocket, o = {}) { // o (draft 37's spin singers): s, jaw, bob, gest, kind and gown override her own
+  const tab = PL(0, TOP, 0), s = o.s || (tab[2] > .3 && tab[0] < f[0] ? -1 : 1); // she faces the board
+  const jaw = o.jaw ?? rapJaw(t), bob = o.bob ?? rapBob(t), [gest, kind] = o.gest != null ? [o.gest, o.kind || 0] : rapGesture(t), sway = n1(41 + (o.seed || 0), t * .9) * .03;
+  const gown = o.gown || ['#22398c', '#101a44'];
   // pt: her own metres (x toward the board, y up) to screen
   const pt = (x, y) => [f[0] + s * x * k, f[1] - y * k];
   const poly = (pts, fill, stroke) => { g.beginPath(); pts.forEach((p, i) => i ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1])); g.closePath(); g.fillStyle = fill; g.fill(); if (stroke) { g.strokeStyle = stroke; g.lineWidth = Math.max(1, .012 * k); g.stroke(); } };
@@ -59,7 +60,7 @@ function rapFigure(t, f, k, rocket) {
   // the gown: ultramarine, long, the hem melting into drips over the plinth edge
   const hem = []; for (let i = 0; i <= 8; i++) { const u = i / 8, x = lerp(-.4, .36, u), drip = (i % 2 ? .02 : -.06 - .05 * rnd(i, 7)) + n1(70 + i, t * .6) * .015; hem.push(pt(x, drip)); }
   const by = -bob * .02; // the body dips a touch on each word
-  poly([pt(-.13 + sway, 1.42 + by), pt(.13 + sway, 1.42 + by), pt(.1, 1.0), pt(.36, .05), ...hem.reverse(), pt(-.4, .05), pt(-.12, 1.0)], '#22398c', '#101a44');
+  poly([pt(-.13 + sway, 1.42 + by), pt(.13 + sway, 1.42 + by), pt(.1, 1.0), pt(.36, .05), ...hem.reverse(), pt(-.4, .05), pt(-.12, 1.0)], gown[0], gown[1]);
   poly([pt(-.12, 1.02), pt(.11, 1.02), pt(.12, .94), pt(-.13, .94)], '#d9a73c'); // a gold sash
   g.strokeStyle = 'rgba(255,255,255,.18)'; g.lineWidth = Math.max(1, .02 * k); g.beginPath(); g.moveTo(...pt(.04, .95)); g.quadraticCurveTo(...pt(.18, .5), ...pt(.26, .06)); g.stroke(); // a fold of light
   const shF = pt(.15 + sway, 1.38 + by), shB = pt(-.15 + sway, 1.38 + by);
@@ -67,7 +68,7 @@ function rapFigure(t, f, k, rocket) {
   { const rest = [pt(-.2, 1.12), pt(-.2, .88)]; let el = rest[0], hd = rest[1];
     if (gest > 0) { const tgt = kind === 0 ? [pt(-.38, 1.62), pt(-.3, 1.95)] : kind === 1 ? [pt(.05, 1.3), pt(.45, 1.5)] : [pt(-.45, 1.3), pt(-.72, 1.42)];
       el = [lerp(rest[0][0], tgt[0][0], gest), lerp(rest[0][1], tgt[0][1], gest)]; hd = [lerp(rest[1][0], tgt[1][0], gest), lerp(rest[1][1], tgt[1][1], gest)]; }
-    limb(shB, el, hd, .075, '#22398c'); g.fillStyle = '#141414'; g.beginPath(); g.arc(hd[0], hd[1], .05 * k, 0, TAU); g.fill(); }
+    limb(shB, el, hd, .075, gown[0]); g.fillStyle = '#141414'; g.beginPath(); g.arc(hd[0], hd[1], .05 * k, 0, TAU); g.fill(); }
   // neck and the horse's head, bobbing on the words, the lower jaw dropping on each onset
   const nk = pt(.02 + sway, 1.42 + by), hb = -bob * .045, hp = pt(.06 + sway * 1.5, 1.66 + by + hb), tilt = s * (.15 * bob - .05);
   poly([pt(-.06 + sway, 1.4 + by), pt(.08 + sway, 1.4 + by), [hp[0] + s * .07 * k, hp[1] + .02 * k], [hp[0] - s * .09 * k, hp[1] - .02 * k]], '#7d3f22', '#2e160c');
@@ -91,7 +92,7 @@ function rapFigure(t, f, k, rocket) {
   const mh = [hp[0] + s * (.24 + .02 * bob) * k, hp[1] + (.08 + .02 * jaw) * k], me = pt(.3, 1.24 + by);
   // draft 17 (Robin: "the horse lady rapper should be holding a cordless microphone"): a handheld cordless mic, big enough
   // to read in the close shots: a black handle with a silver collar and a ball grille at her muzzle, no cable
-  limb(shF, me, mh, .075, '#22398c');
+  limb(shF, me, mh, .075, gown[0]);
   const mb = [mh[0] + s * .05 * k, mh[1] - .09 * k], mhb = [mh[0] - s * .035 * k, mh[1] + .13 * k], mr = .068 * k;
   g.lineCap = 'round'; g.strokeStyle = '#000'; g.lineWidth = .075 * k; g.beginPath(); g.moveTo(...mhb); g.lineTo(...mb); g.stroke(); // the handle's dark edge
   g.strokeStyle = '#1e1e22'; g.lineWidth = .055 * k; g.stroke(); g.strokeStyle = '#4a4a52'; g.lineWidth = .012 * k; g.beginPath(); g.moveTo(mhb[0] + s * .012 * k, mhb[1]); g.lineTo(mb[0] + s * .012 * k, mb[1]); g.stroke(); // a sheen down it
@@ -102,4 +103,34 @@ function rapFigure(t, f, k, rocket) {
   for (let i = -3; i <= 3; i++) { g.moveTo(mb[0] + i * mr / 3.5, mb[1] - mr); g.lineTo(mb[0] + i * mr / 3.5, mb[1] + mr); g.moveTo(mb[0] - mr, mb[1] + i * mr / 3.5); g.lineTo(mb[0] + mr, mb[1] + i * mr / 3.5); } g.stroke(); g.restore();
   g.fillStyle = '#141414'; g.beginPath(); g.arc(mh[0], mh[1], .05 * k, 0, TAU); g.fill(); // the gloved hand round the handle
   g.restore();
+}
+
+// ---------- Draft 37: two divas sing "without spin" at the end of each refrain ----------
+// Bob (note 59 and Messenger, 2026-10-31): "it would send things over the top if some female or females appeared at the
+// end of each chorus just for the final lyrics 'without spin'". The diva and a sister in crimson come up from below the
+// frame's bottom corners on "without", one each side, facing in, mics up, sing it, turn a full twirl on "spin" (a spin on
+// "spin"), hold the long note and sink back as the line ends. Screen-space like little Bob's walk, so every framing of the
+// three refrains keeps them whole and clear of the captions.
+const SPIN_LINES = [6, 13, 34];
+const SPIN_DIVAS = [{ x: .105, s: 1, gown: ['#22398c', '#101a44'], seed: 0, lag: 0 }, { x: .895, s: -1, gown: ['#9a2232', '#4a0e18'], seed: 7, lag: .08 }];
+function spinDivas(t) {
+  for (const li of SPIN_LINES) {
+    const w0 = wt(li, 'without'), sp = wt(li, 'spin'), wo = LINES[li].words.find((w) => w.w === 'without'), end = LINES[li].e;
+    if (t < w0 - .7 || t > end + .7) continue;
+    for (const D of SPIN_DIVAS) {
+      // the crimson diva comes up on the teeth's side, so in the first refrain she waits till they have hopped out (0:55.5)
+      const clear = D.s < 0 ? Math.max(0, ...BUH_RUNS.map((r) => r[r.length - 1] + BOW.hold + BUH.outT).filter((e) => e < end)) : 0;
+      const tt = t - D.lag, k = H / 3.3, t0 = Math.max(w0 - .4, clear), up = easeOutBack(clamp((tt - t0) / .55), 1.3) * (1 - ease(tt, end - .1, end + .5));
+      if (up <= 0) continue;
+      const feet = [W * D.x, H + lerp(2.4, .55, up) * k];
+      // the jaw: two pulses on "with-out", then the long open "spin" that closes just before the line ends
+      let jaw = 0; if (tt >= w0 && tt < wo.e) jaw = .45 + .45 * Math.abs(Math.sin(Math.PI * (tt - w0) / ((wo.e - w0) / 2)));
+      else if (tt >= sp) jaw = .8 * (1 - ease(tt, end - .35, end - .05)) * ease(tt, sp, sp + .06);
+      const bob = Math.max(0, 1 - Math.abs(tt - w0) * 6, 1 - Math.abs(tt - sp) * 6), gest = ease(tt, sp - .1, sp + .15) * (1 - ease(tt, end - .5, end));
+      const tw = clamp((tt - sp) / .7), turn = Math.cos(TAU * smooth(tw)); // the twirl: her width through a full turn
+      g.save(); g.translate(feet[0], 0); g.scale(tw > 0 && tw < 1 ? turn : 1, 1); g.translate(-feet[0], 0);
+      rapFigure(tt, feet, k, 0, { s: D.s, jaw, bob, gest, kind: 0, gown: D.gown, seed: D.seed });
+      g.restore();
+    }
+  }
 }

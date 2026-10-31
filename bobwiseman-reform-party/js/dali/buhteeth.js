@@ -60,12 +60,14 @@ function buhTeeth(t) {
 function drawWindupTeeth(S, open, press, t, oo = 0) {
   const k = S / 100; // drawn on a 100-unit box, the mouth line at y = 6
   const gum = '#e7838d', gumD = '#b85662', tooth = '#fbf6ea', toothE = '#cfc6b4', lip = '#d2343f', lipD = '#8e1a24', ink = '#2a1712';
-  // oo 0..1: the "o" (draft 35). The jaws part by up to 18 units and both lips close round a round hole in the middle: each
-  // lip's inner edge is half an ellipse (rx 1.05, ry 0.75 of the gap) and the lips meet at the corners, so the teeth only
-  // show as a sliver at the top and bottom of the hole. wO snaps the shape to round early; the size follows oo.
-  const wO = smooth01(Math.min(1, oo * 3)), gapO = oo * 18 * k;
+  // oo 0..1: the "o" (draft 35). The jaws part and both lips close round a round hole in the middle: each lip's inner
+  // edge is half an ellipse and the lips meet at the corners, so the teeth only show as a sliver at the top and bottom of
+  // the hole. wO snaps the shape to round early; the size follows oo. Draft 37 (Bob, note 59: "more of a ooo vs. a wow...
+  // the lips should be thinner to pronounce that 'bow'"): the jaws drop 30 units, not 18, the hole is 0.8 of that tall,
+  // and in the middle the lips are a thin band round it instead of keeping their shut thickness.
+  const wO = smooth01(Math.min(1, oo * 3)), gapO = oo * 30 * k;
   const Y0 = 6 * k, gap = open * 24 * k * (1 - wO) + gapO * wO, roll = open * 7 * k * (1 - wO); // roll: how far each lip curls back off the teeth
-  const rxO = 1.05 * gapO / k, ryO = .75 * gapO; // the o's hole, rx in drawing units along the lip, ry in pixels
+  const rxO = 1.05 * gapO / k, ryO = .8 * gapO; // the o's hole, rx in drawing units along the lip, ry in pixels
   // one outer outline round the whole toy (stroke every part thick first, then fill over it, so no seams show)
   const feet = () => { for (const fx of [-22, 18]) { g.beginPath(); g.ellipse(fx * k, 32 * k, 13 * k, 6 * k, 0, 0, TAU); g.fill(); g.stroke(); } };
   const kr = (t * 3) % TAU;
@@ -76,13 +78,14 @@ function drawWindupTeeth(S, open, press, t, oo = 0) {
     g.quadraticCurveTo(32 * k, Y0 + dy * 28 * k, 46 * k, Y0 + dy * 14 * k); g.lineTo(46 * k, Y0); g.closePath(); };
   // a lip: a band along the mouth line whose inner edge curls back by `roll` (0 = the edge sits on the mouth line);
   // pressed lips bulge a little thicker. The upper lip has a cupid's bow.
-  const lipPath = (dy, upper) => { const th = (10 + 2 * press + 3 * wO) * k, r = roll, n = 28; g.beginPath();
+  const lipPath = (dy, upper) => { const th = (10 + 2 * press) * k, r = roll, n = 72; g.beginPath(); // 72 points: the bigger o of draft 37 showed corners at 28
     // the inner edge's offset from the mouth line (outward from this jaw's side); the o mixes in -gap/2 at the corners
     // (the lips cross the gap and meet) and an ellipse in the middle
     const inner = (u, c) => { const xu = -47 + 94 * u, e = rxO > .01 ? Math.sqrt(Math.max(0, 1 - Math.pow(xu / rxO, 2))) : 0; return r * c * (1 - wO) + (-gap / 2 + ryO * e) * wO; };
     for (let j = 0; j <= n; j++) { const u = j / n, x = (-47 + 94 * u) * k, c = 1 - Math.pow(2 * u - 1, 2); g[j ? 'lineTo' : 'moveTo'](x, Y0 + dy * inner(u, c)); }
     for (let j = n; j >= 0; j--) { const u = j / n, x = (-47 + 94 * u) * k, c = 1 - Math.pow(2 * u - 1, 2), bow = upper ? -Math.max(0, 1 - Math.abs(u - .5) / .09) * 3 * k : 0;
-      g.lineTo(x, Y0 + dy * (r * c * (1 - wO) + .35 * ryO * c * wO + th * (.55 + .45 * Math.sqrt(c))) + bow * -dy); } // in the o the outer edge stays where shut lips have it (so the teeth stay covered), with a gentle pucker
+      const base = th * (.55 + .45 * Math.sqrt(c)), thin = inner(u, c) + 5.5 * k * (.7 + .3 * Math.sqrt(c));
+      g.lineTo(x, Y0 + dy * (r * c * (1 - wO) + base * (1 - wO) + Math.max(base, thin) * wO) + bow * -dy); } // in the o the outer edge never comes in past where shut lips have it (so the teeth stay covered); round the hole it rides 5.5 units out from the inner edge: a thin lip
     g.closePath(); };
   const jawAt = (dy, f) => { g.save(); if (dy < 0) g.translate(0, -gap); f(); g.restore(); };
   g.lineJoin = 'round'; g.lineCap = 'round';
@@ -101,6 +104,6 @@ function drawWindupTeeth(S, open, press, t, oo = 0) {
       g.beginPath(); const ty = dy < 0 ? Y0 - h : Y0; g.roundRect ? g.roundRect(tx, ty, 10 * k, h, 3 * k) : g.rect(tx, ty, 10 * k, h); g.fill(); g.stroke(); }
     g.fillStyle = lip; lipPath(dy, dy < 0); g.fill(); g.strokeStyle = lipD; g.lineWidth = 1.4 * k; g.stroke();
     g.strokeStyle = 'rgba(255,235,235,.55)'; g.lineWidth = 2 * k; g.beginPath(); // a highlight on each lip
-    const hl = roll + (-gap / 2 + ryO) * wO; g.moveTo(-18 * k, Y0 + dy * (hl + 5 * k)); g.quadraticCurveTo(0, Y0 + dy * (hl + 7 * k), 18 * k, Y0 + dy * (hl + 5 * k)); g.stroke(); });
+    const hl = roll + (-gap / 2 + ryO) * wO; const hd = (1 - .55 * wO) * k; g.moveTo(-18 * k, Y0 + dy * (hl + 5 * hd)); g.quadraticCurveTo(0, Y0 + dy * (hl + 7 * hd), 18 * k, Y0 + dy * (hl + 5 * hd)); g.stroke(); });
   if (open < .02) { g.strokeStyle = lipD; g.lineWidth = 2 * k; g.beginPath(); g.moveTo(-44 * k, Y0); g.quadraticCurveTo(0, Y0 + 1.5 * k, 44 * k, Y0); g.stroke(); } // lips meeting
 }
