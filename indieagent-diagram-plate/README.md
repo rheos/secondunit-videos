@@ -57,3 +57,16 @@ Construction pencil 0.35 to 2.0 s, frame, the country far to near 2.1 to 5.2 s, 
 objects 7.1 to 9.5 s, words 9.5 to 12.0 s, then a 20 s hold that boils on twos. Draft 1 held 2 s; Bob couldn't read it
 before it looped ("wish it would stay longer at the end"), so draft 2 holds 20 s. Over 20 s, his page also gives
 the clip player controls instead of a silent loop.
+
+## Sound (draft 2)
+
+Under the plate: 32 s of Bob's "All Dressed Up" (Beware of Bob), 3:23.0 to 3:55.0, starting on an onset so the
+music builds while the plate draws and is at full strength when the words land. Fade in 0.15 s, fade out over the
+last 2.5 s, levelled to about -16 LUFS. The source is Robin's copy on Bertha (`Music/Archive/Rock/Bob Wiseman/Beware
+of Bob/`); the cut lives in gitignored `_in/`, never in git:
+
+```bash
+ffmpeg -ss 203.0 -t 32 -i "<Bertha>/Bob Wiseman_09_all dressed up.mp3" \
+  -af "afade=t=in:d=0.15,afade=t=out:st=29.5:d=2.5,loudnorm=I=-16:TP=-1.5:LRA=11" -ar 48000 _in/all-dressed-up_203.0-235.0.wav
+ffmpeg -i out/<picture>.mp4 -i _in/all-dressed-up_203.0-235.0.wav -map 0:v -map 1:a -c:v copy -c:a aac -b:a 192k -shortest out/<name>.mp4
+```
