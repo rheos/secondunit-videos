@@ -92,3 +92,8 @@ Iterate with `npx hyperframes@0.8.162 snapshot --at ...` (contact sheets) before
   envelope around every slam and stamp.
 - **Check a flight path against every solid it passes.** A card's bezier from Blink to the wall dipped into the
   server's body for a frame and vanished (a 58-point spike). Sample the path and keep it out of every box it crosses.
+- **Ease every face value between keys.** Switching Blink from one gaze and smile to another at a time boundary is a
+  one-frame jump; forensics flags it as a spike in the frame's centre. Key lookY, look, happy and skew and ease
+  between them.
+- **A panel that holds still between lines needs a float.** A board showing one word for 1.3 s read as a frozen
+  player (forensics' hold check). A slow bob, scale breath or yaw is enough.
