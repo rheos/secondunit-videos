@@ -44,6 +44,14 @@ const ARTCARS = [
   // edge as the shot settles, across the frame in front of the canvas and out past the right edge by 64.8, his shadow with
   // him, clear before the sax rider rides in on 65.0. The ride is drawn from 60.0 to 65.4, so both ends happen off frame.
   { id: 'robin', kind: 'chopper', t0: 60.0, t1: 65.4, path: [[60.0, 83.58, -7.23], [65.4, 61.78, -34.49]] },
+  // draft 37 (Robin: "at the end there are some bikers going by... can we make me on my chopper bike added to that group?"):
+  // the end's traffic riders cross in front of the embers right to left (playa riders 10, 16, 12, 20, at 3.3-4.4 m/s along
+  // z 30-43). Robin rides among them on z 38.5 at 4.2 m/s, in at the right edge about 258.1 (after the big near silhouettes
+  // have gone: he is drawn over the fire's glow, so he must not pass anything nearer) and across the frame as it fades,
+  // never nearer than 5 m to any rider or burn bike (checked against their tracks every 0.5 s, 250-268). He sets off at
+  // 252, off frame while the drone is still coming down.
+  // front: drawn over the fire's glow (artcarsFront), which washes the other riders out; he should read as himself
+  { id: 'robin-end', kind: 'chopper', front: true, t0: 252, t1: 269, path: [[252, 349.6, 38.5], [269, 278.2, 38.5]] },
   // bridge, "they're ok with foul play" (151-160): the organ cart rolls left to right on the left of the long wide, clear of the
   // giant chess pieces, its player at the keys. Draft 11 (no fades): it comes into the frame as the drone tilts down off the
   // chess board (151.5), rolls on at 5 mph, swings away from the board toward the deep playa (157-160) and keeps going out
