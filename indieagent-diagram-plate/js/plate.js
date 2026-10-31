@@ -370,7 +370,8 @@
   blueLine([760, 1012], [1160, 1012]);
 
   // ---- 10. the schedule (seconds) -----------------------------------------------------------------------------
-  const END = Number(QS.get('end')) || 14;
+  // Words are done by 12 s; the finished plate then holds 20 s (draft 2, Bob: "wish it would stay longer at the end")
+  const END = Number(QS.get('end')) || 32;
   const SCHEDULE = [['construct', 0.35, 2.0, 7], ['frame', 1.1, 2.4, 2], ['far', 2.1, 3.9, 7], ['mid', 3.0, 4.6, 7], ['near', 3.9, 5.2, 6],
     ['bandTint', 4.5, 6.0, 9], ['bandInk', 5.3, 8.0, 12], ['nodes', 7.1, 8.9, 8], ['objects', 7.9, 9.5, 14]];
   for (const [g, t0, t1, hands] of SCHEDULE) { const end = spread(G[g], t0, t1, hands); if (end > t1 + 0.05) throw new Error(`${g} ends at ${end.toFixed(2)}, past ${t1}`); }

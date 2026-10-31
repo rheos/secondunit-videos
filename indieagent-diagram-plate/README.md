@@ -37,9 +37,9 @@ into `_in/shows.json` to refresh.
 tools/blueprint-kit/sync.sh indieagent-diagram-plate   # from the repo root: kit/ with pele, Hershey and diagram.js
 npm install                                            # playwright, uses the installed Chrome
 node tools/tour-data.mjs                               # _in/shows.json -> data/tour.js
-node still.mjs 14 [--notext] [--w 1280]                # frames to out/
-node check.mjs 14                                      # gate: words in containers, nothing touching, words-off contrast, crops
-node ../tools/motion-lab/render.mjs "plate.html?w=1280" 0 14 out/<name>.mp4 --width 1280 --height 720 --workers 3
+node still.mjs 32 [--notext] [--w 1280]                # frames to out/
+node check.mjs 32                                      # gate: words in containers, nothing touching, words-off contrast, crops
+node ../tools/motion-lab/render.mjs "plate.html?w=1280" 0 32 out/<name>.mp4 --width 1280 --height 720 --workers 3
 ```
 
 Open `plate.html?play=1` to watch it draw, `plate.html?t=6` for one moment, `?notext=1` for the words-off frame.
@@ -51,7 +51,9 @@ Open `plate.html?play=1` to watch it draw, `plate.html?t=6` for one moment, `?no
 - `js/plate.js`: the plate, from pele's layout to the last word, and its timing.
 - `check.mjs`, `still.mjs`: the review gate and frame grabs.
 
-## Timing (14 s)
+## Timing (32 s)
 
 Construction pencil 0.35 to 2.0 s, frame, the country far to near 2.1 to 5.2 s, bands 4.5 to 8.0 s, nodes and
-objects 7.1 to 9.5 s, words 9.5 to 12.0 s, then a 2 s hold that boils on twos.
+objects 7.1 to 9.5 s, words 9.5 to 12.0 s, then a 20 s hold that boils on twos. Draft 1 held 2 s; Bob couldn't read it
+before it looped ("wish it would stay longer at the end"), so draft 2 holds 20 s. Over 20 s, his page also gives
+the clip player controls instead of a silent loop.
