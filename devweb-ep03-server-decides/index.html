@@ -26,8 +26,8 @@
     </style>
   </head>
   <body>
-    <div id="root" data-composition-id="main" data-start="0" data-duration="63.88" data-width="1080" data-height="1920">
-      <audio id="mix" src="_in/mix.wav" data-start="0" data-duration="63.88" data-track-index="20" data-volume="1"></audio>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="58.44" data-width="1080" data-height="1920">
+      <audio id="mix" src="_in/mix.wav" data-start="0" data-duration="58.44" data-track-index="20" data-volume="1"></audio>
       <!-- the world: one Three.js scene, one camera (oner.js) -->
       <canvas id="world" width="1080" height="1920" style="position:absolute;left:0;top:0;width:1080px;height:1920px"></canvas>
       <!-- the type is authored on a 720x1280 stage and scaled 1.5x as vectors; the 3D renders natively at 1080x1920 -->
@@ -54,54 +54,55 @@
         const hide = (el, at, d = 0.3) => F(el, { opacity: 1 }, { opacity: 0, duration: d, ease: "power2.in" }, at);
         const rise = (el, at, d = 0.45) => F(el, { opacity: 0, y: 26, filter: "blur(10px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: d, ease: "power3.out" }, at);
         const slam = (el, at, from = 1.6) => { cue("slam", at + 0.16); return F(el, { opacity: 0, scale: from, rotate: -4 }, { opacity: 1, scale: 1, rotate: 0, duration: 0.3, ease: "back.out(1.6)" }, at); };
-        // snapped to the voice's onsets (whisper put "make" before a 0.3 s silence); oner.js uses the same times
-        const MAKE = 58.08, DECIDE_END = 59.3;
+        // snapped to the voice's onsets; oner.js uses the same times
+        const BUG = 5.33, LET2 = w("let", 2), END_LINE = 53.75;
 
         // chrome: lockup, topic tag, progress
         const chrome = mk("div", "abs chrome", "", stage, `<span><span style="color:var(--green)">~/</span>devweb</span><span style="color:var(--faint);font-size:20px">// agent safety</span>`);
         const bar = mk("div", "abs bar");
         const barIn = mk("div", null, "height:3px;background:var(--green);transform-origin:left;transform:scaleX(0)", bar);
         F(barIn, { scaleX: 0 }, { scaleX: 1, duration: VO.END, ease: "none" }, 0);
-        hide(chrome, DECIDE_END + 0.2, 0.4); hide(bar, DECIDE_END + 0.2, 0.4);
+        hide(chrome, END_LINE + 0.2, 0.4); hide(bar, END_LINE + 0.2, 0.4);
 
-        // captions: fragments, one line pair at most; none over the hook, the schema or the closing slams
+        // captions: fragments, one line pair at most; none over the hook, the notice board, the schema or the close
         const R = (s) => `<span style="color:var(--red)">${s}</span>`, Gr = (s) => `<span style="color:var(--green)">${s}</span>`, B = (s) => `<span style="color:var(--blue)">${s}</span>`, Am = (s) => `<span style="color:var(--amber)">${s}</span>`;
         const CAPS = [
-          [w("save") - 0.08, "To save a memory,"], [w("an"), "an AI sends two ids:"], [w("message") - 0.1, "the message it came from,"], [w("and"), "and its chat.", w("nothing") - 0.15],
-          [w("nothing"), `Nothing ${R("ties")} them.`], [w("one"), "One wrong guess,"], [w("or"), "or one buggy client,"], [w("and", 2), "and a real message lands"], [w("in"), `in the ${R("wrong chat.")}`, e("chat", 2) + 0.6],
-          [w("both"), "Both ids come from the same writer.", w("only") - 0.25], [w("only"), `Only the server's ${B("records")}`], [w("know"), "know which chat that message is in.", w("so") - 0.15],
-          [w("so"), `So the server ${B("stops asking.")}`, w("the", 8) - 0.15], [w("the", 8), "The model sends the message id."], [w("the", 10), "The server looks it up"], [w("in", 3), `in its own ${B("records")}`],
-          [w("and", 3), `and ${Am("stamps")} the chat from there.`, w("same", 2) - 0.15], [w("same", 2), "Same rule for the workspace:"], [w("it", 4), `it comes from who's ${Gr("signed in.")}`, w("put") - 0.1],
-          [w("put"), `Put ${R("B")} in the request,`], [w("and", 4), `and the write still lands in ${Gr("A.")}`, w("one", 3) - 0.15],
-          [w("it", 5), "It won't prove the AI"], [w("picked") - 0.1, "picked the right message.", w("it", 6) - 0.1], [w("it", 6), "It stops one thing:"], [w("that", 2), `that message in the ${R("wrong chat.")}`, w("let") - 0.15],
+          [w("the", 2) - 0.05, "The model fills in every argument.", w("so") - 0.15],
+          [w("so"), `So one ${R("wrong guess,")}`], [w("or"), `or one ${R("hostile request,")}`], [w("can"), "can point that tool", w("at") - 0.05], [w("at"), `at ${R("someone else's data.")}`, w("data") + 0.75],
+          [w("this"), "This isn't hypothetical.", w("in", 2) - 0.1],
+          [w("the", 3) - 0.05, `The fix is to ${B("take the field away.")}`, w("whose") - 0.15],
+          [w("whose"), `Who's asking comes from the ${B("session,")}`, w("not") - 0.1], [w("not"), "not the arguments.", w("send") - 0.2],
+          [w("send"), `Send a request naming ${R("someone else's account,")}`, w("and") - 0.1], [w("and"), `and the server writes to ${Gr("yours")} anyway.`, w("theirs") - 0.1],
+          [w("theirs"), "Theirs isn't touched.", w("one", 3) - 0.15],
         ];
         CAPS.forEach(([t, text, end], i) => {
           const c = mk("div", "abs cap hide", "", stage, text);
           rise(c, t, 0.3); hide(c, (end != null ? end : CAPS[i + 1][0]) - 0.2, 0.18);
         });
 
-        // ================= I. HOOK: the card sits mid-frame; the line wraps around it =================
+        // ================= I. HOOK: the form sits mid-frame; the line wraps around it =================
         const hk = "left:44px;right:44px;font-weight:700;letter-spacing:-0.04em;line-height:1;text-shadow:0 4px 30px rgba(0,0,0,.7)";
-        const h1 = mk("div", "abs hide", hk + ";top:120px;font-size:78px", stage, "The AI wrote");
-        const h2 = mk("div", "abs hide", hk + ";top:930px;font-size:72px;color:var(--text2)", stage, "The server");
-        const h3 = mk("div", "abs hide", hk + ";top:1012px;font-size:82px", stage, `${R("crossed")} it out.`);
-        rise(h1, 0.35, 0.4); rise(h2, w("the", 2) - 0.05, 0.3); slam(h3, 4.52 - 0.08, 1.4);
-        [h1, h2, h3].forEach((n) => hide(n, 5.27, 0.3));
+        const h1 = mk("div", "abs hide", hk + ";top:120px;font-size:66px", stage, "If your AI's tools");
+        const h2 = mk("div", "abs hide", hk + ";top:196px;font-size:66px", stage, `take a ${Am("user ID")},`);
+        const h3 = mk("div", "abs hide", hk + ";top:930px;font-size:64px;color:var(--text2)", stage, "you've already");
+        const h4 = mk("div", "abs hide", hk + ";top:1004px;font-size:82px", stage, `written the ${R("bug.")}`);
+        rise(h1, 0.4, 0.4); rise(h2, w("take") - 0.05, 0.35); rise(h3, w("you've") - 0.05, 0.3); slam(h4, BUG - 0.1, 1.4);
+        [h1, h2, h3, h4].forEach((n) => hide(n, w("the", 2) - 0.35, 0.3));
 
         // ================= V. the receipt: six fields =================
         const six = mk("div", "abs hide", hk + ";top:150px;left:44px;right:auto;font-size:190px;color:var(--blue)", stage, "6");
         const sixL = mk("div", "abs hide", hk + ";top:178px;left:180px;font-size:58px", stage, "fields,");
         const sixR = mk("div", "abs hide", hk + ";top:246px;left:180px;font-size:58px;color:var(--green)", stage, "all required.");
         slam(six, w("six") - 0.1, 1.5); rise(sixL, w("fields") - 0.05, 0.3); rise(sixR, w("all") - 0.05, 0.3);
-        [six, sixL, sixR].forEach((n) => hide(n, 50.45, 0.3));
+        [six, sixL, sixR].forEach((n) => hide(n, 50.0, 0.3));
 
         // ================= VI. the last lines =================
-        const f1 = mk("div", "abs hide", hk + ";top:120px;font-size:80px", stage, `Let the model<br>${Gr("choose.")}`);
-        const f2 = mk("div", "abs hide", hk + ";top:310px;font-size:80px", stage, `Make the server<br>${B("decide.")}`);
-        slam(f1, w("let") - 0.08, 1.35); slam(f2, MAKE - 0.08, 1.35);
-        [f1, f2].forEach((n) => hide(n, DECIDE_END + 1.0, 0.3));
+        const f1 = mk("div", "abs hide", hk + ";top:120px;font-size:80px", stage, `Let the model<br>choose ${Gr("what.")}`);
+        const f2 = mk("div", "abs hide", hk + ";top:310px;font-size:80px", stage, `Let the server<br>decide ${B("whose.")}`);
+        slam(f1, w("let") - 0.08, 1.35); slam(f2, LET2 - 0.08, 1.35);
+        [f1, f2].forEach((n) => hide(n, END_LINE + 1.0, 0.3));
         // the end: the mark (the article links live in the YouTube description, never on screen)
-        const endAt = DECIDE_END + 1.3;
+        const endAt = END_LINE + 1.3;
         const mark = mk("div", "abs hide", "left:190px;top:150px;width:340px;height:92px;box-sizing:border-box;border-radius:14px;border:3px solid var(--green);background:#0d1117;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-weight:600;font-size:44px", stage, `<span style="color:var(--green)">~/</span>devweb`);
         F(mark, { opacity: 0, scale: 0.85 }, { opacity: 1, scale: 1, duration: 0.4, ease: "back.out(1.6)" }, endAt);
         cue("sting", endAt + 0.05);

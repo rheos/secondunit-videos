@@ -2,30 +2,30 @@
  "lines": [
   [
    "I",
-   "The AI wrote workspace B on its request. The server crossed it out."
+   "If your AI's tools take a user ID as an argument, you've already written the bug."
   ],
   [
    "II",
-   "To save a memory, an AI sends two ids: the message it came from, and its chat. Nothing ties them. One wrong guess, or one buggy client, and a real message lands in the wrong chat."
+   "The model fills in every argument. So one wrong guess, or one hostile request, can point that tool at someone else's data."
   ],
   [
    "III",
-   "Both ids come from the same writer. Only the server's records know which chat that message is in."
+   "This isn't hypothetical. In 2025, Asana took its AI connector offline for nearly two weeks after finding a bug that could expose data to other organizations."
   ],
   [
    "IV",
-   "So the server stops asking. The model sends the message id. The server looks it up in its own records and stamps the chat from there. Same rule for the workspace: it comes from who's signed in. Put B in the request, and the write still lands in A."
+   "The fix is to take the field away. Who's asking comes from the session, not the arguments. Send a request naming someone else's account, and the server writes to yours anyway. Theirs isn't touched."
   ],
   [
    "V",
-   "One real memory tool asks for six fields, all required. Chat id isn't one of them. Its description says why: derived on the server."
+   "One real memory tool works this way. Six fields, all required, and the conversation ID isn't one of them. Its description tells the model why: the server derives it."
   ],
   [
    "VI",
-   "It won't prove the AI picked the right message. It stops one thing: that message in the wrong chat. Let the model choose. Make the server decide."
+   "Let the model choose what. Let the server decide whose."
   ]
  ],
- "chars": 871,
- "seconds": 58.88,
- "sha256": "2c64800c2a58d4cddcf0fb19733e890522b26996313b21f8b2c71e4bb609ded6"
+ "chars": 782,
+ "seconds": 53.44,
+ "sha256": "067181aa9e3a2c381c1c81367c0c86becfc8ab76b3247aa5a808941bb4e7abaf"
 }
