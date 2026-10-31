@@ -105,32 +105,31 @@ function rapFigure(t, f, k, rocket, o = {}) { // o (draft 37's spin singers): s,
   g.restore();
 }
 
-// ---------- Draft 37: two divas sing "without spin" at the end of each refrain ----------
+// ---------- Draft 37: the stilt walkers on "without spin" at the end of each refrain ----------
 // Bob (note 59 and Messenger, 2026-10-31): "it would send things over the top if some female or females appeared at the
-// end of each chorus just for the final lyrics 'without spin'". The diva and a sister in crimson come up from below the
-// frame's bottom corners on "without", one each side, facing in, mics up, sing it, turn a full twirl on "spin" (a spin on
-// "spin"), hold the long note and sink back as the line ends. Screen-space like little Bob's walk, so every framing of the
-// three refrains keeps them whole and clear of the captions.
+// end of each chorus just for the final lyrics 'without spin'". d37 used the horse diva and a sister with mics; d37d
+// (Robin: "i don't think it looks right with the microphones in their hands like that.. they are not the lead", and the
+// stilt walkers from his photos, playa.js bmStilter, were only ever far off in the crowd): the rainbow walker comes in
+// from the left edge and the purple one from the right on "without", big and full length in the bottom corners, each
+// turns a full twirl on "spin" (a spin on "spin"), sways through the long note and walks back out as the line ends.
+// Screen-space like the end's sax rider, so every framing of the three refrains keeps them whole and clear of the captions.
 const SPIN_LINES = [6, 13, 34];
-const SPIN_DIVAS = [{ x: .105, s: 1, gown: ['#22398c', '#101a44'], seed: 0, lag: 0 }, { x: .895, s: -1, gown: ['#9a2232', '#4a0e18'], seed: 7, lag: .08 }];
+const SPIN_STILTS = [{ j: 0, x: .1, side: -1, lag: 0 }, { j: 1, x: .9, side: 1, lag: .1 }];
 function spinDivas(t) {
   for (const li of SPIN_LINES) {
-    const w0 = wt(li, 'without'), sp = wt(li, 'spin'), wo = LINES[li].words.find((w) => w.w === 'without'), end = LINES[li].e;
-    if (t < w0 - .7 || t > end + .7) continue;
-    for (const D of SPIN_DIVAS) {
-      // the crimson diva comes up on the teeth's side, so in the first refrain she waits till they have hopped out (0:55.5)
-      const clear = D.s < 0 ? Math.max(0, ...BUH_RUNS.map((r) => r[r.length - 1] + BOW.hold + BUH.outT).filter((e) => e < end)) : 0;
-      const tt = t - D.lag, k = H / 3.3, t0 = Math.max(w0 - .4, clear), up = easeOutBack(clamp((tt - t0) / .55), 1.3) * (1 - ease(tt, end - .1, end + .5));
-      if (up <= 0) continue;
-      const feet = [W * D.x, H + lerp(2.4, .55, up) * k];
-      // the jaw: two pulses on "with-out", then the long open "spin" that closes just before the line ends
-      let jaw = 0; if (tt >= w0 && tt < wo.e) jaw = .45 + .45 * Math.abs(Math.sin(Math.PI * (tt - w0) / ((wo.e - w0) / 2)));
-      else if (tt >= sp) jaw = .8 * (1 - ease(tt, end - .35, end - .05)) * ease(tt, sp, sp + .06);
-      const bob = Math.max(0, 1 - Math.abs(tt - w0) * 6, 1 - Math.abs(tt - sp) * 6), gest = ease(tt, sp - .1, sp + .15) * (1 - ease(tt, end - .5, end));
-      const tw = clamp((tt - sp) / .7), turn = Math.cos(TAU * smooth(tw)); // the twirl: her width through a full turn
-      g.save(); g.translate(feet[0], 0); g.scale(tw > 0 && tw < 1 ? turn : 1, 1); g.translate(-feet[0], 0);
-      rapFigure(tt, feet, k, 0, { s: D.s, jaw, bob, gest, kind: 0, gown: D.gown, seed: D.seed });
-      g.restore();
+    const w0 = wt(li, 'without'), sp = wt(li, 'spin'), end = LINES[li].e;
+    if (t < w0 - 1 || t > end + 1.2) continue;
+    for (const D of SPIN_STILTS) {
+      // the purple walker comes in on the teeth's side, so in the first two refrains she waits till they have hopped out
+      const clear = D.side > 0 ? Math.max(0, ...BUH_RUNS.map((r) => r[r.length - 1] + BOW.hold + BUH.outT).filter((e) => e < end)) : 0;
+      const tt = t - D.lag, t0 = Math.max(w0 - .55, clear), k = H / 5.4, inU = ease(tt, t0, t0 + .7), outU = ease(tt, end - .05, end + .8);
+      if (inU <= 0 || outU >= 1) continue;
+      const off = D.side < 0 ? -.8 * k : W + .8 * k, tgt = W * D.x, x = outU > 0 ? lerp(tgt, off, outU) : lerp(off, tgt, inU), y = H - .1 * k;
+      const walking = inU < 1 || outU > 0, step = walking ? Math.abs(Math.sin(tt * 7)) * .05 * k : 0; // a stilt bob while they walk
+      const tw = clamp((tt - sp) / .75), turn = tw > 0 && tw < 1 ? Math.cos(TAU * smooth(tw)) : 1, sway = Math.sin((tt - sp) * 3.3) * .025 * (tt > sp + .75 && outU === 0 ? 1 : 0);
+      g.save(); g.fillStyle = 'rgba(40,24,16,.22)'; g.beginPath(); g.ellipse(x, y + .02 * k, .5 * k, .07 * k, 0, 0, TAU); g.fill(); // a soft shadow under the stilts
+      g.translate(x, y); g.rotate(sway); g.scale(turn, 1); g.translate(-x, -y);
+      bmStilter(D.j, x, y - step, k, walking ? tt : sp + .75, null); g.restore();
     }
   }
 }

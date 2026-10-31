@@ -1549,7 +1549,10 @@ function bmStiltOn(t) { const a = bmStiltAt(0); return t >= bmBorn('stilt', STIL
 function bmStiltObs(t, L) { if (!bmStiltOn(t)) return; for (const j of [0, 1]) { const [X, Z] = bmStiltAt(j)(t); L.push({ X, Z, r: .6 }); } }
 function bmStilter(j, x, y, k, t, hand) { // one walker, front on, feet of the stilts at (x, y), k px per metre; hand: the screen point of the joined hands
   const st = Math.sin(t * 3.4 + j * Math.PI) * .09, det = k > 14; bmBegin(x, y, k, 1);
-  const stripe = (a, b, w, cols, n) => { for (let i = 0; i < n; i++) bmLine([[lerp(a[0], b[0], i / n), lerp(a[1], b[1], i / n)], [lerp(a[0], b[0], (i + 1) / n), lerp(a[1], b[1], (i + 1) / n)]], w, cols[i % cols.length]); };
+  // flat bands across the limb (draft 37d: round-capped strokes read as stacked sausages once she is big on screen)
+  const stripe = (a, b, w, cols, n) => { const dx = b[0] - a[0], dy = b[1] - a[1], l = Math.hypot(dx, dy) || 1, nx = -dy / l * w / 2, ny = dx / l * w / 2;
+    for (let i = 0; i < n; i++) { const u0 = i / n, u1 = Math.min(1, (i + 1.08) / n), p0 = [lerp(a[0], b[0], u0), lerp(a[1], b[1], u0)], p1 = [lerp(a[0], b[0], u1), lerp(a[1], b[1], u1)];
+      bmFill([[p0[0] + nx, p0[1] + ny], [p1[0] + nx, p1[1] + ny], [p1[0] - nx, p1[1] - ny], [p0[0] - nx, p0[1] - ny]], cols[i % cols.length]); } };
   if (j === 0) { // rainbow: black stilt poles under rainbow-striped legs, ruffled pink-and-purple cuffs, the ruffled jacket, a flower crown
     for (const s of [-1, 1]) { const f = [s * .13 + s * st, 0], kn = [s * .11, 1.35]; bmLine([f, kn], .05, '#1c1a1e'); if (det) bmLine([[f[0], .05], [f[0], .14]], .06, '#e8b23a');
       bmFill([[kn[0] - .2, 1.2], [kn[0] + .2, 1.2], [kn[0] + .08, 1.5], [kn[0] - .08, 1.5]], s < 0 ? '#e85aa8' : '#9a68dc');
