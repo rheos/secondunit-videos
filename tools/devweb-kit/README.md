@@ -16,7 +16,8 @@ is 1080x1920 at 60 fps with motion blur.
   a full 3D render.
 - **Narrator:** Chris on ElevenLabs eleven_v4. Every cue sits on one of his words.
 - **Palette:** bg `#0d1117`; green `#6ad08a` = the model and "good"; blue `#4f93d6` = tools; amber `#d6a45a` = results
-  and output; red `#e0675a` = the failure. A request card is always white; a result card always amber.
+  and output; red `#e0675a` = the failure. A request card is always black with a green outline and green text, the
+  same look as the JSON it came from (Robin, ep 1 note at 0:15); a result card is always amber.
 - **Topics borrowed from other channels** are covered in our own words and never credited, and no title echoes theirs.
 
 ## What is in the kit
@@ -59,6 +60,8 @@ Iterate with `npx hyperframes@0.8.162 snapshot --at ...` (contact sheets) before
 - **ParametricGeometry winding:** run `u` backwards or the faces point inward and the outline shell covers the body.
 - **Size canvas panels for their longest text.** Text past the edge is cut, not wrapped.
 - **No one-frame swaps.** Expression changes (eyes to thinking dots) crossfade over about 0.1 s.
+- **A tool call is a real call.** The harness takes the request, the tool runs it against a service, the answer comes
+  back as text: show the tool working (Robin, ep 1 note at 0:18), not a tile that just glows.
 - **Frame for portrait.** Stack stations vertically (question, reply, Blink) rather than side by side, and keep the
   bottom 220 px for captions.
 - **A GSAP tween on an element whose transform is also written by hand overrides it.** Keep hand-driven transforms on
