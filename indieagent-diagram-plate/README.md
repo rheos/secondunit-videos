@@ -60,13 +60,15 @@ the clip player controls instead of a silent loop.
 
 ## Sound (draft 2)
 
-Under the plate: 32 s of Bob's "All Dressed Up" (Beware of Bob), 3:23.0 to 3:55.0, starting on an onset so the
-music builds while the plate draws and is at full strength when the words land. Fade in 0.15 s, fade out over the
-last 2.5 s, levelled to about -16 LUFS. The source is Robin's copy on Bertha (`Music/Archive/Rock/Bob Wiseman/Beware
-of Bob/`); the cut lives in gitignored `_in/`, never in git:
+Under the plate: 29 s of Bob's "All Dressed Up" (Beware of Bob), 3:26.0 to 3:55.0. The music builds there and is at
+full strength when the words land. Robin moved the start 3 s later than the first try (3:23.0) and the video ends
+with the music at 29 s, so the plate holds 17 s. Fade in 0.15 s, fade out over the last 2.5 s, levelled to about
+-16 LUFS. The source is Robin's copy on Bertha (`Music/Archive/Rock/Bob Wiseman/Beware of Bob/`); the cut lives in
+gitignored `_in/`, never in git:
 
 ```bash
-ffmpeg -ss 203.0 -t 32 -i "<Bertha>/Bob Wiseman_09_all dressed up.mp3" \
-  -af "afade=t=in:d=0.15,afade=t=out:st=29.5:d=2.5,loudnorm=I=-16:TP=-1.5:LRA=11" -ar 48000 _in/all-dressed-up_203.0-235.0.wav
-ffmpeg -i out/<picture>.mp4 -i _in/all-dressed-up_203.0-235.0.wav -map 0:v -map 1:a -c:v copy -c:a aac -b:a 192k -shortest out/<name>.mp4
+ffmpeg -ss 206.0 -t 29 -i "<Bertha>/Bob Wiseman_09_all dressed up.mp3" \
+  -af "afade=t=in:d=0.15,afade=t=out:st=26.5:d=2.5,loudnorm=I=-16:TP=-1.5:LRA=11" -ar 48000 _in/all-dressed-up_206.0-235.0.wav
+ffmpeg -i out/<picture 32 s>.mp4 -i _in/all-dressed-up_206.0-235.0.wav -map 0:v -map 1:a -t 29 \
+  -c:v libx264 -crf 23 -maxrate 4.5M -bufsize 9M -pix_fmt yuv420p -c:a aac -b:a 192k out/<name>.mp4
 ```
