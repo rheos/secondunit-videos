@@ -78,8 +78,8 @@ const KEYS = [
   [T.passed2E + 0.5, [0.5, 15.5, 13.5], [0.4, -1.6, -4.5], 40],
   [T.run - 0.05, [0.6, 16.0, 13.8], [0.4, -1.6, -4.5], 40],
   // V. the one real record goes through: down to the counter
-  [T.zero - 0.1, ...TRAYC],
-  [T.zeroE + 0.6, [MX + 0.05, 2.4, 8.8], [MX, -0.75, 1.5], 36],
+  [T.zero - 0.1, [MX, 2.2, 11.6], [MX, 0.6, 0.8], 36], // the whole station: Blink stays in frame through the dive
+  [T.zeroE + 0.6, [MX, 2.15, 11.4], [MX, 0.6, 0.8], 36],
   // VI. trust the green: the station; then up to Blink and the three real inputs
   [T.green + 0.2, ...RIG],
   [T.example + 0.2, [MX + 0.4, 4.2, 10.6], [MX + 0.4, 4.05, 1.0], 34],
