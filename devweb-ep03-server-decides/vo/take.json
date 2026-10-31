@@ -2,30 +2,34 @@
  "lines": [
   [
    "I",
-   "If your AI's tools take a user ID as an argument, you've already written the bug."
+   "You'd never trust a user ID sent from a browser form. So why trust the one your AI typed?"
   ],
   [
    "II",
-   "The model fills in every argument. So one wrong guess, or one hostile request, can point that tool at someone else's data."
+   "It's an easy mistake. You give your AI a tool, copy your existing API, so the tool takes a user ID, and you tell the model the user's ID in the prompt. Then the model fills it in."
   ],
   [
    "III",
-   "This isn't hypothetical. In 2025, Asana took its AI connector offline for nearly two weeks after finding a bug that could expose data to other organizations."
+   "But the model writes every argument. One wrong guess, or one hostile instruction, and your tool saves to someone else's account."
   ],
   [
    "IV",
-   "The fix is to take the field away. Who's asking comes from the session, not the arguments. Send a request naming someone else's account, and the server writes to yours anyway. Theirs isn't touched."
+   "Getting whose data wrong is real. In 2025, Asana pulled its AI connector for nearly two weeks after finding a bug that could expose data to other organizations."
   ],
   [
    "V",
-   "One real memory tool works this way. Six fields, all required, and the conversation ID isn't one of them. Its description tells the model why: the server derives it."
+   "The fix is the one you already use on the web. The server takes the user from the login, never from the request. The tool just doesn't have a user ID box."
   ],
   [
    "VI",
-   "Let the model choose what. Let the server decide whose."
+   "One real memory tool is built this way. Six fields, all filled in by the AI, and which conversation the memory belongs to isn't one of them."
+  ],
+  [
+   "VII",
+   "Treat your AI like a browser. Never trust the ID it sends."
   ]
  ],
- "chars": 782,
- "seconds": 53.44,
- "sha256": "067181aa9e3a2c381c1c81367c0c86becfc8ab76b3247aa5a808941bb4e7abaf"
+ "chars": 914,
+ "seconds": 60.0,
+ "sha256": "3ffd1f3a9581a7daecb57636561328169cf11631f68e6153b7f649dedbff73da"
 }
