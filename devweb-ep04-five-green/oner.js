@@ -165,7 +165,7 @@ export async function buildWorld(canvas) {
   cue("pop", T.mattered - 0.1); [...TESTL[0]].forEach((ch, i) => ch.trim() && i % 2 === 0 && cue("type", T.mattered + i / 40));
   cue("whoosh", T.feeds, { d: 0.8 }); cue("tick", TEST_IN); cue("zip", ROW_AT - 0.1); cue("land", ROW_AT + 0.35); cue("ding", ROW_AT + 0.5);
   cue("whoosh", T.back - 0.1, { d: 1.6 }); cue("slide", T.back + 0.2, { d: 0.6 }); cue("blip", T.trust + 0.4);
-  cue("slide", T.hand, { d: 0.9 }); cue("pop", T.build); cue("zip", T.right); cue("ding", T.comesOutE);
+  cue("slide", T.hand, { d: 0.9 }); cue("pop", T.hand + 0.2); cue("pop", T.build); cue("zip", T.right); cue("ding", T.comesOutE);
   cue("whoosh", T.itE + 0.4, { d: 1.6 }); cue("sting", T.itE + 1.6);
 
   await document.fonts.ready;
@@ -335,7 +335,7 @@ export async function buildWorld(canvas) {
     mono(g, 42 * sc, 700); g.textAlign = "left"; g.fillStyle = "#ffffff"; g.fillText(f.head, 36 * sc, 46 * sc);
     if (f.check) check(g, W - 62 * sc, 46 * sc, 30 * sc);
     const box = (x, y, w, h, label, value, hl) => {
-      if (hl) { g.fillStyle = hl; rr(g, x - 8 * sc, y - 8 * sc, w + 16 * sc, h + 16 * sc, 18 * sc); g.fill(); }
+      if (hl && (f.hlA ?? 1) > 0) { g.globalAlpha = f.hlA ?? 1; g.fillStyle = hl; rr(g, x - 8 * sc, y - 8 * sc, w + 16 * sc, h + 16 * sc, 18 * sc); g.fill(); g.globalAlpha = 1; }
       g.fillStyle = "#ffffff"; rr(g, x, y, w, h, 12 * sc); g.fill(); g.strokeStyle = "#1b212d"; g.lineWidth = 5 * sc; rr(g, x, y, w, h, 12 * sc); g.stroke();
       mono(g, 30 * sc, 600); g.fillStyle = "#7b8593"; g.textAlign = "left"; g.fillText(label, x + 20 * sc, y + 30 * sc);
       if (value) { mono(g, 42 * sc, 700); g.fillStyle = "#1b212d"; g.fillText(value, x + 20 * sc, y + h - 34 * sc); }
@@ -344,7 +344,7 @@ export async function buildWorld(canvas) {
     if (f.faceWho) { box(40 * sc, top, 330 * sc, 130 * sc, "who", "job-giver", f.whoHl); box(410 * sc, top, 350 * sc, 130 * sc, "file in", "ledger 7"); }
     if (f.msg !== undefined && f.msg !== null) {
       const k = f.msg, x = 40 * sc, y = top, wB = W - 80 * sc, hB = mix(110 * sc, H - top - 34 * sc, k);
-      if (f.msgHl) { g.fillStyle = f.msgHl; rr(g, x - 8 * sc, y - 8 * sc, wB + 16 * sc, hB + 16 * sc, 18 * sc); g.fill(); }
+      if (f.msgHl && (f.msgHlA ?? 1) > 0) { g.globalAlpha = f.msgHlA ?? 1; g.fillStyle = f.msgHl; rr(g, x - 8 * sc, y - 8 * sc, wB + 16 * sc, hB + 16 * sc, 18 * sc); g.fill(); g.globalAlpha = 1; }
       g.fillStyle = "#fbf4df"; rr(g, x, y, wB, hB, 14 * sc); g.fill(); g.strokeStyle = "#8f5b12"; g.lineWidth = 6 * sc; rr(g, x, y, wB, hB, 14 * sc); g.stroke();
       mono(g, 32 * sc, 700); g.fillStyle = "#8f5b12"; g.textAlign = "left"; g.fillText("message", x + 20 * sc, y + 32 * sc);
       if (k < 0.5) { // folded: a fold corner, nothing showing
@@ -375,7 +375,7 @@ export async function buildWorld(canvas) {
   notFound.set({}); scene.add(notFound.mesh);
   // the five samples (VI) and the samples rebuilt (IX)
   const samples = [0, 1, 2, 3, 4].map(() => { const p = panel(0.84, 0.57, 400, (g, W, H, s) => drawForm(g, W, H, s)); scene.add(p.mesh); return p; });
-  const sampleCard = (nested, hl) => nested ? { head: "sample", headCol: "#5b8a6a", msg: 1, check: 1, whoHl: hl ? "#cdeed8" : null } : { head: "sample", faceWho: 1, check: 1, whoHl: hl ? "#cfe2f6" : null };
+  const sampleCard = (nested, hlA = 0) => nested ? { head: "sample", headCol: "#5b8a6a", msg: 1, check: 1, whoHl: "#cdeed8", hlA } : { head: "sample", faceWho: 1, check: 1, whoHl: "#cfe2f6", hlA };
   // the key and the lock
   const keyLock = panel(2.5, 1.75, 400, (g, W, H, s) => {
     const sketch = (col) => { g.strokeStyle = col; g.lineWidth = 10; g.lineJoin = "round"; g.lineCap = "round"; };
@@ -440,6 +440,7 @@ export async function buildWorld(canvas) {
   const show = (p, a) => { p.mesh.visible = a > 0.01; p.mesh.material.opacity = cl(a); return a > 0.01; };
   function render(t) {
     cameraAt(t, cam);
+    cam.translateZ(-0.22 * Math.sin(t * 0.42)); cam.translateX(0.07 * Math.sin(t * 0.31 + 0.8)); // a slow breath, so no hold reads as a stalled player
     const bob = 0.05 * Math.sin((t / 1.7) * Math.PI * 2);
     let happy = 0, blinkK = 0, look = 0, lookY = 0, think = 0, skew = 0, eager = 0, tilt = 0, lean = 0, hop = 0, yaw = 0;
 
@@ -529,15 +530,15 @@ export async function buildWorld(canvas) {
     show(bubbleForm, bA); show(bubbleRing, bA * 0.95);
     bubbleForm.mesh.position.copy(BUBBLE_AT).add(V(0, -0.06, 0.02)); bubbleRing.mesh.position.copy(BUBBLE_AT);
     const bs = mix(0.85, 1, back(r01(t, T.jgForms - 0.1, 0.35))); bubbleForm.mesh.scale.setScalar(bs); bubbleRing.mesh.scale.setScalar(bs);
-    bubbleForm.set({ head: "a job-giver form", headCol: "#4f6a8f", faceWho: 1, whoHl: t > T.who1 - 0.1 ? "#cfe2f6" : null });
+    bubbleForm.set({ head: "a job-giver form", headCol: "#4f6a8f", faceWho: 1, whoHl: "#cfe2f6", hlA: r01(t, T.who1 - 0.1, 0.3) });
     puffs.forEach((m, i) => { m.visible = bA > 0.01; m.material.opacity = bA; m.position.set(MX + 1.3 - i * 0.06, BUBBLE_AT.y - FORM_H / 2 - 0.25 - i * 0.2, 1.3); });
     // the real form: face up on "assumed"; its folded "message" box opens on "inside"; back for the fix (IX)
     const rA = r01(t, T.assumed - 0.1, 0.3) * (1 - r01(t, T.entry - 0.6, 0.3)) + r01(t, T.fix + 0.2, 0.3) * (1 - r01(t, T.mattered - 0.4, 0.4));
     if (show(realForm, rA)) {
       const flip = t < T.fix ? io(r01(t, T.assumed - 0.1, 0.45)) : 1;
       realForm.mesh.position.copy(REAL_AT); realForm.mesh.scale.set(Math.max(0.02, Math.sin((Math.PI / 2) * flip)), 1, 1);
-      const openK = t < T.fix ? q(io(r01(t, T.inside1, 0.7))) : 1;
-      realForm.set({ head: "the real record", headCol: "#d6a45a", msg: openK, msgHl: t > T.message1 - 0.1 && t < T.found ? "#f3e1c1" : null, whoHl: t > T.message1 && t < T.found + 0.6 ? "#cdeed8" : null });
+      const openK = t < T.fix ? io(r01(t, T.inside1, 0.7)) : 1;
+      realForm.set({ head: "the real record", headCol: "#d6a45a", msg: openK, msgHl: "#f3e1c1", msgHlA: t < T.fix ? r01(t, T.message1 - 0.1, 0.3) * (1 - r01(t, T.found, 0.3)) : 0, whoHl: "#cdeed8", hlA: t < T.fix ? r01(t, T.message1, 0.3) * (1 - r01(t, T.found + 0.6, 0.3)) : 0 });
     }
     // the pointer: over the expected form's face, then the real form's face; red where it finds nothing
     const pA = (r01(t, T.looked, 0.25) * (1 - r01(t, T.entry - 0.6, 0.3))) + (r01(t, T.reach - 0.2, 0.25) * (1 - r01(t, T.small, 0.3)));
@@ -560,14 +561,14 @@ export async function buildWorld(canvas) {
       const ang = (i - 2) * 0.32, cy = inIX ? 6.2 : FAN_Y;
       p.mesh.position.set(MX + Math.sin(ang) * 1.45, cy - (1 - Math.cos(ang)) * 1.45, 1.25 + i * 0.002); p.mesh.rotation.z = -ang * 0.6;
       p.mesh.scale.setScalar(mix(0.7, 1, back(r01(t, (inIX ? T.rebuilt - 0.45 : T.five - 0.15) + i * 0.09, 0.3))));
-      p.set(sampleCard(inIX, inIX ? t > T.rebuilt : t > T.who2 - 0.1));
+      p.set(sampleCard(inIX, inIX ? r01(t, T.rebuilt, 0.3) : r01(t, T.who2 - 0.1, 0.3)));
     });
     // VII: the key and the lock
     const kA = r01(t, T.guessed - 0.2, 0.3) * (1 - r01(t, T.greenMeant - 0.3, 0.35));
     if (show(keyLock, kA)) {
       const slide = io(r01(t, T.checked, 0.5));
-      keyLock.set({ key: q(r01(t, T.guessed - 0.2, 0.3)), lock: q(r01(t, T.written - 0.2, 0.3)), same: q(r01(t, T.guess1, 0.3)), slide: q(slide), click: t > T.checked + 0.45 && t < T.never2 ? 1 : 0,
-        real: q(io(r01(t, T.never2, 0.6))), shake: t > T.realFile1 + 0.4 && t < T.realFile1 + 1.0 ? Math.round(Math.sin((t - T.realFile1) * 50) * 2) / 2 : 0, red: t > T.realFile1 + 0.4 ? 1 : 0 });
+      keyLock.set({ key: r01(t, T.guessed - 0.2, 0.3), lock: r01(t, T.written - 0.2, 0.3), same: r01(t, T.guess1, 0.3), slide, click: t > T.checked + 0.45 && t < T.never2 ? 1 : 0,
+        real: io(r01(t, T.never2, 0.6)), shake: t > T.realFile1 + 0.4 && t < T.realFile1 + 1.0 ? Math.round(Math.sin((t - T.realFile1) * 50) * 2) / 2 : 0, red: t > T.realFile1 + 0.4 ? 1 : 0 });
       keyLock.mesh.scale.setScalar(1 + 0.04 * pulse(t, T.checked + 0.45, 0.15));
     }
     // IX: the test that mattered
