@@ -233,13 +233,13 @@ export async function buildWorld(canvas) {
   const readsCard = smallMesh("real"), prodCards = PROD_IN.map(() => smallMesh("real")), realCard = smallMesh("real"), realCard2 = smallMesh("real");
   // a card falls from above for FALL seconds, then slips into the slot in 0.22 s (sunk = 1 when it is gone)
   const FALL = 0.55;
-  const dropPose = (m, tIn, t, jx = 0) => {
+  const dropPose = (m, tIn, t, jx = 0, fall = 2.0) => {
     const k = (t - (tIn - FALL)) / FALL;
     m.scale.setScalar(1); m.rotation.set(0, 0, 0); m.material.opacity = 1;
     if (k < 0 || t > tIn + 0.24) { m.visible = false; return; }
     m.visible = true;
     const yIn = MTOP + 0.06 + CARD_S[1] / 2;
-    if (t < tIn) { const f = k * k; m.position.set(SX + jx * (1 - f), mix(yIn + 2.0, yIn, f), 0.02); m.rotation.z = jx * 0.3 * (1 - f); m.material.opacity = cl(k / 0.35); return; }
+    if (t < tIn) { const f = k * k; m.position.set(SX + jx * (1 - f), mix(yIn + fall, yIn, f), 0.02); m.rotation.z = jx * 0.3 * (1 - f); m.material.opacity = cl(k / 0.35); return; }
     const s = cl((t - tIn) / 0.22); // sink: the bottom edge stays on the slot, the card shortens into it
     m.position.set(SX, MTOP + 0.06 + (1 - s) * CARD_S[1] / 2, 0.02); m.scale.set(1, Math.max(0.01, 1 - s), 1);
   };
@@ -292,7 +292,7 @@ export async function buildWorld(canvas) {
     let happy = 0, blinkK = 0, look = 0, lookY = 0, think = 0, skew = 0, eager = 0, tilt = 0, lean = 0, hop = 0, yaw = 0.35 + 0.1 * Math.sin((t / 3.1) * Math.PI * 2);
 
     // the cards falling into the slot (set every frame: frames render in any order)
-    HOOK_IN.forEach((tIn, i) => dropPose(hookCards[i], tIn, t, (i % 2 ? 1 : -1) * 0.25));
+    HOOK_IN.forEach((tIn, i) => dropPose(hookCards[i], tIn, t, (i % 2 ? 1 : -1) * 0.2, 0.9)); // short drops: clear of the hook line
     dropPose(readsCard, READS_IN, t, -0.2);
     PROD_IN.forEach((tIn, i) => dropPose(prodCards[i], tIn, t, (i % 2 ? -1 : 1) * 0.3));
     dropPose(realCard, REAL_IN, t, 0.15); realCard.visible = realCard.visible && t > T.what; // only once the camera is back down
