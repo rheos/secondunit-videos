@@ -114,7 +114,7 @@ export async function buildWorld(canvas) {
   cue("whoosh", T.did - 0.2, { d: 0.9 });
   cue("whoosh", T.if - 0.05, { d: 1.0 }); cue("pop", T.writes); [...CODE].forEach((ch, i) => ch.trim() && cue("type", T.writes + 0.05 + i / CPS));
   cue("slide", T.tests - 0.05, { d: 0.4 }); cue("ding", T.go);
-  cue("pop", T.same - 0.05); cue("draw", T.guess, { d: 0.7 }); cue("blip", T.data); cue("ding", T.agree); cue("strike", T.wrong);
+  cue("pop", T.same - 0.05); cue("draw", T.guess, { d: 0.7 }); cue("blip", T.data); cue("ding", T.agree); cue("blip", T.guess2 - 0.05); cue("strike", T.wrong); // the bubble turns red on "the guess"
   cue("whoosh", T.heres, { d: 1.2 }); PROD_IN.forEach((t) => cue("tick", t)); cue("blip", T.cost + 0.05);
   cue("whoosh", T.looked, { d: 1.0 }); cue("pop", T.field + 0.1); cue("slide", T.top - 0.05, { d: 0.4 }); cue("blip", T.real2);
   cue("draw", T.level, { d: 0.5 }); cue("blip", T.inside + 0.1); cue("strike", T.matched + 0.05);
@@ -326,7 +326,7 @@ export async function buildWorld(canvas) {
     // V: the one real record falls a long way from over the field, big, then shrinks to card size as it reaches the slot
     dropPose(bigDrop, REAL_IN, t, 0, 3.0, REAL_IN - T.one4 + 0.05); // starts low enough to fall below the slams
     if (bigDrop.visible && t < REAL_IN) { const s = mix(2.0, 1, io(r01(t, T.one4, REAL_IN - T.one4))); bigDrop.scale.setScalar(s); }
-    realGlow.visible = bigDrop.visible; realGlow.position.copy(bigDrop.position); realGlow.position.z -= 0.05; realGlow.scale.setScalar(2.4 * bigDrop.scale.x); realGlow.material.opacity = 0.8;
+    realGlow.visible = bigDrop.visible; realGlow.position.copy(bigDrop.position); realGlow.position.z -= 0.05; realGlow.scale.setScalar(2.4 * bigDrop.scale.x); realGlow.material.opacity = 0.8 * bigDrop.material.opacity; // fades in with the card
 
     // the five checks light as the samples go in, and pulse again "in one go" and on "all five passed"
     const nLit = HOOK_IN.filter((x) => t >= x + 0.05).length;
@@ -377,7 +377,8 @@ export async function buildWorld(canvas) {
     if (t < T.heres) { vText = t < T.agree - 0.1 ? "tests: 5/5 pass" : t < T.wrong - 0.05 ? "code and test agree" : "both wrong"; vCol = t < T.wrong - 0.05 ? "#6ad08a" : "#e0675a"; vA = r01(t, T.go, 0.2) * (1 - r01(t, T.heres, 0.3)); }
     else if (t < T.its) { vText = "matched: 0 records"; vCol = "#e0675a"; vA = r01(t, T.matched - 0.05, 0.2) * (1 - r01(t, T.wrote, 0.3)); }
     else { vText = "tests: 5/5 pass"; vA = r01(t, T.expected, 0.2) * (1 - r01(t, T.all + 0.2, 0.4)); }
-    verdict.set({ text: vText, col: vCol }); verdict.mesh.visible = vA > 0.01; verdict.mesh.material.opacity = vA;
+    vA *= 1 - pulse(t, T.agree - 0.1, 0.14) - pulse(t, T.wrong - 0.05, 0.14); // dip through each text swap, no one-frame change
+    verdict.set({ text: vText, col: vCol }); verdict.mesh.visible = vA > 0.01; verdict.mesh.material.opacity = Math.max(0, vA);
     verdict.mesh.scale.setScalar(1 + 0.1 * Math.max(pulse(t, T.agree, 0.18), pulse(t, T.wrong + 0.05, 0.18), pulse(t, T.matched + 0.05, 0.18)));
     // the guess bubble and the two feeds out of it, into the code and into the test
     const bA = r01(t, T.same - 0.1, 0.25) * (1 - r01(t, T.heres, 0.3));
