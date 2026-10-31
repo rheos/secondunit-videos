@@ -53,8 +53,8 @@ const KEYS = [
   [T.chat2 + 0.15, [0.6, 9.0, 5.4], [0.4, 8.75, -3.75], 36],
   [T.both - 0.2, [0.55, 8.95, 5.7], [0.4, 8.75, -3.75], 36],
   // both ids from one writer: the whole stack, Blink to the drawer
-  [T.both + 0.6, [0.5, 3.6, 16.6], [0.4, 3.5, -1.5], 40],
-  [T.only - 0.35, [0.45, 3.7, 16.9], [0.4, 3.5, -1.5], 40],
+  [T.both + 0.6, [0.5, 3.45, 16.6], [0.4, 3.35, -1.5], 40],
+  [T.only - 0.35, [0.45, 3.55, 16.9], [0.4, 3.35, -1.5], 40],
   // the server's records: the drawer that really holds the message, the wrong one beside it
   [T.records1 - 0.1, [-0.05, 9.05, 5.8], [0, 8.75, -3.75], 36],
   [T.so - 0.25, [0, 9.0, 6.1], [0, 8.75, -3.75], 36],
@@ -420,7 +420,7 @@ export async function buildWorld(canvas) {
       });
       // between slams it parks inside the server's body, so wall close-ups and the schema never show a stray handle
       const near = Math.max(0, ...STAMPS.map((ts) => io(r01(t, ts - 1.1, 0.45)) * (1 - io(r01(t, ts + 0.5, 0.45)))));
-      p.y -= 1.6 * (1 - near); stamp.visible = near > 0.01;
+      p = V(0.85, 6.1, -0.7).lerp(p, near); stamp.visible = near > 0.001; // parked inside the body: hidden, no pop
       stamp.position.copy(p); stamp.rotation.set(rx, 0, 0);
     }
 
