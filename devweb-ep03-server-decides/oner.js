@@ -40,8 +40,8 @@ const special = (c, r) => (c === C7.c && r === C7.r) || (c === C9.c && r === C9.
 const DESK = [[0.25, 1.2, 10.4], [0, 0.95, 0]], DESK2 = [[0.1, 1.15, 9.7], [0, 1.0, 0]];
 const KEYS = [
   // the hook: the tool's form on its own, the user_id field in the middle of the frame
-  [0, [0.1, 2.3, 7.2], [0, 2.25, 0.3], 36], // frame top stays under the server's bottom trim (y 4.6)
-  [5.7, [0.05, 2.2, 7.5], [0, 2.15, 0.3], 36],
+  [0, [0.1, 2.1, 7.2], [0, 2.05, 0.3], 36], // frame top (about y 4.3) stays well under the server's bottom (y 4.6): forensics' border check
+  [5.7, [0.05, 2.05, 7.5], [0, 2.0, 0.3], 36],
   // pull back to Blink filling it in
   [T.model + 0.2, ...DESK, 36],
   [T.point - 0.2, ...DESK2, 36],
@@ -307,7 +307,8 @@ export async function buildWorld(canvas) {
       const owner = t >= T.session + 0.06;
       // to someone else's drawer and back
       const up = io(r01(t, T.point, T.data - T.point)), down = io(r01(t, T.fix - 0.1, 0.8));
-      if (up > 0 && down < 1) { p = bez(FORM_DESK, V(1.2, 6.4, 1.4), slot(P9), up); s = mix(1, 0.42, up); if (down > 0) { p = bez(slot(P9), V(1.0, 5.6, 1.6), FORM_DESK, down); s = mix(0.42, 1, down); } }
+      // both legs pass in front of the server and over its top, never through its body (it hid the card for a frame)
+      if (up > 0 && down < 1) { p = bez(FORM_DESK, V(2.2, 7.4, 2.4), slot(P9), up); s = mix(1, 0.42, up); if (down > 0) { p = bez(slot(P9), V(1.4, 6.6, 2.6), FORM_DESK, down); s = mix(0.42, 1, down); } }
       // to the server, stamped from the session, into user_7
       const toM = io(r01(t, T.whos, 0.75)), toD = io(r01(t, T.not - 0.05, 0.7));
       if (toM > 0) { p = bez(FORM_DESK, V(0, 4.2, 1.4), CARD_M, toM); s = 1; }

@@ -90,3 +90,5 @@ Iterate with `npx hyperframes@0.8.162 snapshot --at ...` (contact sheets) before
   at -0.7 dBTP and probe failed.
 - **Snap the closing words to the voice.** Whisper put "make" 0.56 s early, before a silence; check the energy
   envelope around every slam and stamp.
+- **Check a flight path against every solid it passes.** A card's bezier from Blink to the wall dipped into the
+  server's body for a frame and vanished (a 58-point spike). Sample the path and keep it out of every box it crosses.
