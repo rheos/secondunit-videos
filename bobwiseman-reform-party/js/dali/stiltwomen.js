@@ -80,8 +80,8 @@ function stiltWoman(j, x0, y0, k, s, t, mouth = 0, wave = 0) {
     // orange fringe on the arcs and round the collar, silver chimes off the collar tips
     const offset = (pts, o) => pts.map((p, i) => { const a = pts[Math.max(0, i - 1)], b = pts[Math.min(pts.length - 1, i + 1)], dx = b[0] - a[0], dy = b[1] - a[1], L = Math.hypot(dx, dy) || 1; return [p[0] + dy / L * o, p[1] - dx / L * o]; });
     for (const sd of [-1, 1]) {
-      const arc = [...qd([sd * .28, 2.52], [sd * -.03, 2.38], [sd * .006, 2.1], 10), ...qd([sd * .006, 2.1], [sd * .06, 1.84], [sd * .39, 1.87], 10).slice(1)]; // from the collar tip in to the middle and out to the tail's tip
-      const panel = [[sd * .28, 2.52, 1], [sd * .27, 2.43], [sd * .2, 2.36], [sd * .19, 2.27], [sd * .155, 2.08], [sd * .19, 1.98], [sd * .29, 1.93], [sd * .39, 1.87, 1], ...arc.slice(1, -1).reverse()];
+      const arc = [...qd([sd * .28, 2.52], [sd * -.03, 2.38], [sd * .006, 2.1], 10), ...qd([sd * .006, 2.1], [sd * .03, 1.92], [sd * .35, 1.77], 10).slice(1)]; // from the collar tip in to the middle and out to the tail's tip
+      const panel = [[sd * .28, 2.52, 1], [sd * .27, 2.43], [sd * .2, 2.36], [sd * .19, 2.27], [sd * .155, 2.08], [sd * .185, 1.98], [sd * .27, 1.86], [sd * .35, 1.77, 1], ...arc.slice(1, -1).reverse()];
       fillS(panel, SEAM); clipTo(panel, () => { for (let i = 0; i < 12; i++) line(offset(arc, -sd * (.014 + i * .029)), .022, RAIN[(i + (sd > 0 ? 3 : 0)) % 7], 'butt'); }); fillS(panel, 'rgba(0,0,0,0)');
       fringe(arc, .042, ['#ee8a2a', '#f39a3a', '#e8642a', '#f2b040'], -sd, .3); // along the arc, into the opening
       fringe([[sd * .28, 2.52], [sd * .27, 2.43], [sd * .22, 2.38]], .04, ['#ee8a2a', '#e8452f'], sd, .2); // round the collar tip
