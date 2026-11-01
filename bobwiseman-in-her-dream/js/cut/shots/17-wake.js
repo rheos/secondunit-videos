@@ -48,16 +48,24 @@ function sitter(x, y, s, col, p, layer) {
     g.save(); g.translate(8, 0); leg(1.56, 1.5, col, null, false); g.restore();
     if (!p.farFront) { g.save(); g.rotate(p.lean); g.translate(-8, -212); arm(p.far[0], p.far[1], col, p.holdFar); g.restore(); }
     cut(LAP, col, { sh: .6, grain: .26, lift: .2 });
-    g.save(); g.rotate(p.lean); cut(BODICE, col, { sh: .6, grain: .26, lift: .2 }); g.restore();
+    g.save(); g.rotate(p.lean); cut(BODICE, col, { sh: .6, grain: .26, lift: .2 }); if (p.age) oldBack(col, 540, p.age); g.restore();
   }
   if (layer !== 'back') {
     g.save(); g.rotate(p.lean);
     if (p.farFront) {      // 17: the far arm never shows in front of the oilcloth's hanging front (it is behind it)
       g.save(); g.rotate(-p.lean); g.scale(1 / s, 1 / s); g.translate(-x, -y);
       const cl = new Path2D(); cl.rect(-3000, -3000, 9000, 9000); cl.rect(TX0 - 6, TY - 1, TX1 - TX0, 400); g.clip(cl, 'evenodd');
-      g.translate(x, y); g.scale(s, s); g.rotate(p.lean); g.translate(-8, -212); arm(p.far[0], p.far[1], col, p.holdFar); g.restore(); }
+      g.translate(x, y); g.scale(s, s); g.rotate(p.lean); g.translate(-8, -212); arm(p.far[0], p.far[1], col, p.holdFar); g.restore();
+      // her body goes back on top of her left (far) arm, so the arm comes from behind her, not across her
+      // front: drawn over it, both arms read as leaving the near shoulder (Robin, finals, 4:43)
+      cut(BODICE, col, { sh: .6, grain: .26, lift: .2 }); if (p.age) oldBack(col, 540, p.age);
+      // and her dress (the lap) back on top of the torso, as in the back layer; only left of the table's
+      // edge, so the oilcloth still hangs in front of it
+      g.save(); g.rotate(-p.lean); g.scale(1 / s, 1 / s); g.translate(-x, -y);
+      const lc = new Path2D(); lc.rect(-3000, -3000, TX0 - 6 + 3000, 9000); g.clip(lc);
+      g.translate(x, y); g.scale(s, s); cut(LAP, col, { sh: .6, grain: .26, lift: .2 }); g.restore(); }
     if (p.postFar) { g.save(); g.rotate(-p.lean); g.scale(1 / s, 1 / s); g.translate(-x, -y); p.postFar(); g.restore(); }
-    g.save(); g.translate(10, -250); head('her', null, col, .265, p.head || 0, 0);
+    g.save(); g.translate(10, -250); if (p.age) oldNeck(p.age); head('her', null, col, .265, p.head || 0, 0, p.age || 0);
     if (p.eye > 0) {        // a small closed, smiling eye cut out of the head (the 04 crescent)
       g.rotate(-(p.head || 0) * .9); g.scale(.265, .265); g.translate(-580, -800);
       g.globalAlpha *= p.eye; g.strokeStyle = p.eyeCol; g.lineWidth = 15; g.lineCap = 'round';
@@ -73,10 +81,13 @@ function sitter(x, y, s, col, p, layer) {
 // world point of a hip-local point for a lean
 const W_ = (lean, x, y) => [HX + (x * Math.cos(lean) - y * Math.sin(lean)) * S, HY + (x * Math.sin(lean) + y * Math.cos(lean)) * S];
 // an arm pose [sh, el] that puts the hand point (01's handAt) at a world point; side = 8 near, -8 far
-function reachTo(lean, wx, wy, side = 8, neg = false) {
+// hang: when the hand comes within reach of the shoulder itself (the orange at her cheek) the aim at the
+// target swings wildly and the folded arm whips round; blend the aim to this angle so the elbow stays down
+function reachTo(lean, wx, wy, side = 8, neg = false, hang = null) {
   const ux = (wx - HX) / S, uy = (wy - HY) / S;
   const lx = ux * Math.cos(-lean) - uy * Math.sin(-lean) - side, ly = ux * Math.sin(-lean) + uy * Math.cos(-lean) + 212;
-  const a1 = 168, a2 = 182; const d = clamp(Math.hypot(lx, ly), 30, a1 + a2 - .5), th = Math.atan2(lx, ly);
+  const a1 = 168, a2 = 182; const d = clamp(Math.hypot(lx, ly), 30, a1 + a2 - .5);
+  let th = Math.atan2(lx, ly); if (hang !== null) th = lerp(hang, th, ss(40, 110, Math.hypot(lx, ly)));
   const E = Math.acos(clamp((d * d - a1 * a1 - a2 * a2) / (2 * a1 * a2), -1, 1));
   return neg ? [th + Math.atan2(a2 * Math.sin(E), a1 + a2 * Math.cos(E)), -E] : [th - Math.atan2(a2 * Math.sin(E), a1 + a2 * Math.cos(E)), E];
 }
@@ -166,6 +177,9 @@ const OR = 30;                                       // the orange's radius
 // the orange lies at the back of the oilcloth in the lamp's pool, hidden under her head while she sleeps
 const ORANGE = { x: 895, y: TY - TB - 4 };
 const RAISED = [900, 548], CHEEK = [748, 590];       // held up to the light; drawn in to her cheek
+// old (?old=1), her head sits forward and lower (oldNeck), so her cheek and the orange move with it
+if (OLD) { CHEEK[0] += 23; CHEEK[1] += 18; }
+const HANG = 2.1;                                    // at the cheek: the aim that keeps her elbow down
 // 01's doze (01-kitchen.js DOZE): head down on forearms folded on the TOP of the table, far arm over the top
 const DOZE = { lean: .66, head: -.85, near: [2.0, 3.15], far: [2.2, 2.9 - Math.PI * 2] };
 const UP = { lean: .1, head: -.1 }, FAR0 = [1.0, .62];
@@ -256,7 +270,7 @@ SHOT(T.a, T.end, 'wake', (t) => {
   // arm angles: 01's doze angles, then targets
   const dn = [DOZE.near[0] - breath * .9 * sleepK, DOZE.near[1]];
   const nearArmK = eio((t - T.lift0) / (T.lift1 - T.lift0 - .2));
-  const near = nearArmK <= 0 ? dn : nearArmK < 1 ? lerp2(dn, reachTo(lean, NREST[0], NREST[1]), nearArmK) : reachTo(lean, nearT[0], nearT[1]);
+  const near = nearArmK <= 0 ? dn : nearArmK < 1 ? lerp2(dn, reachTo(lean, NREST[0], NREST[1]), nearArmK) : reachTo(lean, nearT[0], nearT[1], 8, false, t > T.dream2 - 1.4 ? HANG : null);
   const df = [DOZE.far[0] - breath * .9 * sleepK, DOZE.far[1]];
   const slide = eio((t - T.slide0) / (T.slide1 - T.slide0));
   const billK = eio((t - T.open - .12) / .55);
@@ -275,8 +289,9 @@ SHOT(T.a, T.end, 'wake', (t) => {
   }
   const farFront = true;
 
+  cane(HX, HY + 22, C.w3, OLD ? 1 : 0);
   chair(HX, C.w0);
-  sitter(HX, HY, S, C.w1, { lean, head: headA, near, far, farFront }, 'back');
+  sitter(HX, HY, S, C.w1, { lean, head: headA, near, far, age: OLD ? 1 : 0, farFront }, 'back');
 
   // the table and oilcloth (01)
   cut(cutRect(TX0 + 40, TY, 30, FLOOR - TY, 51), C.w0, { sh: .5 });
@@ -298,7 +313,7 @@ SHOT(T.a, T.end, 'wake', (t) => {
   // her near hand (at her cheek it sits in front of her face); it never overlaps anything at the switch
   if (t < T.grab) orange(op[0], op[1], OR);
   tentBill(billP[0], billP[1], billK, -.5 * Math.sin(billK * Math.PI) + .06 * billK);
-  sitter(HX, HY, S, C.w1, { lean, head: headA, near, far, farFront, eye, eyeCol, preNear: t >= T.grab ? () => orange(op[0], op[1], OR) : null }, 'front');
+  sitter(HX, HY, S, C.w1, { lean, head: headA, near, far, age: OLD ? 1 : 0, farFront, eye, eyeCol, preNear: t >= T.grab ? () => orange(op[0], op[1], OR) : null }, 'front');
   g.restore();
 
   // the room comes up out of the dark around the lamp (the reunion's last warm circle)

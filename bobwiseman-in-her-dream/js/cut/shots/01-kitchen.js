@@ -32,12 +32,12 @@ function sitter(x, y, s, col, p, layer) {
     g.save(); g.translate(8, 0); leg(1.56, 1.5, col, null, false); g.restore();
     if (!p.farFront) { g.save(); g.rotate(p.lean); g.translate(-8, -212); arm(p.far[0], p.far[1], col, p.holdFar); g.restore(); }
     cut(LAP, col, { sh: .6, grain: .26, lift: .2 });
-    g.save(); g.rotate(p.lean); cut(BODICE, col, { sh: .6, grain: .26, lift: .2 }); g.restore();
+    g.save(); g.rotate(p.lean); cut(BODICE, col, { sh: .6, grain: .26, lift: .2 }); if (p.age) oldBack(col, 540, p.age); g.restore();
   }
   if (layer !== 'back') {
     g.save(); g.rotate(p.lean);
     if (p.farFront) { g.save(); g.translate(-8, -212); arm(p.far[0], p.far[1], col, p.holdFar); g.restore(); }
-    g.save(); g.translate(10, -250); head('her', null, col, .265, p.head || 0, 0); g.restore();
+    g.save(); g.translate(10, -250); if (p.age) oldNeck(p.age); head('her', null, col, .265, p.head || 0, 0, p.age || 0); g.restore();
     g.translate(8, -212); arm(p.near[0], p.near[1], col, p.holdNear);
     g.restore();
   }
@@ -237,8 +237,9 @@ SHOT(0, 18.5, 'kitchen', (t) => {
     billHard(BW, BH, held.last ? mix(C.w4, C.lamp, lit * .7) : billCol, billInk); g.restore(); };
   const flat = (x, y, r, k = 0) => { g.save(); g.translate(x, y); g.rotate(r); g.scale(1, .42); billHard(BW, BH, billCol, billInk, .8); g.restore(); };
 
+  cane(HX, HY + 22, mix(C.w3, C.creamDeep, navyK), AGE_KITCHEN(t));
   chair(mix(C.w0, C.navy, navyK));
-  sitter(HX, HY, S, herCol, { lean, head: headA, near, far, farFront }, 'back');
+  sitter(HX, HY, S, herCol, { lean, head: headA, near, far, age: AGE_KITCHEN(t), farFront }, 'back');
 
   // the table: a leg, the top band (naive perspective), the oilcloth
   cut(cutRect(TX0 + 40, TY, 30, FLOOR - TY, 51), tableCol, { sh: .5 });
@@ -256,7 +257,7 @@ SHOT(0, 18.5, 'kitchen', (t) => {
   });
   cup(1300, TY - 26, 1.3, mix(C.w3, C.cream, navyK));
 
-  sitter(HX, HY, S, herCol, { lean, head: headA, near, far, holdNear, farFront }, 'front');
+  sitter(HX, HY, S, herCol, { lean, head: headA, near, far, age: AGE_KITCHEN(t), holdNear, farFront }, 'front');
   g.restore();
 });
 })();
