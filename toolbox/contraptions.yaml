@@ -1,0 +1,27 @@
+slug: contraptions
+name: contraptions (Stephen Wu)
+kind: toolkit
+status: candidate
+does: An MIT TypeScript and p5 engine of Rube Goldberg machines, about 150 animated pieces across four worlds (workshop, garden, harbor, arcade), where one ball runs an endless chain and the camera follows it, with a Shows mode that choreographs a chain to a recording.
+keywords:
+- rube-goldberg
+- machine
+- music-sync
+- p5
+- generative
+- choreography
+fits:
+- the lyric machine (Kevin Ngo K30 was built on this idea): the pieces and the choreography rule, plus our own hand-lettered lyric layer
+- music videos that want a chain reaction cut to the song, Bob's first
+- explainer cutaways where a process is a chain of cause and effect
+deterministic: yes
+how: 'not installed. The repo is 578 MB (recordings and media); clone with --filter=blob:none or sparse-checkout apps/rube and src. Node 22, `npm install && npm run dev` serves /machine/ and /shows/ on port 8791. A show is apps/rube/src/shows/versions/<work>/<take>.show.ts; the player asks show.at(t) with t in seconds of music.'
+cost: free (MIT; the show recordings are for private demos only, per each ATTRIBUTION.txt)
+url: https://github.com/wustep/contraptions
+detail: 'Its choreography rule (STOCK_SHOWS_PLAN.md, versions/README.md): every piece runs at its own stock duration; choose pieces, their stock variants and their order so events land on measured recording cues; never stretch a mechanism clock or add a pause; report cue errors instead of retiming. Nothing is written on the frame.'
+source: Kevin Ngo's machine film (x.com/kevin_t_ngo/status/2104213302624821647) credits @wustep; his post x.com/wustep/status/2103934236466307073, read 2026-11-01
+verdict: 'Recommended by Claude, 2026-11-01: the engine our test 01 lacked. Our rescue-machine test was keyed by hand from a contact sheet of Kevin''s film, with gaps between parts and a marble that moves on rails; Robin called it "pretty lame and boring by comparison". Rebuild the lyric machine on these pieces and this rule, with the lettering as our layer.'
+related:
+- looseleaf-ink
+- hyperframes
+added: '2026-11-01'
