@@ -1,7 +1,7 @@
 slug: looseleaf-ink
 name: Looseleaf (ink engine)
 kind: library
-status: candidate
+status: available
 does: Kevin Ngo's hand-drawn shadcn/ui component library, whose core is a seeded TypeScript pen engine (felt, pencil and marker pens as pressure ribbons with wobble, bleed, dry skips and pooled ends, paper stocks and textures) that writes SVG coloured by CSS variables, plus 160 icons, 48 doodles, 88 stickers, stamps, a mascot and the Kevin Sans hand font, all MIT.
 keywords:
 - hand-drawn
@@ -18,12 +18,13 @@ fits:
 - the diagram-plate look; his statechart-art plates (MIT, github.com/kevintngo/statechart-art) draw pele layouts in pen and coloured pencil with the same kind of engine, and are worth diffing against tools/blueprint-kit/diagram.js
 - stickers, stamps and Kevin Sans for posters, thumbnails and the ticket-stub world
 deterministic: yes
-how: not installed. Pure TS under src/lib/ink (pen.ts, pens.ts, paper/, art/); runs without React, so it can be bundled into a HyperFrames page. Whole components come in through the shadcn registry (kevintngo.github.io/looseleaf/r/{name}.json).
+how: vendored in tools/looseleaf-pen (bundle, kit.js swap, stills script; see its README). Pure TS under src/lib/ink (pen.ts, pens.ts, paper/, art/); runs without React, so it can be bundled into a HyperFrames page. Whole components come in through the shadcn registry (kevintngo.github.io/looseleaf/r/{name}.json).
 cost: free (MIT for code, art and Kevin Sans; IBM Plex Mono is OFL)
 url: https://github.com/kevintngo/looseleaf
-detail: references/kevin-ngo (his look rules and earlier studies)
+detail: tools/looseleaf-pen/README.md (test 1 results); references/kevin-ngo (his look rules)
 source: x.com/kevin_t_ngo/status/2116743334735851819 and its reply with the repo link (Nov 1 2026, read 2026-11-01)
 verdict: 'Recommended by Claude, 2026-11-01: the most useful find of the two posts. It is Kevin''s line quality as a library, MIT, seeded so every frame redraws the same. Test: port pen.ts into one existing code-drawn scene and compare stills against the kit.js line. Build a language, not a copy: use the pens, not his component designs or Stubby on client work.'
+test: '2026-11-01, Travel Agent stills: felt pen is the keeper (tapered ends, pooled corners), pencil fine for construction lines, brush breaks outlines into dashes. Motion not checked.'
 related:
 - stageshow
 - code-painted
