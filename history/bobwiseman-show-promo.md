@@ -1,0 +1,12 @@
+# Bob Wiseman, show promos, leg promos, 9:16 pan-and-scan and ad clips: history
+
+Moved verbatim from the IndieAgent memory `bob-wiseman-videos` on 2026-10-31. Current state and standing rules stay in that memory.
+
+- 9:16 (2026-10-06): Facebook auto-cropped We Got Time to 9:16 (the straight-crop result, already known to Bob/Robin). For Me and Jimi the comparison shown to Bob is pan-and-scan (vertical.mjs) vs a true 9:16 redraw (wood-p.html, js/pch/), same 0:00-0:59.5 clip.
+
+**Show promos (HyperFrames spike, 2026-10-07):** mv-projects/bobwiseman-show-promo (not committed yet). One 15 s 9:16 riso template on the Airplane hook, show details as variables, `hyperframes render --batch shows.json` = one promo per show (~50 s each), stitch.sh joins them. 16 upcoming shows Oct 20-Dec 4 (Two Pianos no Rodeo Maritimes run + Bob's Nov/Dec dates; Nov 13 skipped, no city). Reel unlisted for Bob: https://youtu.be/CY7VgJIGduc. Open question: Airplane (Bob's song) on the duo Two Pianos dates.
+**Leg promos 2026-10-07:** Robin: Bob likely wants ONE ad per tour leg (next leg), not one per show; a lone date with a big gap gets the single-show ad. legs.py groups shows.json (same act, gap <= 7 days). promo-leg/ = 29 s, plane rig from airplane-type singing via vocal stem, never takes off (`airplane-on-the-highway-status` (IndieAgent memory)). Maritimes leg (Oct 20-31, 11 shows) unlisted for Bob: https://youtu.be/nUAuRevaFng. 2026-10-15: Miramichi back on Oct 23 at Three Dog Distilling; v4 (12 shows) https://youtu.be/SWOeEsikRzk, on his page as Version 4 (secondunit-videos PR #131; org DB change indieagent-org PR #55)
+**9:16 pan-and-scan 2026-10-08:** tools/panscan.py (bobwiseman-more; plan/render/sheet; crop follows action, 'fit' = whole frame over blur for lettering) made 720x1280 cuts of More (draft 5), We Got Time (1080p master) and Airplane (1080p master) in each project's out/9x16/; plans in aspects/9x16/ with by-eye overrides (the detector can't read lettering). Not uploaded yet. Paper no-zoom version parked in bobwiseman-more/work/pending/ awaiting Bob's answer on the beat zoom.
+9:16 cuts on files.novadiem.com 2026-10-08 (expire by 2026-11-07): More b8a78a6231, We Got Time 66ad6ad683, Airplane 8f1c57d6fa.
+
+**Ad clips 2026-10-15 (#144, PR #145):** three <=30 s 9:16 lyric clips each for Satisfied Mind (v1/v3/v4), More (v1/chorus/v3), Holiday Tavern (v1/v2/v3) on Bob's file page, made by mv-projects/tools/lyric_ad_clip.py over the pan-and-scan cuts; aligned lines (local) in that session's scratchpad only. Holiday Tavern's 9:16 lives on Bertha.
