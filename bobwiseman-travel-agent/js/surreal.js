@@ -6,25 +6,98 @@
 'use strict';
 
 // ---------- the merge: the blueprint burns through the paper (ill shots, last third) ----------
-const LEAK_T0 = 272, LEAK_T1 = 392;
-function leak(a) {
-  if (a <= 0) return; const r = M32(4040 + DSEED * 13);
-  for (let i = 0; i < 5; i++) {
-    // holes keep to the edges of frame so the subject stays readable; they grow and multiply as the merge takes over
-    let x = r() * W, y = r() * H; const dx = (x - W / 2) / (W * .46), dy = (y - H / 2) / (H * .46), d = Math.hypot(dx, dy); if (d < 1) { x = W / 2 + dx / (d || 1) * W * .46; y = H / 2 + dy / (d || 1) * H * .46; }
-    const R0 = (34 + r() * 100) * cl(a * 1.5 - i * .2), sd = r(); if (R0 < 5) continue;
-    const pts = []; for (let k = 0; k < 28; k++) { const an = k / 28 * TAU, rr = R0 * (.78 + .22 * Math.sin(an * 3 + i * 1.7) + .12 * Math.sin(an * 7 + sd * 9)); pts.push([x + Math.cos(an) * rr, y + Math.sin(an) * rr]); }
-    const hp = PP(pts);
-    X.save(); X.clip(PE(x, y, R0 * 1.3, R0 * 1.3)); hatch(PE(x, y, R0 * 1.3, R0 * 1.3), x, y, R0 * 1.3, .9 + i, 4, C.dark, 1, .45); X.restore(); // scorch
-    X.save(); X.clip(hp); X.fillStyle = C.navy; X.fillRect(x - R0 * 1.4, y - R0 * 1.4, R0 * 2.8, R0 * 2.8);
-    lattice(x, y, 24, Math.ceil(R0 / 32) + 1, C.lav, .35); stip(null, x, y, R0, R0 * 4, C.lav, .55, 1.3); if (R0 > 60) star(x + R0 * .2, y - R0 * .1, 3 + R0 * .02, C.white, .8); gc(x, y, R0 * .6, C.lav, .3, 1, [3, 6]); X.restore();
-    iP(pts, true, C.ink, 3, 1, true, 1.4);
+const LEAK_T0 = 272, LEAK_T1 = 392; // original growth timing; the late surge now continues to LEAK_PEAK
+// Robin 2026-10-13 (draft 6): the paper should really BURN, to about a third of the frame by ~392 s, then the snow
+// heals it. Holes are fixed in SCREEN space (same place in every shot, so they read as the paper itself burning),
+// each born at its own moment and growing; edges torn and charred with an ember line; the frame centre is kept
+// clearer so faces stay readable. a = 0..1 progress (story.js: eased from LEAK_T0 to LEAK_T1; healing in snowSettle).
+const LEAK_HOLES = (() => { const r = M32(9191), out = [];
+  for (let i = 0; i < 16; i++) { let x = r() * W, y = r() * H; const dx = (x - W / 2) / (W * .5), dy = (y - H / 2) / (H * .5), d = Math.hypot(dx, dy);
+    if (d < .7) { x = W / 2 + dx / (d || 1) * W * .5 * .76; y = H / 2 + dy / (d || 1) * H * .5 * .76; }
+    const born = Math.min(.7, i * .045 + r() * .08), Rmax = 92 + r() * 138, shape = [], ph = r() * TAU; for (let k = 0; k < 56; k++) { const t = k / 56 * TAU; shape.push(.86 + .12 * Math.sin(t * 2 + ph) + .07 * Math.sin(t * 5 + i) + (r() - .5) * .09); }
+    out.push({ x, y, born, Rmax, shape, rot: r() * TAU }); } return out; })();
+// clear: per-shot zones the burn must not eat (faces, pixel screens, tiny figures): [x, y, r] circles or
+// ['rect', x0, y0, x1, y1], screen coords. A hole near one is shrunk so its edge stops short of it.
+function leakRoom(h, clear) {
+  let room = 1e9;
+  for (const z of clear || []) {
+    if (z[0] === 'rect') { const dx = Math.max(z[1] - h.x, 0, h.x - z[3]), dy = Math.max(z[2] - h.y, 0, h.y - z[4]); room = Math.min(room, Math.hypot(dx, dy) - 14); }
+    else room = Math.min(room, Math.hypot(h.x - z[0], h.y - z[1]) - z[2] - 14);
   }
-  X.beginPath(); for (let i = 0; i < 7; i++) { const y = r() * H, L = W * cl(a * 1.5 - i * .1), dy = (r() - .5) * 400; X.moveTo(0, y); X.lineTo(L, y + dy * L / W); } stroke(C.lav, 1.4, .55 * cl(a * 2));
-  for (let i = 0; i < 4; i++) { const x = r() * W, y = r() * H; gc(x, y, (160 + r() * 360) * cl(a * 1.4 - i * .1), C.lav, .45 * cl(a * 2), 1.2, [4, 6]); }
-  for (let i = 0; i < 5; i++) { const x = r() * W, y = r() * H; if (a > .3 + i * .1) { X.beginPath(); X.moveTo(x - 12, y); X.lineTo(x + 12, y); X.moveTo(x, y - 12); X.lineTo(x, y + 12); stroke(C.lav, 1.2, .7); } }
+  return Math.max(0, room / 1.2);
 }
-
+function leakOriginal(a, clear) {
+  if (a <= 0) return;
+  for (const h of LEAK_HOLES) {
+    const g = cl((a - h.born) / (1 - h.born)); if (g <= 0) continue;
+    const R0 = Math.min(h.Rmax * Math.pow(g, .8), leakRoom(h, clear)); if (R0 < 4) continue;
+    const pts = h.shape.map((m, k) => { const an = h.rot + k / h.shape.length * TAU, rr = R0 * m * (1 + jit(.03)); return [h.x + Math.cos(an) * rr, h.y + Math.sin(an) * rr]; });
+    const hp = PP(pts), scorch = PP(pts.map(([x, y]) => [h.x + (x - h.x) * 1.16, h.y + (y - h.y) * 1.16]));
+    X.save(); X.clip(scorch); hatch(scorch, h.x, h.y, R0 * 1.25, h.rot + .9, 3.5, C.dark, 1.2, .6); hatch(scorch, h.x, h.y, R0 * 1.25, h.rot - .6, 5, '#2b1d14', 1, .4); X.restore();
+    X.save(); X.clip(hp); X.fillStyle = C.navy; X.fillRect(h.x - R0 * 1.5, h.y - R0 * 1.5, R0 * 3, R0 * 3);
+    graticule(W / 2, H / 2, W * 1.2, H * 1.2, 40, C.lav, .14);               // one blueprint grid behind every hole: they read as one sheet underneath
+    lattice(h.x, h.y, 26, Math.ceil(R0 / 34) + 1, C.lav, .3); stip(null, h.x, h.y, R0, R0 * 5, C.lav, .55, 1.3);
+    if (R0 > 70) { star(h.x + R0 * .15, h.y - R0 * .1, 3 + R0 * .02, C.white, .85); gc(h.x, h.y, R0 * .55, C.lav, .3, 1, [3, 6]); ticks(h.x, h.y, R0 * .55, 36, 5, C.lav, .35, 1, 6); }
+    X.restore();
+    X.beginPath(); wP(pts, true, 1.6); stroke(C.orange, 3, .85); X.beginPath(); wP(pts, true, 1.2); stroke('#2b1d14', 1.6, 1);
+    for (let k = 0; k < 6; k++) { const q = pts[(k * 7 + (FD >> 1)) % pts.length]; fillP(PE(q[0] + jit(6), q[1] + jit(6), 2.4, 2.4), C.orange, .9); } // embers
+  }
+}
+// Robin: keep the takeover developing beyond the old one-third ceiling.
+// Growth starts on the cage-section cut at 334.42 s; the same holes coalesce, rather than spawning a new pattern.
+const LEAK_SURGE_START = 334.42, LEAK_PEAK = 398.76;
+function leakProgress(T) {
+  return Math.pow(cl((T - LEAK_T0) / (LEAK_T1 - LEAK_T0)), 1.6)
+    + 1.15 * Math.pow(cl((T - LEAK_SURGE_START) / (LEAK_PEAK - LEAK_SURGE_START)), 1.35);
+}
+// Draft 9: the snow heals the burn hole by hole from inside the snow globe (393.5) until the shop draws back (~398.9),
+// last-born first, each hole filling with settling flakes as it closes, instead of one ~1 s uniform shrink.
+const LEAK_HEAL0 = 393.5, LEAK_HEAL_STAGGER = .25, LEAK_HEAL_DUR = 1.6;
+const LEAK_HEAL_ORDER = LEAK_HOLES.map((h, i) => i).sort((i, j) => LEAK_HOLES[j].born - LEAK_HOLES[i].born);
+function leakHeal(i, T) { const k = LEAK_HEAL_ORDER.indexOf(i); return eio(cl((T - LEAK_HEAL0 - k * LEAK_HEAL_STAGGER) / LEAK_HEAL_DUR)); }
+function leak(a, clear, T = TNOW) {
+  if (T <= LEAK_SURGE_START) { leakOriginal(a, clear); return; }
+  if (a <= 0) return;
+  const joined = new Path2D(), edges = [];
+  for (const [i, h] of LEAK_HOLES.entries()) {
+    const g = Math.max(0, (a - h.born) / (1 - h.born));
+    const radius = h.Rmax * Math.pow(g, .8);
+    const heal = leakHeal(i, T);
+    // Draft 11: a hole stops short of a clear zone instead of being carved by it. Carving left navy crescents hugging a
+    // head (d_featherFall) and cream ghost discs with charred rims (e_answerHome, d_birdSwap).
+    const R0 = Math.min(radius, leakRoom(h, clear)) * (1 - heal);
+    if (R0 < 4) continue;
+    const pts = h.shape.map((m, k) => {
+      const an = h.rot + k / h.shape.length * TAU;
+      // Fixed geometry: only its size changes, so the paper edge never swims.
+      return [h.x + Math.cos(an) * R0 * m, h.y + Math.sin(an) * R0 * m];
+    });
+    const path = PP(pts); joined.addPath(path); edges.push({ h, R0, pts, path, heal });
+  }
+  X.save();
+  // Draw rims first, then fill the union; overlapping holes have no internal rings.
+  for (const { h, R0, path, heal } of edges) { // a healing rim cools from ember to snow
+    X.strokeStyle = '#2b1d14'; X.lineWidth = 14; X.globalAlpha = .65 * (1 - heal); X.stroke(path);
+    X.strokeStyle = heal > 0 ? C.white : C.orange; X.lineWidth = 5 + heal * 4; X.globalAlpha = .9; X.stroke(path);
+  }
+  X.globalAlpha = 1;
+  X.save(); X.clip(joined); X.fillStyle = C.navy; X.fillRect(0, 0, W, H);
+  graticule(W / 2, H / 2, W * 1.2, H * 1.2, 40, C.lav, .2);
+  // One continuous sheet under all openings, with stable drafting geometry.
+  lattice(W / 2, H / 2, 42, 27, C.lav, .2);
+  for (let i = 0; i < 7; i++) {
+    const x = 170 + i * 270, y = 240 + (i % 3) * 270;
+    gc(x, y, 105 + (i % 2) * 45, C.lav, .35, 1.3, [4, 7]);
+    gl(x - 140, y, x + 140, y, C.cyan, .3, 1);
+    gl(x, y - 140, x, y + 140, C.cyan, .3, 1);
+    star(x, y, 4, C.white, .8);
+  }
+  for (const { h, R0, heal } of edges) { // snow settling into a hole that is closing, drawn on twos
+    if (heal <= 0) continue; const r = M32(4000 + Math.round(h.x) + FD), n = Math.round(10 + heal * 60);
+    for (let k = 0; k < n; k++) { const an = r() * TAU, d = Math.sqrt(r()) * R0 * 1.05; fillP(PE(h.x + Math.cos(an) * d, h.y + Math.sin(an) * d, 2 + r() * 3, 2 + r() * 3), C.white, .55 + heal * .4); }
+  }
+  X.restore(); X.restore();
+}
 // ---------- act 2: one impossible thing ----------
 SU.roadCarpet = { mode: 'ill', f(q, p, a, T) { // the road rolls itself up behind the car
   stripes(C.paper, '#e6d9b8', 140, -.62, 0, C.tan); cam(960, 540, lerp(1.05, 1, eo(p)));
@@ -74,7 +147,7 @@ SU.tinyPlanet = { mode: 'ill', f(q, p, a, T) { // he walks on a planet the size 
   const onRim = (ang, fn) => { const an = ((ang % TAU) + TAU) % TAU, d = an > Math.PI ? an - TAU : an; if (Math.abs(d) > 1.35) return; X.save(); X.translate(cx, cy); X.rotate(d); X.translate(0, -r + 6); fn(); X.restore(); };
   onRim(-rot + 1.0, () => kioskMini(0, 0, .42));
   onRim(-rot + 2.2, () => palm(0, 0, .7));
-  onRim(-rot + 3.4, () => { iline(0, 0, 0, -260, C.ink, 5); iE(40, -250, 18, 14, 0, C.ink, 2); });
+  onRim(-rot + 3.4, () => { iline(0, 0, 0, -260, C.ink, 5); const sg = PR(-46, -300, 92, 60); fillP(sg, C.cream); iBox(-46, -300, 92, 60, C.ink, 2.2); lab(0, -262, 'BUS', C.ink, .95, 24, 'center', 'alphabetic', 'bold'); }); // draft 11: a bus stop (read as a fishing rod)
   onRim(-rot + 4.6, () => { const b = PR(-110, -180, 220, 180); fillP(b, C.brick); iBox(-110, -180, 220, 180, C.ink, 2.4); lab(0, -150, 'TRAVEL', C.cream, 1, 22, 'center', 'alphabetic', 'bold'); });
   onRim(-rot + 5.6, () => car(0, 0, .6));
   traveller(cx, cy - r + 8, .95, { legs: walkPh() * 1.3, case: true, look: 1, mouth: sing(T) });
@@ -96,7 +169,7 @@ SU.muleCircle = { mode: 'ill', f(q, p, a, T) { // the queue of mules closes into
     iline(hx, hy, px, py, C.ink, 3 * s + 1); iline(px, py, px, py + 120 * s, C.ink, 1.2, 1, false); carrot(px, py + 120 * s, .6 * s);
     if (me) gc(x, y - 200 * s, 230 * s, C.orange, .8, 2);
   }
-  lab(cx, cy + ry + 120, 'NO ONE IS FIRST', C.brick, .9, 18, 'center', 'alphabetic', 'bold');
+  lab(cx, cy + ry + 120, 'NO ONE IS FIRST', C.brick, .95, 30, 'center', 'alphabetic', 'bold');
   consL([[0, cy, W, cy], [cx, 0, cx, H]]);
 } };
 SU.corkMoon = { mode: 'ill', f(q, p, a, T) { // the cork leaves the diner and becomes the moon
@@ -112,7 +185,7 @@ SU.corkMoon = { mode: 'ill', f(q, p, a, T) { // the cork leaves the diner and be
   path(bzPts([1000, 980], [1040, 700], [960, 600], [cx, cy], 0, 1, 30), C.orange, 2, .8, [8, 8]);
   const tb = PR(560, 900, 800, 40); fillP(tb, C.cream); iBox(560, 900, 800, 40, C.ink, 2); traveller(820, 1080, .55, { hat: false, look: 1, sit: 0, coat: C.plum }); traveller(1180, 1080, .55, { look: -1, mouth: sing(T) }); cloud(1180, 800, .3, {});
   cloud(lerp(-200, 2100, (T * .03) % 1), 260, .9, {});
-  if (face > .9) lab(cx + 260, cy + 10, 'CORK · 384,400 KM', C.ink, .9, 16, 'left', 'alphabetic', 'bold');
+  if (face > .9) lab(cx + 260, cy + 10, 'CORK · 384,400 KM', C.ink, .95, 28, 'left', 'alphabetic', 'bold');
   consC([[cx, cy, 300]]);
 } };
 
@@ -225,6 +298,13 @@ SU.snowSettle = { mode: 'ill', f(q, p, a, T) { // the snow settles and draws the
   const all = lines.map((l) => dens(l, 12)), tot = all.reduce((s2, l) => s2 + l.length, 0), show = Math.floor(tot * eo(p * 1.15)); let used = 0;
   for (const l of all) { const n = Math.max(0, Math.min(l.length, show - used)); used += l.length; if (n > 1) iP(l.slice(0, n), false, C.ink, 2.6, 1, true, 1.2); if (n > 1 && n < l.length) { const [x, y] = l[n - 1]; star(x, y, 3, C.orange, .8); } }
   if (p > .6) { X.globalAlpha = eo((p - .6) / .4); X.font = 'bold 86px Georgia, serif'; X.textAlign = 'center'; X.textBaseline = 'middle'; X.fillStyle = C.ink; X.fillText('TRAVEL  AGENT', 960, fy + 98); X.globalAlpha = 1; }
-  const mound = PE(960, H + 60, 1300, 120 + 120 * p); fillP(mound, '#fbfbf6'); iE(960, H + 60, 1300, 120 + 120 * p, 0, C.ink, 2, 1, false, 1, Math.PI, TAU);
+  // Draft 11: one continuous heal. As the snow settles, the finished shop (the next shot, frame for frame) fills in from
+  // the bottom up behind a ragged snowline, so the cut to shopClosed at 400.0 is invisible instead of a pop.
+  const fill = eio(seg(p, .3, 1)), sy = lerp(H + 60, -140, fill);
+  if (fill > 0) { const edge = []; for (let x = -40; x <= W + 40; x += 30) edge.push([x, sy + Math.sin(x * .013 + 2) * 26 + Math.sin(x * .041) * 10]);
+    const rv = PP(edge.concat([[W + 40, H + 80], [-40, H + 80]]));
+    X.save(); screen(); X.clip(rv); SU.shopClosed.f(0, 0, {}, Math.max(T, 400)); X.restore();
+    X.save(); screen(); X.beginPath(); wP(edge, false, 1.2); stroke('#ffffff', 10, .95); X.beginPath(); wP(edge, false, 1.2); stroke(C.ink, 1.6, .6); X.restore(); }
+  if (fill < 1) { const mound = PE(960, H + 60, 1300, 120 + 120 * p); fillP(mound, '#fbfbf6', 1 - fill); }
   snowFlakes(700, T, '#ffffff', .95, 4); X.fillStyle = C.ink; X.globalAlpha = .35; const r = M32(77); for (let i = 0; i < 700; i++) { const x0 = r() * W, sp = 40 + r() * 80, y = ((r() * H + T * sp) % (H + 40)) - 20; X.fillRect(x0 + Math.sin(T * 1.3 + i) * 20 - .5, y - .5, 1, 1); } X.globalAlpha = 1;
 } };

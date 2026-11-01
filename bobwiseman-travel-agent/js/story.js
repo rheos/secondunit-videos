@@ -106,7 +106,8 @@ SU.posterCU = { mode: 'ill', f(q, p, a, T) {
 } };
 SU.seesaw = { mode: 'ill', f(q, p, a, T) {
   stripes(C.paper, '#e8d0c4', 130, -.62, 0, C.rose); cam(960, 560, lerp(1, 1.06, eo(p)));
-  const flip = cl((T - 283.6) / .25), ang = lerp(-.28, .36, eo(flip)) + (flip >= 1 ? Math.sin((T - 283.8) * 18) * .04 * Math.max(0, 1 - (T - 283.8)) : 0);
+  // draft 11: the board's ends rest on the ground (pivot 140 above it, half-length 640: asin(140/640) = .22)
+  const flip = cl((T - 283.6) / .25), ang = Math.min(.22, lerp(-.22, .22, eo(flip)) + (flip >= 1 ? -Math.abs(Math.sin((T - 283.8) * 18)) * .05 * Math.max(0, 1 - (T - 283.8)) : 0));
   const fl = PP([[900, 900], [1020, 900], [960, 760]]); fillP(fl, '#7a4a2a'); shade(fl, 960, 840, 80, [10, 0], .9, 4); iP([[900, 900], [1020, 900], [960, 760]], true, C.ink, 2.6);
   iline(-200, 900, W + 200, 900, C.ink, 2.6); fillP(PR(-200, 900, W + 400, 300), '#c4ae84');
   X.save(); X.translate(960, 760); X.rotate(ang);
@@ -119,19 +120,21 @@ SU.seesaw = { mode: 'ill', f(q, p, a, T) {
   lab(450, -160, 'FEEL', C.ink, .95, 30, 'center', 'alphabetic', 'bold');
   X.restore();
   if (flip > 0 && flip < 1 || (T > 283.8 && T < 284.6)) for (let i = 0; i < 3; i++) gc(960 + 540, 760 + 230, 60 + i * 40 + (T - 283.8) * 200, C.orange, .8, 2.4);
-  traveller(300, 1000, 1.1, { look: 1, mouth: sing(T), hat: true }); cloud(300, 480, .6, { rain: true });
+  traveller(170, 1000, 1.1, { look: 1, mouth: sing(T), hat: true }); cloud(170, 480, .6, { rain: true }); // draft 11: clear of the raised board end
   consL([[0, 760, W, 760], [960, 0, 960, H]]); consC([[960, 760, 640]]);
 } };
 SU.sSeesaw = { mode: 'sch', f(q, p, a, T) {
   schBG(); cam(960, 540, lerp(1.05, 1, eo(p)));
-  const flip = cl((T - 283.6) / .25), ang = lerp(-.28, .36, eo(flip));
+  // Draft 9: the beam no longer sits still; it keeps getting re-weighed, kicking back toward THINK and settling to FEEL.
+  const flip = cl((T - 283.6) / .25), tt = Math.max(0, T - 284.4), kick = .62 * Math.exp(-tt * 1.3) * Math.abs(Math.sin(tt * 3.4));
+  const ang = lerp(-.28, .36, eo(flip)) - kick;
   X.save(); X.translate(960, 700); X.rotate(ang); gl(-640, 0, 640, 0, C.white, .9, 2); stip(PR(-560, -190, 260, 186), -430, -100, 200, 1500, C.cyan, .6, 1.4); X.strokeStyle = C.cyan; X.lineWidth = 1.2; X.strokeRect(-560, -190, 260, 186);
   star(450, -60, 8, C.mag, 1); gc(450, -60, 40, C.mag, .8, 1.4);
   for (const [x2, col, L] of [[-430, C.cyan, flip ? 80 : 220], [450, C.mag, flip ? 260 : 60]]) { gl(x2, 10, x2, 10 + L, col, .9, 2.2); X.beginPath(); X.moveTo(x2 - 9, L - 4); X.lineTo(x2, 10 + L); X.lineTo(x2 + 9, L - 4); stroke(col, 2.2, .9); }
   X.restore(); X.beginPath(); X.moveTo(900, 840); X.lineTo(1020, 840); X.lineTo(960, 700); X.closePath(); stroke(C.lav, 1.4, .9);
   gc(960, 700, 220, C.lav, .5, 1, [3, 6], -Math.PI, 0); lab(1180, 640, 'θ = ' + (ang * 57.3).toFixed(0) + '°', C.white, .9, 16);
   lab(530, 300, 'm(THINK) = 41 YR', C.cyan, .9, 14); lab(1300, 300, 'm(FEEL) = 0.2 S', C.mag, .9, 14);
-  screen(); schFrame('17', 'BALANCE', 'THINK vs FEEL');
+  screen(); schFrame('D1B', 'BALANCE', 'THINK vs FEEL');
 } };
 const STAMPS = [['HOME', 'ellipse'], ['ROADSIDE', 'rect'], ['WARD 3', 'hex'], ['BOX OFFICE', 'rect'], ['THE CAGE', 'ellipse']];
 SU.sPassport = { mode: 'sch', f(q, p, a, T) {
@@ -145,7 +148,10 @@ SU.sPassport = { mode: 'sch', f(q, p, a, T) {
     if (sh === 'ellipse') { gc(0, 0, 90, col, .95, 2); gc(0, 0, 74, col, .6, 1); } else if (sh === 'hex') iP(hexPts(0, 0, 90), true, col, 2, .95, false, .3); else { X.strokeStyle = col; X.lineWidth = 2; X.strokeRect(-110, -60, 220, 120); X.strokeRect(-100, -50, 200, 100); }
     stip(PE(0, 0, 80, 60), 0, 0, 90, 300, col, .5, 1.4); lab(0, 6, name, col, .95, 18, 'center', 'middle', 'bold'); X.restore();
   }
-  lab(1000, 850, 'DISTANCE FROM BLUES: 0 KM', C.mag, .95, 15);
+  // Draft 9: the distance climbs while the stamp lands, then snaps back to zero: every visa leads to the same place.
+  const km = p < .78 ? Math.round(eio(seg(p, .1, .74)) * 4800 / 10) * 10 : 0, snap = seg(p, .78, .9);
+  if (snap > 0 && snap < 1) { X.globalAlpha = .25 * (1 - snap); X.fillStyle = C.mag; X.fillRect(984, 822, 492, 46); X.globalAlpha = 1; }
+  lab(1005, 856, 'FROM BLUES: ' + km.toLocaleString('en-US') + ' KM', km ? C.cyan : C.mag, .95, 28, 'left', 'alphabetic', 'bold');
   screen(); schFrame('20', 'PASSPORT', 'VISA ' + (n + 1) + ' OF ∞');
 } };
 SU.sNews = { mode: 'sch', f(q, p, a, T) {
@@ -227,6 +233,22 @@ POST.holdPhone = (q, p, T) => { traveller(960, 980, .9, { look: 0, mouth: sing(T
 var NOTES = 0;
 // Cuts live in js/acts/act-*.js (CUTS_A..CUTS_E); buildShots() concatenates them in time order.
 const SEC_T = [0, 31.1, 44.7, 59.0, 73.7, 90.8, 104.2, 116.6, 131.2, 160.1, 174.6, 188.7, 203.3, 220.5, 247.3, 262.6, 276.0, 293.7, 319.5, 334.4, 365.5, 392.1, 400.0, 403.42];
+// where the burn-through must not reach, per set-up (screen coords; see leak() in surreal.js)
+const LEAK_CLEAR = {
+  d_featherFall: [['rect', 820, 300, 1320, 580], ['rect', 990, 0, 1210, 300]], // draft 11: restaged, cage from outside
+  e_appInside: [['rect', 700, 20, 1250, 1000], ['rect', 155, 540, 355, 1080], [300, 440, 130]],
+  e_dotHenge: [[360, 990, 120], [570, 440, 200], [975, 420, 200], [1371, 440, 200]],
+  e_answerHome: [[300, 780, 230], [330, 412, 120], ['rect', 600, 120, 1820, 980]],
+  e_freeze: [['rect', 760, 220, 1080, 1000], ['rect', 1400, 400, 1670, 500]],
+  e_globeBlow: [[972, 600, 440]], snowGlobe: [[972, 600, 440]],
+  e_mindSnow: [[830, 600, 420], [1250, 260, 220]],
+  // the zone follows the bird out of frame (it used to be left behind as a ghost disc); path from act-d.js d_birdSwap
+  d_birdSwap: (T) => { const lift = eio(seg((T - 354.6) / 3.8, .4, 1)), bx = lerp(600, -300, lift), by = lerp(730, -260, lift);
+    return [[bx + 10, by - 50, 250], [1360, 480, 260]]; },
+  d_staveCage: [['rect', 780, 40, 1720, 1040], [400, 700, 180]],
+  d_wingFrame: [['rect', 460, 60, 1420, 800], [260, 620, 200]],
+  d_coatWings: [['rect', 960, 100, 1480, 790]], // draft 11: restaged from behind on a parapet
+};
 function buildShots() {
   const CUTS = [].concat(...['A', 'B', 'C', 'D', 'E'].map((k) => window['CUTS_' + k] || [])).sort((a, b) => a[0] - b[0]);
   return CUTS.map(([t0, key, args, post], i) => {
@@ -234,6 +256,34 @@ function buildShots() {
     const frame = (args.fx !== undefined || args.fy !== undefined || args.fz !== undefined) ? { fx: args.fx, fy: args.fy, fz: args.fz } : null;
     // q runs across the sung section this cut sits in, so a scene keeps moving over its returns
     const k = SEC_T.findIndex((t) => t > t0 + 1e-6), s0 = SEC_T[Math.max(0, k - 1)], s1 = SEC_T[k] ?? 403.42;
-    return { t0, t1, mode: su.mode, key, draw: (p, lt) => { const T = t0 + lt, q = cl((T - s0) / (s1 - s0)); NOTES = T < 59 ? 0 : Math.round(lerp(2, 10, cl((T - 59) / 250))); CAMO = frame; su.f(q, p, args, T); if (post) post(q, p, T); CAMO = null; if (su.mode === 'ill' && key !== 'shopClosed' && key !== 'snowSettle' && key !== 'droste' && key !== 'e_droste' && T > LEAK_T0) { screen(); leak(cl((T - LEAK_T0) / (LEAK_T1 - LEAK_T0))); } } };
+    return { t0, t1, mode: su.mode, key, draw: (p, lt) => { const T = t0 + lt, q = cl((T - s0) / (s1 - s0)); TNOW = T; NOTES = T < 59 ? 0 : Math.round(lerp(2, 10, cl((T - 59) / 250))); CAMO = frame; su.f(q, p, args, T); if (post) post(q, p, T); CAMO = null; if (su.mode === 'ill' && key !== 'shopClosed' && key !== 'droste' && key !== 'e_droste' && key !== 'mvu_droste' && key !== 'e_fromInside' && T > LEAK_T0) { screen(); const lp = leakProgress(T); leak(lp, typeof LEAK_CLEAR[key] === 'function' ? LEAK_CLEAR[key](T) : LEAK_CLEAR[key], T); } } };
   });
+}
+
+// ---------- projected film (Robin on draft 7: the cinema screens are FILM, not the pixel world) ----------
+// The screen content is drawn in the same Ngo hand as everything else, then treated as a print on a projector:
+// gate weave (the whole picture shifts a few px per drawing), one flat tone (sepia or silver; no gradients),
+// a flicker of the lamp, dust and hair that change every drawing, a couple of long scratches that run for a second,
+// hatched burn-off in the corners, and an optional cue dot. drawFn(sx, sy, sw, sh) draws the scene, unclipped by us
+// beyond the screen rect. o.tone: 'sepia' | 'silver'; o.base: the colour under the picture; o.cue: [t0, t1] pairs.
+function filmScreen(sx, sy, sw, sh, T, drawFn, o = {}) {
+  const tone = o.tone || 'sepia', r = M32(FD * 29 + 11), k = sw / 860;
+  X.save(); X.clip(PR(sx, sy, sw, sh));
+  fillP(PR(sx, sy, sw, sh), o.base || (tone === 'silver' ? '#2a2724' : '#e6d8b8'));
+  X.save(); X.translate((r() - .5) * 5 * k, (r() - .5) * 7 * k); drawFn(sx, sy, sw, sh); X.restore();
+  // one flat tone over the lot, keeping each mark's light and dark
+  X.globalCompositeOperation = 'color'; fillP(PR(sx, sy, sw, sh), tone === 'silver' ? '#8a8884' : '#a4794a');
+  X.globalCompositeOperation = 'source-over';
+  fillP(PR(sx, sy, sw, sh), tone === 'silver' ? '#f2eee4' : '#f4e6c4', .04 + r() * .07);   // the lamp breathing
+  // burn-off: the corners fall away in hatching, as the beam does on old prints
+  X.save(); const vg = new Path2D(); vg.rect(sx, sy, sw, sh); vg.addPath(PE(sx + sw / 2, sy + sh / 2, sw * .6, sh * .66)); X.clip(vg, 'evenodd');
+  hatch(PR(sx, sy, sw, sh), sx + sw / 2, sy + sh / 2, sw * .8, .7, 7 * k, C.ink, 1.1, .5); hatch(PR(sx, sy, sw, sh), sx + sw / 2, sy + sh / 2, sw * .8, -.7, 9 * k, C.ink, 1, .3); X.restore();
+  // scratches: each lives about a second, wandering a little; the hair and dust change every drawing
+  const sec = Math.floor(T); for (let i = 0; i < 2; i++) { const rs = M32(sec * 7 + i * 131), xx = sx + rs() * sw, wob = (r() - .5) * 3;
+    if (rs() < .7) { X.beginPath(); X.moveTo(xx + wob, sy); X.bezierCurveTo(xx + wob + 4, sy + sh * .3, xx - 3, sy + sh * .7, xx + wob, sy + sh); stroke(tone === 'silver' ? '#eeeae0' : C.cream, 1.4, .55); } }
+  for (let i = 0; i < 9; i++) { const dx = sx + r() * sw, dy = sy + r() * sh, d = (1 + r() * 3.5) * k; fillP(PE(dx, dy, d, d * (.6 + r() * .6), r() * 3), r() < .6 ? C.ink : C.cream, .7); }
+  if (r() < .5) { const hx = sx + r() * sw, hy = sy + r() * sh; X.beginPath(); X.moveTo(hx, hy); X.bezierCurveTo(hx + 20 * k, hy - 14 * k, hx + 34 * k, hy + 18 * k, hx + 52 * k, hy + 4 * k); stroke(C.ink, 1.2, .6); }
+  // a cue dot top right, a ring with a dark core, only on the times given
+  for (const [c0, c1] of (o.cue || [])) if (T >= c0 && T < c1) { const cx = sx + sw * .91, cy = sy + sh * .1, cr = 16 * k; fillP(PE(cx, cy, cr, cr), C.ink, .85); iE(cx, cy, cr * 1.25, cr * 1.25, 0, C.cream, 2, .8, false); }
+  X.restore();
 }
