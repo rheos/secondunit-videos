@@ -1,0 +1,21 @@
+slug: ltx-reframe
+name: LTX 2.3 reframe (Fal)
+kind: model
+status: available
+does: Turns real footage into 9:16, 4:5, 1:1 or other ratios by filling the newly exposed edges instead of cropping, up to 60 s.
+keywords:
+- video-gen
+- reframe
+- aspect-ratio
+fits:
+- vertical and 4:5 cuts of videos built on an artist's own footage
+deterministic: n/a
+how: 'Fal API: `fal-ai/ltx-2.3/reframe`'
+cost: paid, $0.10/s
+url: https://github.com/Lightricks/LTX-2
+detail: code-drawn films still get a redraw, not this (memory `social-feed-4x5-crop`)
+source: x.com/heyrimsha/status/2114672104021148033 (10 AI-filmmaker repos, read 2026-10-26)
+related:
+- pan-and-scan
+- ltx-audio-to-video
+added: '2026-11-01'

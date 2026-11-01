@@ -1,0 +1,17 @@
+slug: comfyui-wanvideowrapper
+name: ComfyUI WanVideoWrapper
+kind: library
+status: rejected
+does: 'ComfyUI nodes for Wan video models: generation, photo animation, camera control.'
+keywords:
+- video-gen
+- camera
+deterministic: n/a
+how: not installed
+cost: free (Apache-2.0)
+url: https://github.com/kijai/ComfyUI-WanVideoWrapper
+source: x.com/heyrimsha/status/2114672104021148033 (10 AI-filmmaker repos, read 2026-10-26)
+why: Needs a local NVIDIA GPU and ComfyUI; the same Wan models (VACE) run on Fal.
+related:
+- wan-vace
+added: '2026-11-01'

@@ -1,0 +1,19 @@
+slug: open-water
+name: open-water
+kind: library
+status: candidate
+does: Leon Lin's WebGL2 open-ocean renderer; renders headless in Chrome like HyperFrames.
+keywords:
+- webgl
+- shader
+- generative
+fits:
+- ocean and water shots in code-drawn films
+deterministic: 'yes'
+how: not installed; headless Chrome on a GPU
+cost: free (MIT)
+url: https://github.com/Leonxlnx/open-water
+detail: references/leon-lin/STUDY-open-water.md
+related:
+- threejs
+added: '2026-11-01'

@@ -1,0 +1,21 @@
+slug: blueprint-kit
+name: Blueprint kit
+kind: toolkit
+status: in-use
+does: 'Shared drawing grammar for the technical-plate explainers: music-driven, no narration, diagrams that draw themselves, palette per film.'
+keywords:
+- diagram
+- explainer
+- line-drawing
+- svg-draw
+fits:
+- novadiem-rheostream
+- technical-plate explainers
+deterministic: 'yes'
+how: '`tools/blueprint-kit/` in this repo (kit.js, kit.css, cues.mjs, holdcheck.py)'
+cost: free
+detail: '`tools/blueprint-kit/README.md`'
+related:
+- pele
+- hyperframes
+added: '2026-11-01'
