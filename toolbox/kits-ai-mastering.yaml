@@ -1,0 +1,16 @@
+slug: kits-ai-mastering
+name: Kits.ai AI Mastering
+kind: service
+status: in-use
+does: Masters a finished mix in the browser; our flow uploads the track three times over, keeps the middle cut and restores the stereo width.
+keywords:
+- audio
+- finishing
+- music
+fits:
+- the living loop (This Goes Into This)
+deterministic: n/a
+how: web only (the API has no mastering and refuses the free tier); `indieagent-relief-box/tools/master.py`
+cost: plan
+detail: memory `kits-ai-mastering`
+added: '2026-11-01'

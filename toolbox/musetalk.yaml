@@ -1,0 +1,20 @@
+slug: musetalk
+name: MuseTalk
+kind: model
+status: candidate
+does: Re-lips a real face in existing video to new audio (256 px face region), in real time on a V100-class GPU.
+keywords:
+- lipsync
+- vocals
+fits:
+- dubbing an artist's real footage to sing a different line
+- create mode at scale, on Modal
+deterministic: n/a
+how: not installed; needs an NVIDIA GPU (Modal)
+cost: free (MIT code and weights); GPU time
+url: https://github.com/TMElyralab/MuseTalk
+source: x.com/heyrimsha/status/2114672104021148033 (10 AI-filmmaker repos, read 2026-10-26)
+verdict: 'Claude, 2026-10-26: later. Fal''s H3 lipsync at $0.05/s is cheap enough for studio work; face detection is trained on real faces, so drawn characters may fail.'
+related:
+- higgsfield-video
+added: '2026-11-01'

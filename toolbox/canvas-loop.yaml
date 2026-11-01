@@ -1,0 +1,19 @@
+slug: canvas-loop
+name: Canvas loop render
+kind: script
+status: in-use
+does: Renders a seamless Spotify Canvas loop from any code-drawn page and proves the seam (MP4 + GIF).
+keywords:
+- render
+- music-video
+- playback
+fits:
+- Canvas loops for Bob's songs
+- the $49 Canvas loop add-on
+deterministic: 'yes'
+how: '`node tools/canvas-loop/loop-render.mjs <page.html> <out dir> --seconds 8`, run from a project folder with playwright'
+cost: free
+detail: memory `music-video-offer-pricing`; the script header
+related:
+- blender
+added: '2026-11-01'

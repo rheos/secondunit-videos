@@ -1,0 +1,21 @@
+slug: modal
+name: Modal
+kind: service
+status: in-use
+does: 'Cloud CPU and GPU runs: Blender 5.2 (which this Intel Mac cannot run) and long renders, split into chunks.'
+keywords:
+- render
+- gpu
+- parallel
+- 3d
+fits:
+- Real Thing Respawn and The pet renders
+- Blender orb visualizer
+deterministic: n/a
+how: '`modal run blender-orb-visualizer/cloud/modal_blender.py --mode probe|stills|full`; GPU via ORB_GPU=L4|A10|L40S'
+cost: paid, about $0.002 a frame on the pet film; the month's free credit goes first
+detail: memory `blender-orb-visualizer`, `bob-real-thing`
+related:
+- blender
+- cloud-render
+added: '2026-11-01'

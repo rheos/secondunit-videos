@@ -1,0 +1,19 @@
+slug: editly
+name: Editly
+kind: cli
+status: rejected
+does: 'Declarative JSON-to-video assembly over ffmpeg: clips, titles, gl-transitions, music.'
+keywords:
+- editing
+- transition
+- cut
+deterministic: n/a
+how: not installed
+cost: free (MIT)
+url: https://github.com/mifi/editly
+source: x.com/heyrimsha/status/2114672104021148033 (10 AI-filmmaker repos, read 2026-10-26)
+why: No updates since May 2025; assemble.py and HyperFrames already cover assembly, and stock fades break the transitions-follow-an-element rule.
+related:
+- gl-transitions
+- hyperframes
+added: '2026-11-01'
