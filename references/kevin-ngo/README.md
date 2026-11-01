@@ -20,7 +20,7 @@ studied for new animation design recipes. The notes had lived only in session me
 - `STUDY-video-call.md`: the 2026-10-23 animation over a real recorded conversation (a person and
   the Dessa voice model) inside a drawn video call: shot grid S1-S14 and recipes V01-V08. The one
   film here built on someone else's audio; the format for animating any real conversation.
-- `works-index.json`: the posts we have studied, K01-K17, with status IDs where recorded and the
+- `works-index.json`: the posts we have studied, K01-K27, with status IDs where recorded and the
   process facts from his own "How this was made" replies.
 - `STYLE-BRIEF.txt`: the marker-and-ink-on-cream-paper surface of the paperclip film, for when the
   look is wanted as well as the thinking.
