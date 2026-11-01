@@ -1,0 +1,19 @@
+slug: video-talkcraft
+name: video-talkcraft
+kind: toolkit
+status: rejected
+does: 'Skill for voiceover explainers in Remotion: word-level voice sync, 108 parameterized motion recipe cards with a web gallery, an anti-slideshow camera system, a multitrack workbench.'
+keywords:
+- explainer
+- narration
+- timeline
+deterministic: 'yes'
+how: not installed
+cost: 'PolyForm Noncommercial: commercial use needs the author''s permission'
+url: https://github.com/Vincentwei1021/video-talkcraft
+source: x.com/socialwithaayan/status/2116567606882967790 (10 motion-design repos, read 2026-11-01)
+why: 'License bars commercial use. Ideas worth keeping: one gallery page showing every motion recipe, and rendering per shot so one change re-renders only that segment (our patch renders do the same).'
+related:
+- remotion
+- anything2explainer
+added: '2026-11-01'

@@ -1,0 +1,23 @@
+slug: huashu-motion
+name: huashu-motion
+kind: toolkit
+status: candidate
+does: Skill that makes launch films from one line, writes its own score in ABC notation played by sampled instruments, and opens a browser editor where you click a frame and type a note; the note reaches the agent with the time, scene, element and its place in the source.
+keywords:
+- review
+- music
+- score
+- editing
+fits:
+- click-on-the-frame notes for Robin's studio notes and the client review page
+- score-first timing for films where we own the music (devweb, IndieAgent explainers)
+deterministic: 'yes'
+how: not installed; `npx skills add alchaincyf/huashu-motion`
+cost: free (MIT)
+url: https://github.com/alchaincyf/huashu-motion
+source: x.com/socialwithaayan/status/2116567606882967790 (10 motion-design repos, read 2026-11-01)
+verdict: 'Claude, 2026-11-01: take the click-to-comment mechanism (a note pinned to an element and its source line, not just a time) for the review page; artists'' songs stay frozen, so the score-first mode only fits our own films.'
+related:
+- openfilm
+- beat-sync
+added: '2026-11-01'

@@ -1,0 +1,19 @@
+slug: anything2explainer
+name: anything2explainer
+kind: toolkit
+status: rejected
+does: Skill that turns a topic into a narrated black-canvas Remotion explainer with word-aligned subtitles, chapter cards and a progress bar, built by parallel agents.
+keywords:
+- explainer
+- narration
+- captions
+deterministic: 'yes'
+how: not installed
+cost: 'PolyForm Noncommercial: commercial use needs the author''s permission'
+url: https://github.com/Vincentwei1021/anything2explainer
+source: x.com/socialwithaayan/status/2116567606882967790 (10 motion-design repos, read 2026-11-01)
+why: Its license bars commercial use, and our faceless-explainer skill and the devweb pipeline already do this job on HyperFrames.
+related:
+- remotion
+- video-talkcraft
+added: '2026-11-01'

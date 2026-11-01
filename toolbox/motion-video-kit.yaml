@@ -1,0 +1,23 @@
+slug: motion-video-kit
+name: Motion Video Kit
+kind: toolkit
+status: candidate
+does: 'Skill kit for business launch films: a builder-is-not-judge critic loop with prompts, motion grammar from 28 launch films, a quality bar, and scripts for frozen-time and loudness checks, contact sheets, sound-effect softening and back-timing music to land on the end card.'
+keywords:
+- qc
+- audit
+- review
+- music
+fits:
+- back-timing a track so its ending lands on the last frame
+- frozen-time and loudness checks beside motion-lab flashcheck
+deterministic: n/a
+how: not installed; copy `business-motion-film/` into skills
+cost: free (MIT)
+url: https://github.com/echris6/motion-video-kit
+source: x.com/socialwithaayan/status/2116567606882967790 (10 motion-design repos, read 2026-11-01)
+verdict: 'Claude, 2026-11-01: borrow the scripts (backtime-music, frozen-time, loudness) and compare its critic prompts with our review checklist; the business-offer playbook is not our market.'
+related:
+- motion-lab
+- hyperframes
+added: '2026-11-01'

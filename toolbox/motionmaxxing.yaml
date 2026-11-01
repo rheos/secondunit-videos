@@ -1,0 +1,23 @@
+slug: motionmaxxing
+name: motionmaxxing
+kind: toolkit
+status: candidate
+does: 'Skill that measures motion against 53 decoded pro moments (about 150 designer rules, 12 measured eases) and lints a film for AI-slop tells: corner labels, deck layouts, typed-out headlines, dead frames, fades everywhere.'
+keywords:
+- audit
+- qc
+- easing
+- explainer
+fits:
+- a slop lint and its measured eases added to motion-lab audits
+- devweb and IndieAgent explainers
+deterministic: 'yes'
+how: not installed
+cost: free (Apache-2.0)
+url: https://github.com/Tejashmakwana/motionmaxxing
+source: x.com/socialwithaayan/status/2116567606882967790 (10 motion-design repos, read 2026-11-01)
+verdict: 'Claude, 2026-11-01: borrow lint.mjs (gate G5) and the 12 measured eases into motion-lab; its "transforms, not fades" count backs our transitions-follow-an-element rule.'
+related:
+- motion-lab
+- gsap
+added: '2026-11-01'
