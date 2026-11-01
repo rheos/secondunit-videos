@@ -13,8 +13,8 @@ keywords:
 fits:
 - explainer figures for docs, blog posts and landing pages
 - stills or plates for blueprint-style explainers
-deterministic: 'yes'
+deterministic: 'port needed: its motion runs live in the browser; trial rheos/secondunit-videos#341 tests a window.__seek(t) tour'
 how: skill `anatomy` in ~/.claude/skills (installed 2026-10-28); Node 20.10+ and Chrome for its checks
 cost: free
-detail: skill `anatomy`
+detail: skill `anatomy`; open trial rheos/secondunit-videos#341 (exploded guitar amp)
 added: '2026-11-01'
