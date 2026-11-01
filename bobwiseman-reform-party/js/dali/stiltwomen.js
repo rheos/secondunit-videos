@@ -73,25 +73,20 @@ function stiltWoman(j, x0, y0, k, s, t, mouth = 0, wave = 0) {
     // bare arms out of the armholes: her right out and down, her left toward her partner or up on the cue
     { const a = [-.19 + sway, 2.34], b = [-.35, 2.15], c = [-.47, 1.99]; limb(a, b, c, .042, .033, .025, skinG([-.4, 2.1], [-.3, 2.2])); hand(c, b, skin); line([[-.27, 2.25], [-.25, 2.2]], .01, 'rgba(60,70,90,.5)'); } // a tattoo
     { const a = [.19 + sway, 2.34], b = [lerp(.33, .3, wave), lerp(2.18, 2.56, wave)], c = [lerp(.43, .35, wave) + Math.sin(t * 6) * .03 * wave, lerp(2.27, 2.83, wave)]; limb(a, b, c, .042, .033, .025, skinG([.2, 2.2], [.35, 2.3])); hand(c, b, skin); }
-    // the collar's back, rising behind the neck
-    fillS([[-.15, 2.42], [-.12, 2.53], [.12, 2.53], [.15, 2.42]], NAVY);
-    // the vest: two panels of vertical stripes that curve with the opening, split up the middle and widening to the hips,
-    // silver piping and orange fringe down both front edges, an orange fringe along the hem
+    // the collar's navy back and lining, showing only inside the upper V round the neck
+    fillS([[-.13, 2.44], [-.1, 2.52], [.1, 2.52], [.13, 2.44], [.03, 2.27, 1], [-.03, 2.27, 1]], NAVY);
+    // the vest: two panels whose front edges are arcs, bowing in to touch at the middle, flaring out above into the collar
+    // and below into a pointed tail past each hip, so the opening is an hourglass; the rainbow stripes nest along each arc, silver piping and
+    // orange fringe on the arcs and round the collar, silver chimes off the collar tips
+    const offset = (pts, o) => pts.map((p, i) => { const a = pts[Math.max(0, i - 1)], b = pts[Math.min(pts.length - 1, i + 1)], dx = b[0] - a[0], dy = b[1] - a[1], L = Math.hypot(dx, dy) || 1; return [p[0] + dy / L * o, p[1] - dx / L * o]; });
     for (const sd of [-1, 1]) {
-      const edge = qd([sd * .012, 2.3], [sd * .02, 2.04], [sd * .11, 1.85], 9);
-      const panel = [[sd * .05, 2.43], [sd * .215, 2.4], [sd * .195, 2.27], [sd * .155, 2.08], [sd * .19, 1.95], [sd * .215, 1.86, 1], ...edge.slice().reverse().map(([x, y], i) => i === 0 ? [x, y, 1] : [x, y])];
-      fillS(panel, SEAM); clipTo(panel, () => { for (let i = 0; i < 10; i++) { const o = sd * (.012 + i * .031); line(edge.map(([x, y]) => [x + o, y]).concat([[sd * .2 + o, 2.6]]).reverse(), .022, RAIN[(i + (sd > 0 ? 3 : 0)) % 7], 'butt'); } }); fillS(panel, 'rgba(0,0,0,0)');
-      fringe(qd([sd * .11, 1.85], [sd * .17, 1.84], [sd * .215, 1.86], 4), .05, ['#ee8a2a', '#f39a3a', '#e8642a'], sd, .6); // the hem
-      fringe(edge, .045, ['#ee8a2a', '#f39a3a', '#e8642a', '#f2b040'], -sd, .35); // down the opening
-      line(edge, .02, '#c9ced6'); line(edge.map(([x, y]) => [x - sd * .004, y]), .007, '#ffffff'); }
-    // the big stand-up collar: navy wings from the V up round the neck and out past the shoulders, orange fringe on the rim
-    for (const sd of [-1, 1]) {
-      const rim = qd([sd * .06, 2.47], [sd * .19, 2.52], [sd * .28, 2.45], 6);
-      fillS([[sd * .012, 2.3, 1], ...rim, [sd * .25, 2.39], [sd * .17, 2.4], [sd * .09, 2.38]], lg([sd * .3, 2.4], [sd * .05, 2.5], [NAVY, '#2e3878']));
-      fringe(rim, .045, ['#ee8a2a', '#e8452f', '#f39a3a'], sd, .1);
-      line([[sd * .012, 2.3], [sd * .06, 2.47]], .012, '#ee8a2a');
-      // silver chimes hanging off the collar's tips
-      const n = sd < 0 ? 4 : 3; for (let i = 0; i < n; i++) { const x = sd * (.29 - i * .028), y = 2.4 + i * .01, sw = Math.sin(t * 3 + i + sd) * .01, L = .11 + .02 * i;
+      const arc = [...qd([sd * .28, 2.52], [sd * -.03, 2.38], [sd * .006, 2.1], 10), ...qd([sd * .006, 2.1], [sd * .06, 1.84], [sd * .39, 1.87], 10).slice(1)]; // from the collar tip in to the middle and out to the tail's tip
+      const panel = [[sd * .28, 2.52, 1], [sd * .27, 2.43], [sd * .2, 2.36], [sd * .19, 2.27], [sd * .155, 2.08], [sd * .19, 1.98], [sd * .29, 1.93], [sd * .39, 1.87, 1], ...arc.slice(1, -1).reverse()];
+      fillS(panel, SEAM); clipTo(panel, () => { for (let i = 0; i < 12; i++) line(offset(arc, -sd * (.014 + i * .029)), .022, RAIN[(i + (sd > 0 ? 3 : 0)) % 7], 'butt'); }); fillS(panel, 'rgba(0,0,0,0)');
+      fringe(arc, .042, ['#ee8a2a', '#f39a3a', '#e8642a', '#f2b040'], -sd, .3); // along the arc, into the opening
+      fringe([[sd * .28, 2.52], [sd * .27, 2.43], [sd * .22, 2.38]], .04, ['#ee8a2a', '#e8452f'], sd, .2); // round the collar tip
+      line(arc, .02, '#c9ced6'); line(offset(arc, sd * .004), .007, '#ffffff');
+      const n = sd < 0 ? 4 : 3; for (let i = 0; i < n; i++) { const x = sd * (.29 - i * .026), y = 2.47 - i * .012, sw = Math.sin(t * 3 + i + sd) * .01, L = .11 + .02 * i;
         line([[x, y], [x + sw, y - L]], .015, '#d4d8de', 'butt'); line([[x - .004, y], [x - .004 + sw, y - L]], .005, '#ffffff', 'butt'); dot([x + sw, y - L - .006], .013, '#3a5a9a', ink); } }
     // neck, head, hair, flowers
     fillS([[-.03, 2.4], [.03, 2.4], [.028, 2.49], [-.028, 2.49]], skinD);
