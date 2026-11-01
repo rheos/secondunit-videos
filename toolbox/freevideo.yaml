@@ -1,0 +1,17 @@
+slug: freevideo
+name: FreeVideo
+kind: app
+status: rejected
+does: Runs MiniMax H3 locally on an 8 GB NVIDIA card or Apple silicon, as a ComfyUI plugin, with community H3 LoRAs.
+keywords:
+- video-gen
+- local
+deterministic: n/a
+how: not installed
+cost: free (Apache-2.0); GPU time
+url: https://github.com/FlashML-org/FreeVideo
+source: x.com/socialwithaayan/status/2116567606882967790 (10 motion-design repos, read 2026-11-01)
+why: This Mac is Intel with no NVIDIA card, and H3 on Fal is $0.03-0.05/s, cheaper than renting a GPU to run it. Community H3 LoRAs are the one thing worth remembering if we ever need a locked character in H3.
+related:
+- fal-kling
+added: '2026-11-01'

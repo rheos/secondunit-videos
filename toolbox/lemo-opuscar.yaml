@@ -1,0 +1,24 @@
+slug: lemo-opuscar
+name: Lemo-Opuscar
+kind: toolkit
+status: candidate
+does: 'A library of 66 film styles made in code for Claude Code: each is a STYLE.md prompt plus a demo film drawn in canvas or WebGL, scored and voiced, with no video model; DIRECTOR.md and TECHNIQUE.md guides tell the agent how to direct and build.'
+keywords:
+- look-dev
+- style-reference
+- explainer
+- catalogue
+fits:
+- mining styles for looks/ (build a language, never copy one film)
+- its Edit & Documentary and Evidence Films styles for Mark Achbar's reel and devweb
+- comparing its DIRECTOR.md self-checks with our review checklist
+deterministic: 'yes'
+how: not installed; `claude plugin marketplace add lemomo-ai/lemo-opuscar`, or read the repo
+cost: free (MIT)
+url: https://github.com/lemomo-ai/lemo-opuscar
+source: x.com/socialwithaayan/status/2116567606882967790 (10 motion-design repos, read 2026-11-01)
+verdict: 'Claude, 2026-11-01: worth a study, the way references/leon-lin was done: diff its 66 styles against looks/*.yaml and take what we lack. Tuned for Opus 5.5, the same model we build with.'
+related:
+- code-painted
+- hyperframes
+added: '2026-11-01'
