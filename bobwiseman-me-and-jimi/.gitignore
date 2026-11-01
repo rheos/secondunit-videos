@@ -15,3 +15,6 @@ assets/wood/
 /assets
 /out
 /source
+
+# lyric captions: generated from source/lines.json, quotes the lyric
+js/gen/
