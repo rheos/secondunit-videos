@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>First Night Out, the raccoons (lock sheet)</title>
+<style>html, body { margin: 0; background: #0b0d1c; } canvas { width: 100vw; display: block; }</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<script src="js/paper.js"></script>
+<script src="js/raccoon.js"></script>
+<script>
+// Character lock sheet on night paper. Top: parent and kit standing at the same scale (breathing, ear and paw
+// twitches run with t), and both heads close up for the mask. Middle: one walk cycle of the parent in six phases.
+// Bottom: the planted-foot check (eight phases of each walk overlaid on one ground, so a skating foot smears) and
+// one walk cycle of the kit. ?t= sets the time; ?q= the resolution (1 = 1920 x 1080).
+const params = new URLSearchParams(location.search);
+const Q = parseFloat(params.get('q') || 1), T = parseFloat(params.get('t') || 0);
+const cv = document.getElementById('c'); cv.width = 1920 * Q; cv.height = 1080 * Q; const X = cv.getContext('2d');
+const LIGHT = [-.5, -.85];
+const parent = RAC.make('parent'), kit = RAC.make('kit');
+parent.build(Q * 2.6, LIGHT); kit.build(Q * 2.6, LIGHT);
+const sheet = PD.sprite({ x: 0, y: 0, w: 1920, h: 1080, res: Q, seed: 'sheet', light: LIGHT, shadow: false, edge: false, mat: 'sky', draw(g) {
+  g.fillStyle = '#1b2042'; g.fillRect(0, 0, 1920, 1080);
+  g.fillStyle = '#151a36'; g.fillRect(1120, 0, 800, 520);
+  for (const y of [500, 790, 1060]) { g.fillStyle = '#10132a'; g.fill(PD.polyPath(PD.tear([[0, y - 18], [1920, y - 18], [1920, y + 40], [0, y + 40]], { amp: 4, freq: .02, seed: y }))); }
+} });
+const label = (s, x, y) => { X.font = '600 19px Georgia, serif'; X.fillStyle = 'rgba(239,231,214,.72)'; X.fillText(s, x, y); };
+function frame(t) {
+  X.setTransform(Q, 0, 0, Q, 0, 0);
+  PD.drawPaper(X, sheet);
+  // standing, same scale
+  parent.draw(X, 330, 482, { d: 0, t, walk: 0 }, { scale: 1.15, light: LIGHT });
+  kit.draw(X, 900, 482, { d: 0, t: t + 1.7, walk: 0 }, { scale: 1.15, light: LIGHT });
+  label('parent', 40, 48); label('kit', 760, 48);
+  // heads close up: the whole figure drawn large and clipped to its panel
+  for (const [r, px, x0, gy, s, name] of [[parent, 1140, 770, 590, 2.2, 'parent, head'], [kit, 1530, 1280, 500, 3, 'kit, head']]) {
+    X.save(); X.beginPath(); X.rect(px, 20, 370, 470); X.clip();
+    r.draw(X, x0, gy, { d: 0, t, walk: 0 }, { scale: s, light: LIGHT, shadowAlpha: .25 });
+    X.restore();
+    label(name, px + 12, 48);
+  }
+  // one walk cycle of the parent, six phases
+  label('parent walking, one cycle (hips higher than shoulders, feet planted)', 40, 560);
+  for (let i = 0; i < 5; i++) {
+    const d = i / 5 * parent.LC;
+    X.save(); X.translate(190 + i * 370, 772); X.scale(.62, .62); X.translate(-d, 0);
+    parent.draw(X, 0, 0, { d, t: t + i * .2, walk: 1 }, { light: LIGHT, shadowAlpha: .3 });
+    X.restore();
+  }
+  // acting: the near front paw is the acting hand. The parent tests something with it; the kit copies, a beat late
+  label('acting: the parent lifts a paw to test, the kit copies', 40, 850);
+  parent.draw(X, 260, 1040, { d: 0, t, walk: 0, paw: 1, pat: 0 }, { scale: .72, light: LIGHT });
+  kit.draw(X, 690, 1040, { d: 0, t: t + 1.7, walk: 0, paw: .7, look: -.12 }, { scale: .72, light: LIGHT });
+  label('kit walking, one cycle', 940, 850);
+  for (let i = 0; i < 6; i++) {
+    const d = i / 6 * kit.LC;
+    X.save(); X.translate(1010 + i * 150, 1040); X.scale(.62, .62); X.translate(-d, 0);
+    kit.draw(X, 0, 0, { d, t: t + i * .2, walk: 1 }, { light: LIGHT, shadowAlpha: .3 });
+    X.restore();
+  }
+  PD.finish(X, { vignette: .18, grain: .045, frame: Math.round(t * 24) });
+}
+frame(T);
+window.__frameJPEG = (t, q = .93) => { frame(t); return cv.toDataURL('image/jpeg', q); };
+window.__ready = Promise.resolve(true);
+window.RIGS = { parent, kit, frame };
+</script>
+</body>
+</html>
