@@ -53,38 +53,46 @@ function stiltWoman(j, x0, y0, k, s, t, mouth = 0, wave = 0) {
     else line(qd([h[0] - .017, h[1] - .056], [h[0] + .003, h[1] - .068], [h[0] + .023, h[1] - .056], 4), .007, '#a8424e'); };
   if (j === 0) {
     const RAIN = ['#e8452f', '#f2d040', '#5fbf4a', '#3f86d8', '#8a52d0', '#e85aa8', '#ee9a42'], SEAM = '#16162a', NAVY = '#1c2248';
-    // stilts: black pegs splayed in an A, taped, rubber feet, under black boots
-    for (const sd of [-1, 1]) { const a = [sd * .075, .88], b = [sd * .17, 0]; line([a, b], .032, '#141216', 'butt');
-      for (const [u, c] of [[.74, '#e8452f'], [.8, '#f2d040'], [.86, '#3f86d8']]) line([[lerp(a[0], b[0], u), lerp(a[1], b[1], u)], [lerp(a[0], b[0], u + .05), lerp(a[1], b[1], u + .05)]], .04, c, 'butt');
-      oval([b[0], .016], .03, .016, '#f2efe8', ink); fillS([[sd * .02, .94], [sd * .14, .93], [sd * .15, .86, 1], [sd * .02, .86, 1]], '#18161a'); }
-    // bell-bottom tights in bold stripes
-    const legs = [[[-.18, 1.96], [-.005, 1.93], [-.02, 1.55], [-.035, 1.3, 1], [-.015, .9, 1], [-.245, .9, 1], [-.135, 1.3, 1], [-.15, 1.56], [-.18, 1.78]], [[.005, 1.93], [.18, 1.96], [.18, 1.78], [.15, 1.56], [.135, 1.3, 1], [.245, .9, 1], [.015, .9, 1], [.035, 1.3, 1], [.02, 1.55]]];
-    for (const L of legs) { fillS(L, SEAM); clipTo(L, () => { for (let i = 0; i < 26; i++) { const y = .9 + i * .037; fillS([[-.4, y + .007, 1], [.4, y + .007, 1], [.4, y + .03, 1], [-.4, y + .03, 1]], RAIN[i % 7], false); } }); fillS(L, 'rgba(0,0,0,0)'); }
-    // the fins, white polka dots along their edges
-    const finL = [[-.15, 1.44], [-.27, 1.24], [-.29, 1.06], [-.21, .95], [-.06, .9, 1], [-.15, 1.03], [-.17, 1.24]];
-    fillS(finL, lg([-.29, 1.2], [-.05, 1.0], ['#6a2aa8', '#9a48dc', '#7a34b8']));
-    fillS([[.15, 1.38], [.26, 1.2], [.32, .98, 1], [.2, 1.06], [.16, 1.2]], lg([.15, 1.2], [.32, 1.0], ['#7a34b8', '#5a2484']));
-    fillS([[-.04, 1.12], [.04, 1.06], [.0, .94], [-.14, .8], [-.33, .74, 1], [-.17, .88], [-.1, 1.0]], lg([-.3, .76], [.03, 1.08], ['#ff3fa4', '#ff7cc8']));
-    for (const p of qd([-.26, 1.24], [-.3, 1.05], [-.12, .93], 6).slice(1, 6)) dot(p, .011, '#fff6fa'); for (const p of qd([-.08, .98], [-.16, .86], [-.29, .77], 4).slice(1, 4)) dot(p, .01, '#fff6fa'); dot([.27, 1.1], .01, '#fff6fa'); dot([.23, 1.18], .01, '#fff6fa');
-    // the body under the top: the striped bodysuit, a waist
+    const mir = (L) => L.map(([x, y, f]) => [-x, y, f]);
+    // stilts: straight black poles, taped near the foot, rubber feet, under black boots
+    for (const sd of [-1, 1]) { const a = [sd * .075, .88], b = [sd * .1, 0]; line([a, b], .032, '#141216', 'butt');
+      for (const [u, c] of [[.8, '#ff5fb8'], [.85, '#f2d040'], [.9, '#5fbf4a']]) line([[lerp(a[0], b[0], u), lerp(a[1], b[1], u)], [lerp(a[0], b[0], u + .04), lerp(a[1], b[1], u + .04)]], .04, c, 'butt');
+      oval([b[0], .014], .026, .014, '#f2efe8', ink); fillS([[sd * .02, .95], [sd * .14, .94], [sd * .15, .86, 1], [sd * .02, .86, 1]], '#18161a'); }
+    // tights in bold stripes, straight legs with a little flare at the cuff
+    const legL = [[-.17, 1.96], [-.008, 1.93], [-.025, 1.5], [-.03, 1.12], [-.02, .92, 1], [-.2, .92, 1], [-.16, 1.12], [-.15, 1.5], [-.17, 1.78]];
+    for (const L of [legL, mir(legL)]) { fillS(L, SEAM); clipTo(L, () => { for (let i = 0; i < 26; i++) { const y = .9 + i * .037; fillS([[-.4, y + .007, 1], [.4, y + .007, 1], [.4, y + .03, 1], [-.4, y + .03, 1]], RAIN[i % 7], false); } }); fillS(L, 'rgba(0,0,0,0)'); }
+    // the fins, mirrored on both legs: a big purple one out to the side from the knee, a pink one below it, white dots on their edges
+    for (const sd of [-1, 1]) {
+      fillS([[sd * .14, 1.4], [sd * .24, 1.24], [sd * .35, 1.0, 1], [sd * .21, 1.05], [sd * .15, 1.16]], lg([sd * .14, 1.3], [sd * .35, 1.0], ['#7a34b8', '#9a48dc', '#6a2aa8']));
+      fillS([[sd * .14, 1.08], [sd * .22, .98], [sd * .31, .78, 1], [sd * .19, .88], [sd * .13, .97]], lg([sd * .13, 1.0], [sd * .31, .78], ['#ff7cc8', '#ff3fa4']));
+      for (const p of qd([sd * .2, 1.31], [sd * .29, 1.16], [sd * .34, 1.03], 4).slice(0, 4)) dot(p, .011, '#fff6fa');
+      for (const p of qd([sd * .19, 1.02], [sd * .26, .92], [sd * .3, .82], 3).slice(0, 3)) dot(p, .01, '#fff6fa'); }
+    // the bodysuit under the vest: the same stripes up to the shoulders
     const body = [[-.18, 1.8], [.18, 1.8], [.185, 1.96], [.135, 2.08], [.16, 2.24], [.22, 2.37], [.13, 2.45], [-.13, 2.45], [-.22, 2.37], [-.16, 2.24], [-.135, 2.08], [-.185, 1.96]];
     fillS(body, SEAM); clipTo(body, () => { for (let i = 0; i < 18; i++) { const y = 1.82 + i * .037; fillS([[-.4, y + .007, 1], [.4, y + .007, 1], [.4, y + .03, 1], [-.4, y + .03, 1]], RAIN[(i + 4) % 7], false); } }); fillS(body, 'rgba(0,0,0,0)');
-    // her right arm (the photo's left), bare, out and down
-    { const a = [-.2 + sway, 2.36], b = [-.35, 2.15], c = [-.47, 1.99]; limb(a, b, c, .042, .033, .025, skinG([-.4, 2.1], [-.3, 2.2])); hand(c, b, skin); line([[-.27, 2.27], [-.25, 2.22]], .01, 'rgba(60,70,90,.5)'); } // a tattoo
-    // the navy lining down her left side above the waist, orange fringe on its edge
-    const lining = [[.11, 2.45], [.22, 2.37], [.18, 2.22], [.155, 2.08], [.1, 2.02], [.11, 2.2]]; fillS(lining, NAVY);
-    fringe(qd([.22, 2.37], [.18, 2.22], [.155, 2.04], 9), .055, ['#ee8a2a', '#f39a3a'], 1, .25);
-    // the top: stripes curving with the S-shaped hem, from the right shoulder to the tail at the left hip
-    const hem = [...qd([.11, 2.45], [.13, 2.1], [.0, 1.96], 9), ...qd([.0, 1.96], [-.16, 1.86], [-.27, 1.86], 7).slice(1), [-.39, 1.83, 1]];
-    const top = [[-.2, 2.42], [-.06, 2.47], [.06, 2.47], ...hem.map((p, i) => i === 0 ? p : p), [-.31, 1.9], [-.18, 1.97], [-.14, 2.1], [-.16, 2.26]];
-    fillS(top, SEAM); clipTo(top, () => { for (let i = 0; i < 16; i++) { const o = i * .036; line(hem.map(([x, y]) => [x - o * .9, y + o * .55]), .028, RAIN[(i + 2) % 7], 'butt'); } }); fillS(top, 'rgba(0,0,0,0)');
-    fringe(hem, .065, ['#ee8a2a', '#f39a3a', '#e8642a', '#f2b040'], -1, .45); // the orange fringe outside the hem
-    line(hem, .022, '#c9ced6'); line(hem, .009, '#ffffff'); // silver piping on the hem
-    // her left arm, bare: toward her partner, or up on the cue
-    { const a = [.2 + sway, 2.36], b = [lerp(.33, .3, wave), lerp(2.18, 2.56, wave)], c = [lerp(.43, .35, wave) + Math.sin(t * 6) * .03 * wave, lerp(2.27, 2.83, wave)]; limb(a, b, c, .042, .033, .025, skinG([.2, 2.2], [.35, 2.3])); hand(c, b, skin); }
-    // the epaulette: orange fringe over the right shoulder, silver tubes hanging off it
-    for (let i = 0; i < 4; i++) { const x = -.29 + i * .03, y = 2.35 - i * .006, sw = Math.sin(t * 3 + i) * .01, L = .12 + .02 * i; line([[x, y], [x + sw, y - L]], .016, '#d4d8de', 'butt'); line([[x - .004, y], [x - .004 + sw, y - L]], .005, '#ffffff', 'butt'); dot([x + sw, y - L - .006], .013, '#6f8fb0', ink); }
-    fringe(qd([-.3, 2.33], [-.27, 2.5], [-.1, 2.46], 6), .055, ['#ee8a2a', '#e8452f', '#f2b040'], 1, .1);
+    // bare arms out of the armholes: her right out and down, her left toward her partner or up on the cue
+    { const a = [-.19 + sway, 2.34], b = [-.35, 2.15], c = [-.47, 1.99]; limb(a, b, c, .042, .033, .025, skinG([-.4, 2.1], [-.3, 2.2])); hand(c, b, skin); line([[-.27, 2.25], [-.25, 2.2]], .01, 'rgba(60,70,90,.5)'); } // a tattoo
+    { const a = [.19 + sway, 2.34], b = [lerp(.33, .3, wave), lerp(2.18, 2.56, wave)], c = [lerp(.43, .35, wave) + Math.sin(t * 6) * .03 * wave, lerp(2.27, 2.83, wave)]; limb(a, b, c, .042, .033, .025, skinG([.2, 2.2], [.35, 2.3])); hand(c, b, skin); }
+    // the collar's back, rising behind the neck
+    fillS([[-.15, 2.42], [-.12, 2.53], [.12, 2.53], [.15, 2.42]], NAVY);
+    // the vest: two panels of vertical stripes that curve with the opening, split up the middle and widening to the hips,
+    // silver piping and orange fringe down both front edges, an orange fringe along the hem
+    for (const sd of [-1, 1]) {
+      const edge = qd([sd * .012, 2.3], [sd * .02, 2.04], [sd * .11, 1.85], 9);
+      const panel = [[sd * .05, 2.43], [sd * .215, 2.4], [sd * .195, 2.27], [sd * .155, 2.08], [sd * .19, 1.95], [sd * .215, 1.86, 1], ...edge.slice().reverse().map(([x, y], i) => i === 0 ? [x, y, 1] : [x, y])];
+      fillS(panel, SEAM); clipTo(panel, () => { for (let i = 0; i < 10; i++) { const o = sd * (.012 + i * .031); line(edge.map(([x, y]) => [x + o, y]).concat([[sd * .2 + o, 2.6]]).reverse(), .022, RAIN[(i + (sd > 0 ? 3 : 0)) % 7], 'butt'); } }); fillS(panel, 'rgba(0,0,0,0)');
+      fringe(qd([sd * .11, 1.85], [sd * .17, 1.84], [sd * .215, 1.86], 4), .05, ['#ee8a2a', '#f39a3a', '#e8642a'], sd, .6); // the hem
+      fringe(edge, .045, ['#ee8a2a', '#f39a3a', '#e8642a', '#f2b040'], -sd, .35); // down the opening
+      line(edge, .02, '#c9ced6'); line(edge.map(([x, y]) => [x - sd * .004, y]), .007, '#ffffff'); }
+    // the big stand-up collar: navy wings from the V up round the neck and out past the shoulders, orange fringe on the rim
+    for (const sd of [-1, 1]) {
+      const rim = qd([sd * .06, 2.47], [sd * .19, 2.52], [sd * .28, 2.45], 6);
+      fillS([[sd * .012, 2.3, 1], ...rim, [sd * .25, 2.39], [sd * .17, 2.4], [sd * .09, 2.38]], lg([sd * .3, 2.4], [sd * .05, 2.5], [NAVY, '#2e3878']));
+      fringe(rim, .045, ['#ee8a2a', '#e8452f', '#f39a3a'], sd, .1);
+      line([[sd * .012, 2.3], [sd * .06, 2.47]], .012, '#ee8a2a');
+      // silver chimes hanging off the collar's tips
+      const n = sd < 0 ? 4 : 3; for (let i = 0; i < n; i++) { const x = sd * (.29 - i * .028), y = 2.4 + i * .01, sw = Math.sin(t * 3 + i + sd) * .01, L = .11 + .02 * i;
+        line([[x, y], [x + sw, y - L]], .015, '#d4d8de', 'butt'); line([[x - .004, y], [x - .004 + sw, y - L]], .005, '#ffffff', 'butt'); dot([x + sw, y - L - .006], .013, '#3a5a9a', ink); } }
     // neck, head, hair, flowers
     fillS([[-.03, 2.4], [.03, 2.4], [.028, 2.49], [-.028, 2.49]], skinD);
     const h = [.004 + sway, 2.57];
@@ -94,25 +102,28 @@ function stiltWoman(j, x0, y0, k, s, t, mouth = 0, wave = 0) {
     for (const [fx, fy, c, r] of FL) { for (let p = 0; p < 6; p++) { const b = p / 6 * TAU + fx * 9; dot([h[0] + fx + Math.cos(b) * r * .65, fy + Math.sin(b) * r * .6], r * .6, c, 'rgba(70,30,20,.45)'); } dot([h[0] + fx, fy], r * .35, '#fff3b0'); }
   } else {
     const PUR = '#7e34b4', PINK = '#ff5fb8';
-    // grey pegs in pink socks
-    for (const sd of [-1, 1]) { fillS([[sd * .035, 0, 1], [sd * .078, 0, 1], [sd * .072, .13], [sd * .04, .13]], '#8a8d93'); fillS([[sd * .03, .12, 1], [sd * .08, .12, 1], [sd * .074, .27], [sd * .036, .27]], PINK); }
-    // the kite-shaped cover, its pink hoop at the widest, the seam, the piping, the cuff at the knees
-    const upper = [[-.085, 1.42, 1], [.085, 1.42, 1], [.2, 1.1], [.335, .77, 1], [-.335, .77, 1], [-.2, 1.1]];
-    const lower = [[-.335, .77, 1], [.335, .77, 1], [.2, .5], [.075, .27, 1], [.0, .36, 1], [-.075, .27, 1], [-.2, .5]];
-    fillS(upper, lg([-.34, 1], [.34, 1], ['#5a2484', '#a24ad8', '#7e34b4', '#4a1c74']));
-    clipTo(upper, () => { for (let i = 0; i < 45; i++) dot([-.3 + rnd(i, 1, 37) * .32, .78 + rnd(i, 2, 37) * .62], .008, 'rgba(255,225,255,.6)'); }); fillS(upper, 'rgba(0,0,0,0)');
-    fillS(lower, lg([-.34, .6], [.34, .6], ['#4a1c74', '#8a3cc0', '#6a2a98', '#3e1764']));
-    line([[.11, 1.42], [.12, .77], [.04, .32]], .02, PINK);
-    for (const sd of [-1, 1]) line([[sd * .085, 1.42], [sd * .2, 1.1], [sd * .335, .77], [sd * .2, .5], [sd * .075, .27]], .024, PINK);
-    line(qd([-.34, .775], [0, .72], [.34, .775], 8), .034, PINK); line(qd([-.32, .775], [0, .8], [.32, .775], 8), .012, 'rgba(255,95,184,.6)');
-    fillS([[-.095, 1.38, 1], [.095, 1.38, 1], [.095, 1.46, 1], [-.095, 1.46, 1]], PINK);
+    // grey pegs in pink socks, under two kite-shaped covers, one per leg: from a pink cuff at the knee out to a pink hoop at
+    // the widest and in to the sock; pink piping on the edges; the right one has a pink panel down its inner half
+    for (const sd of [-1, 1]) { const cx = sd * .135, bx = sd * .105;
+      fillS([[bx - .022, 0, 1], [bx + .022, 0, 1], [bx + .018, .13], [bx - .018, .13]], '#8a8d93'); fillS([[bx - .026, .12, 1], [bx + .026, .12, 1], [bx + .022, .28], [bx - .022, .28]], PINK);
+      const W2 = .2, up = [[cx - .062, 1.42, 1], [cx + .062, 1.42, 1], [cx + W2, .75, 1], [cx - W2, .75, 1]], lo = [[cx - W2, .75, 1], [cx + W2, .75, 1], [bx + .028, .27, 1], [bx - .028, .27, 1]];
+      fillS(up, lg([cx - .18, 1], [cx + .18, 1], ['#5a2484', '#a24ad8', '#7e34b4', '#4a1c74']));
+      clipTo(up, () => { for (let i = 0; i < 26; i++) dot([cx - .15 + rnd(i, sd + 3, 37) * .3, .78 + rnd(i, 2, 37) * .6], .008, 'rgba(255,225,255,.6)'); }); fillS(up, 'rgba(0,0,0,0)');
+      fillS(lo, lg([cx - .18, .6], [cx + .18, .6], ['#4a1c74', '#8a3cc0', '#6a2a98', '#3e1764']));
+      if (sd > 0) { fillS([[cx - .062, 1.42, 1], [cx - .005, 1.42, 1], [cx - .01, .75, 1], [cx - W2, .75, 1]], 'rgba(255,95,184,.92)'); fillS([[cx - W2, .75, 1], [cx - .01, .75, 1], [bx, .27, 1], [bx - .028, .27, 1]], 'rgba(255,95,184,.92)'); }
+      else line([[cx + .03, 1.42], [cx + .09, .75], [bx + .015, .3]], .022, PINK);
+      line([[cx - .062, 1.42], [cx - W2, .75], [bx - .028, .27]], .022, PINK); line([[cx + .062, 1.42], [cx + W2, .75], [bx + .028, .27]], .022, PINK);
+      const hoop = pt([cx, .75]); g.strokeStyle = PINK; g.lineWidth = Math.max(1, .03 * k); g.beginPath(); g.ellipse(hoop[0], hoop[1], (W2 + .01) * k, .038 * k, 0, 0, Math.PI); g.stroke();
+      fillS([[cx - .07, 1.38, 1], [cx + .07, 1.38, 1], [cx + .07, 1.46, 1], [cx - .07, 1.46, 1]], PINK); }
     // the jacket's back: across the shoulders, ragged strips hanging off its short sides
     fillS([[-.21, 2.39], [.21, 2.39], [.22, 2.22], [.19, 2.13], [-.19, 2.13], [-.22, 2.22]], '#4e1f78');
     // bare thighs, the hot pants, the waistband, the midriff
-    for (const sd of [-1, 1]) fillS([[sd * .005, 1.78], [sd * .155, 1.8], [sd * .14, 1.6], [sd * .09, 1.44, 1], [sd * .008, 1.44, 1], [sd * .012, 1.62]], skinG([sd * .14, 1.6], [0, 1.6]));
+    for (const sd of [-1, 1]) fillS([[sd * .005, 1.78], [sd * .155, 1.8], [sd * .19, 1.6], [sd * .2, 1.44, 1], [sd * .07, 1.44, 1], [sd * .05, 1.62]], skinG([sd * .14, 1.6], [0, 1.6]));
     fillS([[-.16, 1.9, 1], [.16, 1.9, 1], [.16, 1.8, 1], [.035, 1.72, 1], [-.035, 1.72, 1], [-.16, 1.8, 1]], lg([-.16, 1.8], [.16, 1.8], ['#6a2a98', '#9a48d0', '#7e34b4']));
     fillS([[-.155, 1.96, 1], [.155, 1.96, 1], [.16, 1.885, 1], [-.16, 1.885, 1]], PINK);
     fillS([[-.15, 1.95], [.15, 1.95], [.125, 2.04], [.14, 2.16], [-.14, 2.16], [-.125, 2.04]], skinG([-.14, 2.05], [.14, 2.05])); oval([0, 2.03], .007, .011, skinD);
+    // a tattered peplum at the hips, under the jacket's tails
+    for (const sd of [-1, 1]) for (let i = 0; i < 8; i++) { const x = sd * (.12 + i * .02), sw = Math.sin(t * 5 + i + sd) * .008; line([[x, 1.97], [x + sw, 1.78 - .04 * (i % 2)]], .022, i % 2 ? '#6a2a98' : '#4e1f78', 'butt'); }
     // the bust under the V
     fillS([[-.07, 2.4], [.07, 2.4], [.05, 2.25], [.0, 2.16, 1], [-.05, 2.25]], skinG([-.07, 2.3], [.07, 2.3]));
     // the open fronts: sequin purple between the side and the pink-piped edge, flaring to tails curling up at the hips
@@ -129,8 +140,8 @@ function stiltWoman(j, x0, y0, k, s, t, mouth = 0, wave = 0) {
       if (fr) for (let i = 0; i < 6; i++) { const p = [lerp(b[0], c[0], .2 + i * .12), lerp(b[1], c[1], .2 + i * .12)], sw = Math.sin(t * 5 + i) * .01; line([p, [p[0] - .02 + sw, p[1] - .09 - .02 * (i % 2)]], .014, i % 2 ? '#6a2a98' : '#4e1f78', 'butt'); }
       fillS([[sd * .15, 2.42, 1], [sd * .25, 2.42], [sd * .285, 2.33], [sd * .265, 2.26, 1], [sd * .18, 2.27, 1]], lg([sd * .28, 2.3], [sd * .15, 2.36], ['#5a2484', '#9a48d0']));
       for (let i = 0; i < 5; i++) { const x = sd * (.19 + i * .022), sw = Math.sin(t * 6 + i) * .007; line([[x, 2.27], [x + sw, 2.21 - .02 * (i % 2)]], .015, '#6a2a98', 'butt'); } };
-    arm(-1, [-.35, 2.17], [-.5, 2.04], false);
-    arm(1, [lerp(.35, .31, wave), lerp(2.2, 2.56, wave)], [lerp(.47, .36, wave) + Math.sin(t * 6) * .03 * wave, lerp(2.1, 2.84, wave)], wave > .3);
+    arm(-1, [-.35, 2.17], [-.5, 2.04], true);
+    arm(1, [lerp(.35, .31, wave), lerp(2.2, 2.56, wave)], [lerp(.47, .36, wave) + Math.sin(t * 6) * .03 * wave, lerp(2.1, 2.84, wave)], true);
     // neck, head, the messy magenta shock
     fillS([[-.03, 2.37], [.03, 2.37], [.028, 2.47], [-.028, 2.47]], skinD);
     const h = [.004 + sway, 2.56];
