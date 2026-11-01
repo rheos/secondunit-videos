@@ -48,7 +48,7 @@ function sitter(x, y, s, col, p, layer) {
     g.save(); g.translate(8, 0); leg(1.56, 1.5, col, null, false); g.restore();
     if (!p.farFront) { g.save(); g.rotate(p.lean); g.translate(-8, -212); arm(p.far[0], p.far[1], col, p.holdFar); g.restore(); }
     cut(LAP, col, { sh: .6, grain: .26, lift: .2 });
-    g.save(); g.rotate(p.lean); cut(BODICE, col, { sh: .6, grain: .26, lift: .2 }); g.restore();
+    g.save(); g.rotate(p.lean); cut(BODICE, col, { sh: .6, grain: .26, lift: .2 }); if (OLD) oldBack(col, 540); g.restore();
   }
   if (layer !== 'back') {
     g.save(); g.rotate(p.lean);
@@ -58,14 +58,14 @@ function sitter(x, y, s, col, p, layer) {
       g.translate(x, y); g.scale(s, s); g.rotate(p.lean); g.translate(-8, -212); arm(p.far[0], p.far[1], col, p.holdFar); g.restore();
       // her body goes back on top of her left (far) arm, so the arm comes from behind her, not across her
       // front: drawn over it, both arms read as leaving the near shoulder (Robin, finals, 4:43)
-      cut(BODICE, col, { sh: .6, grain: .26, lift: .2 });
+      cut(BODICE, col, { sh: .6, grain: .26, lift: .2 }); if (OLD) oldBack(col, 540);
       // and her dress (the lap) back on top of the torso, as in the back layer; only left of the table's
       // edge, so the oilcloth still hangs in front of it
       g.save(); g.rotate(-p.lean); g.scale(1 / s, 1 / s); g.translate(-x, -y);
       const lc = new Path2D(); lc.rect(-3000, -3000, TX0 - 6 + 3000, 9000); g.clip(lc);
       g.translate(x, y); g.scale(s, s); cut(LAP, col, { sh: .6, grain: .26, lift: .2 }); g.restore(); }
     if (p.postFar) { g.save(); g.rotate(-p.lean); g.scale(1 / s, 1 / s); g.translate(-x, -y); p.postFar(); g.restore(); }
-    g.save(); g.translate(10, -250); head('her', null, col, .265, p.head || 0, 0);
+    g.save(); g.translate(10, -250); if (OLD) oldNeck(); head('her', null, col, .265, p.head || 0, 0);
     if (p.eye > 0) {        // a small closed, smiling eye cut out of the head (the 04 crescent)
       g.rotate(-(p.head || 0) * .9); g.scale(.265, .265); g.translate(-580, -800);
       g.globalAlpha *= p.eye; g.strokeStyle = p.eyeCol; g.lineWidth = 15; g.lineCap = 'round';

@@ -1,8 +1,8 @@
 // The cast, as puppet specs (see puppet() in kit.js). Her family is one paper: navy. Everyone else
 // has their own colour. In the waking world she is grey-blue (CAST.herWake).
 const CAST = {
-  her:     { col: C.navy, kind: 'dress', head: 'her', height: 1, lace: true },
-  herWake: { col: C.w1, kind: 'dress', head: 'her', height: 1 },
+  her:     { col: C.navy, kind: 'dress', head: 'her', height: 1, lace: true, old: OLD },
+  herWake: { col: C.w1, kind: 'dress', head: 'her', height: 1, old: OLD },
   girl11:  { col: C.navy, kind: 'dressShort', head: 'child', hair: 'pony', height: .74, headK: .3 },
   boy8:    { col: C.navy, kind: 'shirt', head: 'child', hair: 'cap', height: .64, headK: .31 },
   girl3:   { col: C.navy, kind: 'dressShort', head: 'child', hair: 'pigtail', height: .5, headK: .4 },

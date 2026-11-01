@@ -42,12 +42,12 @@ function sitter(x, y, s, col, p, layer) {
     g.save(); g.translate(8, 0); leg(1.56, 1.5, col, null, false); g.restore();
     if (!p.farFront) { g.save(); g.rotate(p.lean); g.translate(-8, -212); arm(p.far[0], p.far[1], col, p.holdFar); g.restore(); }
     cut(LAP, col, { sh: .6, grain: .26, lift: .2 });
-    g.save(); g.rotate(p.lean); cut(BODICE, col, { sh: .6, grain: .26, lift: .2 }); g.restore();
+    g.save(); g.rotate(p.lean); cut(BODICE, col, { sh: .6, grain: .26, lift: .2 }); if (OLD) oldBack(col, 540); g.restore();
   }
   if (layer !== 'back') {
     g.save(); g.rotate(p.lean);
     if (p.farFront) { g.save(); g.translate(-8, -212); arm(p.far[0], p.far[1], col, p.holdFar); g.restore(); }
-    g.save(); g.translate(10, -250); head('her', null, col, .265, p.head || 0, 0); g.restore();
+    g.save(); g.translate(10, -250); if (OLD) oldNeck(); head('her', null, col, .265, p.head || 0, 0); g.restore();
     g.translate(8, -212); arm(p.near[0], p.near[1], col, p.holdNear);
     g.restore();
   }

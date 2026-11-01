@@ -140,6 +140,7 @@ SHOT(44.9, 73.28, 'sky', (t) => {
   if (eyeK < .5) g.arc(706, 452, 13, Math.PI * .1, Math.PI * .9);           // relaxed lid
   else g.arc(706, 446, 18, Math.PI * .12, Math.PI * .88);                    // crinkled laugh
   if (skyK < .98 || true) g.stroke();
+  if (OLD) specsArm(g.strokeStyle, g.lineWidth * .8);     // her spectacles' arm, in the eye's colour
   g.restore();
 
   // her laugh: gold rings that ride out from her mouth on "smile out loud"
