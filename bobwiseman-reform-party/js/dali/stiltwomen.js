@@ -17,8 +17,10 @@
 //   then on along the open fronts, which flare out and down into long pointed tails curling up at the hips, tattered
 //   strips at the back hem; long pink gloves, a fringe hanging off the raised one; a messy shock of magenta hair.
 // (x0, y0): the screen point of the playa under her; k px per metre; s 1 as in the photo, -1 mirrored; mouth 0..1;
-// wave 0..1 raises the arm on the photo's right; t drives the small motion only.
-function stiltWoman(j, x0, y0, k, s, t, mouth = 0, wave = 0) {
+// wave 0..1 raises the arm on the photo's right; hold 0..1 brings the hands the pair hold (the rainbow walker's
+// left, the purple walker's right) to a point 0.45 m out at shoulder height, as in the photo; grace 0..1 lifts the free
+// arm in a slow open sweep out to shoulder height, hand soft (Robin: no fist pumps); t drives the small motion only.
+function stiltWoman(j, x0, y0, k, s, t, mouth = 0, wave = 0, hold = 0, grace = 0) {
   const pt = (p) => [x0 + s * p[0] * k, y0 - p[1] * k];
   const ink = 'rgba(34,16,30,.9)', lw = Math.max(1, .008 * k);
   // a closed shape through pts, rounded at every point except those marked sharp ([x, y, 1])
@@ -71,8 +73,8 @@ function stiltWoman(j, x0, y0, k, s, t, mouth = 0, wave = 0) {
     const body = [[-.18, 1.8], [.18, 1.8], [.185, 1.96], [.135, 2.08], [.16, 2.24], [.22, 2.37], [.13, 2.45], [-.13, 2.45], [-.22, 2.37], [-.16, 2.24], [-.135, 2.08], [-.185, 1.96]];
     fillS(body, SEAM); clipTo(body, () => { for (let i = 0; i < 18; i++) { const y = 1.82 + i * .037; fillS([[-.4, y + .007, 1], [.4, y + .007, 1], [.4, y + .03, 1], [-.4, y + .03, 1]], RAIN[(i + 4) % 7], false); } }); fillS(body, 'rgba(0,0,0,0)');
     // bare arms out of the armholes: her right out and down, her left toward her partner or up on the cue
-    { const a = [-.19 + sway, 2.34], b = [-.35, 2.15], c = [-.47, 1.99]; limb(a, b, c, .042, .033, .025, skinG([-.4, 2.1], [-.3, 2.2])); hand(c, b, skin); line([[-.27, 2.25], [-.25, 2.2]], .01, 'rgba(60,70,90,.5)'); } // a tattoo
-    { const a = [.19 + sway, 2.34], b = [lerp(.33, .3, wave), lerp(2.18, 2.56, wave)], c = [lerp(.43, .35, wave) + Math.sin(t * 6) * .03 * wave, lerp(2.27, 2.83, wave)]; limb(a, b, c, .042, .033, .025, skinG([.2, 2.2], [.35, 2.3])); hand(c, b, skin); }
+    { const a = [-.19 + sway, 2.34], b = [lerp(-.35, -.36, grace), lerp(2.15, 2.31, grace)], c = [lerp(-.47, -.56, grace), lerp(1.99, 2.4, grace) + Math.sin(t * 2.4) * .015 * grace]; limb(a, b, c, .042, .033, .025, skinG([-.4, 2.1], [-.3, 2.2])); hand(c, b, skin); line([[-.27, 2.25], [-.25, 2.2]], .01, 'rgba(60,70,90,.5)'); } // a tattoo
+    { const a = [.19 + sway, 2.34], b = [lerp(lerp(.33, .3, wave), .32, hold), lerp(lerp(2.18, 2.56, wave), 2.2, hold)], c = [lerp(lerp(.43, .35, wave) + Math.sin(t * 6) * .03 * wave, .45, hold), lerp(lerp(2.27, 2.83, wave), 2.22, hold)]; limb(a, b, c, .042, .033, .025, skinG([.2, 2.2], [.35, 2.3])); hand(c, b, skin); }
     // the collar's navy back and lining, showing only inside the upper V round the neck
     fillS([[-.13, 2.44], [-.1, 2.52], [.1, 2.52], [.13, 2.44], [.03, 2.27, 1], [-.03, 2.27, 1]], NAVY);
     // the vest: two panels whose front edges are arcs, bowing in to touch at the middle, flaring out above into the collar
@@ -146,8 +148,8 @@ function stiltWoman(j, x0, y0, k, s, t, mouth = 0, wave = 0) {
       if (fr) for (let i = 0; i < 6; i++) { const p = [lerp(b[0], c[0], .2 + i * .12), lerp(b[1], c[1], .2 + i * .12)], sw = Math.sin(t * 5 + i) * .01; line([p, [p[0] - .02 + sw, p[1] - .09 - .02 * (i % 2)]], .014, i % 2 ? '#6a2a98' : '#4e1f78', 'butt'); }
       fillS([[sd * .15, 2.42, 1], [sd * .25, 2.42], [sd * .285, 2.33], [sd * .265, 2.26, 1], [sd * .18, 2.27, 1]], lg([sd * .28, 2.3], [sd * .15, 2.36], ['#5a2484', '#9a48d0']));
       for (let i = 0; i < 5; i++) { const x = sd * (.19 + i * .022), sw = Math.sin(t * 6 + i) * .007; line([[x, 2.27], [x + sw, 2.21 - .02 * (i % 2)]], .015, '#6a2a98', 'butt'); } };
-    arm(-1, [-.35, 2.17], [-.5, 2.04], true);
-    arm(1, [lerp(.35, .31, wave), lerp(2.2, 2.56, wave)], [lerp(.47, .36, wave) + Math.sin(t * 6) * .03 * wave, lerp(2.1, 2.84, wave)], true);
+    arm(-1, [lerp(-.35, -.32, hold), lerp(2.17, 2.2, hold)], [lerp(-.5, -.45, hold), lerp(2.04, 2.22, hold)], true);
+    arm(1, [lerp(lerp(.35, .31, wave), .36, grace), lerp(lerp(2.2, 2.56, wave), 2.32, grace)], [lerp(lerp(.47, .36, wave) + Math.sin(t * 6) * .03 * wave, .56, grace), lerp(lerp(2.1, 2.84, wave), 2.41, grace) + Math.sin(t * 2.4 + 1) * .015 * grace], true);
     // neck, head, the messy magenta shock
     fillS([[-.03, 2.37], [.03, 2.37], [.028, 2.47], [-.028, 2.47]], skinD);
     const h = [.004 + sway, 2.56];

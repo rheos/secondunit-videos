@@ -108,30 +108,31 @@ function rapFigure(t, f, k, rocket, o = {}) { // o (draft 37's spin singers): s,
 // ---------- Draft 37: the stilt women on "without spin" at the end of each refrain ----------
 // Bob (note 59 and Messenger, 2026-10-31): "it would send things over the top if some female or females appeared at the
 // end of each chorus just for the final lyrics 'without spin'". d37 used the horse diva and a sister with mics; Robin:
-// "i don't think it looks right with the microphones in their hands like that.. they are not the lead", so d37d brought
-// in the stilt walkers from his photos, and d37f draws them whole and close up (stiltwomen.js) scaled to the diva's size:
-// 2.8 m of walker in the 490 px the diva showed (k 175), stilts on the frame's bottom edge, heads where hers were. The rainbow walker comes in from the left edge and the purple one from the right on "without", they sing
-// it (backing vocals, no mics), each turns a full twirl on "spin", waves through the held note and walks back out as
-// the line ends. Screen-space, so every framing of the three refrains keeps them whole and clear of the captions.
+// "i don't think it looks right with the microphones in their hands like that.. they are not the lead", so they are the
+// stilt walkers from his photos (stiltwomen.js), whole and scaled to the diva's size: 2.8 m of walker in the 490 px the
+// diva showed (k 175), stilts on the frame's bottom edge. Robin on the motion: "they should come in.. sing their part
+// then spin back out on 'spin'". They come in together from the left edge hand in hand, as in his photo (the rainbow
+// walker on the left, the purple one on her right; the chattering teeth hold the right corner in the first two
+// refrains), sing "without" lifting the free arm in a slow open sweep (Robin: no fist pumps, something more elegant),
+// and on "spin" let go and spin back out the way they came, two full turns each.
 const SPIN_LINES = [6, 13, 34];
-const SPIN_STILTS = [{ j: 0, x: .1, side: -1, lag: 0 }, { j: 1, x: .9, side: 1, lag: .1 }];
+const SPIN_PAIR = { k: 175, x: 120, gap: .9, inT: .7, outT: 1.05, turns: 2 };
 function spinDivas(t) {
   for (const li of SPIN_LINES) {
-    const w0 = wt(li, 'without'), sp = wt(li, 'spin'), wo = LINES[li].words.find((w) => w.w === 'without'), end = LINES[li].e;
-    if (t < w0 - 1 || t > end + 1.2) continue;
-    for (const D of SPIN_STILTS) {
-      // the purple walker comes in on the teeth's side, so in the first two refrains she waits till they have hopped out
-      const clear = D.side > 0 ? Math.max(0, ...BUH_RUNS.map((r) => r[r.length - 1] + BOW.hold + BUH.outT).filter((e) => e < end)) : 0;
-      const tt = t - D.lag, t0 = Math.max(w0 - .55, clear), k = 175, inU = ease(tt, t0, t0 + .7), outU = ease(tt, end - .05, end + .8);
+    const w0 = wt(li, 'without'), sp = wt(li, 'spin'), wo = LINES[li].words.find((w) => w.w === 'without');
+    if (t < w0 - 1 || t > sp + 1.4) continue;
+    const S = SPIN_PAIR, k = S.k, t0 = w0 - .6;
+    for (const j of [0, 1]) {
+      const tt = t - .06 * j, inU = ease(tt, t0, t0 + S.inT), outU = clamp((tt - sp) / S.outT);
       if (inU <= 0 || outU >= 1) continue;
-      const off = D.side < 0 ? -.8 * k : W + .8 * k, tgt = W * D.x, x = outU > 0 ? lerp(tgt, off, outU) : lerp(off, tgt, inU);
-      const walking = inU < 1 || outU > 0, y = H - .06 * k - (walking ? Math.abs(Math.sin(tt * 6.5)) * .04 * k : 0); // a stilt bob while they stride
+      const home = S.x + j * S.gap * k, off = -(1 - j) * .7 * k - (S.gap + .7) * k * j - .5 * k, x = outU > 0 ? lerp(home, off, smooth(outU) * smooth(outU)) : lerp(off, home, inU);
+      const walking = inU < 1 || outU > 0, y = H - .06 * k - (walking ? Math.abs(Math.sin(tt * 6.5)) * .04 * k : 0);
       let mouth = 0; if (tt >= w0 && tt < wo.e) mouth = .4 + .5 * Math.abs(Math.sin(Math.PI * (tt - w0) / ((wo.e - w0) / 2)));
-      else if (tt >= sp) mouth = .85 * (1 - ease(tt, end - .35, end - .05)) * ease(tt, sp, sp + .06);
-      const wave = ease(tt, sp + .6, sp + 1) * (1 - ease(tt, end - .3, end + .1));
-      const tw = clamp((tt - sp) / .75), turn = tw > 0 && tw < 1 ? Math.cos(TAU * smooth(tw)) : 1;
+      else if (tt >= sp) mouth = .85 * ease(tt, sp, sp + .06);
+      const hold = 1 - ease(tt, sp - .05, sp + .12), turn = outU > 0 ? Math.cos(TAU * S.turns * outU) : 1;
       g.save(); g.translate(x, 0); g.scale(turn, 1); g.translate(-x, 0);
-      stiltWoman(D.j, x, y, k, -D.side, tt, mouth, wave); g.restore();
+      const grace = ease(tt, w0 - .15, w0 + .55); // the free arm sweeps open as she sings, and stays out through the spin
+      stiltWoman(j, x, y, k, 1, tt, mouth, 0, hold, grace); g.restore();
     }
   }
 }
