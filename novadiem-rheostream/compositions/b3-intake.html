@@ -1,0 +1,125 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #b3 { position: absolute; inset: 0; }
+      </style>
+      <div data-hf-id="hf-rs40" id="b3" data-composition-id="b3" data-width="1920" data-height="1080">
+        <div data-hf-id="hf-rs41" id="b3-content" class="layer">
+          <div data-hf-id="hf-rs42" id="b3-lab-l" class="plate-label left">FIG. III</div>
+          <div data-hf-id="hf-rs43" id="b3-lab-r" class="plate-label right">THE INTAKE</div>
+          <svg data-hf-id="hf-rs44" id="b3-svg" class="full" viewBox="0 0 1920 1080"></svg>
+          <div data-hf-id="hf-rs45" class="statement two">
+            <span data-hf-id="hf-rs46" id="b3-s1" class="phrase">Checked before it's written.</span>
+            <span data-hf-id="hf-rs47" id="b3-s2" class="phrase accent">Stored before it's acknowledged.</span>
+          </div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text } = BP;
+          const tl = gsap.timeline({ paused: true });
+          const S = 34.88;
+          const K = BP.kit(tl, S, "III");
+          const R = (t) => K.R(t);
+          const W = (w, n) => R(VO.w("III", w, n));
+          const svg = K.$("b3-svg");
+
+          // your website, and the pipe it sends through
+          const site = RS.house(svg, 120, 260, 220, 190, null, { cls: "line-strong" });
+          const siteT = text("YOUR WEBSITE", { class: "lab sm", x: 230, y: 500, "text-anchor": "middle" }, svg);
+          const pipe = el("path", { class: "ln line", d: "M340 398H690M340 442H690" }, svg);
+          const seal = el("circle", { class: "ln line-strong", cx: 230, cy: 420, r: 32 }, svg);
+          const sealT = text("SIGNED WITH ITS KEY", { class: "ty sm", x: 230, y: 540, "text-anchor": "middle" }, svg);
+          // the sluice and its three checks
+          const G = RS.gate(svg, 712, 380, 90);
+          const checks = ["CONNECTION", "TIMESTAMP", "SIGNATURE"].map((s, i) => ({
+            t: text(s, { class: "lab sm", x: 560, y: 210 + i * 40 }, svg),
+            c: RS.check(svg, 760, 204 + i * 40),
+          }));
+          const checkLine = el("path", { class: "ln thin line", d: "M712 290V340" }, svg);
+          // one commit: receipt, payload and event land together
+          const chamber = RS.basin(svg, 800, 230, 480, 380, { level: 0.92, cls: "line-strong" });
+          const cards = [
+            RS.card(svg, 830, 300, 420, "RECEIPT", ["keyed by the sender's event id"]),
+            RS.card(svg, 830, 398, 420, "PAYLOAD", ["a bounded copy"]),
+            RS.card(svg, 830, 496, 420, "EVENT", ["in the outbox"]),
+          ];
+          const brace = el("path", { class: "ln line-strong", d: "M1300 300H1320V584H1300" }, svg);
+          const commit = RS.stampBox(svg, "ONE COMMIT", 1450, 442, 220, { ok: true, rot: -4 });
+          // only then: yes
+          const yes = el("path", { class: "ln line-strong", d: "M1040 222V150H230V246" }, svg);
+          const yesH = RS.head(svg, 230, 254, "d");
+          const yesT = text("202 ACCEPTED", { class: "lab", x: 640, y: 136, "text-anchor": "middle" }, svg);
+          // the resend
+          const P2 = RS.dot(svg);
+          const sameT = text("SAME EVENT ID", { class: "lab sm dim", x: 520, y: 490, "text-anchor": "middle" }, svg);
+          const one = RS.stampBox(svg, "STILL ONE LEAD", 1040, 668, 300, { ok: true, rot: 3 });
+          const P = RS.dot(svg);
+
+          // the inquiry arrives at the website from plate II's inlet
+          RS.put(K, tl, P, 230, 420, R(35.3), { fade: 0.4 });
+          K.fade(K.$("b3-lab-l"), R(35.6), 0.4);
+          K.fade(K.$("b3-lab-r"), R(35.6), 0.4);
+          K.draw(site.body, R(35.5), 0.8);
+          K.typed(siteT, W("website"), { cps: 34, cursor: false });
+          // "signs the inquiry": a seal closes round it
+          K.stamp(seal, W("signs"), { origin: "230 420", sound: "stamp", from: 2.2 });
+          K.typed(sealT, W("inquiry"), { cps: 40, cursor: false });
+          // "and sends it in"
+          K.draw(pipe, W("and") - 0.1, 0.5);
+          const atGate = RS.ride(K, P, [[690, 420]], W("sends"), { speed: 380 });
+          K.move(seal, W("sends"), atGate - W("sends"), { x: 0 }, { x: 460 }, { ease: "power2.inOut" });
+          K.draw(G.frame, W("sends") - 0.2, 0.4, "power2.out", false);
+          K.fade(G.plate, W("sends"), 0.3);
+          K.sfx("gate", W("sends") + 0.2);
+          // "checks the signature before it writes a thing"
+          K.draw(checkLine, W("checks") - 0.2, 0.25, "power2.out", false);
+          checks.forEach((c, i) => {
+            const t = i < 2 ? W("checks") + i * 0.32 : W("signature");
+            K.typed(c.t, t, { cps: 40, cursor: false });
+            K.draw(c.c, t + 0.3, 0.2, "power2.out", false);
+            K.sfx("tick", t + 0.32);
+          });
+          K.slam(K.$("b3-s1"), W("before") + 0.1, { stagger: 0.03 });
+          // the sluice opens, the seal comes off, and the inquiry goes in
+          K.move(G.plate, W("thing") - 0.2, 0.4, { y: 0 }, { y: -84 }, { sound: "valve" });
+          tl.to(seal, { opacity: 0, duration: 0.3, ease: "power1.in" }, W("thing"));
+          RS.showBasin(K, chamber, W("thing") - 0.3, 0.6);
+          RS.ride(K, P, [[760, 420], [1040, 262]], W("stores") - 0.4, { speed: 900 });
+          // "stores a receipt, the payload and an event in one commit"
+          RS.showCard(K, cards[0], W("receipt") - 0.15, { cps: 60 });
+          RS.showCard(K, cards[1], W("payload") - 0.1, { cps: 60 });
+          RS.showCard(K, cards[2], W("event") - 0.1, { cps: 60 });
+          K.draw(brace, W("one") - 0.1, 0.35);
+          K.stamp(commit.g, W("commit"), { origin: "1450 442" });
+          K.sfx("gate", W("commit") + 0.1);
+          // "and only then says yes"
+          K.draw(yes, W("only"), 0.9, "power1.inOut");
+          K.draw(yesH, W("only") + 0.85, 0.12, "power2.out", false);
+          K.typed(yesT, W("says") - 0.1, { cps: 28, cursor: false });
+          K.sfx("ping", W("yes"));
+          K.slam(K.$("b3-s2"), W("yes") + 0.15, { stagger: 0.03 });
+          // "send it twice, and it is still one lead"
+          RS.put(K, tl, P2, 230, 420, W("send") - 0.1, { fade: 0.2 });
+          K.typed(sameT, W("twice"), { cps: 40, cursor: false });
+          const back = RS.ride(K, P2, [[760, 420], [1000, 340]], W("send") + 0.15, { speed: 820 });
+          K.pulse(cards[0].box, back, 2, 0.32, 0.03, { origin: "1040 344" });
+          tl.to(P2.g, { scale: 0.2, opacity: 0, transformOrigin: "50% 50%", duration: 0.35, ease: "power2.in" }, back + 0.1);
+          K.stamp(one.g, W("still") - 0.05, { origin: "1040 668" });
+
+          // hand-off: push in on the chamber, which plate IV draws as its lock
+          const out = R(51.65);
+          K.sfx("out", out);
+          K.camera(K.$("b3-content"), out, 0.9, { scale: 1, opacity: 1 }, { scale: 2.2, opacity: 0 }, { origin: "1040px 420px", ease: "power2.in" });
+          window.__timelines["b3"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>
