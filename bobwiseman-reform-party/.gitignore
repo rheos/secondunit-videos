@@ -1,0 +1,10 @@
+# audio, stems, lyrics and anything quoting them stay out
+source/
+assets/
+out/
+work/
+js/gen/
+node_modules
+*.wav
+*.mp4
+*.webm
