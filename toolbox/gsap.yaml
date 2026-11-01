@@ -15,7 +15,7 @@ deterministic: 'yes'
 how: built into HyperFrames
 cost: free
 url: https://gsap.com
-detail: skill `hyperframes-animation`
+detail: skill `hyperframes-animation`; the official `gsap-skills` plugin (core, timeline, plugins, ScrollTrigger, React) is installed
 related:
 - hyperframes
 - animejs
