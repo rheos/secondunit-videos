@@ -1,0 +1,29 @@
+{
+ "lines": [
+  [
+   "I",
+   "In June 2025, Asana switched off its new AI connector for almost two weeks. It could show one company's data to people at other companies."
+  ],
+  [
+   "II",
+   "The connector let AI assistants work with your projects and tasks. A month after launch, Asana found a bug that could expose some of that to users outside your organization. They haven't said exactly how. Nothing shows it was exploited."
+  ],
+  [
+   "III",
+   "But every request an AI makes comes down to one question: whose data is this? If the answer comes from anything the AI wrote, one wrong guess or one planted instruction can change it."
+  ],
+  [
+   "IV",
+   "So the server answers it, every time, from who's signed in. Put someone else's account in the request, and the write still lands in yours. Theirs isn't touched."
+  ],
+  [
+   "V",
+   "One memory tool goes further. Six fields, all required, and which conversation the memory belongs to isn't one of them. The server looks that up itself."
+  ],
+  [
+   "VI",
+   "Let the AI decide what. Let the server decide whose."
+  ]
+ ],
+ "facts": "Script v3 (Robin, 2026-10-30: 'where is this an actual issue? who is having this problem?'; he chose a rebuild on a real incident). I-II: BleepingComputer (Bill Toulas) and The Register (Jessica Lyons), both 2025-06-18. Launch May 1, 2025 and discovery June 4 (both outlets); offline June 5 through June 17 (The Register; BleepingComputer: back 'June 17, 17:00 UTC'). Asana's words to customers: 'this bug could have potentially exposed certain information from your Asana domain to other Asana MCP users.' No cause stated by Asana in either article ('logic flaw' is the reporters' wording); 'no indication that miscreants exploited the issue' (The Register). The ~1,000 customers figure is left out: a spokesperson's number in BleepingComputer, unanswered in The Register. III: the general claim, not Asana's cause. where-logic-lives: rules that must hold 'if a prompt is missed, the model is confused, or the caller is hostile' belong at the data-owning boundary; mcp-tool-design: a model has 'decent reason to think' chat_id belongs in write_memory (the wrong guess). IV: systems repo storage-routing test (S12): a payload naming workspace B 'lands its write in workspace A (the context's) and leaves B unchanged'; routing comes 'from the authenticated context and from nothing a caller supplies'. V: mcp-tool-design: write_memory 'declares six properties and requires all six. chat_id is not among them'; description 'chat_id is NOT an input, it is derived server-side from source_turn_id'. VI: where-logic-lives: 'Let the model choose among safe actions. Reject unsafe states at a boundary the model cannot waive.' YouTube description to cite both news articles and the two devweb articles. v1 and v2 scripts in vo/audition/."
+}

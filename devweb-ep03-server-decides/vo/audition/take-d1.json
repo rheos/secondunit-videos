@@ -1,0 +1,31 @@
+{
+ "lines": [
+  [
+   "I",
+   "The AI wrote workspace B on its request. The server crossed it out."
+  ],
+  [
+   "II",
+   "To save a memory, an AI sends two ids: the message it came from, and its chat. Nothing ties them. One wrong guess, or one buggy client, and a real message lands in the wrong chat."
+  ],
+  [
+   "III",
+   "Both ids come from the same writer. Only the server's records know which chat that message is in."
+  ],
+  [
+   "IV",
+   "So the server stops asking. The model sends the message id. The server looks it up in its own records and stamps the chat from there. Same rule for the workspace: it comes from who's signed in. Put B in the request, and the write still lands in A."
+  ],
+  [
+   "V",
+   "One real memory tool asks for six fields, all required. Chat id isn't one of them. Its description says why: derived on the server."
+  ],
+  [
+   "VI",
+   "It won't prove the AI picked the right message. It stops one thing: that message in the wrong chat. Let the model choose. Make the server decide."
+  ]
+ ],
+ "chars": 871,
+ "seconds": 58.88,
+ "sha256": "2c64800c2a58d4cddcf0fb19733e890522b26996313b21f8b2c71e4bb609ded6"
+}
