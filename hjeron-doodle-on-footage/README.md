@@ -2,7 +2,7 @@
 
 Crayon-and-felt-pen characters living on an artist's real footage, after Kevin Ngo's doodles drawn on photos
 (references/kevin-ngo K28): the real thing stays untouched, the doodle turns it into a set. Built on two of
-Hjeron's own clips (The Wyrd One; consent on record in memory). Test 01, 2026-11-01: 9.2 s, 720x1280.
+Hjeron's own clips (The Wyrd One; consent on record in memory). Test 01, 2026-11-01: 9.2 s, 720x1280. Robin: "It lands". Look: looks/doodle-on-footage.yaml.
 
 - **Walk** (walkaway clip 22.5-28.5 s; cut before his face shows at ~29 s): a sleepy sun drawn into the sunset
   glow wakes up, three crows perched on the long cloud take off as he nears, notes rise from his guitar hand, a
