@@ -4,6 +4,8 @@ One file per tool, `toolbox/<slug>.yaml`: every library, app, model, service and
 for video, animation, image, audio and 3D work. It does for tools what `looks/` does for visual styles: one place
 to find out what we already have before adding something new. `INDEX.md` lists them by status and by keyword.
 
+Sources, ideas and look tests (not tools) go in `references/QUIVER.md`, the one list of everything we've looked at.
+
 **Check here before installing or building anything.** Search the keywords (`grep -ril physics toolbox/`) or read
 `INDEX.md`. If a tool is already here, use it; if it was rejected, read the `why` first.
 

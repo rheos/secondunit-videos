@@ -1,5 +1,7 @@
 # Reference profiles
 
+Everything we have looked at (sources, ideas, look tests) with its verdict, and the queue of what to test next: [QUIVER.md](QUIVER.md).
+
 A library of people whose ideas Robin wants to call on, visually or philosophically. Open
 [index.html](index.html) for the illustrated library page. Each profile
 turns one person's work into something an agent can use on a brief: what they did, what we infer
