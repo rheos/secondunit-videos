@@ -1,0 +1,21 @@
+slug: yt-dlp
+name: yt-dlp
+kind: cli
+status: in-use
+does: Downloads video and audio from YouTube, Facebook, Instagram, TikTok, X and most other sites.
+keywords:
+- download
+- social-video
+- reference-clip
+- audio
+fits:
+- saving reference clips and reels Robin pastes
+- pulling a song or source clip for a look test
+deterministic: n/a
+how: '`~/.local/bin/yt-dlp` (2026.08.19); worked with no cookies on a Facebook reel, 2026-10-30'
+cost: free
+url: https://github.com/yt-dlp/yt-dlp
+detail: memory `reference-save-social-video`
+related:
+- ffmpeg
+added: '2026-11-01'
