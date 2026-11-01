@@ -62,7 +62,6 @@ SHOT(124.0, A_END, 'goodbye-tear', (t) => {
   g.strokeStyle = C.rose; g.lineCap = 'round';
   if (smile < .5) { g.lineWidth = 4.5; g.beginPath(); g.arc(706, 452, 13, Math.PI * .1, Math.PI * .9); g.stroke(); }
   else { g.lineWidth = 6; g.beginPath(); g.arc(706, 466, 17, Math.PI * 1.12, Math.PI * 1.88); g.stroke(); }
-  if (OLD) specsArm(C.rose, 4.5);                          // her spectacles' arm, in the eye's colour
   g.restore();
 
   // the tear: swells at the lid on "she don't", runs down the cheek to the jaw, hangs under the chin;

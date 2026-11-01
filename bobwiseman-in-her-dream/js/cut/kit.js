@@ -224,10 +224,12 @@ const HEAD_CHILD = [
   690, 758, 640, 762, 622, 794,
   612, 846, 616, 920, 640, 1060,
 ];
-// her, old (Bob, 2026-11-01: the song is about an old woman). Look test behind ?old=1 until Robin approves.
-// Same skull, bun, brow and eye as HEAD_HER (the close-ups pin her eye, tear and cheek to those), but a
-// longer nose with a drooping tip, thinner set-back lips, a softer chin, a little jowl and a looser neck,
-// and spectacles: a paper rim standing proud of the brow, the lens cut through where it clears her face.
+// her, old (Bob, 2026-11-01: the song is about an old woman). Robin: old only in the waking world (the grey
+// kitchen at the start and the wake at the end); in the dream she is the age she always was. Look test behind
+// ?old=1 until Robin approves. Same skull, bun, brow and eye as HEAD_HER, but a longer nose with a drooping
+// tip, thinner set-back lips, a softer chin, a little jowl and a looser neck, and spectacles: a paper rim
+// standing proud of the brow, the lens cut through where it clears her face. Same point count as HEAD_HER,
+// so headAt(age) morphs between them (01, as her paper turns navy and the dream begins).
 const OLD = typeof location !== 'undefined' && /[?&]old=1/.test(location.search);
 const HEAD_OLD = HEAD_HER.slice();
 (() => { const s = (k) => 2 + k * 6; const set = (k, a) => a.forEach((v, j) => HEAD_OLD[s(k) + j] = v);
@@ -236,18 +238,18 @@ const HEAD_OLD = HEAD_HER.slice();
   set(14, [767, 681, 757, 687, 761, 701]); set(15, [766, 724, 756, 748, 728, 760]); set(16, [694, 774, 660, 774, 634, 786]);
   set(17, [618, 808, 616, 848, 632, 892]); })();
 const SPEC = [748, 458];
-// the arm of her spectacles, for the close-ups where the head is big: a thin line from the rim back over the
-// temple to the ear, hooked down behind it (head units; stroke it in the shot's eye colour)
-function specsArm(col, w = 7) {
-  g.save(); g.strokeStyle = col; g.lineWidth = w; g.lineCap = 'round'; g.lineJoin = 'round';
-  g.beginPath(); g.moveTo(SPEC[0] - 16, SPEC[1] - 18); g.lineTo(600, 440); g.quadraticCurveTo(574, 444, 566, 470); g.stroke(); g.restore();
-}
-const headOld = () => { const p = pathOf(HEAD_OLD);
+const HEAD_AGED = {};
+function headAt(age) {
+  // age 0..1, cached at 1/50 steps (drawFrame stays pure)
+  const q = Math.round(clamp(age) * 50); if (HEAD_AGED[q]) return HEAD_AGED[q];
+  const a = q / 50, p = pathOf(HEAD_HER.map((v, i) => lerp(v, HEAD_OLD[i], a)));
   // the rim winds the same way as the head (so it adds), the lens the other way (so it cuts a hole only where
-  // the rim stands clear of her face); the bridge is a small pad down onto the nose
-  p.ellipse(SPEC[0], SPEC[1], 19, 31, -.15, 0, Math.PI * 2); p.moveTo(SPEC[0] + 12, SPEC[1]); p.ellipse(SPEC[0], SPEC[1], 12, 24, -.15, 0, Math.PI * 2, true);
-  return p; };
-const HEADS = { her: OLD ? headOld() : pathOf(HEAD_HER), short: pathOf(HEAD_SHORT), child: pathOf(HEAD_CHILD) };
+  // the rim stands clear of her face); growing younger, the rim slides back into her face and is gone
+  const cx = SPEC[0] - (1 - a) * 46, cy = SPEC[1];
+  if (a > 0) { p.ellipse(cx, cy, 19, 31, -.15, 0, Math.PI * 2); p.moveTo(cx + 12, cy); p.ellipse(cx, cy, 12, 24, -.15, 0, Math.PI * 2, true); }
+  return (HEAD_AGED[q] = p);
+}
+const HEADS = { her: pathOf(HEAD_HER), short: pathOf(HEAD_SHORT), child: pathOf(HEAD_CHILD) };
 // hair pieces added on top of a head (same head units)
 const HAIR = {
   bun: null,
@@ -301,10 +303,10 @@ const LACE = (() => { const p = new Path2D(); p.addPath(PARTS.dress);
   for (let i = 0; i < 7; i++) { const x = -96 + i * 30, y = -232 + (i % 2) * 6; p.moveTo(x + 9, y); p.arc(x, y, 9, 0, Math.PI * 2); }
   for (let i = 0; i < 6; i++) { const x = -84 + i * 32, y = -272; p.moveTo(x + 5, y); p.arc(x, y, 5, 0, Math.PI * 2); }
   return p; })();
-function head(kind, hair, col, k, angle, laugh = 0) {
+function head(kind, hair, col, k, angle, laugh = 0, age = 0) {
   g.save(); g.rotate(-angle * .9 - laugh * .18); g.scale(k, k); g.translate(-580, -800);
   g.save(); g.beginPath(); g.rect(-200, -200, 1400, 1040); g.clip();
-  cut(HEADS[kind], col, { sh: .5, grain: .25 });
+  cut(kind === 'her' && age > 0 ? headAt(age) : HEADS[kind], col, { sh: .5, grain: .25 });
   if (hair && HAIR[hair]) cut(HAIR[hair], col, { sh: .3, grain: .2 });
   g.restore(); g.restore();
 }
@@ -324,17 +326,20 @@ function leg(hip, knee, col, shoeCol, kid) {
 // her age, below the neck (spec.old): a rounded upper back, and a shawl over her shoulders (its front edge
 // shows across her chest; a fringe at the back read as a stub at small sizes and was dropped).
 // Drawn in her body paper, after the body, before the head; dy shifts
-// it for the seated rigs (their bodice sits 540 lower). oldNeck() sets her head forward and bows it.
+// it for the seated rigs (their bodice sits 540 lower). oldNeck() sets her head forward and bows it. spec.age (0..1)
+// turns it on for a puppet; the seated rigs pass p.age.
 const HUMP = blob([[-20, -806], [-54, -796], [-76, -770], [-84, -730], [-78, -688], [-60, -650], [-30, -664], [-10, -760]], .5);
 const SHAWL = blob([[34, -800], [-22, -810], [-62, -798], [-80, -770], [-86, -728], [-80, -684], [-64, -640], [-48, -626],
   [-26, -642], [4, -666], [30, -692], [50, -718], [56, -756]], .45);
-function oldBack(col, dy = 0) {
-  g.save(); g.translate(0, dy);
+function oldBack(col, dy = 0, age = 1) {
+  if (age < .03) return;
+  // growing younger, the hump and shawl sink back into her body (squeezed toward her spine line)
+  g.save(); g.translate(0, dy); g.scale(lerp(.6, 1, age), 1);
   cut(HUMP, col, { sh: .5, grain: .26, lift: .2 });
   cut(SHAWL, col, { sh: .55, grain: .26, lift: .3 });
   g.restore();
 }
-function oldNeck() { g.translate(14, 10); g.rotate(.1); }
+function oldNeck(age = 1) { g.translate(14 * age, 10 * age); g.rotate(.1 * age); }
 function puppet(x, y, s, dir, spec, pose = {}) {
   const col = spec.col || C.navy, body = spec.bodyCol || col;
   const hk = spec.headK || (spec.head === 'child' ? .3 : .265);
@@ -353,9 +358,9 @@ function puppet(x, y, s, dir, spec, pose = {}) {
   if (spec.kind === 'shirt') cut(PARTS.hips, legCol, { sh: .3, grain: .2 });
   if (spec.lace) cut(LACE, body, { sh: .6, grain: .26, lift: .2, rule: 'evenodd' });
   else cut(PARTS[spec.kind || 'dress'], body, { sh: .6, grain: .26, lift: .2 });
-  if (spec.old) oldBack(body);
+  if (spec.age) oldBack(body, 0, spec.age);
   if (spec.acc) spec.acc.forEach((a) => a(pose));
-  g.save(); g.translate(10, -790); if (spec.old) oldNeck(); head(spec.head || 'her', spec.hair, spec.headCol || col, hk, pose.head || 0, pose.laugh || 0);
+  g.save(); g.translate(10, -790); if (spec.age) oldNeck(spec.age); head(spec.head || 'her', spec.hair, spec.headCol || col, hk, pose.head || 0, pose.laugh || 0, spec.age || 0);
   if (spec.headAcc) spec.headAcc(pose);
   g.restore();
   g.save(); g.translate(8, -752); arm(arms[0][0], arms[0][1], spec.armCol || body, pose.holdNear); g.restore();

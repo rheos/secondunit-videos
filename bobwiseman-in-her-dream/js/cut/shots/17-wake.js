@@ -48,7 +48,7 @@ function sitter(x, y, s, col, p, layer) {
     g.save(); g.translate(8, 0); leg(1.56, 1.5, col, null, false); g.restore();
     if (!p.farFront) { g.save(); g.rotate(p.lean); g.translate(-8, -212); arm(p.far[0], p.far[1], col, p.holdFar); g.restore(); }
     cut(LAP, col, { sh: .6, grain: .26, lift: .2 });
-    g.save(); g.rotate(p.lean); cut(BODICE, col, { sh: .6, grain: .26, lift: .2 }); if (OLD) oldBack(col, 540); g.restore();
+    g.save(); g.rotate(p.lean); cut(BODICE, col, { sh: .6, grain: .26, lift: .2 }); if (p.age) oldBack(col, 540, p.age); g.restore();
   }
   if (layer !== 'back') {
     g.save(); g.rotate(p.lean);
@@ -58,14 +58,14 @@ function sitter(x, y, s, col, p, layer) {
       g.translate(x, y); g.scale(s, s); g.rotate(p.lean); g.translate(-8, -212); arm(p.far[0], p.far[1], col, p.holdFar); g.restore();
       // her body goes back on top of her left (far) arm, so the arm comes from behind her, not across her
       // front: drawn over it, both arms read as leaving the near shoulder (Robin, finals, 4:43)
-      cut(BODICE, col, { sh: .6, grain: .26, lift: .2 }); if (OLD) oldBack(col, 540);
+      cut(BODICE, col, { sh: .6, grain: .26, lift: .2 }); if (p.age) oldBack(col, 540, p.age);
       // and her dress (the lap) back on top of the torso, as in the back layer; only left of the table's
       // edge, so the oilcloth still hangs in front of it
       g.save(); g.rotate(-p.lean); g.scale(1 / s, 1 / s); g.translate(-x, -y);
       const lc = new Path2D(); lc.rect(-3000, -3000, TX0 - 6 + 3000, 9000); g.clip(lc);
       g.translate(x, y); g.scale(s, s); cut(LAP, col, { sh: .6, grain: .26, lift: .2 }); g.restore(); }
     if (p.postFar) { g.save(); g.rotate(-p.lean); g.scale(1 / s, 1 / s); g.translate(-x, -y); p.postFar(); g.restore(); }
-    g.save(); g.translate(10, -250); if (OLD) oldNeck(); head('her', null, col, .265, p.head || 0, 0);
+    g.save(); g.translate(10, -250); if (p.age) oldNeck(p.age); head('her', null, col, .265, p.head || 0, 0, p.age || 0);
     if (p.eye > 0) {        // a small closed, smiling eye cut out of the head (the 04 crescent)
       g.rotate(-(p.head || 0) * .9); g.scale(.265, .265); g.translate(-580, -800);
       g.globalAlpha *= p.eye; g.strokeStyle = p.eyeCol; g.lineWidth = 15; g.lineCap = 'round';
@@ -288,7 +288,7 @@ SHOT(T.a, T.end, 'wake', (t) => {
   const farFront = true;
 
   chair(HX, C.w0);
-  sitter(HX, HY, S, C.w1, { lean, head: headA, near, far, farFront }, 'back');
+  sitter(HX, HY, S, C.w1, { lean, head: headA, near, far, age: OLD ? 1 : 0, farFront }, 'back');
 
   // the table and oilcloth (01)
   cut(cutRect(TX0 + 40, TY, 30, FLOOR - TY, 51), C.w0, { sh: .5 });
@@ -310,7 +310,7 @@ SHOT(T.a, T.end, 'wake', (t) => {
   // her near hand (at her cheek it sits in front of her face); it never overlaps anything at the switch
   if (t < T.grab) orange(op[0], op[1], OR);
   tentBill(billP[0], billP[1], billK, -.5 * Math.sin(billK * Math.PI) + .06 * billK);
-  sitter(HX, HY, S, C.w1, { lean, head: headA, near, far, farFront, eye, eyeCol, preNear: t >= T.grab ? () => orange(op[0], op[1], OR) : null }, 'front');
+  sitter(HX, HY, S, C.w1, { lean, head: headA, near, far, age: OLD ? 1 : 0, farFront, eye, eyeCol, preNear: t >= T.grab ? () => orange(op[0], op[1], OR) : null }, 'front');
   g.restore();
 
   // the room comes up out of the dark around the lamp (the reunion's last warm circle)
