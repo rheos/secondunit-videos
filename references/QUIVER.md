@@ -15,7 +15,7 @@ Robin signed off) · `candidate` (worth a test, not queued) · `parked` (fine, n
 
 | Order | Idea | From | Status | Note |
 |---|---|---|---|---|
-| 1 | One-spiral-line portrait | Kevin Ngo K29 (Rembrandt after Claude Mellan) | testing | A single spiral whose width follows the photo's darkness; drawing the line is the animation. Portraits, title cards, posters. |
+| 1 | One-spiral-line portrait | Kevin Ngo K29 (Rembrandt after Claude Mellan) | testing | Test 01 rendered 2026-11-01 (Hjeron under the moon, the spiral starts in the moon), waiting on Robin. `hjeron-spiral-portrait/`. |
 | 2 | Lyrics lettered into a Rube Goldberg machine | Kevin Ngo K30 (after wustep) | next | A marble runs one machine; each sung line is hand-lettered beside the part it describes; the loop resets on its own story. A lyric-video format. Robin is curious. |
 | 3 | Lyric captions: one red key word, boxed term label | Kevin Ngo K31 (plate tectonics music video) | candidate | A caption rule, cheap to try on the next lyric video. |
 | 4 | statechart-art pencil kit vs our diagram-plate | Kevin Ngo K24-K26 | candidate | `toolbox/statechart-art-kit.yaml`. Read tools/kit before the next diagram plate. |
