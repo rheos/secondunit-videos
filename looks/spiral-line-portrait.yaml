@@ -1,0 +1,44 @@
+slug: spiral-line-portrait
+title: One-line spiral engraving
+note: >-
+  A single spiral line winds out from the middle of a full moon and swells where the photo is dark, until a
+  veiled musician and his guitar appear against it. Drawing the line is the whole animation.
+used: Hjeron, test
+cost: free
+group: code
+order: 620
+clip: spiral-line-portrait.mp4
+tall: true
+status: test
+engine: python + opencv
+project: hjeron-spiral-portrait
+code:
+  path: hjeron-spiral-portrait/tools/spiral.py
+  flag: --clip
+  page: null
+  note: >-
+    One script, constants at the top (crop, centre, spacing, width range, gamma, colours, timing); `still` or
+    `film`, and `--clip` for the 360x640 styles clip. Takes any photo; about 9 s for a 1080 square.
+rules:
+  - One line, never lifted, from the chosen centre to past the corners
+  - Width from the photo's darkness, capped at 78% of the spacing so every turn stays visible; a hairline in the whites
+  - Local contrast (CLAHE) first, or a dark figure melts into a dark sky
+  - 5 px between turns at 1080 (3.2 at 360 wide); drawn at 2x with sub-pixel edges
+  - Warm black ink on cream paper with fine grain
+  - Start the spiral somewhere that means something (here, inside the moon)
+  - Never scale a render down; render each size with its own spacing (moire)
+palette:
+  - "#1d1a17"
+  - "#efe7d6"
+reference: >-
+  Claude Mellan's 1649 single-line engraving, seen in Kevin Ngo's Rembrandt post (K29,
+  x.com/kevin_t_ngo/status/2102171059592241410)
+proof:
+  renders:
+    - hjeron-spiral-portrait/out/spiral-portrait_test01.mp4
+  pr:
+    - rheos/secondunit-videos#384
+  youtube: []
+verdict: "Robin, 2026-11-01, on test 01: \"It lands\"."
+related:
+  - hj-scratch

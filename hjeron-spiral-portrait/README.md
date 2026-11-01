@@ -5,7 +5,7 @@ A single Archimedean spiral, wound out from one centre, whose width follows the 
 animation. Ours starts inside the moon and winds out until Hjeron (The Wyrd One, veiled; his photo, consent on
 record) appears against it.
 
-Test 01, 2026-11-01: 1080x1080, 9.5 s (7 s of drawing, 2.5 s hold), 309,409 points, about 9 s to render.
+Test 01, 2026-11-01: 1080x1080, 9.5 s (7 s of drawing, 2.5 s hold), 309,409 points, about 9 s to render. Robin: "It lands". Look: `looks/spiral-line-portrait.yaml`.
 
 ```bash
 uv run --no-project --with opencv-python-headless --with numpy python tools/spiral.py still out/still.png
