@@ -24,7 +24,7 @@ is 1080x1920 at 60 fps with motion blur.
 | File | What it does |
 |---|---|
 | `blink-geo.js` | Blink as maths: a superellipsoid body, the visor, eyes, smile and sprout on its surface (proportions measured off the GPT turnaround). `window.BLINK`. |
-| `blink3d.js` | `makeBlink` (toon mesh, outline, `face({blink, happy, look, lookY, think})`, a low-poly option for crowds), `makeHarness` (belt, buckle, gear loop, three tools on carabiners), `glyphTexture`, `toonRamp`. |
+| `blink3d.js` | `makeBlink` (toon mesh, outline, `face({blink, happy, look, lookY, think, skew, eager})` (skew: a side-eye; eager: wide eyes and a grin), a low-poly option for crowds), `makeHarness` (belt, buckle, gear loop, three tools on carabiners), `glyphTexture`, `toonRamp`. |
 | `world.js` | Easing (`io`, `back`, `r01`, `pulse`, `typed`), `cameraPath(KEYS)` (word-keyed camera with a slow drift), `panel()` (canvas-texture panels redrawn only on change), `stage(canvas)` (renderer at the canvas's size, fog, light, toon ramp, floor grid). |
 | `vo/vo.py`, `vo/align.py` | Record `<project>/vo/script.json` with Chris as one take; faster-whisper word times -> `vo/words.js` (`VO.w(word, n)`) and `_in/voice.wav`. |
 | `sfx_earshot.py` | The sound on the picture from earshot's bank (Leon Lin, MIT): one take per cue kind, each hit one frame after its event, mixed under the voice to -14 LUFS. |
@@ -63,3 +63,17 @@ Iterate with `npx hyperframes@0.8.162 snapshot --at ...` (contact sheets) before
   bottom 220 px for captions.
 - **A GSAP tween on an element whose transform is also written by hand overrides it.** Keep hand-driven transforms on
   elements GSAP never touches.
+
+## Rules learned on episode 2
+
+- **Set every transform from t on every frame; never `multiplyScalar` or `+=` onto last frame's value.** Snapshots seek
+  each frame fresh, so they look right, while the finish renders frames in order and the state piles up. On ep 2 a
+  file's stamp pulse multiplied its scale each frame and a giant page washed out 35 to 41.7 s of the first finish; only
+  forensics' pop at the far end gave it away. Reset (`scale.setScalar(1)`, `position.copy(...)`) before any branch
+  that adjusts it.
+- **Frame the camera outside the props.** A key that sits inside a gate post or over a bin reads as a wall of colour;
+  check every key on the contact sheet, and route long camera travels around Blink and the stations, not through them.
+- **No article URLs on screen** (Robin, draft 2). The end card is the `~/devweb` mark over the whole world, nothing else.
+- **No long devweb URLs in the YouTube description either** (Robin, 2026-10-30: "make sure it's not put long urls to
+  devweb articles in the video"). At most plain `devweb.org`; never an `/articles/...` path. Ep 2 draft 4 (jBQhfAUXluU)
+  went up with the full article URL in its description before this rule.

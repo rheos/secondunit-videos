@@ -1,0 +1,29 @@
+{
+ "lines": [
+  [
+   "I",
+   "Telling your AI \"don't reveal secrets\" is a hope, not a guarantee."
+  ],
+  [
+   "II",
+   "By the time it reads that rule, it has already read the secret. Ask sideways, and it helpfully sums up the very file it was told to keep quiet."
+  ],
+  [
+   "III",
+   "The rule is a request. The context is a fact."
+  ],
+  [
+   "IV",
+   "So put the door before the model. Every file says who it's for. A loader checks that against who's asking, and drops everything else before a single word reaches the model."
+  ],
+  [
+   "V",
+   "That's the whole fix: load context, with a role. And a file with no label? It counts as private. Hiding it by mistake costs one quick edit. Sharing it by mistake can't be undone."
+  ],
+  [
+   "VI",
+   "Ask about a file it never got, and it just says: I don't have that. The model can't leak what it was never given."
+  ]
+ ],
+ "facts": "Every claim is from devweb.org/articles/deny-by-default-grounding (devweb content/articles/deny-by-default-grounding.mdx). I: 'If you want a guarantee instead of a tendency, you have to stop the material from entering the room at all' and 'not an architectural guarantee. It is a hope' (The wrong layer). Hook changed from 'a hope with good phrasing' on Robin's note after draft 1, 2026-10-30. II: 'By the time that instruction runs, the model has already read the confidential document'; 'A user asks the question sideways and the model, trying to be helpful, summarizes the very thing it was told to withhold.' III: 'The instruction is a request; the context is a fact.' IV: 'Filter the corpus at the loader, before the model sees anything'; 'Each document declares its audience in frontmatter; the loader checks that audience against the requester's role and either keeps the chunk or drops it'; 'before the model sees a single token'. V: load_context(corpus_root, role) (Filtering at the loader); 'a document with no audience marker defaults to internal, not shared'; over-restrict = 'fixes one frontmatter field'; over-share = 'There is no frontmatter edit that un-sends it.' (Deny by default, and the private floor). VI: the refusal 'I don't have that in the project context' (Refusal is the output); title and last line 'The model can't leak what it was never given.' Borrowed topic #91 checked against episodes.md line 107: no shared phrase, number or structure."
+}
