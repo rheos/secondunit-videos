@@ -1,0 +1,100 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Beat sync</title>
+<!-- Beat sync: watch a code-drawn element act on the music over the real picture, and edit its hits on a 16th-note
+     grid with the mouse. Built for the Reform Party chattering teeth (2026-10-21, Robin: "this was a really solid
+     tool"). Load a project with ?c=/path/to/config.js (served from the repo root with a server that supports range
+     requests, so the timeline can seek). See README.md for the config and the round trip. -->
+<style>
+:root{--bg:#171e20;--fg:#f5e9cf;--dim:#c5cabf;--gold:#e5af33}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.45 system-ui}
+main{max-width:1180px;margin:auto;padding:20px}
+h1{font-size:24px;margin:0 0 4px}p{color:var(--dim);margin:4px 0 10px;max-width:900px}
+#stage{position:relative;width:100%;aspect-ratio:16/9;background:#000;border-radius:6px;overflow:hidden}
+#stage video,#stage canvas{position:absolute;inset:0;width:100%;height:100%}
+nav{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:10px 0}
+button,select{font:inherit;color:inherit;background:#2a3639;border:1px solid #738077;border-radius:6px;padding:6px 12px;cursor:pointer}
+button.on{background:var(--gold);color:#1b1b14}
+#wrap{overflow-x:auto;margin-top:8px;border-radius:6px;background:#101718}
+#tl{display:block;cursor:pointer}
+output{font-variant-numeric:tabular-nums}
+</style>
+<main>
+<h1 id="title">Beat sync</h1>
+<p>Pick a run and press Play (or the space bar). The element is drawn live over the picture, so every change shows straight away. The strip under the picture is the beat grid: one cell per 16th note, a thin line on each beat, a thick line on each bar. Gold cells are hits. Click a cell to add or remove a hit; hold the mouse and drag to paint several in, or out. Click the time ruler on top of the strip to jump there. Slow it down to check an edge. When it looks right, tell Claude "done" (or press Copy cells).</p>
+<nav id="runs"></nav>
+<nav><button id="play">Play</button>
+<label>Speed <select id="speed"><option>1</option><option>0.75</option><option>0.5</option></select></label>
+<button id="early">Run earlier by a 16th</button><button id="late">Run later by a 16th</button><button id="reset">Reset this run</button><button id="copy">Copy cells</button><button id="send" hidden>Send to the studio</button>
+<output id="time"></output></nav>
+<div id="stage"><video id="v" muted playsinline preload="auto"></video><canvas id="ov"></canvas></div>
+<div id="wrap"><canvas id="tl" height="120"></canvas></div>
+<audio id="a" preload="auto"></audio>
+</main>
+<script>
+const CFG_URL=new URLSearchParams(location.search).get('c');
+const loadScript=src=>new Promise((ok,no)=>{const s=document.createElement('script');s.src=src;s.onload=ok;s.onerror=()=>no(new Error('could not load '+src));document.head.appendChild(s)});
+(async()=>{
+ if(!CFG_URL){document.querySelector('p').textContent='Add ?c=/path/to/config.js to the address (see tools/beat-sync/README.md).';return}
+ await loadScript(CFG_URL);const C=window.BEATSYNC;for(const s of C.scripts||[])await loadScript(s);
+ if(C.init)C.init();
+ if(C.intro)document.querySelector('p').textContent=C.intro;
+ document.title=C.title||'Beat sync';document.getElementById('title').textContent=C.title||'Beat sync';
+ const GRID=C.grid(),REF=C.ref(),STEP=C.step||.15,CW=18,RUL=24,KEY=C.storageKey||('beatsync:'+CFG_URL);
+ const a=document.getElementById('a'),v=document.getElementById('v'),ov=document.getElementById('ov'),og=ov.getContext('2d'),tl=document.getElementById('tl'),tg=tl.getContext('2d'),wrap=document.getElementById('wrap');
+ ov.width=C.width||1920;ov.height=C.height||1080;
+ const nearIdx=t=>{let lo=0,hi=GRID.length-1;while(hi-lo>1){const m=(lo+hi)>>1;if(GRID[m]<t)lo=m;else hi=m}return t-GRID[lo]<GRID[hi]-t?lo:hi};
+ const span=r=>[nearIdx(C.runs[r].off),nearIdx(C.runs[r].off+C.runs[r].len)];
+ const fresh=()=>C.runs.map((_,r)=>{const[i0,i1]=span(r);return[...new Set(C.initialTimes().map(nearIdx))].filter(k=>k>=i0&&k<=i1).sort((x,y)=>x-y)});
+ let cells;try{cells=JSON.parse(localStorage.getItem(KEY)||'null')}catch{}
+ if(!cells||cells.length!==C.runs.length)cells=fresh();let run=-1;
+ const all=()=>[...new Set(cells.flat())].sort((x,y)=>x-y);
+ function apply(){C.setTimes(all().map(k=>GRID[k]));window.BEATSYNC_CELLS=all()}
+ const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(cells))}catch{};apply()};
+ const fmt=t=>Math.floor(t/60)+':'+(t%60).toFixed(2).padStart(5,'0');
+ const nav=document.getElementById('runs');
+ C.runs.forEach((R,r)=>{const b=document.createElement('button');b.textContent=R.label||('Run '+(r+1)+' ('+fmt(R.off).slice(0,-3)+')');b.onclick=e=>{e.target.blur();load(r);toggle(true)};nav.appendChild(b)});
+ function load(r){run=r;[...nav.children].forEach((b,i)=>b.classList.toggle('on',i===r));
+  a.src=C.runs[r].audio;v.src=C.runs[r].video||'';a.playbackRate=v.playbackRate=+document.getElementById('speed').value;
+  const[i0,i1]=span(r);tl.width=(i1-i0+1)*CW;wrap.scrollLeft=0}
+ const playB=document.getElementById('play');
+ function toggle(force){if(run<0)return;if(force||a.paused){if(a.ended||a.currentTime>=a.duration-.06){a.currentTime=0;if(v.src)v.currentTime=0}a.play();if(v.src)v.play();playB.textContent='Pause'}else{a.pause();v.pause();playB.textContent='Play'}}
+ playB.onclick=e=>{e.target.blur();toggle()};
+ addEventListener('keydown',e=>{if(e.code==='Space'){e.preventDefault();toggle()}});
+ function seek(t){if(run<0)return;const c=Math.max(0,Math.min(C.runs[run].len-.05,t-C.runs[run].off));a.currentTime=c;if(v.src)v.currentTime=c}
+ document.getElementById('speed').onchange=e=>{a.playbackRate=v.playbackRate=+e.target.value;e.target.blur()};
+ const shiftRun=d=>{if(run<0)return;cells[run]=cells[run].map(k=>k+d);save()};
+ document.getElementById('early').onclick=e=>{e.target.blur();shiftRun(-1)};document.getElementById('late').onclick=e=>{e.target.blur();shiftRun(1)};
+ document.getElementById('reset').onclick=e=>{e.target.blur();if(run<0)return;cells[run]=fresh()[run];save()};
+ // send: post the grid as a note on the client's review round, the same fields as the page's note form (novadiem-files
+ // saveAnswer: action=note, round, text). The text lists the hits as cell ranges, which Claude turns back into cells.
+ const ranges=()=>{const out=[];for(const k of all()){const l=out[out.length-1];if(l&&k===l[1]+1)l[1]=k;else out.push([k,k])}return out.map(([a,b])=>a===b?String(a):a+'-'+b).join(',')};
+ if(C.send){const sb=document.getElementById('send');sb.hidden=false;if(C.send.label)sb.textContent=C.send.label;
+  sb.onclick=async e=>{e.target.blur();sb.disabled=true;sb.textContent='Sending...';
+   const fd=new FormData();fd.set('action','note');fd.set('round',String(C.send.round));fd.set('text',(C.send.prefix||'Timing from the sync tool')+' ('+all().length+' hits). Grid: '+ranges());
+   try{const r=await fetch(C.send.url,{method:'POST',body:fd});if(!r.ok)throw new Error(r.status);sb.textContent=C.send.done||'Sent. Thank you!'}
+   catch(err){sb.disabled=false;sb.textContent="Didn't send, try again"}}}
+ document.getElementById('copy').onclick=e=>{e.target.blur();navigator.clipboard.writeText(JSON.stringify(all())).then(()=>{e.target.textContent='Copied'},()=>{e.target.textContent='Copy failed'})};
+ let paint=null;
+ const cellAt=e=>{const R=tl.getBoundingClientRect();return{k:span(run)[0]+Math.floor((e.clientX-R.left)/R.width*tl.width/CW),y:(e.clientY-R.top)/R.height*tl.height}};
+ function setCell(k){const s=new Set(cells[run]);paint?s.add(k):s.delete(k);cells[run]=[...s].sort((x,y)=>x-y);apply()}
+ tl.addEventListener('pointerdown',e=>{if(run<0)return;const c=cellAt(e);if(c.y<RUL){seek(GRID[c.k]-.4);return}
+  paint=!cells[run].includes(c.k);setCell(c.k);tl.setPointerCapture(e.pointerId)});
+ tl.addEventListener('pointermove',e=>{if(paint!==null)setCell(cellAt(e).k)});
+ addEventListener('pointerup',()=>{if(paint!==null){paint=null;save()}});
+ a.onended=()=>{v.pause();playB.textContent='Play'};
+ apply();
+ // open on the first run, paused, so the picture and grid show and Play works before a run is picked
+ load(0);
+ (function frame(){requestAnimationFrame(frame);og.setTransform(1,0,0,1,0,0);og.clearRect(0,0,ov.width,ov.height);
+  if(run<0)return;const R=C.runs[run],t=R.off+a.currentTime;
+  if(v.src&&!a.paused&&v.paused&&v.currentTime<v.duration-.06)v.play();if(v.src&&!v.seeking&&Math.abs(v.currentTime-a.currentTime)>.04&&v.readyState>1)v.currentTime=a.currentTime;
+  C.draw(og,t);document.getElementById('time').textContent=fmt(t);
+  const[i0,i1]=span(run),Ht=tl.height,on=new Set(cells[run]);tg.fillStyle='#101718';tg.fillRect(0,0,tl.width,Ht);tg.fillStyle='#1f2a2c';tg.fillRect(0,0,tl.width,RUL);
+  for(let k=i0;k<=i1;k++){const x=(k-i0)*CW,p=((k-REF)%16+16)%16;
+   tg.fillStyle=on.has(k)?'#e5af33':'#26312f';tg.fillRect(x+1,RUL+8,CW-2,Ht-RUL-16);
+   if(p%4===0){tg.fillStyle=p===0?'#e9e2cf':'#7d8a83';tg.fillRect(x,RUL,p===0?3:1,Ht-RUL)}
+   if(p===0){tg.fillStyle='#c9cfc4';tg.font='15px system-ui';tg.fillText(fmt(GRID[k]).slice(0,-1),x+4,17)}}
+  const n=nearIdx(t),ph=(n-i0)*CW+((t-GRID[n])/STEP)*CW;tg.fillStyle='#fff';tg.fillRect(ph,0,3,Ht);
+  if(!a.paused&&(ph<wrap.scrollLeft+40||ph>wrap.scrollLeft+wrap.clientWidth-80))wrap.scrollLeft=ph-120})();
+})().catch(e=>{document.querySelector('p').textContent=String(e)});
+</script></html>
