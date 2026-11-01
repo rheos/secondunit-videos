@@ -15,7 +15,7 @@ Robin signed off) · `candidate` (worth a test, not queued) · `parked` (fine, n
 
 | Order | Idea | From | Status | Note |
 |---|---|---|---|---|
-| 1 | Lyrics lettered into a Rube Goldberg machine | Kevin Ngo K30 (after wustep) | next | A marble runs one machine; each sung line is hand-lettered beside the part it describes; the loop resets on its own story. A lyric-video format. Robin is curious. |
+| 1 | Lyrics lettered into a Rube Goldberg machine | Kevin Ngo K30 (after wustep) | testing | A marble runs one machine; each sung line is hand-lettered beside the part it describes; the loop resets on its own story. A lyric-video format. Test 01 on Bob's No One's Coming to the Rescue (`bobwiseman-rescue-machine/`): Robin, "pretty lame and boring" next to Kevin's; it was reverse-engineered from 12 frames. Next: rebuild on wustep's contraptions engine (`toolbox/contraptions.yaml`). |
 | 2 | Lyric captions: one red key word, boxed term label | Kevin Ngo K31 (plate tectonics music video) | candidate | A caption rule, cheap to try on the next lyric video. |
 | 3 | statechart-art pencil kit vs our diagram-plate | Kevin Ngo K24-K26 | candidate | `toolbox/statechart-art-kit.yaml`. Read tools/kit before the next diagram plate. |
 | 4 | Stageshow for IndieAgent UI cutaways | Benji Taylor | candidate | `toolbox/stageshow.yaml`. Its virtual clock alone may be worth taking for frame-exact capture of real-time web motion. |
@@ -25,6 +25,7 @@ Robin signed off) · `candidate` (worth a test, not queued) · `parked` (fine, n
 | Date | What | From | Kind | Status | Verdict | Where |
 |---|---|---|---|---|---|---|
 | 2026-11-01 | One-spiral-line portrait | Kevin Ngo K29 | look test | approved | Robin: "It lands". One line winds out from the moon until veiled Hjeron appears. | `looks/spiral-line-portrait.yaml`, `hjeron-spiral-portrait/`, PR #384 |
+| 2026-11-01 | wustep, contraptions | x.com/wustep/status/2103934236466307073 (credited by Kevin K30) | tool | candidate | The original behind Kevin's machine: MIT engine, about 150 pieces in four worlds, a Shows mode choreographed to recordings by stock durations against measured cues. | `toolbox/contraptions.yaml` |
 | 2026-11-01 | Doodles on real footage | Kevin Ngo K28 | look test | approved | Robin: "It lands". Crayon doodles tracked to the camera and to Hjeron, sky doodles behind him. Live on /video/styles. | `looks/doodle-on-footage.yaml`, `hjeron-doodle-on-footage/`, PR #380 |
 | 2026-11-01 | Looseleaf pen engine | Kevin Ngo (x.com/kevin_t_ngo/status/2116743334735851819) | tool | adopted | Felt pen beats kit.js's line on stills, boils the same, no render cost; subtle at 720p ("a bit better"). Brush breaks outlines into dashes. Goes into Travel Agent draft 22, cream shots only. | `tools/looseleaf-pen/`, `toolbox/looseleaf-ink.yaml`, PR #367 |
 | 2026-11-01 | Stageshow | Benji Taylor (x.com/benjitaylor/status/2116593247854453244) | tool | candidate | Faux product UI skill; default look is SaaS gray, so pair it with a look. | `toolbox/stageshow.yaml` |
