@@ -12,6 +12,7 @@ code-drawn films can draw ink as pressure ribbons instead of even-width jittered
   Query: `pen=felt` (default) `| pencil | brush | fine`, `penw=` width multiplier, `penwob=` wobble multiplier.
   Always strokes with `poly: true`: the pen's default spline loops wildly on sparse corner points (a 4-point box).
 - `ta-pen.html`: Travel Agent's film page with the pen swapped in. Nothing in `bobwiseman-travel-agent/` changes.
+- `clip.mjs`: the same pair in motion, side by side, no audio: `node clip.mjs 138 144 out/pair.mp4`.
 - `stills.mjs`: before/after stills at song times. Needs playwright; point `PW_FROM` at a package.json that has it:
   `PW_FROM=../../bobwiseman-travel-agent/package.json node stills.mjs out/ 20,140,215 "pen=pencil"`
 
@@ -21,4 +22,6 @@ Compare sheets in `out/` (not committed). Felt is the keeper: tapered ends, a li
 line, ink pooling at corners; at full frame it reads as the same film, close up it stops looking machine-drawn.
 Pencil is thinner and softer, good for construction lines. Brush breaks lines into dashes (its `gaps`) and leaves
 blobs at line ends, so not for outlines at this scale. The kit's doubled line is gone; the pen's own halo replaces
-it. Not checked yet: motion (whether the per-drawing reseed boils too much on twos) and render time on a full act.
+it. Motion (2026-11-01, song 138-144 s, three shots): the pen boils on twos like the kit, frame-to-frame change within 4% of
+the kit's, and 288 frames drew in 38 s, so no real render cost. In the navy blueprint shots the felt pen softens what
+should be crisp drafting lines (rounded corners, heavier weight): use it on the cream paper shots only, or try `pen=fine` there.
