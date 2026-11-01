@@ -177,6 +177,8 @@ const OR = 30;                                       // the orange's radius
 // the orange lies at the back of the oilcloth in the lamp's pool, hidden under her head while she sleeps
 const ORANGE = { x: 895, y: TY - TB - 4 };
 const RAISED = [900, 548], CHEEK = [748, 590];       // held up to the light; drawn in to her cheek
+// old (?old=1), her head sits forward and lower (oldNeck), so her cheek and the orange move with it
+if (OLD) { CHEEK[0] += 23; CHEEK[1] += 18; }
 const HANG = 2.1;                                    // at the cheek: the aim that keeps her elbow down
 // 01's doze (01-kitchen.js DOZE): head down on forearms folded on the TOP of the table, far arm over the top
 const DOZE = { lean: .66, head: -.85, near: [2.0, 3.15], far: [2.2, 2.9 - Math.PI * 2] };
@@ -287,6 +289,7 @@ SHOT(T.a, T.end, 'wake', (t) => {
   }
   const farFront = true;
 
+  cane(HX, HY + 22, C.w3, OLD ? 1 : 0);
   chair(HX, C.w0);
   sitter(HX, HY, S, C.w1, { lean, head: headA, near, far, age: OLD ? 1 : 0, farFront }, 'back');
 

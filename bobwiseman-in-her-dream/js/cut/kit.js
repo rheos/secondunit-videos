@@ -334,12 +334,24 @@ const SHAWL = blob([[34, -800], [-22, -810], [-62, -798], [-80, -770], [-86, -72
 function oldBack(col, dy = 0, age = 1) {
   if (age < .03) return;
   // growing younger, the hump and shawl sink back into her body (squeezed toward her spine line)
-  g.save(); g.translate(0, dy); g.scale(lerp(.6, 1, age), 1);
+  g.save(); g.translate(0, dy); g.scale(lerp(.6, 1.12, age), 1);
   cut(HUMP, col, { sh: .5, grain: .26, lift: .2 });
   cut(SHAWL, col, { sh: .55, grain: .26, lift: .3 });
   g.restore();
 }
-function oldNeck(age = 1) { g.translate(14 * age, 10 * age); g.rotate(.1 * age); }
+function oldNeck(age = 1) { g.translate(20 * age, 18 * age); g.rotate(.16 * age); }
+// the kitchen (01, 02, 17): old while she is awake; asleep at the table the dream lifts the years off her,
+// slowly, across the colour change and a little after it (Robin: "slower morph")
+const AGE_KITCHEN = (t) => OLD ? 1 - ss(15.6, 19.8, t) : 0;
+// her cane, hooked over the top of her chair's back post and hanging behind it (x, y = the chair's seat
+// point HX, HY + 22). A pale grey stick so it reads on the dark chair; it goes with her age
+function cane(x, y, col, a) {
+  if (a < .02) return;
+  const p = new Path2D(), cx = x - 90, cy = y - 254;
+  p.arc(cx, cy, 19, Math.PI, 0); p.arc(cx, cy, 8, 0, Math.PI, true); p.closePath();
+  p.rect(cx - 19, cy - 1, 11, 400);
+  g.save(); g.globalAlpha *= a; cut(p, col, { sh: .5, grain: .2 }); g.restore();
+}
 function puppet(x, y, s, dir, spec, pose = {}) {
   const col = spec.col || C.navy, body = spec.bodyCol || col;
   const hk = spec.headK || (spec.head === 'child' ? .3 : .265);
