@@ -229,6 +229,159 @@
    "format": "1080x1080, 30 s",
    "observed": "Bento grid of hand-drawn components (paper, felt pen, stickers, stamps, Kevin Sans) driven by a scripted macOS cursor, filmed frame by frame with Benji Taylor's Stageshow. MIT, github.com/kevintngo/looseleaf.",
    "ours": "Pen engine vendored in tools/looseleaf-pen (PR #367); toolbox looseleaf-ink and stageshow."
+  },
+  {
+   "id": "K28",
+   "title": "Doodles on photos Claude found on the web",
+   "date": "2026-09-17",
+   "url": "https://x.com/kevin_t_ngo/status/2100601972902842517",
+   "format": "1080x1080, 34 s",
+   "observed": "Real product photos (alarm clock, teacup, stroopwafel, sneaker, twin-lens camera, radio, kettle, lamp) with pencil-and-crayon cats, mice and frogs drawn on and around them, each object becoming a set: the cat sleeps on the clock, bathes in the cup, sails the shoe. Ends on all the objects together, 'Claude Opus'.",
+   "ours": "Strongest fit for Second Unit: a code-drawn doodle layer living on an artist's real footage or photos. Not built."
+  },
+  {
+   "id": "K29",
+   "title": "Rembrandt self-portrait in one continuous spiral line",
+   "date": "2026-09-21",
+   "url": "https://x.com/kevin_t_ngo/status/2102171059592241410",
+   "format": "1080x1080, 30 s",
+   "observed": "One spiral drawn from the centre outward, its width swelling with the image's darkness, so the face appears as the line winds (Claude Mellan's 1649 engraving technique). The drawing of the line is the animation.",
+   "ours": "Cheap new look for artist portraits, title cards and posters. Not built."
+  },
+  {
+   "id": "K30",
+   "title": "A day as a Rube Goldberg machine, lyrics written into the scene",
+   "date": "2026-09-27",
+   "url": "https://x.com/kevin_t_ngo/status/2104213302624821647",
+   "format": "1080x1080, 80 s, Gemini TTS narration",
+   "observed": "A marble runs through one long machine of a working day (snooze, espresso, bus, corporate ladder, reply-all, dinner); each narrated line is hand-lettered beside the part of the machine it describes; it ends on a clock face, 'and while I sleep, the moon carries me back to the start'. Inspired by wustep.",
+   "ours": "Lyric-in-the-world format for lyric videos, and a loop that resets on its own story. Not built."
+  },
+  {
+   "id": "K31",
+   "title": "Plate tectonics music video",
+   "date": "2026-10-08",
+   "url": "https://x.com/kevin_t_ngo/status/2108208479358026208",
+   "format": "1080x1080, 2:21, Suno v6 song",
+   "observed": "Educational song on cream paper: serif lyric lines on screen with the key word coloured red, small boxed labels (GLOSSOPTERIS, SEAFLOOR SPREADING, LITHOSPHERE), torn-paper continents, globes with year stamps.",
+   "ours": "Caption rule worth taking: one key word per lyric line in an accent colour, a boxed term label under the picture."
+  },
+  {
+   "id": "K32",
+   "title": "Pachelbel's Canon in D music video",
+   "date": "2026-10-03",
+   "url": "https://x.com/kevin_t_ngo/status/2106446696821747953",
+   "format": "1080x1080, 3:46",
+   "observed": "Dense coloured-pencil hatching on everything (sea, sky, launch tower, rocket), a dawn launch over water. Only the opening was seen (download cut short).",
+   "ours": "Look reference for coloured-pencil texture at full-frame density."
+  },
+  {
+   "id": "K33",
+   "title": "Piano piece, 2D, then the same film in 3D",
+   "date": "2026-09-25",
+   "url": "https://x.com/kevin_t_ngo/status/2103482164193165711",
+   "format": "2160x2160 45 s; 3D version 2105304249060274631, 72 s",
+   "observed": "A crayon-textured block creature plays piano while a black cat sneaks along the keys; the 2D film was handed to a second Claude as choreography for a warm Blender version (candle, dusk window).",
+   "ours": "Already noted in the profile as the 2D-to-3D handoff method."
+  },
+  {
+   "id": "K34",
+   "title": "Everyone sends Claude requests; one girl asks what it loves",
+   "date": "2026-09-22",
+   "url": "https://x.com/kevin_t_ngo/status/2102437977435893771",
+   "format": "2160x2160, 28 s, 6.2k likes",
+   "observed": "Picture-book cut paper and crayon: torn-paper edges, handwritten note cards ('what do you love?'), a sun-flower Claude answering with cards (music, bread, octopus), a heart collage of them.",
+   "ours": "His most-liked story; a model for a warm 30 s artist-meets-agent short."
+  },
+  {
+   "id": "K35",
+   "title": "The life of a fruit fly",
+   "date": "2026-09-15",
+   "url": "https://x.com/kevin_t_ngo/status/2099858454043349342",
+   "format": "1080x1080, 27 s, 6.8k likes",
+   "observed": "Macro tactile textures (orange peel, wood grain, tablecloth) cut with dark scientific-diagram inserts of the larva; ends on a star.",
+   "ours": "Two-register cutting: tactile close-ups and diagram inserts."
+  },
+  {
+   "id": "K36",
+   "title": "Slow Me Down",
+   "date": "2026-10-04",
+   "url": "https://x.com/kevin_t_ngo/status/2106864721525915941",
+   "format": "1080x1080, 69 s",
+   "observed": "Real Claude Code terminal sessions ('slow my guy down', 'why does dad always lose') intercut with the pixel-art tug-of-war game they produce.",
+   "ours": "Screens as story for devweb or the IndieAgent explainer series."
+  },
+  {
+   "id": "K37",
+   "title": "Macrohard: Windows XP",
+   "date": "2026-10-02",
+   "url": "https://x.com/kevin_t_ngo/status/2106157622986748377",
+   "format": "1280x720, 3:01, 17k likes",
+   "observed": "A Windows XP desktop where windows open onto footage of a character, error dialogs and code; 18 hours of Claude time; ends 'It's now safe to turn off your computer'.",
+   "ours": "His biggest post. Period-OS framing device."
+  },
+  {
+   "id": "K38",
+   "title": "Unofficial Theranos commercial",
+   "date": "2026-10-21",
+   "url": "https://x.com/kevin_t_ngo/status/2112877982239096988",
+   "format": "1080x1080, 64 s",
+   "observed": "Dark Blender product film, one caption line per shot, logo card, an explicit 'unofficial fan-made film' disclaimer.",
+   "ours": "Same family as K13/K14."
+  },
+  {
+   "id": "K39",
+   "title": "A paper crane goes on a journey",
+   "date": "2026-10-13",
+   "url": "https://x.com/kevin_t_ngo/status/2109856686588801285",
+   "format": "1080x1080, 69 s",
+   "observed": "Flat paper-cut landscapes, the crane folded at a desk, flies over town, sea, rain, a lily pond, sunset, back to the window.",
+   "ours": "Journey-home structure again (as K04)."
+  },
+  {
+   "id": "K40",
+   "title": "A tortoise learns to fly with the geese",
+   "date": "2026-09-18",
+   "url": "https://x.com/kevin_t_ngo/status/2101057692395884553",
+   "format": "1080x1080, 64 s",
+   "observed": "Storybook on cream, patchwork balloon sewn from leaves over seasons, geese tow it south.",
+   "ours": "Seasons as stitched-up material, a time-passing device."
+  },
+  {
+   "id": "K41",
+   "title": "How burgers are made",
+   "date": "2026-10-17",
+   "url": "https://x.com/kevin_t_ngo/status/2111569193347018977",
+   "format": "1080x1080, 64 s",
+   "observed": "Editorial illustration, a countdown label per scene ('~2 years to lunch', '6 hours to lunch', 'Noon'), ranch to farm to map to grill.",
+   "ours": "Countdown-to-payoff label for process explainers."
+  },
+  {
+   "id": "K42",
+   "title": "An AI narrates a day in the life of the engineer training it",
+   "date": "2026-09-29",
+   "url": "https://x.com/kevin_t_ngo/status/2105004703906218366",
+   "format": "1068x1900 (9:16), 48 s, Gemini TTS",
+   "observed": "Felt-marker objects on white with handwritten captions, cut against navy scribbled night panels.",
+   "ours": "A 9:16 narrated format."
+  },
+  {
+   "id": "K43",
+   "title": "Hugging Face sandbox incident explainer",
+   "date": "2026-08-27",
+   "url": "https://x.com/kevin_t_ngo/status/2093020864992494032",
+   "format": "1920x1080, 1:55, three.js",
+   "observed": "Bean-shaped agents in glass boxes on dark ground, a caption line per beat, a shared message board as the plot device.",
+   "ours": "Explainer with cast characters for agents."
+  },
+  {
+   "id": "K44",
+   "title": "History of dinosaurs in under a minute",
+   "date": "2026-09-28",
+   "url": "https://x.com/kevin_t_ngo/status/2104638743634391408",
+   "format": "2160x2160, 48 s",
+   "observed": "Child's crayon drawing style with a year stamp per scene. Only the opening was seen (download cut short).",
+   "ours": "Year-stamp structure, like K31."
   }
  ]
 }
