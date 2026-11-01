@@ -1,0 +1,29 @@
+slug: stageshow
+name: Stageshow
+kind: toolkit
+status: candidate
+does: An agent skill plus React kit for faux product UI (windows, phones, cursors, bento grids) played by a scripted Act, with a virtual clock that steps timers, animation frames and CSS transitions one exact frame at a time, and a filming script that lints every frame for layout faults.
+keywords:
+- ui-demo
+- cursor
+- product-ui
+- bento
+- virtual-clock
+- frame-capture
+- audit
+fits:
+- UI cutaways in IndieAgent explainers and object shorts (tour dates, the booking screen, the agent chat)
+- devweb episode screen shots where a real product would be clutter
+- the beamnxw-style launch clip offer (one product action, 20 s square) if Robin takes it up
+- borrowing kit/clock.ts alone to bake any real-time web animation (CSS transitions, setTimeout, rAF) into frames that HyperFrames or ffmpeg can use
+deterministic: bake
+how: 'not installed. `npx skills add benjitaylor/skills --skill stageshow`, then `npm install && npm run dev` in the skill folder for the playground. scripts/film.mjs needs playwright-core and makes contact sheets and a JSON report, not video: for an MP4, install kit/clock.ts installVirtualClock() before the page loads, call window.__stageshow.clock.step() per frame from Playwright, screenshot each, and pipe to ffmpeg (about 50 lines, not shipped).'
+cost: free (MIT; bundled app icons and brand marks keep their owners' terms)
+url: https://github.com/benjitaylor/skills/tree/main/stageshow
+source: x.com/benjitaylor/status/2116593247854453244 (Oct 31 2026) and x.com/kevin_t_ngo/status/2116743334735851819, where Kevin Ngo used it to film his Looseleaf demo (read 2026-11-01)
+verdict: 'Recommended by Claude, 2026-11-01: two separate wins. (1) The virtual clock is the best piece: it solves frame-exact capture for real-time CSS/JS motion that HyperFrames cannot seek, without Chrome virtual time. (2) The skill''s framing and motion rules plus the film.mjs lint lines (cut by the crop, tight inset, jump, loop seam) are a ready QA pass for any UI shot. Its default look is polished SaaS gray, so pair it with a look (looseleaf-ink, call-toon) rather than shipping its stock style. Test on one IndieAgent UI cutaway first.'
+related:
+- hyperframes
+- motion-lab
+- looseleaf-ink
+added: '2026-11-01'
