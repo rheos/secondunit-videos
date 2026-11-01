@@ -122,22 +122,23 @@ function stiltWoman(j, x0, y0, k, s, t, mouth = 0, wave = 0) {
     // the bust inside the V
     fillS([[-.12, 2.42], [.12, 2.42], [.06, 2.27], [.0, 2.17, 1], [-.06, 2.27]], skinG([-.07, 2.3], [.07, 2.3]));
     // the fronts: each lapel comes down from its side of the collar and crosses the other just under the bust (no tie);
-    // below the cross the piping carries on down the far side into a long pointed flap that hangs over the hip to mid
-    // thigh, rounds its tip and runs back up the flap's outer edge to the waist. The midriff and the hot pants show in
+    // below the cross the piping carries on down the far side into a long flap that swells over the hip and hooks in to
+    // a point at mid thigh, the two tips curving toward each other like a pair of mandibles, then runs back up the
+    // flap's outer edge to the waist. The midriff and the hot pants show in
     // the open diamond between the flaps. Each pink tube is one continuous line, so the two cross like an X.
     const X = [0, 2.17];
     for (const sd of [-1, 1]) {
       const lapel = qd([sd * .11, 2.42], [sd * .05, 2.27], X, 6); // this side of the collar down to the cross
-      const inner = qd(X, [sd * .1, 1.97], [sd * .19, 1.6], 9); // from the cross down the inner edge of this side's flap
-      const outer = qd([sd * .19, 1.6], [sd * .33, 1.86], [sd * .155, 2.08], 9); // round the tip and back up its outer edge
-      const panel = [[sd * .11, 2.42, 1], [sd * .19, 2.41], [sd * .21, 2.3], [sd * .165, 2.14], ...outer.slice().reverse().slice(1, -1), [sd * .19, 1.6, 1], ...inner.slice(1, -1).reverse(), [X[0], X[1], 1], ...qd([-sd * .06, 2.42], [-sd * .015, 2.27], X, 5).slice(0, -1).reverse().slice(0, 0), ...lapel.slice(1, -1).reverse()];
+      const inner = [...qd(X, [sd * .12, 2.02], [sd * .16, 1.84], 6), ...qd([sd * .16, 1.84], [sd * .17, 1.68], [sd * .085, 1.6], 5).slice(1)]; // down beside the hot pants, then hooking in // from the cross down the inner edge of this side's flap
+      const outer = [...qd([sd * .085, 1.6], [sd * .255, 1.6], [sd * .26, 1.84], 6), ...qd([sd * .26, 1.84], [sd * .255, 2.0], [sd * .155, 2.08], 5).slice(1)]; // from the hooked tip out round the swell of the hip // round the tip and back up its outer edge
+      const panel = [[sd * .11, 2.42, 1], [sd * .19, 2.41], [sd * .21, 2.3], [sd * .165, 2.14], ...outer.slice().reverse().slice(1, -1), [sd * .085, 1.6, 1], ...inner.slice(1, -1).reverse(), [X[0], X[1], 1], ...qd([-sd * .06, 2.42], [-sd * .015, 2.27], X, 5).slice(0, -1).reverse().slice(0, 0), ...lapel.slice(1, -1).reverse()];
       fillS(panel, lg([sd * .26, 2.0], [sd * .04, 2.0], sd < 0 ? ['#5a2484', '#9a48d0'] : ['#4e1f78', '#8a3cc0']));
       clipTo(panel, () => { for (let i = 0; i < 24; i++) dot([sd * (.03 + rnd(i, sd + 2, 41) * .25), 1.62 + rnd(i, 3, 41) * .8], .008, 'rgba(255,225,255,.55)'); }); fillS(panel, 'rgba(0,0,0,0)');
-      for (const p of qd([sd * .27, 1.86], [sd * .27, 1.74], [sd * .21, 1.64], 4)) { const sw = Math.sin(t * 5 + p[1] * 40) * .006; line([p, [p[0] + sd * .03 + sw, p[1] - .05]], .016, '#4e1f78', 'butt'); } // ragged bits off the flap
+      for (const p of qd([sd * .255, 1.8], [sd * .245, 1.68], [sd * .17, 1.62], 4)) { const sw = Math.sin(t * 5 + p[1] * 40) * .006; line([p, [p[0] + sd * .03 + sw, p[1] - .05]], .016, '#4e1f78', 'butt'); } // ragged bits off the flap
     }
     // the two pink tubes, each one line from a collar side across the X and round the opposite flap
     for (const sd of [-1, 1]) {
-      const tube = [...qd([sd * .11, 2.42], [sd * .05, 2.27], X, 6), ...qd(X, [-sd * .1, 1.97], [-sd * .19, 1.6], 9).slice(1), ...qd([-sd * .19, 1.6], [-sd * .33, 1.86], [-sd * .155, 2.08], 9).slice(1)];
+      const tube = [...qd([sd * .11, 2.42], [sd * .05, 2.27], X, 6), ...qd(X, [-sd * .12, 2.02], [-sd * .16, 1.84], 6).slice(1), ...qd([-sd * .16, 1.84], [-sd * .17, 1.68], [-sd * .085, 1.6], 5).slice(1), ...qd([-sd * .085, 1.6], [-sd * .255, 1.6], [-sd * .26, 1.84], 6).slice(1), ...qd([-sd * .26, 1.84], [-sd * .255, 2.0], [-sd * .155, 2.08], 5).slice(1)];
       line(tube, .042, PINK); line(tube.map(([x, y]) => [x - .006, y + .006]), .013, 'rgba(255,210,240,.85)'); }
     // arms in long pink gloves under the puffed cap sleeves
     const arm = (sd, b, c, fr) => { const a = [sd * .2 + sway, 2.34]; limb(a, b, c, .046, .036, .027, skinG([sd * .2, 2.3], [b[0], b[1]]));
