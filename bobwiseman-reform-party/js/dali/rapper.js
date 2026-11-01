@@ -114,22 +114,24 @@ function rapFigure(t, f, k, rocket, o = {}) { // o (draft 37's spin singers): s,
 // then spin back out on 'spin'". They come in together from the left edge hand in hand, as in his photo (the rainbow
 // walker on the left, the purple one on her right; the chattering teeth hold the right corner in the first two
 // refrains), sing "without" lifting the free arm in a slow open sweep (Robin: no fist pumps, something more elegant),
-// and on "spin" let go and spin back out the way they came, two full turns each.
+// and on "spin" let go and spin back out the way they came, turning all through the held note and off the edge as it ends
+// (Robin: they "should not be off screen until the end of the 'spin' which drags on a bit longer").
 const SPIN_LINES = [6, 13, 34];
-const SPIN_PAIR = { k: 175, x: 120, gap: .9, inT: .7, outT: 1.05, turns: 2 };
+const SPIN_PAIR = { k: 175, x: 120, gap: .9, inT: .7, rate: 1.3 }; // rate: turns a second while they spin out
 function spinDivas(t) {
   for (const li of SPIN_LINES) {
-    const w0 = wt(li, 'without'), sp = wt(li, 'spin'), wo = LINES[li].words.find((w) => w.w === 'without');
-    if (t < w0 - 1 || t > sp + 1.4) continue;
+    const w0 = wt(li, 'without'), sp = wt(li, 'spin'), wo = LINES[li].words.find((w) => w.w === 'without'), se = LINES[li].words.find((w) => w.w === 'spin').e;
+    if (t < w0 - 1 || t > se + .3) continue;
     const S = SPIN_PAIR, k = S.k, t0 = w0 - .6;
     for (const j of [0, 1]) {
-      const tt = t - .06 * j, inU = ease(tt, t0, t0 + S.inT), outU = clamp((tt - sp) / S.outT);
+      const tt = t - .06 * j, inU = ease(tt, t0, t0 + S.inT), outU = clamp((tt - sp) / (se - sp - .06)); // out across the whole held "spin", off as it ends
       if (inU <= 0 || outU >= 1) continue;
-      const home = S.x + j * S.gap * k, off = -(1 - j) * .7 * k - (S.gap + .7) * k * j - .5 * k, x = outU > 0 ? lerp(home, off, smooth(outU) * smooth(outU)) : lerp(off, home, inU);
+      const home = S.x + j * S.gap * k, enter = -(1 - j) * .7 * k - (S.gap + .7) * k * j - .5 * k, gone = -.55 * k; // gone: just past the edge
+      const x = outU > 0 ? lerp(home, gone, Math.pow(outU, 1.6)) : lerp(enter, home, inU); // a steady drift out, crossing the edge in the note's last moments
       const walking = inU < 1 || outU > 0, y = H - .06 * k - (walking ? Math.abs(Math.sin(tt * 6.5)) * .04 * k : 0);
       let mouth = 0; if (tt >= w0 && tt < wo.e) mouth = .4 + .5 * Math.abs(Math.sin(Math.PI * (tt - w0) / ((wo.e - w0) / 2)));
-      else if (tt >= sp) mouth = .85 * ease(tt, sp, sp + .06);
-      const hold = 1 - ease(tt, sp - .05, sp + .12), turn = outU > 0 ? Math.cos(TAU * S.turns * outU) : 1;
+      else if (tt >= sp) mouth = .85 * ease(tt, sp, sp + .06) * (1 - ease(tt, se - .3, se));
+      const hold = 1 - ease(tt, sp - .05, sp + .12), turns = Math.max(2, Math.round((se - sp) * S.rate)), turn = outU > 0 ? Math.cos(TAU * turns * outU) : 1;
       g.save(); g.translate(x, 0); g.scale(turn, 1); g.translate(-x, 0);
       const grace = ease(tt, w0 - .15, w0 + .55); // the free arm sweeps open as she sings, and stays out through the spin
       stiltWoman(j, x, y, k, 1, tt, mouth, 0, hold, grace); g.restore();
