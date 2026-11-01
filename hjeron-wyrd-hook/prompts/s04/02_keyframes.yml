@@ -1,0 +1,57 @@
+---
+wolf:
+  prompt: 'This asset belongs to a hyper quality, very interesting music video. Deliver
+    polished visual detail ready for expressive animation. True two-tone scratchboard
+    engraving, after a 1930s scraperboard book illustration: pure solid black ground
+    with the image carved out in crisp WHITE engraved lines only. Exactly two tones,
+    no grey, no gradients, no airbrush, no soft glow, no colour. Form is built from
+    the direction and density of the line hatching; most of the frame stays solid
+    black; light exists only where the fire touches something, as scratched rim light.
+    Confident, simplified strokes; silhouettes read instantly. No text, no lettering,
+    no logos, no watermark. The same Antlered Wolf as the attached character sheet:
+    same design, same proportions, same slender antlers with one tine each, same thick
+    smoke-tipped tail, same white engraved fur and white eyes, same two-tone style.
+    A NEW drawing, not a crop of the sheet: front view, walking straight toward camera,
+    head slightly lowered, eyes forward, the left forepaw lifted mid-step, thin smoke
+    curling off the antler tips and the tail. The whole wolf fills 75% of frame height,
+    centred, with clear margin above the antler tips and below the paws. Background:
+    perfectly flat chroma green #00B140 instead of black, the wolf''s own black areas
+    stay pure black, no floor, no ground line, no shadow, no other animals or people,
+    no text.'
+fire_ground:
+  base: false
+  refs:
+  - style-s1
+  prompt: 'This asset belongs to a hyper quality, very interesting music video. Deliver
+    polished visual detail ready for expressive animation. True two-tone scratchboard
+    engraving, after a 1930s scraperboard book illustration: pure solid black ground
+    with the image carved out in crisp WHITE engraved lines only. Exactly two tones,
+    no grey, no gradients, no airbrush, no soft glow, no colour. Form is built from
+    the direction and density of the line hatching; most of the frame stays solid
+    black; light exists only where the fire touches something, as scratched rim light.
+    Confident, simplified strokes; silhouettes read instantly. No text, no lettering,
+    no logos, no watermark. Use the attached image ONLY as the reference for the engraving
+    technique and line quality; draw a NEW scene, and no people, no figures, no animals
+    in it. A low ground-level view across desert sand toward a ring of fire stones
+    at the centre of the frame with NO fire in it, an empty dark plain beyond, a few
+    stars low in the sky. 16:9 landscape.'
+firesprite:
+  base: false
+  refs:
+  - style-s1
+  prompt: 'This asset belongs to a hyper quality, very interesting music video. Deliver
+    polished visual detail ready for animation. True two-tone scratchboard engraving,
+    after a 1930s scraperboard book illustration: pure solid black ground with the
+    image carved out in crisp WHITE engraved lines only. Exactly two tones, no grey,
+    no gradients, no airbrush, no soft glow, no colour. Form is built from the direction
+    and density of the line hatching. Confident, simplified strokes; silhouettes read
+    instantly. No text, no lettering, no logos, no watermark. Match the engraving
+    technique and line quality of the attached image exactly, but draw ONLY the subject
+    described, nothing from the attached scene. A tall roaring campfire on a small
+    heap of crossed black logs, seen from the front at eye level: big licking tongues
+    of flame carved as dense flowing white engraved lines, brightest and most tightly
+    hatched in the core, tongues curling and breaking into a few loose sparks at the
+    top; the logs solid black edged with scratched light. The fire fills 85% of the
+    frame height, centred, with margin above the highest tongue. Isolated on a perfectly
+    flat chroma green #00B140 background: no ground, no stones, no sky, no stars,
+    no shadow, nothing else in the frame.'

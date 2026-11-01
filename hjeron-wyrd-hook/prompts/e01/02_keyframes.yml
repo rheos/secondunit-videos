@@ -1,0 +1,53 @@
+---
+plain:
+  base: false
+  refs:
+  - style-s1
+  prompt: 'This asset belongs to a hyper quality, very interesting music video. Deliver
+    polished visual detail ready for expressive animation. True two-tone scratchboard
+    engraving, after a 1930s scraperboard book illustration: pure solid black ground
+    with the image carved out in crisp WHITE engraved lines only. Exactly two tones,
+    no grey, no gradients, no airbrush, no soft glow, no colour. Form is built from
+    the direction and density of the line hatching; most of the frame stays solid
+    black; light exists only where fire or the sun touches something, as scratched
+    rim light. Confident, simplified strokes; silhouettes read instantly. No text,
+    no lettering, no logos, no watermark. Use the attached image ONLY as the reference
+    for the engraving technique and line quality; draw a NEW scene, with no people,
+    no figures and no animals in it. 16:9 landscape. A vast flat cracked clay plain
+    at dusk, the dried mud split into a web of polygon cracks that runs toward a low
+    distant horizon of buttes; the last light low on the horizon; a dense star field
+    coming out above. The middle of the frame is open ground with room for a standing
+    figure.'
+close_dusk:
+  prompt: 'This asset belongs to a hyper quality, very interesting music video. Deliver
+    polished visual detail ready for expressive animation. True two-tone scratchboard
+    engraving, after a 1930s scraperboard book illustration: pure solid black ground
+    with the image carved out in crisp WHITE engraved lines only. Exactly two tones,
+    no grey, no gradients, no airbrush, no soft glow, no colour. Form is built from
+    the direction and density of the line hatching; most of the frame stays solid
+    black; light exists only where fire or the sun touches something, as scratched
+    rim light. Confident, simplified strokes; silhouettes read instantly. No text,
+    no lettering, no logos, no watermark. The same character as the attached sheet,
+    the Wyrd One: same design, wide-brim hat, dense matte black cord-fringe veil hanging
+    from the brim hiding the whole face (no face, no mouth, no visible eyes), long
+    dark wavy hair, long shredded duster, laced boots, beaded rosette amulet, black
+    Les Paul with both neck and bridge pickups and the white antlered-wolf headstock.
+    A NEW drawing in a new pose, not a crop of the sheet: singing close-up, low angle
+    from below the chest, three-quarter view, head tipped slightly up toward the sky,
+    hat brim and veil filling 65% of the frame height, amulet visible at the bottom.
+    Whole hat inside the frame with margin. Background: perfectly flat chroma green
+    #00B140 instead of black; the character''s own black areas stay pure black; no
+    floor, no ground line, no shadow, no other figures, no text.'
+close_dusk2:
+  base: close_dusk
+  refs:
+  - char-wyrd-v1
+  prompt: 'Same image, same framing and pose, same engraving style; make exactly three
+    changes and nothing else: (1) REMOVE the microphone and its stand completely;
+    his left gloved hand rests on the guitar body instead. (2) The veil is a dense
+    curtain of thin MATTE BLACK cords hanging straight from the hat brim and hiding
+    the whole face: no beads, no knots, no white dots, no white highlights on the
+    cords, cord tips black, only a few very fine white scratch lines along a handful
+    of cords. (3) The guitar headstock shows the small white antlered wolf from the
+    attached character sheet (image 2), no flame. Keep the flat chroma green #00B140
+    background.'
