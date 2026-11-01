@@ -17,6 +17,7 @@ They work on any look that keeps the mv-projects contract: `window.__ready` and
 | `views.mjs speed` | x, y, height and speed of a probed box per frame, plus a list of dead stops, dead starts and linear runs. |
 | `render.mjs` | Renders any look to MP4 on the song grid. `--shutter n` adds film-shutter motion blur. |
 | `flashcheck.py` | Flash safety on a finished cut: fails above 3 flashes in any second (WCAG 2.3.1). |
+| `forensics.py` | Frame forensics on a finished cut: single-frame pops, motion jumps, freezes and brightness dips. Fails on pops, jumps and holds outside the cuts you pass it. See [Frame forensics](#frame-forensics). |
 | `vendor/` | Remotion's MIT helpers (paths, noise, shapes) bundled as `window.RPaths`, `RNoise`, `RShapes` for a look to load with script tags. See [Vendored helpers](#vendored-helpers). |
 
 ```bash
@@ -25,12 +26,47 @@ node ../tools/motion-lab/views.mjs onion index.html out/check/hop.jpg 52.1 52.9 
 node ../tools/motion-lab/views.mjs speed index.html sheep out/check/sheep-speed.png 52.0 54.0
 node ../tools/motion-lab/render.mjs index.html 51.0 69.2 out/father.mp4 --shutter 8 --audio assets/song.mp3
 $MV_PYTHON ../tools/motion-lab/flashcheck.py out/final.mp4
+$MV_PYTHON ../tools/motion-lab/forensics.py out/final.mp4 --skip 14.23,23.9,26.3 --json out/qa/forensics.json
 ```
 
 Try them on the example: `example/index.html` passes, `example/index.html?bug=1` fails three ways
 (text overflows its sign, the ball leaves the frame, a landing is 2 frames late).
 `example/vendor-demo.html` uses the vendored helpers: a star drawn on, morphed into a heart, a dot riding
 the outline, the camera drifting on noise (`--spec example/vendor-demo.spec.mjs`).
+
+## Frame forensics
+
+`forensics.py` is a port of `tools/forensics.mjs` from Leon Lin's shanshui (MIT, `vendor/LICENSE-shanshui.md`;
+study in `references/leon-lin/STUDY-shanshui.md`). It reads the encoded file at 160x90 grey, so it works on
+any lane (canvas looks, HyperFrames, footage) and on any render, local or cloud. It prints one PASS or FAIL
+line, then each finding with its frame number and time. Exit 1 on FAIL.
+
+What it catches that the others don't. `badframes.py` (in `tools/cloud-render/`) only finds a black lower-right
+quadrant, the mis-scaled worker. `flashcheck.py` only counts flashes. The cloud join only checks frame counts
+and the longest run of identical frames. None of them sees a frame that is wrong but not black:
+
+- **pop**: one frame unlike both neighbours while they agree (a worker that drew the wrong time, a doubled or
+  dropped frame at a seam).
+- **jump**: one step far bigger than the motion around it, standing alone. This is what a slice seam looks
+  like when a look carries state between frames (trails, particles, physics, a paper boil seeded from the
+  last frame) and slice k starts without slice k-1's history.
+- **hold**: over 2 s with nothing moving (`--max-hold`). The join fails this too, but only on cloud renders.
+- **dip**: mean luma 25% under the brightest frame within a second. A note, never a failure: a fade in, or a
+  cut from a bright shot to a dark one, reads the same.
+
+A hard cut is a jump, so pass the cut times: `--skip 14.23,23.9` (single times, widened by 0.05 s each side)
+or ranges `--skip 30-31.5` for a crossfade or a designed freeze. `--seams` takes frame numbers where cloud
+slices meet; jumps there are judged at shanshui's original floor (a step of 1.0) instead of ours (3.0).
+
+Thresholds changed from shanshui, tested on call-toon test 02b (30 fps, mostly still, speaker switches, three
+hard cuts, a fade to an end card): its jump floor of 1.0 flagged the four speaker switches (caption, mouth and
+highlight all change in one frame, steps 1.3 to 2.3), and its jump rule flagged every frame of the fade and
+of each move's first frames (22 jumps besides the cuts). With a 3.0 floor away from seams and the stand-alone
+rule, only the cuts flag, and `--skip` clears them. Its 0.8 s hold flagged the 1.0 s opening title; 2 s is the
+cloud join's limit for looks. Synthetic faults made from the same file all fail: a 3 s freeze (hold), a frame
+swapped for one from 15 s earlier (pop, spike 3.9), an 8-frame time skip in a move (jump, step 7.0), a 0.5 s
+darkening (two jumps at its edges, and a dip note). A 12 px shift of one region from frame 600 on (a stateful
+element restarting at a seam, step 2.9) passes by default and fails with `--seams 600`.
 
 ## Probing a look
 
