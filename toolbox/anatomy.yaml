@@ -1,0 +1,20 @@
+slug: anatomy
+name: Anatomy
+kind: toolkit
+status: available
+does: Builds detailed interactive isometric SVG figures that explain a technical idea as a physical object, with optional WebGL shader effects and A4 PDF export.
+keywords:
+- isometric
+- svg
+- illustration
+- explainer
+- diagram
+- interactive
+fits:
+- explainer figures for docs, blog posts and landing pages
+- stills or plates for blueprint-style explainers
+deterministic: 'yes'
+how: skill `anatomy` in ~/.claude/skills (installed 2026-10-28); Node 20.10+ and Chrome for its checks
+cost: free
+detail: skill `anatomy`
+added: '2026-11-01'

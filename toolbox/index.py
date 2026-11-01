@@ -17,7 +17,11 @@ REQUIRED = ["slug", "name", "kind", "status", "does", "keywords", "how", "cost"]
 def load():
     tools, errors = [], []
     for path in sorted(HERE.glob("*.yaml")):
-        t = yaml.safe_load(path.read_text())
+        try:
+            t = yaml.safe_load(path.read_text())
+        except yaml.YAMLError as e:
+            errors.append(f"{path.name}: not valid YAML ({e.problem}, line {e.problem_mark.line + 1}); quote a value that holds a colon")
+            continue
         missing = [f for f in REQUIRED if not t.get(f)]
         if missing:
             errors.append(f"{path.name}: missing {', '.join(missing)}")
