@@ -7,6 +7,9 @@
 // in, dips onto the copy's first word `send`, finds no match, shakes no and a small red "?" pops: the copy dims. On
 // "next time it reads the list" it tries again, the same miss. The invoice folder draws its outline round the rule,
 // and the copy flinches when the strike crosses it. Every position, size and time of the animatic is kept.
+// Fix round 1 (supervisor R1): the copy lands at 0.8 (the flight's contract) and then settles up to GROW x that, so its
+// name reads on a phone (about 540 px wide at the r3 camera, the animatic's size); the chip, the "?" and the stamps are
+// laid out from the live scale, so they stay composed round it. It still fits the slot's body (1.4 tall, 5.8 wide).
 import { T, w, LONE, FOLDER_X, FOLDER_W, COPY_Z, NAMES, cardY, flightAt, drawCardFace, faceBox, fadeMat, mixHex, cl, io, r01, mix } from "../parts.js";
 import { typed, back } from "../kit/world.js";
 
@@ -28,8 +31,13 @@ const S = {
   chipOut: w("list", 5) + 0.4,    // gone after "the list" (99.16)
   stampsOut: w("list", 5) + 0.55, // the stamps leave with it (99.31), before the pull back
 };
-const CHIP_Y = LONE[1] + 0.47, CHIP_Z = COPY_Z + 0.22;
-const WORD_X = LONE[0] + 0.8 * (-1.2 + 0.42 + 0.156); // the centre of `send` on the landed copy (scale 0.8)
+const CHIP_Z = COPY_Z + 0.22;
+const GROW = 1.75; // landed scale 0.8 -> 1.4 once it sits (R1); the 14 scale-up then goes 1.4 -> 2.2
+// the layout round the copy at carrier scale sc: `send`'s centre, the chip's rest height (its bottom 0.076 above the
+// card's top, as at scale 0.8) and the chip / "?" size, which grows a little less than the card
+const wordX = (sc) => LONE[0] + sc * (-1.2 + 0.42 + 0.156);
+const chipK = (sc) => 1 + 0.6 * (sc / 0.8 - 1);
+const chipY = (sc) => LONE[1] + 0.28 * sc + 0.076 + 0.17 * chipK(sc);
 const q = (v, n = 20) => Math.round(cl(v) * n) / n;
 
 // the wall's folder silhouette (wall.js `outline`): a tab of width tr whose shoulder slopes down to the body; drawn on
@@ -112,7 +120,7 @@ export function build(scene, k) {
   // card 36's lone copy (`send` in white: new, unclaimed) and its two stamps ride one carrier
   carrier = new THREE.Group(); root.add(carrier);
   loneEdge = kit.toon("#4f93d6", { transparent: true });
-  lone = faceBox(2.4, 0.56, 0.04, 210, drawCardFace, loneEdge, { transparent: true });
+  lone = faceBox(2.4, 0.56, 0.04, 420, drawCardFace, loneEdge, { transparent: true });
   lone.set({ n: 36, name: NAMES[36], lit: 0, white: true }); carrier.add(lone.mesh);
   // the stamps sit on the face's right half (x 0.32..1.18, clear of `send_invoice`, which ends at 0.16), 0.14 in front
   [["build", 0.13, -0.06, S.build], ["deploy", -0.13, 0.045, S.deploy]].forEach(([word, y, rz, at]) => {
@@ -155,19 +163,23 @@ export function update(t) {
   // ---------- the lone copy: peels off card 36 and flies into the empty slot (1.0 s), then wobbles ----------
   const p = (t - T.c36Copy) / 1.0;
   const [x, y, z, s] = flightAt(cardY(36), LONE[0], LONE[1], p, 0.8); // camera-r2 clock 5: lands at scale 0.8
+  // R1: once it is nearly down it settles up to its reading size (eased in and out over 0.6 s, no overshoot, no pop)
+  const settle = io(r01(t, S.land - 0.3, 0.6));
+  const s1 = s * mix(1, GROW, settle);
   const big = io(r01(t, T.invoice1, 0.6)); // 14: the same copy scales up in its slot
-  const sc = mix(s, 2.2, big);
+  const sc = mix(s1, 2.2, big);
+  const kc = chipK(sc), WX = wordX(sc), CY = chipY(sc);
   // the wobble eases in after landing (no snap to a mid-swing angle); the miss and the strike knock it
   const wob = 0.05 * Math.sin((2 * Math.PI * t) / 1.6) * (1 - 0.6 * big) * r01(t, S.land - 0.2, 0.5);
   const knock = -0.035 * beat(t, S.miss1, 0.35) - 0.025 * beat(t, S.miss2, 0.3) - 0.04 * Math.sin(Math.PI * cl((t - T.send3 - 0.15) / 0.3)) * hit(t, T.send3 + 0.15, 0.3);
   carrier.visible = out > 0.001;
-  carrier.position.set(x, y - 0.02 * beat(t, S.miss1, 0.35), z);
+  carrier.position.set(x, y - 0.02 * kc * beat(t, S.miss1, 0.35), z);
   carrier.scale.setScalar(sc * (1 - 0.03 * beat(t, T.send3 + 0.2, 0.3)));
   carrier.rotation.set(0, 0, wob + knock);
   lone.mesh.visible = p >= 0;
   // the cost: the miss dims it (until "invoice" brings it back up to be struck), edge going grey with it
   const dim = r01(t, S.miss1 + 0.05, 0.5) * (1 - r01(t, T.invoice1 - 0.1, 0.4));
-  const la = r01(t, T.c36Copy, 0.15) * out * mix(1, 0.4, dim);
+  const la = r01(t, T.c36Copy, 0.15) * out * mix(1, 0.6, dim); // dimmed, still readable (R1)
   // while the chip dips onto it, `send` is read: a white plate behind it (the word that is there, not `invoice`)
   const read = Math.max(beat(t, S.dip1 - 0.05, 0.45), beat(t, S.dip2 - 0.05, 0.45));
   lone.set({ n: 36, name: NAMES[36], lit: 0, white: true, flag: q(read, 10) });
@@ -195,40 +207,40 @@ export function update(t) {
   // ---------- the AI's search key: in, tries `send`, no match; backs off, tries again; leaves ----------
   const chipOn = t >= S.chipIn && t < S.chipOut + 0.3 && out > 0.001;
   chip.mesh.visible = chipOn;
-  chip.mesh.scale.setScalar(1); chip.mesh.rotation.set(0, 0, 0);
+  chip.mesh.scale.setScalar(kc); chip.mesh.rotation.set(0, 0, 0);
   if (chipOn) {
     const slide = io(r01(t, S.chipIn, S.dip1 - 0.05 - S.chipIn));             // 3.55 -> the word
     const backOff = io(r01(t, S.back2, 0.25)) * (1 - io(r01(t, S.back2 + 0.25, S.dip2 - 0.05 - S.back2 - 0.25)));
-    let cx = mix(LONE[0] - 1.35, WORD_X, slide) - 0.35 * backOff;
+    let cx = mix(LONE[0] - 1.35 * kc, WX, slide) - 0.35 * kc * backOff;
     // the tries: a lift (anticipation), then a dip onto the word
-    const tryAt = (a) => 0.05 * beat(t, a - 0.22, 0.2) - 0.08 * beat(t, a, 0.26);
+    const tryAt = (a) => kc * (0.05 * beat(t, a - 0.22, 0.2) - 0.08 * beat(t, a, 0.26));
     // no: a decaying shake of the head, after each dip
     const no = (a, amp) => amp * Math.sin((2 * Math.PI * (t - a)) / 0.2) * (1 - r01(t, a, 0.45)) * (t >= a ? 1 : 0);
-    cx += no(S.miss1 + 0.04, 0.05) + no(S.miss2 + 0.04, 0.035);
+    cx += kc * (no(S.miss1 + 0.04, 0.05) + no(S.miss2 + 0.04, 0.035));
     const droop = io(r01(t, S.miss1 + 0.3, 0.3)) * (1 - io(r01(t, S.back2, 0.25))) + io(r01(t, S.miss2 + 0.35, 0.3));
-    const cy = CHIP_Y + tryAt(S.dip1) + tryAt(S.dip2) - 0.03 * droop + 0.02 * Math.sin(t * 2.6);
+    const cy = CY + tryAt(S.dip1) + tryAt(S.dip2) + kc * (-0.03 * droop + 0.02 * Math.sin(t * 2.6));
     chip.mesh.position.set(cx, cy, CHIP_Z);
     chip.mesh.rotation.set(0, 0, 0.03 * Math.sin(t * 3.3) - 0.07 * droop + 4 * (no(S.miss1 + 0.04, 0.05) + no(S.miss2 + 0.04, 0.035)) * 0.5);
     const inS = back(r01(t, S.chipIn, 0.3)), outS = 1 - io(r01(t, S.chipOut, 0.3));
-    chip.mesh.scale.setScalar(Math.max(0.001, inS * outS));
+    chip.mesh.scale.setScalar(Math.max(0.001, kc * inS * outS));
     fadeMat(chip.mesh.material, r01(t, S.chipIn, 0.1) * outS);
   }
 
   // ---------- the "?": pops on the first miss, bumps on the second, leaves with the chip ----------
   const askOn = t >= S.miss1 && t < S.chipOut + 0.35 && out > 0.001;
   ask.mesh.visible = askOn; askGlow.visible = askOn;
-  ask.mesh.scale.setScalar(1);
+  ask.mesh.scale.setScalar(kc);
   if (askOn) {
-    const ax = WORD_X + 0.55, ay = CHIP_Y + 0.52 + 0.025 * Math.sin(t * 2.2 + 1.0);
+    const ax = WX + 0.55 * kc, ay = CY + kc * (0.52 + 0.025 * Math.sin(t * 2.2 + 1.0));
     const pop = back(r01(t, S.miss1, 0.3)) * (1 + 0.22 * beat(t, S.miss2, 0.28)) * (1 - io(r01(t, S.chipOut + 0.05, 0.3)));
     ask.mesh.position.set(ax, ay, CHIP_Z + 0.02);
     ask.mesh.rotation.set(0, 0, 0.08 * Math.sin(t * 1.9));
-    ask.mesh.scale.setScalar(Math.max(0.001, pop));
+    ask.mesh.scale.setScalar(Math.max(0.001, kc * pop));
     fadeMat(ask.mesh.material, r01(t, S.miss1, 0.08) * (1 - r01(t, S.chipOut + 0.05, 0.3)));
     const h = hit(t, S.miss1, 0.25) + 0.7 * hit(t, S.miss2, 0.25);
     askGlow.position.set(ax, ay, CHIP_Z);
     askGlow.material.opacity = 0.6 * cl(h);
-    askGlow.scale.setScalar(0.7 + 0.5 * cl(h));
+    askGlow.scale.setScalar(kc * (0.7 + 0.5 * cl(h)));
   }
 
   // ---------- the slot's dashed outline draws in over the flight's last 0.4 s ----------
