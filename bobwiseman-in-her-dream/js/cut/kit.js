@@ -310,9 +310,11 @@ function head(kind, hair, col, k, angle, laugh = 0, age = 0) {
   if (hair && HAIR[hair]) cut(HAIR[hair], col, { sh: .3, grain: .2 });
   g.restore(); g.restore();
 }
-function arm(sh, el, col, holding) {
-  g.save(); g.rotate(-sh); cut(PARTS.upper, col, { sh: .45, grain: .2 });
-  g.translate(0, 168); g.rotate(-el); cut(PARTS.fore, col, { sh: .4, grain: .2 });
+// sleeve { col, a }: her cardigan's knit laid over the upper arm and forearm (hands stay bare)
+function arm(sh, el, col, holding, sleeve) {
+  const knit = (part) => { if (sleeve && sleeve.a > .03) cut(part, sleeve.col, { sh: 0, grain: .3, alpha: sleeve.a }); };
+  g.save(); g.rotate(-sh); cut(PARTS.upper, col, { sh: .45, grain: .2 }); knit(PARTS.upper);
+  g.translate(0, 168); g.rotate(-el); cut(PARTS.fore, col, { sh: .4, grain: .2 }); knit(PARTS.fore);
   g.translate(0, 150); cut(PARTS.hand, col, { sh: .35, grain: .15 });
   if (holding) { g.save(); g.translate(4, 40); holding(); g.restore(); }
   g.restore();
@@ -323,23 +325,25 @@ function leg(hip, knee, col, shoeCol, kid) {
   g.translate(0, 250); g.rotate(hip - knee); cut(PARTS.shoe, shoeCol || col, { sh: .35, grain: .2 });
   g.restore();
 }
-// her age, below the neck (spec.old): a rounded upper back, and a shawl over her shoulders (its front edge
-// shows across her chest; a fringe at the back read as a stub at small sizes and was dropped).
-// Drawn in her body paper, after the body, before the head; dy shifts
-// it for the seated rigs (their bodice sits 540 lower). oldNeck() sets her head forward and bows it. spec.age (0..1)
-// turns it on for a puppet; the seated rigs pass p.age.
-const HUMP = blob([[-20, -806], [-54, -796], [-76, -770], [-84, -730], [-78, -688], [-60, -650], [-30, -664], [-10, -760]], .5);
-const SHAWL = blob([[34, -800], [-22, -810], [-62, -798], [-80, -770], [-86, -728], [-80, -684], [-64, -640], [-48, -626],
-  [-26, -642], [4, -666], [30, -692], [50, -718], [56, -756]], .45);
-function oldBack(col, dy = 0, age = 1) {
+// her age, below the neck: an open cardigan over her dress, one paper lighter (knit), with a buttoned front
+// band hanging straight from the shoulder so a sliver of her dress shows at the bust; its back is only gently
+// rounded (the first test's hump and shawl read as a caricature, Robin: "that's how you show an old lady is
+// with a big hump on her back?"). Drawn after the body, before the head; dy shifts it for the seated rigs
+// (their bodice sits 540 lower). Sleeves: arm(..., sleeve). It fades with her age (0..1) in the hand-off.
+// oldNeck() sets her head a little forward and bowed.
+const CARDIGAN = blob([[26, -806], [-6, -814], [-36, -810], [-60, -796], [-74, -770], [-78, -730], [-74, -680], [-64, -630],
+  [-60, -590], [-70, -548], [-58, -536], [20, -538], [42, -546], [44, -590], [50, -640], [58, -690], [54, -740], [42, -784]], .45);
+const KNIT_BAND = blob([[30, -800], [42, -784], [54, -740], [58, -690], [50, -640], [44, -590], [42, -546], [32, -546],
+  [34, -590], [40, -640], [47, -690], [44, -738], [33, -778], [22, -798]], .4);
+function oldBack(col, dy = 0, age = 1, knit = col) {
   if (age < .03) return;
-  // growing younger, the hump and shawl sink back into her body (squeezed toward her spine line)
-  g.save(); g.translate(0, dy); g.scale(lerp(.6, 1.12, age), 1);
-  cut(HUMP, col, { sh: .5, grain: .26, lift: .2 });
-  cut(SHAWL, col, { sh: .55, grain: .26, lift: .3 });
+  g.save(); g.translate(0, dy); g.globalAlpha *= age;
+  cut(CARDIGAN, knit, { sh: .5, grain: .3, lift: .2 });
+  cut(KNIT_BAND, col, { sh: .25, grain: .3 });
+  [[52, -716], [53, -662], [46, -610]].forEach(([x, y]) => cut(circle(x, y, 6), knit, { sh: .3, grain: .2 }));
   g.restore();
 }
-function oldNeck(age = 1) { g.translate(20 * age, 18 * age); g.rotate(.16 * age); }
+function oldNeck(age = 1) { g.translate(12 * age, 10 * age); g.rotate(.09 * age); }
 // the kitchen (01, 02, 17): old while she is awake; asleep at the table the dream lifts the years off her,
 // slowly, across the colour change and a little after it (Robin: "slower morph")
 const AGE_KITCHEN = (t) => OLD ? 1 - ss(15.6, 19.8, t) : 0;

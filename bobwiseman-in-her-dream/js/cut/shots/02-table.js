@@ -40,15 +40,15 @@ function sitter(x, y, s, col, p, layer) {
   if (layer !== 'front') {
     g.save(); g.translate(-8, 0); leg(1.5, 1.42, col, null, false); g.restore();
     g.save(); g.translate(8, 0); leg(1.56, 1.5, col, null, false); g.restore();
-    if (!p.farFront) { g.save(); g.rotate(p.lean); g.translate(-8, -212); arm(p.far[0], p.far[1], col, p.holdFar); g.restore(); }
+    if (!p.farFront) { g.save(); g.rotate(p.lean); g.translate(-8, -212); arm(p.far[0], p.far[1], col, p.holdFar, p.age && { col: p.knit, a: p.age }); g.restore(); }
     cut(LAP, col, { sh: .6, grain: .26, lift: .2 });
-    g.save(); g.rotate(p.lean); cut(BODICE, col, { sh: .6, grain: .26, lift: .2 }); if (p.age) oldBack(col, 540, p.age); g.restore();
+    g.save(); g.rotate(p.lean); cut(BODICE, col, { sh: .6, grain: .26, lift: .2 }); if (p.age) oldBack(col, 540, p.age, p.knit); g.restore();
   }
   if (layer !== 'back') {
     g.save(); g.rotate(p.lean);
-    if (p.farFront) { g.save(); g.translate(-8, -212); arm(p.far[0], p.far[1], col, p.holdFar); g.restore(); }
+    if (p.farFront) { g.save(); g.translate(-8, -212); arm(p.far[0], p.far[1], col, p.holdFar, p.age && { col: p.knit, a: p.age }); g.restore(); }
     g.save(); g.translate(10, -250); if (p.age) oldNeck(p.age); head('her', null, col, .265, p.head || 0, 0, p.age || 0); g.restore();
-    g.translate(8, -212); arm(p.near[0], p.near[1], col, p.holdNear);
+    g.translate(8, -212); arm(p.near[0], p.near[1], col, p.holdNear, p.age && { col: p.knit, a: p.age });
     g.restore();
   }
   g.restore();
@@ -275,7 +275,7 @@ SHOT(18.5, 31.5, 'table', (t) => {
   cane(HX, HY + 22, C.creamDeep, AGE_KITCHEN(t));
   chair(C.navy);
 
-  sitter(HX, HY, S, C.navy, { lean, head: headA, near, far, age: AGE_KITCHEN(t), farFront }, 'back');
+  sitter(HX, HY, S, C.navy, { lean, head: headA, near, far, age: AGE_KITCHEN(t), knit: C.sky1, farFront }, 'back');
 
   // the table: the top band and the cloth, which unrolls toward the floor in scallops; the corner at her
   // end is drawn up like a theatre curtain so her knees and shins stay in view
@@ -304,7 +304,7 @@ SHOT(18.5, 31.5, 'table', (t) => {
   });
 
   // her near arm and head go over the table
-  sitter(HX, HY, S, C.navy, { lean, head: headA, near, far, age: AGE_KITCHEN(t), farFront }, 'front');
+  sitter(HX, HY, S, C.navy, { lean, head: headA, near, far, age: AGE_KITCHEN(t), knit: C.sky1, farFront }, 'front');
 
   // laughter: deep gold rings from her, then from each kid as the ripple reaches them, on the beats
   if (t > T.laughing - .1) {
