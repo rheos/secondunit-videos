@@ -24,6 +24,7 @@ Robin signed off) · `candidate` (worth a test, not queued) · `parked` (fine, n
 
 | Date | What | From | Kind | Status | Verdict | Where |
 |---|---|---|---|---|---|---|
+| 2026-11-02 | Lemo-Opuscar, 66 code-made film styles | x.com/socialwithaayan/status/2116567606882967790 (via PR #377) | source | adopted | Plugin not installed; vocabulary, rules and tools taken. Six looks worth building first: archive light table and evidence board (Achbar), marker briefing wall and marker over screen recordings (devweb), a tour as a transit map (IndieAgent), one line in motion (Bob). | `references/lemo-opuscar/`, `toolbox/lemo-opuscar.yaml`, #387 |
 | 2026-11-01 | One-spiral-line portrait | Kevin Ngo K29 | look test | approved | Robin: "It lands". One line winds out from the moon until veiled Hjeron appears. | `looks/spiral-line-portrait.yaml`, `hjeron-spiral-portrait/`, PR #384 |
 | 2026-11-01 | Doodles on real footage | Kevin Ngo K28 | look test | approved | Robin: "It lands". Crayon doodles tracked to the camera and to Hjeron, sky doodles behind him. Live on /video/styles. | `looks/doodle-on-footage.yaml`, `hjeron-doodle-on-footage/`, PR #380 |
 | 2026-11-01 | Looseleaf pen engine | Kevin Ngo (x.com/kevin_t_ngo/status/2116743334735851819) | tool | adopted | Felt pen beats kit.js's line on stills, boils the same, no render cost; subtle at 720p ("a bit better"). Brush breaks outlines into dashes. Goes into Travel Agent draft 22, cream shots only. | `tools/looseleaf-pen/`, `toolbox/looseleaf-ink.yaml`, PR #367 |
