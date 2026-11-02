@@ -7,7 +7,17 @@
 // on "write" and red on "misses", and on "lost note" it pulses, swings off the cord and its `write` flares.
 // Every position, size and time is the animatic's, except card 11's subject cue (now on "write") and the payoff beat.
 import { T, w, NAMES, MEMORY, family, CORD_Z, CARD_Z, COL_X, MOUTH_Y, cardY, faceBox, fadeMat, mixHex, cl, io, r01, mix, V } from "../parts.js";
-import { typed, rr } from "../kit/world.js";
+import { rr } from "../kit/world.js";
+
+// red to blue without purple (supervisor 01 L7): a straight RGB mix of the palette's blue and red lands on lavender
+// halfway, so the cooling runs blue <- grey <- red, through a neutral of the pair's mean level, and never mixes hue
+const hexRGB = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
+function viaGrey(a, b, k) {
+  const m = Math.round([...hexRGB(a), ...hexRGB(b)].reduce((s, x) => s + x, 0) / 6).toString(16).padStart(2, "0");
+  const G = "#" + m + m + m;
+  return k < 0.5 ? mixHex(a, G, 2 * k) : mixHex(G, b, 2 * k - 1);
+}
+const redMix = (a, b, k, cool) => (cool ? viaGrey(a, b, k) : mixHex(a, b, k));
 
 let THREE, root, kit;
 const cards = [];
@@ -88,17 +98,17 @@ function cardSpeed(i, t) { return Math.abs(cardYAt(i, t + 0.02) - cardYAt(i, t -
 const FW = (name) => { const c = name.indexOf("_"); return c < 0 ? name : name.slice(0, c); };
 function drawBoard(g, W, H, s) {
   const u = W / 2.4;
-  const red = s.red || 0, spot = s.spot || 0, flag = s.flag || 0, lit = s.lit || 0, flare = s.flare || 0;
+  const red = s.red || 0, spot = s.spot || 0, flag = s.flag || 0, lit = s.lit || 0, flare = s.flare || 0, cool = !!s.cool;
   const dimA = 1 - 0.55 * (s.dark || 0);
   // the board: top-lit, a touch darker at the foot
-  const base = red > 0 ? mixHex("#14243a", "#3a1714", red) : spot > 0 ? mixHex("#14243a", "#2b4c74", spot) : "#14243a";
+  const base = red > 0 ? redMix("#14243a", "#3a1714", red, cool) :spot > 0 ? mixHex("#14243a", "#2b4c74", spot) : "#14243a";
   const gr = g.createLinearGradient(0, 0, 0, H);
   gr.addColorStop(0, mixHex(base, "#ffffff", 0.08)); gr.addColorStop(0.5, base); gr.addColorStop(1, mixHex(base, "#000000", 0.28));
   g.fillStyle = gr; g.fillRect(0, 0, W, H);
   // the number strip, pressed in
   g.fillStyle = "rgba(0,0,0,0.22)"; rr(g, 0.04 * u, 0.045 * u, 0.3 * u, H - 0.09 * u, 0.03 * u); g.fill();
   // the printed rim, then a light bevel line along the top and a dark one along the foot
-  const edgeC = red > 0 ? mixHex("#4f93d6", "#e0675a", red) : spot > 0 ? mixHex("#4f93d6", "#ffffff", spot) : "#4f93d6";
+  const edgeC = red > 0 ? redMix("#4f93d6", "#e0675a", red, cool) : spot > 0 ? mixHex("#4f93d6", "#ffffff", spot) : "#4f93d6";
   g.strokeStyle = edgeC; g.lineWidth = (0.025 + 0.02 * spot + 0.012 * red) * u; g.strokeRect(0.0125 * u, 0.0125 * u, W - 0.025 * u, H - 0.025 * u);
   g.fillStyle = "rgba(255,255,255,0.16)"; g.fillRect(0.035 * u, 0.034 * u, W - 0.07 * u, 0.009 * u);
   g.fillStyle = "rgba(0,0,0,0.35)"; g.fillRect(0.035 * u, H - 0.043 * u, W - 0.07 * u, 0.009 * u);
@@ -109,7 +119,7 @@ function drawBoard(g, W, H, s) {
   // name row
   const fs = 0.13 * u; g.font = `600 ${fs}px 'IBM Plex Mono', monospace`;
   const nameY = 0.16 * u, x0 = 0.42 * u;
-  const drawName = (name, litK, alpha, dy, firstColor) => {
+  const drawName = (name, litK, alpha, dy, firstColor, restA = 1) => {
     const fw = FW(name), rest = name.slice(fw.length), fwW = g.measureText(fw).width;
     g.globalAlpha = dimA * alpha;
     if (litK > 0) { // the green underlay, then the first word with a soft bloom of its own
@@ -125,16 +135,18 @@ function drawBoard(g, W, H, s) {
     let c1 = firstColor || (flare > 0.5 ? "#ffffff" : flag > 0.5 ? "#0d1117" : spot > 0.5 ? "#ffffff" : red > 0.5 ? "#ffb3a8" : mixHex("#a9c8ea", "#c8f7d6", litK));
     if (litK > 0 && !flag && !flare) { g.shadowColor = "rgba(106,208,138,0.9)"; g.shadowBlur = 0.05 * u * litK; }
     g.fillStyle = c1; g.fillText(fw, x0, nameY + dy); g.shadowBlur = 0;
-    g.fillStyle = spot > 0.5 ? "#ffffff" : red > 0.5 ? "#ffb3a8" : "#7f9fc2"; g.fillText(rest, x0 + fwW, nameY + dy);
+    g.fillStyle = spot > 0.5 ? "#ffffff" : red > 0.5 ? "#ffb3a8" : "#7f9fc2";
+    if (restA > 0) { g.globalAlpha = dimA * alpha * restA; g.fillText(rest, x0 + fwW + 0.08 * u * (1 - restA), nameY + dy); }
     return fwW + g.measureText(rest).width;
   };
   g.save(); g.beginPath(); g.rect(0.36 * u, 0.04 * u, W - 0.4 * u, 0.24 * u); g.clip();
   if (s.old != null) {
-    // the rename: old name struck in red, sliding up and fading; the new one typed in below
+    // the rename: old name struck in red, sliding up and fading; the new one comes in a whole word at a time
+    // ("memory" rides up with the slide, then "_write" eases in beside it), so no frame shows a broken word
     const k = s.slide || 0;
     const ow = drawName(s.old, 0, 1 - k, -0.2 * u * k);
     if (s.strike > 0) { g.globalAlpha = 1 - k; g.fillStyle = "#e0675a"; g.fillRect(x0, nameY - 0.01 * u - 0.2 * u * k, ow * s.strike, 0.022 * u); }
-    if (s.name) drawName(s.name, lit, 1, 0.2 * u * (1 - k));
+    if (s.name && k > 0) drawName(s.name, lit, k, 0.2 * u * (1 - k), null, s.restA || 0);
   } else drawName(s.name, lit, 1, 0, s.white && s.name.startsWith("send") ? "#ffffff" : null);
   g.restore();
   // lower row: two dim, slightly soft description bars and the inputs tab
@@ -153,8 +165,31 @@ export function build(scene, k) {
   kit = k; THREE = kit.THREE; P = PASSES();
   root = new THREE.Group(); scene.add(root);
   // the cord: one string, nothing branches; heavier than the animatic's, and it sways (its vertices move from t)
-  const curve = new THREE.CatmullRomCurve3([V(0, -0.88, 1.10), V(0, -1.0, 1.2), V(0, -1.4, CORD_Z), V(0, -27.0, CORD_Z)]);
-  cord = new THREE.Mesh(new THREE.TubeGeometry(curve, 260, 0.015, 8), kit.toon("#8b949e"));
+  // Two extra points pin the long run flat at CORD_Z: with only the bend and the mouth, the spline bowed forward to
+  // z 1.30 near card 11 and ran over the red card's face when it leaned back on "that's" (supervisor 01 H2).
+  const curve = new THREE.CatmullRomCurve3([V(0, -0.88, 1.10), V(0, -1.0, 1.2), V(0, -1.4, CORD_Z), V(0, -1.6, CORD_Z), V(0, -1.8, CORD_Z), V(0, -27.0, CORD_Z)]);
+  const TUB = 260, RAD = 8, CORD_R = 0.015;
+  const cordGeo = new THREE.TubeGeometry(curve, TUB, CORD_R, RAD);
+  // each vertex's offset from the centreline, so the shader can widen the tube about its own axis
+  const radial = new Float32Array(cordGeo.attributes.position.count * 3), cp = cordGeo.attributes.position.array;
+  for (let j = 0; j <= TUB; j++) {
+    const ctr = curve.getPointAt(j / TUB);
+    for (let r = 0; r <= RAD; r++) { const n = (j * (RAD + 1) + r) * 3; radial[n] = cp[n] - ctr.x; radial[n + 1] = cp[n + 1] - ctr.y; radial[n + 2] = cp[n + 2] - ctr.z; }
+  }
+  cordGeo.setAttribute("aRadial", new THREE.BufferAttribute(radial, 3));
+  // never thinner than 4.5 px of a 1920 px frame (widened at most 3x): in the wides a 0.03 tube is a 3 px line whose
+  // edge column shimmers as it sways (supervisor 01 M11, 7.37 s); in the closes it is wider and keeps its own radius
+  const cordMat = kit.toon("#8b949e");
+  cordMat.onBeforeCompile = (sh) => {
+    sh.vertexShader = sh.vertexShader
+      .replace("#include <common>", "#include <common>\nattribute vec3 aRadial;")
+      .replace("#include <begin_vertex>", `vec3 cordC = position - aRadial;
+        float cordD = -(modelViewMatrix * vec4(cordC, 1.0)).z;
+        float cordK = clamp((4.5 / 1920.0) * cordD / (${CORD_R.toFixed(4)} * projectionMatrix[1][1]), 1.0, 3.0);
+        vec3 transformed = cordC + aRadial * cordK;`);
+  };
+  cordMat.customProgramCacheKey = () => "devweb-ep05-cord-minpx";
+  cord = new THREE.Mesh(cordGeo, cordMat);
   cordBase = Float32Array.from(cord.geometry.attributes.position.array);
   root.add(cord);
   // the cards: a printed 2.4 x 0.56 x 0.04 face box on a bevelled backer, hung from a steel binder clip
@@ -321,12 +356,14 @@ export function update(t) {
       c.halo.visible = ha > 0.004; c.halo.material.opacity = cl(ha);
       c.halo.material.color.set(mixHex("#cfe4ff", "#e0675a", red / Math.max(0.001, red + spot)));
       c.halo.scale.set(3.6 + 0.6 * bloom(t - TL.lost, 0.9), 1.35 + 0.35 * bloom(t - TL.lost, 0.9), 1);
-      const edgeC = red > 0 ? mixHex("#4f93d6", "#e0675a", red) : spot > 0 ? mixHex("#4f93d6", "#ffffff", spot) : "#4f93d6";
-      c.edge.color.set(edgeC); c.backer.material.color.set(red > 0 ? mixHex("#2c5f95", "#8f3a31", red) : spot > 0 ? mixHex("#2c5f95", "#9fb8d6", spot) : "#2c5f95");
-      if (t >= T.write3) { // the rename: strike, slide up, memory_write types in
-        const t0 = T.write3 + 0.4;
+      const cool = t >= T.rewrite; // the cooling back to blue goes through grey, never through purple (L7)
+      if (cool) s.cool = 1;
+      const edgeC = red > 0 ? redMix("#4f93d6", "#e0675a", red, cool) : spot > 0 ? mixHex("#4f93d6", "#ffffff", spot) : "#4f93d6";
+      c.edge.color.set(edgeC); c.backer.material.color.set(red > 0 ? redMix("#2c5f95", "#8f3a31", red, cool) : spot > 0 ? mixHex("#2c5f95", "#9fb8d6", spot) : "#2c5f95");
+      if (cool) c.halo.material.opacity = cl(ha) * (1 - r01(t, T.rewrite, 0.2)); // the red halo goes first, so no red glow sits on the blue
+      if (t >= T.write3) { // the rename: strike, slide up; "memory" rides in with the slide, "_write" eases in by rewrite
         s.old = "write_memory"; s.strike = q(r01(t, T.write3, 0.3)); s.slide = q(r01(t, T.write3 + 0.3, 0.4));
-        s.name = typed("memory_write", t0, 12 / (T.rewrite - t0), t);
+        s.name = "memory_write"; s.restA = q(r01(t, T.rewrite - 0.25, 0.22));
       }
     }
     c.pivot.position.set(px, y + 0.32 + dy, pz);
