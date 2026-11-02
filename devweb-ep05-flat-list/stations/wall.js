@@ -1,7 +1,7 @@
 // S3 the folder wall (boards 11, 12, 13, 15, 16): the bare back wall of the shaft, ten folders that draw in as their
 // first copy nears, and the copies themselves: 32 in the mass moment's ripple, card 11's after the rename. Copies are
 // ghosts of cards (the cord never moves); each owns its materials because each fades on its own clock (ep 1).
-import { T, NAMES, FOLDERS, SLOT, WALL_Z, FOLDER_Z, FOLDER_X, FOLDER_W, cardY, copyDepart, flightAt, drawCardFace, faceBox, fadeMat, r01, mix } from "../parts.js";
+import { T, NAMES, FOLDERS, SLOT, WALL_Z, FOLDER_Z, FOLDER_X, FOLDER_W, cardY, copyDepart, flightAt, drawCardFace, faceBox, fadeMat, mixHex, r01, mix } from "../parts.js";
 
 let THREE, root, kit;
 const folders = [], copies = [];
@@ -21,7 +21,7 @@ export function build(scene, k) {
   ids.forEach((i) => {
     const edge = kit.toon("#4f93d6", { transparent: true });
     const fb = faceBox(2.4, 0.56, 0.04, 210, drawCardFace, edge, { transparent: true });
-    fb.set({ n: i, name: i === 11 ? "memory_write" : NAMES[i], lit: 1 });
+    fb.set({ n: i, name: i === 11 ? "memory_write" : NAMES[i], lit: 1, hot: 0 });
     const dep = i === 11 ? T.rewrite : copyDepart(i);
     copies.push({ i, fb, edge, dep, slot: SLOT[i] });
     root.add(fb.mesh);
@@ -31,11 +31,22 @@ export function build(scene, k) {
   FOLDERS.forEach(([name, tabTop, bodyTop, bodyBot, cols, cards], f) => {
     const H = tabTop - bodyBot;
     const p = kit.panel(FOLDER_W, H, 160, (g, W, Hp, s) => {
-      const u = W / FOLDER_W, tabH = 0.74 * u;
+      const u = W / FOLDER_W, tabH = 0.74 * u, hi = s.hi || 0;
       g.fillStyle = "#10241a"; g.strokeStyle = "#6ad08a"; g.lineWidth = 0.03 * u;
-      kit.rr(g, 2, 2, 3.08 * u, tabH + 10, 0.08 * u); g.fill(); g.stroke();
       kit.rr(g, 2, tabH, W - 4, Hp - tabH - 2, 0.08 * u); g.fill(); g.stroke();
-      g.fillStyle = "#b9f0c9"; g.font = `700 ${0.44 * u}px 'IBM Plex Mono', monospace`; g.textBaseline = "middle"; g.fillText(name, 0.22 * u, tabH / 2 + 2);
+      // the tab: lit hard while the rule is spoken (102-110 s, the thing first)
+      g.fillStyle = mixHex("#10241a", "#2f8a52", hi); g.lineWidth = (0.03 + 0.03 * hi) * u;
+      kit.rr(g, 2, 2, 3.08 * u, tabH + 10, 0.08 * u); g.fill(); g.stroke();
+      g.fillStyle = hi > 0.5 ? "#ffffff" : "#b9f0c9"; g.font = `700 ${0.44 * u}px 'IBM Plex Mono', monospace`; g.textBaseline = "middle"; g.fillText(name, 0.22 * u, tabH / 2 + 2);
+      if (s.link > 0) { // "match the first words already there": a line from the tab's word to each copy's first word
+        const tx = 0.22 * u + g.measureText(name).width / 2, panelL = FOLDER_X - FOLDER_W / 2;
+        g.strokeStyle = "#b9f0c9"; g.lineWidth = 0.035 * u; g.lineCap = "round";
+        cards.forEach((i) => {
+          if (i === 11 && s.gap) return;
+          const [sx, sy] = SLOT[i], ex = (sx - 0.13 - panelL) * u, ey = (tabTop - (sy + 0.1175)) * u;
+          g.beginPath(); g.moveTo(tx, tabH - 0.04 * u); g.lineTo(mix(tx, ex, s.link), mix(tabH - 0.04 * u, ey, s.link)); g.stroke();
+        });
+      }
       if (s.gap) { // where card 11 should be
         const x = (2.655 + 1.09 * 3 - FOLDER_X + FOLDER_W / 2 - 0.505) * u, y = (tabTop - (bodyTop - 0.2975) - 0.1175) * u;
         g.setLineDash([0.08 * u, 0.06 * u]); g.strokeStyle = "#e0675a"; g.lineWidth = 0.03 * u; g.strokeRect(x, y, 1.01 * u, 0.235 * u); g.setLineDash([]);
@@ -50,11 +61,18 @@ export function build(scene, k) {
   return root;
 }
 
+// the fix shown while it is spoken (first watch item 8): on "start its name with the thing" each tab lights in turn
+// and its copies' first words light against it; on "match the first words" a line runs from each tab to them
+const q = (v) => Math.round(v * 10) / 10;
+const ruleOff = (t) => 1 - r01(t, T.already3 + 0.5, 0.5);
+const hiAt = (t, f) => q(r01(t, T.start3 + 0.12 * f, 0.3) * ruleOff(t));
+const linkAt = (t, f) => q(r01(t, T.match + 0.1 * f, 0.6) * ruleOff(t));
+
 export function update(t) {
-  folders.forEach((f) => {
+  folders.forEach((f, n) => {
     const a = r01(t, f.at - 0.1, 0.4);
     f.p.mesh.visible = a > 0.001;
-    f.p.set({ gap: f.name === "memory" && t < T.rewrite + FLIGHT });
+    f.p.set({ gap: f.name === "memory" && t < T.rewrite + FLIGHT, hi: hiAt(t, n), link: linkAt(t, n) });
     fadeMat(f.p.mesh.material, a);
     f.p.mesh.scale.setScalar(mix(0.96, 1, a));
   });
@@ -66,6 +84,7 @@ export function update(t) {
     c.fb.mesh.position.set(x, y, z);
     const breath = p >= 1 ? 1 + 0.01 * Math.sin(t * 1.3 + c.i) : 1; // a held wide never freezes (ep 3)
     c.fb.mesh.scale.set(s * breath, s, s);
+    c.fb.set({ n: c.i, name: c.i === 11 ? "memory_write" : NAMES[c.i], lit: 1, hot: q(r01(t, T.start3 + 0.12 * c.slot[2] + 0.15, 0.3) * ruleOff(t)) });
     const a = r01(t, c.dep, 0.15);
     fadeMat(c.fb.face, a); fadeMat(c.edge, a);
   });

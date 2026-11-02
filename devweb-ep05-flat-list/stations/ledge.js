@@ -33,9 +33,12 @@ export function build(scene, kit) {
   // the amber result: an eye (reads) and three note bars
   amber = kit.panel(1.7, 1.05, 300, (g, W, H) => {
     g.fillStyle = "#d6a45a"; kit.rr(g, 4, 4, W - 8, H - 8, 30); g.fill();
-    g.strokeStyle = "#0d1117"; g.lineWidth = 12; g.beginPath(); g.ellipse(W * 0.3, H / 2, 82, 50, 0, 0, Math.PI * 2); g.stroke();
-    g.fillStyle = "#0d1117"; g.beginPath(); g.arc(W * 0.3, H / 2, 24, 0, Math.PI * 2); g.fill();
-    [0.3, 0.5, 0.7].forEach((y, i) => { kit.rr(g, W * 0.56, H * y - 9, W * (0.34 - 0.06 * i), 18, 9); g.fill(); });
+    // a big eye (the almond outline, iris, pupil) and the words: this tool reads, it never writes
+    const ex = W * 0.25, ey = H / 2;
+    g.strokeStyle = "#0d1117"; g.lineWidth = 16; g.beginPath(); g.moveTo(ex - 108, ey); g.quadraticCurveTo(ex, ey - 120, ex + 108, ey); g.quadraticCurveTo(ex, ey + 120, ex - 108, ey); g.stroke();
+    g.fillStyle = "#0d1117"; g.beginPath(); g.arc(ex, ey, 44, 0, Math.PI * 2); g.fill(); g.fillStyle = "#d6a45a"; g.beginPath(); g.arc(ex + 14, ey - 14, 12, 0, Math.PI * 2); g.fill();
+    g.fillStyle = "#0d1117"; g.font = "700 100px 'IBM Plex Mono', monospace"; g.textBaseline = "middle"; g.textAlign = "left";
+    g.fillText("read", W * 0.5, H * 0.33); g.fillText("only", W * 0.5, H * 0.7);
   });
   amber.set({}); root.add(amber.mesh);
   amberLight = new THREE.Sprite(new THREE.SpriteMaterial({ color: "#d6a45a", map: kit.glowTex, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true }));
@@ -60,12 +63,12 @@ export function update(t) {
   const blinkK = Math.max(0, 1 - Math.abs(t - 9.0) / 0.07, 1 - Math.abs(t - 52.0) / 0.07, 1 - Math.abs(t - 100.0) / 0.07);
   blink.face({ blink: blinkK, happy, look: LX(t), lookY: LY(t), think, phase: t * 1.6 });
   // buckle glow: the request leaves (02), the tug (06)
-  const glow = Math.max(0.8 * r01(t, T.asks, 0.1) * (1 - r01(t, T.asks + 0.4, 0.3)), 0.8 * r01(t, T.takes, 0.1) * (1 - r01(t, T.takes + 0.4, 0.3)));
+  const glow = Math.max(0.8 * r01(t, T.it1 - 0.15, 0.1) * (1 - r01(t, T.it1 + 0.25, 0.3)), 0.8 * r01(t, T.takes, 0.1) * (1 - r01(t, T.takes + 0.4, 0.3)));
   harness.buckleGlow.material.opacity = glow;
 
   // "save this": in on "save" (2), waits, greys on "nothing" (1), falls out of frame by "errors"; faint drift in 10
   const sIn = kitRef.back(r01(t, T.save2 - 0.1, 0.35));
-  const fall = io(r01(t, T.nothing1 + 0.1, T.errors - T.nothing1 - 0.1));
+  const fall = io(r01(t, T.nothing1 + 0.1, T.there1 + 1.0 - T.nothing1 - 0.1));
   const late = t >= T.finds - 0.6 && t < T.problem1 + 0.4;
   save.set({ grey: t >= T.nothing1 });
   if (late) {
@@ -74,14 +77,17 @@ export function update(t) {
     save.mesh.scale.setScalar(1); fadeMat(saveMat, 0.35 * r01(t, T.finds - 0.6, 0.4) * (1 - r01(t, T.problem1 - 0.2, 0.5)));
     save.mesh.visible = true;
   } else {
-    save.mesh.visible = t >= T.save2 - 0.1 && t < T.errors + 0.1;
-    save.mesh.position.set(mix(1.75, 2.4, fall), mix(1.15, -9.5, fall * fall), mix(0.7, 1.9, fall));
-    save.mesh.rotation.set(0, 0, -0.9 * fall);
-    save.mesh.scale.setScalar(Math.max(0.01, sIn)); fadeMat(saveMat, 1);
+    save.mesh.visible = t >= T.save2 - 0.1 && t < T.there1 + 1.0;
+    // a slow tumbling drift, a leaf rather than a stone: in frame (the camera holds near the ledge) until "there"
+    const sway = 0.35 * Math.sin((t - T.nothing1) * 1.9) * fall;
+    save.mesh.position.set(mix(1.75, 2.5, fall) + sway, mix(1.15, -5.2, fall), mix(0.7, 1.9, fall));
+    save.mesh.rotation.set(0, 0.25 * Math.sin(t * 1.3) * fall, -0.5 * fall + 0.25 * Math.sin((t - T.nothing1) * 1.9 + 0.8) * fall);
+    save.mesh.scale.setScalar(Math.max(0.01, sIn)); fadeMat(saveMat, 1 - r01(t, T.there1 + 0.5, 0.5));
   }
   // the empty outline where it was: in with the fall, out a second later
-  const oA = r01(t, T.nothing1 + 0.1, 0.4) * (1 - r01(t, T.errors + 1.0, 0.4));
-  outline.mesh.visible = oA > 0.001; fadeMat(outline.mesh.material, 0.8 * oA);
+  const oA = r01(t, T.nothing1 + 0.1, 0.4) * (1 - r01(t, T.there1 + 0.8, 0.4));
+  outline.mesh.visible = oA > 0.001; fadeMat(outline.mesh.material, (0.6 + 0.25 * Math.sin(t * 3.1)) * oA); // the empty slot breathes
+  outline.mesh.scale.setScalar(1 + 0.03 * Math.sin(t * 3.1));
 
   // the amber result: light leaves card 12 at "recent" + 0.4, up the cord, over to Blink's left by "saved"
   const a0 = T.recent1 + 0.4, a1 = T.saved1;

@@ -32,11 +32,15 @@ export const T = {
   send3: w("send", 3), rename: w("rename", 1), write3: w("write", 3), memory10: w("memory", 10),
   // X
   first10: w("first", 10), folderE: e("folder", 2), END: VO.END,
+  // fix round 1 (first watch 01): the drop, the ask, the near one, the family marks, the cost, the fix shown
+  your2: w("your", 2), note1: w("note", 1), memory3: w("memory", 3), it1: w("it", 1), there1: w("there", 1),
+  write1: w("write", 1), write2: w("write", 2), saves2: w("saves", 2), action1: w("action", 1), action3: w("action", 3),
+  pays: w("pays", 1), reads3: w("reads", 3), start3: w("start", 3), match: w("match", 1), already3: w("already", 3),
 };
 T.cardsUp = T.gets + 0.1; // II: the 35 cards leave the box mouth, card k 0.06 s after card k-1
 T.diveA = T.sits2 + 0.1; T.diveB = T.sits3 + 0.4; // V: the camera's dive keys (the counter and bracket ride them)
 T.peel = T.mostly + 0.2; // VII: copy i departs at peel + 0.09 (i - 1)
-T.c36Up = T.nothing5 + 1.2; T.c36Copy = T.deploy + 0.2 - 1.0; // VIII: card 36 rises; its copy flies 1.0 s
+T.c36Up = T.nothing5 + 1.2; T.c36Copy = T.deploy - 0.2; // VIII: card 36 rises; its copy flies 1.0 s (camera-r2 clock 4)
 T.c36Down = T.first9; // IX: card 36 goes back into the box while the camera is at S4
 T.rewrite = T.memory10 + 0.3; // IX: memory_write typed in; card 11's copy peels
 
@@ -56,18 +60,25 @@ export const MEMORY = new Set([12, 28, 33]);
 export const family = (i) => (DARK.has(i) || i === 36 ? null : NAMES[i].split("_")[0]);
 
 // folders on the back wall: tab top, body top, body bottom, cols, copy slots in cord order (rows of `cols`)
-export const FOLDERS = [
-  ["entity", -4.94, -5.68, -6.60, 5, [1, 2, 3, 4, 5, 6, 7, 18, 26]],
-  ["ticket", -6.30, -7.04, -7.96, 3, [13, 14, 16, 17, 22, 23]],
-  ["memory", -7.66, -8.40, -9.00, 4, [12, 28, 33, 11]],
-  ["topic", -9.30, -10.04, -10.64, 4, [15, 25, 29, 31]],
-  ["chat", -10.94, -11.68, -12.28, 3, [8, 9, 19]],
-  ["procedural", -12.58, -13.32, -13.92, 2, [24, 27]],
-  ["maintainer", -14.22, -14.96, -15.56, 2, [20, 30]],
-  ["graph", -15.86, -16.60, -17.20, 1, [21]],
-  ["config", -17.50, -18.24, -18.84, 1, [34]],
-  ["stats", -19.14, -19.88, -20.48, 1, [35]],
-];
+// tab top, body top, body bottom; laid out top-down with GAP of clear wall between one body and the next tab (first
+// watch item 15: ticket's and memory's tabs were cut by the bodies above them). entity keeps its place (DP's F2).
+const GAP = 0.2, TAB_H = 0.74;
+export const FOLDERS = (() => {
+  const spec = [ // name, body height, cols, copy slots in cord order (rows of `cols`)
+    ["entity", 0.92, 5, [1, 2, 3, 4, 5, 6, 7, 18, 26]],
+    ["ticket", 0.92, 3, [13, 14, 16, 17, 22, 23]],
+    ["memory", 0.60, 4, [12, 28, 33, 11]],
+    ["topic", 0.60, 4, [15, 25, 29, 31]],
+    ["chat", 0.60, 3, [8, 9, 19]],
+    ["procedural", 0.60, 2, [24, 27]],
+    ["maintainer", 0.60, 2, [20, 30]],
+    ["graph", 0.60, 1, [21]],
+    ["config", 0.60, 1, [34]],
+    ["stats", 0.60, 1, [35]],
+  ];
+  let top = -4.94;
+  return spec.map(([name, h, cols, cards]) => { const f = [name, top, top - TAB_H, top - TAB_H - h, cols, cards]; top = f[3] - GAP; return f; });
+})();
 export const WALL_Z = -2.8, FOLDER_Z = -2.7, COPY_Z = -2.6, FOLDER_X = 4.9, FOLDER_W = 5.8;
 // the landed slot of card i's copy: [x, y, folder index]
 export const SLOT = {};
@@ -93,9 +104,10 @@ export function flightAt(y0, xs, ys, p, sEnd = 0.42) {
 // card units: 2.4 x 0.56; ppu 420 -> 1008 x 235 (copies use ppu 210)
 export function drawCardFace(g, W, H, s) {
   const u = W / 2.4;
-  const red = s.red || 0;
-  g.fillStyle = red > 0 ? mixHex("#14243a", "#3a1714", red) : "#14243a"; g.fillRect(0, 0, W, H);
-  g.strokeStyle = red > 0 ? mixHex("#4f93d6", "#e0675a", red) : "#4f93d6"; g.lineWidth = 0.025 * u; g.strokeRect(0.0125 * u, 0.0125 * u, W - 0.025 * u, H - 0.025 * u);
+  const red = s.red || 0, spot = s.spot || 0, flag = s.flag || 0;
+  g.fillStyle = red > 0 ? mixHex("#14243a", "#3a1714", red) : spot > 0 ? mixHex("#14243a", "#2b4c74", spot) : "#14243a"; g.fillRect(0, 0, W, H);
+  g.strokeStyle = red > 0 ? mixHex("#4f93d6", "#e0675a", red) : spot > 0 ? mixHex("#4f93d6", "#ffffff", spot) : "#4f93d6";
+  g.lineWidth = (0.025 + 0.02 * spot) * u; g.strokeRect(0.0125 * u, 0.0125 * u, W - 0.025 * u, H - 0.025 * u);
   g.globalAlpha = s.dark ? 0.45 : 1;
   g.fillStyle = "#6e7f93"; g.font = `600 ${0.16 * u}px 'IBM Plex Mono', monospace`; g.textBaseline = "middle";
   g.fillText(String(s.n).padStart(2, "0"), 0.06 * u, 0.2 * u);
@@ -107,8 +119,9 @@ export function drawCardFace(g, W, H, s) {
     const fwW = g.measureText(fw).width;
     g.globalAlpha = (s.dark ? 0.45 : 1) * alpha;
     if (lit > 0) { g.fillStyle = `rgba(106,208,138,${0.22 * lit})`; g.fillRect(x0 - 0.02 * u, nameY - 0.1 * u + dy, fwW + 0.04 * u, 0.2 * u); }
-    g.fillStyle = firstColor || (lit > 0.5 ? "#b9f0c9" : red > 0.5 ? "#ffb3a8" : "#a9c8ea"); g.fillText(fw, x0, nameY + dy);
-    g.fillStyle = red > 0.5 ? "#ffb3a8" : "#7f9fc2"; g.fillText(rest, x0 + fwW, nameY + dy);
+    if (flag > 0) { const ga = g.globalAlpha; g.globalAlpha = alpha * flag; g.fillStyle = s.flagRed ? "#e0675a" : "#eef2f6"; g.fillRect(x0 - 0.03 * u, nameY - 0.11 * u + dy, fwW + 0.06 * u, 0.22 * u); g.globalAlpha = ga; }
+    g.fillStyle = flag > 0.5 ? "#0d1117" : firstColor || (spot > 0.5 ? "#ffffff" : lit > 0.5 ? "#b9f0c9" : red > 0.5 ? "#ffb3a8" : "#a9c8ea"); g.fillText(fw, x0, nameY + dy);
+    g.fillStyle = spot > 0.5 ? "#ffffff" : red > 0.5 ? "#ffb3a8" : "#7f9fc2"; g.fillText(rest, x0 + fwW, nameY + dy);
     return fwW + g.measureText(rest).width;
   };
   g.save(); g.beginPath(); g.rect(0.36 * u, 0.04 * u, W - 0.4 * u, 0.24 * u); g.clip();
@@ -119,6 +132,10 @@ export function drawCardFace(g, W, H, s) {
     if (s.strike > 0) { g.globalAlpha = 1 - k; g.fillStyle = "#e0675a"; g.fillRect(x0, nameY - 0.01 * u - 0.2 * u * k, ow * s.strike, 0.02 * u); }
     if (s.name) drawName(s.name, s.lit, 1, 0.2 * u * (1 - k));
   } else drawName(s.name, s.lit, 1, 0, s.white && s.name.startsWith("send") ? "#ffffff" : null);
+  if (s.hot > 0) { // the first word lit hard against its folder tab
+    const cut = s.name.indexOf("_"), fw = cut < 0 ? s.name : s.name.slice(0, cut), fwW = g.measureText(fw).width;
+    g.globalAlpha = s.hot; g.strokeStyle = "#b9f0c9"; g.lineWidth = 0.025 * u; g.strokeRect(x0 - 0.04 * u, nameY - 0.12 * u, fwW + 0.08 * u, 0.24 * u); g.globalAlpha = 1;
+  }
   g.restore();
   // lower row: two dim description bars and the inputs tab
   g.globalAlpha = (s.dark ? 0.45 : 1) * 0.3; g.fillStyle = "#8b949e";

@@ -41,6 +41,6 @@ export function build(scene, k) {
 const OPEN = -1.83;
 export function update(t) {
   // open (01) -> shut once the hook's cards are back in (02) -> open for the list (03 on)
-  const shut = io(r01(t, T.say + 2.05, 0.5)) * (1 - io(r01(t, T.cardsUp - 0.45, 0.4)));
+  const shut = io(r01(t, T.note1 + 0.1, 0.5)) * (1 - io(r01(t, T.cardsUp - 0.45, 0.4))); // camera-r2 clock 2
   lidPivot.rotation.set(mix(OPEN, 0, shut), 0, 0);
 }

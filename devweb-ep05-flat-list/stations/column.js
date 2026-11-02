@@ -7,6 +7,7 @@ import { typed } from "../kit/world.js";
 let THREE, root, kit;
 const cards = [];
 let lane, pulseHead, pulseCore, trail, chip, req, streak, counter, bracket, ticks;
+const tags = []; // the three memory names, brought out big enough to read (first watch item 3)
 
 // ---------- the read passes: [time, y] polylines down the first-word column ----------
 const PASSES = () => [
@@ -45,10 +46,9 @@ function cardYAt(i, t) {
     const arrive = 0.25 * (i - 3), dep = arrive - (y - MOUTH_Y) / V_UP;
     return t >= arrive ? y : Math.max(MOUTH_Y, MOUTH_Y + V_UP * (t - dep));
   }
-  if (t < T.cardsUp) { // 01 -> 02: back down into the box, lowest first (the hook was a flash-forward)
+  if (t < T.cardsUp) { // 01 -> 02: back down into the box as one rigid block (camera-r2 clock 1), riding the crane
     if (i > 9) return MOUTH_Y - 1;
-    const s = T.say + 0.04 * (9 - i);
-    return Math.max(MOUTH_Y - 1, y - V_DOWN * Math.max(0, t - s));
+    return Math.max(MOUTH_Y - 1, y - 26.1 * io(r01(t, T.your2, 3.0)));
   }
   // 03: the list comes back: card k leaves the mouth 0.06 s after card k-1, all at one speed
   const dep = T.cardsUp + 0.06 * (i - 1);
@@ -65,7 +65,7 @@ export function build(scene, k) {
   const edge = kit.toon("#4f93d6"), steel = kit.toon("#c9d1d9");
   const clipGeo = new THREE.TorusGeometry(0.05, 0.012, 6, 16);
   for (let i = 1; i <= 36; i++) {
-    const own = i === 11 ? kit.toon("#4f93d6") : edge;
+    const own = i === 10 || i === 11 || i === 32 ? kit.toon("#4f93d6") : edge; // the three action-first cards recolour alone
     const fb = faceBox(2.4, 0.56, 0.04, 420, drawCardFace, own);
     const pivot = new THREE.Group(); // at the clip, on the cord: the card swings from here
     fb.mesh.position.set(0, -0.32, CARD_Z - CORD_Z);
@@ -73,6 +73,19 @@ export function build(scene, k) {
     pivot.add(fb.mesh, clip); root.add(pivot);
     cards[i] = { fb, pivot, edge: own };
   }
+  // the memory name tags (05): a leader from the card, then the name at about 40 px in the column read
+  [12, 28, 33].forEach((i) => {
+    const tg = kit.panel(3.9, 0.62, 200, (g, W, H) => {
+      const u = W / 3.9;
+      g.fillStyle = "#6ad08a"; g.fillRect(0, H / 2 - 0.02 * u, 0.24 * u, 0.04 * u);
+      g.fillStyle = "rgba(13,17,23,0.9)"; kit.rr(g, 0.22 * u, 3, W - 0.22 * u - 3, H - 6, 0.12 * u); g.fill();
+      g.strokeStyle = "#6ad08a"; g.lineWidth = 0.035 * u; g.stroke();
+      g.font = `600 ${0.4 * u}px 'IBM Plex Mono', monospace`; g.textBaseline = "middle";
+      const nm = NAMES[i], fw = "memory", x = 0.4 * u;
+      g.fillStyle = "#b9f0c9"; g.fillText(fw, x, H / 2 + 2); g.fillStyle = "#a9c8ea"; g.fillText(nm.slice(fw.length), x + g.measureText(fw).width, H / 2 + 2);
+    });
+    tg.set({}); root.add(tg.mesh); tags.push({ i, tg });
+  });
   // the read lane: a narrow additive green strip over the first-word column, grown from t
   lane = new THREE.Mesh(new THREE.PlaneGeometry(0.88, 1), new THREE.MeshBasicMaterial({ color: "#6ad08a", transparent: true, opacity: 0.1, blending: THREE.AdditiveBlending, depthWrite: false }));
   lane.position.set(-0.40, -2, 1.55); root.add(lane);
@@ -120,13 +133,31 @@ export function update(t) {
     c.pivot.position.set(0, y + 0.32 + dy, CORD_Z);
     c.pivot.rotation.set(0, 0.04 * Math.sin((2 * Math.PI * t) / 3.7 + 0.5 * i), 0.025 * Math.sin((2 * Math.PI * t) / 2.9 + 0.35 * i));
     if (!c.pivot.visible) continue;
-    const dark = t >= T.first1 && (i === 10 || i === 32 || (i === 11 && t < T.misses));
+    // VII: the three action-first cards step out of the column, first word boxed white (no folder; white = unclaimed,
+    // like card 36's `send`), from "then the action" until "build" (first watch item 6)
+    const q = (v) => Math.round(cl(v) * 10) / 10;
+    const mark = i === 10 || i === 11 || i === 32 ? r01(t, T.action1 - 0.1, 0.4) * (1 - r01(t, T.build, 0.5)) : 0;
+    // IX (camera-r2 optional): their first words flash red as the camera rides past on "rename" / "action"
+    const flash = i === 32 ? r01(t, T.rename, 0.15) * (1 - r01(t, T.rename + 0.7, 0.3))
+      : i === 10 || i === 11 ? r01(t, T.action3, 0.15) * (1 - r01(t, T.action3 + 0.6, 0.3)) : 0;
+    // VI: write_memory is the subject from "named write memory" until "misses" (first watch item 5)
+    const spot = i === 11 ? r01(t, T.write1 - 0.2, 0.3) * (1 - r01(t, T.misses, 0.25)) : 0;
+    const dark = t >= T.first1 && mark < 0.5 && (i === 10 || i === 32 || (i === 11 && t < T.write1 - 0.2));
     const s = { n: i, name: NAMES[i], lit: litAt(i, t), dark };
     if (i === 36) s.white = true;
+    if (mark > 0) s.flag = q(mark);
+    if (flash > 0) { s.flag = q(flash); s.flagRed = true; }
+    if (i === 10 || i === 32) c.edge.color.set(mixHex("#4f93d6", "#eef2f6", mark));
+    if (mark > 0 || spot > 0) { // step out (left of the column) and forward; a slow pulse keeps the held wide alive
+      const out = io(cl(mark)), pz = 1 + 0.04 * mark * Math.sin(t * 4.2 + i) + 0.07 * spot;
+      c.pivot.position.x = -0.5 * out; c.pivot.position.z = CORD_Z + 0.25 * out + 0.15 * spot; c.pivot.scale.setScalar(pz);
+    } else { c.pivot.scale.setScalar(1); }
     if (i === 11) {
+      s.spot = q(spot);
+      if (t >= T.write2 - 0.1 && t < T.write2 + 1.1) s.flag = q(r01(t, T.write2 - 0.1, 0.15) * (1 - r01(t, T.write2 + 0.8, 0.3))); // "its first word is write"
       const red = r01(t, T.misses, 0.25) * (1 - r01(t, T.rewrite, 0.5));
       s.red = Math.round(red * 10) / 10;
-      c.edge.color.set(red > 0 ? mixHex("#4f93d6", "#e0675a", red) : "#4f93d6");
+      c.edge.color.set(red > 0 ? mixHex("#4f93d6", "#e0675a", red) : spot > 0 ? mixHex("#4f93d6", "#ffffff", spot) : "#4f93d6");
       if (t >= T.write3) { // the rename: strike, slide up, memory_write types in
         const t0 = T.write3 + 0.4;
         s.old = "write_memory"; s.strike = Math.round(r01(t, T.write3, 0.3) * 10) / 10; s.slide = Math.round(r01(t, T.write3 + 0.3, 0.4) * 10) / 10;
@@ -168,12 +199,26 @@ export function update(t) {
     fadeMat(chip.mesh.material, 1 - r01(t, T.memory2 + 0.2, 0.4));
   }
 
+  // ---------- the memory name tags (05): each pops out as the chip reaches its card, held through "three names" ----------
+  tags.forEach(({ i, tg }) => {
+    const at = passTime(P[0], cardY(i)) - 0.05;
+    const gone = T.takes + 0.1; // all out on "takes", before the push to card 12 carries them off the right edge
+    const a = r01(t, at, 0.3) * (1 - r01(t, gone, 0.35));
+    tg.mesh.visible = a > 0.001;
+    if (!tg.mesh.visible) return;
+    const pop = kit.back(r01(t, at, 0.35));
+    tg.mesh.position.set(mix(1.3, 3.25, io(r01(t, at, 0.35))), cardY(i) + 0.08 + 0.03 * Math.sin(t * 2.3 + i), 1.8);
+    tg.mesh.scale.setScalar(Math.max(0.01, pop));
+    fadeMat(tg.mesh.material, a);
+  });
+
   // ---------- the request card (02): down the cord into the shut lid's grommet ----------
-  const r0 = T.asks + 0.2, r1 = T.cardsUp - 0.6;
+  // camera-r2 clock 3: leaves Blink on "it asks", 1.8 s with an ease-out onto the lid, then shrinks into the grommet
+  const r0 = T.it1 - 0.1, rLand = r0 + 1.8, r1 = rLand + 0.35;
   req.visible = t >= r0 && t < r1;
-  const rk = io(r01(t, r0, r1 - r0));
+  const rx = r01(t, r0, rLand - r0), rk = 1 - (1 - rx) * (1 - rx);
   req.position.set(0, mix(0.0, -25.9, rk), 1.66);
-  req.scale.setScalar(Math.max(0.01, r01(t, r0, 0.15) * (1 - r01(t, r1 - 0.35, 0.35))));
+  req.scale.setScalar(Math.max(0.01, r01(t, r0, 0.15) * (1 - r01(t, rLand, 0.35))));
 
   // ---------- the blue streak leading card 01 up (03) ----------
   const y1 = cardYAt(1, t);
