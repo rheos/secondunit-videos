@@ -126,7 +126,7 @@
         show(dim, endAt - 0.1, 0.5);
         const fin = mk("div", "abs ov hide scrim", "right:28px;top:140px;font-size:50px;text-align:right", stage, `The first word<br>is the ${G("folder.")}`);
         const tfin = at(325) - 0.08; // "the" 123.26
-        show(fin, tfin, 0.25); hide(fin, endAt + 0.05, 0.3); cue("slam", tfin + 0.2);
+        show(fin, tfin, 0.25); hide(fin, endAt + 0.05, 0.3); cue("slam-mute", tfin + 0.2); // sound: none, the closing line stays bare (the slam sat on "the first")
         const mark = mk("div", "abs hide", "left:190px;top:590px;width:340px;height:92px;box-sizing:border-box;border-radius:14px;border:3px solid var(--green);background:#0d1117;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-weight:600;font-size:44px", stage,
           `<span style="color:var(--green)">~/</span>devweb<span id="cur" style="display:inline-block;width:18px;height:40px;margin-left:7px;background:var(--green);opacity:.9"></span>`);
         F(mark, { opacity: 0, scale: 0.85 }, { opacity: 1, scale: 1, duration: 0.4, ease: "back.out(1.6)" }, endAt);
@@ -156,8 +156,14 @@
         TT("invoice_get", w("invoice", 2), 14);                   // IX: the invoice folder's lines type on (stations/slot.js, 14 cps)
         TT("invoice_send", w("invoice", 3), 14);
         cue("strike", w("send", 3));                              // the red strike through send_invoice
-        cue("strike", w("write", 3));                             // write_memory struck, then memory_write typed on card 11 (stations/column.js)
+        cue("strike-mute", w("write", 3));                        // sound: none, the zing sat on "write memory"; write_memory struck, then memory_write typed on card 11 (stations/column.js)
         { const t0 = w("write", 3) + 0.4, t1 = w("memory", 10) + 0.3; TT("memory_write", t0, 12 / (t1 - t0)); cue("land", t1 + 0.9); }
+
+        // sound pass: events the station code draws that had no cue, and clicks muted where they sat within 12 dB of the voice
+        // inside a must-catch phrase ("invoice get/send", "write memory becomes memory write"); kinds outside the sound kit are skipped by sfx_earshot.py but still declared to forensics
+        cue("thud", w("note", 1) + 0.1 + 0.42);                   // the lid falls shut and bounces (stations/toolbox.js CI), in the pause after "save a note"
+        cue("blip", w("it", 1) - 0.1 + 1.8 + 0.25);               // the request card shrinks into the grommet and the box gulps (toolbox.js gulp)
+        { const mute = new Set([3431, 3478, 3486, 3640, 3657]); BP.CUES.forEach((c) => { if (c.k === "type" && mute.has(Math.round(c.t * 30) + 1)) c.k = "type-mute"; }); }
 
         const clock3 = { t: 0 };
         tl.fromTo(clock3, { t: 0 }, { t: VO.END, duration: VO.END, ease: "none", immediateRender: false, onUpdate: () => { if (window.renderWorld) window.renderWorld(clock3.t); } }, 0);
