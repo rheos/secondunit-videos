@@ -10,14 +10,17 @@ import { T, w, NAMES, MEMORY, family, CORD_Z, CARD_Z, COL_X, MOUTH_Y, cardY, fac
 import { rr } from "../kit/world.js";
 
 // red to blue without purple (supervisor 01 L7): a straight RGB mix of the palette's blue and red lands on lavender
-// halfway, so the cooling runs blue <- grey <- red, through a neutral of the pair's mean level, and never mixes hue
+// halfway, so both turns run through a neutral of the pair's mean level and never mix hue: the warming on "misses"
+// goes white/blue -> grey -> red, the cooling on the rename red -> grey -> blue
 const hexRGB = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
 function viaGrey(a, b, k) {
   const m = Math.round([...hexRGB(a), ...hexRGB(b)].reduce((s, x) => s + x, 0) / 6).toString(16).padStart(2, "0");
   const G = "#" + m + m + m;
   return k < 0.5 ? mixHex(a, G, 2 * k) : mixHex(G, b, 2 * k - 1);
 }
-const redMix = (a, b, k, cool) => (cool ? viaGrey(a, b, k) : mixHex(a, b, k));
+// red k over a card whose spot (white subject) level is sp: the "from" colour carries the spot, so the warming starts
+// on the white the card had, not on bare blue, and no frame jumps
+const redMix = (blue, spotHex, red, k, sp) => viaGrey(sp > 0 ? mixHex(blue, spotHex, sp) : blue, red, k);
 
 let THREE, root, kit;
 const cards = [];
@@ -98,17 +101,17 @@ function cardSpeed(i, t) { return Math.abs(cardYAt(i, t + 0.02) - cardYAt(i, t -
 const FW = (name) => { const c = name.indexOf("_"); return c < 0 ? name : name.slice(0, c); };
 function drawBoard(g, W, H, s) {
   const u = W / 2.4;
-  const red = s.red || 0, spot = s.spot || 0, flag = s.flag || 0, lit = s.lit || 0, flare = s.flare || 0, cool = !!s.cool;
+  const red = s.red || 0, spot = s.spot || 0, flag = s.flag || 0, lit = s.lit || 0, flare = s.flare || 0;
   const dimA = 1 - 0.55 * (s.dark || 0);
   // the board: top-lit, a touch darker at the foot
-  const base = red > 0 ? redMix("#14243a", "#3a1714", red, cool) :spot > 0 ? mixHex("#14243a", "#2b4c74", spot) : "#14243a";
+  const base = red > 0 ? redMix("#14243a", "#2b4c74", "#3a1714", red, spot) : spot > 0 ? mixHex("#14243a", "#2b4c74", spot) : "#14243a";
   const gr = g.createLinearGradient(0, 0, 0, H);
   gr.addColorStop(0, mixHex(base, "#ffffff", 0.08)); gr.addColorStop(0.5, base); gr.addColorStop(1, mixHex(base, "#000000", 0.28));
   g.fillStyle = gr; g.fillRect(0, 0, W, H);
   // the number strip, pressed in
   g.fillStyle = "rgba(0,0,0,0.22)"; rr(g, 0.04 * u, 0.045 * u, 0.3 * u, H - 0.09 * u, 0.03 * u); g.fill();
   // the printed rim, then a light bevel line along the top and a dark one along the foot
-  const edgeC = red > 0 ? redMix("#4f93d6", "#e0675a", red, cool) : spot > 0 ? mixHex("#4f93d6", "#ffffff", spot) : "#4f93d6";
+  const edgeC = red > 0 ? redMix("#4f93d6", "#ffffff", "#e0675a", red, spot) : spot > 0 ? mixHex("#4f93d6", "#ffffff", spot) : "#4f93d6";
   g.strokeStyle = edgeC; g.lineWidth = (0.025 + 0.02 * spot + 0.012 * red) * u; g.strokeRect(0.0125 * u, 0.0125 * u, W - 0.025 * u, H - 0.025 * u);
   g.fillStyle = "rgba(255,255,255,0.16)"; g.fillRect(0.035 * u, 0.034 * u, W - 0.07 * u, 0.009 * u);
   g.fillStyle = "rgba(0,0,0,0.35)"; g.fillRect(0.035 * u, H - 0.043 * u, W - 0.07 * u, 0.009 * u);
@@ -354,12 +357,11 @@ export function update(t) {
       const haloR = red * (0.38 + 0.4 * bloom(t - T.misses, 0.5) + 0.75 * bloom(t - TL.lost, 0.9) + 0.35 * bloom(t - TL.hurts, 0.5) + 0.06 * Math.sin(t * 3.1));
       const ha = Math.max(haloW, haloR);
       c.halo.visible = ha > 0.004; c.halo.material.opacity = cl(ha);
-      c.halo.material.color.set(mixHex("#cfe4ff", "#e0675a", red / Math.max(0.001, red + spot)));
+      c.halo.material.color.set(viaGrey("#cfe4ff", "#e0675a", red / Math.max(0.001, red + spot)));
       c.halo.scale.set(3.6 + 0.6 * bloom(t - TL.lost, 0.9), 1.35 + 0.35 * bloom(t - TL.lost, 0.9), 1);
-      const cool = t >= T.rewrite; // the cooling back to blue goes through grey, never through purple (L7)
-      if (cool) s.cool = 1;
-      const edgeC = red > 0 ? redMix("#4f93d6", "#e0675a", red, cool) : spot > 0 ? mixHex("#4f93d6", "#ffffff", spot) : "#4f93d6";
-      c.edge.color.set(edgeC); c.backer.material.color.set(red > 0 ? redMix("#2c5f95", "#8f3a31", red, cool) : spot > 0 ? mixHex("#2c5f95", "#9fb8d6", spot) : "#2c5f95");
+      const cool = t >= T.rewrite; // both turns to and from red go through grey, never through purple (L7)
+      const edgeC = red > 0 ? redMix("#4f93d6", "#ffffff", "#e0675a", red, spot) : spot > 0 ? mixHex("#4f93d6", "#ffffff", spot) : "#4f93d6";
+      c.edge.color.set(edgeC); c.backer.material.color.set(red > 0 ? redMix("#2c5f95", "#9fb8d6", "#8f3a31", red, spot) : spot > 0 ? mixHex("#2c5f95", "#9fb8d6", spot) : "#2c5f95");
       if (cool) c.halo.material.opacity = cl(ha) * (1 - r01(t, T.rewrite, 0.2)); // the red halo goes first, so no red glow sits on the blue
       if (t >= T.write3) { // the rename: strike, slide up; "memory" rides in with the slide, "_write" eases in by rewrite
         s.old = "write_memory"; s.strike = q(r01(t, T.write3, 0.3)); s.slide = q(r01(t, T.write3 + 0.3, 0.4));
