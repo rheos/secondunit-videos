@@ -237,7 +237,6 @@ SHOT(0, 18.5, 'kitchen', (t) => {
     billHard(BW, BH, held.last ? mix(C.w4, C.lamp, lit * .7) : billCol, billInk); g.restore(); };
   const flat = (x, y, r, k = 0) => { g.save(); g.translate(x, y); g.rotate(r); g.scale(1, .42); billHard(BW, BH, billCol, billInk, .8); g.restore(); };
 
-  cane(HX, HY + 22, mix(C.w3, C.creamDeep, navyK), AGE_KITCHEN(t));
   chair(mix(C.w0, C.navy, navyK));
   sitter(HX, HY, S, herCol, { lean, head: headA, near, far, age: AGE_KITCHEN(t), knit: mix(C.w2, C.sky1, navyK), farFront }, 'back');
 
@@ -245,6 +244,7 @@ SHOT(0, 18.5, 'kitchen', (t) => {
   cut(cutRect(TX0 + 40, TY, 30, FLOOR - TY, 51), tableCol, { sh: .5 });
   cut(poly([[TX0 + 30, TY - TB], [TX1, TY - TB], [TX1, TY], [TX0, TY]]), topCol, { sh: .5, grain: .2 });
   cut(cutRect(TX0 - 6, TY - 2, TX1 - TX0, 118, 52, 1.5), clothCol, { sh: .8, lift: .3 });
+  cane(TX0 + 30, TY - 4, TX0, mix(CANE_WOOD, C.roseDark, navyK), AGE_KITCHEN(t), mix(C.ink, C.navy, navyK));
 
   // the piles (two bills already sorted each side), the moving bills, a cold cup
   flat(pileA[0] - 14, TY - 22, .05); flat(pileA[0] - 6, TY - 27, -.07);

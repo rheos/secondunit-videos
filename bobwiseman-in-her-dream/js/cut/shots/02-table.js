@@ -272,7 +272,6 @@ SHOT(18.5, 31.5, 'table', (t) => {
   g.restore();
   const placedL = drawKid(KIDS[KIDS.length - 1], KIDS.length - 1);
   placed[KIDS.length - 1] = placedL;
-  cane(HX, HY + 22, C.creamDeep, AGE_KITCHEN(t));
   chair(C.navy);
 
   sitter(HX, HY, S, C.navy, { lean, head: headA, near, far, age: AGE_KITCHEN(t), knit: C.sky1, farFront }, 'back');
@@ -284,6 +283,7 @@ SHOT(18.5, 31.5, 'table', (t) => {
   cut(poly([[TX0 + 30, TY - TB], [TX1, TY - TB], [TX1, TY], [TX0, TY]]), C.creamDeep, { sh: .5, grain: .2 });
   if (t < BEAT_(42.6)) cut(cutRect(TX0 - 6, TY - 2, TX1 - TX0, 118, 52, 1.5), C.cream, { sh: .8, lift: .3 });
   else scallopCloth(TX0 - 6, TX1, TY - 2, lerp(118, FLOOR - TY - 6, unroll), C.cream, 1);
+  cane(TX0 + 30, TY - 4, TX0, C.roseDark, AGE_KITCHEN(t), C.navy);
 
   cup(1300, TY - 26 - jump, 1.3, C.cream);
   // one orange arrives where the bills were (it comes back at the very end of the film)

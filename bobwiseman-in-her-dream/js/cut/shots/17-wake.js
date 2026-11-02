@@ -289,7 +289,6 @@ SHOT(T.a, T.end, 'wake', (t) => {
   }
   const farFront = true;
 
-  cane(HX, HY + 22, C.w3, OLD ? 1 : 0);
   chair(HX, C.w0);
   sitter(HX, HY, S, C.w1, { lean, head: headA, near, far, age: OLD ? 1 : 0, knit: C.w2, farFront }, 'back');
 
@@ -297,6 +296,7 @@ SHOT(T.a, T.end, 'wake', (t) => {
   cut(cutRect(TX0 + 40, TY, 30, FLOOR - TY, 51), C.w0, { sh: .5 });
   cut(poly([[TX0 + 30, TY - TB], [TX1, TY - TB], [TX1, TY], [TX0, TY]]), C.w4, { sh: .5, grain: .2 });
   cut(cutRect(TX0 - 6, TY - 2, TX1 - TX0, 118, 52, 1.5), C.w3, { sh: .8, lift: .3 });
+  cane(TX0 + 30, TY - 4, TX0, CANE_WOOD, OLD ? 1 : 0);
 
   // the empty chairs, pulled out on the near side, facing her
   chair(1400, C.w0, -1); chair(1700, C.w0, -1);

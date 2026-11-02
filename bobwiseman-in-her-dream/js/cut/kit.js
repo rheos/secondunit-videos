@@ -325,36 +325,54 @@ function leg(hip, knee, col, shoeCol, kid) {
   g.translate(0, 250); g.rotate(hip - knee); cut(PARTS.shoe, shoeCol || col, { sh: .35, grain: .2 });
   g.restore();
 }
-// her age, below the neck: an open cardigan over her dress, one paper lighter (knit), with a buttoned front
-// band hanging straight from the shoulder so a sliver of her dress shows at the bust; its back is only gently
-// rounded (the first test's hump and shawl read as a caricature, Robin: "that's how you show an old lady is
-// with a big hump on her back?"). Drawn after the body, before the head; dy shifts it for the seated rigs
-// (their bodice sits 540 lower). Sleeves: arm(..., sleeve). It fades with her age (0..1) in the hand-off.
+// her age, below the neck: a buttoned cardigan over her dress, one paper lighter (knit), its front edge just
+// outside her bodice so none of the dress shows through (left open, the dress at the bust read as a hole under
+// her arm when she leans forward asleep, Robin). The button band is the knit darkened with her dress paper.
+// Its back is only gently rounded (the first test's hump and shawl read as a caricature, Robin: "that's how you
+// show an old lady is with a big hump on her back?"). Drawn after the body, before the head; dy shifts it for
+// the seated rigs (their bodice sits 540 lower). Sleeves: arm(..., sleeve). It fades with her age (0..1).
 // oldNeck() sets her head a little forward and bowed.
-const CARDIGAN = blob([[26, -806], [-6, -814], [-36, -810], [-60, -796], [-74, -770], [-78, -730], [-74, -680], [-64, -630],
-  [-60, -590], [-70, -548], [-58, -536], [20, -538], [42, -546], [44, -590], [50, -640], [58, -690], [54, -740], [42, -784]], .45);
-const KNIT_BAND = blob([[30, -800], [42, -784], [54, -740], [58, -690], [50, -640], [44, -590], [42, -546], [32, -546],
-  [34, -590], [40, -640], [47, -690], [44, -738], [33, -778], [22, -798]], .4);
+const CARDIGAN = blob([[30, -808], [-6, -814], [-36, -810], [-60, -796], [-74, -770], [-78, -730], [-74, -680], [-64, -630],
+  [-60, -590], [-70, -548], [-58, -534], [20, -534], [46, -540], [60, -548], [50, -584], [58, -632], [76, -676], [74, -714],
+  [62, -752], [46, -788]], .45);
+const KNIT_BAND = blob([[34, -802], [50, -786], [66, -750], [77, -714], [78, -676], [60, -632], [52, -584], [62, -548], [50, -536],
+  [42, -540], [44, -584], [50, -632], [66, -676], [65, -712], [54, -746], [40, -780], [26, -798]], .4);
 function oldBack(col, dy = 0, age = 1, knit = col) {
   if (age < .03) return;
   g.save(); g.translate(0, dy); g.globalAlpha *= age;
   cut(CARDIGAN, knit, { sh: .5, grain: .3, lift: .2 });
-  cut(KNIT_BAND, col, { sh: .25, grain: .3 });
-  [[52, -716], [53, -662], [46, -610]].forEach(([x, y]) => cut(circle(x, y, 6), knit, { sh: .3, grain: .2 }));
+  cut(KNIT_BAND, knit, { sh: 0, grain: .3 }); cut(KNIT_BAND, col, { sh: 0, grain: .3, alpha: .28 });
+  [[70, -706], [70, -664], [56, -612]].forEach(([x, y]) => cut(circle(x, y, 6), knit, { sh: .3, grain: .2 }));
   g.restore();
 }
 function oldNeck(age = 1) { g.translate(12 * age, 10 * age); g.rotate(.09 * age); }
 // the kitchen (01, 02, 17): old while she is awake; asleep at the table the dream lifts the years off her,
 // slowly, across the colour change and a little after it (Robin: "slower morph")
 const AGE_KITCHEN = (t) => OLD ? 1 - ss(15.6, 19.8, t) : 0;
-// her cane, hooked over the top of her chair's back post and hanging behind it (x, y = the chair's seat
-// point HX, HY + 22). A pale grey stick so it reads on the dark chair; it goes with her age
-function cane(x, y, col, a) {
+// her walking stick, leaning against the near corner of the table: its round crook hooked over the
+// table's front edge (cx, cy = the crook's centre), the shaft down to a dark rubber tip on the floor at tipX.
+// About wrist height on her (Robin: the first one, hooked on the chair back, was too long, and a pale tube
+// "looks nothing like a cane"). Wood paper; drawn after the cloth, before her near arm; fades with her age.
+const CANE_WOOD = '#6b5a5e';
+function cane(cx, cy, tipX, col, a, tipCol = C.ink) {
   if (a < .02) return;
-  const p = new Path2D(), cx = x - 90, cy = y - 254;
-  p.arc(cx, cy, 19, Math.PI, 0); p.arc(cx, cy, 8, 0, Math.PI, true); p.closePath();
-  p.rect(cx - 19, cy - 1, 11, 400);
-  g.save(); g.globalAlpha *= a; cut(p, col, { sh: .5, grain: .2 }); g.restore();
+  const R = 21, r = 10, top = [cx - (R + r) / 2, cy], tip = [tipX, 1000];
+  const ang = Math.atan2(tip[0] - top[0], tip[1] - top[1]), len = Math.hypot(tip[0] - top[0], tip[1] - top[1]);
+  g.save(); g.globalAlpha *= a;
+  // crook: a thick half ring over the edge, its far end turned down and rounded off
+  const k = new Path2D();
+  k.arc(cx, cy, R, Math.PI, 0); k.lineTo(cx + R, cy + 12); k.arc(cx + (R + r) / 2, cy + 12, (R - r) / 2, 0, Math.PI);
+  k.lineTo(cx + r, cy); k.arc(cx, cy, r, 0, Math.PI, true); k.closePath();
+  cut(k, col, { sh: .5, grain: .25 });
+  // shaft, tapering, and the rubber tip
+  g.save(); g.translate(top[0], top[1]); g.rotate(-ang);
+  const w0 = (R - r) / 2 + .5, w1 = 4.5, sh = new Path2D();
+  sh.moveTo(-w0, -2); sh.lineTo(w0, -2); sh.lineTo(w1, len - 17); sh.lineTo(-w1, len - 17); sh.closePath();
+  cut(sh, col, { sh: .5, grain: .25 });
+  const f = new Path2D(); f.moveTo(-6, len - 19); f.lineTo(6, len - 19); f.lineTo(6.5, len - 3);
+  f.quadraticCurveTo(0, len + 1, -6.5, len - 3); f.closePath();
+  cut(f, tipCol, { sh: .3, grain: .15 });
+  g.restore(); g.restore();
 }
 function puppet(x, y, s, dir, spec, pose = {}) {
   const col = spec.col || C.navy, body = spec.bodyCol || col;
