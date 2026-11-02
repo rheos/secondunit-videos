@@ -20,6 +20,7 @@
       .layer { position: absolute; inset: 0; }
       .hide { opacity: 0; }
       .chrome { left: 44px; right: 44px; top: 52px; display: flex; justify-content: space-between; align-items: center; font-family: var(--mono); font-size: 23px; font-weight: 500; }
+      .hudp { background: rgba(13,17,23,.96); padding: 8px 14px; margin: -8px -14px; border-radius: 12px; }
       .bar { left: 44px; right: 44px; bottom: 50px; height: 3px; background: #1c2333; }
       .cap { left: 40px; right: 40px; top: 1156px; text-align: center; font-size: 40px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.15; white-space: nowrap; text-shadow: 0 2px 18px rgba(0,0,0,.9); }
       .cap .m { font-family: var(--mono); font-weight: 600; font-size: 0.9em; letter-spacing: -0.03em; }
@@ -60,7 +61,7 @@
         const TT = (str, t0, cps) => [...str].forEach((ch, k) => { if (ch !== " ") cue("type", t0 + k / cps); });
 
         // chrome: lockup, topic tag, progress
-        const chrome = mk("div", "abs chrome", "", stage, `<span><span style="color:var(--green)">~/</span>devweb</span><span style="color:var(--faint);font-size:20px">// tool names</span>`);
+        const chrome = mk("div", "abs chrome", "", stage, `<span class="hudp"><span style="color:var(--green)">~/</span>devweb</span><span class="hudp" style="color:var(--faint);font-size:20px">// tool names</span>`);
         const bar = mk("div", "abs bar");
         const barIn = mk("div", null, "height:3px;background:var(--green);transform-origin:left;transform:scaleX(0)", bar);
         F(barIn, { scaleX: 0 }, { scaleX: 1, duration: VO.END, ease: "none" }, 0);
