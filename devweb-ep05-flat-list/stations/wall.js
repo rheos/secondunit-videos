@@ -275,6 +275,24 @@ function copyAt(c, p) {
   return [x, yy + lift, zz, s];
 }
 
+// card 11's copy has its own route (supervisor 01 L4): the shared flight runs level at card 11's height, which on
+// screen is the memory tab's word, so the copy crossed "memory" and its name sat beside card 11's own. A copy fading
+// in on top of card 11 ghosts too (the card sways and sits 0.1 deeper, so the two names never register). This one
+// fades in lifted off card 11, in front of the column, its face in the band between card 10's name and card 11's
+// (LIFT_Y), runs right, eases down into the clear strip between ticket's bottom row and memory's tab word (CORRIDOR)
+// once it is past card 11's name, and only drops into the gap once it is right of the tab, past every label.
+// Same depart (T.rewrite) and landing (T.rewrite + FLIGHT). Checked by projection every 1/120 s at 122.16-123.06 with
+// world.js's camera keys of 1 Nov (no label within 10 px); re-check if the DP moves the 121.3-124.2 keys.
+const LIFT_Y = -8.47, CORRIDOR = -8.66;
+function copy11At(c, p) {
+  const pop = io(r01(p, 0, 0.15)), run = io(r01(p, 0.16, 0.5)), dn = io(r01(p, 0.6, 0.4));
+  const x = mix(mix(0, 0.15, pop), c.slot[0], run); // its { } chip clears card 10's while it fades
+  const y = mix(mix(LIFT_Y, CORRIDOR, io(r01(p, 0.26, 0.14))), c.slot[1], dn);
+  const z = mix(1.5, c.z, io(r01(p, 0.25, 0.5)));
+  const s = mix(mix(0.58, 0.68, pop), 0.42, io(r01(p, 0.2, 0.35)));
+  return [x, y, z, s];
+}
+
 export function update(t) {
   // the hook's hint
   const fw = w("folder", 1), ga = r01(t, 0.3, 0.3) * (1 - r01(t, T.say - 0.25, 0.4));
@@ -300,12 +318,12 @@ export function update(t) {
     const p = (t - c.dep) / FLIGHT;
     c.fb.mesh.visible = p >= 0;
     if (p < 0) return;
-    const [x, y, z, s] = copyAt(c, p);
+    const [x, y, z, s] = c.i === 11 ? copy11At(c, p) : copyAt(c, p);
     c.fb.mesh.position.set(x, y, z);
     const breath = p >= 1 ? 1 + 0.01 * Math.sin(t * 1.3 + c.i) : 1; // a held wide never freezes (ep 3)
     c.fb.mesh.scale.set(s * breath, s, s);
     c.fb.set({ n: c.i, name: c.i === 11 ? "memory_write" : NAMES[c.i], lit: 1, hot: q(r01(t, T.start3 + 0.12 * c.slot[2] + 0.15, 0.3) * ruleOff(t)) });
-    const a = r01(t, c.dep, 0.15);
+    const a = r01(t, c.dep, c.i === 11 ? 0.12 : 0.15); // 11 grows in as it fades, clear of every name
     fadeMat(c.fb.face, a); fadeMat(c.edge, a);
   });
 }
