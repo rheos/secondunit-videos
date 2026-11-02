@@ -82,18 +82,25 @@ const aimY = (y) => Math.max(-1.1, Math.min(0.7, (y - 0.24) / 1.4));
 // the "save this" card and the amber card as functions of t (Blink watches them, so both are computed up front)
 function saveAt(t) {
   const fall = io(r01(t, T.nothing1 + 0.1, T.there1 + 1.0 - T.nothing1 - 0.1));
-  const sway = 0.35 * Math.sin((t - T.nothing1) * 1.9) * fall;
+  // supervisor 01 L8: it slides out to the right as it tips, before it drops, so the whole fall stays clear of
+  // Blink's shoulder (x <= 1.05) and the column (x <= 1.23); a small sway, never back toward them
+  const drift = io(r01(t, T.nothing1 - 0.1, 1.0));
+  const sway = 0.07 * Math.sin((t - T.nothing1) * 1.9) * fall;
   const hold = 1 - fall; // the float while it waits (ep 3 hold rule)
-  return [mix(1.75, 2.5, fall) + sway, mix(1.15, -5.2, fall) + 0.025 * Math.sin((t / 2.3) * Math.PI * 2) * hold, mix(0.7, 1.9, fall), fall];
+  return [mix(1.75, 2.45, drift) + sway, mix(1.15, -5.2, fall) + 0.025 * Math.sin((t / 2.3) * Math.PI * 2) * hold, mix(0.7, 1.9, fall), fall];
 }
 function amberAt(t) {
   const a0 = T.recent1 + 0.4, a1 = T.saved1;
   const up = io(r01(t, a0, a1 - a0));
-  const ay = mix(cardY(12), -0.2, cl(up / 0.8)), side = cl((up - 0.8) / 0.2);
-  // out to Blink's left first, then up beside the visor: never across the face (the animatic's straight line was)
-  const xk = io(cl(side / 0.55)), yk = io(cl((side - 0.35) / 0.65));
+  // supervisor 01 L6: it leaves card 12 to the LEFT and climbs the gutter beside the column, so it never covers
+  // memory_recent (or any name on the way up); small while beside the cards, growing once above them, and it ends
+  // where the animatic put it, up beside Blink's left, never across the face
+  const y = mix(cardY(12), 1.15, up);
+  const s = mix(0.22, 1, io(cl((y + 4.0) / 5.15))); // its size (the card at full size is 1.7 x 1.05)
+  const h = io(cl((y + 1.8) / 1.6)); // 0 beside the column, 1 once it is above the ledge
+  const x = mix(-1.36 - 0.85 * s, -1.75, h); // right edge 0.13 clear of the card backers (x -1.23)
   const held = r01(t, a1, 0.4);
-  return [mix(0, -1.75, xk), mix(ay, 1.15, yk) + 0.025 * Math.sin(((t - a1) / 2.1) * Math.PI * 2) * held, mix(1.75, 0.7, xk), up, ay];
+  return [x, y + 0.025 * Math.sin(((t - a1) / 2.1) * Math.PI * 2) * held, mix(1.45, 0.7, h), up, y, s];
 }
 
 // ---------- Blink's performance: keyed tracks, eased between keys (ep 3) ----------
@@ -198,7 +205,7 @@ export function update(t) {
   amber.mesh.position.set(AM[0], AM[1], AM[2]);
   amber.mesh.rotation.set(0, 0, 0.02 * Math.sin(((t - T.saved1) / 2.7) * Math.PI * 2) * r01(t, T.saved1, 0.4));
   const aIn = r01(t, a0, 0.25), aOut = r01(t, T.why, 0.5);
-  amber.mesh.scale.setScalar(mix(0.2, 0.35, io(aIn)) * mix(1, 1 / 0.35, up) * mix(1, 0.92, aOut));
+  amber.mesh.scale.setScalar(mix(0.6, 1, io(aIn)) * AM[5] * mix(1, 0.92, aOut));
   fadeMat(amber.mesh.material, aIn * (1 - aOut));
   const lA = r01(t, a0, 0.15) * (1 - cl((up - 0.7) / 0.15));
   amberLight.visible = t >= a0 && lA > 0.001;
