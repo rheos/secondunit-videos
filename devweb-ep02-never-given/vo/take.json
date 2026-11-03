@@ -1,0 +1,31 @@
+{
+ "lines": [
+  [
+   "I",
+   "Telling your AI \"don't reveal secrets\" is a hope, not a guarantee."
+  ],
+  [
+   "II",
+   "By the time it reads that rule, it has already read the secret. Ask sideways, and it helpfully sums up the very file it was told to keep quiet."
+  ],
+  [
+   "III",
+   "The rule is a request. The context is a fact."
+  ],
+  [
+   "IV",
+   "So put the door before the model. Every file says who it's for. A loader checks that against who's asking, and drops everything else before a single word reaches the model."
+  ],
+  [
+   "V",
+   "That's the whole fix: load context, with a role. And a file with no label? It counts as private. Hiding it by mistake costs one quick edit. Sharing it by mistake can't be undone."
+  ],
+  [
+   "VI",
+   "Ask about a file it never got, and it just says: I don't have that. The model can't leak what it was never given."
+  ]
+ ],
+ "chars": 722,
+ "seconds": 47.84,
+ "sha256": "70257860f4405c185cbbdb07c6179f177b00f85cb9757d6d08582fd623506ca9"
+}
