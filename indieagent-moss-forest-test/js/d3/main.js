@@ -23,8 +23,8 @@ const MOTES = (() => { const R0 = rng(121), m = []; for (let i = 0; i < 150; i++
 function plane(c, r, t, a = 1, dx = 0) { planeT(X, r, t); X.globalAlpha = a; X.drawImage(c, -MX - dx, -MY); X.globalAlpha = 1; X.setTransform(1, 0, 0, 1, 0, 0); }
 
 // light shafts: beams fanning down from the sun; the same field lights the dust motes
-const BEAMS = [[1.0, .022, .6], [1.2, .04, 1], [1.38, .018, .55], [1.56, .05, .9], [1.8, .03, .8], [2.02, .045, .7], [2.3, .024, .5]];
-const beamI = (i, t) => BEAMS[i][2] * (.72 + .28 * Math.sin(t * .35 + i * 1.7));
+const BEAMS = [[1.0, .05, .9], [1.2, .04, 1], [1.38, .018, .55], [1.56, .05, .9], [1.8, .03, .8], [2.02, .045, .7], [2.3, .024, .5]];
+const beamI = (i, t) => (i === 0 ? Math.max(raysK(t), rayK(t) * 1.5) : raysK(t)) * BEAMS[i][2] * (.72 + .28 * Math.sin(t * .35 + i * 1.7));
 function shaftField(x, y, t) {
   const [sx, sy] = sunScreen(t), a = Math.atan2(y - sy, x - sx), d = Math.hypot(x - sx, y - sy); let v = 0;
   BEAMS.forEach(([b, w], i) => { const q = (a - b) / w; v += beamI(i, t) * Math.exp(-q * q); });
@@ -44,7 +44,7 @@ function shadeWedges(t, L) {
   const [sx, sy] = sunScreen(t).map((v) => v / 4), q = S3.getContext('2d'); q.filter = 'blur(3px)'; q.fillStyle = '#fff'; q.fillRect(-20, -20, 360, 220);
   for (let i = 0; i < BEAMS.length - 1; i++) {
     const a0 = BEAMS[i][0] + BEAMS[i][1] * 1.4, a1 = BEAMS[i + 1][0] - BEAMS[i + 1][1] * 1.4, rg = q.createRadialGradient(sx, sy, 8, sx, sy, 170);
-    rg.addColorStop(0, 'rgb(255,255,255)'); rg.addColorStop(.3, `rgb(${Math.round(255 - 82 * L)},${Math.round(255 - 60 * L)},${Math.round(255 - 66 * L)})`); rg.addColorStop(1, 'rgb(244,246,244)');
+    rg.addColorStop(0, 'rgb(255,255,255)'); rg.addColorStop(.3, `rgb(${Math.round(255 - 82 * L * raysK(t))},${Math.round(255 - 60 * L * raysK(t))},${Math.round(255 - 66 * L * raysK(t))})`); rg.addColorStop(1, 'rgb(244,246,244)');
     q.fillStyle = rg; q.beginPath(); q.moveTo(sx, sy); q.lineTo(sx + Math.cos(a0) * 300, sy + Math.sin(a0) * 300); q.lineTo(sx + Math.cos(a1) * 300, sy + Math.sin(a1) * 300); q.closePath(); q.fill();
   }
   q.filter = 'none';
@@ -114,9 +114,10 @@ function drawFrame(t) {
   plane(F.a, .14, t, .6, t * 5);
   plane(P.fmid, .22, t);
   plane(F.b, .30, t, .42, t * 7);
+  sunDisc(t, L);
   plane(P.mid, .40, t);
   plane(F.c, .48, t, .34, t * 9);
-  shadeWedges(t, L); sunDisc(t, L);
+  shadeWedges(t, L);
   plane(P.clear, .55, t);
   // the giant, on its own layer so the haze can sit on it
   G.setTransform(1, 0, 0, 1, 0, 0); G.clearRect(0, 0, W, H); planeT(G, .55, t);
@@ -128,6 +129,7 @@ function drawFrame(t) {
   X.drawImage(GC, 0, 0);
   plane(F.d, .6, t, .58, t * 11);
   shafts(t, L); motes(t, L);
+  flock(t); leaves(t, L);
   strands(t, L); plane(P.near, 1, t);
   grass(t, L);
   { const gy = X.createLinearGradient(0, 560, 0, 700); gy.addColorStop(0, css(fogRGB(700), 0)); gy.addColorStop(.5, css(fogRGB(700), .12)); gy.addColorStop(1, css(fogRGB(700), 0)); X.fillStyle = gy; X.fillRect(0, 560, W, 140); }

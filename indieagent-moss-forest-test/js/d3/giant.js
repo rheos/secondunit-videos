@@ -42,6 +42,7 @@ function mossMass(g, x0, x1, top, bot, seed = 1) {
     for (let i = 0; i < m; i++) p.quadraticCurveTo(ring[i][0] + dx, ring[i][1] + dy, ...mid(ring[i], ring[(i + 1) % m]));
     p.closePath(); return p; };
   const P0 = shape(); g.lineJoin = 'round';
+  { g.save(); g.globalCompositeOperation = 'source-atop'; g.fillStyle = 'rgba(28,20,26,.34)'; g.fill(shape(9, 4)); g.restore(); }
   g.lineWidth = 4; g.strokeStyle = CEL.mossLine; g.stroke(P0);
   g.fillStyle = css(CEL.mossS); g.fill(P0);
   g.save(); g.clip(P0);
@@ -57,7 +58,28 @@ function mossMass(g, x0, x1, top, bot, seed = 1) {
   }
   // tufts: small dark flecks that give it scale
   for (let i = 0; i < A * .9; i++) { const x = lerp(x0, x1, h2(i, 21, seed)), y = lerp(yMin, yMax, h2(i, 22, seed)); g.fillStyle = css(CEL.mossS, .8); g.beginPath(); g.ellipse(x, y, 2 + h2(i, 23, seed) * 3, 1.2, (h2(i, 24, seed) - .5), 0, TAU); g.fill(); }
+  for (let i = 0; i < A * .55; i++) { const x = lerp(x0, x1, h2(i, 31, seed)), y = lerp(yMin, yMax, h2(i, 32, seed)), r = 3 + h2(i, 33, seed) * 6, a0 = h2(i, 34, seed) * TAU, pts = []; for (let k = 0; k <= 6; k++) { const a = a0 + k / 6 * 2.2; pts.push([x + Math.cos(a) * r, y + Math.sin(a) * r * .65]); } ink(g, pts, 1.5, .3, 'rgba(24,38,32,.55)'); }
   g.restore();
+}
+function ink(g, pts, w0, w1, col = 'rgba(34,24,26,.72)') {
+  const n = pts.length - 1, L = [], R = [];
+  pts.forEach((q, i) => { const a = pts[Math.max(0, i - 1)], b = pts[Math.min(n, i + 1)], dx = b[0] - a[0], dy = b[1] - a[1], d = Math.hypot(dx, dy) || 1, k = i / n, w = lerp(w0, w1, k) * Math.sin(Math.PI * clamp(k * .92 + .06)) * .5 + .05; L.push([q[0] - dy / d * w, q[1] + dx / d * w]); R.push([q[0] + dy / d * w, q[1] - dx / d * w]); });
+  g.fillStyle = col; g.beginPath(); L.forEach((q, i) => (i ? g.lineTo : g.moveTo).call(g, q[0], q[1])); for (let i = n; i >= 0; i--) g.lineTo(R[i][0], R[i][1]); g.closePath(); g.fill();
+}
+function grain(g, x0, y0, x1, y1, n, seed) { // hand-drawn wood grain, cracks and scratches, running with the panel
+  for (let i = 0; i < n; i++) {
+    const x = lerp(x0, x1, h2(i, 1, seed)), y = lerp(y0, y1, h2(i, 2, seed)), len = 22 + h2(i, 3, seed) * 80, pts = [], heavy = h2(i, 4, seed) < .13;
+    for (let k = 0; k <= 8; k++) pts.push([x + 3.2 * Math.sin(k * .8 + i) * (k / 8), Math.min(y1, y + len * k / 8)]);
+    ink(g, pts, heavy ? 2.1 : 1, .3, heavy ? 'rgba(30,20,22,.62)' : 'rgba(34,24,26,.3)');
+  }
+}
+function flowers(g, list, seed) { // wildflowers in the moss: a stem, five flat petals, an inked edge
+  list.forEach(([x, y], i) => {
+    const c = hex(['#f4efe0', '#e9c64a', '#c0582f', '#f4efe0', '#d9a7c0'][(i + seed) % 5]), r = 2.6 + h2(i, 1, seed) * 2.2;
+    g.strokeStyle = css(CEL.mossS); g.lineWidth = 1.2; g.beginPath(); g.moveTo(x, y + 8); g.lineTo(x, y); g.stroke();
+    for (let k = 0; k < 5; k++) { const a = k / 5 * TAU + i; g.beginPath(); g.ellipse(x + Math.cos(a) * r * .8, y + Math.sin(a) * r * .65, r * .72, r * .45, a, 0, TAU); g.fillStyle = css(c); g.fill(); g.lineWidth = .7; g.strokeStyle = 'rgba(34,24,26,.5)'; g.stroke(); }
+    g.fillStyle = '#c9972f'; g.beginPath(); g.arc(x, y, r * .32, 0, TAU); g.fill();
+  });
 }
 function rrect(x, y, w, h, r) { const p = new Path2D(); p.roundRect(x, y, w, h, r); return p; }
 function celFill(g, p, base, line = CEL.line, lw = 4) { g.lineWidth = lw; g.strokeStyle = line; g.lineJoin = 'round'; g.stroke(p); g.fillStyle = css(base); g.fill(p); }
@@ -99,6 +121,10 @@ function bakeBody() {
   // fretwork in the upper panel: a row of tall slots, asymmetric under the moss
   g.fillStyle = css(CEL.woodD);
   for (let i = 0; i < 13; i++) { const x = -108 + i * 17.5; g.beginPath(); g.roundRect(x, -222, 7, 46, 3.5); g.fill(); }
+  // the moss mound's cast shadow across the top of the cabinet, and rain stains running down from it
+  g.fillStyle = 'rgba(28,20,28,.5)'; g.beginPath(); g.moveTo(-170, -260); g.lineTo(170, -260); g.lineTo(170, -212); for (let x = 170; x >= -170; x -= 14) g.lineTo(x, -218 + 9 * Math.sin(x * .05) + 5 * vn2(x * .1, 3, 9)); g.closePath(); g.fill();
+  for (let i = 0; i < 16; i++) { const x = -140 + h2(i, 1, 91) * 280, y = -214, l = 28 + h2(i, 2, 91) * 90; const gr = g.createLinearGradient(0, y, 0, y + l); gr.addColorStop(0, 'rgba(30,22,28,.34)'); gr.addColorStop(1, 'rgba(30,22,28,0)'); g.fillStyle = gr; g.fillRect(x, y, 3 + h2(i, 3, 91) * 9, l); }
+  grain(g, -148, -246, 148, -160, 76, 93); grain(g, -148, -104, 148, -2, 86, 95);
   // weathered patches: veneer gone, the grey core showing
   for (const [x, y, rx, ry] of [[62, -206, 30, 17], [-96, -58, 26, 20], [-30, -238, 16, 7]]) {
     const p = new Path2D(); for (let i = 0; i <= 18; i++) { const a = i / 18 * TAU, k = .78 + .3 * vn2(i * .7, x, 3); (i ? p.lineTo : p.moveTo).call(p, x + Math.cos(a) * rx * k, y + Math.sin(a) * ry * k); }
@@ -118,6 +144,10 @@ function bakeBody() {
   // pedals
   for (const x of [-16, 0, 16]) { g.fillStyle = css(CEL.rust); g.beginPath(); g.roundRect(x - 4, -16, 8, 10, 3); g.fill(); g.strokeStyle = CEL.inner; g.lineWidth = 1.2; g.stroke(); }
   g.restore();
+  // inked edge lines: thick to thin along the big shapes, so they read as drawn, not as a vector stroke
+  ink(g, [[-150, -208], [-146, -160], [-149, -120]], 3, 1); ink(g, [[150, -210], [147, -150], [150, -116]], 3.4, 1.2);
+  ink(g, [[-124, -166], [-30, -163.5], [124, -166]], 2.4, .9); ink(g, [[-118, -30], [10, -28], [118, -30]], 2.6, 1);
+  ink(g, [[146, -226], [180, -246], [208, -262]], 2.6, 1); ink(g, [[146, 0], [180, -8], [208, -18]], 3, 1);
   // key cheeks and the keybed shelf, in front of the cabinet
   for (const x of [-171, 141]) { const p = rrect(x, -164, 30, 60, 10); celFill(g, p, x > 0 ? CEL.woodS : CEL.wood); }
   const shelf = rrect(-174, -122, 348, 15, 5); celFill(g, shelf, CEL.wood);
@@ -142,6 +172,7 @@ function bakeBody() {
   mossMass(g, 138, 178, (x) => -128, (x) => -106, 15);
   for (let i = 0; i < 4; i++) frond(g, -146, -236, 46 + R0() * 26, -2.2 - i * .38, .9 + R0() * .3, R0);
   frond(g, 150, -236, 38, -1.0, -.8, R0);
+  flowers(g, [[-160, -190], [-136, -150], [-128, -40], [-92, -24], [118, -226], [176, -218], [150, -176], [180, -14]], 2);
   return { c, rim: rimOf(c, 3, 5) };
 }
 function bakeLid() {
@@ -151,6 +182,7 @@ function bakeLid() {
   const crest = (x) => -268 - 40 * Math.exp(-Math.pow((x + 30) / 130, 2)) - 22 * Math.exp(-Math.pow((x - 140) / 60, 2)) - 12 * Math.exp(-Math.pow((x + 130) / 40, 2));
   mossMass(g, -186, 216, crest, (x) => -236 + 14 * Math.sin(x * .021), 21);
   mossMass(g, -150, 40, (x) => crest(x) + 8, (x) => -258 + 6 * Math.sin(x * .05), 23);
+  flowers(g, [[-150, -274], [-96, -300], [-58, -292], [-12, -304], [26, -298], [70, -284], [112, -272], [152, -278], [188, -266], [-34, -256], [64, -246]], 0);
   for (let i = 0; i < 3; i++) frond(g, -96 + i * 10, -296, 40 + R0() * 18, -1.9 - i * .45, .7, R0);
   return { c, rim: rimOf(c, 3, 5) };
 }
@@ -162,7 +194,7 @@ function bakeCrown() {
   return { c, rim: rimOf(c, 2, 3) };
 }
 // sleep blankets: the big sheets of moss that cover the front while it sleeps and slide off as it wakes
-const SHEETS = [{ x0: -128, x1: 74, y0: -244, y1: -160, tf: 3.25, seed: 41 }, { x0: -60, x1: 150, y0: -160, y1: -118, tf: 3.75, seed: 45 }, { x0: -70, x1: 140, y0: -104, y1: -26, tf: 5.7, seed: 43 }];
+const SHEETS = [{ x0: -128, x1: 74, y0: -244, y1: -160, tf: 4.05, seed: 41 }, { x0: -60, x1: 150, y0: -160, y1: -118, tf: 4.15, seed: 45 }, { x0: -70, x1: 140, y0: -104, y1: -26, tf: 5.7, seed: 43 }];
 function bakeSheets() {
   for (const q of SHEETS) {
     const w = q.x1 - q.x0 + 40, h = q.y1 - q.y0 + 50, c = canvas(w, h), g = c.getContext('2d'); g.translate(20 - q.x0, 25 - q.y0);
@@ -184,6 +216,7 @@ function rise(t) {
   return lerp(1.03, 1, ease.sine(inv(T.rise1, T.settle, t)));
 }
 function pose(t) {
+  t = Math.floor(t * 12 + 1e-6) / 12; // the giant is animated on twos, 12 drawings a second, while the camera runs on ones
   const r = rise(t), stand = smooth(inv(.3, 1, r));
   const s1 = ease.inOut(inv(9.2, T.lean1, t)), b1 = ease.inOut(inv(10.0, 11.3, t)), b2 = ease.inOut(inv(11.7, 12.9, t));
   const heave = 4 * Math.sin(Math.PI * inv(T.stir, 3.9, t)) + 2.5 * Math.sin(Math.PI * inv(4.3, 5.0, t));
@@ -247,9 +280,17 @@ function drawGiant(g, t, L) {
   g.save(); g.translate(p.bx, p.by); g.rotate(p.th);
   if (p.lid > .3) {
     g.fillStyle = css(CEL.dark); g.fillRect(-146, -252 - p.lid, 292, p.lid + 6);
-    g.strokeStyle = css(CEL.gold, .7); g.lineWidth = 1.2; for (let x = -140; x < 140; x += 6) { g.beginPath(); g.moveTo(x, -250 - p.lid); g.lineTo(x + 1, -248); g.stroke(); }
+    g.strokeStyle = css(mixc(CEL.gold, hex('#fff0c0'), glowK(t)), .7 + .3 * glowK(t)); g.lineWidth = 1.2; for (let x = -140; x < 140; x += 6) { g.beginPath(); g.moveTo(x, -250 - p.lid); g.lineTo(x + 1, -248); g.stroke(); }
   }
   g.drawImage(BODY.c, -GO.x, -GO.y);
+  // the glow inside: the fret slots light up from behind, then the keys, then the air around the panel
+  { const gk = glowK(t), lt = mixc(hex('#f09a38'), hex('#ffd98a'), gk);
+    if (gk > .01) {
+      for (let i = 0; i < 13; i++) { const x = -108 + i * 17.5; const a = gk * (.72 + .28 * vn2(i * .7, t * 3, 211)), sg = g.createLinearGradient(0, -222, 0, -176); sg.addColorStop(0, css(mixc(lt, hex('#c8642a'), .55), a)); sg.addColorStop(.55, css(lt, a)); sg.addColorStop(1, css(mixc(lt, hex('#c8642a'), .4), a)); g.fillStyle = sg; g.beginPath(); g.roundRect(x, -222, 7, 46, 3.5); g.fill(); }
+      g.save(); g.globalCompositeOperation = 'lighter';
+      const rg = g.createRadialGradient(0, -196, 8, 0, -196, 165); rg.addColorStop(0, css(hex('#ff9d3a'), .38 * gk)); rg.addColorStop(1, css(hex('#ff9d3a'), 0)); g.fillStyle = rg; g.fillRect(-170, -260, 340, 170);
+      g.fillStyle = css(hex('#ff9d3a'), .16 * gk * p.fb); g.fillRect(-140, -150, 280, 28); g.restore();
+    } }
   // fallboard: closed over the keys, it folds up and back as it opens
   { const k = p.fb, top = -154 - 12 * k, h = 33 * (1 - k) + 9 * k, fbp = rrect(-143, top, 286, h, 3);
     celFill(g, fbp, CEL.wood, CEL.line, 3);
@@ -292,6 +333,12 @@ function drawGiant(g, t, L) {
     g.save(); g.translate(x0 + 14 * d + (q.seed % 2 ? 26 : -26) * d, y); g.rotate(((q.seed % 2 ? .22 : -.2)) * Math.min(1, d / tl)); g.scale(lerp(1, 1.06, land), lerp(1, .46, land));
     g.drawImage(q.c, -q.w / 2, -q.h / 2); g.restore();
   }
+  soil(g, t);
+  shoulderBird(g, t);
+  // the first ray: a warm pool on the sun-side shoulder, wrapped to the giant's shape
+  { const k = rayK(t) * (1 - .55 * smooth(inv(6, 9.5, t))); if (k > .01) { const [x, y] = toW(p, -60, -270 - p.lid), rg = g.createRadialGradient(x, y, 0, x, y, 210);
+    rg.addColorStop(0, css(hex('#fff0b4'), .85 * k)); rg.addColorStop(.5, css(hex('#ffe08c'), .36 * k)); rg.addColorStop(1, css(hex('#ffe08c'), 0));
+    g.save(); g.globalCompositeOperation = 'source-atop'; g.fillStyle = rg; g.fillRect(x - 210, y - 210, 420, 420); g.restore(); } }
   // dust and spores kicked up at each plant
   for (const [tp, f] of [[T.lPlant, p.fl], [T.rPlant, p.fr]]) {
     const k = inv(tp, tp + 1.1, t); if (k <= 0 || k >= 1) continue;

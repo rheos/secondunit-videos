@@ -33,16 +33,22 @@ const SUN = { x: 662, y: 214 };
 const fogRGB = (x) => mixc(FOG_WARM, FOG_COOL, smooth(Math.abs(x - SUN.x) / 720));
 
 // ---- light arc and camera ----
-const lightK = (t) => lerp(.62, 1, smooth(t / 11));
+const lightK = (t) => lerp(.55, 1, smooth(t / 11));
 const camX = (t) => 2.6 * t + 30 * smooth(t / 15);
 const push = (t) => .04 * ease.sine(t / 15);
 const PIV = { x: 640, y: 420 };
 // world -> screen for a plane of parallax rate r: s = PIV + sc * (w - cam*r - PIV)
-function planeT(ctx, r, t) {
-  const sc = 1 + push(t) * r;
-  ctx.setTransform(sc, 0, 0, sc, PIV.x - sc * (PIV.x + camX(t) * r), PIV.y - sc * PIV.y);
+// the ground trembles: before it rises, less during the rise, a thud on each planted foot
+function shake(t) {
+  let a = 2.8 * smooth(inv(4.7, 5.0, t)) * (1 - smooth(inv(5.5, 6.6, t))) + .7 * smooth(inv(5.5, 6.2, t)) * (1 - smooth(inv(8.2, 8.8, t)));
+  for (const tp of [262 / 24, 302 / 24]) if (t >= tp) a += 3.2 * Math.exp(-(t - tp) * 7);
+  return [a * (vn2(t * 15, .5, 201) - .5) * 1.6, a * (vn2(t * 17, .5, 203) - .5) * 2.2];
 }
-function toScreen(r, t, x, y) { const sc = 1 + push(t) * r; return [PIV.x + sc * (x - camX(t) * r - PIV.x), PIV.y + sc * (y - PIV.y)]; }
+function planeT(ctx, r, t) {
+  const sc = 1 + push(t) * r, [dx, dy] = shake(t);
+  ctx.setTransform(sc, 0, 0, sc, PIV.x - sc * (PIV.x + camX(t) * r) + dx, PIV.y - sc * PIV.y + dy);
+}
+function toScreen(r, t, x, y) { const sc = 1 + push(t) * r, [dx, dy] = shake(t); return [PIV.x + sc * (x - camX(t) * r - PIV.x) + dx, PIV.y + sc * (y - PIV.y) + dy]; }
 const sunScreen = (t) => toScreen(.03, t, SUN.x, SUN.y);
 
 function canvas(w, h) { const c = document.createElement('canvas'); c.width = w; c.height = h; return c; }

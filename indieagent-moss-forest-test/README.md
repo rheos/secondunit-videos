@@ -27,12 +27,12 @@ MEDIUM: background = gouache: brush-dab clusters (ellipses 3-22 px, 2-3 overlapp
       Giant = cel: 2 flat tones per material (base + one shadow shape) and a rim, a soft dark outline (alpha .55,
       2.5 px) only on the silhouette and the big shapes, no texture noise on it.
 LIGHT: bright sky and deep darks, measured off the reference (see "Corrected after the first sheets"): mean luma
-      130-150, p10 <= 65, p50 130-155, p90 >= 205, 45-55% of pixels lighter than 140, mean saturation .24-.30.
+      130-150, p10 <= 65, p50 130-155, p90 >= 205, 45-58% of pixels lighter than 140, mean saturation .24-.30.
       Sun at screen (662, 214), behind the giant's left shoulder once it stands. Sky: pale blue #a9cbd8 at the top
       to cream-gold #fff1c8 at the sun; 3 peach-pink cloud bands (#f2b8a0, #f6cdb2). Shafts: 7 beams fanning down
       from the sun, screen-blended, peak alpha .22; bloom = 1/4-size copy, contrast 2.6, blur 6 px, screen at .13 x L.
       Dust motes: 140, brightness from the shaft field, never visible outside a beam above alpha .15.
-      Light arc L: .62 (0 s) -> 1.0 (11 s), smooth; sun glow, shafts, rim light and bloom read L.
+      Light arc L: .55 (0 s) -> 1.0 (11 s), smooth; sun glow, shafts, rim light and bloom read L.
 DEPTH (back to front, parallax rate): sky .03 | far forest .10 | fog | far-mid .22 | fog | mid .40 | ground fog |
       giant + clearing .55 | ground fog over the giant's feet | shafts, motes | near trunks + canopy 1.0 | grass 1.15.
       Aerial perspective: each plane is tinted toward the fog colour by depth: far 62%, far-mid 44%, mid 24%,
@@ -61,6 +61,25 @@ QA: sheet of the reference beside d3 at 6 times; d3 sheet at 1, 4, 6.5, 9, 11, 1
       4, 7, 10.9, 14 s and of the near plane at 2, 8, 13 s from full-size frames; motion-lab audit on all 360 frames
       (audit-d3.spec.mjs); badframes on the mp4; luma numbers above measured, not eyeballed; then watch it.
 ```
+
+### Beats added from the source thread
+
+The author's own posts (x.com/chetaslua/status/2117171617835143611) say the clip was painted offline by the model's
+own Python and C++, frame seconds not milliseconds, and encoded to video. That reached this session after the first
+build, along with the prompt's beats. Added on top of the rise and the step, all in `js/d3/life.js`:
+
+```text
+0.70-1.75 s  a small bird flies in, lands on the moss at the sun-side shoulder; looks about, hops at 3.55
+2.30-3.10 s  the first ray: one beam comes on and lands a warm pool on that shoulder; other beams wait, 16% until 3.1 s
+2.9-3.8 s    three weak flickers behind the fret slots, seen where the moss doesn't cover them
+3.95-5.1 s   the glow catches and holds; the moss sheets fall at 4.05, 4.15 and 5.7 s and reveal it
+4.70-5.60 s  the ground trembles (camera, up to 2.8 px); the bird leaves at 4.75; 22 birds leave the treetops from 4.85
+5.1-9.3 s    900 grains of soil and moss pour off from 7 spouts, dust where they land; thuds on both plants
+5-15 s       leaves spiral down, brightening inside a beam
+```
+
+The giant now runs on twos (12 drawings a second, camera and particles on ones), the way theatrical cels do. It has
+tapered ink strokes, wood grain and cracks, cast shadows from the moss, rain stains, and wildflowers in the moss.
 
 ### Corrected after the first sheets
 
@@ -94,6 +113,35 @@ pale frame. The numbers above are the measured ones, and the grade was redone to
 - A ruled rim line down a trunk: light on trunks is broken up along their length
 - Fog thick enough to hide the feet: the step is the main action, so the fog over them is 58%, not 92%
 - Bloom and fog as the way to look bright: they wash the frame out. Keep the darks at the measured p10
+
+### Review (d3, 2026-11-03)
+
+Route: an offline-style painter in canvas2d, rendered headless, no 3D. About 230 ms a frame and 16 s to load the
+page's baked planes. A full render is 50 s with 4 workers on this Intel Mac, with no image or video model and 0 credits.
+
+- Motion-lab audit, all 360 frames (`audit-d3.spec.mjs`): giant in frame, feet 0 px slide while down, planted feet on
+  the floor, `lidOpen` f110, `plantL` f262, `plantR` f302. All pass.
+- `badframes.py` 0 of 360. `flashcheck.py` passes, worst 0.5 flashes a second. A frame drawn out of order is
+  byte-identical, so drawFrame is pure.
+- Measured off the rendered mp4 at f24, f216, f348: mean 134-144, p10 57-62, p50 136-153, p90 205-213, 48-57% over
+  140, saturation .28-.29. Reference: mean 130-141, p10 52-63, p50 129-137, p90 211-224, 44-48%, saturation .24-.29.
+  Ours sits a little brighter in the mid-tones.
+- Side by side: `out/mossforest_d3_side-by-side_ref-vs-d3.jpg`. Reference frames are only 320-400 px wide, so fine
+  detail in them can't be judged. Motion was judged from frame sheets only, not watched at speed.
+
+What still differs from the reference:
+
+- Silhouette: its giant is a complex figure with limbs and a broken outline. Ours is a box with moss on it, and two
+  stubby legs. It reads as a piano, which is the idea, but it has far less drawing in it.
+- Foliage: its near leaves are a dense fine scatter; ours are larger gouache clumps, softer and more storybook.
+- Trunks: its trunks lean and fork, dappled with light; ours are straighter and more regular, so the forest is tidier.
+- Colour on the giant: its weathered grey stone and red accents have more range than our brown wood and green moss.
+- The moss sheet that lands in front of the feet reads as a flat mat, not a heap.
+- It may still read as a moving illustration: backgrounds are baked plates and the camera is a clean slide. The next
+  step up, if Robin wants it, is a slower per-frame painter or a 3D giant with an ink pass, which the source thread
+  shows is legitimate.
+
+No sound yet: the thread's film has a synthesised score; a creak, the step thuds and one held note would help.
 
 ## Draft 2 (pixel art, rejected)
 
@@ -206,6 +254,16 @@ too few to read at 720p; and there is no sound (a step thud, falling clods and o
 fallboard opens would make the wake).
 
 ## Build and render
+
+Draft 3:
+
+```bash
+PAGE=d3.html node check.mjs out/check/sheet.jpg 1 4 6.5 9 11 14.5
+node ../tools/motion-lab/audit.mjs d3.html 0 15 --spec audit-d3.spec.mjs --width 1280 --height 720
+nice -n 15 node ../tools/motion-lab/render.mjs d3.html 0 15 out/mossforest_test_f0-f360_24fps_review-720p_dN.mp4 --width 1280 --height 720
+```
+
+Draft 2:
 
 Playwright comes from a sibling look (`ln -s ../bobwiseman-airplane-16bit/node_modules node_modules`, not committed).
 

@@ -1,8 +1,8 @@
 slug: moss-forest
-title: Painted pixel forest
+title: Painted forest with a cel giant
 note: >-
-  A deep forest drawn at 320x180 in dithered pixels, layered in parallax through warm haze and light shafts, where
-  a moss-covered upright piano wakes up and takes a step.
+  A hand-painted forest in parallax, gouache foliage and warm mist with the sun behind the subject, and a flat-shaded,
+  inked giant standing in it: an upright piano the forest grew over, which wakes, glows from inside and takes a step.
 used: Moss forest, look test
 cost: free
 group: code
@@ -13,42 +13,42 @@ status: test
 engine: canvas2d
 project: indieagent-moss-forest-test
 code:
-  path: indieagent-moss-forest-test/js/forest.js
+  path: indieagent-moss-forest-test/js/d3/paint.js
   flag: null
-  page: indieagent-moss-forest-test/index.html
+  page: indieagent-moss-forest-test/d3.html
   note: >-
-    js/px.js is the 16bit look's indexed pixel engine, copied unchanged. js/core.js holds the palette (59 base
-    colours plus LIGHT, LIGHT2 and FOG blends, 150 entries) and the remap tables; js/forest.js the camera, the
-    baked planes, sky, haze, shafts, spores and leaves; js/piano.js the giant (baked cabinet and moss sprites, IK
-    legs, clods, mound, dust); js/main.js the frame order and the palette fade. README has the numbers brief.
+    js/d3/base.js holds time, camera and fog colour; paint.js the baked planes (brush dabs, trunks, aerial tint, depth
+    blur); giant.js the cel piano (moss blankets, ink, pose on twos); life.js the bird, first ray, inner glow, soil,
+    flock and leaves; main.js the frame order, shafts and bloom. README has the numbers brief, measured off the
+    reference. Draft 2's pixel version (index.html, js/*.js) stays beside it, rejected.
 rules:
-  - Draw into an indexed 320x180 buffer and blow it up x4 nearest-neighbour; every element at 1x, whole-pixel positions, no rotation
-  - Foliage and moss are ragged clumps lit per pixel from the sun direction plus value noise, quantized to a 4-7 step ramp with a Bayer threshold
-  - Many planes, each baked once and blitted at round(camera x rate) - sky 0.05, far 0.12, far-mid 0.25, mid 0.42, clearing 0.6, near 1.0, foreground 1.5
-  - Atmosphere is palette remaps by dither - FOG for haze bands (densest at the sun), LIGHT2/LIGHT for shafts fanning from the sun, DARK for shadows
-  - One light arc as a palette fade (dim and muted to full warm gold); rim colours switch on in short runs as the sun climbs
-  - Backlit - the sun sits behind the subject, front faces stay dark, rims and lid moss catch the light
-  - The giant moves in whole poses with feet planted (two-bone IK to fixed floor points, 0 px slide), follow-through on its sapling and hanging moss
+  - Background is painted, not drawn - clumps of overlapping brush dabs lit from the sun side, baked once per plane
+  - Every plane further back is blurred more and tinted further toward the fog colour (56%, 38%, 20%, 8% on the giant)
+  - Bright sky and deep darks - match the reference's measured values (mean luma 130-150, p10 under 65), never pale all over
+  - The sun sits behind the subject; shafts read because the air between them is shaded, not because they are bright
+  - The creature is a cel - flat tones, one shadow shape, cast shadows, tapered ink lines, a backlit rim, no paint texture
+  - Moss is one blanket shape with a scalloped hem and flat patches, never stacks of lit balls
+  - The creature moves on twos in whole poses with planted feet; camera and particles run on ones
+  - No face on the creature; nothing that reads as teeth or fingers
 palette:
-  - "#fff8e6"
-  - "#f3d09a"
-  - "#d39469"
-  - "#989c70"
-  - "#46552e"
-  - "#10170a"
-  - "#7c9e31"
-  - "#e6c87a"
-  - "#58341f"
-  - "#e6dcba"
+  - "#7fb2cc"
+  - "#f6cf8e"
+  - "#f0b49e"
+  - "#123430"
+  - "#4c7434"
+  - "#b9cf52"
+  - "#6f5548"
+  - "#463c44"
+  - "#b4532f"
+  - "#ffd98a"
 reference: >-
-  chetaslua's "pure code" forest film (x.com/chetaslua/status/2117169796290916732): the vocabulary only (low-res
-  painted pixels, planes of trees in haze, shafts, a mossy giant). Its robot is not copied; ours is a piano.
+  chetaslua's code film (x.com/chetaslua/status/2117169796290916732; method in .../2117171617835143611): the manner
+  only, painted anime background and a cel giant. Its robot is not copied, and no frame of it or of any studio film is.
 proof:
   renders:
-    - indieagent-moss-forest-test/out/mossforest_test_f0-f360_24fps_review-720p_v2.mp4
+    - indieagent-moss-forest-test/out/mossforest_test_f0-f360_24fps_review-720p_d3.mp4
   pr:
     - rheos/secondunit-videos#397
   youtube: []
 verdict: null
-related:
-  - 16bit
+related: []
