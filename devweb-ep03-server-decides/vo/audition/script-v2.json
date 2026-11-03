@@ -1,0 +1,29 @@
+{
+ "lines": [
+  [
+   "I",
+   "You can ask an AI to be careful with your data. Or you can just not let it choose whose data it touches."
+  ],
+  [
+   "II",
+   "Think of a withdrawal slip. You can write any account number you like. The bank still pays out of the card you swiped."
+  ],
+  [
+   "III",
+   "An AI that saves a note for you sends the app a request: what to save, and where it goes. Let it fill in the where, and one wrong guess, or one sneaky request, puts your note in someone else's account."
+  ],
+  [
+   "IV",
+   "Asking it to be careful won't stop that. The app can. It ignores the account the AI wrote and uses whoever is signed in. Send it a request naming someone else's account, and the write still lands in yours. Theirs isn't touched."
+  ],
+  [
+   "V",
+   "One real memory tool takes six fields from the AI. Which conversation the memory belongs to isn't one of them. The server looks that up itself."
+  ],
+  [
+   "VI",
+   "Let the AI decide what. Let the app decide whose."
+  ]
+ ],
+ "facts": "Script v2 (Robin, 2026-10-30, after draft 1: 'no clue what this one is even talking about'; he chose a plain rewrite). II is an analogy, not a claim. III: where-logic-lives, rules that must hold 'if the caller is hostile' and a server that 'does not stop a buggy or hostile client from sending inconsistent identifiers' unless the identifier is derived; mcp-tool-design, a model 'has decent reason to think' chat_id belongs in write_memory (the wrong guess). IV: where-logic-lives, 'enforce it in service code or policy at the data-owning boundary'; workspace from the signed-in context, from the systems repo's storage-routing test (S12): a payload naming workspace B 'lands its write in workspace A (the context's) and leaves B unchanged'. V: mcp-tool-design, write_memory 'declares six properties and requires all six. chat_id is not among them', and its description 'chat_id is NOT an input, it is derived server-side from source_turn_id'. VI: where-logic-lives, 'Let the model choose among safe actions. Reject unsafe states at a boundary the model cannot waive.' Not claimed: that the chat_id derivation gives per-user authorization or tenant isolation (the article says it does not); the account/workspace claim rests on the S12 test only. Draft 1's script and take are kept in vo/audition/."
+}

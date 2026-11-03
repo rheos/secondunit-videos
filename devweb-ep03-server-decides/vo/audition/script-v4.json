@@ -1,0 +1,29 @@
+{
+ "lines": [
+  [
+   "I",
+   "If your AI's tools take a user ID as an argument, you've already written the bug."
+  ],
+  [
+   "II",
+   "The model fills in every argument. So one wrong guess, or one hostile request, can point that tool at someone else's data."
+  ],
+  [
+   "III",
+   "This isn't hypothetical. In 2025, Asana took its AI connector offline for nearly two weeks after finding a bug that could expose data to other organizations."
+  ],
+  [
+   "IV",
+   "The fix is to take the field away. Who's asking comes from the session, not the arguments. Send a request naming someone else's account, and the server writes to yours anyway. Theirs isn't touched."
+  ],
+  [
+   "V",
+   "One real memory tool works this way. Six fields, all required, and the conversation ID isn't one of them. Its description tells the model why: the server derives it."
+  ],
+  [
+   "VI",
+   "Let the model choose what. Let the server decide whose."
+  ]
+ ],
+ "facts": "Script v4 (Robin, 2026-10-30: the channel is for people developing with AI; no abstract concepts nobody will deal with). Framed as a builder's rule: no identity or scope fields in a tool's input schema. I-II: where-logic-lives, rules must hold 'if a prompt is missed, the model is confused, or the caller is hostile'; 'the caller could not send a source-turn identifier and independently pair it with an arbitrary chat_id'; mcp-tool-design, a model has 'decent reason to think' chat_id belongs in write_memory. III: stakes only, NOT a claim about Asana's cause (Asana has not stated one). BleepingComputer and The Register, 2025-06-18: launched May 1, found June 4, offline June 5 to 17; Asana to customers: 'this bug could have potentially exposed certain information from your Asana domain to other Asana MCP users.' IV: systems repo storage-routing test (S12): identity and routing come 'from the authenticated context and from nothing a caller supplies'; a payload naming workspace B 'lands its write in workspace A (the context's) and leaves B unchanged'. V: mcp-tool-design: write_memory 'declares six properties and requires all six. chat_id is not among them'; its description: 'chat_id is NOT an input, it is derived server-side from source_turn_id.' VI: where-logic-lives: 'Let the model choose among safe actions. Reject unsafe states at a boundary the model cannot waive.' YouTube description cites the two news articles and the two devweb articles. Earlier scripts in vo/audition/."
+}

@@ -1,0 +1,35 @@
+{
+ "lines": [
+  [
+   "I",
+   "You'd never trust a user ID sent from a browser form. So why trust the one your AI typed?"
+  ],
+  [
+   "II",
+   "It's an easy mistake. You give your AI a tool, copy your existing API, so the tool takes a user ID, and you tell the model the user's ID in the prompt. Then the model fills it in."
+  ],
+  [
+   "III",
+   "But the model writes every argument. One wrong guess, or one hostile instruction, and your tool saves to someone else's account."
+  ],
+  [
+   "IV",
+   "Getting whose data wrong is real. In 2025, Asana pulled its AI connector for nearly two weeks after finding a bug that could expose data to other organizations."
+  ],
+  [
+   "V",
+   "The fix is the one you already use on the web. The server takes the user from the login, never from the request. The tool just doesn't have a user ID box."
+  ],
+  [
+   "VI",
+   "One real memory tool is built this way. Six fields, all filled in by the AI, and which conversation the memory belongs to isn't one of them."
+  ],
+  [
+   "VII",
+   "Treat your AI like a browser. Never trust the ID it sends."
+  ]
+ ],
+ "chars": 914,
+ "seconds": 60.0,
+ "sha256": "3ffd1f3a9581a7daecb57636561328169cf11631f68e6153b7f649dedbff73da"
+}

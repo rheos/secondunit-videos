@@ -1,0 +1,31 @@
+{
+ "lines": [
+  [
+   "I",
+   "If your AI's tools take a user ID as an argument, you've already written the bug."
+  ],
+  [
+   "II",
+   "The model fills in every argument. So one wrong guess, or one hostile request, can point that tool at someone else's data."
+  ],
+  [
+   "III",
+   "This isn't hypothetical. In 2025, Asana took its AI connector offline for nearly two weeks after finding a bug that could expose data to other organizations."
+  ],
+  [
+   "IV",
+   "The fix is to take the field away. Who's asking comes from the session, not the arguments. Send a request naming someone else's account, and the server writes to yours anyway. Theirs isn't touched."
+  ],
+  [
+   "V",
+   "One real memory tool works this way. Six fields, all required, and the conversation ID isn't one of them. Its description tells the model why: the server derives it."
+  ],
+  [
+   "VI",
+   "Let the model choose what. Let the server decide whose."
+  ]
+ ],
+ "chars": 782,
+ "seconds": 53.44,
+ "sha256": "067181aa9e3a2c381c1c81367c0c86becfc8ab76b3247aa5a808941bb4e7abaf"
+}

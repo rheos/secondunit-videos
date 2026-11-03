@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en" data-resolution="portrait">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@500;700&display=block" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script src="vo/words.js"></script>
+    <script src="kit/blink-geo.js"></script>
+    <script type="importmap">
+      { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.181.2/build/three.module.js", "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.181.2/examples/jsm/" } }
+    </script>
+    <style>
+      :root { --bg: #0d1117; --text: #eef2f6; --text2: #c9d1d9; --muted: #9aa6b6; --faint: #7b8593; --green: #6ad08a; --blue: #4f93d6; --amber: #d6a45a; --red: #e0675a; --sans: "IBM Plex Sans", sans-serif; --mono: "IBM Plex Mono", monospace; }
+      html, body { margin: 0; background: var(--bg); }
+      #root { position: relative; width: 1080px; height: 1920px; overflow: hidden; color: var(--text); font-family: var(--sans); background: var(--bg); }
+      .abs { position: absolute; }
+      .layer { position: absolute; inset: 0; }
+      .hide { opacity: 0; }
+      .chrome { left: 44px; right: 44px; top: 52px; display: flex; justify-content: space-between; align-items: center; font-family: var(--mono); font-size: 23px; font-weight: 500; }
+      .bar { left: 44px; right: 44px; bottom: 50px; height: 3px; background: #1c2333; }
+      .cap { left: 40px; right: 40px; top: 1060px; text-align: center; font-size: 44px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.15; text-shadow: 0 2px 18px rgba(0,0,0,.8); }
+      .step { font-size: 86px; font-weight: 700; letter-spacing: -0.04em; text-shadow: 0 4px 30px rgba(0,0,0,.7); }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="65" data-width="1080" data-height="1920">
+      <audio id="mix" src="_in/mix.wav" data-start="0" data-duration="65" data-track-index="20" data-volume="1"></audio>
+      <!-- the world: one Three.js scene, one camera (oner.js) -->
+      <canvas id="world" width="1080" height="1920" style="position:absolute;left:0;top:0;width:1080px;height:1920px"></canvas>
+      <!-- the type is authored on a 720x1280 stage and scaled 1.5x as vectors; the 3D renders natively at 1080x1920 -->
+      <div id="scale" style="position:absolute;left:0;top:0;width:720px;height:1280px;transform:scale(1.5);transform-origin:0 0">
+      <div class="layer" style="pointer-events:none;background:radial-gradient(110% 70% at 50% 50%, rgba(13,17,23,0) 55%, rgba(9,12,17,.75) 100%)"></div>
+      <div class="layer" style="pointer-events:none;background:linear-gradient(rgba(13,17,23,0) 78%, rgba(13,17,23,.85) 92%)"></div>
+      <div id="stage" class="layer"></div>
+      <div class="layer" style="pointer-events:none;opacity:.06;mix-blend-mode:overlay;background-image:url(&quot;data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='160' height='160' filter='url(%23n)'/></svg>&quot;)"></div>
+      </div>
+    </div>
+
+    <script>
+      (() => {
+        const tl = gsap.timeline({ paused: true });
+        const stage = document.getElementById("stage");
+        window.BP = window.BP || {};
+        BP.CUES = BP.CUES || [];
+        const cue = (k, t, extra) => BP.CUES.push(Object.assign({ k, t: +t.toFixed(3) }, extra || {}));
+        const w = (word, n) => VO.w(word, n);
+        const e = (word, n) => VO.e(word, n);
+        const F = (el, from, to, at) => tl.fromTo(el, from, Object.assign({ immediateRender: false }, to), at);
+        const mk = (tag, cls, css, parent, html) => { const n = document.createElement(tag); if (cls) n.className = cls; if (css) n.style.cssText = css; if (html != null) n.innerHTML = html; (parent || stage).appendChild(n); return n; };
+        const show = (el, at, d = 0.3, y = 18) => F(el, { opacity: 0, y }, { opacity: 1, y: 0, duration: d, ease: "power3.out" }, at);
+        const hide = (el, at, d = 0.3) => F(el, { opacity: 1 }, { opacity: 0, duration: d, ease: "power2.in" }, at);
+        const rise = (el, at, d = 0.45) => F(el, { opacity: 0, y: 26, filter: "blur(10px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: d, ease: "power3.out" }, at);
+        const slam = (el, at, from = 1.6) => { cue("slam", at + 0.16); return F(el, { opacity: 0, scale: from, rotate: -4 }, { opacity: 1, scale: 1, rotate: 0, duration: 0.3, ease: "back.out(1.6)" }, at); };
+        // snapped to the voice's onsets; oner.js uses the same times
+        const TYPED = 6.05, NEVER3 = 58.53, END_LINE = 60.45;
+
+        // chrome: lockup, topic tag, progress
+        const chrome = mk("div", "abs chrome", "", stage, `<span><span style="color:var(--green)">~/</span>devweb</span><span style="color:var(--faint);font-size:20px">// agent safety</span>`);
+        const bar = mk("div", "abs bar");
+        const barIn = mk("div", null, "height:3px;background:var(--green);transform-origin:left;transform:scaleX(0)", bar);
+        F(barIn, { scaleX: 0 }, { scaleX: 1, duration: VO.END, ease: "none" }, 0);
+        hide(chrome, END_LINE + 0.2, 0.4); hide(bar, END_LINE + 0.2, 0.4);
+
+        // captions: fragments, one line pair at most; none over the hook, the notice board, the schema or the close
+        const R = (s) => `<span style="color:var(--red)">${s}</span>`, Gr = (s) => `<span style="color:var(--green)">${s}</span>`, B = (s) => `<span style="color:var(--blue)">${s}</span>`, Am = (s) => `<span style="color:var(--amber)">${s}</span>`;
+        const CAPS = [
+          [w("it's"), "It's an easy mistake."], [w("give"), "You give your AI a tool,"], [w("copy"), `copy your existing ${B("API,")}`],
+          [w("so", 2), `so the tool takes a ${Am("user ID,")}`], [w("and"), "and you tell the model the user's ID"], [w("in"), "in the prompt.", w("then") - 0.1],
+          [w("then"), "Then the model fills it in.", w("but") - 0.15],
+          [w("but"), "But the model writes every argument.", w("one", 2) - 0.1], [w("one", 2), `One ${R("wrong guess,")}`], [w("or"), `or one ${R("hostile instruction,")}`],
+          [w("and", 2), "and your tool saves"], [w("to"), `to ${R("someone else's account.")}`, w("getting") - 0.15],
+          [w("getting"), "Getting whose data wrong is real.", w("in", 3) - 0.1],
+          [w("fix") - 0.12, "The fix is the one you already use on the web.", w("server") - 0.15], [w("server") - 0.1, `The server takes the user from the ${Gr("login,")}`],
+          [w("never", 2), "never from the request.", w("tool", 4) - 0.3], [w("tool", 4) - 0.25, `The tool just doesn't have a ${R("user ID box.")}`, w("one", 5) - 0.15],
+        ];
+        CAPS.forEach(([t, text, end], i) => {
+          const c = mk("div", "abs cap hide", "", stage, text);
+          rise(c, t, 0.3); hide(c, (end != null ? end : CAPS[i + 1][0]) - 0.2, 0.18);
+        });
+
+        // ================= I. HOOK: the browser form at the server, then the AI's form at the desk =================
+        const hk = "left:44px;right:44px;font-weight:700;letter-spacing:-0.04em;line-height:1;text-shadow:0 4px 30px rgba(0,0,0,.7)";
+        const deep = ";text-shadow:0 4px 30px rgba(0,0,0,.95),0 0 50px rgba(13,17,23,.95)";
+        const h1 = mk("div", "abs hide", hk + ";top:110px;font-size:46px", stage, "You'd never trust a user ID");
+        const h2 = mk("div", "abs hide", hk + ";top:166px;font-size:58px", stage, `from a ${B("browser form.")}`);
+        const h3 = mk("div", "abs hide", hk + ";top:930px;font-size:64px;color:var(--text2)" + deep, stage, "So why trust");
+        const h4 = mk("div", "abs hide", hk + ";top:1004px;font-size:80px" + deep, stage, `the one your ${Gr("AI")} typed?`);
+        rise(h1, 0.4, 0.4); rise(h2, w("from") - 0.05, 0.35); rise(h3, w("so") - 0.05, 0.3); slam(h4, TYPED - 0.1, 1.4);
+        [h1, h2].forEach((n) => hide(n, w("so") + 0.1, 0.3)); [h3, h4].forEach((n) => hide(n, w("it's") - 0.3, 0.3));
+
+        // ================= VI. the receipt: six fields =================
+        const six = mk("div", "abs hide", hk + ";top:150px;left:44px;right:auto;font-size:190px;color:var(--blue)", stage, "6");
+        const sixL = mk("div", "abs hide", hk + ";top:178px;left:180px;font-size:58px", stage, "fields,");
+        const sixR = mk("div", "abs hide", hk + ";top:246px;left:180px;font-size:58px", stage, `all from the ${Gr("AI.")}`);
+        slam(six, w("six") - 0.1, 1.5); rise(sixL, w("fields") - 0.05, 0.3); rise(sixR, w("all") - 0.05, 0.3);
+        [six, sixL, sixR].forEach((n) => hide(n, w("treat") - 0.35, 0.3));
+
+        // ================= VII. the last lines =================
+        const f1 = mk("div", "abs hide", hk + ";top:120px;font-size:80px", stage, `Treat your AI<br>like a ${B("browser.")}`);
+        const f2 = mk("div", "abs hide", hk + ";top:310px;font-size:80px", stage, `Never trust<br>the ${R("ID")} it sends.`);
+        slam(f1, w("treat") - 0.08, 1.35); slam(f2, NEVER3 - 0.08, 1.35);
+        [f1, f2].forEach((n) => hide(n, END_LINE + 1.0, 0.3));
+        // the end: the mark (no URL on screen; plain devweb.org lives in the YouTube description)
+        const endAt = END_LINE + 1.3;
+        const mark = mk("div", "abs hide", "left:190px;top:150px;width:340px;height:92px;box-sizing:border-box;border-radius:14px;border:3px solid var(--green);background:#0d1117;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-weight:600;font-size:44px", stage, `<span style="color:var(--green)">~/</span>devweb`);
+        F(mark, { opacity: 0, scale: 0.85 }, { opacity: 1, scale: 1, duration: 0.4, ease: "back.out(1.6)" }, endAt);
+        cue("sting", endAt + 0.05);
+
+        const clock3 = { t: 0 };
+        tl.fromTo(clock3, { t: 0 }, { t: VO.END, duration: VO.END, ease: "none", immediateRender: false, onUpdate: () => { if (window.renderWorld) window.renderWorld(clock3.t); } }, 0);
+        window.__timelines = window.__timelines || {};
+        window.__timelines["main"] = tl;
+      })();
+    </script>
+    <script type="module">
+      import { buildWorld } from "./oner.js";
+      window.__hf = window.__hf || {};
+      window.__hf.buildReady = window.__hf.buildReady || {};
+      let ready; window.__hf.buildReady["oner"] = new Promise((r) => (ready = r));
+      const render = await buildWorld(document.getElementById("world"));
+      window.renderWorld = render;
+      window.addEventListener("hf-seek", (ev) => render(ev.detail.time));
+      render(window.__hfThreeTime || 0);
+      ready();
+    </script>
+  </body>
+</html>
