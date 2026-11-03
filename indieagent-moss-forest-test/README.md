@@ -4,6 +4,33 @@ A 15 s silent look test, 16:9 at 720p, 24 fps, every frame drawn in code (0 cred
 80 s "pure code" film on 2026-11-03 (a painted anime forest, haze, god rays, a moss-grown robot;
 x.com/chetaslua/status/2117169796290916732) and said "Yes, build it". Issue rheos/secondunit-videos#396.
 
+## What the film actually is (reverse engineered 2026-11-03)
+
+From `index.html` in github.com/ChetasLua/moss-keeper and the author's method screenshots. The repo has no generator code.
+The page is player controls, a poster JPEG, the MP4 as base64 and live grain, all read end to end. Everything else below
+is measured from the MP4 (`work/ref/`, ignored: 1920x1040, 24 fps, 80.67 s, 1935 frames, x264 two-pass at 3.4 Mbps, AAC).
+
+```text
+METHOD (his words): own Python and C++ painted the backgrounds, "inked and coloured" a generated "robot model", and
+      synthesised the score; "each robot drawing took about 5-15 seconds"; only grain, controls and start-up run live.
+GIANT: a real 3D model. It turns between poses, parts occlude correctly, stains stay on the surface.
+      Cel from a real light: hard terminator, hard cast shadows, 3 flat tones per material. Stone: lit peach #f8d898,
+      shadow lilac-grey #787888-#888878; teal #285848-ish on some parts; rust bands; flat lichen and stain blobs.
+INK:  thin, dark, broken lines with gaps and varied width on silhouettes and creases, panel lines across forms.
+MOSS: not shapes but flat dry-brush hatching: short parallel strokes in 3-4 flat tones with ragged hard edges,
+      star-shaped 5-petal flowers on bladed grass tufts, hanging vines.
+PLATES: flat tones with hard wet edges, no gaussian blur except defocus in close-ups. Dust is a flat hard-edged cel shape.
+SHOTS: 18 cuts in 80 s: wide, close on bird, head, chest, aerial, wides. Average 4.5 s.
+TIMING: giant shots run on twos (diff autocorr .84 at lag 2), the rise shot on threes (.97 at lag 3), including full
+      frames held; only slow layer slides run on ones.
+LIGHT, wide shots: mean luma 122, p10 37, p50 115, p90 221, 41% over 140, saturation .36. Darkest #082828, cream #f8e8b8.
+      Close-ups: mean 140-145, p10 86-92. The thumbnails misled the d3 numbers (mean 130-141, p10 55).
+GRAIN: live, opacity .055, overlay blend, 6 random tiles, about 12 fps.
+```
+
+Draft 3 used none of the method: a 2D sprite slid around on soft gaussian-blurred plates in one continuous shot.
+Draft 4 follows it with our own subject: a four-legged piano giant, no robot, no copied frame.
+
 ## Draft 3: a painted forest and a cel giant (2026-11-03)
 
 Draft 2 was pixel art, and Robin rejected it: "We are trying to make a Studio Ghibli film and you made a 1980s
