@@ -1,0 +1,130 @@
+// d4 giant: our own creature, an upright piano on four turned legs, in metres. Origin of the body = bottom centre of the
+// cabinet; the front faces +z. Parts: 0 body, 1 lid, 2 fallboard, 3-6 thighs, 7-10 shins, 11-14 feet, 15 tree, 16.. moss chunks.
+const P_BODY = 0, P_LID = 1, P_FB = 2, P_TH = 3, P_SH = 7, P_FT = 11, P_TREE = 15, P_CH = 16, NCH = 28;
+const MT = { WOOD: 0, DARK: 1, IVORY: 2, KBLK: 3, RUST: 4, GLOW: 5, BARK: 6, STONE: 7 };
+const BW = 3.0, BH = 2.6, BD = 1.25, HIP = [[-1.02, .55], [1.02, .55], [-1.02, -.42], [1.02, -.42]], LEG1 = 1.02, LEG2 = 1.02, FLOOR_Y = 0;
+const STAND_Y = 1.72, SLEEP_Y = .12;
+function buildGiant() {
+  // cabinet: back, two thick side cheeks, top rail, upper and lower front panels with depth, so it has real planes
+  roundBox(P_BODY, MT.WOOD, 0, BH / 2, -.12, BW - .16, BH - .08, BD - .3, .12, 3);
+  for (const s of [-1, 1]) roundBox(P_BODY, MT.WOOD, s * (BW / 2 - .1), BH / 2, 0, .24, BH, BD, .1, 3);
+  roundBox(P_BODY, MT.WOOD, 0, BH - .13, .08, BW - .3, .24, BD - .1, .08, 2);
+  // upper panel: stiles and rails framing a fret row, whose slots are real holes in front of the glow
+  const uy0 = 1.42, uy1 = 2.36, fz = .47;
+  roundBox(P_BODY, MT.GLOW, 0, (uy0 + uy1) / 2, fz - .1, BW - .5, uy1 - uy0, .06, .01, 1);
+  roundBox(P_BODY, MT.WOOD, 0, uy1 - .06, fz, BW - .44, .14, .1, .04, 2); roundBox(P_BODY, MT.WOOD, 0, uy0 + .06, fz, BW - .44, .14, .1, .04, 2);
+  const nb = 14; for (let i = 0; i <= nb; i++) { const x = lerp(-(BW - .52) / 2, (BW - .52) / 2, i / nb), wd = (i === 0 || i === nb) ? .16 : .1; roundBox(P_BODY, MT.WOOD, x, (uy0 + uy1) / 2, fz, wd, uy1 - uy0 - .2, .1, .03, 1); }
+  // keybed: a deep shelf with its key slip, and big carved arms at each end
+  const ky = 1.22;
+  roundBox(P_BODY, MT.WOOD, 0, ky - .16, .62, BW - .1, .2, .62, .07, 2);
+  for (const s of [-1, 1]) { roundBox(P_BODY, MT.WOOD, s * (BW / 2 - .07), ky - .06, .66, .2, .44, .74, .09, 3); }
+  roundBox(P_BODY, MT.DARK, 0, ky + .14, .34, BW - .42, .44, .1, .02, 1); // recess behind the keys
+  const nk = 40, kw = (BW - .46) / nk;
+  for (let i = 0; i < nk; i++) { if (h2(i, 1, 7) < .05) continue; const sag = h2(i, 2, 7) < .1 ? .025 : 0; roundBox(P_BODY, MT.IVORY, -(BW - .46) / 2 + (i + .5) * kw, ky - .03 - sag, .68, kw * .9, .06, .5, .012, 1); }
+  for (let i = 0; i < nk - 1; i++) if ([0, 1, 3, 4, 5].includes(i % 7) && h2(i, 4, 7) > .07) roundBox(P_BODY, MT.KBLK, -(BW - .46) / 2 + (i + 1) * kw, ky + .03, .58, kw * .55, .07, .3, .012, 1);
+  // lower panel, with a rail, and the pedals
+  roundBox(P_BODY, MT.WOOD, 0, .56, .3, BW - .44, .86, .1, .03, 2); roundBox(P_BODY, MT.WOOD, 0, .1, .34, BW - .3, .2, .16, .05, 2);
+  for (const x of [-.26, 0, .26]) roundBox(P_BODY, MT.RUST, x, .13, .55, .13, .05, .32, .02, 1);
+  // candle sconces
+  for (const s of [-1, 1]) { roundBox(P_BODY, MT.RUST, s * 1.32, 1.95, .62, .1, .34, .1, .04, 1); roundBox(P_BODY, MT.RUST, s * 1.32, 2.1, .72, .22, .06, .22, .03, 1); }
+  // lid and fallboard
+  roundBox(P_LID, MT.WOOD, 0, .06, BD / 2 - .55, BW + .16, .14, BD + .08, .06, 3);
+  for (const [x, y, z, w, h, d] of [[-.55, .22, .08, 2.0, .42, 1.1], [.5, .2, .06, 1.9, .36, 1.05], [-.1, .36, .02, 1.5, .4, .85], [1.12, .16, .1, 1.0, .28, .9], [-1.2, .16, .1, .85, .26, .85]]) roundBox(P_LID, MT.BARK, x, y, z, w, h, d, Math.min(h, d) * .47, 4);
+  roundBox(P_FB, MT.WOOD, 0, -.17, .04, BW - .42, .34, .06, .025, 2);
+  roundBox(P_FB, MT.RUST, 0, -.03, .075, .9, .03, .02, .008, 1);
+  // legs: turned, heavy, with a ring at the knee and a brass-capped foot
+  const thigh = [[.05, .1], [.3, .04], [.34, -.1], [.3, -.34], [.25, -.68], [.27, -.84], [.3, -.95], [.26, -1.04], [.05, -1.1]];
+  const shin = [[.05, .08], [.27, .02], [.31, -.06], [.25, -.2], [.2, -.55], [.22, -.8], [.27, -.96], [.05, -1.05]];
+  const footP = [[.05, .34], [.27, .3], [.36, .2], [.42, .12], [.43, .05], [.38, 0], [.05, 0]];
+  for (let i = 0; i < 4; i++) { lathe(P_TH + i, MT.WOOD, thigh); lathe(P_SH + i, MT.WOOD, shin); lathe(P_FT + i, MT.RUST, footP); }
+  // the tree growing from the lid: a forked trunk
+  const lim = (x0, y0, z0, x1, y1, z1, r0, r1) => { const dx = x1 - x0, dy = y1 - y0, dz = z1 - z0, L = Math.hypot(dx, dy, dz), yv = [dx / L, dy / L, dz / L], ref = Math.abs(yv[1]) > .9 ? [1, 0, 0] : [0, 1, 0], xv = (() => { const c = [ref[1] * yv[2] - ref[2] * yv[1], ref[2] * yv[0] - ref[0] * yv[2], ref[0] * yv[1] - ref[1] * yv[0]], l = Math.hypot(...c); return c.map((v) => v / l); })(), zv = [xv[1] * yv[2] - xv[2] * yv[1], xv[2] * yv[0] - xv[0] * yv[2], xv[0] * yv[1] - xv[1] * yv[0]];
+    const base = GEO.pos.length / 3, seg = 8; for (let j = 0; j <= 5; j++) { const k = j / 5, r = lerp(r0, r1, k); for (let i = 0; i <= seg; i++) { const a = i / seg * TAU, c = Math.cos(a), s = Math.sin(a), N = [xv[0] * c + zv[0] * s, xv[1] * c + zv[1] * s, xv[2] * c + zv[2] * s]; pushV([x0 + dx * k + N[0] * r, y0 + dy * k + N[1] * r, z0 + dz * k + N[2] * r], N, P_TREE, MT.BARK); } } for (let j = 0; j < 5; j++) for (let i = 0; i < seg; i++) { const a = base + j * (seg + 1) + i, b = a + 1, c = a + seg + 1, e = c + 1; GEO.idx.push(a, b, e, a, e, c); } };
+  lim(.55, -.1, 0, .62, .6, .05, .1, .07); lim(.62, .6, .05, .28, 1.2, .1, .065, .03); lim(.62, .6, .05, 1.05, 1.1, -.05, .06, .03); lim(.8, .82, 0, 1.0, 1.35, .25, .03, .015);
+}
+
+// ---- pose ----
+const TG = { rise0: 9.3, rise1: 12.1, fl0: 12.35, fl1: 13.3, rr0: 13.4, rr1: 14.25 };
+const drawT = (t) => (t >= TG.rise0 && t < TG.rise1) ? Math.floor(t * 8 + 1e-6) / 8 : Math.floor(t * 12 + 1e-6) / 12; // on threes in the rise, twos otherwise
+const FEET0 = [[-1.34, 1.0], [1.34, 1.0], [-1.3, -.85], [1.3, -.85]];
+function poseG(t0) {
+  const t = drawT(t0), r = t < TG.rise0 ? 0 : t < 9.75 ? -.05 * ease.out(inv(TG.rise0, 9.75, t)) : t < TG.rise1 ? lerp(-.05, 1.03, ease.inOut(inv(9.75, TG.rise1, t))) : lerp(1.03, 1, ease.sine(inv(TG.rise1, 12.7, t)));
+  const fl = inv(TG.fl0, TG.fl1, t), rr = inv(TG.rr0, TG.rr1, t), b1 = ease.inOut(inv(12.4, 13.5, t)), b2 = ease.inOut(inv(13.45, 14.4, t));
+  const heave = .03 * Math.sin(Math.PI * inv(8.7, 9.3, t));
+  const by = lerp(SLEEP_Y, STAND_Y, r) + heave - .09 * Math.sin(Math.PI * inv(TG.fl1, TG.fl1 + .5, t)) - .06 * Math.sin(Math.PI * inv(TG.rr1, TG.rr1 + .4, t)) + .02 * Math.sin(TAU * .3 * t) * smooth(inv(14.2, 14.8, t));
+  const bz = .34 * b1 + .34 * b2, bx = -.1 * b1 + .08 * b2 + .1 * Math.sin(Math.PI * inv(12.3, 13.5, t)) * .5;
+  const tilt = lerp(.075, 0, clamp(r)) + .05 * Math.sin(Math.PI * inv(12.3, 13.6, t)) - .04 * Math.sin(Math.PI * inv(13.3, 14.5, t));
+  const pitch = lerp(.13, .25, clamp(r)) + .03 * Math.sin(Math.PI * inv(10.5, 12.7, t));
+  const yaw = .06 * b1 - .03 * b2;
+  const feet = FEET0.map(([x, z], i) => { const k = i === 0 ? fl : i === 3 ? rr : 0, e = ease.inOut(k); return { x, y: Math.sin(Math.PI * k) * .46, z: z + .68 * e, down: k <= 0 || k >= 1 }; });
+  const body = M.mul(M.tr(bx, by, bz), M.mul(M.ry(yaw), M.mul(M.rz(tilt), M.rx(pitch))));
+  const v = (topXat(t - .15) - topXat(t - .4)) * 1.0;
+  return { r, by, bx, bz, tilt, pitch, body, feet, fb: ease.out(inv(6.55, 7.45, t)), lid: .24 * ease.out(inv(9.0, 9.7, t)) * (1 - .6 * ease.sine(inv(12, 13, t))), sway: clamp(-v * .5, -.3, .3) };
+}
+function topXat(t) { const r = t < TG.rise0 ? 0 : clamp(inv(9.75, TG.rise1, t)); return (-.1 * ease.inOut(inv(12.4, 13.5, t)) + .08 * ease.inOut(inv(13.45, 14.4, t))) + 3.2 * (lerp(.075, 0, r) + .05 * Math.sin(Math.PI * inv(12.3, 13.6, t))); }
+function segM(A, B) { const yv = [A[0] - B[0], A[1] - B[1], A[2] - B[2]], L = Math.hypot(...yv); yv[0] /= L; yv[1] /= L; yv[2] /= L; const ref = [0, 0, 1], c = [ref[1] * yv[2] - ref[2] * yv[1], ref[2] * yv[0] - ref[0] * yv[2], ref[0] * yv[1] - ref[1] * yv[0]], l = Math.hypot(...c) || 1, xv = c.map((q) => q / l), zv = [xv[1] * yv[2] - xv[2] * yv[1], xv[2] * yv[0] - xv[0] * yv[2], xv[0] * yv[1] - xv[1] * yv[0]]; return [xv[0], xv[1], xv[2], 0, yv[0], yv[1], yv[2], 0, zv[0], zv[1], zv[2], 0, A[0], A[1], A[2], 1]; }
+function partMatrices(p, t) {
+  const out = new Array(MAXP); for (let i = 0; i < MAXP; i++) out[i] = M.id();
+  out[P_BODY] = p.body;
+  out[P_LID] = M.mul(p.body, M.mul(M.tr(0, BH, -BD / 2 + .1), M.mul(M.rx(-p.lid), M.tr(0, .02, BD / 2 - .1))));
+  out[P_LID] = M.mul(p.body, M.mul(M.tr(0, BH, -.5), M.mul(M.rx(-p.lid), M.tr(0, .0, .5))));
+  out[P_FB] = M.mul(p.body, M.mul(M.tr(0, 1.52, .42), M.rx(-p.fb * 1.85)));
+  out[P_TREE] = M.mul(out[P_LID], M.mul(M.tr(-.6, .3, -.1), M.rz(-p.sway * .6 + .02 * Math.sin(TAU * .18 * t))));
+  HIP.forEach(([hx, hz], i) => {
+    const H = M.apply(p.body, [hx, .06, hz]), f = p.feet[i], F = [f.x, f.y + .3, f.z], d0 = [F[0] - H[0], F[1] - H[1], F[2] - H[2]], d = Math.min(LEG1 + LEG2 - .02, Math.hypot(...d0)), l = Math.hypot(...d0) || 1, dir = d0.map((v) => v / l);
+    const a = (LEG1 * LEG1 - LEG2 * LEG2 + d * d) / (2 * d), h = Math.sqrt(Math.max(0, LEG1 * LEG1 - a * a));
+    const sx = hx < 0 ? -1 : 1, front = hz > 0 ? 1 : -1, hint = [sx * .9, .25, front * .55], dt = hint[0] * dir[0] + hint[1] * dir[1] + hint[2] * dir[2], pr = [hint[0] - dir[0] * dt, hint[1] - dir[1] * dt, hint[2] - dir[2] * dt], pl = Math.hypot(...pr) || 1;
+    const K = [H[0] + dir[0] * a + pr[0] / pl * h, H[1] + dir[1] * a + pr[1] / pl * h, H[2] + dir[2] * a + pr[2] / pl * h];
+    out[P_TH + i] = segM(H, K); out[P_SH + i] = segM(K, F);
+    out[P_FT + i] = M.tr(f.x, f.y, f.z);
+  });
+  // moss chunks: stuck to the body until they fall, then ballistic, tumbling, resting on the floor
+  CHUNKS.forEach((c, i) => {
+    const partM = (q) => { const m = partMatrices0(q); return m[c.part]; };
+    if (t < c.tf) { out[P_CH + i] = out[c.part]; return; }
+    const m0 = partM(c.tf), dt = t - c.tf, W0 = M.apply(m0, c.at), tl = Math.sqrt(Math.max(.01, W0[1] - .05) / 4.9), d = Math.min(dt, tl), y = -4.9 * d * d + (dt > tl ? 0 : 0), spin = d * c.spin, dx = c.vx * d, dz = c.vz * d;
+    out[P_CH + i] = M.mul(M.tr(W0[0] + dx, W0[1] + y, W0[2] + dz), M.mul(M.rx(spin), M.mul(M.rz(spin * .6), M.mul(dt > tl ? [1, 0, 0, 0, 0, .34, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1] : M.id(), M.mul(M.tr(-W0[0], -W0[1], -W0[2]), m0)))));
+  });
+  return out;
+}
+function partMatrices0(t) { const p = poseG(t), o = []; o[P_BODY] = p.body; o[P_LID] = M.mul(p.body, M.mul(M.tr(0, BH, -.5), M.mul(M.rx(-p.lid), M.tr(0, 0, .5)))); o[P_FB] = M.mul(p.body, M.mul(M.tr(0, 1.52, .42), M.rx(-p.fb * 1.85))); return o; }
+
+// ---- moss: clusters of dry-brush strokes planted on the surface, in part space ----
+const STROKES = [], CHUNKS = [];
+for (let i = 0; i < NCH; i++) { const R = rng(500 + i), lid = i % 3 === 0; CHUNKS.push({ part: lid ? P_LID : P_BODY, at: lid ? [lerp(-1.4, 1.4, R()), .2, lerp(-.2, .8, R())] : [lerp(-1.3, 1.3, R()), lerp(.3, 2.3, R()), .6], r: .2 + R() * .28, tf: i < 8 ? 6.9 + R() * 2.1 : 9.3 + R() * 2.7, spin: (R() - .5) * 3, vx: (R() - .5) * .9, vz: .2 + R() * .6 }); }
+// a cluster of hatched strokes: all at about one angle, tone by height in the clump and side toward the light
+function clump(part, cx, cy, cz, nx, ny, nz, rad, R0, o = {}) {
+  const n = Math.round(lerp(16, 46, clamp(rad / .34)) * (o.dens || 1)), ang = (o.ang ?? .8) + (R0() - .5) * .7;
+  let tx = ny, ty = -nx, tz = 0; if (Math.hypot(tx, ty) < .1) { tx = 1; ty = 0; tz = 0; } const tl = Math.hypot(tx, ty, tz); tx /= tl; ty /= tl; tz /= tl; const bx = ny * tz - nz * ty, by = nz * tx - nx * tz, bz = nx * ty - ny * tx;
+  for (let i = 0; i < n; i++) {
+    const a = R0() * TAU, r = Math.sqrt(R0()), u = Math.cos(a) * r * rad, v = Math.sin(a) * r * rad, dome = Math.sqrt(Math.max(0, 1 - r * r)) * rad * .62;
+    STROKES.push(part, cx + tx * u + bx * v + nx * dome, cy + ty * u + by * v + ny * dome, cz + tz * u + bz * v + nz * dome, nx + (tx * u + bx * v) / rad * .9, ny + (ty * u + by * v) / rad * .9, nz + (tz * u + bz * v) / rad * .9, .035 + R0() * rad * .2, .018 + R0() * rad * .075, ang + (R0() - .5) * .45, R0(), o.kind || 0, (dome / rad) * .5 + R0() * .32);
+  }
+}
+function buildMoss() {
+  const R0 = rng(1234);
+  const mask = (x, y, s) => fbm2(x * 1.15 + s, y * 1.15, 321);
+  // the lid: thick; the mound is built up in layers
+  for (let i = 0; i < 560; i++) { const x = lerp(-1.72, 1.72, R0()), z = lerp(-.6, .86, R0()), m = mask(x, z, 3); if (m < .24) continue; const edge = Math.max(Math.abs(x) - 1.45, 0) * 2 + Math.max(z - .7, 0) * 2.4; const up = .26 + .34 * m * (1 - edge) + .12 * R0(); clump(P_LID, x, up, z, (x / 2) * .5, 1, (z - .1) * .55, .17 + R0() * .2, R0, { kind: 0 }); }
+  // draped down the front and shoulders as hanging masses
+  for (let i = 0; i < 190; i++) { const s = R0() < .55 ? -1 : 1, x = s * lerp(1.12, 1.62, Math.pow(R0(), .7)), y = lerp(1.5, 2.72, Math.pow(R0(), .5)); if (mask(x, y, 9) < .44) continue; const z = R0() < .75 ? .68 : lerp(-.6, .6, R0()), side = Math.abs(x) > 1.46; clump(P_BODY, side ? s * 1.55 : x, y, z, side ? s : s * .2, .35, side ? 0 : 1, .1 + R0() * .13, R0, { ang: 1.3 }); }
+  // along the keybed ends and over the arms
+  for (let i = 0; i < 60; i++) { const s = R0() < .5 ? -1 : 1, x = s * lerp(1.2, 1.56, R0()), z = lerp(.36, 1.02, R0()); clump(P_BODY, x, 1.46 + R0() * .05, z, 0, 1, .25, .1 + R0() * .13, R0); }
+  // the ground moss that climbed up the lower panel and its corners
+  for (let i = 0; i < 170; i++) { const x = lerp(-1.66, 1.66, R0()), y = Math.pow(R0(), 1.9) * (.38 + .7 * Math.max(0, -x * .55 + mask(x, 2, 5))), s = Math.abs(x) > 1.5; if (mask(x, y, 4) < .42) continue; clump(P_BODY, x, y, .52, s ? Math.sign(x) : 0, .2, s ? .2 : 1, .12 + R0() * .15, R0, { ang: 1.1 }); }
+  // the side plane and the back, seen as the giant turns
+  for (let i = 0; i < 120; i++) { const s = R0() < .5 ? -1 : 1, y = R0() * 2.6, z = lerp(-.6, .6, R0()); if (mask(z, y, 8 + s) < .47) continue; clump(P_BODY, s * 1.56, y, z, s, .3, 0, .12 + R0() * .14, R0, { ang: 1.2 }); }
+  // sleeves on the legs
+  for (let l = 0; l < 4; l++) for (let i = 0; i < 24; i++) { const a = R0() * TAU, onTh = R0() < .7, y = -R0() * .9, r = .27; if (mask(a, y + l, 11) < .46) continue; clump((onTh ? P_TH : P_SH) + l, Math.cos(a) * r, y, Math.sin(a) * r, Math.cos(a), .3, Math.sin(a), .08 + R0() * .1, R0, { ang: 1.2 }); }
+  // the tree crown: three lobes of leaf strokes
+  for (const [cx, cy, cz, rr] of [[.32, 1.42, .1, .55], [1.1, 1.3, -.05, .5], [.72, 1.7, .05, .55], [1.0, 1.62, .25, .34]]) for (let i = 0; i < 90; i++) { const a = R0() * TAU, b = (R0() - .5) * Math.PI, q = Math.pow(R0(), .34) * rr, nx = Math.cos(a) * Math.cos(b), ny = Math.sin(b) * .72, nz = Math.sin(a) * Math.cos(b); clump(P_TREE, cx + nx * q, cy + ny * q, cz + nz * q * .7, nx, ny + .35, nz, .07 + R0() * .08, R0, { ang: .7, dens: .8 }); }
+  const nMoss = STROKES.length / 13;
+  // sleep blankets on the front: chunks that fall as it wakes
+  CHUNKS.forEach((c, i) => { const g = rng(900 + i), [x0, y0, z0] = c.at, k = Math.round(14 + c.r * 40); for (let q = 0; q < k; q++) { const a = g() * TAU, r = Math.sqrt(g()) * c.r * 2.1; clump(P_CH + i, x0 + Math.cos(a) * r, y0 + (c.part === P_LID ? .25 : Math.sin(a) * r * .72), z0 + (c.part === P_LID ? Math.sin(a) * r * .4 : .13), 0, c.part === P_LID ? 1 : .4, c.part === P_LID ? .3 : 1, .1 + g() * .13, g, { ang: 1.1 }); } });
+  // star flowers on blade tufts, in part space on the lid and front
+  const tuft = (part, x, y, z, nx, ny, nz, g) => { for (let b = 0; b < 7; b++) { const a = (b / 7 - .5) * 1.1 + (g() - .5) * .3, h = .13 + g() * .17; STROKES.push(part, x + Math.sin(a) * h * .55, y + Math.cos(a) * h * .55 + .06, z + nz * .05, nx * .3, 1, nz * .3, h * .55, .012 + g() * .009, Math.PI / 2 - a, g(), 1, .55 + g() * .4); }
+    for (let f = 0; f < 3; f++) STROKES.push(part, x + (g() - .5) * .22, y + .17 + g() * .17, z + nz * .1, nx * .3, 1, nz * .3, .042 + g() * .022, .042 + g() * .022, g() * TAU, g(), 2, g()); };
+  const g2 = rng(77); for (let i = 0; i < 70; i++) { const x = lerp(-1.55, 1.55, g2()), z = lerp(-.2, .85, g2()); if (mask(x, z, 3) < .42) continue; tuft(P_LID, x, .46 + mask(x, z, 3) * .3, z, 0, 1, .4, g2); }
+  for (let i = 0; i < 22; i++) { const x = lerp(-1.6, 1.6, g2()), y = Math.pow(g2(), 1.6) * .6; if (mask(x, y, 4) < .42) continue; tuft(P_BODY, x, y + .05, .68, 0, .2, 1, g2); }
+  return nMoss;
+}
