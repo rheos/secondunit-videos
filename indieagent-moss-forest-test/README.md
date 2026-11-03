@@ -31,6 +31,32 @@ GRAIN: live, opacity .055, overlay blend, 6 random tiles, about 12 fps.
 Draft 3 used none of the method: a 2D sprite slid around on soft gaussian-blurred plates in one continuous shot.
 Draft 4 follows it with our own subject: a four-legged piano giant, no robot, no copied frame.
 
+## Draft 4: a 3D piano giant, inked and painted (2026-11-03)
+
+Page `d4.html`, code `js/d4/` (`gl.js` our own WebGL2 renderer, `giant.js` the model, pose and moss, `plates.js` the
+painted plates, `life.js` the bird, soil, dust, flock and leaves, `main.js` the shots). Review cut
+`out/mossforest_test_f0-f360_24fps_review-720p_d4.mp4`. The four-legged piano came back: draft 3 had silently cut it to two.
+
+Follows the method above with our own subject: a real 3D model, shaded from a real light through a hard shadow map, three flat tones per material,
+stains and cracks in object space, ink traced from part, depth and normal edges and broken by noise, moss as dry-brush
+strokes planted on the surface, drawn at 2x and downsampled. Plates have hard edges and no blur except defocus in close-ups.
+The giant runs on twos, the rise on threes. Dust is a flat hard-edged shape. Grain is his: overlay at .055, 6 tiles.
+
+```text
+SHOTS: f0-85 wide, asleep in the mist | f86-153 close, the bird lands (4.45 s), first ray (4.9-5.7 s) |
+       f154-215 close on the panel: moss falls, fallboard opens (f178), glow flickers (6.75-7.4 s) and catches (7.6-8.5 s) |
+       f216-359 wide: ground shakes, bird and flock leave (9.35 s), rises on threes (9.3-12.1 s) with soil and dust,
+       one step on four legs (front left plants f320, rear right plants f342).
+```
+
+Checks on the mp4: audit passes on all frames (feet, floor, cuts, plants, fallboard), badframes 0 of 360, flash check passes, a frame drawn out of order is
+byte-identical. Light at f292 and f356: mean 118, p10 36-37, p50 103, p90 226, 36% over 140, saturation .40. Film wide: 122, 37, 115, 221, 41%, .36.
+About 0.25-0.4 s a frame at 2x, 42 s for the whole render with 3 workers, far faster than his 5-15 s a drawing. Motion judged from sheets, not watched at speed.
+
+Still short of the film: the figure has less drawing and a boxier silhouette; the ink is sparser; the 2D bird is simple; moss is flatter;
+the trunks and canopy strokes are coarser; 4 shots with simple camera moves; no score, where his film synthesises one.
+Side by side: `out/mossforest_d4_side-by-side_film-vs-d4.jpg`.
+
 ## Draft 3: a painted forest and a cel giant (2026-11-03)
 
 Draft 2 was pixel art, and Robin rejected it: "We are trying to make a Studio Ghibli film and you made a 1980s
@@ -286,6 +312,14 @@ too few to read at 720p; and there is no sound (a step thud, falling clods and o
 fallboard opens would make the wake).
 
 ## Build and render
+
+Draft 4:
+
+```bash
+PAGE=d4.html node check.mjs out/check/sheet.jpg 1.5 5.4 8.7 11 13.2 14.8
+node ../tools/motion-lab/audit.mjs d4.html 0 15 --spec audit-d4.spec.mjs --width 1280 --height 720
+nice -n 15 node ../tools/motion-lab/render.mjs d4.html 0 15 out/mossforest_test_f0-f360_24fps_review-720p_dN.mp4 --width 1280 --height 720 --workers 3
+```
 
 Draft 3:
 

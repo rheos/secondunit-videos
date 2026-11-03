@@ -1,6 +1,6 @@
 // d4 giant: our own creature, an upright piano on four turned legs, in metres. Origin of the body = bottom centre of the
 // cabinet; the front faces +z. Parts: 0 body, 1 lid, 2 fallboard, 3-6 thighs, 7-10 shins, 11-14 feet, 15 tree, 16.. moss chunks.
-const P_BODY = 0, P_LID = 1, P_FB = 2, P_TH = 3, P_SH = 7, P_FT = 11, P_TREE = 15, P_CH = 16, NCH = 28;
+const P_BODY = 0, P_LID = 1, P_FB = 2, P_TH = 3, P_SH = 7, P_FT = 11, P_TREE = 15, P_CH = 16, NCH = 22;
 const MT = { WOOD: 0, DARK: 1, IVORY: 2, KBLK: 3, RUST: 4, GLOW: 5, BARK: 6, STONE: 7 };
 const BW = 3.0, BH = 2.6, BD = 1.25, HIP = [[-1.02, .55], [1.02, .55], [-1.02, -.42], [1.02, -.42]], LEG1 = 1.02, LEG2 = 1.02, FLOOR_Y = 0;
 const STAND_Y = 1.72, SLEEP_Y = .12;
@@ -44,7 +44,7 @@ function buildGiant() {
 }
 
 // ---- pose ----
-const TG = { rise0: 9.3, rise1: 12.1, fl0: 12.35, fl1: 13.3, rr0: 13.4, rr1: 14.25 };
+const TG = { rise0: 9.3, rise1: 12.1, fl0: 12.35, fl1: 320 / 24, rr0: 13.4, rr1: 342 / 24 };
 const drawT = (t) => (t >= TG.rise0 && t < TG.rise1) ? Math.floor(t * 8 + 1e-6) / 8 : Math.floor(t * 12 + 1e-6) / 12; // on threes in the rise, twos otherwise
 const FEET0 = [[-1.34, 1.0], [1.34, 1.0], [-1.3, -.85], [1.3, -.85]];
 function poseG(t0) {
@@ -59,7 +59,7 @@ function poseG(t0) {
   const feet = FEET0.map(([x, z], i) => { const k = i === 0 ? fl : i === 3 ? rr : 0, e = ease.inOut(k); return { x, y: Math.sin(Math.PI * k) * .46, z: z + .68 * e, down: k <= 0 || k >= 1 }; });
   const body = M.mul(M.tr(bx, by, bz), M.mul(M.ry(yaw), M.mul(M.rz(tilt), M.rx(pitch))));
   const v = (topXat(t - .15) - topXat(t - .4)) * 1.0;
-  return { r, by, bx, bz, tilt, pitch, body, feet, fb: ease.out(inv(6.55, 7.45, t)), lid: .24 * ease.out(inv(9.0, 9.7, t)) * (1 - .6 * ease.sine(inv(12, 13, t))), sway: clamp(-v * .5, -.3, .3) };
+  return { r, by, bx, bz, tilt, pitch, body, feet, fb: ease.out(inv(6.55, 178 / 24, t)), lid: .24 * ease.out(inv(9.0, 9.7, t)) * (1 - .6 * ease.sine(inv(12, 13, t))), sway: clamp(-v * .5, -.3, .3) };
 }
 function topXat(t) { const r = t < TG.rise0 ? 0 : clamp(inv(9.75, TG.rise1, t)); return (-.1 * ease.inOut(inv(12.4, 13.5, t)) + .08 * ease.inOut(inv(13.45, 14.4, t))) + 3.2 * (lerp(.075, 0, r) + .05 * Math.sin(Math.PI * inv(12.3, 13.6, t))); }
 function segM(A, B) { const yv = [A[0] - B[0], A[1] - B[1], A[2] - B[2]], L = Math.hypot(...yv); yv[0] /= L; yv[1] /= L; yv[2] /= L; const ref = [0, 0, 1], c = [ref[1] * yv[2] - ref[2] * yv[1], ref[2] * yv[0] - ref[0] * yv[2], ref[0] * yv[1] - ref[1] * yv[0]], l = Math.hypot(...c) || 1, xv = c.map((q) => q / l), zv = [xv[1] * yv[2] - xv[2] * yv[1], xv[2] * yv[0] - xv[0] * yv[2], xv[0] * yv[1] - xv[1] * yv[0]]; return [xv[0], xv[1], xv[2], 0, yv[0], yv[1], yv[2], 0, zv[0], zv[1], zv[2], 0, A[0], A[1], A[2], 1]; }
@@ -91,7 +91,7 @@ function partMatrices0(t) { const p = poseG(t), o = []; o[P_BODY] = p.body; o[P_
 
 // ---- moss: clusters of dry-brush strokes planted on the surface, in part space ----
 const STROKES = [], CHUNKS = [];
-for (let i = 0; i < NCH; i++) { const R = rng(500 + i), lid = i % 3 === 0; CHUNKS.push({ part: lid ? P_LID : P_BODY, at: lid ? [lerp(-1.4, 1.4, R()), .2, lerp(-.2, .8, R())] : [lerp(-1.3, 1.3, R()), lerp(.3, 2.3, R()), .6], r: .2 + R() * .28, tf: i < 8 ? 6.9 + R() * 2.1 : 9.3 + R() * 2.7, spin: (R() - .5) * 3, vx: (R() - .5) * .9, vz: .2 + R() * .6 }); }
+for (let i = 0; i < NCH; i++) { const R = rng(500 + i), lid = i % 3 === 0; CHUNKS.push({ part: lid ? P_LID : P_BODY, at: lid ? [lerp(-1.4, 1.4, R()), .2, lerp(.2, .8, R())] : [lerp(-1.25, 1.25, R()), i < 11 ? lerp(1.5, 2.25, R()) : lerp(.3, 1.0, R()), .62], r: lid ? .14 + R() * .12 : .13 + R() * .13, tf: i < 11 ? 6.65 + R() * 1.75 : 9.4 + R() * 2.6, spin: (R() - .5) * 3, vx: (R() - .5) * .9, vz: .2 + R() * .6 }); }
 // a cluster of hatched strokes: all at about one angle, tone by height in the clump and side toward the light
 function clump(part, cx, cy, cz, nx, ny, nz, rad, R0, o = {}) {
   const n = Math.round(lerp(16, 46, clamp(rad / .34)) * (o.dens || 1)), ang = (o.ang ?? .8) + (R0() - .5) * .7;
@@ -106,8 +106,10 @@ function buildMoss() {
   const mask = (x, y, s) => fbm2(x * 1.15 + s, y * 1.15, 321);
   // the lid: thick; the mound is built up in layers
   for (let i = 0; i < 560; i++) { const x = lerp(-1.72, 1.72, R0()), z = lerp(-.6, .86, R0()), m = mask(x, z, 3); if (m < .24) continue; const edge = Math.max(Math.abs(x) - 1.45, 0) * 2 + Math.max(z - .7, 0) * 2.4; const up = .26 + .34 * m * (1 - edge) + .12 * R0(); clump(P_LID, x, up, z, (x / 2) * .5, 1, (z - .1) * .55, .17 + R0() * .2, R0, { kind: 0 }); }
+  for (let i = 0; i < 34; i++) { const x = lerp(-1.6, 1.6, R0()), drop = .25 + R0() * R0() * 1.15; if (Math.abs(x) < 1.0 && R0() < .88) continue; for (let k = 0; k < drop / .07; k++) { const q = k * .07; clump(P_LID, x + .03 * Math.sin(q * 6 + i), .1 - q, .74 + .03 * Math.sin(i), 0, .2, 1, .05 + .05 * (1 - q / drop), R0, { ang: 1.45, dens: .55 }); } }
+  for (let i = 0; i < 26; i++) { const x = lerp(-1.6, 1.6, R0()), z = R0() < .7 ? .5 : lerp(-.4, .5, R0()); clump(P_LID, x, .34 + R0() * .32, z, 0, .8, .6, .26 + R0() * .18, R0, { ang: .9 }); }
   // draped down the front and shoulders as hanging masses
-  for (let i = 0; i < 190; i++) { const s = R0() < .55 ? -1 : 1, x = s * lerp(1.12, 1.62, Math.pow(R0(), .7)), y = lerp(1.5, 2.72, Math.pow(R0(), .5)); if (mask(x, y, 9) < .44) continue; const z = R0() < .75 ? .68 : lerp(-.6, .6, R0()), side = Math.abs(x) > 1.46; clump(P_BODY, side ? s * 1.55 : x, y, z, side ? s : s * .2, .35, side ? 0 : 1, .1 + R0() * .13, R0, { ang: 1.3 }); }
+  for (let i = 0; i < 190; i++) { const s = R0() < .55 ? -1 : 1, x = s * lerp(1.26, 1.62, Math.pow(R0(), .7)), y = lerp(1.5, 2.72, Math.pow(R0(), .5)); if (mask(x, y, 9) < .44) continue; const z = R0() < .75 ? .68 : lerp(-.6, .6, R0()), side = Math.abs(x) > 1.46; clump(P_BODY, side ? s * 1.55 : x, y, z, side ? s : s * .2, .35, side ? 0 : 1, .1 + R0() * .13, R0, { ang: 1.3 }); }
   // along the keybed ends and over the arms
   for (let i = 0; i < 60; i++) { const s = R0() < .5 ? -1 : 1, x = s * lerp(1.2, 1.56, R0()), z = lerp(.36, 1.02, R0()); clump(P_BODY, x, 1.46 + R0() * .05, z, 0, 1, .25, .1 + R0() * .13, R0); }
   // the ground moss that climbed up the lower panel and its corners
@@ -120,7 +122,7 @@ function buildMoss() {
   for (const [cx, cy, cz, rr] of [[.32, 1.42, .1, .55], [1.1, 1.3, -.05, .5], [.72, 1.7, .05, .55], [1.0, 1.62, .25, .34]]) for (let i = 0; i < 90; i++) { const a = R0() * TAU, b = (R0() - .5) * Math.PI, q = Math.pow(R0(), .34) * rr, nx = Math.cos(a) * Math.cos(b), ny = Math.sin(b) * .72, nz = Math.sin(a) * Math.cos(b); clump(P_TREE, cx + nx * q, cy + ny * q, cz + nz * q * .7, nx, ny + .35, nz, .07 + R0() * .08, R0, { ang: .7, dens: .8 }); }
   const nMoss = STROKES.length / 13;
   // sleep blankets on the front: chunks that fall as it wakes
-  CHUNKS.forEach((c, i) => { const g = rng(900 + i), [x0, y0, z0] = c.at, k = Math.round(14 + c.r * 40); for (let q = 0; q < k; q++) { const a = g() * TAU, r = Math.sqrt(g()) * c.r * 2.1; clump(P_CH + i, x0 + Math.cos(a) * r, y0 + (c.part === P_LID ? .25 : Math.sin(a) * r * .72), z0 + (c.part === P_LID ? Math.sin(a) * r * .4 : .13), 0, c.part === P_LID ? 1 : .4, c.part === P_LID ? .3 : 1, .1 + g() * .13, g, { ang: 1.1 }); } });
+  CHUNKS.forEach((c, i) => { const g = rng(900 + i), [x0, y0, z0] = c.at, k = Math.round(10 + c.r * 34); for (let q = 0; q < k; q++) { const a = g() * TAU, r = Math.sqrt(g()) * c.r * 1.9; clump(P_CH + i, x0 + Math.cos(a) * r, y0 + (c.part === P_LID ? .25 : Math.sin(a) * r * .72), z0 + (c.part === P_LID ? Math.sin(a) * r * .4 : .13), 0, c.part === P_LID ? 1 : .4, c.part === P_LID ? .3 : 1, .1 + g() * .13, g, { ang: 1.1 }); } });
   // star flowers on blade tufts, in part space on the lid and front
   const tuft = (part, x, y, z, nx, ny, nz, g) => { for (let b = 0; b < 7; b++) { const a = (b / 7 - .5) * 1.1 + (g() - .5) * .3, h = .13 + g() * .17; STROKES.push(part, x + Math.sin(a) * h * .55, y + Math.cos(a) * h * .55 + .06, z + nz * .05, nx * .3, 1, nz * .3, h * .55, .012 + g() * .009, Math.PI / 2 - a, g(), 1, .55 + g() * .4); }
     for (let f = 0; f < 3; f++) STROKES.push(part, x + (g() - .5) * .22, y + .17 + g() * .17, z + nz * .1, nx * .3, 1, nz * .3, .042 + g() * .022, .042 + g() * .022, g() * TAU, g(), 2, g()); };

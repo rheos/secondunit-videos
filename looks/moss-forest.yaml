@@ -1,8 +1,8 @@
 slug: moss-forest
-title: Painted forest with a cel giant
+title: Inked 3D giant on painted plates
 note: >-
-  A hand-painted forest in parallax, gouache foliage and warm mist with the sun behind the subject, and a flat-shaded,
-  inked giant standing in it: an upright piano the forest grew over, which wakes, glows from inside and takes a step.
+  A 3D model drawn as a hand-inked cel, flat tones from a real light, broken ink lines, dry-brush moss, on hard-edged
+  painted forest plates, cut into shots and held on twos: an overgrown upright piano on four legs wakes and takes a step.
 used: Moss forest, look test
 cost: free
 group: code
@@ -13,23 +13,22 @@ status: test
 engine: canvas2d
 project: indieagent-moss-forest-test
 code:
-  path: indieagent-moss-forest-test/js/d3/paint.js
+  path: indieagent-moss-forest-test/js/d4/gl.js
   flag: null
-  page: indieagent-moss-forest-test/d3.html
+  page: indieagent-moss-forest-test/d4.html
   note: >-
-    js/d3/base.js holds time, camera and fog colour; paint.js the baked planes (brush dabs, trunks, aerial tint, depth
-    blur); giant.js the cel piano (moss blankets, ink, pose on twos); life.js the bird, first ray, inner glow, soil,
-    flock and leaves; main.js the frame order, shafts and bloom. README has the numbers brief, measured off the
-    reference. Draft 2's pixel version (index.html, js/*.js) stays beside it, rejected.
+    js/d4/gl.js is our own WebGL2 renderer (shadow map, cel, ink, moss strokes), giant.js the model, pose and moss,
+    plates.js the baked plates, life.js the flat bird, soil, dust, flock and leaves, main.js the shots. README has the
+    reverse-engineered method and numbers. Drafts 2 and 3 stay beside it (index.html, d3.html), rejected.
 rules:
-  - Background is painted, not drawn - clumps of overlapping brush dabs lit from the sun side, baked once per plane
-  - Every plane further back is blurred more and tinted further toward the fog colour (56%, 38%, 20%, 8% on the giant)
-  - Bright sky and deep darks - match the reference's measured values (mean luma 130-150, p10 under 65), never pale all over
-  - The sun sits behind the subject; shafts read because the air between them is shaded, not because they are bright
-  - The creature is a cel - flat tones, one shadow shape, cast shadows, tapered ink lines, a backlit rim, no paint texture
-  - Moss is one blanket shape with a scalloped hem and flat patches, never stacks of lit balls
-  - The creature moves on twos in whole poses with planted feet; camera and particles run on ones
-  - No face on the creature; nothing that reads as teeth or fingers
+  - The figure is a real 3D model, never a sprite - it turns, parts occlude, its stains stay on its surface
+  - Shade from a real light with a hard shadow map, 3 flat tones per material, a noisy hard terminator
+  - Ink is traced from part, depth and normal edges and broken by noise, thin and dark, never a clean even stroke
+  - Moss is flat dry-brush hatching planted on the surface in 5 tones with star flowers on blades, never round shapes
+  - Plates have hard edges and flat tones; blur only as defocus in close-ups; dust is a flat hard-edged shape
+  - Cut into shots; the figure on twos, a heavy rise on threes; camera on ones
+  - Match light to measured numbers from the film - wide mean luma about 120, p10 about 37, teal-black to cream
+  - No face on the creature and no frame or character from the film
 palette:
   - "#7fb2cc"
   - "#f6cf8e"
@@ -46,7 +45,7 @@ reference: >-
   only, painted anime background and a cel giant. Its robot is not copied, and no frame of it or of any studio film is.
 proof:
   renders:
-    - indieagent-moss-forest-test/out/mossforest_test_f0-f360_24fps_review-720p_d3.mp4
+    - indieagent-moss-forest-test/out/mossforest_test_f0-f360_24fps_review-720p_d4.mp4
   pr:
     - rheos/secondunit-videos#397
   youtube: []

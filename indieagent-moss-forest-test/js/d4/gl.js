@@ -60,7 +60,7 @@ const P_SOLID = prog(`layout(location=0) in vec3 aP;layout(location=1) in vec3 a
 uniform mat4 uPart[${MAXP}];uniform mat4 uVP;out vec3 vW;out vec3 vL;out vec3 vN;flat out int vMat;flat out float vId;
 void main(){int pt=int(aM.x);mat4 m=uPart[pt];vec4 w=m*vec4(aP,1.);vW=w.xyz;vL=aP+float(pt)*3.7;vN=mat3(m)*aN;vMat=int(aM.y);vId=2.+aM.y+aM.x*8.;gl_Position=uVP*w;}`,
 `in vec3 vW;in vec3 vL;in vec3 vN;flat in int vMat;flat in float vId;layout(location=0) out vec4 o0;layout(location=1) out vec4 o1;
-uniform sampler2D uShadow;uniform mat4 uSVP;uniform vec3 uL;uniform float uGlow;uniform float uRay;uniform vec3 uFill;${NOISE}${SHADOW}
+uniform sampler2D uShadow;uniform mat4 uSVP;uniform vec3 uL;uniform float uGlow;uniform float uRay;uniform vec3 uRayP;uniform vec3 uFill;${NOISE}${SHADOW}
 vec3 hx(int c){return vec3(float((c>>16)&255),float((c>>8)&255),float(c&255))/255.;}
 void main(){vec3 N=normalize(vN);vec3 V=normalize(dFdx(vW));V=cross(dFdx(vW),dFdy(vW));if(dot(N,normalize(V))<-.0)N=N; 
  float w=(fbm3(vL*7.)-.5)*.2;float ndl=dot(N,uL)+w;float lit=step(.06,ndl)*sunlit(vW+N*.012);float fill=step(.3,dot(N,uFill)+w*1.4);
@@ -76,7 +76,7 @@ void main(){vec3 N=normalize(vN);vec3 V=normalize(dFdx(vW));V=cross(dFdx(vW),dFd
   if(fbm3(P*3.3+21.)>.645)c=lit>.5?hx(0x9CB08C):hx(0x5D8078);
   float pl=abs(fract(P.x*2.6+.08*fbm3(P*1.3)+P.y*.02)-.5);float gap=step(.42,fbm3(P*vec3(1.5,3.2,1.5)));if(pl<.009&&abs(N.z)>.5)c=mix(c,hx(0x262330),gap*.85);
   float cr=abs(fbm3(P*vec3(1.7,.8,1.7)+5.)-.5);if(cr<.0045)c=mix(c,hx(0x262330),.9);
-  if(uRay>0.&&lit<.5)c=mix(c,hx(0xE8BE82),0.);
+  if(uRay>0.&&lit<.5){float rk=uRay*smoothstep(1.7,.9,distance(vW,uRayP)+(fbm3(vL*6.)-.5)*.6);if(rk>.5)c=fill>.5?hx(0xF4C88E):hx(0xC9A080);}
  }
  if(vMat==5){float g=uGlow*(.82+.18*fbm(vW.xy*3.));c=mix(hx(0x141014),mix(hx(0xE0772A),hx(0xFFDD8A),smoothstep(.15,.9,g)),smoothstep(.0,.25,g));}
  float d=gl_FragCoord.z/gl_FragCoord.w;o0=vec4(c,1.);o1=vec4(N.xy,vId,1./gl_FragCoord.w);}`);
@@ -137,7 +137,7 @@ function renderGiant(parts, cam, uni) {
   gl.bindFramebuffer(gl.FRAMEBUFFER, fbM); gl.viewport(0, 0, GW, GH);
   gl.clearBufferfv(gl.COLOR, 0, new Float32Array([0, 0, 0, 0])); gl.clearBufferfv(gl.COLOR, 1, new Float32Array([0, 0, 0, 1e4])); gl.clear(gl.DEPTH_BUFFER_BIT);
   gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, tShadow);
-  gl.useProgram(P_SOLID.p); const u = P_SOLID.u; gl.uniformMatrix4fv(u.uPart, false, fp); gl.uniformMatrix4fv(u.uVP, false, VP); gl.uniformMatrix4fv(u.uSVP, false, SVP); gl.uniform1i(u.uShadow, 0); gl.uniform3fv(u.uL, Ln); gl.uniform1f(u.uGlow, uni.glow); if (u.uRay) gl.uniform1f(u.uRay, uni.ray); const fv = [0, .92, .38]; gl.uniform3fv(u.uFill, fv);
+  gl.useProgram(P_SOLID.p); const u = P_SOLID.u; gl.uniformMatrix4fv(u.uPart, false, fp); gl.uniformMatrix4fv(u.uVP, false, VP); gl.uniformMatrix4fv(u.uSVP, false, SVP); gl.uniform1i(u.uShadow, 0); gl.uniform3fv(u.uL, Ln); gl.uniform1f(u.uGlow, uni.glow); if (u.uRay) gl.uniform1f(u.uRay, uni.ray); if (u.uRayP) gl.uniform3fv(u.uRayP, uni.rayP); const fv = [0, .92, .38]; gl.uniform3fv(u.uFill, fv);
   gl.drawElements(gl.TRIANGLES, nIdx, gl.UNSIGNED_INT, 0);
   gl.useProgram(P_MOSS.p); const v = P_MOSS.u; gl.uniformMatrix4fv(v.uPart, false, fp); gl.uniformMatrix4fv(v.uVP, false, VP); gl.uniformMatrix4fv(v.uSVP, false, SVP); gl.uniform1i(v.uShadow, 0); gl.uniform3fv(v.uL, Ln); gl.uniform2f(v.uPr, cam.P[0], cam.P[5]); gl.uniform1f(v.uRay, uni.ray); gl.uniform3fv(v.uRayP, uni.rayP);
   gl.bindVertexArray(vaoM); gl.drawArraysInstanced(gl.TRIANGLE_STRIP, 0, 4, nStrokes);
