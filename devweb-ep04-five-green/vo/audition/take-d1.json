@@ -1,0 +1,31 @@
+{
+ "lines": [
+  [
+   "I",
+   "Five tests passed. The code did nothing."
+  ],
+  [
+   "II",
+   "It was a small script. It reads an AI agent's log and writes one line for every job. It shipped, it passed every test, and in production it wrote nothing. No error. No warning. Just a clean exit."
+  ],
+  [
+   "III",
+   "It looked for a field called role at the top of each line. The real log keeps role one level down, inside message. So the script matched zero lines."
+  ],
+  [
+   "IV",
+   "And the five tests? Every one was made up, in the same flat shape the code expected. The code and the tests were wrong the same way, so the tests agreed with the bug."
+  ],
+  [
+   "V",
+   "What caught it was one real log. Run it through, count the lines that come out. Zero."
+  ],
+  [
+   "VI",
+   "The test that matters feeds in a real log and checks that exactly one line lands. Write your tests from the same guess as your code, and they'll agree with it forever. Build at least one from an input you didn't invent."
+  ]
+ ],
+ "chars": 858,
+ "seconds": 57.36,
+ "sha256": "3ff6182185c8c69076cbf4b657c0af0028c6833ee1425e49f679d2ae24477d0e"
+}

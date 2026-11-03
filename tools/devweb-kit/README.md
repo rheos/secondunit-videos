@@ -63,3 +63,13 @@ Iterate with `npx hyperframes@0.8.162 snapshot --at ...` (contact sheets) before
   bottom 220 px for captions.
 - **A GSAP tween on an element whose transform is also written by hand overrides it.** Keep hand-driven transforms on
   elements GSAP never touches.
+
+## Rules learned on episode 2
+
+- **Set every transform from t on every frame; never `multiplyScalar` or `+=` onto last frame's value.** Snapshots seek
+  each frame fresh, so they look right, while the finish renders frames in order and the state piles up. On ep 2 a
+  file's stamp pulse multiplied its scale each frame and a giant page washed out 35 to 41.7 s of the first finish; only
+  forensics' pop at the far end gave it away. Reset (`scale.setScalar(1)`, `position.copy(...)`) before any branch
+  that adjusts it.
+- **Frame the camera outside the props.** A key that sits inside a gate post or over a bin reads as a wall of colour;
+  check every key on the contact sheet, and route long camera travels around Blink and the stations, not through them.

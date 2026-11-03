@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en" data-resolution="portrait">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@500;700&display=block" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script src="vo/words.js"></script>
+    <script src="kit/blink-geo.js"></script>
+    <script type="importmap">
+      { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.181.2/build/three.module.js", "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.181.2/examples/jsm/" } }
+    </script>
+    <style>
+      :root { --bg: #0d1117; --text: #eef2f6; --text2: #c9d1d9; --muted: #9aa6b6; --faint: #7b8593; --green: #6ad08a; --blue: #4f93d6; --amber: #d6a45a; --red: #e0675a; --sans: "IBM Plex Sans", sans-serif; --mono: "IBM Plex Mono", monospace; }
+      html, body { margin: 0; background: var(--bg); }
+      #root { position: relative; width: 1080px; height: 1920px; overflow: hidden; color: var(--text); font-family: var(--sans); background: var(--bg); }
+      .abs { position: absolute; }
+      .layer { position: absolute; inset: 0; }
+      .hide { opacity: 0; }
+      .chrome { left: 44px; right: 44px; top: 52px; display: flex; justify-content: space-between; align-items: center; font-family: var(--mono); font-size: 23px; font-weight: 500; }
+      .bar { left: 44px; right: 44px; bottom: 50px; height: 3px; background: #1c2333; }
+      .cap { left: 40px; right: 40px; top: 1060px; text-align: center; font-size: 44px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.15; text-shadow: 0 2px 18px rgba(0,0,0,.8); }
+      .scrim { background: rgba(13,17,23,.8); padding: 14px 20px 18px; border-radius: 22px; right: auto !important; }
+      .step { font-size: 86px; font-weight: 700; letter-spacing: -0.04em; text-shadow: 0 4px 30px rgba(0,0,0,.7); }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="155.32" data-width="1080" data-height="1920">
+      <audio id="mix" src="_in/mix.wav" data-start="0" data-duration="155.32" data-track-index="20" data-volume="1"></audio>
+      <!-- the world: one Three.js scene, one camera (oner.js) -->
+      <canvas id="world" width="1080" height="1920" style="position:absolute;left:0;top:0;width:1080px;height:1920px"></canvas>
+      <!-- the type is authored on a 720x1280 stage and scaled 1.5x as vectors; the 3D renders natively at 1080x1920 -->
+      <div id="scale" style="position:absolute;left:0;top:0;width:720px;height:1280px;transform:scale(1.5);transform-origin:0 0">
+      <div class="layer" style="pointer-events:none;background:radial-gradient(110% 70% at 50% 50%, rgba(13,17,23,0) 55%, rgba(9,12,17,.75) 100%)"></div>
+      <div class="layer" style="pointer-events:none;background:linear-gradient(rgba(13,17,23,0) 78%, rgba(13,17,23,.85) 92%)"></div>
+      <div id="stage" class="layer"></div>
+      <div class="layer" style="pointer-events:none;opacity:.06;mix-blend-mode:overlay;background-image:url(&quot;data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='160' height='160' filter='url(%23n)'/></svg>&quot;)"></div>
+      </div>
+    </div>
+
+    <script>
+      (() => {
+        const tl = gsap.timeline({ paused: true });
+        const stage = document.getElementById("stage");
+        window.BP = window.BP || {};
+        BP.CUES = BP.CUES || [];
+        const cue = (k, t, extra) => BP.CUES.push(Object.assign({ k, t: +t.toFixed(3) }, extra || {}));
+        const w = (word, n) => VO.w(word, n);
+        const e = (word, n) => VO.e(word, n);
+        const F = (el, from, to, at) => tl.fromTo(el, from, Object.assign({ immediateRender: false }, to), at);
+        const mk = (tag, cls, css, parent, html) => { const n = document.createElement(tag); if (cls) n.className = cls; if (css) n.style.cssText = css; if (html != null) n.innerHTML = html; (parent || stage).appendChild(n); return n; };
+        const show = (el, at, d = 0.3, y = 18) => F(el, { opacity: 0, y }, { opacity: 1, y: 0, duration: d, ease: "power3.out" }, at);
+        const hide = (el, at, d = 0.3) => F(el, { opacity: 1 }, { opacity: 0, duration: d, ease: "power2.in" }, at);
+        const rise = (el, at, d = 0.45) => F(el, { opacity: 0, y: 26, filter: "blur(10px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: d, ease: "power3.out" }, at);
+        const slam = (el, at, from = 1.6) => { cue("slam", at + 0.16); return F(el, { opacity: 0, scale: from, rotate: -4 }, { opacity: 1, scale: 1, rotate: 0, duration: 0.3, ease: "back.out(1.6)" }, at); };
+
+
+        // chrome: lockup, topic tag, progress
+        const chrome = mk("div", "abs chrome", "", stage, `<span><span style="color:var(--green)">~/</span>devweb</span><span style="color:var(--faint);font-size:20px">// testing</span>`);
+        const bar = mk("div", "abs bar");
+        const barIn = mk("div", null, "height:3px;background:var(--green);transform-origin:left;transform:scaleX(0)", bar);
+        F(barIn, { scaleX: 0 }, { scaleX: 1, duration: VO.END, ease: "none" }, 0);
+        // the word nearest a time in the take (Whisper's spellings), as oner.js does
+        const at = (word, near) => { const m = VO.W.filter((x) => x[0] === word); if (!m.length) throw new Error("VO: no " + word); return m.reduce((p, q) => (Math.abs(q[1] - near) < Math.abs(p[1] - near) ? q : p)); };
+        const n = (word, near) => at(word, near)[1], ne = (word, near) => at(word, near)[2];
+        const END_AT = ne("it", 150.6);
+        hide(chrome, END_AT + 1.4, 0.4); hide(bar, END_AT + 1.4, 0.4);
+
+        // captions: fragments, one line pair at most; none over the hook or the slams
+        const R = (s) => `<span style="color:var(--red)">${s}</span>`, Gr = (s) => `<span style="color:var(--green)">${s}</span>`, B = (s) => `<span style="color:var(--blue)">${s}</span>`, A = (s) => `<span style="color:var(--amber)">${s}</span>`;
+        const CAPS = [
+          [n("you've", 5.5), `You've got a ${A("real file.")}`], [n("an", 6.9), "An export, a log."], [n("you", 9.0), "You ask your AI for a script"], [n("that", 10.4), "that reads it and pulls something out."],
+          [n("you", 13.0), "You describe the file,"], [n("but", 14.1), `but you ${R("don't hand it over.")}`], [n("it", 15.8), "It writes the script and the tests."], [n("all", 18.2), `All ${Gr("green.")}`], [n("you", 19.3), "You stop checking.", n("here's", 20.6) - 0.1],
+          [n("here's", 20.6), "Here's a real case, from a different setup."], [n("a", 23.1), "A different AI was sent to do a job."], [n("when", 25.5), "When it finished, a script read that job's record"],
+          [n("and", 28.1), `and added up the ${A("tokens")} it used,`], [n("the", 30.1), "the units AI is billed in."], [n("then", 32.5), `Then it filed ${A("one row")} in a ledger.`], [n("one", 34.6), "One job in, one row out.", n("the", 36.9) - 0.1],
+          [n("the", 36.9), "The script needed the job's instructions."], [n("they", 39.3), `They say ${A("which ledger")} to file in.`], [n("they", 41.4), "They come from the one who sent the AI,"], [n("the", 43.6), "the job-giver."],
+          [n("the", 44.7), "The record is a stack of entries,"], [n("each", 46.6), "each like a form with labelled boxes."], [n("the", 49.1), `The job-giver's forms carry a ${B("\"who\" box")}`], [n("saying", 51.8), "saying who wrote them."],
+          [n("so", 53.2), "So the script looked for the first form"], [n("whose", 55.1), `whose "who" box said job-giver.`], [n("it", 57.7), `It assumed that box sat ${B("right on the face")} of the form.`, n("but", 60.7) - 0.1],
+          [n("but", 60.7), "But in the real record, that box sits"], [n("inside", 62.8), `inside another box, labelled ${A("message.")}`], [n("so", 65.8), `So the script ${R("never found it,")} on any entry.`], [n("no", 69.1), "No instructions, so no ledger."],
+          [n("it", 71.4), "It decided there was nothing to do,"], [n("and", 73.1), "and finished."], [n("no", 74.3), "No error, no warning."], [n("nothing", 76.4), `${R("Nothing got filed.")}`, n("so", 78.0) - 0.1],
+          [n("so", 78.0), "So why did the tests pass?"], [n("a", 79.9), "A test hands the code a sample"], [n("and", 81.6), "and checks what comes out."], [n("someone", 83.4), "Someone writes those samples."],
+          [n("there", 85.3), "There were five,"], [n("all", 86.2), `all with the "who" box ${B("right on the face,")}`], [n("the", 88.5), "the way the code expected.", n("the", 90.6) - 0.1],
+          [n("the", 90.6), `The code ${A("guessed")} where that box sits.`], [n("the", 93.0), "The samples were written from the same guess."], [n("so", 95.6), "So the tests checked the code against the guess,"], [n("never", 98.3), `never against ${A("the real file.")}`, n("green", 100.6) - 0.3],
+          [n("what", 102.6), `What caught it was ${A("one real record.")}`], [n("someone", 105.2), "Someone ran it through and counted the rows.", n("zero", 107.9) - 0.2],
+          [n("one", 108.7), "One job in, no row out."], [n("that", 111.1), "That one count found the bug.", n("the", 113.4) - 0.1],
+          [n("the", 113.4), "The fix starts from the real layout."], [n("the", 115.7), `The script was changed to reach inside ${A("\"message\"")}`], [n("for", 118.0), "for the instructions."], [n("that", 119.5), "That part was small."],
+          [n("the", 121.0), "The samples were rebuilt the real way."], [n("then", 123.7), "Then came the test that mattered."], [n("it", 125.6), "It feeds in a record laid out like the real one,"], [n("and", 127.7), `and checks that ${Gr("exactly one row")} lands.`],
+          [n("it", 131.0), "It doesn't check how the script works inside,", n("just", 133.3) - 0.2],
+          [n("back", 136.5), "Back to you."], [n("before", 137.5), `Before you ${Gr("trust the green,")}`], [n("hand", 139.0), `hand the AI ${A("one real file")} from your system.`], [n("have", 142.0), "Have it build a test from that file,"], [n("and", 143.7), "and check that the right thing comes out.", n("at", 145.7) - 0.2],
+        ];
+        CAPS.forEach(([t, text, end], i) => {
+          const c = mk("div", "abs cap hide", "", stage, text);
+          rise(c, t, 0.3); hide(c, (end != null ? end : CAPS[i + 1][0]) - 0.2, 0.18);
+        });
+
+        // ================= I. HOOK =================
+        const hk = "left:44px;right:44px;font-weight:700;letter-spacing:-0.04em;line-height:1;text-shadow:0 4px 30px rgba(0,0,0,.7)";
+        const hs = mk("div", "abs hide", "left:24px;right:24px;top:112px;height:200px;border-radius:22px;background:rgba(13,17,23,.8)", stage);
+        const h1 = mk("div", "abs", hk + ";top:130px;font-size:78px", stage, `Five tests ${Gr("passed.")}`);
+        const h2 = mk("div", "abs hide", hk + ";top:222px;font-size:62px", stage, `${R("Nothing came out.")}`);
+        stage.insertBefore(hs, h1);
+        show(hs, n("then", 2.5) - 0.1, 0.2, 0); slam(h2, n("nothing", 4.0) - 0.1, 1.4);
+        [hs, h1, h2].forEach((x) => hide(x, n("you've", 5.5) - 0.1, 0.3));
+
+        // ================= VII. the mass moment =================
+        const big = hk + ";font-size:80px";
+        const m1 = mk("div", "abs hide scrim", big + ";top:130px;left:28px", stage, `${Gr("Green")} meant:`);
+        const m2 = mk("div", "abs hide scrim", hk + ";top:250px;left:28px;font-size:62px", stage, "it works on the samples.");
+        slam(m1, n("green", 100.6) - 0.1, 1.4); rise(m2, n("works", 101.1) - 0.1, 0.3);
+        [m1, m2].forEach((x) => hide(x, n("ran", 105.5), 0.3));
+
+        // ================= VIII. zero =================
+        const z1 = mk("div", "abs hide scrim", hk + ";top:130px;left:28px;font-size:150px;color:var(--red)", stage, "Zero.");
+        slam(z1, n("zero", 107.9) - 0.08, 1.5); hide(z1, n("that", 111.1) - 0.2, 0.3);
+
+        // ================= IX. real in, real out =================
+        const r1 = mk("div", "abs hide scrim", hk + ";top:130px;left:28px;font-size:70px", stage, `Real input in.<br>${Gr("Real output out.")}`);
+        slam(r1, n("just", 133.3) - 0.05, 1.4); hide(r1, n("back", 136.5) + 0.3, 0.3);
+
+        // ================= X. the rule =================
+        const f1 = mk("div", "abs hide scrim", hk + ";top:130px;left:28px;font-size:72px", stage, `One test from<br>${A("a real file.")}`);
+        const f2 = mk("div", "abs hide scrim", hk + ";top:300px;left:28px;font-size:52px;color:var(--text2)", stage, "Not your description of it.");
+        slam(f1, n("least", 146.3) - 0.1, 1.4); rise(f2, n("not", 149.4) - 0.05, 0.3);
+        [f1, f2].forEach((x) => hide(x, END_AT + 1.3, 0.3));
+        // the end: the mark (the article link lives in the YouTube description, never on screen)
+        const endAt = END_AT + 1.7;
+        const mark = mk("div", "abs hide", "left:190px;top:110px;width:340px;height:92px;box-sizing:border-box;border-radius:14px;border:3px solid var(--green);background:#0d1117;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-weight:600;font-size:44px", stage, `<span style="color:var(--green)">~/</span>devweb`);
+        F(mark, { opacity: 0, scale: 0.85 }, { opacity: 1, scale: 1, duration: 0.4, ease: "back.out(1.6)" }, endAt);
+
+        const clock3 = { t: 0 };
+        tl.fromTo(clock3, { t: 0 }, { t: VO.END, duration: VO.END, ease: "none", immediateRender: false, onUpdate: () => { if (window.renderWorld) window.renderWorld(clock3.t); } }, 0);
+        window.__timelines = window.__timelines || {};
+        window.__timelines["main"] = tl;
+      })();
+    </script>
+    <script type="module">
+      import { buildWorld } from "./oner.js";
+      window.__hf = window.__hf || {};
+      window.__hf.buildReady = window.__hf.buildReady || {};
+      let ready; window.__hf.buildReady["oner"] = new Promise((r) => (ready = r));
+      const render = await buildWorld(document.getElementById("world"));
+      window.renderWorld = render;
+      window.addEventListener("hf-seek", (ev) => render(ev.detail.time));
+      render(window.__hfThreeTime || 0);
+      ready();
+    </script>
+  </body>
+</html>
