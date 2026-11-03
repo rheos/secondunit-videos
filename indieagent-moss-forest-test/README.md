@@ -4,6 +4,79 @@ A 15 s silent look test, 16:9 at 720p, 24 fps, every frame drawn in code (0 cred
 80 s "pure code" film on 2026-11-03 (a painted anime forest, haze, god rays, a moss-grown robot;
 x.com/chetaslua/status/2117169796290916732) and said "Yes, build it". Issue rheos/secondunit-videos#396.
 
+## Draft 3: a painted forest and a cel giant (2026-11-03)
+
+Draft 2 was pixel art, and Robin rejected it: "We are trying to make a Studio Ghibli film and you made a 1980s
+video game." The reference was never pixel art. Read side by side (`work/ref/side_v2_vs_ref.jpg`), it is a hand-painted
+anime background: gouache foliage, high-key warm mist, a pale blue sky with peach cloud bands, the sun behind the
+giant, four or five planes each paler than the last, and a cel-drawn giant standing half in ground fog. Draft 3
+starts again in that manner with the same idea (the piano that the forest grew over wakes and takes a step). Draft 2's
+page, code and renders stay as they were (`index.html`, `js/*.js`); draft 3 is `d3.html` and `js/d3/`.
+
+We borrow the manner (painted backgrounds, light, air, a cel creature on them), never a character, creature or shot
+from the clip or from any film by that studio. The piano giant is ours, and no frame is laid out like the clip's.
+
+### Brief as numbers (d3, written before the build)
+
+```text
+GOAL: a background painting that breathes, and a giant that wakes with weight
+OUTPUT: canvas2d, native 1280 x 720, anti-aliased; 24 fps; 15 s = 360 frames (song frames 0-359); silent
+MEDIUM: background = gouache: brush-dab clusters (ellipses 3-22 px, 2-3 overlapping strokes each, alpha .5-.9),
+      smooth gradients, soft edges, paper grain overlay at <= 6% contrast. Planes baked once at load, pre-blurred
+      by depth: far 3.2 px, far-mid 1.8, mid 0.8, giant plane 0, near 0.
+      Giant = cel: 2 flat tones per material (base + one shadow shape) and a rim, a soft dark outline (alpha .55,
+      2.5 px) only on the silhouette and the big shapes, no texture noise on it.
+LIGHT: high-key. Mean luma of the frame >= 150 (0-255) at 7.5 s; >= 55% of pixels lighter than 140.
+      Sun at screen (700, 250), behind the giant's left shoulder once it stands. Sky: pale blue #a9cbd8 at the top
+      to cream-gold #fff1c8 at the sun; 3 peach-pink cloud bands (#f2b8a0, #f6cdb2). Shafts: 7 beams fanning down
+      from the sun, screen-blended, peak alpha .22; bloom = 1/4-size copy, contrast 2.4, blur 6 px, screen at .3 x L.
+      Dust motes: 140, brightness from the shaft field, never visible outside a beam above alpha .15.
+      Light arc L: .62 (0 s) -> 1.0 (11 s), smooth; sun glow, shafts, rim light and bloom read L.
+DEPTH (back to front, parallax rate): sky .03 | far forest .10 | fog | far-mid .22 | fog | mid .40 | ground fog |
+      giant + clearing .55 | ground fog over the giant's feet | shafts, motes | near trunks + canopy 1.0 | grass 1.15.
+      Aerial perspective: each plane is tinted toward the fog colour by depth: far 62%, far-mid 44%, mid 24%,
+      giant 12%, near 0. Fog colour = cream #f6e8c6 at the sun's x, pale blue-green #cfe0d6 at the frame edges.
+TREES: far and far-mid trunks 6-22 px, mid 22-40 px, near 70-140 px; all reach past the top edge (canopy cut off).
+      Near trunks: dark blue-green-brown #24332d to #3a4a3c, bark strokes, a 3-5 px warm rim #f2d58c on the sun side.
+      Hanging moss: 40+ strands from the near canopy, 60-260 px long, lit tips #c8dc6a, sway 2-6 px.
+COLOUR: lit leaves #a9c93c to #cfe06a; shade leaves #3d6c5e to #5d8e7a (blue-green); no olive below
+      saturation .3 on lit foliage. Giant: weathered wood #8c6c55 / shadow #5c4c4c, stone-grey moss-free patches
+      #a39a8c, moss #6f9a36 / #3f6b55 / lit #bcd650, rust accents #b4532f (sconces, hinge, foot caps), keys #eadfc4.
+CREATURE: upright piano body 300 x 255 px, legs 105 px; standing height 360 px = 50% of frame (55% with the
+      sapling). Body centre x 790, feet on the floor line y 592. Asleep: sunk to y +150, tilted -3 deg, legs folded.
+      0-3 s asleep (moss breathes 1 px); 3.0-5.0 s stirs: 9 clods fall, fallboard opens 3.6-4.6 s (lidOpen f110),
+      top lid lifts 4.2-5.0 s; 5.0-5.4 s anticipation dip 6 px; 5.4-8.6 s rises (in-out), overshoot 3%, settles 9.2 s;
+      9.2-9.8 weight onto the left leg (tilt -2.5 deg); right foot lifts 9.8, plants 10.9 s (plantR f262) 52 px right,
+      20 px nearer; body follows, drops 7 px on the plant; left foot lifts 11.6, plants 12.6 s (plantL f302);
+      13-15 s stands in full sun, breathes 2 px at .3 Hz. Feet 0 px slide while down; planted feet on their floor y.
+      Sapling and drape moss follow through (sampled from earlier body poses).
+GROUND: grass band y 630-720 at rate 1.15, blades 18-60 px with rim-lit tips, 40 flowers (cream, yellow, rust);
+      its top melts into a fog band at y 560-640.
+CAMERA: one shot, slow dolly. camX = 2.6 t + 30 smooth(t/15) px (0 -> 69), push-in 0 -> 4% x rate. Never stops.
+KEEP: the giant's box inside the frame; the giant never scales except by the camera's push.
+QA: sheet of the reference beside d3 at 6 times; d3 sheet at 1, 4, 6.5, 9, 11, 14.5 s; 600x450 crops of the giant at
+      4, 7, 10.9, 14 s and of the near plane at 2, 8, 13 s from full-size frames; motion-lab audit on all 360 frames
+      (audit-d3.spec.mjs); badframes on the mp4; luma numbers above measured, not eyeballed; then watch it.
+```
+
+### BANNED (d3, written before the build; grows after every render)
+
+- A pixel grid, nearest-neighbour scaling, an indexed palette, ordered dither or `px.js` anywhere in d3
+- Dim or muddy olive: lit foliage that isn't yellow-green, a mean luma under 150 at mid-film, a dark frame
+- A small creature: the standing giant under 45% of frame height, or one that reads as a prop in the clearing
+- Uniform dark trunks: every plane the same value. Each plane back is paler and closer to the fog colour
+- Hard vector edges on the background: unblurred flat polygons, crisp outlines on trees, leaves as stamped circles
+- Texture or noise on the giant (it is a cel: flat tones, one shadow shape, a rim), or an outline on the scenery
+- A face on the piano (eyes, a mouth, teeth), a robot of any kind, a round-headed soldier, any figure from the clip
+  or from a studio film; a frame laid out like the clip (giant centred head-on between two framing trunks)
+- Marionette motion: rigid legs swinging from a pivot, a sliding planted foot, the body gliding without weight
+- Lens flare rings, chromatic aberration, vignette darker than 12% at the corners
+- `Math.random`, `Date.now`, state carried between frames
+
+## Draft 2 (pixel art, rejected)
+
+Everything below is draft 2 as it was built. Its idea carries into d3; its medium does not.
+
 ## The idea
 
 A low sun behind a deep forest. In a clearing sits a mound of moss with a sapling on top. As the light comes up,
