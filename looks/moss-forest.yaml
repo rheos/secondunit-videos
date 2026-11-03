@@ -1,0 +1,54 @@
+slug: moss-forest
+title: Painted pixel forest
+note: >-
+  A deep forest drawn at 320x180 in dithered pixels, layered in parallax through warm haze and light shafts, where
+  a moss-covered upright piano wakes up and takes a step.
+used: Moss forest, look test
+cost: free
+group: code
+order: 365
+clip: null
+tall: false
+status: test
+engine: canvas2d
+project: indieagent-moss-forest-test
+code:
+  path: indieagent-moss-forest-test/js/forest.js
+  flag: null
+  page: indieagent-moss-forest-test/index.html
+  note: >-
+    js/px.js is the 16bit look's indexed pixel engine, copied unchanged. js/core.js holds the palette (59 base
+    colours plus LIGHT, LIGHT2 and FOG blends, 150 entries) and the remap tables; js/forest.js the camera, the
+    baked planes, sky, haze, shafts, spores and leaves; js/piano.js the giant (baked cabinet and moss sprites, IK
+    legs, clods, mound, dust); js/main.js the frame order and the palette fade. README has the numbers brief.
+rules:
+  - Draw into an indexed 320x180 buffer and blow it up x4 nearest-neighbour; every element at 1x, whole-pixel positions, no rotation
+  - Foliage and moss are ragged clumps lit per pixel from the sun direction plus value noise, quantized to a 4-7 step ramp with a Bayer threshold
+  - Many planes, each baked once and blitted at round(camera x rate) - sky 0.05, far 0.12, far-mid 0.25, mid 0.42, clearing 0.6, near 1.0, foreground 1.5
+  - Atmosphere is palette remaps by dither - FOG for haze bands (densest at the sun), LIGHT2/LIGHT for shafts fanning from the sun, DARK for shadows
+  - One light arc as a palette fade (dim and muted to full warm gold); rim colours switch on in short runs as the sun climbs
+  - Backlit - the sun sits behind the subject, front faces stay dark, rims and lid moss catch the light
+  - The giant moves in whole poses with feet planted (two-bone IK to fixed floor points, 0 px slide), follow-through on its sapling and hanging moss
+palette:
+  - "#fff8e6"
+  - "#f3d09a"
+  - "#d39469"
+  - "#989c70"
+  - "#46552e"
+  - "#10170a"
+  - "#7c9e31"
+  - "#e6c87a"
+  - "#58341f"
+  - "#e6dcba"
+reference: >-
+  chetaslua's "pure code" forest film (x.com/chetaslua/status/2117169796290916732): the vocabulary only (low-res
+  painted pixels, planes of trees in haze, shafts, a mossy giant). Its robot is not copied; ours is a piano.
+proof:
+  renders:
+    - indieagent-moss-forest-test/out/mossforest_test_f0-f360_24fps_review-720p_v2.mp4
+  pr:
+    - rheos/secondunit-videos#397
+  youtube: []
+verdict: null
+related:
+  - 16bit

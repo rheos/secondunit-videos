@@ -79,6 +79,37 @@ QA: contact sheet at 1, 4, 6.5, 9, 11, 14.5 s; 600x450 crops (full-size frames) 
 - Copying a frame of the clip: no small giant centred head-on between two framing trunks
 - `Math.random`, `Date.now`, state carried between frames
 
+**Added after the first render (2026-11-03):**
+
+- Moss as lit spheres: the first clumps read as green bubbles and balls stuck on things. Moss is now flatter
+  (`sq` squash), darker, rougher (`tex` up), lumps made of two or three small clumps, rim only on the sun side
+- A haze pass over the giant: an aerial haze band laid over the cabinet front read as a screen door. Haze stays
+  behind the giant; only shafts and dust cross it
+- Shafts as a single strong remap: light on dark wood jumped a long way and made checkerboards. Shafts now step
+  LIGHT2 (17% toward the sun), then LIGHT, then LIGHT twice, with a cut-off at 1.8 widths so beams have gaps
+- Rim lines dithered per pixel: a 1 px rim dimmed by Bayer reads as stitching. Rims now switch on in 2x4 runs
+- Fern arches on the lid: they read as hooks. The lid has grass tufts instead
+- Table legs: hips at the keybed ends with feet far out made a bench. Legs are now 20 + 20 px, feet 7 px out from
+  the hips, so they bow a little when standing and fold out like a frog's when asleep
+- The giant centred between two framing trunks (close to the clip, and dull): the sun moved right, the piano
+  ends in the right third with the sun behind its shoulder, and it steps toward the light
+
+## Review (v2, 2026-11-03)
+
+- Contact sheet at 1, 4, 6.5, 9, 11, 14.5 s and a 12-frame motion sheet; 600x450 crops of the giant at 4, 7,
+  10.42 and 14 s and of the near plane at 2, 8 and 13 s, cut from full-size PNG frames; a 9-frame strip of the step.
+- Motion-lab audit, all 360 frames: giant in frame, feet 0 px slide while planted, planted front feet on the floor,
+  `lidOpen` on frame 110, `plantR` on 250, `plantL` on 290. All pass.
+- `badframes.py`: 0 of 360. Frame-to-frame change: mean 2.6 grey levels, no run of identical frames (the camera
+  never stops).
+- One render on the Intel Mac: about 60 ms a frame, 21 s for the whole 15 s with 4 workers.
+
+What it still lacks, for the next pass: the asleep mound reads as a hedge with a box in it rather than one buried
+shape; the cabinet front is a flat dark slab (no lean or weight shift, since nothing rotates, so the step is all
+legs); the greens sit in one olive family where the clip's forest runs from teal shadow to gold; the spores are
+too few to read at 720p; and there is no sound (a step thud, falling clods and one held piano note when the
+fallboard opens would make the wake).
+
 ## Build and render
 
 Playwright comes from a sibling look (`ln -s ../bobwiseman-airplane-16bit/node_modules node_modules`, not committed).
@@ -86,8 +117,9 @@ Playwright comes from a sibling look (`ln -s ../bobwiseman-airplane-16bit/node_m
 ```bash
 open index.html                                   # plays in a browser; ?t=8 starts at 8 s
 node check.mjs out/check/sheet.jpg 1 4 6.5 9 11 14.5          # contact sheet
+node check.mjs --crop 620,200 out/check/crop 10.42 14           # 600x450 crops from full-size frames
 node check.mjs --full out/check/full 4 7 10.4 14               # full-size PNG stills
 node ../tools/motion-lab/audit.mjs index.html 0 15 --spec audit.spec.mjs --width 1280 --height 720
 nice -n 15 node ../tools/motion-lab/render.mjs index.html 0 15 out/mossforest_test_f0-f360_24fps_review-720p_vN.mp4 --width 1280 --height 720
-python3 ../tools/cloud-render/badframes.py out/mossforest_test_f0-f360_24fps_review-720p_vN.mp4
+~/Code/novadiem/indieagent/viralvision/viralvision-worker/.venv/bin/python ../tools/cloud-render/badframes.py out/mossforest_test_f0-f360_24fps_review-720p_vN.mp4
 ```
