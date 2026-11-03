@@ -116,6 +116,11 @@ pale frame. The numbers above are the measured ones, and the grade was redone to
 
 ### Review (d3, 2026-11-03)
 
+**Judged against the wrong thing.** Every check below used three thumbnails 320-400 px wide. This draft was built
+without opening the film or its repo (github.com/ChetasLua/moss-keeper). The measured light numbers came from those
+thumbnails and need redoing from the film. Robin, on seeing d3: "still not very different to what we already have and
+not very close to the one i showed you".
+
 Route: an offline-style painter in canvas2d, rendered headless, no 3D. About 230 ms a frame and 16 s to load the
 page's baked planes. A full render is 50 s with 4 workers on this Intel Mac, with no image or video model and 0 credits.
 
