@@ -6,7 +6,7 @@
 Reads cues.json (tools/blueprint-kit/cues.mjs: every event the page reports), renders one take per cue kind with
 `earshot sfx render` (the bank is numpy only: no Docker, no torch, no models), places each hit one frame after its
 event, thinned to one per frame per kind, and mixes it under _in/voice.wav -> _in/sfx.wav and _in/mix.wav
-(-14 LUFS integrated, -1.5 dBTP). Re-run after any timing change, after cues.mjs.
+(-14 LUFS integrated, -1.5 dBTP, then a -2 dBFS limiter: single-pass loudnorm plus the AAC encode overshot to -0.7 dBTP on ep 3's stamps). Re-run after any timing change, after cues.mjs.
 """
 import json, os, pathlib, subprocess, sys
 import numpy as np
@@ -76,6 +76,6 @@ for c in sorted(cues, key=lambda c: c["t"]):
 sf.write(HERE / "_in/sfx.wav", np.stack([bus, bus], 1), SR, subtype="PCM_24")
 mix = voice + np.stack([bus, bus], 1)
 sf.write(HERE / "_in/premix.wav", mix, SR, subtype="FLOAT")
-subprocess.run(["ffmpeg", "-y", "-v", "error", "-i", str(HERE / "_in/premix.wav"), "-af", "loudnorm=I=-14:TP=-1.5:LRA=11",
+subprocess.run(["ffmpeg", "-y", "-v", "error", "-i", str(HERE / "_in/premix.wav"), "-af", "loudnorm=I=-14:TP=-1.5:LRA=11,alimiter=limit=0.79:attack=1:release=50:level=false",
                 "-ar", str(SR), "-c:a", "pcm_s16le", str(HERE / "_in/mix.wav")], check=True)
 print("placed", {k: v for k, v in sorted(count.items())}, "->", HERE / "_in/mix.wav")
