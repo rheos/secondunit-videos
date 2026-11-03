@@ -6,7 +6,7 @@ import { launch, openLook, frame, jpegBuffer } from '../tools/motion-lab/frames.
 const a = process.argv.slice(2); let mode = 'sheet', crop = null;
 if (a[0] === '--full') { mode = 'full'; a.shift(); } else if (a[0] === '--crop') { mode = 'crop'; a.shift(); crop = a.shift().split(',').map(Number); }
 const out = a.shift(), times = a.map(Number);
-const b = await launch(); const { p, errors } = await openLook(b, 'index.html', { width: 1280, height: 720 });
+const b = await launch(); const { p, errors } = await openLook(b, process.env.PAGE || 'index.html', { width: 1280, height: 720 });
 const tmp = mode === 'sheet' ? fs.mkdtempSync(path.join(process.env.TMPDIR || '/tmp', 'moss_')) : out; fs.mkdirSync(tmp, { recursive: true });
 const files = []; let ms = 0;
 for (const t of times) {

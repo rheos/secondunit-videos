@@ -26,10 +26,11 @@ MEDIUM: background = gouache: brush-dab clusters (ellipses 3-22 px, 2-3 overlapp
       by depth: far 3.2 px, far-mid 1.8, mid 0.8, giant plane 0, near 0.
       Giant = cel: 2 flat tones per material (base + one shadow shape) and a rim, a soft dark outline (alpha .55,
       2.5 px) only on the silhouette and the big shapes, no texture noise on it.
-LIGHT: high-key. Mean luma of the frame >= 150 (0-255) at 7.5 s; >= 55% of pixels lighter than 140.
-      Sun at screen (700, 250), behind the giant's left shoulder once it stands. Sky: pale blue #a9cbd8 at the top
+LIGHT: bright sky and deep darks, measured off the reference (see "Corrected after the first sheets"): mean luma
+      130-150, p10 <= 65, p50 130-155, p90 >= 205, 45-55% of pixels lighter than 140, mean saturation .24-.30.
+      Sun at screen (662, 214), behind the giant's left shoulder once it stands. Sky: pale blue #a9cbd8 at the top
       to cream-gold #fff1c8 at the sun; 3 peach-pink cloud bands (#f2b8a0, #f6cdb2). Shafts: 7 beams fanning down
-      from the sun, screen-blended, peak alpha .22; bloom = 1/4-size copy, contrast 2.4, blur 6 px, screen at .3 x L.
+      from the sun, screen-blended, peak alpha .22; bloom = 1/4-size copy, contrast 2.6, blur 6 px, screen at .13 x L.
       Dust motes: 140, brightness from the shaft field, never visible outside a beam above alpha .15.
       Light arc L: .62 (0 s) -> 1.0 (11 s), smooth; sun glow, shafts, rim light and bloom read L.
 DEPTH (back to front, parallax rate): sky .03 | far forest .10 | fog | far-mid .22 | fog | mid .40 | ground fog |
@@ -42,12 +43,14 @@ TREES: far and far-mid trunks 6-22 px, mid 22-40 px, near 70-140 px; all reach p
 COLOUR: lit leaves #a9c93c to #cfe06a; shade leaves #3d6c5e to #5d8e7a (blue-green); no olive below
       saturation .3 on lit foliage. Giant: weathered wood #8c6c55 / shadow #5c4c4c, stone-grey moss-free patches
       #a39a8c, moss #6f9a36 / #3f6b55 / lit #bcd650, rust accents #b4532f (sconces, hinge, foot caps), keys #eadfc4.
-CREATURE: upright piano body 300 x 255 px, legs 105 px; standing height 360 px = 50% of frame (55% with the
-      sapling). Body centre x 790, feet on the floor line y 592. Asleep: sunk to y +150, tilted -3 deg, legs folded.
+CREATURE: upright piano front 300 x 250 px plus a 66 px side plane, legs about 86 px, one moss mound on top.
+      Feet to moss crest 59% of frame height at 9 s, 75% with the sapling (brief said 45-55%; left bigger because the
+      reference's giant is about 75%). Body centre x 772, feet on the floor line y 592. Asleep: body bottom y 634
+      (standing 506), tilted -3 deg, legs folded under it, three sheets of moss over the front.
       0-3 s asleep (moss breathes 1 px); 3.0-5.0 s stirs: 9 clods fall, fallboard opens 3.6-4.6 s (lidOpen f110),
       top lid lifts 4.2-5.0 s; 5.0-5.4 s anticipation dip 6 px; 5.4-8.6 s rises (in-out), overshoot 3%, settles 9.2 s;
-      9.2-9.8 weight onto the left leg (tilt -2.5 deg); right foot lifts 9.8, plants 10.9 s (plantR f262) 52 px right,
-      20 px nearer; body follows, drops 7 px on the plant; left foot lifts 11.6, plants 12.6 s (plantL f302);
+      9.2-9.8 weight onto the right leg (tilt +2.3 deg); left foot lifts 9.8, plants 10.92 s (plantL f262) 50 px toward
+      the sun; body follows, drops 7 px on the plant; right foot lifts 11.6, plants 12.58 s (plantR f302) 50 px;
       13-15 s stands in full sun, breathes 2 px at .3 Hz. Feet 0 px slide while down; planted feet on their floor y.
       Sapling and drape moss follow through (sampled from earlier body poses).
 GROUND: grass band y 630-720 at rate 1.15, blades 18-60 px with rim-lit tips, 40 flowers (cream, yellow, rust);
@@ -58,6 +61,14 @@ QA: sheet of the reference beside d3 at 6 times; d3 sheet at 1, 4, 6.5, 9, 11, 1
       4, 7, 10.9, 14 s and of the near plane at 2, 8, 13 s from full-size frames; motion-lab audit on all 360 frames
       (audit-d3.spec.mjs); badframes on the mp4; luma numbers above measured, not eyeballed; then watch it.
 ```
+
+### Corrected after the first sheets
+
+The brief's first light numbers were wrong. It asked for mean luma >= 150 and >= 55% of pixels over 140, and draft
+d3 hit them (mean 167, p10 90, 71% over 140) while looking washed out and lime beside the clip. Measured
+(`work/stats.py`, on the picture area of the three reference frames), the reference is mean 130-141, p10 52-63, p50
+129-137, p90 211-224, 44-48% over 140, saturation .24-.29. Its "high-key" is a bright sky with deep darks, not a
+pale frame. The numbers above are the measured ones, and the grade was redone to meet them.
 
 ### BANNED (d3, written before the build; grows after every render)
 
@@ -72,6 +83,17 @@ QA: sheet of the reference beside d3 at 6 times; d3 sheet at 1, 4, 6.5, 9, 11, 1
 - Marionette motion: rigid legs swinging from a pivot, a sliding planted foot, the body gliding without weight
 - Lens flare rings, chromatic aberration, vignette darker than 12% at the corners
 - `Math.random`, `Date.now`, state carried between frames
+
+**Added after the first renders (2026-11-03):**
+
+- Moss as bubbles: stacks of lit spheres read as green grapes. Moss is one blanket shape with a lumpy top and a
+  scalloped hem (`mossMass`), flat patches on it, closed in round shoulders
+- Foliage as discs: single soft ovals floating between trunks. Foliage is many lobes on visible branches
+- A flat front: the piano as a card. It has a side plane now, and moss wraps onto it
+- Drips along the keys: they read as teeth, then as green fingers. Only four soft teardrops, at the shelf ends
+- A ruled rim line down a trunk: light on trunks is broken up along their length
+- Fog thick enough to hide the feet: the step is the main action, so the fog over them is 58%, not 92%
+- Bloom and fog as the way to look bright: they wash the frame out. Keep the darks at the measured p10
 
 ## Draft 2 (pixel art, rejected)
 
