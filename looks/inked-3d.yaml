@@ -1,9 +1,9 @@
-slug: moss-forest
+slug: inked-3d
 title: Inked 3D giant on painted plates
 note: >-
   A 3D model drawn as a hand-inked cel, flat tones from a real light, broken ink lines, dry-brush moss, on hard-edged
   painted forest plates, cut into shots and held on twos: an overgrown upright piano on four legs wakes and takes a step.
-used: Moss forest, look test
+used: Moss forest (the piano giant), look test
 cost: free
 group: code
 order: 365
@@ -49,5 +49,5 @@ proof:
   pr:
     - rheos/secondunit-videos#397
   youtube: []
-verdict: null
+verdict: Robin, 2026-11-03, on draft 4: "ok.. well that is pretty close". Drafts 2 (pixel art) and 3 (soft painted sprite) rejected.
 related: []

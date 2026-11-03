@@ -33,6 +33,12 @@ Draft 4 follows it with our own subject: a four-legged piano giant, no robot, no
 
 ## Draft 4: a 3D piano giant, inked and painted (2026-11-03)
 
+**Filed as the inked3d kit (2026-11-03, #400).** The general parts of `js/d4/` moved to `tools/inked3d-kit/` and
+`d4.html` now loads `kit/` (synced copy, see `kit/VERSION`); `js/d4/` keeps the piano, its moss, the forest plates,
+the shots and the life. Regression on the six check frames (1.5, 5.4, 7.5, 8.7, 11, 13.2 s): at most 0.5% of pixels
+touched, 0.06% by more than 16 levels, all edge pixels inside the giant (palettes went from shader constants to
+uniforms, and a few ink and stroke ties flip). Visually identical. The look is `looks/inked-3d.yaml`.
+
 Page `d4.html`, code `js/d4/` (`gl.js` our own WebGL2 renderer, `giant.js` the model, pose and moss, `plates.js` the
 painted plates, `life.js` the bird, soil, dust, flock and leaves, `main.js` the shots). Review cut
 `out/mossforest_test_f0-f360_24fps_review-720p_d4.mp4`. The four-legged piano came back: draft 3 had silently cut it to two.
