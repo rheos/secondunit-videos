@@ -26,6 +26,7 @@ is 1080x1920 at 60 fps with motion blur.
 | `blink-geo.js` | Blink as maths: a superellipsoid body, the visor, eyes, smile and sprout on its surface (proportions measured off the GPT turnaround). `window.BLINK`. |
 | `blink3d.js` | `makeBlink` (toon mesh, outline, `face({blink, happy, look, lookY, think, skew, eager})` (skew: a side-eye; eager: wide eyes and a grin), a low-poly option for crowds), `makeHarness` (belt, buckle, gear loop, three tools on carabiners), `glyphTexture`, `toonRamp`. |
 | `world.js` | Easing (`io`, `back`, `r01`, `pulse`, `typed`), `cameraPath(KEYS)` (word-keyed camera with a slow drift), `panel()` (canvas-texture panels redrawn only on change), `stage(canvas)` (renderer at the canvas's size, fog, light, toon ramp, floor grid). |
+| `vo/tighten.py` | Cuts a take's pauses to the look bible's numbers, keeping the raw take as `vo/voice.raw.mp3`. |
 | `vo/vo.py`, `vo/align.py` | Record `<project>/vo/script.json` with Chris as one take; faster-whisper word times -> `vo/words.js` (`VO.w(word, n)`) and `_in/voice.wav`. |
 | `sfx_earshot.py` | The sound on the picture from earshot's bank (Leon Lin, MIT): one take per cue kind, each hit one frame after its event, mixed under the voice to -14 LUFS. |
 | `finish.sh` | Render at 120 fps, blend pairs to 60 fps (motion blur), restore BT.709 tags, then probe, forensics (cues declared) and flashcheck. |
@@ -37,6 +38,7 @@ is 1080x1920 at 60 fps with motion blur.
 # from the secondunit-videos checkout; a new folder per short, allowlisted in .gitignore
 tools/devweb-kit/sync.sh devweb-ep02-<slug>
 python3 -I tools/devweb-kit/vo/vo.py devweb-ep02-<slug>                               # vo/script.json -> vo/voice.mp3
+<viralvision venv python> -I tools/devweb-kit/vo/tighten.py devweb-ep02-<slug>        # pauses: 0.22 s at a stop, 0.15 s at a comma
 <viralvision venv python> -I tools/devweb-kit/vo/align.py devweb-ep02-<slug>          # -> vo/words.js, _in/voice.wav
 # build index.html (overlays + clock) and the short's world file, copying devweb-ep01-oner's shape
 node tools/blueprint-kit/cues.mjs devweb-ep02-<slug>                                  # -> cues.json (BP.CUES)
