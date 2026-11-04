@@ -19,6 +19,7 @@ W = [[w.word.strip().strip(".,:;!?").lower(), round(LEAD + w.start, 3), round(LE
   "  w(word, n = 1) { const m = this.W.filter((x) => x[0] === word.toLowerCase()); if (m.length < n) throw new Error(`VO: no '${word}' #${n}`); return m[n - 1][1]; },\n"
   "  e(word, n = 1) { const m = this.W.filter((x) => x[0] === word.toLowerCase()); if (m.length < n) throw new Error(`VO: no '${word}' #${n}`); return m[n - 1][2]; } };\n")
 ms = round(LEAD * 1000)
+(ROOT / "_in").mkdir(exist_ok=True)  # a fresh project has no _in/ yet (ep 5: ffmpeg exit 254)
 subprocess.run(["ffmpeg", "-y", "-v", "error", "-i", str(HERE / "voice.mp3"), "-af",
   f"aresample=48000,aformat=channel_layouts=stereo,adelay={ms}|{ms},apad=whole_dur={END},atrim=0:{END}",
   "-c:a", "pcm_s16le", str(ROOT / "_in/voice.wav")], check=True)

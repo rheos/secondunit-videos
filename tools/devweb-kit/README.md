@@ -24,7 +24,7 @@ is 1080x1920 at 60 fps with motion blur.
 | File | What it does |
 |---|---|
 | `blink-geo.js` | Blink as maths: a superellipsoid body, the visor, eyes, smile and sprout on its surface (proportions measured off the GPT turnaround). `window.BLINK`. |
-| `blink3d.js` | `makeBlink` (toon mesh, outline, `face({blink, happy, look, lookY, think})`, a low-poly option for crowds), `makeHarness` (belt, buckle, gear loop, three tools on carabiners), `glyphTexture`, `toonRamp`. |
+| `blink3d.js` | `makeBlink` (toon mesh, outline, `face({blink, happy, look, lookY, think, skew, eager})` (skew: a side-eye; eager: wide eyes and a grin), a low-poly option for crowds), `makeHarness` (belt, buckle, gear loop, three tools on carabiners), `glyphTexture`, `toonRamp`. |
 | `world.js` | Easing (`io`, `back`, `r01`, `pulse`, `typed`), `cameraPath(KEYS)` (word-keyed camera with a slow drift), `panel()` (canvas-texture panels redrawn only on change), `stage(canvas)` (renderer at the canvas's size, fog, light, toon ramp, floor grid). |
 | `vo/vo.py`, `vo/align.py` | Record `<project>/vo/script.json` with Chris as one take; faster-whisper word times -> `vo/words.js` (`VO.w(word, n)`) and `_in/voice.wav`. |
 | `sfx_earshot.py` | The sound on the picture from earshot's bank (Leon Lin, MIT): one take per cue kind, each hit one frame after its event, mixed under the voice to -14 LUFS. |
@@ -63,3 +63,41 @@ Iterate with `npx hyperframes@0.8.162 snapshot --at ...` (contact sheets) before
   bottom 220 px for captions.
 - **A GSAP tween on an element whose transform is also written by hand overrides it.** Keep hand-driven transforms on
   elements GSAP never touches.
+
+## Rules learned on episode 2
+
+- **Set every transform from t on every frame; never `multiplyScalar` or `+=` onto last frame's value.** Snapshots seek
+  each frame fresh, so they look right, while the finish renders frames in order and the state piles up. On ep 2 a
+  file's stamp pulse multiplied its scale each frame and a giant page washed out 35 to 41.7 s of the first finish; only
+  forensics' pop at the far end gave it away. Reset (`scale.setScalar(1)`, `position.copy(...)`) before any branch
+  that adjusts it.
+- **Frame the camera outside the props.** A key that sits inside a gate post or over a bin reads as a wall of colour;
+  check every key on the contact sheet, and route long camera travels around Blink and the stations, not through them.
+- **No article URLs on screen** (Robin, draft 2). The end card is the `~/devweb` mark over the whole world, nothing else.
+- **No long devweb URLs in the YouTube description either** (Robin, 2026-10-30: "make sure it's not put long urls to
+  devweb articles in the video"). At most plain `devweb.org`; never an `/articles/...` path. Ep 2 draft 4 (jBQhfAUXluU)
+  went up with the full article URL in its description before this rule.
+
+## Rules learned on episode 3
+
+- **Keep a long straight edge off the frame's outer few pixels.** Forensics' border check fails a run of frames where
+  the outer 1-3 px differ from the pixels just inside: on ep 3 the server's blue trim bars sat on the frame edge in four
+  shots while the camera drifted. Frame with a margin past any trim, bar or panel edge, top and bottom as well as the
+  sides.
+- **Two panels in one plane z-fight.** A card standing on a pulled-out drawer at the drawer face's depth flickered in
+  hatched stripes (ghosts and spikes at 22-24 s). Keep 0.1 units of clearance between facing panels.
+- **No per-frame shake.** A 14 Hz position jitter on a "glitching" card read as one-frame ghosts. Glitch the content
+  (values swapping every 0.1 s), not the position.
+- **Park props the camera passes close to.** From a pulled-back wall shot, the idle stamp and the server's label
+  became dark blurred blobs at the frame's foot. Retract a prop between its moments, or fade it by camera height.
+- **sfx_earshot now limits after loudnorm** (-2 dBFS). Single-pass loudnorm plus the AAC encode put ep 3's stamp hits
+  at -0.7 dBTP and probe failed.
+- **Snap the closing words to the voice.** Whisper put "make" 0.56 s early, before a silence; check the energy
+  envelope around every slam and stamp.
+- **Check a flight path against every solid it passes.** A card's bezier from Blink to the wall dipped into the
+  server's body for a frame and vanished (a 58-point spike). Sample the path and keep it out of every box it crosses.
+- **Ease every face value between keys.** Switching Blink from one gaze and smile to another at a time boundary is a
+  one-frame jump; forensics flags it as a spike in the frame's centre. Key lookY, look, happy and skew and ease
+  between them.
+- **A panel that holds still between lines needs a float.** A board showing one word for 1.3 s read as a frozen
+  player (forensics' hold check). A slow bob, scale breath or yaw is enough.
