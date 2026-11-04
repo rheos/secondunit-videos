@@ -1,0 +1,24 @@
+slug: colorfigures
+name: Colorfigures
+kind: skill
+status: candidate
+does: April Zhu's Claude skill that draws an everyday object hand-inked and isometric with flat colour and a hard blue shadow, as one HTML page with working buttons, live readouts and labelled parts. Figures also turn in 3D and go see-through.
+keywords:
+- isometric
+- illustration
+- explainer
+- interactive
+- 3d
+fits:
+- machines that act out a lyric, close kin to the rescue machine parts
+- how-it-works plates, and the Arowyn science idea
+deterministic: unknown
+how: not installed. One-line install from april-zhu.com/colorfigures. The output is an interactive page, so video needs a seek(t) wrapper we would have to add.
+cost: free, MIT, figures usable in paid and client work; she asks for a credit when posted
+url: https://april-zhu.com/colorfigures
+source: x.com/Aprilzz423/status/2111839048230666590 (Oct 18 2026, read 2026-11-04)
+verdict: 'Recommended by Claude, 2026-11-04: the one to try first from her catalogue, because the licence allows client work. Page and promo read, the skill itself not.'
+related:
+- tinycharts
+- iso-glow
+- anatomy

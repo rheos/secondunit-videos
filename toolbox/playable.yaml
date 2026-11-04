@@ -1,0 +1,20 @@
+slug: playable
+name: Playable
+kind: skill
+status: parked
+does: April Zhu's Claude skill that turns a robot sketch or a rigged 3D model into a character driven in the browser with three.js, with walk, run, jump and light controls.
+keywords:
+- 3d
+- threejs
+- interactive
+- game
+fits:
+- nothing in the studio yet; viewers driving a character is not a video need
+deterministic: unknown
+how: not installed. One-line install from april-zhu.com/playable.
+cost: free, MIT
+url: https://april-zhu.com/playable
+source: x.com/Aprilzz423/status/2110363102168658199 (Oct 14 2026, read 2026-11-04)
+verdict: 'Recommended by Claude, 2026-11-04: fine, no use for it yet.'
+related:
+- meshy
