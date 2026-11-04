@@ -67,11 +67,13 @@ function tube(part, mat, x0, y0, z0, x1, y1, z1, r0, r1, seg = 8) {
 }
 
 // ---- the look: materials and palettes, uploaded as uniforms ----
-const INK = { mat: new Float32Array(NM * 9), kind: new Int32Array(NM), wx: new Float32Array(30), glow: new Float32Array(9), tones: new Float32Array(15), blades: new Float32Array(9), petals: new Float32Array(12), ink: new Float32Array(3) };
+const INK = { mat: new Float32Array(NM * 9), kind: new Int32Array(NM), wx: new Float32Array(30), wxk: new Float32Array([1, 1]), glow: new Float32Array(9), tones: new Float32Array(15), blades: new Float32Array(9), petals: new Float32Array(12), ink: new Float32Array(3) };
 const f3 = (h) => hex(h).map((v) => v / 255);
 function configureInk(o) {
   (o.mats || []).forEach((m, i) => { INK.mat.set([...f3(m.lit), ...f3(m.mid), ...f3(m.shade)], i * 9); INK.kind[i] = m.kind || 0; });
   const w = o.weather || {}; ['stainL', 'stainS', 'bareL', 'bareM', 'bareS', 'lichenL', 'lichenS', 'ink', 'rayL', 'rayS'].forEach((k, i) => { if (w[k]) INK.wx.set(f3(w[k]), i * 3); });
+  // weather.density: how much of the surface the stains, bare patches and lichen cover (1 = the piano); weather.scale: patch size, under 1 for bigger patches
+  INK.wxk.set([w.density ?? 1, w.scale ?? 1]);
   if (o.glow) INK.glow.set(o.glow.flatMap(f3)); if (o.tones) INK.tones.set(o.tones.flatMap(f3)); if (o.blades) INK.blades.set(o.blades.flatMap(f3)); if (o.petals) INK.petals.set(o.petals.flatMap(f3)); if (o.ink) INK.ink.set(f3(o.ink));
 }
 // ---- shaders ----
@@ -85,16 +87,16 @@ uniform mat4 uPart[${MAXP}];uniform mat4 uVP;out vec3 vW;out vec3 vL;out vec3 vN
 void main(){int pt=int(aM.x);mat4 m=uPart[pt];vec4 w=m*vec4(aP,1.);vW=w.xyz;vL=aP+float(pt)*3.7;vN=mat3(m)*aN;vMat=int(aM.y);vId=2.+aM.y+aM.x*8.;gl_Position=uVP*w;}`,
 `in vec3 vW;in vec3 vL;in vec3 vN;flat in int vMat;flat in float vId;layout(location=0) out vec4 o0;layout(location=1) out vec4 o1;
 uniform sampler2D uShadow;uniform mat4 uSVP;uniform vec3 uL;uniform float uGlow;uniform float uRay;uniform vec3 uRayP;uniform vec3 uFill;
-uniform vec3 uMat[${NM * 3}];uniform int uKind[${NM}];uniform vec3 uWx[10];uniform vec3 uGlowC[3];${NOISE}${SHADOW}
+uniform vec3 uMat[${NM * 3}];uniform int uKind[${NM}];uniform vec3 uWx[10];uniform vec2 uWxK;uniform vec3 uGlowC[3];${NOISE}${SHADOW}
 void main(){vec3 N=normalize(vN);
  float w=(fbm3(vL*7.)-.5)*.2;float ndl=dot(N,uL)+w;float lit=step(.06,ndl)*sunlit(vW+N*.012);float fill=step(.3,dot(N,uFill)+w*1.4);
  vec3 L0=uMat[vMat*3],M0=uMat[vMat*3+1],S0=uMat[vMat*3+2];int k=uKind[vMat];
  vec3 c=lit>.5?L0:(fill>.5?M0:S0);
  if((k&1)==1){ // weathered: flat stains, the finish gone in patches, lichen, planks and cracks in ink
-  vec3 P=vL;float st=fbm3(P*2.1+3.);float st2=fbm3(P*5.3+9.);
-  if(st2>.6&&st>.47)c=mix(c,lit>.5?uWx[0]:uWx[1],.85);
-  if(st<.335)c=lit>.5?uWx[2]:(fill>.5?uWx[3]:uWx[4]);
-  if(fbm3(P*3.3+21.)>.645)c=lit>.5?uWx[5]:uWx[6];
+  vec3 P=vL*uWxK.y;float D=uWxK.x;float st=fbm3(P*2.1+3.);float st2=fbm3(P*5.3+9.);
+  if(st2>mix(1.,.6,D)&&st>.47)c=mix(c,lit>.5?uWx[0]:uWx[1],.85);
+  if(st<.335*D)c=lit>.5?uWx[2]:(fill>.5?uWx[3]:uWx[4]);
+  if(fbm3(P*3.3+21.)>mix(1.,.645,D))c=lit>.5?uWx[5]:uWx[6];
   float pl=abs(fract(P.x*2.6+.08*fbm3(P*1.3)+P.y*.02)-.5);float gap=step(.42,fbm3(P*vec3(1.5,3.2,1.5)));if(pl<.009&&abs(N.z)>.5)c=mix(c,uWx[7],gap*.85);
   float cr=abs(fbm3(P*vec3(1.7,.8,1.7)+5.)-.5);if(cr<.0045)c=mix(c,uWx[7],.9);
  }
@@ -164,7 +166,7 @@ function renderModel(parts, cam, uni) {
   gl.clearBufferfv(gl.COLOR, 0, new Float32Array([0, 0, 0, 0])); gl.clearBufferfv(gl.COLOR, 1, new Float32Array([0, 0, 0, 1e4])); gl.clear(gl.DEPTH_BUFFER_BIT);
   gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, tShadow);
   gl.useProgram(P_SOLID.p); const u = P_SOLID.u; gl.uniformMatrix4fv(u.uPart, false, fp); gl.uniformMatrix4fv(u.uVP, false, VP); gl.uniformMatrix4fv(u.uSVP, false, SVP); gl.uniform1i(u.uShadow, 0); gl.uniform3fv(u.uL, Ln); gl.uniform1f(u.uGlow, uni.glow || 0); gl.uniform1f(u.uRay, ray); gl.uniform3fv(u.uRayP, rayP); gl.uniform3fv(u.uFill, uni.fill || [0, .92, .38]);
-  gl.uniform3fv(u.uMat, INK.mat); gl.uniform1iv(u.uKind, INK.kind); gl.uniform3fv(u.uWx, INK.wx); gl.uniform3fv(u.uGlowC, INK.glow);
+  gl.uniform3fv(u.uMat, INK.mat); gl.uniform1iv(u.uKind, INK.kind); gl.uniform3fv(u.uWx, INK.wx); gl.uniform2fv(u.uWxK, INK.wxk); gl.uniform3fv(u.uGlowC, INK.glow);
   gl.drawElements(gl.TRIANGLES, nIdx, gl.UNSIGNED_INT, 0);
   gl.useProgram(P_STROKE.p); const v = P_STROKE.u; gl.uniformMatrix4fv(v.uPart, false, fp); gl.uniformMatrix4fv(v.uVP, false, VP); gl.uniformMatrix4fv(v.uSVP, false, SVP); gl.uniform1i(v.uShadow, 0); gl.uniform3fv(v.uL, Ln); gl.uniform2f(v.uPr, cam.P[0], cam.P[5]); gl.uniform1f(v.uRay, ray); gl.uniform3fv(v.uRayP, rayP);
   gl.uniform3fv(v.uTone, INK.tones); gl.uniform3fv(v.uBlade, INK.blades); gl.uniform3fv(v.uPetal, INK.petals);

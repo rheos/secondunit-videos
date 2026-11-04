@@ -27,7 +27,8 @@ rheos/secondunit-videos#396). Look file: `looks/inked-3d.yaml`. Robin on draft 4
 ## What a project sets
 
 `configureInk({ mats, weather, glow, tones, blades, petals, ink })` once at load: the materials (three
-colours and a kind each), the weathering colours, the glow tones, the stroke-layer tones and the ink colour.
+colours and a kind each), the weathering colours plus `weather.density` (cover, 1 = the piano) and `weather.scale`
+(patch size, under 1 for bigger patches), the glow tones, the stroke-layer tones and the ink colour.
 Then its own model (`build*` with the shape tools), pose (part matrices per held frame), stroke planting, plates,
 shots and cameras, and whatever flat life goes on top. See the moss forest's `js/d4/` for the shape of a project.
 

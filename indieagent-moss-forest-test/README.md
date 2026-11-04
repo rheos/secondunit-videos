@@ -38,6 +38,9 @@ Draft 4 follows it with our own subject: a four-legged piano giant, no robot, no
 the shots and the life. Regression on the six check frames (1.5, 5.4, 7.5, 8.7, 11, 13.2 s): at most 0.5% of pixels
 touched, 0.06% by more than 16 levels, all edge pixels inside the giant (palettes went from shader constants to
 uniforms, and a few ink and stroke ties flip). Visually identical. The look is `looks/inked-3d.yaml`.
+The second subject (the snow bus, #400) added `weather.density` and `weather.scale` to the kit; with the defaults
+the piano moves 0.06% of pixels again, edge ties only. A re-render of the same code is byte-identical, so the renderer
+itself is deterministic.
 
 Page `d4.html`, code `js/d4/` (`gl.js` our own WebGL2 renderer, `giant.js` the model, pose and moss, `plates.js` the
 painted plates, `life.js` the bird, soil, dust, flock and leaves, `main.js` the shots). Review cut
