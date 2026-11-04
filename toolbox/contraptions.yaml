@@ -20,7 +20,7 @@ cost: free (MIT; the show recordings are for private demos only, per each ATTRIB
 url: https://github.com/wustep/contraptions
 detail: 'Its choreography rule (STOCK_SHOWS_PLAN.md, versions/README.md): every piece runs at its own stock duration; choose pieces, their stock variants and their order so events land on measured recording cues; never stretch a mechanism clock or add a pause; report cue errors instead of retiming. Nothing is written on the frame.'
 source: Kevin Ngo's machine film (x.com/kevin_t_ngo/status/2104213302624821647) credits @wustep; his post x.com/wustep/status/2103934236466307073, read 2026-11-01
-verdict: 'Recommended by Claude, 2026-11-01: the engine our test 01 lacked. Our rescue-machine test was keyed by hand from a contact sheet of Kevin''s film, with gaps between parts and a marble that moves on rails; Robin called it "pretty lame and boring by comparison". Rebuild the lyric machine on these pieces and this rule, with the lettering as our layer.'
+verdict: 'Recommended by Claude, 2026-11-01: the engine our test 01 lacked. Our rescue-machine test was keyed by hand from a contact sheet of Kevin''s film, with gaps between parts and a marble that moves on rails; Robin called it "pretty lame and boring by comparison". On a closer look its pieces are clean geometric diagrams, so test 02 took the method (continuous ball, real speeds, follow camera), not the code; the pieces stay a candidate for a machine that wants that look.'
 related:
 - looseleaf-ink
 - hyperframes

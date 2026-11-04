@@ -8,7 +8,7 @@ const si = process.argv.indexOf('--stills'), out = process.argv[2];
 const b = await chromium.launch({ channel: 'chrome', headless: true }); const errs = [];
 const p = await b.newPage({ viewport: { width: 1280, height: 720 } });
 p.on('pageerror', (e) => errs.push(String(e))); p.on('console', (m) => m.type() === 'error' && errs.push(m.text()));
-await p.goto('file://' + path.join(here, 'machine.html')); await p.evaluate(() => window.setup());
+await p.goto('file://' + path.join(here, 'machine.html')); const legs = await p.evaluate(() => window.setup()); if (process.env.LEGS) console.log(legs.join('\n'));
 const dur = await p.evaluate(() => window.CUES.dur);
 const times = si > 0 ? process.argv[si + 1].split(',').map(Number) : [...Array(Math.round(dur * 24)).keys()].map((i) => i / 24);
 const dir = path.join(here, 'out', si > 0 ? 'stills' : 'frames'); fs.rmSync(dir, { recursive: true, force: true }); fs.mkdirSync(dir, { recursive: true });

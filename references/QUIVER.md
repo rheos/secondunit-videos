@@ -15,7 +15,7 @@ Robin signed off) · `candidate` (worth a test, not queued) · `parked` (fine, n
 
 | Order | Idea | From | Status | Note |
 |---|---|---|---|---|
-| 1 | Lyrics lettered into a Rube Goldberg machine | Kevin Ngo K30 (after wustep) | testing | A marble runs one machine; each sung line is hand-lettered beside the part it describes; the loop resets on its own story. A lyric-video format. Test 01 on Bob's No One's Coming to the Rescue (`bobwiseman-rescue-machine/`): Robin, "pretty lame and boring" next to Kevin's; it was reverse-engineered from 12 frames. Next: rebuild on wustep's contraptions engine (`toolbox/contraptions.yaml`). |
+| 1 | Lyrics lettered into a Rube Goldberg machine | Kevin Ngo K30 (after wustep) | testing | A marble runs one machine; each sung line is hand-lettered beside the part it describes; the loop resets on its own story. A lyric-video format. Test 01 on Bob's No One's Coming to the Rescue (`bobwiseman-rescue-machine/`): Robin, "pretty lame and boring" next to Kevin's; it was reverse-engineered from 12 frames. Test 02 rebuilt on wustep's method with a joke per part and a ring reveal, waiting on Robin. |
 | 2 | Lyric captions: one red key word, boxed term label | Kevin Ngo K31 (plate tectonics music video) | candidate | A caption rule, cheap to try on the next lyric video. |
 | 3 | statechart-art pencil kit vs our diagram-plate | Kevin Ngo K24-K26 | candidate | `toolbox/statechart-art-kit.yaml`. Read tools/kit before the next diagram plate. |
 | 4 | Stageshow for IndieAgent UI cutaways | Benji Taylor | candidate | `toolbox/stageshow.yaml`. Its virtual clock alone may be worth taking for frame-exact capture of real-time web motion. |
