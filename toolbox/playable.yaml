@@ -1,7 +1,7 @@
 slug: playable
 name: Playable
 kind: skill
-status: parked
+status: candidate
 does: April Zhu's Claude skill that turns a robot sketch or a rigged 3D model into a character driven in the browser with three.js, with walk, run, jump and light controls.
 keywords:
 - 3d
