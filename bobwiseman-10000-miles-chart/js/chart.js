@@ -74,7 +74,7 @@ function person(x, y, h, o = {}) {
   X.restore();
 }
 
-// ---- the five problems. Icons are held in screen scale against the world, swelling on "once so big".
+// ---- the five problems. Icons are held in screen scale against the world, swelling on the sung line.
 function iconEnvelope(k) { poly([[-14, -9], [14, -9], [14, 9], [-14, 9]], '#f6efdf', INK, 1 / k); X.beginPath(); X.moveTo(-14, -9); X.lineTo(0, 2); X.lineTo(14, -9); X.strokeStyle = INK; X.lineWidth = 1 / k; X.stroke(); poly([[3, -2 + 2], [12, 2], [12, 7], [3, 7]], PAL.brick, INK, 0.7 / k); }
 function iconTooth(k) { X.beginPath(); X.moveTo(-11, -9); X.bezierCurveTo(-6, -14, -2, -10, 0, -9); X.bezierCurveTo(2, -10, 6, -14, 11, -9); X.bezierCurveTo(13, -1, 9, 3, 8, 7); X.bezierCurveTo(7, 14, 3, 13, 2, 6); X.bezierCurveTo(1, 3, -1, 3, -2, 6); X.bezierCurveTo(-3, 13, -7, 14, -8, 7); X.bezierCurveTo(-9, 3, -13, -1, -11, -9); X.closePath(); X.fillStyle = '#fbf8ef'; X.fill(); X.strokeStyle = INK; X.lineWidth = 1 / k; X.stroke(); X.beginPath(); X.moveTo(5, -8); X.lineTo(2, -3); X.lineTo(6, -1); X.strokeStyle = RED; X.lineWidth = 1.2 / k; X.stroke(); }
 function iconPhone(k, s) { const r = Math.sin(s * 22) * (s < 44 ? 1.4 : 0); X.save(); X.rotate(r * 0.05); poly([[-12, 8], [12, 8], [9, -3], [-9, -3]], PAL.brick, INK, 1 / k); X.beginPath(); X.moveTo(-14, -4); X.quadraticCurveTo(0, -13, 14, -4); X.lineTo(14, -1); X.lineTo(8, -1); X.lineTo(7, -4); X.quadraticCurveTo(0, -7, -7, -4); X.lineTo(-8, -1); X.lineTo(-14, -1); X.closePath(); X.fillStyle = shade(PAL.brick, 0.86); X.fill(); X.strokeStyle = INK; X.lineWidth = 1 / k; X.stroke(); X.beginPath(); X.arc(0, 3, 3.4, 0, 7); X.fillStyle = CREAM; X.fill(); X.stroke(); X.restore(); X.strokeStyle = RED; X.lineWidth = 1 / k; for (const q of [-1, 1]) { X.beginPath(); X.arc(q * 16, -8, 3 + Math.abs(r) * 1.2, q > 0 ? -1 : 2.2, q > 0 ? 0.6 : 3.9); X.stroke(); } }
@@ -105,7 +105,7 @@ function shade2(hex) { const n = parseInt(hex.slice(1), 16), f = (v) => Math.rou
 const TOWN = []; (function () { for (let i = 0; i < 150; i++) { const a = hash(i) * 6.283, r = 300 + Math.sqrt(hash(i + 400)) * 840, x = Math.cos(a) * r, y = Math.sin(a) * r; TOWN.push({ x, y, w: 26 + hash(i + 50) * 40, d: 26 + hash(i + 90) * 40, h: 18 + hash(i + 130) * 46, c: [PAL.wall, PAL.floor, PAL.brick, PAL.wood, PAL.stone, PAL.green][Math.floor(hash(i + 170) * 6)], tree: hash(i + 210) < 0.3 }); } })();
 
 function town(s, a) {
-  const k = ss(0.4, 5, a); if (k <= 0) return;
+  const k = ss(9, 20, a); if (k <= 0) return;
   X.save(); X.globalAlpha *= k;
   const ring = [], bot = []; for (let i = 0; i < 72; i++) { const th = i / 72 * 6.283; ring.push(proj(Math.cos(th) * 1200, Math.sin(th) * 1200, 0)); bot.push(proj(Math.cos(th) * 1200, Math.sin(th) * 1200, -70)); }
   poly(bot, shade(PAL.slab, 0.74), VIEW.z > 0.03 ? INK : null); poly(ring, PAL.lawn, VIEW.z > 0.03 ? INK : null);
@@ -281,8 +281,8 @@ function chart(s, a) {
   X.beginPath(); X.arc(dx, dy, 5.5, 0, 7); X.fillStyle = RED; X.fill(); X.strokeStyle = CREAM; X.lineWidth = 1.5; X.stroke();
   // two of Bob's words on the chart itself
   const L2 = C.lines[2], wt = (i) => L2.words[i].s, on = ss(wt(0), wt(0) + 0.3, s), nw = ss(wt(3), wt(3) + 0.3, s);
-  if (s > wt(0)) text('once so big', xOf(1.3) + 12, yOf(sizeFrac(1.3)) - 6, 20, 'KSerif', INK, 'left', on);
-  if (s > wt(3)) text('now so small', xOf(60) + 8, yOf(sizeFrac(60)) - 14, 20, 'KSerif', RED, 'left', nw);
+  if (s > wt(0)) text(L2.words.slice(0, 3).map((w) => w.w).join(' '), xOf(1.3) + 12, yOf(sizeFrac(1.3)) - 6, 20, 'KSerif', INK, 'left', on);
+  if (s > wt(3)) text(L2.words.slice(3).map((w) => w.w).join(' '), xOf(60) + 8, yOf(sizeFrac(60)) - 14, 20, 'KSerif', RED, 'left', nw);
   // 10,000 gets its ring when it is sung
   if (s > 44.9) { const rr = ss(44.9, 45.6, s); X.beginPath(); X.arc(xOf(10000), oy + 15, 21, -1.6, -1.6 + 6.3 * rr); X.strokeStyle = RED; X.lineWidth = 1.5; X.stroke(); }
 }
@@ -329,7 +329,7 @@ function bubble(cx, cy, r, tx, ty, fn, alpha) {
   X.save(); X.globalAlpha = alpha; X.strokeStyle = 'rgba(58,49,40,.7)'; X.lineWidth = 0.8; const d = Math.hypot(tx - cx, ty - cy) || 1; X.beginPath(); X.moveTo(cx + (tx - cx) / d * r, cy + (ty - cy) / d * r); X.lineTo(tx, ty); X.stroke();
   X.beginPath(); X.arc(cx, cy, r, 0, 7); X.fillStyle = '#fdfaf2'; X.fill(); X.save(); X.clip(); fn(); X.restore(); X.beginPath(); X.arc(cx, cy, r, 0, 7); X.lineWidth = 1.2; X.strokeStyle = INK; X.stroke(); X.restore();
 }
-function windowScene(s, cx, cy, r) { // the loneliest smile: drawn up close, then the same drawing from further and further away
+function windowScene(s, cx, cy, r) { // the smile: drawn up close, then the same drawing from further and further away
   const away = ss(31.4, 33.2, s), k = 1.9 * Math.pow(10, -away * 2.6);
   X.save(); X.translate(cx, cy + 6); X.scale(k, k);
   poly([[-44, -44], [44, -44], [44, 44], [-44, 44]], PAL.wall); poly([[-29, -30], [29, -30], [29, 24], [-29, 24]], '#f3d98e');
@@ -338,7 +338,7 @@ function windowScene(s, cx, cy, r) { // the loneliest smile: drawn up close, the
   X.fillStyle = INK; X.fillRect(-6, -5, 2, 2.6); X.fillRect(4, -5, 2, 2.6);
   const sm = ss(30.4, 31.0, s); X.strokeStyle = INK; X.lineWidth = 1.2; X.beginPath(); X.moveTo(-5, 2 ); X.quadraticCurveTo(0, 2 + 5 * sm, 5, 2); X.stroke();
   X.restore();
-  const n = ss(32.6, 33.2, s); if (n > 0) { text('still smiling', cx, cy + r - 22, 14.5, 'KSans', SOFT, 'center', n); text('(we checked)', cx, cy + r - 7 , 12.5, 'KSans', SOFT, 'center', n); }
+  const n = ss(32.6, 33.2, s); if (n > 0) { X.beginPath(); X.arc(cx, cy - 12, 1.5, 0, 7); X.fillStyle = '#d9a93f'; X.globalAlpha *= n; X.fill(); X.globalAlpha = 1; text('still smiling', cx, cy + 22, 15, 'KSans', SOFT, 'center', n); text('(we checked)', cx, cy + 40, 13, 'KSans', SOFT, 'center', n); }
 }
 function careFlow(s) {
   const a = ss(35.6, 36.2, s) * (1 - ss(43.4, 43.9, s)); if (a <= 0) return;
@@ -371,7 +371,7 @@ function draw(s) {
   // where each problem is now
   const pts = {}; const swell = 1 + 2.1 * ss(18.1, 19.4, s);
   for (const p of PROBLEMS) { const q = proj(p.at[0], p.at[1], p.at[2]); pts[p.key] = gk > 0.6 ? [tp.x, tp.y] : q; }
-  // the icons sit above their rooms and grow with "once so big", the world then takes them away
+  // the icons sit above their rooms and grow with the sung line, the world then takes them away
   if (z > 0.06) for (const p of PROBLEMS) { const on = ss(p.cue - 0.4, p.cue, s) || 0.75, q = proj(p.at[0], p.at[1], p.at[2]), k = (p.key === 'car' ? 1.15 : 1.25) * z * swell; X.save(); X.globalAlpha = (s < p.cue ? 0.9 : 1) * worldAlpha; X.translate(q[0], q[1]); X.scale(k, k); p.icon(k, s); X.restore(); }
   // town dot on the globe, once a town can't be drawn
   if (gk > 0.5) { const vis = clamp(tp.front * 8); if (vis > 0) { X.beginPath(); X.arc(tp.x, tp.y, 2.8, 0, 7); X.fillStyle = RED; X.globalAlpha = vis; X.fill(); X.globalAlpha = 1; } }
@@ -383,11 +383,11 @@ function draw(s) {
   labels(s, a, pts);
   rocket(s, rx, ry, rk, a);
   text('rocket not to scale', rx - 30, ry + 22, 13.5, 'KSans', SOFT, 'right', ss(19, 19.6, s) * (1 - ss(26, 26.8, s)));
-  // the loneliest smile
+  // the smile in the window
   const b1 = ss(27.3, 27.9, s) * (1 - ss(34.6, 35.4, s)); if (b1 > 0) bubble(196, 352, 84, pts.rent[0], pts.rent[1], () => windowScene(s, 196, 352, 84), b1);
   careFlow(s);
   // you, in the porthole
-  const b2 = ss(58.5, 59.1, s); if (b2 > 0) bubble(640, 214, 70, rx, ry - 8, () => { const cx = 640, cy = 222; X.fillStyle = PAL.sky; X.fillRect(cx - 80, cy - 80, 160, 160); X.fillStyle = PAL.skin; X.strokeStyle = INK; X.lineWidth = 1.1; X.beginPath(); X.arc(cx, cy, 30, 0, 7); X.fill(); X.stroke(); X.fillStyle = '#4c3a2c'; X.beginPath(); X.arc(cx, cy - 7, 30.4, Math.PI, 0); X.fill(); X.fillStyle = INK; X.fillRect(cx - 12, cy - 4, 3.4, 4.4); X.fillRect(cx + 9, cy - 4, 3.4, 4.4); const sm = ss(60.4, 61.2, s); X.lineWidth = 1.6; X.beginPath(); X.moveTo(cx - 9, cy + 13); X.quadraticCurveTo(cx, cy + 13 + (sm * 12 - 3), cx + 9, cy + 13); X.stroke(); const tear = 1 - ss(59.6, 60.4, s); if (tear > 0) { const ty = cy + 2 + (1 - tear) * 18; X.globalAlpha *= tear; X.fillStyle = PAL.water; X.beginPath(); X.moveTo(cx - 11, ty - 5); X.quadraticCurveTo(cx - 6, ty + 3, cx - 11, ty + 4); X.quadraticCurveTo(cx - 16, ty + 3, cx - 11, ty - 5); X.fill(); } }, b2);
+  const b2 = ss(58.5, 59.1, s); if (b2 > 0) bubble(590, 190, 66, rx, ry - 8, () => { const cx = 590, cy = 198; X.fillStyle = PAL.sky; X.fillRect(cx - 80, cy - 80, 160, 160); X.fillStyle = PAL.skin; X.strokeStyle = INK; X.lineWidth = 1.1; X.beginPath(); X.arc(cx, cy, 30, 0, 7); X.fill(); X.stroke(); X.fillStyle = '#4c3a2c'; X.beginPath(); X.arc(cx, cy - 7, 30.4, Math.PI, 0); X.fill(); X.fillStyle = INK; X.fillRect(cx - 12, cy - 4, 3.4, 4.4); X.fillRect(cx + 9, cy - 4, 3.4, 4.4); const sm = ss(60.4, 61.2, s); X.lineWidth = 1.6; X.beginPath(); X.moveTo(cx - 9, cy + 13); X.quadraticCurveTo(cx, cy + 13 + (sm * 12 - 3), cx + 9, cy + 13); X.stroke(); const tear = 1 - ss(59.6, 60.4, s); if (tear > 0) { const ty = cy + 2 + (1 - tear) * 18; X.globalAlpha *= tear; X.fillStyle = PAL.water; X.beginPath(); X.moveTo(cx - 11, ty - 5); X.quadraticCurveTo(cx - 6, ty + 3, cx - 11, ty + 4); X.quadraticCurveTo(cx - 16, ty + 3, cx - 11, ty - 5); X.fill(); } }, b2);
   // panels, on top of everything
   readout(s, a); chart(s, a); ledger(s, a); caption(s);
   text('heights real, sizes a feeling.', 48, 688, 14.5, 'KSans', SOFT);
