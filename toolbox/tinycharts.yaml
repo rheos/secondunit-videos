@@ -1,0 +1,22 @@
+slug: tinycharts
+name: Tinycharts
+kind: skill
+status: candidate
+does: April Zhu's Claude skill that draws how a process works as a playable chart, 28 chart types in a warm isometric sketch style, each driven by a statechart.
+keywords:
+- diagram
+- isometric
+- explainer
+- interactive
+fits:
+- personal, non-commercial sketches on the free tier (9 chart types)
+- client work only on Pro
+deterministic: unknown
+how: not installed. Free skill is a one-line install from her site; Pro is a paid download. We built our own look test instead, bobwiseman-10000-miles-chart/.
+cost: free tier personal and non-commercial; Pro $34.90, final sale, allows client work
+url: https://april-zhu.com/tinycharts
+source: x.com/Aprilzz423/status/2117989075244466401 (Nov 4 2026)
+verdict: 'Robin: "i love this". Studied from its promo and page, the skill itself not read. Robin chose our own test over buying Pro, 2026-11-04.'
+related:
+- statechart-art-kit
+- anatomy
