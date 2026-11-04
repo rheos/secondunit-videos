@@ -1,0 +1,353 @@
+# Moss forest (look test)
+
+A 15 s silent look test, 16:9 at 720p, 24 fps, every frame drawn in code (0 credits). Robin saw chetaslua's
+80 s "pure code" film on 2026-11-03 (a painted anime forest, haze, god rays, a moss-grown robot;
+x.com/chetaslua/status/2117169796290916732) and said "Yes, build it". Issue rheos/secondunit-videos#396.
+
+## What the film actually is (reverse engineered 2026-11-03)
+
+From `index.html` in github.com/ChetasLua/moss-keeper and the author's method screenshots. The repo has no generator code.
+The page is player controls, a poster JPEG, the MP4 as base64 and live grain, all read end to end. Everything else below
+is measured from the MP4 (`work/ref/`, ignored: 1920x1040, 24 fps, 80.67 s, 1935 frames, x264 two-pass at 3.4 Mbps, AAC).
+
+```text
+METHOD (his words): own Python and C++ painted the backgrounds, "inked and coloured" a generated "robot model", and
+      synthesised the score; "each robot drawing took about 5-15 seconds"; only grain, controls and start-up run live.
+GIANT: a real 3D model. It turns between poses, parts occlude correctly, stains stay on the surface.
+      Cel from a real light: hard terminator, hard cast shadows, 3 flat tones per material. Stone: lit peach #f8d898,
+      shadow lilac-grey #787888-#888878; teal #285848-ish on some parts; rust bands; flat lichen and stain blobs.
+INK:  thin, dark, broken lines with gaps and varied width on silhouettes and creases, panel lines across forms.
+MOSS: not shapes but flat dry-brush hatching: short parallel strokes in 3-4 flat tones with ragged hard edges,
+      star-shaped 5-petal flowers on bladed grass tufts, hanging vines.
+PLATES: flat tones with hard wet edges, no gaussian blur except defocus in close-ups. Dust is a flat hard-edged cel shape.
+SHOTS: 18 cuts in 80 s: wide, close on bird, head, chest, aerial, wides. Average 4.5 s.
+TIMING: giant shots run on twos (diff autocorr .84 at lag 2), the rise shot on threes (.97 at lag 3), including full
+      frames held; only slow layer slides run on ones.
+LIGHT, wide shots: mean luma 122, p10 37, p50 115, p90 221, 41% over 140, saturation .36. Darkest #082828, cream #f8e8b8.
+      Close-ups: mean 140-145, p10 86-92. The thumbnails misled the d3 numbers (mean 130-141, p10 55).
+GRAIN: live, opacity .055, overlay blend, 6 random tiles, about 12 fps.
+```
+
+Draft 3 used none of the method: a 2D sprite slid around on soft gaussian-blurred plates in one continuous shot.
+Draft 4 follows it with our own subject: a four-legged piano giant, no robot, no copied frame.
+
+## Draft 4: a 3D piano giant, inked and painted (2026-11-03)
+
+**Filed as the inked3d kit (2026-11-03, #400).** The general parts of `js/d4/` moved to `tools/inked3d-kit/` and
+`d4.html` now loads `kit/` (synced copy, see `kit/VERSION`); `js/d4/` keeps the piano, its moss, the forest plates,
+the shots and the life. Regression on the six check frames (1.5, 5.4, 7.5, 8.7, 11, 13.2 s): at most 0.5% of pixels
+touched, 0.06% by more than 16 levels, all edge pixels inside the giant (palettes went from shader constants to
+uniforms, and a few ink and stroke ties flip). Visually identical. The look is `looks/inked-3d.yaml`.
+The second subject (the snow bus, #400) added `weather.density` and `weather.scale` to the kit; with the defaults
+the piano moves 0.06% of pixels again, edge ties only. A re-render of the same code is byte-identical, so the renderer
+itself is deterministic.
+
+Page `d4.html`, code `js/d4/` (`gl.js` our own WebGL2 renderer, `giant.js` the model, pose and moss, `plates.js` the
+painted plates, `life.js` the bird, soil, dust, flock and leaves, `main.js` the shots). Review cut
+`out/mossforest_test_f0-f360_24fps_review-720p_d4.mp4`. The four-legged piano came back: draft 3 had silently cut it to two.
+
+Follows the method above with our own subject: a real 3D model, shaded from a real light through a hard shadow map, three flat tones per material,
+stains and cracks in object space, ink traced from part, depth and normal edges and broken by noise, moss as dry-brush
+strokes planted on the surface, drawn at 2x and downsampled. Plates have hard edges and no blur except defocus in close-ups.
+The giant runs on twos, the rise on threes. Dust is a flat hard-edged shape. Grain is his: overlay at .055, 6 tiles.
+
+```text
+SHOTS: f0-85 wide, asleep in the mist | f86-153 close, the bird lands (4.45 s), first ray (4.9-5.7 s) |
+       f154-215 close on the panel: moss falls, fallboard opens (f178), glow flickers (6.75-7.4 s) and catches (7.6-8.5 s) |
+       f216-359 wide: ground shakes, bird and flock leave (9.35 s), rises on threes (9.3-12.1 s) with soil and dust,
+       one step on four legs (front left plants f320, rear right plants f342).
+```
+
+Checks on the mp4: audit passes on all frames (feet, floor, cuts, plants, fallboard), badframes 0 of 360, flash check passes, a frame drawn out of order is
+byte-identical. Light at f292 and f356: mean 118, p10 36-37, p50 103, p90 226, 36% over 140, saturation .40. Film wide: 122, 37, 115, 221, 41%, .36.
+About 0.25-0.4 s a frame at 2x, 42 s for the whole render with 3 workers, far faster than his 5-15 s a drawing. Motion judged from sheets, not watched at speed.
+
+Still short of the film: the figure has less drawing and a boxier silhouette; the ink is sparser; the 2D bird is simple; moss is flatter;
+the trunks and canopy strokes are coarser; 4 shots with simple camera moves; no score, where his film synthesises one.
+Side by side: `out/mossforest_d4_side-by-side_film-vs-d4.jpg`.
+
+## Draft 3: a painted forest and a cel giant (2026-11-03)
+
+Draft 2 was pixel art, and Robin rejected it: "We are trying to make a Studio Ghibli film and you made a 1980s
+video game." The reference was never pixel art. Read side by side (`work/ref/side_v2_vs_ref.jpg`), it is a hand-painted
+anime background: gouache foliage, high-key warm mist, a pale blue sky with peach cloud bands, the sun behind the
+giant, four or five planes each paler than the last, and a cel-drawn giant standing half in ground fog. Draft 3
+starts again in that manner with the same idea (the piano that the forest grew over wakes and takes a step). Draft 2's
+page, code and renders stay as they were (`index.html`, `js/*.js`); draft 3 is `d3.html` and `js/d3/`.
+
+We borrow the manner (painted backgrounds, light, air, a cel creature on them), never a character, creature or shot
+from the clip or from any film by that studio. The piano giant is ours, and no frame is laid out like the clip's.
+
+### Brief as numbers (d3, written before the build)
+
+```text
+GOAL: a background painting that breathes, and a giant that wakes with weight
+OUTPUT: canvas2d, native 1280 x 720, anti-aliased; 24 fps; 15 s = 360 frames (song frames 0-359); silent
+MEDIUM: background = gouache: brush-dab clusters (ellipses 3-22 px, 2-3 overlapping strokes each, alpha .5-.9),
+      smooth gradients, soft edges, paper grain overlay at <= 6% contrast. Planes baked once at load, pre-blurred
+      by depth: far 3.2 px, far-mid 1.8, mid 0.8, giant plane 0, near 0.
+      Giant = cel: 2 flat tones per material (base + one shadow shape) and a rim, a soft dark outline (alpha .55,
+      2.5 px) only on the silhouette and the big shapes, no texture noise on it.
+LIGHT: bright sky and deep darks, measured off the reference (see "Corrected after the first sheets"): mean luma
+      130-150, p10 <= 65, p50 130-155, p90 >= 205, 45-58% of pixels lighter than 140, mean saturation .24-.30.
+      Sun at screen (662, 214), behind the giant's left shoulder once it stands. Sky: pale blue #a9cbd8 at the top
+      to cream-gold #fff1c8 at the sun; 3 peach-pink cloud bands (#f2b8a0, #f6cdb2). Shafts: 7 beams fanning down
+      from the sun, screen-blended, peak alpha .22; bloom = 1/4-size copy, contrast 2.6, blur 6 px, screen at .13 x L.
+      Dust motes: 140, brightness from the shaft field, never visible outside a beam above alpha .15.
+      Light arc L: .55 (0 s) -> 1.0 (11 s), smooth; sun glow, shafts, rim light and bloom read L.
+DEPTH (back to front, parallax rate): sky .03 | far forest .10 | fog | far-mid .22 | fog | mid .40 | ground fog |
+      giant + clearing .55 | ground fog over the giant's feet | shafts, motes | near trunks + canopy 1.0 | grass 1.15.
+      Aerial perspective: each plane is tinted toward the fog colour by depth: far 62%, far-mid 44%, mid 24%,
+      giant 12%, near 0. Fog colour = cream #f6e8c6 at the sun's x, pale blue-green #cfe0d6 at the frame edges.
+TREES: far and far-mid trunks 6-22 px, mid 22-40 px, near 70-140 px; all reach past the top edge (canopy cut off).
+      Near trunks: dark blue-green-brown #24332d to #3a4a3c, bark strokes, a 3-5 px warm rim #f2d58c on the sun side.
+      Hanging moss: 40+ strands from the near canopy, 60-260 px long, lit tips #c8dc6a, sway 2-6 px.
+COLOUR: lit leaves #a9c93c to #cfe06a; shade leaves #3d6c5e to #5d8e7a (blue-green); no olive below
+      saturation .3 on lit foliage. Giant: weathered wood #8c6c55 / shadow #5c4c4c, stone-grey moss-free patches
+      #a39a8c, moss #6f9a36 / #3f6b55 / lit #bcd650, rust accents #b4532f (sconces, hinge, foot caps), keys #eadfc4.
+CREATURE: upright piano front 300 x 250 px plus a 66 px side plane, legs about 86 px, one moss mound on top.
+      Feet to moss crest 59% of frame height at 9 s, 75% with the sapling (brief said 45-55%; left bigger because the
+      reference's giant is about 75%). Body centre x 772, feet on the floor line y 592. Asleep: body bottom y 634
+      (standing 506), tilted -3 deg, legs folded under it, three sheets of moss over the front.
+      0-3 s asleep (moss breathes 1 px); 3.0-5.0 s stirs: 9 clods fall, fallboard opens 3.6-4.6 s (lidOpen f110),
+      top lid lifts 4.2-5.0 s; 5.0-5.4 s anticipation dip 6 px; 5.4-8.6 s rises (in-out), overshoot 3%, settles 9.2 s;
+      9.2-9.8 weight onto the right leg (tilt +2.3 deg); left foot lifts 9.8, plants 10.92 s (plantL f262) 50 px toward
+      the sun; body follows, drops 7 px on the plant; right foot lifts 11.6, plants 12.58 s (plantR f302) 50 px;
+      13-15 s stands in full sun, breathes 2 px at .3 Hz. Feet 0 px slide while down; planted feet on their floor y.
+      Sapling and drape moss follow through (sampled from earlier body poses).
+GROUND: grass band y 630-720 at rate 1.15, blades 18-60 px with rim-lit tips, 40 flowers (cream, yellow, rust);
+      its top melts into a fog band at y 560-640.
+CAMERA: one shot, slow dolly. camX = 2.6 t + 30 smooth(t/15) px (0 -> 69), push-in 0 -> 4% x rate. Never stops.
+KEEP: the giant's box inside the frame; the giant never scales except by the camera's push.
+QA: sheet of the reference beside d3 at 6 times; d3 sheet at 1, 4, 6.5, 9, 11, 14.5 s; 600x450 crops of the giant at
+      4, 7, 10.9, 14 s and of the near plane at 2, 8, 13 s from full-size frames; motion-lab audit on all 360 frames
+      (audit-d3.spec.mjs); badframes on the mp4; luma numbers above measured, not eyeballed; then watch it.
+```
+
+### Beats added from the source thread
+
+The author's own posts (x.com/chetaslua/status/2117171617835143611) say the clip was painted offline by the model's
+own Python and C++, frame seconds not milliseconds, and encoded to video. That reached this session after the first
+build, along with the prompt's beats. Added on top of the rise and the step, all in `js/d3/life.js`:
+
+```text
+0.70-1.75 s  a small bird flies in, lands on the moss at the sun-side shoulder; looks about, hops at 3.55
+2.30-3.10 s  the first ray: one beam comes on and lands a warm pool on that shoulder; other beams wait, 16% until 3.1 s
+2.9-3.8 s    three weak flickers behind the fret slots, seen where the moss doesn't cover them
+3.95-5.1 s   the glow catches and holds; the moss sheets fall at 4.05, 4.15 and 5.7 s and reveal it
+4.70-5.60 s  the ground trembles (camera, up to 2.8 px); the bird leaves at 4.75; 22 birds leave the treetops from 4.85
+5.1-9.3 s    900 grains of soil and moss pour off from 7 spouts, dust where they land; thuds on both plants
+5-15 s       leaves spiral down, brightening inside a beam
+```
+
+The giant now runs on twos (12 drawings a second, camera and particles on ones), the way theatrical cels do. It has
+tapered ink strokes, wood grain and cracks, cast shadows from the moss, rain stains, and wildflowers in the moss.
+
+### Corrected after the first sheets
+
+The brief's first light numbers were wrong. It asked for mean luma >= 150 and >= 55% of pixels over 140, and draft
+d3 hit them (mean 167, p10 90, 71% over 140) while looking washed out and lime beside the clip. Measured
+(`work/stats.py`, on the picture area of the three reference frames), the reference is mean 130-141, p10 52-63, p50
+129-137, p90 211-224, 44-48% over 140, saturation .24-.29. Its "high-key" is a bright sky with deep darks, not a
+pale frame. The numbers above are the measured ones, and the grade was redone to meet them.
+
+### BANNED (d3, written before the build; grows after every render)
+
+- A pixel grid, nearest-neighbour scaling, an indexed palette, ordered dither or `px.js` anywhere in d3
+- Dim or muddy olive: lit foliage that isn't yellow-green, a mean luma under 150 at mid-film, a dark frame
+- A small creature: the standing giant under 45% of frame height, or one that reads as a prop in the clearing
+- Uniform dark trunks: every plane the same value. Each plane back is paler and closer to the fog colour
+- Hard vector edges on the background: unblurred flat polygons, crisp outlines on trees, leaves as stamped circles
+- Texture or noise on the giant (it is a cel: flat tones, one shadow shape, a rim), or an outline on the scenery
+- A face on the piano (eyes, a mouth, teeth), a robot of any kind, a round-headed soldier, any figure from the clip
+  or from a studio film; a frame laid out like the clip (giant centred head-on between two framing trunks)
+- Marionette motion: rigid legs swinging from a pivot, a sliding planted foot, the body gliding without weight
+- Lens flare rings, chromatic aberration, vignette darker than 12% at the corners
+- `Math.random`, `Date.now`, state carried between frames
+
+**Added after the first renders (2026-11-03):**
+
+- Moss as bubbles: stacks of lit spheres read as green grapes. Moss is one blanket shape with a lumpy top and a
+  scalloped hem (`mossMass`), flat patches on it, closed in round shoulders
+- Foliage as discs: single soft ovals floating between trunks. Foliage is many lobes on visible branches
+- A flat front: the piano as a card. It has a side plane now, and moss wraps onto it
+- Drips along the keys: they read as teeth, then as green fingers. Only four soft teardrops, at the shelf ends
+- A ruled rim line down a trunk: light on trunks is broken up along their length
+- Fog thick enough to hide the feet: the step is the main action, so the fog over them is 58%, not 92%
+- Bloom and fog as the way to look bright: they wash the frame out. Keep the darks at the measured p10
+
+### Review (d3, 2026-11-03)
+
+**Judged against the wrong thing.** Every check below used three thumbnails 320-400 px wide. This draft was built
+without opening the film or its repo (github.com/ChetasLua/moss-keeper). The measured light numbers came from those
+thumbnails and need redoing from the film. Robin, on seeing d3: "still not very different to what we already have and
+not very close to the one i showed you".
+
+Route: an offline-style painter in canvas2d, rendered headless, no 3D. About 230 ms a frame and 16 s to load the
+page's baked planes. A full render is 50 s with 4 workers on this Intel Mac, with no image or video model and 0 credits.
+
+- Motion-lab audit, all 360 frames (`audit-d3.spec.mjs`): giant in frame, feet 0 px slide while down, planted feet on
+  the floor, `lidOpen` f110, `plantL` f262, `plantR` f302. All pass.
+- `badframes.py` 0 of 360. `flashcheck.py` passes, worst 0.5 flashes a second. A frame drawn out of order is
+  byte-identical, so drawFrame is pure.
+- Measured off the rendered mp4 at f24, f216, f348: mean 134-144, p10 57-62, p50 136-153, p90 205-213, 48-57% over
+  140, saturation .28-.29. Reference: mean 130-141, p10 52-63, p50 129-137, p90 211-224, 44-48%, saturation .24-.29.
+  Ours sits a little brighter in the mid-tones.
+- Side by side: `out/mossforest_d3_side-by-side_ref-vs-d3.jpg`. Reference frames are only 320-400 px wide, so fine
+  detail in them can't be judged. Motion was judged from frame sheets only, not watched at speed.
+
+What still differs from the reference:
+
+- Silhouette: its giant is a complex figure with limbs and a broken outline. Ours is a box with moss on it, and two
+  stubby legs. It reads as a piano, which is the idea, but it has far less drawing in it.
+- Foliage: its near leaves are a dense fine scatter; ours are larger gouache clumps, softer and more storybook.
+- Trunks: its trunks lean and fork, dappled with light; ours are straighter and more regular, so the forest is tidier.
+- Colour on the giant: its weathered grey stone and red accents have more range than our brown wood and green moss.
+- The moss sheet that lands in front of the feet reads as a flat mat, not a heap.
+- It may still read as a moving illustration: backgrounds are baked plates and the camera is a clean slide. The next
+  step up, if Robin wants it, is a slower per-frame painter or a 3D giant with an ink pass, which the source thread
+  shows is legitimate.
+
+No sound yet: the thread's film has a synthesised score; a creak, the step thuds and one held note would help.
+
+## Draft 2 (pixel art, rejected)
+
+Everything below is draft 2 as it was built. Its idea carries into d3; its medium does not.
+
+## The idea
+
+A low sun behind a deep forest. In a clearing sits a mound of moss with a sapling on top. As the light comes up,
+the mound stirs, a lid opens and a row of old ivory catches the sun: it's an upright piano that has been asleep
+long enough for the forest to grow over it. It pushes itself up on four carved legs, moss sliding off, and takes
+one heavy step toward the light.
+
+**Why a piano.** The clip's giant is a robot that sits close to a famous studio's robot soldier, so a robot of any
+kind was out. Bob Wiseman is our default test subject and a keyboard player, so a musical object is the right
+giant for this studio, and an upright is the one that already looks like a body: a tall cabinet for a torso, a
+keybed for a chest, a fallboard that opens like an eyelid without being a face, brass candle sconces as the one
+craft detail. An abandoned piano in the woods also reads in one second, which a tour-bus amp doesn't. It never gets
+eyes or a mouth: the keys are a keyboard, not teeth.
+
+What we took from the clip is the vocabulary only: low-res painted pixels, many planes of trees in warm haze, light
+shafts, a mossy giant that wakes. No frame of it is copied. The clip frames its robot head-on and small in the middle
+of the forest; ours starts as an unreadable mound right of centre and ends standing in the sun's path.
+
+## Brief as numbers (written before the build)
+
+```text
+GOAL: a forest that feels painted and deep, and a giant whose waking feels heavy and slow
+OUTPUT: canvas2d, indexed 320 x 180 buffer (px.js), x4 nearest-neighbour to 1280 x 720; 24 fps; silent
+TIME: 15 s x 24 = 360 frames (song frames 0-359 on the 24 fps grid); no loop; no audio, so the brief is the clock
+LOOK: one palette of <= 255 indices: ~60 hand-picked base colours (sky 7, far trees 3, far-mid 4, mid 5,
+      near 5, rim 2, moss 7, bark 3, piano wood 6, ivory 2 + key black, ground 4, dust 2, fog 3, brass 3)
+      plus each colour's LIGHT and FOG blend, added as palette entries so shafts and haze stay in palette.
+      Shading is always ramp index + 4x4 Bayer threshold. Foliage = clumps of radius 4-14 px lit per pixel
+      from the sun direction with value noise, quantized to the ramp.
+LAYOUT (back to front, parallax rate in brackets; screen px at cam 0):
+      1 sky card (0.05), sun at (190, 46), dithered radial glow
+      2 far trees (0.12), trunks 3-6 px, canopy tops 20-60
+      3 haze band y 70-120, FOG remap by Bayer, densest at the sun's x
+      4 far-mid trees (0.25), trunks 5-10 px
+      5 fog band y 95-130
+      6 mid trees (0.42), trunks 8-16 px, roots, ground line y 120
+      7 clearing floor (0.6), ground line y 140; the piano and its mound ride this plane
+      8 light shafts (screen, anchored on the sun), 5 beams, LIGHT remap, <= 0.5 density
+      9 spores (0.8), 48 one-pixel motes, bright only inside a shaft
+     10 near plane (1.0): two big trunks, overhead branch, hanging moss strands, fern band y 160-180
+     11 foreground (1.5): two fern fronds through the bottom corners
+MOTION: camera truck camX = 6.5 t + 32 smooth(4..13 s) px (0 to 130 px, never stops);
+      tilt camY = -10 smooth(5..9 s) px; every plane offset = round(cam * rate), whole pixels.
+      Piano rise r: 0 -> -0.06 (5.0-5.4 s anticipation dip) -> 1.03 (5.4-8.6 s, in-out cubic) -> 1.0 (8.6-9.2 s).
+      Body bottom = ground + lerp(+12, -13, r) px. Legs: thigh 22 + shin 22 px, two-bone IK, knees out.
+      Step: right front foot lifts 9.2 s, +16 px, plants 10.4 s; left front 10.9 s, plants 12.1 s;
+      rear feet follow 0.2 s after their front foot. Body x +8 per step, dips 2 px on each plant.
+      Fallboard opens 3.8-4.6 s (ease out). Sapling and hanging moss lag the body (follow-through, pure:
+      sampled from earlier body poses). Breathing 1 px at 0.25 Hz when standing.
+      Light arc L: 0.35 (0 s) -> 1.0 (12.5 s), smooth; shafts, sky, rim light and fog brightness all read L.
+SHOTS: one continuous shot. 0-3 s the still mound; 3-5 s stir (clods fall, lid opens); 5-9 s rise;
+      9-12.4 s the step; 12.4-15 s it stands in full sun.
+KEEP: the piano never rotates or scales; every element on the 320 x 180 grid at 1x.
+BANNED: (see below)
+QA: contact sheet at 1, 4, 6.5, 9, 11, 14.5 s; 600x450 crops (full-size frames) of the giant at 4, 7, 10.4, 14 s
+      and of the near plane at 2, 8, 13 s; motion-lab audit on all 360 frames (feet planted while down,
+      giant inside frame, no 12+ frame frozen run, fallboard and plant events on their frames);
+      badframes on the mp4; then watch it.
+```
+
+## BANNED (written before the build; grows after every render)
+
+- Canvas gradients, `arc()`, anti-aliased anything, any `drawImage` scaling except the final x4 blit
+- Mixed pixel sizes: no `blit` at a scale other than 1, no scaled font
+- Sub-pixel positions: every offset is rounded before it touches the buffer
+- Runtime rotation of a drawing (legs are rasterized each frame from their joint points, which is drawing, not rotating)
+- Glow or bloom shader, lens flare, chromatic aberration, CRT scanlines (this is a painting, not a console)
+- Purple or blue gradient sky; a cold palette
+- A round-headed robot, a robot of any kind, a face on the piano (eyes, a mouth, teeth)
+- Marionette motion: a rigid leg swinging from the hip, a foot that slides while down, the whole body sliding
+- Floating particles as decoration: spores show where the light is, nothing else
+- The camera stopping, any frame identical to the one before (nothing freezes)
+- Copying a frame of the clip: no small giant centred head-on between two framing trunks
+- `Math.random`, `Date.now`, state carried between frames
+
+**Added after the first render (2026-11-03):**
+
+- Moss as lit spheres: the first clumps read as green bubbles and balls stuck on things. Moss is now flatter
+  (`sq` squash), darker, rougher (`tex` up), lumps made of two or three small clumps, rim only on the sun side
+- A haze pass over the giant: an aerial haze band laid over the cabinet front read as a screen door. Haze stays
+  behind the giant; only shafts and dust cross it
+- Shafts as a single strong remap: light on dark wood jumped a long way and made checkerboards. Shafts now step
+  LIGHT2 (17% toward the sun), then LIGHT, then LIGHT twice, with a cut-off at 1.8 widths so beams have gaps
+- Rim lines dithered per pixel: a 1 px rim dimmed by Bayer reads as stitching. Rims now switch on in 2x4 runs
+- Fern arches on the lid: they read as hooks. The lid has grass tufts instead
+- Table legs: hips at the keybed ends with feet far out made a bench. Legs are now 20 + 20 px, feet 7 px out from
+  the hips, so they bow a little when standing and fold out like a frog's when asleep
+- The giant centred between two framing trunks (close to the clip, and dull): the sun moved right, the piano
+  ends in the right third with the sun behind its shoulder, and it steps toward the light
+
+## Review (v2, 2026-11-03)
+
+- Contact sheet at 1, 4, 6.5, 9, 11, 14.5 s and a 12-frame motion sheet; 600x450 crops of the giant at 4, 7,
+  10.42 and 14 s and of the near plane at 2, 8 and 13 s, cut from full-size PNG frames; a 9-frame strip of the step.
+- Motion-lab audit, all 360 frames: giant in frame, feet 0 px slide while planted, planted front feet on the floor,
+  `lidOpen` on frame 110, `plantR` on 250, `plantL` on 290. All pass.
+- `badframes.py`: 0 of 360. Frame-to-frame change: mean 2.6 grey levels, no run of identical frames (the camera
+  never stops).
+- One render on the Intel Mac: about 60 ms a frame, 21 s for the whole 15 s with 4 workers.
+
+What it still lacks, for the next pass: the asleep mound reads as a hedge with a box in it rather than one buried
+shape; the cabinet front is a flat dark slab (no lean or weight shift, since nothing rotates, so the step is all
+legs); the greens sit in one olive family where the clip's forest runs from teal shadow to gold; the spores are
+too few to read at 720p; and there is no sound (a step thud, falling clods and one held piano note when the
+fallboard opens would make the wake).
+
+## Build and render
+
+Draft 4:
+
+```bash
+PAGE=d4.html node check.mjs out/check/sheet.jpg 1.5 5.4 8.7 11 13.2 14.8
+node ../tools/motion-lab/audit.mjs d4.html 0 15 --spec audit-d4.spec.mjs --width 1280 --height 720
+nice -n 15 node ../tools/motion-lab/render.mjs d4.html 0 15 out/mossforest_test_f0-f360_24fps_review-720p_dN.mp4 --width 1280 --height 720 --workers 3
+```
+
+Draft 3:
+
+```bash
+PAGE=d3.html node check.mjs out/check/sheet.jpg 1 4 6.5 9 11 14.5
+node ../tools/motion-lab/audit.mjs d3.html 0 15 --spec audit-d3.spec.mjs --width 1280 --height 720
+nice -n 15 node ../tools/motion-lab/render.mjs d3.html 0 15 out/mossforest_test_f0-f360_24fps_review-720p_dN.mp4 --width 1280 --height 720
+```
+
+Draft 2:
+
+Playwright comes from a sibling look (`ln -s ../bobwiseman-airplane-16bit/node_modules node_modules`, not committed).
+
+```bash
+open index.html                                   # plays in a browser; ?t=8 starts at 8 s
+node check.mjs out/check/sheet.jpg 1 4 6.5 9 11 14.5          # contact sheet
+node check.mjs --crop 620,200 out/check/crop 10.42 14           # 600x450 crops from full-size frames
+node check.mjs --full out/check/full 4 7 10.4 14               # full-size PNG stills
+node ../tools/motion-lab/audit.mjs index.html 0 15 --spec audit.spec.mjs --width 1280 --height 720
+nice -n 15 node ../tools/motion-lab/render.mjs index.html 0 15 out/mossforest_test_f0-f360_24fps_review-720p_vN.mp4 --width 1280 --height 720
+~/Code/novadiem/indieagent/viralvision/viralvision-worker/.venv/bin/python ../tools/cloud-render/badframes.py out/mossforest_test_f0-f360_24fps_review-720p_vN.mp4
+```

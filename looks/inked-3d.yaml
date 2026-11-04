@@ -1,0 +1,58 @@
+slug: inked-3d
+title: Inked 3D giant on painted plates
+note: >-
+  A 3D model drawn as a hand-inked cel, flat tones from a real light, broken ink lines, dry-brush moss, on hard-edged
+  painted forest plates, cut into shots and held on twos: an overgrown upright piano on four legs wakes and takes a step.
+used: Moss forest (the piano giant) and Snow bus, look tests
+cost: free
+group: code
+order: 365
+clip: null
+tall: false
+status: approved
+engine: canvas2d
+project:
+  - indieagent-moss-forest-test
+  - indieagent-snowbus-test
+code:
+  path: indieagent-moss-forest-test/js/d4/gl.js
+  flag: null
+  page: indieagent-moss-forest-test/d4.html
+  note: >-
+    The kit is tools/inked3d-kit (synced to each project's kit/). In the moss forest, js/d4/gl.js was the first renderer (shadow map, cel, ink, moss strokes), giant.js the model, pose and moss,
+    plates.js the baked plates, life.js the flat bird, soil, dust, flock and leaves, main.js the shots. README has the
+    reverse-engineered method and numbers. Drafts 2 and 3 stay beside it (index.html, d3.html), rejected.
+rules:
+  - The figure is a real 3D model, never a sprite - it turns, parts occlude, its stains stay on its surface
+  - Shade from a real light with a hard shadow map, 3 flat tones per material, a noisy hard terminator
+  - Ink is traced from part, depth and normal edges and broken by noise, thin and dark, never a clean even stroke
+  - Moss is flat dry-brush hatching planted on the surface in 5 tones with star flowers on blades, never round shapes
+  - Plates have hard edges and flat tones; blur only as defocus in close-ups; dust is a flat hard-edged shape
+  - Cut into shots; the figure on twos, a heavy rise on threes; camera on ones
+  - Match light to measured numbers from the film - wide mean luma about 120, p10 about 37, teal-black to cream
+  - No face on the creature and no frame or character from the film
+palette:
+  - "#7fb2cc"
+  - "#f6cf8e"
+  - "#f0b49e"
+  - "#123430"
+  - "#4c7434"
+  - "#b9cf52"
+  - "#6f5548"
+  - "#463c44"
+  - "#b4532f"
+  - "#ffd98a"
+reference: >-
+  chetaslua's code film (x.com/chetaslua/status/2117169796290916732; method in .../2117171617835143611): the manner
+  only, painted anime background and a cel giant. Its robot is not copied, and no frame of it or of any studio film is.
+proof:
+  renders:
+    - indieagent-moss-forest-test/out/mossforest_test_f0-f360_24fps_review-720p_d4.mp4
+    - indieagent-snowbus-test/out/snowbus_test_f0-f240_24fps_review-720p_v1.mp4
+  pr:
+    - rheos/secondunit-videos#397
+  youtube: []
+verdict: >-
+  Robin, 2026-11-03, on draft 4: "ok.. well that is pretty close"; on the kit and the snow bus: "lgtm". Drafts 2
+  (pixel art) and 3 (soft painted sprite) rejected.
+related: []
