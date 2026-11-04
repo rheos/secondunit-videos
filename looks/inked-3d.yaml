@@ -9,7 +9,7 @@ group: code
 order: 365
 clip: null
 tall: false
-status: test
+status: approved
 engine: canvas2d
 project:
   - indieagent-moss-forest-test
@@ -53,6 +53,6 @@ proof:
     - rheos/secondunit-videos#397
   youtube: []
 verdict: >-
-  Robin, 2026-11-03, on draft 4: "ok.. well that is pretty close". Drafts 2 (pixel art) and 3 (soft painted sprite)
-  rejected.
+  Robin, 2026-11-03, on draft 4: "ok.. well that is pretty close"; on the kit and the snow bus: "lgtm". Drafts 2
+  (pixel art) and 3 (soft painted sprite) rejected.
 related: []
