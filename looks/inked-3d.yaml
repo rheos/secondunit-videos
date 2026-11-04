@@ -3,7 +3,7 @@ title: Inked 3D giant on painted plates
 note: >-
   A 3D model drawn as a hand-inked cel, flat tones from a real light, broken ink lines, dry-brush moss, on hard-edged
   painted forest plates, cut into shots and held on twos: an overgrown upright piano on four legs wakes and takes a step.
-used: Moss forest (the piano giant), look test
+used: Moss forest (the piano giant) and Snow bus, look tests
 cost: free
 group: code
 order: 365
@@ -11,13 +11,15 @@ clip: null
 tall: false
 status: test
 engine: canvas2d
-project: indieagent-moss-forest-test
+project:
+  - indieagent-moss-forest-test
+  - indieagent-snowbus-test
 code:
   path: indieagent-moss-forest-test/js/d4/gl.js
   flag: null
   page: indieagent-moss-forest-test/d4.html
   note: >-
-    js/d4/gl.js is our own WebGL2 renderer (shadow map, cel, ink, moss strokes), giant.js the model, pose and moss,
+    The kit is tools/inked3d-kit (synced to each project's kit/). In the moss forest, js/d4/gl.js was the first renderer (shadow map, cel, ink, moss strokes), giant.js the model, pose and moss,
     plates.js the baked plates, life.js the flat bird, soil, dust, flock and leaves, main.js the shots. README has the
     reverse-engineered method and numbers. Drafts 2 and 3 stay beside it (index.html, d3.html), rejected.
 rules:
@@ -46,8 +48,11 @@ reference: >-
 proof:
   renders:
     - indieagent-moss-forest-test/out/mossforest_test_f0-f360_24fps_review-720p_d4.mp4
+    - indieagent-snowbus-test/out/snowbus_test_f0-f240_24fps_review-720p_v1.mp4
   pr:
     - rheos/secondunit-videos#397
   youtube: []
-verdict: Robin, 2026-11-03, on draft 4: "ok.. well that is pretty close". Drafts 2 (pixel art) and 3 (soft painted sprite) rejected.
+verdict: >-
+  Robin, 2026-11-03, on draft 4: "ok.. well that is pretty close". Drafts 2 (pixel art) and 3 (soft painted sprite)
+  rejected.
 related: []

@@ -40,7 +40,34 @@ QA: stills at 1, 3.5, 6, 9 s beside the moss forest's; audit (cuts, lightsOn, ro
 
 ## What the kit needed
 
-Filled in after the build, in the review below.
+The second subject exposed one baked-in assumption and confirmed the rest were settings:
+
+- **Weathering cover and patch size were the piano's.** The bus came out rusted all over. Added `weather.density`
+  and `weather.scale` to `configureInk` (kit commit db5e878); defaults keep the piano identical. The bus uses
+  .42 and .55.
+- **The shadow map's centre** was already a setting (`uni.shadowAt`, `shadowR`); a subject that travels needs it
+  to follow (`shadowAt: [p.x, 1.6, 0]`, radius 8 for a 9 m body), where the piano never left the origin.
+- **The sun and fill directions** are settings; dusk from the left-front with a cool fill works without changes.
+- **The stroke layer is subject-free.** Snow is the same `clump` as moss with five blue-to-white tones and a flat
+  stroke angle (`ang` near 0 instead of the moss's .8 to 1.4). Star strokes read as flakes at small size.
+- **A static part for what stays behind** (the drifts on `P_GND` with an identity matrix) is a project pattern,
+  not a kit change; worth copying for anything that leaves its resting place.
+- **Ink and dust tones** were already per film. Nothing in `paint.js` or `flat.js` needed a change: `barkTrunk`
+  draws a telegraph pole and a lamppost with cold tones and no ivy, `hatch` paints hills, snow caps and a hedge.
+- Unused here: the blade kind of stroke and the ray (`kind` bit 4, `uni.ray`), which are the forest's sunrise.
+
+## Review (v1, 2026-11-03)
+
+Review cut `out/snowbus_test_f0-f240_24fps_review-720p_v1.mp4` (42 s to render, 3 workers, about .27 s a frame).
+Audit on all 240 frames: cuts on 60 and 120, lights on 108, roll starts 178 (the brief said 172 and forgot the
+anticipation; the spec was corrected to the geometry), bus in frame in the wide shots, never below the street.
+badframes 0 of 240, flash check passes, a frame drawn out of order is byte-identical. Motion judged from sheets,
+not watched at speed. Side by side with the moss forest: `out/snowbus_v1_side-by-side_moss-vs-bus.jpg`.
+
+What reads: the manner carries over whole (cel from one light, broken ink, hatched snow on the roof and sills,
+flat plates, the dusk grade), the drifts stay behind when it leaves, the headlights catch with beams. What is
+weak: the roof slabs read as white blobs mid-air rather than sheets of snow sliding; the hedge in the front
+plate is a dark strip; the wheels are plain discs at this size; no sound.
 
 ## Build and render
 
