@@ -124,7 +124,7 @@ function shown(t) {
 }
 
 export function update(t) {
-  const a = counterAlpha(t);
+  const a = io(counterAlpha(t)); // counterAlpha is linear; eased here so the fade has no step at either end
   const on = a > 0.002;
   rig.visible = on;
   if (!on) return;

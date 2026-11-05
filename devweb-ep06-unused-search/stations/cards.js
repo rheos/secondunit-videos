@@ -33,10 +33,12 @@ function travel(a, b, u, arc) {
   const k = arc ? sm(u) : io(u), kx = arc ? sm(u / 0.7) : k, ky = arc ? sm((u - 0.3) / 0.7) : k;
   return { x: mix(a.x, b.x, kx), y: mix(a.y, b.y, ky), z: mix(a.z, b.z, k), s: mix(a.s, b.s, k), rx: 0, ry: 0, rz: mix(a.rz, b.rz, k) };
 }
-// out of Blink: starts inside the body, so the body itself hides it until it pushes through the skin, then eases out
+// out of Blink: born small just in front of its belly (front surface about z 0.73 here, with squash and lean), it
+// fades up in 0.03 s and grows as it comes forward. Never inside the body: a card half through the curved skin showed
+// only its far edge, a long thin sliver, for a frame.
 function emerge(e, ci) {
   const k = out3(e);
-  return { x: MOUTH[0], y: MOUTH[1] + 0.04 * k, z: mix(0.6, 1.02, k), s: mix(0.55, 1, k), rx: 0, ry: 0, rz: TILT[ci] + 0.3 * (1 - k), a: 1, lift: LIT, kind: "pop" };
+  return { x: MOUTH[0], y: MOUTH[1] + 0.04 * k, z: mix(0.8, 1.02, k), s: mix(0.12, 1, k), rx: 0, ry: 0, rz: TILT[ci] + 0.3 * (1 - k), a: cl(e / 0.12), lift: LIT, kind: "pop" };
 }
 // into the slot: shrink and turn long side up while swinging edge-on, stop at the mouth, then slide in edge first; the
 // crate's face hides it as it goes

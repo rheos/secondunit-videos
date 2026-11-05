@@ -78,7 +78,7 @@ export function update(t) {
   alpha(halo, 0.025);
 
   // the tag rises 0.02 into place as it fades up, and floats a hair while it holds
-  const a = spanAlpha([[T.h09 + 0.3, T.h10], [T.h14, T.h16]], t, 0.3);
+  const a = io(spanAlpha([[T.h09 + 0.3, T.h10], [T.h14, T.h16]], t, 0.3));
   const rise = 1 - io(t < T.h14 ? r01(t, T.h09 + 0.3, 0.3) : r01(t, T.h14, 0.3));
   label.position.set(X, LABEL_Y - 0.02 * rise + 0.003 * Math.sin(t * 1.4), Z + 0.06);
   alpha(label, a);

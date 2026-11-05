@@ -38,13 +38,19 @@ export function build(scene, { toon }) {
 }
 
 export function update(t) {
-  const kin = r01(t, T.h26 + 0.1, 0.3), kout = r01(t, T.h27, 0.3);
+  // in: 0.3 s from h26 + 0.1; out: 0.4 s from h27, done before the window closes (h27 + 0.4). Both eased at each end,
+  // so no frame-to-frame step is bigger than its neighbours, and the sheet is moving the whole time it fades.
+  const kin = io(r01(t, T.h26 + 0.1, 0.3)), u = r01(t, T.h27, 0.38), kout = io(u);
   const a = kin * (1 - kout);
-  // it settles down 0.08 into place with one small give, floats while held, and drifts right as it leaves
+  // it settles down 0.08 into place with one small give and floats while held; leaving, it lifts, slides right and
+  // shrinks toward its right edge, out of the crate's way
   const drop = 0.08 * (1 - softBack(r01(t, T.h26 + 0.05, 0.45)));
-  rig.position.set(X + 0.12 * io(kout), Y + drop + 0.006 * Math.sin(t * 1.1), Z);
+  const s = 1 - 0.25 * kout;
+  rig.scale.setScalar(s);
+  rig.position.set(X + 0.55 * kout + (W / 2) * (1 - s), Y + drop + 0.12 * kout + 0.006 * Math.sin(t * 1.1), Z);
+  rig.visible = a > 0.002;
   alpha(sheet.mesh, a);
-  solidAlpha(edge, a);
+  solidAlpha(edge, a * a); // the card's edge goes a little ahead of the paper, so it never reads as a grey slab
   if (a > 0.002) {
     // each row's arrival, quantised so the canvas redraws only while a row is moving
     const k = ROWS.map((_, i) => Math.round(io(r01(t, FIRST + i * ROW_T, ROW_IN)) * 40) / 40);

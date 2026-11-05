@@ -5,7 +5,7 @@
 import * as THREE from "three";
 import { makeBlink } from "../kit/blink3d.js";
 import { basic } from "../parts.js";
-import { BLINK_X, CARD_PLAN, FOOT_Y, T, cl, io, mix, r01, spanAlpha } from "../timeline.js";
+import { BLINKS, BLINK_X, CARD_PLAN, FOOT_Y, T, cl, io, mix, r01, spanAlpha } from "../timeline.js";
 
 let pivot, body, blink, pool, sprout, eyes = [], mouths = [];
 
@@ -35,7 +35,9 @@ const POPS = OWN_CARDS.map((c) => c.keys[0][0]), LAST_RIDE = OWN_CARDS[OWN_CARDS
 const ONE = T.endIn - 0.36; // the last word, "one"
 
 const FACE = [
-  K(0, TIP),
+  // the opening starts inside an action: Blink is coming down from a small hop, leaning right, turning to the dial;
+  // eyes arrive on the pointer by 0.35 s, the landing settles with one rebound by about 0.7 s
+  K(0, { look: -0.1, lookY: 0.3, lean: 3 }), K(0.1, TIP, 0.25),
   K(T.smarter - 0.02, { ...NEW, eager: 0.35, rise: 0.06 }), // the new setting appears: eyes there at once, brighter
   K(T.smarter + 0.45, { ...NEW, eager: 0.15, rise: 0.06 }, 0.4),
   K(T.h02 + 0.2, TIP, 0.45), // slides back to the pointer, and stays
@@ -117,9 +119,7 @@ function keyed(t, bodyEase) {
 }
 
 // ---------- blinks: 12 frames at 60 fps, eased (close 4, shut 2, open 6), on the bigger gaze shifts ----------
-const BLINKS = [T.h03 - 0.04, T.my2 + 1.06, T.h04 + 1.06, T.july - 0.04, T.added + 1.06, T.h06 + 0.16, T.old2 - 0.04, T.h09 + 0.16,
-  T.h11 + 0.26, T.one3 + 0.5, T.h14 - 0.04, T.uses + 0.3, T.changedEnd - 0.05, T.h18 - 0.04, T.h20 - 0.06, T.h20 + 0.8, T.h21 - 0.04,
-  T.h21 + 1.26, T.h23 - 0.04, T.h25 + 0.06, T.h25 + 1.26, T.h26 + 0.3, T.endIn + 0.5];
+// the schedule lives in timeline.js (BLINKS) so cues.js can declare each blink to forensics
 function blinkAt(t, c) {
   const u = t - c;
   if (u < 0 || u > 0.2) return 0;
@@ -131,7 +131,12 @@ function blinkAt(t, c) {
 // a landing with one rebound at about 0.2 of the push, done in about 25 frames
 const settle = (u) => (u < 0 || u > 0.6 ? 0 : Math.exp(-u / 0.13) * Math.cos((2 * Math.PI * u) / 0.4));
 // [release time, gather (anticipation squash), stretch after release, gather length]. Gathers only on the hero moves.
+// the opening hop: mid-fall at frame 0, lands at HOP_LAND (rise only ever up, so nothing leaves the frame)
+const HOP_LAND = 0.25;
+const hop = (t) => (t >= HOP_LAND ? 0 : 0.14 * (1 - Math.pow((t + 0.12) / (HOP_LAND + 0.12), 2)));
+const hopStretch = (t) => (t >= HOP_LAND ? 0 : 0.05 * (1 - r01(t, 0.12, HOP_LAND - 0.12)));
 const SQUASH = [
+  [HOP_LAND, 0, -0.09, 0.1], // the landing: squash, one small rebound
   [T.nothing2 + 0.12, 0, 0.045, 0.1], // puffs up a little: nothing broke
   [POPS[0], 0.06, 0.07, 0.12], // hero: its first card comes out
   [T.one3, 0.1, 0.11, 0.15], // hero: the take on 36 of 37
@@ -197,8 +202,8 @@ export function update(t) {
   const f = keyed(t, false), b = keyed(t - 0.05, true);
   // under the calendar strip (holds 16-20) Blink never grows taller than at rest: its sprout sits just under the strip
   const low = spanAlpha([[T.h16 - 0.1, T.h21 + 0.9]], t, 0.3);
-  const rise = b.rise * (1 - low);
-  let sy = 1 + 0.0075 * Math.sin((2 * Math.PI * t) / 3.4) + squashAt(t);
+  const rise = (b.rise + hop(t)) * (1 - low);
+  let sy = 1 + 0.0075 * Math.sin((2 * Math.PI * t) / 3.4) + squashAt(t) + hopStretch(t);
   if (sy > 1) sy = 1 + (sy - 1) * (1 - low);
   const sx = 1 / Math.sqrt(sy);
   // the body turns and tilts toward what the eyes are on, a beat behind them
