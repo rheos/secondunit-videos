@@ -1,0 +1,24 @@
+---
+- name: close_k
+  image: close2
+  seconds: 5
+  key: green
+  engine: kling
+  elements:
+  - frontal: refs/wyrd-front.png
+    refs:
+    - refs/wyrd-side.png
+    - refs/wyrd-back.png
+    - refs/wyrd-head.png
+  prompt: "@Element1, the Wyrd One, exactly as his reference sheet: wide-brim hat,
+    dense matte black cord-fringe veil hiding the whole face (never a face, mouth
+    or eyes), long dark wavy hair, long shredded duster, black Les Paul with two pickups
+    and the white antlered-wolf headstock. Close on the veiled head. Starting from
+    the first frame, the head turns slowly from screen-left toward camera over two
+    seconds; at about 2.5 seconds a single small white eye glints through the cords
+    for half a second; then the head turns slowly away again. The cords sway with
+    the movement, the hat brim tilts, hair stirs in a wind. No mouth, no face. Locked
+    camera, no camera movement, no zoom, the whole figure stays inside the frame,
+    perfectly flat chroma green #00B140 background throughout, no shadows, no floor,
+    no ground line, no text, no other figures. Keep the exact two-tone style of @Element1:
+    white engraved lines on pure black, no grey, no colour."
