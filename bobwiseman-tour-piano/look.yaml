@@ -1,0 +1,48 @@
+# Moves to looks/tour-piano.yaml when its clip goes on the styles page. Until then it stays here, because the site's
+# sync-looks fails on any look in looks/ with no clip.
+slug: tour-piano
+title: Playable inked piano
+note: >-
+  A hand-inked upright you can turn round and play. A tour is written on the music desk as a real score, one key for each
+  show, and pressing a key plays the note and brings up the date and town. Switch on see-through and the hammer hits the string.
+used: Tour dates, Bob Wiseman, test
+cost: free
+group: code
+order: 650
+clip: tour-piano.mp4
+tall: false
+status: test
+engine: colorfigures (svg)
+project: bobwiseman-tour-piano
+code:
+  path: bobwiseman-tour-piano/js/piano.js
+  flag: null
+  page: bobwiseman-tour-piano/piano.html
+  note: >-
+    An interactive page, not a film. Tour data comes from gitignored work/shows.js, a snapshot of list_shows. js/core.js is
+    April Zhu's engine unchanged, MIT, and the page keeps its credit link.
+rules:
+  - Nothing moves or sounds until someone presses something; never a player piano, because the artist is a pianist
+  - One white key per show in date order, so a tour reads left to right along the keyboard, with months pencilled over their keys
+  - The score is real notation at the pitch each key plays, with clef and octave mark chosen per system
+  - The object is true to the real thing from every side; see-through shows the real path from key to string
+  - Flat three-tone bodies, heavy ink silhouette, finer inner lines, flat blue cast shadow, warm paper
+  - One body colour, pencil on cream for the score, red only for what was just played
+palette:
+  - "#ef6a4c"
+  - "#cf5038"
+  - "#4a2219"
+  - "#fbf7e8"
+  - "#41538f"
+reference: >-
+  April Zhu's Colorfigures (april-zhu.com/colorfigures), MIT: her engine and drawing rules. The piano, the tour idea and the
+  sound are ours.
+proof:
+  renders:
+    - bobwiseman-tour-piano/out/tour-piano_test01.html
+  pr:
+    - rheos/secondunit-videos#410
+  youtube: []
+verdict: "Robin, 2026-11-04, on test 01: \"It lands\". Player piano rejected before the build: \"send the wrong message.. bob is a pianist\"."
+related:
+  - chart-world
