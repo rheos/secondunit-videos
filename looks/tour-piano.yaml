@@ -1,5 +1,3 @@
-# Moves to looks/tour-piano.yaml when its clip goes on the styles page. Until then it stays here, because the site's
-# sync-looks fails on any look in looks/ with no clip.
 slug: tour-piano
 title: Playable inked piano
 note: >-
@@ -20,7 +18,9 @@ code:
   page: bobwiseman-tour-piano/piano.html
   note: >-
     An interactive page, not a film. Tour data comes from gitignored work/shows.js, a snapshot of list_shows. js/core.js is
-    April Zhu's engine unchanged, MIT, and the page keeps its credit link.
+    April Zhu's engine unchanged, MIT, and the page keeps its credit link. The styles clip plays only the November shows,
+    because on 2026-11-04 23 of the 40 towns were not in the text of Bob's public tour page. Don't put the full page or
+    later months anywhere public until Bob's dates are checked.
 rules:
   - Nothing moves or sounds until someone presses something; never a player piano, because the artist is a pianist
   - One white key per show in date order, so a tour reads left to right along the keyboard, with months pencilled over their keys
@@ -40,9 +40,10 @@ reference: >-
 proof:
   renders:
     - bobwiseman-tour-piano/out/tour-piano_test01.html
+    - bobwiseman-tour-piano/out/tour-piano_nov.mp4
   pr:
     - rheos/secondunit-videos#410
   youtube: []
-verdict: "Robin, 2026-11-04, on test 01: \"It lands\". Player piano rejected before the build: \"send the wrong message.. bob is a pianist\"."
+verdict: "Robin, 2026-11-04, on test 01: \"It lands\", then \"Publish it\". Player piano rejected before the build: \"send the wrong message.. bob is a pianist\"."
 related:
   - chart-world

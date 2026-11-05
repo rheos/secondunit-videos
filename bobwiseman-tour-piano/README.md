@@ -32,3 +32,6 @@ mid-strike), `cancel`, `pedal`, `xr`, `labels`, plus the engine's `press`.
 On a phone the keys are about 3 px wide, too small to pick one with a finger, so a phone viewer uses Next show and the notes on
 the score. Most of the BC dates have no venue yet, so the card says "Venue to come". The credit link to Colorfigures stays on
 the page.
+
+The recipe is `looks/tour-piano.yaml`. The styles clip plays only the November shows: on 2026-11-04, 23 of the 40 towns were
+not in the text of Bob's public tour page, so keep the full page and later months private until his dates are checked.
