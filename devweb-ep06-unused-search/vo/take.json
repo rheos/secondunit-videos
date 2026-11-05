@@ -1,13 +1,13 @@
 {
- "voice": "swWmDU3GdVjdv7jkjFfQ",
+ "voice": "1PVLUq5IJEWytBdfHmuI",
  "model": "eleven_v4",
  "chars": 1488,
- "seconds": 94.6,
- "sha256": "7839d2f842bbdd5b4fc861e84ad124cae90c6d0670bbf91db53d6558bd53ddad",
+ "seconds": 91.56,
+ "sha256": "6ddbaf4f432461f1b050ce7b7874be209b021686a26369c3d3cc4f16adf46585",
  "tightened": {
   "stop": 0.4,
   "comma": 0.28,
-  "raw_seconds": 101.84,
-  "seconds": 94.6
+  "raw_seconds": 94.96,
+  "seconds": 91.56
  }
 }
