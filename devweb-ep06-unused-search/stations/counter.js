@@ -139,10 +139,11 @@ export function update(t) {
 
   // light: the count is the subject while it climbs and lands; the lamp and the tray take hold 14 and 15
   const lit = 0.84 + 0.16 * io(r01(t, T.one3, 0.3));
-  const lift = t < T.h14 ? lit : t < T.h15 ? mix(lit, 0.8, io(r01(t, T.h14, 0.4))) : mix(0.8, 0.45, io(r01(t, T.h15, 0.4)));
+  // hold 15: the tray is the subject, so the count drops to about a quarter of its lift, eased with the tray's slide
+  const lift = t < T.h14 ? lit : t < T.h15 ? mix(lit, 0.75, io(r01(t, T.h14, 0.4))) : mix(0.75, 0.28, io(r01(t, T.h15, 0.45)));
   faceMat.color.setScalar(lift);
   [tens, units].forEach((dr) => dr.mat.color.setScalar(lift));
-  const housing = 0.75 + 0.25 * lift;
+  const housing = 0.6 + 0.4 * lift;
   solids.forEach((m) => { m.material.color.copy(m.userData.base).multiplyScalar(housing); solidAlpha(m, a); });
 
   const s = shown(t);

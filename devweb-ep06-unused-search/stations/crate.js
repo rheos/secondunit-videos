@@ -11,6 +11,14 @@ const FACE_Z = -1.5, LID_Z = -1.47;
 const A_OLD = (210 * Math.PI) / 180, A_NEW = (330 * Math.PI) / 180;
 const onRing = (a, r = DIAL_R) => [DIAL[0] + Math.cos(a) * r, DIAL[1] + Math.sin(a) * r];
 const TIP = onRing(A_OLD, 0.52);
+// on the words (cues.js mirrors these): the plate lands just before its word, the tag swings on its word
+export const PLATE_HIT = T.new1 - 0.06, TAG_SWING = T.dflt - 0.05;
+// slow glint passes across the dial glass: [start, length] inside the holds where nothing else on the crate moves
+const GLINTS = [[4.95, 2.1], [10.5, 2.8], [54.3, 3.0], [58.95, 2.5]];
+const glintAt = (t) => {
+  for (const [s, d] of GLINTS) if (t >= s && t <= s + d) { const u = (t - s) / d; return { x: 0.75 - 1.5 * io(u), a: 0.07 * Math.sin(Math.PI * u) }; }
+  return { x: 0.75, a: 0 };
+};
 const PLATE_Y = 4.13, PLATE_LINES = [4.27, 4.127, 3.987]; // world y of the plate's three lines
 
 // lit by default; dim behind the option panels (holds 24-25)
@@ -38,7 +46,7 @@ const painted = [];
 const P = (mat, track) => { painted.push([mat, track]); return mat; };
 const box = (toon, w, h, d, track, x, y, z, parent) => { const m = solid(toon, w, h, d, "#ffffff", x, y, z, parent); P(m.material, track); return m; };
 
-let stencil, ringPanel, oldLbl, newLbl, newTick, tagPivot, tag, tagGlow, plate, plateMark, flapPivot, chutes = {}, newGlow, softTex;
+let stencil, ringPanel, oldLbl, newLbl, newTick, tagPivot, tag, tagGlow, plate, plateMark, flapPivot, chutes = {}, newGlow, softTex, glint;
 
 // a soft round falloff, for light that spills rather than paints a rectangle
 function soft() {
@@ -92,6 +100,16 @@ export function build(scene, { toon }) {
   const bezel = new THREE.Mesh(new THREE.TorusGeometry(DIAL_R + 0.045, 0.035, 12, 96), P(toon("#3d566f", { fog: false }), RIM_T));
   bezel.position.set(DIAL[0], DIAL[1], DIAL[2]);
   scene.add(disc, bezel);
+  // the dial glass: a faint glint that crosses it slowly in the long still holds. Clipped by the disc's own shape.
+  const gc = document.createElement("canvas"); gc.width = gc.height = 256;
+  const gg = gc.getContext("2d"), band = gg.createLinearGradient(98, 0, 158, 0);
+  band.addColorStop(0, "rgba(255,255,255,0)"); band.addColorStop(0.5, "rgba(255,255,255,1)"); band.addColorStop(1, "rgba(255,255,255,0)");
+  gg.translate(128, 128); gg.rotate(-0.6); gg.translate(-128, -128); gg.fillStyle = band; gg.fillRect(98, -128, 60, 512);
+  const gtex = new THREE.CanvasTexture(gc); gtex.colorSpace = THREE.SRGBColorSpace;
+  gtex.wrapS = gtex.wrapT = THREE.ClampToEdgeWrapping;
+  glint = new THREE.Mesh(new THREE.CircleGeometry(DIAL_R - 0.01, 64), glowMat("#ffffff", gtex));
+  glint.position.set(DIAL[0], DIAL[1], DIAL[2] + 0.012);
+  scene.add(glint);
   ringPanel = staticPanel(1.3, 1.3, 400, (g, W) => {
     const c = W / 2, r = DIAL_R * 400;
     g.strokeStyle = "#ffffff"; g.lineWidth = 8; g.beginPath(); g.arc(c, c, r, 0, Math.PI * 2); g.stroke();
@@ -195,7 +213,7 @@ function flapAt(t) {
 // the reading mark on the plate: line to line as Blink's gaze reads down, from t
 function markAt(t) {
   const runs = [
-    { on: [T.h11 + 0.5, T.h12], keys: [T.h11 + 0.5, T.listed, T.desc] },
+    { on: [PLATE_HIT + 0.15, T.h12], keys: [PLATE_HIT + 0.15, T.listed, T.desc] },
     { on: [T.h22 + 0.2, T.dflt2 - 0.2], keys: [T.h22 + 0.2, T.list, T.list + 0.45] },
   ];
   for (const r of runs) {
@@ -235,20 +253,20 @@ export function update(t) {
   newGlow.material.opacity = 0.3 * bright;
   newGlow.visible = newGlow.material.opacity > 0.002;
 
-  // the tag swings once on hold 07: out, back past centre once, settled in about 0.9 s. It glows on hold 22.
-  const sw = r01(t, T.h07 + 0.1, 0.9);
+  // the tag swings once on its word (hold 07): out, back past centre once, settled in about 0.9 s. It glows on hold 22.
+  const sw = r01(t, TAG_SWING, 0.9);
   tagPivot.rotation.z = sw > 0 && sw < 1 ? 0.3 * Math.sin(sw * Math.PI * 2) * Math.pow(1 - sw, 1.5) : 0;
   paint(tag.mesh.material, TAG_T, t);
   tagGlow.material.opacity = 0.28 * spanAlpha([[T.dflt2 - 0.1, T.h23]], t, 0.2);
   tagGlow.visible = tagGlow.material.opacity > 0.002;
 
-  // the plate falls into place on hold 11 (lands at the animatic's time), rebounds once, stays
-  const pOn = t >= T.h11 + 0.05, hit = T.h11 + 0.4;
+  // the plate falls into place on hold 11 (lands just before its word), rebounds once, stays
+  const fall0 = PLATE_HIT - 0.35, pOn = t >= fall0, hit = PLATE_HIT;
   if (pOn) {
-    const u = r01(t, T.h11 + 0.05, hit - T.h11 - 0.05);
+    const u = r01(t, fall0, 0.35);
     const bounce = t > hit ? 0.035 * Math.sin(Math.PI * r01(t, hit, 0.24)) : 0;
     plate.mesh.position.y = PLATE_Y + 1.2 * (1 - u * u) + bounce;
-    alpha(plate.mesh, r01(t, T.h11 + 0.05, 0.12));
+    alpha(plate.mesh, r01(t, fall0, 0.12));
     paint(plate.mesh.material, PLATE_T, t);
   } else plate.mesh.visible = false;
   const mk = markAt(t);
@@ -257,6 +275,11 @@ export function update(t) {
 
   // the slot's flap (bottom swings out toward camera)
   flapPivot.rotation.x = -flapAt(t);
+
+  // the glint on the dial glass, one slow pass in each long still hold
+  const gl = glintAt(t);
+  glint.material.map.offset.x = gl.x;
+  alpha(glint, gl.a);
 
   // chutes: the right one only from July; each lights while a card rides it. The left stream at hold 13 is the
   // film's light peak; its glow spills out of the chute's mouth only then.

@@ -1,3 +1,4 @@
+// Rest y -0.38 (animatic -0.2): its top sits about 40 px (720 wide) under Blink's smile, room for the grin and squash.
 // The note: a slip of paper that drifts in from the right on hold 18, floats down beside Blink and slides in under its
 // face, then rests against its front until hold 20 ends. Its path stays below the eyes the whole way (animatic 04 had it
 // cross the face). It rests on the left, clear of July; the right chute is on the right. Nothing joins them. It arrives
@@ -7,10 +8,10 @@ import { alpha, hero, text } from "../parts.js";
 import { rr } from "../kit/world.js";
 import { T, cl, mix, r01 } from "../timeline.js";
 
-const X = -0.75, Y = -0.2, Z = 1.15, NW = 0.95, NH = 0.36;
+const X = -0.75, Y = -0.38, Z = 1.15, NW = 0.95, NH = 0.36;
 // the flight: a cubic from off the frame's right edge, below the strip, down past Blink's right side and in under the
 // face. Checked against the eyes in screen space (720 px): its top stays 20 px or more below them.
-const P = [[2.0, 1.15], [1.1, 0.55], [0.35, -0.36], [X, Y]];
+const P = [[2.0, 1.15], [1.1, 0.55], [0.35, -0.5], [X, Y]];
 const FLY = [T.h18, 1.1], SETTLE = 0.35;
 const bez = (s, i) => { const a = 1 - s; return a * a * a * P[0][i] + 3 * a * a * s * P[1][i] + 3 * a * s * s * P[2][i] + s * s * s * P[3][i]; };
 let note, base;

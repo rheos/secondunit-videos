@@ -40,8 +40,8 @@ window.CUES = function (w, T, H) {
   add("slide", T.h03 + 0.2, 0.45); // and slides back off
   add("slide", T.july, 0.45); // for good in July
   add("slide", T.july, 0.3); // the right chute grows out under it
-  add("ding", T.h07 + 0.1); // the default tag swings (crate.js: swing starts h07 + 0.1)
-  add("thud", T.h11 + 0.4); // the plate lands (crate.js: hit = h11 + 0.4)
+  add("ding", T.dflt - 0.05); // the default tag swings (crate.js: TAG_SWING = dflt - 0.05)
+  add("thud", T.new1 - 0.06); // the plate lands (crate.js: PLATE_HIT = new1 - 0.06)
   add("draw", T.dflt2 - 0.1, 0.6); // the tag glows, hold 22
   add("draw", T.new2, 0.5); // meaning (new) brightens, hold 23
   add("draw", T.h19 + 1.0, 0.9); // the right chute lights: the colour beat, hold 19

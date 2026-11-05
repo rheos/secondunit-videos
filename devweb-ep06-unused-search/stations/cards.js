@@ -45,10 +45,10 @@ function feed(from, u, arc) {
   const A = arc ? 0.72 : 0.6;
   if (u < A) {
     const v = u / A, p = travel(from, AT_SLOT, v, arc), k = io(v);
-    return { ...p, ry: mix(0, AT_SLOT.ry, k), rz: mix(from.rz, AT_SLOT.rz, k), a: 1, u, kind: "feed" };
+    return { ...p, ry: mix(0, AT_SLOT.ry, k), rz: mix(from.rz, AT_SLOT.rz, k), a: 1, u, arc, kind: "feed" };
   }
   const v = io((u - A) / (1 - A));
-  return { ...AT_SLOT, x: mix(AT_SLOT.x, SLOT[0] - 0.21, v), z: mix(AT_SLOT.z, FACE_Z - 0.27, v), a: 1 - r01(v, 0.85, 0.15), u, kind: "feed" };
+  return { ...AT_SLOT, x: mix(AT_SLOT.x, SLOT[0] - 0.21, v), z: mix(AT_SLOT.z, FACE_Z - 0.27, v), a: 1 - r01(v, 0.85, 0.15), u, arc, kind: "feed" };
 }
 // down a chute: slides out from under the crate (the part still inside is cut off), gathers speed, leaves at the foot
 function ride(side, e, dur) {
@@ -82,7 +82,8 @@ function liftAt(t, own, move) {
 
 function cardPose(plan, ci, t) {
   const q = core(plan, ci, t);
-  if (q && q.kind === "feed") q.lift = mix(liftAt(t, plan.dot, 0), LIT, cl(q.u * 4)); // brightens as it heads in
+  // a card fed from the queue brightens as it heads in; a card straight out of Blink is full white the whole way
+  if (q && q.kind === "feed") q.lift = q.arc ? LIT : mix(liftAt(t, plan.dot, 0), LIT, cl(q.u * 4));
   if (!q || q.kind !== "move") return q;
   // lean into the move and settle upright as it stops: tilt from the speed, which eases to zero, so no rebound
   const b = core(plan, ci, t - DT);

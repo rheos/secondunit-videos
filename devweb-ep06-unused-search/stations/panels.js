@@ -28,6 +28,9 @@ function pointerP(t) {
   const v = r01(t, SWING[0] + SWING[1], 0.25);
   return 1 + OVER * (1 - v * v * (3 - 2 * v));
 }
+const BEAT_L = [T.h25 + 0.8, T.h25 + 2.0], BEAT_R = T.h25 + 1.12; // ~68.88 "plain", ~70.08 "use", ~69.2 "words"
+// a blink in about 12 frames at 30 fps: close 4, shut 2, open 6
+const blinkB = (u) => (u < 0 ? 0 : u < 0.133 ? u / 0.133 : u < 0.2 ? 1 : u < 0.4 ? 1 - (u - 0.2) / 0.2 : 0);
 const A_OLD = (-150 * Math.PI) / 180, A_NEW = (-30 * Math.PI) / 180;
 
 function drawDial(g, W, H, { p = 0, sw = 0 } = {}) {
@@ -49,12 +52,13 @@ function drawDial(g, W, H, { p = 0, sw = 0 } = {}) {
   g.font = "700 36px 'IBM Plex Mono', monospace"; g.fillStyle = INK; g.textAlign = "center"; g.textBaseline = "alphabetic";
   g.fillText("default", 0, 50);
   g.restore();
-  // one setting per line, each on its own side; the one the pointer is on reads darkest
-  text(g, "keywords (old)", 22, 352, 54, { c: hexMix(INK, SOFT, cl(p)), w: 700 });
-  text(g, "meaning (new)", W - 22, 420, 54, { c: hexMix(SOFT, INK, cl(p)), w: 700, a: "right" });
+  // one setting per line, each on its own side, 44 px (8.8 %) clear of the card's edges at 48 px (403 and 374 px wide);
+  // the one the pointer is on reads darkest
+  text(g, "keywords (old)", 44, 352, 48, { c: hexMix(INK, SOFT, cl(p)), w: 700 });
+  text(g, "meaning (new)", W - 44, 418, 48, { c: hexMix(SOFT, INK, cl(p)), w: 700, a: "right" });
 }
 
-function drawNote(g, W, H) {
+function drawNote(g, W, H, { b = 0 } = {}) {
   paper(g, W, H);
   // a small Blink: mint body, dark visor, two pill eyes, a small smile, its tilde sprout. No harness.
   const cx = W / 2;
@@ -62,8 +66,10 @@ function drawNote(g, W, H) {
   g.beginPath(); g.moveTo(cx, 46); g.lineTo(cx, 26); g.bezierCurveTo(cx - 6, 10, cx - 22, 10, cx - 28, 22); g.moveTo(cx, 26); g.bezierCurveTo(cx + 6, 12, cx + 22, 14, cx + 30, 24); g.stroke();
   g.fillStyle = "#6ad08a"; rr(g, cx - 82, 44, 164, 136, 60); g.fill();
   g.fillStyle = "#0a1510"; rr(g, cx - 62, 72, 124, 72, 28); g.fill();
-  g.fillStyle = "#c8ffd9"; rr(g, cx - 36, 84, 18, 40, 9); g.fill(); rr(g, cx + 18, 84, 18, 40, 9); g.fill();
+  const eh = Math.max(4, 40 * (1 - b)), ey = 84 + (40 - eh) / 2; // blinks shut toward the eye's middle
+  g.fillStyle = "#c8ffd9"; rr(g, cx - 36, ey, 18, eh, Math.min(9, eh / 2)); g.fill(); rr(g, cx + 18, ey, 18, eh, Math.min(9, eh / 2)); g.fill();
   g.strokeStyle = "#c8ffd9"; g.lineWidth = 4; g.beginPath(); g.arc(cx, 126, 10, 0.15 * Math.PI, 0.85 * Math.PI); g.stroke();
+  // 54 px: the longest line (use the new, 356 px) keeps 71 px (14 %) either side
   text(g, "use the new", cx, 262, 54, { c: INK, w: 700, a: "center" });
   text(g, "search", cx, 332, 54, { c: INK, w: 700, a: "center" });
   text(g, "when ...", cx, 402, 54, { c: INK, w: 700, a: "center" });
@@ -102,7 +108,12 @@ export function update(t) {
 
   // the pointer and its tag: redrawn only when they change (state quantised, so a held pointer doesn't redraw)
   const p = pointerP(t), vel = (p - pointerP(t - 1 / 60)) * 60;
-  left.set({ p: Math.round(p * 400) / 400, sw: Math.round(THREE.MathUtils.clamp(-vel * 0.12, -0.35, 0.35) * 100) / 100 });
+  // two small beats in the long hold, one per card in turn: the tag swings once more on "plain" and again on "use it"
+  // (a decaying swing, one rebound), the little Blink blinks on "words"
+  const nudge = (t0) => { const u = t - t0; return u < 0 || u > 0.6 ? 0 : 0.14 * Math.sin((u / 0.3) * Math.PI) * (1 - u / 0.6); };
+  const sw = THREE.MathUtils.clamp(-vel * 0.12, -0.25, 0.25) + nudge(BEAT_L[0]) + 0.7 * nudge(BEAT_L[1]);
+  left.set({ p: Math.round(p * 400) / 400, sw: Math.round(sw * 100) / 100 });
+  right.set({ b: Math.round(blinkB(t - BEAT_R) * 20) / 20 });
 
   // each card turns face-on, then floats: a slow bob and a breath of yaw, out of step with each other
   const la = Math.min(1, lk * 3) * clear, ra = Math.min(1, rk * 3) * clear;

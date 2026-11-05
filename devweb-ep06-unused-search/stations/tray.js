@@ -1,6 +1,6 @@
 // The error tray: under the lamp, right side, hold 15 only. Empty on every frame.
-// Finished look: a shallow wall-mounted tray with a header bar that carries its label, two side walls, a front lip
-// and a recessed floor shaded darker at its inner edges, so the hollow reads. It slides in from the right with one
+// Finished look: a shallow wall-mounted tray: a dark header bar with the label in white, grey side walls, and a
+// paper-light lip and recessed floor (shaded a little at its inner edges) so "empty" reads at a glance. It slides in from the right with one
 // small settle. While it holds, a slow band of light passes once across the empty floor and a few specks of dust drift
 // down and come to rest on the lip: nothing else is in it. Everything is a pure function of t.
 import * as THREE from "three";
@@ -9,7 +9,7 @@ import { T, cl, io, r01 } from "../timeline.js";
 
 // the animatic's tray: 0.7 x 0.42 at (1.75, 2.55), front at z -1.1. Nothing here reaches past x 2.1.
 const X = 1.75, Y = 2.55, Z = -1.1, W = 0.7, H = 0.42;
-const HEAD = 0.13, LIP = 0.05, WALL = 0.03, DEPTH = 0.14;
+const HEAD = 0.15, LIP = 0.05, WALL = 0.03, DEPTH = 0.14;
 const BED_W = W - 2 * WALL, BED_H = H - HEAD - LIP, BED_Y = -H / 2 + LIP + BED_H / 2;
 const SWEEP = [T.h15 + 1.1, 1.8]; // start, length: one pass, an event, not a state
 const DUST = [[-0.2, 0.75, 2.2], [0.06, 0.95, 2.6], [0.21, 1.2, 2.0], [-0.07, 1.6, 2.4], [0.15, 2.1, 2.3]]; // x, start after h15, fall time
@@ -35,21 +35,24 @@ function canvasTex(w, h, draw) {
 export function build(scene, { toon }) {
   rig = new THREE.Group();
   scene.add(rig);
-  // the floor (the tray's back), recessed DEPTH behind the front
-  box(toon, W, H, 0.02, "#12171e", 0, 0, -DEPTH - 0.01);
-  // walls: two sides and the front lip, each a solid with a lighter front edge
-  const wall = "#2a323c";
+  // the floor (the tray's back), recessed DEPTH behind the front: paper-light and unlit, so the empty bed is the
+  // brightest thing on the right side of the frame through hold 15
+  const floor = new THREE.Mesh(new THREE.BoxGeometry(W, H, 0.02), new THREE.MeshBasicMaterial({ color: "#d4d2cc", fog: false }));
+  floor.position.set(0, 0, -DEPTH - 0.01);
+  rig.add(floor); solids.push(floor);
+  // walls: two sides in mid grey and a light lip, toon shaded so their depth reads against the floor
+  const wall = "#6e7681";
   // (no two boxes share a front face: walls stop under the header, the lip sits between the walls)
   box(toon, WALL, H - HEAD, DEPTH, wall, -W / 2 + WALL / 2, -HEAD / 2, -DEPTH / 2);
   box(toon, WALL, H - HEAD, DEPTH, wall, W / 2 - WALL / 2, -HEAD / 2, -DEPTH / 2);
-  box(toon, BED_W, LIP, DEPTH, "#323b46", 0, -H / 2 + LIP / 2, -DEPTH / 2);
+  box(toon, BED_W, LIP, DEPTH, "#e8e7e3", 0, -H / 2 + LIP / 2, -DEPTH / 2);
   // the header bar, full depth, its face carries the label
   box(toon, W, HEAD, DEPTH, "#1c232c", 0, H / 2 - HEAD / 2, -DEPTH / 2);
   solids.forEach((m) => (m.userData.base = m.material.color.clone()));
 
   header = hero(W - 0.02, HEAD - 0.01, 300, (g, Wp, Hp) => {
-    text(g, "errors", 16, 28, 31, { c: "#e6edf3", w: 600 });
-    g.fillStyle = "#59616b"; g.fillRect(0, Hp - 2, Wp, 2);
+    text(g, "errors", 16, 34, 38, { c: "#ffffff", w: 700 });
+    g.fillStyle = "#8b949e"; g.fillRect(0, Hp - 2, Wp, 2);
   });
   header.set({});
   header.mesh.position.set(0, H / 2 - HEAD / 2, 0.003);
@@ -60,10 +63,10 @@ export function build(scene, { toon }) {
     fog: false, transparent: true, depthWrite: false,
     map: canvasTex(128, 64, (g, w, h) => {
       const v = g.createLinearGradient(0, 0, 0, h);
-      v.addColorStop(0, "rgba(5,7,10,0.85)"); v.addColorStop(0.35, "rgba(5,7,10,0)"); v.addColorStop(1, "rgba(5,7,10,0.2)");
+      v.addColorStop(0, "rgba(13,17,23,0.45)"); v.addColorStop(0.3, "rgba(13,17,23,0)"); v.addColorStop(1, "rgba(13,17,23,0.12)");
       g.fillStyle = v; g.fillRect(0, 0, w, h);
       const s = g.createLinearGradient(0, 0, w, 0);
-      s.addColorStop(0, "rgba(5,7,10,0.5)"); s.addColorStop(0.12, "rgba(5,7,10,0)"); s.addColorStop(0.88, "rgba(5,7,10,0)"); s.addColorStop(1, "rgba(5,7,10,0.5)");
+      s.addColorStop(0, "rgba(13,17,23,0.3)"); s.addColorStop(0.1, "rgba(13,17,23,0)"); s.addColorStop(0.9, "rgba(13,17,23,0)"); s.addColorStop(1, "rgba(13,17,23,0.3)");
       g.fillStyle = s; g.fillRect(0, 0, w, h);
     }),
   }));
@@ -77,13 +80,13 @@ export function build(scene, { toon }) {
     g.fillStyle = b; g.fillRect(w / 3, 0, w / 3, h);
   });
   st.repeat.set(1 / 3, 1);
-  sweep = new THREE.Mesh(new THREE.PlaneGeometry(BED_W, BED_H), new THREE.MeshBasicMaterial({ map: st, color: "#c9d1d9", fog: false, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, opacity: 0 }));
+  sweep = new THREE.Mesh(new THREE.PlaneGeometry(BED_W, BED_H), new THREE.MeshBasicMaterial({ map: st, color: "#ffffff", fog: false, transparent: true, depthWrite: false, opacity: 0 }));
   sweep.position.set(0, BED_Y, -DEPTH + 0.004);
   rig.add(sweep);
 
   // dust: a few specks, each its own material
   DUST.forEach(() => {
-    const m = new THREE.Mesh(new THREE.PlaneGeometry(0.009, 0.009), new THREE.MeshBasicMaterial({ color: "#8b949e", fog: false, transparent: true, depthWrite: false }));
+    const m = new THREE.Mesh(new THREE.PlaneGeometry(0.012, 0.012), new THREE.MeshBasicMaterial({ color: "#59616b", fog: false, transparent: true, depthWrite: false }));
     rig.add(m); motes.push(m);
   });
 }
@@ -101,10 +104,10 @@ export function update(t) {
   alpha(header.mesh, k);
   alpha(shade, k);
 
-  // the sweep: one pass left to right, peak opacity 0.07, then nothing
+  // the sweep: one pass left to right, a white band at peak 0.6 over the light floor, then nothing
   const sp = r01(t, SWEEP[0], SWEEP[1]);
   sweep.material.map.offset.x = (2 / 3) * (1 - io(sp));
-  alpha(sweep, 0.07 * Math.sin(Math.PI * sp) * k);
+  alpha(sweep, 0.6 * Math.sin(Math.PI * sp) * k);
 
   // dust drifts down from under the header and rests on the lip, swaying a little as it falls
   const top = BED_Y + BED_H / 2 - 0.02, floor = -H / 2 + LIP + 0.01;
