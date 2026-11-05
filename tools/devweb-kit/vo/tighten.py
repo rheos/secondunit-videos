@@ -16,7 +16,10 @@ raw = HERE / "voice.raw.mp3"
 if not raw.exists():
     raw.write_bytes((HERE / "voice.mp3").read_bytes())
 script = json.loads((HERE / "script.json").read_text())
-norm = lambda s: re.sub(r"[^a-z0-9']", "", s.lower())
+# A script may set its own: "tighten": {"stop": 0.4, "comma": 0.28, "fade": 0.03}. A voice with long natural pauses sounds chopped at the defaults.
+own = script.get("tighten", {})
+STOP, COMMA, FADE = own.get("stop", STOP), own.get("comma", COMMA), own.get("fade", FADE)
+norm =lambda s: re.sub(r"[^a-z0-9']", "", s.lower())
 
 m = WhisperModel("small.en", device="cpu", compute_type="int8")
 res, _ = m.transcribe(str(raw), word_timestamps=True, beam_size=5)

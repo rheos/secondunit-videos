@@ -2,12 +2,12 @@
  "voice": "swWmDU3GdVjdv7jkjFfQ",
  "model": "eleven_v4",
  "chars": 1488,
- "seconds": 88.69,
+ "seconds": 94.6,
  "sha256": "7839d2f842bbdd5b4fc861e84ad124cae90c6d0670bbf91db53d6558bd53ddad",
  "tightened": {
-  "stop": 0.22,
-  "comma": 0.15,
+  "stop": 0.4,
+  "comma": 0.28,
   "raw_seconds": 101.84,
-  "seconds": 88.69
+  "seconds": 94.6
  }
 }

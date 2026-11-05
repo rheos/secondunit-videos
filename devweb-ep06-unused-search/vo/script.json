@@ -30,5 +30,10 @@
   ]
  ],
  "facts": "Traced in facts-search.md and facts-search-2.md against devweb true-of-a-date.mdx and mcp-tool-design.mdx. The link between the Aug 27 protocol and the hybrid calls is stated as the narrator's bet, not a finding.",
- "voice": "swWmDU3GdVjdv7jkjFfQ"
+ "voice": "swWmDU3GdVjdv7jkjFfQ",
+ "tighten": {
+  "stop": 0.4,
+  "comma": 0.28,
+  "fade": 0.03
+ }
 }
