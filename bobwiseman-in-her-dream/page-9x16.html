@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>In Her Dream, 9:16 page</title>
+<style>html, body { margin: 0; background: #111; } canvas { display: block; }</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<script>
+// The 9:16 final: a still cut-paper page in the film's own kit. The approved 16:9 film is laid onto the card
+// window afterwards by ffmpeg (tools/finals-9x16.sh), so nothing in the film itself is redrawn or cropped.
+// Page 1080x1920; the card window is CARD below, in page pixels.
+</script>
+<script src="js/cut/kit.js"></script>
+<script>
+const PW = 1080, PH = 1920;
+const CARD = { x: 45, y: 700, w: 990, h: 557 };   // 990x557 keeps 16:9 to the pixel
+const cv = document.getElementById('c'); cv.width = PW; cv.height = PH;
+g = cv.getContext('2d');
+const P = (f) => { const p = new Path2D(); f(p); return p; };
+const circ = (x, y, r) => P((p) => p.arc(x, y, r, 0, Math.PI * 2));
+
+// rose sheet, a deeper rose band at the foot
+cut(P((p) => p.rect(0, 0, PW, PH)), C.rose, { sh: 0 });
+cut(P((p) => { p.moveTo(0, 1500); for (let i = 0; i <= 12; i++) p.lineTo(i * PW / 12, 1500 + Math.sin(i * 1.3) * 14 + (hash(i) - .5) * 10); p.lineTo(PW, PH); p.lineTo(0, PH); p.closePath(); }), C.roseDeep, { lift: 1 });
+
+// her sun halo: layered paper rings behind the card, as in the film's first image
+const cx = PW / 2, cy = CARD.y + CARD.h / 2;
+[[560, C.sun], [480, C.goldPale], [400, C.gold], [330, C.orange]].forEach(([r, col], i) => {
+  cut(P((p) => { const n = 48; for (let k = 0; k <= n; k++) { const a = k / n * Math.PI * 2, rr = r + (k % 2 ? 0 : 22) * (i < 2 ? 1 : 0) + (hash(k + i * 50) - .5) * 6; k ? p.lineTo(cx + Math.cos(a) * rr, cy + Math.sin(a) * rr) : p.moveTo(cx + Math.cos(a) * rr, cy + Math.sin(a) * rr); } p.closePath(); }), col, { lift: 1 + i * .5 });
+});
+
+// the cream mount the film sits in, lifted off the sheet
+const m = 22;
+cut(P((p) => p.rect(CARD.x - m, CARD.y - m, CARD.w + 2 * m, CARD.h + 2 * m)), C.cream, { lift: 3 });
+cut(P((p) => p.rect(CARD.x, CARD.y, CARD.w, CARD.h)), C.ink, { sh: 0 });
+
+// title above, author below: navy paper letters with the kit's soft shadow
+function words(txt, y, size, weight, track, col) {
+  g.save(); g.font = `${weight} ${size}px "Gill Sans", "Gill Sans MT", sans-serif`; g.textAlign = 'left'; g.textBaseline = 'alphabetic';
+  const chars = [...txt], ws = chars.map((ch) => g.measureText(ch).width + track), tw = ws.reduce((a, b) => a + b, 0) - track;
+  let x = (PW - tw) / 2;
+  chars.forEach((ch, i) => {
+    g.save(); g.shadowColor = 'rgba(40,20,40,.35)'; g.shadowBlur = 10; g.shadowOffsetX = 3; g.shadowOffsetY = 5;
+    g.fillStyle = col; g.translate(x, y + (hash(i * 3.7 + y) - .5) * 4); g.rotate((hash(i * 9.1 + y) - .5) * .04); g.fillText(ch, 0, 0); g.restore();
+    x += ws[i];
+  });
+  g.restore();
+}
+words('IN HER DREAM', 430, 118, 600, 10, C.navy);
+words('BOB WISEMAN', 1620, 58, 400, 14, C.navy);
+
+// the film's paper finish over the page
+g.globalAlpha = .3; g.globalCompositeOperation = 'overlay'; g.drawImage(GRAIN, 0, 0, PW, PH); g.drawImage(MOTTLE, 0, 0, PW, PH);
+g.globalCompositeOperation = 'multiply'; g.globalAlpha = 1;
+const v = g.createRadialGradient(PW / 2, PH / 2, PH * .3, PW / 2, PH / 2, PH * .75); v.addColorStop(0, 'rgba(255,255,255,0)'); v.addColorStop(1, 'rgba(110,70,85,.38)');
+g.fillStyle = v; g.fillRect(0, 0, PW, PH); g.globalCompositeOperation = 'source-over';
+window.__ready = true;
+</script>
+</body>
+</html>
