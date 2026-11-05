@@ -1,0 +1,30 @@
+slug: leviathan-engine
+name: Leviathan engine (0xCodez)
+kind: toolkit
+status: candidate
+does: A three.js multi-pass film engine that makes 3D read as theatrical cel anime, with a Kuwahara gouache pass on backgrounds, material-id ink on characters, a kilometre-scale sea, drawn water and energy FX, and a fully synthesized score.
+keywords:
+- 3d
+- cel
+- ink
+- anime
+- painted
+- gouache
+- kuwahara
+- water
+- ocean
+- webgl
+- threejs
+- soundtrack
+fits:
+- a film with a sea, sky or big machines, which inked3d-kit has no answer for
+- the paint pass as an upgrade to inked3d-kit's plates
+deterministic: 'yes: every frame is a pure function of time, rendered in any order by headless Chrome (tools/render.mjs)'
+how: not installed. github.com/0xCodez/leviathan and github.com/0xCodez/sunshower; three.js r170, puppeteer-core, ffmpeg
+cost: free
+detail: 'source code MIT (Beyond Dev). Leviathan''s story, shots and designs follow a short by AHMII and Sunshower''s robot is Patlabor''s Ingram, and the licences exclude both: take passes and methods, never its designs or shots. Read CONTRACT.md for the department split.'
+related:
+- inked3d-kit
+- open-water
+source: x.com/0xMovez/status/2117987052419428576
+added: '2026-11-04'
