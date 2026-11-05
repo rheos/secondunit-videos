@@ -7,7 +7,7 @@ used: Bob Wiseman's tour, test
 cost: free
 group: code
 order: 610
-clip: diagram-plate.mp4
+clip: null
 tall: false
 status: test
 engine: canvas2d + pele
