@@ -53,7 +53,7 @@ jobs:
           echo "matrix=$(seq 0 $(( SLICES - 1 )) | jq -cs .)" >> "$GITHUB_OUTPUT"
   slice:
     needs: plan
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04  # playwright 1.55.0 can't install its dependencies on ubuntu-latest (26.04)
     strategy:
       fail-fast: false
       matrix:

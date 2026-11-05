@@ -6,7 +6,7 @@ used: An AI never runs a tool, devweb
 cost: free
 group: code
 order: 200
-clip: pending
+clip: null
 tall: true
 status: draft
 engine: hyperframes + three.js

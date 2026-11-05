@@ -22,7 +22,7 @@ Public: these go to the styles page. Write them for a client to read.
 | `group` | `code` (Drawn in code), `generated`, or `live` (Live action with matched AI). |
 | `order` | Position inside its group on the page, in tens. |
 | `collection` | Optional. `clean-line` lifts the look out of its group into the Clean line section at the top of the styles page (the bold, clean code-drawn looks). The look keeps its `group`; `order` then sets its place in that section. |
-| `clip` | The 6 s muted preview in rheos/novadiem.com `public/video/styles/`: 640x360, or 360x640 when `tall`. |
+| `clip` | The 6 s muted preview in rheos/novadiem.com `public/video/styles/`: 640x360, or 360x640 when `tall`. `null` means recipe only: the look stays here and off the styles page. Set the file name only when the clip goes up, because the site's sync fails on a clip it doesn't have. |
 | `tall` | `true` for 9:16 clips. |
 
 Recipe: internal. Never copied to the site.

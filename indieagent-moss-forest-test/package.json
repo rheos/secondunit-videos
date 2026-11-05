@@ -1,0 +1,7 @@
+{
+  "name": "indieagent-moss-forest-test",
+  "private": true,
+  "type": "module",
+  "description": "Moss forest look test: a painted pixel forest where an overgrown upright piano wakes. Drawn in code.",
+  "devDependencies": { "playwright": "^1.55.0" }
+}
