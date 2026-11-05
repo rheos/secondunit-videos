@@ -62,7 +62,7 @@ const EDGES = [
   ["tray", 2.1, -1.1, span(T.h15 + 0.4, T.h16), "R"],
   ["strip left", -1.5, -1.0, span(T.h16 + 1.2, T.h21), "L"], ["strip right", 1.8, -1.0, span(T.h16 + 1.2, T.h21), "R"],
   ["note left", -1.225, 1.15, span(T.h18 + 0.9, T.h21), "L"],
-  ["left panel", -1.32, -0.9, span(T.h24 + 0.6, T.h26), "L"], ["right panel", 1.68, -0.9, span(T.h25 + 0.6, T.h26), "R"],
+  ["left panel", -1.94, -0.9, span(T.h24 + 0.6, T.h26), "L"], ["right panel", 1.94, -0.9, span(T.h25 + 0.6, T.h26), "R"],
   ["log", 1.95, -0.8, span(T.h26 + 0.4, T.h27), "R"],
 ];
 const worst = {};

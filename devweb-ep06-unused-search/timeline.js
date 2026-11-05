@@ -88,7 +88,7 @@ export const rightAfterglow = (t) => 0.45 * spanAlpha([[T.h19 + 1.0 + CHUTE_RIDE
 
 // ---------- the counter: old search, climbing to 36 of 37. The other call is never labelled. ----------
 // it fades in once the camera has widened enough to hold it (hold 13's move), and climbs from there
-const COUNT_IN = T.h13 + 0.55;
+export const COUNT_IN = T.h13 + 0.55;
 export const counterAlpha = (t) => r01(t, COUNT_IN, 0.3) * (1 - r01(t, T.h16, 0.4));
 export const counterN = (t) => (t < COUNT_IN ? 0 : t >= T.one3 ? 36 : Math.floor(36 * r01(t, COUNT_IN, T.one3 - COUNT_IN) + 1e-6));
 
