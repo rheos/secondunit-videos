@@ -38,11 +38,15 @@ if (hf) {
   console.log(`HyperFrames composition: runtime ${ver}, frames by renderSeek and screenshot`);
 }
 // CR_CHANNEL=chrome uses the installed Chrome (for local tests); runners use Playwright's Chromium
-const br = await chromium.launch({ headless: true, ...(process.env.CR_CHANNEL ? { channel: process.env.CR_CHANNEL } : {}) });
+// file:// pages may load ES modules (devweb's world.js) only with the first flag; a blocked module raises no pageerror,
+// so the run used to succeed with a blank world. The other two give a GPU-less runner WebGL in software.
+const br = await chromium.launch({ headless: true, args: ['--allow-file-access-from-files', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'],
+  ...(process.env.CR_CHANNEL ? { channel: process.env.CR_CHANNEL } : {}) });
 const errs = [];
 await Promise.all([...Array(wk)].map(async (_, w) => {
   const p = await br.newPage({ viewport });
   p.on('pageerror', e => errs.push(String(e)));
+  p.on('console', m => { if (m.type() === 'error') console.log('console error: ' + m.text().slice(0, 300)); });
   // some looks precompute for seconds at load (neon: ~7 s on a Mac, far longer on a 2-core runner without a GPU)
   p.setDefaultTimeout(600000);
   // domcontentloaded, not load: the page's <audio> points at the song, which is never packaged, and the load
