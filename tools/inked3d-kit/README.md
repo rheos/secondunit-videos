@@ -39,7 +39,7 @@ shots and cameras, and whatever flat life goes on top. See the moss forest's `js
 | `strokes.js` | `STROKES`, `clump`, `tuft`. |
 | `paint.js` | `plateCanvas`, `wash`, `hatch`, `barkTrunk`, `frondLeaves`; margins `PX`, `PY`. |
 | `flat.js` | `camera`, `project`, `birdPose`, `dustCloud`, `makeGrainTiles`, `drawGrain`. |
-| `marks.js` | Opt-in, under test (#417): `crown`, `markedTrunk`, `fineFrond`, plates built from many small dabs. No approved page loads it. |
+| `marks.js` | Opt-in (#417), used by `d4-marks.html` and the snow bus `marks.html`: `crown`, `markedTrunk`, `fineFrond`, plates built from many small dabs. No approved page loads it. |
 | `sync.sh` | Copy the kit into a project as `<project>/kit/` with a VERSION stamp. Never edit a project's `kit/` by hand. |
 
 ## Making a film

@@ -1,7 +1,7 @@
 // Marks test (#417): the same forest plates with the same composition, repainted out of many small dabs. Loaded only by
-// d4-marks.html. ?marks=0 leaves the approved plates alone. ?fog=hard (default) keeps hard fog bands, broken by dabs;
-// ?fog=soft is soft fog like the reference, which goes against the approved plate rule, so it is a switch for Robin.
-const MQ = new URLSearchParams(location.search), FOG = MQ.get('fog') || 'hard';
+// d4-marks.html. ?marks=0 leaves the approved plates alone. Fog is soft by default (Robin's choice, Nov 5, 2026);
+// ?fog=hard switches back to hard fog bands, broken by dabs.
+const MQ = new URLSearchParams(location.search), FOG = MQ.get('fog') || 'soft';
 const PALM = {
   far: H4('#4f7f68', '#6f9c7c', '#93b68c', '#b7cc9c', '#d6deb0'),
   canopy: H4('#0b332c', '#114034', '#17553a', '#2c7238', '#5a9438', '#8fae44', '#b7c25a'),
