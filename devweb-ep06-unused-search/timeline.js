@@ -100,5 +100,5 @@ export const dayLit = (t) => t >= MARKER[1] && t < T.h21 + 0.6;
 // ---------- Blink's blinks (stations/mark.js draws them: 0.2 s each, close 4 f, shut 2 f, open 6 f at 60 fps) ----------
 // Start times. Here, not in mark.js, so cues.js can declare each one to forensics as a designed change.
 export const BLINKS = [T.h03 - 0.04, T.my2 + 1.06, T.h04 + 1.06, T.july - 0.04, T.added + 1.06, T.h06 + 0.16, T.old2 - 0.04, T.h09 + 0.16,
-  T.h11 + 0.26, T.one3 + 0.5, T.h14 - 0.04, T.uses + 0.3, T.changedEnd - 0.05, T.h18 - 0.04, T.h20 - 0.06, T.h20 + 0.8, T.h21 - 0.04,
+  T.h11 + 0.26, T.one3 + 0.5, /* T.h14 - 0.04 removed: 0.12 s after the one before it, the two ran together as a flutter (finish forensics, 39.52 s) */ T.uses + 0.3, T.uses + 2.37, T.changedEnd - 0.05, T.h18 - 0.04, T.h20 - 0.06, T.h20 + 0.8, T.h21 - 0.04,
   T.h21 + 1.26, T.h23 - 0.04, T.h25 + 0.06, T.h25 + 1.26, T.h26 + 0.3, T.endIn + 0.5];

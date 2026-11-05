@@ -201,17 +201,31 @@ export function build(scene, { ramp, G }) {
 // a deeper idle breath for two quiet stretches (the queue on hold 06-07, the counter and empty tray on holds 14-15):
 // whole-body squash and stretch about the foot, volume kept, eased in and out inside these film spans and exactly
 // zero outside them, so the rest of the film is unchanged
-const BREATH_SPANS = [[14.5, 16.9], [39.4, 45.4]];
-const breathEnv = (t) => { let e = 0; for (const [a, b] of BREATH_SPANS) e = Math.max(e, io(r01(t, a, 0.3) * (1 - r01(t, b - 0.3, 0.3)))); return e; };
+// [start, end, ease-out length]: the second one stays full through the tray tail and fades under the strip's arrival
+const BREATH_SPANS = [[14.5, 16.9, 0.3], [39.4, 45.9, 0.5]];
+const breathEnv = (t) => { let e = 0; for (const [a, b, o] of BREATH_SPANS) e = Math.max(e, io(r01(t, a, 0.3) * (1 - r01(t, b - o, o)))); return e; };
+// the tray tail, "no error message for that": Blink's eyes leave the empty tray and come to the viewer, the body
+// straightens out of its peer with a small nod. An overlay on the keyed values, exactly zero outside [44.25, 45.9]:
+// it fades out against the hold 16 key's own ease (eyes 0.15 s, body 0.3 s after 0.05 s), so the hand-over is smooth.
+const TO_VIEWER = 44.25, VIEWER = { look: -1.1, lookY: -0.4, skew: -0.35, unlean: 4.5, rise: -0.06 }; // offsets from the tray pose (7 deg less 4.5: still leaning right)
+function viewerAt(t, body) {
+  const t0 = TO_VIEWER + (body ? 0.05 : 0), into = io(r01(t, t0, body ? 0.35 : 0.1));
+  const out = 1 - io(r01(t, T.h16 + (body ? 0.05 : 0), body ? 0.3 : 0.15));
+  return into * out;
+}
+const NOD = (t) => (t < TO_VIEWER + 0.05 ? 0 : t < TO_VIEWER + 0.12 ? mix(0, -0.03, io((t - TO_VIEWER - 0.05) / 0.07)) : -0.03 * settle(t - TO_VIEWER - 0.12));
 const breathAt = (t) => 0.016 * breathEnv(t) * Math.sin((2 * Math.PI * (t - 14.5)) / 3.2);
 const leanAt = (t) => keyed(t - 0.05, true).lean + 0.5 * (0.5 + 0.5 * Math.sin(t * 0.9 + 0.4)); // the sway only ever leans right
 
 export function update(t) {
   const f = keyed(t, false), b = keyed(t - 0.05, true);
+  const wf = viewerAt(t, false), wb = viewerAt(t, true);
+  if (wf > 0) { f.look += VIEWER.look * wf; f.lookY += VIEWER.lookY * wf; f.skew += VIEWER.skew * wf; }
+  if (wb > 0) { b.look += VIEWER.look * wb; b.lookY += VIEWER.lookY * wb; b.lean -= VIEWER.unlean * wb; b.rise += VIEWER.rise * wb; }
   // under the calendar strip (holds 16-20) Blink never grows taller than at rest: its sprout sits just under the strip
   const low = spanAlpha([[T.h16 - 0.1, T.h21 + 0.9]], t, 0.3);
   const rise = (b.rise + hop(t)) * (1 - low);
-  let sy = 1 + 0.0075 * Math.sin((2 * Math.PI * t) / 3.4) + squashAt(t) + hopStretch(t) + breathAt(t);
+  let sy = 1 + 0.0075 * Math.sin((2 * Math.PI * t) / 3.4) + squashAt(t) + hopStretch(t) + breathAt(t) + NOD(t);
   if (sy > 1) sy = 1 + (sy - 1) * (1 - low);
   const sx = 1 / Math.sqrt(sy);
   // the body turns and tilts toward what the eyes are on, a beat behind them
