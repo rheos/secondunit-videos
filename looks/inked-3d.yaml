@@ -22,12 +22,13 @@ code:
     The kit is tools/inked3d-kit (synced to each project's kit/). In the moss forest, js/d4/gl.js was the first renderer (shadow map, cel, ink, moss strokes), giant.js the model, pose and moss,
     plates.js the baked plates, life.js the flat bird, soil, dust, flock and leaves, main.js the shots. README has the
     reverse-engineered method and numbers. Drafts 2 and 3 stay beside it (index.html, d3.html), rejected.
+    The plate rule as of Nov 5, 2026 is shown by d4-marks.html (kit marks.js, opt-in); d4.html keeps the hard fog bands it was approved with.
 rules:
   - The figure is a real 3D model, never a sprite - it turns, parts occlude, its stains stay on its surface
   - Shade from a real light with a hard shadow map, 3 flat tones per material, a noisy hard terminator
   - Ink is traced from part, depth and normal edges and broken by noise, thin and dark, never a clean even stroke
   - Moss is flat dry-brush hatching planted on the surface in 5 tones with star flowers on blades, never round shapes
-  - Plates have hard edges and flat tones; blur only as defocus in close-ups; dust is a flat hard-edged shape
+  - Plates have hard edges and flat tones and are built from small flat-tone marks; distant fog on plates is soft (Robin's choice, Nov 5, 2026, over hard fog bands, from the moss forest marks test); other blur only as defocus in close-ups; dust is a flat hard-edged shape
   - Cut into shots; the figure on twos, a heavy rise on threes; camera on ones
   - Match light to measured numbers from the film - wide mean luma about 120, p10 about 37, teal-black to cream
   - No face on the creature and no frame or character from the film
