@@ -102,7 +102,7 @@ const spriteAt = (i) => {
 const fxTex = { dust: puff("#efe2c4", "#c9b48c"), poison: puff("#97d640", "#5d9a26") };
 const fxPool = [];
 const fxAt = (i) => {
-  if (!fxPool[i]) { const m = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMaterial({ transparent: true, depthWrite: false, alphaTest: 0.02, fog: false, side: THREE.DoubleSide })); m.layers.set(LY.COLOUR); m.renderOrder = 5; scene.add(m); fxPool[i] = m; }
+  if (!fxPool[i]) { const m = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMaterial({ transparent: true, depthWrite: false, alphaTest: 0.02, fog: false, side: THREE.DoubleSide })); m.layers.set(LY.CARD); m.userData.isCard = true; m.renderOrder = 5; scene.add(m); fxPool[i] = m; }
   return fxPool[i];
 };
 
@@ -209,7 +209,7 @@ function renderFrame(f) {
   // fx
   fxPool.forEach((m) => { m.visible = false; });
   S.fxAt(t).forEach((F, i) => {
-    const m = fxAt(i); m.visible = true; m.material.map = fxTex[F.kind]; m.material.opacity = F.a; m.material.color.copy(tint); m.material.needsUpdate = false;
+    const m = fxAt(i); m.visible = true; m.material.map = fxTex[F.kind]; m.userData.nd = matsFor(fxTex[F.kind]).nd; m.material.opacity = F.a; m.material.color.copy(tint); m.material.needsUpdate = false;
     m.position.set(F.x, F.y, F.z); m.scale.setScalar(F.s); m.quaternion.copy(camera.quaternion);
   });
 

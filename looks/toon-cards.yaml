@@ -1,0 +1,45 @@
+slug: toon-cards
+title: Toon cards in an inked world
+note: >-
+  Flat bean-head cartoon people and side-view animals standing in a painted 3D world with black ink lines and real lens
+  blur. The camera glides through one place and every line is acted out literally with a prop, down to a stamp on the
+  last word.
+used: Libelous section, Bob Wiseman, test
+cost: free
+group: code
+order: 660
+clip: null
+tall: true
+status: test
+engine: three.js
+project: bobwiseman-toon-cards
+code:
+  path: bobwiseman-toon-cards/js/
+  flag: null
+  page: bobwiseman-toon-cards/toon.html
+  note: >-
+    Plain three.js, a pure seek by song time, rendered in headless Chrome at about 70 ms a frame on the Mac's GPU at 720p.
+    Cards come from claude-animated-shorts (MIT); the creatures are ours. Prop words that quote a lyric live in gitignored
+    work/words.js.
+rules:
+  - Characters are camera-facing cards with their own plum ink; the world's black ink never outlines them
+  - The world is primitives with canvas-painted textures and a hard two-step toon ramp
+  - Prefer one continuous camera move; cut only on a jump in place or time, and every hold creeps
+  - Blur on close-ups and mediums, focus on the eyes; wides stay sharp
+  - Light carries the story from day to golden to dusk
+  - Every line is acted literally with a prop, and the reaction lands on its word
+  - Herds are side-view sprites with 2-bone IK, cached by pose
+  - New story and cast each time; never copy a channel's scripts, characters or shots
+palette:
+  - "#7fae4a"
+  - "#2f78d8"
+  - "#6d3fa8"
+  - "#eebd3c"
+  - "#241726"
+reference: >-
+  claude-animated-shorts (github.com/mromidev/claude-animated-shorts, MIT) and trey's prompt
+  (x.com/treyscalez/status/2118357912624005300). Those recipes copy a channel's manner; we took the vocabulary and made our
+  own film.
+proof:
+  - rheos/secondunit-videos#424
+verdict: 'Not watched yet.'

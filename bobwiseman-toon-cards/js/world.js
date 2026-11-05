@@ -105,6 +105,10 @@ export function buildWorld(scene, words) {
     (W.flags ||= []).push(fl);
   }
   add(T, at(box(30, 18, 16, stone, 5), 0, 40, 216));
+  // the balcony he waves from, seen from the valley over the hill
+  add(T, at(box(8, 0.6, 3, stone, 3), 0.5, 38.5, 203));
+  add(T, at(box(8.2, 0.14, 0.2, gold, 2), 0.5, 39.9, 201.55));
+  for (let x = -3.4; x <= 4.4; x += 0.98) add(T, at(cyl(0.06, 0.08, 1.1, marble, 8), x, 39.3, 201.6));
   // court: dais, throne, urns of gold
   add(T, at(box(5, 0.5, 2.8, marble, 2), 9, 30.3, 202));
   add(T, at(box(1.5, 2.6, 0.26, gold, 1), 9, 32, 202.7));

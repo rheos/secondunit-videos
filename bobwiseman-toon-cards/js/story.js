@@ -204,7 +204,7 @@ export const actorsAt = (t) => {
     });
     if (t >= 79.57 && t < 80.95) add("farm0", FARMER[0], -13.3, 0, -11.2, { expr: t > 79.74 ? "shock" : "neutral", look: -0.8, facing: -1 }, { seed: 70 });
     if (t >= 80.95) add("farm0", FARMER[0], -12.18, 0, -2, { expr: "nervous", look: -0.5, headTilt: 7 }, { seed: 70 });
-    if (t >= 80.95) { const w = Math.sin(t * 7); add("kingfar", KING, 0.5, 30.12, 193.9, { expr: "grin", wave: w }, { scale: 3, seed: 3 }); }
+    if (t >= 80.95) { const w = Math.sin(t * 7); add("kingfar", KING, 0.5, 38.8, 203, { expr: "grin", wave: w }, { scale: 3, seed: 3 }); }
   }
   if (t >= 82.75 && t < 84.5) {
     FARMER.forEach((o, i) => { const x = -2.8 + i * 2 + (t - 82.75) * 3.6; add("farm" + i, o, x, 0, 5 - i * 1.4, { mode: "stroll", phase: t * 1.6 + i * 0.3, expr: "nervous", look: -0.8 }, { seed: 70 + i }); });
@@ -229,7 +229,8 @@ const hash = (i, k) => { const s = Math.sin(i * 12.9898 + k * 78.233) * 43758.54
 export const beastsAt = (t) => {
   const out = [];
   if (t >= 82.75 && t < 89.4) for (let i = 0; i < HERD; i++) {
-    const delay = hash(i, 1) * 0.95, x1 = -15 + hash(i, 2) * 30, x0 = -24 - hash(i, 3) * 10, z = -9 + hash(i, 4) * 20, sp = 15 + hash(i, 5) * 6;
+    const delay = hash(i, 1) * 0.95, x1 = -15 + hash(i, 2) * 30;
+    const x0 = -17 - hash(i, 3) * 10, z = 1.3 + hash(i, 4) * 10.5, sp = 15 + hash(i, 5) * 6;
     const run = t - 82.75 - delay;
     const dur = (x1 - x0) / sp, k = clamp(run / dur), x = lerp(x0, x1, k - (k * k * (k - 1)) * 0 - 0);
     if (Math.abs(x - 2) < 2.6 && Math.abs(z) < 2.2 && t > 84.2) continue;
@@ -238,6 +239,11 @@ export const beastsAt = (t) => {
     out.push({ kind: "cow", x, z, w: 2.0, flip: false, seed: i,
       pose: { phase: moving ? ((run * sp) / 4.2) % 1 : 0, run: moving ? 1 : 0, graze: !moving && !cough && hash(i, 6) > 0.5 ? 1 : 0, blink: blink(t, i + 3) > 0.7 ? 1 : 0, look: cough ? -0.2 : 0.3, skin: i % 4, cough } });
   }
+  // two near cows walk in under the poison and look up
+  if (t >= 86.2 && t < 89.4) [[-5.2, -4.5, 1], [0.2, -4.3, 3]].forEach(([x, z, skin], i) => {
+    const k = E.smooth((t - 86.2 - i * 0.2) / 0.9), moving = k > 0 && k < 1;
+    out.push({ kind: "cow", x: lerp(x - 9, x, k), z, w: 2.0, flip: false, seed: 60 + i, pose: { phase: moving ? (t * 2.2) % 1 : 0, run: moving ? 0.6 : 0, blink: blink(t, i + 30) > 0.7 ? 1 : 0, look: -0.2, skin, cough: t > 87.8 ? 1 : 0 } });
+  });
   if (t > 76 && t < 82.75) for (let i = 0; i < 9; i++) {
     const x = -6 + hash(i, 11) * 14, z = -2.5 + hash(i, 12) * 9.5, cyc = (t * (0.7 + hash(i, 13) * 0.5) + hash(i, 14)) % 1;
     const dir = hash(i, 15) > 0.5, wob = Math.sin(t * 0.8 + i) * 0.6;
@@ -257,7 +263,7 @@ export const fxAt = (t) => {
   burst(71.56, 6, 0.2, 23.9, 8, 1.1, "dust", 0.42, 0.55);
   burst(79.77, -14, 1.5, -11.75, 8, 0.8, "dust", 0.22, 0.2);
   burst(66.06, -1.5, 31.1, 194.7, 5, 0.2, "dust", 0.34, 0.2);
-  if (t >= 82.75 && t < 84.4) for (let i = 0; i < 26; i++) { const ph = (t * 0.9 + i * 0.13) % 1, x = -36 + (i % 13) * 3.2 + (t - 82.75) * 12; out.push({ kind: "dust", x, y: 0.3 + ph * 1.2, z: -10 + ((i * 7) % 20), s: 1.2 + ph * 1.2, a: (1 - ph) * 0.8 }); }
+  if (t >= 82.75 && t < 84.4) for (let i = 0; i < 26; i++) { const ph = (t * 0.9 + i * 0.13) % 1, x = -28 + (i % 13) * 3.2 + (t - 82.75) * 12; out.push({ kind: "dust", x, y: 0.3 + ph * 1.2, z: -10 + ((i * 7) % 20), s: 1.2 + ph * 1.2, a: (1 - ph) * 0.8 }); }
   if (t > 86.2 && t < 89.4) {
     const n = 72;
     for (let i = 0; i < n; i++) {
@@ -267,7 +273,7 @@ export const fxAt = (t) => {
     }
   }
   burst(90.86, 24, 0.9, -20.3, 5, 0.38, "dust", 0.26, 0.14);
-  burst(92.6, 40, 0.5, 10, 12, 14, "dust", 0.7, 5);
+  burst(92.6, 55, 0.5, 24, 12, 13, "dust", 0.26, 3.6);
   burst(95.8, 1000, 0.95, 1001.4, 7, 0.3, "dust", 0.2, 0.07);
   return out;
 };
@@ -286,7 +292,7 @@ export const worldAt = (t, W, q) => {
   // eviction notice
   { const k = pop(t, 79.74, 0.1), s = 1 + (1 - clamp((t - 79.74) / 0.12)) * 0.7 * (t >= 79.74 ? 1 : 0); W.notice.scale.set(k * s, k * s, 1); W.notice.visible = k > 0.01; }
   // cabbages fall to the herd's front
-  const front = -24 + (t - 82.75) * 19;
+  const front = -18 + (t - 82.75) * 19;
   W.cabPts.forEach(([x, z, s], i) => {
     const gone = t >= 82.75 && x < front ? 1 : 0;
     const pz = t > 86.5 ? 1 : 1;
@@ -306,9 +312,9 @@ export const worldAt = (t, W, q) => {
     if (t >= 89.4 && t < 91.25) {
       if (i < 34) {
         const tAt = 89.5 + i * 0.043, d = t - tAt;
-        if (d > 0) { show = true; const ang = i * 2.4, rr = 0.24 + (i % 7) * 0.05, lx = 24 + Math.cos(ang) * rr, lz = -20.5 + Math.sin(ang) * rr * 0.6, h = 0.74 + (i % 5) * 0.03, k = clamp(d / 0.22); m.position.set(lerp(24, lx, k), lerp(1.2, h, k) + Math.sin(Math.PI * k) * 0.22, lerp(-20.3, lz, k)); m.rotation.set(k * 6 + i, i, 0); if (k >= 1) m.rotation.set(0, i, 0); }
+        if (d > 0) { show = true; const ang = i * 2.4, rr = 0.24 + (i % 7) * 0.05, lx = 24 + Math.cos(ang) * rr, lz = -20.5 + Math.sin(ang) * rr * 0.6, h = 0.74 + (i % 5) * 0.03, k = clamp(d / 0.22); m.position.set(lerp(24, lx, k), lerp(0.86, h, k) + Math.sin(Math.PI * k) * 0.1, lerp(-20.2, lz, k)); m.rotation.set(k * 6 + i, i, 0); if (k >= 1) m.rotation.set(0, i, 0); }
       } else {
-        const d = t - 90.86; if (d > 0) { show = true; const a = i * 2.399, v = 1.1 + hash(i, 31) * 1.5, hx = Math.cos(a) * v * 0.42, hz = Math.sin(a) * v * 0.26; m.position.set(24 + hx * d, 1.1 + v * 2.4 * d - 5 * d * d, -20.6 + hz * d); m.rotation.set(d * 14 + i, d * 9, 0); }
+        const d = t - 90.86 - hash(i, 32) * 0.22; if (d > 0) { show = true; const a = i * 2.399, v = 1.1 + hash(i, 31) * 1.5, hx = Math.cos(a) * v * 1.0, hz = Math.sin(a) * v * 0.5; m.position.set(24 + hx * d * 1.6, 0.86 + v * 1.7 * d - 4.2 * d * d, -20.6 + hz * d); m.rotation.set(d * 14 + i, d * 9, 0); }
       }
     }
     m.scale.setScalar(show ? 1 : 0.0001); m.updateMatrix(); W.coins.setMatrixAt(i, m.matrix);
@@ -326,7 +332,7 @@ export const worldAt = (t, W, q) => {
     f.t.rotation.set(Math.sin(f.a) * k * 1.5, 0, -Math.abs(Math.cos(f.a)) * k * 1.5 - k * 0.15);
     f.t.visible = t < 95 && t > 88;
   }
-  W.dozer.visible = t >= 91 && t < 93; W.dozer.position.set(lerp(30, 50, (t - 91.2) / 1.66), 0.15 * (Math.abs(Math.sin(t * 22)) * 0.2), 5);
+  W.dozer.visible = t >= 91.2 && t < 92.86; W.dozer.position.set(lerp(30, 50, (t - 91.2) / 1.66), 0.15 * (Math.abs(Math.sin(t * 22)) * 0.2), 5);
   // report
   { const draw = Math.round(E.smooth((t - 94.72) / 0.72) * 40) / 40, st = t >= 95.8 ? 1 : 0, key = draw + "|" + st; if (W.repKey !== key) { W.report.userData.paint(draw, st); W.repKey = key; } }
   { const drop = 1 - E.in((t - 95.56) / 0.24), lift = E.smooth((t - 95.9) / 0.24); W.stamper.visible = t > 95.3; W.stamper.position.set(1000.0, 0.91 + drop * 0.7 + lift * 1.2, 1001.27); W.stamper.rotation.y = 0.13; }
