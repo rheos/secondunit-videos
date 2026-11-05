@@ -189,7 +189,8 @@ export function update(t) {
   placeSticker(stB, t, T.hitB, B_POS[0], B_POS[1], STICK_B);
   placeSticker(stC, t, T.hitC, C_POS[0], C_POS[1], STICK_C, 1 - r01(t, T.b32, 0.2));
   alpha(outline.mesh, r01(t, T.b32 + 0.1, 0.2) * (1 - r01(t, T.b33, 0.3)));
-  const su = r01(t, T.names, T.three + 0.4 - T.names);
+  // light along the sticker: on "names all three", and on "safe default" so board 26 isn't a still
+  const su = t < T.b26 ? r01(t, T.names, T.three + 0.4 - T.names) : r01(t, T.default7 - 0.1, 0.8);
   sweep.visible = su > 0 && su < 1;
   sweep.position.x = -1.85 + 1.2 * su;
   sweep.material.opacity = 0.35 * Math.sin(su * Math.PI);

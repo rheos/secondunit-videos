@@ -4,7 +4,7 @@ import { STICKER, alpha, dropY, hero, impact, paint, staticPanel, states, text }
 import { rr } from "../kit/world.js";
 import { T, io, r01 } from "../timeline.js";
 
-const SLIP_X = 1.1, SLIP_Y = 1.85, OPT_X = 1.115, OPT_Y = [2.34, 1.18, 0.02], OR_Y = [1.76, 0.6];
+const SLIP_X = 1.16, SLIP_Y = 1.85, OPT_X = 1.14, OPT_Y = [2.34, 1.18, 0.02], OR_Y = [1.76, 0.6];
 let slip, stamp, ors = [];
 const OPTS = [
   { lines: ["flip the default"], track: states([[0, "LIT"], [T.b30, "IDLE"]], STICKER) },

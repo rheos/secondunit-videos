@@ -4,7 +4,7 @@ import * as THREE from "three";
 import { makeBlink, makeHarness } from "../kit/blink3d.js";
 import { alpha, basic, hero, text } from "../parts.js";
 import { rr } from "../kit/world.js";
-import { T, cl, io, mix, r01 } from "../timeline.js";
+import { BLINK_X, SET_Z, T, cl, io, mix, r01 } from "../timeline.js";
 
 const pulse = (t, c, d) => Math.max(0, 1 - Math.abs(t - c) / d);
 let pivot, blink, ghost;
@@ -28,7 +28,7 @@ const FACE = [
   K(T.b13, { look: 1.2, lookY: 1 }),
   K(T.b14, { look: 1, lookY: 0.5, lean: 3 }),
   K(T.b15, { look: 1, lookY: 0.9, lean: 4 }),
-  K(T.b16, { look: 1, lookY: -0.8, lean: 8, rise: 0.1 }, T.b17 - 0.46 - T.b16), // looks down the whole length
+  K(T.b16, { look: 1, lookY: -0.8, lean: 5, rise: 0.1 }, T.b17 - 0.46 - T.b16), // looks down the whole length
   K(T.b17, { look: 0.6, lookY: -0.8 }, 0.5),
   K(T.own - 0.8, { look: 0.1, lookY: 0, think: 0.95 }),
   K(T.own + 0.4, { look: 0.1, lookY: 0 }),
@@ -36,13 +36,18 @@ const FACE = [
   K(T.b19, { look: -0.1, lookY: 1, rise: 0.15 }),
   K(T.b20, { look: 1, lookY: 0.9, lean: 4 }),
   K(T.b21, { look: 1, lookY: 0.6, skew: 1, happy: 0.35, lean: -5 }, 0.4), // leans away, eyes stay on the two cards
+  K(T.but, { look: 0, lookY: -0.1, skew: 0.5, happy: 0.35, lean: -2 }, 0.3), // "but": off the cards, to us
+  K(T.id, { look: 0.15, lookY: 0, skew: 1, happy: 0.45, lean: -3, rise: 0.12 }, 0.25), // the crooked smile on the bet
   K(T.b22, { look: -0.1, lookY: 1, rise: 0.15 }, 0.5),
   K(T.b23, { look: 0.9, lookY: 0.1, lean: 2 }),
-  K(T.model5, { look: 0.9, lookY: 0.1, eager: 0.45, lean: 3 }),
+  K(T.one4, { look: 0.9, lookY: -0.2, lean: 4, rise: 0.06 }), // eyes go down its own line as it pays out
+  K(T.model5, { look: 0.9, lookY: 0, eager: 0.45, lean: 4, rise: 0.1 }),
   K(T.b24, { look: 0, lookY: 1, rise: 0.1 }, 0.5),
   K(T.flareUp + 0.02, { look: 0.4, lookY: 0.8, rise: 0.1 }, 0.15), // to the flare
   K(T.notOn, { look: 0, lookY: 0.7, rise: 0.1 }, 0.2), // to the knob
   K(T.b26, { look: 0.1, lookY: 0.2, happy: 0.4 }, 0.5),
+  K(T.default7 - 0.1, { look: -0.1, lookY: 1, happy: 0.4, rise: 0.12 }, 0.3), // up to the sticker on "safe default"
+  K(T.you2, { look: 0.2, lookY: 0.3, happy: 0.45 }, 0.3),
   K(T.b27, { look: 1, lookY: 0.3, lean: 3 }),
   K(T.b28, { look: 0.3, lookY: 1, rise: 0.1 }),
   K(T.b29, { look: 1, lookY: 0.8, lean: 4 }),
@@ -62,25 +67,24 @@ function faceAt(t) {
   return out;
 }
 
-// world-space paths, sampled against Blink at rest (world plan). bot2 is bot1 re-aimed at the fourth spot, for board 23.
+// world-space paths, re-laid for the set standing back. bot1 runs to the third spot (05), bot2 to the fourth (23).
+// There is no taut line on 20-21: the sticker, then the line going tight, then the hybrid calls read as cause (first watch 01).
 const P = (a) => a.map((v) => new THREE.Vector3(...v));
-const FROM = [-0.46, -0.72, 0.92];
+const FROM = [-0.41, -0.72, 0.92], CARD_Z = -0.3 + SET_Z;
 const PATHS = {
-  bot1: P([FROM, [0.22, -0.62, 0.72], [0.34, 0, 0.2], [0.42, 0.72, -0.3]]),
-  bot2: P([FROM, [0.22, -0.62, 0.72], [0.34, -0.1, 0.2], [0.42, 0.38, -0.3]]),
-  slack: P([FROM, [0.15, -0.95, 0.7], [0.3, -0.92, 0.4], [0.42, -0.55, 0.1]]),
-  taut: P([FROM, [0.22, -0.62, 0.72], [0.3, 0.25, 0.05], [0.24, 1.1, -0.6], [0.12, 2.03, -1.12]]),
+  bot1: P([FROM, [0.27, -0.62, 0.72], [0.39, 0, 0.2], [0.4, 0.72, CARD_Z]]),
+  bot2: P([FROM, [0.27, -0.62, 0.72], [0.39, -0.1, 0.2], [0.4, 0.375, CARD_Z]]),
+  slack: P([FROM, [0.2, -0.95, 0.7], [0.35, -0.92, 0.4], [0.47, -0.55, 0.1]]),
 };
 const lineK = {
   bot1: (t) => io(r01(t, T.b05, 1.3)) * (1 - io(r01(t, T.botLeave, 0.45))),
-  bot2: (t) => io(r01(t, T.model5 - 0.5, 0.5)) * (1 - io(r01(t, T.b24, 0.3))),
+  bot2: (t) => io(r01(t, T.one4, 0.45)) * (1 - io(r01(t, T.caller2, 0.3))), // "one of those callers": Blink's tether takes a place
   slack: (t) => io(r01(t, T.b17, 0.55)) * (1 - io(r01(t, T.b20, 0.2))),
-  taut: (t) => io(r01(t, T.b20, 0.44)) * (1 - io(r01(t, T.b22, 0.4))), // timing only: no card rides it
 };
 
 export function build(scene, { ramp, G }) {
   pivot = new THREE.Group();
-  pivot.position.set(-0.85, -1.08, 0);
+  pivot.position.set(BLINK_X, -1.08, 0);
   const body = new THREE.Group();
   body.position.y = 1.08;
   pivot.add(body);
@@ -108,7 +112,7 @@ export function build(scene, { ramp, G }) {
     text(g, "search", 14, 32, 25, { c: "#8b949e", w: 700 });
   });
   ghost.set({});
-  ghost.mesh.position.set(0.745, -0.55, 0.1);
+  ghost.mesh.position.set(0.795, -0.55, 0.1);
   scene.add(ghost.mesh);
 
   // the pool under Blink: under 4 % of frame, not the boards' wide haze
@@ -118,7 +122,7 @@ export function build(scene, { ramp, G }) {
   g.fillStyle = grad; g.fillRect(0, 0, 128, 128);
   const pool = new THREE.Mesh(new THREE.CircleGeometry(1.5, 40), basic("#ffffff", { map: new THREE.CanvasTexture(c) }));
   pool.rotation.x = -Math.PI / 2;
-  pool.position.set(-0.85, -1.11, 0.2);
+  pool.position.set(BLINK_X, -1.11, 0.2);
   scene.add(pool);
 }
 
@@ -128,7 +132,7 @@ export function update(t) {
   const bob = 0.012 * Math.sin(t * 1.15);
   pivot.position.y = -1.08 + f.rise;
   pivot.rotation.z = -THREE.MathUtils.degToRad(f.lean);
-  const squash = bob;
+  const squash = bob + 0.05 * pulse(t, T.you2 + 0.3, 0.2) + 0.05 * pulse(t, T.id + 0.3, 0.2); // a nod, written from t
   pivot.scale.set(1 + squash * 0.5, 1 - squash, 1 + squash * 0.5);
   let b = 0;
   for (const c of BLINKS) b = Math.max(b, pulse(t, c, 0.08));

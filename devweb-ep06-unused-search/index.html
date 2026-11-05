@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@500;700&display=block" />
     <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
     <script src="vo/words.js"></script>
+    <script src="overlays.js"></script>
     <script src="kit/blink-geo.js"></script>
     <script type="importmap">
       { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.181.2/build/three.module.js", "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.181.2/examples/jsm/" } }
@@ -19,7 +20,7 @@
       .abs { position: absolute; }
       .layer { position: absolute; inset: 0; }
       .hide { opacity: 0; }
-      .chrome { left: 44px; right: 44px; top: 52px; display: flex; justify-content: space-between; align-items: center; font-family: var(--mono); font-size: 30px; font-weight: 500; }
+      .chrome { left: 66px; right: 66px; top: 1774px; display: flex; justify-content: space-between; align-items: center; font-family: var(--mono); font-size: 30px; font-weight: 500; }
       .bar { left: 66px; right: 66px; bottom: 75px; height: 4px; background: #1c2333; }
       .ov { width: 1400px; text-align: center; font-weight: 700; white-space: nowrap; line-height: 1; text-shadow: 0 4px 30px rgba(0,0,0,.7); }
     </style>
@@ -46,7 +47,7 @@
         const hide = (el, at, d = 0.2) => F(el, { opacity: 1 }, { opacity: 0, duration: d, ease: "power2.in" }, at);
         const slam = (el, at) => { cue("slam", at + 0.16); return F(el, { opacity: 0, scale: 1.45, rotate: -3 }, { opacity: 1, scale: 1, rotate: 0, duration: 0.3, ease: "back.out(1.6)" }, at); };
         // one line of type by its board numbers: centre x, baseline y, size
-        const line = (s, x, base, size) => mk("div", "abs ov hide", `left:${x - 700}px;top:${base - size * 0.8}px;font-size:${size}px;letter-spacing:-0.02em`, stage, s);
+        const line = (s, x, base, size) => mk("div", "abs ov hide", `left:${x - 700}px;top:${base - size * 0.8}px;font-size:${size}px;letter-spacing:-0.02em`, stage, `<span style="display:inline-block">${s}</span>`);
 
         // chrome: lockup, topic tag, progress
         const chrome = mk("div", "abs chrome", "", stage, `<span><span style="color:var(--green)">~/</span>devweb</span><span style="color:var(--faint);font-size:26px">// defaults</span>`);
@@ -56,32 +57,19 @@
         const endIn = w("nothing", 3) + 0.57;
         hide(chrome, endIn, 0.4); hide(bar, endIn, 0.4);
 
-        // [lines of [text, x, baseline, size], in, gone by, slam?]. Places are the boards', moved as camera.md note 2 says.
-        const TYPE = [
-          [[["BROKE NOTHING", 540, 150, 92]], w("broke"), w("36"), 1],
-          [[["36 OF 37", 540, 110, 84], ["ON THE DEFAULT", 540, 200, 84]], w("36"), w("the") + 0.31],
-          [[["JUL 5", 850, 470, 84]], w("july"), w("and")],
-          [[["BY AUGUST", 850, 470, 84]], w("by"), w("so")],
-          [[["53 DAYS", 831, 430, 112]], w("53"), w("nothing", 2), 1],
-          [[["NOTHING FLAGS IT", 540, 150, 84]], w("flag"), w("a", 3)],
-          [[["NO MODE KEY", 540, 150, 92]], w("no"), w("back"), 1],
-          [[["BACK IN JUNE", 540, 100, 84], ["NO SEARCH ON ITS OWN", 540, 186, 70]], w("back"), w("on", 6)],
-          [[["AUG 27", 540, 150, 92]], w("27th", 2), w("the", 14)],
-          [[["A WRITTEN RULE", 850, 400, 60], ["FOR THE MODEL", 850, 465, 60]], w("written"), w("the", 15)],
-          [[["SAME DAY", 540, 150, 92]], w("day"), w("began") + 0.42],
-          [[["THE MODEL", 885, 1520, 60], ["TOO", 885, 1592, 60]], w("model", 5), w("with")],
-          [[["THE DEFAULT", 858, 1110, 58], ["IS YOUR", 858, 1182, 58], ["ROLLOUT", 858, 1254, 58]], w("the", 18), w("and", 7)],
-          [[["SHIPPED,", 858, 1150, 84]], w("shipping"), w("so", 3)],
-          [[["NOT ON", 858, 1244, 84]], w("doesn't", 2), w("so", 3)],
-          [[["LOG THE", 540, 100, 84], ["RESOLVED MODE", 540, 190, 84]], w("log", 3), w("call", 3)],
-          [[["SKIP THE COUNT", 540, 150, 84]], w("skip"), w("because", 2)],
-          [[["BREAKS NOTHING", 540, 150, 92]], w("breaks"), endIn, 1],
-        ];
-        TYPE.forEach(([lines, at, gone, big]) => lines.forEach(([s, x, base, size]) => {
+        // the words, places and times are in overlays.js, where check-graybox.mjs can read them
+        const placed = [];
+        window.OVERLAYS(w).forEach(({ lines, at, gone, big }) => lines.forEach(([s, x, base, size]) => {
           const el = line(s, x, base, size);
+          placed.push({ el, x, size, s });
           (big ? slam : show)(el, at);
           hide(el, gone - 0.2);
         }));
+        // measured, once the face is in: every overlay keeps a 48 px margin in the 1080 frame, or it shrinks and says so
+        window.fitOverlays = () => placed.forEach(({ el, x, size, s }) => {
+          const width = el.firstChild.offsetWidth, room = 2 * Math.min(x - 48, 1032 - x);
+          if (width > room) { console.warn(`FIT: overlay "${s}" ${width} px, room ${room}`); (BP.FIT = BP.FIT || []).push(s); el.style.fontSize = `${size * (room / width)}px`; }
+        });
 
         // the end mark, over the whole world, dimmed
         const mark = mk("div", "abs ov hide", "left:-160px;top:96px;font-family:var(--mono);font-size:92px", stage, `<span style="color:var(--green)">~/</span>devweb`);
@@ -98,6 +86,8 @@
       window.__hf = window.__hf || {};
       window.__hf.buildReady = window.__hf.buildReady || {};
       let ready; window.__hf.buildReady["world"] = new Promise((r) => (ready = r));
+      await document.fonts.load("700 80px 'IBM Plex Sans'");
+      window.fitOverlays();
       const render = await buildWorld(document.getElementById("world"));
       window.renderWorld = render;
       window.addEventListener("hf-seek", (ev) => render(ev.detail.time));

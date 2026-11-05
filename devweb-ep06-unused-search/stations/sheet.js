@@ -35,7 +35,7 @@ function paperPanel(wu, hu, draw) {
 }
 
 export function build(scene, { toon }) {
-  const bar = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 1.7, 14), toon("#8b949e", { fog: false }));
+  const bar = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 1.62, 14), toon("#8b949e", { fog: false }));
   bar.rotation.z = Math.PI / 2;
   bar.position.set(MID, 3.06, Z);
   scene.add(bar);
@@ -69,7 +69,7 @@ export function build(scene, { toon }) {
     }
   });
   log.set({});
-  header = staticPanel(1.6, 0.1, 320, (g) => { text(g, "tool", 20, 26, 27, { c: "#4b4f55", w: 700 }); text(g, "keys", 158, 26, 27, { c: "#4b4f55", w: 700 }); }, MID, 2.5, -0.49, pivot);
+  header = staticPanel(1.6, 0.1, 320, (g) => { text(g, "tool", 20, 26, 27, { c: "#4b4f55", w: 700 }); text(g, "keys", 158, 26, 27, { c: "#4b4f55", w: 700 }); }, MID, 2.516, -0.49, pivot);
 
   your = paperPanel(1.6, 3.31, (g, W, H, s) => {
     g.fillStyle = "#ffffff"; g.fillRect(0, 0, W, H);
@@ -124,19 +124,19 @@ export function build(scene, { toon }) {
     g.fillStyle = "#22262b"; g.fillRect(12, 106, 480, 4); g.fillRect(12, 96, 4, 24); g.fillRect(488, 96, 4, 24);
   });
   small.set({});
-  small.mesh.position.set(MID, 2.71, -0.4);
+  small.mesh.position.set(MID, 2.735, -0.4);
   pivot.add(small.mesh);
   flag = staticPanel(0.7, 0.24, 320, (g) => {
     text(g, "hybrid starts", 215, 26, 27, { c: "#2a5f94", w: 700, a: "right" });
-    g.fillStyle = "#4f93d6"; g.fillRect(205, 34, 4, 43);
+    g.fillStyle = "#4f93d6"; g.fillRect(205, 34, 4, 26);
     g.beginPath(); g.moveTo(205, 34); g.lineTo(166, 46); g.lineTo(205, 58); g.closePath(); g.fill();
-  }, 1.6, 2.81, -0.38, pivot);
+  }, 1.6, 2.835, -0.38, pivot);
   run = hero(1.6, 0.06, 320, (g) => { g.fillStyle = "#4b4f55"; for (let x = 14; x < 480; x += 22) g.fillRect(x, 8, 13, 4); g.beginPath(); g.moveTo(490, 10); g.lineTo(476, 2); g.lineTo(476, 18); g.closePath(); g.fill(); });
   run.set({});
-  run.mesh.position.set(MID, 2.66, -0.39);
+  run.mesh.position.set(MID, 2.685, -0.39);
   pivot.add(run.mesh);
   bead = new THREE.Mesh(new THREE.PlaneGeometry(0.26, 0.05), basic("#ffffff", { blending: THREE.AdditiveBlending }));
-  bead.position.set(MID, 2.61, -0.38);
+  bead.position.set(MID, 2.635, -0.38);
   pivot.add(bead);
 
   // the long strip replaces the rows. No line, arrow or bracket joins the two cards.
@@ -219,11 +219,11 @@ export function update(t) {
   const sA = firstOn ? r01(t, T.stripIn, 0.05) * (1 - lift) : secondOn ? r01(t, T.b18, 0.15) * (1 - r01(t, T.b20, 0.2)) : 0;
   alpha(small.mesh, sA);
   revealLeft(small, LEFT, firstOn ? io(r01(t, T.stripIn, 1.9)) : 1);
-  small.mesh.position.y = 2.71 + (firstOn ? lift * 0.3 : 0);
+  small.mesh.position.y = 2.735 + (firstOn ? lift * 0.3 : 0);
   paint(small.mesh.material, TINT, t);
   const fk = r01(t, T.flag, 0.2);
   alpha(flag.mesh, firstOn && t >= T.flag ? fk * (1 - lift) : 0);
-  flag.mesh.position.y = 2.81 + (1 - io(fk)) * 0.25 + lift * 0.3;
+  flag.mesh.position.y = 2.835 + (1 - io(fk)) * 0.25 + lift * 0.3;
   alpha(run.mesh, secondOn ? sA : 0);
   revealLeft(run, LEFT, io(r01(t, T.b18 + 0.2, T.d27 + 0.3 - T.b18 - 0.2)));
   // on 12 a light runs the empty bar

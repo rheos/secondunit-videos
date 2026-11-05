@@ -5,7 +5,7 @@ import { alpha, basic, frame, hero, staticPanel, text } from "../parts.js";
 import { rr } from "../kit/world.js";
 import { T, io, mix, r01, spanAlpha } from "../timeline.js";
 
-const SPOT = [1.635, 1.22, 0.79, 0.375], X = 0.605, Z = -0.3, SLOT = [0.12, 2.03, -1.12], STEP = 0.3;
+const SPOT = [1.635, 1.22, 0.79, 0.375], X = 0.68, Z = -0.3, SLOT = [0.12, 2.03, -1.12], STEP = 0.3;
 const SPAWN = "spawn"; // where the bot's card first shows, by the end of Blink's line
 const B = T.b23, L = T.botLeave;
 
@@ -16,13 +16,13 @@ const CARDS = [
   { keys: [[T.b03 + 0.3, 3], [T.had + 0.6, 2], [T.had + 1.0, 1], [T.b05 + 2.06, 0], [L + 0.26, -1]] },
   { bot: true, keys: [[T.b05 + 0.18, SPAWN], [T.b05 + 0.3, 2, 0.95], [L, 1], [L + 0.5, 0], [L + 0.8, -1]], ring: [[T.b05 + 1.1, L]] },
   { keys: [[T.b07 - 0.34, 1], [T.b07, 0], [T.b07 + 0.36, -1]] },
-  { keys: [[B, 3], [B + 0.3, 2], [B + 0.6, 1], [B + 0.9, 0]], stamp: B + 1.2, until: T.b24 },
-  { keys: [[B + 1.06, 3], [B + 1.36, 2], [B + 1.66, 1]], stamp: B + 1.96, until: T.b24 },
-  { keys: [[B + 1.86, 3], [B + 2.16, 2]], stamp: B + 2.46, until: T.b24 },
-  { bot: true, keys: [[B + 2.78, 3]], stamp: T.callers2 - 0.2, until: T.b24, ring: [[T.model5, T.b24]] },
+  { keys: [[B, 3], [B + 0.3, 2], [B + 0.6, 1], [B + 0.9, 0]], stamp: B + 1.2, until: T.caller2 },
+  { keys: [[B + 1.06, 3], [B + 1.36, 2], [B + 1.66, 1]], stamp: B + 1.96, until: T.caller2 },
+  { keys: [[B + 1.86, 3], [B + 2.16, 2]], stamp: B + 2.46, until: T.caller2 },
+  { bot: true, keys: [[T.callers2 - 0.2, 3]], stamp: T.model5 + 0.18, until: T.caller2, ring: [[T.model5, T.caller2]] }, // the tether takes a place in the queue
 ];
 
-const place = (spot) => (spot === -1 ? [SLOT[0], SLOT[1], SLOT[2], 0.25] : spot === SPAWN ? [0.74, 0.42, Z, 1] : [X, SPOT[spot], Z, 1]);
+const place = (spot) => (spot === -1 ? [SLOT[0], SLOT[1], SLOT[2], 0.25] : spot === SPAWN ? [0.8, 0.42, Z, 1] : [X, SPOT[spot], Z, 1]);
 let rail;
 
 export function build(scene) {
@@ -58,7 +58,7 @@ function cardAt(c, t) {
 }
 
 export function update(t) {
-  rail.material.opacity = 0.9 * spanAlpha([[T.b03, T.b06 + 0.55], [T.b07 - 0.34, T.b07 + 0.55], [T.b23, T.b24]], t, 0.15);
+  rail.material.opacity = 0.9 * spanAlpha([[T.b03, T.b06 + 0.55], [T.b07 - 0.34, T.b07 + 0.55], [T.b23, T.caller2]], t, 0.15);
   CARDS.forEach((c) => {
     const p = cardAt(c, t);
     if (!p || p.a <= 0.002) { c.group.visible = false; return; }

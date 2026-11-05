@@ -9,7 +9,7 @@ const root = dirname(fileURLToPath(import.meta.url));
 const d = JSON.parse(readFileSync(join(root, "vo/words.json"), "utf8"));
 const find = (word, n = 1) => { const m = d.words.filter((x) => x[0] === word.toLowerCase()); if (m.length < n) throw new Error(`no '${word}' #${n}`); return m[n - 1]; };
 globalThis.VO = { END: d.end, w: (word, n) => find(word, n)[1], e: (word, n) => find(word, n)[2] };
-const { ANCHORS, T, rows, defaultDigits, shutter, markOn, otherShows, MARK_SPANS } = await import(pathToFileURL(join(root, "timeline.js")).href);
+const { ANCHORS, BLINK_X, SET_Z, T, io, r01, rows, defaultDigits, shutter, markOn, otherShows, MARK_SPANS } = await import(pathToFileURL(join(root, "timeline.js")).href);
 
 const fails = [];
 const check = (ok, msg) => { if (!ok) fails.push(msg); };
@@ -54,6 +54,60 @@ check(gap >= 0.195, `other 1 and mark only ${gap.toFixed(3)} s apart`);
 check(shutter(T.b11) >= 1 && shutter(T.stripIn) >= 1, "shutter not shut before the strip");
 check(shutter(T.otherOpen2 - 0.01) >= 1 && shutter(T.otherOpen2 + 0.31) === 0, "shutter wrong around 60.1");
 
+// ---------- the frame, by projection (fov 36 at 1080x1920, the kit's io between keys, drift left out: under 2 px) ----------
+const F = 960 / Math.tan((18 * Math.PI) / 180);
+function camAt(t) {
+  let i = 0;
+  while (i < KEYS.length - 2 && t > KEYS[i + 1][0]) i++;
+  const k = io(r01(t, KEYS[i][0], Math.max(0.001, KEYS[i + 1][0] - KEYS[i][0])));
+  return [0, 1, 2].map((a) => KEYS[i][1][a] + (KEYS[i + 1][1][a] - KEYS[i][1][a]) * k);
+}
+const sx = (c, x, z) => 540 + ((x - c[0]) * F) / (c[2] - z), sy = (c, y, z) => 960 - ((y - c[1]) * F) / (c[2] - z);
+const worst = { crateL: 9e9, paperR: -9e9, blinkL: 9e9, crateT: 9e9, tallyT: 9e9, tagR: -9e9 };
+for (let t = 0; t <= END; t += 1 / 60) {
+  const c = camAt(t);
+  worst.crateL = Math.min(worst.crateL, sx(c, -2.0, -1.2 + SET_Z));
+  worst.paperR = Math.max(worst.paperR, sx(c, 1.94, -0.5 + SET_Z));
+  worst.blinkL = Math.min(worst.blinkL, sx(c, BLINK_X - 1.05, 0));
+  worst.crateT = Math.min(worst.crateT, sy(c, 4.72, -1.2 + SET_Z));
+  worst.tallyT = Math.min(worst.tallyT, sy(c, 4.79, -1.0 + SET_Z));
+  worst.tagR = Math.max(worst.tagR, sx(c, 2.09, -1.38 + SET_Z));
+}
+check(worst.crateL >= 16, `crate's left edge reaches x ${worst.crateL.toFixed(0)}`);
+check(worst.paperR <= 1068, `head bar's right edge reaches x ${worst.paperR.toFixed(0)}`);
+check(worst.blinkL >= 2, `Blink's left edge reaches x ${worst.blinkL.toFixed(0)}`);
+check(worst.tagR <= 1068, `build tag reaches x ${worst.tagR.toFixed(0)}`);
+check(worst.tallyT >= 16, `tally's top reaches y ${worst.tallyT.toFixed(0)}`);
+
+// overlays: width from IBM Plex Sans Bold advances (units per 1000, within 1 % of BY AUGUST and SHIPPED, on the first animatic)
+const ADV = { A: 640, B: 650, C: 630, D: 680, E: 580, F: 560, G: 680, H: 700, I: 360, J: 540, K: 650, L: 540, M: 830, N: 700, O: 700, P: 620, Q: 700, R: 640, S: 600, T: 590, U: 680, V: 630, W: 930, X: 640, Y: 610, Z: 590, " ": 250, ",": 280 };
+const textW = (s, size) => [...s].reduce((a, ch) => a + (ADV[ch] ?? 600), 0) * size * 0.001 - s.length * size * 0.02;
+globalThis.window = globalThis;
+new Function(readFileSync(join(root, "overlays.js"), "utf8"))();
+let minMargin = 9e9, minTop = 9e9, minBlink = 9e9;
+for (const { lines, at, gone } of window.OVERLAYS(VO.w)) {
+  check(gone > at + 0.3, `overlay "${lines[0][0]}" is on for ${(gone - at).toFixed(2)} s`);
+  for (const [s, x, base, size] of lines) {
+    const hw = textW(s, size) / 2, margin = Math.min(x - hw, 1080 - x - hw);
+    minMargin = Math.min(minMargin, margin);
+    check(margin >= 48, `overlay "${s}" has a ${margin.toFixed(0)} px margin`);
+    for (let t = at; t <= gone - 0.1; t += 1 / 60) {
+      const c = camAt(t);
+      if (base < 400) { // top zone: clear of the crate and the tally, ring included
+        const clear = Math.min(sy(c, 4.72, -1.2 + SET_Z), sy(c, 4.79, -1.0 + SET_Z)) - base;
+        minTop = Math.min(minTop, clear);
+        check(clear >= 8, `overlay "${s}" at ${t.toFixed(2)}: only ${clear.toFixed(0)} px above the set`);
+      } else { // low zone: clear of Blink's right edge
+        const clear = x - hw - sx(c, BLINK_X + 1.05, 0);
+        minBlink = Math.min(minBlink, clear);
+        check(clear >= 4, `overlay "${s}" at ${t.toFixed(2)}: ${clear.toFixed(0)} px from Blink`);
+      }
+    }
+  }
+}
+console.log(`frame: crate left ${worst.crateL.toFixed(0)}, head bar right ${worst.paperR.toFixed(0)}, Blink left ${worst.blinkL.toFixed(0)}, build tag right ${worst.tagR.toFixed(0)}, crate top ${worst.crateT.toFixed(0)}, tally top ${worst.tallyT.toFixed(0)}`);
+console.log(`overlays: smallest side margin ${minMargin.toFixed(0)} px, top zone clear by ${minTop.toFixed(0)}, low zone clear of Blink by ${minBlink.toFixed(0)}`);
+
 // static checks: nothing here runs in a browser, so catch dead names and bad imports now
 const stationDir = join(root, "stations");
 const files = ["world.js", "parts.js", ...readdirSync(stationDir).filter((f) => f.endsWith(".js")).map((f) => join("stations", f))];
@@ -65,7 +119,7 @@ for (const f of files) {
     check(existsSync(target), `${f}: no file ${m[2]}`);
     if (existsSync(target)) { const ex = exportsOf(target); m[1].split(",").map((s) => s.trim()).filter(Boolean).forEach((n) => check(ex.has(n), `${f}: ${m[2]} has no export ${n}`)); }
   }
-  for (const m of text.matchAll(/\bT\.(\w+)/g)) check(m[1] in T || m[1] === "botLeave", `${f}: T.${m[1]} isn't defined`);
+  for (const m of text.matchAll(/\bT\.(\w+)/g)) check(m[1] in T, `${f}: T.${m[1]} isn't defined`);
   check(!/https?:\/\//.test(text.replace(/\/\/.*$/gm, "")), `${f}: has a URL`);
 }
 for (const f of readdirSync(stationDir).filter((x) => x.endsWith(".js"))) {

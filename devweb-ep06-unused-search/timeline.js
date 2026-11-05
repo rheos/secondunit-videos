@@ -28,12 +28,12 @@ export const ANCHORS = {
   b18: ["on", 6, 0, 47.52], d27: ["27th", 2, 0, 47.92],
   b19: ["the", 14, 0, 48.9], written: ["written", 1, 0, 49.6], hitB: ["protocol", 1, 0, 49.82],
   b20: ["the", 15, 0, 53.34], day: ["day", 1, 0, 53.78], typeOff20: ["began", 1, 0.22, 55.14],
-  b21: ["i", 1, 0, 55.74],
+  b21: ["i", 1, 0, 55.74], but: ["but", 1, 0, 57.62], id: ["i'd", 1, 0, 58.66],
   b22: ["a", 5, 0, 59.5], stripEnd: ["model", 4, 0.3, 59.9], otherOpen2: ["gets", 1, 0.24, 60.1], dflt: ["default", 4, 0, 62.22],
-  b23: ["your", 1, 0, 63.14], callers2: ["callers", 2, 0, 66.58], model5: ["model", 5, 0, 67.4],
-  b24: ["with", 1, 0, 68.06], the18: ["the", 18, 0, 69.32],
+  b23: ["your", 1, 0, 63.14], one4: ["one", 4, 0, 66.06], callers2: ["callers", 2, 0, 66.58], model5: ["model", 5, 0, 67.4],
+  b24: ["with", 1, 0, 68.06], caller2: ["caller", 2, 0, 68.74], the18: ["the", 18, 0, 69.32],
   b25: ["and", 7, 0, 70.84], shipping: ["shipping", 1, 0, 70.94], flareUp: ["shipping", 1, 0.24, 71.18], flarePeak: ["mode", 5, 0, 71.38], notOn: ["doesn't", 2, 0, 71.64], flareGone: ["doesn't", 2, 0.04, 71.68],
-  b26: ["so", 3, 0, 73.04],
+  b26: ["so", 3, 0, 73.04], safe: ["safe", 1, 0, 73.7], default7: ["default", 7, 0, 73.92], you2: ["you", 2, 0, 74.54],
   b27: ["log", 3, 0, 75.58], call3: ["call", 3, 0, 77.26],
   b28: ["on", 9, 0, 78.08], hitC: ["date", 1, 0.1, 78.42],
   b29: ["then", 1, 0, 80.32], ghost: ["flip", 1, 0, 80.8],
@@ -42,6 +42,9 @@ export const ANCHORS = {
 };
 export const T = Object.fromEntries(Object.entries(ANCHORS).map(([k, [word, n, off]]) => [k, VO.w(word, n) + off]));
 T.END = VO.END;
+// the whole set stands this far behind Blink, so a push on Blink no longer cuts the crate or the sheet (first watch 01)
+export const SET_Z = -1.2;
+export const BLINK_X = -0.8;
 T.botLeave = T.b06 - 0.6; // the bot's card starts up the column; Blink's line retracts on the same clock
 
 // ---------- keyed values ----------

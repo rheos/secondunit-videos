@@ -13,8 +13,8 @@ export function build(scene, { toon }) {
   const halo = new THREE.Mesh(new THREE.SphereGeometry(0.2, 24, 16), basic("#6ad08a", { opacity: 0.03, blending: THREE.AdditiveBlending }));
   halo.position.copy(head.position);
   scene.add(post, head, halo);
-  // below the head, not centred on the post: on SIDE close a centred tag runs off the frame (camera.md note 3)
-  staticPanel(0.4, 0.14, 300, (g, W) => text(g, "build", W / 2, 32, 30, { c: "#c9d1d9", a: "center" }), 1.64, 4.16, -1.38, scene);
+  // beside the post, not across it: a centred tag was cut by the pole and the tally (first watch 01)
+  staticPanel(0.4, 0.14, 300, (g) => text(g, "build", 0, 32, 30, { c: "#c9d1d9" }), 1.99, 4.16, -1.38, scene);
   ring = circleRing(0.19, 0.012, scene, 1.75, 4.36, -1.37);
 }
 
