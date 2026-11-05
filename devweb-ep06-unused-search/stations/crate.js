@@ -1,206 +1,141 @@
-// The Crate: parked for the whole film. Name bar, stickers, dial plate, slot. The knob points at fts and never travels;
-// its one allowed move is a 0.02 press in z, no rotation, so nobody reads it as turning. The hybrid flare is the only
-// blue on the crate, ever.
+// The Crate: the tool. Stencil on the lid, a big dial with two settings in plain words, one white pointer that never
+// moves, the default tag on its tip, the description plate (from hold 11), the slot, and the two chutes underneath.
+// The right chute's first light (hold 19) is the film's one colour beat, in blue.
 import * as THREE from "three";
-import { BODY, NAME, PLATE, RIM, STICKER, alpha, basic, circleRing, dropY, hero, impact, paint, revealTop, solid, staticPanel, states, text } from "../parts.js";
+import { NAME, PAPER, alpha, basic, dropY, paint, solid, staticPanel, states, text } from "../parts.js";
 import { rr } from "../kit/world.js";
-import { T, io, r01, rock, spanAlpha } from "../timeline.js";
+import { CHUTE_X, CX, DIAL, DIAL_R, T, chuteGlow, io, mix, r01, rightAfterglow, spanAlpha } from "../timeline.js";
 
-const DX = -0.85, DY = 2.53, DIAL_R = 0.46; // the dial's centre
-const A_POS = [-1.245, 4.145], B_POS = [-0.98, 3.635], C_POS = [-0.215, 4.145];
+const FACE_Z = -1.5;
+const A_OLD = (210 * Math.PI) / 180, A_NEW = (330 * Math.PI) / 180;
+const onRing = (a, r = DIAL_R) => [DIAL[0] + Math.cos(a) * r, DIAL[1] + Math.sin(a) * r];
+const TIP = onRing(A_OLD, 0.52);
 
-// whole-crate state by board
-const CRATE = [[0, "REST"], [T.b03, "LIT"], [T.b04, "REST"], [T.b08, "IDLE"], [T.b09, "REST"], [T.b10, "IDLE"], [T.b19, "REST"], [T.b20, "IDLE"], [T.b22, "REST"], [T.b26, "LIT"], [T.b27, "REST"], [T.b32, "IDLE"], [T.b33, "REST"]];
-const DIAL = [[0, "REST"], [T.b02, "LIT"], [T.b03, "IDLE"], [T.b04, "LIT"], [T.b05, "IDLE"], [T.b06, "LIT"], [T.b08, "IDLE"], [T.b13, "REST"], [T.b17, "IDLE"], [T.b22, "LIT"], [T.b23, "REST"], [T.b25, "LIT"], [T.b26, "REST"], [T.b31, "LIT"], [T.b32, "REST"], [T.b33, "LIT"]];
-const BODY_T = states(CRATE, BODY), RIM_T = states(CRATE, RIM), NAME_T = states(CRATE, NAME), PLATE_T = states(DIAL, PLATE);
-const STICK_A = states([[0, "LIT"], [T.b10, "REST"], [T.b11, "IDLE"], [T.b22, "LIT"], [T.b23, "IDLE"], [T.b26, "REST"], [T.b29, "IDLE"]], STICKER);
-const STICK_B = states([[0, "LIT"], [T.b20, "IDLE"], [T.b24, "LIT"], [T.b25, "REST"], [T.b29, "IDLE"]], STICKER);
-const STICK_C = states([[0, "LIT"], [T.b29, "IDLE"]], STICKER);
-const WHITE = [[0, "#ffffff"]];
+// lit by default; dim behind the option panels (holds 24-25)
+const CRATE = [[0, "REST"], [T.h24, "IDLE"], [T.h26, "REST"]];
+const BODY_T = states(CRATE, { IDLE: "#0b1118", REST: "#1b2a3b", LIT: "#1b2a3b" });
+const RIM_T = states(CRATE, { IDLE: "#27333f", REST: "#3d566f", LIT: "#3d566f" });
+const INK_T = states(CRATE, { IDLE: "#59616b", REST: "#ffffff", LIT: "#ffffff" });
+const NAME_T = states(CRATE, NAME);
+const TAG_T = states([[0, "REST"], [T.h07, "LIT"], [T.h08, "REST"], [T.h22, "LIT"], [T.h23, "REST"], [T.h24, "IDLE"], [T.h26, "REST"]], PAPER);
+const PLATE_T = states([[0, "REST"], [T.h11, "LIT"], [T.h12, "REST"], [T.h22, "LIT"], [T.h23, "REST"], [T.h24, "IDLE"], [T.h26, "REST"]], PAPER);
 
-let rig, bodyMat, rimMats = [], nameBar, plate, discPanel, knob, knobRing, tickF, tickV, tickH, lblV, lblH, lblOpt, flare;
-let rail, railLbl, railBead, ghost, stA, stB, stC, outline, sweep, aRing, tie, tieFoot;
+let bodyMat, rimMats = [], stencil, ringPanel, oldLbl, newLbl, newTick, oldTick, tagPivot, tag, tagGlow, plate, chutes = {}, newGlow;
 
-const pressAt = (t, c) => 0.02 * Math.max(0, 1 - Math.abs(t - c) / 0.12);
+function chute(scene, toon, side) {
+  const g = new THREE.Group();
+  g.position.set(CHUTE_X[side], 1.875, -1.3);
+  const back = new THREE.Mesh(new THREE.PlaneGeometry(0.34, 0.65), new THREE.MeshBasicMaterial({ color: "#161b22", fog: false }));
+  const glow = new THREE.Mesh(new THREE.PlaneGeometry(0.3, 0.62), basic(side === "L" ? "#c9d1d9" : "#4f93d6", { blending: THREE.AdditiveBlending }));
+  glow.position.z = 0.01;
+  g.add(back, glow);
+  [-0.18, 0.18].forEach((x) => { const r = solid(toon, 0.03, 0.66, 0.05, "#3d566f", x, 0, 0.04, g); rimMats.push(r.material); });
+  scene.add(g);
+  return { g, glow };
+}
 
 export function build(scene, { toon }) {
-  // the crate rocks as one thing about its skids, so everything hangs inside this
-  const hinge = new THREE.Group();
-  hinge.position.set(-0.9, 1.72, -2.4);
-  scene.add(hinge);
-  rig = new THREE.Group();
-  rig.position.set(0.9, -1.72, 2.4);
-  hinge.add(rig);
-  rig.userData.hinge = hinge;
-
-  const body = solid(toon, 2.2, 2.94, 2.4, "#0d141c", -0.9, 3.25, -2.4, rig);
+  const body = solid(toon, 2.4, 2.5, 2.0, "#1b2a3b", CX, 3.45, -2.5, scene);
   bodyMat = body.material;
-  [[-1.75, 0.3], [-0.05, 0.3]].forEach(([x, w]) => solid(toon, w, 0.06, 2.4, "#27333f", x, 1.75, -2.4, rig));
-  // rim, lid seam and corner brackets
-  [[2.2, 0.03, -0.9, 4.71], [2.2, 0.03, -0.9, 1.79], [0.03, 2.94, -1.99, 3.25], [0.03, 2.94, 0.19, 3.25], [2.2, 0.015, -0.9, 4.48]].forEach(([w, h, x, y]) => rimMats.push(solid(toon, w, h, 0.02, "#3d566f", x, y, -1.19, rig).material));
-  [[-1.915, 4.635], [0.115, 4.635], [-1.915, 1.865], [0.115, 1.865]].forEach(([x, y]) => rimMats.push(solid(toon, 0.17, 0.17, 0.03, "#3d566f", x, y, -1.185, rig).material));
-  nameBar = staticPanel(2.1, 0.24, 300, (g, W) => text(g, "search", W / 2, 54, 57, { c: "#ffffff", w: 700, a: "center" }), -0.9, 4.6, -1.17, rig);
+  [[2.4, 0.04, CX, 4.69], [2.4, 0.04, CX, 2.21], [0.04, 2.5, CX - 1.2, 3.45], [0.04, 2.5, CX + 1.2, 3.45], [2.4, 0.02, CX, 4.38]].forEach(([w, h, x, y]) => rimMats.push(solid(toon, w, h, 0.02, "#3d566f", x, y, FACE_Z + 0.01, scene).material));
+  stencil = staticPanel(1.6, 0.26, 300, (g, W) => text(g, "search", W / 2, 58, 52, { c: "#ffffff", w: 700, a: "center" }), CX, 4.54, FACE_Z + 0.02, scene);
 
-  // the slot the cards seat in
-  solid(toon, 0.06, 0.17, 0.03, "#0a0e13", 0.12, 2.03, -1.08, rig);
-
-  // the plate: a real steel sheet with a canvas panel on its face
-  solid(toon, 2.06, 1.53, 0.1, "#27303a", -0.89, 2.615, -1.15, rig);
-  plate = staticPanel(2.06, 1.53, 300, (g) => {
-    const py = (y) => (3.38 - y) * 300;
-    text(g, "mode", 24, py(3.168), 37, { c: "#ffffff", w: 700 });
-    text(g, "fts", 24, py(2.565), 37, { c: "#ffffff", w: 700 });
-    text(g, "(default)", 24, py(2.40), 28.5, { c: "#ffffff" });
-  }, -0.89, 2.615, -1.09, rig);
-  lblOpt = staticPanel(1, 0.15, 300, (g) => text(g, "optional", 0, 34, 33, { c: "#ffffff" }), -1.34, 3.04, -1.08, rig);
-  lblV = staticPanel(0.8, 0.15, 300, (g, W) => text(g, "vector", W / 2, 34, 33, { c: "#ffffff", a: "center" }), DX, 3.12, -1.08, rig);
-  lblH = staticPanel(0.44, 0.15, 300, (g) => text(g, "hybrid", 0, 34, 33, { c: "#ffffff" }), -0.18, 2.78, -1.08, rig);
+  // the slot, on the crate's right edge, where the queue goes in
+  solid(toon, 0.1, 0.42, 0.03, "#0a0e13", 1.25, 3.55, FACE_Z + 0.02, scene);
 
   // the dial
   const disc = new THREE.Mesh(new THREE.CircleGeometry(DIAL_R, 64), new THREE.MeshBasicMaterial({ color: "#11161c", fog: false }));
-  disc.position.set(DX, DY, -1.05);
-  rig.add(disc);
-  discPanel = staticPanel(0.96, 0.96, 300, (g, W) => {
+  disc.position.set(DIAL[0], DIAL[1], DIAL[2]);
+  scene.add(disc);
+  ringPanel = staticPanel(1.3, 1.3, 300, (g, W) => {
     const c = W / 2, r = DIAL_R * 300;
-    g.strokeStyle = "#ffffff"; g.lineWidth = 5; g.beginPath(); g.arc(c, c, r, 0, Math.PI * 2); g.stroke();
+    g.strokeStyle = "#ffffff"; g.lineWidth = 6; g.beginPath(); g.arc(c, c, r, 0, Math.PI * 2); g.stroke();
     g.strokeStyle = "#3a424c"; g.lineWidth = 2;
-    for (let i = 0; i < 24; i++) { const a = (i / 24) * Math.PI * 2; g.beginPath(); g.moveTo(c + Math.cos(a) * (r - 14), c + Math.sin(a) * (r - 14)); g.lineTo(c + Math.cos(a) * (r - 4), c + Math.sin(a) * (r - 4)); g.stroke(); }
-  }, DX, DY, -1.04, rig);
-  const tick = (x, y, rotZ) => { const m = solid(toon, 0.16, 0.026, 0.02, "#c9d1d9", x, y, -1.02, rig); m.rotation.z = rotZ; return m; };
-  tickF = tick(DX - DIAL_R, DY, 0);
-  tickV = tick(DX, DY + DIAL_R, Math.PI / 2);
-  tickH = tick(DX + DIAL_R, DY, 0);
-  // the knob: the pointer is the point, it shows the value
-  knob = new THREE.Group();
-  knob.position.set(DX, DY, -1.03);
-  const hub = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 0.05, 28), toon("#8b949e", { fog: false }));
-  hub.rotation.x = Math.PI / 2;
-  const pointer = new THREE.Mesh(new THREE.BoxGeometry(DIAL_R - 0.06, 0.035, 0.02), toon("#ffffff", { fog: false }));
-  pointer.position.set(-(DIAL_R - 0.06) / 2, 0, 0.03);
-  knob.add(hub, pointer);
-  rig.add(knob);
-  knobRing = circleRing(0.52, 0.014, rig, DX, DY, -1.0);
-  flare = new THREE.Mesh(new THREE.CircleGeometry(0.5, 40), basic("#4f93d6", { blending: THREE.AdditiveBlending, opacity: 0 }));
-  flare.position.set(-0.34, DY, -1.0);
-  rig.add(flare);
+    for (let i = 0; i < 24; i++) { const a = (i / 24) * Math.PI * 2; g.beginPath(); g.moveTo(c + Math.cos(a) * (r - 16), c + Math.sin(a) * (r - 16)); g.lineTo(c + Math.cos(a) * (r - 5), c + Math.sin(a) * (r - 5)); g.stroke(); }
+  }, DIAL[0], DIAL[1], DIAL[2] + 0.01, scene);
+  const tick = (a) => { const [x, y] = onRing(a); const m = solid(toon, 0.2, 0.035, 0.02, "#ffffff", x, y, DIAL[2] + 0.03, scene); m.rotation.z = a; return m; };
+  oldTick = tick(A_OLD);
+  newTick = tick(A_NEW);
+  oldLbl = staticPanel(1.0, 0.16, 300, (g, W) => text(g, "keywords (old)", W / 2, 36, 33, { c: "#ffffff", w: 600, a: "center" }), CHUTE_X.L, 2.36, FACE_Z + 0.02, scene);
+  newLbl = staticPanel(1.0, 0.16, 300, (g, W) => text(g, "meaning (new)", W / 2, 36, 33, { c: "#ffffff", w: 600, a: "center" }), CHUTE_X.R, 2.36, FACE_Z + 0.02, scene);
+  newGlow = new THREE.Mesh(new THREE.PlaneGeometry(1.0, 0.22), basic("#ffffff", { blending: THREE.AdditiveBlending, opacity: 0 }));
+  newGlow.position.set(CHUTE_X.R, 2.36, FACE_Z + 0.015);
+  scene.add(newGlow);
 
-  // the ghost knob, on 29 only: a what-if. The real knob stays drawn and unmoved under it.
-  ghost = new THREE.Group();
-  ghost.position.set(DX, DY, -1.0);
-  ghost.userData.mat = basic("#8b949e");
-  for (let i = 0; i < 4; i++) { const seg = new THREE.Mesh(new THREE.PlaneGeometry(0.07, 0.035), ghost.userData.mat); seg.position.x = -0.13 - i * 0.09; ghost.add(seg); }
-  rig.add(ghost);
+  // the pointer: one white bar, never moves
+  const hub = new THREE.Mesh(new THREE.CylinderGeometry(0.13, 0.13, 0.05, 28), toon("#8b949e", { fog: false }));
+  hub.rotation.x = Math.PI / 2; hub.position.set(DIAL[0], DIAL[1], DIAL[2] + 0.05);
+  const bar = solid(toon, 0.52, 0.045, 0.02, "#ffffff", 0, 0, 0, null);
+  const pointer = new THREE.Group();
+  pointer.position.set(DIAL[0], DIAL[1], DIAL[2] + 0.07);
+  pointer.rotation.z = A_OLD;
+  bar.position.x = 0.26;
+  pointer.add(bar);
+  scene.add(hub, pointer);
 
-  // the old code path, 07 and 23: a thin rail down from (default), a label under it, one bright bead
-  rail = solid(toon, 0.02, 0.33, 0.01, "#c9d1d9", -1.72, 2.195, -1.08, rig);
-  railLbl = staticPanel(1.1, 0.16, 300, (g) => text(g, "old code path", 0, 34, 37, { c: "#ffffff", w: 700 }), -1.29, 1.93, -1.08, rig);
-  railBead = new THREE.Mesh(new THREE.SphereGeometry(0.035, 12, 10), basic("#ffffff"));
-  railBead.position.set(-1.72, 2.36, -1.06);
-  rig.add(railBead);
+  // the default tag hangs off the pointer's tip on a short string
+  tagPivot = new THREE.Group();
+  tagPivot.position.set(TIP[0], TIP[1], DIAL[2] + 0.09);
+  const string = new THREE.Mesh(new THREE.PlaneGeometry(0.01, 0.07), basic("#c9d1d9"));
+  string.position.y = -0.035;
+  tagGlow = new THREE.Mesh(new THREE.PlaneGeometry(0.62, 0.26), basic("#ffffff", { blending: THREE.AdditiveBlending, opacity: 0 }));
+  tagGlow.position.set(0, -0.15, -0.005);
+  tag = staticPanel(0.5, 0.15, 300, (g, W, H) => { g.fillStyle = "#ffffff"; rr(g, 1, 1, W - 2, H - 2, 6); g.fill(); text(g, "default", W / 2, 33, 28, { c: "#14171b", w: 700, a: "center" }); }, 0, -0.145, 0.005, tagPivot);
+  tagPivot.add(string, tagGlow);
+  scene.add(tagPivot);
 
-  // stickers: dropped from above the frame, one impact, no hands. No quote marks.
-  const sticker = (wu, hu, lines, px, step, base) => staticPanel(wu, hu, 300, (g, W, H) => {
-    g.fillStyle = "#ffffff"; rr(g, 1, 1, W - 2, H - 2, 4); g.fill();
-    lines.forEach((s, i) => text(g, s, 16, base + i * step, px, { c: "#14171b", w: 700 }));
-  }, 0, 0, -1.1, rig);
-  stA = sticker(1.43, 0.47, ["fts (default)", "vector  hybrid"], 44, 56, 56);
-  stB = sticker(1.96, 0.39, ["search before claiming", "you don't know"], 40.5, 46, 48);
-  stC = sticker(0.55, 0.47, ["count", "by mode", "Dec 1"], 31, 42, 38);
-  stA.mesh.position.x = A_POS[0]; stB.mesh.position.x = B_POS[0]; stC.mesh.position.x = C_POS[0];
-  outline = staticPanel(0.55, 0.47, 300, (g, W, H) => { g.strokeStyle = "#8b949e"; g.lineWidth = 3; g.setLineDash([9, 7]); rr(g, 3, 3, W - 6, H - 6, 4); g.stroke(); g.setLineDash([]); }, C_POS[0], C_POS[1], -1.1, rig);
-  sweep = new THREE.Mesh(new THREE.PlaneGeometry(0.22, 0.47), basic("#ffffff", { blending: THREE.AdditiveBlending }));
-  sweep.position.set(A_POS[0], A_POS[1], -1.08);
-  rig.add(sweep);
+  // the description plate, hold 11 on: both ways in plain view
+  plate = staticPanel(2.0, 0.46, 300, (g, W, H) => {
+    g.fillStyle = "#ffffff"; rr(g, 1, 1, W - 2, H - 2, 6); g.fill();
+    text(g, "description", 22, 36, 30, { c: "#4b4f55", w: 700 });
+    text(g, "keywords (old)", 22, 80, 30, { c: "#14171b", w: 600 });
+    text(g, "meaning (new)", 22, 122, 30, { c: "#14171b", w: 600 });
+  }, CX, 4.13, FACE_Z + 0.04, scene);
 
-  // board 22: the ring round (default), then the dashed tie down the plate's left edge to the same word by the knob
-  aRing = hero(0.94, 0.22, 300, (g, W, H, s) => {
-    const perim = 2 * (W + H);
-    g.strokeStyle = "#ffffff"; g.lineWidth = 4; g.setLineDash([perim * s.k, perim]); rr(g, 3, 3, W - 6, H - 6, 18); g.stroke(); g.setLineDash([]);
-  });
-  aRing.mesh.position.set(-1.15, 4.245, -1.0);
-  rig.add(aRing.mesh);
-  tie = hero(0.05, 1.75, 300, (g, W, H) => { g.fillStyle = "#ffffff"; for (let y = 0; y < H; y += 26) g.fillRect(W / 2 - 2, y, 4, 15); });
-  tie.set({});
-  tie.mesh.position.set(-1.975, 3.255, -1.0);
-  rig.add(tie.mesh);
-  tieFoot = new THREE.Mesh(new THREE.PlaneGeometry(0.12, 0.012), basic("#ffffff"));
-  tieFoot.position.set(-1.915, 2.43, -1.0);
-  rig.add(tieFoot);
-}
-
-function placeSticker(p, t, hit, x, y, track, alive = 1) {
-  const on = t >= hit - 0.18 && alive > 0.002;
-  p.mesh.visible = on;
-  if (!on) return;
-  p.mesh.position.set(x, dropY(t, hit, y), -1.1);
-  p.mesh.scale.setScalar(impact(t, hit));
-  p.mesh.rotation.z = -0.02;
-  alpha(p.mesh, alive);
-  paint(p.mesh.material, track, t);
+  chutes.L = chute(scene, toon, "L");
+  chutes.R = chute(scene, toon, "R");
 }
 
 export function update(t) {
-  rig.userData.hinge.rotation.z = rock(t) * 0.012;
-
   paint(bodyMat, BODY_T, t);
   rimMats.forEach((m) => paint(m, RIM_T, t));
-  paint(nameBar.mesh.material, NAME_T, t);
-  paint(plate.mesh.material, PLATE_T, t);
-  paint(discPanel.mesh.material, PLATE_T, t);
+  paint(stencil.mesh.material, NAME_T, t);
+  paint(ringPanel.mesh.material, INK_T, t);
+  paint(oldLbl.mesh.material, INK_T, t);
 
-  // new ticks: fts from the start, then vector and hybrid pop one after the other, one settle each
-  const pop = (t0) => { const u = r01(t, t0, 0.22); return u <= 0 ? 0 : 1 + 0.25 * Math.sin(u * Math.PI); };
-  const pV = pop(T.b04), pH = pop(T.landed);
-  tickV.visible = pV > 0; tickV.scale.setScalar(Math.max(pV, 0.001));
-  tickH.visible = pH > 0; tickH.scale.setScalar(Math.max(pH, 0.001));
-  alpha(lblV.mesh, r01(t, T.b04, 0.1)); paint(lblV.mesh.material, PLATE_T, t);
-  const optK = r01(t, T.optional, 0.14);
-  alpha(lblOpt.mesh, optK); lblOpt.mesh.scale.setScalar(1 + (1 - optK) * 0.25); paint(lblOpt.mesh.material, PLATE_T, t);
+  // meaning (new): pops on with "smarter", slides back off at the setup, then appears for good in July
+  const firstIn = r01(t, T.smarter, 0.2), firstOut = io(r01(t, T.h03 + 0.2, 0.45)), forGood = r01(t, T.july, 0.25);
+  const temp = t < T.h05 ? firstIn * (1 - firstOut) : 0;
+  const a = Math.max(temp, t >= T.h05 ? forGood : 0);
+  const slide = t < T.h05 ? firstOut * 0.5 : (1 - io(forGood)) * 0.3;
+  alpha(newLbl.mesh, a);
+  newLbl.mesh.position.x = CHUTE_X.R + slide;
+  const pop = 1 + 0.2 * Math.sin(Math.PI * r01(t, t < T.h05 ? T.smarter : T.july, 0.25)) + 0.18 * Math.sin(Math.PI * r01(t, T.new2, 0.4));
+  newLbl.mesh.scale.setScalar(pop);
+  paint(newLbl.mesh.material, INK_T, t);
+  newTick.visible = a > 0.02; newTick.scale.setScalar(Math.max(0.01, a));
+  newGlow.material.opacity = 0.35 * Math.sin(Math.PI * r01(t, T.new2, 0.5)); newGlow.visible = newGlow.material.opacity > 0.002;
 
-  // the colour beat: pure function of t; rises from flareUp, peaks on "mode", gone by flareGone. The tally stays IDLE.
-  const f = t < T.flareUp || t > T.flareGone ? 0 : t < T.flarePeak ? io(r01(t, T.flareUp, T.flarePeak - T.flareUp)) : 1 - io(r01(t, T.flarePeak, T.flareGone - T.flarePeak));
-  flare.visible = f > 0.002; flare.material.opacity = 0.75 * f;
-  tickH.material.color.set("#c9d1d9").lerp(new THREE.Color("#4f93d6"), f);
-  alpha(lblH.mesh, r01(t, T.landed, 0.1));
-  paint(lblH.mesh.material, PLATE_T, t);
-  lblH.mesh.material.color.lerp(new THREE.Color("#9fccf5"), f);
+  // the tag swings once and settles on hold 07; it glows on hold 22. Written from t.
+  const sw = r01(t, T.h07 + 0.1, 1.2);
+  tagPivot.rotation.z = sw > 0 && sw < 1 ? 0.35 * Math.sin(sw * Math.PI * 3) * (1 - sw) : 0;
+  paint(tag.mesh.material, TAG_T, t);
+  tagGlow.material.opacity = 0.3 * spanAlpha([[T.dflt2 - 0.1, T.h23]], t, 0.2);
+  tagGlow.visible = tagGlow.material.opacity > 0.002;
 
-  knob.position.z = -1.03 - pressAt(t, T.fts) - pressAt(t, T.why); // a settle in place, no rotation
-  knobRing.set(spanAlpha([[T.b02, T.b03], [T.b04, T.b05], [T.b06, T.b07], [T.b13, T.b17], [T.b22, T.b27], [T.b31, T.b32], [T.b33, T.endIn]], t));
+  // the plate drops into place on hold 11 and stays
+  const pOn = t >= T.h11 + 0.05;
+  plate.mesh.visible = pOn;
+  if (pOn) { plate.mesh.position.y = dropY(t, T.h11 + 0.4, 4.13, 1.2); paint(plate.mesh.material, PLATE_T, t); }
 
-  // ghost knob: over the top of the dial, 9 o'clock to 3 o'clock
-  const gu = io(r01(t, T.ghost, 0.9));
-  ghost.visible = t >= T.ghost && t < T.b30;
-  ghost.rotation.z = -Math.PI * gu;
-  ghost.userData.mat.opacity = 0.65 * r01(t, T.ghost, 0.1) * (1 - r01(t, T.b30 - 0.3, 0.3));
-
-  // old code path
-  const pathA = spanAlpha([[T.b07, T.b08], [T.b23, T.b24]], t, 0.2);
-  rail.visible = pathA > 0.002;
-  rail.material.transparent = true; rail.material.opacity = pathA;
-  alpha(railLbl.mesh, pathA);
-  const bu = r01(t, T.old, 0.5);
-  railBead.visible = t > T.old && bu < 1;
-  railBead.material.opacity = 1;
-  railBead.position.y = 2.36 - 0.33 * bu;
-
-  // stickers
-  placeSticker(stA, t, T.hitA, A_POS[0], A_POS[1], STICK_A);
-  placeSticker(stB, t, T.hitB, B_POS[0], B_POS[1], STICK_B);
-  placeSticker(stC, t, T.hitC, C_POS[0], C_POS[1], STICK_C, 1 - r01(t, T.b32, 0.2));
-  alpha(outline.mesh, r01(t, T.b32 + 0.1, 0.2) * (1 - r01(t, T.b33, 0.3)));
-  // light along the sticker: on "names all three", and on "safe default" so board 26 isn't a still
-  const su = t < T.b26 ? r01(t, T.names, T.three + 0.4 - T.names) : r01(t, T.default7 - 0.1, 0.8);
-  sweep.visible = su > 0 && su < 1;
-  sweep.position.x = -1.85 + 1.2 * su;
-  sweep.material.opacity = 0.35 * Math.sin(su * Math.PI);
-
-  // ring and tie, board 22 only
-  const rA = spanAlpha([[T.dflt, T.b23]], t);
-  aRing.set({ k: Math.round(io(r01(t, T.dflt, 0.3)) * 40) / 40 });
-  alpha(aRing.mesh, rA);
-  alpha(tie.mesh, rA);
-  const tk = io(r01(t, T.dflt + 0.3, 0.4));
-  revealTop(tie, 4.13, 1.75 * tk);
-  alpha(tieFoot, tk > 0.98 ? rA : 0);
+  // chutes: the right one only from July; each lights while a card rides it
+  chutes.R.g.visible = t >= T.july;
+  const rA = r01(t, T.july, 0.3);
+  chutes.R.g.scale.y = Math.max(0.01, io(rA));
+  chutes.R.g.position.y = 2.2 - 0.325 * io(rA);
+  chutes.L.glow.material.opacity = 0.55 * chuteGlow("L", t);
+  chutes.R.glow.material.opacity = Math.max(0.9 * chuteGlow("R", t), rightAfterglow(t));
+  chutes.L.glow.visible = chutes.L.glow.material.opacity > 0.002;
+  chutes.R.glow.visible = chutes.R.glow.material.opacity > 0.002;
+  void mix;
 }

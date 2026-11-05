@@ -1,23 +1,23 @@
-// The Lamp: same spot, same green, all film. It keeps its light under the end mark. The ring is an overlay, not the lamp.
+// The Lamp: small green lamp on a post, upper right. Same green in every hold; it keeps its light under the end mark.
+// Its label sits under the head, clear of the post, and shows only on the holds about it (09, 14-15).
 import * as THREE from "three";
-import { basic, circleRing, staticPanel, text } from "../parts.js";
+import { alpha, basic, staticPanel, text } from "../parts.js";
 import { T, spanAlpha } from "../timeline.js";
 
-let ring;
+const X = 1.8, Y = 4.55, Z = -1.8;
+let label;
 
 export function build(scene, { toon }) {
-  const post = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 2.55, 10), toon("#2c343e", { fog: false }));
-  post.position.set(1.75, 2.995, -1.4);
+  const post = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 1.22, 10), toon("#2c343e", { fog: false }));
+  post.position.set(X, 3.61, Z);
   const head = new THREE.Mesh(new THREE.SphereGeometry(0.09, 24, 16), new THREE.MeshBasicMaterial({ color: "#6ad08a", fog: false }));
-  head.position.set(1.75, 4.36, -1.4);
+  head.position.set(X, Y, Z);
   const halo = new THREE.Mesh(new THREE.SphereGeometry(0.2, 24, 16), basic("#6ad08a", { opacity: 0.03, blending: THREE.AdditiveBlending }));
   halo.position.copy(head.position);
   scene.add(post, head, halo);
-  // beside the post, not across it: a centred tag was cut by the pole and the tally (first watch 01)
-  staticPanel(0.4, 0.14, 300, (g) => text(g, "build", 0, 32, 30, { c: "#c9d1d9" }), 1.99, 4.16, -1.38, scene);
-  ring = circleRing(0.19, 0.012, scene, 1.75, 4.36, -1.37);
+  label = staticPanel(0.5, 0.14, 300, (g, W) => text(g, "working", W / 2, 32, 30, { c: "#c9d1d9", a: "center" }), X, 4.33, Z + 0.02, scene);
 }
 
 export function update(t) {
-  ring.set(spanAlpha([[T.b13, T.b14], [T.b33, T.endIn]], t));
+  alpha(label.mesh, spanAlpha([[T.h09 + 0.3, T.h10], [T.h14, T.h16]], t, 0.3));
 }

@@ -26,8 +26,8 @@
     </style>
   </head>
   <body>
-    <div id="root" data-composition-id="main" data-start="0" data-duration="92.88" data-width="1080" data-height="1920">
-      <audio id="mix" src="_in/mix.wav" data-start="0" data-duration="92.88" data-track-index="20" data-volume="1"></audio>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="79.35" data-width="1080" data-height="1920">
+      <audio id="mix" src="_in/mix.wav" data-start="0" data-duration="79.35" data-track-index="20" data-volume="1"></audio>
       <!-- the world: one Three.js scene, one camera (world.js) -->
       <canvas id="world" width="1080" height="1920" style="position:absolute;left:0;top:0;width:1080px;height:1920px"></canvas>
       <div id="stage" class="layer" style="pointer-events:none"></div>
@@ -54,7 +54,7 @@
         const bar = mk("div", "abs bar");
         const barIn = mk("div", null, "height:4px;background:var(--green);transform-origin:left;transform:scaleX(0)", bar);
         F(barIn, { scaleX: 0 }, { scaleX: 1, duration: VO.END, ease: "none" }, 0);
-        const endIn = w("nothing", 3) + 0.57;
+        const endIn = w("one", 4) + 0.36;
         hide(chrome, endIn, 0.4); hide(bar, endIn, 0.4);
 
         // the words, places and times are in overlays.js, where check-graybox.mjs can read them

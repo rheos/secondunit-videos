@@ -3,78 +3,70 @@
 // film time t: HyperFrames seeks frames in any order, and the finish renders them in order.
 import * as THREE from "three";
 import { cameraPath, stage } from "./kit/world.js";
-import { SET_Z, T } from "./timeline.js";
+import { FOOT_Y, T } from "./timeline.js";
 import * as mark from "./stations/mark.js";
-import * as line from "./stations/line.js";
 import * as crate from "./stations/crate.js";
-import * as tally from "./stations/tally.js";
+import * as cards from "./stations/cards.js";
 import * as lamp from "./stations/lamp.js";
+import * as counter from "./stations/counter.js";
 import * as tray from "./stations/tray.js";
-import * as sheet from "./stations/sheet.js";
-import * as queue from "./stations/queue.js";
-import * as bay from "./stations/bay.js";
+import * as strip from "./stations/strip.js";
+import * as note from "./stations/note.js";
+import * as panels from "./stations/panels.js";
+import * as log from "./stations/log.js";
 
 const VO = window.VO, w = (x, n) => VO.w(x, n);
 
-// [time, position, target, fov, the film second camera.md expects]. Poses and reasons are in camera.md.
+// [time, position, target, fov, the film second it should resolve to]. The gray box owns the camera this round:
+// poses from the old camera.md, re-aimed at the plain-words set. Pushes pivot on Blink's foot (y = 0.2444 z - 0.88) except
+// CLOSE, which pivots on the crate's lid so the overlay band above it stays clear.
 // KEYS-BEGIN
 export const KEYS = [
-  /* K01 */ [0, [0, 1.72, 11.25], [0, 1.72, -1.2], 36, 0.00],
-  /* K02 */ [w("nothing", 1), [0, 1.66, 11], [0, 1.66, -1.2], 36, 1.12],
-  /* K03 */ [w("the", 1), [0, 1.647, 10.95], [0, 1.647, -1.2], 36, 3.94],
-  /* K04 */ [w("the", 2), [-0.1, 1.485, 10.3], [-0.1, 1.485, -1.2], 36, 4.90],
-  /* K05 */ [w("hybrid", 2), [-0.1, 1.46, 10.2], [-0.1, 1.46, -1.2], 36, 6.42],
-  /* K06 */ [w("august", 1) + 0.1, [-0.1, 1.435, 10.1], [-0.1, 1.435, -1.2], 36, 8.82],
-  /* K07 */ [w("was", 1) + 0.1, [-0.17, 1.51, 10.4], [-0.17, 1.51, -1.2], 36, 9.74],
-  /* K08 */ [w("model", 1) + 0.1, [-0.17, 1.485, 10.3], [-0.17, 1.485, -1.2], 36, 10.72],
-  /* K09 */ [w("mode", 1), [-0.09, 1.41, 10], [-0.09, 1.41, -1.2], 36, 11.74],
-  /* K10 */ [w("fts", 1), [-0.09, 1.385, 9.9], [-0.09, 1.385, -1.2], 36, 14.48],
-  /* K11 */ [w("path", 1) + 0.1, [-0.09, 1.372, 9.85], [-0.09, 1.372, -1.2], 36, 17.02],
-  /* K12 */ [w("would", 1), [0, 1.622, 10.85], [0, 1.622, -1.2], 36, 18.14],
-  /* K13 */ [w("approve", 1) + 0.3, [0, 1.622, 10.85], [0, 1.622, -1.2], 36, 18.70],
-  /* K14 */ [w("should", 1), [0, 1.61, 10.8], [0, 1.61, -1.2], 36, 19.42],
-  /* K15 */ [w("model", 2), [-0.09, 1.423, 10.05], [-0.09, 1.423, -1.2], 36, 20.28],
-  /* K16 */ [w("three", 1), [-0.09, 1.39, 9.92], [-0.09, 1.39, -1.2], 36, 23.56],
-  /* K17 */ [w("in", 2), [-0.09, 1.385, 9.9], [-0.09, 1.385, -1.2], 36, 24.38],
-  /* K18 */ [w("calls", 2) + 0.3, [0, 1.66, 11], [0, 1.66, -1.2], 36, 25.24],
-  /* K19 */ [w("the", 9), [0, 1.597, 10.75], [0, 1.597, -1.2], 36, 28.52],
-  /* K20 */ [w("calling", 1), [-0.09, 1.385, 9.9], [-0.09, 1.385, -1.2], 36, 29.54],
-  /* K21 */ [w("53", 1), [-0.09, 1.35, 9.75], [-0.09, 1.35, -1.2], 36, 32.04],
-  /* K22 */ [w("nothing", 2), [-0.09, 1.35, 9.75], [-0.09, 1.35, -1.2], 36, 34.16],
-  /* K23 */ [w("it", 3), [0, 1.66, 11], [0, 1.66, -1.2], 36, 34.90],
-  /* K24 */ [w("never", 1), [0, 1.597, 10.75], [0, 1.597, -1.2], 36, 37.90],
-  /* K25 */ [w("error", 1), [0, 1.485, 10.3], [0, 1.485, -1.2], 36, 38.68],
-  /* K26 */ [w("keys", 1), [0, 1.472, 10.25], [0, 1.472, -1.2], 36, 41.20],
-  /* K27 */ [w("that", 3), [0, 1.472, 10.25], [0, 1.472, -1.2], 36, 41.96],
-  /* K28 */ [w("mode", 3) + 0.28, [0, 1.66, 11], [0, 1.66, -1.2], 36, 43.26],
-  /* K29 */ [w("back", 1) - 0.1, [0, 1.673, 11.05], [0, 1.673, -1.2], 36, 44.36],
-  /* K30 */ [w("the", 13), [-0.25, 1.622, 10.85], [-0.25, 1.622, -1.2], 36, 45.32],
-  /* K31 */ [w("own", 1), [-0.25, 1.61, 10.8], [-0.25, 1.61, -1.2], 36, 46.82],
-  /* K32 */ [w("27th", 2), [0, 1.66, 11], [0, 1.66, -1.2], 36, 47.92],
-  /* K33 */ [w("the", 14), [0, 1.635, 10.9], [0, 1.635, -1.2], 36, 48.90],
-  /* K34 */ [w("protocol", 1), [-0.09, 1.423, 10.05], [-0.09, 1.423, -1.2], 36, 49.82],
-  /* K35 */ [w("know", 1) + 0.1, [-0.09, 1.397, 9.95], [-0.09, 1.397, -1.2], 36, 52.78],
-  /* K36 */ [w("day", 1), [0, 1.66, 11], [0, 1.66, -1.2], 36, 53.78],
-  /* K37 */ [w("i", 1), [0, 1.635, 10.9], [0, 1.635, -1.2], 36, 55.74],
-  /* K38 */ [w("a", 5), [0, 1.51, 10.4], [0, 1.51, -1.2], 36, 59.50],
-  /* K39 */ [w("schema", 1) + 0.2, [-0.1, 1.42, 10.05], [-0.1, 1.42, -1.2], 36, 60.58],
-  /* K40 */ [w("default", 4), [-0.1, 1.396, 9.95], [-0.1, 1.396, -1.2], 36, 62.22],
-  /* K41 */ [w("callers", 2), [-0.1, 1.378, 9.9], [-0.1, 1.378, -1.2], 36, 66.58],
-  /* K42 */ [w("model", 5), [-0.092, 1.345, 9.74], [-0.092, 1.345, -1.2], 36, 67.40],
-  /* K43 */ [w("and", 7), [-0.092, 1.335, 9.7], [-0.092, 1.335, -1.2], 36, 70.84],
-  /* K44 */ [w("on", 7) + 0.1, [-0.092, 1.335, 9.7], [-0.092, 1.335, -1.2], 36, 72.46],
-  /* K45 */ [w("the", 20), [0, 1.66, 11], [0, 1.66, -1.2], 36, 73.46],
-  /* K46 */ [w("call", 3), [0, 1.622, 10.85], [0, 1.622, -1.2], 36, 77.26],
-  /* K47 */ [w("date", 1) + 0.1, [0, 1.51, 10.4], [0, 1.51, -1.2], 36, 78.42],
-  /* K48 */ [w("mode", 7), [0, 1.502, 10.37], [0, 1.502, -1.2], 36, 80.02],
-  /* K49 */ [w("flip", 1) + 0.1, [0, 1.497, 10.35], [0, 1.497, -1.2], 36, 80.90],
-  /* K50 */ [w("tell", 1), [0, 1.49, 10.32], [0, 1.49, -1.2], 36, 82.06],
-  /* K51 */ [w("or", 1), [0, 1.48, 10.28], [0, 1.48, -1.2], 36, 84.24],
-  /* K52 */ [w("why", 1) + 0.4, [0, 1.472, 10.25], [0, 1.472, -1.2], 36, 86.46],
-  /* K53 */ [w("count", 2), [0, 1.66, 11], [0, 1.66, -1.2], 36, 87.24],
-  /* K54 */ [w("breaks", 1), [0, 1.61, 10.8], [0, 1.61, -1.2], 36, 90.48],
-  /* K55 */ [w("nothing", 3) + 0.25, [0, 1.597, 10.75], [0, 1.597, -1.2], 36, 91.21],
-  /* K56 */ [VO.END, [0, 1.622, 10.85], [0, 1.622, -1.2], 36, 92.88],
+  /* K01 h01 dial close, Blink large */ [0, [-0.05, 1.69, 10.0], [-0.05, 1.69, -1.2], 36, 0.00],
+  /* K02 h02 creep, overlay above the lid */ [w("it", 1), [-0.05, 1.687, 9.96], [-0.05, 1.687, -1.2], 36, 2.58],
+  /* K03 h03 depart */ [w("here's", 1), [-0.05, 1.687, 9.96], [-0.05, 1.687, -1.2], 36, 4.14],
+  /* K04 h03 pull back to base, lead: meaning (new) sliding off */ [w("my", 2), [0, 1.711, 10.6], [0, 1.711, -1.2], 36, 5.20],
+  /* K05 h05 depart */ [w("in", 1), [0, 1.7, 10.55], [0, 1.7, -1.2], 36, 9.54],
+  /* K06 h05 small push to the dial, lead: meaning (new) appearing */ [w("added", 1), [-0.16, 1.466, 9.6], [-0.16, 1.466, -1.2], 36, 10.40],
+  /* K07 h06 depart */ [w("i", 3), [-0.16, 1.454, 9.55], [-0.16, 1.454, -1.2], 36, 13.68],
+  /* K08 h06 base, wider right, lead: the queue sliding in */ [w("anything", 1), [0.1, 1.808, 11.0], [0.1, 1.808, -1.2], 36, 14.44],
+  /* K09 h07 depart */ [w("so", 1), [0.1, 1.796, 10.95], [0.1, 1.796, -1.2], 36, 16.50],
+  /* K10 h07 push to the dial (queue kept in frame), lead: the tag swinging */ [w("old", 2), [0, 1.564, 10.0], [0, 1.564, -1.2], 36, 17.40],
+  /* K11 h08 depart */ [w("ask", 1), [0, 1.552, 9.95], [0, 1.552, -1.2], 36, 19.06],
+  /* K12 h08 base, lead: the first card into the slot */ [w("special", 1) + 0.1, [0, 1.711, 10.6], [0, 1.711, -1.2], 36, 19.76],
+  /* K13 h09 creep, lamp in frame */ [w("that's", 1), [0, 1.7, 10.55], [0, 1.7, -1.2], 36, 22.52],
+  /* K14 h09 creep, overlay above the lid */ [w("nothing", 2), [0, 1.69, 10.5], [0, 1.69, -1.2], 36, 25.48],
+  /* K15 h10 depart */ [w("but", 1), [0, 1.69, 10.5], [0, 1.69, -1.2], 36, 26.42],
+  /* K16 h10 favour Blink, lead: its card popping out */ [w("is", 1), [-0.2, 1.417, 9.4], [-0.2, 1.417, -1.2], 36, 27.18],
+  /* K17 h11 depart */ [w("it", 4), [-0.2, 1.405, 9.35], [-0.2, 1.405, -1.2], 36, 29.56],
+  /* K18 h11 push to the crate face, lead: the plate dropping */ [w("new", 1), [-0.16, 1.466, 9.6], [-0.16, 1.466, -1.2], 36, 30.40],
+  /* K19 h12 depart */ [w("it", 5), [-0.16, 1.454, 9.55], [-0.16, 1.454, -1.2], 36, 33.50],
+  /* K20 h12 base, lead: Blink's card going in */ [w("ask", 2), [0, 1.711, 10.6], [0, 1.711, -1.2], 36, 34.24],
+  /* K21 h13 depart */ [w("in", 3), [0, 1.711, 10.6], [0, 1.711, -1.2], 36, 35.28],
+  /* K22 h13 wider, counter in frame: the mass moment */ [w("36", 1), [0.22, 1.955, 11.6], [0.22, 1.955, -1.2], 36, 36.20],
+  /* K23 h15 depart (h14 holds here, lamp in frame) */ [w("a", 5), [0.22, 1.943, 11.55], [0.22, 1.943, -1.2], 36, 40.96],
+  /* K24 h15 push right, lead: the tray sliding in */ [w("uses", 1), [0.35, 1.466, 9.6], [0.35, 1.466, -1.2], 36, 41.84],
+  /* K25 h16 depart */ [w("so", 2), [0.35, 1.454, 9.55], [0.35, 1.454, -1.2], 36, 45.46],
+  /* K26 h16 base, lead: the strip unrolling */ [w("changed", 1) + 0.34, [0, 1.711, 10.6], [0, 1.711, -1.2], 36, 46.40],
+  /* K27 h17 depart */ [w("53", 1), [0, 1.711, 10.6], [0, 1.711, -1.2], 36, 47.24],
+  /* K28 h17 push to the strip, lead: the marker */ [w("i", 5) + 0.1, [-0.03, 1.515, 9.8], [-0.03, 1.515, -1.2], 36, 48.02],
+  /* K29 h18 depart */ [w("i", 6), [-0.03, 1.503, 9.75], [-0.03, 1.503, -1.2], 36, 48.76],
+  /* K30 h18 favour Blink, strip in frame, lead: the note landing */ [w("a", 6), [-0.045, 1.54, 9.9], [-0.045, 1.54, -1.2], 36, 49.54],
+  /* K31 h19 depart */ [w("that", 6), [-0.045, 1.528, 9.85], [-0.045, 1.528, -1.2], 36, 51.96],
+  /* K32 h19 base, lead: Blink's card to the slot */ [w("day", 1) + 0.2, [0, 1.711, 10.6], [0, 1.711, -1.2], 36, 52.78],
+  /* K33 h20 same frame, creep */ [w("i", 7), [0, 1.7, 10.55], [0, 1.7, -1.2], 36, 54.96],
+  /* K34 h21 base, overlay above the lid */ [w("here's", 2), [0, 1.711, 10.6], [0, 1.711, -1.2], 36, 58.00],
+  /* K35 h22 depart */ [w("it", 10), [0, 1.7, 10.55], [0, 1.7, -1.2], 36, 61.82],
+  /* K36 h22 push to the face, lead: Blink's gaze on the plate */ [w("list", 1) + 0.2, [-0.16, 1.466, 9.6], [-0.16, 1.466, -1.2], 36, 62.64],
+  /* K37 h23 creep */ [w("so", 3), [-0.16, 1.454, 9.55], [-0.16, 1.454, -1.2], 36, 64.38],
+  /* K38 h24 depart */ [w("either", 1), [-0.16, 1.442, 9.5], [-0.16, 1.442, -1.2], 36, 66.14],
+  /* K39 h24 pull back a little, lead: the left panel turning */ [w("thing", 1), [0.1, 1.76, 10.8], [0.1, 1.76, -1.2], 36, 66.92],
+  /* K40 h26 depart */ [w("then", 1), [0.1, 1.748, 10.75], [0.1, 1.748, -1.2], 36, 70.84],
+  /* K41 h26 base, lead: the panels clearing */ [w("logs", 2), [0, 1.711, 10.6], [0, 1.711, -1.2], 36, 71.62],
+  /* K42 h27 depart */ [w("otherwise", 1), [0, 1.7, 10.55], [0, 1.7, -1.2], 36, 73.80],
+  /* K43 h27 dial close as hold 02, lead: Blink's card */ [w("built", 1), [-0.05, 1.69, 10.0], [-0.05, 1.69, -1.2], 36, 74.62],
+  /* K44 h27 creep */ [w("old", 4), [-0.05, 1.687, 9.96], [-0.05, 1.687, -1.2], 36, 77.56],
+  /* K45 h28 eased back, the path clamps */ [VO.END, [-0.05, 1.7, 10.1], [-0.05, 1.7, -1.2], 36, 79.35],
 ];
 // KEYS-END
 KEYS.forEach((k, i) => {
@@ -86,14 +78,15 @@ const cameraAt = cameraPath(KEYS);
 // each station: its file and the film spans in which it exists. Outside them it is hidden and update() isn't called.
 const WHOLE = [[0, T.END]];
 const STATIONS = [
-  { name: "line", mod: line, win: WHOLE },
-  { name: "lamp", mod: lamp, win: WHOLE },
   { name: "crate", mod: crate, win: WHOLE },
-  { name: "tally", mod: tally, win: WHOLE },
-  { name: "tray", mod: tray, win: [[T.b14 - 0.05, T.b17 + 0.7]] },
-  { name: "sheet", mod: sheet, win: WHOLE },
-  { name: "queue", mod: queue, win: [[T.b03 - 0.05, T.b06 + 0.7], [T.b07 - 0.4, T.b07 + 0.7], [T.b23 - 0.05, T.caller2 + 0.35]] },
-  { name: "bay", mod: bay, win: [[T.b08 - 0.05, T.b09 + 0.5], [T.b29 - 0.25, T.b32 + 0.35]] },
+  { name: "lamp", mod: lamp, win: WHOLE },
+  { name: "counter", mod: counter, win: [[T.h13 - 0.05, T.h16 + 0.5]] },
+  { name: "tray", mod: tray, win: [[T.h15 - 0.05, T.h16 + 0.5]] },
+  { name: "strip", mod: strip, win: [[T.h16, T.h21 + 0.7]] },
+  { name: "note", mod: note, win: [[T.h18 - 0.05, T.h21 + 0.5]] },
+  { name: "panels", mod: panels, win: [[T.h24 - 0.05, T.h26 + 0.4]] },
+  { name: "log", mod: log, win: [[T.h26 - 0.05, T.h27 + 0.4]] },
+  { name: "cards", mod: cards, win: WHOLE },
   { name: "mark", mod: mark, win: WHOLE },
 ];
 
@@ -101,16 +94,12 @@ export async function buildWorld(canvas) {
   // canvases can't use a face the DOM hasn't asked for yet
   await Promise.all(["400", "500", "600", "700"].map((wt) => document.fonts.load(`${wt} 24px 'IBM Plex Mono'`)));
   await document.fonts.ready;
-  const { renderer, scene, cam, ramp, toon, grid } = stage(canvas, { fog: [12.1, 28.6], floorY: -1.12 });
+  const { renderer, scene, cam, ramp, toon, grid } = stage(canvas, { fog: [12.1, 28.6], floorY: FOOT_Y - 0.02 });
   grid.material.opacity = 0.12;
   const kit = { toon, ramp, G: window.BLINK };
-  // everything but Blink stands back by SET_Z; Blink's mark and the camera's keys stay in world space
-  const set = new THREE.Group();
-  set.position.z = SET_Z;
-  scene.add(set);
   STATIONS.forEach((s) => {
     s.group = new THREE.Group();
-    (s.mod === mark ? scene : set).add(s.group);
+    scene.add(s.group);
     s.mod.build(s.group, kit);
   });
   return function render(time) {
