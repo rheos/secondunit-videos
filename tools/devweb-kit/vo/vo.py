@@ -9,8 +9,10 @@ import json, pathlib, sys, urllib.request, subprocess, hashlib
 PROJ = pathlib.Path(sys.argv[1]).resolve()
 HERE = PROJ / "vo"
 KEY = (pathlib.Path.home() / "Documents/novadiem/keys/elevenlabs/api.txt").read_text().strip()
-VOICE = "iP95p4xoKVk53GoZ742B"  # Chris - Charming, Down-to-Earth (the felt GrowOperative voice)
-LINES = json.loads((HERE / "script.json").read_text())["lines"]
+SCRIPT = json.loads((HERE / "script.json").read_text())
+# Default Chris - Charming, Down-to-Earth (the felt GrowOperative voice). A script may name its own: "voice": "<voice_id>".
+VOICE = SCRIPT.get("voice", "iP95p4xoKVk53GoZ742B")
+LINES = SCRIPT["lines"]
 text = " ".join(t for _, t in LINES)
 body = {"text": text, "model_id": "eleven_v4", "voice_settings": {"stability": 0.5, "similarity_boost": 0.75}}
 req = urllib.request.Request(f"https://api.elevenlabs.io/v1/text-to-speech/{VOICE}?output_format=mp3_44100_192",

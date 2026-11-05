@@ -1,0 +1,34 @@
+{
+ "lines": [
+  [
+   "I",
+   "Hybrid search broke nothing; 36 of 37 calls used the default."
+  ],
+  [
+   "II",
+   "The search tool had callers when hybrid landed on July 5, and by August one was a chat bot's model. So a mode param went in as optional, defaulting to FTS. Omit it and you get the old code path. Any reviewer would approve that, and should."
+  ],
+  [
+   "III",
+   "The model could see the new mode, because the tool description names all three. In the logged calls on that tool, 36 of 37 used the default. The bot started calling hybrid on August 27, 53 days after it landed."
+  ],
+  [
+   "IV",
+   "Nothing would flag it. A call on the default doesn't throw, so it never reaches the error log. The request log records argument keys, and that call has no mode key to record."
+  ],
+  [
+   "V",
+   "Back in June, the model didn't retrieve on its own. On August 27, the bot got a written protocol telling it to search before claiming it didn't know, the same day those hybrid calls began. I can't prove one caused the other, but I know which way I'd bet."
+  ],
+  [
+   "VI",
+   "A model gets a schema, and one mode in it is marked default. Your back-compat default protected every caller, and one of those callers is the model. With an AI caller, the default is your rollout, and shipping the mode doesn't turn it on."
+  ],
+  [
+   "VII",
+   "So keep the safe default if you want it. Log the resolved mode on every call. On a date you set, count calls by mode. Then flip the default, tell the model when to use the new mode, or keep the old one and write down why. Skip the count and you'll never know, because a feature nobody calls breaks nothing."
+  ]
+ ],
+ "facts": "Traced in facts-search.md and facts-search-2.md against devweb true-of-a-date.mdx and mcp-tool-design.mdx. The link between the Aug 27 protocol and the hybrid calls is stated as the narrator's bet, not a finding.",
+ "voice": "swWmDU3GdVjdv7jkjFfQ"
+}
