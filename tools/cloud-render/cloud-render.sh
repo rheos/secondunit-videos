@@ -8,6 +8,7 @@
 #   encode for drafts and finals alike (secondunit/CLAUDE.md), so --draft changes nothing there. No height argument.
 #   Either way GitHub joins the slices and the Mac downloads one file and only muxes the song (stream copy).
 #   CR_FPS=<n>: frames per second (default 24, the song grid; devweb animatics use 30).
+#   CR_MASTER=1 with --tall: 1080x1920 at crf 17 with no cap, for the devweb finish (see finish.sh RAW=).
 #   CR_REF=<branch> runs the workflow file from that branch (to test workflow changes before merging).
 #   CR_HOLD=<seconds>: the longest still run the join accepts (default 2, 6 for a HyperFrames composition).
 #   e.g. tools/cloud-render/cloud-render.sh bobwiseman-holiday-tavern looks/charcoal.html 24 130
@@ -44,6 +45,9 @@ fps=${CR_FPS:-24}; width=$(( height * 16 / 9 )); vbv=()
 if (( tall )); then
   [[ -z $7 ]] || { echo "--tall is always 720x1280: drop the height argument"; exit 2; }
   width=720; height=1280; crf=23; vbv=(-f maxrate=4500)   # kbit/s; the workflow sets bufsize to twice it
+  # CR_MASTER=1: the devweb finish only (Robin, 2026-10-29: devweb shorts finish at 1080x1920): crf 17, no rate cap.
+  # Use with CR_FPS=120; tools/devweb-kit/finish.sh blends the pairs to 60 fps on the Mac (RAW=<this file>).
+  (( ${CR_MASTER:-0} )) && { width=1080; height=1920; crf=17; vbv=(); }
 fi
 frames=$(python3 -c "print(round(($t1 - $t0) * $fps))")
 # the join fails on a still run longer than this: a look never holds 2 s, an explainer holds a plate for 4 s and more

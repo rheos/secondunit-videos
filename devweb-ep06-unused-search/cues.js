@@ -33,7 +33,7 @@ window.CUES = function (w, T, H) {
   add("riser", COUNT_IN, T.one3 - COUNT_IN);
   const DUR = T.one3 - COUNT_IN;
   for (let n = 4; n < 36; n += 4) add("tick", COUNT_IN + (n / 36) * DUR); // counter.js: n lands at COUNT_IN + n/36 of the climb
-  add("stamp", T.one3);
+  add("stamp", T.one3 + 0.24); // on the 36 seating (counter.js ROLL_LAST), in the gap after "one"
 
   // ---- dial, tag, plate, right chute ----
   add("slide", T.smarter, 0.4); // meaning (new) rides in on "smarter" (crate.js: 0.4 s)
