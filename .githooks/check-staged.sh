@@ -7,7 +7,7 @@ if [ -n "$1" ]; then LIST=$(git diff --name-status --diff-filter=ACMRT "$1"...HE
 else LIST=$(git diff --cached --name-only --diff-filter=ACMRT); MODES=$(git diff --cached --raw --diff-filter=ACMRT | awk '{print $2" "$NF}'); fi
 bad=0
 echo "$MODES" | while read -r mode path; do [ "$mode" = "120000" ] && echo "REFUSED symlink: $path"; done | grep . && bad=1
-echo "$LIST" | grep -E '(^|/)(out|_in|source|work|output|tmp)(/|$)' | sed 's/^/REFUSED data folder: /' | grep . && bad=1
+echo "$LIST" | grep -E '(^|/)(out|_in|source|work|output|tmp|gen)(/|$)' | sed 's/^/REFUSED data folder: /' | grep . && bad=1
 echo "$LIST" | grep -iE '\.(wav|mp3|m4a|flac|aif|aiff|mp4|mov|webm|mkv)$' | sed 's/^/REFUSED media file: /' | grep . && bad=1
 if [ $bad = 1 ]; then echo "Data, media and symlinks stay out of git (see .githooks/check-staged.sh). Unstage them: git restore --staged <path>"; exit 1; fi
 exit 0
