@@ -7,6 +7,7 @@
 #   --tall (or CR_TALL=1): a 9:16 page, always 720x1280 at crf 23 capped at 4.5 Mbit/s, the house phone-ratio
 #   encode for drafts and finals alike (secondunit/CLAUDE.md), so --draft changes nothing there. No height argument.
 #   Either way GitHub joins the slices and the Mac downloads one file and only muxes the song (stream copy).
+#   CR_FPS=<n>: frames per second (default 24, the song grid; devweb animatics use 30).
 #   CR_REF=<branch> runs the workflow file from that branch (to test workflow changes before merging).
 #   CR_HOLD=<seconds>: the longest still run the join accepts (default 2, 6 for a HyperFrames composition).
 #   e.g. tools/cloud-render/cloud-render.sh bobwiseman-holiday-tavern looks/charcoal.html 24 130
@@ -39,7 +40,7 @@ if [[ ! -f $song ]] && (( hfpage )); then
   song=$pdir/${hfclip[1]}
 fi
 [[ -f $song ]] || { echo "no $song (the song clock)"; exit 2; }
-fps=24; width=$(( height * 16 / 9 )); vbv=()
+fps=${CR_FPS:-24}; width=$(( height * 16 / 9 )); vbv=()
 if (( tall )); then
   [[ -z $7 ]] || { echo "--tall is always 720x1280: drop the height argument"; exit 2; }
   width=720; height=1280; crf=23; vbv=(-f maxrate=4500)   # kbit/s; the workflow sets bufsize to twice it
