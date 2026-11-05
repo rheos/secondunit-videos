@@ -71,7 +71,8 @@ export const CARD_PLAN = [
   { keys: [[T.h09 + 1.3, "R1"], [T.h09 + 1.5, "S1", 0.7], [c12 + 0.4, "S0"], [c12 + 0.75, "slot"]], chute: ["L", c12 + 1.1] },
   { dot: true, keys: [[T.h10 + 0.18, "blink"], [T.h10 + 0.6, "S2", 0.9], [c12 + 0.4, "S1"], [c12 + 0.75, "S0"], [c12 + 1.1, "slot"]], chute: ["L", c12 + 1.45] },
   { dot: true, keys: [[T.h19 + 0.02, "blink"], [T.h19 + 0.35, "slot", 0.6]], chute: ["R", T.h19 + 1.0] },
-  { dot: true, keys: [[T.h27 + 0.2, "blink"], [T.h27 + 0.55, "slot", 0.7]], chute: ["L", T.h27 + 1.6] },
+  // the last card rides the old chute on "still using the old one" (editor): out on "for an AI", down from "still" + 0.2
+  { dot: true, keys: [[T.h27 + 1.9, "blink"], [T.h27 + 2.25, "slot", 0.7]], chute: ["L", T.still + 0.2] },
 ];
 export const CHUTE_RIDE = 0.7;
 export const STREAM = [T.h13 + 0.12, T.one3]; // the mass moment: cards pour down the left chute
