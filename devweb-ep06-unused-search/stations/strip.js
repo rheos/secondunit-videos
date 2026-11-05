@@ -25,6 +25,15 @@ function markerP(t) {
   return 1 + OVER * (1 - v * v * (3 - 2 * v));
 }
 // how much of the strip is out: unrolls left to right on hold 16, rolls back up on hold 21
+// the roll's opacity (round 3: it ended as a lone bright speck at 58.5 s). Time-keyed so only two short spans change:
+// fades in over 45.70-46.00 s as the unroll starts, and on the roll-up fades out over T.h21 + 0.25..0.55 (58.25-58.55),
+// done while the roll still travels and shrinks (k > 0.002 until 58.552). After T.h21 it also follows the roll's own
+// radius, so the tiny roll that grows at the right end at 58.05 comes up from zero instead of switching on.
+const ss = (x) => x * x * (3 - 2 * x);
+function rollAlpha(t, r) {
+  const fadeIn = ss(r01(t, T.h16 + 0.24, 0.3)), fadeOut = 1 - ss(r01(t, T.h21 + 0.25, 0.3));
+  return fadeIn * fadeOut * (t >= T.h21 ? cl((r - 0.004) / 0.05) : 1);
+}
 const outK = (t) => io(r01(t, T.h16 + 0.2, 1.0)) * (1 - io(r01(t, T.h21, 0.6)));
 
 export function build(scene, { toon }) {
@@ -120,7 +129,9 @@ export function update(t) {
 
   // the roll rides the leading edge and is used up as the strip runs out (and grows back as it rolls up)
   const r = 0.075 * Math.sqrt(1 - k) * Math.sqrt(cl(k / 0.05)); // grows from nothing as it starts, shrinks away as it ends
-  roll.visible = k > 0.002 && r > 0.006;
+  const ra = rollAlpha(t, r), rm = roll.material;
+  rm.opacity = ra; rm.transparent = ra < 0.999; rm.depthWrite = ra > 0.98;
+  roll.visible = k > 0.002 && ra > 0.002 && (t >= T.h21 || r > 0.006);
   roll.scale.set(r, 1, r);
   roll.position.set(edge + r * 0.7, Y, Z + r * 0.8);
   roll.rotation.y = -(W * k) / 0.06; // turns with the paper paid out
