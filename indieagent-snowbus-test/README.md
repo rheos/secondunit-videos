@@ -79,3 +79,18 @@ node check.mjs out/check/sheet.jpg 1 3.5 6 9
 node ../tools/motion-lab/audit.mjs index.html 0 10 --spec audit.spec.mjs --width 1280 --height 720
 nice -n 15 node ../tools/motion-lab/render.mjs index.html 0 10 out/snowbus_test_f0-f240_24fps_review-720p_v1.mp4 --width 1280 --height 720 --workers 3
 ```
+
+## Plate marks test (2026-11-04, rheos/secondunit-videos#417, waiting on Robin)
+
+Same test as the moss forest (see its README). Page `marks.html`, `js/plates-marks.js`; `?marks=0` is byte-identical to
+`index.html`. Cloud bank and hills, hedge, snow caps, street and poles are repainted in small dabs; the wires are drawn after every
+mark and stay whole, and the bus and its snow are untouched. Clip: `out/snowbus_test_f96-f240_24fps_marks-flip.mp4`.
+
+```text
+t=8                  before    marks
+marks per 10,000 px    90.8    108.8
+LIGHT mean / p10   134.7/44.3  134.1/46.8
+```
+
+Street contrast was lowered after the first pass so it doesn't compete with the bus's drift. Adds about 2 s at load (375,000 dabs).
+Hedge frame-to-frame change rises slightly on the camera slide (mean 1.25 to 1.41 levels). 0 bad frames.

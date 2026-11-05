@@ -351,3 +351,32 @@ node ../tools/motion-lab/audit.mjs index.html 0 15 --spec audit.spec.mjs --width
 nice -n 15 node ../tools/motion-lab/render.mjs index.html 0 15 out/mossforest_test_f0-f360_24fps_review-720p_vN.mp4 --width 1280 --height 720
 ~/Code/novadiem/indieagent/viralvision/viralvision-worker/.venv/bin/python ../tools/cloud-render/badframes.py out/mossforest_test_f0-f360_24fps_review-720p_vN.mp4
 ```
+
+## Plate marks test (2026-11-04, rheos/secondunit-videos#417, waiting on Robin)
+
+Does mark density close the gap to The Moss Keeper? Page `d4-marks.html` repaints the same composition with `kit/marks.js`
+and `js/d4/plates-marks.js`. `?marks=0` is byte-identical to `d4.html`; `?fog=hard` (default) keeps the approved hard fog
+bands, broken by dabs; `?fog=soft` is soft fog like the film, which goes against the approved plate rule, so it stays a switch.
+Clip: `out/mossforest_test_f216-f360_24fps_marks-flip.mp4` (before, hard fog, soft fog, one second each), with each take beside it.
+
+```text
+Small flat-tone marks per 10,000 px (3-80 px regions, 12 tones, after a 3x3 median), t=13.2. The reference is
+compressed video scaled to 1280 wide, which merges small marks, so its counts read low.
+                     before    marks (hard)   marks (soft)   reference
+whole frame           112.7        136.4          131.9        135.8
+canopy                 43.3        210.0          210.0        111.0
+near trunk             47.7        110.2          108.5        135.8
+far forest (left)     125.0        100.0           96.6        120.1
+LIGHT mean / p10   121.5/34.5    123.1/34.0     123.2/34.0   124.6/38.1
+flat pixels (<3)       65.0%        53.6%          54.3%        53.9%
+```
+
+- **Closes the mark gap:** yes for canopy and bark by eye, and whole-frame density now matches. It reads as the same kind of
+  picture at 1:1. Canopy overshoots the count, partly because the film's compression merges marks; far forest and trunk fall short.
+- **Still different:** colour (the film is warmer and more olive, ours is mintier), the far forest is softer and shows
+  less tree structure, the film's clouds are painted and ours are flat bands, and the film's giant fills more of the frame.
+- **Figure:** untouched, and it still reads at 720p against the pale forest. Plates now carry finer marks than the giant's stroke layer.
+- **Cost:** adds about 2.3 s at load (1,040,000 dabs, plates 4.7 s against 2.4 s) and no code per frame. Frame timings were
+  taken at load average 34 and are noisy. Pure out of order and across reloads, 0 bad frames.
+- **Motion:** plate regions change as much as the approved page frame to frame over t=0.2 to 1.2 (canopy mean 1.00 to 1.16 levels, meadow
+  1.05 to 1.11, far forest and near trunk lower). Plates are baked and move as one.
