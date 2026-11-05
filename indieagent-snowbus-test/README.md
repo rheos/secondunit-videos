@@ -79,3 +79,27 @@ node check.mjs out/check/sheet.jpg 1 3.5 6 9
 node ../tools/motion-lab/audit.mjs index.html 0 10 --spec audit.spec.mjs --width 1280 --height 720
 nice -n 15 node ../tools/motion-lab/render.mjs index.html 0 10 out/snowbus_test_f0-f240_24fps_review-720p_v1.mp4 --width 1280 --height 720 --workers 3
 ```
+
+## Gouache pass test (2026-11-04, rheos/secondunit-videos#415, not adopted)
+
+Tests Leviathan's Kuwahara paint pass (`tools/inked3d-kit/gouache.js`, MIT, Beyond Dev) on the plates at bake time. Page
+`gouache.html` wraps the bake functions and leaves the approved page alone; with `?gb=0&gf=0` its frames are byte-identical to the
+approved page. Picked setting: back plate radius 3.5, stroke field 140, no paper tooth, front plate off.
+Clips: `out/snowbus_test_f96-f240_24fps_gouache-flip.mp4` (before and after swap each second), with `-off` and `-on` beside it.
+
+```text
+                     before                        after
+LIGHT t=8            mean 134.7 p10 44.3           mean 134.9 p10 44.5
+LIGHT t=1.5          mean 129.3 p10 41.8           mean 129.6 p10 42.3
+EDGES t=8            flat 69.1%  hard 12.4%        flat 69.9%  hard 11.3%
+```
+
+- **More hand-painted?** Slightly, and only in the far forest and washes: square hatch corners turn into rounder dabs.
+  It does not add marks, and the reference's plates have far more small marks than ours (far forest flat pixels: reference
+  13%, before 52%, after 60%; the reference is compressed video, so read the direction, not the number).
+- **Breaks the look?** Light does not move. It costs thin detail: the power lines thin and break.
+- **Rejected:** paper tooth (reads as wood-grain contours on flat fog, because the noise is rotated by the stroke field);
+  radius 6 and up, and any radius on the front plate over about 2 (ivy and grass melt).
+- **Motion and cost:** no shimmer. Frame-to-frame change in plate regions matches the approved page within 0.1 levels
+  (grain and snow dominate), frames are pure out of order and across reloads, 0 bad frames. Adds 0.5 to 0.8 s at load
+  and nothing per frame. Close-ups show it hardly at all: they use the blurred plate.

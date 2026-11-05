@@ -1,7 +1,7 @@
 slug: leviathan-engine
 name: Leviathan engine (0xCodez)
 kind: toolkit
-status: candidate
+status: available
 does: A three.js multi-pass film engine that makes 3D read as theatrical cel anime, with a Kuwahara gouache pass on backgrounds, material-id ink on characters, a kilometre-scale sea, drawn water and energy FX, and a fully synthesized score.
 keywords:
 - 3d
@@ -20,9 +20,9 @@ fits:
 - a film with a sea, sky or big machines, which inked3d-kit has no answer for
 - the paint pass as an upgrade to inked3d-kit's plates
 deterministic: 'yes: every frame is a pure function of time, rendered in any order by headless Chrome (tools/render.mjs)'
-how: not installed. github.com/0xCodez/leviathan and github.com/0xCodez/sunshower; three.js r170, puppeteer-core, ffmpeg
+how: the engine is not installed (github.com/0xCodez/leviathan and github.com/0xCodez/sunshower; three.js r170, puppeteer-core, ffmpeg). Only the paint pass is ported, as the opt-in tools/inked3d-kit/gouache.js with the MIT notice in LICENSE-leviathan.txt, tested on 2026-11-04 (#415), not adopted
 cost: free
-detail: 'source code MIT (Beyond Dev). Leviathan''s story, shots and designs follow a short by AHMII and Sunshower''s robot is Patlabor''s Ingram, and the licences exclude both: take passes and methods, never its designs or shots. Read CONTRACT.md for the department split.'
+detail: 'source code MIT (Beyond Dev). Leviathan''s story, shots and designs follow a short by AHMII and Sunshower''s robot is Patlabor''s Ingram, and the licences exclude both: take passes and methods, never its designs or shots. Read CONTRACT.md for the department split. Paint pass test (#415): rounds hatch corners on back plates, no shimmer, light unchanged, but it removes thin detail and adds no marks; paper tooth reads as wood grain on flat tones.'
 related:
 - inked3d-kit
 - open-water

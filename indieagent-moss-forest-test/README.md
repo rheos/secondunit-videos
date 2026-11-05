@@ -351,3 +351,27 @@ node ../tools/motion-lab/audit.mjs index.html 0 15 --spec audit.spec.mjs --width
 nice -n 15 node ../tools/motion-lab/render.mjs index.html 0 15 out/mossforest_test_f0-f360_24fps_review-720p_vN.mp4 --width 1280 --height 720
 ~/Code/novadiem/indieagent/viralvision/viralvision-worker/.venv/bin/python ../tools/cloud-render/badframes.py out/mossforest_test_f0-f360_24fps_review-720p_vN.mp4
 ```
+
+## Gouache pass test (2026-11-04, rheos/secondunit-videos#415, not adopted)
+
+Tests Leviathan's Kuwahara paint pass (`tools/inked3d-kit/gouache.js`, MIT, Beyond Dev) on the plates at bake time. Page
+`d4-gouache.html` wraps the bake functions and leaves the approved page alone; with `?gb=0&gf=0` its frames are byte-identical to the
+approved page. Picked setting: back plate radius 3.5, stroke field 140, no paper tooth, front plate off.
+Clips: `out/mossforest_test_f216-f360_24fps_gouache-flip.mp4` (before and after swap each second), with `-off` and `-on` beside it.
+
+```text
+                     before                        after
+LIGHT t=13.2         mean 121.5 p10 34.5           mean 121.5 p10 34.5
+LIGHT t=1.5          mean 107.7 p10 29.9           mean 107.7 p10 29.9
+EDGES t=13.2         flat 58.2%  hard 11.6%        flat 61.3%  hard 11.1%
+```
+
+- **More hand-painted?** Slightly, and only in the far forest and washes: square hatch corners turn into rounder dabs.
+  It does not add marks, and the reference's plates have far more small marks than ours (far forest flat pixels: reference
+  13%, before 52%, after 60%; the reference is compressed video, so read the direction, not the number).
+- **Breaks the look?** Light does not move. It costs thin detail: the meadow loses about half its fine grass hatch and some of its white flecks.
+- **Rejected:** paper tooth (reads as wood-grain contours on flat fog, because the noise is rotated by the stroke field);
+  radius 6 and up, and any radius on the front plate over about 2 (ivy and grass melt).
+- **Motion and cost:** no shimmer. Frame-to-frame change in plate regions matches the approved page within 0.1 levels
+  (grain and snow dominate), frames are pure out of order and across reloads, 0 bad frames. Adds 0.5 to 0.8 s at load
+  and nothing per frame. Close-ups show it hardly at all: they use the blurred plate.

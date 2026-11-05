@@ -39,6 +39,7 @@ shots and cameras, and whatever flat life goes on top. See the moss forest's `js
 | `strokes.js` | `STROKES`, `clump`, `tuft`. |
 | `paint.js` | `plateCanvas`, `wash`, `hatch`, `barkTrunk`, `frondLeaves`; margins `PX`, `PY`. |
 | `flat.js` | `camera`, `project`, `birdPose`, `dustCloud`, `makeGrainTiles`, `drawGrain`. |
+| `gouache.js` | Opt-in, not adopted (#415): Leviathan's Kuwahara paint filter on a baked plate, MIT notice in `LICENSE-leviathan.txt`. No approved page loads it. |
 | `sync.sh` | Copy the kit into a project as `<project>/kit/` with a VERSION stamp. Never edit a project's `kit/` by hand. |
 
 ## Making a film
