@@ -4,7 +4,7 @@
 // it fades up. Rows arrive one at a time on the animatic's beat (every 0.36 s): each slides a few pixels in from the
 // left and fades up over 0.16 s, onto its ruled line. Everything is drawn from t.
 import * as THREE from "three";
-import { alpha, hero, solidAlpha, text } from "../parts.js";
+import { alpha, hero, text } from "../parts.js";
 import { rr } from "../kit/world.js";
 import { T, cl, io, r01 } from "../timeline.js";
 
@@ -20,7 +20,7 @@ export function build(scene, { toon }) {
   rig = new THREE.Group();
   scene.add(rig);
   // the card's edge: a thin slab behind the sheet, showing as a hairline at its right and bottom
-  edge = new THREE.Mesh(new THREE.BoxGeometry(W, H, 0.012), toon("#a9a7a2", { fog: false }));
+  edge = new THREE.Mesh(new THREE.BoxGeometry(W, H, 0.012), toon("#a9a7a2", { fog: false, transparent: true }));
   edge.position.set(0.007, -0.009, -0.012);
   rig.add(edge);
 
@@ -37,22 +37,28 @@ export function build(scene, { toon }) {
   rig.add(sheet.mesh);
 }
 
+// one alpha for every part: in over 0.3 s from h26 + 0.1, out over 0.38 s from h27. Both are straight ramps (an eased
+// 0.3 s ramp steps 0.15 a frame at its middle), so it changes steadily and reaches zero with the motion.
+export const logAlpha = (t) => r01(t, T.h26 + 0.1, 0.3) * (1 - r01(t, T.h27, 0.38));
+
 export function update(t) {
-  // in: 0.3 s from h26 + 0.1; out: 0.4 s from h27, done before the window closes (h27 + 0.4). Both eased at each end,
-  // so no frame-to-frame step is bigger than its neighbours, and the sheet is moving the whole time it fades.
-  const kin = io(r01(t, T.h26 + 0.1, 0.3)), u = r01(t, T.h27, 0.38), kout = io(u);
-  const a = kin * (1 - kout);
+  const a = logAlpha(t), kout = io(r01(t, T.h27, 0.38));
   // it settles down 0.08 into place with one small give and floats while held; leaving, it lifts, slides right and
   // shrinks toward its right edge, out of the crate's way
   const drop = 0.08 * (1 - softBack(r01(t, T.h26 + 0.05, 0.45)));
   const s = 1 - 0.25 * kout;
   rig.scale.setScalar(s);
   rig.position.set(X + 0.55 * kout + (W / 2) * (1 - s), Y + drop + 0.12 * kout + 0.006 * Math.sin(t * 1.1), Z);
-  rig.visible = a > 0.002;
+  const on = a > 0.002;
+  rig.visible = on;
   alpha(sheet.mesh, a);
-  solidAlpha(edge, a * a); // the card's edge goes a little ahead of the paper, so it never reads as a grey slab
-  if (a > 0.002) {
-    // each row's arrival, quantised so the canvas redraws only while a row is moving
+  // the edge stays a transparent material for good: flipping .transparent at runtime doesn't recompile three's
+  // shader, so a box first drawn opaque kept full alpha through the fade and showed as a solid grey slab
+  edge.visible = on;
+  edge.material.opacity = a;
+  edge.material.depthWrite = a > 0.98;
+  if (on) {
+    // each row's arrival, quantised so the canvas redraws only while a row is moving; rows share the sheet's alpha
     const k = ROWS.map((_, i) => Math.round(io(r01(t, FIRST + i * ROW_T, ROW_IN)) * 40) / 40);
     sheet.set({ k });
   }

@@ -69,7 +69,9 @@ const FACE = [
   K(T.one3 - 0.36, { look: 0.3, lookY: 0.6, lean: 2, eager: 0.45 }),
   K(T.one3 - 0.03, { ...COUNTER, lean: 4, eager: 0.95, rise: 0.1 }, 0.07, 0.25),
   K(T.one3 + 0.5, { ...COUNTER, lean: 4, eager: 0.75, rise: 0.06 }, 0.4),
-  K(T.h14, { ...LAMP, eager: 0.3 }), K(T.h14 + 0.3, LAMP, 0.4),
+  // hold 14: the blink first, still on the counter, then the turn to the lamp once the eyes have reopened, so the
+  // closing eyes and the body tilt never share frames
+  K(T.h14, { ...COUNTER, lean: 4, rise: 0.06, eager: 0.3 }), K(T.h14 + 0.22, { ...LAMP, eager: 0.3 }), K(T.h14 + 0.3, LAMP, 0.4),
   // hold 15: peers into the empty tray, a little puzzled
   K(T.h15 + 0.2, { look: 1.1, lookY: 0.5, lean: 7, rise: 0.1 }, 0.12, 0.5),
   K(T.uses + 0.4, { look: 1.1, lookY: 0.45, lean: 7, rise: 0.1, skew: 0.35 }, 0.25, 0.5),
@@ -196,6 +198,12 @@ export function build(scene, { ramp, G }) {
   scene.add(pool);
 }
 
+// a deeper idle breath for two quiet stretches (the queue on hold 06-07, the counter and empty tray on holds 14-15):
+// whole-body squash and stretch about the foot, volume kept, eased in and out inside these film spans and exactly
+// zero outside them, so the rest of the film is unchanged
+const BREATH_SPANS = [[14.5, 16.9], [39.4, 45.4]];
+const breathEnv = (t) => { let e = 0; for (const [a, b] of BREATH_SPANS) e = Math.max(e, io(r01(t, a, 0.3) * (1 - r01(t, b - 0.3, 0.3)))); return e; };
+const breathAt = (t) => 0.016 * breathEnv(t) * Math.sin((2 * Math.PI * (t - 14.5)) / 3.2);
 const leanAt = (t) => keyed(t - 0.05, true).lean + 0.5 * (0.5 + 0.5 * Math.sin(t * 0.9 + 0.4)); // the sway only ever leans right
 
 export function update(t) {
@@ -203,7 +211,7 @@ export function update(t) {
   // under the calendar strip (holds 16-20) Blink never grows taller than at rest: its sprout sits just under the strip
   const low = spanAlpha([[T.h16 - 0.1, T.h21 + 0.9]], t, 0.3);
   const rise = (b.rise + hop(t)) * (1 - low);
-  let sy = 1 + 0.0075 * Math.sin((2 * Math.PI * t) / 3.4) + squashAt(t) + hopStretch(t);
+  let sy = 1 + 0.0075 * Math.sin((2 * Math.PI * t) / 3.4) + squashAt(t) + hopStretch(t) + breathAt(t);
   if (sy > 1) sy = 1 + (sy - 1) * (1 - low);
   const sx = 1 / Math.sqrt(sy);
   // the body turns and tilts toward what the eyes are on, a beat behind them
@@ -217,7 +225,9 @@ export function update(t) {
   body.rotation.set(0, yaw, 0);
   // the sprout trails the body's lean and the squash, with its own slow sway; smaller under the strip
   const trail = THREE.MathUtils.degToRad(lean - leanAt(t - 0.15)) * 1.6 + 0.6 * (squashAt(t) - squashAt(t - 0.08));
-  sprout.rotation.z = (0.022 * Math.sin(t * 1.7 + 0.8) + Math.max(-0.08, Math.min(0.08, trail))) * (1 - 0.6 * low);
+  // the breath's sprout: a beat behind it, inside the same spans only
+  const sway = 0.05 * breathEnv(t) * Math.sin((2 * Math.PI * (t - 14.5 - 0.45)) / 3.2);
+  sprout.rotation.z = (0.022 * Math.sin(t * 1.7 + 0.8) + Math.max(-0.08, Math.min(0.08, trail)) + sway) * (1 - 0.6 * low);
   pool.position.x = BLINK_X + dx;
   pool.material.opacity = cl(1 - 2.5 * rise);
   pool.scale.setScalar(1 + rise);
