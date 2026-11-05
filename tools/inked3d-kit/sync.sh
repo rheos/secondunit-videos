@@ -10,7 +10,7 @@ dest="$repo/$proj/kit"
 [ -d "$repo/$proj" ] || { echo "no project folder: $proj" >&2; exit 1; }
 rm -rf "$dest"
 mkdir -p "$dest"
-cp "$here/base.js" "$here/gl.js" "$here/strokes.js" "$here/paint.js" "$here/flat.js" "$dest/"
+cp "$here/base.js" "$here/gl.js" "$here/strokes.js" "$here/paint.js" "$here/flat.js" "$here/marks.js" "$dest/"
 rev="$(git -C "$repo" log -1 --format=%h -- tools/inked3d-kit 2>/dev/null || true)"
 [ -n "$rev" ] || rev="uncommitted"
 [ -z "$(git -C "$repo" status --porcelain -- tools/inked3d-kit 2>/dev/null)" ] || rev="$rev+local-edits"
