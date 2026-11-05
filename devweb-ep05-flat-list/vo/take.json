@@ -1,0 +1,47 @@
+{
+ "lines": [
+  [
+   "I",
+   "Your AI has never seen a folder."
+  ],
+  [
+   "II",
+   "Say you've given your AI tools: send a reminder, save a note. It asks the server holding them what it can do and gets one list back. Here's a real one. Thirty-five tools, in the order someone wrote them. No folders, no groups."
+  ],
+  [
+   "III",
+   "You say: save this. It wants a memory tool. The name is the first thing it reads, and three names start with memory. It takes one, a tool called memory recent. That tool only reads back what's already saved. Nothing is saved. Nothing errors. The note isn't there next time."
+  ],
+  [
+   "IV",
+   "Here's why. Nothing groups that list except the first word of each name. Where a tool sits means nothing, near or far."
+  ],
+  [
+   "V",
+   "Memory recent sits twelfth. The next memory tool sits twenty-eighth, fifteen unrelated tools between them. Only the first word says they belong together."
+  ],
+  [
+   "VI",
+   "Now the near one. The tool that saves, named write memory, sits eleventh, touching memory recent. But its first word is write. A look for memory tools finds three and misses the one that saves. That's the lost note."
+  ],
+  [
+   "VII",
+   "Thirty-five tools was never the problem. The problem is a list where only the first word groups anything, and the name that hurts got it wrong. Mostly this list got it right: thirty-two of thirty-five put the thing first, then the action. Tools sharing a first word are a family. That alone makes ten."
+  ],
+  [
+   "VIII",
+   "Nothing catches this. A thirty-sixth tool can start with any word; build passes, deploy passes. The AI pays, next time it reads the list. This one held because whoever added a tool matched the names already there."
+  ],
+  [
+   "IX",
+   "When you or your AI add a tool, start its name with the thing it acts on, and match the first words already there. Adding invoices? Invoice first, then the action: invoice get, invoice send. Not send invoice. Rename any that start with an action: write memory becomes memory write."
+  ],
+  [
+   "X",
+   "The first word is the folder."
+  ]
+ ],
+ "chars": 1850,
+ "seconds": 124.56,
+ "sha256": "d81c97dcbcad7570244d786bc45a2d48fa30bffa0e6a812a59dd9ec3a03cb5cc"
+}
