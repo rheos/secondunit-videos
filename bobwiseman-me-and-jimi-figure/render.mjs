@@ -18,5 +18,5 @@ for (const [i, s] of times.entries()) {
 }
 await b.close();
 if (errs.length) { console.log('ERRORS:\n' + [...new Set(errs)].slice(0, 10).join('\n')); process.exit(1); }
-if (si < 0) execSync(`ffmpeg -v error -y -framerate 24 -i ${dir}/f_%05d.jpg -i ${path.join(here, 'work', 'section.wav')} -af "afade=t=in:d=.15,afade=t=out:st=38.2:d=.8" -c:v libx264 -crf 20 -maxrate 4.5M -bufsize 9M -pix_fmt yuv420p -c:a aac -b:a 192k -shortest -movflags +faststart ${out}`);
+if (si < 0) execSync(`ffmpeg -v error -y -framerate 24 -i ${dir}/f_%05d.jpg -i ${path.join(here, 'work', 'section.wav')} -af "afade=t=in:d=0.15,afade=t=out:st=38.2:d=0.8" -c:v libx264 -crf 20 -maxrate 4.5M -bufsize 9M -pix_fmt yuv420p -c:a aac -b:a 192k -shortest -movflags +faststart ${out}`);
 console.log(si > 0 ? `stills in ${dir}` : `wrote ${out}`);

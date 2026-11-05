@@ -1,7 +1,7 @@
 slug: colorfigures
 name: Colorfigures
 kind: skill
-status: candidate
+status: available
 does: April Zhu's Claude skill that draws an everyday object hand-inked and isometric with flat colour and a hard blue shadow, as one HTML page with working buttons, live readouts and labelled parts. Figures also turn in 3D and go see-through.
 keywords:
 - isometric
@@ -12,12 +12,12 @@ keywords:
 fits:
 - machines that act out a lyric, close kin to the rescue machine parts
 - how-it-works plates, and the Arowyn science idea
-deterministic: unknown
-how: not installed. One-line install from april-zhu.com/colorfigures. The output is an interactive page, so video needs a seek(t) wrapper we would have to add.
+deterministic: 'yes, once the page is driven by seek(t); its hand-drawn filter noise is fixed'
+how: 'Installed at ~/.claude/skills/colorfigures on 2026-11-04 after reading all of it (plain text, no network calls; build.py only inlines the engine). For film, copy assets/core.js and LICENSE into the project and write a seek(t) over mountFigure. Reference: bobwiseman-me-and-jimi-figure/. 936 frames at 720p render in about 2 minutes.'
 cost: free, MIT, figures usable in paid and client work; she asks for a credit when posted
 url: https://april-zhu.com/colorfigures
 source: x.com/Aprilzz423/status/2111839048230666590 (Oct 18 2026, read 2026-11-04)
-verdict: 'Recommended by Claude, 2026-11-04: the one to try first from her catalogue, because the licence allows client work. Page and promo read, the skill itself not.'
+verdict: 'Test 01 built 2026-11-04 on Me and Jimi verse 3 (issue 407, PR 408), Robin has not watched it yet. The engine holds up from every angle under a moving camera, and See-through plus labels are real story devices.'
 related:
 - tinycharts
 - iso-glow
