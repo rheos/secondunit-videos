@@ -126,7 +126,7 @@ const NAME_T = () => LN[LN.length - 1].text.toUpperCase();
 
 window.seek = function(s){
   const st = ui.st;
-  // the train lets go of the loop as "train" is sung; it has been going round all along, nobody looking
+  // the train lets go of the loop late in the sixth line; it has been going round all along, nobody looking
   const v = 44, leave = T.missed - .1;
   st.train = s < leave ? v*(s - leave) : v*(s - leave)*(1 + .35*(s - leave));
   // the camera: a slow drift, one full walk round the outside on the second line, a push in on the cheque
@@ -149,9 +149,9 @@ window.seek = function(s){
   // the words live on the buttons: each fills as it is sung, then stays pressed
   pills.forEach((p, i) => { const t0 = LN[i].words[0].t, name = i === LN.length - 1, sh = s >= t0 - .35;
     const gone = !name && s >= T.name - .5; p.style.display = sh && !gone ? '' : 'none';
-    const pct = linePct(i, s), acc = '#f4b829';
-    p.style.background = `linear-gradient(90deg,${acc} ${pct.toFixed(2)}%,var(--paper) ${pct.toFixed(2)}%)`;
-    p.style.opacity = sh ? (name ? 1 : (s > LN[i].words[LN[i].words.length - 1].t + 1.2 ? .62 : 1)) : 0; });
+    const past = !name && s > LN[i].words[LN[i].words.length - 1].t + 1.2, pct = linePct(i, s), acc = past ? '#f0d48f' : '#f4b829';
+    p.style.background = `linear-gradient(90deg,${acc} ${pct.toFixed(2)}%,#f2efe7 ${pct.toFixed(2)}%)`;
+    p.style.color = past ? '#6d6350' : ''; p.style.borderColor = past ? '#8a7f68' : ''; });
   // the view
   const pull = 1 + .5*smooth(prog(s, T.chq0, T.chq - .1))*(1 - smooth(prog(s, T.chq + .55, T.ashamed - .9)));
   const [fx, fy] = P(W + 14, 56, PZ0 + 6), vw = VW/pull, vh = VH/pull, vx = VX0 + (fx - VX0 - (fx - VX0)/pull)*1 + 0, vy = VY0 + (fy - VY0 - (fy - VY0)/pull);
@@ -160,14 +160,14 @@ window.seek = function(s){
   const yr = s < T.yrs0 ? YEAR0 : Math.round(lerp(YEAR0, YEAR1, smooth(prog(s, T.yrs0, T.yrs1))));
   vY.textContent = yr; vP.textContent = s >= T.hit + .95 ? '1' : '0';
   swX.classList.toggle('on', s >= T.name - .35);
-  // the pointer: comes to the See-through switch on "inspect" and leaves without pressing; comes back too late
+  // the pointer: comes to the See-through switch on the end of the fourth line and leaves without pressing; comes back too late
   const sr = swX.getBoundingClientRect(), hx = sr.left + sr.width/2 - 8, hy = sr.top + sr.height/2 - 2;
   let cx = 1400, cy = 620, show = 0;
   const a1 = wordT(3, 2), a2 = T.inspect, a3 = T.inspect + .9;
   if (s >= a1 - .3 && s < a3 + .5){ const inn = smooth(prog(s, a1 - .3, a2 - .4)), out = smooth(prog(s, a3 - .15, a3 + .5)); cx = lerp(1320, hx, inn); cy = lerp(620, hy, inn); cx = lerp(cx, 1330, out); cy = lerp(cy, 470, out); show = 1; }
   const b1 = T.name - 1.2, b2 = T.name - .42;
   if (s >= b1 && s < T.name + .75){ const inn = smooth(prog(s, b1, b2)), out = smooth(prog(s, T.name + .1, T.name + .75)); cx = lerp(1320, hx, inn); cy = lerp(560, hy, inn); cx = lerp(cx, 1330, out); cy = lerp(cy, 470, out); show = 1; }
-  // it goes for the train on "missed", and gets there as the last car clears
+  // it goes for the train near the end of the sixth line, and gets there as the last car clears
   const c1 = T.missed - 1.3, c2 = leave + 1.12, [tx_, ty_] = P(X1 - LR + 10, Y0, BOARD_H + 6), vbn = svgEl.viewBox.baseVal, mx = (tx_ - vbn.x)*1280/vbn.width, my = (ty_ - vbn.y)*1280/vbn.width;
   if (s >= c1 && s < T.train + 1.3){ const inn = smooth(prog(s, c1, c2)), out = smooth(prog(s, T.train + .75, T.train + 1.3)); cx = lerp(1320, mx, inn); cy = lerp(690, my, inn); cx = lerp(cx, 1330, out); cy = lerp(cy, 690, out); show = 1; }
   cur.style.display = show ? '' : 'none'; cur.style.transform = `translate(${cx.toFixed(1)}px,${cy.toFixed(1)}px) scale(${s >= b2 - .03 && s < b2 + .14 ? .86 : 1})`;
