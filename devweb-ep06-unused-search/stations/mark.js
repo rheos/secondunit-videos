@@ -32,10 +32,10 @@ const FACE = [
   K(T.h15 + 0.2, { look: 1.1, lookY: 0.5, lean: 7, rise: 0.1 }, 0.5), // peering into the empty tray
   K(T.h16, { look: 0, lookY: 1.2, think: 0.95 }, 0.3), K(T.changedEnd, { look: -0.3, lookY: 0.5 }, 0.3), // thinking, then the strip's left end
   K(T.h17 + 0.05, { look: -0.3, lookY: 0.5 }), K(T.h17 + 0.1, { look: 1, lookY: 0.5, lean: 3 }, 1.0), // follows the marker to the end
-  K(T.h18 + 0.6, { look: 0.25, lookY: 1, rise: 0.12 }, 0.5), // reading the note
+  K(T.h18 + 0.6, { look: 0.1, lookY: -0.9 }, 0.5), // reading the note against its front
   K(T.h19, { ...OWN }), K(T.h19 + 0.4, { ...SLOT }), K(T.h19 + 1.0, { ...CHUTE_R }, 0.4), // its card, down the right chute
-  K(T.h20, { look: 0.25, lookY: 1, skew: 0.8 }, 0.3), K(T.but2, { ...CHUTE_R, skew: 1, happy: 0.4, lean: -3 }, 0.6), // side-eye, note to chute
-  K(T.id, { ...CHUTE_R, skew: 1, happy: 0.45, lean: -3, rise: 0.1 }, 0.25), // the crooked smile on the bet
+  K(T.h20, { look: 0.1, lookY: -0.9, skew: 0.8 }, 0.3), K(T.but2, { ...CHUTE_R, skew: 1, happy: 0.4 }, 0.6), // side-eye, note to chute
+  K(T.id, { ...CHUTE_R, skew: 1, happy: 0.45 }, 0.25), // no rise: the strip sits just over the sprout // the crooked smile on the bet
   K(T.h21, { ...DIAL_UP }, 0.4),
   K(T.h22 + 0.2, { look: 0.3, lookY: 1.2, rise: 0.12 }), K(T.list, { look: 0.3, lookY: 1.05, rise: 0.12 }, 0.5), K(T.dflt2 - 0.2, { ...TIP, rise: 0.08 }, 0.3),
   K(T.h23, { ...NEW, rise: 0.08 }),

@@ -1,32 +1,33 @@
-// The calendar strip, holds 16-20: a long paper strip across the frame under the crate, in front of the chutes' lower
-// half. Day boxes left to right, July at the left end, day 53 at the right end, nothing else. A marker runs and stops.
+// The calendar strip, holds 16-20: one long row of paper across the frame just under the crate, in front of the chutes'
+// tops and clear of Blink's sprout. July at the left end, day boxes, day 53 at the right end, nothing else. A marker
+// runs and stops. Cards still come out of the chutes below it.
 import * as THREE from "three";
 import { alpha, basic, frame, hero, revealLeft, text } from "../parts.js";
 import { MARKER, T, dayLit, io, mix, r01 } from "../timeline.js";
 
-const LEFT = -1.5, W = 3.3, Y = 1.725, Z = -1.0, DAYS = 53, PPU = 200;
-const BOX0 = 18, BOXW = (W * PPU - 36) / DAYS; // canvas px
+const LEFT = -1.5, W = 3.3, H = 0.22, Y = 2.07, Z = -1.0, DAYS = 53, PPU = 200;
+const BOX0 = 78, BOX1 = W * PPU - 96, BOXW = (BOX1 - BOX0) / DAYS; // canvas px: labels sit either side of the boxes
 const boxX = (i) => LEFT + (BOX0 + BOXW * (i + 0.5)) / PPU; // world x of day box i (0-based)
 let strip, marker, lit, litRing;
 
 export function build(scene) {
-  strip = hero(W, 0.45, PPU, (g, Wc, H) => {
-    g.fillStyle = "#ffffff"; g.fillRect(0, 0, Wc, H);
-    text(g, "July", BOX0, 30, 24, { c: "#14171b", w: 700 });
-    text(g, "day 53", Wc - BOX0, 30, 24, { c: "#14171b", w: 700, a: "right" });
+  strip = hero(W, H, PPU, (g, Wc, Hc) => {
+    g.fillStyle = "#ffffff"; g.fillRect(0, 0, Wc, Hc);
+    text(g, "July", 10, 30, 22, { c: "#14171b", w: 700 });
+    text(g, "day 53", Wc - 8, 30, 22, { c: "#14171b", w: 700, a: "right" });
     g.strokeStyle = "#8b8a84"; g.lineWidth = 1.5;
-    for (let i = 0; i < DAYS; i++) g.strokeRect(BOX0 + BOXW * i + 1, 44, BOXW - 2, 34);
+    for (let i = 0; i < DAYS; i++) g.strokeRect(BOX0 + BOXW * i + 1, 8, BOXW - 2, 28);
   });
   strip.set({});
   strip.mesh.position.set(LEFT + W / 2, Y, Z);
   scene.add(strip.mesh);
-  marker = new THREE.Mesh(new THREE.PlaneGeometry(0.05, 0.2), basic("#14171b"));
-  marker.position.set(boxX(0), Y - 0.08, Z + 0.01);
+  marker = new THREE.Mesh(new THREE.PlaneGeometry(0.03, 0.17), basic("#14171b"));
+  marker.position.set(boxX(0), Y, Z + 0.01);
   scene.add(marker);
-  lit = new THREE.Mesh(new THREE.PlaneGeometry(BOXW / PPU, 0.17), basic("#ffffff", { blending: THREE.AdditiveBlending }));
-  lit.position.set(boxX(DAYS - 1), Y - 0.08, Z + 0.012);
+  lit = new THREE.Mesh(new THREE.PlaneGeometry(BOXW / PPU, 0.14), basic("#ffffff", { blending: THREE.AdditiveBlending }));
+  lit.position.set(boxX(DAYS - 1), Y, Z + 0.012);
   scene.add(lit);
-  litRing = frame(BOXW / PPU + 0.05, 0.22, 0.012, scene, boxX(DAYS - 1), Y - 0.08, Z + 0.015);
+  litRing = frame(BOXW / PPU + 0.04, 0.2, 0.01, scene, boxX(DAYS - 1), Y, Z + 0.015);
 }
 
 export function update(t) {

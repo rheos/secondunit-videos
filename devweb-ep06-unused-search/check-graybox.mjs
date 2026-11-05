@@ -61,12 +61,14 @@ const EDGES = [
   ["counter", 2.215, -1.1, (t) => counterAlpha(t) > 0.5, "R"],
   ["tray", 2.1, -1.1, span(T.h15 + 0.4, T.h16), "R"],
   ["strip left", -1.5, -1.0, span(T.h16 + 1.2, T.h21), "L"], ["strip right", 1.8, -1.0, span(T.h16 + 1.2, T.h21), "R"],
-  ["note left", -0.975, 0.6, span(T.h18 + 0.9, T.h21), "L"],
-  ["left panel", -1.2, -0.9, span(T.h24 + 0.6, T.h26), "L"], ["right panel", 1.6, -0.9, span(T.h25 + 0.6, T.h26), "R"],
+  ["note left", -1.225, 1.15, span(T.h18 + 0.9, T.h21), "L"],
+  ["left panel", -1.32, -0.9, span(T.h24 + 0.6, T.h26), "L"], ["right panel", 1.68, -0.9, span(T.h25 + 0.6, T.h26), "R"],
   ["log", 1.95, -0.8, span(T.h26 + 0.4, T.h27), "R"],
 ];
 const worst = {};
-let blinkIn = 0, n = 0, footMax = -1e9, blinkW = [1e9, 0];
+// Blink's whole body, outline included (half-width 1.03 at z 0, calibrated on animatic 03), must stay inside the frame.
+// Leans only ever tip it right, pivoting at the foot, which never moves its left edge out: mark.js is checked for that.
+let blinkL = 1e9, blinkR = -1e9, n = 0, footMax = -1e9, blinkW = [1e9, 0], sproutGap = 1e9;
 for (let t = 0; t <= END; t += 1 / 60, n++) {
   const c = camAt(t);
   for (const [name, x, z, on, side] of EDGES) {
@@ -74,8 +76,10 @@ for (let t = 0; t <= END; t += 1 / 60, n++) {
     const px = sx(c, x, z);
     worst[name] = worst[name] === undefined ? px : side === "L" ? Math.min(worst[name], px) : Math.max(worst[name], px);
   }
-  const bl = sx(c, BLINK_X - 1.05, 0), br = sx(c, BLINK_X + 1.05, 0), vis = (Math.min(br, 1080) - Math.max(bl, 0)) / (br - bl);
-  if (vis >= 0.75) blinkIn++;
+  const bl = sx(c, BLINK_X - 1.03, 0), br = sx(c, BLINK_X + 1.03, 0);
+  blinkL = Math.min(blinkL, bl); blinkR = Math.max(blinkR, br);
+  // the calendar strip's bottom edge must clear the top of Blink's sprout (world y 1.84, measured on animatic 03)
+  if (t > T.h16 + 0.2 && t < T.h21 + 0.6) sproutGap = Math.min(sproutGap, sy(c, 1.84, 0) - sy(c, 1.96, -1.0));
   blinkW = [Math.min(blinkW[0], br - bl), Math.max(blinkW[1], br - bl)];
   footMax = Math.max(footMax, sy(c, FOOT_Y, 0.5));
 }
@@ -83,7 +87,14 @@ for (const [name, , , , side] of EDGES) {
   if (worst[name] === undefined) continue;
   check(side === "L" ? worst[name] >= 8 : worst[name] <= 1072, `${name} reaches x ${worst[name].toFixed(0)}`);
 }
-check(blinkIn / n >= 0.75, `Blink at least 3/4 in frame only ${(100 * blinkIn / n).toFixed(0)} % of the film`);
+check(blinkL >= 8 && blinkR <= 1072, `Blink's body reaches x ${blinkL.toFixed(0)}..${blinkR.toFixed(0)}`);
+check(!/lean: -/.test(readFileSync(join(root, "stations/mark.js"), "utf8")), "mark.js leans Blink left, which the bounds check doesn't cover");
+check(sproutGap >= 8, `the strip comes within ${sproutGap.toFixed(0)} px of Blink's sprout`);
+// the option panels: a clear gap with the "or" in it, both inside the frame (EDGES above)
+const pv = Object.fromEntries([...readFileSync(join(root, "stations/panels.js"), "utf8").match(/export const PANEL_W[^;]+/)[0].replace("export const ", "").matchAll(/(\w+) = ([-\d.]+)/g)].map((m) => [m[1], +m[2]]));
+const gap = pv.R_X - pv.L_X - pv.PANEL_W;
+check(gap >= 0.4 + 0.15, `option panels only ${gap.toFixed(2)} apart for a 0.4-wide "or"`);
+check(pv.OR_X - 0.2 >= pv.L_X + pv.PANEL_W / 2 + 0.05 && pv.OR_X + 0.2 <= pv.R_X - pv.PANEL_W / 2 - 0.05, `"or" doesn't sit clear inside the gap`);
 check(footMax <= 1765, `Blink's foot reaches y ${footMax.toFixed(0)}, into the lockup at 1774`);
 
 // ---------- overlays: width from IBM Plex Sans Bold advances (units per 1000, within 1 % of two measured animatic lines) ----------
@@ -169,7 +180,7 @@ for (const f of stationFiles) {
 
 console.log(`${Object.keys(ANCHORS).length} anchors, ${KEYS.length} camera keys, shortest move ${shortestMove.toFixed(2)} s, film ${END} s`);
 console.log(`frame: ${Object.entries(worst).map(([k, v]) => `${k} ${v.toFixed(0)}`).join(", ")}`);
-console.log(`Blink: 3/4+ in frame ${(100 * blinkIn / n).toFixed(0)} % of the film, ${blinkW[0].toFixed(0)}-${blinkW[1].toFixed(0)} px wide, foot down to y ${footMax.toFixed(0)}`);
+console.log(`Blink: body x ${blinkL.toFixed(0)}..${blinkR.toFixed(0)} at worst, ${blinkW[0].toFixed(0)}-${blinkW[1].toFixed(0)} px wide, foot down to y ${footMax.toFixed(0)}; strip clears sprout by ${sproutGap.toFixed(0)} px; panel gap ${gap.toFixed(2)}`);
 console.log(`overlays: ${OV.length}, smallest side margin ${minMargin.toFixed(0)} px, lid band clear by ${minTop.toFixed(0)}, low zone clear by ${minLow.toFixed(0)}; counter/day-53/right-chute shared samples ${shared}`);
 if (fails.length) { console.log(`FAIL (${fails.length})`); fails.forEach((f) => console.log("  " + f)); process.exit(1); }
 console.log("PASS");

@@ -1,10 +1,11 @@
-// The note: floats down to Blink on hold 18 and stays in front of it, a little above its head, until hold 20 ends.
-// It sits on the left; the right chute is on the right. Nothing joins them. No quote marks on it.
+// The note: floats down to Blink on hold 18 and rests against its front, below its face, until hold 20 ends. Above the
+// head it sat on the strip; here it covers no label. It sits on the left; the right chute is on the right. Nothing
+// joins them. No quote marks on it.
 import { alpha, hero, text } from "../parts.js";
 import { rr } from "../kit/world.js";
 import { T, io, mix, r01 } from "../timeline.js";
 
-const X = -0.5, Y = 1.75, Z = 0.6;
+const X = -0.75, Y = -0.2, Z = 1.15;
 let note;
 
 export function build(scene) {
@@ -21,6 +22,6 @@ export function update(t) {
   const a = r01(t, T.h18, 0.15) * (1 - r01(t, T.h21, 0.4));
   alpha(note.mesh, a);
   // floats down with a slight sway, then a slow breath so the hold isn't frozen
-  note.mesh.position.set(X + 0.08 * Math.sin(u * Math.PI * 2) * (1 - u), mix(3.6, Y, u) + 0.01 * Math.sin(t * 1.3), Z);
+  note.mesh.position.set(X + 0.08 * Math.sin(u * Math.PI * 2) * (1 - u), mix(1.6, Y, u) + 0.01 * Math.sin(t * 1.3), Z);
   note.mesh.rotation.z = 0.12 * Math.sin(u * Math.PI * 3) * (1 - u) + 0.01 * Math.sin(t * 0.9);
 }
