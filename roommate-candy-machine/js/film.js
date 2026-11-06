@@ -11,6 +11,15 @@ const bounce = k => { const a = 1 - k; return k >= 1 ? 0 : -Math.abs(Math.cos(k*
 // clones of the machine as sales climb. Offsets on the bench; each lands in turn.
 const STACK = Z1 + 7, CLONES = [[-74, 0, 0], [-74, -92, 0], [-74, 92, 0], [-74, 0, STACK], [-74, -92, STACK], [-74, 92, STACK], [-74, 0, 2*STACK]];
 const tower0 = s => smooth(prog(s, T.sell, T.sell + 3))*(1 - .4*smooth(prog(s, T.a3, T.end)));
+// after the tower lands every machine keeps going by itself: a click, a sweet off the tray, a bounce, a roll across the bench
+const DRIPS = (() => { const out = [], g = rnd(91); CLONES.forEach((c, i) => { for (let t = 112.95 + i*.19; t < 127.2; t += .8 + g()*.5) out.push({ t, i, col:SWEETS[Math.floor(g()*SWEETS.length)], vx:9 + g()*15, vy:(g() - .5)*30 }); }); return out; })();
+const cloneRot = (i, s) => DRIPS.reduce((a, d) => d.i === i ? a + smooth(prog(s, d.t - .3, d.t)) : a, 0);
+function dripAt(d, s){ const [dx, dy, dz] = CLONES[d.i], u = s - d.t, x0 = dx + TRAY_X1 + .5, y0 = dy + CY + d.vy*.25, z0 = dz + TRAY_Z + 4, zg = BOARD_H + 2.8, G = 300, T_ = Math.sqrt(2*(z0 - zg)/G);
+  if (u < T_) return [x0 + d.vx*u*.5, y0 + d.vy*u*.4, z0 - .5*G*u*u];
+  const v = u - T_, roll = 1 - Math.exp(-v*2.4); let x = x0 + d.vx*T_*.5 + d.vx*1.2*roll, y = y0 + d.vy*T_*.4 + d.vy*1.1*roll;
+  if (y > -6 && y < D + 6 && x > -5 && x < W + 18) x = x < 16 ? -5 : W + 18;
+  x = Math.min(BX[1] - 6, x); y = Math.max(BY[0] + 6, Math.min(BY[1] - 6, y));
+  return [x, y, zg + Math.abs(Math.sin(v*11))*7*Math.exp(-v*5)]; }
 const worldShift = (dx, dy, dz = 0) => { const a = P(0, 0, 0), b = P(dx, dy, dz); return [b[0] - a[0], b[1] - a[1]]; };
 
 function scene(st, m){
@@ -22,11 +31,12 @@ function scene(st, m){
   // the shadows first, so nothing paints over a part
   if (st.drop > 0) s += `<g opacity="${f(smooth(st.drop))}">${castShadow(bodyPts, BOARD_H, top)}</g>`;
   else s += castShadow([[stubBox.x0, stubBox.y0, stubBox.z1], [stubBox.x1, stubBox.y0, stubBox.z1], [stubBox.x1, stubBox.y1, stubBox.z1], [stubBox.x0, stubBox.y1, stubBox.z1], [stubBox.x0, stubBox.y0, stubBox.z0], [stubBox.x1, stubBox.y0, stubBox.z0], [stubBox.x1, stubBox.y1, stubBox.z0], [stubBox.x0, stubBox.y1, stubBox.z0]], BOARD_H, top);
-  const closedClone = closedMachine({ rot:0, jiggle:0, level:1, hatch:0, doses:[], t:0 });
-  CLONES.forEach(([dx, dy, dz], i) => { const a = st.clones[i]; if (a <= 0) return;
+    CLONES.forEach(([dx, dy, dz], i) => { const a = st.clones[i]; if (a <= 0) return;
     const [sx, sy] = worldShift(dx, dy, dz), up = (1 - a)*(1 - a)*240*INK_K;
     if (!dz) s += `<g opacity="${f(smooth(a))}">${castShadow(bodyPts.map(([x, y, z]) => [x + dx, y + dy, z]), BOARD_H, top)}</g>`;
-    items.push({ box:[[dx, dy, BOARD_H + dz], [dx + W + 17, dy + D, Z1 + 9 + dz]], svg:`<g transform="translate(${f(sx)} ${f(sy - up)})">${closedClone}</g>` }); });
+    items.push({ box:[[dx, dy, BOARD_H + dz], [dx + W + 17, dy + D, Z1 + 9 + dz]], svg:`<g transform="translate(${f(sx)} ${f(sy - up)})">${closedMachine({ rot:cloneRot(i, st.t), jiggle:0, level:1, hatch:0, doses:[], t:0 })}</g>` }); });
+  for (const d of DRIPS) if (st.t >= d.t){ const [x, y, z] = dripAt(d, st.t); items.push({ box:[[x - 2.8, y - 2.8, z - 2.8], [x + 2.8, y + 2.8, z + 2.8]], svg:ball(x, y, z, 2.8, d.col, .7) }); }
+  if (st.rack > 0){ const up = (1 - st.rack)*(1 - st.rack)*170*INK_K; items.push({ box:[[84, -22, BOARD_H], [96, 8, BOARD_H + 27]], svg:`<g transform="translate(0 ${f(-up)})">${testRack(90, -7, st.rackHot)}</g>` }); }
   // the machine itself
   let main;
   if (st.drop <= 0) main = '';
@@ -44,8 +54,9 @@ function scene(st, m){
   // falling sweets for the hatch
   if (st.pour > 0) for (let i = 0; i < 12; i++){ const u = clamp(st.pour*2.4 - i*.11); if (u <= 0 || u >= 1) continue; const z = Z1 + 34 - u*u*(Z1 + 34 - DR_Z - 12), x = NECK_X + ((i*37) % 7) - 3, y = CY + ((i*53) % 9) - 4; s += ball(x, y, z, 3.4, SWEETS[i % SWEETS.length], .7); }
   // the labels: part names in two columns; later their words change one at a time
-  const kl = prog(k, .6, .9); if (kl > 0) s += `<g opacity="${f(kl)}">` + pillCols(MECH_ITEMS(st), st.flip) + '</g>';
+  const kl = prog(k, .6, .9)*st.labelK; if (kl > 0) s += `<g opacity="${f(kl)}">` + pillCols(MECH_ITEMS(st), st.flip) + '</g>';
   // the labels that spread off the machine onto the bench, and the one that comes back
+  for (const q of st.pops) s += `<g opacity="${f(q.a)}">${pill(q.text, q.px, q.py - 14*(1 - q.a), true)}</g>`;
   for (const e of st.extra) s += `<g opacity="${f(e.a)}">${onePill(e.at, e.px, e.py)}</g>`;
   return s;
 }
@@ -65,7 +76,7 @@ function onePill(at, ox, oy){ const [X, Y] = P(...at), v = fig().viewBox.baseVal
 
 const ui = mountFigure({ fig:'01', title:'Candy machine', turn:'full', palette:'mustard', credit:false,
   size:[120, 120, 130], center:[W/2, CY],
-  state:{ xr:0, rot:0, jiggle:0, level:.55, hatch:0, pour:0, drop:0, puff:0, chalk:0, flip:0, finish:false, moving:false, locked:false, stop:0, pawl:0, doses:[], t:0, clones:CLONES.map(() => 0), extra:[] }, scene });
+  state:{ xr:0, rot:0, jiggle:0, level:.55, hatch:0, pour:0, drop:0, puff:0, chalk:0, flip:0, finish:false, moving:false, locked:false, stop:0, pawl:0, doses:[], t:0, clones:CLONES.map(() => 0), extra:[], pops:[], labelK:1, hop:0, rack:0, rackHot:0 }, scene });
 
 /* ---------- the frame: her page laid out for a 1280 x 720 film ---------- */
 const svgEl = fig(), vb0 = svgEl.viewBox.baseVal, mUnits = Math.hypot(P(0, 0, Z1)[0] - P(0, 0, 0)[0], P(0, 0, Z1)[1] - P(0, 0, 0)[1]), VW = FW*mUnits/400, VH = VW*FH/FW;
@@ -101,7 +112,13 @@ window.seek = function(s){
   st.t = s;
   // the camera: slow drift, one full walk round the machine, then a push in while it opens
   const walk = smooth(prog(s, T.spin0, T.spin1)), drift = 4*Math.sin((s - 87)*.31);
-  setCam(YAW0 + 360*walk + drift, PITCH0 + 1.8*Math.sin((s - 87)*.19));
+  const crane = smooth(prog(s, 113.3, 115.2))*(1 - smooth(prog(s, 118.4, 120.2))), orbit = smooth(prog(s, 113.3, 119.9)), after = prog(s, 120, 121.2)*(1 - prog(s, 126.2, 127));
+  setCam(YAW0 + 360*walk + drift + 360*orbit + 13*Math.sin((s - 120)*1.05)*after, PITCH0 + 1.8*Math.sin((s - 87)*.19) + 7*crane + 3.5*Math.sin((s - 120)*.8)*after);
+  st.labelK = (1 - smooth(prog(s, 112.9, 113.4))) + smooth(prog(s, 119.6, 120.1));
+  const popA = (a, b) => prog(s, a, a + .1)*(1 - prog(s, b, b + .2));
+  st.pops = [{ text:'FOOD SAFE FINISH', px:360, py:300, a:popA(T.finish, 118.5) }, ...CU.blah.map((t, i) => ({ text:CU.blahWord, px:[210, 500, 340][i], py:[370, 440, 510][i], a:popA(t, 118.6) }))].filter(q => q.a > 0);
+  const ph = s >= T.a1 && s < T.leave ? (s - T.a1) % .58 : 9; st.hop = 2*Math.exp(-ph*8)*Math.abs(Math.sin(ph*26));
+  st.rack = prog(s, CU.test - .3, CU.test); st.rackHot = smooth(prog(s, T.a2, T.a2 + .4));
   st.chalk = smooth(prog(s, T.template, T.template + 1.2));
   st.drop = s < T.land - .42 ? 0 : prog(s, T.land - .42, T.land);
   if (s >= T.land - .42 && s < T.land) st.drop = Math.max(.01, st.drop);
@@ -132,8 +149,9 @@ window.seek = function(s){
   const lb = prog(s, T.a3, T.a3 + .12); if (lb > 0) st.extra.push({ a:lb, at:[W + .3, CY - 12, DR_Z + 8], px:110, py:-96 });
   // the view
   const inK = smooth(prog(s, T.see - .3, T.see + 1.0))*(1 - smooth(prog(s, T.sell - .3, T.sell + 1.2))), endK = smooth(prog(s, T.a3 + .6, T.end));
-  const pull = (1 + .26*inK + .1*endK - .18*tower0(s)) + .22*smooth(prog(s, T.template, T.land - .5))*(1 - smooth(prog(s, T.land, T.land + .5)));
-  const [fx, fy] = P(W/2, CY, 60), tower = smooth(prog(s, T.sell, T.sell + 3)), vw = VW/pull, vh = VH/pull, vx = fx - vw/2, vy = fy - vh*(.5 + .1*tower);
+  const crK = smooth(prog(s, 113.3, 115.2))*(1 - smooth(prog(s, 118.4, 120.2))), arK = smooth(prog(s, 120, 121.8))*(1 - smooth(prog(s, 124.6, 126.8)));
+  const pull = (1 + .26*inK + .1*endK - .18*tower0(s) - .2*crK + .3*arK + .02*Math.sin(s*1.3)) + .22*smooth(prog(s, T.template, T.land - .5))*(1 - smooth(prog(s, T.land, T.land + .5)));
+  const [fx, fy] = P(W/2 - 74*crK, CY, 60 + 112*crK), tower = smooth(prog(s, T.sell, T.sell + 3)), vw = VW/pull, vh = VH/pull, vx = fx - vw/2, vy = fy - vh*(.5 + .1*tower);
   svgEl.setAttribute('viewBox', `${vx.toFixed(2)} ${vy.toFixed(2)} ${vw.toFixed(2)} ${vh.toFixed(2)}`);
   ui.render();
   // the readout

@@ -145,7 +145,7 @@ function mechParts(st){ const out = [], a = st.rot*Math.PI/2 + st.jiggle, FRONT 
   const rims = [...on(PX(5.5), ellUV(CY, DR_Z, DR_R, DR_R, 40)), ...on(PX(W - 1), ellUV(CY, DR_Z, DR_R, DR_R, 40))], tube = hull(rims.map(q => P(...q)));
   bx(5, CY - DR_R, DR_Z - DR_R, 6, CY + DR_R, DR_Z + DR_R, `<path d="M${tube.map(q => f(q[0]) + ' ' + f(q[1])).join('L')}Z" fill="#cfe9f0" opacity=".42"/>` + shape(on(PX(5.5), ellUV(CY, DR_Z, DR_R, DR_R, 48)), '#8ea5a8', 1.1) + hullInk(rims, 1.1));
   const lim = levelZ(st.level);
-  for (const b of DRUM) if (b.z <= lim) bx(b.x - 4, b.y - 4, b.z - 4, b.x + 4, b.y + 4, b.z + 4, ball(b.x, b.y, b.z, 4, b.c, .7));
+  for (const b of DRUM) if (b.z <= lim){ const hz = b.z + (st.hop || 0)*(1 + (Math.round(b.x + b.y) % 3)); bx(b.x - 4, b.y - 4, hz - 4, b.x + 4, b.y + 4, hz + 4, ball(b.x, b.y, hz, 4, b.c, .7)); }
   // the neck from the top of the case down into the drum
   bx(NECK_X - NECK_R, CY - NECK_R, DR_Z + 18, NECK_X + NECK_R, CY + NECK_R, Z1, rod([NECK_X, CY, DR_Z + 19], [NECK_X, CY, Z1], NECK_R, CLEAR, toneI, .9));
   return out; }
@@ -179,3 +179,8 @@ function cupcake(x, y){ const z = BOARD_H; let s = rod([x, y, z], [x, y, z + 8],
   s += rod([x, y, z + 8], [x, y, z + 12.5], 9, CUPM, toneI, 1, 6, 22) + rod([x, y, z + 12.5], [x, y, z + 15.5], 6, CUPM, toneI, .9, 2.5, 18) + ball(x, y, z + 17.4, 2.1, '#d8432f', .8);
   return { box:[[x - 9, y - 9, z], [x + 9, y + 9, z + 19.5]], svg:s }; }
 function pencil(x, y){ return { box:[[x, y - 1, BOARD_H], [x + 30, y + 8, BOARD_H + 2]], svg:rod([x, y, BOARD_H + 1], [x + 28, y + 6, BOARD_H + 1], .9, { l:'#f4b829', m:'#d39c1e', d:'#8c6510' }, toneI, .7) }; }
+
+/* a rack of three test tubes; the liquid turns the label's colour when k = 1 */
+function testRack(x, y, k){ const z = BOARD_H, liquid = mix('#7fb7d8', '#f4b829', k); let s = box(x - 6, y - 15, z, x + 6, y + 15, z + 4, BLOND, toneI, 1);
+  const tubes = [-9, 0, 9].map(i => ({ box:[[x - 3, y + i - 3, z + 3], [x + 3, y + i + 3, z + 27]], svg:rod([x, y + i, z + 3], [x, y + i, z + 15], 2.1, matOf(liquid), toneI, .7) + rod([x, y + i, z + 3], [x, y + i, z + 27], 2.7, { l:'#eef8fa', m:'#d6ebef', d:'#b4d2d8' }, (n, m) => m.l, .9).replace(/fill="#[0-9a-f]+"/g, 'fill="#dff1f5" fill-opacity=".28"') }));
+  return s + byDepth(tubes); }
