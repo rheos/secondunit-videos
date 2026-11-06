@@ -66,6 +66,9 @@ window.CUES = function (w, T, H) {
   add("sting", T.endIn);
 
   // one per kind within a frame: the same event written twice (queue steps that move together) collapses
+  // the needle (timeline.js NEEDLE_SWINGS, drawn by crate.js): a swish as it leaves its stop, a knock where it falls back
+  // onto old. Its kicks ride the cards' own slot sounds and the counter's ticks, so they get none of their own.
+  (H.NEEDLE_SWINGS || []).forEach(([a, to, d]) => { add("strike", a + 0.06); if (to === 0) add("thud", a + d); });
   // Blink's blinks: no sound (sfx_earshot.py skips kinds it has no take for); declared so forensics reads the lid closing
   // and opening as designed changes, not pops. Close is over by +0.067 s, the eyes reopen from +0.1 s.
   (H.BLINKS || []).forEach((b) => { add("eye", b + 0.033); add("eye", b + 0.133); });

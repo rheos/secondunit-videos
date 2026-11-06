@@ -5,7 +5,7 @@
 import * as THREE from "three";
 import { makeBlink } from "../kit/blink3d.js";
 import { basic } from "../parts.js";
-import { BLINKS, BLINK_X, CARD_PLAN, FOOT_Y, T, cl, io, mix, r01, spanAlpha } from "../timeline.js";
+import { BLINKS, BLINK_X, CARD_PLAN, CX, FOOT_Y, NEEDLE_KICKS, NEEDLE_SWINGS, T, cl, io, mix, needlePos, r01, spanAlpha } from "../timeline.js";
 
 let pivot, body, blink, pool, sprout, eyes = [], mouths = [];
 
@@ -14,14 +14,16 @@ let pivot, body, blink, pool, sprout, eyes = [], mouths = [];
 // longer is following something that moves. The body follows 0.05 s later over at least 0.3 s.
 // The mouth is its own channel: smile (0) or grin (1), chosen per key and always crossfaded over exactly 0.1 s, so it
 // never rests part-way however slowly happy or eager ease.
-const ZERO = { look: 0, lookY: 0, happy: 0, think: 0, skew: 0, eager: 0, lean: 0, rise: 0, grin: 0 };
+// onNeedle 0..1 hands the gaze to the needle's tip wherever the needle is (needlePos in timeline.js); lid 0..1 is a
+// flat, half-lidded look (the sag when the needle falls back, the deadpan at the end).
+const ZERO = { look: 0, lookY: 0, happy: 0, think: 0, skew: 0, eager: 0, lean: 0, rise: 0, grin: 0, onNeedle: 0, lid: 0 };
 const K = (t, o = {}, d = 0.1, bd) => {
   const v = { ...ZERO, ...o };
   v.grin = v.happy >= 0.5 || v.eager >= 0.7 ? 1 : 0;
   return { t, v, d, bd: bd ?? Math.max(0.3, d) };
 };
 const MOUTH_D = 0.1;
-const TIP = { look: 0.3, lookY: 0.9 }, NEW = { look: 0.9, lookY: 0.8 }, DIAL_UP = { look: 0.5, lookY: 1 };
+const TIP = { onNeedle: 1, look: 0.3, lookY: 0.9 }, NEW = { look: 0.9, lookY: 0.8 }, DIAL_UP = { look: 0.5, lookY: 1 };
 const SLOT = { look: 1, lookY: 0.95, lean: 2 }, OWN = { look: 0.25, lookY: -0.8 }, LAMP = { look: 1.2, lookY: 1.2, lean: 2 };
 const COUNTER = { look: 1.1, lookY: 0.9, lean: 3 }, CHUTE = { L: { look: 0.15, lookY: 0.68 }, R: { look: 0.7, lookY: 0.68 } };
 // a card going down a chute: eyes jump to the chute top, then ride down with it
@@ -33,14 +35,23 @@ const c8 = T.h08, c12 = T.h12, ROW_T = 0.36;
 const OWN_CARDS = CARD_PLAN.filter((c) => c.keys[0][1] === "blink");
 const POPS = OWN_CARDS.map((c) => c.keys[0][0]), LAST_RIDE = OWN_CARDS[OWN_CARDS.length - 1].chute[1];
 const ONE = T.endIn - 0.36; // the last word, "one"
+// the needle: the gaze on its tip, and the swings Blink plays to (read from timeline.js, never copied)
+const A_OLD = (210 * Math.PI) / 180, A_NEW = (330 * Math.PI) / 180, TIP_R = 0.52, TIP_X0 = CX + TIP_R * Math.cos(A_OLD);
+const tipLook = (t) => 0.3 + 0.44 * (CX + TIP_R * Math.cos(mix(A_OLD, A_NEW, needlePos(t))) - TIP_X0);
+const TO_NEW = NEEDLE_SWINGS.filter((s) => s[1] === 1), TO_OLD = NEEDLE_SWINGS.filter((s) => s[1] === 0);
+const HOOK = TO_NEW[0], FALL = TO_OLD[0], DAY53 = TO_NEW[TO_NEW.length - 1], DROP = TO_OLD[TO_OLD.length - 1];
+const LANDED = DAY53[0] + DAY53[2], DROPPED = DROP[0] + DROP[2];
+const HARD = NEEDLE_KICKS.reduce((a, k) => (k[1] > a[1] ? k : a))[0]; // the 36 seating
 
 const FACE = [
   // the opening starts inside an action: Blink is coming down from a small hop, leaning right, turning to the dial;
   // eyes arrive on the pointer by 0.35 s, the landing settles with one rebound by about 0.7 s
   K(0, { look: -0.1, lookY: 0.3, lean: 3 }), K(0.1, TIP, 0.25),
-  K(T.smarter - 0.02, { ...NEW, eager: 0.35, rise: 0.06 }), // the new setting appears: eyes there at once, brighter
-  K(T.smarter + 0.45, { ...NEW, eager: 0.15, rise: 0.06 }, 0.4),
-  K(T.h02 + 0.2, TIP, 0.45), // slides back to the pointer, and stays
+  // the hook: eyes ride the needle over to new with a lift of hope; it falls back and Blink sags, looking at it flatly
+  K(HOOK[0] - 0.1, { ...TIP, eager: 0.35, rise: 0.06 }),
+  K(HOOK[0] + 0.08, { ...TIP, eager: 0.6, happy: 0.35, rise: 0.14, lean: 2 }, 0.35, 0.5),
+  K(HOOK[0] + HOOK[2] + 0.25, { ...TIP, eager: 0.5, happy: 0.4, rise: 0.12, lean: 2 }, 0.3),
+  K(FALL[0] + 0.06, { ...TIP, lid: 1, lean: 0.5 }, 0.15, 0.45),
   K(T.h03, { look: 0.25, lookY: 1.2, rise: 0.1 }), // the lid stencil
   ...READ(T.my2 + 0.1, 1.15, 0.5, { rise: 0.1 }), K(T.my2 + 1.1, TIP), // reads the stencil, then down to the pointer
   K(T.h04 + 0.08, SLOT), ...DOWN("L", T.h04 + 1.1), // the card at the slot, then down the left chute
@@ -66,8 +77,9 @@ const FACE = [
   // hold 13: the stream, then the counter, eyes widening as it climbs; a glance away and the take on 36
   K(T.h13 + 0.2, { look: 0.3, lookY: 0.6, lean: 2, eager: 0.1 }),
   K(T.h13 + 0.6, { ...COUNTER, eager: 0.2 }), K(T.h13 + 0.72, { ...COUNTER, eager: 0.6 }, T.one3 - T.h13 - 1.1),
-  K(T.one3 - 0.36, { look: 0.3, lookY: 0.6, lean: 2, eager: 0.45 }),
-  K(T.one3 - 0.03, { ...COUNTER, lean: 4, eager: 0.95, rise: 0.1 }, 0.07, 0.25),
+  K(T.one3 - 0.36, { ...TIP, lean: 2, eager: 0.5 }), // the needle hammering the old stop
+  K(T.one3 - 0.03, { ...COUNTER, lean: 4, eager: 0.95, rise: 0.1 }, 0.07, 0.25), // 36 seats
+  K(HARD - 0.02, { ...TIP, lean: 4, eager: 0.95, rise: 0.1 }, 0.06, 0.2), // and the needle slams: a double take
   K(T.one3 + 0.5, { ...COUNTER, lean: 4, eager: 0.75, rise: 0.06 }, 0.4),
   // hold 14: the blink first, still on the counter, then the turn to the lamp once the eyes have reopened, so the
   // closing eyes and the body tilt never share frames
@@ -85,13 +97,17 @@ const FACE = [
   K(T.h18 + 1.2, { look: -0.15, lookY: -0.85 }), K(T.h18 + 1.3, { look: 0.4, lookY: -0.85 }, 0.6),
   K(T.h18 + 2.1, { look: 0.1, lookY: -0.9, happy: 0.15 }, 0.3),
   // hold 19: its card out of its front, up into the slot, down the new chute; a small pleased beat
-  K(T.h19 - 0.1, OWN), K(T.h19 + 0.36, { look: 0.6, lookY: 0.2 }, 0.2), K(T.h19 + 0.55, SLOT, 0.25),
-  ...DOWN("R", T.h19 + 1.0), K(T.h19 + 1.4, { ...CHUTE.R, lookY: 0.5, happy: 0.65 }, 0.15), K(T.h19 + 2.2, { ...CHUTE.R, lookY: 0.55, happy: 0.4 }, 0.5),
+  // day 53: its card out and up, then the needle: eyes ride the swing, delight when it lands, a look down the new
+  // chute after the card, then quiet pride back on the needle
+  K(T.h19 - 0.1, OWN), K(POPS[1] + 0.3, { look: 0.6, lookY: 0.2 }),
+  K(DAY53[0] - 0.02, { ...TIP, eager: 0.35 }), K(DAY53[0] + 0.15, { ...TIP, eager: 0.6, lean: 1.5 }, 0.3),
+  K(LANDED - 0.02, { ...TIP, happy: 0.95, eager: 0.5, lean: 3 }),
+  K(LANDED + 0.4, { ...CHUTE.R, lookY: 0.5, happy: 0.85, lean: 2 }), K(LANDED + 1.0, { ...TIP, happy: 0.45, lean: 1 }, 0.15, 0.5),
   // hold 20: side-eye from the note to the chute, then the crooked smile on the bet
-  K(T.h20, { look: 0.1, lookY: -0.9, skew: 0.8, happy: 0.2 }, 0.15),
+  K(T.h20, { look: 0.1, lookY: -0.9, skew: 0.8, happy: 0.3 }, 0.15),
   K(T.h20 + 0.85, { look: 0.15, lookY: -0.85, skew: 0.8, happy: 0.2, lean: 2.5 }, 0.15), // shifts its weight on the note
-  K(T.but2, { ...CHUTE.R, skew: 1, happy: 0.4, lean: 1 }, 0.45),
-  K(T.id, { ...CHUTE.R, skew: 1, happy: 0.5, lean: 3 }, 0.2),
+  K(T.but2, { ...TIP, skew: 1, happy: 0.4, lean: 1 }, 0.45), // the needle, on new
+  K(T.id, { ...TIP, skew: 1, happy: 0.5, lean: 3 }, 0.2),
   K(T.h21, DIAL_UP),
   K(T.h21 + 1.3, TIP), K(T.h21 + 2.6, { ...DIAL_UP, rise: 0.06 }), // the pointer, then the dial again, with a nod
   ...READ(T.h22 + 0.2, 1.2, 0.55, { rise: 0.12 }), ...READ(T.list, 1.05, 0.55, { rise: 0.12 }), K(T.dflt2 - 0.2, { ...TIP, rise: 0.08 }),
@@ -104,10 +120,11 @@ const FACE = [
   ...[0, 1, 2, 3, 4, 5].map((i) => K(T.h26 + 0.4 + ROW_T * i, { look: 1, lookY: 0.9 - 0.11 * i, lean: 3 })),
   // hold 27: the dial, the unused new setting on "a smarter search", then its last card out (CARD_PLAN), up into the
   // slot, down the old chute on "still using the old one", and the look to camera landing on "one", held to the end
-  K(T.h27 + 0.1, DIAL_UP), K(T.built, { ...NEW, eager: 0.2 }),
-  K(POPS[2] - 0.15, OWN), K(POPS[2] + 0.42, { look: 0.6, lookY: 0.2 }, 0.25), K(POPS[2] + 0.7, SLOT, 0.35),
-  ...DOWN("L", LAST_RIDE),
-  K(ONE - 0.04, { look: 0, lookY: 0, happy: 0.2 }), K(T.endIn, { look: 0, lookY: 0, happy: 0.25 }, 0.3),
+  K(T.h27 + 0.1, TIP), K(T.built, { ...NEW, eager: 0.2 }),
+  K(POPS[2] - 0.15, OWN), K(POPS[2] + 0.42, { look: 0.6, lookY: 0.2 }, 0.25),
+  K(DROP[0] - 0.08, TIP), K(DROPPED + 0.02, { ...TIP, lid: 1 }, 0.15, 0.4), // watches it fall back, flat
+  ...DOWN("L", LAST_RIDE, { lid: 1 }),
+  K(ONE - 0.04, { look: 0, lookY: 0, lid: 0.8 }), K(T.endIn, { look: 0, lookY: 0, lid: 0.8 }, 0.3), // deadpan, to camera
 ].sort((a, b) => a.t - b.t);
 
 // the value at time t: walk the keys from the start, each one easing from where the last had got to (no jumps when
@@ -143,10 +160,16 @@ const SQUASH = [
   [POPS[0], 0.06, 0.07, 0.12], // hero: its first card comes out
   [T.one3, 0.1, 0.11, 0.15], // hero: the take on 36 of 37
   [POPS[1], 0.06, 0.07, 0.12], // hero: the card that goes down the new chute
-  [T.h19 + 1.35, 0.035, 0.03, 0.1], // pleased (squash only: the strip is overhead)
+  [LANDED, 0.04, 0.06, 0.1], // delight as the needle lands on new (the strip overhead keeps it to the squash)
+  [HOOK[0] + 0.1, 0, 0.04, 0.1], // the lift of hope
+  [FALL[0] + 0.12, 0, -0.05, 0.1], // the sag
+  [HARD, 0, -0.08, 0.1], // flinch at the slam
+  [DROPPED, 0, -0.04, 0.1], // the last sag
   [POPS[2], 0.05, 0.06, 0.12], // the last card out, on "for an AI"
-  [ONE - 0.04, 0, 0.03, 0.1], // turns to camera
+  [ONE - 0.04, 0, 0.02, 0.1], // turns to camera
   // weight shifts that carry the quiet holds (no gather, one small rebound)
+  // a small flinch for each knock of the needle in the mass moment
+  ...NEEDLE_KICKS.filter(([k]) => k >= T.h13 && k < T.one3).map(([k, str]) => [k, 0, -0.014 * str, 0.1]),
   [T.my2 + 1.1, 0, 0.022, 0.1], [T.added + 1.1, 0, 0.022, 0.1], [T.added + 2.4, 0, 0.02, 0.1], [T.dflt, 0, 0.03, 0.1],
   [T.h20 + 0.85, 0, -0.03, 0.1], [T.id, 0, -0.025, 0.1], [T.h21 + 2.6, 0, 0.03, 0.1], [T.h25 + 2.3, 0, 0.025, 0.1],
 ];
@@ -198,12 +221,9 @@ export function build(scene, { ramp, G }) {
   scene.add(pool);
 }
 
-// a deeper idle breath for two quiet stretches (the queue on hold 06-07, the counter and empty tray on holds 14-15):
-// whole-body squash and stretch about the foot, volume kept, eased in and out inside these film spans and exactly
-// zero outside them, so the rest of the film is unchanged
-// [start, end, ease-out length]: the second one stays full through the tray tail and fades under the strip's arrival
-const BREATH_SPANS = [[14.5, 16.9, 0.3], [39.4, 45.9, 0.5]];
-const breathEnv = (t) => { let e = 0; for (const [a, b, o] of BREATH_SPANS) e = Math.max(e, io(r01(t, a, 0.3) * (1 - r01(t, b - o, o)))); return e; };
+// a deeper idle breath wherever Blink is otherwise still: it eases in 0.5 s after the last key or squash and out 0.3 s
+// before the next, so it only shows in gaps of about 1.2 s or more; whole-body squash and stretch about the foot,
+// volume kept, starting on an inhale
 // the tray tail, "no error message for that": Blink's eyes leave the empty tray and come to the viewer, the body
 // straightens out of its peer with a small nod. An overlay on the keyed values, exactly zero outside [44.25, 45.9]:
 // it fades out against the hold 16 key's own ease (eyes 0.15 s, body 0.3 s after 0.05 s), so the hand-over is smooth.
@@ -214,11 +234,20 @@ function viewerAt(t, body) {
   return into * out;
 }
 const NOD = (t) => (t < TO_VIEWER + 0.05 ? 0 : t < TO_VIEWER + 0.12 ? mix(0, -0.03, io((t - TO_VIEWER - 0.05) / 0.07)) : -0.03 * settle(t - TO_VIEWER - 0.12));
-const breathAt = (t) => 0.016 * breathEnv(t) * Math.sin((2 * Math.PI * (t - 14.5)) / 3.2);
+const EVENTS = [...FACE.map((k) => k.t), ...SQUASH.map((q) => q[0]), TO_VIEWER].sort((a, b) => a - b);
+function quiet(t) {
+  let prev = 0, next = Infinity;
+  for (const e of EVENTS) { if (e <= t) prev = e; else { next = e; break; } }
+  return [prev, io(r01(t, prev + 0.5, 0.3)) * (1 - io(r01(t, next - 0.6, 0.3)))];
+}
+const breathAt = (t) => { const [p, e] = quiet(t); return 0.016 * e * Math.sin((2 * Math.PI * (t - p - 0.5)) / 3.2); };
 const leanAt = (t) => keyed(t - 0.05, true).lean + 0.5 * (0.5 + 0.5 * Math.sin(t * 0.9 + 0.4)); // the sway only ever leans right
 
 export function update(t) {
   const f = keyed(t, false), b = keyed(t - 0.05, true);
+  // on the needle: the gaze goes to its tip wherever it is now (and where it was 0.05 s ago, for the body)
+  if (f.onNeedle > 0) { f.look = mix(f.look, tipLook(t), f.onNeedle); f.lookY = mix(f.lookY, 0.9, f.onNeedle); }
+  if (b.onNeedle > 0) { b.look = mix(b.look, tipLook(t - 0.05), b.onNeedle); b.lookY = mix(b.lookY, 0.9, b.onNeedle); }
   const wf = viewerAt(t, false), wb = viewerAt(t, true);
   if (wf > 0) { f.look += VIEWER.look * wf; f.lookY += VIEWER.lookY * wf; f.skew += VIEWER.skew * wf; }
   if (wb > 0) { b.look += VIEWER.look * wb; b.lookY += VIEWER.lookY * wb; b.lean -= VIEWER.unlean * wb; b.rise += VIEWER.rise * wb; }
@@ -239,8 +268,8 @@ export function update(t) {
   body.rotation.set(0, yaw, 0);
   // the sprout trails the body's lean and the squash, with its own slow sway; smaller under the strip
   const trail = THREE.MathUtils.degToRad(lean - leanAt(t - 0.15)) * 1.6 + 0.6 * (squashAt(t) - squashAt(t - 0.08));
-  // the breath's sprout: a beat behind it, inside the same spans only
-  const sway = 0.05 * breathEnv(t) * Math.sin((2 * Math.PI * (t - 14.5 - 0.45)) / 3.2);
+  // the breath's sprout: a beat behind it
+  const [qp, qe] = quiet(t), sway = 0.05 * qe * Math.sin((2 * Math.PI * (t - qp - 0.95)) / 3.2);
   sprout.rotation.z = (0.022 * Math.sin(t * 1.7 + 0.8) + Math.max(-0.08, Math.min(0.08, trail)) + sway) * (1 - 0.6 * low);
   pool.position.x = BLINK_X + dx;
   pool.material.opacity = cl(1 - 2.5 * rise);
@@ -248,6 +277,7 @@ export function update(t) {
 
   let bl = 0;
   for (const c of BLINKS) bl = Math.max(bl, blinkAt(t, c));
+  bl = Math.max(bl, 0.4 * f.lid);
   blink.face({ blink: bl, happy: f.happy, look: f.look, lookY: f.lookY, think: f.think, phase: t * 1.6, skew: f.skew, eager: f.eager });
   // wider eye travel than the kit gives (look bible: 0.11 and 0.08), still well inside the visor
   eyes.forEach(({ g, base }) => g.position.set(base.x + f.look * 0.11, base.y + f.happy * 0.05 + f.lookY * 0.08 + f.eager * 0.03, base.z));

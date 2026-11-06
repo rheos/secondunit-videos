@@ -102,3 +102,27 @@ export const dayLit = (t) => t >= MARKER[1] && t < T.h21 + 0.6;
 export const BLINKS = [T.h03 - 0.04, T.my2 + 1.06, T.h04 + 1.06, T.july - 0.04, T.added + 1.06, T.h06 + 0.16, T.old2 - 0.04, T.h09 + 0.16,
   T.h11 + 0.26, T.one3 + 0.5, /* T.h14 - 0.04 removed: 0.12 s after the one before it, the two ran together as a flutter (finish forensics, 39.52 s) */ T.uses + 0.3, T.uses + 2.37, T.changedEnd - 0.05, T.h18 - 0.04, T.h20 - 0.06, T.h20 + 0.8, T.h21 - 0.04,
   T.h21 + 1.26, T.h23 - 0.04, T.h25 + 0.06, T.h25 + 1.26, T.h26 + 0.3, T.endIn + 0.5];
+
+// ---------- the needle (Robin, final watch d3: "even the needle which is front and center does not move to the other
+// side.. even when the narrator says that it started doing the other search it stays on default") ----------
+// The needle shows which search the call in hand gets. 0 = keywords (old), where the default tag hangs; 1 = meaning (new).
+// Swings: [start, to, duration]. The hook tries the new setting and falls back; day 53's card sends it to new, where it
+// stays through the tip; the closing line drops it back to old. Overshoot and settle are crate.js's, on top of this.
+export const NEEDLE_SWINGS = [
+  [T.smarter + 0.08, 1, 0.42], // "a smarter search": over to meaning (new)
+  [T.h02 + 0.02, 0, 0.36], // "It kept using the old one": back, with a thunk
+  [T.h19 + 0.42, 1, 0.5], // day 53: Blink's own card asks for the new search
+  [T.still - 0.4, 0, 0.42], // "still using the old one"
+];
+export function needlePos(t) {
+  let p = 0;
+  for (const [a, to, d] of NEEDLE_SWINGS) if (t >= a) p = mix(p, to, io(r01(t, a, d)));
+  return p;
+}
+// Kicks: [time, strength]. A call served by the old search knocks the needle against its stop: one per card into the slot
+// while the needle rests on old, every third count of the mass moment, and the 36 seating is the hard one.
+export const NEEDLE_KICKS = [
+  ...CARD_PLAN.filter((c) => c.chute[0] === "L").map((c) => [c.keys[c.keys.length - 1][0], 1]),
+  ...Array.from({ length: 11 }, (_, i) => [COUNT_IN + ((3 * (i + 1)) / 36) * (T.one3 - COUNT_IN), 0.6]),
+  [T.one3 + 0.24, 1.6],
+].filter(([t]) => needlePos(t) < 0.01).sort((a, b) => a[0] - b[0]);

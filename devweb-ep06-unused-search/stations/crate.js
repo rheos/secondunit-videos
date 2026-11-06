@@ -1,16 +1,48 @@
 // The Crate: the tool. A box with a lid (stencil on the lid), a big dial in a bezel with two settings in plain words, one
-// weighted white pointer that never moves, the default tag on its tip, the description plate (from hold 11), the slot
+// weighted white needle that shows which search the call in hand gets, the default tag hung on the old setting, the description plate (from hold 11), the slot
 // with a flap that lifts as each card goes in, and two real chutes underneath. The right chute's first light (hold 19)
 // is the film's one colour beat, in blue. Every transform below is written from t alone: no state between frames.
 import * as THREE from "three";
 import { NAME, PAPER, alpha, basic, paint, solid, staticPanel, states, text } from "../parts.js";
 import { back, rr } from "../kit/world.js";
-import { CARD_PLAN, CHUTE_X, CX, DIAL, DIAL_R, STREAM, T, chuteGlow, io, mix, r01, rightAfterglow, spanAlpha } from "../timeline.js";
+import { CARD_PLAN, CHUTE_X, CX, DIAL, DIAL_R, NEEDLE_KICKS, NEEDLE_SWINGS, STREAM, T, chuteGlow, io, mix, needlePos, r01, rightAfterglow, spanAlpha } from "../timeline.js";
 
 const FACE_Z = -1.5, LID_Z = -1.47;
 const A_OLD = (210 * Math.PI) / 180, A_NEW = (330 * Math.PI) / 180;
 const onRing = (a, r = DIAL_R) => [DIAL[0] + Math.cos(a) * r, DIAL[1] + Math.sin(a) * r];
-const TIP = onRing(A_OLD, 0.52);
+const TIP = onRing(A_OLD, 0.55); // the tag hangs from the old setting's tick, not from the needle
+const SWEEP = A_NEW - A_OLD; // 120 degrees, through the bottom of the dial
+
+// ---------- the needle: needlePos (timeline.js) plus this file's weight: anticipation, one overshoot or a thunk, kicks ----------
+const DEG = Math.PI / 180;
+const SWINGS = NEEDLE_SWINGS.map(([a, to, d]) => { const from = needlePos(a - 1e-4); return { a, d, to, dir: Math.sign(to - from), amp: Math.abs(to - from) * SWEEP }; });
+// a smooth bump that rises and settles to zero with zero speed at both ends
+const settle = (u) => (u <= 0 || u >= 1 ? 0 : Math.sin(Math.PI * u) * (1 - u) * 1.72);
+function needleWeight(t) {
+  let o = 0;
+  for (const s of SWINGS) {
+    if (!s.amp) continue;
+    // anticipation: 12 % the other way, peaking as the swing starts
+    o -= s.dir * 0.12 * s.amp * Math.sin(Math.PI * r01(t, s.a - 0.14, 0.29)) * (t > s.a - 0.14 && t < s.a + 0.15 ? 1 : 0);
+    if (s.to === 1) o += s.dir * 0.1 * s.amp * settle(r01(t, s.a + 0.75 * s.d, 0.42)); // past new once, back in 25 f
+    else o += 0.07 * s.amp * settle(r01(t, s.a + 0.85 * s.d, 0.3)); // a thunk on the old stop: one bounce off it
+  }
+  return o;
+}
+// kicks: a call served by the old search knocks the needle off its stop; two bounces, gone in 0.25 s
+const kickEnv = (x) => (x <= 0 || x >= 0.25 ? 0 : Math.pow(1 - x / 0.25, 2) * Math.abs(Math.sin((Math.PI * x) / 0.125)));
+function kickAt(t) {
+  let k = 0;
+  for (const [at, s] of NEEDLE_KICKS) if (t > at && t < at + 0.25) k = Math.max(k, Math.pow(s, 1.5) * kickEnv(t - at));
+  return k; // 1 = a normal card's knock
+}
+const needleAngle = (t) => A_OLD + SWEEP * needlePos(t) + needleWeight(t) + 3.5 * DEG * kickAt(t);
+
+// ---------- the colour beat: day 53's landing on new. Flash about 0.6 s, then a restrained tint until the closing fall. ----------
+const S53 = SWINGS.find((s) => s.to === 1 && s.a > T.h19), FALL = SWINGS.find((s) => s.to === 0 && s.a > S53.a);
+const LAND = S53.a + S53.d * 0.85;
+const blueFlash = (t) => Math.sin(Math.PI * r01(t, LAND - 0.08, 0.68));
+const blueRest = (t) => r01(t, LAND + 0.1, 0.35) * (1 - r01(t, FALL.a, 0.25));
 // on the words (cues.js mirrors these): the plate lands just before its word, the tag swings on its word
 export const PLATE_HIT = T.new1 - 0.06, TAG_SWING = T.dflt - 0.05;
 // slow glint passes across the dial glass: [start, length] inside the holds where nothing else on the crate moves
@@ -46,7 +78,7 @@ const painted = [];
 const P = (mat, track) => { painted.push([mat, track]); return mat; };
 const box = (toon, w, h, d, track, x, y, z, parent) => { const m = solid(toon, w, h, d, "#ffffff", x, y, z, parent); P(m.material, track); return m; };
 
-let stencil, ringPanel, oldLbl, newLbl, newTick, tagPivot, tag, tagGlow, plate, plateMark, flapPivot, chutes = {}, newGlow, softTex, glint;
+let stencil, ringPanel, oldLbl, newLbl, newTick, tagPivot, tag, tagGlow, plate, plateMark, flapPivot, chutes = {}, newGlow, softTex, glint, needleParts = [], wash, arc, tipGlow;
 
 // a soft round falloff, for light that spills rather than paints a rectangle
 function soft() {
@@ -134,7 +166,7 @@ export function build(scene, { toon }) {
   newGlow.position.set(CHUTE_X.R, 2.36, FACE_Z + 0.015);
   scene.add(newGlow);
 
-  // the pointer: a tapered needle with a counterweight, sitting on its own shadow. It never moves.
+  // the needle: tapered, with a counterweight, sitting on its own shadow. Hub, weight and shadow all turn with it.
   const needle = new THREE.Shape();
   needle.moveTo(-0.08, 0.03); needle.lineTo(0.5, 0.008); needle.quadraticCurveTo(0.535, 0, 0.5, -0.008); needle.lineTo(-0.08, -0.03); needle.closePath();
   const inkMat = P(toon("#ffffff", { fog: false }), INK_T);
@@ -155,9 +187,20 @@ export function build(scene, { toon }) {
   hub.rotation.x = Math.PI / 2; hub.position.set(DIAL[0], DIAL[1], DIAL[2] + 0.04);
   const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.055, 0.055, 0.03, 24), P(toon("#c9d1d9", { fog: false }), CAP_T));
   cap.rotation.x = Math.PI / 2; cap.position.set(DIAL[0], DIAL[1], DIAL[2] + 0.105);
+  tipGlow = new THREE.Mesh(new THREE.PlaneGeometry(0.22, 0.22), glowMat("#4f93d6", softTex));
+  tipGlow.position.set(0.5, 0, 0.025);
+  pointer.add(tipGlow);
   scene.add(shadow, hub, pointer, cap);
+  needleParts = [pointer, shadow];
 
-  // the default tag hangs off the pointer's tip on a short string, an eyelet at its top
+  // the colour beat's parts: a blue wash over the dial glass, and the rim arc on the new side
+  wash = new THREE.Mesh(new THREE.CircleGeometry(DIAL_R - 0.01, 64), glowMat("#4f93d6"));
+  wash.position.set(DIAL[0], DIAL[1], DIAL[2] + 0.008);
+  arc = new THREE.Mesh(new THREE.RingGeometry(DIAL_R + 0.015, DIAL_R + 0.075, 48, 1, A_NEW - 38 * DEG, 76 * DEG), glowMat("#4f93d6"));
+  arc.position.set(DIAL[0], DIAL[1], DIAL[2] + 0.04);
+  scene.add(wash, arc);
+
+  // the default tag hangs on the old setting's tick by a pin and a short string. It does not travel with the needle.
   tagPivot = new THREE.Group();
   tagPivot.position.set(TIP[0], TIP[1], DIAL[2] + 0.09);
   const string = new THREE.Mesh(new THREE.PlaneGeometry(0.012, 0.075), P(basic("#c9d1d9"), TAG_T));
@@ -171,7 +214,9 @@ export function build(scene, { toon }) {
     g.fillStyle = "#14171b"; g.beginPath(); g.arc(W / 2, 13, 6, 0, Math.PI * 2); g.fill();
     text(g, "default", W / 2, 70, 50, { c: "#14171b", w: 700, a: "center" });
   }, 0, -0.145, 0.005, tagPivot);
-  tagPivot.add(string, tagShadow, tagGlow);
+  const pin = new THREE.Mesh(new THREE.CylinderGeometry(0.018, 0.018, 0.03, 16), P(toon("#8b949e", { fog: false }), HUB_T));
+  pin.rotation.x = Math.PI / 2; pin.position.z = 0.005;
+  tagPivot.add(string, tagShadow, tagGlow, pin);
   scene.add(tagPivot);
 
   // the description plate, hold 11 on: both ways in plain view. Screwed to the face; a small mark follows the reading.
@@ -255,7 +300,18 @@ export function update(t) {
 
   // the tag swings once on its word (hold 07): out, back past centre once, settled in about 0.9 s. It glows on hold 22.
   const sw = r01(t, TAG_SWING, 0.9);
-  tagPivot.rotation.z = sw > 0 && sw < 1 ? 0.3 * Math.sin(sw * Math.PI * 2) * Math.pow(1 - sw, 1.5) : 0;
+  const kick = kickAt(t);
+  tagPivot.rotation.z = (sw > 0 && sw < 1 ? 0.3 * Math.sin(sw * Math.PI * 2) * Math.pow(1 - sw, 1.5) : 0) + 0.035 * kick; // trembles on each knock
+
+  // the needle, with its weight; everything that belongs to it turns together
+  const ang = needleAngle(t);
+  needleParts.forEach((m) => { m.rotation.z = ang; }); // the hub and cap are round: they need no turn
+
+  // the colour beat (dimmed with the crate behind the panels)
+  const lift = 1 - 0.65 * spanAlpha([[T.h24, T.h26]], t, 0.25), fl = blueFlash(t), rest = blueRest(t);
+  alpha(wash, lift * Math.max(0.5 * fl, 0.1 * rest));
+  alpha(arc, lift * Math.max(0.95 * fl, 0.3 * rest));
+  alpha(tipGlow, lift * Math.max(0.85 * fl, 0.3 * rest) * (needlePos(t) > 0.5 ? 1 : 0));
   paint(tag.mesh.material, TAG_T, t);
   tagGlow.material.opacity = 0.28 * spanAlpha([[T.dflt2 - 0.1, T.h23]], t, 0.2);
   tagGlow.visible = tagGlow.material.opacity > 0.002;
