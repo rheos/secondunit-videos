@@ -1,0 +1,27 @@
+slug: agent-sprite-forge
+name: Agent Sprite Forge
+kind: toolkit
+status: candidate
+does: Agent skills that turn one approved character still into a full 2D sprite set, one image-to-video clip per action, then Python tools key, register, loop, retime, colour-lock and export each one (HD or pixel finish).
+keywords:
+- sprite
+- pixel-art
+- keying
+- matte
+- loop
+- character
+- image-to-video
+fits:
+- animated characters for the next pixel film, since Robin wants more pixel art and the 16bit look has only hand-drawn sprites so far
+- a generated walk or run cycle dropped into a code-drawn scene as a transparent loop
+- borrowing the keyer, colour lock and one-shot retime alone for any generated clip that has to sit over a code-drawn plate
+deterministic: bake
+how: 'not installed. `claude plugin marketplace add 0x0funky/agent-sprite-forge --sparse .claude-plugin skills`, then `claude plugin install agent-sprite-forge@agent-sprite-forge`. Needs numpy, Pillow, scipy and ffmpeg 5.1+. Its fal.ai route takes FAL_KEY, which we already hold in keys/fal/fal.env.'
+cost: free (MIT); each action is one paid image-to-video clip on the route you pick
+url: https://github.com/0x0funky/agent-sprite-forge
+source: x.com/dextune/status/2118151550174691566 (Nov 5 2026), README read 2026-11-05
+verdict: 'Recommended by Claude, 2026-11-05, from the README only, nothing run; the numbers are the author''s. The clip-to-sprite half is the part we lack: soft matte keyer (145 frames, fringe to 0, 271 s to 44 s), colour lock on the master still (OKLab, hue flips 352 to 170 per frame pair), slow-motion attack retimed from 4.1 s to 0.7 s, and contact-foot run speed so feet do not slide. Weak fit for most of the studio, which draws characters in code for 0 credits and wants bendy acting, not game cycles. Test it on a small walking character for a pixel film before installing it anywhere that matters. The pixel finish picks its own palette of up to 32 colours, so check that it can match a look palette.'
+related:
+- fal-kling
+- fal-seedance
+added: '2026-11-05'
