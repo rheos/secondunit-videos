@@ -55,6 +55,8 @@ check(CAM.inShot >= 0.75, `rule 2: the visor is whole in shot ${(100 * CAM.inSho
 check(CAM.gapMax <= 6, `rule 2: the visor is out for ${CAM.gapMax.toFixed(2)} s (to ${CAM.gapAt.toFixed(2)})`);
 check(CAM.rule3.length === 0, `rule 3, Blink not whole on its beats: ${CAM.rule3.join("; ")}`);
 check(CAM.rule4.length === 0, `rule 4, overlays: ${CAM.rule4.join("; ")}`);
+check(CAM.ruleNote.length === 0, `the note sinks into the bottom chrome: ${CAM.ruleNote.join("; ")}`);
+check(CAM.ovEdge >= 40, `an overlay phrase sits ${CAM.ovEdge.toFixed(0)} px from a frame edge`);
 check(CAM.rule5.length === 0, `rule 5, subject at an edge: ${CAM.rule5.join("; ")}`);
 check(CAM.sproutGap >= 8, `the strip comes within ${CAM.sproutGap.toFixed(0)} px of Blink's sprout at ${CAM.sproutAt.toFixed(2)}`);
 check(!/lean: -/.test(readFileSync(join(root, "stations/mark.js"), "utf8")), "mark.js leans Blink left, which the bounds check doesn't cover");

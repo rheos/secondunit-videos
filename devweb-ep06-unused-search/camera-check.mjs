@@ -64,6 +64,7 @@ export const BOX = {
   oldLbl: [-0.97, 0.03, 2.28, 2.44, -1.48],
   newLbl: [0.27, 1.27, 2.28, 2.44, -1.48],
   plate: [-0.85, 1.15, 3.92, 4.34, -1.45],
+  lid: [-1.07, 1.37, 4.38, 4.71, -1.47], // the lid band: its top edge and the `search` stencil (1.6 x 0.26 at y 4.54)
   crate: [-1.07, 1.37, 1.55, 4.71, -1.5],
   slot: [1.0, 1.5, 3.4, 3.7, -1.5],
   queue: [0.98, 1.94, 1.88, 3.72, -1.1],
@@ -125,7 +126,7 @@ export async function cameraReport(root, KEYS, VO) {
   // what each overlay must stay off, and when those things are on screen
   const on = (a, b) => (t) => t >= a && t <= b;
   const PROTECT = [
-    ["visor", B.visor, () => true], ["Blink", [B.body, B.sprout], () => true], ["dial face", B.dial, () => true], ["tag", B.tag, () => true],
+    ["visor", B.visor, () => true], ["Blink", [B.body, B.sprout], () => true], ["dial face", B.dial, () => true], ["lid and its stencil", B.lid, () => true], ["tag", B.tag, () => true],
     ["keywords label", B.oldLbl, () => true], ["meaning label", B.newLbl, () => true],
     ["plate", B.plate, on(T.new1 - 0.6, END)], ["counter", B.counter, (t) => counterAlpha(t) > 0.05],
     ["lamp", B.lamp, () => true], ["tray", B.tray, on(T.h15, T.h16 + 0.5)], ["strip", B.strip, on(T.h16 + 0.2, T.h21 + 0.6)],
@@ -236,6 +237,21 @@ export async function cameraReport(root, KEYS, VO) {
   }
   for (const [k, v] of Object.entries(worst5)) rule5.push(`${k}: ${v}`);
 
+  // the note on Blink's front stays above the bottom chrome (y 1700) on 54.9-58.0 and whenever the camera rests on Blink
+  const noteOn = (t) => t >= T.h18 + 1.1 && t <= T.h21 + 0.5;
+  const ruleNote = [];
+  let noteLow = -1e9, noteAt = 0;
+  for (const f of frames) {
+    if (!noteOn(f.t)) continue;
+    const rest = creepSeg.has(f.c.seg) && ["blink", "note", "end", "bet"].includes(f.subj);
+    if (!(rest || (f.t >= 54.9 && f.t <= 58.0))) continue;
+    const nb = screenBox(f.c, B.note).b;
+    if (nb > noteLow) { noteLow = nb; noteAt = f.t; }
+    if (nb > 1700 && !ruleNote.length) ruleNote.push(`${f.t.toFixed(2)}: note bottom ${nb.toFixed(0)}`);
+  }
+  // overlay phrases and their distance to the frame edges
+  const ovEdge = Math.min(...ovBoxes.map((o) => Math.min(o.box.l + 12, W - o.box.r + 12, o.box.t + 12, LOCKUP - o.box.b + 12)));
+
   // the calendar strip's bottom edge clears the top of Blink's sprout (world y 1.84) while the strip is out
   let sproutGap = 1e9, sproutAt = 0;
   for (const f of frames) {
@@ -244,7 +260,7 @@ export async function cameraReport(root, KEYS, VO) {
     if (g < sproutGap) { sproutGap = g; sproutAt = f.t; }
   }
 
-  return { sproutGap, sproutAt, frames, N, moving: moving / N, drift: drift / N, longestStill, longestHold, moves, slices, rule1, inShot, gapMax, gapAt, rule3, rule4, rule5, ovBoxes, PROTECT };
+  return { ruleNote, noteLow, noteAt, ovEdge, sproutGap, sproutAt, frames, N, moving: moving / N, drift: drift / N, longestStill, longestHold, moves, slices, rule1, inShot, gapMax, gapAt, rule3, rule4, rule5, ovBoxes, PROTECT };
 }
 function sliceEdge(v) { return v.l < 0 ? "left" : v.r > W ? "right" : v.b > H ? "bottom" : "top"; }
 
@@ -271,6 +287,7 @@ if (import.meta.url === pathToFileURL(process.argv[1]).href) {
   console.log(`camera moving ${(100 * R.moving).toFixed(1)} %, drifting ${(100 * R.drift).toFixed(1)} %; longest below move ${(R.longestStill / 60).toFixed(2)} s, longest hold ${(R.longestHold / 60).toFixed(2)} s`);
   console.log(`visor whole in shot ${(100 * R.inShot).toFixed(1)} %, longest absence ${R.gapMax.toFixed(2)} s (ends ${R.gapAt.toFixed(2)})`);
   console.log(`visor slices: ${R.slices.map((s) => `${s.a.toFixed(2)}-${s.b.toFixed(2)} ${s.edge}${s.slow ? ` (${s.slow} slow f)` : ""}`).join(", ") || "none"}`);
+  console.log(`note bottom at most ${R.noteLow.toFixed(0)} (at ${R.noteAt.toFixed(2)}); overlays at least ${R.ovEdge.toFixed(0)} px from an edge or the lockup`);
   console.log(`strip clears the sprout by ${R.sproutGap.toFixed(0)} px (worst at ${R.sproutAt.toFixed(2)})`);
-  for (const [name, list] of [["rule 1", R.rule1], ["rule 3", R.rule3], ["rule 4", R.rule4], ["rule 5", R.rule5]]) console.log(`${name}: ${list.length ? list.join(" | ") : "ok"}`);
+  for (const [name, list] of [["note", R.ruleNote], ["rule 1", R.rule1], ["rule 3", R.rule3], ["rule 4", R.rule4], ["rule 5", R.rule5]]) console.log(`${name}: ${list.length ? list.join(" | ") : "ok"}`);
 }
