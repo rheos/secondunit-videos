@@ -13,8 +13,8 @@
   <body>
     <canvas id="world" width="1080" height="1920"></canvas>
     <script type="module">
-      // A design study, not film code: the search machine as a lumpy riveted sorter. Cards go in the hopper and come
-      // out of one of two horns. Vocabulary borrowed from picture-book contraptions (bulging bodies, ribbed necks,
+      // A design study, not film code: the search machine as a lumpy riveted contraption with a spring-held lever.
+      // Vocabulary borrowed from picture-book contraptions (bulging bodies, ribbed necks,
       // flared horns, rivets, steam, IN and OUT plaques); the shape is our own. ?cam=film|hero|close  ?steam=0|1
       import * as THREE from "three";
       import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
@@ -83,7 +83,7 @@
         const x = c.getContext("2d"); x.fillStyle = "#1a2029"; x.font = `600 ${px}px 'IBM Plex Mono', monospace`; x.textAlign = "center"; x.textBaseline = "middle"; x.fillText(text, c.width / 2, c.height / 2 + 2);
         const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 8;
         const face = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ map: tex, transparent: true, fog: false })); face.position.z = 0.027; g.add(face);
-        for (const sx of [-1, 1]) { const rv = add(new THREE.SphereGeometry(0.022, 10, 8), C.rivet, g, 0); rv.position.set(sx * (w / 2 - 0.05), 0, 0.03); }
+        for (const sx of [-1, 1]) { const rv = add(new THREE.SphereGeometry(0.022, 10, 8), C.rivet, g, 0); rv.position.set(sx * (w / 2 - 0.035), 0, 0.03); }
         world.add(g); return g;
       }
       const rivet = (x, y, z, r = 0.045) => { const m = add(new THREE.SphereGeometry(r, 12, 10), C.rivet, world, 0.012); m.position.set(x, y, z); return m; };
@@ -148,86 +148,118 @@
         for (let k = 0; k < n; k++) { const a = -1.25 + (k / (n - 1)) * 2.5; rivet(c.x + Math.sin(a) * r, c.y, c.z + Math.cos(a) * r); }
       }
 
-      // the gauge: a porthole housing on the belly, a recessed face, a weighted needle
-      const GY = 3.2, GZ = BZ + 1.33;
+      // ---------- how it works ----------
+      // One tool, one way in, one result back. Inside are two searches. A lever picks which one runs, and a spring holds
+      // it on the old one: that is the default. A request has to carry a tab to throw the lever. ?state=before|after
+      const AFTER = Q.get("state") === "after";
+      const BLUE = "#4f93d6", AMBER = "#d6a45a";
+      const V3 = (x, y, z) => new THREE.Vector3(x, y, z);
+      function coil(a, b, turns = 7, r = 0.06, th = 0.02) {
+        const A = V3(...a), B = V3(...b), d = B.clone().sub(A), len = d.length(), dir = d.clone().normalize();
+        const n1 = new THREE.Vector3().crossVectors(dir, V3(0, 0, 1)).normalize(), n2 = new THREE.Vector3().crossVectors(dir, n1), pts = [];
+        for (let k = 0; k <= turns * 10; k++) { const u = k / (turns * 10), an = u * turns * Math.PI * 2; const q = A.clone().addScaledVector(dir, len * u).addScaledVector(n1, Math.cos(an) * r).addScaledVector(n2, Math.sin(an) * r); pts.push([q.x, q.y, q.z]); }
+        add(sweep(pts, () => th, { segs: turns * 22, radial: 8 }).geo, C.rim, world, 0.012);
+      }
+
+      // the switch plate: a porthole housing on the belly
+      const GY = 3.25, GZ = BZ + 1.33;
       const housing = add(new THREE.CylinderGeometry(0.74, 0.86, 0.5, 48), C.bodyDark); housing.rotation.x = Math.PI / 2; housing.position.set(CX, GY, GZ - 0.2);
       const bezel = add(new THREE.TorusGeometry(0.7, 0.085, 16, 64), C.rim); bezel.position.set(CX, GY, GZ + 0.05);
-      const face = new THREE.Mesh(new THREE.CircleGeometry(0.66, 64), new THREE.MeshBasicMaterial({ color: "#0c1118", fog: false })); face.position.set(CX, GY, GZ - 0.02); world.add(face);
-      const A_OLD = (210 * Math.PI) / 180, A_NEW = (330 * Math.PI) / 180;
-      for (let k = 0; k <= 12; k++) { // tick marks along the bottom arc
-        const a = A_OLD + ((A_NEW - A_OLD) * k) / 12, big = k === 0 || k === 12;
-        const t = new THREE.Mesh(new THREE.PlaneGeometry(big ? 0.05 : 0.02, big ? 0.16 : 0.08), new THREE.MeshBasicMaterial({ color: big ? "#ffffff" : "#6f7d8c", fog: false }));
-        t.position.set(CX + Math.cos(a) * 0.54, GY + Math.sin(a) * 0.54, GZ - 0.01); t.rotation.z = a - Math.PI / 2; world.add(t);
+      const face = new THREE.Mesh(new THREE.CircleGeometry(0.66, 64), new THREE.MeshBasicMaterial({ color: "#0c1118", fog: false })); face.position.set(CX, GY, GZ + 0.056); world.add(face);
+      for (let k = 0; k < 10; k++) { const a = (k / 10) * Math.PI * 2; rivet(CX + Math.cos(a) * 0.9, GY + Math.sin(a) * 0.9, GZ - 0.34, 0.04); }
+      // a fine scale behind the lever, and a stop at each end
+      const PV = [CX, GY - 0.3, GZ + 0.07], TH = 0.72;
+      for (let k = 0; k <= 16; k++) {
+        const a = Math.PI / 2 + TH - (2 * TH * k) / 16, end = k === 0 || k === 16;
+        const t = new THREE.Mesh(new THREE.PlaneGeometry(end ? 0.045 : 0.016, end ? 0.15 : 0.07), new THREE.MeshBasicMaterial({ color: end ? "#ffffff" : "#5d6b7b", fog: false }));
+        t.position.set(PV[0] + Math.cos(a) * 0.72, PV[1] + Math.sin(a) * 0.72, GZ + 0.06); t.rotation.z = a - Math.PI / 2; world.add(t);
       }
-      const needle = new THREE.Group(); needle.position.set(CX, GY, GZ + 0.06); needle.rotation.z = A_OLD; world.add(needle);
-      const blade = add(new THREE.BoxGeometry(0.62, 0.05, 0.03), "#ffffff", needle, 0.014); blade.position.x = 0.22;
-      const weight = add(new THREE.SphereGeometry(0.075, 16, 12), "#ffffff", needle, 0.014); weight.position.x = -0.14;
-      const hub = add(new THREE.CylinderGeometry(0.11, 0.11, 0.07, 28), C.rim, needle, 0.014); hub.rotation.x = Math.PI / 2;
-      for (let k = 0; k < 10; k++) { const a = (k / 10) * Math.PI * 2; rivet(CX + Math.cos(a) * 0.9, GY + Math.sin(a) * 0.9, GZ - 0.36 + 0.02, 0.04); }
-      // the default tag, hung on the old stop
-      const tag = plate("default", 0.52, 0.16, 34); tag.position.set(CX + Math.cos(A_OLD) * 0.62 - 0.2, GY + Math.sin(A_OLD) * 0.62 - 0.26, GZ + 0.16); tag.rotation.z = 0.06;
+      // the lever: leans out of the plate toward us, thrown left (old) or right (new)
+      const th = AFTER ? -TH : TH, LEAN = 0.6;
+      const lever = new THREE.Group(); lever.position.set(...PV); lever.rotation.z = th; world.add(lever);
+      const arm = new THREE.Group(); arm.rotation.x = LEAN; lever.add(arm);
+      const rod = add(new THREE.CylinderGeometry(0.05, 0.07, 1.0, 18), C.rim, arm, 0.016); rod.position.y = 0.5;
+      const knobL = add(new THREE.SphereGeometry(0.15, 22, 16), AFTER ? BLUE : C.plate, arm, 0.02); knobL.position.y = 1.05;
+      const boss = add(new THREE.CylinderGeometry(0.17, 0.2, 0.16, 28), C.pipe, world, 0.018); boss.rotation.x = Math.PI / 2; boss.position.set(PV[0], PV[1], GZ + 0.1);
+      const leverAt = (d) => [PV[0] - Math.sin(th) * Math.cos(LEAN) * d, PV[1] + Math.cos(th) * Math.cos(LEAN) * d, PV[2] + Math.sin(LEAN) * d];
+      // the spring that holds it on the old side, and its anchor post with the default tag
+      const ANCH = [CX - 0.86, GY + 0.3, GZ + 0.3];
+      const post = add(new THREE.CylinderGeometry(0.045, 0.06, 0.5, 14), C.pipe, world, 0.014); post.rotation.x = Math.PI / 2; post.position.set(ANCH[0], ANCH[1], ANCH[2] - 0.22);
+      const postCap = add(new THREE.SphereGeometry(0.07, 14, 10), C.rim, world, 0.014); postCap.position.set(...ANCH);
+      coil(ANCH, leverAt(0.62), AFTER ? 9 : 6, 0.055, 0.018);
+      const tag = plate("default", 0.64, 0.16, 34); tag.position.set(ANCH[0] - 0.08, ANCH[1] - 0.26, ANCH[2] + 0.06); tag.rotation.z = 0.07;
 
-      // two spouts out of the belly, each onto its own slide: old on the left, new on the right
-      const hornR = ribs(curveFn([[0, 0.36], [0.35, 0.28], [0.7, 0.33], [1, 0.52]]), 5, 0.05);
-      const HL = horn([[CX - 0.62, 2.72, BZ + 0.62], [CX - 1.0, 2.62, BZ + 1.0], [CX - 1.3, 2.4, BZ + 1.35], [CX - 1.42, 2.08, BZ + 1.62]], hornR);
-      const HR = horn([[CX + 0.62, 2.72, BZ + 0.62], [CX + 1.0, 2.62, BZ + 1.0], [CX + 1.3, 2.4, BZ + 1.35], [CX + 1.42, 2.08, BZ + 1.62]], hornR);
-      const SL = slide([[CX - 1.44, 1.86, BZ + 1.74], [CX - 1.66, 1.2, BZ + 2.3], [CX - 1.72, 0.25, BZ + 3.0], [CX - 1.6, -0.5, BZ + 3.7], [CX - 1.4, -0.8, BZ + 4.35]]);
-      const SR = slide([[CX + 1.44, 1.86, BZ + 1.74], [CX + 1.66, 1.2, BZ + 2.3], [CX + 1.72, 0.25, BZ + 3.0], [CX + 1.6, -0.5, BZ + 3.7], [CX + 1.4, -0.8, BZ + 4.35]]);
-      const pOld = plate("keywords (old)", 1.02, 0.2, 36); pOld.position.set(CX - 1.5, 3.02, BZ + 1.45); pOld.rotation.set(-0.1, 0.32, 0.05);
-      const pNew = plate("meaning (new)", 0.98, 0.2, 36); pNew.position.set(CX + 1.5, 3.02, BZ + 1.45); pNew.rotation.set(-0.1, -0.32, -0.05);
-      // bracing pipes from the trunk to each slide, with collars
-      for (const sx of [-1, 1]) {
-        add(sweep([[CX + sx * 0.55, 0.9, BZ + 0.35], [CX + sx * 1.0, 0.8, BZ + 1.2], [CX + sx * 1.6, 0.42, BZ + 2.5]], () => 0.06, { segs: 30, radial: 12 }).geo, C.plate, world, 0.02);
-        const col = add(new THREE.TorusGeometry(0.085, 0.03, 8, 18), C.rim, world, 0.012); col.position.set(CX + sx * 1.0, 0.8, BZ + 1.2); col.rotation.y = sx * 0.9;
+      // the old search: clockwork on the left shoulder, with a bellows under it
+      const gcol = AFTER ? C.pipe : C.rim;
+      gear(0.42, 10, CX - 1.2, 3.82, BZ + 0.72, -0.45, 0.1, gcol); gear(0.27, 7, CX - 1.64, 3.34, BZ + 0.98, -0.45, 0.35, gcol); gear(0.19, 6, CX - 1.06, 3.2, BZ + 1.12, -0.45, 0.2, gcol);
+      const bel = sweep([[CX - 1.0, 2.3, BZ + 0.3], [CX - 1.42, 2.22, BZ + 0.45], [CX - 1.8, 2.18, BZ + 0.55]], (u) => 0.26 + 0.09 * Math.abs(Math.sin(u * Math.PI * 6)) - 0.1 * Math.pow(Math.abs(u - 0.5) * 2, 6), { segs: 80, radial: 28 });
+      add(bel.geo, C.plate, world, 0.03);
+      const board = add(new THREE.CylinderGeometry(0.34, 0.34, 0.07, 28), C.pipe, world, 0.02); board.position.copy(bel.end); board.rotation.z = Math.PI / 2 + 0.1;
+      const pOld = plate("keywords (old)", 1.2, 0.2, 36); pOld.position.set(CX - 1.42, 2.82, BZ + 1.08); pOld.rotation.set(-0.08, 0.3, 0.03);
+
+      // the new search: a core in rings on the right shoulder. Dark until a request asks for it.
+      const ORB = [CX + 1.42, 3.62, BZ + 0.92];
+      add(sweep([[CX + 0.86, 3.5, BZ + 0.45], [CX + 1.12, 3.3, BZ + 0.7], [CX + 1.42, 3.22, BZ + 0.92]], () => 0.07, { segs: 24, radial: 12 }).geo, C.pipe, world, 0.02);
+      const cup = add(new THREE.CylinderGeometry(0.2, 0.12, 0.14, 24), C.rim, world, 0.018); cup.position.set(ORB[0], ORB[1] - 0.36, ORB[2]);
+      const core = new THREE.Mesh(new THREE.SphereGeometry(0.25, 28, 20), AFTER ? new THREE.MeshBasicMaterial({ color: "#bfe0ff", fog: false }) : M("#1a2634")); core.position.set(...ORB); world.add(core);
+      if (!AFTER) core.add(hull(core.geometry, 0.022));
+      [[0.4, 1.2, 0.2], [0.47, 0.3, 1.0], [0.54, -0.7, 0.5]].forEach(([r, rx, ry]) => { const ring = new THREE.Mesh(new THREE.TorusGeometry(r, 0.024, 10, 72), AFTER ? new THREE.MeshBasicMaterial({ color: BLUE, fog: false }) : M(C.pipe)); ring.position.set(...ORB); ring.rotation.set(rx, ry, 0); world.add(ring); });
+      if (AFTER) {
+        const c = document.createElement("canvas"); c.width = c.height = 256; const x = c.getContext("2d"), g = x.createRadialGradient(128, 128, 10, 128, 128, 128);
+        g.addColorStop(0, "rgba(79,147,214,0.75)"); g.addColorStop(1, "rgba(79,147,214,0)"); x.fillStyle = g; x.fillRect(0, 0, 256, 256);
+        const halo = new THREE.Mesh(new THREE.PlaneGeometry(2.6, 2.6), new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(c), transparent: true, depthWrite: false, fog: false, blending: THREE.AdditiveBlending })); halo.position.set(ORB[0], ORB[1], ORB[2] + 0.3); world.add(halo);
       }
+      const pilot = new THREE.Mesh(new THREE.SphereGeometry(0.06, 14, 10), new THREE.MeshBasicMaterial({ color: AFTER ? BLUE : "#26303c", fog: false })); pilot.position.set(CX + 0.98, 2.98, BZ + 1.1); world.add(pilot);
+      const pNew = plate("meaning (new)", 1.14, 0.2, 36); pNew.position.set(CX + 1.42, 2.82, BZ + 1.08); pNew.rotation.set(-0.08, -0.3, -0.03);
 
-      // the hopper: cards go in here
-      const IN = horn([[CX + 0.7, 3.95, BZ + 0.3], [CX + 1.08, 4.12, BZ + 0.62], [CX + 1.3, 4.5, BZ + 0.82], [CX + 1.34, 5.02, BZ + 0.9]], ribs(curveFn([[0, 0.33], [0.4, 0.27], [0.72, 0.36], [1, 0.6]]), 5, 0.045), C.bodyDark);
-      const pIn = plate("in", 0.3, 0.2, 40); pIn.position.set(IN.end.x - 0.02, IN.end.y - 0.22, IN.end.z + 0.64); pIn.rotation.x = -0.2;
+      // one way in: a slot low on the front, with a feeler that a tabbed card lifts, linked up to the lever
+      const SLOT = [CX + 0.42, 2.18, BZ + 1.2];
+      const mouth = add(new RoundedBoxGeometry(1.0, 0.36, 0.34, 4, 0.08), C.rim, world, 0.028); mouth.position.set(...SLOT);
+      const dark = new THREE.Mesh(new THREE.PlaneGeometry(0.8, 0.1), new THREE.MeshBasicMaterial({ color: C.hole, fog: false })); dark.position.set(SLOT[0], SLOT[1], SLOT[2] + 0.172); world.add(dark);
+      const lip = add(new RoundedBoxGeometry(0.86, 0.045, 0.34, 2, 0.02), C.pipe, world, 0.02); lip.position.set(SLOT[0], SLOT[1] - 0.1, SLOT[2] + 0.3);
+      const feeler = add(new RoundedBoxGeometry(0.12, 0.16, 0.06, 2, 0.02), AFTER ? BLUE : C.plate, world, 0.016); feeler.position.set(SLOT[0] + 0.3, SLOT[1] + (AFTER ? 0.2 : 0.12), SLOT[2] + 0.2);
+      add(sweep([[SLOT[0] + 0.3, SLOT[1] + 0.2, SLOT[2] + 0.18], [SLOT[0] + 0.34, SLOT[1] + 0.45, SLOT[2] + 0.1], [PV[0] + 0.2, PV[1] - 0.12, GZ + 0.02]], () => 0.025, { segs: 20, radial: 8 }).geo, C.plate, world, 0.012);
+      const pIn = plate("in", 0.36, 0.17, 38); pIn.position.set(SLOT[0] - 0.7, SLOT[1] + 0.02, SLOT[2] + 0.2);
+      // one way out: a spout low on the left, toward whoever asked
+      const OUT = horn([[CX - 0.5, 2.0, BZ + 0.8], [CX - 0.74, 1.78, BZ + 1.25], [CX - 0.86, 1.5, BZ + 1.58]], ribs(curveFn([[0, 0.3], [0.5, 0.25], [1, 0.4]]), 3, 0.04, 0.1, 0.6), C.bodyDark);
+      const pOut = plate("out", 0.42, 0.17, 38); pOut.position.set(OUT.end.x + 0.36, OUT.end.y + 0.4, OUT.end.z + 0.05); pOut.rotation.z = -0.1;
 
       // the name, riveted across the shoulders
-      const pName = plate("search", 1.1, 0.3, 58); pName.position.set(CX - 0.02, 4.22, BZ + 1.05); pName.rotation.x = -0.32;
-
-      // a stack and a whistle on top, a curl of pipe down the side
+      const pName = plate("search", 1.1, 0.3, 58); pName.position.set(CX - 0.02, 4.3, BZ + 1.0); pName.rotation.x = -0.32;
+      // a stack and a whistle on top, curly wires, the green lamp
       add(sweep([[CX - 0.5, 4.45, BZ - 0.1], [CX - 0.62, 5.0, BZ - 0.12], [CX - 0.6, 5.45, BZ - 0.1]], curveFn([[0, 0.16], [0.7, 0.13], [1, 0.24]]), { segs: 30, radial: 20 }).geo, C.pipe, world, 0.025);
       add(sweep([[CX + 0.1, 4.7, BZ + 0.1], [CX + 0.14, 5.05, BZ + 0.12], [CX + 0.1, 5.25, BZ + 0.1]], curveFn([[0, 0.09], [0.75, 0.08], [1, 0.15]]), { segs: 24, radial: 16 }).geo, C.pipe, world, 0.02);
-      // gears on the left shoulder, meshed
-      gear(0.4, 10, CX - 1.12, 3.95, BZ + 0.72, -0.5, 0.1);
-      gear(0.25, 7, CX - 1.5, 3.42, BZ + 0.98, -0.5, 0.35);
-      // a bellows on the right hip, with its board and a nozzle into the belly
-      const bel = sweep([[CX + 1.02, 2.05, BZ + 0.1], [CX + 1.45, 1.95, BZ + 0.22], [CX + 1.85, 1.9, BZ + 0.3]], (u) => 0.3 + 0.1 * Math.abs(Math.sin(u * Math.PI * 6)) - 0.12 * Math.pow(Math.abs(u - 0.5) * 2, 6), { segs: 80, radial: 28 });
-      add(bel.geo, C.plate, world, 0.03);
-      const board = add(new THREE.CylinderGeometry(0.4, 0.4, 0.07, 28), C.pipe, world, 0.02); board.position.copy(bel.end); board.rotation.z = Math.PI / 2 - 0.12;
-      const knob = add(new THREE.SphereGeometry(0.09, 14, 10), C.rim, world, 0.016); knob.position.set(bel.end.x + 0.12, bel.end.y, bel.end.z);
-      // curly wires on top
       spring(CX - 0.15, 4.82, BZ + 0.2, 0.62, 4, -0.18); spring(CX + 0.38, 4.7, BZ + 0.3, 0.46, 3, 0.2, C.rim);
-      // a small pressure gauge and a crank on the left hip
-      const pg = add(new THREE.CylinderGeometry(0.17, 0.17, 0.1, 24), C.rim, world, 0.018); pg.rotation.x = Math.PI / 2; pg.position.set(CX - 0.98, 2.1, BZ + 0.82); pg.rotation.z = 0.5;
-      const pgf = new THREE.Mesh(new THREE.CircleGeometry(0.13, 24), new THREE.MeshBasicMaterial({ color: "#0c1118", fog: false })); pgf.position.set(CX - 0.98 - 0.03, 2.1, BZ + 0.82 + 0.06); pgf.rotation.y = -0.5; world.add(pgf);
-      // the lamp: a green bulb on a bent stalk
       const stalk = sweep([[CX + 0.62, 4.55, BZ - 0.05], [CX + 0.8, 5.05, BZ - 0.05], [CX + 0.62, 5.42, BZ], [CX + 0.45, 5.4, BZ + 0.05]], () => 0.045, { segs: 30, radial: 12 });
       add(stalk.geo, C.pipe, world, 0.016);
       const bulb = new THREE.Mesh(new THREE.SphereGeometry(0.12, 20, 16), new THREE.MeshBasicMaterial({ color: C.lamp, fog: false })); bulb.position.copy(stalk.end); world.add(bulb);
       if (Q.get("steam") !== "0") { puff(CX - 0.58, 5.82, BZ - 0.1, 1.0); puff(CX - 0.3, 6.25, BZ - 0.12, 0.7); puff(CX + 0.12, 5.48, BZ + 0.1, 0.45); }
 
-      // cards: a line coming down to the hopper; a run of them down the old slide and a heap at its foot; one on the new
-      card(CX + 2.05, 6.5, BZ + 0.9, -0.1); card(CX + 1.72, 5.98, BZ + 0.9, -0.22); card(CX + 1.42, 5.44, BZ + 0.9, -0.42);
-      const seat = (sl, u, twist = 0) => { const { p, q } = sl.at(u); const c = card(p.x, p.y, p.z); c.quaternion.copy(q); c.rotateZ(twist); return c; };
-      seat(SL, 0.08, 0.1); seat(SL, 0.3, -0.12); seat(SL, 0.52, 0.08); seat(SL, 0.74, -0.05);
-      [[0, 0, 0.1], [0.12, 0.04, -0.4], [-0.1, 0.08, 0.7], [0.05, 0.12, -0.15], [-0.04, 0.16, 0.35], [0.1, 0.2, -0.6]].forEach(([dx, dy, rz]) => { const c = card(CX - 1.3 + dx, -0.86 + dy, BZ + 4.75 + dx, 0, 0, -Math.PI / 2); c.rotateZ(rz); });
-      seat(SR, 0.86, 0.12);
+      // Blink asks: its request card is on the way to the slot; the result card is on its way back
+      const pivot = new THREE.Group(); pivot.position.set(-1.25, -0.88, 0.2); scene.add(pivot);
+      const bl = makeBlink(THREE, window.BLINK, ramp); bl.root.position.y = 1.08; bl.root.rotation.y = 0.25; pivot.add(bl.root);
+      try { bl.face({ blink: 0, happy: AFTER ? 0.9 : 0.4, look: 0.5, lookY: 0.7, think: 0, phase: 0, skew: 0, eager: AFTER ? 0.8 : 0.2 }); } catch (e) { console.warn("face()", e); }
+      const req = card(0.5, 1.5, 0.15, 0.22, -0.3, -0.1);
+      if (AFTER) { const tab = add(new RoundedBoxGeometry(0.2, 0.14, 0.04, 2, 0.02), BLUE, req, 0.016); tab.position.set(0.2, 0.26, 0); }
+      const res = card(OUT.end.x + 0.02, OUT.end.y - 0.16, OUT.end.z + 0.42, 0.3, 0.25, -0.35);
+      res.children[0].material = M(AMBER);
 
-      // Blink, where the film stands it
-      const pivot = new THREE.Group(); pivot.position.set(CX - 0.05, -0.88, 0.5); scene.add(pivot);
-      const bl = makeBlink(THREE, window.BLINK, ramp); bl.root.position.y = 1.08; pivot.add(bl.root);
-      try { bl.face({ blink: 0, happy: 0.5, look: 0.35, lookY: 0.6, think: 0, phase: 0, skew: 0, eager: 0.3 }); } catch (e) { console.warn("face()", e); }
+      // the other callers: two older programs on the floor, each sending the same plain card up a rail to the slot
+      for (const [x, z, ry, u] of [[1.45, 0.7, -0.5, 0.55], [1.9, -0.45, -0.35, 0.3]]) {
+        const box = add(new RoundedBoxGeometry(0.62, 0.5, 0.46, 4, 0.07), "#27384d", world, 0.026); box.position.set(x, -0.63, z); box.rotation.y = ry;
+        const scr = new THREE.Mesh(new THREE.PlaneGeometry(0.44, 0.3), new THREE.MeshBasicMaterial({ color: "#0c1118", fog: false })); scr.position.set(0, 0.02, 0.232); box.add(scr);
+        for (const [w, yy] of [[0.26, 0.07], [0.18, 0], [0.05, -0.07]]) { const l = new THREE.Mesh(new THREE.PlaneGeometry(w, 0.03), new THREE.MeshBasicMaterial({ color: "#7d8996", fog: false })); l.position.set(-0.17 + w / 2, yy, 0.002); scr.add(l); }
+        const rail = sweep([[x - 0.1, -0.36, z], [x - 0.3, 0.9, z * 0.5 - 0.3], [SLOT[0] + 0.25, 1.85, SLOT[2] + 0.75], [SLOT[0] + 0.05, SLOT[1] - 0.04, SLOT[2] + 0.42]], () => 0.03, { segs: 40, radial: 8 });
+        add(rail.geo, C.pipe, world, 0.012);
+        const q = rail.curve.getPointAt(u); card(q.x, q.y + 0.2, q.z + 0.05, -0.1, -0.2, -0.1).scale.setScalar(0.8);
+      }
 
       // ---------- cameras ----------
       const CAMS = {
-        film: [[0.15, 2.3, 12.6], [0.15, 2.3, -1.2], 36], // straight on, as the film frames its wide shots
-        hero: [[6.4, 5.0, 10.6], [0.1, 2.0, -1.2], 36], // three-quarter, a little above
+        film: [[0.05, 2.5, 12.4], [0.05, 2.5, -1.2], 36], // straight on, as the film frames its wide shots
+        hero: [[5.0, 4.6, 11.6], [-0.35, 2.2, -1.0], 36], // three-quarter, a little above
         left: [[-6.2, 3.6, 10.2], [0.1, 2.1, -1.2], 36],
-        close: [[2.6, 4.0, 4.4], [0.0, 3.1, -1.9], 36], // the gauge and the horns
+        close: [[2.2, 3.9, 4.6], [0.25, 3.0, -1.5], 36], // the gauge and the horns
       };
       window.setCam = (name) => { const [p, g, f] = CAMS[name] || CAMS.film; cam.position.set(...p); cam.fov = f; cam.updateProjectionMatrix(); cam.lookAt(...g); renderer.render(scene, cam); return name; };
       window.snap = async (name) => { renderer.render(scene, cam); const b = await new Promise((r) => canvas.toBlob(r, "image/jpeg", 0.93)); const res = await fetch(`/save/${name}.jpg`, { method: "PUT", body: b }); return `${name}: ${res.status}`; };
