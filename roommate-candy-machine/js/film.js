@@ -2,7 +2,7 @@
    the word that is quoted on screen lives in work/cues.js (local, gitignored). */
 const CU = window.CUES, FW = 720, FH = 1280; // 9:16 is the master frame for this film
 const T = { template:87.83, land:91.55, spin0:92.2, spin1:95.9, see:96.61, ten:99.27, open:100.91, fill:102.67, turn1:103.09, turn2:105.85, tryLock:107.71, sell:109.69,
-  finish:116.31, a1:120.29, a2:125.81, family:131.89, a3:134.43, last:137.07, end:138.3 };
+  finish:116.31, a1:120.29, a2:125.81, leave:127.0, press1:88.9, press2:133.5, a3:134.43, last:137.07, end:138.3 };
 const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x)), prog = (s, a, b) => clamp((s - a)/(b - a)), lerp = (a, b, k) => a + (b - a)*k;
 const smooth = k => k*k*(3 - 2*k);
 const backOut = k => { const c = 1.7; const u = k - 1; return 1 + (c + 1)*u*u*u + c*u*u; };
@@ -76,6 +76,7 @@ css.textContent = `html,body{width:720px;height:1280px;overflow:hidden}body{padd
   .stage{position:absolute;inset:0;max-width:none;width:720px;height:1280px}
   #fig{position:absolute;left:0;top:0;width:720px;height:1280px;max-width:none;margin:0}
   #rt{position:absolute;left:36px;right:36px;top:44px;display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-start;gap:14px 18px;z-index:2}
+  #rt .stat{background:rgba(236,233,225,.9);border-radius:10px;padding:4px 10px}
   #rt .stat .k{font:700 14px ui-monospace,Menlo,monospace;letter-spacing:.12em;color:var(--muted)}
   #rt .stat .v{font:800 42px/1.05 ui-monospace,Menlo,monospace;font-variant-numeric:tabular-nums}
   .sw2{font:600 19px/1.2 ui-monospace,Menlo,monospace;border:1.5px solid var(--ink);border-radius:999px;padding:9px 20px;background:var(--paper);color:var(--ink)}
@@ -105,7 +106,7 @@ window.seek = function(s){
   st.drop = s < T.land - .42 ? 0 : prog(s, T.land - .42, T.land);
   if (s >= T.land - .42 && s < T.land) st.drop = Math.max(.01, st.drop);
   st.puff = s >= T.land ? prog(s, T.land, T.land + .8) : 0;
-  st.xr = (prog(s, T.see, T.see + .6))*(1 - prog(s, T.family, T.family + .55));
+  st.xr = (prog(s, T.see, T.see + .6))*(1 - prog(s, T.leave - .5, T.leave));
   // fill: hatch lifts on the word, the sweets pour, the level rises
   const up = smooth(prog(s, T.open - .1, T.open + .35)), dn = smooth(prog(s, T.fill + .05, T.fill + .4));
   st.hatch = up*(1 - dn); st.pour = prog(s, T.open + .3, T.fill + .2);
@@ -123,8 +124,8 @@ window.seek = function(s){
   // sales: the machines land, the number climbs and then stops dead
   st.clones = CLONES.map((_, i) => prog(s, T.sell + i*.42, T.sell + i*.42 + .42));
   // the part names turn into one word, one at a time, and the word jumps off the machine
-  st.flip = s < T.a1 ? 0 : s >= T.family ? 0 : Math.min(9, 1 + Math.floor((s - T.a1)/.58));
-  const X = (a, b) => prog(s, a, a + .12)*(1 - prog(s, T.family, T.family + .3))*(b ?? 1);
+  st.flip = s < T.a1 ? 0 : s >= T.leave ? 0 : Math.min(9, 1 + Math.floor((s - T.a1)/.58));
+  const X = (a, b) => prog(s, a, a + .12)*(1 - prog(s, T.leave - .4, T.leave))*(b ?? 1);
   st.extra = [];
   const add = (t0, at, px, py) => { const a = X(t0); if (a > 0) st.extra.push({ a, at, px, py }); };
   add(T.a2, [84, 34, BOARD_H + 19], 30, 66); add(T.a2 + .35, [74, -38, BOARD_H + 13], 20, 74); add(T.a2 + .7, [46, 104, BOARD_H + 22], -20, 74); add(T.a2 + 1.1, [CLONES[6][0] + W, CLONES[6][1] + D/2, CLONES[6][2] + 70], 130, -20); add(T.a2 + 1.5, [CLONES[5][0] + W, CLONES[5][1] + D/2, CLONES[5][2] + 70], -96, -40);
@@ -139,13 +140,16 @@ window.seek = function(s){
   stP.style.display = s >= T.ten ? '' : 'none'; vP.textContent = '10';
   const turns = (s >= T.turn1 + .25 ? 1 : 0) + (s >= T.turn2 + .25 ? 1 : 0); vT.textContent = `${turns}/2`;
   const mk = prog(s, T.sell, T.a1); vM.textContent = (mk*mk*.0031).toFixed(4);
-  swX.classList.toggle('on', s >= T.see && s < T.family);
+  swX.classList.toggle('on', (s >= T.press1 && s < T.land) || (s >= T.see && s < 127.7) || s >= T.press2 && s < T.a3 - .1);
   // the pointer: See-through, the dial twice, a third try, then See-through off
   const sr = swX.getBoundingClientRect(), hx = sr.left + sr.width/2 - 8, hy = sr.top + sr.height/2 - 2, [dx, dy] = dialPx(), ptr = [dx + 6, dy + 2];
-  const path = [[T.see - .9, 780, 420], [T.see - .08, hx, hy], [T.see + .5, hx, hy], [T.turn1 - .7, 780, 820], [T.turn1 - .02, ...ptr], [T.turn1 + .5, ...ptr], [T.turn2 - .02, ...ptr], [T.turn2 + .5, ...ptr], [T.tryLock + .4, ...ptr], [T.tryLock + 1.3, ...ptr], [T.tryLock + 2, 780, 860], [T.family - .9, 780, 420], [T.family - .08, hx, hy], [T.family + .25, hx, hy], [T.family + .9, 790, 420]];
+  const path = [[T.see - .9, 780, 420], [T.see - .08, hx, hy], [T.see + .5, hx, hy], [T.turn1 - .7, 780, 820], [T.turn1 - .02, ...ptr], [T.turn1 + .5, ...ptr], [T.turn2 - .02, ...ptr], [T.turn2 + .5, ...ptr], [T.tryLock + .4, ...ptr], [T.tryLock + 1.3, ...ptr], [T.tryLock + 2, 780, 860]];
+  const toSwitch = (t) => [[t - .75, 780, 300], [t - .02, hx, hy], [t + .3, hx, hy], [t + .85, 790, 300]];
+  path.unshift(...toSwitch(T.press1)); const later = toSwitch(T.press2);
   let cx = 800, cy = 800, show = 0;
   for (let i = 0; i < path.length - 1; i++){ const [a, ax, ay] = path[i], [b, bx, by] = path[i + 1]; if (s >= a && s < b){ const u = smooth(prog(s, a, b)); cx = lerp(ax, bx, u); cy = lerp(ay, by, u); show = 1; } }
-  const press = (s >= T.see - .08 && s < T.see + .08) || (s >= T.family - .08 && s < T.family + .08) || (s >= T.turn1 && s < T.turn1 + .45) || (s >= T.turn2 && s < T.turn2 + .45);
+  for (let i = 0; i < later.length - 1; i++){ const [a, ax, ay] = later[i], [b, bx, by] = later[i + 1]; if (s >= a && s < b){ const u = smooth(prog(s, a, b)); cx = lerp(ax, bx, u); cy = lerp(ay, by, u); show = 1; } }
+  const press = (s >= T.see - .08 && s < T.see + .08) || (s >= T.press1 - .02 && s < T.press1 + .14) || (s >= T.press2 - .02 && s < T.press2 + .14) || (s >= T.turn1 && s < T.turn1 + .45) || (s >= T.turn2 && s < T.turn2 + .45);
   cur.style.display = show ? '' : 'none'; cur.style.transform = `translate(${cx.toFixed(1)}px,${cy.toFixed(1)}px) scale(${press ? .86 : 1})`;
   const tn = prog(s, T.tryLock + .45, T.tryLock + .6)*(1 - prog(s, T.tryLock + 2, T.tryLock + 2.3)); toast2.style.display = tn > 0 ? '' : 'none'; toast2.style.opacity = tn.toFixed(2);
   take.style.display = s >= T.last + .65 ? '' : 'none';
