@@ -1,0 +1,22 @@
+slug: voice-match
+name: Voice match catalogue
+kind: tool
+status: in-use
+does: Picks a voice by median pitch (pyin) and MFCC against a reference narrator, from a kept catalogue of ElevenLabs voices, so nothing is measured twice.
+keywords:
+- voiceover
+- tts
+- voice-changer
+- narration
+- pitch
+- casting
+fits:
+- choosing a narrator
+- voice replacement
+deterministic: 'yes'
+how: '`tools/voice-match/match.py` (sync, ref, rank); data in `voices.jsonl` and `refs.jsonl`'
+cost: free, previews only
+detail: Method from Finn Ardley's row in references/QUIVER.md. Measure the converted audio too, since a preview is text-to-speech and the voice changer follows the source's register.
+related:
+- elevenlabs-tts
+added: '2026-11-06'
