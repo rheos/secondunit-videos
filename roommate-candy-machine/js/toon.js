@@ -577,7 +577,9 @@ const bodyFront = (p, o, opts) => {
     wave,
     light = DEF_LIGHT,
     facing = 0,
-    seed = 1
+    seed = 1,
+    headScale = null,
+    faceShade = null
   } = opts;
   const Bd = BUILD[o.build ?? "adult"], skin = o.skin ?? SKIN, two = Math.PI * 2, lid = lidOf(blink);
   const H = headBlob(seed, Bd.a, facing), W = 2 * H.a, HH = 2 * H.b, u = W / 100;
@@ -743,13 +745,23 @@ const bodyFront = (p, o, opts) => {
   }
   const Ah = A + headTilt, [cpx, cpy] = rotAbout([300, chin], rad(A), [300, hipY]);
   p.rot = Ah ? [rad(Ah), 300, chin, cpx - 300, cpy - chin] : null;
+  // candy machine short: the head scales about the chin ([sx, sy]), as the Ricks Clips heads pulse
+  if (headScale) { p.g.save(); p.g.translate(cpx, cpy); p.g.scale(headScale[0], headScale[1]); p.g.translate(-cpx, -cpy); }
   hatBehind(p, o, H, 300, hc, light, thick, ow, false);
   const hp = blobPts(300, hc, H);
   p.shadedFill(hp, skin, mul(skin, SH_SKIN), light, H.a);
+  // candy machine short: a hard shadow across the skin. faceShade.ang is the world angle the light comes from, so it stays put as the head tilts
+  if (faceShade) p.clip(hp, () => {
+    const g = p.g, aL = faceShade.ang - rad(Ah), cxL = 300 + Math.cos(aL) * faceShade.off * H.a, cyL = hc + Math.sin(aL) * faceShade.off * H.a, Rs = 2.2 * H.a;
+    const trace = (pts) => { pts.forEach(([x, y], i) => { const [X, Y] = p.P(x, y); if (i) g.lineTo(X, Y); else g.moveTo(X, Y); }); g.closePath(); };
+    g.beginPath(); trace([[300 - Rs, hc - Rs], [300 + Rs, hc - Rs], [300 + Rs, hc + Rs], [300 - Rs, hc + Rs]]); trace(ellPts(cxL, cyL, 1.04 * H.a, 1.04 * H.a));
+    g.fillStyle = mix(skin, faceShade.col, faceShade.k); g.fill("evenodd");
+  });
   p.inkRing(hp, ow, thick);
   hatOn(p, o, hp, H, 300, hc, light, seed, facing, false);
   const brim = !!o.hat && o.hat !== "hair" && o.hat !== "bonnet" && o.hat !== "cap";
   faceFront(p, 300, hc, W, expr, facing, look, lid, brim, skin, o.moustache, o.build === "stout");
+  if (headScale) p.g.restore();
   p.rot = null;
 };
 const ik = (hip, ank, l1, l2) => {
