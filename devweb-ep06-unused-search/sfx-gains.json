@@ -1,0 +1,19 @@
+{
+ "type": -2,
+ "blip": -6,
+ "swipe": -8,
+ "zipdown": null,
+ "tick": -4,
+ "pop": -4,
+ "land": -5,
+ "ding": -12,
+ "draw": -9,
+ "strike": -4,
+ "whoosh": -6,
+ "riser": -16,
+ "zip": null,
+ "slam": -14,
+ "thud": -4,
+ "stamp": -6,
+ "sting": -6
+}

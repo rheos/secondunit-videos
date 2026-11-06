@@ -20,12 +20,18 @@ dur="$(python3 -I -c "import json;print(json.load(open('vo/words.json'))['end'])
 raw="renders/${name}_1080p120-raw.mp4"
 out="renders/${name}_1080p60.mp4"
 
+if [ -n "${RAW:-}" ]; then
+  # RAW=<1080x1920 120 fps file with the mix on it>: rendered off the Mac (tools/cloud-render, CR_MASTER=1 CR_FPS=120),
+  # so skip the local render and go straight to the blend and the checks.
+  test -s "$RAW"; [ "$RAW" -ef "$raw" ] || cp "$RAW" "$raw"
+else
 until mkdir ~/.cache/hf-render.lock 2>/dev/null; do find ~/.cache/hf-render.lock -maxdepth 0 -mmin +120 -exec rmdir {} \; ; sleep 20; done
 trap 'rmdir ~/.cache/hf-render.lock 2>/dev/null || true' EXIT
 start=$(date +%s)
 nice -n 10 npx --yes hyperframes@0.8.162 render -f 120 -q looks --quiet -o "$raw" > qa/finish-render.log 2>&1
 rmdir ~/.cache/hf-render.lock; trap - EXIT
 echo "render: $(( ($(date +%s) - start) / 60 )) min"
+fi
 test -s "$raw"
 
 ffmpeg -v error -y -i "$raw" \

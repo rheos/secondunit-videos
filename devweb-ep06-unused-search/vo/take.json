@@ -1,0 +1,13 @@
+{
+ "voice": "1PVLUq5IJEWytBdfHmuI",
+ "model": "eleven_v4",
+ "chars": 1303,
+ "seconds": 78.03,
+ "sha256": "43d9662b3526d8fc583a013eb2b1333d5f02086c9c68b8d609e801961ccc79be",
+ "tightened": {
+  "stop": 0.4,
+  "comma": 0.28,
+  "raw_seconds": 81.44,
+  "seconds": 78.03
+ }
+}

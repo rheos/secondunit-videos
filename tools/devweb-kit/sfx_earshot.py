@@ -36,6 +36,8 @@ KIT = {
     "stamp": ("pro_impact/deep", -12, [None]),
     "sting": ("logo_sting/soft_bloom", -11, [None]),
 }
+# Optional per-episode gain table: PROJECT/sfx-gains.json {"kind": dB offset, "kind": null mutes it}. No file, no change.
+GAINS = json.loads((HERE / "sfx-gains.json").read_text()) if (HERE / "sfx-gains.json").exists() else {}
 cache = HERE / "sfx"
 cache.mkdir(exist_ok=True)
 
@@ -67,6 +69,9 @@ for c in sorted(cues, key=lambda c: c["t"]):
     if (k, frame) in seen: continue
     seen.add((k, frame))
     sid, db, seeds = KIT[k]
+    if k in GAINS:
+        if GAINS[k] is None: continue
+        db += GAINS[k]
     i = count.get(k, 0); count[k] = i + 1
     dur = c.get("d") if k in ("whoosh", "riser", "slide", "draw") else None
     x = take(sid, seeds[i % len(seeds)], dur) * 10 ** (db / 20)
