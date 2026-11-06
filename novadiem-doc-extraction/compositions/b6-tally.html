@@ -1,0 +1,108 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #b6 {
+          position: absolute;
+          inset: 0;
+        }
+        #b6 svg text.big {
+          font-size: 96px;
+        }
+      </style>
+      <div id="b6" data-composition-id="b6" data-width="1920" data-height="1080">
+        <svg class="full" viewBox="0 0 1920 1080">
+          <path id="b6-bracket" class="ln line-strong" d="M400 168V156H1060V168" />
+          <text id="b6-bracket-l" class="mono small gold-t" x="730" y="144" text-anchor="middle">NEVER USED FOR TUNING</text>
+          <g id="b6-grid"></g>
+          <text id="b6-scope" class="mono" x="960" y="482" text-anchor="middle">10 BILLS · ONE VENDOR · 3 RUNS EACH · SCORED AGAINST THE PARSER</text>
+          <g id="b6-c1"></g>
+          <g id="b6-c2"></g>
+          <text id="b6-c1-l" class="mono small" x="600" y="660" text-anchor="middle">FIELDS CORRECT · ALL 10 BILLS</text>
+          <text id="b6-c2-l" class="mono small" x="1320" y="660" text-anchor="middle">FIELDS CORRECT · THOSE 6 BILLS</text>
+        </svg>
+        <div id="b6-label-l" class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate VI</div>
+        <div id="b6-label-r" class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>The Tally</div>
+        <div class="statement two" data-layout-allow-overlap data-layout-allow-occlusion>
+          <div class="row">
+            <span id="b6-st-a" class="phrase red">180 of 180</span>
+            <span id="b6-st-b" class="phrase">on bills it was never tuned on.</span>
+          </div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text, kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 66);
+          const $ = K.$;
+
+          K.fade($("b6-label-l"), K.T(66.53), 0.4);
+          K.fade($("b6-label-r"), K.T(66.53), 0.4);
+
+          // 10 bills x 3 runs, each cell one run of ten fields scored against the reference parser
+          const grid = $("b6-grid");
+          const cols = [];
+          const cells = [];
+          for (let c = 0; c < 10; c++) {
+            const g = el("g", {}, grid);
+            cols.push(g);
+            const x = 400 + c * 112;
+            const lab = text(`B${String(c + 1).padStart(2, "0")}`, { class: "mono small", x: x + 50, y: 192, "text-anchor": "middle" }, g);
+            K.fade(lab, K.T(67.16) + c * 0.05, 0.3);
+            for (let r = 0; r < 3; r++) {
+              const y = 204 + r * 76;
+              const box = el("rect", { class: "ln thin ink", x, y, width: 100, height: 64 }, g);
+              const fill = el("rect", { class: "fill-line", x, y, width: 100, height: 64, opacity: 0.22 }, g);
+              const t = text("10/10", { class: "mono small", x: x + 50, y: y + 38, "text-anchor": "middle" }, g);
+              K.draw(box, K.T(67.16) + c * 0.05 + r * 0.04, 0.35, "none");
+              cells.push({ c, r, fill, t });
+            }
+          }
+          ["RUN 1", "RUN 2", "RUN 3"].forEach((s, r) => K.fade(text(s, { class: "mono small", x: 384, y: 204 + r * 76 + 38, "text-anchor": "end" }, grid), K.T(67.16) + 0.3, 0.3));
+
+          // counter 1: climbs by ten as each cell fills
+          const c1 = $("b6-c1");
+          const n1 = [];
+          for (let k = 0; k <= 30; k++) n1.push(text(`${k * 10} / 300`, { class: "big", x: 960, y: 612, "text-anchor": "middle", opacity: 0 }, c1));
+          K.fade(n1[0], K.T(67.79), 0.3);
+          cells.sort((a, b) => a.c - b.c || a.r - b.r);
+          cells.forEach((cell, k) => {
+            const at = K.T(68.42) + k * 0.14;
+            K.fade(cell.fill, at, 0.15, 0.22);
+            K.fade(cell.t, at, 0.15);
+            tl.set(n1[k], { opacity: 0 }, at);
+            tl.set(n1[k + 1], { opacity: 1 }, at);
+          });
+          K.reveal($("b6-scope"), K.T(72.8), 0.7);
+
+          // the six bills never used for tuning
+          K.draw($("b6-bracket"), K.T(73.43), 0.5, "none");
+          K.fade($("b6-bracket-l"), K.T(73.43) + 0.3, 0.3);
+          cols.slice(6).forEach((g) => tl.to(g, { opacity: 0.35, duration: 0.4 }, K.T(73.43)));
+          tl.to(c1, { x: -360, duration: 0.6, ease: "power2.inOut" }, K.T(73.43));
+          K.fade($("b6-c1-l"), K.T(74.05), 0.3);
+          const c2 = $("b6-c2");
+          const n2 = [];
+          for (let k = 0; k <= 18; k++) n2.push(text(`${k * 10} / 180`, { class: "big", x: 1320, y: 612, "text-anchor": "middle", opacity: 0 }, c2));
+          tl.set(n2[0], { opacity: 1 }, K.T(74.05));
+          for (let k = 1; k <= 18; k++) {
+            tl.set(n2[k - 1], { opacity: 0 }, K.T(74.05) + k * 0.045);
+            tl.set(n2[k], { opacity: 1 }, K.T(74.05) + k * 0.045);
+          }
+          K.fade($("b6-c2-l"), K.T(74.68), 0.3);
+          K.reveal($("b6-st-a"), K.T(75.3), 0.5);
+          K.reveal($("b6-st-b"), K.T(75.3) + 0.45, 0.7);
+
+          tl.to("#b6 svg, #b6 .plate-label, #b6 .statement", { opacity: 0, duration: 0.4, ease: "power1.in" }, K.T(79.55));
+          window.__timelines["b6"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

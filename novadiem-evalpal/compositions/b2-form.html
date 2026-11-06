@@ -1,0 +1,162 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #b2 {
+          position: absolute;
+          inset: 0;
+        }
+        #b2 svg text.opt {
+          font-family: var(--font-mono);
+          font-size: 18px;
+          font-weight: 400;
+          letter-spacing: 0.04em;
+          fill: var(--ink);
+        }
+        #b2 svg text.slot {
+          font-family: var(--font-mono);
+          font-size: 17px;
+          font-weight: 400;
+          letter-spacing: 0.08em;
+          fill: var(--ink-dim);
+        }
+        #b2 svg text.slot.on {
+          font-weight: 700;
+          fill: var(--ink);
+        }
+      </style>
+      <div id="b2" data-composition-id="b2" data-width="1920" data-height="1080">
+        <svg class="full" viewBox="0 0 1920 1080">
+          <g id="b2-move"><g id="b2-card" transform="translate(730 150)"></g></g>
+
+          <!-- the one renderer: a switch on the scale type -->
+          <g id="b2-switch">
+            <text id="b2-sw-head" class="mono head" x="730" y="196">ItemRenderer</text>
+            <text id="b2-sw-sub" class="sht dim" x="730" y="226">switch (scale.scaleType)</text>
+            <g id="b2-slots"></g>
+            <path id="b2-link" class="ln line-strong" d="M642 238C690 238 690 336 728 336" />
+          </g>
+
+          <!-- the form it draws (generic app layout, item wording not shown) -->
+          <g id="b2-form">
+            <rect id="b2-f-frame" class="ln ink" x="1100" y="150" width="620" height="590" />
+            <path id="b2-f-rule" class="ln thin ink" d="M1100 200H1720" />
+            <g id="b2-f-top">
+              <text class="sht val" x="1124" y="182">EvalPal</text>
+              <text class="sht dim" x="1696" y="182" text-anchor="end">PHQ-9</text>
+            </g>
+            <text id="b2-f-n1" class="sht dim" x="1124" y="238">ITEM 01 OF 10</text>
+            <g id="b2-f-prog"></g>
+            <g id="b2-f-q">
+              <path class="ln thin ink" d="M1124 296h520" opacity="0.5" />
+              <path class="ln thin ink" d="M1124 324h360" opacity="0.5" />
+            </g>
+            <text id="b2-f-qnote" class="mono small gold-t" x="1124" y="360">ITEM TEXT FROM THE DEFINITION</text>
+            <g id="b2-f-opts"></g>
+            <g id="b2-f-pick"></g>
+            <g id="b2-f-save">
+              <circle cx="1130" cy="718" r="6" class="fill-line" />
+              <text class="mono small gold-t" x="1146" y="724">AUTOSAVED · ENCRYPTED</text>
+            </g>
+          </g>
+          <g id="b2-fly"></g>
+        </svg>
+        <div id="b2-label-l" class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate II</div>
+        <div id="b2-label-r" class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>The Form</div>
+        <div class="statement two" data-layout-allow-overlap data-layout-allow-occlusion>
+          <div class="row">
+            <span id="b2-st-a" class="phrase">The app draws the form</span>
+            <span id="b2-st-b" class="phrase red">from the scale type.</span>
+          </div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text, kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 11);
+          EP.card(K.$("b2-card"), EP.PHQ9); // fully drawn: plate I handed it over
+
+          K.fade(K.$("b2-label-l"), K.T(11.38), 0.4);
+          K.fade(K.$("b2-label-r"), K.T(11.38), 0.4);
+          tl.fromTo(K.$("b2-move"), { x: 0 }, { x: 200 - 730, duration: 0.9, ease: "power2.inOut" }, K.T(11.38));
+
+          // six scale families, one renderer
+          const slots = K.$("b2-slots");
+          ["ORDINAL", "FREQUENCY", "SEVERITY", "CHECKLIST", "FREE_TEXT", "DATE"].forEach((s, i) => {
+            const y = 260 + i * 54;
+            const box = el("rect", { class: i === 1 ? "ln line-strong" : "ln thin ink", x: 730, y, width: 280, height: 44 }, slots);
+            const lab = text(s, { class: i === 1 ? "slot on" : "slot", x: 750, y: y + 28 }, slots);
+            const at = K.T(12.03) + i * 0.08;
+            K.draw(box, at, 0.3, "none");
+            K.fade(lab, at + 0.1, 0.25);
+          });
+          K.fade(K.$("b2-sw-head"), K.T(12.03), 0.3);
+          K.fade(K.$("b2-sw-sub"), K.T(12.03) + 0.15, 0.3);
+          K.draw(K.$("b2-link"), K.T(12.7), 0.5);
+
+          // the form frame
+          K.draw(K.$("b2-f-frame"), K.T(13.33), 0.8, "none");
+          K.draw(K.$("b2-f-rule"), K.T(13.33) + 0.3, 0.3, "none");
+          K.fade(K.$("b2-f-top"), K.T(13.33) + 0.4, 0.3);
+          K.fade(K.$("b2-f-n1"), K.T(13.98), 0.3);
+          const prog = K.$("b2-f-prog");
+          const segs = [];
+          for (let i = 0; i < 10; i++) {
+            const x = 1124 + i * 58;
+            segs.push(el("rect", { class: "ln thin ink", x, y: 250, width: 52, height: 8 }, prog));
+          }
+          K.fade(prog, K.T(13.98) + 0.1, 0.3);
+          const fill1 = el("rect", { class: "fill-line", x: 1124, y: 250, width: 52, height: 8 }, prog);
+          K.fade(fill1, K.T(13.98) + 0.3, 0.3);
+          K.fade(K.$("b2-f-q"), K.T(13.98) + 0.2, 0.3);
+          K.fade(K.$("b2-f-qnote"), K.T(14.63), 0.3);
+
+          K.reveal(K.$("b2-st-a"), K.T(14.63), 0.6);
+          K.reveal(K.$("b2-st-b"), K.T(15.3), 0.7);
+
+          // the four option labels lift off the card's scale and land in the form
+          const opts = K.$("b2-f-opts"),
+            fly = K.$("b2-fly");
+          const rows = EP.PHQ9.options.map(([v, label], i) => {
+            const y = 390 + i * 66;
+            const box = el("rect", { class: "ln thin ink", x: 1124, y, width: 572, height: 54 }, opts);
+            const radio = el("circle", { class: "ln thin ink", cx: 1154, cy: y + 27, r: 10 }, opts);
+            const lab = text(label, { class: "opt", x: 1182, y: y + 33 }, opts);
+            const sx = 200 + 76,
+              sy = 150 + 122 + i * 26;
+            const clone = text(label, { class: "sht", x: sx, y: sy, opacity: 0 }, fly);
+            const at = K.T(15.93) + i * 0.65;
+            K.draw(box, at, 0.35, "none");
+            K.draw(radio, at + 0.1, 0.3, "none");
+            tl.set(clone, { opacity: 1 }, at);
+            tl.fromTo(clone, { x: 0, y: 0 }, { x: 1182 - sx, y: y + 33 - sy, duration: 0.55, ease: "power2.inOut" }, at);
+            tl.set(clone, { opacity: 0 }, at + 0.56);
+            tl.fromTo(lab, { opacity: 0 }, { opacity: 1, duration: 0.1 }, at + 0.53);
+            return { y };
+          });
+
+          // a synthetic answer: "Several days", then autosave
+          const pick = K.$("b2-f-pick");
+          const py = rows[1].y;
+          const sel = el("rect", { class: "ln line-strong", x: 1122, y: py - 2, width: 576, height: 58 }, pick);
+          const dot = el("circle", { class: "fill-ink", cx: 1154, cy: py + 27, r: 5 }, pick);
+          K.draw(sel, K.T(19.2), 0.35, "none");
+          K.fade(dot, K.T(19.2) + 0.1, 0.15);
+          K.fade(K.$("b2-f-save"), K.T(19.85), 0.3);
+
+          // clear down to the card; plate III keeps it on the left
+          ["b2-switch", "b2-form", "b2-label-l", "b2-label-r"].forEach((id) => K.out(K.$(id), K.T(23.1), 0.4));
+          tl.to("#b2 .statement", { opacity: 0, duration: 0.4, ease: "power1.in" }, K.T(23.1));
+
+          window.__timelines["b2"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

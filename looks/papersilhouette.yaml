@@ -1,0 +1,53 @@
+slug: papersilhouette
+title: Coloured paper silhouettes
+note: >-
+  Matte coloured paper cut flat and lit from the front, with soft drop shadows and four colours a frame.
+  People are profile silhouettes in one colour each, jointed like puppets. Here her silhouette fills with
+  night sky and the clouds inside it carry her children's profiles.
+used: In Her Dream, Bob Wiseman
+cost: free
+group: code
+order: 300
+clip: papersilhouette.mp4
+tall: false
+status: draft
+engine: canvas2d
+project: bobwiseman-in-her-dream
+code:
+  path: bobwiseman-in-her-dream/js/cut/kit.js
+  flag: null
+  page: bobwiseman-in-her-dream/film.html
+  note: >-
+    On branch in-her-dream-cutpaper (draft PR #107), not merged. kit.js is the paper kit, cast.js the puppets,
+    js/cut/shots/ the 17 shots. The look test is cutpaper.html (js/cut/cut.js), now shot 04-sky. Look bible in
+    STORYBOARD-cut.md (gitignored).
+rules:
+  - A few flat layers of matte cut paper with soft drop shadows, grain and mottling; depth from shadows and gentle parallax, never 3D lighting
+  - People are profile silhouette puppets, one paper colour per person, moving at the joints; never rock a stiff figure
+  - No faces ever; a small closed-eye crescent only on a big head
+  - Her family is navy and nobody else is; at most four colours a frame besides the ground, one or two accents a scene
+  - Paper moves on twos; arrivals pop with overshoot or slide in on a slot
+  - Poster-grade frames with one focal point and generous negative space; no text unless the story needs it
+  - Recurring motifs carry meaning (gold laugh rings, the sun halo, paper birds, the orange)
+palette:
+  - "#e6a096"
+  - "#f4ead6"
+  - "#1d2852"
+  - "#f1b23a"
+  - "#17204a"
+  - "#f3d9a0"
+reference: null
+proof:
+  renders:
+    - bobwiseman-in-her-dream/out/film3/ihd_film-v3_f00000-f07202_24fps_draft.mp4
+  pr:
+    - rheos/secondunit-videos#107
+  youtube:
+    - XCRcn7H0IU8
+    - tbUMKSOz8Ow
+verdict: 'Robin, 2026-10-13, on draft 2: "the best one we have done". On the 2:20 mandala: "a great style, I love it".'
+related:
+  - silhouette
+  - cutpaper
+  - shadow
+  - scrap

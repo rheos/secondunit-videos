@@ -1,0 +1,44 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #furniture {
+          position: absolute;
+          inset: 0;
+          background: var(--bg);
+        }
+      </style>
+      <div data-hf-id="hf-bi10" id="furniture" data-composition-id="furniture" data-width="1920" data-height="1080">
+        <svg data-hf-id="hf-bi11" id="fu-ground" class="full" viewBox="0 0 1920 1080" aria-hidden="true" style="will-change: transform"></svg>
+        <svg data-hf-id="hf-bi12" id="fu-frame" class="full" viewBox="0 0 1920 1080"></svg>
+      </div>
+
+      <script>
+        (() => {
+          const tl = gsap.timeline({ paused: true });
+          const K = BP.kit(tl, 0);
+          // stations are the build tail around one seam (workflows/execute-plan/build-tail.md: build, cold review,
+          // accept each half; couple; smoke; route the fix; re-couple; stop at dev). The stage of the story, not live progress.
+          BP.furniture(K, tl, {
+            stations: [
+              { label: "BUILD", at: 0 },
+              { label: "COLD REVIEW", at: 12.98 },
+              { label: "ACCEPT", at: 14.16 },
+              { label: "COUPLE", at: 29.47 },
+              { label: "SMOKE", at: 44.16 },
+              { label: "ROUTE", at: 54.75 },
+              { label: "RE-COUPLE", at: 61.25 },
+              { label: "DEV-VERIFIED", at: 72.4 },
+            ],
+            sheets: [0, 9.47, 18.88, 29.47, 41.24, 54.75, 72.4],
+          });
+          window.__timelines["furniture"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

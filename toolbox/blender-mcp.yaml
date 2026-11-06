@@ -1,0 +1,23 @@
+slug: blender-mcp
+name: MCP for Blender
+kind: service
+status: available
+does: 'Lets a Claude session drive a live Blender: runs bpy code, looks at the viewport, imports library assets, generates models.'
+keywords:
+- 3d
+- blender
+- mcp
+- scene
+- props
+- asset-library
+fits:
+- building Blender scenes and props from a session instead of scripts run by hand
+- pulling free models from Poly Haven, Sketchfab and Poly Pizza
+deterministic: n/a
+how: global MCP server `blender` (`uvx mcp-for-blender@2.2.6`); needs Blender open with its add-on running
+cost: free; `generate_3d` may spend a credit per model
+detail: the server's own instructions (start with get_addon_status and get_scene_info); skills `blender-*` for bpy
+related:
+- blender
+- meshy
+added: '2026-11-01'

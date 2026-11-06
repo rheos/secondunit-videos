@@ -1,0 +1,24 @@
+slug: motion-graphics-toolkit
+name: Motion-graphics toolkit (p5 + Swift VFX)
+kind: toolkit
+status: in-use
+does: p5.js generative visuals and lyric animation, plus Swift VFX cues for light, glitch, TV and grain.
+keywords:
+- p5
+- generative
+- lyrics
+- vfx
+- glitch
+- grain
+fits:
+- all-generated character music videos
+deterministic: 'yes'
+how: '`~/.claude/skills/motion-graphics-music-video`; p5 and magick through `bin/mv-docker`'
+cost: free
+url: https://github.com/processing/p5.js
+detail: skill `motion-graphics-music-video`
+source: x.com/e1genqq/status/2114445900131013003 (20 open-source tools post, read 2026-10-27)
+related:
+- code-painted
+- imagemagick
+added: '2026-10-27'

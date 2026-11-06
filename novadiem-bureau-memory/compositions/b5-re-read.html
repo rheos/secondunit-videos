@@ -1,0 +1,97 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #b5 {
+          position: absolute;
+          inset: 0;
+        }
+      </style>
+      <div id="b5" data-composition-id="b5" data-width="1920" data-height="1080">
+        <div class="layer">
+          <svg class="full" viewBox="0 0 1920 1080">
+            <g id="b5-map"></g>
+            <g id="b5-top"></g>
+          </svg>
+          <div class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate V</div>
+          <div class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>Re-read</div>
+          <div id="b5-st" class="statement">
+            <span id="b5-st-a" class="phrase">From the files,</span>
+            <span id="b5-st-b" class="phrase red">not the transcript.</span>
+          </div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text, kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 50.06);
+          const map = K.$("b5-map");
+          const top = K.$("b5-top");
+          const { carry } = AM.cues(K, tl, top);
+          const transient = [];
+          const keep = (n) => (transient.push(n), n);
+
+          AM.session(map, 2);
+          const C = AM.conductor(map, "NEW CTX");
+          const D = AM.disk(map);
+          const empty = text("NO TRANSCRIPT", { class: "mono dim", x: 580, y: 318, "text-anchor": "middle" }, C.g);
+          tl.to(empty, { opacity: 0, duration: 0.3 }, K.T(50.64));
+
+          // the Conductor re-reads state.json, then the latest log.md section, before it acts
+          // (agents/orchestrator.md "Context hygiene" 3; bureau CLAUDE.md "Resuming")
+          const beam = (x) => {
+            const b = keep(el("path", { class: "ln line construct", d: `M${x} 556V434` }, top));
+            return b;
+          };
+          const row = (i, at) => {
+            const [a, b] = AM.row(C.g, ...AM.READ[i], i);
+            K.fade(a, at, 0.3);
+            K.reveal(b, at + 0.1, 0.5);
+          };
+          K.sweep(beam(420), K.T(51.22), 0.4);
+          carry("M420 600V420", K.T(51.22), 0.9);
+          tl.fromTo(D.plates.state.body, { opacity: 1 }, { opacity: 0.45, duration: 0.15, yoyo: true, repeat: 1 }, K.T(51.22));
+          row(0, K.T(52.41));
+          row(1, K.T(52.99));
+          row(2, K.T(53.57));
+          K.sweep(beam(690), K.T(55.33), 0.4);
+          carry("M690 600V470H640V420", K.T(55.33), 0.9);
+          row(3, K.T(56.52));
+          row(4, K.T(57.12));
+
+          // the resume gate: the run dir is used as it is; no second run dir, nothing moved
+          // (docs/run-protocol.md "Creation order" step 0; bureau CLAUDE.md "Resuming")
+          const dup = keep(el("g", {}, top));
+          const dupBox = el("rect", { class: "ln planned", x: 960, y: 230, width: 620, height: 130 }, dup);
+          const dupT = text(".bureau/runs/<date>-<task>-2/", { class: "mono small dim", x: 990, y: 302 }, dup);
+          const dupCap = text("A SECOND RUN DIR?", { class: "mono tiny dim", x: 960, y: 216 }, dup);
+          K.sweep(dupBox, K.T(58.28), 0.6);
+          K.fade(dupT, K.T(58.28) + 0.3, 0.3);
+          K.fade(dupCap, K.T(58.28) + 0.2, 0.3);
+          const x = keep(el("path", { class: "ln ink", d: "M1240 250L1300 340M1300 250L1240 340" }, top));
+          K.draw(x, K.T(59.47), 0.4);
+          const gate = keep(text("no: the existing one, as is", { class: "mono small", x: 960, y: 400 }, top));
+          K.reveal(gate, K.T(60.05), 0.6);
+
+          // the new leg is counted in state.json (agents/orchestrator.md, resumed_legs)
+          const legs = text("resumed_legs: 1", { class: "mono tiny gold-t", x: 420, y: 744, "text-anchor": "middle" }, D.g);
+          K.fade(legs, K.T(60.63), 0.4);
+
+          K.reveal(K.$("b5-st-a"), K.T(61.23), 0.6);
+          K.reveal(K.$("b5-st-b"), K.T(61.81), 0.7);
+
+          const end = 64.95 - 50.06;
+          K.out(K.$("b5-st"), end, 0.35);
+          transient.forEach((n) => K.out(n, end, 0.35));
+          window.__timelines["b5"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

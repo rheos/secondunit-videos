@@ -1,0 +1,79 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #c4 {
+          position: absolute;
+          inset: 0;
+        }
+      </style>
+      <div id="c4" data-composition-id="c4" data-width="1920" data-height="1080">
+        <div class="layer">
+          <svg class="full" viewBox="0 0 1920 1080">
+            <g id="c4-art"></g>
+          </svg>
+          <div class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate IV</div>
+          <div class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>The Rerun</div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text, kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 30.79);
+          const art = K.$("c4-art");
+
+          // plate III's end state: three rows, the discarded review kept
+          const L = LG.ledger(art, { show: 3 });
+          const r3 = L.rows[3], r4 = L.rows[4];
+
+          // the review is retried: its started line carries rework
+          const a1 = LG.tag(art, 1300, 250, ['{"attempt_id":"challenger-2",', ' "status":"started",', ' "rework":true}'], { lineCls: [null, null, "gold-t"] });
+          LG.drawTag(K, a1, K.T(31.23));
+          LG.carry(K, tl, art, LG.toRow(300, 3), K.T(31.67), 0.5);
+          LG.rowIn(K, r3, K.T(32.11));
+          const capA = text("rework: it redoes work", { class: "mono cap", x: 1300, y: 420 }, art);
+          const capB = text("an earlier spawn tried", { class: "mono cap", x: 1300, y: 450 }, art);
+          K.reveal(capA, K.T(32.55), 0.5);
+          K.reveal(capB, K.T(33.0), 0.5);
+          const a2 = LG.tag(art, 1300, 490, ['{"attempt_id":"challenger-2",', ' "status":"complete"}']);
+          LG.drawTag(K, a2, K.T(33.44));
+          LG.carry(K, tl, art, LG.toRow(540, 3), K.T(33.88), 0.5);
+          LG.rowDone(K, tl, r3, K.T(34.32));
+          LG.outAll(tl, [a1.g, a2.g, capA, capB], K.T(35.2), 0.3);
+
+          // the wrong way: a fix pass reports back with no started line, and accounting drops it
+          const o1 = LG.tag(art, 1300, 250, ['{"attempt_id":"architect-2",', ' "status":"complete"}']);
+          LG.drawTag(K, o1, K.T(35.64));
+          const s = LG.sheet(art);
+          tl.fromTo(s, { opacity: 0 }, { opacity: 1, duration: 0.12 }, K.T(36.08));
+          K.travel(s, el("path", { d: "M1300 300H1270V420" }), K.T(36.08), 0.5);
+          tl.fromTo(s, { opacity: 1 }, { opacity: 0, duration: 0.3, immediateRender: false }, K.T(36.52) + 0.1);
+          const x = LG.cross(art, 1270, 420, 12, "accent-s");
+          K.draw(x, K.T(36.52), 0.3);
+          const orph = text("ORPHAN TERMINAL: SKIPPED", { class: "mono red-t", x: 1300, y: 428 }, art);
+          K.reveal(orph, K.T(36.52) + 0.2, 0.6);
+          const capC = text("no started line, no row", { class: "mono cap", x: 1300, y: 462 }, art);
+          K.reveal(capC, K.T(37.41), 0.5);
+
+          // the right way: the rerun writes its own started line first
+          const f1 = LG.tag(art, 1300, 500, ['{"attempt_id":"architect-2",', ' "status":"started",', ' "rework":true}'], { lineCls: [null, null, "gold-t"] });
+          LG.drawTag(K, f1, K.T(38.29));
+          LG.carry(K, tl, art, LG.toRow(550, 4), K.T(38.73), 0.4);
+          LG.rowIn(K, r4, K.T(39.17));
+          const f2 = LG.tag(art, 1300, 650, ['{"attempt_id":"architect-2",', ' "status":"complete"}']);
+          LG.drawTag(K, f2, K.T(39.61));
+          LG.rowDone(K, tl, r4, K.T(40.05));
+
+          LG.outAll(tl, [o1.g, x, orph, capC, f1.g, f2.g], K.R(40.55), 0.3);
+          window.__timelines["c4"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

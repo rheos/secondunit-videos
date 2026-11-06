@@ -1,0 +1,27 @@
+slug: wan-vace
+name: Wan VACE 14B (Fal)
+kind: model
+status: available
+does: Copies a real clip's motion onto a character from a first frame (pose), regenerates one masked region of real footage and keeps every other pixel (inpainting), or widens a frame (outpainting).
+keywords:
+- motion-transfer
+- video-gen
+- inpaint
+- character
+- dance
+fits:
+- swapping Robin for Bob in filmed shots (Real Thing's real-world ending)
+- Bob's dance video, standard tier
+- restyling a real walk into a drawn character
+deterministic: n/a
+how: 'Fal API: `fal-ai/wan-vace-14b/pose` (also `/inpainting`, `/outpainting`); first_frame_url + ref_image_urls, preprocess: true'
+cost: paid, $0.08/s; 720p max, 16 fps out (interpolate to 24)
+url: https://github.com/ali-vilab/VACE
+detail: 'skill video-production `references/tools-catalogue.md` "Motion transfer: what to quote"; test notes secondunit/output/fal-transform-20261009/motion/vace-20261026/NOTES.md'
+source: x.com/heyrimsha/status/2114672104021148033 (10 AI-filmmaker repos, read 2026-10-26)
+verdict: 'Robin, 2026-10-27: "VACE is good enough" (standard tier for Bob''s quotes, Kling as premium). Hjeron walk test 2026-10-26: $0.49 for 6 s, kept the scratchboard look and veil, guitar smeared on the swing, weaker camera push-in.'
+related:
+- fal-kling
+- dreamactor
+- fal-seedance
+added: '2026-11-01'

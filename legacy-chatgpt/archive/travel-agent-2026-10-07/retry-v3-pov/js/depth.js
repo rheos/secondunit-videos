@@ -1,0 +1,15 @@
+// Depth-correct underpainting. Geometry is still authored in the scene as polygons.
+const DepthPaint=(()=>{
+const c=document.createElement('canvas');c.width=960;c.height=540;const gl=c.getContext('webgl2',{alpha:true,preserveDrawingBuffer:true,antialias:true,premultipliedAlpha:false});
+const vs=`#version 300 es
+in vec3 aP;in vec4 aC;in float aG;out vec4 vC;out float vG;out float vD;
+void main(){float z=aP.z;float n=.5,f=900.;gl_Position=vec4((aP.x/1920.*2.-1.)*z,(1.-aP.y/1080.*2.)*z,((f+n)/(f-n))*z-2.*f*n/(f-n),z);vC=aC;vG=aG;vD=z;}`;
+const fs=`#version 300 es
+precision highp float;in vec4 vC;in float vG;in float vD;uniform float lightPass;out vec4 frag;
+void main(){if(lightPass>.5){frag=vec4(vec3(1.,.58,.20)*vG,1.);}else{float fog=clamp((vD-65.)/330.,0.,.46);frag=vec4(mix(vC.rgb,vec3(.23,.31,.38),fog),vC.a);}}`;
+function shader(t,src){let q=gl.createShader(t);gl.shaderSource(q,src);gl.compileShader(q);if(!gl.getShaderParameter(q,gl.COMPILE_STATUS))throw Error(gl.getShaderInfoLog(q));return q;}let p=gl.createProgram();gl.attachShader(p,shader(gl.VERTEX_SHADER,vs));gl.attachShader(p,shader(gl.FRAGMENT_SHADER,fs));gl.linkProgram(p);if(!gl.getProgramParameter(p,gl.LINK_STATUS))throw Error(gl.getProgramInfoLog(p));gl.useProgram(p);const buf=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,buf);for(let[n,size,offset]of[['aP',3,0],['aC',4,12],['aG',1,28]]){let l=gl.getAttribLocation(p,n);gl.enableVertexAttribArray(l);gl.vertexAttribPointer(l,size,gl.FLOAT,false,32,offset);}const colors=new Map();
+function color(c){if(colors.has(c))return colors.get(c);let a;if(c[0]==='#'){let h=c.slice(1);if(h.length===3)h=h.split('').map(x=>x+x).join('');a=[parseInt(h.slice(0,2),16)/255,parseInt(h.slice(2,4),16)/255,parseInt(h.slice(4,6),16)/255,1];}else{let v=c.match(/[\d.]+/g).map(Number);a=[v[0]/255,v[1]/255,v[2]/255,v[3]??1];}colors.set(c,a);return a;}
+function render(faces,s,f){let data=[];function vertex(p,c,g){data.push(p[0],p[1],p[2],...c,g||0);}function segment(a,b,c,w){let dx=b[0]-a[0],dy=b[1]-a[1],d=Math.hypot(dx,dy);if(d<.01)return;let ox=-dy/d*w/2,oy=dx/d*w/2,z=.9985;const ps=[[a[0]+ox,a[1]+oy,a[2]*z],[a[0]-ox,a[1]-oy,a[2]*z],[b[0]-ox,b[1]-oy,b[2]*z],[b[0]+ox,b[1]+oy,b[2]*z]];for(let i of[0,1,2,0,2,3])vertex(ps[i],c,0);}
+for(let o of faces){let co=color(o.c);if(o.line){for(let j=1;j<o.ps.length;j++)segment(o.ps[j-1],o.ps[j],co,o.w);continue;}for(let j=1;j<o.ps.length-1;j++)for(let k of[0,j,j+1])vertex(o.ps[k],co,o.glow);if(o.edge){let ec=color(o.edge);for(let j=0;j<o.ps.length;j++)segment(o.ps[j],o.ps[(j+1)%o.ps.length],ec,1.4);}}
+gl.bindBuffer(gl.ARRAY_BUFFER,buf);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(data),gl.DYNAMIC_DRAW);gl.viewport(0,0,960,540);gl.enable(gl.DEPTH_TEST);gl.depthFunc(gl.LEQUAL);gl.disable(gl.CULL_FACE);gl.clearColor(0,0,0,0);for(let [pass,ctx]of[[0,s],[1,f]]){gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);gl.uniform1f(gl.getUniformLocation(p,'lightPass'),pass);gl.drawArrays(gl.TRIANGLES,0,data.length/8);ctx.save();ctx.setTransform(1,0,0,1,0,0);ctx.drawImage(c,0,0);ctx.restore();}}
+return{render};})();

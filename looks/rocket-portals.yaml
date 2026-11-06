@@ -1,0 +1,62 @@
+slug: rocket-portals
+title: Toon dioramas in circle portals
+note: >-
+  One object stays in the middle of the frame for a whole song while small toon-shaded 3D scenes open around it
+  as circles on cream paper and close again; on each chorus they pack together into a planet. The people are
+  moulded-plastic toy figures with one dark outline.
+used: 10,000 Miles, Bob Wiseman
+cost: free
+group: code
+collection: clean-line
+order: 320
+clip: rocket-portals.mp4
+tall: false
+status: draft
+engine: blender
+project: bobwiseman-10000-miles
+code:
+  path: bobwiseman-10000-miles/render.py
+  flag: null
+  page: null
+  note: >-
+    tk/kit.py (toon material, shapes, keying), tk/cast.py (the figures), tk/scenes_*.py (one function per
+    portal scene), comp.py (paper, rings, portals, mosaics, outlines; --workers 4), timeline.json (every cue in
+    song seconds). The look test is blender-orb-visualizer/rocket_portals.py (lab take 05).
+rules:
+  - "The anchor never leaves frame centre; it is its own transparent render layer, composited last"
+  - "A scene is shown only inside a circle at frame centre; radius keyed per cue, eased; a cobalt ring runs just ahead of it as it opens"
+  - "Sound rings pulse out of the anchor on the sung words, every other one dashed; they grow past the frame in 2.6 s and fade"
+  - "Keep faces and key action below or beside the frame centre, where the anchor sits"
+  - "Toon material: Diffuse, Shader to RGB, three-step EASE ramp, Emission; shadows lean cool; a hot fourth step (gloss) for the plastic figures"
+  - "Figures: big head, dot eyes, small smile, snap-on hair cut along a smooth arc, neck peg, trapezoid torso with rounded shoulders and a belt, tube limbs that bend as one curve, mitt hands, square feet"
+  - "One dark outer outline per figure, drawn by the compositor from a holdout alpha pass (the Chars collection on its own view layer), grown by a blur, never a pixel kernel; no stair steps anywhere"
+  - "A sad face is lids plus a gentle brow tilt and a small downturn, never a flipped smile"
+  - "Mosaic: nine square stills per scene, laid in hex rings of 6/12/18/24 cells, flown in from far out, packed inside a sky-blue planet with a cobalt rim"
+  - "Scenery carries no outline; cream paper with light blotches and 4.5% grain over everything"
+palette:
+  - "#efe8db"
+  - "#2f5fb3"
+  - "#e8645a"
+  - "#3b2a22"
+  - "#d4553b"
+  - "#f3ead2"
+  - "#2e9c93"
+  - "#3a6ed0"
+  - "#f3cfa8"
+reference: >-
+  Kevin Ngo's orb film (x.com/kevin_t_ngo/status/2110010240825737683): an orb anchored at centre, portals out of
+  its ripples, a mosaic recap. The figures after Playmobil, on Ngo's hobbit proportions.
+proof:
+  renders:
+    - bobwiseman-10000-miles/out/10000-miles_draft1_720p.mp4
+    - bobwiseman-10000-miles/reviews/cast-lineup.png
+    - blender-orb-visualizer/reviews/take-05_10000-miles_contact.jpg
+  pr:
+    - rheos/secondunit-videos#245
+    - rheos/secondunit-videos#250
+  youtube:
+    - eMs_v-VRJ5E
+verdict: "Robin, 2026-10-19: look test \"works\"; cast line-up approved after three passes; \"Draft 1 works.\""
+related:
+  - orb-cel
+  - voxelloop

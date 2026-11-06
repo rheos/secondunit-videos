@@ -1,0 +1,95 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #c1 {
+          position: absolute;
+          inset: 0;
+        }
+        #c1 .title {
+          top: 150px;
+          font-family: var(--font-label);
+          font-size: 120px;
+          letter-spacing: 0.08em;
+        }
+        #c1 .sub {
+          position: absolute;
+          left: 0;
+          right: 0;
+          top: 330px;
+          text-align: center;
+          font-size: 26px;
+          color: var(--ink);
+        }
+      </style>
+      <div id="c1" data-composition-id="c1" data-width="1920" data-height="1080">
+        <div id="c1-all" class="layer">
+          <svg class="full" viewBox="0 0 1920 1080">
+            <path id="c1-rule" class="ln line" d="M660 302H1260M660 292V312M1260 292V312" />
+            <g id="c1-art"></g>
+          </svg>
+          <div class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate I</div>
+          <div class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>Inside the Bureau · 10</div>
+          <div id="c1-title" class="title">THE LEDGER</div>
+          <div id="c1-sub" class="sub mono">HOW THE BUREAU COUNTS WHAT A RUN SPENT</div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text, kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 0);
+
+          K.reveal(K.$("c1-title"), K.T(0.65), 1.1);
+          K.draw(K.$("c1-rule"), K.T(1.09), 0.8);
+          K.reveal(K.$("c1-sub"), K.T(1.53), 0.8);
+
+          // a finished run, illustrative: it says complete
+          const art = K.$("c1-art");
+          const x = 640, y = 440, w = 640, h = 250;
+          const paper = el("rect", { class: "fill-bg", x, y, width: w, height: h }, art);
+          const frame = el("rect", { class: "ln ink", x, y, width: w, height: h }, art);
+          const head = text("RUN · ILLUSTRATIVE", { class: "mono", x: x + 30, y: y + 44 }, art);
+          const rule = el("path", { class: "ln thin ink", d: `M${x + 30} ${y + 64}H${x + w - 30}` }, art);
+          const rows = [
+            ["workflow", "feature"],
+            ["phase_status", "complete"],
+            ["shipped", "spec · plan · prompts"],
+          ].map(([k, v], i) => [
+            text(k, { class: "mono small dim", x: x + 30, y: y + 112 + i * 44 }, art),
+            text(v, { class: "mono", x: x + w - 30, y: y + 112 + i * 44, "text-anchor": "end" }, art),
+          ]);
+          K.fade(paper, K.T(2.41), 0.2);
+          K.draw(frame, K.T(2.41), 0.8, "none");
+          K.fade(head, K.T(2.41) + 0.3, 0.3);
+          K.draw(rule, K.T(2.41) + 0.4, 0.4);
+          rows.forEach(([k, v], i) => {
+            K.fade(k, K.T(2.86) + i * 0.3, 0.3);
+            K.reveal(v, K.T(2.86) + i * 0.3 + 0.1, 0.45);
+          });
+          const S = LG.stamp(art, "COMPLETE", 1380, 470, 250);
+          LG.slam(tl, S, K.T(4.18));
+
+          // the question the stamp doesn't answer
+          const cy = y + h + 70;
+          const costK = text("cost", { class: "mono small dim", x: x + 30, y: cy }, art);
+          const costV = text("?", { class: "mono big", x: x + w - 30, y: cy + 2, "text-anchor": "end" }, art);
+          const costR = el("path", { class: "ln thin ink", d: `M${x + 100} ${cy - 6}H${x + w - 60}`, opacity: 0.5 }, art);
+          K.fade(costK, K.T(5.5), 0.3);
+          K.draw(costR, K.T(5.5) + 0.1, 0.5);
+          K.fade(costV, K.T(5.94), 0.3);
+          const q = text("WHAT DID IT COST?", { class: "mono red-t", x: x + w + 40, y: cy }, art);
+          K.reveal(q, K.T(6.39), 0.6);
+
+          K.out(K.$("c1-all"), K.R(8.5), 0.45);
+          window.__timelines["c1"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

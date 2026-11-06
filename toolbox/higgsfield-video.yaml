@@ -1,0 +1,20 @@
+slug: higgsfield-video
+name: Higgsfield video
+kind: service
+status: in-use
+does: Bridges between clips, continue-from-last-frame, lipsync, Seedance.
+keywords:
+- video-gen
+- lipsync
+- bridge
+- extend-clip
+fits:
+- Second Unit music videos
+deterministic: n/a
+how: '`higgsfield` CLI'
+cost: plan credits
+detail: skill `second-unit-video` `references/techniques.md`; memory `higgsfield-skills-and-bridges`
+related:
+- fal-kling
+- higgsfield-genjutsu
+added: '2026-10-27'

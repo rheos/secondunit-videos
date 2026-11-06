@@ -1,0 +1,452 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1280, height=720" />
+    <title>Call Toon Test</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=block" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script src="cues.js"></script>
+    <style>
+      /* Animated video call (after Kevin Ngo's Dessa demo film, K17; study in
+         references/kevin-ngo/STUDY-video-call.md). Ink only on the people, flat outline-free rooms,
+         one warm room for the artist and one cool room for the agent, chrome drawn straight. */
+      :root {
+        --call: #1e1f24;
+        --chip: #2d2e34;
+        --btn: #3a3b42;
+        --ink: #15151a;
+        --cap: #f4f4f6;
+        --label: #9ea0a8;
+        --talk: #3dba7a;
+        --red: #c8341e; /* IndieAgent red */
+        --hang: #e5484d;
+      }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body { background: var(--call); font-family: "Inter", sans-serif; }
+      #root { position: relative; width: 100%; height: 100%; overflow: hidden; background: var(--call); }
+      .clip { position: absolute; inset: 0; }
+      #stage { position: absolute; left: 0; top: 0; width: 1280px; height: 720px; transform-origin: 0 0; }
+      .tile { position: absolute; top: 18px; width: 619px; height: 440px; border-radius: 14px; overflow: hidden; }
+      .tile svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+      .ring { position: absolute; inset: 0; border-radius: 14px; border: 3px solid var(--talk); opacity: 0; }
+      .name {
+        position: absolute; left: 10px; bottom: 10px; padding: 4px 8px 5px; border-radius: 6px;
+        background: rgba(20, 20, 24, 0.62); color: #fff; font: 500 13px "Inter", sans-serif;
+      }
+      .badge {
+        position: absolute; right: 10px; top: 10px; width: 26px; height: 26px; border-radius: 50%;
+        background: var(--talk); display: flex; align-items: center; justify-content: center; gap: 2px; opacity: 0;
+      }
+      .badge i { display: block; width: 3px; height: 6px; border-radius: 2px; background: #fff; }
+      .caps { position: absolute; left: 0; width: 1280px; text-align: center; }
+      .cap { display: block; height: 26px; white-space: nowrap; color: var(--cap); font: 500 19px "Inter", sans-serif; }
+      .cap b { font: 500 12px "Inter", sans-serif; color: var(--label); margin-right: 8px; }
+      #capOver .cap { text-shadow: 0 1px 3px rgba(0, 0, 0, 0.65), 0 0 12px rgba(0, 0, 0, 0.35); }
+      #capOver .cap b { color: #e6e7eb; }
+      #toolbar { position: absolute; left: 0; top: 664px; width: 1280px; height: 44px; }
+      #clock { position: absolute; left: 16px; top: 13px; color: #c9cad0; font: 500 12px "Inter", sans-serif; }
+      #toast {
+        position: absolute; left: 16px; top: 620px; padding: 7px 11px; border-radius: 8px;
+        background: var(--chip); color: #e6e7eb; font: 500 12px "Inter", sans-serif; opacity: 0;
+      }
+      #card { position: absolute; inset: 0; background: var(--call); opacity: 0; }
+      #card h1 { position: absolute; top: 400px; width: 1280px; text-align: center; color: #fff; font: 600 34px "Inter", sans-serif; }
+      #card p { position: absolute; top: 452px; width: 1280px; text-align: center; color: #b8bac2; font: 400 15px "Inter", sans-serif; }
+      #card .pills { position: absolute; top: 490px; width: 1280px; display: flex; justify-content: center; gap: 10px; }
+      #card .pills span { padding: 6px 10px; border-radius: 6px; background: var(--chip); color: #9ea0a8; font: 400 12px "Inter", sans-serif; }
+      #card .pills span b { color: #fff; font-weight: 600; margin-right: 6px; }
+      #card svg { position: absolute; left: 0; top: 0; width: 1280px; height: 720px; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-width="1280" data-height="720" data-duration="32.858">
+      <div id="scene" class="clip" data-start="0" data-duration="32.858" data-track-index="0">
+        <div id="stage">
+          <div class="tile" id="tileA"><svg viewBox="0 0 619 440" id="svgA"></svg><div class="ring"></div><div class="name">Rae</div><div class="badge"><i></i><i></i><i></i></div></div>
+          <div class="tile" id="tileB"><svg viewBox="0 0 619 440" id="svgB"></svg><div class="ring"></div><div class="name">IndieAgent</div><div class="badge"><i></i><i></i><i></i></div></div>
+          <div class="caps" id="capGrid" style="top: 478px"><span class="cap"></span><span class="cap"></span></div>
+          <div id="toast">IndieAgent joined</div>
+          <div id="toolbar"><div id="clock">7:30 PM &nbsp;|&nbsp; Rae &amp; IndieAgent</div><svg id="tools" viewBox="0 0 1280 44" width="1280" height="44"></svg></div>
+        </div>
+        <div class="caps" id="capOver" style="top: 604px"><span class="cap"></span><span class="cap"></span></div>
+        <div id="card">
+          <svg id="cardHeads" viewBox="0 0 1280 720"></svg>
+          <h1>Rae &amp; IndieAgent</h1>
+          <p>A booking call between an artist and her agent, animated.</p>
+          <div class="pills"><span><b>Rae</b>an artist</span><span><b>IndieAgent</b>her agent</span></div>
+        </div>
+      </div>
+      <audio id="voices" src="assets/call.wav" data-start="0" data-duration="32.858" data-track-index="1" data-volume="1"></audio>
+    </div>
+
+    <script>
+      const C = window.CUES;
+      const FPS = C.fps;
+      const W = 1280, TW = 619, TH = 440;
+      const OL = 'stroke="#15151a" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"';
+
+      // ---------- rooms: flat colour, no outlines ----------
+      const roomRae = `
+        <rect width="619" height="440" fill="#f5c9a2"/>
+        <rect x="0" y="372" width="619" height="68" fill="#e9b48a"/>
+        <g><!-- dusk window -->
+          <rect x="440" y="36" width="150" height="196" rx="4" fill="#fff4e4"/>
+          <rect x="450" y="46" width="130" height="176" fill="#f7b27a"/>
+          <rect x="450" y="134" width="130" height="88" fill="#f08c5a"/>
+          <circle cx="532" cy="140" r="26" fill="#ffe0a3"/>
+          <path d="M450 222 V176 Q490 150 528 170 Q556 156 580 172 V222 Z" fill="#c46a4a"/>
+          <rect x="511" y="46" width="8" height="176" fill="#fff4e4"/>
+          <rect x="450" y="130" width="130" height="7" fill="#fff4e4"/>
+        </g>
+        <g><!-- guitar on the wall -->
+          <rect x="84" y="34" width="14" height="12" rx="3" fill="#6b4024"/>
+          <rect x="82" y="44" width="18" height="30" rx="4" fill="#6b4024"/>
+          <rect x="85" y="70" width="12" height="96" fill="#8a5328"/>
+          <circle cx="91" cy="170" r="36" fill="#c27a3e"/>
+          <circle cx="91" cy="228" r="48" fill="#c27a3e"/>
+          <circle cx="91" cy="196" r="13" fill="#5a3420"/>
+          <rect x="74" y="246" width="34" height="7" rx="3" fill="#6b4024"/>
+        </g>
+        <g><!-- tour poster -->
+          <rect x="166" y="44" width="98" height="132" rx="3" fill="#c8341e"/>
+          <text x="215" y="92" text-anchor="middle" font-family="Inter" font-weight="700" font-size="30" fill="#fff4e4">RAE</text>
+          <rect x="184" y="106" width="62" height="6" rx="3" fill="#fff4e4" opacity="0.85"/>
+          <rect x="190" y="120" width="50" height="5" rx="2.5" fill="#fff4e4" opacity="0.6"/>
+          <rect x="190" y="132" width="50" height="5" rx="2.5" fill="#fff4e4" opacity="0.6"/>
+          <rect x="190" y="144" width="50" height="5" rx="2.5" fill="#fff4e4" opacity="0.6"/>
+        </g>
+        <g><!-- record shelf -->
+          <rect x="452" y="300" width="160" height="10" fill="#b9773f"/>
+          ${[["#2f8f83",0],["#e9b23f",11],["#3a3b42",20],["#c8341e",31],["#7d6bb3",42],["#f2ede4",51],["#2f8f83",62],["#3a3b42",73]].map(([c,o],i)=>`<rect x="${470+o*1.6}" y="${238+(i%3)*6}" width="14" height="${62-(i%3)*6}" fill="${c}"/>`).join("")}
+        </g>
+        <g><!-- plant -->
+          <path d="M18 440 L26 384 H82 L90 440 Z" fill="#d2693c"/>
+          <ellipse cx="40" cy="352" rx="14" ry="34" transform="rotate(-28 40 352)" fill="#4e9a5b"/>
+          <ellipse cx="66" cy="344" rx="14" ry="38" transform="rotate(18 66 344)" fill="#5cae69"/>
+          <ellipse cx="54" cy="336" rx="12" ry="40" fill="#4e9a5b"/>
+        </g>`;
+
+      const roomAgent = `
+        <rect width="619" height="440" fill="#b8cde6"/>
+        <rect x="0" y="372" width="619" height="68" fill="#a6bcd8"/>
+        <g><!-- wall calendar, one date circled -->
+          <rect x="52" y="44" width="134" height="152" rx="4" fill="#ffffff"/>
+          <rect x="52" y="44" width="134" height="30" rx="4" fill="#3e5c9a"/>
+          <text x="119" y="65" text-anchor="middle" font-family="Inter" font-weight="700" font-size="15" fill="#fff">MARCH</text>
+          ${Array.from({length: 20}, (_, i) => `<rect x="${62 + (i % 5) * 24}" y="${84 + Math.floor(i / 5) * 26}" width="18" height="18" rx="3" fill="#e3e9f2"/>`).join("")}
+          <circle cx="${62 + 3 * 24 + 9}" cy="${84 + 1 * 26 + 9}" r="14" fill="none" stroke="#c8341e" stroke-width="3.5"/>
+        </g>
+        <g><!-- corkboard of ticket stubs -->
+          <rect x="414" y="40" width="168" height="140" rx="4" fill="#d9b98c"/>
+          ${[[434,58,-8,"#fff4e4"],[490,52,6,"#f7b27a"],[528,96,-4,"#fff4e4"],[440,112,5,"#c9dcef"],[492,124,-7,"#fff4e4"]].map(([x,y,r,c])=>`<g transform="rotate(${r} ${x+26} ${y+16})"><rect x="${x}" y="${y}" width="52" height="32" rx="3" fill="${c}"/><rect x="${x+38}" y="${y}" width="2" height="32" fill="#d9b98c"/><circle cx="${x+20}" cy="${y+6}" r="3.5" fill="#c8341e"/></g>`).join("")}
+        </g>
+        <g><!-- shelf of binders -->
+          <rect x="430" y="300" width="182" height="10" fill="#8aa3c4"/>
+          ${["#3e5c9a","#c8341e","#f2ede4","#3e5c9a","#7d6bb3","#e9b23f","#3a3b42"].map((c,i)=>`<rect x="${446+i*19}" y="${236+(i%2)*8}" width="15" height="${64-(i%2)*8}" rx="2" fill="${c}"/>`).join("")}
+        </g>
+        <g><!-- desk lamp -->
+          <rect x="34" y="420" width="80" height="12" rx="6" fill="#3e5c9a"/>
+          <path d="M70 420 L96 330 L60 296" stroke="#3e5c9a" stroke-width="8" fill="none" stroke-linecap="round"/>
+          <path d="M34 300 L70 270 L88 300 Z" fill="#3e5c9a"/>
+          <ellipse cx="60" cy="300" rx="27" ry="6" fill="#ffe7a8"/>
+        </g>`;
+
+      // ---------- characters: ink outline, white face, dot eyes ----------
+      const CHAR = {
+        artist: { svg: "svgA", tile: "tileA", face: [310, 200], eyes: [[281, 206], [339, 206]], mouth: [310, 250], neck: [310, 286] },
+        agent: { svg: "svgB", tile: "tileB", face: [310, 196], eyes: [[284, 200], [336, 200]], mouth: [310, 246], neck: [310, 286] },
+      };
+
+      function bodyRae() {
+        return `
+          <rect x="164" y="236" width="292" height="240" rx="44" fill="#3c3f4a"/>
+          <path d="M190 440 L198 330 Q210 292 262 284 H358 Q410 292 422 330 L430 440 Z" fill="#2f8f83"/>
+          <path d="M215 330 H405 M210 372 H410 M206 414 H414" stroke="#3aa597" stroke-width="12"/>
+          <path d="M286 284 L310 312 L334 284 Z" fill="#f3e9d8"/>
+          <path d="M198 330 L190 440 M422 330 L430 440 M198 330 Q210 292 262 284 M422 330 Q410 292 358 284" ${OL} fill="none"/>`;
+      }
+      function headRae() {
+        return `
+          <path d="M222 150 Q206 226 216 270 H404 Q414 226 398 150 Z" fill="#4a2c20" ${OL}/>
+          <circle cx="310" cy="200" r="80" fill="#ffffff" ${OL}/>
+          <path d="M222 168 Q228 92 310 90 Q392 92 398 168 Z" fill="#e9b23f" ${OL}/>
+          <rect x="216" y="150" width="188" height="28" rx="12" fill="#d9a030" ${OL}/>
+          <path d="M240 164 V176 M262 164 V176 M284 164 V176 M306 164 V176 M328 164 V176 M350 164 V176 M372 164 V176" stroke="#c48a1e" stroke-width="3"/>
+          <circle cx="310" cy="88" r="11" fill="#e9b23f" ${OL}/>
+          <path d="M228 190 Q236 182 246 186" stroke="#4a2c20" stroke-width="8" stroke-linecap="round" fill="none"/>`;
+      }
+      function bodyAgent() {
+        return `
+          <rect x="170" y="240" width="280" height="236" rx="40" fill="#4a5466"/>
+          <path d="M192 440 L200 330 Q212 292 264 284 H356 Q408 292 420 330 L428 440 Z" fill="#2e3f73"/>
+          <path d="M282 284 L310 316 L338 284 Z" fill="#ffffff"/>
+          <path d="M310 316 L304 440" stroke="#c8341e" stroke-width="6"/>
+          <path d="M200 330 L192 440 M420 330 L428 440 M200 330 Q212 292 264 284 M420 330 Q408 292 356 284 M282 284 L310 316 L338 284" ${OL} fill="none"/>`;
+      }
+      function headAgent() {
+        return `
+          <ellipse cx="310" cy="196" rx="74" ry="86" fill="#ffffff" ${OL}/>
+          <path d="M236 182 Q232 108 304 106 Q384 104 386 180 Q360 136 306 142 Q264 146 236 182 Z" fill="#1e1e24" ${OL}/>
+          <path d="M228 196 Q232 88 310 86 Q388 88 392 196" stroke="#2a2b33" stroke-width="10" fill="none" stroke-linecap="round"/>
+          <rect x="216" y="176" width="22" height="46" rx="10" fill="#2a2b33" ${OL}/>
+          <rect x="382" y="176" width="22" height="46" rx="10" fill="#2a2b33" ${OL}/>
+          <path d="M228 220 Q238 262 280 264" stroke="#15151a" stroke-width="5" fill="none" stroke-linecap="round"/>
+          <circle cx="285" cy="264" r="8" fill="#c8341e" stroke="#15151a" stroke-width="3.5"/>`;
+      }
+
+      // mouths, centred on 0,0
+      const MOUTH = {
+        closed: `<path d="M-14 0 Q0 3 14 0" ${OL} fill="none"/>`,
+        smile: `<path d="M-17 -3 Q0 12 17 -3" ${OL} fill="none"/>`,
+        small: `<path d="M-10 -2 Q0 -3 10 -2 Q9 9 0 10 Q-9 9 -10 -2 Z" fill="#5b1f24" ${OL}/>`,
+        mid: `<path d="M-17 -5 Q0 -3 17 -5 Q15 14 0 17 Q-15 14 -17 -5 Z" fill="#5b1f24" ${OL}/><path d="M-8 12 Q0 4 8 12 Q0 16 -8 12 Z" fill="#e78a96"/>`,
+        wide: `<path d="M-21 -7 Q0 -5 21 -7 Q19 19 0 23 Q-19 19 -21 -7 Z" fill="#5b1f24" ${OL}/><path d="M-11 17 Q0 7 11 17 Q0 22 -11 17 Z" fill="#e78a96"/>`,
+        o: `<ellipse cx="0" cy="3" rx="8" ry="10" fill="#5b1f24" ${OL}/>`,
+        grin: `<path d="M-20 -6 Q0 -2 20 -6 Q17 15 0 18 Q-17 15 -20 -6 Z" fill="#5b1f24" ${OL}/><path d="M-17 -5 Q0 -1 17 -5 L15 1 Q0 4 -15 1 Z" fill="#ffffff"/><path d="M-9 13 Q0 6 9 13 Q0 17 -9 13 Z" fill="#e78a96"/>`,
+      };
+      function eye(x, y, kind, dx) {
+        if (kind === "closed") return `<path d="M${x - 13} ${y} Q${x} ${y + 4} ${x + 13} ${y}" ${OL} fill="none"/>`;
+        if (kind === "happy") return `<path d="M${x - 13} ${y + 3} Q${x} ${y - 10} ${x + 13} ${y + 3}" ${OL} fill="none"/>`;
+        const r = kind === "wide" ? 18 : 16, p = kind === "wide" ? 6 : 7;
+        return `<circle cx="${x}" cy="${y}" r="${r}" fill="#fff" ${OL}/><circle cx="${x + dx}" cy="${y + 1}" r="${p}" fill="#15151a"/>`;
+      }
+      function brows(c, lift) {
+        const [[lx, ly], [rx, ry]] = c.eyes;
+        return `<path d="M${lx - 15} ${ly - 26 - lift} Q${lx} ${ly - 34 - lift} ${lx + 15} ${ly - 26 - lift}" ${OL} fill="none"/>` +
+          `<path d="M${rx - 15} ${ry - 26 - lift} Q${rx} ${ry - 34 - lift} ${rx + 15} ${ry - 26 - lift}" ${OL} fill="none"/>`;
+      }
+
+      // black mitt hands, palm pointing up at 0,0
+      const MITT = `<path d="M-15 14 Q-18 -8 -11 -18 Q0 -25 11 -18 Q18 -8 15 14 Q0 20 -15 14 Z M-14 2 Q-27 -4 -25 -13 Q-21 -18 -12 -9 Z" fill="#15151a"/>`;
+      const GESTURE = {
+        wave: (t) => {
+          const a = Math.sin((t * 2 * Math.PI) * 2.4) * 16;
+          return `<path d="M432 440 Q456 330 456 262" ${OL} stroke-width="6" fill="none"/>` +
+            `<g transform="translate(456 246) rotate(${a})">${MITT}</g>`;
+        },
+        // palms held out past the shoulders, so the black reads against the wall, not the shirt
+        palms: () =>
+          `<path d="M196 440 Q160 360 168 300" ${OL} stroke-width="6" fill="none"/><path d="M424 440 Q460 360 452 300" ${OL} stroke-width="6" fill="none"/>` +
+          `<g transform="translate(166 284) rotate(-30)">${MITT}</g><g transform="translate(454 284) rotate(30) scale(-1 1)">${MITT}</g>`,
+        headhands: () =>
+          `<path d="M196 440 Q140 260 218 130" ${OL} stroke-width="6" fill="none"/><path d="M424 440 Q480 260 402 130" ${OL} stroke-width="6" fill="none"/>` +
+          `<g transform="translate(224 116) rotate(-40)">${MITT}</g><g transform="translate(396 116) rotate(40) scale(-1 1)">${MITT}</g>`,
+      };
+
+      // ---------- direction, anchored to the lines so new audio keeps every beat ----------
+      const L = C.lines;
+      const word = (i, w) => L[i].word_starts[w];
+      const END = Math.max(...L.map((l) => l.end));
+      const PUNCH = { t0: L[5].start + 0.25, t1: L[6].start, s: W / TW, x: -16 * (W / TW), y: -121 };
+      const CARD = END + 0.8;
+      const OVERRIDE = {
+        artist: [
+          { t0: 0, t1: 1.45, eyes: "happy", rest: "smile" },
+          { t0: PUNCH.t0, t1: PUNCH.t1, eyes: "wide", rest: "grin", lift: 5 },
+          { t0: L[6].start + 0.9, t1: C.duration, eyes: "happy", rest: "grin" },
+        ],
+        agent: [
+          { t0: L[3].start, t1: L[3].start + 0.7, lift: 4 },
+          { t0: L[7].end - 0.2, t1: C.duration, eyes: "happy", rest: "smile" },
+        ],
+      };
+      const GESTURES = {
+        artist: [
+          { kind: "wave", t0: 1.45, t1: 3.1 },
+          { kind: "palms", t0: L[4].start - 0.1, t1: L[4].end + 0.2 },
+          { kind: "headhands", t0: PUNCH.t0 + 0.3, t1: PUNCH.t1 - 0.05 },
+        ],
+        agent: [{ kind: "palms", t0: word(3, 3) - 0.1, t1: word(3, 3) + 1.6 }], // "Door split"
+      };
+      const PUSH = { t0: L[1].start + 2.0, t1: L[1].end - 0.1, cut: L[2].start, s: 1.32, fx: 955, fy: 223 };
+      const SPLIT = { t0: 1.15, t1: 1.55 };
+      const TOAST = { t0: 1.0, t1: 3.6 };
+
+      // seeded blinks
+      function rng(seed) { return () => ((seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296); }
+      const BLINKS = {};
+      for (const [who, seed] of [["artist", 7], ["agent", 19]]) {
+        const r = rng(seed), out = [];
+        for (let t = 0.8 + r() * 1.5; t < C.duration; t += 2.2 + r() * 2.6) out.push(t);
+        BLINKS[who] = out;
+      }
+
+      const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+      const ease = (p) => (p < 0.5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2);
+      const linesOf = (who) => C.lines.filter((l) => l.who === who);
+      function speaking(who, t) { return linesOf(who).some((l) => t >= l.start && t < l.end + 0.05); }
+      function level(who, f) { const a = C.levels[who]; return a[clamp(f, 0, a.length - 1)] || 0; }
+      function blockLevel(who, t) {
+        const b = Math.floor(Math.round(t * FPS) / 3) * 3;
+        return Math.max(level(who, b), level(who, b + 1), level(who, b + 2));
+      }
+      function override(who, t) { return OVERRIDE[who].find((o) => t >= o.t0 && t < o.t1) || {}; }
+
+      // ---------- build static layers ----------
+      const layers = {};
+      for (const who of ["artist", "agent"]) {
+        const c = CHAR[who];
+        const svg = document.getElementById(c.svg);
+        svg.innerHTML = (who === "artist" ? roomRae : roomAgent) +
+          (who === "artist" ? bodyRae() : bodyAgent()) +
+          `<g class="head">${who === "artist" ? headRae() : headAgent()}<g class="brows"></g><g class="eyes"></g><g class="mouth" transform="translate(${c.mouth[0]} ${c.mouth[1]})"></g></g>` +
+          `<g class="hands"></g>`;
+        const tile = document.getElementById(c.tile);
+        layers[who] = {
+          head: svg.querySelector(".head"), brows: svg.querySelector(".brows"), eyes: svg.querySelector(".eyes"),
+          mouth: svg.querySelector(".mouth"), hands: svg.querySelector(".hands"), tile,
+          ring: tile.querySelector(".ring"), badge: tile.querySelector(".badge"), bars: [...tile.querySelectorAll(".badge i")], cache: {},
+        };
+      }
+
+      // toolbar: our own buttons, not any real app's
+      const tools = document.getElementById("tools");
+      const btn = (x, inner, fill = "#3a3b42") => `<circle cx="${x}" cy="22" r="18" fill="${fill}"/>${inner}`;
+      tools.innerHTML =
+        btn(540, `<rect x="535" y="11" width="10" height="15" rx="5" fill="#fff"/><path d="M531 22 Q531 31 540 31 Q549 31 549 22 M540 31 V34" stroke="#fff" stroke-width="2" fill="none"/>`) +
+        btn(584, `<rect x="574" y="15" width="15" height="14" rx="3" fill="#fff"/><path d="M590 19 L596 15 V29 L590 25 Z" fill="#fff"/>`) +
+        btn(628, `<rect x="617" y="14" width="22" height="16" rx="3" fill="none" stroke="#fff" stroke-width="2"/><text x="628" y="26" text-anchor="middle" font-family="Inter" font-weight="700" font-size="9" fill="#fff">CC</text>`, "#4a6fd1") +
+        btn(672, `<circle cx="666" cy="22" r="2" fill="#fff"/><circle cx="672" cy="22" r="2" fill="#fff"/><circle cx="678" cy="22" r="2" fill="#fff"/>`) +
+        `<rect x="700" y="4" width="62" height="36" rx="18" fill="#e5484d"/><path d="M716 26 Q731 12 746 26 L742 30 L736 26 V23 Q731 21 726 23 V26 L720 30 Z" fill="#fff"/>` +
+        `<circle cx="1208" cy="22" r="9" fill="none" stroke="#c9cad0" stroke-width="2"/><rect x="1207" y="20" width="2" height="7" fill="#c9cad0"/><circle cx="1208" cy="17" r="1.3" fill="#c9cad0"/>` +
+        `<circle cx="1244" cy="17" r="5" fill="none" stroke="#c9cad0" stroke-width="2"/><path d="M1235 31 Q1244 21 1253 31" stroke="#c9cad0" stroke-width="2" fill="none"/>`;
+
+      // end card heads: the same drawings, scaled down
+      document.getElementById("cardHeads").innerHTML =
+        `<svg x="420" y="170" width="240" height="210" viewBox="160 70 300 262">${bodyRae()}${headRae()}${brows(CHAR.artist, 0)}${eye(281, 206, "open", 0)}${eye(339, 206, "open", 0)}<g transform="translate(310 250)">${MOUTH.smile}</g></svg>` +
+        `<svg x="620" y="170" width="240" height="210" viewBox="160 70 300 262">${bodyAgent()}${headAgent()}${brows(CHAR.agent, 0)}${eye(284, 200, "open", 0)}${eye(336, 200, "open", 0)}<g transform="translate(310 246)">${MOUTH.smile}</g></svg>`;
+
+      const stage = document.getElementById("stage");
+      const tileA = document.getElementById("tileA"), tileB = document.getElementById("tileB");
+      const capGrid = document.getElementById("capGrid"), capOver = document.getElementById("capOver");
+      const toast = document.getElementById("toast"), toolbar = document.getElementById("toolbar"), card = document.getElementById("card");
+
+      function setHTML(el, key, html, cache, name) { if (cache[name] !== key) { cache[name] = key; el.innerHTML = html; } }
+
+      function drawChar(who, t) {
+        const c = CHAR[who], L = layers[who], o = override(who, t);
+        const other = who === "artist" ? "agent" : "artist";
+        const talk = speaking(who, t);
+        const lv = talk ? blockLevel(who, t) : 0;
+        const blk = Math.floor(Math.round(t * FPS) / 3);
+
+        // mouth from the voice's own level, one shape per 3 frames (100 ms)
+        let m = o.rest || (speaking(other, t) ? "smile" : "closed");
+        if (lv > 0.45) m = "wide";
+        else if (lv > 0.22) m = blk % 4 === 2 ? "o" : "mid";
+        else if (lv > 0.06) m = "small";
+        setHTML(L.mouth, m, MOUTH[m], L.cache, "m");
+
+        // eyes: override, else blink, else open; listener glances toward the other tile
+        let e = o.eyes || "open";
+        if (e === "open" && BLINKS[who].some((b) => t >= b && t < b + 0.12)) e = "closed";
+        const dx = speaking(other, t) ? (who === "artist" ? 3 : -3) : 0;
+        setHTML(L.eyes, e + dx, c.eyes.map(([x, y]) => eye(x, y, e, dx)).join(""), L.cache, "e");
+        const lift = (o.lift || 0) + (lv > 0.5 ? 2 : 0);
+        setHTML(L.brows, lift, brows(c, lift), L.cache, "b");
+
+        // head: bob on the voice, a tilt per line, a nod while listening
+        const f = Math.round(t * FPS);
+        const smooth = talk ? (level(who, f - 1) + level(who, f) + level(who, f + 1)) / 3 : 0;
+        let rot = 0, y = -5 * smooth;
+        linesOf(who).forEach((l, i) => {
+          const env = clamp((t - l.start) / 0.3) * clamp((l.end + 0.3 - t) / 0.3);
+          rot += (i % 2 ? -3 : 2.5) * ease(env);
+        });
+        linesOf(other).forEach((l) => {
+          const tn = l.start + 0.7, p = (t - tn) / 0.55;
+          if (p > 0 && p < 1) y += 5 * Math.sin(Math.PI * p);
+        });
+        L.head.setAttribute("transform", `translate(0 ${y.toFixed(2)}) rotate(${rot.toFixed(2)} ${c.neck[0]} ${c.neck[1]})`);
+
+        // hands only when they have something to say
+        const g = GESTURES[who].find((g) => t >= g.t0 && t < g.t1);
+        if (g) {
+          const pop = Math.min(clamp((t - g.t0) / 0.12), clamp((g.t1 - t) / 0.12));
+          const s = 0.7 + 0.3 * pop;
+          L.hands.setAttribute("transform", `translate(${310 * (1 - s)} ${440 * (1 - s)}) scale(${s})`);
+          L.hands.setAttribute("opacity", pop.toFixed(2));
+          L.hands.innerHTML = GESTURE[g.kind](t - g.t0);
+          L.cache.h = g.kind;
+        } else if (L.cache.h) { L.hands.innerHTML = ""; L.cache.h = null; }
+
+        // speaking ring and badge
+        L.ring.style.opacity = talk ? 1 : 0;
+        L.badge.style.opacity = talk ? 1 : 0;
+        L.bars.forEach((b, i) => { b.style.height = `${6 + Math.round(10 * level(who, f - i * 2))}px`; });
+      }
+
+      // live captions roll: a line is cut into chunks of at most 52 characters, and the caption
+      // shows the chunk holding the newest spoken word, growing word by word
+      const CHUNK = 52;
+      C.lines.forEach((l) => {
+        l.chunk = [];
+        let n = 0, len = 0;
+        l.words.forEach((w, i) => {
+          if (len && len + 1 + w.length > CHUNK) { n++; len = 0; }
+          len += (len ? 1 : 0) + w.length;
+          l.chunk[i] = n;
+        });
+      });
+      function captionHTML(l, t) {
+        let last = -1;
+        l.word_starts.forEach((s, i) => { if (s <= t + 1e-6) last = i; });
+        if (last < 0) return `<b>${C.voices[l.who]}</b>`;
+        const shown = l.words.filter((_, i) => i <= last && l.chunk[i] === l.chunk[last]).join(" ");
+        return `<b>${C.voices[l.who]}</b>${shown}`;
+      }
+      function drawCaptions(t, el) {
+        // a caption appears with its first word, not with a laugh or breath before it
+        const started = C.lines.filter((l) => l.word_starts[0] <= t);
+        const last = started.slice(-2);
+        const spans = el.querySelectorAll(".cap");
+        const rows = last.length === 2 ? last : [null, ...last];
+        rows.forEach((l, i) => { spans[i].innerHTML = l ? captionHTML(l, t) : ""; });
+      }
+
+      function camera(t) {
+        if (t >= PUNCH.t0 && t < PUNCH.t1) return { x: PUNCH.x, y: PUNCH.y, s: PUNCH.s };
+        if (t >= PUSH.t0 && t < PUSH.cut) {
+          const s = 1 + (PUSH.s - 1) * ease(clamp((t - PUSH.t0) / (PUSH.t1 - PUSH.t0)));
+          return { x: PUSH.fx * (1 - s), y: PUSH.fy * (1 - s), s };
+        }
+        return { x: 0, y: 0, s: 1 };
+      }
+
+      function draw(t) {
+        // opening: Rae waits alone, then IndieAgent joins and the tiles split
+        const sp = ease(clamp((t - SPLIT.t0) / (SPLIT.t1 - SPLIT.t0)));
+        tileA.style.left = `${330.5 + (16 - 330.5) * sp}px`;
+        tileB.style.left = "645px";
+        // the new tile arrives once Rae's has moved out of its slot
+        const bp = ease(clamp((t - SPLIT.t1 + 0.05) / 0.25));
+        tileB.style.opacity = bp;
+        tileB.style.transform = `scale(${0.94 + 0.06 * bp})`;
+        toast.style.opacity = Math.min(clamp((t - TOAST.t0) / 0.2), clamp((TOAST.t1 - t) / 0.3));
+
+        const cam = camera(t);
+        stage.style.transform = `translate(${cam.x}px, ${cam.y}px) scale(${cam.s})`;
+        const over = cam.s > 1.05;
+        capGrid.style.opacity = over ? 0 : 1;
+        capOver.style.opacity = over ? 1 : 0;
+        drawCaptions(t, over ? capOver : capGrid);
+        (over ? capGrid : capOver).querySelectorAll(".cap").forEach((s) => { s.innerHTML = ""; });
+
+        drawChar("artist", t);
+        drawChar("agent", t);
+
+        const co = clamp((t - CARD) / 0.35);
+        card.style.opacity = co;
+        stage.style.visibility = capOver.style.visibility = co >= 1 ? "hidden" : "visible";
+      }
+
+      const tl = gsap.timeline({ paused: true });
+      const clock = { t: 0 };
+      tl.to(clock, { t: C.duration, duration: C.duration, ease: "none", onUpdate: () => draw(clock.t) }, 0);
+      draw(0);
+      window.__timelines["main"] = tl;
+    </script>
+  </body>
+</html>

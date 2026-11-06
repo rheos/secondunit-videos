@@ -1,0 +1,543 @@
+{
+ "0": {
+  "mode": "wide",
+  "width": 1747,
+  "centre": 0.4914,
+  "why": "kinetic type, measured extent 110-1777 px"
+ },
+ "84": {
+  "mode": "wide",
+  "width": 1483,
+  "centre": 0.4237,
+  "why": "kinetic type, measured extent 112-1515 px"
+ },
+ "113": {
+  "mode": "fit",
+  "why": "kinetic type, measured extent 4-1919 px: lettering and line art fill the width"
+ },
+ "156": {
+  "mode": "fit",
+  "why": "kinetic type, measured extent 80-1839 px: lettering and line art fill the width"
+ },
+ "456": {
+  "mode": "fit",
+  "why": "kinetic type, measured extent 0-1919 px: lettering and line art fill the width"
+ },
+ "537": {
+  "mode": "fit",
+  "why": "kinetic type, measured extent 0-1919 px: lettering and line art fill the width"
+ },
+ "564": {
+  "mode": "wide",
+  "width": 1634,
+  "centre": 0.5083,
+  "why": "kinetic type, measured extent 199-1753 px"
+ },
+ "626": {
+  "mode": "wide",
+  "width": 1722,
+  "centre": 0.4969,
+  "why": "kinetic type, measured extent 133-1775 px"
+ },
+ "639": {
+  "mode": "wide",
+  "width": 1752,
+  "centre": 0.4984,
+  "why": "kinetic type, measured extent 121-1793 px"
+ },
+ "681": {
+  "mode": "wide",
+  "width": 1754,
+  "centre": 0.4969,
+  "why": "kinetic type, measured extent 117-1791 px"
+ },
+ "749": {
+  "mode": "wide",
+  "width": 1747,
+  "centre": 0.4951,
+  "why": "kinetic type, measured extent 117-1784 px"
+ },
+ "800": {
+  "mode": "fit",
+  "why": "kinetic type, measured extent 0-1919 px: lettering and line art fill the width"
+ },
+ "851": {
+  "mode": "fit",
+  "why": "kinetic type, measured extent 0-1919 px: lettering and line art fill the width"
+ },
+ "883": {
+  "mode": "wide",
+  "width": 1771,
+  "centre": 0.4971,
+  "why": "kinetic type, measured extent 109-1800 px"
+ },
+ "1066": {
+  "mode": "wide",
+  "width": 1741,
+  "centre": 0.4997,
+  "why": "kinetic type, measured extent 129-1790 px"
+ },
+ "1264": {
+  "mode": "fit",
+  "why": "kinetic type, measured extent 0-1919 px: lettering and line art fill the width"
+ },
+ "1270": {
+  "mode": "fit",
+  "why": "kinetic type, measured extent 0-1919 px: lettering and line art fill the width"
+ },
+ "1277": {
+  "mode": "wide",
+  "width": 1738,
+  "centre": 0.4839,
+  "why": "kinetic type, measured extent 100-1758 px"
+ },
+ "1288": {
+  "mode": "wide",
+  "width": 1300,
+  "centre": 0.3698,
+  "why": "kinetic type, measured extent 100-1320 px"
+ },
+ "1305": {
+  "mode": "wide",
+  "width": 1677,
+  "centre": 0.4997,
+  "why": "kinetic type, measured extent 161-1758 px"
+ },
+ "1317": {
+  "mode": "fit",
+  "why": "kinetic type, measured extent 0-1919 px: lettering and line art fill the width"
+ },
+ "1332": {
+  "mode": "wide",
+  "width": 1641,
+  "centre": 0.4586,
+  "why": "kinetic type, measured extent 100-1661 px"
+ },
+ "1340": {
+  "mode": "wide",
+  "width": 1303,
+  "centre": 0.3706,
+  "why": "kinetic type, measured extent 100-1323 px"
+ },
+ "1347": {
+  "mode": "wide",
+  "width": 1538,
+  "centre": 0.4964,
+  "why": "kinetic type, measured extent 224-1682 px"
+ },
+ "1361": {
+  "mode": "wide",
+  "width": 1681,
+  "centre": 0.4997,
+  "why": "kinetic type, measured extent 159-1760 px"
+ },
+ "1375": {
+  "mode": "wide",
+  "width": 1681,
+  "centre": 0.4997,
+  "why": "kinetic type, measured extent 159-1760 px"
+ },
+ "1389": {
+  "mode": "wide",
+  "width": 1681,
+  "centre": 0.4997,
+  "why": "kinetic type, measured extent 159-1760 px"
+ },
+ "1403": {
+  "mode": "wide",
+  "width": 1681,
+  "centre": 0.4997,
+  "why": "kinetic type, measured extent 159-1760 px"
+ },
+ "1416": {
+  "mode": "fit",
+  "why": "kinetic type, measured extent 0-1919 px: lettering and line art fill the width"
+ },
+ "1473": {
+  "mode": "wide",
+  "width": 1661,
+  "centre": 0.4997,
+  "why": "kinetic type, measured extent 169-1750 px"
+ },
+ "1487": {
+  "mode": "wide",
+  "width": 1664,
+  "centre": 0.499,
+  "why": "kinetic type, measured extent 166-1750 px"
+ },
+ "1500": {
+  "mode": "wide",
+  "width": 1661,
+  "centre": 0.4997,
+  "why": "kinetic type, measured extent 169-1750 px"
+ },
+ "1514": {
+  "mode": "wide",
+  "width": 1661,
+  "centre": 0.4997,
+  "why": "kinetic type, measured extent 169-1750 px"
+ },
+ "1529": {
+  "mode": "wide",
+  "width": 1709,
+  "centre": 0.4992,
+  "why": "kinetic type, measured extent 144-1773 px"
+ },
+ "1556": {
+  "mode": "wide",
+  "width": 1707,
+  "centre": 0.4997,
+  "why": "kinetic type, measured extent 146-1773 px"
+ },
+ "1639": {
+  "mode": "fit",
+  "why": "kinetic type, measured extent 0-1919 px: lettering and line art fill the width"
+ },
+ "8193": {
+  "mode": "fit",
+  "why": "kinetic type, measured extent 0-1919 px: lettering and line art fill the width"
+ },
+ "8316": {
+  "mode": "fit",
+  "why": "kinetic type, measured extent 35-1784 px: lettering and line art fill the width"
+ },
+ "8469": {
+  "mode": "fit",
+  "why": "kinetic type, measured extent 0-1919 px: lettering and line art fill the width"
+ },
+ "8535": {
+  "mode": "wide",
+  "width": 1449,
+  "centre": 0.4977,
+  "why": "kinetic type, measured extent 271-1640 px"
+ },
+ "8602": {
+  "mode": "fit",
+  "why": "kinetic type, measured extent 0-1919 px: lettering and line art fill the width"
+ },
+ "8727": {
+  "mode": "wide",
+  "width": 1223,
+  "centre": 0.4997,
+  "why": "kinetic type, measured extent 388-1531 px"
+ },
+ "1854": {
+  "mode": "crop",
+  "centre": 0.5,
+  "why": "face front, centred; propeller tips leave the frame"
+ },
+ "1890": {
+  "mode": "fit",
+  "why": "side-on plane with passengers plus the speech-bubble words, 0.03-0.85 wide"
+ },
+ "1972": {
+  "mode": "wide",
+  "width": 1000,
+  "centre": 0.3,
+  "why": "side-on plane 0.07-0.52"
+ },
+ "1986": {
+  "mode": "wide",
+  "width": 1100,
+  "centre": 0.42,
+  "why": "side-on plane 0.15-0.65"
+ },
+ "2008": {
+  "mode": "crop",
+  "centre": 0.4,
+  "why": "side-on plane 0.2-0.57"
+ },
+ "2040": {
+  "mode": "wide",
+  "width": 1150,
+  "centre": 0.33,
+  "why": "big side-on plane 0.05-0.62"
+ },
+ "2062": {
+  "mode": "crop",
+  "centre": 0.4,
+  "why": "side-on plane 0.2-0.57"
+ },
+ "2079": {
+  "mode": "crop",
+  "centre": 0.45,
+  "why": "face front; road and car on the right stay partly in"
+ },
+ "2096": {
+  "mode": "crop",
+  "centre": 0.45,
+  "why": "face front"
+ },
+ "2532": {
+  "mode": "wide",
+  "width": 1150,
+  "centre": 0.5,
+  "why": "close-up face: eyes 0.28-0.72 need more than 864 px"
+ },
+ "2565": {
+  "mode": "fit",
+  "why": "Bob's na-na words scattered across the whole frame"
+ },
+ "2774": {
+  "mode": "crop",
+  "centre": 0.55,
+  "why": "music notes 0.35-0.75"
+ },
+ "2864": {
+  "mode": "wide",
+  "width": 1500,
+  "centre": 0.5,
+  "why": "woodcut plane on the night road, 0.15-0.85"
+ },
+ "2932": {
+  "mode": "fit",
+  "why": "woodcut squadron and sun across the whole frame"
+ },
+ "3039": {
+  "mode": "wide",
+  "width": 1300,
+  "centre": 0.45,
+  "why": "plane on the night road, start frames 0.15-0.65"
+ },
+ "3160": {
+  "mode": "fit",
+  "why": "riso poster: title lettering 0.07-0.93"
+ },
+ "3173": {
+  "mode": "crop",
+  "centre": 0.335,
+  "why": "single face tile at left"
+ },
+ "3186": {
+  "mode": "fit",
+  "why": "two faces side by side plus the LIVE stamp"
+ },
+ "3201": {
+  "mode": "fit",
+  "why": "the LIVE stamp sits on the seam at 0.43-0.53; a crop on either face cuts it"
+ },
+ "3214": {
+  "mode": "fit",
+  "why": "2x2 grid of faces plus the LIVE stamp"
+ },
+ "3226": {
+  "mode": "crop",
+  "centre": 0.485,
+  "why": "the centre sign (lettering 557-1306 px) fits; side faces are part of the grid"
+ },
+ "3333": {
+  "mode": "fit",
+  "why": "riso sax and piano, 25 s, piano and sax at opposite sides; recompose candidate"
+ },
+ "3960": {
+  "mode": "fit",
+  "why": "sax spiral fills the frame"
+ },
+ "4034": {
+  "mode": "crop",
+  "centre": 0.42,
+  "why": "face close-up 0.4-0.55"
+ },
+ "4044": {
+  "mode": "crop",
+  "centre": 0.5,
+  "why": "piano label lettering 0.38-0.62; keys run off both sides"
+ },
+ "4054": {
+  "mode": "crop",
+  "centre": 0.5,
+  "why": "rain road, 7 frames"
+ },
+ "4061": {
+  "mode": "wide",
+  "width": 1200,
+  "centre": 0.45,
+  "why": "transition: plane 0.2-0.6 at the start"
+ },
+ "4108": {
+  "mode": "crop",
+  "centre": 0.6,
+  "why": "face 0.47-0.7"
+ },
+ "4148": {
+  "mode": "fit",
+  "why": "billboard names (Bob's note: his text visible) move across 0.12-0.98"
+ },
+ "4272": {
+  "mode": "fit",
+  "why": "Bob's doo-doo words scattered across the whole frame"
+ },
+ "4362": {
+  "mode": "wide",
+  "width": 1600,
+  "centre": 0.5,
+  "why": "side-on plane with the car, plane 0.05-0.95, face at the right end"
+ },
+ "4368": {
+  "mode": "wide",
+  "width": 1600,
+  "centre": 0.5,
+  "why": "side-on plane with the car, plane 0.05-0.95, face at the right end"
+ },
+ "4388": {
+  "mode": "wide",
+  "width": 1600,
+  "centre": 0.5,
+  "why": "side-on plane with the car, plane 0.05-0.95, face at the right end"
+ },
+ "4402": {
+  "mode": "wide",
+  "width": 1200,
+  "centre": 0.45,
+  "why": "plane rolling, face at 0.3-0.4 at the start"
+ },
+ "4462": {
+  "mode": "fit",
+  "why": "game dialogue box lettering spans the width"
+ },
+ "4729": {
+  "mode": "fit",
+  "why": "game HUD in all four corners, bottom banner 0.25-0.75"
+ },
+ "4836": {
+  "mode": "fit",
+  "why": "game HUD (time, position, speed) in all four corners"
+ },
+ "5046": {
+  "mode": "fit",
+  "why": "game HUD (time, position, speed) in all four corners"
+ },
+ "5202": {
+  "mode": "fit",
+  "why": "game HUD (time, position, speed) in all four corners"
+ },
+ "5228": {
+  "mode": "fit",
+  "why": "game HUD (time, position, speed) in all four corners"
+ },
+ "4928": {
+  "mode": "wide",
+  "width": 960,
+  "centre": 0.5,
+  "why": "bonus-stage box and labels 0.27-0.73 (883 px)"
+ },
+ "5441": {
+  "mode": "crop",
+  "centre": 0.45,
+  "why": "aerial: plane 0.3-0.55"
+ },
+ "5511": {
+  "mode": "crop",
+  "centre": 0.45,
+  "why": "aerial: plane 0.35-0.55"
+ },
+ "5576": {
+  "mode": "crop",
+  "centre": 0.72,
+  "why": "aerial: plane 0.68-0.8"
+ },
+ "6190": {
+  "mode": "wide",
+  "width": 1000,
+  "centre": 0.5,
+  "why": "plane front with four propellers 0.25-0.75"
+ },
+ "6206": {
+  "mode": "wide",
+  "width": 1000,
+  "centre": 0.5,
+  "why": "plane front with four propellers 0.25-0.75"
+ },
+ "6212": {
+  "mode": "wide",
+  "width": 1000,
+  "centre": 0.5,
+  "why": "plane front with four propellers 0.25-0.75"
+ },
+ "6257": {
+  "mode": "wide",
+  "width": 1000,
+  "centre": 0.5,
+  "why": "plane front with four propellers 0.25-0.75"
+ },
+ "6233": {
+  "mode": "crop",
+  "centre": 0.5,
+  "why": "plane front"
+ },
+ "6266": {
+  "mode": "crop",
+  "centre": 0.5,
+  "why": "plane front"
+ },
+ "6585": {
+  "mode": "crop",
+  "centre": 0.5,
+  "why": "vortex, abstract: held still, centred"
+ },
+ "6789": {
+  "mode": "fit",
+  "why": "monologue words at left 0.07-0.5, anchorman at 0.5-0.8"
+ },
+ "6836": {
+  "mode": "fit",
+  "why": "monologue words top-left, anchorman right"
+ },
+ "6902": {
+  "mode": "fit",
+  "why": "monologue words 0.07-0.45, anchorman 0.55-0.75"
+ },
+ "6954": {
+  "mode": "fit",
+  "why": "monologue words 0.1-0.5, anchorman 0.6-0.8"
+ },
+ "7030": {
+  "mode": "fit",
+  "why": "subtitle line grows to 0.12-0.8"
+ },
+ "7321": {
+  "mode": "crop",
+  "centre": 0.47,
+  "why": "subtitle words 0.33-0.6"
+ },
+ "7331": {
+  "mode": "wide",
+  "width": 1050,
+  "centre": 0.42,
+  "why": "subtitle words start at 0.2"
+ },
+ "7403": {
+  "mode": "fit",
+  "why": "subtitle line 0.12-0.95"
+ },
+ "7484": {
+  "mode": "wide",
+  "width": 1110,
+  "centre": 0.59,
+  "why": "face 0.3-0.65 plus words at 0.7-0.85"
+ },
+ "7700": {
+  "mode": "wide",
+  "width": 1240,
+  "centre": 0.42,
+  "why": "overhead words 0.12-0.72"
+ },
+ "7738": {
+  "mode": "wide",
+  "width": 1180,
+  "centre": 0.48,
+  "why": "teacher 0.2-0.45 plus words 0.5-0.74"
+ },
+ "7776": {
+  "mode": "wide",
+  "width": 1400,
+  "centre": 0.55,
+  "why": "teacher 0.2-0.5 plus words 0.5-0.9"
+ },
+ "7867": {
+  "mode": "wide",
+  "width": 1250,
+  "centre": 0.36,
+  "why": "words 0.06-0.3, face 0.45-0.65"
+ }
+}

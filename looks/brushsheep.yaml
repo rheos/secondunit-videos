@@ -1,0 +1,50 @@
+slug: brushsheep
+title: Brushstroke painting
+note: Drawn shapes repainted every frame by a brushstroke renderer.
+used: Mind The Sheep, Pnubb
+cost: free
+group: code
+order: 30
+clip: brushsheep.mp4
+tall: false
+status: approved
+engine: brushstroke
+project: pnubb-mind-the-sheep-painted
+code:
+  path: pnubb-mind-the-sheep-painted/js/cast.js
+  flag: null
+  page: pnubb-mind-the-sheep-painted/index.html
+  note: >-
+    js/cast.js draws the sheep, sleeper and bedroom; one chapter per file in js/ch/ (hook.js is the reference
+    chapter); renderer js/paint.js (functional-emotions-video, MIT). Read ANIMATION_GUIDE.md first.
+rules:
+  - "Two layers per frame: an underpainting the GPU repaints with thousands of edge-following brushstrokes, and an additive light layer with bloom"
+  - Big clear shapes and value contrast; detail under about 8 px dissolves into paint, flat areas get swirl for free
+  - Lamps, eyes, moonlight and sparks go on the light layer; repaint a silhouette in black on it to block light
+  - "Paint settings per chapter or shot: boil 6 to 12 re-rolls a second, bloom about 1 to 2, flowK 0.5 to 1.5"
+  - Night blues with cream wool; the sheep is a round cloud of wool with a black face and heavy lids
+  - No text on screen, no real likeness; short shots (1.2 to 3.5 s), camera always moving, hits on beats and sung words
+  - Every frame a pure function of song time, rendered at 24 fps on the song grid
+palette:
+  - "#ece6d6"
+  - "#a39d93"
+  - "#17141c"
+  - "#0d1233"
+  - "#3b4d8e"
+reference: functional-emotions-video brushstroke renderer (ledbetterljoshua, MIT); concept "counting sheep"
+proof:
+  renders:
+    - pnubb-mind-the-sheep-painted/out/mts_painted-hook_f00360-f00705_24fps_composite.mp4
+    - mv-projects/auto-edits/mts_auto-7_f00000-f03496_24fps_composite.mp4
+  pr: []
+  youtube:
+    - 7XkX0k2RMC4
+    - 7ENtGQ8LerQ
+verdict: >-
+  "we just need more of the lip sync sheep in more places throughout... more fast cuts to the singing sheep, not
+  enough to miss any of the great animation." (Robin, 2026-09-28, on auto-edit 2)
+related:
+  - brushhjeron
+  - hj-myth
+  - paint
+  - sheep

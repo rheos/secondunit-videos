@@ -1,0 +1,84 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #c3 {
+          position: absolute;
+          inset: 0;
+        }
+      </style>
+      <div id="c3" data-composition-id="c3" data-width="1920" data-height="1080">
+        <div class="layer">
+          <svg class="full" viewBox="0 0 1920 1080">
+            <g id="c3-art"></g>
+          </svg>
+          <div class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate III</div>
+          <div class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>The Discard</div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text, kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 19.18);
+          const art = K.$("c3-art");
+
+          // plate II's end state: two rows written
+          const L = LG.ledger(art, { show: 2 });
+          const r = L.rows[2];
+
+          // a review starts
+          const s1 = LG.tag(art, 1300, 250, ['{"attempt_id":"challenger-1",', ' "status":"started"}']);
+          LG.drawTag(K, s1, K.T(19.62));
+          LG.carry(K, tl, art, LG.toRow(300, 2), K.T(20.06), 0.5);
+          LG.rowIn(K, r, K.T(20.5));
+
+          // its handoff comes back unusable: the verdict record is rejected
+          const hx = 1300, hy = 400;
+          const hand = el("g", {}, art);
+          const hp = el("path", { class: "fill-bg", d: `M${hx} ${hy}H${hx + 200}L${hx + 224} ${hy + 24}V${hy + 120}H${hx}Z` }, hand);
+          const hb = el("path", { class: "ln ink", d: `M${hx} ${hy}H${hx + 200}L${hx + 224} ${hy + 24}V${hy + 120}H${hx}Z` }, hand);
+          const hn = text("verdict record", { class: "mono small", x: hx + 18, y: hy + 40 }, hand);
+          const hl = el("path", { class: "ln thin ink", d: `M${hx + 18} ${hy + 64}H${hx + 190}M${hx + 18} ${hy + 84}H${hx + 170}M${hx + 18} ${hy + 104}H${hx + 130}` }, hand);
+          K.fade(hp, K.T(21.39), 0.2);
+          K.draw(hb, K.T(21.39), 0.6, "none");
+          K.fade(hn, K.T(21.39) + 0.3, 0.3);
+          K.draw(hl, K.T(21.83), 0.5);
+          const x = LG.cross(art, hx + 112, hy + 64, 34);
+          K.draw(x, K.T(22.71), 0.35);
+          const rej = text("rejected", { class: "mono cap", x: hx + 244, y: hy + 52 }, art);
+          const rej2 = text("no usable handoff", { class: "mono cap dim", x: hx + 244, y: hy + 84 }, art);
+          K.reveal(rej, K.T(22.71) + 0.3, 0.5);
+          K.reveal(rej2, K.T(23.15) + 0.2, 0.4);
+
+          const s2 = LG.tag(art, 1300, 560, ['{"attempt_id":"challenger-1",', ' "status":"no-handoff"}']);
+          LG.drawTag(K, s2, K.T(23.66));
+          LG.carry(K, tl, art, LG.toRow(610, 2), K.T(24.17), 0.5);
+          LG.rowDone(K, tl, r, K.T(24.61));
+
+          // the obvious move is to drop it: the row dims and a strike starts across it
+          const strike = el("path", { class: "ln ink", d: `M${LG.X + 60} ${r.y - 8}H${LG.X + LG.W - 60}`, style: "stroke-width:3" }, art);
+          tl.fromTo(r.g, { opacity: 1 }, { opacity: 0.3, duration: 0.5, immediateRender: false }, K.T(25.5));
+          K.draw(strike, K.T(25.5), 0.6, "none");
+          // and it isn't: the strike lifts, the row stays, bracketed
+          tl.fromTo(strike, { opacity: 1 }, { opacity: 0, duration: 0.3, immediateRender: false }, K.T(26.82));
+          tl.fromTo(r.g, { opacity: 0.3 }, { opacity: 1, duration: 0.3, immediateRender: false }, K.T(26.82));
+          const br = el("path", { class: "ln line-strong", d: `M${LG.X + 20} ${r.y - 30}H${LG.X + 10}V${r.y + 14}H${LG.X + 20}M${LG.X + LG.W - 20} ${r.y - 30}H${LG.X + LG.W - 10}V${r.y + 14}H${LG.X + LG.W - 20}`, style: "stroke-width:3" }, art);
+          K.draw(br, K.T(27.26), 0.4);
+          const kept = text("RECORDED, NOT DROPPED", { class: "mono red-t", x: 1300, y: 740 }, art);
+          K.reveal(kept, K.T(27.26) + 0.2, 0.6);
+          const why = text("a spawn with no handoff still ran", { class: "mono cap", x: 1300, y: 780 }, art);
+          K.reveal(why, K.T(28.14), 0.6);
+
+          LG.outAll(tl, [s1.g, s2.g, hand, x, rej, rej2, kept, why, br], K.R(30.35), 0.35);
+          window.__timelines["c3"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

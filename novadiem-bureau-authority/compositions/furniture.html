@@ -1,0 +1,45 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #furniture {
+          position: absolute;
+          inset: 0;
+          background: var(--bg);
+        }
+      </style>
+      <div data-hf-id="hf-ba10" id="furniture" data-composition-id="furniture" data-width="1920" data-height="1080">
+        <svg data-hf-id="hf-ba11" id="fu-ground" class="full" viewBox="0 0 1920 1080" aria-hidden="true" style="will-change: transform"></svg>
+        <svg data-hf-id="hf-ba12" id="fu-frame" class="full" viewBox="0 0 1920 1080"></svg>
+      </div>
+
+      <script>
+        (() => {
+          const tl = gsap.timeline({ paused: true });
+          const K = BP.kit(tl, 0);
+          // stations are the Delegate's steps for one checkpoint (agents/delegate.md, main manager loop: a routine
+          // checkpoint's verdict, then a genuine fork's ledger record, the wait, the owner's call and the resume).
+          // The stage of the story, not live progress.
+          BP.furniture(K, tl, {
+            stations: [
+              { label: "RETURN", at: 0 },
+              { label: "VERDICT", at: 15.35 },
+              { label: "FORK", at: 23.59 },
+              { label: "LEDGER", at: 38.87 },
+              { label: "WAIT", at: 42.4 },
+              { label: "OWNER'S CALL", at: 52.41 },
+              { label: "RESUME", at: 54.17 },
+            ],
+            sheets: [0, 9.47, 23.59, 37.69, 47.11, 61.23, 75.35],
+          });
+          window.__timelines["furniture"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>
+

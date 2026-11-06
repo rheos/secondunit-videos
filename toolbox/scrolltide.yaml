@@ -1,0 +1,19 @@
+slug: scrolltide
+name: Scrolltide
+kind: service
+status: rejected
+does: Paid library of scroll-driven website templates, components and shader backgrounds, sold as prompts to paste into an AI.
+keywords:
+- web
+- scroll
+- shader
+- landing-page
+fits:
+- novadiem.com or an artist page, at most
+deterministic: n/a
+how: not installed
+cost: paid, $299 lifetime (2026-10-28)
+url: https://scrolltide.co
+source: x.com/amananimates/status/2115003606051262772 (read 2026-10-28)
+why: Web pages, not films; design-taste-frontend, impeccable and the Leon Lin code already cover what a site would need.
+added: '2026-10-28'

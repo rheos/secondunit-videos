@@ -1,0 +1,18 @@
+slug: autosubs
+name: AutoSubs
+kind: app
+status: rejected
+does: Local Whisper subtitles with speaker labels, sent into DaVinci Resolve, Premiere or After Effects.
+keywords:
+- captions
+- transcribe
+- whisper
+deterministic: n/a
+how: not installed
+cost: free (MIT)
+url: https://github.com/tmoroney/auto-subs
+source: x.com/heyrimsha/status/2114672104021148033 (10 AI-filmmaker repos, read 2026-10-26)
+why: 'faster-whisper already does this here, and it doesn''t fix our real problem: sung words come out up to 0.4 s early.'
+related:
+- faster-whisper
+added: '2026-11-01'

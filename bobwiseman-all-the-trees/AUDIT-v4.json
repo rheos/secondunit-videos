@@ -1,0 +1,250 @@
+{
+  "version": "v4-directing-audit",
+  "date": "2026-10-13",
+  "status": "audit and proposed revision; no v5 footage rendered",
+  "baselineCommit": "ad295e9",
+  "video": "out/att_alchemy-v4-full_f00000-f03674_24fps_draft.mp4",
+  "recommendation": "The connected grove, played as a physical comedy",
+  "summary": "Repeated swaying is carrying passages that need events, surprises and consequences. The next pass should give the ensemble different functions and let actions travel through its shared structure.",
+  "reviewMethod": "Source inspection, full-cut and action contact sheets, sampled full-resolution frames, and a numerical cue audit by three independent critics. No continuous playback/listening assessment was performed. The first brass onset remains unverified.",
+  "findings": [
+    {
+      "id": "F01",
+      "priority": "1",
+      "category": "Music",
+      "start": 8,
+      "end": 20,
+      "title": "Let the first horn be a surprise",
+      "observed": "A trumpet emblem appears at 8 seconds; the bird introduced at 10.458 seconds also carries one. Heralds arrive in an already-playing pose. The current rig has no conceal, prepare, play, breath or rest states.",
+      "change": "Show the heralds listening or conspiring with hands and horns concealed by a cloak or cloud. At the verified first brass attack, reveal the horn and its first ray together. A nearby listener recoils, catches their balance, and passes the reaction onward. In phrase gaps, lower the instrument and recover.",
+      "meaning": "Sound wakes a connected world. Concealment gives the revealed faculty a consequence.",
+      "anchor": "U06: scale listening into a bodily role; U07: make transmission physical. The comic reveal is our own animation proposal.",
+      "evidence": "opening.js:5,17\u201318,69\u201370; scene.js:86\u201397",
+      "check": "Before verified entry B: zero visible bells, mouth-to-horn contacts or emitted rays across all three drawing routes. Reveal/first emission at B, within one 24-fps frame. Breath and rest follow verified phrase windows."
+    },
+    {
+      "id": "F02",
+      "priority": "1",
+      "category": "Music",
+      "start": 104,
+      "end": 123,
+      "title": "Replace the always-on brass signal with phrases",
+      "observed": "456 harmonic onset candidates drive every herald and bird through the same 0.65-second decay. The computed envelope is nonzero on 99.85% of frames from 12.625 to 147.431 seconds. Ribbons animate throughout the instrumental chapter even when the note envelope is zero.",
+      "change": "Build a reviewed score with brass phrase entrances, sustained notes, releases and rests. Store attacks separately from phrase activity. Use evidence-backed performer assignment; where the recording is an ensemble, direct coordinated roles rather than inventing alternating soloists.",
+      "meaning": "Each musical phrase becomes a complete gesture with a beginning, exertion and recovery.",
+      "anchor": "U03/U04: anatomy and musical apparatus belong to the action, rather than providing a decorative frame.",
+      "evidence": "kit.js: brass(); analyze_brass.py; scene.js:86\u201397; extended.js:64\u201375",
+      "check": "Mark candidate, signal-supported and listening-verified cues separately. Keep 12.5 seconds as the old authored boundary, not a verified trumpet entrance. Test silence and sustained-note examples as well as attacks."
+    },
+    {
+      "id": "F09",
+      "priority": "1",
+      "category": "Music",
+      "start": 49.1,
+      "end": 64,
+      "title": "Make the cue sheet actually drive the picture",
+      "observed": "The named ALCHEMY_CUES.beats entries are checked by the audit, but the drawing functions use their own hard-coded times. Changing a named cue can pass validation while leaving the rendered action unchanged.",
+      "change": "Use one integer-frame event and performance track for the renderer and its audit. Store phrase windows, attack frames, performer, action, confidence and source evidence. Expose the current actor state and actual instrument/contact geometry for review.",
+      "meaning": "The score should determine when an action happens; the rendered action should provide the evidence that it happened.",
+      "anchor": "A production requirement supporting the symbolic direction, rather than an inference about Mark.",
+      "evidence": "cues.js: beats; opening.js, scene.js, extended.js; tools/audit-alchemy.mjs:13\u201325",
+      "check": "Changing a cue moves the visible event. Audit the actual rendered state on the frame before, at, and after attack/release. Include expected quiet frames; candidate count and late-candidate presence are not correctness tests."
+    },
+    {
+      "id": "F03",
+      "priority": "1",
+      "category": "Story",
+      "start": 32.9,
+      "end": 63.75,
+      "title": "Keep the connection alive through the transformation",
+      "observed": "The roots join, then retract from 43.5 seconds; the trees sink before the first person arrives at 49.083. The strongest discovery is cleared away and rebuilt for the chorus.",
+      "change": "One tree stamps or leans. A visible impulse travels through the joined roots and surprises the other. Keep the join as trunks unfold into robes and boughs become arms; the second person discovers that the first person\u2019s movement affects them.",
+      "meaning": "Separation is superficial. Shared structure makes action travel between apparently independent bodies.",
+      "anchor": "U07: a shared physical field connects differently constructed participants.",
+      "evidence": "opening.js:34\u201357; scene.js:35\u201346",
+      "check": "A viewer can trace source, route and receiver without text. Root endpoints stay attached during the handoff. Preserve the physical connection across the shot instead of returning to an empty stage."
+    },
+    {
+      "id": "F04",
+      "priority": "1",
+      "category": "Cast",
+      "start": 79.5,
+      "end": 96.3,
+      "title": "Give the ensemble different jobs",
+      "observed": "There are eight people by the last chorus, but the six additions reuse the same two rigs with different colours, scale and phase. More arrivals do not add new motives or useful abilities.",
+      "change": "Add four functional roles: a listener with an enlarged receptive feature; a carrier/grafter whose hands bridge a gap; a caretaker whose branch-body shelters visitors; a small mischief-maker who tugs the network. Each must change what another character can do.",
+      "meaning": "A community works because its members contribute differently.",
+      "anchor": "U06: scale expresses function. U08: knowing and doing share a body. U09\u2013U13: changed construction makes a meaningful comparison.",
+      "evidence": "extended.js:5\u201322",
+      "check": "At least three roles read from their silhouettes at 720p without relying on robe colour. Each has a setup, a distinct action and an observable effect on a neighbour."
+    },
+    {
+      "id": "F05",
+      "priority": "1",
+      "category": "Acting",
+      "start": 49.1,
+      "end": 79.5,
+      "title": "Make contact interrupt the dance",
+      "observed": "The people repeat roughly a 0.828-second sine cycle. Arms, heads and bodies move, but they rarely intend, resist, catch or recover. A bird lands on the moving hand geometry without its weight changing the host\u2019s action.",
+      "change": "One person offers a branch; the other tests its spring and almost overbalances. Their roots catch the fall. A bird landing bends the bough, interrupts the dance and makes its host adjust. Let the next musical answer release the stored spring.",
+      "meaning": "Being a tree is a usable bodily condition with obligations, not just an identity badge.",
+      "anchor": "U03: construction gives a body its capabilities. U08: altered anatomy joins perception and action.",
+      "evidence": "scene.js:32\u201347,95\u2013108",
+      "check": "Show anticipation, contact, reaction and recovery. Probe bird-foot/bough contact within 3 delivery pixels; allow deliberate impact overdraw only when documented. At least two distinct phrase gestures and one motivated hold in the proof."
+    },
+    {
+      "id": "F06",
+      "priority": "2",
+      "category": "Story",
+      "start": 71.5,
+      "end": 79.5,
+      "title": "Let weather act on the cast",
+      "observed": "Wind, sun and winter arrive in small roundels while the people continue almost the same performance below them.",
+      "change": "Wind inflates a robe like a sail and strains the root connection. Sun opens a protective branch. Winter makes two bodies form a shelter. The returning bird chooses that shelter, completing the action.",
+      "meaning": "The environment changes what connection requires of the characters.",
+      "anchor": "U08\u2019s transfer of function suggests giving a robe or branch a second useful job. This weather staging is a new proposal.",
+      "evidence": "scene.js:110\u2013114,126",
+      "check": "Each weather change produces a readable change of pose or relationship in the main scene. Use a focal action, then the response; avoid adding three concurrent decorative systems."
+    },
+    {
+      "id": "F07",
+      "priority": "2",
+      "category": "Story",
+      "start": 96.3,
+      "end": 122.7,
+      "title": "Make the heart perform care",
+      "observed": "The heart grows from the roots, which is a useful physical origin, then becomes a persistent central sign. The instrumental adds orbiting curves without changing the relationship between the cast.",
+      "change": "Treat the heart as a living pump or bellows. One figure supplies warmth, another shelters a neighbour; a phrase pushes warmth through one root and a bare branch opens at its destination. During the instrumental, the network briefly becomes a bodily orchestra, then returns to the grove.",
+      "meaning": "Love is something the community does that lets another body recover or grow.",
+      "anchor": "U03: apparatus becomes anatomy. U07: an exchange has a physical route and a changed recipient.",
+      "evidence": "extended.js:25\u201347,64\u201375",
+      "check": "Track the same pulse through departure, transit and arrival. The receiver changes after arrival. Do not leave the heart pulsing indefinitely without a consequence."
+    },
+    {
+      "id": "F08",
+      "priority": "2",
+      "category": "Shots",
+      "start": 122.7,
+      "end": 153.083333,
+      "title": "Earn the final wide view",
+      "observed": "Most of the film uses one frontal plate. Camera scale stays close to 1; the late pullback makes the added people smaller. Cloning bodies and filling margins increases density more than dramatic scale.",
+      "change": "Use a close view for the hidden instrument, an underground tracking view for the first transferred impulse, and a perch-level view for the bird\u2019s weight. Return to the full plate when all distinct roles connect. End with a coordinated chain reaction and a musical recovery, not only orbiting birds and a fade.",
+      "meaning": "The wide view reveals a system whose parts we have learned to understand.",
+      "anchor": "Mark\u2019s theatrical framing gives an object presence; our animation extends that idea by directing attention through scale and viewpoint.",
+      "evidence": "scene.js:121; extended.js:77\u201379,85\u2013102",
+      "check": "At least three purposeful framing scales across the next sequence. Every reframe reveals new information. Reserve the largest coordinated action for the final ensemble; do not add continuous camera rocking as filler."
+    }
+  ],
+  "firstProof": {
+    "rangeSeconds": [
+      8,
+      32
+    ],
+    "firstBrassOnset": null,
+    "rule": "Locate and verify the first brass entrance in the unchanged master, starting with a listening check around 10\u201314 seconds. If it falls outside the proof, move the proof to include at least four seconds before it and twelve after.",
+    "sequence": [
+      "Concealed instrument; listening and a shared glance.",
+      "Preparation inside the cloak/cloud; horn stays hidden.",
+      "First confirmed attack: horn and ray revealed together.",
+      "Receiver reacts 3\u20136 frames later; its changed anatomy makes the reaction legible.",
+      "Reaction travels through a visible connection and changes a second actor.",
+      "At the verified phrase gap, horn lowers; cast catches breath. A contrasting next gesture follows."
+    ],
+    "acceptance": [
+      "No early horn in herald, chart or bird paths.",
+      "Verified attack/emission alignment within one frame at 24 fps.",
+      "At least two distinct roles and a visible action travelling between them.",
+      "Two purposeful framings; one complete surprise\u2192reaction\u2192recovery.",
+      "Verify actual bell, hand, mouth and receiver geometry at event frames; do not assert timing merely because a constant matches.",
+      "Use a phrase-led gesture curve; remove the fixed BPM loop from the hero action.",
+      "Check playback with the source music after the frame/pose audit."
+    ]
+  },
+  "options": [
+    {
+      "name": "The connected grove",
+      "recommended": true,
+      "description": "Keep the tree/community thesis. Give the cast useful differences and let mischief, care and music travel through the roots."
+    },
+    {
+      "name": "A body-built orchestra",
+      "recommended": false,
+      "description": "Make breath chambers, branch keys and root strings into bodies. Useful for the instrumental; as a whole-film direction it risks weakening the community story."
+    }
+  ],
+  "protect": [
+    "Fine historical engraving and bright hand-colour washes.",
+    "Principal sun/moon faces, modest robes and readable joints.",
+    "Substantial roots, visible joins and planted weight.",
+    "Untouched pinned soundtrack and deterministic song-time rendering.",
+    "The song\u2019s warmth and silliness."
+  ],
+  "reject": [
+    "An always-playing mouth-to-horn silhouette.",
+    "One dense global onset envelope treated as a trumpet score.",
+    "More recoloured clones with identical jobs.",
+    "Looped bobbing used as the principal dramatic action.",
+    "Weather badges that do not affect anyone.",
+    "A root connection erased for an unrelated entrance.",
+    "Freeze detection or a clean mux presented as proof that the film works."
+  ],
+  "measurements": {
+    "candidateCount": 456,
+    "nonzeroBrassEnvelopePercent": 99.85,
+    "measurementRangeSeconds": [
+      12.625,
+      147.431
+    ],
+    "peopleAtEnd": 8,
+    "personRigTypes": 2,
+    "basePosePeriodSeconds": 0.8275862068965517,
+    "encodedFrames": 3674,
+    "encodedDurationSeconds": 153.083333,
+    "encodedSize": [
+      1280,
+      720
+    ],
+    "audioOffsetMilliseconds": [
+      0,
+      0,
+      0
+    ],
+    "freezeRunsOverTwoSeconds": 0
+  },
+  "cueContract": {
+    "timeUnit": "integer source-song frames at 24 fps",
+    "eventFields": [
+      "id",
+      "startFrame",
+      "endFrame",
+      "attackFrames",
+      "performer",
+      "action",
+      "verification",
+      "sourceEvidence"
+    ],
+    "verificationValues": [
+      "candidate",
+      "signal-supported",
+      "listening-verified"
+    ],
+    "requiredStates": [
+      "concealed",
+      "prepare",
+      "reveal",
+      "play",
+      "recover",
+      "rest"
+    ],
+    "firstEntryFrame": null,
+    "rule": "Geometry/probes must confirm the event. Render from the same cue track the audit uses. Phrase entries can update on any frame; pose cadence must not silently move them."
+  },
+  "nextWork": [
+    "Review the musical score and phrase boundaries against the master; retain candidate provenance.",
+    "Build concealed/prepare/play/recover/rest instrument states and shared world-space anchors.",
+    "Prove the 8\u201332-second surprise and chain reaction.",
+    "Build the roots-to-people handoff and bird-weight interaction.",
+    "Give the ensemble distinct silhouettes and causal roles; reblock chorus and instrumental.",
+    "Review the full arc, then render the next full cut."
+  ]
+}

@@ -1,0 +1,41 @@
+STYLE BRIEF: FLAT-VECTOR SCIENCE EXPLAINER (the Kurzgesagt manner)
+Use when the brief wants the surface as well as the thinking. Updated 2026-10-26.
+Built once as indieagent-flat-explainer-test (one canvas, a pure draw(t), HyperFrames for timing and render).
+
+WHAT IT IS
+Flat shapes on a night gradient, each solid body given volume by one soft highlight, a thin bright rim and a dark inner edge, with film grain over everything. Wide-tracked capitals on leader lines. Rounded heavy numbers that roll. Slow camera.
+
+PALETTE (ours; do not sample the studio's)
+sky        #141238 top, #251a52 middle, #43204f low; a faint warm glow where the light source is
+stars      #efe9ff, 0.8-3 px, 250 or so per 1080p frame; four or five four-point sparkles, twinkling
+ground     #1a1236 with a thin rim #7a66c8; far hills #1d1640, rim at 35%
+warm light #ff9d4d body, #ffd08a highlight
+people     bodies #2d2257 (front) / #221a47 (behind), heads #3b2e6e
+travelling things  sound #c9b8ff, light #fff3c4
+the number #ffc94a gold, once per beat
+text       #f4efff, secondary #b9addf
+Any new subject: keep the gradient-night family, one warm source, one cool travelling colour, gold for the number.
+
+BODIES
+Flat fill. One radial highlight toward the light, 0.2-0.7 alpha. Dark inner edge: radial from 72% to 100% of the radius. Thin bright rim (2-2.5 px at 1080) on the lit side only, about 140 degrees of arc. Light sources add a faint inner ring, three translucent halo rings and faint spokes. Never an outline all round; never a drop shadow.
+
+SPHERES
+Features are projected: lat/lon to x, y, z; squash each feature by z toward the limb; fade and hide as z goes to 0; rotate longitude with time. A flat map pasted on a disc is a reject.
+
+TYPE
+Nunito 800/900 (or any rounded heavy sans). Labels: 17-22 px at 1080, caps, letter-spacing 0.14-0.2 em. Leader: 5 px dot on the object, angled line to an elbow, flat underline, text on the underline. The line draws in 0.55 s (ease out), text fades and slides 12 px in from 0.4 s. Big numbers: 900 weight, 100+ px, the units smaller beside them. Card: small caps line, big gold number phrase, one white sentence, optional small caps footnote.
+
+NUMBERS
+Odometer: each column rolls; a higher column turns only during the last unit before it carries. Columns faster than about 2 digits a second blur (several ghost copies along the roll, 0.16-0.26 alpha), faded at the top and bottom of the window. The value is computed from the moving thing every frame. The number goes gold when it lands. Time compression is labelled on screen.
+
+GRAIN
+Over the whole frame, every frame: grey noise tiles (sum of three uniforms), overlay at about 16%, tile and offset chosen from the frame number so it is deterministic. Vignette under the grain. This is the part that makes it read as the manner and not as clip art.
+
+MOTION
+Slow push-ins (2-5% over a shot), drift of a few px, camera eases in and out (cubic). Things react on contact with a front: a nod, a rim flash, a light going out. Sparks: four-point stars that burst and shrink. Parallax: stars 0.25, moon 0.45, far hills 0.7 of the camera move.
+
+REJECTS
+The studio's bird or characters; its exact palette; any shot's composition; faces (keep people as heads and shoulders); outlines round every shape; drop shadows; a flat map on a sphere; a number that runs at a speed it doesn't label; more than one gold number per beat; no grain.
+
+ACCEPTANCE CHECK
+A 1 fps contact sheet should read as one look in every cell. One full-size frame: rims only on the lit side, grain visible in the flat sky, every label's line ending in a dot on its object. Scrub the number: at any frame, recompute it from the moving thing and get the same value.

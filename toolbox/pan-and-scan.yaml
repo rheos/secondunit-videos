@@ -1,0 +1,18 @@
+slug: pan-and-scan
+name: Pan and scan (vertical.mjs)
+kind: method
+status: in-use
+does: Makes a 9:16 (or other ratio) cut of a code-drawn film by drawing frames bigger and cropping along a plan that follows the action.
+keywords:
+- render
+- reframe
+- aspect-ratio
+fits:
+- 9:16 cuts of 16:9 masters when a full recompose is not worth it
+deterministic: 'yes'
+how: '`bobwiseman-me-and-jimi/vertical.mjs` + `aspects/<r>/panscan-plan-vN.json`; about 40 min per minute of video'
+cost: free
+detail: secondunit/CLAUDE.md "Several aspect ratios per project"; bobwiseman-me-and-jimi/ASPECTS.md
+related:
+- ltx-reframe
+added: '2026-11-01'

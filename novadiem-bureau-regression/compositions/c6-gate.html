@@ -1,0 +1,111 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #c6 {
+          position: absolute;
+          inset: 0;
+        }
+      </style>
+      <div id="c6" data-composition-id="c6" data-width="1920" data-height="1080">
+        <div id="c6-all" class="layer">
+          <svg class="full" viewBox="0 0 1920 1080">
+            <g id="c6-art"></g>
+          </svg>
+          <div class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate VI</div>
+          <div class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>The Next Run</div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text, kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 61.53);
+          const art = K.$("c6-art");
+
+          // a later build run (ILLUSTRATIVE). The gate is real: workflows/execute-plan/build-tail.md step 6
+          const h1 = text("LATER · A NEW BUILD RUN · ILLUSTRATIVE", { class: "mono big", x: 960, y: 186, "text-anchor": "middle" }, art);
+          const h2 = text("before any coder is dispatched, the gate re-runs every standing fixture", { class: "mono cap dim", x: 960, y: 228, "text-anchor": "middle" }, art);
+          K.reveal(h1, K.T(62.14), 0.7);
+          K.fade(h2, K.T(62.74), 0.5);
+
+          // the worktree: an accepted prompt quietly put the typed stamp back
+          const W = TW.card(art, 140, 290, 560, 230, "WORKTREE · ILLUSTRATIVE", { headCls: "" });
+          TW.drawCard(K, W, K.T(63.34));
+          const w1 = text("prompt 03, accepted, edited", { class: "mono code", x: 168, y: 372 }, art);
+          const w2 = text("scripts/log-append.sh:", { class: "mono code", x: 168, y: 404 }, art);
+          const w3 = text('- TS="$(date -u +%Y-%m-%dT%H:%M:%SZ)"', { class: "mono code dim", x: 168, y: 450 }, art);
+          const w4 = text('+ TS="${STAMP}"', { class: "mono code b", x: 168, y: 486 }, art);
+          K.reveal(w1, K.T(63.95), 0.5);
+          K.reveal(w2, K.T(63.95) + 0.25, 0.5);
+          K.reveal(w3, K.T(64.55), 0.6);
+          K.reveal(w4, K.T(64.55) + 0.4, 0.5);
+
+          // the gate: two posts and a wire, fixture 135 hung on it
+          const posts = el("path", { class: "ln ink", d: "M860 300V650M1060 300V650M846 300H874M1046 300H1074" }, art);
+          K.draw(posts, K.T(65.16), 0.6, "none");
+          const gl = text("RE-RUN GATE", { class: "mono cap b", x: 960, y: 284, "text-anchor": "middle" }, art);
+          K.fade(gl, K.T(65.16) + 0.2, 0.4);
+          const wire = el("path", { class: "ln line-strong", d: "M860 590H1060", style: "stroke-width:3" }, art);
+          K.draw(wire, K.T(65.16) + 0.4, 0.5);
+          const chip = TW.chip(art, "135");
+          chip.setAttribute("transform", "translate(960 520)");
+          K.fade(chip, K.T(65.76), 0.35);
+          const hang = el("path", { class: "ln thin ink", d: "M960 564V590" }, art);
+          K.draw(hang, K.T(65.76) + 0.2, 0.2);
+
+          // where the prompt is headed
+          const D = TW.card(art, 1240, 500, 540, 150, "NEXT DISPATCH", { headCls: "" });
+          TW.drawCard(K, D, K.T(65.76));
+          const d1 = text("prompt 04 → The Systemsmith", { class: "mono code", x: 1268, y: 596 }, art);
+          K.reveal(d1, K.T(66.36), 0.5);
+          const route = el("path", { class: "ln thin ink", d: "M560 590H1232" }, art);
+          route.setAttribute("opacity", "0.5");
+          K.draw(route, K.T(66.36), 0.7, "none");
+
+          // the packet walks up to the wire and waits there
+          const pk = el("g", {}, art);
+          el("rect", { class: "fill-bg", x: -70, y: -24, width: 140, height: 48 }, pk);
+          el("rect", { class: "ln ink", x: -70, y: -24, width: 140, height: 48 }, pk);
+          text("PROMPT 04", { class: "mono small", x: 0, y: 6, "text-anchor": "middle" }, pk);
+          K.fade(pk, K.T(66.97), 0.2);
+          K.travel(pk, el("path", { d: "M480 590H770" }), K.T(66.97), 0.9, "power2.out");
+
+          // the runner's own lines (scripts are real; 133 and 134 are live fixtures that run just before 135)
+          const R = TW.card(art, 140, 690, 1640, 230, "$ sh .bureau/regression/run.sh");
+          TW.drawCard(K, R, K.T(68.17), 0.6);
+          const L = [
+            [68.78, "· · ·", "dim"],
+            [69.38, "PASS          133-integration-gate-conflicts-legacy-mergetree-fallback.md", ""],
+            [69.98, "PASS          134-integration-gate-verbose-preexisting-gate-not-swallowed.md", ""],
+            [72.4, "FAIL exit=1 135-log-append-real-timestamp.md", "b"],
+            [73.0, "    last output: FAIL: echoed TS1 [] not ISO-8601 UTC", ""],
+          ];
+          L.forEach(([at, s, c], i) => K.reveal(text(s, { class: `mono code ${c}`, x: 168, y: 768 + i * 34 }, art), K.T(at), 0.5));
+          const x = TW.cross(art, 1720, 870, 13);
+          K.draw(x, K.T(73.0) + 0.3, 0.3);
+
+          // the wire trips: a cross on the gate, the packet stays where it is
+          const tx = TW.cross(art, 960, 590, 22);
+          K.draw(tx, K.T(73.61), 0.35);
+          tl.fromTo(wire, { opacity: 1 }, { opacity: 0.35, duration: 0.3, immediateRender: false }, K.T(73.61));
+          const note1 = text("the log names the fixture file,", { class: "mono small dim", x: 1268, y: 450 }, art);
+          const note2 = text("the command and the failing output", { class: "mono small dim", x: 1268, y: 474 }, art);
+          K.fade(note1, K.T(74.81), 0.4);
+          K.fade(note2, K.T(74.81) + 0.15, 0.4);
+
+          const S = TW.stamp(art, "BLOCKED BEFORE DISPATCH", 985, 410, 545, true);
+          TW.slam(tl, S, K.T(76.02));
+
+          K.out(K.$("c6-all"), K.R(79.2), 0.45);
+          window.__timelines["c6"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

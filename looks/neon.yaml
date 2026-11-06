@@ -1,0 +1,47 @@
+slug: neon
+title: Neon sign
+note: "Bent glass tubes on a brick wall: lit and unlit poses, failing tubes, the drums switch the sign."
+used: Holiday Tavern, Bob Wiseman
+cost: free
+group: code
+order: 140
+clip: neon.mp4
+tall: false
+status: draft
+engine: canvas2d
+project: bobwiseman-holiday-tavern
+code:
+  path: bobwiseman-holiday-tavern/js/neon/tube.js
+  flag: null
+  page: bobwiseman-holiday-tavern/looks/neon.html
+  note: >-
+    local only: js/neon/ is not committed on any branch (draft PR #39, branch holiday-tavern, holds only
+    README, CAST.md and tools). sign.js lays out the tubes; wall.js the brick.
+rules:
+  - Every tube is one continuous piece of bent glass, corners bent round, never a sharp kink
+  - Return legs and tube ends are painted out black; standoff clips every ~120 px
+  - "All tubes are mounted at once: unlit poses show as bare glass, as on a real animated sign"
+  - Old tavern brick painted dark oxblood and worn back; the image is albedo times light, then bloom
+  - A failing tube buzzes, drops out and lights only part way
+  - Poses switch on drum onsets
+palette:
+  - "#ffa83a"
+  - "#ff2a40"
+  - "#ff48c8"
+  - "#3f8cff"
+  - "#52e4ff"
+  - "#fff0b0"
+  - "#3dff86"
+reference: null
+proof:
+  renders:
+    - bobwiseman-holiday-tavern/out/holiday-tavern_draft5_f00000-f05011_24fps_draft.mp4
+  pr:
+    - rheos/secondunit-videos#39
+  youtube:
+    - PTTro8rezBc
+    - ygMAG_AvW3Q
+verdict: null
+related:
+  - charcoal
+  - flashphoto

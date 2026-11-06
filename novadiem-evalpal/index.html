@@ -1,0 +1,174 @@
+<!doctype html>
+<html class="draft" lang="en" data-resolution="landscape">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1280, height=720" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=IBM+Plex+Mono:wght@400;700&display=block" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <!-- Series kit (tools/blueprint-kit, copied by sync.sh). Theme first, then structure. -->
+    <link rel="stylesheet" href="kit/themes/paper.css" />
+    <link rel="stylesheet" href="kit/kit.css" />
+    <script src="kit/kit.js"></script>
+    <script>
+      // Beat grid of the score (beats.json): librosa beats 0.28-83.75 at ~92.3 BPM, extended to 85.70 at 0.65 s.
+      BP.grid({ beats: [0.28, 0.93, 1.6, 2.25, 2.9, 3.55, 4.2, 4.85, 5.5, 6.15, 6.8, 7.48, 8.1, 8.75, 9.43, 10.08, 10.73, 11.38, 12.03, 12.7, 13.33, 13.98, 14.63, 15.3, 15.93, 16.58, 17.25, 17.9, 18.55, 19.2, 19.85, 20.5, 21.15, 21.8, 22.48, 23.1, 23.75, 24.4, 25.08, 25.73, 26.38, 27.03, 27.68, 28.33, 28.98, 29.63, 30.28, 30.95, 31.58, 32.25, 32.9, 33.55, 34.2, 34.85, 35.5, 36.15, 36.8, 37.45, 38.13, 38.78, 39.4, 40.08, 40.73, 41.38, 42.03, 42.68, 43.33, 43.98, 44.63, 45.28, 45.95, 46.6, 47.25, 47.9, 48.55, 49.2, 49.85, 50.5, 51.15, 51.8, 52.45, 53.1, 53.78, 54.43, 55.08, 55.73, 56.38, 57.03, 57.68, 58.33, 58.98, 59.63, 60.3, 60.93, 61.6, 62.25, 62.88, 63.55, 64.2, 64.85, 65.5, 66.15, 66.8, 67.45, 68.1, 68.75, 69.43, 70.08, 70.73, 71.38, 72.03, 72.68, 73.33, 73.98, 74.63, 75.3, 75.95, 76.6, 77.25, 77.9, 78.53, 79.2, 79.85, 80.5, 81.15, 81.8, 82.45, 83.1, 83.75, 84.4, 85.05, 85.7] });
+    </script>
+    <style>
+      /* shared by the paper plates (plate IV scopes its own night versions) */
+      svg text.sht { font-family: var(--font-mono); font-size: 15px; font-weight: 400; letter-spacing: 0.06em; fill: var(--ink); }
+      svg text.sht.val { font-weight: 700; }
+      svg text.sht.dim { fill: var(--ink-dim); }
+      svg text.sht.tiny { font-size: 13px; }
+      svg text.mono.head { font-size: 22px; }
+      svg text.mono.gold-t { fill: #6b5416; } /* line-strong is 3.5:1 on paper; small type needs 4.5:1 */
+      svg text.big { font-family: var(--font-display); font-weight: var(--display-weight); letter-spacing: var(--display-tracking); fill: var(--ink); }
+      .fill-ink { fill: var(--ink); }
+      .statement.two { top: 790px; flex-direction: column; align-items: center; font-size: 60px; row-gap: 6px; }
+      .statement.two .row { display: flex; column-gap: 0.3em; }
+    </style>
+    <script>
+      // EP.card(parent, spec): an instrument definition drawn as a data card, local coords 0-460 x 0-596.
+      // Item wording is never shown: each item is a ruled line. Returns the parts for cueing and the
+      // card's zones (local coords) for callouts and highlights.
+      window.EP = (() => {
+        const { el, text } = BP;
+        const W = 460,
+          H = 596;
+        // prisma/instruments/phq9.ts (public domain per the file): structure only
+        const PHQ9 = {
+          name: "PHQ-9",
+          meta: "v1.0 · PUBLIC DOMAIN",
+          scale: "FREQUENCY  0–3",
+          options: [["0", "Not at all"], ["1", "Several days"], ["2", "More than half the days"], ["3", "Nearly every day"]],
+          itemsNote: "9 SCORED + 1",
+          items: [1, 1, 1, 1, 1, 1, 1, 1, 1, 0].map((s, i) => ({ n: String(i + 1).padStart(2, "0"), scored: !!s, tag: "" })),
+          scoring: "SUM · TOTAL",
+          bands: ["0–4", "5–9", "10–14", "15–19", "20–27"],
+          safety: "ITEM 09 > 0",
+        };
+        // a made-up definition: different scale type, reverse items, two subscales
+        const EXAMPLE = {
+          name: "YOUR INSTRUMENT",
+          meta: "EXAMPLE · MADE UP",
+          scale: "ORDINAL  1–4",
+          options: [["1", "Never"], ["2", "Sometimes"], ["3", "Often"], ["4", "Always"]],
+          itemsNote: "8 · 2 SUBSCALES",
+          items: ["A", "A", "B", "A  R", "B", "B  R", "A", "B"].map((tag, i) => ({ n: String(i + 1).padStart(2, "0"), scored: true, tag })),
+          scoring: "SUM · PER SUBSCALE",
+          bands: ["4–7", "8–11", "12–16"],
+          safety: "NONE",
+        };
+        const HATCH = [250, 300, 210, 280, 190, 320, 296, 330, 236, 270];
+        const ZONES = {
+          scale: [12, 72, 436, 140],
+          items: [12, 232, 436, 248],
+          scoring: [12, 494, 436, 30],
+          bands: [12, 526, 436, 34],
+          safety: [12, 562, 436, 26],
+        };
+        function card(parent, spec) {
+          const P = { rules: [], groups: [], items: [] };
+          P.paper = el("rect", { class: "fill-bg", x: 0, y: 0, width: W, height: H, opacity: 0.94 }, parent);
+          P.frame = el("rect", { class: "ln ink", x: 0, y: 0, width: W, height: H }, parent);
+          const g = () => {
+            const n = el("g", {}, parent);
+            P.groups.push(n);
+            return n;
+          };
+          const t = (str, x, y, cls, p, anchor) => text(str, Object.assign({ class: `sht ${cls || ""}`, x, y }, anchor ? { "text-anchor": anchor } : {}), p);
+          const rule = (y) => P.rules.push(el("path", { class: "ln thin ink", d: `M0 ${y}H${W}` }, parent));
+
+          P.head = g();
+          t(spec.name, 24, 40, "val", P.head);
+          t(spec.meta, 436, 40, "dim tiny", P.head, "end");
+          rule(60);
+
+          P.scale = g();
+          t("SCALE", 24, 92, "dim", P.scale);
+          t(spec.scale, 436, 92, "val", P.scale, "end");
+          P.opts = spec.options.map(([v, label], i) => {
+            const og = el("g", {}, P.scale);
+            t(v, 44, 122 + i * 26, "val", og);
+            t(label, 76, 122 + i * 26, "", og);
+            return og;
+          });
+          rule(222);
+
+          P.itemsHead = g();
+          t("ITEMS", 24, 252, "dim", P.itemsHead);
+          t(spec.itemsNote, 436, 252, "val", P.itemsHead, "end");
+          spec.items.forEach((it, i) => {
+            const y = 278 + i * 21;
+            const row = el("g", {}, parent);
+            t(it.n, 44, y, "tiny", row);
+            el("path", { class: "ln thin ink", d: `M84 ${y - 5}h${HATCH[i % HATCH.length]}`, opacity: 0.45 }, row);
+            if (it.tag) t(it.tag, 436, y, "tiny val", row, "end");
+            else if (it.scored) el("circle", { class: "fill-ink", cx: 428, cy: y - 5, r: 4.5 }, row);
+            else el("circle", { class: "ln thin ink", cx: 428, cy: y - 5, r: 4.5 }, row);
+            P.items.push(row);
+          });
+          rule(488);
+
+          P.scoring = g();
+          t("SCORING", 24, 516, "dim", P.scoring);
+          t(spec.scoring, 436, 516, "val", P.scoring, "end");
+
+          P.bands = g();
+          t("BANDS", 24, 548, "dim", P.bands);
+          const bw = (436 - 128 - (spec.bands.length - 1) * 4) / spec.bands.length;
+          P.bandBoxes = spec.bands.map((b, i) => {
+            const x = 128 + i * (bw + 4);
+            el("rect", { class: "ln thin ink", x, y: 530, width: bw, height: 24 }, P.bands);
+            t(b, x + bw / 2, 547, "tiny", P.bands, "middle");
+            return x;
+          });
+
+          P.safety = g();
+          t("SAFETY", 24, 580, "dim", P.safety);
+          t(spec.safety, 436, 580, "val", P.safety, "end");
+          return P;
+        }
+        return { card, PHQ9, EXAMPLE, ZONES, W, H };
+      })();
+    </script>
+  </head>
+  <body>
+    <div data-hf-id="hf-ep01"
+      id="root"
+      data-composition-id="main"
+      data-start="0"
+      data-duration="85.9"
+      data-width="1280"
+      data-height="720"
+    >
+      <!-- Score: score-library drafting-table-evalpal take-01, sha256 2a2b7cde...e857, the clock for every cue -->
+      <audio data-hf-id="hf-ep02"
+        id="score"
+        src="_in/score.mp3"
+        data-start="0"
+        data-duration="85.9"
+        data-track-index="9"
+        data-volume="1"
+      ></audio>
+
+      <!-- every plate draws on a 1920x1080 stage; drafts scale it to 720p (kit.css, stage.sh) -->
+      <div class="stage">
+        <div data-hf-id="hf-ep03" id="slot-furniture" data-composition-id="furniture" data-composition-src="compositions/furniture.html" data-start="0" data-duration="85.9" data-track-index="0" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-ep04" id="slot-b1" data-composition-id="b1" data-composition-src="compositions/b1-definition.html" data-start="0" data-duration="11.2" data-track-index="1" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-ep05" id="slot-b2" data-composition-id="b2" data-composition-src="compositions/b2-form.html" data-start="11" data-duration="13.05" data-track-index="2" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-ep06" id="slot-b3" data-composition-id="b3" data-composition-src="compositions/b3-score.html" data-start="24" data-duration="14.9" data-track-index="3" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-ep08" id="slot-b5" data-composition-id="b5" data-composition-src="compositions/b5-report.html" data-start="51.5" data-duration="12.55" data-track-index="5" data-width="1920" data-height="1080"></div>
+        <!-- plate IV's night field covers the end of III and the start of V, so it sits on top -->
+        <div data-hf-id="hf-ep07" id="slot-b4" data-composition-id="b4" data-composition-src="compositions/b4-at-rest.html" data-start="37.9" data-duration="14.7" data-track-index="4" data-width="1920" data-height="1080" style="z-index: 5"></div>
+        <div data-hf-id="hf-ep09" id="slot-b6" data-composition-id="b6" data-composition-src="compositions/b6-new-instrument.html" data-start="64" data-duration="14.05" data-track-index="6" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-ep0a" id="slot-b7" data-composition-id="b7" data-composition-src="compositions/b7-colophon.html" data-start="78" data-duration="7.9" data-track-index="7" data-width="1920" data-height="1080"></div>
+      </div>
+    </div>
+
+    <script>
+      window.__timelines["main"] = gsap.timeline({ paused: true });
+    </script>
+  </body>
+</html>

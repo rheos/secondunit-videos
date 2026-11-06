@@ -1,0 +1,108 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #b5 {
+          position: absolute;
+          inset: 0;
+        }
+      </style>
+      <div data-hf-id="hf-n501" id="b5" data-composition-id="b5" data-width="1920" data-height="1080">
+        <div data-hf-id="hf-n502" id="b5-content" class="layer">
+          <div data-hf-id="hf-n503" id="b5-lab-l" class="plate-label left">PLATE V</div>
+          <div data-hf-id="hf-n504" id="b5-lab-r" class="plate-label right">THE OUTBOX</div>
+          <svg data-hf-id="hf-n505" id="b5-svg" class="full" viewBox="0 0 1920 1080"></svg>
+          <div data-hf-id="hf-n506" class="statement">
+            <span data-hf-id="hf-n507" id="b5-s1" class="phrase">The change and its event.</span>
+            <span data-hf-id="hf-n508" id="b5-s2" class="phrase accent">One commit.</span>
+          </div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text } = BP;
+          const tl = gsap.timeline({ paused: true });
+          const S = 50;
+          const K = BP.kit(tl, S);
+          const svg = K.$("b5-svg");
+
+          // worker B's second transaction: the handler's effects, the job's success and the event it
+          // publishes (events/publish.py: both inserts run in the caller's unit of work)
+          const txO = el("rect", { class: "ln line", x: 220, y: 190, width: 860, height: 520 }, svg);
+          const txI = el("rect", { class: "ln thin line", x: 230, y: 200, width: 840, height: 500 }, svg);
+          const txT = text("ONE TRANSACTION", { class: "mono", x: 220, y: 172 }, svg);
+
+          const blocks = [
+            ["HANDLER EFFECTS", "the job's own writes"],
+            ["core.job  ->  succeeded", "the job's state change"],
+            ["core.outbox_event", "publish(): one row"],
+            ["core.event_delivery", "one row per subscribed consumer"],
+          ].map(([a, b], i) => {
+            const y = 230 + i * 116;
+            const r = el("rect", { class: "ln line", x: 270, y, width: 760, height: 86 }, svg);
+            const t = text(a, { class: "mono", x: 300, y: y + 38 }, svg);
+            const s = text(b, { class: "mono small dim", x: 300, y: y + 66 }, svg);
+            return { r, t, s, y };
+          });
+
+          // two outcomes, the two the tests check (tests/postgres/test_outbox.py)
+          const lanes = [
+            { y: 330, word: "COMMIT", result: "ALL FOUR LAND", solid: true },
+            { y: 560, word: "ROLLBACK", result: "NONE OF THEM", solid: false },
+          ].map((L) => {
+            const arrow = el("path", { class: "ln line", d: `M1080 ${L.y}H1200M1188 ${L.y - 10}L1200 ${L.y}L1188 ${L.y + 10}` }, svg);
+            const b = JB.box(svg, 1210, L.y - 40, 240, 80, L.word, L.solid ? "ln line-strong" : "ln line");
+            const marks = [0, 1, 2, 3].map((k) => {
+              const x = 1500 + k * 68;
+              const sq = el("rect", { class: L.solid ? "ln line" : "ln line construct", x, y: L.y - 24, width: 48, height: 48 }, svg);
+              const tick = L.solid ? el("path", { class: "ln line-strong", d: `M${x + 12} ${L.y}l8 9l16 -18` }, svg) : null;
+              return { sq, tick };
+            });
+            const res = text(L.result, { class: L.solid ? "mono small strong" : "mono small dim", x: 1500, y: L.y + 58 }, svg);
+            return { arrow, b, marks, res };
+          });
+
+          const foot = text("CONSUMERS LOG EACH EVENT IN core.consumer_processed, SO A HANDLER NEVER RUNS TWICE", { class: "mono small dim", x: 960, y: 760, "text-anchor": "middle" }, svg);
+
+          // cues
+          K.fade(K.$("b5-lab-l"), K.T(50.35), 0.4);
+          K.fade(K.$("b5-lab-r"), K.T(50.35), 0.4);
+          K.draw(txO, K.T(50.98), 0.8);
+          K.draw(txI, K.T(50.98) + 0.2, 0.8);
+          K.fade(txT, K.T(50.98) + 0.3, 0.35);
+          [51.61, 52.23, 52.86, 53.48].forEach((at, i) => {
+            const B = blocks[i];
+            K.draw(B.r, K.T(at), 0.45);
+            K.fade(B.t, K.T(at) + 0.2, 0.3);
+            K.fade(B.s, K.T(at) + 0.3, 0.3);
+          });
+
+          [[54.73, 55.36], [56.61, 57.23]].forEach(([a, b], i) => {
+            const L = lanes[i];
+            K.draw(L.arrow, K.T(a), 0.4);
+            K.draw(L.b.r, K.T(a) + 0.2, 0.45);
+            K.fade(L.b.t, K.T(a) + 0.4, 0.3);
+            L.marks.forEach((m, k) => {
+              if (i === 0) K.draw(m.sq, K.T(b) + k * 0.15, 0.3);
+              else K.sweep(m.sq, K.T(b) + k * 0.15, 0.3);
+              if (m.tick) K.draw(m.tick, K.T(b) + k * 0.15 + 0.2, 0.25);
+            });
+            K.fade(L.res, K.T(b) + 0.6, 0.35);
+          });
+          K.fade(foot, K.T(58.48), 0.4);
+
+          K.reveal(K.$("b5-s1"), K.T(59.73), 0.7);
+          K.reveal(K.$("b5-s2"), K.T(60.36), 0.6);
+
+          K.out(K.$("b5-content"), K.R(63.4), 0.45);
+          window.__timelines["b5"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

@@ -1,0 +1,44 @@
+slug: hj-veil
+title: The Wyrd One, keyed
+note: His veiled character, generated alone on a plain ground so it can be placed into any shot.
+used: Dream of Fire character probe
+cost: credits
+group: live
+order: 80
+clip: hj-veil.mp4
+tall: true
+status: test
+engine: generated (GPT Image 2.5 still + MiniMax H3 Max lip-sync)
+project: hjeron-dark-blues-probe
+code:
+  path: null
+  flag: null
+  page: null
+  note: >-
+    Local only, not in rheos/secondunit-videos. Prompts mv-projects/hjeron-dark-blues-probe/p1.txt (still) and
+    p2.txt (veiled sing); job receipts img.json, vid.json. The green was keyed out and the figure laid on a dark
+    blue ground for the clip.
+rules:
+  - "Still: GPT Image 2.5 Sunburst 9:16 from his real refs, medium shot mid-thigh up, low camera, whole hat in frame with margin"
+  - Black wide-brim hat tilted down, a dense curtain of black cord fringe over the whole face, never eyes, nose or mouth
+  - Long black coat, fingerless gloves, black Les Paul with cream binding across the body
+  - Flat chroma green #00B140 ground edge to edge, no shadows, no floor; no green on him
+  - "Sing pass: H3 Max 6 s 768p, image + vocal stem; locked camera; singing reads through the fringe swaying and the head lifting with the phrasing"
+  - Cost 19.5 credits for the pair (4.5 still + 15 for 6 s of H3)
+palette:
+  - "#00B140"
+reference: >-
+  Hjeron's own reference photos (hjeron-darkblues-ref 2, 5, 9) and his "The Wyrd One" persona; probe for the
+  veiled-lipsync method
+proof:
+  renders:
+    - mv-projects/hjeron-dark-blues-probe/vid.url (H3 job 916d9192)
+    - mv-projects/hjeron-dark-blues-probe/img.url (GPT Image job 36abc379)
+  pr: []
+  youtube: []
+verdict: >-
+  "he's not jack sparrow.. or slash" (Robin, 2026-09-28: the fringe read as dreadlock hair). Later settled
+  (2026-10-07): the veil is fine black strings from the brim, the hair his own long wavy hair.
+related:
+  - hj-lipsync
+  - hj-rattle

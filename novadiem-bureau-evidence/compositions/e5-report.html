@@ -1,0 +1,72 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #e5 {
+          position: absolute;
+          inset: 0;
+        }
+      </style>
+      <div id="e5" data-composition-id="e5" data-width="1920" data-height="1080">
+        <div id="e5-all" class="layer">
+          <svg class="full" viewBox="0 0 1920 1080">
+            <g id="e5-art"></g>
+          </svg>
+          <div class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate V</div>
+          <div class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>Coverage</div>
+          <div id="e5-st" class="statement">
+            <span id="e5-st-a" class="phrase">The verdict lists what it read.</span>
+          </div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text, kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 44.16);
+          const root = K.$("e5-art");
+          const P = FP.desk(root, { read: 1 });
+          FP.hide(FP.gateParts(P));
+          FP.hide([P.reads[1].ok]);
+
+          // the manifest from plate IV, and a fresh reviewer
+          K.fade(P.man.g, K.T(44.16), 0.4);
+          FP.drawRoom(K, P.room, K.T(44.74));
+
+          // it reads plan.md, and only plan.md
+          FP.carry(K, tl, root, P.readPaths[0], K.T(45.93), 1.0);
+
+          // the verdict comes back: proceed, the primary's fingerprint, and what it read
+          K.draw(P.toCard, K.T(47.11), 0.3);
+          FP.drawCard(K, P.card, K.T(47.11));
+          K.fade(P.decL, K.T(47.69), 0.3);
+          K.reveal(P.decV, K.T(47.69) + 0.1, 0.4);
+          K.fade(P.hashL, K.T(48.27), 0.3);
+          FP.showGlyph(K, P.hashG, K.T(48.27), 0.4);
+          K.fade(P.readL, K.T(48.88), 0.3);
+          K.fade(P.reads[0].g, K.T(48.88) + 0.2, 0.4);
+
+          // check one: the fingerprint matches the staged primary
+          K.draw(P.hashOk, K.T(49.46), 0.35);
+
+          // check two: every manifest line against the read list, both directions
+          K.draw(P.links[0], K.T(51.8), 0.9, "power1.inOut");
+          K.draw(P.reads[0].ok, K.T(52.99), 0.35);
+          K.draw(P.links[1], K.T(53.57), 1.6, "power1.inOut");
+          K.fade(P.slot, K.T(54.75), 0.5, 0.6);
+
+          K.reveal(K.$("e5-st-a"), K.T(49.46), 0.7);
+
+          // the desk carries straight on into plate VI; only the line of text leaves
+          K.out(K.$("e5-st"), K.R(56.1), 0.4);
+          window.__timelines["e5"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

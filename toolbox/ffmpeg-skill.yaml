@@ -1,0 +1,23 @@
+slug: ffmpeg-skill
+name: ffmpeg-skill
+kind: toolkit
+status: candidate
+does: 42 typed FFmpeg tools for agents (cut, captions, reframe, loudness, platform exports) with a probe, edit, verify contract and an MCP server; standard-library Python.
+keywords:
+- encode
+- cut
+- qc
+- captions
+- delivery
+fits:
+- loudness targets and platform export presets for deliveries
+- the probe-first, verify-after habit in references/editing.md
+deterministic: n/a
+how: not installed; `npx ffmpeg-skill`
+cost: free (MIT)
+url: https://github.com/kajisho5/ffmpeg-skill
+source: x.com/socialwithaayan/status/2116567606882967790 (10 motion-design repos, read 2026-11-01)
+verdict: 'Claude, 2026-11-01: borrow its loudness and platform presets into our editing recipes rather than install a second ffmpeg layer.'
+related:
+- ffmpeg
+added: '2026-11-01'

@@ -1,0 +1,98 @@
+[
+  {
+    "a": 0,
+    "b": 6,
+    "key": "window-release",
+    "id": 1,
+    "startFrame": 0,
+    "endFrame": 144
+  },
+  {
+    "a": 6,
+    "b": 15,
+    "key": "city-rises",
+    "id": 2,
+    "startFrame": 144,
+    "endFrame": 360
+  },
+  {
+    "a": 15,
+    "b": 23,
+    "key": "shore-departure",
+    "id": 3,
+    "startFrame": 360,
+    "endFrame": 552
+  },
+  {
+    "a": 23,
+    "b": 30,
+    "key": "island-approach",
+    "id": 4,
+    "startFrame": 552,
+    "endFrame": 720
+  },
+  {
+    "a": 30,
+    "b": 38,
+    "key": "vocal-shutters-answer",
+    "id": 5,
+    "startFrame": 720,
+    "endFrame": 912
+  },
+  {
+    "a": 38,
+    "b": 44.72,
+    "key": "take-lit-branch",
+    "id": 6,
+    "startFrame": 912,
+    "endFrame": 1073
+  },
+  {
+    "a": 44.72,
+    "b": 53.28,
+    "key": "memory-on-water",
+    "id": 7,
+    "startFrame": 1073,
+    "endFrame": 1279
+  },
+  {
+    "a": 53.28,
+    "b": 59.12,
+    "key": "door-approach",
+    "id": 8,
+    "startFrame": 1279,
+    "endFrame": 1419
+  },
+  {
+    "a": 59.12,
+    "b": 66,
+    "key": "sun-window-response",
+    "id": 9,
+    "startFrame": 1419,
+    "endFrame": 1584
+  },
+  {
+    "a": 66,
+    "b": 73.72,
+    "key": "pass-the-spectacle",
+    "id": 10,
+    "startFrame": 1584,
+    "endFrame": 1769
+  },
+  {
+    "a": 73.72,
+    "b": 84.14,
+    "key": "roads-curl-away",
+    "id": 11,
+    "startFrame": 1769,
+    "endFrame": 2019
+  },
+  {
+    "a": 84.14,
+    "b": 90,
+    "key": "landmark-returns",
+    "id": 12,
+    "startFrame": 2019,
+    "endFrame": 2160
+  }
+]

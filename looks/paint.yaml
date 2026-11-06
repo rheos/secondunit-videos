@@ -1,0 +1,58 @@
+slug: paint
+title: Brushstroke painting, Fauvist
+note: The brushstroke renderer in bright cadmiums and cobalt on cream ground.
+used: Airplane on the Highway test
+cost: free
+group: code
+order: 340
+clip: paint.mp4
+tall: false
+status: test
+engine: brushstroke
+project: bobwiseman-airplane-paint
+code:
+  path: bobwiseman-airplane-paint/js/paint.js
+  flag: null
+  page: bobwiseman-airplane-paint/index.html
+  note: >-
+    paint.js is the brushstroke renderer (adapted from functional-emotions-video, MIT); world.js the ground
+    plane and the plane rig; palette and brush settings at the top of js/ch/flight.js; js/ch/verse3.js is the
+    second test.
+rules:
+  - "Scene code draws a flat 960x540 underpainting; the GPU repaints it with instanced brushstrokes that sample its colour and follow its edges"
+  - Eyes and mouth go on an unbrushed full-res ink layer so the strokes never dissolve his face; a mask shrinks strokes on the plane
+  - Warm cream gesso ground shows in gaps between broad loaded strokes; impasto ridges lit from the upper left
+  - "Fauve colour: high key, full chroma, no black (darkest note indigo), shadows violet and ultramarine, lights cadmium lemon"
+  - Long horizontal strokes in flat areas and skies (flow bias), no swirl
+  - No text anywhere; billboards carry pictures, signs carry shapes
+palette:
+  - "#f3e7c9"
+  - "#fbf5e6"
+  - "#f5d93a"
+  - "#f4c534"
+  - "#f08a24"
+  - "#e4502e"
+  - "#d9577a"
+  - "#8a5bb5"
+  - "#2a3a9e"
+  - "#2f63b8"
+  - "#5aa9da"
+  - "#1f7a5c"
+reference: Plein-air Fauvist landscapes (Derain's Collioure, Matisse's Nice windows, Hockney's Yorkshire fields), per js/ch/flight.js
+proof:
+  renders:
+    - bobwiseman-airplane-paint/out/aoh_paint-test_f06672-f07152_24fps_review-720p.mp4
+    - bobwiseman-airplane-paint/out/aoh_paint-test_f04080-f04560_24fps_review-720p.mp4
+  pr: []
+  youtube:
+    - UlixlGOsHy8
+    - K9N41qz5OOk
+  note: out/ is archived on Bertha, /Volumes/Bertha/secondunit-archive/mv-projects/<project>/out/
+verdict: >-
+  Robin, 2026-10-03, on the take-off test at 4:38: "you picked a bad part of the song... for instrumental or
+  experimental parts it should probably get more abstract and explorative than just having the plane flying
+  around." The verse 3 test followed.
+related:
+  - brushsheep
+  - brushhjeron
+  - nouveau

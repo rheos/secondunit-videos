@@ -1,0 +1,98 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #b2 {
+          position: absolute;
+          inset: 0;
+        }
+      </style>
+      <div data-hf-id="hf-n201" id="b2" data-composition-id="b2" data-width="1920" data-height="1080">
+        <div data-hf-id="hf-n202" id="b2-content" class="layer">
+          <div data-hf-id="hf-n203" id="b2-lab-l" class="plate-label left">PLATE II</div>
+          <div data-hf-id="hf-n204" id="b2-lab-r" class="plate-label right">THE LEASE</div>
+          <svg data-hf-id="hf-n205" id="b2-svg" class="full" viewBox="0 0 1920 1080"></svg>
+          <div data-hf-id="hf-n206" class="statement">
+            <span data-hf-id="hf-n207" id="b2-s1" class="phrase">Two workers.</span>
+            <span data-hf-id="hf-n208" id="b2-s2" class="phrase accent">Never the same job.</span>
+          </div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text } = BP;
+          const tl = gsap.timeline({ paused: true });
+          const S = 8;
+          const K = BP.kit(tl, S);
+          const svg = K.$("b2-svg");
+
+          // three queued jobs
+          const P = JB.table(svg, { x: 420, y: 206, rows: 3 });
+          const r1y = P.rowY(0), r2y = P.rowY(1);
+
+          // two workers, and the one statement both run (work/jobs.py, acquire_lease)
+          const wa = JB.box(svg, 300, 600, 240, 80, "WORKER A");
+          const wb = JB.box(svg, 1380, 600, 240, 80, "WORKER B");
+          const card = el("rect", { class: "ln thin line", x: 620, y: 600, width: 680, height: 80 }, svg);
+          const cardT = text("SELECT id ... FOR UPDATE SKIP LOCKED LIMIT 1", { class: "mono code", x: 960, y: 648, "text-anchor": "middle" }, svg);
+          const cardCap = text("acquire_lease()", { class: "mono small dim", x: 960, y: 588, "text-anchor": "middle" }, svg);
+
+          // A reaches row 1; B reaches row 1, finds it locked, and skips to row 2 without waiting
+          const pathA = el("path", { class: "ln line", d: `M420 600V560H360V${r1y}H420` }, svg);
+          const pathB = el("path", { class: "ln line", d: `M1500 600V560H1560V${r1y + 14}` }, svg);
+          const lock = el("g", {}, svg);
+          el("rect", { class: "ln line-strong", x: 1548, y: r1y - 6, width: 24, height: 18 }, lock);
+          el("path", { class: "ln line-strong", d: `M1553 ${r1y - 6}V${r1y - 13}A7 7 0 0 1 1567 ${r1y - 13}V${r1y - 6}` }, lock);
+          const skip = el("path", { class: "ln line", d: `M1572 ${r1y + 8}Q1640 ${(r1y + r2y) / 2} 1560 ${r2y}H1500` }, svg);
+          const skipT = text("SKIP LOCKED", { class: "mono small strong", x: 1622, y: r1y + 4 }, svg);
+          const hi = el("rect", { class: "ln line-strong", x: P.x + 4, y: r1y - 28, width: P.W - 8, height: 56 }, svg);
+
+          const note = text("B DOES NOT WAIT BEHIND A'S OPEN TRANSACTION", { class: "mono small dim", x: 960, y: 728, "text-anchor": "middle" }, svg);
+
+          // cues
+          K.fade(K.$("b2-lab-l"), K.T(8.49), 0.4);
+          K.fade(K.$("b2-lab-r"), K.T(8.49), 0.4);
+          JB.draw(K, P, K.T(8.49));
+          const rows = [0, 1, 2].map((r) => JB.row(K, P, r, [`job ${r + 1}`, "queued", "null", "null", "0"], K.T(9.73) + r * 0.31));
+
+          K.draw(wa.r, K.T(11.61), 0.5);
+          K.fade(wa.t, K.T(11.61) + 0.3, 0.3);
+          K.draw(wb.r, K.T(11.61), 0.5);
+          K.fade(wb.t, K.T(11.61) + 0.3, 0.3);
+          K.draw(card, K.T(12.85), 0.6);
+          K.fade(cardCap, K.T(12.85) + 0.2, 0.3);
+          K.fade(cardT, K.T(12.85) + 0.35, 0.4);
+
+          K.draw(pathA, K.T(14.11), 0.7);
+          K.draw(pathB, K.T(14.11), 0.7);
+          K.draw(hi, K.T(14.73), 0.5);
+          K.fade(lock, K.T(14.73), 0.3);
+          K.draw(skip, K.T(15.36), 0.5);
+          K.fade(skipT, K.T(15.36) + 0.3, 0.3);
+
+          // the leases land (lease_until is now + LEASE_SECONDS, work/loop.py: 60)
+          const lease = (r, who, at) => {
+            JB.swap(K, P, rows[r][1], r, 1, "leased", at, "b");
+            JB.swap(K, P, rows[r][2], r, 2, who, at + 0.08);
+            JB.swap(K, P, rows[r][3], r, 3, "now + 60 s", at + 0.16);
+            JB.swap(K, P, rows[r][4], r, 4, "1", at + 0.24);
+          };
+          lease(0, "worker-a", K.T(15.98));
+          lease(1, "worker-b", K.T(16.6));
+          K.fade(note, K.T(17.86), 0.4);
+
+          K.reveal(K.$("b2-s1"), K.T(18.48), 0.6);
+          K.reveal(K.$("b2-s2"), K.T(19.11), 0.7);
+
+          K.out(K.$("b2-content"), K.R(21.4), 0.45);
+          window.__timelines["b2"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

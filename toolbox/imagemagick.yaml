@@ -1,0 +1,15 @@
+slug: imagemagick
+name: ImageMagick
+kind: cli
+status: in-use
+does: 'Image batch work: resize, composite, montage.'
+keywords:
+- image
+- batch
+- composite
+fits:
+- frame prep
+deterministic: n/a
+how: not native; the `mv-toolkit` Docker image via `bin/mv-docker`
+cost: free
+added: '2026-10-27'

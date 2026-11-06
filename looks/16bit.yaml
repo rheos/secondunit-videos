@@ -1,0 +1,55 @@
+slug: 16bit
+title: 16-bit pixel art
+note: A SNES-era racing game drawn at 320x180 in 46 colours, scaled up with crisp pixels.
+used: Airplane on the Highway, Bob Wiseman
+cost: free
+group: code
+order: 360
+clip: 16bit.mp4
+tall: false
+status: approved
+engine: canvas2d
+project: bobwiseman-airplane-16bit
+code:
+  path: bobwiseman-airplane-16bit/js/px.js
+  flag: null
+  page: bobwiseman-airplane-16bit/16bit.html
+  note: >-
+    px.js is the indexed pixel engine, js/shots.js holds the 46-colour PALDEF and the shots, js/look.js the
+    CRT finish. Section H (188.54-219.46 s) of the final film reuses this test as is.
+rules:
+  - >-
+    Draw into an indexed 320x180 buffer, one palette index per pixel, then blow it up x4 nearest-neighbour at
+    720p
+  - "46 colours only (PALDEF in js/shots.js): every pixel of every frame is one of them"
+  - Integer primitives, no anti-aliasing, no smooth gradients; shade with a 4x4 Bayer dither
+  - Text in a hand-drawn 5x7 bitmap font, typed out letter by letter
+  - >-
+    Finish reads the source 1:1 (texelFetch, no blur); only a faint darker last row per game pixel, a whisper
+    of vignette, white flash on hits
+  - Game grammar on the lyrics (position counter, JUMP not equipped, pause menu); hits snapped to vocal onsets
+palette:
+  - "#000000"
+  - "#1d2b53"
+  - "#3b5dc9"
+  - "#41a6f6"
+  - "#e43b44"
+  - "#f77622"
+  - "#fee761"
+  - "#fbf2dc"
+  - "#63c74d"
+reference: SNES / Mega Drive racing games, about 1991 (per js/shots.js)
+proof:
+  renders:
+    - bobwiseman-airplane-16bit/out/aoh_16bit-test_f04525-f05267_24fps_review-720p.mp4
+    - bobwiseman-airplane-v1/out/Bob Wiseman - Airplane on the Highway (1080p master).mp4
+  pr:
+    - rheos/novadiem.com#86
+  youtube:
+    - dkcf6J3cmSY
+    - 6rkbMbEqnHA
+  note: out/ is archived on Bertha, /Volumes/Bertha/secondunit-archive/mv-projects/<project>/out/
+verdict: "Robin's v3 notes, 2026-10-03 (STORYBOARD.md): keep what Bob loves, the 16-bit with emerging text."
+related:
+  - macpaint
+  - voxelloop

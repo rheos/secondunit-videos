@@ -1,0 +1,22 @@
+slug: gptimg
+name: GPT Image via Codex
+kind: service
+status: in-use
+does: Character sheets and plates from references, repainting code-drawn frames, lettering, spot fixes.
+keywords:
+- image
+- character-sheet
+- repaint
+- lettering
+- inpaint
+fits:
+- Second Unit music videos
+- Dreamberry
+deterministic: n/a
+how: '`bin/gptimg` in the video-production skill; per-project copies such as dreamberry `ref/tools/gptimg`'
+cost: plan
+detail: video-production `references/image-generation.md`; memory `gpt-image-via-codex`
+related:
+- midjourney
+- higgsfield-image
+added: '2026-10-27'

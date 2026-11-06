@@ -1,0 +1,72 @@
+{
+  "name": "Terry Gilliam",
+  "updated": "2026-10-15",
+  "sources_file": "sources.json",
+  "sections": [
+    {
+      "title": "Early life",
+      "facts": [
+        {"text": "Born Terrence Vance Gilliam on 22 November 1940 in Minneapolis, Minnesota, to Beatrice (nee Vance) and James Hall Gilliam. His father sold coffee for Folgers, then became a carpenter. The family lived at Medicine Lake, Minnesota, and moved to Panorama City, Los Angeles, in 1952.", "source_id": "wikipedia"},
+        {"text": "As a teenager he read Mad, then edited by Harvey Kurtzman. In a 2004 interview he said Mad 'inspired everything we ever did'.", "source_id": "wikipedia"},
+        {"text": "In 2015 he named Mad the magazine of his youth and called Kurtzman and his colleagues really brilliant. He also loved the Sunday comics, especially Milton Caniff's Terry and the Pirates, and copied them.", "source_id": "dazed2015"},
+        {"text": "The official Python biography says drawing cartoons shaped his school life and his sceptical attitude toward authority.", "source_id": "montypython-bio"},
+        {"text": "He graduated from Occidental College in 1962 with a BA in political science.", "source_id": "wikipedia"}
+      ]
+    },
+    {
+      "title": "Magazines, then London",
+      "facts": [
+        {"text": "He worked as a magazine illustrator and art director in Los Angeles and New York in the 1960s, including on Kurtzman's Help!. A photo strip (fumetti) he made for Help! featured John Cleese, which is how they met.", "source_id": "montypython-bio"},
+        {"text": "When Help! folded he went to Europe.", "source_id": "wikipedia"},
+        {"text": "One biography says he left the US partly because he feared being drawn into militant politics, after repeated police stops by officers who assumed he used drugs. Not checked against his own account; treat as unconfirmed.", "source_id": "imdb-bio"},
+        {"text": "In London he made cartoons and animation for We Have Ways of Making You Laugh, Do Not Adjust Your Set, Marty and Broaden Your Mind.", "source_id": "montypython-bio"},
+        {"text": "He became a British citizen in 1968, held dual citizenship for 38 years, and renounced US citizenship in January 2006. He described it as a protest against George W. Bush, and elsewhere linked it to tax liability for his family.", "source_id": "wikipedia"}
+      ]
+    },
+    {
+      "title": "How the method started",
+      "facts": [
+        {"text": "For a 1968 Christmas segment of Do Not Adjust Your Set he went to the Tate, found its collection of Victorian Christmas cards, photocopied them and rearranged them. He said the style came out of doing it the quickest, easiest way, with pictures he loved, not from a plan.", "source_id": "farout2021"},
+        {"text": "The stream-of-consciousness style of his Do Not Adjust Your Set work impressed Terry Jones, who encouraged him to bring it to Flying Circus.", "source_id": "flavorwire"},
+        {"text": "On the BBC's Do-It-Yourself Film Animation Show (1974) he said the point of animation is to tell a story, make a joke or express an idea, that cut-outs are the easiest form he knows, and that sudden moves are what paper does best.", "source_id": "bbc1974"},
+        {"text": "He said in 2010 that he used whatever he could get cheaply or free, and that when he ran out of ideas he walked around the National Gallery and came out with a flood of them within minutes.", "source_id": "expansion2010"}
+      ]
+    },
+    {
+      "title": "Monty Python",
+      "facts": [
+        {"text": "He joined Monty Python's Flying Circus (BBC, 1969-1974) from the start, credited first as animator and later as a full member. His cartoons linked the sketches and shaped the group's visual language.", "source_id": "wikipedia"},
+        {"text": "He chose the theme, Sousa's Liberty Bell march, because it was in the public domain. The foot in the titles is cut from Cupid's foot in Bronzino's Venus, Cupid, Folly and Time.", "source_id": "wikipedia-mpfc"},
+        {"text": "He appeared on screen too, usually in parts the others did not want, such as the knight who hits people with a chicken.", "source_id": "wikipedia-mpfc"},
+        {"text": "His screen parts included Cardinal Fang of the Spanish Inquisition.", "source_id": "montypython-bio"},
+        {"text": "He co-directed Monty Python and the Holy Grail (1975) with Terry Jones, was production designer on Life of Brian (1979), and made the short The Crimson Permanent Assurance for The Meaning of Life (1983).", "source_id": "montypython-bio"},
+        {"text": "In 1978 he published Animations of Mortality, with Lucinda Cowell (Methuen), an illustrated, tongue-in-cheek, semi-autobiographical how-to book on his technique.", "source_id": "encyclopedia"},
+        {"text": "A bookseller's description of Animations of Mortality says it starts from the walk cycle and gives ways to avoid moving legs at all.", "source_id": "stuartng"},
+        {"text": "An animation studies post describes him as an advocate of corner-cutting, recommending excuses such as long grass, darkness or roller skates instead of laborious animation.", "source_id": "animationstudies"}
+      ]
+    },
+    {
+      "title": "Influences he names",
+      "facts": [
+        {"text": "He loved Disney's craft and the Grimm stories behind its films, and the European look of Disneyland.", "source_id": "dazed2015"},
+        {"text": "He loves the Surrealists because they make the mind work to make sense of them. He first heard of Max Ernst when a critic compared his Python animation to Ernst.", "source_id": "dazed2015"},
+        {"text": "He and Terry Jones call Bruegel and Bosch favourites. He finds the medieval view of the world more vivid than modern imagery.", "source_id": "expansion2010"},
+        {"text": "He reportedly said the Holy Grail animations drew on a book about the illustrations in medieval manuscript margins. The title he gave has not been traced.", "source_id": "dangerousminds-grail"},
+        {"text": "In 2015 he also named Kubrick as a great hero, Dostoevsky, and Banksy.", "source_id": "dazed2015"}
+      ]
+    },
+    {
+      "title": "The feature films",
+      "facts": [
+        {"text": "After Holy Grail he directed Jabberwocky (1977), Time Bandits (1981), Brazil (1985), The Adventures of Baron Munchausen (1988), The Fisher King (1991), 12 Monkeys (1995), Fear and Loathing in Las Vegas (1998), The Brothers Grimm (2005), Tideland (2005), The Imaginarium of Doctor Parnassus (2009), The Zero Theorem (2013) and The Man Who Killed Don Quixote (2018).", "source_id": "wikipedia"},
+        {"text": "Brazil earned him a shared Oscar nomination for best original screenplay.", "source_id": "montypython-bio"},
+        {"text": "His memoir, Gilliamesque: A Pre-Posthumous Memoir, written with Ben Thompson, came out from Canongate in 2015. We have not read it.", "source_id": "canongate2015"}
+      ]
+    }
+  ],
+  "limits": [
+    "Most facts come from Wikipedia, the official Python biography and interviews retold by journalists. The three books that would settle the open points (canongate2015, sterritt2004, christie1999) have not been read.",
+    "Open points: whether We Have Ways of Making You Laugh held his first animation; why he left the US in his own words; the Black Spot's episode and the 'gangrene' redub; the Killer Cars episode and narrator; the title of the marginalia book.",
+    "His feature films are listed for context. This profile studies the cut-out animation, 1968-1983."
+  ]
+}

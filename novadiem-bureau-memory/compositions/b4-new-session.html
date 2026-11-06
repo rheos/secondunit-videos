@@ -1,0 +1,87 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #b4 {
+          position: absolute;
+          inset: 0;
+        }
+      </style>
+      <div id="b4" data-composition-id="b4" data-width="1920" data-height="1080">
+        <div class="layer">
+          <svg class="full" viewBox="0 0 1920 1080">
+            <g id="b4-map"></g>
+            <g id="b4-top"></g>
+          </svg>
+          <div class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate IV</div>
+          <div class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>New Session</div>
+          <div id="b4-st" class="statement">
+            <span id="b4-st-a" class="phrase">A new session</span>
+            <span id="b4-st-b" class="phrase red">starts empty.</span>
+          </div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text, kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 36.52);
+          const map = K.$("b4-map");
+          const top = K.$("b4-top");
+          const { ghost } = AM.cues(K, tl, top);
+
+          // the ghosts of session 1 go; the run dir stays exactly as it was
+          const old = el("g", {}, map);
+          const S1 = AM.session(old, 1);
+          const C1 = AM.conductor(old);
+          ghost([S1.g, C1.g]); // the ended specialists already stepped aside in plate III
+          tl.fromTo(old, { opacity: 1 }, { opacity: 0, duration: 0.9, ease: "power1.in" }, K.T(36.52));
+          AM.disk(map);
+
+          // session 2: a fresh Conductor context, with nothing in it
+          const S = AM.session(map, 2);
+          K.draw(S.frame, K.T(37.71), 0.9, "none");
+          K.fade(S.label, K.T(38.29), 0.3);
+          const C = AM.conductor(map, "NEW CTX");
+          K.draw(C.outer, K.T(38.87), 0.7, "none");
+          K.draw(C.inner, K.T(38.87) + 0.3, 0.6, "none");
+          K.fade(C.label, K.T(39.47), 0.3);
+          K.fade(C.ctx, K.T(39.47), 0.3, 0.6);
+          const empty = text("NO TRANSCRIPT", { class: "mono dim", x: 580, y: 318, "text-anchor": "middle" }, C.g);
+          K.fade(empty, K.T(40.63), 0.4);
+
+          // the resume snippet: which run dir, and what to read first (bureau CLAUDE.md "Resuming")
+          const slip = el("g", {}, top);
+          el("rect", { class: "ln ink", x: 0, y: 0, width: 660, height: 112, style: "fill: var(--bg)" }, slip);
+          el("path", { class: "ln thin ink", d: "M0 0V112", opacity: 0 }, slip);
+          const l1 = text("Run dir: .bureau/runs/<date>-<task>/", { class: "mono small", x: 24, y: 44 }, slip);
+          const l2 = text("read its state.json and log.md", { class: "mono small", x: 24, y: 80 }, slip);
+          tl.fromTo(slip, { opacity: 0, x: 1240, y: 250 }, { opacity: 1, x: 940, y: 250, duration: 0.9, ease: "power2.out" }, K.T(41.24));
+          K.reveal(l1, K.T(42.4), 0.7);
+          K.reveal(l2, K.T(43.0), 0.7);
+          const cap = text("RESUME SNIPPET", { class: "mono tiny dim", x: 940, y: 236 }, top);
+          K.fade(cap, K.T(42.4), 0.3);
+
+          // it points at the run dir that is already there
+          const point = el("path", { class: "ln line construct", d: "M1060 362V516H520" }, top);
+          K.sweep(point, K.T(44.16), 0.7);
+          const under = el("path", { class: "ln line-strong", d: "M392 536H712" }, top);
+          K.draw(under, K.T(44.77), 0.5);
+
+          K.reveal(K.$("b4-st-a"), K.T(45.35), 0.6);
+          K.reveal(K.$("b4-st-b"), K.T(45.93), 0.7);
+
+          const end = 49.65 - 36.52;
+          K.out(K.$("b4-st"), end, 0.35);
+          [slip, cap, point, under].forEach((n) => K.out(n, end, 0.35));
+          window.__timelines["b4"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

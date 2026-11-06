@@ -1,0 +1,43 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #furniture {
+          position: absolute;
+          inset: 0;
+          background: var(--bg);
+        }
+      </style>
+      <div data-hf-id="hf-mq10" id="furniture" data-composition-id="furniture" data-width="1920" data-height="1080">
+        <svg data-hf-id="hf-mq11" id="fu-ground" class="full" viewBox="0 0 1920 1080" aria-hidden="true" style="will-change: transform"></svg>
+        <svg data-hf-id="hf-mq12" id="fu-frame" class="full" viewBox="0 0 1920 1080"></svg>
+      </div>
+
+      <script>
+        (() => {
+          const tl = gsap.timeline({ paused: true });
+          const K = BP.kit(tl, 0);
+          // stations are MemoirQuill's eight pipeline stages, in order (src/server/pipeline/run-pipeline.ts PIPELINE_CHAIN)
+          BP.furniture(K, tl, {
+            stations: [
+              { label: "NORMALIZE", at: 10.98 },
+              { label: "ENTITIES", at: 16.61 },
+              { label: "CHAPTERS", at: 22.86 },
+              { label: "RETELLING", at: 33.8 },
+              { label: "CONFLICTS", at: 40.04 },
+              { label: "CLEAN", at: 46.92 },
+              { label: "PROSE", at: 53.8 },
+              { label: "REVIEW", at: 75.05 },
+            ],
+            sheets: [0, 10.98, 22.86, 33.8, 46.92, 61.29, 75.05],
+          });
+          window.__timelines["furniture"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

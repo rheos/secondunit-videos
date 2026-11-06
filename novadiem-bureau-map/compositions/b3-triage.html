@@ -1,0 +1,125 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #b3 {
+          position: absolute;
+          inset: 0;
+        }
+      </style>
+      <div id="b3" data-composition-id="b3" data-width="1920" data-height="1080">
+        <div class="layer">
+          <svg class="full" viewBox="0 0 1920 1080">
+            <g id="b3-map"></g>
+            <g id="b3-top"></g>
+          </svg>
+          <div id="b3-lab-l" class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate III</div>
+          <div id="b3-lab-r" class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>Triage</div>
+          <div id="b3-st" class="statement">
+            <span id="b3-st-a" class="phrase">Pick the</span>
+            <span id="b3-st-b" class="phrase red">smallest workflow that fits.</span>
+          </div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text, kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 19);
+          const P = BM.build(K.$("b3-map"), 3);
+          const top = K.$("b3-top");
+
+          K.fade(K.$("b3-lab-l"), K.T(19.04), 0.4);
+          K.fade(K.$("b3-lab-r"), K.T(19.04), 0.4);
+
+          // the owner, outside the drawing
+          K.draw(P.owner.ring, K.T(19.04) + 0.2, 0.7, "none");
+          K.draw(P.owner.cross, K.T(19.48), 0.5);
+          K.fade(P.owner.core, K.T(19.48) + 0.3, 0.3);
+          K.fade(P.owner.label, K.T(19.92), 0.4);
+
+          // the first floor of the cutaway
+          K.draw(P.floor1.shell, K.T(19.48), 1.3, "none");
+          K.draw(P.floor1.floor, K.T(20.36), 0.8, "none");
+          K.draw(P.floor1.part1, K.T(20.81), 0.4);
+          K.draw(P.floor1.part2, K.T(20.81) + 0.15, 0.4);
+
+          // the brief comes in from the owner to the Delegate
+          const brief = BM.token(top, "BRIEF", 1640, 196);
+          K.fade(brief, K.T(20.81), 0.3);
+          K.travel(brief, el("path", { d: "M1640 196H1350V246" }), K.T(21.25), 1.1);
+
+          const d = P.delegate;
+          K.draw(d.foot, K.T(22.13), 0.3);
+          K.draw(d.hinge, K.T(22.13) + 0.1, 0.3);
+          K.draw(d.armBox, K.T(22.13) + 0.2, 0.6);
+          d.stripes.forEach((s, i) => K.fade(s, K.T(22.57) + i * 0.1, 0.25));
+          K.fade(P.floor1.lDel, K.T(22.57), 0.4);
+
+          // the workflow registry, and the one that fits
+          const r = P.registry;
+          K.fade(P.floor1.lReg, K.T(23.01), 0.4);
+          K.draw(r.frame, K.T(23.01), 0.7, "none");
+          r.rows.forEach((row, i) => {
+            K.draw(row, K.T(23.45) + i * 0.15, 0.4);
+            K.fade(r.names[i], K.T(23.45) + i * 0.15 + 0.2, 0.3);
+          });
+          K.fade(r.more, K.T(24.33), 0.4);
+          const pointer = el("path", { class: "ln line construct", d: "M1318 205H1058" }, P.registry.g);
+          K.sweep(pointer, K.T(24.78), 0.6);
+          K.draw(r.pick, K.T(25.22), 0.6, "none");
+          K.draw(r.tick, K.T(25.66), 0.3);
+
+          K.reveal(K.$("b3-st-a"), K.T(25.66), 0.6);
+          K.reveal(K.$("b3-st-b"), K.T(26.1), 0.9);
+
+          // the run dir opens below ground, and the choice is written down before work begins
+          const b = P.base;
+          K.draw(b.ground, K.T(26.54), 0.9, "none");
+          b.hatch.forEach((h, i) => K.fade(h, K.T(26.98) + (i % 6) * 0.05, 0.3, 0.6));
+          K.draw(b.walls, K.T(26.98), 1.0, "none");
+          K.draw(b.shelf, K.T(27.42), 0.6, "none");
+          K.fade(b.label, K.T(27.42), 0.4);
+          K.fade(b.path, K.T(27.86), 0.4);
+
+          const slip = BM.sheet(top, 1350, 270);
+          K.fade(slip, K.T(27.86), 0.2);
+          K.travel(slip, el("path", { d: "M1350 270V572H372V612" }), K.T(27.86), 1.2);
+          tl.to(slip, { opacity: 0, duration: 0.2 }, K.T(27.86) + 1.2);
+          K.out(brief, K.T(27.86), 0.3);
+          ["state", "log"].forEach((k, i) => {
+            const f = P.files[k];
+            const at = K.T(29.19) + i * 0.44;
+            K.draw(f.body, at, 0.5, "none");
+            K.draw(f.fold, at + 0.4, 0.2);
+            K.draw(f.lines, at + 0.45, 0.3);
+            K.fade(f.label, at + 0.3, 0.3);
+          });
+          const wf = text("workflow: feature", { class: "mono small gold-t", x: 326, y: 686 }, top);
+          K.fade(wf, K.T(29.63) + 0.3, 0.4);
+
+          // the Delegate starts the Conductor
+          K.draw(P.spawnConductor, K.T(30.07), 0.9, "power1.inOut");
+          const c = P.conductor;
+          K.draw(c.outer, K.T(30.51), 0.8, "none");
+          K.draw(c.crossH, K.T(30.51) + 0.2, 0.6);
+          K.draw(c.crossV, K.T(30.51) + 0.3, 0.6);
+          K.draw(c.inner, K.T(30.95), 0.6, "none");
+          K.draw(c.core, K.T(31.39), 0.2);
+          K.fade(P.floor1.lCond, K.T(31.39), 0.4);
+
+          // the pointer and the slip note belong to this plate only
+          K.out(pointer, 31.4 - 19, 0.4);
+          K.out(K.$("b3-st"), 31.5 - 19, 0.45);
+          K.out(wf, 31.5 - 19, 0.45);
+          window.__timelines["b3"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

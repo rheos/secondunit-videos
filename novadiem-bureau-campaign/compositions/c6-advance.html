@@ -1,0 +1,117 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #c6 {
+          position: absolute;
+          inset: 0;
+        }
+      </style>
+      <div id="c6" data-composition-id="c6" data-width="1920" data-height="1080">
+        <div id="c6-all" class="layer">
+          <svg class="full" viewBox="0 0 1920 1080">
+            <g id="c6-art"></g>
+            <g id="c6-top"></g>
+          </svg>
+          <div class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate VI</div>
+          <div class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>Advance</div>
+          <div class="statement">
+            <span id="c6-st-a" class="phrase">Handed off.</span>
+            <span id="c6-st-b" class="phrase red">Next run launched.</span>
+          </div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text } = BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = BP.kit(tl, 56.22);
+          const art = K.$("c6-art");
+          const top = K.$("c6-top");
+
+          // plate V's end state, static: the map stepped back, the review on top
+          const M = CM.map(art, { id: "c6" });
+          const lit = el("rect", { class: "ln line-strong", x: 576, y: 490, width: 178, height: 100, style: "stroke-width:3" }, M.g);
+          const A = CM.callout(art, 665, 540, 118, "A", "M665 422V350H1220");
+          const I = CM.inset(art, "A", 3, { prev: 2 });
+          const R = CM.route(art);
+          [M.g, A.g, R.g].forEach((n) => n.setAttribute("opacity", 0.15));
+          [I.work, I.del.g].forEach((n) => n.setAttribute("opacity", 0.3));
+          M.park5.g.setAttribute("display", "none");
+          const C = CM.checklist(top);
+          const ok = CM.edge(top, "M180 254V300H970V326", 970, 330, "d");
+          const Rm = CM.room(top, 800, 330, 340, 180, "THE CHALLENGER", "FRESH CONTEXT");
+          const V = CM.verdict(top);
+          const review = [C.g, ok.g, Rm.g, V.g];
+
+          // proceed is relayed to the run, inside the charter's grant
+          CM.carry(K, tl, top, "M1140 600H1200V268H1300", K.T(56.22), 0.9);
+          const n1 = CM.topNote(top, "RELAYED INSIDE THE CHARTER · OUTSIDE IT: PARK, PING THE OWNER");
+          K.reveal(n1, K.T(56.22) + 0.1, 0.6);
+          // run 3 merges through its own delivery flow
+          const S = CM.stamp(art, "MERGED", 1520, 452, 210);
+          CM.slam(tl, S, K.T(57.4));
+
+          // the review steps away, the map comes back, the detail folds into it
+          review.forEach((n) => CM.out(tl, n, K.T(58.56), 0.4));
+          [M.g, R.g].forEach((n) => CM.dim(tl, n, K.T(58.56), 1, 0.5, 0.15));
+          CM.out(tl, R.g, K.T(59.16), 0.3);
+          tl.fromTo(I.g, { scale: 1, opacity: 1, svgOrigin: "1220 350" }, { scale: 0.2, opacity: 0, svgOrigin: "1220 350", duration: 0.6, ease: "power2.in", immediateRender: false }, K.T(59.16));
+          tl.fromTo(S.g, { opacity: 1 }, { opacity: 0, duration: 0.4, immediateRender: false }, K.T(59.16));
+          CM.out(tl, A.g, K.T(59.74), 0.35, 0.15);
+          CM.out(tl, lit, K.T(59.74), 0.35);
+          CM.out(tl, n1, K.T(59.74), 0.3);
+          CM.restat(K, tl, M.cells[3], "MERGED", K.T(59.74), "gold-t");
+          const t3 = CM.check(M.cells[3].g, 728, 518);
+          K.draw(t3, K.T(59.74) + 0.4, 0.3);
+
+          // hand off: this Envoy writes HANDOFF.md and a fresh Envoy picks up from disk
+          const hb = el("rect", { class: "ln line-strong", x: 1030, y: 166, width: 120, height: 106, style: "stroke-width:2.5" }, art);
+          K.draw(hb, K.T(60.33), 0.6, "none");
+          [M.envoy.moon, M.envoy.ring, M.envoy.name, M.envoy.sub].forEach((n) => CM.out(tl, n, K.T(60.93), 0.4));
+          const E2 = CM.envoy(art, "A FRESH ENVOY", "PICKS UP FROM THE BOOKS");
+          CM.drawEnvoy(K, E2, K.T(61.51));
+          const n2 = CM.topNote(top, "ONE ENVOY PER PRODUCT RUN · NEVER ZERO LIVE, NEVER TWO");
+          K.reveal(n2, K.T(61.51), 0.6);
+          CM.out(tl, hb, K.T(63.27), 0.4);
+
+          // run 3 merged, so run 4 is free; run 5 still waits on run 4
+          const ok34 = CM.met(art, "e34");
+          CM.drawEdge(K, ok34, K.T(62.69), 0.4);
+          CM.out(tl, M.parkAll.g, K.T(63.27), 0.4);
+          K.fade(M.park5.g, K.T(63.27) + 0.2, 0.4);
+          M.park5.g.removeAttribute("display");
+          CM.restat(K, tl, M.cells[4], "NEXT", K.T(63.27));
+          CM.restat(K, tl, M.cells[5], "WAITS ON 4", K.T(63.85));
+
+          // the fresh Envoy launches run 4: DETAIL B, a new Delegate, nothing carried over
+          const lit4 = el("rect", { class: "ln line-strong", x: 796, y: 376, width: 178, height: 100, style: "stroke-width:3" }, art);
+          K.draw(lit4, K.T(63.85), 0.5, "none");
+          const B = CM.callout(art, 885, 426, 112, "B", "M997 426H1100V300H1220");
+          CM.drawCallout(K, B, K.T(63.85) + 0.3);
+          const I2 = CM.inset(art, "B", 4, { prev: 3, only: "delegate" });
+          CM.hide([I2.pr.g, I2.prNote]);
+          CM.drawInsetFrame(K, I2, K.T(64.46));
+          const R2 = CM.route(art);
+          CM.drawEdge(K, R2, K.T(65.04), 0.7);
+          CM.out(tl, n2, K.T(65.04), 0.3);
+          CM.carry(K, tl, art, "M180 176V128H1520V236", K.T(65.62), 1.0);
+          CM.drawBox(K, I2.del, K.T(66.8));
+          K.fade(I2.work, K.T(67.38), 0.5);
+          K.reveal(I2.note, K.T(67.99), 0.6);
+          CM.restat(K, tl, M.cells[4], "ACTIVE", K.T(66.8), "gold-t");
+
+          K.reveal(K.$("c6-st-a"), K.T(68.57), 0.55);
+          K.reveal(K.$("c6-st-b"), K.T(69.15), 0.6);
+          CM.out(tl, K.$("c6-st-a").parentNode, K.R(72.25), 0.4);
+          window.__timelines["c6"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

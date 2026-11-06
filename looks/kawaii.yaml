@@ -1,0 +1,57 @@
+slug: kawaii
+title: Kawaii watercolour
+note: Boxy characters with kaomoji faces, wobbly marker line over pastel watercolour washes.
+used: Airplane on the Highway, Bob Wiseman
+cost: free
+group: code
+order: 330
+clip: kawaii.mp4
+tall: false
+status: approved
+engine: canvas2d
+project: bobwiseman-airplane-kawaii, bobwiseman-airplane-v1
+code:
+  path: bobwiseman-airplane-kawaii/js/kawaii.js
+  flag: null
+  page: bobwiseman-airplane-kawaii/kawaii.html
+  note: >-
+    js/look.js is the watercolour wash pass (adapted from gemmaluna-clap-hands/js/looks/water.js). The film's
+    kawaii sections D, G and J2 are bobwiseman-airplane-v1/sections/kawaii (kawaii.html, j2.html; plane3.js is
+    the approved dimensional plane).
+rules:
+  - >-
+    Two layers: flat pastel fills on the paint canvas, black felt-marker outlines on their own ink canvas,
+    sharing every transform
+  - >-
+    The paint becomes a wash on cold-press paper: pigment pools at the drying edge, mottles, granulates,
+    blooms into damp paper
+  - Ink sits on top, crisp, wobbly, re-drawn on twos, with felt-tip density and tooth skips
+  - Boxy characters with kaomoji faces (^ ^ or dot eyes, tiny mouth, blush); nothing ever covers the face
+  - "It is a copied style: cross-look face rules (FACE.md) do not apply to kawaii"
+  - Music notes for singing, not lettering; pastel palette (kawaii.js PAL), ink
+palette:
+  - "#1e1a1d"
+  - "#f6c3c6"
+  - "#fbe2ae"
+  - "#cfe3f3"
+  - "#bfe6cf"
+  - "#d6c6ec"
+  - "#fff1d2"
+  - "#f6a3b7"
+reference: Japanese kawaii cartoon style (copied style; the reference stills FACE.md mentions are not recorded)
+proof:
+  renders:
+    - bobwiseman-airplane-kawaii/out/aoh_kawaii-test_f01704-f02184_24fps_review-720p.mp4
+    - bobwiseman-airplane-v1/out/Bob Wiseman - Airplane on the Highway (1080p master).mp4
+  pr:
+    - rheos/novadiem.com#86
+  youtube:
+    - zYFzhpW02j4
+    - 6rkbMbEqnHA
+  note: out/ is archived on Bertha, /Volumes/Bertha/secondunit-archive/mv-projects/<project>/out/
+verdict: >-
+  Bob, 2026-10-03: one of his four favourite Airplane looks (risograph, woodcut, kinetic typography, kawaii).
+  Robin, 2026-10-04: "Kawaii is actually a style and we were copying it."
+related:
+  - water
+  - outlinecartoon

@@ -1,0 +1,26 @@
+slug: inked3d-kit
+name: inked3d kit
+kind: toolkit
+status: in-use
+does: 'A 3D model drawn as a hand-inked cel on painted plates: cel from one light through a hard shadow map, weathering in object space, ink traced from edges and broken by noise, a dry-brush stroke layer planted on the surface, cuts and held drawings. Our own WebGL2, 0 credits.'
+keywords:
+- 3d
+- cel
+- ink
+- anime
+- painted
+- webgl
+- moss
+- character
+fits:
+- indieagent-moss-forest-test
+- any film that wants a drawn creature or machine that turns in space
+deterministic: 'yes'
+how: '`tools/inked3d-kit/` in this repo (base.js, gl.js, strokes.js, paint.js, flat.js, sync.sh); `sync.sh <project>` copies it to `<project>/kit/`'
+cost: free
+detail: '`tools/inked3d-kit/README.md`; method and numbers in `indieagent-moss-forest-test/README.md`; look `looks/inked-3d.yaml`'
+related:
+- devweb-kit
+- blueprint-kit
+- motion-lab
+added: '2026-11-03'

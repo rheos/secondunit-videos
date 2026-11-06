@@ -1,0 +1,142 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #b3 {
+          position: absolute;
+          inset: 0;
+        }
+      </style>
+      <div data-hf-id="hf-g7p5" id="b3" data-composition-id="b3" data-width="1920" data-height="1080">
+        <div data-hf-id="hf-ip6w" id="b3-content" class="layer">
+          <div data-hf-id="hf-qr8n" id="b3-lab-l" class="plate-label left">PLATE III</div>
+          <div data-hf-id="hf-nzkm" id="b3-lab-r" class="plate-label right">ONE SYSTEM</div>
+          <svg data-hf-id="hf-c5vi" id="b3-svg" class="full" viewBox="0 0 1920 1080"></svg>
+          <div data-hf-id="hf-mwwv" class="statement">
+            <span data-hf-id="hf-31j7" id="b3-s1" class="phrase">One system.</span>
+            <span data-hf-id="hf-7p0v" id="b3-s2" class="phrase accent">You own it.</span>
+          </div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text } = BP;
+          const tl = gsap.timeline({ paused: true });
+          const S = 20; // slot start, score seconds
+          const K = BP.kit(tl, S);
+          const svg = K.$("b3-svg");
+
+          // section drawing: ground at y 640, building x 460-1460
+          const X0 = 460,
+            X1 = 1460,
+            GROUND = 640;
+          const ground = el("path", { class: "ln line", d: `M220 ${GROUND}H1700` }, svg);
+          const hatch = el("g", { opacity: 0 }, svg);
+          for (let x = 236; x < 1700; x += 22) {
+            if (x > X0 - 24 && x < X1 + 8) continue;
+            el("path", { class: "ln thin line", d: `M${x} ${GROUND + 4}l-14 14`, opacity: 0.5 }, hatch);
+          }
+
+          // foundation, below ground
+          el("rect", { class: "fill-raised", x: X0, y: GROUND, width: X1 - X0, height: 80 }, svg);
+          const slab = el("rect", { class: "ln line", x: X0, y: GROUND, width: X1 - X0, height: 80 }, svg);
+          const slabT = text("POSTGRES  ·  ONE DATABASE PER WORKSPACE", { class: "mono", x: 960, y: GROUND + 47, "text-anchor": "middle" }, svg);
+
+          // core floor
+          const core = el("rect", { class: "ln line", x: X0, y: 560, width: X1 - X0, height: 80 }, svg);
+          const coreT = text("CORE  ·  FASTAPI  ·  DURABLE WORKER  ·  AUDIT", { class: "mono", x: 960, y: 607, "text-anchor": "middle" }, svg);
+
+          // four rooms, one per bar
+          const ROOMS = [
+            ["RECALLATRON", "MEMORY"],
+            ["LEADS", "OPPORTUNITIES"],
+            ["CURRENT", "ACTIVE WORK"],
+            ["RELATIONSHIPS", "PEOPLE"],
+          ];
+          const W = (X1 - X0) / 4;
+          const rooms = ROOMS.map(([name, sub], i) => {
+            const x = X0 + i * W,
+              cx = x + W / 2,
+              cy = 420;
+            const wall = el("path", { class: "ln line", d: `M${x} 560V330H${x + W}V560` }, svg);
+            const g = el("g", {}, svg);
+            const glyph = [];
+            if (i === 0) {
+              // stacked records
+              [-30, -6, 18].forEach((dy) => {
+                glyph.push(el("rect", { class: "ln line", x: cx - 46, y: cy + dy, width: 92, height: 16 }, g));
+                glyph.push(el("path", { class: "ln thin line", d: `M${cx - 36} ${cy + dy + 8}h40`, opacity: 0.7 }, g));
+              });
+            } else if (i === 1) {
+              // funnel
+              glyph.push(el("path", { class: "ln line", d: `M${cx - 52} ${cy - 34}H${cx + 52}L${cx + 12} ${cy + 6}V${cy + 40}H${cx - 12}V${cy + 6}Z` }, g));
+            } else if (i === 2) {
+              // checklist
+              [-28, 0, 28].forEach((dy, k) => {
+                glyph.push(el("rect", { class: "ln line", x: cx - 50, y: cy + dy - 8, width: 16, height: 16 }, g));
+                glyph.push(el("path", { class: "ln thin line", d: `M${cx - 22} ${cy + dy}h70`, opacity: 0.7 }, g));
+                if (k < 2) glyph.push(el("path", { class: "ln line-strong", d: `M${cx - 47} ${cy + dy}l5 5l9 -10` }, g));
+              });
+            } else {
+              // two linked parties
+              glyph.push(el("circle", { class: "ln line", cx: cx - 34, cy, r: 18 }, g));
+              glyph.push(el("circle", { class: "ln line", cx: cx + 34, cy, r: 18 }, g));
+              glyph.push(el("path", { class: "ln line", d: `M${cx - 16} ${cy}H${cx + 16}` }, g));
+            }
+            const nameT = text(name, { class: "mono", x: cx, y: 520, "text-anchor": "middle" }, svg);
+            const subT = text(sub, { class: "mono small dim", x: cx, y: 545, "text-anchor": "middle" }, svg);
+            return { wall, glyph, nameT, subT };
+          });
+
+          // shell band on top
+          const roof = el("rect", { class: "ln line", x: X0, y: 270, width: X1 - X0, height: 60 }, svg);
+          const roofT = text("NEXT.JS SHELL", { class: "mono", x: 960, y: 307, "text-anchor": "middle" }, svg);
+
+          // the rheo agent: planned, drawn dashed
+          const agent = el("g", {}, svg);
+          el("circle", { class: "ln planned", cx: 960, cy: 186, r: 34 }, agent);
+          el("circle", { class: "ln thin planned", cx: 960, cy: 186, r: 24 }, agent);
+          el("path", { class: "ln thin planned", d: "M960 220V270" }, agent);
+          const agentT = text("RHEO AGENT  ·  PLANNED", { class: "mono small planned-t", x: 1012, y: 192 }, svg);
+
+          // dimension line under the building
+          const dim = el("path", { class: "ln thin line", d: `M${X0} 772H812M1108 772H${X1}M${X0} 760V784M${X1} 760V784M${X0} 772l14 -6v12zM${X1} 772l-14 -6v12z` }, svg);
+          const dimT = text("ONE SYSTEM  ·  FOUR MODULES", { class: "mono small", x: 960, y: 778, "text-anchor": "middle" }, svg);
+
+          // cues, score seconds on the beat
+          K.fade(K.$("b3-lab-l"), K.T(20.625), 0.4);
+          K.fade(K.$("b3-lab-r"), K.T(20.625), 0.4);
+          K.draw(ground, K.T(20.625), 1.25, "none");
+          K.fade(hatch, K.T(21.875), 0.6);
+          K.draw(slab, K.T(21.875), 0.8);
+          K.fade(slabT, K.T(22.5), 0.4);
+          K.draw(core, K.T(23.125), 0.8);
+          K.fade(coreT, K.T(23.75), 0.4);
+          rooms.forEach((r, i) => {
+            const at = K.T(24.375 + i * 1.25);
+            K.draw(r.wall, at, 0.7);
+            r.glyph.forEach((n, k) => K.draw(n, at + 0.3 + k * 0.04, 0.5));
+            K.fade(r.nameT, at + 0.625, 0.35);
+            K.fade(r.subT, at + 0.9, 0.35);
+          });
+          K.draw(roof, K.T(29.375), 0.8);
+          K.fade(roofT, K.T(30.0), 0.4);
+          K.sweep(agent, K.T(31.25), 0.8);
+          K.fade(agentT, K.T(31.875), 0.4);
+          K.draw(dim, K.T(32.5), 0.8, "none");
+          K.fade(dimT, K.T(33.125), 0.4);
+          K.reveal(K.$("b3-s1"), K.T(34.375), 0.6);
+          K.reveal(K.$("b3-s2"), K.T(35.0), 0.6);
+
+          K.out(K.$("b3-content"), K.R(39.375), 0.45);
+          window.__timelines["b3"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

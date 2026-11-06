@@ -1,0 +1,111 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #b5 { position: absolute; inset: 0; }
+      </style>
+      <div data-hf-id="hf-rc60" id="b5" data-composition-id="b5" data-width="1920" data-height="1080">
+        <div data-hf-id="hf-rc61" id="b5-content" class="layer">
+          <div data-hf-id="hf-rc62" id="b5-lab-l" class="plate-label left">FIG. V</div>
+          <div data-hf-id="hf-rc63" id="b5-lab-r" class="plate-label right">OF CHANGED FACTS AND MISTAKEN ONES</div>
+          <svg data-hf-id="hf-rc64" id="b5-svg" class="full" viewBox="0 0 1920 1080"></svg>
+          <div data-hf-id="hf-rc65" class="statement">
+            <span data-hf-id="hf-rc66" id="b5-s1" class="phrase">Retired,</span>
+            <span data-hf-id="hf-rc67" id="b5-s2" class="phrase accent">not destroyed.</span>
+          </div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text } = BP;
+          const tl = gsap.timeline({ paused: true });
+          const S = 64.88;
+          const K = BP.kit(tl, S, "V");
+          const R = (t) => K.R(t);
+          const W = (w, n) => R(VO.w("V", w, n));
+          const svg = K.$("b5-svg");
+
+          const divider = el("path", { class: "ln thin line construct", d: "M960 150V760" }, svg);
+          const hL = text("SUPERSEDED", { class: "lab", x: 520, y: 170, "text-anchor": "middle" }, svg);
+          const hR = text("CORRECTED", { class: "lab", x: 1420, y: 170, "text-anchor": "middle" }, svg);
+
+          // left: the fact changed. A (from plate IV) is superseded by B and filed in the history drawer.
+          const A = RC.card(svg, 1300, 420, { kind: "FACT", title: "Staging database", body: "Staging runs Postgres 17.", foot: "2026-10-02  ·  AUTOMATIC", strong: true });
+          const slip = el("g", {}, svg);
+          el("rect", { class: "ln line-strong fill-raised", x: 110, y: 200, width: 420, height: 64 }, slip);
+          const slipT = text("Staging moved to Postgres 18.", { class: "ty sm", x: 128, y: 240 }, slip);
+          const B = RC.card(svg, 300, 290, { kind: "FACT", title: "Staging database", body: "Staging runs Postgres 18.", foot: "2026-10-09", strong: true });
+          const hist = RC.drawer(svg, 110, 560, 420, 150, "HISTORY");
+          const lin = el("path", { class: "ln line-strong", d: "M520 510V545" }, svg);
+          const linH = RC.head(svg, 520, 556, "d");
+          const linT = text("LINEAGE", { class: "lab sm", x: 560, y: 540 }, svg);
+          const histT = text("still readable", { class: "ty sm", x: 560, y: 640 }, svg);
+
+          // right: the fact was wrong. C is corrected in place; D, derived from it, is flagged for review.
+          const call = text("CORRECT( C, EXPECTED REV. 1 )", { class: "ty sm", x: 1010, y: 222 }, svg);
+          const C = RC.card(svg, 1010, 240, { kind: "FACT", title: "Nightly backup", body: "Backups run at 02:00 UTC.", foot: "2026-10-04" });
+          const tagC = text("C", { class: "lab", x: 1000, y: 268, "text-anchor": "end" }, svg);
+          const strike = el("path", { class: "ln acc-s", d: "M1024 364H1330", style: "stroke-width: 3" }, svg);
+          const fixed = text("Backups run at 03:00 UTC.", { class: "cb", x: 1028, y: 410 }, svg);
+          const rev2 = text("REV. 2", { class: "cm on", x: 1432, y: 271, "text-anchor": "end" }, svg);
+          const revBg = el("rect", { class: "fill-raised", x: 1360, y: 252, width: 80, height: 26 }, svg);
+          revBg.parentNode.insertBefore(revBg, rev2);
+          const D = RC.card(svg, 1390, 520, { kind: "SUMMARY", title: "Ops summary", body: "Backups nightly, 02:00.", foot: "DERIVED FROM C" });
+          const dl = el("path", { class: "ln line", d: "M1500 520V470" }, svg);
+          const dlH = RC.head(svg, 1500, 462, "u", "ln line");
+          const flag = RC.stampBox(svg, "FLAGGED FOR REVIEW", 1610, 772, 330, { cls: "line-strong", rot: -5 });
+
+          // A comes over from plate IV, then takes its place on the left
+          K.fade(A.root, R(64.95), 0.25);
+          K.move(A.root, R(65.4), 0.8, { x: 0, y: 0 }, { x: -1000, y: -130 }, { ease: "power2.inOut", sound: "slide" });
+          K.fade(K.$("b5-lab-l"), R(65.6), 0.4);
+          K.fade(K.$("b5-lab-r"), R(65.6), 0.4);
+          K.sweep(divider, R(65.8), 0.8);
+          K.typed(hL, R(65.9), { cps: 30, cursor: false });
+          K.stamp(slip, W("changes") - 0.3, { origin: "320 232", sound: "tube" });
+          K.typed(slipT, W("changes"), { cps: 40, cursor: false });
+          // "the old one is superseded: retired to the history, not destroyed"
+          const sup = W("superseded");
+          const hb = [hist.box, hist.holder, hist.pull];
+          hb.forEach((n, i) => K.draw(n, sup - 0.6 + i * 0.1, 0.4));
+          K.typed(hist.t, sup - 0.3, { cps: 30, cursor: false });
+          RC.drawIn(K, B, sup, { cps: 46 });
+          K.move(A.root, W("retired"), 0.7, { x: -1000, y: -130, scale: 1, opacity: 1, svgOrigin: "1520 530" }, { x: -1000, y: 140, scale: 0.55, opacity: 0, svgOrigin: "1520 530" }, { ease: "power2.in", sound: "drawer" });
+          K.draw(lin, W("history") - 0.1, 0.3);
+          K.draw(linH, W("history") + 0.15, 0.15);
+          K.typed(linT, W("history"), { cps: 30, cursor: false });
+          K.typed(histT, W("destroyed") - 0.2, { cps: 30, cursor: false });
+          K.slam(K.$("b5-s1"), W("retired") + 0.2, { stagger: 0.04 });
+          K.slam(K.$("b5-s2"), W("not") - 0.05, { stagger: 0.04 });
+
+          // "When a fact was wrong, it is corrected in place, the revision counted, and everything built upon it
+          // flagged for review."
+          K.typed(hR, W("when", 2) - 0.6, { cps: 30, cursor: false });
+          RC.drawIn(K, C, W("when", 2) - 0.4, { cps: 50, type: false });
+          K.fade(tagC, W("when", 2) - 0.2, 0.3);
+          RC.drawIn(K, D, W("wrong") - 0.3, { cps: 50, type: false });
+          K.draw(dl, W("wrong"), 0.3);
+          K.draw(dlH, W("wrong") + 0.25, 0.15);
+          K.typed(call, W("corrected") - 0.4, { cps: 40, cursor: false });
+          K.draw(strike, W("place") - 0.1, 0.35);
+          K.typed(fixed, W("place") + 0.2, { cps: 40 });
+          K.fade(revBg, W("revision"), 0.05);
+          K.stamp(rev2, W("counted") - 0.1, { origin: "1400 266", sound: "tick", from: 1.6 });
+          tl.fromTo(D.root, { opacity: 1 }, { opacity: 0.55, duration: 0.4, immediateRender: false }, W("flagged"));
+          K.stamp(flag.g, W("flagged") - 0.05, { origin: "1610 772" });
+
+          // hand-off: push in on the history drawer, which plate VI keeps as its cabinet
+          const out = R(81.0);
+          K.sfx("out", out);
+          K.camera(K.$("b5-content"), out, 0.8, { scale: 1, opacity: 1 }, { scale: 1.6, opacity: 0 }, { origin: "320px 640px", ease: "power2.in" });
+          window.__timelines["b5"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

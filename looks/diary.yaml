@@ -1,0 +1,54 @@
+slug: diary
+title: Marker diary comic
+note: >-
+  Felt-tip panels on a lined notebook page that draw themselves in. Streaky fills miss the lines; the camera
+  drifts from panel to panel.
+used: Holiday Tavern test, Bob Wiseman
+cost: free
+group: code
+order: 130
+clip: diary.mp4
+tall: false
+status: option
+engine: canvas2d
+project: bobwiseman-holiday-tavern
+code:
+  path: bobwiseman-holiday-tavern/js/diary/marker.js
+  flag: null
+  page: bobwiseman-holiday-tavern/looks/diary.html
+  note: >-
+    local only: js/diary/ is not committed on any branch (draft PR #39, branch holiday-tavern, holds only
+    README, CAST.md and tools); it quotes lyrics
+rules:
+  - A lined notebook page as the ground
+  - >-
+    Felt-tip lines with a wobble, taper and a little bleed; boxes hand-ruled from four strokes that overshoot
+    the corners
+  - >-
+    Streaky marker fills: chisel-tip scanlines offset from the outline, over- and undershooting it, overlaps
+    banding darker
+  - Panels draw themselves in; hand lettering written in word by word, fitted to its box
+  - Highlighter caption boxes; the camera drifts from panel to panel
+palette:
+  - "#1c1922"
+  - "#e5463b"
+  - "#f6cf3a"
+  - "#3f8ede"
+  - "#45ad66"
+  - "#f08a35"
+  - "#ef84b0"
+  - "#fbe96a"
+reference: null
+proof:
+  renders:
+    - bobwiseman-holiday-tavern/out/diary_draft.mp4
+    - bobwiseman-holiday-tavern/out/holiday-tavern_draft1_f00000-f05011_24fps_draft.mp4
+  pr:
+    - rheos/novadiem.com#108
+  youtube:
+    - PTTro8rezBc
+verdict: null
+related:
+  - charcoal
+  - flashphoto
+  - neon

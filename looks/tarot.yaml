@@ -1,0 +1,47 @@
+slug: tarot
+title: Engraved tarot cards
+note: The artist's likeness on illustrated cards, dealt to the beat.
+used: Dream of Fire, quest deck
+cost: credits
+group: generated
+order: 50
+clip: tarot.mp4
+tall: false
+status: rejected
+engine: generated + p5 (Soul 2 stills, GPT Image 2.5, MiniMax H3 Max, Wan 2.7, composited in p5)
+project: hjeron-quest-deck
+code:
+  path: null
+  flag: null
+  page: null
+  note: >-
+    Local only, not in rheos/secondunit-videos: mv-projects/hjeron-quest-deck/prompts/qd-verse1/05_overlay.js
+    (cards, flips, fan, push-through, type) and 04_clips.yml; plan docs/PLAN.md.
+rules:
+  - "Card stock bone white with a seeded scorched edge (outer 2 to 4%), ember pin-holes that flicker on beats, rounded corners, a fold crease"
+  - One heavy rust-red rule inset 6% with a black hairline inside; no filigree, no gold
+  - Four hand-carved corner glyphs from a fixed set (flame, smoke spiral, ram's horn, rayed sun, mesa, open eye), woodcut jitter
+  - Lyric band in charcoal under the window, Anton caps, bone white, karaoke-filled to ember word by word; card name small in rust red
+  - "Interiors: linocut and woodcut prints overprinted with flat gouache washes, gouge marks in the blacks, slight misregistration; face and hands carved finer"
+  - Flips, deals and the 36-card fan land in the breaths and on beats, never on a sung word
+  - "Cost: 81.72 credits for the verse (6 Soul stills, 8 GPT Image 2.5 at 4.5, 2 H3 Max 5 s at 12.5, 2 Wan 2.7)"
+palette:
+  - "#E9DFC9"
+  - "#E0702E"
+  - "#8E2F1C"
+  - "#17110D"
+reference: >-
+  Tarot card layout printed as hand-pulled linocut and woodcut with gouache washes; deliberately unlike MythMaker's
+  black-and-gold Quest cards. Likeness from Hjeron's Soul ID (a1b90b0a).
+proof:
+  renders: []
+  pr: []
+  youtube: []
+  spend: mv-projects/hjeron-quest-deck/docs/SPEND.md
+verdict: >-
+  Retired with cuts 1-3 on 2026-09-28 when Robin sent the solo act's real look: "shift in direction. for the dark
+  blues project this is more the character and vibe that hjeron is going for."
+related:
+  - tarotdeck
+  - woodcut
+  - hj-rattle

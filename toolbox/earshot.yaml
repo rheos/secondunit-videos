@@ -1,0 +1,21 @@
+slug: earshot
+name: earshot
+kind: library
+status: in-use
+does: Code-made sound effects from event descriptions (Leon Lin's), rendered offline.
+keywords:
+- sfx
+- procedural-audio
+- audio
+fits:
+- devweb shorts
+- The cable and the stub event sound
+deterministic: 'yes'
+how: 'Docker only (pip install fails here): image earshot:0.4.0; `tools/devweb-kit/sfx_earshot.py`'
+cost: free
+url: https://github.com/Leonxlnx/earshot
+detail: references/leon-lin/STUDY-earshot.md
+related:
+- devweb-kit
+- tonejs
+added: '2026-11-01'

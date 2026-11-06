@@ -1,0 +1,16 @@
+slug: take-catalogue
+name: Take catalogue
+kind: script
+status: in-use
+does: Stamps every Second Unit output against its song clock.
+keywords:
+- bookkeeping
+- takes
+- catalogue
+fits:
+- Second Unit music videos
+deterministic: n/a
+how: '`secondunit-worker`'
+cost: free
+detail: memory `secondunit-take-catalogue`
+added: '2026-10-27'

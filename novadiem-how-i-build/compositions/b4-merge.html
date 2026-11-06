@@ -1,0 +1,58 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #b4 {
+          position: absolute;
+          inset: 0;
+        }
+      </style>
+      <div id="b4" data-composition-id="b4" data-width="1920" data-height="1080">
+        <svg class="full" viewBox="0 0 1920 1080">
+          <g id="b4-flow"></g>
+        </svg>
+        <div id="b4-label-l" class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate IV</div>
+        <div id="b4-label-r" class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>The Merge</div>
+        <div class="statement" data-layout-allow-overlap data-layout-allow-occlusion>
+          <span id="b4-st-a" class="phrase">A merge commit.</span>
+          <span id="b4-st-b" class="phrase red">Never a squash.</span>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text, kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 31);
+          const F = HB.flow(K.$("b4-flow"), ["main", "issue", "branch", "commits", "pr", "link", "checks", "review", "merge", "merged"]);
+          K.fade(K.$("b4-label-l"), K.T(31.3), 0.4);
+          K.fade(K.$("b4-label-r"), K.T(31.3), 0.4);
+
+          // review done: the chamber clears
+          K.out(F.review.g, K.T(31.93), 0.6);
+
+          // the branch joins main through a merge commit; every commit on it stays
+          K.draw(F.merge.line, K.T(32.55), 0.8);
+          K.draw(F.merge.node, K.T(33.18), 0.4);
+          K.fade(F.merge.core, K.T(33.18), 0.3);
+          K.out(F.pr.draft, K.T(33.18), 0.3);
+          K.fade(F.merged.label, K.T(33.81), 0.4);
+          K.fade(F.merge.label, K.T(33.81), 0.4);
+          K.reveal(K.$("b4-st-a"), K.T(33.81), 0.6);
+          K.draw(F.merge.bracket, K.T(34.44), 0.6, "none");
+          K.fade(F.merge.kept, K.T(34.44) + 0.2, 0.4);
+          K.reveal(K.$("b4-st-b"), K.T(34.44), 0.7);
+
+          K.out(K.$("b4-label-l"), K.T(38.17), 0.4);
+          K.out(K.$("b4-label-r"), K.T(38.17), 0.4);
+          tl.to("#b4 .statement", { opacity: 0, duration: 0.4, ease: "power1.in" }, K.T(38.17));
+          window.__timelines["b4"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

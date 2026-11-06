@@ -1,0 +1,79 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #b1 {
+          position: absolute;
+          inset: 0;
+        }
+      </style>
+      <div id="b1" data-composition-id="b1" data-width="1920" data-height="1080">
+        <div id="b1-all" class="layer">
+          <svg class="full" viewBox="0 0 1920 1080">
+            <path id="b1-rule" class="ln gold" d="M660 446H1260" />
+            <path id="b1-rule-ends" class="ln thin gold" d="M660 438V454M1260 438V454" />
+            <path id="b1-bracket" class="ln thin ink" d="M690 586H678V774H690" />
+            <text id="b1-diff-label" class="mono small" x="660" y="686" text-anchor="end">DIFF</text>
+            <g id="b1-diff"></g>
+          </svg>
+          <div id="b1-label-l" class="plate-label left">Plate I</div>
+          <div id="b1-label-r" class="plate-label right">Review</div>
+          <div id="b1-title" class="plate-title" style="top: 300px">The Cold Read</div>
+          <div id="b1-sub" class="sub-mono" style="top: 482px">WHEN INDEPENDENT REVIEW IS WORTH ITS COST</div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, kit } = window.CR;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 0);
+
+          // a diff, line by line: context lines faint, removals ink, additions gold
+          const g = K.$("b1-diff");
+          const LINES = [
+            [" ", 380],
+            ["-", 300],
+            ["+", 440],
+            ["+", 220],
+            [" ", 360],
+            ["-", 410],
+            ["+", 260],
+          ];
+          const strokes = [];
+          LINES.forEach(([kind, len], i) => {
+            const y = 600 + i * 26;
+            const cls = kind === "+" ? "ln gold" : "ln ink";
+            const op = kind === " " ? 0.35 : kind === "-" ? 0.7 : 1;
+            if (kind !== " ") {
+              const mark = kind === "+" ? `M698 ${y}H710M704 ${y - 6}V${y + 6}` : `M698 ${y}H710`;
+              strokes.push([el("path", { class: cls, d: mark, opacity: op }, g), 0.12]);
+            }
+            strokes.push([el("path", { class: cls, d: `M726 ${y}H${726 + len}`, opacity: op }, g), 0.32]);
+          });
+
+          K.fade(K.$("b1-label-l"), K.T(1.2), 0.5);
+          K.fade(K.$("b1-label-r"), K.T(1.2), 0.5);
+          K.reveal(K.$("b1-title"), K.T(1.83), 1.3);
+          K.draw(K.$("b1-rule"), K.T(2.4), 0.8, "none");
+          K.draw(K.$("b1-rule-ends"), K.T(2.4) + 0.7, 0.2);
+          K.fade(K.$("b1-sub"), K.T(3.0), 0.6, 0.8);
+          K.draw(K.$("b1-bracket"), K.T(3.6), 0.5);
+          K.fade(K.$("b1-diff-label"), K.T(3.6) + 0.3, 0.4);
+          let t = K.T(4.15);
+          strokes.forEach(([node, dur]) => {
+            K.draw(node, t, dur, "none");
+            t += dur * 0.85;
+          });
+          K.out(K.$("b1-all"), 7.0, 0.45);
+
+          window.__timelines["b1"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

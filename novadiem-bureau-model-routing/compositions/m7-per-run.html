@@ -1,0 +1,96 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #m7 {
+          position: absolute;
+          inset: 0;
+        }
+        #m7 .statement.one {
+          top: 500px;
+        }
+        #m7 .statement.two {
+          top: 590px;
+        }
+        #m7 .colo {
+          position: absolute;
+          left: 0;
+          right: 0;
+          text-align: center;
+          color: var(--ink);
+        }
+        #m7 .colo.a {
+          top: 796px;
+          font-size: 24px;
+          font-weight: 700;
+        }
+        #m7 .colo.b {
+          top: 838px;
+          font-size: 18px;
+          color: var(--ink-dim);
+        }
+      </style>
+      <div id="m7" data-composition-id="m7" data-width="1920" data-height="1080">
+        <div class="layer">
+          <svg class="full" viewBox="0 0 1920 1080">
+            <g id="m7-board"></g>
+            <g id="m7-art"></g>
+            <path id="m7-rule" class="ln line" d="M760 740H1160M760 730V750M1160 730V750" />
+          </svg>
+          <div class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate VII</div>
+          <div class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>Set per Run</div>
+          <div id="m7-st-a" class="statement one"><span class="phrase">Separate choices, set per run.</span></div>
+          <div id="m7-st-b" class="statement two"><span class="phrase red">Not one AI doing everything.</span></div>
+          <div id="m7-colo-a" class="colo a mono">THE BUREAU · THEBUREAU.DEV · NOVADIEM.COM</div>
+          <div id="m7-colo-b" class="colo b mono">INSIDE THE BUREAU · 9 · THE CASTING BOARD</div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text, kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 75.07);
+
+          // plate VI's end state, then it steps back
+          const B = CB.board(K.$("m7-board"));
+          CB.fill(B, { host: "openai", fresh: true });
+          K.out(K.$("m7-board"), K.R(75.65), 0.5);
+
+          // the board's columns, pulled apart: each one its own choice
+          const art = K.$("m7-art");
+          const cols = [
+            ["ROLE", "the job"],
+            ["TIER", "how capable"],
+            ["HOST", "one per run"],
+            ["MODEL", "tier + host"],
+            ["EFFORT", "tier + host"],
+            ["FRESH CONTEXT", "per role"],
+          ];
+          const w = 240, gap = 36, x0 = (1920 - (6 * w + 5 * gap)) / 2;
+          cols.forEach(([h, c], i) => {
+            const x = x0 + i * (w + gap);
+            const box = el("rect", { class: "ln ink", x, y: 290, width: w, height: 80 }, art);
+            const ht = text(h, { class: "mono", x: x + w / 2, y: 337, "text-anchor": "middle" }, art);
+            const ct = text(c, { class: "mono small dim", x: x + w / 2, y: 404, "text-anchor": "middle" }, art);
+            K.draw(box, K.T(76.23) + i * 0.29, 0.5, "none");
+            K.fade(ht, K.T(76.23) + i * 0.29 + 0.2, 0.3);
+            K.fade(ct, K.T(78.0) + i * 0.15, 0.35);
+          });
+
+          K.reveal(K.$("m7-st-a"), K.T(79.76), 0.8);
+          K.reveal(K.$("m7-st-b"), K.T(80.36), 0.8);
+          K.draw(K.$("m7-rule"), K.T(80.94), 0.6);
+          K.fade(K.$("m7-colo-a"), K.T(82.13), 0.5);
+          K.fade(K.$("m7-colo-b"), K.T(82.71), 0.5);
+
+          window.__timelines["m7"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

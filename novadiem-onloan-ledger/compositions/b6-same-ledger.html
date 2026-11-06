@@ -1,0 +1,117 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #b6 {
+          position: absolute;
+          inset: 0;
+        }
+        #b6 svg text.mono.planned-t {
+          fill: var(--ink-dim);
+        }
+      </style>
+      <div id="b6" data-composition-id="b6" data-width="1920" data-height="1080">
+        <svg class="full" viewBox="0 0 1920 1080">
+          <g id="b6-pair"></g>
+          <!-- entries landing on the one trustline -->
+          <path id="b6-e1" class="fill-line" d="M720 280L730 290L720 300L710 290Z" />
+          <path id="b6-e2" class="fill-line" d="M1200 280L1210 290L1200 300L1190 290Z" />
+          <path id="b6-up-l" class="ln line construct" d="M720 454V306" />
+          <path id="b6-up-r" class="ln line construct" d="M1200 454V306" />
+
+          <!-- the SDK: one client per side, same three services -->
+          <text id="b6-sdk" class="mono small" x="960" y="446" text-anchor="middle">FOAF-CLIENT · RUBY GEM + TYPESCRIPT</text>
+          <rect id="b6-band" class="ln line" x="420" y="458" width="1080" height="90" />
+          <path id="b6-band-d" class="ln thin line" d="M780 458V548M1140 458V548" />
+          <text id="b6-c1" class="mono" x="600" y="496" text-anchor="middle">AUTH</text>
+          <text id="b6-c1s" class="code dim" x="600" y="528" text-anchor="middle">one FOAF login</text>
+          <text id="b6-c2" class="mono" x="960" y="496" text-anchor="middle">CONTACTS</text>
+          <text id="b6-c2s" class="code dim" x="960" y="528" text-anchor="middle">GET /v1/contacts</text>
+          <text id="b6-c3" class="mono" x="1320" y="496" text-anchor="middle">LEDGER</text>
+          <text id="b6-c3s" class="code dim" x="1320" y="528" text-anchor="middle">trustlines · transfers</text>
+
+          <!-- the apps -->
+          <path id="b6-l1" class="ln ink" d="M600 630V552" />
+          <path id="b6-l2" class="ln ink" d="M960 630V552" />
+          <rect id="b6-a1" class="ln ink" x="440" y="634" width="320" height="104" />
+          <text id="b6-a1-h" class="mono" x="600" y="678" text-anchor="middle">GROWOPERATIVE</text>
+          <text id="b6-a1-s" class="code dim" x="600" y="712" text-anchor="middle">an order settles</text>
+          <rect id="b6-a2" class="ln ink" x="800" y="634" width="320" height="104" />
+          <text id="b6-a2-h" class="mono" x="960" y="678" text-anchor="middle">ONLOAN</text>
+          <text id="b6-a2-s" class="code dim" x="960" y="712" text-anchor="middle">a loan settles</text>
+          <!-- not built: drawn dashed -->
+          <path id="b6-l3" class="ln planned" d="M1320 630V552" />
+          <rect id="b6-a3" class="ln planned" x="1160" y="634" width="320" height="104" />
+          <text id="b6-a3-h" class="mono planned-t" x="1320" y="678" text-anchor="middle">YOUR APP</text>
+          <text id="b6-a3-s" class="code dim" x="1320" y="712" text-anchor="middle">its own workflow</text>
+        </svg>
+        <div id="b6-label-l" class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate VI</div>
+        <div id="b6-label-r" class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>Same Ledger</div>
+        <div class="statement two" data-layout-allow-overlap data-layout-allow-occlusion>
+          <div class="row">
+            <span id="b6-st-a" class="phrase">A new app gets the same login,</span>
+            <span id="b6-st-b" class="phrase">the same contacts,</span>
+          </div>
+          <div class="row"><span id="b6-st-c" class="phrase red">and the same tabs.</span></div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 66);
+          OL.pair(K.$("b6-pair"));
+
+          K.fade(K.$("b6-label-l"), K.T(66.32), 0.4);
+          K.fade(K.$("b6-label-r"), K.T(66.32), 0.4);
+
+          // the SDK band
+          K.fade(K.$("b6-sdk"), K.T(66.94), 0.4);
+          K.draw(K.$("b6-band"), K.T(66.94), 0.8, "none");
+          K.draw(K.$("b6-band-d"), K.T(66.94) + 0.6, 0.3, "none");
+          [["b6-c1", "b6-c1s"], ["b6-c2", "b6-c2s"], ["b6-c3", "b6-c3s"]].forEach(([a, b], i) => {
+            K.fade(K.$(a), K.T(67.57) + i * 0.31, 0.3);
+            K.fade(K.$(b), K.T(67.57) + i * 0.31 + 0.15, 0.3);
+          });
+
+          // GrowOperative, then OnLoan: both write to the same trustline
+          K.draw(K.$("b6-a1"), K.T(69.43), 0.6, "none");
+          K.fade(K.$("b6-a1-h"), K.T(69.43) + 0.3, 0.3);
+          K.fade(K.$("b6-a1-s"), K.T(69.43) + 0.45, 0.3);
+          K.draw(K.$("b6-l1"), K.T(70.05), 0.3, "none");
+          K.sweep(K.$("b6-up-l"), K.T(70.36), 0.3);
+          tl.fromTo(K.$("b6-e1"), { opacity: 0 }, { opacity: 1, duration: 0.2 }, K.T(70.68));
+
+          K.draw(K.$("b6-a2"), K.T(71.31), 0.6, "none");
+          K.fade(K.$("b6-a2-h"), K.T(71.31) + 0.3, 0.3);
+          K.fade(K.$("b6-a2-s"), K.T(71.31) + 0.45, 0.3);
+          K.draw(K.$("b6-l2"), K.T(71.94), 0.3, "none");
+          K.sweep(K.$("b6-up-r"), K.T(72.25), 0.3);
+          tl.fromTo(K.$("b6-e2"), { opacity: 0 }, { opacity: 1, duration: 0.2 }, K.T(72.56));
+
+          // the next app, not built yet
+          K.sweep(K.$("b6-a3"), K.T(73.19), 0.6);
+          K.sweep(K.$("b6-l3"), K.T(73.82), 0.3);
+          K.fade(K.$("b6-a3-h"), K.T(73.82), 0.3);
+          K.fade(K.$("b6-a3-s"), K.T(73.82) + 0.15, 0.3);
+
+          K.reveal(K.$("b6-st-a"), K.T(74.44), 0.6);
+          K.reveal(K.$("b6-st-b"), K.T(75.7), 0.5);
+          K.reveal(K.$("b6-st-c"), K.T(76.93), 0.7);
+
+          // clear down to the bare frame for the colophon
+          tl.to("#b6 svg", { opacity: 0, duration: 0.35, ease: "power1.in" }, K.T(79.44));
+          ["b6-label-l", "b6-label-r"].forEach((id) => K.out(K.$(id), K.T(79.44), 0.35));
+          tl.to("#b6 .statement", { opacity: 0, duration: 0.35, ease: "power1.in" }, K.T(79.44));
+
+          window.__timelines["b6"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

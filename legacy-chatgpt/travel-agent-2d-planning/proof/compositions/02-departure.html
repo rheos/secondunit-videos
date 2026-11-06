@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"></head><body><template>
+<style>
+ #root { position:absolute; inset:0; width:100%; height:100%; overflow:hidden; }
+ #paper-departure-canvas { position:absolute; inset:0; width:100%; height:100%; }
+</style>
+<div data-hf-id="hf-zw7p" id="root" data-composition-id="paper-departure" data-duration="4.5" data-width="1920" data-height="1080">
+ <canvas data-hf-id="hf-p8kr" id="paper-departure-canvas" class="clip" data-layout-allow-overflow="" data-start="0" data-duration="4.5" data-track-index="0" width="1920" height="1080"></canvas>
+</div>
+<script>
+(function(){
+ window.TravelProof.ready.then(function(){
+  const surface=document.getElementById("paper-departure-canvas");
+  const drive={time:0};
+  const tl=gsap.timeline({paused:true});
+  tl.fromTo(drive,{time:0},{time:4.5,duration:4.5,ease:"none",
+   onUpdate:function(){window.TravelProof.draw(surface,2.75+drive.time,1);}},0);
+  window.TravelProof.draw(surface,2.75,1);
+  window.__timelines["paper-departure"]=tl;
+ });
+})();
+</script>
+</template></body></html>

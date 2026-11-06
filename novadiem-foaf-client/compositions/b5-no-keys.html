@@ -1,0 +1,111 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #b5 {
+          position: absolute;
+          inset: 0;
+        }
+        #b5 svg text.code.sm {
+          font-size: 17px;
+        }
+      </style>
+      <div id="b5" data-composition-id="b5" data-width="1920" data-height="1080">
+        <svg class="full" viewBox="0 0 1920 1080">
+          <g id="b5-rig" data-layout-allow-overlap data-layout-allow-occlusion></g>
+
+          <!-- the write path: body -> custodian signs the exact bytes -> body + X-Signature to the ledger -->
+          <rect id="b5-a" class="ln ink" x="160" y="390" width="340" height="140" />
+          <text id="b5-a-h" class="mono gold-t" x="184" y="428">TRANSFER</text>
+          <text id="b5-a-1" class="code b" x="184" y="468">createPendingTransfer</text>
+          <text id="b5-a-2" class="code" x="184" y="502"><tspan class="dim">you → Mira ·</tspan> 12.00</text>
+
+          <path id="b5-ar1" class="ln line" d="M508 460H572M560 450L572 460L560 470" />
+          <rect id="b5-b" class="ln ink" x="580" y="390" width="400" height="140" />
+          <text id="b5-b-h" class="mono gold-t" x="604" y="428">EXACT BODY</text>
+          <text id="b5-b-1" class="code sm" x="604" y="462">{"from_address":"0x7a3f…",</text>
+          <text id="b5-b-2" class="code sm" x="604" y="488"> "to_address":"0x51c0…",</text>
+          <text id="b5-b-3" class="code sm" x="604" y="514"> "value":"12.00", …}</text>
+
+          <path id="b5-ar2" class="ln line" d="M988 460H1052M1040 450L1052 460L1040 470" />
+          <rect id="b5-c" class="ln line-strong" x="1060" y="390" width="320" height="140" style="stroke-width: 3" />
+          <text id="b5-c-h" class="mono gold-t" x="1084" y="428">CUSTODIAN</text>
+          <text id="b5-c-1" class="code b" x="1084" y="468">auth.foaf.io</text>
+          <text id="b5-c-2" class="code" x="1084" y="502"><tspan class="dim">personal_sign</tspan> 0x9f2c…41b</text>
+
+          <path id="b5-ar3" class="ln line" d="M1388 460H1452M1440 450L1452 460L1440 470" />
+          <rect id="b5-d" class="ln ink" x="1460" y="390" width="300" height="140" />
+          <text id="b5-d-h" class="mono gold-t" x="1484" y="428">LEDGER</text>
+          <text id="b5-d-1" class="code b" x="1484" y="468">api.foaf.io</text>
+          <text id="b5-d-2" class="code" x="1484" y="502"><tspan class="dim">+</tspan> X-Signature</text>
+
+          <text id="b5-nofb" class="mono small dim" x="1220" y="560" text-anchor="middle">CUSTODIAN DOWN: THE WRITE FAILS, NO LOCAL KEY</text>
+
+          <!-- the two signature providers that are built, and the device custody that is only named -->
+          <rect id="b5-p1" class="ln ink" x="160" y="590" width="780" height="70" />
+          <text id="b5-p1-1" class="code b" x="184" y="620">createRemoteCustodianSignatureProvider</text>
+          <text id="b5-p1-2" class="mono small dim" x="184" y="646">AN APP WITH A BACKEND · SERVICE TOKEN</text>
+          <rect id="b5-p2" class="ln ink" x="980" y="590" width="780" height="70" />
+          <text id="b5-p2-1" class="code b" x="1004" y="620">createSessionSignatureProvider</text>
+          <text id="b5-p2-2" class="mono small dim" x="1004" y="646">A UI-ONLY APP · THE USER'S OWN SESSION</text>
+          <rect id="b5-p3" class="ln planned" x="160" y="680" width="1600" height="44" />
+          <text id="b5-p3-1" class="mono small planned-t" x="960" y="708" text-anchor="middle">KEYS ON THE DEVICE · PHASE A · NAMED, NOT BUILT</text>
+        </svg>
+        <div id="b5-label-l" class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate V</div>
+        <div id="b5-label-r" class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>Signed, No Keys</div>
+        <div class="statement two" data-layout-allow-overlap data-layout-allow-occlusion>
+          <div class="row"><span id="b5-st-a" class="phrase">The custodian signs the exact bytes.</span></div>
+          <div class="row"><span id="b5-st-b" class="phrase red">Your app holds no keys.</span></div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 52);
+          const R = FC.rig(K.$("b5-rig"));
+          const L = FC.light(R, "ledger");
+          const S = FC.lightSvc(R, "auth");
+
+          K.fade(K.$("b5-label-l"), K.T(52.1), 0.4);
+          K.fade(K.$("b5-label-r"), K.T(52.1), 0.4);
+          FC.on(K, L, K.T(52.7));
+
+          const box = (f, h, lines, at) => {
+            K.draw(K.$(f), at, 0.6, "none");
+            K.fade(K.$(h), at + 0.25, 0.3);
+            lines.forEach((id, i) => K.reveal(K.$(id), at + 0.45 + i * 0.25, 0.45));
+          };
+          box("b5-a", "b5-a-h", ["b5-a-1", "b5-a-2"], K.T(53.35));
+          K.draw(K.$("b5-ar1"), K.T(54.6), 0.35);
+          box("b5-b", "b5-b-h", ["b5-b-1", "b5-b-2", "b5-b-3"], K.T(54.6) + 0.3);
+          K.draw(K.$("b5-ar2"), K.T(56.5), 0.35);
+          box("b5-c", "b5-c-h", ["b5-c-1", "b5-c-2"], K.T(56.5) + 0.3);
+          FC.on(K, S, K.T(56.5) + 0.3);
+          K.reveal(K.$("b5-st-a"), K.T(57.1), 0.8);
+          K.draw(K.$("b5-ar3"), K.T(58.35), 0.35);
+          box("b5-d", "b5-d-h", ["b5-d-1", "b5-d-2"], K.T(58.35) + 0.3);
+          K.reveal(K.$("b5-st-b"), K.T(59.6), 0.9);
+          K.fade(K.$("b5-nofb"), K.T(60.85), 0.4);
+
+          box("b5-p1", "b5-p1-1", ["b5-p1-2"], K.T(61.5));
+          box("b5-p2", "b5-p2-1", ["b5-p2-2"], K.T(62.1));
+          K.sweep(K.$("b5-p3"), K.T(63.35), 0.7);
+          K.fade(K.$("b5-p3-1"), K.T(63.35) + 0.4, 0.4);
+
+          const ids = ["b5-a", "b5-a-h", "b5-a-1", "b5-a-2", "b5-ar1", "b5-b", "b5-b-h", "b5-b-1", "b5-b-2", "b5-b-3", "b5-ar2", "b5-c", "b5-c-h", "b5-c-1", "b5-c-2", "b5-ar3", "b5-d", "b5-d-h", "b5-d-1", "b5-d-2", "b5-nofb", "b5-p1", "b5-p1-1", "b5-p1-2", "b5-p2", "b5-p2-1", "b5-p2-2", "b5-p3", "b5-p3-1", "b5-label-l", "b5-label-r"];
+          ids.forEach((id) => K.out(K.$(id), K.T(65.6), 0.35));
+          [L.fill, L.edge, S.fill, S.edge].forEach((n) => K.out(n, K.T(65.6), 0.35));
+          tl.to("#b5 .statement", { opacity: 0, duration: 0.35, ease: "power1.in" }, K.T(65.6));
+
+          window.__timelines["b5"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

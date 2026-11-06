@@ -1,0 +1,15 @@
+slug: openstoryline
+name: FireRed-OpenStoryline
+kind: app
+status: rejected
+does: Agent that plans an edit from plain language, finds stock media, writes narration and saves a whole edit as a reusable style skill.
+keywords:
+- editing
+- explainer
+deterministic: n/a
+how: not installed
+cost: free (Apache-2.0)
+url: https://github.com/FireRedTeam/FireRed-OpenStoryline
+source: x.com/heyrimsha/status/2114672104021148033 (10 AI-filmmaker repos, read 2026-10-26)
+why: Built for vlogs and product clips from stock media. Its saved style skills are what looks/*.yaml already does for us.
+added: '2026-11-01'

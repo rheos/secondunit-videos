@@ -1,0 +1,72 @@
+TERRY GILLIAM: CUT-OUT SURFACE AND MOTION BRIEF
+Updated 2026-10-16
+
+SCOPE
+Use this when Robin wants the cut-out surface, not just the thinking. The thinking is in AGENT-DIRECTION.txt and works in any medium. The method below comes from Gilliam's own 1974 demonstration (BBC Do-It-Yourself Film Animation Show, source bbc1974) unless marked otherwise. Where we propose a code equivalent, it says so. We have not studied frames from the broadcast pieces in this session; check against a real clip before calling a look finished.
+
+MATERIAL (his account)
+- Faces and figures from old photographs, magazines, books, family albums, Christmas cards. He liked old pictures for the faces in them. Christmas 1968: Victorian Christmas cards photocopied from the Tate's collection (farout2021).
+- His own figures were often airbrushed, because airbrush gives a rounded, three-dimensional form that flat cel colour cannot. He mixed airbrushed drawings, photographs and simple drawings freely.
+- Colour: felt-tip markers over the cut-outs, or anything already coloured. Photographs were coloured in by hand.
+- Skies: painted, or a book photograph coloured in. Grounds: mostly a shaded piece of colour. Add buildings and trees as further cut-outs.
+- Wikipedia's summary of the look: his own soft-gradient, bulbous drawings mixed with cut-outs from mostly Victorian photographs (source wikipedia).
+
+EDGES AND LIGHT (his account; this is where our kits differ)
+- Every cut edge is blacked with a black felt-tip. Without it, white paper edges flare under the lights and the figure stops reading as a rounded image against a deep background and reads as one flat scrap pasted on another. He considered that the end of the illusion.
+- Shadows were the enemy: lights as high as possible, the largest field possible, padding under the artwork and a glass or perspex plate pressing everything flat.
+- Consequence for us: the Gilliam look has a thin dark rim on every piece and almost no cast shadow. Our scrapbook/paper-theatre kit (Clap Hands, after Sarah Legault's Rheostatics video) shows white paper edges and soft drop shadows on purpose; the WGT Gilliam test (bobwiseman-wgt-gilliam/js/gilliam.js) also cuts with a paper margin and a soft shadow. Both are valid looks, but they are not Gilliam's. For a Gilliam pass: dark rim, flat light, no drop shadow, or a very faint one.
+
+MOTION (his account)
+- Know the limits and use them. Smooth, graceful movement is what cut-outs do worst; quick, sudden movement is what they do best and funniest.
+- Cheat. Avoid walking legs: put people on wheels and roll them; slide figures without moving their legs (his camel and wise men slid across and back); bounce a two-piece figure up and down (legs one piece, body another).
+- Talking: a cut-out jaw that pulls down, not drawn mouth shapes.
+- Joints: as few pieces as the action needs. The old man has two legs; the bending lady has three parts (lower body, torso, head). A closing pram needs an extra pram-top piece behind. A fight inside the pram is bits of black paper changed position by position.
+- Silly walks are welcome: one walker's foot comes out of his stomach, swings in an arc to the ground, and the body catches up.
+- Timing: he wrote seconds and sound effects (squeaking wheels, footsteps) under each storyboard frame, then moved pieces by marks on a template, one step per frame. The storyboard is a crude reminder; the film comes alive under the camera, and accidents found there are kept.
+
+SCALE (his account)
+Cut-outs make scale easy to fake: perfume bottles with tiny people become a futuristic city; rocks against a sky with a little tone become mountains.
+
+PROPOSED CODE APPROACH (ours)
+- Plates: public-domain scans (Victorian photographs and engravings, Renaissance paintings, catalogues, Christmas cards), keyed with gemmaluna-clap-hands/tools/paper_prep.py as in the Clap Hands scrapbook kit. Gilliam's documented sources are in plates/ (S01-S08) and are free to cut.
+- Tint: multiply a flat or slightly blotchy marker colour over greyscale photo pieces; leave some pieces in their own sepia.
+- Rim: dilate each piece's alpha 1-3 px at 1080p and fill the ring near-black (#1a1612); no white margin.
+- Airbrushed pieces: radial and linear gradients with soft falloff, bulbous rounded shapes, a slight spatter grain.
+- Skies: a vertical gradient with a soft airbrushed glow, or a coloured-in photo sky. Grounds: one shaded colour band.
+- Light: no drop shadow by default. If depth is needed, a 1-2 px offset at 15 percent black at most.
+- Motion: pieces on single pivots; hold on twos or threes (we propose 12 fps holds at 24 fps); linear steps for slides and rolls (template marks give constant increments, not eased curves); snaps happen in one or two frames; bounces as a two-frame up-down on the beat.
+- Sound: every movement beat gets a sound (pop, squeak, boing, crash, raspberry). Time actions to the song's clock (video-production skill); sound effects ride on top in the mix.
+- Determinism: paint each piece once at load, then only transform it per frame, as the existing kits do.
+
+MUSIC VIDEO TIMING AND FRAME (ours)
+- Two motion layers. Cut-out pieces step (held on twos or threes) while the background moves smoothly: the sky glow breathes, a pan drifts, light shifts. The contrast between stepped paper and a smooth world is the look. Do not step the background.
+- Hits on the grid. Put every snap, pop, drop and squash on a beat or subdivision from the song's beat map (video-production skill, audio as clock). A hit is one or two frames; the hold after it lasts until the next hit.
+- Cycles in bars. A repeating cycle (cog, pump, marching row, wheel) lasts exactly one or two bars so it never drifts off the tempo.
+- The singing jaw. For a singing found face, the jaw opens on each sung syllable from the word timings and closes between; on fast lines, open on the beat instead. Opening is a 2-3 frame drop, never eased.
+- Colour layers. Colour lives in the sky and the airbrushed shapes: deep gradients (sunset orange to night blue, acid green to violet). Photo pieces stay sepia or lightly tinted. The photographs are the "real" layer, the airbrush is the dream layer.
+- Panorama pans. For an intro, solo or outro, build one collage several screens wide and pan or push slowly across it at a constant speed, with the pieces on it barely moving.
+- Fly-through cuts. To go into a mouth, eye, opened head or doorway, scale the camera into the opening until its dark interior fills the frame, cut on a beat, and scale out of a matching opening in the next scene.
+
+GENERATOR NOTES (from our own Midjourney runs, memory wgt-generative-mj-look)
+- Putting "Gilliam" in a prompt with "painted" pulls Monty Python cut-out collage with grotesque faces.
+- "Film still from Terry Gilliam's Brazil 1985" pulls a live-action ministry interior, not the animation.
+- For plates, ask for the source material (an 1880s cabinet-card portrait, a steel engraving of a bicycle) rather than for "Gilliam style"; build the collage ourselves.
+
+REJECTS
+- The Python trademarks: the Bronzino foot itself, the Liberty Bell march, the castaway "It's".
+- Smooth eased motion everywhere, lip-sync mouth shapes, walk cycles with articulated knees.
+- Clean flat vector colour (the peg-bar cel look he contrasted cut-outs with).
+- White paper edges and soft drop shadows, unless the film is deliberately mixing in the paper-theatre look.
+- Modern stock photography, recognisable real public figures, realistic gore.
+
+ACCEPTANCE CHECK
+- At a glance, the frame reads as a collage of real old pictures and airbrushed shapes on a deep, glowing sky.
+- Every cut piece has a dark rim; nothing flares white at its edge (unless chosen).
+- Motion reads as paper: holds, slides, snaps, bounces, a dropping jaw. Nothing glides.
+- Each scene change follows an element into the next scene.
+- Each beat has a sound.
+- In a music video: hits land on the beat map, cycles last whole bars, and the background moves smoothly while the pieces step.
+- The joke survives if the texture is swapped for clean vector.
+
+READING ORDER
+AGENT-DIRECTION.txt for the moves; PSYCHOLOGY.md for why they work; this file for the surface; index.html for anchors and sources.

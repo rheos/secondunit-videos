@@ -1,0 +1,76 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #b1 {
+          position: absolute;
+          inset: 0;
+        }
+      </style>
+      <div id="b1" data-composition-id="b1" data-width="1920" data-height="1080">
+        <svg class="full" viewBox="0 0 1920 1080">
+          <text id="b1-tag" class="mono small" x="960" y="150" text-anchor="middle">ONLOAN · METERED LENDING ON THE FOAF LEDGER</text>
+          <g id="b1-pair"></g>
+          <g id="b1-car"></g>
+          <path id="b1-ground" class="ln line construct" d="M640 738H1280" />
+          <text id="b1-card" class="mono small gold-t" x="960" y="772" text-anchor="middle">LOAN · CAR · 0.25 PER KM · DRAFT</text>
+        </svg>
+        <div id="b1-label-l" class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate I</div>
+        <div id="b1-label-r" class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>Where Does the Loan Settle?</div>
+        <div class="statement two" data-layout-allow-overlap data-layout-allow-occlusion>
+          <div class="row">
+            <span id="b1-st-a" class="phrase">Ana lends Ben her car,</span>
+            <span id="b1-st-b" class="phrase">metered by the kilometre.</span>
+          </div>
+          <div class="row"><span id="b1-st-c" class="phrase red">Where does it settle?</span></div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 0);
+          const P = OL.pair(K.$("b1-pair"));
+          const C = OL.car(K.$("b1-car"), 960, 700);
+
+          K.fade(K.$("b1-label-l"), K.T(0.72), 0.4);
+          K.fade(K.$("b1-label-r"), K.T(0.72), 0.4);
+          K.fade(K.$("b1-tag"), K.T(1.35), 0.5);
+
+          // two FOAF contacts, then the trustline they already share
+          [P.ana, P.ben].forEach((p, i) => {
+            const at = K.T(1.35) + i * 0.63;
+            K.draw(p.head, at, 0.6);
+            K.draw(p.body, at + 0.2, 0.6);
+            K.fade(p.nm, at + 0.4, 0.4);
+            K.fade(p.rl, at + 0.55, 0.4);
+          });
+          K.draw(P.line, K.T(2.62), 0.9, "power2.inOut");
+          K.draw(P.ends, K.T(2.62) + 0.7, 0.3, "none");
+          K.fade(P.tag, K.T(3.25), 0.4);
+          K.fade(P.credit, K.T(3.25) + 0.3, 0.4);
+
+          // the car
+          K.reveal(K.$("b1-st-a"), K.T(3.25), 0.6);
+          C.parts.forEach((n, i) => K.draw(n, K.T(3.88) + i * 0.12, 0.8, "power1.inOut"));
+          K.sweep(K.$("b1-ground"), K.T(4.53), 0.6);
+          K.reveal(K.$("b1-st-b"), K.T(5.18), 0.6);
+          K.fade(K.$("b1-card"), K.T(5.8), 0.4);
+
+          K.reveal(K.$("b1-st-c"), K.T(6.43), 0.7);
+
+          // clear down to the pair; plate II redraws it whole at 10.0
+          ["b1-car", "b1-ground", "b1-card", "b1-tag", "b1-label-l", "b1-label-r"].forEach((id) => K.out(K.$(id), K.T(9.64), 0.35));
+          tl.to("#b1 .statement", { opacity: 0, duration: 0.35, ease: "power1.in" }, K.T(9.64));
+
+          window.__timelines["b1"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

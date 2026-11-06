@@ -1,0 +1,115 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #p3 {
+          position: absolute;
+          inset: 0;
+        }
+      </style>
+      <div id="p3" data-composition-id="p3" data-width="1920" data-height="1080">
+        <svg class="full" viewBox="0 0 1920 1080">
+          <g id="p3-work"></g>
+          <g id="p3-phone"></g>
+          <g id="p3-grid"></g>
+        </svg>
+        <div id="p3-label-l" class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate III</div>
+        <div id="p3-label-r" class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>The Rate</div>
+        <div class="statement two" data-layout-allow-overlap data-layout-allow-occlusion>
+          <div class="row"><span id="p3-st-a" class="phrase">The rate is copied onto each tally.</span></div>
+          <div class="row"><span id="p3-st-b" class="phrase red">A new rate never rewrites old ones.</span></div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text, kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 23.99);
+          const w = K.$("p3-work");
+
+          // the phone and its filled sheet carry over from plate II
+          OR.phone(K.$("p3-phone"));
+          const G = OR.grid(K.$("p3-grid"));
+          G.marks.forEach((m) => m.setAttribute("opacity", 1));
+
+          K.fade(K.$("p3-label-l"), K.T(24.64), 0.4);
+          K.fade(K.$("p3-label-r"), K.T(24.64), 0.4);
+
+          // the pay rule in force (synthetic rate)
+          const card = (x, title, rate, from) => {
+            const g = el("g", {}, w);
+            const box = el("rect", { class: "ln ink", x, y: 170, width: 500, height: 170 }, g);
+            const t = el("g", {}, g);
+            text(title, { class: "mono head", x: x + 24, y: 214 }, t);
+            text("GALA · BIN", { class: "mono small", x: x + 24, y: 250 }, t);
+            text("rate", { class: "mono small", x: x + 24, y: 290 }, t);
+            text(rate, { class: "mono", x: x + 140, y: 290 }, t);
+            text(from, { class: "mono small", x: x + 24, y: 322 }, t);
+            return { g, box, t };
+          };
+          const oldR = card(160, "PAY RULE", "2400 ¢", "from 2026-09-01");
+          K.draw(oldR.box, K.T(24.64), 0.7, "none");
+          K.fade(oldR.t, K.T(25.26), 0.4);
+
+          // the tally being written: rate box still empty
+          const row = el("g", {}, w);
+          const rowBox = el("rect", { class: "ln ink", x: 160, y: 430, width: 1100, height: 64 }, row);
+          const rowT = el("g", {}, row);
+          [["t-10", 184], ["CLEO", 330], ["bin 3", 500], ["count 1", 660]].forEach(([s, x]) => text(s, { class: "mono", x, y: 470 }, rowT));
+          text("rate", { class: "mono small", x: 880, y: 470 }, rowT);
+          const slot = el("rect", { class: "ln line planned", x: 950, y: 442, width: 180, height: 40 }, row);
+          const tallyTag = text("tally", { class: "mono small", x: 160, y: 418 }, row);
+          K.draw(rowBox, K.T(25.91), 0.7, "none");
+          K.fade(rowT, K.T(26.54), 0.4);
+          K.fade(tallyTag, K.T(26.54), 0.4);
+          K.sweep(slot, K.T(26.54), 0.4);
+
+          // the rate is copied from the rule into the tally when it is written
+          const stamp = el("g", { opacity: 0 }, w);
+          text("2400", { class: "mono", x: 0, y: 7, "text-anchor": "middle" }, stamp);
+          const route = el("path", { d: "M300 290C300 380 1040 360 1040 462", fill: "none" }, w);
+          const guide = el("path", { class: "ln line construct", d: "M300 300C300 380 1040 360 1040 440" }, w);
+          tl.fromTo(stamp, { opacity: 0 }, { opacity: 1, duration: 0.2 }, K.T(27.19));
+          K.sweep(guide, K.T(27.19), 0.6);
+          K.travel(stamp, route, K.T(27.19), 0.9);
+          tl.fromTo(slot, { opacity: 1 }, { opacity: 0, duration: 0.25 }, K.T(27.84) + 0.3);
+          const fixedBox = el("rect", { class: "ln line", x: 950, y: 442, width: 180, height: 40, opacity: 0 }, row);
+          K.fade(fixedBox, K.T(27.84) + 0.3, 0.3);
+          const copied = text("copied when the tally is written", { class: "mono note", x: 950, y: 528 }, w);
+          K.fade(copied, K.T(27.84), 0.4, 0.75);
+          K.out(guide, K.T(29.74), 0.4);
+
+          // owed for this tally: floor(count x rate)
+          const owed = text("owed = floor(count × rate) = floor(1 × 2400) = 2400 ¢", { class: "mono", x: 160, y: 600 }, w);
+          K.reveal(owed, K.T(29.12), 0.7);
+
+          // a rate change later in the season: a new rule, the old one superseded
+          const newR = card(760, "PAY RULE", "2600 ¢", "from 2026-09-15");
+          K.draw(newR.box, K.T(31.02), 0.7, "none");
+          K.fade(newR.t, K.T(31.65), 0.4);
+          const strike = el("path", { class: "ln accent-s", d: "M160 340L660 170" }, w);
+          const sup = text("SUPERSEDED", { class: "mono small red-t", x: 410, y: 160, "text-anchor": "middle" }, w);
+          K.draw(strike, K.T(31.65), 0.4);
+          K.fade(sup, K.T(31.65), 0.3);
+
+          // the old tally keeps its 2400
+          const tick = el("path", { class: "ln line", d: "M1148 466l10 11l20 -24", style: "stroke-width: 4" }, w);
+          K.draw(tick, K.T(32.95), 0.3);
+          const keeps = text("old tallies keep 2400", { class: "mono note", x: 950, y: 556 }, w);
+          K.fade(keeps, K.T(32.95), 0.4, 0.75);
+
+          K.reveal(K.$("p3-st-a"), K.T(28.47), 0.6);
+          K.reveal(K.$("p3-st-b"), K.T(32.95), 0.8);
+
+          // plate IV's navy field wipes over this at 37.38
+          window.__timelines["p3"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

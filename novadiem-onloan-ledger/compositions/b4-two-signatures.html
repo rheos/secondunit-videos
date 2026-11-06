@@ -1,0 +1,188 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #b4 {
+          position: absolute;
+          inset: 0;
+        }
+        #b4 svg text.mono.gold-t {
+          fill: var(--line-field);
+        }
+        #b4 svg text.code.res {
+          fill: var(--line-field);
+          font-weight: 700;
+        }
+        #b4 .sig {
+          fill: none;
+          stroke: var(--line-field);
+          stroke-width: 2.5;
+          stroke-linecap: round;
+          stroke-linejoin: round;
+        }
+        #b4 .fill-field {
+          fill: var(--field);
+        }
+      </style>
+      <div id="b4" data-composition-id="b4" data-width="1920" data-height="1080">
+        <div id="b4-night" class="layer field" data-layout-allow-overlap data-layout-allow-occlusion>
+          <svg class="full" viewBox="0 0 1920 1080">
+            <defs>
+              <pattern id="b4-grid" width="60" height="60" patternUnits="userSpaceOnUse" x="48" y="48">
+                <path d="M60 0H0V60" fill="none" stroke="#f4eee0" stroke-width="1" opacity="0.06" />
+              </pattern>
+            </defs>
+            <rect x="48" y="48" width="1824" height="984" fill="url(#b4-grid)" />
+            <rect class="ln thin paper-s" x="48" y="48" width="1824" height="984" opacity="0.5" />
+
+            <!-- pine copy of the furniture bar: the tick sits at AWAITING and moves to SETTLED at 48.18, sheet 04 / 07 -->
+            <g id="b4-bar" data-layout-allow-overlap data-layout-allow-occlusion>
+              <path class="ln thin paper-s" d="M260 985H1520" opacity="0.35" />
+              <path id="b4-prog" class="ln line-field" d="M260 985H1520" />
+              <g id="b4-stations"></g>
+              <path id="b4-tick" d="M-9 -14H9L0 0Z" style="fill: var(--line-field)" />
+              <rect class="ln thin line-field" x="1610" y="958" width="230" height="50" />
+              <path class="ln thin line-field" d="M1690 958V1008" opacity="0.6" />
+              <text class="mono small" x="1650" y="990" text-anchor="middle">SHEET</text>
+              <text class="mono" x="1765" y="991" text-anchor="middle">04 / 07</text>
+            </g>
+
+            <g id="b4-pair"></g>
+
+            <!-- the pending transfer travels the trustline, Ben to Ana -->
+            <path id="b4-route" d="M1220 290H700" fill="none" stroke="none" />
+            <g id="b4-token" opacity="0">
+              <rect class="ln line-field fill-field" x="-90" y="-22" width="180" height="44" />
+              <text id="b4-tk-a" class="mono small" x="0" y="6" text-anchor="middle">21.68 PENDING</text>
+              <text id="b4-tk-b" class="mono small" x="0" y="6" text-anchor="middle" opacity="0">21.68 CONFIRMED</text>
+            </g>
+
+            <!-- 1: the borrower creates (sender signs) -->
+            <g id="b4-c1">
+              <rect id="b4-c1-f" class="ln paper-s" x="1180" y="452" width="500" height="250" />
+              <text id="b4-c1-h" class="mono gold-t" x="1204" y="492">1 · BEN CREATES</text>
+              <text id="b4-c1-1" class="code b" x="1204" y="534">POST /pending_transfers</text>
+              <text id="b4-c1-2" class="code" x="1204" y="568"><tspan class="dim">from</tspan> Ben <tspan class="dim">to</tspan> Ana <tspan class="dim">value</tspan> 21.68</text>
+              <text id="b4-c1-3" class="code" x="1204" y="602"><tspan class="dim">key</tspan> onloan:loan:42</text>
+              <path id="b4-c1-sig" class="sig" d="M1210 660c14-30 26-30 22 0s16-34 30-12c10 14 14 10 24-4s20-6 26 6c6 10 18 4 30-10" />
+              <text id="b4-c1-s" class="mono small" x="1656" y="672" text-anchor="end">SIGNED · SENDER</text>
+            </g>
+
+            <!-- 2: the lender confirms (receiver signs) -->
+            <g id="b4-c2">
+              <rect id="b4-c2-f" class="ln paper-s" x="240" y="452" width="500" height="250" />
+              <text id="b4-c2-h" class="mono gold-t" x="264" y="492">2 · ANA CONFIRMS</text>
+              <text id="b4-c2-1" class="code b" x="264" y="534">PUT /pending_transfers/:id/confirm</text>
+              <text id="b4-c2-2" class="code" x="264" y="568"><tspan class="dim">signer</tspan> Ana</text>
+              <text id="b4-c2-3" class="code" x="264" y="602"><tspan class="dim">→</tspan> operation id</text>
+              <path id="b4-c2-sig" class="sig" d="M270 660c10-26 22-32 24-8s10 10 22-8c10-14 18-12 20 2s14 12 26-6c10-14 20-8 28 4" />
+              <text id="b4-c2-s" class="mono small" x="716" y="672" text-anchor="end">SIGNED · RECEIVER</text>
+            </g>
+
+            <!-- the custodian holds both keys; OnLoan holds none -->
+            <rect id="b4-cu" class="ln line-field" x="800" y="488" width="320" height="150" />
+            <text id="b4-cu-1" class="mono" x="960" y="532" text-anchor="middle">FOAF CUSTODIAN</text>
+            <text id="b4-cu-2" class="code" x="960" y="570" text-anchor="middle">auth.foaf.io</text>
+            <text id="b4-cu-3" class="code dim" x="960" y="606" text-anchor="middle">holds the keys</text>
+            <path id="b4-cu-r" class="ln line-field construct" d="M1124 560H1176" />
+            <path id="b4-cu-l" class="ln line-field construct" d="M744 560H796" />
+            <text id="b4-cu-4" class="code res" x="960" y="680" text-anchor="middle">OnLoan holds no keys</text>
+            <text id="b4-ok" class="code" x="960" y="740" text-anchor="middle">settled only on a 2xx with an operation id</text>
+          </svg>
+          <div id="b4-label-l" class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate IV</div>
+          <div id="b4-label-r" class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>Two Signatures</div>
+          <div class="statement two" data-layout-allow-overlap data-layout-allow-occlusion>
+            <div class="row">
+              <span id="b4-st-a" class="phrase">Ben signs the transfer.</span>
+              <span id="b4-st-b" class="phrase">Ana confirms it.</span>
+            </div>
+            <div class="row"><span id="b4-st-c" class="phrase red">Each side signs its own half.</span></div>
+          </div>
+        </div>
+        <div id="b4-edge" class="wipe-edge"></div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text, kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 35.4);
+
+          // pine bar stations (same x as the furniture: 260 + i * 420)
+          const st = K.$("b4-stations");
+          ["DRAFT", "OPEN", "AWAITING", "SETTLED"].forEach((s, i) => {
+            const x = 260 + i * 420;
+            el("path", { class: "ln thin paper-s", d: `M${x} 979V991` }, st);
+            text(s, { class: "mono small", x, y: 1014, "text-anchor": "middle" }, st);
+          });
+          const prog = K.$("b4-prog");
+          const len = 1260;
+          prog.style.strokeDasharray = `${len}`;
+          tl.fromTo(prog, { strokeDashoffset: len / 3 }, { strokeDashoffset: 0, duration: 0.6, ease: "power2.inOut" }, K.T(48.18));
+          tl.fromTo(K.$("b4-tick"), { x: 1100, y: 971 }, { x: 1520, y: 971, duration: 0.6, ease: "power2.inOut" }, K.T(48.18));
+
+          const P = OL.pair(K.$("b4-pair"), { field: true });
+
+          // ---- the plate turns pine from the left (35.69 -> 36.32) ----
+          const inA = K.T(35.69),
+            inB = K.T(36.32);
+          tl.fromTo("#b4-night", { clipPath: "inset(0 100% 0 0)" }, { clipPath: "inset(0 0% 0 0)", duration: inB - inA, ease: "power2.inOut" }, inA);
+          tl.fromTo("#b4-edge", { x: 0 }, { x: 1918, duration: inB - inA, ease: "power2.inOut" }, inA);
+          tl.fromTo("#b4-edge", { opacity: 0 }, { opacity: 1, duration: 0.08 }, inA);
+          tl.to("#b4-edge", { opacity: 0, duration: 0.12 }, inB - 0.08);
+          K.fade(K.$("b4-label-l"), K.T(36.94), 0.4);
+          K.fade(K.$("b4-label-r"), K.T(36.94), 0.4);
+
+          // ---- 1: Ben creates the pending transfer ----
+          K.draw(K.$("b4-c1-f"), K.T(37.57), 0.7, "none");
+          K.fade(K.$("b4-c1-h"), K.T(37.57) + 0.3, 0.3);
+          ["b4-c1-1", "b4-c1-2", "b4-c1-3"].forEach((id, i) => K.reveal(K.$(id), K.T(38.2) + i * 0.3, 0.5));
+          K.draw(K.$("b4-cu"), K.T(38.82), 0.7, "none");
+          ["b4-cu-1", "b4-cu-2", "b4-cu-3"].forEach((id, i) => K.fade(K.$(id), K.T(38.82) + 0.3 + i * 0.2, 0.3));
+          K.sweep(K.$("b4-cu-r"), K.T(39.45), 0.3);
+          K.draw(K.$("b4-c1-sig"), K.T(39.45) + 0.2, 0.8, "power1.inOut");
+          K.fade(K.$("b4-c1-s"), K.T(40.05), 0.3);
+          K.reveal(K.$("b4-st-a"), K.T(39.45), 0.6);
+
+          // the pending transfer rides the trustline toward Ana
+          tl.fromTo(K.$("b4-token"), { opacity: 0 }, { opacity: 1, duration: 0.25 }, K.T(40.68));
+          K.travel(K.$("b4-token"), K.$("b4-route"), K.T(40.68), K.T(42.56) - K.T(40.68));
+
+          // ---- 2: Ana confirms ----
+          K.draw(K.$("b4-c2-f"), K.T(42.56), 0.7, "none");
+          K.fade(K.$("b4-c2-h"), K.T(42.56) + 0.3, 0.3);
+          ["b4-c2-1", "b4-c2-2", "b4-c2-3"].forEach((id, i) => K.reveal(K.$(id), K.T(43.19) + i * 0.3, 0.5));
+          (() => {
+            // the left connector reads right to left
+            const n = K.$("b4-cu-l");
+            tl.fromTo(n, { clipPath: "inset(0 0 0 100%)" }, { clipPath: "inset(0 0 0 0%)", duration: 0.3, ease: "none" }, K.T(44.44));
+          })();
+          K.draw(K.$("b4-c2-sig"), K.T(44.44) + 0.2, 0.8, "power1.inOut");
+          K.fade(K.$("b4-c2-s"), K.T(45.07), 0.3);
+          K.reveal(K.$("b4-st-b"), K.T(44.44), 0.6);
+
+          // confirmed: FOAF returns the operation
+          tl.set(K.$("b4-tk-a"), { opacity: 0 }, K.T(45.7));
+          tl.set(K.$("b4-tk-b"), { opacity: 1 }, K.T(45.7));
+          K.fade(K.$("b4-cu-4"), K.T(46.3), 0.4);
+          K.reveal(K.$("b4-st-c"), K.T(46.93), 0.8);
+          K.fade(K.$("b4-ok"), K.T(48.18), 0.4);
+
+          // ---- the cutaway closes onto plate V (51.94 -> 52.57) ----
+          const outA = K.T(51.94),
+            outB = K.T(52.57);
+          tl.to("#b4-night", { clipPath: "inset(0 0 0 100%)", duration: outB - outA, ease: "power2.inOut" }, outA);
+          tl.fromTo("#b4-edge", { x: 0 }, { x: 1918, duration: outB - outA, ease: "power2.inOut", immediateRender: false }, outA);
+          tl.to("#b4-edge", { opacity: 1, duration: 0.08 }, outA);
+          tl.to("#b4-edge", { opacity: 0, duration: 0.12 }, outB - 0.08);
+
+          window.__timelines["b4"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

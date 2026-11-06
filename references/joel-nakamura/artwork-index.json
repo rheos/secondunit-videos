@@ -1,0 +1,1173 @@
+{
+  "artist": "Joel Nakamura",
+  "updated": "2026-10-13",
+  "scope": "Four user references plus all 25 entries from each of the artist’s Art for Publication and Neo-Folk Primitive galleries, as retrieved. This is not a complete career archive.",
+  "reading_rule": "Portfolio context is artist supplied; interpretations are explicitly inferred. Exact article titles and publication dates remain unverified unless stated.",
+  "artworks": [
+    {
+      "id": "N01",
+      "title": "Brain and skeleton",
+      "title_status": "descriptive label, not verified title",
+      "file": "artwork/N01-brain-and-skeleton.jpeg",
+      "source_status": "user reference; attribution and original commission not independently matched",
+      "source_id": "user",
+      "source_url": null,
+      "context": null,
+      "dimensions": [
+        360,
+        360
+      ],
+      "preview": "previews/N01.jpg",
+      "observed_forms": "Brain and skeletal forms occupy a frontal figure; hands sit beside its head; stars and planets surround it.",
+      "interpretation": "The image combines a person’s internal anatomy with a cosmic setting. Without its original context, an intended claim about consciousness, medicine, or spirituality cannot be assigned.",
+      "interpretation_status": "inferred from visible forms and available context"
+    },
+    {
+      "id": "N02",
+      "title": "Figure under rainbow",
+      "title_status": "descriptive label, not verified title",
+      "file": "artwork/N02-figure-under-rainbow.jpeg",
+      "source_status": "user reference; attribution and original commission not independently matched",
+      "source_id": "user",
+      "source_url": null,
+      "context": null,
+      "dimensions": [
+        257,
+        360
+      ],
+      "preview": "previews/N02.jpg",
+      "observed_forms": "A figure holds two sides of a rainbow-like arch; small circular emblems sit above; vessels and a flowing line sit below.",
+      "interpretation": "The arch and lower vessels suggest a connection between levels or domains. The exact story, cultural reference, and direction of flow remain unknown.",
+      "interpretation_status": "inferred from visible forms and available context"
+    },
+    {
+      "id": "N03",
+      "title": "Blue vessel and connections",
+      "title_status": "descriptive label, not verified title",
+      "file": "artwork/N03-blue-vessel-and-connections.jpeg",
+      "source_status": "user reference; attribution and original commission not independently matched",
+      "source_id": "user",
+      "source_url": null,
+      "context": null,
+      "dimensions": [
+        281,
+        360
+      ],
+      "preview": "previews/N03.jpg",
+      "observed_forms": "A blue face-like bowl supports a small figure; curling paths connect body parts, tools, stars, and floating forms.",
+      "interpretation": "The vessel and linked objects invite a reading of thought as a place where different inputs meet. This is a formal reading, not a verified commission subject.",
+      "interpretation_status": "inferred from visible forms and available context"
+    },
+    {
+      "id": "N04",
+      "title": "Helix body and orbits",
+      "title_status": "descriptive label, not verified title",
+      "file": "artwork/N04-helix-body-and-orbits.jpeg",
+      "source_status": "user reference; attribution and original commission not independently matched",
+      "source_id": "user",
+      "source_url": null,
+      "context": null,
+      "dimensions": [
+        283,
+        360
+      ],
+      "preview": "previews/N04.jpg",
+      "observed_forms": "A figure has a double-helix-like torso, eyes at several scales, raised hands, and an orange field of orbiting shapes.",
+      "interpretation": "The repeated eyes and helix-like body connect scales within one figure. A precise scientific or spiritual interpretation requires the missing context.",
+      "interpretation_status": "inferred from visible forms and available context"
+    },
+    {
+      "id": "N05",
+      "title": "Out of Thin Air/ Moose Music",
+      "title_status": "artist portfolio title",
+      "file": "artwork/N05-out-of-thin-air-moose-music.jpg",
+      "source_status": "artist portfolio record",
+      "source_id": "publication",
+      "source_url": "https://www.joelnakamura.com/art-for-publication",
+      "context": "Record cover art for Don Grusin",
+      "image_url": "https://static.wixstatic.com/media/010a85_0b3e8e2337c04bde908edaa50edf4087~mv2.jpg",
+      "gallery_item_id": "d08edd06-727b-4456-b1c5-c73f27727608",
+      "date_note": "Gallery upload timestamps are not creation or publication dates.",
+      "dimensions": [
+        1274,
+        1280
+      ],
+      "preview": "previews/N05.jpg",
+      "observed_forms": "A moose head stands within a circular field containing landscape and small repeated shapes.",
+      "interpretation": null,
+      "interpretation_status": "No specific symbolic interpretation assigned."
+    },
+    {
+      "id": "N06",
+      "title": "The Last Train",
+      "title_status": "artist portfolio title",
+      "file": "artwork/N06-the-last-train.jpg",
+      "source_status": "artist portfolio record",
+      "source_id": "publication",
+      "source_url": "https://www.joelnakamura.com/art-for-publication",
+      "context": "Single cover image for Don Grusin",
+      "image_url": "https://static.wixstatic.com/media/010a85_fdffa1d257fe4538959681eefaf3b853~mv2.jpg",
+      "gallery_item_id": "51006adf-5fdf-4266-ac00-01a40afb1b8e",
+      "date_note": "Gallery upload timestamps are not creation or publication dates.",
+      "dimensions": [
+        1280,
+        1170
+      ],
+      "preview": "previews/N06.jpg",
+      "observed_forms": "Railway tracks converge toward mountains and a luminous horizon, with creatures and marks beside them.",
+      "interpretation": null,
+      "interpretation_status": "No specific symbolic interpretation assigned."
+    },
+    {
+      "id": "N07",
+      "title": "So Nan Desu",
+      "title_status": "artist portfolio title",
+      "file": "artwork/N07-so-nan-desu.jpg",
+      "source_status": "artist portfolio record",
+      "source_id": "publication",
+      "source_url": "https://www.joelnakamura.com/art-for-publication",
+      "context": "Image created for single for Don Grusin",
+      "image_url": "https://static.wixstatic.com/media/010a85_57e74c50cd774dde96e65f0bb853a83e~mv2.jpg",
+      "gallery_item_id": "e0981c5d-90bf-42d8-b6ed-f55ac51583e1",
+      "date_note": "Gallery upload timestamps are not creation or publication dates.",
+      "dimensions": [
+        1280,
+        1268
+      ],
+      "preview": "previews/N07.jpg",
+      "observed_forms": "Two fish curve around a musical note, surrounded by small floating marks.",
+      "interpretation": null,
+      "interpretation_status": "No specific symbolic interpretation assigned."
+    },
+    {
+      "id": "N08",
+      "title": "Covid-19",
+      "title_status": "artist portfolio title",
+      "file": "artwork/N08-covid-19.jpg",
+      "source_status": "artist portfolio record",
+      "source_id": "publication",
+      "source_url": "https://www.joelnakamura.com/art-for-publication",
+      "context": "Is this our future?",
+      "image_url": "https://static.wixstatic.com/media/010a85_f3b18406110f4b679355a71519db72ac~mv2.jpg",
+      "gallery_item_id": "a0f43dcd-0402-4f3d-8fa9-d6db4229ee8e",
+      "date_note": "Gallery upload timestamps are not creation or publication dates.",
+      "dimensions": [
+        954,
+        1280
+      ],
+      "preview": "previews/N08.jpg",
+      "observed_forms": "A figure in a helmet faces a large spiked sphere among clouds and patterned color fields.",
+      "interpretation": null,
+      "interpretation_status": "No specific symbolic interpretation assigned."
+    },
+    {
+      "id": "N09",
+      "title": "Medtronic Poster art",
+      "title_status": "artist portfolio title",
+      "file": "artwork/N09-medtronic-poster-art.jpg",
+      "source_status": "artist portfolio record",
+      "source_id": "publication",
+      "source_url": "https://www.joelnakamura.com/art-for-publication",
+      "context": "Image for Medtronic Conference cardiology collection of Medtronic",
+      "image_url": "https://static.wixstatic.com/media/010a85_56092a7a78f4484fb93e884c342245c6~mv2.jpg",
+      "gallery_item_id": "a33ec613-386e-43d0-93a7-85f454a9979b",
+      "date_note": "Gallery upload timestamps are not creation or publication dates.",
+      "dimensions": [
+        775,
+        1020
+      ],
+      "preview": "previews/N09.jpg",
+      "observed_forms": "An anatomical heart and device-like forms occupy a warm red panel enclosed by an ornamented frame.",
+      "interpretation": "A technical subject retains its recognizable anatomy while becoming a richly framed central presence. This can guide technical illustration without claiming that ornament explains a medical mechanism.",
+      "interpretation_status": "inferred from visible forms and available context"
+    },
+    {
+      "id": "N10",
+      "title": "Zeus",
+      "title_status": "artist portfolio title",
+      "file": "artwork/N10-zeus.jpg",
+      "source_status": "artist portfolio record",
+      "source_id": "publication",
+      "source_url": "https://www.joelnakamura.com/art-for-publication",
+      "context": "Mythology series for Imperial Printing",
+      "image_url": "https://static.wixstatic.com/media/010a85_bee2189466784fe8999b8958854d4a66~mv2.jpg",
+      "gallery_item_id": "cd7e5819-a330-4dc6-8027-398ad2a462d5",
+      "date_note": "Gallery upload timestamps are not creation or publication dates.",
+      "dimensions": [
+        3852,
+        4487
+      ],
+      "preview": "previews/N10.jpg",
+      "observed_forms": "A blue figure points outward while perched above stacked animals and a globe-like form.",
+      "interpretation": null,
+      "interpretation_status": "No specific symbolic interpretation assigned."
+    },
+    {
+      "id": "N11",
+      "title": "Hempire",
+      "title_status": "artist portfolio title",
+      "file": "artwork/N11-hempire.jpg",
+      "source_status": "artist portfolio record",
+      "source_id": "publication",
+      "source_url": "https://www.joelnakamura.com/art-for-publication",
+      "context": "Image Brand art for Santa Fe Farms/Brands",
+      "image_url": "https://static.wixstatic.com/media/010a85_4467a137ef1649d2bea713ffc80e4da1~mv2.jpg",
+      "gallery_item_id": "02a2f2cf-840c-4513-864a-f2138604f834",
+      "date_note": "Gallery upload timestamps are not creation or publication dates.",
+      "dimensions": [
+        1280,
+        830
+      ],
+      "preview": "previews/N11.jpg",
+      "observed_forms": "A spiral field encloses animals and plant-like forms beneath prominent lettering.",
+      "interpretation": null,
+      "interpretation_status": "No specific symbolic interpretation assigned."
+    },
+    {
+      "id": "N12",
+      "title": "Koi and Robot",
+      "title_status": "artist portfolio title",
+      "file": "artwork/N12-koi-and-robot.jpg",
+      "source_status": "artist portfolio record",
+      "source_id": "publication",
+      "source_url": "https://www.joelnakamura.com/art-for-publication",
+      "context": "Poster image for Santa Fe Japan festival",
+      "image_url": "https://static.wixstatic.com/media/010a85_63530fd6d5fa4db1a1575cc9a1b77f1e~mv2.jpg",
+      "gallery_item_id": "1e964a16-382f-4111-b74d-84a173aae783",
+      "date_note": "Gallery upload timestamps are not creation or publication dates.",
+      "dimensions": [
+        864,
+        1086
+      ],
+      "preview": "previews/N12.jpg",
+      "observed_forms": "A geometric robot stands among floating koi and small clouds.",
+      "interpretation": "The combination gives familiar fish and a machine-character a shared setting. The artist identifies a Japanese festival commission; the exact symbolic role of each fish is not specified.",
+      "interpretation_status": "inferred from visible forms and available context"
+    },
+    {
+      "id": "N13",
+      "title": "Earthquake",
+      "title_status": "artist portfolio title",
+      "file": "artwork/N13-earthquake.jpg",
+      "source_status": "artist portfolio record",
+      "source_id": "publication",
+      "source_url": "https://www.joelnakamura.com/art-for-publication",
+      "context": "Los Angeles Times, article about how we can not tame the power of nature",
+      "image_url": "https://static.wixstatic.com/media/010a85_b0da09c96fdd46de8c392bf4095d0f14~mv2.jpg",
+      "gallery_item_id": "19a18670-1da5-45fb-bc91-b7dde8ccf117",
+      "date_note": "Gallery upload timestamps are not creation or publication dates.",
+      "dimensions": [
+        660,
+        860
+      ],
+      "preview": "previews/N13.jpg",
+      "observed_forms": "An enormous open mouth and sharp shapes surround small urban or structural forms.",
+      "interpretation": "The artist’s description concerns nature’s untamable power. Disproportion between the giant mouth and smaller structures offers a possible visual expression of that power.",
+      "interpretation_status": "inferred from visible forms and available context"
+    },
+    {
+      "id": "N14",
+      "title": "Kabuki Octopus",
+      "title_status": "artist portfolio title",
+      "file": "artwork/N14-kabuki-octopus.jpg",
+      "source_status": "artist portfolio record",
+      "source_id": "publication",
+      "source_url": "https://www.joelnakamura.com/art-for-publication",
+      "context": "Poster Image for Santa Fe Japan Festival",
+      "image_url": "https://static.wixstatic.com/media/010a85_999fa54273504aea9783c00c3761c845~mv2.jpg",
+      "gallery_item_id": "8d014c6f-7dca-4b7e-80a2-840f84781120",
+      "date_note": "Gallery upload timestamps are not creation or publication dates.",
+      "dimensions": [
+        1348,
+        1806
+      ],
+      "preview": "previews/N14.jpg",
+      "observed_forms": "An octopus body carries a painted theatrical face, a headdress, and curling arms.",
+      "interpretation": null,
+      "interpretation_status": "No specific symbolic interpretation assigned."
+    },
+    {
+      "id": "N15",
+      "title": "Merck/ Maxalt Boston Tea Party",
+      "title_status": "artist portfolio title",
+      "file": "artwork/N15-merck-maxalt-boston-tea-party.jpg",
+      "source_status": "artist portfolio record",
+      "source_id": "publication",
+      "source_url": "https://www.joelnakamura.com/art-for-publication",
+      "context": "Poster for conference in Boston Maxalt is a migrane headache medicine.",
+      "image_url": "https://static.wixstatic.com/media/010a85_9ec3ea05e9584fbeb8c7cb95ebc75b62~mv2.jpg",
+      "gallery_item_id": "cec34268-f656-433f-acf9-0b1cd4a38c51",
+      "date_note": "Gallery upload timestamps are not creation or publication dates.",
+      "dimensions": [
+        795,
+        1020
+      ],
+      "preview": "previews/N15.jpg",
+      "observed_forms": "A sailing ship and historical figure fit inside a blue face-like vessel, enclosed by an oval frame.",
+      "interpretation": "A container becomes a stage for a historical scene. Boston is documented in the commission note; meanings for the enclosing face and smaller objects are inferred.",
+      "interpretation_status": "inferred from visible forms and available context"
+    },
+    {
+      "id": "N16",
+      "title": "Choices",
+      "title_status": "artist portfolio title",
+      "file": "artwork/N16-choices.jpg",
+      "source_status": "artist portfolio record",
+      "source_id": "publication",
+      "source_url": "https://www.joelnakamura.com/art-for-publication",
+      "context": "John Hopkins School of Health",
+      "image_url": "https://static.wixstatic.com/media/010a85_6ba961abfc824c13b57ff6489079a50a~mv2.jpg",
+      "gallery_item_id": "4200941d-adde-49ab-9c69-51dfc2c336b1",
+      "date_note": "Gallery upload timestamps are not creation or publication dates.",
+      "dimensions": [
+        998,
+        1321
+      ],
+      "preview": "previews/N16.jpg",
+      "observed_forms": "A head profile containing broccoli sits above an inverted profile containing a hot dog.",
+      "interpretation": "The repeated profile joins food with the head and body, making competing choices visually comparable. The image alone does not establish a nutritional claim.",
+      "interpretation_status": "inferred from visible forms and available context"
+    },
+    {
+      "id": "N17",
+      "title": "Wind Power",
+      "title_status": "artist portfolio title",
+      "file": "artwork/N17-wind-power.jpg",
+      "source_status": "artist portfolio record",
+      "source_id": "publication",
+      "source_url": "https://www.joelnakamura.com/art-for-publication",
+      "context": "Illustration for Santa Fe Natural Tobacco",
+      "image_url": "https://static.wixstatic.com/media/010a85_9e9359ee74cc46e8b5ac3870434a2ad4~mv2.jpg",
+      "gallery_item_id": "b8b175ee-69f7-4b74-92f2-c815cc5ca660",
+      "date_note": "Gallery upload timestamps are not creation or publication dates.",
+      "dimensions": [
+        1000,
+        826
+      ],
+      "preview": "previews/N17.jpg",
+      "observed_forms": "Wind turbines rise over layers of green plants and patterned ground.",
+      "interpretation": null,
+      "interpretation_status": "No specific symbolic interpretation assigned."
+    },
+    {
+      "id": "N18",
+      "title": "Merck / Maxalt Poster art",
+      "title_status": "artist portfolio title",
+      "file": "artwork/N18-merck-maxalt-poster-art.jpg",
+      "source_status": "artist portfolio record",
+      "source_id": "publication",
+      "source_url": "https://www.joelnakamura.com/art-for-publication",
+      "context": "Poster art for Scottsdale AZ Conference",
+      "image_url": "https://static.wixstatic.com/media/010a85_99a7f06d85c9498797c6406b3148fbc9~mv2.jpg",
+      "gallery_item_id": "9c2f35f0-1a79-4013-8956-0b3fd8456e11",
+      "date_note": "Gallery upload timestamps are not creation or publication dates.",
+      "dimensions": [
+        288,
+        367
+      ],
+      "preview": "previews/N18.jpg",
+      "observed_forms": "A figure with raised arms supports a rainbow; landscape and smaller figures surround a central patterned head.",
+      "interpretation": null,
+      "interpretation_status": "No specific symbolic interpretation assigned."
+    },
+    {
+      "id": "N19",
+      "title": "Wrestler and Godzilla",
+      "title_status": "artist portfolio title",
+      "file": "artwork/N19-wrestler-and-godzilla.jpeg",
+      "source_status": "artist portfolio record",
+      "source_id": "publication",
+      "source_url": "https://www.joelnakamura.com/art-for-publication",
+      "context": "Image created for fusion cuisine Chino- Latino",
+      "image_url": "https://static.wixstatic.com/media/010a85_ed4aab69a4b843e6b7d67926d5acc1df~mv2.jpeg",
+      "gallery_item_id": "3b5e1578-991c-4fc6-8fa6-e09eb783101a",
+      "date_note": "Gallery upload timestamps are not creation or publication dates.",
+      "dimensions": [
+        413,
+        640
+      ],
+      "preview": "previews/N19.jpg",
+      "observed_forms": "A small masked wrestler confronts a much larger blue reptilian creature.",
+      "interpretation": null,
+      "interpretation_status": "No specific symbolic interpretation assigned."
+    },
+    {
+      "id": "N20",
+      "title": "Network Dream",
+      "title_status": "artist portfolio title",
+      "file": "artwork/N20-network-dream.png",
+      "source_status": "artist portfolio record",
+      "source_id": "publication",
+      "source_url": "https://www.joelnakamura.com/art-for-publication",
+      "context": "Image created for Georgia Pacific Paper. HOW design confenece",
+      "image_url": "https://static.wixstatic.com/media/010a85_095feb10bbb1469faefec6c171af9e5c~mv2.png",
+      "gallery_item_id": "f2315b6a-4a8c-4597-8b8b-6ce5b5a9c528",
+      "date_note": "Gallery upload timestamps are not creation or publication dates.",
+      "dimensions": [
+        1528,
+        1949
+      ],
+      "preview": "previews/N20.jpg",
+      "observed_forms": "A spiral contains small people, arrows, and emblems; a blue face-like vessel sits alongside the lower turns.",
+      "interpretation": "The spiral offers a route through many small actors and signs. Given the design-conference commission, connected activity is a plausible reading; individual emblems remain undecoded.",
+      "interpretation_status": "inferred from visible forms and available context"
+    },
+    {
+      "id": "N21",
+      "title": "Beer Distribution poster",
+      "title_status": "artist portfolio title",
+      "file": "artwork/N21-beer-distribution-poster.jpg",
+      "source_status": "artist portfolio record",
+      "source_id": "publication",
+      "source_url": "https://www.joelnakamura.com/art-for-publication",
+      "context": "Image created for a Beer distribution company",
+      "image_url": "https://static.wixstatic.com/media/010a85_ef883b7e45704d769cd9feb2faee7250~mv2.jpg",
+      "gallery_item_id": "f84800ce-83b0-49c4-8636-cb67bb0f3179",
+      "date_note": "Gallery upload timestamps are not creation or publication dates.",
+      "dimensions": [
+        800,
+        653
+      ],
+      "preview": "previews/N21.jpg",
+      "observed_forms": "Beer names, bottles, and emblems are gathered inside a multicolored ornamental panel.",
+      "interpretation": null,
+      "interpretation_status": "No specific symbolic interpretation assigned."
+    },
+    {
+      "id": "N22",
+      "title": "LSD",
+      "title_status": "artist portfolio title",
+      "file": "artwork/N22-lsd.jpg",
+      "source_status": "artist portfolio record",
+      "source_id": "publication",
+      "source_url": "https://www.joelnakamura.com/art-for-publication",
+      "context": "Image created for Playboy Magazine, article about LSD",
+      "image_url": "https://static.wixstatic.com/media/010a85_dd2b4b1370b744368d46dabbc1dac180~mv2.jpg",
+      "gallery_item_id": "e943e670-6fd6-466b-8907-9511d040ae2e",
+      "date_note": "Gallery upload timestamps are not creation or publication dates.",
+      "dimensions": [
+        500,
+        510
+      ],
+      "preview": "previews/N22.jpg",
+      "observed_forms": "A vessel-like face carries a snake-necked creature, floating eyes, and organic forms against radiating bands.",
+      "interpretation": "The artist explicitly associates this commission with an article about LSD. That context applies to this image and should not be transferred to every unusual figure in the collection.",
+      "interpretation_status": "inferred from visible forms and available context"
+    },
+    {
+      "id": "N23",
+      "title": "2002 Winter Olympic program",
+      "title_status": "artist portfolio title",
+      "file": "artwork/N23-2002-winter-olympic-program.png",
+      "source_status": "artist portfolio record",
+      "source_id": "publication",
+      "source_url": "https://www.joelnakamura.com/art-for-publication",
+      "context": "image for 2002 Olympic program",
+      "image_url": "https://static.wixstatic.com/media/010a85_0e8b43b162674618b5a63abd187c3376~mv2.png",
+      "gallery_item_id": "30251da7-c675-4df8-b986-b2abf9d98687",
+      "date_note": "Gallery upload timestamps are not creation or publication dates.",
+      "dimensions": [
+        640,
+        432
+      ],
+      "preview": "previews/N23.jpg",
+      "observed_forms": "A running figure and circular body marks connect mountains, lightning, and a procession of small figures.",
+      "interpretation": null,
+      "interpretation_status": "No specific symbolic interpretation assigned."
+    },
+    {
+      "id": "N24",
+      "title": "2002 Winter Olympics",
+      "title_status": "artist portfolio title",
+      "file": "artwork/N24-2002-winter-olympics.png",
+      "source_status": "artist portfolio record",
+      "source_id": "publication",
+      "source_url": "https://www.joelnakamura.com/art-for-publication",
+      "context": "Image created for the 2002 Olympic Games opening cerimonies program collection of Olympic Museum",
+      "image_url": "https://static.wixstatic.com/media/010a85_d444d56499e64e4ba15edb837487df83~mv2.png",
+      "gallery_item_id": "2ab2836e-04df-416b-97a0-b05c0288096e",
+      "date_note": "Gallery upload timestamps are not creation or publication dates.",
+      "dimensions": [
+        640,
+        422
+      ],
+      "preview": "previews/N24.jpg",
+      "observed_forms": "Birds, figures, plants, and other small forms inhabit a broad circular field.",
+      "interpretation": null,
+      "interpretation_status": "No specific symbolic interpretation assigned."
+    },
+    {
+      "id": "N25",
+      "title": "Poster Sea Grant",
+      "title_status": "artist portfolio title",
+      "file": "artwork/N25-poster-sea-grant.jpg",
+      "source_status": "artist portfolio record",
+      "source_id": "publication",
+      "source_url": "https://www.joelnakamura.com/art-for-publication",
+      "context": "University of Washington Sea Grant",
+      "image_url": "https://static.wixstatic.com/media/010a85_170f19682e1d4938959dc4b811a2adc6~mv2.jpg",
+      "gallery_item_id": "921e0b83-19c9-458a-9750-f0a4f6ca9d0c",
+      "date_note": "Gallery upload timestamps are not creation or publication dates.",
+      "dimensions": [
+        1248,
+        800
+      ],
+      "preview": "previews/N25.jpg",
+      "observed_forms": "Fish and other marine forms overlap with small scenes inside a patterned aquatic composition.",
+      "interpretation": "Small creatures and scenes make the larger marine composition feel inhabited. The documented Sea Grant commission supplies an environmental context.",
+      "interpretation_status": "inferred from visible forms and available context"
+    },
+    {
+      "id": "N26",
+      "title": "Washington Sea Grant 2011",
+      "title_status": "artist portfolio title",
+      "file": "artwork/N26-washington-sea-grant-2011.jpg",
+      "source_status": "artist portfolio record",
+      "source_id": "publication",
+      "source_url": "https://www.joelnakamura.com/art-for-publication",
+      "context": "Poster image for the Universtity of Washington Sea Grant program",
+      "image_url": "https://static.wixstatic.com/media/010a85_103584c97382416d97dca4dcaa9d9c36~mv2.jpg",
+      "gallery_item_id": "0b66e6dc-5643-47ab-8ef7-25d9e5bb75c6",
+      "date_note": "Gallery upload timestamps are not creation or publication dates.",
+      "dimensions": [
+        954,
+        616
+      ],
+      "preview": "previews/N26.jpg",
+      "observed_forms": "Marine creatures and small pictorial elements occupy interlocking curved compartments.",
+      "interpretation": null,
+      "interpretation_status": "No specific symbolic interpretation assigned."
+    },
+    {
+      "id": "N27",
+      "title": "JVC Jazz Festival poster",
+      "title_status": "artist portfolio title",
+      "file": "artwork/N27-jvc-jazz-festival-poster.jpg",
+      "source_status": "artist portfolio record",
+      "source_id": "publication",
+      "source_url": "https://www.joelnakamura.com/art-for-publication",
+      "context": "Image created for JVC Jazz poster",
+      "image_url": "https://static.wixstatic.com/media/010a85_bc7eb6257ee445f092cd1f012b17aef3~mv2.jpg",
+      "gallery_item_id": "7ad22df3-6e36-48e6-9c10-20116176ad0b",
+      "date_note": "Gallery upload timestamps are not creation or publication dates.",
+      "dimensions": [
+        600,
+        765
+      ],
+      "preview": "previews/N27.jpg",
+      "observed_forms": "A large saxophone-shaped silhouette contains a person and smaller forms, with another figure extending alongside it.",
+      "interpretation": "The instrument doubles as a setting for performers and smaller forms. The object can be read both at the scale of a musical tool and at the scale of a world.",
+      "interpretation_status": "inferred from visible forms and available context"
+    },
+    {
+      "id": "N28",
+      "title": "Merck/ Maxalt Poster",
+      "title_status": "artist portfolio title",
+      "file": "artwork/N28-merck-maxalt-poster.jpg",
+      "source_status": "artist portfolio record",
+      "source_id": "publication",
+      "source_url": "https://www.joelnakamura.com/art-for-publication",
+      "context": "San Diego poster for Neurology conference",
+      "image_url": "https://static.wixstatic.com/media/010a85_875ab185e2114612b9e28a70ecac4916~mv2.jpg",
+      "gallery_item_id": "57836685-2324-402d-a44c-bfcd5789c5cf",
+      "date_note": "Gallery upload timestamps are not creation or publication dates.",
+      "dimensions": [
+        400,
+        504
+      ],
+      "preview": "previews/N28.jpg",
+      "observed_forms": "A central figure and rainbow rise above a red head-like form, surrounded by coastal imagery and plants.",
+      "interpretation": null,
+      "interpretation_status": "No specific symbolic interpretation assigned."
+    },
+    {
+      "id": "N29",
+      "title": "Astrology cards/ Paper company promotion",
+      "title_status": "artist portfolio title",
+      "file": "artwork/N29-astrology-cards-paper-company-promotion.jpg",
+      "source_status": "artist portfolio record",
+      "source_id": "publication",
+      "source_url": "https://www.joelnakamura.com/art-for-publication",
+      "context": "Pisces image for astrology series",
+      "image_url": "https://static.wixstatic.com/media/010a85_878025a34ab04d3893c94b2a81c4d4b5~mv2.jpg",
+      "gallery_item_id": "d817a8e5-3da9-43b5-9263-95a7a4cb34d8",
+      "date_note": "Gallery upload timestamps are not creation or publication dates.",
+      "dimensions": [
+        567,
+        800
+      ],
+      "preview": "previews/N29.jpg",
+      "observed_forms": "Two curved fish-like creatures and sun and moon faces occupy a framed field of small marks.",
+      "interpretation": null,
+      "interpretation_status": "No specific symbolic interpretation assigned."
+    },
+    {
+      "id": "N30",
+      "title": "Makai",
+      "title_status": "artist portfolio title",
+      "file": "artwork/N30-makai.jpg",
+      "source_status": "artist portfolio record",
+      "source_id": "neo-folk",
+      "source_url": "https://www.joelnakamura.com/neo-folk-primitive",
+      "context": "30\" x 40\" To the Ocean Neoteny series acrylic on canvas",
+      "image_url": "https://static.wixstatic.com/media/010a85_a5e0ddf1e7844e7cb54226bd92faa895~mv2.jpg",
+      "gallery_item_id": "3295c4dd-77b5-4afb-bf70-b9c6cb71f522",
+      "date_note": "Gallery upload timestamps are not creation or publication dates.",
+      "dimensions": [
+        1280,
+        964
+      ],
+      "preview": "previews/N30.jpg",
+      "observed_forms": "Flat red, blue, and yellow creature shapes fill a horizontal field.",
+      "interpretation": null,
+      "interpretation_status": "No specific symbolic interpretation assigned."
+    },
+    {
+      "id": "N31",
+      "title": "Portal",
+      "title_status": "artist portfolio title",
+      "file": "artwork/N31-portal.png",
+      "source_status": "artist portfolio record",
+      "source_id": "neo-folk",
+      "source_url": "https://www.joelnakamura.com/neo-folk-primitive",
+      "context": "Record cover art Josh Clayton",
+      "image_url": "https://static.wixstatic.com/media/010a85_5c3e10e503f04136855a218fc8f96d94~mv2.png",
+      "gallery_item_id": "44d428c1-3963-4932-bfca-5d6ae773fa9b",
+      "date_note": "Gallery upload timestamps are not creation or publication dates.",
+      "dimensions": [
+        724,
+        738
+      ],
+      "preview": "previews/N31.jpg",
+      "observed_forms": "A frontal green figure holds small worlds and signs inside a circular yellow enclosure.",
+      "interpretation": "The figure’s compartments encourage a reading of identity as a collection of connected spaces. Its record-cover commission is documented; that interpretation is ours.",
+      "interpretation_status": "inferred from visible forms and available context"
+    },
+    {
+      "id": "N32",
+      "title": "Sheepdog/Dream Watch",
+      "title_status": "artist portfolio title",
+      "file": "artwork/N32-sheepdog-dream-watch.jpg",
+      "source_status": "artist portfolio record",
+      "source_id": "neo-folk",
+      "source_url": "https://www.joelnakamura.com/neo-folk-primitive",
+      "context": "Image about my Sheepdogs I kind of am one myself",
+      "image_url": "https://static.wixstatic.com/media/010a85_8d48f27b0e3d442c894233a3a74fa715~mv2.jpg",
+      "gallery_item_id": "04c86c53-8564-4ba8-b188-6d74cae75d1a",
+      "date_note": "Gallery upload timestamps are not creation or publication dates.",
+      "dimensions": [
+        1499,
+        2000
+      ],
+      "preview": "previews/N32.jpg",
+      "observed_forms": "A blue dog looks toward floating circular images of sheep in a dark field.",
+      "interpretation": "The dog and floating sheep invite a playful reversal of who watches whom while dreaming. The artist identifies the subject as his sheepdogs.",
+      "interpretation_status": "inferred from visible forms and available context"
+    },
+    {
+      "id": "N33",
+      "title": "Dreamwatch",
+      "title_status": "artist portfolio title",
+      "file": "artwork/N33-dreamwatch.jpg",
+      "source_status": "artist portfolio record",
+      "source_id": "neo-folk",
+      "source_url": "https://www.joelnakamura.com/neo-folk-primitive",
+      "context": "Image about Dreams and Sleep",
+      "image_url": "https://static.wixstatic.com/media/010a85_f27b0384d81d4c82b38c6f51c54cb50a~mv2.jpg",
+      "gallery_item_id": "28dc8382-b091-4f70-8128-b141325c21b6",
+      "date_note": "Gallery upload timestamps are not creation or publication dates.",
+      "dimensions": [
+        1591,
+        2000
+      ],
+      "preview": "previews/N33.jpg",
+      "observed_forms": "A sheep stands beneath interlinked outlined forms and floating circles.",
+      "interpretation": null,
+      "interpretation_status": "No specific symbolic interpretation assigned."
+    },
+    {
+      "id": "N34",
+      "title": "Manifest Destiny",
+      "title_status": "artist portfolio title",
+      "file": "artwork/N34-manifest-destiny.jpg",
+      "source_status": "artist portfolio record",
+      "source_id": "neo-folk",
+      "source_url": "https://www.joelnakamura.com/neo-folk-primitive",
+      "context": "Image about the Dream World Indiscernible Genus Exhibition",
+      "image_url": "https://static.wixstatic.com/media/010a85_d73b544dc19941488b4b60f46460ffa3~mv2.jpg",
+      "gallery_item_id": "bb4ffc86-a539-469c-809b-e8eb714e786b",
+      "date_note": "Gallery upload timestamps are not creation or publication dates.",
+      "dimensions": [
+        1006,
+        1008
+      ],
+      "preview": "previews/N34.jpg",
+      "observed_forms": "A grinning creature combines animal limbs, patterned wings, a moon, and small surrounding shapes.",
+      "interpretation": null,
+      "interpretation_status": "No specific symbolic interpretation assigned."
+    },
+    {
+      "id": "N35",
+      "title": "Tin Mans Dream",
+      "title_status": "artist portfolio title",
+      "file": "artwork/N35-tin-mans-dream.jpg",
+      "source_status": "artist portfolio record",
+      "source_id": "neo-folk",
+      "source_url": "https://www.joelnakamura.com/neo-folk-primitive",
+      "context": "Image created for a traveling show for the anniversary of the Wizard of OZ",
+      "image_url": "https://static.wixstatic.com/media/010a85_fcc0d68b93a642dd98ee9afeb928df9f~mv2.jpg",
+      "gallery_item_id": "3e173726-57b3-4d7b-b014-b24c5e0c4ab1",
+      "date_note": "Gallery upload timestamps are not creation or publication dates.",
+      "dimensions": [
+        3000,
+        2255
+      ],
+      "preview": "previews/N35.jpg",
+      "observed_forms": "A reclining figure stretches across a blue field of hands, stars, creatures, and marks.",
+      "interpretation": null,
+      "interpretation_status": "No specific symbolic interpretation assigned."
+    },
+    {
+      "id": "N36",
+      "title": "The Group Howl",
+      "title_status": "artist portfolio title",
+      "file": "artwork/N36-the-group-howl.png",
+      "source_status": "artist portfolio record",
+      "source_id": "neo-folk",
+      "source_url": "https://www.joelnakamura.com/neo-folk-primitive",
+      "context": "Image created during the pandemic",
+      "image_url": "https://static.wixstatic.com/media/010a85_fd9f421033c749d0a84dd1b46a3087d9~mv2.png",
+      "gallery_item_id": "b02be800-d15f-4f3b-9073-17a962d638c9",
+      "date_note": "Gallery upload timestamps are not creation or publication dates.",
+      "dimensions": [
+        2880,
+        3600
+      ],
+      "preview": "previews/N36.jpg",
+      "observed_forms": "A large howling blue head rises from a group of small black silhouettes.",
+      "interpretation": null,
+      "interpretation_status": "No specific symbolic interpretation assigned."
+    },
+    {
+      "id": "N37",
+      "title": "T Bone",
+      "title_status": "artist portfolio title",
+      "file": "artwork/N37-t-bone.jpg",
+      "source_status": "artist portfolio record",
+      "source_id": "neo-folk",
+      "source_url": "https://www.joelnakamura.com/neo-folk-primitive",
+      "context": "Image from Indescernible Genus exhibition Hahn Ross Gallery Santa Fe NM",
+      "image_url": "https://static.wixstatic.com/media/010a85_59ef1ec1752f4e9d8f8b9a1cc6e18e78~mv2.jpg",
+      "gallery_item_id": "2b9f512a-b2a3-40d3-8f2b-a1419bd65d2b",
+      "date_note": "Gallery upload timestamps are not creation or publication dates.",
+      "dimensions": [
+        668,
+        800
+      ],
+      "preview": "previews/N37.jpg",
+      "observed_forms": "A steak-shaped face stands on legs beneath a small white cloud-like form.",
+      "interpretation": "The familiar name of a steak and the body-like face suggest a visual joke joining food to a character. The exhibition context does not establish a further editorial argument.",
+      "interpretation_status": "inferred from visible forms and available context"
+    },
+    {
+      "id": "N38",
+      "title": "Zombie Walk",
+      "title_status": "artist portfolio title",
+      "file": "artwork/N38-zombie-walk.jpg",
+      "source_status": "artist portfolio record",
+      "source_id": "neo-folk",
+      "source_url": "https://www.joelnakamura.com/neo-folk-primitive",
+      "context": "Zombie Walk 11\" x 14\" acrylic on hand tooled panel",
+      "image_url": "https://static.wixstatic.com/media/010a85_87c149c101734e41b7571e3f4be480e1~mv2.jpg",
+      "gallery_item_id": "d82210fc-054d-4df8-9f09-2a96844995d2",
+      "date_note": "Gallery upload timestamps are not creation or publication dates.",
+      "dimensions": [
+        1172,
+        1491
+      ],
+      "preview": "previews/N38.jpg",
+      "observed_forms": "A many-legged figure carries a dense tangled head with an eye on a projecting stalk.",
+      "interpretation": null,
+      "interpretation_status": "No specific symbolic interpretation assigned."
+    },
+    {
+      "id": "N39",
+      "title": "Ephemeral Soup",
+      "title_status": "artist portfolio title",
+      "file": "artwork/N39-ephemeral-soup.jpg",
+      "source_status": "artist portfolio record",
+      "source_id": "neo-folk",
+      "source_url": "https://www.joelnakamura.com/neo-folk-primitive",
+      "context": "Poster image for a AIGA talk",
+      "image_url": "https://static.wixstatic.com/media/010a85_ac2a74ac5ae849608a9b9d4fc8fb6c18~mv2.jpg",
+      "gallery_item_id": "ce89bbfc-d0e8-4502-b2dd-a27645ce0dc5",
+      "date_note": "Gallery upload timestamps are not creation or publication dates.",
+      "dimensions": [
+        3713,
+        4752
+      ],
+      "preview": "previews/N39.jpg",
+      "observed_forms": "A red serpentine body supports a green face and several projecting limbs inside a dark red panel.",
+      "interpretation": null,
+      "interpretation_status": "No specific symbolic interpretation assigned."
+    },
+    {
+      "id": "N40",
+      "title": "Noahs Ark",
+      "title_status": "artist portfolio title",
+      "file": "artwork/N40-noahs-ark.jpg",
+      "source_status": "artist portfolio record",
+      "source_id": "neo-folk",
+      "source_url": "https://www.joelnakamura.com/neo-folk-primitive",
+      "context": "Image about the Arc being a DNA lab",
+      "image_url": "https://static.wixstatic.com/media/010a85_31ecf274085440e9afca74c3428bbf75~mv2.jpg",
+      "gallery_item_id": "a71e67fe-544e-4ed3-8d39-1015d6f6ee74",
+      "date_note": "Gallery upload timestamps are not creation or publication dates.",
+      "dimensions": [
+        2023,
+        1366
+      ],
+      "preview": "previews/N40.jpg",
+      "observed_forms": "An ark carries many animals; a helix-like structure rises through its center above patterned water.",
+      "interpretation": "The artist explicitly describes the ark as a DNA lab. The shared idea of carrying and preserving life connects the traditional vessel with a contemporary scientific structure.",
+      "interpretation_status": "inferred from visible forms and available context"
+    },
+    {
+      "id": "N41",
+      "title": "Sisyphus",
+      "title_status": "artist portfolio title",
+      "file": "artwork/N41-sisyphus.jpg",
+      "source_status": "artist portfolio record",
+      "source_id": "neo-folk",
+      "source_url": "https://www.joelnakamura.com/neo-folk-primitive",
+      "context": "Difficult times are mythological",
+      "image_url": "https://static.wixstatic.com/media/010a85_4d27fcacd061418c848838b87a63b742~mv2.jpg",
+      "gallery_item_id": "388f316d-7f55-42e4-a906-91f287192ba3",
+      "date_note": "Gallery upload timestamps are not creation or publication dates.",
+      "dimensions": [
+        1984,
+        2000
+      ],
+      "preview": "previews/N41.jpg",
+      "observed_forms": "A small silhouette pushes a large gear-edged sphere up a steep diagonal.",
+      "interpretation": "The title supplies the Sisyphus reference. The small figure, uphill direction, and disproportionate load make repeated effort immediately legible.",
+      "interpretation_status": "inferred from visible forms and available context"
+    },
+    {
+      "id": "N42",
+      "title": "Zozobra",
+      "title_status": "artist portfolio title",
+      "file": "artwork/N42-zozobra.jpg",
+      "source_status": "artist portfolio record",
+      "source_id": "neo-folk",
+      "source_url": "https://www.joelnakamura.com/neo-folk-primitive",
+      "context": "Pagan burning ritual in Santa Fe NM.",
+      "image_url": "https://static.wixstatic.com/media/010a85_95806b2c4523486aaf15f66621e8ab42~mv2.jpg",
+      "gallery_item_id": "217cf908-95e3-4111-8cc7-6940f9aea882",
+      "date_note": "Gallery upload timestamps are not creation or publication dates.",
+      "dimensions": [
+        743,
+        950
+      ],
+      "preview": "previews/N42.jpg",
+      "observed_forms": "A white frontal figure with raised hands sits within an orange flame.",
+      "interpretation": null,
+      "interpretation_status": "No specific symbolic interpretation assigned."
+    },
+    {
+      "id": "N43",
+      "title": "Slow WiFi",
+      "title_status": "artist portfolio title",
+      "file": "artwork/N43-slow-wifi.jpg",
+      "source_status": "artist portfolio record",
+      "source_id": "neo-folk",
+      "source_url": "https://www.joelnakamura.com/neo-folk-primitive",
+      "context": "Image about Slow WiFi while distance learning",
+      "image_url": "https://static.wixstatic.com/media/010a85_98616cc38ec4429ca7d0b1e847e68a13~mv2.jpg",
+      "gallery_item_id": "fb9455b0-eeea-4967-8b94-c3d85b46d258",
+      "date_note": "Gallery upload timestamps are not creation or publication dates.",
+      "dimensions": [
+        1997,
+        2000
+      ],
+      "preview": "previews/N43.jpg",
+      "observed_forms": "A snail with a spiral shell sits beneath three wireless-signal arcs on a dark ground.",
+      "interpretation": "The snail makes slow connectivity bodily and humorous. The artist connects the piece to distance learning, giving the visual metaphor a specific everyday predicament.",
+      "interpretation_status": "inferred from visible forms and available context"
+    },
+    {
+      "id": "N44",
+      "title": "White Buffalo",
+      "title_status": "artist portfolio title",
+      "file": "artwork/N44-white-buffalo.jpg",
+      "source_status": "artist portfolio record",
+      "source_id": "neo-folk",
+      "source_url": "https://www.joelnakamura.com/neo-folk-primitive",
+      "context": "White Buffalo Spirit",
+      "image_url": "https://static.wixstatic.com/media/010a85_aa6db2f7f67b42d68bcdedffe5948b21~mv2.jpg",
+      "gallery_item_id": "dc2220e4-c6aa-4f32-9d0e-1f14a6a28f2a",
+      "date_note": "Gallery upload timestamps are not creation or publication dates.",
+      "dimensions": [
+        1006,
+        1280
+      ],
+      "preview": "previews/N44.jpg",
+      "observed_forms": "A luminous white buffalo stands over a patterned oval under small clouds.",
+      "interpretation": null,
+      "interpretation_status": "No specific symbolic interpretation assigned."
+    },
+    {
+      "id": "N45",
+      "title": "Red Bison",
+      "title_status": "artist portfolio title",
+      "file": "artwork/N45-red-bison.jpg",
+      "source_status": "artist portfolio record",
+      "source_id": "neo-folk",
+      "source_url": "https://www.joelnakamura.com/neo-folk-primitive",
+      "context": "Igneous Inception exhibition Pop gallery Santa Fe",
+      "image_url": "https://static.wixstatic.com/media/010a85_d7bf3e1718f04368b1420a70994c7f53~mv2.jpg",
+      "gallery_item_id": "689d59b2-e8a9-4292-b951-e6c66b317283",
+      "date_note": "Gallery upload timestamps are not creation or publication dates.",
+      "dimensions": [
+        1492,
+        2000
+      ],
+      "preview": "previews/N45.jpg",
+      "observed_forms": "A red bison stands above dense repeated marks against a glowing red and yellow ground.",
+      "interpretation": null,
+      "interpretation_status": "No specific symbolic interpretation assigned."
+    },
+    {
+      "id": "N46",
+      "title": "Trojan Horse",
+      "title_status": "artist portfolio title",
+      "file": "artwork/N46-trojan-horse.jpg",
+      "source_status": "artist portfolio record",
+      "source_id": "neo-folk",
+      "source_url": "https://www.joelnakamura.com/neo-folk-primitive",
+      "context": "Image for mythology series for Imperial printing",
+      "image_url": "https://static.wixstatic.com/media/010a85_5ad796e2a9d84718ad4a2ef0e5fe29c1~mv2.jpg",
+      "gallery_item_id": "5d42406d-cf32-4435-ac99-26e6c0e74c6d",
+      "date_note": "Gallery upload timestamps are not creation or publication dates.",
+      "dimensions": [
+        723,
+        906
+      ],
+      "preview": "previews/N46.jpg",
+      "observed_forms": "A horse on wheels contains tiny people and patterned compartments.",
+      "interpretation": "The inhabitants inside the horse reinforce its title through containment. The wheels make it an object that can move into another space.",
+      "interpretation_status": "inferred from visible forms and available context"
+    },
+    {
+      "id": "N47",
+      "title": "Indiscernible Genus",
+      "title_status": "artist portfolio title",
+      "file": "artwork/N47-indiscernible-genus.jpg",
+      "source_status": "artist portfolio record",
+      "source_id": "neo-folk",
+      "source_url": "https://www.joelnakamura.com/neo-folk-primitive",
+      "context": "Title image for exhibition Hahn Ross Gallery Santa Fe NM",
+      "image_url": "https://static.wixstatic.com/media/010a85_979078255d66427b88f101b7ef5a4525~mv2.jpg",
+      "gallery_item_id": "82d98124-e0ad-4fbe-9360-bc6a92102a0b",
+      "date_note": "Gallery upload timestamps are not creation or publication dates.",
+      "dimensions": [
+        540,
+        700
+      ],
+      "preview": "previews/N47.jpg",
+      "observed_forms": "A dragonfly-like creature combines a long curling body, wings, and an elongated animal head.",
+      "interpretation": null,
+      "interpretation_status": "No specific symbolic interpretation assigned."
+    },
+    {
+      "id": "N48",
+      "title": "A traditional version of God as Geometer",
+      "title_status": "artist portfolio title",
+      "file": "artwork/N48-a-traditional-version-of-god-as-geometer.jpg",
+      "source_status": "artist portfolio record",
+      "source_id": "neo-folk",
+      "source_url": "https://www.joelnakamura.com/neo-folk-primitive",
+      "context": "comissioned painting",
+      "image_url": "https://static.wixstatic.com/media/010a85_36a986e4975e408e82b31605f780c110~mv2.jpg",
+      "gallery_item_id": "0ae8d399-ed8f-4d53-9461-29a11dc75fd1",
+      "date_note": "Gallery upload timestamps are not creation or publication dates.",
+      "dimensions": [
+        828,
+        1280
+      ],
+      "preview": "previews/N48.jpg",
+      "observed_forms": "A robed figure, compass-like instrument, rainbow, and round world form a framed composition.",
+      "interpretation": null,
+      "interpretation_status": "No specific symbolic interpretation assigned."
+    },
+    {
+      "id": "N49",
+      "title": "God as Geometer",
+      "title_status": "artist portfolio title",
+      "file": "artwork/N49-god-as-geometer.jpg",
+      "source_status": "artist portfolio record",
+      "source_id": "neo-folk",
+      "source_url": "https://www.joelnakamura.com/neo-folk-primitive",
+      "context": "Image for a festival poster",
+      "image_url": "https://static.wixstatic.com/media/010a85_7379023525f6401f8d3f9f6070431253~mv2.jpg",
+      "gallery_item_id": "ff2e78de-d7a7-45e9-910e-16cd12d52be4",
+      "date_note": "Gallery upload timestamps are not creation or publication dates.",
+      "dimensions": [
+        1280,
+        1280
+      ],
+      "preview": "previews/N49.jpg",
+      "observed_forms": "A blue figure holds a compass-like instrument near a large circular eye or lens and a bright geometric form.",
+      "interpretation": null,
+      "interpretation_status": "No specific symbolic interpretation assigned."
+    },
+    {
+      "id": "N50",
+      "title": "Kaiju Glyphs",
+      "title_status": "artist portfolio title",
+      "file": "artwork/N50-kaiju-glyphs.jpg",
+      "source_status": "artist portfolio record",
+      "source_id": "neo-folk",
+      "source_url": "https://www.joelnakamura.com/neo-folk-primitive",
+      "context": "30\" x 40\" Acrylic and enamel on canvas",
+      "image_url": "https://static.wixstatic.com/media/010a85_f03b3ad724094916854a3c43933daa95~mv2.jpg",
+      "gallery_item_id": "ef5e55b2-28ba-4163-a610-4e4adf3b37d6",
+      "date_note": "Gallery upload timestamps are not creation or publication dates.",
+      "dimensions": [
+        958,
+        1280
+      ],
+      "preview": "previews/N50.jpg",
+      "observed_forms": "Creatures and mask-like shapes fill a red, yellow, and blue field of small compartments.",
+      "interpretation": null,
+      "interpretation_status": "No specific symbolic interpretation assigned."
+    },
+    {
+      "id": "N51",
+      "title": "Talking Rocks 2",
+      "title_status": "artist portfolio title",
+      "file": "artwork/N51-talking-rocks-2.jpg",
+      "source_status": "artist portfolio record",
+      "source_id": "neo-folk",
+      "source_url": "https://www.joelnakamura.com/neo-folk-primitive",
+      "context": "Painting on canvas inspired by petroglyphs avaiable in shop",
+      "image_url": "https://static.wixstatic.com/media/010a85_126bcb5c1c3f4ca79d02b7547a6c9981~mv2.jpg",
+      "gallery_item_id": "d6ef2491-0ccc-465e-bf90-fd78d6a8d3e3",
+      "date_note": "Gallery upload timestamps are not creation or publication dates.",
+      "dimensions": [
+        1272,
+        1280
+      ],
+      "preview": "previews/N51.jpg",
+      "observed_forms": "A patchwork of colored zones holds small animals, faces, crosses, and glyph-like marks.",
+      "interpretation": null,
+      "interpretation_status": "No specific symbolic interpretation assigned."
+    },
+    {
+      "id": "N52",
+      "title": "Green Folk Legend",
+      "title_status": "artist portfolio title",
+      "file": "artwork/N52-green-folk-legend.jpg",
+      "source_status": "artist portfolio record",
+      "source_id": "neo-folk",
+      "source_url": "https://www.joelnakamura.com/neo-folk-primitive",
+      "context": "Indescernible Genus exhibition",
+      "image_url": "https://static.wixstatic.com/media/010a85_eb3d16c9d14f4a9a897f3bc7443a5e04~mv2.jpg",
+      "gallery_item_id": "de7d4f02-1a45-4cb0-a8fc-b46c96fc9017",
+      "date_note": "Gallery upload timestamps are not creation or publication dates.",
+      "dimensions": [
+        500,
+        601
+      ],
+      "preview": "previews/N52.jpg",
+      "observed_forms": "A smiling green creature and a red figure share a tall framed panel with stars and a skull.",
+      "interpretation": null,
+      "interpretation_status": "No specific symbolic interpretation assigned."
+    },
+    {
+      "id": "N53",
+      "title": "Insomnia",
+      "title_status": "artist portfolio title",
+      "file": "artwork/N53-insomnia.jpg",
+      "source_status": "artist portfolio record",
+      "source_id": "neo-folk",
+      "source_url": "https://www.joelnakamura.com/neo-folk-primitive",
+      "context": "image for Emory Health",
+      "image_url": "https://static.wixstatic.com/media/010a85_9bcc3cdf38774f979f146ce0f78c6ae0~mv2.jpg",
+      "gallery_item_id": "805ab876-45f4-4b23-8b4d-ff6eb7c110d0",
+      "date_note": "Gallery upload timestamps are not creation or publication dates.",
+      "dimensions": [
+        1832,
+        2252
+      ],
+      "preview": "previews/N53.jpg",
+      "observed_forms": "Sleeping and wakeful faces join above a small red body, with a crescent moon and stars nearby.",
+      "interpretation": "Contrasting wakeful and sleeping faces share a character. This makes conflicting states visible together, consistent with the title and health commission.",
+      "interpretation_status": "inferred from visible forms and available context"
+    },
+    {
+      "id": "N54",
+      "title": "Rainbow Bridge",
+      "title_status": "artist portfolio title",
+      "file": "artwork/N54-rainbow-bridge.jpg",
+      "source_status": "artist portfolio record",
+      "source_id": "neo-folk",
+      "source_url": "https://www.joelnakamura.com/neo-folk-primitive",
+      "context": "Dream Catcher Exhibition",
+      "image_url": "https://static.wixstatic.com/media/010a85_7bec348e36b34ee694e2c8395fd15a7a~mv2.jpg",
+      "gallery_item_id": "809bdf2f-82de-480b-87be-2b54ea423f4c",
+      "date_note": "Gallery upload timestamps are not creation or publication dates.",
+      "dimensions": [
+        744,
+        954
+      ],
+      "preview": "previews/N54.jpg",
+      "observed_forms": "A tree and small beings grow above a blue face, enclosed by an arch with figures and a radiating circle.",
+      "interpretation": "The arch, branching tree, and small beings connect a central figure to a larger inhabited environment. The portfolio identifies an exhibition context, not the meaning of each symbol.",
+      "interpretation_status": "inferred from visible forms and available context"
+    }
+  ],
+  "sources": {
+    "official": {
+      "title": "Official biography",
+      "url": "https://www.joelnakamura.com/about-joel"
+    },
+    "publication": {
+      "title": "Artist portfolio: Art for Publication",
+      "url": "https://www.joelnakamura.com/art-for-publication"
+    },
+    "neo-folk": {
+      "title": "Artist portfolio: Neo-Folk Primitive",
+      "url": "https://www.joelnakamura.com/neo-folk-primitive"
+    },
+    "nikkei": {
+      "title": "Mia Nakaji Monnier, Discover Nikkei, June 22, 2010",
+      "url": "https://discovernikkei.org/en/journal/2010/6/22/joel-nakamura/"
+    },
+    "nature": {
+      "title": "Maggie Macnab, Design by Nature, publisher excerpt, copyright 2012; printed pp. 12–13",
+      "url": "https://ptgmedia.pearsoncmg.com/imprint_downloads/peachpit/peachpit/samplechapters/0321747763/0321747763_designByNature_01rev.pdf",
+      "local": "sources/design-by-nature-excerpt.pdf#page=11"
+    },
+    "pbs": {
+      "title": "New Mexico PBS, ¡COLORES! artist profile",
+      "url": "https://www.newmexicopbs.org/productions/colores/nakamura-joel/"
+    },
+    "latimes": {
+      "title": "Los Angeles Times, February 24, 1985",
+      "url": "https://www.latimes.com/archives/la-xpm-1985-02-24-ga-24879-story.html"
+    },
+    "books": {
+      "title": "Official books page",
+      "url": "https://www.joelnakamura.com/books"
+    },
+    "southwest": {
+      "title": "Southwest Art, Contemporary Perspectives, 2005 profile",
+      "url": "https://www.southwestart.com/articles-interviews/feature-articles/contemporary_eye"
+    },
+    "prints": {
+      "title": "Artist print catalogue",
+      "url": "https://joel-nakamura.pixels.com/art"
+    }
+  }
+}

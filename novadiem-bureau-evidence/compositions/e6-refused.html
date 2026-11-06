@@ -1,0 +1,101 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #e6 {
+          position: absolute;
+          inset: 0;
+        }
+      </style>
+      <div id="e6" data-composition-id="e6" data-width="1920" data-height="1080">
+        <div id="e6-all" class="layer">
+          <svg class="full" viewBox="0 0 1920 1080">
+            <g id="e6-art"></g>
+          </svg>
+          <div class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate VI</div>
+          <div class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>Refused</div>
+          <div id="e6-st" class="statement">
+            <span id="e6-st-a" class="phrase">One document unread:</span>
+            <span id="e6-st-b" class="phrase">the verdict is refused.</span>
+          </div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text, kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 56.54);
+          const root = K.$("e6-art");
+          // the desk exactly as plate V left it (static), the gate still to come
+          const P = FP.desk(root, { read: 1 });
+          FP.hide([P.reads[1].ok]);
+
+          // spec.md has no line in the read list
+          const unread = text("spec.md · UNREAD", { class: "mono red-t", x: 1174, y: 632 }, P.card.g);
+          K.reveal(unread, K.T(57.12), 0.5);
+          tl.fromTo(P.links[1], { stroke: "#8c6e22" }, { stroke: "#b3261e", duration: 0.3, immediateRender: false }, K.T(57.72));
+
+          // the helper reports the gap and logs it
+          const Rd = FP.card(root, 120, 590, 640, 196, "run-cold-reviewer.sh");
+          FP.drawCard(K, Rd, K.T(58.89));
+          const l1 = text("artifacts_read_complete: false", { class: "mono small", x: 144, y: 690 }, root);
+          const l2 = text('artifacts_unread: ["spec.md"]', { class: "mono small", x: 144, y: 722 }, root);
+          const l3 = text("log.md: does not match the packet manifest", { class: "mono small dim", x: 144, y: 754 }, root);
+          K.reveal(l1, K.T(58.89) + 0.4, 0.5);
+          K.reveal(l2, K.T(58.89) + 0.7, 0.5);
+          K.reveal(l3, K.T(64.81), 0.6);
+
+          // the Delegate's gate stays shut
+          K.draw(P.path, K.T(60.07), 0.6, "none");
+          K.fade(P.gateL, K.T(60.07) + 0.2, 0.3);
+          K.draw(P.post, K.T(60.07) + 0.2, 0.2);
+          K.draw(P.hinge, K.T(60.07) + 0.3, 0.3);
+          tl.fromTo(P.arm, { opacity: 0 }, { opacity: 1, duration: 0.3 }, K.T(60.07) + 0.4);
+          K.fade(P.condL, K.T(60.07) + 0.5, 0.3);
+
+          const tok = FP.sheet(root, 1560, 420);
+          tl.fromTo(tok, { opacity: 0 }, { opacity: 1, duration: 0.15 }, K.T(61.25));
+          K.travel(tok, el("path", { d: "M1560 420H1634" }), K.T(61.25), 0.5, "power2.in");
+          const x = FP.cross(root, 1612, 372);
+          K.draw(x, K.T(61.83), 0.3);
+          tl.fromTo(tok, { opacity: 1 }, { opacity: 0, duration: 0.3, immediateRender: false }, K.T(62.44));
+
+          const S = FP.stamp(root, "DISCARD", 1340, 470, 230);
+          FP.slam(tl, S, K.T(62.44));
+
+          K.reveal(K.$("e6-st-a"), K.T(63.02), 0.55);
+          K.reveal(K.$("e6-st-b"), K.T(63.6), 0.6);
+
+          const why = text("ADDED 2026-09-25, AFTER A STAGED SPEC WENT UNREAD", { class: "mono small gold-t", x: 1340, y: 744, "text-anchor": "middle" }, root);
+          K.reveal(why, K.T(66.55), 0.6);
+
+          // the Delegate re-spawns: a fresh reviewer gets the same packet
+          const gone = [P.card.g, S.g, unread, P.toCard, x];
+          gone.forEach((n) => tl.fromTo(n, { opacity: 1 }, { opacity: 0, duration: 0.4, immediateRender: false }, K.T(67.73)));
+          tl.fromTo(P.links[1], { stroke: "#b3261e" }, { stroke: "#8c6e22", duration: 0.4, immediateRender: false }, K.T(67.73));
+          tl.fromTo(P.room.g, { opacity: 1 }, { opacity: 0, duration: 0.3, immediateRender: false }, K.T(67.73));
+          const Fresh = FP.room(root, 740, 160, 340, 200, "FRESH REVIEWER", "READ-ONLY");
+          FP.drawRoom(K, Fresh, K.T(68.34));
+          FP.carry(K, tl, root, P.readPaths[0], K.T(68.94), 1.0);
+          FP.carry(K, tl, root, P.readPaths[1], K.T(70.12), 1.0);
+
+          // reading
+          const barF = el("rect", { class: "ln thin ink", x: 800, y: 262, width: 220, height: 12 }, root);
+          const bar = el("rect", { class: "fill-gold", x: 802, y: 264, width: 216, height: 8 }, root);
+          K.fade(barF, K.T(70.7), 0.3);
+          tl.fromTo(bar, { scaleX: 0, svgOrigin: "802 268" }, { scaleX: 1, svgOrigin: "802 268", duration: 3.6, ease: "none" }, K.T(71.29));
+
+          K.out(K.$("e6-st"), K.R(70.7), 0.45);
+          [Rd.g, l1, l2, l3, why].forEach((n) => K.out(n, K.T(72.45), 0.5));
+
+          window.__timelines["e6"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

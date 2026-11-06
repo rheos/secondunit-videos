@@ -1,0 +1,48 @@
+[
+  {
+    "file": "em-1996-03.pdf",
+    "url": "https://www.worldradiohistory.com/Archive-All-Music/Electronic-Musician/1996/Electronic-Musician-1996-03.pdf",
+    "bytes": 21347137,
+    "sha256": "318cef93900faabc34c18fae3726e65737488ec46ce35df514d9a09ed30165d9"
+  },
+  {
+    "file": "em-1999-11.pdf",
+    "url": "https://www.worldradiohistory.com/Archive-All-Music/Electronic-Musician/1999/Electronic-Musician-1999-11.pdf",
+    "bytes": 28451676,
+    "sha256": "048fac7ac716a48c720698569b719b2016635bb77b9ac5eab888aba2812bd38f"
+  },
+  {
+    "file": "mix-1993-10.pdf",
+    "url": "https://www.worldradiohistory.com/Archive-All-Audio/Mix-Magazine/90s/93/Mix-1993-10.pdf",
+    "bytes": 26601954,
+    "sha256": "266a928fdc9c0c2d0d9a13899a0ece1e25585f33fe6eaa5133b7422dcf78cac1"
+  },
+  {
+    "file": "mix-2001-06.pdf",
+    "url": "https://www.worldradiohistory.com/Archive-All-Audio/Mix-Magazine/00s/2001/Mix-2001-06.pdf",
+    "bytes": 22469787,
+    "sha256": "74004c8274f95e2e07f6172d2c05d059c1e10f01cda5b27adfc4554f29ffa345"
+  },
+  {
+    "file": "spirituality-health-2009-03.pdf",
+    "url": "https://storage.googleapis.com/spirituality-health/files/Issues/SH_MarApr_2009.pdf",
+    "bytes": 19321212,
+    "sha256": "6bd143eb8a5262eef84a8276f2a1baad5ac33e6cd21b5bfe61fceea9168a9734"
+  },
+  {
+    "file": "jhu-spring-2016.pdf",
+    "url": "https://www.case.org/system/files/media/file/JohnsHopkins_AwdNomineeDocs_JHPH%20Spring%202016%20SMALL.pdf",
+    "bytes": 6375503,
+    "sha256": "6ae03a96390df22d5433a234cc9268b0293e3cad2dc1a423e090414ab9ec93fa"
+  },
+  {
+    "file": "new-mexico-sense-of-place.html",
+    "url": "https://www.newmexicomagazine.org/blog/post/the-sense-of-place-94026/amp/",
+    "error": "HTTP Error 403: Forbidden"
+  },
+  {
+    "file": "../../articles/new-mexico-sense-of-place.jpg",
+    "url": "https://assets.simpleviewinc.com/simpleview/image/upload/c_fill%2Ch_430%2Cq_75%2Cw_640/v1/clients/newmexico/Nakamura_Dream_of_the_Feast_Main_e979c02e-7e25-4fb5-bb8d-b71eae5e5356.jpg",
+    "sha256": "4ecb88cd4f4a1e3e1ed6915f0b3374f89dbef5b0f05dab8a895f43ab10e89860"
+  }
+]

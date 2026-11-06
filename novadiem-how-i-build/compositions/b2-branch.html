@@ -1,0 +1,56 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #b2 {
+          position: absolute;
+          inset: 0;
+        }
+      </style>
+      <div id="b2" data-composition-id="b2" data-width="1920" data-height="1080">
+        <svg class="full" viewBox="0 0 1920 1080">
+          <g id="b2-flow"></g>
+        </svg>
+        <div id="b2-label-l" class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate II</div>
+        <div id="b2-label-r" class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>The Branch</div>
+        <div class="statement" data-layout-allow-overlap data-layout-allow-occlusion>
+          <span id="b2-st-a" class="phrase">Then a branch,</span>
+          <span id="b2-st-b" class="phrase red">and a draft PR.</span>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text, kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 8);
+          const F = HB.flow(K.$("b2-flow"), ["main", "issue", "branch", "commits", "pr", "link"]);
+          K.fade(K.$("b2-label-l"), K.T(8.17), 0.4);
+          K.fade(K.$("b2-label-r"), K.T(8.17), 0.4);
+
+          // the change leaves main on its own branch; commits land one beat apart
+          K.fade(F.branch.fork, K.T(8.8), 0.3);
+          K.draw(F.branch.line, K.T(8.8), 1.0);
+          K.reveal(K.$("b2-st-a"), K.T(9.43), 0.6);
+          F.commits.dots.forEach((d, i) => K.draw(d, K.T(10.05 + i * 0.63), 0.35));
+
+          // a draft PR opens around it and points back at the issue it closes
+          K.draw(F.pr.frame, K.T(12.56), 0.8, "none");
+          K.fade(F.pr.draft, K.T(13.19), 0.4);
+          K.reveal(K.$("b2-st-b"), K.T(13.19), 0.7);
+          K.sweep(F.link.line, K.T(14.42), 0.6);
+          K.fade(F.link.label, K.T(15.05), 0.4);
+
+          K.out(K.$("b2-label-l"), K.T(18.18), 0.4);
+          K.out(K.$("b2-label-r"), K.T(18.18), 0.4);
+          tl.to("#b2 .statement", { opacity: 0, duration: 0.4, ease: "power1.in" }, K.T(18.18));
+          window.__timelines["b2"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

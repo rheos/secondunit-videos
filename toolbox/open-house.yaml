@@ -1,0 +1,21 @@
+slug: open-house
+name: Open House
+kind: skill
+status: rejected
+does: April Zhu's Claude skill that turns a described house or inked drawing into a pop-up card rising off a book page into 3D, which turns, cuts open, comes apart and folds flat.
+keywords:
+- paper
+- 3d
+- interactive
+- illustration
+fits:
+- none as code. The idea is useful: a page that opens, a pencil on a wooden desk, a cut-out and an architecture view
+deterministic: unknown
+how: not installed, and don't. Personal use only.
+cost: free for personal use; its page rules out commercial work, client projects and products
+url: https://april-zhu.com/openhouseskill
+source: x.com/Aprilzz423/status/2116170702768517418 (Oct 30 2026, read 2026-11-04)
+verdict: 'Recommended by Claude, 2026-11-04: licence shuts it out of studio work. Look at its promo when Bob''s pull-tab book gets built, as a reference only.'
+related:
+- colorfigures
+why: Its page rules out commercial work, client projects and products, and everything we make is studio work.

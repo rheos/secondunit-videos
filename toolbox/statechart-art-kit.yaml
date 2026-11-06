@@ -1,0 +1,27 @@
+slug: statechart-art-kit
+name: statechart-art drawing kit
+kind: toolkit
+status: candidate
+does: Kevin Ngo's Node kit that draws a pele diagram layout as a hand-made plate in pen and coloured pencil, with dry media (paper, pencil, pen, crayon) laid down pixel by pixel and Hershey-based hand lettering (Kevin Serif, Kevin Sans), plus a three.js paper-theatre page whose textures come from the same kit.
+keywords:
+- diagram
+- hand-drawn
+- pencil
+- paper
+- lettering
+- 3d
+fits:
+- diagram-plate look: diff its chart drawer and pencil fill against tools/blueprint-kit/diagram.js
+- explainer cutaways (IndieAgent object shorts, devweb) where a flow or state chart is the point
+- paper-theatre 3D scenes (paper depth, relief box), and its contact test that checks every solid against every other at 1000+ moments
+deterministic: yes
+how: not installed. `cd tools && npm install`, `node business/art/order.js` writes a 2160 px plate; uses @napi-rs/canvas, so it runs in Node, not the browser. The /statechart skill (poteto) and TLC are only needed to make new charts from TLA+ models.
+cost: free (MIT for code, models, drawings and fonts)
+url: https://github.com/kevintngo/statechart-art
+detail: references/kevin-ngo works K24-K26
+source: x.com/kevin_t_ngo/status/2116270190040416313 (Oct 30 2026, read 2026-11-01)
+verdict: 'Recommended by Claude, 2026-11-01: same pipeline as our diagram-plate (pele, Hershey letters) but a richer pencil and paper finish; read tools/kit and tools/lib before the next diagram plate. The TLA+ step is optional.'
+related:
+- looseleaf-ink
+- stageshow
+added: '2026-11-01'

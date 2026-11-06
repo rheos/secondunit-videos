@@ -1,0 +1,45 @@
+slug: charcoal
+title: Smudged charcoal
+note: >-
+  Charcoal figures and hatched walls on grey, rubbed paper. The guitar player talks with his hands to the kid
+  in the striped shirt, and each old pose stays behind as a faint smudge.
+used: Holiday Tavern, Bob Wiseman
+cost: free
+group: code
+order: 520
+clip: charcoal.mp4
+tall: false
+status: draft
+engine: canvas2d
+project: bobwiseman-holiday-tavern
+code:
+  path: bobwiseman-holiday-tavern/js/charcoal/core.js
+  flag: null
+  page: bobwiseman-holiday-tavern/looks/charcoal.html
+  note: >-
+    local only: js/charcoal/ is not committed on any branch (draft PR #39, branch holiday-tavern, holds only
+    README, CAST.md and tools). core.js = paper and stroke engine; cast.js the figures and sets; ending.js the
+    charcoal ending.
+rules:
+  - Grey newsprint with mottling, pulp grain, fibres and an aged edge; a tooth map where charcoal skips
+  - "Two layers take marks with 'darken' so overlaps never pile up: a line layer and a blurred smudge layer"
+  - Hand-drawn strokes that boil; side-of-the-stick tone, thumb smudges, rubbed-in masses for the dark
+  - Hatched walls; erasing lifts back toward paper but leaves a grey remnant, never clean paper
+  - "Palimpsest: the last drawing stays on the sheet as a rubbed-back ghost for about a second after each cut"
+  - Greyscale only
+palette: []
+reference: null
+proof:
+  renders:
+    - bobwiseman-holiday-tavern/out/holiday-tavern_draft5_f00000-f05011_24fps_draft.mp4
+  pr:
+    - rheos/secondunit-videos#39
+  youtube:
+    - VuVoPQeNq74
+    - ygMAG_AvW3Q
+    - 2tpAvqxaWqY
+verdict: null
+related:
+  - diary
+  - flashphoto
+  - neon

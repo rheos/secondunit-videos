@@ -1,0 +1,14 @@
+slug: cogvideox
+name: CogVideoX
+kind: model
+status: rejected
+does: Open text- and image-to-video model from 2024.
+keywords:
+- video-gen
+deterministic: n/a
+how: not installed
+cost: free (Apache-2.0)
+url: https://github.com/zai-org/CogVideo
+source: x.com/heyrimsha/status/2114672104021148033 (10 AI-filmmaker repos, read 2026-10-26)
+why: Superseded by newer models we already reach on Fal; needs an NVIDIA GPU.
+added: '2026-11-01'

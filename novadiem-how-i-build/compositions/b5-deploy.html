@@ -1,0 +1,64 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #b5 {
+          position: absolute;
+          inset: 0;
+        }
+      </style>
+      <div id="b5" data-composition-id="b5" data-width="1920" data-height="1080">
+        <svg class="full" viewBox="0 0 1920 1080">
+          <g id="b5-flow"></g>
+        </svg>
+        <div id="b5-label-l" class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate V</div>
+        <div id="b5-label-r" class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>The Deploy</div>
+        <div class="statement" data-layout-allow-overlap data-layout-allow-occlusion>
+          <span id="b5-st-a" class="phrase">Deployed,</span>
+          <span id="b5-st-b" class="phrase red">then checked live.</span>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text, kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 39);
+          const F = HB.flow(K.$("b5-flow"), ["main", "issue", "branch", "commits", "pr", "link", "checks", "merge", "merged", "live"]);
+          F.pr.draft.setAttribute("opacity", 0); // plate IV relabelled the PR as merged
+          K.fade(K.$("b5-label-l"), K.T(39.43), 0.4);
+          K.fade(K.$("b5-label-r"), K.T(39.43), 0.4);
+
+          // main carries the change on to the deploy
+          const L = F.live;
+          K.draw(L.line, K.T(40.05), 0.7);
+          K.draw(L.box, K.T(40.68), 0.6, "none");
+          K.fade(L.label, K.T(41.31), 0.4);
+          K.reveal(K.$("b5-st-a"), K.T(41.31), 0.5);
+
+          // and the running site is opened and looked at
+          K.draw(L.leader, K.T(41.94), 0.4);
+          K.draw(L.screen, K.T(41.94) + 0.3, 0.6, "none");
+          K.draw(L.bar, K.T(42.56), 0.3, "none");
+          K.fade(L.tag, K.T(42.56), 0.3);
+          K.fade(L.dot, K.T(42.56), 0.3);
+          L.hatch.forEach((h, i) => K.draw(h, K.T(42.56) + 0.2 + i * 0.12, 0.3, "none"));
+          K.draw(L.tick, K.T(43.19), 0.4);
+          K.reveal(K.$("b5-st-b"), K.T(43.19), 0.7);
+          [43.82, 45.05].forEach((a) => tl.fromTo(L.dot, { opacity: 1 }, { opacity: 0.25, duration: 0.6, ease: "sine.inOut", yoyo: true, repeat: 1, immediateRender: false }, K.T(a)));
+
+          // the whole flow clears for the evidence
+          K.out(K.$("b5-flow"), K.T(46.3), 0.6);
+          K.out(K.$("b5-label-l"), K.T(46.3), 0.4);
+          K.out(K.$("b5-label-r"), K.T(46.3), 0.4);
+          tl.to("#b5 .statement", { opacity: 0, duration: 0.4, ease: "power1.in" }, K.T(46.3));
+          window.__timelines["b5"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

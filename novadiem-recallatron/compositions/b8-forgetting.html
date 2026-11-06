@@ -1,0 +1,119 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #b8 { position: absolute; inset: 0; }
+      </style>
+      <div data-hf-id="hf-rc90" id="b8" data-composition-id="b8" data-width="1920" data-height="1080">
+        <div data-hf-id="hf-rc91" id="b8-content" class="layer">
+          <div data-hf-id="hf-rc92" id="b8-lab-l" class="plate-label left">FIG. VIII</div>
+          <div data-hf-id="hf-rc93" id="b8-lab-r" class="plate-label right">OF FORGETTING</div>
+          <svg data-hf-id="hf-rc94" id="b8-svg" class="full" viewBox="0 0 1920 1080"></svg>
+          <div data-hf-id="hf-rc95" class="statement">
+            <span data-hf-id="hf-rc96" id="b8-s1" class="phrase">To forget is</span>
+            <span data-hf-id="hf-rc97" id="b8-s2" class="phrase accent">to forget entirely.</span>
+          </div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text } = BP;
+          const tl = gsap.timeline({ paused: true });
+          const S = 110.24;
+          const K = BP.kit(tl, S, "VIII");
+          const R = (t) => K.R(t);
+          const W = (w, n) => R(VO.w("VIII", w, n));
+          const svg = K.$("b8-svg");
+
+          // a memory and the memories drawn from it (the erasure follows every derived_from link)
+          const mini = (x, y, kind, body) => {
+            const g = el("g", {}, svg);
+            const slot = el("rect", { class: "ln thin line", x, y, width: 320, height: 120, opacity: 0.35 }, svg);
+            el("rect", { class: "ln line-strong fill-raised", x, y, width: 320, height: 120 }, g);
+            el("path", { class: "ln line-strong", d: `M${x} ${y + 36}H${x + 320}` }, g);
+            text(kind, { class: "cm on", x: x + 14, y: y + 25 }, g);
+            text(body, { class: "cb", x: x + 14, y: y + 82 }, g);
+            return { g, slot, cx: x + 160, cy: y + 60 };
+          };
+          const m = mini(150, 200, "FACT", "Staging runs Postgres 18.");
+          const d1 = mini(560, 380, "SUMMARY", "Ops summary, October.");
+          const d2 = mini(150, 520, "DECISION", "Upgrade the driver.");
+          const links = el("path", { class: "ln line", d: "M470 260H720V380M310 320V520" }, svg);
+          const lt = text("DRAWN FROM IT", { class: "lab sm", x: 330, y: 440 }, svg);
+          const forget = text("FORGET", { class: "lab", x: 150, y: 172 }, svg);
+          const gone = text("deleted, not marked", { class: "ty", x: 560, y: 600 }, svg);
+
+          // your own server: the search, its two models, and no key to anyone else's
+          const srv = el("rect", { class: "ln line-strong", x: 1010, y: 170, width: 520, height: 400 }, svg);
+          const srvT = text("YOUR OWN SERVER", { class: "lab sm", x: 1030, y: 206 }, svg);
+          const parts = ["WORDS INTO VECTORS", "THE SECOND READER"].map((s, i) => ({
+            box: el("rect", { class: "ln line", x: 1050, y: 240 + i * 120, width: 440, height: 90 }, svg),
+            t: text(s, { class: "lab sm", x: 1070, y: 278 + i * 120 }, svg),
+            s: text("runs here, in the engine", { class: "ty sm", x: 1070, y: 310 + i * 120 }, svg),
+          }));
+          const key = el("g", {}, svg);
+          el("circle", { class: "ln line-strong", cx: 1640, cy: 330, r: 34 }, key);
+          el("path", { class: "ln line-strong", d: "M1674 330H1800M1760 330V360M1786 330V352" }, key);
+          const keyX = el("path", { class: "ln acc-s", d: "M1600 270L1810 400M1600 400L1810 270", style: "stroke-width: 4" }, svg);
+          const keyT = text("no key to anyone else's", { class: "ty sm", x: 1700, y: 452, "text-anchor": "middle" }, svg);
+          // export and restore, whole
+          const crate = el("g", {}, svg);
+          const cA = el("rect", { class: "ln line-strong", x: 1010, y: 620, width: 140, height: 100 }, crate);
+          const cB = el("path", { class: "ln thin line-strong", d: "M1010 620L1150 720M1150 620L1010 720" }, crate);
+          const ex = el("path", { class: "ln line-strong", d: "M1270 570V610M1150 670H1330" }, svg);
+          const exH = RC.head(svg, 1332, 670, "r");
+          const exT = text("EXPORTED", { class: "lab sm", x: 1170, y: 650 }, svg);
+          const srv2 = el("rect", { class: "ln line-strong", x: 1360, y: 610, width: 180, height: 120 }, svg);
+          const reT = text("RESTORED, WHOLE", { class: "lab sm", x: 1570, y: 680 }, svg);
+
+          K.fade(K.$("b8-lab-l"), R(111.0), 0.4);
+          K.fade(K.$("b8-lab-r"), R(111.0), 0.4);
+          [m, d1, d2].forEach((c, i) => K.stamp(c.g, R(111.0) + i * 0.2, { origin: `${c.cx} ${c.cy}`, sound: "card", from: 1.2 }));
+          K.draw(links, R(111.6), 0.6);
+          K.typed(lt, R(111.9), { cps: 34, cursor: false });
+          K.typed(forget, W("forget") - 0.2, { cps: 26 });
+          K.sfx("stamp", W("forget") + 0.35);
+          // "and it forgets entirely: the memory, and all that was drawn from it"
+          const fall = (c, t, rot) => K.move(c.g, t, 0.55, { y: 0, rotation: 0, opacity: 1, svgOrigin: `${c.cx} ${c.cy}` }, { y: 420, rotation: rot, opacity: 0, svgOrigin: `${c.cx} ${c.cy}` }, { ease: "power2.in", sound: "card" });
+          fall(m, W("memory") - 0.1, -14);
+          tl.to(links, { opacity: 0, duration: 0.4 }, W("all"));
+          fall(d1, W("drawn") - 0.2, 11);
+          fall(d2, W("from") - 0.1, -9);
+          [m, d1, d2].forEach((c) => K.fade(c.slot, W("memory"), 0.3, 0.35));
+          K.typed(gone, W("it", 3) + 0.2, { cps: 34, cursor: false });
+          K.slam(K.$("b8-s1"), W("entirely") - 0.1, { stagger: 0.04 });
+          K.slam(K.$("b8-s2"), W("entirely") + 0.4, { stagger: 0.04 });
+          // "Its search runs on your own server, with no key to anyone else's"
+          K.draw(srv, W("search") - 0.3, 0.8, "none");
+          K.typed(srvT, W("server") - 0.5, { cps: 34, cursor: false });
+          parts.forEach((p, i) => {
+            const t = W("runs") + i * 0.5;
+            K.draw(p.box, t, 0.4);
+            K.typed(p.t, t + 0.15, { cps: 40, cursor: false });
+            K.typed(p.s, t + 0.6, { cps: 50, cursor: false });
+          });
+          K.fade(key, W("key") - 0.2, 0.3);
+          K.draw(keyX, W("anyone"), 0.35);
+          K.typed(keyT, W("else's") - 0.1, { cps: 36, cursor: false });
+          // "and the whole of it can be exported and restored"
+          [cA, cB].forEach((n, i) => K.draw(n, W("whole") + i * 0.1, 0.4));
+          K.draw(ex, W("exported") - 0.1, 0.4);
+          K.draw(exH, W("exported") + 0.25, 0.15);
+          K.typed(exT, W("exported"), { cps: 40, cursor: false });
+          K.draw(srv2, W("restored") - 0.1, 0.5);
+          K.typed(reT, W("restored") + 0.1, { cps: 40, cursor: false });
+
+          const out = R(126.25);
+          K.sfx("out", out);
+          tl.to(K.$("b8-content"), { opacity: 0, duration: 0.45 }, out);
+          window.__timelines["b8"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

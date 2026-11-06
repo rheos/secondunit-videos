@@ -1,0 +1,153 @@
+<!doctype html>
+<html class="draft" lang="en" data-resolution="landscape">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1280, height=720" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@700&family=JetBrains+Mono:wght@400;700&display=block" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <!-- Series kit (tools/blueprint-kit, copied by sync.sh). Theme first, then structure. -->
+    <link rel="stylesheet" href="kit/themes/cyanotype.css" />
+    <link rel="stylesheet" href="kit/kit.css" />
+    <script src="kit/kit.js"></script>
+    <script>
+      // Beat grid of the score (beats.json): librosa beats at ~95.7 BPM, extended to both ends at 0.63 s.
+      BP.grid({ beats: [0.04, 0.67, 1.3, 1.93, 2.55, 3.18, 3.81, 4.44, 5.06, 5.69, 6.32, 6.94, 7.55, 8.17, 8.8, 9.43, 10.05, 10.68, 11.31, 11.94, 12.56, 13.19, 13.82, 14.42, 15.05, 15.67, 16.3, 16.93, 17.55, 18.18, 18.81, 19.44, 20.06, 20.69, 21.29, 21.92, 22.55, 23.17, 23.8, 24.43, 25.05, 25.68, 26.31, 26.94, 27.56, 28.17, 28.79, 29.42, 30.05, 30.67, 31.3, 31.93, 32.55, 33.18, 33.81, 34.44, 35.06, 35.69, 36.29, 36.94, 37.57, 38.17, 38.8, 39.43, 40.05, 40.68, 41.31, 41.94, 42.56, 43.19, 43.82, 44.44, 45.05, 45.67, 46.3, 46.93, 47.55, 48.18, 48.81, 49.44, 50.06, 50.69, 51.32, 51.94, 52.55, 53.17, 53.8, 54.43, 55.05, 55.68, 56.31, 56.94, 57.56, 58.19, 58.82, 59.44, 60.05, 60.67, 61.3, 61.93, 62.55, 63.18, 63.81, 64.44, 65.06, 65.69, 66.29, 66.94, 67.55, 68.17, 68.8, 69.43, 70.05, 70.68, 71.31, 71.94, 72.56, 73.19, 73.82, 74.42, 75.05, 75.67, 76.3, 76.93, 77.55, 78.18, 78.81, 79.44, 80.07, 80.7, 81.33, 81.96, 82.59, 83.22, 83.85, 84.48, 85.11] });
+    </script>
+    <style>
+      svg text.mono.cap { font-size: 16px; font-weight: 400; fill: var(--ink-dim); }
+      svg text.mono.cap.hi { fill: var(--line-strong); font-weight: 700; }
+      svg text.mono.host { font-size: 18px; font-weight: 700; fill: var(--line-strong); }
+      svg text.mono.acc { fill: var(--accent); }
+      .fill-dot { fill: var(--line-strong); }
+      .fill-acc { fill: var(--accent); }
+      .accent-ln { stroke: var(--accent); }
+      .statement.two { top: 790px; flex-direction: column; align-items: center; font-size: 60px; row-gap: 6px; }
+      .statement.two .row { display: flex; column-gap: 0.3em; }
+    </style>
+    <script>
+      // SH: the one scene every plate shares. The rented box, its one door, the edge, three app containers,
+      // their routes, Coolify and the databases. Each part draws into a parent <g> and returns its nodes, so a
+      // plate draws the parts it inherits as they are and animates the parts it introduces.
+      // Facts: assistant/hosting-map.md, the contabo skill, rheos/rheo-infra traefik-dynamic/ (see BUILD-STATE.md).
+      window.SH = (() => {
+        const { el, text } = BP;
+        const BOX = { x: 560, y: 150, w: 1080, h: 600 };
+        const DOOR = [410, 480];
+        const ROWS = [245, 445, 645];
+        const APPS = [
+          ["rheoStream", "RECALL"],
+          ["RetainScore", "API"],
+          ["GrowOperative", "API"],
+        ];
+        const HOSTS = ["recall.rheo.stream", "api.retainscore.com", "api.growoperative.app"];
+        const EDGE = { x: 590, y: 390, w: 240, h: 110 };
+        const APP_X = 940,
+          APP_W = 300;
+
+        function box(p) {
+          const { x, y, w, h } = BOX;
+          const wall = el("path", { class: "ln line", d: `M${x} ${DOOR[0]}V${y}H${x + w}V${y + h}H${x}V${DOOR[1]}` }, p);
+          const posts = el("path", { class: "ln line-strong", d: `M${x - 12} ${DOOR[0]}H${x + 12}M${x - 12} ${DOOR[1]}H${x + 12}` }, p);
+          const cap = text("ONE RENTED BOX · 8 CORES · 24 GB", { class: "mono cap", x, y: y - 16 }, p);
+          return { wall, posts, cap };
+        }
+        function edge(p) {
+          const { x, y, w, h } = EDGE;
+          const frame = el("rect", { class: "ln line-strong", x, y, width: w, height: h }, p);
+          const name = text("TRAEFIK", { class: "mono", x: x + w / 2, y: y + 48, "text-anchor": "middle" }, p);
+          const sub = text("THE EDGE", { class: "mono cap", x: x + w / 2, y: y + 80, "text-anchor": "middle" }, p);
+          return { frame, name, sub };
+        }
+        function app(p, i, subText) {
+          const cy = ROWS[i];
+          const g = el("g", {}, p);
+          const frame = el("rect", { class: "ln line", x: APP_X, y: cy - 45, width: APP_W, height: 90 }, g);
+          const name = text(APPS[i][0], { class: "mono", x: APP_X + APP_W / 2, y: cy - 4, "text-anchor": "middle" }, g);
+          const sub = text(subText || APPS[i][1], { class: "mono cap", x: APP_X + APP_W / 2, y: cy + 24, "text-anchor": "middle" }, g);
+          return { g, frame, name, sub };
+        }
+        const routeD = (i) => `M${EDGE.x + EDGE.w} 445C885 445 885 ${ROWS[i]} ${APP_X} ${ROWS[i]}`;
+        function route(p, i) {
+          return el("path", { class: "ln line", d: routeD(i) }, p);
+        }
+        function coolify(p) {
+          const x = 590,
+            y = 600,
+            w = 240,
+            h = 90;
+          const frame = el("rect", { class: "ln line", x, y, width: w, height: h }, p);
+          const name = text("COOLIFY", { class: "mono", x: x + w / 2, y: y + 40, "text-anchor": "middle" }, p);
+          const sub = text("BUILDS · DEPLOYS", { class: "mono cap", x: x + w / 2, y: y + 68, "text-anchor": "middle" }, p);
+          return { frame, name, sub };
+        }
+        function cylinder(p, cx, cy) {
+          const top = el("path", { class: "ln line", d: `M${cx - 60} ${cy - 28}a60 12 0 1 0 120 0a60 12 0 1 0 -120 0` }, p);
+          const body = el("path", { class: "ln line", d: `M${cx - 60} ${cy - 28}V${cy + 28}a60 12 0 0 0 120 0V${cy - 28}` }, p);
+          return { top, body };
+        }
+        // rheoStream and RetainScore keep Postgres on the box; GrowOperative's lives on managed Postgres off it
+        function db(p, i) {
+          const cy = ROWS[i];
+          const off = i === 2;
+          const cx = off ? 1760 : 1410;
+          const link = el("path", { class: "ln line", d: `M${APP_X + APP_W} ${cy}H${cx - 60}` }, p);
+          const c = cylinder(p, cx, cy);
+          const lab = text(off ? "MANAGED POSTGRES" : "POSTGRES", { class: "mono cap", x: cx, y: cy + 66, "text-anchor": "middle" }, p);
+          return { link, top: c.top, body: c.body, lab };
+        }
+        // everything up to and including plate `upto` (1 box, 2 edge, 3 apps, 4 coolify, 5 databases), fully drawn
+        function scene(p, upto) {
+          const S = {};
+          if (upto >= 1) S.box = box(p);
+          if (upto >= 2) S.edge = edge(p);
+          if (upto >= 3) {
+            S.routes = [0, 1, 2].map((i) => route(p, i));
+            S.apps = [0, 1, 2].map((i) => app(p, i));
+          }
+          if (upto >= 4) S.coolify = coolify(p);
+          if (upto >= 5) S.dbs = [0, 1, 2].map((i) => db(p, i));
+          return S;
+        }
+        return { BOX, DOOR, ROWS, APPS, HOSTS, EDGE, APP_X, APP_W, box, edge, app, route, routeD, coolify, cylinder, db, scene };
+      })();
+    </script>
+  </head>
+  <body>
+    <div data-hf-id="hf-sh01"
+      id="root"
+      data-composition-id="main"
+      data-start="0"
+      data-duration="85.5"
+      data-width="1280"
+      data-height="720"
+    >
+      <!-- Score: score-library drafting-table-self-hosting take-01 (sha256 9c5c41c8...b719), cut at 85.5 s. The clock for every cue. -->
+      <audio data-hf-id="hf-sh02"
+        id="score"
+        src="_in/score.mp3"
+        data-start="0"
+        data-duration="85.5"
+        data-track-index="9"
+        data-volume="1"
+      ></audio>
+
+      <!-- every plate draws on a 1920x1080 stage; drafts scale it to 720p (kit.css, stage.sh) -->
+      <div class="stage">
+        <div data-hf-id="hf-sh03" id="slot-furniture" data-composition-id="furniture" data-composition-src="compositions/furniture.html" data-start="0" data-duration="85.5" data-track-index="0" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-sh04" id="slot-b1" data-composition-id="b1" data-composition-src="compositions/b1-question.html" data-start="0" data-duration="9.55" data-track-index="1" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-sh05" id="slot-b2" data-composition-id="b2" data-composition-src="compositions/b2-edge.html" data-start="9.5" data-duration="14.55" data-track-index="2" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-sh06" id="slot-b3" data-composition-id="b3" data-composition-src="compositions/b3-by-name.html" data-start="24" data-duration="14.05" data-track-index="3" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-sh07" id="slot-b4" data-composition-id="b4" data-composition-src="compositions/b4-deploys.html" data-start="38" data-duration="16.05" data-track-index="4" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-sh08" id="slot-b5" data-composition-id="b5" data-composition-src="compositions/b5-databases.html" data-start="54" data-duration="14.05" data-track-index="5" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-sh09" id="slot-b6" data-composition-id="b6" data-composition-src="compositions/b6-off-the-box.html" data-start="68" data-duration="11.55" data-track-index="6" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-sh0a" id="slot-b7" data-composition-id="b7" data-composition-src="compositions/b7-colophon.html" data-start="79.5" data-duration="6" data-track-index="7" data-width="1920" data-height="1080"></div>
+      </div>
+    </div>
+
+    <script>
+      window.__timelines["main"] = gsap.timeline({ paused: true });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,17 @@
+slug: beat-sync
+name: Beat sync
+kind: tool
+status: in-use
+does: Robin places a code-drawn element's hits on a 16th-note grid while watching it live over the picture.
+keywords:
+- beat
+- timing
+- music-sync
+- grid
+fits:
+- music videos
+deterministic: n/a
+how: '`tools/beat-sync/` in this repo, served by `npx http-server`'
+cost: free
+detail: '`tools/beat-sync/README.md`'
+added: '2026-10-27'

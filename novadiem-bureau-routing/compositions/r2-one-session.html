@@ -1,0 +1,117 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #r2 {
+          position: absolute;
+          inset: 0;
+        }
+        #r2 svg text.stepl {
+          font-family: var(--font-mono);
+          font-size: 24px;
+          letter-spacing: 0.06em;
+          fill: var(--ink);
+        }
+        #r2 svg text.num {
+          font-family: var(--font-mono);
+          font-size: 20px;
+          font-weight: 700;
+          fill: #6b5416;
+        }
+      </style>
+      <div id="r2" data-composition-id="r2" data-width="1920" data-height="1080">
+        <div id="r2-all" class="layer">
+          <svg class="full" viewBox="0 0 1920 1080">
+            <g id="r2-d"></g>
+          </svg>
+          <div class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate II</div>
+          <div class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>One Session</div>
+          <div id="r2-st1" class="statement">
+            <span id="r2-st1-a" class="phrase">One session</span>
+            <span id="r2-st1-b" class="phrase red">reviews its own choices.</span>
+          </div>
+          <div id="r2-st2" class="statement">
+            <span id="r2-st2-a" class="phrase">Split the jobs.</span>
+          </div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text, kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 8.31);
+          const d = K.$("r2-d");
+
+          // one box that does everything
+          const box = el("rect", { class: "ln ink", x: 460, y: 200, width: 1000, height: 500 }, d);
+          const inner = el("rect", { class: "ln thin ink", x: 470, y: 210, width: 980, height: 480 }, d);
+          const name = text("ONE SESSION", { class: "mono head", x: 500, y: 256 }, d);
+          K.draw(box, K.T(8.31) + 0.05, 1.0, "none");
+          K.draw(inner, K.T(8.87), 0.8, "none");
+          K.fade(name, K.T(9.47), 0.4);
+
+          // both tasks drop in
+          const bug = RT.ticket(d, "bug", 1250, 270);
+          const feat = RT.ticket(d, "feature", 1360, 276);
+          K.fade(bug, K.T(9.47), 0.3);
+          K.fade(feat, K.T(9.47) + 0.2, 0.3);
+
+          // what it does, in order (README "Why it exists")
+          const STEPS = ["interprets the brief", "chooses an architecture", "writes the code", "reviews its own choices"];
+          const items = STEPS.map((s, i) => {
+            const y = 360 + i * 74;
+            const n = text(String(i + 1), { class: "num", x: 520, y }, d);
+            const t = text(s, { class: "stepl", x: 560, y }, d);
+            K.fade(n, K.T(10.05) + i * 0.58, 0.3);
+            K.reveal(t, K.T(10.05) + i * 0.58 + 0.1, 0.6);
+            return [n, t];
+          });
+          // the review loops straight back into its own work
+          const loop = el("path", { class: "ln ink", d: "M1000 574C1110 574 1110 504 1000 504" }, d);
+          const head = el("path", { class: "ln ink", d: "M1014 494L1000 504L1014 514" }, d);
+          K.draw(loop, K.T(12.4), 0.7);
+          K.draw(head, K.T(12.4) + 0.6, 0.2);
+
+          K.reveal(K.$("r2-st1-a"), K.T(12.4), 0.6);
+          K.reveal(K.$("r2-st1-b"), K.T(13.0), 0.9);
+
+          // the box splits into three jobs (README "How a run moves")
+          const OUT = 15.35;
+          items.forEach(([n, t]) => {
+            K.out(n, K.T(OUT) - 0.1, 0.35);
+            K.out(t, K.T(OUT) - 0.1, 0.35);
+          });
+          K.out(loop, K.T(OUT) - 0.1, 0.35);
+          K.out(head, K.T(OUT) - 0.1, 0.35);
+          K.out(name, K.T(OUT) - 0.1, 0.35);
+          K.out(bug, K.T(OUT) - 0.1, 0.35);
+          K.out(feat, K.T(OUT) - 0.1, 0.35);
+          K.out(K.$("r2-st1"), K.T(OUT) - 0.1, 0.35);
+          const p1 = el("path", { class: "ln ink", d: "M793 200V700" }, d);
+          const p2 = el("path", { class: "ln ink", d: "M1127 200V700" }, d);
+          K.draw(p1, K.T(OUT), 0.6, "none");
+          K.draw(p2, K.T(OUT) + 0.15, 0.6, "none");
+          const JOBS = [
+            ["DELEGATE", "flow and gates", 627],
+            ["CONDUCTOR", "dispatch and adjudication", 960],
+            ["SPECIALISTS", "fresh, bounded context", 1293],
+          ];
+          JOBS.forEach(([n, s, cx], i) => {
+            const at = K.T(15.93) + i * 0.58;
+            K.fade(text(n, { class: "mono head", x: cx, y: 440, "text-anchor": "middle" }, d), at, 0.4);
+            K.fade(text(s, { class: "mono small dim", x: cx, y: 476, "text-anchor": "middle" }, d), at + 0.2, 0.4);
+          });
+          K.reveal(K.$("r2-st2-a"), K.T(16.53), 0.7);
+
+          K.out(K.$("r2-all"), 18.4 - 8.31, 0.4);
+          window.__timelines["r2"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

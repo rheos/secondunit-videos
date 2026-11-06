@@ -1,0 +1,67 @@
+slug: woodcut
+title: Woodcut
+note: Carved black lines on cream paper with one red; the block cracks open.
+used: Airplane on the Highway; Me and Jimi, Bob Wiseman
+cost: free
+group: code
+order: 90
+clip: woodcut.mp4
+tall: false
+status: approved
+engine: canvas2d
+project: bobwiseman-airplane-woodcut, bobwiseman-airplane-v1, bobwiseman-me-and-jimi, bobwiseman-libelous
+code:
+  path: bobwiseman-airplane-woodcut/js/look.js
+  flag: null
+  page: bobwiseman-airplane-woodcut/woodcut.html
+  note: >-
+    wood.js is the carving kit (flick, taper, chisel). The film's sections C and E are
+    bobwiseman-airplane-v1/sections/woodcut. Me and Jimi copies the print as
+    bobwiseman-me-and-jimi/js/look-woodcut.js with wood.js + wkit.js (page wood.html; build rules in
+    docs/WOODCUT_BUILD.md). Libelous has its own chapbook woodcut in bobwiseman-libelous/js/woodcut/ on branch
+    libelous-1 (not merged).
+rules:
+  - >-
+    Draw only three flat values: INK #000, CUT #fff (bare paper), RED #f00 (the one accent plate); no greys,
+    no gradients
+  - >-
+    Carver's marks, not vector art - tapered gouge flicks, parallel cut lines that thin into the light,
+    chiselled faceted outlines
+  - Fill big areas with ink and carve light into them, or the reverse
+  - >-
+    Limited animation on twos (a new block every 1/12 s); the print is re-pulled on threes so the gouge
+    texture boils
+  - >-
+    Print pass: edges thresholded against noise (ragged, hard), paper tooth and pressure sag, wood-grain
+    streaks in solids, red plate a few px off register, paper margin and block edge
+  - Red is reserved for one thing per film (the cheat line in Airplane, Ellen's hair in Me and Jimi)
+palette:
+  - "#f1e9d7"
+  - "#131112"
+  - "#db3326"
+reference: Hand-carved relief print (woodcut / linocut) and folk-print legends
+proof:
+  renders:
+    - bobwiseman-airplane-woodcut/out/aoh_woodcut-test_f01704-f02184_24fps_review-720p.mp4
+    - bobwiseman-airplane-v1/out/Bob Wiseman - Airplane on the Highway (1080p master).mp4
+    - bobwiseman-me-and-jimi/out/maj_woodcut-v12_f0-f6780_24fps_master1080.mp4
+    - bobwiseman-libelous/out/lib_woodcut-v1_f00000-f00826_24fps_draft.mp4
+  pr:
+    - rheos/secondunit-videos#2
+    - rheos/secondunit-videos#26
+    - rheos/secondunit-videos#105
+    - rheos/secondunit-videos#94
+    - rheos/novadiem.com#86
+  youtube:
+    - 2kbqJ8dsMrQ
+    - 6rkbMbEqnHA
+    - L2S8_SSknyM
+    - f8cIFlD2IBY
+  note: out/ is archived on Bertha, /Volumes/Bertha/secondunit-archive/mv-projects/<project>/out/
+verdict: >-
+  Bob, 2026-10-03: one of his four favourite Airplane looks (risograph, woodcut, kinetic typography, kawaii).
+  Bob, 2026-10-04, on Me and Jimi draft 1: "just be all woodcut".
+related:
+  - engraving
+  - alchemy
+  - riso

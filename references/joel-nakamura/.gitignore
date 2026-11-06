@@ -1,0 +1,3 @@
+# Large source files stay local; re-download from sources/download-manifest.json and sources/articles/manifest.json (SHA-256 pinned).
+sources/*.pdf
+sources/articles/*.pdf

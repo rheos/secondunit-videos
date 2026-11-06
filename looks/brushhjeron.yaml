@@ -1,0 +1,53 @@
+slug: brushhjeron
+title: Brushstroke painting, by firelight
+note: The same renderer with a different paint mood for each section of the song.
+used: Dream of Fire, The Wyrd One
+cost: free
+group: code
+order: 550
+clip: brushhjeron.mp4
+tall: true
+status: draft
+engine: brushstroke
+project: hjeron-dark-blues-painted
+code:
+  path: hjeron-dark-blues-painted/js/cast.js
+  flag: "?fmt=16x9 (9:16 is the default)"
+  page: hjeron-dark-blues-painted/index.html
+  note: >-
+    LOOK presets (ink, sepia, rock, sunset, dream, storm, cracks) at the top of js/cast.js, one per chapter in
+    js/ch/; wyrd() draws the character; renderer js/paint.js (functional-emotions-video, MIT). Read
+    ANIMATION_GUIDE.md first.
+rules:
+  - The paint mood changes only at section boundaries, one look and one location per chapter, locations never return
+  - "Section looks: scratchboard ink night, sepia worn-film fog, rock-wall painting on sandstone, blazing sunset oil, indigo dream night, silver-grey storm, back to ink on glowing cracks"
+  - One character only, drawn with wyrd(); the face never shows behind the black veil; at most one eye, gated by EYE_WINDOWS
+  - Guitar strapped high and steep, hunched over it, rocking with the beat, the lean pivots at the boots; fretting arm behind the neck
+  - Long tattered duster with wind in most shots; all fire through the shared flameShape()
+  - No text on screen, no skeletons; every frame a pure function of song time
+  - Stage shots on a 1920x1920 world so 9:16 and 16:9 share every drawing
+palette: []
+reference: >-
+  Hjeron's inspiration board (scratchboard walk #19, smoke-serpent moon #18, rock-wall figure #15-17, sepia painted
+  guitar #25, sunset oil #26) and his Wyrd One character sheet; functional-emotions-video renderer
+proof:
+  renders:
+    - hjeron-dark-blues-painted/out/dream-of-fire-full_painted_preview_v3.mp4
+    - hjeron-dark-blues-painted/out/dream-of-fire_painted_preview_cut5.mp4
+  pr:
+    - rheos/secondunit-videos#42
+    - rheos/secondunit-videos#44
+  youtube:
+    - gzsPD7o3YqU
+    - BAw3bQ9DD10
+    - 07FnapawH9w
+    - 72LIqR8IejU
+    - JXOwO9KBRvI
+verdict: >-
+  "ok. continue" (Robin, 2026-09-28, approving the one-look-per-section plan); "that's much better" (2026-09-29,
+  on the guitar layering in cut 5). On 2026-09-30 he judged the painted version better than the paid footage
+  version (paraphrased in memory, not quoted).
+related:
+  - hj-myth
+  - brushsheep
+  - hj-scratch

@@ -1,0 +1,50 @@
+slug: newsdesk
+title: 1970s TV newscast
+note: >-
+  A wood-cabinet television in a lamp-lit den. The station's spinning globe ident whites out to the anchor at
+  his desk with a picture box over his shoulder, and the yellow teleprinter strip slides up.
+used: Libelous, Bob Wiseman
+cost: free
+group: code
+order: 510
+clip: newsdesk.mp4
+tall: false
+status: approved
+engine: canvas2d + webgl
+project: bobwiseman-libelous
+code:
+  path: bobwiseman-libelous/js/tv/r3a-studio.js
+  flag: null
+  page: bobwiseman-libelous/looks/tv-r3a.html
+  note: >-
+    On branch libelous-1 (draft PR #94), not merged. The whole-song TV news version is three pages (tv-r3a,
+    tv-r3b, tv-r3c). news.js is the set and anchor, r3a-wire.js the teleprinter strip, crt.js the picture tube,
+    room.js the den. Finals: tools/finals/.
+rules:
+  - Everything plays on a walnut console TV in a lamp-lit, wood-panelled den, the king watching from his wingback
+  - "The broadcast is a 960x720 signal put through a WebGL CRT: NTSC chroma bleed and ringing, 240 scanlines that widen with brightness, barrel curve, phosphor bloom, slot mask, grey-green glass"
+  - "The set: navy backdrop, an orange dot-matrix world map, a veneer desk, a generic anchor in glasses, sideburns, brown suit and wide orange tie"
+  - An over-the-shoulder picture box carries the story; inserts are slightly warmer news film
+  - "Captions are a canary teleprinter strip across the lower third: Courier New Bold capitals typed on each word's onset, ink jitter, a double strike and a riding print head"
+  - Cel figures with one dark ink outline, popping on twos; every face stays above the strip
+palette:
+  - "#162544"
+  - "#24375e"
+  - "#e8862a"
+  - "#7a4a26"
+  - "#f1e48e"
+  - "#1b1530"
+reference: 1970s local TV news bulletins; Bob asked for the whole song "as if by that filter" (the news stanza of the round-2 TV look)
+proof:
+  renders:
+    - bobwiseman-libelous/out/finals/lib_tvnews-v3-final_f00000-f08171_24fps_1080p.mp4
+  pr:
+    - rheos/secondunit-videos#94
+  youtube:
+    - mpzvaK7bri4
+    - nds3GocdJzE
+    - 6aVi7Fr3vcI
+verdict: 'Bob, 2026-10-15: "I especially like v2" (TV news, his favourite of the three versions). Signed off 2026-10-16.'
+related:
+  - woodcut
+  - paparazzi

@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1080" />
+    <title>Ticket Stamp Test</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&display=block" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      /* Clean vector look (after Kevin Ngo's Opus UI animations): one navy outline weight,
+         flat fill + one shade band + one highlight, halftone on the shade side, soft ground
+         shadow, pastel ground, 4-point sparkles as the only ornament. */
+      :root {
+        --ground: #F7EFE7;
+        --ink: #2A2940;
+        --butter: #FFD36E;
+        --pink: #F7A8B8;
+        --lilac: #B9A7F2;
+        --coral: #F27D6B;
+        --stamp: #C8341E; /* IndieAgent red */
+        --sky: #7CC6F2;
+        --mint: #86DBB0;
+      }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body { background: var(--ground); }
+      #root { position: relative; width: 100%; height: 100%; overflow: hidden; background: var(--ground); }
+      .clip { position: absolute; inset: 0; }
+      svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+      .ol { stroke: var(--ink); stroke-width: 6; stroke-linejoin: round; stroke-linecap: round; }
+      .t { font-family: "Fredoka", sans-serif; fill: var(--ink); }
+      #chip {
+        position: absolute; left: 64px; top: 64px; padding: 10px 18px 12px;
+        background: var(--ink); color: #fff; border-radius: 8px;
+        font: 600 26px "Fredoka", sans-serif; letter-spacing: 0.01em;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-width="1080" data-height="1080" data-duration="5">
+      <div id="scene" class="clip" data-start="0" data-duration="5" data-track-index="0">
+        <svg viewBox="0 0 1080 1080">
+          <defs>
+            <pattern id="dots" width="12" height="12" patternUnits="userSpaceOnUse">
+              <circle cx="3" cy="3" r="2.1" fill="#2A2940" />
+              <circle cx="9" cy="9" r="2.1" fill="#2A2940" />
+            </pattern>
+            <!-- ticket: 700 x 300, perforation at x 720 with half-round notches top and bottom -->
+            <path id="ticketShape" d="M224 410 H698 A22 22 0 0 0 742 410 H856 A34 34 0 0 1 890 444 V676 A34 34 0 0 1 856 710 H742 A22 22 0 0 0 698 710 H224 A34 34 0 0 1 190 676 V444 A34 34 0 0 1 224 410 Z" />
+            <clipPath id="ticketClip"><use href="#ticketShape" /></clipPath>
+            <clipPath id="ticketShadeClip"><path d="M180 652 Q540 694 900 640 V730 H180 Z" /></clipPath>
+            <path id="spark" d="M0 -1 C0.12 -0.12 0.12 -0.12 1 0 C0.12 0.12 0.12 0.12 0 1 C-0.12 0.12 -0.12 0.12 -1 0 C-0.12 -0.12 -0.12 -0.12 0 -1 Z" />
+          </defs>
+
+          <!-- ground shadow -->
+          <ellipse id="shadow" cx="540" cy="772" rx="310" ry="22" fill="#2A2940" opacity="0.12" />
+
+          <g id="tkPop">
+            <g id="tkSquash">
+              <g id="tkWobble">
+                <!-- fills -->
+                <g clip-path="url(#ticketClip)">
+                  <rect x="180" y="400" width="720" height="320" fill="var(--butter)" />
+                  <rect x="720" y="400" width="180" height="320" fill="var(--pink)" />
+                  <!-- one shade band with halftone on it -->
+                  <g clip-path="url(#ticketShadeClip)">
+                    <rect x="180" y="630" width="720" height="100" fill="#B4661E" opacity="0.22" />
+                    <rect x="180" y="630" width="720" height="100" fill="url(#dots)" opacity="0.16" />
+                  </g>
+                </g>
+                <!-- highlight -->
+                <path d="M216 478 Q217 438 254 433" fill="none" stroke="#fff" stroke-width="11" stroke-linecap="round" />
+                <circle cx="284" cy="433" r="6" fill="#fff" />
+                <!-- outline + perforation -->
+                <use href="#ticketShape" fill="none" class="ol" />
+                <line x1="720" y1="446" x2="720" y2="676" stroke="var(--ink)" stroke-width="6" stroke-linecap="round" stroke-dasharray="0.1 19" />
+
+                <!-- the show -->
+                <g id="txt1"><text class="t" x="252" y="512" font-size="58" font-weight="700" letter-spacing="1">THE ROYAL</text></g>
+                <g id="txt2"><text class="t" x="254" y="564" font-size="34" font-weight="500" opacity="0.78">Nelson, BC</text></g>
+                <g id="txt3"><text class="t" x="254" y="620" font-size="30" font-weight="600">Nov 12 · 8 pm</text></g>
+                <g id="txtStub"><text class="t" x="0" y="0" font-size="30" font-weight="700" letter-spacing="4" text-anchor="middle" transform="translate(816 560) rotate(-90)">ADMIT ONE</text></g>
+
+                <!-- the stamp mark, revealed when the stamp lifts -->
+                <g transform="translate(588 604) rotate(-12)">
+                  <g id="mark">
+                    <rect x="-102" y="-46" width="204" height="92" rx="20" fill="var(--stamp)" fill-opacity="0.08" stroke="var(--stamp)" stroke-width="7" />
+                    <text x="0" y="16" text-anchor="middle" font-family="Fredoka, sans-serif" font-size="46" font-weight="700" letter-spacing="3" fill="var(--stamp)">BOOKED</text>
+                  </g>
+                </g>
+              </g>
+            </g>
+          </g>
+
+          <!-- impact sparkles and dashes, laid out by script -->
+          <g id="burst"></g>
+          <!-- ambient twinkles -->
+          <g id="twinkles"></g>
+
+          <!-- the rubber stamp: outer group moves, inner sits on the mark at the same angle -->
+          <g id="tool" data-layout-allow-overflow>
+            <g transform="translate(588 604) rotate(-12) translate(0 38)">
+              <g id="toolBody">
+                <!-- knob -->
+                <rect x="-20" y="-124" width="40" height="58" rx="8" fill="var(--lilac)" class="ol" />
+                <circle cx="0" cy="-156" r="38" fill="var(--coral)" class="ol" />
+                <path d="M-22 -168 Q-18 -184 -2 -186" fill="none" stroke="#fff" stroke-width="8" stroke-linecap="round" />
+                <!-- block -->
+                <rect x="-118" y="-74" width="236" height="66" rx="16" fill="var(--lilac)" />
+                <g>
+                  <clipPath id="blockShade"><rect x="-118" y="-30" width="236" height="22" /></clipPath>
+                  <rect x="-118" y="-74" width="236" height="66" rx="16" fill="#3B2C88" opacity="0.18" clip-path="url(#blockShade)" />
+                  <rect x="-118" y="-74" width="236" height="66" rx="16" fill="url(#dots)" opacity="0.16" clip-path="url(#blockShade)" />
+                </g>
+                <rect x="-118" y="-74" width="236" height="66" rx="16" fill="none" class="ol" />
+                <path d="M-96 -52 H-60" stroke="#fff" stroke-width="8" stroke-linecap="round" />
+                <!-- rubber -->
+                <rect x="-106" y="-10" width="212" height="22" rx="6" fill="var(--stamp)" class="ol" />
+              </g>
+            </g>
+          </g>
+        </svg>
+        <div id="chip">Show booked</div>
+      </div>
+    </div>
+
+    <script>
+      const NS = "http://www.w3.org/2000/svg";
+      const el = (tag, attrs, parent) => {
+        const n = document.createElementNS(NS, tag);
+        for (const k in attrs) n.setAttribute(k, attrs[k]);
+        parent.appendChild(n);
+        return n;
+      };
+      // a 4-point sparkle: colour fill, navy outline (stroke scaled back so every sparkle keeps the same line weight)
+      const sparkle = (parent, x, y, size, fill) => {
+        const g = el("g", { transform: `translate(${x} ${y})` }, parent);
+        const s = el("g", {}, g);
+        el("use", { href: "#spark", transform: `scale(${size})`, fill, stroke: "#2A2940", "stroke-width": 3.2 / size, "stroke-linejoin": "round" }, s);
+        return s;
+      };
+
+      // impact point = centre of the mark
+      const CX = 588, CY = 604;
+      const burst = document.getElementById("burst");
+      // fixed layout, no randomness: where each sparkle comes to rest, clear of the ticket [x, y, size, colour]
+      const BURST = [
+        [372, 326, 24, "var(--sky)"], [520, 290, 18, "var(--butter)"], [676, 300, 30, "var(--mint)"],
+        [826, 336, 20, "var(--pink)"], [948, 430, 24, "var(--butter)"], [958, 600, 16, "var(--mint)"],
+        [136, 470, 22, "var(--pink)"], [150, 650, 14, "var(--sky)"],
+      ];
+      const bursts = BURST.map(([x, y, s, c]) => ({ node: sparkle(burst, x, y, s, c), dx: CX - x, dy: CY - y }));
+      // short impact dashes just outside the stamp
+      const DASH = [-160, -128, -96, -64, -32, 0];
+      const dashes = DASH.map((a) => {
+        const r = (a * Math.PI) / 180;
+        const x1 = CX + Math.cos(r) * 150, y1 = CY + Math.sin(r) * 120;
+        const x2 = CX + Math.cos(r) * 190, y2 = CY + Math.sin(r) * 158;
+        return el("line", { x1, y1, x2, y2, stroke: "#2A2940", "stroke-width": 6, "stroke-linecap": "round" }, burst);
+      });
+
+      const tw = document.getElementById("twinkles");
+      const TWINKLE = [[176, 372, 16, "var(--sky)"], [930, 360, 20, "var(--pink)"], [916, 742, 14, "var(--mint)"], [150, 760, 12, "var(--butter)"]];
+      const twinkles = TWINKLE.map(([x, y, s, c]) => sparkle(tw, x, y, s, c));
+
+      const tl = gsap.timeline({ paused: true });
+
+      // chip
+      tl.fromTo("#chip", { y: -16, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease: "power3.out" }, 0.1);
+
+      // 1. ticket springs in
+      tl.fromTo("#tkPop", { scale: 0.35, y: 70, opacity: 0, transformOrigin: "50% 50%" },
+        { scale: 1, y: 0, opacity: 1, duration: 0.9, ease: "elastic.out(1, 0.55)" }, 0.15);
+      tl.fromTo("#shadow", { scale: 0.3, opacity: 0, transformOrigin: "50% 50%" },
+        { scale: 1, opacity: 0.12, duration: 0.7, ease: "back.out(2)" }, 0.2);
+      tl.fromTo(["#txt1", "#txt2", "#txt3"], { y: 18, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.4, ease: "back.out(2.4)", stagger: 0.09 }, 0.55);
+      tl.fromTo("#txtStub", { opacity: 0, x: 14 }, { opacity: 1, x: 0, duration: 0.4, ease: "back.out(2.4)" }, 0.75);
+      tl.set("#mark", { opacity: 0 }, 0);
+
+      // 2. the stamp drops in and hovers
+      tl.fromTo("#tool", { y: -760, x: 60, rotation: 8, svgOrigin: "588 604" },
+        { y: -250, x: 0, rotation: 0, duration: 0.55, ease: "back.out(1.6)" }, 1.0);
+      // anticipation: rises and squashes down into itself
+      tl.to("#tool", { y: -320, duration: 0.32, ease: "power2.out" }, 1.6);
+      tl.to("#toolBody", { scaleY: 0.86, scaleX: 1.06, transformOrigin: "50% 100%", duration: 0.32, ease: "power2.out" }, 1.6);
+      // slam: stretches on the way down
+      tl.to("#tool", { y: 0, duration: 0.14, ease: "power4.in" }, 1.94);
+      tl.to("#toolBody", { scaleY: 1.12, scaleX: 0.94, duration: 0.14, ease: "power2.in" }, 1.94);
+
+      // 3. impact at 2.08
+      const HIT = 2.08;
+      tl.to("#toolBody", { scaleY: 0.76, scaleX: 1.14, duration: 0.07, ease: "power1.out" }, HIT);
+      tl.to("#toolBody", { scaleY: 1, scaleX: 1, duration: 0.6, ease: "elastic.out(1, 0.4)" }, HIT + 0.07);
+      tl.fromTo("#tkSquash", { scaleY: 1, scaleX: 1, transformOrigin: "50% 100%" },
+        { scaleY: 0.9, scaleX: 1.05, duration: 0.07, ease: "power1.out", immediateRender: false }, HIT);
+      tl.to("#tkSquash", { scaleY: 1, scaleX: 1, duration: 0.8, ease: "elastic.out(1.1, 0.35)" }, HIT + 0.07);
+      tl.to("#shadow", { scaleX: 1.08, duration: 0.07 }, HIT);
+      tl.to("#shadow", { scaleX: 1, duration: 0.7, ease: "elastic.out(1, 0.4)" }, HIT + 0.07);
+      tl.fromTo("#mark", { opacity: 1, scale: 1.14, transformOrigin: "50% 50%" },
+        { opacity: 1, scale: 1, duration: 0.5, ease: "elastic.out(1, 0.45)", immediateRender: false }, HIT + 0.16);
+
+      // sparkles fly out, spin and shrink away
+      bursts.forEach(({ node, dx, dy }, i) => {
+        tl.fromTo(node, { scale: 0, rotation: -60, x: dx, y: dy, transformOrigin: "50% 50%" },
+          { scale: 1, rotation: 0, x: 0, y: 0, duration: 0.42, ease: "power3.out", immediateRender: false }, HIT + 0.04 + i * 0.025);
+        tl.to(node, { scale: 0, rotation: 45, duration: 0.35, ease: "power2.in" }, HIT + 0.62 + i * 0.03);
+      });
+      tl.set(bursts.map((b) => b.node), { scale: 0, transformOrigin: "50% 50%" }, 0);
+      dashes.forEach((d, i) => {
+        const len = Math.hypot(d.x2.baseVal.value - d.x1.baseVal.value, d.y2.baseVal.value - d.y1.baseVal.value);
+        d.setAttribute("stroke-dasharray", `${len} ${len}`);
+        tl.set(d, { attr: { "stroke-dashoffset": len }, opacity: 0 }, 0);
+        tl.set(d, { opacity: 1 }, HIT + 0.02 + i * 0.015);
+        tl.set(d, { opacity: 0 }, HIT + 0.45 + i * 0.015);
+        tl.to(d, { attr: { "stroke-dashoffset": 0 }, duration: 0.12, ease: "power2.out" }, HIT + 0.02 + i * 0.015);
+        tl.to(d, { attr: { "stroke-dashoffset": -len }, duration: 0.2, ease: "power2.in" }, HIT + 0.24 + i * 0.015);
+      });
+
+      // 4. the stamp lifts, then leaves
+      tl.to("#tool", { y: -210, duration: 0.3, ease: "power2.out" }, HIT + 0.2);
+      tl.to("#tool", { y: -820, x: 180, rotation: 18, duration: 0.55, ease: "power2.in" }, HIT + 0.62);
+
+      // the ticket shrugs with joy
+      tl.to("#tkWobble", { rotation: -3.5, svgOrigin: "540 710", duration: 0.12, ease: "power2.out" }, HIT + 0.25);
+      tl.to("#tkWobble", { rotation: 0, duration: 0.9, ease: "elastic.out(1.2, 0.3)" }, HIT + 0.37);
+
+      // 5. settle: slow bob, shadow breathes with it, twinkles
+      tl.to("#tkPop", { y: -10, duration: 0.9, ease: "sine.inOut", yoyo: true, repeat: 1 }, 3.15);
+      tl.to("#shadow", { scaleX: 0.95, opacity: 0.09, duration: 0.9, ease: "sine.inOut", yoyo: true, repeat: 1 }, 3.15);
+      tl.set(twinkles, { scale: 0, transformOrigin: "50% 50%" }, 0);
+      twinkles.forEach((t, i) => {
+        const at = 2.5 + i * 0.42;
+        tl.to(t, { scale: 1, rotation: 90, duration: 0.35, ease: "back.out(3)" }, at);
+        tl.to(t, { scale: 0.55, rotation: 135, duration: 0.6, ease: "sine.inOut", yoyo: true, repeat: 1 }, at + 0.4);
+      });
+
+      window.__timelines["main"] = tl;
+    </script>
+  </body>
+</html>

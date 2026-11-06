@@ -1,0 +1,25 @@
+slug: openfilm
+name: OpenFilm
+kind: app
+status: candidate
+does: Coding agent writes a film as web pages (each draws any moment with frame(t)) cut together in one film.html; Studio, a local browser editor, then lets you move, restyle, trim and cut anything and export MP4, stems, subtitles or the timeline for Final Cut, Premiere and Resolve.
+keywords:
+- editing
+- timeline
+- review
+- html
+fits:
+- hand-editing an auto-edit or a code-drawn draft without a re-prompt
+- FCPXML handoff to Resolve or Premiere (the gap assemble.py leaves)
+- a base for the create-mode client editor (MIT, so a hosted product can use it)
+deterministic: 'yes'
+how: not installed; `npx -y openfilm@latest` (npm 0.2.7), Node 22.2+ and ffmpeg; desktop app at openfilm.dev
+cost: free (MIT)
+url: https://github.com/openfilm/openfilm
+source: x.com/socialwithaayan/status/2116567606882967790 (10 motion-design repos, read 2026-11-01)
+verdict: 'Claude, 2026-11-01: the strongest pick of the post. Its page contract is the same as our seekable pages, so a test is wrapping one finished code-drawn shot as an OpenFilm page and exporting the timeline to Resolve.'
+related:
+- hyperframes
+- openchatcut
+- take-catalogue
+added: '2026-11-01'

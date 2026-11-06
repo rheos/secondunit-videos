@@ -1,0 +1,63 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #b10 { position: absolute; inset: 0; }
+        #b10-kick { top: 160px; font-size: 30px; }
+        #b10-title { top: 206px; font-size: 176px; }
+        .b10-word { position: absolute; top: 512px; font-family: var(--font-display); font-size: 92px; color: var(--ink-field); }
+        #b10-w1 { left: 330px; }
+        #b10-w2 { left: 820px; }
+        #b10-w3 { left: 1330px; color: var(--accent-field); }
+        #b10-inst { position: absolute; left: 0; right: 0; top: 700px; text-align: center; font-family: var(--font-mono); font-size: 30px; color: var(--ink-field); }
+        #b10-foot { position: absolute; left: 0; right: 0; top: 790px; text-align: center; font-family: var(--font-label); font-size: 28px; letter-spacing: 0.16em; color: var(--line-field); }
+      </style>
+      <div data-hf-id="hf-rcb0" id="b10" data-composition-id="b10" data-width="1920" data-height="1080">
+        <div data-hf-id="hf-rcb1" id="b10-sheet" class="sheet" data-layout-allow-overlap data-layout-allow-occlusion>
+          <svg data-hf-id="hf-rcb2" id="b10-svg" class="full" viewBox="0 0 1920 1080"></svg>
+          <div data-hf-id="hf-rcb3" id="b10-kick" class="kick">A MODULE OF RHEOSTREAM</div>
+          <div data-hf-id="hf-rcb4" id="b10-title" class="title">The Recallatron</div>
+          <div data-hf-id="hf-rcb5" id="b10-w1" class="b10-word">Inspect.</div>
+          <div data-hf-id="hf-rcb6" id="b10-w2" class="b10-word">Correct.</div>
+          <div data-hf-id="hf-rcb7" id="b10-w3" class="b10-word">Trust.</div>
+          <div data-hf-id="hf-rcb8" id="b10-inst">remember · derive · correct · supersede · recall · read · forget</div>
+          <div data-hf-id="hf-rcb9" id="b10-foot">SEVEN INSTRUMENTS · AGPL-3.0 · RHEO.STREAM</div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text } = BP;
+          const tl = gsap.timeline({ paused: true });
+          const S = 137.92;
+          const K = BP.kit(tl, S, "X");
+          const R = (t) => K.R(t);
+          const W = (w, n) => R(VO.w("X", w, n));
+          const svg = K.$("b10-svg");
+
+          const outer = el("rect", { class: "ln ink-s", x: 48, y: 48, width: 1824, height: 984 }, svg);
+          const inner = el("rect", { class: "ln thin ink-s", x: 62, y: 62, width: 1796, height: 956 }, svg);
+          const orn = el("path", { class: "ln thin ink-s", d: "M600 440H930M990 440H1320M960 426L974 440L960 454L946 440Z" }, svg);
+          const orn2 = el("path", { class: "ln thin ink-s", d: "M700 670H1220" }, svg);
+
+          // the broadsheet comes back down over the blueprint
+          K.move(K.$("b10-sheet"), R(138.45), 0.85, { y: -1100 }, { y: 0 }, { ease: "power2.out", sound: "slide" });
+          K.slam(K.$("b10-kick"), W("the") - 0.4, { stagger: 0.03 });
+          K.slam(K.$("b10-title"), W("the"), { stagger: 0.06 });
+          K.draw(orn, W("a") - 0.3, 0.6);
+          K.slam(K.$("b10-w1"), W("inspect") - 0.1, { stagger: 0.05 });
+          K.slam(K.$("b10-w2"), W("correct") - 0.1, { stagger: 0.05 });
+          K.slam(K.$("b10-w3"), W("trust") - 0.1, { stagger: 0.06 });
+          K.draw(orn2, W("trust") + 0.5, 0.6);
+          K.typed(K.$("b10-inst"), W("trust") + 0.6, { cps: 60, cursor: false });
+          K.typed(K.$("b10-foot"), W("trust") + 1.7, { cps: 60, cursor: false });
+          window.__timelines["b10"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

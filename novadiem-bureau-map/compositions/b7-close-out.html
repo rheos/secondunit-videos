@@ -1,0 +1,132 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #b7 {
+          position: absolute;
+          inset: 0;
+        }
+        #b7 .statement {
+          top: 640px;
+        }
+        #b7 svg text.val {
+          font-family: var(--font-mono);
+          font-size: 18px;
+          letter-spacing: 0.08em;
+          fill: var(--ink);
+        }
+        #b7 svg text.stamp {
+          font-family: var(--font-mono);
+          font-size: 26px;
+          font-weight: 700;
+          letter-spacing: 0.16em;
+          fill: var(--ink);
+        }
+        #b7 .colo {
+          position: absolute;
+          left: 0;
+          right: 0;
+          text-align: center;
+          color: var(--ink);
+        }
+        #b7 .colo.a {
+          top: 796px;
+          font-size: 24px;
+          font-weight: 700;
+        }
+        #b7 .colo.b {
+          top: 838px;
+          font-size: 18px;
+          color: var(--ink-dim);
+        }
+      </style>
+      <div id="b7" data-composition-id="b7" data-width="1920" data-height="1080">
+        <div class="layer">
+          <svg class="full" viewBox="0 0 1920 1080">
+            <g id="b7-zoom"><g id="b7-map"></g><g id="b7-top"></g></g>
+            <g id="b7-pk"></g>
+            <path id="b7-rule" class="ln line" d="M760 770H1160M760 760V780M1160 760V780" />
+          </svg>
+          <div class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate VII</div>
+          <div class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>Close-out</div>
+          <div class="statement">
+            <span id="b7-st-a" class="phrase">Finished,</span>
+            <span id="b7-st-b" class="phrase red">with the record.</span>
+          </div>
+          <div id="b7-colo-a" class="colo a mono">THE BUREAU · THEBUREAU.DEV · NOVADIEM.COM</div>
+          <div id="b7-colo-b" class="colo b mono">INSIDE THE BUREAU · 1 · THE MAP</div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text, kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 75.5);
+          const P = BM.build(K.$("b7-map"), 7);
+          const top = K.$("b7-top");
+
+          // close-out: the accounting record goes to disk
+          const s = BM.sheet(top, 0, 0);
+          tl.fromTo(s, { opacity: 0 }, { opacity: 1, duration: 0.15 }, K.T(75.58));
+          K.travel(s, el("path", { d: "M490 290V336H1070V572H1060V612" }), K.T(75.58), 0.9);
+          tl.to(s, { opacity: 0, duration: 0.2 }, K.T(75.58) + 0.9);
+          const f = P.files.accounting;
+          const at = K.T(76.46);
+          K.draw(f.body, at, 0.5, "none");
+          K.draw(f.fold, at + 0.4, 0.2);
+          K.draw(f.lines, at + 0.45, 0.3);
+          K.fade(f.label, at + 0.3, 0.3);
+
+          // the whole cutaway steps back to the left: this is the map
+          const zoom = K.$("b7-zoom");
+          const z = { e: 0 };
+          tl.fromTo(
+            z,
+            { e: 0 },
+            {
+              e: 1,
+              duration: 1.1,
+              ease: "power2.inOut",
+              onUpdate: () => zoom.setAttribute("transform", `translate(${(-10 * z.e).toFixed(2)} ${(220 * z.e).toFixed(2)}) scale(${(1 - 0.5 * z.e).toFixed(4)})`),
+            },
+            K.T(76.9)
+          );
+
+          // the packet from plate I, this time with something behind each line
+          const X = 1080,
+            Y = 270;
+          const pk = BM.packet(K.$("b7-pk"), X, Y);
+          K.draw(pk.tab, K.T(77.35), 0.4);
+          K.draw(pk.body, K.T(77.35) + 0.2, 0.9, "none");
+          K.fade(pk.head, K.T(77.79), 0.4);
+          K.draw(pk.rule, K.T(77.79) + 0.1, 0.4);
+          const stamp = el("g", { transform: `rotate(-6 ${X + 470} ${Y + 64})` }, pk.g);
+          el("rect", { class: "ln ink", x: X + 380, y: Y + 42, width: 180, height: 46 }, stamp);
+          text("FINISHED", { class: "stamp", x: X + 470, y: Y + 74, "text-anchor": "middle" }, stamp);
+          K.fade(stamp, K.T(78.23), 0.3);
+          const VALS = ["log.md · state.json", "verdicts/ · proceed", "accounting.json"];
+          pk.rows.forEach((r, i) => {
+            const t = K.T(78.23) + i * 0.3;
+            K.fade(r.label, t, 0.3);
+            K.draw(r.box, t + 0.05, 0.4);
+            K.fade(text(VALS[i], { class: "val", x: r.cx, y: r.cy, "text-anchor": "middle" }, pk.g), t + 0.25, 0.3);
+            K.draw(el("path", { class: "ln line-strong", d: `M${X + 578} ${r.cy - 6}l5 6 10 -14` }, pk.g), t + 0.4, 0.25);
+          });
+
+          K.reveal(K.$("b7-st-a"), K.T(79.11), 0.6);
+          K.reveal(K.$("b7-st-b"), K.T(79.55), 0.8);
+          K.draw(K.$("b7-rule"), K.T(79.99), 0.6);
+          K.fade(K.$("b7-colo-a"), K.T(80.43), 0.5);
+          K.fade(K.$("b7-colo-b"), K.T(80.88), 0.5);
+
+          window.__timelines["b7"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

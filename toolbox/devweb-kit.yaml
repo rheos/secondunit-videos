@@ -1,0 +1,21 @@
+slug: devweb-kit
+name: devweb kit
+kind: toolkit
+status: in-use
+does: 'Shared parts of the devweb shorts: one Three.js world and camera, the mascot, voiceover sync, earshot sound effects, finishing.'
+keywords:
+- explainer
+- 3d
+- webgl
+- narration
+- sfx
+fits:
+- devweb shorts
+deterministic: 'yes'
+how: '`tools/devweb-kit/` in this repo'
+cost: free
+detail: '`tools/devweb-kit/README.md`'
+related:
+- threejs
+- earshot
+added: '2026-11-01'

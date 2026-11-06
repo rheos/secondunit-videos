@@ -1,0 +1,44 @@
+slug: hj-myth
+title: Painted myth
+note: A brushstroke desert ritual, the serpent ring forming in firelight.
+used: Dream of Fire v1, The Wyrd One
+cost: free
+group: code
+order: 40
+clip: hj-myth.mp4
+tall: false
+status: rejected
+engine: brushstroke
+project: hjeron-painted-myth
+code:
+  path: hjeron-painted-myth/js/scene.js
+  flag: null
+  page: hjeron-painted-myth/index.html
+  note: >-
+    Cues in CUE at the top of js/scene.js, read from the beat list made by tools/analyze.py; renderer js/paint.js
+    (functional-emotions-video, MIT) with a new aged-print finish pass.
+rules:
+  - "Three layers per frame: a 960x540 underpainting repainted by GPU brushstrokes, a crisp 1920x1080 ink layer, an additive fx light layer with bloom and red halation"
+  - Inked lines (serpent, scales, medallion rim, runes, skull cracks) use a pressure and wobble model, never plain vector strokes
+  - Ground and sky strokes lie mostly horizontal, turbulence breaks them up; strokes follow edges elsewhere
+  - Night desert in umber, rust and ember; fire, glows and stars only on the light layer
+  - "Finish like aged print stock: soft shoulder, umber toe, cream highlights, clumped grain, dust, scratches, gate weave, vignette, torn scorched edge with an ember line"
+  - One continuous shot, every event on a measured beat or onset; camera cranes, punches and shakes only on the big hits
+palette:
+  - "#050407"
+  - "#3e1512"
+  - "#93401a"
+  - "#c2481a"
+  - "#8e6232"
+reference: >-
+  functional-emotions-video brushstroke renderer; the ouroboros and antler-rune medallion are MythMaker brand
+  motifs redrawn in code
+proof:
+  renders:
+    - hjeron-painted-myth/output/painted-myth-intro.mp4 (local)
+  pr: []
+  youtube: []
+verdict: null
+related:
+  - brushhjeron
+  - brushsheep

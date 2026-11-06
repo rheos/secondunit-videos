@@ -1,0 +1,43 @@
+{
+  "official": {
+    "title": "Official biography",
+    "url": "https://www.joelnakamura.com/about-joel"
+  },
+  "publication": {
+    "title": "Artist portfolio: Art for Publication",
+    "url": "https://www.joelnakamura.com/art-for-publication"
+  },
+  "neo-folk": {
+    "title": "Artist portfolio: Neo-Folk Primitive",
+    "url": "https://www.joelnakamura.com/neo-folk-primitive"
+  },
+  "nikkei": {
+    "title": "Mia Nakaji Monnier, Discover Nikkei, June 22, 2010",
+    "url": "https://discovernikkei.org/en/journal/2010/6/22/joel-nakamura/"
+  },
+  "nature": {
+    "title": "Maggie Macnab, Design by Nature, publisher excerpt, copyright 2012; printed pp. 12–13",
+    "url": "https://ptgmedia.pearsoncmg.com/imprint_downloads/peachpit/peachpit/samplechapters/0321747763/0321747763_designByNature_01rev.pdf",
+    "local": "sources/design-by-nature-excerpt.pdf#page=11"
+  },
+  "pbs": {
+    "title": "New Mexico PBS, ¡COLORES! artist profile",
+    "url": "https://www.newmexicopbs.org/productions/colores/nakamura-joel/"
+  },
+  "latimes": {
+    "title": "Los Angeles Times, February 24, 1985",
+    "url": "https://www.latimes.com/archives/la-xpm-1985-02-24-ga-24879-story.html"
+  },
+  "books": {
+    "title": "Official books page",
+    "url": "https://www.joelnakamura.com/books"
+  },
+  "southwest": {
+    "title": "Southwest Art, Contemporary Perspectives, 2005 profile",
+    "url": "https://www.southwestart.com/articles-interviews/feature-articles/contemporary_eye"
+  },
+  "prints": {
+    "title": "Artist print catalogue",
+    "url": "https://joel-nakamura.pixels.com/art"
+  }
+}

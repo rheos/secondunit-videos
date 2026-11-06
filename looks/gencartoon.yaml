@@ -1,0 +1,46 @@
+slug: gencartoon
+title: Retro halftone cartoon
+note: A generated character lip-syncing the real vocal over a generated background.
+used: Airplane on the Highway test
+cost: 34 credits / 10 s
+group: generated
+order: 30
+clip: gencartoon.mp4
+tall: false
+status: test
+engine: generated + p5
+project: bobwiseman-airplane-on-the-highway
+code:
+  path: bobwiseman-airplane-on-the-highway/production/prompts/aoh-v1/05_overlay.js
+  flag: null
+  page: null
+  note: >-
+    Not in rheos/secondunit-videos; the folder lives only in the local mv-projects checkout. Prompts:
+    production/prompts/char-plane-v1/01_ref_base.txt, aoh-v1/04_clips.yml, aoh-plates/02_keyframes.yml.
+    Plan and spend: production/docs/PLAN.md ("Comparison test") and docs/SPEND.md.
+rules:
+  - "Character sheet in GPT Image 2.5 (xhigh 2k) on flat chroma green #00B140; the style bible pasted verbatim into every prompt"
+  - "Style bible: bold brush-and-ink outlines with a wobbly hand line, flat spot colours on off-white newsprint, Ben-Day halftone shading, cut-paper edges with a thin white border, slight misregistration, halftone storm skies"
+  - "Plane: stubby 1950s twin-prop airliner, cream body, tomato-red cheat line, mustard spinners, teal tail, white-wall car tyres, eyes in the windscreen, mouth under the nose"
+  - One 10 s MiniMax H3 Max lip-sync clip (768p, reference mode, the vocal stem as audio), locked camera, plane alone on green
+  - Keyed and composited in p5 over a still highway plate that scrolls left; torn white lane dashes rush past under the tyres
+  - No full-frame generated shots; no lettering, logos or real people
+palette:
+  - "#D9452B"
+  - "#E0A43A"
+  - "#2F8C86"
+  - "#F2E6CC"
+  - "#EFE7D2"
+reference: Cal Schenkel's late-1960s Mothers of Invention covers (We're Only in It for the Money, Uncle Meat), method only, per docs/RESEARCH.md
+proof:
+  renders:
+    - bobwiseman-airplane-on-the-highway/out/aoh_gen-test_f01704-f01944_24fps_composite.mp4
+    - bobwiseman-airplane-on-the-highway/out/aoh_compare_left-code_right-gen_f01704-f01944.mp4
+  pr: []
+  youtube:
+    - UVm9bQpNOVg
+  note: out/ is archived on Bertha, /Volumes/Bertha/secondunit-archive/mv-projects/<project>/out/
+verdict: "Robin, 2026-10-03 (bobwiseman-airplane-v1/FACE.md): its plane is the face \"reference that works\" for the other looks."
+related:
+  - collage
+  - morph

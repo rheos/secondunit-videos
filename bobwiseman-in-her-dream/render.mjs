@@ -12,7 +12,7 @@ const errs = [];
 await Promise.all([...Array(WK)].map(async (_, w) => {
   const p = await b.newPage({ viewport: { width: 1920, height: 1080 } });
   p.on('console', m => { if (m.type() === 'error') errs.push(m.text()); }); p.on('pageerror', e => errs.push(String(e)));
-  await p.goto('file://' + process.cwd() + '/index.html?offline=1' + (process.env.QS ? '&' + process.env.QS : '')); await p.evaluate(() => window.__ready);
+  await p.goto('file://' + process.cwd() + '/' + (process.env.PAGE || 'index.html') + '?offline=1' + (process.env.QS ? '&' + process.env.QS : '')); await p.evaluate(() => window.__ready);
   for (let i = w; i < n; i += WK) {
     const url = await p.evaluate((t) => window.__frameJPEG(t, .93), t0 + i / FPS);
     fs.writeFileSync(`${dir}/f_${String(i).padStart(6, '0')}.jpg`, Buffer.from(url.split(',')[1], 'base64'));

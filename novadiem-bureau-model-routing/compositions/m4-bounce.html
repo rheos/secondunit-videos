@@ -1,0 +1,102 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #m4 {
+          position: absolute;
+          inset: 0;
+        }
+        #m4 .statement {
+          top: 820px;
+          font-size: 60px;
+        }
+      </style>
+      <div id="m4" data-composition-id="m4" data-width="1920" data-height="1080">
+        <div class="layer">
+          <svg class="full" viewBox="0 0 1920 1080">
+            <g id="m4-art"></g>
+            <g id="m4-side"></g>
+          </svg>
+          <div class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate IV</div>
+          <div class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>Escalate on Evidence</div>
+          <div id="m4-st" class="statement"><span class="phrase red">Only the fixer moves.</span></div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text, kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 34.18);
+
+          // plate III's end state: the resolved board on Claude
+          const B = CB.board(K.$("m4-art"));
+          const st = CB.fill(B, { host: "claude" });
+          const side = K.$("m4-side");
+          const SW = 2, CH = 4; // the Spellwright, the Challenger
+          const yS = CB.rowMid(SW), yC = CB.rowMid(CH);
+
+          // the Spellwright's prompts go to the Challenger for review
+          const bandS = CB.rowBand(B, SW);
+          K.fade(bandS, K.T(34.18), 0.3, 0.2);
+          const route = `M1470 ${yS}H1540V${yC}H1470`;
+          const rail = el("path", { class: "ln thin line-strong", d: route }, side);
+          K.draw(rail, K.T(34.18) + 0.2, 0.5);
+          const pm = text("prompts.md", { class: "mono small dim", x: 1556, y: (yS + yC) / 2 + 6 }, side);
+          K.fade(pm, K.T(34.76), 0.3);
+          CB.carry(K, tl, side, route, K.T(34.76), 0.9);
+          const bandC = CB.rowBand(B, CH);
+          K.fade(bandC, K.T(35.76), 0.25, 0.2);
+
+          // first rejection: the fixer goes to strong (escalation_ladder rung 1)
+          const S1 = CB.stamp(side, "REJECTED", 1716, yC, 230);
+          CB.slam(tl, S1, K.T(36.25));
+          const r1a = text("1st rejection:", { class: "mono small", x: 1524, y: 300 }, side);
+          const r1b = text("the fixer -> strong", { class: "mono small gold-t", x: 1524, y: 326 }, side);
+          K.reveal(r1a, K.T(36.83), 0.4);
+          K.reveal(r1b, K.T(36.83) + 0.2, 0.4);
+          const t1 = CB.cell(B, SW, "tier", "strong");
+          const m1 = CB.cell(B, SW, "model", "opus");
+          CB.swap(K, tl, st.tier[SW], t1, K.T(37.41));
+          CB.swap(K, tl, st.model[SW], m1, K.T(38.01));
+          K.reveal(K.$("m4-st"), K.T(39.17), 0.7);
+
+          // second rejection: the fixer goes to escalated (rung 2)
+          K.out(S1.g, K.R(40.1), 0.25);
+          CB.carry(K, tl, side, route, K.T(40.36), 0.9);
+          const S2 = CB.stamp(side, "REJECTED", 1716, yC, 230);
+          CB.slam(tl, S2, K.T(41.54));
+          K.out(r1a, K.R(41.9), 0.2);
+          K.out(r1b, K.R(41.9), 0.2);
+          const r2a = text("2nd rejection:", { class: "mono small", x: 1524, y: 300 }, side);
+          const r2b = text("the fixer -> escalated", { class: "mono small gold-t", x: 1524, y: 326 }, side);
+          K.reveal(r2a, K.T(42.12), 0.4);
+          K.reveal(r2b, K.T(42.12) + 0.2, 0.4);
+          const t2 = CB.cell(B, SW, "tier", "escalated");
+          const m2 = CB.cell(B, SW, "model", "fable");
+          CB.swap(K, tl, t1, t2, K.T(42.7));
+          CB.swap(K, tl, m1, m2, K.T(43.31));
+
+          // every fable spawn carries a written reason
+          const L = CB.fileCard(side, 1510, 660, 320, "log.md", ["MODEL-OVERRIDE", "spellwright: fable", "reason: 2nd rejection"]);
+          CB.drawFile(K, L, K.T(44.47));
+          // a role already at the target stays put
+          const k1 = text("already at the target?", { class: "mono small", x: 1524, y: 392 }, side);
+          const k2 = text("it stays where it is", { class: "mono small", x: 1524, y: 418 }, side);
+          K.reveal(k1, K.T(45.07), 0.45);
+          K.reveal(k2, K.T(45.07) + 0.2, 0.45);
+
+          K.out(side, K.R(48.1), 0.45);
+          K.out(K.$("m4-st"), K.R(48.1), 0.45);
+          K.out(bandS, K.R(48.1), 0.45);
+          K.out(bandC, K.R(48.1), 0.45);
+          window.__timelines["m4"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

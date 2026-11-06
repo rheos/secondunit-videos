@@ -1,0 +1,15 @@
+slug: obs-studio
+name: OBS Studio
+kind: app
+status: rejected
+does: Screen capture and live streaming.
+keywords:
+- screen-capture
+- recording
+deterministic: n/a
+how: not installed
+cost: free
+url: https://github.com/obsproject/obs-studio
+source: x.com/e1genqq/status/2114445900131013003 (20 open-source tools post, read 2026-10-27)
+why: Browser captures run headless through HyperFrames; deliverables are written, not screen-recorded walkthroughs.
+added: '2026-10-27'

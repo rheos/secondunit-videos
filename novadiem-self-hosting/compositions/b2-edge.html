@@ -1,0 +1,101 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #b2 {
+          position: absolute;
+          inset: 0;
+        }
+      </style>
+      <div id="b2" data-composition-id="b2" data-width="1920" data-height="1080">
+        <svg class="full" viewBox="0 0 1920 1080">
+          <g id="b2-scene"></g>
+          <g id="b2-new"></g>
+        </svg>
+        <div id="b2-label-l" class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate II</div>
+        <div id="b2-label-r" class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>One Way In</div>
+        <div class="statement two" data-layout-allow-overlap data-layout-allow-occlusion>
+          <div class="row"><span id="b2-st-a" class="phrase">Every request comes in</span></div>
+          <div class="row"><span id="b2-st-b" class="phrase red">through one door.</span></div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text, kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 9.5);
+          SH.scene(K.$("b2-scene"), 1); // the box, as plate I left it
+          const N = K.$("b2-new");
+
+          K.fade(K.$("b2-label-l"), K.T(9.45), 0.4);
+          K.fade(K.$("b2-label-r"), K.T(9.45), 0.4);
+
+          // a browser outside the box asks for a page
+          const br = el("rect", { class: "ln line", x: 150, y: 400, width: 260, height: 90 }, N);
+          const brBar = el("path", { class: "ln thin line", d: "M150 422H410" }, N);
+          const brName = text("BROWSER", { class: "mono", x: 280, y: 462, "text-anchor": "middle" }, N);
+          K.draw(br, K.T(10.08), 0.6, "none");
+          K.draw(brBar, K.T(10.08) + 0.3, 0.3, "none");
+          K.fade(brName, K.T(10.08) + 0.4, 0.3);
+
+          // the edge sits just inside the one door
+          const E = SH.edge(N);
+          K.draw(E.frame, K.T(11.34), 0.7, "none");
+          K.fade(E.name, K.T(11.34) + 0.4, 0.3);
+          K.fade(E.sub, K.T(11.34) + 0.6, 0.3);
+
+          // the request crosses the door
+          const path = el("path", { class: "ln line-strong", d: `M410 445H${SH.EDGE.x}` }, N);
+          const dot = el("circle", { class: "fill-dot", r: 9, cx: 0, cy: 0, opacity: 0 }, N);
+          K.draw(path, K.T(12.6), 0.5, "none");
+          tl.fromTo(dot, { opacity: 0 }, { opacity: 1, duration: 0.1 }, K.T(12.6));
+          K.travel(dot, path, K.T(12.6), 0.9);
+          tl.to(dot, { opacity: 0, duration: 0.2 }, K.T(12.6) + 0.9);
+
+          // the only public doors
+          const ports = text("80 · 443", { class: "mono host", x: 540, y: 396, "text-anchor": "end" }, N);
+          const portsCap = text("WEB TRAFFIC: 80 AND 443", { class: "mono cap", x: 150, y: 540 }, N);
+          K.fade(ports, K.T(13.82), 0.4);
+          K.fade(portsCap, K.T(13.82) + 0.3, 0.4);
+
+          // TLS is finished at the edge
+          const lock = el("g", {}, N);
+          el("rect", { class: "ln line-strong", x: 798, y: 360, width: 26, height: 20 }, lock);
+          el("path", { class: "ln line-strong", d: "M803 360v-7a8 8 0 0 1 16 0v7" }, lock);
+          const tls = text("TLS CERTIFICATES · LET'S ENCRYPT", { class: "mono cap", x: SH.EDGE.x, y: 530 }, N);
+          K.fade(lock, K.T(15.05), 0.4);
+          K.fade(tls, K.T(15.05) + 0.3, 0.4);
+
+          // the rest of the wall stays shut: app ports never face the internet
+          const shut = el("path", { class: "ln line-strong", d: `M560 ${SH.DOOR[0]}V150H1640V750H560V${SH.DOOR[1]}` }, N);
+          const shutCap = text("APP PORTS NEVER FACE THE INTERNET", { class: "mono cap", x: 600, y: 726 }, N);
+          K.draw(shut, K.T(16.93), 1.4, "none");
+          tl.to(shut, { opacity: 0, duration: 0.6 }, K.T(16.93) + 1.6);
+          K.fade(shutCap, K.T(16.93) + 0.3, 0.4);
+
+          K.reveal(K.$("b2-st-a"), K.T(18.81), 0.6);
+          K.reveal(K.$("b2-st-b"), K.T(19.44), 0.7);
+
+          // a second request walks through while the line reads
+          const dot2 = el("circle", { class: "fill-dot", r: 9, cx: 0, cy: 0, opacity: 0 }, N);
+          tl.fromTo(dot2, { opacity: 0 }, { opacity: 1, duration: 0.1 }, K.T(20.69));
+          K.travel(dot2, path, K.T(20.69), 0.9);
+          tl.to(dot2, { opacity: 0, duration: 0.2 }, K.T(20.69) + 0.9);
+
+          // clear down to the box and the edge; plate III routes from here
+          [br, brBar, brName, path, ports, portsCap, lock, tls, shutCap].forEach((n) => K.out(n, K.T(22.57), 0.4));
+          K.out(K.$("b2-label-l"), K.T(22.57), 0.4);
+          K.out(K.$("b2-label-r"), K.T(22.57), 0.4);
+          tl.to("#b2 .statement", { opacity: 0, duration: 0.4, ease: "power1.in" }, K.T(22.57));
+
+          window.__timelines["b2"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

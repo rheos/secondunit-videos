@@ -1,0 +1,37 @@
+TERRY GILLIAM PROFILE: RESEARCH NOTES
+2026-10-15
+
+WHAT WE READ
+- BBC Archive clip of the 1974 Do-It-Yourself Film Animation Show (bbc1974): full auto-transcript. The primary source for the method and for STYLE-BRIEF.txt.
+- Official Monty Python channel, 2019 restoration featurette (mpfc2019): full transcript. Confirms the opening head in the series 1 titles and the Black Spot narration.
+- Wikipedia: Terry Gilliam (first 100,000 characters), Monty Python's Flying Circus (first 100,000), the episode list (first 100,000), and search extracts of the Holy Grail article.
+- Official Python biography (montypython-bio), Dazed 2015 (dazed2015), Expansion / CNN Mexico 2010 (expansion2010), Far Out 2021 (farout2021), Open Culture 2020 (openculture2020), Flavorwire (flavorwire).
+- Search extracts only: artnet 2024 on the foot (artnet2024), Dangerous Minds on the cut Grail animation (dangerousminds-grail), Tellyspotting 2015, Cinema Cats, WatchMojo, IMDb biography, the Animations of Mortality bookseller listing, an animation studies blog post.
+- YouTube metadata checked 2026-10-15 for every linked video id in artwork-index.json.
+
+WHAT FAILED
+- CNN's English original of the 2010 interview returned HTTP 451; we used the Spanish edition.
+- artnet, Dangerous Minds, Senses of Cinema and Tellyspotting returned 403. Their content here comes from search extracts. Read the pages before quoting them.
+- The Monty Python fandom wiki returned 402. Variety (2024 Annecy masterclass) and Rolling Stone (memoir) redirected to a paywall.
+
+NOT READ (the books that would settle the open points)
+- Gilliamesque: A Pre-Posthumous Memoir (Canongate, 2015).
+- Terry Gilliam: Interviews, ed. Sterritt and Rhodes (2004). Holds the Paul Wardle interview behind the Christmas Card story.
+- Gilliam on Gilliam, ed. Ian Christie (Faber, 1999).
+- Animations of Mortality (Methuen, 1978). His own how-to book.
+- Marcia Landy, Monty Python's Flying Circus (2005). Reads the show through the carnivalesque.
+
+OPEN POINTS
+- Was his first animation for We Have Ways of Making You Laugh (1968)? Often told, not confirmed here.
+- Why he left the US, in his own words. The police-stop account is from IMDb only.
+- The Black Spot's episode, and whether the BBC really redubbed "cancer" as "gangrene" (WatchMojo only).
+- Killer Cars: Wikipedia puts it in episode 22, Cinema Cats elsewhere; the narrator is given as Cleese by one source and Idle by another.
+- The title of the marginalia book he named on the Holy Grail 40th-anniversary disc.
+- Descriptions for the title-only pieces (G07-G09, G11-G13, G15, G16, G18, G19, G26, G27, G29). Watching them is the next step.
+
+THINGS WE CHECKED AND DID NOT FIND
+- No source for Sears or other mail-order catalogues as his material, though fans often say so.
+- No sustained psychoanalytic reading of the animation by a critic. The psychology in PSYCHOLOGY.md is ours.
+
+PLATES
+Searched Wikimedia Commons with the API for public-domain versions of the works he is documented using or naming. Downloaded at up to 1920 px. Sizes and SHA-256 in sources/plates-manifest.json. Search and fetch scripts were scratch tools and are not kept.

@@ -1,0 +1,87 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #b3 {
+          position: absolute;
+          inset: 0;
+        }
+      </style>
+      <div id="b3" data-composition-id="b3" data-width="1920" data-height="1080">
+        <svg class="full" viewBox="0 0 1920 1080">
+          <g id="b3-scene"></g>
+          <g id="b3-new"></g>
+        </svg>
+        <div id="b3-label-l" class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate III</div>
+        <div id="b3-label-r" class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>Routed by Name</div>
+        <div class="statement two" data-layout-allow-overlap data-layout-allow-occlusion>
+          <div class="row"><span id="b3-st-a" class="phrase">The name on the request</span></div>
+          <div class="row"><span id="b3-st-b" class="phrase red">picks the container.</span></div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text, kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 24);
+          SH.scene(K.$("b3-scene"), 2); // box and edge, as plate II left them
+          const N = K.$("b3-new");
+
+          K.fade(K.$("b3-label-l"), K.T(24.45), 0.4);
+          K.fade(K.$("b3-label-r"), K.T(24.45), 0.4);
+
+          // three requests, three public names, three containers: the edge matches on the host name
+          const hosts = [],
+            ins = [];
+          SH.HOSTS.forEach((h, i) => {
+            const y = SH.ROWS[i];
+            const at = K.T(25.05) + i * 2.51;
+            const host = text(h, { class: "mono host", x: 470, y: y + 6, "text-anchor": "end" }, N);
+            const inPath = el("path", { class: "ln thin line", d: `M482 ${y}C540 ${y} 520 445 ${SH.EDGE.x} 445` }, N);
+            const route = SH.route(N, i);
+            const A = SH.app(N, i);
+            const dot = el("circle", { class: "fill-dot", r: 9, cx: 0, cy: 0, opacity: 0 }, N);
+            const trip = el("path", { d: `M482 ${y}C540 ${y} 520 445 ${SH.EDGE.x} 445H${SH.EDGE.x + SH.EDGE.w}C885 445 885 ${y} ${SH.APP_X} ${y}`, fill: "none", stroke: "none" }, N);
+
+            K.fade(host, at, 0.35);
+            K.draw(inPath, at + 0.15, 0.5, "none");
+            K.draw(route, at + 0.9, 0.5, "none");
+            K.draw(A.frame, at + 1.1, 0.6, "none");
+            K.fade(A.name, at + 1.4, 0.3);
+            K.fade(A.sub, at + 1.55, 0.3);
+            tl.fromTo(dot, { opacity: 0 }, { opacity: 1, duration: 0.1 }, at + 0.3);
+            K.travel(dot, trip, at + 0.3, 1.5);
+            tl.to(dot, { opacity: 0, duration: 0.2 }, at + 1.8);
+            // the matched pair brightens for a beat
+            tl.fromTo(A.frame, { stroke: "#e6f3ff" }, { stroke: "#a9d4ff", duration: 0.8 }, at + 1.8);
+            hosts.push(host);
+            ins.push(inPath);
+          });
+
+          const reads = text("MATCHES THE HOST NAME", { class: "mono cap", x: SH.EDGE.x, y: 530 }, N);
+          K.fade(reads, K.T(32.55), 0.4);
+
+          K.reveal(K.$("b3-st-a"), K.T(33.18), 0.6);
+          K.reveal(K.$("b3-st-b"), K.T(33.81), 0.7);
+
+          // where the routes come from (Coolify writes them as labels; plate IV)
+          const labels = text("EACH ROUTE IS A LABEL ON ITS CONTAINER", { class: "mono cap", x: 600, y: 726 }, N);
+          K.fade(labels, K.T(35.06), 0.4);
+
+          // clear the outside world; plate IV brings in the repo
+          [...hosts, ...ins, reads, labels].forEach((n) => K.out(n, K.T(37.57), 0.4));
+          K.out(K.$("b3-label-l"), K.T(37.57), 0.4);
+          K.out(K.$("b3-label-r"), K.T(37.57), 0.4);
+          tl.to("#b3 .statement", { opacity: 0, duration: 0.4, ease: "power1.in" }, K.T(37.57));
+
+          window.__timelines["b3"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

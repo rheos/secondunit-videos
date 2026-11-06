@@ -1,0 +1,42 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #furniture {
+          position: absolute;
+          inset: 0;
+          background: var(--bg);
+        }
+      </style>
+      <div data-hf-id="hf-nf10" id="furniture" data-composition-id="furniture" data-width="1920" data-height="1080">
+        <svg data-hf-id="hf-nf11" id="fu-ground" class="full" viewBox="0 0 1920 1080" aria-hidden="true" style="will-change: transform"></svg>
+        <svg data-hf-id="hf-nf12" id="fu-frame" class="full" viewBox="0 0 1920 1080"></svg>
+      </div>
+
+      <script>
+        (() => {
+          const tl = gsap.timeline({ paused: true });
+          const K = BP.kit(tl, 0);
+          // stations are the real path through Nutrifax: recipe in, ingredient matching (ai_import.py),
+          // calculator.py, label rounding (label_generator.py), the label renderer, the PDF/Avery sheet
+          BP.furniture(K, tl, {
+            stations: [
+              { label: "RECIPE", at: 0 },
+              { label: "MATCH", at: 10 },
+              { label: "CALCULATE", at: 24 },
+              { label: "ROUND", at: 38 },
+              { label: "LABEL", at: 52 },
+              { label: "PRINT", at: 68 },
+            ],
+            sheets: [0, 10, 24, 38, 52, 68, 78],
+          });
+          window.__timelines["furniture"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

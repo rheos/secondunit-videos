@@ -1,0 +1,32 @@
+/* cyanotype theme: the classic blueprint. Pale line work on Prussian blue, amber as the one accent phrase
+   per plate (red reads poorly on blue). The alternate field is a cream drafting sheet with blue ink.
+   Space Grotesk display and JetBrains Mono labels come from Google Fonts on the root page.
+   First used by novadiem-self-hosting. */
+:root {
+  --bg: #0b3558;
+  --bg-raised: #0f416a;
+  --line: #a9d4ff;
+  --line-strong: #e6f3ff;
+  --ink: #f2f8ff;
+  --ink-dim: #b3cde6;
+  --ink-faint: #86a8c9;
+  --accent: #ffc04a;
+
+  --field: #f2eee3;
+  --line-field: #0b3558;
+  --ink-field: #0b2540;
+  --accent-field: #b8321f;
+
+  --grid: #a9d4ff;
+  --grid-opacity: 0.09;
+  --grain-rgb: 0.75 0.87 1;
+  --grain-alpha: 0.12;
+
+  --font-display: "Space Grotesk", sans-serif;
+  --display-weight: 700;
+  --display-tracking: -0.03em;
+  --font-label: "JetBrains Mono", monospace;
+  --label-size: 22px;
+  --label-tracking: 0.2em;
+  --font-mono: "JetBrains Mono", monospace;
+}

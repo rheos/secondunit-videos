@@ -1,0 +1,77 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #b1 {
+          position: absolute;
+          inset: 0;
+        }
+      </style>
+      <div id="b1" data-composition-id="b1" data-width="1920" data-height="1080">
+        <svg class="full" viewBox="0 0 1920 1080">
+          <g id="b1-servers"></g>
+          <g id="b1-scene"></g>
+        </svg>
+        <div id="b1-label-l" class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate I</div>
+        <div id="b1-label-r" class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>Novadiem Studio · self-hosting</div>
+        <div class="statement two" data-layout-allow-overlap data-layout-allow-occlusion>
+          <div class="row"><span id="b1-st-a" class="phrase">How many servers</span></div>
+          <div class="row"><span id="b1-st-b" class="phrase">does a studio need?</span></div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text, kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 0);
+
+          K.fade(K.$("b1-label-l"), K.T(0.67), 0.4);
+          K.fade(K.$("b1-label-r"), K.T(0.67), 0.4);
+
+          // the usual answer: a server per job, drawn one per beat
+          const srv = K.$("b1-servers");
+          const jobs = ["SITE", "API", "WORKER", "DATABASE", "PROXY", "QUEUE"];
+          const units = jobs.map((job, i) => {
+            const x = 330 + i * 220;
+            const g = el("g", {}, srv);
+            const r = el("rect", { class: "ln line", x, y: 300, width: 160, height: 190 }, g);
+            const slots = [0, 1, 2].map((k) => el("path", { class: "ln thin line", d: `M${x + 22} ${330 + k * 26}H${x + 138}` }, g));
+            const lab = text(job, { class: "mono cap", x: x + 80, y: 466, "text-anchor": "middle" }, g);
+            return { g, r, slots, lab, x };
+          });
+          units.forEach((u, i) => {
+            const at = K.T(1.3) + i * 0.63;
+            K.draw(u.r, at, 0.5, "none");
+            u.slots.forEach((s, k) => K.draw(s, at + 0.2 + k * 0.06, 0.2, "none"));
+            K.fade(u.lab, at + 0.3, 0.3);
+          });
+
+          K.reveal(K.$("b1-st-a"), K.T(1.93), 0.6);
+          K.reveal(K.$("b1-st-b"), K.T(3.2), 0.6);
+
+          // they fold into one rented box
+          const centre = 960 - 80;
+          units.forEach((u, i) => {
+            tl.fromTo(u.g, { x: 0, opacity: 1 }, { x: centre - u.x, opacity: 0, duration: 0.9, ease: "power2.in" }, K.T(5.69) + i * 0.05);
+          });
+          const S = SH.scene(K.$("b1-scene"), 1);
+          K.draw(S.box.wall, K.T(6.32), 1.2, "power2.out");
+          K.draw(S.box.posts, K.T(6.94) + 0.4, 0.3, "none");
+          K.fade(S.box.cap, K.T(7.57), 0.4);
+
+          // plate II takes the box over at 9.5
+          K.out(K.$("b1-label-l"), K.T(8.82), 0.4);
+          K.out(K.$("b1-label-r"), K.T(8.82), 0.4);
+          tl.to("#b1 .statement", { opacity: 0, duration: 0.4, ease: "power1.in" }, K.T(8.82));
+
+          window.__timelines["b1"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

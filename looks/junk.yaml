@@ -1,0 +1,45 @@
+slug: junk
+title: Junkyard collage
+note: Torn paper, newsprint and tin, moving in stop motion.
+used: Airplane on the Highway test
+cost: free
+group: code
+order: 60
+clip: junk.mp4
+tall: false
+status: test
+engine: canvas2d
+project: bobwiseman-airplane-junkyard
+code:
+  path: bobwiseman-airplane-junkyard/js/kit.js
+  flag: null
+  page: bobwiseman-airplane-junkyard/index.html
+  note: kit.js holds the paper stocks and scrap helpers, js/look.js the stop-motion finish, js/ch/02-verse1.js the junk plane and shots.
+rules:
+  - Everything is a torn scrap cut from seeded paper stocks (newsprint, kraft, brick, halftone poster, mustard, tin, rust, tissue)
+  - Scraps get a white rim and a soft shadow; torn edges, nothing vector-clean
+  - "The plane is built from junk: tin-can fuselage, poster-stripe cheat line, magazine-paper eyes, cereal-box wings, spoon propeller, hubcap wheels"
+  - Stop motion on twos (12 a second); one exposure per drawing
+  - "Finish: per-drawing misregistration, grain, exposure flicker, uneven table light, dust specks, vignette"
+palette:
+  - "#d9d3c4"
+  - "#b48a5c"
+  - "#c8392b"
+  - "#f2c14e"
+  - "#e8b53a"
+  - "#2f6b45"
+  - "#1d2a4a"
+  - "#efe6cf"
+reference: Zappa-era record sleeves, Cal Schenkel's method (none of his images); ported from the Gemma Luna junkyard probe at Robin's request, 2026-10-03
+proof:
+  renders:
+    - bobwiseman-airplane-junkyard/out/aoh_junk-test_f01692-f02184_24fps_review-720p.mp4
+  pr: []
+  youtube:
+    - YkMiRe0ZzfU
+  note: out/ is archived on Bertha, /Volumes/Bertha/secondunit-archive/mv-projects/<project>/out/
+verdict: null
+related:
+  - collage
+  - cutout
+  - scrap

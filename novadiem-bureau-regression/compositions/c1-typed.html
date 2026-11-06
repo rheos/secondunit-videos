@@ -1,0 +1,94 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #c1 {
+          position: absolute;
+          inset: 0;
+        }
+        #c1 .title {
+          top: 150px;
+          font-family: var(--font-label);
+          font-size: 120px;
+          letter-spacing: 0.08em;
+        }
+        #c1 .sub {
+          position: absolute;
+          left: 0;
+          right: 0;
+          top: 330px;
+          text-align: center;
+          font-size: 26px;
+          color: var(--ink);
+        }
+      </style>
+      <div id="c1" data-composition-id="c1" data-width="1920" data-height="1080">
+        <div id="c1-all" class="layer">
+          <svg class="full" viewBox="0 0 1920 1080">
+            <path id="c1-rule" class="ln line" d="M660 302H1260M660 292V312M1260 292V312" />
+            <g id="c1-art"></g>
+          </svg>
+          <div class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate I</div>
+          <div class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>Inside the Bureau · 11</div>
+          <div id="c1-title" class="title">THE TRIPWIRE</div>
+          <div id="c1-sub" class="sub mono">HOW THE BUREAU TURNS A FAILURE INTO A CHECK</div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text, kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 0);
+
+          K.reveal(K.$("c1-title"), K.T(0.84), 1.1);
+          K.draw(K.$("c1-rule"), K.T(1.44), 0.8);
+          K.reveal(K.$("c1-sub"), K.T(2.04), 0.8);
+
+          // a run's log.md, written by the Conductor (illustrative lines; the round-hour drift is the real pattern)
+          const art = K.$("c1-art");
+          const C = TW.card(art, 460, 420, 1000, 330, "log.md", { right: "RUN · ILLUSTRATIVE", headCls: "" });
+          TW.drawCard(K, C, K.T(2.65));
+          const x0 = 500, cw = 12; // IBM Plex Mono at 20px with no tracking: 12px a character
+          const LINES = [
+            ["00", "Spawned The Analyst"],
+            ["01", "Spawned The Architect"],
+            ["02", "The Challenger, round 1"],
+            ["03", "Spawned The Spellwright"],
+          ];
+          const rows = LINES.map(([h, what], i) => {
+            const y = 520 + i * 48;
+            const pre = text("## [2026-07-09", { class: "mono code", x: x0, y }, art);
+            const st = text(`T${h}:00:00Z`, { class: "mono code b", x: x0 + 14 * cw, y }, art);
+            const post = text(`] — ${what}`, { class: "mono code", x: x0 + 24 * cw, y }, art);
+            return [pre, st, post];
+          });
+          [3.25, 3.85, 4.46, 5.06].forEach((at, i) => rows[i].forEach((n) => K.reveal(n, K.T(at), 0.5)));
+
+          // the stamps: every one a round hour
+          const box = el("rect", { class: "ln line-strong", x: x0 + 14 * cw - 10, y: 494, width: 10 * cw + 20, height: 186 }, art);
+          K.draw(box, K.T(5.67), 0.6, "none");
+          const lead = el("path", { class: "ln thin ink", d: `M${x0 + 19 * cw} 680V784` }, art);
+          K.draw(lead, K.T(6.27), 0.4);
+          const red = text("TYPED, NOT READ", { class: "mono big red-t", x: x0 + 19 * cw, y: 822, "text-anchor": "middle" }, art);
+          K.reveal(red, K.T(6.27) + 0.3, 0.6);
+          const cap = text("THE REAL PATTERN: PLANNING-RUN LOGS DRIFTED TO ROUND HOURS · COMMIT 0e2983c", { class: "mono small dim", x: 960, y: 890, "text-anchor": "middle" }, art);
+          K.fade(cap, K.T(6.87), 0.5);
+
+          // the last stamp tears off as the slip, the failure this film follows
+          const s = TW.slip(art);
+          const path = el("path", { d: `M${x0 + 19 * cw} 664C900 640 1300 600 1640 586` });
+          tl.fromTo(s, { opacity: 0 }, { opacity: 1, duration: 0.2 }, K.T(7.48));
+          K.travel(s, path, K.T(7.48), 0.7);
+
+          K.out(K.$("c1-all"), K.R(9.4), 0.45);
+          window.__timelines["c1"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

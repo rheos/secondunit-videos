@@ -1,0 +1,59 @@
+slug: flat-explainer
+title: Flat vector science explainer
+note: >-
+  One fact made visible on a grainy night gradient. Flat shapes lit with a single highlight and a thin rim, small
+  capital labels on leader lines, and a number that rolls as the thing it measures crosses the frame.
+used: IndieAgent test
+cost: free
+group: code
+collection: clean-line
+order: 380
+clip: flat-explainer.mp4
+tall: false
+status: test
+engine: hyperframes
+project: indieagent-flat-explainer-test
+code:
+  path: indieagent-flat-explainer-test/index.html
+  flag: null
+  page: indieagent-flat-explainer-test/index.html
+  note: >-
+    One 1920x1080 canvas shown at 1280x720, drawn by a pure draw(t) driven by a single GSAP tween, so any frame
+    renders on its own. Helpers to reuse: body() (fill, highlight, dark edge, lit-side rim), leader() (dot, line,
+    tracked caps), odometer() (rolling columns, blur on fast digits, faded window), fourPoint() sparkles, and the
+    seeded grain tiles. The moon shows how to project features onto a turning sphere.
+rules:
+  - "Background: vertical night gradient indigo to wine, a faint warm glow at the light source, 250 or so small stars and four or five four-point sparkles"
+  - "Film grain over the whole frame every frame (seeded noise tiles, overlay about 16%), vignette under it; without grain it reads as clip art"
+  - "Bodies: flat fill, one soft radial highlight toward the light, dark inner edge from 72% of the radius, thin bright rim on the lit side only; no full outlines, no drop shadows"
+  - "Light sources add a faint inner ring, three translucent halo rings and faint spokes"
+  - "Spheres project their features (foreshorten at the limb, hide behind, rotate); never a flat map on a disc"
+  - "Labels: rounded heavy sans (Nunito 800), small wide-tracked capitals on a leader line: dot on the object, angled line, flat underline; line draws first, then the text"
+  - "One number per beat, computed every frame from what moves; fast digits blur; it goes gold when it lands; time compression is labelled on screen"
+  - "Something travels (a front, a sweep, a spark on a dashed ruler) and things react on contact"
+  - "Camera: slow push-ins, small drift, cubic eases; parallax for stars, moon and far hills"
+  - "People are heads and shoulders, no faces"
+palette:
+  - "#141238"
+  - "#251a52"
+  - "#43204f"
+  - "#1a1236"
+  - "#ff9d4d"
+  - "#c9b8ff"
+  - "#fff3c4"
+  - "#ffc94a"
+  - "#f4efff"
+reference: >-
+  The Kurzgesagt explainer manner, read through Finn Ardley's code recreation
+  (x.com/finnardley/status/2114188068500508998); profile in references/kurzgesagt/. Our own subject, palette and
+  layouts; none of the studio's characters.
+proof:
+  renders:
+    - indieagent-flat-explainer-test/out/back-row-delay_d1_review_720.mp4
+  pr:
+    - rheos/secondunit-videos#334
+  youtube: []
+verdict: "Robin, 2026-10-26, on draft 1: \"Watched it, the look lands.\""
+related:
+  - blueprint
+  - call-toon

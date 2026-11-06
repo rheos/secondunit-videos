@@ -1,0 +1,93 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #c3 {
+          position: absolute;
+          inset: 0;
+        }
+      </style>
+      <div id="c3" data-composition-id="c3" data-width="1920" data-height="1080">
+        <div id="c3-all" class="layer">
+          <svg class="full" viewBox="0 0 1920 1080">
+            <g id="c3-art"></g>
+          </svg>
+          <div class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate III</div>
+          <div class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>The Fixture</div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text, kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 19.37);
+          const art = K.$("c3-art");
+
+          // fixture 135 as committed: the five required fields (docs/conventions/regression-fixtures.md), values abridged
+          const C = TW.card(art, 120, 160, 900, 610, ".bureau/regression/", { right: "COMMITTED · 0e2983c" });
+          TW.drawCard(K, C, K.T(19.97));
+          const file = text("135-log-append-real-timestamp.md", { class: "mono head", x: 150, y: 250 }, art);
+          K.reveal(file, K.T(20.55), 0.6);
+          const F = [
+            ["name", "log-append.sh stamps a REAL shell-computed UTC time …"],
+            ["command", 'SC="$ROOT/scripts/log-append.sh"   …'],
+            ["expected", "exit 0; stdout ends with a PASS line"],
+            ["phase", "135 · framework-hardening"],
+            ["owner", "scripts/log-append.sh"],
+          ];
+          [21.15, 21.73, 22.34, 22.92, 23.52].forEach((at, i) => {
+            const y = 316 + i * 88;
+            const k = text(`${F[i][0]}:`, { class: "mono small dim", x: 150, y }, art);
+            const v = text(F[i][1], { class: "mono code", x: 150, y: y + 34 }, art);
+            K.fade(k, K.T(at), 0.3);
+            K.reveal(v, K.T(at) + 0.1, 0.55);
+          });
+
+          // the slip arrives: the failure is about to become an assertion
+          const s = TW.slip(art, "T03:00:00Z");
+          const sp = el("path", { d: "M1700 150C1700 260 1640 420 1560 460" });
+          s.setAttribute("transform", "translate(1700 150)");
+          K.fade(s, K.T(20.55), 0.35);
+
+          // what it asserts (the fixture's command, read as a list)
+          const ah = text("WHAT IT ASSERTS", { class: "mono head", x: 1100, y: 236 }, art);
+          const ar = el("path", { class: "ln thin ink", d: "M1100 254H1790" }, art);
+          K.fade(ah, K.T(24.1), 0.3);
+          K.draw(ar, K.T(24.1) + 0.1, 0.4);
+          const A = [
+            "every stamp is ISO-8601 UTC",
+            "within 5 s of the harness's own date -u",
+            "never a 00:00:00Z placeholder",
+            "a second call is never earlier",
+            "never clobbers what log.md holds",
+          ];
+          const REDROW = 2;
+          [24.71, 25.31, 25.89, 26.49, 27.07].forEach((at, i) => {
+            const y = 316 + i * 88;
+            const bx = el("rect", { class: "ln ink", x: 1100, y: y - 24, width: 28, height: 28 }, art);
+            const t = text(A[i], { class: `mono code${i === REDROW ? " b red-t" : ""}`, x: 1150, y }, art);
+            const ck = TW.check(art, 1114, y - 8);
+            K.draw(bx, K.T(at), 0.3, "none");
+            if (i === REDROW) {
+              K.travel(s, sp, K.T(at) - 0.6, 0.6);
+              tl.fromTo(s, { opacity: 1 }, { opacity: 0, duration: 0.25, immediateRender: false }, K.T(at));
+            }
+            K.reveal(t, K.T(at) + 0.05, 0.5);
+            K.draw(ck, K.T(at) + 0.45, 0.25);
+          });
+
+          const pass = text("A FIXTURE PASSES WHEN ITS COMMAND EXITS 0.", { class: "mono big", x: 960, y: 850, "text-anchor": "middle" }, art);
+          K.reveal(pass, K.T(28.28), 0.8);
+
+          K.out(K.$("c3-all"), K.R(30.8), 0.45);
+          window.__timelines["c3"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

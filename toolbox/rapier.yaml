@@ -1,0 +1,20 @@
+slug: rapier
+name: Rapier
+kind: library
+status: candidate
+does: 3D physics (Rust, runs in the browser as WASM).
+keywords:
+- physics
+- 3d
+- collision
+fits:
+- 3D physics with Three.js
+deterministic: bake
+how: not installed; least likely of the physics pair
+cost: free
+url: https://github.com/dimforge/rapier
+source: x.com/e1genqq/status/2114445900131013003 (20 open-source tools post, read 2026-10-27)
+related:
+- matter-js
+- threejs
+added: '2026-10-27'

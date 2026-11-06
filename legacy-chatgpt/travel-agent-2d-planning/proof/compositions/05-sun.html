@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"></head><body><template>
+<style>
+ #root { position:absolute; inset:0; width:100%; height:100%; overflow:hidden; }
+ #sun-opens-canvas { position:absolute; inset:0; width:100%; height:100%; }
+</style>
+<div data-hf-id="hf-zzcw" id="root" data-composition-id="sun-opens" data-duration="3.42" data-width="1920" data-height="1080">
+ <canvas data-hf-id="hf-gp74" id="sun-opens-canvas" class="clip" data-layout-allow-overflow="" data-start="0" data-duration="3.42" data-track-index="0" width="1920" height="1080"></canvas>
+</div>
+<script>
+(function(){
+ window.TravelProof.ready.then(function(){
+  const surface=document.getElementById("sun-opens-canvas");
+  const drive={time:0};
+  const tl=gsap.timeline({paused:true});
+  tl.fromTo(drive,{time:0},{time:3.42,duration:3.42,ease:"none",
+   onUpdate:function(){window.TravelProof.draw(surface,16.58+drive.time,4);}},0);
+  window.TravelProof.draw(surface,16.58,4);
+  window.__timelines["sun-opens"]=tl;
+ });
+})();
+</script>
+</template></body></html>

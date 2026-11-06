@@ -1,0 +1,45 @@
+slug: filmposter
+title: Painted film poster
+note: >-
+  Brushy 1950s Italian cinema-poster paint on a wall of pasted bills. A broom pastes up each new sheet; her
+  heart glows through her coat.
+used: Giulietta Masina test, Bob Wiseman
+cost: free
+group: code
+order: 220
+clip: filmposter.mp4
+tall: false
+status: approved
+engine: canvas2d
+project: bobwiseman-giulietta-masina
+code:
+  path: bobwiseman-giulietta-masina/js/poster/paint.js
+  flag: null
+  page: bobwiseman-giulietta-masina/looks/poster.html
+  note: >-
+    On branch giulietta-masina (draft PR #90), not merged. paint.js is the gouache mark-making; art.js, head.js
+    and layout.js paint the sheets; main.js stays local. poster-cap.html adds the lyrics. js/poster-v1 is the
+    first pass, sent back.
+rules:
+  - All painting is baked at load with seeded bristle strokes; frames only composite
+  - Gouache planes in soft steps, dry-brush edges, paper tooth
+  - Landscape posters fill the frame, one saturated flat ground each, a big three-quarter head plus a small full figure
+  - Heads are shaded per pixel into a few flat tones with a hard terminator, deep violet shadow, warm edge and reflected light; features crisp on top
+  - Hand-brushed capitals on a tilted band, one baseline per word
+  - Shots change by pasting, ripping and tearing sheets on a Roman night wall of old bills under a street lamp
+palette: []
+reference: 1950s hand-painted Italian cinema posters
+proof:
+  renders:
+    - bobwiseman-giulietta-masina/out/gm_poster-v3_f00816-f01440_24fps_draft.mp4
+  pr:
+    - rheos/secondunit-videos#90
+  youtube:
+    - e4CjHyhGUMk
+    - dW37ldfayw0
+    - 8eEP0rJv4RM
+verdict: 'Bob, 2026-10-14, signing off the film: "I am good with giulietta".'
+related:
+  - circus
+  - paparazzi
+  - filmleader

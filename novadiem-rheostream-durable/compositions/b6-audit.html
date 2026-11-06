@@ -1,0 +1,121 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #b6 {
+          position: absolute;
+          inset: 0;
+        }
+      </style>
+      <div data-hf-id="hf-n601" id="b6" data-composition-id="b6" data-width="1920" data-height="1080">
+        <div data-hf-id="hf-n602" id="b6-content" class="layer">
+          <div data-hf-id="hf-n603" id="b6-lab-l" class="plate-label left">PLATE VI</div>
+          <div data-hf-id="hf-n604" id="b6-lab-r" class="plate-label right">THE AUDIT PATH</div>
+          <svg data-hf-id="hf-n605" id="b6-svg" class="full" viewBox="0 0 1920 1080"></svg>
+          <div data-hf-id="hf-n606" class="statement">
+            <span data-hf-id="hf-n607" id="b6-s1" class="phrase">No audit path,</span>
+            <span data-hf-id="hf-n608" id="b6-s2" class="phrase accent">no start.</span>
+          </div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text } = BP;
+          const tl = gsap.timeline({ paused: true });
+          const S = 64;
+          const K = BP.kit(tl, S);
+          const svg = K.$("b6-svg");
+
+          // the service's own startup, in order (apps/core/src/rheo_app_core/startup.py, run_startup)
+          const railT = text("run_startup()", { class: "mono", x: 140, y: 190 }, svg);
+          const STEPS = ["MIGRATE DATABASES", "REGISTER CORE OPERATIONS", "LOAD MODULES", "check_audit_paths()", "SERVE"];
+          const steps = STEPS.map((s, i) => {
+            const y = 214 + i * 96;
+            const b = JB.box(svg, 140, y, 400, 64, s, "ln line", "mono small");
+            const join = i ? el("path", { class: "ln thin line", d: `M340 ${y - 32}V${y}` }, svg) : null;
+            return { b, join, y };
+          });
+          const chk = steps[3], serve = steps[4];
+
+          // the operation registry as startup finds it; harness is the module tests/postgres/test_cli.py leaves unwired
+          const TX = 680, TW = 1100, TY = 214, HH = 52, RH = 60;
+          const COLS = [["OPERATION", 0], ["CLASS", 440], ["MODULE", 640], ["AUDIT SINK", 860]];
+          const ROWS = [
+            ["current.project.get", "read", "current", "not needed", "dim"],
+            ["current.project.update", "mutate", "current", "installed", ""],
+            ["current.area.create", "mutate", "current", "installed", ""],
+            ["harness.note.write", "mutate", "harness", "none", "b"],
+          ];
+          const regT = text("THE REGISTRY  ·  harness IS THE TEST'S UNWIRED MODULE", { class: "mono small dim", x: TX, y: 190 }, svg);
+          const frame = el("rect", { class: "ln line", x: TX, y: TY, width: TW, height: HH + ROWS.length * RH }, svg);
+          const headRule = el("path", { class: "ln thin line", d: `M${TX} ${TY + HH}H${TX + TW}` }, svg);
+          const heads = COLS.map(([n, dx]) => text(n, { class: "mono small dim", x: TX + dx + 18, y: TY + 33 }, svg));
+          const rules = ROWS.slice(1).map((_, i) => el("path", { class: "ln thin line", d: `M${TX} ${TY + HH + (i + 1) * RH}H${TX + TW}`, opacity: 0.5 }, svg));
+          const cells = ROWS.map((row, r) =>
+            row.slice(0, 4).map((v, c) => {
+              const cls = c === 3 ? row[4] : c === 1 && v === "read" ? "dim" : "";
+              return text(v, { class: `mono cell ${cls}`, x: TX + COLS[c][1] + 18, y: TY + HH + r * RH + 38 }, svg);
+            })
+          );
+          const rowMid = (r) => TY + HH + r * RH + RH / 2;
+          const scan = el("path", { class: "ln line-strong", d: `M${TX - 10} 0H${TX + TW + 10}` }, svg);
+          const flag = el("rect", { class: "ln accent-s", x: TX + 4, y: rowMid(3) - 26, width: TW - 8, height: 52 }, svg);
+          const link = el("path", { class: "ln line", d: `M540 ${chk.y + 32}H${TX - 40}V${rowMid(0)}H${TX}` }, svg);
+
+          // what check_audit_paths raises (operations/audit_paths.py)
+          const err = el("rect", { class: "ln line", x: TX, y: 560, width: TW, height: 112 }, svg);
+          const e1 = text("RuntimeError: no audit sink is installed for the owning", { class: "mono code", x: TX + 30, y: 604 }, svg);
+          const e2 = text("module of: harness.note.write (module 'harness')", { class: "mono code", x: TX + 30, y: 644 }, svg);
+          const cross = el("path", { class: "ln accent-s", d: `M150 ${serve.y + 8}L530 ${serve.y + 56}M150 ${serve.y + 56}L530 ${serve.y + 8}` }, svg);
+          const neverT = text("NEVER STARTS SERVING", { class: "mono small dim", x: 340, y: serve.y + 96, "text-anchor": "middle" }, svg);
+          const layers = text("THREE LAYERS: REGISTRATION REFUSES IT, STARTUP REFUSES IT, DISPATCH REFUSES IT", { class: "mono small dim", x: TX + TW / 2, y: 730, "text-anchor": "middle" }, svg);
+
+          // cues
+          K.fade(K.$("b6-lab-l"), K.T(64.73), 0.4);
+          K.fade(K.$("b6-lab-r"), K.T(64.73), 0.4);
+          K.fade(railT, K.T(64.73), 0.35);
+          steps.forEach((s, i) => {
+            const at = K.T(65.35) + i * 0.31;
+            if (s.join) K.draw(s.join, at - 0.1, 0.2);
+            K.draw(s.b.r, at, 0.4);
+            K.fade(s.b.t, at + 0.15, 0.3);
+          });
+
+          K.fade(regT, K.T(66.61), 0.35);
+          K.draw(frame, K.T(66.61), 0.8);
+          K.draw(headRule, K.T(66.61) + 0.3, 0.6, "none");
+          heads.forEach((h, i) => K.fade(h, K.T(66.61) + 0.4 + i * 0.08, 0.3));
+          rules.forEach((r, i) => K.draw(r, K.T(66.61) + 0.5 + i * 0.1, 0.5, "none"));
+          cells.forEach((row, r) => row.forEach((n, c) => K.fade(n, K.T(67.23) + r * 0.31 + c * 0.06, 0.3)));
+
+          // the check walks the registry
+          tl.to(chk.b.r, { strokeWidth: 3, duration: 0.2 }, K.T(68.48));
+          K.draw(link, K.T(68.48), 0.6);
+          tl.fromTo(scan, { y: TY + HH, opacity: 0 }, { y: TY + HH, opacity: 1, duration: 0.2 }, K.T(69.1));
+          tl.fromTo(scan, { y: TY + HH }, { y: TY + HH + ROWS.length * RH, duration: 1.2, ease: "none", immediateRender: false }, K.T(69.1) + 0.2);
+          K.draw(flag, K.T(70.36), 0.4);
+          tl.to(scan, { opacity: 0, duration: 0.3 }, K.T(70.36) + 0.2);
+
+          K.draw(err, K.T(70.98), 0.5);
+          K.fade(e1, K.T(70.98) + 0.3, 0.35);
+          K.fade(e2, K.T(70.98) + 0.5, 0.35);
+          K.draw(cross, K.T(72.23), 0.4, "none");
+          K.fade(neverT, K.T(72.23) + 0.3, 0.35);
+          tl.to([serve.b.r, serve.b.t], { opacity: 0.4, duration: 0.4 }, K.T(72.23));
+          K.fade(layers, K.T(73.48), 0.4);
+
+          K.reveal(K.$("b6-s1"), K.T(74.73), 0.6);
+          K.reveal(K.$("b6-s2"), K.T(75.36), 0.6);
+
+          K.out(K.$("b6-content"), K.R(79.4), 0.45);
+          window.__timelines["b6"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

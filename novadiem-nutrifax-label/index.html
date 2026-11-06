@@ -1,0 +1,156 @@
+<!doctype html>
+<html class="draft" lang="en" data-resolution="landscape">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1280, height=720" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,900&family=JetBrains+Mono:wght@400;700&family=Caveat:wght@600;700&display=block" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <!-- Series kit (tools/blueprint-kit, copied by sync.sh). Theme first, then structure. -->
+    <link rel="stylesheet" href="kit/themes/nutrifax.css" />
+    <link rel="stylesheet" href="kit/kit.css" />
+    <script src="kit/kit.js"></script>
+    <script>
+      // Beat grid of the score (beats.json): librosa beats 10.47-83.52 at ~92.3 BPM, extended to 0.07-85.47 at 0.65 s.
+      BP.grid({ beats: [0.07, 0.72, 1.37, 2.02, 2.67, 3.32, 3.97, 4.62, 5.27, 5.92, 6.57, 7.22, 7.87, 8.52, 9.17, 9.82, 10.47, 11.13, 11.78, 12.43, 13.08, 13.73, 14.38, 15.03, 15.7, 16.35, 17.0, 17.65, 18.3, 18.95, 19.61, 20.26, 20.91, 21.56, 22.22, 22.87, 23.52, 24.17, 24.82, 25.47, 26.13, 26.78, 27.43, 28.08, 28.73, 29.38, 30.05, 30.7, 31.35, 32.0, 32.65, 33.3, 33.96, 34.61, 35.26, 35.91, 36.56, 37.21, 37.87, 38.52, 39.17, 39.82, 40.47, 41.13, 41.77, 42.42, 43.08, 43.73, 44.38, 45.04, 45.7, 46.35, 47.0, 47.65, 48.3, 48.96, 49.61, 50.26, 50.91, 51.56, 52.22, 52.86, 53.52, 54.17, 54.82, 55.47, 56.12, 56.78, 57.43, 58.08, 58.73, 59.39, 60.05, 60.7, 61.35, 62.0, 62.65, 63.29, 63.95, 64.61, 65.25, 65.91, 66.56, 67.21, 67.87, 68.51, 69.17, 69.82, 70.47, 71.12, 71.77, 72.43, 73.08, 73.72, 74.39, 75.04, 75.69, 76.35, 77.0, 77.65, 78.3, 78.95, 79.61, 80.26, 80.91, 81.56, 82.21, 82.86, 83.52, 84.17, 84.82, 85.47] });
+    </script>
+    <style>
+      svg text.mono.head { font-size: 22px; }
+      svg text.mono.green-t { fill: #15803d; }
+      svg text.mono.red-t { fill: var(--accent); }
+      svg text.big { font-family: var(--font-display); font-weight: var(--display-weight); letter-spacing: var(--display-tracking); fill: var(--ink); }
+      /* the recipe card is handwritten; the label is set in a plain grotesque, like the real table */
+      svg text.hand { font-family: "Caveat", cursive; font-weight: 700; font-size: 40px; fill: var(--ink); }
+      svg text.hand.title { font-size: 48px; }
+      svg text.nf { font-family: var(--font-label); font-weight: 500; font-size: 23px; fill: var(--ink); }
+      svg text.nf.b, svg text.nf tspan.b { font-weight: 800; }
+      svg text.nf.title { font-size: 42px; font-weight: 800; letter-spacing: -0.01em; }
+      svg text.nf.small { font-size: 18px; }
+      .statement.two { top: 790px; flex-direction: column; align-items: center; font-size: 60px; row-gap: 6px; }
+      .statement.two .row { display: flex; column-gap: 0.3em; }
+    </style>
+    <script>
+      // NF: the film's shared drawings, synthetic recipe, values from the Canadian Nutrient File (CNF 2015)
+      // run through the same arithmetic as nutrifax calculator.py. See BUILD-STATE.md for every source.
+      window.NF = (() => {
+        const { el, text } = BP;
+        // the recipe card, local coords 0-520 x 0-580. Line i sits at LINE_Y(i).
+        const LINES = ["400 g rolled oats", "1/2 cup maple syrup", "4 tbsp canola oil", "1 cup whole almonds", "1/2 cup sunflower seeds", "1 tsp salt"];
+        const LINE_Y = (i) => 160 + i * 58;
+        function card(parent) {
+          const P = { rules: [], lines: [] };
+          P.paper = el("rect", { class: "fill-raised", x: 0, y: 0, width: 520, height: 580, opacity: 0.55 }, parent);
+          P.frame = el("rect", { class: "ln ink", x: 0, y: 0, width: 520, height: 580 }, parent);
+          P.title = text("Maple almond granola", { class: "hand title", x: 36, y: 72 }, parent);
+          P.rules.push(el("path", { class: "ln thin ink", d: "M24 98H496", opacity: 0.6 }, parent));
+          for (let i = 0; i < 7; i++) P.rules.push(el("path", { class: "ln thin line", d: `M24 ${LINE_Y(i) + 14}H496`, opacity: 0.35 }, parent));
+          LINES.forEach((s, i) => P.lines.push(text(s, { class: "hand", x: 40, y: LINE_Y(i) }, parent)));
+          P.serves = text("Makes 12 servings", { class: "hand", x: 40, y: LINE_Y(6) + 8 }, parent);
+          return P;
+        }
+        // The Canadian Nutrition Facts table for this recipe, laid out like Nutrifax's own Figure 1.2 preview
+        // (backend/app/static/label-previews/ca/1.2.png), local coords 0-480 x 0-616. Values are
+        // label_generator.py's Canadian rounding of the per-serving numbers; %DV from the HC daily values.
+        // Returns the frame and the parts in the order render_ca_standard() draws them.
+        function table(parent) {
+          const P = { parts: [] };
+          const part = () => {
+            const g = el("g", {}, parent);
+            P.parts.push(g);
+            return g;
+          };
+          const row = (g, y, bold, reg, dv, x = 14, cls = "nf") => {
+            const t = el("text", { class: cls, x, y }, g);
+            if (bold) el("tspan", { class: "nf b" }, t).textContent = bold + (reg ? " " : "");
+            if (reg) el("tspan", {}, t).textContent = reg;
+            if (dv) text(dv, { class: cls, x: 466, y, "text-anchor": "end" }, g);
+          };
+          const rule = (g, y, w = 1.5) => el("path", { class: "ln ink", d: `M8 ${y}H472`, style: `stroke-width: ${w}` }, g);
+          P.frame = el("rect", { class: "ln ink", x: 0, y: 0, width: 480, height: 616 }, parent);
+          P.paper = el("rect", { x: 1, y: 1, width: 478, height: 614, style: "fill: #ffffff", opacity: 0.6 }, parent);
+          parent.insertBefore(P.paper, P.frame);
+          let g = part();
+          text("Nutrition Facts", { class: "nf title", x: 14, y: 50 }, g);
+          g = part();
+          text("Per 2/3 cup (71 g)", { class: "nf", x: 14, y: 86 }, g);
+          rule(g, 100, 4);
+          g = part();
+          text("Calories 320", { class: "nf b", x: 14, y: 134, style: "font-size: 28px" }, g);
+          text("% Daily Value*", { class: "nf b small", x: 466, y: 132, "text-anchor": "end" }, g);
+          el("path", { class: "ln ink", d: "M14 148H186", style: "stroke-width: 6" }, g);
+          rule(g, 154);
+          g = part();
+          row(g, 180, "Fat", "16 g", "22 %");
+          row(g, 209, null, "Saturated 1.5 g", null, 34);
+          row(g, 233, null, "+ Trans 0 g", null, 34);
+          text("8 %", { class: "nf", x: 466, y: 221, "text-anchor": "end" }, g);
+          rule(g, 246);
+          g = part();
+          row(g, 271, "Carbohydrate", "35 g");
+          row(g, 296, null, "Fibre 6 g", "20 %", 34);
+          row(g, 321, null, "Sugars 9 g", "9 %", 34);
+          rule(g, 336);
+          g = part();
+          row(g, 362, "Protein", "10 g");
+          rule(g, 376);
+          g = part();
+          row(g, 402, "Cholesterol", "0 mg");
+          rule(g, 416);
+          g = part();
+          row(g, 442, "Sodium", "200 mg", "9 %");
+          rule(g, 458, 5);
+          g = part();
+          row(g, 487, null, "Potassium 306 mg", "7 %");
+          rule(g, 501);
+          g = part();
+          row(g, 527, null, "Calcium 72 mg", "6 %");
+          rule(g, 541);
+          g = part();
+          row(g, 567, null, "Iron 2.4 mg", "13 %");
+          rule(g, 582, 5);
+          g = part();
+          text("*5% or less is a little, 15% or more is a lot", { class: "nf small", x: 14, y: 604, style: "font-size: 16px" }, g);
+          return P;
+        }
+        return { card, table, LINES, LINE_Y };
+      })();
+    </script>
+  </head>
+  <body>
+    <div data-hf-id="hf-nf01"
+      id="root"
+      data-composition-id="main"
+      data-start="0"
+      data-duration="86"
+      data-width="1280"
+      data-height="720"
+    >
+      <!-- Score: score-library drafting-table-nutrifax-label take-01, sha256 71011a14...ec00, the clock for every cue -->
+      <audio data-hf-id="hf-nf02"
+        id="score"
+        src="_in/score.mp3"
+        data-start="0"
+        data-duration="85.94"
+        data-track-index="9"
+        data-volume="1"
+      ></audio>
+
+      <!-- every plate draws on a 1920x1080 stage; drafts scale it to 720p (kit.css, stage.sh) -->
+      <div class="stage">
+        <div data-hf-id="hf-nf03" id="slot-furniture" data-composition-id="furniture" data-composition-src="compositions/furniture.html" data-start="0" data-duration="86" data-track-index="0" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-nf04" id="slot-p1" data-composition-id="p1" data-composition-src="compositions/p1-recipe.html" data-start="0" data-duration="10.05" data-track-index="1" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-nf05" id="slot-p2" data-composition-id="p2" data-composition-src="compositions/p2-match.html" data-start="10" data-duration="14.05" data-track-index="2" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-nf06" id="slot-p3" data-composition-id="p3" data-composition-src="compositions/p3-sums.html" data-start="24" data-duration="14.05" data-track-index="3" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-nf07" id="slot-p4" data-composition-id="p4" data-composition-src="compositions/p4-rounding.html" data-start="38" data-duration="14.05" data-track-index="4" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-nf08" id="slot-p5" data-composition-id="p5" data-composition-src="compositions/p5-table.html" data-start="52" data-duration="16.05" data-track-index="5" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-nf09" id="slot-p6" data-composition-id="p6" data-composition-src="compositions/p6-sheet.html" data-start="68" data-duration="10.05" data-track-index="6" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-nf0a" id="slot-p7" data-composition-id="p7" data-composition-src="compositions/p7-colophon.html" data-start="78" data-duration="8" data-track-index="7" data-width="1920" data-height="1080"></div>
+      </div>
+    </div>
+
+    <script>
+      window.__timelines["main"] = gsap.timeline({ paused: true });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,91 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #e4 {
+          position: absolute;
+          inset: 0;
+        }
+      </style>
+      <div id="e4" data-composition-id="e4" data-width="1920" data-height="1080">
+        <div id="e4-all" class="layer">
+          <svg class="full" viewBox="0 0 1920 1080">
+            <g id="e4-art"></g>
+          </svg>
+          <div class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate IV</div>
+          <div class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>The Packet</div>
+          <div id="e4-st" class="statement">
+            <span id="e4-st-a" class="phrase">Two documents,</span>
+            <span id="e4-st-b" class="phrase red">two fingerprints.</span>
+          </div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text, kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 30.65);
+          const root = K.$("e4-art");
+
+          // the staged packet: the reviewer's only read root
+          const tab = el("path", { class: "ln ink", d: "M140 250V220H360L384 250" }, root);
+          const body = el("path", { class: "ln ink", d: "M140 250H860V740H140Z" }, root);
+          const head = text("02-context/", { class: "mono head", x: 170, y: 300 }, root);
+          const sub = text("STAGED BY THE DELEGATE", { class: "mono small dim", x: 170, y: 328 }, root);
+          K.draw(tab, K.T(30.65), 0.4);
+          K.draw(body, K.T(30.65) + 0.2, 0.9, "none");
+          K.fade(head, K.T(31.23), 0.4);
+          K.fade(sub, K.T(31.23) + 0.2, 0.4);
+
+          // two documents under review: the plan, and the spec staged beside it
+          function icon(x, y, name, role) {
+            const g = el("g", {}, root);
+            el("path", { class: "fill-bg", d: `M${x} ${y}H${x + 86}L${x + 110} ${y + 24}V${y + 140}H${x}Z` }, g);
+            el("path", { class: "ln ink", d: `M${x} ${y}H${x + 86}L${x + 110} ${y + 24}V${y + 140}H${x}Z` }, g);
+            el("path", { class: "ln thin ink", d: `M${x + 86} ${y}V${y + 24}H${x + 110}` }, g);
+            el("path", { class: "ln thin line", d: `M${x + 18} ${y + 48}H${x + 92}M${x + 18} ${y + 68}H${x + 88}M${x + 18} ${y + 88}H${x + 92}M${x + 18} ${y + 108}H${x + 70}` }, g);
+            text(name, { class: "mono", x: x + 55, y: y + 176, "text-anchor": "middle" }, g);
+            text(role, { class: "mono small dim", x: x + 55, y: y + 202, "text-anchor": "middle" }, g);
+            return g;
+          }
+          const plan = icon(230, 370, "plan.md", "PRIMARY");
+          const spec = icon(500, 370, "spec.md", "SUPPLEMENTARY");
+          tl.fromTo(plan, { opacity: 0, x: -60 }, { opacity: 1, x: 0, duration: 0.6, ease: "power2.out" }, K.T(31.81));
+          tl.fromTo(spec, { opacity: 0, x: 60 }, { opacity: 1, x: 0, duration: 0.6, ease: "power2.out" }, K.T(33.0));
+
+          // the rest of the packet is context, not under review
+          const cx = text("CONTEXT, NOT UNDER REVIEW", { class: "mono small gold-t", x: 170, y: 640 }, root);
+          const i1 = text("state.json   log-slice.md   conventions.md", { class: "mono small dim", x: 170, y: 676 }, root);
+          const i2 = text("delegate-reviewer.md   bureau-agents.md", { class: "mono small dim", x: 170, y: 706 }, root);
+          K.fade(cx, K.T(34.16), 0.4);
+          K.fade(i1, K.T(34.16) + 0.25, 0.4);
+          K.fade(i2, K.T(34.16) + 0.45, 0.4);
+
+          // the harness hashes each artifact into the manifest
+          const arrow = el("path", { class: "ln line", d: "M876 430H1040M1028 420L1042 430L1028 440" }, root);
+          const hashed = text("HASHED", { class: "mono small gold-t", x: 958, y: 414, "text-anchor": "middle" }, root);
+          K.draw(arrow, K.T(34.76), 0.5);
+          K.fade(hashed, K.T(34.76) + 0.2, 0.3);
+          const M = FP.manifest(root, 1060, 260, [["plan.md", FP.DIG.plan2, "PRIMARY"], ["spec.md", FP.DIG.spec, "SUPPLEMENTARY"]], 640);
+          FP.drawManifest(K, M, K.T(35.34));
+
+          const n1 = text("THE PROMPT NAMES EACH ONE WITH ITS FINGERPRINT", { class: "mono small dim", x: 1060, y: 590 }, root);
+          const n2 = text("THE VERDICT MUST LIST BOTH", { class: "mono small gold-t", x: 1060, y: 622 }, root);
+          K.reveal(n1, K.T(38.29), 0.6);
+          K.reveal(n2, K.T(41.22), 0.5);
+
+          K.reveal(K.$("e4-st-a"), K.T(39.45), 0.55);
+          K.reveal(K.$("e4-st-b"), K.T(40.05), 0.6);
+
+          K.out(K.$("e4-all"), K.R(43.7), 0.45);
+          window.__timelines["e4"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

@@ -1,0 +1,140 @@
+<!doctype html>
+<html class="draft" lang="en" data-resolution="landscape">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1280, height=720" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=IBM+Plex+Mono:wght@400;700&display=block" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <!-- Series kit (tools/blueprint-kit, copied by sync.sh). Theme first, then structure. -->
+    <link rel="stylesheet" href="kit/themes/paper.css" />
+    <link rel="stylesheet" href="kit/kit.css" />
+    <script src="kit/kit.js"></script>
+    <script>
+      // Beat grid of the score (beats.json): librosa beats at a 0.6037 s median gap, extended to both ends of take-01-edit.
+      BP.grid({ beats: [0.23,0.84,1.44,2.04,2.65,3.25,3.85,4.46,5.06,5.67,6.27,6.87,7.48,8.08,8.66,9.26,9.87,10.45,11.05,11.63,12.24,12.84,13.42,14.0,14.61,15.21,15.79,16.39,16.97,17.58,18.18,18.76,19.37,19.97,20.55,21.15,21.73,22.34,22.92,23.52,24.1,24.71,25.31,25.89,26.49,27.07,27.68,28.28,28.86,29.47,30.07,30.65,31.25,31.83,32.44,33.02,33.62,34.2,34.81,35.39,35.99,36.57,37.18,37.78,38.36,38.96,39.57,40.15,40.75,41.33,41.94,42.52,43.12,43.7,44.3,44.88,45.49,46.09,46.7,47.28,47.88,48.46,49.06,49.67,50.25,50.85,51.43,52.04,52.62,53.22,53.82,54.4,55.01,55.59,56.19,56.77,57.35,57.96,58.56,59.14,59.74,60.33,60.93,61.53,62.14,62.74,63.34,63.95,64.55,65.16,65.76,66.36,66.97,67.57,68.17,68.78,69.38,69.98,70.59,71.19,71.8,72.4,73.0,73.61,74.21,74.81,75.42,76.02,76.63,77.23,77.83,78.44,79.04,79.64,80.25,80.85,81.46,82.06,82.66,83.27,83.87,84.47,85.08,85.68,86.29,86.89,87.49,88.1,88.7,89.3,89.91] });
+    </script>
+    <style>
+      svg text.mono.head { font-size: 22px; }
+      svg text.mono.code { font-size: 20px; font-weight: 400; letter-spacing: 0; }
+      svg text.mono.code.b { font-weight: 700; }
+      svg text.mono.cap { font-size: 20px; font-weight: 400; letter-spacing: 0.06em; }
+      svg text.mono.cap.b { font-weight: 700; }
+      svg text.mono.big { font-size: 26px; }
+      svg text.mono.gold-t { fill: #6b5416; } /* line-strong is 3.5:1 on paper; small type needs 4.5:1 */
+      svg text.mono.red-t { fill: var(--accent); }
+      .fill-ink { fill: var(--ink); }
+      .fill-gold { fill: var(--line); }
+      .fill-accent { fill: var(--accent); }
+      .stamp-t { font-family: var(--font-mono); font-size: 30px; font-weight: 700; letter-spacing: 0.16em; fill: var(--ink); }
+      .stamp-t.red { fill: var(--accent); }
+    </style>
+    <script>
+      // TW: the one device of this film, a failure travelling into a committed check. The slip is the
+      // failure (a typed round-hour stamp); the card is fixture 135, the check it became; the drawer is
+      // the standing suite; the gate is the next run's prior-fixture re-run gate. Real case: commits
+      // 0e2983c and 5070dee on the Bureau's main branch. The run log and the later edit are ILLUSTRATIVE.
+      window.TW = (() => {
+        const { el, text } = BP;
+        const hidden = (n) => (n.setAttribute("opacity", "0"), n);
+
+        // a document card: paper, frame, a small head and a rule under it
+        function card(parent, x, y, w, h, head, o = {}) {
+          const C = { g: el("g", {}, parent), x, y, w, h };
+          C.paper = el("rect", { class: "fill-bg", x, y, width: w, height: h }, C.g);
+          C.frame = el("rect", { class: `ln ${o.cls || "ink"}`, x, y, width: w, height: h }, C.g);
+          C.head = text(head, { class: `mono small ${o.headCls || "dim"}`, x: x + 24, y: y + 34 }, C.g);
+          if (o.right) C.right = text(o.right, { class: "mono small dim", x: x + w - 24, y: y + 34, "text-anchor": "end" }, C.g);
+          C.rule = el("path", { class: "ln thin ink", d: `M${x + 24} ${y + 50}H${x + w - 24}` }, C.g);
+          return C;
+        }
+        function drawCard(K, C, at, dur = 0.7) {
+          K.fade(C.paper, at, 0.15);
+          K.draw(C.frame, at, dur, "none");
+          K.fade(C.head, at + 0.15, 0.3);
+          if (C.right) K.fade(C.right, at + 0.25, 0.3);
+          K.draw(C.rule, at + 0.25, 0.4);
+        }
+
+        // the slip: the failure itself, a torn log line carrying a typed stamp
+        function slip(parent, label = "T03:00:00Z") {
+          const g = el("g", { "data-layout-allow-overlap": "" }, parent);
+          const d = "M-92 -22H92L86 -14L92 -6L86 2L92 10L86 18L92 22H-92Z";
+          el("path", { class: "fill-bg", d }, g);
+          el("path", { class: "ln accent-s", d, style: "stroke-width:2" }, g);
+          text(label, { class: "mono code b red-t", x: 0, y: 7, "text-anchor": "middle" }, g);
+          return g;
+        }
+        // a small fixture card in transit (the 135 card, seen small)
+        function chip(parent, label = "135") {
+          const g = el("g", {}, parent);
+          el("rect", { class: "fill-bg", x: -34, y: -44, width: 68, height: 88 }, g);
+          el("rect", { class: "ln ink", x: -34, y: -44, width: 68, height: 88 }, g);
+          el("path", { class: "ln thin ink", d: "M-22 -8H22M-22 4H22M-22 16H12" }, g);
+          text(label, { class: "mono code b", x: 0, y: -18, "text-anchor": "middle" }, g);
+          return g;
+        }
+        function outAll(tl, nodes, at, dur = 0.35) {
+          nodes.forEach((n) => tl.fromTo(n, { opacity: 1 }, { opacity: 0, duration: dur, immediateRender: false }, at));
+        }
+        // a stamp, tilted
+        function stamp(parent, word, cx, cy, w = 220, red = false) {
+          const tilt = el("g", { transform: `rotate(-5 ${cx} ${cy})`, "data-layout-allow-overlap": "" }, parent);
+          const g = el("g", {}, tilt);
+          el("rect", { class: "fill-bg", x: cx - w / 2, y: cy - 30, width: w, height: 60, opacity: 0.94 }, g);
+          el("rect", { class: `ln ${red ? "accent-s" : "ink"}`, x: cx - w / 2, y: cy - 30, width: w, height: 60, style: "stroke-width:3" }, g);
+          text(word, { class: `stamp-t${red ? " red" : ""}`, x: cx, y: cy + 11, "text-anchor": "middle" }, g);
+          return { g, cx, cy };
+        }
+        function slam(tl, S, at) {
+          tl.fromTo(S.g, { opacity: 0, scale: 1.25, svgOrigin: `${S.cx} ${S.cy}` }, { opacity: 1, scale: 1, svgOrigin: `${S.cx} ${S.cy}`, duration: 0.25, ease: "power2.in" }, at);
+        }
+        const cross = (parent, x, y, s = 12, cls = "accent-s") => el("path", { class: `ln ${cls}`, d: `M${x - s} ${y - s}l${2 * s} ${2 * s}M${x + s} ${y - s}l${-2 * s} ${2 * s}`, style: "stroke-width:3" }, parent);
+        const check = (parent, x, y, cls = "line-strong") => el("path", { class: `ln ${cls}`, d: `M${x - 12} ${y}l8 9l16 -20`, style: "stroke-width:3" }, parent);
+        const arrow = (parent, x, y, dir = "r", cls = "ink") => {
+          const d = { r: `M${x - 12} ${y - 8}L${x} ${y}L${x - 12} ${y + 8}`, d: `M${x - 8} ${y - 12}L${x} ${y}L${x + 8} ${y - 12}`, l: `M${x + 12} ${y - 8}L${x} ${y}L${x + 12} ${y + 8}` }[dir];
+          return el("path", { class: `ln ${cls}`, d }, parent);
+        };
+
+        return { card, drawCard, slip, chip, outAll, stamp, slam, cross, check, arrow, hidden };
+      })();
+    </script>
+  </head>
+  <body>
+    <div data-hf-id="hf-rg01"
+      id="root"
+      data-composition-id="main"
+      data-start="0"
+      data-duration="86.9"
+      data-width="1280"
+      data-height="720"
+    >
+      <!-- Score: score-library bureau-art-pop-bureau-regression take-01-edit, sha256 4fd2b881...0fbd, the clock for every cue -->
+      <audio data-hf-id="hf-rg02"
+        id="score"
+        src="_in/score.mp3"
+        data-start="0"
+        data-duration="86.9"
+        data-track-index="9"
+        data-volume="1"
+      ></audio>
+
+      <!-- every plate draws on a 1920x1080 stage; drafts scale it to 720p (kit.css, stage.sh) -->
+      <div class="stage">
+        <div data-hf-id="hf-rg03" id="slot-furniture" data-composition-id="furniture" data-composition-src="compositions/furniture.html" data-start="0" data-duration="86.9" data-track-index="0" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-rg04" id="slot-c1" data-composition-id="c1" data-composition-src="compositions/c1-typed.html" data-start="0" data-duration="9.87" data-track-index="1" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-rg05" id="slot-c2" data-composition-id="c2" data-composition-src="compositions/c2-fix.html" data-start="9.87" data-duration="9.5" data-track-index="2" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-rg06" id="slot-c3" data-composition-id="c3" data-composition-src="compositions/c3-fixture.html" data-start="19.37" data-duration="11.88" data-track-index="3" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-rg07" id="slot-c4" data-composition-id="c4" data-composition-src="compositions/c4-mutation.html" data-start="31.25" data-duration="11.87" data-track-index="4" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-rg08" id="slot-c5" data-composition-id="c5" data-composition-src="compositions/c5-suite.html" data-start="43.12" data-duration="18.41" data-track-index="5" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-rg09" id="slot-c6" data-composition-id="c6" data-composition-src="compositions/c6-gate.html" data-start="61.53" data-duration="18.11" data-track-index="6" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-rg0a" id="slot-c7" data-composition-id="c7" data-composition-src="compositions/c7-limit.html" data-start="79.64" data-duration="7.26" data-track-index="7" data-width="1920" data-height="1080"></div>
+      </div>
+    </div>
+
+    <script>
+      window.__timelines["main"] = gsap.timeline({ paused: true });
+    </script>
+  </body>
+</html>

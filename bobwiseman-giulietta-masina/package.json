@@ -1,0 +1,7 @@
+{
+  "name": "bobwiseman-giulietta-masina",
+  "private": true,
+  "type": "module",
+  "description": "Bob Wiseman, Giulietta Masina at the Oscars Crying: look tests drawn in code, one page per look under looks/.",
+  "devDependencies": { "playwright": "^1.55.0" }
+}

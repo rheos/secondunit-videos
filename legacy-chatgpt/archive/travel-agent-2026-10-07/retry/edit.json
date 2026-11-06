@@ -1,0 +1,66 @@
+[
+  {
+    "a": 0,
+    "b": 2,
+    "key": "carriage",
+    "id": 1,
+    "startFrame": 0,
+    "endFrame": 48
+  },
+  {
+    "a": 2,
+    "b": 4.5,
+    "key": "approach",
+    "id": 2,
+    "startFrame": 48,
+    "endFrame": 108
+  },
+  {
+    "a": 4.5,
+    "b": 6.75,
+    "key": "release",
+    "id": 3,
+    "startFrame": 108,
+    "endFrame": 162
+  },
+  {
+    "a": 6.75,
+    "b": 9.25,
+    "key": "follow",
+    "id": 4,
+    "startFrame": 162,
+    "endFrame": 222
+  },
+  {
+    "a": 9.25,
+    "b": 12.25,
+    "key": "city",
+    "id": 5,
+    "startFrame": 222,
+    "endFrame": 294
+  },
+  {
+    "a": 12.25,
+    "b": 15.25,
+    "key": "fragments",
+    "id": 6,
+    "startFrame": 294,
+    "endFrame": 366
+  },
+  {
+    "a": 15.25,
+    "b": 17.75,
+    "key": "reveal",
+    "id": 7,
+    "startFrame": 366,
+    "endFrame": 426
+  },
+  {
+    "a": 17.75,
+    "b": 20,
+    "key": "after",
+    "id": 8,
+    "startFrame": 426,
+    "endFrame": 480
+  }
+]

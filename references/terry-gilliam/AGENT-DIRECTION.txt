@@ -1,0 +1,68 @@
+WHAT WOULD TERRY ADD?
+Symbolic and motion direction informed by Terry Gilliam's cut-out animation (1968-1983)
+Updated 2026-10-16
+
+PURPOSE
+Use Gilliam as a reference for cutting a respectable image out of its world, making it misbehave, and turning it into the next thing. Keep the project's chosen medium unless Robin asks for the cut-out surface too (then add STYLE-BRIEF.txt). This is a working guide built from his recorded statements and finished work. It is not written in his voice and does not claim to know his intentions.
+
+THE CENTRAL QUESTION
+What respectable thing can we cut out of its world, make misbehave, and turn into the next thing?
+
+EVIDENCE
+On BBC's Do-It-Yourself Film Animation Show (1974) Gilliam says animation exists to "tell a story, make a joke, express an idea"; technique comes second; cut-outs are the quickest form he knows; cheat wherever you can; and because paper moves best in sudden jerks, his films lean toward violence and sex. He takes faces from old photographs, magazines and family albums and gives them cartoon bodies, and he fakes scale (perfume bottles become a city). See biography.html for sources and PSYCHOLOGY.md for why these moves work on a viewer.
+
+START WITH THE STIFF THING
+Name the most dignified, official or self-important element in the brief: a boss, a court, a party, a product, a monument, a polite tradition. That is the material. If nothing in the brief is stiff, Gilliam has less to offer; try Mark or Joel instead.
+
+TRY TWO OF THESE MOVES
+1. Real face, silly body. Keep a serious found face (old photograph or engraving) and give it a ridiculous drawn or collaged body. The face stays dignified; only the body misbehaves. (G21, G23)
+2. Make the transition the joke. End each scene by turning one element into the first element of the next scene, by visual rhyme: same position, same rough shape, different meaning. Chain three or four. (G05, the show's link role)
+3. Let the thing eat its user. A convenience (car, TV, phone, product, party) grows a mouth and consumes the people it serves; the cure arrives and is worse. (G10, G17)
+4. Open the head. Hinge a character's head like a lid and let the private contents climb out as objects. (G05)
+5. Lie about scale. Build a world from small found objects shown huge, or shrink an institution to a toy. Let the audience notice the trick. (G21, G10)
+6. Stop it from above. End a section with an object that descends from outside the frame and flattens the scene, no explanation. Once per film. Never the Python foot itself; find our own (stamp, gavel, flat iron, giant thumb from a PD engraving). (G06)
+7. Deadpan over disaster. A calm, official narration describes something absurd or terrible; the picture panics while the voice does not. (G14)
+8. Use the limitation. Choose actions that sudden paper moves do well: pops, snaps, slides, bounces, drops. Put the walker on wheels. Give the talker a jaw that drops. (G21)
+
+REFERENCE ANCHORS
+G21 Do-It-Yourself Film Animation Show (BBC, 1974): the whole method in his words; old man on two legs, lady in three hinged parts, a fight inside a pram done with bits of black paper.
+G06 / S01-S02 The Foot: cut from Cupid's foot in Bronzino's Venus, Cupid, Folly and Time; he saw it as a punctuation, a sudden halt.
+G23 / S03 Holy Grail's God: an animated photograph of the cricketer W. G. Grace.
+G10 Killer Cars: cars eat pedestrians, a giant cat eats a building, a giant hand ends it.
+G14 The Prince and the Black Spot: a level narrator reports a death from an ignored spot.
+G24 The Black Beast and the weak-hearted animator: the monster vanishes when its animator dies.
+Open index.html#G21 etc. for sources. Descriptions of broadcast pieces come from cited sources; watch the piece before treating it as a visual anchor.
+
+IN A MUSIC VIDEO
+The song is the clock. Gilliam's documented habits are marked (G); the rest is our proposal, or a memory of the broadcasts to check against a clip before relying on it (check).
+Rhythm
+- Hits on the beat. Snaps, pops, drops and squashes land on kicks and snares; holds sit on rests. Paper's jerky motion is percussive by nature. (The Python titles cut to a march; check.)
+- Cycles as groove. Cogs, pumps, a turning wheel, a row of identical marchers: cheap repeating cycles, locked to the tempo so a loop is one bar or two. (check)
+- Singing without lip-sync. A found face whose cut-out jaw drops on each sung syllable, or on the beat when the line is fast. No mouth shapes. (G, the dropping jaw; the timing is ours)
+Structure
+- The verse is a chain. Each scene turns into the next by visual rhyme (move 2). The chorus comes back to the same object or place every time, so the viewer learns the song's shape. The bridge breaks the chain. The last chorus ends on the one stop from above (move 6).
+- Take the lyric literally. "Time flies", "eats me up", "head over heels": draw the phrase at face value, as a Mad-style visual pun. Good for one or two lines per section, not every line.
+- Instrumentals are pans. A long, slow pan across one wide collage panorama, or a slow push into one detail, carries a solo or an intro for almost no animation. (check)
+Images that sit well on a song
+- Fly into the mouth, the opened head, an eye or a doorway, and come out in the next scene. A transition built into the picture. (G05 for the head; flying in is ours)
+- Growth over a held note or a swell: tentacles, vines, fungus or flowers sprouting from a respectable thing. One of the few slow moves cut-outs do well.
+- Scale against the sky. A giant figure over a tiny town on an airbrushed gradient sky. One frame type can carry a chorus. (G10, G21)
+- Crowds of copies. One cut-out figure duplicated into a crowd, choir or army, moving in sync to the beat. (check)
+
+HOW MUCH TO CHANGE
+Accent: one found face or one misbehaving prop inside the existing look.
+Link: plan the section's scene changes as a chain of visual rhymes (the cheapest high-value use of Gilliam).
+Scene: the whole section becomes a collage stage with found pieces, a fake-scale world and a hard stop.
+Default to Accent or Link. Scene is for sections that are already satire or allegory.
+
+RETURN
+State the scene's claim and name its stiff thing. Give two options. For each: the found material (and a PD source if possible), what it does that it should not, the next thing it becomes, how the section ends, the sound that sells each beat, and the reference anchor. Recommend one. For motion, name one sudden action and its consequence, and the visual rhyme that carries the cut. For a music video, also say which beats the hits land on, what the chorus returns to, and how any singing character sings.
+
+CHECK
+Who is the target? It must be power, pomposity, an institution or a product, never a weak or real private person. No recognisable real public figure; for Bob's films, allegory only. Does the violence stay visibly paper, with no realistic injury? Does each transition follow an element rather than fade? Can you explain the joke without saying "Gilliam" or "Monty Python"? Would it still work in clean vector or clay? If it only works as a Python pastiche (the foot, the Liberty Bell, the Victorian strongman), start again.
+
+SURFACE
+For the cut-out look, read STYLE-BRIEF.txt. It differs from our existing paper-theatre kit in two places that matter: Gilliam blackened his cut edges and fought shadows, where the Rheostatics-style kit shows white paper edges and soft drop shadows. Pick one per film on purpose.
+
+WITH THE OTHER PROFILES
+Mark asks which bodily or spatial change makes the argument visible. Joel asks what story an object can hold inside. Terry asks what respectable thing can be cut out, made to misbehave, and turned into the next thing. Run all three on a brief when you want three genuinely different options.

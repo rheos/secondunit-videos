@@ -1,0 +1,51 @@
+WHAT WOULD JOEL ADD?
+Symbolic direction informed by Joel Nakamura
+Updated 2026-10-13
+
+PURPOSE
+Use Nakamura as a reference for turning a subject into a small, inhabited story. Apply the conceptual approach in the project's chosen medium. This is a working creative guide, not instructions written by Joel or a claim to reproduce his mind.
+
+THE CENTRAL QUESTION
+What if this ordinary thing had a life, a world inside it, and a relationship with something unexpected?
+
+EVIDENCE
+In Discover Nikkei's 2010 interview, Nakamura describes beginning with a story. His contribution to Design by Nature describes reference immersion and sharing a broad field of sketches with clients. The operations below are our interpretation of the collected images. See biography.html for source links and director-guide.html for illustrated reasoning.
+
+START WITH A SITUATION
+Write: Someone or something wants X, encounters Y, and must change Z. Pick a concrete subject from the brief: a heart, journey, instrument, animal, tool, or communication system. Let the subject acquire motives or a predicament. “Connection” is too general; “a messenger has to carry an enormous message through a tiny opening” gives you a scene.
+
+TRY TWO OF THESE MOVES
+- Inhabit the object. Put a smaller cast, habitat, or action inside a larger body or container. Make inside and outside affect one another.
+- Give a technical subject a character. Preserve its recognizable function while inventing an expressive body, face, or behavior.
+- Join distant kinds of things through a shared action. An ark can become a biological archive; a musical instrument can become a landscape for performers. The connection needs a reason.
+- Shift the scale. Let an everyday difficulty become an event large enough to live inside, while keeping a small human or creature as a point of reference.
+- Build a visual route. A spiral, branch, current, or procession can lead the eye between related episodes. Give the route a beginning, destination, or return.
+- Use humor to open the story. A snail carrying a wireless signal makes slowness immediately readable. Preserve the subject's emotional stakes.
+- Reward a second look. The silhouette supplies the first reading; small inhabitants or repeated forms deepen it. Keep the main action clear.
+
+REFERENCE ANCHORS
+N43 Slow WiFi: a snail and wireless marks; the artist links it to distance learning. A familiar metaphor becomes a character.
+N40 Noahs Ark: animals, a vessel, and a helix; the artist describes the ark as a DNA lab. A story and a scientific idea share a structure.
+N20 Network Dream: spiral, people, and a face-like vessel; commissioned for Georgia-Pacific's HOW design conference. Read the spiral as a possible route through connected activity, not a decoded universal sign.
+N09 Medtronic Poster art: an anatomical heart and devices inside an ornamented panel. Retain subject specificity when enriching a technical diagram.
+N27 JVC Jazz Festival poster: a saxophone contains smaller figures and forms. An object becomes a setting.
+N53 Insomnia: a paired sleeping and wakeful face, moon and stars; commissioned for Emory Health. Contrasting states share one character.
+Open index.html#N43 etc. for images, observations, and source records.
+
+HOW MUCH TO CHANGE
+Accent: give one prop an expressive role or a tiny internal scene.
+Construction: rebuild the focal subject as an inhabited character or container.
+Scene: extend the same story into the environment and its smaller inhabitants.
+Choose the smallest useful intervention. These degrees are our production framework.
+
+RETURN
+Give the scene's claim, two concrete visual options, and a recommendation. For each option, identify the action, main object, internal or surrounding cast, reference anchor, and why the combination communicates the claim. State how it fits the current medium. If motion is requested, describe one cause and one visible consequence; proposed motion is an extension of still artwork.
+
+CHECK
+Does the image contain an event or relationship? Can you describe it without listing decorative symbols? Does it read small and reveal more up close? Does the unusual combination belong to this subject? Distinguish artist-supplied context from your interpretation. Keep culturally specific stories attributable; “ancient” or “tribal” is not a substitute for knowing the source. The four supplied originals remain unmatched to public title records.
+
+SURFACE
+For a painted-panel treatment, read STYLE-BRIEF.txt. Do not automatically import Mark Von Ulrich's Mac palette or ordered-dither specification. Conceptual direction can work in paint, paper, clay, pencil, vector, or 3D.
+
+ARTICLE-VERIFIED EXAMPLES
+See articles.html and article-index.json. Start with the article’s tension or governing metaphor; choose a transformation that explains it. A01: studio-maintenance figure with a console head and tools. A03: many arms gather a percussion setup into one performer. A04: a pyramid metaphor becomes the panel’s shape. A05: a resting body contains a moon amid a busy symbolic field. A06: a profile separates contrasting mental environments. These directing lessons are our extrapolations from published pairings. Credits verify editorial use, not necessarily a new commission.

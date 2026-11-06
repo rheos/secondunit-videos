@@ -1,0 +1,28 @@
+name: makevoid-watch
+on:
+  schedule:
+    - cron: '0 17 * * 1' # Mondays 17:00 UTC
+  workflow_dispatch:
+    inputs:
+      test_issue:
+        description: Issue number to comment on, as a test
+        required: false
+permissions:
+  actions: write
+  contents: read
+  issues: write
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - id: watch
+        run: python3 tools/makevoid-watch/check.py
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RHEO_NOTIFY_TOKEN: ${{ secrets.RHEO_NOTIFY_TOKEN }}
+          TEST_ISSUE: ${{ inputs.test_issue }}
+      - if: steps.watch.outputs.found == 'true'
+        run: gh workflow disable makevoid-watch.yml --repo "$GITHUB_REPOSITORY"
+        env:
+          GH_TOKEN: ${{ github.token }}

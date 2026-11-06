@@ -1,0 +1,45 @@
+slug: paparazzi
+title: Halftone press photos
+note: >-
+  Grainy black-and-white halftone with flash bursts. The shots land as pages of a 1950s picture magazine, then
+  a contact sheet with a red grease-pencil circle.
+used: Giulietta Masina test, Bob Wiseman
+cost: free
+group: code
+order: 210
+clip: paparazzi.mp4
+tall: false
+status: test
+engine: canvas2d
+project: bobwiseman-giulietta-masina
+code:
+  path: bobwiseman-giulietta-masina/js/paparazzi/screen.js
+  flag: null
+  page: bobwiseman-giulietta-masina/looks/paparazzi.html
+  note: >-
+    On branch giulietta-masina (draft PR #90), not merged. screen.js is the halftone press, scenes.js the Oscar
+    night; main.js stays local. Not in the signed-off film: verse 1 became the kite dream on Bob's 2026-10-11 note.
+rules:
+  - Every frame is drawn in tone (grey, white is bare paper) plus a spot-red layer, then screened pixel by pixel
+  - Black ink on a 45 degree amplitude-modulated dot screen, red on 75 degrees, red printed 3 px out of register
+  - Ragged dot edges from a paper-fibre field, cream newsprint underneath
+  - "Flashbulb pop: a hard white burst of about two frames, then a blue-white afterimage that fades where the bulb fired"
+  - On the prints (magazine spread, contact sheet) the screen is pinned to the page, so a push-in grows the dots
+  - Stand-ins only; the big man is only seen from behind or as a far-off silhouette
+palette:
+  - "#181516"
+  - "#ce2622"
+  - "#eee5cf"
+reference: 1950s picture-magazine press photography
+proof:
+  renders: []
+  pr:
+    - rheos/secondunit-videos#90
+  youtube:
+    - e4CjHyhGUMk
+    - dW37ldfayw0
+verdict: null
+related:
+  - flashphoto
+  - filmleader
+  - filmposter

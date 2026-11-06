@@ -1,0 +1,119 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #b1 { position: absolute; inset: 0; }
+        #b1-kick { top: 150px; font-size: 30px; }
+        #b1-title { top: 190px; font-size: 176px; }
+        #b1-sub { top: 418px; font-family: var(--font-display); font-style: italic; font-size: 44px; text-align: center; position: absolute; left: 0; right: 0; color: var(--line-field); }
+        .b1-slip { position: absolute; left: 240px; width: 820px; height: 118px; border: 2px solid var(--ink-field); background: var(--field); }
+        .b1-slip .day { position: absolute; left: 26px; top: 16px; font-family: var(--font-label); font-size: 26px; letter-spacing: 0.14em; color: var(--accent-field); }
+        .b1-slip .msg { position: absolute; left: 26px; top: 56px; font-family: var(--font-mono); font-size: 38px; color: var(--ink-field); white-space: nowrap; }
+        #b1-slip1 { top: 548px; }
+        #b1-slip2 { top: 700px; }
+      </style>
+      <div data-hf-id="hf-rc20" id="b1" data-composition-id="b1" data-width="1920" data-height="1080">
+        <div data-hf-id="hf-rc21" id="b1-sheet" class="sheet" data-layout-allow-overlap data-layout-allow-occlusion>
+          <svg data-hf-id="hf-rc22" id="b1-svg" class="full" viewBox="0 0 1920 1080"></svg>
+          <div data-hf-id="hf-rc23" id="b1-kick" class="kick">LADIES &amp; GENTLEMEN · WITNESS</div>
+          <div data-hf-id="hf-rc24" id="b1-title" class="title">The Recallatron</div>
+          <div data-hf-id="hf-rc25" id="b1-sub">An engine for the memory of thinking machines</div>
+          <div data-hf-id="hf-rc26" id="b1-slip1" class="b1-slip">
+            <div data-hf-id="hf-rc27" id="b1-d1" class="day">TELEGRAM · MONDAY</div>
+            <div data-hf-id="hf-rc28" id="b1-m1" class="msg">Staging runs Postgres 17.</div>
+          </div>
+          <div data-hf-id="hf-rc29" id="b1-slip2" class="b1-slip">
+            <div data-hf-id="hf-rc2a" id="b1-d2" class="day">TELEGRAM · TUESDAY</div>
+            <div data-hf-id="hf-rc2b" id="b1-m2" class="msg">Staging runs Postgres 17.</div>
+          </div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text } = BP;
+          const tl = gsap.timeline({ paused: true });
+          const S = 0;
+          const K = BP.kit(tl, S, "I");
+          const R = (t) => K.R(t);
+          const svg = K.$("b1-svg");
+
+          // the broadsheet's double rule and corner ornaments
+          const outer = el("rect", { class: "ln ink-s", x: 48, y: 48, width: 1824, height: 984 }, svg);
+          const inner = el("rect", { class: "ln thin ink-s", x: 62, y: 62, width: 1796, height: 956 }, svg);
+          const orn = el("path", { class: "ln thin ink-s", d: "M600 392H930M990 392H1320M960 378L974 392L960 406L946 392Z" }, svg);
+
+          // the knife switch: a blade on a hinge post, a contact clip, a lamp that shows it is live
+          const SW = el("g", {}, svg);
+          const base = el("rect", { class: "ln ink-s", x: 1300, y: 772, width: 420, height: 30 }, SW);
+          const post = el("path", { class: "ln ink-s", d: "M1370 772V712H1394V772" }, SW);
+          const clip = el("path", { class: "ln ink-s", d: "M1626 772V706M1650 772V706" }, SW);
+          const blade = el("g", {}, SW);
+          el("path", { class: "ln ink-s", d: "M1382 712H1638", style: "stroke-width: 6" }, blade);
+          el("path", { class: "ln ink-s", d: "M1638 712H1690M1690 698V726", style: "stroke-width: 4" }, blade);
+          const lamp = el("circle", { class: "ln ink-s", cx: 1210, cy: 690, r: 34 }, SW);
+          const glow = el("circle", { class: "fill-ink", cx: 1210, cy: 690, r: 22 }, SW);
+          const rays = el("path", { class: "ln thin ink-s", d: "M1210 638V620M1256 690H1274M1146 690H1164M1246 656L1260 642M1174 656L1160 642" }, SW);
+          const swT = text("THE SWITCH", { class: "lab sm", x: 1510, y: 850, "text-anchor": "middle" }, SW);
+          const lampT = text("MEMORY", { class: "lab sm", x: 1210, y: 610, "text-anchor": "middle" }, SW);
+          const wire = el("path", { class: "ln thin ink-s", d: "M1244 700Q1290 760 1300 786" }, SW);
+
+          K.draw(outer, 0.1, 1.2, "none", false);
+          K.draw(inner, 0.3, 1.2, "none", false);
+          K.slam(K.$("b1-kick"), R(0.5), { stagger: 0.03 });
+          K.slam(K.$("b1-title"), R(1.25), { stagger: 0.06 });
+          K.draw(orn, R(2.4), 0.6);
+          K.typed(K.$("b1-sub"), R(2.9), { cps: 34, cursor: false });
+
+          // "forgets everything at the stroke of the switch"
+          const swAt = R(VO.w("I", "forgets") - 0.6);
+          [base, post, clip, wire].forEach((n, i) => K.draw(n, swAt + i * 0.12, 0.4));
+          K.fade(blade, swAt + 0.3, 0.3);
+          K.fade(lamp, swAt + 0.4, 0.3);
+          K.fade(glow, swAt + 0.5, 0.3);
+          K.fade(rays, swAt + 0.6, 0.3);
+          K.typed(swT, swAt + 0.5, { cps: 30, cursor: false });
+          K.typed(lampT, swAt + 0.7, { cps: 30, cursor: false });
+          const throwAt = (t, back) => {
+            K.move(blade, t, 0.16, { rotation: 0, svgOrigin: "1382 712" }, { rotation: -58, svgOrigin: "1382 712" }, { ease: "power3.in" });
+            K.sfx("stamp", t + 0.14);
+            tl.fromTo(glow, { opacity: 1 }, { opacity: 0, duration: 0.05 }, t + 0.14);
+            tl.fromTo(rays, { opacity: 1 }, { opacity: 0, duration: 0.05 }, t + 0.14);
+            if (back) {
+              K.move(blade, t + back, 0.2, { rotation: -58, svgOrigin: "1382 712" }, { rotation: 0, svgOrigin: "1382 712" }, { ease: "power2.in" });
+              K.sfx("tick", t + back + 0.18);
+              tl.fromTo(glow, { opacity: 0 }, { opacity: 1, duration: 0.1 }, t + back + 0.2);
+              tl.fromTo(rays, { opacity: 0 }, { opacity: 1, duration: 0.1 }, t + back + 0.2);
+            }
+          };
+          throwAt(R(VO.w("I", "switch")), 0.7);
+
+          // "Tell it on Monday that staging runs Postgres 17." Then the switch again, and the telegram is gone.
+          const mon = R(VO.w("I", "monday") - 0.3);
+          K.stamp(K.$("b1-slip1"), mon, { sound: "card", from: 1.08, origin: "50% 50%" });
+          K.typed(K.$("b1-d1"), mon + 0.2, { cps: 40, cursor: false });
+          K.typed(K.$("b1-m1"), R(VO.w("I", "staging") - 0.1), { cps: 26 });
+          const off = R(VO.w("I", "17") + 0.75);
+          throwAt(off, 0.55);
+          K.drop(K.$("b1-m1"), off + 0.16, { stagger: 0.02 });
+          K.drop(K.$("b1-d1"), off + 0.2, { stagger: 0.02 });
+
+          // "On Tuesday, you will tell it again."
+          const tue = R(VO.w("I", "tuesday") - 0.3);
+          K.stamp(K.$("b1-slip2"), tue, { sound: "card", from: 1.08, origin: "50% 50%" });
+          K.typed(K.$("b1-d2"), tue + 0.2, { cps: 40, cursor: false });
+          K.typed(K.$("b1-m2"), tue + 0.55, { cps: 30 });
+
+          // the sheet is pulled up and away, and plate II's blueprint is underneath
+          K.sfx("out", R(14.35));
+          K.move(K.$("b1-sheet"), R(14.35), 0.95, { y: 0 }, { y: -1100 }, { ease: "power2.in", sound: "slide" });
+          window.__timelines["b1"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

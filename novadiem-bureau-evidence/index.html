@@ -1,0 +1,286 @@
+<!doctype html>
+<html class="draft" lang="en" data-resolution="landscape">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1280, height=720" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=IBM+Plex+Mono:wght@400;700&display=block" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <!-- Series kit (tools/blueprint-kit, copied by sync.sh). Theme first, then structure. -->
+    <link rel="stylesheet" href="kit/themes/paper.css" />
+    <link rel="stylesheet" href="kit/kit.css" />
+    <script src="kit/kit.js"></script>
+    <script>
+      // Beat grid of the score (beats.json): librosa beats at a 0.5805 s median gap, extended to both ends of take-01.
+      BP.grid({ beats: [0.05,0.63,1.23,1.81,2.41,3.0,3.58,4.18,4.76,5.34,5.92,6.52,7.11,7.69,8.29,8.87,9.45,10.05,10.63,11.22,11.82,12.4,12.98,13.58,14.16,14.74,15.35,15.93,16.51,17.11,17.69,18.27,18.88,19.46,20.06,20.64,21.22,21.8,22.41,22.99,23.59,24.17,24.75,25.33,25.94,26.52,27.12,27.7,28.28,28.86,29.47,30.05,30.65,31.23,31.81,32.39,33.0,33.58,34.16,34.76,35.34,35.92,36.52,37.11,37.71,38.29,38.87,39.45,40.05,40.63,41.22,41.82,42.4,42.98,43.58,44.16,44.74,45.35,45.93,46.51,47.11,47.69,48.27,48.88,49.46,50.04,50.64,51.22,51.8,52.41,52.99,53.57,54.17,54.75,55.33,55.94,56.54,57.12,57.72,58.31,58.89,59.49,60.07,60.65,61.25,61.83,62.44,63.02,63.6,64.2,64.81,65.39,65.97,66.55,67.13,67.73,68.34,68.94,69.54,70.12,70.7,71.29,71.87,72.45,73.03,73.61,74.19,74.77,75.35,75.93,76.51,77.11,77.69,78.27,78.88,79.46,80.04,80.64,81.22,81.8,82.41,82.99,83.57,84.15,84.73,85.31,85.89,86.47,87.05,87.63,88.21,88.79,89.37,89.95] });
+    </script>
+    <style>
+      svg text.mono.head { font-size: 22px; }
+      svg text.mono.src { font-size: 21px; font-weight: 400; letter-spacing: 0.04em; }
+      svg text.mono.gold-t { fill: #6b5416; } /* line-strong is 3.5:1 on paper; small type needs 4.5:1 */
+      svg text.mono.red-t { fill: var(--accent); }
+      svg text.mono.big { font-size: 26px; }
+      .fill-ink { fill: var(--ink); }
+      .fill-gold { fill: var(--line); }
+      .red-s { stroke: var(--accent); }
+      .stamp-t { font-family: var(--font-mono); font-size: 30px; font-weight: 700; letter-spacing: 0.16em; fill: var(--ink); }
+      .note {
+        position: absolute;
+        font-family: var(--font-mono);
+        font-size: 18px;
+        letter-spacing: 0.1em;
+        color: var(--ink-dim);
+        white-space: nowrap;
+      }
+    </style>
+    <script>
+      // FP: the one device of this film, a geometric fingerprint. A SHA-256 digest is 64 hex digits;
+      // the glyph draws one radial mark per digit, its length set by the digit's value (0-f).
+      // DIG holds the real SHA-256 of the synthetic documents below, exactly as drawn
+      // (lines joined with "\n", trailing newline). No hash string ever appears on screen.
+      window.FP = (() => {
+        const { el, text } = BP;
+        const PLAN1 = ["# Plan", "1  Add a rate limit to /export", "2  Limit: 60 requests a minute", "3  Over the limit: 429 + Retry-After", "4  Test: a burst of 61 requests"];
+        const PLAN2 = PLAN1.map((l) => l.replace("60 requests", "600 requests"));
+        const SPEC = ["# Spec", "R1  Exports finish in under 2 s", "R2  One rate limit per API key", "R3  Errors say how long to wait"];
+        const DIG = {
+          plan1: "d5669ffd3596915f9262b65c85997f9c2d54bde85fcae18b629b3bc2f2d15e10",
+          plan2: "ea5b2020e238a70115f8bbe2feb7a3fb392d0dcf6b2498b49243677597246c73",
+          spec: "b9d272d2ef66c563ae057f78d3789b2a56de897afbb442e7e8071501542a16de",
+        };
+
+        // glyph(parent, hex, cx, cy, R, { w, cls }) -> { g, ring, marks[64], core }
+        function glyph(parent, hex, cx, cy, R, o = {}) {
+          const g = el("g", {}, parent);
+          const w = o.w || Math.max(1.2, R / 50);
+          const r0 = R * 0.44,
+            span = R * 0.56;
+          const ring = el("circle", { class: "ln ink", cx, cy, r: (r0 - R * 0.1).toFixed(1), style: `stroke-width:${Math.max(1, w * 0.6)}` }, g);
+          const core = el("path", { class: "ln ink", d: `M${cx - R * 0.12} ${cy}H${cx + R * 0.12}M${cx} ${cy - R * 0.12}V${cy + R * 0.12}`, style: `stroke-width:${Math.max(1, w * 0.6)}` }, g);
+          const marks = [];
+          for (let i = 0; i < 64; i++) {
+            const v = parseInt(hex[i], 16);
+            const a = (i / 64) * Math.PI * 2 - Math.PI / 2;
+            const r1 = r0 + (span * (v + 1)) / 16;
+            const x0 = cx + Math.cos(a) * r0,
+              y0 = cy + Math.sin(a) * r0;
+            const x1 = cx + Math.cos(a) * r1,
+              y1 = cy + Math.sin(a) * r1;
+            marks.push(el("path", { class: `ln ${o.cls || "line-strong"}`, d: `M${x0.toFixed(1)} ${y0.toFixed(1)}L${x1.toFixed(1)} ${y1.toFixed(1)}`, style: `stroke-width:${w};stroke-linecap:butt` }, g));
+          }
+          return { g, ring, core, marks, hex, cx, cy, R };
+        }
+        // draw a glyph mark by mark, clockwise from twelve o'clock
+        function drawGlyph(K, G, at, dur = 1.6) {
+          K.draw(G.ring, at, 0.5);
+          K.fade(G.core, at, 0.3);
+          const step = (dur - 0.2) / 64;
+          G.marks.forEach((m, i) => K.draw(m, at + 0.1 + i * step, 0.18, "none"));
+        }
+        // the same glyph, already drawn: fade it in whole
+        function showGlyph(K, G, at, dur = 0.4) {
+          K.fade(G.g, at, dur);
+        }
+
+        // a document sheet with its exact text: doc(parent, x, y, name, lines, { w })
+        function doc(parent, x, y, name, lines, o = {}) {
+          const w = o.w || 560;
+          const h = 64 + lines.length * 40 + 20;
+          const D = { g: el("g", {}, parent), lines: [], x, y, w, h };
+          D.paper = el("path", { class: "fill-bg", d: `M${x} ${y}H${x + w - 26}L${x + w} ${y + 26}V${y + h}H${x}Z` }, D.g);
+          D.body = el("path", { class: "ln ink", d: `M${x} ${y}H${x + w - 26}L${x + w} ${y + 26}V${y + h}H${x}Z` }, D.g);
+          D.fold = el("path", { class: "ln thin ink", d: `M${x + w - 26} ${y}V${y + 26}H${x + w}` }, D.g);
+          D.name = text(name, { class: "mono", x: x + 24, y: y - 14 }, D.g);
+          lines.forEach((l, i) => D.lines.push(text(l, { class: "mono src", x: x + 28, y: y + 58 + i * 40 }, D.g)));
+          D.lineY = (i) => y + 58 + i * 40;
+          return D;
+        }
+        function drawDoc(K, D, at) {
+          K.fade(D.paper, at, 0.2);
+          K.draw(D.body, at, 0.7, "none");
+          K.draw(D.fold, at + 0.5, 0.2);
+          K.fade(D.name, at + 0.2, 0.3);
+          D.lines.forEach((n, i) => K.reveal(n, at + 0.35 + i * 0.12, 0.45));
+        }
+        function showDoc(K, D, at) {
+          K.fade(D.g, at, 0.35);
+        }
+
+        // a framed card with a title: card(parent, x, y, w, h, title)
+        function card(parent, x, y, w, h, title) {
+          const C = { g: el("g", {}, parent), x, y, w, h };
+          C.paper = el("rect", { class: "fill-bg", x, y, width: w, height: h }, C.g);
+          C.frame = el("rect", { class: "ln ink", x, y, width: w, height: h }, C.g);
+          C.title = text(title, { class: "mono head", x: x + 24, y: y + 40 }, C.g);
+          C.rule = el("path", { class: "ln thin ink", d: `M${x + 24} ${y + 58}H${x + w - 24}` }, C.g);
+          return C;
+        }
+        function drawCard(K, C, at) {
+          K.fade(C.paper, at, 0.2);
+          K.draw(C.frame, at, 0.6, "none");
+          K.fade(C.title, at + 0.25, 0.3);
+          K.draw(C.rule, at + 0.3, 0.4);
+        }
+
+        // a fresh, read-only reviewer: a double-walled room
+        function room(parent, x, y, w, h, name, sub) {
+          const R = { g: el("g", {}, parent), x, y, w, h };
+          R.outer = el("rect", { class: "ln ink", x, y, width: w, height: h }, R.g);
+          R.inner = el("rect", { class: "ln thin ink", x: x + 8, y: y + 8, width: w - 16, height: h - 16 }, R.g);
+          R.glyph = el("path", { class: "ln line", d: `M${x + w / 2} ${y + 34}l22 22l-22 22l-22 -22Z` }, R.g);
+          R.name = text(name, { class: "mono", x: x + w / 2, y: y + h - 46, "text-anchor": "middle" }, R.g);
+          R.sub = text(sub, { class: "mono small dim", x: x + w / 2, y: y + h - 22, "text-anchor": "middle" }, R.g);
+          return R;
+        }
+        function drawRoom(K, R, at) {
+          K.draw(R.outer, at, 0.7, "none");
+          K.draw(R.inner, at + 0.3, 0.5, "none");
+          K.draw(R.glyph, at + 0.4, 0.5);
+          K.fade(R.name, at + 0.5, 0.3);
+          K.fade(R.sub, at + 0.6, 0.3);
+        }
+
+        const check = (parent, x, y, cls = "line-strong") => el("path", { class: `ln ${cls}`, d: `M${x - 12} ${y}l8 9l16 -20`, style: "stroke-width:3" }, parent);
+        const cross = (parent, x, y, cls = "ink") => el("path", { class: `ln ${cls}`, d: `M${x - 10} ${y - 10}l20 20M${x + 10} ${y - 10}l-20 20`, style: "stroke-width:3" }, parent);
+
+        // a stamp, tilted: stamp(parent, word, cx, cy, w)
+        function stamp(parent, word, cx, cy, w = 220, cls = "ink") {
+          const tilt = el("g", { transform: `rotate(-6 ${cx} ${cy})`, "data-layout-allow-overlap": "" }, parent);
+          const g = el("g", {}, tilt);
+          el("rect", { class: "fill-bg", x: cx - w / 2, y: cy - 27, width: w, height: 54, opacity: 0.92 }, g);
+          el("rect", { class: `ln ${cls}`, x: cx - w / 2, y: cy - 27, width: w, height: 54, style: "stroke-width:3" }, g);
+          text(word, { class: "stamp-t", x: cx, y: cy + 11, "text-anchor": "middle" }, g);
+          return { g, cx, cy };
+        }
+        function slam(tl, S, at) {
+          tl.fromTo(S.g, { opacity: 0, scale: 1.25, svgOrigin: `${S.cx} ${S.cy}` }, { opacity: 1, scale: 1, svgOrigin: `${S.cx} ${S.cy}`, duration: 0.25, ease: "power2.in" }, at);
+        }
+
+        // a sheet in transit
+        function sheet(parent, x, y) {
+          const t = el("g", { transform: `translate(${x} ${y})` }, parent);
+          el("path", { class: "fill-bg", d: "M-12 -15H5L12 -8V15H-12Z" }, t);
+          el("path", { class: "ln line", d: "M-12 -15H5L12 -8V15H-12Z" }, t);
+          el("path", { class: "ln thin line", d: "M-6 -4H6M-6 3H6M-6 10H2" }, t);
+          return t;
+        }
+        function carry(K, tl, parent, d, at, dur) {
+          const s = sheet(parent, 0, 0);
+          tl.fromTo(s, { opacity: 0 }, { opacity: 1, duration: 0.15 }, at);
+          K.travel(s, el("path", { d }), at, dur);
+          tl.fromTo(s, { opacity: 1 }, { opacity: 0, duration: 0.2, immediateRender: false }, at + dur);
+          return s;
+        }
+
+        // the manifest card, artifacts.sha256: manifest(parent, x, y, rows=[[name, hex, role]])
+        function manifest(parent, x, y, rows, w = 500) {
+          const M = card(parent, x, y, w, 96 + rows.length * 90, "artifacts.sha256");
+          M.rows = rows.map(([name, hex, role], i) => {
+            const ry = y + 124 + i * 90;
+            const r = { y: ry };
+            r.glyph = glyph(M.g, hex, x + 72, ry, 36);
+            r.name = text(name, { class: "mono big", x: x + 136, y: ry - 2 }, M.g);
+            r.role = text(role, { class: "mono small dim", x: x + 136, y: ry + 24 }, M.g);
+            return r;
+          });
+          M.right = x + w;
+          return M;
+        }
+        function drawManifest(K, M, at) {
+          drawCard(K, M, at);
+          M.rows.forEach((r, i) => {
+            const t = at + 0.6 + i * 0.9;
+            drawGlyph(K, r.glyph, t, 0.8);
+            K.reveal(r.name, t + 0.3, 0.5);
+            K.fade(r.role, t + 0.5, 0.3);
+          });
+        }
+        // the review desk of plates V-VII: manifest (left), reviewer (top), verdict card (right), gate.
+        // desk(parent, { read: 1 | 2 }) builds every part; a plate animates the parts it needs.
+        function desk(parent, o = {}) {
+          const P = { g: el("g", {}, parent) };
+          const g = P.g;
+          P.man = manifest(g, 120, 250, [["plan.md", DIG.plan2, "PRIMARY"], ["spec.md", DIG.spec, "SUPPLEMENTARY"]], 500);
+          P.room = room(g, 740, 160, 340, 200, o.roomName || "COLD REVIEWER", o.roomSub || "READ-ONLY");
+          P.readPaths = ["M620 374H690V250H740", "M620 464H706V290H740"];
+          P.links = [el("path", { class: "ln thin line-strong", d: "M620 374H860V534H1150" }, g), el("path", { class: "ln thin line-strong", d: "M620 464H820V624H1150" }, g)];
+          P.toCard = el("path", { class: "ln ink", d: "M1080 260H1112M1100 250L1114 260L1100 270" }, g);
+          const C = (P.card = card(g, 1120, 230, 440, 460, "VERDICT"));
+          P.decL = text("Decision", { class: "mono small dim", x: 1144, y: 336 }, C.g);
+          P.decV = text("proceed", { class: "mono", x: 1536, y: 336, "text-anchor": "end" }, C.g);
+          P.hashL = text("Artifact-hash", { class: "mono small dim", x: 1144, y: 406 }, C.g);
+          P.hashG = glyph(C.g, DIG.plan2, 1440, 400, 28);
+          P.hashOk = check(C.g, 1524, 406);
+          P.readL = text("Artifacts-read", { class: "mono small dim", x: 1144, y: 474 }, C.g);
+          P.reads = [];
+          [["plan.md", DIG.plan2, 534], ["spec.md", DIG.spec, 624]].forEach(([name, hex, y], i) => {
+            const r = { y, g: el("g", {}, C.g) };
+            if (i < (o.read || 1)) {
+              r.glyph = glyph(r.g, hex, 1186, y, 30);
+              r.name = text(name, { class: "mono", x: 1236, y: y + 8 }, r.g);
+            }
+            r.ok = check(C.g, 1524, y + 4);
+            P.reads.push(r);
+          });
+          P.slot = el("rect", { class: "ln ink construct", x: 1150, y: 594, width: 390, height: 60, style: "opacity:0.6" }, C.g);
+          // the Delegate's gate on the way to the Conductor
+          P.path = el("path", { class: "ln ink", d: "M1560 420H1846M1832 410L1848 420L1832 430" }, g);
+          P.gateL = text("DELEGATE", { class: "mono", x: 1660, y: 262, "text-anchor": "middle" }, g);
+          P.hinge = el("circle", { class: "ln ink", cx: 1660, cy: 300, r: 6 }, g);
+          P.post = el("path", { class: "ln ink", d: "M1660 294V280" }, g);
+          P.arm = el("g", {}, g);
+          el("rect", { class: "fill-bg", x: 1653, y: 308, width: 14, height: 168 }, P.arm);
+          el("rect", { class: "ln ink", x: 1653, y: 308, width: 14, height: 168 }, P.arm);
+          [0, 1, 2, 3].forEach((i) => el("rect", { class: "fill-ink", x: 1653, y: 318 + i * 42, width: 14, height: 20 }, P.arm));
+          P.condL = text("CONDUCTOR", { class: "mono", x: 1764, y: 470, "text-anchor": "middle" }, g);
+          return P;
+        }
+        // parts a plate never shows: hide(nodes) removes them from the drawing for that plate
+        function hide(nodes) {
+          nodes.forEach((n) => n && n.setAttribute("display", "none"));
+        }
+        // the gate's parts, for hide()
+        const gateParts = (P) => [P.path, P.gateL, P.hinge, P.post, P.arm, P.condL];
+
+        return { desk, hide, gateParts, PLAN1, PLAN2, SPEC, DIG, glyph, drawGlyph, showGlyph, doc, drawDoc, showDoc, card, drawCard, room, drawRoom, check, cross, stamp, slam, sheet, carry, manifest, drawManifest };
+      })();
+    </script>
+  </head>
+  <body>
+    <div data-hf-id="hf-be01"
+      id="root"
+      data-composition-id="main"
+      data-start="0"
+      data-duration="88"
+      data-width="1280"
+      data-height="720"
+    >
+      <!-- Score: score-library bureau-art-pop-bureau-evidence take-01, sha256 ca6b6391...c408, the clock for every cue -->
+      <audio data-hf-id="hf-be02"
+        id="score"
+        src="_in/score.mp3"
+        data-start="0"
+        data-duration="88"
+        data-track-index="9"
+        data-volume="1"
+      ></audio>
+
+      <!-- every plate draws on a 1920x1080 stage; drafts scale it to 720p (kit.css, stage.sh) -->
+      <div class="stage">
+        <div data-hf-id="hf-be03" id="slot-furniture" data-composition-id="furniture" data-composition-src="compositions/furniture.html" data-start="0" data-duration="88" data-track-index="0" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-be04" id="slot-e1" data-composition-id="e1" data-composition-src="compositions/e1-proceed.html" data-start="0" data-duration="8.87" data-track-index="1" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-be05" id="slot-e2" data-composition-id="e2" data-composition-src="compositions/e2-fingerprint.html" data-start="8.87" data-duration="10.01" data-track-index="2" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-be06" id="slot-e3" data-composition-id="e3" data-composition-src="compositions/e3-mismatch.html" data-start="18.88" data-duration="11.77" data-track-index="3" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-be07" id="slot-e4" data-composition-id="e4" data-composition-src="compositions/e4-packet.html" data-start="30.65" data-duration="13.51" data-track-index="4" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-be08" id="slot-e5" data-composition-id="e5" data-composition-src="compositions/e5-report.html" data-start="44.16" data-duration="12.38" data-track-index="5" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-be09" id="slot-e6" data-composition-id="e6" data-composition-src="compositions/e6-refused.html" data-start="56.54" data-duration="18.81" data-track-index="6" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-be0a" id="slot-e7" data-composition-id="e7" data-composition-src="compositions/e7-limit.html" data-start="75.35" data-duration="12.65" data-track-index="7" data-width="1920" data-height="1080"></div>
+      </div>
+    </div>
+
+    <script>
+      window.__timelines["main"] = gsap.timeline({ paused: true });
+    </script>
+  </body>
+</html>

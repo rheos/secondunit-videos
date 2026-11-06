@@ -1,0 +1,89 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #a7 {
+          position: absolute;
+          inset: 0;
+        }
+        #a7 .statement.one {
+          top: 330px;
+        }
+        #a7 .statement.two {
+          top: 420px;
+        }
+        #a7 .gist {
+          position: absolute;
+          left: 0;
+          right: 0;
+          text-align: center;
+          color: var(--ink);
+        }
+        #a7 .gist.a {
+          top: 600px;
+          font-size: 22px;
+        }
+        #a7 .gist.b {
+          top: 650px;
+          font-size: 18px;
+          color: var(--ink-dim);
+        }
+        #a7 .colo {
+          position: absolute;
+          left: 0;
+          right: 0;
+          text-align: center;
+          color: var(--ink);
+        }
+        #a7 .colo.a {
+          top: 796px;
+          font-size: 24px;
+          font-weight: 700;
+        }
+        #a7 .colo.b {
+          top: 838px;
+          font-size: 18px;
+          color: var(--ink-dim);
+        }
+      </style>
+      <div id="a7" data-composition-id="a7" data-width="1920" data-height="1080">
+        <div class="layer">
+          <svg class="full" viewBox="0 0 1920 1080">
+            <path id="a7-rule" class="ln line" d="M760 560H1160M760 550V570M1160 550V570" />
+            <g id="a7-art"></g>
+          </svg>
+          <div class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate VII</div>
+          <div class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>Who Decides</div>
+          <div id="a7-st-a" class="statement one"><span class="phrase">Routine checks: it proceeds.</span></div>
+          <div id="a7-st-b" class="statement two"><span class="phrase red">Your calls stay yours.</span></div>
+          <div id="a7-l-a" class="gist a mono">IT STOPS FOR PRODUCT CHOICES, NEW AUTHORITY, AND OUTSIDE ACTIONS NOT ALREADY AUTHORIZED</div>
+          <div id="a7-l-b" class="gist b mono">THE GATES ARE WRITTEN RULES, CHECKED IN REVIEW, NOT A HARD TECHNICAL BLOCK</div>
+          <div id="a7-colo-a" class="colo a mono">THE BUREAU · THEBUREAU.DEV · NOVADIEM.COM</div>
+          <div id="a7-colo-b" class="colo b mono">INSIDE THE BUREAU · 7 · THE CONTROL POINT</div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 75.35);
+
+          K.reveal(K.$("a7-st-a"), K.T(75.35) + 0.1, 0.7);
+          K.reveal(K.$("a7-st-b"), K.T(76.53), 0.8);
+          K.draw(K.$("a7-rule"), K.T(77.69), 0.6);
+          K.reveal(K.$("a7-l-a"), K.T(78.3), 0.9);
+          K.fade(K.$("a7-l-b"), K.T(80.06), 0.5);
+          K.fade(K.$("a7-colo-a"), K.T(81.83), 0.5);
+          K.fade(K.$("a7-colo-b"), K.T(82.41), 0.5);
+
+          window.__timelines["a7"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

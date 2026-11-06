@@ -1,0 +1,50 @@
+slug: doodle-on-footage
+title: Doodles on real footage
+note: >-
+  Crayon and felt-pen characters living on an artist's real clip: a sleepy sun wakes in the sunset, crows sit on a
+  cloud, a doodle wolf pup trots at his heel, a bird lands on his dog's head. The footage stays untouched.
+used: Hjeron, test
+cost: free
+group: live
+order: 90
+clip: doodle-on-footage.mp4
+tall: true
+status: test
+engine: canvas2d + mediapipe
+project: hjeron-doodle-on-footage
+code:
+  path: hjeron-doodle-on-footage/js/doodles.js
+  flag: null
+  page: hjeron-doodle-on-footage/doodle.html
+  note: >-
+    tools/track.py tracks the camera (LK flow, RANSAC affine) and the person (MediaPipe pose, --masks for their
+    segmentation mask); render.mjs draws a back and a front layer as transparent PNGs and composites footage +
+    back + the person through their feathered mask + front. Pen strokes come from tools/looseleaf-pen.
+rules:
+  - The footage is never restyled; doodles sit beside, behind or on the things around the artist, never on the artist
+  - World doodles ride the handheld camera; doodles on the person follow their pose
+  - Sky and background doodles go behind people (their mask laid back over them); companions and notes go in front
+  - Looseleaf felt pen in near-black ink about 2.5 px at 720 wide; crayon fills a touch off the line
+  - Cream bodies so a character reads on light sky and dark ground alike
+  - Sized as the subject of the frame, never as specks
+  - Held on twos and reseeded per drawing, so the lines boil
+  - Each doodle turns a real thing into a set (the sunset glow becomes a sun, a cloud a perch, the dog's head a landing)
+palette:
+  - "#2a2320"
+  - "#f6efdc"
+  - "#ffc93c"
+  - "#ef6a4c"
+  - "#79b8e0"
+reference: >-
+  Kevin Ngo's doodles drawn on photos Claude found on the web (K28, x.com/kevin_t_ngo/status/2100601972902842517);
+  the vocabulary, not his compositions
+proof:
+  renders:
+    - hjeron-doodle-on-footage/out/doodle-on-footage_test01.mp4
+  pr:
+    - rheos/secondunit-videos#380
+  youtube: []
+verdict: "Robin, 2026-11-01, on test 01: \"It lands\"."
+related:
+  - hj-anim
+  - crisp-line

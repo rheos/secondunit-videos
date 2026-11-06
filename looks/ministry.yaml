@@ -1,0 +1,53 @@
+slug: ministry
+title: Ink and newsprint
+note: Grey bureaucracy in heavy ink line, with the sky as the only colour.
+used: We Got Time, first version
+cost: free
+group: code
+order: 20
+clip: ministry.mp4
+tall: false
+status: option
+engine: canvas2d
+project: bobwiseman-we-got-time
+code:
+  path: bobwiseman-we-got-time/js/kit.js
+  flag: null
+  page: bobwiseman-we-got-time/index.html
+  note: >-
+    kit.js draws (one-point perspective sets, people, forms, stamps); look.js is the newsprint shader.
+    index.html keeps this heavy-ink look; pnc.html is the pinball version.
+rules:
+  - Ink line (2 to 4 px) over flat greys on cream; hatching for shadow; no gradients except sky
+  - "Colour is a story beat: blue only for real sky or a dream of it, rose only for her; everything else grey"
+  - >-
+    Shader boils the line on twos, lays it on newsprint, crushes colour toward grey (sat .32) and slips the
+    red plate a hair
+  - >-
+    A 1940s office grown into a machine: ducts, hoses, pneumatic tubes, numbered queues; people small and
+    identical
+  - >-
+    Composed like constructivist posters: strong silhouettes, symmetry, big negative space, scale jokes, match
+    cuts between shapes
+  - Lyrics appear as things in the world (forms, split-flap boards, stamps, ticker tape), never captions
+palette:
+  - "#22221e"
+  - "#e6dfc6"
+  - "#7f8b8e"
+  - "#88917f"
+  - "#a88a4c"
+  - "#3f7fc4"
+  - "#c8455a"
+reference: "Terry Gilliam's Brazil (1985): its ideas, none of its scenes, characters or names"
+proof:
+  renders:
+    - bobwiseman-we-got-time/out/wgt_ministry-v1_f00000-f08195_24fps_review-720p.mp4
+  pr: []
+  youtube:
+    - TDNWD1-9ULk
+    - 57p08HZeyf8
+verdict: null
+related:
+  - pinball
+  - gilliam
+  - submarine

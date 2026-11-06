@@ -1,0 +1,86 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #i5 {
+          position: absolute;
+          inset: 0;
+        }
+      </style>
+      <div id="i5" data-composition-id="i5" data-width="1920" data-height="1080">
+        <div id="i5-all" class="layer">
+          <svg class="full" viewBox="0 0 1920 1080">
+            <g id="i5-art"></g>
+          </svg>
+          <div class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate V</div>
+          <div class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>Smoke</div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text, kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 41.24);
+          const root = K.$("i5-art");
+          const A = SM.assembly(root, { cx: 960, cy: 400, s: 0.92 });
+          SM.show(K, A, K.T(41.24));
+
+          // trace both directions, naming the file on each side
+          const fL = text("RunsList.tsx", { class: "mono dim", x: -320, y: 186, "text-anchor": "middle" }, A.extra);
+          const fR = text("routes/runs.py", { class: "mono dim", x: 320, y: 186, "text-anchor": "middle" }, A.extra);
+          K.fade(fL, K.T(41.82), 0.3);
+          K.fade(fR, K.T(41.82) + 0.15, 0.3);
+          const req = el("path", { class: "ln ink", d: "M-500 -232H500M484 -242L502 -232L484 -222" }, A.extra);
+          const reqT = text("REQUEST · GET /api/runs", { class: "mono", x: 0, y: -246, "text-anchor": "middle" }, A.extra);
+          const res = el("path", { class: "ln ink", d: "M500 222H-500M-484 212L-502 222L-484 232" }, A.extra);
+          const resT = text("RESPONSE · { id, status }", { class: "mono", x: 0, y: 256, "text-anchor": "middle" }, A.extra);
+          K.draw(req, K.T(42.41), 0.6);
+          K.fade(reqT, K.T(42.41) + 0.3, 0.3);
+          K.draw(res, K.T(42.99), 0.6);
+          K.fade(resT, K.T(42.99) + 0.3, 0.3);
+
+          // one happy-path call through the joined halves
+          const L = SM.log(root, 300, 670, 1000, "SMOKE · ONE HAPPY-PATH CALL", [
+            "$ curl /api/runs → 200",
+            '{ "runs": [{ "id": 7, "status": "done" }] }',
+            "RunsList.tsx:42 · run.run_id → undefined",
+          ]);
+          SM.drawCard(K, L, K.T(44.16));
+          SM.pulse(K, tl, A, 0, -420, 420, K.T(44.74), 0.6);
+          K.reveal(L.lines[0], K.T(44.74), 0.5);
+          const t0 = K.T(45.93),
+            beat = K.T(46.51) - t0;
+          SM.pulse(K, tl, A, 0, 420, -420, t0, beat * 2);
+          SM.pulse(K, tl, A, 2, 420, -420, t0, beat * 2);
+          SM.pulse(K, tl, A, 1, 420, 0, t0, beat);
+          K.reveal(L.lines[1], t0, 0.7);
+          SM.spark(K, tl, A, 1, K.T(46.51));
+          K.reveal(L.lines[2], K.T(47.11), 0.6);
+
+          // rated: a blocker. The seam is broken; the next prompt must not proceed
+          const tagG = el("g", {}, root);
+          el("rect", { class: "ln ink", x: 900, y: 826, width: 160, height: 36, style: "stroke-width:3" }, tagG);
+          text("BLOCKER", { class: "mono", x: 980, y: 851, "text-anchor": "middle" }, tagG);
+          K.fade(tagG, K.T(48.27), 0.3);
+          const scale = text("BLOCKER · WARNING · SOLID", { class: "mono small dim", x: 900, y: 904 }, root);
+          K.fade(scale, K.T(48.88), 0.4);
+
+          const S = SM.stamp(root, "PHASE LOCK FAILED", 1580, 720, 420, true);
+          SM.slam(tl, S, K.T(50.64));
+          const w1 = text("→ coupling/runs-api.md", { class: "mono gold-t", x: 1580, y: 800, "text-anchor": "middle" }, root);
+          const w2 = text("+ A SUMMARY IN log.md", { class: "mono small dim", x: 1580, y: 834, "text-anchor": "middle" }, root);
+          K.fade(w1, K.T(51.8), 0.4);
+          K.fade(w2, K.T(52.41), 0.4);
+
+          K.out(K.$("i5-all"), K.R(54.3), 0.45);
+          window.__timelines["i5"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

@@ -1,0 +1,47 @@
+slug: crisp-line
+title: Crisp even-line animation
+note: >-
+  Even outlines, true colour and no haze: a man in a red toque points from his canoe at a cardboard stand-up
+  of a woman on the dock. It drops away and the real woman is standing behind it.
+used: Real Thing, Bob Wiseman
+cost: free
+group: code
+order: 480
+clip: crisp-line.mp4
+tall: false
+status: test
+engine: canvas2d
+project: bobwiseman-real-thing
+code:
+  path: bobwiseman-real-thing/js/roto/kit.js
+  flag: null
+  page: bobwiseman-real-thing/roto.html
+  note: >-
+    On branch real-thing-roto (draft PR #203), not merged. Crisp is HANDS.crisp and CRISP in kit.js plus
+    crispLook in the look.js shader; the SWITCH list in shots.js lands each switch on a lyric.
+rules:
+  - No wobble, no off-register drift, no hue drift; one even, near-black line about 3.2 px wide
+  - True colour, saturation nudged up, no haze and no grain
+  - Fills sit right on the line
+  - >-
+    Each switch to crisp spreads out in a circle from one object (the fish, the treaty, the scales, the jar,
+    her) on a lyric
+  - Brochure props stay flat and still in both looks
+palette:
+  - "#121014"
+reference: Built as the plain opposite of the rotoscope-dream kit from Airplane on the Highway, in the same scenes
+proof:
+  renders:
+    - bobwiseman-real-thing/out/real-thing-2026_roto-animatic-d1c_f00000-f03981_24fps_review-720p.mp4
+  pr:
+    - rheos/secondunit-videos#203
+  youtube:
+    - mnsk9RJPPv0
+    - 3HrnInepTs0
+    - c03aDYNT3lA
+verdict: >-
+  Bob, 2026-10-19, on draft 1: the canoe story is "too paired with the metaphors"; he asked for a different
+  story, and the gorilla film replaced it.
+related:
+  - rotoscope-haze
+  - storybook

@@ -1,0 +1,52 @@
+slug: riso
+title: Risograph poster
+note: Misregistered pink, teal and yellow inks with halftone grain, and a Warhol triptych.
+used: Airplane on the Highway, Bob Wiseman
+cost: free
+group: code
+order: 80
+clip: riso.mp4
+tall: false
+status: approved
+engine: canvas2d
+project: bobwiseman-airplane-riso, bobwiseman-airplane-v1
+code:
+  path: bobwiseman-airplane-riso/js/look.js
+  flag: null
+  page: bobwiseman-airplane-riso/riso.html
+  note: >-
+    js/ch/01-airplane.js draws the separations. The film's riso sections B and F are
+    bobwiseman-airplane-v1/sections/riso (riso.html, verse1.html; js/ch/06-F.js is the sax solo).
+rules:
+  - >-
+    The 2D frame is a set of separations: R = pink plate, G = teal, B = yellow; black in the source is bare
+    paper
+  - Opaque shapes knock out every plate (source-over); overprints use lighten (max per plate)
+  - Each plate gets its own registration error, new every drawing; animation on twos (12 a second)
+  - Plates screened into rotated halftones, starved in streaks and blotches, speckled with white
+  - >-
+    Inks multiply over off-white stock, so overlaps go deep (pink x teal = navy line, pink x yellow = red,
+    teal x yellow = green)
+  - Big moments fly the plates apart and re-register; Warhol-style repeats of his face, one per ink
+palette:
+  - "#ff4a9e"
+  - "#008599"
+  - "#ffe60d"
+  - "#f7f2e6"
+reference: Three-drum risograph gig poster, with Warhol silkscreen repeats for "mnuh nuh nuh"
+proof:
+  renders:
+    - bobwiseman-airplane-riso/out/aoh_riso-test_f01704-f02184_24fps_review-720p.mp4
+    - bobwiseman-airplane-v1/out/Bob Wiseman - Airplane on the Highway (1080p master).mp4
+  pr:
+    - rheos/novadiem.com#86
+  youtube:
+    - 1u5PpJYAlZk
+    - 6rkbMbEqnHA
+  note: out/ is archived on Bertha, /Volumes/Bertha/secondunit-archive/mv-projects/<project>/out/
+verdict: >-
+  Bob, 2026-10-03: one of his four favourite Airplane looks (risograph, woodcut, kinetic typography, kawaii).
+  Robin, 2026-10-04: the riso colour activates exactly when the singing starts.
+related:
+  - paparazzi
+  - woodcut

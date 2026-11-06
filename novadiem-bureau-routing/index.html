@@ -1,0 +1,262 @@
+<!doctype html>
+<html class="draft" lang="en" data-resolution="landscape">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1280, height=720" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=IBM+Plex+Mono:wght@400;700&display=block" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <!-- Series kit (tools/blueprint-kit, copied by sync.sh). Theme first, then structure. -->
+    <link rel="stylesheet" href="kit/themes/paper.css" />
+    <link rel="stylesheet" href="kit/kit.css" />
+    <script src="kit/kit.js"></script>
+    <script>
+      // Beat grid of the score (beats.json): librosa beats 0.65-81.80 at a 0.5805 s median gap, extended to 84.71.
+      BP.grid({ beats: [0.07,0.65,1.23,1.81,2.41,3.0,3.6,4.18,4.76,5.34,5.94,6.52,7.11,7.71,8.31,8.87,9.47,10.05,10.66,11.24,11.82,12.4,13.0,13.58,14.16,14.77,15.35,15.93,16.53,17.11,17.72,18.3,18.88,19.46,20.06,20.64,21.22,21.83,22.41,22.99,23.59,24.17,24.78,25.36,25.94,26.52,27.12,27.7,28.28,28.89,29.47,30.05,30.65,31.23,31.83,32.39,33.0,33.58,34.18,34.76,35.34,35.92,36.52,37.11,37.69,38.27,38.87,39.45,40.03,40.63,41.22,41.8,42.4,42.98,43.58,44.16,44.74,45.33,45.93,46.51,47.09,47.67,48.27,48.85,49.46,50.04,50.64,51.2,51.8,52.38,52.99,53.57,54.15,54.75,55.33,55.91,56.52,57.1,57.68,58.28,58.86,59.44,60.05,60.63,61.21,61.81,62.39,62.97,63.58,64.16,64.76,65.34,65.92,66.5,67.11,67.69,68.27,68.87,69.45,70.03,70.64,71.22,71.82,72.4,72.98,73.56,74.16,74.75,75.33,75.93,76.51,77.09,77.69,78.27,78.85,79.44,80.04,80.62,81.22,81.8,82.38,82.96,83.55,84.13,84.71] });
+    </script>
+    <style>
+      svg text.mono.head { font-size: 22px; }
+      svg text.mono.gold-t { fill: #6b5416; } /* line-strong is 3.5:1 on paper; small type needs 4.5:1 */
+      svg text.mono.tok { font-size: 14px; font-weight: 700; }
+      svg text.mono.row-t { font-size: 18px; font-weight: 400; }
+      svg text.mono.row-t.on { font-weight: 700; }
+      svg text.mono.call { font-size: 17px; font-weight: 400; fill: #6b5416; }
+      svg text.mono.step { font-size: 16px; font-weight: 700; fill: #6b5416; }
+      .fill-ink { fill: var(--ink); }
+    </style>
+    <script>
+      // RT: the one device of this film, a switchboard. Rows are workflows from the registry, columns
+      // are specialists, and only the chosen route's lamps light. The Delegate's desk plugs the task
+      // into one row; the Conductor's reticle runs along that row, lamp by lamp, in step order.
+      // RT.build(parent) draws every fixed part (visible) and returns them by name; plate III animates
+      // them in, later plates use them as they stand.
+      window.RT = (() => {
+        const { el, text } = BP;
+        const COLS = [
+          { k: "analizer", name: "ANALIZER 2000", cx: 860 },
+          { k: "architect", name: "ARCHITECT", cx: 1000 },
+          { k: "challenger", name: "CHALLENGER", cx: 1140 },
+          { k: "cleric", name: "CLERIC", cx: 1280 },
+          { k: "spellwright", name: "SPELLWRIGHT", cx: 1420 },
+          { k: "coder", name: "CODER", cx: 1560 },
+        ];
+        // six of the registry's twenty rows (workflows/index.md)
+        const ROWS = ["feature", "bug-fix", "build-review-cold", "execute-plan", "code-review", "design-build"];
+        const RY = (i) => 322 + i * 56;
+        const JACK = 790;
+        const PLUG = [358, 400];
+        const DIR = { cx: 1766, slots: [248, 398, 500, 602] };
+        const col = (k) => COLS.find((c) => c.k === k);
+        const row = (name) => ROWS.indexOf(name);
+
+        function build(parent) {
+          const P = { rows: [], cols: [], lamps: {} };
+          const g = () => el("g", {}, parent);
+
+          // the panel
+          const pn = (P.panel = { g: g() });
+          pn.outer = el("rect", { class: "ln ink", x: 400, y: 170, width: 1240, height: 530 }, pn.g);
+          pn.inner = el("rect", { class: "ln thin ink", x: 410, y: 180, width: 1220, height: 510 }, pn.g);
+          pn.rule = el("path", { class: "ln thin ink", d: "M410 278H1630" }, pn.g);
+          pn.divider = el("path", { class: "ln thin ink", d: "M760 180V690" }, pn.g);
+          pn.head = text("WORKFLOWS", { class: "mono", x: 436, y: 238 }, pn.g);
+          COLS.forEach((c, i) => {
+            const y = i % 2 ? 254 : 224;
+            P.cols.push({
+              tick: el("path", { class: "ln thin ink", d: `M${c.cx} ${y + 8}V278`, opacity: 0.5 }, pn.g),
+              label: text(c.name, { class: "mono small", x: c.cx, y, "text-anchor": "middle" }, pn.g),
+            });
+          });
+          ROWS.forEach((name, i) => {
+            const y = RY(i);
+            const r = { name, y, g: el("g", {}, pn.g), sockets: {} };
+            r.label = text(name, { class: "mono row-t", x: 436, y: y + 6 }, r.g);
+            r.bus = el("path", { class: "ln thin ink", d: `M${JACK + 10} ${y}H1604`, opacity: 0.25 }, r.g);
+            r.jack = el("circle", { class: "ln ink", cx: JACK, cy: y, r: 9 }, r.g);
+            COLS.forEach((c) => (r.sockets[c.k] = el("circle", { class: "ln thin ink", cx: c.cx, cy: y, r: 14, opacity: 0.6 }, r.g)));
+            P.rows.push(r);
+          });
+          pn.more = text("+ 14 MORE", { class: "mono small dim", x: 436, y: 662 }, pn.g);
+
+          // the Delegate's desk: flow and gates. Its glyph is a gate arm.
+          const d = (P.del = { g: g() });
+          d.box = el("rect", { class: "ln ink", x: 118, y: 286, width: 240, height: 170 }, d.g);
+          d.label = text("DELEGATE", { class: "mono", x: 138, y: 320 }, d.g);
+          d.sub = text("flow and gates", { class: "mono small dim", x: 138, y: 346 }, d.g);
+          d.hinge = el("circle", { class: "ln ink", cx: 148, cy: 420, r: 6 }, d.g);
+          d.arm = el("g", {}, d.g);
+          d.armBox = el("rect", { class: "ln ink", x: 156, y: 413, width: 150, height: 14 }, d.arm);
+          d.stripes = [0, 1, 2].map((i) => el("rect", { class: "fill-ink", x: 170 + i * 46, y: 413, width: 22, height: 14 }, d.arm));
+          d.plug = el("circle", { class: "ln ink", cx: PLUG[0], cy: PLUG[1], r: 6 }, d.g);
+          d.tray = el("path", { class: "ln thin ink", d: "M168 270H308", opacity: 0.5 }, d.g);
+          d.trayLabel = text("IN", { class: "mono small dim", x: 132, y: 275 }, d.g);
+
+          // the Conductor: dispatch and adjudication
+          const c = (P.cond = { g: g() });
+          c.box = el("rect", { class: "ln ink", x: 118, y: 520, width: 240, height: 170 }, c.g);
+          c.label = text("CONDUCTOR", { class: "mono", x: 138, y: 554 }, c.g);
+          c.sub1 = text("dispatch and", { class: "mono small dim", x: 138, y: 580 }, c.g);
+          c.sub2 = text("adjudication", { class: "mono small dim", x: 138, y: 602 }, c.g);
+          c.outer = el("circle", { class: "ln ink", cx: 300, cy: 640, r: 26 }, c.g);
+          c.cross = el("path", { class: "ln line construct", d: "M262 640H338M300 602V678" }, c.g);
+          c.core = el("circle", { class: "ln ink", cx: 300, cy: 640, r: 4 }, c.g);
+          // the Delegate starts the Conductor
+          P.spawn = el("path", { class: "ln thin ink", d: "M238 456V520", opacity: 0.7 }, parent);
+
+          // the run dir
+          const r = (P.dir = { g: g() });
+          r.box = el("rect", { class: "ln thin ink", x: 1680, y: 170, width: 172, height: 530 }, r.g);
+          r.head = text("RUN DIR", { class: "mono", x: DIR.cx, y: 208, "text-anchor": "middle" }, r.g);
+          return P;
+        }
+
+        // a lamp lit on one row/column, with its step number(s) beside it
+        function lamp(P, rowName, colKey, step, parent) {
+          const y = RY(row(rowName));
+          const cx = col(colKey).cx;
+          const L = {};
+          L.ring = el("circle", { class: "ln line-strong", cx, cy: y, r: 14 }, parent);
+          L.fill = el("circle", { class: "fill-line", cx, cy: y, r: 9 }, parent);
+          L.tag = text(step, { class: "mono step", x: cx + 19, y: y - 16 }, parent);
+          return L;
+        }
+        // the lit bus of a chosen row
+        const litBus = (rowName, parent) => {
+          const y = RY(row(rowName));
+          return el("path", { class: "ln line-strong", d: `M${JACK + 10} ${y}H1604` }, parent);
+        };
+        // the patch cord from the Delegate's plug to a row's jack
+        function cord(rowName, parent) {
+          const y = RY(row(rowName));
+          return el("path", { class: "ln ink", d: `M${PLUG[0]} ${PLUG[1]}C520 ${PLUG[1] + 60} 600 ${y + 30} ${JACK - 9} ${y}` }, parent);
+        }
+        // the row's chosen-mark around its name
+        const pick = (rowName, parent) => {
+          const y = RY(row(rowName));
+          return el("path", { class: "ln line-strong", d: `M424 ${y - 20}H748V${y + 20}H424Z` }, parent);
+        };
+        // a file in the run dir
+        function file(slot, name, parent) {
+          const cx = DIR.cx,
+            y = DIR.slots[slot];
+          const F = { g: el("g", {}, parent) };
+          F.body = el("path", { class: "ln line", d: `M${cx - 18} ${y}H${cx + 8}L${cx + 18} ${y + 10}V${y + 46}H${cx - 18}Z` }, F.g);
+          F.fold = el("path", { class: "ln thin line", d: `M${cx + 8} ${y}V${y + 10}H${cx + 18}` }, F.g);
+          F.lines = el("path", { class: "ln thin line", d: `M${cx - 10} ${y + 18}H${cx + 10}M${cx - 10} ${y + 26}H${cx + 12}M${cx - 10} ${y + 34}H${cx + 4}` }, F.g);
+          F.label = text(name, { class: "mono small", x: cx, y: y + 72, "text-anchor": "middle" }, F.g);
+          return F;
+        }
+        // a task folder: small for the bug, larger for the feature; label underneath
+        function ticket(parent, kind, x, y) {
+          const t = el("g", { transform: `translate(${x} ${y})` }, parent);
+          const [w, h] = kind === "bug" ? [26, 17] : [46, 28];
+          el("path", { class: "fill-bg", d: `M${-w} ${-h}H${w}V${h}H${-w}Z` }, t);
+          el("path", { class: "ln ink", d: `M${-w} ${-h}H${w}V${h}H${-w}ZM${-w} ${-h}V${-h - 6}H${-w + w * 0.6}L${-w + w * 0.6 + 5} ${-h}` }, t);
+          el("path", { class: "ln thin line", d: `M${-w + 10} ${-h + 12}H${w - 10}M${-w + 10} ${-h + 20}H${w - 18}` }, t);
+          text(kind === "bug" ? "BUG" : "FEATURE", { class: "mono tok", x: 0, y: h + 22, "text-anchor": "middle" }, t);
+          return t;
+        }
+        // the Conductor's dispatch reticle that runs along a row
+        function reticle(parent, x, y) {
+          const t = el("g", { transform: `translate(${x} ${y})` }, parent);
+          el("circle", { class: "fill-bg", r: 13 }, t);
+          el("circle", { class: "ln ink", r: 13 }, t);
+          el("path", { class: "ln thin ink", d: "M-21 0H21M0 -21V21" }, t);
+          return t;
+        }
+        // a sheet in transit
+        function sheet(parent, x, y) {
+          const t = el("g", { transform: `translate(${x} ${y})` }, parent);
+          el("path", { class: "fill-bg", d: "M-10 -13H4L10 -7V13H-10Z" }, t);
+          el("path", { class: "ln line", d: "M-10 -13H4L10 -7V13H-10Z" }, t);
+          return t;
+        }
+        // the path a sheet takes from a lamp, over the panel, down into a run-dir slot
+        const toDir = (colKey, rowName, slot) => {
+          const cx = col(colKey).cx,
+            y = RY(row(rowName));
+          return el("path", { d: `M${cx} ${y}V150H${DIR.cx}V${DIR.slots[slot] + 22}` });
+        };
+        // the reticle's way from one point on the panel to another (vertical first along the jack column, then along the row)
+        const hop = (x0, y0, x1, y1) => el("path", { d: y0 === y1 ? `M${x0} ${y0}H${x1}` : `M${x0} ${y0}H${JACK}V${y1}H${x1}` });
+
+        // the standing state a plate opens on (what earlier plates left drawn), all visible
+        //   s.route: the row the cord is in; s.ticket: "bug" | "feature"; s.workflow: the state.json note
+        //   s.files: [[slot, name]] besides state.json; s.lamps: [[row, col, step]]; s.lit: rows with a lit bus
+        //   s.reticle: [x, y] of the Conductor's dispatch reticle
+        function scene(P, parent, s) {
+          const S = { lamps: [], files: {}, lit: {} };
+          if (s.route) {
+            S.pick = pick(s.route, parent);
+            S.cord = cord(s.route, parent);
+          }
+          if (s.ticket) {
+            S.ticketW = el("g", {}, parent);
+            ticket(S.ticketW, s.ticket, 238, s.ticket === "bug" ? 222 : 212);
+          }
+          S.state = file(0, "state.json", parent);
+          if (s.workflow) {
+            S.w1 = text("workflow:", { class: "mono call", x: DIR.cx, y: DIR.slots[0] + 98, "text-anchor": "middle" }, parent);
+            S.w2 = text(s.workflow, { class: "mono call", x: DIR.cx, y: DIR.slots[0] + 118, "text-anchor": "middle" }, parent);
+          }
+          (s.files || []).forEach(([slot, name]) => (S.files[name] = file(slot, name, parent)));
+          (s.lit || []).forEach((r) => (S.lit[r] = litBus(r, parent)));
+          (s.lamps || []).forEach(([r, c, step]) => S.lamps.push(lamp(P, r, c, step, parent)));
+          if (s.reticle) S.reticle = reticle(parent, s.reticle[0], s.reticle[1]);
+          return S;
+        }
+        // travel for a node that moves more than once in a plate: unlike kit travel it does not render at
+        // creation, so the node keeps its drawn start position until its first move begins
+        function travel(tl, node, path, at, dur, ease = "power1.inOut") {
+          const len = path.getTotalLength();
+          const p = { t: 0 };
+          return tl.fromTo(p, { t: 0 }, { t: 1, duration: dur, ease, immediateRender: false, onUpdate: () => {
+            const pt = path.getPointAtLength(p.t * len);
+            node.setAttribute("transform", `translate(${pt.x.toFixed(2)} ${pt.y.toFixed(2)})`);
+          } }, at);
+        }
+        // reticle hop helper: a straight path between two points on the same row
+        const along = (rowName, x0, x1) => el("path", { d: `M${x0} ${RY(row(rowName))}H${x1}` });
+
+        return { build, scene, travel, lamp, litBus, cord, pick, file, ticket, reticle, sheet, toDir, hop, along, COLS, ROWS, RY, JACK, DIR, col, row };
+      })();
+    </script>
+  </head>
+  <body>
+    <div data-hf-id="hf-br01"
+      id="root"
+      data-composition-id="main"
+      data-start="0"
+      data-duration="85.2"
+      data-width="1280"
+      data-height="720"
+    >
+      <!-- Score: score-library bureau-art-pop-bureau-routing take-01-edit, sha256 530449a9...dc17, the clock for every cue -->
+      <audio data-hf-id="hf-br02"
+        id="score"
+        src="_in/score.mp3"
+        data-start="0"
+        data-duration="85.2"
+        data-track-index="9"
+        data-volume="1"
+      ></audio>
+
+      <!-- every plate draws on a 1920x1080 stage; drafts scale it to 720p (kit.css, stage.sh) -->
+      <div class="stage">
+        <div data-hf-id="hf-br03" id="slot-furniture" data-composition-id="furniture" data-composition-src="compositions/furniture.html" data-start="0" data-duration="85.2" data-track-index="0" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-br04" id="slot-r1" data-composition-id="r1" data-composition-src="compositions/r1-two-tasks.html" data-start="0" data-duration="8.31" data-track-index="1" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-br05" id="slot-r2" data-composition-id="r2" data-composition-src="compositions/r2-one-session.html" data-start="8.31" data-duration="10.57" data-track-index="2" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-br06" id="slot-r3" data-composition-id="r3" data-composition-src="compositions/r3-triage.html" data-start="18.88" data-duration="16.46" data-track-index="3" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-br07" id="slot-r4" data-composition-id="r4" data-composition-src="compositions/r4-bug-fix.html" data-start="35.34" data-duration="11.17" data-track-index="4" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-br08" id="slot-r5" data-composition-id="r5" data-composition-src="compositions/r5-feature.html" data-start="46.51" data-duration="17.07" data-track-index="5" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-br09" id="slot-r6" data-composition-id="r6" data-composition-src="compositions/r6-separate.html" data-start="63.58" data-duration="12.93" data-track-index="6" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-br0a" id="slot-r7" data-composition-id="r7" data-composition-src="compositions/r7-weight.html" data-start="76.51" data-duration="8.69" data-track-index="7" data-width="1920" data-height="1080"></div>
+      </div>
+    </div>
+
+    <script>
+      window.__timelines["main"] = gsap.timeline({ paused: true });
+    </script>
+  </body>
+</html>

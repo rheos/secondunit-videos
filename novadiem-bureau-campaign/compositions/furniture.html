@@ -1,0 +1,43 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #furniture {
+          position: absolute;
+          inset: 0;
+          background: var(--bg);
+        }
+      </style>
+      <div data-hf-id="hf-bc10" id="furniture" data-composition-id="furniture" data-width="1920" data-height="1080">
+        <svg data-hf-id="hf-bc11" id="fu-ground" class="full" viewBox="0 0 1920 1080" aria-hidden="true" style="will-change: transform"></svg>
+        <svg data-hf-id="hf-bc12" id="fu-frame" class="full" viewBox="0 0 1920 1080"></svg>
+      </div>
+
+      <script>
+        (() => {
+          const tl = gsap.timeline({ paused: true });
+          const K = BP.kit(tl, 0);
+          // stations follow the Envoy's loop for one run (workflows/run-series.md; agents/envoy.md Bootstrap):
+          // the stage of the story, not live progress
+          BP.furniture(K, tl, {
+            stations: [
+              { label: "ADOPT", at: 9.47 },
+              { label: "LAUNCH", at: 21.25 },
+              { label: "WATCH", at: 33.0 },
+              { label: "SECOND REVIEW", at: 47.07 },
+              { label: "RELAY", at: 56.22 },
+              { label: "HAND OFF", at: 60.33 },
+              { label: "NEXT RUN", at: 63.85 },
+            ],
+            sheets: [0, 9.47, 19.46, 33.0, 43.54, 56.22, 72.68],
+          });
+          window.__timelines["furniture"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

@@ -1,0 +1,67 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #b7 {
+          position: absolute;
+          inset: 0;
+        }
+      </style>
+      <div data-hf-id="hf-n701" id="b7" data-composition-id="b7" data-width="1920" data-height="1080">
+        <div data-hf-id="hf-n702" id="b7-content" class="layer">
+          <div data-hf-id="hf-n703" id="b7-lab-l" class="plate-label left">PLATE VII</div>
+          <div data-hf-id="hf-n704" id="b7-lab-r" class="plate-label right">BY CONSTRUCTION</div>
+          <svg data-hf-id="hf-n705" id="b7-svg" class="full" viewBox="0 0 1920 1080"></svg>
+          <div data-hf-id="hf-n706" class="statement two">
+            <div data-hf-id="hf-n707" class="row"><span data-hf-id="hf-n708" id="b7-s1" class="phrase">Durable and accounted for.</span></div>
+            <div data-hf-id="hf-n709" class="row"><span data-hf-id="hf-n70a" id="b7-s2" class="phrase accent">By construction.</span></div>
+          </div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text } = BP;
+          const tl = gsap.timeline({ paused: true });
+          const S = 80;
+          const K = BP.kit(tl, S);
+          const svg = K.$("b7-svg");
+
+          // the three guarantees, left as construction lines
+          const G = [
+            ["JOBS", "LEASED  ·  SKIP LOCKED"],
+            ["EVENTS", "OUTBOX  ·  ONE COMMIT"],
+            ["MUTATIONS", "AUDIT PATH OR NO START"],
+          ].map(([a, b], i) => {
+            const cx = 480 + i * 480;
+            const r = el("rect", { class: "ln line construct", x: cx - 200, y: 300, width: 400, height: 140 }, svg);
+            const t1 = text(a, { class: "mono", x: cx, y: 360, "text-anchor": "middle" }, svg);
+            const t2 = text(b, { class: "mono small dim", x: cx, y: 400, "text-anchor": "middle" }, svg);
+            const join = i < 2 ? el("path", { class: "ln line construct", d: `M${cx + 208} 370H${cx + 272}` }, svg) : null;
+            return { r, t1, t2, join };
+          });
+          const site = text("RHEO.STREAM  ·  GITHUB.COM/RHEOS/RHEOSTREAM  ·  AGPL-3.0", { class: "mono", x: 960, y: 560, "text-anchor": "middle" }, svg);
+
+          K.fade(K.$("b7-lab-l"), K.T(80.36), 0.4);
+          K.fade(K.$("b7-lab-r"), K.T(80.36), 0.4);
+          G.forEach((g, i) => {
+            const at = K.T(80.98) + i * 0.31;
+            K.sweep(g.r, at, 0.45);
+            K.fade(g.t1, at + 0.2, 0.3);
+            K.fade(g.t2, at + 0.3, 0.3);
+            if (g.join) K.sweep(g.join, at + 0.35, 0.25);
+          });
+          K.reveal(K.$("b7-s1"), K.T(82.23), 0.7);
+          K.reveal(K.$("b7-s2"), K.T(82.86), 0.7);
+          K.fade(site, K.T(84.1), 0.5);
+
+          window.__timelines["b7"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

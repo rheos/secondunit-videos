@@ -1,0 +1,52 @@
+slug: tarotdeck
+title: Old stencil-coloured tarot
+note: >-
+  Black outlines with flat colour that slips off the lines, on aged card. The camera moves into a card and its
+  picture comes alive in stiff steps.
+used: Satisfied Mind, Bob Wiseman
+cost: free
+group: code
+order: 200
+clip: tarotdeck.mp4
+tall: false
+status: approved
+engine: canvas2d
+project: bobwiseman-satisfied-mind
+code:
+  path: bobwiseman-satisfied-mind/js/tarot/core.js
+  flag: null
+  page: bobwiseman-satisfied-mind/looks/tarot.html
+  note: >-
+    On branch satisfied-mind (draft PR #84), not merged. figures.js holds the people, the toy piano and the
+    Junos; scenes.js and sampler.js stay local. The little-Bob walk-through in other Bob films copies this
+    drawing (bobwiseman-you-dont-love-me js/glass/outro-bob.js).
+rules:
+  - Each card prints in two passes that share its transform, both multiplied onto aged card stock
+  - "Colour stencils: flat fills, each colour slipped off register by its own offset, mottled where the ink starved"
+  - "Black key block: variable-width cut lines, hatching and lettering, speckled where the paper tooth skipped"
+  - Figures move on 8 fps steps, like puppets
+  - The camera moves into a card and its picture grows past the frame, wiping the frame and banners away (no fade)
+  - Cards are dealt on a green square mat on a light oak table
+  - No red or yellow rays from a red disc (they read as the Rising Sun flag); suns are Marseille-style faces
+palette:
+  - "#c8392b"
+  - "#eab52e"
+  - "#4f7dbd"
+  - "#f1c29a"
+  - "#5c9a4f"
+  - "#1a1410"
+reference: Tarot de Marseille woodcut decks (the sun after card XVIIII, Le Soleil)
+proof:
+  renders:
+    - bobwiseman-satisfied-mind/out/tarot_test-v6_f5112-f6552_24fps_draft.mp4
+  pr:
+    - rheos/secondunit-videos#84
+  youtube:
+    - PpGUzik5i2o
+    - rrozBrC0dNI
+    - puldjVp8I7U
+verdict: 'Bob, 2026-10-09, on draft 2: "pretty cool version. like the goths." (the goths are on THE COMPANY card)'
+related:
+  - tarot
+  - gameboard
+  - woodcut

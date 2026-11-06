@@ -1,0 +1,47 @@
+{
+  "title": "Travel Agent \u2014 An Escape Brochure",
+  "artist": "Bob Wiseman",
+  "type": "20-second original animation look test",
+  "fps": 24,
+  "frames": 480,
+  "width": 1920,
+  "height": 1080,
+  "song_start_frame": 0,
+  "song_end_frame": 480,
+  "source_url": "https://www.bobwiseman.ca/wp-content/uploads/2014/02/Bob_Wiseman_-_11_-_Travel_Agent.mp3",
+  "filename": "travel-agent_escape-brochure_f0000-f0480_24fps_demo-notitles.mp4",
+  "audio_processing": "Original recording, no speed changes; 60 ms opening fade and 350 ms ending fade for excerpt playback.",
+  "technique": "Original deterministic Canvas2D drawings; layered paper, ink, articulated character animation and camera transforms. No paid generation.",
+  "shots": [
+    {
+      "start": 0.0,
+      "end": 5.291666666666667,
+      "description": "A traveler asks for a ticket. The agency's sea poster begins to escape its frame.",
+      "start_frame": 0,
+      "end_frame": 127
+    },
+    {
+      "start": 5.291666666666667,
+      "end": 10.25,
+      "description": "The counter becomes a pier. The traveler drifts away in a folded ticket.",
+      "start_frame": 127,
+      "end_frame": 246
+    },
+    {
+      "start": 10.25,
+      "end": 14.416666666666666,
+      "description": "A route lifts from a folded map and becomes a red bird.",
+      "start_frame": 246,
+      "end_frame": 346
+    },
+    {
+      "start": 14.416666666666666,
+      "end": 20.0,
+      "description": "The bird leads the boat into paper mountains and an ocean, toward another tiny travel agency.",
+      "start_frame": 346,
+      "end_frame": 480
+    }
+  ],
+  "source_sha256": "78c9f34dc2bb94801693ed5ce4349733c0be25bfb610a1b061dbc9e10923f77d",
+  "timing": "Transitions centered on nearby spectral accents at song frames 127, 246 and 346; subtle wave and scarf motion uses measured soundtrack energy."
+}

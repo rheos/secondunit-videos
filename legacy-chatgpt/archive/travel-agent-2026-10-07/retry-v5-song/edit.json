@@ -1,0 +1,58 @@
+[
+  {
+    "a": 0,
+    "b": 6.6,
+    "key": "instrumental-windows-wake",
+    "id": 1,
+    "startFrame": 0,
+    "endFrame": 158.39999999999998
+  },
+  {
+    "a": 6.6,
+    "b": 16,
+    "key": "instrumental-buildings-depart",
+    "id": 2,
+    "startFrame": 158.39999999999998,
+    "endFrame": 384
+  },
+  {
+    "a": 16,
+    "b": 26,
+    "key": "instrumental-window-wheel",
+    "id": 3,
+    "startFrame": 384,
+    "endFrame": 624
+  },
+  {
+    "a": 26,
+    "b": 30,
+    "key": "approach-first-vocal",
+    "id": 4,
+    "startFrame": 624,
+    "endFrame": 720
+  },
+  {
+    "a": 30,
+    "b": 44.75,
+    "key": "requests-and-offered-destinations",
+    "id": 5,
+    "startFrame": 720,
+    "endFrame": 1074
+  },
+  {
+    "a": 44.75,
+    "b": 59.125,
+    "key": "distance-from-the-blue-world",
+    "id": 6,
+    "startFrame": 1074,
+    "endFrame": 1419
+  },
+  {
+    "a": 59.125,
+    "b": 72,
+    "key": "sunlight-becomes-sound",
+    "id": 7,
+    "startFrame": 1419,
+    "endFrame": 1728
+  }
+]

@@ -1,0 +1,37 @@
+slug: claymation
+title: Claymation
+note: "Plasticine aliens in a cardboard med bay, posed on twos: thumbprints, soft studio light, a cryopod."
+used: Holiday Tavern test, Bob Wiseman
+cost: free
+group: code
+order: 160
+clip: claymation.mp4
+tall: false
+status: test
+engine: webgl (sphere-traced clay)
+project: bobwiseman-holiday-tavern
+code:
+  path: bobwiseman-holiday-tavern/js/aliens/gl.js
+  flag: null
+  page: bobwiseman-holiday-tavern/looks/aliens.html
+  note: >-
+    local only: js/aliens/ is not committed on any branch (draft PR #39, branch holiday-tavern, holds only
+    README, CAST.md and tools)
+rules:
+  - Every figure and prop is clay primitives (blended, subtracted), sphere-traced in a shader
+  - "Materials carry patterns and bump: stripes, wicker, blotch, marble, fuzz, thumbprints"
+  - "Lit like a stop-motion set: key and fill, soft studio light, shallow focus"
+  - Poses change on twos (12 a second) with a hint of frame-to-frame light flicker
+  - "Handmade cardboard sets: a med bay with a clay console, a vitals screen and a cryosleep pod"
+palette: []
+reference: null
+proof:
+  renders:
+    - bobwiseman-holiday-tavern/out/aliens_v2.mp4
+  pr: []
+  youtube:
+    - 6yCLVABNvZU
+verdict: "Bob, 2026-10-06: \"Pretty noteworthy.\" Parked by Robin the same day: real claymation belongs in Blender."
+related:
+  - sheep
+  - felt

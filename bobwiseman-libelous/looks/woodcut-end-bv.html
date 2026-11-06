@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Libelous, woodcut last chapter, backing-vocal look test</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #000; overflow: hidden; }
+  canvas { width: 100vw; height: 100vh; object-fit: contain; display: block; cursor: pointer; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<audio id="a" src="../assets/song.wav" preload="auto"></audio>
+<script src="../js/common/core.js"></script>
+<!-- the stanza-1 kit, read-only: the woodcut cutter, paper and type, figures -->
+<script src="../js/woodcut/woodcut.js"></script>
+<script src="../js/woodcut/print.js"></script>
+<script src="../js/woodcut/figures.js"></script>
+<!-- the last chapter -->
+<script src="../js/woodcut/gen/end-lyrics.js"></script>
+<script src="../js/woodcut/end-timing.js"></script>
+<script src="../js/woodcut/end-figures.js"></script>
+<script src="../js/woodcut/end-blocks.js"></script>
+<script src="../js/woodcut/end-main.js"></script>
+<!-- look test: the backing singer's sung title (BACKING-VOCAL.md) -->
+<script src="../js/common/bv-onsets.js"></script>
+<script src="../js/woodcut/bv-end.js"></script>
+</body>
+</html>

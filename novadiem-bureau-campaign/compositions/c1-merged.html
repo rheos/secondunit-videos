@@ -1,0 +1,93 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #c1 {
+          position: absolute;
+          inset: 0;
+        }
+        #c1 .title {
+          top: 150px;
+          font-family: var(--font-label);
+          font-size: 120px;
+          letter-spacing: 0.08em;
+        }
+        #c1 .sub {
+          position: absolute;
+          left: 0;
+          right: 0;
+          top: 330px;
+          text-align: center;
+          font-size: 26px;
+          color: var(--ink);
+        }
+      </style>
+      <div id="c1" data-composition-id="c1" data-width="1920" data-height="1080">
+        <div id="c1-all" class="layer">
+          <svg class="full" viewBox="0 0 1920 1080">
+            <path id="c1-rule" class="ln line" d="M660 302H1260M660 292V312M1260 292V312" />
+            <g id="c1-art" transform="translate(0 70)"></g>
+          </svg>
+          <div class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate I</div>
+          <div class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>Inside the Bureau · 8</div>
+          <div id="c1-title" class="title">THE CAMPAIGN</div>
+          <div id="c1-sub" class="sub mono">WHAT THE BUREAU'S ENVOY ADDS ABOVE A SINGLE RUN</div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text, kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 0);
+
+          K.reveal(K.$("c1-title"), K.T(0.65), 1.1);
+          K.draw(K.$("c1-rule"), K.T(1.23), 0.8);
+          K.reveal(K.$("c1-sub"), K.T(1.81), 0.8);
+
+          // run 2 finishes: its close-out is complete and the PR merges
+          const art = K.$("c1-art");
+          const R2 = CM.box(art, 250, 480, 360, 120, "RUN 2", "CLOSE-OUT COMPLETE");
+          R2.name.setAttribute("class", "mono big");
+          R2.name.setAttribute("y", 528);
+          R2.sub.setAttribute("y", 566);
+          CM.drawBox(K, R2, K.T(2.41));
+          const S = CM.stamp(art, "MERGED", 560, 446, 210);
+          CM.slam(tl, S, K.T(3.0));
+
+          // but the roadmap still has dependent work
+          const R3 = CM.cell(art, 3, "WAITS ON 2", 720, 494);
+          const R4 = CM.cell(art, 4, "WAITS ON 3", 940, 400);
+          const R5 = CM.cell(art, 5, "WAITS ON 3, 4", 1110, 590);
+          const e = [
+            CM.edge(art, "M610 540H716", 720, 540, "r"),
+            CM.edge(art, "M890 540H915V446H936", 940, 446, "r"),
+            CM.edge(art, "M890 540H915V636H1106", 1110, 636, "r"),
+            CM.edge(art, "M1025 492V546H1195V586", 1195, 590, "d"),
+          ];
+          CM.drawEdge(K, e[0], K.T(3.6));
+          CM.drawCell(K, R3, K.T(4.18));
+          CM.drawEdge(K, e[1], K.T(4.76));
+          CM.drawEdge(K, e[2], K.T(4.76));
+          CM.drawCell(K, R4, K.T(5.36) - 0.3);
+          CM.drawEdge(K, e[3], K.T(5.36));
+          CM.drawCell(K, R5, K.T(5.36));
+
+          const br = el("path", { class: "ln line-strong", d: "M1330 420H1346V700H1330M1346 560H1370" }, art);
+          K.draw(br, K.T(5.94), 0.4);
+          const left = text("3 RUNS LEFT", { class: "mono big red-t", x: 1390, y: 554 }, art);
+          const who = text("WHO STARTS RUN 3?", { class: "mono", x: 1390, y: 592 }, art);
+          K.reveal(left, K.T(5.94) + 0.2, 0.5);
+          K.reveal(who, K.T(6.52), 0.5);
+
+          CM.out(tl, K.$("c1-all"), K.R(9.12), 0.35);
+          window.__timelines["c1"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

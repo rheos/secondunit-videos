@@ -1,0 +1,45 @@
+slug: submarine
+title: Psychedelic pop, after Yellow Submarine
+note: Flat 60s print colours, Art Nouveau line, banded cloud hills and balloon lettering. A convention of clouds.
+used: We Got Time test
+cost: free
+group: code
+order: 380
+clip: submarine.mp4
+tall: false
+status: test
+engine: canvas2d
+project: bobwiseman-wgt-submarine
+code:
+  path: bobwiseman-wgt-submarine/js/sub.js
+  flag: null
+  page: bobwiseman-wgt-submarine/index.html
+  note: >-
+    sub.js is the style kit (pass 2, toward Edelmann); look.js the cel-print finish; js/ch/05-clouds.js the
+    test (ch05, 133-170 s)
+rules:
+  - >-
+    60s print inks at full saturation: magenta, burnt orange, olive, prussian blue, violet, mustard, black,
+    cream
+  - "Art Nouveau swelling line: thin black line all round plus a heavy offset line on the shadow side"
+  - Whiplash curls drawn as tapered filled shapes
+  - Concentric contour-band fills, colour split down the middle; banded cloud hills
+  - Balloon letters built from swelling strokes, no font
+  - "Odd cast: long-nosed profiles, heavy lids, ring eyes, every figure a different silhouette on thin legs"
+  - "Finish like a clean cel print: fine grain on twos, a faint paint wobble, soft vignette"
+palette:
+  - "#b8165a"
+  - "#c94a17"
+  - "#dca42c"
+  - "#7a8a1c"
+  - "#173d6b"
+  - "#5a2a8a"
+  - "#120f12"
+  - "#f1e1b8"
+reference: Heinz Edelmann's design for Yellow Submarine (1968)
+proof: null
+verdict: null
+related:
+  - pinball
+  - ministry
+  - gilliam

@@ -1,0 +1,16 @@
+slug: cloud-render
+name: GitHub Actions render
+kind: service
+status: in-use
+does: Long code-drawn renders split across 20 runners.
+keywords:
+- render
+- parallel
+- ci
+fits:
+- long code-drawn renders
+deterministic: n/a
+how: '`tools/cloud-render/cloud-render.sh` in this repo'
+cost: free
+detail: video-production SKILL.md "GitHub Actions render"
+added: '2026-10-27'

@@ -1,0 +1,7 @@
+{
+  "name": "indieagent-snowbus-test",
+  "private": true,
+  "type": "module",
+  "description": "Snow bus look test: an overgrown tour bus wakes at dusk, on the inked3d kit. Drawn in code.",
+  "devDependencies": { "playwright": "^1.55.0" }
+}

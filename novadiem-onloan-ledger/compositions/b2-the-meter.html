@@ -1,0 +1,114 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #b2 {
+          position: absolute;
+          inset: 0;
+        }
+        #b2 svg text.res { fill: #1f4b39; font-weight: 700; }
+      </style>
+      <div id="b2" data-composition-id="b2" data-width="1920" data-height="1080">
+        <svg class="full" viewBox="0 0 1920 1080">
+          <g id="b2-pair"></g>
+
+          <!-- the odometer, the road, the two readings -->
+          <text id="b2-odo-cap" class="mono small" x="260" y="448">ODOMETER · KM</text>
+          <rect id="b2-odo" class="ln ink" x="260" y="462" width="520" height="100" />
+          <g id="b2-digits"></g>
+          <path id="b2-road" class="ln line construct" d="M260 622H780" />
+          <path id="b2-route" d="M300 610H720" fill="none" stroke="none" />
+          <g id="b2-token" opacity="0">
+            <path class="ln ink" d="M-26 6V-6H-14L-6 -16H12L22 -6H28V6" />
+            <circle class="ln thin ink" cx="-14" cy="8" r="6" />
+            <circle class="ln thin ink" cx="16" cy="8" r="6" />
+          </g>
+          <text id="b2-start" class="code" xml:space="preserve" x="260" y="680">START <tspan class="b">48 210.0</tspan>  set by Ana</text>
+          <text id="b2-end" class="code" xml:space="preserve" x="260" y="716">END   <tspan class="b">48 296.7</tspan>  entered by Ben</text>
+
+          <!-- the metering calculation -->
+          <rect id="b2-frame" class="ln line" x="900" y="450" width="820" height="296" />
+          <text id="b2-head" class="mono head" x="930" y="494">MeteringCalculator.compute</text>
+          <text id="b2-src" class="mono small" x="1690" y="494" text-anchor="end" style="fill: var(--ink-dim)">onloan-api</text>
+          <path id="b2-rule" class="ln thin line" d="M900 514H1720" />
+          <text id="b2-unit" class="code" x="930" y="556"><tspan class="dim">unit </tspan> km · day · hour</text>
+          <rect id="b2-km" class="ln line-strong" x="983" y="536" width="34" height="28" />
+          <text id="b2-rate" class="code" x="930" y="594"><tspan class="dim">rate </tspan> 0.25 per km</text>
+          <text id="b2-f1" class="code b" x="930" y="642">(48 296.7 − 48 210.0) × 0.25</text>
+          <text id="b2-f2" class="code" x="930" y="680">= 86.7 × 0.25 = 21.675</text>
+          <text id="b2-f3" class="code res" x="930" y="718">half_up to 2 decimals → 21.68</text>
+          <rect id="b2-box" class="ln line-strong" x="1206" y="696" width="72" height="30" />
+        </svg>
+        <div id="b2-label-l" class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate II</div>
+        <div id="b2-label-r" class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>The Meter</div>
+        <div class="statement two" data-layout-allow-overlap data-layout-allow-occlusion>
+          <div class="row">
+            <span id="b2-st-a" class="phrase">Start reading at handoff.</span>
+            <span id="b2-st-b" class="phrase">End reading at return.</span>
+          </div>
+          <div class="row"><span id="b2-st-c" class="phrase red">(end − start) × rate</span></div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { text, kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 10);
+          OL.pair(K.$("b2-pair")); // whole: plate I drew it
+
+          K.fade(K.$("b2-label-l"), K.T(10.26), 0.4);
+          K.fade(K.$("b2-label-r"), K.T(10.26), 0.4);
+
+          // odometer
+          K.fade(K.$("b2-odo-cap"), K.T(10.91), 0.4);
+          K.draw(K.$("b2-odo"), K.T(10.91), 0.7, "none");
+          const READ = ["48 210.0", "48 221.4", "48 233.9", "48 246.2", "48 258.8", "48 270.1", "48 283.5", "48 296.7"];
+          const digits = READ.map((v) => text(v, { class: "mono big", x: 520, y: 530, "text-anchor": "middle", opacity: 0 }, K.$("b2-digits")));
+          tl.fromTo(digits[0], { opacity: 0 }, { opacity: 1, duration: 0.3 }, K.T(11.54));
+          K.fade(K.$("b2-start"), K.T(11.54) + 0.2, 0.4);
+          K.reveal(K.$("b2-st-a"), K.T(11.54), 0.6);
+
+          // the drive: the token runs the road while the digits roll (set() swaps, seek-safe)
+          K.sweep(K.$("b2-road"), K.T(12.82), 0.5);
+          tl.fromTo(K.$("b2-token"), { opacity: 0 }, { opacity: 1, duration: 0.2 }, K.T(13.47));
+          K.travel(K.$("b2-token"), K.$("b2-route"), K.T(13.47), K.T(17.3) - K.T(13.47));
+          const step = (K.T(17.3) - K.T(13.47)) / (READ.length - 1);
+          for (let i = 1; i < READ.length; i++) {
+            const at = K.T(13.47) + i * step;
+            tl.set(digits[i - 1], { opacity: 0 }, at);
+            tl.set(digits[i], { opacity: 1 }, at);
+          }
+          K.fade(K.$("b2-end"), K.T(17.93), 0.4);
+          K.reveal(K.$("b2-st-b"), K.T(17.93), 0.6);
+
+          // the calculation panel
+          K.draw(K.$("b2-frame"), K.T(13.47), 0.8, "none");
+          K.fade(K.$("b2-head"), K.T(14.09), 0.4);
+          K.fade(K.$("b2-src"), K.T(14.09) + 0.2, 0.4);
+          K.draw(K.$("b2-rule"), K.T(14.09) + 0.2, 0.4, "none");
+          K.fade(K.$("b2-unit"), K.T(14.74), 0.4);
+          K.draw(K.$("b2-km"), K.T(15.37), 0.4, "none");
+          K.fade(K.$("b2-rate"), K.T(16.02), 0.4);
+          K.reveal(K.$("b2-f1"), K.T(18.58), 0.6);
+          K.reveal(K.$("b2-st-c"), K.T(18.58), 0.7);
+          K.reveal(K.$("b2-f2"), K.T(19.85), 0.6);
+          K.reveal(K.$("b2-f3"), K.T(20.48), 0.6);
+          K.draw(K.$("b2-box"), K.T(21.13), 0.4, "none");
+
+          // clear down to the pair
+          ["b2-odo-cap", "b2-odo", "b2-digits", "b2-road", "b2-token", "b2-start", "b2-end", "b2-frame", "b2-head", "b2-src", "b2-rule", "b2-unit", "b2-km", "b2-rate", "b2-f1", "b2-f2", "b2-f3", "b2-box", "b2-label-l", "b2-label-r"].forEach((id) =>
+            K.out(K.$(id), K.T(23.66), 0.35)
+          );
+          tl.to("#b2 .statement", { opacity: 0, duration: 0.35, ease: "power1.in" }, K.T(23.66));
+
+          window.__timelines["b2"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

@@ -1,0 +1,126 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #c5 {
+          position: absolute;
+          inset: 0;
+        }
+        #c5 .statement {
+          top: 560px;
+          font-size: 64px;
+        }
+      </style>
+      <div id="c5" data-composition-id="c5" data-width="1920" data-height="1080">
+        <div id="c5-left" class="layer">
+            <div class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate V</div>
+        </div>
+        <div id="c5-a" class="layer">
+          <svg class="full" viewBox="0 0 1920 1080">
+            <g id="c5-art-a"></g>
+          </svg>
+          <div id="c5-lab-a" class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>The Blind Spot</div>
+          <div id="c5-st" class="statement"><span class="phrase red">The check had a blind spot.</span></div>
+        </div>
+        <div id="c5-b" class="layer">
+          <svg class="full" viewBox="0 0 1920 1080">
+            <g id="c5-art-b"></g>
+          </svg>
+          <div id="c5-lab-b" class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>The Standing Suite</div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text, kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 43.12);
+
+          // ── part 1: the cold review of the fix found two real blockers (commit 5070dee) ──
+          const a = K.$("c5-art-a");
+          const h1 = text("COLD REVIEW OF THE FIX · SAME DAY", { class: "mono big", x: 960, y: 186, "text-anchor": "middle" }, a);
+          const h2 = text("commit 5070dee: two blockers, both real", { class: "mono cap dim", x: 960, y: 228, "text-anchor": "middle" }, a);
+          K.reveal(h1, K.T(43.7), 0.7);
+          K.fade(h2, K.T(44.3), 0.4);
+          const B = [
+            { x: 140, at: 44.88, head: "BLOCKER B1 · THE SCRIPT", lines: ["a heading-only call still read stdin.", "on a stdin that never closes,", "the run hangs forever."] },
+            { x: 980, at: 46.09, head: "BLOCKER B2 · THE FIXTURE", lines: ["fixture 135 shared the blind spot.", "it passed only because the", "runner's stdin closes."] },
+          ];
+          B.forEach((b) => {
+            const C = TW.card(a, b.x, 280, 800, 220, b.head, { headCls: "" });
+            TW.drawCard(K, C, K.T(b.at));
+            b.lines.forEach((l, i) => K.reveal(text(l, { class: "mono code", x: b.x + 28, y: 362 + i * 44 }, a), K.T(b.at) + 0.35 + i * 0.25, 0.5));
+          });
+          K.reveal(K.$("c5-st"), K.T(47.28), 0.9);
+          const F = TW.card(a, 340, 690, 1240, 150, "FIXTURE 135, STRENGTHENED");
+          TW.drawCard(K, F, K.T(49.06), 0.6);
+          const f1 = text("+ NO-HANG: a stdin that never closes; the call must exit within 2 s", { class: "mono code b", x: 368, y: 774 }, a);
+          const f2 = text("full suite after the fix: pass=141 fail=0 skip=4", { class: "mono code b gold-t", x: 368, y: 818 }, a);
+          K.reveal(f1, K.T(49.06) + 0.4, 0.7);
+          K.reveal(f2, K.T(49.67) + 0.3, 0.7);
+          K.out(K.$("c5-a"), K.R(51.6), 0.45);
+
+          // ── part 2: the standing suite, .bureau/regression/ on the main branch ──
+          const g = K.$("c5-art-b");
+          K.fade(K.$("c5-lab-b"), K.T(52.04), 0.4);
+          const tray = el("path", { class: "ln ink", d: "M560 380V600H1360V380" }, g);
+          K.draw(tray, K.T(52.62), 0.7, "none");
+          // card edges standing in the drawer; about one in four drawn faint, the way 93 of 327 are retired
+          const edges = el("g", {}, g);
+          const GAP = [1048, 1112];
+          for (let x = 584, i = 0; x <= 1336; x += 16, i++) {
+            if (x > GAP[0] && x < GAP[1]) continue;
+            const top = 340 + ((i * 37) % 5) * 6;
+            el("path", { class: "ln thin ink", d: `M${x} ${top}V592`, opacity: i % 4 === 1 ? 0.3 : 1 }, edges);
+          }
+          K.fade(edges, K.T(52.62) + 0.4, 0.6);
+          const CAT = ["BINDING", "VERDICTS", "ISOLATION", "ACCOUNTING", "GATES"];
+          CAT.forEach((c, i) => K.fade(text(c, { class: "mono small dim", x: 620 + i * 170, y: 312, "text-anchor": "middle" }, g), K.T(53.22) + i * 0.08, 0.3));
+          const chip = TW.chip(g, "135");
+          K.fade(chip, K.T(53.82), 0.2);
+          K.travel(chip, el("path", { d: "M1080 160V470" }), K.T(53.82), 0.6, "power2.in");
+          const lab1 = text(".bureau/regression/", { class: "mono head", x: 960, y: 646, "text-anchor": "middle" }, g);
+          const lab2 = text("sh .bureau/regression/run.sh", { class: "mono code", x: 960, y: 686, "text-anchor": "middle" }, g);
+          K.fade(lab1, K.T(55.01), 0.4);
+          K.reveal(lab2, K.T(55.01) + 0.3, 0.6);
+          const n1 = text("327 FIXTURE FILES · 93 RETIRED, KEPT AS RECORD · 2 SLOW", { class: "mono big", x: 960, y: 776, "text-anchor": "middle" }, g);
+          const n2 = text("THE BUREAU'S MAIN BRANCH, 2026-10-17", { class: "mono small dim", x: 960, y: 816, "text-anchor": "middle" }, g);
+          K.reveal(n1, K.T(55.59), 0.8);
+          K.fade(n2, K.T(56.19), 0.4);
+
+          // two ways in
+          const IN = [
+            { at: 57.35, y: 420, lines: ["FRAMEWORK FIX", "committed with", "its script (135)"] },
+            { at: 57.96, y: 540, lines: ["BUILD RUN", "close-out:", "promote-fixtures.sh"] },
+          ];
+          IN.forEach((b) => {
+            b.lines.forEach((l, i) => K.fade(text(l, { class: i ? "mono code" : "mono cap b", x: 140, y: b.y - 30 + i * 32 }, g), K.T(b.at) + i * 0.1, 0.3));
+            const p = el("path", { class: "ln ink", d: `M376 ${b.y}H544` }, g);
+            K.draw(p, K.T(b.at) + 0.2, 0.4);
+            K.fade(TW.arrow(g, 552, b.y, "r"), K.T(b.at) + 0.55, 0.2);
+          });
+
+          // not built: the Bureau's CI does not run this suite (checks.yml runs check-framework.sh and parse checks)
+          const dl = el("path", { class: "ln planned", d: "M1364 490H1478" }, g);
+          const db = el("rect", { class: "ln planned", x: 1484, y: 420, width: 330, height: 140 }, g);
+          K.sweep(dl, K.T(58.56), 0.4);
+          K.sweep(db, K.T(58.56) + 0.3, 0.6);
+          const d1 = text("CI ON EVERY PR", { class: "mono cap b planned-t", x: 1649, y: 480, "text-anchor": "middle" }, g);
+          const d2 = text("not wired to", { class: "mono code planned-t", x: 1649, y: 514, "text-anchor": "middle" }, g);
+          const d3 = text("this suite", { class: "mono code planned-t", x: 1649, y: 542, "text-anchor": "middle" }, g);
+          K.fade(d1, K.T(59.14), 0.4);
+          K.fade(d2, K.T(59.14) + 0.2, 0.4);
+          K.fade(d3, K.T(59.14) + 0.3, 0.4);
+
+          K.out(K.$("c5-b"), K.R(61.05), 0.45);
+          K.out(K.$("c5-left"), K.R(61.05), 0.45);
+          window.__timelines["c5"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

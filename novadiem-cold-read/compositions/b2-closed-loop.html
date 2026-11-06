@@ -1,0 +1,125 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #b2 {
+          position: absolute;
+          inset: 0;
+        }
+      </style>
+      <div id="b2" data-composition-id="b2" data-width="1920" data-height="1080">
+        <div id="b2-all" class="layer">
+          <svg class="full" viewBox="0 0 1920 1080">
+            <defs>
+              <clipPath id="b2-hatch-clip"><rect x="1186" y="398" width="68" height="46" /></clipPath>
+            </defs>
+            <!-- the agent: writes, then reviews its own work -->
+            <circle id="b2-node-outer" class="ln ink" cx="700" cy="400" r="64" />
+            <circle id="b2-node-inner" class="ln thin ink" cx="700" cy="400" r="52" />
+            <circle id="b2-node-core" class="ln ink" cx="700" cy="400" r="6" />
+            <text id="b2-node-label" class="mono" x="700" y="312" text-anchor="middle">AGENT</text>
+
+            <!-- the work, with a blind spot in it -->
+            <path id="b2-doc" class="ln gold" d="M1172 340H1250L1268 358V460H1172Z" />
+            <path id="b2-doc-fold" class="ln thin gold" d="M1250 340V358H1268" />
+            <path id="b2-doc-lines" class="ln thin gold" d="M1186 368H1240M1186 382H1252" />
+            <rect id="b2-hatch-box" class="ln thin ink" x="1186" y="398" width="68" height="46" stroke-dasharray="4 4" opacity="0.7" />
+            <g id="b2-hatch" clip-path="url(#b2-hatch-clip)" opacity="0.55"></g>
+            <path id="b2-assumed-leader" class="ln thin ink" d="M1258 421H1290" opacity="0.7" />
+            <text id="b2-assumed" class="mono small" x="1298" y="427">ASSUMED</text>
+
+            <!-- writes -->
+            <path id="b2-out" class="ln gold" d="M766 400H1160" />
+            <path id="b2-out-head" class="ln gold" d="M1150 392L1160 400L1150 408" />
+            <text id="b2-writes" class="mono small" x="963" y="384" text-anchor="middle">WRITES</text>
+
+            <!-- reviews: the loop closes back into the same node -->
+            <path id="b2-back" class="ln gold" d="M1220 462C1220 640 700 640 700 476" />
+            <path id="b2-back-head" class="ln gold" d="M692 488L700 476L708 488" />
+            <text id="b2-reviews" class="mono small" x="960" y="636" text-anchor="middle">REVIEWS</text>
+
+            <path id="b2-lap" d="M764 400H1172L1220 400L1220 462C1220 640 700 640 700 464A64 64 0 0 0 764 400" fill="none" stroke="none" />
+            <circle id="b2-dot" r="7" fill="#a8862f" opacity="0" />
+          </svg>
+          <div id="b2-label-l" class="plate-label left">Plate II</div>
+          <div id="b2-label-r" class="plate-label right">The Closed Loop</div>
+          <div class="statement wrap">
+            <span id="b2-st-a" class="phrase">The author</span>
+            <span id="b2-st-b" class="phrase red">can't see</span>
+            <span id="b2-st-c" class="phrase">what the author assumed.</span>
+          </div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, kit } = window.CR;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 7.5);
+
+          const hatch = K.$("b2-hatch");
+          for (let x = 1150; x < 1270; x += 9) el("path", { class: "ln thin ink", d: `M${x} 446L${x + 48} 396` }, hatch);
+
+          K.fade(K.$("b2-label-l"), K.T(7.89), 0.4);
+          K.fade(K.$("b2-label-r"), K.T(7.89), 0.4);
+          // the node: first stroke on the pause in the music (~8.5 s)
+          K.draw(K.$("b2-node-outer"), K.R(8.45), 1.1, "none");
+          K.draw(K.$("b2-node-inner"), K.R(8.45) + 0.5, 0.8, "none");
+          K.draw(K.$("b2-node-core"), K.R(8.45) + 1.0, 0.3);
+          K.fade(K.$("b2-node-label"), K.R(8.45) + 1.0, 0.4);
+          // writes
+          K.draw(K.$("b2-out"), K.T(10.38), 0.6);
+          K.draw(K.$("b2-out-head"), K.T(10.38) + 0.55, 0.2);
+          K.fade(K.$("b2-writes"), K.T(10.38) + 0.4, 0.4);
+          K.draw(K.$("b2-doc"), K.T(11.01), 0.7, "none");
+          K.draw(K.$("b2-doc-fold"), K.T(11.01) + 0.6, 0.25);
+          K.draw(K.$("b2-doc-lines"), K.T(11.01) + 0.7, 0.4);
+          // the blind spot
+          K.fade(K.$("b2-hatch-box"), K.T(11.63), 0.3);
+          K.fade(hatch, K.T(11.63) + 0.2, 0.5);
+          K.draw(K.$("b2-assumed-leader"), K.T(11.63) + 0.5, 0.3);
+          K.fade(K.$("b2-assumed"), K.T(11.63) + 0.7, 0.4);
+          // reviews: back into itself
+          K.draw(K.$("b2-back"), K.T(12.89), 1.0, "none");
+          K.draw(K.$("b2-back-head"), K.T(12.89) + 0.95, 0.2);
+          K.fade(K.$("b2-reviews"), K.T(12.89) + 0.6, 0.4);
+
+          // two laps of the closed loop; the review never touches the hatched part
+          const dot = K.$("b2-dot");
+          const lap = K.$("b2-lap");
+          const lapLen = lap.getTotalLength();
+          const p0 = lap.getPointAtLength(0);
+          dot.setAttribute("transform", `translate(${p0.x} ${p0.y})`);
+          const prog = { t: 0 };
+          tl.to(dot, { opacity: 1, duration: 0.25 }, K.T(14.14));
+          tl.fromTo(
+            prog,
+            { t: 0 },
+            {
+              t: 2,
+              duration: K.T(19.13) - K.T(14.14),
+              ease: "none",
+              onUpdate: () => {
+                const pt = lap.getPointAtLength((prog.t % 1) * lapLen);
+                dot.setAttribute("transform", `translate(${pt.x.toFixed(2)} ${pt.y.toFixed(2)})`);
+              },
+            },
+            K.T(14.14)
+          );
+          tl.to(dot, { opacity: 0, duration: 0.25 }, K.T(19.13) - 0.2);
+
+          K.reveal(K.$("b2-st-a"), K.T(15.39), 0.6);
+          K.reveal(K.$("b2-st-b"), K.T(16.0), 0.6);
+          K.reveal(K.$("b2-st-c"), K.T(16.63), 0.8);
+          K.out(K.$("b2-all"), 19.6 - 7.5, 0.4);
+
+          window.__timelines["b2"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

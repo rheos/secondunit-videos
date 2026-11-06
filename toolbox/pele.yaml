@@ -1,0 +1,21 @@
+slug: pele
+name: pele
+kind: library
+status: in-use
+does: Lays out Mermaid diagrams as drawn plates; our diagram layout engine.
+keywords:
+- diagram
+- svg
+- line-drawing
+fits:
+- blueprint explainers
+- the diagram-plate look (Fifty-three Nights)
+deterministic: 'yes'
+how: 'vendored: `tools/blueprint-kit/vendor/pele.global.js`, `indieagent-diagram-plate/kit/vendor/`'
+cost: free (MIT)
+detail: references/pele-diagrams/README.md; memory `pele-diagram-plates`
+related:
+- blueprint-kit
+- statechart-art-kit
+- looseleaf-ink
+added: '2026-11-01'

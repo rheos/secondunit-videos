@@ -1,0 +1,7 @@
+{
+  "name": "indieagent-paper-depth",
+  "private": true,
+  "type": "module",
+  "description": "Cut-paper look test with depth: paper baked into each piece, lit and unlit cut edges, depth shadows, a multiplane camera, a pop-up book transition and a walking musician. Techniques after Leon Lin's paper-fox (MIT).",
+  "devDependencies": { "playwright": "^1.55.0" }
+}

@@ -1,0 +1,52 @@
+slug: rescue-machine
+title: Lyric chain-reaction machine
+note: >-
+  One ball runs one long hand-drawn machine, and every part is a joke about the line being sung beside it. On the
+  last word the camera pulls back: the whole machine is a ring around one lit window.
+used: No One's Coming to the Rescue, Bob Wiseman, test
+cost: free
+group: code
+order: 630
+clip: rescue-machine.mp4
+tall: false
+status: test
+engine: canvas2d
+project: bobwiseman-rescue-machine
+code:
+  path: bobwiseman-rescue-machine/js/ring.js
+  flag: null
+  page: bobwiseman-rescue-machine/machine.html
+  note: >-
+    Times come from work/cues.js (gitignored, it quotes the lyrics), built by tools/align.py and tools/cues.py from
+    the vocal stem. `LEGS=1 node render.mjs x --stills 1` prints every leg's speed.
+rules:
+  - One ball on one continuous path; every leg a real roll, fall, rise, hop or ride, with its speed checked
+  - The camera follows the ball, smoothed over the ball's own path, close enough that objects fill the frame
+  - Every part is a joke about its line, not a generic mechanism; write the joke before drawing the part
+  - Parts carry props that extend the joke (a WE CARE certificate, a paper stack marked ON HOLD)
+  - Each line is lettered beside its part, word by word on the sung times, where the camera already is
+  - A repeated verse runs the machine again and escalates; second-pass lines in red under the first
+  - End on a pull-back that gives the whole machine a meaning
+  - Looseleaf felt pen, crayon fills, held on twos; motion blur only on fast camera moves
+palette:
+  - "#2a2320"
+  - "#f4ecdc"
+  - "#cf3a2c"
+  - "#d9b463"
+  - "#c79d6a"
+  - "#6b2328"
+  - "#ffd36b"
+  - "#2f4f8f"
+reference: >-
+  Kevin Ngo's day machine (K30, x.com/kevin_t_ngo/status/2104213302624821647) and Stephen Wu's contraptions
+  (github.com/wustep/contraptions, the continuous-ball method and timing rule)
+proof:
+  renders:
+    - bobwiseman-rescue-machine/out/rescue-machine_test02.mp4
+  pr:
+    - rheos/secondunit-videos#386
+  youtube: []
+verdict: "Robin, 2026-11-03, on test 02: \"It lands\". On test 01, built from 12 frames of the reference: \"pretty lame and boring\"."
+related:
+  - doodle-on-footage
+  - diagram-plate

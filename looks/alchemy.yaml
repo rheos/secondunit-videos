@@ -1,0 +1,57 @@
+slug: alchemy
+title: Hand-coloured emblem engraving
+note: >-
+  Cut-outs from 17th-century emblem engravings, washed in blue and rose: a sun-headed man and a moon-headed
+  woman whose hatched roots knot together under the soil. Angels blow trumpets from clouds while engraved
+  birds fly in to the branches.
+used: All The Trees, Bob Wiseman
+cost: hybrid
+group: code
+order: 450
+clip: alchemy.mp4
+tall: false
+status: draft
+engine: canvas2d + generated cut-outs
+project: bobwiseman-all-the-trees
+code:
+  path: bobwiseman-all-the-trees/js/alchemy/kit.js
+  flag: null
+  page: bobwiseman-all-the-trees/alchemy.html
+  note: >-
+    On branch all-the-trees-look (draft PR #115), not merged. Cut-outs come from public-domain scans plus
+    GPT-Image repairs and the generated ensemble, prepared by tools/prepare_alchemy.py and kept local; SOURCES.md
+    lists every one. Look bible: LOOK-BIBLE.md.
+rules:
+  - Warm cream paper and brown-black copperplate lines; colour sits under the ink as transparent washes whose uneven edges leave paper showing
+  - Azure sky, ultramarine and rose robes, gamboge sun, sap-green leaves; no brown vignette, no brown-on-brown grading
+  - Figures are cut-outs from real 17th-century engravings with their faces kept; boughs, roots, birds and rays are code-drawn with matching hatching
+  - Roots are substantial tapered wood (filled silhouettes, bark hatching, short thick forks) and they visibly join
+  - Character poses update on twos; the camera and the wash reveals move every frame
+  - Cloud angels hide their trumpets until the brass comes in and play only on the trumpet phrases
+  - No doll proportions, locked arms, cartoon vector people or unreadable detail
+palette:
+  - "#f3e7c8"
+  - "#27261d"
+  - "#558dab"
+  - "#537ac0"
+  - "#cb6770"
+  - "#5d9446"
+  - "#e5af33"
+reference: >-
+  Michael Maier's Atalanta Fugiens (1618 edition, engravings attributed to Matthäus Merian; emblem XXX is the
+  sun and moon pair); Enea Vico's Fame for the trumpeters; Mark Von Ulrich's idea of making relationships
+  physical; a Terry Gilliam study for draft 3b
+proof:
+  renders:
+    - bobwiseman-all-the-trees/out/att_alchemy-d4-full_f00000-f03674_24fps_draft.mp4
+  pr:
+    - rheos/secondunit-videos#115
+  youtube:
+    - 5hhhkOEhRaU
+    - VGeZx1TdRQA
+    - kAOdRMXAws8
+verdict: null
+related:
+  - emblem-stage
+  - gilliam
+  - engraving

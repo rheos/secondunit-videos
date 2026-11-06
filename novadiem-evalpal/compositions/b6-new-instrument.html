@@ -1,0 +1,104 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #b6 {
+          position: absolute;
+          inset: 0;
+        }
+      </style>
+      <div id="b6" data-composition-id="b6" data-width="1920" data-height="1080">
+        <svg class="full" viewBox="0 0 1920 1080">
+          <text id="b6-file" class="mono small gold-t" x="200" y="136">data/instruments/your-instrument.json</text>
+          <g id="b6-card" transform="translate(200 150)"></g>
+          <g id="b6-pipe"></g>
+          <g id="b6-same"></g>
+          <text id="b6-f1" class="mono small gold-t" x="1160" y="580">A REAL EDIT, JULY 2026: 15 ROWS OF ONE INSTRUMENT</text>
+          <text id="b6-f2" class="mono small gold-t" x="1160" y="612">FILES CHANGED: ITS JSON + REVIEW NOTES · CODE: NONE</text>
+          <text id="b6-count" class="mono" x="1160" y="680">7 DEFINITIONS · 1 RENDERER · 1 SCORER</text>
+        </svg>
+        <div id="b6-label-l" class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate VI</div>
+        <div id="b6-label-r" class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>A New Instrument</div>
+        <div class="statement two" data-layout-allow-overlap data-layout-allow-occlusion>
+          <div class="row"><span id="b6-st-a" class="phrase">A new questionnaire is a data change,</span></div>
+          <div class="row"><span id="b6-st-b" class="phrase red">not a code change.</span></div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text, kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 64);
+
+          K.fade(K.$("b6-label-l"), K.T(64.2), 0.4);
+          K.fade(K.$("b6-label-r"), K.T(64.2), 0.4);
+
+          // a made-up definition: another scale type, reverse items, two subscales
+          const C = EP.card(K.$("b6-card"), EP.EXAMPLE);
+          K.draw(C.frame, K.T(64.2), 0.8, "none");
+          K.fade(C.paper, K.T(64.2) + 0.3, 0.4, 0.94);
+          K.fade(K.$("b6-file"), K.T(64.85), 0.3);
+          C.rules.forEach((r, i) => K.draw(r, K.T(64.85) + i * 0.08, 0.3, "none"));
+          K.fade(C.head, K.T(64.85) + 0.15, 0.3);
+          K.fade(C.scale, K.T(64.85) + 0.3, 0.3);
+          K.fade(C.itemsHead, K.T(65.5), 0.3);
+          C.items.forEach((r, i) => K.fade(r, K.T(65.5) + 0.1 + i * 0.06, 0.25));
+          K.fade(C.scoring, K.T(65.5) + 0.5, 0.3);
+          K.fade(C.bands, K.T(65.5) + 0.6, 0.3);
+          K.fade(C.safety, K.T(65.5) + 0.7, 0.3);
+
+          // the import path: validate, then load on deploy
+          const pipe = K.$("b6-pipe");
+          [
+            { name: "VALIDATE", sub: "npm run import:validate", y: 250, at: 66.15 },
+            { name: "LOAD ON DEPLOY", sub: "npm run import:load", y: 400, at: 66.8 },
+          ].forEach((s) => {
+            const box = el("rect", { class: "ln ink", x: 760, y: s.y, width: 300, height: 80 }, pipe);
+            const n = text(s.name, { class: "mono", x: 784, y: s.y + 34 }, pipe);
+            const sub = text(s.sub, { class: "sht dim tiny", x: 784, y: s.y + 60 }, pipe);
+            const at = K.T(s.at);
+            K.draw(box, at, 0.4, "none");
+            K.fade(n, at + 0.15, 0.3);
+            K.fade(sub, at + 0.25, 0.3);
+          });
+          const a1 = el("path", { class: "ln line", d: "M664 290H756" }, pipe);
+          const a2 = el("path", { class: "ln line", d: "M910 334V396" }, pipe);
+          K.draw(a1, K.T(66.15) - 0.2, 0.3, "none");
+          K.draw(a2, K.T(66.8) - 0.2, 0.3, "none");
+
+          // the same renderer, scorer and report as before
+          const same = K.$("b6-same");
+          ["ItemRenderer", "score()", "PDF report"].forEach((s, i) => {
+            const y = 200 + i * 110;
+            const box = el("rect", { class: "ln ink", x: 1160, y, width: 560, height: 80 }, same);
+            const n = text(s, { class: "mono", x: 1184, y: y + 48 }, same);
+            const tag = text("SAME", { class: "mono small gold-t", x: 1696, y: y + 48, "text-anchor": "end" }, same);
+            const arrow = el("path", { class: "ln line", d: `M1064 440C1110 440 1110 ${y + 40} 1156 ${y + 40}` }, same);
+            const at = K.T(67.45) + i * 0.33;
+            K.draw(arrow, at, 0.35);
+            K.draw(box, at + 0.15, 0.4, "none");
+            K.fade(n, at + 0.3, 0.3);
+            K.fade(tag, K.T(68.75) + i * 0.2, 0.3);
+          });
+
+          K.reveal(K.$("b6-st-a"), K.T(69.43), 0.8);
+          K.reveal(K.$("b6-st-b"), K.T(70.73), 0.7);
+
+          K.fade(K.$("b6-f1"), K.T(72.03), 0.4);
+          K.fade(K.$("b6-f2"), K.T(72.68), 0.4);
+          K.fade(K.$("b6-count"), K.T(73.98), 0.4);
+
+          ["b6-file", "b6-card", "b6-pipe", "b6-same", "b6-f1", "b6-f2", "b6-count", "b6-label-l", "b6-label-r"].forEach((id) => K.out(K.$(id), K.T(77.25), 0.4));
+          tl.to("#b6 .statement", { opacity: 0, duration: 0.4, ease: "power1.in" }, K.T(77.25));
+
+          window.__timelines["b6"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

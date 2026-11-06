@@ -1,0 +1,8 @@
+{
+  "name": "indieagent-relief-box",
+  "private": true,
+  "type": "module",
+  "description": "Shadowbox relief look test: sculpted clay panels drawn in code on Leon Lin's paper-fox engine (MIT).",
+  "scripts": { "build": "node tools/bundle.mjs" },
+  "devDependencies": { "playwright": "^1.55.0" }
+}

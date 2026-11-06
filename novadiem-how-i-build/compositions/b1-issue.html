@@ -1,0 +1,57 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #b1 {
+          position: absolute;
+          inset: 0;
+        }
+      </style>
+      <div id="b1" data-composition-id="b1" data-width="1920" data-height="1080">
+        <svg class="full" viewBox="0 0 1920 1080">
+          <g id="b1-flow"></g>
+        </svg>
+        <div id="b1-label-l" class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate I</div>
+        <div id="b1-label-r" class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>How I Build</div>
+        <div class="statement" data-layout-allow-overlap data-layout-allow-occlusion>
+          <span id="b1-st-a" class="phrase">Every change starts</span>
+          <span id="b1-st-b" class="phrase red">as an issue.</span>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text, kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 0);
+          const F = HB.flow(K.$("b1-flow"), ["main", "issue"]);
+          K.fade(K.$("b1-label-l"), K.T(0.67), 0.4);
+          K.fade(K.$("b1-label-r"), K.T(0.67), 0.4);
+
+          // the existing main line, then the ask written down as an issue
+          K.draw(F.main.line, K.T(1.3), 1.2, "none");
+          K.fade(F.main.label, K.T(1.93), 0.4);
+          K.fade(F.issue.paper, K.T(1.93), 0.4);
+          K.draw(F.issue.frame, K.T(1.93), 0.8, "none");
+          K.fade(F.issue.head, K.T(2.55), 0.4);
+          K.draw(F.issue.rule, K.T(2.55), 0.4, "none");
+          K.fade(F.issue.crit, K.T(3.18), 0.4);
+          F.issue.rows.forEach((r, i) => K.reveal(r, K.T(3.81 + i * 0.63), 0.5));
+
+          K.reveal(K.$("b1-st-a"), K.T(3.81), 0.6);
+          K.reveal(K.$("b1-st-b"), K.T(4.44), 0.7);
+
+          // plate II takes the drawing over at 8.0
+          K.out(K.$("b1-label-l"), K.T(7.55), 0.4);
+          K.out(K.$("b1-label-r"), K.T(7.55), 0.4);
+          tl.to("#b1 .statement", { opacity: 0, duration: 0.4, ease: "power1.in" }, K.T(7.55));
+          window.__timelines["b1"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

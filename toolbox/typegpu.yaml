@@ -1,0 +1,19 @@
+slug: typegpu
+name: TypeGPU
+kind: library
+status: available
+does: GPU shaders from TypeScript; a HyperFrames runtime adapter.
+keywords:
+- shader
+- gpu
+- webgpu
+- generative
+fits:
+- shader looks inside HyperFrames
+deterministic: 'yes'
+how: HyperFrames adapter
+cost: free
+detail: skill `hyperframes-animation`
+related:
+- ogl
+added: '2026-10-27'

@@ -1,0 +1,130 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #p3 {
+          position: absolute;
+          inset: 0;
+        }
+        #p3 svg text.cell {
+          font-family: var(--font-mono);
+          font-size: 22px;
+          letter-spacing: 0.02em;
+          fill: var(--ink);
+        }
+        #p3 svg text.cell.nm {
+          font-family: var(--font-label);
+          font-weight: 700;
+          font-size: 24px;
+        }
+        #p3 svg text.cell.gr {
+          fill: var(--ink-dim);
+          font-size: 18px;
+        }
+        #p3 svg text.cell.tot {
+          font-weight: 700;
+        }
+        #p3 svg text.cell.ps {
+          font-weight: 700;
+          font-size: 26px;
+        }
+        #p3 svg text.formula {
+          font-family: var(--font-mono);
+          font-size: 24px;
+          font-weight: 700;
+          letter-spacing: 0.04em;
+          fill: var(--ink);
+        }
+      </style>
+      <div id="p3" data-composition-id="p3" data-width="1920" data-height="1080">
+        <svg class="full" viewBox="0 0 1920 1080">
+          <text id="p3-formula" class="formula" x="960" y="152" text-anchor="middle">SALT: 6.1 G × 38,758 MG SODIUM PER 100 G ÷ 100 = 2,372.8 MG</text>
+          <path id="p3-frame" class="ln ink" d="M220 176H1740V686H220Z" />
+          <path id="p3-hrule" class="ln thin ink" d="M220 222H1740" />
+          <g id="p3-head"></g>
+          <g id="p3-cells"></g>
+          <path id="p3-trule" class="ln ink" d="M220 538H1740" />
+          <g id="p3-tot"></g>
+          <rect id="p3-psbox" class="ln line-strong" x="228" y="610" width="1504" height="62" style="stroke-width: 3" />
+          <g id="p3-ps"></g>
+          <rect id="p3-hl" class="ln accent-s" x="1568" y="482" width="156" height="40" style="stroke-width: 3" />
+        </svg>
+        <div id="p3-label-l" class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate III</div>
+        <div id="p3-label-r" class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>The Sums</div>
+        <div class="statement two" data-layout-allow-overlap data-layout-allow-occlusion>
+          <div class="row"><span id="p3-st-a" class="phrase">Grams times the file's values per 100 g.</span></div>
+          <div class="row"><span id="p3-st-b" class="phrase red">Added up, then split 12 ways.</span></div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { text, kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 24);
+          const $ = K.$;
+
+          K.fade($("p3-label-l"), K.T(24.17), 0.4);
+          K.fade($("p3-label-r"), K.T(24.17), 0.4);
+
+          // calculator.py: contribution = value per 100 g × grams / 100, summed per nutrient, ÷ servings
+          const COLX = [880, 1090, 1300, 1510, 1714]; // right edges
+          const HEAD = ["CALORIES", "FAT G", "CARB G", "PROTEIN G", "SODIUM MG"];
+          const ROWS = [
+            ["Oats", "400.0 g", ["1556.0", "27.6", "265.1", "67.6", "8.0"]],
+            ["Maple syrup", "166.4 g", ["432.7", "0.4", "111.3", "0.1", "15.0"]],
+            ["Canola oil", "56.8 g", ["502.3", "56.8", "0.0", "0.0", "0.0"]],
+            ["Almonds", "150.0 g", ["868.7", "74.9", "32.3", "31.7", "1.5"]],
+            ["Sunflower seeds", "74.0 g", ["432.7", "38.1", "14.8", "15.4", "6.7"]],
+            ["Salt", "6.1 g", ["0.0", "0.0", "0.0", "0.0", "2372.8"]],
+          ];
+          const TOTAL = ["3792.5", "197.7", "423.5", "114.7", "2403.9"];
+          const PERSERV = ["316.04", "16.48", "35.29", "9.56", "200.33"];
+
+          K.draw($("p3-frame"), K.T(24.82), 0.9, "none");
+          K.draw($("p3-hrule"), K.T(24.82) + 0.4, 0.5, "none");
+          const head = $("p3-head");
+          text("INGREDIENT", { class: "mono small", x: 244, y: 206 }, head);
+          HEAD.forEach((h, c) => text(h, { class: "mono small", x: COLX[c], y: 206, "text-anchor": "end" }, head));
+          K.fade(head, K.T(24.82) + 0.5, 0.4);
+
+          const cells = $("p3-cells");
+          ROWS.forEach(([nm, g, vals], r) => {
+            const y = 264 + r * 50;
+            const at = K.T(25.47 + r * 0.65);
+            K.fade(text(nm, { class: "cell nm", x: 244, y }, cells), at, 0.3);
+            K.fade(text(g, { class: "cell gr", x: 640, y, "text-anchor": "end" }, cells), at + 0.05, 0.3);
+            vals.forEach((v, c) => K.fade(text(v, { class: "cell", x: COLX[c], y, "text-anchor": "end" }, cells), at + 0.1 + c * 0.07, 0.25));
+          });
+
+          // the salt line: one teaspoon carries almost all the sodium
+          K.draw($("p3-hl"), K.T(29.38), 0.5, "none");
+          K.reveal($("p3-formula"), K.T(29.38) + 0.2, 0.9);
+
+          K.reveal($("p3-st-a"), K.T(26.13), 0.8);
+
+          // recipe total, then per serving
+          K.draw($("p3-trule"), K.T(30.7), 0.5, "none");
+          const tot = $("p3-tot");
+          text("RECIPE TOTAL", { class: "mono small", x: 244, y: 584 }, tot);
+          TOTAL.forEach((v, c) => text(v, { class: "cell tot", x: COLX[c], y: 584, "text-anchor": "end" }, tot));
+          K.fade(tot, K.T(30.7) + 0.3, 0.4);
+
+          K.reveal($("p3-st-b"), K.T(32.0), 0.7);
+          K.draw($("p3-psbox"), K.T(32.65), 0.6, "none");
+          const ps = $("p3-ps");
+          text("÷ 12 SERVINGS", { class: "mono small green-t", x: 244, y: 650 }, ps);
+          PERSERV.forEach((v, c) => text(v, { class: "cell ps", x: COLX[c], y: 652, "text-anchor": "end" }, ps));
+          K.fade(ps, K.T(32.65) + 0.3, 0.4);
+
+          tl.to("#p3 svg, #p3 .plate-label, #p3 .statement", { opacity: 0, duration: 0.4, ease: "power1.in" }, K.T(37.21));
+          window.__timelines["p3"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

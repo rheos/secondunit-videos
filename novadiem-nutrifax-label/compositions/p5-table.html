@@ -1,0 +1,84 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #p5 {
+          position: absolute;
+          inset: 0;
+        }
+        #p5 svg text.co {
+          font-family: var(--font-mono);
+          font-size: 18px;
+          font-weight: 700;
+          letter-spacing: 0.06em;
+          fill: var(--ink);
+        }
+        #p5 svg text.co.dim {
+          fill: var(--ink-dim);
+          font-weight: 400;
+        }
+      </style>
+      <div id="p5" data-composition-id="p5" data-width="1920" data-height="1080">
+        <svg class="full" viewBox="0 0 1920 1080">
+          <g id="p5-table" data-layout-allow-overlap data-layout-allow-occlusion transform="translate(720 140)"></g>
+          <g id="p5-co"></g>
+        </svg>
+        <div id="p5-label-l" class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate V</div>
+        <div id="p5-label-r" class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>The Table</div>
+        <div class="statement two" data-layout-allow-overlap data-layout-allow-occlusion>
+          <div class="row"><span id="p5-st-a" class="phrase">Built panel by panel:</span></div>
+          <div class="row"><span id="p5-st-b" class="phrase red">a CFIA Nutrition Facts table.</span></div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text, kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 52);
+          const $ = K.$;
+
+          K.fade($("p5-label-l"), K.T(52.22), 0.4);
+          K.fade($("p5-label-r"), K.T(52.22), 0.4);
+
+          // the table assembles in render_ca_standard()'s order, about one part per beat
+          const N = NF.table($("p5-table"));
+          K.draw(N.frame, K.T(52.86), 0.8, "none");
+          K.fade(N.paper, K.T(52.86) + 0.3, 0.5, 0.6);
+          const CUES = [53.52, 54.17, 54.82, 55.47, 56.12, 56.78, 57.43, 58.08, 58.73, 59.07, 59.39, 60.05];
+          N.parts.forEach((p, i) => tl.fromTo(p, { opacity: 0, x: -14 }, { opacity: 1, x: 0, duration: 0.35, ease: "power2.out" }, K.T(CUES[i])));
+
+          K.reveal($("p5-st-a"), K.T(55.47), 0.7);
+          K.reveal($("p5-st-b"), K.T(56.78), 0.8);
+
+          // callouts: where the numbers came from, and what changes for the US panel
+          const co = $("p5-co");
+          const call = (side, y, lines, at) => {
+            const g = el("g", {}, co);
+            const x0 = side === "l" ? 708 : 1212;
+            const x1 = side === "l" ? 652 : 1268;
+            const ln = el("path", { class: "ln thin ink", d: `M${x0} ${y}H${x1}` }, g);
+            el("circle", { class: "fill-line", cx: x0, cy: y, r: 4 }, g);
+            lines.forEach(([s, dim], k) =>
+              text(s, { class: `co${dim ? " dim" : ""}`, x: side === "l" ? x1 - 10 : x1 + 10, y: y + 6 + k * 26, "text-anchor": side === "l" ? "end" : "start" }, g)
+            );
+            K.draw(ln, at, 0.35, "none");
+            tl.fromTo(g, { opacity: 0 }, { opacity: 1, duration: 0.35 }, at);
+          };
+          call("l", 140 + 126, [["316.04 ROUNDS TO 320"], ["PLATE IV", true]], K.T(61.35));
+          call("r", 140 + 126, [["CANADIAN DAILY VALUES"], ["HEALTH CANADA TABLE", true]], K.T(62.0));
+          call("r", 140 + 174, [["FAT: 22 % OF 75 G"], ["A US PANEL: 21 % OF 78 G", true]], K.T(62.65));
+          call("l", 140 + 436, [["200.33 ROUNDS TO 200"], ["MOSTLY THE TEASPOON OF SALT", true]], K.T(63.29));
+          call("r", 140 + 590, [["FIGURE 1.2 · ALSO IN FRENCH"], ["OR AS ONE BILINGUAL TABLE", true]], K.T(63.95));
+
+          tl.to("#p5-co, #p5 .plate-label, #p5 .statement", { opacity: 0, duration: 0.4, ease: "power1.in" }, K.T(67.21));
+          window.__timelines["p5"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

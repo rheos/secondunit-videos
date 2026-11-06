@@ -1,0 +1,133 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #b6 {
+          position: absolute;
+          inset: 0;
+        }
+        /* the drawing is three sheets wide; the view stays inside the plate border and pans across */
+        #b6-view {
+          position: absolute;
+          inset: 0;
+          clip-path: inset(49px);
+        }
+        #b6-pan {
+          position: absolute;
+          left: 0;
+          top: 0;
+          width: 5400px;
+          height: 1080px;
+        }
+        #b6-pan svg.full {
+          width: 5400px;
+        }
+        #b6 .vwrap {
+          position: absolute;
+          top: 236px;
+          width: 1120px;
+          height: 630px;
+          overflow: hidden;
+          background: var(--bg-raised);
+        }
+        #b6 .vwrap video {
+          display: block;
+          width: 1120px;
+          height: 630px;
+          object-fit: cover;
+        }
+        #b6 svg text.big {
+          font-size: 46px;
+        }
+      </style>
+      <div id="b6" data-composition-id="b6" data-width="1920" data-height="1080">
+        <div id="b6-view">
+          <div id="b6-pan">
+            <svg class="full" viewBox="0 0 5400 1080">
+              <g id="b6-draw"></g>
+            </svg>
+            <div id="b6-w1" class="vwrap" style="left: 150px">
+              <video id="b6-v1" src="_in/clip-rheostream.mp4" muted playsinline data-start="2.44" data-duration="7.5" data-track-index="1"></video>
+            </div>
+            <div id="b6-w2" class="vwrap" style="left: 1850px">
+              <video id="b6-v2" src="_in/clip-cold-read.mp4" muted playsinline data-start="10.56" data-duration="7.5" data-track-index="2"></video>
+            </div>
+            <div id="b6-w3" class="vwrap" style="left: 3550px">
+              <video id="b6-v3" src="_in/clip-doc-extraction.mp4" muted playsinline data-start="18.69" data-duration="8" data-track-index="3"></video>
+            </div>
+          </div>
+        </div>
+        <div id="b6-label-l" class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate VI</div>
+        <div id="b6-label-r" class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>The Evidence</div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text, kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 47);
+          const D = K.$("b6-draw");
+
+          K.fade(K.$("b6-label-l"), K.T(47.55), 0.4);
+          K.fade(K.$("b6-label-r"), K.T(47.55), 0.4);
+
+          // three finished explainers, each built through the flow above; clips are muted
+          const STOPS = [
+            { n: "I", title: ["rheoStream"], desc: ["AN OPEN FRAMEWORK.", "ONE SYSTEM YOU OWN."], arrive: 48.18, clip: 49.44 },
+            { n: "II", title: ["The Cold Read"], desc: ["WHEN IS INDEPENDENT", "REVIEW WORTH ITS COST?"], arrive: 56.31, clip: 57.56 },
+            { n: "III", title: ["300 of 300", "Fields"], desc: ["A DOCUMENT EXTRACTION", "API, CHECKED."], arrive: 64.44, clip: 65.69 },
+          ];
+          // the line runs on from the deploy and passes each one
+          const segs = [
+            el("path", { class: "ln thick line-strong", d: "M40 200H710" }, D),
+            el("path", { class: "ln thick line-strong", d: "M720 200H2410" }, D),
+            el("path", { class: "ln thick line-strong", d: "M2420 200H4110" }, D),
+          ];
+          K.draw(segs[0], K.T(47.55), 0.6, "none");
+          K.draw(segs[1], K.T(54.43), 1.2, "power1.in");
+          K.draw(segs[2], K.T(62.55), 1.2, "power1.in");
+
+          STOPS.forEach((s, i) => {
+            const ox = i * 1700;
+            const marker = el("circle", { class: "ln line-strong dot-bg", cx: ox + 710, cy: 200, r: 10 }, D);
+            const leader = el("path", { class: "ln thin line-strong", d: `M${ox + 710} 212V230` }, D);
+            const frame = el("rect", { class: "ln ink", x: ox + 146, y: 232, width: 1128, height: 638 }, D);
+            const tag = text(`EVIDENCE · ${s.n}`, { class: "mono small gold-t", x: ox + 1330, y: 292 }, D);
+            const title = el("g", {}, D);
+            s.title.forEach((t, j) => text(t, { class: "big", x: ox + 1330, y: 372 + j * 56 }, title));
+            const desc = el("g", {}, D);
+            const dy = 372 + (s.title.length - 1) * 56 + 64;
+            s.desc.forEach((t, j) => text(t, { class: "mono", x: ox + 1330, y: dy + j * 34 }, desc));
+            const rule = el("path", { class: "ln thin line-strong", d: `M${ox + 1330} 314H${ox + 1690}` }, D);
+
+            K.draw(marker, K.T(s.arrive), 0.4);
+            K.draw(leader, K.T(s.arrive) + 0.2, 0.3);
+            K.draw(frame, K.T(s.arrive + 0.63), 0.6, "none");
+            K.fade(K.$(`b6-w${i + 1}`), K.T(s.clip), 0.4);
+            K.fade(tag, K.T(s.clip), 0.4);
+            K.draw(rule, K.T(s.clip), 0.5, "none");
+            K.reveal(title, K.T(s.clip + 0.63), 0.6);
+            K.fade(desc, K.T(s.clip + 1.25), 0.5);
+          });
+
+          // pan to the next sheet once the line has run on
+          const pan = K.$("b6-pan");
+          tl.fromTo(pan, { x: 0 }, { x: -1700, duration: 1.26, ease: "power2.inOut" }, K.T(55.68));
+          tl.fromTo(pan, { x: -1700 }, { x: -3400, duration: 1.25, ease: "power2.inOut", immediateRender: false }, K.T(63.81));
+
+          // the last clip ends inside the view: fade its window, then clear for the colophon
+          K.out(K.$("b6-w3"), K.R(73.69) - 0.6, 0.6);
+          K.out(K.$("b6-view"), K.T(73.79), 0.6);
+          K.out(K.$("b6-label-l"), K.T(74.42), 0.4);
+          K.out(K.$("b6-label-r"), K.T(74.42), 0.4);
+
+          window.__timelines["b6"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

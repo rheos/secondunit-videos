@@ -1,0 +1,49 @@
+slug: emblem-stage
+title: Engraved toy theatre
+note: >-
+  Engraved paper players on a stage hung with red velvet: a troubadour sings beside a wheel of medallions,
+  then the curtains part on a blue sky and trumpeting angels. The figures switch between a few drawn poses
+  like puppets.
+used: All The Trees, Bob Wiseman
+cost: hybrid
+group: code
+order: 460
+clip: emblem-stage.mp4
+tall: false
+status: draft
+engine: canvas2d + generated cut-outs
+project: bobwiseman-all-the-trees
+code:
+  path: bobwiseman-all-the-trees/js/alchemy/stage.js
+  flag: null
+  page: bobwiseman-all-the-trees/alchemy.html
+  note: >-
+    On branch all-the-trees-look (draft PR #115), not merged. stage.js is the opening theatre (0-18.6 s) over
+    the emblem kit; the curtain call closes the film. Herald and troubadour poses are cut-outs in
+    source/alchemy/opening/, packed by tools/pack_opening_media.py (local).
+rules:
+  - "Curtains inside the plate: engraved crimson velvet, each fold shaded from dark crease to lit crest and hatched in its shadow, gold fringe"
+  - Players are engraved paper cut-outs that switch between a few drawn poses, like toy-theatre puppets
+  - Mouths open only on voiced frames and shut on breaths
+  - The same paper, ink and colour washes as the emblem plates
+  - Every frame a function of song time; poses on twos
+palette:
+  - "#7d2430"
+  - "#f3e7c8"
+  - "#27261d"
+  - "#558dab"
+reference: Toy-theatre staging with 17th-century engraved figures (same sources as alchemy); the herald stands in for the radio DJ on the record's intro
+proof:
+  renders:
+    - bobwiseman-all-the-trees/out/att_alchemy-d4-full_f00000-f03674_24fps_draft.mp4
+  pr:
+    - rheos/secondunit-videos#115
+  youtube:
+    - 5hhhkOEhRaU
+    - VGeZx1TdRQA
+    - kAOdRMXAws8
+verdict: null
+related:
+  - alchemy
+  - scrap
+  - gilliam

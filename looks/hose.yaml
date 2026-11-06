@@ -1,0 +1,46 @@
+slug: hose
+title: 1930s rubber-hose cartoon
+note: Sepia noodle limbs, film grain and gate weave. The waiter brings a shot; a whole bottle slams down instead.
+used: More, Bob Wiseman
+cost: free
+group: code
+order: 110
+clip: hose.mp4
+tall: false
+status: draft
+engine: canvas2d
+project: bobwiseman-more
+code:
+  path: bobwiseman-more/js/look-hose.js
+  flag: null
+  page: bobwiseman-more/hose.html
+  note: "on branch more-1 (draft PR #18), not on main"
+rules:
+  - Two-tone warm sepia ink and paint
+  - Thick clean outlines, noodle limbs, pie-cut eyes, white gloves
+  - "Everything bounces on the beat: squash on the beat, stretch and hop between, lean alternate ways"
+  - "Screen-space film finish: grain, gate weave, flicker, vignette, a rounded film gate"
+palette:
+  - "#17110b"
+  - "#f3e9d3"
+  - "#ddd0b3"
+  - "#bcac8e"
+  - "#8f7f66"
+  - "#5a4d3e"
+  - "#2f271f"
+  - "#fbf5e8"
+reference: 1930s rubber-hose cartoons
+proof:
+  renders:
+    - bobwiseman-more/out/more_hose-v1_f01572-f02340_24fps_draft.mp4
+    - bobwiseman-more/out/more_full-v6_f00000-f05466_24fps_draft.mp4
+  pr:
+    - rheos/secondunit-videos#18
+  youtube:
+    - _HGiGwHkLz8
+    - hHcHt3kURdI
+    - pakBYyvf7KE
+verdict: "Bob, 2026-10-06, on draft 3: \"Yes this More version great\""
+related:
+  - crayon
+  - cutpaper

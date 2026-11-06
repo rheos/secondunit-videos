@@ -1,0 +1,177 @@
+<!doctype html>
+<html class="draft" lang="en" data-resolution="landscape">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1280, height=720" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=IBM+Plex+Mono:wght@400;700&display=block" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <!-- Series kit (tools/blueprint-kit, copied by sync.sh). Theme first, then structure. -->
+    <link rel="stylesheet" href="kit/themes/paper.css" />
+    <link rel="stylesheet" href="kit/kit.css" />
+    <script src="kit/kit.js"></script>
+    <script>
+      // Beat grid of the score (beats.json): intro beats 0.07-35.94 from the first 37 s, main grid 36.52-84.17 at a 0.580 s median gap, extended to 89.98.
+      BP.grid({ beats: [0.07,0.65,1.25,1.83,2.41,3.0,3.6,4.18,4.76,5.36,5.94,6.52,7.13,7.71,8.29,8.89,9.47,10.05,10.66,11.24,11.84,12.42,13.0,13.58,14.19,14.77,15.35,15.95,16.53,17.11,17.72,18.3,18.88,19.48,20.06,20.64,21.25,21.83,22.41,23.01,23.59,24.17,24.78,25.36,25.94,26.54,27.12,27.7,28.28,28.89,29.47,30.07,30.65,31.23,31.83,32.42,33.0,33.58,34.18,34.76,35.34,35.94,36.52,37.11,37.71,38.29,38.87,39.47,40.05,40.63,41.24,41.82,42.4,43.0,43.58,44.16,44.77,45.35,45.93,46.51,47.11,47.69,48.3,48.88,49.46,50.06,50.64,51.22,51.8,52.41,52.99,53.57,54.17,54.75,55.33,55.94,56.52,57.12,57.7,58.28,58.89,59.47,60.05,60.63,61.23,61.81,62.39,63.0,63.58,64.18,64.76,65.34,65.94,66.53,67.11,67.71,68.29,68.87,69.47,70.05,70.64,71.24,71.82,72.4,73.0,73.58,74.16,74.75,75.35,75.93,76.53,77.11,77.69,78.3,78.88,79.46,80.06,80.64,81.22,81.8,82.41,82.99,83.59,84.17,84.75,85.33,85.91,86.49,87.07,87.66,88.24,88.82,89.4,89.98] });
+    </script>
+    <style>
+      svg text.mono.tiny { font-size: 15px; font-weight: 400; }
+      svg text.mono.code { font-size: 17px; font-weight: 400; letter-spacing: 0.04em; }
+      svg text.mono.gold-t { fill: #6b5416; } /* line-strong is 3.5:1 on paper; small type needs 4.5:1 */
+      .fill-ink { fill: var(--ink); }
+    </style>
+    <script>
+      // AM: the one device of this film. Above the disk line, the session: context chambers that hold
+      // conversation and vanish when the session ends. Below it, the run dir: artifact plates that stay.
+      // Each plate (sub-composition) rebuilds the standing parts statically and animates its own events.
+      window.AM = (() => {
+        const { el, text } = BP;
+        // the run dir's artifact plates, left to right (README "Run artifacts"; docs/run-protocol.md)
+        const PLATES = { state: [420, "state.json"], log: [690, "log.md"], spec: [960, "spec.md"], plan: [1230, "plan.md"], prompts: [1500, "prompts.md"] };
+        // specialists that already ran, each in its own fresh context, and the file each wrote (workflows/feature.md)
+        const SPECS = [
+          ["ANALIZER 2000", "CTX·01", "spec"],
+          ["ARCHITECT", "CTX·02", "plan"],
+          ["CHALLENGER", "CTX·03", "log"],
+          ["SPELLWRIGHT", "CTX·04", "prompts"],
+        ];
+        const g = (parent) => el("g", {}, parent);
+
+        function session(parent, n) {
+          const S = { g: g(parent) };
+          S.frame = el("rect", { class: "ln thin ink", x: 260, y: 136, width: 1400, height: 318 }, S.g);
+          S.label = text(`SESSION ${n}`, { class: "mono small", x: 284, y: 168 }, S.g);
+          return S;
+        }
+        function conductor(parent, ctx = "CTX·00") {
+          const C = { g: g(parent) };
+          C.outer = el("rect", { class: "ln ink", x: 300, y: 190, width: 560, height: 240 }, C.g);
+          C.inner = el("rect", { class: "ln thin ink", x: 308, y: 198, width: 544, height: 224 }, C.g);
+          C.label = text("CONDUCTOR", { class: "mono", x: 836, y: 228, "text-anchor": "end" }, C.g);
+          C.ctx = text(ctx, { class: "mono tiny", x: 326, y: 226, opacity: 0.6 }, C.g);
+          return C;
+        }
+        // the conversation inside a context: short lines, alternating sides like a chat
+        function chat(parent) {
+          const L = [360, 230, 400, 290, 380, 200];
+          return L.map((w, i) => {
+            const x = i % 2 ? 470 : 334;
+            return el("path", { class: "ln thin ink", d: `M${x} ${250 + i * 22}H${x + Math.min(w, 826 - x)}` }, parent);
+          });
+        }
+        function specialists(parent) {
+          return SPECS.map(([name, ctx, file], i) => {
+            const x0 = 900 + i * 185,
+              cx = x0 + 82.5;
+            const R = { g: g(parent), cx, file };
+            R.outer = el("rect", { class: "ln ink", x: x0, y: 190, width: 165, height: 240 }, R.g);
+            R.inner = el("rect", { class: "ln thin ink", x: x0 + 6, y: 196, width: 153, height: 228 }, R.g);
+            R.label = text(name, { class: "mono tiny", x: cx, y: 412, "text-anchor": "middle" }, R.g);
+            R.ctx = text(ctx, { class: "mono tiny", x: x0 + 16, y: 224, opacity: 0.6 }, R.g);
+            R.check = el("path", { class: "ln line-strong", d: `M${cx - 18} 300l12 12 24 -26` }, R.g);
+            R.ended = text("ENDED", { class: "mono tiny dim", x: cx, y: 350, "text-anchor": "middle" }, R.g);
+            return R;
+          });
+        }
+        function plate(parent, k) {
+          const [cx, name] = PLATES[k];
+          const F = { g: g(parent), cx };
+          F.body = el("path", { class: "ln line", d: `M${cx - 40} 560H${cx + 22}L${cx + 40} 578V680H${cx - 40}Z` }, F.g);
+          F.fold = el("path", { class: "ln thin line", d: `M${cx + 22} 560V578H${cx + 40}` }, F.g);
+          F.lines = el("path", { class: "ln thin line", d: `M${cx - 26} 600H${cx + 20}M${cx - 26} 616H${cx + 26}M${cx - 26} 632H${cx + 10}M${cx - 26} 648H${cx + 22}` }, F.g);
+          F.label = text(name, { class: "mono small", x: cx, y: 712, "text-anchor": "middle" }, F.g);
+          return F;
+        }
+        // the disk line and the run dir below it; `which` lists the plates already standing
+        function disk(parent, which = Object.keys(PLATES)) {
+          const D = { g: g(parent), hatch: [], plates: {} };
+          D.line = el("path", { class: "ln ink", d: "M220 486H1700" }, D.g);
+          D.word = text("DISK", { class: "mono tiny dim", x: 1690, y: 474, "text-anchor": "end" }, D.g);
+          for (let x = 232; x <= 280; x += 12) D.hatch.push(el("path", { class: "ln thin ink", d: `M${x} 490l-10 14`, opacity: 0.6 }, D.g));
+          for (let x = 1652; x <= 1700; x += 12) D.hatch.push(el("path", { class: "ln thin ink", d: `M${x} 490l-10 14`, opacity: 0.6 }, D.g));
+          D.walls = el("path", { class: "ln ink", d: "M260 486V770H1660V486" }, D.g);
+          D.label = text("RUN DIR", { class: "mono", x: 284, y: 526 }, D.g);
+          D.path = text(".bureau/runs/<date>-<task>/", { class: "mono small dim", x: 392, y: 526 }, D.g);
+          which.forEach((k) => (D.plates[k] = plate(D.g, k)));
+          return D;
+        }
+        // what the new Conductor rebuilds from the files, one row per line, inside its chamber
+        const READ = [
+          ["phase", "prompts · complete"],
+          ["done", "analyst · architect"],
+          ["", "challenger · prompts"],
+          ["next", "challenger, round 2"],
+          ["canonical", "prompts.md"],
+        ];
+        function row(parent, k, v, i) {
+          const y = 254 + i * 23;
+          return [text(k, { class: "mono tiny dim", x: 332, y }, parent), text(v, { class: "mono small", x: 470, y }, parent)];
+        }
+        // a sheet of paper in transit, drawn around (0,0)
+        function sheet(parent) {
+          const t = el("g", { opacity: 0 }, parent);
+          el("path", { class: "fill-bg", d: "M-12 -15H5L12 -8V15H-12Z" }, t);
+          el("path", { class: "ln line", d: "M-12 -15H5L12 -8V15H-12Z" }, t);
+          el("path", { class: "ln thin line", d: "M-6 -4H6M-6 3H6M-6 9H2" }, t);
+          return t;
+        }
+        // cue helpers that need a plate's kit
+        function cues(K, tl, top) {
+          const carry = (d, at, dur = 0.9) => {
+            const s = sheet(top);
+            tl.fromTo(s, { opacity: 0 }, { opacity: 1, duration: 0.15 }, at);
+            K.travel(s, el("path", { d }), at, dur);
+            tl.to(s, { opacity: 0, duration: 0.2 }, at + dur);
+            return s;
+          };
+          const fileIn = (f, at) => {
+            K.draw(f.body, at, 0.5, "none");
+            K.draw(f.fold, at + 0.4, 0.2);
+            K.draw(f.lines, at + 0.45, 0.3);
+            K.fade(f.label, at + 0.3, 0.3);
+          };
+          const ghost = (nodes, op = 0.22) => nodes.forEach((n) => n.setAttribute("opacity", op));
+          return { carry, fileIn, ghost };
+        }
+        return { PLATES, SPECS, READ, row, session, conductor, chat, specialists, plate, disk, sheet, cues };
+      })();
+    </script>
+  </head>
+  <body>
+    <div data-hf-id="hf-am01"
+      id="root"
+      data-composition-id="main"
+      data-start="0"
+      data-duration="86"
+      data-width="1280"
+      data-height="720"
+    >
+      <!-- Score: score-library bureau-art-pop-bureau-memory take-01, sha256 783259d8...5f65, the clock for every cue -->
+      <audio data-hf-id="hf-am02"
+        id="score"
+        src="_in/score.mp3"
+        data-start="0"
+        data-duration="86"
+        data-track-index="9"
+        data-volume="1"
+      ></audio>
+
+      <!-- every plate draws on a 1920x1080 stage; drafts scale it to 720p (kit.css, stage.sh) -->
+      <div class="stage">
+        <div data-hf-id="hf-am03" id="slot-furniture" data-composition-id="furniture" data-composition-src="compositions/furniture.html" data-start="0" data-duration="86" data-track-index="0" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-am04" id="slot-b1" data-composition-id="b1" data-composition-src="compositions/b1-cut.html" data-start="0" data-duration="8.89" data-track-index="1" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-am05" id="slot-b2" data-composition-id="b2" data-composition-src="compositions/b2-on-disk.html" data-start="8.89" data-duration="13.52" data-track-index="2" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-am06" id="slot-b3" data-composition-id="b3" data-composition-src="compositions/b3-state-log.html" data-start="22.41" data-duration="14.11" data-track-index="3" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-am07" id="slot-b4" data-composition-id="b4" data-composition-src="compositions/b4-new-session.html" data-start="36.52" data-duration="13.54" data-track-index="4" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-am08" id="slot-b5" data-composition-id="b5" data-composition-src="compositions/b5-re-read.html" data-start="50.06" data-duration="15.28" data-track-index="5" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-am09" id="slot-b6" data-composition-id="b6" data-composition-src="compositions/b6-limit.html" data-start="65.34" data-duration="12.35" data-track-index="6" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-am0a" id="slot-b7" data-composition-id="b7" data-composition-src="compositions/b7-continue.html" data-start="77.69" data-duration="8.31" data-track-index="7" data-width="1920" data-height="1080"></div>
+      </div>
+    </div>
+
+    <script>
+      window.__timelines["main"] = gsap.timeline({ paused: true });
+    </script>
+  </body>
+</html>

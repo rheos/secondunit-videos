@@ -1,0 +1,89 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #b2 {
+          position: absolute;
+          inset: 0;
+        }
+      </style>
+      <div id="b2" data-composition-id="b2" data-width="1920" data-height="1080">
+        <svg class="full" viewBox="0 0 1920 1080">
+          <g id="b2-move"><g id="b2-card" transform="translate(615 420)"></g><g id="b2-marks" transform="translate(615 420)"></g></g>
+
+          <g id="b2-rep">
+            <rect id="b2-rep-f" class="ln line" x="960" y="150" width="810" height="300" />
+            <text id="b2-rep-t" class="mono head" x="990" y="194">normalization_report</text>
+            <path id="b2-rep-r" class="ln thin line" d="M960 214H1770" />
+            <g id="b2-rep-1"><text class="key" x="990" y="256">"speaker_labels_inferred":</text><text class="jval" x="1740" y="256" text-anchor="end">false</text></g>
+            <g id="b2-rep-2"><text class="key" x="990" y="296">"turns_with_low_confidence":</text><text class="jval" x="1740" y="296" text-anchor="end">[]</text></g>
+            <g id="b2-rep-3"><text class="key" x="990" y="336">"unparsed_segments":</text></g>
+            <text id="b2-rep-seg" class="key" x="1740" y="372" text-anchor="end">["Here's the transcript you asked for."]</text>
+            <rect id="b2-rep-box" class="ln line-strong" x="1270" y="350" width="480" height="32" />
+            <text id="b2-rep-st" class="mono small gold-t" x="1740" y="426" text-anchor="end">STATUS  RAW → INGESTED</text>
+          </g>
+
+          <g id="b2-ent">
+            <rect id="b2-ent-f" class="ln line" x="960" y="500" width="810" height="190" />
+            <text id="b2-ent-t" class="mono head" x="990" y="544">entities</text>
+            <path id="b2-ent-r" class="ln thin line" d="M960 564H1770" />
+            <g id="b2-ent-1"><text class="key" x="990" y="610">PERSON</text><text class="jval" x="1140" y="610">Dad</text><text class="key" x="1740" y="610" text-anchor="end">1 mention</text></g>
+            <g id="b2-ent-2"><text class="key" x="990" y="652">PLACE</text><text class="jval" x="1140" y="652">Birch Creek</text><text class="key" x="1740" y="652" text-anchor="end">1 mention</text></g>
+          </g>
+        </svg>
+        <div id="b2-label-l" class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate II</div>
+        <div id="b2-label-r" class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>Read and Tag</div>
+        <div class="statement two" data-layout-allow-overlap data-layout-allow-occlusion>
+          <div class="row"><span id="b2-st-a" class="phrase">Every line read.</span></div>
+          <div class="row"><span id="b2-st-b" class="phrase red">Nothing dropped.</span></div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 10.98);
+          const C = MQ.card(K.$("b2-card"), MQ.S1); // fully drawn: plate I handed it over
+
+          K.fade(K.$("b2-label-l"), K.T(10.98) + 0.1, 0.4);
+          K.fade(K.$("b2-label-r"), K.T(10.98) + 0.1, 0.4);
+          tl.fromTo(K.$("b2-move"), { x: 0, y: 0 }, { x: 130 - 615, y: 150 - 420, duration: 0.9, ease: "power2.inOut" }, K.T(10.98) + 0.1);
+
+          // normalize: what the import set aside is kept verbatim in the report, not thrown away
+          K.draw(K.$("b2-rep-f"), K.T(12.24), 0.8, "none");
+          K.fade(K.$("b2-rep-t"), K.T(12.24) + 0.3, 0.3);
+          K.draw(K.$("b2-rep-r"), K.T(12.24) + 0.4, 0.4, "none");
+          K.reveal(K.$("b2-st-a"), K.T(12.24), 0.6);
+          ["b2-rep-1", "b2-rep-2", "b2-rep-3"].forEach((id, i) => K.fade(K.$(id), K.T(12.85) + i * 0.63, 0.3));
+          K.fade(K.$("b2-rep-seg"), K.T(14.11) + 0.2, 0.4);
+          K.draw(K.$("b2-rep-box"), K.T(14.73), 0.4, "none");
+          K.reveal(K.$("b2-st-b"), K.T(14.73), 0.6);
+          K.fade(K.$("b2-rep-st"), K.T(15.36), 0.4);
+
+          // entities: people and places named in the turns
+          K.draw(K.$("b2-ent-f"), K.T(16.61), 0.7, "none");
+          K.fade(K.$("b2-ent-t"), K.T(16.61) + 0.3, 0.3);
+          K.draw(K.$("b2-ent-r"), K.T(16.61) + 0.4, 0.4, "none");
+          [[1, 0, 26, 3, "b2-ent-1"], [1, 1, 4, 11, "b2-ent-2"]].forEach(([r, l, c, n, id], i) => {
+            const b = C.word(r, l, c, n);
+            const m = el("rect", { class: "ln line-strong", x: b.x, y: b.y, width: b.w, height: b.h }, K.$("b2-marks"));
+            const at = K.T(17.23) + i * 0.63;
+            K.draw(m, at, 0.3, "none");
+            K.fade(K.$(id), at + 0.2, 0.3);
+          });
+
+          // clear to the card; plate III keeps it where it is
+          ["b2-rep", "b2-ent", "b2-marks", "b2-label-l", "b2-label-r"].forEach((id) => K.out(K.$(id), K.T(21.61), 0.4));
+          tl.to("#b2 .statement", { opacity: 0, duration: 0.4, ease: "power1.in" }, K.T(21.61));
+
+          window.__timelines["b2"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

@@ -1,0 +1,25 @@
+slug: lemo-opuscar
+name: Lemo-Opuscar
+kind: toolkit
+status: candidate
+does: 'A library of 66 film styles made in code for Claude Code: each is a STYLE.md prompt plus a demo film drawn in canvas or WebGL (16 of them cut from real archive footage, data or scans), scored and voiced, with no video model; DIRECTOR.md and TECHNIQUE.md guides tell the agent how to direct and build.'
+keywords:
+- look-dev
+- style-reference
+- explainer
+- catalogue
+fits:
+- mining styles for looks/ (build a language, never copy one film)
+- its Edit & Documentary and Evidence Films styles for Mark Achbar's reel and devweb
+- comparing its DIRECTOR.md self-checks with our review checklist
+deterministic: 'yes'
+how: not installed; `claude plugin marketplace add lemomo-ai/lemo-opuscar`, or read the repo
+cost: free (MIT)
+url: https://github.com/lemomo-ai/lemo-opuscar
+source: x.com/socialwithaayan/status/2116567606882967790 (10 motion-design repos, read 2026-11-01)
+detail: references/lemo-opuscar/ (README verdict; STUDY-styles.md all 66 against our looks; STUDY-edit-and-evidence.md for Achbar and devweb; STUDY-director-technique.md rules to take; STUDY-packaging.md)
+verdict: 'Claude, 2026-11-02 (#387): do not install the plugin, it claims every styled film request and runs its own pipeline. Take vocabulary, rules and a few MIT tools (readcheck.mjs, footage.py, sru.py, final_asr.py). 7 of 66 styles we have, 39 partial, 20 lack. Looks worth building first: archive light table and evidence board (Achbar), marker briefing wall and marker over screen recordings (devweb), a tour as a transit map (IndieAgent), one line in motion (Bob). Demo films are CC BY 4.0, not MIT.'
+related:
+- code-painted
+- hyperframes
+added: '2026-11-01'

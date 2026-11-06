@@ -1,0 +1,40 @@
+STYLE BRIEF: MARKER AND INK ON CREAM PAPER (the paperclip film, K10)
+Use only when the brief wants Ngo's surface as well as his thinking. Updated 2026-10-20.
+Two of his other surfaces are already built here: the clean vector look (K01, indieagent-clean-vector-test) and the arm look (K06, bobwiseman-travel-agent/js/arm.js). This brief is the third.
+
+WHAT IT IS
+A night office drawn in felt marker and one ink line on cream paper, every frame code. Flat colour laid down as visible strokes, one ink outline, one highlight per material, no gradients except the lamp pool, no outlines on anything seen through glass.
+
+PALETTE (sampled from the posted frames; use as a start, then sample again from the post)
+paper / office wall      #eee9dd  (the paper shows at every torn edge and is also the wall colour)
+ink                      #222338  (one weight; also the monitor body and the darkest sky bar)
+night sky strokes        #32355b and #33365c, laid as vertical strokes; each tower a slightly darker bar
+lit windows              #ebcf46 as small rectangles, scattered, never aligned
+sticky note              #ebcf46 to #efd04b, hatched diagonally in #e5b538; lifted corner lighter
+banker's lamp            shade #225c44 with a pale band; brass #ca9e50 with one pale stripe
+chrome wire (paperclip)  pale grey with one white streak and a dark edge line
+desk                     warm grey wood #a29a8d with faint grain strokes
+dawn sky                 horizontal strokes of lavender grey #c9bec5 and peach-yellow, sun #ceb244, skyline #9c8f99
+dawn interior            walls go lavender-grey, the lamp pool goes warm
+
+EDGES AND MARKS
+- One ink line, one weight, around every solid object. Slightly uneven, never doubled. Nothing seen through the window gets an outline: the city is flat strokes and dots.
+- Fills are strokes, not areas: vertical for the night sky, horizontal for dawn, diagonal hatch on the note, along the grain on the desk. Stroke direction is the texture; there is no grain overlay.
+- One highlight per material (brass band, chrome streak, glass glare band, note underside). Never two.
+- Shadows: soft, long, and only from the lamp; a soft ellipse pool on the desk, long soft shadows away from it. No cast shadows on exteriors.
+- Exteriors are drawn as a ragged marker rectangle on the paper: a jagged edge of stroke ends with the paper showing around it, the same mask (same seed) for the whole exterior run. Interiors are full bleed.
+
+FACES
+Two black dots and a mouth line, drawn on the object's flattest plane. Four states: content (small smile), worried (flat mouth, brows), shock (round open mouth), happy (closed-eye smile). They must read at 60 px. A wire character gets two dots in its loop and nothing else.
+
+MOTION
+- Objects move as what they are: paper flutters and turns on its own axes, wire bends in arcs with a little overshoot, a spring compresses and releases, a vacuum glides.
+- The shape-shifter re-forms in under a second, in place, then acts.
+- Camera: locked or a slow tilt along a prop (the phone cord), one slow fall over a perspective grid. No handheld, no zooms into faces.
+- Cuts on a frame grid (his: 64 frames; ours: the song's bars). About 22 shots a minute.
+
+REJECTS
+Gradients on objects, drop shadows, outlines on background buildings, more than one highlight on a material, a second texture pass, a face with eyebrows and teeth, any generated image or video frame, a style change mid-film.
+
+ACCEPTANCE CHECK
+Put a 1-second-per-frame contact sheet of the film beside the same from the post. Same cream, same single ink weight, strokes visible in every fill, one highlight per material, every exterior on the same ragged paper mask, faces readable at thumbnail size. Then look at one full-size frame: the ink line should be the only hard edge in it.

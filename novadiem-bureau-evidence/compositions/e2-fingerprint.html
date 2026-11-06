@@ -1,0 +1,89 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #e2 {
+          position: absolute;
+          inset: 0;
+        }
+      </style>
+      <div id="e2" data-composition-id="e2" data-width="1920" data-height="1080">
+        <div id="e2-all" class="layer">
+          <svg class="full" viewBox="0 0 1920 1080">
+            <g id="e2-art"></g>
+          </svg>
+          <div class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate II</div>
+          <div class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>Fingerprint</div>
+          <div id="e2-st" class="statement">
+            <span id="e2-st-a" class="phrase">Proceed, for</span>
+            <span id="e2-st-b" class="phrase red">these exact bytes.</span>
+          </div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text, kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 8.87);
+          const root = K.$("e2-art");
+
+          // the reviewed plan.md, as staged for the reviewer
+          const D = FP.doc(root, 140, 300, "plan.md", FP.PLAN1, { w: 600 });
+          FP.drawDoc(K, D, K.T(8.87));
+
+          // run-cold-reviewer.sh reads every byte of it
+          const scan = el("line", { class: "ln line", x1: 128, x2: 752, y1: 300, y2: 300, style: "stroke-width:3" }, root);
+          tl.fromTo(scan, { attr: { y1: 300, y2: 300 }, opacity: 1 }, { attr: { y1: 584, y2: 584 }, duration: 1.3, ease: "none" }, K.T(9.45));
+          tl.fromTo(scan, { opacity: 1 }, { opacity: 0, duration: 0.2, immediateRender: false }, K.T(9.45) + 1.3);
+          const nRead = text("THE HARNESS HASHES EVERY BYTE", { class: "mono small dim", x: 140, y: 636 }, root);
+          K.fade(nRead, K.T(9.45), 0.4);
+
+          // the fingerprint: 64 marks, one per hex digit of the SHA-256
+          const G = FP.glyph(root, FP.DIG.plan1, 1010, 440, 150);
+          FP.drawGlyph(K, G, K.T(10.63), 1.6);
+          const lab = text("artifact.sha256", { class: "mono", x: 1010, y: 640, "text-anchor": "middle" }, root);
+          const cap = text("SHA-256 · 64 MARKS, ONE PER HEX DIGIT", { class: "mono small gold-t", x: 1010, y: 670, "text-anchor": "middle" }, root);
+          K.fade(lab, K.T(10.63) + 0.3, 0.4);
+          K.fade(cap, K.T(11.82), 0.4);
+
+          // a fresh reviewer reads the document; it cannot hash, so it copies the fingerprint
+          const Rm = FP.room(root, 1350, 200, 380, 210, "COLD REVIEWER", "READ-ONLY · CANNOT HASH");
+          FP.drawRoom(K, Rm, K.T(12.98));
+          const route = el("path", { class: "ln line construct", d: "M440 300V240H1300V300H1350" }, root);
+          K.fade(route, K.T(13.58), 0.4, 0.5);
+          K.out(route, K.T(14.74), 0.4);
+          FP.carry(K, tl, root, "M440 300V240H1300V300H1400", K.T(13.58), 1.0);
+
+          const copy = el("g", { transform: "translate(1010 440)" }, root);
+          FP.glyph(copy, FP.DIG.plan1, 0, 0, 30);
+          tl.fromTo(copy, { opacity: 0 }, { opacity: 1, duration: 0.2 }, K.T(14.16));
+          K.travel(copy, el("path", { d: "M1010 440C1160 440 1300 350 1460 330" }), K.T(14.16), 0.9);
+          tl.fromTo(copy, { opacity: 1 }, { opacity: 0, duration: 0.2, immediateRender: false }, K.T(14.16) + 0.9);
+
+          // the verdict carries it
+          const C = FP.card(root, 1350, 470, 380, 230, "VERDICT");
+          FP.drawCard(K, C, K.T(15.35));
+          const r1 = text("Decision", { class: "mono small dim", x: 1374, y: 584 }, root);
+          const v1 = text("proceed", { class: "mono", x: 1706, y: 584, "text-anchor": "end" }, root);
+          const r2 = text("Artifact-hash", { class: "mono small dim", x: 1374, y: 656 }, root);
+          K.fade(r1, K.T(15.93), 0.3);
+          K.reveal(v1, K.T(15.93) + 0.1, 0.4);
+          K.fade(r2, K.T(16.51), 0.3);
+          const mini = FP.glyph(root, FP.DIG.plan1, 1672, 650, 30);
+          FP.showGlyph(K, mini, K.T(16.51), 0.4);
+
+          K.reveal(K.$("e2-st-a"), K.T(14.74), 0.55);
+          K.reveal(K.$("e2-st-b"), K.T(15.35), 0.55);
+
+          K.out(K.$("e2-all"), K.R(18.4), 0.45);
+          window.__timelines["e2"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

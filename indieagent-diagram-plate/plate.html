@@ -1,0 +1,32 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Fifty-three Nights · pen-and-pencil diagram plate</title>
+<style>html,body{margin:0;background:#1d1a17}canvas{display:block;width:100vw;height:auto}</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<script src="kit/vendor/pele.global.js"></script>
+<script src="kit/vendor/hershey.js"></script>
+<script src="kit/diagram.js"></script>
+<script src="data/tour.js"></script>
+<script src="js/hand.js"></script>
+<script src="js/plate.js"></script>
+<script>
+// Frame contract shared by every look (tools/motion-lab/frames.mjs): window.__ready, window.__frameJPEG(t, q).
+// ?w=1280 draws at 720p, ?notext=1 leaves the words out (contrast check), ?t=12 shows one frame, ?play=1 plays.
+(function () {
+  const qs = new URLSearchParams(location.search), cv = document.getElementById('c');
+  cv.width = Number(qs.get('w')) || 1920; cv.height = Math.round(cv.width * 1080 / 1920);
+  const R = HAND.renderer(cv, PLATE.strokes), notext = qs.get('notext') === '1';
+  window.__draw = (t) => R.draw(t, { notext });
+  window.__frameJPEG = async (t, q = 0.92) => { R.draw(t, { notext }); return cv.toDataURL('image/jpeg', q); };
+  window.__words = PLATE.words;
+  window.__ready = Promise.resolve(true);
+  if (qs.has('play')) { const t0 = performance.now(); const tick = () => { R.draw(((performance.now() - t0) / 1000) % (PLATE.END + 1)); requestAnimationFrame(tick); }; tick(); }
+  else R.draw(Number(qs.get('t') ?? PLATE.END));
+})();
+</script>
+</body>
+</html>

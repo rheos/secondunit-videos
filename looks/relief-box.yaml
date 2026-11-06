@@ -1,0 +1,61 @@
+slug: relief-box
+title: Sculpted shadowbox relief
+note: >-
+  A deep box of sculpted pastel pieces at dawn, filmed by a camera that slides across it: a sun made of lit
+  windows rises over stepped hills, trees bloom rosette by rosette, a train of beads rolls along piping between
+  two portholes. Every piece is cut in tiers so it reads as rounded clay, and casts a soft shadow on what sits
+  behind it.
+used: Relief box, test
+cost: free
+group: code
+order: 315
+clip: relief-box.mp4
+tall: false
+status: approved
+engine: canvas2d (paper-fox core)
+project: indieagent-relief-box
+code:
+  path: indieagent-relief-box/src/film.js
+  flag: null
+  page: indieagent-relief-box/index.html
+  note: >-
+    Built directly on Leon Lin's paper-fox engine: vendor/paper-fox/core is his src/core, unchanged (MIT, LICENSE
+    beside it). src/ holds our scene as ES modules in paper-fox's idiom (Scene, planes at depth z, baked sprites,
+    drawSprites). tools/bundle.mjs joins them into build/film.js so the page opens from file:// for render.mjs and
+    the cloud render; run it after every src edit. Branch look/relief-box, issue #327.
+rules:
+  - One shadowbox per shot. Back wall, four inner walls drawn through the camera each frame, a moulded frame at the front whose shadow falls into the box
+  - "Clay, not cut paper (draft 3): every piece is shaded as a rounded lump (kit.js clayForm): a blurred falloff into shadow away from the light, a tucked core shadow, a soft lit shoulder, a faint matte sheen; coils, stalks and piping are rolled tubes; corners are rounded (chaikin)"
+  - "Fine clay surface soft-lit into every piece: grain, faint fingerprint whorls, tiny pits; paper fibre kept barely visible underneath"
+  - "Soft light: two shadows under every piece (tight contact, wide soft), soft cut edges, bloom on the light parts, a gentle vignette"
+  - Hills are rows of rounded mounds pressed side by side, the back row paler
+  - Pastel palette on bone white: mint, pink, butter, slate, a little lilac; one dark accent (navy) inside the bubble only
+  - "Paper-fox density: twelve-plus planes from the back wall to a lens plane in front of the frame (1500 wall, 1480 sun, 1460/1400 hills, 1430 discs, 1290/1180 islands, 1240 coral, 1150 trees, 1100 track, 900 garland, 830/790 floor rows, 720 frame, 560 lens), every plane packed, each casting a drop shadow onto what is behind"
+  - "A language, not a copy: the vocabulary of the reference set (honeycomb walls, stepped tiers and roots, windows in a wheel, ruffle rosettes, dotted discs, curl clusters, tubes, beads, chevrons) in scenes of our own; no reference's composition or central figure"
+  - Motion is mechanical and calm: a sun climbs and turns, rosettes spring open one by one, beads roll along piping, islands drift and bob, the garland swings; the camera trucks across the box (x -120 to 110) and pushes in a little
+  - One light arc per shot (here a cool half-dark that lifts to warm light as the sun rises)
+  - Every frame a pure function of t, seeded randomness only
+palette:
+  - "#f1e9dd"
+  - "#8fd4cf"
+  - "#f3a9b6"
+  - "#f4e39b"
+  - "#8d9db3"
+  - "#ecd2bf"
+  - "#e6c8b6"
+  - "#2b3557"
+reference: >-
+  Photographs of sculpted clay relief panels in shadowboxes that Robin shared on 2026-10-25 (artist not yet
+  identified): studied for technique and motifs only, no piece copied. Engine and depth language from Leon Lin's
+  paper-fox (github.com/Leonxlnx/paper-fox, MIT).
+proof:
+  renders:
+    - indieagent-relief-box/out/draft/reliefbox_d3_f0-f264_24fps_draft.mp4
+  pr:
+    - rheos/secondunit-videos#328
+  youtube: []
+verdict: 'Robin, 2026-10-25, on draft 3 (figure-free, clay): "The clay look works. Approve it." Drafts 1-2 led to the rule: build a language from the reference set, never copy one piece.'
+related:
+  - paper-depth
+  - claymation
+  - felt

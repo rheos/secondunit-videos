@@ -1,0 +1,101 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #b6 {
+          position: absolute;
+          inset: 0;
+        }
+      </style>
+      <div id="b6" data-composition-id="b6" data-width="1920" data-height="1080">
+        <svg class="full" viewBox="0 0 1920 1080">
+          <g id="b6-scene"></g>
+          <g id="b6-new"></g>
+        </svg>
+        <div id="b6-label-l" class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate VI</div>
+        <div id="b6-label-r" class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>What Stays Off</div>
+        <div class="statement two" data-layout-allow-overlap data-layout-allow-occlusion>
+          <div class="row"><span id="b6-st-a" class="phrase red">Mostly one box.</span></div>
+          <div class="row"><span id="b6-st-b" class="phrase">Each exception has a reason.</span></div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text, kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 68);
+          const scene = K.$("b6-scene");
+          SH.scene(scene, 5); // everything so far
+          const N = K.$("b6-new");
+
+          K.fade(K.$("b6-label-l"), K.T(68.2), 0.4);
+          K.fade(K.$("b6-label-r"), K.T(68.2), 0.4);
+
+          // step back: the whole box shrinks to the middle of the sheet
+          const S1 = 0.6,
+            TX = 243,
+            TY = 202;
+          const z = { s: 1, x: 0, y: 0 };
+          tl.fromTo(
+            z,
+            { s: 1, x: 0, y: 0 },
+            {
+              s: S1,
+              x: TX,
+              y: TY,
+              duration: 1.2,
+              ease: "power2.inOut",
+              onUpdate: () => scene.setAttribute("transform", `translate(${z.x.toFixed(2)} ${z.y.toFixed(2)}) scale(${z.s.toFixed(4)})`),
+            },
+            K.T(68.82)
+          );
+          const wall = (x) => TX + S1 * x; // a scene x once shrunk
+          const wy = (y) => TY + S1 * y;
+
+          const card = (x, y, w, h, title, lines, at, planned) => {
+            const f = el("rect", { class: planned ? "ln planned" : "ln line", x, y, width: w, height: h }, N);
+            const t = text(title, { class: "mono", x: x + 24, y: y + 40 }, N);
+            const ls = lines.map(([s, cls], k) => text(s, { class: `mono ${cls}`, x: x + 24, y: y + 76 + k * 32 }, N));
+            (planned ? K.sweep : K.draw)(f, at, 0.6, "none");
+            K.fade(t, at + 0.3, 0.3);
+            ls.forEach((n, k) => K.fade(n, at + 0.45 + k * 0.15, 0.3));
+            return [f, t, ...ls];
+          };
+
+          // static sites never touch the box
+          card(110, 190, 420, 190, "STATIC SITES", [["AT A CDN EDGE", "cap"], ["novadiem.com", "host"], ["rheo.stream", "host"]], K.T(70.05));
+          const l1 = el("path", { class: "ln thin line construct", d: `M530 285H${wall(560) - 10}` }, N);
+          K.sweep(l1, K.T(70.05) + 0.6, 0.4);
+
+          // one app has to call out from outside the US
+          card(1390, 190, 430, 190, "ONE BOX ABROAD", [["ONE APP'S EXCHANGES", "cap"], ["BLOCK US TRAFFIC", "cap"]], K.T(71.94));
+
+          // one app still runs on its own server; the move onto the box is planned, so it is drawn dashed
+          card(110, 520, 420, 150, "NUTRIFAX", [["ITS OWN SERVER, FOR NOW", "cap"]], K.T(73.82));
+          const move = el("path", { class: "ln planned", d: `M530 595H${wall(560) - 8}` }, N);
+          const head = el("path", { class: "ln planned", d: `M${wall(560) - 22} 583L${wall(560) - 8} 595L${wall(560) - 22} 607` }, N);
+          const moveT = text("MOVE PLANNED", { class: "mono planned-t small", x: 110, y: 700 }, N);
+          K.sweep(move, K.T(73.82) + 0.6, 0.5);
+          K.sweep(head, K.T(73.82) + 1.0, 0.2);
+          K.fade(moveT, K.T(73.82) + 1.0, 0.4);
+
+          K.reveal(K.$("b6-st-a"), K.T(75.05), 0.6);
+          K.reveal(K.$("b6-st-b"), K.T(75.68), 0.8);
+
+          // hand over to the colophon
+          tl.to("#b6 svg", { opacity: 0, duration: 0.5, ease: "power1.in" }, K.T(78.81));
+          K.out(K.$("b6-label-l"), K.T(78.81), 0.4);
+          K.out(K.$("b6-label-r"), K.T(78.81), 0.4);
+          tl.to("#b6 .statement", { opacity: 0, duration: 0.4, ease: "power1.in" }, K.T(78.81));
+
+          window.__timelines["b6"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

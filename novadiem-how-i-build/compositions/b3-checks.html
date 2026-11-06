@@ -1,0 +1,62 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #b3 {
+          position: absolute;
+          inset: 0;
+        }
+      </style>
+      <div id="b3" data-composition-id="b3" data-width="1920" data-height="1080">
+        <svg class="full" viewBox="0 0 1920 1080">
+          <g id="b3-flow"></g>
+        </svg>
+        <div id="b3-label-l" class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate III</div>
+        <div id="b3-label-r" class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>The Checks</div>
+        <div class="statement two" data-layout-allow-overlap data-layout-allow-occlusion>
+          <div class="row"><span id="b3-st-a" class="phrase">Every PR is checked.</span></div>
+          <div class="row"><span id="b3-st-b" class="phrase red">Independent review where bugs stay silent.</span></div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text, kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 19);
+          const F = HB.flow(K.$("b3-flow"), ["main", "issue", "branch", "commits", "pr", "link", "checks", "review"]);
+          K.fade(K.$("b3-label-l"), K.T(19.44), 0.4);
+          K.fade(K.$("b3-label-r"), K.T(19.44), 0.4);
+
+          // the checks gate on the branch, each check ticks green
+          K.draw(F.checks.gate, K.T(20.06), 0.4);
+          K.fade(F.checks.label, K.T(20.06), 0.4);
+          F.checks.boxes.forEach((b, i) => K.draw(b, K.T(20.06) + i * 0.1, 0.3, "none"));
+          F.checks.ticks.forEach((t, i) => K.draw(t, K.T(20.69 + i * 0.6), 0.3));
+          K.reveal(K.$("b3-st-a"), K.T(21.29), 0.6);
+
+          // where a bug would stay silent, the diff also goes to a reviewer in a fresh context (The Cold Read)
+          const R = F.review;
+          K.draw(R.leader, K.T(23.17), 0.5);
+          K.draw(R.outer, K.T(23.8), 0.8, "none");
+          K.draw(R.inner, K.T(23.8) + 0.3, 0.7, "none");
+          K.fade(R.title, K.T(24.43), 0.4);
+          K.fade(R.sub, K.T(24.43) + 0.3, 0.4);
+          K.fade(R.when, K.T(25.05), 0.4);
+          K.reveal(R.tagA, K.T(25.05) + 0.3, 0.5);
+          K.reveal(R.tagB, K.T(25.68), 0.5);
+          K.reveal(K.$("b3-st-b"), K.T(25.68), 0.9);
+
+          K.out(K.$("b3-label-l"), K.T(30.67), 0.4);
+          K.out(K.$("b3-label-r"), K.T(30.67), 0.4);
+          tl.to("#b3 .statement", { opacity: 0, duration: 0.4, ease: "power1.in" }, K.T(30.67));
+          window.__timelines["b3"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

@@ -1,0 +1,52 @@
+slug: fieldguide
+title: Field-guide illustration
+note: >-
+  Hatched ink on cream paper over wide diagonal stripes. Every line swells and thins like a pen, each outline
+  is a darker shade of its own colour, and the fills carry a soft wash.
+used: Travel Agent, Bob Wiseman
+cost: free
+group: code
+collection: clean-line
+order: 340
+clip: fieldguide.mp4
+tall: false
+status: draft
+engine: canvas2d
+project: bobwiseman-travel-agent
+code:
+  path: bobwiseman-travel-agent/js/ink2.js
+  flag: null
+  page: bobwiseman-travel-agent/looks/film.html
+  note: kit.js draws; ink2.js wraps it (?ink=1 = the draft 15 line)
+rules:
+  - Cream paper with grain; wide diagonal stripe grounds, the colour shifting per act
+  - "Simple primitive figures: box coats, ellipse heads, stick legs; deadpan faces"
+  - "Ink lines are pressure ribbons: width and darkness swell and thin, tapered ends"
+  - Each outline and hatch is a darker cut of the fill it sits on, not one brown ink
+  - "Opaque fills get a wash: light from the upper left, a darker rim pooled inside the edge"
+  - Hatching only for shade, never gradients; drawn on twos
+  - Cut hard on the beat against the blueprint schematic look
+palette:
+  - "#efe5cd"
+  - "#3a2617"
+  - "#c8922e"
+  - "#d4682f"
+  - "#c98478"
+  - "#93a57c"
+  - "#3f7f7c"
+reference: >-
+  Kevin Ngo's Claude-drawn JavaScript films (honey bee, fruit fly); his line code (kengocodes figure-sheet
+  ink())
+proof:
+  renders:
+    - bobwiseman-travel-agent/out/ta_film-v16_f00000-f09682_24fps_draft.mp4
+  pr:
+    - rheos/secondunit-videos#113
+    - rheos/secondunit-videos#234
+  youtube:
+    - DZHAbJ2Ho3M
+verdict: "Robin, 2026-10-19: \"Draft 16 looks good.\" Kept as the Travel Agent look over the robot-arm style."
+related:
+  - blueprint
+  - macpaint
+  - armink

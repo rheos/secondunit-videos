@@ -1,0 +1,47 @@
+slug: medical
+title: Medical textbook plates
+note: >-
+  Engraved anatomy plates in an open book on green baize: a heart with a pump valve, the doctor with his
+  stethoscope, a daisy in a specimen jar.
+used: You Don't Love Me test, Bob Wiseman
+cost: free
+group: code
+order: 260
+clip: medical.mp4
+tall: false
+status: rejected
+engine: canvas2d
+project: bobwiseman-you-dont-love-me
+code:
+  path: bobwiseman-you-dont-love-me/js/medical/draw.js
+  flag: null
+  page: bobwiseman-you-dont-love-me/looks/medical.html
+  note: >-
+    On branch you-dont-love-me (draft PR #92), not merged. draw.js holds the engraving helpers, figures.js the
+    plates' figures; pages.js stays local.
+rules:
+  - Engraved plates in a doctor's folio open on green baize, with a daisy specimen card and a stethoscope beside it
+  - Parallel engraved lines that wobble a touch so they read as hand-cut; shade one side of a shape with hatching
+  - Flat colour fill first, hatch shading over it, then ink the outline; stipple for texture
+  - Numbered callouts on leader lines, Roman plate numerals, double-rule plate borders
+  - Old-style serif labels (Iowan Old Style, Baskerville)
+  - Page turns between spreads
+palette:
+  - "#2f2219"
+  - "#eee3c9"
+  - "#a6342c"
+  - "#566c92"
+  - "#5c784e"
+reference: Engraved medical textbook plates (anatomy, Snellen eye chart, phrenology bust, patent-medicine bottle)
+proof:
+  renders:
+    - bobwiseman-you-dont-love-me/out/ydlm_medical-v1_f1692-f2868_24fps_draft.mp4
+  pr:
+    - rheos/secondunit-videos#92
+  youtube:
+    - hmi7b9OBc94
+verdict: 'Bob, 2026-10-10, on the look reel: he wanted the whole song in the stained glass ("view the whole thing through that lens"), so the medical chart left the cut.'
+related:
+  - surveymap
+  - engraving
+  - stainedglass

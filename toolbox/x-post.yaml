@@ -1,0 +1,15 @@
+slug: x-post
+name: x_post.py
+kind: script
+status: available
+does: Posts a video to X as @rheostatiko; dry run unless --post.
+keywords:
+- upload
+- delivery
+deterministic: n/a
+how: '`tools/x-post/x_post.py`; keys/x/rheostatiko.env, OAuth 1.0a pair (the 2.0 token lacks media.write)'
+cost: free (paid X API tier)
+detail: memory `x-posting-rheostatiko`
+related:
+- yt-upload
+added: '2026-11-01'

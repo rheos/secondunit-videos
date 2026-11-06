@@ -1,0 +1,178 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #r5 {
+          position: absolute;
+          inset: 0;
+        }
+        #r5 svg text.stamp {
+          font-family: var(--font-mono);
+          font-size: 20px;
+          font-weight: 700;
+          letter-spacing: 0.16em;
+          fill: #6b5416;
+        }
+      </style>
+      <div id="r5" data-composition-id="r5" data-width="1920" data-height="1080">
+        <div class="layer">
+          <svg class="full" viewBox="0 0 1920 1080">
+            <g id="r5-sb"></g>
+            <g id="r5-top"></g>
+          </svg>
+          <div class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate V</div>
+          <div class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>Feature</div>
+          <div id="r5-st" class="statement">
+            <span id="r5-st-a" class="phrase">A feature takes</span>
+            <span id="r5-st-b" class="phrase red">the heaviest route.</span>
+          </div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text, kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 46.51);
+          const P = RT.build(K.$("r5-sb"));
+          const top = K.$("r5-top");
+          const X = (k) => RT.col(k).cx;
+
+          // plate IV's last state, standing
+          const S = RT.scene(P, top, {
+            route: "bug-fix",
+            ticket: "bug",
+            workflow: "bug-fix",
+            files: [[1, "repro.md"]],
+            lit: ["bug-fix"],
+            lamps: [
+              ["bug-fix", "analizer", "1"],
+              ["bug-fix", "coder", "3"],
+              ["bug-fix", "challenger", "4"],
+            ],
+            reticle: [RT.JACK, RT.RY(1)],
+          });
+          const ret = S.reticle;
+          const oldCall = text("the Conductor re-runs the repro", { class: "mono call", x: 1604, y: 662, "text-anchor": "end" }, top);
+          const dv = text("DEV-VERIFIED", { class: "stamp", x: 238, y: 730, "text-anchor": "middle" }, top);
+          const none = text("no spec · no plan · no prompts", { class: "mono small dim", x: 1636, y: 734, "text-anchor": "end" }, top);
+
+          // that run is done: clear it (a new task gets its own run dir)
+          const CLR = K.T(46.51) + 0.1;
+          [S.pick, S.cord, S.ticketW, S.w1, S.w2, S.files["repro.md"].g, S.lit["bug-fix"], oldCall, dv, none].forEach((n) => K.out(n, CLR, 0.4));
+          S.lamps.forEach((L) => [L.ring, L.fill, L.tag].forEach((n) => K.out(n, CLR, 0.4)));
+
+          // the feature arrives at the same desk
+          const fW = el("g", {}, top);
+          RT.ticket(fW, "feature", 238, 212);
+          tl.fromTo(fW, { opacity: 0, y: -60 }, { opacity: 1, y: 0, duration: 0.6, ease: "power2.out" }, K.T(47.09));
+
+          // triage again: this time the first row fits
+          const scan = el("g", {}, top);
+          el("path", { class: "ln line construct", d: "M424 -20H748V20H424Z" }, scan);
+          tl.fromTo(scan, { opacity: 0, y: RT.RY(0) }, { opacity: 1, y: RT.RY(0), duration: 0.3 }, K.T(47.67));
+          tl.to(scan, { opacity: 0, duration: 0.3 }, K.T(48.27) + 0.4);
+          K.draw(RT.pick("feature", top), K.T(48.27), 0.6, "none");
+          K.draw(RT.cord("feature", top), K.T(48.27) + 0.2, 0.8, "power1.inOut");
+          const w1 = text("workflow:", { class: "mono call", x: RT.DIR.cx, y: RT.DIR.slots[0] + 98, "text-anchor": "middle" }, top);
+          const w2 = text("feature", { class: "mono call", x: RT.DIR.cx, y: RT.DIR.slots[0] + 118, "text-anchor": "middle" }, top);
+          K.fade(w1, K.T(48.85), 0.4);
+          K.fade(w2, K.T(48.85) + 0.2, 0.4);
+
+          K.reveal(K.$("r5-st-a"), K.T(49.46), 0.6);
+          K.reveal(K.$("r5-st-b"), K.T(50.04), 0.8);
+
+          const light = (L, at) => {
+            K.draw(L.ring, at, 0.3);
+            K.fade(L.fill, at + 0.1, 0.25);
+            K.fade(L.tag, at + 0.2, 0.3);
+          };
+          const call = (str, at, until) => {
+            const t = text(str, { class: "mono call", x: 1604, y: 662, "text-anchor": "end" }, top);
+            K.fade(t, at, 0.3);
+            if (until) K.out(t, until, 0.25);
+            return t;
+          };
+          const toFile = (colKey, slot, name, at) => {
+            const s = RT.sheet(top, X(colKey), RT.RY(0));
+            K.fade(s, at, 0.15);
+            K.travel(s, RT.toDir(colKey, "feature", slot), at, 0.9);
+            tl.to(s, { opacity: 0, duration: 0.15 }, at + 0.9);
+            const f = RT.file(slot, name, top);
+            K.draw(f.body, at + 0.9, 0.4, "none");
+            K.draw(f.fold, at + 1.2, 0.2);
+            K.draw(f.lines, at + 1.25, 0.3);
+            K.fade(f.label, at + 1.1, 0.3);
+          };
+          const lamps = [];
+          const lampAt = (colKey, step, at) => {
+            const L = RT.lamp(P, "feature", colKey, step, top);
+            light(L, at);
+            lamps.push(L);
+            return L;
+          };
+
+          // the feature route (workflows/feature.md steps 1-9), the reticle visiting lamps in step order
+          RT.travel(tl, ret, el("path", { d: `M${RT.JACK} ${RT.RY(1)}V${RT.RY(0)}` }), K.T(49.46), 0.45);
+          K.draw(RT.litBus("feature", top), K.T(50.04), 0.6, "none");
+          RT.travel(tl, ret, RT.along("feature", RT.JACK, X("analizer")), K.T(50.04) + 0.1, 0.45);
+          const a1 = lampAt("analizer", "1", K.T(50.64));
+          call("1 · requirements → spec.md", K.T(50.64) + 0.2, K.T(51.8) - 0.25);
+          toFile("analizer", 1, "spec.md", K.T(50.64) + 0.3);
+
+          RT.travel(tl, ret, RT.along("feature", X("analizer"), X("architect")), K.T(51.8), 0.4);
+          lampAt("architect", "2", K.T(52.38) - 0.1);
+          call("2 · architecture and plan → plan.md", K.T(52.38), K.T(53.57) - 0.25);
+          toFile("architect", 2, "plan.md", K.T(52.38) + 0.1);
+
+          RT.travel(tl, ret, RT.along("feature", X("architect"), X("analizer")), K.T(53.57), 0.4);
+          const a3 = text("1 · 3", { class: "mono step", x: X("analizer") + 19, y: RT.RY(0) - 16 }, top);
+          tl.to(a1.tag, { opacity: 0, duration: 0.2 }, K.T(54.15) - 0.2);
+          K.fade(a3, K.T(54.15) - 0.05, 0.3);
+          call("3 · reconcile requirements with the plan", K.T(54.15), K.T(54.75) + 0.5);
+
+          // 4: a checkpoint goes back up the cord to the Delegate; the gate lifts and drops
+          RT.travel(tl, ret, RT.along("feature", X("analizer"), RT.JACK), K.T(54.75), 0.4);
+          const pulse = el("circle", { class: "fill-line", r: 7 }, top);
+          const up = el("path", { d: `M${RT.JACK - 9} ${RT.RY(0)}C600 ${RT.RY(0) + 30} 520 460 358 400` });
+          K.fade(pulse, K.T(55.33), 0.1);
+          K.travel(pulse, up, K.T(55.33), 0.55);
+          tl.to(pulse, { opacity: 0, duration: 0.15 }, K.T(55.33) + 0.55);
+          const cp = text("4 · checkpoint", { class: "mono step", x: 138, y: 449 }, top);
+          K.fade(cp, K.T(55.91) - 0.1, 0.3);
+          tl.fromTo(P.del.arm, { rotation: 0, svgOrigin: "148 420" }, { rotation: -22, svgOrigin: "148 420", duration: 0.4, ease: "power2.out" }, K.T(55.91) + 0.2);
+          tl.fromTo(P.del.arm, { rotation: -22, svgOrigin: "148 420" }, { rotation: 0, svgOrigin: "148 420", duration: 0.4, ease: "power2.in", immediateRender: false }, K.T(57.1));
+          K.out(cp, K.T(57.68), 0.3);
+
+          RT.travel(tl, ret, RT.along("feature", RT.JACK, X("challenger")), K.T(56.52), 0.6);
+          const c5 = lampAt("challenger", "5", K.T(57.1) + 0.05);
+          call("5 · cold review: spec and plan", K.T(57.1) + 0.25, K.T(58.28) - 0.25);
+
+          RT.travel(tl, ret, RT.along("feature", X("challenger"), X("cleric")), K.T(58.28), 0.35);
+          lampAt("cleric", "6 · 7", K.T(58.86) - 0.15);
+          call("6 · 7 · a design brief, or DESIGN: NOT NEEDED", K.T(58.86), K.T(60.05) - 0.25);
+
+          RT.travel(tl, ret, RT.along("feature", X("cleric"), X("spellwright")), K.T(60.05), 0.35);
+          lampAt("spellwright", "8", K.T(60.63) - 0.15);
+          call("8 · scoped prompts → prompts.md", K.T(60.63), K.T(61.81) - 0.25);
+          toFile("spellwright", 3, "prompts.md", K.T(60.63) - 0.05);
+
+          RT.travel(tl, ret, RT.along("feature", X("spellwright"), X("challenger")), K.T(61.81), 0.5);
+          const c9 = text("5 · 9", { class: "mono step", x: X("challenger") + 19, y: RT.RY(0) - 16 }, top);
+          tl.to(c5.tag, { opacity: 0, duration: 0.2 }, K.T(62.39) - 0.2);
+          K.fade(c9, K.T(62.39) - 0.05, 0.3);
+          call("9 · cold review: the prompts", K.T(62.39));
+          const noCoder = text("no coder: feature is a plan workflow", { class: "mono small dim", x: 1636, y: 734, "text-anchor": "end" }, top);
+          K.fade(noCoder, K.T(61.81), 0.4);
+
+          top.appendChild(ret); // the reticle rides above lamps and bus
+          window.__timelines["r5"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

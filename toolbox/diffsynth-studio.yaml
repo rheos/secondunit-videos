@@ -1,0 +1,15 @@
+slug: diffsynth-studio
+name: DiffSynth-Studio
+kind: toolkit
+status: rejected
+does: Toolkit for running and training diffusion image and video models (Wan, FLUX, Qwen-Image), LoRAs included.
+keywords:
+- video-gen
+- image
+deterministic: n/a
+how: not installed
+cost: free (Apache-2.0)
+url: https://github.com/modelscope/DiffSynth-Studio
+source: x.com/heyrimsha/status/2114672104021148033 (10 AI-filmmaker repos, read 2026-10-26)
+why: A self-hosted NVIDIA training kit; Fal's LTX 2.3 trainers are the route if we ever train a look or character LoRA.
+added: '2026-11-01'

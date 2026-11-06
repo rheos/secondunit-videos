@@ -1,0 +1,51 @@
+slug: drawn-playa
+title: Drawn surrealist playa
+note: >-
+  Flat cut-out figures set in a 3D desert under a drifting drone camera: a sax player in a purple striped coat
+  cycles past an octopus art car and a long boardroom table where egg-headed suits ride in office chairs. Hard
+  sun, long shadows, cracked mud drawn as polygons.
+used: The Reform Party at Burning Man, Bob Wiseman
+cost: free
+group: code
+order: 490
+clip: drawn-playa.mp4
+tall: false
+status: draft
+engine: canvas2d
+project: bobwiseman-reform-party
+code:
+  path: bobwiseman-reform-party/js/dali/world.js
+  flag: null
+  page: bobwiseman-reform-party/looks/dali.html
+  note: >-
+    On branch reform-party-1 (draft PR #129), not merged. world.js is the playa and pinhole camera, camera.js the
+    drone, car.js the boardroom car and suits, playa.js, artcars.js and installs.js the city, render.js the grade
+    and captions.
+rules:
+  - "One continuous 3D playa through a pinhole camera: flat ground, low horizon, clear sky, hard sun, long shadows"
+  - People are flat profile cut-outs placed in the 3D world; never mix in 3D-modelled characters
+  - Cracked mud drawn as polygons fixed in the world, so motion reads against them
+  - One drone camera that never stops moving; when it slows it hovers and drifts, never still more than 1-2 s, no snaps
+  - Nothing blinks in or out; a solid thing only appears or vanishes where the lens can't see it
+  - Dali touches (melting props, crutches, egg heads, drawers) on a real Burning Man (the Man, the city map, burn rituals, one-of-a-kind art cars, costumes)
+palette:
+  - "#2d5fa8"
+  - "#bfd6e2"
+  - "#e2c48e"
+  - "#b9874c"
+  - "#5a2416"
+  - "#2a2a33"
+  - "#f1e4cc"
+  - "#d0281f"
+reference: Salvador Dali; the real boardroom art car (built by Sean Lang); Robin's Burning Man photos (El Pulpo Mecanico, the Transportals portals)
+proof:
+  renders: []
+  pr:
+    - rheos/secondunit-videos#129
+  youtube:
+    - Pc4jJ1a0MWc
+    - otzI0l7OtEc
+    - gJMJ3M9_v1o
+verdict: 'Bob, 2026-10-16, on draft 2: "great thinking making it Dali-like". Robin, 2026-10-16, on draft 5''s drone camera: "this is much improved". Bob picked this drawn look over Blender in round 24 (2026-10-18).'
+related:
+  - playa-3d

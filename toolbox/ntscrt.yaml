@@ -1,0 +1,22 @@
+slug: ntscrt
+name: NTSCRT
+kind: app
+status: available
+does: 'Full vintage-TV look by hand: VHS signal, TV/VCR glitches, CRT scanlines, keyframed; Screen Loop feedback.'
+keywords:
+- vhs
+- crt
+- retro
+- glitch
+- scanlines
+fits:
+- flashback and home-video sections
+- show promos
+- found-tape teasers
+deterministic: n/a
+how: '`/Applications/NTSCRT.app` (GUI only), 0.17.0 installed 2026-10-14'
+cost: free
+detail: video-production `references/tools-catalogue.md` "VHS look in a script"
+related:
+- ntsc-rs
+added: '2026-10-27'

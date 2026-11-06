@@ -1,0 +1,96 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #c5 {
+          position: absolute;
+          inset: 0;
+        }
+      </style>
+      <div id="c5" data-composition-id="c5" data-width="1920" data-height="1080">
+        <div id="c5-all" class="layer">
+          <svg class="full" viewBox="0 0 1920 1080">
+            <g id="c5-art"></g>
+            <g id="c5-top"></g>
+          </svg>
+          <div class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate V</div>
+          <div class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>Second Review</div>
+          <div class="statement">
+            <span id="c5-st-a" class="phrase red">A fresh reviewer</span>
+            <span id="c5-st-b" class="phrase">grades the PR.</span>
+          </div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text } = BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = BP.kit(tl, 43.54);
+          const art = K.$("c5-art");
+          const top = K.$("c5-top");
+
+          // plate IV's end state, static
+          const M = CM.map(art, { id: "c5" });
+          CM.hide([M.park5.g]);
+          const lit = el("rect", { class: "ln line-strong", x: 576, y: 490, width: 178, height: 100, style: "stroke-width:3" }, M.g);
+          const A = CM.callout(art, 665, 540, 118, "A", "M665 422V350H1220");
+          const I = CM.inset(art, "A", 3, { prev: 2 });
+          const R = CM.route(art);
+
+          // run 3 reaches its PR; its final gate is green
+          CM.dim(tl, I.work, K.T(43.54), 0.3);
+          CM.dim(tl, I.del.g, K.T(43.54), 0.3);
+          CM.drawBox(K, I.pr, K.T(44.12));
+          K.reveal(I.prNote, K.T(44.72), 0.5);
+          // the map steps back while the Envoy checks the close-out itself
+          [M.g, A.g, R.g].forEach((n) => CM.dim(tl, n, K.T(44.72), 0.15));
+
+          const C = CM.checklist(top);
+          CM.drawCard(K, C, K.T(45.3));
+          C.rows.forEach((r, i) => {
+            K.reveal(r.t, K.T(45.88) + i * 0.29, 0.45);
+            K.draw(r.ok, K.T(46.49) + i * 0.58, 0.3);
+          });
+
+          // it does not grade the PR itself
+          const wrong = el("path", { class: "ln ink", d: "M180 254V300H770V655H796" }, top);
+          K.draw(wrong, K.T(49.37), 0.7, "none");
+          const slot = el("rect", { class: "ln ink construct", x: 800, y: 540, width: 340, height: 230, style: "opacity:0.6" }, top);
+          K.fade(slot, K.T(49.37), 0.3, 0.6);
+          const x = CM.cross(top, 770, 480);
+          K.draw(x, K.T(49.95), 0.3);
+          const n1 = CM.topNote(top, "THE ENVOY NEVER GRADES A RUN ON ITS OWN AUTHORITY");
+          K.reveal(n1, K.T(49.95), 0.5);
+          CM.out(tl, wrong, K.T(51.11), 0.3);
+          CM.out(tl, x, K.T(51.11), 0.3);
+
+          // it spawns a fresh cold reviewer for the second pass
+          const ok = CM.edge(top, "M180 254V300H970V326", 970, 330, "d");
+          CM.drawEdge(K, ok, K.T(51.11), 0.6);
+          const Rm = CM.room(top, 800, 330, 340, 180, "THE CHALLENGER", "FRESH CONTEXT");
+          CM.drawRoom(K, Rm, K.T(51.66));
+          CM.carry(K, tl, top, "M1640 606H1180V420H1140", K.T(52.22), 0.9);
+
+          const V = CM.verdict(top);
+          CM.drawCard(K, V, K.T(53.34));
+          CM.out(tl, slot, K.T(53.34), 0.2, 0.6);
+          V.rows.forEach((r, i) => K.fade(r, K.T(53.34) + 0.3 + i * 0.12, 0.3));
+          K.draw(V.ok, K.T(54.5), 0.3);
+          K.fade(V.n1, K.T(55.08), 0.3);
+          K.fade(V.n2, K.T(55.08) + 0.15, 0.3);
+
+          K.reveal(K.$("c5-st-a"), K.T(51.66), 0.55);
+          K.reveal(K.$("c5-st-b"), K.T(52.22), 0.55);
+          CM.out(tl, n1, K.R(55.7), 0.4);
+          CM.out(tl, K.$("c5-st-a").parentNode, K.R(55.7), 0.45);
+          window.__timelines["c5"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

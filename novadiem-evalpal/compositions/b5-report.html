@@ -1,0 +1,130 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #b5 {
+          position: absolute;
+          inset: 0;
+        }
+        #b5 svg text.tot {
+          font-family: var(--font-mono);
+          font-size: 30px;
+          font-weight: 700;
+          fill: var(--ink);
+        }
+      </style>
+      <div id="b5" data-composition-id="b5" data-width="1920" data-height="1080">
+        <svg class="full" viewBox="0 0 1920 1080">
+          <g id="b5-steps"></g>
+          <g id="b5-page" transform="translate(1000 150)"></g>
+          <g id="b5-calls"></g>
+        </svg>
+        <div id="b5-label-l" class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate V</div>
+        <div id="b5-label-r" class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>The Report</div>
+        <div class="statement two" data-layout-allow-overlap data-layout-allow-occlusion>
+          <div class="row"><span id="b5-st-a" class="phrase">A PDF report,</span></div>
+          <div class="row"><span id="b5-st-b" class="phrase red">screening only, not a diagnosis.</span></div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text, kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 51.5);
+          const PX = 1000,
+            PY = 150;
+
+          K.fade(K.$("b5-label-l"), K.T(52.45), 0.4);
+          K.fade(K.$("b5-label-r"), K.T(52.45), 0.4);
+
+          // ---- the page (generic app layout; synthetic answers and date) ----
+          const pg = K.$("b5-page");
+          const t = (str, x, y, cls, anchor, p) => text(str, Object.assign({ class: `sht ${cls || ""}`, x, y }, anchor ? { "text-anchor": anchor } : {}), p || pg);
+          const paper = el("rect", { class: "fill-bg", x: 0, y: 0, width: 440, height: 590, opacity: 0.94 }, pg);
+          const frame = el("rect", { class: "ln ink", x: 0, y: 0, width: 440, height: 590 }, pg);
+          const rules = [60, 112, 200, 436].map((y) => el("path", { class: "ln thin ink", d: `M0 ${y}H440` }, pg));
+          const head = el("g", {}, pg);
+          t("EvalPal", 24, 40, "val", null, head);
+          t("REPORT", 416, 40, "dim tiny", "end", head);
+          const inst = el("g", {}, pg);
+          t("PHQ-9 · v1.0", 24, 92, "val", null, inst);
+          t("2026-10-17", 416, 92, "dim tiny", "end", inst);
+          const tot = el("g", {}, pg);
+          t("TOTAL", 24, 148, "dim", null, tot);
+          text("6", { class: "tot", x: 416, y: 154, "text-anchor": "end" }, tot);
+          t("BAND", 24, 182, "dim", null, tot);
+          t("5–9 · Mild depression", 416, 182, "val", "end", tot);
+          const LABELS = ["Not at all", "Several days", "More than half the days", "Nearly every day"];
+          const VALS = [1, 1, 0, 2, 1, 0, 1, 0, 0, 1];
+          const rows = VALS.map((v, i) => {
+            const g = el("g", {}, pg);
+            const y = 230 + i * 21;
+            t(String(i + 1).padStart(2, "0"), 24, y, "tiny dim", null, g);
+            t(LABELS[v], 416, y, "tiny", "end", g);
+            return g;
+          });
+          const disc = el("rect", { class: "ln ink", x: 16, y: 452, width: 408, height: 122 }, pg);
+          const dtext = el("g", {}, pg);
+          ["This is a screening tool only.", "Results are not a diagnosis.", "Consult a qualified clinician."].forEach((s, i) => t(s, 36, 488 + i * 28, "val", null, dtext));
+
+          K.draw(frame, K.T(52.45), 0.8, "none");
+          K.fade(paper, K.T(52.45) + 0.3, 0.4, 0.94);
+          rules.forEach((r, i) => K.draw(r, K.T(53.1) + i * 0.1, 0.3, "none"));
+          K.fade(head, K.T(53.1), 0.3);
+          K.fade(inst, K.T(53.78), 0.3);
+          K.fade(tot, K.T(54.43), 0.3);
+          rows.forEach((r, i) => K.fade(r, K.T(55.08) + i * 0.1, 0.25));
+          K.draw(disc, K.T(56.38), 0.5, "none");
+          K.fade(dtext, K.T(56.38) + 0.3, 0.4);
+
+          // ---- what feeds it: the frozen definition, the stored score, the decrypted answers ----
+          const steps = K.$("b5-steps");
+          [
+            { name: "SNAPSHOT", sub: "the definition, frozen at start", y: 200, to: PY + 86, at: 53.78 },
+            { name: "SCORE", sub: "stored at submit", y: 320, to: PY + 160, at: 54.43 },
+            { name: "DECRYPT", sub: "each answer, with the app key", y: 440, to: PY + 320, at: 55.08 },
+          ].forEach((s) => {
+            const box = el("rect", { class: "ln ink", x: 200, y: s.y, width: 440, height: 80 }, steps);
+            const n = text(s.name, { class: "mono", x: 224, y: s.y + 34 }, steps);
+            const sub = text(s.sub, { class: "sht dim", x: 224, y: s.y + 60 }, steps);
+            const mid = s.y + 40;
+            const arrow = el("path", { class: "ln line", d: `M644 ${mid}C800 ${mid} 840 ${s.to} 994 ${s.to}` }, steps);
+            const at = K.T(s.at);
+            K.draw(box, at - 0.3, 0.4, "none");
+            K.fade(n, at - 0.15, 0.3);
+            K.fade(sub, at, 0.3);
+            K.draw(arrow, at + 0.1, 0.45);
+          });
+
+          K.reveal(K.$("b5-st-a"), K.T(57.68), 0.5);
+          K.reveal(K.$("b5-st-b"), K.T(58.33), 0.8);
+
+          // ---- callouts on the page ----
+          const calls = K.$("b5-calls");
+          [
+            { label: "INSTRUMENT + VERSION", y: PY + 86, at: 58.98 },
+            { label: "TOTAL + BAND", y: PY + 160, at: 59.63 },
+            { label: "EVERY ANSWER", y: PY + 320, at: 60.3 },
+            { label: "DISCLAIMER · ALWAYS", y: PY + 513, at: 60.93 },
+          ].forEach((c) => {
+            const lead = el("path", { class: "ln thin line-strong", d: `M1446 ${c.y}H1510` }, calls);
+            const lab = text(c.label, { class: "mono small gold-t", x: 1520, y: c.y + 6 }, calls);
+            K.draw(lead, K.T(c.at), 0.3, "none");
+            K.fade(lab, K.T(c.at) + 0.15, 0.3);
+          });
+
+          // clear the plate for VI
+          ["b5-steps", "b5-page", "b5-calls", "b5-label-l", "b5-label-r"].forEach((id) => K.out(K.$(id), K.T(63.55), 0.4));
+          tl.to("#b5 .statement", { opacity: 0, duration: 0.4, ease: "power1.in" }, K.T(63.55));
+
+          window.__timelines["b5"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

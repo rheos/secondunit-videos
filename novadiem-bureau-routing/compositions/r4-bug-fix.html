@@ -1,0 +1,116 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #r4 {
+          position: absolute;
+          inset: 0;
+        }
+        #r4 svg text.stamp {
+          font-family: var(--font-mono);
+          font-size: 20px;
+          font-weight: 700;
+          letter-spacing: 0.16em;
+          fill: #6b5416;
+        }
+      </style>
+      <div id="r4" data-composition-id="r4" data-width="1920" data-height="1080">
+        <div class="layer">
+          <svg class="full" viewBox="0 0 1920 1080">
+            <g id="r4-sb"></g>
+            <g id="r4-top"></g>
+          </svg>
+          <div class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate IV</div>
+          <div class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>Bug Fix</div>
+          <div id="r4-st" class="statement">
+            <span id="r4-st-a" class="phrase">The bug is</span>
+            <span id="r4-st-b" class="phrase red">the spec.</span>
+          </div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text, kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 35.34);
+          const P = RT.build(K.$("r4-sb"));
+          const top = K.$("r4-top");
+          const S = RT.scene(P, top, { route: "bug-fix", ticket: "bug", workflow: "bug-fix", reticle: [RT.JACK, RT.RY(1)] });
+          const ret = S.reticle;
+          const X = (k) => RT.col(k).cx;
+
+          const light = (L, at) => {
+            K.draw(L.ring, at, 0.3);
+            K.fade(L.fill, at + 0.1, 0.25);
+            K.fade(L.tag, at + 0.2, 0.3);
+          };
+          const call = (str, at, until) => {
+            const t = text(str, { class: "mono call", x: 1604, y: 662, "text-anchor": "end" }, top);
+            K.fade(t, at, 0.35);
+            if (until) K.out(t, until, 0.3);
+            return t;
+          };
+          const toFile = (colKey, slot, name, at) => {
+            const s = RT.sheet(top, X(colKey), RT.RY(1));
+            K.fade(s, at, 0.15);
+            K.travel(s, RT.toDir(colKey, "bug-fix", slot), at, 1.0);
+            tl.to(s, { opacity: 0, duration: 0.15 }, at + 1.0);
+            const f = RT.file(slot, name, top);
+            K.draw(f.body, at + 1.0, 0.45, "none");
+            K.draw(f.fold, at + 1.35, 0.2);
+            K.draw(f.lines, at + 1.4, 0.3);
+            K.fade(f.label, at + 1.2, 0.3);
+            return f;
+          };
+
+          // the bug-fix route lights
+          K.draw(RT.litBus("bug-fix", top), K.T(35.34) + 0.05, 0.6, "none");
+          top.appendChild(ret); // keep the reticle above the bus and the lamps
+
+          // 1: Analizer 2000 reproduces the bug and locates the cause (workflows/bug-fix.md step 1)
+          RT.travel(tl, ret, RT.along("bug-fix", RT.JACK, X("analizer")), K.T(35.92), 0.55);
+          const l1 = RT.lamp(P, "bug-fix", "analizer", "1", top);
+          light(l1, K.T(36.52));
+          top.appendChild(ret);
+          call("1 · reproduce, locate the cause", K.T(36.52) + 0.2, K.T(38.87) - 0.3);
+          toFile("analizer", 1, "repro.md", K.T(36.52) + 0.4);
+
+          K.reveal(K.$("r4-st-a"), K.T(37.11), 0.6);
+          K.reveal(K.$("r4-st-b"), K.T(37.69), 0.8);
+
+          // 3: one coder fixes it in a worktree, with a regression test (step 2 is the worktree itself)
+          RT.travel(tl, ret, RT.along("bug-fix", X("analizer"), X("coder")), K.T(38.87), 0.9);
+          const l3 = RT.lamp(P, "bug-fix", "coder", "3", top);
+          light(l3, K.T(39.45) + 0.25);
+          top.appendChild(ret);
+          call("3 · one coder fixes it in a worktree, with a regression test", K.T(40.03), K.T(41.22) - 0.3);
+          const who = text("CODER: the Mage, the Systemsmith or the Mechanic", { class: "mono small dim", x: 1636, y: 734, "text-anchor": "end" }, top);
+          K.fade(who, K.T(40.03) + 0.3, 0.4);
+          K.out(who, K.T(43.58), 0.3);
+
+          // 4: the Challenger reviews the diff cold
+          RT.travel(tl, ret, RT.along("bug-fix", X("coder"), X("challenger")), K.T(41.22), 0.7);
+          const l4 = RT.lamp(P, "bug-fix", "challenger", "4", top);
+          light(l4, K.T(41.8) + 0.15);
+          top.appendChild(ret);
+          call("4 · cold review: the diff and repro.md, never log.md", K.T(42.4), K.T(43.58) - 0.3);
+
+          // the Conductor adjudicates and re-runs the repro
+          RT.travel(tl, ret, RT.along("bug-fix", X("challenger"), RT.JACK), K.T(43.58), 0.8);
+          call("the Conductor re-runs the repro", K.T(44.16));
+          const dv = text("DEV-VERIFIED", { class: "stamp", x: 238, y: 730, "text-anchor": "middle" }, top);
+          K.fade(dv, K.T(44.16) + 0.2, 0.35);
+          const none = text("no spec · no plan · no prompts", { class: "mono small dim", x: 1636, y: 734, "text-anchor": "end" }, top);
+          K.fade(none, K.T(44.74), 0.4);
+
+          window.__timelines["r4"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

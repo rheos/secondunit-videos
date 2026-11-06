@@ -1,0 +1,113 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #b2 {
+          position: absolute;
+          inset: 0;
+        }
+      </style>
+      <div id="b2" data-composition-id="b2" data-width="1920" data-height="1080">
+        <div id="b2-all" class="layer">
+          <svg class="full" viewBox="0 0 1920 1080">
+            <defs>
+              <clipPath id="b2-clip"><rect x="584" y="424" width="752" height="206" /></clipPath>
+            </defs>
+            <g id="b2-room"></g>
+            <g id="b2-feed-clip" clip-path="url(#b2-clip)"><g id="b2-feed"></g></g>
+            <g id="b2-top"></g>
+          </svg>
+          <div class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate II</div>
+          <div class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>One Session</div>
+          <div class="statement">
+            <span id="b2-st-a" class="phrase">Decisions get</span>
+            <span id="b2-st-b" class="phrase red">buried in chat.</span>
+          </div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text, kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 8.3);
+          const room = K.$("b2-room"),
+            feed = K.$("b2-feed"),
+            top = K.$("b2-top");
+
+          // one room, one context, every job
+          const outer = el("rect", { class: "ln ink", x: 560, y: 170, width: 800, height: 480 }, room);
+          const inner = el("rect", { class: "ln thin ink", x: 568, y: 178, width: 784, height: 464 }, room);
+          const tag = text("ONE SESSION · ONE CONTEXT", { class: "mono small", x: 588, y: 206, opacity: 0.7 }, room);
+          K.draw(outer, K.T(8.45), 1.0, "none");
+          K.draw(inner, K.T(8.89), 0.8, "none");
+          K.fade(tag, K.T(9.33), 0.4, 0.7);
+
+          const STATIONS = [
+            { name: "INTERPRET", cx: 660, glyph: "M-26 0A26 26 0 1 0 26 0A26 26 0 1 0 -26 0M-40 0H-18M18 0H40M0 -40V-18M0 18V40" },
+            { name: "DESIGN", cx: 860, glyph: "M-30 28H30L-30 -32ZM-30 6A22 22 0 0 1 -8 28" },
+            { name: "BUILD", cx: 1060, glyph: "M-28 -28H28V28H-28ZM-28 28L28 -28M-28 0H28" },
+            { name: "REVIEW", cx: 1260, glyph: "M0 -34L34 0L0 34L-34 0Z" },
+          ];
+          STATIONS.forEach((s, i) => {
+            const at = K.T(10.22) + i * 0.44;
+            const gg = el("g", { transform: `translate(${s.cx} 312)` }, room);
+            K.draw(el("path", { class: "ln line", d: s.glyph }, gg), at, 0.6);
+            K.fade(text(s.name, { class: "mono", x: s.cx, y: 384, "text-anchor": "middle" }, room), at + 0.25, 0.35);
+            if (i > 0) {
+              const x1 = STATIONS[i - 1].cx + 46,
+                x2 = s.cx - 46;
+              K.draw(el("path", { class: "ln line", d: `M${x1} 312H${x2}M${x2 - 9} 304L${x2} 312L${x2 - 9} 320` }, room), at - 0.2, 0.3);
+            }
+          });
+          // the review loops back to the same desk
+          const arc = el("path", { class: "ln line", d: "M1260 270C1260 232 660 232 660 270" }, room);
+          const head = el("path", { class: "ln line", d: "M652 260L660 270L668 260" }, room);
+          const own = text("REVIEWS ITS OWN WORK", { class: "mono small gold-t", x: 960, y: 228, "text-anchor": "middle" }, room);
+          K.draw(arc, K.T(12.42), 0.9, "none");
+          K.draw(head, K.T(13.31), 0.2);
+          K.fade(own, K.T(13.31), 0.4);
+
+          // the brief comes in
+          const brief = BM.token(top, "BRIEF", 400, 312);
+          K.fade(brief, K.T(9.33), 0.3);
+          K.travel(brief, el("path", { d: "M400 312H578" }), K.T(9.33), 0.9);
+
+          // the transcript: new lines arrive at the bottom, decisions scroll up and out of sight
+          const lab = text("TRANSCRIPT", { class: "mono small", x: 588, y: 414, opacity: 0.7 }, room);
+          K.fade(lab, K.T(9.78), 0.4, 0.7);
+          const W = [520, 610, 380, 690, 450, 560, 300, 640, 500, 420, 670, 350, 590, 470, 620, 330, 560, 690, 410, 530, 600, 360, 650, 480];
+          const DEC = { 2: 760, 6: 980, 10: 1120 };
+          const t0 = K.T(10.22);
+          W.forEach((w, i) => {
+            const y = 438 + i * 18;
+            const ln = el("path", { class: "ln thin ink", d: `M600 ${y}H${600 + w}`, opacity: 0.55 }, feed);
+            K.fade(ln, t0 + i * 0.3, 0.2, 0.55);
+            if (DEC[i]) {
+              const x = DEC[i];
+              const d = el("path", { class: "fill-gold", d: `M${x} ${y - 8}L${x + 8} ${y}L${x} ${y + 8}L${x - 8} ${y}Z` }, feed);
+              K.fade(d, t0 + i * 0.3, 0.2);
+              if (i === 2) K.fade(text("DECISION", { class: "mono small gold-t", x: x + 16, y: y + 5 }, feed), t0 + i * 0.3 + 0.1, 0.3);
+            }
+          });
+          tl.fromTo(feed, { y: 0 }, { y: -238, duration: W.length * 0.3, ease: "none" }, t0);
+
+          // out goes a packet that says finished
+          const done = BM.token(top, "FINISHED", 1312, 312);
+          tl.fromTo(done, { opacity: 0 }, { opacity: 1, duration: 0.3 }, K.T(15.95));
+          K.travel(done, el("path", { d: "M1312 312H1560" }), K.T(15.95), 1.0);
+
+          K.reveal(K.$("b2-st-a"), K.T(14.63), 0.6);
+          K.reveal(K.$("b2-st-b"), K.T(15.07), 0.8);
+
+          K.out(K.$("b2-all"), 18.55 - 8.3, 0.45);
+          window.__timelines["b2"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

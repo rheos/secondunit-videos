@@ -1,0 +1,48 @@
+slug: storybook
+title: Storybook cartoon, painted ground
+note: >-
+  Round outlined characters with simple faces over soft painted backgrounds that have no outlines at all:
+  layered hills, haze and sunlight. The elephant tries to open the gorilla's banana with its trunk.
+used: Real Thing, Bob Wiseman
+cost: free
+group: code
+collection: clean-line
+order: 310
+clip: storybook.mp4
+tall: false
+status: draft
+engine: canvas2d
+project: bobwiseman-real-thing
+code:
+  path: bobwiseman-real-thing/js/gorilla/kit.js
+  flag: null
+  page: bobwiseman-real-thing/gorilla.html
+  note: >-
+    On branch real-thing-gorilla (draft PR #242, into real-thing-roto), not merged. kit.js, cast.js, world.js
+    and act0-act5.js draw it; look bible in STORYBOARD-gorilla.md (gitignored).
+rules:
+  - Only characters get outlines, in thick dark-brown ink, 5 px on screen at any zoom
+  - "Characters are whole poses: big round head, small pear body, tube limbs bending in one curve, mitts, big flat feet; no visible joints"
+  - The face does the acting (eye shapes, brows, mouths)
+  - "Backgrounds have no outlines: layered gradient shapes, lighter and bluer with distance, light rays, a stepped sun halo, flowers, tufts, ferns"
+  - One paper grain and vignette over the whole frame
+  - Eased moves with overshoot, ringing impacts, sparkles on surprises, a cartoon dust cloud for scuffles
+  - A light arc over the song, dawn to day to dusk to moonlit night to sunrise
+palette:
+  - "#3e3735"
+  - "#9b8676"
+  - "#f3cf45"
+  - "#2b211c"
+reference: Kevin Ngo's One Ring film (outlined chibi characters on unoutlined painted grounds); the elephant redrawn after his hobbits
+proof:
+  renders:
+    - bobwiseman-real-thing/out/realthing_gorilla-d3_f00000-f03981_24fps_draft.mp4
+  pr:
+    - rheos/secondunit-videos#242
+  youtube:
+    - rwTvtgV7ry4
+    - MkRNnD4DYhA
+verdict: 'Robin, 2026-10-19, on the look test: "this beats the marionettes. Take the gorilla story through the whole song". Later that day he found it "a bit silly" (keep it if Bob wants it).'
+related:
+  - outlinecartoon
+  - crisp-line

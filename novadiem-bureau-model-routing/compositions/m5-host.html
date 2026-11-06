@@ -1,0 +1,99 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #m5 {
+          position: absolute;
+          inset: 0;
+        }
+        #m5 .statement {
+          top: 820px;
+          font-size: 60px;
+        }
+      </style>
+      <div id="m5" data-composition-id="m5" data-width="1920" data-height="1080">
+        <div class="layer">
+          <svg class="full" viewBox="0 0 1920 1080">
+            <g id="m5-art"></g>
+            <g id="m5-side"></g>
+          </svg>
+          <div class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate V</div>
+          <div class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>Another Host</div>
+          <div id="m5-st" class="statement"><span class="phrase red">The tiers don't move.</span></div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text, kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 48.6);
+
+          // plate IV's end state: the Spellwright on its retry tier
+          const tiers = CB.TIER.slice();
+          tiers[2] = "escalated";
+          const B = CB.board(K.$("m5-art"));
+          const st = CB.fill(B, { tiers, host: "claude" });
+          const side = K.$("m5-side");
+
+          // a new run starts on another host (scripts/run-start.sh --runtime openai)
+          const nr = text("NEXT RUN", { class: "mono big", x: 1524, y: 222 }, side);
+          const rs1 = text("run-start.sh", { class: "mono small", x: 1524, y: 256 }, side);
+          const rs2 = text("--runtime openai", { class: "mono small gold-t", x: 1524, y: 282 }, side);
+          K.reveal(nr, K.T(48.6), 0.5);
+          K.reveal(rs1, K.T(49.18), 0.4);
+          K.reveal(rs2, K.T(49.18) + 0.2, 0.4);
+
+          // routing is resolved fresh: the Spellwright starts on its own tier again
+          const tS = CB.cell(B, 2, "tier", "standard");
+          CB.swap(K, tl, st.tier[2], tS, K.T(49.76));
+          const mS = CB.cell(B, 2, "model", "sonnet");
+          CB.swap(K, tl, st.model[2], mS, K.T(49.76) + 0.2);
+          st.model[2] = mS;
+
+          // the host column flips, all rows at once
+          const hostBand = CB.colBand(B, "host");
+          K.fade(hostBand, K.T(51.53), 0.25, 0.2);
+          for (let r = 0; r < 7; r++) CB.swap(K, tl, st.host[r], CB.cell(B, r, "host", "openai", "w4"), K.T(51.53));
+          tl.fromTo(hostBand, { opacity: 0.2 }, { opacity: 0, duration: 0.4, immediateRender: false }, K.T(53.29));
+
+          // the tier column holds
+          const tierBand = CB.colBand(B, "tier");
+          K.fade(tierBand, K.T(52.71), 0.3, 0.2);
+          K.reveal(K.$("m5-st"), K.T(53.29), 0.7);
+
+          // the Codex adapter maps the same tiers to its own models and effort
+          const C = CB.fileCard(side, 1510, 330, 320, "runtimes/openai.json", ["tier -> model + effort"]);
+          CB.drawFile(K, C, K.T(54.47));
+          for (let r = 0; r < 7; r++) {
+            const [m, e] = CB.OPENAI[CB.TIER[r]];
+            const at = K.T(55.05) + r * 0.58;
+            CB.swap(K, tl, st.model[r], CB.cell(B, r, "model", m), at);
+            CB.swap(K, tl, st.effort[r], CB.cell(B, r, "effort", e, "w4"), at + 0.1);
+          }
+          tl.fromTo(tierBand, { opacity: 0.2 }, { opacity: 0, duration: 0.4, immediateRender: false }, K.T(59.19));
+
+          // not every host is a build host (docs/host-runtime.md, Subscription vs metered API)
+          const or1 = text("--runtime openrouter", { class: "mono small", x: 1524, y: 520 }, side);
+          K.reveal(or1, K.T(59.19), 0.5);
+          const S = CB.stamp(side, "NOT A BUILD HOST", 1680, 576, 330);
+          CB.slam(tl, S, K.T(59.77));
+          const o1 = text("metered API: non-build", { class: "mono small", x: 1524, y: 652 }, side);
+          const o2 = text("passes only", { class: "mono small", x: 1524, y: 678 }, side);
+          const o3 = text("run-start.sh refuses it", { class: "mono small gold-t", x: 1524, y: 716 }, side);
+          K.reveal(o1, K.T(60.35), 0.45);
+          K.reveal(o2, K.T(60.35) + 0.2, 0.45);
+          K.reveal(o3, K.T(60.95), 0.5);
+
+          K.out(side, K.R(64.0), 0.45);
+          K.out(K.$("m5-st"), K.R(64.0), 0.45);
+          window.__timelines["m5"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

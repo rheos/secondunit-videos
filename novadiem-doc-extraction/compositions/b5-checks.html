@@ -1,0 +1,146 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #b5 {
+          position: absolute;
+          inset: 0;
+        }
+      </style>
+      <div id="b5" data-composition-id="b5" data-width="1920" data-height="1080">
+        <svg class="full" viewBox="0 0 1920 1080">
+          <!-- check 1: unpaid + current = total -->
+          <text id="b5-h1" class="mono small gold-t" x="200" y="178">CHECK 1 · THE SUM</text>
+          <rect id="b5-a" class="ln ink" x="220" y="230" width="118.6" height="36" />
+          <rect id="b5-a-fill" class="fill-line" x="220" y="230" width="118.6" height="36" opacity="0.35" />
+          <text id="b5-a-l" class="mono small" x="220" y="216">UNPAID 12.50</text>
+          <rect id="b5-b" class="ln ink" x="338.6" y="230" width="581.4" height="36" />
+          <rect id="b5-b-fill" class="fill-line" x="338.6" y="230" width="581.4" height="36" opacity="0.15" />
+          <text id="b5-b-l" class="mono small" x="629" y="216" text-anchor="middle">CURRENT 61.25</text>
+          <path id="b5-ext" class="ln line construct" d="M220 266V312M920 266V312" />
+          <path id="b5-dim" class="ln ink" d="M220 300H920M220 290V310M920 290V310" />
+          <text id="b5-dim-l" class="mono" x="570" y="336" text-anchor="middle">TOTAL DUE 73.75</text>
+          <path id="b5-t1" class="ln line-strong" d="M944 300l7 8l14 -17" stroke-width="3" />
+          <text id="b5-t1-l" class="mono small" x="978" y="306">TO THE CENT</text>
+
+          <!-- check 2: due date 7 to 31 days after the bill date -->
+          <text id="b5-h2" class="mono small gold-t" x="200" y="430">CHECK 2 · THE DUE DATE</text>
+          <rect id="b5-win-fill" class="fill-line" x="434.4" y="500" width="467.7" height="32" opacity="0.2" />
+          <rect id="b5-win" class="ln line-strong" x="434.4" y="500" width="467.7" height="32" />
+          <text id="b5-win-l" class="mono small" x="668" y="490" text-anchor="middle">7 TO 31 DAYS AFTER</text>
+          <path id="b5-axis" class="ln ink" d="M220 540H980" />
+          <g id="b5-days"></g>
+          <path id="b5-bill" class="ln ink" d="M298 478V552" />
+          <text id="b5-bill-l" class="mono small" x="298" y="578" text-anchor="middle">BILL 03-14</text>
+          <path id="b5-due" class="ln ink" d="M707.6 498V552" stroke-width="3" />
+          <text id="b5-due-l" class="mono small" x="707.6" y="578" text-anchor="middle">DUE 04-04</text>
+          <path id="b5-t2" class="ln line-strong" d="M1004 538l7 8l14 -17" stroke-width="3" />
+          <text id="b5-t2-l" class="mono small" x="1038" y="544">21 DAYS</text>
+
+          <!-- check 3: every required field present -->
+          <text id="b5-h3" class="mono small gold-t" x="1150" y="178">CHECK 3 · REQUIRED FIELDS</text>
+          <g id="b5-rows"></g>
+          <path id="b5-route" class="ln accent-s" d="M1712 572V650H1566" />
+          <path id="b5-arrow" d="M1566 650l14 -8v16z" style="fill: var(--accent)" />
+          <g id="b5-gate">
+            <path id="b5-gate-posts" class="ln ink" d="M1420 600V700M1540 600V700" stroke-width="3" />
+            <path id="b5-gate-bar" class="ln ink" d="M1408 630H1552M1420 670L1540 630" />
+          </g>
+          <text id="b5-gate-l" class="mono" x="1480" y="730" text-anchor="middle">NEEDS REVIEW</text>
+        </svg>
+        <div id="b5-label-l" class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate V</div>
+        <div id="b5-label-r" class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>The Checks</div>
+        <div class="statement two" data-layout-allow-overlap data-layout-allow-occlusion>
+          <div class="row">
+            <span id="b5-st-a" class="phrase">Doubtful values are</span>
+            <span id="b5-st-b" class="phrase red">flagged,</span>
+          </div>
+          <div class="row"><span id="b5-st-c" class="phrase">not passed along.</span></div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text, kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 51.9);
+          const $ = K.$;
+
+          // nothing draws until plate IV's night has wiped off (52.57)
+          K.fade($("b5-label-l"), K.T(52.57), 0.4);
+          K.fade($("b5-label-r"), K.T(52.57), 0.4);
+
+          // check 1
+          K.fade($("b5-h1"), K.T(53.2), 0.3);
+          K.draw($("b5-a"), K.T(53.2), 0.5, "none");
+          K.fade($("b5-a-fill"), K.T(53.2) + 0.3, 0.3, 0.35);
+          K.fade($("b5-a-l"), K.T(53.2) + 0.2, 0.3);
+          K.draw($("b5-b"), K.T(53.82), 0.6, "none");
+          K.fade($("b5-b-fill"), K.T(53.82) + 0.4, 0.3, 0.15);
+          K.fade($("b5-b-l"), K.T(53.82) + 0.2, 0.3);
+          K.fade($("b5-ext"), K.T(54.44), 0.3);
+          K.draw($("b5-dim"), K.T(54.44), 0.6, "none");
+          K.fade($("b5-dim-l"), K.T(55.07), 0.3);
+          K.draw($("b5-t1"), K.T(55.7), 0.25, "none");
+          K.fade($("b5-t1-l"), K.T(55.7) + 0.1, 0.3);
+
+          // check 2: a day scale from 03-10 to 04-18
+          const PX = 760 / 39;
+          const days = $("b5-days");
+          const dayTicks = [];
+          for (let d = 0; d <= 39; d++) {
+            const x = 220 + d * PX;
+            const tall = (d - 4) % 7 === 0;
+            dayTicks.push(el("path", { class: "ln thin ink", d: `M${x.toFixed(1)} 540V${tall ? 556 : 548}`, opacity: tall ? 0.9 : 0.5 }, days));
+          }
+          K.fade($("b5-h2"), K.T(56.3), 0.3);
+          K.draw($("b5-axis"), K.T(56.3), 0.6, "none");
+          tl.fromTo(days, { clipPath: "inset(0 100% 0 0)" }, { clipPath: "inset(0 0% 0 0)", duration: 0.6, ease: "none" }, K.T(56.3) + 0.2);
+          K.draw($("b5-bill"), K.T(56.93), 0.3, "none");
+          K.fade($("b5-bill-l"), K.T(56.93) + 0.1, 0.3);
+          K.fade($("b5-win-fill"), K.T(57.55), 0.4, 0.2);
+          K.draw($("b5-win"), K.T(57.55), 0.6, "none");
+          K.fade($("b5-win-l"), K.T(57.55) + 0.3, 0.3);
+          K.draw($("b5-due"), K.T(58.18), 0.3, "none");
+          K.fade($("b5-due-l"), K.T(58.18) + 0.1, 0.3);
+          K.draw($("b5-t2"), K.T(58.81), 0.25, "none");
+          K.fade($("b5-t2-l"), K.T(58.81) + 0.1, 0.3);
+
+          // check 3: nine present, one missing
+          const rows = $("b5-rows");
+          K.fade($("b5-h3"), K.T(59.44), 0.3);
+          DX.ORDER.forEach((name, i) => {
+            const y = 222 + i * 36;
+            const missing = name === "data_used_mb";
+            const n = text(name, { class: "mono small", x: 1150, y }, rows);
+            K.fade(n, K.T(59.44) + i * 0.06, 0.25);
+            if (!missing) {
+              const t = el("path", { class: "ln line-strong", d: `M1700 ${y - 6}l7 8l14 -17`, "stroke-width": 3 }, rows);
+              K.draw(t, K.T(59.75) + i * 0.16, 0.2, "none");
+            } else {
+              const v = text("null", { class: "mono small red-t", x: 1660, y, "text-anchor": "end" }, rows);
+              const c = el("path", { d: `M1704 ${y - 13}l16 16M1720 ${y - 13}l-16 16`, class: "ln accent-s", style: "stroke-width: 3px" }, rows);
+              K.fade(v, K.T(61.32), 0.25);
+              K.draw(c, K.T(61.32) + 0.1, 0.25, "none");
+            }
+          });
+          K.draw($("b5-route"), K.T(61.94), 0.5, "none");
+          K.fade($("b5-arrow"), K.T(61.94) + 0.45, 0.15);
+          K.draw($("b5-gate-posts"), K.T(62.25), 0.4, "none");
+          K.draw($("b5-gate-bar"), K.T(62.25) + 0.25, 0.4, "none");
+          K.fade($("b5-gate-l"), K.T(62.57), 0.3);
+          K.reveal($("b5-st-a"), K.T(61.94), 0.6);
+          K.reveal($("b5-st-b"), K.T(61.94) + 0.5, 0.4);
+          K.reveal($("b5-st-c"), K.T(62.57), 0.6);
+
+          tl.to("#b5 svg, #b5 .plate-label, #b5 .statement", { opacity: 0, duration: 0.4, ease: "power1.in" }, K.T(65.55));
+          window.__timelines["b5"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

@@ -1,0 +1,85 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #b6 {
+          position: absolute;
+          inset: 0;
+        }
+      </style>
+      <div id="b6" data-composition-id="b6" data-width="1920" data-height="1080">
+        <svg class="full" viewBox="0 0 1920 1080">
+          <g id="b6-rig" data-layout-allow-overlap data-layout-allow-occlusion></g>
+
+          <!-- gem/: the Ruby package, a Bundler dependency pinned to a repo tag (docs/adoption.md, version.rb 0.2.0) -->
+          <rect id="b6-l" class="ln ink" x="160" y="370" width="780" height="270" />
+          <text id="b6-l-h" class="mono gold-t" x="188" y="410">RUBY · FOR YOUR BACKEND</text>
+          <text id="b6-l-1" class="code b" x="188" y="452">gem "foaf_client", git: "…/foaf-client.git", tag: "v0.2.0"</text>
+          <text id="b6-l-2" class="code" x="188" y="500">Foaf::Auth::Verifier</text>
+          <text id="b6-l-3" class="code" x="188" y="534">Foaf::LedgerClient</text>
+          <text id="b6-l-4" class="code" x="188" y="568">Foaf::Custodian.remote_provider</text>
+          <text id="b6-l-5" class="code dim" x="188" y="608">require "foaf/auth" · require "foaf/ledger"</text>
+
+          <!-- client/: the TypeScript package, copy-synced into the app for now (package.json is private) -->
+          <rect id="b6-r" class="ln ink" x="980" y="370" width="780" height="270" />
+          <text id="b6-r-h" class="mono gold-t" x="1008" y="410">TYPESCRIPT · FOR YOUR APP</text>
+          <text id="b6-r-1" class="code b" x="1008" y="452">./scripts/sync-to-app.sh &lt;your-app&gt;</text>
+          <text id="b6-r-2" class="code" x="1008" y="500">auth · contacts · ledger · adapters · ui</text>
+          <text id="b6-r-3" class="code" x="1008" y="534"><tspan class="dim">ui</tspan>  ContactListScreen · PaymentModal</text>
+          <text id="b6-r-4" class="code" x="1008" y="568">    TransactionHistory · theme overrides</text>
+          <rect id="b6-npm" class="ln planned" x="1008" y="586" width="420" height="38" />
+          <text id="b6-npm-t" class="mono small planned-t" x="1218" y="611" text-anchor="middle">NPM PACKAGE · NOT YET</text>
+
+          <!-- contracts/: wire fixtures both implementations test against -->
+          <rect id="b6-k" class="ln line" x="160" y="664" width="1600" height="52" />
+          <text id="b6-k-t" class="code" x="960" y="697" text-anchor="middle"><tspan class="b">contracts/</tspan>  <tspan class="dim">the same wire fixtures, tested from both sides</tspan></text>
+        </svg>
+        <div id="b6-label-l" class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate VI</div>
+        <div id="b6-label-r" class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>Two Packages</div>
+        <div class="statement two" data-layout-allow-overlap data-layout-allow-occlusion>
+          <div class="row"><span id="b6-st-a" class="phrase">A gem for the backend. TypeScript for the app.</span></div>
+          <div class="row"><span id="b6-st-b" class="phrase red">One wire contract under both.</span></div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 66);
+          const R = FC.rig(K.$("b6-rig"));
+          const Ls = ["auth", "contacts", "ledger"].map((k) => FC.light(R, k));
+
+          K.fade(K.$("b6-label-l"), K.T(65.9), 0.4);
+          K.fade(K.$("b6-label-r"), K.T(65.9), 0.4);
+          Ls.forEach((L, i) => FC.on(K, L, K.T(66.5) + i * 0.2));
+
+          K.draw(K.$("b6-l"), K.T(67.15), 0.7, "none");
+          K.fade(K.$("b6-l-h"), K.T(67.15) + 0.3, 0.3);
+          ["b6-l-1", "b6-l-2", "b6-l-3", "b6-l-4", "b6-l-5"].forEach((id, i) => K.reveal(K.$(id), K.T(67.75) + i * 0.3, 0.45));
+
+          K.draw(K.$("b6-r"), K.T(69.0), 0.7, "none");
+          K.fade(K.$("b6-r-h"), K.T(69.0) + 0.3, 0.3);
+          ["b6-r-1", "b6-r-2", "b6-r-3", "b6-r-4"].forEach((id, i) => K.reveal(K.$(id), K.T(69.65) + i * 0.3, 0.45));
+          K.reveal(K.$("b6-st-a"), K.T(70.25), 0.8);
+          K.sweep(K.$("b6-npm"), K.T(71.5), 0.6);
+          K.fade(K.$("b6-npm-t"), K.T(71.5) + 0.3, 0.4);
+
+          K.draw(K.$("b6-k"), K.T(72.15), 0.8, "none");
+          K.fade(K.$("b6-k-t"), K.T(72.15) + 0.4, 0.4);
+          K.reveal(K.$("b6-st-b"), K.T(72.75), 0.9);
+
+          // clear everything, the rig included: plate VII is the colophon
+          ["b6-rig", "b6-l", "b6-l-h", "b6-l-1", "b6-l-2", "b6-l-3", "b6-l-4", "b6-l-5", "b6-r", "b6-r-h", "b6-r-1", "b6-r-2", "b6-r-3", "b6-r-4", "b6-npm", "b6-npm-t", "b6-k", "b6-k-t", "b6-label-l", "b6-label-r"].forEach((id) => K.out(K.$(id), K.T(77.4), 0.4));
+          tl.to("#b6 .statement", { opacity: 0, duration: 0.4, ease: "power1.in" }, K.T(77.4));
+
+          window.__timelines["b6"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

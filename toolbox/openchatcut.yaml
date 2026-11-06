@@ -1,0 +1,21 @@
+slug: openchatcut
+name: OpenChatCut
+kind: app
+status: rejected
+does: 'Local conversational video editor: multitrack timeline, agent and MCP share the same edit tools, Remotion render, FCPXML export.'
+keywords:
+- editing
+- timeline
+- captions
+fits:
+- reference for the create-mode review app
+deterministic: n/a
+how: not installed
+cost: free (AGPL-3.0)
+url: https://github.com/0xsline/OpenChatCut
+source: x.com/heyrimsha/status/2114672104021148033 (10 AI-filmmaker repos, read 2026-10-26)
+why: 'AGPL: none of its code can go into a hosted create.viralvision.quest. Ideas taken instead: FCPXML export from assemble.py so an auto-edit opens in Resolve or Premiere, face-safe caption zones, agent edits as proposals with undo.'
+related:
+- remotion
+- opencut
+added: '2026-11-01'

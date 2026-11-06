@@ -1,0 +1,76 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #i2 {
+          position: absolute;
+          inset: 0;
+        }
+      </style>
+      <div id="i2" data-composition-id="i2" data-width="1920" data-height="1080">
+        <div id="i2-all" class="layer">
+          <svg class="full" viewBox="0 0 1920 1080">
+            <g id="i2-art"></g>
+          </svg>
+          <div class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate II</div>
+          <div class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>Built Apart</div>
+          <div id="i2-st" class="statement">
+            <span id="i2-st-a" class="phrase">Built apart.</span>
+            <span id="i2-st-b" class="phrase red">Reviewed apart.</span>
+          </div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text, kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 9.47);
+          const root = K.$("i2-art");
+
+          // the run's worktree: both halves are built inside it, one prompt and one coder each
+          const A = SM.assembly(root, { cx: 960, cy: 448, s: 0.95, gap: 150 });
+          const frame = el("rect", { class: "ln thin ink", x: -760, y: -262, width: 1520, height: 462 }, A.extra);
+          const fl = text("THE RUN'S WORKTREE", { class: "mono dim", x: -760, y: -278 }, A.extra);
+          K.draw(frame, K.T(9.47), 1.0, "none");
+          K.fade(fl, K.T(9.47) + 0.4, 0.4);
+
+          // the contract-owning chunk ships first
+          SM.drawHalf(K, A, "R", K.T(9.47) + 0.2);
+          const nR = text("1 · OWNS THE CONTRACT", { class: "mono gold-t", x: 320, y: 186, "text-anchor": "middle" }, A.R);
+          K.fade(nR, K.T(10.63), 0.4);
+          SM.drawHalf(K, A, "L", K.T(11.22));
+          const nL = text("2 · BUILT ON IT", { class: "mono gold-t", x: -320, y: 186, "text-anchor": "middle" }, A.L);
+          K.fade(nL, K.T(11.82), 0.4);
+
+          // each diff goes to its own cold review
+          const rooms = [
+            [364, 514, 598],
+            [1256, 1406, 598],
+          ].map(([x, cx, fromY], i) => {
+            const R = SM.room(root, x, 680, 300, 104, "THE CHALLENGER", "ONE DIFF · COLD");
+            SM.drawRoom(K, R, K.T(12.4) + i * 0.15);
+            SM.carry(K, tl, root, `M${cx} ${fromY}V680`, K.T(12.98) + i * 0.1, 0.5);
+            return R;
+          });
+          [[1576, 14.16], [684, 14.74]].forEach(([x, at]) => {
+            const ok = SM.check(root, x + 12, 738);
+            const t = text("ACCEPTED", { class: "mono", x: x + 36, y: 742 }, root);
+            K.draw(ok, K.T(at), 0.3);
+            K.fade(t, K.T(at) + 0.1, 0.3);
+          });
+
+          K.reveal(K.$("i2-st-a"), K.T(15.35), 0.55);
+          K.reveal(K.$("i2-st-b"), K.T(15.93), 0.6);
+
+          K.out(K.$("i2-all"), K.R(18.4), 0.45);
+          window.__timelines["i2"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

@@ -1,0 +1,25 @@
+slug: mediapipe-pose
+name: MediaPipe Pose Landmarker
+kind: model
+status: in-use
+does: Finds a person's 33 body landmarks in every frame of a clip, and with segmentation on, a soft mask of their body, locally on the CPU.
+keywords:
+- pose
+- tracking
+- mask
+- rotoscope
+- footage
+fits:
+- pinning drawn elements to a real person in their footage (doodles on footage, second-unit overlays)
+- putting drawings behind a real person with their mask (occlusion)
+- generate-then-trace: driving a code-drawn rig from a cheap generated clip's motion
+deterministic: n/a
+how: 'uv run --no-project --python 3.12 --with opencv-python-headless --with mediapipe --with ''numpy<2.3''; heavy model downloaded on first run to the project''s work/ folder. Script: hjeron-doodle-on-footage/tools/track.py.'
+cost: free (Apache-2.0)
+url: https://ai.google.dev/edge/mediapipe/solutions/vision/pose_landmarker
+detail: hjeron-doodle-on-footage/README.md; video-production skill references/motion-lab.md "Generate-then-trace"
+source: used in generate-then-trace (2026-10-28) and doodles on footage (2026-11-01)
+verdict: 'Claude, 2026-11-01: found Hjeron in 132 of 144 frames even at about 80 px tall against a sunset, and its masks were clean enough to hide drawings behind him. Swaps left and right on small or side-on figures; pick limbs by image position, not label. False detections on animals.'
+related:
+- looseleaf-ink
+added: '2026-11-01'

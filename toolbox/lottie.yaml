@@ -1,0 +1,20 @@
+slug: lottie
+name: Lottie
+kind: library
+status: available
+does: Plays After Effects animations exported as JSON; a HyperFrames runtime adapter.
+keywords:
+- animation
+- after-effects
+- icons
+- vector
+fits:
+- animated icons and stickers in explainers
+deterministic: 'yes'
+how: HyperFrames adapter
+cost: free
+url: https://airbnb.io/lottie
+detail: skill `hyperframes-animation`
+related:
+- after-effects-premiere
+added: '2026-10-27'

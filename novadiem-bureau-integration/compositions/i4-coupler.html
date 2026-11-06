@@ -1,0 +1,100 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #i4 {
+          position: absolute;
+          inset: 0;
+        }
+      </style>
+      <div id="i4" data-composition-id="i4" data-width="1920" data-height="1080">
+        <div id="i4-all" class="layer">
+          <svg class="full" viewBox="0 0 1920 1080">
+            <g id="i4-art"></g>
+          </svg>
+          <div class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate IV</div>
+          <div class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>The Coupler</div>
+          <div id="i4-st" class="statement">
+            <span id="i4-st-a" class="phrase">Not each half.</span>
+            <span id="i4-st-b" class="phrase red">The join.</span>
+          </div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text, kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 29.47);
+          const root = K.$("i4-art");
+
+          // once both halves are accepted, the Conductor spawns the Coupler before anything uses both
+          const okA = SM.check(root, 152, 202);
+          const okB = SM.check(root, 182, 202);
+          const head = text("BOTH HALVES ACCEPTED → THE CONDUCTOR SPAWNS", { class: "mono small dim", x: 212, y: 208 }, root);
+          K.draw(okA, K.T(29.47), 0.3);
+          K.draw(okB, K.T(29.47) + 0.15, 0.3);
+          K.fade(head, K.T(29.47) + 0.2, 0.4);
+
+          // the spawn prompt names the seam, both halves, the worktree and the checkpoint
+          const C = SM.card(root, 140, 250, 700, 376, "SPAWN · THE COUPLER");
+          SM.drawCard(K, C, K.T(30.05));
+          [
+            ["SEAM", "P4 UI ↔ P3 API · /api/runs"],
+            ["HALF_A", "P4 · THE MAGE · UI"],
+            ["HALF_B", "P3 · THE SYSTEMSMITH · API"],
+            ["WORKTREE", "~/.bureau/worktrees/app/…"],
+            ["CHECKPOINT", "npm test · curl /api/runs"],
+          ].forEach(([k, v], i) => {
+            const y = 350 + i * 56;
+            const kt = text(k, { class: "mono small dim", x: 164, y }, C.g);
+            const vt = text(v, { class: "mono", x: 330, y }, C.g);
+            const at = K.T(30.63 + i * 0.58);
+            K.fade(kt, at, 0.3);
+            K.reveal(vt, at + 0.05, 0.45);
+          });
+
+          // and what it is not handed
+          const nr = text("NOT HANDED", { class: "mono small dim", x: 140, y: 682 }, root);
+          const n1 = text("the full spec rationale", { class: "mono src", x: 140, y: 722 }, root);
+          const n2 = text("the log narrative", { class: "mono src", x: 500, y: 722 }, root);
+          const s1 = el("path", { class: "ln ink", d: "M136 715H452" }, root);
+          const s2 = el("path", { class: "ln ink", d: "M496 715H732" }, root);
+          K.fade(nr, K.T(33.58), 0.3);
+          K.fade(n1, K.T(33.58) + 0.1, 0.3);
+          K.fade(n2, K.T(33.58) + 0.2, 0.3);
+          K.draw(s1, K.T(34.16), 0.3);
+          K.draw(s2, K.T(34.16) + 0.15, 0.3);
+
+          // a fresh context
+          const R = SM.room(root, 1100, 250, 520, 150, "THE COUPLER", "FRESH CONTEXT");
+          SM.drawRoom(K, R, K.T(33.58));
+          SM.carry(K, tl, root, "M840 438H970V325H1100", K.T(34.76), 0.7);
+
+          // it inventories the shared contract (drums land here)
+          const link = el("path", { class: "ln ink", d: "M1360 400V440" }, root);
+          K.draw(link, K.T(36.52), 0.2);
+          const I = SM.card(root, 1100, 440, 520, 300, "INVENTORY THE SEAM");
+          SM.drawCard(K, I, K.T(36.52));
+          ["URLS", "TYPES", "ENV VARS", "AUTH HEADERS", "PAYLOAD SHAPES"].forEach((t, i) => {
+            const y = 540 + i * 44;
+            const tt = text(t, { class: "mono", x: 1124, y }, I.g);
+            const ok = SM.check(I.g, 1584, y - 6);
+            K.reveal(tt, K.T(36.52) + 0.4 + i * 0.3, 0.35);
+            K.draw(ok, K.T(36.52) + 0.6 + i * 0.3, 0.25);
+          });
+
+          K.reveal(K.$("i4-st-a"), K.T(37.11), 0.55);
+          K.reveal(K.$("i4-st-b"), K.T(37.71), 0.55);
+
+          K.out(K.$("i4-all"), K.R(40.8), 0.45);
+          window.__timelines["i4"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

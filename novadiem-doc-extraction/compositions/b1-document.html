@@ -1,0 +1,77 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #b1 {
+          position: absolute;
+          inset: 0;
+        }
+      </style>
+      <div id="b1" data-composition-id="b1" data-width="1920" data-height="1080">
+        <svg class="full" viewBox="0 0 1920 1080">
+          <!-- two more months stacked behind this one -->
+          <rect id="b1-back2" class="ln thin ink" x="796" y="178" width="440" height="570" opacity="0.5" />
+          <rect id="b1-back1" class="ln thin ink" x="768" y="164" width="440" height="570" opacity="0.7" />
+          <g id="b1-sheet" transform="translate(740 150)"></g>
+          <g id="b1-fields"></g>
+        </svg>
+        <div id="b1-label-l" class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate I</div>
+        <div id="b1-label-r" class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>300 of 300 Fields</div>
+        <div class="statement two" data-layout-allow-overlap data-layout-allow-occlusion>
+          <div class="row">
+            <span id="b1-st-a" class="phrase">Ten fields.</span>
+            <span id="b1-st-b" class="phrase">Every month.</span>
+            <span id="b1-st-c" class="phrase red">Typed by hand.</span>
+          </div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 0);
+          const S = DX.sheet(K.$("b1-sheet"));
+
+          K.fade(K.$("b1-label-l"), K.T(0.7), 0.4);
+          K.fade(K.$("b1-label-r"), K.T(0.7), 0.4);
+
+          // the statement draws itself
+          K.fade(S.paper, K.T(1.32), 0.4, 0.92);
+          K.draw(S.frame, K.T(0.7), 0.9, "none");
+          S.rules.forEach((r, i) => K.draw(r, K.T(1.32) + i * 0.08, 0.35, "none"));
+          S.boxes.forEach((b, i) => K.draw(b, K.T(1.32) + 0.2 + i * 0.12, 0.5, "none"));
+          S.groups.forEach((g, i) => K.fade(g, K.T(1.32) + 0.3 + i * 0.1, 0.35));
+          S.hatch.forEach((h, i) => K.draw(h, K.T(1.95) + 0.2 + i * 0.06, 0.3, "none"));
+
+          // ten fields light up, one after another
+          const marks = DX.ORDER.map((name) => {
+            const b = DX.box(name);
+            return el("rect", { class: "ln line-strong", x: 740 + b.x, y: 150 + b.y, width: b.w, height: b.h }, K.$("b1-fields"));
+          });
+          K.reveal(K.$("b1-st-a"), K.T(2.59), 0.5);
+          marks.forEach((m, i) => K.draw(m, K.T(2.59) + i * 0.11, 0.25, "none"));
+
+          // every month: two more sheets behind it
+          K.reveal(K.$("b1-st-b"), K.T(3.84), 0.5);
+          K.draw(K.$("b1-back1"), K.T(3.84), 0.5, "none");
+          K.draw(K.$("b1-back2"), K.T(3.84) + 0.31, 0.5, "none");
+
+          K.reveal(K.$("b1-st-c"), K.T(5.1), 0.6);
+
+          // clear down to the one sheet; plate II takes it over at 8.0
+          ["b1-back1", "b1-back2", "b1-fields"].forEach((id) => K.out(K.$(id), K.T(7.48), 0.4));
+          K.out(K.$("b1-label-l"), K.T(7.48), 0.4);
+          K.out(K.$("b1-label-r"), K.T(7.48), 0.4);
+          tl.to("#b1 .statement", { opacity: 0, duration: 0.4, ease: "power1.in" }, K.T(7.48));
+
+          window.__timelines["b1"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

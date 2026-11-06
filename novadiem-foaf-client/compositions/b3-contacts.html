@@ -1,0 +1,90 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #b3 {
+          position: absolute;
+          inset: 0;
+        }
+      </style>
+      <div id="b3" data-composition-id="b3" data-width="1920" data-height="1080">
+        <svg class="full" viewBox="0 0 1920 1080">
+          <g id="b3-rig" data-layout-allow-overlap data-layout-allow-occlusion></g>
+          <!-- FoafContactsClient#list: GET /v1/contacts with the app's client_id, bearer token attached -->
+          <text id="b3-c1" class="code b" x="160" y="404">contacts.list()</text>
+          <text id="b3-c2" class="code" x="420" y="404"><tspan class="dim">GET</tspan> auth.foaf.io/v1/contacts?client_id=<tspan class="blue">your-app</tspan></text>
+          <g id="b3-cards"></g>
+        </svg>
+        <div id="b3-label-l" class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate III</div>
+        <div id="b3-label-r" class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>Their Contacts</div>
+        <div class="statement two" data-layout-allow-overlap data-layout-allow-occlusion>
+          <div class="row"><span id="b3-st-a" class="phrase">Their contacts come with the login.</span></div>
+          <div class="row"><span id="b3-st-b" class="phrase red">Confirmed ones carry an address.</span></div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text, kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 24);
+          const R = FC.rig(K.$("b3-rig"));
+          const L = FC.light(R, "contacts");
+          const S = FC.lightSvc(R, "auth");
+
+          K.fade(K.$("b3-label-l"), K.T(24.0), 0.4);
+          K.fade(K.$("b3-label-r"), K.T(24.0), 0.4);
+          FC.on(K, L, K.T(24.6));
+          FC.on(K, S, K.T(24.6) + 0.3);
+          K.reveal(K.$("b3-c1"), K.T(25.25), 0.5);
+          K.reveal(K.$("b3-c2"), K.T(25.85), 0.7);
+
+          // three contact edges (FoafContactEdge), synthetic people. foaf_address is non-null only for a confirmed contact.
+          const people = [
+            ["MIRA", "NORTH SHORE", "c41b…2e07", "0x51c0…9e2a", true],
+            ["TOMAS", "RIVERSIDE", "8e2d…a913", "0x8d14…07bb", true],
+            ["JUN", "HILLTOP", "f07a…5c41", "null", false],
+          ];
+          const cards = K.$("b3-cards");
+          const marks = [];
+          people.forEach(([nm, area, id, addr, ok], i) => {
+            const x = 160 + i * 550;
+            const g = el("g", {}, cards);
+            const frame = el("rect", { class: ok ? "ln ink" : "ln thin ink", x, y: 450, width: 500, height: 230 }, g);
+            const head = el("circle", { class: "ln ink", cx: x + 64, cy: 512, r: 30 }, g);
+            const body = el("path", { class: "ln ink", d: `M${x + 22} 570C${x + 22} 540 ${x + 106} 540 ${x + 106} 570` }, g);
+            const who = text(nm, { class: "who", x: x + 128, y: 508 }, g);
+            const role = text(ok ? `${area} · CONFIRMED` : `${area} · UNCONFIRMED`, { class: "role", x: x + 128, y: 536 }, g);
+            const f1 = text("", { class: "code", x: x + 28, y: 614 }, g);
+            f1.innerHTML = `<tspan class="dim">foaf_id</tspan>       ${id}`;
+            const f2 = text("", { class: "code", x: x + 28, y: 648 }, g);
+            f2.innerHTML = `<tspan class="dim">foaf_address</tspan>  <tspan class="${ok ? "blue" : "dim"}">${addr}</tspan>`;
+            const at = K.T(26.5) + i * 1.25;
+            K.draw(frame, at, 0.7, "none");
+            K.draw(head, at + 0.2, 0.5);
+            K.draw(body, at + 0.3, 0.5);
+            K.fade(who, at + 0.4, 0.3);
+            K.fade(role, at + 0.5, 0.3);
+            K.reveal(f1, at + 0.6, 0.45);
+            K.reveal(f2, at + 0.85, 0.45);
+            if (ok) marks.push(el("path", { class: "ln line-strong", d: `M${x + 196} 660H${x + 340}`, style: "stroke-width: 3" }, g));
+          });
+
+          K.reveal(K.$("b3-st-a"), K.T(30.3), 0.8);
+          K.reveal(K.$("b3-st-b"), K.T(32.2), 0.9);
+          marks.forEach((m, i) => K.draw(m, K.T(32.85) + i * 0.3, 0.4));
+
+          ["b3-c1", "b3-c2", "b3-cards", "b3-label-l", "b3-label-r"].forEach((id) => K.out(K.$(id), K.T(37.6), 0.35));
+          [L.fill, L.edge, S.fill, S.edge].forEach((n) => K.out(n, K.T(37.6), 0.35));
+          tl.to("#b3 .statement", { opacity: 0, duration: 0.35, ease: "power1.in" }, K.T(37.6));
+
+          window.__timelines["b3"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

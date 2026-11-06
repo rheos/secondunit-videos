@@ -1,0 +1,49 @@
+slug: gilliam
+title: Engraved cut-outs, after Gilliam
+note: >-
+  Victorian engravings drawn in code and hand-tinted, on hinged pieces over airbrushed skies. The boss rises
+  like a moon and his lid flips open.
+used: We Got Time test
+cost: free
+group: code
+order: 370
+clip: gilliam.mp4
+tall: false
+status: test
+engine: canvas2d
+project: bobwiseman-wgt-gilliam
+code:
+  path: bobwiseman-wgt-gilliam/js/gilliam.js
+  flag: null
+  page: bobwiseman-wgt-gilliam/index.html
+  note: >-
+    gilliam.js is the cut-out kit (procedural engraving); look.js the 16 mm finish; js/ch/08-boss.js the test
+    (ch08, 206-245 s)
+rules:
+  - >-
+    Pieces are procedural steel engravings: parallel lines that bend with the tone, thicken in the dark,
+    cross-hatch in the darkest
+  - "Hand tinted: flat muted watercolour washes, blotched and slipped off the lines"
+  - Cut out with a wobbling scissor edge and a paper margin; each piece casts a soft shadow
+  - Pieces are laid on airbrushed skies
+  - Movement on single pivots, stepped at 10 fps with a little jitter; gags are instant
+  - Paint each piece once at load; per frame only transform and blit
+  - "16 mm finish: gate weave, grain, exposure flicker, light vignette"
+palette:
+  - "#eee4cd"
+  - "#281e18"
+  - "#d27c70"
+  - "#e2a446"
+  - "#8cad78"
+  - "#4b78a2"
+  - "#c0402f"
+  - "#8fb2c0"
+reference: Terry Gilliam's 1970s Monty Python cut-out animation
+proof: null
+verdict: null
+related:
+  - cutout
+  - scrap
+  - engraving
+  - alchemy
+  - ministry

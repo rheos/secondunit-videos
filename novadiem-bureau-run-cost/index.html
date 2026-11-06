@@ -1,0 +1,223 @@
+<!doctype html>
+<html class="draft" lang="en" data-resolution="landscape">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1280, height=720" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=IBM+Plex+Mono:wght@400;700&display=block" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <!-- Series kit (tools/blueprint-kit, copied by sync.sh). Theme first, then structure. -->
+    <link rel="stylesheet" href="kit/themes/paper.css" />
+    <link rel="stylesheet" href="kit/kit.css" />
+    <script src="kit/kit.js"></script>
+    <script>
+      // Beat grid of the score (beats.json): librosa beats at a 0.4412 s median gap, extended to both ends of take-02.
+      BP.grid({ beats: [0.21,0.65,1.09,1.53,1.97,2.41,2.86,3.3,3.74,4.18,4.62,5.06,5.5,5.94,6.39,6.83,7.27,7.71,8.15,8.59,9.03,9.47,9.91,10.36,10.8,11.24,11.68,12.12,12.56,13.0,13.44,13.89,14.33,14.77,15.21,15.65,16.09,16.53,16.97,17.41,17.86,18.3,18.74,19.18,19.62,20.06,20.5,20.94,21.39,21.83,22.27,22.71,23.15,23.66,24.17,24.61,25.05,25.5,25.94,26.38,26.82,27.26,27.7,28.14,28.58,29.02,29.47,29.91,30.35,30.79,31.23,31.67,32.11,32.55,33.0,33.44,33.88,34.32,34.76,35.2,35.64,36.08,36.52,36.97,37.41,37.85,38.29,38.73,39.17,39.61,40.05,40.5,40.94,41.38,41.82,42.26,42.7,43.14,43.58,44.03,44.47,44.91,45.35,45.79,46.23,46.67,47.11,47.55,48.0,48.44,48.88,49.32,49.76,50.2,50.64,51.08,51.53,51.97,52.41,52.85,53.29,53.73,54.17,54.61,55.05,55.5,55.94,56.38,56.82,57.26,57.7,58.14,58.58,59.03,59.47,59.91,60.35,60.79,61.23,61.67,62.11,62.55,63.0,63.44,63.88,64.32,64.76,65.2,65.64,66.08,66.53,66.97,67.41,67.85,68.29,68.73,69.17,69.61,70.05,70.5,70.94,71.38,71.82,72.26,72.7,73.14,73.58,74.03,74.47,74.91,75.35,75.79,76.23,76.67,77.11,77.55,78.0,78.44,78.88,79.32,79.76,80.2,80.64,81.08,81.53,81.97,82.41,82.85,83.29,83.73,84.17,84.61,85.05,85.5,85.94,86.38,86.82,87.26,87.7,88.14,88.58,89.03,89.47,89.91] });
+    </script>
+    <style>
+      svg text.mono.head { font-size: 22px; }
+      svg text.mono.row { font-size: 22px; font-weight: 400; letter-spacing: 0.06em; }
+      svg text.mono.row.b { font-weight: 700; }
+      svg text.mono.ev { font-size: 18px; font-weight: 400; letter-spacing: 0.02em; }
+      svg text.mono.cap { font-size: 20px; font-weight: 400; letter-spacing: 0.06em; }
+      svg text.mono.big { font-size: 28px; }
+      svg text.mono.gold-t { fill: #6b5416; } /* line-strong is 3.5:1 on paper; small type needs 4.5:1 */
+      svg text.mono.red-t { fill: var(--accent); }
+      .fill-ink { fill: var(--ink); }
+      .fill-gold { fill: var(--line); }
+      .stamp-t { font-family: var(--font-mono); font-size: 30px; font-weight: 700; letter-spacing: 0.16em; fill: var(--ink); }
+    </style>
+    <script>
+      // LG: the one device of this film, a run's ledger. One row per specialist attempt, built from the
+      // two SPAWN-EVENT lines each spawn writes (started, then a terminal status); the token column is
+      // only filled at close-out, from transcripts. Every figure in this ledger is ILLUSTRATIVE (labelled
+      // on the card). The real run in plate VI is read from its accounting.json.
+      window.LG = (() => {
+        const { el, text } = BP;
+        const X = 120, Y = 150, W = 1120;
+        const COL = { idx: X + 34, att: X + 80, host: X + 420, stat: X + 580, rew: X + 800, tok: X + W - 34 };
+        const rowY = (i) => Y + 190 + i * 62;
+        const ROWS = [
+          { att: "analyst-1", host: "main", stat: "complete", rew: "", tok: "1.2M" },
+          { att: "architect-1", host: "main", stat: "complete", rew: "", tok: "5.4M" },
+          { att: "challenger-1", host: "main", stat: "no-handoff", rew: "", tok: "2.9M" },
+          { att: "challenger-2", host: "main", stat: "complete", rew: "true", tok: "3.1M" },
+          { att: "architect-2", host: "main", stat: "complete", rew: "true", tok: "4.6M" },
+          { att: "spellwright-1", host: "second", stat: "complete", rew: "", tok: null },
+        ];
+        const hidden = (n) => (n.setAttribute("opacity", "0"), n);
+        const gone = (n) => (n.setAttribute("display", "none"), n);
+
+        // ledger(parent, { show, tok, conductor, total }): the card in the state a plate opens on.
+        //   show: rows already written; tok: token cells already filled (rows 0..tok-1; row 5 reads UNKNOWN)
+        //   Rows past `show` are built hidden (opacity 0) so the plate can write them in.
+        function ledger(parent, o = {}) {
+          const show = o.show || 0, tok = o.tok || 0;
+          const L = { g: el("g", {}, parent), rows: [] };
+          const g = L.g;
+          L.paper = el("rect", { class: "fill-bg", x: X, y: Y, width: W, height: 730 }, g);
+          L.frame = el("rect", { class: "ln ink", x: X, y: Y, width: W, height: 730 }, g);
+          L.title = text("LEDGER", { class: "mono head", x: X + 30, y: Y + 46 }, g);
+          L.illus = text("ILLUSTRATIVE FIGURES", { class: "mono small dim", x: X + W - 30, y: Y + 44, "text-anchor": "end" }, g);
+          L.rule = el("path", { class: "ln thin ink", d: `M${X + 30} ${Y + 66}H${X + W - 30}` }, g);
+          L.heads = [
+            ["#", COL.idx, "middle"], ["ATTEMPT", COL.att, "start"], ["HOST", COL.host, "start"],
+            ["STATUS", COL.stat, "start"], ["REWORK", COL.rew, "start"], ["TOKENS", COL.tok, "end"],
+          ].map(([t, x, a]) => text(t, { class: "mono small dim", x, y: Y + 116, "text-anchor": a }, g));
+          L.rule2 = el("path", { class: "ln thin ink", d: `M${X + 30} ${Y + 134}H${X + W - 30}` }, g);
+          ROWS.forEach((d, i) => {
+            const y = rowY(i);
+            const r = { y, g: el("g", {}, g), d };
+            r.idx = text(String(i + 1).padStart(2, "0"), { class: "mono row dim", x: COL.idx, y, "text-anchor": "middle" }, r.g);
+            r.att = text(d.att, { class: "mono row b", x: COL.att, y }, r.g);
+            r.host = text(d.host, { class: "mono row", x: COL.host, y }, r.g);
+            r.started = text("started", { class: "mono row dim", x: COL.stat, y }, r.g);
+            r.stat = text(d.stat, { class: "mono row b", x: COL.stat, y }, r.g);
+            r.rew = text(d.rew || "", { class: "mono row b gold-t", x: COL.rew, y }, r.g);
+            r.dots = text("· · ·", { class: "mono row dim", x: COL.tok, y, "text-anchor": "end" }, r.g);
+            r.tok = text(d.tok || "UNKNOWN", { class: `mono row b${d.tok ? "" : " red-t"}`, x: COL.tok, y, "text-anchor": "end" }, r.g);
+            if (i >= show) [r.idx, r.att, r.host, r.started, r.stat, r.rew, r.dots].forEach(hidden);
+            else gone(r.started);
+            if (i < tok) gone(r.dots);
+            else hidden(r.tok);
+            L.rows.push(r);
+          });
+          // the Conductor is not a spawn: its figure sits under its own rule (accounting.json conductor_tokens)
+          const cy = Y + 600;
+          L.cRule = el("path", { class: "ln thin ink", d: `M${X + 30} ${cy - 46}H${X + W - 30}` }, g);
+          L.cName = text("conductor", { class: "mono row b", x: COL.att, y: cy }, g);
+          L.cNote = text("not a spawn", { class: "mono row dim", x: COL.stat, y: cy }, g);
+          L.cTok = text("6.0M", { class: "mono row b", x: COL.tok, y: cy, "text-anchor": "end" }, g);
+          // the total: processed_total, the sum of the shares present
+          const ty = Y + 676;
+          L.tRule = el("path", { class: "ln ink", d: `M${X + 30} ${ty - 44}H${X + W - 30}M${X + 30} ${ty - 38}H${X + W - 30}` }, g);
+          L.tName = text("processed_total", { class: "mono row b", x: COL.att, y: ty }, g);
+          L.tConf = text("partial", { class: "mono row b gold-t", x: COL.rew, y: ty }, g);
+          L.tTok = text("23.2M", { class: "mono row b", x: COL.tok, y: ty, "text-anchor": "end" }, g);
+          const conductor = [L.cRule, L.cName, L.cNote, L.cTok];
+          const total = [L.tRule, L.tName, L.tConf, L.tTok];
+          (o.conductor ? [] : conductor).forEach(hidden);
+          (o.total ? [] : total).forEach(hidden);
+          return L;
+        }
+        function drawLedger(K, L, at) {
+          K.fade(L.paper, at, 0.2);
+          K.draw(L.frame, at, 0.9, "none");
+          K.fade(L.title, at + 0.3, 0.3);
+          K.fade(L.illus, at + 0.5, 0.3);
+          K.draw(L.rule, at + 0.4, 0.5);
+          L.heads.forEach((h, i) => K.fade(h, at + 0.6 + i * 0.08, 0.3));
+          K.draw(L.rule2, at + 0.7, 0.5);
+        }
+        // write a row from its started line; then its terminal status
+        function rowIn(K, r, at) {
+          [r.idx, r.att, r.host].forEach((n, i) => K.fade(n, at + i * 0.08, 0.3, 1));
+          K.fade(r.started, at + 0.25, 0.3, 1);
+          if (r.d.rew) K.fade(r.rew, at + 0.35, 0.3, 1);
+          K.fade(r.dots, at + 0.4, 0.3, 1);
+        }
+        function rowDone(K, tl, r, at) {
+          tl.fromTo(r.started, { opacity: 1 }, { opacity: 0, duration: 0.2, immediateRender: false }, at);
+          K.fade(r.stat, at + 0.15, 0.3, 1);
+        }
+        function tokIn(K, tl, r, at) {
+          tl.fromTo(r.dots, { opacity: 1 }, { opacity: 0, duration: 0.15, immediateRender: false }, at);
+          K.fade(r.tok, at + 0.1, 0.3, 1);
+        }
+
+        // an event tag in the right-hand panel: a SPAWN-EVENT line, shortened to the keys that matter here
+        function tag(parent, x, y, lines, o = {}) {
+          const T = { g: el("g", {}, parent), x, y };
+          const h = 46 + lines.length * 28;
+          T.paper = el("rect", { class: "fill-bg", x, y, width: o.w || 500, height: h }, T.g);
+          T.frame = el("rect", { class: `ln ${o.cls || "ink"}`, x, y, width: o.w || 500, height: h }, T.g);
+          T.head = text(o.head || "SPAWN-EVENT", { class: "mono small dim", x: x + 18, y: y + 28 }, T.g);
+          T.lines = lines.map((l, i) => text(l, { class: `mono ev${o.lineCls && o.lineCls[i] ? " " + o.lineCls[i] : ""}`, x: x + 18, y: y + 58 + i * 28 }, T.g));
+          T.h = h;
+          return T;
+        }
+        function drawTag(K, T, at) {
+          K.fade(T.paper, at, 0.15);
+          K.draw(T.frame, at, 0.45, "none");
+          K.fade(T.head, at + 0.1, 0.25);
+          T.lines.forEach((n, i) => K.reveal(n, at + 0.2 + i * 0.12, 0.4));
+        }
+        function outAll(tl, nodes, at, dur = 0.35) {
+          nodes.forEach((n) => tl.fromTo(n, { opacity: 1 }, { opacity: 0, duration: dur, immediateRender: false }, at));
+        }
+
+        // a sheet in transit, from a tag to its row
+        function sheet(parent) {
+          const t = el("g", {}, parent);
+          el("path", { class: "fill-bg", d: "M-12 -15H5L12 -8V15H-12Z" }, t);
+          el("path", { class: "ln line", d: "M-12 -15H5L12 -8V15H-12Z" }, t);
+          el("path", { class: "ln thin line", d: "M-6 -4H6M-6 3H6M-6 10H2" }, t);
+          return t;
+        }
+        function carry(K, tl, parent, d, at, dur = 0.6) {
+          const s = sheet(parent);
+          tl.fromTo(s, { opacity: 0 }, { opacity: 1, duration: 0.12 }, at);
+          K.travel(s, el("path", { d }), at, dur);
+          tl.fromTo(s, { opacity: 1 }, { opacity: 0, duration: 0.15, immediateRender: false }, at + dur);
+          return s;
+        }
+        // from the panel (x 1300) to a row's right edge
+        const toRow = (ty, i) => `M1300 ${ty}H1270V${rowY(i) - 8}H1250`;
+
+        // a stamp, tilted
+        function stamp(parent, word, cx, cy, w = 220, cls = "ink") {
+          const tilt = el("g", { transform: `rotate(-6 ${cx} ${cy})`, "data-layout-allow-overlap": "" }, parent);
+          const g = el("g", {}, tilt);
+          el("rect", { class: "fill-bg", x: cx - w / 2, y: cy - 27, width: w, height: 54, opacity: 0.92 }, g);
+          el("rect", { class: `ln ${cls}`, x: cx - w / 2, y: cy - 27, width: w, height: 54, style: "stroke-width:3" }, g);
+          text(word, { class: "stamp-t", x: cx, y: cy + 11, "text-anchor": "middle" }, g);
+          return { g, cx, cy };
+        }
+        function slam(tl, S, at) {
+          tl.fromTo(S.g, { opacity: 0, scale: 1.25, svgOrigin: `${S.cx} ${S.cy}` }, { opacity: 1, scale: 1, svgOrigin: `${S.cx} ${S.cy}`, duration: 0.25, ease: "power2.in" }, at);
+        }
+        const cross = (parent, x, y, s = 10, cls = "ink") => el("path", { class: `ln ${cls}`, d: `M${x - s} ${y - s}l${2 * s} ${2 * s}M${x + s} ${y - s}l${-2 * s} ${2 * s}`, style: "stroke-width:3" }, parent);
+        const check = (parent, x, y, cls = "line-strong") => el("path", { class: `ln ${cls}`, d: `M${x - 12} ${y}l8 9l16 -20`, style: "stroke-width:3" }, parent);
+
+        return { X, Y, W, COL, rowY, ROWS, ledger, drawLedger, rowIn, rowDone, tokIn, tag, drawTag, outAll, sheet, carry, toRow, stamp, slam, cross, check };
+      })();
+    </script>
+  </head>
+  <body>
+    <div data-hf-id="hf-rc01"
+      id="root"
+      data-composition-id="main"
+      data-start="0"
+      data-duration="87.5"
+      data-width="1280"
+      data-height="720"
+    >
+      <!-- Score: score-library bureau-art-pop-bureau-run-cost take-02, sha256 5c53868a...3168, the clock for every cue -->
+      <audio data-hf-id="hf-rc02"
+        id="score"
+        src="_in/score.mp3"
+        data-start="0"
+        data-duration="87.5"
+        data-track-index="9"
+        data-volume="1"
+      ></audio>
+
+      <!-- every plate draws on a 1920x1080 stage; drafts scale it to 720p (kit.css, stage.sh) -->
+      <div class="stage">
+        <div data-hf-id="hf-rc03" id="slot-furniture" data-composition-id="furniture" data-composition-src="compositions/furniture.html" data-start="0" data-duration="87.5" data-track-index="0" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-rc04" id="slot-c1" data-composition-id="c1" data-composition-src="compositions/c1-bill.html" data-start="0" data-duration="9.03" data-track-index="1" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-rc05" id="slot-c2" data-composition-id="c2" data-composition-src="compositions/c2-ledger.html" data-start="9.03" data-duration="10.15" data-track-index="2" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-rc06" id="slot-c3" data-composition-id="c3" data-composition-src="compositions/c3-discard.html" data-start="19.18" data-duration="11.61" data-track-index="3" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-rc07" id="slot-c4" data-composition-id="c4" data-composition-src="compositions/c4-rerun.html" data-start="30.79" data-duration="10.15" data-track-index="4" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-rc08" id="slot-c5" data-composition-id="c5" data-composition-src="compositions/c5-unknown.html" data-start="40.94" data-duration="14.11" data-track-index="5" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-rc09" id="slot-c6" data-composition-id="c6" data-composition-src="compositions/c6-total.html" data-start="55.05" data-duration="18.09" data-track-index="6" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-rc0a" id="slot-c7" data-composition-id="c7" data-composition-src="compositions/c7-limit.html" data-start="73.14" data-duration="14.36" data-track-index="7" data-width="1920" data-height="1080"></div>
+      </div>
+    </div>
+
+    <script>
+      window.__timelines["main"] = gsap.timeline({ paused: true });
+    </script>
+  </body>
+</html>

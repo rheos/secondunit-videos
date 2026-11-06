@@ -1,0 +1,20 @@
+slug: ltx-audio-to-video
+name: LTX 2.5 audio-to-video (Fal)
+kind: model
+status: available
+does: Generates video timed to a supplied audio clip, with synchronized sound, in one pass.
+keywords:
+- video-gen
+- music-sync
+- ai-shot
+fits:
+- ViralVision create mode (self-serve), more than studio work
+deterministic: n/a
+how: 'Fal API: `lightricks/ltx-2.5/audio-to-video/pro` (and `/fast`)'
+cost: paid; Fal lists $0.01 per undefined 'unit', so run an estimate first
+url: https://github.com/Lightricks/LTX-2
+source: x.com/heyrimsha/status/2114672104021148033 (10 AI-filmmaker repos, read 2026-10-26)
+verdict: 'Claude, 2026-10-26: worth a test for create mode. LTX license is free under $10M annual revenue.'
+related:
+- ltx-reframe
+added: '2026-11-01'

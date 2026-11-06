@@ -3,12 +3,18 @@
 # Media, lyrics and artist audio stay out (each project has its own .gitignore too).
 /*
 !/.gitignore
+!/.nvmrc
 !/.githooks/
 !/.github/
 !/tools/
 !/README.md
 !/references/
+!/looks/
+!/toolbox/
+!/history/
+!/blender-orb-visualizer/
 !/bobwiseman-airplane-16bit/
+!/bobwiseman-reform-party-blender/
 !/bobwiseman-airplane-collage/
 !/bobwiseman-airplane-cutout/
 !/bobwiseman-airplane-hybrid/
@@ -23,7 +29,10 @@
 !/bobwiseman-airplane-v1/
 !/bobwiseman-airplane-wakinglife/
 !/bobwiseman-airplane-woodcut/
+!/bobwiseman-giulietta-masina/
 !/bobwiseman-in-her-dream/
+!/bobwiseman-all-the-trees/
+!/bobwiseman-libelous/
 !/bobwiseman-me-and-jimi/
 !/bobwiseman-reform-party/
 !/bobwiseman-show-promo/
@@ -37,8 +46,36 @@
 !/hjeron-dark-blues-realcut/
 !/hjeron-dark-blues-storyboard/
 !/hjeron-painted-myth/
+!/novadiem-cold-read/
+!/novadiem-rheostream/
+!/devweb-ep01-tool-loop/
+!/devweb-blink-looktest/
+!/devweb-ep01-oner/
+!/devweb-ep06-unused-search/
+!/novadiem-doc-extraction/
+!/novadiem-evalpal/
+!/novadiem-onloan-ledger/
+!/novadiem-bureau-map/
+!/novadiem-bureau-evidence/
+!/novadiem-bureau-integration/
+!/novadiem-bureau-memory/
+!/novadiem-bureau-routing/
+!/novadiem-bureau-campaign/
+!/novadiem-bureau-authority/
+!/novadiem-bureau-run-cost/
+!/novadiem-bureau-model-routing/
+!/novadiem-bureau-regression/
+!/novadiem-nutrifax-label/
+!/novadiem-memoirquill/
+!/novadiem-how-i-build/
+!/novadiem-recallatron/
+!/novadiem-rheostream-durable/
+!/novadiem-orchardly/
+!/novadiem-foaf-client/
+!/novadiem-self-hosting/
 !/pnubb-mind-the-sheep-painted/
 !/bobwiseman-travel-agent/
+!/bobwiseman-10000-miles/
 
 # Local data at any depth, as folders OR symlinks (a trailing slash only matches folders; that gap let four
 # symlinks in on 2026-10-06 and a pull then deleted the folders' contents). Tracked files are unaffected.
@@ -48,3 +85,22 @@
 **/work
 **/output
 **/tmp
+!/indieagent-one-show/
+!/indieagent-paper-depth/
+!/indieagent-relief-box/
+!/oneshow-launch-clip/
+!/indieagent-clean-vector-test/
+!/indieagent-flat-explainer-test/
+!/indieagent-call-toon/
+!/indieagent-diagram-plate/
+!/indieagent-gigcaravan/
+
+# Historical animation-study source, with media kept outside Git.
+!/legacy-chatgpt/
+!/hjeron-doodle-on-footage/
+!/hjeron-spiral-portrait/
+!/bobwiseman-rescue-machine/
+!/bobwiseman-10000-miles-chart/
+!/bobwiseman-tour-piano/
+!/indieagent-moss-forest-test/
+!/indieagent-snowbus-test/

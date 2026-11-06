@@ -1,0 +1,40 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #furniture {
+          position: absolute;
+          inset: 0;
+          background: var(--bg);
+        }
+      </style>
+      <div data-hf-id="hf-or10" id="furniture" data-composition-id="furniture" data-width="1920" data-height="1080">
+        <svg data-hf-id="hf-or11" id="fu-ground" class="full" viewBox="0 0 1920 1080" aria-hidden="true" style="will-change: transform"></svg>
+        <svg data-hf-id="hf-or12" id="fu-frame" class="full" viewBox="0 0 1920 1080"></svg>
+      </div>
+
+      <script>
+        (() => {
+          const tl = gsap.timeline({ paused: true });
+          const K = BP.kit(tl, 0);
+          // stations are the tally's real path: a tap, the phone's SQLite, the pay week, a sync batch, the Rails API
+          BP.furniture(K, tl, {
+            stations: [
+              { label: "TAP", at: 0 },
+              { label: "SQLITE", at: 9.96 },
+              { label: "PAY WEEK", at: 37.38 },
+              { label: "BATCH", at: 51.43 },
+              { label: "API", at: 64.2 },
+            ],
+            sheets: [0, 9.96, 23.99, 37.38, 51.43, 64.2, 76.32],
+          });
+          window.__timelines["furniture"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

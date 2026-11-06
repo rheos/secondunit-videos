@@ -1,0 +1,18 @@
+slug: demucs
+name: Demucs
+kind: cli
+status: available
+does: 'Stem separation: vocals, drums, bass, other.'
+keywords:
+- stems
+- audio
+- separation
+- vocals
+fits:
+- lyric timing
+- remixes
+- ducking
+deterministic: n/a
+how: '`uv run` one-liner in the video-production SKILL.md (not installed globally)'
+cost: free
+added: '2026-10-27'

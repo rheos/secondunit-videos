@@ -1,0 +1,99 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #c5 {
+          position: absolute;
+          inset: 0;
+        }
+      </style>
+      <div id="c5" data-composition-id="c5" data-width="1920" data-height="1080">
+        <div class="layer">
+          <svg class="full" viewBox="0 0 1920 1080">
+            <g id="c5-art"></g>
+          </svg>
+          <div class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate V</div>
+          <div class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>Unknown</div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text, kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 40.94);
+          const art = K.$("c5-art");
+
+          // plate IV's end state: five rows, two of them rework
+          const L = LG.ledger(art, { show: 5 });
+          const r5 = L.rows[5];
+
+          // one more spawn, on a second host
+          const a1 = LG.tag(art, 1300, 250, ['{"attempt_id":"spellwright-1",', ' "status":"started"}']);
+          LG.drawTag(K, a1, K.T(41.38));
+          LG.carry(K, tl, art, LG.toRow(300, 5), K.T(41.82), 0.5);
+          LG.rowIn(K, r5, K.T(42.26));
+          const a2 = LG.tag(art, 1300, 380, ['{"attempt_id":"spellwright-1",', ' "status":"complete"}']);
+          LG.drawTag(K, a2, K.T(42.7));
+          LG.rowDone(K, tl, r5, K.T(43.14));
+          LG.outAll(tl, [a1.g, a2.g], K.T(43.58), 0.3);
+
+          // close-out: account-run.sh, which calls the transcript aggregator
+          const c1 = LG.tag(art, 1300, 250, ["scripts/account-run.sh RUN_DIR"], { head: "CLOSE-OUT" });
+          LG.drawTag(K, c1, K.T(44.03));
+          const c2 = LG.tag(art, 1300, 360, ["aggregate-transcripts.sh", "one transcript per attempt"], { head: "TRANSCRIPTS" });
+          LG.drawTag(K, c2, K.T(45.35));
+
+          // six attempts, six transcript slots; the token cells fill from what is found
+          const slots = [];
+          for (let i = 0; i < 6; i++) {
+            const sx = 1316 + i * 80, sy = 520;
+            const g = el("g", {}, art);
+            const d = `M${sx} ${sy}H${sx + 30}L${sx + 42} ${sy + 12}V${sy + 54}H${sx}Z`;
+            if (i < 5) {
+              el("path", { class: "fill-bg", d }, g);
+              el("path", { class: "ln line-strong", d }, g);
+              el("path", { class: "ln thin line-strong", d: `M${sx + 8} ${sy + 22}H${sx + 32}M${sx + 8} ${sy + 32}H${sx + 32}M${sx + 8} ${sy + 42}H${sx + 24}` }, g);
+            } else {
+              el("path", { class: "ln thin ink", d, opacity: 0.6 }, g);
+              text("?", { class: "mono", x: sx + 21, y: sy + 36, "text-anchor": "middle" }, g);
+            }
+            text(String(i + 1).padStart(2, "0"), { class: "mono small dim", x: sx + 21, y: sy + 84, "text-anchor": "middle" }, g);
+            slots.push(g);
+          }
+          slots.forEach((g, i) => K.fade(g, K.T(45.79) + i * 0.1, 0.3));
+          const oks = [];
+          [45.79, 46.23, 46.67, 47.11, 47.55].forEach((t, i) => {
+            const ok = LG.check(art, 1316 + i * 80 + 21, 640);
+            oks.push(ok);
+            K.draw(ok, K.T(t) + 0.4, 0.25);
+            LG.tokIn(K, tl, L.rows[i], K.T(t) + 0.45);
+          });
+
+          // the second host left no transcript here. A zero would be easy to write, and wrong.
+          const zero = text("0", { class: "mono row dim", x: LG.COL.tok, y: r5.y, "text-anchor": "end" }, art);
+          tl.fromTo(r5.dots, { opacity: 1 }, { opacity: 0, duration: 0.15, immediateRender: false }, K.T(48.44));
+          K.fade(zero, K.T(48.44) + 0.1, 0.3, 1);
+          const strike = el("path", { class: "ln ink", d: `M${LG.COL.tok - 30} ${r5.y - 8}H${LG.COL.tok + 8}`, style: "stroke-width:3" }, art);
+          K.draw(strike, K.T(49.32), 0.25);
+          tl.fromTo([zero, strike], { opacity: 1 }, { opacity: 0, duration: 0.25, immediateRender: false }, K.T(49.76));
+          K.fade(r5.tok, K.T(49.76) + 0.15, 0.35, 1);
+
+          const n1 = text("no run-scoped transcript resolved", { class: "mono cap", x: 1300, y: 700 }, art);
+          const n2 = text("confidence: unavailable", { class: "mono cap", x: 1300, y: 740 }, art);
+          const n3 = text("a zero with no source is never exact", { class: "mono cap dim", x: 1300, y: 780 }, art);
+          K.reveal(n1, K.T(50.64), 0.6);
+          K.reveal(n2, K.T(51.53), 0.5);
+          K.reveal(n3, K.T(52.41), 0.6);
+
+          LG.outAll(tl, [c1.g, c2.g, ...slots, ...oks, n1, n2, n3], K.R(54.6), 0.35);
+          window.__timelines["c5"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

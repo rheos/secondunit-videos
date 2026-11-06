@@ -1,0 +1,21 @@
+slug: dreamactor
+name: DreamActor v2 (Fal)
+kind: model
+status: available
+does: Cheapest motion copy from a driving video onto a start image; handles animals and two figures walking together.
+keywords:
+- motion-transfer
+- video-gen
+- character
+fits:
+- animal shots (the Hjeron wolf)
+- person + dog walking together
+deterministic: n/a
+how: 'Fal API: `fal-ai/bytedance/dreamactor/v2`; the first ~1 s is its own lead-in unless trimmed (trim_first_second)'
+cost: paid, $0.05/s
+detail: memory `fal-access`; secondunit/output/fal-transform-20261009/motion/NOTES.md
+verdict: 'Claude, 2026-10-09: copied the dog''s head turn and a person + dog walk; antlers drifted to stubs or a ring.'
+related:
+- wan-vace
+- fal-kling
+added: '2026-11-01'

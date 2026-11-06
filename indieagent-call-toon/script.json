@@ -1,0 +1,70 @@
+{
+  "note": "The words of the look test. Voices are ElevenLabs eleven_v4, one request per line, cached in assets/tts (gitignored). 'tts' is what the voice reads (audio tags allowed); 'text' is what the captions show.",
+  "fps": 30,
+  "voices": {
+    "artist": {
+      "name": "Rae",
+      "eleven": "1EZBFEhLjqjzuG8HBNbj",
+      "eleven_name": "Gabby - Authentic, Raspy and Kind",
+      "say": "Samantha",
+      "rate": 190,
+      "stability": 0.5
+    },
+    "agent": {
+      "name": "IndieAgent",
+      "eleven": "W78pxv1enhu0qj6t6IaC",
+      "eleven_name": "IA audition adam",
+      "say": "Daniel",
+      "rate": 185,
+      "stability": 0.5
+    }
+  },
+  "lead_in": 1.6,
+  "gap": 0.35,
+  "tail": 3.4,
+  "lines": [
+    {
+      "who": "artist",
+      "text": "Hi! Hey. Okay, so. I want to play Montreal in March.",
+      "tts": "[warmly] Hi! Hey. Okay, so. I want to play Montreal in March."
+    },
+    {
+      "who": "agent",
+      "text": "Montreal in March. There's a hundred and twenty seat room on the Plateau, free on Thursday the twelfth.",
+      "tts": "Montreal in March. There's a hundred and twenty seat room on the Plateau, free on Thursday the twelfth."
+    },
+    {
+      "who": "artist",
+      "text": "Wait. The one with the red curtains?",
+      "tts": "[curious] Wait. The one with the red curtains?"
+    },
+    {
+      "who": "agent",
+      "text": "That's the one. Door split, seventy thirty your way. Should I hold it?",
+      "tts": "That's the one. Door split, seventy thirty your way. Should I hold it?"
+    },
+    {
+      "who": "artist",
+      "text": "Yes! Hold it.",
+      "tts": "[excited] Yes! Hold it."
+    },
+    {
+      "who": "agent",
+      "text": "It's held. It's on your tour page.",
+      "tts": "[warmly] It's held. It's on your tour page."
+    },
+    {
+      "who": "artist",
+      "text": "Wait, that's it?",
+      "overlap_next": 0.45,
+      "tts": "[laughs] Wait, that's it?"
+    },
+    {
+      "who": "agent",
+      "text": "That's it.",
+      "tts": "[chuckles] That's it."
+    }
+  ],
+  "engine": "elevenlabs",
+  "model": "eleven_v4"
+}

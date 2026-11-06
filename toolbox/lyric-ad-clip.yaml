@@ -1,0 +1,19 @@
+slug: lyric-ad-clip
+name: lyric_ad_clip.py
+kind: script
+status: in-use
+does: Cuts a 30 s or shorter 9:16 clip from a finished vertical render and burns in the lyric word by word, Giulietta's film-subtitle style.
+keywords:
+- captions
+- lyrics
+- cut
+fits:
+- Bob's social ad clips
+deterministic: n/a
+how: '`uv run --with pillow --with "numpy<2" python tools/lyric_ad_clip.py SRC_9x16.mp4 lines.json T0 T1 OUT.mp4`'
+cost: free
+detail: the script header; lines come from bobwiseman-giulietta-masina/tools/align_lyrics.py (local only)
+related:
+- faster-whisper
+- pan-and-scan
+added: '2026-11-01'

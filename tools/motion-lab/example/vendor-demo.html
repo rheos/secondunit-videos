@@ -1,0 +1,101 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>motion-lab vendor demo</title>
+<!-- Proves the vendored Remotion helpers (tools/motion-lab/vendor) from a Canvas look, 3 s at 24 fps:
+     0-1 s  a star from RShapes.makeStar is drawn on with RPaths.evolvePath (Path2D + setLineDash)
+     1-2 s  it morphs into a heart with RPaths.interpolatePath (both outlines resampled to 240 points first)
+     2-3 s  a dot rides the heart with getPointAtLength and getTangentAtLength, popping in on EASE.outElastic
+     all    the camera drifts on RNoise.noise2D with a fixed seed, so every frame renders on its own.
+     Keeps the mv-projects contract (window.__ready, window.__frameJPEG) and probes for audit.mjs. -->
+<style>html, body { margin: 0; background: #111; } canvas { width: 100vw; }</style>
+<canvas id="c" width="1920" height="1080"></canvas>
+<script src="../motion.js"></script>
+<script src="../vendor/remotion-paths.min.js"></script>
+<script src="../vendor/remotion-noise.min.js"></script>
+<script src="../vendor/remotion-shapes.min.js"></script>
+<script>
+(() => {
+  const g = document.getElementById('c').getContext('2d');
+  const { EASE, probe } = ML;
+  const FPS = 24, W = 1920, H = 1080, ACCENT = '#d97757', INK = '#1c1b1a';
+  const DRAW = [0, 0.9], MORPH = [1.0, 1.8], RIDE = [2.0, 3.0];   // seconds; holds between them
+  const u = (t, [a, b]) => Math.min(1, Math.max(0, (t - a) / (b - a)));
+
+  // Both shapes centred on (0, 0) in the same local frame, so the morph has nothing to drift.
+  const star = RShapes.makeStar({ innerRadius: 95, outerRadius: 210, points: 5 });
+  const heart = RShapes.makeHeart({ height: 400 });
+  const centred = (s) => RPaths.translatePath(s.path, -s.width / 2, -s.height / 2);
+  const STAR = centred(star), HEART = centred(heart);
+  // interpolatePath pairs instructions one for one, and the star is all lines while the heart is all
+  // curves: morphing them raw collapses into a scribble halfway. So both outlines are resampled to the
+  // same N points by distance, each rotated to start at its top, and the morph runs between those.
+  function resample(d, n) {
+    const L = RPaths.getLength(d), pts = [...Array(n)].map((_, i) => RPaths.getPointAtLength(d, L * i / n));
+    const top = pts.reduce((b, p, i) => (p.y < pts[b].y ? i : b), 0), r = [...pts.slice(top), ...pts.slice(0, top)];
+    return 'M ' + r.map((p) => `${p.x.toFixed(2)} ${p.y.toFixed(2)}`).join(' L ') + ' Z';
+  }
+  const STAR_240 = resample(STAR, 240), HEART_240 = resample(HEART, 240);
+
+  // Drone camera: never still, never snapping. Noise in -1..1 on a fixed seed, slow in x and y, a hair of roll.
+  function camera(t) {
+    return { x: 18 * RNoise.noise2D('cam-x', t * 0.35, 0), y: 12 * RNoise.noise2D('cam-y', 0, t * 0.35 + 7),
+      rot: 0.004 * RNoise.noise2D('cam-r', t * 0.25 + 3, 3) };
+  }
+  function shapeAt(t) {
+    if (t < MORPH[0]) return STAR;
+    if (t >= MORPH[1]) return HEART;
+    return RPaths.interpolatePath(EASE.inOutQuart(u(t, MORPH)), STAR_240, HEART_240);
+  }
+  // The dot is on screen from its first frame: that frame is already one frame into the pop, since an
+  // elastic that starts at 0 would make the arrival frame empty and the audit would see it a frame late.
+  const dotScale = (t) => (t < RIDE[0] ? 0 : EASE.outElastic(u(t + 1 / FPS, [RIDE[0], RIDE[0] + 0.5])));
+
+  function draw(t) {
+    g.setTransform(1, 0, 0, 1, 0, 0);
+    g.fillStyle = '#f4f1ec'; g.fillRect(0, 0, W, H);
+    // a label in its card, so the audit has text to fit
+    const card = [120, 90, 760, 120];
+    g.fillStyle = INK; g.fillRect(...card);
+    g.font = 'bold 56px Helvetica, Arial, sans-serif'; g.textAlign = 'left'; g.textBaseline = 'middle';
+    const label = t < MORPH[0] ? 'RShapes + evolvePath' : t < RIDE[0] ? 'interpolatePath' : 'getPointAtLength';
+    g.fillStyle = '#f4f1ec'; g.fillText(label, 150, 152);
+    probe.text(g, 'label', label, 150, 152, card);
+
+    const cam = camera(t);
+    g.save();
+    g.translate(W / 2 + cam.x, H / 2 + 40 + cam.y); g.rotate(cam.rot);
+    const d = shapeAt(t), path = new Path2D(d);
+    g.lineWidth = 10; g.lineJoin = 'round'; g.lineCap = 'round'; g.strokeStyle = INK;
+    if (t < DRAW[1]) {   // draw-on: evolvePath gives the dash array and offset SVG would use; Canvas takes the same numbers
+      const p = EASE.outQuint(u(t, DRAW)), ev = RPaths.evolvePath(p, d);
+      g.setLineDash(String(ev.strokeDasharray).split(/\s+/).map(Number)); g.lineDashOffset = Number(ev.strokeDashoffset);
+      g.stroke(path); g.setLineDash([]);
+      probe.value('draw', p);
+    } else {
+      g.fillStyle = t < MORPH[0] ? '#f1d9c9' : '#f3c9c2'; g.fill(path); g.stroke(path);
+      probe.value('draw', 1);
+    }
+    const bb = RPaths.getBoundingBox(d);
+    probe.box(g, 'shape', bb.x1, bb.y1, bb.width, bb.height, { keep: true });
+
+    const s = dotScale(t);
+    if (s > 0) {   // the dot rides the outline, its tail pointing back along the tangent
+      const L = RPaths.getLength(d), at = L * EASE.inOutQuart(u(t, RIDE));
+      const pt = RPaths.getPointAtLength(d, at), tg = RPaths.getTangentAtLength(d, at);
+      g.strokeStyle = ACCENT; g.lineWidth = 8; g.beginPath(); g.moveTo(pt.x, pt.y); g.lineTo(pt.x - tg.x * 70 * s, pt.y - tg.y * 70 * s); g.stroke();
+      g.fillStyle = ACCENT; g.beginPath(); g.arc(pt.x, pt.y, 22 * s, 0, 2 * Math.PI); g.fill();
+      probe.box(g, 'dot', pt.x - 22 * s, pt.y - 22 * s, 44 * s, 44 * s, { keep: true });
+    }
+    g.restore();
+    // the dot's arrival fires from the geometry: visible now, not one frame ago
+    probe.edge('dot', dotScale(t) > 0, dotScale(ML.prevT(t, FPS)) > 0);
+    probe.value('dot-scale', s);
+  }
+
+  window.__ready = document.fonts.ready;
+  window.__frameJPEG = (t, q = 0.92) => { draw(t); return g.canvas.toDataURL('image/jpeg', q); };
+  if (!new URLSearchParams(location.search).has('offline')) {
+    const t0 = performance.now(); const loop = () => { draw(((performance.now() - t0) / 1000) % 3.5); requestAnimationFrame(loop); }; loop();
+  }
+})();
+</script>

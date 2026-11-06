@@ -1,0 +1,80 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #a5 {
+          position: absolute;
+          inset: 0;
+        }
+      </style>
+      <div id="a5" data-composition-id="a5" data-width="1920" data-height="1080">
+        <div id="a5-all" class="layer">
+          <svg class="full" viewBox="0 0 1920 1080">
+            <g id="a5-art"></g>
+          </svg>
+          <div class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate V</div>
+          <div class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>No Guessing</div>
+          <div id="a5-st" class="statement"><span class="phrase">It asks.</span> <span class="phrase red">It never guesses.</span></div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text, kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 47.11);
+          const art = K.$("a5-art");
+          const P = AG.rig(art);
+          const G = AG.groups(P);
+          AG.hide(G.review);
+          const Y = AG.Y;
+
+          // carried over: the fork still waits at the owner's control point
+          AG.show(K, [...G.base, ...G.owner], K.T(47.11));
+          const F = AG.packet(art, "FORK", AG.DCX, AG.PY);
+          AG.appear(tl, F, K.T(47.11), 0.35);
+          const L = AG.card(art, 1290, 300, 540, 200, "delegate-decisions.md");
+          const r1 = AG.row(L, 0, "record", "03.F1 · escalate", { vx: 200 });
+          const r2 = AG.row(L, 1, "owner's call", '"trial"', { vx: 200, cls: "gold-t" });
+          AG.show(K, [L.g], K.T(47.11));
+
+          // the one thing it will not do: stand in for the owner
+          const box = el("rect", { class: "ln thin dim-s", x: 140, y: 260, width: 600, height: 80 }, art);
+          const guess = text("WHAT WOULD THE OWNER LIKELY ACCEPT?", { class: "mono", x: 440, y: 307, "text-anchor": "middle" }, art);
+          K.draw(box, K.T(47.69), 0.6, "none");
+          K.fade(guess, K.T(47.69) + 0.3, 0.4);
+          const strike = el("path", { class: "ln ink", d: "M160 300H720", style: "stroke-width:3" }, art);
+          K.draw(strike, K.T(49.46), 0.45);
+          const nm = text("NOT MODELLED, NOT PREDICTED", { class: "mono small gold-t", x: 140, y: 384 }, art);
+          const fg = text("the Delegate only routes and gates", { class: "mono small dim", x: 140, y: 412 }, art);
+          K.fade(nm, K.T(50.06), 0.35);
+          K.fade(fg, K.T(50.64), 0.35);
+
+          // the owner answers; the answer goes into the ledger word for word
+          AG.carry(K, tl, art, `M${AG.DCX} ${AG.OY + 46}V${AG.PY - 24}`, K.T(51.83), 0.45);
+          const ans = text('answer: "trial"', { class: "mono small gold-t", x: AG.DCX + 70, y: AG.PY + 6 }, art);
+          K.fade(ans, K.T(52.41), 0.35);
+          K.reveal(r2.val, K.T(52.41) + 0.3, 0.5);
+          const vb = text("recorded verbatim", { class: "mono small dim", x: 1318, y: 482 }, art);
+          K.fade(vb, K.T(52.99), 0.35);
+
+          // the Conductor resumes with the owner's answer
+          tl.fromTo(ans, { opacity: 1 }, { opacity: 0, duration: 0.3, immediateRender: false }, K.T(53.57));
+          AG.move(K, tl, F, `M${AG.DCX} ${AG.PY}V${Y}`, K.T(53.57), 0.6);
+          AG.lift(tl, P, K.T(54.17));
+          AG.move(K, tl, F, `M${AG.DCX} ${Y}H1480`, K.T(54.75), 1.2);
+          const res = text("the Conductor resumes with the answer", { class: "mono small gold-t", x: 1480, y: Y + 46, "text-anchor": "middle" }, art);
+          K.fade(res, K.T(55.94), 0.35);
+
+          K.reveal(K.$("a5-st"), K.T(56.52), 0.8);
+          K.out(K.$("a5-all"), K.R(60.8), 0.4);
+          window.__timelines["a5"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

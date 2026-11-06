@@ -1,0 +1,68 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #c2 {
+          position: absolute;
+          inset: 0;
+        }
+      </style>
+      <div id="c2" data-composition-id="c2" data-width="1920" data-height="1080">
+        <div id="c2-all" class="layer">
+          <svg class="full" viewBox="0 0 1920 1080">
+            <g id="c2-art"></g>
+          </svg>
+          <div class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate II</div>
+          <div class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>The Map</div>
+          <div class="statement">
+            <span id="c2-st-a" class="phrase">One supervisor,</span>
+            <span id="c2-st-b" class="phrase red">above the runs.</span>
+          </div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const tl = gsap.timeline({ paused: true });
+          const K = BP.kit(tl, 9.47);
+          const art = K.$("c2-art");
+
+          // INDEX.md drawn as a map: five runs and what each one waits on
+          const M = CM.map(art, { id: "c2" });
+          CM.hide([M.parkAll.g, M.park5.g]);
+          K.draw(M.frame, K.T(9.47), 0.9, "none");
+          K.reveal(M.label, K.T(9.47) + 0.3, 0.6);
+          const order = [
+            [1, null],
+            [2, "e12"],
+            [3, "e23"],
+            [4, "e34"],
+            [5, "e35"],
+          ];
+          order.forEach(([n, e], i) => {
+            const at = K.T(10.05) + i * 0.58;
+            if (e) CM.drawEdge(K, M.edges[e], at - 0.3, 0.3);
+            CM.drawCell(K, M.cells[n], at);
+          });
+          CM.drawEdge(K, M.edges.e45, K.T(12.4), 0.4);
+
+          // the Envoy sits above the map and reads it, with its three books
+          CM.drawEnvoy(K, M.envoy, K.T(13.0));
+          K.draw(M.read, K.T(13.58), 0.4);
+          M.books.forEach((B, i) => CM.drawBook(K, B, K.T(14.19) + i * 0.58));
+
+          K.reveal(K.$("c2-st-a"), K.T(15.35), 0.55);
+          K.reveal(K.$("c2-st-b"), K.T(15.93), 0.55);
+
+          // the map stays; only the statement leaves for plate III
+          CM.out(tl, K.$("c2-st-a").parentNode, K.R(19.0), 0.4);
+          window.__timelines["c2"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

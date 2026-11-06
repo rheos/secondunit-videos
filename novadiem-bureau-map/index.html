@@ -1,0 +1,208 @@
+<!doctype html>
+<html class="draft" lang="en" data-resolution="landscape">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1280, height=720" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=IBM+Plex+Mono:wght@400;700&display=block" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <!-- Series kit (tools/blueprint-kit, copied by sync.sh). Theme first, then structure. -->
+    <link rel="stylesheet" href="kit/themes/paper.css" />
+    <link rel="stylesheet" href="kit/kit.css" />
+    <script src="kit/kit.js"></script>
+    <script>
+      // Beat grid of the score (beats.json): librosa beats 0.07-80.88 at a 0.441 s median gap, extended to 84.85.
+      BP.grid({ beats: [0.07,0.51,0.95,1.39,1.83,2.28,2.72,3.16,3.6,4.04,4.48,4.92,5.36,5.8,6.25,6.69,7.13,7.57,8.01,8.45,8.89,9.33,9.78,10.22,10.66,11.1,11.54,11.98,12.42,12.86,13.31,13.75,14.19,14.63,15.07,15.51,15.95,16.39,16.83,17.28,17.72,18.16,18.6,19.04,19.48,19.92,20.36,20.81,21.25,21.69,22.13,22.57,23.01,23.45,23.89,24.33,24.78,25.22,25.66,26.1,26.54,26.98,27.42,27.86,28.31,28.75,29.19,29.63,30.07,30.51,30.95,31.39,31.83,32.28,32.72,33.16,33.6,34.04,34.48,34.92,35.36,35.81,36.25,36.69,37.13,37.57,38.01,38.45,38.89,39.33,39.78,40.22,40.66,41.1,41.54,41.98,42.42,42.86,43.31,43.75,44.19,44.63,45.07,45.51,45.95,46.39,46.83,47.25,47.67,48.11,48.55,48.99,49.44,49.88,50.32,50.76,51.2,51.64,52.08,52.52,52.96,53.41,53.85,54.31,54.75,55.22,55.66,56.1,56.56,57.0,57.45,57.89,58.33,58.75,59.19,59.63,60.07,60.53,61.0,61.46,61.9,62.35,62.79,63.23,63.67,64.11,64.55,64.99,65.43,65.88,66.32,66.76,67.2,67.64,68.08,68.52,68.96,69.4,69.85,70.29,70.73,71.17,71.61,72.05,72.49,72.93,73.38,73.82,74.26,74.7,75.14,75.58,76.02,76.46,76.9,77.35,77.79,78.23,78.67,79.11,79.55,79.99,80.43,80.88,81.32,81.76,82.2,82.64,83.08,83.52,83.96,84.4,84.85] });
+    </script>
+    <style>
+      svg text.mono.head { font-size: 22px; }
+      svg text.mono.gold-t { fill: #6b5416; } /* line-strong is 3.5:1 on paper; small type needs 4.5:1 */
+      svg text.mono.red-t { fill: var(--accent); }
+      svg text.mono.tok { font-size: 14px; font-weight: 700; }
+      .fill-ink { fill: var(--ink); }
+      .fill-gold { fill: var(--line); }
+    </style>
+    <script>
+      // BM: the one device of this film, a building cutaway of a Bureau run that grows plate by plate.
+      // BM.build(parent, upto) draws every part whose stage <= upto and returns them by name. A plate
+      // animates the parts of its own stage; earlier stages are already standing (static).
+      //   stage 3 (Triage): owner, floor 1 (Conductor, workflow registry, Delegate + gate), the run dir with state.json, log.md
+      //   stage 4 (Fresh Rooms): floor 2, Analizer 2000 and Architect rooms, spec.md, plan.md
+      //   stage 5 (Cold Review): the Challenger room, plan.md rev 2, verdicts/
+      //   stage 7 (Close-out): accounting.json
+      window.BM = (() => {
+        const { el, text } = BP;
+        const FILES = { state: [372, "state.json", 3], log: [517, "log.md", 3], spec: [662, "spec.md", 4], plan: [807, "plan.md", 4], accounting: [1060, "accounting.json", 7], verdicts: [1242, "verdicts/", 5] };
+        const ROOMS = {
+          analizer: { x0: 312, name: "ANALIZER 2000", ctx: "CTX·01", stage: 4, glyph: "M-26 0A26 26 0 1 0 26 0A26 26 0 1 0 -26 0M-40 0H-18M18 0H40M0 -40V-18M0 18V40", spawn: "M490 290V342" },
+          architect: { x0: 692, name: "ARCHITECT", ctx: "CTX·02", stage: 4, glyph: "M-30 28H30L-30 -32ZM-30 6A22 22 0 0 1 -8 28", spawn: "M500 290V318H870V342" },
+          challenger: { x0: 1092, name: "CHALLENGER", ctx: "CTX·03", stage: 5, glyph: "M0 -34L34 0L0 34L-34 0Z", spawn: "M510 290V324H1270V342" },
+        };
+        function build(parent, upto) {
+          const P = { files: {}, rooms: {} };
+          const on = (s) => s <= upto;
+          const g = (p) => el("g", {}, p || parent);
+          if (on(3)) {
+            // owner: a control point outside the building, not a person
+            const o = (P.owner = { g: g() });
+            o.ring = el("circle", { class: "ln ink", cx: 1700, cy: 200, r: 28 }, o.g);
+            o.cross = el("path", { class: "ln thin ink", d: "M1656 200H1744M1700 156V244" }, o.g);
+            o.core = el("circle", { class: "fill-ink", cx: 1700, cy: 200, r: 6 }, o.g);
+            o.label = text("OWNER", { class: "mono", x: 1700, y: 136, "text-anchor": "middle" }, o.g);
+            // floor 1 shell: roof, outer walls, the floor between floors 1 and 2, two partitions
+            const f = (P.floor1 = { g: g() });
+            f.shell = el("path", { class: "ln ink", d: "M300 330V140H1460V330" }, f.g);
+            f.floor = el("path", { class: "ln ink", d: "M300 330H1460" }, f.g);
+            f.part1 = el("path", { class: "ln thin ink", d: "M700 140V330" }, f.g);
+            f.part2 = el("path", { class: "ln thin ink", d: "M1080 140V330" }, f.g);
+            f.lCond = text("CONDUCTOR", { class: "mono", x: 320, y: 168 }, f.g);
+            f.lReg = text("WORKFLOWS", { class: "mono", x: 720, y: 168 }, f.g);
+            f.lDel = text("DELEGATE", { class: "mono", x: 1100, y: 168 }, f.g);
+            // the workflow registry: four of its twenty rows
+            const r = (P.registry = { g: g(), rows: [], names: [] });
+            r.frame = el("rect", { class: "ln thin ink", x: 730, y: 184, width: 320, height: 118 }, r.g);
+            ["feature", "bug-fix", "execute-plan", "code-review"].forEach((n, i) => {
+              r.rows.push(el("rect", { class: "ln thin ink", x: 744, y: 194 + i * 26, width: 292, height: 22 }, r.g));
+              r.names.push(text(n, { class: "mono small", x: 756, y: 210 + i * 26 }, r.g));
+            });
+            r.more = text("+ 16 MORE", { class: "mono small dim", x: 1060, y: 168, "text-anchor": "end" }, r.g);
+            r.pick = el("path", { class: "ln line-strong", d: "M740 191H1040V219H740Z" }, r.g);
+            r.tick = el("path", { class: "ln line-strong", d: "M1006 204L1013 211L1026 197" }, r.g);
+            // the Delegate's gate: a striped arm across the way out, hinged at the floor
+            const d = (P.delegate = { g: g() });
+            d.foot = el("path", { class: "ln ink", d: "M1404 300H1436" }, d.g);
+            d.hinge = el("circle", { class: "ln ink", cx: 1420, cy: 294, r: 5 }, d.g);
+            d.arm = el("g", {}, d.g);
+            d.armBox = el("rect", { class: "ln ink", x: 1413, y: 206, width: 14, height: 82 }, d.arm);
+            d.stripes = [0, 1, 2].map((i) => el("rect", { class: "fill-ink", x: 1413, y: 214 + i * 26, width: 14, height: 12 }, d.arm));
+            // the spawn line from the Delegate to the Conductor, along the top of floor 1
+            P.spawnConductor = el("path", { class: "ln thin ink", d: "M1350 226V184H490V210", opacity: 0.55 }, parent);
+            // the Conductor
+            const c = (P.conductor = { g: g() });
+            c.crossH = el("path", { class: "ln line construct", d: "M420 250H560" }, c.g);
+            c.crossV = el("path", { class: "ln line construct", d: "M490 196V304" }, c.g);
+            c.outer = el("circle", { class: "ln ink", cx: 490, cy: 250, r: 40 }, c.g);
+            c.inner = el("circle", { class: "ln thin ink", cx: 490, cy: 250, r: 30 }, c.g);
+            c.core = el("circle", { class: "ln ink", cx: 490, cy: 250, r: 5 }, c.g);
+            // the ground and the run dir below it
+            const b = (P.base = { g: g(), hatch: [] });
+            b.ground = el("path", { class: "ln ink", d: "M220 520H1540" }, b.g);
+            for (let x = 232; x <= 292; x += 12) b.hatch.push(el("path", { class: "ln thin ink", d: `M${x} 524l-10 14`, opacity: 0.6 }, b.g));
+            for (let x = 1472; x <= 1532; x += 12) b.hatch.push(el("path", { class: "ln thin ink", d: `M${x} 524l-10 14`, opacity: 0.6 }, b.g));
+            b.walls = el("path", { class: "ln ink", d: "M300 520V700H1460V520" }, b.g);
+            b.shelf = el("path", { class: "ln thin ink", d: "M320 640H1440", opacity: 0.5 }, b.g);
+            b.label = text("RUN DIR", { class: "mono", x: 320, y: 556 }, b.g);
+            b.path = text(".bureau/runs/<date>-<task>/", { class: "mono small dim", x: 424, y: 556 }, b.g);
+          }
+          if (on(4)) {
+            const f2 = (P.floor2 = { g: g() });
+            f2.walls = el("path", { class: "ln ink", d: "M300 330V520M1460 330V520" }, f2.g);
+          }
+          Object.entries(ROOMS).forEach(([k, R]) => {
+            if (!on(R.stage)) return;
+            const rm = (P.rooms[k] = { g: g() });
+            const cx = R.x0 + 178;
+            rm.cx = cx;
+            rm.spawn = el("path", { class: "ln thin ink", d: R.spawn, opacity: 0.55 }, rm.g);
+            rm.outer = el("rect", { class: "ln ink", x: R.x0, y: 342, width: 356, height: 166 }, rm.g);
+            rm.inner = el("rect", { class: "ln thin ink", x: R.x0 + 8, y: 350, width: 340, height: 150 }, rm.g);
+            const gg = el("g", { transform: `translate(${cx} 410)` }, rm.g);
+            rm.glyph = el("path", { class: "ln line", d: R.glyph }, gg);
+            rm.label = text(R.name, { class: "mono", x: cx, y: 488, "text-anchor": "middle" }, rm.g);
+            rm.ctx = text(R.ctx, { class: "mono small", x: R.x0 + 22, y: 374, opacity: 0.6 }, rm.g);
+          });
+          Object.entries(FILES).forEach(([k, [cx, name, stage]]) => {
+            if (!on(stage)) return;
+            const fl = (P.files[k] = { g: g(), cx });
+            if (k === "verdicts") {
+              fl.body = el("path", { class: "ln line", d: `M${cx - 20} 598V636H${cx + 20}V604H${cx - 2}L${cx - 7} 598Z` }, fl.g);
+              fl.fold = el("path", { class: "ln thin line", d: `M${cx - 20} 612H${cx + 20}` }, fl.g);
+              fl.lines = el("path", { class: "ln thin line", d: `M${cx - 12} 622H${cx + 12}` }, fl.g);
+            } else {
+              fl.body = el("path", { class: "ln line", d: `M${cx - 18} 590H${cx + 8}L${cx + 18} 600V636H${cx - 18}Z` }, fl.g);
+              fl.fold = el("path", { class: "ln thin line", d: `M${cx + 8} 590V600H${cx + 18}` }, fl.g);
+              fl.lines = el("path", { class: "ln thin line", d: `M${cx - 10} 608H${cx + 10}M${cx - 10} 616H${cx + 12}M${cx - 10} 624H${cx + 4}` }, fl.g);
+            }
+            fl.label = text(name, { class: "mono small", x: cx, y: 664, "text-anchor": "middle" }, fl.g);
+          });
+          if (on(5)) P.planRev = text("rev 2", { class: "mono small gold-t", x: 807, y: 684, "text-anchor": "middle" }, parent);
+          return P;
+        }
+
+        // a work packet that moves: a small folder with a label under it, drawn around (0,0)
+        function token(parent, label, x, y) {
+          const t = el("g", { transform: `translate(${x} ${y})` }, parent);
+          el("path", { class: "fill-bg", d: "M-26 -14H26V19H-26Z" }, t);
+          el("path", { class: "ln ink", d: "M-26 -14H26V19H-26ZM-26 -14V-19H-6L-2 -14" }, t);
+          el("path", { class: "ln thin line", d: "M-16 -2H16M-16 6H10" }, t);
+          if (label) text(label, { class: "mono tok", x: 0, y: 40, "text-anchor": "middle" }, t);
+          return t;
+        }
+        // a sheet of paper in transit (a finding, a file going to disk)
+        function sheet(parent, x, y) {
+          const t = el("g", { transform: `translate(${x} ${y})` }, parent);
+          el("path", { class: "fill-bg", d: "M-10 -13H4L10 -7V13H-10Z" }, t);
+          el("path", { class: "ln line", d: "M-10 -13H4L10 -7V13H-10Z" }, t);
+          return t;
+        }
+
+        // the work packet of plates I and VII: three slots that should hold the run's record
+        function packet(parent, x, y) {
+          const P = { g: el("g", {}, parent), rows: [] };
+          P.body = el("path", { class: "ln ink", d: `M${x} ${y + 30}H${x + 600}V${y + 300}H${x}Z` }, P.g);
+          P.tab = el("path", { class: "ln ink", d: `M${x} ${y + 30}V${y}H${x + 190}L${x + 214} ${y + 30}` }, P.g);
+          P.head = text("WORK PACKET", { class: "mono head", x: x + 30, y: y + 82 }, P.g);
+          P.rule = el("path", { class: "ln thin ink", d: `M${x + 30} ${y + 102}H${x + 570}` }, P.g);
+          ["DECISIONS", "REVIEW", "EVIDENCE"].forEach((n, i) => {
+            const ry = y + 150 + i * 52;
+            const r = {};
+            r.label = text(n, { class: "mono", x: x + 30, y: ry + 7 }, P.g);
+            r.box = el("rect", { class: "ln thin ink", x: x + 250, y: ry - 20, width: 320, height: 38 }, P.g);
+            r.cx = x + 410;
+            r.cy = ry + 6;
+            P.rows.push(r);
+          });
+          return P;
+        }
+        return { build, token, sheet, packet, FILES, ROOMS };
+      })();
+    </script>
+  </head>
+  <body>
+    <div data-hf-id="hf-bm01"
+      id="root"
+      data-composition-id="main"
+      data-start="0"
+      data-duration="84"
+      data-width="1280"
+      data-height="720"
+    >
+      <!-- Score: score-library bureau-art-pop-bureau-map take-01-edit, sha256 9f6e7626...f12a, the clock for every cue -->
+      <audio data-hf-id="hf-bm02"
+        id="score"
+        src="_in/score.mp3"
+        data-start="0"
+        data-duration="84"
+        data-track-index="9"
+        data-volume="1"
+      ></audio>
+
+      <!-- every plate draws on a 1920x1080 stage; drafts scale it to 720p (kit.css, stage.sh) -->
+      <div class="stage">
+        <div data-hf-id="hf-bm03" id="slot-furniture" data-composition-id="furniture" data-composition-src="compositions/furniture.html" data-start="0" data-duration="84" data-track-index="0" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-bm04" id="slot-b1" data-composition-id="b1" data-composition-src="compositions/b1-packet.html" data-start="0" data-duration="8.3" data-track-index="1" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-bm05" id="slot-b2" data-composition-id="b2" data-composition-src="compositions/b2-one-session.html" data-start="8.3" data-duration="10.7" data-track-index="2" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-bm06" id="slot-b3" data-composition-id="b3" data-composition-src="compositions/b3-triage.html" data-start="19" data-duration="13" data-track-index="3" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-bm07" id="slot-b4" data-composition-id="b4" data-composition-src="compositions/b4-fresh-rooms.html" data-start="32" data-duration="16.5" data-track-index="4" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-bm08" id="slot-b5" data-composition-id="b5" data-composition-src="compositions/b5-cold-review.html" data-start="48.5" data-duration="16.5" data-track-index="5" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-bm09" id="slot-b6" data-composition-id="b6" data-composition-src="compositions/b6-gate.html" data-start="65" data-duration="10.5" data-track-index="6" data-width="1920" data-height="1080"></div>
+        <div data-hf-id="hf-bm0a" id="slot-b7" data-composition-id="b7" data-composition-src="compositions/b7-close-out.html" data-start="75.5" data-duration="8.5" data-track-index="7" data-width="1920" data-height="1080"></div>
+      </div>
+    </div>
+
+    <script>
+      window.__timelines["main"] = gsap.timeline({ paused: true });
+    </script>
+  </body>
+</html>

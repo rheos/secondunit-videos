@@ -1,0 +1,24 @@
+slug: iso-glow
+name: ISO-GLOW
+kind: skill
+status: candidate
+does: April Zhu's Claude skill for fine-line isometric figures on black where whatever is switched on glows amber. 2D or three.js 3D with orbit and true-isometric snap, and it can clean up and restyle a .glb you hand it.
+keywords:
+- isometric
+- 3d
+- threejs
+- interactive
+- neon
+fits:
+- musician gear as dark glowing objects (its demos include a drum machine and a cassette deck)
+- devweb and IndieAgent object shorts
+- restyling Meshy models
+deterministic: unknown
+how: not installed. One-line install from isoglow.dev. Built on Tolga Cohce's ai-iso-skill (MrBongoC/ai-iso-skill, MIT, 336 stars).
+cost: free, MIT; keep the licence and credit when building on it
+url: https://isoglow.dev/
+source: x.com/Aprilzz423/status/2109294655489868227 (Oct 11 2026, read 2026-11-04)
+verdict: 'Recommended by Claude, 2026-11-04: worth a test on a gear-heavy idea. Page and promo read, the skill itself not.'
+related:
+- colorfigures
+- meshy

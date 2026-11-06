@@ -1,0 +1,46 @@
+slug: hj-scratch
+title: Scratchboard
+note: The same dune shot as white-on-black scratchboard etching.
+used: Dream of Fire look test
+cost: credits
+group: live
+order: 70
+clip: hj-scratch.mp4
+tall: true
+status: approved
+engine: generated (Kling O3 video edit of his real clip)
+project: hjeron-dark-blues-storyboard
+code:
+  path: hjeron-dark-blues-storyboard/tools/assemble.py
+  flag: null
+  page: null
+  note: >-
+    The conversion is a paid Kling video edit (job 87b55c41, prompt mv-projects/hjeron-dark-blues-augment/p_scratch.txt,
+    local only). assemble.py places it as shot 48 (SB1) and builds the free etch transition (etch()) that reveals
+    it over the real frame with a growing hatch mask.
+rules:
+  - Input is his real dune walk (#37), converted whole by Kling O3 video edit, so pose, walk and timing stay his
+  - White on black only; tone comes from line density, hatching and stippling, no flat grey
+  - Stippled star field, hatched sand ripples, distant buttes
+  - Face stays black under the brim
+  - The cut reveals it with an etch transition, hatch strokes growing over the real frame, dense shadows last
+  - About 7.5 credits per 5 s clip
+palette:
+  - "#000000"
+  - "#ffffff"
+reference: >-
+  Scratchboard etching (white clay under black ink, scratched to white); Hjeron's inspiration board image 19,
+  a scratchboard walk across a starry desert
+proof:
+  renders:
+    - mv-projects/hjeron-dark-blues-augment/scratch.json (Kling job 87b55c41)
+    - hjeron-dark-blues-storyboard/output/dream-of-fire_storyboard-cut_f0000-f2342_24fps_9x16_master.mp4 (shot 48)
+  pr: []
+  youtube:
+    - 5J-ST917WGc
+    - uH7Y8q0xpHc
+verdict: null
+related:
+  - hj-sepia
+  - hj-genmontage
+  - brushhjeron

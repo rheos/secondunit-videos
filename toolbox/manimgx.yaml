@@ -1,0 +1,23 @@
+slug: manimgx
+name: ManimGX
+kind: library
+status: available
+does: 'Manim CE''s Python API on a Rust and wgpu renderer: math, diagrams, 3D surfaces and moving cameras, rendered fast to MP4 with a storyboard still.'
+keywords:
+- 3d
+- diagram
+- explainer
+- animation
+fits:
+- math and 3D diagram shots in devweb shorts and the blueprint explainers
+deterministic: 'yes'
+how: '`uv run --no-project --python 3.13 --with manimgx manimgx render scene.py` (x86_64 wheel; no install needed)'
+cost: free (MIT)
+url: https://github.com/academa-labs/manimgx
+source: x.com/socialwithaayan/status/2116567606882967790 (10 motion-design repos, read 2026-11-01)
+verdict: 'Claude, 2026-11-01: tested on this Intel Mac; a 2 s 1080p60 rotating-cube scene rendered in 18 s, plus a storyboard PNG.'
+related:
+- threejs
+- blueprint-kit
+- devweb-kit
+added: '2026-11-01'

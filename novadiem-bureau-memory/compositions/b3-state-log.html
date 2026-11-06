@@ -1,0 +1,119 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #b3 {
+          position: absolute;
+          inset: 0;
+        }
+      </style>
+      <div id="b3" data-composition-id="b3" data-width="1920" data-height="1080">
+        <div class="layer">
+          <svg class="full" viewBox="0 0 1920 1080">
+            <g id="b3-map"></g>
+            <g id="b3-top"></g>
+          </svg>
+          <div class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate III</div>
+          <div class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>State and Log</div>
+          <div id="b3-st" class="statement">
+            <span id="b3-st-a" class="phrase">Written</span>
+            <span id="b3-st-b" class="phrase red">before the next spawn.</span>
+          </div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text, kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 22.41);
+          const map = K.$("b3-map");
+          const top = K.$("b3-top");
+          const { carry, fileIn, ghost } = AM.cues(K, tl, top);
+          const transient = [];
+          const keep = (n) => (transient.push(n), n);
+
+          const S = AM.session(map, 1);
+          const C = AM.conductor(map);
+          const SP = AM.specialists(map);
+          ghost([S.g, C.g, ...SP.map((r) => r.g)]);
+          const D = AM.disk(map, ["log", "spec", "plan", "prompts"]);
+          const st = AM.plate(D.g, "state");
+
+          // at the phase boundary the Conductor writes state.json, then a resume note in log.md
+          tl.fromTo(C.g, { opacity: 0.22 }, { opacity: 1, duration: 0.4 }, K.T(22.41) + 0.1);
+          carry("M560 430V470H420V606", K.T(23.01), 0.9);
+          fileIn(st, K.T(23.59));
+
+          // two cards over the ended specialists: what each file now says
+          const card = (x0, title) => {
+            const cg = keep(el("g", {}, top));
+            const box = el("rect", { class: "ln ink fill-bg", x: x0, y: 150, width: 355, height: 300 }, cg);
+            box.style.fill = "var(--bg)";
+            const head = text(title, { class: "mono small", x: x0 + 18, y: 182 }, cg);
+            const rule = el("path", { class: "ln thin ink", d: `M${x0 + 18} 196H${x0 + 337}` }, cg);
+            return { cg, box, head, rule, x0 };
+          };
+          const row = (cd, str, y, at, cls = "mono code") => {
+            const t = text(str, { class: cls, x: cd.x0 + 18, y }, cd.cg);
+            K.fade(t, at, 0.3);
+            return t;
+          };
+          // illustrative values; key names from docs/run-protocol.md "State management"
+          // the ended specialists step aside for the cards
+          SP.forEach((r) => tl.to(r.g, { opacity: 0, duration: 0.3 }, K.T(24.17) - 0.1));
+          const A = card(900, "state.json");
+          tl.fromTo(A.cg, { opacity: 0 }, { opacity: 1, duration: 0.3 }, K.T(24.17));
+          K.draw(A.rule, K.T(24.17) + 0.2, 0.4);
+          const lead = keep(el("path", { class: "ln line construct", d: "M420 556V500H880V300H900" }, top));
+          K.sweep(lead, K.T(24.17), 0.6);
+          [
+            ['"phase": "prompts",', 24.78],
+            ['"phase_status": "complete",', 25.36],
+            ['"phases_complete": [', 25.94],
+            ['  "analyst", "architect",', 25.94],
+            ['  "challenger", "prompts" ],', 26.54],
+            ['"open_questions": [],', 27.12],
+            ['"last_updated": "<utc>"', 27.7],
+          ].forEach(([s, at], i) => row(A, s, 228 + i * 30, K.T(at) + (i === 3 ? 0.2 : 0)));
+
+          // log.md: append-only; the resume note names done, next, blocked and the canonical artifact
+          carry("M600 430V476H690V606", K.T(28.28), 0.9);
+          tl.fromTo(D.plates.log.lines, { opacity: 0.3 }, { opacity: 1, duration: 0.4 }, K.T(28.89));
+          const B = card(1265, "log.md");
+          tl.fromTo(B.cg, { opacity: 0 }, { opacity: 1, duration: 0.3 }, K.T(28.89));
+          K.draw(B.rule, K.T(28.89) + 0.2, 0.4);
+          row(B, "## <utc> phase boundary", 228, K.T(29.47));
+          row(B, "done:  prompts.md approved", 270, K.T(30.07));
+          row(B, "next:  challenger, round 2", 300, K.T(30.65));
+          row(B, "blocked:  nothing", 330, K.T(31.23));
+          row(B, "canonical:  prompts.md", 360, K.T(31.83));
+
+          // state, not prose: a paragraph heads for state.json and is turned to log.md
+          const prose = keep(el("g", {}, top));
+          el("path", { class: "fill-bg", d: "M-24 -11H24V11H-24Z" }, prose);
+          el("path", { class: "ln thin ink", d: "M-24 -11H24V11H-24ZM-18 -5H18M-18 0H18M-18 5H10" }, prose);
+          tl.fromTo(prose, { opacity: 0 }, { opacity: 1, duration: 0.2 }, K.T(32.42));
+          K.travel(prose, el("path", { d: "M640 430V545H470" }), K.T(32.42), 0.6, "power1.in");
+          K.travel(prose, el("path", { d: "M470 545H690V556" }), K.T(33.0), 0.6, "power1.out");
+          tl.to(prose, { opacity: 0, duration: 0.25 }, K.T(33.58));
+          const notProse = keep(text("state, not prose", { class: "mono tiny dim", x: 420, y: 744, "text-anchor": "middle" }, top));
+          K.fade(notProse, K.T(32.42) + 0.4, 0.3);
+
+          K.reveal(K.$("b3-st-a"), K.T(33.0), 0.5);
+          K.reveal(K.$("b3-st-b"), K.T(33.58), 0.7);
+
+          const end = 36.2 - 22.41;
+          tl.to(C.g, { opacity: 0.22, duration: 0.4 }, end);
+          K.out(K.$("b3-st"), end, 0.3);
+          transient.forEach((n) => K.out(n, end, 0.3));
+          window.__timelines["b3"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

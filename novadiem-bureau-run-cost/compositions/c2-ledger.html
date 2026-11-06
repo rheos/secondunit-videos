@@ -1,0 +1,71 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #c2 {
+          position: absolute;
+          inset: 0;
+        }
+      </style>
+      <div id="c2" data-composition-id="c2" data-width="1920" data-height="1080">
+        <div class="layer">
+          <svg class="full" viewBox="0 0 1920 1080">
+            <g id="c2-art"></g>
+          </svg>
+          <div class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate II</div>
+          <div class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>Two Lines a Spawn</div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text, kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 9.03);
+          const art = K.$("c2-art");
+
+          // the ledger opens empty; the token column waits for close-out
+          const L = LG.ledger(art, { show: 0 });
+          LG.drawLedger(K, L, K.T(9.03));
+          const wait = text("filled at close-out", { class: "mono small dim", x: LG.COL.tok, y: LG.Y + 160, "text-anchor": "end" }, art);
+          K.fade(wait, K.T(10.36), 0.4);
+          tl.fromTo(wait, { opacity: 1 }, { opacity: 0, duration: 0.4, immediateRender: false }, K.T(18.3));
+
+          // spawn 1: a started line writes the row, a terminal line settles it
+          const r0 = L.rows[0], r1 = L.rows[1];
+          const a1 = LG.tag(art, 1300, 250, ['{"attempt_id":"analyst-1",', ' "status":"started"}']);
+          const a2 = LG.tag(art, 1300, 380, ['{"attempt_id":"analyst-1",', ' "status":"complete"}']);
+          LG.drawTag(K, a1, K.T(10.8));
+          LG.carry(K, tl, art, LG.toRow(300, 0), K.T(11.24), 0.5);
+          LG.rowIn(K, r0, K.T(11.68));
+          LG.drawTag(K, a2, K.T(12.56));
+          LG.carry(K, tl, art, LG.toRow(430, 0), K.T(12.99), 0.5);
+          LG.rowDone(K, tl, r0, K.T(13.44));
+
+          const capA = text("one line when a spawn starts,", { class: "mono cap", x: 1300, y: 560 }, art);
+          const capB = text("one when it ends", { class: "mono cap", x: 1300, y: 592 }, art);
+          K.reveal(capA, K.T(13.89), 0.6);
+          K.reveal(capB, K.T(14.33), 0.5);
+
+          // spawn 2, the same pair
+          LG.outAll(tl, [a1.g, a2.g], K.T(15.21), 0.3);
+          const b1 = LG.tag(art, 1300, 250, ['{"attempt_id":"architect-1",', ' "status":"started"}']);
+          const b2 = LG.tag(art, 1300, 380, ['{"attempt_id":"architect-1",', ' "status":"complete"}']);
+          LG.drawTag(K, b1, K.T(15.65));
+          LG.carry(K, tl, art, LG.toRow(300, 1), K.T(16.09), 0.5);
+          LG.rowIn(K, r1, K.T(16.53));
+          LG.drawTag(K, b2, K.T(17.41));
+          LG.carry(K, tl, art, LG.toRow(430, 1), K.T(17.86), 0.5);
+          LG.rowDone(K, tl, r1, K.T(18.3));
+
+          LG.outAll(tl, [b1.g, b2.g, capA, capB], K.R(18.85), 0.3);
+          window.__timelines["c2"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

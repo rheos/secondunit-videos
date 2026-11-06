@@ -1,0 +1,42 @@
+slug: playa-3d
+title: Rendered 3D figures
+note: >-
+  The same boardroom rebuilt in Blender with lit surfaces, sun shadows and desert haze: egg-headed suits at
+  tape recorders under giant padlocked red lips, while a huge ear on a pole reels out its boom mics.
+used: The Reform Party at Burning Man test, Bob Wiseman
+cost: free
+group: code
+order: 500
+clip: playa-3d.mp4
+tall: false
+status: test
+engine: blender
+project: bobwiseman-reform-party-blender
+code:
+  path: bobwiseman-reform-party-blender/verse1/verse1.py
+  flag: "--look pbr --chars 3d"
+  page: null
+  note: >-
+    On branch reform-party-blender-d24 (issue #179, no PR), not merged. Built from draft 24's exported state
+    (tools/export_state.mjs); renders on Modal only. The first Blender test (slump_shot.py, cel look) is on
+    main via PR #175.
+rules:
+  - The drawn film's exported state drives it (same camera, car, suits and timings)
+  - Real surfaces under one sun with cast shadows, a warm bounce fill, exposure 0.2
+  - Distance haze whitens the playa toward the horizon (45 to 1600 m)
+  - Figures are 3D bodies (--chars 3d); --chars cutout keeps them as lit flat cut-outs
+palette: []
+reference: The drawn Reform Party film (draft 24), rebuilt in Blender
+proof:
+  renders: []
+  pr:
+    - rheos/secondunit-videos#175
+    - rheos/secondunit-videos#180
+  youtube:
+    - 9CqA9wvpIIo
+    - N49JMzgDYYk
+    - uRCZSceBlVg
+verdict: null
+related:
+  - drawn-playa
+  - orb-cel

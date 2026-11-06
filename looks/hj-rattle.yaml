@@ -1,0 +1,52 @@
+slug: hj-rattle
+title: Rattle and drum
+note: Firelit lip-sync close-ups with big type on the beat.
+used: Dream of Fire v1, The Wyrd One
+cost: credits
+group: generated
+order: 60
+clip: hj-rattle.mp4
+tall: false
+status: rejected
+engine: generated + p5 (GPT Image 2.5, MiniMax H3 Max, Wan 2.7, composited in p5 with Swift VFX)
+project: hjeron-rattle-and-drum
+code:
+  path: null
+  flag: null
+  page: null
+  note: >-
+    Local only, not in rheos/secondunit-videos: mv-projects/hjeron-rattle-and-drum/prompts/rd/05_overlay.js (p5
+    composite) and 04_clips.yml; cue analysis in docs/analysis/ (cues.json); plan docs/PLAN.md.
+rules:
+  - Hjeron generated alone on chroma green and composited by p5 over a fire-circle plate; no full-frame H3 shots
+  - "Lip-sync: H3 Max 768p 10 s reference mode (green still + vocal stem); MCU and a wider rattle shot"
+  - Every drum crack fires a line of fire across the frame; rattle transients jolt the camera and flash ram-skull silhouettes; embers pulse on the beat grid
+  - Three words only, BONES, DRUMS, WARNING, in Anton, bone white with a charred ember edge, always behind him, never over the mouth
+  - Grade in p5 and Swift only, never baked into generations; one Swift grain pass; torn-photo edges only on graphic beats
+  - Night, char, ember, gold, bone, red rock; photographic dark-western mood
+  - "Cost: 101 credits for the section (3 GPT Image 2.5 at 4.5, 3 H3 Max 10 s at 25, 1 Wan 2.7 5 s at 12.5)"
+palette:
+  - "#0B0806"
+  - "#2A1A12"
+  - "#E8641E"
+  - "#F2A93B"
+  - "#FFE9C2"
+  - "#E9DFC9"
+  - "#8A3B22"
+  - "#5B5550"
+  - "#C9A24A"
+reference: >-
+  Weathered dark-western photography (red-rock desert at night, ram skulls, charred wood); the face is the
+  MythMaker-era look (face paint, fur mantle) that was retired
+proof:
+  renders: []
+  pr: []
+  youtube: []
+  spend: mv-projects/hjeron-rattle-and-drum/docs/SPEND.md
+verdict: >-
+  Retired with cuts 1-3 on 2026-09-28 when Robin sent the solo act's real look: "shift in direction. for the dark
+  blues project this is more the character and vibe that hjeron is going for."
+related:
+  - tarot
+  - hj-lipsync
+  - hj-veil

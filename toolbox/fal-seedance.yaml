@@ -1,0 +1,22 @@
+slug: fal-seedance
+name: Seedance 2.5 (Fal)
+kind: model
+status: available
+does: Reference-guided video from up to 30 images and 10 videos, 4-30 s, up to 1080p; its editing task swaps a person in real footage from photo references in one pass, no mask.
+keywords:
+- video-gen
+- motion-transfer
+- character
+- inpaint
+fits:
+- a premium tier above Kling when a face has to hold for long shots
+deterministic: n/a
+how: 'Fal API: `bytedance/seedance-2.5/us/reference-to-video` (task reference, editing or extension); set generate_audio: false under a song'
+cost: paid, per token on input AND output video; about $0.57 per output second at 720p when copying a same-length clip, about $1.40 at 1080p
+detail: 'skill video-production `references/tools-catalogue.md` "Motion transfer: what to quote" (token formula)'
+verdict: 'Robin, 2026-10-27: no test for now (three to seven times the price of VACE or Kling).'
+related:
+- higgsfield-video
+- wan-vace
+- fal-kling
+added: '2026-11-01'

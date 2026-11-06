@@ -1,0 +1,25 @@
+slug: ogl
+name: OGL
+kind: library
+status: candidate
+does: Small WebGL library for writing custom shaders.
+keywords:
+- shader
+- webgl
+- gradient
+- distortion
+- glitch
+- background
+fits:
+- music-video looks
+- animated site backgrounds
+deterministic: yes (time is a shader uniform)
+how: not installed
+cost: free
+url: https://github.com/oframe/ogl
+source: x.com/e1genqq/status/2114445900131013003 (20 open-source tools post, read 2026-10-27)
+verdict: second pick after Matter.js, if music videos need looks the registry lacks (Claude, 2026-10-27)
+related:
+- typegpu
+- gl-transitions
+added: '2026-10-27'

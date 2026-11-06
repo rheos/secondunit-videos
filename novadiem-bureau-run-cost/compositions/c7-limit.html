@@ -1,0 +1,89 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #c7 {
+          position: absolute;
+          inset: 0;
+        }
+        #c7 .statement.one {
+          top: 330px;
+        }
+        #c7 .statement.two {
+          top: 420px;
+        }
+        #c7 .lim {
+          position: absolute;
+          left: 0;
+          right: 0;
+          text-align: center;
+          color: var(--ink);
+        }
+        #c7 .lim.a {
+          top: 586px;
+          font-size: 26px;
+          font-weight: 700;
+        }
+        #c7 .lim.b {
+          top: 630px;
+          font-size: 20px;
+          color: var(--ink-dim);
+        }
+        #c7 .colo {
+          position: absolute;
+          left: 0;
+          right: 0;
+          text-align: center;
+          color: var(--ink);
+        }
+        #c7 .colo.a {
+          top: 796px;
+          font-size: 24px;
+          font-weight: 700;
+        }
+        #c7 .colo.b {
+          top: 838px;
+          font-size: 18px;
+          color: var(--ink-dim);
+        }
+      </style>
+      <div id="c7" data-composition-id="c7" data-width="1920" data-height="1080">
+        <div class="layer">
+          <svg class="full" viewBox="0 0 1920 1080">
+            <path id="c7-rule" class="ln line" d="M760 740H1160M760 730V750M1160 730V750" />
+          </svg>
+          <div class="plate-label left" data-layout-allow-overlap data-layout-allow-occlusion>Plate VII</div>
+          <div class="plate-label right" data-layout-allow-overlap data-layout-allow-occlusion>The Limit</div>
+          <div id="c7-st-a" class="statement one"><span class="phrase">Failed work counts.</span></div>
+          <div id="c7-st-b" class="statement two"><span class="phrase red">Unknown stays unknown.</span></div>
+          <div id="c7-lim-a" class="lim a mono">IT COUNTS TOKENS AND TIME. NOT DOLLARS.</div>
+          <div id="c7-lim-b" class="lim b mono">cost.currency_estimate: null · unavailable</div>
+          <div id="c7-colo-a" class="colo a mono">THE BUREAU · THEBUREAU.DEV · NOVADIEM.COM</div>
+          <div id="c7-colo-b" class="colo b mono">INSIDE THE BUREAU · 10 · THE LEDGER</div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { kit } = window.BP;
+          const tl = gsap.timeline({ paused: true });
+          const K = kit(tl, 73.14);
+
+          K.reveal(K.$("c7-st-a"), K.T(73.58), 0.7);
+          K.reveal(K.$("c7-st-b"), K.T(74.91), 0.8);
+          K.reveal(K.$("c7-lim-a"), K.T(77.11), 0.7);
+          K.fade(K.$("c7-lim-b"), K.T(78.0), 0.5);
+          K.draw(K.$("c7-rule"), K.T(79.76), 0.6);
+          K.fade(K.$("c7-colo-a"), K.T(80.64), 0.5);
+          K.fade(K.$("c7-colo-b"), K.T(81.53), 0.5);
+
+          window.__timelines["c7"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>
