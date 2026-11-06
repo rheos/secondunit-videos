@@ -103,3 +103,35 @@ Iterate with `npx hyperframes@0.8.162 snapshot --at ...` (contact sheets) before
   between them.
 - **A panel that holds still between lines needs a float.** A board showing one word for 1.3 s read as a frozen
   player (forensics' hold check). A slow bob, scale breath or yaw is enough.
+
+## Rules learned on episode 6
+
+- **The picture acts out the narration** (Robin, 2026-11-05, on a finish that had passed every check: "it's boring.
+  even the needle which is front and center does not move to the other side"). When the narrator says a thing changed,
+  the main prop changes on that word. A prop that several stations watch gets one schedule in `timeline.js`
+  (`NEEDLE_SWINGS`, `needlePos(t)` in ep 6) and the prop, Blink and `cues.js` all read it.
+- **The camera moves in about 30 % of frames**, with a push on each beat and a move in the hook's first 3 s.
+  Ep 6's `camera-check.mjs` projects every key in node and prints the share; it names ep 6's stations, so copy it
+  into the next episode and re-point it until it moves into the kit. Run it before the animatic goes to Robin.
+- **Blink wears the harness only when the film shows it working** (Robin, 2026-11-04). Leave `makeHarness` out
+  otherwise; a request card just comes out from Blink.
+- **Words on screen are plain.** Ep 6 dropped mode, optional, fts, vector, hybrid, query, param and argument for
+  `keywords (old)` and `meaning (new)` after Robin could not follow the animatic.
+- **The 120 fps render runs on GitHub.** `CR_MASTER=1 CR_FPS=120 tools/cloud-render/cloud-render.sh --tall <project>
+  index.html 0 <end> <raw.mp4> 10` gives 1080x1920; `RAW=<raw.mp4> tools/devweb-kit/finish.sh <project> <name>` then
+  blends and checks without rendering. Drafts: `CR_FPS=30 CR_HOLD=20 ... --tall`, 8 slices, about 4.5 minutes.
+- **Fix a finish with a patch.** Render only the changed seconds at 120 fps on one runner, splice them into the raw by
+  frame number (ffmpeg concat filter, `trim=start_frame:end_frame`, crf 12), finish again. Whoever made the change
+  proves in node that frames outside the window are identical.
+- **Don't edit `cloud-render.sh` while a render is running.** zsh reads the script as it goes; an edit mid-run failed
+  the last steps of a render that had already finished.
+- **Runners stall in apt.** On most multi-slice runs 2-4 runners sit 10-40 minutes in `apt-get` before drawing a
+  frame. Timeouts and retries in the workflow did not cure it. Unsolved; fewer slices lose less.
+- **Per-episode effect levels** go in `<project>/sfx-gains.json` (dB per effect name, `null` to drop one);
+  `sfx_earshot.py` reads it when it is there.
+- **Declare blinks as cues.** A blink is a real one-frame change and forensics calls it a spike. `cues.js` adds an
+  `eye` cue for each entry in `BLINKS`; two blinks 0.12 s apart still read as a flutter, so space them.
+- **A sheet or card that appears starts transparent.** A material created opaque showed for one frame before its
+  fade began (the log sheet); set opacity 0 at creation and fade with motion.
+- **Pauses are per narrator.** 0.22 s stops sounded "all cut up" on Robin's cloned voice; that take uses 0.40 s at a
+  stop and 0.28 s at a comma (`"tighten"` in `script.json`). A/B a new voice by ear.
