@@ -40,7 +40,12 @@ if (hf) {
 // CR_CHANNEL=chrome uses the installed Chrome (for local tests); runners use Playwright's Chromium
 // file:// pages may load ES modules (devweb's world.js) only with the first flag; a blocked module raises no pageerror,
 // so the run used to succeed with a blank world. The other two give a GPU-less runner WebGL in software.
-const br = await chromium.launch({ headless: true, args: ['--allow-file-access-from-files', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'],
+// Only a page with a module script gets them: the flags change how every page is rasterised (edges and fine texture,
+// about 40 dB against the same page without them, measured on a 2D look and a WebGL look, 2026-11-05), and a look
+// rendered before must stay bit-identical so a patch can be spliced into an older master.
+const esm = /<script[^>]*type=["']module["']/i.test(src);
+const br = await chromium.launch({ headless: true,
+  ...(esm ? { args: ['--allow-file-access-from-files', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] } : {}),
   ...(process.env.CR_CHANNEL ? { channel: process.env.CR_CHANNEL } : {}) });
 const errs = [];
 await Promise.all([...Array(wk)].map(async (_, w) => {
