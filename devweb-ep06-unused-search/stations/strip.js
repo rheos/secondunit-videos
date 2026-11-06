@@ -26,15 +26,18 @@ function markerP(t) {
 }
 // how much of the strip is out: unrolls left to right on hold 16, rolls back up on hold 21
 // the roll's opacity (round 3: it ended as a lone bright speck at 58.5 s). Time-keyed so only two short spans change:
-// fades in over 45.70-46.00 s as the unroll starts, and on the roll-up fades out over T.h21 + 0.25..0.55 (58.25-58.55),
-// done while the roll still travels and shrinks (k > 0.002 until 58.552). After T.h21 it also follows the roll's own
+// fades in over 45.70-46.00 s as the unroll starts, and on the roll-up fades out over UP + 0.25..0.55,
+// done while the roll still travels and shrinks (k > 0.002 until UP + 0.552). After UP it also follows the roll's own
 // radius, so the tiny roll that grows at the right end at 58.05 comes up from zero instead of switching on.
 const ss = (x) => x * x * (3 - 2 * x);
 function rollAlpha(t, r) {
-  const fadeIn = ss(r01(t, T.h16 + 0.24, 0.3)), fadeOut = 1 - ss(r01(t, T.h21 + 0.25, 0.3));
-  return fadeIn * fadeOut * (t >= T.h21 ? cl((r - 0.004) / 0.05) : 1);
+  const fadeIn = ss(r01(t, T.h16 + 0.24, 0.3)), fadeOut = 1 - ss(r01(t, UP + 0.25, 0.3));
+  return fadeIn * fadeOut * (t >= UP ? cl((r - 0.004) / 0.05) : 1);
 }
-const outK = (t) => io(r01(t, T.h16 + 0.2, 1.0)) * (1 - io(r01(t, T.h21, 0.6)));
+// the roll-up: one hold early (round 4), so the strip is gone before hold 20's framing slices its right end.
+// Runs UP..UP + 0.6 = T.h20 - 0.15..T.h20 + 0.45, which is where dayLit ends.
+const UP = T.h20 - 0.15;
+const outK = (t) => io(r01(t, T.h16 + 0.2, 1.0)) * (1 - io(r01(t, UP, 0.6)));
 
 export function build(scene, { toon }) {
   // the paper face: labels only; the day boxes are their own geometry in front of it
@@ -89,7 +92,7 @@ export function build(scene, { toon }) {
 export function update(t) {
   const k = outK(t), edge = LEFT + W * k;
   // once the right chute takes the subject (hold 19), the strip steps back; day 53 keeps its light
-  const dim = mix(1, 0.72, io(r01(t, T.h19, 0.4)) * (1 - r01(t, T.h21, 0.3)));
+  const dim = mix(1, 0.72, io(r01(t, T.h19, 0.4)) * (1 - r01(t, UP, 0.3)));
   for (const [m, c, dims] of tones) m.color.copy(c).multiplyScalar(dims ? dim : 1);
 
   // the slab: the left fraction k of it, its texture cut to match (never accumulates)
@@ -112,7 +115,7 @@ export function update(t) {
   marker.scale.set(1 + 0.12 * land, 1 - 0.1 * land, 1);
 
   // day boxes: cut by the roll's edge; the ones the marker has passed go a shade darker
-  const lit = dayLit(t) ? r01(t, MARKER[1], 0.15) * (1 - r01(t, T.h21, 0.3)) : 0;
+  const lit = dayLit(t) ? r01(t, MARKER[1], 0.15) : 0; // stays lit until the roll's edge takes the box (cut below)
   tiles.forEach((m, i) => {
     const x = boxX(i), l = x - TW / 2, sf = cl((edge - l) / TW);
     m.visible = sf > 0.01;
@@ -131,7 +134,7 @@ export function update(t) {
   const r = 0.075 * Math.sqrt(1 - k) * Math.sqrt(cl(k / 0.05)); // grows from nothing as it starts, shrinks away as it ends
   const ra = rollAlpha(t, r), rm = roll.material;
   rm.opacity = ra; rm.transparent = ra < 0.999; rm.depthWrite = ra > 0.98;
-  roll.visible = k > 0.002 && ra > 0.002 && (t >= T.h21 || r > 0.006);
+  roll.visible = k > 0.002 && ra > 0.002 && (t >= UP || r > 0.006);
   roll.scale.set(r, 1, r);
   roll.position.set(edge + r * 0.7, Y, Z + r * 0.8);
   roll.rotation.y = -(W * k) / 0.06; // turns with the paper paid out

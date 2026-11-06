@@ -55,6 +55,10 @@ check(CAM.inShot >= 0.75, `rule 2: the visor is whole in shot ${(100 * CAM.inSho
 check(CAM.gapMax <= 6, `rule 2: the visor is out for ${CAM.gapMax.toFixed(2)} s (to ${CAM.gapAt.toFixed(2)})`);
 check(CAM.rule3.length === 0, `rule 3, Blink not whole on its beats: ${CAM.rule3.join("; ")}`);
 check(CAM.rule4.length === 0, `rule 4, overlays: ${CAM.rule4.join("; ")}`);
+check(CAM.stripCut.length === 0, `the strip's day 53 end is sliced by the frame: ${CAM.stripCut.join("; ")}`);
+check(CAM.ruleCentre.length === 0, `a prop subject sits outside 30-60 % of the frame height: ${CAM.ruleCentre.join("; ")}`);
+check(CAM.ruleEmpty.length === 0, `a resting frame is mostly empty: ${CAM.ruleEmpty.join("; ")}`);
+check(CAM.border.length === 0, `a prop edge sits on a frame edge: ${CAM.border.join("; ")}`);
 check(CAM.ruleNote.length === 0, `the note sinks into the bottom chrome: ${CAM.ruleNote.join("; ")}`);
 check(CAM.ovEdge >= 40, `an overlay phrase sits ${CAM.ovEdge.toFixed(0)} px from a frame edge`);
 check(CAM.rule5.length === 0, `rule 5, subject at an edge: ${CAM.rule5.join("; ")}`);

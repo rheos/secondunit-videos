@@ -54,7 +54,7 @@ window.CUES = function (w, T, H) {
   add("draw", MARKER[1], 0.5); // day 53 lights
   add("whoosh", T.h18, 1.1); // the note flies in (note.js: 1.1)
   add("land", T.h18 + 1.1); // and lands in front of Blink
-  add("whoosh", T.h21, 0.6); // the strip rolls away
+  add("whoosh", T.h20 - 0.15, 0.6); // the strip rolls away (strip.js: from h20 - 0.15)
 
   // ---- option panels and the log ----
   add("slide", T.h24 + 0.1, 0.5); // left panel turns face-on (panels.js: 0.5)

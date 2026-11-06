@@ -55,7 +55,7 @@ export function spanAlpha(spans, t, d = 0.15) {
   return a;
 }
 // the world dims under the end mark; the lamp and Blink don't read this
-export const worldDim = (t) => 1 - 0.62 * io(r01(t, T.endIn, 0.5));
+export const worldDim = (t) => 1 - 0.8 * io(r01(t, T.endIn, 0.5)); // 0.62 left the plate's words readable under the end mark
 
 // ---------- the cards. One plan, read by the cards station (motion) and the crate (chute lights). ----------
 // keys: [time, place, move length]. Places: R0-R3 off frame right of a queue spot, S0-S3 queue spots, slot, blink
@@ -95,7 +95,7 @@ export const counterN = (t) => (t < COUNT_IN ? 0 : t >= T.one3 ? 36 : Math.floor
 
 // ---------- the calendar strip ----------
 export const MARKER = [T.h17 + 0.05, T.h17 + 1.05]; // runs July to day 53, stops
-export const dayLit = (t) => t >= MARKER[1] && t < T.h21 + 0.6;
+export const dayLit = (t) => t >= MARKER[1] && t < T.h20 + 0.45; // the strip now rolls away at hold 20
 
 // ---------- Blink's blinks (stations/mark.js draws them: 0.2 s each, close 4 f, shut 2 f, open 6 f at 60 fps) ----------
 // Start times. Here, not in mark.js, so cues.js can declare each one to forensics as a designed change.

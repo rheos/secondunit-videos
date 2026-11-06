@@ -16,6 +16,8 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 
 export const W = 1080, H = 1920, LOCKUP = 1774, EDGE = 40;
 export const MOVE_PX = 1.5; // px per 60 fps frame: the look bible's "camera move" class (hold < 0.225, drift between)
+export const CLEAR = 20; // px an overlay phrase keeps from anything it must not cross
+export const BORDER = 12; // px a long prop edge keeps from a frame edge, inside or out
 export const SLICE_MAX = 0.6; // s a visor slice may last while the camera sweeps past it
 
 // ---------- maths ----------
@@ -101,7 +103,7 @@ export const SUBJECTS = {
   plate: [B.plate, B.dial],
   counter: [B.counter],
   stream: [B.counter, B.chuteL],
-  tray: [B.tray, B.counter],
+  tray: [B.tray],
   strip: [B.strip],
   note: [B.body, B.sprout, B.note],
   turn: [B.dial, B.chuteR, B.newLbl],
@@ -112,6 +114,22 @@ export const SUBJECTS = {
   end: [B.body, B.sprout, B.dial],
   bet: [B.body, B.sprout, B.plate],
 };
+
+// ---------- prop edges on a frame edge ----------
+// the props with long straight borders, and when they are on screen
+export function edgeHits(c, t, T, counterAlpha, band = BORDER) {
+  const EDGED = [["crate", B.crate, true], ["plate", B.plate, t >= T.new1 - 0.6], ["strip", B.strip, t >= T.h16 + 1.2 && t <= T.h20 - 0.15],
+    ["counter", B.counter, counterAlpha(t) > 0.5], ["tray", B.tray, t >= T.h15 + 0.4 && t <= T.h16], ["panels", B.panels, t >= T.h24 + 0.6 && t <= T.h26],
+    ["log", B.log, t >= T.h26 + 0.4 && t <= T.h27], ["lamp", B.lamp, true]];
+  const out = [];
+  for (const [name, box, on] of EDGED) {
+    if (!on) continue;
+    const sb = screenBox(c, box), vy = Math.min(H, sb.b) - Math.max(0, sb.t), vx = Math.min(W, sb.r) - Math.max(0, sb.l);
+    if (vy >= 100) { if (Math.abs(sb.l) < band) out.push(`${name} left`); if (Math.abs(sb.r - W) < band) out.push(`${name} right`); }
+    if (vx >= 100) { if (Math.abs(sb.t) < band) out.push(`${name} top`); if (Math.abs(sb.b - H) < band) out.push(`${name} bottom`); }
+  }
+  return out;
+}
 
 // ---------- the report ----------
 export async function cameraReport(root, KEYS, VO) {
@@ -129,7 +147,7 @@ export async function cameraReport(root, KEYS, VO) {
     ["visor", B.visor, () => true], ["Blink", [B.body, B.sprout], () => true], ["dial face", B.dial, () => true], ["lid and its stencil", B.lid, () => true], ["tag", B.tag, () => true],
     ["keywords label", B.oldLbl, () => true], ["meaning label", B.newLbl, () => true],
     ["plate", B.plate, on(T.new1 - 0.6, END)], ["counter", B.counter, (t) => counterAlpha(t) > 0.05],
-    ["lamp", B.lamp, () => true], ["tray", B.tray, on(T.h15, T.h16 + 0.5)], ["strip", B.strip, on(T.h16 + 0.2, T.h21 + 0.6)],
+    ["lamp", B.lamp, () => true], ["tray", B.tray, on(T.h15, T.h16 + 0.5)], ["strip", B.strip, on(T.h16 + 0.2, T.h20 + 0.45)],
     ["panels", B.panels, on(T.h24, T.h26 + 0.4)], ["log", B.log, on(T.h26, T.h27 + 0.4)], ["note", B.note, on(T.h18 + 0.9, T.h21 + 0.5)],
   ];
   // the fixed overlay phrases: width from IBM Plex Sans Bold advances (as check-graybox), caps height 0.74 of size
@@ -137,7 +155,7 @@ export async function cameraReport(root, KEYS, VO) {
   const textW = (s, size) => [...s].reduce((a, ch) => a + (ADV[ch] ?? 600), 0) * size * 0.001 - s.length * size * 0.02;
   const ovBoxes = OV.flatMap(({ lines, at, gone }) => lines.map(([s, x, base, size]) => {
     const hw = textW(s, size) / 2 + 12;
-    const box = { l: x - hw, r: x + hw, t: base - 0.74 * size - 12, b: base + 12 };
+    const box = { l: x - hw, r: x + hw, t: base - 0.74 * size - CLEAR, b: base + 0.05 * size + CLEAR }; // CLEAR px kept from anything protected
     return { s, at, gone, box: { ...box, w: box.r - box.l, h: box.b - box.t } };
   }));
 
@@ -212,16 +230,74 @@ export async function cameraReport(root, KEYS, VO) {
     if (bad.length) rule3.push(`${a}-${b}: ${bad.length} frames, first ${bad[0].t.toFixed(2)} body ${fmt(bad[0].body)}`);
   }
 
-  // rule 4: overlays off the protected things
+  // rule 4: overlays off the protected things, and never straddling the crate's or Blink's border (a phrase sits wholly
+  // on dark field or wholly on one plain surface)
+  const STRADDLE = [["crate", B.crate, () => true], ["Blink", [B.body, B.sprout], () => true]];
   const rule4 = [];
   for (const o of ovBoxes) {
     const hits = new Map();
+    const text = { l: o.box.l + CLEAR, r: o.box.r - CLEAR, t: o.box.t + CLEAR, b: o.box.b - CLEAR };
     for (const f of frames) {
       if (f.t < o.at || f.t > o.gone - 0.05) continue;
       for (const [name, box, when] of PROTECT) if (when(f.t) && overlaps(o.box, screenBox(f.c, box))) if (!hits.has(name)) hits.set(name, f.t);
+      for (const [name, box] of STRADDLE) {
+        const sb = screenBox(f.c, box), within = text.l >= sb.l && text.r <= sb.r && text.t >= sb.t && text.b <= sb.b;
+        if (overlaps(text, sb) && !within && !hits.has(name + "'s border")) hits.set(name + "'s border", f.t);
+      }
     }
     for (const [name, t] of hits) rule4.push(`"${o.s}" over the ${name} from ${t.toFixed(2)}`);
   }
+
+  // border: no prop edge running 100 px or more along a frame edge sits within BORDER px of it, inside or outside, for
+  // 7 or more 60 fps frames, 3 or more at 30 fps (a move sweeps an edge across the band in fewer; forensics flags the
+  // ones that sit)
+  const border = [], borderRuns = {};
+  for (const f of frames) for (const k of edgeHits(f.c, f.t, T, counterAlpha)) (borderRuns[k] ||= []).push(f.t);
+  for (const [k, ts] of Object.entries(borderRuns)) {
+    let a = ts[0], prev = ts[0];
+    for (const t of ts.slice(1).concat([1e9])) { if (t - prev > 0.05) { if (prev - a >= 6 / 60 - 1e-9) border.push(`${k} ${a.toFixed(2)}-${prev.toFixed(2)}`); a = t; } prev = t; }
+  }
+
+  // the strip's right end (the `day 53` box and its label, x 1.45-1.8) is wholly in by 40 px or wholly out, never sliced,
+  // whenever the camera is slower than 4 px/f
+  const D53 = [1.45, 1.8, 1.96, 2.18, -1.0], stripEnd = [];
+  for (const f of frames) {
+    if (f.t < T.h16 + 1.2 || f.t > T.h20 - 0.15) continue;
+    if (f.v >= 4) continue; // a move sweeping the end past the edge is not a slice that sits; at rest and slow drift only
+    const s = screenBox(f.c, D53);
+    if (s.r > W - EDGE && s.l < W + EDGE && s.r - s.l > 0) stripEnd.push(f.t);
+  }
+  const stripCut = [];
+  if (stripEnd.length) { let a = stripEnd[0], prev = a; for (const t of stripEnd.slice(1).concat([1e9])) { if (t - prev > 0.05) { if (prev - a >= 5 / 60 - 1e-9) stripCut.push(`${a.toFixed(2)}-${prev.toFixed(2)}`); a = t; } prev = t; } }
+
+  // composition at rest (creep segments): a prop subject's centre sits between 30 % and 60 % of the frame height, and
+  // the frame's width is not mostly empty. Empty width = 1 - (length of the union of the x-spans of everything on screen:
+  // the crate, Blink, the counter, tray, strip, note, panels, log and lamp while each is on and inside the frame
+  // vertically) / 1080, at most 0.55.
+  const NOT_PROP = new Set(["blink", "blinkcard", "set", "note", "end", "bet"]);
+  const restSeg = new Set(moves.filter((m) => m.kind === "creep").map((m) => m.i));
+  KEYS.forEach((k, i) => { if (i < KEYS.length - 1 && !moves.some((m) => m.i === i)) restSeg.add(i); });
+  const SCENE = [[B.crate, () => true], [[B.body, B.sprout], () => true], [B.counter, (t) => counterAlpha(t) > 0.3], [B.tray, on(T.h15 + 0.3, T.h16)],
+    [B.strip, on(T.h16 + 0.6, T.h20 - 0.15)], [B.note, on(T.h18 + 1.1, T.h21 + 0.5)], [B.panels, on(T.h24 + 0.3, T.h26)], [B.log, on(T.h26 + 0.3, T.h27)], [B.lamp, () => true]];
+  const centreBad = {}, emptyBad = {};
+  let emptyMax = 0, emptyAt = 0;
+  for (const f of frames) {
+    if (!restSeg.has(f.c.seg) || f.t < 0.5) continue;
+    const key = `K${f.c.seg + 2} ${f.subj}`;
+    if (!NOT_PROP.has(f.subj)) {
+      const s = screenBox(f.c, SUBJECTS[f.subj]);
+      if ((s.cy < 0.3 * H || s.cy > 0.6 * H) && !centreBad[key]) centreBad[key] = `${f.t.toFixed(2)} y ${s.cy.toFixed(0)}`;
+    }
+    const spans = [];
+    for (const [box, when] of SCENE) { if (!when(f.t)) continue; const s = screenBox(f.c, box); if (s.b < 0 || s.t > H || s.r < 0 || s.l > W) continue; spans.push([Math.max(0, s.l), Math.min(W, s.r)]); }
+    spans.sort((a, b) => a[0] - b[0]);
+    let cov = 0, end = -1;
+    for (const [a, b] of spans) { if (b <= end) continue; cov += b - Math.max(a, end); end = b; }
+    const empty = 1 - cov / W;
+    if (empty > emptyMax) { emptyMax = empty; emptyAt = f.t; }
+    if (empty > 0.55 && !emptyBad[key]) emptyBad[key] = `${f.t.toFixed(2)} ${(100 * empty).toFixed(0)} % empty`;
+  }
+  const ruleCentre = Object.entries(centreBad).map(([k, v]) => `${k}: ${v}`), ruleEmpty = Object.entries(emptyBad).map(([k, v]) => `${k}: ${v}`);
 
   // rule 5: the subject clear of the edges and the lockup once the camera has arrived on it (creep segments, and the
   // last frame of each move)
@@ -250,17 +326,17 @@ export async function cameraReport(root, KEYS, VO) {
     if (nb > 1700 && !ruleNote.length) ruleNote.push(`${f.t.toFixed(2)}: note bottom ${nb.toFixed(0)}`);
   }
   // overlay phrases and their distance to the frame edges
-  const ovEdge = Math.min(...ovBoxes.map((o) => Math.min(o.box.l + 12, W - o.box.r + 12, o.box.t + 12, LOCKUP - o.box.b + 12)));
+  const ovEdge = Math.min(...ovBoxes.map((o) => Math.min(o.box.l + CLEAR, W - o.box.r + CLEAR, o.box.t + CLEAR, LOCKUP - o.box.b + CLEAR)));
 
   // the calendar strip's bottom edge clears the top of Blink's sprout (world y 1.84) while the strip is out
   let sproutGap = 1e9, sproutAt = 0;
   for (const f of frames) {
-    if (f.t < T.h16 + 0.2 || f.t > T.h21 + 0.6) continue;
+    if (f.t < T.h16 + 0.2 || f.t > T.h20 + 0.45) continue;
     const g = project(f.c, [BLINK_SPROUT_X, 1.84, 0])[1] - screenBox(f.c, B.strip).b;
     if (g < sproutGap) { sproutGap = g; sproutAt = f.t; }
   }
 
-  return { ruleNote, noteLow, noteAt, ovEdge, sproutGap, sproutAt, frames, N, moving: moving / N, drift: drift / N, longestStill, longestHold, moves, slices, rule1, inShot, gapMax, gapAt, rule3, rule4, rule5, ovBoxes, PROTECT };
+  return { stripCut, ruleCentre, ruleEmpty, emptyMax, emptyAt, border, ruleNote, noteLow, noteAt, ovEdge, sproutGap, sproutAt, frames, N, moving: moving / N, drift: drift / N, longestStill, longestHold, moves, slices, rule1, inShot, gapMax, gapAt, rule3, rule4, rule5, ovBoxes, PROTECT };
 }
 function sliceEdge(v) { return v.l < 0 ? "left" : v.r > W ? "right" : v.b > H ? "bottom" : "top"; }
 
@@ -289,5 +365,6 @@ if (import.meta.url === pathToFileURL(process.argv[1]).href) {
   console.log(`visor slices: ${R.slices.map((s) => `${s.a.toFixed(2)}-${s.b.toFixed(2)} ${s.edge}${s.slow ? ` (${s.slow} slow f)` : ""}`).join(", ") || "none"}`);
   console.log(`note bottom at most ${R.noteLow.toFixed(0)} (at ${R.noteAt.toFixed(2)}); overlays at least ${R.ovEdge.toFixed(0)} px from an edge or the lockup`);
   console.log(`strip clears the sprout by ${R.sproutGap.toFixed(0)} px (worst at ${R.sproutAt.toFixed(2)})`);
-  for (const [name, list] of [["note", R.ruleNote], ["rule 1", R.rule1], ["rule 3", R.rule3], ["rule 4", R.rule4], ["rule 5", R.rule5]]) console.log(`${name}: ${list.length ? list.join(" | ") : "ok"}`);
+  console.log(`widest empty frame at rest ${(100 * R.emptyMax).toFixed(0)} % (at ${R.emptyAt.toFixed(2)})`);
+  for (const [name, list] of [["strip end", R.stripCut], ["subject centre", R.ruleCentre], ["empty width", R.ruleEmpty], ["border", R.border], ["note", R.ruleNote], ["rule 1", R.rule1], ["rule 3", R.rule3], ["rule 4", R.rule4], ["rule 5", R.rule5]]) console.log(`${name}: ${list.length ? list.join(" | ") : "ok"}`);
 }
