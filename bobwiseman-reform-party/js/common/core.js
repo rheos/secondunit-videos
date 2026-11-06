@@ -1,6 +1,8 @@
 // Shared helpers for every look. Every frame is a pure function of song time t:
 // no Math.random, no Date, no state carried between frames (render workers draw frames out of order).
-const W = 1920, H = 1080, TAU = Math.PI * 2;
+// a 9:16 page sets window.PORTRAIT = 1 before this file: the same world drawn on a 1080x1920 canvas (looks/dali-9x16.html)
+const PORTRAIT = !!window.PORTRAIT, W = PORTRAIT ? 1080 : 1920, H = PORTRAIT ? 1920 : 1080, TAU = Math.PI * 2;
+const MW = 1920, MH = 1080; // the master frame: world placements tuned on its screen positions use these, so a 9:16 page builds the same world
 const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
 const lerp = (a, b, u) => a + (b - a) * u;
 const smooth = (x) => { x = clamp(x); return x * x * (3 - 2 * x); };

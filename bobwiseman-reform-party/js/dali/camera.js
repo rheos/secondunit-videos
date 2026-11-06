@@ -432,7 +432,8 @@ function camAt(t, bare) { // bare: without the hover (scene placement reads this
   // draft 12: the jolt is a quick roll of the frame now (render.js rollFrame); moving the drone 5 cm at 9 Hz broke every acceleration limit
   // draft 16: the floor again after the follower and the hover (a soft max, so it never kinks)
   const fx = c.x + hx, fz = c.z + hz, fl = t > AIR.t0 && t < AIR.t1 ? 0 : tableFloor(t, fx, fz), fy0 = c.y + hy, fy = fl ? (fy0 + fl + Math.sqrt((fy0 - fl) ** 2 + .01)) / 2 : fy0;
-  return { x: fx, y: fy, z: fz, p, f: f2, yaw, cy: Math.cos(yaw), sy: Math.sin(yaw), clip, roll: camRoll(t) + .012 * sh * Math.sin(gu * 48) };
+  const cam = { x: fx, y: fy, z: fz, p, f: f2, yaw, cy: Math.cos(yaw), sy: Math.sin(yaw), clip, roll: camRoll(t) + .012 * sh * Math.sin(gu * 48) };
+  return typeof camPortrait === 'function' ? camPortrait(t, cam, bare) : cam; // 9:16: js/dali-9x16/camera-9x16.js reframes each moment for the tall frame
 }
 // the protected intro glide flies 450 m from the sunrise camp to the car in 17 s (AUDIT-d10 "do not touch"): no speed or
 // acceleration limit there (tools/check-camera.mjs reads this)

@@ -137,7 +137,7 @@ function earLock(t, hx, hy, k) { // on "restrict" a padlock drops out of the sky
 // the flight does; the padlock hangs open from "gag" and its shackle snaps shut on "order", the lips pinch, the lock shudders.
 const GAG = { S: 1.8, D: 22, SX: 860, H: 2.5 }; // draft 11 (Robin: closer and more central so it is easy to notice): 22 m out (was 31.6), near the centre (was the left third), the lock held above the Instrument People's heads; // scale, metres ahead of the lens at "order", screen x of its centre there, lips height (scaled units)
 let gagAt = null; // a constant (worked out once from the flight, which is itself a pure function of t), not frame state
-function gagWhere() { if (gagAt) return gagAt; const c = camAt(wt(2, 'order'), true), fx = Math.sin(c.yaw), fz = Math.cos(c.yaw), lat = (GAG.SX - W / 2) / c.f * GAG.D;
+function gagWhere() { if (gagAt) return gagAt; const c = camAt(wt(2, 'order'), true), fx = Math.sin(c.yaw), fz = Math.cos(c.yaw), lat = (GAG.SX - MW / 2) / c.f * GAG.D;
   return (gagAt = { X: c.x + fx * GAG.D + fz * lat, Z: c.z + fz * GAG.D - fx * lat, rx: fz, rz: -fx }); }
 function gagMouth(t, list) { const s = L_(2).s; if (t < s - .2) return; const { X, Z } = gagWhere(), grow = easeOutBack(clamp((t - s + .2) / .9)), o = wt(2, 'order');
   const shut = ease(t, o - .1, o + .02), snap = t > o ? Math.exp(-(t - o) * 8) * Math.sin((t - o) * 38) : 0, pinch = shut * (1 - .4 * Math.exp(-Math.max(0, t - o) * 4));
@@ -324,7 +324,7 @@ function rookFallen(X, Z, fall, up, d, key = 'white', tl, col = '#efe6cf') {
 // the referee: black and white stripes, faceless, jogs in from the right and holds a 1.2 m yellow card high on "play",
 // then (draft 11) jogs on out of frame instead of shrinking away with the pieces
 let refAt = null;
-function refWhere() { if (refAt) return refAt; const c = camAt(wt(27, 'play'), true), fx = Math.sin(c.yaw), fz = Math.cos(c.yaw), D = 18, lat = (.78 * W - W / 2) / c.f * D;
+function refWhere() { if (refAt) return refAt; const c = camAt(wt(27, 'play'), true), fx = Math.sin(c.yaw), fz = Math.cos(c.yaw), D = 18, lat = (.78 * MW - MW / 2) / c.f * D;
   return (refAt = { X: c.x + fx * D + fz * lat, Z: c.z + fz * D - fx * lat, rx: fz, rz: -fx }); }
 function refPos(t) { const play = wt(27, 'play'), { X: X0, Z: Z0, rx, rz } = refWhere(), r0 = play - 1.6, r1 = play - .35, o0 = play + 1.1;
   const d = t < r0 ? 7 + (r0 - t) * 5.4 : t < r1 ? 7 * (1 - ease(t, r0, r1)) : t < o0 ? 0 : t - o0 < .5 ? (t - o0) * (t - o0) * 5.4 : (t - o0) * 5.4 - 1.35; // in from the right, the card, then back off the way he came

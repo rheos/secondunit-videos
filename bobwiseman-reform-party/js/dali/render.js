@@ -42,7 +42,7 @@ const CAPS = {
 const capWob = (li, wi, k) => { const v = Math.sin(li * 127.1 + wi * 311.7 + k * 74.7) * 43758.5453; return (v - Math.floor(v)) * 2 - 1; };
 // outro: the repeated last line stays uncaptioned until its final time (Bob's note on draft 11)
 const CAP_HIDE = new Set([35, 36, 37]);
-const CAP = { y: 1014, maxW: 1500 }; // baseline inside the title-safe area; 210 px side margin at full size
+const CAP = typeof CAP_9X16 !== 'undefined' ? CAP_9X16 : { y: 1014, maxW: 1500 }; // baseline inside the title-safe area; 210 px side margin at full size
 // a soft dark band behind the caption line: feathered on all four sides, built once, stretched to the line
 const CAP_BAND = (() => { const c = mkCanvas(512, 96), b = c.getContext('2d');
   const v = b.createLinearGradient(0, 0, 0, 96); v.addColorStop(0, 'rgba(16,9,7,0)'); v.addColorStop(.32, 'rgba(16,9,7,.85)'); v.addColorStop(.62, 'rgba(16,9,7,1)'); v.addColorStop(1, 'rgba(16,9,7,0)');

@@ -10,7 +10,7 @@
 // (only for stretches Robin or the audit protected, e.g. the intro glide). Exit code 1 if anything fails.
 import { chromium } from 'playwright'; import fs from 'fs';
 const outFile = process.argv[2];
-const b = await chromium.launch({ channel: 'chrome', headless: true }); const p = await b.newPage();
+const b = await chromium.launch({ channel: 'chrome', headless: true }); const p = await b.newPage(/9x16/.test(process.env.PAGE || '') ? { viewport: { width: 1080, height: 1920 } } : {});
 await p.goto('file://' + process.cwd() + '/' + (process.env.PAGE || 'looks/dali.html') + '?offline=1'); await p.evaluate(() => window.__ready);
 const res = await p.evaluate(() => {
   const N = Math.round(268.99 * 24), rows = [];

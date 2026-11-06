@@ -74,7 +74,7 @@ const IP_SIT = [251.0, 251.7]; // they sit down for the fall (a real burn crowd 
 const IP_STAND = [254.4, 254.95], IP_WALK0 = 254.75, IP_OUT = 257.9; // up, off by IP_OUT, then on out of sight
 let IP_EXIT = null;
 function ipExits() {
-  if (IP_EXIT) return IP_EXIT; const c = camAt(IP_OUT), fw = [Math.sin(c.yaw), Math.cos(c.yaw)], rt = [Math.cos(c.yaw), -Math.sin(c.yaw)], half = (W / 2) / c.f; IP_EXIT = {};
+  if (IP_EXIT) return IP_EXIT; const c = camAt(IP_OUT), fw = [Math.sin(c.yaw), Math.cos(c.yaw)], rt = [Math.cos(c.yaw), -Math.sin(c.yaw)], half = (MW / 2) / c.f; IP_EXIT = {};
   for (const kind of IP_KINDS) { const [sx, sz] = IP_V4[kind], side = IP_LR.indexOf(kind) < 2 ? -1 : 1, dx = sx - c.x, dz = sz - c.z, d = dx * fw[0] + dz * fw[1], lat = dx * rt[0] + dz * rt[1];
     const dOut = d - 1.2 - [0, 1.8, 0, 1.6, 3.2][IP_LR.indexOf(kind)], lOut = side * Math.max(dOut * half + 1.3, Math.abs(lat) + 2); // a step nearer the lens as they go (staggered in depth so neighbours never converge), 1.3 m past the edge (arms and head), always outward
     const ex = c.x + fw[0] * dOut + rt[0] * lOut, ez = c.z + fw[1] * dOut + rt[1] * lOut, L = Math.hypot(ex - sx, ez - sz) || 1;
