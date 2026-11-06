@@ -25,6 +25,9 @@ cut from `bobwiseman-libelous/source/libelous.wav`.
 
 ## Lessons
 
+- Check what big "far" hills really cover. A wide ellipsoid sat in front of the plain and buried everything built behind it.
+- Stack coins as one solid cylinder with painted edges. Thin discs break the ink pass into dots.
+- A flight shot should chase its object. A camera that tilts from sky to ground makes empty frames and fails the flash check.
 - Compare opposite neighbours in 1/z for the depth edge. A single-sample depth test draws a false black band where the ground
   meets the horizon.
 - Set `frustumCulled = false` on an InstancedMesh you fill later, or its first bounding sphere hides it.

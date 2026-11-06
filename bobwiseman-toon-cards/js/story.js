@@ -78,7 +78,11 @@ export const camAt = (t) => {
   if (i < 0) i = 0;
   const a = K[i], b = K[Math.min(i + 1, K.length - 1)];
   let c;
-  if (b === a || b.cut) c = { p: a.p, l: a.l, fov: a.fov, roll: a.roll || 0 };
+  if (t >= 70.68 && t < 71.56) {
+    // the sack's flight: one steady chase from just behind and above it, so the frame never swings off into empty sky
+    const k = clamp((t - 70.68) / 0.88), q = sackAt(t);
+    c = { p: [q[0], q[1] + lerp(1.3, 1.64, k), q[2] + lerp(3.5, 7, k)], l: lerp3(q, [6, 1.45, 23], E.smooth((k - 0.7) / 0.3)), fov: lerp(52, 34, E.smooth(k)), roll: 0 };
+  } else if (b === a || b.cut) c = { p: a.p, l: a.l, fov: a.fov, roll: a.roll || 0 };
   else {
     const k = (E[b.e || "linear"] || E.linear)((t - a.t) / (b.t - a.t));
     const p = b.via ? CR([a.p, ...b.via, b.p], k) : lerp3(a.p, b.p, k);

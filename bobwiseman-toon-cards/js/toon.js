@@ -249,7 +249,7 @@ const costumeOver = (p, o, tcx, chin, T, HH, u) => {
   if (o.epaulettes) for (const s of [-1, 1]) { const x = tcx + s * 0.82 * a, y = chin + 0.06 * HH; for (let i = -2; i <= 2; i++) p.band([[x + i * 2.6 * u, y], [x + i * 3.2 * u, y + 0.13 * HH]], o.epaulettes, 1.6 * u, 0.6 * u); p.ell(x, y, 11 * u, 5.5 * u, o.epaulettes, 1.6 * u); }
   if (o.kerchief) p.poly([[tcx - 0.56 * a, chin - 0.04 * HH], [tcx + 0.56 * a, chin - 0.04 * HH], [tcx, chin + 0.3 * HH]], o.kerchief, 1.6 * u);
   if (o.jabot) for (let i = 0; i < 3; i++) p.ell(tcx, chin + 0.03 * HH + i * 0.1 * HH, (9 - i * 1.6) * u, 5.4 * u, "#f8f4e8", 1.2 * u);
-  if (o.ermine) { for (let i = -3; i <= 3; i++) { const x = tcx + i * 0.31 * a, y = chin + 0.04 * HH + (Math.abs(i) ** 1.5) * 0.008 * HH - (3 - Math.abs(i)) * 0.002 * HH; p.ell(x, y, 0.2 * a, 0.078 * HH, "#fbf7ec", 1.4 * u); if (i % 2 === 0) p.dot(x, y + 0.01 * HH, 1.7 * u, INK); } }
+  if (o.ermine) { p.ell(tcx, chin + 0.05 * HH, 1.02 * a, 0.105 * HH, "#fbf7ec", 1.8 * u); for (let i = -3; i <= 3; i++) { const x = tcx + i * 0.26 * a, y = chin + 0.05 * HH + (i % 2 ? 0.03 : -0.015) * HH; p.poly([[x - 1.5 * u, y - 3 * u], [x + 1.5 * u, y - 3 * u], [x, y + 3.4 * u]], INK, 0); } }
 };
 const ellPts = (cx, cy, rx, ry, a0 = 0, a1 = 360, rot = 0, n = 48) => {
   const r = rad(rot), pts = [];
