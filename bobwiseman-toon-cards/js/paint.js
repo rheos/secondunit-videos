@@ -26,12 +26,12 @@ const strokes = (g, r, w, h, n, col, len, lw, a = 0.4) => {
 const fill = (g, w, h, c) => { g.fillStyle = c; g.fillRect(0, 0, w, h); };
 
 export const TEX = {
-  grass: () => canvasTex(1024, 1024, (g, w, h) => { const r = rng(3); fill(g, w, h, "#7fae4a"); blotch(g, r, w, h, 60, "#94bd55", 0.5, 30, 110); blotch(g, r, w, h, 50, "#6a9a42", 0.45, 24, 90); strokes(g, r, w, h, 1100, "#55853a", 13, 2.4, 0.55); strokes(g, r, w, h, 300, "#b2cf63", 9, 2.2, 0.6); }),
-  soil: () => canvasTex(1024, 1024, (g, w, h) => { const r = rng(5); fill(g, w, h, "#9a6a42"); blotch(g, r, w, h, 70, "#875a36", 0.5, 26, 90); blotch(g, r, w, h, 50, "#ad7c50", 0.5, 20, 70); strokes(g, r, w, h, 500, "#6e4a2c", 12, 3.4, 0.5); strokes(g, r, w, h, 260, "#c29a6c", 7, 3, 0.55); }),
-  road: () => canvasTex(512, 512, (g, w, h) => { const r = rng(7); fill(g, w, h, "#d0a868"); blotch(g, r, w, h, 26, "#bd9353", 0.5, 20, 60); strokes(g, r, w, h, 200, "#9c7a45", 16, 2, 0.4); }),
+  grass: () => canvasTex(1024, 1024, (g, w, h) => { const r = rng(3); fill(g, w, h, "#b39f45"); blotch(g, r, w, h, 60, "#c2ad50", 0.5, 30, 110); blotch(g, r, w, h, 50, "#9c8f3e", 0.45, 24, 90); strokes(g, r, w, h, 1100, "#7f7732", 13, 2.4, 0.55); strokes(g, r, w, h, 300, "#d6c267", 9, 2.2, 0.6); }),
+  soil: () => canvasTex(1024, 1024, (g, w, h) => { const r = rng(5); fill(g, w, h, "#a8532b"); blotch(g, r, w, h, 70, "#944726", 0.5, 26, 90); blotch(g, r, w, h, 50, "#bc6636", 0.5, 20, 70); strokes(g, r, w, h, 500, "#74361d", 12, 3.4, 0.5); strokes(g, r, w, h, 260, "#cf8452", 7, 3, 0.55); }),
+  road: () => canvasTex(512, 512, (g, w, h) => { const r = rng(7); fill(g, w, h, "#d9b878"); blotch(g, r, w, h, 26, "#c8a260", 0.5, 20, 60); strokes(g, r, w, h, 200, "#a07c45", 16, 2, 0.4); }),
   stone: () => canvasTex(1024, 1024, (g, w, h) => {
-    const r = rng(9); fill(g, w, h, "#c9bda6"); blotch(g, r, w, h, 40, "#b5a78e", 0.5, 30, 90);
-    g.strokeStyle = "#6f6352"; g.lineWidth = 5; g.globalAlpha = 0.75;
+    const r = rng(9); fill(g, w, h, "#d8b98c"); blotch(g, r, w, h, 40, "#c6a475", 0.5, 30, 90);
+    g.strokeStyle = "#7a5a3a"; g.lineWidth = 5; g.globalAlpha = 0.75;
     for (let row = 0; row < 8; row++) { const y = row * 128; g.beginPath(); g.moveTo(0, y); g.lineTo(w, y); g.stroke(); for (let c = 0; c < 6; c++) { const x = c * 171 + (row % 2) * 85; g.beginPath(); g.moveTo(x, y); g.lineTo(x, y + 128); g.stroke(); } }
     g.globalAlpha = 1;
   }),
@@ -40,9 +40,9 @@ export const TEX = {
   wood: () => canvasTex(512, 512, (g, w, h) => { const r = rng(15); fill(g, w, h, "#a56f3e"); for (let i = 0; i < 90; i++) { const y = r() * h; g.strokeStyle = r() > 0.5 ? "#7e522a" : "#bd8650"; g.lineWidth = 1 + r() * 4; g.globalAlpha = 0.6; g.beginPath(); g.moveTo(0, y); g.bezierCurveTo(w * 0.3, y + r() * 12 - 6, w * 0.7, y + r() * 12 - 6, w, y); g.stroke(); } g.globalAlpha = 1; for (let x = 0; x < w; x += 128) { g.fillStyle = "#4b2f18"; g.fillRect(x, 0, 6, h); } }),
   plaster: () => canvasTex(512, 512, (g, w, h) => { const r = rng(17); fill(g, w, h, "#f0dcae"); blotch(g, r, w, h, 26, "#e3cb97", 0.55, 20, 70); strokes(g, r, w, h, 40, "#b49a68", 22, 2.4, 0.35); }),
   thatch: () => canvasTex(512, 512, (g, w, h) => { const r = rng(19); fill(g, w, h, "#c4923f"); strokes(g, r, w, h, 700, "#9a6e2a", 22, 3, 0.5); strokes(g, r, w, h, 400, "#deb35c", 18, 2.4, 0.6); }),
-  slate: () => canvasTex(512, 512, (g, w, h) => { const r = rng(21); fill(g, w, h, "#4d5d86"); blotch(g, r, w, h, 20, "#5b6c98", 0.6, 18, 50); g.strokeStyle = "#2c3654"; g.lineWidth = 4; for (let y = 0; y < h; y += 64) { g.beginPath(); g.moveTo(0, y); g.lineTo(w, y); g.stroke(); } }),
+  slate: () => canvasTex(512, 512, (g, w, h) => { const r = rng(21); fill(g, w, h, "#8c4a33"); blotch(g, r, w, h, 20, "#a05a3e", 0.6, 18, 50); g.strokeStyle = "#54281c"; g.lineWidth = 4; for (let y = 0; y < h; y += 64) { g.beginPath(); g.moveTo(0, y); g.lineTo(w, y); g.stroke(); } }),
   bark: () => canvasTex(256, 256, (g, w, h) => { const r = rng(23); fill(g, w, h, "#7a5532"); strokes(g, r, w, h, 200, "#4f361f", 22, 3, 0.5); }),
-  leaf: () => canvasTex(512, 512, (g, w, h) => { const r = rng(25); fill(g, w, h, "#4f8c3a"); blotch(g, r, w, h, 50, "#65a547", 0.6, 18, 50); blotch(g, r, w, h, 40, "#3a6f2f", 0.55, 14, 40); }),
+  leaf: () => canvasTex(512, 512, (g, w, h) => { const r = rng(25); fill(g, w, h, "#cfcfa8"); blotch(g, r, w, h, 50, "#e6e4bc", 0.6, 18, 50); blotch(g, r, w, h, 40, "#a8ac88", 0.55, 14, 40); }),
   wall: () => canvasTex(512, 512, (g, w, h) => { const r = rng(27); fill(g, w, h, "#7d2f38"); for (let x = 0; x < w; x += 64) { g.fillStyle = "#6f2831"; g.fillRect(x, 0, 30, h); } blotch(g, r, w, h, 16, "#8a3842", 0.3, 20, 60); }),
   carpet: () => canvasTex(512, 512, (g, w, h) => { const r = rng(29); fill(g, w, h, "#3b4d6e"); blotch(g, r, w, h, 26, "#465a7d", 0.5, 18, 60); strokes(g, r, w, h, 240, "#2a3752", 10, 2, 0.5); }),
   table: () => canvasTex(512, 512, (g, w, h) => { const r = rng(31); fill(g, w, h, "#6b3a22"); for (let i = 0; i < 70; i++) { const y = r() * h; g.strokeStyle = r() > 0.5 ? "#522a18" : "#84492b"; g.lineWidth = 1 + r() * 3; g.globalAlpha = 0.6; g.beginPath(); g.moveTo(0, y); g.bezierCurveTo(w * 0.3, y + 8, w * 0.7, y - 8, w, y); g.stroke(); } g.globalAlpha = 1; }),

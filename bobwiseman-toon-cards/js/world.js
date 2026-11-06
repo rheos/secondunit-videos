@@ -2,6 +2,7 @@
 // Valley: the camera mostly looks -z at the farm; the castle stands on its hill at z = +200.
 import * as THREE from "./lib/three.module.js";
 import { TEX, canvasTex, rng } from "./paint.js";
+import { buildFields } from "./fields.js";
 
 const G = (() => { const d = new Uint8Array([90, 255]); const t = new THREE.DataTexture(d, 2, 1, THREE.RedFormat); t.minFilter = t.magFilter = THREE.NearestFilter; t.needsUpdate = true; return t; })();
 const texCache = {};
@@ -36,6 +37,19 @@ export const textPlane = (w, h, px, draw, { alpha = false } = {}) => {
   return m;
 };
 
+/** coin stacks: one solid cylinder per stack, with painted coin edges, so the ink pass doesn't break up on thin discs */
+const coinEdge = () => canvasTex(64, 64, (g, w, h) => { g.fillStyle = "#eebd3c"; g.fillRect(0, 0, w, h); g.fillStyle = "#8a5a14"; g.fillRect(0, 0, w, 7); g.fillStyle = "#f7d572"; g.fillRect(0, 7, w, 8); });
+export const coinStacks = (parent, list, rad, coinH, capMat) => {
+  const side = new THREE.MeshToonMaterial({ gradientMap: G, map: (texCache.coinEdge ||= coinEdge()) });
+  for (const n of [...new Set(list.map((q) => q[3]))]) {
+    const pts = list.filter((q) => q[3] === n), geo = new THREE.CylinderGeometry(rad, rad, n * coinH, 16, 1), uv = geo.attributes.uv;
+    for (let i = 0; i < uv.count; i++) uv.setY(i, uv.getY(i) * n);
+    const m = new THREE.InstancedMesh(geo, [side, capMat, capMat], pts.length), o = new THREE.Object3D();
+    pts.forEach((q, i) => { o.position.set(q[0], q[1] + (n * coinH) / 2, q[2]); o.rotation.y = i; o.updateMatrix(); m.setMatrixAt(i, o.matrix); });
+    m.castShadow = true; m.frustumCulled = false; parent.add(m);
+  }
+};
+
 export const tree = (h = 7, seed = 1, trunkMat, leafMat) => {
   const r = rng(seed * 97 + 3), t = new THREE.Group();
   add(t, at(cyl(h * 0.05, h * 0.075, h * 0.55, trunkMat, 10), 0, h * 0.27, 0));
@@ -48,7 +62,7 @@ export const tree = (h = 7, seed = 1, trunkMat, leafMat) => {
 
 export function buildWorld(scene, words) {
   const W = {};
-  const grass = toon("grass"), stone = toon("stone"), gold = toon("gold"), marble = toon("marble"), wood = toon("wood"), plaster = toon("plaster"), thatch = toon("thatch"), slate = toon("slate"), bark = toon("bark"), leaf = toon("leaf");
+  const grass = toon("grass"), stone = toon("stone"), gold = toon("gold"), marble = toon("marble"), wood = toon("wood"), plaster = toon("plaster"), thatch = toon("thatch"), slate = toon("slate"), bark = toon("bark"), leaf = toon("leaf", "#7f8a3a"), leafRust = toon("leaf", "#a5772e");
   const ground = new THREE.Mesh(new THREE.PlaneGeometry(1600, 1600), grass);
   grass.map.repeat.set(1, 1);
   { const uv = ground.geometry.attributes.uv; for (let i = 0; i < 4; i++) uv.setXY(i, uv.getX(i) * 180, uv.getY(i) * 180); }
@@ -63,12 +77,14 @@ export function buildWorld(scene, words) {
 
   // far land
   const r = rng(77);
-  const hillMat = toon("grass", "#d9dfa8");
+  const hillMat = toon("grass", "#e6c9a0");
   for (let i = 0; i < 16; i++) {
-    const a = (i / 16) * Math.PI * 2 + r() * 0.2, d = 260 + r() * 130;
-    add(scene, at(ball(70 + r() * 70, hillMat, 1.7, 0.42, 1.2), Math.cos(a) * d, -6, Math.sin(a) * d - 40));
+    const a = (i / 16) * Math.PI * 2 + r() * 0.2; let d = 260 + r() * 130; const hr = 70 + r() * 70;
+    // far land stays far: push each hill back until it no longer buries the fields on the plain
+    while (Math.abs(Math.cos(a) * d) - hr * 1.7 < 112 && Math.sin(a) * d - 40 - hr * 1.2 < 150 && Math.sin(a) * d - 40 + hr * 1.2 > -92) d += 20;
+    add(scene, at(ball(hr, hillMat, 1.7, 0.42, 1.2), Math.cos(a) * d, -6, Math.sin(a) * d - 40));
   }
-  const rock = flat("#8d8ba6"), snow = flat("#f4f6fa");
+  const rock = flat("#9c8596"), snow = flat("#f1e6da");
   for (let i = 0; i < 9; i++) {
     const a = (i / 9) * Math.PI * 2 + 0.3, d = 620 + r() * 120, h = 150 + r() * 120, w = 110 + r() * 70;
     const mx = Math.cos(a) * d, mz = Math.sin(a) * d;
@@ -78,7 +94,7 @@ export function buildWorld(scene, words) {
   for (let i = 0; i < 60; i++) {
     const a = r() * 6.3, d = 62 + r() * 150, x = Math.cos(a) * d, z = Math.sin(a) * d;
     if (z > 130 || (x > 22 && x < 90 && z > -30 && z < 60) || Math.abs(x - 2) < 7) continue;
-    add(scene, at(tree(6 + r() * 6, i + 1, bark, leaf), x, 0, z));
+    add(scene, at(tree(6 + r() * 6, i + 1, bark, i % 3 ? leaf : leafRust), x, 0, z));
   }
 
   // castle hill and terrace: floor y = 30, front rail at z = 193
@@ -113,10 +129,25 @@ export function buildWorld(scene, words) {
   add(T, at(box(5, 0.5, 2.8, marble, 2), 9, 30.3, 202));
   add(T, at(box(1.5, 2.6, 0.26, gold, 1), 9, 32, 202.7));
   add(T, at(box(1.3, 0.2, 1.1, toon(null, "#a52a3a")), 9, 31.25, 202.1));
-  for (const [x, z] of [[6.6, 200.8], [11.4, 200.8], [4.8, 199.2], [13.4, 199.2]]) {
+  for (const [x, z] of [[6.6, 200.8], [11.4, 200.8], [15.2, 199.4], [13.4, 199.2]]) {
     add(T, at(cyl(0.34, 0.2, 0.9, gold, 14), x, 30.57, z));
     add(T, at(ball(0.42, gold, 1, 0.86, 1, 14), x, 31.2, z));
     add(T, at(cyl(0.3, 0.3, 0.14, gold, 14), x, 31.6, z));
+  }
+  // what the money bought: banners, a red carpet, chests and coin stacks along the terrace
+  for (const x of [-12, -6.9, 5.1, 7, 16]) {
+    const ban = textPlane(1.5, 3.9, 256, (g, w, h) => {
+      g.fillStyle = "#6d2a78"; g.fillRect(0, 0, w, h); g.fillStyle = "#f2c23c"; g.fillRect(0, 0, w, 26); g.fillRect(0, h - 90, w, 18); g.fillRect(14, 26, 10, h); g.fillRect(w - 24, 26, 10, h);
+      g.save(); g.translate(w / 2, h * 0.36); g.fillStyle = "#f2c23c"; g.strokeStyle = "#241726"; g.lineWidth = 8; g.beginPath(); g.moveTo(-78, 50); g.lineTo(-78, -40); g.lineTo(-40, 4); g.lineTo(0, -60); g.lineTo(40, 4); g.lineTo(78, -40); g.lineTo(78, 50); g.closePath(); g.fill(); g.stroke(); g.restore();
+    });
+    ban.rotation.y = Math.PI; at(ban, x, 34.1, 203.92); T.add(ban); add(T, at(box(1.8, 0.14, 0.14, gold, 1), x, 36.1, 203.9));
+  }
+  add(T, at(box(3.6, 0.03, 12, toon(null, "#a52a3a"), 2), -3, 30.14, 197.5));
+  { const pts = []; const q = rng(55);
+    for (let i = 0; i < 70; i++) { const x = 2.1 + q() * 4.2, z = 199.6 + q() * 3.2, n = 1 + Math.floor(q() * 6); if (Math.hypot(x - 3.5, z - 200.3) < 0.75 || Math.hypot(x - 5.3, z - 199.5) < 0.75) continue; pts.push([x, 30.13, z, n]); }
+    coinStacks(T, pts, 0.09, 0.05, gold); }
+  for (const [x, z, ry] of [[3.0, 201.7, 0.25], [4.4, 202.1, -0.2], [13.8, 201.8, 0.3], [-9, 201.2, 0.2], [-10.6, 200.6, -0.3]]) {
+    const ch = new THREE.Group(); at(ch, x, 30.12, z); ch.rotation.y = ry; add(ch, at(box(1.05, 0.6, 0.66, wood, 1), 0, 0.3, 0)); add(ch, at(box(1.09, 0.1, 0.7, gold, 1), 0, 0.62, 0)); add(ch, at(ball(0.34, gold, 1.35, 0.5, 0.8, 12), 0, 0.68, 0)); T.add(ch);
   }
   // telescope on its tripod
   const S = (W.scope = new THREE.Group()); at(S, -1.5, 30.12, 195.4); T.add(S);
@@ -158,6 +189,10 @@ export function buildWorld(scene, words) {
   for (const s of [-1, 1]) add(scene, at(box(0.14, 2.9, 0.14, wood, 1), 9.5 + s * 1.12, 1.45, 23));
   add(scene, at(box(2.5, 0.16, 0.2, wood, 1), 9.5, 2.68, 23));
 
+  W.fields = buildFields(scene, toon);
+  // farm yard: woodpile, barrels, a cart, things a working farm has lying about
+  for (let i = 0; i < 7; i++) { const c = cyl(0.17, 0.17, 1.5, bark, 8); c.rotation.z = Math.PI / 2; add(scene, at(c, -21.5 + (i % 3) * 0.2, 0.2 + ((i % 3)) * 0.3, -10.4 + (i % 4) * 0.34)); }
+  for (const [x, z] of [[-8.4, -11.2], [-7.5, -11.7], [-8.1, -12.3]]) add(scene, at(cyl(0.34, 0.3, 0.86, wood, 12), x, 0.43, z));
   // farm
   const H = new THREE.Group(); at(H, -14, 0, -16); scene.add(H);
   add(H, at(box(10, 4.2, 8, plaster, 3), 0, 2.1, 0));
@@ -185,7 +220,7 @@ export function buildWorld(scene, words) {
     cabPts.push([x + Math.sin(x * z) * 0.1, z + Math.cos(x * 3) * 0.1, 0.8 + Math.abs(Math.sin(x * 7.1 + z)) * 0.5]);
   }
   W.cabPts = cabPts;
-  W.cabs = new THREE.InstancedMesh(cabGeo, toon("leaf", "#b8e18d"), cabPts.length); W.cabs.castShadow = true; W.cabs.frustumCulled = false; W.cabs.receiveShadow = true; scene.add(W.cabs);
+  W.cabs = new THREE.InstancedMesh(cabGeo, toon("leaf", "#4f9a70"), cabPts.length); W.cabs.castShadow = true; W.cabs.frustumCulled = false; W.cabs.receiveShadow = true; scene.add(W.cabs);
   W.cabM = new THREE.Object3D();
   // fence on the road side
   for (let x = -34; x <= 34; x += 3.4) { if (Math.abs(x - 2) < 3.5) continue; add(scene, at(box(0.14, 1.3, 0.14, wood, 1), x, 0.65, 15)); }
@@ -194,9 +229,9 @@ export function buildWorld(scene, words) {
   // forest hill: story.js squashes it and tips the trees
   W.fHill = at(ball(34, grass, 1.05, 0.62, 0.8), 54, -6, 28); scene.add(W.fHill);
   W.fTrees = [];
-  { const r3 = rng(91); for (let i = 0; i < 30; i++) {
+  { const r3 = rng(91); for (let i = 0; i < 52; i++) {
       const a = r3() * 6.3, q = 0.2 + r3() * 0.74, x = 54 + Math.cos(a) * q * 28, z = 28 + Math.sin(a) * q * 22;
-      const t = tree(7 + r3() * 4, 200 + i, bark, leaf); scene.add(t);
+      const t = tree(7 + r3() * 4, 200 + i, bark, i % 4 ? leaf : leafRust); scene.add(t);
       W.fTrees.push({ t, x, z, q, a: r3() * 6.3, base: () => 0 });
   } }
   // bulldozer
@@ -274,11 +309,12 @@ export function buildWorld(scene, words) {
     for (let i = 0; i <= m; i++) { const u = i / n; const y = cy0 - ch * (0.1 + 0.86 * u ** 2.3) + Math.sin(i * 1.7) * 7; const x = cx0 + cw * u; i ? g.lineTo(x, y) : g.moveTo(x, y); } g.stroke();
     g.fillStyle = "#241726"; g.textAlign = "left"; g.font = "800 44px Georgia, serif"; g.fillText(words.facts + ":", 52, 590);
     if (stamped) {
-      g.save(); g.translate(w / 2, 690); g.rotate(-0.13); g.strokeStyle = "#c4232e"; g.lineWidth = 12; g.strokeRect(-262, -68, 524, 118);
-      g.fillStyle = "#c4232e"; g.textAlign = "center"; g.textBaseline = "middle"; g.font = "900 70px Georgia, serif"; g.fillText(words.stamp, 0, -9); g.restore();
+      g.save(); g.translate(w / 2, 690); g.rotate(-0.13); g.strokeStyle = "#c4232e"; g.lineWidth = 12; g.strokeRect(-226, -62, 452, 106);
+      g.fillStyle = "#c4232e"; g.textAlign = "center"; g.textBaseline = "middle"; g.font = "900 64px Georgia, serif"; g.fillText(words.stamp, 0, -9); g.restore();
     }
   });
   W.report.rotation.set(-Math.PI / 2, 0, Math.PI); at(W.report, 1000, 0.905, 1001.55); scene.add(W.report);
+  coinStacks(scene, [[999.72, 1002.1, 9], [999.9, 1002.34, 5], [1000.3, 1002.2, 7], [1000.5, 1002.5, 12], [999.5, 1002.5, 6], [1000.12, 1002.6, 4], [999.2, 1001.8, 11], [1000.8, 1001.9, 8]].map(([x, z, n]) => [x, 0.9, z, n]), 0.058, 0.022, gold);
   const St = (W.stamper = new THREE.Group()); scene.add(St);
   add(St, at(box(0.3, 0.05, 0.14, flat("#2a2c33"), 1), 0, 0.025, 0));
   add(St, at(cyl(0.022, 0.034, 0.13, toon(null, "#a56f3e"), 10), 0, 0.11, 0));

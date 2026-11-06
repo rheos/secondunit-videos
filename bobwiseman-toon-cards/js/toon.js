@@ -231,6 +231,26 @@ class Pen {
     g.lineCap = "round";
   }
 }
+// Test 02 costume detail: drawn on the torso, under the buttons (clip on) and over the ink (clip off)
+const costumeUnder = (p, o, tcx, chin, torsoBot, T, HH, u) => {
+  const a = T.a, top = chin - 0.02 * HH, dark = shade(o.jacket, 0.72);
+  if (o.vest) p.poly([[tcx - 0.42 * a, top], [tcx + 0.42 * a, top], [tcx + 0.5 * a, torsoBot], [tcx - 0.5 * a, torsoBot]], o.vest, 1.8 * u);
+  if (o.pockets) for (const s of [-1, 1]) { const x = tcx + s * 0.5 * a, y = chin + 0.38 * HH, w = 0.24 * a, h = 0.1 * HH; p.poly([[x - w, y], [x + w, y], [x + w, y + 2 * h], [x - w, y + 2 * h]], dark, 1.5 * u); p.poly([[x - w * 1.1, y - 0.2 * h], [x + w * 1.1, y - 0.2 * h], [x + w * 1.1, y + 0.55 * h], [x - w * 1.1, y + 0.55 * h]], o.jacket, 1.5 * u); }
+  if (o.straps) { p.poly([[tcx - 0.46 * a, chin + 0.3 * HH], [tcx + 0.46 * a, chin + 0.3 * HH], [tcx + 0.62 * a, torsoBot + 2 * u], [tcx - 0.62 * a, torsoBot + 2 * u]], o.straps, 1.8 * u); for (const s of [-1, 1]) p.band([[tcx + s * 0.4 * a, chin + 0.32 * HH], [tcx + s * 0.62 * a, top]], o.straps, 5 * u, 1.3 * u); for (const s of [-1, 1]) p.dot(tcx + s * 0.38 * a, chin + 0.36 * HH, 2.6 * u, "#e8c45a"); }
+  if (o.lapels) { p.poly([[tcx - 0.34 * a, top], [tcx + 0.34 * a, top], [tcx, chin + 0.62 * HH]], "#f4f0e4", 1.4 * u); if (o.tie) { p.poly([[tcx - 3.4 * u, chin + 0.04 * HH], [tcx + 3.4 * u, chin + 0.04 * HH], [tcx + 5 * u, chin + 0.46 * HH], [tcx, chin + 0.58 * HH], [tcx - 5 * u, chin + 0.46 * HH]], o.tie, 1.3 * u); } for (const s of [-1, 1]) p.poly([[tcx + s * 0.28 * a, top], [tcx + s * 0.86 * a, chin + 0.12 * HH], [tcx + s * 0.5 * a, chin + 0.3 * HH], [tcx + s * 0.04 * a, chin + 0.66 * HH]], dark, 1.5 * u); }
+  if (o.tabs) for (const s of [-1, 1]) p.poly([[tcx + s * 0.02 * a, chin + 0.02 * HH], [tcx + s * 0.2 * a, chin + 0.02 * HH], [tcx + s * 0.24 * a, chin + 0.34 * HH], [tcx + s * 0.05 * a, chin + 0.34 * HH]], "#f8f4e8", 1.3 * u);
+  if (o.chain) { p.arc(tcx + 0.3 * a, chin + 0.72 * HH, 0.34 * a, 0.14 * HH, 0, 180, 2 * u, "#e8c45a"); p.dot(tcx + 0.64 * a, chin + 0.72 * HH, 3 * u, "#e8c45a"); }
+  if (o.ribbon) p.band([[tcx - 1.1 * a, chin - 0.04 * HH], [tcx + 1.1 * a, torsoBot - 0.34 * HH]], o.ribbon, 0.11 * HH, 1.5 * u);
+  if (o.medals) for (let i = 0; i < 3; i++) { const x = tcx + 0.3 * a + i * 0.2 * a, y = chin + 0.2 * HH; p.band([[x, y - 0.1 * HH], [x, y]], ["#c0303a", "#2f6a9a", "#efe9dc"][i], 3.4 * u, 0.9 * u); p.dot(x, y + 2.4 * u, 3.6 * u, INK); p.dot(x, y + 2.4 * u, 2.7 * u, "#f2c23c"); }
+  if (o.badge) { p.dot(tcx - 0.5 * a, chin + 0.3 * HH, 5 * u, INK); p.dot(tcx - 0.5 * a, chin + 0.3 * HH, 4 * u, "#e8c45a"); }
+};
+const costumeOver = (p, o, tcx, chin, T, HH, u) => {
+  const a = T.a;
+  if (o.epaulettes) for (const s of [-1, 1]) { const x = tcx + s * 0.82 * a, y = chin + 0.06 * HH; for (let i = -2; i <= 2; i++) p.band([[x + i * 2.6 * u, y], [x + i * 3.2 * u, y + 0.13 * HH]], o.epaulettes, 1.6 * u, 0.6 * u); p.ell(x, y, 11 * u, 5.5 * u, o.epaulettes, 1.6 * u); }
+  if (o.kerchief) p.poly([[tcx - 0.56 * a, chin - 0.04 * HH], [tcx + 0.56 * a, chin - 0.04 * HH], [tcx, chin + 0.3 * HH]], o.kerchief, 1.6 * u);
+  if (o.jabot) for (let i = 0; i < 3; i++) p.ell(tcx, chin + 0.03 * HH + i * 0.1 * HH, (9 - i * 1.6) * u, 5.4 * u, "#f8f4e8", 1.2 * u);
+  if (o.ermine) { for (let i = -3; i <= 3; i++) { const x = tcx + i * 0.31 * a, y = chin + 0.04 * HH + (Math.abs(i) ** 1.5) * 0.008 * HH - (3 - Math.abs(i)) * 0.002 * HH; p.ell(x, y, 0.2 * a, 0.078 * HH, "#fbf7ec", 1.4 * u); if (i % 2 === 0) p.dot(x, y + 0.01 * HH, 1.7 * u, INK); } }
+};
 const ellPts = (cx, cy, rx, ry, a0 = 0, a1 = 360, rot = 0, n = 48) => {
   const r = rad(rot), pts = [];
   for (let i = 0; i <= n; i++) {
@@ -670,8 +690,10 @@ const bodyFront = (p, o, opts) => {
         p.poly([[xc - 3.5 * u, yc - 3.5 * u], [xc + 3.5 * u, yc - 3.5 * u], [xc + 3.5 * u, yc + 3.5 * u], [xc - 3.5 * u, yc + 3.5 * u]], "#d9dde0", 1.5 * u);
       }
       if (o.sash) p.band([[tcx - 1.3 * T.a, torsoBot - 0.32 * HH], [tcx + 1.3 * T.a, torsoBot - 0.32 * HH]], o.sash, 0.13 * HH, 1.8 * u);
+      costumeUnder(p, o, tcx, chin, torsoBot, T, HH, u);
       for (let i = 0; i < 4; i++) {
         const y = chin + 0.12 * HH + i * 0.2 * HH;
+        if ((o.vest || o.straps || o.lapels) && i < 2) continue;
         if (o.sash && Math.abs(y - (torsoBot - 0.32 * HH)) < 0.08 * HH) continue;
         p.dot(tcx + 2 * u * facing, y, 2.2 * u + 0.8 * u, INK);
         p.dot(tcx + 2 * u * facing, y, 2.2 * u, o.buttons ?? shade(o.jacket, 0.7));
@@ -682,6 +704,7 @@ const bodyFront = (p, o, opts) => {
       p.poly([[tcx + s * 0.55 * T.a, torsoBot - 0.3 * HH], [tcx + s * 0.75 * T.a, torsoBot + 0.05 * HH], [tcx + s * 0.45 * T.a, torsoBot + 0.02 * HH]], o.sash, 1.6 * u);
     }
     p.inkRing(tp, ow, thick);
+    costumeOver(p, o, tcx, chin, T, HH, u);
   }
   for (const a of arms) if (a.front) {
     drawArm(a);

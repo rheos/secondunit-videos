@@ -57,8 +57,8 @@ const K = [
   { t: 85.1, p: [2, 1.6, -4.3], l: [2, 1.42, 0], fov: 34, e: "smooth", via: [[4, 7, -16]] },
   { t: 85.72, p: [2, 1.58, -4.1], l: [2, 1.42, 0], fov: 33.6 },
   { t: 86.14, p: [2, 0.9, -7.6], l: [2, 4.1, 0], fov: 50, e: "out" },
-  { t: 86.7, p: [-2.6, 1.0, -9], l: [-10, 13, 14], fov: 54, e: "smooth" },
-  { t: 89.34, p: [-2.4, 1.0, -9], l: [15, 12, 14], fov: 52, e: "linear" },
+  { t: 86.7, p: [-2.6, 1.0, -9], l: [-18, 9.5, 14], fov: 54, e: "smooth" },
+  { t: 89.34, p: [-2.4, 1.0, -9], l: [25, 9.5, 14], fov: 52, e: "linear" },
   { t: 89.4, p: [24, 1.34, -23.5], l: [24, 1.02, -20], fov: 30, cut: true },
   { t: 91.17, p: [24, 1.3, -23.05], l: [24, 1.02, -20], fov: 29 },
   { t: 91.2, p: [28, 7.2, -14], l: [36, 3, 16], fov: 46, cut: true },
@@ -118,8 +118,8 @@ export const dofAt = (t) => {
 
 // light presets: "day" until the poison, "golden" through the forest, "dusk" in the boardroom
 const L = {
-  day: { az: 62, el: 50, sun: "#fff3df", sunI: 2.5, sky: "#d2e2f6", gnd: "#a8905e", hemi: 1.14, top: "#2f78d8", hor: "#cfe3f5", f0: 130, f1: 1300, sat: 1.12, vig: 0.2, gain: [1, 1, 1], lift: [0, 0, 0], tint: "#ffffff" },
-  golden: { az: 28, el: 12, sun: "#ffd2a4", sunI: 2.7, sky: "#a99bcc", gnd: "#7a5040", hemi: 1.0, top: "#6474c0", hor: "#ffc485", f0: 90, f1: 1000, sat: 1.14, vig: 0.26, gain: [1, 0.96, 0.9], lift: [0, 0, 0], tint: "#ffe6cc" },
+  day: { az: 62, el: 50, sun: "#fff3df", sunI: 2.5, sky: "#d2e2f6", gnd: "#a8905e", hemi: 1.14, top: "#4a86c4", hor: "#f2e0c2", f0: 130, f1: 1300, sat: 1.16, vig: 0.2, gain: [1, 1, 1], lift: [0, 0, 0], tint: "#ffffff" },
+  golden: { az: 28, el: 12, sun: "#ffd2a4", sunI: 3.0, sky: "#b08f9c", gnd: "#8a5038", hemi: 1.08, top: "#8a6a92", hor: "#ffb170", f0: 90, f1: 1000, sat: 1.14, vig: 0.26, gain: [1, 0.96, 0.9], lift: [0, 0, 0], tint: "#ffe6cc" },
   dusk: { az: 20, el: 6, sun: "#ff9a72", sunI: 0.9, sky: "#5d6cab", gnd: "#3a3048", hemi: 0.95, top: "#18234f", hor: "#d18a7c", f0: 80, f1: 800, sat: 1.1, vig: 0.34, gain: [0.92, 0.95, 1.05], lift: [0.012, 0.014, 0.03], tint: "#eceaf8" },
 };
 // the sun is frozen per stretch and sits relative to the way the camera looks
@@ -139,34 +139,38 @@ export const lightAt = (t) => {
 };
 
 export const flashAt = (t) => {
-  for (const q of [89.4, 92.86]) { const d = (t - q) * FPS; if (d >= 0 && d < 6) return 1 - d / 6; }
+  for (const q of [89.4, 92.86]) { const d = (t - q) * FPS; if (d >= 0 && d < 3) return 0.7 * (1 - d / 3); }
   return 0;
 };
 export const blink = (t, seed) => { const per = 1.5 + ((seed * 17) % 11) * 0.09, ph = (t + seed * 0.53) % per; return ph < 0.08 ? 0.5 : ph < 0.16 ? 1 : 0; };
 export const idle = (t, seed = 1) => ({ bob: 0.006 * Math.sin((t + seed * 0.46) * 2.64), tilt: 1.2 * Math.sin((t + seed * 0.3) * 1.2), head: 1.6 * Math.sin((t + seed * 0.2) * 0.9 + 1) });
 
-const KING = { jacket: "#6d3fa8", pants: "#3a2c55", boots: "#2a1c38", hat: "crown", sash: "#f2c23c", buttons: "#f2c23c", moustache: "#5a3b2a", build: "stout" };
-const QUEEN = { jacket: "#c0394a", pants: "#3a2c55", boots: "#5a2030", hat: "crown", dress: "#c0394a" };
-const PRINCE = { jacket: "#3f7fbf", pants: "#2c3b55", boots: "#2a2438", hat: "crown", build: "kid", buttons: "#f2c23c" };
+const KING = { jacket: "#6d3fa8", pants: "#3a2c55", boots: "#2a1c38", hat: "crown", sash: "#f2c23c", buttons: "#f2c23c", moustache: "#5a3b2a", build: "stout", ermine: true, epaulettes: "#f2c23c", ribbon: "#c0303a", medals: true };
+const QUEEN = { jacket: "#c0394a", pants: "#3a2c55", boots: "#5a2030", hat: "crown", dress: "#c0394a", ermine: true };
+const PRINCE = { jacket: "#3f7fbf", pants: "#2c3b55", boots: "#2a2438", hat: "crown", build: "kid", buttons: "#f2c23c", ribbon: "#f2c23c", pockets: true };
 const PRINCESS = { jacket: "#d97ca8", pants: "#5a3050", boots: "#5a3050", hat: "crown", build: "kid", dress: "#d97ca8" };
 const COURT = [
-  { jacket: "#2f7f77", pants: "#1f4f4b", boots: "#1c2c2c", hat: "wig", buttons: "#f2c23c", sash: "#f2c23c" },
-  { jacket: "#b5482e", pants: "#6c2c1c", boots: "#2c1c1c", hat: "wig", buttons: "#f2c23c" },
-  { jacket: "#3a5aa8", pants: "#232f5a", boots: "#1c2438", hat: "wig", buttons: "#efe9dc", build: "stout" },
-  { jacket: "#8a7a2a", pants: "#4c4418", boots: "#2c2a14", hat: "wig", buttons: "#f2c23c" },
+  { jacket: "#2f7f77", pants: "#1f4f4b", boots: "#1c2c2c", hat: "wig", buttons: "#f2c23c", sash: "#f2c23c", jabot: true, epaulettes: "#f2c23c" },
+  { jacket: "#b5482e", pants: "#6c2c1c", boots: "#2c1c1c", hat: "wig", buttons: "#f2c23c", jabot: true, pockets: true },
+  { jacket: "#3a5aa8", pants: "#232f5a", boots: "#1c2438", hat: "wig", buttons: "#efe9dc", build: "stout", jabot: true, medals: true },
+  { jacket: "#8a7a2a", pants: "#4c4418", boots: "#2c2a14", hat: "wig", buttons: "#f2c23c", jabot: true, ribbon: "#efe9dc" },
 ];
-const LAWYER = { jacket: "#2b2a33", pants: "#1d1c24", boots: "#16151c", hat: "wig", buttons: "#efe9dc" };
+const ATTEND = [
+  { jacket: "#a8452f", pants: "#5a2a1c", boots: "#2c1c1c", hat: "wig", buttons: "#f2c23c", jabot: true, pockets: true },
+  { jacket: "#2f5f7f", pants: "#1f3a4f", boots: "#1c242c", hat: "wig", buttons: "#efe9dc", jabot: true, build: "stout", ribbon: "#f2c23c" },
+];
+const LAWYER = { jacket: "#2b2a33", pants: "#1d1c24", boots: "#16151c", hat: "wig", buttons: "#efe9dc", lapels: true, tabs: true };
 const FARMER = [
-  { jacket: "#4a78b5", pants: "#34557f", boots: "#5a3b2a", hat: "straw", buttons: "#efe0a8", moustache: "#6b4a2a" },
+  { jacket: "#4a78b5", pants: "#34557f", boots: "#5a3b2a", hat: "straw", buttons: "#efe0a8", moustache: "#6b4a2a", straps: "#34557f", kerchief: "#c0303a" },
   { jacket: "#c26f3a", pants: "#6e4a2a", boots: "#4a3020", hat: "straw", dress: "#7ca24a" },
-  { jacket: "#6c9a4a", pants: "#3e5a30", boots: "#4a3020", hat: "straw", build: "stout", skin: "#c99067" },
+  { jacket: "#6c9a4a", pants: "#3e5a30", boots: "#4a3020", hat: "straw", build: "stout", skin: "#c99067", straps: "#3e5a30", pockets: true },
 ];
 const RANCHER = [
-  { jacket: "#c9a26a", pants: "#4e5c78", boots: "#5a3218", hat: "stetson", sash: "#b5302e", moustache: "#3a2618", build: "stout" },
-  { jacket: "#8f5a3a", pants: "#3e465c", boots: "#3a2018", hat: "stetson", skin: "#f5c9a0" },
-  { jacket: "#6a7a54", pants: "#3e3a30", boots: "#3a2018", hat: "stetson", skin: "#ecd0b6" },
+  { jacket: "#c9a26a", pants: "#4e5c78", boots: "#5a3218", hat: "stetson", sash: "#b5302e", moustache: "#3a2618", build: "stout", vest: "#6a3f24", kerchief: "#b5302e", badge: true },
+  { jacket: "#8f5a3a", pants: "#3e465c", boots: "#3a2018", hat: "stetson", skin: "#f5c9a0", vest: "#54331f", kerchief: "#2f6a8a" },
+  { jacket: "#6a7a54", pants: "#3e3a30", boots: "#3a2018", hat: "stetson", skin: "#ecd0b6", kerchief: "#c98a2a", pockets: true },
 ];
-const SHARE = [0, 1, 2, 3, 4].map((i) => ({ jacket: ["#2e3442", "#3a2e42", "#2e4238", "#42362e", "#2a3a4c"][i], pants: "#1d1f28", boots: "#14141c", hat: "tophat", buttons: "#d9c27a", build: i % 2 ? "stout" : "adult", moustache: i === 1 || i === 3 ? "#d8d4cc" : undefined, skin: ["#ffe2c2", "#f5c9a0", "#ecd0b6", "#ffe2c2", "#c99067"][i] }));
+const SHARE = [0, 1, 2, 3, 4].map((i) => ({ jacket: ["#2e3442", "#3a2e42", "#2e4238", "#42362e", "#2a3a4c"][i], pants: "#1d1f28", boots: "#14141c", hat: "tophat", buttons: "#d9c27a", build: i % 2 ? "stout" : "adult", moustache: i === 1 || i === 3 ? "#d8d4cc" : undefined, skin: ["#ffe2c2", "#f5c9a0", "#ecd0b6", "#ffe2c2", "#c99067"][i], lapels: true, tie: ["#c0303a", "#d9b23c", "#2f7d4f", "#7a3a9a", "#c98a2a"][i], chain: i % 2 === 0 }));
 
 /** returns the list of bean cards alive at t */
 export const actorsAt = (t) => {
@@ -187,6 +191,7 @@ export const actorsAt = (t) => {
       add("princess", PRINCESS, -0.4, y, 197.9, { expr: "smile", wave: t < 65.3 ? Math.sin(t * 9) : undefined, tilt: Math.sin(t * 5) * 2 });
       add("prince", PRINCE, -1.5, y, 196.32 + (1 - k) * 2.5, { expr: t < 66.1 ? "grin" : "shock", look: 0.4, tilt: 3 });
     }
+    if (t > 68.6) ATTEND.forEach((o, i) => { const k = pop(t, 68.72 + i * 0.2); if (k > 0.01) add("attend" + i, o, [3.5, 5.3][i], y + (1 - k) * -0.9, [200.3, 199.5][i], { expr: i ? "smile" : "grin", look: -0.5, facing: -1 }, { seed: 50 + i }); });
     if (t > 68.6) COURT.forEach((o, i) => {
       const cx = [6.9, 8.6, 10.3, 12.2][i], cz = [199.9, 201.2, 200.3, 201.4][i], pt = 69.05 + i * 0.32, k = pop(t, pt);
       if (k > 0.01) add("court" + i, o, cx, y + (1 - k) * -0.9, cz, { expr: i % 2 ? "smile" : "grin", wave: i === 1 && t > pt + 0.3 ? Math.sin(t * 7) : undefined, facing: -1, look: -0.6 }, { seed: 40 + i });
