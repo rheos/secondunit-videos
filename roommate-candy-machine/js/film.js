@@ -9,7 +9,7 @@ const backOut = k => { const c = 1.7; const u = k - 1; return 1 + (c + 1)*u*u*u 
 const bounce = k => { const a = 1 - k; return k >= 1 ? 0 : -Math.abs(Math.cos(k*Math.PI*2.2))*a*a; };
 
 // clones of the machine as sales climb. Offsets on the bench; each lands in turn.
-const STACK = Z1 + 7, CLONES = [[-74, 0, 0], [-74, -92, 0], [-74, 92, 0], [-74, 0, STACK], [-74, -92, STACK], [-74, 92, STACK], [-74, 0, 2*STACK]];
+const RACK = [98, 72], BOTTLE = [66, -8], STACK = Z1 + 7, CLONES = [[-74, 0, 0], [-74, -92, 0], [-74, 92, 0], [-74, 0, STACK], [-74, -92, STACK], [-74, 92, STACK], [-74, 0, 2*STACK]];
 const tower0 = s => smooth(prog(s, T.sell, T.sell + 3))*(1 - .4*smooth(prog(s, T.a3, T.end)));
 // after the tower lands every machine keeps going by itself: a click, a sweet off the tray, a bounce, a roll across the bench
 const DRIPS = (() => { const out = [], g = rnd(91); CLONES.forEach((c, i) => { for (let t = 112.95 + i*.19; t < 127.2; t += .8 + g()*.5) out.push({ t, i, col:SWEETS[Math.floor(g()*SWEETS.length)], vx:9 + g()*15, vy:(g() - .5)*30 }); }); return out; })();
@@ -36,7 +36,10 @@ function scene(st, m){
     if (!dz) s += `<g opacity="${f(smooth(a))}">${castShadow(bodyPts.map(([x, y, z]) => [x + dx, y + dy, z]), BOARD_H, top)}</g>`;
     items.push({ box:[[dx, dy, BOARD_H + dz], [dx + W + 17, dy + D, Z1 + 9 + dz]], svg:`<g transform="translate(${f(sx)} ${f(sy - up)})">${closedMachine({ rot:cloneRot(i, st.t), jiggle:0, level:1, hatch:0, doses:[], t:0 })}</g>` }); });
   for (const d of DRIPS) if (st.t >= d.t){ const [x, y, z] = dripAt(d, st.t); items.push({ box:[[x - 2.8, y - 2.8, z - 2.8], [x + 2.8, y + 2.8, z + 2.8]], svg:ball(x, y, z, 2.8, d.col, .7) }); }
-  if (st.rack > 0){ const up = (1 - st.rack)*(1 - st.rack)*170*INK_K; items.push({ box:[[84, -22, BOARD_H], [96, 8, BOARD_H + 27]], svg:`<g transform="translate(0 ${f(-up)})">${testRack(90, -7, st.rackHot)}</g>` }); }
+  if (st.cash > 0) items.push({ box:[[100, 24, BOARD_H], [132, 104, BOARD_H + 34]], svg:cashPile(116, 64, st.cash) });
+  if (st.rack > 0){ const up = (1 - st.rack)*(1 - st.rack)*170*INK_K; items.push({ box:[[RACK[0] - 8, RACK[1] - 19, BOARD_H], [RACK[0] + 8, RACK[1] + 19, BOARD_H + 52]], svg:`<g transform="translate(0 ${f(-up)})">${testRack(RACK[0], RACK[1], st.rackHot, st.labFx)}</g>` }); }
+  if (st.bottle > 0){ const up = (1 - st.bottle)*(1 - st.bottle)*230*INK_K + Math.abs(Math.sin(st.bottleB*9))*Math.exp(-st.bottleB*6)*26*INK_K; items.push({ box:[[BOTTLE[0] - 10, BOTTLE[1] - 10, BOARD_H], [BOTTLE[0] + 10, BOTTLE[1] + 10, BOARD_H + 44]], svg:`<g transform="translate(0 ${f(-up)})">${poisonBottle(BOTTLE[0], BOTTLE[1])}</g>` }); }
+  if (st.labFx.sweet > 0 && st.labFx.sweet < 1){ const u = st.labFx.sweet, x = lerp(W + 10, RACK[0], u), y = lerp(CY, RACK[1], u), z = lerp(8, BOARD_H + 34, u) + 34*Math.sin(u*Math.PI); items.push({ box:[[x - 3, y - 3, z - 3], [x + 3, y + 3, z + 3]], svg:ball(x, y, z, 2.8, '#d8432f', .8) }); }
   // the machine itself
   let main;
   if (st.drop <= 0) main = '';
@@ -56,6 +59,7 @@ function scene(st, m){
   // the labels: part names in two columns; later their words change one at a time
   const kl = prog(k, .6, .9)*st.labelK; if (kl > 0) s += `<g opacity="${f(kl)}">` + pillCols(MECH_ITEMS(st), st.flip) + '</g>';
   // the labels that spread off the machine onto the bench, and the one that comes back
+  if (st.rackHot[1] > .4 && st.t < T.leave){ const [X, Y] = P(RACK[0], RACK[1] + 12, BOARD_H + 34), v = fig().viewBox.baseVal, k_ = FW/v.width; s += pill('POSITIVE', (X - v.x)*k_ - 96, (Y - v.y)*k_ + 26, true, X, Y); }
   for (const q of st.pops) s += `<g opacity="${f(q.a)}">${pill(q.text, q.px, q.py - 14*(1 - q.a), true)}</g>`;
   for (const e of st.extra) s += `<g opacity="${f(e.a)}">${onePill(e.at, e.px, e.py)}</g>`;
   return s;
@@ -76,7 +80,7 @@ function onePill(at, ox, oy){ const [X, Y] = P(...at), v = fig().viewBox.baseVal
 
 const ui = mountFigure({ fig:'01', title:'Candy machine', turn:'full', palette:'mustard', credit:false,
   size:[120, 120, 130], center:[W/2, CY],
-  state:{ xr:0, rot:0, jiggle:0, level:.55, hatch:0, pour:0, drop:0, puff:0, chalk:0, flip:0, finish:false, moving:false, locked:false, stop:0, pawl:0, doses:[], t:0, clones:CLONES.map(() => 0), extra:[], pops:[], labelK:1, hop:0, rack:0, rackHot:0 }, scene });
+  state:{ xr:0, rot:0, jiggle:0, level:.55, hatch:0, pour:0, drop:0, puff:0, chalk:0, flip:0, finish:false, moving:false, locked:false, stop:0, pawl:0, doses:[], t:0, clones:CLONES.map(() => 0), extra:[], pops:[], labelK:1, hop:0, rack:0, rackHot:[0, 0, 0], labFx:{ bubble:0, bubbling:false, dropper:0, drop:-1, sweet:0 }, cash:0, bottle:0, bottleB:0 }, scene });
 
 /* ---------- the frame: her page laid out for a 1280 x 720 film ---------- */
 const svgEl = fig(), vb0 = svgEl.viewBox.baseVal, mUnits = Math.hypot(P(0, 0, Z1)[0] - P(0, 0, 0)[0], P(0, 0, Z1)[1] - P(0, 0, 0)[1]), VW = FW*mUnits/400, VH = VW*FH/FW;
@@ -101,7 +105,7 @@ document.head.appendChild(css);
 const stage = document.querySelector('.stage');
 const el = (t, id) => { const e = document.createElement(t); if (id) e.id = id; stage.appendChild(e); return e; };
 const rt = el('div', 'rt'); rt.innerHTML = `<div class="stat" id="stP"><div class="k">PER TURN</div><div class="v" id="vP"></div></div><div class="stat"><div class="k">TURNS TODAY</div><div class="v" id="vT"></div></div><div class="stat"><div class="k">MILLION BUCKS</div><div class="v" id="vM"></div></div><div class="sw2" id="swX">See-through</div>`;
-const toast2 = el('div', 'toast2'), cur = el('div', 'cur'), take = el('div', 'take'); toast2.textContent = 'Two turns a day'; take.textContent = 'Take one';
+const toast2 = el('div', 'toast2'), cur = el('div', 'cur'), take = el('div', 'take'); toast2.textContent = 'Two turns a day'; take.textContent = 'Please take one';
 cur.innerHTML = `<svg viewBox="0 0 26 34" width="26" height="34"><path d="M2 2L2 26L8.5 20.5L13 31L18 29L13.5 18.8L22 18.2Z" fill="#fff" stroke="#231e16" stroke-width="2" stroke-linejoin="round"/></svg>`;
 el('div', 'credit').textContent = 'MADE WITH COLORFIGURES';
 const vP = document.getElementById('vP'), vT = document.getElementById('vT'), vM = document.getElementById('vM'), swX = document.getElementById('swX'), stP = document.getElementById('stP');
@@ -118,7 +122,13 @@ window.seek = function(s){
   const popA = (a, b) => prog(s, a, a + .1)*(1 - prog(s, b, b + .2));
   st.pops = [{ text:'FOOD SAFE FINISH', px:360, py:300, a:popA(T.finish, 118.5) }, ...CU.blah.map((t, i) => ({ text:CU.blahWord, px:[210, 500, 340][i], py:[370, 440, 510][i], a:popA(t, 118.6) }))].filter(q => q.a > 0);
   const ph = s >= T.a1 && s < T.leave ? (s - T.a1) % .58 : 9; st.hop = 2*Math.exp(-ph*8)*Math.abs(Math.sin(ph*26));
-  st.rack = prog(s, CU.test - .3, CU.test); st.rackHot = smooth(prog(s, T.a2, T.a2 + .4));
+  st.rack = prog(s, CU.test - .3, CU.test) ; st.rackHot = [0, .1, .2].map(d => smooth(prog(s, T.a2 + d, T.a2 + d + .25)));
+  // the test, quickly: a sweet goes in, the dropper comes down and drips, it bubbles, then the answer
+  const dT = s - (CU.test + .55);
+  st.labFx = { sweet:prog(s, CU.test, CU.test + .42), bubbling:s >= CU.test + .42 && s < T.a2 + 1.2, bubble:(s*1.7) % 1, dropper:smooth(prog(s, CU.test + .35, CU.test + .6))*(1 - smooth(prog(s, T.a2 - .12, T.a2 + .1))), drop:dT > 0 && s < T.a2 ? (dT % .28)/.28 : -1 };
+  // the money: bundles land as sales climb, and are gone almost as soon as he says the word
+  const cashK = prog(s, T.sell + .1, T.a1 - .4); st.cash = Math.round(36*cashK*(1 - smooth(prog(s, T.a1 + .1, T.a1 + .9))));
+  st.bottle = prog(s, T.a1 - .3, T.a1); st.bottleB = Math.max(0, s - T.a1);
   st.chalk = smooth(prog(s, T.template, T.template + 1.2));
   st.drop = s < T.land - .42 ? 0 : prog(s, T.land - .42, T.land);
   if (s >= T.land - .42 && s < T.land) st.drop = Math.max(.01, st.drop);
@@ -149,9 +159,10 @@ window.seek = function(s){
   const lb = prog(s, T.a3, T.a3 + .12); if (lb > 0) st.extra.push({ a:lb, at:[W + .3, CY - 12, DR_Z + 8], px:110, py:-96 });
   // the view
   const inK = smooth(prog(s, T.see - .3, T.see + 1.0))*(1 - smooth(prog(s, T.sell - .3, T.sell + 1.2))), endK = smooth(prog(s, T.a3 + .6, T.end));
+  const rkK = smooth(prog(s, CU.test - .35, CU.test + .1))*(1 - smooth(prog(s, T.a2 + .8, T.a2 + 1.5)));
   const crK = smooth(prog(s, 113.3, 115.2))*(1 - smooth(prog(s, 118.4, 120.2))), arK = smooth(prog(s, 120, 121.8))*(1 - smooth(prog(s, 124.6, 126.8)));
-  const pull = (1 + .26*inK + .1*endK - .18*tower0(s) - .2*crK + .3*arK + .02*Math.sin(s*1.3)) + .22*smooth(prog(s, T.template, T.land - .5))*(1 - smooth(prog(s, T.land, T.land + .5)));
-  const [fx, fy] = P(W/2 - 74*crK, CY, 60 + 112*crK), tower = smooth(prog(s, T.sell, T.sell + 3)), vw = VW/pull, vh = VH/pull, vx = fx - vw/2, vy = fy - vh*(.5 + .1*tower);
+  const pull = (1 + .26*inK + .1*endK - .18*tower0(s) - .2*crK + .3*arK + .35*rkK + .02*Math.sin(s*1.3)) + .22*smooth(prog(s, T.template, T.land - .5))*(1 - smooth(prog(s, T.land, T.land + .5)));
+  const [fx, fy] = P(lerp(W/2 - 74*crK, RACK[0], .72*rkK), lerp(CY, RACK[1], .72*rkK), lerp(60 + 112*crK, 28, .72*rkK)), tower = smooth(prog(s, T.sell, T.sell + 3)), vw = VW/pull, vh = VH/pull, vx = fx - vw/2, vy = fy - vh*(.5 + .1*tower);
   svgEl.setAttribute('viewBox', `${vx.toFixed(2)} ${vy.toFixed(2)} ${vw.toFixed(2)} ${vh.toFixed(2)}`);
   ui.render();
   // the readout
@@ -170,6 +181,6 @@ window.seek = function(s){
   const press = (s >= T.see - .08 && s < T.see + .08) || (s >= T.press1 - .02 && s < T.press1 + .14) || (s >= T.press2 - .02 && s < T.press2 + .14) || (s >= T.turn1 && s < T.turn1 + .45) || (s >= T.turn2 && s < T.turn2 + .45);
   cur.style.display = show ? '' : 'none'; cur.style.transform = `translate(${cx.toFixed(1)}px,${cy.toFixed(1)}px) scale(${press ? .86 : 1})`;
   const tn = prog(s, T.tryLock + .45, T.tryLock + .6)*(1 - prog(s, T.tryLock + 2, T.tryLock + 2.3)); toast2.style.display = tn > 0 ? '' : 'none'; toast2.style.opacity = tn.toFixed(2);
-  take.style.display = s >= T.last + .65 && s < 141 ? '' : 'none';
+  take.style.display = s >= T.last + .65 && s < 141 ? '' : 'none'; take.style.transform = `translateX(-50%) scale(${(1 + .07*Math.sin((s - T.last)*6.5)).toFixed(3)})`;
 };
 window.setup = async () => { await new Promise(r => setTimeout(r, 900)); window.seek(CU.s0); await document.fonts.ready; };

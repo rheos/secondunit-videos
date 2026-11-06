@@ -180,7 +180,32 @@ function cupcake(x, y){ const z = BOARD_H; let s = rod([x, y, z], [x, y, z + 8],
   return { box:[[x - 9, y - 9, z], [x + 9, y + 9, z + 19.5]], svg:s }; }
 function pencil(x, y){ return { box:[[x, y - 1, BOARD_H], [x + 30, y + 8, BOARD_H + 2]], svg:rod([x, y, BOARD_H + 1], [x + 28, y + 6, BOARD_H + 1], .9, { l:'#f4b829', m:'#d39c1e', d:'#8c6510' }, toneI, .7) }; }
 
-/* a rack of three test tubes; the liquid turns the label's colour when k = 1 */
-function testRack(x, y, k){ const z = BOARD_H, liquid = mix('#7fb7d8', '#f4b829', k); let s = box(x - 6, y - 15, z, x + 6, y + 15, z + 4, BLOND, toneI, 1);
-  const tubes = [-9, 0, 9].map(i => ({ box:[[x - 3, y + i - 3, z + 3], [x + 3, y + i + 3, z + 27]], svg:rod([x, y + i, z + 3], [x, y + i, z + 15], 2.1, matOf(liquid), toneI, .7) + rod([x, y + i, z + 3], [x, y + i, z + 27], 2.7, { l:'#eef8fa', m:'#d6ebef', d:'#b4d2d8' }, (n, m) => m.l, .9).replace(/fill="#[0-9a-f]+"/g, 'fill="#dff1f5" fill-opacity=".28"') }));
-  return s + byDepth(tubes); }
+/* a rack of three tall test tubes. hot: 0..1 per tube, liquid goes from blue to the label colour. fx: what the test is doing now */
+const TUBE_DY = [-12, 0, 12];
+function testRack(x, y, hot, fx){ const z = BOARD_H; let s = box(x - 8, y - 19, z, x + 8, y + 19, z + 5, BLOND, toneI, 1.1);
+  const tubes = TUBE_DY.map((dy, i) => { const yy = y + dy, liquid = mix('#7fb7d8', '#f4b829', hot[i]);
+    let t = rod([x, yy, z + 4], [x, yy, z + 20], 3, matOf(liquid), toneI, .7);
+    if (i === 1) for (let b = 0; b < 5; b++){ const u = (fx.bubble + b/5) % 1; if (fx.bubbling) t += ball(x + Math.sin(b*2.1)*1.2, yy + Math.cos(b*1.7)*1.2, z + 6 + 14*u, .7 + .3*b/5, '#ffffff', .4); }
+    t += rod([x, yy, z + 4], [x, yy, z + 38], 3.7, CLEAR, (n, m) => m.l, 1).replace(/fill="#[0-9a-f]+"/g, 'fill="#dff1f5" fill-opacity=".26"');
+    return { box:[[x - 4, yy - 4, z + 4], [x + 4, yy + 4, z + 38]], svg:t }; });
+  s += byDepth(tubes);
+  // the dropper over the first tube, and its drops
+  if (fx.dropper > 0){ const yy = y + TUBE_DY[0], zT = z + 66 - 14*fx.dropper; s += `<g opacity="${f(fx.dropper)}">` + rod([x, yy, zT], [x, yy, zT - 16], 1.3, CLEAR, toneI, .8) + rod([x, yy, zT], [x, yy, zT + 7], 2.5, { l:'#e36a4d', m:'#c64f33', d:'#7c2c1e' }, toneI, .8) + '</g>';
+    if (fx.drop >= 0) s += ball(x, yy, zT - 17 - (zT - 17 - (z + 20))*fx.drop*fx.drop, 1.2, '#7fd0a6', .5); }
+  return s; }
+/* a poison bottle: brown glass, cork, and a skull and crossbones label that always faces us */
+function poisonBottle(x, y){ const z = BOARD_H, G_ = { l:'#8b5a33', m:'#6b4326', d:'#3d2513' };
+  let s = rod([x, y, z], [x, y, z + 26], 10, G_, toneI, 1.5) + rod([x, y, z + 26], [x, y, z + 33], 10, G_, toneI, 1.2, 3.6) + rod([x, y, z + 33], [x, y, z + 39], 3.6, G_, toneI, 1) + rod([x, y, z + 38], [x, y, z + 44], 4.1, BLOND, toneI, 1, 3.5);
+  const [X, Y] = P(x, y, z + 14), u = unitPx(), lw = u*.55, sk = u*3.6, cy = Y - sk*.25;
+  s += `<rect x="${f(X - u*8.4)}" y="${f(Y - u*9.6)}" width="${f(u*16.8)}" height="${f(u*19.2)}" rx="${f(u*1.4)}" fill="#fff4d6" stroke="${INK}" stroke-width="${f(lw)}"/>`;
+  const bone = (a, b, c, d) => `<path d="M${f(X + a*u)} ${f(Y + b*u)}L${f(X + c*u)} ${f(Y + d*u)}" stroke="${INK}" stroke-width="${f(u*1.5)}" stroke-linecap="round"/>`;
+  s += bone(-6, 3.4, 6, 8) + bone(6, 3.4, -6, 8);
+  s += `<circle cx="${f(X)}" cy="${f(cy)}" r="${f(sk)}" fill="#ffffff" stroke="${INK}" stroke-width="${f(lw)}"/><rect x="${f(X - sk*.55)}" y="${f(cy + sk*.7)}" width="${f(sk*1.1)}" height="${f(sk*.6)}" fill="#ffffff" stroke="${INK}" stroke-width="${f(lw*.8)}"/>`;
+  s += `<circle cx="${f(X - sk*.4)}" cy="${f(cy - sk*.05)}" r="${f(sk*.27)}" fill="${INK}"/><circle cx="${f(X + sk*.4)}" cy="${f(cy - sk*.05)}" r="${f(sk*.27)}" fill="${INK}"/><path d="M${f(X)} ${f(cy + sk*.22)}l${f(-sk*.13)} ${f(sk*.28)}h${f(sk*.26)}Z" fill="${INK}"/>`;
+  return s; }
+/* bundles of money in a growing pile: n bundles, three by two a layer */
+const CASH = { l:'#8fc77f', m:'#68a65b', d:'#3b6f35' };
+function cashPile(x, y, n){ const items = []; for (let i = 0; i < n; i++){ const c = i % 6, lay = Math.floor(i/6), col = c % 3, row = Math.floor(c/3), bx0 = x + (row - 1)*9 + (lay % 2 ? 1.5 : 0), by0 = y + (col - 1.5)*18 + (lay % 2 ? -1.5 : 0), z0 = BOARD_H + lay*3.7;
+    let b = box(bx0, by0, z0, bx0 + 8.6, by0 + 17, z0 + 3.5, CASH, toneI, .75);
+    b += fill(pd([[bx0 + .01, by0 + 6.6, z0 + 3.52], [bx0 + 8.6, by0 + 6.6, z0 + 3.52], [bx0 + 8.6, by0 + 10.4, z0 + 3.52], [bx0 + .01, by0 + 10.4, z0 + 3.52]]), '#fff4d6');
+    items.push({ box:[[bx0, by0, z0], [bx0 + 8.6, by0 + 17, z0 + 3.5]], svg:b }); } return byDepth(items); }

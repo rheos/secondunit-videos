@@ -10,6 +10,9 @@ const doorG = s => s < DOOR.out[0] ? smooth(prog(s, ...DOOR.ghost1)) : s < DOOR.
 const ROOMIE = { jacket:'#b5653f', pants:'#3b3f52', boots:'#4a3426', skin:TN.SKINS[1], hat:'cap', cap:'#3a2a20' };
 const LISTEN = { jacket:'#3f6fb5', pants:'#3b3f52', boots:'#4a3426', skin:TN.SKINS[2], hat:'cap', cap:'#7b7468' };
 const WOOD_MAN = { jacket:'#5d7a3a', pants:'#3b3f52', boots:'#4a3426', skin:TN.SKINS[0], hat:'cap', cap:'#c64f33', moustache:'#4a3426' };
+const WIFE = { jacket:'#c25a7a', pants:'#3b3f52', boots:'#4a3426', skin:TN.SKINS[1], hat:'cap', cap:'#7a4a2a', dress:'#d9a441' };
+const KID_A = { build:'kid', jacket:'#4f7fd0', pants:'#3b3f52', boots:'#4a3426', skin:TN.SKINS[0], hat:'cap', cap:'#c64f33' };
+const KID_B = { build:'kid', jacket:'#3f9d6c', pants:'#3b3f52', boots:'#4a3426', skin:TN.SKINS[2], hat:'cap', cap:'#f4b829' };
 const SEED_R = 4, CARD_W = 600, CARD_H = 1000;
 const envAt = s => { const E = window.ENV; return E.v[Math.max(0, Math.min(E.v.length - 1, Math.floor((s - E.s0)*E.fps)))] || 0; };
 const talkFace = s => { const v = envAt(s); return v < .22 ? 'talk0' : v < .5 ? 'talk1' : v < .78 ? 'talk2' : 'talk3'; };
@@ -48,12 +51,13 @@ function paintPhone(g, s, k){ if (k <= 0) return; const says = s >= DOOR.woodSay
   const paused = s >= DOOR.stopTap, wave = says || paused ? 0 : Math.sin(s*7);
   drawCard(offW, WOOD_MAN, { expr: says ? talkFace(s) : paused ? 'neutral' : 'smile_closed', look:.2, seed:12, wave, blink: !paused && Math.floor(s*2.1) % 7 === 0 });
   const W_ = 256, H_ = 420, x = 26, y = lerp(FH + 60, 846, backOut(k));
-  g.save(); g.translate(x + W_/2, y + H_/2); g.rotate(-.07); g.translate(-W_/2, -H_/2);
+  const big = 1 + .24*famK(s); g.save(); g.translate(x + W_/2 + 22*famK(s), y + H_/2 - 42*famK(s)); g.rotate(-.07); g.scale(big, big); g.translate(-W_/2, -H_/2);
   g.fillStyle = '#241726'; g.beginPath(); g.roundRect(-8, -8, W_ + 16, H_ + 16, 26); g.fill();
   g.save(); g.beginPath(); g.roundRect(0, 0, W_, H_, 18); g.clip();
   g.fillStyle = '#c9a26b'; g.fillRect(0, 0, W_, H_); g.fillStyle = '#e3c394'; g.fillRect(0, 0, W_, 250); g.fillStyle = '#a5683c'; g.fillRect(0, 300, W_, 120);
   g.strokeStyle = '#241726'; g.lineWidth = 3; g.beginPath(); g.moveTo(0, 300); g.lineTo(W_, 300); g.stroke();
   g.drawImage(offW, -46, -6, CARD_W*.58, CARD_H*.58);
+  paintFamily(g, s);
   // a progress bar, the only thing that says this is a video
   g.fillStyle = 'rgba(0,0,0,.35)'; g.fillRect(14, H_ - 22, W_ - 28, 7); g.fillStyle = '#d8432f'; g.fillRect(14, H_ - 22, (W_ - 28)*.62, 7);
   // he stops the video: the pause sign holds over the woodworker
@@ -84,6 +88,18 @@ function roomFrame(s){ const g = cardsC.getContext('2d'); g.drawImage(roomBg, 0,
   g.drawImage(offR, ROOM_X - 300*HEAD_S, ROOM_SOLE - 975*HEAD_S, CARD_W*HEAD_S, CARD_H*HEAD_S);
   paintPhone(g, s, smooth(prog(s, ...DOOR.phone))*(s >= 127 ? 1 : 0));
   return g; }
+// the woodworker's family, on the phone with him for the moment he says the words: in from the screen's right, bottom and left
+const FAM = [
+  { o:WIFE, seed:21, sc:.5, x0:430, y0:520, x1:218, y1:520, t:0, expr:'grin', c:mk(CARD_W, CARD_H) },
+  { o:KID_B, seed:23, sc:.46, x0:-170, y0:505, x1:40, y1:505, t:.14, expr:'smile_closed', c:mk(CARD_W, CARD_H) },
+  { o:KID_A, seed:22, sc:.5, x0:150, y0:1000, x1:150, y1:560, t:.07, expr:'grin', c:mk(CARD_W, CARD_H) },
+];
+const FAM_IN = 131.72, FAM_OUT = 132.62;
+const famK = s => smooth(prog(s, FAM_IN - .05, FAM_IN + .15))*(1 - smooth(prog(s, FAM_OUT + .1, FAM_OUT + .35)));
+function paintFamily(g, s){ if (s < FAM_IN || s > FAM_OUT + .4) return;
+  for (const m of FAM){ const k = backOut(prog(s, FAM_IN + m.t, FAM_IN + m.t + .2))*(1 - smooth(prog(s, FAM_OUT + m.t*.5, FAM_OUT + m.t*.5 + .24)));
+    drawCard(m.c, m.o, { expr:m.expr, look:0, seed:m.seed, wave:Math.sin(s*11 + m.seed) });
+    const x = lerp(m.x0, m.x1, k), y = lerp(m.y0, m.y1, k); g.drawImage(m.c, x - 300*m.sc, y - 975*m.sc, CARD_W*m.sc, CARD_H*m.sc); } }
 function ghostFrame(s, G){ const g = ghostC.getContext('2d'); g.clearRect(0, 0, FW, FH); if (G <= 0) return;
   g.save(); g.beginPath(); HEAD_POLY.forEach(([x, y], i) => i ? g.lineTo(x, y) : g.moveTo(x, y)); g.closePath(); g.clip();
   g.globalAlpha = 1 - .8*G; g.drawImage(offR, ROOM_X - 300*HEAD_S, ROOM_SOLE - 975*HEAD_S, CARD_W*HEAD_S, CARD_H*HEAD_S); g.restore();
