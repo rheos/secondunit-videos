@@ -158,7 +158,7 @@ window.seek = function(s){
   stP.style.display = s >= T.ten ? '' : 'none'; vP.textContent = '10';
   const turns = (s >= T.turn1 + .25 ? 1 : 0) + (s >= T.turn2 + .25 ? 1 : 0); vT.textContent = `${turns}/2`;
   const mk = prog(s, T.sell, T.a1); vM.textContent = (mk*mk*.0031).toFixed(4);
-  swX.classList.toggle('on', (s >= T.press1 && s < T.land) || (s >= T.see && s < 127.7) || s >= T.press2 && s < T.a3 - .1);
+  swX.classList.toggle('on', (s >= T.press1 && s < T.land) || (s >= T.see && s < 127.7) || s >= T.press2 && s < T.a3 - .1 || s >= 141 && s < 142);
   // the pointer: See-through, the dial twice, a third try, then See-through off
   const sr = swX.getBoundingClientRect(), hx = sr.left + sr.width/2 - 8, hy = sr.top + sr.height/2 - 2, [dx, dy] = dialPx(), ptr = [dx + 6, dy + 2];
   const path = [[T.see - .9, 780, 420], [T.see - .08, hx, hy], [T.see + .5, hx, hy], [T.turn1 - .7, 780, 820], [T.turn1 - .02, ...ptr], [T.turn1 + .5, ...ptr], [T.turn2 - .02, ...ptr], [T.turn2 + .5, ...ptr], [T.tryLock + .4, ...ptr], [T.tryLock + 1.3, ...ptr], [T.tryLock + 2, 780, 860]];
@@ -170,6 +170,6 @@ window.seek = function(s){
   const press = (s >= T.see - .08 && s < T.see + .08) || (s >= T.press1 - .02 && s < T.press1 + .14) || (s >= T.press2 - .02 && s < T.press2 + .14) || (s >= T.turn1 && s < T.turn1 + .45) || (s >= T.turn2 && s < T.turn2 + .45);
   cur.style.display = show ? '' : 'none'; cur.style.transform = `translate(${cx.toFixed(1)}px,${cy.toFixed(1)}px) scale(${press ? .86 : 1})`;
   const tn = prog(s, T.tryLock + .45, T.tryLock + .6)*(1 - prog(s, T.tryLock + 2, T.tryLock + 2.3)); toast2.style.display = tn > 0 ? '' : 'none'; toast2.style.opacity = tn.toFixed(2);
-  take.style.display = s >= T.last + .65 ? '' : 'none';
+  take.style.display = s >= T.last + .65 && s < 141 ? '' : 'none';
 };
 window.setup = async () => { await new Promise(r => setTimeout(r, 900)); window.seek(CU.s0); await document.fonts.ready; };

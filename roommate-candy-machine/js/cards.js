@@ -3,9 +3,9 @@
    both layers through the head until the figure fills the frame. Everything here is a pure function of s. */
 const TN = window.TOON;
 // d: 0 = in the room, 1 = inside the figure. g: how see-through his head is.
-const DOOR = { ghost1:[88.95, 89.35], in1:[90.65, 91.2], out:[127.0, 127.62], unghost:[127.72, 128.1], ghost2:[133.55, 133.85], in2:[133.92, 134.4], phone:[129.55, 129.95], woodSays:[132.57, 133.9] };
-const doorD = s => { const a = smooth(prog(s, ...DOOR.in1)), b = smooth(prog(s, ...DOOR.out)), c = smooth(prog(s, ...DOOR.in2)); return s < DOOR.out[0] ? a : s < DOOR.in2[0] ? 1 - b : c; };
-const doorG = s => s < DOOR.out[0] ? smooth(prog(s, ...DOOR.ghost1)) : s < DOOR.ghost2[0] ? 1 - smooth(prog(s, ...DOOR.unghost)) : smooth(prog(s, ...DOOR.ghost2));
+const DOOR = { ghost1:[88.95, 89.35], in1:[90.65, 91.2], out:[127.0, 127.62], unghost:[127.72, 128.1], ghost2:[133.55, 133.85], in2:[133.92, 134.4], phone:[129.55, 129.95], woodSays:[132.57, 133.9], out2:[141.0, 141.6], unghost2:[141.7, 142.1], stopTap:142.1 };
+const doorD = s => { const a = smooth(prog(s, ...DOOR.in1)), b = smooth(prog(s, ...DOOR.out)), c = smooth(prog(s, ...DOOR.in2)); const e = smooth(prog(s, ...DOOR.out2)); return s < DOOR.out[0] ? a : s < DOOR.in2[0] ? 1 - b : c*(1 - e); };
+const doorG = s => s < DOOR.out[0] ? smooth(prog(s, ...DOOR.ghost1)) : s < DOOR.ghost2[0] ? 1 - smooth(prog(s, ...DOOR.unghost)) : smooth(prog(s, ...DOOR.ghost2))*(1 - smooth(prog(s, ...DOOR.unghost2)));
 
 const ROOMIE = { jacket:'#b5653f', pants:'#3b3f52', boots:'#4a3426', skin:TN.SKINS[1], hat:'cap', cap:'#3a2a20' };
 const LISTEN = { jacket:'#3f6fb5', pants:'#3b3f52', boots:'#4a3426', skin:TN.SKINS[2], hat:'cap', cap:'#7b7468' };
@@ -45,8 +45,8 @@ const roomBg = mk(FW, FH); paintRoom(roomBg.getContext('2d'));
 
 /* the phone he holds up: the woodworker he has been watching, talking on it */
 function paintPhone(g, s, k){ if (k <= 0) return; const says = s >= DOOR.woodSays[0] && s < DOOR.woodSays[1];
-  const wave = says ? 0 : Math.sin(s*7);
-  drawCard(offW, WOOD_MAN, { expr: says ? talkFace(s) : 'smile_closed', look:.2, seed:12, wave, blink: Math.floor(s*2.1) % 7 === 0 });
+  const paused = s >= DOOR.stopTap, wave = says || paused ? 0 : Math.sin(s*7);
+  drawCard(offW, WOOD_MAN, { expr: says ? talkFace(s) : paused ? 'neutral' : 'smile_closed', look:.2, seed:12, wave, blink: !paused && Math.floor(s*2.1) % 7 === 0 });
   const W_ = 256, H_ = 420, x = 26, y = lerp(FH + 60, 846, backOut(k));
   g.save(); g.translate(x + W_/2, y + H_/2); g.rotate(-.07); g.translate(-W_/2, -H_/2);
   g.fillStyle = '#241726'; g.beginPath(); g.roundRect(-8, -8, W_ + 16, H_ + 16, 26); g.fill();
@@ -56,6 +56,8 @@ function paintPhone(g, s, k){ if (k <= 0) return; const says = s >= DOOR.woodSay
   g.drawImage(offW, -46, -6, CARD_W*.58, CARD_H*.58);
   // a progress bar, the only thing that says this is a video
   g.fillStyle = 'rgba(0,0,0,.35)'; g.fillRect(14, H_ - 22, W_ - 28, 7); g.fillStyle = '#d8432f'; g.fillRect(14, H_ - 22, (W_ - 28)*.62, 7);
+  // he stops the video: the pause sign holds over the woodworker
+  if (paused){ const q = prog(s, DOOR.stopTap, DOOR.stopTap + .12); g.globalAlpha = q; g.fillStyle = 'rgba(0,0,0,.55)'; g.beginPath(); g.arc(W_/2, 312, 44, 0, 7); g.fill(); g.fillStyle = '#fff'; g.fillRect(W_/2 - 18, 289, 12, 46); g.fillRect(W_/2 + 6, 289, 12, 46); g.globalAlpha = 1; }
   g.restore();
   // his thumb
   g.fillStyle = TN.SKINS[1]; g.strokeStyle = '#241726'; g.lineWidth = 6; g.beginPath(); g.ellipse(W_ - 2, H_*.66, 24, 40, -.25, 0, 7); g.fill(); g.stroke();
@@ -76,11 +78,11 @@ function roomFrame(s){ const g = cardsC.getContext('2d'); g.drawImage(roomBg, 0,
   drawCard(offL, LISTEN, { expr:lis, look:-.8, facing:-1, seed:9, blink: Math.floor(s*1.7) % 9 === 0 });
   g.drawImage(offL, 596 - 300, 1305 - 975, CARD_W, CARD_H);
   // him: a surprised beat, then talking; he stops to let the phone speak
-  const shock = s >= 127.2 && s < 128.0, expr = shock ? 'shock' : inQuote ? 'smile' : talkFace(s);
+  const shock = s >= 127.2 && s < 128.0, done = s >= 145.05, expr = shock ? 'shock' : inQuote || done ? 'smile' : talkFace(s);
   const wave = !inQuote && s < 90 ? Math.sin(s*5)*.9 : undefined;
   drawCard(offR, ROOMIE, { expr, look:.6, facing:1, seed:SEED_R, wave, blink: Math.floor(s*2.3) % 8 === 0 });
   g.drawImage(offR, ROOM_X - 300*HEAD_S, ROOM_SOLE - 975*HEAD_S, CARD_W*HEAD_S, CARD_H*HEAD_S);
-  paintPhone(g, s, smooth(prog(s, ...DOOR.phone))*(s < DOOR.in2[1] && s >= 127 ? 1 : 0));
+  paintPhone(g, s, smooth(prog(s, ...DOOR.phone))*(s >= 127 ? 1 : 0));
   return g; }
 function ghostFrame(s, G){ const g = ghostC.getContext('2d'); g.clearRect(0, 0, FW, FH); if (G <= 0) return;
   g.save(); g.beginPath(); HEAD_POLY.forEach(([x, y], i) => i ? g.lineTo(x, y) : g.moveTo(x, y)); g.closePath(); g.clip();
