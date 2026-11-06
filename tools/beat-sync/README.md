@@ -39,7 +39,7 @@ and see the result at once, without a render in between.
    - `setTimes(times)`: hand the edited hit times to the element's code
    - `draw(ctx, t)`: draw the element at song time t on a 1920x1080 canvas (`width`/`height` to change that).
 
-   `bobwiseman-reform-party/beat-sync.config.js` is the worked example (on branch reform-party-d29 until PR #262 merges).
+   `bobwiseman-reform-party/beat-sync.config.js` is the worked example.
 5. **Serve the repo root** with a server that supports range requests, so the timeline can seek. Python's
    http.server can't: the audio restarts from 0:00. Then open
    `/tools/beat-sync/beat-sync.html?c=/<project>/beat-sync.config.js`:
@@ -74,4 +74,4 @@ The page runs from any static host, so a client can use it from their own review
 4. Turn the note's ranges back into a cells JSON and run the project's converter (Reform Party: tools/buh_onsets.py --slots).
 
 The drop expires objects after 30 days, so re-upload if a round stays open longer. Worked example:
-bobwiseman-reform-party/beat-sync.bob.config.js (on branch reform-party-d29 until PR #262 merges).
+bobwiseman-reform-party/beat-sync.bob.config.js.
