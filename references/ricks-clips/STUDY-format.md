@@ -26,6 +26,19 @@ Sources: two shorts looked at frame by frame ("The Pink Prison Cell Experiment" 
 
 So their frames change 4 to 8 times more than ours, frame to frame. Overall saturation isn't the gap: ours matches the prison film. Their colour reads richer because of the motif colour, the light and the texture. My cut detector was unreliable here (29 and 3 cuts) because the camera moves so much; Dumble counts a new shot about every 2 s.
 
+## How the faces move
+
+Robin caught this; the first pass looked at frames a second or more apart and missed it. Faces tracked at 30 fps on two shots only, at 360x640, so read the numbers as rough. Camera zoom can't be fully removed, and the tracked area can pick up nearby shapes.
+
+- **The head pulses.** After slow change is removed, face size moves by about 2 to 4% in width and 4 to 6% in height, strongest at about 1.2 to 2.5 times a second. Width and height move together (+0.6 and +0.9), so it reads as scaling, not squash and stretch. On one angry line the face swells about 18% and settles in about half a second.
+- **It doesn't simply follow voice loudness** (correlation under +0.2 on these shots). It may be tied to stressed words or to acting; these shots can't settle that.
+- **The whole head is alive.** The head tilts through a line, and its outline and shape shift from frame to frame.
+- **The mouth changes shape, the eyes mostly hold.** Eyes and brows set the mood and hold; teeth bared, pursed, O. One calm character barely opens his mouth and acts with one raised brow and a tilt.
+- **Light travels across the face.** A shadow wedge moves over the white head as the character or camera moves. This goes against Dumble's "shadeless" advice, at least on these shots.
+- **Emotion gets a physical add-on.** Puffs of steam with trails beside the angry head, plus the purple head.
+
+Ours has none of this: a fixed-size card, level-driven mouths on 12 fps, no head tilt while talking, no light on the face.
+
 ## How people say they build it
 
 - **Dumble: Blender.** Sets through the Blender MCP in three passes, stopping after each: BLOCK grey shapes and every camera, LIGHT one motivated key plus warm practicals plus a Poly Haven HDRI, DRESS worn materials and props, depth of field on every camera. Characters are flat image planes with an emit or shadeless shader and a contact shadow. Hero prop gets its own 6-angle build. An acting line per shot: thought, anticipation, action, hold; no idle bounce. Timing as frame numbers so a revision can't be misread. Fix by frame range, four-field notes: where, problem, change, keep. Critic pass on a 1 fps contact sheet and a 360 px phone sheet.
