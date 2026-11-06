@@ -22,4 +22,7 @@ The same 3D world and the same drone flight, drawn on a 1080x1920 canvas (render
 - Check: `PAGE=looks/dali-9x16.html node tools/check-camera.mjs`. On 2026-11-06 the tall page missed the same cue
   words as the master (control, blues, time, poor, unfair, pie, mystery, look, knight, shamelessly) plus partial frames
   on grin (49), spin (56), facts and share.
+- Flash: the first full tall render failed flashcheck at 1:19 (the push into the cell bars, 4 a second) and 2:27 (the
+  protected whip onto the mystery book, 3.5) where the 16:9 passes. `PORT_FIX` in camera-9x16.js widens the lens on the bar
+  push and tilts up a little on the whip; those two spans were re-rendered and spliced in, and the cut passes (worst 3).
 - Render: `tools/cloud-render/cloud-render.sh --tall bobwiseman-reform-party looks/dali-9x16.html 0 268.99 <out>`.

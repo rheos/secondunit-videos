@@ -35,11 +35,16 @@ function buildPortrait() {
   PORT.off = off; PORT.busy = false;
 }
 function portraitYaw(t) { if (!PORT.off) buildPortrait(); const u = clamp(t, 0, PORT.end) * PORT.fps, i = Math.floor(u), fr = u - i, o = PORT.off; return lerp(o[Math.min(i, o.length - 1)], o[Math.min(i + 1, o.length - 1)], fr); }
+// Flash fixes for the tall frame only (tools/motion-lab/flashcheck.py failed the first 9:16 render here, the 16:9 passes):
+// [t0, t1, ramp, lens x, pitch +rad]. 78.0-80.6: the push into the cell bars (bars sliding through a narrow frame);
+// 146.6-148.6: the protected whip onto the mystery book (the near seat backs sweep the bottom of the tall frame).
+const PORT_FIX = [[78.0, 80.6, 1.2, .72, 0], [146.6, 148.6, .8, 1, .14]];
+function portFix(t) { let lens = 1, dp = 0; for (const [a, b, r, l, p] of PORT_FIX) { const w = smooth(clamp((t - (a - r)) / r)) * (1 - smooth(clamp((t - b) / r))); lens *= lerp(1, l, w); dp += p * w; } return [lens, dp]; }
 function camPortrait(t, c, bare) {
   if (bare) return c; // scene placement (bare) reads the master's pose, so every prop stands where it stands in the 16:9
   // until every builder file has loaded (frame-9x16.js sets PORT.ready), cue targets read stubs: the master's pose, nothing cached
   if (PORT.busy || !PORT.ready) return Object.assign({}, c, { f: c.f * LENS_9X16 });
   const dy = c.p > 1.3 ? 0 : portraitYaw(t); // looking straight down (the aerial, the chess top-down) a yaw only spins the map
-  const yw = c.yaw + dy;
-  return Object.assign({}, c, { f: c.f * LENS_9X16, yaw: yw, cy: Math.cos(yw), sy: Math.sin(yw) });
+  const yw = c.yaw + dy, [fl, fp] = portFix(t);
+  return Object.assign({}, c, { f: c.f * LENS_9X16 * fl, p: Math.min(c.p + fp, 1.565), yaw: yw, cy: Math.cos(yw), sy: Math.sin(yw) });
 }
