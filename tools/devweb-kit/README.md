@@ -30,6 +30,9 @@ is 1080x1920 at 60 fps with motion blur.
 | `vo/vo.py`, `vo/align.py` | Record `<project>/vo/script.json` with Chris as one take; faster-whisper word times -> `vo/words.js` (`VO.w(word, n)`) and `_in/voice.wav`. |
 | `sfx_earshot.py` | The sound on the picture from earshot's bank (Leon Lin, MIT): one take per cue kind, each hit one frame after its event, mixed under the voice to -14 LUFS. |
 | `finish.sh` | Render at 120 fps, blend pairs to 60 fps (motion blur), restore BT.709 tags, then probe, forensics (cues declared) and flashcheck. |
+| `camera-check.mjs` | The camera measured in node, no browser: every key projected to 1080x1920 the way three.js does it. Share of frames the camera moves, holds, one row per move, Blink's visor in shot, overlays against props, prop edges on frame edges, empty frames. Reads the episode's `camera-set.mjs`. |
+| `check-graybox.mjs` | The gray box's pass or fail: anchors resolve, keys in order, the camera targets above, overlay timing and margins, banned on-screen words, imports and station exports. The episode adds its own checks. |
+| `templates/` | `camera-set.mjs`, `camera-check.mjs`, `check-graybox.mjs` to copy into a new episode. Episode 6's are the worked example. |
 | `sync.sh` | Copy the kit into a project as `<project>/kit/` with a VERSION stamp. Never edit a project's `kit/` by hand. |
 
 ## Making a short
@@ -41,6 +44,8 @@ python3 -I tools/devweb-kit/vo/vo.py devweb-ep02-<slug>                         
 <viralvision venv python> -I tools/devweb-kit/vo/tighten.py devweb-ep02-<slug>        # pauses: 0.22 s at a stop, 0.15 s at a comma
 <viralvision venv python> -I tools/devweb-kit/vo/align.py devweb-ep02-<slug>          # -> vo/words.js, _in/voice.wav
 # build index.html (overlays + clock) and the short's world file, copying devweb-ep01-oner's shape
+cp tools/devweb-kit/templates/*.mjs devweb-ep02-<slug>/                               # then fill camera-set.mjs with the episode's props
+node devweb-ep02-<slug>/check-graybox.mjs                                             # PASS before the animatic goes to Robin
 node tools/blueprint-kit/cues.mjs devweb-ep02-<slug>                                  # -> cues.json (BP.CUES)
 EARSHOT=<earshot clone> <viralvision venv python> -I tools/devweb-kit/sfx_earshot.py devweb-ep02-<slug>
 CINETIC=<cinetic clone>/skills/cinetic/scripts tools/devweb-kit/finish.sh devweb-ep02-<slug> devweb-ep02
@@ -111,8 +116,12 @@ Iterate with `npx hyperframes@0.8.162 snapshot --at ...` (contact sheets) before
   the main prop changes on that word. A prop that several stations watch gets one schedule in `timeline.js`
   (`NEEDLE_SWINGS`, `needlePos(t)` in ep 6) and the prop, Blink and `cues.js` all read it.
 - **The camera moves in about 30 % of frames**, with a push on each beat and a move in the hook's first 3 s.
-  Ep 6's `camera-check.mjs` projects every key in node and prints the share; it names ep 6's stations, so copy it
-  into the next episode and re-point it until it moves into the kit. Run it before the animatic goes to Robin.
+  `camera-check.mjs` projects every key in node and prints the share, and `check-graybox.mjs` fails outside 27-36 %
+  or with no move in the first 3 s. Both are in the kit since episode 6; an episode supplies `camera-set.mjs` (its
+  props as boxes, and when each is on screen). Run them before the animatic goes to Robin.
+- **The checks need two things from the episode's files.** `world.js` keeps its camera keys between `// KEYS-BEGIN` and
+  `// KEYS-END` as `[time, position, target, fov, expected time, "subject"]`, and `timeline.js` exports `ANCHORS` as
+  `{ name: [word, n, offset, expected time] }` beside `T`.
 - **Blink wears the harness only when the film shows it working** (Robin, 2026-11-04). Leave `makeHarness` out
   otherwise; a request card just comes out from Blink.
 - **Words on screen are plain.** Ep 6 dropped mode, optional, fts, vector, hybrid, query, param and argument for

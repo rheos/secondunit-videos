@@ -22,8 +22,8 @@ const VO = window.VO, w = (x, n) => VO.w(x, n);
 // creep between moves (a "creep" key nudges the pose toward the next one). The hook opens close on the dial from the
 // left, already moving at frame 0 (K01 starts before 0), with Blink as foreground; the pushes on the counter (36), the
 // tray, the turn on day 53 and the list/default tag in the tip drop Blink's visor out; everything else keeps it whole. Poses were fitted in node against
-// the framing rules in camera-check.mjs; `node check-graybox.mjs` measures them. Subject names are camera-check's
-// SUBJECTS (cameraPath ignores the sixth field). All keys share the kit's io ease: the kit offers no other.
+// the framing rules in the kit's camera-check.mjs; `node check-graybox.mjs` measures them. Subject names are
+// camera-set.mjs's SUBJECTS (cameraPath ignores the sixth field). All keys share the kit's io ease: the kit offers no other.
 // KEYS-BEGIN
 export const KEYS = [
   /* K01 hook: already moving at frame 0 */ [T.h01 - 0.72, [-1.467, 3.049, 5.672], [0.255, 2.635, -1.47], 36, -0.60, "dial"],
