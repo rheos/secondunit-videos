@@ -102,7 +102,7 @@ window.CUES = function (w, T, H) {
   add("slide", T.h24 + 0.1, 0.5); // left panel turns face-on (panels.js: 0.5)
   add("slide", T.h25 + 0.05, 0.5); // right panel turns face-on
   add("blip", T.h25 + 0.3); // "or" rises into the gap
-  for (let i = 0; i < 6; i++) add("type", T.h26 + 0.35 + i * 0.36); // log.js: FIRST = h26 + 0.35, a row every 0.36 s
+  for (let i = 0; i < 6; i++) add("type", T.h26 + 0.15 + i * 0.3); // log.js: FIRST = h26 + 0.15, a row every 0.3 s
 
   // ---- the end mark ----
   add("sting", T.endIn);

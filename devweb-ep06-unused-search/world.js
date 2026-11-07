@@ -72,7 +72,7 @@ export const KEYS = [
   /* K39 the stream up every rail and the counter standing up */ [w("36", 1) - 0.02, [-1.2, 3.4, 12.6], [0.1, 2.05, -1.6], 36, 36.18, "stream"],
   /* K40 creep */ [w("searches", 1), [-1.302, 3.4, 12.308], [0.049, 2.035, -1.6], 36, 37.64, "stream"],
   /* K41 36 seats: the counter on its shelf */ [T.one3 + 0.21, [-2.1, 4.9, 3], [-1.1, 4.2, -2.6], 36, 39.05, "counter"],
-  /* K42 settle */ [w("and", 4) + 0.55, [-2.17, 4.9, 2.8], [-1.135, 4.19, -2.6], 36, 40.05, "counter"],
+  /* K42 "and nothing told me": back and up so the counter and the bulb share the frame (supervisor 05 F1: the lamp was out of shot on the hold about it) */ [w("and", 4) + 0.55, [-2.4, 5.0, 4.8], [-0.4, 4.1, -2.6], 36, 40.05, "lamp"],
   /* K43 over the bin tipped out of the foot: its empty bed */ [T.uses - 0.02, [-1.9, 5.8, 5.9], [-0.5, 0.1, -2.1], 36, 41.82, "bin"],
   /* K44 creep */ [w("crash", 1) - 0.5, [-1.865, 5.8, 5.8], [-0.482, 0.095, -2.1], 36, 42.32, "bin"],
   /* K45 back to Blink and the machine */ [w("no", 1) - 0.02, [-0.8, 3.4, 13.2], [-0.06, 2.05, -1.5], 36, 43.88, "set"],
@@ -138,7 +138,7 @@ const STATIONS = [
   { name: "strip", mod: strip, win: [[T.h16, T.h21 + 0.7]] },
   { name: "note", mod: note, win: [[T.h18 - 0.05, T.h21 + 0.5]] },
   { name: "panels", mod: panels, win: [[T.h24 - 0.05, T.h26 + 0.4]] },
-  { name: "log", mod: log, win: [[T.h26 - 0.05, T.h27 + 0.4]] },
+  { name: "log", mod: log, win: [[T.h26 - 0.05, T.h27 + 0.9]] }, // the sheet leaves from log.js OUT = h27 + 0.35
   { name: "mark", mod: mark, win: WHOLE },
   { name: "cards", mod: cards, win: WHOLE },
 ];

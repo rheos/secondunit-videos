@@ -10,8 +10,10 @@ import { rr } from "../kit/world.js";
 import { T, cl, io, r01 } from "../timeline.js";
 
 const ROWS = ["keywords (old)", "keywords (old)", "meaning (new)", "keywords (old)", "meaning (new)", "keywords (old)"];
-const X = 1.2, Y = 3.1, Z = -0.8, W = 1.5, H = 2.3, ROW_T = 0.36, ROW_IN = 0.16; // 450 x 690 px; `keywords (old)` at 38 px is 319 px
-const FIRST = T.h26 + 0.35; // row i lands at FIRST + i * ROW_T, as in the animatic
+const X = 1.2, Y = 3.1, Z = -0.8, W = 1.5, H = 2.3, ROW_T = 0.3, ROW_IN = 0.16; // 450 x 690 px; `keywords (old)` at 38 px is 319 px
+// row i lands at FIRST + i * ROW_T. The animatic had h26 + 0.35 and 0.36 s; the finish starts 0.2 s earlier and steps
+// 0.3 s so the sixth row is typed by h27 - 1.15 and holds 1.5 s before OUT (cues.js copies both numbers).
+const FIRST = T.h26 + 0.15;
 let rig, sheet, edge;
 
 const softBack = (x, c1 = 0.9) => { x = cl(x); const c3 = c1 + 1; return 1 + c3 * Math.pow(x - 1, 3) + c1 * Math.pow(x - 1, 2); };
@@ -39,12 +41,17 @@ export function build(scene, { toon }) {
   rig.add(sheet.mesh);
 }
 
-// one alpha for every part: in over 0.3 s from h26 + 0.1, out over 0.38 s from h27. Both are straight ramps (an eased
+// one alpha for every part: in over 0.3 s from h26 + 0.1, out over 0.38 s from OUT. Both are straight ramps (an eased
 // 0.3 s ramp steps 0.15 a frame at its middle), so it changes steadily and reaches zero with the motion.
-export const logAlpha = (t) => r01(t, T.h26 + 0.1, 0.3) * (1 - r01(t, T.h27, 0.38));
+// OUT = h27 + 0.35: the sixth row is typed by h27 - 1.15, and a line holds 1.5 s after its last character before it
+// leaves (review checklist; the supervisor measured 0.8 s on d3). The sheet is gone by h27 + 0.73, before the camera
+// leaves the log on "built" (h27 + 0.82); world.js keeps the station's window open past that and camera-set.mjs knows
+// the same end.
+export const OUT = T.h27 + 0.35;
+export const logAlpha = (t) => r01(t, T.h26 + 0.1, 0.3) * (1 - r01(t, OUT, 0.38));
 
 export function update(t) {
-  const a = logAlpha(t), kout = io(r01(t, T.h27, 0.38));
+  const a = logAlpha(t), kout = io(r01(t, OUT, 0.38));
   // it settles down 0.08 into place with one small give and floats while held; leaving, it lifts, slides right and
   // shrinks toward its right edge, out of the machine's way
   const drop = 0.08 * (1 - softBack(r01(t, T.h26 + 0.05, 0.45)));

@@ -1,0 +1,14 @@
+{
+ "rise": ["swipe/paper", -28, [null], 0.35],
+ "form": ["reverse_swell/short", -27, [null], "d"],
+ "knock": ["knock/wood", -24, [null]],
+ "lift": ["toggle/latch", -19, [null]],
+ "puff": ["swish/soft", -30, [null], 0.3],
+ "dissolve": ["pro_shimmer/m3", -29, [null], "d"],
+ "beam": ["shimmer/m5", -31, [null], "d"],
+ "beamoff": ["whoosh_fast/reverse", -30, [null], 0.35],
+ "unfold": ["toggle/rocker", -22, [null]],
+ "drop": ["swish/cane", -24, [null], "d"],
+ "up": ["toggle/on", -24, [null]],
+ "down": ["toggle/off", -24, [null]]
+}

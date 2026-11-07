@@ -110,7 +110,7 @@ export const protect = ({ T, TL, END }) => [
   ["keywords label", B.labelOld, () => true], ["meaning label", B.labelNew, (t) => TL.newPlate(t).a > 0.05],
   ["placard", B.placard, on(T.new1 - 0.6, END)], ["counter", B.counter, (t) => TL.counterUp(t) > 0.05],
   ["bulb", B.bulb, () => true], ["bin", B.binOut, (t) => TL.binOut(t) > 0.05], ["strip", B.strip, on(T.h16 + 0.2, T.h20 + 0.45)],
-  ["panels", B.panels, on(T.h24, T.h26 + 0.4)], ["log", B.log, on(T.h26, T.h27 + 0.4)], ["note", B.note, on(T.h18 + 0.9, T.h21 + 0.5)],
+  ["panels", B.panels, on(T.h24, T.h26 + 0.4)], ["log", B.log, on(T.h26, T.h27 + 0.75)], ["note", B.note, on(T.h18 + 0.9, T.h21 + 0.5)],
   ["core", B.core, (t) => TL.coreGlow(t) > 0.05],
 ];
 // an overlay phrase never straddles the border of these
@@ -118,7 +118,7 @@ export const straddle = [["machine's body", B.body], ["Blink", BLINK_ALL]];
 // the props with long straight borders, and whether each is on screen at t
 export const edged = (t, { T, TL }) => [["placard", B.placard, t >= T.new1 - 0.6], ["strip", B.strip, t >= T.h16 + 1.2 && t <= T.h20 - 0.15],
   ["counter", B.counter, TL.counterUp(t) > 0.5], ["bin", B.binOut, TL.binOut(t) > 0.5], ["panels", B.panels, t >= T.h24 + 0.6 && t <= T.h26],
-  ["log", B.log, t >= T.h26 + 0.4 && t <= T.h27], ["plinth", B.plinth, true]];
+  ["log", B.log, t >= T.h26 + 0.4 && t <= T.h27 + 0.35], ["plinth", B.plinth, true]];
 // everything that fills the frame's width, and when
 export const scene = ({ T, TL }) => [[B.machine, () => true], [BLINK_ALL, () => true], [[B.prog1, B.prog3], () => true], [B.counter, (t) => TL.counterUp(t) > 0.3],
   [B.strip, on(T.h16 + 0.6, T.h20 - 0.15)], [B.note, on(T.h18 + 1.1, T.h21 + 0.5)], [B.panels, on(T.h24 + 0.3, T.h26)], [B.log, on(T.h26 + 0.3, T.h27)]];
