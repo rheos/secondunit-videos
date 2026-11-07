@@ -4,6 +4,7 @@
 import * as THREE from "three";
 import { cameraPath, stage } from "./kit/world.js";
 import { FOOT_Y, T } from "./timeline.js";
+import { gridFloor } from "./stations/floor.js";
 import * as mark from "./stations/mark.js";
 import * as machine from "./stations/machine.js";
 import * as programs from "./stations/programs.js";
@@ -154,10 +155,10 @@ export async function buildWorld(canvas) {
   // grid's alone (every prop and panel has fog off, Blink's toon does not): it starts past the furthest Blink ever is from
   // the lens (14.75 at the strip poses) and runs to 48, so the lines thin toward the horizon over the last third of the
   // ground band instead of stopping short of it (60 left a pale band where the cells merge). Lines, not a glowing floor.
+  // Painted by a shader (stations/floor.js), not GridHelper: the runner's SwiftShader dropped the depth lines of GL
+  // lines, which is why d2 showed parallel stripes instead of a grid.
   scene.remove(grid);
-  const floor = new THREE.GridHelper(120, 240, "#4a5c82", "#4a5c82");
-  floor.position.y = floorY; floor.material.transparent = true; floor.material.opacity = 0.88; floor.material.fog = true;
-  scene.add(floor);
+  scene.add(gridFloor({ size: 120, cell: 0.5, color: "#4a5c82", opacity: 0.88, y: floorY }));
   const kit = { toon, ramp, G: window.BLINK };
   STATIONS.forEach((s) => {
     s.group = new THREE.Group();
