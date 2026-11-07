@@ -72,8 +72,8 @@ export const KEYS = [
   /* K40 creep */ [w("searches", 1), [-1.302, 3.4, 12.308], [0.049, 2.035, -1.6], 36, 37.64, "stream"],
   /* K41 36 seats: the counter on its shelf */ [T.one3 + 0.21, [-2.1, 4.9, 3], [-1.1, 4.2, -2.6], 36, 39.05, "counter"],
   /* K42 settle */ [w("and", 4) + 0.55, [-2.17, 4.9, 2.8], [-1.135, 4.19, -2.6], 36, 40.05, "counter"],
-  /* K43 over the bin tipped out of the foot: its empty bed */ [T.uses - 0.02, [0.5, 4.5, 1.4], [0.34, 1.3, -2.1], 36, 41.82, "bin"],
-  /* K44 creep */ [w("crash", 1) - 0.5, [0.465, 4.5, 1.3], [0.323, 1.295, -2.1], 36, 42.32, "bin"],
+  /* K43 over the bin tipped out of the foot: its empty bed */ [T.uses - 0.02, [-1.9, 5.8, 5.9], [-0.5, 0.1, -2.1], 36, 41.82, "bin"],
+  /* K44 creep */ [w("crash", 1) - 0.5, [-1.865, 5.8, 5.8], [-0.482, 0.095, -2.1], 36, 42.32, "bin"],
   /* K45 back to Blink and the machine */ [w("no", 1) - 0.02, [-0.8, 3.4, 13.2], [-0.06, 2.05, -1.5], 36, 43.88, "set"],
   /* K46 creep */ [w("so", 2), [-0.911, 3.4, 12.884], [-0.115, 2.034, -1.5], 36, 45.46, "set"],
   /* K47 the strip unrolls above the crown */ [T.changedEnd, [-0.9, 3.2, 14], [0.55, 2.9, -1.5], 36, 46.40, "strip"],
@@ -149,13 +149,14 @@ export async function buildWorld(canvas) {
   const floorY = FOOT_Y - 0.02;
   const { renderer, scene, cam, ramp, toon, grid } = stage(canvas, { fog: [14.8, 48], floorY });
   // the floor (world-plan-v2 section 4, tuned by the DP on stills): half-unit cells so the convergence reads from the
-  // base poses (camera 3.4 up, 13 out, 5 deg down), one colour so no cross runs under Blink, lines only. The fog is the
+  // base poses (camera 3.4 up, 13 out, 5 deg down), one colour so no cross runs under Blink, lines only (#4a5c82 at 0.88:
+  // the first pass at #3a4a6c and 0.72 read faintly on the 720p draft). The fog is the
   // grid's alone (every prop and panel has fog off, Blink's toon does not): it starts past the furthest Blink ever is from
   // the lens (14.75 at the strip poses) and runs to 48, so the lines thin toward the horizon over the last third of the
   // ground band instead of stopping short of it (60 left a pale band where the cells merge). Lines, not a glowing floor.
   scene.remove(grid);
-  const floor = new THREE.GridHelper(120, 240, "#3a4a6c", "#3a4a6c");
-  floor.position.y = floorY; floor.material.transparent = true; floor.material.opacity = 0.72; floor.material.fog = true;
+  const floor = new THREE.GridHelper(120, 240, "#4a5c82", "#4a5c82");
+  floor.position.y = floorY; floor.material.transparent = true; floor.material.opacity = 0.88; floor.material.fog = true;
   scene.add(floor);
   const kit = { toon, ramp, G: window.BLINK };
   STATIONS.forEach((s) => {
