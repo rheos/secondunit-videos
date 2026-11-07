@@ -141,3 +141,75 @@ last frame to first 20.77 dB. The seam is an ordinary step.
 `reviews/take-02_canvas_contact.jpg` (one frame a second).
 
 **Verdict.** Robin, 2026-10-19: "this is great. love it." Merged in #236 (6805b44); tagged `canvas-take-02`.
+
+The take-02 helpers now live in `canvas_kit.py` (textures, boxes, camera, sky, render, run), shared by takes
+02-04. Take 02 renders bit-identical through it (frames 1, 60 and 130, PSNR inf against the pre-kit script).
+
+
+## Take 03: an 8-second Canvas loop for All The Trees (2026-10-19)
+
+**Brief.** Robin loved take 02, so the same treatment for Bob's other songs, one Canvas per track. Issue #237.
+All The Trees has the clearest single image of the set: the film's thesis, that trees look separate but their
+roots join.
+
+**What it is.** `canvas_trees.py`. The sun-headed man (ultramarine robe) and the moon-headed woman (rose robe)
+stand apart on a floating island with their arms raised into boughs, and the heart tree between them. Under the
+island their roots hang down, three strands each plus the heart tree's, and meet in one gold knot with a
+taproot below. The island turns once in exactly 8 s about the vertical. A gold pulse runs down his middle root,
+through the knot (which flares) and up hers in 4 s, then back in 4 s. The two cloud trumpeters stay fixed left
+and right of the sky, facing us like the film's plates, horns pointing in. Boughs and trumpeters rock on 2 s, the
+heart beats on 1 s (a thump and an echo), the horns lift on 1 s, the sun's eight rays turn 45 degrees in 2 s and
+the gold ring round the heart 30 degrees in 2 s, so both map onto themselves.
+
+**Look.** The film's hand-coloured engraving palette: azure sky graded to cream, ultramarine and rose robes with a
+hatch every third pixel column, gamboge sun, sap-green leaves, tan soil steps. Roots are chains of axis-aligned
+boxes along curves, so they step like voxels. Not Bob or anyone real.
+
+**Settings.** Blender 4.5.14 LTS, EEVEE Next at 180x320, 16 samples. Island top 5.2 m, figures about 2.3 m.
+Camera at (0, -24, 5.2) aimed at (0, 0, -0.05), 47 mm.
+
+**Speed.** 192 frames in 34 s on this Mac.
+
+**Seam check** (`tools/canvas_encode.sh take-03`): steps median 24.82 dB (23.74-25.89); last frame to first
+25.05 dB. SEAM OK.
+
+**Renders** (`out/canvas/take-03/`): `take-03_canvas_720x1280.mp4` (8.0 s, silent) and
+`take-03_review_x4_song.mp4` (four loops from 48.1 s, the first chorus trumpet passage). Contact sheet:
+`reviews/take-03_canvas_contact.jpg` (one frame a second).
+
+**Verdict.** Not reviewed yet.
+
+
+## Take 04: an 8-second Canvas loop for The Reform Party at Burning Man (2026-10-19)
+
+**Brief.** The second song for #237. The boardroom art car is the film's one image, and it is made of boxes
+already.
+
+**What it is.** `canvas_playa.py`. The car holds still in frame on its circle round the Man, and the playa turns
+under it once in 8 s, as the world turned under the traveller in take 02. The table covers the whole car: suits
+on black office chairs built out from its edge, the driver's red hat in the hole in the middle, a whiteboard of
+bar charts, a speakerphone, laptops and mugs. Behind it the Man stands on his stepped base at the centre of the
+disc, and the city arc (shade structures, tents, domes, a trailer under a flag, Esplanade lamp posts) runs from
+2:00 to 10:00 on the rim, with the onion-dome Temple out at 12:00. Wheels make exactly 15 turns a loop (the
+circle's length over the wheel's), the car rattles on 0.5 s, dust puffs live 0.5 s, the suits nod on 1 s and vote
+a third at a time on 2 s, and the driver looks about on 4 s.
+
+**Look.** The drawn film's palette (draft 24): navy suits, cream egg heads, red table top with gold trim,
+mahogany skirt, black chairs, playa tan with Voronoi crazing on the 16 px tile, desert blue sky. The disc is
+built from strips in one mesh (`canvas_kit.disc`), so the crust texture runs across without seams and the rim
+steps like voxels. Allegory only: faceless suits, no real people, no little Bob. The Temple is kept small and on
+the rim so it never covers the car when it swings to the front.
+
+**Settings.** Blender 4.5.14 LTS, EEVEE Next at 180x320, 16 samples. Playa radius 6.2 m, car on a 3 m circle,
+wheel radius 0.2 m. Camera at (-1, -14.5, 12.5) aimed at (0, -1.1, 0.4), 44 mm.
+
+**Speed.** 192 frames in 33 s on this Mac.
+
+**Seam check** (`tools/canvas_encode.sh take-04`): steps median 19.54 dB (18.68-20.36); last frame to first
+19.24 dB. SEAM OK.
+
+**Renders** (`out/canvas/take-04/`): `take-04_canvas_720x1280.mp4` (8.0 s, silent) and
+`take-04_review_x4_song.mp4` (four loops from 35.0 s, the first refrain and the sax lick). Contact sheet:
+`reviews/take-04_canvas_contact.jpg`.
+
+**Verdict.** Not reviewed yet.
