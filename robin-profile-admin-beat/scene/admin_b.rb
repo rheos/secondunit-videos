@@ -26,7 +26,7 @@ module AdminB
     def initialize
       @n, @top, @events, @accents = [], [], [], []
       @rng = Random.new(1000)
-      @words = JSON.parse(File.read(File.join(WORK, "voice", "pro-01.words.json")))["words"]
+      @words = JSON.parse(File.read(File.join(WORK, "voice", ENV.fetch("ADMIN_WORDS", "film-v1.words.json"))))["words"]
     end
 
     # ---------------------------------------------------------------- clock and helpers
