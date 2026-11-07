@@ -158,7 +158,10 @@ export async function buildWorld(canvas) {
   // Painted by a shader (stations/floor.js), not GridHelper: the runner's SwiftShader dropped the depth lines of GL
   // lines, which is why d2 showed parallel stripes instead of a grid.
   scene.remove(grid);
-  scene.add(gridFloor({ size: 120, cell: 0.5, color: "#4a5c82", opacity: 0.88, y: floorY }));
+  // A honeycomb, cells 1.1 wide flat to flat, so each reads as a tile under Blink (Robin, 2026-11-06, from stills of
+  // the square grid, a 0.55 hex and this one: "hex, bigger cells"). ?floor=square keeps the half-unit grid for comparison.
+  const square = new URLSearchParams(location.search).get("floor") === "square";
+  scene.add(gridFloor({ size: 120, cell: square ? 0.5 : 1.1, pattern: square ? "square" : "hex", color: "#4a5c82", opacity: 0.88, y: floorY }));
   const kit = { toon, ramp, G: window.BLINK };
   STATIONS.forEach((s) => {
     s.group = new THREE.Group();

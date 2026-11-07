@@ -9,8 +9,10 @@
 // aliasing, and the scene fog (three's own chunks) fades them to the background past its near distance.
 import * as THREE from "three";
 
-export function gridFloor({ size = 120, cell = 0.5, color = "#4a5c82", opacity = 0.88, y = 0 } = {}) {
+// pattern: "square" (cell = the side) or "hex" (cell = a hexagon's width flat to flat, pointy ends along z).
+export function gridFloor({ size = 120, cell = 0.5, color = "#4a5c82", opacity = 0.88, y = 0, pattern = "square" } = {}) {
   const mat = new THREE.ShaderMaterial({
+    defines: pattern === "hex" ? { HEX: 1 } : {},
     uniforms: THREE.UniformsUtils.merge([THREE.UniformsLib.fog, {
       color: { value: new THREE.Color(color) }, opacity: { value: opacity }, cell: { value: cell },
     }]),
@@ -30,10 +32,25 @@ export function gridFloor({ size = 120, cell = 0.5, color = "#4a5c82", opacity =
       #include <fog_pars_fragment>
       uniform vec3 color; uniform float opacity; uniform float cell;
       varying vec2 vXZ;
+      #ifdef HEX
+      // hex tiling with width 1 flat to flat: distance from the nearest edge, 0 on an edge, 0.5 at a centre
+      float hexEdge(vec2 p) {
+        vec2 r = vec2(1.0, 1.7320508), h = r * 0.5;
+        vec2 a = mod(p, r) - h, b = mod(p - h, r) - h;
+        vec2 g = dot(a, a) < dot(b, b) ? a : b;
+        g = abs(g);
+        return 0.5 - max(dot(g, normalize(vec2(1.0, 1.7320508))), g.x);
+      }
+      #endif
       void main() {
         vec2 q = vXZ / cell;
+        #ifdef HEX
+        float px = max(fwidth(q.x), fwidth(q.y));       // one pixel in cell units, the longer axis
+        float line = 1.0 - min(hexEdge(q) / px, 1.0);
+        #else
         vec2 d = abs(fract(q - 0.5) - 0.5) / fwidth(q); // pixels to the nearest line on each axis
         float line = 1.0 - min(min(d.x, d.y), 1.0);
+        #endif
         if (line <= 0.0) discard;
         gl_FragColor = vec4(color, opacity * line);
         #include <fog_fragment>
