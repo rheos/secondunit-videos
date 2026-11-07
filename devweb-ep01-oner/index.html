@@ -112,11 +112,11 @@
         hide(did, w("guardrails") - 0.15, 0.2);
         const gTag = mk("div", "abs hide", "left:44px;right:44px;top:160px;font-size:96px;font-weight:700;letter-spacing:-0.045em;line-height:1;color:var(--amber);text-shadow:0 4px 30px rgba(0,0,0,.7)", stage, "Guardrails<br>go here.");
         slam(gTag, w("guardrails") - 0.05, 1.4); hide(gTag, e("belong") + 0.2, 0.3);
-        // the end: the mark under Blink, the article's address
+        // the end: the mark under Blink and the site's address (never a long article URL; it can't be clicked in a video)
         const endAt = e("belong") + 1.2;
         const mark = mk("div", "abs hide", "left:190px;top:600px;width:340px;height:92px;box-sizing:border-box;border-radius:14px;border:3px solid var(--green);background:#0d1117;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-weight:600;font-size:44px", stage, `<span style="color:var(--green)">~/</span>devweb`);
         F(mark, { opacity: 0, scale: 0.85 }, { opacity: 1, scale: 1, duration: 0.4, ease: "back.out(1.6)" }, endAt);
-        const url = mk("div", "abs hide", "left:0;right:0;top:730px;text-align:center;font-family:var(--mono);font-size:28px;color:var(--text2)", stage, "devweb.org/glossary/tool-calling-loop");
+        const url = mk("div", "abs hide", "left:0;right:0;top:730px;text-align:center;font-family:var(--mono);font-size:28px;color:var(--text2)", stage, "devweb.org");
         rise(url, endAt + 0.4, 0.4);
 
         const clock3 = { t: 0 };
