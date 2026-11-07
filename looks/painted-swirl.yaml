@@ -8,12 +8,12 @@ cost: free
 group: code
 order: 660
 clip: null
-tall: false
+tall: true
 status: test
 engine: swift and metal
 project: bobwiseman-swift-noimage
 code:
-  path: bobwiseman-swift-noimage/scene/ihd.rb
+  path: bobwiseman-swift-noimage/scene/ihd_9x16.rb
   flag: null
   page: null
   note: >-
@@ -42,6 +42,7 @@ reference: >-
 proof:
   renders:
     - bobwiseman-swift-noimage/out/swift-ihd_test01_720p.mp4
+    - bobwiseman-swift-noimage/out/swift-ihd_9x16_test01_720p.mp4
   pr: []
   youtube: []
 verdict: "Robin, 2026-11-07, on the 16:9 test: \"i like it\", and \"i think it should probably be 9:16\"."
