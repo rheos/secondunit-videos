@@ -58,27 +58,33 @@ function cleeseHead(g, o = {}) {
   for (const sd of [-1, 1]) { g.beginPath(); g.moveTo(sd * 49, 46); g.quadraticCurveTo(sd * 48, 64, sd * 39, 74); g.stroke(); } // jowls
   g.beginPath(); g.moveTo(-14, 80); g.quadraticCurveTo(0, 85, 14, 80); g.stroke(); // the chin
   g.fillStyle = 'rgba(214,140,124,.12)'; for (const sd of [-1, 1]) { g.beginPath(); g.ellipse(sd * 38, 18, 14, 20, 0, 0, TAU); g.fill(); }
-  // frown creases between the brows
-  paint(g, 1.8, .45); for (const sd of [-1, 1]) { g.beginPath(); g.moveTo(sd * 4, -44); g.lineTo(sd * 5, -30); g.stroke(); }
+  // Draft 17 (Bob, note 54: "the tea leaf reader's face seems depressed/ tired. can you make him more bug eyed or
+  // smirky?", and note 67 pinning it at 2:15): the same face, a brighter expression. The eyes open wide (big whites
+  // round a small pupil with a catch light, the outer corners lifted, no bags, a light socket), the brows ride high
+  // with his right one arched (the quizzical Cleese brow), the frown creases are gone, and the shut mouth is a
+  // lopsided smirk. Callers' lid values still close the eyes on a blink or a wince, from a much more open rest.
   for (const sd of [-1, 1]) {
-    const ex = sd * 24, ey = -18, rot = sd * .2; // outer corner lower
-    g.fillStyle = 'rgba(160,110,96,.3)'; g.beginPath(); g.ellipse(ex, ey - 3, 16, 11, rot, 0, TAU); g.fill(); // the socket
+    const ex = sd * 24, ey = -19, rot = sd * -.06; // outer corner a touch higher: alert, not drooping
+    g.fillStyle = 'rgba(160,110,96,.16)'; g.beginPath(); g.ellipse(ex, ey - 3, 16, 12, rot, 0, TAU); g.fill(); // the socket
     g.save(); g.translate(ex, ey); g.rotate(rot);
-    const eye = new Path2D(); eye.moveTo(-10, 0); eye.quadraticCurveTo(0, -7, 10, 0); eye.quadraticCurveTo(0, 6, -10, 0); eye.closePath();
-    g.fillStyle = 'rgba(244,240,228,1)'; g.fill(eye);
+    const eye = new Path2D(); eye.moveTo(-12, 0); eye.bezierCurveTo(-8, -12, 8, -12, 12, 0); eye.bezierCurveTo(8, 10, -8, 10, -12, 0); eye.closePath();
+    g.fillStyle = 'rgba(248,246,236,1)'; g.fill(eye);
     g.save(); g.clip(eye);
-    g.fillStyle = 'rgba(70,48,34,1)'; g.beginPath(); g.arc(lx * 3.5, ly * 2 + .5, 4.2, 0, TAU); g.fill();
-    g.fillStyle = 'rgba(14,10,8,1)'; g.beginPath(); g.arc(lx * 3.5, ly * 2 + .5, 1.9, 0, TAU); g.fill();
-    g.fillStyle = rgb(mix(CL.skin, [196, 146, 126], .3)); g.fillRect(-11, -8, 22, 5 + 8 * lid); // the hooded lid
+    const px = lx * 5, py = ly * 3.5 - .5;
+    g.fillStyle = 'rgba(70,48,34,1)'; g.beginPath(); g.arc(px, py, 3.9, 0, TAU); g.fill();
+    g.fillStyle = 'rgba(14,10,8,1)'; g.beginPath(); g.arc(px, py, 1.9, 0, TAU); g.fill();
+    g.fillStyle = 'rgba(255,255,255,.95)'; g.beginPath(); g.arc(px + 1.3, py - 1.4, .9, 0, TAU); g.fill(); // catch light
+    const lidY = -10 + 18 * lid * lid; // the upper lid's edge: at the callers' rest (lid .3) it barely touches the white; 1 shuts it
+    g.fillStyle = rgb(mix(CL.skin, [196, 146, 126], .3)); g.fillRect(-13, -14, 26, lidY + 14);
     g.restore();
-    paint(g, 2.6, .9); g.beginPath(); g.moveTo(-11, 1); g.quadraticCurveTo(0, -5 + 8 * lid, 11, 2); g.stroke(); // lid edge
-    paint(g, 1.6, .4); g.beginPath(); g.moveTo(-10, -9); g.quadraticCurveTo(0, -13, 11, -7); g.stroke(); // the fold above
-    g.beginPath(); g.moveTo(-8, 7); g.quadraticCurveTo(0, 11, 9, 7); g.stroke(); // bags
+    paint(g, 2.6, .9); g.beginPath(); g.moveTo(-12, 0); g.bezierCurveTo(-8, lidY - 2, 8, lidY - 2, 12, 0); g.stroke(); // lid edge
+    paint(g, 1.8, .55); g.beginPath(); g.moveTo(-11, 1); g.bezierCurveTo(-7, 9, 7, 9, 11, 1); g.stroke(); // lower rim
+    paint(g, 1.4, .3); g.beginPath(); g.moveTo(-11, -12); g.quadraticCurveTo(0, -17, 12, -11); g.stroke(); // the fold above
     g.restore();
-    // the brows: thick, low and nearly straight, the outer ends dipping a little
-    const lift = 6 * up;
+    // the brows: still thick and dark, but riding high and arched; his right one (screen right) cocked higher
+    const lift = 2 + 3 * up + (sd > 0 ? 4 : 0), arch = sd > 0 ? 3 : 1; // the bowler's brim sits at about y -52: stay under it
     g.strokeStyle = rgb(CL.brow, .95); g.lineWidth = 8; g.lineCap = 'round';
-    g.beginPath(); g.moveTo(sd * 8, -38 - lift); g.quadraticCurveTo(sd * 22, -43 - lift, sd * 33, -40 - lift * .6); g.quadraticCurveTo(sd * 39, -38, sd * 43, -33); g.stroke();
+    g.beginPath(); g.moveTo(sd * 9, -38 - lift * .7); g.quadraticCurveTo(sd * 21, -44 - lift - arch, sd * 33, -42 - lift * .8); g.quadraticCurveTo(sd * 40, -40 - lift * .4, sd * 44, -35 - lift * .2); g.stroke();
   }
   // the nose: long, a broad round tip, wide nostrils
   g.fillStyle = 'rgba(176,120,100,.22)'; g.beginPath(); g.moveTo(-5, -30); g.quadraticCurveTo(-9, 4, -14, 22); g.lineTo(-4, 26); g.quadraticCurveTo(-2, 0, 0, -30); g.closePath(); g.fill();
@@ -89,8 +95,10 @@ function cleeseHead(g, o = {}) {
   paint(g, 1.6, .25); for (const sd of [-1, 1]) { g.beginPath(); g.moveTo(sd * 5, 47); g.lineTo(sd * 6, 57); g.stroke(); } // the long upper lip
   // the mouth: thin and wide, the corners down; opening round the top teeth to sing
   const my = 64, h = 2 + 22 * m;
-  if (m < .08) { paint(g, 3.4, .88); g.beginPath(); g.moveTo(-26, my + 2.5); g.quadraticCurveTo(-14, my - .5, 0, my - .5); g.quadraticCurveTo(14, my - .5, 26, my + 2.5); g.stroke();
-    paint(g, 1.6, .25); g.beginPath(); g.moveTo(-11, my + 8); g.quadraticCurveTo(0, my + 10, 11, my + 8); g.stroke(); }
+  if (m < .08) { // draft 17: the smirk, flat on his left and curling up on his right, a dimple at the high corner
+    paint(g, 3.4, .88); g.beginPath(); g.moveTo(-24, my + 1); g.quadraticCurveTo(-10, my + 3, 4, my + 1.5); g.quadraticCurveTo(17, my, 27, my - 7); g.stroke();
+    paint(g, 2, .5); g.beginPath(); g.moveTo(25, my - 11); g.quadraticCurveTo(31, my - 7, 29, my - 1); g.stroke(); // dimple
+    paint(g, 1.6, .25); g.beginPath(); g.moveTo(-10, my + 9); g.quadraticCurveTo(2, my + 11, 12, my + 7); g.stroke(); }
   else {
     const p = ellPath(0, my + h / 2 - 1, 22 + 4 * m, h / 2 + 1.5);
     g.fillStyle = 'rgba(70,16,20,.96)'; g.fill(p);
