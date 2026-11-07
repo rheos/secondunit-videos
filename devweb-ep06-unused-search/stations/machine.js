@@ -7,10 +7,11 @@
 // no state between frames, every value reset before any branch.
 import * as THREE from "three";
 import { C, INK, forge } from "./forge.js";
-import { CARD_PLAN, CORE_LIT, LEVER_THROWS, MACHINE_AT, MACHINE_S, ML, PLATE_HIT, PUFFS, T, TAG_SWING, binOut, coreGlow, io, knocks, lever, mix, newPlate, r01, runOn, runWork, settle, spanAlpha, ss, worldDim } from "../timeline.js";
+import { CARD_PLAN, CORE_LIT, LEVER_THROWS, MACHINE_AT, MACHINE_S, ML, PLATE_HIT, PUFFS, T, TAG_SWING, binOut, coreGlow, io, knocks, lever, mix, mw, newPlate, r01, runOn, runWork, settle, spanAlpha, ss, worldDim } from "../timeline.js";
 
 const BLUE = "#4f93d6";
 const TH = 0.72, LEAN = 0.6; // the lever's half-throw and its lean out of the plate
+const PLACARD_W = 1.5; // the description placard's width (its centre is ML.placard; camera-set.mjs's box should carry 0.75 * S)
 const V3 = (x, y, z) => new THREE.Vector3(x, y, z);
 const col = (a, b, k) => new THREE.Color(a).lerp(new THREE.Color(b), Math.max(0, Math.min(1, k)));
 
@@ -51,6 +52,17 @@ function fade(g, a) {
   g.visible = a > 0.002;
   g.traverse((o) => { if (o.material) { o.material.opacity = a; o.material.depthWrite = a > 0.98; } });
 }
+// a hole cut into a toon surface: fragments inside the world box [x0, x1, y0, y1, z0, z1] are discarded. The errors boss
+// is sunk into the foot trunk and the belly, whose surfaces pass through its opening (the trunk's front is 0.09 behind the
+// boss face at the bin's x, the belly bulges 0.27 past it at the top); without the cut they cover the tipped bin's bed.
+function cut(mesh, box) {
+  const [x0, x1, y0, y1, z0, z1] = box.map((v) => v.toFixed(4)), m = mesh.material;
+  m.onBeforeCompile = (sh) => {
+    sh.vertexShader = sh.vertexShader.replace("#include <common>", "#include <common>\nvarying vec3 vCut;").replace("#include <begin_vertex>", "#include <begin_vertex>\nvCut = (modelMatrix * vec4(transformed, 1.0)).xyz;");
+    sh.fragmentShader = sh.fragmentShader.replace("#include <common>", "#include <common>\nvarying vec3 vCut;").replace("#include <clipping_planes_fragment>", `if (vCut.x > ${x0} && vCut.x < ${x1} && vCut.y > ${y0} && vCut.y < ${y1} && vCut.z > ${z0} && vCut.z < ${z1}) discard;\n#include <clipping_planes_fragment>`);
+  };
+  m.customProgramCacheKey = () => `cut ${box.join(",")}`;
+}
 function canvasFace(w, h, draw, parent, x, y, z) {
   const c = document.createElement("canvas"); c.width = Math.round(w * 300); c.height = Math.round(h * 300);
   draw(c.getContext("2d"), c.width, c.height);
@@ -74,12 +86,14 @@ export function build(scene, { toon }) {
 
   // ---------- the body, as the test ----------
   // the foot: a flared trunk on the plinth
-  add(sweep([[CX, -0.9, BZ], [CX, 0.2, BZ], [CX + 0.03, 1.35, BZ]], curveFn([[0, 1.02], [0.12, 0.86], [0.5, 0.58], [1, 0.66]]), { segs: 40 }).geo, C.bodyDark);
+  const foot = add(sweep([[CX, -0.9, BZ], [CX, 0.2, BZ], [CX + 0.03, 1.35, BZ]], curveFn([[0, 1.02], [0.12, 0.86], [0.5, 0.58], [1, 0.66]]), { segs: 40 }).geo, C.bodyDark);
   for (let k = 0; k < 9; k++) { const a = -0.9 + (k / 8) * 1.8; rivet(CX + Math.sin(a) * 0.93, -0.72, BZ + Math.cos(a) * 0.93); }
   // the belly: one lumpy pot, leaning a little
   const bodyR = curveFn([[0, 0.5], [0.1, 0.98], [0.36, 1.24], [0.6, 1.03], [0.78, 1.1], [0.92, 0.74], [1, 0.03]]);
   const body = sweep([[CX, 1.2, BZ + 0.04], [CX - 0.06, 2.2, BZ], [CX + 0.05, 3.2, BZ], [CX - 0.04, 4.1, BZ + 0.03], [CX + 0.06, 4.86, BZ + 0.08]], bodyR, { segs: 110, radial: 56 });
-  add(body.geo, C.body, group, 0.045);
+  const belly = add(body.geo, C.body, group, 0.045);
+  // the errors boss's opening is cut into both (test-local: the boss's 0.7 x 0.52 footprint, from the cavity's back forward)
+  { const [x0, y0, z0] = mw([ML.bin[0] - 0.35, ML.bin[1] - 0.26, ML.bin[2] - 0.21]), [x1, y1, z1] = mw([ML.bin[0] + 0.35, ML.bin[1] + 0.26, ML.bin[2] + 0.6]); cut(foot, [x0, x1, y0, y1, z0, z1]); cut(belly, [x0, x1, y0, y1, z0, z1]); }
   // seams of rivets round the belly (front half)
   for (const [u, n] of [[0.2, 13], [0.66, 12]]) {
     const c = body.curve.getPointAt(u), r = bodyR(u) + 0.01;
@@ -152,8 +166,17 @@ export function build(scene, { toon }) {
   const OUT = horn([[CX - 0.5, 2.0, BZ + 0.8], [CX - 0.74, 1.78, BZ + 1.25], [CX - 0.86, 1.5, BZ + 1.58]], ribs(curveFn([[0, 0.3], [0.5, 0.25], [1, 0.4]]), 3, 0.04, 0.1, 0.6), C.bodyDark);
   const pOut = plate("out", 0.5, 0.21, 46); pOut.position.set(OUT.end.x + 0.36, OUT.end.y + 0.4, OUT.end.z + 0.05); pOut.rotation.z = -0.1;
 
-  // ---------- the errors bin (new): a boss flush with the foot trunk; the bin tips out of it on hold 15 ----------
-  const binBoss = add(new RoundedBoxGeometry(0.7, 0.52, 0.3, 4, 0.05), C.bodyDark, group, 0.03); binBoss.position.set(ML.bin[0], ML.bin[1], ML.bin[2] - 0.15);
+  // ---------- the errors bin (new): a hollow boss on the foot trunk; the bin tips out of it on hold 15 ----------
+  // The boss is a frame of four bars round a dark opening, not a solid block: tipped 0.6 rad on its hinge, the bin's bed
+  // stays inside the boss's depth (test-local z -2.06 to -1.95, 0.1 to 0.2 above the hinge), so only a hollow boss lets a
+  // camera above it see the pale bed over the tipped face. The opening is 0.6 x 0.42 (the face plate, 0.64 x 0.46, covers
+  // it at rest); the sill is a thin bar so the tipped bed's front lip (0.03 above the hinge) clears it; the cavity behind
+  // is a back-faced box in the hole colour, 0.2 deep so the trunk's surface (z -2.08 at the bin's x) never shows in it.
+  const BX = ML.bin[0], BY = ML.bin[1], BZF = ML.bin[2]; // the boss's front plane
+  const bar = (w, h, x, y) => { const m = add(new RoundedBoxGeometry(w, h, 0.3, 2, 0.012), C.bodyDark, group, 0.012); m.position.set(BX + x, BY + y, BZF - 0.15); return m; };
+  bar(0.7, 0.05, 0, 0.235); bar(0.7, 0.03, 0, -0.245); bar(0.05, 0.52, -0.325, 0); bar(0.05, 0.52, 0.325, 0); // top, sill, left, right
+  const cavity = new THREE.Mesh(new THREE.BoxGeometry(0.66, 0.48, 0.2), new THREE.MeshBasicMaterial({ color: C.hole, side: THREE.BackSide, fog: false }));
+  cavity.position.set(BX, BY, BZF - 0.1); group.add(cavity);
   binHinge = new THREE.Group(); binHinge.position.set(...ML.binHinge); group.add(binHinge);
   const binFace = add(new RoundedBoxGeometry(0.64, 0.46, 0.04, 3, 0.02), "#1c232c", binHinge, 0.02); binFace.position.set(0, 0.25, 0.02);
   canvasFace(0.6, 0.4, (g, W, H) => { g.fillStyle = "#ffffff"; g.font = "600 34px 'IBM Plex Mono', monospace"; g.textAlign = "center"; g.textBaseline = "middle"; g.fillText("errors", W / 2, H / 2 + 2); }, binHinge, 0, 0.25, 0.045);
@@ -179,15 +202,19 @@ export function build(scene, { toon }) {
   // ---------- the description placard (hold 11 on): on two standoff rods from the housing's top rivets ----------
   placardG = new THREE.Group(); group.add(placardG);
   for (const r of [ML.rodL, ML.rodR]) { rod(r, [r[0], 4.0, ML.placard[2] - 0.03], 0.02, C.pipe, placardG); const cap = add(new THREE.SphereGeometry(0.035, 10, 8), C.rim, placardG, 0.012); cap.position.set(r[0], 4.0, ML.placard[2] - 0.03); }
-  // the lines start at 300 px, right of where the knob stands in front of the placard on the old stop (it covers 175-265 px)
-  pDesc = plate("", 2.6, 0.5, 38, (g, W, H) => {
+  // The plate is as wide as its lines (PLACARD_W, 1.5: the longest line ends at 350 px of 450) and sits right of the
+  // knob on the old stop (knob x -0.57 to -0.27; the plate's left edge is at -0.2, the text starts 0.1 in), so holds 11
+  // and 22 read all three lines past the knob from the left-oblique poses. Lifting the plate clear of the knob instead
+  // (0.3) would put its top over the lid plate's `search` by 70-100 px from those poses, which the plan forbids; the knob
+  // on the thrown stop (x 0.57 to 0.87, holds 19-20 only) still crosses the ends of lines 2 and 3, as it did before.
+  pDesc = plate("", PLACARD_W, 0.5, 38, (g, W, H) => {
     g.textAlign = "left"; g.textBaseline = "middle";
-    g.font = "700 38px 'IBM Plex Mono', monospace"; g.fillStyle = "#4b4f55"; g.fillText("description", 300, 32);
-    g.font = "600 38px 'IBM Plex Mono', monospace"; g.fillStyle = "#1a2029"; g.fillText("keywords (old)", 300, 78); g.fillText("meaning (new)", 300, 124);
+    g.font = "700 38px 'IBM Plex Mono', monospace"; g.fillStyle = "#4b4f55"; g.fillText("description", 30, 32);
+    g.font = "600 38px 'IBM Plex Mono', monospace"; g.fillStyle = "#1a2029"; g.fillText("keywords (old)", 30, 78); g.fillText("meaning (new)", 30, 124);
   });
   placardG.add(pDesc); pDesc.position.set(...ML.placard);
   descMark = new THREE.Mesh(new THREE.PlaneGeometry(0.028, 0.1), new THREE.MeshBasicMaterial({ color: "#1a2029", fog: false, transparent: true, depthWrite: false }));
-  descMark.position.set(-1.3 + 280 / 300, 0, 0.032); pDesc.add(descMark);
+  descMark.position.set(-PLACARD_W / 2 + 12 / 300, 0, 0.032); pDesc.add(descMark); // 12 px in: the margin left of the lines
   own(placardG); descPaper = pDesc.children[0].material; descPaper.userData.own = true; descMark.material.userData.own = true;
 
   // every material with a base colour, for the dim; the inks and the hand-coloured ones are left out

@@ -66,7 +66,9 @@ export const ML = {
   slot: [0.57, 2.18, -1.4], slotFront: [0.57, 2.18, -1.228], lip: [0.57, 2.08, -1.1], feeler: [0.87, 2.3, -1.2],
   inPlaque: [-0.13, 2.2, -1.2], spout: [-0.71, 1.5, -1.02], outPlaque: [-0.35, 1.9, -0.97],
   bin: [0.45, 1.3, -1.85], binHinge: [0.45, 1.04, -1.85],
-  lid: [0.13, 4.3, -1.6], placard: [0.15, 3.78, -0.8], rodL: [-0.13, 4.11, -1.61], rodR: [0.43, 4.11, -1.61],
+  // the placard is 1.5 wide (machine.js PLACARD_W), centred at 0.55 so it sits right of the knob on the old stop (x -0.57 to
+  // -0.27) and holds 11 and 22 read its lines past the knob; its rods stay on the housing's top rivets
+  lid: [0.13, 4.3, -1.6], placard: [0.55, 3.78, -0.8], rodL: [-0.13, 4.11, -1.61], rodR: [0.43, 4.11, -1.61],
   stackTop: [-0.45, 5.45, -2.7], whistle: [0.25, 5.3, -2.5], bulb: [0.45, 5.4, -2.55], lampTag: [0.45, 5.1, -2.5],
   shelf: [-1.4, 4.45, -2.1], counterHinge: [-1.4, 4.48, -2.46], counterUp: [-1.4, 4.84, -2.46],
   bellows: [-0.85, 2.0, -2.3], gear1: [-1.05, 3.82, -1.88],
@@ -74,7 +76,7 @@ export const ML = {
 // the older programs (world units, section 1.3): three boxes on the floor lower right, feeders into one trunk to the
 // slot's lip, a return trough from under the spout and a lane back to each box. Built by stations/programs.js.
 export const PROGRAMS = {
-  boxes: [{ at: [0.8, -0.63, -0.2], yaw: -0.4, from: null }, { at: [1.2, -0.63, -1.1], yaw: -0.4, from: 2.6 }, { at: [1.5, -0.63, -2.1], yaw: -0.4, from: 2.9 }],
+  boxes: [{ at: [0.8, -0.63, -0.2], yaw: -0.4, from: null }, { at: [1.2, -0.63, -1.1], yaw: -0.4, from: 3.3 }, { at: [1.5, -0.63, -2.1], yaw: -0.4, from: 3.6 }],
   slideIn: [T.h06 + 0.1, 0.6], // programs 2 and 3 ride in along x on hold 06, 3 is 0.15 s behind 2
   J: [1.3, 0.9, -1.0],
   feeders: [[[0.8, -0.4, -0.2], [0.95, 0.3, -0.5]], [[1.2, -0.4, -1.1], [1.3, 0.3, -1.1]], [[1.5, -0.4, -2.1], [1.5, 0.3, -1.6]]],
@@ -127,7 +129,7 @@ export const BLINKS = [T.h03 - 0.04, T.my2 + 1.06, T.h04 + 1.06, T.july - 0.04, 
 //   to: "slot" | "Q0".."Q3"     first destination   steps: [[t, "Q1"], ...] later moves down the line
 //   in: enters the slot (the knock; the run starts here)   result: the result leaves the spout
 //   tab: hold 19's blue tab (lifts the feeler; no knock)   dot: Blink's mint dot
-//   open: the beam opens here instead of out - 0.5          flight: the result's flight to the beam (0.55 unless wider)
+//   open: the beam opens here instead of out - 0.5          flight: the result's flight to the beam (cards.js: 0.55 if unset)
 const c8 = T.h08, c12 = T.h12;
 export const CARD_PLAN = [
   { from: 1, out: T.h04 + 0.05, to: "slot", in: T.h04 + 0.95, result: T.h04 + 1.75 },
@@ -137,21 +139,20 @@ export const CARD_PLAN = [
   { from: 1, out: T.h06 + 0.9, to: "Q3", steps: [[c8 + 0.6, "Q2"], [c8 + 1.6, "Q1"], [c8 + 2.6, "Q0"]], in: c8 + 2.95, result: c8 + 3.75 },
   { from: 2, out: T.h09 + 1.3, to: "Q0", in: c12 + 0.05, result: c12 + 0.85 },
   { from: 3, out: T.h09 + 1.5, to: "Q1", steps: [[c12 + 0.4, "Q0"]], in: c12 + 0.5, result: c12 + 1.3 },
-  { from: "blink", dot: true, out: T.h10 + 0.35, open: T.h10 - 0.2, to: "Q2", steps: [[c12 + 0.4, "Q1"], [c12 + 0.75, "Q0"]], in: c12 + 0.85, result: c12 + 1.65, flight: 0.8 },
+  // its result's flight is the plain 0.55 (was 0.8). Its dissolve at the focus (35.70 to 36.05) still meets the stream's second
+  // beam card condensing there (35.66 to 35.98): with the beam entries at k 4, 9, 14, ... no flight finds a gap before 36.08
+  { from: "blink", dot: true, out: T.h10 + 0.35, open: T.h10 - 0.2, to: "Q2", steps: [[c12 + 0.4, "Q1"], [c12 + 0.75, "Q0"]], in: c12 + 0.85, result: c12 + 1.65, flight: 0.55 },
   // day 53: the tab lifts the feeler, the lever throws (LEVER_THROWS[2]), the core lights; the result comes out on "the"
   { from: "blink", dot: true, tab: true, out: T.h19 + 0.32, open: T.h19 - 0.3, to: "slot", in: 52.88, result: 54.0 },
-  // the closing line: its card in on "for an AI", the knock on "still", the result out on "old"
-  { from: "blink", dot: true, out: T.h27 + 2.25, open: T.h27 + 1.6, to: "slot", in: T.still - 0.1, result: T.old4 },
+  // the closing line: its card in on "for an AI", the knock on "still", the result out on "old"; a short flight (0.35) so
+  // it is at the focus by 77.9 and dissolved before the beam closes under the end dim (world-plan-v2 hold 27)
+  { from: "blink", dot: true, out: T.h27 + 2.25, open: T.h27 + 1.6, to: "slot", in: T.still - 0.1, result: T.old4, flight: 0.35 },
 ];
-// shim: removed when cards.js and mark.js are reworked (they read keys[0] as the pop and chute[1] as the last ride)
-CARD_PLAN.forEach((c) => { c.keys = [[c.out, c.from === "blink" ? "blink" : "R0"], [c.in - 0.35, "slot", 0.35]]; c.chute = ["L", c.result]; });
-export const CHUTE_X = { L: 0.15 - 0.62, R: 0.15 + 0.62 }, CHUTE_RIDE = 0.7; // shim: removed when cards.js is reworked
-export const CX = 0.15; // shim: removed when mark.js is reworked (its gaze offset for the old dial)
 
 // ---------- the mass moment (hold 13): counterN(t) is the only clock. Entry k happens when counterN first reaches k. ----------
 export const STREAM = [COUNT_IN, T.one3];
 // 29 entries up the three rails in rotation; 7 from the beam (Blink's cards among them)
-const BEAM_K = new Set([4, 9, 14, 19, 24, 29, 34]);
+const BEAM_K = new Set([14, 18, 22, 26, 30, 34]); // from 14: an earlier beam entry condensed on top of hold 12's result dissolving at the focus (35.7-36.05)
 export const ENTRIES = Array.from({ length: 36 }, (_, i) => {
   const k = i + 1, at = COUNT_IN + (k / 36) * (T.one3 - COUNT_IN);
   let rail = 0;
@@ -188,13 +189,10 @@ export function knocks(t) {
   for (const [at, s] of KNOCKS) { if (t > at + 0.3) continue; if (t < at) break; k = Math.max(k, s * settle(r01(t, at, 0.3))); }
   return k;
 }
-export const NEEDLE_SWINGS = LEVER_THROWS, NEEDLE_KICKS = KNOCKS, needlePos = lever; // shim: removed when mark.js is reworked
 
 // ---------- the core (the new search): the one colour beat. Dark until day 53's throw; rests lit through the bet. ----------
 export const CORE_LIT = 53.3, CORE_REST = 54.45, CORE_OUT = T.h21 + 0.3;
 export const coreGlow = (t) => ss(r01(t, CORE_LIT, 0.45)) * (1 - 0.65 * ss(r01(t, CORE_REST, 0.7))) * (1 - ss(r01(t, CORE_OUT, 0.7)));
-export const chuteGlow = (side, t) => (side === "R" ? coreGlow(t) : runOn(t)); // shim: removed when check-graybox.mjs is reworked
-export const rightAfterglow = () => 0; // shim: removed when check-graybox.mjs is reworked
 
 // ---------- the meaning (new) plate: test-local x and alpha. In on "smarter", back off at the setup, in for good in July;
 // one rebound on every arrival, a fade over its first or last 0.15 s. Hold 23 brightens it once. ----------
@@ -227,12 +225,15 @@ export const PUFFS = [
 ].sort((a, b) => a[0] - b[0]);
 
 // ---------- the beam from Blink's visor: open while a card condenses or a result dissolves, and through the stream ----------
+// [open, close]: the light eases up over 0.22 s from open and down over 0.25 s from close (beamOn). A return window ends
+// 0.45 s after the result reaches the focus, except that no window closes later than T.endIn - 0.05: the beam is dark by
+// 78.3, before the end dim has taken the set (hold 27's result dissolves under it from 77.9).
 const beamWindows = () => {
   const w = [];
   for (const c of CARD_PLAN) {
     if (c.from !== "blink") continue;
     w.push([c.open ?? c.out - 0.5, c.out + 0.25]);
-    if (c.to === "slot") { const arrive = c.result + (c.flight ?? 0.55); w.push([arrive - 0.5, arrive + 0.45]); }
+    if (c.to === "slot") { const arrive = c.result + (c.flight ?? 0.55); w.push([arrive - 0.5, Math.min(arrive + 0.45, T.endIn - 0.05)]); }
   }
   w.push([c12 + 1.3, T.h14 + 0.2]); // hold 12's result comes back into it and it holds open through the stream
   return w;
