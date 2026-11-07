@@ -1,7 +1,7 @@
 slug: swift-noimage-skill
 name: Motion graphics music video noimage
 kind: toolkit
-status: available
+status: in-use
 does: Draws a whole music video from Ruby-written scene JSON with a native Swift and Metal renderer, then adds procedural sound effects and VFX cues from the scene's own events.
 keywords:
 - swift
@@ -17,6 +17,7 @@ keywords:
 fits:
 - code-drawn music videos
 - fast look tests
+- documentary and explainer infographics, not yet tried
 deterministic: 'yes'
 how: 'Clone the repo, run its scripts/mv.rb with Homebrew Ruby (`/usr/local/opt/ruby/bin`). Skip ImageMagick by tiling sheets with ffmpeg. Run Demucs with our pinned recipe, not media:stems_local. Example: `bobwiseman-swift-noimage/`.'
 cost: free
