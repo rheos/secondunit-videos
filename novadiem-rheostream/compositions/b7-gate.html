@@ -1,0 +1,113 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #b7 { position: absolute; inset: 0; }
+      </style>
+      <div data-hf-id="hf-rs80" id="b7" data-composition-id="b7" data-width="1920" data-height="1080">
+        <div data-hf-id="hf-rs81" id="b7-content" class="layer">
+          <div data-hf-id="hf-rs82" id="b7-lab-l" class="plate-label left">FIG. VII</div>
+          <div data-hf-id="hf-rs83" id="b7-lab-r" class="plate-label right">THE GATE</div>
+          <svg data-hf-id="hf-rs84" id="b7-svg" class="full" viewBox="0 0 1920 1080"></svg>
+          <div data-hf-id="hf-rs85" class="statement">
+            <span data-hf-id="hf-rs86" id="b7-s1" class="phrase">A model can propose.</span>
+            <span data-hf-id="hf-rs87" id="b7-s2" class="phrase accent">Only you approve.</span>
+          </div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text } = BP;
+          const tl = gsap.timeline({ paused: true });
+          const S = 104.78;
+          const K = BP.kit(tl, S, "VII");
+          const R = (t) => K.R(t);
+          const W = (w, n) => R(VO.w("VII", w, n));
+          const svg = K.$("b7-svg");
+
+          // the channel on to Current, and the lock gate across it
+          const chan = el("path", { class: "ln line-strong", d: "M120 400H1800M120 460H1800" }, svg);
+          const chanW = el("rect", { class: "water", x: 120, y: 420, width: 1680, height: 39 }, svg);
+          const toCur = text("TO CURRENT", { class: "lab sm dim", x: 1800, y: 382, "text-anchor": "end" }, svg);
+          const G = RS.gate(svg, 960, 380, 100);
+          const req = RS.stampBox(svg, "APPROVAL REQUIRED", 960, 318, 330, { rot: -3 });
+          // rheo's proposal, and your approval of this exact call
+          const prop = RS.card(svg, 120, 150, 500, "RHEO PROPOSES", ["hand this lead to Current", "an external step"]);
+          const appr = RS.card(svg, 1160, 150, 560, "YOUR APPROVAL", ["bound to a digest of", "this exact payload"], { cls: "line-strong" });
+          const apprLine = el("path", { class: "ln thin line-strong", d: "M1160 230H1060L978 372" }, svg);
+          const onlyT = text("ONLY A PERSON", { class: "lab sm", x: 1440, y: 304, "text-anchor": "middle" }, svg);
+          // keys: none of them can approve
+          const KEYS = [[180, "AN AGENT'S KEY"], [470, "A RUNTIME'S KEY"], [760, "YOUR OWN KEY"]];
+          const keys = KEYS.map(([x, name]) => {
+            const g = el("g", {}, svg);
+            el("circle", { class: "ln line", cx: x, cy: 590, r: 16 }, g);
+            el("path", { class: "ln line", d: `M${x + 16} 590H${x + 90}M${x + 74} 590V604M${x + 86} 590V600` }, g);
+            const t = text(name, { class: "lab sm", x: x - 16, y: 646 }, svg);
+            return { g, t, x: RS.cross(svg, x + 44, 590, 20) };
+          });
+          // when it runs, the guard checks again
+          const guard = RS.check(svg, 1010, 520);
+          const guardT = text("CHECKED AGAIN AS IT RUNS", { class: "lab sm", x: 1034, y: 528 }, svg);
+          const DAYS = ["APPROVED", "PERMISSION WITHDRAWN", "RUNS: REFUSED"];
+          const days = DAYS.map((s, i) => {
+            const x = 960 + i * 300;
+            const box = el("rect", { class: "ln line", x, y: 600, width: 290, height: 70 }, svg);
+            const t = text(s, { class: `lab sm${i === 2 ? " acc" : ""}`, x: x + 145, y: 642, "text-anchor": "middle" }, svg);
+            const day = text(["DAY ONE", "DAY TWO", "DAY THREE"][i], { class: "ty sm", x: x + 145, y: 590, "text-anchor": "middle" }, svg);
+            return { box, t, day };
+          });
+          const P = RS.dot(svg);
+
+          // the lead, handed on from plate VI
+          K.draw(chan, R(105.1), 0.8, "power1.out");
+          K.fade(chanW, R(105.4), 0.5, 0.16);
+          RS.put(K, tl, P, 420, 430, R(105.3), { fade: 0.4 });
+          K.fade(K.$("b7-lab-l"), R(105.6), 0.4);
+          K.fade(K.$("b7-lab-r"), R(105.6), 0.4);
+          K.draw(G.frame, R(105.7), 0.4, "power2.out", false);
+          tl.set(G.plate, { y: -170 }, 0);
+          K.fade(G.plate, R(105.8), 0.3);
+          // "rheo proposes turning the lead into work, and the step stops at a gate"
+          RS.showCard(K, prop, W("proposes") - 0.2, { cps: 52 });
+          K.typed(toCur, W("work") - 0.2, { cps: 34, cursor: false });
+          RS.ride(K, P, [[925, 430]], W("and") , { speed: 520 });
+          K.move(G.plate, W("stops") - 0.1, 0.25, { y: -170 }, { y: 0 }, { ease: "power3.in" });
+          K.sfx("gate", W("stops") + 0.15);
+          K.stamp(req.g, W("gate") - 0.05, { origin: "960 318" });
+          // "you approve this exact call, and only you can"
+          RS.showCard(K, appr, W("approve") - 0.1, { cps: 50 });
+          K.draw(apprLine, W("exact"), 0.45);
+          K.typed(onlyT, W("only") - 0.05, { cps: 34, cursor: false });
+          // "no key of any kind can approve"
+          keys.forEach((k, i) => { K.fade(k.g, W("no") - 0.1 + i * 0.12, 0.25); K.typed(k.t, W("no") + i * 0.12, { cps: 50, cursor: false }); });
+          keys.forEach((k, i) => K.stamp(k.x, W("kind") - 0.05 + i * 0.14, { origin: `${KEYS[i][0] + 44} 590`, from: 1.8 }));
+          K.slam(K.$("b7-s1"), W("can", 2) - 0.1, { stagger: 0.03 });
+          K.slam(K.$("b7-s2"), W("approve", 2) + 0.1, { stagger: 0.04 });
+          // "when it runs, it checks again": the guard passes, and the gate lifts
+          K.draw(guard, W("checks") - 0.1, 0.2, "power2.out", false);
+          K.sfx("tick", W("checks"));
+          K.typed(guardT, W("checks"), { cps: 40, cursor: false });
+          // "so a permission withdrawn yesterday still holds today"
+          days.forEach((d, i) => {
+            const t = [W("so"), W("withdrawn") - 0.1, W("still") - 0.1][i];
+            K.draw(d.box, t, 0.3, "power2.out", i === 0);
+            K.typed(d.day, t + 0.05, { cps: 40, cursor: false });
+            K.typed(d.t, t + 0.2, { cps: 44, cursor: false });
+          });
+          K.sfx("stamp", W("still") + 0.15);
+
+          // hand-off: the gate lifts and the work rides on into Current (plate VIII)
+          K.move(G.plate, R(122.15), 0.35, { y: 0 }, { y: -170 }, { sound: "valve" });
+          RS.ride(K, P, [[1880, 430]], R(122.35), { speed: 1500 });
+          K.out(K.$("b7-content"), R(122.65), 0.45);
+          window.__timelines["b7"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

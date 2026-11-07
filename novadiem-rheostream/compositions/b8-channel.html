@@ -1,0 +1,106 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #b8 { position: absolute; inset: 0; }
+      </style>
+      <div data-hf-id="hf-rs90" id="b8" data-composition-id="b8" data-width="1920" data-height="1080">
+        <div data-hf-id="hf-rs91" id="b8-content" class="layer">
+          <div data-hf-id="hf-rs92" id="b8-lab-l" class="plate-label left">FIG. VIII</div>
+          <div data-hf-id="hf-rs93" id="b8-lab-r" class="plate-label right">THE CHANNEL</div>
+          <svg data-hf-id="hf-rs94" id="b8-svg" class="full" viewBox="0 0 1920 1080"></svg>
+          <div data-hf-id="hf-rs95" class="statement">
+            <span data-hf-id="hf-rs96" id="b8-s1" class="phrase">The same alert is one item,</span>
+            <span data-hf-id="hf-rs97" id="b8-s2" class="phrase accent">not ten.</span>
+          </div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text } = BP;
+          const tl = gsap.timeline({ paused: true });
+          const S = 122.46;
+          const K = BP.kit(tl, S, "VIII");
+          const R = (t) => K.R(t);
+          const W = (w, n) => R(VO.w("VIII", w, n));
+          const svg = K.$("b8-svg");
+
+          // Current: the main channel
+          const chan = el("path", { class: "ln line-strong", d: "M120 340H1080M1120 340H1800M120 520H1800" }, svg);
+          const chanW = el("rect", { class: "water", x: 120, y: 400, width: 1680, height: 119 }, svg);
+          const curT = text("CURRENT", { class: "lab", x: 120, y: 318 }, svg);
+          const work = RS.card(svg, 220, 570, 440, "NOW IT IS WORK", ["Lund studio site"], { cls: "line-strong" });
+          const workL = el("path", { class: "ln thin line", d: "M440 570V500" }, svg);
+          // an alert, firing again and again down its inlet
+          const inlet = el("path", { class: "ln line", d: "M1080 130V340M1120 130V340" }, svg);
+          const alertT = text("AN ALERT", { class: "lab sm", x: 1144, y: 168 }, svg);
+          const alertS = text("backup check failed", { class: "ty sm", x: 1144, y: 198 }, svg);
+          const item = RS.card(svg, 920, 404, 360, "ONE ITEM", ["backup check failed"]);
+          const states = ["WAKES", "REOPENS", "CLIMBS"].map((s, i) => text(s, { class: "lab sm", x: 1310, y: 432 + i * 30 }, svg));
+          const ladder = el("path", { class: "ln line", d: "M1640 150V320M1626 170H1654M1626 210H1654M1626 250H1654M1626 290H1654" }, svg);
+          const ladT = text("PRIORITY", { class: "lab sm", x: 1610, y: 176, "text-anchor": "end" }, svg);
+          const mark = el("path", { class: "fill-strong", d: "M1662 290L1680 280V300Z" }, svg);
+          const note = RS.card(svg, 920, 580, 440, "YOUR NOTE", ["check it after the migration"]);
+          const noteL = el("path", { class: "ln thin line", d: "M1100 580V492" }, svg);
+          const kept = RS.stampBox(svg, "AS YOU WROTE IT", 1545, 640, 290, { ok: true, rot: -3 });
+          const pulses = [0, 1, 2, 3].map(() => { const q = RS.dot(svg); q.core.setAttribute("r", 6); q.ring.setAttribute("r", 11); q.halo.setAttribute("r", 14); return q; });
+          const P = RS.dot(svg);
+
+          // the work rides in from the gate
+          K.draw(chan, R(122.9), 0.8, "power1.out");
+          K.fade(chanW, R(123.1), 0.5, 0.16);
+          RS.put(K, tl, P, -30, 460, R(123.0), { fade: 0.1 });
+          RS.ride(K, P, [[440, 460]], R(123.1), { speed: 1100, chime: true });
+          K.fade(K.$("b8-lab-l"), R(123.3), 0.4);
+          K.fade(K.$("b8-lab-r"), R(123.3), 0.4);
+          // "now it is work, in Current"
+          K.draw(workL, W("work") - 0.2, 0.2, "power2.out", false);
+          RS.showCard(K, work, W("work") - 0.1, { cps: 50 });
+          K.typed(curT, W("current") - 0.1, { cps: 30, cursor: false });
+          // "an alert that fires three times becomes one item"
+          K.draw(inlet, W("an") - 0.3, 0.4);
+          K.typed(alertT, W("alert") - 0.1, { cps: 40, cursor: false });
+          K.typed(alertS, W("alert") + 0.2, { cps: 50, cursor: false });
+          const hits = [W("fires"), W("three"), W("times")];
+          hits.forEach((t, i) => {
+            RS.put(K, tl, pulses[i], 1100, 130, t - 0.35, { fade: 0.1 });
+            RS.ride(K, pulses[i], [[1100, 430]], t - 0.3, { speed: 1000, sound: false });
+            K.sfx("ping", t);
+            tl.to(pulses[i].g, { opacity: 0, duration: 0.15 }, t + 0.02);
+          });
+          RS.showCard(K, item, W("times") + 0.1, { cps: 50 });
+          K.slam(K.$("b8-s1"), W("becomes"), { stagger: 0.025 });
+          K.slam(K.$("b8-s2"), W("item") + 0.1, { stagger: 0.05 });
+          // "that wakes, reopens, or climbs in priority"
+          K.typed(states[0], W("wakes") - 0.05, { cps: 34, cursor: false });
+          K.typed(states[1], W("reopens") - 0.05, { cps: 34, cursor: false });
+          K.typed(states[2], W("climbs") - 0.05, { cps: 34, cursor: false });
+          K.draw(ladder, W("wakes"), 0.5);
+          K.typed(ladT, W("reopens"), { cps: 34, cursor: false });
+          K.fade(mark, W("reopens") + 0.2, 0.2);
+          K.move(mark, W("climbs"), 0.8, { y: 0 }, { y: -120 }, { ease: "power2.out", sound: "crank" });
+          K.pulse(item.g, W("wakes"), 1, 0.4, 0.04, { origin: "1100 448" });
+          // "and what you wrote about it stays as you wrote it"
+          K.draw(noteL, W("you") - 0.2, 0.2, "power2.out", false);
+          RS.showCard(K, note, W("you") - 0.1, { cps: 54 });
+          RS.put(K, tl, pulses[3], 1100, 130, W("stays") - 0.45, { fade: 0.1 });
+          RS.ride(K, pulses[3], [[1100, 430]], W("stays") - 0.4, { speed: 1000, sound: false });
+          K.sfx("ping", W("stays") - 0.1);
+          tl.to(pulses[3].g, { opacity: 0, duration: 0.15 }, W("stays") - 0.08);
+          K.pulse(note.g, W("stays"), 1, 0.4, 0.02, { origin: "1140 624" });
+          K.stamp(kept.g, W("wrote", 2) - 0.1, { origin: "1545 640" });
+
+          // hand-off: the work runs on downstream, to the reservoir (plate IX)
+          RS.ride(K, P, [[620, 500], [1880, 500]], R(135.6), { speed: 1600 });
+          K.out(K.$("b8-content"), R(136.05), 0.45);
+          window.__timelines["b8"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>
