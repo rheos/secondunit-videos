@@ -1,16 +1,18 @@
 // Rest y -0.38 (animatic -0.2): its top sits about 40 px (720 wide) under Blink's smile, room for the grin and squash.
 // The note: a slip of paper that drifts in from the right on hold 18, floats down beside Blink and slides in under its
 // face, then rests against its front until hold 20 ends. Its path stays below the eyes the whole way (animatic 04 had it
-// cross the face). It rests on the left, clear of July; the right chute is on the right. Nothing joins them. It arrives
-// on its own: no arm, no hand. No quote marks on it.
+// cross the face). It rests on the left in front of Blink (world-plan-v2 1.4: x follows BLINK.x + 0.11, z 0.2 nearer
+// with him, under the beam's root), passing in front of program 1; the core's rest glow is on the right. Nothing joins
+// them. It arrives on its own: no arm, no hand. No quote marks on it.
 import * as THREE from "three";
 import { alpha, hero, text } from "../parts.js";
 import { rr } from "../kit/world.js";
-import { T, cl, mix, r01 } from "../timeline.js";
+import { BLINK, T, cl, mix, r01 } from "../timeline.js";
 
-const X = -0.75, Y = -0.38, Z = 1.15, NW = 0.95, NH = 0.36;
-// the flight: a cubic from off the frame's right edge, below the strip, down past Blink's right side and in under the
-// face. Checked against the eyes in screen space (720 px): its top stays 20 px or more below them.
+// 285 x 108 px: `when to search` at 30 px is 252 px, 16 px clear each side
+const X = BLINK.x + 0.11, Y = -0.38, Z = BLINK.z + 1.15, NW = 0.95, NH = 0.36;
+// the flight: a cubic from off the frame's right edge, down past Blink's right side and in under the face. Checked
+// against the eyes in screen space (720 px): its top stays 20 px or more below them.
 const P = [[2.0, 1.15], [1.1, 0.55], [0.35, -0.5], [X, Y]];
 const FLY = [T.h18, 1.1], SETTLE = 0.35;
 const bez = (s, i) => { const a = 1 - s; return a * a * a * P[0][i] + 3 * a * a * s * P[1][i] + 3 * a * s * s * P[2][i] + s * s * s * P[3][i]; };
@@ -25,6 +27,7 @@ export function build(scene) {
     text(g, "when to search", W / 2, H / 2 + 11, 30, { c: "#14171b", w: 700, a: "center" });
   });
   note.set({});
+  note.mesh.material.opacity = 0; // it starts transparent and arrives with its flight
   // a slight curl: both short ends lift toward the camera, the bottom-right corner a little more
   const geo = new THREE.PlaneGeometry(NW, NH, 14, 4), pos = geo.attributes.position;
   for (let i = 0; i < pos.count; i++) {

@@ -19,7 +19,7 @@ if (import.meta.url === pathToFileURL(process.argv[1]).href) {
   if (process.argv.includes("--moves")) printMoves(R);
   printMotion(R);
   console.log(`note bottom at most ${R.noteLow.toFixed(0)} (at ${R.noteAt.toFixed(2)}); overlays at least ${R.ovEdge.toFixed(0)} px from an edge or the lockup`);
-  console.log(`strip clears the sprout by ${R.sproutGap.toFixed(0)} px (worst at ${R.sproutAt.toFixed(2)})`);
+  console.log(`spout mouth clears Blink's head by ${R.spoutGap.toFixed(0)} px (worst at ${R.spoutAt.toFixed(2)}); sprout at rest ${R.sproutIn.toFixed(0)} px into the opening, ${R.sproutLeanIn.toFixed(0)} with a full lean; first move ${R.firstMove.toFixed(2)} s`);
   console.log(`widest empty frame at rest ${(100 * R.emptyMax).toFixed(0)} % (at ${R.emptyAt.toFixed(2)})`);
   printRules([["strip end", R.stripCut], ["subject centre", R.ruleCentre], ["empty width", R.ruleEmpty], ["border", R.border], ["note", R.ruleNote], ["rule 1", R.rule1], ["rule 3", R.rule3], ["rule 4", R.rule4], ["rule 5", R.rule5]]);
 }

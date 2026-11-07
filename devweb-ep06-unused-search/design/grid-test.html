@@ -1,0 +1,29 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>grid test</title>
+<!-- The floor under the K06 base pose, GridHelper (GL lines) beside the shader floor the film uses. Open it on the Mac
+     and in `chrome --headless=new --use-angle=swiftshader --enable-unsafe-swiftshader --screenshot=...` (the runner's
+     rasterizer): GridHelper loses its depth lines under SwiftShader, the shader floor does not. -->
+<style>body{margin:0;background:#222;display:flex;gap:8px;align-items:flex-start}figure{margin:0}canvas{width:720px;height:1280px;display:block}figcaption{color:#ddd;font:14px monospace;padding:4px 0}</style>
+<script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.181.2/build/three.module.js" } }</script>
+<script type="module">
+import * as THREE from "three";
+import { gridFloor } from "../stations/floor.js";
+const cases = [
+  { tag: "GridHelper (d2)", make: () => { const g = new THREE.GridHelper(120, 240, "#4a5c82", "#4a5c82"); g.position.y = -0.92; g.material.transparent = true; g.material.opacity = 0.88; g.material.fog = true; return g; } },
+  { tag: "shader floor (d3)", make: () => gridFloor({ size: 120, cell: 0.5, color: "#4a5c82", opacity: 0.88, y: -0.92 }) },
+];
+for (const c of cases) {
+  const fig = document.createElement("figure"); document.body.appendChild(fig);
+  const canvas = document.createElement("canvas"); canvas.width = 720; canvas.height = 1280; fig.appendChild(canvas);
+  const r = new THREE.WebGLRenderer({ canvas, antialias: true, preserveDrawingBuffer: true }); r.setPixelRatio(1); r.setSize(720, 1280, false);
+  r.outputColorSpace = THREE.SRGBColorSpace; r.setClearColor("#0d1117", 1);
+  const scene = new THREE.Scene(); scene.fog = new THREE.Fog("#0d1117", 14.8, 48);
+  const cam = new THREE.PerspectiveCamera(36, 720 / 1280, 0.1, 200);
+  cam.position.set(-0.8, 3.4, 13.2); cam.lookAt(-0.06, 2.05, -1.5);
+  scene.add(c.make());
+  r.render(scene, cam);
+  const cap = document.createElement("figcaption"); cap.textContent = c.tag; fig.appendChild(cap);
+}
+window.ready = true;
+</script>

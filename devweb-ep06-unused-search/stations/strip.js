@@ -1,13 +1,15 @@
-// The calendar strip, holds 16-20: one long slab of paper across the frame just under the crate, in front of the chutes'
-// tops and clear of Blink's sprout. July at the left end, 53 raised day boxes, day 53 at the right end, nothing else.
-// A paper roll unrolls it on hold 16 and rolls it back up on hold 21. A weighted marker runs July to day 53 on hold 17
-// and settles with one small rebound; the days it has passed stay a shade darker. Day 53 lifts in brightness, not
-// colour, and the rest of the strip steps back a little once the right chute takes the subject (hold 19).
+// The calendar strip, holds 16-20: one long slab of paper across the frame in the band above the machine's crown
+// (timeline.js STRIP: y 5.2, clear of the stack top and the bulb, in front of everything at z -1.0). July at the left
+// end, 53 raised day boxes, day 53 at the right end, nothing else. A paper roll unrolls it on hold 16 and rolls it back
+// up on hold 21. A weighted marker runs July to day 53 on hold 17 and settles with one small rebound; the days it has
+// passed stay a shade darker. Day 53 lifts in brightness, not colour, and the rest of the strip steps back a little
+// once the core takes the subject (hold 19).
 import * as THREE from "three";
 import { basic, frame, hero, text } from "../parts.js";
-import { MARKER, T, cl, dayLit, io, mix, r01 } from "../timeline.js";
+import { MARKER, STRIP, T, cl, dayLit, io, mix, r01 } from "../timeline.js";
 
-const LEFT = -1.5, W = 3.3, H = 0.22, Y = 2.07, Z = -1.0, DAYS = 53, PPU = 200, SLAB = 0.03;
+// 640 x 44 px: July (53 px) and day 53 (79 px) either side of 53 boxes of 8.8 px
+const LEFT = STRIP.left, W = STRIP.w, H = 0.22, Y = STRIP.y, Z = STRIP.z, DAYS = 53, PPU = 200, SLAB = 0.03;
 const BOX0 = 78, BOX1 = W * PPU - 96, BOXW = (BOX1 - BOX0) / DAYS; // canvas px: labels sit either side of the boxes
 const boxX = (i) => LEFT + (BOX0 + BOXW * (i + 0.5)) / PPU; // world x of day box i (0-based)
 const TW = BOXW / PPU - 0.009, TH = 0.14, TD = 0.016, TZ = Z + SLAB / 2 + TD / 2 + 0.001; // one day box
@@ -91,7 +93,7 @@ export function build(scene, { toon }) {
 
 export function update(t) {
   const k = outK(t), edge = LEFT + W * k;
-  // once the right chute takes the subject (hold 19), the strip steps back; day 53 keeps its light
+  // once the core takes the subject (hold 19), the strip steps back; day 53 keeps its light
   const dim = mix(1, 0.72, io(r01(t, T.h19, 0.4)) * (1 - r01(t, UP, 0.3)));
   for (const [m, c, dims] of tones) m.color.copy(c).multiplyScalar(dims ? dim : 1);
 
