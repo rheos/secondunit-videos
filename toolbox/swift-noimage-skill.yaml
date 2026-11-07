@@ -22,7 +22,7 @@ deterministic: 'yes'
 how: 'Clone the repo, run its scripts/mv.rb with Homebrew Ruby (`/usr/local/opt/ruby/bin`). Skip ImageMagick by tiling sheets with ffmpeg. Run Demucs with our pinned recipe, not media:stems_local. Example: `bobwiseman-swift-noimage/`.'
 cost: free
 url: https://github.com/makevoid/motion-graphics-music-video-skill-noimage
-detail: 860 frames at 1080p in 36 s at nice 15 with JOBS=5 on the Intel Mac. The renderer crops to --width and --height instead of scaling, so render at scene size and scale down. Output came out 2 frames short of the 862 asked for.
+detail: 860 frames at 1080p in 36 s at nice 15 with JOBS=5 on the Intel Mac. The renderer crops to --width and --height instead of scaling, so render at scene size and scale down. Output came out 2 frames short of the 862 asked for. The parallel vfx:render fails with "Invalid VFX frame interval" when audio outlasts the video, because it counts frames from the container duration; run it with JOBS=1. Glow whitens filled shapes, so put a plain fill under a glowing outline. Copying a project without its .venv needs MV_PYTHON set for sfx:mix.
 source: x.com/makevoid/status/2118814727346262292
 related:
 - motion-graphics-toolkit
