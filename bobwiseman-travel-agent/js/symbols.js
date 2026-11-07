@@ -73,13 +73,29 @@ SU.appInside = { mode: 'ill', f(q, p, a, T) { // chorus 4: she is inside his pho
   traveller(300, 1180, 1.6, { look: 1, mouth: sing(T), case: false }); cloud(300, 1180 - 720, .9, { rain: true }); noteRain(160, 520, 280, 300, 10);
   bird(1500, 220, .9, flap()); gc(1500, 220, 120, C.orange, .6, 1.6);
 } };
-SU.shopClosed = { mode: 'ill', f(q, p, a, T) { // the agency closed, for lease; he stands outside in the snow, on his phone; little Bob passes
+SU.shopClosed = { mode: 'ill', f(q, p, a, T) { // the ending (Robin's call: end on the shop): the agency closed, for lease, at dusk in
+  // settled snow; he stands under the lamp reading his phone, turns his head as little Bob passes with piano and Junos
   SU.shop.f(q, p, { snow: 1, closed: 1, z: 1, push: 1.03 }, T);
+  const fx = 380, fy = 150, fw = 1160, fh = 760;
+  // the lamp is lit: a flat hatched pool of light, no gradient
+  const cone = PP([[300, 150], [130, fy + fh + 90], [480, fy + fh + 90]]); fillP(cone, '#f0d27a', .32); hatch(cone, 300, 600, 480, 1.4, 9, C.ochre, 1, .35); fillP(PE(300, 140, 24, 18), '#ffe9a8'); iE(300, 140, 26, 20, 0, C.ink, 2.2);
   const wx = 470, wy = 490, ww = 620, wh = 360; fillP(PR(wx, wy, ww, wh), '#cbc3b0'); hatch(PR(wx, wy, ww, wh), wx + ww / 2, wy + wh / 2, 420, .8, 10, C.ink, .9, .45); iBox(wx, wy, ww, wh, C.ink, 3); iline(wx + ww / 2, wy, wx + ww / 2, wy + wh, C.ink, 3);
   const sg = PR(wx + 160, wy + 110, 300, 140); fillP(sg, C.cream); iBox(wx + 160, wy + 110, 300, 140, C.ink, 2.4); lab(wx + 310, wy + 175, 'FOR LEASE', C.brick, 1, 30, 'center', 'alphabetic', 'bold'); lab(wx + 310, wy + 215, 'ENQUIRE ONLINE', C.ink, .8, 13, 'center');
-  souvenirsOn(wx + 30, wy + wh - 6, T, .6);
-  traveller(1360, 1010, .7, { look: -.2, armR: [2.6, -1.9], hat: true }); phoneBody(1385, 760, .14, -.2, (w, h) => appScreen(w, h, T, 'chat')); cloud(1360, 680, .45, {});
-  littleBob(lerp(-250, 2300, seg(T, 400.0, 402.3)), 1040, .62, T);
+  // draft 11: the souvenirs as a window display, each on its own little stand with a tag, spaced out (they read as one
+  // fallen object on the sill)
+  carried(T).forEach((k, i) => { const sx = wx + 70 + i * 120, sy = wy + wh - 30; fillP(PR(sx - 34, sy, 68, 24), C.cream); iBox(sx - 34, sy, 68, 24, C.ink, 1.6); iline(sx + 30, sy + 12, sx + 46, sy + 30, C.ink, 1, .7, false); fillP(PR(sx + 40, sy + 26, 22, 12), '#f3ead4'); souvenir(k, sx, sy - 4, .85); });
+  // settled snow: on the sign, the awning, the sill, and drifts along the pavement
+  const drift = (x0, x1, y, th, seed) => { const r = M32(seed), top = []; for (let x = x0; x <= x1; x += 24) top.push([x, y - th * (.6 + r() * .5)]); const pts = top.concat([[x1, y + 4], [x0, y + 4]]); fillP(PP(pts), '#fbfbf6'); hatch(PP(pts), (x0 + x1) / 2, y, (x1 - x0) / 2, .2, 9, C.sky, .8, .25); iP(top, false, C.ink, 1.8, 1, false, .6); };
+  drift(fx + 130, fx + fw - 130, fy + 36, 16, 71); drift(fx + 60, fx + fw - 60, fy + 190, 20, 72); drift(wx, wx + ww, wy + wh, 14, 73); drift(-40, W + 40, fy + fh + 6, 26, 74);
+  const pv = PP([[-200, fy + fh + 40], [W + 200, fy + fh + 40], [W + 200, H + 40], [-200, H + 40]]); fillP(pv, '#f4f4ee', .75); hatch(pv, 960, 1000, 1100, .1, 14, C.sky, .8, .3);
+  // little Bob crosses the whole frame, on screen from the cut, at a walk (Bob's standing request)
+  const bx = lerp(820, 1600, seg(T, 400.0, 403.42)); // draft 11: he ends fully in frame on the last drawing
+  // the traveller under the lamp: reading his phone, then his head turns to watch little Bob go by
+  // draft 11: he looks up from the phone at little Bob (phone arm lowers a little as his head turns)
+  const tx = 330, ty = 1010, ts = .78, gl2 = eo(seg(bx, 900, 1160)), look = lerp(-.3, 1, gl2), armR = [lerp(2.6, 2.3, gl2), lerp(-1.9, -1.3, gl2)];
+  traveller(tx, ty, ts, { look, armR, hat: true, mouth: gl2 > .6 ? .3 : 0 }); const [hx, hy] = handAt(tx, ty, ts, armR);
+  phoneBody(hx + 6, hy - 20, .14, -.2, (w, h) => appScreen(w, h, T, 'chat')); cloud(tx, ty - 520 * ts, .45, {});
+  littleBob(bx, 1050, .8, T);
 } };
 SU.forkRoad = { mode: 'ill', f(q, p, a, T) { // "didn't use a fork": a fork in the road, and he goes straight between the branches
   stripes(C.paper, '#e0cfd6', 140, -.62, 0, C.plum); cam(960, 540, lerp(1.05, 1, eo(p)));
@@ -96,7 +112,7 @@ SU.treadmill = { mode: 'ill', f(q, p, a, T) { // moving is half the cure: he wal
   stripes(C.paper, '#e3dbc0', 140, -.62, -T * 200, C.tan); cam(960, 560, lerp(1, 1.1, eo(p)));
   const ty = 900, b = PR(360, ty, 1200, 60); fillP(b, '#3b3430'); X.beginPath(); const off = (T * 400) % 40; for (let x = 360 - off; x < 1560; x += 40) { X.moveTo(x, ty + 4); X.lineTo(x + 10, ty + 56); } stroke(C.cream, 2, .6); iBox(360, ty, 1200, 60, C.ink, 3);
   for (const ex2 of [360, 1560]) { fillP(PE(ex2, ty + 30, 30, 30), '#6b6b6b'); iE(ex2, ty + 30, 30, 30, 0, C.ink, 2.4); }
-  iline(1500, ty, 1600, ty - 420, C.ink, 7); const cp = PR(1520, ty - 520, 220, 130); fillP(cp, '#2b2420'); iBox(1520, ty - 520, 220, 130, C.ink, 2.4); lab(1630, ty - 470, 'DIST 0.0 KM', C.cyan, 1, 15, 'center'); lab(1630, ty - 430, 'CURE 50%', C.orange, 1, 18, 'center', 'alphabetic', 'bold');
+  iline(1500, ty, 1600, ty - 420, C.ink, 7); const cp = PR(1470, ty - 520, 320, 130); fillP(cp, '#2b2420'); iBox(1470, ty - 520, 320, 130, C.ink, 2.4); lab(1630, ty - 472, 'DIST 0.0 KM', C.cyan, 1, 28, 'center', 'alphabetic', 'bold'); lab(1630, ty - 428, 'CURE 50%', C.orange, 1, 20, 'center', 'alphabetic', 'bold');
   traveller(960, ty, 1.35, { legs: walkPh() * 1.8, look: 1, mouth: sing(T), case: true, armL: [-.5, -.4] }); cloud(960, ty - 640, .9, { rain: true }); noteRain(820, ty - 580, 280, 300, 12);
   for (let i = 0; i < 8; i++) { const y = 300 + i * 70; gl(200 - ((T * 900 + i * 120) % 300), y, 330 - ((T * 900 + i * 120) % 300), y, C.ink, .5, 2); }
   consL([[0, ty, W, ty], [960, 0, 960, H]]);
@@ -104,11 +120,11 @@ SU.treadmill = { mode: 'ill', f(q, p, a, T) { // moving is half the cure: he wal
 SU.puppetHand = { mode: 'ill', f(q, p, a, T) { // "I see the string": it goes up to a hand in the sky
   SU.mule.f(q, p, { fz: 1 }, T);
   const s = 1.25, tx = 760, gy = 930, hatY = gy + 10 - 360 * s, px = tx + 560, py = hatY - 90;
-  const hx = lerp(px + 120, px + 40, eo(p)), hy = -60;
+  const hx = lerp(px + 120, px + 40, eo(p)), hy = 70; // draft 11: the hand is in frame (it was at -60, only a fingertip showed)
   X.beginPath(); X.moveTo(px, py); X.lineTo(hx, hy + 200); stroke(C.ink, 1.4, 1); gl(px, py, hx, hy + 200, C.orange, .9, 2.4);
   for (const [dx2, tx2] of [[-40, tx - 20], [40, tx + 40]]) { X.beginPath(); X.moveTo(hx + dx2, hy + 200); X.lineTo(tx2, gy + 10 - 300 * s); stroke(C.ink, 1, .8); }
   hand(hx, hy, 1.1, Math.PI); X.save(); X.translate(hx, hy + 210); X.rotate(Math.sin(T * 2) * .1); const bar = PR(-140, -10, 280, 20); fillP(bar, '#8a5530'); iBox(-140, -10, 280, 20, C.ink, 2.4); X.restore();
-  lab(hx + 180, hy + 260, 'WHO HOLDS IT?', C.brick, .95, 20, 'left', 'alphabetic', 'bold');
+  lab(hx + 170, hy + 262, 'WHO HOLDS IT?', C.brick, .95, 30, 'left', 'alphabetic', 'bold');
 } };
 SU.sOuroboros = { mode: 'sch', f(q, p, a, T) { // the vicious circle as a snake eating its tail, his route printed along it
   schBG(); cam(960, 540, lerp(1, 1.1, eo(p)));

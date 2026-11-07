@@ -106,8 +106,25 @@ function stip(shape, cx, cy, rad, n, col, a = 1, sz = 1.6, dir = null, bias = 0)
 function stipRect(x, y, w, h, n, col, a = 1, sz = 1.6) { X.fillStyle = col; X.globalAlpha = a; for (let i = 0; i < n; i++) { const s = sz * (.5 + R()); X.fillRect(x + R() * w, y + R() * h, s, s); } X.globalAlpha = 1; }
 
 // ---------- grounds ----------
-function paper(c = C.paper) { X.fillStyle = c; X.fillRect(-W, -H, 3 * W, 3 * H); illDress(); }
+function paper(c = C.paper) { c = actGround(c); X.fillStyle = c; X.fillRect(-W, -H, 3 * W, 3 * H); illDress(); }
+// ---------- the colour arc: each act's paper/stripe ground shifts (Robin 2026-10-13, inside the palette) ----------
+// Only the GROUND (stripes, paper) is remapped, so figures, ink and the pixel world keep their colour.
+let TNOW = 0;
+const hexRGB = (h) => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
+const rgbHex = (c) => '#' + c.map((v) => Math.max(0, Math.min(255, Math.round(v))).toString(16).padStart(2, '0')).join('');
+function actGround(c) {
+  if (typeof c !== 'string' || c[0] !== '#' || c.length !== 7) return c;
+  const T = TNOW; let to = null, k = 0, dark = 0;
+  if (T >= 400) { to = '#9ea6ad'; k = .55; }                       // the closing shop at dusk
+  else if (T >= 365.5) { to = '#dfe7ea'; k = .5; }                 // E: the snow drains it cool
+  else if (T >= 276) { to = '#eab0a8'; k = .3; dark = .16 * cl((T - 276) / 116); } // D: rose, darkening as the burn eats it
+  else if (T >= 188.7) { to = '#c6d1ca'; k = .45; }                // C: sage and teal-grey for the ward
+  else if (T >= 116.6) { to = '#f3ad6e'; k = .26; }                // B: warmer, more saturated as physics bends
+  if (!to) return c;
+  const a = hexRGB(c), b = hexRGB(to); return rgbHex(a.map((v, i) => (v + (b[i] - v) * k) * (1 - dark)));
+}
 function stripes(c1, c2, wd = 140, ang = -.62, off = 0, hatchCol) {
+  c1 = actGround(c1); c2 = actGround(c2);
   X.fillStyle = c1; X.fillRect(-W, -H, 3 * W, 3 * H);
   const p = new Path2D(), ca = Math.cos(ang), sa = Math.sin(ang), D = W * 1.6, nx = -sa, ny = ca;
   for (let k = -D; k < D; k += wd * 2) {
