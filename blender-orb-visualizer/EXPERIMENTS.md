@@ -141,3 +141,43 @@ last frame to first 20.77 dB. The seam is an ordinary step.
 `reviews/take-02_canvas_contact.jpg` (one frame a second).
 
 **Verdict.** Robin, 2026-10-19: "this is great. love it." Merged in #236 (6805b44); tagged `canvas-take-02`.
+
+## Take 05: 10,000 Miles look test, anchor and circle portals (2026-10-19)
+
+**Brief.** Robin asked for a short look test of the structure in Kevin Ngo's orb film (one anchor never leaves the
+centre of the frame, scenes open as circle portals out of its ripples, a mosaic recap of every scene at once) for
+one of Bob's songs. Issue #243. (Takes 03-04 are the Canvas loops in PR #240.)
+
+**Song.** Bob Wiseman, "10,000 Miles" (Accidentally Acquired Beliefs, 1995; sha256 0cc9dd22...). It has no video yet,
+and its words are this structure: a rocket ship, problems "once so big now so small", the world that still turns,
+and the chorus "from 10,000 miles up in the sky". Times come from Whisper medium on the Demucs vocal stem (the plain
+mix missed the whole soft first verse). Look test = song 7.0-53.0 s.
+
+**What it is.**
+- The anchor is Bob's rocket ship, a tin toy in red and cream, rendered on its own transparent layer and always on top.
+  Sound rings pulse out of it on the sung words; every other one is dashed.
+- Four portal scenes, one per lyric idea, each a toon-shaded Blender diorama rendered only for its own span:
+  - problems: a desk under a paper pile and a storm cloud; the cloud swells on "so big", and on "now so small" the
+    camera falls away fast, the way a rocket leaves;
+  - world: a little round world of houses and trees turning on "the world still turns";
+  - window: one lit window at night, someone with a small smile; the portal shrinks to nothing on "you can't even
+    tell it's there";
+  - cat: a cat on a sunny sill turns away on "won't" and yawns on "care".
+- On "because from 10,000 miles", 36 circles (stills of the four scenes from nine framings each) fly in and pack into
+  the Earth around the rocket. On "up in the sky" it turns and falls away.
+
+**How.** `rocket_portals.py --part <rocket|problems|world|window|cat|mosaic>` renders the 3D parts (Blender 4.5,
+EEVEE, toon material = Diffuse > Shader to RGB > three-step ramp > Emission). `tools/portals_comp.py` (numpy + Pillow)
+lays the paper, rings, portals, mosaic and grain, then encodes with the song (`--review --song <mp3>`; the song is
+gitignored, so a worktree passes the main checkout's copy). Timing for both lives in `portals_take05.json`.
+
+**Speed.** All 3D parts render in about 7.5 min on this Mac (rocket 1,104 frames in 4 min); compositing takes about
+7 min for 1,104 frames.
+
+**Fixes from the first pass.** The rocket's fins came out as one block (now two side plates and one behind), the paper
+was too cloudy, and the rocket sat on the faces in the window and cat portals (cameras now aim higher).
+
+**Renders** (`out/portals/take-05/`): `take-05_review_720p.mp4` (46 s with the song). Contact sheet:
+`reviews/take-05_10000-miles_contact.jpg`.
+
+**Verdict.** Waiting on Robin.
