@@ -1,8 +1,11 @@
-// The two option panels, holds 24-25: two equal paper cards side by side in front of the crate, a clear gap between them
-// with a plain "or" in it. A soft dark backing behind both dims the crate so its labels don't compete.
-// Left: a small dial; as it comes face-on its pointer swings from keywords (old) to meaning (new) and carries the default
-// tag with it (the tag's one move in the film). Right: a note for Blink, beside a small Blink face (mint body, dark visor,
-// two eyes, its sprout; no harness).
+// The two option panels, holds 24-25: two equal paper cards side by side in front of the machine's switch (the knob at
+// z -1.16 is 0.26 behind them), a clear gap between them with a plain "or" in it. A soft dark backing behind both dims
+// the machine (machine.js reads the same span) so its labels don't compete.
+// Left: a small switch, drawn as the machine's: a short arc of scale with a stop at each end, a lever from a pivot
+// below it, a zigzag spring from a small post to the lever and the default tag hung on that post. As the card comes
+// face-on the lever swings from keywords (old) to meaning (new) and the spring and tag go with it to the other post
+// (the tag's one move in the film). Right: a note for Blink, beside a small Blink face (mint body, dark visor, two
+// eyes, its sprout; no harness).
 // Sized for a phone: every word is about 30 px tall at 720x1280 (animatic 04's were about 13).
 import * as THREE from "three";
 import { alpha, basic, staticPanel, text } from "../parts.js";
@@ -10,7 +13,7 @@ import { rr } from "../kit/world.js";
 import { T, cl, io, mix, r01 } from "../timeline.js";
 
 // panels 1.66 wide, 0.56 apart: the "or" (0.4 wide) sits in the gap with 0.08 either side; centred on the camera's x
-// for these holds (K39-K40 sit at x 0), so each outer edge keeps about 35 px of frame at 1080 with the drift
+// for these holds, so each outer edge keeps about 35 px of frame at 1080 with the drift. 498 x 450 px each.
 export const PANEL_W = 1.66, PANEL_H = 1.5, L_X = -1.11, R_X = 1.11, OR_X = 0, Y = 3.3, Z = -0.9;
 const PPU = 300, INK = "#14171b", SOFT = "#6f6e69";
 let left, right, or, backing, edges = [];
@@ -21,7 +24,7 @@ const hexMix = (a, b, k) => {
   return "#" + [0, 1, 2].map((i) => Math.round(mix(p(a, i), p(b, i), k)).toString(16).padStart(2, "0")).join("");
 };
 
-// the left panel's pointer: 0 on keywords (old), 1 on meaning (new); one small overshoot, back by SWING + 0.25
+// the left panel's lever: 0 on keywords (old), 1 on meaning (new); one small overshoot, back by SWING + 0.25
 const SWING = [T.h24 + 0.65, 0.5], OVER = 0.04;
 function pointerP(t) {
   if (t < SWING[0] + SWING[1]) return io(r01(t, SWING[0], SWING[1])) * (1 + OVER);
@@ -31,20 +34,48 @@ function pointerP(t) {
 const BEAT_L = [T.h25 + 0.8, T.h25 + 2.0], BEAT_R = T.h25 + 1.12; // ~68.88 "plain", ~70.08 "use", ~69.2 "words"
 // a blink in about 12 frames at 30 fps: close 4, shut 2, open 6
 const blinkB = (u) => (u < 0 ? 0 : u < 0.133 ? u / 0.133 : u < 0.2 ? 1 : u < 0.4 ? 1 - (u - 0.2) / 0.2 : 0);
-const A_OLD = (-150 * Math.PI) / 180, A_NEW = (-30 * Math.PI) / 180;
+// the drawn switch: pivot, lever length, the stops' half-angle from vertical, the scale's radius, the posts
+const PX = 249, PY = 232, LV = 125, HA = (55 * Math.PI) / 180, SR = 148, POST_DX = 86, POST_DY = 4;
+const tipAt = (p) => { const a = mix(-HA, HA, p); return [PX + Math.sin(a) * LV, PY - Math.cos(a) * LV]; };
 
-function drawDial(g, W, H, { p = 0, sw = 0 } = {}) {
+// a zigzag spring between two points, n zigs of amplitude amp, drawn in the current stroke
+function zigzag(g, x0, y0, x1, y1, n = 9, amp = 7) {
+  const dx = x1 - x0, dy = y1 - y0, L = Math.hypot(dx, dy) || 1, nx = -dy / L, ny = dx / L;
+  g.beginPath(); g.moveTo(x0, y0);
+  for (let k = 1; k < n; k++) { const u = k / n, s = k % 2 ? amp : -amp; g.lineTo(x0 + dx * u + nx * s, y0 + dy * u + ny * s); }
+  g.lineTo(x1, y1); g.stroke();
+}
+// a post with its spring to the lever's tip, at alpha a: the side the lever is on holds the spring
+function post(g, x, y, tip, a) {
+  if (a <= 0.002) return;
+  g.save(); g.globalAlpha = a; g.strokeStyle = INK; g.fillStyle = INK; g.lineCap = "round";
+  g.lineWidth = 4; zigzag(g, x, y, tip[0], tip[1]);
+  g.beginPath(); g.arc(x, y, 8, 0, Math.PI * 2); g.fill();
+  g.lineWidth = 6; g.beginPath(); g.moveTo(x, y); g.lineTo(x, y + 10); g.stroke();
+  g.restore();
+}
+
+function drawSwitch(g, W, H, { p = 0, sw = 0 } = {}) {
   paper(g, W, H);
-  const cx = W / 2, cy = 150, r = 105;
-  g.strokeStyle = INK; g.lineCap = "round";
-  g.lineWidth = 6; g.beginPath(); g.arc(cx, cy, r, 0, Math.PI * 2); g.stroke();
-  [A_OLD, A_NEW].forEach((a) => { g.beginPath(); g.moveTo(cx + Math.cos(a) * (r - 12), cy - Math.sin(a) * (r - 12)); g.lineTo(cx + Math.cos(a) * (r + 12), cy - Math.sin(a) * (r + 12)); g.stroke(); });
-  // the pointer turns the short way, through the bottom of the ring
-  const a = mix(A_OLD, A_NEW, p), tx = cx + Math.cos(a) * (r - 22), ty = cy - Math.sin(a) * (r - 22);
-  g.lineWidth = 10; g.beginPath(); g.moveTo(cx, cy); g.lineTo(tx, ty); g.stroke();
-  g.fillStyle = INK; g.beginPath(); g.arc(cx, cy, 13, 0, Math.PI * 2); g.fill();
-  // the tag hangs from the tip on a short string and swings a little behind the move
-  g.save(); g.translate(tx, ty); g.rotate(sw);
+  g.strokeStyle = INK; g.fillStyle = INK; g.lineCap = "round";
+  // the scale: a short arc over the pivot, a stop at each end, fine ticks between
+  g.lineWidth = 5; g.beginPath(); g.arc(PX, PY, SR, -Math.PI / 2 - HA, -Math.PI / 2 + HA); g.stroke();
+  for (let k = 0; k <= 8; k++) {
+    const a = -HA + (2 * HA * k) / 8, end = k === 0 || k === 8, len = end ? 22 : 9;
+    g.lineWidth = end ? 7 : 3;
+    g.beginPath(); g.moveTo(PX + Math.sin(a) * (SR - len), PY - Math.cos(a) * (SR - len)); g.lineTo(PX + Math.sin(a) * (SR + (end ? 8 : 0)), PY - Math.cos(a) * (SR + (end ? 8 : 0))); g.stroke();
+  }
+  // the lever from the pivot to the stop it is on, a knob on its tip, a boss at the pivot
+  const tip = tipAt(p);
+  g.lineWidth = 11; g.beginPath(); g.moveTo(PX, PY); g.lineTo(tip[0], tip[1]); g.stroke();
+  g.beginPath(); g.arc(tip[0], tip[1], 15, 0, Math.PI * 2); g.fill();
+  g.beginPath(); g.arc(PX, PY, 12, 0, Math.PI * 2); g.fill();
+  // the spring post on the side the lever is on: the left one lets go as the lever leaves, the right one takes it
+  const k = cl(p), xl = PX - POST_DX, xr = PX + POST_DX, yp = PY + POST_DY;
+  post(g, xl, yp, tip, 1 - k);
+  post(g, xr, yp, tip, k);
+  // the tag goes with the spring from post to post on a short string, swinging a little behind the move
+  g.save(); g.translate(mix(xl, xr, p), yp + 10); g.rotate(sw);
   g.lineWidth = 3; g.beginPath(); g.moveTo(0, 0); g.lineTo(0, 14); g.stroke();
   g.fillStyle = "#ffffff"; g.fillRect(-84, 14, 168, 48); g.lineWidth = 3; g.strokeRect(-84, 14, 168, 48);
   // drawn straight (not text()): text()'s fit check reads x in canvas space, and this is in the tag's own space.
@@ -53,9 +84,9 @@ function drawDial(g, W, H, { p = 0, sw = 0 } = {}) {
   g.fillText("default", 0, 50);
   g.restore();
   // one setting per line, each on its own side, 44 px (8.8 %) clear of the card's edges at 48 px (403 and 374 px wide);
-  // the one the pointer is on reads darkest
-  text(g, "keywords (old)", 44, 352, 48, { c: hexMix(INK, SOFT, cl(p)), w: 700 });
-  text(g, "meaning (new)", W - 44, 418, 48, { c: hexMix(SOFT, INK, cl(p)), w: 700, a: "right" });
+  // the one the lever is on reads darkest
+  text(g, "keywords (old)", 44, 352, 48, { c: hexMix(INK, SOFT, k), w: 700 });
+  text(g, "meaning (new)", W - 44, 418, 48, { c: hexMix(SOFT, INK, k), w: 700, a: "right" });
 }
 
 function drawNote(g, W, H, { b = 0 } = {}) {
@@ -94,11 +125,14 @@ export function build(scene) {
   backing = new THREE.Mesh(new THREE.PlaneGeometry(4.9, 2.3), basic("#ffffff", { opacity: 0, map: new THREE.CanvasTexture(c) }));
   backing.position.set(OR_X, Y, Z - 0.1);
   scene.add(backing);
-  left = staticPanel(PANEL_W, PANEL_H, PPU, drawDial, L_X, Y, Z, scene);
+  left = staticPanel(PANEL_W, PANEL_H, PPU, drawSwitch, L_X, Y, Z, scene);
   left.set({ p: 0, sw: 0 });
   right = staticPanel(PANEL_W, PANEL_H, PPU, drawNote, R_X, Y, Z, scene);
   cardEdge(left); cardEdge(right);
   or = staticPanel(0.4, 0.3, PPU, (g2, W, H) => text(g2, "or", W / 2, H / 2 + 20, 60, { c: "#ffffff", w: 700, a: "center" }), OR_X, Y, Z + 0.05, scene);
+  // everything starts transparent and turns or rises in (kit rule: no first-frame flash)
+  [left.mesh, right.mesh, or.mesh].forEach((m) => (m.material.opacity = 0));
+  edges.forEach((m) => { m.material.opacity = 0; m.visible = false; });
 }
 
 export function update(t) {
@@ -106,7 +140,7 @@ export function update(t) {
   const lk = io(r01(t, T.h24 + 0.1, 0.5)), rk = io(r01(t, T.h25 + 0.05, 0.5));
   alpha(backing, 0.85 * r01(t, T.h24, 0.3) * clear);
 
-  // the pointer and its tag: redrawn only when they change (state quantised, so a held pointer doesn't redraw)
+  // the lever and its tag: redrawn only when they change (state quantised, so a held lever doesn't redraw)
   const p = pointerP(t), vel = (p - pointerP(t - 1 / 60)) * 60;
   // two small beats in the long hold, one per card in turn: the tag swings once more on "plain" and again on "use it"
   // (a decaying swing, one rebound), the little Blink blinks on "words"

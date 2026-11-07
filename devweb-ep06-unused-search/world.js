@@ -6,6 +6,7 @@ import { cameraPath, stage } from "./kit/world.js";
 import { FOOT_Y, T } from "./timeline.js";
 import * as mark from "./stations/mark.js";
 import * as machine from "./stations/machine.js";
+import * as programs from "./stations/programs.js";
 import * as cards from "./stations/cards.js";
 import * as lamp from "./stations/lamp.js";
 import * as counter from "./stations/counter.js";
@@ -121,10 +122,12 @@ KEYS.forEach((k, i) => {
 const cameraAt = cameraPath(KEYS);
 
 // each station: its file and the film spans in which it exists. Outside them it is hidden and update() isn't called.
-// The machine builds first so machine.at() is live before the stations that hang on it.
+// The machine builds first so machine.at() is live before the stations that hang on it; the programs next, since the
+// cards ride their rails; the cards last, after mark, because they read the beam's focus off Blink's pose for the frame.
 const WHOLE = [[0, T.END]];
 const STATIONS = [
   { name: "machine", mod: machine, win: WHOLE },
+  { name: "programs", mod: programs, win: WHOLE },
   { name: "lamp", mod: lamp, win: WHOLE },
   { name: "counter", mod: counter, win: [[T.h13 - 0.05, T.h16 + 0.5]] },
   { name: "tray", mod: tray, win: [[T.h15 - 0.05, T.h16 + 0.5]] },
@@ -132,8 +135,8 @@ const STATIONS = [
   { name: "note", mod: note, win: [[T.h18 - 0.05, T.h21 + 0.5]] },
   { name: "panels", mod: panels, win: [[T.h24 - 0.05, T.h26 + 0.4]] },
   { name: "log", mod: log, win: [[T.h26 - 0.05, T.h27 + 0.4]] },
-  { name: "cards", mod: cards, win: [] }, // off until cards.js is rewritten on the new CARD_PLAN (world-plan-v2 build order 7)
   { name: "mark", mod: mark, win: WHOLE },
+  { name: "cards", mod: cards, win: WHOLE },
 ];
 
 export async function buildWorld(canvas) {
