@@ -249,11 +249,61 @@
       const BL = V3(-1.25, -0.88, 0.2);
       const pivot = new THREE.Group(); pivot.position.copy(BL); scene.add(pivot);
       const bl = makeBlink(THREE, window.BLINK, ramp); bl.root.position.y = 1.08; bl.root.rotation.y = 0.25; pivot.add(bl.root);
+      scene.updateMatrixWorld(true);
+
+      // the emitter (Robin, 2026-11-06: the cards can't just come out of his head). Two to compare:
+      //   beam: a cone of light opens from the visor, the card condenses inside it; a result flies back into the beam and dissolves
+      //   port: a hatch forms on his upper right, irises open, the card feeds out like a ticket; a result slides back in
+      const EMIT = Q.get("emit") === "port" ? "port" : "beam";
+      const GLOW = "#c4f7d3";
+      const G = window.BLINK;
+      // where a card is whole and free: the beam's focus, or the port's mouth
+      let formAt = () => V3(0, 0, 0);
+      let beam = null, port = null;
+      if (EMIT === "beam") {
+        const vf = G.onFront(0, 0.2, 0.02); // visor centre, on the skin
+        beam = new THREE.Group(); beam.position.set(...vf.p); bl.root.add(beam);
+        const dirL = V3(0.42, 0.78, 0.46).normalize(); // up and to the right of the visor, a little forward
+        const len = 1.35;
+        beam.quaternion.setFromUnitVectors(V3(0, -1, 0), dirL);
+        const coneMat = (op, r) => new THREE.MeshBasicMaterial({ color: GLOW, transparent: true, opacity: op, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, fog: false });
+        const mkCone = (rt, rb, op) => { const g = new THREE.CylinderGeometry(rt, rb, 1, 28, 1, true); g.translate(0, -0.5, 0); const m = new THREE.Mesh(g, coneMat(op)); beam.add(m); return m; };
+        beam.userData.outer = mkCone(0.05, 0.5, 0.16); beam.userData.inner = mkCone(0.03, 0.26, 0.2);
+        const lens = new THREE.Mesh(new THREE.CircleGeometry(0.12, 24), new THREE.MeshBasicMaterial({ color: GLOW, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, fog: false }));
+        lens.quaternion.setFromUnitVectors(V3(0, 0, 1), V3(0, -1, 0)); beam.add(lens); beam.userData.lens = lens;
+        beam.userData.len = len; beam.userData.focus = V3(0, -len, 0);
+        beam.visible = false;
+        formAt = () => beam.localToWorld(V3(0, -len, 0));
+        // motes: a few sparks that gather into the card as it condenses, and fly apart as a result dissolves
+        beam.userData.motes = Array.from({ length: 14 }, (_, i) => { const m = new THREE.Mesh(new THREE.SphereGeometry(0.03, 8, 6), new THREE.MeshBasicMaterial({ color: "#ffffff", transparent: true, opacity: 0.9, fog: false })); const a = i * 2.399, r = 0.25 + 0.3 * ((i * 7) % 5) / 5; m.userData.o = V3(Math.cos(a) * r, Math.sin(a) * r * 0.8, Math.sin(a * 1.7) * 0.25); m.visible = false; scene.add(m); return m; });
+      } else {
+        const pf = G.onFront(0.7, 0.8, 0); // upper right of the visor, on the rounded shoulder of his head
+        const pn = V3(...pf.n).add(V3(0, 0, 0.9)).normalize(); // turned a little toward the camera so the iris reads; the collar's far edge sinks into the skin
+        port = new THREE.Group(); port.position.set(...pf.p); port.lookAt(V3(...pf.p).add(pn)); port.scale.setScalar(0.85); bl.root.add(port);
+        port.userData.n = pn; port.userData.p0 = V3(...pf.p);
+        const inkRing = new THREE.Mesh(new THREE.RingGeometry(0.24, 0.62, 48), new THREE.MeshBasicMaterial({ color: INK, side: THREE.DoubleSide, fog: false })); inkRing.position.z = -0.045; port.add(inkRing);
+        const collar = new THREE.Mesh(new THREE.RingGeometry(0.28, 0.58, 48), M(C.rim)); collar.position.z = 0.02; port.add(collar);
+        const bezel = add(new THREE.TorusGeometry(0.29, 0.035, 10, 40), C.rim, port, 0.014); bezel.position.z = 0.03;
+        for (let i = 0; i < 4; i++) { const rv = add(new THREE.SphereGeometry(0.035, 10, 8), C.rivet, port, 0.012); const a = i * Math.PI / 2 + Math.PI / 4; rv.position.set(Math.cos(a) * 0.5, Math.sin(a) * 0.5, 0.03); }
+        const throat = new THREE.Mesh(new THREE.CylinderGeometry(0.27, 0.22, 0.4, 32, 1, true), new THREE.MeshBasicMaterial({ color: C.hole, side: THREE.BackSide, fog: false })); throat.rotation.x = Math.PI / 2; throat.position.z = -0.2; port.add(throat);
+        const back = new THREE.Mesh(new THREE.CircleGeometry(0.23, 32), new THREE.MeshBasicMaterial({ color: C.hole, fog: false })); back.position.z = -0.38; port.add(back);
+        // six leaves, each a sector; opening slides them out under the collar and turns them
+        const leafShape = new THREE.Shape(); leafShape.moveTo(0, 0); leafShape.absarc(0, 0, 0.31, -0.78, 0.78, false); leafShape.lineTo(0, 0);
+        port.userData.leaves = Array.from({ length: 6 }, (_, i) => { const l = new THREE.Mesh(new THREE.ShapeGeometry(leafShape, 12), M("#8fb0d0")); const e = new THREE.Mesh(new THREE.ShapeGeometry(leafShape, 12), new THREE.MeshBasicMaterial({ color: INK, side: THREE.DoubleSide, fog: false })); e.scale.setScalar(1.05); e.position.z = -0.006; l.add(e); l.userData.a = (i * Math.PI) / 3; l.position.z = -0.02 - 0.004 * i; port.add(l); return l; });
+        port.visible = false;
+        formAt = () => port.localToWorld(V3(0, 0, 0.72));
+      }
+      // the paths start and end where the emitter holds a card, measured with his face tipped up as it is while the beam is on
+      if (beam) bl.root.rotation.x = -0.12;
+      scene.updateMatrixWorld(true);
+      const F0 = formAt();
+      bl.root.rotation.x = 0;
+      if (port) port.scale.setScalar(0.001);
 
       // cards
       const mkCard = (color, s = 1, tab = false) => { const c = card(0, 0, 0); c.children[0].material = M(color); c.scale.setScalar(s); c.userData.s = s; if (tab) { const tb = add(new RoundedBoxGeometry(0.2, 0.14, 0.04, 2, 0.02), BLUE, c, 0.016); tb.position.set(0.2, 0.26, 0); } c.visible = false; return c; };
-      const toSlot = new THREE.CatmullRomCurve3([V3(BL.x + 0.75, 1.15, BL.z + 0.5), V3(-0.1, 1.95, 0.6), V3(SLOT.x - 0.02, SLOT.y + 0.12, SLOT.z + 1.0), V3(SLOT.x, SLOT.y + 0.01, SLOT.z + 0.3)]);
-      const fromSpout = new THREE.CatmullRomCurve3([OUT.end.clone(), V3(OUT.end.x - 0.05, OUT.end.y - 0.15, OUT.end.z + 0.5), V3(BL.x + 0.5, 1.75, BL.z + 0.55), V3(BL.x + 0.25, 1.0, BL.z + 0.5)]);
+      const toSlot = new THREE.CatmullRomCurve3([F0.clone(), V3(-0.1, 1.95, 0.6), V3(SLOT.x - 0.02, SLOT.y + 0.12, SLOT.z + 1.0), V3(SLOT.x, SLOT.y + 0.01, SLOT.z + 0.3)]);
+      const fromSpout = new THREE.CatmullRomCurve3([OUT.end.clone(), V3(OUT.end.x - 0.05, OUT.end.y - 0.15, OUT.end.z + 0.5), V3(BL.x + 0.5, 1.9, BL.z + 0.6), F0.clone()]);
       const reqA = mkCard(C.card), reqB = mkCard(C.card, 1, true), resA = mkCard(AMBER), resB = mkCard(AMBER);
       // the other callers: two older programs, each with a rail to the slot
       const PROGS = [[1.45, 0.7, -0.5, 0], [1.9, -0.45, -0.35, 0.45]].map(([x, z, ry, lag]) => {
@@ -266,12 +316,67 @@
       });
 
       // a card along a path: grows out of its sender, turns flat to go through the slot, shrinks away at the end
-      function ride(c, curve, u, { flat = 0, lift = 0 } = {}) {
+      function ride(c, curve, u, { flat = 0, lift = 0, grow = true, shrink = true, q0 = null, q1 = null } = {}) {
         if (u <= 0 || u >= 1) { c.visible = false; return; }
         c.visible = true; const p = curve.getPointAt(io(u)); c.position.set(p.x, p.y + lift, p.z);
-        const s = c.userData.s * Math.min(1, u / 0.14) * (1 - 0.75 * r01(u, 0.88, 0.12));
+        const s = c.userData.s * (grow ? Math.min(1, u / 0.14) : 1) * (shrink ? 1 - 0.75 * r01(u, 0.88, 0.12) : 1);
         c.scale.setScalar(Math.max(0.001, s));
         c.rotation.set(-1.45 * flat * ss(r01(u, 0.55, 0.4)), -0.25 + 0.2 * u, 0.2 - 0.3 * u);
+        if (q0 && u < 0.25) c.quaternion.slerpQuaternions(q0, c.quaternion.clone(), ss(u / 0.25)); // leaving the port edge-on, then turning to fly
+        if (q1 && u > 0.75) c.quaternion.slerpQuaternions(c.quaternion.clone(), q1, ss((u - 0.75) / 0.25));
+      }
+      const glowCard = (c, k) => { c.children[0].material.emissive.set(GLOW).multiplyScalar(0.9 * k); };
+      const OUTS = [[reqA, B.askA, B.inA - B.askA + 0.25], [reqB, B.askB, B.tab - B.askB + 0.3]]; // a request leaves at R
+      const INS = [[resA, B.outA, B.backA], [resB, B.outB, B.backB]];                                // a result arrives at E
+      // the emitter per frame; also places the four cards
+      function emitFrame(t) {
+        if (beam) {
+          let on = 0, lensK = 0;
+          const F = formAt(), motes = beam.userData.motes; let moteK = -1, moteDir = 1;
+          for (const [c, R, d] of OUTS) {
+            const w = ss(r01(t, R - 0.5, 0.22)) * (1 - ss(r01(t, R + 0.2, 0.25))); on = Math.max(on, w);
+            const k = ss(r01(t, R - 0.32, 0.3));
+            if (t < R) { // condensing in the beam
+              c.visible = k > 0.001; c.position.copy(F); c.scale.setScalar(Math.max(0.001, c.userData.s * k)); c.rotation.set(0, -0.25, 0.2); glowCard(c, 1 - k);
+              if (k > 0.001 && k < 1) { moteK = 1 - k; moteDir = 1; }
+            } else { glowCard(c, 0); ride(c, toSlot, (t - R) / d, { flat: 1, grow: false }); }
+          }
+          for (const [c, S, E] of INS) {
+            const w = ss(r01(t, E - 0.5, 0.22)) * (1 - ss(r01(t, E + 0.45, 0.25))); on = Math.max(on, w);
+            const k = ss(r01(t, E, 0.35));
+            if (t < E) { glowCard(c, 0); ride(c, fromSpout, (t - S) / (E - S), { shrink: false }); }
+            else { c.visible = k < 0.999; c.position.copy(F); c.scale.setScalar(Math.max(0.001, c.userData.s * (1 - k))); c.rotation.set(0, -0.25 + 0.2, 0.2 - 0.3); glowCard(c, k); if (k > 0.001 && k < 1) { moteK = k; moteDir = -1; } }
+          }
+          beam.visible = on > 0.002;
+          const fl = 0.86 + 0.14 * Math.sin(t * 37) * Math.sin(t * 23);
+          beam.userData.outer.scale.set(on, beam.userData.len, on); beam.userData.inner.scale.set(on, beam.userData.len, on);
+          beam.userData.outer.material.opacity = 0.16 * on * fl; beam.userData.inner.material.opacity = 0.2 * on * fl;
+          beam.userData.lens.material.opacity = 0.9 * on; beam.userData.lens.scale.setScalar(0.5 + on);
+          motes.forEach((m, i) => { m.visible = moteK >= 0; if (!m.visible) return; const sp = moteK * 0.55 + (moteDir < 0 ? 0.05 : 0); m.position.copy(F).addScaledVector(m.userData.o, sp / 0.55).add(V3(0, 0.03 * Math.sin(t * 19 + i), 0)); m.scale.setScalar(0.5 + moteK * (moteDir > 0 ? 1 : 0.6)); m.material.opacity = 0.9 * (moteDir > 0 ? 1 : 1 - moteK); });
+          return on;
+        }
+        // port
+        let form = 0, open = 0;
+        const qCard = () => { const q = new THREE.Quaternion(); port.getWorldQuaternion(q); return q.multiply(new THREE.Quaternion().setFromAxisAngle(V3(0, 1, 0), -Math.PI / 2)); };
+        const mouth = (s) => port.localToWorld(V3(0, 0, -0.3 + 1.02 * s));
+        for (const [c, R, d] of OUTS) {
+          form = Math.max(form, ss(r01(t, R - 0.8, 0.3)) * (1 - ss(r01(t, R + 0.4, 0.3))));
+          open = Math.max(open, ss(r01(t, R - 0.55, 0.2)) * (1 - ss(r01(t, R + 0.15, 0.2))));
+          const s = ss(r01(t, R - 0.4, 0.35));
+          if (t < R) { c.visible = s > 0.001; c.position.copy(mouth(s)); c.scale.setScalar(c.userData.s); c.quaternion.copy(qCard()); }
+          else ride(c, toSlot, (t - R) / d, { flat: 1, grow: false, q0: qCard() });
+        }
+        for (const [c, S, E] of INS) {
+          form = Math.max(form, ss(r01(t, E - 0.8, 0.3)) * (1 - ss(r01(t, E + 0.7, 0.3))));
+          open = Math.max(open, ss(r01(t, E - 0.55, 0.2)) * (1 - ss(r01(t, E + 0.45, 0.2))));
+          const s = ss(r01(t, E, 0.35));
+          if (t < E) ride(c, fromSpout, (t - S) / (E - S), { shrink: false, q1: qCard() });
+          else { c.visible = s < 0.999; c.position.copy(mouth(1 - s)); c.scale.setScalar(c.userData.s); c.quaternion.copy(qCard()); }
+        }
+        port.visible = form > 0.002; port.scale.setScalar(0.85 * (0.001 + 0.999 * form));
+        port.position.copy(port.userData.p0).addScaledVector(port.userData.n, -0.12 + 0.18 * form);
+        port.userData.leaves.forEach((l) => { l.rotation.z = l.userData.a + 0.7 * open; const r = 0.34 * open; l.position.x = Math.cos(l.userData.a + 0.35 * open) * r; l.position.y = Math.sin(l.userData.a + 0.35 * open) * r; });
+        return form;
       }
       const run = (t, [a, b]) => (t <= a ? 0 : t >= b ? 1 : ss((t - a) / (b - a)));
       const oldWork = (t) => OLD_RUNS.reduce((s, w) => s + run(t, w), 0), oldOn = (t) => OLD_RUNS.reduce((s, [a, b]) => s + bump(t, a, b - a), 0);
@@ -317,16 +422,15 @@
         // steam
         PUFFS.forEach(({ at, from, s, g }) => { const u = (t - at) / 1.5; g.visible = u > 0 && u < 1; if (g.visible) { g.position.set(from.x + 0.25 * u * u, from.y + 0.25 + 1.0 * u, from.z); g.scale.setScalar(s * (0.35 + 0.85 * Math.sqrt(u)) * (1 - Math.pow(u, 4))); } });
         // cards
-        ride(reqA, toSlot, (t - B.askA) / (B.inA - B.askA + 0.25), { flat: 1 });
-        ride(resA, fromSpout, (t - B.outA) / (B.backA - B.outA));
-        ride(reqB, toSlot, (t - B.askB) / (B.tab - B.askB + 0.3), { flat: 1 });
-        ride(resB, fromSpout, (t - B.outB) / (B.backB - B.outB));
         PROGS.forEach(({ curve, lag, up, down }) => { ride(up, curve, (t - B.progs - lag) / 1.25, { flat: 1, lift: 0.16 }); const u = (t - 7.7 - lag) / 1.1; ride(down, curve, u > 0 && u < 1 ? 1 - u : -1, { lift: 0.16 }); });
-        // Blink: a hop when it asks, a look at the machine, a grin when the answer comes back
-        const hop = bump(t, B.askA - 0.1, 0.35) + bump(t, B.askB - 0.1, 0.35), got = bump(t, B.backA - 0.15, 1.2) + bump(t, B.backB - 0.15, 1.6);
+        // Blink: a hop before it asks (the emitter forms on the landing), a look at the machine, a grin when the answer comes back
+        const hop = bump(t, B.askA - 0.78, 0.3) + bump(t, B.askB - 0.78, 0.3), got = bump(t, B.backA + 0.1, 1.2) + bump(t, B.backB + 0.1, 1.6);
         pivot.scale.set(1 + 0.05 * hop, 1 - 0.07 * hop + 0.04 * got, 1 + 0.05 * hop);
+        pivot.updateMatrixWorld(true);
+        const em = emitFrame(t);
+        if (beam) bl.root.rotation.x = -0.12 * em; // he tips his face up a little to throw the beam
         const blinkAt = [1.9, 5.9, 9.2, 11.6, 14.2].reduce((s, b) => Math.max(s, bump(t, b, 0.2)), 0);
-        try { bl.face({ blink: blinkAt, happy: 0.35 + 0.6 * cl(got), look: 0.45 + 0.25 * glow, lookY: 0.55 + 0.25 * glow, think: 0, phase: t * 1.6, skew: 0, eager: 0.2 + 0.7 * cl(glow + bump(t, B.askB - 0.2, 1.4)) }); } catch (e) {}
+        try { bl.face({ blink: blinkAt, happy: 0.35 + 0.6 * cl(got), look: 0.45 + 0.25 * glow, lookY: 0.55 + 0.25 * glow + 0.3 * em, think: 0, phase: t * 1.6, skew: 0, eager: 0.2 + 0.7 * cl(glow + bump(t, B.askB - 0.2, 1.4)) }); } catch (e) {}
         camAt(t); renderer.render(scene, cam);
       }
       window.renderAt = renderAt; window.DUR = DUR;
