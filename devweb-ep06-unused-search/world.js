@@ -5,7 +5,7 @@ import * as THREE from "three";
 import { cameraPath, stage } from "./kit/world.js";
 import { FOOT_Y, T } from "./timeline.js";
 import * as mark from "./stations/mark.js";
-import * as crate from "./stations/crate.js";
+import * as machine from "./stations/machine.js";
 import * as cards from "./stations/cards.js";
 import * as lamp from "./stations/lamp.js";
 import * as counter from "./stations/counter.js";
@@ -121,9 +121,10 @@ KEYS.forEach((k, i) => {
 const cameraAt = cameraPath(KEYS);
 
 // each station: its file and the film spans in which it exists. Outside them it is hidden and update() isn't called.
+// The machine builds first so machine.at() is live before the stations that hang on it.
 const WHOLE = [[0, T.END]];
 const STATIONS = [
-  { name: "crate", mod: crate, win: WHOLE },
+  { name: "machine", mod: machine, win: WHOLE },
   { name: "lamp", mod: lamp, win: WHOLE },
   { name: "counter", mod: counter, win: [[T.h13 - 0.05, T.h16 + 0.5]] },
   { name: "tray", mod: tray, win: [[T.h15 - 0.05, T.h16 + 0.5]] },
@@ -131,7 +132,7 @@ const STATIONS = [
   { name: "note", mod: note, win: [[T.h18 - 0.05, T.h21 + 0.5]] },
   { name: "panels", mod: panels, win: [[T.h24 - 0.05, T.h26 + 0.4]] },
   { name: "log", mod: log, win: [[T.h26 - 0.05, T.h27 + 0.4]] },
-  { name: "cards", mod: cards, win: WHOLE },
+  { name: "cards", mod: cards, win: [] }, // off until cards.js is rewritten on the new CARD_PLAN (world-plan-v2 build order 7)
   { name: "mark", mod: mark, win: WHOLE },
 ];
 
@@ -139,8 +140,14 @@ export async function buildWorld(canvas) {
   // canvases can't use a face the DOM hasn't asked for yet
   await Promise.all(["400", "500", "600", "700"].map((wt) => document.fonts.load(`${wt} 24px 'IBM Plex Mono'`)));
   await document.fonts.ready;
-  const { renderer, scene, cam, ramp, toon, grid } = stage(canvas, { fog: [12.1, 28.6], floorY: FOOT_Y - 0.02 });
-  grid.material.opacity = 0.12;
+  const floorY = FOOT_Y - 0.02;
+  const { renderer, scene, cam, ramp, toon, grid } = stage(canvas, { fog: [12.1, 32], floorY });
+  // the floor (world-plan-v2 section 4): 1-unit cells in the brand hairline at 50 %, the same colour on the centre lines so
+  // no cross runs under Blink; the fog takes it before the cells moire near the horizon. Lines, not a glowing floor.
+  scene.remove(grid);
+  const floor = new THREE.GridHelper(80, 80, "#2a3550", "#2a3550");
+  floor.position.y = floorY; floor.material.transparent = true; floor.material.opacity = 0.5; floor.material.fog = true;
+  scene.add(floor);
   const kit = { toon, ramp, G: window.BLINK };
   STATIONS.forEach((s) => {
     s.group = new THREE.Group();
