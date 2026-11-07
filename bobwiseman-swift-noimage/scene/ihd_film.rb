@@ -41,6 +41,8 @@ module Film
       make_dashes
       make_kids
       make_final_lights
+      make_team
+      make_figures
     end
 
     # ------------------------------------------------------------------ small tools
@@ -91,6 +93,8 @@ module Film
     end
 
     # ------------------------------------------------------------------ the story as numbers
+    PLUCKS = [176.94, 177.29, 177.5, 177.71, 177.93, 178.19, 178.46, 178.71].freeze
+    STRUM_HIT = 179.35
     STAMPS = [187.64, 188.9, 189.69, 190.48].freeze
 
     def warmth(t)
@@ -158,8 +162,8 @@ module Film
       [path(roofs, fill: STREET, stroke: nil), path(walls, fill: nil, stroke: EDGE, strokeWidth: 3), path(road, fill: "#0D1236", stroke: nil)]
     end
 
-    def window(x, y, color, on, off = nil)
-      fade = [[on, 0], [on + 0.35, 1]]
+    def window(x, y, color, on, off = nil, dur = 0.35)
+      fade = [[on, 0], [on + dur, 1]]
       fade += [[off, 1], [off + 0.3, 0]] if off
       { type: "rect", x: x - 17, y: y - 23, width: 34, height: 46, fill: color, stroke: EDGE, strokeWidth: 3, tracks: { opacity: fade } }
     end
@@ -249,6 +253,200 @@ module Film
       [x, y - laugh]
     end
 
+    # ------------------------------------------------------------------ figures made of the paint
+    # Nothing is drawn into the sky. An object is a set of line segments; dashes near a line are pulled onto it, turn to
+    # follow it and take its colour, the way the smile forms (Robin, 2026-11-07: "the particles should reform to make the
+    # object ideas"). Each beat gives a lambda t -> figures; a figure is {segs:, amt:, level:, sig:, pull:, mode:}.
+    def env(t, s, rise, e, fall) = smooth((t - s) / rise) * (1 - smooth((t - (e - fall)) / fall))
+    def seg_poly(pts, closed: false) = (closed ? pts + [pts[0]] : pts).each_cons(2).map { |a, b| [a[0], a[1], b[0], b[1]] }
+
+    def arc_pts(cx, cy, rx, ry, a0 = 0.0, a1 = TAU, n = 28) = (0..n).map { |i| a = a0 + (a1 - a0) * i / n; [cx + rx * Math.cos(a), cy + ry * Math.sin(a)] }
+
+    # rotate about (px, py) by rot, then move by (dx, dy)
+    def xform(segs, dx: 0, dy: 0, rot: 0, px: 0, py: 0)
+      c, s = Math.cos(rot), Math.sin(rot)
+      segs.map do |seg|
+        seg.each_slice(2).flat_map { |x, y| u, v = x - px, y - py; [px + u * c - v * s + dx, py + u * s + v * c + dy] }
+      end
+    end
+
+    def fig(segs, amt, level, sig: 24, pull: 0.75, mode: :line)
+      return nil if amt <= 0.01 || segs.empty?
+      xs = segs.flat_map { |q| [q[0], q[2]] }
+      ys = segs.flat_map { |q| [q[1], q[3]] }
+      m = sig * 3 + 20
+      { segs: segs, amt: amt.clamp(0, 1), level: level, sig: sig, pull: pull, mode: mode, box: [xs.min - m, xs.max + m, ys.min - m, ys.max + m] }
+    end
+
+    def make_team
+      s = 207.6
+      @puppet = TEAM.each_with_index.map do |(x, y), i|
+        ->(t) do
+          jerk = bump(t, 218.2, 218.9, 224.2, 225, 1.0) * 26 * Math.sin((t * 4).floor * 1.7 + i)
+          free = (t > 224 ? 18 * Math.sin(t * 2 + i) : 8 * Math.sin((t + i) * TAU / BEAT))
+          [x, key(t, [[s + i * 0.08, H + 90], [s + 1.7 + i * 0.08, y], [225.6, y], [228.6, H + 120]])[0] + free + jerk]
+        end
+      end
+    end
+
+    def make_figures
+      @figs = []
+      fig_table
+      fig_cradles
+      fig_diner
+      fig_television
+      fig_wallet
+      fig_rift
+      fig_machine
+    end
+
+    def figures_at(t) = @figs.flat_map { |s, e, f| t.between?(s, e) ? [f.call(t)].flatten : [] }.compact
+
+    def fig_table
+      plates = [-260, -130, 0, 130, 260].each_with_index.map { |dx, i| [TABLE_C[0] + dx, TABLE_C[1] + (i.even? ? 30 : -30), [w(1, 3), w(1, 4)].min + i * 0.22] }
+      @figs << [24.0, 46.6, lambda do |t|
+        a = env(t, 24.0, 2.6, 46.4, 1.6)
+        dy = 160 * (1 - smooth((t - 24) / 3.2))
+        out = [fig(seg_poly(arc_pts(TABLE_C[0], TABLE_C[1] + dy, 340, 125)), a, 0.68, sig: 26)]
+        plates.each { |x, y, at| out << fig(seg_poly(arc_pts(x, y + dy, 46, 22, 0, TAU, 12)), a * smooth((t - at) / 0.35), 0.86, sig: 16, pull: 0.85) }
+        out
+      end]
+      plates.each { |*, at| event(:arrive, at) }
+    end
+
+    def fig_cradles
+      s, e = w(1, 5), 46.4
+      [[230, 560, 0.0], [850, 470, 1.4], [560, 330, 2.6]].each_with_index do |(cx, cy, ph), i|
+        at = s + i * 0.45
+        shape = seg_poly(arc_pts(cx, cy, 120, 96, 0, Math::PI, 14)) + seg_poly([[cx - 120, cy], [cx + 120, cy]]) + seg_poly(arc_pts(cx - 60, cy - 8, 34, 30, 0, TAU, 10))
+        @figs << [at, e, ->(t) { fig(xform(shape, rot: 0.3 * Math.sin((t + ph) * TAU / (BEAT * 2)), px: cx, py: cy - 140), env(t, at, 0.5, e, 1.2), 0.56, sig: 22) }]
+        event(:arrive, at)
+      end
+    end
+
+    def spoon_segs
+      bowl = seg_poly(arc_pts(0, -200, 110, 150, 0, TAU, 22))
+      stem = seg_poly([[-16, -52], [-14, 360]]) + seg_poly([[16, -52], [14, 360]])
+      xform(bowl + stem, dx: 620, dy: 560, rot: 0.5)
+    end
+
+    def fig_diner
+      s, e = 92.2, 108.4
+      on = w(7, 5)
+      blink = [[on, 0], [on + 0.1, 1], [on + 0.2, 0.3], [on + 0.36, 1], [w(7, 7), 1], [w(7, 7) + 0.1, 0.4], [w(7, 7) + 0.24, 1], [106.8, 1], [107.8, 0]]
+      plates = [[w(7, 10), 220], [w(7, 11), 620], [w(7, 13), 800], [w(7, 13) + 0.25, 960]]
+      spoon = spoon_segs
+      @figs << [s, e, lambda do |t|
+        a = env(t, s, 2.4, e, 1.4)
+        dy = 220 * (1 - smooth((t - s) / 2.6)) + 300 * smooth((t - 106.9) / 1.5)
+        counter = seg_poly([[-100, 1300 + dy], [W + 100, 1300 + dy]])
+        stools = [200, 420, 640, 860].flat_map { |x| seg_poly([[x - 70, 1490 + dy], [x + 70, 1490 + dy]]) + seg_poly([[x, 1490 + dy], [x, 1760 + dy]]) }
+        out = [fig(counter, a, 0.62, sig: 28), fig(stools, a, 0.4, sig: 20)]
+        plates.each { |at, x| out << fig(seg_poly(arc_pts(x, 1240 + dy, 60, 20, 0, TAU, 12)), a * smooth((t - at) / 0.25), 0.88, sig: 16, pull: 0.85) }
+        out << fig(spoon, key(t, blink)[0], 0.6, sig: 26) if t >= on
+        out
+      end]
+      plates.each { |at, _| event(:arrive, at) }
+      event(:flicker, on)
+    end
+
+    TV = [200, 880, 360, 880].freeze
+
+    def fig_television
+      s, e = 107.4, 117.6
+      off = w(9, 5)
+      x0, x1, y0, y1 = TV
+      body = seg_poly([[x0, y0], [x1, y0], [x1, y1], [x0, y1]], closed: true) + seg_poly([[540, y0], [400, 170]]) + seg_poly([[540, y0], [690, 160]])
+      crack = seg_poly([[540, 400], [505, 500], [590, 590], [520, 690], [575, 840]])
+      @figs << [s, e, lambda do |t|
+        a = env(t, s, 0.8, e, 1.0)
+        dy = 500 * smooth((t - off - 0.7) / (e - off - 0.7))
+        out = [fig(xform(body, dy: dy), a, 0.3, sig: 26)]
+        # static: the dashes inside the screen jump and flicker, then the picture folds to a line and a dot
+        h = 240 * (1 - smooth((t - off) / 0.34))
+        wd = 300 * (1 - smooth((t - off - 0.34) / 0.36))
+        if t < off + 0.34
+          out << fig(seg_poly([[x0 + 30, 620 - h], [x1 - 30, 620 - h], [x1 - 30, 620 + h], [x0 + 30, 620 + h]], closed: true), a, 0.4, sig: 1, pull: 0, mode: :static)
+        end
+        out << fig(seg_poly([[540 - wd - 8, 620], [540 + wd + 8, 620]]), smooth((t - off) / 0.1) * (1 - smooth((t - off - 0.6) / 0.2)), 0.92, sig: 18) if t >= off
+        out << fig(xform(crack, dy: dy), a * smooth((t - off - 0.1) / 0.2), 0.9, sig: 18) if t >= off
+        out
+      end]
+      event(:tv_off, off)
+    end
+
+    def fig_wallet
+      s, land = w(16, 4), w(16, 8)
+      e = land + 0.5
+      shape = seg_poly([[-110, -70], [110, -70], [110, 70], [-110, 70]], closed: true) + seg_poly([[20, -30], [110, -30], [110, 30], [20, 30]], closed: true)
+      @figs << [s, e, lambda do |t|
+        x = key(t, [[s, 860], [land, her(land)[0]]])[0] + 80 * Math.sin((t - s) * 2.2) * (1 - smooth((t - s) / (land - s)))
+        y = key(t, [[s, -60], [s + 0.7, 180], [land - 0.9, 240], [land, her(land)[1] - 40]])[0]
+        rot = -0.5 + 0.9 * smooth((t - s) / (land - s))
+        fig(xform(shape, dx: x, dy: y, rot: rot), env(t, s, 0.4, e, 0.35), 0.72, sig: 22)
+      end]
+      ring(land, ->(_) { her(land) }, GOLD, big: 4.5, life: 1.0)
+      event(:arrive, land)
+      STAMPS.each do |t|
+        ring(t + 0.26, ->(_) { [her(t)[0], BASE + 60] }, CREAM, big: 7, life: 0.9)
+        event(:stamp, t + 0.26)
+      end
+    end
+
+    RIFT = [[640, -40], [560, 110], [660, 250], [540, 410], [640, 570], [520, 730], [620, 880], [510, 1040]].freeze
+
+    # the sky parts along a seam: the dashes there go dark and lean away from it, then gold stitches cross it and the
+    # paint closes up behind them
+    def fig_rift
+      torn, seam = w(17, 11), w(17, 14)
+      s, e = torn, seam + 3.4
+      a, span = seam - 0.7, 1.8
+      line = seg_poly(RIFT)
+      stitches = (0...14).map do |i|
+        u = (i + 0.5) / 14
+        seg = (u * (RIFT.size - 1)).floor
+        q = u * (RIFT.size - 1) - seg
+        x = RIFT[seg][0] + (RIFT[seg + 1][0] - RIFT[seg][0]) * q
+        y = RIFT[seg][1] + (RIFT[seg + 1][1] - RIFT[seg][1]) * q
+        [a + span * u, [x - 64, y - 26, x + 64, y + 26]]
+      end
+      @figs << [s, e, lambda do |t|
+        open = smooth((t - s) / 0.4) * (1 - smooth((t - seam + 0.4) / 1.8))
+        out = [fig(line, open, 0.8, sig: 50, pull: 1.0, mode: :tear)]
+        stitches.each { |at, sg| out << fig([sg], smooth((t - at) / 0.12) * (1 - smooth((t - e + 0.9) / 0.9)), 0.86, sig: 16, pull: 0.9) }
+        out
+      end]
+      event(:rip, s)
+      stitches.each_with_index { |(at, _), i| event(:stitch, at) if i % 3 == 0 }
+    end
+
+    def gear_segs(x, y, r, rot) = seg_poly((0...20).map { |i| a = rot + i * TAU / 20; rr = i.even? ? r : r * 0.74; [x + rr * Math.cos(a), y + rr * Math.sin(a)] }, closed: true)
+
+    def fig_machine
+      s, e = w(19, 1), 226.0
+      snap = w(19, 8)
+      cut = TEAM.each_index.map { |i| snap + i * 0.2 }
+      box = seg_poly([[120, 180], [960, 180], [960, 480], [120, 480]], closed: true) + seg_poly([[240, 180], [240, 60], [300, 60], [300, 180]]) + seg_poly([[780, 180], [780, 40], [840, 40], [840, 180]])
+      @figs << [s, e, lambda do |t|
+        lift = key(t, [[s, 700], [s + 1.3, 0], [snap + 1.2, 0], [e, 800]])[0]
+        shake = snap < t && t < snap + 1.4 ? 16 * Math.sin((t - snap) * 52) * (1 - (t - snap) / 1.4) : 0
+        a = smooth((t - s) / 0.8)
+        gears = [[300, 330, 80, 1.5], [540, 300, 112, -1.0], [790, 340, 80, 1.5]].flat_map { |x, y, r, sp| gear_segs(x, y, r, (t - s) * sp) }
+        out = [fig(xform(box + gears, dx: shake, dy: -lift), a, 0.32, sig: 24)]
+        strings = @puppet.each_with_index.filter_map do |pos, i|
+          next if t >= cut[i] + 0.25
+          x, y = pos.call(t)
+          top = [x * 0.84 + 86 + shake, 480 - lift]
+          # a cut string springs back up towards the machine
+          k = smooth((t - cut[i]) / 0.25)
+          [top[0], top[1], x + (top[0] - x) * k, y + (top[1] - y) * k]
+        end
+        out << fig(strings, a, 0.9, sig: 12, pull: 0.9)
+        out
+      end]
+      cut.each { |c| event(:snap, c) }
+    end
+
     # ------------------------------------------------------------------ the paint
     def make_dashes
       @dashes = []
@@ -284,8 +482,9 @@ module Film
       active = active_at(t)
       smile = bump(t, 50.3, 51.2, 54, 56, 1.0)
       smile_end = -0.2 + 3.6 * smooth((t - 50.3) / 1.3)
+      figs = figures_at(t)
       buckets = Array.new(PAINT.size) { [] }
-      @dashes.each do |bx, by, ph, len, tone|
+      @dashes.each_with_index do |(bx, by, ph, len, tone), di|
         x = bx + 9 * Math.cos(ph + p * 0.9)
         y = by + 9 * Math.sin(ph + p * 0.7)
         a0 = 0.7 * Math.sin(x / 310.0 + y / 430.0 + p * 0.11) + 1.0 * Math.sin(y / 205.0 - x / 540.0 - p * 0.07)
@@ -317,8 +516,55 @@ module Film
             heat += 0.82 * band * smile
           end
         end
+        level = warm * 0.36 + heat + tone + 0.06 * Math.sin(x / 90.0 + p)
+        take, want = 0.0, 0.0
+        figs.each do |g|
+          x0, x1, y0, y1 = g[:box]
+          next if x < x0 || x > x1 || y < y0 || y > y1
+          if g[:mode] == :static
+            sx0, sy0, sx1, sy1 = g[:segs][0][0], g[:segs][0][1], g[:segs][1][2], g[:segs][1][3]
+            next unless x.between?(sx0, sx1) && y.between?(sy0, sy1)
+            n = Math.sin(di * 12.9898 + t * 78.233) * 43_758.5453
+            n -= n.floor
+            ux, uy = Math.cos(n * 40), Math.sin(n * 40)
+            take += g[:amt]
+            want += g[:amt] * (n < 0.12 ? 0.9 : 0.12 + 0.3 * n)
+            next
+          end
+          best, nx, ny, tx, ty = 1e12, 0, 0, 1, 0
+          g[:segs].each do |ax, ay, bx2, by2|
+            vx, vy = bx2 - ax, by2 - ay
+            ll = vx * vx + vy * vy
+            u = ll.zero? ? 0 : (((x - ax) * vx + (y - ay) * vy) / ll).clamp(0, 1)
+            px, py = ax + vx * u, ay + vy * u
+            d2 = (x - px)**2 + (y - py)**2
+            next unless d2 < best
+            l = Math.sqrt(ll) + 1e-6
+            best, nx, ny, tx, ty = d2, px, py, vx / l, vy / l
+          end
+          k = g[:amt] * Math.exp(-best / (2.0 * g[:sig]**2))
+          next if k < 0.02
+          tx, ty = -tx, -ty if tx * ux + ty * uy < 0
+          if g[:mode] == :tear
+            side = (x - nx) * -ty + (y - ny) * tx >= 0 ? 1 : -1
+            x += -ty * side * 70 * k
+            y += tx * side * 70 * k
+          else
+            x += (nx - x) * g[:pull] * k
+            y += (ny - y) * g[:pull] * k
+          end
+          ux += tx * 6 * k
+          uy += ty * 6 * k
+          take += k
+          want += k * (g[:level] + 0.25 * tone)
+        end
+        if take > 0
+          kk = [take, 1].min
+          level = level * (1 - kk) + want / take * kk
+          heat += 0.4 * kk
+        end
         ang = Math.atan2(uy, ux)
-        level = (warm * 0.36 + heat + tone + 0.06 * Math.sin(x / 90.0 + p)).clamp(0.0, 0.93)
+        level = level.clamp(0.0, 0.93)
         i = (level * PAINT.size).floor
         half = len * (13 + 9 * [heat, 1].min)
         c, s = Math.cos(ang), Math.sin(ang)
@@ -344,108 +590,7 @@ module Film
     end
 
     # ------------------------------------------------------------------ table, cradles
-    def table
-      s, e = 24.0, 46.4
-      return unless live?(s, e)
-      rise = [[s, 800], [27.2, 0, "outCubic"], [44.9, 0], [e, 800, "smooth"]]
-      kids = [path(ellipse(*TABLE_C, 330, 120), fill: STREET, stroke: EDGE, strokeWidth: 3)]
-      [-260, -130, 0, 130, 260].each_with_index do |dx, i|
-        at = [w(1, 3), w(1, 4)].min + i * 0.22
-        y = TABLE_C[1] + (i.even? ? 34 : -34)
-        kids << { type: "circle", x: TABLE_C[0] + dx, y: y, radius: 36, fill: "#FFF0C9", stroke: EDGE, strokeWidth: 3, tracks: { opacity: [[at, 0], [at + 0.25, 1]] } }
-        kids << { type: "circle", x: TABLE_C[0] + dx, y: y, radius: 21, fill: %w[#E9743A #D0587A #F6B73C #7FE3D0 #FF9A4D][i], tracks: { opacity: [[at, 0], [at + 0.25, 1]] } }
-      end
-      @nodes << group(kids, start: f(s), end: e, tracks: { y: rise })
-    end
-
-    def cradles
-      s = w(1, 5)
-      e = 46.2
-      return unless live?(s, e)
-      [[220, 560, 0.0], [860, 470, 1.4], [560, 330, 2.6]].each_with_index do |(cx, cy, ph), i|
-        at = s + i * 0.45
-        arc = (0..18).map { |j| a = j * Math::PI / 18; [j.zero? ? "M" : "L", (cx + 92 * Math.cos(a)).round(1), (cy + 92 * Math.sin(a)).round(1)] } + [["Z"]]
-        rock = sample(at, e, 1 / 12.0) { |t| (0.34 * Math.sin((t + ph) * TAU / (BEAT * 2))).round(3) }
-        @nodes << group([path(arc, fill: "#8E5AA8", stroke: CREAM, strokeWidth: 5), { type: "circle", x: cx, y: cy + 8, radius: 26, fill: "#FFF0C9", stroke: NIGHT, strokeWidth: 4 }],
-                        start: f(at), end: e, x: cx, y: cy, anchor: [cx, cy], tracks: { rotation: rock, opacity: [[at, 0], [at + 0.4, 1], [e - 1.0, 1], [e, 0]] })
-        event(:arrive, at)
-      end
-    end
-
-    # ------------------------------------------------------------------ diner
-    def spoon_path
-      bowl = ellipse(0, -200, 88, 124)
-      stem = [["M", -18, -80], ["L", -14, 340], ["L", 14, 340], ["L", 18, -80], ["Z"]]
-      [bowl, stem]
-    end
-
-    def diner
-      s, e = 92.2, 108.4
-      return unless live?(s, e)
-      rise = [[s, 800], [94.8, 0, "outCubic"], [106.9, 0], [e, 800, "smooth"]]
-      band = [["M", -140, 1270], ["L", W + 140, 1270], ["L", W + 140, 1340], ["L", -140, 1340], ["Z"]]
-      kids = [path(band, fill: "#D0587A", stroke: CREAM, strokeWidth: 4)]
-      kids << path([["M", -140, 1340], ["L", W + 140, 1340], ["L", W + 140, H + 300], ["L", -140, H + 300], ["Z"]], fill: STREET, stroke: nil)
-      [200, 420, 640, 860].each do |x|
-        kids << path(ellipse(x, 1486, 64, 22), fill: "#E9743A", stroke: CREAM, strokeWidth: 3)
-        kids << path([["M", x - 7, 1500], ["L", x - 7, 1740], ["L", x + 7, 1740], ["L", x + 7, 1500], ["Z"]], fill: EDGE, stroke: nil)
-      end
-      [[w(7, 10), 220, "#F6B73C"], [w(7, 11), 620, "#7FE3D0"], [w(7, 13), 800, "#FF8FA3"], [w(7, 13) + 0.25, 960, "#C6A7FF"]].each do |at, x, c|
-        kids << group([path(ellipse(x, 1254, 62, 18), fill: "#FFF0C9", stroke: EDGE, strokeWidth: 3), { type: "circle", x: x, y: 1234, radius: 24, fill: c, stroke: NIGHT, strokeWidth: 3 }], tracks: { opacity: [[at, 0], [at + 0.2, 1]] })
-        event(:arrive, at)
-      end
-      @nodes << group(kids, start: f(s), end: e, tracks: { y: rise })
-      # the sign over the counter, a neon spoon
-      on = w(7, 5)
-      bowl, stem = spoon_path
-      flicker = [[on, 0], [on + 0.1, 1], [on + 0.2, 0.3], [on + 0.36, 1], [w(7, 7), 1], [w(7, 7) + 0.1, 0.4], [w(7, 7) + 0.24, 1], [106.8, 1], [107.8, 0]]
-      @nodes << group([path(bowl, fill: "#FF8FA322", stroke: "#FF8FA3", strokeWidth: 11, glow: 22), path(stem, fill: "#FF8FA322", stroke: "#FF8FA3", strokeWidth: 9, glow: 22)],
-                      start: f(on), end: 108, x: 620, y: 560, rotation: 0.5, tracks: { opacity: flicker })
-      event(:flicker, on)
-      doctors
-    end
-
-    def doctors
-      at = w(8, 2)
-      swap = w(8, 5)
-      [[0, 980], [1, 1130], [2, 1280]].each do |i, tx|
-        pos = lambda do |t|
-          x, = key(t, [[at + i * 0.3, W + 90, 0], [at + 1.5 + i * 0.3, tx - 280, 0], [swap + 0.2, tx - 280, 0], [swap + 1.2, 590 + i * 170, 0]])
-          [x, 1138 - 10 * Math.sin((t + i) * TAU / BEAT).abs]
-        end
-        cross = [{ type: "rect", x: -14, y: -4, width: 28, height: 8, fill: "#E5484D", tracks: { opacity: [[swap - 0.2, 1], [swap, 0]] } },
-                 { type: "rect", x: -4, y: -14, width: 8, height: 28, fill: "#E5484D", tracks: { opacity: [[swap - 0.2, 1], [swap, 0]] } },
-                 group([path(ellipse(0, -62, 54, 10), fill: "#DDE3F2", stroke: EDGE, strokeWidth: 3), path(ellipse(0, -74, 30, 18), fill: "#F6B73C", stroke: NIGHT, strokeWidth: 3)], tracks: { opacity: [[swap - 0.1, 0], [swap + 0.1, 1]] })]
-        dab(at + i * 0.3, 107.9, "#FFFFFF", 34, pos, extra: cross)
-        event(:arrive, at + i * 0.3)
-      end
-    end
-
     # ------------------------------------------------------------------ the set
-    def television
-      s, e = 107.4, 117.6
-      return unless live?(s, e)
-      off = w(9, 5)
-      fade = [[s, 0], [108.2, 1], [off + 0.7, 1], [e, 0]]
-      drop = [[off + 0.7, 0], [e, 500, "smooth"]]
-      body = path([["M", 200, 360], ["L", 880, 360], ["L", 880, 880], ["L", 200, 880], ["Z"]], fill: STREET, stroke: "#5A6AA8", strokeWidth: 7)
-      aerial = path([["M", 540, 360], ["L", 400, 180], ["M", 540, 360], ["L", 690, 170]], fill: nil, stroke: "#5A6AA8", strokeWidth: 9)
-      emit(group([body, aerial], start: f(s), end: e, tracks: { opacity: fade, y: drop }))
-      r = Random.new(5)
-      t = s
-      while t < off
-        cmds = (0...90).flat_map { x = 240 + r.rand * 590; y = 400 + r.rand * 440; [["M", x.round, y.round], ["L", (x + 14 + r.rand * 26).round, y.round]] }
-        hue = %w[#DDE3F2 #9AD7FF #7E8FB8][(t * 8).round % 3]
-        emit(path(cmds, fill: nil, stroke: hue, strokeWidth: 5, start: f(t), end: f(t + STEP), tracks: { opacity: [[s, 0], [108.2, 1]] }))
-        t += STEP
-      end
-      # the picture collapses to a line, then a dot
-      emit({ type: "rect", x: 240, y: 615, width: 600, height: 10, fill: "#FFFFFF", start: f(off), end: off + 0.7, glow: 10, tracks: { opacity: [[off, 1], [off + 0.34, 1], [off + 0.7, 0]] } })
-      crack = [["M", 540, 400], ["L", 505, 500], ["L", 590, 590], ["L", 520, 690], ["L", 575, 840]]
-      emit(path(crack, fill: nil, stroke: CREAM, strokeWidth: 6, start: f(off + 0.1), end: e, tracks: { opacity: fade, y: drop }))
-      event(:tv_off, off)
-    end
-
     def talk
       s, e = 117.4, 125.7
       friend = ->(t) { [key(t, [[s, -80, 0], [118.3, 290, 0], [124.3, 290, 0], [e, -100, 0]])[0], 1290] }
@@ -483,10 +628,11 @@ module Film
       end
       look_at = 169.0
       warm = w(15, 2)
+      gap = (PLUCKS.first - 0.25 - warm) / @far.size
       @far.each_with_index do |(x, y), i|
-        on = warm + i * 0.13
+        on = warm + i * gap
         kids << { type: "rect", x: x - 17, y: y - 23, width: 34, height: 46, fill: "#10163A", stroke: EDGE, strokeWidth: 3 }
-        blink = [[look_at, 1], [warm - 0.2 + i * 0.13, 1], [on, 0]]
+        blink = [[look_at, 1], [on - 0.2, 1], [on, 0]]
         shift = [[look_at - 1, -3], [look_at + 3, 3], [look_at + 3.5, -3]]
         [-8, 8].each do |dx|
           kids << { type: "circle", x: x + dx, y: y - 4, radius: 7, fill: "#F2F5FF", tracks: { opacity: blink } }
@@ -494,56 +640,22 @@ module Film
         end
         kids << window(x, y, LIGHTS[i % LIGHTS.size], on)
       end
+      # the strum: the windows change colour left to right, one column of houses per plucked string, then all of
+      # them change together on the hit (Robin's notes at 2:57 and 2:59; onsets from the no-vocals stem)
+      xs = @far.map(&:first)
+      lo, hi = xs.min, xs.max + 1
+      @far.each_with_index do |(x, y), i|
+        k = ((x - lo) / (hi - lo) * PLUCKS.size).floor
+        at = PLUCKS[k]
+        kids << window(x, y, LIGHTS[(i + 3) % LIGHTS.size], at, nil, 0.08)
+        kids << window(x, y, LIGHTS[(i + 6) % LIGHTS.size], STRUM_HIT, nil, 0.08)
+      end
+      PLUCKS.each { |q| event(:pluck, q) }
       scroll = [[163.3, 0], [172, -1500, "smooth"]]
       rise = [[s, 760], [160.5, 0, "outCubic"], [207, 0], [e, 900, "smooth"]]
       rent = [[w(17, 4) - 0.6, 1], [w(17, 5), 1.26, "smooth"], [w(17, 6) + 0.2, 1, "smooth"]]
       street_group(s, e, kids, rise: rise, scroll: scroll, tall: rent)
       event(:settle, 158.9)
-      wallet
-    end
-
-    def wallet
-      s = w(16, 4)
-      land = w(16, 8)
-      e = land + 0.5
-      return unless live?(s, e)
-      body = [{ type: "rect", x: -72, y: -46, width: 144, height: 92, fill: "#D08A4E", stroke: CREAM, strokeWidth: 5 }, { type: "rect", x: 14, y: -20, width: 58, height: 40, fill: "#F6B73C", stroke: NIGHT, strokeWidth: 4 }]
-      xs = sample(s, e, 1 / 12.0) { |t| (key(t, [[s, 860], [land, her(land)[0]]])[0] + 80 * Math.sin((t - s) * 2.2) * (1 - smooth((t - s) / (land - s)))).round(1) }
-      ys = sample(s, e, 1 / 12.0) { |t| key(t, [[s, -60], [s + 0.7, 180], [land - 0.9, 240], [land, her(land)[1] - 40]])[0].round(1) }
-      emit(group(body, start: f(s), end: e, tracks: { x: xs, y: ys, rotation: [[s, -0.5], [land, 0.4]], opacity: [[land + 0.15, 1], [e, 0]] }))
-      ring(land, ->(_) { her(land) }, GOLD, big: 4.5, life: 1.0)
-      event(:arrive, land)
-      STAMPS.each do |t|
-        ring(t + 0.26, ->(_) { [her(t)[0], BASE + 60] }, CREAM, big: 7, life: 0.9)
-        event(:stamp, t + 0.26)
-      end
-    end
-
-    def rift
-      torn = w(17, 11)
-      seam = w(17, 14)
-      s, e = torn, seam + 3.4
-      return unless live?(s, e)
-      pts = [[640, -40], [560, 110], [660, 250], [540, 410], [640, 570], [520, 730], [620, 880], [510, 1040]]
-      poly = [["M", *pts[0]]] + pts.each_cons(2).map { |_, b| ["L", b[0] - 40, b[1]] } + pts.reverse.map { |p| ["L", p[0] + 34, p[1]] } + [["Z"]]
-      close = [[s, 0], [s + 0.3, 1, "outCubic"], [seam - 0.7, 1], [seam + 1.1, 0, "smooth"]]
-      emit(path(poly, fill: "#04061A", stroke: "#04061A", strokeWidth: 2, start: f(s), end: seam + 1.2, x: 590, y: 0, anchor: [590, 0], tracks: { scaleX: close }))
-      event(:rip, s)
-      a = seam - 0.7
-      span = 1.8
-      steps = 22
-      (0...steps).each do |i|
-        u = i.fdiv(steps)
-        seg = (u * (pts.size - 1)).floor
-        q = u * (pts.size - 1) - seg
-        x = pts[seg][0] + (pts[seg + 1][0] - pts[seg][0]) * q
-        y = pts[seg][1] + (pts[seg + 1][1] - pts[seg][1]) * q
-        t = a + span * u
-        side = i.even? ? 1 : -1
-        emit(path([["M", (x - 34 * side).round, (y - 16).round], ["L", (x + 34 * side).round, (y + 16).round]], fill: nil, stroke: GOLD, strokeWidth: 8, glow: 5, start: f(t), end: e,
-                   tracks: { opacity: [[t, 0], [t + 0.06, 1], [e - 0.9, 1], [e, 0]] }))
-        event(:stitch, t) if i % 3 == 0
-      end
     end
 
     # ------------------------------------------------------------------ team
@@ -553,13 +665,6 @@ module Film
       s, e = 207.6, 227.0
       return unless live?(s, e)
       same = w(18, 10)
-      @puppet = TEAM.each_with_index.map do |(x, y), i|
-        ->(t) do
-          jerk = bump(t, 218.2, 218.9, 224.2, 225, 1.0) * 26 * Math.sin((t * 4).floor * 1.7 + i)
-          free = (t > 224 ? 18 * Math.sin(t * 2 + i) : 8 * Math.sin((t + i) * TAU / BEAT))
-          [x, key(t, [[s + i * 0.08, H + 90], [s + 1.7 + i * 0.08, y], [225.6, y], [228.6, H + 120]])[0] + free + jerk]
-        end
-      end
       @puppet.each_with_index do |pos, i|
         gold = { type: "circle", radius: 30, fill: nil, stroke: GOLD, strokeWidth: 6, tracks: { opacity: [[same + i * 0.03, 0], [same + 0.15 + i * 0.03, 1], [218, 1], [218.6, 0]] } }
         dab(s, e, LIGHTS[i % LIGHTS.size], 22, pos, extra: [gold])
@@ -576,36 +681,6 @@ module Film
       dab(ball_times.first, ball_times.last, "#FFFFFF", 15, ball, fade: [[ball_times.first, 0], [ball_times.first + 0.1, 1], [ball_times.last - 0.2, 1], [ball_times.last, 0]], halo: false)
       ball_times.each { |t| event(:pass, t) }
       ring(w(18, 11), ->(_) { her(w(18, 11)) }, GOLD, big: 8, life: 1.2, r: 40)
-      machine
-    end
-
-    def machine
-      s, e = w(19, 1), 226.0
-      return unless live?(s, e)
-      snap = w(19, 8)
-      gears = [[300, 330, 64, 1.5], [540, 300, 92, -1.0], [790, 340, 64, 1.5]].map do |x, y, r, sp|
-        { type: "star", x: x, y: y, radius: r, inner: r * 0.72, rays: 10, fill: "#7E8FB8", stroke: NIGHT, strokeWidth: 4, tracks: { rotation: sample(s, e, 1 / 6.0) { |t| ((t - s) * sp).round(3) } } }
-      end
-      box = path([["M", 120, 180], ["L", 960, 180], ["L", 960, 480], ["L", 120, 480], ["Z"]], fill: "#232C66", stroke: "#5A6AA8", strokeWidth: 6)
-      stack = path([["M", 240, 180], ["L", 240, 60], ["L", 300, 60], ["L", 300, 180], ["Z"], ["M", 780, 180], ["L", 780, 40], ["L", 840, 40], ["L", 840, 180], ["Z"]], fill: "#232C66", stroke: "#5A6AA8", strokeWidth: 6)
-      drop = [[s, -700], [s + 1.3, 0, "outCubic"], [snap + 1.2, 0], [e, -800, "smooth"]]
-      shake = [[snap - 0.1, 0]] + (0..10).map { |i| [snap + i * 0.12, i.even? ? 16 : -16] } + [[snap + 1.4, 0]]
-      emit(group([stack, box] + gears, start: f(s), end: e, tracks: { y: drop, x: shake }))
-      # strings, redrawn each paint step so they follow the puppets
-      cut = TEAM.each_index.map { |i| snap + i * 0.2 }
-      t = (([s, @a].max) / STEP).floor * STEP
-      while t < [e, @b].min
-        cmds = []
-        lift = key(t, [[s, 700], [s + 1.3, 0], [snap + 1.2, 0], [e, 800]])[0]
-        @puppet.each_with_index do |pos, i|
-          next if t >= cut[i]
-          x, y = pos.call(t)
-          cmds += [["M", (x * 0.84 + 86).round, (480 - lift).round], ["L", x.round, y.round]]
-        end
-        @nodes << path(cmds, fill: nil, stroke: "#DDE3F2", strokeWidth: 3, start: f(t), end: f(t + STEP)) unless cmds.empty?
-        t += STEP
-      end
-      cut.each { |c| event(:snap, c) }
     end
 
     # ------------------------------------------------------------------ lights stay on
@@ -671,14 +746,9 @@ module Film
     def build
       underpaint
       paint
-      table
-      cradles
       friends_street
-      diner
-      television
       talk
       return_street
-      rift
       team
       goodnight_street
       lights
