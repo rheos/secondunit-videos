@@ -308,7 +308,12 @@ module Film
         a = env(t, 24.0, 2.6, 46.4, 1.6)
         dy = 160 * (1 - smooth((t - 24) / 3.2))
         out = [fig(seg_poly(arc_pts(TABLE_C[0], TABLE_C[1] + dy, 340, 125)), a, 0.68, sig: 26)]
-        plates.each { |x, y, at| out << fig(seg_poly(arc_pts(x, y + dy, 46, 22, 0, TAU, 12)), a * smooth((t - at) / 0.35), 0.86, sig: 16, pull: 0.85) }
+        plates.each_with_index do |(_, _, at), i|
+          ang = i * TAU / 5 + 0.35 * (t - 24)
+          x = TABLE_C[0] + 215 * Math.cos(ang)
+          y = TABLE_C[1] + dy + 62 * Math.sin(ang) - 14 * bump(t, 25.5, 26.5, 44, 46, 1.0) * Math.sin(t * TAU / BEAT + i).abs
+          out << fig(seg_poly(arc_pts(x, y, 46, 22, 0, TAU, 12)), a * smooth((t - at) / 0.35), 0.86, sig: 16, pull: 0.85)
+        end
         out
       end]
       plates.each { |*, at| event(:arrive, at) }
@@ -324,10 +329,31 @@ module Film
       end
     end
 
-    def spoon_segs
-      bowl = seg_poly(arc_pts(0, -200, 110, 150, 0, TAU, 22))
-      stem = seg_poly([[-16, -52], [-14, 360]]) + seg_poly([[16, -52], [14, 360]])
-      xform(bowl + stem, dx: 620, dy: 560, rot: 0.5)
+    # the neon spoon stirs: it drops in, tips bowl-down and sweeps loops on the beat, dips on each plate, and the paint
+    # round its bowl swirls with it (active_at), so it is stirring the sky rather than hanging in it
+    SPOON_STEM = 420
+
+    def spoon_pose(t)
+      on, off = w(7, 5), 106.8
+      dips = [w(7, 10), w(7, 11), w(7, 13), w(7, 13) + 0.25]
+      ph = (t - on) * TAU / (2 * BEAT)
+      stir = smooth((t - on - 0.6) / 0.8)
+      px = 690 + 110 * Math.cos(ph) * stir
+      py = 640 - 700 * (1 - smooth((t - on) / 0.9)) - 900 * smooth((t - off) / 1.0)
+      py += dips.sum { |d| 90 * Math.sin(Math::PI * ((t - d + 0.15) / 0.5).clamp(0, 1)) }
+      rot = (1 - smooth((t - on) / 0.9)) * 2.4 + 0.32 * Math.sin(ph) * stir - 2.0 * smooth((t - off) / 1.0)
+      [px, py, rot]
+    end
+
+    def spoon_bowl(t)
+      px, py, rot = spoon_pose(t)
+      [px - Math.sin(rot) * (SPOON_STEM + 120), py + Math.cos(rot) * (SPOON_STEM + 120)]
+    end
+
+    def spoon_segs(t)
+      px, py, rot = spoon_pose(t)
+      shape = seg_poly([[-14, 0], [-12, SPOON_STEM]]) + seg_poly([[14, 0], [12, SPOON_STEM]]) + seg_poly(arc_pts(0, SPOON_STEM + 120, 86, 124, 0, TAU, 20))
+      xform(shape, dx: px, dy: py, rot: rot)
     end
 
     def fig_diner
@@ -335,15 +361,22 @@ module Film
       on = w(7, 5)
       blink = [[on, 0], [on + 0.1, 1], [on + 0.2, 0.3], [on + 0.36, 1], [w(7, 7), 1], [w(7, 7) + 0.1, 0.4], [w(7, 7) + 0.24, 1], [106.8, 1], [107.8, 0]]
       plates = [[w(7, 10), 220], [w(7, 11), 620], [w(7, 13), 800], [w(7, 13) + 0.25, 960]]
-      spoon = spoon_segs
       @figs << [s, e, lambda do |t|
         a = env(t, s, 2.4, e, 1.4)
         dy = 220 * (1 - smooth((t - s) / 2.6)) + 300 * smooth((t - 106.9) / 1.5)
         counter = seg_poly([[-100, 1300 + dy], [W + 100, 1300 + dy]])
-        stools = [200, 420, 640, 860].flat_map { |x| seg_poly([[x - 70, 1490 + dy], [x + 70, 1490 + dy]]) + seg_poly([[x, 1490 + dy], [x, 1760 + dy]]) }
+        # the stool seats swivel, each a little behind the last
+        stools = [200, 420, 640, 860].each_with_index.flat_map do |x, i|
+          hw = 22 + 52 * Math.cos((t - s) * TAU / (4 * BEAT) + i * 0.8).abs
+          seg_poly([[x - hw, 1490 + dy], [x + hw, 1490 + dy]]) + seg_poly([[x, 1490 + dy], [x, 1760 + dy]])
+        end
         out = [fig(counter, a, 0.62, sig: 28), fig(stools, a, 0.4, sig: 20)]
-        plates.each { |at, x| out << fig(seg_poly(arc_pts(x, 1240 + dy, 60, 20, 0, TAU, 12)), a * smooth((t - at) / 0.25), 0.88, sig: 16, pull: 0.85) }
-        out << fig(spoon, key(t, blink)[0], 0.6, sig: 26) if t >= on
+        # plates slide in along the counter from the right edge and stop at their place
+        plates.each do |at, x|
+          px = x + (W + 140 - x) * (1 - smooth((t - at + 0.5) / 0.5))
+          out << fig(seg_poly(arc_pts(px, 1240 + dy, 60, 20, 0, TAU, 12)), a * smooth((t - at + 0.5) / 0.2), 0.88, sig: 16, pull: 0.85)
+        end
+        out << fig(spoon_segs(t), key(t, blink)[0], 0.6, sig: 26) if t >= on
         out
       end]
       plates.each { |at, _| event(:arrive, at) }
@@ -468,6 +501,11 @@ module Film
         next if t < k[:s] || t > k[:e]
         cloud = bump(t, 58.2, 60.5, 68, 70.5, 1.0)
         out << [kid_pos(k, t), 0.5 + 0.5 * cloud, 1.0 + 1.2 * cloud, 0.14 + 0.46 * cloud, 72.0 + 70 * cloud, 7_000.0 + 15_000 * cloud]
+      end
+      on = w(7, 5)
+      if t.between?(on, 107.8)
+        stir = smooth((t - on - 0.6) / 0.8) * (1 - smooth((t - 106.8) / 0.8))
+        out << [spoon_bowl(t), stir, 2.4, 0.22, 120.0, 22_000.0] if stir > 0.02
       end
       if t.between?(107.3, 116.4)
         out << [[540, 620], 1.0, 0.0, 0.34, 72.0, 60_000.0]
