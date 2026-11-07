@@ -8,7 +8,8 @@ echo 'swift ihd film render' > /Users/robin/tmp/devweb-heavy.lock/owner
 trap 'rm -rf /Users/robin/tmp/devweb-heavy.lock' EXIT
 BIN=tools/graphics/.build/release/mgraphics
 EDGES=(0 17 44.9 75.3 106.9 137.3 162.8 190.9 216.9 248.4 282 300.04)
-mkdir -p output/film; rm -f output/film/sec_*.mp4 scenes/film_*.json
+mkdir -p output/film; rm -f output/film/sec_*.mp4(N) scenes/film_*.json(N)
+old=(output/film/sec_*.mp4(N)); (( ${#old} == 0 )) || { echo "old sections still there"; exit 1; }
 SECONDS=0
 one() {
   local i=$1 a=$2 b=$3 tag=$(printf %02d $i)
