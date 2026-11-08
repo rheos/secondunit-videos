@@ -46,7 +46,14 @@ function ride(curve, u0, u1, v, { flat = 0, lift = 0, grow = false, shrink = fal
 const LEAN = 1.15, LENS = V3(0, 0.35, 1).normalize(); // from flat, toward where the camera is: in front, a little above
 function rideDown(curve, v, size, { grow = true, shrink = true } = {}) {
   if (v < 0 || v >= 1) return null;
-  const u = io(v), p = pt(curve, u), tg = curve.getTangent(u).normalize();
+  const u = io(v), p = pt(curve, u);
+  // the travel direction: over a short window of the path (4 % each way, about 0.25 units) and never from the drop
+  // out of the spout (the first 9 % of the path, nearly vertical). The way home is a drop, a trough and a lane joined
+  // at corners; a basis built on the drop's vertical tangent has its top edge nearly level, and the sign test below
+  // flipped it as the card turned the first corner, so the card snapped from standing to lying in one frame (forensics
+  // on the d6 master, 8.86 s). Read from the trough instead, a result comes out of the spout already lying back, as
+  // programs.js says results come, and the lane corner is turned over a few frames.
+  const D = 0.04, uT = Math.max(u, 0.14), tg = pt(curve, Math.min(1, uT + D)).sub(pt(curve, uT - D)).normalize();
   const perp = (a) => a.clone().addScaledVector(tg, -a.dot(tg)).normalize(); // a direction with the travel taken out
   const up = perp(Y), toLens = perp(LENS);
   const cz = up.clone().multiplyScalar(Math.cos(LEAN)).addScaledVector(toLens, Math.sin(LEAN)).normalize(); // the face
