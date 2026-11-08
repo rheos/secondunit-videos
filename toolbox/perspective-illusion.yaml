@@ -1,7 +1,7 @@
 slug: perspective-illusion
 name: perspective-illusion (simcraft)
 kind: toolkit
-status: candidate
+status: available
 does: A Claude skill plus three.js templates for a looping ink line-art scene that a level telephoto camera squashes flat, then dolly-zooms and swings to corner views so the depth opens up, while objects swap depth unseen during the flat moments.
 keywords:
 - dolly-zoom
@@ -19,7 +19,7 @@ fits:
 - one hero move inside a code-drawn film, as the reveal of a place
 - devweb-world style one-camera films, for the flat-to-deep reveal and the blink check
 deterministic: yes
-how: 'not installed. Repo cloned to a scratchpad on 2026-11-07 only. Pages expose render(ms), probe(ms), setJitter and renderMany; render_fast.mjs averages 4 jittered sub-renders per frame and up to 32 on fast moves, sized from how far probe points move on screen. blink_map.py counts pixels that flicker in near-still frames.'
+how: 'Our own build of the method is bobwiseman-10000-miles-perspective/ (three.js r160, render.mjs, about 0.3 s a frame). The simcraft repo is not installed; it was only read. Pages expose render(ms), probe(ms), setJitter and renderMany; render_fast.mjs averages 4 jittered sub-renders per frame and up to 32 on fast moves, sized from how far probe points move on screen. blink_map.py counts pixels that flicker in near-still frames.'
 cost: 'free, but the repo has no licence: ideas and method only, write our own code'
 url: https://github.com/dotslashsimran/simcraft/tree/main/skills/video/perspective-illusion
 source: x.com/simranrambles/status/2119097166191096197 (Nov 7 2026), a remake of a @garments__ clip; sent by Robin
