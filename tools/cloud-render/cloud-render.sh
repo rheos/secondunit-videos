@@ -40,6 +40,11 @@ if [[ ! -f $song ]] && (( hfpage )); then
   hfclip=($(python3 $here/hfaudio.py $pdir/$page)) || { echo "no $song, and no single <audio> clip in the page to use"; exit 2; }
   song=$pdir/${hfclip[1]}
 fi
+if [[ ! -f $song && -f $pdir/film.config.js ]]; then
+  # a cleanline film: the song its clock.js pins, refused unless its sha256 matches (the engine itself is not packaged:
+  # the runner checks out cleanline/ from the workflow's ref, so commit engine changes before a cloud render)
+  song=$(node --input-type=module -e "import { loadFilm, audioPath } from '$root/cleanline/bin/film.mjs'; console.log(audioPath(loadFilm('$pdir'), { required: true }))") || exit 2
+fi
 [[ -f $song ]] || { echo "no $song (the song clock)"; exit 2; }
 fps=${CR_FPS:-24}; width=$(( height * 16 / 9 )); vbv=()
 if (( tall )); then

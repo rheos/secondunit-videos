@@ -44,8 +44,12 @@ export function audioPath(F, { required = false } = {}) {
 }
 
 // Chrome with the GPU flags every film has rendered with, one page per worker, the film page opened offline.
+// CL_GPU=0 draws on the CPU instead: slower, but bit-exact from page to page (GPU canvas can differ by one level on a
+// few pixels between two pages drawing the same frame), so compare.mjs uses it for proofs.
 export async function openBrowser() {
-  return chromium.launch({ channel: process.env.CL_CHANNEL || 'chrome', headless: true, args: ['--use-angle=metal', '--ignore-gpu-blocklist', '--enable-gpu'] });
+  const gpu = process.env.CL_GPU !== '0';
+  return chromium.launch({ channel: process.env.CL_CHANNEL || 'chrome', headless: true,
+    args: gpu ? ['--use-angle=metal', '--ignore-gpu-blocklist', '--enable-gpu'] : ['--disable-gpu', '--disable-accelerated-2d-canvas'] });
 }
 export async function openPage(b, pageFile, size, qs, errs) {
   const p = await b.newPage({ viewport: { width: size[0], height: size[1] } });

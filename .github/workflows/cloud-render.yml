@@ -73,7 +73,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          sparse-checkout: tools/cloud-render
+          # cleanline films load the shared engine from ../cleanline/ (beside pkg/), as committed on this ref
+          sparse-checkout: |
+            tools/cloud-render
+            cleanline
           persist-credentials: false
       - uses: actions/setup-node@v4
         with: { node-version-file: .nvmrc }

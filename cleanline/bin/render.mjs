@@ -1,5 +1,5 @@
 // Render a span of a cleanline film to mp4, on the song's frame grid, with the pinned song muxed in.
-//   node ../cleanline/bin/render.mjs <t0> <t1> <out.mp4> [--workers 4] [--scale 0.6667] [--qs look=armink] [--film DIR] [--keep]
+//   node ../cleanline/bin/render.mjs <t0> <t1|end> <out.mp4> [--workers 4] [--scale 0.6667] [--qs look=armink] [--film DIR] [--keep]
 // Run from the film folder (or pass --film). Frame i is song time t0 + i/fps; t0 and t1 should sit on the grid.
 // --scale < 1 encodes a review file at that size (0.6667 = 1280x720, crf 24); frames are always drawn full size.
 // --no-audio skips the mux (for a film whose song is not on this machine). Frames go to <film>/out/frames_<t0>_<t1>/.
@@ -8,9 +8,10 @@ import { parseArgs, loadFilm, audioPath, openBrowser, openPage, writeDataURL } f
 
 const { opt, pos } = parseArgs(process.argv.slice(2), ['keep', 'no-audio']);
 const F = loadFilm(opt.film); const fps = F.fps;
-const [t0, t1] = [Number(pos[0]), Number(pos[1])]; const out = path.resolve(pos[2] || path.join(F.dir, `out/render_${t0}_${t1}.mp4`));
-if (!(t1 > t0)) throw new Error('usage: render.mjs <t0> <t1> <out.mp4> [--workers n] [--scale s] [--qs ...]');
-for (const t of [t0, t1]) if (Math.abs(t * fps - Math.round(t * fps)) > 1e-6 && t !== F.clock.duration) console.log(`note: ${t} s is not on the ${fps} fps grid`);
+const t0 = Number(pos[0]), t1 = pos[1] === 'end' ? F.clock.frames / fps : Number(pos[1]); // 'end' = the song's last frame
+const out = path.resolve(pos[2] || path.join(F.dir, `out/render_${t0}_${t1}.mp4`));
+if (!(t1 > t0)) throw new Error('usage: render.mjs <t0> <t1|end> <out.mp4> [--workers n] [--scale s] [--qs ...]');
+for (const t of [t0, t1]) if (Math.abs(t * fps - Math.round(t * fps)) > 1e-6) console.log(`note: ${t} s is not on the ${fps} fps grid`);
 const WK = Number(opt.workers || 4), SCALE = Number(opt.scale || 1);
 const song = opt['no-audio'] ? null : audioPath(F, { required: true });
 const dir = path.join(F.dir, 'out', `frames_${t0}_${t1}${opt.qs ? '_' + opt.qs.replace(/\W/g, '_') : ''}`);
