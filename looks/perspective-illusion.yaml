@@ -37,5 +37,6 @@ reference: >-
   Method from github.com/dotslashsimran/simcraft (perspective-illusion skill) and the @garments__ clips it studies. Town,
   cast, story and code are ours.
 proof:
-  - rheos/secondunit-videos#451
+  pr:
+    - rheos/secondunit-videos#451
 verdict: "Robin, 2026-11-08, on test 01c: \"It lands\"."
