@@ -1,0 +1,12 @@
+# media, lyrics and work files stay out (no trailing slashes: they would miss symlinks)
+/source
+/work
+/out
+/output
+/tmp
+/_in
+/gen
+/assets
+/node_modules
+STORYBOARD.md
+*.lyrics.txt
