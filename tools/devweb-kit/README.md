@@ -160,6 +160,12 @@ Iterate with `npx hyperframes@0.8.162 snapshot --at ...` (contact sheets) before
   "very 2D and boring"; on a wrong study: "is that really the way it works though?"). Write down who acts, what they
   choose and what comes back, draw exactly that in Blink's language with the mechanism showing, shot from
   three-quarter angles, in a study page under `design/` before a board draws it, then a silent motion test.
+- **No sign test on a basis built from a travel tangent that can go vertical.** A result card's frame was built from
+  the path's tangent with "top edge upward" chosen by `cy.y < 0`; where the path drops out of the spout the tangent is
+  near vertical, the top edge near level, and the test flipped at the first corner: the card snapped from standing to
+  lying in one frame (forensics on the ep 6 master, 8.86 s; the 30 fps draft and two supervisor rounds missed it).
+  Read the direction from the part of the path that never goes vertical, or blend the basis over the corner, and
+  check a moving prop at 1/120 s steps on the page through every corner of its path.
 - **A cloned take gets Adobe Enhance Speech v2 before align** (Robin, 2026-11-06: "B is way better"): his Chrome, free
   plan, strength 50 %, from a 48 kHz WAV; timing unchanged, level-match the result to the take, check 0 ms lag.
 - **Declare blinks as cues.** A blink is a real one-frame change and forensics calls it a spike. `cues.js` adds an
