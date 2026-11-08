@@ -10,6 +10,9 @@ window.OVERLAYS = function (w) {
     { lines: [["NOTHING BROKE", 540, 152, 92]], at: w("nothing", 2) - 0.2, gone: w("but", 1) + 0.15, big: 1 },
     { lines: [["53 DAYS", LOW, 1200, 96]], at: w("53", 1) - 0.2, gone: w("i", 6), big: 1 },
     { lines: [["THE TIP", LOW, 1200, 92]], at: w("here's", 2) - 0.1, gone: w("it", 10) },
+    // Stays at the foot, straddling the bottom 220 px band (supervisor 05 F3): raised to clear the band it sits on
+    // Blink's body at the end pose, and at the top (the storyboard's spot) it covers the bulb and then the lid as the
+    // camera drops. The film has no captions in the band. Robin's ruling at the final watch.
     { lines: [["STILL THE OLD ONE", 540, 1728, 80]], at: w("still", 1) - 0.12, gone: endIn + 0.3 },
   ];
 };

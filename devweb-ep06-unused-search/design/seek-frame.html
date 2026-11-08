@@ -1,0 +1,15 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>seek frame</title>
+<!-- One frame of the film at ?t=<s>, at half size, for a headless screenshot on the runner's rasterizer:
+     chrome --headless=new --use-angle=swiftshader --enable-unsafe-swiftshader --window-size=540,960
+       --virtual-time-budget=12000 --screenshot=out.png "http://localhost:8796/design/seek-frame.html?t=7.9" -->
+<style>body{margin:0;background:#000}iframe{width:1080px;height:1920px;border:0;transform:scale(.5);transform-origin:0 0}</style>
+<iframe id="f"></iframe>
+<script>
+const Q = new URLSearchParams(location.search);
+const t = parseFloat(Q.get("t") || "0");
+const f = document.getElementById("f");
+f.src = "../index.html" + (Q.get("floor") ? `?floor=${Q.get("floor")}` : ""); // ?floor=hex reaches world.js
+f.addEventListener("load", () => { setTimeout(() => f.contentWindow.dispatchEvent(new CustomEvent("hf-seek", { detail: { time: t } })), 2500); });
+</script>
