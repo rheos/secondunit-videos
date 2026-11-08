@@ -28,6 +28,8 @@ rules:
 palette: ["#0d1117", "#6ad08a", "#4f93d6", "#d6a45a", "#e0675a", "#eef2f6"]
 reference: cinetic's gallery films (Leon Lin), for the continuous camera, the mass moment and the finish
 proof:
-  - https://youtu.be/uieKDwKfPzg (ep 1 draft 4)
-  - rheos/secondunit-videos#348
+  pr:
+    - rheos/secondunit-videos#348
+  youtube:
+    - uieKDwKfPzg (ep 1 draft 4)
 verdict: '"i definitely like the 1 3D world. that''s great. that''s going to be our standard" (Robin, 2026-10-29)'
