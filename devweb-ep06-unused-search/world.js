@@ -4,8 +4,10 @@
 import * as THREE from "three";
 import { cameraPath, stage } from "./kit/world.js";
 import { FOOT_Y, T } from "./timeline.js";
+import { gridFloor } from "./stations/floor.js";
 import * as mark from "./stations/mark.js";
-import * as crate from "./stations/crate.js";
+import * as machine from "./stations/machine.js";
+import * as programs from "./stations/programs.js";
 import * as cards from "./stations/cards.js";
 import * as lamp from "./stations/lamp.js";
 import * as counter from "./stations/counter.js";
@@ -17,101 +19,104 @@ import * as log from "./stations/log.js";
 
 const VO = window.VO, w = (x, n) => VO.w(x, n);
 
-// [time, position, target, fov, the film second it should resolve to, subject]. DP final (camera-final.md in the run):
-// a designed camera. One move per change of subject, each arriving 0-3 frames before the word or hit it serves, with a
-// creep between moves (a "creep" key nudges the pose toward the next one). The hook opens close on the dial from the
-// left, already moving at frame 0 (K01 starts before 0), with Blink as foreground; the pushes on the counter (36), the
-// tray, the turn on day 53 and the list/default tag in the tip drop Blink's visor out; everything else keeps it whole. Poses were fitted in node against
-// the framing rules in the kit's camera-check.mjs; `node check-graybox.mjs` measures them. Subject names are
-// camera-set.mjs's SUBJECTS (cameraPath ignores the sixth field). All keys share the kit's io ease: the kit offers no other.
+// [time, position, target, fov, the film second it should resolve to, subject]. DP for the rebuilt set (camera-v2.md in
+// the run): a new camera on the search machine, not the crate's keys re-aimed. One move per change of subject, each
+// arriving 0-3 frames before the word or hit it serves, with a creep between moves (a slow slide and push so no hold
+// goes dead). The base and most medium poses sit left of the machine's axis and above the switch, as the approved
+// motion test; the hook opens close on the switch from the left, already moving at frame 0 (K01 starts before 0), with
+// Blink as foreground; the day 53 turn swings right so the core is nearest the lens; the counter is read from above its
+// shelf and the bin from above its bed. Those four pushes (counter, bin, the turn, the list/default tag) drop Blink's
+// visor out; everything else keeps it whole. Poses were fitted in node against the framing rules in the kit's
+// camera-check.mjs; `node check-graybox.mjs` measures them. Subject names are camera-set.mjs's SUBJECTS (cameraPath
+// ignores the sixth field). All keys share the kit's io ease: the kit offers no other.
 // KEYS-BEGIN
 export const KEYS = [
-  /* K01 hook: already moving at frame 0 */ [T.h01 - 0.72, [-1.467, 3.049, 5.672], [0.255, 2.635, -1.47], 36, -0.60, "dial"],
-  /* K02 pan right with the needle to meaning (new) */ [T.smarter + 0.5, [-1.38, 2.8, 5], [0.2, 2.42, -1.47], 36, 1.88, "needle"],
-  /* K03 creep */ [w("it", 1), [-1.36, 2.79, 4.94], [0.21, 2.42, -1.47], 36, 2.58, "needle"],
-  /* K04 punch onto the old stop, 2 f before the thunk */ [w("it", 1) + 0.35, [-1.6, 2.74, 4.35], [-0.08, 2.46, -1.47], 36, 2.93, "dial"],
-  /* K05 settle */ [w("here's", 1) + 0.16, [-1.58, 2.74, 4.47], [-0.06, 2.45, -1.47], 36, 4.30, "dial"],
-  /* K06 reveal: Blink and the box */ [w("my", 2), [-0.362, 1.712, 10.178], [-0.362, 1.712, -1.2], 36, 5.20, "set"],
-  /* K07 creep toward the card coming in */ [w("and", 1), [-0.362, 1.712, 10.178], [-0.362, 1.712, -1.2], 36, 6.84, "set"],
-  /* K08 with the card to the slot */ [w("to", 1) + 0.2, [0.262, 1.602, 12.503], [0.262, 1.602, -1.2], 36, 7.58, "queue"],
-  /* K09 the card down the old chute */ [w("keywords", 1) - 0.05, [-0.244, 2.056, 9.443], [-0.244, 2.056, -1.2], 36, 8.63, "chuteL"],
-  /* K10 creep */ [w("in", 1), [-0.244, 2.033, 9.513], [-0.244, 2.033, -1.2], 36, 9.54, "chuteL"],
-  /* K11 meaning (new) slid in */ [w("added", 1), [-0.24, 1.764, 10.318], [-0.24, 1.764, -1.2], 36, 10.40, "labels"],
-  /* K12 creep */ [w("that", 1), [-0.237, 1.8, 10.282], [-0.237, 1.8, -1.2], 36, 11.60, "labels"],
-  /* K13 toward meaning (new) */ [w("meaning", 1) - 0.02, [-0.2, 2.214, 9.864], [-0.2, 2.214, -1.2], 36, 12.86, "newchute"],
-  /* K14 creep */ [w("i", 3), [-0.179, 2.159, 9.978], [-0.179, 2.159, -1.2], 36, 13.68, "newchute"],
-  /* K15 the queue sliding in */ [w("anything", 1), [0.066, 1.528, 11.29], [0.066, 1.528, -1.2], 36, 14.44, "feed"],
-  /* K16 creep */ [w("used", 2) - 0.3, [0.066, 1.555, 11.29], [0.066, 1.555, -1.2], 36, 15.06, "feed"],
-  /* K17 along the line of callers */ [w("tool", 2), [0.066, 1.87, 11.29], [0.066, 1.87, -1.2], 36, 15.96, "feed"],
-  /* K18 creep */ [w("kept", 2), [0.041, 1.888, 11.142], [0.041, 1.888, -1.2], 36, 17.06, "feed"],
-  /* K19 the tag swings on default */ [T.dflt - 0.05, [-0.244, 2.09, 9.443], [-0.244, 2.09, -1.2], 36, 18.25, "tag"],
-  /* K20 creep */ [T.dflt + 0.55, [-0.219, 2.045, 9.591], [-0.219, 2.045, -1.2], 36, 18.85, "tag"],
-  /* K21 card into the slot */ [w("special", 1) - 0.04, [0.066, 1.528, 11.29], [0.066, 1.528, -1.2], 36, 19.62, "feed"],
-  /* K22 creep */ [w("special", 1) + 0.3, [0.051, 1.536, 11.198], [0.051, 1.536, -1.2], 36, 19.96, "feed"],
-  /* K23 cards down the old chute */ [w("keywords", 2) - 0.02, [-0.244, 1.69, 9.443], [-0.244, 1.69, -1.2], 36, 20.68, "chuteL"],
-  /* K24 creep */ [w("that's", 1), [-0.208, 1.72, 9.667], [-0.208, 1.72, -1.2], 36, 22.52, "chuteL"],
-  /* K25 up to the lamp */ [w("ship", 1), [0.204, 2.07, 12.242], [0.204, 2.07, -1.2], 36, 23.70, "lamp"],
-  /* K26 creep */ [w("and", 3) - 0.5, [0.196, 2.115, 12.184], [0.196, 2.115, -1.2], 36, 24.18, "lamp"],
-  /* K27 settle on it worked */ [w("worked", 1) - 0.02, [0.104, 2.636, 11.516], [0.104, 2.636, -1.2], 36, 24.88, "lamp"],
-  /* K28 creep */ [w("nothing", 2), [0.085, 2.599, 11.462], [0.085, 2.599, -1.2], 36, 25.48, "lamp"],
-  /* K29 down to Blink before its card pops */ [T.h10 - 0.24, [-0.362, 1.712, 10.178], [-0.362, 1.712, -1.2], 36, 26.18, "blink"],
-  /* K30 creep */ [T.h10 + 0.6, [-0.347, 1.701, 10.272], [-0.347, 1.701, -1.2], 36, 27.02, "blink"],
-  /* K31 with its card to the queue */ [T.h10 + 1.5, [-0.056, 1.49, 12.053], [-0.056, 1.49, -1.2], 36, 27.92, "blinkcard"],
-  /* K32 creep */ [w("it", 4), [-0.07, 1.547, 11.874], [-0.07, 1.547, -1.2], 36, 29.56, "blinkcard"],
-  /* K33 the plate lands */ [T.new1 - 0.06, [-0.23, 2.202, 9.82], [-0.23, 2.202, -1.2], 36, 30.34, "plate"],
-  /* K34 creep */ [T.listed, [-0.206, 2.238, 9.96], [-0.206, 2.238, -1.2], 36, 31.54, "plate"],
-  /* K35 the mark reads down */ [T.desc - 0.02, [0.064, 2.658, 11.573], [0.064, 2.658, -1.2], 36, 32.68, "plate"],
-  /* K36 creep */ [w("it", 5), [0.064, 2.568, 11.55], [0.064, 2.568, -1.2], 36, 33.50, "plate"],
-  /* K37 its card in the queue */ [w("ask", 2), [0.066, 1.528, 11.29], [0.066, 1.528, -1.2], 36, 34.24, "feed"],
-  /* K38 creep */ [w("in", 3), [0.089, 1.565, 11.431], [0.089, 1.565, -1.2], 36, 35.28, "feed"],
-  /* K39 the stream and the counter */ [w("36", 1) - 0.02, [0.356, 1.986, 13.055], [0.356, 1.986, -1.2], 36, 36.18, "stream"],
-  /* K40 creep */ [w("searches", 1), [0.142, 1.334, 11.749], [0.142, 1.334, -1.2], 36, 37.64, "stream"],
-  /* K41 36 seats */ [T.one3 + 0.21, [2.074, 3.002, 4.102], [2.074, 3.002, -1.2], 36, 39.05, "counter"],
-  /* K42 settle */ [w("and", 4) + 0.9, [2.045, 2.962, 4.082], [2.045, 2.962, -1.2], 36, 40.40, "counter"],
-  /* K43 the tray */ [T.uses - 0.02, [1.716, 2.192, 3.849], [1.716, 2.192, -1.2], 36, 41.82, "tray"],
-  /* K44 creep */ [w("crash", 1) - 0.5, [1.716, 2.192, 3.849], [1.716, 2.192, -1.2], 36, 42.32, "tray"],
-  /* K45 back to Blink and the box */ [w("no", 1) - 0.02, [-0.366, 1.64, 10.462], [-0.366, 1.64, -1.2], 36, 43.88, "set"],
-  /* K46 creep */ [w("so", 2), [-0.34, 1.661, 10.575], [-0.34, 1.661, -1.2], 36, 45.46, "set"],
-  /* K47 the strip unrolls */ [T.changedEnd, [-0.042, 1.898, 11.869], [-0.042, 1.898, -1.2], 36, 46.40, "strip"],
-  /* K48 creep */ [T.h17 + 0.05, [-0.034, 1.878, 11.823], [-0.034, 1.878, -1.2], 36, 47.29, "strip"],
-  /* K49 with the marker to day 53 */ [T.h17 + 1.03, [0.054, 1.654, 11.29], [0.054, 1.654, -1.2], 36, 48.27, "strip"],
-  /* K50 creep */ [T.h18, [0.021, 1.645, 11.237], [0.021, 1.645, -1.2], 36, 48.76, "strip"],
-  /* K51 the note lands */ [T.h18 + 1.08, [-1.062, 1.338, 9.525], [-1.062, 1.338, -1.2], 36, 49.84, "note"],
-  /* K52 creep */ [w("about", 1), [-1.062, 1.338, 9.525], [-1.062, 1.338, -1.2], 36, 50.44, "note"],
-  /* K53 push on Blink */ [w("search", 5), [-1.062, 1.338, 9.525], [-1.062, 1.338, -1.2], 36, 51.28, "note"],
-  /* K54 creep */ [T.h19 + 0.16, [-1.043, 1.353, 9.495], [-1.043, 1.353, -1.2], 36, 52.12, "note"],
-  /* K55 the needle swings to new */ [T.h19 + 0.88, [0.84, 2.88, 6.507], [0.84, 2.88, -1.2], 36, 52.84, "turn"],
-  /* K56 down the new chute */ [T.h19 + 1.62, [0.84, 2.88, 6.507], [0.84, 2.88, -1.2], 36, 53.58, "newchute"],
-  /* K57 creep */ [w("i", 7) - 1.14, [0.829, 2.864, 6.54], [0.829, 2.864, -1.2], 36, 53.82, "newchute"],
-  /* K58 side-eye */ [w("i", 7) - 0.02, [-0.302, 1.248, 9.82], [-0.302, 1.248, -1.2], 36, 54.94, "blink"],
-  /* K59 creep */ [w("but", 2), [-0.279, 1.254, 9.97], [-0.279, 1.254, -1.2], 36, 56.54, "blink"],
-  /* K60 push on the bet */ [w("way", 2), [-0.01, 1.326, 11.69], [-0.01, 1.326, -1.2], 36, 57.44, "blink"],
-  /* K61 creep */ [w("here's", 2) - 0.14, [-0.011, 1.344, 11.699], [-0.011, 1.344, -1.2], 36, 57.86, "blink"],
-  /* K62 the tip */ [w("tip", 1) - 0.02, [-0.06, 1.934, 11.991], [-0.06, 1.934, -1.2], 36, 58.74, "tip"],
-  /* K63 creep */ [w("explore", 1), [-0.043, 1.954, 11.976], [-0.043, 1.954, -1.2], 36, 60.40, "tip"],
-  /* K64 in on the plate */ [w("tools", 1), [0.152, 2.18, 11.809], [0.152, 2.18, -1.2], 36, 61.10, "tip"],
-  /* K65 creep */ [w("it", 10), [0.152, 2.221, 11.341], [0.152, 2.221, -1.2], 36, 61.82, "tip"],
-  /* K66 reads the list */ [T.list - 0.02, [0.15, 2.692, 5.961], [0.15, 2.692, -1.2], 36, 62.62, "plate"],
-  /* K67 goes with the default */ [T.dflt2 - 0.02, [-0.17, 2.756, 5.095], [-0.17, 2.756, -1.2], 36, 63.48, "tag"],
-  /* K68 creep */ [w("so", 3), [-0.175, 2.696, 5.443], [-0.175, 2.696, -1.2], 36, 64.38, "tag"],
-  /* K69 the new thing */ [w("new", 2) - 0.02, [-0.238, 2.004, 9.443], [-0.238, 2.004, -1.2], 36, 65.36, "labels"],
-  /* K70 creep */ [w("either", 1), [-0.222, 1.997, 9.637], [-0.222, 1.997, -1.2], 36, 66.14, "labels"],
-  /* K71 the panels */ [w("thing", 1) - 0.02, [-0.042, 1.916, 11.869], [-0.042, 1.916, -1.2], 36, 66.90, "panels"],
-  /* K72 creep */ [w("or", 1) - 0.62, [-0.024, 1.954, 11.914], [-0.024, 1.954, -1.2], 36, 67.46, "panels"],
-  /* K73 to the right panel */ [w("or", 1) - 0.02, [0.18, 2.396, 12.437], [0.18, 2.396, -1.2], 36, 68.06, "panels"],
-  /* K74 creep */ [w("plain", 1), [0.169, 2.382, 12.35], [0.169, 2.382, -1.2], 36, 68.82, "panels"],
-  /* K75 when to use it */ [w("when", 3) - 0.02, [0.044, 2.224, 11.346], [0.044, 2.224, -1.2], 36, 69.50, "panels"],
-  /* K76 creep */ [w("then", 1), [0.063, 2.193, 11.444], [0.063, 2.193, -1.2], 36, 70.84, "panels"],
-  /* K77 the log */ [w("logs", 2) - 0.02, [0.276, 1.832, 12.569], [0.276, 1.832, -1.2], 36, 71.60, "log"],
-  /* K78 creep */ [w("to", 6), [0.261, 1.887, 12.48], [0.261, 1.887, -1.2], 36, 71.84, "log"],
-  /* K79 down the rows */ [w("picks", 1), [0.094, 2.52, 11.459], [0.094, 2.52, -1.2], 36, 72.98, "log"],
-  /* K80 creep */ [w("otherwise", 1), [0.074, 2.459, 11.377], [0.074, 2.459, -1.2], 36, 73.80, "log"],
-  /* K81 back to Blink and the dial */ [w("built", 1) - 0.02, [-0.302, 1.296, 9.82], [-0.302, 1.296, -1.2], 36, 74.60, "end"],
-  /* K82 creep */ [T.h27 + 1.9, [-0.316, 1.267, 9.903], [-0.316, 1.267, -1.2], 36, 75.70, "end"],
-  /* K83 its card to the slot */ [T.h27 + 2.6, [-0.474, 0.93, 10.862], [-0.474, 0.93, -1.2], 36, 76.40, "end"],
-  /* K84 creep */ [w("using", 4), [-0.505, 0.928, 10.619], [-0.505, 0.928, -1.2], 36, 77.08, "end"],
-  /* K85 the look to camera */ [w("one", 4) - 0.02, [-0.86, 0.904, 7.82], [-0.86, 0.904, -1.2], 36, 77.72, "blink"],
-  /* K86 eased out under the end mark */ [VO.END, [-0.86, 0.54, 8.94], [-0.86, 0.54, -1.2], 36, 79.35, "blink"],
+  /* K01 hook: already moving at frame 0, close on the old side of the switch from the left */ [T.h01 - 0.72, [-2, 3.6, 5.8], [-0.25, 2.55, -1.6], 36, -0.60, "switch"],
+  /* K02 pan right with the knob to meaning (new): both labels */ [T.smarter + 0.5, [-1.6, 3.7, 8], [0.05, 3.2, -1.6], 36, 1.88, "labels"],
+  /* K03 creep */ [w("it", 1) - 0.12, [-1.641, 3.7, 7.884], [0.03, 3.194, -1.6], 36, 2.46, "labels"],
+  /* K04 punch onto the old stop and the tag, 2 f before the thunk */ [w("it", 1) + 0.35, [-1.9, 3.6, 7.4], [-0.15, 2.98, -1.55], 36, 2.93, "switch"],
+  /* K05 settle */ [w("here's", 1) + 0.16, [-1.996, 3.6, 7.126], [-0.198, 2.966, -1.55], 36, 4.30, "switch"],
+  /* K06 reveal: the whole machine on its plinth, the grid, Blink */ [w("my", 2), [-0.8, 3.4, 13.2], [-0.06, 2.05, -1.5], 36, 5.20, "set"],
+  /* K07 creep */ [w("and", 1), [-0.912, 3.4, 12.88], [-0.116, 2.034, -1.5], 36, 6.84, "set"],
+  /* K08 with program 1's card up the rail to the slot */ [w("to", 1) + 0.2, [-1.6, 2.7, 11.4], [-0.1, 1.6, -1.5], 36, 7.58, "feed"],
+  /* K09 the clockwork runs, the result out of the spout */ [w("keywords", 1) - 0.05, [-0.85, 2.8, 10.6], [-0.5, 1.75, -1.8], 36, 8.63, "run"],
+  /* K10 creep */ [w("in", 1), [-0.786, 2.8, 10.418], [-0.468, 1.741, -1.8], 36, 9.54, "run"],
+  /* K11 meaning (new) slid in for good: both labels */ [w("added", 1), [-1.5, 2.9, 10.4], [0, 2.35, -1.7], 36, 10.40, "labels"],
+  /* K12 creep */ [w("that", 1), [-1.584, 2.9, 10.16], [-0.042, 2.338, -1.7], 36, 11.60, "labels"],
+  /* K13 toward the core, its rings unfolded */ [w("meaning", 1) - 0.02, [-1.4, 2.9, 11.2], [0.2, 2.25, -1.7], 36, 12.86, "core"],
+  /* K14 creep */ [w("i", 3), [-1.457, 2.9, 11.036], [0.171, 2.242, -1.7], 36, 13.68, "core"],
+  /* K15 the programs slide in, cards rise to the line */ [w("anything", 1), [-1.6, 2.8, 11.6], [0.1, 1.5, -1.3], 36, 14.44, "slot"],
+  /* K16 creep */ [w("used", 2) - 0.3, [-1.643, 2.8, 11.476], [0.078, 1.494, -1.3], 36, 15.06, "slot"],
+  /* K17 along the line of callers */ [w("tool", 2), [-1.4, 3.15, 11], [0.25, 1.85, -1.3], 36, 15.96, "slot"],
+  /* K18 creep */ [w("kept", 2), [-1.477, 3.15, 10.78], [0.212, 1.839, -1.3], 36, 17.06, "slot"],
+  /* K19 the tag swings on default */ [T.dflt - 0.05, [-2, 2.9, 9.6], [-0.35, 2.4, -1.5], 36, 18.25, "tag"],
+  /* K20 creep */ [T.dflt + 0.55, [-2.042, 2.9, 9.48], [-0.371, 2.394, -1.5], 36, 18.85, "tag"],
+  /* K21 the first card of the line into the slot */ [w("special", 1) - 0.04, [-1.6, 2.7, 11.4], [-0.1, 1.6, -1.5], 36, 19.62, "feed"],
+  /* K22 creep */ [w("special", 1) + 0.3, [-1.624, 2.7, 11.332], [-0.112, 1.597, -1.5], 36, 19.96, "feed"],
+  /* K23 the results out of the spout, down the trough */ [w("keywords", 2) - 0.02, [-0.85, 2.8, 10.6], [-0.5, 1.75, -1.8], 36, 20.68, "run"],
+  /* K24 creep */ [w("that's", 1), [-0.738, 2.8, 10.28], [-0.444, 1.734, -1.8], 36, 22.52, "run"],
+  /* K25 up to the lamp on the crown */ [w("ship", 1), [-1.2, 3.6, 12.6], [0.1, 2.7, -1.8], 36, 23.70, "lamp"],
+  /* K26 creep */ [w("and", 3) - 0.5, [-1.234, 3.6, 12.504], [0.083, 2.695, -1.8], 36, 24.18, "lamp"],
+  /* K27 settle on it worked */ [w("worked", 1) - 0.02, [-1, 3.9, 12], [0.2, 2.95, -1.8], 36, 24.88, "lamp"],
+  /* K28 creep */ [w("nothing", 2), [-1.042, 3.9, 11.88], [0.179, 2.944, -1.8], 36, 25.48, "lamp"],
+  /* K29 down to Blink before the beam opens */ [T.h10 - 0.24, [-0.9, 2.6, 12], [-0.3, 1.9, -1.3], 36, 26.18, "beam"],
+  /* K30 creep */ [T.h10 + 0.6, [-0.959, 2.6, 11.832], [-0.329, 1.892, -1.3], 36, 27.02, "beam"],
+  /* K31 with its card to the end of the line */ [T.h10 + 1.5, [-1.6, 2.9, 12], [-0.1, 1.5, -1.2], 36, 27.92, "blinkcard"],
+  /* K32 creep */ [w("it", 4), [-1.712, 2.9, 11.68], [-0.156, 1.484, -1.2], 36, 29.56, "blinkcard"],
+  /* K33 the placard lands on its rods */ [T.new1 - 0.06, [-1.5, 3.1, 9.8], [0, 2.3, -1.5], 36, 30.34, "placard"],
+  /* K34 creep */ [T.listed, [-1.584, 3.1, 9.56], [-0.042, 2.288, -1.5], 36, 31.54, "placard"],
+  /* K35 the mark reads down */ [T.desc - 0.02, [-1.45, 2.95, 9.4], [0, 2, -1.5], 36, 32.68, "placard"],
+  /* K36 creep */ [w("it", 5), [-1.507, 2.95, 9.236], [-0.029, 1.992, -1.5], 36, 33.50, "placard"],
+  /* K37 its card steps down the line and in */ [w("ask", 2), [-1.6, 2.7, 11.4], [-0.1, 1.6, -1.5], 36, 34.24, "feed"],
+  /* K38 creep */ [w("in", 3), [-1.673, 2.7, 11.192], [-0.136, 1.59, -1.5], 36, 35.28, "feed"],
+  /* K39 the stream up every rail and the counter standing up */ [w("36", 1) - 0.02, [-1.2, 3.4, 12.6], [0.1, 2.05, -1.6], 36, 36.18, "stream"],
+  /* K40 creep */ [w("searches", 1), [-1.302, 3.4, 12.308], [0.049, 2.035, -1.6], 36, 37.64, "stream"],
+  /* K41 36 seats: the counter on its shelf */ [T.one3 + 0.21, [-2.1, 4.9, 3], [-1.1, 4.2, -2.6], 36, 39.05, "counter"],
+  /* K42 "and nothing told me": back and up so the counter and the bulb share the frame (supervisor 05 F1: the lamp was out of shot on the hold about it) */ [w("and", 4) + 0.55, [-2.4, 5.0, 4.8], [-0.4, 4.1, -2.6], 36, 40.05, "lamp"],
+  /* K43 over the bin tipped out of the foot: its empty bed */ [T.uses - 0.02, [-1.9, 5.8, 5.9], [-0.5, 0.1, -2.1], 36, 41.82, "bin"],
+  /* K44 creep */ [w("crash", 1) - 0.5, [-1.865, 5.8, 5.8], [-0.482, 0.095, -2.1], 36, 42.32, "bin"],
+  /* K45 back to Blink and the machine */ [w("no", 1) - 0.02, [-0.8, 3.4, 13.2], [-0.06, 2.05, -1.5], 36, 43.88, "set"],
+  /* K46 creep */ [w("so", 2), [-0.911, 3.4, 12.884], [-0.115, 2.034, -1.5], 36, 45.46, "set"],
+  /* K47 the strip unrolls above the crown */ [T.changedEnd, [-0.9, 3.2, 14], [0.55, 2.9, -1.5], 36, 46.40, "strip"],
+  /* K48 creep */ [T.h17 + 0.05, [-0.962, 3.2, 13.822], [0.519, 2.891, -1.5], 36, 47.29, "strip"],
+  /* K49 with the marker to day 53 */ [T.h17 + 1.03, [-0.9, 3.2, 13.8], [0.65, 2.85, -1.5], 36, 48.27, "strip"],
+  /* K50 creep */ [T.h17 + 1.28, [-0.917, 3.2, 13.75], [0.641, 2.848, -1.5], 36, 48.52, "strip"],
+  /* K51 down with the note as it floats in to Blink */ [T.h18 + 0.55, [-1.5, 2.7, 11.6], [-0.4, 1.75, -1], 36, 49.31, "note"],
+  /* K52 creep */ [w("about", 1), [-1.579, 2.7, 11.374], [-0.44, 1.739, -1], 36, 50.44, "note"],
+  /* K53 push on Blink reading */ [w("search", 5), [-1.6, 2.6, 11.6], [-0.5, 1.6, -1], 36, 51.28, "note"],
+  /* K54 creep */ [T.h19 + 0.16, [-1.659, 2.6, 11.432], [-0.529, 1.592, -1], 36, 52.12, "note"],
+  /* K55 the turn: from the right, the tab lifts the feeler and the lever throws */ [T.h19 + 0.88, [1.6, 3.3, 6.4], [0.6, 2.55, -1.85], 36, 52.84, "throw"],
+  /* K56 to the core lighting blue */ [T.h19 + 1.62, [1.7, 3.3, 6.2], [0.8, 2.6, -1.9], 36, 53.58, "core"],
+  /* K57 creep */ [w("i", 7) - 1.14, [1.683, 3.3, 6.152], [0.792, 2.598, -1.9], 36, 53.82, "core"],
+  /* K58 side-eye: the note left, the lit core right */ [w("i", 7) - 0.02, [-1.3, 2.9, 11.4], [-0.32, 1.55, -1.4], 36, 54.94, "note"],
+  /* K59 creep */ [w("but", 2), [-1.412, 2.9, 11.08], [-0.376, 1.534, -1.4], 36, 56.54, "note"],
+  /* K60 push on the bet */ [w("way", 2), [-2, 2.9, 14], [0.32, 1.6, -1.4], 36, 57.44, "note"],
+  /* K61 creep */ [w("here's", 2) - 0.14, [-2.029, 2.9, 13.916], [0.305, 1.596, -1.4], 36, 57.86, "note"],
+  /* K62 the tip: up to the switch as the strip rolls away */ [w("tip", 1) - 0.02, [-1.5, 3, 12.6], [0.5, 2.15, -1.5], 36, 58.74, "switch"],
+  /* K63 creep */ [w("explore", 1), [-1.612, 3, 12.28], [0.444, 2.134, -1.5], 36, 60.40, "switch"],
+  /* K64 in on the placard */ [w("tools", 1), [-1.5, 3.1, 11.4], [0.42, 2.5, -1.5], 36, 61.10, "placard"],
+  /* K65 creep */ [w("it", 10), [-1.55, 3.1, 11.256], [0.395, 2.493, -1.5], 36, 61.82, "placard"],
+  /* K66 reads the list: close on the placard */ [T.list - 0.02, [-1.5, 3.7, 6.6], [0.1, 3, -1.4], 36, 62.62, "placard"],
+  /* K67 goes with the default: the tag */ [T.dflt2 - 0.02, [-2, 3.5, 6], [-0.4, 2.85, -1.45], 36, 63.48, "tag"],
+  /* K68 creep */ [w("so", 3), [-2.063, 3.5, 5.82], [-0.431, 2.841, -1.45], 36, 64.38, "tag"],
+  /* K69 the new thing: both labels */ [w("new", 2) - 0.02, [-1.5, 2.9, 10.4], [0, 2.35, -1.7], 36, 65.36, "labels"],
+  /* K70 creep */ [w("either", 1), [-1.555, 2.9, 10.244], [-0.027, 2.342, -1.7], 36, 66.14, "labels"],
+  /* K71 the panels: the left one turns */ [w("thing", 1) - 0.02, [-0.9, 3.6, 12.4], [0, 2.65, -0.9], 36, 66.90, "panels"],
+  /* K72 creep */ [w("or", 1) - 0.62, [-0.939, 3.6, 12.288], [-0.02, 2.644, -0.9], 36, 67.46, "panels"],
+  /* K73 to the right panel */ [w("or", 1) - 0.02, [-0.7, 3.6, 12.4], [0.2, 2.7, -0.9], 36, 68.06, "panels"],
+  /* K74 creep */ [w("plain", 1), [-0.753, 3.6, 12.248], [0.173, 2.692, -0.9], 36, 68.82, "panels"],
+  /* K75 when to use it */ [w("when", 3) - 0.02, [-0.75, 3.5, 12], [0.12, 2.55, -0.9], 36, 69.50, "panels"],
+  /* K76 creep */ [w("then", 1), [-0.844, 3.5, 11.732], [0.073, 2.537, -0.9], 36, 70.84, "panels"],
+  /* K77 the log in the right half */ [w("logs", 2) - 0.02, [-1.4, 3.3, 12.4], [0.2, 2.2, -0.8], 36, 71.60, "log"],
+  /* K78 creep */ [w("to", 6), [-1.417, 3.3, 12.352], [0.192, 2.198, -0.8], 36, 71.84, "log"],
+  /* K79 down the rows */ [w("picks", 1), [-1.35, 3, 11.8], [0.25, 1.85, -0.8], 36, 72.98, "log"],
+  /* K80 creep */ [w("otherwise", 1), [-1.407, 3, 11.636], [0.221, 1.842, -0.8], 36, 73.80, "log"],
+  /* K81 back to Blink and the switch */ [w("built", 1) - 0.02, [-1.3, 2.2, 11.3], [-0.45, 1.3, -1.3], 36, 74.60, "end"],
+  /* K82 creep */ [T.h27 + 1.9, [-1.377, 2.2, 11.08], [-0.488, 1.289, -1.3], 36, 75.70, "end"],
+  /* K83 its last card up into the slot */ [T.h27 + 2.6, [-1.2, 2.7, 11.2], [-0.35, 1.2, -1.3], 36, 76.40, "end"],
+  /* K84 creep */ [w("using", 4), [-1.248, 2.7, 11.064], [-0.374, 1.193, -1.3], 36, 77.08, "end"],
+  /* K85 the look to camera */ [w("one", 4) - 0.02, [-1.5, 0.9, 9], [-1.25, 0.9, 0.2], 36, 77.72, "blink"],
+  /* K86 eased out under the end mark */ [VO.END, [-1.5, 0.85, 9.6], [-1.4, 0.85, 0.2], 36, 79.35, "blink"],
 ];
 // KEYS-END
 KEYS.forEach((k, i) => {
@@ -121,26 +126,42 @@ KEYS.forEach((k, i) => {
 const cameraAt = cameraPath(KEYS);
 
 // each station: its file and the film spans in which it exists. Outside them it is hidden and update() isn't called.
+// The machine builds first so machine.at() is live before the stations that hang on it; the programs next, since the
+// cards ride their rails; the cards last, after mark, because they read the beam's focus off Blink's pose for the frame.
 const WHOLE = [[0, T.END]];
 const STATIONS = [
-  { name: "crate", mod: crate, win: WHOLE },
+  { name: "machine", mod: machine, win: WHOLE },
+  { name: "programs", mod: programs, win: WHOLE },
   { name: "lamp", mod: lamp, win: WHOLE },
   { name: "counter", mod: counter, win: [[T.h13 - 0.05, T.h16 + 0.5]] },
   { name: "tray", mod: tray, win: [[T.h15 - 0.05, T.h16 + 0.5]] },
   { name: "strip", mod: strip, win: [[T.h16, T.h21 + 0.7]] },
   { name: "note", mod: note, win: [[T.h18 - 0.05, T.h21 + 0.5]] },
   { name: "panels", mod: panels, win: [[T.h24 - 0.05, T.h26 + 0.4]] },
-  { name: "log", mod: log, win: [[T.h26 - 0.05, T.h27 + 0.4]] },
-  { name: "cards", mod: cards, win: WHOLE },
+  { name: "log", mod: log, win: [[T.h26 - 0.05, T.h27 + 0.9]] }, // the sheet leaves from log.js OUT = h27 + 0.35
   { name: "mark", mod: mark, win: WHOLE },
+  { name: "cards", mod: cards, win: WHOLE },
 ];
 
 export async function buildWorld(canvas) {
   // canvases can't use a face the DOM hasn't asked for yet
   await Promise.all(["400", "500", "600", "700"].map((wt) => document.fonts.load(`${wt} 24px 'IBM Plex Mono'`)));
   await document.fonts.ready;
-  const { renderer, scene, cam, ramp, toon, grid } = stage(canvas, { fog: [12.1, 28.6], floorY: FOOT_Y - 0.02 });
-  grid.material.opacity = 0.12;
+  const floorY = FOOT_Y - 0.02;
+  const { renderer, scene, cam, ramp, toon, grid } = stage(canvas, { fog: [14.8, 48], floorY });
+  // the floor (world-plan-v2 section 4, tuned by the DP on stills): half-unit cells so the convergence reads from the
+  // base poses (camera 3.4 up, 13 out, 5 deg down), one colour so no cross runs under Blink, lines only (#4a5c82 at 0.88:
+  // the first pass at #3a4a6c and 0.72 read faintly on the 720p draft). The fog is the
+  // grid's alone (every prop and panel has fog off, Blink's toon does not): it starts past the furthest Blink ever is from
+  // the lens (14.75 at the strip poses) and runs to 48, so the lines thin toward the horizon over the last third of the
+  // ground band instead of stopping short of it (60 left a pale band where the cells merge). Lines, not a glowing floor.
+  // Painted by a shader (stations/floor.js), not GridHelper: the runner's SwiftShader dropped the depth lines of GL
+  // lines, which is why d2 showed parallel stripes instead of a grid.
+  scene.remove(grid);
+  // A honeycomb, cells 1.1 wide flat to flat, so each reads as a tile under Blink (Robin, 2026-11-06, from stills of
+  // the square grid, a 0.55 hex and this one: "hex, bigger cells"). ?floor=square keeps the half-unit grid for comparison.
+  const square = new URLSearchParams(location.search).get("floor") === "square";
+  scene.add(gridFloor({ size: 120, cell: square ? 0.5 : 1.1, pattern: square ? "square" : "hex", color: "#4a5c82", opacity: 0.88, y: floorY }));
   const kit = { toon, ramp, G: window.BLINK };
   STATIONS.forEach((s) => {
     s.group = new THREE.Group();

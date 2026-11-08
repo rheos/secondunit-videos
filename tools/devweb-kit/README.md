@@ -138,6 +138,36 @@ Iterate with `npx hyperframes@0.8.162 snapshot --at ...` (contact sheets) before
   frame. Timeouts and retries in the workflow did not cure it. Unsolved; fewer slices lose less.
 - **Per-episode effect levels** go in `<project>/sfx-gains.json` (dB per effect name, `null` to drop one);
   `sfx_earshot.py` reads it when it is there.
+- **Per-episode takes** go in `<project>/sfx-kit.json` (`{"kind": ["bank/id", dB, [seeds or null], "d"?]}`, merged over
+  the script's KIT; a 4th item `"d"` plays the cue's d as the take's length, a number is a fixed length). It is for a
+  kind the shared table has no sound for, so other episodes' mixes don't move. Ep 6 added 12 kinds this way; `sfx/` is
+  a cache the script rebuilds from the bank, not tracked.
+- **The runner draws WebGL on SwiftShader, and SwiftShader drops GL lines that run in depth.** The kit's `GridHelper`
+  floor came back from the cloud render as parallel cross stripes, the lines toward the vanishing point gone, while the
+  page on a Mac showed a grid; a DP read the stripes as "faint" and raised the opacity. Never `GridHelper` or
+  `LineSegments` for anything that must survive the render: paint it in a shader on a mesh (ep 6 `stations/floor.js`,
+  square or honeycomb, with `#include <colorspace_fragment>` or it comes out at half brightness). `stage()` keeps its
+  GridHelper so earlier episodes re-render bit-identical; a new episode removes it and adds the shader floor. Before
+  judging any new element, look at a frame made the runner's way: `chrome --headless=new --use-angle=swiftshader
+  --enable-unsafe-swiftshader --screenshot=out.png "http://localhost:8796/design/seek-frame.html?t=7.9"` (ep 6
+  `design/seek-frame.html` over `design/serve.py`), and count what is there.
+- **The stage is a floor with a vanishing point** (Robin, 2026-11-06): the ground runs to the horizon under every prop
+  and the camera sits high enough to see it (ep 6's base poses: 3.4 up, 13 out, about 5 degrees down). Lines only.
+- **Blink's cards come through the beam from his visor** (Robin, 2026-11-06, after two emitter tests): a cone of pale
+  mint light opens, the card condenses in it from sparks and flies as paper; a result flies back in and dissolves.
+  `stations/beam.js` in ep 6; nothing emerges from his head.
+- **A main prop is a real 3D mechanism, designed as stills in the engine first** (Robin, 2026-11-06, on ep 6's crate:
+  "very 2D and boring"; on a wrong study: "is that really the way it works though?"). Write down who acts, what they
+  choose and what comes back, draw exactly that in Blink's language with the mechanism showing, shot from
+  three-quarter angles, in a study page under `design/` before a board draws it, then a silent motion test.
+- **No sign test on a basis built from a travel tangent that can go vertical.** A result card's frame was built from
+  the path's tangent with "top edge upward" chosen by `cy.y < 0`; where the path drops out of the spout the tangent is
+  near vertical, the top edge near level, and the test flipped at the first corner: the card snapped from standing to
+  lying in one frame (forensics on the ep 6 master, 8.86 s; the 30 fps draft and two supervisor rounds missed it).
+  Read the direction from the part of the path that never goes vertical, or blend the basis over the corner, and
+  check a moving prop at 1/120 s steps on the page through every corner of its path.
+- **A cloned take gets Adobe Enhance Speech v2 before align** (Robin, 2026-11-06: "B is way better"): his Chrome, free
+  plan, strength 50 %, from a 48 kHz WAV; timing unchanged, level-match the result to the take, check 0 ms lag.
 - **Declare blinks as cues.** A blink is a real one-frame change and forensics calls it a spike. `cues.js` adds an
   `eye` cue for each entry in `BLINKS`; two blinks 0.12 s apart still read as a flutter, so space them.
 - **A sheet or card that appears starts transparent.** A material created opaque showed for one frame before its
