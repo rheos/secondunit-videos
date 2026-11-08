@@ -72,7 +72,7 @@ function room(t) {
     X.fillStyle = sp; X.beginPath(); X.moveTo(DOOR.x, FLOOR); X.lineTo(DOOR.x + DOOR.w, FLOOR); X.lineTo(DOOR.x + DOOR.w + 120, H + 40); X.lineTo(DOOR.x - 420, H + 40); X.fill(); X.restore();
   }
 }
-// the door panel swings toward us on its right-hand hinge, in front of Robin as he goes through
+// the door panel swings toward us on its right-hand hinge as the agents pull it open
 function doorPanel(t) {
   const open = eio(seg(t, 1.95, 2.45));
   const pw = DOOR.w * Math.cos(open * 1.35), px = DOOR.x + DOOR.w - pw;
@@ -85,20 +85,19 @@ function doorPanel(t) {
 }
 function plate0(t) {
   GRAIN = .6;
-  const push = eio(seg(t, 2.92, 3.3)), z = Math.exp(lerp(0, Math.log(8.5), push)), cx = lerp(W / 2, DOOR.x + DOOR.w / 2, Math.min(1, push * 1.4)), cy = lerp(H / 2, DOOR.y + 120, Math.min(1, push * 1.4));
+  // No drawn Robin: the camera is his point of view. It walks up to the door (a slow dolly with a light step
+  // bob), the agents pull the door open from inside, and the camera goes through.
+  const walk = eio(seg(t, 0, 2.0)), bob = Math.sin(t * TAU * 1.7) * 5 * (1 - seg(t, 1.7, 2.0)) + Math.sin((t - 2.72) * TAU * 1.9) * 4 * seg(t, 2.72, 2.85);
+  const z0 = lerp(1, 1.32, walk), ax = lerp(W / 2, DOOR.x + DOOR.w / 2 - 150, walk), ay = lerp(H / 2, H / 2 + 20, walk) + bob;
+  const push = eio(seg(t, 2.92, 3.3)), z = z0 * Math.exp(lerp(0, Math.log(8.5 / 1.32), push)), cx = lerp(ax, DOOR.x + DOOR.w / 2, Math.min(1, push * 1.4)), cy = lerp(ay, DOOR.y + 120, Math.min(1, push * 1.4));
   X.save(); cam(cx, cy, z);
   room(t);
-  const x = walkX(t), wk = cl(seg(t, .1, .35)) * (1 - seg(t, 1.7, 1.9)) + seg(t, 2.72, 2.85);
-  const reach = eo(seg(t, 1.62, 1.9)) * (1 - eo(seg(t, 2.35, 2.6)));
-  const inn = eio(seg(t, 2.72, 3.25)), back = t >= 2.72;
-  const rx = back ? lerp(1236, DOOR.x + DOOR.w / 2, inn) : x, s = back ? lerp(.92, .5, inn) : 1;
-  robin(rx, FLOOR + 4 - 34 * inn, { s, ph: back ? (t - 2.72) * 13 : (x - 560) / 130 * Math.PI, wk: back ? 1 : wk, reach, back, look: t > 2.45 && t < 2.72 ? eo(seg(t, 2.45, 2.58)) * .8 : 0 });
   doorPanel(t);
   X.restore();
   // AGENTS lands on the wall as they appear
   if (t > T.agents - .05) {
-    kin('AGENTS', 905, 330, t, T.agents - .05, { size: fit('AGENTS', 740, 190, { fam: FT.d, weight: 900, stretch: '115%' }), weight: 900, stretch: '115%', color: '#16203d', stag: .045, dur: .22, align: 'center', alpha: 1 - push, hot: [0, 6, '#16203d'] });
-    caption('several of them, each with a job', 560, 392, t, T.agents + .25, { fam: FT.m, size: 24, color: '#16203d', alpha: (1 - push) * .8 });
+    kin('AGENTS', 500, 330, t, T.agents - .05, { size: fit('AGENTS', 720, 190, { fam: FT.d, weight: 900, stretch: '115%' }), weight: 900, stretch: '115%', color: '#16203d', stag: .045, dur: .22, align: 'center', alpha: 1 - push, hot: [0, 6, '#16203d'] });
+    caption('several of them, each with a job', 150, 392, t, T.agents + .25, { fam: FT.m, size: 24, color: '#16203d', alpha: (1 - push) * .8 });
   }
   caption('FIG. 1   THE OFFICE (LIVING ROOM)', 60, 70, t, .15, { fam: FT.m, size: 18, color: '#16203d', alpha: .7 * (1 - push) });
 }
@@ -152,11 +151,9 @@ function bureauPlate(t, camZ = 1, camX = W / 2, camY = H / 2) {
       caption(r.sub, lx, ly + 34, t, lt + .35, { fam: FT.m, size: 16, color: C.lav, alpha: .8 });
     }
   });
-  // Robin, small, walking to the front door with the brief
-  const rx = kfv(t, [[3.3, 360], [5.4, 640]], (u) => u), rs = .3;
+  // the brief arrives from off frame (from Robin, who stays the camera) and lands at the front door
   const door = p(1.6, 3, 0);
-  robin(rx, 935, { s: rs, ph: (rx - 360) / 40 * Math.PI, wk: t < 5.4 ? 1 : 0, reach: eo(seg(t, 5.4, 5.7)), look: t > 5.9 ? .7 : 0 });
-  if (t > 5.4) { const k = eio(seg(t, 5.45, 6.1)); changeCardSmall(lerp(rx + 30, door[0], k), lerp(935 - 120, door[1] - 30, k) - Math.sin(k * Math.PI) * 120, k); }
+  if (t > 5.2) { const k = eio(seg(t, 5.25, 6.1)); changeCardSmall(lerp(-60, door[0], k), lerp(820, door[1] - 30, k) - Math.sin(k * Math.PI) * 160, k); }
   X.restore();
   schFrame('2', 'THE BUREAU', 'AGENT FRAMEWORK · REQUIREMENTS → IMPLEMENTATION → REVIEW');
   kin('THE', 120, 300, t, T.bureau - .12, { size: 70, weight: 800, color: C.lav, stag: .03 });
@@ -421,16 +418,13 @@ function plate6(t) {
   kin('CONTEXT', 150, 325, t, T.fresh + .2, { size: 100, weight: 900, color: P.gold, stag: .04, dur: .2, out: 16.2 });
   kin('NOT INHERITED', 150, 290, t, T.without + .25, { size: 96, weight: 900, color: C.white, stag: .03, dur: .2, out: 18.3, hot: [0, 3, P.gold] });
 
-  // ---- hand over to the administrator beat: everything clears to its night, Robin becomes its gold figure
-  const rs0 = .62, rx0 = 770, ry0 = 1000;
+  // ---- hand over to the administrator beat: everything clears to its night and its gold figure rises in
   if (endK > 0) {
     X.fillStyle = `rgba(11,14,33,${endK})`; X.fillRect(0, 0, W, H);
     X.beginPath(); for (const x of [440, 960, 1480]) { X.moveTo(x, 0); X.lineTo(x, H); } for (const y of [202, 722]) { X.moveTo(0, y); X.lineTo(W, y); } stroke('#8fa0ff', 2, .07 * endK);
   }
   WMIX = 1 - endK; if (endK > .98) WOOD = null;
-  const m = eio(seg(t, 18.3, 18.82)), s = lerp(rs0, 1.5, m), fx = lerp(rx0, 951, m), fy = lerp(ry0, 285 + 452 * 1.5, m);
-  const fade = seg(t, 18.72, 19.0);
-  robin(fx, fy, { s, ph: (fx - rx0) / 70 * Math.PI, wk: m > 0 && m < 1 ? 1 - fade : 0, dir: 1, look: t > 18.2 ? eo(seg(t, 18.2, 18.45)) : (t > T.fresh && t < 16.5 ? 0 : 0), alpha: 1 - fade });
+  const fade = seg(t, 18.62, 19.0);
   if (fade > 0) { const k = lerp(2.25, GOLD_END.k, eo(fade)); goldFig(GOLD_END.cx, lerp(GOLD_END.oy + 30, GOLD_END.oy, eo(fade)), k, fade); }
   GRAIN = 1 - endK;
 }
