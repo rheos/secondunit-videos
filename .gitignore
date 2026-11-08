@@ -10,6 +10,7 @@
 !/README.md
 !/references/
 !/looks/
+!/cleanline/
 !/toolbox/
 !/history/
 !/blender-orb-visualizer/
@@ -76,6 +77,7 @@
 !/novadiem-self-hosting/
 !/pnubb-mind-the-sheep-painted/
 !/bobwiseman-travel-agent/
+!/bobwiseman-travel-agent-cl/
 !/bobwiseman-10000-miles/
 
 # Local data at any depth, as folders OR symlinks (a trailing slash only matches folders; that gap let four

@@ -14,10 +14,13 @@ status: draft
 engine: canvas2d
 project: bobwiseman-travel-agent
 code:
-  path: bobwiseman-travel-agent/js/kit.js
-  flag: null
-  page: bobwiseman-travel-agent/looks/film.html
-  note: schBG(), schFrame(), sty({sch:true}) and the sch shots in js/acts/
+  path: cleanline/looks/blueprint.js
+  flag: "?look=blueprint (the default for 'sch' shots)"
+  page: bobwiseman-travel-agent-cl/film.html
+  note: >-
+    cleanline look module (mode 'sch'): provides schBG(), schDress(), schFrame() and the navy palette; the crisp
+    marks (gl, gc, ticks, lab, bracket, lattice) are in cleanline/js/kit.js. Travel Agent's sch set-ups and
+    sty({sch:true}) are in bobwiseman-travel-agent-cl/js/.
 rules:
   - Navy ground (#0c1430) with a faint grid and corner marks
   - Pale lavender and cyan linework, crisp, never pixelated, never boiling
