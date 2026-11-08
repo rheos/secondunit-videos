@@ -1,0 +1,7 @@
+{
+  "name": "robin-profile-bureau-passage",
+  "private": true,
+  "type": "module",
+  "description": "The Bureau passage of Robin's portfolio film: a door into the Bureau, one room per look, ending on the administrator beat's first frame.",
+  "devDependencies": { "playwright": "^1.55.0" }
+}
