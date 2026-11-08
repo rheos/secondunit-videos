@@ -1,0 +1,135 @@
+# old run 1 vs old run 2: 127 frames, 123 identical, 4 differ
+
+- old run 1: `../../../../../../tmp/claude-501/-Users-robin-Code-novadiem-novadiem-com/6a8ccdc5-7f4a-4256-94d3-a5c6caa5da55/scratchpad/old/bobwiseman-travel-agent/looks/film.html`
+- old run 2: `../../../../../../tmp/claude-501/-Users-robin-Code-novadiem-novadiem-com/6a8ccdc5-7f4a-4256-94d3-a5c6caa5da55/scratchpad/old/bobwiseman-travel-agent/looks/film.html`
+- mean = mean absolute difference per channel (0-255), max = largest channel difference, px = share of pixels that differ
+
+| frame | time (s) | event | result |
+|---:|---:|---|---|
+| 0 | 0.000 |  | identical |
+| 97 | 4.042 |  | identical |
+| 182 | 7.583 |  | identical |
+| 260 | 10.833 |  | identical |
+| 326 | 13.583 |  | identical |
+| 423 | 17.625 |  | identical |
+| 542 | 22.583 |  | identical |
+| 607 | 25.292 |  | identical |
+| 663 | 27.625 |  | identical |
+| 747 | 31.125 |  | identical |
+| 841 | 35.042 |  | identical |
+| 889 | 37.042 |  | identical |
+| 955 | 39.792 |  | identical |
+| 1018 | 42.417 |  | identical |
+| 1073 | 44.708 |  | identical |
+| 1130 | 47.083 |  | identical |
+| 1217 | 50.708 |  | identical |
+| 1293 | 53.875 |  | identical |
+| 1416 | 59.000 |  | identical |
+| 1417 | 59.042 |  | identical |
+| 1481 | 61.708 |  | identical |
+| 1591 | 66.292 |  | identical |
+| 1649 | 68.708 |  | identical |
+| 1768 | 73.667 |  | identical |
+| 1769 | 73.708 |  | identical |
+| 1880 | 78.333 |  | identical |
+| 1924 | 80.167 |  | identical |
+| 2032 | 84.667 |  | identical |
+| 2180 | 90.833 |  | identical |
+| 2249 | 93.708 |  | identical |
+| 2292 | 95.500 |  | identical |
+| 2400 | 100.000 |  | identical |
+| 2501 | 104.208 |  | identical |
+| 2612 | 108.833 |  | identical |
+| 2639 | 109.958 |  | identical |
+| 2694 | 112.250 |  | identical |
+| 2799 | 116.625 |  | identical |
+| 2800 | 116.667 |  | identical |
+| 2863 | 119.292 |  | identical |
+| 2928 | 122.000 |  | identical |
+| 3032 | 126.333 |  | identical |
+| 3106 | 129.417 |  | identical |
+| 3148 | 131.167 |  | identical |
+| 3269 | 136.208 |  | identical |
+| 3336 | 139.000 |  | identical |
+| 3340 | 139.167 |  | identical |
+| 3387 | 141.125 |  | identical |
+| 3510 | 146.250 |  | identical |
+| 3579 | 149.125 |  | identical |
+| 3628 | 151.167 |  | identical |
+| 3724 | 155.167 |  | identical |
+| 3778 | 157.417 |  | identical |
+| 3844 | 160.167 |  | mean 0.000, max 1, 0.00% px |
+| 3906 | 162.750 |  | identical |
+| 3967 | 165.292 |  | identical |
+| 4007 | 166.958 |  | identical |
+| 4092 | 170.500 |  | identical |
+| 4190 | 174.583 |  | identical |
+| 4300 | 179.167 |  | identical |
+| 4341 | 180.875 |  | identical |
+| 4366 | 181.917 |  | identical |
+| 4455 | 185.625 |  | identical |
+| 4529 | 188.708 |  | identical |
+| 4683 | 195.125 |  | identical |
+| 4786 | 199.417 |  | identical |
+| 4881 | 203.375 |  | identical |
+| 4955 | 206.458 |  | identical |
+| 5023 | 209.292 |  | mean 0.000, max 1, 0.00% px |
+| 5073 | 211.375 |  | identical |
+| 5129 | 213.708 |  | identical |
+| 5293 | 220.542 |  | mean 0.000, max 1, 0.00% px |
+| 5362 | 223.417 |  | identical |
+| 5412 | 225.500 |  | identical |
+| 5476 | 228.167 |  | identical |
+| 5544 | 231.000 |  | identical |
+| 5618 | 234.083 |  | identical |
+| 5744 | 239.333 |  | identical |
+| 5816 | 242.333 |  | identical |
+| 5878 | 244.917 |  | identical |
+| 5936 | 247.333 |  | identical |
+| 6001 | 250.042 |  | identical |
+| 6049 | 252.042 |  | identical |
+| 6161 | 256.708 |  | identical |
+| 6304 | 262.667 |  | identical |
+| 6401 | 266.708 |  | identical |
+| 6451 | 268.792 |  | identical |
+| 6624 | 276.000 |  | identical |
+| 6703 | 279.292 |  | identical |
+| 6729 | 280.375 |  | identical |
+| 6826 | 284.417 |  | identical |
+| 6872 | 286.333 |  | identical |
+| 6970 | 290.417 |  | identical |
+| 7050 | 293.750 |  | identical |
+| 7128 | 297.000 |  | identical |
+| 7203 | 300.125 |  | identical |
+| 7263 | 302.625 |  | identical |
+| 7361 | 306.708 |  | identical |
+| 7442 | 310.083 |  | identical |
+| 7527 | 313.625 |  | identical |
+| 7584 | 316.000 |  | identical |
+| 7669 | 319.542 |  | identical |
+| 7747 | 322.792 |  | identical |
+| 7812 | 325.500 |  | identical |
+| 7911 | 329.625 |  | mean 0.000, max 1, 0.00% px |
+| 8027 | 334.458 |  | identical |
+| 8083 | 336.792 |  | identical |
+| 8156 | 339.833 |  | identical |
+| 8256 | 344.000 |  | identical |
+| 8319 | 346.625 |  | identical |
+| 8385 | 349.375 |  | identical |
+| 8441 | 351.708 |  | identical |
+| 8511 | 354.625 |  | identical |
+| 8602 | 358.417 |  | identical |
+| 8720 | 363.333 |  | identical |
+| 8772 | 365.500 |  | identical |
+| 8839 | 368.292 |  | identical |
+| 8926 | 371.917 |  | identical |
+| 8964 | 373.500 |  | identical |
+| 9104 | 379.333 |  | identical |
+| 9180 | 382.500 |  | identical |
+| 9245 | 385.208 |  | identical |
+| 9309 | 387.875 |  | identical |
+| 9410 | 392.083 |  | identical |
+| 9492 | 395.500 |  | identical |
+| 9524 | 396.833 |  | identical |
+| 9571 | 398.792 |  | identical |
+| 9600 | 400.000 |  | identical |
