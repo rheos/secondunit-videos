@@ -20,7 +20,10 @@ studied for new animation design recipes. The notes had lived only in session me
 - `STUDY-video-call.md`: the 2026-10-23 animation over a real recorded conversation (a person and
   the Dessa voice model) inside a drawn video call: shot grid S1-S14 and recipes V01-V08. The one
   film here built on someone else's audio; the format for animating any real conversation.
-- `works-index.json`: the posts we have studied, K01-K44, with status IDs where recorded and the
+- `STUDY-lantern-paper-sf.md`: the 2026-11-08 San Francisco film (K45), his first with generated
+  plates: GPT Image paintings and paper textures, all motion in plain JS. Shot grid, his style board
+  (three named mediums on two test scenes), and recipes L01-L08.
+- `works-index.json`: the posts we have studied, K01-K45, with status IDs where recorded and the
   process facts from his own "How this was made" replies.
 - `STYLE-BRIEF.txt`: the marker-and-ink-on-cream-paper surface of the paperclip film, for when the
   look is wanted as well as the thinking.
@@ -46,9 +49,11 @@ fetched. The code facts (K16) come from public mirrors of files he once posted, 
 One small object is the hero: a paperclip, a paper boat, a blue orb, a robot arm. It has a face of
 two dots or no face at all, and it travels through a chain of concrete places built from things
 everyone recognises. The film locks one look from first frame to last. Sound is a score written in
-code, so the cuts sit on a grid he controls. The ending rhymes with the opening. He uses no
-image or video model for the drawn films, and says so in the caption each time, which is part of
-why they read as clean.
+code, so the cuts sit on a grid he controls. The ending rhymes with the opening. Through K44 he
+used no image or video model for the drawn films, and said so in the caption each time, which is
+part of why they read as clean. K45 (2026-11-08) changed that: GPT Image painted the plates and
+paper textures, and code still made every move. The look still held from first frame to last,
+because a style board fixed the medium before any plate was painted.
 
 ## Our use of his manner so far
 

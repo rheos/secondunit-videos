@@ -3,7 +3,7 @@
  "handle": "@kevin_t_ngo",
  "profile": "https://x.com/kevin_t_ngo",
  "note": "Posts we have studied, with stable IDs for the direction file. Status IDs are given where recorded; subscriber posts (K04, K05, K07) are study only and must never be republished. No frames are committed in this profile.",
- "updated": "2026-11-01",
+ "updated": "2026-11-09",
  "works": [
   {
    "id": "K01",
@@ -382,6 +382,16 @@
    "format": "2160x2160, 48 s",
    "observed": "Child's crayon drawing style with a year stamp per scene. Only the opening was seen (download cut short).",
    "ours": "Year-stamp structure, like K31."
+  },
+  {
+   "id": "K45",
+   "title": "A paper sun leaves its mural and crosses San Francisco (lantern paper)",
+   "date": "2026-11-08",
+   "url": "https://x.com/kevin_t_ngo/status/2119436039488156158",
+   "format": "1080x1080, 37.5 s, 24 fps, score composed by Claude",
+   "made_with": "Paintings and paper textures by GPT Image 2.6 via Fal; all motion plain JavaScript written by Claude (his replies). About 15-20 prompts, one of which had Claude make a style board: two test scenes ('heights sun', 'avenues fog') in three named mediums (Marine Layer, Hill Press, Lantern Paper); he picked Lantern Paper, 'cut and layered painted papers'. The first film in this index that uses an image model.",
+   "observed": "A cut-paper sun peels off a Mission-style mural, shows its cream paper back and leaves a grey blank; it crosses a park, garden stairs, torn-paper fog it burns through, the Avenues and Ocean Beach at sunset, then dusk, and climbs back into the blank so the loop closes. Large painted plates crossed by the camera, foreground cut-outs for parallax, sprites moved in code. Hard cuts on multiples of 15 frames, wipes after 25.6 s.",
+   "ours": "Study and recipes L01-L08 in STUDY-lantern-paper-sf.md. Most worth taking: the style board (L01) for the 3-looks offer and the Academy; torn-paper weather as a transition (L04). Look test proposed, not built (QUIVER, 2026-11-09)."
   }
  ]
 }
