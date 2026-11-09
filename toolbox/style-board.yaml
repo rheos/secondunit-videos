@@ -1,7 +1,7 @@
 slug: style-board
 name: Style board (two scenes, three mediums)
 kind: method
-status: candidate
+status: available
 does: Before painting any plate, paint the same two test scenes in three named mediums, each with a one-line description of its material, show the six as one board, and let the director or client pick; the chosen name and line then go into every plate prompt.
 keywords:
 - look-dev
@@ -15,7 +15,7 @@ fits:
 - any painted-plate film (paper, gouache, print looks) before the plates are made
 - an Academy lesson on choosing a medium before you paint
 deterministic: n/a
-how: 'Not built. Plates from GPT Image via Codex (`gptimg`), six images per board, one grid; pick the two scenes for the film''s two moods (e.g. bright and foggy).'
+how: '`bobwiseman-10000-miles-styleboard/`: prompts.json (medium lines, scenes, shared tail), paint.sh (one plate through `gptimg`, about 70 s and ~21k Codex tokens), board.py (Pillow grid with names and one-liners). Copy the folder for a new song and rewrite prompts.json.'
 cost: plan
 detail: references/kevin-ngo/STUDY-lantern-paper-sf.md (recipe L01)
 source: Kevin Ngo's reply on x.com/kevin_t_ngo/status/2119436039488156158 (Nov 8 2026), showing the board Claude made him for his San Francisco film; studied Nov 9 2026, rheos/secondunit-videos#463
