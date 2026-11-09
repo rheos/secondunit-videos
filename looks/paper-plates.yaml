@@ -1,0 +1,56 @@
+slug: paper-plates
+title: Painted paper layers
+note: >-
+  A paper theatre of painted plates: every sky, hill, street and prop is its own sheet of hand-painted, cut or torn
+  paper, and code moves them past each other at their own depths, each sheet casting a soft shadow on the one behind.
+used: 10,000 Miles, Bob Wiseman, test
+cost: hybrid
+group: code
+order: 315
+clip: paper-plates.mp4
+tall: false
+status: approved
+engine: canvas2d + generated
+project: bobwiseman-10000-miles-paperplates
+code:
+  path: bobwiseman-10000-miles-paperplates/js/film.js
+  flag: null
+  page: bobwiseman-10000-miles-paperplates/film.html
+  note: >-
+    plates.json holds every layer's prompt (style line plus layer line); paint.sh paints one layer through gptimg with
+    the style board's paper plate attached as image 1; build_plates.py trims each to its alpha box and writes
+    work/plates.js as WebP data URLs (file:// pages can then read them without tainting the canvas). The film runs on
+    cleanline's clock, frame driver and render tools with no engine change; js/paperstage.js is a look with no line
+    or grain, and js/ready.js holds renders until the plates decode.
+rules:
+  - Choose the medium on a style board first (toolbox style-board); attach the board's plate as image 1 to every layer call so the medium holds
+  - Paint every depth on its own sheet (sky, far hills, town, near roof, clouds, props) on a transparent background, never one finished picture cut up later
+  - Every sheet casts a soft shadow down and to the right on the one behind, so the papers read as separate
+  - "Move the camera through the layers by depth: each layer moves by its own factor (sky 0.22, hills 0.38, town 0.6, near 1, clouds in front 1.35)"
+  - Drawn on twos, like a paper theatre moved by hand; small props (smoke, flame) are painted sprites, flame flickers per drawing
+  - Weather is torn paper; a scene change tears through a sheet from the hero's position, with the torn paper's pale core along the edge
+  - Plates are painted at 1536 px, so keep upscales near 1.5x at 1080p; a plate drawn bigger than that goes soft
+  - No lettering on any plate (every prompt says so); text, if any, goes on in code afterwards
+palette:
+  - "#e98a7a"
+  - "#7a5da0"
+  - "#5f8a5a"
+  - "#9c3b2a"
+  - "#f3c25a"
+  - "#1f2f78"
+  - "#efe4cf"
+reference: >-
+  The method (generated plates, motion in code, a style board first) from Kevin Ngo's K45 film, studied in
+  references/kevin-ngo/STUDY-lantern-paper-sf.md. Our own scenes, rocket and plates; none of his.
+proof:
+  renders:
+    - bobwiseman-10000-miles-paperplates/out/10000-miles_paper-test01_f01041-f01508_24fps_draft.mp4
+  pr:
+    - rheos/secondunit-videos#472
+  youtube: []
+verdict: 'Robin, 2026-11-09, on test 01 (10,000 Miles chorus 1): "It lands".'
+related:
+  - paper-depth
+  - scrap
+  - cutpaper
+  - rocket-portals
