@@ -22,7 +22,7 @@ Song 43.375-62.833 s, chorus 1, 467 frames at 24 fps.
   (`work/style_ref.png`) attached as image 1. Every layer except the sky, night and cloud sheet came back on a real
   transparent background.
 - **Bundle:** `build_plates.py` (Pillow) trims each layer to its alpha box and writes `work/plates.js` as WebP data URLs,
-  about 3 MB. Data URLs keep the canvas untainted on a file:// page, so the render tools can read frames.
+  about 4 MB. Data URLs keep the canvas untainted on a file:// page, so the render tools can read frames.
 - **Motion:** `js/film.js`, two shots, every frame a pure function of song time. Runs on cleanline unchanged:
   `film.html` loads the engine, `js/paperstage.js` (a look with no line and no grain), the plates and the film, and
   `js/ready.js` holds renders until every plate has decoded.
