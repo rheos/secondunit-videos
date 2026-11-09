@@ -16,6 +16,15 @@ commit. `js/shot.js` replaces only the camera, cast and timing; `toon.html?shot=
 
 ## The two runs (not run yet)
 
+Runner: `tools/el-video/el_video.py` (ElevenLabs Python SDK, key from the umbrella's `.env.local`). Jobs:
+`jobs/seedance_A.json` and `jobs/seedance_B.json`.
+
+    uv run tools/el-video/el_video.py submit indieagent-previz-seedance/jobs/seedance_A.json
+    uv run tools/el-video/el_video.py wait   indieagent-previz-seedance/jobs/seedance_A.json
+
+Blocked 2026-11-08: Robin's ElevenLabs is on Pro and the video API answers, but Seedance returns 403
+`model_access_denied` until ElevenLabs support approves ByteDance models. Nothing was charged.
+
 Seedance 2.5 US reference-to-video, 5 s, 720p, 9:16, task reference, with the sheet and the line in both.
 
 - A: the three keyframes as images, as in Danioros's post. About $2.31.
