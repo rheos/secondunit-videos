@@ -31,3 +31,19 @@ Seedance 2.5 US reference-to-video, 5 s, 720p, 9:16, task reference, with the sh
 - B: the previz clip as a video reference. About $2.79.
 
 Cap $11 with one retake each (Robin, 2026-11-08). Judge each beside the previz on camera, character, lips and look.
+
+## Run on Fal instead: a Libelous take (2026-11-09)
+
+Robin wanted the money to buy something usable, so the king shot became a real take of Libelous: the opening
+5 s of the toon-cards take (song frames f1488-f1608, the king on the terrace, then the royal family and the prince
+at his telescope), previzzed by test 02 itself. Fal `bytedance/seedance-2.5/us/reference-to-video`, 720p 9:16,
+5 s, no audio (Bob's master stays the sound). Jobs `jobs/lib_A.json` (king sheet + three keyframes) and
+`jobs/lib_B.json` (king sheet + the previz clip). About $5.10 together, logged in secondunit/CREDITS.md.
+
+- `out/lib_seed-compare_f01488-f01608_24fps_draft.mp4`: previz, A and B side by side.
+- `out/lib_toon-test03{A,B}_f01488-f02324_24fps_draft.mp4`: test 02 with the first 120 frames replaced.
+
+First read: Seedance kept our toon-cards look almost exactly, with softer light; it did not repaint it. A opens
+much closer on the king than the previz and cuts back into test 02 cleanly. B copies the middle of the previz
+camera most closely but opens on an extreme close-up and ends with the king, not the princess, beside the prince,
+so its cut back into test 02 swaps a character.
