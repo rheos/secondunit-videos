@@ -1,0 +1,25 @@
+slug: exposure-check
+name: Exposure and colour gate (ESCAPEMENT's exposure_check.py)
+kind: script
+status: candidate
+does: Scores a still on luma percentiles, clipped and near-white area, lifted blacks, contrast, saturation and colourfulness, and fails it on numbers before anyone looks at it.
+keywords:
+- qc
+- audit
+- review
+- color-grade
+- exposure
+fits:
+- cleanline's planned review command, as one more pass/fail line per frame
+- any look with a known paper colour or black floor, with thresholds measured off its approved clip
+- 3D and painted-plate films, where washed-out haze and blown highlights are the usual failures
+deterministic: n/a
+how: 'Not installed. 67 lines of numpy + ffmpeg in github.com/Leonxlnx/escapement tools/exposure_check.py; runs anywhere with Python and ffmpeg.'
+cost: free (MIT)
+url: https://github.com/Leonxlnx/escapement/blob/main/tools/exposure_check.py
+detail: references/leon-lin/STUDY-escapement.md (What's new, item 1)
+source: Leon Lin's ESCAPEMENT post, x.com/LexnLin/status/2119558994352304202 (Nov 8 2026); studied Nov 9 2026, rheos/secondunit-videos#467
+verdict: 'Recommended by Claude, 2026-11-09: port it into cleanline review with thresholds per look, not his. His limits are for dark cinema (near-white under 2%, p5 luma under 0.08), and every cream-paper look we have would fail them. Write our own version; keep his MIT notice on anything copied.'
+related:
+- motion-lab
+added: '2026-11-09'

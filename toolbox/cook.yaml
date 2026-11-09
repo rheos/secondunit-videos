@@ -1,0 +1,23 @@
+slug: cook
+name: cook (Leon Lin's long-run agent skill)
+kind: skill
+status: rejected
+does: An agent skill that runs a long autonomous loop for visual builds against references, with one intake, fixed camera presets, side-by-side stills, fresh-context critics, a round ledger and a hold on the final render until the user approves.
+keywords:
+- review
+- audit
+- qc
+- critic
+fits:
+- nothing as installed; its calibration offset and critic disagreement rule go into our own critic step
+deterministic: n/a
+how: not installed
+cost: free (MIT)
+url: https://github.com/Leonxlnx/cook
+detail: references/leon-lin/STUDY-escapement.md (The cook skill; What's new, item 6)
+source: Leon Lin's ESCAPEMENT post, which says it was made with /cook (x.com/LexnLin/status/2119558994352304202, Nov 8 2026); studied Nov 9 2026, rheos/secondunit-videos#467
+verdict: 'Claude, 2026-11-09: borrow two ideas, do not install. Take the calibration offset (log the gap between Robin''s score and the critics'' median, apply it to later scores) and the rule to add a critic when two differ by more than 10 points.'
+why: 'It would claim every visual build, as cinetic would; after intake it never asks a question, where our runs stop at Robin''s gates; and its description invites a recreation in code from reference images, which breaks build-a-language-not-a-copy. Our bureau critics and the open-water review method already cover the loop.'
+related:
+- motion-lab
+added: '2026-11-09'
