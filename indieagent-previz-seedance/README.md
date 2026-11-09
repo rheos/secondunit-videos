@@ -47,3 +47,7 @@ First read: Seedance kept our toon-cards look almost exactly, with softer light;
 much closer on the king than the previz and cuts back into test 02 cleanly. B copies the middle of the previz
 camera most closely but opens on an extreme close-up and ends with the king, not the princess, beside the prince,
 so its cut back into test 02 swaps a character.
+
+**Robin's verdict (2026-11-09):** the Seedance shot is better, but too close to our free render to justify the
+spend: he'd have to really believe in a video to pay that for so little difference. Paid generation earns its
+cost only where it adds what our code can't draw, not as a polish pass on a look we already render.
