@@ -48,4 +48,4 @@ The render took 45 s on the Intel Mac (467 frames, about 100 ms a frame).
 - The rocket points nose-down while it swoops toward the orbit, which can read as falling for a moment.
 - No sound design; the song is the only audio.
 
-Robin's verdict: not yet.
+Robin's verdict, Nov 9, 2026: "It lands". Look `paper-plates` is approved and on novadiem.com/video/styles.
