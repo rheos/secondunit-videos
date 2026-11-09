@@ -1,0 +1,31 @@
+slug: todai-qc
+name: Todai film QC tools (seeconever)
+kind: toolkit
+status: candidate
+does: 'Measured gates for a code-drawn 3D film: an overlap probe that poses the character as a rounded box plus cylinders against every prop on every second frame, keyframe sheets labelled with luma, saturation and the hero''s hue, an encode QC that flags luma jumps inside a shot (cuts excluded), blank and near-duplicate frames and the loop seam, and a per-section loudness and band report of the master.'
+keywords:
+- qc
+- audit
+- collision
+- overlap
+- loudness
+- threejs
+- review
+fits:
+- the Academy Kit's check step, beside check.mjs, badframes.py and flashcheck.py
+- inked3d-kit and Leviathan-style films where a character sits on or holds props
+- a hue lock on a character whose colour must survive coloured light
+deterministic: 'yes: the film page exposes window.__collide(t) and window.__events(); every frame is a pure function of its index'
+how: 'not installed. github.com/seeconever/todai, tools/collide.mjs, keys.mjs, draft_qc.mjs, soundcheck.mjs (Node 20, Playwright Chromium, ffmpeg). The tools hardcode this film''s cut list and shot names, so port the ideas into our own checks rather than vendoring the files.'
+cost: free (MIT)
+url: https://github.com/seeconever/todai
+source: x.com/0xnicc0/status/2119407185499140158 (repost of seeco's film, read 2026-11-09)
+verdict: 'Claude, 2026-11-09: the film is a weaker cousin of Leviathan, but these gates are the useful part. Three are new to us: the posed overlap probe, the character-hue gate on labelled keyframes, and in-shot luma jumps with the cut list excluded (Finn Ardley''s row named the idea; this is a working version). Frozen-time and loudness checks we already have via motion-video-kit and motion-lab. Never the mascot (Clawd is Anthropic''s, not the repo author''s to license) or the film''s shots.'
+detail: 'Gate numbers the film ships with: no penetration deeper than 1.2 cm on 676 checked frames; hue 13-18 in non-glow keys; lightning ramps over 2-3 frames and never jumps more than 25 luma levels per frame; master -14 LUFS, true peak at most -1 dBTP, the loudest moment at the climax. The study is the 2026-11-09 QUIVER row.'
+related:
+- motion-lab
+- motion-video-kit
+- leviathan-engine
+- inked3d-kit
+- ffmpeg
+added: '2026-11-09'
