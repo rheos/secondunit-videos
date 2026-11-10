@@ -1,0 +1,69 @@
+# Andre dinner monologue: looks
+
+Source: a Facebook reel posted by Mark Joyner on 2026-11-05 (facebook.com/reel/1443352110477181), the
+restaurant scene from My Dinner With Andre (1981). Robin, 2026-11-09: "grab this reel.. i want to animate
+the audio." Audio pinned at `_in/andre.wav` (sha256 in `_in/andre.wav.sha256`), 198.37 s, 4761 frames at
+24 fps. Timing from a local faster-whisper pass (`_in/cues.json`); there is no script sheet, so the
+transcript's words are the words, checked by ear against the film.
+
+## 1. Brief
+
+**About.** Wally asks whether people are just bored, spoiled children playing with a plastic duck in the
+bath. Andre answers for three minutes: boredom is a self-perpetuating brainwashing run by a world
+government based on money; a bored person is asleep and someone asleep will not say no. A Swedish
+physicist has cut out television and papers. An 84-year-old English tree man at Findhorn says New York is
+a concentration camp built and guarded by its own inmates, who are proud of what they built and can no
+longer see it as a prison. He puts a pine seed in Andre's hand: escape before it's too late. Andre and
+Chiquita feel like Jews in Germany in the late 30s, but the whole world is going the same way. The 1960s
+were the last burst of the human being; from now on, robots walking around feeling nothing, and soon
+nobody will remember that life existed on the planet.
+
+**The one image.** The prison built by its inmates, who are also its guards. Second: the seed in the hand.
+
+**Mood and arc.** Intimate and dark at a dinner table, hypnotic, a man talking himself toward the end of
+the world. Climax at the seed in the hand (138.9 to 140.5 s, "escape before it's too late"). The ending
+(195 to 196.5 s, "life existed on the planet") is the biggest, emptiest image. One light arc: a lit
+table, then a lit city, then one light on a dark planet, then out.
+
+**Sections (24 fps frames, from cues.json).**
+
+| Frames | Seconds | What is said |
+|---|---|---|
+| f0-f170 | 0.1-7.1 | Wally: why is that? lazy, bored? |
+| f196-f463 | 8.2-19.3 | Wally: bored spoiled children, the bathtub, the plastic duck |
+| f508-f1180 | 21.2-49.2 | Andre: we are bored; boredom as brainwashing; asleep will not say no |
+| f1209-f1772 | 50.4-73.8 | the Swedish physicist who cut out television and papers |
+| f1807-f2431 | 75.3-101.3 | the tree man at Findhorn; New Yorkers who never leave |
+| f2554-f3134 | 106.4-130.6 | New York as a camp built by its inmates; guards and prisoners; lobotomized |
+| f3168-f3372 | 132.0-140.5 | the pine seed; escape before it's too late |
+| f3397-f3845 | 141.6-160.2 | Chiquita and I should get out; the whole world is going the same way |
+| f3845-f4315 | 160.2-179.8 | the 1960s were the last burst; robots feeling nothing |
+| f4315-f4715 | 179.8-196.5 | nobody left to remind them; history erased; life on the planet |
+
+**Limits.** Free code only, no credits. 9:16 (720x1280) draft and final (Robin's pick, 2026-11-10). No
+faces: two real actors, and code can't draw faces. No footage from the film in the animation. The audio
+is a copyrighted film scene; posting is Robin's call, and the transcript stays out of git.
+
+**Real people.** Andre Gregory and Wallace Shawn, playing themselves. Never drawn. Gustav Bjornstrand and
+the tree man are people Andre describes; the tree man may be drawn as a silhouette.
+
+## 2. Shortlist
+
+Read from the catalogue digest at origin/main 16498d4 (86 looks). Spread: line film, cut paper, type,
+paper diorama.
+
+| Look | Why it fits | Section | Cost | Code | Risk |
+|---|---|---|---|---|---|
+| swift-line (Night-sky line film) | One unbroken pull-back carries the arc: a lit table to a city of robots to the planet. A live readout can count memory draining to zero. Robin expected it to suit documentary. | f3840-f4728 (160.0-197.0), the 1960s to the planet | free | film-bound, `bobwiseman-swift-noimage/scene/ihd_9x16.rb`; needs the noimage renderer cloned and built (about 3 min) | the Swift renderer is two tests old; a monologue has no beat grid for the sound cues |
+| papersilhouette (Coloured paper silhouettes) | Profiles dodge faces. A paper skyline rises as a camp wall, figures lay their own bricks and turn into guards, a seed lands in a paper hand. "The best one we have done." | f2548-f3384 (106.0-141.0), the camp to the seed | free | film-bound, `bobwiseman-in-her-dream/js/cut/kit.js` | In Her Dream's motifs (gold rings, the orange) must not come along; 35 s is long for a test |
+| type (Kinetic typography) | A monologue is all words. "Somebody who's asleep will not say no" is a dialog box with NO greyed out. Approved look. | f504-f1188 (21.0-49.5), boredom as brainwashing | free | film-bound, `bobwiseman-airplane-type/js/` minus the plane | three minutes of text alone would wear thin; the test must prove text plus interface grammar can hold |
+| Fresh: table-to-city diorama | Not in the catalogue. A cut-paper dinner table seen from above: plates, glasses and cutlery rise into a city, the cutlery stands up as a fence, tiny figures walk to the fence and turn back. Ties the dinner to the prison. | f1800-f2544 (75.0-106.0), the tree man to "I don't think it's that way at all" | free | paper-depth engine, `indieagent-paper-depth/js/paper.js` | the table-to-city turn must read in 9:16 without a face; risk of a cute diorama on a bleak speech |
+
+Not shortlisted but read: ministry (ink and newsprint, grey bureaucracy) fits the Orwell line and would be
+the fifth; wakinglife is the obvious cinematic cousin (Linklater) but needs footage to trace; woodcut's
+propaganda-poster feel suits "inmates are the guards" and stays available.
+
+## 3. Pick
+
+Robin, 2026-11-10 (after midnight Pacific): all four, 9:16 reel. Each gets a 30 s look test on its own
+section, in `tests/<slug>/`, renders in `out/`.

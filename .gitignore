@@ -110,3 +110,10 @@
 !/bobwiseman-10000-miles-perspective/
 !/bobwiseman-10000-miles-styleboard/
 !/bobwiseman-10000-miles-paperplates/
+
+# Andre dinner monologue reel, 2026-11-10
+!/andre-dinner-monologue/
+# generated word-time files quote the dialogue; each test regenerates them from _in/cues.json
+/andre-dinner-monologue/tests/*/js/words.js
+/andre-dinner-monologue/tests/*/js/cues.js
+**/node_modules
