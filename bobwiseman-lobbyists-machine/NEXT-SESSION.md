@@ -1,6 +1,12 @@
-# NEXT SESSION: Lobbyists at Parliament, whole song (draft 2 rendered 2026-11-10)
+# NEXT SESSION: Lobbyists at Parliament, whole song (draft 3 = draft 2 + intro scat, 2026-11-10)
 
-Draft 2 is built, merged, audited and rendered. Robin has NOT watched it yet. Next is his verdict.
+Draft 2 is built, merged, audited and rendered. Robin started watching it and gave one note so far: the intro
+scat (vocal at 0.33-3.2 s, five syllables) needed something happening. He picked machine-only, no lettering. Built in
+sec-attic.js: per syllable the crank is yanked a notch, the ram ratchets up, a pawl on the press pulley clacks, and a
+marquee bulb on the RECORD LABEL sign lights; all five flash on the stamp. Draft 3 =
+`out/lobbyists_machine-d3_f0-f6446_24fps_draft.mp4`: a local render of 0-4.58 s spliced at frame 110 (mid camera move)
+into draft 2's picture, draft 2's audio copied. Wide shots later in the song were not re-rendered, so the unlit bulbs
+show up there only on the next full render. Audit 0-8 s passes; flash check passes.
 
 ## Load first
 1. Skill `video-production` and its `references/revision-loop.md`.

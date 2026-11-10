@@ -34,6 +34,7 @@ const TM = {};
 function times() {
   Object.assign(TM, {
     stamp: 3.37,                                    // the band's hit before the first line (audio onset 3.375)
+    scat: [0.33, 0.87, 1.415, 1.98, 2.805],         // the intro scat's five syllables (vocal stem onsets); the 4th is held
     right0: wt(0, 5), wing0: wt(0, 6), man0: wt(0, 7),
     but1: wt(1, 0), right1: wt(1, 2), wing1: wt(1, 3), man1: wt(1, 4), was1: wt(1, 5), just1: wt(1, 6), too1: wt(1, 7), fright: wt(1, 8),
     so2: wt(2, 0), pub: wt(2, 6),
@@ -42,10 +43,15 @@ function times() {
 }
 
 // ---------- moving parts as functions of time ----------
-// the press: the crank winds the ram up slowly through the intro, it slams on the hit, then lifts
-const crankA = (t) => t * 1.9;
+// the press: through the intro scat the crank is yanked a notch per syllable and the ram ratchets up a notch with it;
+// it slams on the hit, then lifts. After the stamp the crank turns steadily.
+const notches = (t, d) => TM.scat.reduce((s, p) => s + ease(seg(t, p, p + d)), 0);
+function crankA(t) {
+  if (t >= TM.stamp) return t * 1.9;
+  return 0.4 * t + notches(t, 0.14) * (TM.stamp * 1.5) / 5;   // meets t * 1.9 at the stamp
+}
 function ramY(t) {
-  const up = -2262 - 30 * seg(t, 0, 3.25);
+  const up = -2262 - 6 * notches(t, 0.07);
   if (t < TM.stamp - 0.07) return up;
   if (t < TM.stamp) return lerp(-2292, -2228, seg(t, TM.stamp - 0.07, TM.stamp) ** 2);
   if (t < TM.stamp + 0.1) return -2228;
@@ -154,6 +160,16 @@ function loftPart(t) {
   for (const rx of [-580, 120]) ink([[rx, LOFT], [rx, -2760]], 'lrod' + rx, { w: 1.6, col: PENCIL });
   shape(box(-620, LOFT, 780, 22), TAN, 'loft', 2);
   shape(box(-380, -2500, 300, 58), RED, 'rlsign', 2); boxLabel('RECORD LABEL', [-380, -2500, 300, 58], 34, PAPER);
+  // marquee bulbs along the sign's top: one lights per scat syllable and stays lit, the held one shimmers;
+  // all five flash on the stamp, then go dark for the rest of the song
+  for (let i = 0; i < 5; i++) {
+    const bx = -350 + i * 60, by = -2517, on = t >= TM.scat[i] && t < TM.stamp + 0.7;
+    ink([[bx, -2500], [bx, by + 8]], 'bsock' + i, { w: 2.2 });
+    const dk = (a, r) => (t >= a ? Math.exp(-(t - a) * r) : 0), pop = dk(TM.scat[i], 6), fl = dk(TM.stamp, 4), hold = i === 3 && t < TM.scat[4] ? 0.25 * (0.5 + 0.5 * Math.sin(t * 30)) : 0;
+    const glow = on ? Math.min(1, 0.35 + 0.65 * Math.max(pop, fl) + hold) : 0;
+    if (glow > 0) { X.save(); const g = X.createRadialGradient(bx, by, 3, bx, by, 34); g.addColorStop(0, `rgba(255,211,107,${0.6 * glow})`); g.addColorStop(1, 'rgba(255,211,107,0)'); X.fillStyle = g; X.fillRect(bx - 36, by - 36, 72, 72); X.restore(); }
+    blob(circ(bx, by, 11), on ? LAMP : PAPER, 'bulb' + i, 1.4);
+  }
   // the hatch in the wall
   shape(box(...HATCH), INK, 'hatch', 2); ink(box(HATCH[0] - 8, HATCH[1] - 8, HATCH[2] + 16, HATCH[3] + 16), 'hatchf', { w: 1.6, poly: true });
   // the crank: wheel on a post, a belt to the press's screw
@@ -164,6 +180,12 @@ function loftPart(t) {
   shape(box(-176, -2380, 14, 202), OX, 'pupl', 1.8); shape(box(-38, -2380, 14, 202), OX, 'pupr', 1.8);
   shape(box(-190, -2400, 180, 22), OX, 'pbar', 2);
   blob(circ(-100, -2412, 16), GILT, 'ppul', 1.6);
+  // the ratchet's pawl on the press's pulley: it flicks up and clacks back down on each scat notch
+  if (t < TM.stamp + 0.3) {
+    const flick = TM.scat.reduce((m, p) => Math.max(m, pulse(t, p, 0.14)), 0), pv = [-52, -2444], tip = [-86, lerp(-2422, -2438, flick)];
+    ink([pv, tip], 'pawl', { w: 3.4 }); dot(pv[0], pv[1], 4.5);
+    TM.scat.forEach((p, n) => { const k = seg(t, p + 0.1, p + 0.32); if (k > 0 && k < 1) for (let j = 0; j < 3; j++) { const a = -0.7 + j * 0.45, r0 = 24 + k * 10; ink([[-100 + Math.cos(a) * r0, -2412 + Math.sin(a) * r0], [-100 + Math.cos(a) * (r0 + 13), -2412 + Math.sin(a) * (r0 + 13)]], 'clk' + n + j, { w: 2, a: 1 - k }); } });
+  }
   const ry = ramY(t);
   ink([[-100, -2400], [-100, ry - 46]], 'screw', { w: 5 }); for (let y = -2392; y < ry - 50; y += 12) ink([[-106, y], [-94, y + 6]], 'thr' + y, { w: 1, a: 0.7 });
   shape(box(-132, ry - 46, 64, 46), GREY, 'ram', 2); shape(box(-118, ry - 6, 36, 6), INK, 'die', 1);
