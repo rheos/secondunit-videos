@@ -9,7 +9,8 @@ let C = null;
 const PROBE = (typeof ML !== 'undefined' && ML.probe) || { on: false, text() {}, box() {}, event() {}, edge() {}, value() {} };
 // a sign's text: fitted inside its box with a margin, and reported to the audit with the box as its container
 function boxLabel(txt, [bx, by, bw, bh], size, col = INK) {
-  const s = Math.min(size, bh * 0.72), cx = bx + bw / 2, cy = by + bh / 2, used = fitLabel(txt, cx, cy + 1, bw - 12, s, col);
+  const s = Math.min(size, bh * 0.62), cx = bx + bw / 2, cy = by + bh / 2, used = fitLabel(txt, cx, cy + 1, bw - 12, s, col);
+  if (X.getTransform().a < 0.5) return; // the pull-back: a sign a few pixels tall has no margin to measure
   X.save(); X.font = `${used}px KevinSans`; X.textAlign = 'center'; X.textBaseline = 'middle'; PROBE.text(X, 'sign', txt, cx, cy + 1, [bx, by, bw, bh], { margin: 2 }); X.restore();
 }
 
@@ -95,7 +96,7 @@ function buildLegs() {
   add(T.a2 - 0.3, T.a2, (k) => { const a = rung(10); a[1] -= 22; return [lerp(a[0], SLOT[0], k), lerp(a[1], SLOT[1], k) - Math.sin(k * Math.PI) * 120]; });
   add(T.a2, 99, (k, t) => [SLOT[0], lerp(SLOT[1], -820, ease(seg(t, T.a2, T.a2 + 0.25)))]);
   LEGS = L.sort((a, b) => a.t0 - b.t0);
-  LANDS = [['slot1', T.a1], ['board', T.what], ['yoyo', T.you], ['xylo', T.and2], ['bulb', T.zoo], ['bucket', T.too], ['slot2', T.a2]];
+  LANDS = [['slot', T.a1], ['board', T.what], ['yoyo', T.you], ['xylo', T.and2], ['bulb', T.zoo], ['bucket', T.too]];
   window.__legs = LEGS.map((l, i) => { const d = Math.min(l.t1, C.dur) - l.t0; let len = 0, p = ballAt(l.t0); for (let s = 1; s <= 20; s++) { const q = ballAt(l.t0 + d * s / 20); len += dist(p, q); p = q; } return `${l.t0.toFixed(2)}-${l.t1.toFixed(2)} ${Math.round(len / Math.max(d, 1e-3))} u/s`; });
 }
 function ballAt(t) {
@@ -109,10 +110,16 @@ function camAt(t) {
   for (let j = -10; j <= 14; j++) { const w = 1 - Math.abs(j - 2) / 14, b = ballAt(t + j * 0.04); x += b[0] * w; y += b[1] * w; sum += w; }
   x /= sum; y = y / sum - 30; let z = 1.1;
   const hold = (cx, cy, cz, a0, a1, b0, b1) => { const k = ease(seg(t, a0, a1)) * (1 - ease(seg(t, b0, b1))); x = lerp(x, cx, k); y = lerp(y, cy, k); z = Math.exp(lerp(Math.log(z), Math.log(cz), k)); };
-  hold(-470, -960, 1.12, -9, -8, TM.a1 + 0.1, TM.a1 + 1.1);
-  hold(-200, -520, 1.0, TM.what - 0.6, TM.what - 0.1, TM.said2 + 0.1, TM.you);
-  hold(820, 250, 0.92, TM.and3 - 1.3, TM.and3 - 0.3, TM.zoo + 0.5, TM.and4 + 0.4);
-  hold(820, 480, 0.86, TM.frames - 0.1, TM.too, TM.too + 0.9, TM.h2[0] + 0.3);
+  // hook 2: the camera trails the coin up the charts, so each rung's words stay up 1.5 s after they're written
+  const hk = ease(seg(t, TM.h2[1], TM.h2[2])) * (1 - ease(seg(t, TM.a2 + 0.2, TM.a2 + 0.8)));
+  if (hk > 0) { const b0 = ballAt(t), b1 = ballAt(t - 1.5); x = lerp(x, (b0[0] + b1[0]) / 2 + 60, hk); y = lerp(y, (b0[1] + b1[1]) / 2, hk); z = lerp(z, 0.77, hk); }
+  hold(-470, -960, 1.12, -9, -8, TM.a1 + 0.6, TM.what - 0.6);
+  hold(-200, -400, 0.82, TM.what - 0.6, TM.what - 0.1, TM.ma + 1.3, TM.ma + 2.1);
+  hold(720, -200, 0.95, TM.the2 - 0.5, TM.the2, TM.and3 - 1.3, TM.and3 - 0.3);
+  hold(800, 250, 0.92, TM.and3 - 1.3, TM.and3 - 0.3, TM.and4, TM.and4 + 0.4);
+  hold(714, 500, 0.74, TM.zoo + 0.25, TM.and4 - 0.1, TM.frames - 0.3, TM.too);
+  hold(800, 610, 0.76, TM.frames - 0.3, TM.too, TM.too + 1.0, TM.too + 1.4);
+  hold(464, 900, 0.75, TM.too + 0.6, TM.too + 1.0, TM.h2[0] + 0.3, TM.h2[1] + 0.3);
   const end = TM.a2 + 0.2, k = ease(seg(t, end, end + 1.6));
   return { x: lerp(x, 190, k), y: lerp(y, -90, k), z: Math.exp(lerp(Math.log(z), Math.log(0.25), k)) };
 }
@@ -311,19 +318,19 @@ function letterWords(words, x, y, size, col, maxW, rot = 0, wipe = 0.24) {
   for (const w of words) {
     const ww = X.measureText(w.w).width; if (cx > 0 && cx + ww > maxW) { cx = 0; cy += size * 1.16; }
     const k = seg(T, w.t - 0.04, w.t + wipe);
-    if (k > 0) { X.save(); X.beginPath(); X.rect(cx - 2, cy - size * 1.2, (ww + 4) * k, size * 1.7); X.clip(); X.fillText(w.w, cx, cy); X.restore(); if (T < w.t + 0.7) PROBE.box(X, 'word', cx, cy - size * 0.8, ww, size, { keep: true }); }
+    if (k > 0) { X.save(); X.beginPath(); X.rect(cx - 2, cy - size * 1.2, (ww + 4) * k, size * 1.7); X.clip(); X.fillText(w.w, cx, cy); X.restore(); if (T < words[words.length - 1].t + 1.5) PROBE.box(X, 'word', cx, cy - size * 0.8, ww, size, { keep: true }); }
     cx += ww + sp;
   }
   X.restore();
 }
 const phrase = (txt, t) => txt.split(' ').map((w, i) => ({ w, t: t + i * 0.12 }));
-const SPOTS = [[-170, -700, 520, 34], [-380, -30, 440, 36], [400, -80, 600, 36], [140, 80, 320, 38], [650, 900, 600, 36]];
+const SPOTS = [[-170, -700, 520, 34], [-330, -50, 440, 36], [360, -70, 720, 36], [178, 80, 320, 38], [650, 900, 600, 36]];
 function words(t) {
   const hk = C.hookText, ag = C.againText;
   C.hooks[0].ticks.forEach((tk, i) => letterWords(phrase(hk, tk), -390, -1150 + i * 38, 30, INK, 400));
   letterWords([{ w: ag, t: C.hooks[0].again }], -390, -1150 + 8 * 38 + 4, 34, INK, 400);
   C.lines.forEach((l, i) => { const [x, y, mw, s] = SPOTS[i]; letterWords(l.words, x, y, s, INK, mw); });
-  C.hooks[1].ticks.forEach((tk, i) => { const [x, y] = rung(i + 1); letterWords(phrase(hk, tk), x - 300, y + 8, 28, RED, 400); });
+  C.hooks[1].ticks.forEach((tk, i) => { const [x, y] = rung(i + 1); letterWords(phrase(hk, tk), i < 5 ? x + 66 : x - 300, y + 8, 28, RED, 400); });
   letterWords([{ w: ag, t: C.hooks[1].again }], -390, -1150 + 9 * 38 + 10, 34, RED, 400);
 }
 
