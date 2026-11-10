@@ -3,7 +3,7 @@ title: Lyric chain-reaction machine
 note: >-
   One ball runs one long hand-drawn machine, and every part is a joke about the line being sung beside it. On the
   last word the camera pulls back: the whole machine is a ring around one lit window.
-used: No One's Coming to the Rescue, Bob Wiseman, test
+used: No One's Coming to the Rescue, Bob Wiseman, test; Lobbyists at Parliament, Bob Wiseman, test
 cost: free
 group: code
 order: 630
@@ -43,10 +43,12 @@ reference: >-
 proof:
   renders:
     - bobwiseman-rescue-machine/out/rescue-machine_test02.mp4
+    - bobwiseman-lobbyists-machine/out/lobbyists_machine-test01_f480-f1284_24fps_draft.mp4
   pr:
     - rheos/secondunit-videos#386
+    - rheos/secondunit-videos#477
   youtube: []
-verdict: "Robin, 2026-11-03, on test 02: \"It lands\". On test 01, built from 12 frames of the reference: \"pretty lame and boring\"."
+verdict: "Robin, 2026-11-09, on Lobbyists at Parliament test 01 (a cast in the look, a coin through a pay-for-a-hit machine): \"Looks great. Keep going.\" Robin, 2026-11-03, on test 02: \"It lands\". On test 01, built from 12 frames of the reference: \"pretty lame and boring\"."
 related:
   - doodle-on-footage
   - diagram-plate
