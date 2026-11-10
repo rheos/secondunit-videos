@@ -10,6 +10,13 @@ group: code
 order: 490
 clip: drawn-playa.mp4
 tall: false
+tags:
+  medium: [3d, cartoon]
+  texture: [clean]
+  motion: [moving camera]
+  mood: [deadpan, dreamy]
+  engine: [canvas2d]
+  use: [music video]
 status: draft
 engine: canvas2d
 project: bobwiseman-reform-party

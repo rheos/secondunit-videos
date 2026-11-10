@@ -7,6 +7,12 @@ group: live
 order: 50
 clip: hj-anim.mp4
 tall: true
+tags:
+  texture: [film grain]
+  mood: [dark]
+  colour: [sepia]
+  engine: [kling, gpt-image]
+  use: [artist footage, music video]
 status: approved
 engine: generated (Kling 3.0, GPT Image 2.5) + local worn-film finish
 project: hjeron-dark-blues-storyboard

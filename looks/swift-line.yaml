@@ -9,6 +9,14 @@ group: code
 order: 650
 clip: null
 tall: false
+tags:
+  medium: [light, type]
+  texture: [glow]
+  motion: [moving camera]
+  mood: [technical, dreamy]
+  colour: [dark ground, one accent]
+  engine: [swift-metal]
+  use: [music video, lyric video, explainer, infographic]
 status: test
 engine: swift and metal
 project: bobwiseman-swift-noimage

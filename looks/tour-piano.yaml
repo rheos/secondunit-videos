@@ -9,6 +9,12 @@ group: code
 order: 650
 clip: tour-piano.mp4
 tall: false
+tags:
+  medium: [ink]
+  texture: [clean]
+  mood: [playful, technical]
+  engine: [colorfigures]
+  use: [infographic]
 status: test
 engine: colorfigures (svg)
 project: bobwiseman-tour-piano

@@ -7,6 +7,12 @@ group: code
 order: 570
 clip: water.mp4
 tall: true
+tags:
+  medium: [watercolour, ink]
+  texture: [paper grain]
+  mood: [dreamy]
+  engine: [canvas2d]
+  use: [music video]
 status: test
 engine: canvas2d
 project: gemmaluna-clap-hands

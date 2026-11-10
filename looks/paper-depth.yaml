@@ -9,6 +9,13 @@ group: code
 order: 310
 clip: paper-depth.mp4
 tall: false
+tags:
+  medium: [cut paper]
+  texture: [paper grain]
+  motion: [moving camera]
+  mood: [playful, dreamy]
+  engine: [canvas2d]
+  use: [music video]
 status: approved
 engine: canvas2d
 project: indieagent-paper-depth

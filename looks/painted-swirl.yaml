@@ -9,6 +9,13 @@ group: code
 order: 660
 clip: null
 tall: true
+tags:
+  medium: [paint, light]
+  texture: [brushstroke, glow]
+  mood: [dreamy]
+  colour: [dark ground]
+  engine: [swift-metal]
+  use: [music video]
 status: test
 engine: swift and metal
 project: bobwiseman-swift-noimage

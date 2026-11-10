@@ -7,6 +7,14 @@ group: code
 order: 330
 clip: kawaii.mp4
 tall: false
+tags:
+  medium: [watercolour, ink, cartoon]
+  texture: [paper grain]
+  motion: [boil, on twos]
+  mood: [playful]
+  colour: [pastel]
+  engine: [canvas2d]
+  use: [music video]
 status: approved
 engine: canvas2d
 project: bobwiseman-airplane-kawaii, bobwiseman-airplane-v1

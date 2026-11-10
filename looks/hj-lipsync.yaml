@@ -7,6 +7,13 @@ group: live
 order: 40
 clip: hj-lipsync.mp4
 tall: true
+tags:
+  medium: [live action]
+  texture: [film grain]
+  motion: [lip-sync]
+  mood: [dark]
+  engine: [minimax-h3]
+  use: [artist footage, music video]
 status: approved
 engine: generated (MiniMax H3 Max) + local grade
 project: hjeron-dark-blues-storyboard

@@ -7,6 +7,14 @@ group: code
 order: 360
 clip: 16bit.mp4
 tall: false
+tags:
+  medium: [pixel]
+  texture: [dither]
+  era: [1970-1999]
+  mood: [playful, nostalgic]
+  colour: [saturated]
+  engine: [canvas2d]
+  use: [music video]
 status: approved
 engine: canvas2d
 project: bobwiseman-airplane-16bit

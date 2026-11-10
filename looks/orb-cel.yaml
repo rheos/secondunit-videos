@@ -9,6 +9,15 @@ group: code
 order: 540
 clip: orb-cel.mp4
 tall: false
+tags:
+  medium: [3d]
+  texture: [clean, glow]
+  era: [contemporary]
+  motion: [moving camera]
+  mood: [dreamy]
+  colour: [pastel]
+  engine: [blender]
+  use: [music video]
 status: test
 engine: blender
 project: blender-orb-visualizer

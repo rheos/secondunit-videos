@@ -9,6 +9,14 @@ group: code
 order: 170
 clip: gameboard.mp4
 tall: false
+tags:
+  medium: [print]
+  texture: [halftone, misregister, paper grain]
+  era: [1945-1969]
+  mood: [playful, nostalgic]
+  colour: [limited palette]
+  engine: [canvas2d]
+  use: [music video]
 status: approved
 engine: canvas2d
 project: bobwiseman-satisfied-mind

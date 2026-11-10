@@ -7,6 +7,15 @@ group: code
 order: 110
 clip: hose.mp4
 tall: false
+tags:
+  medium: [cartoon]
+  texture: [film grain]
+  era: [1900-1945]
+  motion: [on the beat]
+  mood: [playful, nostalgic]
+  colour: [sepia]
+  engine: [canvas2d]
+  use: [music video]
 status: draft
 engine: canvas2d
 project: bobwiseman-more

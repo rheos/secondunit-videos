@@ -9,6 +9,13 @@ group: code
 order: 315
 clip: paper-plates.mp4
 tall: false
+tags:
+  medium: [cut paper, paint]
+  texture: [paper grain]
+  motion: [moving camera]
+  mood: [dreamy]
+  engine: [canvas2d, gpt-image]
+  use: [music video]
 status: approved
 engine: canvas2d + generated
 project: bobwiseman-10000-miles-paperplates

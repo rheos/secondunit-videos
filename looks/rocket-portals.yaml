@@ -11,6 +11,12 @@ collection: clean-line
 order: 320
 clip: rocket-portals.mp4
 tall: false
+tags:
+  medium: [3d, cartoon]
+  texture: [clean, paper grain]
+  mood: [playful]
+  engine: [blender]
+  use: [music video]
 status: draft
 engine: blender
 project: bobwiseman-10000-miles

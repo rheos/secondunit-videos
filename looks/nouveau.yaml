@@ -7,6 +7,14 @@ group: code
 order: 560
 clip: nouveau.mp4
 tall: true
+tags:
+  medium: [paint]
+  texture: [brushstroke]
+  era: [1900-1945]
+  mood: [ornate, dreamy]
+  colour: [muted]
+  engine: [brushstroke]
+  use: [music video]
 status: approved
 engine: brushstroke
 project: gemmaluna-clap-hands

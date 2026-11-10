@@ -7,6 +7,13 @@ group: code
 order: 350
 clip: wakinglife.mp4
 tall: false
+tags:
+  medium: [cartoon, paint]
+  texture: [misregister]
+  motion: [boil]
+  mood: [dreamy]
+  engine: [canvas2d]
+  use: [music video]
 status: approved
 engine: canvas2d
 project: bobwiseman-airplane-wakinglife, bobwiseman-airplane-v1

@@ -7,6 +7,12 @@ group: code
 order: 550
 clip: brushhjeron.mp4
 tall: true
+tags:
+  medium: [paint]
+  texture: [brushstroke]
+  mood: [dark, dreamy]
+  engine: [brushstroke]
+  use: [music video]
 status: draft
 engine: brushstroke
 project: hjeron-dark-blues-painted

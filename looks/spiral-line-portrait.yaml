@@ -9,6 +9,13 @@ group: code
 order: 620
 clip: spiral-line-portrait.mp4
 tall: true
+tags:
+  medium: [engraving, photo]
+  texture: [paper grain]
+  motion: [draw-on]
+  colour: [monochrome]
+  engine: [python]
+  use: [artist footage]
 status: test
 engine: python + opencv
 project: hjeron-spiral-portrait

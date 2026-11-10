@@ -7,6 +7,14 @@ group: live
 order: 30
 clip: hj-continue.mp4
 tall: true
+tags:
+  medium: [live action]
+  texture: [film grain]
+  motion: [moving camera, morph]
+  mood: [dreamy]
+  colour: [sepia]
+  engine: [live-action, kling]
+  use: [artist footage, music video]
 status: approved
 engine: live action + generated (Kling 3.0 start/end-frame bridge)
 project: hjeron-dark-blues-storyboard

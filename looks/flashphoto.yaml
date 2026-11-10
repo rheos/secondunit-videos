@@ -9,6 +9,13 @@ group: code
 order: 150
 clip: flashphoto.mp4
 tall: false
+tags:
+  medium: [photo, collage, cut paper]
+  era: [1970-1999]
+  motion: [puppet]
+  mood: [nostalgic, playful]
+  engine: [canvas2d]
+  use: [music video]
 status: option
 engine: canvas2d
 project: bobwiseman-holiday-tavern

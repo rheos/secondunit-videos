@@ -8,6 +8,15 @@ group: code
 order: 200
 clip: null
 tall: true
+tags:
+  medium: [3d, cartoon]
+  texture: [clean]
+  era: [contemporary]
+  motion: [moving camera]
+  mood: [playful, technical]
+  colour: [dark ground]
+  engine: [hyperframes, threejs]
+  use: [explainer]
 status: draft
 engine: hyperframes + three.js
 project: devweb-ep01-oner

@@ -10,6 +10,11 @@ collection: clean-line
 order: 310
 clip: storybook.mp4
 tall: false
+tags:
+  medium: [cartoon, paint]
+  mood: [playful]
+  engine: [canvas2d]
+  use: [music video]
 status: draft
 engine: canvas2d
 project: bobwiseman-real-thing

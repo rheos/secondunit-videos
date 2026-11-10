@@ -9,6 +9,13 @@ group: code
 order: 510
 clip: newsdesk.mp4
 tall: false
+tags:
+  medium: [cartoon]
+  texture: [crt, glow]
+  era: [1970-1999]
+  mood: [nostalgic, deadpan]
+  engine: [canvas2d, webgl]
+  use: [music video]
 status: approved
 engine: canvas2d + webgl
 project: bobwiseman-libelous

@@ -9,6 +9,12 @@ group: code
 order: 500
 clip: playa-3d.mp4
 tall: false
+tags:
+  medium: [3d]
+  motion: [moving camera]
+  mood: [deadpan]
+  engine: [blender]
+  use: [music video]
 status: test
 engine: blender
 project: bobwiseman-reform-party-blender

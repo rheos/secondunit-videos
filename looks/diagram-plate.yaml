@@ -9,6 +9,13 @@ group: code
 order: 610
 clip: null
 tall: false
+tags:
+  medium: [diagram, ink, dry media]
+  texture: [paper grain, hatching]
+  era: [pre-1900]
+  mood: [technical, ornate]
+  engine: [canvas2d]
+  use: [infographic]
 status: test
 engine: canvas2d + pele
 project: indieagent-diagram-plate

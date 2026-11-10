@@ -9,6 +9,13 @@ group: code
 order: 280
 clip: stainedglass.mp4
 tall: false
+tags:
+  texture: [glow, film grain]
+  era: [pre-1900]
+  mood: [ornate]
+  colour: [saturated]
+  engine: [canvas2d]
+  use: [music video]
 status: draft
 engine: canvas2d
 project: bobwiseman-you-dont-love-me

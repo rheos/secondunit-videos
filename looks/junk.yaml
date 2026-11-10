@@ -7,6 +7,13 @@ group: code
 order: 60
 clip: junk.mp4
 tall: false
+tags:
+  medium: [collage, cut paper]
+  texture: [paper grain, halftone]
+  motion: [stop motion, on twos]
+  mood: [playful]
+  engine: [canvas2d]
+  use: [music video]
 status: test
 engine: canvas2d
 project: bobwiseman-airplane-junkyard

@@ -7,6 +7,13 @@ group: live
 order: 20
 clip: hj-live.mp4
 tall: true
+tags:
+  medium: [live action]
+  texture: [film grain]
+  mood: [dark]
+  colour: [sepia]
+  engine: [live-action]
+  use: [artist footage, music video]
 status: approved
 engine: live action
 project: hjeron-dark-blues-storyboard

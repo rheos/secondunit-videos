@@ -11,6 +11,13 @@ group: code
 order: 315
 clip: relief-box.mp4
 tall: false
+tags:
+  medium: [clay, cut paper]
+  motion: [moving camera, loop]
+  mood: [dreamy, playful]
+  colour: [pastel]
+  engine: [canvas2d]
+  use: [music video, canvas loop]
 status: approved
 engine: canvas2d (paper-fox core)
 project: indieagent-relief-box

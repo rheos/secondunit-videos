@@ -7,6 +7,13 @@ group: live
 order: 70
 clip: hj-scratch.mp4
 tall: true
+tags:
+  medium: [engraving, live action]
+  texture: [hatching]
+  mood: [dark]
+  colour: [monochrome, dark ground]
+  engine: [kling]
+  use: [artist footage, music video]
 status: approved
 engine: generated (Kling O3 video edit of his real clip)
 project: hjeron-dark-blues-storyboard

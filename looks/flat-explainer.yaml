@@ -10,6 +10,14 @@ collection: clean-line
 order: 380
 clip: flat-explainer.mp4
 tall: false
+tags:
+  medium: [flat vector, diagram]
+  texture: [film grain, glow]
+  era: [contemporary]
+  mood: [technical, dreamy]
+  colour: [dark ground]
+  engine: [hyperframes]
+  use: [explainer, infographic]
 status: test
 engine: hyperframes
 project: indieagent-flat-explainer-test

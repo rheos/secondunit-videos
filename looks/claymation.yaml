@@ -7,6 +7,12 @@ group: code
 order: 160
 clip: claymation.mp4
 tall: false
+tags:
+  medium: [clay, 3d]
+  motion: [stop motion, on twos]
+  mood: [playful]
+  engine: [webgl]
+  use: [music video]
 status: test
 engine: webgl (sphere-traced clay)
 project: bobwiseman-holiday-tavern

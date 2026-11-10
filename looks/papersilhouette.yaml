@@ -10,6 +10,14 @@ group: code
 order: 300
 clip: papersilhouette.mp4
 tall: false
+tags:
+  medium: [cut paper]
+  texture: [paper grain]
+  motion: [puppet]
+  mood: [dreamy]
+  colour: [limited palette]
+  engine: [canvas2d]
+  use: [music video]
 status: draft
 engine: canvas2d
 project: bobwiseman-in-her-dream

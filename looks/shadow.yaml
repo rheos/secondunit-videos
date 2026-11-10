@@ -7,6 +7,14 @@ group: code
 order: 50
 clip: shadow.mp4
 tall: false
+tags:
+  medium: [cut paper]
+  texture: [glow]
+  era: [pre-1900]
+  motion: [puppet]
+  mood: [nostalgic]
+  colour: [sepia]
+  engine: [canvas2d]
 status: approved
 engine: canvas2d
 project: shadow-tales (rheos/shadow-tales)

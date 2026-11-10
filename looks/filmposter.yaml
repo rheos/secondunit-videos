@@ -9,6 +9,14 @@ group: code
 order: 220
 clip: filmposter.mp4
 tall: false
+tags:
+  medium: [paint]
+  texture: [brushstroke, paper grain]
+  era: [1945-1969]
+  mood: [nostalgic]
+  colour: [saturated]
+  engine: [canvas2d]
+  use: [music video]
 status: approved
 engine: canvas2d
 project: bobwiseman-giulietta-masina

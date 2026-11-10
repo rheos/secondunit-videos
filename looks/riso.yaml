@@ -7,6 +7,14 @@ group: code
 order: 80
 clip: riso.mp4
 tall: false
+tags:
+  medium: [print]
+  texture: [halftone, misregister, paper grain]
+  motion: [on twos]
+  mood: [playful]
+  colour: [limited palette]
+  engine: [canvas2d]
+  use: [music video]
 status: approved
 engine: canvas2d
 project: bobwiseman-airplane-riso, bobwiseman-airplane-v1

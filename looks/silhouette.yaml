@@ -7,6 +7,13 @@ group: code
 order: 290
 clip: silhouette.mp4
 tall: false
+tags:
+  medium: [cut paper]
+  texture: [glow, film grain]
+  motion: [puppet, on twos]
+  mood: [dreamy, ornate]
+  engine: [canvas2d]
+  use: [music video]
 status: test
 engine: canvas2d
 project: bobwiseman-airplane-silhouette

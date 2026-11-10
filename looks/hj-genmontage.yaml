@@ -9,6 +9,14 @@ group: live
 order: 10
 clip: hj-genmontage.mp4
 tall: true
+tags:
+  medium: [live action]
+  texture: [film grain]
+  motion: [lip-sync]
+  mood: [dark]
+  colour: [sepia]
+  engine: [kling, gpt-image, minimax-h3]
+  use: [artist footage, music video]
 status: approved
 engine: generated (Kling 3.0, Kling O3 video edit, GPT Image 2.5, MiniMax H3 Max) + local finish
 project: hjeron-dark-blues-storyboard

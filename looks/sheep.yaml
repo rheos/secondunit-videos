@@ -7,6 +7,12 @@ group: generated
 order: 40
 clip: sheep.mp4
 tall: false
+tags:
+  medium: [textile, clay]
+  motion: [lip-sync, stop motion]
+  mood: [deadpan]
+  engine: [midjourney, gpt-image, minimax-h3, kling, p5]
+  use: [music video]
 status: approved
 engine: generated + p5 (Midjourney concept and plates, GPT Image 2.5, MiniMax H3 Max, Kling 3.0 morphs)
 project: pnubb-mind-the-sheep-hook
