@@ -17,6 +17,13 @@ window.drawPlate = (n, t = 0) => {
     rocker(470, g, 1, { pose: 'thumbs', glasses: 1, tag: 'b' }); name('...after the new frames', 470);
     publicist(790, g, 1.12, { talk: 0.8, point: 1 }); name('the Publicist', 790);
     cellist(1110, g, 1.12, { bow: 0.4 }); name('the Cellist', 1100);
+  } else if (n === 3) {
+    const nm = (s, x) => label(s, x, 708, 17, INK);
+    minder(240, g, 0.95, { flap: 0.5 }); nm('hired minder', 210);
+    shoveller(500, g, 0.95, { arms: 0.5 }); nm('the Shoveller', 500);
+    bellhop(720, g, 1.1); nm('bellhop', 720);
+    bust(880, g, 1.0); bust(1000, g, 1.0, { sniff: 1, tag: 'b' }); nm('heads of state', 940);
+    opinionHead(1110, g - 120, 1.0, { tag: 'a' }); opinionHead(1110, g - 30, 0.9, { tilt: 0.25, tag: 'b' }); jester(1210, g, 1, { price: '$1' }); nm('opinion, jester', 1160);
   } else {
     kid(130, g, 1.25, { kind: 'ice' }); kid(270, g, 1.25, { kind: 'balloon' }); name('kids at the zoo', 200);
     giraffe(520, g, 1.05, { lean: 0.6 }); name('the giraffe', 520);

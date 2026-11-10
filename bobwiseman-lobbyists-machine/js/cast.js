@@ -233,3 +233,120 @@ function cutout(x, y, s = 1, o = {}) {
   X.restore();
   if (name && up > 0.6) fitLabel(name, x, y + 18, 90, 18);
 }
+
+// ---------- whole-song cast (line-up 2026-11-10) ----------
+const SKIN2 = '#c68a5a', STONE = '#bdb6aa', PLAT = '#e4e7ea';
+// the hired minder: dark suit, sunglasses, earpiece, a HIRED badge and one huge cardboard wing strapped to his right side.
+// flap 0..1 lifts the wing; fold 0..1 squashes him down like a deckchair (the RETURNS box is the builder's).
+function minder(x, y, s = 1, o = {}) {
+  const { flap = 0, fold = 0, flip = 1 } = o;
+  X.save(); X.translate(x, y); X.scale(1 + fold * 0.15, 1 - fold * 0.75); X.translate(-x, -y);
+  const F = Fig('mn' + (o.tag || ''), x, y, s, flip), wa = 0.35 + flap * 0.7;
+  // the wing behind him, pivoting at his right shoulder (local -x): a cardboard angel wing, scalloped feathers
+  const wp = (u, v) => [-56 - Math.cos(wa) * u + Math.sin(wa) * v, -296 - Math.sin(wa) * u - Math.cos(wa) * v];
+  const wing = [wp(0, -10), wp(60, 40), wp(150, 70), wp(240, 60), wp(250, 20)];
+  for (let i = 0; i <= 6; i++) { const u = 250 - i * 40; wing.push(wp(u - 8, -34 - (i % 2) * 6), wp(u - 22, -14)); }
+  wing.push(wp(0, 10)); fblob(F, wing, PAPER);
+  ftube(F, bend([-20, -170], [-40, -18], 6), 32, NAVY); ftube(F, bend([20, -170], [40, -18], -6), 32, NAVY);
+  fblob(F, [[-78, -2], [-72, -30], [-26, -32], [-18, -2]], INK); fblob(F, [[18, -2], [26, -32], [72, -30], [78, -2]], INK);
+  fblob(F, [[-70, -316], [70, -316], [56, -160], [-56, -160]], NAVY);
+  fblob(F, [[-14, -316], [14, -316], [0, -270]], SNOW);
+  ftube(F, bend([-64, -300], [-76, -186], 10), 26, NAVY); fcirc(F, -78, -180, 15, 15, SKIN);
+  ftube(F, bend([64, -300], [76, -186], -10), 26, NAVY); fcirc(F, 78, -180, 15, 15, SKIN);
+  ftube(F, [[0, -316], [0, -336]], 34, SKIN);
+  fblob(F, [[-44, -330], [-48, -390], [-30, -420], [30, -420], [48, -390], [44, -330], [24, -318], [-24, -318]], SKIN);
+  fblob(F, [[-46, -396], [-40, -424], [0, -432], [40, -424], [46, -396], [30, -410], [-30, -410]], INK);
+  drawFig(F, () => {
+    fblobDetail([[-38, -384], [-4, -384], [-8, -370], [-34, -370]]); fblobDetail([[4, -384], [38, -384], [34, -370], [8, -370]]); d([[-4, -380], [4, -380]], 'mnsb', 2);
+    d([[-14, -344], [14, -344]], 'mnm', 2, OX); d([[46, -380], [52, -366], [46, -352], [40, -330]], 'mnear', 1.4);
+    X.save(); X.fillStyle = PAPER; X.fillRect(18, -296, 40, 18); X.restore(); d(box(18, -296, 40, 18), 'mnbg', 1); X.save(); X.font = '12px KevinSans'; X.fillStyle = RED; X.textAlign = 'center'; X.fillText('HIRED', 38, -283); X.restore();
+    for (let i = 1; i < 6; i++) d([wp(40 * i, 50), wp(40 * i - 14, -10)], 'mnwf' + i, 1.2, PENCIL);
+    d([[-60, -250], [-20, -300]], 'mnstrap', 3, OX); d([[-60, -210], [40, -250]], 'mnstrap2', 3, OX);
+  });
+  X.restore();
+}
+function fblobDetail(pts) { X.save(); X.fillStyle = INK; X.fill(pathOf(pts)); X.restore(); }
+// the Shoveller (verse 3's stand-in, invented): round, sequinned gold parka, fur-ruff hood, star sunglasses,
+// a platinum shovel in each hand, rhinestone snowshoes. Nothing of any real face. arms 0..1 raises the shovels.
+function shoveller(x, y, s = 1, o = {}) {
+  const { arms = 0.3, flip = 1, grin = 1 } = o, F = Fig('sh' + (o.tag || ''), x, y, s, flip);
+  // snowshoes: oval frames under each boot
+  for (const sx of [-44, 44]) fblob(F, circ(sx, -6, 52, 14), PLAT);
+  ftube(F, bend([-22, -110], [-40, -22], 6), 30, NAVY); ftube(F, bend([22, -110], [40, -22], -6), 30, NAVY);
+  fblob(F, [[-62, -16], [-56, -36], [-24, -38], [-18, -16]], INK); fblob(F, [[18, -16], [24, -38], [56, -36], [62, -16]], INK);
+  // parka: a round gold body
+  fblob(F, circ(0, -190, 92, 104), GILT);
+  // shovels: shaft from each hand, blade at the top
+  const ay = lerp(-200, -330, arms);
+  for (const sd of [-1, 1]) {
+    const hx = sd * 108, hy = ay, tx = sd * 150, ty = hy - 170;
+    ftube(F, [[hx, hy + 60], [tx, ty]], 9, TAN);
+    fblob(F, [[tx - 30, ty], [tx + 30, ty], [tx + 26, ty - 60], [tx, ty - 76], [tx - 26, ty - 60]], PLAT);
+    ftube(F, bend([sd * 70, -250], [hx, hy], sd * -16), 30, GILT); fcirc(F, hx, hy, 16, 16, SNOW);
+  }
+  // fur ruff hood around a round face
+  fcirc(F, 0, -330, 82, 76, SNOW); fcirc(F, 0, -326, 52, 50, SKIN2);
+  drawFig(F, () => {
+    // rhinestones on the parka and snowshoes
+    const r = rng('shrh'); for (let i = 0; i < 34; i++) { const a = r() * TAU, rr = Math.sqrt(r()) * 84; const px = Math.cos(a) * rr, py = -190 + Math.sin(a) * rr * 1.1; dot(px, py, 2.4, SNOW); }
+    for (const sx of [-44, 44]) for (let i = 0; i < 6; i++) dot(sx - 40 + i * 16, -6, 2.4, LAMP);
+    // star sunglasses
+    const star = (cx, cy, R) => { const p = []; for (let i = 0; i <= 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, rr = i % 2 ? R * 0.45 : R; p.push([cx + Math.cos(a) * rr, cy + Math.sin(a) * rr]); } return p; };
+    for (const ex of [-20, 20]) { const p = star(ex, -334, 20); X.save(); X.fillStyle = RED; X.fill(pathOf(p)); X.restore(); d(p, 'shst' + ex, 1.4); }
+    d([[-2, -334], [2, -334]], 'shbr', 2);
+    if (grin) { const g = [[-22, -308], [22, -308], [14, -296], [-14, -296], [-22, -308]]; X.save(); X.fillStyle = PAPER; X.fill(pathOf(g)); X.restore(); d(g, 'shg', 1.6); }
+    d([[0, -250], [0, -110]], 'shzip', 1.4, OX);
+  });
+}
+// the bellhop who runs the lobby's shell game: pillbox hat, ox jacket, gold buttons, white gloves, a sly look.
+function bellhop(x, y, s = 1, o = {}) {
+  const { flip = 1, look = 0 } = o, F = Fig('bh' + (o.tag || ''), x, y, s, flip);
+  ftube(F, bend([-12, -128], [-18, -14], 4), 18, NAVY); ftube(F, bend([12, -128], [18, -14], -4), 18, NAVY);
+  fblob(F, [[-40, -2], [-36, -20], [-12, -22], [-6, -2]], INK); fblob(F, [[6, -2], [12, -22], [36, -20], [40, -2]], INK);
+  fblob(F, [[-40, -236], [40, -236], [34, -120], [-34, -120]], OX);
+  ftube(F, bend([-38, -226], [-70, -150], 12), 18, OX); fcirc(F, -72, -146, 13, 13, SNOW);
+  ftube(F, bend([38, -226], [72, -150], -12), 18, OX); fcirc(F, 74, -146, 13, 13, SNOW);
+  ftube(F, [[0, -236], [0, -252]], 20, SKIN);
+  fcirc(F, 0, -290, 44, 44, SKIN);
+  fblob(F, [[-22, -326], [-20, -350], [26, -350], [28, -326]], RED);
+  drawFig(F, () => {
+    for (let i = 0; i < 4; i++) dot(10, -222 + i * 26, 3.4, GILT);
+    eyes('bh', [-15 + look * 4, 15 + look * 4], -292, 'lid', 4.5);
+    d([[-28, -308], [-6, -306]], 'bhb1', 1.6); d([[6, -310], [28, -316]], 'bhb2', 1.6);
+    d([[-14, -268], [4, -266], [16, -272]], 'bhm', 1.8, OX);
+    d([[-22, -326], [28, -326]], 'bhhb', 1.4, GILT);
+  });
+}
+// a head of state: a blank stone bust on a plinth, paper crown, no face except a big nose. sniff 0..1 lifts the nose.
+function bust(x, y, s = 1, o = {}) {
+  const { sniff = 0, tag = '' } = o, F = Fig('bs' + tag, x, y, s, 1);
+  fblob(F, [[-44, 0], [-44, -70], [44, -70], [44, 0]], STONE);
+  fblob(F, [[-58, -70], [-58, -84], [58, -84], [58, -70]], STONE);
+  fblob(F, [[-74, -84], [-44, -180], [44, -180], [74, -84]], STONE);
+  fcirc(F, 0, -236, 42, 54, STONE);
+  const ny = -236 - sniff * 12, ns = 1 + sniff * 0.3;
+  fblob(F, [[-40, -276], [-40, -308], [-24, -292], [-12, -316], [0, -296], [12, -316], [24, -292], [40, -308], [40, -276]], GILT);
+  drawFig(F, () => {
+    const nose = [[-6, ny - 26], [8, ny - 26], [20 * ns, ny + 14], [16 * ns, ny + 26], [-18 * ns, ny + 26], [-22 * ns, ny + 14]];
+    X.save(); X.fillStyle = '#a9a196'; X.fill(pathOf(nose)); X.restore(); ink(nose.concat([nose[0]]), 'bsn' + tag, { w: 2.2 });
+    dot(-8 * ns, ny + 20, 3); dot(8 * ns, ny + 20, 3); d([[-30, -100], [30, -100]], 'bsl', 0.9, PENCIL); if (sniff > 0.3) for (let i = 0; i < 3; i++) d([[30 + i * 10, ny - 10 - i * 6], [36 + i * 10, ny - 22 - i * 6]], 'bssn' + i, 1, GREY); });
+}
+// props in the cardboard family: a public-opinion head on a stick (all identical), and a jester with a price tag.
+function opinionHead(x, y, s = 1, o = {}) {
+  const { tilt = 0, tag = '' } = o;
+  X.save(); X.translate(x, y); X.rotate(tilt); X.scale(s, s);
+  ink([[0, 0], [0, -70]], 'ohs' + tag, { w: 2.4, col: TAN });
+  blob(circ(0, -104, 34, 38), TAN, 'oh' + tag, 1.8); blob(circ(0, -104, 26, 30), PAPER, 'ohf' + tag, 0.8);
+  dot(-9, -110, 3); dot(9, -110, 3); ink([[-9, -92], [9, -92]], 'ohm' + tag, { w: 1.2 });
+  X.restore();
+}
+function jester(x, y, s = 1, o = {}) {
+  const { price = '$1', tag = '' } = o;
+  X.save(); X.translate(x, y); X.scale(s, s);
+  shape([[-40, 0], [-44, -110], [-22, -150], [-40, -200], [-14, -186], [0, -214], [14, -186], [40, -200], [22, -150], [44, -110], [40, 0], [-40, 0]], TAN, 'js' + tag, 2);
+  blob(circ(0, -150, 20, 22), PAPER, 'jsf' + tag, 0.8); dot(-7, -154, 2.6); dot(7, -154, 2.6); ink([[-8, -140], [0, -136], [8, -140]], 'jsm' + tag, { w: 1.1 });
+  for (const [px, py] of [[-40, -200], [0, -214], [40, -200]]) dot(px, py, 5, RED);
+  shape(box(16, -80, 46, 28), PAPER, 'jst' + tag, 1.2); label(price, 39, -65, 16, RED);
+  ink([[16, -66], [0, -60]], 'jsts' + tag, { w: 0.9 });
+  X.restore();
+}
