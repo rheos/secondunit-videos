@@ -15,11 +15,10 @@ import soundfile as sf
 HERE = Path(__file__).resolve().parent.parent
 W = HERE / "work"
 lines = [l.strip() for l in (W / "full-lines.txt").read_text().split("\n")[3:] if l.strip()]
-hook_text = "I wanna hit"  # display text is read from the sheet below, this is only a fallback
 sheet = (W / "lobbyists-at-parliament.settled.txt").read_text().split("\n")
-hook_text = next(l for l in sheet if l.lower().startswith("i wanna hit")).split(",")[0].strip()
+hook_text = next(l for l in sheet if "(six to eight times)" in l).split(",")[0].strip()  # the first hook line
 again_text = next(l.strip() for l in sheet if l.strip().lower() == "again")
-outro_text = next(l for l in sheet if l.lower().startswith("gotta hit")).split("(")[0].strip().rstrip(",")
+outro_text = next(l for l in sheet if "(repeated to the end)" in l).split("(")[0].strip().rstrip(",")
 
 x, sr = sf.read(W / "lobbyists-at-parliament.vocals.wav", always_2d=True); x = x.mean(1)
 hop = int(sr * 0.01)
