@@ -117,6 +117,7 @@ facets:
       gpt-image: GPT Image stills or plates (paid).
       midjourney: Midjourney stills or plates.
       kling: Kling video generation (paid).
+      seedance: Seedance video generation (paid), with or without reference images.
       minimax-h3: MiniMax H3 lip-sync video (paid).
       generated: Paid generation where the model is not recorded.
       live-action: The artist's own footage, cut and graded.
