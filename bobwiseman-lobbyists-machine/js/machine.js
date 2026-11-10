@@ -111,15 +111,14 @@ function camAt(t) {
   x /= sum; y = y / sum - 30; let z = 1.1;
   const hold = (cx, cy, cz, a0, a1, b0, b1) => { const k = ease(seg(t, a0, a1)) * (1 - ease(seg(t, b0, b1))); x = lerp(x, cx, k); y = lerp(y, cy, k); z = Math.exp(lerp(Math.log(z), Math.log(cz), k)); };
   // hook 2: the camera trails the coin up the charts, so each rung's words stay up 1.5 s after they're written
-  const hk = ease(seg(t, TM.h2[1], TM.h2[2])) * (1 - ease(seg(t, TM.a2 + 0.2, TM.a2 + 0.8)));
+  const hk = ease(seg(t, TM.h2[0] + 0.15, TM.h2[1] + 0.15)) * (1 - ease(seg(t, TM.a2 + 0.2, TM.a2 + 0.8)));
   if (hk > 0) { const b0 = ballAt(t), b1 = ballAt(t - 1.5); x = lerp(x, (b0[0] + b1[0]) / 2 + 60, hk); y = lerp(y, (b0[1] + b1[1]) / 2, hk); z = lerp(z, 0.77, hk); }
   hold(-470, -960, 1.12, -9, -8, TM.a1 + 0.6, TM.what - 0.6);
   hold(-200, -400, 0.82, TM.what - 0.6, TM.what - 0.1, TM.ma + 1.3, TM.ma + 2.1);
   hold(720, -200, 0.95, TM.the2 - 0.5, TM.the2, TM.and3 - 1.3, TM.and3 - 0.3);
   hold(800, 250, 0.92, TM.and3 - 1.3, TM.and3 - 0.3, TM.and4, TM.and4 + 0.4);
   hold(714, 500, 0.74, TM.zoo + 0.25, TM.and4 - 0.1, TM.frames - 0.3, TM.too);
-  hold(800, 610, 0.76, TM.frames - 0.3, TM.too, TM.too + 1.0, TM.too + 1.4);
-  hold(464, 900, 0.75, TM.too + 0.6, TM.too + 1.0, TM.h2[0] + 0.3, TM.h2[1] + 0.3);
+  hold(507, 605, 0.74, TM.frames - 0.3, TM.too, TM.h2[0] + 0.15, TM.h2[1] + 0.15); // the frames land on his face, then the charts, no whip
   const end = TM.a2 + 0.2, k = ease(seg(t, end, end + 1.6));
   return { x: lerp(x, 190, k), y: lerp(y, -90, k), z: Math.exp(lerp(Math.log(z), Math.log(0.25), k)) };
 }
