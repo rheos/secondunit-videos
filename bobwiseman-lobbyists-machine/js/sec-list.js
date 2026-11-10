@@ -280,7 +280,7 @@ function words(t) {
 }
 
 // ---------- register ----------
-SEC.list = { enterT: 0, exitT: 999, pullback: true, entry: BAGM, exit: [SLOT[0], -820] };
+SEC.list = { enterT: 0, exitT: 51.9, pullback: true, entry: BAGM, exit: { t: 51.9, p: [SLOT[0], -820] } };
 section({
   id: 'list', range: [20.0, 53.5],
   init() { times(); SEC.list.enterT = TM.h1[0] - 0.5; },
