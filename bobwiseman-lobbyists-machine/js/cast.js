@@ -53,7 +53,7 @@ function rocker(x, y, s = 1, o = {}) {
   // arms
   if (pose === 'thumbs') {
     ftube(F, bend([-44, -290], [-96, -220], 16), 22, RED); fcirc(F, -100, -214, 14, 14, SKIN);
-    ftube(F, bend([44, -290], [104, -338], -14), 22, RED); fcirc(F, 108, -344, 15, 15, SKIN); ftube(F, [[108, -352], [108, -380]], 9, SKIN);
+    ftube(F, bend([44, -290], [104, -334], -14), 22, RED); fblob(F, [[92, -350], [124, -352], [128, -330], [120, -318], [96, -318], [90, -332]], SKIN); ftube(F, [[96, -350], [86, -382]], 11, SKIN);
   } else {
     ftube(F, bend([-44, -290], [118, -292], 40), 22, RED); fcirc(F, 122, -292, 14, 14, SKIN);
     ftube(F, bend([44, -290], [30, -200], -26), 22, RED); fcirc(F, 26, -194, 14, 14, SKIN);
@@ -73,6 +73,7 @@ function rocker(x, y, s = 1, o = {}) {
     X.fillStyle = PAPER; X.fill(pathOf(g)); d(g, 'rkg', 1.8); d([[-26, -335], [26, -335]], 'rkt', 1);
     d([[-3, -362], [-6, -350], [2, -350]], 'rkn', 1.4);
     if (glasses > 0) { X.save(); X.globalAlpha = clamp(glasses * 1.5); for (const ex of [-21, 21]) { d(circ(ex, -372, 19, 17), 'rkgl' + ex, 2.6, OX); } d([[-3, -374], [3, -374]], 'rkglb', 2.4, OX); X.restore(); }
+    if (pose === 'thumbs') { for (const fy of [-344, -335, -326]) d([[104, fy], [124, fy + 1]], 'rkf' + fy, 1.3); }
     // guitar details: sound hole, strings
     dot(20, -194, 11); d([[-20, -170], [140, -322]], 'rks', 0.6, GREY);
     d([[0, -302], [-6, -170]], 'rkj', 1); // jacket edge
