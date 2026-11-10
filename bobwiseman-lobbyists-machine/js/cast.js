@@ -86,6 +86,25 @@ function publicist(x, y, s = 1, o = {}) {
   fblob(F, [[-40, -2], [-38, -18], [-12, -20], [-6, -2]], RED); fblob(F, [[8, -2], [12, -20], [38, -18], [42, -2]], RED);
   fblob(F, [[-38, -168], [38, -168], [34, -98], [-34, -98]], NAVY);
   fblob(F, [[-70, -258], [70, -258], [74, -236], [42, -160], [-42, -160], [-74, -236]], RED);
+  if (o.tray != null) { // machine pose: the clipboard held out flat as a tray on her right, the other hand up, one finger raised
+    ftube(F, bend([-60, -246], [-98, -326], 14), 18, RED); fcirc(F, -100, -332, 11, 11, SKIN); ftube(F, [[-100, -340], [-102, -366]], 7, SKIN);
+    const b = pubBoard(0, 0, 1, o.tray);
+    ftube(F, bend([60, -246], [b.grip[0], b.grip[1]], -14), 18, RED);
+    fblob(F, b.poly, TAN); fcirc(F, b.grip[0], b.grip[1] + 6, 11, 11, SKIN);
+    ftube(F, [[0, -256], [0, -276]], 20, SKIN);
+    fcirc(F, 0, -312, 46, 48, SKIN);
+    fblob(F, [[-52, -268], [-56, -330], [-36, -362], [0, -370], [36, -362], [56, -330], [52, -268], [36, -270], [36, -318], [-36, -318], [-36, -270]], INK);
+    drawFig(F, () => {
+      eyes('pb', [-16, 16], -304, o.look || 'lid', 5);
+      d([[-28, -324], [-8, -328]], 'pbb1', 1.8); d([[8, -328], [28, -322]], 'pbb2', 1.8);
+      d([[-2, -296], [-5, -286], [2, -286]], 'pbn', 1.3);
+      if (talk > 0.15) { const m = circ(0, -276, 13, 5 + 7 * talk); X.fillStyle = OX; X.fill(pathOf(m)); d(m, 'pbm', 1.6); }
+      else d([[-11, -277], [0, -274], [11, -277]], 'pbm0', 1.8, OX);
+      d(circ(0, -320, 54, 52, Math.PI * 1.02, Math.PI * 1.98, 14), 'pbhs', 2.2); dot(-52, -316, 7, INK); d([[-50, -306], [-34, -286], [-16, -282]], 'pbbm', 1.6); dot(-16, -282, 3.5);
+      d([[0, -256], [0, -168]], 'pbj', 1);
+    });
+    return;
+  }
   // clipboard arm (her right, our left) and the pointing arm
   ftube(F, bend([-60, -246], [-30, -186], 14), 18, RED);
   fblob(F, [[-62, -232], [-6, -232], [-6, -160], [-62, -160]], TAN); fblob(F, [[-56, -222], [-12, -222], [-12, -166], [-56, -166]], PAPER);
@@ -108,6 +127,13 @@ function publicist(x, y, s = 1, o = {}) {
     for (let i = 0; i < 4; i++) { d([[-50, -210 + i * 12], [-44, -210 + i * 12]], 'pbck' + i, 1); d([[-40, -210 + i * 12], [-18, -210 + i * 12]], 'pbcl' + i, 0.8, PENCIL); }
     d([[0, -256], [0, -168]], 'pbj', 1);
   });
+}
+
+// her clipboard as a tray, in her local units (feet at 0,0): pivot at her hand, 120 long, tilted by `tilt` (radians, + = far end down)
+function pubBoard(x, y, s, tilt) {
+  const px = 92, py = -196, c = Math.cos(tilt), sn = Math.sin(tilt), L = 132, th = 9;
+  const pt = (u, v) => [x + (px + u * c - v * sn) * s, y + (py + u * sn + v * c) * s];
+  return { poly: [pt(0, 0), pt(L, 0), pt(L, th), pt(0, th)], top: (u) => pt(u, 0), grip: pt(14, 4), end: pt(L, 0), n: [sn, -c] };
 }
 
 // ---------- the Cellist: wild white hair and beard, tails, eyes shut in rapture; bow arm moves ----------
