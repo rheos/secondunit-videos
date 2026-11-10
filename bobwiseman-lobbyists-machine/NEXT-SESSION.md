@@ -51,7 +51,7 @@ the last chord.
 - The guest-and-critic open ruling on the Shoveller stand-in: Robin approved him with the new cast line-up.
 
 ## Next
-1. Robin watches draft 2 (local file, VLC). Build his notes; artist notes are the brief.
-2. Only on his say-so: upload unlisted (`secondunit-worker/yt_upload.py`, link to Telegram), then Bob's review page
-   (`client-review` skill). Robin watches before Bob.
+1. Draft 3 is on Bob's page as round 87 ("Draft 1", https://youtu.be/1R2JyGpvSbU), asking whether a Rube Goldberg
+   machine suits the song at all. Wait for his answer (Telegram group or `drop.sh inbox bob`); his notes are the brief.
+2. Robin is curious about a more 3D look for the machine, but only after Bob likes the idea. Don't start it before.
 3. After sign-off: 1080p master on GitHub (no --draft), 9:16 redraw, 4:5 cut.
