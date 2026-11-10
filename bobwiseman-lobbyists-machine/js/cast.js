@@ -259,7 +259,7 @@ function minder(x, y, s = 1, o = {}) {
   drawFig(F, () => {
     fblobDetail([[-38, -384], [-4, -384], [-8, -370], [-34, -370]]); fblobDetail([[4, -384], [38, -384], [34, -370], [8, -370]]); d([[-4, -380], [4, -380]], 'mnsb', 2);
     d([[-14, -344], [14, -344]], 'mnm', 2, OX); d([[46, -380], [52, -366], [46, -352], [40, -330]], 'mnear', 1.4);
-    X.save(); X.fillStyle = PAPER; X.fillRect(18, -296, 40, 18); X.restore(); d(box(18, -296, 40, 18), 'mnbg', 1); X.save(); X.font = '12px KevinSans'; X.fillStyle = RED; X.textAlign = 'center'; X.fillText('HIRED', 38, -283); X.restore();
+    X.save(); X.fillStyle = PAPER; X.fillRect(18, -296, 40, 18); X.restore(); d(box(18, -296, 40, 18), 'mnbg', 1); X.save(); X.font = '12px KevinSans'; X.fillStyle = RED; X.textAlign = 'center'; X.translate(38, -283); X.scale(flip, 1); X.fillText('HIRED', 0, 0); X.restore();
     for (let i = 1; i < 6; i++) d([wp(40 * i, 50), wp(40 * i - 14, -10)], 'mnwf' + i, 1.2, PENCIL);
     d([[-60, -250], [-20, -300]], 'mnstrap', 3, OX); d([[-60, -210], [40, -250]], 'mnstrap2', 3, OX);
   });
