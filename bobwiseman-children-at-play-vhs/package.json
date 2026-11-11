@@ -1,0 +1,7 @@
+{
+  "name": "bobwiseman-children-at-play-vhs",
+  "private": true,
+  "type": "module",
+  "description": "Look test: a camcorder home video drawn in code, put on VHS with ntsc-rs (NTSCRT presets) and shown on a drawn CRT. Bob Wiseman, Children at Play.",
+  "devDependencies": { "playwright": "^1.55.0" }
+}
