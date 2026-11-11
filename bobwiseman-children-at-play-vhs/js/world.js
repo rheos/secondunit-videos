@@ -251,7 +251,7 @@
   // Tag: two kids sprint one lap round the field, the chaser 0.75 s behind, then leave the park.
   function tagKid(t, lag) {
     const tt = t - lag;
-    const t0 = 0.6, lapT = 13.0;
+    const t0 = 3.86, lapT = 13.0;  // enter from the left after the first line; far side of the park while the boy slides
     if (tt < t0 || tt > t0 + lapT * 1.05) return null;
     const ph = 0.15 + TAU * (tt - t0) / lapT;
     const cx = 1120, cy = 584, rx = 860, ry = 52;
@@ -285,7 +285,7 @@
       return { x: tx + 3 + 46 * k, y: ty + 4 * k, pose: lerpPose(P.peek(1, 1), P.stand(0), k), h: kidH(ty + 4 * k) };
     }
     const runEnd = T.waveAt - 0.12;
-    const A = [tx + 49, ty + 4], B = [1690, 636];
+    const A = [tx + 49, ty + 4], B = [1792, 640];  // stops right of the sandbox, clear of the digger
     if (t < runEnd) {
       const u = seg(t, T.line5run, runEnd);
       const e = u < 0.82 ? u / 0.82 * 0.92 : 0.92 + 0.08 * smooth((u - 0.82) / 0.18);

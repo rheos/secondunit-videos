@@ -61,7 +61,7 @@
     o.filter = `blur(${cam.focus.toFixed(2)}px) brightness(${ex.bright.toFixed(3)}) contrast(${ex.contrast.toFixed(3)}) saturate(${ex.sat})`;
     o.fillStyle = '#000'; o.fillRect(0, 0, W, H);
     if (speed > 3) {  // camcorder shutter at 1/60 smears a fast pan
-      const n = Math.min(9, Math.ceil(speed / 4));
+      const n = Math.min(9, Math.max(2, Math.ceil(speed / 4)));  // at least 2: one copy would divide by zero
       for (let i = 0; i < n; i++) {
         const k = (i / (n - 1) - 0.5) * 0.9;
         o.globalAlpha = i === 0 ? 1 : 1 / (i + 1);

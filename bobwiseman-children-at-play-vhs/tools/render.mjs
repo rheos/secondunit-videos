@@ -2,9 +2,9 @@
 // tools/motion-lab/render.mjs, with two differences:
 //  - Chrome runs with --allow-file-access-from-files: the TV page reads the tape frames from work/ into WebGL and
 //    canvas pixel reads, which a file:// page may only do with that flag.
-//  - every frame is checked for a blank canvas and drawn again. Under heavy load (2026-11-11, load average 40)
-//    Chrome's GPU canvas handed back 44 all-black frames out of 948 in runs across every worker. No frame of this
-//    look is ever near black, so a near-black frame is a failure, not a picture.
+//  - every frame is checked for a blank canvas: drawn again a few times, then the render fails loudly. No frame of
+//    this look is ever near black, so a near-black frame is a failure, not a picture. (It caught 44 black frames on
+//    2026-11-11: the pan smear divided by zero at 3 to 4 px/frame. A retry can't fix a bug like that; failing does.)
 //   node tools/render.mjs <page> <t0> <t1> <out.mp4> [--workers 3] [--width 1920 --height 1080]
 //   node tools/render.mjs --still <page> <out-prefix> <t...> [--width 1920 --height 1080]
 import fs from 'fs';

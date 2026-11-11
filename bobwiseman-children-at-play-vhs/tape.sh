@@ -26,7 +26,7 @@ case "$1" in
     nice -n 15 node tools/render.mjs "tv.html?preset=$s" $T0 $T1 work/tv_$s.mp4 --workers 2
     mkdir -p out
     ffmpeg -v error -y -i work/tv_$s.mp4 -ss $T0 -t $((T1 - T0)) -i $SONG -map 0:v -map 1:a \
-      -vf "scale=-2:$h:flags=lanczos" -c:v libx264 -crf 19 -maxrate 6M -bufsize 12M -preset medium -pix_fmt yuv420p \
+      -vf "scale=-2:${h}:flags=lanczos" -c:v libx264 -crf 19 -maxrate 6M -bufsize 12M -preset medium -pix_fmt yuv420p \
       -c:a aac -b:a 192k -shortest -movflags +faststart \
       out/children-at-play_vhs-${s}_f0-f948_24fps_${h}p.mp4
     echo out/children-at-play_vhs-${s}_f0-f948_24fps_${h}p.mp4 ;;
