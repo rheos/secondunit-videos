@@ -93,3 +93,37 @@ Robin, Nov 11 2026, a few minutes later: "the table city is best out of what you
 it doesn't have enough movment for the first part." So test 02 is the table-city section (f1800-f2544)
 rebuilt as the true 3D paper world, moving from frame one; the guard cap, the hands, the seed and the
 pine are proved on a line-up beside it, for the camp section in the same world.
+
+## 5. Reference: the paper-craft storybook film
+
+Robin, Nov 11 2026: "I was just looking at this video and i think i want to to go more or less in this
+direction.. without the photo realistic human character." https://youtu.be/JLEUSKq4cX4 ("claude fable
+5.2's first fable", anabology, posted Nov 10 2026, 244 s, 854x480 copy in `_in/ref-JLEUSKq4cX4/`).
+
+What it is, read off contact sheets every 4 s (measured on the 480p copy; counts are estimates):
+
+- **Medium:** photographed-looking paper craft. An open pop-up book on a patchwork quilt, a brass lamp
+  with a fringed shade top left, a night window top right. Pages cream with a teal cloth border and
+  gold-foil edges. Generated footage, not code.
+- **Pop-up spreads:** card pieces standing off the page on visible tabs and folds, pale cut edges, real
+  cast shadows. One spread builds cumulatively, a piece per line (sand, then a sphere, then a hall of
+  folded doors, then a blue paper river, then a house over all of it).
+- **Toy theatre:** a paper proscenium with red curtains and shell footlights, a teal night backdrop, a
+  paper moon, stars hanging on strings.
+- **Characters:** small standee figures and scallop-edged cut-out animals on tab feet, plus a
+  photoreal human host. Robin does not want the human.
+- **Light:** warm tungsten pools, deep shadow, blue night fill, shallow depth of field.
+- **Palette:** teal and navy, cream page, gold foil, red velvet, amber light.
+- **Camera and cutting:** about 43 hard cuts in 244 s (a shot every 5 to 6 s); slow push-ins and
+  near-static frames inside a shot.
+- **Text:** white serif captions bottom centre, with small footnotes.
+
+What we take: the surface (photographed card, tabs, folds, cut edges), the light (one warm source, deep
+shadow, shallow focus), pop-up mechanics as the way things arrive, and standee cut-outs as the cast.
+What we leave: its book-on-a-quilt setting, its characters and its compositions. Our world stays the
+restaurant table from table-city (Robin's favourite of test 01): the place setting pops up into the city,
+the cutlery fence becomes the prison wall. Vocabulary, not a copy.
+
+What it changes: the three.js build of the table section becomes the blocking pass (camera, timing,
+staging, exported as `out/paper-world/blocking.json`). The finish needs a photoreal renderer. Target
+stills in `out/paper-world/styleboard/`.
