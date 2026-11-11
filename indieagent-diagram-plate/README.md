@@ -44,6 +44,11 @@ node ../tools/motion-lab/render.mjs "plate.html?w=1280" 0 32 out/<name>.mp4 --wi
 
 Open `plate.html?play=1` to watch it draw, `plate.html?t=6` for one moment, `?notext=1` for the words-off frame.
 
+## 9:16
+
+A tall redraw for Instagram and phones: `plate-9x16.html` and `js/plate-9x16.js`. What changed and how to render it
+is in `ASPECTS.md`.
+
 ## Files
 
 - `js/hand.js`: paper (pulp, grain, fibres, tooth mask), the pen (pressure ribbons) and coloured pencil (through the

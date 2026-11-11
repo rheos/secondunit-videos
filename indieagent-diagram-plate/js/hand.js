@@ -9,7 +9,8 @@
 //   kind 'blue'    construction pencil (non-photo blue), same as pencil, laid down first
 (function () {
   'use strict';
-  const W = 1920, H = 1080, FPS = 24;
+  // Page size in plate units: 1920x1080 for the 16:9 master; a page for another ratio sets window.PLATE_SIZE first.
+  const [W, H] = window.PLATE_SIZE || [1920, 1080], FPS = 24;
 
   // ---- deterministic noise ---------------------------------------------------------------------------
   function h32(a, b = 0, c = 0) {

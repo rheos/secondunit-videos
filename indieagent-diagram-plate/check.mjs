@@ -1,5 +1,5 @@
 // check.mjs · the gate before Robin sees a render. Writes out/check/ and prints a report; exits 1 on any failure.
-//   node check.mjs [t=14]
+//   node check.mjs [t=14] [--page plate-9x16.html]
 // 1. full-size stills at t, with and without words
 // 2. every word inside its container with a margin (tags, signs, the title and note bands)
 // 3. no two words touch
@@ -10,10 +10,12 @@ import fs from 'fs';
 import { execFileSync } from 'child_process';
 import { launch, openLook, frame, jpegBuffer } from '../tools/motion-lab/frames.mjs';
 
-const t = Number(process.argv[2] || 14), MARGIN = 6, PAD = 2, INK_LUM = 110, MIN_CONTRAST = 7;
-const dir = 'out/check'; fs.mkdirSync(dir, { recursive: true });
+const PAGE = process.argv.includes('--page') ? process.argv[process.argv.indexOf('--page') + 1] : 'plate.html';
+const t = Number(process.argv.slice(2).find((a) => /^[\d.]+$/.test(a)) || 14), MARGIN = 6, PAD = 2, INK_LUM = 110, MIN_CONTRAST = 7;
+const dir = PAGE === 'plate.html' ? 'out/check' : `out/check-${PAGE.replace('.html', '')}`; fs.mkdirSync(dir, { recursive: true });
 const b = await launch();
-const withText = await openLook(b, 'plate.html'), noText = await openLook(b, 'plate.html?notext=1');
+const withText = await openLook(b, PAGE), noText = await openLook(b, `${PAGE}?notext=1`);
+const [PW, PH] = await withText.p.evaluate(() => [window.HAND.W, window.HAND.H]);
 fs.writeFileSync(`${dir}/full_t${t}.jpg`, jpegBuffer(await frame(withText.p, t, 0.95)));
 fs.writeFileSync(`${dir}/full_t${t}_notext.jpg`, jpegBuffer(await frame(noText.p, t, 0.95)));
 const words = await withText.p.evaluate(() => window.__words);
@@ -52,7 +54,7 @@ console.table(rows);
 const full = `${dir}/full_t${t}.jpg`, crops = [];
 const cover = []; for (const w of words) { const cx = (w.box[0] + w.box[2]) / 2, cy = (w.box[1] + w.box[3]) / 2; if (!cover.some(([x, y]) => Math.abs(cx - x) < 300 && Math.abs(cy - y) < 225)) cover.push([cx, cy]); }
 cover.forEach(([cx, cy], i) => {
-  const x = Math.max(0, Math.min(1920 - 600, Math.round(cx - 300))), y = Math.max(0, Math.min(1080 - 450, Math.round(cy - 225))), f = `${dir}/crop_${String(i).padStart(2, '0')}_${x}x${y}.png`;
+  const x = Math.max(0, Math.min(PW - 600, Math.round(cx - 300))), y = Math.max(0, Math.min(PH - 450, Math.round(cy - 225))), f = `${dir}/crop_${String(i).padStart(2, '0')}_${x}x${y}.png`;
   execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-i', full, '-vf', `crop=600:450:${x}:${y}`, f]); crops.push(f);
 });
 console.log(`${words.length} words, ${crops.length} crops in ${dir}`);
