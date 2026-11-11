@@ -11,6 +11,70 @@ voice muxed from `_in/andre.wav` cut to [75.0, 106.0)).
 **Units and axes (also in blocking.json): centimetres, right-handed, y up, the cloth is y = 0, x to the right,
 z toward the viewer. The near place setting is at +z, the far one at -z. Quaternions are [x, y, z, w].**
 
+## Test 03: the painted skin (`?skin=1`)
+
+Review file: `out/paper-world/andre_paper-world-test03_f1800-f2544_24fps_720x1280.mp4` (744 frames, 31.000 s, the
+same voice cut). Test 02's file and code path are untouched: `index.html` is test 02, `index.html?skin=1` is test 03.
+
+```bash
+zsh tools/make03.sh                                                 # everything: frames03/, the mp4, check03/, blocking.json, scans
+SKIN=1 FRAMES=2400 OUT=../../out/paper-world/wip/x node tools/render.mjs    # one frame; every render.mjs mode takes SKIN=1
+SKIN=1 zsh tools/sheet.sh <name> <cols> <frame> [frame ...]         # a quick contact sheet
+```
+
+What is the same as test 02: the camera keys (except f1994 to f2038, below), every cue frame, every position on
+the table, the fence plan (`table.js fencePlan`, now shared), the audio, the units.
+
+What changed:
+
+- **Every object is its painted cut-out** from `work/plates/` (read only), trimmed to its alpha box and standing
+  in its place as a card (`js/skin.js`). Pieces are drawn unlit and multiplied by one tint: full and warm within
+  25 cm of the candle, 55 % and cooler at the table's far edge (`tintAt`).
+- **The cloth is the only lit surface** and the only one that takes shadows: the painted `cloth` (its even middle
+  tiled 2 by 3 for the weave, the whole plate once over it at 30 % for the folds), lit by the flame, a small
+  shadowless bounce and a warm room fill. It hangs 40 cm over the table's edge into the dark.
+- **Volumes turn to the lens** (plate towers, glasses, bottle, basket, salt, pepper, candle, sapling, redwood):
+  cylindrical billboards. Each has a second, unseen card of the same piece that faces the flame and casts the
+  shadow, so shadows do not swing with the camera. When the lens is more than 24 degrees above a volume its card
+  leans back by the difference, so the painted three-quarter view stays true in the crane and the wide.
+- **Flats do not turn** (tree man, citizens, the 54 fence cards): fixed cards with alpha-tested shadows. A
+  standee is two faces 1 mm apart with a core in its own colour between them, so it shows an edge when edge-on.
+- **Nobody walks.** Standees slide along slots drawn on the cloth (a dark cut with a pale lip, the whole path),
+  rocking 2.6 degrees and hopping 1 mm, on twos; a stop is the rock settling; a turn is the card's half turn,
+  edge-on for two frames. The leg rig, the lean and the hitch are gone: on "84" he stops and settles, on
+  "backpack" one hop (3.8 mm), on "where" the turn. Citizens hinge up out of the cloth at the start of their
+  slot, just outside their tower's footprint, and fold flat again when they are back.
+- **Pop-ups.** At rest: `plate_disc` flat at each setting, glasses and bottle standing with their dark-window
+  plates, basket and shakers standing (dimmed 30 %: they have no dark plate), the cutlery cards flat in six
+  stacks. On "New York" (f2215, three frames apart): glasses and bottle squash and settle and their windows wipe
+  on from the bottom (dark plate to lit plate, 22 frames); each plate's tower springs out of its disc (damping
+  0.6) and its windows wipe on 9 frames later. On "New York" 2 (f2236) the cutlery deals out and hinges up, as in
+  test 02. The sapling springs taller on "trees"; on "redwoods" it folds down toward the lens and the redwood
+  card hinges up from behind it.
+- **Lens.** `fg_glass` (f1800 to f1845) and `fg_fork` (f1800 to f1931) stand close to the lens, pre-blurred 5 to 6 px
+  in the texture and dimmed to a third; the `room` is a cylinder 330 cm out, pre-blurred 12 px, at 50 %, and the
+  floor 76 cm below the cloth is the same picture softer and darker. A warm glow on the flame, a faint one on
+  lit windows, a vignette, a warm grade. The paint goes to the screen as painted: only values above 0.72 roll off.
+- **The tree man starts on the table**: his slot begins at the cloth's far edge, he waits there until f1831.
+- **Camera, f1994 to f2038 only** (test 02 defect 2 and 3): instead of looking away up the redwood, the camera backs
+  off to (-9.5, 6.4, -26.2) at f2008, so the redwood rising at the corner and the tree man at the foot of the far
+  glass share the frame (he is 181 px at f2010), then swings round the glass to his shoulder for "84".
+
+Sizes (cm): tree man 4, citizens 4 and 3.8, candle 12 with its flame, salt and pepper 9, basket 10, plate tower
+18.8 high on its 24 cm plate (the tiers alone about 14), glass 18, bottle 30, knife 20, fork 19, spoon 18, redwood
+45, sapling 7 with its pot, plate disc 24.
+
+`out/paper-world/blocking.json` is now test 03's export (175 objects, same format). Names kept: `plate_far`,
+`plate_near` (now the flat discs; the towers are `plate_far.tower`, `plate_near.tower`), `glass_far`, `glass_near`,
+`bottle`, `salt`, `pepper`, `basket`, `candle`, `flame`, `redwood`, `fence_01`..`54` and `.hinge`, `treeman`,
+`citizen_01`..`16`, `cloth`, `key_light`, `bounce_light`, `room_fill`. New: `sapling` (was `pot`), `<name>.card`
+(the face that turns to the lens, or a standee's rocking card), `fg_glass`, `fg_fork`, `slots`. Gone: `napkin`
+(no plate), the tower tiers, struts, limb cards, `eye_fill`.
+
+Added files: `js/skin.js`, `tools/make03.sh`; `out/paper-world/frames03/`, `check03/` (stills at the beat frames,
+`sheet.jpg`, `compare_wide_target_vs_test03-f2543.jpg`, `compare_street_target_vs_test03-f2400.jpg`,
+`figure-heights-px.txt`, `first17s_*`, `camera-speed.txt`).
+
 ## Commands
 
 Everything, from `tests/paper-world/`:

@@ -5,6 +5,8 @@ import { CUES } from "./cues.js";
 import { clamp, lerp, smooth, spring, hash } from "./kit.js";
 
 export const F0 = 1800, F1 = 2544, FPS = 24;
+// test 03 (the painted skin) sets window.PAPER_SKIN before this module loads; test 02 leaves it unset
+export const SKIN = !!globalThis.PAPER_SKIN;
 const c = (k) => CUES[k].f;
 export const C = {
   expert: c("expert"), trees: c("trees"), redwoods: c("redwoods"), eighty4: c("eighty4"), backpack: c("backpack"),
@@ -80,7 +82,7 @@ function walker(def) {
       yaw += Math.PI * flip;
     }
     const w = walking ? clamp(L0.speedAt(f) / L0.v * 1.6) : 0;
-    return { name, f, x: p.x, z: p.z, yaw, phase: walking ? s / L0.L : 0, L: L0.L, walk: w, edge, visible: fRaw >= show[0] && fRaw <= show[1], leg: i, s };
+    return { name, f, x: p.x, z: p.z, yaw, phase: walking ? s / L0.L : 0, L: L0.L, walk: w, edge, visible: fRaw >= show[0] && fRaw <= show[1], leg: i, s, rest: walking || i < 0 ? 99 : f - L0.fb };
   };
   return def;
 }
@@ -91,7 +93,9 @@ const candle = LAY.candle;
 const TM_A = [[34, -84], [33, -64], [31.6, -55], [22, -38], [16, -28.5]];
 const TM_B = [[16, -28.5], [11.6, -22.6], [7.3, -19.2], [6.2, -15.4], [8.5, -12.2], [12.0, -12.1], [13.4, -13.5]];
 const TM_C = [[13.4, -13.5], [14.9, -18.4], [15.3, -27.3], [20.6, -33], GATE, [32.6, -40.5]];
-const legA = leg(TM_A, { end: C.eighty4, v: VT, rampIn: false });
+// test 03: a standee cannot be off the table, so his slot starts at the cloth's far edge and he waits there
+const TM_A3 = [[33.05, -63.6], [32.9, -61.5], [31.6, -55], [22, -38], [16, -28.5]];
+const legA = SKIN ? leg(TM_A3, { end: C.eighty4, v: VT }) : leg(TM_A, { end: C.eighty4, v: VT, rampIn: false });
 const legB = leg(TM_B, { start: C.backpack - 5, v: VT * 1.06 });
 const legC = leg(TM_C, { start: C.newyork1 + 12, v: VT });
 export const TM = walker({
@@ -105,20 +109,28 @@ export function treemanAt(f) {
   s.y = s.z < -LAY.cloth.hd ? -0.3 : 0;
   s.lean = smooth((g - C.eighty4) / 12) * (1 - smooth((g - (C.backpack - 10)) / 9));        // leans on the stick at "84"
   const h = g - (C.backpack - 8); s.hitch = h <= 0 ? 0 : h < 8 ? smooth(h / 8) : 1 - spring(h - 8, 0.5, 12);   // hitches the pack on "backpack"
+  const hp = (g - (C.backpack - 4)) / 8; s.hop = hp > 0 && hp < 1 ? Math.sin(Math.PI * hp) : 0;                    // test 03: one small hop on "backpack"
   return s;
 }
 
 // ---------- citizens
 const VC = 2.1 / 12;
 const HOME = { bottle: LAY.bottle, plate_far: LAY.plate_far, plate_near: LAY.plate_near, basket: LAY.basket };
+const FOOT = { bottle: 3.0, plate_far: 12.9, plate_near: 12.9, basket: 5.8 };
 function citizen(i, home, fence, arrive, turnAt, o = {}) {
-  const pts = [HOME[home], ...(o.via || []), fence];
-  const out = leg(pts, { end: arrive, v: VC * (o.pace || 1), rampIn: false });
-  const back = leg(rev(pts), { start: turnAt + 8 + (o.wait || 0), v: VC * (o.pace || 1), rampOut: false });
-  return walker({
+  let pts = [HOME[home], ...(o.via || []), fence];
+  if (SKIN) {       // a slot from just outside the piece's footprint to the fence; from a plate it leaves at an angle, so the slot is long enough to read
+    const c = HOME[home], n = pts[1], a = Math.atan2(n[1] - c[1], n[0] - c[0]) + (home.startsWith("plate") && !o.via ? (i % 2 ? 1 : -1) * 1.05 : 0);
+    pts = [[c[0] + FOOT[home] * Math.cos(a), c[1] + FOOT[home] * Math.sin(a)], ...pts.slice(1)];
+  }
+  const out = leg(pts, { end: arrive, v: VC * (o.pace || 1), rampIn: SKIN });
+  const back = leg(rev(pts), { start: turnAt + 8 + (o.wait || 0), v: VC * (o.pace || 1), rampOut: SKIN });
+  const w = walker({
     name: "citizen_" + String(i).padStart(2, "0"), home, legs: [out, back], turns: [{ f: turnAt }],
-    show: [out.fa + 2, back.fb - 3], colour: o.colour ?? i % 5, h: o.h ?? 3.7 + 0.6 * hash(i, 7), hat: o.hat ?? i % 3,
+    show: SKIN ? [out.fa - 10, back.fb + 10] : [out.fa + 2, back.fb - 3], colour: o.colour ?? i % 5, h: o.h ?? 3.7 + 0.6 * hash(i, 7), hat: o.hat ?? i % 3,
   });
+  w.popAt = (f) => smooth((f - (out.fa - 9)) / 8) * (1 - smooth((f - back.fb - 1) / 8));     // hinges up before it leaves, folds flat when it is back
+  return w;
 }
 const N1 = C.never, N2 = C.leave2;
 export const CITIZENS = [
@@ -141,7 +153,7 @@ export const CITIZENS = [
   citizen(15, "plate_near", [16, 59], N2 + 2, N2 + 16),
   citizen(16, "bottle", [39, -12], N2 - 4, N2 + 13),
 ];
-export const citizenAt = (i, f) => { const s = CITIZENS[i].at(f); s.y = 0; s.lean = 0; s.hitch = 0; return s; };
+export const citizenAt = (i, f) => { const s = CITIZENS[i].at(f); s.y = 0; s.lean = 0; s.hitch = 0; s.pop = CITIZENS[i].popAt(f - ((f - F0) & 1)); return s; };
 
 // ---------- risers ("New York"): each springs up, three frames apart, with overshoot
 export const RISERS = ["plate_far", "bottle", "glass_far", "plate_near", "glass_near", "salt", "pepper", "basket", "napkin"];
@@ -187,12 +199,20 @@ export const CAM_KEYS = [
   { f: 1944, P: [13.2, 4.5, -44.2], T: tmT(1944, 2.7) },
   { f: 1954, P: [13.9, 4.5, -43], T: tmT(1954, 2.7) },
   { f: 1964, P: [12.4, 4.6, -40.8], T: tmT(1964, 2.7) },
+  ...(SKIN ? [
+    // test 03: back and a little up, so the tree man (under the far glass's bowl) and the redwood rising at the corner share the frame
+    { f: C.redwoods - 4, P: [2.5, 5, -31.6], T: tmT(C.redwoods - 4, 2.5) },
+    { f: C.redwoods + 10, P: [-9.5, 6.4, -26.2], T: [19.2, 12.2, -37.5] },
+    { f: C.eighty4 + 3, P: [5, 5.3, -37.5], T: [16.3, 2.6, -28.6] },
+    { f: C.eighty4 + 16, P: [11, 5.4, -40], T: [16.2, 2.5, -28.3] },
+  ] : [
   { f: C.redwoods - 4, P: [4, 4.8, -33], T: tmT(C.redwoods - 4, 2.9) },
   { f: C.redwoods + 4, P: [3.6, 4.9, -36.5], T: [27, 14, -44] },
   { f: C.redwoods + 11, P: [6.5, 5.2, -39.6], T: [33.5, 31, -53] },
   { f: C.eighty4 - 7, P: [9.6, 5.4, -40.4], T: [26, 7, -42] },
   { f: C.eighty4 - 1, P: [12.4, 5.5, -40.6], T: [16.2, 2.7, -28.3] },
   { f: C.eighty4 + 8, P: [13.2, 5.4, -40.4], T: [16.2, 2.7, -28.3] },
+  ]),
   { f: 2048, P: [14.3, 5.2, -39.3], T: [16.2, 2.7, -28.2] },
   { f: C.backpack, P: [14.6, 5, -37.6], T: [16.2, 2.8, -28] },
   { f: 2090, P: [8.5, 4.7, -34.4], T: tmT(2090, 2.6) },

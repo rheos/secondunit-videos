@@ -2,13 +2,13 @@
 //   FRAMES="1800-2543" OUT=../../out/paper-world/frames node tools/render.mjs      (run from tests/paper-world/)
 // FRAMES takes "a-b", "a,b,c" or "a-b:step"; RESUME=1 skips frames already on disk; N = sub-renders a frame (default 10);
 // W, H default 720x1280; PNG=1 for PNG; SPEED=1 prints the camera speed table and draws nothing; PX=1 prints figure heights;
-// BLOCKING=<file> writes blocking.json and draws nothing.
+// BLOCKING=<file> writes blocking.json and draws nothing. SKIN=1 renders test 03 (the painted cards).
 import http from "node:http"; import fs from "node:fs"; import path from "node:path"; import { createRequire } from "node:module";
 const root = path.resolve(path.dirname(new URL(import.meta.url).pathname), "..");
 const require = createRequire(process.env.PW_FROM || path.join(root, "package.json"));
 const { chromium } = require("playwright");
 const OUT = process.env.OUT || path.join(root, "../../out/paper-world/frames");
-const types = { ".html": "text/html", ".js": "text/javascript" };
+const types = { ".html": "text/html", ".js": "text/javascript", ".png": "image/png", ".jpg": "image/jpeg" };
 const srv = http.createServer((q, s) => { const f = path.join(root, decodeURIComponent(q.url.split("?")[0])); fs.readFile(f, (e, d) => { if (e) { s.writeHead(404); s.end(); } else { s.writeHead(200, { "content-type": types[path.extname(f)] || "application/octet-stream", "cache-control": "no-store" }); s.end(d); } }); }).listen(0);
 const port = srv.address().port;
 const W = +(process.env.W || 720), H = +(process.env.H || 1280), N = +(process.env.N || 10);
@@ -18,7 +18,7 @@ const pg = await b.newPage({ viewport: { width: W, height: H } });
 let bad = 0;
 pg.on("pageerror", (e) => { bad++; console.log("PAGEERROR", e.message); });
 pg.on("console", (m) => { if (["error", "warning"].includes(m.type()) && !/GPU stall/i.test(m.text())) console.log("CONSOLE", m.text().slice(0, 600)); });
-await pg.goto(`http://127.0.0.1:${port}/index.html?w=${W}&h=${H}&n=${N}&still=1${process.env.LINEUP ? "&lineup=1" : ""}`);
+await pg.goto(`http://127.0.0.1:${port}/index.html?w=${W}&h=${H}&n=${N}&still=1${process.env.LINEUP ? "&lineup=1" : ""}${process.env.SKIN ? "&skin=1" : ""}`);
 await pg.waitForFunction("window.ready===true", null, { timeout: 180000 });
 if (process.env.BLOCKING) {
   const json = await pg.evaluate(() => window.exportBlocking());

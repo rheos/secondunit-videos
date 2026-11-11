@@ -108,3 +108,103 @@ Rebuild:
 The same kit carries the camp section: the fence is already a wall of cards on a loop, and a citizen card can
 turn into a guard on the half-turn. Give the camera more to pass close to in the first leg (a second glass, the
 bread basket nearer the path), and decide whether the candle may sit off-centre as it does here.
+
+---
+
+# Test 03: the painted skin
+
+Same camera, cues, positions and audio as test 02; every object replaced by its painted card (`js/skin.js`,
+`index.html?skin=1`, `zsh tools/make03.sh`). What changed is listed in README.md under "Test 03".
+
+## The test: would the frame pass for a photograph of a paper model on a restaurant table?
+
+- **The wide (f2543): no, not yet.** The pieces pass. The frame does not: the 90 by 130 cm cloth is mostly empty
+  (the city is nine small pieces on it, where the target still packs a table a third the size), the cloth is a
+  flat lit plane with no fabric relief, the table reads as a box, and the candle sits inside the fence so the
+  fence's shadows fall outward off the table instead of raking across it as in the target.
+- **The street frame (f2400): nearly.** Standees on their tabs, the cutlery fence, the redwood trunk and the
+  out-of-focus room behind hold up beside the target. What gives it away: the cloth (even, a little like kraft
+  paper at this distance), slots drawn as clean lines, standee shadows that are thin lines because their cards
+  point at the flame, and no depth of field in the mid-ground.
+
+## BANNED (added in test 03)
+
+- **Relighting a painted piece.** No light touches a card; test 02's `eye_fill` and the bounce on figures are gone.
+- **Mirror-tiling the whole cloth plate.** Its corner wrinkles repeated as butterfly marks in the wide. The even
+  middle is tiled; the whole plate goes over it once.
+- **Leaving the real glass and fork on the table.** They showed up in the crane and the wide as a real coupe in a
+  paper city. They exist only while the lens passes them.
+- **Upright billboards under a high lens.** From 47 degrees up the towers were squashed slivers with a second
+  plate floating under them. Volumes lean back to the lens above 24 degrees, and a plate tower's card is seated
+  toward the lens so its painted plate lies over the flat disc.
+- **Fill light as strong as the key.** The shadows disappeared. The flame gives most of the cloth's light now.
+- **An orange key.** It turned the linen into burlap. The key is a pale warm white; the warmth is in the paint.
+- **Letting the cloth burn out by the candle.** It bleached the tree man through the glow pass. Lit paper rolls off
+  to white and no longer feeds the glow; the glow is the flame and, faintly, the lit windows.
+- **Test 02's film curve on the paint.** It washed the plates. Paint goes through as painted.
+- **A white core in the standees.** It showed as white slivers at the neck and between the legs in three-quarter
+  view. The core is the figure's own colour, 0.2 mm wide.
+- **Recolouring by saturation.** It turned the cream tabs navy and left the teal woman teal. Recolouring is by hue:
+  only pixels the colour of the figure's own paper change.
+- **Black slot lines.** They read as marker. Dark brown, 1 mm, with a pale lip.
+- **The camera behind the far glass's stem at "84".** The stem covered him. Shifted to his shoulder.
+- Legs, the lean, the hitch, the walking stick's swing: gone with the rig.
+
+## Pieces: missing or wrong (nothing was repainted)
+
+- **No dark-window plates for `basket` and `saltpepper`.** They cannot wipe on. They stand dimmed 30 % until
+  "New York" and brighten; their windows glow from the first frame.
+- **No napkin piece.** The napkin is gone from the table.
+- **`tower_plate` carries its own plate**, which doubles with `plate_disc` lying under it. Seating the card toward
+  the lens hides most of it; a tower painted without its plate would sit on the disc properly at every angle.
+- **Every piece is lit from the upper left.** The candle is to the right of the far plate tower, the far glass and
+  the salt and pepper in most shots, so their painted highlights face away from the flame.
+- **`fg_glass` is a coupe of red wine**; fine as a blur. **`fg_fork`** is drawn at a slant, so it stands as a card
+  rather than lying on the cloth.
+- **Only two citizen plates.** Navy and ochre are recolours of them, as briefed, so there are two silhouettes.
+- **`redwood` is 45 cm on a 10.6 cm wide card**: slim for a redwood; the target's is far heavier.
+- **`candle`'s flame** is split from the body where the wick is narrowest so it can lean; the split is automatic.
+
+## Known defects (frame numbers)
+
+1. f1800 to f1832: the real glass covers up to half the frame as the lens passes within 2 cm of it.
+2. f1860 to f1905 and f2014 to f2030: the far paper glass's stem and foot fill a quarter to a third of the frame
+   (the test 02 path passes 5 cm from it). At f1874 ("tree expert") the tree man is 100 px beside it.
+3. f1995 to f2001: he passes behind that stem (5 frames hidden). From f2002 he is in frame with the rising redwood.
+4. f1998 to f2010: the redwood hinges up from lying flat beyond the table's corner, so it rises out of the dark
+   past the cloth's edge; the folded sapling lies at its foot from f2008 on.
+5. f2106 to f2215: the candle, bottle and glass turn to follow the lens as it goes round them. That is the rule
+   for volumes; on the candle orbit it is visible as the pieces "watching" the camera.
+6. f2215 to f2300: a plate tower's card is seated 3 to 6 cm toward the lens, so its base slides a little on its
+   disc as the camera cranes round.
+7. f2236 to f2262: the cutlery cards at rest are nine identical cards in a stack; the deal was checked on stills
+   at f2250, f2262, f2276 and f2290 only.
+8. f2280 to f2470: citizens' shadows are thin lines (their cards point at the flame); the fence's shadows fall
+   outward off the table. Soft, not stepped, on the 1:1 crops checked (f2300, f2400, f2426).
+9. f2300 on: a citizen about to rise lies flat at the head of its slot for up to 9 frames and reads as a grey
+   figure on the cloth.
+10. f2349 to f2365 and f2432 to f2450: the citizens' turns; two stand within 2 cm of a fence card.
+11. f2494 to f2543: the wide, as above. Figures are 10 to 16 px; from above the fence cards are slivers.
+12. Slots are drawn from frame one, so the citizens' slots lie on the cloth before there is a city.
+13. The mid-ground has no depth of field (by the rule); the foreground blur is in the texture, so it does not
+    change as the lens approaches.
+14. Whole film: the camera's slow float (test 02 defect 13) is still there.
+
+## What a Seedance pass would need from these frames
+
+- **Clips, not the whole move.** The test is one 31 s camera move; Seedance works in 5 to 10 s clips. Natural
+  handovers, each with a first and last frame from `out/paper-world/frames03/`: f1800-f1930, f1930-f2110,
+  f2110-f2215, f2215-f2300, f2300-f2466, f2466-f2544. Overlap each by 8 frames for the join.
+- **First and last frame of every clip as image conditioning**, plus one or two frames inside it at the beats
+  (the redwood up at f2010, the towers up at f2262, the fence up at f2300, the turns at f2357 and f2440), or the
+  model will invent its own timing. The cue frames are in `blocking.json`.
+- **A prompt that says what must not happen**: the figures are card standees on tabs that slide and rock; they
+  never bend a leg, never grow a face. Nothing on the table is real except the cloth. One flame.
+- **Mattes and depth from the same render**, so its output can be composited back over ours where it drifts: an
+  object-ID pass and a depth pass are a small addition to `main.js` (every card is its own mesh).
+- **Higher resolution stills** for conditioning: the plates are 1024 to 1536 px, so 1080 by 1920 frames are free
+  (`W=1080 H=1920`).
+- **The audio stays ours.** Generate silent, conform to 744 frames at 24 fps, mux the master cut as now.
+- **Decide first what Seedance is for.** These frames already carry the pieces, timing and camera. What they
+  lack is in the two verdicts above: real cloth, real contact shadows and soft depth of field. A relight and
+  defocus pass may get there cheaper than regenerating the motion.

@@ -6,6 +6,7 @@ import { buildWorld } from "./table.js";
 import { makeTreeman, makeCitizen } from "./figures.js";
 import * as S from "./story.js";
 import { CUES } from "./cues.js";
+import { buildSkin } from "./skin.js";
 
 const q = new URLSearchParams(location.search);
 const W = +(q.get("w") || 720), H = +(q.get("h") || Math.round((W * 16) / 9)), NS = +(q.get("n") || 10);
@@ -16,11 +17,13 @@ renderer.setPixelRatio(1); renderer.setSize(W, H, false);
 renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.toneMapping = THREE.NoToneMapping;
 
-const scene = new THREE.Scene(); scene.background = new THREE.Color("#0b0e2a");
+const SKIN = S.SKIN;      // test 03: the painted cards (index.html?skin=1)
+const scene = new THREE.Scene(); scene.background = new THREE.Color(SKIN ? "#000000" : "#0b0e2a");
 const camera = new THREE.PerspectiveCamera(S.FOV, W / H, 0.35, 2500);
-const world = buildWorld(scene);
-const treeman = makeTreeman(); scene.add(treeman.root);
-const citizens = S.CITIZENS.map((d) => { const c = makeCitizen(d); scene.add(c.root); return c; });
+const world = SKIN ? null : buildWorld(scene), skin = SKIN ? await buildSkin(scene) : null;
+const treeman = SKIN ? null : makeTreeman(); if (treeman) scene.add(treeman.root);
+const citizens = SKIN ? [] : S.CITIZENS.map((d) => { const c = makeCitizen(d); scene.add(c.root); return c; });
+const figures = SKIN ? skin.figures : [treeman, ...citizens];
 
 // ---------- passes
 const fsCam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1), fsGeo = new THREE.PlaneGeometry(2, 2);
@@ -28,21 +31,27 @@ const pass = (frag, uniforms, extra = {}) => { const m = new THREE.ShaderMateria
 const rt = (w, h, depth = false) => new THREE.WebGLRenderTarget(w, h, { type: THREE.HalfFloatType, depthBuffer: depth, minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter });
 const rtScene = rt(W, H, true), rtAcc = rt(W, H), bw = W >> 2, bh = H >> 2, rtB = [rt(bw, bh), rt(bw, bh)];
 const add = pass("uniform sampler2D t; uniform float k; varying vec2 vUv; void main(){ gl_FragColor = vec4(texture2D(t, vUv).rgb * k, 1.0); }", { t: { value: rtScene.texture }, k: { value: 1 } }, { blending: THREE.CustomBlending, blendEquation: THREE.AddEquation, blendSrc: THREE.OneFactor, blendDst: THREE.OneFactor });
-const bright = pass("uniform sampler2D t; varying vec2 vUv; void main(){ vec3 c = texture2D(t, vUv).rgb; float l = max(c.r, max(c.g, c.b)); gl_FragColor = vec4(c * smoothstep(0.95, 1.6, l), 1.0); }", { t: { value: rtAcc.texture } });
+const bright = pass(SKIN
+  ? "uniform sampler2D t; varying vec2 vUv; void main(){ vec3 c = texture2D(t, vUv).rgb; float l = max(c.r, max(c.g, c.b)); gl_FragColor = vec4(c * (smoothstep(1.02, 1.5, l) + 0.3 * smoothstep(0.66, 0.78, (c.r - c.b) / max(c.r, 0.001)) * smoothstep(0.55, 0.95, l)), 1.0); }"      // the flame, and faintly the lit windows (bright and strongly warm); the cloth is capped at 1 and barely feeds it
+  : "uniform sampler2D t; varying vec2 vUv; void main(){ vec3 c = texture2D(t, vUv).rgb; float l = max(c.r, max(c.g, c.b)); gl_FragColor = vec4(c * smoothstep(0.95, 1.6, l), 1.0); }", { t: { value: rtAcc.texture } });
 const blur = pass(`uniform sampler2D t; uniform vec2 d; varying vec2 vUv; void main(){ vec3 c = texture2D(t, vUv).rgb * 0.227;
   c += (texture2D(t, vUv + d * 1.385).rgb + texture2D(t, vUv - d * 1.385).rgb) * 0.316; c += (texture2D(t, vUv + d * 3.231).rgb + texture2D(t, vUv - d * 3.231).rgb) * 0.0703; gl_FragColor = vec4(c, 1.0); }`, { t: { value: null }, d: { value: new THREE.Vector2() } });
-const final = pass(`uniform sampler2D t, b; uniform float expo; varying vec2 vUv;
+const final = pass(`uniform sampler2D t, b; uniform float expo, skin; varying vec2 vUv;
   void main(){ vec3 c = texture2D(t, vUv).rgb + texture2D(b, vUv).rgb * 0.55;
     vec2 p = vUv - 0.5; float v = 1.0 - 0.42 * smoothstep(0.25, 0.95, length(p * vec2(1.0, 1.25)));
-    c *= v * expo; c = 1.0 - exp(-c * 1.15);                         // soft shoulder, no clipping
-    c = pow(c, vec3(1.0 / 2.2)); c = mix(c, c * c * (3.0 - 2.0 * c), 0.35);
-    gl_FragColor = vec4(c, 1.0); }`, { t: { value: rtAcc.texture }, b: { value: rtB[0].texture }, expo: { value: 1 } });
+    c *= v * expo;
+    if (skin > 0.5) { c = mix(c, 0.72 + 0.28 * (1.0 - exp(-(c - 0.72) / 0.28)), step(0.72, c));      // the paint as painted; only the brightest cloth and the flame roll off
+      c = pow(c, vec3(1.0 / 2.2)); c = mix(c, c * c * (3.0 - 2.0 * c), 0.22); c *= vec3(1.03, 1.0, 0.94); c += vec3(0.012, 0.005, 0.0) * (1.0 - c); }
+    else { c = 1.0 - exp(-c * 1.15);                                   // soft shoulder, no clipping
+      c = pow(c, vec3(1.0 / 2.2)); c = mix(c, c * c * (3.0 - 2.0 * c), 0.35); }
+    gl_FragColor = vec4(c, 1.0); }`, { t: { value: rtAcc.texture }, b: { value: rtB[0].texture }, expo: { value: 1 }, skin: { value: SKIN ? 1 : 0 } });
 
 const halton = (i, b) => { let f = 1, r = 0; while (i > 0) { f /= b; r += f * (i % b); i = Math.floor(i / b); } return r; };
 const cityOn = (f) => clamp((f - S.C.newyork1 - 8) / 50);
 const _t = new THREE.Vector3();
 
 function setState(f, jitter) {
+  if (SKIN) { const cam = S.camAt(f); skin.update(f, jitter, cam); camera.position.set(...cam.P); camera.up.set(0, 1, 0); camera.lookAt(_t.set(...cam.T)); camera.fov = cam.fov; camera.updateProjectionMatrix(); return cam; }
   const fl = world.update(f, jitter), on = cityOn(f);
   world.candle.key.intensity = 62 * fl.gain; world.candle.bounce.intensity = 34 + 46 * on; world.hemi.intensity = 0.6 + 0.5 * on;
   treeman.pose(S.treemanAt(f)); citizens.forEach((c, i) => c.pose(S.citizenAt(i, f)));
@@ -82,7 +91,7 @@ window.renderFrame = (f, n = NS) => {
 window.camInfo = (f) => { const c = S.camAt(f); return { f, P: c.P, T: c.T, fov: c.fov }; };
 window.figurePx = (f) => {
   setState(f, [0, 0, 0]); camera.updateMatrixWorld(true); scene.updateMatrixWorld(true);
-  const out = {}; for (const fig of [treeman, ...citizens]) { if (!fig.root.visible) continue;
+  const out = {}; for (const fig of figures) { if (!fig.root.visible) continue;
     const a = new THREE.Vector3().setFromMatrixPosition(fig.root.matrixWorld), b = a.clone(); b.y += fig.h; const za = a.clone().project(camera), zb = b.project(camera);
     if (za.z > 1 || Math.abs(za.x) > 1.05 || Math.abs(za.y) > 1.2) continue; out[fig.name] = Math.round(Math.abs(zb.y - za.y) * H / 2); }
   return out;

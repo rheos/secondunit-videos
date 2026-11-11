@@ -226,7 +226,8 @@ function fenceLoop() {
   const nearest = (x, z) => { let best = 0, bd = 1e9; D.forEach((p, i) => { const d = (p[0] - x) ** 2 + (p[1] - z) ** 2; if (d < bd) { bd = d; best = i; } }); return S[best]; };
   return { L, at, nearest };
 }
-function buildFence(world) {
+// the fence plan: which card goes to which slot, and where each one is at frame f. Shared by test 02 and the skin.
+export function fencePlan() {
   const loop = fenceLoop(), N = 54, pitch = loop.L / N, sGate = loop.nearest(GATE[0], GATE[1]);
   const off = ((sGate / pitch) % 1) - 0.5;                              // the gate falls mid-gap
   const kinds = ["fork", "knife", "spoon"], slots = Array.from({ length: N }, (_, i) => { const s = (i + off) * pitch, p = loop.at(s); return { i, s, p, kind: kinds[i % 3] }; });
@@ -238,24 +239,28 @@ function buildFence(world) {
     mine.sort((a, b) => Math.abs(dist(b)) - Math.abs(dist(a)));         // the furthest slot takes the top card and leaves first
     mine.forEach((sl, order) => {
       const j = mine.length - 1 - order, name = "fence_" + String(sl.i + 1).padStart(2, "0");
-      const G = named(new THREE.Group(), name), H = named(new THREE.Group(), name + ".hinge"); G.add(H); world.add(G);
-      const hd = card(CUT[kind].head, PAL.lilac, 0.06), hn = card(CUT[kind].handle, PAL.indigo, 0.06); hd.name = name + ".head"; hn.name = name + ".handle"; H.add(hd, hn);
-      const tab = strip(1.5, 1.3, mixHex(PAL.lilac, PAL.core, 0.5), 0.05); tab.position.z = -1.3; tab.name = name + ".tab"; G.add(tab);
-      G.userData.kind = kind;
       const d = dist(sl), t0 = FENCE_T0 + order * 1.5, d1 = 9, d2 = clamp(Math.abs(d) / 4.4, 3, 24), pe = loop.at(sEntry), yawE = Math.atan2(pe.nx, pe.nz);
       let dy = yawE - Math.PI; dy = ((dy + Math.PI) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI) - Math.PI;
       if (Math.abs(dy) > 2.1) dy = sx < 0 ? ((dy % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI) : -((((-dy) % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI));   // swing away from the plate
-      posts.push({ G, H, update(f) {
+      posts.push({ name, kind, i: sl.i, at(f) {
         const t = f - t0, a = smooth(t / d1), b = smooth((t - d1) / d2), hinge = spring(t - d1 - d2, 0.6, 16);
         const p = loop.at(sEntry + d * b);
-        G.position.set(lerp(sx, p.x, a), lerp(0.03 + j * 0.056, 0.03, a), lerp(sz, p.z, a));
-        G.rotation.y = a < 1 ? Math.PI + dy * a : Math.atan2(p.nx, p.nz);
-        H.rotation.x = (Math.PI / 2) * (1 - hinge);
-        tab.visible = t > 0;
+        return { x: lerp(sx, p.x, a), y: lerp(0.03 + j * 0.056, 0.03, a), z: lerp(sz, p.z, a), yaw: a < 1 ? Math.PI + dy * a : Math.atan2(p.nx, p.nz), hinge: (Math.PI / 2) * (1 - hinge), t };
       } });
     });
   }
-  return { update: (f) => posts.forEach((p) => p.update(f)), loop };
+  return { posts, loop };
+}
+function buildFence(world) {
+  const plan = fencePlan(), posts = plan.posts.map((P) => {
+    const { name, kind } = P;
+    const G = named(new THREE.Group(), name), H = named(new THREE.Group(), name + ".hinge"); G.add(H); world.add(G);
+    const hd = card(CUT[kind].head, PAL.lilac, 0.06), hn = card(CUT[kind].handle, PAL.indigo, 0.06); hd.name = name + ".head"; hn.name = name + ".handle"; H.add(hd, hn);
+    const tab = strip(1.5, 1.3, mixHex(PAL.lilac, PAL.core, 0.5), 0.05); tab.position.z = -1.3; tab.name = name + ".tab"; G.add(tab);
+    G.userData.kind = kind;
+    return { update(f) { const s = P.at(f); G.position.set(s.x, s.y, s.z); G.rotation.y = s.yaw; H.rotation.x = s.hinge; tab.visible = s.t > 0; } };
+  });
+  return { update: (f) => posts.forEach((p) => p.update(f)), loop: plan.loop };
 }
 
 export function buildWorld(scene) {
