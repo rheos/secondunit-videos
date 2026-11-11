@@ -1,0 +1,62 @@
+slug: record-player-figure
+title: See-through inked machine
+note: >-
+  A hand-inked record player on a desk that the camera turns round while the song plays. The sung lines appear as
+  buttons that fill as they are sung, and the case fades to show the working parts inside.
+used: Me and Jimi, Bob Wiseman, test
+cost: free
+group: code
+order: 680
+clip: null
+tall: false
+tags:
+  medium: [ink, 3d]
+  texture: [clean]
+  motion: [moving camera]
+  mood: [playful, technical]
+  colour: [saturated]
+  engine: [colorfigures]
+  use: [lyric video, music video]
+status: test
+engine: colorfigures (svg)
+project: bobwiseman-me-and-jimi-figure
+code:
+  path: bobwiseman-me-and-jimi-figure/js/film.js
+  flag: null
+  page: bobwiseman-me-and-jimi-figure/figure.html
+  note: >-
+    js/core.js is April Zhu's engine unchanged, MIT, with js/LICENSE-colorfigures.txt and the credit on screen.
+    js/player.js models the machine; js/film.js is a pure seek(songSeconds) that drives mountFigure's state and setCam,
+    with the viewBox set before the scene draws (labels read it). Lyrics and cues stay in gitignored work/
+    (tools/cues.py builds them from the project's Whisper words and vocal stem). render.mjs does 936 frames in about
+    2 minutes.
+rules:
+  - Her buttons become the lyric line; each pill fills as it is sung
+  - Every animation is a function of song time, never a button press
+  - Layout is for 1280x720, the object framed with room for the lyric row and labels
+  - See-through and labels switch on for a sung reason (the "inspect" line, a name) and off again
+  - The object is true to the real thing from every side; parts only move along their real path
+  - Flat three-tone bodies, heavy ink silhouette, finer inner lines, flat blue cast shadow, warm paper
+  - People named in the lyric stay undrawn; objects stand in for them
+palette:
+  - "#d8432f"
+  - "#fff4d6"
+  - "#2b2523"
+  - "#ef6a4c"
+  - "#5a82c6"
+  - "#d08a52"
+reference: >-
+  April Zhu's Colorfigures (april-zhu.com/colorfigures), MIT: her engine and drawing rules. The record player, the
+  train, the cheque and the timing are ours.
+proof:
+  issue: rheos/secondunit-videos#407
+  pr:
+    - rheos/secondunit-videos#408
+  renders:
+    - bobwiseman-me-and-jimi-figure/out/record-player_test01.mp4
+  youtube:
+    - 9iJsP1snPRs
+verdict: null
+related:
+  - tour-piano
+  - chart-world
