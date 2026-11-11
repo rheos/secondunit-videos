@@ -1,12 +1,97 @@
 {
- "note": "Painted pieces for the paper-world film. Image 1 (work/style_ref.png, the table-city target still) is attached to every call as the style reference. Every piece is one isolated object on a transparent background, lit warm from the upper left; code mirrors a piece for the other side of the candle.",
+ "note": "Painted pieces for the paper-world film. Image 1 (work/style_ref.png, the table-city target still) is attached to every call as the style reference. Every piece is one isolated object on a transparent background, lit warm from the upper left; code mirrors a piece for the other side of the candle. A plate with \"full\": true carries its whole prompt (no style prefix, no style image). A plate with \"ref\" is an edit of that painted plate, which is attached as image 1 instead of the style reference.",
  "style": "Image 1 is a style reference only: match its medium and photographic finish exactly (a macro photograph of handmade paper-craft: cut and folded matte card with visible paper fibre, pale cut edges, small folded card tab stands, warm candle light from the upper left, gentle shading). Do not copy its composition. Paint ONLY the single object described: whole, uncropped, centred, seen from the front at eye level, filling most of the image, on a fully transparent background. No table, no tablecloth, no ground, no cast shadow on any surface, no background at all. No text, no letters, no logos.",
  "plates": {
-  "treeman": {"size": "1024x1536", "prompt": "A single flat paper cut-out standee of an old man in side profile, facing right, slightly stooped, wearing a brimmed hat and a long coat, carrying a large backpack on his back and holding a walking stick in front of him. Cut from moss-green card, the backpack a second layer of tan card glued on. A plain silhouette with no facial features at all. He stands on a small folded card tab at his feet."},
-  "guard": {"size": "1024x1536", "prompt": "A single flat paper cut-out standee of a prison guard in side profile, facing right, standing upright with chest out and hands clasped behind his back. Cut from navy blue card. He wears a peaked police-style officer's cap with a wide flat crown that overhangs front and back and a short stiff visor, a tiny gold foil badge on the front of the cap, a uniform jacket with a belt, a ring of keys hanging at the hip, straight trousers and boots. A plain silhouette with no facial features at all. He stands on a small folded card tab at his feet."},
-  "citizen": {"size": "1024x1536", "prompt": "A single flat paper cut-out standee of an ordinary man in a city coat in side profile, facing right, mid-stride, arms at his sides, no hat. Cut from one piece of dusty brick-red card. A plain silhouette with no facial features at all. He stands on a small folded card tab at his feet."},
-  "tower_plate": {"size": "1024x1536", "prompt": "A single paper-craft pop-up tower made of four stacked round tiers that get narrower toward the top, like a tiered drum, in peach and umber card, each tier ringed with rows of small arched window cut-outs glowing warm from inside, with a small round cap on top. It sits on a flat round white paper plate, seen slightly from above so the plate is a shallow ellipse at its base."},
-  "tower_glass": {"size": "1024x1536", "prompt": "A single tall paper-craft tower in the shape of a wine glass: a faceted goblet bowl folded from green card with rows of small window cut-outs glowing warm yellow from inside, on a thin green card stem and a round card foot."},
-  "fence_trio": {"size": "1536x1024", "prompt": "Three separate flat card cut-outs standing upright side by side with clear gaps between them: a table knife, a fork and a spoon, each cut from pale silver-grey card, handles at the bottom, each as tall as the image allows, each held upright by its own small folded card tab at the base."}
+  "treeman": {
+   "size": "1024x1536",
+   "prompt": "A single flat paper cut-out standee of an old man in side profile, facing right, slightly stooped, wearing a brimmed hat and a long coat, carrying a large backpack on his back and holding a walking stick in front of him. Cut from moss-green card, the backpack a second layer of tan card glued on. A plain silhouette with no facial features at all. He stands on a small folded card tab at his feet."
+  },
+  "guard": {
+   "size": "1024x1536",
+   "prompt": "A single flat paper cut-out standee of a prison guard in side profile, facing right, standing upright with chest out and hands clasped behind his back. Cut from navy blue card. He wears a peaked police-style officer's cap with a wide flat crown that overhangs front and back and a short stiff visor, a tiny gold foil badge on the front of the cap, a uniform jacket with a belt, a ring of keys hanging at the hip, straight trousers and boots. A plain silhouette with no facial features at all. He stands on a small folded card tab at his feet."
+  },
+  "citizen": {
+   "size": "1024x1536",
+   "prompt": "A single flat paper cut-out standee of an ordinary man in a city coat in side profile, facing right, mid-stride, arms at his sides, no hat. Cut from one piece of dusty brick-red card. A plain silhouette with no facial features at all. He stands on a small folded card tab at his feet."
+  },
+  "tower_plate": {
+   "size": "1024x1536",
+   "prompt": "A single paper-craft pop-up tower made of four stacked round tiers that get narrower toward the top, like a tiered drum, in peach and umber card, each tier ringed with rows of small arched window cut-outs glowing warm from inside, with a small round cap on top. It sits on a flat round white paper plate, seen slightly from above so the plate is a shallow ellipse at its base."
+  },
+  "tower_glass": {
+   "size": "1024x1536",
+   "prompt": "A single tall paper-craft tower in the shape of a wine glass: a faceted goblet bowl folded from green card with rows of small window cut-outs glowing warm yellow from inside, on a thin green card stem and a round card foot."
+  },
+  "fence_trio": {
+   "size": "1536x1024",
+   "prompt": "Three separate flat card cut-outs standing upright side by side with clear gaps between them: a table knife, a fork and a spoon, each cut from pale silver-grey card, handles at the bottom, each as tall as the image allows, each held upright by its own small folded card tab at the base."
+  },
+  "tower_bottle": {
+   "size": "1024x1536",
+   "prompt": "A single tall paper-craft tower in the shape of a wine bottle, folded from navy blue card with panel creases, with rows of small window cut-outs glowing warm yellow from inside, a short neck and a flat card cap."
+  },
+  "basket": {
+   "size": "1536x1024",
+   "prompt": "A single paper-craft bread basket woven from strips of brown card into a round, dome-topped basket like a small domed hall, with a few tiny window cut-outs glowing warm near its base."
+  },
+  "candle": {
+   "size": "1024x1536",
+   "prompt": "A single short pillar candle made of rolled cream card, standing in a low folded card holder, with a paper flame on a thin wire: a small teardrop of layered yellow and orange translucent paper that glows."
+  },
+  "redwood": {
+   "size": "1024x1536",
+   "prompt": "A single very tall, slender paper-craft redwood tree: a long straight trunk rolled and pleated from red-brown card, bare for its lower two thirds, with layered dark green cut-paper foliage only near the top. It stands on a small folded card base."
+  },
+  "sapling": {
+   "size": "1024x1536",
+   "prompt": "A single small paper-craft conifer sapling: three tiers of green cut-paper branches on a thin card trunk, planted in a small terracotta-coloured folded card flowerpot."
+  },
+  "saltpepper": {
+   "size": "1536x1024",
+   "prompt": "Two separate small paper-craft towers standing side by side with a clear gap between them: a salt shaker folded from pale grey card and a pepper shaker folded from charcoal card, each with a domed cap with tiny holes and a few small window cut-outs glowing warm."
+  },
+  "citizen_woman": {
+   "size": "1024x1536",
+   "prompt": "A single flat paper cut-out standee of an ordinary woman in a city coat with a bob haircut, carrying a handbag, in side profile, facing right, mid-stride. Cut from one piece of dusty teal card. A plain silhouette with no facial features at all. She stands on a small folded card tab at her feet."
+  },
+  "plate_disc": {
+   "size": "1024x1024",
+   "prompt": "A single round paper plate cut from thick cream-white card with a slightly raised rim, seen from directly above as a perfect circle, empty."
+  },
+  "fg_glass": {
+   "size": "1024x1536",
+   "full": true,
+   "prompt": "A photograph of the lower half of a real crystal wine glass holding red wine: the bottom of the bowl, the stem and the round foot, with warm candle highlights, photographed close and softly out of focus. Only the glass, isolated on a fully transparent background: no table, no background, no cast shadow. No text."
+  },
+  "fg_fork": {
+   "size": "1536x1024",
+   "full": true,
+   "prompt": "A photograph of a real silver dinner fork lying on its back, seen from a low angle close to the tines, pointing to the left, with warm candle highlights, softly out of focus. Only the fork, isolated on a fully transparent background: no table, no background, no cast shadow. No text."
+  },
+  "cloth": {
+   "size": "1536x1024",
+   "full": true,
+   "prompt": "A flat, evenly lit photograph taken from directly above of cream linen tablecloth fabric filling the entire image from edge to edge: fine woven texture, a few very soft creases, warm tone. Nothing on it: no objects, no shadows, no border, no text. Full bleed."
+  },
+  "room": {
+   "size": "1536x1024",
+   "full": true,
+   "prompt": "A heavily out-of-focus photograph of a dark, elegant restaurant interior at night, seen from a dinner table: deep blue-black shadows, soft warm bokeh from distant candles and small lamps, the dim suggestion of other tables and a tall dark window with a cool blue night beyond. No people, no text, nothing in focus. Full bleed, no border."
+  },
+  "tower_glass_dark": {
+   "size": "1024x1536",
+   "ref": "tower_glass",
+   "prompt": "Edit image 1. Change ONLY the window cut-outs: they are now dark and unlit, showing only deep shadow inside, with no glow and no warm light anywhere on the piece. Keep everything else exactly as it is: the same shape, the same size and position in the frame, the same card colour, texture and creases, and the fully transparent background."
+  },
+  "tower_plate_dark": {
+   "size": "1536x1024",
+   "ref": "tower_plate",
+   "prompt": "Edit image 1. Change ONLY the window cut-outs: they are now dark and unlit, showing only deep shadow inside, with no glow and no warm light anywhere on the piece. Keep everything else exactly as it is: the same shape, the same size and position in the frame, the same card colours, texture and creases, the plate, and the fully transparent background."
+  },
+  "tower_bottle_dark": {
+   "size": "1024x1536",
+   "ref": "tower_bottle",
+   "prompt": "Edit image 1. Change ONLY the window cut-outs: they are now dark and unlit, showing only deep shadow inside, with no glow and no warm light anywhere on the piece. Keep everything else exactly as it is: the same shape, the same size and position in the frame, the same card colour, texture and creases, and the fully transparent background."
+  }
  }
 }
