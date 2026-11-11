@@ -30,15 +30,15 @@ function sitter(x, y, s, col, p, layer) {
   if (layer !== 'front') {
     g.save(); g.translate(-8, 0); leg(1.5, 1.42, col, null, false); g.restore();
     g.save(); g.translate(8, 0); leg(1.56, 1.5, col, null, false); g.restore();
-    if (!p.farFront) { g.save(); g.rotate(p.lean); g.translate(-8, -212); arm(p.far[0], p.far[1], col, p.holdFar); g.restore(); }
+    if (!p.farFront) { g.save(); g.rotate(p.lean); g.translate(-8, -212); arm(p.far[0], p.far[1], col, p.holdFar, p.age && { col: p.knit, a: p.age }); g.restore(); }
     cut(LAP, col, { sh: .6, grain: .26, lift: .2 });
-    g.save(); g.rotate(p.lean); cut(BODICE, col, { sh: .6, grain: .26, lift: .2 }); g.restore();
+    g.save(); g.rotate(p.lean); cut(BODICE, col, { sh: .6, grain: .26, lift: .2 }); if (p.age) oldBack(col, 540, p.age, p.knit); g.restore();
   }
   if (layer !== 'back') {
     g.save(); g.rotate(p.lean);
-    if (p.farFront) { g.save(); g.translate(-8, -212); arm(p.far[0], p.far[1], col, p.holdFar); g.restore(); }
-    g.save(); g.translate(10, -250); head('her', null, col, .265, p.head || 0, 0); g.restore();
-    g.translate(8, -212); arm(p.near[0], p.near[1], col, p.holdNear);
+    if (p.farFront) { g.save(); g.translate(-8, -212); arm(p.far[0], p.far[1], col, p.holdFar, p.age && { col: p.knit, a: p.age }); g.restore(); }
+    g.save(); g.translate(10, -250); if (p.age) oldNeck(p.age); head('her', null, col, .265, p.head || 0, 0, p.age || 0); g.restore();
+    g.translate(8, -212); arm(p.near[0], p.near[1], col, p.holdNear, p.age && { col: p.knit, a: p.age });
     g.restore();
   }
   g.restore();
@@ -238,12 +238,13 @@ SHOT(0, 18.5, 'kitchen', (t) => {
   const flat = (x, y, r, k = 0) => { g.save(); g.translate(x, y); g.rotate(r); g.scale(1, .42); billHard(BW, BH, billCol, billInk, .8); g.restore(); };
 
   chair(mix(C.w0, C.navy, navyK));
-  sitter(HX, HY, S, herCol, { lean, head: headA, near, far, farFront }, 'back');
+  sitter(HX, HY, S, herCol, { lean, head: headA, near, far, age: AGE_KITCHEN(t), knit: mix(C.w2, C.sky1, navyK), farFront }, 'back');
 
   // the table: a leg, the top band (naive perspective), the oilcloth
   cut(cutRect(TX0 + 40, TY, 30, FLOOR - TY, 51), tableCol, { sh: .5 });
   cut(poly([[TX0 + 30, TY - TB], [TX1, TY - TB], [TX1, TY], [TX0, TY]]), topCol, { sh: .5, grain: .2 });
   cut(cutRect(TX0 - 6, TY - 2, TX1 - TX0, 118, 52, 1.5), clothCol, { sh: .8, lift: .3 });
+  cane(TX0 + 30, TY - 4, TX0, mix(CANE_WOOD, C.roseDark, navyK), AGE_KITCHEN(t), mix(C.ink, C.navy, navyK));
 
   // the piles (two bills already sorted each side), the moving bills, a cold cup
   flat(pileA[0] - 14, TY - 22, .05); flat(pileA[0] - 6, TY - 27, -.07);
@@ -256,7 +257,7 @@ SHOT(0, 18.5, 'kitchen', (t) => {
   });
   cup(1300, TY - 26, 1.3, mix(C.w3, C.cream, navyK));
 
-  sitter(HX, HY, S, herCol, { lean, head: headA, near, far, holdNear, farFront }, 'front');
+  sitter(HX, HY, S, herCol, { lean, head: headA, near, far, age: AGE_KITCHEN(t), knit: mix(C.w2, C.sky1, navyK), holdNear, farFront }, 'front');
   g.restore();
 });
 })();

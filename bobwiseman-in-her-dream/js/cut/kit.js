@@ -224,6 +224,31 @@ const HEAD_CHILD = [
   690, 758, 640, 762, 622, 794,
   612, 846, 616, 920, 640, 1060,
 ];
+// her, old (Bob, 2026-11-01: the song is about an old woman). Robin: old only in the waking world (the grey
+// kitchen at the start and the wake at the end); in the dream she is the age she always was. Look test behind
+// ?old=1 until Robin approves. Same skull, bun, brow and eye as HEAD_HER, but a longer nose with a drooping
+// tip, thinner set-back lips, a softer chin, a little jowl and a looser neck, and spectacles: a paper rim
+// standing proud of the brow, the lens cut through where it clears her face. Same point count as HEAD_HER,
+// so headAt(age) morphs between them (01, as her paper turns navy and the dream begins).
+const OLD = typeof location !== 'undefined' && /[?&]old=1/.test(location.search);
+const HEAD_OLD = HEAD_HER.slice();
+(() => { const s = (k) => 2 + k * 6; const set = (k, a) => a.forEach((v, j) => HEAD_OLD[s(k) + j] = v);
+  set(8, [762, 494, 792, 534, 808, 568]); set(9, [814, 582, 804, 594, 786, 594]); set(10, [772, 596, 768, 602, 768, 610]);
+  set(11, [771, 618, 776, 622, 775, 630]); set(12, [775, 636, 767, 639, 763, 642]); set(13, [768, 649, 772, 656, 769, 668]);
+  set(14, [767, 681, 757, 687, 761, 701]); set(15, [766, 724, 756, 748, 728, 760]); set(16, [694, 774, 660, 774, 634, 786]);
+  set(17, [618, 808, 616, 848, 632, 892]); })();
+const SPEC = [748, 458];
+const HEAD_AGED = {};
+function headAt(age) {
+  // age 0..1, cached at 1/50 steps (drawFrame stays pure)
+  const q = Math.round(clamp(age) * 50); if (HEAD_AGED[q]) return HEAD_AGED[q];
+  const a = q / 50, p = pathOf(HEAD_HER.map((v, i) => lerp(v, HEAD_OLD[i], a)));
+  // the rim winds the same way as the head (so it adds), the lens the other way (so it cuts a hole only where
+  // the rim stands clear of her face); growing younger, the rim slides back into her face and is gone
+  const cx = SPEC[0] - (1 - a) * 46, cy = SPEC[1];
+  if (a > 0) { p.ellipse(cx, cy, 19, 31, -.15, 0, Math.PI * 2); p.moveTo(cx + 12, cy); p.ellipse(cx, cy, 12, 24, -.15, 0, Math.PI * 2, true); }
+  return (HEAD_AGED[q] = p);
+}
 const HEADS = { her: pathOf(HEAD_HER), short: pathOf(HEAD_SHORT), child: pathOf(HEAD_CHILD) };
 // hair pieces added on top of a head (same head units)
 const HAIR = {
@@ -278,16 +303,18 @@ const LACE = (() => { const p = new Path2D(); p.addPath(PARTS.dress);
   for (let i = 0; i < 7; i++) { const x = -96 + i * 30, y = -232 + (i % 2) * 6; p.moveTo(x + 9, y); p.arc(x, y, 9, 0, Math.PI * 2); }
   for (let i = 0; i < 6; i++) { const x = -84 + i * 32, y = -272; p.moveTo(x + 5, y); p.arc(x, y, 5, 0, Math.PI * 2); }
   return p; })();
-function head(kind, hair, col, k, angle, laugh = 0) {
+function head(kind, hair, col, k, angle, laugh = 0, age = 0) {
   g.save(); g.rotate(-angle * .9 - laugh * .18); g.scale(k, k); g.translate(-580, -800);
   g.save(); g.beginPath(); g.rect(-200, -200, 1400, 1040); g.clip();
-  cut(HEADS[kind], col, { sh: .5, grain: .25 });
+  cut(kind === 'her' && age > 0 ? headAt(age) : HEADS[kind], col, { sh: .5, grain: .25 });
   if (hair && HAIR[hair]) cut(HAIR[hair], col, { sh: .3, grain: .2 });
   g.restore(); g.restore();
 }
-function arm(sh, el, col, holding) {
-  g.save(); g.rotate(-sh); cut(PARTS.upper, col, { sh: .45, grain: .2 });
-  g.translate(0, 168); g.rotate(-el); cut(PARTS.fore, col, { sh: .4, grain: .2 });
+// sleeve { col, a }: her cardigan's knit laid over the upper arm and forearm (hands stay bare)
+function arm(sh, el, col, holding, sleeve) {
+  const knit = (part) => { if (sleeve && sleeve.a > .03) cut(part, sleeve.col, { sh: 0, grain: .3, alpha: sleeve.a }); };
+  g.save(); g.rotate(-sh); cut(PARTS.upper, col, { sh: .45, grain: .2 }); knit(PARTS.upper);
+  g.translate(0, 168); g.rotate(-el); cut(PARTS.fore, col, { sh: .4, grain: .2 }); knit(PARTS.fore);
   g.translate(0, 150); cut(PARTS.hand, col, { sh: .35, grain: .15 });
   if (holding) { g.save(); g.translate(4, 40); holding(); g.restore(); }
   g.restore();
@@ -297,6 +324,55 @@ function leg(hip, knee, col, shoeCol, kid) {
   g.translate(0, 266); g.rotate(knee); cut(kid ? PARTS.shinKid : PARTS.shin, col, { sh: .4, grain: .2 });
   g.translate(0, 250); g.rotate(hip - knee); cut(PARTS.shoe, shoeCol || col, { sh: .35, grain: .2 });
   g.restore();
+}
+// her age, below the neck: a buttoned cardigan over her dress, one paper lighter (knit), its front edge just
+// outside her bodice so none of the dress shows through (left open, the dress at the bust read as a hole under
+// her arm when she leans forward asleep, Robin). The button band is the knit darkened with her dress paper.
+// Its back is only gently rounded (the first test's hump and shawl read as a caricature, Robin: "that's how you
+// show an old lady is with a big hump on her back?"). Drawn after the body, before the head; dy shifts it for
+// the seated rigs (their bodice sits 540 lower). Sleeves: arm(..., sleeve). It fades with her age (0..1).
+// oldNeck() sets her head a little forward and bowed.
+const CARDIGAN = blob([[30, -808], [-6, -814], [-36, -810], [-60, -796], [-74, -770], [-78, -730], [-74, -680], [-64, -630],
+  [-60, -590], [-70, -548], [-58, -534], [20, -534], [46, -540], [60, -548], [50, -584], [58, -632], [76, -676], [74, -714],
+  [62, -752], [46, -788]], .45);
+const KNIT_BAND = blob([[34, -802], [50, -786], [66, -750], [77, -714], [78, -676], [60, -632], [52, -584], [62, -548], [50, -536],
+  [42, -540], [44, -584], [50, -632], [66, -676], [65, -712], [54, -746], [40, -780], [26, -798]], .4);
+function oldBack(col, dy = 0, age = 1, knit = col) {
+  if (age < .03) return;
+  g.save(); g.translate(0, dy); g.globalAlpha *= age;
+  cut(CARDIGAN, knit, { sh: .5, grain: .3, lift: .2 });
+  cut(KNIT_BAND, knit, { sh: 0, grain: .3 }); cut(KNIT_BAND, col, { sh: 0, grain: .3, alpha: .28 });
+  [[70, -706], [70, -664], [56, -612]].forEach(([x, y]) => cut(circle(x, y, 6), knit, { sh: .3, grain: .2 }));
+  g.restore();
+}
+function oldNeck(age = 1) { g.translate(12 * age, 10 * age); g.rotate(.09 * age); }
+// the kitchen (01, 02, 17): old while she is awake; asleep at the table the dream lifts the years off her,
+// slowly, across the colour change and a little after it (Robin: "slower morph")
+const AGE_KITCHEN = (t) => OLD ? 1 - ss(15.6, 19.8, t) : 0;
+// her walking stick, leaning against the near corner of the table: its round crook hooked over the
+// table's front edge (cx, cy = the crook's centre), the shaft down to a dark rubber tip on the floor at tipX.
+// About wrist height on her (Robin: the first one, hooked on the chair back, was too long, and a pale tube
+// "looks nothing like a cane"). Wood paper; drawn after the cloth, before her near arm; fades with her age.
+const CANE_WOOD = '#6b5a5e';
+function cane(cx, cy, tipX, col, a, tipCol = C.ink) {
+  if (a < .02) return;
+  const R = 21, r = 10, top = [cx - (R + r) / 2, cy], tip = [tipX, 1000];
+  const ang = Math.atan2(tip[0] - top[0], tip[1] - top[1]), len = Math.hypot(tip[0] - top[0], tip[1] - top[1]);
+  g.save(); g.globalAlpha *= a;
+  // crook: a thick half ring over the edge, its far end turned down and rounded off
+  const k = new Path2D();
+  k.arc(cx, cy, R, Math.PI, 0); k.lineTo(cx + R, cy + 12); k.arc(cx + (R + r) / 2, cy + 12, (R - r) / 2, 0, Math.PI);
+  k.lineTo(cx + r, cy); k.arc(cx, cy, r, 0, Math.PI, true); k.closePath();
+  cut(k, col, { sh: .5, grain: .25 });
+  // shaft, tapering, and the rubber tip
+  g.save(); g.translate(top[0], top[1]); g.rotate(-ang);
+  const w0 = (R - r) / 2 + .5, w1 = 4.5, sh = new Path2D();
+  sh.moveTo(-w0, -2); sh.lineTo(w0, -2); sh.lineTo(w1, len - 17); sh.lineTo(-w1, len - 17); sh.closePath();
+  cut(sh, col, { sh: .5, grain: .25 });
+  const f = new Path2D(); f.moveTo(-6, len - 19); f.lineTo(6, len - 19); f.lineTo(6.5, len - 3);
+  f.quadraticCurveTo(0, len + 1, -6.5, len - 3); f.closePath();
+  cut(f, tipCol, { sh: .3, grain: .15 });
+  g.restore(); g.restore();
 }
 function puppet(x, y, s, dir, spec, pose = {}) {
   const col = spec.col || C.navy, body = spec.bodyCol || col;
@@ -316,8 +392,9 @@ function puppet(x, y, s, dir, spec, pose = {}) {
   if (spec.kind === 'shirt') cut(PARTS.hips, legCol, { sh: .3, grain: .2 });
   if (spec.lace) cut(LACE, body, { sh: .6, grain: .26, lift: .2, rule: 'evenodd' });
   else cut(PARTS[spec.kind || 'dress'], body, { sh: .6, grain: .26, lift: .2 });
+  if (spec.age) oldBack(body, 0, spec.age);
   if (spec.acc) spec.acc.forEach((a) => a(pose));
-  g.save(); g.translate(10, -790); head(spec.head || 'her', spec.hair, spec.headCol || col, hk, pose.head || 0, pose.laugh || 0);
+  g.save(); g.translate(10, -790); if (spec.age) oldNeck(spec.age); head(spec.head || 'her', spec.hair, spec.headCol || col, hk, pose.head || 0, pose.laugh || 0, spec.age || 0);
   if (spec.headAcc) spec.headAcc(pose);
   g.restore();
   g.save(); g.translate(8, -752); arm(arms[0][0], arms[0][1], spec.armCol || body, pose.holdNear); g.restore();

@@ -40,15 +40,15 @@ function sitter(x, y, s, col, p, layer) {
   if (layer !== 'front') {
     g.save(); g.translate(-8, 0); leg(1.5, 1.42, col, null, false); g.restore();
     g.save(); g.translate(8, 0); leg(1.56, 1.5, col, null, false); g.restore();
-    if (!p.farFront) { g.save(); g.rotate(p.lean); g.translate(-8, -212); arm(p.far[0], p.far[1], col, p.holdFar); g.restore(); }
+    if (!p.farFront) { g.save(); g.rotate(p.lean); g.translate(-8, -212); arm(p.far[0], p.far[1], col, p.holdFar, p.age && { col: p.knit, a: p.age }); g.restore(); }
     cut(LAP, col, { sh: .6, grain: .26, lift: .2 });
-    g.save(); g.rotate(p.lean); cut(BODICE, col, { sh: .6, grain: .26, lift: .2 }); g.restore();
+    g.save(); g.rotate(p.lean); cut(BODICE, col, { sh: .6, grain: .26, lift: .2 }); if (p.age) oldBack(col, 540, p.age, p.knit); g.restore();
   }
   if (layer !== 'back') {
     g.save(); g.rotate(p.lean);
-    if (p.farFront) { g.save(); g.translate(-8, -212); arm(p.far[0], p.far[1], col, p.holdFar); g.restore(); }
-    g.save(); g.translate(10, -250); head('her', null, col, .265, p.head || 0, 0); g.restore();
-    g.translate(8, -212); arm(p.near[0], p.near[1], col, p.holdNear);
+    if (p.farFront) { g.save(); g.translate(-8, -212); arm(p.far[0], p.far[1], col, p.holdFar, p.age && { col: p.knit, a: p.age }); g.restore(); }
+    g.save(); g.translate(10, -250); if (p.age) oldNeck(p.age); head('her', null, col, .265, p.head || 0, 0, p.age || 0); g.restore();
+    g.translate(8, -212); arm(p.near[0], p.near[1], col, p.holdNear, p.age && { col: p.knit, a: p.age });
     g.restore();
   }
   g.restore();
@@ -274,7 +274,7 @@ SHOT(18.5, 31.5, 'table', (t) => {
   placed[KIDS.length - 1] = placedL;
   chair(C.navy);
 
-  sitter(HX, HY, S, C.navy, { lean, head: headA, near, far, farFront }, 'back');
+  sitter(HX, HY, S, C.navy, { lean, head: headA, near, far, age: AGE_KITCHEN(t), knit: C.sky1, farFront }, 'back');
 
   // the table: the top band and the cloth, which unrolls toward the floor in scallops; the corner at her
   // end is drawn up like a theatre curtain so her knees and shins stay in view
@@ -283,6 +283,7 @@ SHOT(18.5, 31.5, 'table', (t) => {
   cut(poly([[TX0 + 30, TY - TB], [TX1, TY - TB], [TX1, TY], [TX0, TY]]), C.creamDeep, { sh: .5, grain: .2 });
   if (t < BEAT_(42.6)) cut(cutRect(TX0 - 6, TY - 2, TX1 - TX0, 118, 52, 1.5), C.cream, { sh: .8, lift: .3 });
   else scallopCloth(TX0 - 6, TX1, TY - 2, lerp(118, FLOOR - TY - 6, unroll), C.cream, 1);
+  cane(TX0 + 30, TY - 4, TX0, C.roseDark, AGE_KITCHEN(t), C.navy);
 
   cup(1300, TY - 26 - jump, 1.3, C.cream);
   // one orange arrives where the bills were (it comes back at the very end of the film)
@@ -303,7 +304,7 @@ SHOT(18.5, 31.5, 'table', (t) => {
   });
 
   // her near arm and head go over the table
-  sitter(HX, HY, S, C.navy, { lean, head: headA, near, far, farFront }, 'front');
+  sitter(HX, HY, S, C.navy, { lean, head: headA, near, far, age: AGE_KITCHEN(t), knit: C.sky1, farFront }, 'front');
 
   // laughter: deep gold rings from her, then from each kid as the ripple reaches them, on the beats
   if (t > T.laughing - .1) {
