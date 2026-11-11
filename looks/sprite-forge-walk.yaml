@@ -1,0 +1,49 @@
+slug: sprite-forge-walk
+title: Generated walk as pixel sprite
+note: >-
+  A small pixel character walks across a side-on road in a 16-bit game world. His walk comes from a generated
+  video clip, cut to a clean loop and redrawn in the world's own colours.
+used: Little Bob, Bob Wiseman, test
+cost: 9 credits
+group: code
+order: 690
+clip: null
+tall: false
+tags:
+  medium: [pixel, cartoon]
+  era: [1970-1999]
+  motion: [on twos, loop]
+  mood: [playful]
+  colour: [saturated]
+  engine: [python, kling]
+  use: [music video]
+status: test
+engine: Agent Sprite Forge (python) + kling
+project: bobwiseman-little-bob-sprite
+code:
+  path: bobwiseman-little-bob-sprite/scene.py
+  flag: null
+  page: null
+  note: >-
+    Agent Sprite Forge (github.com/0x0funky/agent-sprite-forge, MIT, v0.4) does keying, registration and the pixel
+    finish; the README lists every step. Master still from bin/gptimg; clip from Higgsfield kling3_0_turbo, 6 s, 1:1,
+    720p, 9 credits (the only paid step). The Forge's loop finder stops at a 1.6 s walk window and Kling's stride was
+    1.67 s, so ask for a brisker walk or pick the loop by hand (test 01 used frames 66-105). out/ and _in/ are
+    gitignored; a rebuild needs the Forge clone.
+rules:
+  - "--palette is the 16bit PALDEF: every sprite pixel is one of the 46 colours (test 01: 0 off-palette pixels)"
+  - Binary alpha, no soft edges
+  - One stride a second at 12 frames; the planted foot must travel at the walk speed or the sprite slides
+  - The world follows the 16bit look's rules (320x180 indexed buffer, x4 nearest)
+  - Plain image-to-video sees one still, so only a character in profile doing one action; anything that turns or acts needs the character sheet
+palette: []
+reference: dextune's post on Agent Sprite Forge (x.com/dextune/status/2118151550174691566); the 16bit look.
+proof:
+  pr:
+    - rheos/secondunit-videos#428
+  renders:
+    - bobwiseman-little-bob-sprite/out/little-bob-sprite-test-01_720p.mp4
+  youtube: []
+verdict: null
+related:
+  - 16bit
