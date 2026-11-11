@@ -1,0 +1,8 @@
+{
+  "name": "cleanline",
+  "private": true,
+  "type": "module",
+  "description": "Shared canvas2d clean-line film engine: frame driver, song clock, drawing kit, look modules, render/check/compare.",
+  "bin": { "cl-render": "bin/render.mjs", "cl-check": "bin/check.mjs", "cl-compare": "bin/compare.mjs" },
+  "devDependencies": { "playwright": "1.64.0" }
+}

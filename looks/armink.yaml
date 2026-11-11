@@ -14,12 +14,13 @@ status: option
 engine: canvas2d
 project: bobwiseman-travel-agent
 code:
-  path: bobwiseman-travel-agent/js/arm.js
-  flag: "?look=arm (&ground=plain for cream paper)"
-  page: bobwiseman-travel-agent/looks/film.html
+  path: cleanline/looks/armink.js
+  flag: "?look=armink (&ground=plain for cream paper)"
+  page: bobwiseman-travel-agent-cl/film.html
   note: >-
-    wraps kit.js stroke/fillP/hatch/stripes/paper; hooks armInit, armPre, armPost in main.js. Porting it means
-    mapping those onto another film kit.
+    cleanline look module (mode 'ill', extends fieldguide's grounds): init wraps stroke/fillP/hatch, pre clears the
+    shadow mask, post hatches the cast shadows. Any cleanline film that lists it in film.config.js looks can use it.
+    Was bobwiseman-travel-agent/js/arm.js.
 rules:
   - "One ink for every outline: deep navy (#25264a), heavy and even, about 4.6 to 7 px at 1080p"
   - Flat fills with a screen-anchored dry-brush speckle; no modelling inside objects

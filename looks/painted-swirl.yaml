@@ -1,0 +1,50 @@
+slug: painted-swirl
+title: Living brush-dash sky
+note: >-
+  A night sky made of thousands of short coloured brush dashes that repaint themselves and swirl around each light.
+  As the lights gather, the paint heats from blue through rose and orange to cream.
+used: In Her Dream, Bob Wiseman, test
+cost: free
+group: code
+order: 660
+clip: null
+tall: true
+status: test
+engine: swift and metal
+project: bobwiseman-swift-noimage
+code:
+  path: bobwiseman-swift-noimage/scene/ihd_9x16.rb
+  flag: null
+  page: null
+  note: >-
+    About 2,000 dashes recomputed 8 times a second from a designed field, written as one path per colour, 26 MB of
+    scene JSON and still real time at 1080p on the Intel Mac. A Metal nebula underpaints the gaps. No lyrics on screen.
+rules:
+  - Every dash takes its angle from a designed field, sky rivers plus a swirl round each light; no random noise
+  - Every dash takes its colour from heat, nine paints from ultramarine to cream
+  - Paint redraws 8 times a second so the sky is always wet
+  - Dashes thicken as they warm; the climax is the biggest and brightest image, on the sung word
+  - Each person is one dab of their own colour with a dark edge; the gold dab is her
+  - Lights arrive on sung words
+  - Keep away from the Starry Night composition; a flat row of plain houses, no hills, spire or cypress
+palette:
+  - "#121C52"
+  - "#2653A6"
+  - "#2E8C9A"
+  - "#8E5AA8"
+  - "#D0587A"
+  - "#E9743A"
+  - "#F6B73C"
+  - "#FFE9B0"
+reference: >-
+  Robin's 2026-10-04 brief for this song, Van Gogh's handling and not his composition, with a wider palette. A test of
+  closing the gap in the rejected skytest-v1: designed swirl fields in place of noise.
+proof:
+  renders:
+    - bobwiseman-swift-noimage/out/swift-ihd_test01_720p.mp4
+    - bobwiseman-swift-noimage/out/swift-ihd_9x16_test01_720p.mp4
+  pr: []
+  youtube: []
+verdict: "Robin, 2026-11-07, on the 16:9 test: \"i like it\", and \"i think it should probably be 9:16\"."
+related:
+  - swift-line

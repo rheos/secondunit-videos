@@ -26,9 +26,13 @@ is 1080x1920 at 60 fps with motion blur.
 | `blink-geo.js` | Blink as maths: a superellipsoid body, the visor, eyes, smile and sprout on its surface (proportions measured off the GPT turnaround). `window.BLINK`. |
 | `blink3d.js` | `makeBlink` (toon mesh, outline, `face({blink, happy, look, lookY, think, skew, eager})` (skew: a side-eye; eager: wide eyes and a grin), a low-poly option for crowds), `makeHarness` (belt, buckle, gear loop, three tools on carabiners), `glyphTexture`, `toonRamp`. |
 | `world.js` | Easing (`io`, `back`, `r01`, `pulse`, `typed`), `cameraPath(KEYS)` (word-keyed camera with a slow drift), `panel()` (canvas-texture panels redrawn only on change), `stage(canvas)` (renderer at the canvas's size, fog, light, toon ramp, floor grid). |
+| `vo/tighten.py` | Cuts a take's pauses to the look bible's numbers, keeping the raw take as `vo/voice.raw.mp3`. |
 | `vo/vo.py`, `vo/align.py` | Record `<project>/vo/script.json` with Chris as one take; faster-whisper word times -> `vo/words.js` (`VO.w(word, n)`) and `_in/voice.wav`. |
 | `sfx_earshot.py` | The sound on the picture from earshot's bank (Leon Lin, MIT): one take per cue kind, each hit one frame after its event, mixed under the voice to -14 LUFS. |
 | `finish.sh` | Render at 120 fps, blend pairs to 60 fps (motion blur), restore BT.709 tags, then probe, forensics (cues declared) and flashcheck. |
+| `camera-check.mjs` | The camera measured in node, no browser: every key projected to 1080x1920 the way three.js does it. Share of frames the camera moves, holds, one row per move, Blink's visor in shot, overlays against props, prop edges on frame edges, empty frames. Reads the episode's `camera-set.mjs`. |
+| `check-graybox.mjs` | The gray box's pass or fail: anchors resolve, keys in order, the camera targets above, overlay timing and margins, banned on-screen words, imports and station exports. The episode adds its own checks. |
+| `templates/` | `camera-set.mjs`, `camera-check.mjs`, `check-graybox.mjs` to copy into a new episode. Episode 6's are the worked example. |
 | `sync.sh` | Copy the kit into a project as `<project>/kit/` with a VERSION stamp. Never edit a project's `kit/` by hand. |
 
 ## Making a short
@@ -37,8 +41,11 @@ is 1080x1920 at 60 fps with motion blur.
 # from the secondunit-videos checkout; a new folder per short, allowlisted in .gitignore
 tools/devweb-kit/sync.sh devweb-ep02-<slug>
 python3 -I tools/devweb-kit/vo/vo.py devweb-ep02-<slug>                               # vo/script.json -> vo/voice.mp3
+<viralvision venv python> -I tools/devweb-kit/vo/tighten.py devweb-ep02-<slug>        # pauses: 0.22 s at a stop, 0.15 s at a comma
 <viralvision venv python> -I tools/devweb-kit/vo/align.py devweb-ep02-<slug>          # -> vo/words.js, _in/voice.wav
 # build index.html (overlays + clock) and the short's world file, copying devweb-ep01-oner's shape
+cp tools/devweb-kit/templates/*.mjs devweb-ep02-<slug>/                               # then fill camera-set.mjs with the episode's props
+node devweb-ep02-<slug>/check-graybox.mjs                                             # PASS before the animatic goes to Robin
 node tools/blueprint-kit/cues.mjs devweb-ep02-<slug>                                  # -> cues.json (BP.CUES)
 EARSHOT=<earshot clone> <viralvision venv python> -I tools/devweb-kit/sfx_earshot.py devweb-ep02-<slug>
 CINETIC=<cinetic clone>/skills/cinetic/scripts tools/devweb-kit/finish.sh devweb-ep02-<slug> devweb-ep02
@@ -101,3 +108,69 @@ Iterate with `npx hyperframes@0.8.162 snapshot --at ...` (contact sheets) before
   between them.
 - **A panel that holds still between lines needs a float.** A board showing one word for 1.3 s read as a frozen
   player (forensics' hold check). A slow bob, scale breath or yaw is enough.
+
+## Rules learned on episode 6
+
+- **The picture acts out the narration** (Robin, 2026-11-05, on a finish that had passed every check: "it's boring.
+  even the needle which is front and center does not move to the other side"). When the narrator says a thing changed,
+  the main prop changes on that word. A prop that several stations watch gets one schedule in `timeline.js`
+  (`NEEDLE_SWINGS`, `needlePos(t)` in ep 6) and the prop, Blink and `cues.js` all read it.
+- **The camera moves in about 30 % of frames**, with a push on each beat and a move in the hook's first 3 s.
+  `camera-check.mjs` projects every key in node and prints the share, and `check-graybox.mjs` fails outside 27-36 %
+  or with no move in the first 3 s. Both are in the kit since episode 6; an episode supplies `camera-set.mjs` (its
+  props as boxes, and when each is on screen). Run them before the animatic goes to Robin.
+- **The checks need two things from the episode's files.** `world.js` keeps its camera keys between `// KEYS-BEGIN` and
+  `// KEYS-END` as `[time, position, target, fov, expected time, "subject"]`, and `timeline.js` exports `ANCHORS` as
+  `{ name: [word, n, offset, expected time] }` beside `T`.
+- **Blink wears the harness only when the film shows it working** (Robin, 2026-11-04). Leave `makeHarness` out
+  otherwise; a request card just comes out from Blink.
+- **Words on screen are plain.** Ep 6 dropped mode, optional, fts, vector, hybrid, query, param and argument for
+  `keywords (old)` and `meaning (new)` after Robin could not follow the animatic.
+- **The 120 fps render runs on GitHub.** `CR_MASTER=1 CR_FPS=120 tools/cloud-render/cloud-render.sh --tall <project>
+  index.html 0 <end> <raw.mp4> 10` gives 1080x1920; `RAW=<raw.mp4> tools/devweb-kit/finish.sh <project> <name>` then
+  blends and checks without rendering. Drafts: `CR_FPS=30 CR_HOLD=20 ... --tall`, 8 slices, about 4.5 minutes.
+- **Fix a finish with a patch.** Render only the changed seconds at 120 fps on one runner, splice them into the raw by
+  frame number (ffmpeg concat filter, `trim=start_frame:end_frame`, crf 12), finish again. Whoever made the change
+  proves in node that frames outside the window are identical.
+- **Don't edit `cloud-render.sh` while a render is running.** zsh reads the script as it goes; an edit mid-run failed
+  the last steps of a render that had already finished.
+- **Runners stall in apt.** On most multi-slice runs 2-4 runners sit 10-40 minutes in `apt-get` before drawing a
+  frame. Timeouts and retries in the workflow did not cure it. Unsolved; fewer slices lose less.
+- **Per-episode effect levels** go in `<project>/sfx-gains.json` (dB per effect name, `null` to drop one);
+  `sfx_earshot.py` reads it when it is there.
+- **Per-episode takes** go in `<project>/sfx-kit.json` (`{"kind": ["bank/id", dB, [seeds or null], "d"?]}`, merged over
+  the script's KIT; a 4th item `"d"` plays the cue's d as the take's length, a number is a fixed length). It is for a
+  kind the shared table has no sound for, so other episodes' mixes don't move. Ep 6 added 12 kinds this way; `sfx/` is
+  a cache the script rebuilds from the bank, not tracked.
+- **The runner draws WebGL on SwiftShader, and SwiftShader drops GL lines that run in depth.** The kit's `GridHelper`
+  floor came back from the cloud render as parallel cross stripes, the lines toward the vanishing point gone, while the
+  page on a Mac showed a grid; a DP read the stripes as "faint" and raised the opacity. Never `GridHelper` or
+  `LineSegments` for anything that must survive the render: paint it in a shader on a mesh (ep 6 `stations/floor.js`,
+  square or honeycomb, with `#include <colorspace_fragment>` or it comes out at half brightness). `stage()` keeps its
+  GridHelper so earlier episodes re-render bit-identical; a new episode removes it and adds the shader floor. Before
+  judging any new element, look at a frame made the runner's way: `chrome --headless=new --use-angle=swiftshader
+  --enable-unsafe-swiftshader --screenshot=out.png "http://localhost:8796/design/seek-frame.html?t=7.9"` (ep 6
+  `design/seek-frame.html` over `design/serve.py`), and count what is there.
+- **The stage is a floor with a vanishing point** (Robin, 2026-11-06): the ground runs to the horizon under every prop
+  and the camera sits high enough to see it (ep 6's base poses: 3.4 up, 13 out, about 5 degrees down). Lines only.
+- **Blink's cards come through the beam from his visor** (Robin, 2026-11-06, after two emitter tests): a cone of pale
+  mint light opens, the card condenses in it from sparks and flies as paper; a result flies back in and dissolves.
+  `stations/beam.js` in ep 6; nothing emerges from his head.
+- **A main prop is a real 3D mechanism, designed as stills in the engine first** (Robin, 2026-11-06, on ep 6's crate:
+  "very 2D and boring"; on a wrong study: "is that really the way it works though?"). Write down who acts, what they
+  choose and what comes back, draw exactly that in Blink's language with the mechanism showing, shot from
+  three-quarter angles, in a study page under `design/` before a board draws it, then a silent motion test.
+- **No sign test on a basis built from a travel tangent that can go vertical.** A result card's frame was built from
+  the path's tangent with "top edge upward" chosen by `cy.y < 0`; where the path drops out of the spout the tangent is
+  near vertical, the top edge near level, and the test flipped at the first corner: the card snapped from standing to
+  lying in one frame (forensics on the ep 6 master, 8.86 s; the 30 fps draft and two supervisor rounds missed it).
+  Read the direction from the part of the path that never goes vertical, or blend the basis over the corner, and
+  check a moving prop at 1/120 s steps on the page through every corner of its path.
+- **A cloned take gets Adobe Enhance Speech v2 before align** (Robin, 2026-11-06: "B is way better"): his Chrome, free
+  plan, strength 50 %, from a 48 kHz WAV; timing unchanged, level-match the result to the take, check 0 ms lag.
+- **Declare blinks as cues.** A blink is a real one-frame change and forensics calls it a spike. `cues.js` adds an
+  `eye` cue for each entry in `BLINKS`; two blinks 0.12 s apart still read as a flutter, so space them.
+- **A sheet or card that appears starts transparent.** A material created opaque showed for one frame before its
+  fade began (the log sheet); set opacity 0 at creation and fade with motion.
+- **Pauses are per narrator.** 0.22 s stops sounded "all cut up" on Robin's cloned voice; that take uses 0.40 s at a
+  stop and 0.28 s at a comma (`"tighten"` in `script.json`). A/B a new voice by ear.

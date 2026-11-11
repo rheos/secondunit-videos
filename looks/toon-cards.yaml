@@ -1,15 +1,21 @@
 slug: toon-cards
-title: Toon cards in an inked world
+title: Bean-head cards in an inked world
 note: >-
-  Flat bean-head cartoon people and side-view animals standing in a painted 3D world with black ink lines and real lens
-  blur. The camera glides through one place and every line is acted out literally with a prop, down to a stamp on the
-  last word.
-used: Libelous section, Bob Wiseman, test
+  Flat cartoon cards with round bean heads, dot eyes and stick legs stand in a painted 3D world with ink lines on every
+  edge. The camera moves through the world while the cards stay flat, like paper puppets on a model set.
+used: Libelous, Bob Wiseman, test
 cost: free
 group: code
-order: 660
+order: 670
 clip: null
 tall: true
+tags:
+  medium: [cartoon, 3d, ink]
+  motion: [moving camera]
+  mood: [playful, deadpan]
+  colour: [saturated]
+  engine: [threejs]
+  use: [music video, explainer]
 status: test
 engine: three.js
 project: bobwiseman-toon-cards
@@ -18,28 +24,50 @@ code:
   flag: null
   page: bobwiseman-toon-cards/toon.html
   note: >-
-    Plain three.js, a pure seek by song time, rendered in headless Chrome at about 70 ms a frame on the Mac's GPU at 720p.
-    Cards come from claude-animated-shorts (MIT); the creatures are ours. Prop words that quote a lyric live in gitignored
-    work/words.js.
+    toon.js draws the cards (from claude-animated-shorts, MIT, with our crown, stetson, straw hat, wig and money sack);
+    beasts.js has our cow, chicken and mouse as IK sprites; world.js and paint.js build the world from primitives and
+    canvas-painted textures; story.js holds every camera, actor and prop as a pure function of song time; main.js does
+    colour, normal and depth, ink, grade and lens. About 70 ms a frame at 720x1280 on the Mac's GPU, so it renders
+    locally. The words on the props quote the lyric and stay in gitignored work/words.js.
 rules:
-  - Characters are camera-facing cards with their own plum ink; the world's black ink never outlines them
-  - The world is primitives with canvas-painted textures and a hard two-step toon ramp
-  - Prefer one continuous camera move; cut only on a jump in place or time, and every hold creeps
-  - Blur on close-ups and mediums, focus on the eyes; wides stay sharp
-  - Light carries the story from day to golden to dusk
-  - Every line is acted literally with a prop, and the reaction lands on its word
-  - Herds are side-view sprites with 2-bone IK, cached by pose
-  - New story and cast each time; never copy a channel's scripts, characters or shots
+  - Characters are flat cards that always face the camera; the world around them is real 3D
+  - Ink from normal and depth edges on the world; the cards carry their own outline
+  - Sprites and dust write to the normal and depth pass too, or the world's ink draws over them
+  - One place and one earthy late-summer palette; frames packed with repeated objects (fields, coins, crowds)
+  - Costume detail on the cards (crowns, ermine, epaulettes, sashes) so a small figure still reads
+  - Action lands on the sung word; a flight shot chases its object instead of tilting through empty sky
+  - No black horizon band; compare depth across neighbours in 1/z
 palette:
-  - "#7fae4a"
-  - "#2f78d8"
   - "#6d3fa8"
-  - "#eebd3c"
-  - "#241726"
+  - "#f2c23c"
+  - "#c0303a"
+  - "#2f7f77"
+  - "#e2d2ad"
 reference: >-
-  claude-animated-shorts (github.com/mromidev/claude-animated-shorts, MIT) and trey's prompt
-  (x.com/treyscalez/status/2118357912624005300). Those recipes copy a channel's manner; we took the vocabulary and made our
-  own film.
+  trey's toon-short prompt and github.com/mromidev/claude-animated-shorts (QUIVER row), in the manner of the Ricks Clips
+  channel. Story, cast, world and props are ours. Compared with trey's emu demo on 2026-11-05: his world is one place,
+  one earthy palette and dense frames, which test 02 adopted.
 proof:
-  - rheos/secondunit-videos#424
-verdict: "Robin, 2026-11-05, on test 01: \"It lands\". Compared with trey's demo after that, the world was the gap; test 02 fixes it and hasn't been watched."
+  issue: rheos/secondunit-videos#424
+  pr:
+    - rheos/secondunit-videos#425
+    - rheos/secondunit-videos#459
+  renders:
+    - bobwiseman-toon-cards/out/lib_toon-test01_f01488-f02324_24fps_draft.mp4
+    - bobwiseman-toon-cards/out/lib_toon-test02_f01488-f02324_24fps_draft.mp4
+    - indieagent-previz-seedance/out/lib_seed-compare_f01488-f01608_24fps_draft.mp4
+  youtube:
+    - xZ835ME2Oqo
+  seedance: >-
+    2026-11-09: the first 5 s of test 02 (f1488-f1608) used as previz for Seedance 2.5 on Fal, A steered by three keyframes
+    and B by the clip, about $5.10 together. Seedance kept this look almost exactly with softer light; A cut back into
+    test 02 cleanly, B swapped a character at the cut. Spliced takes:
+    indieagent-previz-seedance/out/lib_toon-test03{A,B}_f01488-f02324_24fps_draft.mp4.
+verdict: >-
+  Robin, 2026-11-05, on test 01: "It lands". Test 02 has no verdict yet. On the Seedance takes, Robin, 2026-11-09: the
+  Seedance one is better, but "I would have to really believe in the video to spend that much with so little
+  difference."
+related:
+  - inked-3d
+  - call-toon
+  - outlinecartoon

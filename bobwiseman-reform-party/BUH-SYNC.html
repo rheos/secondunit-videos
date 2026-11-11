@@ -1,0 +1,88 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Reform Party · buh sync</title>
+<style>
+:root{--bg:#171e20;--fg:#f5e9cf;--dim:#b9bfb4;--gold:#e5af33;--red:#d9573f}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.45 system-ui}
+main{max-width:1180px;margin:auto;padding:20px}
+h1{font-size:24px;margin:0 0 4px}p{color:var(--dim);margin:4px 0 10px;max-width:900px}
+#stage{position:relative;width:100%;aspect-ratio:16/9;background:#000;border-radius:6px;overflow:hidden}
+#stage video,#stage canvas{position:absolute;inset:0;width:100%;height:100%}
+nav{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:10px 0}
+button,select{font:inherit;color:inherit;background:#2a3639;border:1px solid #738077;border-radius:6px;padding:6px 12px;cursor:pointer}
+button.on{background:var(--gold);color:#1b1b14}
+
+table{border-collapse:collapse;margin-top:10px;font-variant-numeric:tabular-nums}
+td{padding:3px 8px;border-bottom:1px solid #2a3639}
+td button{padding:2px 9px}
+output{font-variant-numeric:tabular-nums}
+</style>
+<main>
+<h1>Buh sync: the teeth live over the picture</h1>
+<p>Pick a run and press Play. The teeth are drawn live over the picture, so every change shows straight away. The strip under the picture is the beat grid: one cell per 16th note, a thin line on each beat, a thick line on each bar. Gold cells are buhs. Click a cell to add or remove a buh; hold the mouse and drag to paint several in, or out. Click the time ruler on top of the strip to jump there. Slow it down to check an edge. When it looks right, tell Claude "done".</p>
+<nav>
+<button data-r="0">Run 1 (0:35)</button><button data-r="1">Run 2 (1:33)</button><button data-r="2">Run 3 (2:50)</button>
+<button id="play">Play</button>
+<label>Speed <select id="speed"><option>1</option><option>0.75</option><option>0.5</option></select></label>
+<button id="reset">Reset this run</button>
+<output id="time"></output>
+</nav>
+<div id="stage"><video id="v" muted playsinline preload="auto"></video><canvas id="ov" width="1920" height="1080"></canvas></div>
+<div id="wrap" style="overflow-x:auto;margin-top:8px;border-radius:6px;background:#101718"><canvas id="tl" height="120" style="display:block;cursor:pointer"></canvas></div>
+<audio id="a" preload="auto"></audio>
+</main>
+<script src="js/common/core.js"></script>
+<script>var g;</script>
+<script src="js/dali/buh-onsets.js"></script>
+<script src="js/dali/buh-grid.js"></script>
+<script src="js/dali/buhteeth.js"></script>
+<script>
+// draft 31d: the beat-grid editor. Each run's buhs are a set of 16th-note cells (indices into BUH_GRID, the song's
+// 16th grid from tools/buh_onsets.py); the teeth play the cells' times live. Claude reads window.SYNC_CELLS when Robin
+// says done and rebuilds js/dali/buh-onsets.js from them (buh_onsets.py --slots).
+const RUNS=[{off:35,len:24},{off:93,len:24},{off:170,len:22}],CW=18,RUL=24;
+const a=document.getElementById('a'),v=document.getElementById('v'),ov=document.getElementById('ov'),tl=document.getElementById('tl'),tg=tl.getContext('2d'),wrap=document.getElementById('wrap');
+g=ov.getContext('2d');
+const nearIdx=t=>{let lo=0,hi=BUH_GRID.length-1;while(hi-lo>1){const m=(lo+hi)>>1;if(BUH_GRID[m]<t)lo=m;else hi=m}return t-BUH_GRID[lo]<BUH_GRID[hi]-t?lo:hi};
+const span=r=>[nearIdx(RUNS[r].off),nearIdx(RUNS[r].off+RUNS[r].len)];
+const fresh=()=>[0,1,2].map(r=>{const[i0,i1]=span(r);return [...new Set(BUH_ONSETS.map(nearIdx))].filter(k=>k>=i0&&k<=i1)});
+let cells;try{cells=JSON.parse(localStorage.getItem('rp-buh-cells')||'null')}catch{}
+if(!cells)cells=fresh();let run=-1;
+function apply(){const ons=[...new Set(cells.flat())].sort((x,y)=>x-y).map(k=>BUH_GRID[k]);BUH_RUNS.length=0;
+ for(const o of ons){const r=BUH_RUNS[BUH_RUNS.length-1];if(r&&o-r[r.length-1]<=BUH.runGap)r.push(o);else BUH_RUNS.push([o])}window.SYNC_CELLS=[...new Set(cells.flat())].sort((x,y)=>x-y)}
+const save=()=>{try{localStorage.setItem('rp-buh-cells',JSON.stringify(cells))}catch{};apply()};
+const fmt=t=>Math.floor(t/60)+':'+(t%60).toFixed(2).padStart(5,'0');
+function load(r){run=r;document.querySelectorAll('[data-r]').forEach(b=>b.classList.toggle('on',+b.dataset.r===r));
+ a.src='assets/run'+(r+1)+'.mp3';v.src='assets/run'+(r+1)+'.mp4';a.playbackRate=v.playbackRate=+document.getElementById('speed').value;
+ const[i0,i1]=span(r);tl.width=(i1-i0+1)*CW;wrap.scrollLeft=0}
+document.querySelectorAll('[data-r]').forEach(b=>b.onclick=e=>{e.target.blur();load(+b.dataset.r);toggle(true)});
+const playB=document.getElementById('play');
+function toggle(force){if(run<0)return;if(force||a.paused){a.play();v.play();playB.textContent='Pause'}else{a.pause();v.pause();playB.textContent='Play'}}
+playB.onclick=e=>{e.target.blur();toggle()};
+addEventListener('keydown',e=>{if(e.code==='Space'){e.preventDefault();toggle()}});
+function seek(t){if(run<0)return;const c=Math.max(0,Math.min(RUNS[run].len-.05,t-RUNS[run].off));a.currentTime=c;v.currentTime=c}
+document.getElementById('speed').onchange=e=>{a.playbackRate=v.playbackRate=+e.target.value;e.target.blur()};
+document.getElementById('reset').onclick=e=>{e.target.blur();if(run<0)return;cells[run]=fresh()[run];save()};
+let paint=null;
+const cellAt=e=>{const R=tl.getBoundingClientRect();return{k:span(run)[0]+Math.floor((e.clientX-R.left)/R.width*tl.width/CW),y:(e.clientY-R.top)/R.height*tl.height}};
+tl.addEventListener('pointerdown',e=>{if(run<0)return;const c=cellAt(e);
+ if(c.y<RUL){seek(BUH_GRID[c.k]-.4);return}
+ const on=cells[run].includes(c.k);paint=!on;setCell(c.k);tl.setPointerCapture(e.pointerId)});
+tl.addEventListener('pointermove',e=>{if(paint===null)return;setCell(cellAt(e).k)});
+addEventListener('pointerup',()=>{if(paint!==null){paint=null;save()}});
+function setCell(k){const s=new Set(cells[run]);paint?s.add(k):s.delete(k);cells[run]=[...s].sort((x,y)=>x-y);apply()}
+a.onended=()=>{v.pause();playB.textContent='Play'};
+apply();
+function frame(){requestAnimationFrame(frame);g.setTransform(1,0,0,1,0,0);g.clearRect(0,0,W,H);
+ if(run<0)return;const R=RUNS[run],t=R.off+a.currentTime;
+ if(Math.abs(v.currentTime-a.currentTime)>.04&&v.readyState>1)v.currentTime=a.currentTime;
+ buhTeeth(t);document.getElementById('time').textContent=fmt(t);
+ const[i0,i1]=span(run),Ht=tl.height,on=new Set(cells[run]);tg.fillStyle='#101718';tg.fillRect(0,0,tl.width,Ht);
+ tg.fillStyle='#1f2a2c';tg.fillRect(0,0,tl.width,RUL);
+ for(let k=i0;k<=i1;k++){const x=(k-i0)*CW,p=((k-BUH_REF)%16+16)%16;
+  tg.fillStyle=on.has(k)?'#e5af33':'#26312f';tg.fillRect(x+1,RUL+8,CW-2,Ht-RUL-16);
+  if(p%4===0){tg.fillStyle=p===0?'#e9e2cf':'#7d8a83';tg.fillRect(x,RUL,p===0?3:1,Ht-RUL)}
+  if(p===0){tg.fillStyle='#c9cfc4';tg.font='15px system-ui';tg.fillText(fmt(BUH_GRID[k]).slice(0,-1),x+4,17)}}
+ let ph=(nearIdx(t)-i0)*CW+((t-BUH_GRID[nearIdx(t)])/0.151)*CW;tg.fillStyle='#fff';tg.fillRect(ph,0,3,Ht);
+ if(!a.paused&&(ph<wrap.scrollLeft+40||ph>wrap.scrollLeft+wrap.clientWidth-80))wrap.scrollLeft=ph-120}
+frame();
+</script></html>

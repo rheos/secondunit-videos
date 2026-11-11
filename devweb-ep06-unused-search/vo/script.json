@@ -1,0 +1,43 @@
+{
+ "lines": [
+  [
+   "I",
+   "I gave my AI a smarter search. It kept using the old one."
+  ],
+  [
+   "II",
+   "Here's the setup. My AI has a search tool, and it used to find things by matching keywords. In July I added a smarter search that also matches by meaning."
+  ],
+  [
+   "III",
+   "I didn't want to break anything that already used that tool. So I kept the old search as the default. Ask for nothing special, and you get keywords, same as before."
+  ],
+  [
+   "IV",
+   "That's the careful way to ship a change, and it worked. Nothing broke."
+  ],
+  [
+   "V",
+   "But the AI is one of the things using that tool. It could see the new option, because it's listed right in the tool's description. It just didn't ask for it. In my logs, 36 of 37 searches got the old one."
+  ],
+  [
+   "VI",
+   "And nothing told me. A feature nobody uses doesn't crash, and there's no error message for that."
+  ],
+  [
+   "VII",
+   "So what changed? 53 days after I shipped it, I gave the AI a written rule about when to search. That same day, it started using the smart search. I can't prove the rule did it, but I know which way I'd bet."
+  ],
+  [
+   "VIII",
+   "Here's the tip. An AI doesn't explore your tools. It reads the list and goes with the default. So when you build it something new, either make the new thing the default, or tell it in plain words when to use it. Then check your logs to see what it actually picks. Otherwise you've built a smarter search for an AI that's still using the old one."
+  ]
+ ],
+ "facts": "true-of-a-date.mdx lines 58-62 and 110; see brief.md STORY CHANGE. Not yet fact-traced.",
+ "voice": "1PVLUq5IJEWytBdfHmuI",
+ "tighten": {
+  "stop": 0.4,
+  "comma": 0.28,
+  "fade": 0.03
+ }
+}

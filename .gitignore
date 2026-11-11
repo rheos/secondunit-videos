@@ -10,6 +10,7 @@
 !/README.md
 !/references/
 !/looks/
+!/cleanline/
 !/toolbox/
 !/history/
 !/blender-orb-visualizer/
@@ -31,9 +32,11 @@
 !/bobwiseman-airplane-woodcut/
 !/bobwiseman-giulietta-masina/
 !/bobwiseman-in-her-dream/
+!/bobwiseman-swift-noimage/
 !/bobwiseman-all-the-trees/
 !/bobwiseman-libelous/
 !/bobwiseman-me-and-jimi/
+!/bobwiseman-reform-party/
 !/bobwiseman-show-promo/
 !/bobwiseman-we-got-time/
 !/bobwiseman-wgt-generative/
@@ -50,6 +53,7 @@
 !/devweb-ep01-tool-loop/
 !/devweb-blink-looktest/
 !/devweb-ep01-oner/
+!/devweb-ep06-unused-search/
 !/novadiem-doc-extraction/
 !/novadiem-evalpal/
 !/novadiem-onloan-ledger/
@@ -73,6 +77,7 @@
 !/novadiem-self-hosting/
 !/pnubb-mind-the-sheep-painted/
 !/bobwiseman-travel-agent/
+!/bobwiseman-travel-agent-cl/
 !/bobwiseman-10000-miles/
 
 # Local data at any depth, as folders OR symlinks (a trailing slash only matches folders; that gap let four
@@ -103,3 +108,6 @@
 !/bobwiseman-toon-cards/
 !/indieagent-moss-forest-test/
 !/indieagent-snowbus-test/
+!/bobwiseman-10000-miles-perspective/
+!/bobwiseman-10000-miles-styleboard/
+!/bobwiseman-10000-miles-paperplates/

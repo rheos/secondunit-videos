@@ -1,0 +1,13 @@
+{
+  "note": "Style board for Bob Wiseman's 10,000 Miles: two scenes x three mediums. A prompt is the medium line, then the scene line, then the shared tail. No lyrics in any prompt.",
+  "tail": "Wide 3:2 frame; keep everything important inside the middle 16:9 band. No people. No text, no letters, no logos anywhere; any sign is blank.",
+  "scenes": {
+    "liftoff": "A small red-and-cream toy rocket ship with one round porthole lifts off from a flat rooftop above a small town at the end of the day, a thin curl of smoke below it. Water tanks, chimneys and TV aerials on the neighbouring roofs, a laundry line, a long view over low brick buildings to soft hills and a wide open sky with the first stars. The rocket is small, in the upper third.",
+    "town": "A restless small-town main street at night, seen from the kerb: shuttered shops, a laundromat with its lights still on, one lit upstairs window with a plant on the sill, a stray cat sitting on a step, wet pavement holding the reflections, power lines overhead, and high in the dark sky one tiny warm point of light, a rocket ship."
+  },
+  "mediums": {
+    "paper": {"name": "Painted paper layers", "line": "cut and torn painted papers, layered like a paper theatre", "prompt": "Made entirely of cut and torn hand-painted papers layered in depth like a paper theatre: every shape is its own sheet of painted paper with visible brush texture and paper fibre, crisp scissor edges on buildings and soft torn edges on hills and clouds, each layer casting a soft shadow on the one behind, lit windows glowing as if lit from behind through thin paper. Not a photograph, not a 3D render."},
+    "sketchbook": {"name": "Tour sketchbook", "line": "felt-tip line and watercolour wash in a travel sketchbook", "prompt": "Drawn in a musician's travel sketchbook: loose black felt-tip line with wobbly, confident strokes, quick transparent watercolour washes that run past the lines, white paper left showing, a pencil guideline here and there, the paper grain visible across the page. Not a photograph, not a digital painting."},
+    "tin": {"name": "Tin toy", "line": "lithographed colour on pressed tin, like a wind-up toy", "prompt": "Printed on pressed tin like a 1950s wind-up toy: bold flat lithographed colours on metal, the print slightly off register, rounded embossed edges, small dents, a soft metallic sheen and scuffs where the paint has worn, every building and tree simplified into a toy shape. Not a photograph of a real place."}
+  }
+}

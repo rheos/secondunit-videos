@@ -73,7 +73,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          sparse-checkout: tools/cloud-render
+          # cleanline films load the shared engine from ../cleanline/ (beside pkg/), as committed on this ref
+          sparse-checkout: |
+            tools/cloud-render
+            cleanline
           persist-credentials: false
       - uses: actions/setup-node@v4
         with: { node-version-file: .nvmrc }
@@ -88,6 +91,8 @@ jobs:
       - name: Install
         working-directory: pkg
         run: |
+          # some runners sat 10-38 min in apt (2026-11-05, 3-4 of 20 slices on two runs): short timeouts, retries, IPv4
+          printf 'Acquire::http::Timeout "20";\nAcquire::https::Timeout "20";\nAcquire::Retries "5";\nAcquire::ForceIPv4 "true";\n' | sudo tee /etc/apt/apt.conf.d/99cr-timeouts > /dev/null
           sudo apt-get -qq update && sudo apt-get -qq install -y --no-install-recommends ffmpeg > /dev/null
           # Mac Chrome draws Courier New, Arial, Georgia and the other Microsoft core fonts from the copies Apple
           # ships. The runner has none, and fontconfig quietly swaps in a look-alike, so install the same families.

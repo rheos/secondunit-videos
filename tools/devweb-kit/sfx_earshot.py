@@ -36,6 +36,22 @@ KIT = {
     "stamp": ("pro_impact/deep", -12, [None]),
     "sting": ("logo_sting/soft_bloom", -11, [None]),
 }
+# Which kinds play their take as long as the cue's d says (the bank sound must take a duration: "dur param" or
+# "dur shape" in `earshot sfx list`; "dur trim" only shortens).
+STRETCH = {"whoosh", "riser", "slide", "draw"}
+# Optional per-episode kit: PROJECT/sfx-kit.json {"kind": ["bank/id", dB, [seeds or null], "d"?]} merged over KIT, for
+# kinds the table has no take for (or a take this episode wants different). A 4th item "d" plays the cue's d; a number
+# is a fixed length in seconds; nothing keeps the bank's own length. No file, no change: every other episode's mix stays.
+FIXED = {}  # kind -> fixed take length in seconds
+if (HERE / "sfx-kit.json").exists():
+    for k, row in json.loads((HERE / "sfx-kit.json").read_text()).items():
+        KIT[k] = tuple(row[:3])
+        STRETCH.discard(k)
+        how = row[3] if len(row) > 3 else None
+        if how == "d": STRETCH.add(k)
+        elif how is not None: FIXED[k] = float(how)
+# Optional per-episode gain table: PROJECT/sfx-gains.json {"kind": dB offset, "kind": null mutes it}. No file, no change.
+GAINS = json.loads((HERE / "sfx-gains.json").read_text()) if (HERE / "sfx-gains.json").exists() else {}
 cache = HERE / "sfx"
 cache.mkdir(exist_ok=True)
 
@@ -67,8 +83,11 @@ for c in sorted(cues, key=lambda c: c["t"]):
     if (k, frame) in seen: continue
     seen.add((k, frame))
     sid, db, seeds = KIT[k]
+    if k in GAINS:
+        if GAINS[k] is None: continue
+        db += GAINS[k]
     i = count.get(k, 0); count[k] = i + 1
-    dur = c.get("d") if k in ("whoosh", "riser", "slide", "draw") else None
+    dur = c.get("d") if k in STRETCH else FIXED.get(k)
     x = take(sid, seeds[i % len(seeds)], dur) * 10 ** (db / 20)
     a = int(frame / FPS * SR)
     b = min(n, a + len(x))

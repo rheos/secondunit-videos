@@ -1,0 +1,19 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>10,000 Miles paper</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>html,body{margin:0;height:100%;background:#111;display:flex;align-items:center;justify-content:center;overflow:hidden}canvas{width:min(100vw,177.78vh);height:auto;display:block;cursor:pointer}</style>
+</head><body><canvas id="c"></canvas>
+<script src="film.config.js"></script>
+<script src="../cleanline/js/clock.js"></script>
+<script src="clock.js"></script>
+<script src="../cleanline/js/core.js"></script>
+<script src="../cleanline/js/kit.js"></script>
+<script src="../cleanline/js/look.js"></script>
+<!-- the film's own look (plates need no line or grain), the painted layers (built by build_plates.py, gitignored), the film -->
+<script src="js/paperstage.js"></script>
+<script src="work/plates.js"></script>
+<script src="js/film.js"></script>
+<script src="../cleanline/js/frame.js"></script>
+<!-- after the driver: hold renders until every plate has decoded -->
+<script src="js/ready.js"></script>
+</body></html>

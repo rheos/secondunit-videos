@@ -1,0 +1,51 @@
+slug: swift-line
+title: Night-sky line film
+note: >-
+  One unbroken pull-back from a lit window to the whole Earth, drawn in thin glowing lines on navy, with an odometer
+  running, big words slamming in on the chorus and every small move cued to the song.
+used: 10,000 Miles, Bob Wiseman, test
+cost: free
+group: code
+order: 650
+clip: null
+tall: false
+status: test
+engine: swift and metal
+project: bobwiseman-swift-noimage
+code:
+  path: bobwiseman-swift-noimage/scene/miles.rb
+  flag: null
+  page: null
+  note: >-
+    Ruby writes scene JSON, makevoid's native renderer draws it (`toolbox/swift-noimage-skill.yaml`), and
+    scene/finish_cues.rb puts sound and VFX on the scene's own events. Real time at 1080p on the Intel Mac. Render at
+    scene size and scale down, because the renderer crops. Lyric words come from gitignored work/cues.json.
+rules:
+  - One continuous camera; a scale change carries the story and strokes stay a fixed width on screen
+  - Thin glowing lines on navy, one gold light that means the person, one hot accent
+  - A live readout runs throughout, and it only tells the truth the song just told
+  - Small labelled objects act out the words; big poster words only on the chorus
+  - The rocket goes behind the words, and every word fits the frame
+  - Sung lines reveal word by word in one fixed place, and a whole word always appears
+  - The opening image returns as the payoff
+  - Sound and VFX come from events the scene reports, never hand-placed
+palette:
+  - "#0A0E24"
+  - "#0D1636"
+  - "#F2E8D5"
+  - "#FFC531"
+  - "#FF5A1F"
+  - "#7FD6FF"
+reference: >-
+  Our own composition on makevoid's MIT renderer. Its examples were not watched before this was built.
+proof:
+  renders:
+    - bobwiseman-swift-noimage/out/swift-noimage_test01_720p.mp4
+  pr:
+    - rheos/secondunit-videos#438
+  youtube: []
+verdict: "Robin, 2026-11-06, on test 01: \"that was amazing\". He expects it to suit documentary and explainer infographics too."
+related:
+  - chart-world
+  - rescue-machine
+  - neon

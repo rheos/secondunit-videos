@@ -6,7 +6,7 @@ import json, pathlib, subprocess
 from faster_whisper import WhisperModel
 import sys
 ROOT = pathlib.Path(sys.argv[1]).resolve(); HERE = ROOT / "vo"  # python3 align.py <project-folder>
-LEAD, TAIL = 0.6, 4.4
+LEAD, TAIL = 0.12, 1.2  # look bible: voice in by 0.12 s, film ends within 1.5 s of the last word
 take = json.loads((HERE / "take.json").read_text())
 END = round(LEAD + take["seconds"] + TAIL, 3)
 m = WhisperModel("small.en", device="cpu", compute_type="int8")

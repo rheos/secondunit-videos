@@ -1,0 +1,7 @@
+{
+  "name": "bobwiseman-reform-party",
+  "private": true,
+  "type": "module",
+  "description": "Bob Wiseman, The Reform Party at Burning Man: look tests drawn in code, one page per look under looks/.",
+  "devDependencies": { "playwright": "^1.55.0" }
+}

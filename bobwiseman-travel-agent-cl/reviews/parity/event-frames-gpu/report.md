@@ -1,0 +1,135 @@
+# old draft 21 vs cleanline: 127 frames, 123 identical, 4 differ
+
+- old draft 21: `../../../../../../tmp/claude-501/-Users-robin-Code-novadiem-novadiem-com/6a8ccdc5-7f4a-4256-94d3-a5c6caa5da55/scratchpad/old/bobwiseman-travel-agent/looks/film.html`
+- cleanline: `film.html`
+- mean = mean absolute difference per channel (0-255), max = largest channel difference, px = share of pixels that differ
+
+| frame | time (s) | event | result |
+|---:|---:|---|---|
+| 0 | 0.000 | cut a_room | identical |
+| 97 | 4.042 | cut a_trick | identical |
+| 182 | 7.583 | cut a_cloudWalk | identical |
+| 260 | 10.833 | cut a_puddle | identical |
+| 326 | 13.583 | cut shop | identical |
+| 423 | 17.625 | cut a_posterCU | identical |
+| 542 | 22.583 | cut a_doorBell | identical |
+| 607 | 25.292 | cut sPlan | identical |
+| 663 | 27.625 | cut a_interior | identical |
+| 747 | 31.125 | cut a_desk + line start | identical |
+| 841 | 35.042 | cut a_newspaper | identical |
+| 889 | 37.042 | cut a_sNews | identical |
+| 955 | 39.792 | cut a_rolodex | identical |
+| 1018 | 42.417 | cut sBoard | identical |
+| 1073 | 44.708 | cut globeSpin + line start | identical |
+| 1130 | 47.083 | cut a_sGlobe | identical |
+| 1217 | 50.708 | cut a_pin | identical |
+| 1293 | 53.875 | cut a_sPin | identical |
+| 1416 | 59.000 | cut a_beach | identical |
+| 1417 | 59.042 | line start | identical |
+| 1481 | 61.708 | cut a_sunHorn | identical |
+| 1591 | 66.292 | cut a_sSound | identical |
+| 1649 | 68.708 | cut a_shell | identical |
+| 1768 | 73.667 | line start | identical |
+| 1769 | 73.708 | cut a_noCarVillage | identical |
+| 1880 | 78.333 | cut a_sNoCar | identical |
+| 1924 | 80.167 | cut a_carMoon | identical |
+| 2032 | 84.667 | cut a_sFootpath | identical |
+| 2180 | 90.833 | cut a_payphone + line start | identical |
+| 2249 | 93.708 | cut a_sWire | identical |
+| 2292 | 95.500 | cut a_poleDesk | identical |
+| 2400 | 100.000 | cut a_sHold | identical |
+| 2501 | 104.208 | cut a_stampWorld + line start | identical |
+| 2612 | 108.833 | cut mvu_dialFace | identical |
+| 2639 | 109.958 | cut a_sTicket | identical |
+| 2694 | 112.250 | cut a_rushRoad | identical |
+| 2799 | 116.625 | cut tinyPlanet | identical |
+| 2800 | 116.667 | line start | identical |
+| 2863 | 119.292 | cut b_sOuroboros | identical |
+| 2928 | 122.000 | cut b_groove | identical |
+| 3032 | 126.333 | cut b_fiddle | identical |
+| 3106 | 129.417 | cut b_sGroove | identical |
+| 3148 | 131.167 | cut b_luggage + line start | identical |
+| 3269 | 136.208 | cut b_sLoad | identical |
+| 3336 | 139.000 | line start | identical |
+| 3340 | 139.167 | cut puppetHand | identical |
+| 3387 | 141.125 | cut b_sMarionette | identical |
+| 3510 | 146.250 | cut b_tied + line start | identical |
+| 3579 | 149.125 | cut sCarrot | identical |
+| 3628 | 151.167 | cut b_balloons | identical |
+| 3724 | 155.167 | cut muleCircle | identical |
+| 3778 | 157.417 | cut b_grab | identical |
+| 3844 | 160.167 | cut b_whisper + line start | mean 0.000, max 1, 0.00% px |
+| 3906 | 162.750 | cut b_diner | identical |
+| 3967 | 165.292 | cut sSetting | identical |
+| 4007 | 166.958 | cut b_forkRoad | identical |
+| 4092 | 170.500 | cut b_peas | identical |
+| 4190 | 174.583 | cut b_order + line start | identical |
+| 4300 | 179.167 | cut b_teeth | identical |
+| 4341 | 180.875 | cut b_sBottle | identical |
+| 4366 | 181.917 | cut b_corkMoon | identical |
+| 4455 | 185.625 | cut b_corkCatch | identical |
+| 4529 | 188.708 | cut c_dinerLift + line start | identical |
+| 4683 | 195.125 | cut c_shadowStay | identical |
+| 4786 | 199.417 | cut sWard | identical |
+| 4881 | 203.375 | cut c_profile + line start | identical |
+| 4955 | 206.458 | cut sHead | identical |
+| 5023 | 209.292 | cut c_pills | mean 0.000, max 1, 0.00% px |
+| 5073 | 211.375 | cut c_sDose | identical |
+| 5129 | 213.708 | cut c_windowRoom | identical |
+| 5293 | 220.542 | cut c_corridorLoop + line start | mean 0.000, max 1, 0.00% px |
+| 5362 | 223.417 | cut c_sQueue | identical |
+| 5412 | 225.500 | cut c_holdSpiral | identical |
+| 5476 | 228.167 | cut c_bellFar | identical |
+| 5544 | 231.000 | cut sPassport | identical |
+| 5618 | 234.083 | cut c_holdSky + line start | identical |
+| 5744 | 239.333 | cut c_lifebuoy | identical |
+| 5816 | 242.333 | cut c_stairs | identical |
+| 5878 | 244.917 | cut sPlaneW | identical |
+| 5936 | 247.333 | cut c_seatsStretch + line start | identical |
+| 6001 | 250.042 | cut sProjector | identical |
+| 6049 | 252.042 | cut mvu_cinema | identical |
+| 6161 | 256.708 | cut c_reelSpill | identical |
+| 6304 | 262.667 | cut f_heroFlat + line start | identical |
+| 6401 | 266.708 | cut sFilm | identical |
+| 6451 | 268.792 | cut c_crookReal + line start | identical |
+| 6624 | 276.000 | cut d_headRooms + line start | identical |
+| 6703 | 279.292 | cut d_sHead | identical |
+| 6729 | 280.375 | cut seesaw + line start | identical |
+| 6826 | 284.417 | cut sSeesaw | identical |
+| 6872 | 286.333 | cut d_heartGiant | identical |
+| 6970 | 290.417 | cut d_mirror | identical |
+| 7050 | 293.750 | cut mvu_app + line start | identical |
+| 7128 | 297.000 | cut d_appTower | identical |
+| 7203 | 300.125 | cut d_sApp | identical |
+| 7263 | 302.625 | cut mvu_sChart | identical |
+| 7361 | 306.708 | cut d_bigButton + line start | identical |
+| 7442 | 310.083 | cut phoneApp | identical |
+| 7527 | 313.625 | cut d_ticketPrint | identical |
+| 7584 | 316.000 | cut d_sDose | identical |
+| 7669 | 319.542 | cut d_casePlane + line start | identical |
+| 7747 | 322.792 | cut d_coatMap | identical |
+| 7812 | 325.500 | cut treadmill | identical |
+| 7911 | 329.625 | cut d_dolls | mean 0.000, max 1, 0.00% px |
+| 8027 | 334.458 | cut worldCage + line start | identical |
+| 8083 | 336.792 | cut d_crate | identical |
+| 8156 | 339.833 | cut d_ribCage | identical |
+| 8256 | 344.000 | cut d_sRib | identical |
+| 8319 | 346.625 | cut d_staveCage | identical |
+| 8385 | 349.375 | cut d_wingFrame + line start | identical |
+| 8441 | 351.708 | cut d_coatWings | identical |
+| 8511 | 354.625 | cut d_birdSwap | identical |
+| 8602 | 358.417 | cut d_featherFall | identical |
+| 8720 | 363.333 | cut d_sFeather | identical |
+| 8772 | 365.500 | cut e_appInside + line start | identical |
+| 8839 | 368.292 | cut e_sPhoneCage | identical |
+| 8926 | 371.917 | cut e_fromInside | identical |
+| 8964 | 373.500 | cut mvu_droste | identical |
+| 9104 | 379.333 | line start | identical |
+| 9180 | 382.500 | cut e_sTyping | identical |
+| 9245 | 385.208 | cut e_answerHome | identical |
+| 9309 | 387.875 | cut e_freeze | identical |
+| 9410 | 392.083 | cut e_globeBlow + line start | identical |
+| 9492 | 395.500 | cut sSnow | identical |
+| 9524 | 396.833 | cut e_mindSnow | identical |
+| 9571 | 398.792 | cut snowSettle | identical |
+| 9600 | 400.000 | cut shopClosed | identical |

@@ -1,0 +1,30 @@
+slug: swift-noimage-skill
+name: Motion graphics music video noimage
+kind: toolkit
+status: in-use
+does: Draws a whole music video from Ruby-written scene JSON with a native Swift and Metal renderer, then adds procedural sound effects and VFX cues from the scene's own events.
+keywords:
+- swift
+- metal
+- shader
+- vector
+- kinetic-type
+- line-art
+- neon
+- shockwave
+- anamorphic
+- procedural-sfx
+fits:
+- code-drawn music videos
+- fast look tests
+- documentary and explainer infographics, not yet tried
+deterministic: 'yes'
+how: 'Clone the repo, run its scripts/mv.rb with Homebrew Ruby (`/usr/local/opt/ruby/bin`). Skip ImageMagick by tiling sheets with ffmpeg. Run Demucs with our pinned recipe, not media:stems_local. Example: `bobwiseman-swift-noimage/`.'
+cost: free
+url: https://github.com/makevoid/motion-graphics-music-video-skill-noimage
+detail: 860 frames at 1080p in 36 s at nice 15 with JOBS=5 on the Intel Mac. The renderer crops to --width and --height instead of scaling, so render at scene size and scale down. Output comes out 1 to 2 frames short of what you ask for, and with JOBS above 1 vfx:render can then fail with "Invalid VFX frame interval"; use JOBS=1 for that step, about 10 s.
+source: x.com/makevoid/status/2118814727346262292
+related:
+- motion-graphics-toolkit
+- code-painted
+added: '2026-11-06'

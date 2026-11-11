@@ -1,0 +1,133 @@
+# The controlled tag vocabulary for the look catalogue (ADR-0012, look_facet).
+#
+# A look's `tags:` (in looks/<slug>.yaml) may use only the facets and values below. The org DB sync
+# (rheos/indieagent-org ops/looks/sync-from-yaml.py) copies this file into look_facet and each look's tags into
+# look_tag, and refuses the whole run if any look uses a value that is not here. QUIVER's Tags column and
+# toolbox keywords borrow the same words, so one search finds looks, studies and tools together.
+#
+# This file sits in a subfolder on purpose: every *.yaml directly in looks/ is read as a look, by the org sync
+# and by novadiem.com's sync-looks.
+#
+# Rules for values: lowercase letters, digits, spaces and hyphens, at most 60 characters (the DB checks
+# ^[a-z0-9][a-z0-9 _-]{0,59}$, so no dots: three.js is `threejs`). Each value has a one-line meaning so two
+# people tag the same look the same way. Add a value only when two looks would use it (or it is clearly
+# coming), and propose it in the PR rather than slipping it in.
+#
+# Tag what the look IS, not what one film happened to put in it. Most looks take one or two values per
+# facet; era and mood can be left out when nothing fits.
+
+facets:
+  medium:
+    meaning: What the picture looks like it was made with. The craft a viewer would name.
+    values:
+      ink: Drawn ink line (pen, brush or felt marker) carries the image.
+      engraving: Engraved, etched or scratched line; tone comes from line width and hatching.
+      print: Printed from plates or blocks (riso, litho, halftone, woodcut, stencil); the press shows.
+      paint: Brush paint (oil, gouache, poster paint), including the brushstroke renderer.
+      watercolour: Transparent washes that pool, bleed and let paper show through.
+      dry media: Charcoal, crayon or coloured pencil, with paper tooth where it skips.
+      cut paper: Cut or torn paper and card pieces with edges and shadows.
+      collage: Pieces taken from photos, prints or other found images and combined.
+      cartoon: Cel or character animation drawing (outlined figures, acting faces).
+      flat vector: Clean flat shapes with no hand texture, drawn as graphics.
+      pixel: "Pixel art: a small grid of hard pixels, scaled up."
+      3d: Rendered 3D space or bodies, whatever the shading.
+      clay: Sculpted clay or plasticine, or shaded to read as it.
+      textile: Felt, wool, thread or stitches.
+      light: "Made of emitted light: neon tubes, phosphor beams, glowing lines on dark."
+      photo: Photographs or photo-real imagery used as photos (flash snapshots, press photos).
+      live action: The artist's real camera footage is on screen.
+      diagram: Charts, maps, schematics and plates that carry real information.
+      type: Words are the main picture (kinetic type, lettering that acts).
+
+  texture:
+    meaning: The surface finish laid over everything.
+    values:
+      paper grain: Visible paper or card stock under the image (cream stock, tooth, fibres).
+      halftone: Dot screens or Ben-Day dots.
+      misregister: Colour plates or fills slip off the line.
+      hatching: Tone built from parallel or crossed lines.
+      dither: Ordered dither or stepped pixel shading.
+      brushstroke: Individual brush marks are visible and move.
+      film grain: "Film stock damage: grain, gate weave, scratches, flicker, dust."
+      glow: Bloom, light layers and haze around bright things.
+      crt: "A TV or tube screen: scanlines, phosphor, curved glass."
+      clean: No grain, wobble or paper; crisp edges on flat colour.
+
+  era:
+    meaning: The period the look's visual language comes from. Leave out when it is timeless.
+    values:
+      pre-1900: Before 1900 (engravings, emblem books, samplers, Victorian prints, medieval glass).
+      1900-1945: Early 20th century (Art Nouveau, chromolithograph, 1930s cartoons, 1940s offices).
+      1945-1969: Mid-century (1950s posters and magazines, 60s psychedelic print, vintage board games).
+      1970-1999: Late 20th century (70s cel and TV, 80s snapshots, early desktop and 16-bit games).
+      contemporary: Today's motion design and 3D.
+
+  motion:
+    meaning: How things move. Several can apply.
+    values:
+      on twos: Stepped animation at 12 drawings a second or fewer, held frames.
+      stop motion: Reads as physical objects moved frame by frame.
+      puppet: Jointed or hinged pieces that move at pivots and swap drawings.
+      boil: Lines or edges redraw and wobble from drawing to drawing.
+      moving camera: One continuous camera travels through a world or set, few or no cuts.
+      draw-on: Lines, stitches or pieces build the picture in front of the viewer.
+      on the beat: Hits, pops and switches are keyed to the song's beat grid.
+      lip-sync: Mouths move with a real voice.
+      morph: One image or world turns into another inside a shot.
+      loop: The last frame runs into the first, so it can repeat forever.
+
+  mood:
+    meaning: How it feels to watch. One or two.
+    values:
+      playful: Bouncy, comic, light.
+      deadpan: Dry humour, bureaucratic or satirical, straight-faced.
+      dreamy: Soft, drifting, gently surreal.
+      dark: Night, ritual, ominous or heavy.
+      nostalgic: Warm period feeling, worn and familiar.
+      psychedelic: Saturated, swirling, mind-bending.
+      ornate: Decorative, dense with ornament and craft.
+      technical: Precise, labelled, informational and calm.
+
+  colour:
+    meaning: The palette's shape, not its exact hexes (those are in palette).
+    values:
+      monochrome: One ink or one hue in tones, with no accent.
+      one accent: A neutral or limited world with one colour reserved for what matters.
+      saturated: Full-strength primaries or print inks.
+      pastel: Light, soft tints.
+      muted: Desaturated, greyed or washed-out colour.
+      sepia: Warm brown and amber, like old film or lamplight.
+      dark ground: Light lines or colour on navy or black.
+      limited palette: A small fixed set of inks or papers (about four), several of them strong.
+
+  engine:
+    meaning: What renders it. Tag every engine a look really needs.
+    values:
+      canvas2d: Drawn frame by frame in the browser's 2D canvas.
+      webgl: A WebGL shader pass or scene (CRT, engraving lines, clay).
+      hyperframes: A HyperFrames composition.
+      threejs: three.js 3D in the browser.
+      blender: Rendered in Blender.
+      brushstroke: Code frames repainted by the brushstroke renderer.
+      swift-metal: Swift and Metal on the Mac, real time.
+      p5: Composited or drawn in p5.js.
+      colorfigures: The Colorfigures SVG engine (inked isometric objects).
+      python: A Python script draws the frames (OpenCV, PIL).
+      gpt-image: GPT Image stills or plates (paid).
+      midjourney: Midjourney stills or plates.
+      kling: Kling video generation (paid).
+      seedance: Seedance video generation (paid), with or without reference images.
+      minimax-h3: MiniMax H3 lip-sync video (paid).
+      generated: Paid generation where the model is not recorded.
+      live-action: The artist's own footage, cut and graded.
+
+  use:
+    meaning: What the look is good for, not only what it was first made for.
+    values:
+      music video: A full song's video.
+      lyric video: The sung words are part of the picture.
+      explainer: Explains an idea, product or process, usually with narration.
+      infographic: Shows real data, dates or places (tours, charts, maps).
+      canvas loop: A short seamless loop (Spotify Canvas, a living cover).
+      artist footage: Works with or on an artist's own footage.
