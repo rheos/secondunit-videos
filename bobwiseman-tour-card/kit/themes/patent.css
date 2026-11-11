@@ -1,0 +1,32 @@
+/* patent theme: an Edison-era patent office. Cyanotype sheets (pale line on Prussian blue) for the figures,
+   and a cream exhibition broadsheet (ink and oxblood, after recallatron.com) as the alternate field for title
+   cards. IM Fell English display, IM Fell English SC labels, Special Elite typewriter for typed captions; all
+   from Google Fonts on the root page. First used by novadiem-recallatron draft 2. */
+:root {
+  --bg: #0c3254;
+  --bg-raised: #113c63;
+  --line: #b7d7f2;
+  --line-strong: #edf5fc;
+  --ink: #f3f7fb;
+  --ink-dim: #b9cfe3;
+  --ink-faint: #89a7c4;
+  --accent: #f4b24e;
+
+  --field: #efe6cf;
+  --line-field: #3a2c1c;
+  --ink-field: #211a12;
+  --accent-field: #7c211a;
+
+  --grid: #b7d7f2;
+  --grid-opacity: 0.08;
+  --grain-rgb: 0.78 0.88 1;
+  --grain-alpha: 0.16;
+
+  --font-display: "IM Fell English", serif;
+  --display-weight: 400;
+  --display-tracking: 0;
+  --font-label: "IM Fell English SC", serif;
+  --label-size: 26px;
+  --label-tracking: 0.12em;
+  --font-mono: "Special Elite", monospace;
+}

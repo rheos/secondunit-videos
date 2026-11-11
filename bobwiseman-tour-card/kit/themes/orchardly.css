@@ -1,0 +1,31 @@
+/* orchardly theme: orchardly.app's brand (rheos/orchardly-web DESIGN.md). Navy ink and canopy green line work
+   on the brand's pale day surface; the alternate field is the brand navy, for the evening plate. Fruit
+   orange is the accent on navy; on pale it darkens to #c2410c so a display phrase still reads (4.6:1). */
+:root {
+  --bg: #eef3e8;
+  --bg-raised: #e1e9d8;
+  --line: #229438;
+  --line-strong: #1d7a31;
+  --ink: #02122e;
+  --ink-dim: #4b5a6b;
+  --ink-faint: #8a9a88;
+  --accent: #c2410c;
+
+  --field: #02122e;
+  --line-field: #6aad4a;
+  --ink-field: #f4f7ef;
+  --accent-field: #f2871f;
+
+  --grid: #02122e;
+  --grid-opacity: 0.05;
+  --grain-rgb: 0.16 0.26 0.14;
+  --grain-alpha: 0.3;
+
+  --font-display: "Bricolage Grotesque", sans-serif;
+  --display-weight: 700;
+  --display-tracking: -0.02em;
+  --font-label: "Bricolage Grotesque", sans-serif;
+  --label-size: 24px;
+  --label-tracking: 0.2em;
+  --font-mono: "IBM Plex Mono", monospace;
+}
