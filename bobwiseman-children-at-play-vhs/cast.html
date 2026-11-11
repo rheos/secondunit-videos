@@ -1,0 +1,53 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Children at Play VHS: cast line-up</title>
+<style>html,body{margin:0;background:#000}canvas{display:block}</style></head>
+<body><canvas id="c" width="1920" height="1080"></canvas>
+<script src="js/cast.js"></script>
+<script src="js/backlight.js"></script>
+<script>
+// The cast line-up at full size, on the film's own back-lit sky, in the poses the shots use.
+const cv = document.getElementById('c'), g = cv.getContext('2d');
+const W = cv.width, H = cv.height;
+const { KIDS, drawKid, poses: P } = CAST;
+const SIL = '#2a1e22';
+function draw() {
+  const sky = g.createLinearGradient(0, 0, 0, H);
+  sky.addColorStop(0, '#9db8d4'); sky.addColorStop(0.42, '#f3d7a2'); sky.addColorStop(0.62, '#fbe7bf'); sky.addColorStop(0.63, '#c9b25e'); sky.addColorStop(1, '#5e7430');
+  g.fillStyle = sky; g.fillRect(0, 0, W, H);
+  const sun = g.createRadialGradient(W * 0.5, H * 0.6, 10, W * 0.5, H * 0.6, 700);
+  sun.addColorStop(0, 'rgba(255,252,236,1)'); sun.addColorStop(0.15, 'rgba(255,236,190,.65)'); sun.addColorStop(1, 'rgba(255,220,160,0)');
+  g.fillStyle = sun; g.fillRect(0, 0, W, H);
+  const layer = BACKLIGHT.scratch('layer', W, H), lg = layer.getContext('2d');
+  lg.clearRect(0, 0, W, H);
+  const row1 = 500, row2 = 1010, h = 330;
+  const items = [
+    ['swing', P.swingSit(1, 1, -14), 130, row1 - 90, 'swing, legs out'],
+    ['swing', P.swingSit(0, 1, 10), 380, row1 - 90, 'swing, tucked'],
+    ['slide', P.climb(0.25, 1), 620, row1, 'climb'],
+    ['slide', P.slideSit(28, 1, 1), 860, row1 - 80, 'slide, arms up'],
+    ['tagA', P.run(0.1, 1), 1110, row1, 'run'],
+    ['tagB', P.run(0.62, 1), 1370, row1, 'chase'],
+    ['bars', P.hang(0.3, 0), 1630, row1 - 300, 'monkey bars'],
+    ['sand', P.dig(0.5, -1), 150, row2, 'dig'],
+    ['hider', P.peek(1, 1), 430, row2, 'peek'],
+    ['hider', P.run(0.35, -1), 720, row2, 'runs to camera'],
+    ['hider', P.wave(0.25, 0, 0.4), 1000, row2, 'wave'],
+    ['tagB', P.stand(0), 1260, row2, 'stand, front'],
+    ['slide', P.ledgeSit(0.8, 1), 1500, row2 - 70, 'ledge, kicking'],
+    ['swing', P.stand(-1), 1760, row2, 'stand, profile'],
+  ];
+  for (const [k, pose, x, y] of items) drawKid(lg, KIDS[k], pose, x, y, h, SIL);
+  // the props they act on, in the same silhouette colour
+  lg.fillStyle = lg.strokeStyle = SIL; lg.lineWidth = 6;
+  lg.beginPath(); lg.moveTo(130, row1 - 400); lg.lineTo(130, row1 - 88); lg.moveTo(380, row1 - 400); lg.lineTo(380, row1 - 88); lg.stroke();
+  lg.fillRect(100, row1 - 92, 70, 9); lg.fillRect(350, row1 - 92, 70, 9);
+  lg.lineWidth = 9; lg.beginPath(); lg.moveTo(1560, row1 - 300); lg.lineTo(1760, row1 - 300); lg.stroke();
+  lg.lineWidth = 12; lg.beginPath(); lg.moveTo(790, row1 - 120); lg.lineTo(990, row1 - 10); lg.stroke();
+  BACKLIGHT.composite(g, layer, { rim: '#ffd68c', glow: 'rgba(255,196,120,.9)', glowBlur: 14, rimW: 3, sunDir: [0, -1] });
+  g.font = '600 17px Helvetica, Arial'; g.fillStyle = 'rgba(30,20,20,.75)'; g.textAlign = 'center';
+  for (const [k, , x, y, label] of items) g.fillText(KIDS[k].name + ': ' + label, x, (y < row1 + 10 ? row1 : row2) + 42 - (k === 'bars' ? 0 : 0));
+}
+draw();
+window.__ready = Promise.resolve();
+window.__frameJPEG = (t, q = 0.92) => { draw(); return cv.toDataURL('image/jpeg', q); };
+</script></body></html>
