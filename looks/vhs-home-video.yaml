@@ -8,7 +8,7 @@ used: Children at Play, Bob Wiseman (test)
 cost: free
 group: code
 order: 515
-clip: null
+clip: vhs-home-video.mp4
 tall: false
 tags:
   medium: [flat vector]
@@ -63,9 +63,14 @@ reference: Family camcorder tapes of the late 1980s and early 1990s, played on a
 proof:
   renders:
     - bobwiseman-children-at-play-vhs/out/children-at-play_vhs-medium_f0-f948_24fps_720p.mp4
+    - bobwiseman-children-at-play-vhs/out/children-at-play_vhs-mild_f0-f948_24fps_720p.mp4
+    - bobwiseman-children-at-play-vhs/out/children-at-play_vhs-clean_f0-f948_24fps_720p.mp4
   pr:
     - rheos/secondunit-videos#496
-verdict: null
+    - rheos/secondunit-videos#497
+verdict: >-
+  Robin, 2026-11-11, picked the Medium VHS tape strength over Mild and Clean VHS for the style menu. Look test
+  only; not shown to Bob.
 related:
   - newsdesk
   - silhouette
