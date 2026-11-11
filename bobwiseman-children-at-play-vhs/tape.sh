@@ -10,11 +10,10 @@ cd "${0:A:h}"
 T0=0; T1=39.5
 SONG=_in/children-at-play.mp3
 PRESETS=/Applications/NTSCRT.app/Contents/Resources/presets
-ML=../tools/motion-lab
 slugof() { echo "${1:l}" | sed 's/ vhs$//; s/ /-/g'; }
 case "$1" in
   render)
-    nice -n 15 node $ML/render.mjs home.html $T0 $T1 work/home.mp4 --width 960 --height 720 ;;
+    nice -n 15 node tools/render.mjs home.html $T0 $T1 work/home.mp4 --width 960 --height 720 --workers 2 ;;
   tape)
     p="$2"; s=$(slugof "$p")
     python3 -I -c "import json,sys;print(json.dumps(json.load(open(sys.argv[1]))['ntsc']['settings']))" "$PRESETS/$p.json" > work/$s.ntsc.json
@@ -24,7 +23,7 @@ case "$1" in
     echo "tape_$s: $(ls work/tape_$s | wc -l) frames" ;;
   tv)
     s="$2"; h="${3:-720}"
-    nice -n 15 node $ML/render.mjs "tv.html?preset=$s" $T0 $T1 work/tv_$s.mp4 --width 1920 --height 1080 --workers 3
+    nice -n 15 node tools/render.mjs "tv.html?preset=$s" $T0 $T1 work/tv_$s.mp4 --workers 2
     mkdir -p out
     ffmpeg -v error -y -i work/tv_$s.mp4 -ss $T0 -t $((T1 - T0)) -i $SONG -map 0:v -map 1:a \
       -vf "scale=-2:$h:flags=lanczos" -c:v libx264 -crf 19 -maxrate 6M -bufsize 12M -preset medium -pix_fmt yuv420p \

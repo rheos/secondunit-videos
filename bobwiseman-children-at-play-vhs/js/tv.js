@@ -92,7 +92,7 @@
   async function draw(t) {
     const s = await buildSignal(t);
     const f = Math.round(t * FPS);
-    crt.render(sig, { frame: f, snow: s.snow, jit: s.jit, chroma: 1.0, raster: [0.965, 0.965], bright: 1.06, dot: 0, over: 1.0 });
+    crt.render(sig, { frame: f, snow: s.snow, jit: s.jit, chroma: 1.0, raster: [0.965, 0.965], bright: 0.98, dot: 0, over: 1.0 });
     avgG.drawImage(sig, 0, 0, 1, 1); const [ar, ag, ab] = avgG.getImageData(0, 0, 1, 1).data;
     // the room: dark, lit only by the screen
     o.setTransform(1, 0, 0, 1, 0, 0);

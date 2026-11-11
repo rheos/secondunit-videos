@@ -111,6 +111,7 @@ facets:
       blender: Rendered in Blender.
       brushstroke: Code frames repainted by the brushstroke renderer.
       swift-metal: Swift and Metal on the Mac, real time.
+      ntsc-rs: "The VHS and NTSC signal stage from ntsc-rs (NTSCRT's presets run through it): colour bleed, tape noise, tracking."
       p5: Composited or drawn in p5.js.
       colorfigures: The Colorfigures SVG engine (inked isometric objects).
       python: A Python script draws the frames (OpenCV, PIL).

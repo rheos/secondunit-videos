@@ -28,13 +28,13 @@
   const tufts = [];
   for (let i = 0; i < 1400; i++) { const y = HOR + 6 + Math.pow(R(), 1.35) * 470; tufts.push([-600 + R() * 3400, y, R(), R()]); }
   const crown = [], crownEdge = [];
-  const lobes = [[-170, -250, 95, 70], [-40, -360, 120, 85], [120, -330, 110, 80], [200, -235, 80, 60], [-90, -215, 110, 55], [40, -230, 120, 60], [-210, -330, 70, 60]];
-  const inLobe = (x, y) => lobes.some(([lx, ly, rx, ry]) => ((x - lx) / rx) ** 2 + ((y - ly) / ry) ** 2 < 1);
-  for (const [lx, ly, rx, ry] of lobes) for (let i = 0; i < 12; i++) { const a = R() * TAU, r = Math.sqrt(R()) * 0.75; crown.push([lx + Math.cos(a) * r * rx, ly + Math.sin(a) * r * ry, 26 + R() * 30, R() * TAU]); }
-  for (let i = 0; i < 900 && crownEdge.length < 230; i++) {
-    const L = lobes[Math.floor(R() * lobes.length)], a = R() * TAU;
-    const x = L[0] + Math.cos(a) * L[2] * (0.92 + R() * 0.14), y = L[1] + Math.sin(a) * L[3] * (0.92 + R() * 0.14);
-    if (!inLobe(x * 0.97, (y + 300) * 0.97 - 300) || R() < 0.5) crownEdge.push([x, y, 5 + R() * 11, R() * TAU]);
+  // the crown: many leaf clumps inside a ragged outline, denser in the middle, thin and broken at the edge
+  const lobes = [[-170, -250, 95, 70], [-40, -360, 120, 85], [120, -330, 110, 80], [200, -235, 80, 60], [-90, -215, 110, 55], [40, -230, 120, 60], [-210, -330, 70, 60], [60, -405, 60, 40]];
+  const inLobe = (x, y, k = 1) => lobes.some(([lx, ly, rx, ry]) => ((x - lx) / (rx * k)) ** 2 + ((y - ly) / (ry * k)) ** 2 < 1);
+  for (const [lx, ly, rx, ry] of lobes) for (let i = 0; i < 9; i++) { const a = R() * TAU, r = Math.sqrt(R()) * 0.6; crown.push([lx + Math.cos(a) * r * rx, ly + Math.sin(a) * r * ry, 24 + R() * 22, R() * TAU]); }
+  for (let i = 0; i < 6000 && crownEdge.length < 520; i++) {
+    const x = -300 + R() * 600, y = -470 + R() * 330;
+    if (inLobe(x, y, 1.12) && !inLobe(x, y, 0.72)) crownEdge.push([x, y, 3 + R() * 8 * (inLobe(x, y, 0.95) ? 1.3 : 0.7), R() * TAU]);
   }
   const sunHoles = [];
 
