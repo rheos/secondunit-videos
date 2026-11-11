@@ -67,3 +67,29 @@ propaganda-poster feel suits "inmates are the guards" and stays available.
 
 Robin, 2026-11-10 (after midnight Pacific): all four, 9:16 reel. Each gets a 30 s look test on its own
 section, in `tests/<slug>/`, renders in `out/`.
+
+## 4. Test 01 notes and the direction for test 02
+
+Robin, Nov 11 2026 (around 1 pm Pacific), on the three test 01 renders:
+
+> the guard hat doesn't look much like a priston guard which i would expect to have a hat more like a
+> police than a construction worker. also that hand the seed goes into is pretty bad.. i want this all
+> to have more of a 3D world look to it.. which some of it does.. i love the 2D figures in a 3D world
+> idea. develop that better.
+
+What that means for the film:
+
+- **The look is now flat paper figures in a real 3D paper world**, for the whole film, not one section.
+  Closest catalogue relatives: drawn-playa ("People are flat profile cut-outs placed in the 3D world;
+  never mix in 3D-modelled characters") and devweb-world ("One world, one continuous camera", which
+  Robin called "our standard" on 2026-10-29). Working slug: `paper-world`.
+- **Guard cap:** a peaked cap as police and prison officers wear, never a brimmed work cap or hard hat.
+- **The hand** is redrawn from a real hand's proportions and proved on a line-up before it goes in a shot.
+- test 02 redoes the camp-to-seed section (f2548-f3384) in this direction: `tests/paper-world/`, brief
+  in `docs/BRIEF-test02-paper-world.md`. test 01 files stay as they are. type and table-city wait on
+  how test 02 lands.
+
+Robin, Nov 11 2026, a few minutes later: "the table city is best out of what you have done so far.. but
+it doesn't have enough movment for the first part." So test 02 is the table-city section (f1800-f2544)
+rebuilt as the true 3D paper world, moving from frame one; the guard cap, the hands, the seed and the
+pine are proved on a line-up beside it, for the camp section in the same world.
