@@ -92,6 +92,39 @@
    "size": "1024x1536",
    "ref": "tower_bottle",
    "prompt": "Edit image 1. Change ONLY the window cut-outs: they are now dark and unlit, showing only deep shadow inside, with no glow and no warm light anywhere on the piece. Keep everything else exactly as it is: the same shape, the same size and position in the frame, the same card colour, texture and creases, and the fully transparent background."
+  },
+  "wall_segment": {
+   "size": "1536x1024",
+   "prompt": "A single straight section of a paper-craft wall, seen straight on from the front: six staggered courses of small red-brown card bricks, each brick a separate little piece of card, with square battlements along the top. The left and right ends are cut straight and vertical so that sections can stand side by side. It stands on small folded card tabs along its base."
+  },
+  "brick": {
+   "size": "1024x1024",
+   "prompt": "A single small brick folded from red-brown card, a little rectangular box with crisp creased edges, seen from the front and slightly above."
+  },
+  "watchtower": {
+   "size": "1024x1536",
+   "prompt": "A single square paper-craft watchtower: a tall shaft built of small red-brown card bricks, an open lookout at the top with four corner posts and a low parapet, and a pyramid roof of grey card. A small warm light glows inside the lookout."
+  },
+  "head_bare": {
+   "size": "1024x1536",
+   "prompt": "A single large flat paper cut-out of a man's head, neck and the top of his shoulders in side profile, facing right, bare-headed with short hair. Cut from one piece of navy blue card. A plain silhouette with no facial features at all: no eye, no mouth, no ear detail. It stands on a folded card tab at the base of the shoulders."
+  },
+  "hand_pinch": {
+   "size": "1024x1536",
+   "prompt": "A single flat paper-craft cut-out of a human hand reaching down from above, in three-quarter view: the wrist, a cream card shirt cuff and a navy card coat sleeve run off the top of the image; at the bottom the thumb and index finger are pinched together, tip to tip, as if holding something tiny; the other three fingers are curled loosely behind. The hand is cut from warm kraft-tan card with fine cut lines at the knuckles. Correct anatomy: five fingers, the thumb shorter and thicker than the index finger."
+  },
+  "pine_tall": {
+   "size": "1024x1536",
+   "prompt": "A single tall paper-craft pine tree made like an accordion pop-up: many layered tiers of dark green cut card, widest at the bottom and narrowing to a point, on a short brown card trunk and a small folded card base."
+  },
+  "seed": {
+   "size": "1024x1024",
+   "prompt": "A single tiny pine seed made of paper: a small gold foil teardrop with one long pale papery wing attached, like a real winged pine seed."
+  },
+  "head_capped": {
+   "size": "1024x1536",
+   "ref": "head_bare",
+   "prompt": "Edit image 1. Add ONLY a hat: the man now wears a peaked police-style officer's cap cut from the same navy card, with a wide flat crown that overhangs at the front and the back, a narrow band, a short stiff visor at the front, and one tiny gold foil badge on the front of the crown. Keep everything else exactly as it is: the same head, neck and shoulders, the same size and position in the frame, the same card colour and texture, the tab, and the fully transparent background. Still no facial features."
   }
  }
 }
