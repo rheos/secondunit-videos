@@ -6,13 +6,16 @@ import fs from 'fs'; import { execSync } from 'child_process';
 const [page, a0, a1, out] = process.argv.slice(2); const t0 = Number(a0), t1 = Number(a1);
 const WK = Number(process.argv[6] || 4), FPS = Number(process.argv[7] || 24), FADE = Number(process.argv[8] || 0), SCALE = Number(process.argv[9] || 1), CRF = SCALE < 1 ? 26 : 17; // the boiling brushstrokes make every frame new: crf 22 at 720p was 268 MB for 3 min
 const dir = `out/frames_${page}_${t0}_${t1}`; fs.rmSync(dir, { recursive: true, force: true }); fs.mkdirSync(dir, { recursive: true });
-const n = Math.round((t1 - t0) * FPS); let done = 0; const start = Date.now();
+const n = Math.round((t1 - t0) * FPS);
+// each frame's time from its integer song frame: t0 + i / FPS with a rounded t0 lands a hair under some frames,
+// and on-twos animation (floor(t * 12)) then draws the previous pose (2026-10-13, Me and Jimi lyric patches)
+const F0 = Math.round(t0 * FPS); let done = 0; const start = Date.now();
 const b = await chromium.launch({ channel: 'chrome', headless: true, args: ['--use-angle=metal', '--ignore-gpu-blocklist', '--enable-gpu', '--allow-file-access-from-files'] });
 await Promise.all([...Array(WK)].map(async (_, w) => {
   const p = await b.newPage({ viewport: { width: 1920, height: 1080 } });
   await p.goto('file://' + process.cwd() + `/${page}.html?offline=1&scale=${SCALE}`); await p.evaluate(() => window.__ready);
   for (let i = w; i < n; i += WK) {
-    const url = await p.evaluate((t) => window.__frameJPEG(t, .92), t0 + i / FPS);
+    const url = await p.evaluate((t) => window.__frameJPEG(t, .92), (F0 + i) / FPS);
     fs.writeFileSync(`${dir}/f_${String(i).padStart(6, '0')}.jpg`, Buffer.from(url.split(',')[1], 'base64'));
     if (++done % 120 === 0) console.log(`${done}/${n} ${((Date.now() - start) / 1000).toFixed(0)}s`);
   }

@@ -21,7 +21,8 @@ export async function launch() {
   const mac = process.platform === 'darwin';
   const channel = process.env.CR_CHANNEL || (mac ? 'chrome' : undefined);
   return chromium.launch({ headless: true, ...(channel ? { channel } : {}),
-    args: mac ? ['--use-angle=metal', '--ignore-gpu-blocklist', '--enable-gpu'] : [] });
+    // file access: looks that draw image files (carved pieces, cut-outs) taint the canvas without it
+    args: [...(mac ? ['--use-angle=metal', '--ignore-gpu-blocklist', '--enable-gpu'] : []), '--allow-file-access-from-files'] });
 }
 
 export async function openLook(browser, page, { width = 1920, height = 1080 } = {}) {
