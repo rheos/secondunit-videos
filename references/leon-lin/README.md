@@ -2,14 +2,14 @@
 
 Leon Lin (github.com/Leonxlnx, Munich) writes films and tools entirely in code, mostly with coding
 agents. He also wrote taste-skill, the upstream of our `design-taste-frontend` skill. Unlike the other
-profiles here, this one is about methods, not a way of seeing: six of his repos, each read against our
-own pipeline and either borrowed from or set aside.
+profiles here, this one is about methods, not a way of seeing: his repos, each read against our
+own pipeline and either borrowed from or set aside (eight, counting escapement and cook).
 
-Studied 2026-10-23 and 2026-10-24 (issues #298 to #303). All six repos are MIT. Anything we copy keeps
-his notice, the way `tools/motion-lab/vendor/LICENSE-*.md` does for Remotion. paper-fox's soundtrack
-and open-water's rain and thunder recordings are licensed separately: never copy those.
+Studied 2026-10-23 and 2026-10-24 (issues #298 to #303), and escapement plus cook on 2026-11-09 (#467). All of them are MIT. Anything we copy keeps
+his notice, the way `tools/motion-lab/vendor/LICENSE-*.md` does for Remotion. paper-fox's soundtrack,
+open-water's rain and thunder recordings and escapement's Mixkit music and effects are licensed separately: never copy those.
 
-## The six, with a verdict each
+## The repos, with a verdict each
 
 | Repo | What it is | Verdict | Study |
 |---|---|---|---|
@@ -19,6 +19,7 @@ and open-water's rain and thunder recordings are licensed separately: never copy
 | lumenshaders (#301) | Generative shader studio with seamless loops and WebM export | Borrow the loop trick (noise sampled around a circle) into `tools/canvas-loop`; don't use LUMEN as a Canvas source as shipped (no 9:16, WebM only, generic fields) | `STUDY-lumenshaders.md` |
 | cinetic (#302) | An agent skill that directs software launch films: concepts, a 273-move technique library, critics, a ship gate | Don't install (claims every video ask, defaults to Remotion, bans our cream palette); borrow the encoded-file QA scripts, the refute-before-fix verifier, the text-flow numbers and a filtered technique list | `STUDY-cinetic.md` |
 | open-water (#303) | A physically based ocean and storm in WebGL2 | Keep as a reference and a sea/storm plate generator, rendered only on a real GPU (Modal GPU once a card is on the account; a few stills on this Mac); not for our CPU cloud render. Take its review method now: a fixed scene set every round, domain critics, a verifier, a regression judge | `STUDY-open-water.md` |
+| escapement + cook (#467) | A 36 s film from Python driving Blender 5.2 (EEVEE), five act builders plus a director agent, edit, grade and mix in numpy; `cook` is the long-run agent loop he made it with | Borrow, no look test now: an exposure and colour gate with thresholds per look (for cleanline review), numeric hand-off contracts between builders, last frame becomes a prop in the next scene, luma dissolve, sound cues aligned by their peak, cook's critic calibration offset. Don't install cook. A photoreal Blender look is a candidate only (this Mac can't run Blender 5; Modal CPU) | `STUDY-escapement.md` |
 
 ## What the six have in common (inference)
 

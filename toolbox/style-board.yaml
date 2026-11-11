@@ -1,0 +1,26 @@
+slug: style-board
+name: Style board (two scenes, three mediums)
+kind: method
+status: available
+does: Before painting any plate, paint the same two test scenes in three named mediums, each with a one-line description of its material, show the six as one board, and let the director or client pick; the chosen name and line then go into every plate prompt.
+keywords:
+- look-dev
+- style-reference
+- moodboard
+- image
+- paper
+- review
+fits:
+- the "3 looks first" step of a music video offer, as one sheet instead of three drafts
+- any painted-plate film (paper, gouache, print looks) before the plates are made
+- an Academy lesson on choosing a medium before you paint
+deterministic: n/a
+how: '`bobwiseman-10000-miles-styleboard/`: prompts.json (medium lines, scenes, shared tail), paint.sh (one plate through `gptimg`, about 70 s and ~21k Codex tokens), board.py (Pillow grid with names and one-liners). Copy the folder for a new song and rewrite prompts.json.'
+cost: plan
+detail: references/kevin-ngo/STUDY-lantern-paper-sf.md (recipe L01)
+source: Kevin Ngo's reply on x.com/kevin_t_ngo/status/2119436039488156158 (Nov 8 2026), showing the board Claude made him for his San Francisco film; studied Nov 9 2026, rheos/secondunit-videos#463
+verdict: 'Recommended by Claude, 2026-11-09: try it on the next look choice for a client song. The board fixes the medium, not the subject, so a client chooses a look without being swayed by which draft had the better scene. Use our own medium names and our own scenes; never his three styles as a set or his San Francisco plates.'
+related:
+- gptimg
+- midjourney
+added: '2026-11-09'

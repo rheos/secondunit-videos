@@ -1,7 +1,7 @@
 slug: openfilm
 name: OpenFilm
 kind: app
-status: candidate
+status: available
 does: Coding agent writes a film as web pages (each draws any moment with frame(t)) cut together in one film.html; Studio, a local browser editor, then lets you move, restyle, trim and cut anything and export MP4, stems, subtitles or the timeline for Final Cut, Premiere and Resolve.
 keywords:
 - editing
@@ -9,17 +9,19 @@ keywords:
 - review
 - html
 fits:
-- hand-editing an auto-edit or a code-drawn draft without a re-prompt
-- FCPXML handoff to Resolve or Premiere (the gap assemble.py leaves)
-- a base for the create-mode client editor (MIT, so a hosted product can use it)
+- handing a finished cut to someone who edits in Resolve, Premiere or Final Cut (frame-exact XML, song trimmed with handles)
+- opening an existing code-drawn film for clip-level hand edits without porting it (HyperFrames would need a rebuild first)
+- 'its `look` determinism check: every sheet frame drawn twice in two shuffled orders'
+- a base for the create-mode client editor (MIT)
 deterministic: 'yes'
-how: not installed; `npx -y openfilm@latest` (npm 0.2.7), Node 22.2+ and ffmpeg; desktop app at openfilm.dev
-cost: free (MIT)
+how: '`npm i openfilm` in a scratch folder (0.3.1 tested), Node 22.2+, ffmpeg; first run downloads a headless Chromium. Wrap a code-drawn film without touching it: a page that loads the film page''s own scripts, sets ?offline=1 by history.replaceState before them, and defines window.film = { frame(t) { frame(t) }, duration: <song length> }; then film.html cuts that one page into one <iframe src="page.html#t=a,b" at="a"> per shot, song on its own track. Set Studio''s frame rate to 24 (it defaults to 30) and type the export folder into Save to (the folder button opens a macOS dialog).'
+cost: 'free (MIT); the timeline export renders every page clip to PNG-in-MOV or ProRes 4444 on this Mac: 38 s took about 8 min at 2.1 fps and 2.9 GB, so a whole 5-min song is about an hour and 20+ GB'
 url: https://github.com/openfilm/openfilm
 source: x.com/socialwithaayan/status/2116567606882967790 (10 motion-design repos, read 2026-11-01)
-verdict: 'Claude, 2026-11-01: the strongest pick of the post. Its page contract is the same as our seekable pages, so a test is wrapping one finished code-drawn shot as an OpenFilm page and exporting the timeline to Resolve.'
+verdict: 'Claude, 2026-11-08, tested on In Her Dream (wrapped unchanged, 21 shots as 21 clips): the determinism check passed, and a frame from the export matched our own renderer at 55 dB PSNR. The Resolve XML (xmeml v4) parsed cleanly in OpenTimelineIO: 24 fps, frame-exact cuts, song trimmed at 124 s with the full file as handles. Resolve itself was not installed, so the import is unconfirmed. Limits: a canvas film is one element, so Studio edits only whole clips (scale, crop, grade, trim), the same as HyperFrames Studio; hand edits are baked into the rendered clip, not exported as editor effects; paths in the XML are absolute. Use it when a cut has to leave for an NLE; day to day, assemble.py and HyperFrames Studio already cover it.'
 related:
 - hyperframes
 - openchatcut
 - take-catalogue
 added: '2026-11-01'
+detail: test notes in rheos/secondunit-videos#461
