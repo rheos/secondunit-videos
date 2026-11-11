@@ -39,17 +39,19 @@ gop=$(awk -v f="$fps" 'BEGIN{printf "%d", f*2+0.5}')
 
 # Full-range sources get their levels scaled into tv range; tv or untagged sources keep their
 # values and are tagged tv, which is how every player already reads them.
-vf=()
+# setparams tags every frame tv; without it an untagged source comes out untagged whatever
+# -color_range says.
+vf=(-vf "setparams=range=tv")
 if [[ $pix == yuvj* || $range == pc ]]; then
-  vf=(-vf "scale=in_range=pc:out_range=tv:flags=accurate_rnd+full_chroma_int")
+  vf=(-vf "scale=in_range=pc:out_range=tv:flags=accurate_rnd+full_chroma_int,setparams=range=tv")
 fi
 # Keep the source's matrix tag so the picture decodes the same; don't invent one.
 tags=()
 case $matrix in bt709|bt470bg|smpte170m) tags=(-colorspace "$matrix") ;; esac
 
-nice -n 15 ffmpeg -hide_banner -v error -y -i "$in" \
+nice -n 15 ffmpeg -nostdin -hide_banner -v error -y -i "$in" \
   -map 0:v:0 -map '0:a:0?' -fps_mode passthrough \
-  ${vf[@]+"${vf[@]}"} \
+  "${vf[@]}" \
   -c:v libx264 -profile:v high -pix_fmt yuv420p -color_range tv ${tags[@]+"${tags[@]}"} \
   -g "$gop" -keyint_min "$gop" -sc_threshold 0 -crf 20 -maxrate 6M -bufsize 12M \
   -c:a aac -b:a 192k -ar 48000 \
@@ -58,7 +60,7 @@ nice -n 15 ffmpeg -hide_banner -v error -y -i "$in" \
 fail=()
 
 # 1. clean decode
-errs=$(nice -n 15 ffmpeg -hide_banner -v error -i "$out" -f null - 2>&1 | wc -l | tr -d ' ')
+errs=$(nice -n 15 ffmpeg -nostdin -hide_banner -v error -i "$out" -f null - 2>&1 | wc -l | tr -d ' ')
 [[ $errs == 0 ]] || fail+=("decode-errors=$errs")
 
 # 2. geometry, frames, duration
@@ -88,10 +90,10 @@ awk -v m="${maxgap:-0}" 'BEGIN{exit !(m<=2.01)}' || fail+=("maxgap=$maxgap")
 
 # 5. picture match. Both sides go to full-range RGB the way a player decodes them (their own
 #    range and matrix tags), then compare.
-psnr=$(nice -n 15 ffmpeg -hide_banner -v info -i "$in" -i "$out" -lavfi \
+psnr=$(nice -n 15 ffmpeg -nostdin -hide_banner -v info -i "$in" -i "$out" -lavfi \
   "[0:v]scale=out_range=pc,format=rgb24[a];[1:v]scale=out_range=pc,format=rgb24[b];[a][b]psnr" \
   -f null - 2>&1 | sed -n 's/.*PSNR r:[^ ]* g:[^ ]* b:[^ ]* average:\([0-9.inf]*\).*/\1/p' | tail -1)
-lum() { nice -n 15 ffmpeg -hide_banner -v error -i "$1" -vf \
+lum() { nice -n 15 ffmpeg -nostdin -hide_banner -v error -i "$1" -vf \
   "fps=1,scale=out_range=pc,format=rgb24,format=gray,signalstats,metadata=print:file=-" -f null - 2>/dev/null |
   awk -F= '/YAVG/{a+=$2; n++} /YLOW/{l+=$2} /YHIGH/{hi+=$2} END{printf "%.2f %.2f %.2f", a/n, l/n, hi/n}'; }
 read -r yin lin hin <<<"$(lum "$in")"; read -r yout lout hout <<<"$(lum "$out")"
@@ -107,11 +109,11 @@ tmp=$(mktemp -d); trap 'rm -r "$tmp"' EXIT
 i=0
 for pct in 10 30 50 70 90; do
   t=$(awk -v d="$din" -v p=$pct 'BEGIN{printf "%.3f", d*p/100}')
-  ffmpeg -v error -ss "$t" -i "$in"  -frames:v 1 -vf "scale=out_range=pc,scale=270:-2" -y "$tmp/s$i.png"
-  ffmpeg -v error -ss "$t" -i "$out" -frames:v 1 -vf "scale=out_range=pc,scale=270:-2" -y "$tmp/o$i.png"
+  ffmpeg -nostdin -v error -ss "$t" -i "$in"  -frames:v 1 -vf "scale=out_range=pc,scale=270:-2" -y "$tmp/s$i.png"
+  ffmpeg -nostdin -v error -ss "$t" -i "$out" -frames:v 1 -vf "scale=out_range=pc,scale=270:-2" -y "$tmp/o$i.png"
   i=$((i+1))
 done
-ffmpeg -v error -y \
+ffmpeg -nostdin -v error -y \
   -i "$tmp/s0.png" -i "$tmp/s1.png" -i "$tmp/s2.png" -i "$tmp/s3.png" -i "$tmp/s4.png" \
   -i "$tmp/o0.png" -i "$tmp/o1.png" -i "$tmp/o2.png" -i "$tmp/o3.png" -i "$tmp/o4.png" \
   -filter_complex "[0][1][2][3][4]hstack=5[top];[5][6][7][8][9]hstack=5[bot];[top]pad=iw:ih+6:0:0:white[t2];[t2][bot]vstack=2" \
