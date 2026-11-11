@@ -45,6 +45,9 @@ vf=(-vf "setparams=range=tv")
 if [[ $pix == yuvj* || $range == pc ]]; then
   vf=(-vf "scale=in_range=pc:out_range=tv:flags=accurate_rnd+full_chroma_int,setparams=range=tv")
 fi
+# x264 only writes the range flag when a video format or colour description is present, so an
+# untagged source would still read color_range=unknown; videoformat=component makes it write
+# "limited range" without inventing a matrix.
 # Keep the source's matrix tag so the picture decodes the same; don't invent one.
 tags=()
 case $matrix in bt709|bt470bg|smpte170m) tags=(-colorspace "$matrix") ;; esac
@@ -53,6 +56,7 @@ nice -n 15 ffmpeg -nostdin -hide_banner -v error -y -i "$in" \
   -map 0:v:0 -map '0:a:0?' -fps_mode passthrough \
   "${vf[@]}" \
   -c:v libx264 -profile:v high -pix_fmt yuv420p -color_range tv ${tags[@]+"${tags[@]}"} \
+  -x264-params videoformat=component \
   -g "$gop" -keyint_min "$gop" -sc_threshold 0 -crf 20 -maxrate 6M -bufsize 12M \
   -c:a aac -b:a 192k -ar 48000 \
   -movflags +faststart "$out"
