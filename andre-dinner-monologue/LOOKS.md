@@ -127,3 +127,28 @@ the cutlery fence becomes the prison wall. Vocabulary, not a copy.
 What it changes: the three.js build of the table section becomes the blocking pass (camera, timing,
 staging, exported as `out/paper-world/blocking.json`). The finish needs a photoreal renderer. Target
 stills in `out/paper-world/styleboard/`.
+
+## 6. Method decision
+
+Robin, Nov 11 2026, on how to make the look move: "what we will do is first do the whole thing with
+paintied pieces and once that is all solid we will look at running it through seedance after." And on
+the reference: "if you look at that video the majority of it looks like it was drawn with code. i think
+this is how they likely did it." (Its credit reads "written, painted and directed by Claude Fable 5.2".)
+
+So:
+
+1. **The whole film is built from painted pieces moved by code.** Free: GPT Image through Codex on the
+   ChatGPT plan paints each piece as a paper-craft cut-out on a transparent background, with the
+   table-city target still attached as the style reference (`tests/paper-world/plates.json`,
+   `paint.sh`). No credits are spent until Robin says so.
+2. **The pieces stand in the 3D table world as cards.** The three.js blocking supplies the camera, the
+   timing and the positions; each painted piece is a card at its real place and depth, so parallax and
+   overlap are exact. Things arrive the way a pop-up arrives: a card hinges up from the cloth, a
+   standee slides along a slot, a card turns to show its other side.
+3. **People are standees on tabs.** They do not walk with legs; they slide along slots cut in the
+   cloth, with a small wobble on twos, like toy-theatre figures. The citizens who go to the fence and
+   turn back are literally on rails.
+4. **Seedance comes after**, on the finished cut, section by section, once the painted film is solid.
+   Estimate first and get Robin's number.
+
+Target stills (approved as the look by Robin's choice of method): `out/paper-world/styleboard/`.
