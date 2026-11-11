@@ -1,0 +1,47 @@
+---
+- name: back_k
+  image: back
+  seconds: 5
+  key: green
+  engine: kling
+  elements:
+  - frontal: refs/wyrd-front.png
+    refs:
+    - refs/wyrd-side.png
+    - refs/wyrd-back.png
+    - refs/wyrd-head.png
+  prompt: "@Element1, the Wyrd One, exactly as his reference sheet: wide-brim hat,
+    dense matte black cord-fringe veil hiding the whole face (never a face, mouth
+    or eyes), long dark wavy hair, long shredded duster, black Les Paul with two pickups
+    and the white antlered-wolf headstock. Seen from behind. Starting from the first
+    frame he stands still looking up at the sky, head tilting slowly further up; a
+    rising wind lifts the shredded coat hem and his hair; the guitar on his back (upside
+    down, neck to the bottom right) sways slightly. In the last two seconds he lowers
+    his head and stands quietly. Locked camera, no camera movement, no zoom, the whole
+    figure stays inside the frame, perfectly flat chroma green #00B140 background
+    throughout, no shadows, no floor, no ground line, no text, no other figures. Keep
+    the exact two-tone style of @Element1: white engraved lines on pure black, no
+    grey, no colour."
+- name: serpent_k
+  image: serpent
+  seconds: 5
+  key: green
+  engine: kling
+  elements:
+  - frontal: output/s03/02_kf_serp_head_front.png
+    refs:
+    - output/s03/02_kf_serp_head_side.png
+    - output/s03/02_kf_serpent.png
+  prompt: "@Element1, the smoke rattlesnake, exactly as its reference images: engraved
+    scales, heat pits, slit eyes, fangs, smoke ribbons streaming off its body, white
+    engraved lines on black. Starting from the first frame, its whole body slowly
+    writhes and flows through the thin ring of light, smoke ribbons streaming and
+    curling off it; its head rears back, then lowers toward the lower right and the
+    jaws open wide, fangs bared, the forked tongue flicking. The ring stays a thin
+    double line and stays in place. Locked camera, no camera movement, no zoom, the
+    whole serpent stays inside the frame, perfectly flat chroma green #00B140 background
+    throughout, no shadows, no text, no other figures. Exact two-tone scratchboard
+    style, no grey, no colour."
+- name: fire
+  source: output/s04/04_clip_fire.mp4
+  key: green
