@@ -74,16 +74,45 @@
     const flat = L2(L2(toW(k, REST_H), upW, r), meetW, near);           // the hand's top-view position
     const hand = add(flat, [idle * 3 * Math.sin(t * 1.3 + side), idle * 2.4 * Math.cos(t * 1.1 + side)]);
     const reach = Math.min(L, Math.hypot(hand[0] - sh[0], hand[1] - sh[1]));
-    const H = Math.sqrt(L * L - reach * reach) * Math.max(r, near);    // height off the grass, from the arm length
+    const H0 = Math.sqrt(L * L - reach * reach) * Math.max(r, near);   // height off the grass, from the arm length
+    const H = lerp(H0, 46, near);   // touching fingertips are at one height, so the two hand shadows meet on the grass too
     return { r, hand, H, big: 1 + 0.22 * (H / L) + 0.16 * poke, drift, sh, L };
   }
-  // A raised hand in kid-local units at hl. The outlines are traced from Michelangelo's "Creation of Adam"
+  // The hands' SHADOWS on the grass, in kid-local units at hl (Robin, Nov 12: the drawn open hands are right; their
+  // shadows were the problem, and the fresco is what the shadows should be). The outlines are traced from Michelangelo's "Creation of Adam"
   // (js/hands.js; Robin, Nov 12: drawn fingers read as claws, "I gave you a reference"). Me gets Adam's relaxed hand,
   // the hider God's reaching index, mirrored so both reach the same way round. Robin: that picture is what the touch
   // should remind us of; until then the hands shift a bit. So while raised and drifting together they turn at the
   // wrist and flex, and the motion settles out on "love" so on "you" they hold the fresco's pose. Pointing up at the
   // lens they are foreshortened; as they reach for each other they lengthen out to the full outline.
   function handShape(g, k, hl, big, t) {
+    // An open, relaxed hand reaching up (Robin, Nov 11: not a pointing fist, which read as a rude finger; more like
+    // Michelangelo's hands). Fingers loosely spread and gently curled, the index the longest and straightest; as the
+    // hands reach for each other the fingers lengthen out of the foreshortening and the index leads.
+    const R = raised(k, t);
+    const aimW = R.drift > 0.02 ? MEET : add(R.hand, k === 'me' ? [10, -16] : [-10, 16]);
+    const aim = toL(k, aimW);
+    const ang = Math.atan2(aim[1] - hl[1], aim[0] - hl[0]);
+    const ext = 0.45 + 0.55 * R.drift;   // straight up at the lens the fingers are foreshortened
+    const side = k === 'me' ? 1 : -1;    // which way the thumb sits
+    g.save(); g.translate(hl[0], hl[1]); g.rotate(ang); g.scale(big, big * side);
+    g.beginPath(); g.ellipse(0, 0, 4.2, 3.8, 0, 0, TAU); g.fill();                               // palm
+    g.lineCap = 'round'; g.lineJoin = 'round';
+    const FING = [  // [knuckle y, length, curl, width]: index, middle, ring, little
+      [-2.4, 8.2, 0.3, 1.75], [-0.8, 7.6, 1.1, 1.7], [0.8, 6.8, 1.7, 1.6], [2.3, 5.4, 2.1, 1.4],
+    ];
+    for (const [ky, len, curl, w] of FING) {
+      const L = len * ext, c = curl * (0.6 + 0.4 * ext);
+      const spread = ky * 0.16;   // fanned a little
+      g.lineWidth = w;
+      g.beginPath(); g.moveTo(3, ky);
+      g.quadraticCurveTo(3 + L * 0.6, ky + spread * L * 0.5 + c * 0.3, 3 + L * (1 - 0.08 * c), ky + spread * L + c);
+      g.stroke();
+    }
+    g.lineWidth = 2.0; g.beginPath(); g.moveTo(0.5, -3.2); g.quadraticCurveTo(3, -5.4, 5.2 * (0.6 + 0.4 * ext), -5.6); g.stroke();   // thumb
+    g.restore();
+  }
+  function handTraced(g, k, hl, big, t) {
     const R = raised(k, t);
     const aimW = R.drift > 0.02 ? MEET : add(R.hand, k === 'me' ? [10, -16] : [-10, 16]);
     const aim = toL(k, aimW);
@@ -244,7 +273,7 @@
         // (Robin, Nov 11: the old blob-and-stub shadow still read as a pointing finger)
         const off = [hd[0] - R.hand[0], hd[1] - R.hand[1]];
         shl.save(); shl.translate(off[0], off[1]); shl.translate(d.origin[0], d.origin[1]); shl.rotate(d.rot); shl.scale(d.s, d.s);
-        handShape(shl, k, toL(k, R.hand), 1, t);
+        handTraced(shl, k, toL(k, R.hand), 1, t);
         shl.restore();
       }
     }
