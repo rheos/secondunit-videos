@@ -40,7 +40,23 @@
     bars:    { name: 'Monkey bars',   hair: 'bob',      outfit: 'shorts', size: 1.0 },
     sand:    { name: 'Sandbox',       hair: 'crop',     outfit: 'shorts', size: 0.85 },
     hider:   { name: 'The hider (you)', hair: 'pigtails', outfit: 'shorts', size: 0.74 },  // the smallest kid, the only one in pigtails (Robin: the sun hat read as the mother)
+    // the hider's family and best friend, for the full song (verse 2 on). Adults get adult proportions.
+    me:      { name: 'Me (best friend)', hair: 'cowlick', outfit: 'shorts', size: 0.78 },
+    sister:  { name: 'Little sister', hair: 'braid',    outfit: 'dress',  size: 0.66 },
+    brother: { name: 'Brother',       hair: 'cap',      outfit: 'shorts', size: 0.95 },
+    grandma: { name: 'Grandma',       hair: 'bun',      outfit: 'shawl',  size: 1.32, adult: true, shoulders: 0.95 },
+    father:  { name: 'Father',        hair: 'short',    outfit: 'slacks', size: 1.55, adult: true, shoulders: 1.25 },
+    mother:  { name: 'Mother',        hair: 'long',     outfit: 'longdress', size: 1.45, adult: true, shoulders: 1.05 },
   };
+  // adult proportions: the same poses, a longer body under a smaller head
+  function adultize(p) {
+    const L = (q) => [q[0], q[1] * 1.14];
+    const o = { ...p };
+    for (const k of ['hip', 'chest']) o[k] = L(p[k]);
+    o.head = add(o.chest, mul(sub(p.head, p.chest), 0.92));
+    for (const k of ['legF', 'legB', 'armF', 'armB']) if (p[k]) o[k] = p[k].map(L);
+    return o;
+  }
 
   // Draw one kid. pose: { hip, chest, head, armF:[elbow,hand], armB:[elbow,hand], legF:[knee,foot], legB:[knee,foot],
   // face: -1|0|1, hairSwing, hem, props: [] }. "F" limbs are the near side, drawn last; "B" the far side.
@@ -48,7 +64,9 @@
     const s = h / 100 * (kid.size || 1);
     g.save(); g.translate(x, y); g.scale(s, s);
     g.fillStyle = color; g.strokeStyle = color;
+    if (kid.adult) pose = adultize(pose);
     const { hip, chest, head } = pose;
+    const shw = kid.shoulders || 1;
     const ax = norm(sub(chest, hip));            // torso axis, hip -> chest
     const n = [-ax[1], ax[0]];                   // across the torso
     const face = pose.face || 0;
@@ -64,7 +82,7 @@
         const toe = pose.toe != null ? pose.toe : (face || 1);
         ell(g, L[1][0] + toe * 2.6, L[1][1] - 1.4, 6.0, 3.5, 0);
       } else {
-        tube(g, sh(side, 8.4), L[0], L[1], 7.6, 6.0);
+        tube(g, sh(side, 8.4 * shw), L[0], L[1], 7.6, 6.0);
         ell(g, L[1][0], L[1][1], 3.9, 3.9);
       }
     };
@@ -73,7 +91,7 @@
     // torso: shoulders, waist, hips
     const waist = lerpP(hip, chest, 0.4);
     g.beginPath();
-    const p1 = sh(-1, 10.4), p2 = sh(1, 10.4), w1 = add(waist, mul(n, -8.6 * wide)), w2 = add(waist, mul(n, 8.6 * wide));
+    const p1 = sh(-1, 10.4 * shw), p2 = sh(1, 10.4 * shw), w1 = add(waist, mul(n, -8.6 * wide)), w2 = add(waist, mul(n, 8.6 * wide));
     const h1 = hp(-1, 9.0), h2 = hp(1, 9.0);
     const top = add(chest, mul(ax, 4.5));
     g.moveTo(p1[0], p1[1]); g.quadraticCurveTo(top[0], top[1], p2[0], p2[1]);
@@ -83,7 +101,18 @@
     g.fill();
     // clothes that change the outline
     const down = mul(ax, -1);
-    if (kid.outfit === 'dress' || kid.outfit === 'skirt') {
+    if (kid.outfit === 'shawl') {  // a shawl over the shoulders and a long skirt
+      const s1 = sh(-1, 13), s2 = sh(1, 13), lo = add(chest, mul(down, 16));
+      g.beginPath(); g.moveTo(s1[0], s1[1]); g.quadraticCurveTo(chest[0], chest[1] - 6, s2[0], s2[1]);
+      g.quadraticCurveTo(s2[0] + n[0] * 2, lo[1], lo[0], lo[1] + 3); g.quadraticCurveTo(s1[0] - n[0] * 2, lo[1], s1[0], s1[1]); g.fill();
+    }
+    if ((kid.outfit === 'longdress' || kid.outfit === 'shawl') && pose.legF) {
+      const fl = 14 * (face === 0 ? 1 : 0.85), dr = 34, sway = pose.hem || 0;
+      const a1 = add(waist, mul(n, -8.2 * wide)), a2 = add(waist, mul(n, 8.2 * wide));
+      const b1 = add(add(hip, mul(down, dr)), add(mul(n, -fl), [sway, 0])), b2 = add(add(hip, mul(down, dr)), add(mul(n, fl), [sway, 0]));
+      const hm = add(add(hip, mul(down, dr + 2.5)), [sway * 1.2, 0]);
+      g.beginPath(); g.moveTo(a1[0], a1[1]); g.lineTo(b1[0], b1[1]); g.quadraticCurveTo(hm[0], hm[1], b2[0], b2[1]); g.lineTo(a2[0], a2[1]); g.closePath(); g.fill();
+    } else if (kid.outfit === 'dress' || kid.outfit === 'skirt') {
       const flare = (kid.outfit === 'dress' ? 15 : 13.5) * (face === 0 ? 1 : 0.85), drop = kid.outfit === 'dress' ? 17 : 12;
       const sway = pose.hem || 0;
       const a1 = add(waist, mul(n, -8.2 * wide)), a2 = add(waist, mul(n, 8.2 * wide));
@@ -105,7 +134,7 @@
     // neck and head
     g.lineWidth = 7; g.lineCap = 'round';
     g.beginPath(); g.moveTo(chest[0], chest[1]); g.lineTo(lerp(chest[0], head[0], 0.6), lerp(chest[1], head[1], 0.6)); g.stroke();
-    const R = 12.4;
+    const R = kid.adult ? 9.6 : 12.4;
     ell(g, head[0], head[1], R * (face === 0 ? 1 : 0.96), R * 1.04);
     if (face !== 0) {  // profile: jaw forward, small nose bump
       g.beginPath();
@@ -116,14 +145,48 @@
       g.closePath(); g.fill();
     }
     drawHair(g, kid.hair, head, R, face, pose.hairSwing || 0);
+    if (pose.hat === 'army') drawArmyCap(g, head, R, face, pose.hatTilt || 0);
     // near limbs last
     limb('legF', front); limb('armF', front);
     if (pose.props) for (const pr of pose.props) pr(g);
     g.restore();
   }
 
+  function drawArmyCap(g, hd, R, f, tilt) {  // an old garrison-style service cap with a stiff visor
+    const [x, y] = hd;
+    g.save(); g.translate(x, y - R * 0.55); g.rotate(tilt);
+    ell(g, 0, -R * 0.35, R * 1.12, R * 0.62);
+    g.fillRect(-R * 1.05, -R * 0.3, R * 2.1, R * 0.42);
+    if (f !== 0) { g.beginPath(); g.moveTo(f * R * 0.6, -R * 0.05); g.lineTo(f * R * 1.75, R * 0.25); g.lineTo(f * R * 1.65, R * 0.48); g.lineTo(f * R * 0.5, R * 0.18); g.closePath(); g.fill(); }
+    else g.fillRect(-R * 0.95, R * 0.05, R * 1.9, R * 0.3);
+    g.restore();
+  }
   function drawHair(g, hair, hd, R, face, swing) {
     const [x, y] = hd, f = face;
+    if (hair === 'bun') { ell(g, x - f * 1, y - 2.5, R * 1.04, R * 0.92); ell(g, x - f * R * 0.7, y - R * 0.95, R * 0.52, R * 0.48); return; }
+    if (hair === 'short') { ell(g, x - f * 1.2, y - 2.2, R * 1.03, R * 0.9); if (f) ell(g, x - f * 0.8, y - 1, 2.2, 3); return; }
+    if (hair === 'long') {  // shoulder-length with an outward flip; in profile it hangs behind the head
+      ell(g, x - f * 1.4, y - 2.5, R * 1.08, R * 0.98);
+      const sides = f === 0 ? [-1, 1] : [-f];
+      for (const sd of sides) {
+        const ox = x + sd * R * (f === 0 ? 0.78 : 0.45);
+        g.beginPath(); g.moveTo(ox - R * 0.4, y - 3); g.quadraticCurveTo(ox + sd * R * 0.4, y + R * 0.5, ox + sd * R * 0.45 + swing * 3, y + R * 1.2);
+        g.quadraticCurveTo(ox + sd * R * 0.2, y + R * 1.05, ox - sd * R * 0.25, y + R * 0.9); g.closePath(); g.fill();
+      }
+      return;
+    }
+    if (hair === 'braid') {
+      ell(g, x - f * 1.2, y - 3, R * 1.05, R * 0.94);
+      const bx = f === 0 ? 0.3 : -f, base = [x + bx * R * 0.7, y + 2];
+      for (let i = 0; i < 4; i++) ell(g, base[0] + bx * (2 + i * 1.5) + Math.sin(swing + i * 0.4) * i * 1.6, base[1] + 4 + i * 5, 3.6 - i * 0.35, 3.2);
+      ell(g, base[0] + bx * 8 + Math.sin(swing + 1.6) * 6, base[1] + 25, 2.6, 2.2);
+      return;
+    }
+    if (hair === 'cowlick') {
+      ell(g, x - f * 1.4, y - 2.6, R * 1.05, R * 0.96);
+      g.beginPath(); g.moveTo(x - 3 - f * 2, y - R * 0.9); g.quadraticCurveTo(x + 1 - f * 3, y - R * 1.6, x + 5 - f * 5, y - R * 1.45); g.quadraticCurveTo(x + 2 - f * 2, y - R * 1.15, x + 3, y - R * 0.85); g.closePath(); g.fill();
+      return;
+    }
     if (hair === 'ponytail') {
       ell(g, x - f * 1.2, y - 3.5, R * 1.06, R * 0.95);            // hair cap, a touch bigger than the head
       const bx = f === 0 ? 0 : -f;                                    // the tail hangs behind the head
@@ -328,6 +391,66 @@
     return p;
   }
 
+  // Sitting up in bed (legs under the blanket, so no legs): reach 0..1 lifts the near hand toward the window.
+  function bedSit(reach, d = 1, nod = 0) {
+    const hip = [0, -2], chest = add(hip, mul(dirv(180 + 14 - 6 * reach), 29)), head = add(chest, mul(dirv(180 + 4 - 10 * reach + nod * 8), 13));
+    const hand = [lerp(10, 26, reach), lerp(-6, -40, reach)], elbow = [lerp(9, 18, reach), lerp(-14, -26, reach)];
+    return mirrorPose({ hip, chest, head, face: d, armF: [elbow, hand], armB: [add(chest, [-2, 14]), [4, -4]], hem: 0 }, d);
+  }
+  // Salute, profile: the near hand at the brow.
+  function salute(k, d = 1) {
+    const p = stand(1);
+    p.armF = [lerpP([6, -63], add(p.chest, [11, -4]), k), lerpP([6, -50], add(p.head, [7, -6]), k)];
+    p.chest = add(p.chest, [0, -1 * k]);
+    return mirrorPose(p, d);
+  }
+  // A drunk march: stiff legs, swinging arms, the body swaying off the vertical. sway in degrees.
+  function march(phase, d = 1, sway = 0) {
+    const a = 24 * Math.sin(phase * TAU);
+    const hip = [0, -47 + Math.abs(Math.sin(phase * TAU)) * 1.5];
+    const chest = add(hip, mul(dirv(180 - 2 + sway), 30)), head = add(chest, mul(dirv(180 + sway * 1.4), 13));
+    const leg = (s) => { const knee = add(hip, mul(dirv(s * a), 22)); return [knee, add(knee, mul(dirv(s * a - Math.max(0, s * a) * 0.3), 23))]; };
+    const arm = (s) => { const el = add(chest, add([0, 2], mul(dirv(-s * a * 0.9), 14))); return [el, add(el, mul(dirv(-s * a * 0.9 + 12), 13))]; };
+    return mirrorPose({ hip, chest, head, face: 1, legF: leg(1), legB: leg(-1), armF: arm(1), armB: arm(-1), toe: 1 }, d);
+  }
+  // Slumped on the floor against a cabinet, legs out, head down.
+  function slump(drop, d = 1) {
+    const hip = [0, -8], chest = add(hip, mul(dirv(180 + 14), 29)), head = add(chest, mul(dirv(180 - 25 - 45 * drop), 12.5));
+    return mirrorPose({ hip, chest, head, face: 1, legF: [[20, -6], [42, -3]], legB: [[18, -8], [38, -1]],
+      armF: [add(chest, [4, 15]), [12, -1]], armB: [add(chest, [1, 15]), [-6, -1]], toe: 1 }, d);
+  }
+  // Standing, arms crossed over the chest (front or profile).
+  function armsCrossed(d = 0) {
+    const p = stand(d);
+    const c = p.chest;
+    p.armF = [add(c, [9, 13]), add(c, [-7, 10])]; p.armB = [add(c, [-9, 13]), add(c, [7, 9])];
+    return p;
+  }
+  // Kneeling with a diary on the knee, writing: pen hand moves a little.
+  function write(phase, d = 1) {
+    const w = Math.sin(phase * TAU * 3) * 1.2;
+    const hip = [0, -8], chest = add(hip, mul(dirv(180 - 12), 28)), head = add(chest, mul(dirv(180 - 38), 12.5));
+    const book = (g) => { g.save(); g.translate(17, -31); g.rotate(-0.55); g.fillRect(-8, -1.6, 16, 3.2); g.restore(); };
+    return mirrorPose({ hip, chest, head, face: 1, legF: [[15, -26], [20, -1]], legB: [[13, -24], [17, 0]],
+      armF: [add(chest, [11, 11]), [21 + w, -34]], armB: [add(chest, [7, 12]), [14, -29]], props: [book], toe: 1 }, d);
+  }
+
+  // A hen in silhouette: body, fanned tail, comb, beak, legs. peck 0..1 drops the head to the ground.
+  function drawChicken(g, x, y, h, peck, d = 1, color = '#261a1e') {
+    const s = h / 40;
+    g.save(); g.translate(x, y); g.scale(s * d, s); g.fillStyle = color; g.strokeStyle = color;
+    g.lineWidth = 1.6; g.lineCap = 'round';
+    g.beginPath(); g.moveTo(-2, -10); g.lineTo(-3, 0); g.moveTo(3, -10); g.lineTo(4, 0); g.stroke();
+    ell(g, 0, -20, 15, 11, -0.15);
+    g.beginPath(); g.moveTo(-10, -22); g.quadraticCurveTo(-22, -40, -15, -38); g.quadraticCurveTo(-12, -30, -6, -28); g.closePath(); g.fill();
+    const hx = lerp(13, 18, peck), hy = lerp(-32, -6, peck);
+    g.lineWidth = 7; g.beginPath(); g.moveTo(9, -24); g.quadraticCurveTo(14, lerp(-30, -14, peck), hx, hy); g.stroke();
+    ell(g, hx, hy, 5, 5);
+    g.beginPath(); g.moveTo(hx + 4, hy - 1); g.lineTo(hx + 9, hy + 1); g.lineTo(hx + 4, hy + 2.5); g.fill();
+    for (let i = 0; i < 3; i++) ell(g, hx - 2 + i * 2.6, hy - 5 - (i === 1 ? 1.5 : 0), 1.8, 2.4);
+    g.restore();
+  }
+
   function mirrorPose(p, d) {
     if (d >= 0) return p;
     const q = { ...p };
@@ -339,5 +462,5 @@
     return q;
   }
 
-  window.CAST = { KIDS, drawKid, poses: { stand, run, swingSit, slideSit, ledgeSit, climb, hang, dig, peek, wave }, ss, lerp };
+  window.CAST = { KIDS, drawKid, drawChicken, poses: { stand, run, swingSit, slideSit, ledgeSit, climb, hang, dig, peek, wave, bedSit, salute, march, slump, armsCrossed, write }, ss, lerp };
 })();
