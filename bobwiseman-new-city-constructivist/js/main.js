@@ -12,8 +12,48 @@ const W = +(q.get("w") || 1280), H = +(q.get("h") || 720);
 const SUB = +(q.get("sub") || 6);          // motion-blur sub-frames
 const FPS = 24;
 
-export const INK = { cream: new THREE.Color("#e8dcc2"), red: new THREE.Color("#c3302a"), black: new THREE.Color("#1c1916") };
-for (const c of Object.values(INK)) c.convertSRGBToLinear();
+// Three inks by role: cream = the paper, red = the accent ink, black = the dark ink. Pick with ?pal=<name>.
+// "oxblood" is the first palette, archived 2026-11-12 (Robin: "very cool, but it's also kind of fascist").
+export const PALETTES = {
+  oxblood: ["#e8dcc2", "#c3302a", "#1c1916"],      // v1 and the v2 proof; archived
+  // from the cover of Accidentally Acquired Beliefs (1995), the album New City came out on
+  cobalt: ["#efe3c0", "#2f5f9e", "#24232b"],       // A: the cover's deep blue on cream, charcoal
+  coral: ["#efe3c0", "#e45f57", "#27324f"],        // B: the red-orange burst, with navy for the dark ink
+  star: ["#efe5c6", "#e3c636", "#2e4f7c"],         // C: the yellow star, with the cover's blue as the dark ink
+  lime: ["#ede4c4", "#8c9b2e", "#3a2a26"],         // D: the green lettering, with the cover's brown-black
+  // from the cover of City of Wood (1993): black field, a city in electric-blue lines, gold lettering, white title
+  cowwhite: ["#ece9e1", "#3a3fd6", "#0e0d15"],     // E: white card, the cover's electric blue, its black
+  cowkraft: ["#d8b07a", "#3a3fd6", "#0e0d15"],     // F: gold-brown kraft card (the "wood" lettering), blue, black
+  cownight: ["#2f33a8", "#e2ac62", "#0e0d15"],     // G: blue card, gold ink, black
+};
+// The colour arc (Robin, 2026-11-12, after the Ricks Clips and Kevin Ngo studies): cobalt drifts from a cool
+// morning at the first line to warm by the last, and a motif yellow (the star on the Accidentally Acquired Beliefs
+// cover) grows across the piece on what is being built. Keyframes by song time; other palettes stay fixed.
+const ARCS = {
+  cobalt: [
+    [0.0, ["#e6e5dc", "#2c5aa0", "#21252f"]],
+    [9.0, ["#ece4cf", "#2f5c9e", "#24242c"]],
+    [16.0, ["#f2e2ba", "#34529f", "#2a2424"]],
+  ],
+};
+const MOTIF = "#e9c43a";
+const palName = q.get("pal") || "cobalt";   // cobalt: Robin's pick, 2026-11-12
+const PAL = PALETTES[palName] || PALETTES.cobalt;
+export const INK = { cream: new THREE.Color(), red: new THREE.Color(), black: new THREE.Color(), motif: new THREE.Color() };
+const _a = new THREE.Color(), _b = new THREE.Color();
+export function setPalette(t) {
+  const arc = ARCS[palName];
+  const mixHex = (i) => {
+    if (!arc) return _a.set(PAL[i]);
+    let k = 0; while (k < arc.length - 1 && t > arc[k + 1][0]) k++;
+    if (k === arc.length - 1) return _a.set(arc[k][1][i]);
+    const [t0, p0] = arc[k], [t1, p1] = arc[k + 1]; const u = Math.min(1, Math.max(0, (t - t0) / (t1 - t0)));
+    return _a.set(p0[i]).lerp(_b.set(p1[i]), u * u * (3 - 2 * u));
+  };
+  ["cream", "red", "black"].forEach((r, i) => INK[r].copy(mixHex(i)).convertSRGBToLinear());
+  INK.motif.set(MOTIF).convertSRGBToLinear();
+}
+setPalette(0);
 
 const canvas = document.getElementById("c");
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, preserveDrawingBuffer: true });
@@ -80,16 +120,22 @@ const finMat = new THREE.ShaderMaterial({
     vec2 px = vUv * res;
     vec2 uv = vUv + weave / res;                       // gate weave moves the print, not the paper
     vec2 t = soft / res; vec3 c = texture2D(tAcc, uv).rgb * .4 + (texture2D(tAcc, uv + vec2(t.x, 0.)).rgb + texture2D(tAcc, uv - vec2(t.x, 0.)).rgb + texture2D(tAcc, uv + vec2(0., t.y)).rgb + texture2D(tAcc, uv - vec2(0., t.y)).rgb) * .15;
-    // paper tooth, fixed to the screen: broad cloud, fibres, pits
+    // paper, fixed to the screen: an embossed fibrous tooth lit from the top left (a scanned sheet of rough card),
+    // plus slow cloudy variation in the sheet. Multiplied over everything, ink included.
     vec2 p = px / res.y * 720.;
-    float cloud = fbm(p * .006) - .5;
-    float fib = fbm(vec2(p.x * .09, p.y * .02) + 3.1) - .5;
-    float tooth = n2(p * .55) - .5;
-    float pit = smoothstep(.985, 1., h(floor(p * .5)));
-    float m = 1. + cloud * .10 + fib * .06 + tooth * .05 - pit * .22;
+    vec2 q2 = vec2(p.x * .62, p.y);                                   // fibres run a little sideways
+    float e = 1.2;
+    float hc = fbm(q2 * .09), hx = fbm((q2 + vec2(e, 0.)) * .09), hy = fbm((q2 + vec2(0., e)) * .09);
+    float fc = n2(q2 * .3), fx = n2((q2 + vec2(e, 0.)) * .3), fy = n2((q2 + vec2(0., e)) * .3);
+    vec2 grad = vec2(hx - hc, hy - hc) * 1.0 + vec2(fx - fc, fy - fc) * .35;
+    float relief = dot(grad, normalize(vec2(-.7, .7))) * 2.4;        // light from the top left
+    float cloud = fbm(p * .005) - .5;
+    float alb = (fbm(q2 * .08 + 7.) - .5) * .06;
+    float m = 1. + relief * .42 + cloud * .07 + alb + (fbm(q2 * .045 + 3.) - .5) * .07;
     c *= m;
-    // ink sits in the paper: a little lift in the darks where the tooth is high (dry ink)
-    c = mix(c, c + vec3(.012, .011, .009), smoothstep(.2, .6, tooth + .5) * (1. - smoothstep(0., .2, dot(c, vec3(.333)))));
+    // the tooth shows through dark ink too: ink sits on the raised fibres a little thinner
+    float luma = dot(c, vec3(.333));
+    c += vec3(max(relief, 0.) * .06 + max(alb, 0.) * .3) * (1. - smoothstep(0., .25, luma));
     // vignette
     vec2 d = (vUv - .5) * vec2(res.x / res.y, 1.); float v = 1. - vig * smoothstep(.35, 1.05, length(d));
     c *= v;
@@ -111,6 +157,7 @@ window.renderFrame = (f) => {
   let look = null;
   for (let i = 0; i < SUB; i++) {
     const t = (f + (i + 0.5) / SUB * 0.5 - 0.25) / FPS;   // 180-degree shutter centred on the frame
+    setPalette(t);
     look = at(t, ctx);
     scene.background = INK[look.ground];
     renderer.setRenderTarget(rtScene); renderer.render(scene, camera);

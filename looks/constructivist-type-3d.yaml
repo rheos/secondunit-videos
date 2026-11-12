@@ -1,0 +1,63 @@
+slug: constructivist-type-3d
+title: Constructivist type in 3D on paper
+note: >-
+  Sung words printed flat on cards, bars and gateways in a 3D city that the camera skims at steep angles, with real
+  buildings, doors and crowds lit from one side and pushed into three inks. Everything sits under a rough card texture
+  with depth of field and motion blur, like a moving screen print.
+used: New City, Bob Wiseman, test
+cost: free
+group: code
+order: 680
+clip: null
+tall: false
+tags:
+  medium: [type, 3d]
+  texture: [paper grain]
+  era: [1900-1945]
+  motion: [moving camera]
+  colour: [limited palette]
+  engine: [threejs]
+  use: [music video]
+status: test
+engine: three.js
+project: bobwiseman-new-city-constructivist
+code:
+  path: bobwiseman-new-city-constructivist/js/
+  flag: "?v=2 (v1 board: no flag); ?pal=<name> picks a palette"
+  page: bobwiseman-new-city-constructivist/newcity.html
+  note: >-
+    story2.js holds the four shots as pure functions of song time; ink.js thresholds real models into three inks from
+    one fixed light (face normals from screen derivatives, so instanced and skinned meshes work); type.js turns Anton
+    outlines into flat or extruded meshes; main.js does the colour arc, sub-frame motion blur, depth of field from the
+    depth buffer, the embossed paper on multiply, weave and vignette. About 0.2 s a frame at 720p on the Mac's GPU.
+    Words and onset times are in gitignored work/words.js.
+rules:
+  - Three inks by role (paper, accent, dark) plus one motif colour; the ground flips ink at each cut
+  - Real models (CC0) lit by one fixed light and thresholded into the inks; no outlines, no lights in the scene
+  - Type is printed flat on surfaces (street cards, lintels, bars, slabs), never floating facing the camera
+  - Camera low, wide and rolled; it skims printed surfaces at grazing angles and streams past dense rows of objects
+  - Each word is stamped on its vocal-stem onset; the camera is placed so the word is ahead of it, not behind a nearer prop
+  - Paper is an embossed, lit card tooth fixed to the screen, multiplied over everything and showing through dark ink
+  - The palette drifts cool to warm across the piece; the motif colour grows on what is being built
+palette:
+  - "#e6e5dc"
+  - "#2c5aa0"
+  - "#21252f"
+  - "#f2e2ba"
+  - "#e9c43a"
+reference: >-
+  Simon Robson's "What Barry Says" (2004), study references/simon-robson/STUDY-what-barry-says.md: ideas only, none of
+  his frames, layouts, emblems, models or sound. Colour arc and motif colour from the Kevin Ngo and Ricks Clips studies;
+  cobalt from the cover of Accidentally Acquired Beliefs. The first palette (cream, poster red, near-black) is archived
+  as ?pal=oxblood: Robin, 2026-11-12, "very cool, but it's also kind of fascist".
+proof:
+  issue: rheos/secondunit-videos#502
+  pr:
+    - rheos/secondunit-videos#503
+  renders:
+    - bobwiseman-new-city-constructivist/out/review/new-city_constructivist-v2-cobalt-b_f0-f468_24fps_review.mp4
+verdict: null
+related:
+  - toon-cards
+  - perspective-illusion
+  - riso

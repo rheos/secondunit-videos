@@ -10,7 +10,7 @@ const LIGHT = new THREE.Vector3(-0.72, 0.55, 0.3).normalize();
 
 export function inkMaterial({ hi, mid, lo, t1 = -0.05, t2 = 0.45, light = LIGHT, rough = 0.12, side = THREE.FrontSide } = {}) {
   const m = new THREE.MeshBasicMaterial({ color: 0xffffff, side });
-  const u = { inkHi: { value: hi.clone() }, inkMid: { value: mid.clone() }, inkLo: { value: lo.clone() },
+  const u = { inkHi: { value: hi }, inkMid: { value: mid }, inkLo: { value: lo },   // shared Colors: the palette arc updates them
     lightDir: { value: light.clone() }, t1: { value: t1 }, t2: { value: t2 }, rough: { value: rough } };
   m.userData.u = u;
   m.onBeforeCompile = (sh) => {

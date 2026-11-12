@@ -55,6 +55,8 @@ export function crane(r, x, z, s = 1, swing = 0) {
   const hookAt = top.clone().addScaledVector(dir, L * (0.55 + r() * 0.3)); const drop = (5 + r() * 6) * s;
   gs.push(beam(hookAt, hookAt.clone().addScaledVector(up, -drop), t * 0.5));
   gs.push(box(0.5 * s, 0.5 * s, 0.5 * s, hookAt.x, hookAt.y - drop - 0.5 * s, hookAt.z));
+  // the load on the hook, kept apart so it can take its own ink
+  gs.load = box(2.6 * s, 1.1 * s, 1.4 * s, hookAt.x, hookAt.y - drop - 1.7 * s, hookAt.z);
   return gs;
 }
 // row house front with open doorways (no doors in them: "without locks on the doors")
