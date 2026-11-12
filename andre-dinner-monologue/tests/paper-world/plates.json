@@ -225,6 +225,49 @@
    "size": "1024x1536",
    "ref": "tower_glass2_dark",
    "prompt": "Edit image 1. Keep everything exactly as it is: the same wine glass, the same shape, size and position in the frame, the same vellum bowl, the same red paper wine, the same stem and foot, the same light, and the fully transparent background. Add only this: three neat rows of small arched window cut-outs in the bowl above the wine, each one glowing warm yellow from inside like the lit windows of an apartment building at night, with a soft warm glow on the vellum close around them. Nothing else changes."
+  },
+  "bldg_stone": {
+   "size": "1024x1536",
+   "full": true,
+   "prompt": "A flat, straight-on, evenly lit macro photograph of a tall rectangular panel of matte cream-stone card with visible paper fibre: one face of a handmade paper-craft model skyscraper. It has a regular grid of small upright rectangular window cut-outs, six across and fourteen down, most of them glowing warm yellow from behind and a few left dark, separated by slim raised vertical piers of the same card in an art deco manner. A narrow band of slightly darker card runs along the very top edge and the very bottom edge. The panel fills the whole image from edge to edge with no border and no background, and its left and right edges match so that copies can repeat side by side. No perspective, no cast shadows, no text."
+  },
+  "bldg_brick": {
+   "size": "1024x1536",
+   "full": true,
+   "prompt": "A flat, straight-on, evenly lit macro photograph of a tall rectangular panel of matte brick-red card with visible paper fibre and faint scored brick courses: one face of a handmade paper-craft model apartment building. It has a regular grid of small upright rectangular window cut-outs, five across and ten down, each with a thin pale card sill, most of them glowing warm yellow from behind and a few left dark. A narrow band of cream card runs along the very top edge like a cornice. The panel fills the whole image from edge to edge with no border and no background, and its left and right edges match so that copies can repeat side by side. No perspective, no cast shadows, no text."
+  },
+  "bldg_teal": {
+   "size": "1024x1536",
+   "full": true,
+   "prompt": "A flat, straight-on, evenly lit macro photograph of a tall rectangular panel of matte deep teal card with visible paper fibre: one face of a handmade paper-craft model office tower. It has seven narrow vertical ribbons of small square window cut-outs running the full height, the windows mostly glowing warm yellow from behind and a few left dark, with plain teal card piers between the ribbons. A narrow band of navy card runs along the very top edge. The panel fills the whole image from edge to edge with no border and no background, and its left and right edges match so that copies can repeat side by side. No perspective, no cast shadows, no text."
+  },
+  "bldg_stone_dark": {
+   "size": "1024x1536",
+   "ref": "bldg_stone",
+   "prompt": "Edit image 1. Change ONLY the window cut-outs: every one of them is now dark and unlit, showing only deep shadow inside, with no glow and no warm light spilling onto the card. Keep everything else exactly as it is: the same panel, the same window shapes, sizes and positions, the same card colour, piers, bands and texture, edge to edge."
+  },
+  "bldg_brick_dark": {
+   "size": "1024x1536",
+   "ref": "bldg_brick",
+   "prompt": "Edit image 1. Change ONLY the window cut-outs: every one of them is now dark and unlit, showing only deep shadow inside, with no glow and no warm light spilling onto the card. Keep everything else exactly as it is: the same panel, the same window shapes, sizes and positions, the same sills, the same card colour, brick courses, cornice and texture, edge to edge."
+  },
+  "bldg_teal_dark": {
+   "size": "1024x1536",
+   "ref": "bldg_teal",
+   "prompt": "Edit image 1. Change ONLY the window cut-outs: every one of them is now dark and unlit, showing only deep shadow inside, with no glow and no warm light spilling onto the card. Keep everything else exactly as it is: the same panel, the same window shapes, sizes and positions, the same card colour, piers, band and texture, edge to edge."
+  },
+  "bldg_roof": {
+   "size": "1024x1024",
+   "full": true,
+   "prompt": "A flat, evenly lit macro photograph taken from directly above of the flat roof of a handmade paper-craft model building: a square of matte grey-cream card with visible paper fibre, with a raised folded card parapet running round all four edges, a small square card hatch near one corner and a short card vent pipe. The square roof fills the whole image from edge to edge with no border and no background. No perspective, no cast shadows, no text."
+  },
+  "water_tower": {
+   "size": "1024x1024",
+   "prompt": "A single small paper-craft rooftop water tower of the kind on New York buildings: a round barrel made of vertical slats of brown card held by two thin card hoops, with a low conical card roof, standing on four thin crossed card legs."
+  },
+  "spire": {
+   "size": "1024x1536",
+   "prompt": "A single paper-craft art deco skyscraper crown: three stepped tiers of cream card that narrow as they rise, each with small arched fan shapes of gold foil card, topped by a long thin card needle. Only the crown and needle, no building under it."
   }
  }
 }
