@@ -34,13 +34,18 @@ export async function buildCamp(X) {
     reg.add(G.name, G, { kind: "flat", it: { s, G, H, card, slit } });
     return { s, G, H, card, slit, inner };
   });
-  // the guards' slots up the face of the hero segment
-  const hero = wallObjs[S6.HERO], slotPaleB = basic("#dba584"), slotDarkB = basic("#3a1e16");
+  // The guards have no slot up the wall's face: they come up behind the battlements (s06.js GUARD_TOP). The five strips
+  // that were the slots are kept, hidden, on the face of the hero segment, and shown only once that face is turned down
+  // onto the cloth in the fall (from f3357): their top ends show through the crenels of the fallen wall as two to six
+  // pixels in the wides of sections 7 to 10, and those frames are the ones the later sections were built on. Delete
+  // these strips and f3357 on changes by those pixels and nothing else.
+  const hero = wallObjs[S6.HERO], slotPaleB = basic("#dba584"), slotDarkB = basic("#3a1e16"), oldSlots = [];
   const localX = (o, [x, z]) => (x - o.s.mid[0]) * Math.cos(o.s.yaw) - (z - o.s.mid[1]) * Math.sin(o.s.yaw);
   S6.CREW.filter((d) => d.role === "guard").forEach((d) => { const L = d.w.legs[d.w.legs.length - 1], e = L.path.at(L.path.len), x = localX(hero, e);
-    const a = new THREE.Mesh(new THREE.PlaneGeometry(0.2, S6.GUARD_Y - 0.5), slotPaleB), b = new THREE.Mesh(new THREE.PlaneGeometry(0.07, S6.GUARD_Y - 0.5), slotDarkB); a.position.set(x, (S6.GUARD_Y + 0.5) / 2, 0.015); b.position.set(x, (S6.GUARD_Y + 0.5) / 2, 0.03); hero.H.add(a, b); });
+    const a = new THREE.Mesh(new THREE.PlaneGeometry(0.2, S6.GUARD_Y - 0.5), slotPaleB), b = new THREE.Mesh(new THREE.PlaneGeometry(0.07, S6.GUARD_Y - 0.5), slotDarkB); a.position.set(x, (S6.GUARD_Y + 0.5) / 2, 0.015); b.position.set(x, (S6.GUARD_Y + 0.5) / 2, 0.03); a.visible = b.visible = false; hero.H.add(a, b); oldSlots.push(a, b); });
   updates.push((f) => {
     paint(slotPaleB, hero.s.mid[0], hero.s.mid[1], 1, new THREE.Color("#dba584")); paint(slotDarkB, hero.s.mid[0], hero.s.mid[1], 1, new THREE.Color("#3a1e16"));
+    const under = f >= S7.F0 && S7.fallAt(S6.HERO, f).a >= 0.75; for (const m of oldSlots) m.visible = under;
     for (const o of wallObjs) {
       const w = S6.wallAt(o.s.i, f), fall = f >= S7.F0 ? S7.fallAt(o.s.i, f) : { a: 0, dir: 1 };
       o.G.visible = f >= S6.F0 && w.slit > 0; if (!o.G.visible) continue;
@@ -86,10 +91,20 @@ export async function buildCamp(X) {
       const s = S.citizenAt(i, f), tint = tintAt(s.x, s.z), fall = f >= S7.F0 && c.seg >= 0 ? S7.fallAt(c.seg, f + (c.guard ? 0 : 5)).a : 0;
       c.carried.visible = !!s.carry && s.role !== undefined; c.carried.material.color.copy(tint);
       c.left.visible = S6.delivered(i, f) && fall < 0.45; paint(c.left.material, c.left.position.x, c.left.position.z);
-      if (c.guard) { c.guard.visible = !!s.guard; st.a.visible = st.b.visible = st.core.visible = !s.guard; c.guard.material.color.copy(tint); st.root.position.y += s.lift || 0; }
+      // a guard on the wall rides it down; over the first three quarters of the fall it is eased to where it has always
+      // lain on the fallen wall (ride = 1: the pose sections 8 to 10 are built on, computed exactly as before)
+      const ride = c.guard && fall > 0 ? smooth(fall / 0.75) : 0, GT = S6.GUARD_TOP, n = S.CH.n, yaw0 = st.root.rotation.y;
+      if (c.guard) { c.guard.visible = !!s.guard; st.a.visible = st.b.visible = st.core.visible = !s.guard; c.guard.material.color.copy(tint);
+        if (!s.wall) st.root.position.y -= s.sink || 0;                // down through the slot it stands in
+        else if (ride < 1) {                                           // behind the battlements, boots on the floor of its crenel, the card parallel to the wall
+          const th = fall * (HALF - 0.004), w0 = S6.chP(s.wu, S6.WALL.off), on = -GT.back * Math.cos(th) + s.wy * Math.sin(th), oy = s.wy * Math.cos(th) + GT.back * Math.sin(th);
+          const out = S6.GUARD_Y * Math.sin(th) + 0.55 * Math.cos(th) - 0.55, y = Math.max(0.12, S6.GUARD_Y * Math.cos(th) - 0.55 * Math.sin(th));      // where it lay before, at this angle
+          const yawW = hero.s.yaw + (c.sign < 0 ? 0 : Math.PI), dy = Math.atan2(Math.sin(yawW - yaw0), Math.cos(yawW - yaw0));
+          st.root.position.set(lerp(w0[0] + n[0] * on, s.x + n[0] * out, ride), lerp(oy, y, ride), lerp(w0[1] + n[1] * on, s.z + n[1] * out, ride)); st.root.rotation.y = yaw0 + dy * (1 - ride);
+        } }
       if (fall > 0 && st.root.visible) {       // the wall comes down: a guard rides it to the cloth, a bricklayer is folded flat ahead of it
-        const th = fall * (HALF - 0.004), n = S.CH.n, zl = [Math.sin(st.root.rotation.y), Math.cos(st.root.rotation.y)], sg = zl[0] * n[0] + zl[1] * n[1] > 0 ? 1 : -1;
-        if (c.guard) { const out = S6.GUARD_Y * Math.sin(th) + 0.55 * Math.cos(th) - 0.55, y = S6.GUARD_Y * Math.cos(th) - 0.55 * Math.sin(th);
+        const th = fall * (HALF - 0.004), zl = [Math.sin(st.root.rotation.y), Math.cos(st.root.rotation.y)], sg = zl[0] * n[0] + zl[1] * n[1] > 0 ? 1 : -1;
+        if (c.guard && ride >= 1) { const out = S6.GUARD_Y * Math.sin(th) + 0.55 * Math.cos(th) - 0.55, y = S6.GUARD_Y * Math.cos(th) - 0.55 * Math.sin(th);
           st.root.position.x += n[0] * out; st.root.position.z += n[1] * out; st.root.position.y = Math.max(0.12, y); }
         st.pop.rotation.x = sg * th; st.rock.rotation.z = 0;
       }
@@ -113,7 +128,30 @@ export async function buildCamp(X) {
     const mats = [b.material, l.material]; if (extra) { const e = flatCard(extra, HWc, HH, false); e.position.z = -0.06; G.add(e); mats.push(e.material); }
     return { G, lg, mats }; };
   const capped = layer("head.capped", part(cb, (x, y) => !isLidC(x, y)), part(cb, isLidC), 0.15);
-  const bare = layer("head.bare", part(bb, (x, y) => !isLidB(x, y)), part(bb, isLidB), -0.15, part(bb, isLidB, [20, 15, 15]));      // behind the crown: a plain dark hollow
+  const bare = layer("head.bare", part(bb, (x, y) => !isLidB(x, y)), part(bb, isLidB), -0.15);
+  // the hollow under the crown. No dark card stands where the crown was: with the lid up, the head is cut clean along
+  // the band line and the room shows through the gap. What is inside is an inner wall of darker card, bowed back behind
+  // the cut like the far side of a bowl (a strip fixed at both ends of the cut that bows as the lid lifts, 6.5 cm deep
+  // at the middle, its edge 0.9 cm above the cut), darker toward the bottom; and the pale core of the card shows as a
+  // rim along the three cut edges (the head's, the lid's, the inner wall's). Looking down into it the wall is a dark
+  // lens between two pale rims; from eye height it is a sliver.
+  const HOL = { D: 6.5, rise: 0.9, deep: 7.5, rim: 7, n: 28 }, A8 = (d, x, y) => (x < 0 || y < 0 || x >= HW || y >= HHp ? 0 : d[(Math.round(y) * HW + Math.round(x)) * 4 + 3]);
+  const rimOf = (onLid) => { const c = canvasOf(HW, HHp), g = c.getContext("2d"), img = g.createImageData(HW, HHp), d = cb.data.data, o = img.data;       // the cut edge of the capped layer: of its lid, or of what stays
+    for (let x = 0; x < HW; x++) for (let y = 1; y < HHp - 1; y++) { if (A8(d, x, y) < 128 || isLidC(x, y) !== onLid) continue; const yn = onLid ? y + 1 : y - 1;
+      if (A8(d, x, yn) < 128 || isLidC(x, yn) === onLid) continue; for (let q = 0; q < HOL.rim; q++) { const yy = onLid ? y - q : y + q; if (A8(d, x, yy) < 128 || isLidC(x, yy) !== onLid) break; const i = (yy * HW + x) * 4; o[i] = o[i + 1] = o[i + 2] = o[i + 3] = 255; } }
+    g.putImageData(img, 0, 0); return tex(c); };
+  const rimM = [], rimBody = flatCard(rimOf(false), HWc, HH, false), rimLid = flatCard(rimOf(true), HWc, HH, false); rimBody.position.z = 0.03; rimLid.position.set(-pivot[0], -pivot[1], 0.03); capped.G.add(rimBody); capped.lg.add(rimLid); rimM.push(rimBody.material, rimLid.material);
+  let xa = 0, xb = HW - 1; while (xa < HW && A8(bb.data.data, xa, lineY(xa) + 4) < 128) xa++; while (xb > xa && A8(bb.data.data, xb, lineY(xb) + 4) < 128) xb--;       // the two ends of the cut, in the box's pixels
+  const cutP = (u) => { const x = lerp(xa, xb, u); return [(x / HW - 0.5) * HWc, (1 - lineY(x) / HHp) * HH]; };
+  const wallG = new THREE.BufferGeometry(), rimG = new THREE.BufferGeometry(), wIdx = [], wCol = [], cTop = new THREE.Color("#2a2233"), cBot = new THREE.Color("#060508");
+  for (let i = 0; i <= HOL.n; i++) { wCol.push(cTop.r, cTop.g, cTop.b, cBot.r, cBot.g, cBot.b); if (i < HOL.n) { const a = i * 2; wIdx.push(a, a + 1, a + 2, a + 1, a + 3, a + 2); } }
+  for (const g of [wallG, rimG]) { g.setAttribute("position", new THREE.Float32BufferAttribute(new Float32Array((HOL.n + 1) * 6), 3)); g.setIndex(wIdx); } wallG.setAttribute("color", new THREE.Float32BufferAttribute(wCol, 3));
+  const wallM = new THREE.MeshBasicMaterial({ vertexColors: true, toneMapped: false, side: THREE.DoubleSide }), rimWM = basic("#ffffff"); rimM.push(rimWM);
+  const hollow = new THREE.Group(), hWall = new THREE.Mesh(wallG, wallM), hRim = new THREE.Mesh(rimG, rimWM); hWall.frustumCulled = hRim.frustumCulled = false; hollow.add(hWall, hRim); hinge.add(hollow);
+  const bow = (k) => { const pw = wallG.attributes.position, pr = rimG.attributes.position;       // k: how far the lid is open, 0 to 1
+    for (let i = 0; i <= HOL.n; i++) { const th = (Math.PI * i) / HOL.n, [x, y] = cutP((1 - Math.cos(th)) / 2), sn = Math.sin(th), z = -0.34 - HOL.D * sn * k, top = y + HOL.rise * sn * k;
+      pw.setXYZ(i * 2, x, top, z); pw.setXYZ(i * 2 + 1, x, top - HOL.deep * (0.25 + 0.75 * sn), z); pr.setXYZ(i * 2, x, top, z + 0.03); pr.setXYZ(i * 2 + 1, x, top - 0.24 * Math.min(1, 4 * sn), z + 0.03); }
+    pw.needsUpdate = pr.needsUpdate = true; };
   // its back is the cloth it was cut from: lying face down it is the tablecloth; lit, like the cloth
   { const g = new THREE.PlaneGeometry(HWc, HH, 8, 8); g.translate(0, HH / 2, 0); const pos = g.attributes.position, uv1 = [], { hw, hd } = S.LAY.cloth;
     for (let i = 0; i < pos.count; i++) { const wx = S6.HEAD.at[0] - pos.getX(i), wz = S6.HEAD.at[1] + pos.getY(i); uv1.push((wx + hw) / (2 * hw), (hd - wz) / (2 * hd)); }
@@ -137,7 +175,8 @@ export async function buildCamp(X) {
     const h = S6.headAt(f), down = f >= S7.F0 ? S7.headDownAt(f) : 0; headG.visible = h.shown && down < 1; if (!headG.visible) return;
     hinge.rotation.x = HALF * (1 - h.up * (1 - down)); hinge.scale.z = lerp(0.04, 1, clamp(h.up * (1 - down) * 2.5));      // lying flat, the layers are pressed together
     capped.G.position.x = h.capped; bare.G.position.x = h.bare; capped.lg.rotation.z = bare.lg.rotation.z = 0.56 * h.lid * (f >= S7.F0 ? 1 - smooth((f - S7.HEAD_DOWN + 4) / 9) : 1);       // the crown shuts as the head folds away
-    const [x, z] = S6.HEAD.at, c = tintAt(x, z); [...capped.mats, ...bare.mats, band.material].forEach((m) => m.color.copy(c)); paint(tabM, x, z, 1, new THREE.Color("#ead9b8")); paint(gripM, x, z, 1, new THREE.Color("#d8c39c")); paint(slitM, x, z, 1, new THREE.Color("#1c1310"));
+    const open = clamp(capped.lg.rotation.z / 0.56); hollow.visible = rimBody.visible = rimLid.visible = open > 0.02; if (hollow.visible) bow(Math.min(1, open));
+    const [x, z] = S6.HEAD.at, c = tintAt(x, z); [...capped.mats, ...bare.mats, band.material, wallM].forEach((m) => m.color.copy(c)); rimM.forEach((m) => paint(m, x, z, 1, new THREE.Color("#ead9b8"))); paint(tabM, x, z, 1, new THREE.Color("#ead9b8")); paint(gripM, x, z, 1, new THREE.Color("#d8c39c")); paint(slitM, x, z, 1, new THREE.Color("#1c1310"));
     const ext = Math.max(0.001, h.band) * bandLen; band.visible = h.band > 0.002; band.scale.x = ext / bandLen; bandT.repeat.x = ext / bandLen; bandT.offset.x = 1 - ext / bandLen; bandTab.position.x = slitX + ext + 0.3;
     strips.forEach((s) => { s.strip.position.x = s.k ? h.bare : h.capped; s.g.visible = h.up * (1 - down) > 0.03; });       // under the flap while it lies flat
   });
@@ -191,7 +230,7 @@ export async function buildCamp(X) {
     const h = S7.handAt(f); handG.visible = f >= S7.F0 && h.shown; if (!handG.visible) return;
     handG.position.set(S7.HAND.xc, 0.075, S7.HAND.zw + h.dz);
     const c = tintAt(S7.HAND.xc, S7.HAND.zw - 12 + h.dz); handMats.forEach((m) => m.color.copy(c));
-    fingers.forEach((o, i) => { o.Hn.rotation.x = (o.F.deg * Math.PI / 180) * h.fold(i); });
+    const curl = S7.curlAt(f); fingers.forEach((o, i) => { o.Hn.rotation.x = (o.F.deg * Math.PI / 180) * h.fold(i) * curl; });
     const a = S7.fallAt(S7.UNDER[0], f).a; under.forEach((o) => { o.H.rotation.x = -a * HALF; });
   });
 

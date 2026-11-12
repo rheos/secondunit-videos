@@ -51,7 +51,16 @@ export const towerAt = (k, f) => ({ up: spring(f - TOWERS[k].t0, 0.6, 18), lamp:
 // the fence where they stopped in section 5 and go home again.
 const VC = 2.1 / 12, LANE = 3.3, FOOT = 1.75;
 const turnAt = (k) => C.guards + 3 * k, riseAt = (k) => C.pride + 2 * k;
-export const GUARD_Y = WALL.H - 0.42;                               // a guard's tab sits on the top course, in front of the merlons
+export const GUARD_Y = WALL.H - 0.42;                               // how far up the wall a guard is once the wall has fallen flat (section 9 reads it)
+// On "pride" a guard stands on top of the wall, not on a rod up its face: the card drops through the slot it stands in
+// (6 frames, ending on the cue), passes under the table, and rises behind the battlements through the wall's top (12
+// frames and a settle), its boots on the floor of a crenel. Nothing is in front of the bricks.
+const HERO_U1 = uB + 3 * (uC - uB) / 4, HERO_W = (uC - uB) / 4;      // the hero segment's right-hand end (seen from outside) and its width
+export const GUARD_TOP = { y: WALL.H - 0.97 - 0.04, back: 0.2, sink: 6, drop: 4.5, rise: 4.4,
+  u: [1226, 974.5, 720.5, 464.5, 210].map((px) => HERO_U1 - (px / 1438) * HERO_W) };      // the five crenels of the wall_segment plate, guard 0 first
+// The deal: nothing lies flat on the cloth. Each card is hidden until its hinge starts, springs up from the head of its
+// slot (damping 0.6), one card every two frames. H[i] is citizen i's frame; a home citizen leaves ten frames later.
+const DEAL = { 3: 2545, 8: 2547, 5: 2549, 10: 2551, 6: 2553, 11: 2555, 4: 2557, 9: 2559, 7: 2561, 12: 2563, 1: 2565, 2: 2567, 14: 2569, 13: 2571, 16: 2577, 15: 2583 };
 function crewDef(i, o) {
   const w5 = S5.CITIZENS[i - 1], A = w5.legs[0].path.pts, v = VC * o.pace;
   const B = leg([A[A.length - 1], ...o.out.map(([u, vv]) => chP(u, vv))], { end: o.arrive, v });
@@ -60,14 +69,14 @@ function crewDef(i, o) {
     const u0 = o.out[o.out.length - 1][0], u1 = o.patrol.to, P = [chP(u0, LANE), chP((u0 + u1) / 2, LANE + 0.15), chP(u1, LANE)]; let t = o.patrol.start, fwd = true;
     while (t < 3300) { turns.push({ f: Math.round(t - 12) }); const L = leg(fwd ? P : P.slice().reverse(), { start: t, v: VC * 1.1 }); legs.push(L); t = L.fb + 30; fwd = !fwd; }
   }
-  const w = walker({ name: w5.name, legs, turns: o.guard !== undefined ? [{ f: turnAt(o.guard) }] : turns, show: [legs[0].fa - 10, 1e9] });
-  return { i, w, role: o.guard !== undefined ? "guard" : "layer", k: o.guard, arrive: o.arrive, popT: legs[0].fa - 9, legB: B };
+  const w = walker({ name: w5.name, legs, turns: o.guard !== undefined ? [{ f: turnAt(o.guard) }] : turns, show: [DEAL[i], 1e9] });
+  return { i, w, role: o.guard !== undefined ? "guard" : "layer", k: o.guard, arrive: o.arrive, popT: DEAL[i], legB: B };
 }
 function homeDef(i, arrive, stay, pace = 1.25) {
-  const w5 = S5.CITIZENS[i - 1], A = w5.legs[0].path.pts, v = VC * pace, start = Math.max(F0 + 9, w5.show[1] + 14);
+  const w5 = S5.CITIZENS[i - 1], A = w5.legs[0].path.pts, v = VC * pace, start = DEAL[i] + 10;
   const out = leg(A, { start, v }), t = Math.max(arrive, out.fb) + stay, back = leg(A.slice().reverse(), { start: t + 8, v });
-  const w = walker({ name: w5.name, legs: [out, back], turns: [{ f: Math.round(t) }], show: [out.fa - 10, back.fb + 10] });
-  return { i, w, role: "home", arrive: out.fb, popT: out.fa - 9, downT: back.fb + 1, s5until: w5.show[1] };
+  const w = walker({ name: w5.name, legs: [out, back], turns: [{ f: Math.round(t) }], show: [DEAL[i], back.fb + 10] });
+  return { i, w, role: "home", arrive: out.fb, popT: DEAL[i], downT: back.fb + 1, s5until: w5.show[1] };
 }
 const G = GATE_U;
 export const CREW = [
@@ -89,15 +98,18 @@ export const CREW = [
   d.w.legs.push(leg([chP(last[0], last[1]), chP(2, LANE + 0.1), chP(-4.6, LANE), chP(-6.3, 2.6), chP(-7.4, FOOT)], { start: C.camp + 12, v: VC * 1.2 })); d.arrive = Math.round(d.w.legs[2].fb); }
 export function citizenAt(i, f) {
   const d = CREW[i], g = f - ((f - F0) & 1);
-  if (d.role === "home" && f <= d.s5until + 10) return S5.citizenAt(i, f);        // still on its way home from section 5
+  if (d.role === "home" && f <= d.s5until) { const s = S5.citizenAt(i, f); if (s.pop < 0.02) s.visible = false; return s; }        // still on its way home from section 5; never drawn lying flat
   const s = d.w.at(f); s.y = 0; s.lean = 0; s.hitch = 0;
-  s.pop = smooth((g - d.popT) / 8) * (d.downT ? 1 - smooth((g - d.downT) / 8) : 1);
+  const dn = d.downT ? 1 - smooth((g - d.downT) / 8) : 1;
+  s.pop = spring(g - d.popT, 0.6, 14) * dn; if (g <= d.popT || dn < 0.02) s.visible = false;       // hinges up on a spring; hidden while it would lie flat
   s.role = d.role; s.carry = d.role === "layer" || (d.role === "home" ? g < d.arrive + 1 : g < d.arrive);
   if (d.role === "guard") {
     const tt = turnAt(d.k), tr = riseAt(d.k), r = g - tr;
     s.guard = g >= tt + 4;                                           // the card is edge-on at tt + 4 and tt + 5: the back is the guard
     s.turning = g >= tt && g < tt + 8;
-    s.lift = GUARD_Y * (r <= 0 ? 0 : r < 12 ? smoother(r / 12) : 1);
+    s.sink = GUARD_TOP.drop * smoother((r + GUARD_TOP.sink) / GUARD_TOP.sink);      // down through its slot, under by "pride"
+    s.wall = r > 0;                                                  // behind the battlements from "pride" on
+    if (s.wall) { s.wu = GUARD_TOP.u[d.k]; s.wy = GUARD_TOP.y - GUARD_TOP.rise * (1 - (r < 12 ? smoother(r / 12) : 1)); }
     if (r >= 12) s.rest = r - 12;                                    // lands and settles with one small rock
   }
   return s;
@@ -136,10 +148,13 @@ const hd = (dy = 0) => [HEAD.at[0], HEAD.eyeY + dy, HEAD.at[1]];
 const orbit = (deg, r, y) => [HEAD.at[0] + r * Math.sin((deg * Math.PI) / 180), y, HEAD.at[1] + r * Math.cos((deg * Math.PI) / 180)];
 export const CAM_KEYS = [
   handover(S5.CAM_KEYS, F0),
-  // f2544-f2636: down from the high wide and round the far right corner, to just outside the front wall, low, looking in
+  // f2544-f2636: down from the high wide and wide round the far right corner, staying high until it is out in front of
+  // the chamfer; then it comes down and in along the line it will look along at "camp", so the cutlery of the fence
+  // grows where it stands behind the citizens and never sweeps across the lens (it no longer trucks low past the
+  // right fence's corner)
   { f: 2566, P: [22, 132, 96], T: [8, 8, -4] },
-  { f: 2592, P: [62, 84, 42], T: [20, 6, -24] },
-  { f: 2614, P: [72, 34, -22], T: P3(4, -2, 5) },
+  { f: 2590, P: [66, 96, 26], T: [18, 6, -18] },
+  { f: 2614, P: P3(18.2, 40.3, 40), T: P3(5.5, -0.5, 4.5) },
   { f: C.camp, P: P3(11, 17.5, 6.4), T: P3(5.5, 0, 4) },
   // f2636-f2737: trucks along the wall as it goes up, to the hero segment
   { f: C.camp2 + 4, P: P3(9, 18, 5.8), T: P3(2.5, 0, 4) },
@@ -151,13 +166,15 @@ export const CAM_KEYS = [
   // f2761-f2830: rises a little and tilts up to the guards on the wall: the hero frame
   { f: C.pride + 24, P: P3(-9.4, 18.5, 5.4), T: P3(-7.4, 0, 6.6) },
   { f: C.prison1 + 4, P: P3(-12.2, 19.4, 6.2), T: P3(-7.4, 0, 6.9) },
-  // f2830-f2886: back and up over the wall, round the right side of the table, down to the head's eye height
-  { f: 2838, P: [41.5, 15, -52.5], T: [25, 7.5, -36] },
-  { f: 2846, P: [58, 28, -40], T: [25.5, 9, -20] },
-  { f: 2853, P: [66.5, 36, -17], T: hd(-8) },
-  { f: 2860, P: [61, 36, 12], T: hd(-5) },
-  { f: 2868, P: [48, 31, 31], T: hd(-4.2) },
-  { f: 2876, P: [40.5, 27, 37.5], T: hd(-3.9) },
+  // f2830-f2886: back and up over the wall, high round the right side of the table (60 cm up, so the right fence lies
+  // under the head in the frame, not across it), over the fence once at the near right, 13 cm above the cutlery, and
+  // down inside it to the head's eye height
+  { f: 2838, P: [43.4, 18, -51.9], T: [25, 7.8, -33] },
+  { f: 2847, P: [61, 48, -35], T: [24.5, 10, -16] },
+  { f: 2854, P: [69, 62, -12], T: hd(-8) },
+  { f: 2861, P: [64.5, 62, 12], T: hd(-6) },
+  { f: 2868, P: [53, 51, 31], T: hd(-5) },
+  { f: 2876, P: [41.3, 34, 40.8], T: hd(-4.2) },
   { f: 2886, P: orbit(12, 51, 23.3), T: hd(-3.7) },
   // f2878-f2957: a slow arc of 18 degrees, on round the head the way it came, as the layers part
   { f: C.guards2, P: orbit(6.5, 51, 22.8), T: hd(-3.8) },
@@ -174,9 +191,9 @@ export const CAM_KEYS = [
 export const camAt = (f) => camFrom(CAM_KEYS, f, lerp(1, 0.5, smooth((f - F0) / 60)));      // the float eases to half of section 5's
 
 export const BEATS = [
-  [F0, "I think", "citizens come out again on their slots, each pushing a brick"], [C.camp, "camp", "the first wall segment rises in front of the cutlery as the first brick arrives"],
+  [F0, "I think", "citizens spring up at the heads of their slots, one every two frames, and come out again, each pushing a brick"], [C.camp, "camp", "the first wall segment rises in front of the cutlery as the first brick arrives"],
   [C.built, "built", "the hero segment rises behind its five; the deal goes on round the table"], [C.themselves, "themselves", "the front wall closes; the watchtowers stand at its two corners"],
-  [C.guards, "guards", "the five cards turn: the back of each is a guard"], [C.pride, "pride", "the guards rise on their slots to stand on the wall"],
+  [C.guards, "guards", "the five cards turn: the back of each is a guard"], [C.pride, "pride", "the guards, gone down through their slots, come up behind the battlements to stand on the wall"],
   [C.prison1, "prison", "the hero frame: guards on the wall against the lit towers, bricklayers below"], [HEAD.t0, "(And so)", "the head hinges up out of the cloth beside the candle"],
   [C.schizophrenia, "schizophrenia", "the pull-tab slides the two layers apart: capped one way, bare the other"], [C.guards2, "guards", "the capped layer nudges"],
   [C.prisoners, "prisoners", "the bare layer nudges"], [C.result, "result", "the layers slide back together"], [C.lobotomized, "lobotomized", "the crown lifts on its hinge: a dark hollow"],

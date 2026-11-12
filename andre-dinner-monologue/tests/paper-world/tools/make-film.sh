@@ -9,7 +9,9 @@ cd "$(dirname "$0")/.."
 PY=/Users/robin/Code/novadiem/indieagent/viralvision/viralvision-worker/.venv/bin/python
 OUT=../../out/paper-world
 TAG=${1:?a tag for this cut, such as cut01}; A=${2:-0}; B=${3:-4761}; LAST=$((B - 1))
-FR=$OUT/frames-film; FILM=$OUT/film; CK=$OUT/check-film/$TAG
+# FILM_FRAMES=<dir> keeps a variant's frames apart, e.g. NOSLOTS=1 FILM_FRAMES=$OUT/frames-film-no-tracks for the cut
+# with the cloth tracks switched off (render.mjs reads NOSLOTS)
+FR=${FILM_FRAMES:-$OUT/frames-film}; FILM=$OUT/film; CK=$OUT/check-film/$TAG
 REVIEW=$FILM/andre_pop-up-table_${TAG}_f0-f4761_24fps_720x1280.mp4
 [[ -e $REVIEW ]] && { echo "$REVIEW exists: pick a new tag, review files are never overwritten"; exit 1; }
 mkdir -p $FR $FILM $CK
