@@ -152,3 +152,24 @@ So:
    Estimate first and get Robin's number.
 
 Target stills (approved as the look by Robin's choice of method): `out/paper-world/styleboard/`.
+
+## 7. Test 03 verdict (the painted table section)
+
+Robin, Nov 11 2026, about 6 pm Pacific, on `andre_paper-world-test03_f1800-f2544`:
+
+> Don't forget, we also have C-Dance through 11 Labs, where I have a lot of credits. Also, the building
+> cakes on the plates are not at quite the right angle, but overall, this is great.
+
+("C-Dance" is Seedance, dictated.) He sent a crop of the high wide: the tiered plate tower stands at
+the wrong angle on its plate.
+
+- **The method is approved.** The rest of the film is built this way, section by section, in the
+  storyboard's order.
+- **Plate towers:** a flat painted card is only right from near table height. They become real tiered
+  drums (three cylinders and a cap) wrapped in painted card (`tier_wall`, `tier_wall_dark`,
+  `tier_roof`), so they sit true on the plate from every angle. Only the plate towers change; the other
+  volumes stay as cards unless Robin asks.
+- **The Seedance pass runs through ElevenLabs,** where Robin has the credits (pro plan, about 738,000
+  of 745,000 credits unused when read on Nov 11). Higgsfield holds 4.79 credits; Fal's Seedance was
+  priced at about $0.57 a second at 720p. Not started; estimate first and get his number. Read
+  `references/previz-into-seedance.md` (the Nov 9 Libelous test) before planning it.

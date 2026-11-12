@@ -125,6 +125,21 @@
    "size": "1024x1536",
    "ref": "head_bare",
    "prompt": "Edit image 1. Add ONLY a hat: the man now wears a peaked police-style officer's cap cut from the same navy card, with a wide flat crown that overhangs at the front and the back, a narrow band, a short stiff visor at the front, and one tiny gold foil badge on the front of the crown. Keep everything else exactly as it is: the same head, neck and shoulders, the same size and position in the frame, the same card colour and texture, the tab, and the fully transparent background. Still no facial features."
+  },
+  "tier_wall": {
+   "size": "1536x1024",
+   "full": true,
+   "prompt": "A flat, straight-on, evenly lit macro photograph of a rectangular panel of matte peach-terracotta card with visible paper fibre. In it are exactly three tall arched window cut-outs side by side, evenly spaced, each glowing warm yellow from behind. A narrow band of umber card runs along the very top edge and another along the very bottom edge. Faint vertical crease lines sit halfway between the windows. The panel fills the whole image from edge to edge with no border and no background, and its left and right edges match so that copies can repeat side by side. No perspective, no cast shadows, no text."
+  },
+  "tier_roof": {
+   "size": "1024x1024",
+   "full": true,
+   "prompt": "A flat, evenly lit macro photograph taken from directly above of a round disc of matte peach-terracotta card with visible paper fibre, pleated with fine radial crease lines like a paper lid, with a narrow umber rim and a small round card cap in the centre. A perfect circle, centred, filling most of the image, on a fully transparent background. No perspective, no cast shadows, no text."
+  },
+  "tier_wall_dark": {
+   "size": "1536x1024",
+   "ref": "tier_wall",
+   "prompt": "Edit image 1. Change ONLY the three window cut-outs: they are now dark and unlit, showing only deep shadow inside, with no glow and no warm light spilling onto the card. Keep everything else exactly as it is: the same panel, the same window shapes, sizes and positions, the same card colour, bands, creases and texture, edge to edge."
   }
  }
 }
