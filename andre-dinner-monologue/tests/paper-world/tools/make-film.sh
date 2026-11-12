@@ -2,6 +2,9 @@
 # make-film.sh: the whole film, f0 to f4761, every section together, one render. Run from tests/paper-world/:
 #   zsh tools/make-film.sh cut01            frames to out/paper-world/frames-film/, the film to out/paper-world/film/
 #   zsh tools/make-film.sh cut02 2544 3397  re-render only that range into frames-film/, then mux the whole film again
+# Render the WHOLE film for a cut that goes out. A range re-render is for a look only: frames rendered in another
+# session are not byte-identical (Nov 12: f3120 came back 33 dB off the night before's, all of it in the soft shadow
+# edges, with the same code; within one session a frame is exact), so a spliced range can show as a shadow that shifts.
 # The voice is the master, never re-encoded in place: _in/andre.wav is 5 ms shorter than 4761 frames, so the tail is
 # padded with silence and the picture keeps its last frame (no -shortest).
 set -e -o pipefail

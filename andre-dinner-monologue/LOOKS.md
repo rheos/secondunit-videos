@@ -288,6 +288,10 @@ Robin, Nov 11 2026, about 8 pm Pacific, on `andre_paper-world-s06-s07-test01_f25
     enough (it is not: a 1981 US film stays in copyright into the 2070s).
   - The continuous camera was our rule, not his (the storyboard's "one continuous move").
   Nothing is built from these until he says which.
+  - He said yes to the seed the same morning: repainted as a pine seed (`seed_pine`, a registered
+    repaint of `seed`), in cut 04 (`out/paper-world/film/andre_pop-up-table_cut04_...`, rendered
+    whole on Nov 12). The camera, the glasses and the audio are untouched and still his to call.
+    The YouTube upload is still cut 03.
 - What is and is not code, so nobody overstates it: the 48 surfaces are painted images (GPT Image on
   the ChatGPT plan, no credits). Everything else is code: the 3D table, where each piece stands, every
   move, the camera, the candlelight and shadows, the lens blur, the render.
