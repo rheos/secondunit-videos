@@ -229,6 +229,12 @@ Robin, Nov 11 2026, about 8 pm Pacific, on `andre_paper-world-s06-s07-test01_f25
   theirs (the tree man, the guard's cap, the child, the couple, the robot), on his number.
   Robin: "we'll maybe do a few more then.. just make sure we are not forgetting about those." All
   three now sit together in `secondunit/figure-library/` with a README that lists them; start there.
+- **Later that night he came round to it** (after seeing six of the seven new sections land): "it's
+  looking good. i was never imagining the dinner table theme.. i do think it's kind of a nice
+  hommage to the source. perhaps i will just go with it awhile and revisit only after guaging the
+  reaction to this." So the table cut is the release, not a throwaway: finish it to release
+  standard. Version B (no table, Meshy people walking in a real city) is parked until he has seen
+  how this one is received; do not storyboard it until he asks. Its notes above stand.
 - What is and is not code, so nobody overstates it: the 48 surfaces are painted images (GPT Image on
   the ChatGPT plan, no credits). Everything else is code: the 3D table, where each piece stands, every
   move, the camera, the candlelight and shadows, the lens blur, the render.
