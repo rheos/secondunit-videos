@@ -4,7 +4,7 @@ const here = path.dirname(new URL(import.meta.url).pathname);
 const require = createRequire(process.env.PW_FROM || path.join(here, "package.json"));
 const { chromium } = require("playwright-core");
 const OUT = process.env.OUT || path.join(here, "out/frames"); fs.mkdirSync(OUT, { recursive: true });
-const types = { ".html": "text/html", ".js": "text/javascript", ".ttf": "font/ttf" };
+const types = { ".html": "text/html", ".js": "text/javascript", ".ttf": "font/ttf", ".glb": "model/gltf-binary" };
 const srv = http.createServer((q, s) => { const f = path.join(here, decodeURIComponent(q.url.split("?")[0])); fs.readFile(f, (e, d) => { if (e) { s.writeHead(404); s.end(); } else { s.writeHead(200, { "content-type": types[path.extname(f)] || "application/octet-stream" }); s.end(d); } }); }).listen(0);
 const port = srv.address().port;
 const W = +(process.env.W || 1280), H = +(process.env.H || 720);

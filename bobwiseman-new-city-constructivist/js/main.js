@@ -5,7 +5,7 @@
 // window.renderFrame(f) draws song frame f (24 fps, absolute song frame). Pure: frames can render in any order.
 import * as THREE from "./lib/three.module.js";
 import { loadFont } from "./type.js";
-import * as story from "./story.js";
+
 
 const q = new URLSearchParams(location.search);
 const W = +(q.get("w") || 1280), H = +(q.get("h") || 720);
@@ -105,7 +105,7 @@ function pass(mat, target, clear = true) {
 const hash = (n) => { const x = Math.sin(n * 12.9898) * 43758.5453; return x - Math.floor(x); };
 
 const ctx = { THREE, scene, camera, INK, W, H };
-let at = story.at;
+let at = null;
 window.renderFrame = (f) => {
   renderer.setRenderTarget(rtAcc); renderer.setClearColor(0x000000, 1); renderer.clear();
   let look = null;
@@ -124,7 +124,9 @@ window.renderFrame = (f) => {
   pass(finMat, null);
 };
 
+const story = await import(q.get("v") === "2" ? "./story2.js" : "./story.js");
 await loadFont("fonts/Anton-Regular.ttf");
-if (q.has("lineup")) { const lk = story.lineup(ctx); at = () => lk; } else await story.setup(ctx);
+at = story.at;
+if (q.has("lineup")) { const lk = await story.lineup(ctx); at = () => lk; } else await story.setup(ctx);
 window.ready = true;
 if (q.has("f")) window.renderFrame(+q.get("f"));
