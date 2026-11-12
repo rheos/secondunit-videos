@@ -65,7 +65,8 @@
     const side = k === 'me' ? 1 : -1;
     const toM = [MEET[0] - sh[0], MEET[1] - sh[1]], dm = Math.hypot(toM[0], toM[1]), um = [toM[0] / dm, toM[1] / dm];
     const upW = add(sh, [um[0] * 0.12 * L, um[1] * 0.12 * L]);           // straight up, tipped a little toward the other kid
-    const target = add(MEET, [-um[0] * 11, -um[1] * 11]);               // the palm stops short on its own side; the finger reaches
+    const fr = 11 * d.s * 1.18;                                          // palm centre to index tip, at full reach
+    const target = add(MEET, [-um[0] * fr, -um[1] * fr]);               // the palms stop short so only the fingertips meet
     const tr = Math.min(Math.hypot(target[0] - sh[0], target[1] - sh[1]), 0.93 * L);
     const tdir = Math.atan2(target[1] - sh[1], target[0] - sh[0]);
     const meetW = add(sh, [Math.cos(tdir) * tr, Math.sin(tdir) * tr]);
@@ -78,19 +79,33 @@
   }
   // A raised hand in kid-local units at hl: palm, the index finger pointing (at the lens, then at the other hand).
   function handShape(g, k, hl, big, t) {
+    // An open, relaxed hand reaching up (Robin, Nov 11: not a pointing fist, which read as a rude finger; more like
+    // Michelangelo's hands). Fingers loosely spread and gently curled, the index the longest and straightest; as the
+    // hands reach for each other the fingers lengthen out of the foreshortening and the index leads.
     const R = raised(k, t);
     const aimW = R.drift > 0.02 ? MEET : add(R.hand, k === 'me' ? [10, -16] : [-10, 16]);
     const aim = toL(k, aimW);
     const ang = Math.atan2(aim[1] - hl[1], aim[0] - hl[0]);
-    const fl = 4.5 + 8 * R.drift;   // pointing straight up at the lens the finger is foreshortened to a stub
-    g.save(); g.translate(hl[0], hl[1]); g.rotate(ang); g.scale(big, big);
-    g.beginPath(); g.ellipse(0, 0, 4.6, 3.9, 0, 0, TAU); g.fill();
-    g.lineCap = 'round';
-    g.lineWidth = 2.4; g.beginPath(); g.moveTo(2.5, -1.2); g.lineTo(fl, -1.4); g.stroke();      // index finger
-    g.beginPath(); g.ellipse(3.4, 1.4, 2.8, 2.3, 0, 0, TAU); g.fill();                              // curled fingers
-    g.lineWidth = 2.1; g.beginPath(); g.moveTo(-0.5, -3); g.lineTo(2.5, -5.2); g.stroke();        // thumb
+    const ext = 0.45 + 0.55 * R.drift;   // straight up at the lens the fingers are foreshortened
+    const side = k === 'me' ? 1 : -1;    // which way the thumb sits
+    g.save(); g.translate(hl[0], hl[1]); g.rotate(ang); g.scale(big, big * side);
+    g.beginPath(); g.ellipse(0, 0, 4.2, 3.8, 0, 0, TAU); g.fill();                               // palm
+    g.lineCap = 'round'; g.lineJoin = 'round';
+    const FING = [  // [knuckle y, length, curl, width]: index, middle, ring, little
+      [-2.4, 8.2, 0.3, 1.75], [-0.8, 7.6, 1.1, 1.7], [0.8, 6.8, 1.7, 1.6], [2.3, 5.4, 2.1, 1.4],
+    ];
+    for (const [ky, len, curl, w] of FING) {
+      const L = len * ext, c = curl * (0.6 + 0.4 * ext);
+      const spread = ky * 0.16;   // fanned a little
+      g.lineWidth = w;
+      g.beginPath(); g.moveTo(3, ky);
+      g.quadraticCurveTo(3 + L * 0.6, ky + spread * L * 0.5 + c * 0.3, 3 + L * (1 - 0.08 * c), ky + spread * L + c);
+      g.stroke();
+    }
+    g.lineWidth = 2.0; g.beginPath(); g.moveTo(0.5, -3.2); g.quadraticCurveTo(3, -5.4, 5.2 * (0.6 + 0.4 * ext), -5.6); g.stroke();   // thumb
     g.restore();
   }
+
   function pose(k, t) {
     const d = KD[k];
     const br = Math.sin(t * 1.7 + (k === 'me' ? 0 : 2)) * 0.8;   // breathing
@@ -231,8 +246,8 @@
         const w = d.s;
         shl.lineWidth = 6.4 * w; shl.beginPath(); shl.moveTo(s0[0], s0[1]); shl.lineTo(hd[0], hd[1]); shl.stroke();
         shl.beginPath(); shl.ellipse(hd[0] + u[0] * 2 * w, hd[1] + u[1] * 2 * w, 5.2 * w, 4.4 * w, Math.atan2(u[1], u[0]), 0, TAU); shl.fill();
-        // the finger points at the lens, so in the low sun its shadow runs on along the arm's
-        shl.lineWidth = 2.4 * w; shl.beginPath(); shl.moveTo(hd[0] + u[0] * 4 * w, hd[1] + u[1] * 4 * w); shl.lineTo(hd[0] + u[0] * (10 + 3 * (1 - R.drift)) * w, hd[1] + u[1] * (10 + 3 * (1 - R.drift)) * w); shl.stroke();
+        // the open fingers: a short broad fan on from the palm's shadow, along the arm's
+        shl.lineWidth = 5 * w; shl.beginPath(); shl.moveTo(hd[0] + u[0] * 4 * w, hd[1] + u[1] * 4 * w); shl.lineTo(hd[0] + u[0] * 10 * w, hd[1] + u[1] * 10 * w); shl.stroke();
       }
     }
     // tint the opaque layer to the grass's shadow colour, then lay it down once, soft at the edge
