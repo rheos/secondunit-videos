@@ -240,8 +240,10 @@ Robin, Nov 11 2026, about 8 pm Pacific, on `andre_paper-world-s06-s07-test01_f25
   them; the `NOSLOTS=1` switch stays in the engine but is not used. Cut 01 (the first joined film,
   `out/paper-world/film/andre_pop-up-table_cut01_...`) went to him at the same time.
 - **Where it goes.** Robin, about 10:45 pm Nov 11: "i want to post this on novadiem.com on the
-  novadiem studio youtube channel." He may also try a no-tracks version later and is asking other
-  opinions, so every full cut is rendered both ways as two named files. Release steps, from the
+  novadiem studio youtube channel." He may try a no-tracks version later and will ask other
+  opinions first. That is not a request: render with tracks only. (I queued a whole no-tracks
+  render of cut 02 on my own and he stopped it: "I never asked for that.. that doesn't mean to
+  render it now." It never started.) Make a no-tracks film only when he asks for one. Release steps, from the
   video-production skill's `references/publish.md`, once he signs off a cut: pre-flight; upload
   unlisted with `yt_upload.py --channel "Novadiem Studio"` (link to Telegram); check the video's
   status for a copyright claim or block, since the sound is the film's own; public on his word;
