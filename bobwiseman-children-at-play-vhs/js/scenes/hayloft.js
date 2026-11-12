@@ -1,5 +1,7 @@
 // scenes/hayloft.js · "flying, you and me, up in the hayloft": inside the barn, SEP.12 1992. The mother films from
-// the barn floor. You and me leap off the loft edge into the hay pile (holding hands), high-five in the hay, climb
+// the barn floor. It opens at full zoom inside the loft's hay door, so all we see is the two of them and the sky: they
+// leap up and out of frame on "Flying", run in and leap again on "you and me flying", and just before "up in the
+// hayloft" the zoom pulls back and the barn appears (Robin, Nov 11). You and me leap off the loft edge into the hay pile (holding hands), high-five in the hay, climb
 // the ladder, take a bigger running leap, climb again while the camera tilts up, and on the third leap the hats and
 // shoes fly off (then a sock each gets flung up out of the hay). Barefoot, they run out of the big door into the
 // glare with their arms out like planes, and the camera follows through the doorway.
@@ -38,7 +40,8 @@
   const FY = 652;                        // where the kids stand on the floor (a step in front of the wall)
   const LOFT_Y = 384, LOFT_EDGE = 372;   // the loft floor's front edge, its right-hand end
   const DOOR = [432, 318, 718, 640];     // the big open barn door (the source behind everything)
-  const LDOOR = [118, 168, 384, 384];    // the loft's hay door, high in the back wall behind the loft edge
+  const LDOOR = [118, 130, 420, 384];    // the loft's hay door, high in the back wall behind the loft edge (wide and tall:
+                                         // the opening shot is framed inside it, nothing but sky behind the leaps)
   const STALL = [16, 452, 150, 546];     // a stall window under the loft, behind the ladder
   const HOR = 515, VPX = 600;            // horizon and vanishing point of the field outside
   const SUN = [606, 470];
@@ -79,8 +82,13 @@
   // ---- background ---------------------------------------------------------------------------------------
   function outside(g) {  // the bright afternoon field seen through every opening
     const sky = g.createLinearGradient(0, -100, 0, HOR);
-    sky.addColorStop(0, '#e9ebe2'); sky.addColorStop(0.6, '#fbf3dc'); sky.addColorStop(1, '#fff8e6');
+    sky.addColorStop(0, '#a6c2d6'); sky.addColorStop(0.42, '#d3e0e2'); sky.addColorStop(0.72, '#f6f0dc'); sky.addColorStop(1, '#fff8e6');
     g.fillStyle = sky; g.fillRect(-800, -400, 2600, HOR + 400);
+    // a few soft fair-weather clouds, so the tight opening reads as open sky
+    for (const [cx, cy, w] of [[190, 196, 1], [356, 158, 0.8], [640, 140, 1.1], [-120, 210, 0.9]]) {
+      g.fillStyle = 'rgba(255,255,250,.62)';
+      for (const [dx, dy, r] of [[0, 0, 26], [24, -10, 22], [48, 2, 20], [-22, 6, 18], [70, 8, 14]]) { g.beginPath(); g.arc(cx + dx * w, cy + dy * w, r * w, 0, TAU); g.fill(); }
+    }
     const sg = g.createRadialGradient(SUN[0], SUN[1], 2, SUN[0], SUN[1], 260);
     sg.addColorStop(0, 'rgba(255,255,250,1)'); sg.addColorStop(0.25, 'rgba(255,248,226,.8)'); sg.addColorStop(1, 'rgba(255,240,210,0)');
     g.fillStyle = sg; g.fillRect(SUN[0] - 300, SUN[1] - 300, 600, 600);
@@ -484,7 +492,7 @@
   function act(k, t) {
     const M = TIM[k], third = true;
     if (t < FLY1) return edgeWait(k, T0, FLY1, t);
-    if (t < M.land1) return leapFront(k, FLY1, F1, EDGE[k], LOFT_Y, LAND[1][k], 70, t);
+    if (t < M.land1) return leapFront(k, FLY1, F1, EDGE[k], LOFT_Y, LAND[1][k], 110, t);   // high: up into the sky in the tight shot
     if (t < M.out1) return inHay(k, M.land1, LAND[1][k], t, 'five');
     if (t < M.lad1) return wadeOut(k, M.out1, M.lad1, LAND[1][k], t);
     if (t < M.top1) return climbUp(k, M.lad1, M.top1, t);
@@ -713,20 +721,23 @@
   }
 
   // ---- camera: the mother on the barn floor, zoom rocker in and out, following the kids ---------------------------------
+  // Robin, Nov 11: it opens so tight you can't tell it's a barn. Full zoom on the loft's hay door: only sky (and a far
+  // tree) behind the two of them. On "Flying" they leap up and out of frame; on "you and me flying" they run in from
+  // the left and do it again; just before "up in the hayloft" the zoom pulls all the way back and the barn appears.
+  // The door spans x 118..420, y 130..384: at zoom 3.45 the frame plus the hand's shake stays inside it.
   const CAM = [
-    [T0, 420, 366, 1.04], [207.4, 396, 352, 1.08], [209.3, 336, 334, 1.42], [FLY1, 338, 336, 1.42],
-    [FLY1 + 0.75, 408, 404, 1.2], [FLY1 + 1.45, 470, 448, 1.28], [YOUME - 0.5, 482, 452, 1.4], [YOUME + 0.9, 484, 450, 1.44],
-    [215.5, 420, 470, 1.26], [216.5, 210, 480, 1.22], [217.4, 150, 436, 1.18], [218.5, 200, 372, 1.06],
-    [FLY2 - 0.3, 336, 372, 1.0], [FLY2 + 0.8, 440, 420, 1.0], [FLY2 + 1.6, 520, 466, 1.14], [222.2, 470, 476, 1.14],
+    [T0, 266, 270, 3.48], [208.6, 270, 268, 3.48], [FLY1 - 0.2, 270, 268, 3.45], [FLY1 + 0.55, 272, 272, 3.45],
+    [FLY1 + 1.4, 268, 272, 3.46], [214.6, 266, 270, 3.48], [217.2, 262, 272, 3.48], [FLY2 - 0.3, 266, 270, 3.47],
+    [FLY2 + 0.6, 272, 268, 3.45], [221.45, 270, 272, 3.46], [222.5, 330, 432, 1.04],
     [LOFTUP, 214, 488, 1.24], [HAYLOFT, 176, 342, 1.26], [225.6, 214, 326, 1.2], [227.5, 318, 330, 1.38], [LOSE, 326, 334, 1.38],
     [LOSE + 0.6, 400, 368, 1.0], [LOSE + 1.7, 466, 436, 1.04], [CLOTH - 0.7, 490, 452, 1.3], [CLOTH + 1.5, 494, 444, 1.3],
     [236.2, 478, 446, 1.16], [GLAD, 520, 468, 1.12], [FREE, 612, 500, 1.6], [240.5, 668, 496, 2.15],
     [241.5, 600, 486, 2.0], [243.0, 584, 482, 1.86], [T1, 580, 480, 1.9],
   ];
   const FOCUS = [
-    [T0, 1.4], [207.0, 0], [209.3, 0], [209.7, 1.8], [210.15, 0.2], [210.45, 0],
-    [FLY1 + 1.3, 0], [FLY1 + 1.6, 1.2], [212.5, 0], [216.2, 0], [216.6, 1.6], [217.1, 0],
-    [221.2, 0], [221.5, 1.0], [221.9, 0], [224.7, 0], [225.1, 1.4], [225.6, 0],
+    [T0, 1.6], [206.8, 0], [209.6, 0], [209.9, 1.2], [210.2, 0],
+    [FLY1 + 1.3, 0], [FLY1 + 1.6, 0.9], [212.1, 0], [216.4, 0], [216.8, 1.3], [217.3, 0],
+    [221.4, 0], [221.9, 2.2], [222.5, 1.0], [222.9, 0], [224.7, 0], [225.1, 1.4], [225.6, 0],
     [CLOTH - 0.9, 0], [CLOTH - 0.5, 1.3], [CLOTH - 0.1, 0], [FREE, 0], [240.6, 1.8], [241.2, 0.3], [241.9, 1.2], [242.6, 0.2], [243.4, 0.7], [244.0, 0],
   ];
   const cam = CAMKIT.rig(CAM, FOCUS, 7, 1);
