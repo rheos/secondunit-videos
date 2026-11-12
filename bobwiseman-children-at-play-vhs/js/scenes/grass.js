@@ -86,32 +86,24 @@
   // wrist and flex, and the motion settles out on "love" so on "you" they hold the fresco's pose. Pointing up at the
   // lens they are foreshortened; as they reach for each other they lengthen out to the full outline.
   function handShape(g, k, hl, big, t) {
-    // An open, relaxed hand reaching up (Robin, Nov 11: not a pointing fist, which read as a rude finger; more like
-    // Michelangelo's hands). Fingers loosely spread and gently curled, the index the longest and straightest; as the
-    // hands reach for each other the fingers lengthen out of the foreshortening and the index leads.
+    // The raised hand (Robin picked B, Nov 12, after stroke-by-stroke fingers read as claws and then as deformed):
+    // a solid palm, the index reaching, the other three fingers relaxed together in one curled bundle, and a thumb.
+    // Foreshortened while pointing up at the lens; lengthening as the hands reach for each other.
     const R = raised(k, t);
     const aimW = R.drift > 0.02 ? MEET : add(R.hand, k === 'me' ? [10, -16] : [-10, 16]);
     const aim = toL(k, aimW);
     const ang = Math.atan2(aim[1] - hl[1], aim[0] - hl[0]);
-    const ext = 0.45 + 0.55 * R.drift;   // straight up at the lens the fingers are foreshortened
+    const ext = 0.45 + 0.55 * R.drift;
     const side = k === 'me' ? 1 : -1;    // which way the thumb sits
     g.save(); g.translate(hl[0], hl[1]); g.rotate(ang); g.scale(big, big * side);
-    g.beginPath(); g.ellipse(0, 0, 4.2, 3.8, 0, 0, TAU); g.fill();                               // palm
     g.lineCap = 'round'; g.lineJoin = 'round';
-    const FING = [  // [knuckle y, length, curl, width]: index, middle, ring, little
-      [-2.4, 8.2, 0.3, 1.75], [-0.8, 7.6, 1.1, 1.7], [0.8, 6.8, 1.7, 1.6], [2.3, 5.4, 2.1, 1.4],
-    ];
-    for (const [ky, len, curl, w] of FING) {
-      const L = len * ext, c = curl * (0.6 + 0.4 * ext);
-      const spread = ky * 0.16;   // fanned a little
-      g.lineWidth = w;
-      g.beginPath(); g.moveTo(3, ky);
-      g.quadraticCurveTo(3 + L * 0.6, ky + spread * L * 0.5 + c * 0.3, 3 + L * (1 - 0.08 * c), ky + spread * L + c);
-      g.stroke();
-    }
-    g.lineWidth = 2.0; g.beginPath(); g.moveTo(0.5, -3.2); g.quadraticCurveTo(3, -5.4, 5.2 * (0.6 + 0.4 * ext), -5.6); g.stroke();   // thumb
+    g.beginPath(); g.ellipse(0, 0, 4.4, 4.0, 0, 0, TAU); g.fill();                                                            // palm
+    g.lineWidth = 2.6; g.beginPath(); g.moveTo(2.4, -1.8); g.quadraticCurveTo(3 + 3.6 * ext, -2.1, 3.4 + 6.2 * ext, -1.5); g.stroke();   // index
+    g.lineWidth = 4.8; g.beginPath(); g.moveTo(2.2, 1.0); g.quadraticCurveTo(3 + 3 * ext, 1.3, 3.2 + 3.8 * ext, 2.4 + 0.6 * ext); g.stroke();   // the other three, curled together
+    g.lineWidth = 2.5; g.beginPath(); g.moveTo(0.4, -3.1); g.quadraticCurveTo(2.2, -4.4, 2.9 + 1.4 * ext, -4.4); g.stroke();   // thumb
     g.restore();
   }
+
   function handTraced(g, k, hl, big, t) {
     const R = raised(k, t);
     const aimW = R.drift > 0.02 ? MEET : add(R.hand, k === 'me' ? [10, -16] : [-10, 16]);
