@@ -135,7 +135,26 @@ export function headAt(f) {
   return {
     up: spring(f - HEAD.t0, 0.62, 24), shown: f >= HEAD.t0,
     capped: (HEAD.part / 2) * apart + 0.7 * bump(f - C.guards2), bare: -(HEAD.part / 2) * apart - 0.7 * bump(f - C.prisoners),   // the two nudges
-    tab: apart, lid: spring(f - C.lobotomized, 0.6, 20), band: smoother((f - C.see) / (C.prison2 - C.see)),
+    tab: apart, lid: spring(f - BRAIN.t0, 0.6, 20), band: smoother((f - C.see) / (C.prison2 - C.see)),
+  };
+}
+// ---------- the brain: the painted plate, 13 cm long, standing in the hollow of the bare head behind its face, tilted
+// along the skull's cut so its dome stands 4.5 cm above the rim. The crown lifts 24 frames before "lobotomized", so it
+// is seen whole before the word. On the word a dashed cut runs down its groove (8 frames, top to bottom); then the
+// frontal lobe, cut from the plate along that groove, tips forward over the rim on a hinge where it crosses it (9
+// frames), slides off and falls in front of the face, turning three quarters of a turn, to lie flat on the cloth in
+// front of the head, painted side up (16 frames). What is left slumps 3 degrees toward the gap and settles on one spring.
+// `at` is the brain's centre in the head plate's box pixels; `land` is where the lobe comes to lie, in cm from where it
+// hung: [to the right, toward the lens from the head's plane].
+export const BRAIN = { len: 13, at: [500, 232], depth: 1.2, t0: C.lobotomized - 24, cut: C.lobotomized, dash: 8, snip: C.lobotomized + 8, tip: 9, fall: 16, land: [-1.4, 21.7], slump: 3 };
+export function brainAt(f) {
+  const t = f - BRAIN.snip, a = clamp(t / BRAIN.tip), s = clamp((t - BRAIN.tip) / BRAIN.fall);
+  return {
+    dash: clamp((f - BRAIN.cut) / BRAIN.dash),                       // how much of the dashed cut is drawn, from the top
+    parted: t > 0, tip: a, fall: s,
+    th: (Math.PI / 2) * a * a + Math.PI * (1 - (1 - s) ** 1.78),     // the lobe's turn about its hinge line: a quarter turn over the rim, then half a turn more as it falls
+    yaw: 0.3 * smooth(s), lift: 0.8 * smooth(a), drop: s ** 1.8, out: s * (1.25 - 0.25 * s), side: smooth(s),
+    slump: spring(t - 3, 0.45, 16),                                  // what is left tilts toward the gap
   };
 }
 
@@ -196,7 +215,8 @@ export const BEATS = [
   [C.guards, "guards", "the five cards turn: the back of each is a guard"], [C.pride, "pride", "the guards, gone down through their slots, come up behind the battlements to stand on the wall"],
   [C.prison1, "prison", "the hero frame: guards on the wall against the lit towers, bricklayers below"], [HEAD.t0, "(And so)", "the head hinges up out of the cloth beside the candle"],
   [C.schizophrenia, "schizophrenia", "the pull-tab slides the two layers apart: capped one way, bare the other"], [C.guards2, "guards", "the capped layer nudges"],
-  [C.prisoners, "prisoners", "the bare layer nudges"], [C.result, "result", "the layers slide back together"], [C.lobotomized, "lobotomized", "the crown lifts on its hinge: a dark hollow"],
+  [C.prisoners, "prisoners", "the bare layer nudges"], [C.result, "result", "the layers slide back together"], [BRAIN.t0, "(no longer have)", "the crown lifts on its hinge: the brain stands in the hollow"],
+  [C.lobotomized, "lobotomized", "a dashed cut runs down the brain's groove; the frontal lobe tips out over the rim and falls in front of the face; the rest slumps"],
   [C.see, "see", "a band of bricks is drawn across the eyes"], [C.prison2, "prison", "the band stops over the eyes"],
 ];
 

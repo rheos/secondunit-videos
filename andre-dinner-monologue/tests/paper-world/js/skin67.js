@@ -15,7 +15,7 @@ const canvasOf = (w, h) => { const c = document.createElement("canvas"); c.width
 
 export async function buildCamp(X) {
   const { world, image, cut, tex, plane, flatCard, caster, unseen, volume, ribbon, slotPale, slotDark, shoulder, leanFor, clothT, reg } = X;
-  const names = ["brick", "wall_segment", "watchtower", "guard", "head_bare", "head_capped", "hand_open", "hand_pinch", "seed", "pine_tall"];
+  const names = ["brick", "wall_segment", "watchtower", "guard", "head_bare", "head_capped", "hand_open", "hand_pinch", "seed", "pine_tall", "brain"];
   const im = Object.fromEntries(await Promise.all(names.map(async (n) => [n, await image(n)])));
   const P = {}; for (const n of ["brick", "wall_segment", "watchtower", "guard", "hand_pinch", "seed", "pine_tall"]) { const c = cut(im[n]); P[n] = { ...c, t: tex(c.canvas) }; }
   const basic = (color) => new THREE.MeshBasicMaterial({ color: new THREE.Color(color), toneMapped: false, side: THREE.DoubleSide });
@@ -171,6 +171,42 @@ export async function buildCamp(X) {
     const lip = new THREE.Mesh(flatPlane(24, 1.75), slotPale), cutL = new THREE.Mesh(flatPlane(24, 1.45), slotDark); lip.position.y = 0.0; cutL.position.y = 0.012; lip.receiveShadow = true; g.add(lip, cutL);
     const strip = new THREE.Group(), s1 = new THREE.Mesh(flatPlane(13, 1.25), tabM), s2 = new THREE.Mesh(new THREE.CircleGeometry(1.15, 24).rotateX(-HALF), tabM); s1.position.y = 0.03; s2.position.set((k ? -1 : 1) * 6.5, 0.03, 0); strip.add(s1, s2); g.add(strip);
     return { g, strip, k }; });
+  // the brain (s06.js BRAIN): the painted plate and nothing else, standing in the hollow behind the bare layer, its long
+  // axis along the skull's cut, so its dome shows above the rim once the crown is up. It is cut in two in code along its
+  // groove: `brain` is what stays, `brain_lobe` the frontal lobe. The two are the same pixels of the same plate, the lobe
+  // two pixels under the other's edge, so there is no gap until the lobe moves. The brain rides the hollow's inner wall:
+  // it stands off 1.2 cm behind the face as the lid lifts and is pressed flat between the layers when the crown shuts,
+  // so it folds away inside the head. The lobe, once out, lies on the cloth where the head's flap comes down on it.
+  const br = cut(im.brain), BK = S6.BRAIN.len / br.w, BWc = S6.BRAIN.len, BHc = br.h * BK, TILT = Math.atan(0.219);      // TILT: the slope of the skull's cut (lineY)
+  // the groove from the top down, in the plate's pixels: the lobe's own edge of the dark fold between it and the rest
+  const GROOVE = [[926, 10], [932, 40], [948, 60], [965, 80], [976, 100], [977, 120], [974, 140], [966, 160], [959, 180], [957, 200], [959, 220], [965, 240], [976, 260], [990, 280], [998, 300], [1001, 320], [1000, 340], [999, 360],
+    [996, 380], [990, 400], [983, 420], [978, 440], [973, 460], [969, 480], [966, 500], [968, 520], [975, 540], [981, 560], [990, 580], [994, 600], [996, 620], [995, 640], [992, 660], [985, 690], [980, 720]].map(([x, y]) => [x - br.box[0], y - br.box[1]]);
+  const cutX = (y) => { const G = GROOVE; if (y <= G[0][1]) return G[0][0]; for (let i = 1; i < G.length; i++) if (y <= G[i][1]) return lerp(G[i - 1][0], G[i][0], (y - G[i - 1][1]) / (G[i][1] - G[i - 1][1])); return G[G.length - 1][0]; };
+  const lobeBox = [1e9, -1e9, 1e9];       // the lobe's first and last row and its leftmost pixel
+  const bpart = (keep, white) => { const c = canvasOf(br.w, br.h), g = c.getContext("2d"), img = g.createImageData(br.w, br.h), src = br.data.data, d = img.data;
+    for (let y = 0; y < br.h; y++) { const cx = cutX(y); for (let x = 0; x < br.w; x++) { const i = (y * br.w + x) * 4, on = keep(x, cx) && (!white || src[i + 3] > 127);
+      d[i] = white ? 255 : src[i]; d[i + 1] = white ? 255 : src[i + 1]; d[i + 2] = white ? 255 : src[i + 2]; d[i + 3] = on ? (white ? 255 : src[i + 3]) : 0;
+      if (!white && on && x > cx && src[i + 3] > 127) { lobeBox[0] = Math.min(lobeBox[0], y); lobeBox[1] = Math.max(lobeBox[1], y); lobeBox[2] = Math.min(lobeBox[2], x); } } }
+    g.putImageData(img, 0, 0); return tex(c); };
+  const restT = bpart((x, cx) => x <= cx), lobeT = bpart((x, cx) => x > cx - 2), brimT = bpart((x, cx) => x <= cx && x > cx - 19, true);       // the pale core along the cut, as wide as the head's rims
+  const bC = [(S6.BRAIN.at[0] / HW - 0.5) * HWc, (1 - S6.BRAIN.at[1] / HHp) * HH];                                  // the brain's centre on the head, cm
+  const vRim = ((1 - 275 / HHp) * HH + 0.219 * (bC[0] - (201 / HW - 0.5) * HWc) - bC[1]) * Math.cos(TILT);         // the skull's rim, cm above the brain's centre along the brain's own upright
+  const brainG = named(new THREE.Group(), "brain"); brainG.visible = false; bare.G.add(brainG); reg.add("brain", brainG, { kind: "flat" });
+  const rest = flatCard(restT, BWc, BHc), brim = flatCard(brimT, BWc, BHc, false); rest.position.y = brim.position.y = -BHc / 2; brim.position.z = 0.012; brainG.add(rest, brim); rimM.push(brim.material);
+  // the dashed cut: slits along the middle of the groove, drawn from the top down
+  const dashM = basic("#f4ead2"), dashG = new THREE.BufferGeometry(); let nDash = 0, nVis = 0;
+  { const pts = GROOVE.filter(([, y]) => y >= 14 && y <= 668).map(([x, y]) => [(x - 12 - br.w / 2) * BK, (br.h / 2 - y) * BK]), seg = [], pos = [], idx = []; let L = 0;
+    for (let i = 1; i < pts.length; i++) { const a = pts[i - 1], b = pts[i], l = Math.hypot(b[0] - a[0], b[1] - a[1]); seg.push({ a, b, s0: L, l }); L += l; }
+    const at = (q) => { const g = seg.find((e) => q <= e.s0 + e.l) || seg[seg.length - 1], k = clamp((q - g.s0) / g.l); return [lerp(g.a[0], g.b[0], k), lerp(g.a[1], g.b[1], k)]; };
+    for (let q = 0.08; q + 0.42 < L; q += 0.68) { const a = at(q), b = at(q + 0.42), dx = b[0] - a[0], dy = b[1] - a[1], l = Math.hypot(dx, dy), nx = (-dy / l) * 0.07, ny = (dx / l) * 0.07, o = nDash * 4;
+      pos.push(a[0] - nx, a[1] - ny, 0, a[0] + nx, a[1] + ny, 0, b[0] + nx, b[1] + ny, 0, b[0] - nx, b[1] - ny, 0); idx.push(o, o + 1, o + 2, o, o + 2, o + 3); if ((a[1] + b[1]) / 2 > vRim) nVis++; nDash++; }
+    dashG.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3)); dashG.setIndex(idx); }
+  const dashes = new THREE.Mesh(dashG, dashM); dashes.position.z = 0.016; dashes.frustumCulled = false; brainG.add(dashes);
+  // the lobe is its own piece in the world: it hangs where the plate has it until the cut, then turns about the line
+  // where it crosses the skull's rim (its hinge) and falls. (uP, vP): that hinge on the brain, cm from its centre
+  const uP = ((lobeBox[2] + br.w) / 2 - br.w / 2) * BK, vP = vRim + 0.2, dTop = (br.h / 2 - lobeBox[0]) * BK - vP, dBot = (br.h / 2 - lobeBox[1]) * BK - vP;
+  const lobeG = named(new THREE.Group(), "brain_lobe"); lobeG.rotation.order = "YZX"; lobeG.visible = false; world.add(lobeG); reg.add("brain_lobe", lobeG, { kind: "flat" });
+  const lobe = flatCard(lobeT, BWc, BHc); lobe.position.set(-uP, -vP - BHc / 2, 0); lobeG.add(lobe);
   updates.push((f) => {
     const h = S6.headAt(f), down = f >= S7.F0 ? S7.headDownAt(f) : 0; headG.visible = h.shown && down < 1; if (!headG.visible) return;
     hinge.rotation.x = HALF * (1 - h.up * (1 - down)); hinge.scale.z = lerp(0.04, 1, clamp(h.up * (1 - down) * 2.5));      // lying flat, the layers are pressed together
@@ -179,6 +215,19 @@ export async function buildCamp(X) {
     const [x, z] = S6.HEAD.at, c = tintAt(x, z); [...capped.mats, ...bare.mats, band.material, wallM].forEach((m) => m.color.copy(c)); rimM.forEach((m) => paint(m, x, z, 1, new THREE.Color("#ead9b8"))); paint(tabM, x, z, 1, new THREE.Color("#ead9b8")); paint(gripM, x, z, 1, new THREE.Color("#d8c39c")); paint(slitM, x, z, 1, new THREE.Color("#1c1310"));
     const ext = Math.max(0.001, h.band) * bandLen; band.visible = h.band > 0.002; band.scale.x = ext / bandLen; bandT.repeat.x = ext / bandLen; bandT.offset.x = 1 - ext / bandLen; bandTab.position.x = slitX + ext + 0.3;
     strips.forEach((s) => { s.strip.position.x = s.k ? h.bare : h.capped; s.g.visible = h.up * (1 - down) > 0.03; });       // under the flap while it lies flat
+    // the brain: seen only through the open crown (shut, it is behind the bare layer)
+    const b = S6.brainAt(f), zb = -(0.07 + S6.BRAIN.depth * open); brainG.visible = open > 0.02;
+    if (brainG.visible) { brainG.position.set(bC[0], bC[1], zb); brainG.rotation.z = TILT - ((S6.BRAIN.slump * Math.PI) / 180) * b.slump;
+      rest.material.color.copy(tintAt(x, z)); paint(dashM, x, z, 1, new THREE.Color("#f4ead2")); brim.visible = b.parted;
+      dashes.visible = b.dash > 0 && b.tip < 0.34; dashG.setDrawRange(0, 6 * (b.dash >= 1 ? nDash : Math.ceil(nVis * b.dash))); }
+    lobeG.visible = f >= S6.BRAIN.t0 && h.up * (1 - down) > 0.03 && (b.parted || open > 0.02);       // on the cloth it goes under the head's flap, as the pull-tab does
+    if (lobeG.visible) {
+      const cs = Math.cos(TILT), sn = Math.sin(TILT), x0 = x + h.bare + bC[0] + uP * cs - vP * sn, y0 = 0.03 + bC[1] + uP * sn + vP * cs, z0 = z - 0.15 + zb - 0.02, zf = z - 0.5;
+      const co = Math.cos(b.th), ys = y0 + b.lift, floor = 0.08 - Math.min(dTop * co, dBot * co);       // it never goes into the cloth: it lands on an edge and comes down flat
+      const lx = x0 + S6.BRAIN.land[0] * b.side, lz = b.tip < 1 ? lerp(z0, zf, b.tip * b.tip) : zf + (S6.BRAIN.land[1] + 0.5) * b.out;
+      lobeG.position.set(lx, Math.max(ys - (ys - 0.08) * b.drop, b.parted ? floor : 0), lz); lobeG.rotation.set(b.th, b.yaw, TILT * (1 - smooth(b.fall * 1.5)));
+      lobe.material.color.copy(tintAt(lx, lz));
+    }
   });
 
   // ================= the open hand
