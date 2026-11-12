@@ -1,0 +1,20 @@
+{
+  "model": "bytedance-seedance-v2.5",
+  "params": {
+    "aspect_ratio": "9:16",
+    "resolution": "720p",
+    "duration_secs": 5,
+    "generate_audio": true
+  },
+  "audios": [
+    "../work/refs/line_5s.wav"
+  ],
+  "prompt": "One continuous 5 second shot, vertical 9:16. @Image1 is the character sheet: keep the king exactly like it. @Video1 is a rough 3D previz of this shot: copy its camera move, framing, timing and the king's position and mouth timing exactly, but render it in the painted style of @Image1, not the flat previz look. The king stands on a sunlit palace terrace with pale stone tiles, a cream column, brick and stone walls, a gold rail and a red carpet. The camera pushes in slowly from behind the gold rail to a medium close-up of his face, no cuts. Painted 3D cartoon, warm late-afternoon light, soft painterly texture, like the character sheet. The king is a round bean-headed cartoon man: gold crown with a red and two blue jewels, small brown moustache, white ermine collar with black flecks, gold epaulettes, purple tunic with a red sash and gold belt, a brown money sack with a dollar sign held against his chest, thin purple legs, brown shoes. At 0.7 seconds he says the line in @Audio1, \"Nobody needs to know where the money went.\", lips matching the words, smug and pleased with himself, eyes half closed. No other speech, no music.",
+  "images": [
+    "../work/refs/sheet.png"
+  ],
+  "videos": [
+    "../work/refs/previz_5s.mp4"
+  ],
+  "out": "../out/seedance_B_previz_5s.mp4"
+}

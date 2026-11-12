@@ -1,0 +1,76 @@
+slug: vhs-home-video
+title: VHS home video on a CRT
+note: >-
+  A family camcorder tape of kids playing in a park into the low sun, played back on an old television. The kids
+  are back-lit shapes with warm rims, the camera drifts and hunts for focus, and the tape brings a blue PLAY
+  screen, a rolling tracking band, colour bleed and scanlines.
+used: Children at Play, Bob Wiseman (test)
+cost: free
+group: code
+order: 515
+clip: vhs-home-video.mp4
+tall: false
+tags:
+  medium: [flat vector]
+  texture: [crt, glow]
+  era: [1970-1999]
+  motion: [moving camera]
+  mood: [nostalgic]
+  colour: [muted]
+  engine: [canvas2d, ntsc-rs, webgl]
+  use: [music video]
+status: test
+engine: canvas2d + ntsc-rs + webgl
+project: bobwiseman-children-at-play-vhs
+code:
+  path: bobwiseman-children-at-play-vhs/js/world.js
+  flag: null
+  page: bobwiseman-children-at-play-vhs/tv.html
+  note: >-
+    Three stages, run by tape.sh. 1: home.html draws the camcorder video at 960x720 (world.js the park, cast.js the
+    kids, camera.js the hand-held camcorder, home.js optics, date stamp and the record-restart glitch). 2: ntsc-rs-cli
+    with an NTSCRT preset's ntsc.settings (Mild, Medium or Clean VHS) at 480 lines. 3: tv.html reads the tape frames,
+    adds the VCR's blue screen, PLAY, snow and tracking band, then the house CRT shader (js/crt.js, a factory made
+    from bobwiseman-libelous/js/tv/crt.js), rounded glass, bezel and screen spill. Stage 3 needs Chrome's
+    --allow-file-access-from-files (tools/render.mjs, which also redraws any frame the GPU canvas hands back blank), because WebGL won't take file:// images otherwise.
+rules:
+  - >-
+    Shoot into the sun: everything between it and the camera is one dark shape with a warm rim and a soft halo,
+    shadows run long toward the camera, the sun blooms over nearby edges
+  - >-
+    Kids are silhouettes, never faces: one dark colour, whole poses with tube limbs that bend through knee and elbow,
+    identity carried by the outline (ponytail, cap brim, sun hat, dress flare); size follows depth on the ground
+  - >-
+    Camcorder grammar: drift that never stops (more shake when zoomed), slow pans, an easing zoom rocker, focus that
+    hunts after each zoom, auto-iris that darkens with the sun in frame, smear on fast pans, in-camera cuts that
+    roll and tear for four frames, a burned-in 5x7 date stamp whose minute jumps at a cut
+  - >-
+    Draw at 4:3 and leave the tape to ntsc-rs: the strength is a preset choice, never hand-made noise on the picture
+  - >-
+    What the VCR adds is drawn after the tape (blue screen, PLAY, snow, the tracking band as it locks); what the
+    camcorder adds is drawn before it (date stamp, record restart)
+  - >-
+    The TV is deterministic: house CRT shader at 240 lines, rounded tube, dark bezel, screen colour spilling on a
+    dark room, 4:3 tube inside 16:9
+palette:
+  - "#261a1e"
+  - "#fde9c2"
+  - "#7f9fc4"
+  - "#b0a253"
+  - "#4e5a26"
+  - "#1a33c4"
+reference: Family camcorder tapes of the late 1980s and early 1990s, played on a consumer CRT
+proof:
+  renders:
+    - bobwiseman-children-at-play-vhs/out/children-at-play_vhs-medium_f0-f948_24fps_720p.mp4
+    - bobwiseman-children-at-play-vhs/out/children-at-play_vhs-mild_f0-f948_24fps_720p.mp4
+    - bobwiseman-children-at-play-vhs/out/children-at-play_vhs-clean_f0-f948_24fps_720p.mp4
+  pr:
+    - rheos/secondunit-videos#496
+    - rheos/secondunit-videos#497
+verdict: >-
+  Robin, 2026-11-11, picked the Medium VHS tape strength over Mild and Clean VHS for the style menu. Look test
+  only; not shown to Bob.
+related:
+  - newsdesk
+  - silhouette
