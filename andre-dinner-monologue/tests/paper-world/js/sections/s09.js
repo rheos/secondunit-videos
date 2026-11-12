@@ -1,12 +1,12 @@
 // s09.js: section 9, the last burst, f3840 to f4315. Its cue names, its events and its camera keys, every one a pure
 // function of the film frame f (24 fps). The city of sections 5 to 7 stands; section 8's couple stand at the left edge.
 // A card stem telescopes up out of a slot in the middle of the city carrying a shut honeycomb ball; on "burst" its
-// leaves fan round the stem into a ball of colour; on "extinguished" they fan shut, the stem drops and the picture
-// drains to grey-blue. Then every citizen card stands up, turns to its robot side and slides along its slot.
+// leaves fan round the stem into a ball of colour; on "extinguished" the ball comes apart, top first, into torn scraps
+// of its own paper that drift down going grey, the bare stem drops and the picture drains to grey-blue. Then every citizen card stands up, turns to its robot side and slides along its slot.
 // This section's pieces act after f4315 too: the robots fall on "nobody" and fade into the cloth from "erased".
 // Units: centimetres, y up, the cloth is y = 0, x to the right, z toward the viewer.
 import { CUES } from "../cues/s09.js";                  // generated: $PY tools/onsets.py 09 (from tools/cues/s09.json)
-import { clamp, lerp, smooth, smoother, spring } from "../kit.js";
+import { clamp, lerp, smooth, smoother, spring, hash } from "../kit.js";
 import { camFrom, camRaw } from "./lib.js";
 import { joinKey, joinFloat } from "./joins.js";
 import * as S5 from "./s05.js";
@@ -25,23 +25,80 @@ const E = C.extinguished;
 // half-disc leaves pressed into one flat pack) comes up through the slot edge-on on its spine, then three wider
 // sections telescope up under it, the widest last, on "last". The hub of the ball ends 40 cm over the cloth.
 // On "burst" leaf i swings round the spine to i / 14 of a turn (damping 0.5: it overshoots); open, the ball turns by
-// one leaf's angle, so the last leaf has come the whole way round to the slot's line; on "extinguished" the others
-// follow it round and the pack is shut over that line again in 10 frames, and drops back through the slot.
+// one leaf's angle. On "extinguished" it does not shut: it comes apart (APART, below). The stem stands bare for about
+// 12 frames after the last scrap has left it, then its sections drop into each other and it goes back through the slot.
 export const BURST = { at: [0, 5], N: 14, R: 17.15, H: 31.45, th0: -0.72, spine: 31.4, L: 8.1, widths: [2.1, 1.7, 1.3, 0.9] };
+export const APART = { spread: 14, hold: 20, landers: 60, last: C.future + 4 };      // frames the break takes, top to bottom; how much later the stem drops; how many scraps land; every scrap is gone by `last`
 const DELTA = (2 * Math.PI) / BURST.N, UPS = [C.last - 6, C.last - 15, C.last - 24];      // section 0 (the widest, at the cloth) clicks out last
 export function burstAt(f) {
-  const a = smoother((f - C.sixties) / 22) * (1 - clamp((f - (E + 19)) / 12) ** 2);                    // the spine and its pack through the slot
-  const e = UPS.map((t, k) => spring(f - t, 0.6, 12) * (1 - smooth((f - (E + 10 + 3 * k)) / 6)));     // the three sections, 0 = at the cloth
+  const a = smoother((f - C.sixties) / 22) * (1 - clamp((f - (E + 19 + APART.hold)) / 12) ** 2);                    // the spine through the slot
+  const e = UPS.map((t, k) => spring(f - t, 0.6, 12) * (1 - smooth((f - (E + 10 + APART.hold + 3 * k)) / 6)));     // the three sections, 0 = at the cloth
   const Y = [0, 0, 0]; let y = 0; e.forEach((v, k) => { y += BURST.L * v; Y[k] = y; });
-  const bottom = y - BURST.spine * (1 - a), shut = f >= E;
-  const open = shut ? 1 - smooth((f - E) / 10) : spring(f - C.burst, 0.5, 18);
-  return { a, e, Y, bottom, hub: bottom + BURST.spine / 2, open, shut, phi: DELTA * clamp((f - C.burst) / (E - C.burst)),
-    shown: f >= C.sixties - 1 && f < E + 32, slot: clamp((f - (C.sixties - 10)) / 8), glow: clamp(open) };
+  const bottom = y - BURST.spine * (1 - a), open = spring(f - C.burst, 0.5, 18);
+  return { a, e, Y, bottom, hub: bottom + BURST.spine / 2, open, apart: f >= E, phi: DELTA * clamp((f - C.burst) / (E - C.burst)),
+    shown: f >= C.sixties - 1 && f < E + 32 + APART.hold, slot: clamp((f - (C.sixties - 10)) / 8), glow: clamp(open) * (1 - smooth((f - E) / 16)) };
 }
 // where leaf i points (radians about the stem), and how far it sits from the middle of the pack while the pack is shut
 export function leafAt(i, b) {
-  const ang = b.shut ? BURST.th0 + 2 * Math.PI - (BURST.N - 1 - i) * DELTA * b.open : BURST.th0 + b.phi + i * DELTA * b.open;
-  return { ang, off: (i - (BURST.N - 1) / 2) * 0.03 * (1 - clamp(b.open * 4)) };
+  return { ang: BURST.th0 + b.phi + i * DELTA * b.open, off: (i - (BURST.N - 1) / 2) * 0.03 * (1 - clamp(b.open * 4)) };
+}
+
+// ---------- the ball comes apart. From "extinguished" every leaf is its scraps (the skin tears each leaf of the plate
+// into about fifty). A scrap lets go at o.tb: the top of the ball first, the bottom 14 frames later. Then it is burnt
+// paper: it drifts out from the stem and down, slowly, turning about its own axis, fluttering on its own two periods;
+// it goes grey over 7 to 12 frames (the grade takes 24), curls and shrinks, and is gone in the air after o.life frames
+// (the ones from the top live longest and travel furthest). APART.landers of them are carried instead to a place on
+// the cloth, a tower's top or the fallen wall, turn flat as they come down, lie there, and shrink to nothing before
+// `last`. Every number is seeded by the scrap's leaf and cell: no clock, no random call at render time.
+// [x, y, z, yaw, tilt]: a flake on a tower lies on the side of its dome that faces the lens (a flat flake at the lens's own height is a line)
+const TOPS = [[-19.66, 9.4, 12.84, -0.24, 0.4], [-24.23, 7.6, 11.73, -0.24, 0.6], [-17.23, 8.0, 13.43, -0.24, 0.6], [-9.15, 8.7, -1.63, -0.39, 0.5], [-12.64, 8.7, 2.37, -0.36, 0.5]];      // the basket (three), the salt, the pepper
+const WALLS = [[-43.6, 0.2, 22], [-45.2, 0.2, 31], [-44.1, 0.2, 13.5]];                                             // on the fallen wall along the left edge
+const KEEP_OFF = [[-21, 12, 9.6], [-9, -2, 4], [-12.5, 2, 4], [12, 30, 4.5], [0, 44, 9.6], [10.5, -16.5, 3.5]];     // footprints a flake may not lie in: [x, z, radius]
+const clothSpot = (seed) => {       // a place on the open cloth, in the half of the table the lens goes down to
+  for (let m = 0; m < 40; m++) { const a = 1.3 + 2.3 * hash(seed, 60 + 3 * m), r = 4 + 27 * Math.sqrt(hash(seed, 61 + 3 * m)), x = BURST.at[0] + r * Math.cos(a), z = BURST.at[1] + r * Math.sin(a);
+    if (x > -38.5 && x < -9 && z > 22.2 && z < 31.8) continue;                          // where ranks 1 and 2 lie before they hinge up
+    if (Math.abs(x) > 42 || Math.abs(z) > 62 || KEEP_OFF.some(([cx, cz, cr]) => Math.hypot(x - cx, z - cz) < cr)) continue;
+    return [x, 0.07, z]; }
+  return [BURST.at[0] - 6, 0.07, BURST.at[1] + 6];
+};
+// one scrap's numbers. c: the middle of its cell on the leaf, cm ([from the stem, up from the hub])
+export function scrapOf(leaf, k, c) {
+  const seed = 9001 + 977 * leaf + k, r = (n) => hash(seed, n), h = clamp(c[1] / BURST.H + 0.5), rho = clamp(c[0] / BURST.R), ta = 2 * Math.PI * r(14);
+  return { leaf, k, c, h, rho, seed, land: null,
+    tb: E + Math.max(0.05, APART.spread * (1 - h) ** 0.9 + 3 * (r(1) - 0.5)),
+    out: (2.5 + 7.5 * h + 4 * r(2)) * (0.45 + 0.55 * rho), tau: 18 + 10 * r(3), side: 1.7 * (r(4) - 0.5), lift: (0.3 + 1.5 * r(5)) * h,
+    vt: 0.45 + 0.45 * r(6), life: 18 + 24 * h + 12 * r(7),
+    fl: [0.5 + 1.3 * r(8), 0.19 + 0.16 * r(9), 6.283 * r(10), 0.3 + 0.9 * r(11), 0.13 + 0.12 * r(12), 6.283 * r(13)],
+    axis: [Math.cos(ta) * 0.94, Math.sin(ta) * 0.94, 0.34 * (r(15) < 0.5 ? -1 : 1)], w: (r(17) < 0.5 ? -1 : 1) * (0.05 + 0.1 * r(18)), w2: 0.09 * (r(19) - 0.5),
+    g0: 4 * r(20), gd: 7 + 5 * r(21), ash: 0.45 + 0.6 * r(22), smin: 0.35 + 0.25 * r(23), curl: 1.2 + 2.8 * r(24), bend: Math.PI * r(25) };
+}
+// which of them land, and where (call once, with every scrap). The lower a scrap starts, the likelier it is to land.
+export function landersOf(scraps, hub) {
+  const pick = scraps.map((o) => [hash(o.seed, 30) / (0.22 + (1 - o.h)), o]).sort((a, b) => a[0] - b[0]).slice(0, APART.landers).map((p) => p[1]);
+  pick.forEach((o, n) => { const r = (m) => hash(o.seed, m), T = n < TOPS.length ? TOPS[n] : n < TOPS.length + WALLS.length ? WALLS[n - TOPS.length] : clothSpot(o.seed);
+    const y0 = hub + o.c[1], rank3 = T[0] > -38.5 && T[0] < -9 && T[2] > 18 && T[2] <= 22.2;
+    o.land = { T, tilt: T[4] || 0, D: clamp((y0 - T[1]) / (0.72 + 0.3 * r(31)), 22, E + 59 - o.tb), yaw: T.length > 3 ? T[3] : 6.283 * r(32), gone: rank3 ? E + 60 + 8 * r(33) : E + 64 + 9.5 * r(33) };
+    o.smin = 0.3 + 0.2 * r(23); o.curl = 0.7 + 1.1 * r(24); });
+  return pick;
+}
+// a scrap at f. ang: where its leaf points; hub: the ball's middle over the cloth (both as they are at "extinguished").
+// -> p (its middle, world), yaw and spin (it turns `spin` about o.axis in its own plane's frame, then `yaw` about the
+// vertical), flat (0 to 1: turned to lie flat, at flatYaw, leaning `tilt` that way), s (size), grey, curl (radians of arc across it), on
+export function scrapAt(o, f, ang, hub) {
+  const t = f - o.tb, ca = Math.cos(ang), sa = Math.sin(ang), p0 = [BURST.at[0] + o.c[0] * ca, hub + o.c[1], BURST.at[1] - o.c[0] * sa];
+  if (t <= 0) return { p: p0, yaw: ang, spin: 0, flat: 0, s: 1, grey: 0, curl: 0, on: true };
+  const env = smooth(t / 12), th = t - 6 * (1 - Math.exp(-t / 6)), [a1, w1, p1, a2, w2, p2] = o.fl;       // th: the turning starts from rest
+  let dx = ca + o.side * sa, dz = -sa + o.side * ca; const dl = Math.hypot(dx, dz); dx /= dl; dz /= dl;      // the way out: along its leaf, a little off it
+  const s1 = a1 * Math.sin(w1 * t + p1) * env, s2 = a2 * Math.sin(w2 * t + p2) * env, bob = 0.35 * a1 * Math.sin(2 * w1 * t + p2) * env;
+  const grey = smooth((t - o.g0) / o.gd), small = lerp(1, o.smin, smooth(t / 18)), lift = o.lift * (1 - Math.exp(-t / 5));
+  if (!o.land) {
+    const out = o.out * (1 - Math.exp(-t / o.tau)) + s2, fall = o.vt * (t - 10 * (1 - Math.exp(-t / 10)));
+    return { p: [p0[0] + dx * out - dz * s1, p0[1] + lift - fall + bob, p0[2] + dz * out + dx * s1], yaw: ang + o.w2 * th, spin: o.w * th, flat: 0,
+      s: small * (1 - smooth((t - (o.life - 10)) / 10)), grey, curl: o.curl * smooth(t / 20), on: t < o.life };
+  }
+  const L = o.land, u = clamp(t / L.D), k = 1 - (1 - u) ** 2, air = (1 - u) ** 1.5, flat = smooth((u - 0.5) / 0.5);
+  return { p: [lerp(p0[0], L.T[0], k) + (dx * s2 - dz * s1) * air, p0[1] + (lift + bob) * air + (L.T[1] - p0[1]) * lerp(u * u, u, 0.7), lerp(p0[2], L.T[2], k) + (dz * s2 + dx * s1) * air],
+    yaw: ang + o.w2 * th, spin: o.w * th, flat, flatYaw: L.yaw, tilt: L.tilt, s: small * (1 - smooth((f - L.gone) / 9)), grey, curl: o.curl * smooth(t / 20), on: f < L.gone + 9, landed: u >= 1 };
 }
 
 // ---------- the ranks: three new slots across the open cloth, eight cards on each, 3.3 cm apart. They hinge up as
@@ -115,7 +172,12 @@ export const CAM_KEYS = [
   { f: C.thinking, P: [-15, 4, 37], T: [-2, 2.9, 12.5] },
   J1,
 ];
-export const camAt = (f) => camFrom(CAM_KEYS, f, joinFloat(F0, F1, f));
+// f4082 to f4129 only: the lens stays up on the ball while it comes apart and tilts down after the first flakes, instead
+// of going down with the stem. An offset on the target alone, zero (with its slope) at both ends: the path of the lens,
+// its speed and every frame outside (E, beginning) are as they were.
+export const LINGER = { dT: [0, 8, 0] };       // at its most (f4101) the target is 8 cm higher
+const lingerAt = (f) => { const u = clamp((f - E) / (C.beginning - E)); return 28.94 * u * u * (1 - u) ** 3; };       // 1 at u = 0.4; it lets go gently
+export const camAt = (f) => { const c = camFrom(CAM_KEYS, f, joinFloat(F0, F1, f)); if (f > E && f < C.beginning) { const w = lingerAt(f); c.T = c.T.map((v, i) => v + w * LINGER.dT[i]); } return c; };
 
 export const BEATS = [
   [F0, "(See)", "the camera turns back from the dark room to the table in one arc, over the left fence"],
@@ -123,7 +185,7 @@ export const BEATS = [
   [C.last, "last", "the last section clicks out: the hub stands 40 cm over the cloth"],
   [C.burst, "burst", "fourteen leaves fan round the stem into a ball 34 cm across, with overshoot; its colour falls on the cloth and the towers"],
   [C.human, "human", "the open ball turns slowly: the key image"],
-  [E, "extinguished", "the leaves fan shut in 10 frames, the stem drops, the candle gutters to a third, the colour drains to grey-blue over 24 frames"],
+  [E, "extinguished", "the ball comes apart from the top down into torn scraps of its own paper, which drift down going grey; a few dozen land and shrink to nothing; the bare stem drops; the candle gutters to a third, the colour drains to grey-blue over 24 frames"],
   [C.beginning, "beginning", "three slots are cut across the cloth; two ranks of eight hinge up, and the fallen citizens and guards stand up"],
   [C.future, "future", "the third rank hinges up; the citizens who went home hinge up at the heads of their slots"],
   [C.robots, "robots", "every card turns, edge-on for two frames, to its robot side"],

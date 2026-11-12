@@ -3,11 +3,16 @@
 //               the ball is real geometry from every side; unlit and never tinted by the candle. Under it a cross of card
 //               strips in three telescoping sections, cut from the plate's own stem; a slot in the cloth it rises through;
 //               three small coloured lights that put its colour on the cloth, and a share of it on the towers' tint.
+//   the scraps  from "extinguished" each leaf is drawn as its scraps: the leaf's own cut of the plate torn along ragged
+//               lines into about fifty pieces (an id map, one cell a scrap), so every scrap is the plate's paper and at
+//               f4082 they tile the leaf exactly. sections/s09.js scrapAt() moves each; here it is turned, curled and
+//               shrunk, greyed (its own paper's lightness, then under the candle's tint like any other piece), and it
+//               casts its own torn silhouette on the cloth.
 //   the robots  forty standees, each with the `robot` plate on its back: three new ranks of eight on three new slots, and
 //               one in the place of each of the sixteen citizens of sections 5 and 6, whose own cards are hidden from
 //               f3840 to the end of the film (a bricklayer's carried brick stays, and fades with the robots).
 // Everything is hidden before f3840. After f4315: the robots fall on "nobody" and fade with their slots from "erased".
-import { clamp, lerp } from "../kit.js";
+import { clamp, lerp, hash } from "../kit.js";
 import { makePath } from "../sections/lib.js";
 import * as S5 from "../sections/s05.js";
 import * as S6 from "../sections/s06.js";
@@ -25,7 +30,7 @@ export async function build(X) {
   // ================= the burst
   // the plate: the ball is x 58 to 965 about the axis x 511, y 12 to 850; its stem is x 468 to 534 below y 856
   const flip = (cv) => { const c = canvasOf(cv.width, cv.height), g = c.getContext("2d"); g.translate(cv.width, 0); g.scale(-1, 1); g.drawImage(cv, 0, 0); return c; };
-  const tR = X.tex(X.cut(img, [511, 12, 458, 840]).canvas), tL = X.tex(flip(X.cut(img, [53, 12, 458, 840]).canvas));
+  const cvR = X.cut(img, [511, 12, 458, 840]).canvas, cvL = flip(X.cut(img, [53, 12, 458, 840]).canvas), tR = X.tex(cvR), tL = X.tex(cvL);
   const burstG = new THREE.Group(); burstG.position.set(bx, 0, bz); burstG.visible = false; world.add(burstG);
   const ball = new THREE.Group(); burstG.add(ball);
   const leafGeo = new THREE.PlaneGeometry(BURST.R, BURST.H); leafGeo.translate(BURST.R / 2, 0, 0);       // the axis is its inner edge
@@ -33,6 +38,80 @@ export async function build(X) {
     const G = new THREE.Group(), m = new THREE.Mesh(leafGeo, new THREE.MeshBasicMaterial({ map: i % 2 ? tL : tR, alphaTest: 0.5, side: THREE.DoubleSide, toneMapped: false }));
     m.material.color.setScalar(i % 2 ? 0.93 : 1.04); m.frustumCulled = false; X.cast(m, i % 2 ? tL : tR); G.add(m); ball.add(G); return { G, m };
   });
+  // ---- the scraps. Each leaf's cut of the plate (458 by 840 px, 26.7 px a cm) is torn into cells: jittered sites, the
+  // nearest site to each pixel after the pixel is pushed about by three octaves of noise, so the tears wander and fray.
+  const TW = 458, TH = 840, GN = 4, NV = (GN + 1) ** 2;       // a scrap is a GN by GN grid over its cell's box, so it can curl
+  const vnoise = (x, y, seed) => { const ix = Math.floor(x), iy = Math.floor(y), fx = x - ix, fy = y - iy, sx = fx * fx * (3 - 2 * fx), sy = fy * fy * (3 - 2 * fy), h = (a, b) => hash(a * 7919 + seed, b);
+    return lerp(lerp(h(ix, iy), h(ix + 1, iy), sx), lerp(h(ix, iy + 1), h(ix + 1, iy + 1), sx), sy) - 0.5; };
+  const warp = [0, 1].map((ax) => { const a = new Float32Array(TW * TH); for (let y = 0; y < TH; y++) for (let x = 0; x < TW; x++) a[y * TW + x] = 16 * vnoise(x / 38, y / 38, 11 + ax) + 8 * vnoise(x / 9, y / 9, 23 + ax) + 3.2 * vnoise(x / 3.1, y / 3.1, 37 + ax); return a; });
+  const alphaOf = (cv) => cv.getContext("2d", { willReadFrequently: true }).getImageData(0, 0, TW, TH).data, alphas = [alphaOf(cvR), alphaOf(cvL)];
+  function tear(i) {
+    const al = alphas[i % 2], r = (n) => hash(4000 + i, n), sites = [];
+    for (let gy = 0; gy < 10; gy++) for (let gx = 0; gx < 6; gx++) sites.push([((gx + 0.5 + 0.84 * (r(gy * 10 + gx) - 0.5)) * TW) / 6, ((gy + 0.5 + 0.84 * (r(100 + gy * 10 + gx) - 0.5)) * TH) / 10]);
+    for (let k = 0; k < 8; k++) sites.push([r(200 + k) * TW, r(210 + k) * TH]);
+    const live = sites.filter(([x, y]) => al[((y | 0) * TW + (x | 0)) * 4 + 3] > 128), n = live.length, sx = live.map((p) => p[0]), sy = live.map((p) => p[1]);
+    const ids = new Uint8Array(TW * TH).fill(255), cells = live.map(() => ({ n: 0, x0: TW, x1: -1, y0: TH, y1: -1, sx: 0, sy: 0 })), ox = (hash(i, 501) * TW) | 0, oy = (hash(i, 502) * TH) | 0;
+    for (let y = 0; y < TH; y++) for (let x = 0; x < TW; x++) { const a = al[(y * TW + x) * 4 + 3]; if (!a) continue;
+      const j = ((y + oy) % TH) * TW + ((x + ox) % TW), qx = x + warp[0][j], qy = y + warp[1][j]; let best = 0, bd = 1e12;
+      for (let k = 0; k < n; k++) { const d = (qx - sx[k]) ** 2 + (qy - sy[k]) ** 2; if (d < bd) { bd = d; best = k; } }
+      ids[(TH - 1 - y) * TW + x] = best; if (a < 100) continue;
+      const c = cells[best]; c.n++; c.sx += x + 0.5; c.sy += y + 0.5; if (x < c.x0) c.x0 = x; if (x > c.x1) c.x1 = x; if (y < c.y0) c.y0 = y; if (y > c.y1) c.y1 = y; }
+    const t = new THREE.DataTexture(ids, TW, TH, THREE.RedFormat, THREE.UnsignedByteType); t.needsUpdate = true;
+    return { t, cells };
+  }
+  const scrapMat = (map, ids, shade) => new THREE.ShaderMaterial({ uniforms: { map: { value: map }, ids: { value: ids }, shade: { value: shade } }, side: THREE.DoubleSide,
+    vertexShader: `attribute float aId; attribute float aGrey; attribute vec3 aAsh; varying vec2 vUv; varying float vId; varying float vGrey; varying vec3 vAsh;
+      void main(){ vUv = uv; vId = aId; vGrey = aGrey; vAsh = aAsh; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
+    fragmentShader: `uniform sampler2D map; uniform sampler2D ids; uniform float shade; varying vec2 vUv; varying float vId; varying float vGrey; varying vec3 vAsh;
+      void main(){ if (abs(floor(texture2D(ids, vUv).r * 255.0 + 0.5) - vId) > 0.5) discard; vec4 c = texture2D(map, vUv); if (c.a < 0.5) discard;
+        float l = dot(c.rgb, vec3(0.2126, 0.7152, 0.0722)); gl_FragColor = vec4(mix(c.rgb * shade, l * vAsh, vGrey), 1.0); }` });       // the plate's paper as painted; grey: its own lightness under the one tint
+  // the shadow of the torn shape, not of its box. (The shadow pass copies `map` and `alphaTest` from the seen material
+  // onto this one, and a ShaderMaterial has neither: so it reads the leaf and the id map through uniforms of its own.)
+  const scrapCaster = (map, ids) => { const m = new THREE.MeshDistanceMaterial({ side: THREE.DoubleSide });
+    m.onBeforeCompile = (sh) => { sh.uniforms.leafMap = { value: map }; sh.uniforms.ids = { value: ids };
+      sh.vertexShader = "attribute float aId; varying float vId; varying vec2 vLeafUv;\n" + sh.vertexShader.replace("#include <begin_vertex>", "#include <begin_vertex>\n vId = aId; vLeafUv = uv;");
+      sh.fragmentShader = "uniform sampler2D leafMap; uniform sampler2D ids; varying float vId; varying vec2 vLeafUv;\n" + sh.fragmentShader.replace("#include <map_fragment>",
+        "if (abs(floor(texture2D(ids, vLeafUv).r * 255.0 + 0.5) - vId) > 0.5 || texture2D(leafMap, vLeafUv).a < 0.5) discard;"); };
+    return m; };
+  const scrapG = new THREE.Group(); scrapG.visible = false; world.add(scrapG); const scraps = [];
+  const scrapLeaves = Array.from({ length: BURST.N }, (_, i) => {
+    const { t, cells } = tear(i), mine = cells.map((c, k) => ({ c, k })).filter((z) => z.c.n >= 12), nv = mine.length * NV;
+    const pos = new Float32Array(nv * 3), uv = new Float32Array(nv * 2), aId = new Float32Array(nv), grey = new Float32Array(nv), ash = new Float32Array(nv * 3), off = new Float32Array(nv * 2), index = [];
+    mine.forEach(({ c, k }, m) => {
+      const x0 = Math.max(0, c.x0 - 1), x1 = Math.min(TW, c.x1 + 2), y0 = Math.max(0, c.y0 - 1), y1 = Math.min(TH, c.y1 + 2), cx = ((c.sx / c.n) * BURST.R) / TW, cy = BURST.H / 2 - ((c.sy / c.n) * BURST.H) / TH, v0 = m * NV;
+      for (let b = 0; b <= GN; b++) for (let a = 0; a <= GN; a++) { const v = v0 + b * (GN + 1) + a, px = lerp(x0, x1, a / GN), py = lerp(y0, y1, b / GN);
+        uv[2 * v] = px / TW; uv[2 * v + 1] = 1 - py / TH; aId[v] = k; off[2 * v] = (px * BURST.R) / TW - cx; off[2 * v + 1] = BURST.H / 2 - (py * BURST.H) / TH - cy; }
+      for (let b = 0; b < GN; b++) for (let a = 0; a < GN; a++) { const p = v0 + b * (GN + 1) + a; index.push(p, p + GN + 1, p + 1, p + 1, p + GN + 1, p + GN + 2); }
+      const o = S9.scrapOf(i, k, [cx, cy]);
+      scraps.push({ o, i, v0, size: Math.max(((x1 - x0) * BURST.R) / TW, ((y1 - y0) * BURST.H) / TH), cb: Math.cos(o.bend), sb: Math.sin(o.bend) });
+    });
+    const geo = new THREE.BufferGeometry(); geo.setAttribute("position", new THREE.BufferAttribute(pos, 3)); geo.setAttribute("uv", new THREE.BufferAttribute(uv, 2)); geo.setAttribute("aId", new THREE.BufferAttribute(aId, 1));
+    geo.setAttribute("aGrey", new THREE.BufferAttribute(grey, 1)); geo.setAttribute("aAsh", new THREE.BufferAttribute(ash, 3)); geo.setIndex(index);
+    const map = i % 2 ? tL : tR, m = new THREE.Mesh(geo, scrapMat(map, t, i % 2 ? 0.93 : 1.04)); m.frustumCulled = false; m.castShadow = true; m.customDistanceMaterial = scrapCaster(map, t); scrapG.add(m);
+    return { geo, pos, grey, ash, off };
+  });
+  reg.add("burst_scraps", scrapG, { kind: "flat" });
+  const bE = S9.burstAt(C.extinguished), angE = scrapLeaves.map((_, i) => S9.leafAt(i, bE).ang); S9.landersOf(scraps.map((k) => k.o), bE.hub);
+  const _q = new THREE.Quaternion(), _qa = new THREE.Quaternion(), _qf = new THREE.Quaternion(), _ax = new THREE.Vector3(), _v = new THREE.Vector3(), UP = new THREE.Vector3(0, 1, 0);
+  const XAX = new THREE.Vector3(1, 0, 0), FLAT = new THREE.Quaternion().setFromAxisAngle(XAX, -HALF); let posedAt = -1;
+  function updateScraps(f) {
+    scrapG.visible = f >= C.extinguished && f <= S9.APART.last; if (!scrapG.visible || f === posedAt) return; posedAt = f;       // the same for every sub-render of a frame
+    for (const k of scraps) {
+      const { o, v0 } = k, L = scrapLeaves[k.i], st = S9.scrapAt(o, f, angE[k.i], bE.hub), { pos, off } = L;
+      if (!st.on || st.s < 0.004) { for (let v = v0; v < v0 + NV; v++) { pos[3 * v] = 0; pos[3 * v + 1] = -60; pos[3 * v + 2] = 0; } continue; }
+      _q.setFromAxisAngle(UP, st.yaw); if (st.spin) _q.multiply(_qa.setFromAxisAngle(_ax.set(o.axis[0], o.axis[1], o.axis[2]).normalize(), st.spin));
+      if (st.flat > 0) _q.slerp(_qf.setFromAxisAngle(UP, st.flatYaw).multiply(st.tilt ? _qa.setFromAxisAngle(XAX, st.tilt - HALF) : FLAT), st.flat);
+      const kap = st.curl / k.size, c = tintAt(st.p[0], st.p[2]), ar = c.r * o.ash, ag = c.g * o.ash, ab = c.b * o.ash;
+      for (let v = v0; v < v0 + NV; v++) {
+        const ox = off[2 * v], oy = off[2 * v + 1]; let p = ox * k.cb + oy * k.sb, zz = 0; const w = -ox * k.sb + oy * k.cb;       // p: along the curl, w: across it
+        if (kap > 1e-4) { zz = (1 - Math.cos(kap * p)) / kap; p = Math.sin(kap * p) / kap; }
+        _v.set((p * k.cb - w * k.sb) * st.s, (p * k.sb + w * k.cb) * st.s, zz * st.s).applyQuaternion(_q);
+        pos[3 * v] = st.p[0] + _v.x; pos[3 * v + 1] = st.p[1] + _v.y; pos[3 * v + 2] = st.p[2] + _v.z;
+        L.grey[v] = st.grey; L.ash[3 * v] = ar; L.ash[3 * v + 1] = ag; L.ash[3 * v + 2] = ab;
+      }
+    }
+    for (const L of scrapLeaves) { L.geo.attributes.position.needsUpdate = true; L.geo.attributes.aGrey.needsUpdate = true; L.geo.attributes.aAsh.needsUpdate = true; }
+  }
   // the stem: two strips crossed, in the paper of the plate's own stem; one piece for each telescoping section and the spine
   const stemCanvas = X.cut(img, [470, 862, 62, 128]).canvas, stemG = new THREE.Group(); stemG.rotation.y = BURST.th0; burstG.add(stemG);
   const stemMats = [];
@@ -84,6 +163,7 @@ export async function build(X) {
     spine(b.bottom, BURST.spine);
     collars.forEach((m, k) => { m.visible = b.e[k] > 0.04; m.position.y = b.Y[k] - 0.1; });
     ball.position.y = b.hub;
+    ball.visible = !b.apart;       // from "extinguished" the leaves are their scraps
     leaves.forEach((o, i) => { const s = S9.leafAt(i, b); o.G.rotation.y = s.ang; o.m.position.z = -s.off; });
   }
 
@@ -147,7 +227,7 @@ export async function build(X) {
 
   return { update(f, jitter, cam) {
     const fade = clamp((f - C.erased) / 40);
-    updateBurst(f, fade);
+    updateBurst(f, fade); updateScraps(f);
     for (const draw of rankSlots) draw(f);
     updateCards(f);       // reads the owners' poses (base) before the lines below hide them
     wallSlots.forEach((g) => { g.visible = f >= C.beginning - 2; g.draw(clamp((f - (C.beginning - 2)) / 14)); });
