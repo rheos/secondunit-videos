@@ -211,6 +211,15 @@ Robin, Nov 11 2026, about 8 pm Pacific, on `andre_paper-world-s06-s07-test01_f25
   semi-realistic dinner table either." The slots were ours too (section 6, point 3: standees on
   rails so nobody needs legs). For version B the default is no tracks cut in the ground; how the
   figures move is the second yes-or-no at the top of its storyboard, after the settings.
+
+  And how the people are made in version B, his decision (dictated; "hearts" is most likely
+  "parts"): "what we will do is use Meshy to create the people. Have them actually walk in with the
+  city possibly as shadows or something like that, but you can't have you making people with hearts
+  because they always just look like bad". So: **people are Meshy 3D figures, rigged, with a real
+  walk cycle, walking in the city, possibly shown as shadows or silhouettes. No people built in code
+  from jointed parts, ever.** The house route is Meshy on Fal (about $1.52 a rigged, animated
+  figure; recipe in `secondunit/MESHY-3D-PIPELINE.md`, `toolbox/meshy.yaml`), loaded into three.js
+  and posed per frame. It is paid: count the figures in the storyboard, estimate, get his number.
 - What is and is not code, so nobody overstates it: the 48 surfaces are painted images (GPT Image on
   the ChatGPT plan, no credits). Everything else is code: the 3D table, where each piece stands, every
   move, the camera, the candlelight and shadows, the lens blur, the render.
