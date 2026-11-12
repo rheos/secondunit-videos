@@ -201,6 +201,10 @@
    "size": "1536x1024",
    "full": true,
    "prompt": "A photograph of a dark, elegant restaurant at night, seen from one table looking out across the room: several other round tables with white cloths recede into the darkness, and on each one stands a small handmade paper-craft model of a walled city with tiny glowing windows, lit by a single candle. Soft focus, deep blue-black shadows, warm points of light. No people, no text. Full bleed, no border."
+  },
+  "brain": {
+   "size": "1536x1024",
+   "prompt": "A single paper-craft human brain seen exactly from the side, the front of the brain on the right, the brain stem at the lower left. Made of layered, curled and folded strips of dusty pink and rose card, so the folds of the surface are real paper folds with pale cut edges and soft shadows between them. One clear deep groove of darker card runs from the top down toward the middle, dividing the front third (the frontal lobe, on the right) from the rest, as if the front part were a separate piece that could be lifted out. No face, no skull, no head around it, no stand, no labels."
   }
  }
 }
