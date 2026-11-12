@@ -251,6 +251,12 @@ Robin, Nov 11 2026, about 8 pm Pacific, on `andre_paper-world-s06-s07-test01_f25
   the title: "leave My Dinner with Andre out of the title and call it something more clever .. just
   put dinner with andre in the description as the source." Description: one plain line, then the
   source, My Dinner with Andre (1981).
+- **Description approved, and public.** The text: "A monologue about boredom, cities and a pine
+  seed, built from painted paper on a table set for two." then a blank line, then "Source: My Dinner
+  with Andre (1981)." Robin: "sounds good. post it public when you do." So this video goes public
+  as part of the upload: `yt_upload.py` uploads unlisted (it refuses public by design), then the
+  Novadiem Studio manage token sets it public over the API, and the status is read back. The
+  with-tracks cut is the one posted. He still sees the finished cut and says go before the upload.
 - What is and is not code, so nobody overstates it: the 48 surfaces are painted images (GPT Image on
   the ChatGPT plan, no credits). Everything else is code: the 3D table, where each piece stands, every
   move, the camera, the candlelight and shadows, the lens blur, the render.
