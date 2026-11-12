@@ -268,6 +268,16 @@
   "spire": {
    "size": "1024x1536",
    "prompt": "A single paper-craft art deco skyscraper crown: three stepped tiers of cream card that narrow as they rise, each with small arched fan shapes of gold foil card, topped by a long thin card needle. Only the crown and needle, no building under it."
+  },
+  "bldg_twin": {
+   "size": "1024x1536",
+   "full": true,
+   "prompt": "A flat, straight-on, evenly lit macro photograph of a tall rectangular panel of matte pale silver-grey card with visible paper fibre: one face of a handmade paper-craft model of a very tall, plain 1970s skyscraper. The whole face is made of many very fine raised vertical ribs of the same card running the full height, closely and evenly spaced, and between the ribs are very narrow vertical window slits, most of them glowing warm yellow from behind in short stacked segments and some left dark. One plain horizontal band of slightly darker card crosses the face a third of the way up and another two thirds of the way up, and a narrow plain band runs along the very top edge and the very bottom edge. The panel fills the whole image from edge to edge with no border and no background, and its left and right edges match so that copies can repeat side by side. No perspective, no cast shadows, no text."
+  },
+  "bldg_twin_dark": {
+   "size": "1024x1536",
+   "ref": "bldg_twin",
+   "prompt": "Edit image 1. Change ONLY the narrow window slits between the ribs: every one of them is now dark and unlit, showing only deep shadow, with no glow and no warm light spilling onto the card. Keep everything else exactly as it is: the same panel, the same ribs, bands, card colour and texture, edge to edge."
   }
  }
 }
