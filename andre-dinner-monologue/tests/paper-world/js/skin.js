@@ -192,13 +192,16 @@ function drumTower(world, name, at, im, roofT) {
 // ---------- the table: the world every section stands on, and section 5's pieces (skins/s05.js wraps this)
 export async function buildTable(X) {
   const scene = X.scene;
-  const names = ["treeman", "citizen", "citizen_woman", "tower_plate", "tower_plate_dark", "tower_glass", "tower_glass_dark", "tower_bottle", "tower_bottle_dark", "basket", "saltpepper", "candle", "redwood", "sapling", "fence_trio", "plate_disc", "fg_glass", "fg_fork", "cloth", "room", ...(DRUMS ? ["tier_wall", "tier_wall_dark", "tier_roof"] : [])];
+  // ?glass2=1 (GLASS2=1 on a render): the two glasses are the plain paper wine glass (tower_glass2, tower_glass2_dark), which
+  // only gains lit windows on "New York" (Nathan Fenwick's note, Nov 12). Without it, the first green lattice goblet.
+  const GLASS = new URLSearchParams(location.search).has("glass2") ? "tower_glass2" : "tower_glass";
+  const names = ["treeman", "citizen", "citizen_woman", "tower_plate", "tower_plate_dark", GLASS, GLASS + "_dark", "tower_bottle", "tower_bottle_dark", "basket", "saltpepper", "candle", "redwood", "sapling", "fence_trio", "plate_disc", "fg_glass", "fg_fork", "cloth", "room", ...(DRUMS ? ["tier_wall", "tier_wall_dark", "tier_roof"] : [])];
   const im = Object.fromEntries(await Promise.all(names.map(async (n) => [n, await image(n)])));
   const P = {}, one = (n, o) => { const c = cut(im[n], null, o); P[o?.as || n] = { ...c, t: tex(c.canvas) }; return P[o?.as || n]; };
   for (const n of ["treeman", "citizen", "citizen_woman", "basket", "candle", "redwood", "sapling", "plate_disc", "fg_glass", "fg_fork"]) one(n);
   one("citizen", { recolour: [52, 60, 104], as: "citizen_navy" }); one("citizen_woman", { recolour: [196, 150, 62], as: "citizen_ochre" });
   const roofT = DRUMS ? tex(cut(im.tier_roof).canvas) : null;
-  for (const n of ["tower_plate", "tower_glass", "tower_bottle"]) { const lit = one(n), dk = cut(im[n + "_dark"], lit.box); P[n + "_dark"] = { ...dk, t: tex(dk.canvas) }; }
+  for (const n of ["tower_plate", GLASS, "tower_bottle"]) { const lit = one(n), dk = cut(im[n + "_dark"], lit.box); P[n + "_dark"] = { ...dk, t: tex(dk.canvas) }; }
   one("saltpepper", { x0: 0, x1: 765, as: "salt" }); one("saltpepper", { x0: 766, x1: im.saltpepper.width - 1, as: "pepper" });
   one("fence_trio", { x0: 0, x1: 308, as: "knife" }); one("fence_trio", { x0: 309, x1: 620, as: "fork" }); one("fence_trio", { x0: 621, x1: im.fence_trio.width - 1, as: "spoon" });
 
@@ -287,7 +290,7 @@ export async function buildTable(X) {
       // the card stands toward the lens by the depth of its painted plate, so that plate lies over the flat disc
       const dx = cam[0] - at[0], dz = cam[2] - at[1], dl = Math.hypot(dx, dz) || 1, e = Math.atan2(cam[1], dl), off = Math.min(6.2, 2.9 / Math.sin(Math.max(e, 0.42))); v.g.position.set(at[0] + (dx / dl) * off, 0, at[1] + (dz / dl) * off); v.scale(lerp(0.5, 1, clamp(k)), Math.max(k, 0.002)); v.mat.uniforms.wipe.value = smooth((f - t0 - 9) / 20); v.tint(); });
   }
-  for (const [name, at, key, h] of [["glass_far", S.LAY.glass_far, "tower_glass", 18], ["glass_near", S.LAY.glass_near, "tower_glass", 18], ["bottle", S.LAY.bottle, "tower_bottle", 30]]) {
+  for (const [name, at, key, h] of [["glass_far", S.LAY.glass_far, GLASS, 18], ["glass_near", S.LAY.glass_near, GLASS, 18], ["bottle", S.LAY.bottle, "tower_bottle", 30]]) {
     const p = P[key], v = volume(world, name, at, p.t, (h * p.w) / p.h, h, wipeMat(P[key + "_dark"].t, p.t)); vols.push(v);
     rise.push((f) => { const t0 = S.C.newyork1 + 3 * S.RISERS.indexOf(name), b = spring(f - t0, 0.55, 14); v.scale(1, 1 + 0.07 * (b - clamp((f - t0) / 2)) * (f > t0 ? 1 : 0)); v.mat.uniforms.wipe.value = smooth((f - t0 - 2) / 22); v.tint(); });
   }
