@@ -185,6 +185,20 @@ Robin, Nov 11 2026, about 8 pm Pacific, on `andre_paper-world-s06-s07-test01_f25
 - **Seedance is no longer the plan.** The painted-pieces film is the film. Do not estimate or plan a
   Seedance pass unless Robin asks for one after seeing the whole cut; if he does, it would be for
   single shots where card motion falls short, not the whole film.
+- **The table is not what Robin asked for.** Later the same evening:
+
+  > i'm not really sure i undertand why all this has to be happening on a dinner table.. i did say
+  > from the start i was trying to animate the monologue.. so it's weird all this is happening on a
+  > dinner table because nothing in the monoluges is talking about a dinner table.. but let's finish
+  > it up so we can do it the way i actually wanted without wasting this.
+
+  The table came from us, not from him: the "table-to-city" look test staged one section on a dinner
+  table (from the film's setting), he called it the best of test 01, and the storyboard then put the
+  whole film on that table. He liked the look and the 2D-figures-in-a-3D-world idea; he never asked
+  for the conceit. **Plan:** finish this cut as storyboarded (version A, "the table"). Then version
+  B animates what the monologue says, each thing in its own place, with no table under it. Version B
+  gets its own storyboard, shown to Robin before anything is built. It reuses the engine, the
+  painted pieces and the section mechanics.
 - What is and is not code, so nobody overstates it: the 48 surfaces are painted images (GPT Image on
   the ChatGPT plan, no credits). Everything else is code: the 3D table, where each piece stands, every
   move, the camera, the candlelight and shadows, the lens blur, the render.
