@@ -14,9 +14,9 @@
 
   // ---- hits, song seconds (work/hits.txt, vocal-stem onsets) ----------------------------------------------
   const T0 = S.hayloft, T1 = S.grass;
-  const FLY1 = 210.76;     // "Flying" (held): first leap off the loft edge, holding hands
+  const FLY1 = 208.2;      // takeoff a beat before the held "Flying" (vocal stem: 208.38 to 213.4), holding hands
   const YOUME = 214.03;    // "you and me": a high five in the hay
-  const FLY2 = 219.72;     // "flying": the second, bigger leap, with a running start
+  const FLY2 = 215.8;      // takeoff for the second held "flying" (vocal stem: 216.0 to 220.3), with a running start
   const LOFTUP = 222.88;   // "up in the hayloft": the camera tilts up the ladder after them
   const HAYLOFT = 224.26;  // "hayloft": the camera arrives at the loft
   const LOSE = 229.18;     // "Losing": third leap; hats blow off, shoes get kicked off
@@ -322,13 +322,14 @@
     hider: { kid: KIDS.hider, sg: 1,  hat: 'bucket' },
   };
   const sOf = (k, h) => h / 100 * KD[k].kid.size;
+  const F1 = 2.2, F2 = 2.2, F3 = 1.3;   // the two sky leaps a little slow-motion (Robin, Nov 11)
   const TIM = {
-    me:    { land1: FLY1 + 1.45, out1: 214.95, lad1: 216.15, top1: 217.65, take2: FLY2 + 0.2, out2: 222.00, lad2: 223.05, top2: 224.45, edge3: 226.30 },
-    hider: { land1: FLY1 + 1.45, out1: 215.25, lad1: 216.95, top1: 218.40, take2: FLY2,       out2: 222.20, lad2: 223.85, top2: 225.25, edge3: 226.70 },
+    me:    { land1: FLY1 + F1, out1: 211.5, lad1: 212.6, top1: 214.0, take2: FLY2 + 0.2, out2: 222.00, lad2: 223.05, top2: 224.45, edge3: 226.30 },
+    hider: { land1: FLY1 + F1, out1: 211.8, lad1: 213.3, top1: 214.8, take2: FLY2,       out2: 222.20, lad2: 223.85, top2: 225.25, edge3: 226.70 },
   };
-  const F1 = 1.45, F2 = 1.6, F3 = 1.3;
-  const LAND = [null, { me: 460, hider: 504 }, { me: 470, hider: 530 }, { me: 474, hider: 520 }];
-  const EDGE = { me: 262, hider: 306 }, TAKE2 = { me: 262, hider: 310 };
+  const LAND = [null, { me: 400, hider: 444 }, { me: 420, hider: 480 }, { me: 474, hider: 520 }];
+  const EDGE = { me: 262, hider: 306 }, TAKE2 = { me: 200, hider: 250 };
+  const SKYX = { me: 196, hider: 240 };   // where the first sky leap starts, so the pair crosses the middle of the frame
   const SKYLEAP = 250;   // the first two leaps go up through the sky-only opening shot (Robin, Nov 11: they fly by)
   const OUT3 = 234.6, TOP = { me: 404, hider: 490 }, DOORP = { me: 648, hider: 700 };
   const HAT_OFF = { me: LOSE + 0.22, hider: LOSE + 0.3 };
@@ -338,7 +339,7 @@
   const climbX = (k, y) => ladX(y - 94 * sOf(k, KH)) + 13 * sOf(k, KH);
   const sinkIn = (dt) => 20 + 22 * (1 - Math.exp(-dt * 9)) + 7 * Math.exp(-dt * 4) * Math.sin(dt * 14);
 
-  function edgeWait(k, t0, tj, t, fromProfile) {
+  function edgeWait(k, t0, tj, t, fromProfile, x0) {
     const sg = KD[k].sg;
     const crouch = sm(seg(t, tj - 0.42, tj - 0.04));
     const bob = (1 - crouch) * 0.18 * Math.max(0, Math.sin(t * 5.2 + sg * 1.3));
@@ -349,7 +350,7 @@
       if (pt > 0) { const e = add(p.chest, [15, 4]), h = add(p.chest, [30, 22 + 2 * Math.sin(t * 9)]); p.armF = [L2(p.armF[0], e, pt), L2(p.armF[1], h, pt)]; }
     }
     if (fromProfile) p = lerpPose(P.stand(1), p, sm(seg(t, t0, t0 + 0.35)));
-    return { x: EDGE[k], y: LOFT_Y, h: KH, pose: p, held: true, hat: t < HAT_OFF[k], shoes: 2 };
+    return { x: x0 == null ? EDGE[k] : x0, y: LOFT_Y, h: KH, pose: p, held: true, hat: t < HAT_OFF[k], shoes: 2 };
   }
   function leapFront(k, t0, dur, x0, y0, xl, apex, t, third, sky) {
     const sg = KD[k].sg, u = seg(t, t0, dur + t0);
@@ -518,8 +519,8 @@
   }
   function act(k, t) {
     const M = TIM[k], third = true;
-    if (t < FLY1) return edgeWait(k, T0, FLY1, t);
-    if (t < M.land1) return leapFront(k, FLY1, F1, EDGE[k], LOFT_Y, LAND[1][k], SKYLEAP, t, false, true);   // high: up into the sky in the tight shot
+    if (t < FLY1) return edgeWait(k, T0, FLY1, t, false, SKYX[k]);
+    if (t < M.land1) return leapFront(k, FLY1, F1, SKYX[k], LOFT_Y, LAND[1][k], SKYLEAP, t, false, true);   // high: up into the sky in the tight shot
     if (t < M.out1) return inHay(k, M.land1, LAND[1][k], t, 'five');
     if (t < M.lad1) return wadeOut(k, M.out1, M.lad1, LAND[1][k], t);
     if (t < M.top1) return climbUp(k, M.lad1, M.top1, t);
@@ -762,8 +763,8 @@
   // The frame sits in the top of the hay door (x 118..420, y 30..384), above the kids' heads as they wait on the loft
   // edge (hat tops at y ~241), so it holds nothing but sky until a leap carries them through it.
   const CAM = [
-    [T0, 282, 138, 3.85], [208.6, 284, 136, 3.85], [FLY1 + 0.3, 286, 138, 3.85], [FLY1 + 1.4, 282, 138, 3.85],
-    [214.6, 280, 136, 3.86], [217.2, 284, 138, 3.85], [FLY2 + 1.0, 286, 138, 3.85], [221.45, 284, 140, 3.84],
+    [T0, 276, 138, 3.85], [208.0, 278, 136, 3.85], [FLY1 + 1.0, 280, 138, 3.85], [FLY1 + 2.4, 276, 138, 3.85],
+    [214.6, 274, 136, 3.86], [FLY2, 278, 138, 3.85], [FLY2 + 1.2, 280, 138, 3.85], [221.45, 278, 140, 3.84],
     [222.5, 330, 432, 1.04],
     [LOFTUP, 214, 488, 1.24], [HAYLOFT, 176, 342, 1.26], [225.6, 214, 326, 1.2], [227.5, 318, 330, 1.38], [LOSE, 326, 334, 1.38],
     [LOSE + 0.6, 400, 368, 1.0], [LOSE + 1.7, 466, 436, 1.04], [CLOTH - 0.7, 490, 452, 1.3], [CLOTH + 1.5, 494, 444, 1.3],
