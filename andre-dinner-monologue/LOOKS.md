@@ -204,6 +204,13 @@ Robin, Nov 11 2026, about 8 pm Pacific, on `andre_paper-world-s06-s07-test01_f25
   just basically do the whole thing again, except lose the dinner table aspect, which I never asked
   for and actually hate". So version A is finished, exported and saved, and nothing of the table
   (cloth, place setting, candle on a table, cutlery fence, restaurant room) goes into version B.
+
+  Two more notes from him as he watched: "this is supposed to be a city.. not a dinner table" (New
+  York is a city: streets, buildings, people in them), and "it's pretty weird as well on this
+  'dinner table' there a tracks cut into it for cutouts to travel on.. So it's not even a
+  semi-realistic dinner table either." The slots were ours too (section 6, point 3: standees on
+  rails so nobody needs legs). For version B the default is no tracks cut in the ground; how the
+  figures move is the second yes-or-no at the top of its storyboard, after the settings.
 - What is and is not code, so nobody overstates it: the 48 surfaces are painted images (GPT Image on
   the ChatGPT plan, no credits). Everything else is code: the 3D table, where each piece stands, every
   move, the camera, the candlelight and shadows, the lens blur, the render.
