@@ -239,6 +239,14 @@ Robin, Nov 11 2026, about 8 pm Pacific, on `andre_paper-world-s06-s07-test01_f25
   `out/paper-world/tracks/`, he picked "A, with tracks" (about 10:30 pm, Nov 11). The release keeps
   them; the `NOSLOTS=1` switch stays in the engine but is not used. Cut 01 (the first joined film,
   `out/paper-world/film/andre_pop-up-table_cut01_...`) went to him at the same time.
+- **Where it goes.** Robin, about 10:45 pm Nov 11: "i want to post this on novadiem.com on the
+  novadiem studio youtube channel." He may also try a no-tracks version later and is asking other
+  opinions, so every full cut is rendered both ways as two named files. Release steps, from the
+  video-production skill's `references/publish.md`, once he signs off a cut: pre-flight; upload
+  unlisted with `yt_upload.py --channel "Novadiem Studio"` (link to Telegram); check the video's
+  status for a copyright claim or block, since the sound is the film's own; public on his word;
+  then novadiem.com (`src/data/videos.ts`, `otherGroups`, issue, worktree, PR, merge, deploy, curl).
+  No upload while a cut is still being fixed.
 - What is and is not code, so nobody overstates it: the 48 surfaces are painted images (GPT Image on
   the ChatGPT plan, no credits). Everything else is code: the 3D table, where each piece stands, every
   move, the camera, the candlelight and shadows, the lens blur, the render.
