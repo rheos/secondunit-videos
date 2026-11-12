@@ -199,6 +199,11 @@ Robin, Nov 11 2026, about 8 pm Pacific, on `andre_paper-world-s06-s07-test01_f25
   B animates what the monologue says, each thing in its own place, with no table under it. Version B
   gets its own storyboard, shown to Robin before anything is built. It reuses the engine, the
   painted pieces and the section mechanics.
+
+  Confirmed a few minutes later: "after we're done this, we'll just save it export it then we will
+  just basically do the whole thing again, except lose the dinner table aspect, which I never asked
+  for and actually hate". So version A is finished, exported and saved, and nothing of the table
+  (cloth, place setting, candle on a table, cutlery fence, restaurant room) goes into version B.
 - What is and is not code, so nobody overstates it: the 48 surfaces are painted images (GPT Image on
   the ChatGPT plan, no credits). Everything else is code: the 3D table, where each piece stands, every
   move, the camera, the candlelight and shadows, the lens blur, the render.
