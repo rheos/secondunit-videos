@@ -1,5 +1,21 @@
 {
  "section": 3,
- "words": [],
- "stills": []
+ "words": [
+  { "key": "yes", "word": "yes", "cue": 524 },
+  { "key": "bored1", "word": "bored", "cue": 565 },
+  { "key": "bored2", "word": "bored", "cue": 599 },
+  { "key": "process", "word": "process", "cue": 670 },
+  { "key": "self", "word": "self", "cue": 771 },
+  { "key": "brainwashing", "word": "brainwashing", "cue": 827 },
+  { "key": "totalitarian", "word": "totalitarian", "cue": 875 },
+  { "key": "government", "word": "government", "cue": 888 },
+  { "key": "money", "word": "money", "cue": 916 },
+  { "key": "dangerous", "word": "dangerous", "cue": 964 },
+  { "key": "survival", "word": "survival", "cue": 1041 },
+  { "key": "bored3", "word": "bored", "cue": 1092 },
+  { "key": "asleep1", "word": "asleep", "cue": 1106 },
+  { "key": "asleep2", "word": "asleep", "cue": 1145 },
+  { "key": "no", "word": "no", "cue": 1172, "hand": 1174 }
+ ],
+ "stills": [508, 540, 558, 577, 612, 640, 683, 693, 720, 790, 841, 920, 1000, 1124, 1140, 1165, 1182, 1200, 1220, 1243]
 }
