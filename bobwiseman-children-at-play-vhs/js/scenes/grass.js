@@ -37,7 +37,7 @@
   const KH = 380;
   const KD = {
     me:    { kid: KIDS.me,    head: [440, 316], rot: Math.PI / 2 },   // body runs off to the left
-    hider: { kid: KIDS.hider, head: [522, 404], rot: -Math.PI / 2 },  // body runs off to the right
+    hider: { kid: KIDS.hider, head: [536, 420], rot: -Math.PI / 2 },  // body runs off to the right
   };
   for (const k of ['me', 'hider']) {
     const d = KD[k]; d.s = KH / 100 * d.kid.size;
@@ -48,21 +48,33 @@
   const toL = (k, w) => { const d = KD[k], c = Math.cos(d.rot), s = Math.sin(d.rot); const x = (w[0] - d.origin[0]) / d.s, y = (w[1] - d.origin[1]) / d.s; return [x * c + y * s, -x * s + y * c]; };
 
   // The raised inner hand: where it shows (top view) and how high it is off the grass (world px).
+  // Seen from straight above, an arm pointing up at the lens is only a fist over its shoulder (Blender reference,
+  // work/ref3d, Nov 11): the hand's top-view offset from the shoulder and its height share one arm length.
   // The heads lie offset on a diagonal, which leaves open grass between them: the hands meet there.
-  const UP = { me: [424, 398], hider: [540, 322] };   // pointing up at the lens, each in its own patch of grass
-  const MEET = [481, 360];                              // the fingertips touch here
+  const ARM = 31;                                       // shoulder to knuckles, kid-local units
+  const SHOULDER = [8, -79], REST_H = [16, -49];        // kid-local: the inner shoulder, the hand resting by the side
+  const MEET = [500, 342];                              // the fingertips touch here, over open grass between the heads
+  const shoulderW = (k) => toW(k, SHOULDER);
   function raised(k, t) {
+    const d = KD[k], L = ARM * d.s, sh = shoulderW(k);
     const lag = k === 'me' ? 0 : 0.42;
     const r = sm(seg(t, AND_I + lag, LOVE1 - 0.05 + lag * 0.2));
     const poke = Math.exp(-Math.pow((t - YOU1 - 0.08) / 0.16, 2));
     const drift = sm(seg(t, OH, YOU2));                 // the two hands come together, slowly, then touch on "you"
     const near = drift * (1 - 0.06 * Math.exp(-Math.pow((t - LOVE2) / 0.5, 2)));
     const side = k === 'me' ? 1 : -1;
-    const tip = L2(UP[k], add(MEET, [side * -15, side * 11]), near);   // the palm stops short; the finger reaches
+    const toM = [MEET[0] - sh[0], MEET[1] - sh[1]], dm = Math.hypot(toM[0], toM[1]), um = [toM[0] / dm, toM[1] / dm];
+    const upW = add(sh, [um[0] * 0.12 * L, um[1] * 0.12 * L]);           // straight up, tipped a little toward the other kid
+    const target = add(MEET, [-um[0] * 11, -um[1] * 11]);               // the palm stops short on its own side; the finger reaches
+    const tr = Math.min(Math.hypot(target[0] - sh[0], target[1] - sh[1]), 0.93 * L);
+    const tdir = Math.atan2(target[1] - sh[1], target[0] - sh[0]);
+    const meetW = add(sh, [Math.cos(tdir) * tr, Math.sin(tdir) * tr]);
     const idle = (1 - drift) * r;                         // while held up, the hands trace little circles at the clouds
-    const hand = add(tip, [idle * 4 * Math.sin(t * 1.3 + side), idle * 3 * Math.cos(t * 1.1 + side)]);
-    const H = lerp(0, 92, r) * (1 + 0.14 * poke) - 14 * drift;   // height off the grass
-    return { r, hand, H, big: 1 + 0.14 * r + 0.16 * poke, drift };
+    const flat = L2(L2(toW(k, REST_H), upW, r), meetW, near);           // the hand's top-view position
+    const hand = add(flat, [idle * 3 * Math.sin(t * 1.3 + side), idle * 2.4 * Math.cos(t * 1.1 + side)]);
+    const reach = Math.min(L, Math.hypot(hand[0] - sh[0], hand[1] - sh[1]));
+    const H = Math.sqrt(L * L - reach * reach) * Math.max(r, near);    // height off the grass, from the arm length
+    return { r, hand, H, big: 1 + 0.22 * (H / L) + 0.16 * poke, drift, sh, L };
   }
   // A raised hand in kid-local units at hl: palm, the index finger pointing (at the lens, then at the other hand).
   function handShape(g, k, hl, big, t) {
@@ -70,10 +82,11 @@
     const aimW = R.drift > 0.02 ? MEET : add(R.hand, k === 'me' ? [10, -16] : [-10, 16]);
     const aim = toL(k, aimW);
     const ang = Math.atan2(aim[1] - hl[1], aim[0] - hl[0]);
+    const fl = 4.5 + 8 * R.drift;   // pointing straight up at the lens the finger is foreshortened to a stub
     g.save(); g.translate(hl[0], hl[1]); g.rotate(ang); g.scale(big, big);
     g.beginPath(); g.ellipse(0, 0, 4.6, 3.9, 0, 0, TAU); g.fill();
     g.lineCap = 'round';
-    g.lineWidth = 2.4; g.beginPath(); g.moveTo(2.5, -1.2); g.lineTo(12.5, -1.4); g.stroke();      // index finger
+    g.lineWidth = 2.4; g.beginPath(); g.moveTo(2.5, -1.2); g.lineTo(fl, -1.4); g.stroke();      // index finger
     g.beginPath(); g.ellipse(3.4, 1.4, 2.8, 2.3, 0, 0, TAU); g.fill();                              // curled fingers
     g.lineWidth = 2.1; g.beginPath(); g.moveTo(-0.5, -3); g.lineTo(2.5, -5.2); g.stroke();        // thumb
     g.restore();
@@ -93,6 +106,7 @@
       p.legB = [[-4, -24], [3, -2]]; p.legF = [[4, -24], [-3, -1]];
     }
     p.hairSwing = 0;
+    p.toe = 0;   // on their backs the feet point up at the lens: seen from above, a blob at the end of each leg
     // the inner arm: resting by the side, then raised toward the lens
     const R = raised(k, t);
     const sh = add(p.chest, [8, -2]);
@@ -180,40 +194,54 @@
         g.fillStyle = kind === 'yellow' ? '#c98a12' : '#e8c34a'; g.beginPath(); g.arc(x, y, 1.6 * s, 0, TAU); g.fill();
       }
     }
-    // the kids' own shadows, short (they lie flat), and the long shadows of the raised arms
-    g.save(); g.filter = 'blur(2.5px)';
-    g.fillStyle = g.strokeStyle = 'rgba(34,44,10,.42)';
-    for (const k of ['me', 'hider']) {
-      const d = KD[k];
-      g.save(); g.translate(SH[0] * 13, SH[1] * 13);
-      g.translate(d.origin[0], d.origin[1]); g.rotate(d.rot);
-      const p = pose(k, t); p.props = []; p.armF = [p.armF[0], p.armF[0]];
-      drawKid(g, d.kid, p, 0, 0, KH, 'rgba(34,44,10,.42)');
-      g.restore();
-    }
-    g.fillStyle = g.strokeStyle = 'rgba(30,40,8,.56)';
-    for (const k of ['me', 'hider']) armShadow(g, k, t);
-    g.restore();
+    kidShadows(g, t);
     cloudShadows(g, t);
   }
-  // The raised arm's shadow on the grass: shoulder to fingertip, each point pushed along SH by its height.
-  function armShadow(g, k, t) {
-    const R = raised(k, t);
-    if (R.r < 0.02) return;
-    const d = KD[k];
-    const p = P.stand(0);
-    const sh = toW(k, add(p.chest, [8, -2]));
-    const footHand = R.hand;
-    const H = R.H;
+  // The kids' shadows, from the Blender reference (work/ref3d, Nov 11). A body lying in low sun throws a broad, soft
+  // shadow on its far side, as deep as the body is thick, attached all along its edge: the silhouette swept along SH
+  // up to its height. The head and the upturned feet stand higher and stick out further. A raised arm's shadow is a
+  // long thin stroke that starts at the shoulder on the grass and runs out to the hand's shadow. Everything is drawn
+  // opaque into one layer, then laid down once, so overlapping parts don't darken twice.
+  const SHL = document.createElement('canvas'); SHL.width = 960; SHL.height = 720;
+  const shl = SHL.getContext('2d');
+  const BODY = { legs: 7.5, torso: 11, head: 13.5, feet: 15 };   // heights off the grass, kid-local units
+  function kidShadows(g, t) {
+    const m = g.getTransform(), zoom = Math.hypot(m.a, m.b);
+    shl.setTransform(1, 0, 0, 1, 0, 0); shl.clearRect(0, 0, 960, 720); shl.setTransform(m);
+    shl.fillStyle = shl.strokeStyle = '#000'; shl.lineCap = 'round'; shl.lineJoin = 'round';
     const at = (w, h) => [w[0] + SH[0] * h * SHK, w[1] + SH[1] * h * SHK];
-    const s0 = at(sh, 10), el = at(L2(sh, footHand, 0.5), H * 0.5 + 5), hd = at(footHand, H);
-    const fdir = [hd[0] - el[0], hd[1] - el[1]], fl = Math.hypot(fdir[0], fdir[1]) || 1;
-    const u = [fdir[0] / fl, fdir[1] / fl];
-    const w = d.s;
-    g.lineCap = 'round'; g.lineJoin = 'round';
-    g.lineWidth = 7 * w; g.beginPath(); g.moveTo(s0[0], s0[1]); g.quadraticCurveTo(el[0], el[1], hd[0], hd[1]); g.stroke();
-    g.beginPath(); g.ellipse(hd[0] + u[0] * 2 * w, hd[1] + u[1] * 2 * w, 5 * w, 4.4 * w, Math.atan2(u[1], u[0]), 0, TAU); g.fill();
-    g.lineWidth = 2.5 * w; g.beginPath(); g.moveTo(hd[0] + u[0] * 4 * w, hd[1] + u[1] * 4 * w); g.lineTo(hd[0] + u[0] * 11.5 * w, hd[1] + u[1] * 11.5 * w); g.stroke();
+    for (const k of ['me', 'hider']) {
+      const d = KD[k], R = raised(k, t), p = pose(k, t);
+      p.props = [];
+      if (R.r > 0.02) p.armF = [SHOULDER, SHOULDER];   // the raised arm throws its own shadow below
+      const sweep = (hUnits, draw) => {
+        const hpx = hUnits * d.s, n = Math.max(2, Math.ceil(hpx * SHK / 3));
+        for (let i = 0; i <= n; i++) {
+          const o = SH.map((v) => v * hpx * SHK * i / n);
+          shl.save(); shl.translate(o[0], o[1]); shl.translate(d.origin[0], d.origin[1]); shl.rotate(d.rot); draw(); shl.restore();
+        }
+      };
+      sweep(BODY.legs, () => drawKid(shl, d.kid, p, 0, 0, KH, '#000'));
+      sweep(BODY.torso, () => { shl.scale(d.s, d.s); shl.beginPath(); shl.ellipse(0, -63, 10.5, 15, 0, 0, TAU); shl.fill(); });
+      sweep(BODY.head, () => { shl.scale(d.s, d.s); shl.beginPath(); shl.arc(p.head[0], p.head[1], 9.5, 0, TAU); shl.fill(); });
+      sweep(BODY.feet, () => { shl.scale(d.s, d.s); for (const L of [p.legF, p.legB]) { shl.beginPath(); shl.ellipse(L[1][0], L[1][1] - 1.4, 3.6, 2.6, 0, 0, TAU); shl.fill(); } });
+      if (R.r > 0.02) {   // the raised arm: shoulder (on the grass, at torso height) out to the hand at its height
+        const s0 = at(R.sh, BODY.torso * d.s * 0.8), hd = at(R.hand, R.H);
+        const u0 = [hd[0] - s0[0], hd[1] - s0[1]], ul = Math.hypot(u0[0], u0[1]) || 1, u = [u0[0] / ul, u0[1] / ul];
+        const w = d.s;
+        shl.lineWidth = 6.4 * w; shl.beginPath(); shl.moveTo(s0[0], s0[1]); shl.lineTo(hd[0], hd[1]); shl.stroke();
+        shl.beginPath(); shl.ellipse(hd[0] + u[0] * 2 * w, hd[1] + u[1] * 2 * w, 5.2 * w, 4.4 * w, Math.atan2(u[1], u[0]), 0, TAU); shl.fill();
+        // the finger points at the lens, so in the low sun its shadow runs on along the arm's
+        shl.lineWidth = 2.4 * w; shl.beginPath(); shl.moveTo(hd[0] + u[0] * 4 * w, hd[1] + u[1] * 4 * w); shl.lineTo(hd[0] + u[0] * (10 + 3 * (1 - R.drift)) * w, hd[1] + u[1] * (10 + 3 * (1 - R.drift)) * w); shl.stroke();
+      }
+    }
+    // tint the opaque layer to the grass's shadow colour, then lay it down once, soft at the edge
+    shl.setTransform(1, 0, 0, 1, 0, 0);
+    shl.globalCompositeOperation = 'source-in'; shl.fillStyle = 'rgb(28,38,8)'; shl.fillRect(0, 0, 960, 720);
+    shl.globalCompositeOperation = 'source-over';
+    g.save(); g.setTransform(1, 0, 0, 1, 0, 0);
+    g.globalAlpha = 0.58; g.filter = `blur(${(1.6 * zoom).toFixed(2)}px)`; g.drawImage(SHL, 0, 0);
+    g.restore();
   }
   function cloudShadows(g, t) {
     const v = [32, 13];  // px per second, with the wind
@@ -246,11 +274,11 @@
       g.save(); g.translate(d.origin[0], d.origin[1]); g.rotate(d.rot); g.scale(d.s, d.s);
       const hl = p.armF[1], el = p.armF[0];
       const c = Math.cos(-d.rot), sn = Math.sin(-d.rot), sunL = [SUNDIR[0] * c - SUNDIR[1] * sn, SUNDIR[0] * sn + SUNDIR[1] * c];
-      const fore = L2(el, hl, 0.35);
+      const up0 = L2(SHOULDER, el, 0.45);   // the whole raised arm, so it reads where it crosses a dark head
       const draw = (col, off) => {
         g.save(); g.translate(off[0], off[1]);
         g.fillStyle = g.strokeStyle = col; g.lineCap = 'round';
-        g.lineWidth = 6.2; g.beginPath(); g.moveTo(fore[0], fore[1]); g.lineTo(hl[0], hl[1]); g.stroke();
+        g.lineWidth = 6.2; g.lineJoin = 'round'; g.beginPath(); g.moveTo(up0[0], up0[1]); g.lineTo(el[0], el[1]); g.lineTo(hl[0], hl[1]); g.stroke();
         handShape(g, k, hl, R.big, t);
         g.restore();
       };
@@ -264,7 +292,7 @@
 
   const CAM = [
     [T0, 482, 358, 1.0], [AND_I, 478, 362, 1.04], [YOU1, 472, 366, 1.1], [OH, 466, 372, 1.12],
-    [LOVE2, 440, 396, 1.42], [YOU2 + 0.6, 428, 404, 1.58], [T1, 426, 406, 1.63],
+    [LOVE2, 468, 366, 1.36], [YOU2 + 0.6, 478, 356, 1.5], [T1, 480, 354, 1.54],   // push in on the touching hands
   ];
   const FOCUS = [[T0, 1.8], [245.9, 0.2], [246.3, 0], [YOU1 + 0.3, 0], [YOU1 + 0.6, 0.9], [249.4, 0], [YOU2 + 0.7, 0], [YOU2 + 1.1, 1.1], [YOU2 + 1.6, 0]];
 
