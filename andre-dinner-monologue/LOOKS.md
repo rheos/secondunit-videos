@@ -257,6 +257,9 @@ Robin, Nov 11 2026, about 8 pm Pacific, on `andre_paper-world-s06-s07-test01_f25
   as part of the upload: `yt_upload.py` uploads unlisted (it refuses public by design), then the
   Novadiem Studio manage token sets it public over the API, and the status is read back. The
   with-tracks cut is the one posted. He still sees the finished cut and says go before the upload.
+- **Changed a few minutes later: unlisted.** "actually no.. keep it unlisted for now". So the upload
+  stays unlisted and nothing sets it public. Public, and the novadiem.com entry (which would show an
+  unlisted video to anyone on the site), wait for his word.
 - What is and is not code, so nobody overstates it: the 48 surfaces are painted images (GPT Image on
   the ChatGPT plan, no credits). Everything else is code: the 3D table, where each piece stands, every
   move, the camera, the candlelight and shadows, the lens blur, the render.
