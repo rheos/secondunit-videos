@@ -247,6 +247,10 @@ Robin, Nov 11 2026, about 8 pm Pacific, on `andre_paper-world-s06-s07-test01_f25
   status for a copyright claim or block, since the sound is the film's own; public on his word;
   then novadiem.com (`src/data/videos.ts`, `otherGroups`, issue, worktree, PR, merge, deploy, curl).
   No upload while a cut is still being fixed.
+- **Title: "Table for Two"** (Robin's pick, Nov 11, from four offered). He wants the source out of
+  the title: "leave My Dinner with Andre out of the title and call it something more clever .. just
+  put dinner with andre in the description as the source." Description: one plain line, then the
+  source, My Dinner with Andre (1981).
 - What is and is not code, so nobody overstates it: the 48 surfaces are painted images (GPT Image on
   the ChatGPT plan, no credits). Everything else is code: the 3D table, where each piece stands, every
   move, the camera, the candlelight and shadows, the lens blur, the render.
