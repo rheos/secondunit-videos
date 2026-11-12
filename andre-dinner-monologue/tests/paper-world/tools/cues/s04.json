@@ -1,5 +1,104 @@
 {
  "section": 4,
- "words": [],
- "stills": []
+ "words": [
+  {
+   "key": "meeting",
+   "word": "meeting",
+   "cue": 1219
+  },
+  {
+   "key": "just",
+   "word": "just",
+   "cue": 1257
+  },
+  {
+   "key": "met",
+   "word": "met",
+   "cue": 1281,
+   "hand": 1281
+  },
+  {
+   "key": "swedish",
+   "word": "Swedish",
+   "cue": 1323
+  },
+  {
+   "key": "physicist",
+   "word": "physicist",
+   "cue": 1333
+  },
+  {
+   "key": "television",
+   "word": "television",
+   "cue": 1432
+  },
+  {
+   "key": "newspapers",
+   "word": "newspapers",
+   "cue": 1463,
+   "hand": 1465
+  },
+  {
+   "key": "magazines",
+   "word": "magazines",
+   "cue": 1495,
+   "hand": 1496
+  },
+  {
+   "key": "cut",
+   "word": "cut",
+   "cue": 1538
+  },
+  {
+   "key": "life",
+   "word": "life",
+   "cue": 1567
+  },
+  {
+   "key": "orwellian",
+   "word": "Orwellian",
+   "cue": 1646
+  },
+  {
+   "key": "nightmare",
+   "word": "nightmare",
+   "cue": 1659
+  },
+  {
+   "key": "everything",
+   "word": "everything",
+   "cue": 1692,
+   "hand": 1692
+  },
+  {
+   "key": "robot",
+   "word": "robot",
+   "cue": 1764,
+   "hand": 1764
+  }
+ ],
+ "stills": [
+  1236,
+  1258,
+  1270,
+  1290,
+  1300,
+  1352,
+  1390,
+  1443,
+  1449,
+  1473,
+  1504,
+  1600,
+  1652,
+  1680,
+  1730,
+  1770,
+  1772,
+  1776,
+  1782,
+  1790,
+  1820,
+  1848
+ ]
 }
