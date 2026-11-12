@@ -28,7 +28,7 @@ case "$1" in
     ffmpeg -v error -y -i work/tv_$s.mp4 -ss $T0 -t $((T1 - T0)) -i $SONG -map 0:v -map 1:a \
       -vf "scale=-2:${h}:flags=lanczos" -c:v libx264 -crf 19 -maxrate 6M -bufsize 12M -preset medium -pix_fmt yuv420p \
       -c:a aac -b:a 192k -shortest -movflags +faststart \
-      out/children-at-play_vhs-${s}-${VER:-d2}_f0-f948_24fps_${h}p.mp4
-    echo out/children-at-play_vhs-${s}-${VER:-d2}_f0-f948_24fps_${h}p.mp4 ;;
+      out/children-at-play_vhs-${s}-${VER:-d2}_f0-f$((T1 * 24))_24fps_${h}p.mp4
+    echo out/children-at-play_vhs-${s}-${VER:-d2}_f0-f$((T1 * 24))_24fps_${h}p.mp4 ;;
   *) sed -n 2,8p "$0" ;;
 esac
