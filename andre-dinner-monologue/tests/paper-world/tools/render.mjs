@@ -24,7 +24,7 @@ const pg = await b.newPage({ viewport: { width: W, height: H } });
 let bad = 0;
 pg.on("pageerror", (e) => { bad++; console.log("PAGEERROR", e.message); });
 pg.on("console", (m) => { if (["error", "warning"].includes(m.type()) && !/GPU stall/i.test(m.text())) console.log("CONSOLE", m.text().slice(0, 600)); });
-await pg.goto(`http://127.0.0.1:${port}/index.html?w=${W}&h=${H}&n=${N}&still=1${process.env.LINEUP ? "&lineup=1" : ""}${process.env.SKIN ? "&skin=1" : ""}${process.env.T3 ? "&t3=1" : ""}${process.env.CAM ? "&cam=" + process.env.CAM : ""}`);
+await pg.goto(`http://127.0.0.1:${port}/index.html?w=${W}&h=${H}&n=${N}&still=1${process.env.LINEUP ? "&lineup=1" : ""}${process.env.SKIN ? "&skin=1" : ""}${process.env.T3 ? "&t3=1" : ""}${process.env.CAM ? "&cam=" + process.env.CAM : ""}${process.env.NOSLOTS ? "&noslots=1" : ""}`);
 await pg.waitForFunction("window.ready===true", null, { timeout: 180000 });
 const SECTION = process.env.SECTION ? +process.env.SECTION : 0, seen = new Set();
 const failures = async () => { let mine = false; for (const x of await pg.evaluate(() => window.paperFailed())) { if (x.section === SECTION) mine = true; const k = x.section + x.part; if (seen.has(k)) continue; seen.add(k);

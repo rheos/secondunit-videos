@@ -230,6 +230,8 @@ export async function buildTable(X) {
   // ---------- slots: a thin dark cut with a paler lip, along every standee's whole path
   const off = { polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 };
   const slotPale = shoulder(new THREE.MeshStandardMaterial({ color: "#fff7e6", roughness: 1, ...off })), slotDark = new THREE.MeshBasicMaterial({ color: new THREE.Color(0.11, 0.075, 0.05), toneMapped: false, polygonOffset: true, polygonOffsetFactor: -4, polygonOffsetUnits: -4 });
+  // ?noslots=1 (NOSLOTS=1 on a render): the tracks are not drawn at all, for Robin's with-and-without comparison
+  if (new URLSearchParams(location.search).has("noslots")) slotPale.visible = slotDark.visible = false;
   function ribbon(path, half, y, mat) {
     const n = Math.max(2, Math.ceil(path.len / 0.35)), pos = [], idx = [];
     for (let i = 0; i <= n; i++) { const p = path.pose((i / n) * path.len); pos.push(p.x - p.hz * half, y, p.z + p.hx * half, p.x + p.hz * half, y, p.z - p.hx * half); if (i < n) { const a = i * 2; idx.push(a, a + 1, a + 2, a + 1, a + 3, a + 2); } }
