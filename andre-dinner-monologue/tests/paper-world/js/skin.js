@@ -9,6 +9,7 @@
 import { THREE, clamp, lerp, smooth, spring, hash } from "./kit.js";
 import * as S from "./story.js";
 import { fencePlan } from "./table.js";
+import { buildCamp } from "./skin67.js";
 
 const PL = "work/plates/";
 // test 04: the plate towers are real drums (three tiers and a cap) and the foreground glass is moved. ?t3=1 keeps test 03 as it was.
@@ -215,7 +216,7 @@ export async function buildSkin(scene) {
     const ec = new THREE.Color().setRGB((p.mean[0] * 0.6 + 96) / 255, (p.mean[1] * 0.6 + 92) / 255, (p.mean[2] * 0.6 + 80) / 255, THREE.SRGBColorSpace);
     const core = new THREE.Mesh(new THREE.BoxGeometry(0.02, ((y1 - y0) / p.h) * h, 0.09), new THREE.MeshBasicMaterial({ color: ec.clone(), toneMapped: false })); core.position.y = h - ((y0 + y1) / 2 / p.h) * h; rock.add(core);
     world.add(root);
-    return { name, root, h, pose(s) {
+    return { name, root, h, pop, rock, a, b, core, pose(s) {
       root.visible = s.visible !== false; if (!root.visible) return;
       root.position.set(s.x, 0.02, s.z); root.rotation.y = s.yaw;
       const ph = (s.f * Math.PI) / 6, w = s.walk ?? 0, settle = Math.exp(-(s.rest ?? 99) / 5) * Math.cos(((s.rest ?? 0) * Math.PI) / 4);      // sliding: rocks on twos; stopped: the rock settles
@@ -276,9 +277,9 @@ export async function buildSkin(scene) {
 
   // ---------- the fence: the same deal as test 02, with the painted knife, fork and spoon
   const plan = fencePlan(), FH = { knife: 20, fork: 19, spoon: 18 };
-  const posts = plan.posts.map((Q) => {
+  const postObjs = [], posts = plan.posts.map((Q) => {
     const p = P[Q.kind], h = FH[Q.kind], G = named(new THREE.Group(), Q.name), H = named(new THREE.Group(), Q.name + ".hinge"); G.add(H); world.add(G); G.userData.kind = Q.kind;
-    const m = flatCard(p.t, (h * p.w) / p.h, h); H.add(m);
+    const m = flatCard(p.t, (h * p.w) / p.h, h); H.add(m); postObjs.push({ Q, G, H });
     return (f) => { const s = Q.at(f); G.position.set(s.x, s.y, s.z); G.rotation.y = s.yaw; H.rotation.x = s.hinge; m.material.color.copy(tintAt(s.x, s.z)); };
   });
 
@@ -288,15 +289,20 @@ export async function buildSkin(scene) {
   const hemi = named(new THREE.HemisphereLight("#93806c", "#3a2e26", 1), "room_fill"); scene.add(hemi);
   [treeman, ...citizens].forEach((s) => s.root.traverse((o) => (o.frustumCulled = false)));
 
+  // sections 6 and 7: the camp and the seed (js/skin67.js). Everything it adds is hidden before f2544.
+  const camp = await buildCamp({ world, image, cut, tex, plane, flatCard, caster, unseen, volume, ribbon, slotPale, slotDark, shoulder, leanFor, clothT, treeman, citizens, postObjs });
+
   function update(f, jitter = [0, 0, 0], cam) {
     const flm = S.flameAt(f), on = clamp((f - S.C.newyork1 - 6) / 44);
     flame.rotation.z = -Math.atan(flm.lx * 1.4); flame.scale.y = flm.h; glow.scale.setScalar(8.5 * (0.94 + 0.12 * (flm.gain - 1) * 10)); glow.material.color.setRGB(0.8 * flm.gain, 0.5 * flm.gain, 0.2 * flm.gain);
     const L = [candleXZ[0] + flm.lx * 1.2 + jitter[0], flameY + jitter[1], candleXZ[1] + flm.lz * 1.2 + jitter[2]];
-    key.position.set(...L); key.intensity = 54 * flm.gain; bounce.intensity = 20 + 6 * on; hemi.intensity = 0.8 + 0.15 * on;
+    const fill = S.fillAt(f);       // 1 through section 5
+    key.position.set(...L); key.intensity = 54 * flm.gain; bounce.intensity = (20 + 6 * on) * fill; hemi.intensity = (0.8 + 0.15 * on) * fill;
     cface.rotation.set(-leanFor(cam.P, candle.position, CH), Math.atan2(cam.P[0] - candleXZ[0], cam.P[2] - candleXZ[1]), 0);
     rise.forEach((r) => r(f, cam.P)); vols.forEach((v) => v.aim(cam.P, L)); posts.forEach((p) => p(f));
     fg.forEach((g) => { g.rotation.y = Math.atan2(cam.P[0] - g.position.x, cam.P[2] - g.position.z); g.visible = f < g.userData.until; });      // gone once it is behind the lens
     treeman.pose(S.treemanAt(f)); citizens.forEach((c, i) => c.pose(S.citizenAt(i, f)));
+    camp.update(f, cam, L);
     return flm;
   }
   return { world, update, figures: [treeman, ...citizens], skin: true };

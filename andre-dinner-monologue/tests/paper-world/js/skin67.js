@@ -1,0 +1,215 @@
+// skin67.js: the painted pieces of sections 6 and 7 (the camp, the seed), added to section 5's table by buildSkin.
+// Same rules as skin.js: a painted piece is never relit (unlit, times the one tint by distance from the candle); the
+// cloth is the only lit, shadow-receiving surface; volumes (watchtowers, the pine) turn to the lens, flats (wall,
+// guards, bricks, the head, the hands, the seed) do not. Every state is a pure function of the film frame; everything
+// here is hidden before f2544, so section 5 draws exactly as it did.
+import { THREE, clamp, lerp, smooth } from "./kit.js";
+import * as S from "./story.js";
+import { tintAt } from "./skin.js";
+
+const { S6, S7 } = S, HALF = Math.PI / 2;
+const named = (o, name) => { o.name = name; return o; };
+const canvasOf = (w, h) => { const c = document.createElement("canvas"); c.width = w; c.height = h; return c; };
+
+export async function buildCamp(X) {
+  const { world, image, cut, tex, plane, flatCard, caster, unseen, volume, ribbon, slotPale, slotDark, shoulder, leanFor, clothT } = X;
+  const names = ["brick", "wall_segment", "watchtower", "guard", "head_bare", "head_capped", "hand_open", "hand_pinch", "seed", "pine_tall"];
+  const im = Object.fromEntries(await Promise.all(names.map(async (n) => [n, await image(n)])));
+  const P = {}; for (const n of ["brick", "wall_segment", "watchtower", "guard", "hand_pinch", "seed", "pine_tall"]) { const c = cut(im[n]); P[n] = { ...c, t: tex(c.canvas) }; }
+  const basic = (color) => new THREE.MeshBasicMaterial({ color: new THREE.Color(color), toneMapped: false, side: THREE.DoubleSide });
+  const paint = (mat, x, z, gain = 1, base = null) => { const c = tintAt(x, z, gain); if (base) mat.color.setRGB(base.r * c.r, base.g * c.g, base.b * c.b); else mat.color.copy(c); };
+  const flatPlane = (w, d) => { const g = new THREE.PlaneGeometry(w, d); g.rotateX(-HALF); return g; };       // lies on the cloth
+  const updates = [];
+
+  // ================= the wall
+  const WH = S6.WALL.H, wallObjs = S6.SEGS.map((s) => {
+    const G = named(new THREE.Group(), "wall_" + String(s.i + 1).padStart(2, "0")); G.position.set(s.mid[0], 0, s.mid[1]); G.rotation.y = s.yaw; world.add(G);
+    const H = named(new THREE.Group(), G.name + ".hinge"); G.add(H);
+    const card = flatCard(P.wall_segment.t, s.w, WH); H.add(card);
+    // the slit it rises through: cut along the wall line from the end nearer the first segment
+    const slit = new THREE.Group(), pale = new THREE.Mesh(flatPlane(s.w, 0.34), slotPale), dark = new THREE.Mesh(flatPlane(s.w, 0.12), slotDark); pale.position.y = 0.02; dark.position.y = 0.045; pale.receiveShadow = true;
+    const inner = new THREE.Group(); inner.add(pale, dark); inner.position.x = (s.from * s.w) / 2; slit.add(inner); slit.position.x = (-s.from * s.w) / 2; G.add(slit);       // local +x runs from b to a
+    return { s, G, H, card, slit, inner };
+  });
+  // the guards' slots up the face of the hero segment
+  const hero = wallObjs[S6.HERO], slotPaleB = basic("#dba584"), slotDarkB = basic("#3a1e16");
+  const localX = (o, [x, z]) => (x - o.s.mid[0]) * Math.cos(o.s.yaw) - (z - o.s.mid[1]) * Math.sin(o.s.yaw);
+  S6.CREW.filter((d) => d.role === "guard").forEach((d) => { const L = d.w.legs[d.w.legs.length - 1], e = L.path.at(L.path.len), x = localX(hero, e);
+    const a = new THREE.Mesh(new THREE.PlaneGeometry(0.2, S6.GUARD_Y - 0.5), slotPaleB), b = new THREE.Mesh(new THREE.PlaneGeometry(0.07, S6.GUARD_Y - 0.5), slotDarkB); a.position.set(x, (S6.GUARD_Y + 0.5) / 2, 0.015); b.position.set(x, (S6.GUARD_Y + 0.5) / 2, 0.03); hero.H.add(a, b); });
+  updates.push((f) => {
+    paint(slotPaleB, hero.s.mid[0], hero.s.mid[1], 1, new THREE.Color("#dba584")); paint(slotDarkB, hero.s.mid[0], hero.s.mid[1], 1, new THREE.Color("#3a1e16"));
+    for (const o of wallObjs) {
+      const w = S6.wallAt(o.s.i, f), fall = f >= S7.F0 ? S7.fallAt(o.s.i, f) : { a: 0, dir: 1 };
+      o.G.visible = f >= S6.F0 && w.slit > 0; if (!o.G.visible) continue;
+      o.slit.scale.x = Math.max(0.001, w.slit);
+      o.H.visible = w.up > 0; o.H.position.y = -WH * (1 - w.up) + 0.05 * fall.a; o.H.rotation.x = fall.dir * fall.a * (fall.dir < 0 ? HALF : HALF - 0.004);
+      paint(o.card.material, o.s.mid[0], o.s.mid[1]);
+    }
+  });
+
+  // ================= the watchtowers: volumes at the two corners of the front wall; they hinge up, then the lamp comes on
+  const lampT = (() => { const c = canvasOf(64, 64), g = c.getContext("2d"), gr = g.createRadialGradient(32, 32, 0, 32, 32, 32); gr.addColorStop(0, "rgba(255,255,255,1)"); gr.addColorStop(0.3, "rgba(255,255,255,0.4)"); gr.addColorStop(1, "rgba(255,255,255,0)"); g.fillStyle = gr; g.fillRect(0, 0, 64, 64); return new THREE.CanvasTexture(c); })();
+  const TWH = 15, TWW = (TWH * P.watchtower.w) / P.watchtower.h, towers = S6.TOWERS.map((T) => {
+    const v = volume(world, T.name, T.at, P.watchtower.t, TWW, TWH), lamp = new THREE.Sprite(new THREE.SpriteMaterial({ map: lampT, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false }));
+    lamp.scale.set(2.6, 2.6, 1); lamp.position.set(((514 - P.watchtower.box[0]) / P.watchtower.w - 0.5) * TWW, (1 - (439 - P.watchtower.box[1]) / P.watchtower.h) * TWH, 0.1); v.show.add(lamp);
+    return { T, v, lamp };
+  });
+  updates.push((f, cam, L) => towers.forEach((o, k) => { const s = S6.towerAt(k, f); o.v.g.visible = f >= o.T.t0; if (!o.v.g.visible) return;
+    o.v.aim(cam.P, L); o.v.show.rotation.x = o.v.sh.rotation.x = -HALF * (1 - s.up); o.v.tint(lerp(0.62, 1, s.lamp)); o.lamp.material.color.setRGB(1.0 * s.lamp, 0.58 * s.lamp, 0.22 * s.lamp); }));
+
+  // ================= the crew: each citizen's brick, the guard on the back of five cards, their slots outside the fence
+  const BW = 1.5, BH = (BW * P.brick.h) / P.brick.w, GH = 4.15, GW = (GH * P.guard.w) / P.guard.h, slots = named(new THREE.Group(), "slots_camp"); world.add(slots);
+  const growing = [];           // a slot is cut as the first standee goes along it
+  const grow = (L, f0 = L.fa) => { const a = ribbon(L.path, 0.15, 0.02, slotPale), b = ribbon(L.path, 0.05, 0.045, slotDark); slots.add(a, b); growing.push({ L, a, b, n: a.geometry.index.count / 6 }); };
+  const front = S6.SEGS.slice(0, 4), segAtU = (u) => front.findIndex((s, k) => u >= S6.WALL_CORNERS.uB + k * s.w && u < S6.WALL_CORNERS.uB + (k + 1) * s.w);
+  const crew = S6.CREW.map((d, i) => {
+    const st = X.citizens[i], carried = flatCard(P.brick.t, BW, BH); carried.position.x = 1.35; st.pop.add(carried);
+    const sp = S6.brickSpot(i), left = named(flatCard(P.brick.t, BW, BH), "brick_" + String(i + 1).padStart(2, "0")); left.position.set(sp.x, 0.02, sp.z); left.rotation.y = sp.yaw; world.add(left);
+    let guard = null, sign = 1, seg = -1;
+    if (d.role !== "home") { d.w.legs.slice(1).forEach((L, k) => { if (d.role === "guard" || k < 2) grow(L); }); const L = d.w.legs[d.w.legs.length - 1], e = L.path.pose(L.path.len); seg = segAtU(S6.chUV([e.x, e.z])[0]); }
+    if (d.role === "guard") { const L = d.w.legs[d.w.legs.length - 1], e = L.path.pose(L.path.len), along = e.hx * S.CH.t[0] + e.hz * S.CH.t[1];       // which way it faced as it arrived
+      guard = flatCard(P.guard.t, GW, GH); guard.rotation.y = along < 0 ? Math.PI : 0; st.rock.add(guard); sign = along < 0 ? -1 : 1; seg = S6.HERO; }
+    return { d, st, carried, left, guard, sign, seg };
+  });
+  grow(S6.TM_SLOT);
+  updates.push((f) => {
+    const on = f >= S6.F0; slots.visible = on;
+    for (const g of growing) { const k = Math.round(g.n * clamp((g.L.sAt(f) + 1.7) / g.L.path.len) * (f >= g.L.fa - 2 ? 1 : 0)); g.a.geometry.setDrawRange(0, 6 * k); g.b.geometry.setDrawRange(0, 6 * k); }
+    crew.forEach((c, i) => {
+      const { st } = c; c.carried.visible = false; c.left.visible = false; if (c.guard) c.guard.visible = false; st.a.visible = st.b.visible = st.core.visible = true;
+      if (!on) return;
+      const s = S.citizenAt(i, f), tint = tintAt(s.x, s.z), fall = f >= S7.F0 && c.seg >= 0 ? S7.fallAt(c.seg, f + (c.guard ? 0 : 5)).a : 0;
+      c.carried.visible = !!s.carry && s.role !== undefined; c.carried.material.color.copy(tint);
+      c.left.visible = S6.delivered(i, f) && fall < 0.45; paint(c.left.material, c.left.position.x, c.left.position.z);
+      if (c.guard) { c.guard.visible = !!s.guard; st.a.visible = st.b.visible = st.core.visible = !s.guard; c.guard.material.color.copy(tint); st.root.position.y += s.lift || 0; }
+      if (fall > 0 && st.root.visible) {       // the wall comes down: a guard rides it to the cloth, a bricklayer is folded flat ahead of it
+        const th = fall * (HALF - 0.004), n = S.CH.n, zl = [Math.sin(st.root.rotation.y), Math.cos(st.root.rotation.y)], sg = zl[0] * n[0] + zl[1] * n[1] > 0 ? 1 : -1;
+        if (c.guard) { const out = S6.GUARD_Y * Math.sin(th) + 0.55 * Math.cos(th) - 0.55, y = S6.GUARD_Y * Math.cos(th) - 0.55 * Math.sin(th);
+          st.root.position.x += n[0] * out; st.root.position.z += n[1] * out; st.root.position.y = Math.max(0.12, y); }
+        st.pop.rotation.x = sg * th; st.rock.rotation.z = 0;
+      }
+    });
+  });
+
+  // ================= the head
+  const cb = cut(im.head_capped), box = cb.box, bb = cut(im.head_bare, box), HW = box[2], HHp = box[3], HH = S6.HEAD.h, HWc = (HH * HW) / HHp;
+  const lineY = (x) => 275 - 0.219 * (x - 201);                       // the hat band's lower edge, in the box's pixels
+  const visor = [[448, 188], [678, 168], [733, 223], [713, 253], [543, 238], [463, 203]];      // the peak hangs below that line: it lifts with the cap
+  const inPoly = (poly, x, y) => { let c = false; for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) { const [xi, yi] = poly[i], [xj, yj] = poly[j]; if (yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) c = !c; } return c; };
+  const part = (src, keep, recolour) => { const c = canvasOf(HW, HHp), g = c.getContext("2d"); g.drawImage(src.canvas, 0, 0); const img = g.getImageData(0, 0, HW, HHp), d = img.data;
+    for (let y = 0; y < HHp; y++) for (let x = 0; x < HW; x++) { const i = (y * HW + x) * 4; if (!keep(x, y)) d[i + 3] = 0; else if (recolour && d[i + 3] > 40) { const k = 0.75 + 0.25 * ((d[i] + d[i + 1] + d[i + 2]) / 300); d[i] = recolour[0] * k; d[i + 1] = recolour[1] * k; d[i + 2] = recolour[2] * k; } }
+    g.putImageData(img, 0, 0); return tex(c); };
+  const isLidC = (x, y) => y < lineY(x) || inPoly(visor, x, y), isLidB = (x, y) => y < lineY(x);
+  const headG = named(new THREE.Group(), "head"); headG.position.set(S6.HEAD.at[0], 0.03, S6.HEAD.at[1]); world.add(headG);
+  const hinge = named(new THREE.Group(), "head.hinge"); headG.add(hinge);
+  const pivot = [(193 / HW - 0.5) * HWc, (1 - 275 / HHp) * HH];
+  const layer = (name, body, lid, z, extra) => { const G = named(new THREE.Group(), name); G.position.z = z; hinge.add(G);
+    const b = flatCard(body, HWc, HH); G.add(b); const lg = named(new THREE.Group(), name + ".lid"); lg.position.set(pivot[0], pivot[1], 0); const l = flatCard(lid, HWc, HH); l.position.set(-pivot[0], -pivot[1], 0); lg.add(l); G.add(lg);
+    const mats = [b.material, l.material]; if (extra) { const e = flatCard(extra, HWc, HH, false); e.position.z = -0.06; G.add(e); mats.push(e.material); }
+    return { G, lg, mats }; };
+  const capped = layer("head.capped", part(cb, (x, y) => !isLidC(x, y)), part(cb, isLidC), 0.15);
+  const bare = layer("head.bare", part(bb, (x, y) => !isLidB(x, y)), part(bb, isLidB), -0.15, part(bb, isLidB, [20, 15, 15]));      // behind the crown: a plain dark hollow
+  // its back is the cloth it was cut from: lying face down it is the tablecloth; lit, like the cloth
+  { const g = new THREE.PlaneGeometry(HWc, HH, 8, 8); g.translate(0, HH / 2, 0); const pos = g.attributes.position, uv1 = [], { hw, hd } = S.LAY.cloth;
+    for (let i = 0; i < pos.count; i++) { const wx = S6.HEAD.at[0] - pos.getX(i), wz = S6.HEAD.at[1] + pos.getY(i); uv1.push((wx + hw) / (2 * hw), (hd - wz) / (2 * hd)); }
+    g.setAttribute("uv1", new THREE.Float32BufferAttribute(uv1, 2)); for (let i = 0; i < pos.count; i++) g.attributes.uv.setX(i, 1 - g.attributes.uv.getX(i));       // the card faces away: its outline is the layers' outline seen from behind
+    const ac = canvasOf(HW, HHp), ag = ac.getContext("2d"), a = cb.data.data, b = bb.data.data, img = ag.createImageData(HW, HHp); for (let i = 0; i < a.length; i += 4) { const v = a[i + 3] > 127 || b[i + 3] > 127 ? 255 : 0; img.data[i] = img.data[i + 1] = img.data[i + 2] = v; img.data[i + 3] = 255; } ag.putImageData(img, 0, 0);
+    const at = new THREE.CanvasTexture(ac), ct = clothT.clone(); ct.channel = 1; ct.needsUpdate = true;
+    const m = new THREE.Mesh(g, shoulder(new THREE.MeshStandardMaterial({ map: ct, alphaMap: at, alphaTest: 0.5, roughness: 1, metalness: 0 }))); m.rotation.y = Math.PI; m.position.z = -0.3; m.receiveShadow = true; hinge.add(named(m, "head.back")); }
+  // the band of bricks: drawn out of a slit at the back of the head, across the eyes, by the tab at its leading end
+  const bandLen = 16.2, bandH = 3.6, slitX = ((275 - box[0]) / HW - 0.5) * HWc;
+  const bc = canvasOf(765, 170); bc.getContext("2d").drawImage(P.wall_segment.canvas, 30, 258, 765, 170, 0, 0, 765, 170); const bandT = tex(bc); bandT.wrapS = THREE.ClampToEdgeWrapping;
+  const bandGeo = new THREE.PlaneGeometry(bandLen, bandH); bandGeo.translate(bandLen / 2, 0, 0);
+  const band = named(new THREE.Mesh(bandGeo, new THREE.MeshBasicMaterial({ map: bandT, toneMapped: false })), "head.band"); band.position.set(slitX, S6.HEAD.eyeY, 0.09); capped.G.add(band);
+  const tabM = basic("#ead9b8"), gripM = basic("#d8c39c"), slitM = basic("#1c1310"), bandTab = new THREE.Mesh(new THREE.PlaneGeometry(0.75, bandH + 0.5), gripM), bandSlit = new THREE.Mesh(new THREE.PlaneGeometry(0.14, bandH + 0.7), slitM);
+  bandTab.position.set(slitX, S6.HEAD.eyeY, 0.12); bandSlit.position.set(slitX - 0.05, S6.HEAD.eyeY, 0.07); capped.G.add(bandTab, bandSlit);
+  // the pull-tab on the cloth in front of the head: one strip to each layer, each in its own slot
+  const strips = [1.5, 3.3].map((dz, k) => { const g = new THREE.Group(); g.position.set(0, 0, dz); headG.add(g);
+    const lip = new THREE.Mesh(flatPlane(24, 1.75), slotPale), cutL = new THREE.Mesh(flatPlane(24, 1.45), slotDark); lip.position.y = 0.0; cutL.position.y = 0.012; lip.receiveShadow = true; g.add(lip, cutL);
+    const strip = new THREE.Group(), s1 = new THREE.Mesh(flatPlane(13, 1.25), tabM), s2 = new THREE.Mesh(new THREE.CircleGeometry(1.15, 24).rotateX(-HALF), tabM); s1.position.y = 0.03; s2.position.set((k ? -1 : 1) * 6.5, 0.03, 0); strip.add(s1, s2); g.add(strip);
+    return { g, strip, k }; });
+  updates.push((f) => {
+    const h = S6.headAt(f), down = f >= S7.F0 ? S7.headDownAt(f) : 0; headG.visible = h.shown && down < 1; if (!headG.visible) return;
+    hinge.rotation.x = HALF * (1 - h.up * (1 - down)); hinge.scale.z = lerp(0.04, 1, clamp(h.up * (1 - down) * 2.5));      // lying flat, the layers are pressed together
+    capped.G.position.x = h.capped; bare.G.position.x = h.bare; capped.lg.rotation.z = bare.lg.rotation.z = 0.56 * h.lid * (f >= S7.F0 ? 1 - smooth((f - S7.HEAD_DOWN + 4) / 9) : 1);       // the crown shuts as the head folds away
+    const [x, z] = S6.HEAD.at, c = tintAt(x, z); [...capped.mats, ...bare.mats, band.material].forEach((m) => m.color.copy(c)); paint(tabM, x, z, 1, new THREE.Color("#ead9b8")); paint(gripM, x, z, 1, new THREE.Color("#d8c39c")); paint(slitM, x, z, 1, new THREE.Color("#1c1310"));
+    const ext = Math.max(0.001, h.band) * bandLen; band.visible = h.band > 0.002; band.scale.x = ext / bandLen; bandT.repeat.x = ext / bandLen; bandT.offset.x = 1 - ext / bandLen; bandTab.position.x = slitX + ext + 0.3;
+    strips.forEach((s) => { s.strip.position.x = s.k ? h.bare : h.capped; s.g.visible = h.up * (1 - down) > 0.03; });       // under the flap while it lies flat
+  });
+
+  // ================= the open hand
+  const hp = cut(im.hand_open), HB = hp.box, k = S7.HAND.k, EXT = Math.round(46 / k), PADX = 110;
+  const hc = canvasOf(hp.w + 2 * PADX, hp.h + EXT), hg = hc.getContext("2d", { willReadFrequently: true }); hg.drawImage(hp.canvas, PADX, 0);
+  const fx = (px) => px - HB[0] + PADX, fy = (py) => py - HB[1];       // plate pixels -> this canvas
+  { // paint the plate's own seed out: palm sampled from just below it, feathered, then the crease it sat on drawn through
+    const src = hg.getImageData(0, 0, hc.width, hp.h), d = src.data, W = hc.width, dy = 104, ell = (x, y, cx, cy, a, b, rot) => { const c = Math.cos(rot), s = Math.sin(rot), u = (x - cx) * c + (y - cy) * s, v = -(x - cx) * s + (y - cy) * c; return (u * u) / (a * a) + (v * v) / (b * b); };
+    const out = hg.getImageData(0, 0, hc.width, hp.h), o = out.data;
+    for (let y = fy(700); y < fy(826); y++) for (let x = fx(604); x < fx(784); x++) { const e = Math.min(ell(x, y, fx(655), fy(787), 44, 38, 0), ell(x, y, fx(716), fy(750), 76, 36, -0.56)); if (e >= 1) continue;
+      const m = clamp((1 - e) / 0.22), i = (y * W + x) * 4, j = ((y + dy) * W + x) * 4; for (let q = 0; q < 3; q++) o[i + q] = lerp(d[i + q], d[j + q], m); }
+    hg.putImageData(out, 0, 0);
+    hg.strokeStyle = "rgba(240,208,170,0.92)"; hg.lineWidth = 4.2; hg.lineCap = "round"; hg.beginPath(); hg.moveTo(fx(640), fy(752)); hg.quadraticCurveTo(fx(700), fy(772), fx(748), fy(798)); hg.stroke();
+    hg.beginPath(); hg.lineWidth = 3.6; hg.moveTo(fx(700), fy(688)); hg.quadraticCurveTo(fx(750), fy(702), fx(790), fy(722)); hg.stroke(); }
+  { // the sleeve runs on past the plate's lower edge, off the table: its last rows repeated, its two edges carried on straight
+    const img = hg.getImageData(0, 0, hc.width, hp.h).data, W = hc.width, edge = (y) => { let a = -1, b = -1; for (let x = 0; x < W; x++) if (img[(y * W + x) * 4 + 3] > 127) { if (a < 0) a = x; b = x; } return [a, b]; };
+    const N = 220, y1 = hp.h - 2, y0 = y1 - N, [a0, b0] = edge(y0), [a1, b1] = edge(y1), copy = canvasOf(W, hp.h); copy.getContext("2d").drawImage(hc, 0, 0, W, hp.h, 0, 0, W, hp.h);
+    for (let r = 0; r < EXT; r++) { const tri = N - Math.abs((r % (2 * N)) - N), sy = y1 - Math.min(N - 1, tri), [sa, sb] = edge(sy), ta = a1 + ((a1 - a0) / N) * r, tb = b1 + ((b1 - b0) / N) * r; hg.drawImage(copy, sa, sy, sb - sa + 1, 1, ta, y1 + 1 + r, tb - ta + 1, 1.5); } }
+  // the four fingers and the thumb, cut along their knuckle lines (plate pixels), each hinged on that line
+  const FING = [
+    { name: "index", poly: [[380, 300], [512, 300], [520, 560], [530, 597], [427, 608], [380, 612]], line: [[427, 608], [530, 597]], deg: 30 },
+    { name: "middle", poly: [[512, 300], [645, 300], [638, 562], [635, 590], [530, 590], [520, 560]], line: [[530, 590], [635, 590]], deg: 27 },
+    { name: "ring", poly: [[645, 300], [765, 300], [753, 560], [746, 586], [735, 610], [630, 603], [638, 562]], line: [[630, 603], [735, 610]], deg: 31 },
+    { name: "little", poly: [[765, 300], [900, 300], [900, 656], [850, 654], [723, 630], [746, 586], [753, 560]], line: [[723, 630], [850, 654]], deg: 35 },
+    { name: "thumb", poly: [[60, 560], [330, 640], [348, 728], [262, 778], [240, 806], [60, 806]], line: [[262, 778], [348, 728]], deg: 28 },
+  ];
+  const handG = named(new THREE.Group(), "hand_open"); handG.rotation.x = -HALF; world.add(handG);
+  const local = (px, py) => [(px - 630) * k, (965 - py) * k], handMats = [];
+  const piece = (canvas, x0, y0) => { const t = tex(canvas), m = new THREE.Mesh(new THREE.PlaneGeometry(canvas.width * k, canvas.height * k), new THREE.MeshBasicMaterial({ map: t, alphaTest: 0.5, toneMapped: false, side: THREE.DoubleSide })); handMats.push(m.material);
+    const [cx, cy] = local(x0 + canvas.width / 2, y0 + canvas.height / 2); m.userData.c = [cx, cy]; m.castShadow = true; m.customDistanceMaterial = caster(t); return m; };
+  const fingers = FING.map((F) => {
+    const xs = F.poly.map((p) => p[0]), ys = F.poly.map((p) => p[1]), x0 = Math.min(...xs), y0 = Math.min(...ys), w = Math.max(...xs) - x0, h = Math.max(...ys) - y0, c = canvasOf(w, h), g = c.getContext("2d");
+    g.beginPath(); F.poly.forEach(([x, y], i) => (i ? g.lineTo(x - x0, y - y0) : g.moveTo(x - x0, y - y0))); g.closePath(); g.clip(); g.drawImage(hc, fx(x0), fy(y0), w, h, 0, 0, w, h);
+    const a = local(...F.line[0]), b = local(...F.line[1]), mid = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2], ang = Math.atan2(b[1] - a[1], b[0] - a[0]);
+    const G = named(new THREE.Group(), "hand_open." + F.name); G.position.set(mid[0], mid[1], 0.02); G.rotation.z = ang; const Hn = new THREE.Group(); G.add(Hn); handG.add(G);
+    const m = piece(c, x0, y0), dx = m.userData.c[0] - mid[0], dy = m.userData.c[1] - mid[1]; m.position.set(dx * Math.cos(-ang) - dy * Math.sin(-ang), dx * Math.sin(-ang) + dy * Math.cos(-ang), 0); m.rotation.z = -ang; Hn.add(m);
+    return { F, Hn };
+  });
+  { const g = hg; g.save(); g.globalCompositeOperation = "destination-out"; for (const F of FING) { g.beginPath(); F.poly.forEach(([x, y], i) => (i ? g.lineTo(fx(x), fy(y)) : g.moveTo(fx(x), fy(y)))); g.closePath(); g.fill(); } g.restore();
+    const m = piece(hc, HB[0] - PADX, HB[1]); m.position.set(m.userData.c[0], m.userData.c[1], 0); handG.add(m); }
+  // what the sleeve crosses on its way in is pushed flat by the fingertips: the cutlery cards of the near fence in its path
+  const under = X.postObjs.map((o) => { const s = o.Q.at(3000); return s.z > 57 && s.x > 11.5 && s.x < 39.6 ? o : null; }).filter(Boolean);
+  updates.push((f) => {
+    const h = S7.handAt(f); handG.visible = f >= S7.F0 && h.shown; if (!handG.visible) return;
+    handG.position.set(S7.HAND.xc, 0.075, S7.HAND.zw + h.dz);
+    const c = tintAt(S7.HAND.xc, S7.HAND.zw - 12 + h.dz); handMats.forEach((m) => m.color.copy(c));
+    fingers.forEach((o, i) => { o.Hn.rotation.x = (o.F.deg * Math.PI / 180) * h.fold(i); });
+    const a = S7.fallAt(S7.UNDER[0], f).a; under.forEach((o) => { o.H.rotation.x = -a * HALF; });
+  });
+
+  // ================= the pinch hand and the seed
+  const pp = P.hand_pinch, PH = S7.PINCH.h, PW = (PH * pp.w) / pp.h;
+  let tipX = 0, tn = 0; for (let y = pp.h - 26; y < pp.h; y++) for (let x = 0; x < pp.w; x++) if (pp.data.data[(y * pp.w + x) * 4 + 3] > 127) { tipX += x; tn++; } tipX = (tipX / tn / pp.w - 0.5) * PW;
+  const pinch = named(flatCard(pp.t, PW, PH), "hand_pinch"); pinch.geometry = pinch.geometry.clone().translate(-tipX, 0, 0); world.add(pinch);
+  const sd = P.seed, SK = 5.45 / 869, SW = sd.w * SK, SH = sd.h * SK, seedG = named(new THREE.Group(), "seed"), seedT = new THREE.Group(), seed = flatCard(sd.t, SW, SH);
+  seed.geometry = new THREE.PlaneGeometry(SW, SH).translate(SW / 2 - 58 * SK, SH / 2 - (sd.h - 335) * SK, 0); seedT.add(seed); seedG.add(seedT); world.add(seedG);       // its body at the origin
+  updates.push((f) => {
+    const p = S7.pinchAt(f), s = S7.seedAt(f), [x, z] = S7.SEED_AT, on = f >= S7.F0;
+    pinch.visible = on && p.shown; pinch.position.set(x, p.y, z + 0.25); pinch.rotation.z = p.rock; paint(pinch.material, x, z);
+    seedG.visible = on && s.shown; seedG.position.set(x, s.y, z); seedG.rotation.y = s.spin; seedT.rotation.x = -HALF * s.flat; seed.rotation.z = lerp(-1.9, 0.265, s.flat); paint(seed.material, x, z, 1.04);
+  });
+
+  // ================= the pine: a volume in eight tiers; 3 cm on "pine tree", 60 cm on "escape"
+  const pt = P.pine_tall, NT = S7.PINE.tiers, PHt = S7.PINE.h, PWt = (PHt * pt.w) / pt.h, th = PHt / NT;
+  const pineG = named(new THREE.Group(), "pine"); pineG.position.set(S7.PINE.at[0], 0.12, S7.PINE.at[1]); world.add(pineG);
+  const pface = named(new THREE.Group(), "pine.card"); pface.rotation.order = "YXZ"; const pshadow = new THREE.Group(); pineG.add(pface, pshadow);
+  const tiers = Array.from({ length: NT }, (_, i) => { const t = pt.t.clone(); t.repeat.set(1, 1 / NT); t.offset.set(0, i / NT); t.needsUpdate = true;
+    const show = named(new THREE.Mesh(plane(PWt, th), new THREE.MeshBasicMaterial({ map: t, alphaTest: 0.5, side: THREE.DoubleSide, toneMapped: false })), "pine.tier_" + i), sh = new THREE.Mesh(plane(PWt, th), unseen); sh.castShadow = true; sh.customDistanceMaterial = new THREE.MeshDistanceMaterial({ map: t, alphaTest: 0.5, side: THREE.DoubleSide });
+    pface.add(show); pshadow.add(sh); return { show, sh }; });
+  updates.push((f, cam, L) => {
+    const p = S7.pineAt(f); pineG.visible = f >= S7.F0 && p.shown; if (!pineG.visible) return;
+    const c = tintAt(S7.PINE.at[0], S7.PINE.at[1], 1.03); let y = 0;
+    tiers.forEach((o, i) => { const s = Math.max(0.0005, S7.PINE.tiny * p.tiny + (1 - S7.PINE.tiny) * p.tier(i)); for (const m of [o.show, o.sh]) { m.scale.set(s, s, 1); m.position.y = y; } y += th * s; o.show.material.color.copy(c); });
+    pface.rotation.set(-leanFor(cam.P, pineG.position, y), Math.atan2(cam.P[0] - pineG.position.x, cam.P[2] - pineG.position.z), 0); pshadow.rotation.y = Math.atan2(L[0] - pineG.position.x, L[2] - pineG.position.z);
+  });
+
+  return { update(f, cam, L) { for (const u of updates) u(f, cam, L); } };
+}

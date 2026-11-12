@@ -52,7 +52,8 @@ const cityOn = (f) => clamp((f - S.C.newyork1 - 8) / 50);
 const _t = new THREE.Vector3();
 
 function setState(f, jitter) {
-  if (SKIN) { const cam = CHECKCAM ? { P: CHECKCAM.slice(0, 3), T: CHECKCAM.slice(3), fov: S.FOV } : S.camAt(f); skin.update(f, jitter, cam); camera.position.set(...cam.P); camera.up.set(0, 1, 0); camera.lookAt(_t.set(...cam.T)); camera.fov = cam.fov; camera.updateProjectionMatrix(); return cam; }
+  if (SKIN) { final.m.uniforms.expo.value = 1 + 0.12 * (S.flameAt(f).flare || 0);       // the candle's flare on "escape" (section 7) opens the exposure a little; 1 before it
+    const cam = CHECKCAM ? { P: CHECKCAM.slice(0, 3), T: CHECKCAM.slice(3), fov: S.FOV } : S.camAt(f); skin.update(f, jitter, cam); camera.position.set(...cam.P); camera.up.set(0, 1, 0); camera.lookAt(_t.set(...cam.T)); camera.fov = cam.fov; camera.updateProjectionMatrix(); return cam; }
   const fl = world.update(f, jitter), on = cityOn(f);
   world.candle.key.intensity = 62 * fl.gain; world.candle.bounce.intensity = 34 + 46 * on; world.hemi.intensity = 0.6 + 0.5 * on;
   treeman.pose(S.treemanAt(f)); citizens.forEach((c, i) => c.pose(S.citizenAt(i, f)));
@@ -111,7 +112,7 @@ window.exportBlocking = (fa = S.F0, fb = S.F1) => {
   const objs = []; scene.traverse((o) => { if (o.name && o.name !== "world") objs.push(o); });
   setState(fa, [0, 0, 0]); scene.updateMatrixWorld(true);
   const out = {
-    about: "paper-world test 02 blocking. Units: centimetres. Right-handed, y up, the cloth is y = 0, x to the right, z toward the viewer (near place setting at +z). Quaternions are [x, y, z, w]. Object transforms are local to the named parent ('parent'; null = world). A track lists only the frames where the transform changed: hold the last listed value until the next (figures are posed on twos). visible lists [frame, 0|1] changes.",
+    about: "paper-world blocking. Units: centimetres. Right-handed, y up, the cloth is y = 0, x to the right, z toward the viewer (near place setting at +z). Quaternions are [x, y, z, w]. Object transforms are local to the named parent ('parent'; null = world). A track lists only the frames where the transform changed: hold the last listed value until the next (figures are posed on twos). visible lists [frame, 0|1] changes.",
     fps: S.FPS, f0: fa, f1: fb, frames: fb - fa, width: W, height: H, cues: CUES, beats: S.BEATS.map(([f, word, what]) => ({ f, word, what })),
     layout: S.LAY, fence_polygon_xz: S.FENCE_POLY, camera: { fov_vertical_deg: S.FOV, near: camera.near, frames: [] }, objects: {},
   };

@@ -1,4 +1,4 @@
-"""Snap the key words of f1800-f2544 to onsets of _in/andre.wav and write js/cues.js (gitignored: it holds
+"""Snap the key words of f1800-f3397 to onsets of _in/andre.wav and write js/cues.js (gitignored: it holds
 transcript words). Method (docs/BRIEF.md): rise in log energy over 40 ms; the strongest rise within +-0.25 s of
 the Whisper cue, then +-0.6 s; keep the cue when the rise is weak (under 6 dB). Copied from
 tests/table-city/tools/onsets.py with its two hand picks, plus the words test 02 adds. Run from tests/paper-world/:
@@ -17,9 +17,21 @@ KEYS = [  # (key, word text, Whisper frame f0 from cues.json, segment id or None
     ('newyork2', 'New', 2235), ('leave1', 'leave', 2342), ('never', 'never', 2350), ('do', 'do?', 2355),
     ('yes', 'yes.', 2379), ('why', 'why', 2404), ('leave2', 'leave?', 2424), ('gave', 'gave', 2442),
     ('theories', 'theories.', 2462), ('oh', 'oh,', 2491), ('all', 'all.', 2520),
+    # section 6, the camp
+    ('think', 'think', 2560), ('camp', 'camp,', 2628), ('camp2', 'camp', 2655), ('built', 'built', 2668), ('themselves', 'themselves,', 2688),
+    ('guards', 'guards,', 2736), ('pride', 'pride', 2760), ('prison1', 'prison.', 2819), ('schizophrenia', 'schizophrenia,', 2881),
+    ('guards2', 'guards', 2908), ('prisoners', 'prisoners,', 2926), ('result', 'result,', 2953), ('lobotomized', 'lobotomized,', 3003),
+    ('see', 'see', 3099), ('prison2', 'prison.', 3128),
+    # section 7, the seed
+    ('then', 'And', 3168), ('pocket', 'pocket,', 3187), ('took', 'took', 3200), ('seed', 'seed', 3211), ('pine', 'pine', 3260),
+    ('hand', 'hand,', 3302), ('escape', 'escape', 3335), ('before', 'before', 3335), ('late', 'late.', 3363),
 ]
 # hand picks from the envelope (tests/table-city/NOTES.md): the snapper takes a neighbouring word for these
-HAND = {'newyork2': 2236, 'leave2': 2426, 'newyork1': 2215}
+HAND = {'newyork2': 2236, 'leave2': 2426, 'newyork1': 2215,
+        # sections 6 and 7, read off the per-frame envelope and the 3.5 to 9 kHz band (sibilants): the snapper's +-0.25 s
+        # window takes a neighbouring word in this fast stretch. The vowel of the word, or its stressed syllable.
+        'camp': 2636, 'pride': 2761, 'guards2': 2911, 'prisoners': 2930, 'result': 2957, 'lobotomized': 3007,
+        'see': 3107, 'prison2': 3128, 'seed': 3212, 'pine': 3260, 'before': 3346, 'late': 3365}
 
 with wave.open(os.path.join(PROJ, '_in', 'andre.wav'), 'rb') as w:
     sr, n, ch = w.getframerate(), w.getnframes(), w.getnchannels()

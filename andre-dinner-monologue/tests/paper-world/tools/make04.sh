@@ -38,6 +38,6 @@ for f in $STILLS; do cp $OUT/frames04/f$f.jpg $C/f$f.jpg; done
 inputs=(); for f in $STILLS; do inputs+=(-i $C/f$f.jpg); done
 nice -n 15 ffmpeg -y -loglevel error ${inputs[@]} -filter_complex "concat=n=${#STILLS}:v=1:a=0,scale=360:-2,tile=5x4" -frames:v 1 $C/sheet.jpg
 
-BLOCKING=$OUT/blocking.json nice -n 15 node tools/render.mjs
+FRAMES=1800-2543 BLOCKING=$OUT/blocking.json nice -n 15 node tools/render.mjs
 nice -n 15 $PY ../../../tools/cloud-render/badframes.py $REVIEW
 nice -n 15 $PY ../../../tools/motion-lab/flashcheck.py $REVIEW

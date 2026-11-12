@@ -1,4 +1,7 @@
-# paper-world: test 02, the table section, f1800 to f2544 (75.0 to 106.0 s)
+# paper-world: the table world, f1800 to f3397 (sections 5, 6 and 7)
+
+Newest first: sections 6 and 7 (the camp, the seed), then test 04 and test 03 (section 5 in the painted skin), then
+test 02 (section 5, the blocking pass), which is where the units, the commands and the file list are.
 
 The table-city section rebuilt as a real 3D paper world in three.js r160: one dinner table, flat paper cut-out
 people standing in it as cards, one continuous camera that never cuts and never stops. This render is a
@@ -10,6 +13,130 @@ voice muxed from `_in/andre.wav` cut to [75.0, 106.0)).
 
 **Units and axes (also in blocking.json): centimetres, right-handed, y up, the cloth is y = 0, x to the right,
 z toward the viewer. The near place setting is at +z, the far one at -z. Quaternions are [x, y, z, w].**
+
+## Sections 6 and 7: the camp and the seed, f2544 to f3397 (`?skin=1`)
+
+Review file: `out/paper-world/andre_paper-world-s06-s07-test01_f2544-f3397_24fps_720x1280.mp4` (853 frames, 35.542 s,
+voice muxed from `_in/andre.wav` cut to [106.0, 141.5417)). Same world, same engine, same camera as test 04: the
+camera of f2544 is the camera of f2543 a frame later.
+
+```bash
+zsh tools/make67.sh                 # everything: cues, frames-s67/, the mp4, check-s67/, the regression, blocking-s06-s07.json, scans
+zsh tools/make67.sh 2737 2830       # any range [f0, f1) of f1800 to f3397: frames and a muxed mp4 in out/paper-world/wip/
+SKIN=1 FRAMES=2800 OUT=../../out/paper-world/wip/x node tools/render.mjs          # one frame
+SKIN=1 FRAMES=2544-3396 SPEED=12 node tools/render.mjs                            # the camera speed print for the two sections
+SKIN=1 FRAMES=2544-3396 BLOCKING=../../out/paper-world/blocking-s06-s07.json node tools/render.mjs   # blocking for a range
+zsh tools/make04.sh                 # section 5 (test 04), unchanged; SKIN=1 T3=1 zsh tools/make03.sh is test 03
+```
+
+`out/paper-world/check-s67/`: `f<frame>.jpg` (every row's first frame and every cue frame, full size), `sheet.jpg`,
+`compare_hero_target_vs_f2800.jpg` (the target still beside the hero frame), `hand-seed_1to1_f3250.jpg` and
+`hand-seed_1to1_crop_f3250.png` (the open hand with the seed, unscaled), `regress/` (section 5 before and after,
+`regress.txt`, `before-above_after-below.jpg`, the old `story.js`), `cues.txt`, `camera-speed_f2544-f3397.txt`
+(min 0.051 cm a frame, no dead stops, no jumps), `figure-heights-px.txt` (guards 223 to 272 px), `luma.txt`.
+`out/paper-world/frames-s67/` holds the 853 frames; `blocking-s06-s07.json` is the export for the range (280 objects,
+same format; `blocking.json` is still test 04's).
+
+### The engine now takes more than one section
+
+- **A section is a module**: `js/sections/s05.js`, `s06.js`, `s07.js`. Each owns its cue names (`C`), its events and
+  its camera keys (`CAM_KEYS`, `camAt`), every one a pure function of the film frame, and its `BEATS`.
+  `js/sections/lib.js` holds what they share: paths and walkers (standees on slots), the camera spline and its float.
+- **`js/story.js` is the film**: it lists the sections, gives the frame range (`F0` 1800, `F1` 3397), picks the
+  section's camera and the section that poses the standees at f, and joins the beat tables. It re-exports section 5's
+  layout, because the world is section 5's table.
+- **The world's state at f is a function of f alone.** Section 5's functions hold their last state past f2544 (towers
+  up, windows lit, fence up, citizens home, tree man and redwood outside), so f2600 renders the same whether or not
+  f2543 was ever drawn. Sections 6 and 7 add to that state; nothing they build exists before f2544.
+- **The camera carries across a join**: a section's first key is `handover(previous keys, F0)`, the last section's
+  spline at that frame with its velocity. Position and direction match to the frame at f2544 and at f3130.
+- **To add a section**: write `js/sections/sNN.js` (`F0`, `F1`, `C`, `CAM_KEYS` starting with a handover, `camAt`,
+  `BEATS`, its events), import it in `story.js` and add it to `SECTIONS`; build its pieces in a skin module that
+  `buildSkin` calls (as `js/skin67.js` is), hidden before its first frame; add its words to `tools/onsets.py`.
+- **Section 5 renders the same.** f1800, f2215, f2300, f2400 and f2543 before and after the change: mean absolute
+  difference 0.0000, largest 0, and the JPEGs are identical to test 04's delivered frames
+  (`out/paper-world/check-s67/regress/regress.txt`, `tools/regress.py`).
+- `tools/render.mjs`: `BLOCKING=` now takes `FRAMES=a-b` (the three older make scripts pass `1800-2543`).
+
+### What is on the table
+
+- **The wall** (`s06.js SEGS`): 26 `wall_segment` cards 1.2 cm outside the cutlery, round the whole table, 7 cm high.
+  Each rises through a slit in the cloth (12 frames and a settle); the slit is cut along the wall line first. The
+  first rises on "camp" as a citizen's brick arrives; the rest are dealt both ways round the table.
+- **The front wall is the chamfer**, the long diagonal across the far right corner, not the near (+z) edge: see
+  "Where this departs from the brief" below. A `watchtower` (15 cm, a volume) hinges up at each of its two corners
+  and its lamp comes on.
+- **The crew**: all 16 citizens come out on their section 5 slots pushing a `brick` card. Five go out through the
+  gate the tree man used and stand against the hero segment; three go out through the next gap and carry bricks
+  along the wall's foot; eight push their brick to the fence where they stopped in section 5, leave it and go home.
+  New slots are cut as the first standee travels them.
+- **Guards**: on "guards" each of the five cards makes its half turn (edge-on two frames, three frames apart); the
+  back of the card is the `guard` plate. On "pride" each rises 6.6 cm up a slot in the wall's face (12 frames, two
+  frames apart) and settles with one rock.
+- **The head**: `head_capped` in front, `head_bare` 3 mm behind, 34 cm, beside the candle. It lies face down as a flap
+  of the cloth (its back is the cloth's own texture, lit like the cloth) and hinges up. A pull-tab (two strips in
+  slots in front of it) slides the layers 7 cm apart; the crown, cut along the hat band's line, lifts 32 degrees on a
+  hinge at the back with the cap (and its peak) over a plain dark card; a band of two brick courses is drawn out of a
+  slit at the back of the head across the eyes by the tab at its leading end.
+- **The hand**: `hand_open`, 28 cm wrist to fingertip, flat on the cloth between the near plate and the right fence,
+  on a sleeve that runs off the near edge. The plate's own seed is painted out on a copy; the four fingers and the
+  thumb are cut along their knuckle lines and hinge up 27 to 35 degrees. `hand_pinch` is a standing card, 21 cm, that
+  comes down from above the frame with the `seed`.
+- **The pine**: `pine_tall` in eight tiers, a volume: 3 cm on "pine tree", 60 cm on "escape", tier by tier from the
+  bottom (damping 0.55), the redwood is 45.
+- **Light**: the room fill and the cloth's bounce fall by a third from f2544 to "prison" (f2823) and stay there; from
+  f3130 they come back, and on "escape" the flame's gain goes to 1.95 and the exposure opens 12 %.
+
+### The beat table (frames snapped by tools/onsets.py; `how: hand` where the snapper took a neighbouring word)
+
+| Frame | Word | What happens | Camera |
+|---|---|---|---|
+| f2544 | "I think" | The high wide of f2543, a frame on. From f2545 citizens hinge up at the heads of their slots and slide out, each pushing a brick | down from the wide and round the far right corner |
+| f2636 | "camp" | The first wall segment rises behind the first brick, outside the cutlery | low, 17 cm outside the wall, looking in |
+| f2650 | "camp" (2) | The watchtower at the right corner is up, its lamp coming on; the deal runs on round the table | trucks along the wall |
+| f2667 | "built" | The hero segment rises behind its citizens and their bricks | |
+| f2691 | "themselves" | The next segment; the front wall closes at f2701, the second watchtower at f2707 | |
+| f2737 | "guards" | The five cards turn, right to left, three frames apart: the back of each is a guard (all five by f2757) | holds low, drifting along the wall |
+| f2761 | "pride" | The guards rise up the wall's face on their slots (all up by f2781) and settle with one rock | rises a little and tilts up |
+| f2766 | | Three bricklayers set off in a row along the wall's foot, under the guards | |
+| f2823 | "prison" | The hero frame: five guards on the wall against the bottle and glass towers and the flame, three bricklayers below | still drifting right |
+| f2836 | ("And so") | The head hinges up out of the cloth beside the candle (seen first from behind, as a flap of cloth) | back and up over the wall, round the right side of the table |
+| f2878 | "schizophrenia" | The pull-tab slides the layers apart: capped to the right, bare to the left, 7 cm by f2891 | in front of the head at eye height, then an 18 degree arc |
+| f2911 | "guards" | The capped layer nudges | |
+| f2930 | "prisoners" | The bare layer nudges | |
+| f2957 | "result" | The layers slide back together (closed by f2970) | |
+| f3007 | "lobotomized" | The crown lifts on its hinge with the cap: a dark hollow | rises to look down into it (peak f3037), back to the eyes by f3101 |
+| f3107 | "see" | The band of bricks is drawn out of the slit across the eyes | holds, pushing in slowly |
+| f3128 | "prison" | The band stops over the eyes; held to f3164 (36 frames) | |
+| f3164 | | The crown shuts and the head folds back into the cloth (flat by f3178) | tilts down toward the near edge |
+| f3171 | "And then" | The open hand slides in from the near edge on its sleeve (in place at f3188, "pocket") | settles over the palm, looking down 50 degrees |
+| f3192 | | The pinch hand comes down from above the frame with the seed (down by f3208; "took" is f3205) | |
+| f3212 | "seed" | The pinch lets go: the seed falls 5 cm, turning twice on its wing, lands at f3221 with a small bounce; the pinch hand lifts away; the fingers fold up round the seed from f3224 | pushes in on the palm |
+| f3260 | "pine tree" | A 3 cm pine springs up from the seed | holds close, drifting |
+| f3304 | "my hand" | The fingers close a little more | |
+| f3331 | "escape" | The pine opens tier by tier to 60 cm (55 cm at f3347, just after "before"; 60 at f3351; settled by f3358); the wall falls flat outward, nearest the pine first (f3336 to f3377); the candle flares | cranes up and back from f3323, the pine's top in frame |
+| f3396 | (end) | The pine over the open city, the flame at its brightest | drifting |
+
+### Where this departs from the brief, and why
+
+- **The wall the camera works is the chamfer, not the near edge.** At the near (+z) edge there are 4.5 cm of cloth
+  outside the cutlery, the candle is 77 cm away and the towers stand far behind and below the wall's top, so there is
+  no cloth for the wall's shadow to cross, no room for bricklayers at the wall's foot and no lit tower behind a
+  guard. The chamfer has the triangle of cloth outside it, the candle 26 cm behind it, and the bottle, the glass and
+  the far plate tower right behind the cutlery. The two watchtowers stand at its two corners. The hand still comes in
+  from the near edge.
+- **Wall segments rise through slits; they do not hinge up.** A card hinged at the wall's foot would have to lie
+  either under the cutlery or where the bricklayers and the tree man stand. The watchtowers do hinge.
+- **Citizens go out through gaps in the cutlery to the wall's foot**, as in the target still, so the turn on "guards"
+  and the bricklayers are in front of the wall and not behind it.
+- **"schizophrenia" is f2878 and "result" f2957, not test 01's f2897 and f2963.** Those two were the onsets of the
+  next words ("where", "they"): the envelope and the sibilant band put "schizophrenia" at f2877 to f2889, then a
+  pause. The camera is in front of the head by f2876 for it. The other cues agree with test 01 within a frame, except
+  "prison" (1) f2823 (test 01 f2828 is its second syllable) and "late" f3365.
+- **The head folds away at f3164**, after the 36 frame hold, because it lies where the hand comes in.
+- **The hand is 28 cm, not 30**: it fits between the near plate tower and the right fence with a centimetre each side,
+  the near glass in the notch between thumb and cuff.
+- **The camera's float is half of section 5's** from f2604 on (eased from f2544), so slow trucks never stall.
 
 ## Test 04: the plate towers as drums (`?skin=1`)
 
@@ -195,7 +322,12 @@ tests/paper-world/
   js/table.js             the world: room, cloth, plates/towers, glasses, bottle, shakers, basket, napkin, candle
                           and flame, pot and redwood, the cutlery stacks and the fence; every piece named
   js/figures.js           the walking rig: makeFigure, makeTreeman, makeCitizen (2D joints, feet planted by IK)
-  js/story.js             layout, paths, walkers, every event and the camera keys, all on cue frames
+  js/story.js             the film: the sections, the frame range, which section's camera and poses apply at f
+  js/sections/lib.js      shared: paths, walkers, the camera spline, its float, handover()
+  js/sections/s05.js      section 5 (was story.js): layout, paths, walkers, every event and the camera keys, on cue frames
+  js/sections/s06.js, s07.js   sections 6 and 7: the wall, the crew, the head; the hand, the seed, the pine, the fall
+  js/skin.js              the painted skin of section 5 (test 03 and 04); calls skin67.js
+  js/skin67.js            the painted pieces of sections 6 and 7
   js/main.js              renderer: N jittered sub-renders a frame, glow, grade; renderFrame, exportBlocking,
                           camInfo, figurePx; ?lineup=1
   js/cues.js              generated by tools/onsets.py (gitignored)
@@ -204,7 +336,8 @@ tests/paper-world/
   tools/lineup.mjs, paint.sh, plates.json, work/   not Builder A's either; left untouched
   tools/onsets.py         snaps the words to onsets of _in/andre.wav
   tools/render.mjs        frames, camera speed print, figure heights, blocking export (headless Chrome, Metal)
-  tools/make.sh           the whole pipeline
+  tools/make.sh           the whole pipeline (test 02); make03.sh, make04.sh (section 5 skinned); make67.sh (sections 6 and 7, or any range)
+  tools/regress.py        section 5 before and after an engine change; tools/luma.py: how bright each frame is
   tools/sheet.sh          quick contact sheets while building
   tools/motioncheck.py    how much the picture changes a second apart
   tools/render-frames.reference.mjs   the reference renderer this was adapted from

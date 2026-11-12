@@ -2,7 +2,7 @@
 //   FRAMES="1800-2543" OUT=../../out/paper-world/frames node tools/render.mjs      (run from tests/paper-world/)
 // FRAMES takes "a-b", "a,b,c" or "a-b:step"; RESUME=1 skips frames already on disk; N = sub-renders a frame (default 10);
 // W, H default 720x1280; PNG=1 for PNG; SPEED=1 prints the camera speed table and draws nothing; PX=1 prints figure heights;
-// BLOCKING=<file> writes blocking.json and draws nothing. SKIN=1 renders the painted cards (test 04); SKIN=1 T3=1 renders test 03 as delivered.
+// BLOCKING=<file> writes blocking.json (for FRAMES=a-b, or the whole film) and draws nothing. SKIN=1 renders the painted cards (test 04); SKIN=1 T3=1 renders test 03 as delivered.
 // CAM="px,py,pz,tx,ty,tz" overrides the camera (check stills only).
 import http from "node:http"; import fs from "node:fs"; import path from "node:path"; import { createRequire } from "node:module";
 const root = path.resolve(path.dirname(new URL(import.meta.url).pathname), "..");
@@ -22,7 +22,7 @@ pg.on("console", (m) => { if (["error", "warning"].includes(m.type()) && !/GPU s
 await pg.goto(`http://127.0.0.1:${port}/index.html?w=${W}&h=${H}&n=${N}&still=1${process.env.LINEUP ? "&lineup=1" : ""}${process.env.SKIN ? "&skin=1" : ""}${process.env.T3 ? "&t3=1" : ""}${process.env.CAM ? "&cam=" + process.env.CAM : ""}`);
 await pg.waitForFunction("window.ready===true", null, { timeout: 180000 });
 if (process.env.BLOCKING) {
-  const json = await pg.evaluate(() => window.exportBlocking());
+  const json = await pg.evaluate(([a, b]) => window.exportBlocking(a, b), process.env.FRAMES ? [list[0], list[list.length - 1] + 1] : [undefined, undefined]);      // FRAMES=a-b exports that range; without it, the whole film so far
   fs.mkdirSync(path.dirname(process.env.BLOCKING), { recursive: true }); fs.writeFileSync(process.env.BLOCKING, json);
   const o = JSON.parse(json); console.log(`blocking: ${Object.keys(o.objects).length} objects, ${o.camera.frames.length} camera frames, ${(json.length / 1e6).toFixed(1)} MB -> ${process.env.BLOCKING}`);
 } else if (process.env.SPEED) {

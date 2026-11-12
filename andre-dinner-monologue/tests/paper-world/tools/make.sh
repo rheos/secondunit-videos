@@ -32,6 +32,6 @@ FIRST=(); for f in {1800..2215..24}; do FIRST+=(-i $OUT/frames/f$f.jpg); done
 nice -n 15 ffmpeg -y -loglevel error ${FIRST[@]} -filter_complex "concat=n=18:v=1:a=0,scale=240:-2,tile=6x3" -frames:v 1 $OUT/check/first17s_every24.jpg
 nice -n 15 $PY tools/motioncheck.py $OUT/frames 1800 2215 24 | tee $OUT/check/first17s_change.txt
 
-BLOCKING=$OUT/blocking.json nice -n 15 node tools/render.mjs
+FRAMES=1800-2543 BLOCKING=$OUT/blocking.json nice -n 15 node tools/render.mjs
 nice -n 15 $PY ../../../tools/cloud-render/badframes.py $REVIEW
 nice -n 15 $PY ../../../tools/motion-lab/flashcheck.py $REVIEW

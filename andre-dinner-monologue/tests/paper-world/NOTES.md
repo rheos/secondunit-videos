@@ -266,3 +266,104 @@ where none should be; fixed and re-rendered before delivery.
    for the first 8 frames.
 6. All of test 03's other defects stand (NOTES above), except its numbers 6 (tower seated toward the lens) and the
    leaning half of 5 for the plate towers, which are gone.
+
+---
+
+# Sections 6 and 7: the camp and the seed (f2544 to f3397)
+
+Built on test 04's world without a cut. README.md, "Sections 6 and 7", has the build, the beat table and where it
+departs from the brief. Review file: `out/paper-world/andre_paper-world-s06-s07-test01_f2544-f3397_24fps_720x1280.mp4`.
+
+## The engine change, and section 5
+
+`story.js` became `sections/s05.js` (the same code), `sections/lib.js` (paths, walkers, the camera spline) and a short
+`story.js` that joins the sections. Section 5's picture is unchanged: five frames before and after are identical
+(difference 0 on every pixel), and as JPEGs they are byte for byte test 04's delivered frames
+(`check-s67/regress/`). `SKIN=1 T3=1` still gives test 03's frames exactly. Without `SKIN` (test 02) the frames differ
+from the delivered test 02 frames by a mean of 0.05 of 255 (largest 15); the same difference shows with the old
+`story.js` put back, so it predates this change (test 03 edited `table.js` after test 02 was rendered).
+
+## Cue picks
+
+`tools/onsets.py` now snaps sections 6 and 7 as well. In this fast stretch its 0.25 s window takes a neighbouring
+word eleven times, so those are hand picks read off the per-frame envelope and the 3.5 to 9 kHz band (`HAND`).
+Against test 01: "schizophrenia" f2878 (test 01 f2897 is "where", after the pause), "result" f2957 (f2963 is
+"they"), "prison" (1) f2823 (f2828 is its second syllable), "late" f3365; the rest agree within a frame.
+Snapped values: `out/paper-world/check-s67/cues.txt`.
+
+## BANNED (added in sections 6 and 7)
+
+- **The wall at the near edge.** 4.5 cm of cloth outside the cutlery, the candle 77 cm away, the towers low and far:
+  no shadow on the cloth, no bricklayers, no lit tower behind a guard. The front wall is the chamfer.
+- **A wall card hinged at its foot.** Lying flat it is either under the cutlery or on the bricklayers and the tree
+  man. Segments rise through slits.
+- **Citizens behind the wall they build.** Seen from outside, the turn on "guards" was hidden. They go out through
+  gaps to its foot.
+- **The lens 27 cm from the wall with guards 3 cm apart.** Five guards 150 px tall under 20 cm cutlery read as
+  ornaments. 17 cm and 2.2 cm apart: 230 to 270 px.
+- **Face culling to show the guard as the card's back.** Which picture showed depended on the side the lens was on.
+  The turn's own state picks the face; the guard always faces right along the wall.
+- **The standee's pale core on a guard.** A pale line ran up the middle of every guard.
+- **Cream slot lines on the wall's face.** White stripes on brick. They are brick-toned now.
+- **A head whose back was the mirror of its front**, so navy showed round the cloth flap; and layers 3 mm apart
+  while lying flat (a navy fringe). The back is flipped and the layers press together as it folds.
+- **The crown left open while the head folds.** A navy sliver lay on the cloth and then vanished.
+- **The band's grip fixed to the head's hinge.** It stayed behind when the layers parted. It rides the capped layer.
+- **Finger cuts as upright strips.** A sliver of the ring finger lifted with the little finger. The cuts run
+  through the valleys between the fingers.
+- **Cards "flat" at 89.4 degrees under the sleeve.** Their tips came through it.
+- **A crane that starts on "escape".** 0.02 to 5 cm a frame in two frames. It starts eight frames early, eased.
+- **The last wide from the right.** The pine covered the flaring candle. It is from the left.
+- **Section 5's full camera float on slow trucks.** It cancelled them to under 0.05 cm a frame.
+- **An arc round the head against the way the camera arrived.** A dead stop at the turn.
+
+## Pieces: missing or wrong (nothing was repainted)
+
+- **No citizen carrying a brick.** `brick` is a separate small card pushed along the cloth ahead of the standee; the
+  citizens' hands are empty (the woman carries a handbag). The target's bricklayers carry bricks at the chest.
+- **`brick` is a box in three-quarter view**, used as a 1.5 cm standing card.
+- **`wall_segment` is one plate for all 26 segments**, 13.3 to 16.7 cm wide at one height, so every segment is the
+  same picture and the front wall's bricks are 13 % narrow. There is no corner piece.
+- **`watchtower` has no unlit twin.** The lamp "comes on" as a dim-to-full tint and an added glow.
+- **`head_capped`: the cap's peak hangs below the hat band's line**, so the crown's cut on that layer follows the
+  band and then goes round the peak by a hand-drawn outline.
+- **`hand_open`**: its own seed is painted out in code (a faint dent is left where its shadow was); the sleeve ends at
+  the plate's lower edge and is carried on off the table by repeating its last rows.
+- **`hand_pinch` is one pose.** It cannot open: the release is a small start upward. It is as large as the open hand.
+- **`pine_tall` is one picture cut into eight strips.** Mid-opening the strips' straight edges show (f3334 to f3348).
+- **`guard` stands at ease with keys**, lit from the upper left like everything else; the flame is behind the wall.
+
+## Known defects (frame numbers)
+
+1. f2545 to f2600: sixteen citizens' cards appear lying flat at the heads of their slots, then hinge up (section 5's
+   defect 9 again), eight of them in the first twelve frames, 15 to 25 px tall in the wide.
+2. f2610 to f2632: on its way down the lens passes the right fence; cutlery cards fill the left third of the frame.
+3. f2636 to f2700: the citizens stand outside the wall they build (as in the target still). The wall rises behind
+   them; they never go back in.
+4. f2640 to f2830: the slots on the cloth are heavy dark lines this close to the lens, and each guard's slot is a
+   line down the wall under it.
+5. f2737 to f2757: two of the five citizens faced left before the turn; all five guards face right after it.
+6. f2761 to f2830: the guard second from the left stands in front of the navy bottle; the towers behind are cut by
+   the frame's top. One bricklayer plate is used twice (ochre) in the row of three.
+7. f2838 to f2866: cutlery and the watchtower cross the lower frame as the camera goes over the right fence. The
+   head is first seen from behind, as a flap of cloth, and is edge-on to the lens at about f2858.
+8. f2878 to f2886: the camera is still easing in as the layers begin to part.
+9. f2911, f2930: the two nudges are 0.7 cm and easy to miss.
+10. f3007 to f3100: the crown turns in the card's own plane on a pivot, so looking "into" it shows a flat dark card.
+    The bare layer's hair shows past the cap as a tuft.
+11. f3107 to f3164: the band's grip is a pale rectangle at the brow.
+12. f3170 to f3177: as the head folds toward the lens the frame is mostly cap.
+13. f3168 to f3176: two near wall segments and the cutlery cards in the sleeve's path are pushed flat under the sleeve off screen; they
+    are only ever seen flat (the bottom of the frame from f3350).
+14. f3192 to f3236: the pinch hand covers the open hand's fingers.
+15. f3224 to f3250: from above, the fingers folding up read as the fingers shortening; the thumb is out of frame.
+16. f3331 to f3350: the pine's lower strips open while the upper ones are still 3 cm wide.
+17. f3336 to f3377: the wall's fall is at the edges of the wide and behind the pine; the guards ride the hero
+    segment down 100 cm from the lens.
+18. Light: the darkest two seconds start at f2894 (the head). By frame mean the brightest frames are the palm
+    close-ups (f3240 to f3320, 0.24); the flare's wide is 0.10 to 0.17 because two thirds of it is dark room,
+    though the flame and the cloth round it are at their brightest there (`check-s67/luma.txt`).
+19. The tree man backs away to the far end of the triangle (f2566 to f2678) and is out of frame from f2620 until
+    the last wide, where the pine hides him.
+20. flashcheck's worst second is 2 flashes at f2836 (the camera leaving the wall). It passes.
+21. Not done: `views.mjs onion`; a 1080 wide render.
