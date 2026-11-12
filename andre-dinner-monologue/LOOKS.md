@@ -220,6 +220,13 @@ Robin, Nov 11 2026, about 8 pm Pacific, on `andre_paper-world-s06-s07-test01_f25
   from jointed parts, ever.** The house route is Meshy on Fal (about $1.52 a rigged, animated
   figure; recipe in `secondunit/MESHY-3D-PIPELINE.md`, `toolbox/meshy.yaml`), loaded into three.js
   and posed per frame. It is paid: count the figures in the storyboard, estimate, get his number.
+
+  Robin: "We already have a whole bunch of figures for blocking from our earlier tests." What is on
+  this Mac and in Fal's Meshy history (checked Nov 11): three rigged figures, each with a walk (and
+  a run, still on Fal): `secondunit/_wt-persp/bobwiseman-10000-miles-perspective/_in/meshy/bomber/`
+  and `puffer/` (Nov 9) and `secondunit/output/meshy-neon-test-20261024/meshy/` (Oct 24). Block
+  version B with these, at no cost; generate new figures only for the ones whose outline has to be
+  theirs (the tree man, the guard's cap, the child, the couple, the robot), on his number.
 - What is and is not code, so nobody overstates it: the 48 surfaces are painted images (GPT Image on
   the ChatGPT plan, no credits). Everything else is code: the 3D table, where each piece stands, every
   move, the camera, the candlelight and shadows, the lens blur, the render.
