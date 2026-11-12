@@ -227,6 +227,8 @@ Robin, Nov 11 2026, about 8 pm Pacific, on `andre_paper-world-s06-s07-test01_f25
   and `puffer/` (Nov 9) and `secondunit/output/meshy-neon-test-20261024/meshy/` (Oct 24). Block
   version B with these, at no cost; generate new figures only for the ones whose outline has to be
   theirs (the tree man, the guard's cap, the child, the couple, the robot), on his number.
+  Robin: "we'll maybe do a few more then.. just make sure we are not forgetting about those." All
+  three now sit together in `secondunit/figure-library/` with a README that lists them; start there.
 - What is and is not code, so nobody overstates it: the 48 surfaces are painted images (GPT Image on
   the ChatGPT plan, no credits). Everything else is code: the 3D table, where each piece stands, every
   move, the camera, the candlelight and shadows, the lens blur, the render.
