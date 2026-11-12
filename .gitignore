@@ -119,4 +119,5 @@
 # generated word-time files quote the dialogue; each test regenerates them from _in/cues.json
 /andre-dinner-monologue/tests/*/js/words.js
 /andre-dinner-monologue/tests/*/js/cues.js
+/andre-dinner-monologue/tests/*/js/cues/
 **/node_modules
