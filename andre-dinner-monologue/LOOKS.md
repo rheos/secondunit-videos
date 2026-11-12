@@ -173,3 +173,18 @@ the wrong angle on its plate.
   of 745,000 credits unused when read on Nov 11). Higgsfield holds 4.79 credits; Fal's Seedance was
   priced at about $0.57 a second at 720p. Not started; estimate first and get his number. Read
   `references/previz-into-seedance.md` (the Nov 9 Libelous test) before planning it.
+
+## 8. Camp and seed verdict, and Seedance stood down
+
+Robin, Nov 11 2026, about 8 pm Pacific, on `andre_paper-world-s06-s07-test01_f2544-f3397`:
+
+> we are doing all this only drawn in code? it's really incredible.. we probably don't even need to
+> put this through seedance at all
+
+- **Storyboard for sections 1 to 4 and 8 to 10:** "Build as written" (same evening).
+- **Seedance is no longer the plan.** The painted-pieces film is the film. Do not estimate or plan a
+  Seedance pass unless Robin asks for one after seeing the whole cut; if he does, it would be for
+  single shots where card motion falls short, not the whole film.
+- What is and is not code, so nobody overstates it: the 48 surfaces are painted images (GPT Image on
+  the ChatGPT plan, no credits). Everything else is code: the 3D table, where each piece stands, every
+  move, the camera, the candlelight and shadows, the lens blur, the render.
