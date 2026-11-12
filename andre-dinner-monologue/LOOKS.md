@@ -262,6 +262,15 @@ Robin, Nov 11 2026, about 8 pm Pacific, on `andre_paper-world-s06-s07-test01_f25
 - **Changed a few minutes later: unlisted.** "actually no.. keep it unlisted for now". So the upload
   stays unlisted and nothing sets it public. Public, and the novadiem.com entry (which would show an
   unlisted video to anyone on the site), wait for his word.
+- **Cuts and the upload.** Cut 02 (both polish passes) went to him about 11:50 pm Nov 11. His notes
+  that night, all built into cut 03: a brain in the opened head whose front lobe is cut out on
+  "lobotomized"; the burst disintegrates on "extinguished" instead of folding shut; the centre of a
+  seal he sent (open book, owl, sword; its source unknown to both of us, nothing found on the web)
+  fades onto the coin from 0:35 to 0:40. He said "Upload unlisted" to cut 03:
+  https://youtu.be/CYw1f0Y12WY on Novadiem Studio, unlisted, 1:04 am Nov 12, link sent to Telegram,
+  from commit beec152. Status read back right after: unlisted, no rejection, no region block
+  (claims can arrive later and a monetisation-only claim shows only in YouTube Studio).
+  Public and the novadiem.com entry still wait for his word.
 - What is and is not code, so nobody overstates it: the 48 surfaces are painted images (GPT Image on
   the ChatGPT plan, no credits). Everything else is code: the 3D table, where each piece stands, every
   move, the camera, the candlelight and shadows, the lens blur, the render.
