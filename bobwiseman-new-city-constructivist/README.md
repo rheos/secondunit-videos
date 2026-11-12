@@ -1,5 +1,24 @@
 # New City: constructivist type in 3D, printed on paper (look test)
 
+**Current version: v2** (`newcity.html?v=2`, `js/story2.js`), cobalt palette. Robin's verdict 2026-11-12 on
+`out/review/new-city_constructivist-v2-cobalt-b_f0-f468_24fps_review.mp4`: it lands, keep it. Next: the same test in
+Blender, to compare. v1 below (`js/story.js`, no flag) is kept as the record of what missed.
+
+## v2, after Robin's notes on v1
+
+- Real CC0 models (`assets/models/`, credits in `CREDITS.md`) lit by one fixed light and thresholded into the inks
+  (`js/ink.js`), so every block has a lit side and a dark side. v1's one-ink silhouettes read as flat cut-outs.
+- Type printed flat on surfaces the camera skims: a street card, gateway lintels, crossing bars, a card under a crowd.
+  v1 stood extruded words up facing the camera, which read as a 2D poster in front of a backdrop.
+- A low, wide, rolled camera through dense rows. Each word is placed ahead of the camera on its onset; in the gate
+  flight the gates are spaced by the time between words, and words sung under 0.3 s apart share a lintel.
+- Palette by role (`?pal=`): cobalt, from the Accidentally Acquired Beliefs cover, drifts cool to warm over the piece,
+  and a motif yellow grows on what is being built (crane loads, opened doors, a rule, the last big word). The first
+  palette is archived as `?pal=oxblood` ("very cool, but it's also kind of fascist").
+- Paper: an embossed, lit card tooth matched against a 1:1 crop of the reference, showing through dark ink too.
+
+The v1 notes follow.
+
 Bob Wiseman, "New City" (Accidentally Acquired Beliefs), song 0:00.0 to 0:19.5, the first verse, 24 fps song frames
 0 to 468, 1280x720. Issue #502. Internal test, not for the client page. Look: `looks/constructivist-type-3d.yaml`.
 

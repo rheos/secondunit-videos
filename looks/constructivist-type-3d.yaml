@@ -56,7 +56,10 @@ proof:
     - rheos/secondunit-videos#503
   renders:
     - bobwiseman-new-city-constructivist/out/review/new-city_constructivist-v2-cobalt-b_f0-f468_24fps_review.mp4
-verdict: null
+verdict: >-
+  Robin, 2026-11-12, on the 19.5 s cobalt cut (v2-cobalt-b): it lands, keep it. Next: the same test in Blender for
+  comparison. On v1 (flat silhouettes, words facing the camera) he said it missed the essence: the 3D build, the
+  printed type at grazing angles and the paper texture.
 related:
   - toon-cards
   - perspective-illusion
