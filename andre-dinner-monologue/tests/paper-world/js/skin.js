@@ -192,9 +192,10 @@ function drumTower(world, name, at, im, roofT) {
 // ---------- the table: the world every section stands on, and section 5's pieces (skins/s05.js wraps this)
 export async function buildTable(X) {
   const scene = X.scene;
-  // ?glass2=1 (GLASS2=1 on a render): the two glasses are the plain paper wine glass (tower_glass2, tower_glass2_dark), which
-  // only gains lit windows on "New York" (Nathan Fenwick's note, Nov 12). Without it, the first green lattice goblet.
-  const GLASS = new URLSearchParams(location.search).has("glass2") ? "tower_glass2" : "tower_glass";
+  // The two glasses are the plain paper wine glass (tower_glass2, tower_glass2_dark), which only gains lit windows on
+  // "New York" (Nathan Fenwick's note; Robin's choice on Nov 12, from cut 05 on). ?glass1=1 (GLASS1=1 on a render) brings
+  // back the first green lattice goblet of cuts 01 to 04.
+  const GLASS = new URLSearchParams(location.search).has("glass1") ? "tower_glass" : "tower_glass2";
   const names = ["treeman", "citizen", "citizen_woman", "tower_plate", "tower_plate_dark", GLASS, GLASS + "_dark", "tower_bottle", "tower_bottle_dark", "basket", "saltpepper", "candle", "redwood", "sapling", "fence_trio", "plate_disc", "fg_glass", "fg_fork", "cloth", "room", ...(DRUMS ? ["tier_wall", "tier_wall_dark", "tier_roof"] : [])];
   const im = Object.fromEntries(await Promise.all(names.map(async (n) => [n, await image(n)])));
   const P = {}, one = (n, o) => { const c = cut(im[n], null, o); P[o?.as || n] = { ...c, t: tex(c.canvas) }; return P[o?.as || n]; };
