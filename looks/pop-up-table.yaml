@@ -1,0 +1,64 @@
+slug: pop-up-table
+title: Paper pop-up table
+note: >-
+  A restaurant table at night where everything is cut card: the place setting pops up into a small city, the cutlery
+  stands up as a fence, and flat paper people on little tabs slide along slots in the cloth. It is filmed low and
+  close, by candlelight, like a real paper model.
+used: My Dinner With Andre monologue reel, test
+cost: hybrid
+group: code
+order: 317
+clip: null
+tall: true
+status: test
+engine: three.js + generated
+project: andre-dinner-monologue
+code:
+  path: andre-dinner-monologue/tests/paper-world/js/skin.js
+  flag: "?skin=1"
+  page: andre-dinner-monologue/tests/paper-world/index.html
+  note: >-
+    plates.json holds every piece's prompt; paint.sh paints pieces through gptimg in parallel, with the target still
+    attached as the style reference (a plate with "ref" is a registered edit of another plate, used for dark and lit
+    window pairs and for the bare and capped head; "full" plates carry their whole prompt). Pieces live in gitignored
+    work/plates/. js/skin.js stands each piece in the three.js blocking as a card; js/story.js holds the camera keys
+    and every event on film frames; tools/render.mjs draws frames in headless Chrome. docs/STORYBOARD.md has the
+    grammar (hinge, slot, turn, pull-tab, wheel, string, fold) and the whole film.
+rules:
+  - "One world, the table; one continuous low camera that never stops and never zooms (a pull-back rises and tilts)"
+  - Paint a target still of the key image first; attach it as image 1 to every piece so the medium and finish hold
+  - "Every piece is one isolated object on a transparent background, lit warm from the upper left, on its own tab or base"
+  - "A painted piece is never relit: draw it unlit and tint it by distance from the candle; the cloth is the only lit surface and the only one that takes shadows"
+  - "Solid-looking pieces turn about the vertical axis to face the lens; flat standees and the cutlery fence keep their place and show their edge"
+  - "A solid piece that the camera sees from high above must be real geometry wrapped in painted card (the tiered plate towers), never a card painted from table height"
+  - "Nobody walks with legs: standees slide along slots drawn in the cloth, rocking a couple of degrees on twos; a turn is the card turning, edge-on for two frames"
+  - "Things arrive as pop-ups: a card hinges up from the cloth, windows wipe on from a dark plate to its lit twin, tiers telescope out of a plate"
+  - "Soft real tableware close to the lens and a blurred, dimmed restaurant far behind give the lens its depth"
+  - No faces, no text; guards wear painted peaked caps
+palette:
+  - "#35366f"
+  - "#f2b38a"
+  - "#5f8350"
+  - "#23636b"
+  - "#e9ae3a"
+  - "#7e3b2f"
+  - "#f1e4cc"
+reference: >-
+  The photographed paper-craft storybook finish of anabology's "claude fable 5.2's first fable" (youtu.be/JLEUSKq4cX4),
+  which Robin pointed to on 2026-11-11, without its human host, its book-on-a-quilt setting or its compositions. The
+  piece-painting method is paper-plates'. The table that becomes a city is ours (table-city, test 01).
+proof:
+  renders:
+    - andre-dinner-monologue/out/paper-world/andre_paper-world-test04_f1800-f2544_24fps_720x1280.mp4
+    - andre-dinner-monologue/out/paper-world/styleboard/target-table-city_v1.png
+  pr:
+    - rheos/secondunit-videos#479
+  youtube: []
+verdict: >-
+  Robin, 2026-11-11, on test 03: "the building cakes on the plates are not at quite the right angle, but overall,
+  this is great." Test 04 rebuilt the plate towers as real drums. A Seedance pass over the finished cut is planned.
+related:
+  - paper-plates
+  - paper-depth
+  - drawn-playa
+  - devweb-world
