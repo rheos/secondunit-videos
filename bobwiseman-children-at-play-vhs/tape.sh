@@ -7,7 +7,7 @@
 # Section: song 0 to 39.5 s (TIMING in js/timing.js). Heavy steps run nice -n 15 (shared Mac).
 set -e -o pipefail
 cd "${0:A:h}"
-T0=0; T1=39.5
+T0=0; T1=330
 SONG=_in/children-at-play.mp3
 PRESETS=/Applications/NTSCRT.app/Contents/Resources/presets
 slugof() { echo "${1:l}" | sed 's/ vhs$//; s/ /-/g'; }

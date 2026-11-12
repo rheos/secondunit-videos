@@ -462,5 +462,14 @@
     return q;
   }
 
-  window.CAST = { KIDS, drawKid, drawChicken, poses: { stand, run, swingSit, slideSit, ledgeSit, climb, hang, dig, peek, wave, bedSit, salute, march, slump, armsCrossed, write }, ss, lerp };
+  // Blend two poses point by point (k 0..1): for turning, standing up, settling.
+  function lerpPose(a, b, k) {
+    const L = (p, q) => [lerp(p[0], q[0], k), lerp(p[1], q[1], k)];
+    const o = { ...(k < 0.5 ? a : b) };
+    for (const key of ['hip', 'chest', 'head']) o[key] = L(a[key], b[key]);
+    for (const key of ['legF', 'legB', 'armF', 'armB']) if (a[key] && b[key]) o[key] = [L(a[key][0], b[key][0]), L(a[key][1], b[key][1])];
+    o.hairSwing = lerp(a.hairSwing || 0, b.hairSwing || 0, k); o.hem = lerp(a.hem || 0, b.hem || 0, k);
+    return o;
+  }
+  window.CAST = { KIDS, drawKid, drawChicken, lerpPose, poses: { stand, run, swingSit, slideSit, ledgeSit, climb, hang, dig, peek, wave, bedSit, salute, march, slump, armsCrossed, write }, ss, lerp };
 })();

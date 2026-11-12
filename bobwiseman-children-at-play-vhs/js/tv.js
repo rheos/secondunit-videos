@@ -75,6 +75,16 @@
       osd(sg, 'PLAY >');
       return { snow: 0.08, jit: 2.5 };
     }
+    if (T.vcrStop && t >= T.vcrStop) {          // the VCR stops: its blue screen and STOP
+      sg.fillStyle = '#1a33c4'; sg.fillRect(0, 0, SIG_W, SIG_H);
+      osd(sg, 'STOP');
+      return { snow: 0.004, jit: 0.2 };
+    }
+    if (T.tapeEnd && t >= T.tapeEnd) {          // past the end of the recording: blank tape, snow
+      sg.fillStyle = '#202020'; sg.fillRect(0, 0, SIG_W, SIG_H);
+      snow(sg, f, 1);
+      return { snow: 0.08, jit: 2.5 };
+    }
     const img = await loadFrame(f);
     if (img) sg.drawImage(img, 0, 0, SIG_W, SIG_H); else { sg.fillStyle = '#000'; sg.fillRect(0, 0, SIG_W, SIG_H); }
     const roll = (t - T.pictureIn) / 1.15;
@@ -85,17 +95,34 @@
       if (roll < 0.12) { sg.globalAlpha = 0.5 * (1 - roll / 0.12); snow(sg, f, 0.6); sg.globalAlpha = 1; }
     }
     if (t < T.osdOff) osd(sg, 'PLAY >');
-    return { snow: 0.022, jit: roll < 1 ? 1.4 : 0.55 };
+    const rw = T.rewind;                          // the brother's tape rewinding: the VCR's own REW, then PLAY again
+    if (rw && t >= rw[0] && t < rw[1]) osd(sg, '<< REW');
+    if (rw && t >= rw[1] && t < rw[1] + 1.6) osd(sg, 'PLAY >');
+    return { snow: 0.022, jit: roll < 1 ? 1.4 : (rw && t >= rw[0] && t < rw[1] ? 2.2 : 0.55) };
   }
   function rounded(g, r) { g.beginPath(); g.roundRect(r.x, r.y, r.w, r.h, r.r); }
 
   async function draw(t) {
     const s = await buildSignal(t);
     const f = Math.round(t * FPS);
-    crt.render(sig, { frame: f, snow: s.snow, jit: s.jit, chroma: 1.0, raster: [0.965, 0.965], bright: 0.98, dot: 0, over: 1.0 });
-    avgG.drawImage(sig, 0, 0, 1, 1); const [ar, ag, ab] = avgG.getImageData(0, 0, 1, 1).data;
+    // switching the set off: the picture collapses to a bright line, then a dot, which fades
+    let rx = 0.965, ry = 0.965, bright = 0.98, dot = 0, on = 1;
+    if (T.powerOff && t >= T.powerOff) {
+      const u = (t - T.powerOff) / 0.42;
+      ry = u < 0.5 ? 0.965 + (0.006 - 0.965) * smooth01(u / 0.5) : 0.006;
+      rx = u < 0.5 ? 0.965 : 0.965 + (0.006 - 0.965) * smooth01((u - 0.5) / 0.5);
+      bright = 0.98 + 1.4 * smooth01(u / 0.5);
+      dot = u < 0.5 ? 0 : u < 1 ? smooth01((u - 0.5) / 0.5) : Math.max(0, 1 - (t - T.powerOff - 0.42) / 0.7);
+      on = Math.max(0, 1 - smooth01(u));
+    }
+    crt.render(sig, { frame: f, snow: s.snow, jit: s.jit, chroma: 1.0, raster: [rx, ry], bright, dot, over: 1.0 });
+    avgG.drawImage(sig, 0, 0, 1, 1); let [ar, ag, ab] = avgG.getImageData(0, 0, 1, 1).data;
+    ar *= on; ag *= on; ab *= on;
     // the room: a photographic plate (GPT Image, assets/tvroom_1990s.png) with its chroma-green screen keyed out
-    const k = smooth01((t - 0.8) / 23.2);                        // the slow push-in, wide room to near full screen
+    // the slow push-in, wide room to near full screen over verse 1; held close; pulled back out at the end
+    const S = T.scenes || {};
+    const back = S.outro ? smooth01((t - S.outro) / ((T.vcrStop || S.outro + 5) + 0.6 - S.outro)) : 0;
+    const k = smooth01((t - 0.8) / 23.2) * (1 - back);
     const z = 1 + (ZMAX - 1) * k;
     let cx = 960 + (SCR_C[0] - 960) * k, cy = 540 + (SCR_C[1] - 540) * k;
     cx = Math.min(W - W / (2 * z), Math.max(W / (2 * z), cx)); cy = Math.min(H - H / (2 * z), Math.max(H / (2 * z), cy));

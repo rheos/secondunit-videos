@@ -121,13 +121,14 @@
     const amp = 0.52;
     return amp * Math.cos(TAU * (t - T.line1) / Ps);
   }
-  function swingSet(g, t, withGirl) {
+  function swingSet(g, t, withGirl, empty) {
     g.fillStyle = g.strokeStyle = COL.swing; g.lineCap = 'round';
     g.lineWidth = 6.5;
     for (const ax of [-170, 170]) { g.beginPath(); g.moveTo(ax - 40, 0); g.lineTo(ax, -172); g.lineTo(ax + 40, 0); g.stroke(); }
     g.lineWidth = 8; g.beginPath(); g.moveTo(-182, -172); g.lineTo(182, -172); g.stroke();
     swingPivots.forEach((px, i) => {
-      const th = i === 0 ? swingAngle(t) : 0.06 * Math.sin(t * 1.9 + i * 2) + (i === 2 ? 0.1 * Math.sin(t * 2.4) : 0);
+      const th = empty ? (i === 0 ? 0.2 : 0.07) * Math.sin(t * 1.55 + i * 1.9) + 0.03 * Math.sin(t * 3.1 + i)  // empty: the wind moves them
+        : i === 0 ? swingAngle(t) : 0.06 * Math.sin(t * 1.9 + i * 2) + (i === 2 ? 0.1 * Math.sin(t * 2.4) : 0);
       g.save(); g.translate(px, -172); g.rotate(-th);
       g.lineWidth = 1.8; g.beginPath(); g.moveTo(-1, 0); g.lineTo(-1, SWING_L); g.stroke();
       g.fillRect(-13, SWING_L - 1, 26, 4.5);
@@ -353,5 +354,22 @@
     for (const [k, r] of runners) drawKid(g, KIDS[k], P.run(r.ph, r.d), r.x, r.y, kidH(r.y), COL.kid);
   }
 
-  window.WORLD = { bg, shadows, shapes, crownLight, SUN, HOR, kidH, hider, slideBoy };
+  // The same park with nobody in it (the reprise, years later): equipment and tree only, the swings moving alone.
+  function shadowsEmpty(g, t) {
+    g.fillStyle = g.strokeStyle = '#000';
+    const S = (bx, by, fn, k) => { g.save(); shadowXf(g, bx, by, k); fn(g); g.restore(); };
+    S(690, 470, (q) => swingSet(q, t, false, true));
+    S(1120, 492, slide); S(1390, 495, bars); S(230, 505, bench);
+    S(1880, 512, (q) => tree(q, t, true), 0.8);
+  }
+  function shapesEmpty(g, t) {
+    g.save(); g.translate(230, 505); bench(g); g.restore();
+    g.save(); g.translate(690, 470); swingSet(g, t, false, true); g.restore();
+    g.save(); g.translate(1120, 492); slide(g); g.restore();
+    g.save(); g.translate(1390, 495); bars(g); g.restore();
+    g.save(); g.translate(1880, 512); tree(g, t, false); g.restore();
+    g.save(); g.translate(1650, 565); sandbox(g); g.restore();
+  }
+
+  window.WORLD = { bg, shadows, shapes, shadowsEmpty, shapesEmpty, crownLight, SUN, HOR, kidH, hider, slideBoy };
 })();
