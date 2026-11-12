@@ -1,7 +1,8 @@
 // scenes/hayloft.js · "flying, you and me, up in the hayloft": inside the barn, SEP.12 1992. The mother films from
-// the barn floor. It opens at full zoom inside the loft's hay door, so all we see is the two of them and the sky: they
-// leap up and out of frame on "Flying", run in and leap again on "you and me flying", and just before "up in the
-// hayloft" the zoom pulls back and the barn appears (Robin, Nov 11). You and me leap off the loft edge into the hay pile (holding hands), high-five in the hay, climb
+// the barn floor. It opens at full zoom on the sky through the top of the loft's hay door: empty sky, a few distant
+// birds, then the two of them fly through the frame on "Flying" (hand in hand, arms out like wings), sky again, and
+// they fly through again on "you and me flying". Just before "up in the hayloft" the zoom pulls back and the barn
+// appears (Robin, Nov 11). You and me leap off the loft edge into the hay pile (holding hands), high-five in the hay, climb
 // the ladder, take a bigger running leap, climb again while the camera tilts up, and on the third leap the hats and
 // shoes fly off (then a sock each gets flung up out of the hay). Barefoot, they run out of the big door into the
 // glare with their arms out like planes, and the camera follows through the doorway.
@@ -40,7 +41,7 @@
   const FY = 652;                        // where the kids stand on the floor (a step in front of the wall)
   const LOFT_Y = 384, LOFT_EDGE = 372;   // the loft floor's front edge, its right-hand end
   const DOOR = [432, 318, 718, 640];     // the big open barn door (the source behind everything)
-  const LDOOR = [118, 130, 420, 384];    // the loft's hay door, high in the back wall behind the loft edge (wide and tall:
+  const LDOOR = [118, 30, 420, 384];     // the loft's hay door, high in the back wall behind the loft edge (wide and tall:
                                          // the opening shot is framed inside it, nothing but sky behind the leaps)
   const STALL = [16, 452, 150, 546];     // a stall window under the loft, behind the ladder
   const HOR = 515, VPX = 600;            // horizon and vanishing point of the field outside
@@ -74,13 +75,17 @@
   for (let x = -100; x < 1400; x += 10 + R() * 18) trees.push([x, HOR - 6 - R() * 18, 8 + R() * 14]);
   const motes = [];
   for (let i = 0; i < 170; i++) motes.push([R(), R() - 0.5, 0.004 + R() * 0.012, R() * TAU, 0.6 + R() * 1.2, (R() * 5) | 0]);
+  const BIRDS = [  // [time it enters at x 100, height, speed px/s, size, phase]: two or three at a time, far off
+    [205.6, 92, 34, 1, 0.3], [206.8, 120, 30, 0.8, 1.9], [212.0, 70, 38, 1.1, 2.6], [212.7, 104, 33, 0.9, 4.1], [213.4, 86, 36, 0.75, 5.0],
+    [216.4, 140, 31, 1, 0.8], [217.1, 112, 35, 0.85, 3.3],
+  ];
   const BEAMS = [  // sunbeams from gaps in the back wall and roof: origin, direction, length, width at the far end
     [[790, 96], [-0.52, 1], 760, 74, 0.2], [[862, 150], [-0.5, 1], 700, 56, 0.16], [[930, 60], [-0.55, 1], 820, 84, 0.13],
     [[262, 18], [-0.38, 1], 560, 60, 0.12], [[612, -40], [-0.46, 1], 620, 50, 0.09],
   ];
 
   // ---- background ---------------------------------------------------------------------------------------
-  function outside(g) {  // the bright afternoon field seen through every opening
+  function outside(g, t) {  // the bright afternoon field seen through every opening
     const sky = g.createLinearGradient(0, -100, 0, HOR);
     sky.addColorStop(0, '#a6c2d6'); sky.addColorStop(0.42, '#d3e0e2'); sky.addColorStop(0.72, '#f6f0dc'); sky.addColorStop(1, '#fff8e6');
     g.fillStyle = sky; g.fillRect(-800, -400, 2600, HOR + 400);
@@ -92,6 +97,14 @@
     const sg = g.createRadialGradient(SUN[0], SUN[1], 2, SUN[0], SUN[1], 260);
     sg.addColorStop(0, 'rgba(255,255,250,1)'); sg.addColorStop(0.25, 'rgba(255,248,226,.8)'); sg.addColorStop(1, 'rgba(255,240,210,0)');
     g.fillStyle = sg; g.fillRect(SUN[0] - 300, SUN[1] - 300, 600, 600);
+    // distant birds drifting across, so the empty sky between the leaps is never dead
+    g.strokeStyle = 'rgba(52,46,48,.8)'; g.lineWidth = 1.3; g.lineCap = 'round'; g.lineJoin = 'round';
+    for (const [t0, y0, vx, s, ph] of BIRDS) {
+      const x = 100 + (t - t0) * vx, y = y0 + 6 * Math.sin((t - t0) * 0.9 + ph);
+      if (x < 60 || x > 480) continue;
+      const f = Math.sin(t * 9 + ph * 3), w = 5 * s, d = 2.6 * s * f;   // wingbeat
+      g.beginPath(); g.moveTo(x - w, y - d); g.quadraticCurveTo(x - w * 0.4, y - d * 0.2 - 1.2 * s, x, y); g.quadraticCurveTo(x + w * 0.4, y - d * 0.2 - 1.2 * s, x + w, y - d); g.stroke();
+    }
     // a pale silo and a big tree on the far side of the yard, seen through the loft's hay door
     g.fillStyle = 'rgba(214,202,168,.8)';
     g.fillRect(196, 330, 46, HOR - 330); g.beginPath(); g.arc(219, 332, 23, Math.PI, 0); g.fill();
@@ -144,7 +157,7 @@
     g.rect(DOOR[0], DOOR[1], DOOR[2] - DOOR[0], DOOR[3] - DOOR[1] + 12);
     g.rect(LDOOR[0], LDOOR[1], LDOOR[2] - LDOOR[0], LDOOR[3] - LDOOR[1]);
     g.rect(STALL[0], STALL[1], STALL[2] - STALL[0], STALL[3] - STALL[1]);
-    g.clip(); outside(g); g.restore();
+    g.clip(); outside(g, t); g.restore();
     // door frames: jambs and header with a warm lit inner edge
     const frame = (x0, y0, x1, y1, w) => {
       g.fillStyle = '#3a2717';
@@ -164,9 +177,9 @@
     g.beginPath(); g.moveTo(DOOR[2] + 20, FLOOR - 10); g.lineTo(DOOR[2] + 300, DOOR[1] - 4); g.moveTo(DOOR[2] + 14, FLOOR - 6); g.lineTo(DOOR[2] + 314, FLOOR - 6); g.moveTo(DOOR[2] + 14, DOOR[1] - 10); g.lineTo(DOOR[2] + 314, DOOR[1] - 10); g.stroke();
     g.fillStyle = '#22170f'; g.fillRect(DOOR[0] - 10, DOOR[1] - 30, 650, 8);
     // roof structure: a tie beam and knee braces high up
-    g.fillStyle = '#2b1d12'; g.fillRect(-900, 28, 2900, 22);
+    g.fillStyle = '#2b1d12'; g.fillRect(-900, 0, 2900, 18);
     g.strokeStyle = '#2b1d12'; g.lineWidth = 14;
-    for (const x of [-160, 420, 1000]) { g.beginPath(); g.moveTo(x - 70, 48); g.lineTo(x, -40); g.moveTo(x + 70, 48); g.lineTo(x, -40); g.stroke(); }
+    for (const x of [-160, 420, 1000]) { g.beginPath(); g.moveTo(x - 70, 16); g.lineTo(x, -72); g.moveTo(x + 70, 16); g.lineTo(x, -72); g.stroke(); }
     g.fillRect(-900, -260, 2900, 16);
     // floor: packed earth and old boards, a pool of light from the door
     const fl = g.createLinearGradient(0, FLOOR, 0, FLOOR + 160);
@@ -310,12 +323,13 @@
   };
   const sOf = (k, h) => h / 100 * KD[k].kid.size;
   const TIM = {
-    me:    { land1: FLY1 + 1.22, out1: 214.95, lad1: 216.15, top1: 217.65, take2: FLY2 + 0.2, out2: 222.00, lad2: 223.05, top2: 224.45, edge3: 226.30 },
-    hider: { land1: FLY1 + 1.22, out1: 215.25, lad1: 216.95, top1: 218.40, take2: FLY2,       out2: 222.20, lad2: 223.85, top2: 225.25, edge3: 226.70 },
+    me:    { land1: FLY1 + 1.45, out1: 214.95, lad1: 216.15, top1: 217.65, take2: FLY2 + 0.2, out2: 222.00, lad2: 223.05, top2: 224.45, edge3: 226.30 },
+    hider: { land1: FLY1 + 1.45, out1: 215.25, lad1: 216.95, top1: 218.40, take2: FLY2,       out2: 222.20, lad2: 223.85, top2: 225.25, edge3: 226.70 },
   };
-  const F1 = 1.22, F2 = 1.45, F3 = 1.3;
-  const LAND = [null, { me: 460, hider: 504 }, { me: 506, hider: 594 }, { me: 474, hider: 520 }];
-  const EDGE = { me: 302, hider: 346 }, TAKE2 = { me: 300, hider: 358 };
+  const F1 = 1.45, F2 = 1.6, F3 = 1.3;
+  const LAND = [null, { me: 460, hider: 504 }, { me: 470, hider: 530 }, { me: 474, hider: 520 }];
+  const EDGE = { me: 262, hider: 306 }, TAKE2 = { me: 262, hider: 310 };
+  const SKYLEAP = 250;   // the first two leaps go up through the sky-only opening shot (Robin, Nov 11: they fly by)
   const OUT3 = 234.6, TOP = { me: 404, hider: 490 }, DOORP = { me: 648, hider: 700 };
   const HAT_OFF = { me: LOSE + 0.22, hider: LOSE + 0.3 };
   const SHOE_OFF = { me: [LOSE + 0.42, LOSE + 0.52], hider: [LOSE + 0.48, LOSE + 0.6] };
@@ -337,7 +351,7 @@
     if (fromProfile) p = lerpPose(P.stand(1), p, sm(seg(t, t0, t0 + 0.35)));
     return { x: EDGE[k], y: LOFT_Y, h: KH, pose: p, held: true, hat: t < HAT_OFF[k], shoes: 2 };
   }
-  function leapFront(k, t0, dur, x0, y0, xl, apex, t, third) {
+  function leapFront(k, t0, dur, x0, y0, xl, apex, t, third, sky) {
     const sg = KD[k].sg, u = seg(t, t0, dur + t0);
     const yl = hayY(xl) + 20;
     const x = lerp(x0, xl, u), y = lerp(y0, yl, u) - 4 * apex * u * (1 - u);
@@ -351,6 +365,15 @@
     const up = lerp(0.2, 0.75, sm(seg(u, 0, 0.18))) + 0.12 * Math.sin(u * 14);
     outerArm(p, sg, u > 0.82 ? lerp(up, 1, sm(seg(u, 0.82, 1))) : up, 8 * Math.sin(u * 20 + sg));
     p.hairSwing = -0.8 * Math.sin(u * Math.PI);
+    if (sky) {  // through the sky shot: flying, not standing. Knees tucked, the free arm out like a wing, the body tipping
+      // forward along the arc, rising then diving (pair() turns the two of them together about their joined hands)
+      const q = jump(0.5, 0.12);
+      outerArm(q, sg, 0.08 + 0.12 * Math.sin(u * 16 + sg), 7 * Math.sin(u * 18 + sg));
+      q.hairSwing = -0.9;
+      const lean = lerp(0.28, 0.95, sm(seg(u, 0.15, 0.95)));
+      if (u < 0.08) { const c = front(1.1); outerArm(c, sg, -1.25); return { x, y, h: KH, pose: lerpPose(c, q, u / 0.08), held: true, hat: true, shoes: 2, fly: lean * u / 0.08 }; }
+      return { x, y, h: KH, pose: q, held: true, hat: true, shoes: 2, fly: lean };
+    }
     if (u < 0.08) { const c = front(1.1); outerArm(c, sg, -1.25); return { x, y, h: KH, pose: lerpPose(c, p, u / 0.08), held: true, hat: t < HAT_OFF[k], shoes: 2 }; }
     const sh = third ? SHOE_OFF[k] : [1e9, 1e9];
     return { x, y, h: KH, pose: p, held: true, hat: t < HAT_OFF[k], shoes: (t < sh[0] ? 1 : 0) + (t < sh[1] ? 1 : 0) };
@@ -439,14 +462,18 @@
   function leapRun(k, t0, dur, x0, xl, t) {
     const u = seg(t, t0, t0 + dur), sg = KD[k].sg;
     const yl = hayY(xl) + 20;
-    const x = lerp(x0, xl, u), y = lerp(LOFT_Y, yl, u) - 4 * 140 * u * (1 - u);
+    const x = lerp(x0, xl, u), y = lerp(LOFT_Y, yl, u) - 4 * SKYLEAP * u * (1 - u);
     const st = star(sm(seg(u, 0.12, 0.35)) * (1 - sm(seg(u, 0.72, 0.9)) * 0.6));
     let p;
     if (u < 0.15) p = lerpPose(P.run((t - t0) * 2.8, 1), st, sm(u / 0.15));
     else p = st;
+    if (u > 0.15) {  // arms out flat like wings, flapping, the body tipping forward along the arc (the sky shot)
+      outerArm(p, -1, 0.06 + 0.1 * Math.sin(u * 17), 7 * Math.sin(u * 19)); outerArm(p, 1, 0.06 + 0.1 * Math.sin(u * 17 + 1), 7 * Math.sin(u * 19 + 1));
+    }
     if (u > 0.8) { const q = front(0.2); outerArm(q, -1, 1); outerArm(q, 1, 1); p = lerpPose(p, q, sm(seg(u, 0.8, 1))); }
+    const lean = lerp(0.3, 0.9, sm(seg(u, 0.15, 0.95))) * sm(seg(u, 0, 0.15)) * (1 - sm(seg(u, 0.88, 1)));
     void sg;
-    return { x, y, h: KH, pose: p, hat: true, shoes: 2 };
+    return { x, y, h: KH, pose: p, hat: true, shoes: 2, fly: lean };
   }
   function onTop(k, t) {
     const sg = KD[k].sg;
@@ -492,7 +519,7 @@
   function act(k, t) {
     const M = TIM[k], third = true;
     if (t < FLY1) return edgeWait(k, T0, FLY1, t);
-    if (t < M.land1) return leapFront(k, FLY1, F1, EDGE[k], LOFT_Y, LAND[1][k], 110, t);   // high: up into the sky in the tight shot
+    if (t < M.land1) return leapFront(k, FLY1, F1, EDGE[k], LOFT_Y, LAND[1][k], SKYLEAP, t, false, true);   // high: up into the sky in the tight shot
     if (t < M.out1) return inHay(k, M.land1, LAND[1][k], t, 'five');
     if (t < M.lad1) return wadeOut(k, M.out1, M.lad1, LAND[1][k], t);
     if (t < M.top1) return climbUp(k, M.lad1, M.top1, t);
@@ -520,7 +547,14 @@
       A.pose.armF = [add(L2(add(A.pose.chest, [8, -2]), ha, 0.5), [1, 4]), ha];
       B.pose.armB = [add(L2(add(B.pose.chest, [-8, -2]), hb, 0.5), [-1, 4]), hb];
     }
-    for (const [k, Q] of [['me', A], ['hider', B]]) dress(Q.pose, k, Q.hat, Q.shoes == null ? 0 : Q.shoes);
+    for (const [k, Q] of [['me', A], ['hider', B]]) {
+      dress(Q.pose, k, Q.hat, Q.shoes == null ? 0 : Q.shoes);
+      if (Q.fly) { Q.rot = Q.fly; Q.pivot = [Q.x, Q.y - 50 * sOf(k, Q.h)]; }
+    }
+    if (A.held && B.held && A.fly && B.fly) {  // hand in hand: turn the pair together about the middle, so the hands stay joined
+      const pv = [(A.pivot[0] + B.pivot[0]) / 2, (A.pivot[1] + B.pivot[1]) / 2], r = (A.fly + B.fly) / 2;
+      A.pivot = B.pivot = pv; A.rot = B.rot = r;
+    }
     return { me: A, hider: B };
   }
 
@@ -648,12 +682,13 @@
     g.save();
     if (Q.outside) { g.beginPath(); g.rect(DOOR[0], DOOR[1], DOOR[2] - DOOR[0], DOOR[3] - DOOR[1] + 12); g.clip(); }
     hayClip(g);
+    if (Q.rot) { g.translate(Q.pivot[0], Q.pivot[1]); g.rotate(Q.rot); g.translate(-Q.pivot[0], -Q.pivot[1]); }
     drawKid(g, KD[k].kid, Q.pose, Q.x, Q.y, Q.h, COL.kid);
     g.restore();
   }
   function shapes(g, t) {
     const Q = pair(t);
-    loft(g, t); pulley(g, t); ladder(g);
+    loft(g, t); ladder(g);   // no hay rope in the door: the opening shot is nothing but sky (Robin, Nov 11)
     // the kid nearer the ladder is drawn last while climbing; otherwise me first
     drawKidQ(g, 'me', Q.me); drawKidQ(g, 'hider', Q.hider);
     drawItems(g, t);
@@ -724,11 +759,12 @@
   // Robin, Nov 11: it opens so tight you can't tell it's a barn. Full zoom on the loft's hay door: only sky (and a far
   // tree) behind the two of them. On "Flying" they leap up and out of frame; on "you and me flying" they run in from
   // the left and do it again; just before "up in the hayloft" the zoom pulls all the way back and the barn appears.
-  // The door spans x 118..420, y 130..384: at zoom 3.45 the frame plus the hand's shake stays inside it.
+  // The frame sits in the top of the hay door (x 118..420, y 30..384), above the kids' heads as they wait on the loft
+  // edge (hat tops at y ~241), so it holds nothing but sky until a leap carries them through it.
   const CAM = [
-    [T0, 266, 270, 3.48], [208.6, 270, 268, 3.48], [FLY1 - 0.2, 270, 268, 3.45], [FLY1 + 0.55, 272, 272, 3.45],
-    [FLY1 + 1.4, 268, 272, 3.46], [214.6, 266, 270, 3.48], [217.2, 262, 272, 3.48], [FLY2 - 0.3, 266, 270, 3.47],
-    [FLY2 + 0.6, 272, 268, 3.45], [221.45, 270, 272, 3.46], [222.5, 330, 432, 1.04],
+    [T0, 282, 138, 3.85], [208.6, 284, 136, 3.85], [FLY1 + 0.3, 286, 138, 3.85], [FLY1 + 1.4, 282, 138, 3.85],
+    [214.6, 280, 136, 3.86], [217.2, 284, 138, 3.85], [FLY2 + 1.0, 286, 138, 3.85], [221.45, 284, 140, 3.84],
+    [222.5, 330, 432, 1.04],
     [LOFTUP, 214, 488, 1.24], [HAYLOFT, 176, 342, 1.26], [225.6, 214, 326, 1.2], [227.5, 318, 330, 1.38], [LOSE, 326, 334, 1.38],
     [LOSE + 0.6, 400, 368, 1.0], [LOSE + 1.7, 466, 436, 1.04], [CLOTH - 0.7, 490, 452, 1.3], [CLOTH + 1.5, 494, 444, 1.3],
     [236.2, 478, 446, 1.16], [GLAD, 520, 468, 1.12], [FREE, 612, 500, 1.6], [240.5, 668, 496, 2.15],
