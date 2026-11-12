@@ -208,3 +208,61 @@ Same camera, cues, positions and audio as test 02; every object replaced by its 
 - **Decide first what Seedance is for.** These frames already carry the pieces, timing and camera. What they
   lack is in the two verdicts above: real cloth, real contact shadows and soft depth of field. A relight and
   defocus pass may get there cheaper than regenerating the motion.
+
+---
+
+# Test 04: the plate towers as drums, and the opening
+
+The director on test 03: "overall, this is great", and one note, "the building cakes on the plates are not at quite
+the right angle." Test 04 is that fix and the foreground glass, nothing else. README.md, "Test 04", has the build.
+
+## What the towers look like now
+
+- **Street height** (a check camera; the film never sees a risen plate tower from this low): three stacked drums
+  with an umber band at each rim and a row of small arched windows glowing warm, brighter low in the arch. The
+  side away from the flame is a shade darker. The walls are plain orange card: flatter than the painted
+  tower was, with no scored panels or tabs.
+- **Mid-crane (f2262)**: tiers stepped back with their pleated tops showing, standing square on the plate from
+  every side as the lens goes round. No lean, no sliding on the disc.
+- **The wide (f2543)**: three concentric pleated discs and the cap on the plate, a ring of windows under each
+  rim, the tower's shadow thrown away from the candle. This is the director's crop; it is the right angle now.
+
+## What changed that was not asked for
+
+Nothing in the picture. `check04/changed-vs-test03.txt` compares all 744 frames with test 03: f1800 to f1824
+differ (the glass), f2216 to f2330 and f2477 to f2543 differ (the towers and their shadows), every other frame is
+the same to within JPEG noise. `SKIN=1 T3=1` still renders test 03's frames exactly (difference 0 on the frames
+checked). In the code: `skin.js` gained `tierCell`, `wallMat`, `drumTower` and a `DRUMS` switch; `main.js` and
+`render.mjs` gained `CAM=` for check stills; `blocking.json` has six more objects (the tiers and caps).
+
+One thing caught on the way: the first test 04 render left the real glass and fork standing on the table for the
+whole film (an edit had commented out the line that registers them). The frame-by-frame comparison showed changes
+where none should be; fixed and re-rendered before delivery.
+
+## BANNED (added in test 04)
+
+- A painted three-quarter view standing in for a solid that the camera sees from above. Solids that are seen from
+  more than one height are built.
+- An inline comment added in the middle of a one-line block.
+
+## Pieces (nothing was repainted)
+
+- **`tier_wall` is a stronger, yellower orange than `tier_roof`** (salmon) and than the old painted tower, so the
+  walls and tops do not quite match and the towers are the most saturated thing on the table.
+- **`tier_wall` has no panel scoring, tabs or cut edges** apart from the faint joins between its three windows, so
+  the walls read as a smooth wrap at close range.
+- The panel's windows are plain yellow; the glow is added in code as asked.
+
+## Known defects (frame numbers)
+
+1. Not in the film, check camera only: at street height the walls are flat orange card with little paper detail.
+2. f2216 to f2236: the tiers telescope up through their own pleated tops; for the first two or three frames of
+   each tier the top of the tier below is cut by the rising wall with no slot drawn.
+3. f2228 to f2262: the dark windows are near-black arches until the wipe reaches them (from f2227, 22 frames).
+4. f2477 to f2543: from above the walls are slivers, so the windows are a few pixels; the pale rim rings read as
+   fine light circles.
+5. f1800 to f1822: the foreground glass is now in front of the bottle at the frame's right edge (22 % of the frame
+   at f1800, by `fgcover`-style difference against a render without it), and its foot crosses the candle's holder
+   for the first 8 frames.
+6. All of test 03's other defects stand (NOTES above), except its numbers 6 (tower seated toward the lens) and the
+   leaning half of 5 for the plate towers, which are gone.

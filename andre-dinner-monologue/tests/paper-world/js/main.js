@@ -17,6 +17,7 @@ renderer.setPixelRatio(1); renderer.setSize(W, H, false);
 renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.toneMapping = THREE.NoToneMapping;
 
+const CHECKCAM = q.get("cam") ? q.get("cam").split(",").map(Number) : null;      // a camera for check stills that the film never uses
 const SKIN = S.SKIN;      // test 03: the painted cards (index.html?skin=1)
 const scene = new THREE.Scene(); scene.background = new THREE.Color(SKIN ? "#000000" : "#0b0e2a");
 const camera = new THREE.PerspectiveCamera(S.FOV, W / H, 0.35, 2500);
@@ -51,7 +52,7 @@ const cityOn = (f) => clamp((f - S.C.newyork1 - 8) / 50);
 const _t = new THREE.Vector3();
 
 function setState(f, jitter) {
-  if (SKIN) { const cam = S.camAt(f); skin.update(f, jitter, cam); camera.position.set(...cam.P); camera.up.set(0, 1, 0); camera.lookAt(_t.set(...cam.T)); camera.fov = cam.fov; camera.updateProjectionMatrix(); return cam; }
+  if (SKIN) { const cam = CHECKCAM ? { P: CHECKCAM.slice(0, 3), T: CHECKCAM.slice(3), fov: S.FOV } : S.camAt(f); skin.update(f, jitter, cam); camera.position.set(...cam.P); camera.up.set(0, 1, 0); camera.lookAt(_t.set(...cam.T)); camera.fov = cam.fov; camera.updateProjectionMatrix(); return cam; }
   const fl = world.update(f, jitter), on = cityOn(f);
   world.candle.key.intensity = 62 * fl.gain; world.candle.bounce.intensity = 34 + 46 * on; world.hemi.intensity = 0.6 + 0.5 * on;
   treeman.pose(S.treemanAt(f)); citizens.forEach((c, i) => c.pose(S.citizenAt(i, f)));

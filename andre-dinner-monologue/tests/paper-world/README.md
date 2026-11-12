@@ -11,6 +11,43 @@ voice muxed from `_in/andre.wav` cut to [75.0, 106.0)).
 **Units and axes (also in blocking.json): centimetres, right-handed, y up, the cloth is y = 0, x to the right,
 z toward the viewer. The near place setting is at +z, the far one at -z. Quaternions are [x, y, z, w].**
 
+## Test 04: the plate towers as drums (`?skin=1`)
+
+Review file: `out/paper-world/andre_paper-world-test04_f1800-f2544_24fps_720x1280.mp4` (744 frames, 31.000 s, the
+same voice cut). Test 04 is test 03 with two changes and nothing else; `index.html?skin=1` is now test 04 and
+`index.html?skin=1&t3=1` (`SKIN=1 T3=1` for the tools) is test 03 exactly as delivered.
+
+```bash
+zsh tools/make04.sh                                   # frames04/, the mp4, check04/, blocking.json, scans
+SKIN=1 T3=1 zsh tools/make03.sh                       # test 03 again, unchanged
+SKIN=1 FRAMES=2300 CAM="-22,4.5,-22,-1,6,-43" OUT=../../out/paper-world/wip/x node tools/render.mjs   # a check still from a camera the film never uses (position, then target)
+```
+
+1. **The two plate towers are real geometry** (`skin.js drumTower`), centred on the flat `plate_disc`, which is
+   the only plate now. Three open drums, radii 9.0, 7.0, 5.0 cm, each 4.2 cm high, and a cap (radius 1.6, 0.9 high):
+   13.5 cm in all. The painted `tower_plate` card, its lean and its seating toward the lens are gone for these two.
+   - Walls: one window cell per tier, composed on a canvas from `work/plates/tier_wall.png` and
+     `tier_wall_dark.png` (`tierCell`): the plate's own plain card (the band above its windows) tiled down the
+     cell, the plate's window scaled to 45 % of the tier's height and set a fifth of the way up, the plate's umber
+     bands at top and bottom. The cell repeats 24, 18 and 12 times round the three drums. In the lit cell the
+     window's yellow paper is given a warm glow, orange at the top of the arch to near white low down.
+   - Tops: `tier_roof.png` on each tier and the cap, each turned differently, with a pale ring 1 mm wide at the rim.
+   - Light: unlit times the same candle-distance tint as every piece, times one form shade on the walls, 0.72 on
+     the side away from the flame to 1.0 facing it; tops 6 % lighter. Walls and tops cast shadows on the cloth.
+   - Pop-up on "New York": the bottom tier comes up out of the disc, then each tier springs out of the one below,
+     three frames apart, damping 0.6; from 12 frames in the windows wipe from dark to lit, bottom tier to top, over
+     22 frames. A plain sleeve under each wall keeps an overshooting tier from showing a gap.
+   - Names: `plate_far.tower`, `plate_near.tower` (kept) with children `.tier_0`, `.tier_1`, `.tier_2`, `.cap`.
+2. **The foreground glass** stands at (7, -10) instead of (0.6, -10.2), 90 % the size: 8 cm to the right of the
+   lens's path, so it sits at the right edge of the opening frame, covers 22 % of it at f1800 (it was 36 to 45 %
+   through f1820) and is out of frame by f1822.
+
+`out/paper-world/check04/`: `tower_street-height_checkcam_f2300.jpg` (a check camera: the film never sees a risen
+plate tower from street height), `tower_rising_f2228.jpg`, `tower_mid-crane_f2262.jpg`, `tower_wide_f2543.jpg`,
+`crop_near-tower_f2543_test03_vs_test04.jpg`, `crop_far-tower_f2543_test03_vs_test04.jpg`,
+`before-after_test03-above_test04-below.jpg`, `changed-vs-test03.txt` (which frames differ from test 03, from
+`tools/diff03.py`), `sheet.jpg` and the beat stills. `blocking.json` is test 04's export.
+
 ## Test 03: the painted skin (`?skin=1`)
 
 Review file: `out/paper-world/andre_paper-world-test03_f1800-f2544_24fps_720x1280.mp4` (744 frames, 31.000 s, the

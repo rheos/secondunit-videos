@@ -11,6 +11,8 @@ import * as S from "./story.js";
 import { fencePlan } from "./table.js";
 
 const PL = "work/plates/";
+// test 04: the plate towers are real drums (three tiers and a cap) and the foreground glass is moved. ?t3=1 keeps test 03 as it was.
+const DRUMS = !globalThis.PAPER_T3;
 const named = (o, name) => { o.name = name; return o; };
 
 // ---------- plates: load, trim to the alpha box, bleed the piece's colour under the transparent pixels (clean mips)
@@ -87,12 +89,80 @@ function volume(world, name, [x, z], t, w, h, mat) {
   return v;
 }
 
+// ---------- test 04: the plate towers as paper drums
+// One window cell for a tier's wall, composed from the tier_wall plate: plain card (the plate's own card, from the band
+// above its windows), the plate's window scaled so it is 45 % of the tier's height, the umber bands top and bottom.
+// The cell repeats round the drum. The lit cell gets a warm glow inside the arch, brightest low, like the painted towers.
+function tierCell(im, aspect, o = {}) {
+  const W = 256, H = Math.round(W / aspect), c = document.createElement("canvas"); c.width = W; c.height = H; const g = c.getContext("2d", { willReadFrequently: true });
+  const sy = 48, sh = 104, dh = Math.round((sh * W) / 512);
+  // each row of card comes from a different stretch of the plate's plain bands (above and below its windows), flipped
+  // this way and that, so the grain does not repeat in a pattern
+  for (let y = 0, j = 0; y < H; y += dh, j++) { const sx = [0, 512, 1024][(j * 2 + (o.seed || 0)) % 3], fx = (j >> 1) % 2, fy = j % 2; g.save(); g.translate(fx ? W : 0, y + (fy ? dh : 0)); g.scale(fx ? -1 : 1, fy ? -1 : 1); g.drawImage(im, sx, j % 3 === 1 ? 870 : sy, 512, sh, 0, 0, W, dh); g.restore(); }
+  const bh = Math.round(0.055 * H);
+  if (o.window !== false) {
+    const wh = 0.45 * H, sx0 = 88, sy0 = 162, sw = 334, shh = 697, m = 14, k = wh / shh, top = H - 0.2 * H - wh;
+    g.drawImage(im, sx0 - m, sy0 - m, sw + 2 * m, shh + 2 * m, (W - (sw + 2 * m) * k) / 2, top - m * k, (sw + 2 * m) * k, (shh + 2 * m) * k);
+    if (o.glow) {
+      const x0 = Math.floor((W - sw * k) / 2) - 2, y0 = Math.floor(top) - 2, ww = Math.ceil(sw * k) + 4, hh = Math.ceil(wh) + 4, img = g.getImageData(x0, y0, ww, hh), d = img.data;
+      for (let y = 0; y < hh; y++) for (let x = 0; x < ww; x++) { const i = (y * ww + x) * 4, r = d[i], gg = d[i + 1], b = d[i + 2];
+        if (!(r > 185 && gg > 140 && b < 130 && r - b > 85)) continue;                   // only the window's yellow paper
+        const t = smooth(((y - 2) / wh) * 1.1), u = (x - ww / 2) / (ww / 2), hot = smooth((y / hh - 0.45) / 0.55) * (1 - 0.5 * u * u), grain = Math.sqrt((0.3 * r + 0.59 * gg + 0.11 * b) / 205);
+        const base = [lerp(224, 255, t), lerp(126, 204, t), lerp(42, 82, t)], hi = [255, 243, 198];
+        for (let q = 0; q < 3; q++) d[i + q] = Math.min(255, lerp(base[q], hi[q], 0.72 * hot) * grain); }
+      g.putImageData(img, x0, y0);
+    }
+  }
+  g.drawImage(im, 0, 0, 512, 38, 0, 0, W, bh); g.drawImage(im, 0, 986, 512, 38, 0, H - bh, W, bh);
+  const t = tex(c); t.wrapS = THREE.RepeatWrapping; return t;
+}
+// wall: unlit card times the tint, times one soft form shade (0.72 away from the flame to 1 facing it); windows wipe dark to lit
+function wallMat(tDark, tLit, rep) {
+  return new THREE.ShaderMaterial({ side: THREE.DoubleSide, uniforms: { tDark: { value: tDark }, tLit: { value: tLit }, wipe: { value: 0 }, rep: { value: rep }, tint: { value: new THREE.Color(1, 1, 1) }, toFlame: { value: new THREE.Vector2(1, 0) } },
+    vertexShader: "varying vec2 vUv; varying vec3 vN; void main(){ vUv = uv; vN = normal; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }",
+    fragmentShader: `uniform sampler2D tDark, tLit; uniform float wipe, rep; uniform vec3 tint; uniform vec2 toFlame; varying vec2 vUv; varying vec3 vN;
+      void main(){ vec2 uv = vec2(vUv.x * rep, vUv.y); float k = smoothstep(wipe * 1.12 - 0.02, wipe * 1.12 - 0.12, vUv.y);
+        vec3 c = mix(texture2D(tDark, uv).rgb, texture2D(tLit, uv).rgb, k);
+        float s = mix(0.72, 1.0, smoothstep(-1.0, 1.0, dot(normalize(vN.xz), toFlame)));
+        gl_FragColor = vec4(c * tint * s, 1.0); }` });
+}
+function drumTower(world, name, at, im, roofT) {
+  const R = [9, 7, 5], N = [24, 18, 12], TH = 4.2, CAP = [1.6, 0.9], SEG = 72;
+  const tower = named(new THREE.Group(), name + ".tower"); tower.position.set(at[0], 0, at[1]); world.add(tower);
+  const flame = new THREE.Vector2(S.LAY.candle[0] - at[0], S.LAY.candle[1] - at[1]).normalize(), mats = [], tops = [];
+  const plain = tierCell(im.tier_wall, 0.6, { window: false });
+  const drum = (label, r, h, mat, turn) => {       // a group whose origin is the drum's top
+    const g = named(new THREE.Group(), `${name}.tower.${label}`); tower.add(g);
+    const wall = new THREE.Mesh(new THREE.CylinderGeometry(r, r, h, SEG, 1, true), mat); wall.position.y = -h / 2; wall.castShadow = true; g.add(wall); mat.uniforms.toFlame.value.copy(flame); mats.push(mat);
+    // a plain sleeve below the wall, inside the drum underneath, so an overshooting tier never shows a gap
+    const sm = wallMat(plain, plain, Math.round((2 * Math.PI * r) / 2.5)); sm.uniforms.toFlame.value.copy(flame); mats.push(sm);
+    const sleeve = new THREE.Mesh(new THREE.CylinderGeometry(r - 0.01, r - 0.01, 1.1, SEG, 1, true), sm); sleeve.position.y = -h - 0.55; g.add(sleeve);
+    const roof = new THREE.Mesh(new THREE.CircleGeometry(r, SEG), new THREE.MeshBasicMaterial({ map: roofT, alphaTest: 0.5, toneMapped: false })); roof.rotation.set(-Math.PI / 2, 0, turn); roof.position.y = 0.004; roof.castShadow = true; g.add(roof); tops.push(roof.material);
+    const rim = new THREE.Mesh(new THREE.RingGeometry(r - 0.07, r + 0.03, SEG), new THREE.MeshBasicMaterial({ color: new THREE.Color(1, 1, 1), toneMapped: false })); rim.rotation.x = -Math.PI / 2; rim.position.y = 0.012; g.add(rim); rim.userData.rim = true; tops.push(rim.material);
+    return g;
+  };
+  const tiers = R.map((r, k) => { const aspect = ((2 * Math.PI * r) / N[k]) / TH; return drum("tier_" + k, r, TH, wallMat(tierCell(im.tier_wall_dark, aspect, { seed: k }), tierCell(im.tier_wall, aspect, { glow: true, seed: k }), N[k]), 0.5 + k * 1.3); });
+  const cap = drum("cap", CAP[0], CAP[1], wallMat(plain, plain, 4), 2.2);
+  const pale = new THREE.Color(0.93, 0.85, 0.73);
+  return (f) => {
+    const t0 = S.C.newyork1 + 3 * S.RISERS.indexOf(name), wipe = smooth((f - t0 - 12) / 22), c = tintAt(at[0], at[1]);
+    // telescoping: the bottom tier comes up out of the disc, then each tier springs out of the one below, three frames apart
+    let y = 0; const ext = [TH, TH, TH, CAP[1]], parts = [...tiers, cap];
+    parts.forEach((g, k) => { const e = spring(f - t0 - 3 * k, 0.6, 16); y += ext[k] * e - (e < 0.02 ? 0.03 : 0); g.position.y = y; });
+    tower.visible = f >= t0 - 1;
+    mats.forEach((m) => m.uniforms.tint.value.copy(c));
+    tiers.forEach((g, k) => { g.children[0].material.uniforms.wipe.value = clamp(wipe * 3 - k); });
+    tops.forEach((m, i) => { if (i % 2) m.color.setRGB(pale.r * c.r, pale.g * c.g, pale.b * c.b); else m.color.setRGB(Math.min(1, c.r * 1.06), Math.min(1, c.g * 1.06), Math.min(1, c.b * 1.06)); });   // tops a little lighter than walls
+  };
+}
+
 export async function buildSkin(scene) {
-  const names = ["treeman", "citizen", "citizen_woman", "tower_plate", "tower_plate_dark", "tower_glass", "tower_glass_dark", "tower_bottle", "tower_bottle_dark", "basket", "saltpepper", "candle", "redwood", "sapling", "fence_trio", "plate_disc", "fg_glass", "fg_fork", "cloth", "room"];
+  const names = ["treeman", "citizen", "citizen_woman", "tower_plate", "tower_plate_dark", "tower_glass", "tower_glass_dark", "tower_bottle", "tower_bottle_dark", "basket", "saltpepper", "candle", "redwood", "sapling", "fence_trio", "plate_disc", "fg_glass", "fg_fork", "cloth", "room", ...(DRUMS ? ["tier_wall", "tier_wall_dark", "tier_roof"] : [])];
   const im = Object.fromEntries(await Promise.all(names.map(async (n) => [n, await image(n)])));
   const P = {}, one = (n, o) => { const c = cut(im[n], null, o); P[o?.as || n] = { ...c, t: tex(c.canvas) }; return P[o?.as || n]; };
   for (const n of ["treeman", "citizen", "citizen_woman", "basket", "candle", "redwood", "sapling", "plate_disc", "fg_glass", "fg_fork"]) one(n);
   one("citizen", { recolour: [52, 60, 104], as: "citizen_navy" }); one("citizen_woman", { recolour: [196, 150, 62], as: "citizen_ochre" });
+  const roofT = DRUMS ? tex(cut(im.tier_roof).canvas) : null;
   for (const n of ["tower_plate", "tower_glass", "tower_bottle"]) { const lit = one(n), dk = cut(im[n + "_dark"], lit.box); P[n + "_dark"] = { ...dk, t: tex(dk.canvas) }; }
   one("saltpepper", { x0: 0, x1: 765, as: "salt" }); one("saltpepper", { x0: 766, x1: im.saltpepper.width - 1, as: "pepper" });
   one("fence_trio", { x0: 0, x1: 308, as: "knife" }); one("fence_trio", { x0: 309, x1: 620, as: "fork" }); one("fence_trio", { x0: 621, x1: im.fence_trio.width - 1, as: "spoon" });
@@ -163,6 +233,7 @@ export async function buildSkin(scene) {
   const vols = [], rise = [];
   for (const [name, at] of [["plate_far", S.LAY.plate_far], ["plate_near", S.LAY.plate_near]]) {
     const disc = new THREE.Mesh(new THREE.PlaneGeometry(24, 24), new THREE.MeshBasicMaterial({ map: P.plate_disc.t, alphaTest: 0.5, toneMapped: false, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 })); disc.rotation.x = -Math.PI / 2; disc.position.set(at[0], 0.015, at[1]); disc.material.color.copy(tintAt(at[0], at[1])); world.add(named(disc, name));
+    if (DRUMS) { const up = drumTower(world, name, at, im, roofT); rise.push((f) => up(f)); continue; }
     const p = P.tower_plate, v = volume(world, name + ".tower", at, p.t, 24, (24 * p.h) / p.w, wipeMat(P.tower_plate_dark.t, p.t)); vols.push(v);
     rise.push((f, cam) => { const k = S.riseAt(name, f), t0 = S.C.newyork1 + 3 * S.RISERS.indexOf(name); v.g.visible = k > 0.002;
       // the card stands toward the lens by the depth of its painted plate, so that plate lies over the flat disc
@@ -197,10 +268,10 @@ export async function buildSkin(scene) {
     red.g.visible = f >= S.C.redwoods - 1; red.show.rotation.x = red.sh.rotation.x = -(Math.PI / 2) * (1 - up); red.tint(); });           // hinges up from behind
   // real tableware close to the lens in the first leg: soft and dark
   const fg = [];
-  for (const [name, key, at, w, y, dim, px] of [["fg_glass", "fg_glass", [0.6, -10.2], 10.4, 0, 0.3, 5], ["fg_fork", "fg_fork", [9, -38], 17, 0.3, 0.34, 6]]) {
+  for (const [name, key, at, w, y, dim, px] of [["fg_glass", "fg_glass", DRUMS ? [7, -10] : [0.6, -10.2], DRUMS ? 9.4 : 10.4, 0, 0.3, 5], ["fg_fork", "fg_fork", [9, -38], 17, 0.3, 0.34, 6]]) {
     const p = P[key], c = blurred(p.canvas, px), t = tex(c), h = (w * p.h) / p.w, sw = (w * c.width) / p.w, sh = (h * c.height) / p.h;
     const g = named(new THREE.Group(), name); g.position.set(at[0], y, at[1]); world.add(g);
-    const m = new THREE.Mesh(plane(sw, sh), new THREE.MeshBasicMaterial({ map: t, transparent: true, depthWrite: false, toneMapped: false, color: new THREE.Color(dim, dim * 0.94, dim * 0.86) })); m.position.y = -(sh - h) / 2; m.renderOrder = 10; g.add(m); g.userData.until = name === "fg_glass" ? 1846 : 1932; fg.push(g);
+    const m = new THREE.Mesh(plane(sw, sh), new THREE.MeshBasicMaterial({ map: t, transparent: true, depthWrite: false, toneMapped: false, color: new THREE.Color(dim, dim * 0.94, dim * 0.86) })); m.position.y = -(sh - h) / 2; m.renderOrder = 10; g.add(m); g.userData.until = name === "fg_glass" ? (DRUMS ? 1826 : 1846) : 1932; fg.push(g);      // test 04: the glass stands 8 cm to the right of the lens's path, at the frame's right edge, and is out by f1822
   }
 
   // ---------- the fence: the same deal as test 02, with the painted knife, fork and spoon
