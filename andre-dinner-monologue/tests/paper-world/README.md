@@ -1,7 +1,8 @@
-# paper-world: the table world, f1800 to f3397 (sections 5, 6 and 7)
+# paper-world: the table world, f0 to f4761 (ten sections; 5, 6 and 7 are built)
 
-Newest first: sections 6 and 7 (the camp, the seed), then test 04 and test 03 (section 5 in the painted skin), then
-test 02 (section 5, the blocking pass), which is where the units, the commands and the file list are.
+Newest first: how to build a section (the engine for all ten), then sections 6 and 7 (the camp, the seed), then test 04
+and test 03 (section 5 in the painted skin), then test 02 (section 5, the blocking pass), which is where the units, the
+commands and the file list are.
 
 The table-city section rebuilt as a real 3D paper world in three.js r160: one dinner table, flat paper cut-out
 people standing in it as cards, one continuous camera that never cuts and never stops. This render is a
@@ -13,6 +14,224 @@ voice muxed from `_in/andre.wav` cut to [75.0, 106.0)).
 
 **Units and axes (also in blocking.json): centimetres, right-handed, y up, the cloth is y = 0, x to the right,
 z toward the viewer. The near place setting is at +z, the far one at -z. Quaternions are [x, y, z, w].**
+
+## How to build a section (the engine takes all ten, f0 to f4761)
+
+The film is ten sections on one table with one camera. Sections 5 to 7 are built; 1 to 4 and 8 to 10 start as stubs
+(no cues, no pieces, a camera that glides from join to join). Each section has its own four files, so seven builders
+can work at once and no two of them ever edit the same file. `window.renderFrame(f)` works for 0 <= f < 4761.
+
+| Section | Frames | Section | Frames |
+|---|---|---|---|
+| 1 the table as set | f0 to f196 | 6 the camp | f2544 to f3130 |
+| 2 the bathtub | f196 to f504 | 7 the seed | f3130 to f3397 |
+| 3 the boredom machine | f504 to f1196 | 8 the couple at the edge | f3397 to f3840 |
+| 4 the physicist | f1196 to f1800 | 9 the last burst | f3840 to f4315 |
+| 5 the table city | f1800 to f2544 | 10 the bare table | f4315 to f4761 |
+
+### The files you own (NN = your section, two digits)
+
+- `js/sections/sNN.js`: cue names (`C`), events, camera keys (`CAM_KEYS`, `camAt`), `BEATS`, and the optional hooks.
+  Every export is a pure function of the film frame. Model: `s06.js`, `s07.js`.
+- `js/skins/sNN.js`: `export async function build(X)` makes your pieces and returns `{ update(f, jitter, cam) }`.
+  Model: `js/skin67.js`.
+- `tools/cues/sNN.json`: your key words and your stills list.
+- `notes/sNN.md`: your beat table and notes.
+- Under `out/paper-world/`: `frames-sNN/`, `check-sNN/`, `wip/sNN_*`, and your review file.
+
+Nothing else. Not `story.js`, `skin.js`, `skin67.js`, `lib.js`, `joins.js`, `registry.js`, `README.md`, another
+section's files, `paint.sh`, `plates.json`, `work/plates/`, `js/cast/`. If you need a change there, put it in your report.
+
+If your module or your skin fails (a syntax error, a missing cue key, a throw in `build` or `update`), the engine
+replaces the module with its stub or leaves the skin out, prints `SECTION NN FAILED (...)` with the error, and the
+other nine sections render as before. So a neighbour's half-written file cannot stop your render, and yours cannot
+stop theirs. `SECTION=NN` on a render makes it stop (exit 2) when your own section is the one that failed.
+
+### Commands (from `tests/paper-world/`; `PY` is the viralvision venv python)
+
+```bash
+SKIN=1 SECTION=03 FRAMES=560,700 OUT=../../out/paper-world/wip/s03_x node tools/render.mjs   # stills: cheap, never wait
+SKIN=1 FRAMES=504-1195 SPEED=12 node tools/render.mjs        # camera speed: cm a frame, dead stops, jumps
+SKIN=1 FRAMES=560 PX=1 node tools/render.mjs                 # how tall every standee made with X.standee stands on screen, px
+SKIN=1 FRAMES=700 CAM="-22,8,-30,-26,4,-48" OUT=... node tools/render.mjs    # a check camera: position, then target
+SKIN=1 NAMES=1 node tools/render.mjs                         # the registry: every piece, its section, kind and setters (NAMES=2: parts too)
+$PY tools/onsets.py 03                                       # snap tools/cues/s03.json, write js/cues/s03.js
+zsh tools/make-section.sh 03 560 640                         # a range inside your section: frames and a muxed mp4 in wip/
+zsh tools/make-section.sh 03                                 # the whole section: see below
+zsh tools/regress-built.sh                                   # sections 5 to 7 against the delivered frames, byte for byte (add 1 for every frame)
+```
+
+Run renders under `nice -n 15` (make-section.sh does). Several `render.mjs` runs at once are safe: each has its own
+port and Chrome profile, and a frame is written under a temporary name and renamed. Give each run its own `OUT`.
+
+### Cues
+
+`tools/cues/sNN.json` is tracked by git, so it holds key words only, never the dialogue:
+
+```json
+{ "section": 3,
+  "words": [ { "key": "bored1", "word": "bored", "cue": 565 }, { "key": "no", "word": "no", "cue": 1172, "hand": 1174 } ],
+  "stills": [504, 620] }
+```
+
+`key` is the name your module uses, `word` the word as Whisper has it in `_in/cues.json` (case and punctuation
+ignored), `cue` its Whisper frame (within 3 frames), `hand` your own pick when the snapper takes a neighbouring word.
+`$PY tools/onsets.py NN` snaps each word to its onset (the same method as sections 5 to 7) and writes `js/cues/sNN.js`
+(gitignored: `CUES`, `STILLS`). Your module reads it: `const c = (k) => CUES[k].f; export const C = { bored1: c("bored1") };`.
+A key that is not in the generated file throws when the page loads, and your section falls back to its stub: run
+`onsets.py NN` after every change to the list. Sections 5 to 7 keep `js/cues.js` as it is (`onsets.py` with no argument).
+
+### The camera and the joins
+
+`js/sections/joins.js` holds the camera at every boundary between two sections: position, target, velocity per frame,
+and the size of the float. Your first key is `joinKey(F0)` and your last is `joinKey(F1)` (import it from `./joins.js`);
+between them, your own keys `{ f, P, T }`. `camFrom(CAM_KEYS, f, joinFloat(F0, F1, f))` splines them and adds the slow
+float, so the film is one move with no jump at a join (`out/paper-world/check-engine/join-f3397/`). Section 10 has no
+join at f4761: its last key is its own. Helpers in `lib.js`: `crane()`, `handover()`, `camRaw()`, `makePath`, `leg`,
+`walker`.
+
+| f | P | T | velocity of P per frame | float |
+|---|---|---|---|---|
+| 0 | [-2, 16, 96] | [8, 9, -10] | [0.01, -0.03, -0.12] | 0.5 |
+| 196 | [-5, 9, 70] | [1, 3.5, 44] | [0.01, -0.005, -0.05] | 0.5 |
+| 504 | [-8, 11, 60] | [-3, 4, 30] | [-0.03, 0.03, -0.12] | 0.5 |
+| 1196 | [-17, 5, -39] | [-30, 2.2, -50] | [0.02, 0.01, 0.04] | 0.5 |
+| 1800 | [-4, 6, -2] | [12, 4.5, -22] | [0.072, -0.01, -0.285] (section 5's first key, read from it) | 1 |
+| 3397 | [-7.2, 52.8, 101.0] | [26.7, 31.4, 22.0] | [-0.036, 0.09, 0.124] (section 7's spline at f3397, read from it) | 0.5 |
+| 3840 | [-58, 18, 16] | [-170, 10, 4] | [-0.04, 0.01, 0] | 0.5 |
+| 4315 | [-12, 4, 36] | [2, 3, 10] | [-0.01, 0.01, 0.05] | 0.5 |
+
+### Hooks (optional exports of `js/sections/sNN.js`)
+
+`story.js` applies every section's hooks, in section order, for every frame of the film. So each hook must leave
+things as they are outside the frames it cares about.
+
+- `flame(f, fl)`: change and return the flame's state. `fl.lit`: 1 burning, 0 out; the key light, the cloth's
+  bounce, the glow and every painted piece's tint follow it (pieces go down to 6 %). Use `lit` to dim the candle on
+  everything at once. `fl.hinge`: 0 the flame card up, 1 folded down on the wick. `fl.gain`: the key light on the cloth
+  only (section 5's flicker, section 7's flare). `fl.h`: the flame card's height. `fl.lx`, `fl.lz`: its lean.
+  `fl.flare` (section 7, 0 to 1) opens the exposure 12 %.
+- `fill(f)`: a factor on the room fill and the cloth's bounce.
+- `grade(f)`: `{ expo, tint: [r, g, b], sat }`, factors on the final picture (saturation first, then the tint).
+
+Section 7's hooks hold past f3397: the flare stays at 0.78 (gain times 1.74, `fl.flare` 0.78) and the fill at 1.2.
+A later section that wants the candle settled scales `fl.gain`, `fl.h` and `fl.flare` down in its own `flame` hook and
+returns a `fill` below 1.
+
+### The skin: `build(X)` and `update(f, jitter, cam)`
+
+The table (`js/skin.js`, wrapped by `skins/s05.js`) is built and updated first on every frame, then `skins/s01.js` to
+`s04.js`, then `s06.js` to `s10.js`. So every section may re-pose the table's pieces, and a section may re-pose the
+pieces of any section before it. `X` is the shared kit (the full list is in the comment above `buildSkin` in `js/skin.js`):
+
+| In `X` | What it is |
+|---|---|
+| `scene`, `world`, `THREE`, `S`, `LAY` | the scene, the Group everything on the table hangs from, three.js, `story.js`, the layout in cm |
+| `plate(name, o)` | the plate loader: `work/plates/<name>.png` trimmed to its alpha box, as `{ canvas, w, h, box, data, mean, t }` (`t` is the texture). `image`, `cut`, `tex` are its three steps |
+| `flatCard(t, w, h, cast)`, `plane(w, h)` | a flat: an unlit two-sided card that stands on y = 0 and casts its own silhouette |
+| `volume(world, name, [x, z], t, w, h, mat)` | a volume: a card that turns to the lens, with an unseen second card that faces the flame and casts the shadow. Every frame: `v.aim(cam.P, X.now.L); v.tint();` |
+| `standee(name, plate, h)` | a standee: two faces and a core. Every frame: `st.pose({ visible, x, z, yaw, f, walk, rest, hop, pop })` (see `lib.js walker`) |
+| `tintAt(x, z, gain)` | the candle tint: the one colour an unlit painted piece is multiplied by. Set it every frame: it follows `fl.lit` |
+| `cast(mesh, t)`, `caster(t)`, `unseen` | the shadow set-up: `cast()` makes a mesh throw its texture's silhouette on the cloth; `unseen` is the material of a shadow-only card |
+| `slot(path)`, `ribbon`, `slotPale`, `slotDark` | the cloth-slot drawer: `slot(makePath(points))` is a Group (pale lip, dark cut); `g.draw(k)` shows the first k of it, call it every frame |
+| `blurred(canvas, px)` | the pre-blur helper, for a card close to the lens (draw it `transparent`, `depthWrite: false`) |
+| `wipeMat(tDark, tLit)`, `shoulder(m)`, `clothT`, `cloth`, `leanFor` | windows that wipe from dark to lit; the roll-off for a lit material; the cloth's texture and mesh; a volume's lean |
+| `key`, `bounce`, `hemi` | the flame's light, the cloth's bounce, the room fill (the table sets them every frame) |
+| `reg` | the registry |
+| `now` | this frame: `{ f, jitter, cam, L, flame, fill, level }`; `L` is where the flame's light is in this sub-render |
+
+`update` is called on every sub-render of every frame of the film (12 times a frame), for every f from 0 to 4760. It
+must be a pure function of f.
+
+**The rule about clearing pieces.** An owner sets every animated property of its pieces from scratch on every frame:
+position, rotation, scale, visibility, opacity, colour, uniforms. The registry backs this up: at the start of every
+frame it puts every registered object and everything under it back as it was built (position, rotation, scale,
+visibility) and undoes the last frame's fades. So build a piece hidden (`obj.visible = false`) and it is hidden on every
+frame your `update` does not show it. What the registry does not put back: material colours and uniforms, texture
+offsets, geometry draw ranges. Set those every frame. Everything you bring leaves by its own mechanism by your F1, or
+within 48 frames after it; your `update` runs for the whole film, so a piece of yours can act in a later section.
+A light you add must be at intensity 0 outside your frames.
+
+### The registry
+
+Every piece is registered by name: `X.reg.add(name, obj, { kind, set, it })` (`volume` and `standee` do it for you).
+`X.reg.get(name)` gives `{ name, obj, section, kind, set, it }`. Your own names are prefixed with your section
+(`X.reg.add("tv", ...)` in section 3 is `s03.tv`; `get("tv")` finds it from inside your own build and update), so two
+builders can both have a `tv`. Named objects under a piece are registered as parts (`fence_07.hinge`, `pine.tier_3`).
+`X.reg.names(section)` lists a section's pieces; `SKIN=1 NAMES=1 node tools/render.mjs` prints all of them.
+
+Re-posing another section's piece: call a setter, or set a raw property of `obj` or `it`, in your `update`. The owner
+has already posed it this frame, and it resets it on the next, so your change lasts exactly that frame: apply it on
+every frame you want it, and leave the piece alone outside the frames your section needs it.
+
+The pieces of sections 5 to 7 (143 pieces, 137 parts):
+
+| Names | Section, kind | Setters besides `hide()` and `fade(k)` |
+|---|---|---|
+| `plate_far`, `plate_near` | 5 flat | `lid(k, deg = 75)`: hinge the disc up about its far edge, 0 flat to 1 open; its underside is the same paint, mirrored |
+| `plate_far.tower`, `plate_near.tower` | 5 drum | `telescope(k)`: 1 up, 0 down in its plate (a number, `[tier 0, tier 1, tier 2, cap]` or a function of the tier); `windows(k)`: 1 lit, 0 dark, top tier dark first; `fold(k, heading)`: tip the stack over about its base rim |
+| `glass_far`, `glass_near`, `bottle` | 5 volume | `fold(k, heading)`, `windows(k)` (dark from the top floor down), `tint(gain)` |
+| `salt`, `pepper`, `basket` | 5 volume | `fold(k, heading)`, `windows(k)` (1 as lit, 0 dimmed 30 % as before "New York"), `tint(gain)` |
+| `sapling`, `redwood` | 5 volume | `fold(k, heading)`, `tint(gain)` |
+| `candle` (part `flame`) | 5 candle | the flame is the `flame` hook's, not a setter's |
+| `fence_01` to `fence_54` | 5 flat | `hinge(k)`: 0 standing, 1 flat pointing out over the table's edge, -1 flat pointing in |
+| `treeman`, `citizen_01` to `citizen_16` | 5 standee | `fold(k, dir = 1)`: hinge the card down flat. A citizen's entry has `role` (`guard`, `layer`, `home`) and `guard` (0 to 4 along the wall): the guards are citizens 10, 1, 3, 2, 11, and hiding the citizen hides its guard |
+| `fg_glass`, `fg_fork` | 5 lens | |
+| `slots`, `cloth`, `room_wall`, `room_floor`, `key_light`, `bounce_light`, `room_fill` | 5 | |
+| `wall_01` to `wall_26`, `brick_01` to `brick_16`, `head`, `slots_camp` | 6 flat, slots | |
+| `watchtower_c`, `watchtower_b` | 6 volume | `fold(k, heading)`, `windows(k)` (the lamp), `tint(gain)` |
+| `hand_open` | 7 flat | `slide(dz)`: 0 in place, 72 out over the near edge on its sleeve; `fold(k)`: the fingers, 0 flat, 1 up round the seed |
+| `hand_pinch`, `seed` | 7 flat | |
+| `pine` | 7 volume | `tiers(k)`: how far each of the eight tiers is open (a number, an array or a function of the tier, 0 = the bottom); `fold(k, heading)` |
+
+- `fold(k, heading)` on a volume: 0 standing to 1 flat on the cloth, painted side up. `heading` is the way its top comes
+  down, in radians (0 toward +z, the viewer; `Math.PI / 2` toward +x); the default is away from the candle; `null` is
+  straight back from the lens. The card turns from facing the lens to that heading over the first third of the fold.
+- `fade(k)`: 1 as painted, 0 nothing, for that frame, on the piece and everything under it. It works on a piece that
+  shares its material with others (the slots do). A `ShaderMaterial` of your own needs an `opacity` uniform to fade.
+- `hide()`: not drawn this frame.
+- Proof of each: `out/paper-world/check-engine/setters/` (the throwaway skin that called them, and the sheets).
+
+### Before f1800 and after f3397
+
+- Before f1800 the table is as set, which is section 5's state before its first event: plate discs flat, cutlery lying
+  flat in six stacks, glasses and bottle with dark windows, basket and shakers dimmed, the sapling in its pot, the candle
+  burning, the citizens out of sight. Three things of section 5's are also there for every f before 1800, because they
+  are in its first frame and must not pop on the join: `slots` (section 5's slots, drawn in the cloth), and the two soft
+  pieces of real tableware `fg_glass` at [7, -10] and `fg_fork` at [9, -38], which turn to the lens. Hide or move them
+  inside your own frames through the registry if they are in your way; section 4 must leave them as they are over its
+  last frames. The tree man hinges up at the head of his slot at the far edge from f1790 to f1798.
+- After f3397 everything holds section 7's last state: the pine at 60 cm, the wall flat, the hand open on the cloth,
+  the towers lit, the candle flared.
+
+### make-section.sh
+
+`zsh tools/make-section.sh NN` snaps your cues, prints the camera speed, renders the section to
+`out/paper-world/frames-sNN/` (12 sub-renders a frame), muxes the voice from `_in/andre.wav` cut to the range into
+`out/paper-world/andre_paper-world-sNN-test01_f<F0>-f<F1>_24fps_720x1280.mp4`, and writes to `out/paper-world/check-sNN/`:
+`cues.txt`, `camera-speed_f<F0>-f<F1>.txt`, full-size stills at your first and last frame, every snapped cue frame and
+every frame in your `stills` list (a still outside your section is rendered on its own), `sheet.jpg`, `luma.txt`,
+`badframes.txt`, `flashcheck.txt`. A scan that flags is reported, not fatal. With a range (`NN f0 f1`, inside your
+section) it renders the frames and writes `out/paper-world/wip/sNN_f<f0>-f<f1>_24fps_720x1280.mp4` only.
+
+A whole-section render takes a machine-wide lock (`/tmp/paper-world-render.lock`): one runs at a time and the others
+wait their turn, printing who holds it once a minute. Ranges and single stills never wait. Run the whole section when
+the stills are right, not to find out.
+
+### What changed in the engine, and the proof (`out/paper-world/check-engine/`)
+
+- `js/story.js` loads all ten sections and joins them generically; `js/sections/joins.js`, `stub.js`, `s01.js` to
+  `s04.js`, `s08.js` to `s10.js` are new; `s06.js` and `s07.js` gained their hooks (`fill`, `flame`).
+- `js/skin.js`: the old `buildSkin` is `buildTable(X)`; the new `buildSkin` makes the kit and the registry and runs the
+  ten skins. `js/skins/registry.js` and `js/skins/s01.js` to `s10.js` are new. `js/skin67.js` registers its pieces and
+  splits its update in two (section 6's, section 7's).
+- `js/main.js`: the grade hook's `sat` and `tint` in the final pass. `tools/render.mjs`: `NAMES`, `SECTION`, atomic writes.
+  `tools/onsets.py NN`, `tools/make-section.sh`.
+- Sections 5 to 7 render the same: `regress.txt` (20 frames as PNG before and after, mean absolute difference 0.0000,
+  largest 0), `before-above_after-below.jpg`, and `regress_f1800-f3397_vs_delivered.txt` (all 1,597 frames rendered again
+  and compared with the delivered JPEGs in `frames04/` and `frames-s67/`).
+- `stubs/`: stills at f100, f800, f1500, f3600, f4500. `join-f3397/`, `join-f1800/`: 48 frames across each built join
+  with the voice, and the camera speed there (no jump). `setters/`, `hooks/`: the throwaway checks.
 
 ## Sections 6 and 7: the camp and the seed, f2544 to f3397 (`?skin=1`)
 
@@ -322,19 +541,27 @@ tests/paper-world/
   js/table.js             the world: room, cloth, plates/towers, glasses, bottle, shakers, basket, napkin, candle
                           and flame, pot and redwood, the cutlery stacks and the fence; every piece named
   js/figures.js           the walking rig: makeFigure, makeTreeman, makeCitizen (2D joints, feet planted by IK)
-  js/story.js             the film: the sections, the frame range, which section's camera and poses apply at f
-  js/sections/lib.js      shared: paths, walkers, the camera spline, its float, handover()
+  js/story.js             the film: the ten sections, the frame range, which section's camera and poses apply at f, the hooks
+  js/sections/lib.js      shared: paths, walkers, the camera spline, its float, handover(), RANGES, joinKey(), joinFloat()
+  js/sections/joins.js    the camera at every boundary between two sections; stub.js: what replaces a section that fails to load
   js/sections/s05.js      section 5 (was story.js): layout, paths, walkers, every event and the camera keys, on cue frames
   js/sections/s06.js, s07.js   sections 6 and 7: the wall, the crew, the head; the hand, the seed, the pine, the fall
-  js/skin.js              the painted skin of section 5 (test 03 and 04); calls skin67.js
+  js/sections/s01.js to s04.js, s08.js to s10.js   the other seven sections (stubs until built)
+  js/skin.js              the kit X, buildSkin (runs the ten skins) and buildTable: the table and the painted skin of section 5
   js/skin67.js            the painted pieces of sections 6 and 7
+  js/skins/registry.js    every piece by name, its setters, and the reset at the start of every frame
+  js/skins/s01.js to s10.js    one skin a section: s05 wraps skin.js, s06 and s07 wrap skin67.js, the rest are stubs until built
+  js/cues/sNN.js          generated by tools/onsets.py NN from tools/cues/sNN.json (gitignored)
   js/main.js              renderer: N jittered sub-renders a frame, glow, grade; renderFrame, exportBlocking,
                           camInfo, figurePx; ?lineup=1
   js/cues.js              generated by tools/onsets.py (gitignored)
   js/lib/three.module.js  three.js r160 (MIT)
   js/cast/, lineup*.html  Builder B's (guard, hands, seed, pine); not used by this section
   tools/lineup.mjs, paint.sh, plates.json, work/   not Builder A's either; left untouched
-  tools/onsets.py         snaps the words to onsets of _in/andre.wav
+  tools/onsets.py         snaps the words to onsets of _in/andre.wav (no argument: sections 5 to 7; NN: one section's list)
+  tools/cues/sNN.json     a section's key words and stills list
+  tools/make-section.sh   one section end to end, or a range inside it
+  tools/regress-built.sh  sections 5 to 7 rendered again and compared with the delivered frames
   tools/render.mjs        frames, camera speed print, figure heights, blocking export (headless Chrome, Metal)
   tools/make.sh           the whole pipeline (test 02); make03.sh, make04.sh (section 5 skinned); make67.sh (sections 6 and 7, or any range)
   tools/regress.py        section 5 before and after an engine change; tools/luma.py: how bright each frame is

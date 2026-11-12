@@ -9,12 +9,19 @@
 import { THREE, clamp, lerp, smooth, spring, hash } from "./kit.js";
 import * as S from "./story.js";
 import { fencePlan } from "./table.js";
-import { buildCamp } from "./skin67.js";
+import { makeRegistry } from "./skins/registry.js";
+import * as K5 from "./skins/s05.js";
+import * as K6 from "./skins/s06.js";
+import * as K7 from "./skins/s07.js";
 
 const PL = "work/plates/";
 // test 04: the plate towers are real drums (three tiers and a cap) and the foreground glass is moved. ?t3=1 keeps test 03 as it was.
 const DRUMS = !globalThis.PAPER_T3;
 const named = (o, name) => { o.name = name; return o; };
+const HALF = Math.PI / 2;
+let REG = null;                 // the registry of the skin being built (buildSkin sets it); the makers below register what they make
+// how much of the candle's light the painted pieces get: 1 while it burns as now, DARK when it is out (fl.lit, story.js)
+const DARK = 0.06; let LEVEL = 1;
 
 // ---------- plates: load, trim to the alpha box, bleed the piece's colour under the transparent pixels (clean mips)
 async function image(name) { const im = new Image(); im.src = PL + name + ".png"; await im.decode(); return im; }
@@ -51,7 +58,7 @@ function blurred(canvas, px, pad = Math.ceil(px * 3)) { const c = document.creat
 // ---------- the one tint: bright and warm within 25 cm of the candle, about 55 % and cooler at the table's far edge
 const _c = new THREE.Color();
 export function tintAt(x, z, gain = 1) {
-  const d = Math.hypot(x - S.LAY.candle[0], z - S.LAY.candle[1]), t = smooth((d - 25) / 52), k = lerp(1, 0.55, t) * gain;
+  const d = Math.hypot(x - S.LAY.candle[0], z - S.LAY.candle[1]), t = smooth((d - 25) / 52), k = lerp(1, 0.55, t) * gain * LEVEL;
   return _c.setRGB(k * lerp(1.0, 0.86, t), k * lerp(0.98, 0.93, t), k * lerp(0.93, 1.05, t));
 }
 
@@ -67,11 +74,11 @@ function flatCard(t, w, h, cast = true) {
 }
 // dark-window plate wiping to its lit twin from the bottom up
 function wipeMat(tDark, tLit) {
-  return new THREE.ShaderMaterial({ side: THREE.DoubleSide, uniforms: { tDark: { value: tDark }, tLit: { value: tLit }, wipe: { value: 0 }, tint: { value: new THREE.Color(1, 1, 1) } },
+  return new THREE.ShaderMaterial({ side: THREE.DoubleSide, uniforms: { tDark: { value: tDark }, tLit: { value: tLit }, wipe: { value: 0 }, tint: { value: new THREE.Color(1, 1, 1) }, opacity: { value: 1 } },
     vertexShader: "varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }",
-    fragmentShader: `uniform sampler2D tDark, tLit; uniform float wipe; uniform vec3 tint; varying vec2 vUv;
+    fragmentShader: `uniform sampler2D tDark, tLit; uniform float wipe, opacity; uniform vec3 tint; varying vec2 vUv;
       void main(){ vec4 d = texture2D(tDark, vUv), l = texture2D(tLit, vUv); float k = smoothstep(wipe * 1.08 - 0.04, wipe * 1.08 - 0.08, vUv.y);
-        vec4 c = mix(d, l, k); if (c.a < 0.5) discard; gl_FragColor = vec4(c.rgb * tint, 1.0); }` });
+        vec4 c = mix(d, l, k); if (c.a < 0.5) discard; gl_FragColor = vec4(c.rgb * tint, opacity); }` });
 }
 // the pieces are painted from about 24 degrees above. When the lens is higher than that, a volume's card leans back by the
 // difference (never the shadow card), so its painted top still reads as its top. Flats never lean.
@@ -87,6 +94,19 @@ function volume(world, name, [x, z], t, w, h, mat) {
     aim(cam, light) { face.rotation.set(-leanFor(cam, g.position, h), Math.atan2(cam[0] - g.position.x, cam[2] - g.position.z), 0); shg.rotation.y = Math.atan2(light[0] - g.position.x, light[2] - g.position.z); },
     scale(sx, sy) { show.scale.set(sx, sy, 1); sh.scale.set(sx, sy, 1); },
     tint(gain = 1) { const c = tintAt(g.position.x, g.position.z, gain); if (v.mat.uniforms) v.mat.uniforms.tint.value.copy(c); else v.mat.color.copy(c); } };
+  // setters for the registry: called after the owner's update (and its aim), they last that frame
+  v.set = {
+    tint: (gain = 1) => v.tint(gain),
+    // fold(k, heading): hinge the card down about its base, 0 standing to 1 flat on the cloth, painted side up. heading
+    // is the way its top comes down (radians, 0 = toward +z, the viewer; PI / 2 = toward +x): default away from the
+    // candle; null = straight back from the lens. It turns from facing the lens to that heading over the first third.
+    fold(k, heading) { k = clamp(k); if (k <= 0) return; const a = k * (HALF - 0.004), yc = face.rotation.y;
+      const yf = heading === null ? yc : heading === undefined ? Math.atan2(S.LAY.candle[0] - g.position.x, S.LAY.candle[1] - g.position.z) : heading + Math.PI;
+      const d = Math.atan2(Math.sin(yf - yc), Math.cos(yf - yc));
+      face.rotation.set(face.rotation.x * (1 - k), yc + d * smooth(k / 0.35), 0); show.rotation.x = sh.rotation.x = -a; g.position.y = 0.04 * k; },
+  };
+  if (v.mat.uniforms && v.mat.uniforms.wipe) v.set.windows = (k) => { v.mat.uniforms.wipe.value = clamp(k); };      // 1 lit, 0 dark: goes dark from the top floor down
+  if (REG) REG.add(name, g, { kind: "volume", set: v.set, it: v });
   return v;
 }
 
@@ -119,13 +139,13 @@ function tierCell(im, aspect, o = {}) {
 }
 // wall: unlit card times the tint, times one soft form shade (0.72 away from the flame to 1 facing it); windows wipe dark to lit
 function wallMat(tDark, tLit, rep) {
-  return new THREE.ShaderMaterial({ side: THREE.DoubleSide, uniforms: { tDark: { value: tDark }, tLit: { value: tLit }, wipe: { value: 0 }, rep: { value: rep }, tint: { value: new THREE.Color(1, 1, 1) }, toFlame: { value: new THREE.Vector2(1, 0) } },
+  return new THREE.ShaderMaterial({ side: THREE.DoubleSide, uniforms: { tDark: { value: tDark }, tLit: { value: tLit }, wipe: { value: 0 }, rep: { value: rep }, tint: { value: new THREE.Color(1, 1, 1) }, toFlame: { value: new THREE.Vector2(1, 0) }, opacity: { value: 1 } },
     vertexShader: "varying vec2 vUv; varying vec3 vN; void main(){ vUv = uv; vN = normal; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }",
-    fragmentShader: `uniform sampler2D tDark, tLit; uniform float wipe, rep; uniform vec3 tint; uniform vec2 toFlame; varying vec2 vUv; varying vec3 vN;
+    fragmentShader: `uniform sampler2D tDark, tLit; uniform float wipe, rep, opacity; uniform vec3 tint; uniform vec2 toFlame; varying vec2 vUv; varying vec3 vN;
       void main(){ vec2 uv = vec2(vUv.x * rep, vUv.y); float k = smoothstep(wipe * 1.12 - 0.02, wipe * 1.12 - 0.12, vUv.y);
         vec3 c = mix(texture2D(tDark, uv).rgb, texture2D(tLit, uv).rgb, k);
         float s = mix(0.72, 1.0, smoothstep(-1.0, 1.0, dot(normalize(vN.xz), toFlame)));
-        gl_FragColor = vec4(c * tint * s, 1.0); }` });
+        gl_FragColor = vec4(c * tint * s, opacity); }` });
 }
 function drumTower(world, name, at, im, roofT) {
   const R = [9, 7, 5], N = [24, 18, 12], TH = 4.2, CAP = [1.6, 0.9], SEG = 72;
@@ -145,19 +165,33 @@ function drumTower(world, name, at, im, roofT) {
   const tiers = R.map((r, k) => { const aspect = ((2 * Math.PI * r) / N[k]) / TH; return drum("tier_" + k, r, TH, wallMat(tierCell(im.tier_wall_dark, aspect, { seed: k }), tierCell(im.tier_wall, aspect, { glow: true, seed: k }), N[k]), 0.5 + k * 1.3); });
   const cap = drum("cap", CAP[0], CAP[1], wallMat(plain, plain, 4), 2.2);
   const pale = new THREE.Color(0.93, 0.85, 0.73);
-  return (f) => {
+  const ext = [TH, TH, TH, CAP[1]], parts = [...tiers, cap];
+  const place = (ext01) => { let y = 0; parts.forEach((g, k) => { const e = ext01(k); y += ext[k] * e - (e < 0.02 ? 0.03 : 0); g.position.y = y; }); };       // each tier out of the one below
+  const up = (f) => {
     const t0 = S.C.newyork1 + 3 * S.RISERS.indexOf(name), wipe = smooth((f - t0 - 12) / 22), c = tintAt(at[0], at[1]);
     // telescoping: the bottom tier comes up out of the disc, then each tier springs out of the one below, three frames apart
-    let y = 0; const ext = [TH, TH, TH, CAP[1]], parts = [...tiers, cap];
-    parts.forEach((g, k) => { const e = spring(f - t0 - 3 * k, 0.6, 16); y += ext[k] * e - (e < 0.02 ? 0.03 : 0); g.position.y = y; });
+    place((k) => spring(f - t0 - 3 * k, 0.6, 16));
     tower.visible = f >= t0 - 1;
     mats.forEach((m) => m.uniforms.tint.value.copy(c));
     tiers.forEach((g, k) => { g.children[0].material.uniforms.wipe.value = clamp(wipe * 3 - k); });
     tops.forEach((m, i) => { if (i % 2) m.color.setRGB(pale.r * c.r, pale.g * c.g, pale.b * c.b); else m.color.setRGB(Math.min(1, c.r * 1.06), Math.min(1, c.g * 1.06), Math.min(1, c.b * 1.06)); });   // tops a little lighter than walls
   };
+  const each = (k) => (typeof k === "function" ? k : Array.isArray(k) ? (i) => k[i] : () => k);
+  up.set = {
+    // telescope(k): 1 = up as built, 0 = down in its plate; a number, [tier 0, tier 1, tier 2, cap] or a function of the tier
+    telescope(k) { const e = each(k); place((i) => clamp(e(i), 0, 1.2)); tower.visible = [0, 1, 2, 3].some((i) => e(i) > 0.002); },
+    windows(k) { tiers.forEach((g, i) => { g.children[0].material.uniforms.wipe.value = clamp(clamp(k) * 3 - i); }); },      // 1 lit, 0 dark: the top tier goes dark first
+    // fold(k, heading): tip the whole stack over about a point on its base rim, toward heading (default away from the candle), to lying on its side
+    fold(k, heading) { const a = clamp(k) * HALF, h = heading === undefined ? Math.atan2(at[0] - S.LAY.candle[0], at[1] - S.LAY.candle[1]) : heading, sx = Math.sin(h), cz = Math.cos(h);
+      tower.quaternion.setFromAxisAngle(new THREE.Vector3(cz, 0, -sx), a); tower.position.set(at[0] + R[0] * sx * (1 - Math.cos(a)), R[0] * Math.sin(a), at[1] + R[0] * cz * (1 - Math.cos(a))); },
+  };
+  if (REG) REG.add(name + ".tower", tower, { kind: "drum", set: up.set });
+  return up;
 }
 
-export async function buildSkin(scene) {
+// ---------- the table: the world every section stands on, and section 5's pieces (skins/s05.js wraps this)
+export async function buildTable(X) {
+  const scene = X.scene;
   const names = ["treeman", "citizen", "citizen_woman", "tower_plate", "tower_plate_dark", "tower_glass", "tower_glass_dark", "tower_bottle", "tower_bottle_dark", "basket", "saltpepper", "candle", "redwood", "sapling", "fence_trio", "plate_disc", "fg_glass", "fg_fork", "cloth", "room", ...(DRUMS ? ["tier_wall", "tier_wall_dark", "tier_roof"] : [])];
   const im = Object.fromEntries(await Promise.all(names.map(async (n) => [n, await image(n)])));
   const P = {}, one = (n, o) => { const c = cut(im[n], null, o); P[o?.as || n] = { ...c, t: tex(c.canvas) }; return P[o?.as || n]; };
@@ -175,10 +209,10 @@ export async function buildSkin(scene) {
   { const c = document.createElement("canvas"); c.width = 1536; c.height = 1024; const g = c.getContext("2d"); g.filter = "blur(12px)"; g.drawImage(im.room, -30, -30, 1596, 1084);
     const t = tex(c); t.wrapS = THREE.MirroredRepeatWrapping; t.repeat.x = 4;
     const wall = new THREE.Mesh(new THREE.CylinderGeometry(330, 330, 345, 48, 1, true), new THREE.MeshBasicMaterial({ map: t, side: THREE.BackSide, color: new THREE.Color(0.5, 0.5, 0.5), toneMapped: false }));
-    wall.position.y = 62; world.add(named(wall, "room_wall"));
+    wall.position.y = 62; world.add(named(wall, "room_wall")); REG.add("room_wall", wall, { kind: "room" });
     // below the table the room is as far out of focus as the wall: the same picture, softer and darker
     const c2 = document.createElement("canvas"); c2.width = 768; c2.height = 512; const g2 = c2.getContext("2d"); g2.filter = "blur(16px)"; g2.drawImage(im.room, -40, -40, 848, 592); const t2 = tex(c2); t2.wrapS = t2.wrapT = THREE.MirroredRepeatWrapping; t2.repeat.set(2, 2);
-    const floor = new THREE.Mesh(new THREE.PlaneGeometry(700, 700), new THREE.MeshBasicMaterial({ map: t2, color: new THREE.Color(0.2, 0.19, 0.18), toneMapped: false })); floor.rotation.x = -Math.PI / 2; floor.position.y = -76; world.add(named(floor, "room_floor")); }
+    const floor = new THREE.Mesh(new THREE.PlaneGeometry(700, 700), new THREE.MeshBasicMaterial({ map: t2, color: new THREE.Color(0.2, 0.19, 0.18), toneMapped: false })); floor.rotation.x = -Math.PI / 2; floor.position.y = -76; world.add(named(floor, "room_floor")); REG.add("room_floor", floor, { kind: "room" }); }
   const clothT = tex((() => {
     const W = 1536, H = 2304, c = document.createElement("canvas"); c.width = W; c.height = H; const g = c.getContext("2d");
     const tw = W / 2, th = H / 3;                                   // one tile is 45 by 43 cm: the weave at a believable size
@@ -188,7 +222,7 @@ export async function buildSkin(scene) {
   // lit paper never burns out: next to the flame the cloth rolls off to white instead of clipping (and so never feeds the glow)
   const shoulder = (m) => { m.onBeforeCompile = (sh) => { sh.fragmentShader = sh.fragmentShader.replace("#include <opaque_fragment>", "#include <opaque_fragment>\ngl_FragColor.rgb = mix(gl_FragColor.rgb, 0.8 + 0.2 * (1.0 - exp(-(gl_FragColor.rgb - 0.8) / 0.2)), step(0.8, gl_FragColor.rgb));"); }; return m; };
   const clothM = shoulder(new THREE.MeshStandardMaterial({ map: clothT, roughness: 1, metalness: 0 }));
-  const cloth = new THREE.Mesh(new THREE.PlaneGeometry(2 * hw, 2 * hd), clothM); cloth.rotation.x = -Math.PI / 2; cloth.receiveShadow = true; world.add(named(cloth, "cloth"));
+  const cloth = new THREE.Mesh(new THREE.PlaneGeometry(2 * hw, 2 * hd), clothM); cloth.rotation.x = -Math.PI / 2; cloth.receiveShadow = true; world.add(named(cloth, "cloth")); REG.add("cloth", cloth, { kind: "cloth" });
   { const skirtM = new THREE.MeshBasicMaterial({ map: clothT, color: new THREE.Color(0.11, 0.09, 0.07), toneMapped: false, side: THREE.DoubleSide });     // the cloth hangs over the table's edge, out of the candle's light
     skirtM.vertexColors = true; skirtM.color.setRGB(1, 1, 1);
     for (const [w, x, z, ry] of [[2 * hw, 0, hd, 0], [2 * hw, 0, -hd, Math.PI], [2 * hd, hw, 0, Math.PI / 2], [2 * hd, -hw, 0, -Math.PI / 2]]) { const g = new THREE.PlaneGeometry(w, 40); g.setAttribute("color", new THREE.Float32BufferAttribute([0.085, 0.065, 0.05, 0.085, 0.065, 0.05, 0.006, 0.005, 0.004, 0.006, 0.005, 0.004], 3)); const m = new THREE.Mesh(g, skirtM); m.position.set(x, -20, z); m.rotation.y = ry; world.add(m); } }
@@ -202,10 +236,15 @@ export async function buildSkin(scene) {
     const g = new THREE.BufferGeometry(); g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3)); g.setIndex(idx); g.computeVertexNormals();
     const m = new THREE.Mesh(g, mat); mat.side = THREE.DoubleSide; m.receiveShadow = true; return m;
   }
-  const slots = named(new THREE.Group(), "slots"); world.add(slots);
+  const slots = named(new THREE.Group(), "slots"); world.add(slots); REG.add("slots", slots, { kind: "slots" });
+  // a slot for any section: the pale lip and the dark cut along a path (lib.js makePath), as a Group; draw(k) shows the
+  // first k (0 to 1) of it, for a slot that is cut as a standee travels it (call it every frame)
+  const slot = (path) => { const g = new THREE.Group(), a = ribbon(path, 0.15, 0.02, slotPale), b = ribbon(path, 0.05, 0.045, slotDark), n = a.geometry.index.count / 6; g.add(a, b);
+    g.draw = (k) => { const m = Math.round(n * clamp(k)); a.geometry.setDrawRange(0, 6 * m); b.geometry.setDrawRange(0, 6 * m); }; return g; };
   for (const w of [S.TM, ...S.CITIZENS]) for (const [k, L] of w.legs.entries()) { if (w !== S.TM && k > 0) continue; slots.add(ribbon(L.path, 0.15, 0.02, slotPale), ribbon(L.path, 0.05, 0.045, slotDark)); }
 
   // ---------- standees: two faces of one card a millimetre apart, a pale core between them that only shows edge-on
+  const figures = [];       // every standee, for the height check (PX=1)
   function standee(name, p, h) {
     const w = (h * p.w) / p.h, root = named(new THREE.Group(), name), pop = new THREE.Group(), rock = named(new THREE.Group(), name + ".card"); root.add(pop); pop.add(rock);
     const a = flatCard(p.t, w, h), b = flatCard(p.t, w, h, false); a.position.z = 0.05; b.position.z = -0.05; rock.add(a, b);
@@ -216,7 +255,7 @@ export async function buildSkin(scene) {
     const ec = new THREE.Color().setRGB((p.mean[0] * 0.6 + 96) / 255, (p.mean[1] * 0.6 + 92) / 255, (p.mean[2] * 0.6 + 80) / 255, THREE.SRGBColorSpace);
     const core = new THREE.Mesh(new THREE.BoxGeometry(0.02, ((y1 - y0) / p.h) * h, 0.09), new THREE.MeshBasicMaterial({ color: ec.clone(), toneMapped: false })); core.position.y = h - ((y0 + y1) / 2 / p.h) * h; rock.add(core);
     world.add(root);
-    return { name, root, h, pop, rock, a, b, core, pose(s) {
+    const st = { name, root, h, pop, rock, a, b, core, pose(s) {
       root.visible = s.visible !== false; if (!root.visible) return;
       root.position.set(s.x, 0.02, s.z); root.rotation.y = s.yaw;
       const ph = (s.f * Math.PI) / 6, w = s.walk ?? 0, settle = Math.exp(-(s.rest ?? 99) / 5) * Math.cos(((s.rest ?? 0) * Math.PI) / 4);      // sliding: rocks on twos; stopped: the rock settles
@@ -225,15 +264,21 @@ export async function buildSkin(scene) {
       pop.rotation.x = (Math.PI / 2) * (1 - (s.pop ?? 1));
       const c = tintAt(s.x, s.z); a.material.color.copy(c); b.material.color.copy(c); core.material.color.setRGB(ec.r * c.r, ec.g * c.g, ec.b * c.b);
     } };
+    // fold(k, dir): hinge the card down flat about its foot (0 standing, 1 flat); dir -1 lays it the other way
+    st.set = { fold(k, dir = 1) { k = clamp(k); pop.rotation.x = dir * HALF * k; rock.rotation.z *= 1 - k; } };
+    REG.add(name, root, { kind: "standee", set: st.set, it: st }); figures.push(st);
+    return st;
   }
   const treeman = standee("treeman", P.treeman, 4);
   const kinds = [P.citizen, P.citizen_woman, P.citizen_navy, P.citizen_ochre];
   const citizens = S.CITIZENS.map((def, i) => standee(def.name, kinds[i % 4], i % 2 ? 3.8 : 4));
 
   // ---------- the place setting and the city
-  const vols = [], rise = [];
+  const vols = [], rise = [], discs = [];
   for (const [name, at] of [["plate_far", S.LAY.plate_far], ["plate_near", S.LAY.plate_near]]) {
-    const disc = new THREE.Mesh(new THREE.PlaneGeometry(24, 24), new THREE.MeshBasicMaterial({ map: P.plate_disc.t, alphaTest: 0.5, toneMapped: false, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 })); disc.rotation.x = -Math.PI / 2; disc.position.set(at[0], 0.015, at[1]); disc.material.color.copy(tintAt(at[0], at[1])); world.add(named(disc, name));
+    const disc = new THREE.Mesh(new THREE.PlaneGeometry(24, 24), new THREE.MeshBasicMaterial({ map: P.plate_disc.t, alphaTest: 0.5, toneMapped: false, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 })); disc.rotation.x = -Math.PI / 2; disc.position.set(at[0], 0.015, at[1]); disc.material.color.copy(tintAt(at[0], at[1])); world.add(named(disc, name)); discs.push({ disc, at });
+    // lid(k, deg): hinge the disc up about its far edge like a lid, 0 flat to 1 open by deg degrees (its underside shows)
+    REG.add(name, disc, { kind: "flat", set: { lid(k, deg = 75) { const a = (clamp(k) * deg * Math.PI) / 180; disc.rotation.x = -HALF - a; disc.position.set(at[0], 0.015 + 12 * Math.sin(a), at[1] - 12 + 12 * Math.cos(a)); disc.material.side = a > 0 ? THREE.DoubleSide : THREE.FrontSide; } } });
     if (DRUMS) { const up = drumTower(world, name, at, im, roofT); rise.push((f) => up(f)); continue; }
     const p = P.tower_plate, v = volume(world, name + ".tower", at, p.t, 24, (24 * p.h) / p.w, wipeMat(P.tower_plate_dark.t, p.t)); vols.push(v);
     rise.push((f, cam) => { const k = S.riseAt(name, f), t0 = S.C.newyork1 + 3 * S.RISERS.indexOf(name); v.g.visible = k > 0.002;
@@ -246,6 +291,7 @@ export async function buildSkin(scene) {
   }
   for (const [name, at, key, h] of [["salt", S.LAY.salt, "salt", 9], ["pepper", S.LAY.pepper, "pepper", 9], ["basket", S.LAY.basket, "basket", 10]]) {
     const p = P[key], v = volume(world, name, at, p.t, (h * p.w) / p.h, h); vols.push(v);       // these have no dark-window plate: they are dimmed until "New York"
+    v.set.windows = (k) => v.tint(lerp(0.7, 1, clamp(k)));      // 1 lit, 0 dimmed as before "New York"
     rise.push((f) => { const t0 = S.C.newyork1 + 3 * S.RISERS.indexOf(name), b = spring(f - t0, 0.55, 14); v.scale(1, 1 + 0.07 * (b - clamp((f - t0) / 2)) * (f > t0 ? 1 : 0)); v.tint(lerp(0.7, 1, smooth((f - t0) / 14))); });
   }
   // the candle: body and flame are one plate, split where the flame meets the wick so the flame can lean
@@ -253,7 +299,7 @@ export async function buildSkin(scene) {
   let split = 0, peak = 0; for (let y = 0; y < cp.h * 0.45; y++) { if (widths[y] > peak) peak = widths[y]; if (peak > 20 && widths[y] < peak * 0.35) { split = y; break; } }
   let s2 = split; while (s2 < cp.h * 0.5 && widths[s2 + 1] <= widths[s2] + 2) s2++; split = Math.round((split + s2) / 2);
   const CH = 12, CW = (CH * cp.w) / cp.h, fy = CH * (1 - split / cp.h);
-  const candle = named(new THREE.Group(), "candle"); candle.position.set(candleXZ[0], 0, candleXZ[1]); world.add(candle);
+  const candle = named(new THREE.Group(), "candle"); candle.position.set(candleXZ[0], 0, candleXZ[1]); world.add(candle); REG.add("candle", candle, { kind: "candle" });
   const cface = new THREE.Group(); cface.rotation.order = "YXZ"; candle.add(cface);
   const body = new THREE.Mesh(new THREE.PlaneGeometry(CW, fy), new THREE.MeshBasicMaterial({ map: cp.t.clone(), alphaTest: 0.5, toneMapped: false })); body.material.map.repeat.set(1, 1 - split / cp.h); body.material.map.needsUpdate = true; body.position.y = fy / 2; cface.add(body);
   const flame = named(new THREE.Group(), "flame"); flame.position.y = fy; cface.add(flame);
@@ -272,7 +318,7 @@ export async function buildSkin(scene) {
   for (const [name, key, at, w, y, dim, px] of [["fg_glass", "fg_glass", DRUMS ? [7, -10] : [0.6, -10.2], DRUMS ? 9.4 : 10.4, 0, 0.3, 5], ["fg_fork", "fg_fork", [9, -38], 17, 0.3, 0.34, 6]]) {
     const p = P[key], c = blurred(p.canvas, px), t = tex(c), h = (w * p.h) / p.w, sw = (w * c.width) / p.w, sh = (h * c.height) / p.h;
     const g = named(new THREE.Group(), name); g.position.set(at[0], y, at[1]); world.add(g);
-    const m = new THREE.Mesh(plane(sw, sh), new THREE.MeshBasicMaterial({ map: t, transparent: true, depthWrite: false, toneMapped: false, color: new THREE.Color(dim, dim * 0.94, dim * 0.86) })); m.position.y = -(sh - h) / 2; m.renderOrder = 10; g.add(m); g.userData.until = name === "fg_glass" ? (DRUMS ? 1826 : 1846) : 1932; fg.push(g);      // test 04: the glass stands 8 cm to the right of the lens's path, at the frame's right edge, and is out by f1822
+    const m = new THREE.Mesh(plane(sw, sh), new THREE.MeshBasicMaterial({ map: t, transparent: true, depthWrite: false, toneMapped: false, color: new THREE.Color(dim, dim * 0.94, dim * 0.86) })); m.position.y = -(sh - h) / 2; m.renderOrder = 10; g.add(m); g.userData.until = name === "fg_glass" ? (DRUMS ? 1826 : 1846) : 1932; g.userData.dim = dim; g.userData.card = m; fg.push(g); REG.add(name, g, { kind: "lens" });      // test 04: the glass stands 8 cm to the right of the lens's path, at the frame's right edge, and is out by f1822
   }
 
   // ---------- the fence: the same deal as test 02, with the painted knife, fork and spoon
@@ -280,6 +326,8 @@ export async function buildSkin(scene) {
   const postObjs = [], posts = plan.posts.map((Q) => {
     const p = P[Q.kind], h = FH[Q.kind], G = named(new THREE.Group(), Q.name), H = named(new THREE.Group(), Q.name + ".hinge"); G.add(H); world.add(G); G.userData.kind = Q.kind;
     const m = flatCard(p.t, (h * p.w) / p.h, h); H.add(m); postObjs.push({ Q, G, H });
+    // hinge(k): 0 standing, 1 flat on the cloth pointing out over the table's edge (as it was dealt), -1 flat pointing in
+    REG.add(Q.name, G, { kind: "flat", set: { hinge(k) { H.rotation.x = clamp(k, -1, 1) * HALF; } }, it: { Q, G, H, card: m } });
     return (f) => { const s = Q.at(f); G.position.set(s.x, s.y, s.z); G.rotation.y = s.yaw; H.rotation.x = s.hinge; m.material.color.copy(tintAt(s.x, s.z)); };
   });
 
@@ -288,22 +336,90 @@ export async function buildSkin(scene) {
   const bounce = named(new THREE.PointLight("#ffe0c0", 1, 0, 1.0), "bounce_light"); bounce.position.set(candleXZ[0], 46, candleXZ[1]); world.add(bounce);
   const hemi = named(new THREE.HemisphereLight("#93806c", "#3a2e26", 1), "room_fill"); scene.add(hemi);
   [treeman, ...citizens].forEach((s) => s.root.traverse((o) => (o.frustumCulled = false)));
+  REG.add("key_light", key, { kind: "light" }); REG.add("bounce_light", bounce, { kind: "light" }); REG.add("room_fill", hemi, { kind: "light" });
 
-  // sections 6 and 7: the camp and the seed (js/skin67.js). Everything it adds is hidden before f2544.
-  const camp = await buildCamp({ world, image, cut, tex, plane, flatCard, caster, unseen, volume, ribbon, slotPale, slotDark, shoulder, leanFor, clothT, treeman, citizens, postObjs });
+  // what the other skins build with (see buildSkin for the rest of X)
+  Object.assign(X, { world, clothT, cloth, shoulder, slotPale, slotDark, ribbon, slot, standee, treeman, citizens, postObjs, figures,
+    key, bounce, hemi, candle, flame, flameY, plates: P });
 
+  // The table's update runs first on every frame, before any section's. It sets X.now: { f, jitter, cam, L (where the
+  // flame's light is in this sub-render), flame (the flame's state after every hook), fill, level (the painted pieces' share
+  // of the candle's light) }.
   function update(f, jitter = [0, 0, 0], cam) {
-    const flm = S.flameAt(f), on = clamp((f - S.C.newyork1 - 6) / 44);
-    flame.rotation.z = -Math.atan(flm.lx * 1.4); flame.scale.y = flm.h; glow.scale.setScalar(8.5 * (0.94 + 0.12 * (flm.gain - 1) * 10)); glow.material.color.setRGB(0.8 * flm.gain, 0.5 * flm.gain, 0.2 * flm.gain);
+    const flm = S.flameAt(f), lit = Math.max(0, flm.lit), on = clamp((f - S.C.newyork1 - 6) / 44);
+    LEVEL = lit === 1 ? 1 : DARK + (1 - DARK) * lit;
+    flame.rotation.z = -Math.atan(flm.lx * 1.4); flame.rotation.x = HALF * 0.97 * clamp(flm.hinge); flame.scale.y = flm.h;
+    glow.scale.setScalar(8.5 * (0.94 + 0.12 * (flm.gain - 1) * 10)); glow.material.color.setRGB(0.8 * flm.gain * lit, 0.5 * flm.gain * lit, 0.2 * flm.gain * lit); glow.visible = lit > 0.002;
+    const e = lit === 1 ? 1 : 0.1 + 0.9 * Math.min(1, lit); fl.material.color.setRGB(1.5 * e, 1.4 * e, 1.2 * e); body.material.color.setScalar(LEVEL);       // out, the flame card is plain dim paper
     const L = [candleXZ[0] + flm.lx * 1.2 + jitter[0], flameY + jitter[1], candleXZ[1] + flm.lz * 1.2 + jitter[2]];
     const fill = S.fillAt(f);       // 1 through section 5
-    key.position.set(...L); key.intensity = 54 * flm.gain; bounce.intensity = (20 + 6 * on) * fill; hemi.intensity = (0.8 + 0.15 * on) * fill;
+    key.position.set(...L); key.intensity = 54 * flm.gain * lit; bounce.intensity = (20 + 6 * on) * fill * lit; hemi.intensity = (0.8 + 0.15 * on) * fill;
+    X.now = { f, jitter, cam, L, flame: flm, fill, level: LEVEL };
+    slotDark.color.setRGB(0.11 * LEVEL, 0.075 * LEVEL, 0.05 * LEVEL);
+    discs.forEach(({ disc, at }) => { disc.material.color.copy(tintAt(at[0], at[1])); disc.material.side = THREE.FrontSide; });
     cface.rotation.set(-leanFor(cam.P, candle.position, CH), Math.atan2(cam.P[0] - candleXZ[0], cam.P[2] - candleXZ[1]), 0);
     rise.forEach((r) => r(f, cam.P)); vols.forEach((v) => v.aim(cam.P, L)); posts.forEach((p) => p(f));
-    fg.forEach((g) => { g.rotation.y = Math.atan2(cam.P[0] - g.position.x, cam.P[2] - g.position.z); g.visible = f < g.userData.until; });      // gone once it is behind the lens
+    fg.forEach((g) => { const d = g.userData.dim; g.rotation.y = Math.atan2(cam.P[0] - g.position.x, cam.P[2] - g.position.z); g.visible = f < g.userData.until; g.userData.card.material.color.setRGB(d * LEVEL, d * 0.94 * LEVEL, d * 0.86 * LEVEL); });      // gone once it is behind the lens
     treeman.pose(S.treemanAt(f)); citizens.forEach((c, i) => c.pose(S.citizenAt(i, f)));
-    camp.update(f, cam, L);
     return flm;
   }
-  return { world, update, figures: [treeman, ...citizens], skin: true };
+  return { update };
+}
+
+// ---------- the film's skin: the kit X, the registry, and the ten skins. The table (skins/s05.js: this file) is built and
+// updated first, because every section stands on it and sections 1 to 4 re-pose its pieces; then skins/s01.js to s04.js,
+// s06.js to s10.js in section order. Each is `export async function build(X)` returning { update(f, jitter, cam) }.
+// A skin (other than 5 to 7) that fails to load, to build or to update is left out and listed in S.FAILED; the rest carry on.
+//
+// X, the shared kit:
+//   THREE, S (story.js), scene, world (the Group everything on the table hangs from), LAY (the layout, cm), PL (the plates' folder)
+//   image(name)                 load work/plates/<name>.png
+//   cut(image, box, o)          trim to the alpha box, bleed colour under the transparent pixels -> { canvas, w, h, box, data, mean }
+//                               (o.recolour = [r, g, b] repaints the piece's own paper; o.x0, o.x1 cut a column range out of a sheet)
+//   tex(canvas)                 a texture with mips
+//   plate(name, o)              image + cut + tex in one: -> { canvas, w, h, box, data, mean, t }
+//   blurred(canvas, px)         a pre-blurred copy, for a card close to the lens (draw it transparent, depthWrite false)
+//   plane(w, h)                 a card's geometry standing on y = 0
+//   flatCard(t, w, h, cast)     a flat: an unlit, alpha-tested, two-sided card that casts its own silhouette
+//   volume(world, name, [x, z], t, w, h, mat)   a volume: a card that turns to the lens and a second, unseen card that faces
+//                               the flame and casts the shadow. Registered under name. Call v.aim(cam.P, X.now.L) and v.tint()
+//                               every frame; v.scale(sx, sy); wipeMat(tDark, tLit) as mat gives it windows (uniform wipe 0 to 1)
+//   standee(name, plate, h)     a standee on a slot: two faces a millimetre apart and a core. Registered under name. Every
+//                               frame: st.pose({ visible, x, z, yaw, f, walk (0 to 1), rest (frames since it stopped), hop, pop (0 flat to 1 up) })
+//   tintAt(x, z, gain)          the candle tint: the one colour a painted piece is multiplied by (it follows the candle's level)
+//   cast(mesh, t), caster(t), unseen   the shadow set-up: cast() makes a mesh throw its texture's silhouette on the cloth;
+//                               unseen is the material of a shadow-only card
+//   slot(path), ribbon(path, half, y, mat), slotPale, slotDark   the cloth-slot drawer (path: lib.js makePath)
+//   shoulder(material)          for a lit material: rolls off to white near the flame instead of clipping
+//   clothT, cloth               the cloth's texture and mesh (the only lit, shadow-receiving surface)
+//   leanFor(cam.P, position, h) how far a volume leans back when the lens is high
+//   key, bounce, hemi           the flame's light, the cloth's bounce, the room fill (set by the table every frame)
+//   treeman, citizens, postObjs, plates   section 5's standees, fence posts and cut plates
+//   figures                     every standee made with standee(), for the height check (PX=1 prints how tall each stands on screen)
+//   reg                         the registry (skins/registry.js)
+//   now                         this frame: { f, jitter, cam, L, flame, fill, level }, set by the table before your update
+const STATIC = { 5: K5, 6: K6, 7: K7 };
+export async function buildSkin(scene) {
+  const reg = makeRegistry(); REG = reg;
+  const plate = async (name, o) => { const c = cut(await image(name), null, o); return { ...c, t: tex(c.canvas) }; };
+  const cast = (mesh, t) => { mesh.castShadow = true; mesh.customDistanceMaterial = caster(t); return mesh; };
+  const X = { THREE, S, scene, reg, LAY: S.LAY, PL, image, cut, tex, plate, blurred, plane, flatCard, volume, wipeMat, tintAt, cast, caster, unseen, leanFor, named, now: null };
+  const skins = [];
+  for (const n of [5, 1, 2, 3, 4, 6, 7, 8, 9, 10]) {
+    reg.section = n; const before = new Set([...(X.world ? X.world.children : []), ...scene.children]);
+    const added = () => [...(X.world ? X.world.children : []), ...scene.children].filter((o) => !before.has(o) && o !== X.world);
+    try {
+      const mod = STATIC[n] || await import(`./skins/s${String(n).padStart(2, "0")}.js`), skin = await mod.build(X);
+      if (!skin || typeof skin.update !== "function") throw new Error("build(X) must return { update(f, jitter, cam) }");
+      skins.push({ n, skin, objs: added(), dead: false });
+    } catch (e) { if (STATIC[n]) throw e; S.fail(n, "skin build, left out", e); const gone = added(); gone.forEach((o) => o.removeFromParent()); reg.drop(n, gone); }
+  }
+  reg.section = 0;
+  function update(f, jitter = [0, 0, 0], cam) {
+    reg.begin();
+    for (const k of skins) { if (k.dead) continue; reg.section = k.n;
+      try { k.skin.update(f, jitter, cam); } catch (e) { if (STATIC[k.n]) throw e; k.dead = true; S.fail(k.n, "skin update, left out from here on", e); k.objs.forEach((o) => o.removeFromParent()); reg.drop(k.n, k.objs); } }
+    reg.section = 0; return X.now.flame;
+  }
+  return { world: X.world, update, figures: X.figures, skin: true, reg, X };
 }

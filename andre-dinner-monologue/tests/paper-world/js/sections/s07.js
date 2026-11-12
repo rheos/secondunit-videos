@@ -89,3 +89,9 @@ export const BEATS = [
   [C.hand, "my hand", "the fingers close a little more"], [C.escape, "escape", "the pine opens tier by tier to 60 cm; the wall falls outward round the table; the candle flares"],
   [C.before, "before", "the pine stands full"], [F1 - 1, "end", "the pine over the open city"],
 ];
+
+// ---------- hooks (story.js applies every section's, in section order, for every f). Nothing before f3130; past f3397
+// they hold section 7's last state (the flare at 0.78, the fill at 1.2) until a later section's hook changes it.
+// fl.flare (0 to 1) also opens the exposure by 12 % (story.js gradeAt): scale it down to let the candle settle.
+export function flame(f, fl) { const k = f < F0 ? 0 : flareAt(f); if (k) { fl.gain *= 1 + 0.95 * k; fl.h *= 1 + 0.5 * k; fl.flare = k; } return fl; }
+export const fill = (f) => (f < F0 ? 1 : fillAt(f));

@@ -98,3 +98,18 @@ export function handover(keys, f) {
   const a = camRaw(keys, f), b = camRaw(keys, f + 1);
   return { f, P: a.P, T: a.T, mP: b.P.map((v, i) => v - a.P[i]), mT: b.T.map((v, i) => v - a.T[i]) };
 }
+
+// ---------- the ten sections' frame ranges (fixed: the audio is the clock) and the joins between them
+export const RANGES = { 1: [0, 196], 2: [196, 504], 3: [504, 1196], 4: [1196, 1800], 5: [1800, 2544], 6: [2544, 3130], 7: [3130, 3397], 8: [3397, 3840], 9: [3840, 4315], 10: [4315, 4761] };
+// A join is the camera at the boundary between two sections: position, target, velocity per frame, and the size of the
+// float there. js/sections/joins.js fills this table (import joinKey from there, so the table is loaded first).
+const JOINS = new Map();
+export const setJoin = (f, key) => { JOINS.set(f, key); };
+// joinKey(f): a camera key { f, P, T, mP, mT, float } to use as the first or the last of a section's CAM_KEYS
+export function joinKey(f) {
+  const j = JOINS.get(f); if (!j) throw new Error(`joinKey(${f}): no join at that frame (joins are at ${[...JOINS.keys()].sort((a, b) => a - b).join(", ")}; import joinKey from ./joins.js)`);
+  const k = typeof j === "function" ? j() : j;
+  return { f, P: k.P.slice(), T: k.T.slice(), mP: k.mP.slice(), mT: k.mT.slice(), float: k.float ?? 0.5 };
+}
+// the float between two joins: the first join's share eased to the last one's across the section (1 = section 5's circle)
+export const joinFloat = (fa, fb, f) => { const a = joinKey(fa).float, b = joinKey(fb).float; return a === b ? a : lerp(a, b, smooth((f - fa) / (fb - fa))); };

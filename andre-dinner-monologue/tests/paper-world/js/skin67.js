@@ -3,6 +3,8 @@
 // cloth is the only lit, shadow-receiving surface; volumes (watchtowers, the pine) turn to the lens, flats (wall,
 // guards, bricks, the head, the hands, the seed) do not. Every state is a pure function of the film frame; everything
 // here is hidden before f2544, so section 5 draws exactly as it did.
+// skins/s06.js builds this and runs the camp's updates (the wall, the watchtowers, the crew, the head); skins/s07.js runs
+// the seed's (the open hand, the pinch hand and the seed, the pine). Every piece is in the registry (X.reg).
 import { THREE, clamp, lerp, smooth } from "./kit.js";
 import * as S from "./story.js";
 import { tintAt } from "./skin.js";
@@ -12,14 +14,14 @@ const named = (o, name) => { o.name = name; return o; };
 const canvasOf = (w, h) => { const c = document.createElement("canvas"); c.width = w; c.height = h; return c; };
 
 export async function buildCamp(X) {
-  const { world, image, cut, tex, plane, flatCard, caster, unseen, volume, ribbon, slotPale, slotDark, shoulder, leanFor, clothT } = X;
+  const { world, image, cut, tex, plane, flatCard, caster, unseen, volume, ribbon, slotPale, slotDark, shoulder, leanFor, clothT, reg } = X;
   const names = ["brick", "wall_segment", "watchtower", "guard", "head_bare", "head_capped", "hand_open", "hand_pinch", "seed", "pine_tall"];
   const im = Object.fromEntries(await Promise.all(names.map(async (n) => [n, await image(n)])));
   const P = {}; for (const n of ["brick", "wall_segment", "watchtower", "guard", "hand_pinch", "seed", "pine_tall"]) { const c = cut(im[n]); P[n] = { ...c, t: tex(c.canvas) }; }
   const basic = (color) => new THREE.MeshBasicMaterial({ color: new THREE.Color(color), toneMapped: false, side: THREE.DoubleSide });
   const paint = (mat, x, z, gain = 1, base = null) => { const c = tintAt(x, z, gain); if (base) mat.color.setRGB(base.r * c.r, base.g * c.g, base.b * c.b); else mat.color.copy(c); };
   const flatPlane = (w, d) => { const g = new THREE.PlaneGeometry(w, d); g.rotateX(-HALF); return g; };       // lies on the cloth
-  const updates = [];
+  const updates = [], updates7 = [], each = (k) => (typeof k === "function" ? k : Array.isArray(k) ? (i) => k[i] : () => k);
 
   // ================= the wall
   const WH = S6.WALL.H, wallObjs = S6.SEGS.map((s) => {
@@ -29,6 +31,7 @@ export async function buildCamp(X) {
     // the slit it rises through: cut along the wall line from the end nearer the first segment
     const slit = new THREE.Group(), pale = new THREE.Mesh(flatPlane(s.w, 0.34), slotPale), dark = new THREE.Mesh(flatPlane(s.w, 0.12), slotDark); pale.position.y = 0.02; dark.position.y = 0.045; pale.receiveShadow = true;
     const inner = new THREE.Group(); inner.add(pale, dark); inner.position.x = (s.from * s.w) / 2; slit.add(inner); slit.position.x = (-s.from * s.w) / 2; G.add(slit);       // local +x runs from b to a
+    reg.add(G.name, G, { kind: "flat", it: { s, G, H, card, slit } });
     return { s, G, H, card, slit, inner };
   });
   // the guards' slots up the face of the hero segment
@@ -52,19 +55,21 @@ export async function buildCamp(X) {
   const TWH = 15, TWW = (TWH * P.watchtower.w) / P.watchtower.h, towers = S6.TOWERS.map((T) => {
     const v = volume(world, T.name, T.at, P.watchtower.t, TWW, TWH), lamp = new THREE.Sprite(new THREE.SpriteMaterial({ map: lampT, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false }));
     lamp.scale.set(2.6, 2.6, 1); lamp.position.set(((514 - P.watchtower.box[0]) / P.watchtower.w - 0.5) * TWW, (1 - (439 - P.watchtower.box[1]) / P.watchtower.h) * TWH, 0.1); v.show.add(lamp);
+    v.set.windows = (k) => { k = clamp(k); v.tint(lerp(0.62, 1, k)); lamp.material.color.setRGB(1.0 * k, 0.58 * k, 0.22 * k); };      // the lamp: 1 on, 0 off
     return { T, v, lamp };
   });
   updates.push((f, cam, L) => towers.forEach((o, k) => { const s = S6.towerAt(k, f); o.v.g.visible = f >= o.T.t0; if (!o.v.g.visible) return;
     o.v.aim(cam.P, L); o.v.show.rotation.x = o.v.sh.rotation.x = -HALF * (1 - s.up); o.v.tint(lerp(0.62, 1, s.lamp)); o.lamp.material.color.setRGB(1.0 * s.lamp, 0.58 * s.lamp, 0.22 * s.lamp); }));
 
   // ================= the crew: each citizen's brick, the guard on the back of five cards, their slots outside the fence
-  const BW = 1.5, BH = (BW * P.brick.h) / P.brick.w, GH = 4.15, GW = (GH * P.guard.w) / P.guard.h, slots = named(new THREE.Group(), "slots_camp"); world.add(slots);
+  const BW = 1.5, BH = (BW * P.brick.h) / P.brick.w, GH = 4.15, GW = (GH * P.guard.w) / P.guard.h, slots = named(new THREE.Group(), "slots_camp"); world.add(slots); reg.add("slots_camp", slots, { kind: "slots" });
   const growing = [];           // a slot is cut as the first standee goes along it
   const grow = (L, f0 = L.fa) => { const a = ribbon(L.path, 0.15, 0.02, slotPale), b = ribbon(L.path, 0.05, 0.045, slotDark); slots.add(a, b); growing.push({ L, a, b, n: a.geometry.index.count / 6 }); };
   const front = S6.SEGS.slice(0, 4), segAtU = (u) => front.findIndex((s, k) => u >= S6.WALL_CORNERS.uB + k * s.w && u < S6.WALL_CORNERS.uB + (k + 1) * s.w);
   const crew = S6.CREW.map((d, i) => {
     const st = X.citizens[i], carried = flatCard(P.brick.t, BW, BH); carried.position.x = 1.35; st.pop.add(carried);
-    const sp = S6.brickSpot(i), left = named(flatCard(P.brick.t, BW, BH), "brick_" + String(i + 1).padStart(2, "0")); left.position.set(sp.x, 0.02, sp.z); left.rotation.y = sp.yaw; world.add(left);
+    const sp = S6.brickSpot(i), left = named(flatCard(P.brick.t, BW, BH), "brick_" + String(i + 1).padStart(2, "0")); left.position.set(sp.x, 0.02, sp.z); left.rotation.y = sp.yaw; world.add(left); reg.add(left.name, left, { kind: "flat" });
+    Object.assign(reg.get(st.name), { role: d.role, guard: d.k });      // what this citizen is in the camp: guard (k: 0 to 4 along the wall), layer or home
     let guard = null, sign = 1, seg = -1;
     if (d.role !== "home") { d.w.legs.slice(1).forEach((L, k) => { if (d.role === "guard" || k < 2) grow(L); }); const L = d.w.legs[d.w.legs.length - 1], e = L.path.pose(L.path.len); seg = segAtU(S6.chUV([e.x, e.z])[0]); }
     if (d.role === "guard") { const L = d.w.legs[d.w.legs.length - 1], e = L.path.pose(L.path.len), along = e.hx * S.CH.t[0] + e.hz * S.CH.t[1];       // which way it faced as it arrived
@@ -100,7 +105,7 @@ export async function buildCamp(X) {
     for (let y = 0; y < HHp; y++) for (let x = 0; x < HW; x++) { const i = (y * HW + x) * 4; if (!keep(x, y)) d[i + 3] = 0; else if (recolour && d[i + 3] > 40) { const k = 0.75 + 0.25 * ((d[i] + d[i + 1] + d[i + 2]) / 300); d[i] = recolour[0] * k; d[i + 1] = recolour[1] * k; d[i + 2] = recolour[2] * k; } }
     g.putImageData(img, 0, 0); return tex(c); };
   const isLidC = (x, y) => y < lineY(x) || inPoly(visor, x, y), isLidB = (x, y) => y < lineY(x);
-  const headG = named(new THREE.Group(), "head"); headG.position.set(S6.HEAD.at[0], 0.03, S6.HEAD.at[1]); world.add(headG);
+  const headG = named(new THREE.Group(), "head"); headG.position.set(S6.HEAD.at[0], 0.03, S6.HEAD.at[1]); world.add(headG); reg.add("head", headG, { kind: "flat" });
   const hinge = named(new THREE.Group(), "head.hinge"); headG.add(hinge);
   const pivot = [(193 / HW - 0.5) * HWc, (1 - 275 / HHp) * HH];
   const layer = (name, body, lid, z, extra) => { const G = named(new THREE.Group(), name); G.position.z = z; hinge.add(G);
@@ -177,7 +182,12 @@ export async function buildCamp(X) {
     const m = piece(hc, HB[0] - PADX, HB[1]); m.position.set(m.userData.c[0], m.userData.c[1], 0); handG.add(m); }
   // what the sleeve crosses on its way in is pushed flat by the fingertips: the cutlery cards of the near fence in its path
   const under = X.postObjs.map((o) => { const s = o.Q.at(3000); return s.z > 57 && s.x > 11.5 && s.x < 39.6 ? o : null; }).filter(Boolean);
-  updates.push((f) => {
+  reg.add("hand_open", handG, { kind: "flat", section: 7, set: {
+    // slide(dz): where the hand is along its sleeve: 0 in place, S7.HAND.travel (72 cm) out over the near edge
+    slide(dz) { handG.position.z = S7.HAND.zw + dz; const c = tintAt(S7.HAND.xc, S7.HAND.zw - 12 + dz); handMats.forEach((m) => m.color.copy(c)); },
+    fold(k) { fingers.forEach((o) => { o.Hn.rotation.x = ((o.F.deg * Math.PI) / 180) * k; }); },      // the fingers: 0 flat, 1 folded up round the seed
+  } });
+  updates7.push((f) => {
     const h = S7.handAt(f); handG.visible = f >= S7.F0 && h.shown; if (!handG.visible) return;
     handG.position.set(S7.HAND.xc, 0.075, S7.HAND.zw + h.dz);
     const c = tintAt(S7.HAND.xc, S7.HAND.zw - 12 + h.dz); handMats.forEach((m) => m.color.copy(c));
@@ -191,7 +201,8 @@ export async function buildCamp(X) {
   const pinch = named(flatCard(pp.t, PW, PH), "hand_pinch"); pinch.geometry = pinch.geometry.clone().translate(-tipX, 0, 0); world.add(pinch);
   const sd = P.seed, SK = 5.45 / 869, SW = sd.w * SK, SH = sd.h * SK, seedG = named(new THREE.Group(), "seed"), seedT = new THREE.Group(), seed = flatCard(sd.t, SW, SH);
   seed.geometry = new THREE.PlaneGeometry(SW, SH).translate(SW / 2 - 58 * SK, SH / 2 - (sd.h - 335) * SK, 0); seedT.add(seed); seedG.add(seedT); world.add(seedG);       // its body at the origin
-  updates.push((f) => {
+  reg.add("hand_pinch", pinch, { kind: "flat", section: 7 }); reg.add("seed", seedG, { kind: "flat", section: 7 });
+  updates7.push((f) => {
     const p = S7.pinchAt(f), s = S7.seedAt(f), [x, z] = S7.SEED_AT, on = f >= S7.F0;
     pinch.visible = on && p.shown; pinch.position.set(x, p.y, z + 0.25); pinch.rotation.z = p.rock; paint(pinch.material, x, z);
     seedG.visible = on && s.shown; seedG.position.set(x, s.y, z); seedG.rotation.y = s.spin; seedT.rotation.x = -HALF * s.flat; seed.rotation.z = lerp(-1.9, 0.265, s.flat); paint(seed.material, x, z, 1.04);
@@ -200,16 +211,25 @@ export async function buildCamp(X) {
   // ================= the pine: a volume in eight tiers; 3 cm on "pine tree", 60 cm on "escape"
   const pt = P.pine_tall, NT = S7.PINE.tiers, PHt = S7.PINE.h, PWt = (PHt * pt.w) / pt.h, th = PHt / NT;
   const pineG = named(new THREE.Group(), "pine"); pineG.position.set(S7.PINE.at[0], 0.12, S7.PINE.at[1]); world.add(pineG);
-  const pface = named(new THREE.Group(), "pine.card"); pface.rotation.order = "YXZ"; const pshadow = new THREE.Group(); pineG.add(pface, pshadow);
+  const pface = named(new THREE.Group(), "pine.card"); pface.rotation.order = "YXZ"; const pshadow = new THREE.Group(); pshadow.rotation.order = "YXZ"; pineG.add(pface, pshadow);
   const tiers = Array.from({ length: NT }, (_, i) => { const t = pt.t.clone(); t.repeat.set(1, 1 / NT); t.offset.set(0, i / NT); t.needsUpdate = true;
     const show = named(new THREE.Mesh(plane(PWt, th), new THREE.MeshBasicMaterial({ map: t, alphaTest: 0.5, side: THREE.DoubleSide, toneMapped: false })), "pine.tier_" + i), sh = new THREE.Mesh(plane(PWt, th), unseen); sh.castShadow = true; sh.customDistanceMaterial = new THREE.MeshDistanceMaterial({ map: t, alphaTest: 0.5, side: THREE.DoubleSide });
     pface.add(show); pshadow.add(sh); return { show, sh }; });
-  updates.push((f, cam, L) => {
+  reg.add("pine", pineG, { kind: "volume", section: 7, set: {
+    // tiers(k): how far each tier is open, 1 = full, 0 = shut: a number, an array of eight (0 = the bottom tier) or a function of the tier
+    tiers(k) { const e = each(k); let y = 0; tiers.forEach((o, i) => { const s = Math.max(0.0005, e(i)); for (const m of [o.show, o.sh]) { m.scale.set(s, s, 1); m.position.y = y; } y += th * s; }); },
+    // fold(k, heading): lay the tree down about its foot, 0 standing to 1 flat, painted side up; its top comes down toward
+    // heading (radians, 0 = toward +z; default away from the candle; null = straight back from the lens)
+    fold(k, heading) { k = clamp(k); if (k <= 0) return; const a = k * (HALF - 0.004), yc = pface.rotation.y, [px, pz] = S7.PINE.at;
+      const yf = heading === null ? yc : heading === undefined ? Math.atan2(S.LAY.candle[0] - px, S.LAY.candle[1] - pz) : heading + Math.PI, d = Math.atan2(Math.sin(yf - yc), Math.cos(yf - yc));
+      pface.rotation.set(pface.rotation.x * (1 - k) - a, yc + d * smooth(k / 0.35), 0); pshadow.rotation.x = -a; pineG.position.y = 0.12 + 0.04 * k; },
+  } });
+  updates7.push((f, cam, L) => {
     const p = S7.pineAt(f); pineG.visible = f >= S7.F0 && p.shown; if (!pineG.visible) return;
     const c = tintAt(S7.PINE.at[0], S7.PINE.at[1], 1.03); let y = 0;
     tiers.forEach((o, i) => { const s = Math.max(0.0005, S7.PINE.tiny * p.tiny + (1 - S7.PINE.tiny) * p.tier(i)); for (const m of [o.show, o.sh]) { m.scale.set(s, s, 1); m.position.y = y; } y += th * s; o.show.material.color.copy(c); });
     pface.rotation.set(-leanFor(cam.P, pineG.position, y), Math.atan2(cam.P[0] - pineG.position.x, cam.P[2] - pineG.position.z), 0); pshadow.rotation.y = Math.atan2(L[0] - pineG.position.x, L[2] - pineG.position.z);
   });
 
-  return { update(f, cam, L) { for (const u of updates) u(f, cam, L); } };
+  return { update6(f, cam, L) { for (const u of updates) u(f, cam, L); }, update7(f, cam, L) { for (const u of updates7) u(f, cam, L); } };
 }

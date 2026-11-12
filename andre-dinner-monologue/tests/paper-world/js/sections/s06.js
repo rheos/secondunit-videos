@@ -182,3 +182,6 @@ export const BEATS = [
   [C.prisoners, "prisoners", "the bare layer nudges"], [C.result, "result", "the layers slide back together"], [C.lobotomized, "lobotomized", "the crown lifts on its hinge: a dark hollow"],
   [C.see, "see", "a band of bricks is drawn across the eyes"], [C.prison2, "prison", "the band stops over the eyes"],
 ];
+
+// ---------- hooks (story.js applies every section's, in section order, for every f): no change outside f2544 to f3130
+export const fill = (f) => (f < F0 || f >= F1 ? 1 : fillAt(f));

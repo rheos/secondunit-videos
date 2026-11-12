@@ -37,7 +37,7 @@ const bright = pass(SKIN
   : "uniform sampler2D t; varying vec2 vUv; void main(){ vec3 c = texture2D(t, vUv).rgb; float l = max(c.r, max(c.g, c.b)); gl_FragColor = vec4(c * smoothstep(0.95, 1.6, l), 1.0); }", { t: { value: rtAcc.texture } });
 const blur = pass(`uniform sampler2D t; uniform vec2 d; varying vec2 vUv; void main(){ vec3 c = texture2D(t, vUv).rgb * 0.227;
   c += (texture2D(t, vUv + d * 1.385).rgb + texture2D(t, vUv - d * 1.385).rgb) * 0.316; c += (texture2D(t, vUv + d * 3.231).rgb + texture2D(t, vUv - d * 3.231).rgb) * 0.0703; gl_FragColor = vec4(c, 1.0); }`, { t: { value: null }, d: { value: new THREE.Vector2() } });
-const final = pass(`uniform sampler2D t, b; uniform float expo, skin; varying vec2 vUv;
+const final = pass(`uniform sampler2D t, b; uniform float expo, skin, sat; uniform vec3 tint; varying vec2 vUv;
   void main(){ vec3 c = texture2D(t, vUv).rgb + texture2D(b, vUv).rgb * 0.55;
     vec2 p = vUv - 0.5; float v = 1.0 - 0.42 * smoothstep(0.25, 0.95, length(p * vec2(1.0, 1.25)));
     c *= v * expo;
@@ -45,14 +45,16 @@ const final = pass(`uniform sampler2D t, b; uniform float expo, skin; varying ve
       c = pow(c, vec3(1.0 / 2.2)); c = mix(c, c * c * (3.0 - 2.0 * c), 0.22); c *= vec3(1.03, 1.0, 0.94); c += vec3(0.012, 0.005, 0.0) * (1.0 - c); }
     else { c = 1.0 - exp(-c * 1.15);                                   // soft shoulder, no clipping
       c = pow(c, vec3(1.0 / 2.2)); c = mix(c, c * c * (3.0 - 2.0 * c), 0.35); }
-    gl_FragColor = vec4(c, 1.0); }`, { t: { value: rtAcc.texture }, b: { value: rtB[0].texture }, expo: { value: 1 }, skin: { value: SKIN ? 1 : 0 } });
+    if (sat != 1.0) c = mix(vec3(dot(c, vec3(0.2126, 0.7152, 0.0722))), c, sat);      // a section's grade hook (story.js gradeAt): saturation, then a tint, on the graded picture
+    if (tint != vec3(1.0)) c *= tint;
+    gl_FragColor = vec4(c, 1.0); }`, { t: { value: rtAcc.texture }, b: { value: rtB[0].texture }, expo: { value: 1 }, skin: { value: SKIN ? 1 : 0 }, sat: { value: 1 }, tint: { value: new THREE.Vector3(1, 1, 1) } });
 
 const halton = (i, b) => { let f = 1, r = 0; while (i > 0) { f /= b; r += f * (i % b); i = Math.floor(i / b); } return r; };
 const cityOn = (f) => clamp((f - S.C.newyork1 - 8) / 50);
 const _t = new THREE.Vector3();
 
 function setState(f, jitter) {
-  if (SKIN) { final.m.uniforms.expo.value = 1 + 0.12 * (S.flameAt(f).flare || 0);       // the candle's flare on "escape" (section 7) opens the exposure a little; 1 before it
+  if (SKIN) { const g = S.gradeAt(f); final.m.uniforms.expo.value = g.expo; final.m.uniforms.sat.value = g.sat; final.m.uniforms.tint.value.set(...g.tint);       // the flare on "escape" (section 7) opens the exposure a little, and every section's grade hook; 1, 1, [1, 1, 1] otherwise
     const cam = CHECKCAM ? { P: CHECKCAM.slice(0, 3), T: CHECKCAM.slice(3), fov: S.FOV } : S.camAt(f); skin.update(f, jitter, cam); camera.position.set(...cam.P); camera.up.set(0, 1, 0); camera.lookAt(_t.set(...cam.T)); camera.fov = cam.fov; camera.updateProjectionMatrix(); return cam; }
   const fl = world.update(f, jitter), on = cityOn(f);
   world.candle.key.intensity = 62 * fl.gain; world.candle.bounce.intensity = 34 + 46 * on; world.hemi.intensity = 0.6 + 0.5 * on;
@@ -95,9 +97,14 @@ window.figurePx = (f) => {
   setState(f, [0, 0, 0]); camera.updateMatrixWorld(true); scene.updateMatrixWorld(true);
   const out = {}; for (const fig of figures) { if (!fig.root.visible) continue;
     const a = new THREE.Vector3().setFromMatrixPosition(fig.root.matrixWorld), b = a.clone(); b.y += fig.h; const za = a.clone().project(camera), zb = b.project(camera);
-    if (za.z > 1 || Math.abs(za.x) > 1.05 || Math.abs(za.y) > 1.2) continue; out[fig.name] = Math.round(Math.abs(zb.y - za.y) * H / 2); }
+    if (za.z > 1 || Math.abs(za.x) > 1.05 || Math.abs(za.y) > 1.2) continue; out[fig.root.name || fig.name] = Math.round(Math.abs(zb.y - za.y) * H / 2); }
   return out;
 };
+
+// what fell back to a stub or was left out (story.js FAILED), and the registry's pieces: NAMES=1 node tools/render.mjs
+window.paperFailed = () => S.FAILED.map((x) => ({ ...x }));
+window.paperNames = () => (skin ? skin.reg.begin() || skin.reg.list() : []);
+window.paperSections = () => S.SECTIONS.map((s, i) => ({ n: i + 1, F0: s.F0, F1: s.F1, stub: !!s.stub, cues: Object.keys(s.C || {}).length, beats: s.BEATS.length }));
 
 // ---------- blocking export: every named object, as sparse per-frame samples of its transform under its named parent
 function namedParent(o) { let p = o.parent; while (p && !p.name) p = p.parent; return p; }
@@ -113,7 +120,7 @@ window.exportBlocking = (fa = S.F0, fb = S.F1) => {
   setState(fa, [0, 0, 0]); scene.updateMatrixWorld(true);
   const out = {
     about: "paper-world blocking. Units: centimetres. Right-handed, y up, the cloth is y = 0, x to the right, z toward the viewer (near place setting at +z). Quaternions are [x, y, z, w]. Object transforms are local to the named parent ('parent'; null = world). A track lists only the frames where the transform changed: hold the last listed value until the next (figures are posed on twos). visible lists [frame, 0|1] changes.",
-    fps: S.FPS, f0: fa, f1: fb, frames: fb - fa, width: W, height: H, cues: CUES, beats: S.BEATS.map(([f, word, what]) => ({ f, word, what })),
+    fps: S.FPS, f0: fa, f1: fb, frames: fb - fa, width: W, height: H, cues: { ...CUES, ...S.CUES_ALL }, beats: S.BEATS.map(([f, word, what]) => ({ f, word, what })),
     layout: S.LAY, fence_polygon_xz: S.FENCE_POLY, camera: { fov_vertical_deg: S.FOV, near: camera.near, frames: [] }, objects: {},
   };
   const P = new THREE.Vector3(), Q = new THREE.Quaternion(), Sc = new THREE.Vector3(), M = new THREE.Matrix4(), last = new Map();
