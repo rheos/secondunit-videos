@@ -1,5 +1,10 @@
 {
  "section": 1,
- "words": [],
- "stills": []
+ "words": [
+  { "key": "why1", "word": "why", "cue": 17 },
+  { "key": "why2", "word": "why", "cue": 68, "hand": 68 },
+  { "key": "lazy", "word": "lazy", "cue": 134 },
+  { "key": "bored", "word": "bored", "cue": 165 }
+ ],
+ "stills": [8, 15, 20, 26, 97, 115, 169, 176]
 }
