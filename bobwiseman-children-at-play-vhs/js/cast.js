@@ -35,11 +35,11 @@
   const KIDS = {
     swing:   { name: 'Swing girl',    hair: 'ponytail', outfit: 'dress',  size: 1.0 },
     slide:   { name: 'Slide boy',     hair: 'cap',      outfit: 'shorts', size: 1.05 },
-    tagA:    { name: 'Tag, runner',   hair: 'pigtails', outfit: 'skirt',  size: 0.95 },
+    tagA:    { name: 'Tag, runner',   hair: 'ponytail', outfit: 'skirt',  size: 0.95 },
     tagB:    { name: 'Tag, chaser',   hair: 'mop',      outfit: 'shorts', size: 1.1 },
     bars:    { name: 'Monkey bars',   hair: 'bob',      outfit: 'shorts', size: 1.0 },
     sand:    { name: 'Sandbox',       hair: 'crop',     outfit: 'shorts', size: 0.85 },
-    hider:   { name: 'The hider (you)', hair: 'sunhat', outfit: 'dress', size: 0.9 },
+    hider:   { name: 'The hider (you)', hair: 'pigtails', outfit: 'shorts', size: 0.74 },  // the smallest kid, the only one in pigtails (Robin: the sun hat read as the mother)
   };
 
   // Draw one kid. pose: { hip, chest, head, armF:[elbow,hand], armB:[elbow,hand], legF:[knee,foot], legB:[knee,foot],

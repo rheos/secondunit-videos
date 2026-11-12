@@ -268,21 +268,33 @@
   function sandKid(t) {
     return { x: 1652, y: 566, pose: P.dig(t / (2 * T.beat) + 0.3, -1), h: kidH(566) };
   }
-  // The hider: behind the big trunk. A giggle (the hat pokes out), then the peek, the step out, the run, the wave.
+  // The hider: behind the big trunk. On "she hears you laughing" the kid is half out at the trunk's edge, snickering
+  // (hand over mouth, shoulders shaking, pigtails bouncing) while the camera pushes in; ducks back; then the peek,
+  // the step out, the run to mom (the camera), the wave.
+  function giggle(t, lean) {
+    const sh = Math.sin(t * TAU * 6.5), bob = Math.abs(Math.sin(t * TAU * 3.25));
+    const p = P.peek(lean, 1, { hairSwing: 0.35 * sh });
+    const up = [0, -1.6 * bob];
+    for (const k of ['chest', 'head']) p[k] = [p[k][0] + 0.6 * sh, p[k][1] + up[1]];
+    p.armF = [[p.chest[0] + 9, p.chest[1] + 7], [p.head[0] + 7, p.head[1] + 7]];   // hand over the mouth
+    return p;
+  }
   function hider(t) {
     const tx = 1880, ty = 508, h0 = kidH(ty);
-    if (t < T.line4laugh - 0.05) return { x: tx, y: ty, pose: P.peek(0, 1), h: h0, hidden: true };
-    if (t < T.line5peek) {
-      const k = Math.sin(Math.PI * seg(t, T.line4laugh - 0.05, T.line4laugh + 0.75));
-      return { x: tx + 3, y: ty, pose: P.peek(0.62 * Math.max(0, k), 1), h: h0 };
+    const out0 = T.line4laugh - 0.35, out1 = 29.3, back = 29.75;
+    if (t < out0) return { x: tx, y: ty, pose: P.peek(0, 1), h: h0, hidden: true };
+    if (t < back) {
+      const k = smooth(seg(t, out0, out0 + 0.3)) * (1 - smooth(seg(t, out1, back)));
+      return { x: tx + 4 + 18 * k, y: ty, pose: giggle(t, 0.45 * k), h: h0 };  // half the body past the trunk's edge
     }
+    if (t < T.line5peek) return { x: tx, y: ty, pose: P.peek(0, 1), h: h0, hidden: true };
     if (t < T.line5out) {
       const k = smooth(seg(t, T.line5peek, T.line5peek + 0.35));
-      return { x: tx + 3, y: ty, pose: P.peek(k, 1, { hairSwing: 0.3 * Math.sin(t * 9) * (1 - k) }), h: h0 };
+      return { x: tx + 3 + 14 * k, y: ty, pose: P.peek(k, 1, { hairSwing: 0.3 * Math.sin(t * 9) * (1 - k) }), h: h0 };
     }
     if (t < T.line5run) {
       const k = smooth(seg(t, T.line5out, T.line5run));
-      return { x: tx + 3 + 46 * k, y: ty + 4 * k, pose: lerpPose(P.peek(1, 1), P.stand(0), k), h: kidH(ty + 4 * k) };
+      return { x: tx + 17 + 32 * k, y: ty + 4 * k, pose: lerpPose(P.peek(1, 1), P.stand(0), k), h: kidH(ty + 4 * k) };
     }
     const runEnd = T.waveAt - 0.12;
     const A = [tx + 49, ty + 4], B = [1792, 640];  // stops right of the sandbox, clear of the digger

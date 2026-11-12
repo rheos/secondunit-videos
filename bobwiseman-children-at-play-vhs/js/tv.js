@@ -1,7 +1,8 @@
 // tv.js · stage 3: the taped home video played back on a CRT television, 1920 x 1080.
 // Reads the ntsc-rs tape frames (work/tape_<preset>/f_000001.png ...), adds what the VCR itself puts on the screen
 // (blue screen, PLAY, snow while the heads find the tape, the tracking band rolling through as it locks), then the
-// tube: the house CRT shader, a rounded glass face, a plastic bezel, and the screen's light on the dark room.
+// tube (the house CRT shader) set into a photographed 1990s den (assets/tvroom_1990s.png, GPT Image, its chroma-green
+// screen keyed out), the screen's light spilling on the room, and a slow push-in from the room to the screen.
 // Page params: ?preset=medium (folder work/tape_medium), &fps=24. Pure in t: the same t always draws the same frame.
 (function () {
   const W = 1920, H = 1080, SIG_W = 960, SIG_H = 720, FPS = 24;
@@ -13,7 +14,6 @@
   const sg = sig.getContext('2d');
   // tube geometry: a 4:3 face centred in the 16:9 frame
   const TUBE = { x: 400, y: 112, w: 1120, h: 840, r: 64 };
-  const BEZEL = { x: 334, y: 46, w: 1252, h: 1000, r: 46 };
   const crt = makeCRT(TUBE.w, TUBE.h, 240, SIG_W, SIG_H);
   const avgC = document.createElement('canvas'); avgC.width = avgC.height = 1;
   const avgG = avgC.getContext('2d', { willReadFrequently: true });
@@ -94,37 +94,57 @@
     const f = Math.round(t * FPS);
     crt.render(sig, { frame: f, snow: s.snow, jit: s.jit, chroma: 1.0, raster: [0.965, 0.965], bright: 0.98, dot: 0, over: 1.0 });
     avgG.drawImage(sig, 0, 0, 1, 1); const [ar, ag, ab] = avgG.getImageData(0, 0, 1, 1).data;
-    // the room: dark, lit only by the screen
-    o.setTransform(1, 0, 0, 1, 0, 0);
-    o.fillStyle = '#050403'; o.fillRect(0, 0, W, H);
-    const spill = o.createRadialGradient(W / 2, H / 2, 300, W / 2, H / 2, 1150);
-    spill.addColorStop(0, `rgba(${ar},${ag},${ab},.26)`); spill.addColorStop(1, `rgba(${ar},${ag},${ab},0)`);
-    o.fillStyle = spill; o.fillRect(0, 0, W, H);
-    // bezel: dark plastic with a soft top light from the screen and a small power light
-    rounded(o, BEZEL);
-    const bz = o.createLinearGradient(0, BEZEL.y, 0, BEZEL.y + BEZEL.h);
-    bz.addColorStop(0, '#1d1b1a'); bz.addColorStop(0.5, '#141312'); bz.addColorStop(1, '#0c0b0b');
-    o.fillStyle = bz; o.fill();
-    o.strokeStyle = 'rgba(255,255,255,.05)'; o.lineWidth = 2; o.stroke();
-    // inner bevel round the glass
-    const bev = { x: TUBE.x - 16, y: TUBE.y - 16, w: TUBE.w + 32, h: TUBE.h + 32, r: TUBE.r + 14 };
-    rounded(o, bev); o.fillStyle = '#070707'; o.fill();
-    o.strokeStyle = `rgba(${ar},${ag},${ab},.16)`; o.lineWidth = 3; o.stroke();
-    o.fillStyle = '#7a1410'; o.beginPath(); o.arc(BEZEL.x + BEZEL.w - 70, BEZEL.y + BEZEL.h - 26, 4.5, 0, Math.PI * 2); o.fill();
-    o.fillStyle = 'rgba(255,60,40,.35)'; o.beginPath(); o.arc(BEZEL.x + BEZEL.w - 70, BEZEL.y + BEZEL.h - 26, 9, 0, Math.PI * 2); o.fill();
-    // the tube
-    o.save(); rounded(o, TUBE); o.clip();
-    o.drawImage(crt.canvas, TUBE.x, TUBE.y, TUBE.w, TUBE.h);
-    // glass: a faint reflection band up top-left and the darker curved edges
-    const gl = o.createLinearGradient(TUBE.x, TUBE.y, TUBE.x + TUBE.w * 0.6, TUBE.y + TUBE.h * 0.7);
-    gl.addColorStop(0, 'rgba(255,255,255,.07)'); gl.addColorStop(0.35, 'rgba(255,255,255,.025)'); gl.addColorStop(0.36, 'rgba(255,255,255,0)'); gl.addColorStop(1, 'rgba(255,255,255,0)');
-    o.fillStyle = gl; o.fillRect(TUBE.x, TUBE.y, TUBE.w, TUBE.h);
-    const edge = o.createRadialGradient(W / 2, TUBE.y + TUBE.h / 2, TUBE.h * 0.45, W / 2, TUBE.y + TUBE.h / 2, TUBE.w * 0.72);
-    edge.addColorStop(0, 'rgba(0,0,0,0)'); edge.addColorStop(1, 'rgba(0,0,0,.42)');
-    o.fillStyle = edge; o.fillRect(TUBE.x, TUBE.y, TUBE.w, TUBE.h);
+    // the room: a photographic plate (GPT Image, assets/tvroom_1990s.png) with its chroma-green screen keyed out
+    const k = smooth01((t - 0.8) / 23.2);                        // the slow push-in, wide room to near full screen
+    const z = 1 + (ZMAX - 1) * k;
+    let cx = 960 + (SCR_C[0] - 960) * k, cy = 540 + (SCR_C[1] - 540) * k;
+    cx = Math.min(W - W / (2 * z), Math.max(W / (2 * z), cx)); cy = Math.min(H - H / (2 * z), Math.max(H / (2 * z), cy));
+    o.setTransform(1, 0, 0, 1, 0, 0); o.fillStyle = '#000'; o.fillRect(0, 0, W, H);
+    o.setTransform(z, 0, 0, z, W / 2 - cx * z, H / 2 - cy * z);
+    o.imageSmoothingEnabled = true; o.imageSmoothingQuality = 'high';
+    // the tube under the plate, overscanned a little past the glass the way a TV crops its picture
+    const dh = SCR.h * 1.05, dw = dh * 4 / 3 * 0.93;
+    o.drawImage(crt.canvas, SCR_C[0] - dw / 2, SCR.y + SCR.h / 2 - dh / 2, dw, dh);
+    // glass: the lamp's reflection and a soft sheen, only on the screen
+    o.save(); o.beginPath(); o.roundRect(SCR.x, SCR.y, SCR.w, SCR.h, 34); o.clip();
+    const rf = o.createRadialGradient(SCR.x + SCR.w * 0.2, SCR.y + SCR.h * 0.18, 4, SCR.x + SCR.w * 0.2, SCR.y + SCR.h * 0.18, SCR.w * 0.32);
+    rf.addColorStop(0, 'rgba(255,214,160,.10)'); rf.addColorStop(1, 'rgba(255,214,160,0)');
+    o.fillStyle = rf; o.fillRect(SCR.x, SCR.y, SCR.w, SCR.h);
+    const sh = o.createLinearGradient(SCR.x, SCR.y, SCR.x + SCR.w * 0.7, SCR.y + SCR.h);
+    sh.addColorStop(0, 'rgba(255,255,255,.05)'); sh.addColorStop(0.4, 'rgba(255,255,255,.015)'); sh.addColorStop(0.41, 'rgba(255,255,255,0)');
+    o.fillStyle = sh; o.fillRect(SCR.x, SCR.y, SCR.w, SCR.h);
+    o.restore();
+    o.drawImage(keyed, 0, 0, W, H);
+    // the screen's own light on the room, everywhere but the glass, following the picture's colour and brightness
+    const lum = (0.299 * ar + 0.587 * ag + 0.114 * ab) / 255;
+    o.save(); o.beginPath(); o.rect(0, 0, W, H); o.roundRect(SCR.x + 6, SCR.y + 6, SCR.w - 12, SCR.h - 12, 30); o.clip('evenodd');
+    o.globalCompositeOperation = 'screen';
+    const sp = o.createRadialGradient(SCR_C[0], SCR_C[1], SCR.h * 0.45, SCR_C[0], SCR_C[1], 760);
+    sp.addColorStop(0, `rgba(${ar},${ag},${ab},${(0.10 + 0.32 * lum).toFixed(3)})`); sp.addColorStop(0.35, `rgba(${ar},${ag},${ab},${(0.04 + 0.12 * lum).toFixed(3)})`); sp.addColorStop(1, `rgba(${ar},${ag},${ab},0)`);
+    o.fillStyle = sp; o.fillRect(0, 0, W, H);
     o.restore();
   }
-  let ready = (async () => { await loadFrame(48); })();
+  // key the plate's green screen to transparent once, with despill on its edge
+  const ZMAX = 2.25, SCR = { x: 731, y: 165, w: 464, h: 406 }, SCR_C = [963, 368];
+  const smooth01 = (x) => { x = Math.min(1, Math.max(0, x)); return x * x * (3 - 2 * x); };
+  const keyed = document.createElement('canvas'); keyed.width = W; keyed.height = H;
+  async function buildKey() {
+    const img = new Image(); img.src = 'assets/tvroom_1990s.png'; await img.decode();
+    const kg = keyed.getContext('2d', { willReadFrequently: true });
+    kg.imageSmoothingQuality = 'high'; kg.drawImage(img, 0, 0, W, H);
+    const pad = 14, x0 = SCR.x - pad, y0 = SCR.y - pad, w = SCR.w + 2 * pad, h = SCR.h + 2 * pad;
+    const id = kg.getImageData(x0, y0, w, h), d = id.data;
+    for (let i = 0; i < d.length; i += 4) {
+      const r = d[i], g = d[i + 1], b = d[i + 2], m = Math.max(r, b), gn = g - m;
+      if (gn > 0) {
+        const a = 1 - smooth01((gn - 25) / 70);
+        d[i + 1] = Math.min(g, m + 6);                            // despill the green fringe
+        d[i + 3] = Math.round(255 * a);
+      }
+    }
+    kg.putImageData(id, x0, y0);
+  }
+  let ready = (async () => { await buildKey(); await loadFrame(48); })();
   window.__ready = ready;
   window.__frameJPEG = async (t, q = 0.92) => { await draw(t); return out.toDataURL('image/jpeg', q); };
   if (!qs.has('offline')) draw(Number(qs.get('t') || 8));
