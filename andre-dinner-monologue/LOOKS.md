@@ -271,6 +271,23 @@ Robin, Nov 11 2026, about 8 pm Pacific, on `andre_paper-world-s06-s07-test01_f25
   from commit beec152. Status read back right after: unlisted, no rejection, no region block
   (claims can arrive later and a monetisation-only claim shows only in YouTube Studio).
   Public and the novadiem.com entry still wait for his word.
+- **First outside notes (Nov 12, read from Robin's Messenger thread with Mark Achbar, paraphrased).**
+  Robin sent him the unlisted link and asked for a critique.
+  - Mark: loves the style. It feels a bit like a video game. The shot does not have to be
+    continuous: being able to fly everywhere is not a reason to. More deliberate angles chosen for
+    an effect; where the camera gets jittery, calmer movement would work better. He asked whether
+    the audio rights are cleared, and later said they will be locked up with the studio and the
+    actors. His way round it: if the film reference is not needed, rewrite the monologue in new
+    words that carry the idea, and voice it fresh (he suggested a woman's voice).
+  - Nathan Fenwick, passed on by Mark: great script, nearly perfect animation style, the pop-up
+    paper theme is popular and timeless. Two small points: the wine glasses are over the top (he
+    would have kept them simple and lit them when they become buildings), and the seed is a maple
+    seed, not a pine seed.
+  - Robin's replies: he knew about the seed and means to make it more like a pine seed; the film
+    is mainly a portfolio piece; he has no rights to the audio and wondered whether 1981 is old
+    enough (it is not: a 1981 US film stays in copyright into the 2070s).
+  - The continuous camera was our rule, not his (the storyboard's "one continuous move").
+  Nothing is built from these until he says which.
 - What is and is not code, so nobody overstates it: the 48 surfaces are painted images (GPT Image on
   the ChatGPT plan, no credits). Everything else is code: the 3D table, where each piece stands, every
   move, the camera, the candlelight and shadows, the lens blur, the render.
