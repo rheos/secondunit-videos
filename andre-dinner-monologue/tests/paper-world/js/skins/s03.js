@@ -1,20 +1,21 @@
 // skins/s03.js: the painted pieces of section 3, the boredom machine (sections/s03.js has its events and its camera).
 // One pull-strip of cream card (a spine along the far left, three hinge strips, an arm to the wheel's hub, a tab to the
 // television) carries everything: 24 identical citizens in three ranks, the gold coin on its hub with six riders on its
-// rim, the television. It slides in flat over the far edge (f508 to f558), pops up, and is drawn off after f1196.
+// rim, the television. It slides in flat over the far edge (f508 to f558), pops up, and is drawn off from f1194.
 // Rules as in skin.js: a painted piece is never relit (unlit, times the one candle tint; here plus the screen's cold
 // glow by distance from the screen); the cloth and the strip lying on it are the lit, shadow-receiving surfaces; the
 // television is a volume and turns to the lens, the citizens and the coin are flat card and do not.
-// Every state is a pure function of the film frame. Nothing here is drawn before f508 or after f1242.
+// Every state is a pure function of the film frame. Nothing here is drawn before f508 or after f1244.
 import * as S3 from "../sections/s03.js";
 import { clamp, lerp, smooth } from "../kit.js";
 
 export async function build(X) {
   const { THREE, world, reg, tintAt } = X, HALF = Math.PI / 2, { RANK, WHEEL, TV, SPINE, EDGE } = S3;
-  const [cit, coin, tvp] = await Promise.all([X.plate("citizen", { recolour: [116, 102, 80] }), X.plate("coin"), X.plate("tv")]);      // one grey-ochre for every citizen
-  { // the plate's pale cut rim keeps its brick red through the recolour: bring it to the same ochre, paler, so every card is one colour
-    const g = cit.canvas.getContext("2d", { willReadFrequently: true }), im = g.getImageData(0, 0, cit.w, cit.h), d = im.data, ref = 0.3 * 116 + 0.59 * 102 + 0.11 * 80;
-    for (let i = 0; i < d.length; i += 4) { const r = d[i], gr = d[i + 1], b = d[i + 2]; if (d[i + 3] < 8 || r / (r + gr + b + 1) < 0.415) continue; const l = (0.3 * r + 0.59 * gr + 0.11 * b) / ref; d[i] = Math.min(255, 116 * l); d[i + 1] = Math.min(255, 102 * l); d[i + 2] = Math.min(255, 80 * l); }
+  const SLATE = [74, 82, 96];                                        // one slate for every citizen: darker and cooler than the cloth, still card
+  const [cit, coin, tvp] = await Promise.all([X.plate("citizen", { recolour: SLATE }), X.plate("coin"), X.plate("tv")]);
+  { // the plate's pale cut rim keeps its brick red through the recolour: bring it to the same slate, paler, so every card is one colour
+    const g = cit.canvas.getContext("2d", { willReadFrequently: true }), im = g.getImageData(0, 0, cit.w, cit.h), d = im.data, [sr, sg, sb] = SLATE, ref = 0.3 * 116 + 0.59 * 102 + 0.11 * 80;
+    for (let i = 0; i < d.length; i += 4) { const r = d[i], gr = d[i + 1], b = d[i + 2]; if (d[i + 3] < 8 || r / (r + gr + b + 1) < 0.415) continue; const l = (0.3 * r + 0.59 * gr + 0.11 * b) / ref; d[i] = Math.min(255, sr * l); d[i + 1] = Math.min(255, sg * l); d[i + 2] = Math.min(255, sb * l); }
     g.putImageData(im, 0, 0); cit.t.needsUpdate = true; }
   const COLD = [0.2, 0.34, 0.62];                                     // what the screen adds to a painted piece's tint
   const canvasOf = (w, h) => { const c = document.createElement("canvas"); c.width = w; c.height = h; return c; };
@@ -98,9 +99,19 @@ export async function build(X) {
   const cold = new THREE.PointLight("#86b0ff", 0, 0, 1.3); cold.visible = false; world.add(cold);
   const toHub = [WHEEL.at[0] - TV.at[0], WHEEL.at[1] - TV.at[1]].map((v, _, a) => v / Math.hypot(a[0], a[1]));
 
+  // ================= one soft piece close to the lens: this section's own copy of the table's fork, pre-blurred and dark,
+  // turned to the lens. It stands in the lower right of the frame while the ranks go down; it comes into the frame and
+  // leaves it over the frame's right edge, and is in the scene only for those frames.
+  const SOFT = { at: [-16.45, -47.3], w: 9, y: -1.2, dim: 0.26, px: 7, f0: 1041, f1: 1140 };
+  const fk = await X.plate("fg_fork"), fc = X.blurred(fk.canvas, SOFT.px), fh = (SOFT.w * fk.h) / fk.w, fsw = (SOFT.w * fc.width) / fk.w, fsh = (fh * fc.height) / fk.h;
+  const softM = new THREE.MeshBasicMaterial({ map: X.tex(fc), transparent: true, depthWrite: false, toneMapped: false }), softG = X.named(new THREE.Group(), "soft_fork");
+  { const m = new THREE.Mesh(X.plane(fsw, fsh), softM); m.position.y = -(fsh - fh) / 2; m.renderOrder = 10; softG.add(m); softG.position.set(SOFT.at[0], SOFT.y, SOFT.at[1]); softG.visible = false; world.add(softG); reg.add("soft_fork", softG, { kind: "lens" }); }
+
   const lens = ["fg_glass", "fg_fork"].map((n) => reg.get(n));       // section 5's soft tableware: lens dressing for its own first leg, blobs from any other lens
   function update(f, jitter, cam) {
     if (f >= S3.F0 && f < S3.F1) for (const e of lens) e.set.hide();       // hidden for every frame of this section (as sections 1 and 2 do in theirs)
+    softG.visible = f >= SOFT.f0 && f < SOFT.f1;
+    if (softG.visible) { const d = SOFT.dim * X.now.level; softG.rotation.y = Math.atan2(cam.P[0] - SOFT.at[0], cam.P[2] - SOFT.at[1]); softM.color.setRGB(d, d * 0.94, d * 0.86); }
     const on = S3.shown(f);
     strip.visible = wheelG.visible = tv.g.visible = on; cold.visible = false; cold.intensity = 0;
     if (!on) { for (const o of ranks) o.st.root.visible = false; for (const o of riders) o.st.root.visible = false; return; }
@@ -112,7 +123,10 @@ export async function build(X) {
     wheelG.position.set(w.x, 0, w.z); coinG.position.y = 0.06 + w.y; spin.rotation.y = w.a;
     hub.visible = w.y > 0.03; hub.scale.y = Math.max(0.001, w.y + 0.06);
     const c = lightAt(w.x, w.z, t); topM.color.copy(c); sideM.color.setRGB(SIDE.r * c.r, SIDE.g * c.g, SIDE.b * c.b); hubM.color.setRGB(HUBC.r * c.r, HUBC.g * c.g, HUBC.b * c.b);
-    for (const o of riders) card(o.st, S3.riderAt(o.q, f), f, 0.06 + w.y + WHEEL.thick + 0.1, t);
+    // a rider's card swivels on its tab: it rides tangent to the rim while that shows the lens its face, and where the rim
+    // would turn it edge-on it swings back through face-on instead (never less than 50 degrees of face to the lens)
+    for (const o of riders) { const s = S3.riderAt(o.q, f), a = Math.atan2(cam.P[0] - s.x, cam.P[2] - s.z), d = 0.5 * Math.asin(0.97 * Math.sin(2 * (s.yaw - a)));
+      s.yaw = mixAngle(s.yaw, a + d, smooth(clamp(s.up) * (1 - clamp(s.fall * 2)))); card(o.st, s, f, 0.06 + w.y + WHEEL.thick + 0.1, t); }
     const g = S3.glintAt(f); glint.visible = g >= 0;
     if (glint.visible) { glintT.offset.x = lerp(0.62, -0.62, g); const e = Math.sin(Math.PI * g) ** 0.5 * 0.85 * lvl; glint.material.color.setRGB(e, 0.9 * e, 0.66 * e); }
 

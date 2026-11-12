@@ -1,7 +1,7 @@
 // s03.js: section 3, the boredom machine, f504 to f1196. Its cue names, its events and its camera keys, all pure
 // functions of the film frame f (24 fps). The machine is one flat piece of card on a pull-strip: a spine along the far
 // left, three hinge strips (the ranks), a gold coin on a hub (the wheel) and a paper television. It is pushed in over
-// the far edge of the table lying flat, pops up, runs, falls asleep, and is drawn off the same way after f1196.
+// the far edge of the table lying flat, pops up, runs, falls asleep, and is drawn off the same way from f1194.
 // Units: centimetres, y up, the cloth is y = 0, x to the right, z toward the viewer.
 import { CUES } from "../cues/s03.js";                  // generated: $PY tools/onsets.py 03 (from tools/cues/s03.json)
 import { clamp, lerp, smooth, smoother, spring } from "../kit.js";
@@ -25,7 +25,7 @@ export const SPINE = { x: -32.6, w: 1.0 };
 export const SURVIVOR = [RANK.x0, RANK.z[0]];
 
 // ---------- the pull-strip: the whole machine slides in flat over the far edge, and out again after the section
-export const SLED = { in0: 508, in1: 558, travel: 57, out0: F1 + 2, out1: F1 + 46, pull: 60 };
+export const SLED = { in0: 508, in1: 558, travel: 57, out0: F1 - 2, out1: F1 + 48, pull: 60 };       // drawn off from f1194: the last one has landed (f1188) and its bounce is over
 export const shown = (f) => f >= SLED.in0 && f < SLED.out1;
 export const sledAt = (f) => (f < SLED.out0 ? -SLED.travel * (1 - smoother((f - SLED.in0) / (SLED.in1 - SLED.in0))) : -SLED.pull * smoother((f - SLED.out0) / (SLED.out1 - SLED.out0)));
 
@@ -95,46 +95,56 @@ export function tvAt(f) {
 // "money": a glint crosses the coin's face in 14 frames
 export const glintAt = (f) => { const g = (f - C.money + 1) / 15; return g > 0 && g < 1 ? g : -1; };
 
-// ---------- the camera: one move. It crosses the table from the near plate round the left of the basket, trucks along
-// the front rank as it is dealt, backs up and over the coin as it lifts, holds on the wheel between the ranks and the
-// screen while circling to the right, rises over the coin for the glint, comes down round its right side to the ranks,
-// lifts a little for the dominoes and drops to the one left standing.
-const hub = (dy = 0) => [WHEEL.at[0], 2.4 + dy, WHEEL.at[1]];
+// ---------- the camera: one move. It crosses the table from the near plate round the left of the basket and down the
+// left side outside the flat coin, trucks along the front rank at the citizens' own height as it is dealt, goes up and
+// back over the coin as it lifts, holds low on the wheel's near side between the ranks and the screen while circling to
+// the right, rises over the coin for the glint, comes down round its right side to the ranks, lifts a little for the
+// dominoes, follows the front rank's wave to the left and stops 9 cm off the one left standing.
+const hub = (dy = 0) => [WHEEL.at[0], 2.4 + dy, WHEEL.at[1]], far = (dy = 0) => [WHEEL.at[0] - 2.5, 2.4 + dy, WHEEL.at[1] - 2];       // far: a little beyond the hub, toward the ranks and the screen
 const round = (deg, r, y) => [WHEEL.at[0] + r * Math.sin((deg * Math.PI) / 180), y, WHEEL.at[1] + r * Math.cos((deg * Math.PI) / 180)];      // 0 = the near side, 90 = the right
 export const KEY = 790;                                               // the key image: the wheel turning between the ranks and the cold screen
+// The camera at f1196 is this section's own key, not the shared join: the last one standing is seen close, and section 4
+// starts from here. sections/s04.js carries the same numbers (J1196): position, target and velocity match across the frame.
+export const J1196 = { f: F1, P: [-24.6, 3.4, -41.6], T: [-30.8, 0.9, -51.2], mP: [0.4, 0.1, 0.18], mT: [0.02, -0.02, 0.02] };
 export const CAM_KEYS = [
   joinKey(F0),
-  // f504-f567: crosses the table low, left of the basket and down the left side, to the left end of the front rank
+  // f504-f567: crosses the table low, left of the basket and down the left side, outside the flat coin (it stays out of
+  // the frame's lower right), to the left end of the front rank
   { f: 524, P: [-19, 10.5, 40], T: [-26, 4, 4] },
-  { f: 540, P: [-32, 8.4, 14], T: [-27, 3, -26] },
-  { f: 550, P: [-38, 6.8, -10], T: [-27, 2.6, -44] },
-  { f: 559, P: [-38, 5.4, -27], T: [-25.2, 2.4, -50] },
-  { f: C.bored1, P: [-36.8, 4.7, -36.6], T: [-24.6, 2.4, -51] },
-  { f: 577, P: [-35.4, 4.6, -39], T: [-24.4, 2.5, -51.6] },
-  // f567-f640: trucks along the front rank, close, as it is dealt and the two ranks behind it come up
-  { f: C.bored2, P: [-31.6, 4.6, -40.4], T: [-24.6, 2.7, -53] },
-  { f: 640, P: [-26.6, 5, -40], T: [-22, 2.7, -53.5] },
-  // f640-f715: backs up and over the coin as it lifts, to the near side of the wheel
-  { f: C.process, P: [-29.4, 8.6, -23.5], T: [-27.2, 1.8, -37] },
-  { f: 695, P: [-34, 15, -9.5], T: [-27.6, 2.2, -35.5] },
-  // f715-f829: holds on the wheel, the screen to its left and the ranks behind, circling slowly to the right
-  { f: 720, P: round(-20, 26.5, 18.5), T: hub(-0.2) },
-  { f: KEY, P: round(-2, 27, 19), T: hub(0) },
-  { f: C.brainwashing, P: round(10, 26.5, 18.5), T: hub(-0.2) },
+  { f: 540, P: [-33, 8.6, 14], T: [-29, 3, -26] },
+  { f: 549, P: [-40, 7, -7], T: [-36, 2.4, -46] },
+  { f: 557, P: [-41.5, 4.8, -22], T: [-37, 2.2, -50] },
+  { f: 562, P: [-39.4, 3.8, -30], T: [-34.5, 2.2, -50] },            // between the coin's rim and the flat television
+  { f: C.bored1, P: [-36.6, 3, -36.8], T: [-30.6, 2.2, -50] },       // on the first of the rank as it hinges up
+  { f: 571, P: [-35.4, 2.75, -39.6], T: [-29.4, 2.2, -50.2] },
+  { f: 577, P: [-34.6, 2.6, -41.4], T: [-27.6, 2.2, -50.6] },
+  // f567-f640: trucks along the front rank at the citizens' own height, close, as it is dealt and the two ranks behind it come up
+  { f: C.bored2, P: [-31.2, 2.5, -43], T: [-24.4, 2.3, -52.6] },
+  { f: 640, P: [-25.4, 2.9, -42.4], T: [-21.2, 2.4, -53.5] },
+  // f640-f715: up and back over the coin, high enough to see its whole face as it lifts, to the near side of the wheel
+  { f: 655, P: [-26.2, 7, -38.6], T: [-24.8, 1.6, -50] },
+  { f: C.process, P: [-28.8, 11.5, -24], T: [-27.2, 1.8, -36] },
+  { f: 695, P: [-35.6, 10.5, -17.5], T: [-27.4, 2.6, -33.5] },
+  // f715-f829: holds on the wheel from low on its near side, the riders passing 12 cm off, the screen to its left and
+  // the ranks behind, circling slowly to the right
+  { f: 720, P: round(-23, 19, 7.7), T: far(3) },
+  { f: KEY, P: round(-2, 18.5, 7.5), T: far(3) },
+  { f: C.brainwashing, P: round(11, 18.5, 7.3), T: far(3) },
   // f829-f913: circles on, then up to see the coin's face for the glint
-  { f: C.totalitarian, P: round(24, 25, 17.5), T: hub(-0.4) },
+  { f: C.totalitarian, P: round(24, 20.5, 11), T: far(1.5) },
   { f: C.money, P: round(40, 17.5, 23.5), T: hub(-1.6) },
   // f913-f1093: down again, round the right side of the wheel to the front of the ranks
-  { f: C.dangerous, P: round(60, 21.5, 13), T: hub(0) },
-  { f: 1000, P: round(80, 20, 10.5), T: [-27.5, 2.4, -35] },
-  { f: C.survival, P: round(100, 18, 9), T: [-27, 2.2, -42] },
-  { f: C.bored3, P: [-13.4, 8, -39.5], T: [-24.5, 1.8, -53.5] },
-  // f1104-f1140: lifts a little for the dominoes
-  { f: 1124, P: [-15.4, 10.8, -38.2], T: [-25.5, 1.5, -53.5] },
-  // f1140-f1196: down to the one left standing, close: the join
-  { f: C.asleep2, P: [-17.8, 7.6, -39.6], T: [-29.4, 2, -50.6] },
-  { f: C.no, P: [-18.6, 5.5, -40.2], T: [-30.4, 2.2, -50.2] },
-  joinKey(F1),
+  { f: C.dangerous, P: round(60, 19, 9), T: hub(1.6) },
+  { f: 1000, P: round(80, 18.5, 8), T: [-27.5, 4, -35] },
+  { f: C.survival, P: round(100, 17.5, 7), T: [-27, 3.6, -42] },
+  { f: C.bored3, P: [-13.6, 4.4, -41.5], T: [-23.5, 2, -54] },
+  // f1104-f1137: lifts a little for the dominoes, then follows the front rank's wave to the left
+  { f: 1116, P: [-14.2, 6.4, -41], T: [-24.5, 1.4, -54] },
+  { f: 1137, P: [-19.5, 5, -41.6], T: [-27.5, 1.4, -52] },
+  // f1137-f1196: down to the one left standing, at its own height, 9 cm off: it stands across the middle of the frame
+  { f: C.asleep2, P: [-24.4, 3.5, -41.2], T: [-30.4, 1.8, -50.3] },
+  { f: C.no, P: [-27.8, 2.4, -41.5], T: [-30.8, 1.9, -50], mP: [0, 0.03, -0.055] },
+  J1196,
 ];
 export const camAt = (f) => camFrom(CAM_KEYS, f, joinFloat(F0, F1, f));
 
@@ -153,6 +163,6 @@ export const BEATS = [
   [C.bored3, "bored", "the ranks stand still"],
   [C.asleep1, "asleep", "the ranks hinge down flat like dominoes, 1.5 frames apart, rank by rank"],
   [C.asleep2, "asleep", "the wheel slows and stops where it started; the riders lie down; the screen goes dark; one citizen is left standing"],
-  [C.no, "no", "it tips over slowly, bounces once and lies flat"],
+  [C.no, "no", "it tips over slowly, bounces once and lies flat; the lens is 9 cm off it, at its own height"],
   [SLED.out0, "(after)", "the flat cards, the coin and the screen are drawn off over the far edge on the pull-strip"],
 ];

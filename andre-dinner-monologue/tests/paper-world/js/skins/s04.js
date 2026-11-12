@@ -5,7 +5,7 @@
 // three layers (the white, the iris on its slide, the lid), lit from behind. The television, the newspapers and the
 // magazines stand flush against the back wall; each is cut out along its own outline and tips back through its hole.
 // Same rules as skin.js: painted pieces are unlit, times the one tint by distance from the candle; the cloth is the only
-// lit surface. Everything here is hidden before f1221 and gone by f1838; every state is a pure function of the frame.
+// lit surface. Everything here is hidden before f1205 and gone by f1838; every state is a pure function of the frame.
 import * as S4 from "../sections/s04.js";
 import { makePath } from "../sections/lib.js";
 import { THREE, clamp, lerp, smooth } from "../kit.js";
@@ -253,9 +253,10 @@ export async function build(X) {
     // the back wall and what is on it
     hinge.visible = fk > 0.02; hinge.rotation.x = HALF * (1 - wk);
     const st = S4.holesAt(f); wallF.material = wallMats[st]; wallB.material = wallBackMats[st]; wallF.customDistanceMaterial = caster(wallT[st]);
-    sides.forEach((s, k) => { s.g.rotation.y = -s.sg * (Math.PI - OPEN * S4.sideAt(k, f)); });
+    // folded, a side wall lies on the back wall's face 2 mm proud of it (over the cards that stand against the wall)
+    sides.forEach((s, k) => { const o = S4.sideAt(k, f); s.g.rotation.y = -s.sg * (Math.PI - OPEN * o); s.g.position.z = 0.03 + 0.03 * k + 0.2 * (1 - clamp(o * 4)); });
     thingObjs.forEach((o, i) => { const t = S4.thingAt(i, f); o.g.rotation.x = -t.tip * (HALF - 0.012); o.dashes.visible = t.dashes; o.dashes.geometry.setDrawRange(0, 6 * Math.round(o.n * t.cut)); });
-    tvGlow.material.color.setRGB(0.2 * wk, 0.3 * wk, 0.42 * wk); tvGlow.visible = wk > 0.3;
+    const gk = wk * clamp(S4.sideAt(1, f) * 3); tvGlow.material.color.setRGB(0.2 * gk, 0.3 * gk, 0.42 * gk); tvGlow.visible = gk > 0.3;       // the screen shows once the left side wall has swung off it
     // the flap, the lamp, the eye
     const open = S4.flapAt(f), lk = S4.lampAt(f), a = open * 1.95; doors.forEach((d) => { d.g.rotation.y = d.k ? a : -a; });
     latchG.rotation.x = -2.95 * smooth((f - (C.orwellian - 4)) / 5) * (1 - smooth((f - (T.shut + 8)) / 5));       // the latch flips up out of the doors' way, and back when they have shut
