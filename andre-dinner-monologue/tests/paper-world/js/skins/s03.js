@@ -12,7 +12,7 @@ import { clamp, lerp, smooth } from "../kit.js";
 export async function build(X) {
   const { THREE, world, reg, tintAt } = X, HALF = Math.PI / 2, { RANK, WHEEL, TV, SPINE, EDGE } = S3;
   const SLATE = [74, 82, 96];                                        // one slate for every citizen: darker and cooler than the cloth, still card
-  const [cit, coin, tvp] = await Promise.all([X.plate("citizen", { recolour: SLATE }), X.plate("coin"), X.plate("tv")]);
+  const [cit, coin, tvp, seal] = await Promise.all([X.plate("citizen", { recolour: SLATE }), X.plate("coin"), X.plate("tv"), X.plate("coin_seal")]);
   { // the plate's pale cut rim keeps its brick red through the recolour: bring it to the same slate, paler, so every card is one colour
     const g = cit.canvas.getContext("2d", { willReadFrequently: true }), im = g.getImageData(0, 0, cit.w, cit.h), d = im.data, [sr, sg, sb] = SLATE, ref = 0.3 * 116 + 0.59 * 102 + 0.11 * 80;
     for (let i = 0; i < d.length; i += 4) { const r = d[i], gr = d[i + 1], b = d[i + 2]; if (d[i + 3] < 8 || r / (r + gr + b + 1) < 0.415) continue; const l = (0.3 * r + 0.59 * gr + 0.11 * b) / ref; d[i] = Math.min(255, sr * l); d[i + 1] = Math.min(255, sg * l); d[i + 2] = Math.min(255, sb * l); }
@@ -69,7 +69,14 @@ export async function build(X) {
   const top = new THREE.Mesh(topG.rotateX(-HALF), topM); top.position.y = WHEEL.thick; top.castShadow = true;
   const side = new THREE.Mesh(new THREE.CylinderGeometry(WHEEL.R, WHEEL.R, WHEEL.thick, 96, 1, true), sideM); side.position.y = WHEEL.thick / 2;
   spin.add(top, side);
-  const hub = new THREE.Mesh(new THREE.CylinderGeometry(1.25, 1.25, 1, 20).translate(0, 0.5, 0), hubM); hub.castShadow = true; wheelG.add(hub);
+  // the seal (Robin, Nov 12): the same coin with an emblem embossed in its plain centre (coin_seal, a registered edit of
+  // the coin plate: open book on a pedestal, owl, sword, rays; no words). It fades in over the plain face at about 0:35,
+  // while the voice names who runs the machine, and out again at about 0:40. It turns with the coin.
+  const SEAL = { in0: 834, in1: 852, out0: 948, out1: 966 };
+  const sealAt = (f) => smooth((f - SEAL.in0) / (SEAL.in1 - SEAL.in0)) * (1 - smooth((f - SEAL.out0) / (SEAL.out1 - SEAL.out0)));
+  const sealM = basic({ map: seal.t, transparent: true, opacity: 0, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 });
+  const sealTop = new THREE.Mesh(topG, sealM); sealTop.position.y = WHEEL.thick + 0.008; sealTop.renderOrder = 2; sealTop.visible = false; spin.add(sealTop);
+  const hub =new THREE.Mesh(new THREE.CylinderGeometry(1.25, 1.25, 1, 20).translate(0, 0.5, 0), hubM); hub.castShadow = true; wheelG.add(hub);
   // the glint: a soft bright band that crosses the coin's face (additive), across the way the candle's light falls
   const glintT = (() => { const c = canvasOf(256, 4), g = c.getContext("2d"), gr = g.createLinearGradient(0, 0, 256, 0); gr.addColorStop(0, "#000"); gr.addColorStop(0.36, "#000"); gr.addColorStop(0.47, "#888"); gr.addColorStop(0.5, "#fff"); gr.addColorStop(0.53, "#888"); gr.addColorStop(0.64, "#000"); gr.addColorStop(1, "#000"); g.fillStyle = gr; g.fillRect(0, 0, 256, 4);
     const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.ClampToEdgeWrapping; return t; })();
@@ -122,7 +129,7 @@ export async function build(X) {
     // the wheel
     wheelG.position.set(w.x, 0, w.z); coinG.position.y = 0.06 + w.y; spin.rotation.y = w.a;
     hub.visible = w.y > 0.03; hub.scale.y = Math.max(0.001, w.y + 0.06);
-    const c = lightAt(w.x, w.z, t); topM.color.copy(c); sideM.color.setRGB(SIDE.r * c.r, SIDE.g * c.g, SIDE.b * c.b); hubM.color.setRGB(HUBC.r * c.r, HUBC.g * c.g, HUBC.b * c.b);
+    const c = lightAt(w.x, w.z, t); topM.color.copy(c); { const k = sealAt(f); sealTop.visible = k > 0.002; sealM.opacity = k; sealM.color.copy(c); } sideM.color.setRGB(SIDE.r * c.r, SIDE.g * c.g, SIDE.b * c.b); hubM.color.setRGB(HUBC.r * c.r, HUBC.g * c.g, HUBC.b * c.b);
     // a rider's card swivels on its tab: it rides tangent to the rim while that shows the lens its face, and where the rim
     // would turn it edge-on it swings back through face-on instead (never less than 50 degrees of face to the lens)
     for (const o of riders) { const s = S3.riderAt(o.q, f), a = Math.atan2(cam.P[0] - s.x, cam.P[2] - s.z), d = 0.5 * Math.asin(0.97 * Math.sin(2 * (s.yaw - a)));

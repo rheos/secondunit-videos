@@ -205,6 +205,12 @@
   "brain": {
    "size": "1536x1024",
    "prompt": "A single paper-craft human brain seen exactly from the side, the front of the brain on the right, the brain stem at the lower left. Made of layered, curled and folded strips of dusty pink and rose card, so the folds of the surface are real paper folds with pale cut edges and soft shadows between them. One clear deep groove of darker card runs from the top down toward the middle, dividing the front third (the frontal lobe, on the right) from the rest, as if the front part were a separate piece that could be lifted out. No face, no skull, no head around it, no stand, no labels."
+  },
+  "coin_seal": {
+   "size": "1024x1024",
+   "ref": "coin",
+   "second_ref": "work/refs/seal_bureau-of-truth.jpg (the seal image Robin sent on Nov 12; paint.sh passes one reference only, so this plate was painted by hand: gptimg -r work/plates/coin.png -r work/refs/seal_bureau-of-truth.jpg)",
+   "prompt": "Image 1 is a coin made of gold foil card, seen from directly above, on a transparent background. Keep it exactly as it is: the same size and position in the frame, the same embossed laurel wreath around the rim, the same gold foil texture and grain, the same warm light from the upper left, the same transparent background. Change only the plain raised centre of the coin: emboss into it, in low relief pressed from the same gold foil, the central emblem of image 2 and nothing else from image 2: an open book standing on a small pedestal, an owl perched on the left page, an upright sword on the right page, and a fan of short rays above the book. The emblem fills the plain centre and stays inside the laurel wreath. No letters, no numbers, no words, no ring of text, no second wreath. The relief catches the light from the upper left like the rest of the coin."
   }
  }
 }
