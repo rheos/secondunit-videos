@@ -235,6 +235,10 @@ Robin, Nov 11 2026, about 8 pm Pacific, on `andre_paper-world-s06-s07-test01_f25
   reaction to this." So the table cut is the release, not a throwaway: finish it to release
   standard. Version B (no table, Meshy people walking in a real city) is parked until he has seen
   how this one is received; do not storyboard it until he asks. Its notes above stand.
+- **Tracks stay.** Shown the same ten seconds with the cloth tracks (A) and without (B), in
+  `out/paper-world/tracks/`, he picked "A, with tracks" (about 10:30 pm, Nov 11). The release keeps
+  them; the `NOSLOTS=1` switch stays in the engine but is not used. Cut 01 (the first joined film,
+  `out/paper-world/film/andre_pop-up-table_cut01_...`) went to him at the same time.
 - What is and is not code, so nobody overstates it: the 48 surfaces are painted images (GPT Image on
   the ChatGPT plan, no credits). Everything else is code: the 3D table, where each piece stands, every
   move, the camera, the candlelight and shadows, the lens blur, the render.
