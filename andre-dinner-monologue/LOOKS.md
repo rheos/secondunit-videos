@@ -292,6 +292,15 @@ Robin, Nov 11 2026, about 8 pm Pacific, on `andre_paper-world-s06-s07-test01_f25
     repaint of `seed`), in cut 04 (`out/paper-world/film/andre_pop-up-table_cut04_...`, rendered
     whole on Nov 12). The camera, the glasses and the audio are untouched and still his to call.
     The YouTube upload is still cut 03.
+  - Same day, cut 05 (`..._cut05_...`, rendered whole): the two glasses are a plain paper wine
+    glass that only gains lit windows on "New York" (Nathan's note; Robin picked it over the green
+    lattice goblet after seeing both on stills; the bottle stays as it was, at his word), and
+    eight pop-up buildings stand in the far left of the table city, the Twin Towers among them
+    (both Robin's ideas: "more buildings to make it look more like New York... more pop-up, like
+    the tree", and "because this is a 1981 New York, it could have the Twin Towers in it"). At the
+    end the Twin Towers fold flat sideways instead of sinking, our call, so the image does not read
+    as September 11. On the audio he decided to credit the film and not pursue rights.
+    Mark's camera note is still open.
 - What is and is not code, so nobody overstates it: the 48 surfaces are painted images (GPT Image on
   the ChatGPT plan, no credits). Everything else is code: the 3D table, where each piece stands, every
   move, the camera, the candlelight and shadows, the lens blur, the render.
