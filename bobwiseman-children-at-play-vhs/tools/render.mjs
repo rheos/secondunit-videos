@@ -30,9 +30,9 @@ async function goodFrame(p, t, q, stats) {
       const g = s.getContext('2d', { willReadFrequently: true }); g.drawImage(cv, 0, 0, 32, 18);
       let sum = 0; const d = g.getImageData(0, 0, 32, 18).data;
       for (let i = 0; i < d.length; i += 4) sum += 0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2];
-      return { url, luma: sum / (32 * 18) };
+      return { url, luma: sum / (32 * 18), allow: !!(window.__allowBlank && window.__allowBlank(t)) };
     }, [t, q]);
-    if (res.luma >= 14) return jpegBuffer(res.url);
+    if (res.luma >= 14 || res.allow) return jpegBuffer(res.url);   // a page may mark stretches that are black on purpose
     stats.retries++;
     await new Promise((r) => setTimeout(r, 250 * (k + 1)));
   }

@@ -17,9 +17,9 @@ case "$1" in
   tape)
     p="$2"; s=$(slugof "$p")
     python3 -I -c "import json,sys;print(json.dumps(json.load(open(sys.argv[1]))['ntsc']['settings']))" "$PRESETS/$p.json" > work/$s.ntsc.json
-    nice -n 15 ntsc-rs-cli -i work/home.mp4 -o work/tape_$s.mp4 -p work/$s.ntsc.json -y --scale 480 --quality 44
+    nice -n 15 ntsc-rs-cli -i work/home.mp4 -o work/tape_$s.mp4 -p work/$s.ntsc.json -y --scale 480 --quality 40
     rm -rf work/tape_$s; mkdir -p work/tape_$s
-    ffmpeg -v error -i work/tape_$s.mp4 -start_number 1 work/tape_$s/f_%06d.png
+    ffmpeg -v error -i work/tape_$s.mp4 -start_number 1 -q:v 2 work/tape_$s/f_%06d.jpg
     echo "tape_$s: $(ls work/tape_$s | wc -l) frames" ;;
   tv)
     s="$2"; h="${3:-720}"

@@ -132,5 +132,6 @@
   window.__ready = Promise.resolve();
   window.__frameJPEG = (t, q = 0.92) => { draw(t); return out.toDataURL('image/jpeg', q); };
   window.__draw = draw;
+  window.__allowBlank = (t) => TIMING.tapeEnd != null && t >= TIMING.tapeEnd;   // blank tape after the recording stops
   if (!qs.has('offline')) draw(Number(qs.get('t') || 8));
 })();

@@ -22,7 +22,7 @@
 
   async function loadFrame(f) {
     const img = new Image();
-    img.src = `work/tape_${preset}/f_${String(f + 1).padStart(6, '0')}.png`;
+    img.src = `work/tape_${preset}/f_${String(f + 1).padStart(6, '0')}.jpg`;
     try { await img.decode(); return img; } catch { return null; }
   }
   function snow(g, f, k) {
