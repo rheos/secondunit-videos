@@ -189,6 +189,129 @@ function drumTower(world, name, at, im, roofT) {
   return up;
 }
 
+// ---------- the buildings: New York's pop-ups that are not tableware (sections/s05.js BUILDINGS)
+// A building is real geometry, true from every side: one to three boxes that step in as they rise (the setback), a
+// painted face on all four sides, a painted roof on each. The faces come from the full-bleed panels bldg_stone,
+// bldg_brick and bldg_teal (and each one's registered _dark twin): a panel is cropped to whole window columns and its
+// floors are evened out to one height, so it repeats both ways without a seam, and a face is laid out in whole columns
+// and whole floors. A window is 0.5 cm wide on every building. x0, px: the first column's left edge and the column
+// pitch in the panel; rows: the top of every window row; g: half the gap between two rows.
+const BLDG_PLATES = ["bldg_stone", "bldg_stone_dark", "bldg_brick", "bldg_brick_dark", "bldg_teal", "bldg_teal_dark", "bldg_twin", "bldg_twin_dark", "bldg_roof", "water_tower", "spire"];
+const BLDG_CROP = {
+  stone: { x0: 22, cols: 6, px: 164, g: 21, rows: [55, 176, 298, 418, 536, 651, 764, 875, 988, 1093, 1197, 1302, 1411] },
+  brick: { x0: 30, cols: 5, px: 193, g: 30, rows: [87, 241, 395, 550, 705, 859, 1011, 1154, 1291, 1422] },
+  teal: { x0: 15, cols: 7, px: 142, g: 8, rows: [58, 115, 175, 236, 295, 355, 414, 473, 533, 592, 651, 711, 770, 829, 889, 948, 1007, 1065, 1124, 1184, 1243, 1302, 1361, 1420, 1479] },
+};
+function bldgTile(im, s) {
+  const n = s.rows.length - 1, rp = Math.round((s.rows[n] - s.rows[0]) / n), W = s.cols * s.px, c = document.createElement("canvas"); c.width = W; c.height = n * rp; const g = c.getContext("2d");
+  for (let i = 0; i < n; i++) g.drawImage(im, s.x0, s.rows[i] - s.g, W, s.rows[i + 1] - s.rows[i], 0, i * rp, W, rp);
+  const t = tex(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; return t;
+}
+// The Twin Towers' panel goes on once a side, whole: 50 ribs across 5 cm. It is cut from the middle of its first rib to
+// the middle of its last (x0, 50 ribs at `px` a rib) and resampled to exactly 16 px a rib, 800 px wide: every mip level
+// down to one texel a rib then averages whole ribs, so the ribs fade to even grey with distance instead of beating.
+const TWIN_CROP = { x0: 10.85, ribs: 50, px: 20.229 };
+// Two textures come back: the panel (t), and the panel with every rib averaged away across (avg: a box blur exactly one
+// rib wide, wrapped). The wall shows the first only where a rib is three pixels or more on screen and the second where
+// it is finer (bldgMat), because the face is stretched five to one up the tower, so the usual filtering takes its level
+// from the tall axis and samples the ribs too sparsely: from 60 to 90 cm they crawled. The second has no ribs to alias.
+function twinTile(im) {
+  const R = 16, c = document.createElement("canvas"); c.width = TWIN_CROP.ribs * R; c.height = im.height; const g = c.getContext("2d", { willReadFrequently: true }); g.imageSmoothingQuality = "high";
+  g.drawImage(im, TWIN_CROP.x0, 0, TWIN_CROP.ribs * TWIN_CROP.px, im.height, 0, 0, c.width, c.height);
+  const W = c.width, H = c.height, src = g.getImageData(0, 0, W, H), out = new ImageData(W, H), s = src.data, o = out.data;
+  for (let y = 0; y < H; y++) for (let q = 0; q < 3; q++) { const row = y * W * 4 + q; let sum = 0; for (let x = -R / 2; x < R / 2; x++) sum += s[row + ((x + W) % W) * 4];
+    for (let x = 0; x < W; x++) { o[row + x * 4] = sum / R; sum += s[row + ((x + R / 2) % W) * 4] - s[row + ((x - R / 2 + W) % W) * 4]; } }
+  for (let i = 3; i < o.length; i += 4) o[i] = 255;
+  const c2 = document.createElement("canvas"); c2.width = W; c2.height = H; c2.getContext("2d").putImageData(out, 0, 0);
+  const t = tex(c), avg = tex(c2); t.wrapS = t.wrapT = avg.wrapS = avg.wrapT = THREE.RepeatWrapping; return { t, avg, across: W };
+}
+// the wall: unlit paint times the candle's tint, times one form shade by face (0.56 away from the flame to 1 facing it:
+// the plate towers' drums go 0.72 to 1 round a curve; a box has four flat faces and needs the wider step to read as a box). The windows wipe from the dark panel to the lit one up the whole building: aH is how
+// far up the building a point is (0 at the cloth, 1 at the top roof).
+// ribs: { dark, lit, across } for a face with ribs too fine to draw at a distance (the twins): the same two panels with
+// the ribs averaged away, and the panel's width in texels. Where a rib is under about three pixels the wall fades to those.
+function bldgMat(tDark, tLit, ribs) {
+  return new THREE.ShaderMaterial({ defines: ribs ? { RIBS: 1, ACROSS: ribs.across.toFixed(1) } : {},
+    uniforms: { tDark: { value: tDark }, tLit: { value: tLit }, tDarkA: { value: ribs ? ribs.dark : null }, tLitA: { value: ribs ? ribs.lit : null }, wipe: { value: 0 }, tint: { value: new THREE.Color(1, 1, 1) }, toFlame: { value: new THREE.Vector2(1, 0) }, opacity: { value: 1 } },
+    vertexShader: "attribute float aH; varying vec2 vUv; varying vec3 vN; varying float vH; void main(){ vUv = uv; vN = normal; vH = aH; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }",
+    fragmentShader: `uniform sampler2D tDark, tLit, tDarkA, tLitA; uniform float wipe, opacity; uniform vec3 tint; uniform vec2 toFlame; varying vec2 vUv; varying vec3 vN; varying float vH;
+      void main(){ float k = smoothstep(0.0, 1.0, (wipe * 1.12 - 0.02 - vH) / 0.10);
+        vec3 dk = texture2D(tDark, vUv).rgb, lt = texture2D(tLit, vUv).rgb;
+        #ifdef RIBS
+          float tpp = length(vec2(dFdx(vUv.x), dFdy(vUv.x))) * ACROSS, w = smoothstep(4.6, 6.7, tpp);       // texels a pixel across the ribs (a rib is 16 texels)
+          dk = mix(dk, texture2D(tDarkA, vUv).rgb, w); lt = mix(lt, texture2D(tLitA, vUv).rgb, w);
+        #endif
+        vec3 c = mix(dk, lt, k);
+        float s = mix(0.56, 1.0, smoothstep(-0.9, 0.9, dot(normalize(vN.xz), toFlame)));
+        gl_FragColor = vec4(c * tint * s, opacity); }` });
+}
+// four walls of a box w by d whose roof is y = 0: the stretch from ya down to yb below the roof (the box itself is 0 to h;
+// h to h + sl is its sleeve, more of the same wall that stays inside the box below, or under the cloth, so a box that
+// overshoots never shows a gap). nx, nz columns and nf floors of the panel over the box. y0: the box's foot in the building, H: the building's height.
+function bldgWalls(w, d, h, ya, yb, tile, nx, nz, nf, y0, H, seed) {
+  const pos = [], nor = [], uv = [], ah = [], idx = [], x = w / 2, z = d / 2;
+  [[[-x, z], [x, z], [0, 1], nx], [[x, z], [x, -z], [1, 0], nz], [[x, -z], [-x, -z], [0, -1], nx], [[-x, -z], [-x, z], [-1, 0], nz]].forEach(([a, b, n, cols], q) => {
+    // every face starts on another column and every box on another floor of the panel, so its few dark windows never line up
+    const u0 = Math.floor(hash(seed, q) * tile.cols) / tile.cols, u1 = u0 + cols / tile.cols, vr = nf / tile.rows, vt = Math.floor(hash(seed, 9) * tile.rows) / tile.rows + vr, va = vt - (ya / h) * vr, vb = vt - (yb / h) * vr, i = pos.length / 3;
+    pos.push(a[0], -yb, a[1], b[0], -yb, b[1], b[0], -ya, b[1], a[0], -ya, a[1]); for (let j = 0; j < 4; j++) nor.push(n[0], 0, n[1]);
+    uv.push(u0, vb, u1, vb, u1, va, u0, va); ah.push((y0 + h - yb) / H, (y0 + h - yb) / H, (y0 + h - ya) / H, (y0 + h - ya) / H); idx.push(i, i + 1, i + 2, i, i + 2, i + 3);
+  });
+  const g = new THREE.BufferGeometry(); g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute("normal", new THREE.Float32BufferAttribute(nor, 3));
+  g.setAttribute("uv", new THREE.Float32BufferAttribute(uv, 2)); g.setAttribute("aH", new THREE.Float32BufferAttribute(ah, 1)); g.setIndex(idx); return g;
+}
+// B: one entry of S.BUILDINGS. K: { tiles, roofT, slot, tops, now() }. Returns its per-frame update; registers the
+// building (kind drum, the plate towers' setters), its cut in the cloth (kind slots) and what stands on its roof (a volume).
+function building(world, B, K) {
+  const [bx, bz] = B.at, n = B.boxes.length, tile = K.tiles[B.face], wall = bldgMat(tile.dark, tile.lit, tile.ribs), roofM = new THREE.MeshBasicMaterial({ map: K.roofT, toneMapped: false });
+  const tower = named(new THREE.Group(), B.name); tower.position.set(bx, 0, bz); tower.visible = false; world.add(tower);
+  wall.uniforms.toFlame.value.set(S.LAY.candle[0] - bx, S.LAY.candle[1] - bz).normalize(); wall.shadowSide = THREE.DoubleSide;
+  let y0 = 0; const sleeves = [];
+  const tiers = B.boxes.map((t, k) => {       // a group whose origin is the box's roof
+    const g = named(new THREE.Group(), `${B.name}.tier_${k}`), sl = 0.16 * t.h + 0.4, seed = B.i * 7 + k; tower.add(g);
+    const m = new THREE.Mesh(bldgWalls(t.w, t.d, t.h, 0, t.h, tile, t.nx, t.nz, t.nf, y0, B.H, seed), wall); m.castShadow = true; g.add(m);
+    const sm = new THREE.Mesh(bldgWalls(t.w, t.d, t.h, t.h, t.h + sl, tile, t.nx, t.nz, t.nf, y0, B.H, seed), wall); g.add(sm); sleeves.push(sm);
+    const roof = new THREE.Mesh(new THREE.PlaneGeometry(t.w, t.d), roofM); roof.rotation.set(-HALF, 0, HALF * ((B.i + k) % 4)); roof.position.y = 0.004; roof.castShadow = true; g.add(roof);
+    y0 += t.h; return g;
+  });
+  const place = (e) => { let y = 0; tiers.forEach((g, k) => { y += B.boxes[k].h * e[k] - (e[k] < 0.02 ? 0.03 : 0); g.position.y = y; }); return y; };       // each box out of the one below
+  // the cut: a pale line round the footprint, drawn in the cloth before the building comes up out of it
+  const b0 = B.boxes[0], cw = b0.w + 0.24, cd = b0.d + 0.24, cx = bx - cw / 2, cz = bz + cd / 2, len = 2 * (cw + cd);
+  const cut = K.slot({ len, pose(s) { s = Math.min(Math.max(s, 0), len); return s < cw ? { x: cx + s, z: cz, hx: 1, hz: 0 } : s < cw + cd ? { x: cx + cw, z: cz - (s - cw), hx: 0, hz: -1 } : s < 2 * cw + cd ? { x: cx + cw - (s - cw - cd), z: cz - cd, hx: -1, hz: 0 } : { x: cx, z: cz - cd + (s - 2 * cw - cd), hx: 0, hz: 1 }; } });
+  cut.visible = false; world.add(named(cut, B.name + "_cut")); REG.add(B.name + "_cut", cut, { kind: "slots" });
+  // on the roof: a card that turns to the lens, like the other small volumes (the spire is as wide as the box it stands on)
+  let orn = null; const o = B.topAt || [0, 0];
+  if (B.top) { const p = K.tops[B.top], h = B.top === "spire" ? (B.boxes[n - 1].w * p.h) / p.w : p.cm;
+    orn = volume(world, `${B.name}_${B.top}`, [bx + o[0], bz + o[1]], p.t, (h * p.w) / p.h, h); orn.g.visible = false; }
+  const ornAt = (k, y) => { if (!orn) return; const now = K.now(), c = now.cam.P; orn.g.visible = tower.visible && k > 0.02; orn.g.position.y = y; orn.scale(1, Math.max(k, 0.001)); orn.aim([c[0], c[1] - y, c[2]], now.L); orn.tint(); };
+  const up = (f) => {
+    const t0 = S.bldgRise(B.slot), c = tintAt(bx, bz), e = tiers.map((_, k) => spring(f - t0 - S.BLDG.tier * k, B.zeta, B.period));
+    tower.matrixAutoUpdate = true;       // fold() below writes the matrix itself, for that frame
+    cut.visible = f >= S.bldgCut(B.slot); cut.draw((f - S.bldgCut(B.slot)) / S.BLDG.cut);
+    tower.visible = f >= t0; const y = place(e);
+    wall.uniforms.tint.value.copy(c); wall.uniforms.wipe.value = smooth((f - t0 - S.BLDG.wipe) / S.BLDG.wipeN);
+    roofM.color.setRGB(Math.min(1, c.r * 1.06), Math.min(1, c.g * 1.06), Math.min(1, c.b * 1.06));       // roofs a little lighter than walls
+    ornAt(spring(f - t0 - S.BLDG.tier * n - 2, 0.55, 12), y);       // it springs up on the roof once the top box is out
+  };
+  const each = (k) => (typeof k === "function" ? k : Array.isArray(k) ? (i) => k[i] : () => k);
+  up.set = {
+    // telescope(k): 1 = up as built, 0 = down in the cloth; a number, one value a box (bottom first) or a function (box, boxes)
+    telescope(k) { const fn = each(k), e = tiers.map((_, i) => clamp(fn(i, n), 0, 1.2)); tower.visible = e.some((v) => v > 0.002); ornAt(smooth(e[n - 1] * 2 - 1), place(e)); },
+    windows(k) { wall.uniforms.wipe.value = clamp(k); },       // 1 lit, 0 dark: the top floor goes dark first
+    // fold(k, heading): the building closes sideways the way a pop-up box closes, 0 standing to 1 flat on the cloth. The
+    // walls across the heading hinge over about their feet, the roof rides across on them staying level, the other two
+    // walls shear flat. It ends as one card: the wall that was away from the heading, face up, the roof at its far end.
+    // heading: the way it goes over (radians, 0 = toward +z, the viewer); default away from the candle. Call it on a
+    // building that is up (telescope 1).
+    fold(k, heading) { k = clamp(k); if (k <= 0) return; const a = k * (HALF - 0.0002), h = heading === undefined ? Math.atan2(bx - S.LAY.candle[0], bz - S.LAY.candle[1]) : heading, sx = Math.sin(h) * Math.sin(a), sz = Math.cos(h) * Math.sin(a), lift = S.BLDG.flat * smooth((k - 0.5) / 0.4);       // lying, it is clear of the cuts under it (their lines are drawn with a depth offset)
+      tower.matrixAutoUpdate = false; tower.matrix.set(1, sx, 0, bx, 0, Math.cos(a), 0, lift, 0, sz, 1, bz, 0, 0, 0, 1); tower.matrixWorldNeedsUpdate = true;
+      sleeves.forEach((m) => { m.visible = false; });
+      // what stands on the roof hinges down the same way first, and rides the roof across
+      if (orn && orn.g.visible) { orn.set.fold(clamp(k / 0.3), h); orn.g.position.set(bx + o[0] + B.H * sx, B.H * Math.cos(a) + lift + 0.05, bz + o[1] + B.H * sz); } },
+  };
+  REG.add(B.name, tower, { kind: "drum", set: up.set, it: { B, tower, tiers, wall, roofM, cut, orn } });
+  return up;
+}
+
 // ---------- the table: the world every section stands on, and section 5's pieces (skins/s05.js wraps this)
 export async function buildTable(X) {
   const scene = X.scene;
@@ -196,10 +319,10 @@ export async function buildTable(X) {
   // "New York" (Nathan Fenwick's note; Robin's choice on Nov 12, from cut 05 on). ?glass1=1 (GLASS1=1 on a render) brings
   // back the first green lattice goblet of cuts 01 to 04.
   const GLASS = new URLSearchParams(location.search).has("glass1") ? "tower_glass" : "tower_glass2";
-  const names = ["treeman", "citizen", "citizen_woman", "tower_plate", "tower_plate_dark", GLASS, GLASS + "_dark", "tower_bottle", "tower_bottle_dark", "basket", "saltpepper", "candle", "redwood", "sapling", "fence_trio", "plate_disc", "fg_glass", "fg_fork", "cloth", "room", ...(DRUMS ? ["tier_wall", "tier_wall_dark", "tier_roof"] : [])];
+  const names = ["treeman", "citizen", "citizen_woman", "tower_plate", "tower_plate_dark", GLASS, GLASS + "_dark", "tower_bottle", "tower_bottle_dark", "basket", "saltpepper", "candle", "redwood", "sapling", "fence_trio", "plate_disc", "fg_glass", "fg_fork", "cloth", "room", ...(DRUMS ? ["tier_wall", "tier_wall_dark", "tier_roof"] : []), ...BLDG_PLATES];
   const im = Object.fromEntries(await Promise.all(names.map(async (n) => [n, await image(n)])));
   const P = {}, one = (n, o) => { const c = cut(im[n], null, o); P[o?.as || n] = { ...c, t: tex(c.canvas) }; return P[o?.as || n]; };
-  for (const n of ["treeman", "citizen", "citizen_woman", "basket", "candle", "redwood", "sapling", "plate_disc", "fg_glass", "fg_fork"]) one(n);
+  for (const n of ["treeman", "citizen", "citizen_woman", "basket", "candle", "redwood", "sapling", "plate_disc", "fg_glass", "fg_fork", "water_tower", "spire"]) one(n);       // the last two stand on the buildings' roofs
   one("citizen", { recolour: [52, 60, 104], as: "citizen_navy" }); one("citizen_woman", { recolour: [196, 150, 62], as: "citizen_ochre" });
   const roofT = DRUMS ? tex(cut(im.tier_roof).canvas) : null;
   for (const n of ["tower_plate", GLASS, "tower_bottle"]) { const lit = one(n), dk = cut(im[n + "_dark"], lit.box); P[n + "_dark"] = { ...dk, t: tex(dk.canvas) }; }
@@ -300,6 +423,14 @@ export async function buildTable(X) {
     v.set.windows = (k) => v.tint(lerp(0.7, 1, clamp(k)));      // 1 lit, 0 dimmed as before "New York"
     rise.push((f) => { const t0 = S.C.newyork1 + 3 * S.RISERS.indexOf(name), b = spring(f - t0, 0.55, 14); v.scale(1, 1 + 0.07 * (b - clamp((f - t0) / 2)) * (f > t0 ? 1 : 0)); v.tint(lerp(0.7, 1, smooth((f - t0) / 14))); });
   }
+  // the buildings: pop-ups among the tableware, hidden until "New York" (their makers are above buildTable)
+  { const tiles = Object.fromEntries(Object.entries(BLDG_CROP).map(([k, s]) => [k, { lit: bldgTile(im["bldg_" + k], s), dark: bldgTile(im["bldg_" + k + "_dark"], s), cols: s.cols, rows: s.rows.length - 1 }]));
+    { const lit = twinTile(im.bldg_twin), dark = twinTile(im.bldg_twin_dark); tiles.twin = { lit: lit.t, dark: dark.t, cols: 1, rows: 1, ribs: { lit: lit.avg, dark: dark.avg, across: lit.across } }; }
+    // the mast: a plain strip of the twins' own card (the panel's plain band), 6 cm tall
+    const mc = document.createElement("canvas"); mc.width = 20; mc.height = 320; { const g = mc.getContext("2d"); for (let y = 0; y < 320; y += 40) g.drawImage(im.bldg_twin, 200 + 37 * (y / 40), 458, 20, 40, 0, y, 20, 40); }
+    const tops = { spire: P.spire, tank: { ...P.water_tower, cm: 3.4 }, mast: { t: tex(mc), w: 20, h: 320, cm: 6 } };
+    const K = { tiles, roofT: tex(im.bldg_roof), slot, tops, now: () => X.now };
+    for (const B of S.BUILDINGS) { const up = building(world, B, K); rise.push((f) => up(f)); } }
   // the candle: body and flame are one plate, split where the flame meets the wick so the flame can lean
   const cp = P.candle, widths = []; for (let y = 0; y < cp.h; y++) { let n = 0; for (let x = 0; x < cp.w; x++) if (cp.data.data[(y * cp.w + x) * 4 + 3] > 200) n++; widths.push(n); }
   let split = 0, peak = 0; for (let y = 0; y < cp.h * 0.45; y++) { if (widths[y] > peak) peak = widths[y]; if (peak > 20 && widths[y] < peak * 0.35) { split = y; break; } }

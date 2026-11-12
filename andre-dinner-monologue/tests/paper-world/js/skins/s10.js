@@ -41,9 +41,13 @@ export async function build(X) {
   const under = (p) => { const r = along(p); return r > 1.5 && r < RH - 3 && Math.abs(across(p)) < redHalf ? r : 0; };
   const posts = X.postObjs.map((o) => { const s = o.Q.at(F0); return { ...o, e: get(o.Q.name), at: [s.x, s.z], h: FH[o.G.userData.kind] || 19, push: under([s.x, s.z]) }; });
   posts.slice().sort((a, b) => b.at[1] - a.at[1]).forEach((p, r) => { p.rank = r; });
+  // a card on the left or the far edge that comes down across a Twin Tower lying flat lands on top of it
+  for (const p of posts) { const [x, z] = p.at, land = x < -40 ? [x, x + p.h, z - 1.6, z + 1.6] : z < -60 ? [x - 1.6, x + 1.6, z, z + p.h] : null;
+    p.onTwin = !!land && E.TWIN_CARDS.some((c) => land[0] < c[1] && land[1] > c[0] && land[2] < c[3] && land[3] > c[2]); }
   const vols = E.FOLDS.map((F, i) => ({ ...F, e: get(F.name), camP: camAt(F.t0), lift: 0.16 + 0.03 * i }));
   const dark = E.DARK.map(([name, half, lag]) => ({ e: get(name), half, lag }));
   const towers = Object.keys(E.TELE).map((name) => ({ name, e: get(name) }));
+  const bldgs = E.BLDGS.filter((b) => reg.has(b.name)).map((b) => ({ ...b, e: get(b.name) }));       // section 5's buildings: the plate towers' kind and setters
   const bricks = reg.names(6).filter((n) => n.startsWith("brick_")).map((n, i) => ({ e: get(n), i }));
   const standees = reg.names(5).filter((n) => n.startsWith("citizen_")).map((n) => get(n));
   const fades = [5, 6, 7].flatMap((n) => reg.names(n)).filter((n) => !KEEP.has(n)).map(get);
@@ -74,13 +78,15 @@ export async function build(X) {
     // "feelings", "thoughts": windows dark, the plate towers down into their plates, the other towers flat
     for (const d of dark) d.e.set.windows(E.windowsAt(d.half, d.lag, f));
     for (const t of towers) if (f > E.TELE[t.name]) t.e.set.telescope((i) => E.teleAt(t.name, i, f));
+    // the buildings: dark, then down into their cuts; the Twin Towers close sideways and lie flat
+    for (const b of bldgs) { b.e.set.windows(E.windowsAt(b.half, b.lag, f)); if (f <= b.t0) continue; if (b.fold) b.e.set.fold(E.twinFold(f), E.headingOf(E.TWINS.dir)); else b.e.set.telescope((i, n) => E.bldgTele(b.t0, i, n, f)); }
     for (const v of vols) foldVolume(v.e, E.drop(f - v.t0, v.n), v.dir, v.camP, v.lift);
 
     // "history": the fence hinges down inward, the nearest card first (a card the sleeve or the trunk pushed in stays in)
     for (const p of posts) {
       const cur = p.H.rotation.x / HALF, k = Math.max(E.fenceDown(p.rank, f), p.push ? E.pushed(ar, p.push, p.h) / HALF : 0), nk = Math.min(cur, -k);
       if (nk < cur) p.e.set.hinge(nk);
-      p.G.position.y += 0.09 * Math.min(1, k * 2);                                          // lying, it is a card's thickness above the plate's disc
+      p.G.position.y += 0.09 * Math.min(1, k * 2) + (p.onTwin ? (S.BLDG.flat + 0.1) * smooth(k * 1.5) : 0);       // lying, it is a card's thickness above the plate's disc (and above a twin's card)
     }
     // "memory": the bricks left standing at the fence hinge down
     for (const b of bricks) { const o = b.e.obj, k = E.brickDown(b.i, f); if (!o.visible || k <= 0) continue; o.rotation.order = "YXZ"; o.rotation.x = -k * (HALF - 0.004); o.position.y += 0.05 * k; }

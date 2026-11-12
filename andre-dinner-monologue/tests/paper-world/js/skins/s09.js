@@ -140,7 +140,8 @@ export async function build(X) {
     const m = new THREE.Mesh(new THREE.CylinderGeometry(330, 330, 300, 48, 1, true), new THREE.MeshBasicMaterial({ map: t, side: THREE.BackSide, color: new THREE.Color(0.5, 0.5, 0.5), toneMapped: false }));
     m.position.y = 62 + 345 / 2 + 150 - 0.5; m.visible = false; world.add(m); reg.add("room_top", m, { kind: "room" }); return m; })();
   // ... and on the towers: their owners set their tint every frame; this multiplies it for that frame
-  const lit = ["glass_far", "glass_near", "bottle", "salt", "pepper", "basket", "plate_far.tower", "plate_near.tower"].filter((n) => reg.has(n)).map((n) => reg.get(n));
+  const lit = ["glass_far", "glass_near", "bottle", "salt", "pepper", "basket", "plate_far.tower", "plate_near.tower",
+    ...(X.S.BUILDINGS || []).flatMap((b) => [b.name, `${b.name}_${b.top}`])].filter((n) => reg.has(n)).map((n) => reg.get(n));       // and section 5's buildings, with what stands on their roofs
   const _mul = new THREE.Color(), seen = new Set();
   function spill(k, phi, hub) {
     spillG.visible = k > 0.003; if (!spillG.visible) return;

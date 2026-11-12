@@ -43,8 +43,22 @@ export const HALVES = { far: C.feelings, near: C.thoughts };
 export const DARK = [["plate_far.tower", "far", 0], ["bottle", "far", 2], ["glass_far", "far", 4], ["watchtower_c", "far", 5], ["watchtower_b", "far", 7],
   ["plate_near.tower", "near", 0], ["glass_near", "near", 2], ["salt", "near", 4], ["pepper", "near", 5], ["basket", "near", 6]];
 export const windowsAt = (half, lag, f) => 1 - smooth((f - HALVES[half] - lag) / 11);
+export const TWINS = { t0: C.feelings + 32, n: 20, dir: [0, 1] };       // toward the viewer
 export const TELE = { "plate_far.tower": C.feelings + 9, "plate_near.tower": C.thoughts + 7 };
 export const teleAt = (name, i, f) => 1 - smoother((f - TELE[name] - 3 * (3 - i)) / 9);       // i: 0 to 2 the tiers, 3 the cap: the cap goes first
+// the buildings (section 5's pop-ups) go the way the plate towers go: their windows go dark on "feelings" (they all stand
+// in the far half), top floor first, one building a frame and a half after another; then each telescopes down into its
+// cut in the cloth, the top box first, two frames apart. The cut stays in the cloth and fades with every other slot on
+// "erased". bldg_01 goes first: it stands where the far glass comes down, and is in the cloth before the glass lands.
+// The Twin Towers do not go down into the cloth. Their windows go dark with the rest; they stand dark while the others
+// go (all are in the cloth 28 frames after "feelings"); then both close sideways the same way, as a pop-up box closes,
+// slowly and with no bounce, and lie flat as two cards along the ground the skyline stood on. The cards fade on "erased".
+export const BLDGS = (() => { let j = 0; return S5.BUILDINGS.map((b) => { const fold = b.end === "fold", k = fold ? 4 : j++; return { name: b.name, half: "far", fold, lag: 1 + 1.5 * k, t0: fold ? TWINS.t0 : HALVES.far + 9 + 2 * k }; }); })();
+export const bldgTele = (t0, i, n, f) => 1 - smoother((f - t0 - 3 * (n - 1 - i)) / 9);       // i: the box, 0 the bottom one of n: the top box goes first
+export const twinFold = (f) => smooth((f - TWINS.t0) / TWINS.n);       // a plain ease, no bounce: at its fastest 7 degrees a frame
+// where each twin lies once it is flat: [x0, x1, z0, z1] on the cloth (the far wall face up, then the roof). The fence
+// cards that come down on these two cards later ("history") land on top of them (skins/s10.js)
+export const TWIN_CARDS = S5.BUILDINGS.filter((b) => b.end === "fold").map((b) => { const t = b.boxes[0], x = b.at[0] - t.w / 2, z = b.at[1] - t.d / 2; return [x, x + t.w, z, z + b.H + t.d]; });
 // every volume that hinges down flat: when, how many frames, and the way its top comes down: toward open cloth, and
 // across the frame where it can, so that from above a card lying down does not look like one still standing
 export const FOLDS = [
@@ -147,8 +161,9 @@ export const BEATS = [
   [C.remind, "remind", "(section 8) the couple hinge down at the left edge, the last standees to fall"],
   [C.species, "species", "the pine folds shut tier by tier from the top; then it lies down"],
   [C.human, "human", "the redwood hinges down into the city across the fence line, pushing the cutlery under it flat; the tree man folds beside it"],
-  [C.feelings, "feelings", "the far half's windows go dark, top floor first; the far plate tower telescopes down; the bottle and the far glass hinge down"],
+  [C.feelings, "feelings", "the far half's windows go dark, top floor first; the far plate tower and the six buildings telescope down; the bottle and the far glass hinge down; the Twin Towers stand dark"],
   [C.thoughts, "thoughts", "the near half's windows go dark; the near plate tower telescopes down; the near glass, the shakers and the basket hinge down"],
+  [TWINS.t0, "(thoughts)", "the Twin Towers close sideways like a pop-up box, both toward the viewer, and lie flat (20 frames)"],
   [C.history, "history", "the fence cutlery hinges down flat, the nearest card first, round the whole table"],
   [C.memory, "memory", "the watchtowers and the bricks lie down: every card lies in the cloth"],
   [C.erased, "erased", "every flat shape and every slot fades to blank cream cloth over 40 frames: the widest frame of the film"],

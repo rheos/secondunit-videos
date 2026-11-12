@@ -108,6 +108,35 @@ export const citizenAt = (i, f) => { const s = CITIZENS[i].at(f); s.y = 0; s.lea
 export const RISERS = ["plate_far", "bottle", "glass_far", "plate_near", "glass_near", "salt", "pepper", "basket", "napkin"];
 export const riseAt = (name, f, k = 0) => spring(f - (C.newyork1 + 3 * RISERS.indexOf(name) + 3 * k), 0.6, 18);
 
+// ---------- the buildings ("New York"): pop-ups that are not tableware. Each is one to three boxes that step in as they
+// rise, a painted face on all four sides, laid out in whole window columns and whole floors, so a window is the same
+// size on every building (0.5 cm wide). FACES: one window column's width and one floor's height, in cm. The Twin Towers
+// (it is 1981) are the exception: their panel has ribs too fine to repeat, so it goes on once a side, whole (5 by 38 cm).
+export const FACES = { stone: { col: 1.025, floor: 0.706 }, brick: { col: 1.191, floor: 0.914 }, teal: { col: 1.578, floor: 0.656 }, twin: { col: 5, floor: 38 } };
+// at: the middle of its footprint (x, z). tiers: [columns along x, columns along z, floors], bottom first.
+// top: what stands on the roof ("spire", "tank", "mast") and where, in cm from the roof's middle.
+// slot: its place in the rise order (the twins share one: they come up together). end: how it leaves in section 10
+// (default: it telescopes down into its cut; "fold": it closes sideways like a pop-up box and lies flat).
+// Where they stand and why: notes/buildings.md.
+export const BUILDINGS = [
+  { name: "bldg_01", at: [-6, -25], face: "brick", tiers: [[4, 4, 10]], top: "tank", topAt: [0.9, -0.8] },
+  { name: "bldg_02", at: [-21.5, -21], face: "brick", tiers: [[6, 5, 13]], top: "tank", topAt: [-1.7, -1.2] },
+  { name: "bldg_03", at: [-27, -36], face: "stone", tiers: [[8, 8, 18], [6, 6, 14], [4, 4, 10]], top: "spire" },
+  { name: "bldg_04", at: [-33, -23], face: "stone", tiers: [[6, 5, 16], [4, 3, 8]] },
+  { name: "bldg_05", at: [-25.5, -13.5], face: "teal", tiers: [[3, 3, 22]] },
+  { name: "bldg_06", at: [-34.2, -6.8], face: "teal", tiers: [[4, 3, 14]] },
+  // the Twin Towers: two plain boxes 5 cm square and 38 cm tall, 2.5 cm apart and set a little diagonal, at the far end
+  // of the skyline. The tallest things in the city until the pine. One carries a card mast.
+  { name: "twin_1", at: [-30.5, -49.5], face: "twin", tiers: [[1, 1, 1]], top: "mast", slot: 6, zeta: 0.7, period: 22, end: "fold" },
+  { name: "twin_2", at: [-23, -52], face: "twin", tiers: [[1, 1, 1]], slot: 6, zeta: 0.7, period: 22, end: "fold" },
+].map((b, i) => { const F = FACES[b.face], boxes = b.tiers.map(([nx, nz, nf]) => ({ nx, nz, nf, w: nx * F.col, d: nz * F.col, h: nf * F.floor }));
+  return { slot: i, zeta: 0.55 + 0.15 * hash(i, 31), period: 16, end: "telescope", ...b, i, boxes, H: boxes.reduce((s, t) => s + t.h, 0) }; });
+// each one's footprint is cut in the cloth (4 frames), then it telescopes up out of the cut, box by box, three frames
+// apart; the buildings are three frames apart too, one frame behind the tableware's own rise (RISERS), so the city
+// comes up as one event. Its windows wipe on 12 frames after it starts to rise, as the plate towers' do.
+export const BLDG = { cut: 4, tier: 3, wipe: 12, wipeN: 22, flat: 1.0 };       // flat: how high a building folded flat lies over the cloth, cm
+export const bldgCut = (slot) => C.newyork1 + 3 * slot, bldgRise = (slot) => bldgCut(slot) + BLDG.cut;
+
 // ---------- the tree: the sapling springs a tier on "trees", shoots up into a redwood on "redwoods"
 export const treeAt = (f) => ({ tier: spring(f - C.trees, 0.5, 12), grow: spring(f - C.redwoods, 0.72, 30) });
 
