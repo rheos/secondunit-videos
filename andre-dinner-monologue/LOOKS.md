@@ -301,6 +301,11 @@ Robin, Nov 11 2026, about 8 pm Pacific, on `andre_paper-world-s06-s07-test01_f25
     end the Twin Towers fold flat sideways instead of sinking, our call, so the image does not read
     as September 11. On the audio he decided to credit the film and not pursue rights.
     Mark's camera note is still open.
+  - Cut 05 is up: https://youtu.be/730T3xJ5LTY, Novadiem Studio, unlisted, 12:02 pm Nov 12, link
+    to Telegram, from commit dfbfa92, with the fuller credit in the description (the film, Louis
+    Malle, Andre Gregory, Wallace Shawn). Cut 03 (https://youtu.be/CYw1f0Y12WY) is still up too,
+    because Mark has that link: after eleven hours it shows no rejection and no region block, 9
+    views. Deleting it is Robin's call.
 - What is and is not code, so nobody overstates it: the 48 surfaces are painted images (GPT Image on
   the ChatGPT plan, no credits). Everything else is code: the 3D table, where each piece stands, every
   move, the camera, the candlelight and shadows, the lens blur, the render.
