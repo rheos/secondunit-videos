@@ -1,0 +1,50 @@
+{
+ "section": 2,
+ "words": [
+  { "key": "spoiled",
+   "word": "spoiled",
+   "cue": 243
+  },
+  { "key": "children",
+   "word": "children",
+   "cue": 255,
+   "hand": 261
+  },
+  { "key": "bathtub",
+   "word": "bathtub",
+   "cue": 306
+  },
+  { "key": "playing",
+   "word": "playing",
+   "cue": 338
+  },
+  { "key": "duck",
+   "word": "duck",
+   "cue": 380
+  },
+  { "key": "thinking",
+   "word": "thinking",
+   "cue": 408
+  },
+  { "key": "what",
+   "word": "what",
+   "cue": 440
+  },
+  { "key": "do",
+   "word": "do",
+   "cue": 456
+  }
+ ],
+ "stills": [
+  212,
+  240,
+  254,
+  266,
+  316,
+  398,
+  470,
+  478,
+  486,
+  494
+ ]
+}

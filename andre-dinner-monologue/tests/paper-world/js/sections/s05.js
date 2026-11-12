@@ -1,0 +1,226 @@
+// s05.js: section 5, the table city, f1800 to f2544. The layout, the camera keys and every event of the section,
+// all pure functions of the film frame f (24 fps). Past f2544 every function here holds its last state, so the
+// city stands for the sections that follow.
+// Frames come from js/cues.js (tools/onsets.py). Units: centimetres, y up, the cloth is y = 0,
+// x to the right, z toward the viewer (the near place setting is at +z, the far one at -z).
+import { CUES } from "../cues.js";
+import { clamp, lerp, smooth, spring, hash } from "../kit.js";
+import { SKIN, makePath, rev, leg, walker, mix3, crane, camRaw, camFrom, RAMP } from "./lib.js";
+export { SKIN };
+
+export const F0 = 1800, F1 = 2544;
+const c = (k) => CUES[k].f;
+export const C = {
+  expert: c("expert"), trees: c("trees"), redwoods: c("redwoods"), eighty4: c("eighty4"), backpack: c("backpack"),
+  tomorrow: c("tomorrow"), where: c("where"), from: c("from"), newyork1: c("newyork1"), newyork2: c("newyork2"),
+  never: c("never"), do: c("do"), yes: c("yes"), why: c("why"), leave2: c("leave2"), theories: c("theories"), all: c("all"),
+};
+
+// ---------- the table (x, z)
+export const LAY = {
+  cloth: { hw: 45, hd: 65 },
+  plate_far: [0, -44], plate_near: [0, 44], plateR: 11,
+  glass_far: [9, -30.5], glass_near: [12, 30],
+  bottle: [21, -24], candle: [10.5, -16.5], flameY: 10.6,
+  salt: [-9, -2], pepper: [-12.5, 2], basket: [-21, 12], napkin: [-25.5, 44], pot: [37, -57.5],
+  cutlery: {   // rest stacks: [x, zBase (handle end), kind]
+    far: [[-13.5, -34.5, "fork"], [13.2, -34.5, "knife"], [16.6, -34.5, "spoon"]],
+    near: [[-13.5, 53.5, "fork"], [13.2, 53.5, "knife"], [16.6, 53.5, "spoon"]],
+  },
+};
+// the fence line: the cloth edge inset, with the far right corner cut off by a long chamfer, so the pot
+// (the redwood) and a triangle of cloth are outside the wall. n = the chamfer's outward normal, t = along it.
+export const CH = { n: [0.7, -0.714], t: [0.715, 0.7], c: 45.4, a: [3.1, -60.5], b: [40.5, -23.9] };
+export const FENCE_POLY = [[-40.5, -60.5], CH.a, CH.b, [40.5, 60.5], [-40.5, 60.5]];
+const onChamfer = (x) => [x, (0.7 * x - CH.c) / 0.714];
+export const GATE = onChamfer(27);                        // where the tree man walks out between two posts
+const G = (k, inset = 1.5) => [GATE[0] + k * 3.3 * CH.t[0] - inset * CH.n[0], GATE[1] + k * 3.3 * CH.t[1] - inset * CH.n[1]];
+
+// ---------- the tree man
+const VT = 2.6 / 12;                                                  // 2.6 cm a step, 12 frames a step
+const candle = LAY.candle;
+const TM_A = [[34, -84], [33, -64], [31.6, -55], [22, -38], [16, -28.5]];
+const TM_B = [[16, -28.5], [11.6, -22.6], [7.3, -19.2], [6.2, -15.4], [8.5, -12.2], [12.0, -12.1], [13.4, -13.5]];
+const TM_C = [[13.4, -13.5], [14.9, -18.4], [15.3, -27.3], [20.6, -33], GATE, [32.6, -40.5]];
+// test 03: a standee cannot be off the table, so his slot starts at the cloth's far edge and he waits there
+const TM_A3 = [[33.05, -63.6], [32.9, -61.5], [31.6, -55], [22, -38], [16, -28.5]];
+const legA = SKIN ? leg(TM_A3, { end: C.eighty4, v: VT }) : leg(TM_A, { end: C.eighty4, v: VT, rampIn: false });
+const legB = leg(TM_B, { start: C.backpack - 5, v: VT * 1.06 });
+const legC = leg(TM_C, { start: C.newyork1 + 12, v: VT });
+export const TM = walker({
+  name: "treeman", legs: [legA, legB, legC],
+  turns: [{ f: C.where }, { f: C.newyork1 + 3 }, { f: C.why - 4 }],  // faces the near setting; turns to go; looks back in
+});
+export const TMF = { stopB: Math.round(legB.fb), startC: Math.round(legC.fa), gate: Math.round(legC.fa + RAMP / 2 + (legC.path.len - 6.6) / VT), stopC: Math.round(legC.fb) };
+export function treemanAt(f) {
+  const s = TM.at(f), g = s.f;
+  // off the cloth he walks on the room's paper, a card's thickness lower
+  s.y = s.z < -LAY.cloth.hd ? -0.3 : 0;
+  s.lean = smooth((g - C.eighty4) / 12) * (1 - smooth((g - (C.backpack - 10)) / 9));        // leans on the stick at "84"
+  const h = g - (C.backpack - 8); s.hitch = h <= 0 ? 0 : h < 8 ? smooth(h / 8) : 1 - spring(h - 8, 0.5, 12);   // hitches the pack on "backpack"
+  const hp = (g - (C.backpack - 4)) / 8; s.hop = hp > 0 && hp < 1 ? Math.sin(Math.PI * hp) : 0;                    // test 03: one small hop on "backpack"
+  return s;
+}
+
+// ---------- citizens
+const VC = 2.1 / 12;
+const HOME = { bottle: LAY.bottle, plate_far: LAY.plate_far, plate_near: LAY.plate_near, basket: LAY.basket };
+const FOOT = { bottle: 3.0, plate_far: 12.9, plate_near: 12.9, basket: 5.8 };
+function citizen(i, home, fence, arrive, turnAt, o = {}) {
+  let pts = [HOME[home], ...(o.via || []), fence];
+  if (SKIN) {       // a slot from just outside the piece's footprint to the fence; from a plate it leaves at an angle, so the slot is long enough to read
+    const c = HOME[home], n = pts[1], a = Math.atan2(n[1] - c[1], n[0] - c[0]) + (home.startsWith("plate") && !o.via ? (i % 2 ? 1 : -1) * 1.05 : 0);
+    pts = [[c[0] + FOOT[home] * Math.cos(a), c[1] + FOOT[home] * Math.sin(a)], ...pts.slice(1)];
+  }
+  const out = leg(pts, { end: arrive, v: VC * (o.pace || 1), rampIn: SKIN });
+  const back = leg(rev(pts), { start: turnAt + 8 + (o.wait || 0), v: VC * (o.pace || 1), rampOut: SKIN });
+  const w = walker({
+    name: "citizen_" + String(i).padStart(2, "0"), home, legs: [out, back], turns: [{ f: turnAt }],
+    show: SKIN ? [out.fa - 10, back.fb + 10] : [out.fa + 2, back.fb - 3], colour: o.colour ?? i % 5, h: o.h ?? 3.7 + 0.6 * hash(i, 7), hat: o.hat ?? i % 3,
+  });
+  w.popAt = (f) => smooth((f - (out.fa - 9)) / 8) * (1 - smooth((f - back.fb - 1) / 8));     // hinges up before it leaves, folds flat when it is back
+  return w;
+}
+const N1 = C.never, N2 = C.leave2;
+export const CITIZENS = [
+  // first wave: at the fence by "leave", turn on "never do"
+  citizen(1, "bottle", G(1), N1 - 9, N1),
+  citizen(2, "bottle", G(3.2), N1 - 4, N1 + 4),
+  citizen(3, "bottle", G(4.6), N1 - 12, N1 + 2),
+  citizen(4, "plate_far", [14.6, -47.2], N1 - 6, N1 + 6),
+  citizen(5, "plate_far", [-4, -59], N1 - 14, N1 + 2),
+  citizen(6, "plate_near", [6, 59], N1 - 8, N1 + 4),
+  citizen(7, "basket", [-39, 9], N1 - 3, N1 + 8, { pace: 1.04 }),
+  // second wave: at the fence on "leave?", turn after it
+  citizen(8, "plate_far", G(-1.2), N2 - 6, N2 + 8, { via: [[12.5, -40.5]] }),
+  citizen(9, "plate_far", G(-2.6), N2 - 1, N2 + 12, { via: [[11, -42.5]] }),
+  citizen(10, "bottle", G(1.2), N2 - 3, N2 + 6),
+  citizen(11, "bottle", G(3.0), N2 - 9, N2 + 10),
+  citizen(12, "plate_near", [-8, 59], N2 - 5, N2 + 9),
+  citizen(13, "plate_far", [-13, -59], N2 - 2, N2 + 7),
+  citizen(14, "basket", [-39, 17], N2 - 7, N2 + 11),
+  citizen(15, "plate_near", [16, 59], N2 + 2, N2 + 16),
+  citizen(16, "bottle", [39, -12], N2 - 4, N2 + 13),
+];
+export const citizenAt = (i, f) => { const s = CITIZENS[i].at(f); s.y = 0; s.lean = 0; s.hitch = 0; s.pop = CITIZENS[i].popAt(f - ((f - F0) & 1)); return s; };
+
+// ---------- risers ("New York"): each springs up, three frames apart, with overshoot
+export const RISERS = ["plate_far", "bottle", "glass_far", "plate_near", "glass_near", "salt", "pepper", "basket", "napkin"];
+export const riseAt = (name, f, k = 0) => spring(f - (C.newyork1 + 3 * RISERS.indexOf(name) + 3 * k), 0.6, 18);
+
+// ---------- the buildings ("New York"): pop-ups that are not tableware. Each is one to three boxes that step in as they
+// rise, a painted face on all four sides, laid out in whole window columns and whole floors, so a window is the same
+// size on every building (0.5 cm wide). FACES: one window column's width and one floor's height, in cm. The Twin Towers
+// (it is 1981) are the exception: their panel has ribs too fine to repeat, so it goes on once a side, whole (5 by 38 cm).
+export const FACES = { stone: { col: 1.025, floor: 0.706 }, brick: { col: 1.191, floor: 0.914 }, teal: { col: 1.578, floor: 0.656 }, twin: { col: 5, floor: 38 } };
+// at: the middle of its footprint (x, z). tiers: [columns along x, columns along z, floors], bottom first.
+// top: what stands on the roof ("spire", "tank", "mast") and where, in cm from the roof's middle.
+// slot: its place in the rise order (the twins share one: they come up together). end: how it leaves in section 10
+// (default: it telescopes down into its cut; "fold": it closes sideways like a pop-up box and lies flat).
+// Where they stand and why: notes/buildings.md.
+export const BUILDINGS = [
+  { name: "bldg_01", at: [-6, -25], face: "brick", tiers: [[4, 4, 10]], top: "tank", topAt: [0.9, -0.8] },
+  { name: "bldg_02", at: [-21.5, -21], face: "brick", tiers: [[6, 5, 13]], top: "tank", topAt: [-1.7, -1.2] },
+  { name: "bldg_03", at: [-27, -36], face: "stone", tiers: [[8, 8, 18], [6, 6, 14], [4, 4, 10]], top: "spire" },
+  { name: "bldg_04", at: [-33, -23], face: "stone", tiers: [[6, 5, 16], [4, 3, 8]] },
+  { name: "bldg_05", at: [-25.5, -13.5], face: "teal", tiers: [[3, 3, 22]] },
+  { name: "bldg_06", at: [-34.2, -6.8], face: "teal", tiers: [[4, 3, 14]] },
+  // the Twin Towers: two plain boxes 5 cm square and 38 cm tall, 2.5 cm apart and set a little diagonal, at the far end
+  // of the skyline. The tallest things in the city until the pine. One carries a card mast.
+  { name: "twin_1", at: [-30.5, -49.5], face: "twin", tiers: [[1, 1, 1]], top: "mast", slot: 6, zeta: 0.7, period: 22, end: "fold" },
+  { name: "twin_2", at: [-23, -52], face: "twin", tiers: [[1, 1, 1]], slot: 6, zeta: 0.7, period: 22, end: "fold" },
+].map((b, i) => { const F = FACES[b.face], boxes = b.tiers.map(([nx, nz, nf]) => ({ nx, nz, nf, w: nx * F.col, d: nz * F.col, h: nf * F.floor }));
+  return { slot: i, zeta: 0.55 + 0.15 * hash(i, 31), period: 16, end: "telescope", ...b, i, boxes, H: boxes.reduce((s, t) => s + t.h, 0) }; });
+// each one's footprint is cut in the cloth (4 frames), then it telescopes up out of the cut, box by box, three frames
+// apart; the buildings are three frames apart too, one frame behind the tableware's own rise (RISERS), so the city
+// comes up as one event. Its windows wipe on 12 frames after it starts to rise, as the plate towers' do.
+export const BLDG = { cut: 4, tier: 3, wipe: 12, wipeN: 22, flat: 1.0 };       // flat: how high a building folded flat lies over the cloth, cm
+export const bldgCut = (slot) => C.newyork1 + 3 * slot, bldgRise = (slot) => bldgCut(slot) + BLDG.cut;
+
+// ---------- the tree: the sapling springs a tier on "trees", shoots up into a redwood on "redwoods"
+export const treeAt = (f) => ({ tier: spring(f - C.trees, 0.5, 12), grow: spring(f - C.redwoods, 0.72, 30) });
+
+// ---------- the fence: 54 cards dealt off six stacks of cutlery, out along the table edge, hinged up
+export const FENCE_T0 = C.newyork2;
+
+// ---------- the flame: flickers always, leans after the tree man as he passes on "tomorrow"
+export function flameAt(f) {
+  const a = Math.sin(f * 0.37) * 0.5 + Math.sin(f * 0.83 + 1.3) * 0.3 + Math.sin(f * 0.151 + 0.4) * 0.6;
+  const b = Math.cos(f * 0.29 + 2.1) * 0.5 + Math.sin(f * 0.71) * 0.3 + Math.cos(f * 0.117) * 0.6;
+  const tm = TM.at(f), d = Math.hypot(tm.x - candle[0], tm.z - candle[1]);
+  const wake = clamp(1 - (d - 4) / 5) * tm.walk;                      // strongest while he walks close by
+  const p0 = TM.at(f - 8), wx = tm.x - p0.x, wz = tm.z - p0.z, wl = Math.hypot(wx, wz) || 1;
+  return {
+    lx: a * 0.045 + (wx / wl) * 0.5 * wake, lz: b * 0.045 + (wz / wl) * 0.5 * wake,   // lean as a slope (x, z per unit height)
+    h: 1 + 0.06 * Math.sin(f * 0.53) + 0.04 * Math.sin(f * 1.31), gain: 1 + 0.025 * Math.sin(f * 0.47) + 0.02 * Math.sin(f * 1.13),
+  };
+}
+
+// ---------- the camera: one move, keys on the cue frames, position P and target T splined in time
+const tmT = (f, dy = 2.5) => { const s = treemanAt(f); return [s.x, s.y + dy, s.z]; };
+const around = (deg, r, y) => [candle[0] + r * Math.cos(deg * Math.PI / 180), y, candle[1] + r * Math.sin(deg * Math.PI / 180)];
+const flame = [candle[0], 7, candle[1]];
+export const CAM_KEYS = [
+  // f1800-f1930: low across the table, gliding to the far corner, past the glass stem, the plate rim and the knife
+  { f: 1800, P: [-4, 6, -2], T: [12, 4.5, -22] },
+  { f: 1842, P: [-1, 5.6, -14], T: [22, 4, -46] },
+  { f: C.expert, P: [-0.5, 5.4, -25.5], T: tmT(C.expert, 2.4) },
+  { f: C.trees, P: [10, 4.6, -41], T: [28.5, 3.3, -48.5] },
+  // f1930-f2110: beside him at his eye height as he comes in among the tableware; he passes the lens, the camera
+  // swings round behind him, looks up the redwood as it shoots up, and comes back down to him at the bottle
+  { f: 1944, P: [13.2, 4.5, -44.2], T: tmT(1944, 2.7) },
+  { f: 1954, P: [13.9, 4.5, -43], T: tmT(1954, 2.7) },
+  { f: 1964, P: [12.4, 4.6, -40.8], T: tmT(1964, 2.7) },
+  ...(SKIN ? [
+    // test 03: back and a little up, so the tree man (under the far glass's bowl) and the redwood rising at the corner share the frame
+    { f: C.redwoods - 4, P: [2.5, 5, -31.6], T: tmT(C.redwoods - 4, 2.5) },
+    { f: C.redwoods + 10, P: [-9.5, 6.4, -26.2], T: [19.2, 12.2, -37.5] },
+    { f: C.eighty4 + 3, P: [5, 5.3, -37.5], T: [16.3, 2.6, -28.6] },
+    { f: C.eighty4 + 16, P: [11, 5.4, -40], T: [16.2, 2.5, -28.3] },
+  ] : [
+  { f: C.redwoods - 4, P: [4, 4.8, -33], T: tmT(C.redwoods - 4, 2.9) },
+  { f: C.redwoods + 4, P: [3.6, 4.9, -36.5], T: [27, 14, -44] },
+  { f: C.redwoods + 11, P: [6.5, 5.2, -39.6], T: [33.5, 31, -53] },
+  { f: C.eighty4 - 7, P: [9.6, 5.4, -40.4], T: [26, 7, -42] },
+  { f: C.eighty4 - 1, P: [12.4, 5.5, -40.6], T: [16.2, 2.7, -28.3] },
+  { f: C.eighty4 + 8, P: [13.2, 5.4, -40.4], T: [16.2, 2.7, -28.3] },
+  ]),
+  { f: 2048, P: [14.3, 5.2, -39.3], T: [16.2, 2.7, -28.2] },
+  { f: C.backpack, P: [14.6, 5, -37.6], T: [16.2, 2.8, -28] },
+  { f: 2090, P: [8.5, 4.7, -34.4], T: tmT(2090, 2.6) },
+  { f: C.tomorrow, P: [1.5, 4.6, -31], T: mix3(tmT(C.tomorrow, 2.8), flame, 0.2) },
+  // f2110-f2215: round the candle on the outside of his circle, rising from 5 to 25 cm
+  { f: 2130, P: around(-160, 15, 5.4), T: mix3(tmT(2130), flame, 0.3) },
+  { f: 2156, P: around(-215, 14.5, 6.6), T: mix3(tmT(2156), flame, 0.3) },
+  { f: 2180, P: around(-290, 14, 8.2), T: mix3(tmT(2180), flame, 0.25) },
+  { f: C.from, P: around(-310, 14.5, 10.5), T: mix3(tmT(C.from), flame, 0.2) },
+  { f: C.newyork1, P: around(-322, 19, 21), T: [12, 4, -15.5] },
+  // f2215-f2300: crane up and back as the towers rise
+  { f: 2256, P: [41, 43, 14], T: [11, 7, -20] },
+  { f: 2300, P: [62, 64, 34], T: [8, 10, -24] },
+  // f2300-f2466: down to citizen height at the fence
+  { f: 2326, P: [45, 27, 10], T: [26, 4.5, -29] },
+  { f: 2346, P: [34.2, 7.6, -7.5], T: [29.5, 3.2, -32] },
+  { f: 2378, P: [31.6, 5.2, -11.5], T: [30.6, 2.9, -34] },
+  { f: C.leave2, P: [31.2, 4.3, -16.5], T: [31.5, 3.0, -36] },
+  { f: C.theories - 8, P: [31.6, 4.2, -19.2], T: [32, 3.5, -38] },
+  // f2466-f2544: up and back to the high wide, landing on "all", then drifting
+  ...crane(C.theories - 8, C.all, [31.6, 4.2, -19.6], [32, 3.5, -38], [5, 144, 106], [0, 10, 5]),
+  { f: C.all, P: [5, 144, 106], T: [0, 10, 5] },
+  { f: 2548, P: [3.6, 147, 108.6], T: [0, 10, 4.4] },
+];
+export const camRaw5 = (f) => camRaw(CAM_KEYS, f);
+export const camAt = (f) => camFrom(CAM_KEYS, f);
+
+// the beat table, for the README and for blocking.json
+export const BEATS = [
+  [F0, "start", "low across the table, one flame"], [C.expert, "tree expert", "the tree man walks into frame by the sapling"],
+  [C.trees, "trees", "the sapling springs a tier"], [C.redwoods, "redwoods", "the sapling shoots up into a redwood"],
+  [C.eighty4, "84", "he stops and leans on the stick beside the bottle"], [C.backpack, "backpack", "he hitches the pack and walks on"],
+  [C.tomorrow, "tomorrow", "he reaches the candle; the flame leans after him"], [C.where, "where are you from", "he stops; the card turns to the near setting"],
+  [C.newyork1, "New York", "plates, glasses, bottle, salt, pepper, basket rise into towers"], [C.newyork2, "New York (2)", "the cutlery deals out along the edge and hinges up as the fence"],
+  [2300, "Do you know", "the camera comes down toward the fence"], [C.never, "never do", "citizens stop at the fence and turn back; the tree man walks on"],
+  [TMF.gate, "(oh, yes)", "the tree man walks out between two posts"], [C.why, "why", "outside, he turns and looks back in"],
+  [C.leave2, "don't leave", "the second wave stops at the fence"], [C.theories, "theories", "the camera starts up and back"],
+  [C.all, "all", "the high wide: the walled, lit city"], [F1 - 1, "end", "hold, drifting"],
+];

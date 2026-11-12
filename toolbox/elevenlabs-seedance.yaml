@@ -1,0 +1,22 @@
+slug: elevenlabs-seedance
+name: Seedance (ElevenLabs)
+kind: model
+status: candidate
+does: Seedance video generation billed to Robin's ElevenLabs credits instead of Fal dollars or Higgsfield credits.
+keywords:
+- video-gen
+- seedance
+- previz-into-seedance
+- credits
+fits:
+- the photoreal finishing pass over a finished code-drawn or painted-pieces cut, when the spend should come from ElevenLabs
+deterministic: n/a
+how: 'Not yet run from here. Key: keys/elevenlabs/api.txt (the same key as TTS and Music). Before the first job, find the video endpoint and its model ids in the ElevenLabs API reference, and price one clip in credits.'
+cost: plan credits
+source: 'Robin, 2026-11-11, on the Andre dinner monologue reel: "we also have C-Dance through 11 Labs, where I have a lot of credits." Balance read that day: pro plan, 6,927 of 745,072 credits used. Rate per second not yet measured.'
+related:
+- fal-seedance
+- higgsfield-video
+- elevenlabs-tts
+- elevenlabs-music
+added: '2026-11-11'

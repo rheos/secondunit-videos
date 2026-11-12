@@ -1,0 +1,216 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>paper-world cast line-up</title>
+<style>html,body{margin:0;background:#1b1b1f}canvas{display:block;max-height:100vh}</style>
+<canvas id="c" width="720" height="1280"></canvas>
+<script type="module">
+// The cast line-up: guard, hands, seed, pine as flat paper cut-outs in a small three.js scene, one warm soft key,
+// real shadows, cream ground. ?still=<name> draws one still; window.renderStill(name) draws another on the same page.
+import * as THREE from "./js/lib/three.module.js";
+import * as cast from "./js/cast/index.js";
+import { area } from "./js/cast/shape2d.js";
+
+const Q = new URLSearchParams(location.search), W = 720, H = 1280, DEG = Math.PI / 180;
+const out = document.getElementById("c"), ctx = out.getContext("2d", { willReadFrequently: true });
+const glc = document.createElement("canvas");
+const renderer = new THREE.WebGLRenderer({ canvas: glc, antialias: true, preserveDrawingBuffer: true });
+renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFShadowMap; renderer.outputColorSpace = THREE.SRGBColorSpace;
+const SAMPLES = +(Q.get("samples") || 28);
+
+// ---------- this page's own paper: matte, roughness 1, a seeded grain (crumple facets and fibres) as colour and bump ----------
+function rng(seed) { let a = seed >>> 0; return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+function grainCanvas(seed, size = 512) {
+  const r = rng(seed), c = document.createElement("canvas"); c.width = c.height = size; const g = c.getContext("2d"), img = g.createImageData(size, size);
+  const K = 90, cells = []; for (let i = 0; i < K; i++) cells.push({ x: r() * size, y: r() * size, gx: (r() - 0.5) * 0.05, gy: (r() - 0.5) * 0.05, o: (r() - 0.5) * 3 });
+  for (let y = 0; y < size; y++) for (let x = 0; x < size; x++) {
+    let bd = 1e9, b = null, bx = 0, by = 0;
+    for (const s of cells) { let dx = x - s.x, dy = y - s.y; if (dx > size / 2) dx -= size; if (dx < -size / 2) dx += size; if (dy > size / 2) dy -= size; if (dy < -size / 2) dy += size; const d = dx * dx + dy * dy; if (d < bd) { bd = d; b = s; bx = dx; by = dy; } }
+    const v = 236 + b.o + b.gx * bx + b.gy * by + (r() - 0.5) * 7, k = (y * size + x) * 4; img.data[k] = img.data[k + 1] = img.data[k + 2] = Math.max(0, Math.min(255, v)); img.data[k + 3] = 255;
+  }
+  g.putImageData(img, 0, 0);
+  for (let i = 0; i < 2600; i++) {                                   // fibres
+    const x = r() * size, y = r() * size, a = r() * Math.PI, l = 5 + r() * 26, light = r() > 0.45;
+    g.strokeStyle = light ? `rgba(255,255,255,${0.05 + r() * 0.12})` : `rgba(120,110,95,${0.04 + r() * 0.08})`; g.lineWidth = 0.5 + r() * 0.8;
+    for (const [ox, oy] of [[0, 0], [size, 0], [-size, 0], [0, size], [0, -size]]) { g.beginPath(); g.moveTo(x + ox, y + oy); g.quadraticCurveTo(x + ox + Math.cos(a) * l * 0.5 + (r() - 0.5) * 4, y + oy + Math.sin(a) * l * 0.5 + (r() - 0.5) * 4, x + ox + Math.cos(a) * l, y + oy + Math.sin(a) * l); g.stroke(); }
+  }
+  return c;
+}
+const gc = grainCanvas(20261111);
+const grainMap = new THREE.CanvasTexture(gc); grainMap.wrapS = grainMap.wrapT = THREE.RepeatWrapping; grainMap.colorSpace = THREE.SRGBColorSpace; grainMap.anisotropy = 8;
+const grainBump = new THREE.CanvasTexture(gc); grainBump.wrapS = grainBump.wrapT = THREE.RepeatWrapping; grainBump.anisotropy = 8;
+const paper = (colour) => new THREE.MeshStandardMaterial({ color: colour, map: grainMap, bumpMap: grainBump, bumpScale: 0.3, roughness: 1, metalness: 0 });
+const CREAM = "#f3e8d2";
+
+// ---------- stage: cream ground curving up into a cream backdrop, one warm key with a real shadow, a dim cool fill ----------
+function stage({ wallZ = -14, wall = true, size = 160, keyFrom = [-16, 26, 20], keyAt = [0, 2, 0], span = 12, soft = 1.6, tile = 5, front = 0 } = {}) {
+  const scene = new THREE.Scene(); scene.background = new THREE.Color(CREAM);
+  const gm = paper(CREAM); gm.bumpScale = 0.12;
+  const prof = [], R = 5; prof.push([size / 2, 0]); for (let a = 0; a <= 90; a += 6) prof.push([wallZ + R - R * Math.sin(a * DEG), R - R * Math.cos(a * DEG)]); prof.push([wallZ, size / 2]);
+  const pos = [], uv = [], idx = [], nor = []; let run = 0;
+  prof.forEach(([z, y], i) => { if (i) run += Math.hypot(z - prof[i - 1][0], y - prof[i - 1][1]); for (const x of [-size / 2, size / 2]) { pos.push(x, wall ? y : 0, wall ? z : (i ? -size / 2 : size / 2)); uv.push(x / tile, run / tile); } if (i) { const k = (i - 1) * 2; idx.push(k, k + 1, k + 2, k + 1, k + 3, k + 2); } });
+  const geo = new THREE.BufferGeometry(); geo.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3)); geo.setAttribute("uv", new THREE.Float32BufferAttribute(uv, 2)); geo.setIndex(idx); geo.computeVertexNormals();
+  const ground = new THREE.Mesh(geo, gm); ground.receiveShadow = true; scene.add(ground);
+  const key = new THREE.DirectionalLight("#fff0d8", 2.85); key.position.set(...keyFrom); key.target.position.set(...keyAt); scene.add(key, key.target);
+  key.castShadow = true; key.shadow.mapSize.set(4096, 4096); const sc = key.shadow.camera; sc.left = -span; sc.right = span; sc.top = span; sc.bottom = -span; sc.near = 1; sc.far = 200; key.shadow.bias = -0.0004; key.shadow.normalBias = 0.012; key.shadow.radius = 1.5;
+  scene.add(new THREE.HemisphereLight("#dfe6ff", "#f3e6cc", 1.62));
+  if (front) { const f = new THREE.DirectionalLight("#fff6ea", front); f.position.set(0, 8, 40); scene.add(f); }      // lifts the backdrop behind standing cards
+  return { scene, key, soft };
+}
+const camAt = (pos, look, fov) => { const c = new THREE.PerspectiveCamera(fov, W / H, 1, 400); c.position.set(...pos); c.lookAt(...look); return c; };
+// a camera that looks down `pitch` degrees at a point so that `tall` cm fills the frame height
+function camFrame(look, tall, pitch = 6, fov = 14, yaw = 0) {
+  const d = tall / 2 / Math.tan(fov / 2 * DEG), p = pitch * DEG, y = yaw * DEG;
+  return camAt([look[0] + d * Math.cos(p) * Math.sin(y), look[1] + d * Math.sin(p), look[2] + d * Math.cos(p) * Math.cos(y)], look, fov);
+}
+
+// ---------- one panel: N renders with the light moved over a small disc (a soft key) and the camera jittered (anti-aliasing) ----------
+const LUT = new Float32Array(256); for (let i = 0; i < 256; i++) { const v = i / 255; LUT[i] = v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); }
+const halton = (i, b) => { let f = 1, r = 0; while (i > 0) { f /= b; r += f * (i % b); i = Math.floor(i / b); } return r; };
+function shoot({ scene, key, soft }, cam, x = 0, y = 0, w = W, h = H) {
+  renderer.setPixelRatio(1); renderer.setSize(w, h, false); cam.aspect = w / h;
+  const gl = renderer.getContext(), acc = new Float32Array(w * h * 3), buf = new Uint8Array(w * h * 4), base = key.position.clone();
+  const dir = base.clone().sub(key.target.position).normalize(), U = new THREE.Vector3(0, 1, 0).cross(dir).normalize(), V = dir.clone().cross(U);
+  for (let i = 0; i < SAMPLES; i++) {
+    const r = Math.sqrt(halton(i + 1, 2)), a = halton(i + 1, 3) * Math.PI * 2;
+    key.position.copy(base).addScaledVector(U, Math.cos(a) * r * soft).addScaledVector(V, Math.sin(a) * r * soft);
+    cam.setViewOffset(w, h, halton(i + 1, 5) - 0.5, halton(i + 1, 7) - 0.5, w, h); cam.updateProjectionMatrix();
+    renderer.render(scene, cam); gl.readPixels(0, 0, w, h, gl.RGBA, gl.UNSIGNED_BYTE, buf);
+    for (let p = 0, q = 0; p < buf.length; p += 4, q += 3) { acc[q] += LUT[buf[p]]; acc[q + 1] += LUT[buf[p + 1]]; acc[q + 2] += LUT[buf[p + 2]]; }
+  }
+  key.position.copy(base); cam.clearViewOffset();
+  const img = ctx.createImageData(w, h), d = img.data;
+  for (let j = 0; j < h; j++) for (let i = 0; i < w; i++) {
+    const q = ((h - 1 - j) * w + i) * 3, p = (j * w + i) * 4;
+    for (let k = 0; k < 3; k++) { const v = acc[q + k] / SAMPLES; d[p + k] = 255 * (v <= 0.0031308 ? v * 12.92 : 1.055 * Math.pow(v, 1 / 2.4) - 0.055) + 0.5; }
+    d[p + 3] = 255;
+  }
+  ctx.putImageData(img, x, y);
+}
+const size = (w, h) => { out.width = w; out.height = h; ctx.fillStyle = CREAM; ctx.fillRect(0, 0, w, h); };
+const image = (src) => new Promise((ok, no) => { const i = new Image(); i.onload = () => ok(i); i.onerror = no; i.src = src; });
+const boxOf = (objs) => { const b = new THREE.Box3(); for (const o of objs) { o.updateWorldMatrix(true, true); b.expandByObject(o); } return b; };
+
+// ---------- casting ----------
+const NAVY = "#1f2755", LILAC = "#6c66a5", UMBER = "#7e3b2f";
+const guard = (o = {}, pose = {}, at = [0, 0, 0]) => { const g = cast.makeGuard(THREE, paper, o); g.pose(g, pose); g.position.set(...at); return g; };
+const HANDCAM = { look: [-2.4, 0, -4.6], dist: 102, pitch: 54, fov: 22 };
+const handCam = (c = HANDCAM) => { const p = c.pitch * DEG; return camAt([c.look[0], c.look[1] + c.dist * Math.sin(p), c.look[2] + c.dist * Math.cos(p)], c.look, c.fov); };
+const handStage = () => stage({ wall: false, keyFrom: [-24, 70, 22], keyAt: [-2, 0, -6], span: 40, soft: 5, tile: 14 });
+function openHand(S, curl = 0, withSeed = true) {
+  const h = cast.makeHandOpen(THREE, paper, {}); h.pose(h, { curl }); S.scene.add(h);
+  if (withSeed) { const s = cast.makeSeed(THREE, paper, {}); s.pose(s, { tilt: Math.PI / 2, spin: -0.75 }); const c = h.userData.palmCentre; s.position.set(c[0] + 1.0, c[1] + 0.06, c[2] + 1.0); S.scene.add(s); }
+  return h;
+}
+
+const STILLS = {
+  // citizen, guard at ease ("pride"), guard walking, side by side at 600 px tall
+  "guard-lineup": () => {
+    size(W, H); const S = stage({ wallZ: -9, front: 0.6 });
+    S.scene.add(guard({ role: "citizen", colour: LILAC }, { stance: "stand" }, [-1.85, 0, 0]), guard({}, { stance: "ease" }, [-0.42, 0, 0]), guard({}, { stance: "walk", phase: 0.06 }, [1.2, 0, 0]));
+    shoot(S, camFrame([0, 2.35, 0], 4 * H / 600, 5));
+  },
+  // the head and cap at 600 px, beside a crop of test 01's cap
+  "guard-cap-crop": async () => {
+    size(W * 2, H); const S = stage({ wallZ: -9, front: 0.6 }), g = guard({}, { stance: "ease", head: 0, lean: 0 }); S.scene.add(g);
+    const N = g.cast.nodes, b = boxOf([N.capped, N.cap]), c = b.getCenter(new THREE.Vector3()), tall = (b.max.y - b.min.y) * H / 600;
+    shoot(S, camFrame([c.x + 0.03, c.y - 0.04, 0], tall, 3), W, 0);
+    try { const im = await image("/_ref/f2835.jpg"); ctx.drawImage(im, 0, 790, 720, 490, 0, (H - 490) / 2, 720, 490); } catch (e) { console.warn("no test 01 still"); }
+  },
+  // six guards on a wall at head height 40 px
+  "guard-small": () => {
+    size(W, H); const S = stage({ wallZ: -12, span: 14, front: 0.6 }), M = paper(UMBER), top = 2.3, r = rng(7);
+    for (let row = 0; row < 4; row++) for (let i = -1; i < 9; i++) {                      // the wall: paper bricks
+      const w = 1.52, h = top / 4, x = -6.1 + i * 1.56 + (row % 2) * 0.78;
+      const m = new THREE.Mesh(new THREE.BoxGeometry(w, h - 0.03, 0.9 + r() * 0.05), M); m.position.set(x, h / 2 + row * h, -0.3 + (r() - 0.5) * 0.03); m.rotation.z = (r() - 0.5) * 0.012; m.castShadow = m.receiveShadow = true; S.scene.add(m);
+    }
+    const poses = [{ stance: "walk", phase: 0.05 }, { stance: "walk", phase: 0.3 }, { stance: "ease" }, { stance: "walk", phase: 0.55 }, { stance: "walk", phase: 0.8 }, { stance: "ease" }];
+    poses.forEach((q, i) => S.scene.add(guard({}, q, [-3.85 + i * 1.5, top, -0.2])));
+    shoot(S, camFrame([0, 3.6, 0], 4 * H / 300, 4));
+  },
+  // a citizen's card turning into a guard: 0, 45, 90, 135, 180 degrees
+  "guard-turn": () => {
+    size(W, H); const S = stage({ wallZ: -9, front: 0.6 });
+    [0, 45, 90, 135, 180].forEach((turn, i) => S.scene.add(guard({ role: "citizen", colour: LILAC, back: NAVY }, { stance: turn < 90 ? "stand" : "ease", turn, guard: turn >= 90 }, [-2.86 + i * 1.36, 0, 0])));
+    shoot(S, camFrame([0, 2.3, 0], 4 * H / 430, 7));
+  },
+  // the open hand from the film's camera, curl 0, the seed in the palm
+  "hand-open": () => { size(W, H); const S = handStage(); openHand(S, 0); shoot(S, handCam()); },
+  // curl 0, 0.5, 1 from the same camera
+  "hand-open-curl": () => { size(W * 3, H); [0, 0.5, 1].forEach((curl, i) => { const S = handStage(); openHand(S, curl); shoot(S, handCam(), i * W, 0); }); },
+  // the pinch hand above the open hand, seed held
+  "hand-pinch": (x0 = 0, resize = true) => {
+    if (resize) size(W, H); const S = handStage(), h = openHand(S, 0.12, false), c = h.userData.palmCentre;
+    const k = cast.makeHandPinch(THREE, paper, { lean: -68 }); k.position.set(c[0] + 0.6, 7.0, c[2] + 0.4); k.rotation.x = -30 * DEG; S.scene.add(k);
+    const s = cast.makeSeed(THREE, paper, {}), sp = { size: s.userData.size }; s.pose(s, { tilt: 0, spin: 0.15 }); s.scale.setScalar(1 / k.userData.scale); s.position.set(0, -0.93 * sp.size / k.userData.scale, 0); k.cast.seedAnchor.add(s);
+    shoot(S, handCam({ look: [0.5, 0, -6.4], dist: 127, pitch: 54, fov: 22 }), x0, 0);
+  },
+  // the new pinch frame beside test 01's f3212
+  "hand-before-after": async () => {
+    size(W * 2, H); STILLS["hand-pinch"](W, false);
+    try { ctx.drawImage(await image("/_ref/f3212.jpg"), 0, 0); } catch (e) { console.warn("no test 01 still"); }
+  },
+  // the pine at 0.1, 0.4, 0.7, 1.0 growing from the palm
+  "pine-stages": () => {
+    size(W * 2, H * 2);
+    [0.1, 0.4, 0.7, 1].forEach((growth, i) => {
+      const S = handStage(), h = openHand(S, 0.3, false), c = h.userData.palmCentre;
+      const s = cast.makeSeed(THREE, paper, {}); s.pose(s, { tilt: Math.PI / 2, spin: -0.7 }); s.position.set(c[0] + 0.5, c[1] + 0.05, c[2] + 0.5); S.scene.add(s);
+      const pn = cast.makePine(THREE, paper, {}); pn.pose(pn, { growth }); pn.position.set(c[0] + 0.5, c[1], c[2] + 0.5); S.scene.add(pn);
+      shoot(S, handCam(), (i % 2) * W, Math.floor(i / 2) * H);
+    });
+  },
+
+  // ---------- working views (not deliverables) ----------
+  // the open hand flat from directly above
+  "hand-top": () => { size(W, H); const S = stage({ wall: false, keyFrom: [-20, 60, 14], keyAt: [-2, 0, -4], span: 30, soft: 2.5 }); openHand(S, +(Q.get("curl") || 0), false); shoot(S, camAt([-2.5, 150, -3.9], [-2.5, 0, -4], 14)); },
+  // the pinch letting go: open 0, 0.5, 1
+  "pinch-open": () => {
+    size(W * 3, H);
+    [0, 0.5, 1].forEach((open, i) => {
+      const S = stage({ wall: false, keyFrom: [-10, 40, 30], keyAt: [0, 0, 0], span: 22, soft: 3, tile: 14 });
+      const k = cast.makeHandPinch(THREE, paper, {}); k.pose(k, { open }); k.rotation.x = -Math.PI / 2 + 0.0001; k.position.set(0, 0.3, 0); S.scene.add(k);
+      const s = cast.makeSeed(THREE, paper, {}), sp = { size: s.userData.size }; s.scale.setScalar(1 / 10); s.position.set(0, -0.93 * sp.size / 10 - open * 0.25, 0); k.cast.seedAnchor.add(s);
+      shoot(S, camAt([5, 120, -6.99], [5, 0, -7], 14), i * W, 0);
+    });
+  },
+  "seed-close": () => {
+    size(W, H); const S = stage({ wall: false, keyFrom: [-10, 30, 10], keyAt: [0, 0, 0], span: 8, soft: 2, tile: 14 });
+    const a = cast.makeSeed(THREE, paper, {}); a.pose(a, { tilt: Math.PI / 2, spin: -0.75 }); a.position.set(-0.5, 0.05, 1.6); S.scene.add(a);
+    const b = cast.makeSeed(THREE, paper, {}); b.pose(b, { tilt: 0.35, spin: 0.6 }); b.position.set(0.3, 3.2, -1.5); S.scene.add(b);
+    const pn = cast.makePine(THREE, paper, { height: 5 }); pn.position.set(2.2, 0, -1); S.scene.add(pn);
+    shoot(S, camFrame([0.5, 1.6, 0], 13, 40, 20));
+  },
+  // 2D prints of the outlines
+  "debug-2d": () => {
+    size(1440, 1280); const fill = (pts, col, sc, ox, oy, strokeOnly) => { ctx.beginPath(); pts.forEach(([x, y], i) => i ? ctx.lineTo(ox + x * sc, oy - y * sc) : ctx.moveTo(ox + x * sc, oy - y * sc)); ctx.closePath(); if (strokeOnly) { ctx.strokeStyle = col; ctx.lineWidth = 1; ctx.stroke(); } else { ctx.fillStyle = col; ctx.fill(); } };
+    const dot = (p, sc, ox, oy, col = "#e33") => { ctx.fillStyle = col; ctx.beginPath(); ctx.arc(ox + p[0] * sc, oy - p[1] * sc, 3, 0, 7); ctx.fill(); };
+    // open hand: pieces in two tones so the joints show, joints on top
+    let sc = 300, ox = 390, oy = 640; const pc = cast.handPieces("open"), J = cast.handSkeleton(); let n = 0;
+    fill(pc.palm, "#35366f", sc, ox, oy); for (const f of Object.keys(pc.fingers)) pc.fingers[f].forEach((q) => fill(q, n++ % 2 ? "#35366f" : "#4a4b8c", sc, ox, oy)); pc.thumb.forEach((q) => fill(q, n++ % 2 ? "#35366f" : "#4a4b8c", sc, ox, oy));
+    pc.creases.forEach((q) => fill(q, "#f3e8d2", sc, ox, oy)); fill(cast.handOutline("open"), "#e9ae3a", sc, ox, oy, true);
+    for (const k of Object.keys(J)) (Array.isArray(J[k][0]) ? J[k] : [J[k]]).forEach((p) => dot(p, sc, ox, oy));
+    // pinch: union silhouette, then the layers
+    sc = 330; ox = 880; oy = 600; const loops = cast.handLoops("pinch"); fill(loops[0], "#7e3b2f", sc, ox, oy); loops.slice(1).forEach((l) => { if (Math.abs(area(l)) > 1e-4) fill(l, CREAM, sc, ox, oy); });
+    const pp = cast.handPieces("pinch"), PJ = cast.profileSkeleton("pinch"); ox = 880; oy = 1240; const cols = { little: "#3d1d17", ring: "#572a21", middle: "#6b3329", palm: "#7e3b2f", index: "#99503f", thumb: "#b56a55" };
+    for (const k of ["little", "ring", "middle", "palm", "index", "thumb"]) fill(pp[k], cols[k], sc, ox, oy);
+    for (const k of ["index", "middle", "ring", "little", "thumb"]) PJ[k].forEach((p) => dot(p, sc, ox, oy, "#fff")); dot(PJ.pinch, sc, ox, oy, "#e9ae3a");
+    fill(cast.guardParts().hand, "#1f2755", 400, 1300, 900);
+  },
+  "debug-cap": () => {
+    size(1440, 1280); const draw = (shapes, sc, ox, oy, col = NAVY) => { ctx.fillStyle = col; for (const pts of shapes) { ctx.beginPath(); pts.forEach(([x, y], i) => i ? ctx.lineTo(ox + x * sc, oy - y * sc) : ctx.moveTo(ox + x * sc, oy - y * sc)); ctx.closePath(); ctx.fill(); } };
+    const P = cast.guardParts(), neck = [[-0.3, -0.4], [0.06, -0.4], [0.02, 0.2], [-0.3, 0.2]];
+    draw([P.headCapped, P.cap, neck], 520, 380, 880); draw([P.badge], 520, 380, 880, "#f1b23a"); draw([P.capSlit], 520, 380, 880, CREAM);
+    draw([P.head, cast.baseballCapOutline(), neck], 300, 1050, 480, "#555a7a");
+    [40, 28, 20].forEach((px, i) => { draw([P.headCapped, P.cap, neck], px, 860 + i * 110, 1100); draw([P.head, cast.baseballCapOutline(), neck], px, 860 + i * 110, 1220, "#555a7a"); });
+    // the 40 px head again, enlarged x6 without smoothing
+    const t = document.createElement("canvas"); t.width = 80; t.height = 70; const g2 = t.getContext("2d"); g2.fillStyle = CREAM; g2.fillRect(0, 0, 80, 70); g2.fillStyle = NAVY;
+    for (const pts of [P.headCapped, P.cap, neck]) { g2.beginPath(); pts.forEach(([x, y], i) => i ? g2.lineTo(30 + x * 40, 56 - y * 40) : g2.moveTo(30 + x * 40, 56 - y * 40)); g2.closePath(); g2.fill(); }
+    ctx.imageSmoothingEnabled = false; ctx.drawImage(t, 0, 0, 80, 70, 900, 560, 480, 420); ctx.imageSmoothingEnabled = true;
+  },
+};
+
+window.stills = Object.keys(STILLS);
+window.renderStill = async (name) => { if (!STILLS[name]) throw new Error("no still " + name); await STILLS[name](); return [out.width, out.height]; };
+await window.renderStill(Q.get("still") || "guard-lineup");
+window.ready = true;
+</script>

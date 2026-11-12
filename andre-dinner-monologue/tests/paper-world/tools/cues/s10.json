@@ -1,0 +1,21 @@
+{
+ "section": 10,
+ "words": [
+  { "key": "nobody", "word": "nobody", "cue": 4340 },
+  { "key": "remind", "word": "remind", "cue": 4390 },
+  { "key": "species", "word": "species", "cue": 4424 },
+  { "key": "human", "word": "human", "cue": 4457 },
+  { "key": "feelings", "word": "feelings", "cue": 4491 },
+  { "key": "thoughts", "word": "thoughts", "cue": 4507 },
+  { "key": "history", "word": "history", "cue": 4539 },
+  { "key": "memory", "word": "memory", "cue": 4552 },
+  { "key": "erased", "word": "erased", "cue": 4592 },
+  { "key": "soon", "word": "soon", "cue": 4610 },
+  { "key": "nobody2", "word": "nobody", "cue": 4620 },
+  { "key": "remember", "word": "remember", "cue": 4654 },
+  { "key": "life", "word": "life", "cue": 4680 },
+  { "key": "existed", "word": "existed", "cue": 4686 },
+  { "key": "planet", "word": "planet", "cue": 4708 }
+ ],
+ "stills": [4350, 4375, 4440, 4452, 4466, 4500, 4522, 4560, 4609, 4629, 4660, 4716, 4722, 4750]
+}

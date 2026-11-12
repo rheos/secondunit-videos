@@ -15,7 +15,7 @@ fits:
 deterministic: n/a
 how: on Fal (`meshy/v7.1/text-to-3d`), which Robin already pays for; skill `meshy-3d-generation` for the direct API
 cost: paid, about $1.52 per full figure on Fal (2026-10-24)
-detail: '`MESHY-3D-PIPELINE.md` in the secondunit folder (one real test figure, 2026-10-24)'
+detail: '`MESHY-3D-PIPELINE.md` in the secondunit folder. Look in `figure-library/` beside it before generating: three rigged figures with walk cycles already exist (bomber, puffer, neon-test), listed in its README'
 related:
 - fal-image-to-3d
 - gltf-transform

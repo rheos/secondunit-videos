@@ -1,0 +1,113 @@
+{
+ "section": 9,
+ "words": [
+  {
+   "key": "sixties",
+   "word": "1960s",
+   "cue": 3968,
+   "hand": 3968
+  },
+  {
+   "key": "last",
+   "word": "last",
+   "cue": 4013,
+   "hand": 4013
+  },
+  {
+   "key": "burst",
+   "word": "burst",
+   "cue": 4021
+  },
+  {
+   "key": "human",
+   "word": "human",
+   "cue": 4047,
+   "hand": 4049
+  },
+  {
+   "key": "extinguished",
+   "word": "extinguished",
+   "cue": 4075
+  },
+  {
+   "key": "beginning",
+   "word": "beginning",
+   "cue": 4128,
+   "hand": 4129
+  },
+  {
+   "key": "future",
+   "word": "future",
+   "cue": 4160,
+   "hand": 4161
+  },
+  {
+   "key": "robots",
+   "word": "robots",
+   "cue": 4226,
+   "hand": 4229
+  },
+  {
+   "key": "walking",
+   "word": "walking",
+   "cue": 4238
+  },
+  {
+   "key": "feeling",
+   "word": "feeling",
+   "cue": 4272
+  },
+  {
+   "key": "nothing1",
+   "word": "nothing",
+   "cue": 4281,
+   "hand": 4281
+  },
+  {
+   "key": "thinking",
+   "word": "thinking",
+   "cue": 4297
+  },
+  {
+   "key": "nothing2",
+   "word": "nothing",
+   "cue": 4302,
+   "hand": 4302
+  },
+  {
+   "key": "nobody",
+   "word": "nobody",
+   "cue": 4340,
+   "hand": 4351
+  },
+  {
+   "key": "erased",
+   "word": "erased",
+   "cue": 4592,
+   "hand": 4592
+  }
+ ],
+ "stills": [
+  3900,
+  3936,
+  3990,
+  4034,
+  4066,
+  4087,
+  4092,
+  4098,
+  4106,
+  4116,
+  4140,
+  4145,
+  4175,
+  4234,
+  4260,
+  4290,
+  4340,
+  4370,
+  4390,
+  4600,
+  4640
+ ]
+}
