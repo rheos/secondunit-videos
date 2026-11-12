@@ -245,9 +245,13 @@
         const u0 = [hd[0] - s0[0], hd[1] - s0[1]], ul = Math.hypot(u0[0], u0[1]) || 1, u = [u0[0] / ul, u0[1] / ul];
         const w = d.s;
         shl.lineWidth = 6.4 * w; shl.beginPath(); shl.moveTo(s0[0], s0[1]); shl.lineTo(hd[0], hd[1]); shl.stroke();
-        shl.beginPath(); shl.ellipse(hd[0] + u[0] * 2 * w, hd[1] + u[1] * 2 * w, 5.2 * w, 4.4 * w, Math.atan2(u[1], u[0]), 0, TAU); shl.fill();
-        // the open fingers: a short broad fan on from the palm's shadow, along the arm's
-        shl.lineWidth = 5 * w; shl.beginPath(); shl.moveTo(hd[0] + u[0] * 4 * w, hd[1] + u[1] * 4 * w); shl.lineTo(hd[0] + u[0] * 10 * w, hd[1] + u[1] * 10 * w); shl.stroke();
+        void u;
+        // the hand's shadow is the hand itself, open fingers and all, laid on the grass where the sun throws it
+        // (Robin, Nov 11: the old blob-and-stub shadow still read as a pointing finger)
+        const off = [hd[0] - R.hand[0], hd[1] - R.hand[1]];
+        shl.save(); shl.translate(off[0], off[1]); shl.translate(d.origin[0], d.origin[1]); shl.rotate(d.rot); shl.scale(d.s, d.s);
+        handShape(shl, k, toL(k, R.hand), 1, t);
+        shl.restore();
       }
     }
     // tint the opaque layer to the grass's shadow colour, then lay it down once, soft at the edge
