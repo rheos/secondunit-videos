@@ -1,0 +1,9 @@
+{
+  "name": "bobwiseman-tour-card",
+  "private": true,
+  "type": "module",
+  "description": "Bob Wiseman's next shows as a drawn end card (pen-and-pencil ticket stubs) to add to his own reels.",
+  "devDependencies": {
+    "playwright": "^1.55.0"
+  }
+}

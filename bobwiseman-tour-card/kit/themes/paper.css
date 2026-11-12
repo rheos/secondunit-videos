@@ -1,0 +1,35 @@
+/* paper theme: The Cold Read's surveyor's plate (novadiem-cold-read/design.md). Gold on aged paper, night field. */
+@font-face {
+  font-family: "Marcellus SC";
+  src: url("../fonts/MarcellusSC-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+}
+:root {
+  --bg: #efe6d2;
+  --bg-raised: #e6dcc4;
+  --line: #a8862f;
+  --line-strong: #8c6e22;
+  --ink: #1c1a17;
+  --ink-dim: #4a443a;
+  --ink-faint: #8a8170;
+  --accent: #b3261e;
+
+  --field: #0e1220;
+  --line-field: #c9a54a;
+  --ink-field: #efe6d2;
+  --accent-field: #d9473b;
+
+  --grid: #1c1a17;
+  --grid-opacity: 0.06;
+  --grain-rgb: 0.36 0.29 0.18;
+  --grain-alpha: 0.55;
+
+  --font-display: "Archivo Black", sans-serif;
+  --display-weight: 400;
+  --display-tracking: -0.03em;
+  --font-label: "Marcellus SC", serif;
+  --label-size: 26px;
+  --label-tracking: 0.18em;
+  --font-mono: "IBM Plex Mono", monospace;
+}
