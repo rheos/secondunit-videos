@@ -540,19 +540,24 @@ def shot_c():
 def shot_d():
     L = LINES[3]; s0 = cut(3); objs = []
     on_cream = ink("onCreamD", "cream", "red", "black", .42, .96, .07)
-    cardZ, cardW, cardD = -85, 176, 66
+    # reading order from above, far to near, growing as it comes (Robin, 2026-11-12; #504, look/new-city-more-size)
+    cardZ, cardW, cardD, gapZ, stretch = -98, 176, 140, 5, 1.3
     objs.append(place(mesh_obj("D_card", Geo().plane(cardW, cardD).mesh("D_card", [FLAT["red"]])), (0, .02, cardZ), (-math.pi / 2, 0, 0)))
     wAnd, wPeople, wMore = L
-    mP = word(wPeople["w"], FLAT["motif"]); c = min(44, cardW * .86 / mP["width"])
-    place(mP, (0, .06, cardZ + c * .5), (-math.pi / 2, 0, 0), (c, c, c))
-    mA = place(word(wAnd["w"], FLAT["red"]), (-34, .06, cardZ + cardD / 2 + 22), (-math.pi / 2, 0, 0), (12, 12, 12))
-    mM = place(word(wMore["w"], FLAT["red"]), (40, .06, cardZ - cardD / 2 - 12), (-math.pi / 2, 0, 0), (16, 16, 16))
+    mM = word(wMore["w"], FLAT["motif"]); capM = min(56, cardW * .86 / mM["width"])
+    mP = word(wPeople["w"], FLAT["motif"]); capP = min(34, cardW * .86 / mP["width"])
+    mA = word(wAnd["w"], FLAT["motif"]); capA = 17
+    zMore = cardZ + cardD / 2 - 6; zPeople = zMore - capM - gapZ; zAnd = zPeople - capP * stretch - gapZ    # baselines
+    place(mM, (0, .06, zMore), (-math.pi / 2, 0, 0), (capM, capM, capM))
+    place(mP, (0, .06, zPeople), (-math.pi / 2, 0, 0), (capP, capP * stretch, capP))
+    place(mA, (0, .06, zAnd), (-math.pi / 2, 0, 0), (capA, capA * stretch * 1.15, capA))
     for m in (mP, mA, mM): m["base"] = tuple(m.scale)
     r = rng(77); lists = [[], []]; z = 12
     while z > -300:
         x = -180
         while x < 180:
-            if r() >= .12:
+            on_card = abs(x) < cardW / 2 and abs(z - cardZ) < cardD / 2     # thinned where it stands on the type
+            if r() >= (.6 if on_card else .12):
                 pose = 1 if r() < .3 else 0; s = 4.2 + r() * .8
                 px = x + r() * .8; ry = (r() - .5) * .8; lists[pose].append((px, 0, z, ry, s))
             x += 5.5 + r() * 3
@@ -566,7 +571,7 @@ def shot_d():
         for m, s in words: stamp(m, t, s, active)
         rise = ease((t - s0) / 3.8); drift = max(0, t - s0 - 3.8)
         pos = Vector((math.sin(t * .6) * 1.5, lerp(2.4, 96, rise) + drift * 2, lerp(16, 46, rise) + drift * 1.5))
-        camera(pos, (0, lerp(3, 0, rise), lerp(-50, cardZ - 4, rise)), lerp(-.36, -.07, rise), 54,
+        camera(pos, (0, lerp(3, 0, rise), lerp(-50, cardZ + 2, rise)), lerp(-.36, -.07, rise), 54,
                (pos - Vector((0, 0, cardZ))).length, lerp(1.6, .6, rise))
     SHOTS.append((s0, "cream", update))
 
@@ -692,8 +697,12 @@ def build():
     pct = SC.render.resolution_percentage / 100
     hsh = lambda n: (lambda x: x - math.floor(x))(math.sin(n * 12.9898) * 43758.5453)
     # sample times: every frame (with a margin for the shutter) plus both sides of each cut
-    times = [f / FPS for f in range(-2, F_LAST + 3)]
+    # quarter frames, so constant keys (visibility, ground) switch inside the shutter as three.js's sub-frames did,
+    # plus both sides of every exact switch: the cuts and each word's stamp (s - 1/24; shot A uses s - 2/24)
+    times = [q / (4 * FPS) for q in range(-8, 4 * F_LAST + 12)]
     for st, _, _ in SHOTS[1:]: times += [st - 1e-4, st]
+    for line in LINES:
+        for w in line: times += [w["s"] - d + e for d in (1 / 24, 2 / 24) for e in (-1e-4, 1e-4)]
     times.sort()
     for t in times:
         FRAME[0] = t * FPS
