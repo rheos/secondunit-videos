@@ -1,5 +1,23 @@
 {
  "section": 8,
- "words": [],
- "stills": []
+ "words": [
+  { "key": "chiquita", "word": "Chiquita", "cue": 3473 },
+  { "key": "unpleasant", "word": "unpleasant", "cue": 3506 },
+  { "key": "out1", "word": "out", "cue": 3558 },
+  { "key": "jews", "word": "Jews", "cue": 3600 },
+  { "key": "germany", "word": "Germany", "cue": 3611 },
+  { "key": "thirties", "word": "30s", "cue": 3627 },
+  { "key": "out2", "word": "out", "cue": 3657 },
+  { "key": "here", "word": "here", "cue": 3665 },
+  { "key": "problem", "word": "problem", "cue": 3701 },
+  { "key": "go", "word": "go", "cue": 3734 },
+  { "key": "whole", "word": "whole", "cue": 3791 },
+  { "key": "world", "word": "world", "cue": 3796 },
+  { "key": "direction", "word": "direction", "cue": 3832 },
+  { "key": "remind", "word": "remind", "cue": 4390 },
+  { "key": "erased", "word": "erased", "cue": 4592 },
+  { "key": "soon", "word": "soon", "cue": 4610 },
+  { "key": "planet", "word": "planet", "cue": 4708 }
+ ],
+ "stills": [3410, 3446, 3482, 3522, 3540, 3566, 3598, 3640, 3720, 3768, 3806, 4390, 4410, 4600, 4700]
 }
