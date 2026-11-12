@@ -15,9 +15,9 @@ const canvasOf = (w, h) => { const c = document.createElement("canvas"); c.width
 
 export async function buildCamp(X) {
   const { world, image, cut, tex, plane, flatCard, caster, unseen, volume, ribbon, slotPale, slotDark, shoulder, leanFor, clothT, reg } = X;
-  const names = ["brick", "wall_segment", "watchtower", "guard", "head_bare", "head_capped", "hand_open", "hand_pinch", "seed", "pine_tall", "brain"];
+  const names = ["brick", "wall_segment", "watchtower", "guard", "head_bare", "head_capped", "hand_open", "hand_pinch", "seed_pine", "pine_tall", "brain"];      // seed_pine: the seed repainted as a real pine seed (Nov 12; the first one read as maple)
   const im = Object.fromEntries(await Promise.all(names.map(async (n) => [n, await image(n)])));
-  const P = {}; for (const n of ["brick", "wall_segment", "watchtower", "guard", "hand_pinch", "seed", "pine_tall"]) { const c = cut(im[n]); P[n] = { ...c, t: tex(c.canvas) }; }
+  const P = {}; for (const n of ["brick", "wall_segment", "watchtower", "guard", "hand_pinch", "seed_pine", "pine_tall"]) { const c = cut(im[n]); P[n] = { ...c, t: tex(c.canvas) }; }
   const basic = (color) => new THREE.MeshBasicMaterial({ color: new THREE.Color(color), toneMapped: false, side: THREE.DoubleSide });
   const paint = (mat, x, z, gain = 1, base = null) => { const c = tintAt(x, z, gain); if (base) mat.color.setRGB(base.r * c.r, base.g * c.g, base.b * c.b); else mat.color.copy(c); };
   const flatPlane = (w, d) => { const g = new THREE.PlaneGeometry(w, d); g.rotateX(-HALF); return g; };       // lies on the cloth
@@ -287,8 +287,8 @@ export async function buildCamp(X) {
   const pp = P.hand_pinch, PH = S7.PINCH.h, PW = (PH * pp.w) / pp.h;
   let tipX = 0, tn = 0; for (let y = pp.h - 26; y < pp.h; y++) for (let x = 0; x < pp.w; x++) if (pp.data.data[(y * pp.w + x) * 4 + 3] > 127) { tipX += x; tn++; } tipX = (tipX / tn / pp.w - 0.5) * PW;
   const pinch = named(flatCard(pp.t, PW, PH), "hand_pinch"); pinch.geometry = pinch.geometry.clone().translate(-tipX, 0, 0); world.add(pinch);
-  const sd = P.seed, SK = 5.45 / 869, SW = sd.w * SK, SH = sd.h * SK, seedG = named(new THREE.Group(), "seed"), seedT = new THREE.Group(), seed = flatCard(sd.t, SW, SH);
-  seed.geometry = new THREE.PlaneGeometry(SW, SH).translate(SW / 2 - 58 * SK, SH / 2 - (sd.h - 335) * SK, 0); seedT.add(seed); seedG.add(seedT); world.add(seedG);       // its body at the origin
+  const sd = P.seed_pine, SK = 5.45 / 869, SW = sd.w * SK, SH = sd.h * SK, seedG = named(new THREE.Group(), "seed"), seedT = new THREE.Group(), seed = flatCard(sd.t, SW, SH);
+  seed.geometry = new THREE.PlaneGeometry(SW, SH).translate(SW / 2 - 65 * SK, SH / 2 - (sd.h - 311) * SK, 0); /* the pine seed's body: 7 px right and 24 px higher in its trimmed plate than the first seed's (58, 335) */ seedT.add(seed); seedG.add(seedT); world.add(seedG);       // its body at the origin
   reg.add("hand_pinch", pinch, { kind: "flat", section: 7 }); reg.add("seed", seedG, { kind: "flat", section: 7 });
   updates7.push((f) => {
     const p = S7.pinchAt(f), s = S7.seedAt(f), [x, z] = S7.SEED_AT, on = f >= S7.F0;
