@@ -140,6 +140,67 @@
    "size": "1536x1024",
    "ref": "tier_wall",
    "prompt": "Edit image 1. Change ONLY the three window cut-outs: they are now dark and unlit, showing only deep shadow inside, with no glow and no warm light spilling onto the card. Keep everything else exactly as it is: the same panel, the same window shapes, sizes and positions, the same card colour, bands, creases and texture, edge to edge."
+  },
+  "bathtub": {
+   "size": "1536x1024",
+   "prompt": "A single paper-craft clawfoot bathtub seen from the side and slightly above, folded from white card with a rolled rim and four small card feet, filled to the brim with layered blue paper water with small scalloped waves."
+  },
+  "child_tub": {
+   "size": "1024x1024",
+   "prompt": "A single flat paper cut-out of a small child's head, shoulders and one raised arm, in side profile facing right, cut from one piece of warm pink-tan card. A plain silhouette with no facial features at all. The cut-out ends in a straight horizontal edge at the chest, as if the rest of the child is hidden inside a bathtub. No tab."
+  },
+  "duck": {
+   "size": "1024x1024",
+   "prompt": "A single small toy duck folded from bright yellow card with an orange card beak, side view facing right, simple and plain."
+  },
+  "waves": {
+   "size": "1536x1024",
+   "prompt": "A single long strip of layered paper waves with scalloped tops: three overlapping layers of light and dark blue card, seen straight on from the front, as wide as the image allows."
+  },
+  "coin": {
+   "size": "1024x1024",
+   "prompt": "A single large coin made of gold foil card, seen from directly above as a perfect circle: an embossed laurel wreath around the rim and a plain raised centre, with no letters, no numbers and no face on it."
+  },
+  "tv": {
+   "size": "1024x1024",
+   "prompt": "A single small retro television set folded from grey and cream card, seen from the front: a rounded screen glowing cold blue-white and completely blank, two card dials, a V-shaped wire antenna and short card legs."
+  },
+  "room_fold": {
+   "size": "1536x1024",
+   "prompt": "A single paper-craft pop-up room like a spread from a pop-up book, seen from the front and slightly above: a floor of cream card, a back wall and two angled side walls of teal card with visible folds and tabs, and a small square window flap, closed, in the back wall. The room is empty: no furniture, no people."
+  },
+  "newspapers": {
+   "size": "1024x1024",
+   "prompt": "A single small stack of folded newspapers made of grey paper, with rows of tiny illegible printed lines and no readable words, tied with a thin string."
+  },
+  "magazines": {
+   "size": "1024x1024",
+   "prompt": "A single small fanned stack of magazines made of coloured card, their covers plain blocks of colour with no words and no pictures."
+  },
+  "physicist": {
+   "size": "1024x1536",
+   "prompt": "A single flat paper cut-out standee of an older man in a long laboratory coat, hands in his pockets, standing upright in side profile, facing right. Cut from off-white card with a second layer of grey card for the trousers and shoes. A plain silhouette with no facial features at all. He stands on a small folded card tab at his feet."
+  },
+  "eye": {
+   "size": "1536x1024",
+   "prompt": "A single large stylised eye made of layered cut card: a white almond shape, a teal iris, a black pupil and a heavy dark upper lid. No lashes, no eyebrow, no face around it."
+  },
+  "robot": {
+   "size": "1024x1536",
+   "prompt": "A single flat paper cut-out standee of a simple boxy robot in side profile, facing right, mid-stride: a square head, a rectangular body, arms and legs made of straight jointed segments. Cut from one piece of grey-blue card. The head is completely blank, with no face at all. It stands on a small folded card tab at its feet."
+  },
+  "couple": {
+   "size": "1536x1024",
+   "prompt": "Two flat paper cut-out standees side by side with a small gap: a man in a coat and hat and a woman in a coat and headscarf, both in side profile, facing right, walking, each carrying a small suitcase. The man is cut from navy card and the woman from dusty rose card. Plain silhouettes with no facial features at all. They share one long folded card tab at their feet."
+  },
+  "burst": {
+   "size": "1024x1024",
+   "prompt": "A single honeycomb tissue-paper ball, fully opened like a paper firework or a giant paper flower, in bright stripes of orange, hot pink, yellow and turquoise tissue, on a short card stem."
+  },
+  "far_tables": {
+   "size": "1536x1024",
+   "full": true,
+   "prompt": "A photograph of a dark, elegant restaurant at night, seen from one table looking out across the room: several other round tables with white cloths recede into the darkness, and on each one stands a small handmade paper-craft model of a walled city with tiny glowing windows, lit by a single candle. Soft focus, deep blue-black shadows, warm points of light. No people, no text. Full bleed, no border."
   }
  }
 }
