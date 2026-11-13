@@ -14,20 +14,42 @@ module Cap
   GRID = 24.0
   NF = (DURATION * GRID).round + 1
 
-  # song seconds = video seconds (the test starts at 0:00); beats from BRIEF.md, snapped to the vocal stem
+  # song seconds = video seconds (the test starts at 0:00). The five named beats come from BRIEF.md and stay fixed.
   LAUGH1, OUT, HEARS, LAUGH2, WALK = 1.50, 7.34, 25.39, 26.98, 33.39
 
+  # Every other beat lands on an onset of the vocal stem (work/audio/voc40.beats.json, made by scene/onsets.sh). In the
+  # sung gaps there are no vocal onsets, so a beat there takes a strong onset of the full mix instead.
+  AUDIO = File.expand_path("../work/audio", __dir__)
+  def self.onsets(name) = JSON.parse(File.read(File.join(AUDIO, "#{name}.beats.json")))["onsets"].map { |o| [o["t"], o["strength"]] }
+  VOC, MIX = onsets("voc40"), onsets("mix40")
+  def self.near(list, t, win, min) = list.select { |x, s| s >= min && (x - t).abs <= win }.min_by { |x, _| (x - t).abs }
+  def self.snap(t, win: 0.6) = ((near(VOC, t, win, 0.8) || near(MIX, t, win, 1.5) || [t])[0]).round(3)
+  # the first onset at or after t (within a second): vocal first, then the mix
+  def self.after(t)
+    pick = ->(list, min) { list.select { |x, s| s >= min && x >= t && x <= t + 1.0 }.min_by(&:first) }
+    ((pick.(VOC, 0.8) || pick.(MIX, 1.5) || [t])[0]).round(3)
+  end
+
+  # she rules a place out (a cool cross) on these; she moves off on the next onset after each
+  CROSS = [snap(8.85), snap(13.0), snap(17.85), snap(24.9)].freeze
+  GO = CROSS[0..2].map { |c| after(c + 0.12) }.freeze
+  ARRIVE = [snap(10.6), snap(15.4), snap(20.8), snap(35.7)].freeze
+
   # where she walks: [start, end, from x, to x]; she is inside the kitchen until 6.9
-  MOVES = [[6.0, 6.9, -2.25, 0.4], [6.9, 7.34, 0.4, 1.7], [7.34, 7.9, 1.7, 2.75], [9.0, 10.6, 2.75, 4.6],
-           [13.2, 15.4, 4.6, 8.4], [18.0, 20.8, 8.4, 14.2], [WALK, 35.7, 14.2, 18.6]].freeze
+  MOVES = [[6.0, 6.9, -2.25, 0.4], [6.9, OUT, 0.4, 1.7], [OUT, 7.9, 1.7, 2.75], [GO[0], ARRIVE[0], 2.75, 4.6],
+           [GO[1], ARRIVE[1], 4.6, 8.4], [GO[2], ARRIVE[2], 8.4, 14.2], [WALK, ARRIVE[3], 14.2, 18.6]].freeze
   INSIDE_UNTIL = 6.95
 
-  # where she looks: [from, to, target(t), label]
+  # where she looks: [from, to, target(t)]
+  L0 = snap(7.75)
+  L1 = [snap(10.75), ARRIVE[0] + 0.1].max
+  L2 = [snap(15.55), ARRIVE[1] + 0.1].max
+  L3 = [snap(21.4), ARRIVE[2] + 0.15].max
   LOOKS = [
-    [7.75, 8.95, ->(t) { u = ((t - 7.75) / 1.2).clamp(0, 1); u = u * u * (3 - 2 * u); [3.45 + 1.3 * u, -0.85 + 0.3 * u] }],
-    [10.75, 13.1, ->(t) { u = ((t - 10.75) / 2.35).clamp(0, 1); [5.95 + 1.4 * u, -1.35 - 0.05 * Math.sin(u * 3)] }],
-    [15.55, 17.95, ->(_t) { [9.85, -0.55] }],
-    [21.4, HEARS, ->(t) { u = ((t - 21.4) / 4.0).clamp(0, 1); [13.3 - 1.1 * Math.sin(u * Math::PI), -0.95 - 0.25 * Math.sin(u * Math::PI)] }],
+    [L0, CROSS[0] + 0.3, ->(t) { u = ((t - L0) / 1.2).clamp(0, 1); u = u * u * (3 - 2 * u); [3.45 + 1.3 * u, -0.85 + 0.3 * u] }],
+    [L1, CROSS[1] + 0.3, ->(t) { u = ((t - L1) / 2.3).clamp(0, 1); [5.95 + 1.4 * u, -1.35 - 0.05 * Math.sin(u * 3)] }],
+    [L2, CROSS[2] + 0.3, ->(_t) { [9.85, -0.55] }],
+    [L3, HEARS, ->(t) { u = ((t - L3) / (HEARS - L3)).clamp(0, 1); [13.3 - 1.1 * Math.sin(u * Math::PI), -0.95 - 0.25 * Math.sin(u * Math::PI)] }],
     [LAUGH2, DURATION + 0.1, ->(_t) { BARN_DOOR }]
   ].freeze
 
@@ -259,20 +281,21 @@ module Cap
     ].freeze
 
     def make_bursts
-      list = [[LAUGH1, 7], [HEARS, 4], [LAUGH2, 8], [WALK, 4], [36.0, 5], [37.4, 5]]
+      list = [[LAUGH1, 7], [HEARS, 4], [LAUGH2, 8], [WALK, 4], [Cap.snap(36.0), 5], [Cap.snap(37.4), 5]]
       # rings only where the laugh reaches her: the window at 1.5 (she doesn't hear), the fence at 25.4 and 27.0 (she does)
       @rings = { LAUGH1 => :big, HEARS => :reach, LAUGH2 => :big }
-      t = 2.9
-      while t < DURATION - 1
-        list << [t.round(3), 2 + @rng.rand(2)] unless list.any? { |b, _| (b - t).abs < 0.6 }
-        t += rnd(1.1, 1.8)
+      # the rest: one small burst on each clear vocal onset, at least 1.1 s apart, while the voice is singing
+      VOC.select { |t, s| s >= 0.9 && t > 2.0 && t < DURATION - 0.8 }.each do |t, s|
+        next if list.any? { |b, _| (b - t).abs < 1.1 }
+        list << [t.round(3), s >= 1.5 ? 3 : 2]
       end
       @bursts = list.sort_by(&:first)
     end
 
     def laughter
       @bursts.each do |t0, n|
-        event(:laugh, t0, size: n)
+        hx, hy = scr(20.0, -4.2, fi(t0))
+        event(:laugh, t0, size: n, x: (hx / W).round(4), y: (hy / H).round(4))
         ring(t0, @rings[t0]) if @rings[t0]
         n.times do |k|
           s = t0 + k * 0.07
@@ -351,11 +374,11 @@ module Cap
 
     def labels
       label("kitchen window", [KITCHEN[:x1], KITCHEN[:y0]], 0, 5.2)
-      label("hay door", [HAYDOOR[:x1], HAYDOOR[:y0]], 3.6, DURATION + 0.1)
-      label("porch", [3.3, -1.15], 7.6, WALK + 0.8, cross: 8.85, dx: 30, dy: -96)
-      label("washing line", [7.75, -1.92], 10.6, WALK + 0.8, cross: 13.0, dx: 40, dy: -58)
-      label("swing", [10.15, -0.55], 15.4, WALK + 0.8, cross: 17.85, dx: 40, dy: -64)
-      label("field", [12.85, -1.25], 21.2, WALK + 0.8, cross: 24.9, dx: -34, dy: -104)
+      label("hay door", [HAYDOOR[:x1], HAYDOOR[:y0]], Cap.snap(3.6), DURATION + 0.1)
+      label("porch", [3.3, -1.15], L0 - 0.15, WALK + 0.8, cross: CROSS[0], dx: 30, dy: -96)
+      label("washing line", [7.75, -1.92], L1 - 0.15, WALK + 0.8, cross: CROSS[1], dx: 40, dy: -58)
+      label("swing", [10.15, -0.55], L2 - 0.15, WALK + 0.8, cross: CROSS[2], dx: 40, dy: -64)
+      label("field", [12.85, -1.25], L3 - 0.15, WALK + 0.8, cross: CROSS[3], dx: -34, dy: -104)
     end
 
     # ---------------------------------------------------------------- the readout: how far she is from the hay door
@@ -392,7 +415,7 @@ module Cap
       event(:hear, HEARS)
       event(:turn, LAUGH2)
       event(:section, WALK, name: "barn")
-      event(:arrive, 35.7)
+      event(:arrive, ARRIVE[3])
       {
         version: 1, background: NIGHT, fonts: FONTS,
         nodes: [stars, world_group] + @over + @top,

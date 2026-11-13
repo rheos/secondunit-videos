@@ -82,25 +82,30 @@ nice -n 15 work/mv/tools/graphics/.build/release/mgraphics work/mv/scenes/lineup
 - `finish_cues.rb` stays the model for sound and VFX: the scene already reports `laugh`, `ring`, `look`, `cross`,
   `step`, `door`, `hear`, `turn`, `arrive` and `section` events.
 
-## Phase 2 (after Robin's yes)
+## Phase 2 (Robin picked this look on Nov 13): the full verse
 
-1. Snap the laugh bursts to the song. Today the regular bursts run on a seeded cadence of about 1.5 s; the five named
-   moments (1.50, 25.39, 26.98, 33.39, 36.0) are fixed. Move the cadence onto onsets from `work/stems`.
-2. Animate the small stuff: her hands at the sink, the walk cycle checked in motion (it switches poses on distance
-   walked), the sheets and swing sway already move.
-3. Range previews of the three moves (pull-back, turn, push-in) at 30 fps, 1x, before a full render.
-4. Finish: soft footsteps on `step`, a short tick on each `cross`, a low shimmer on `ring`. No added laughter sounds;
-   the only laughter is the song's.
-5. Render the master, scale a 720p review file, then the 4:5 question if Bob wants it.
+Done:
 
-Render time on the Intel Mac at nice 15: three stills at supersample 2 took 2.2 s. The whole 937 frames should be
-about 1 minute with JOBS=5 at 1x and 3 to 4 minutes at supersample 2, plus about 20 s for the sound and VFX finish.
-Only when the Mac is free; another session is rendering in Blender today.
+1. Timing on the voice. `scene/onsets.sh` runs the kit's `beats.py` on the vocal stem and the full mix (0 to 40 s).
+   The five named beats stay as the brief has them (1.50, 7.34, 25.39, 26.98, 33.39). Every other beat lands on a
+   vocal onset: her four crosses (8.96, 13.06, 17.91, 25.08), the moment she moves off from each place, her arrivals,
+   and every laugh burst after the first (one small burst per clear vocal onset, at least 1.1 s apart). Where the
+   voice rests (13 to 16 s, 21 to 25 s, 29 to 33 s) a beat takes a strong onset of the full mix, and no new laughter
+   starts; the marks already in the air keep rising.
+2. The hay-door outlines and the distance readout stay as in phase 1.
+3. `scene/render.sh`: scene, 1080p picture in four parallel chunks at supersample 2, the song 0 to 39 s muxed under
+   it, the VFX finish, then a 720p review cut. About 4 minutes on the Intel Mac at nice 15.
+4. Sound is the song only, nothing added. `scene/finish.rb` places VFX from the scene's events alone: a soft bloom
+   as each big laugh ring passes, a few small gold glints at the hay door on each laugh, one small push on her turn
+   (26.98), a slow creep in after she arrives, and an ease out to black in the last 0.75 s.
 
-## Open questions for Robin
+Outputs (gitignored): `out/full/cap-line_finished.mp4` (1080p) and `out/full/cap-line_verse1_720p.mp4` (review).
+Checks: `out/check/contact_2s.png`, and `out/check/compare_*.png` (phase 1 still beside the finished frame at 8,
+27.25 and 36 s). flashcheck passes (worst 0.5 flashes a second). badframes flags every frame, which is a false alarm
+for this look: the lower right of the frame is the dark yard by design, and the contact sheet shows full pictures.
 
-- The two faint outlines under the lights: keep them, or lights only? They make "two adults standing" read at a
-  glance; lights alone are more discreet.
-- The opening has a lot of dark yard under the window. It is the space she will stand in at the end; if it reads as
-  empty, the opening can sit lower and the rhyme becomes a match of size rather than of place.
-- Readout wording: "between her and the hay door". Alternatives: "to the hay door", or counting in steps.
+## Still open
+
+- The opening has a lot of dark yard under the window. It is the space she will stand in at the end.
+- The gold glints at the hay door on each laugh: they read as sparkle round the two lights. Easy to drop if Robin
+  wants the lights alone.
