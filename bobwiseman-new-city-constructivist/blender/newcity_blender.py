@@ -445,8 +445,12 @@ def shot_a():
                 rec(m, "location", (0, 38 - 70 * (1 - rise), slabZ + .06)); vis(m, active and rise > .98); continue
             k = clamp((t - m["s"]) / (2 / 24) + 1); vis(m, active and k > 0); pop_scale(m, t, m["s"], m["base"])
         z = zcam(t); up = easeIO((t - (lastS - .9)) / 1.4)
-        camera((math.sin(t * .9) * 1.2, lerp(4.6, 6, up), z), (lerp(1.5, 0, up), lerp(0, 30, up), z - lerp(40, 46, up)),
-               lerp(-.42, -.12, up) + math.sin(t * .7) * .03, 66, lerp(32, 46, up), 1.3)
+        pos = Vector((math.sin(t * .9) * 1.2, lerp(4.6, 6, up), z)); fd = lerp(32, 46, up)
+        if V3:   # focus on the newest word on the card, then on the slab word as the camera tilts up
+            seen = [m for m in words if not m["slab"] and m["s"] <= t + .05 and m.location.z < pos.z - 4]
+            card_d = (pos - Vector(seen[-1].location)).length if seen else 32
+            fd = lerp(card_d, (pos - Vector((0, 38, slabZ))).length, up)
+        camera(pos, (lerp(1.5, 0, up), lerp(0, 30, up), z - lerp(40, 46, up)), lerp(-.42, -.12, up) + math.sin(t * .7) * .03, 66, fd, 1.3)
     SHOTS.append((-1.0, "cream", update))
 
 def shot_b():
@@ -521,8 +525,12 @@ def shot_b():
         for o in objs: vis(o, active)
         for m in words: stamp(m, t, m["s"], active)
         z = camz(t); rise = easeIO((t - (sDoor + .25)) / 2.4); k = clamp((t - s0) / (cut(2) - s0))
-        camera((math.sin(t * 1.2) * .6, lerp(6.4, 34, rise), z + lerp(11, 30, rise)), (0, lerp(12.5, 0, rise), z - lerp(40, 70, rise)),
-               lerp(-.3, .14, k) + math.sin(t * .8) * .03, 60, lerp(34, 75, rise), 1.1)
+        pos = Vector((math.sin(t * 1.2) * .6, lerp(6.4, 34, rise), z + lerp(11, 30, rise)))
+        fd = lerp(34, 75, rise)
+        if V3:   # v3's deeper blur shows any miss: focus on the lintel words of the nearest gate still ahead
+            ahead = [gz for gz in gateZ if gz + D / 2 < pos.z - 3] or [gateZ[-1]]
+            fd = lerp((pos - Vector((0, oh + lint / 2, max(ahead) + D / 2))).length, 75, rise)
+        camera(pos, (0, lerp(12.5, 0, rise), z - lerp(40, 70, rise)), lerp(-.3, .14, k) + math.sin(t * .8) * .03, 60, fd, 1.1)
     SHOTS.append((s0, "red", update))
 
 def shot_c():

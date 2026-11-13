@@ -1,12 +1,12 @@
 #!/bin/zsh
 # Render the Blender take in short chunks with cool-down pauses (long EEVEE runs have crashed this Mac's GPU),
 # then join the frames with the song into a 720p review cut. Run from the project folder:
-#   blender/render_chunks.sh constructivist-blender-a [chunk=78] [pause=30]
+#   blender/render_chunks.sh constructivist-blender-a [chunk=78] [pause=30]     (BUILD_FLAGS="--v3" for recipe v3)
 set -euo pipefail
 take=${1:?take id}; chunk=${2:-78}; pause=${3:-30}
 blend=out/blender/$take.blend; frames=out/blender/frames_$take
 mkdir -p $frames out/review
-blender -b --factory-startup --python blender/newcity_blender.py -- --save $blend | grep -E "newcity|Error" || true
+blender -b --factory-startup --python blender/newcity_blender.py -- ${=BUILD_FLAGS:-} --save $blend | grep -E "newcity|Error" || true
 test -f $blend
 for (( a = 0; a <= 467; a += chunk )); do
   b=$(( a + chunk - 1 )); (( b > 467 )) && b=467
