@@ -20,12 +20,20 @@ def mat_on(ground):
                         "red": lambda: ink("onBlue", "cream", "black", "black", .5, .5, .06),
                         "black": lambda: ink("onDark", "cream", "red", "black", 0.0, .65, .06)}[ground]()
     return MATS[ground]
+BLOCK_MAT = {}
+def block_mat(ground):
+    """the ground's inks with no threshold noise: big flat faces landing near a threshold would speckle"""
+    if ground not in BLOCK_MAT:
+        BLOCK_MAT[ground] = {"cream": lambda: ink("blockCream", "cream", "red", "black", .42, .96, 0.0),
+                             "red": lambda: ink("blockBlue", "cream", "black", "black", .5, .5, 0.0),
+                             "black": lambda: ink("blockDark", "cream", "red", "black", 0.0, .65, 0.0)}[ground]()
+    return BLOCK_MAT[ground]
 MOTIF_MAT = {}
 def motif_top(ground):
     """faces toward the sky in the motif yellow, sides in the ground's inks: what is being built"""
     if ground not in MOTIF_MAT:
         lo, mid = {"cream": ("black", "red"), "red": ("black", "black"), "black": ("black", "red")}[ground]
-        MOTIF_MAT[ground] = ink(f"motifTop_{ground}", "motif", mid, lo, .2, .5, .05)
+        MOTIF_MAT[ground] = ink(f"motifTop_{ground}", "motif", mid, lo, .2, .5, 0.0)
     return MOTIF_MAT[ground]
 LOADS = []
 def loads_mat():
@@ -159,17 +167,22 @@ def shot_blocks(ln, ground, seed, yellow=0, until=None):
     for i, w in enumerate(ln):
         big = w["w"] in ("build", "city")
         key = "motif" if (yellow >= 3 or (yellow >= 2 and big) or (yellow >= 1 and w["w"] == "city")) and ground != "red" else top_ink
-        bm = motif_top(ground) if (yellow >= 2 and big) else mat
-        if bm is not mat: key = "black"                      # never yellow type on a yellow top
+        bm = motif_top(ground) if (yellow >= 2 and big) else block_mat(ground)
+        if bm is not block_mat(ground): key = "black"         # never yellow type on a yellow top
         g = Geo(); g.box(bw * (1.15 if big else 1), bh, bd, 0, 0, 0); b = mesh_obj(f"F_block{i}", g.mesh(f"F_block{i}", [bm]))
         ry = (r() - .5) * .5 + i * .2; place(b, (0, i * bh, 0), (0, ry, 0)); b["y0"] = i * bh; b["s"] = w["s"]; b["ry"] = ry
         m = word(w["w"], FLAT[key], parent=b); fit_c = min(5.0, bw * (1.15 if big else 1) * .86 / m["width"])
-        place(m, (0, bh + .03, 1.6 * fit_c * .5), (-math.pi / 2, 0, 0), (fit_c, fit_c * 1.5, fit_c)); m["s"] = w["s"]; m["base"] = tuple(m.scale)
+        place(m, (0, bh + .03, 0), (-math.pi / 2, 0, 0), (fit_c, fit_c * 1.5, fit_c)); m["s"] = w["s"]; m["base"] = tuple(m.scale)
+        m["h"] = fit_c * 1.5
         WORD_TIMES.append(w["s"]); blocks.append(b); words.append(m)
     ring_of_buildings("F_rows", mat, seed, 75, 300, (8, 24))
     cranes("F_cranes", mat, [(-50, -24, 2.4, .4 + r()), (46, 30, 2.2, 2.4 + r())], seed + 1)
     times = [w["s"] for w in ln]; th0 = r() * 6.28
-    for b, m in zip(blocks, words): m.rotation_euler = (-math.pi / 2, 0, th0 + (b["s"] - t0) * .13 - b["ry"])
+    for b, m in zip(blocks, words):
+        # each block lands turned to the camera (a little off square), its word centred along the long side, so the
+        # stack spirals with the orbit and every word reads upright
+        ry = th0 + (b["s"] - t0) * .13 + (r() - .5) * .35; b["ry"] = ry; b.rotation_euler = (0, ry, 0)
+        m.rotation_euler = (-math.pi / 2, 0, 0); m.location.z = m["h"] / 2
     def update(t):
         for b, m in zip(blocks, words):
             s = b["s"]; on = t >= s - .45; vis(b, on); vis(m, on)

@@ -6,6 +6,38 @@ Robin, 2026-11-12, comparing `out/review/new-city_constructivist-blender-e_f0-f4
 Barry Says. Issue #505. The three.js v2 (`newcity.html?v=2`, `js/story2.js`) stays as the fast version; its verdict
 on cobalt-b was "it lands, keep it". v1 (`js/story.js`) is kept as the record of what missed.
 
+## The whole song (Blender)
+
+Robin's go, 2026-11-12: finish New City end to end in the Blender build. Issue #511.
+
+```bash
+nice -n 15 uv run -q --python 3.11 --with torch==2.2.2 --with torchaudio==2.2.2 --with 'numpy<2' --with soundfile --with scipy \
+  python tools/align_sung.py _in/demucs/vocals.wav work/sung.txt work/sung.align.json        # the song as sung, timed
+blender -b --factory-startup --python blender/newcity_blender.py -- --full --res 50 --samples 8 --stills 600,1330 --tag check
+blender -b --factory-startup --python blender/newcity_blender.py -- --full --samples 16 --mbsteps 1 --save out/blender/newcity-full.blend
+../tools/cloud-render/blender-cloud.sh out/blender/newcity-full.blend 0 5638 out/blender/newcity-full_silent.mp4 20 16
+```
+
+- **Words and times.** `work/sung.txt` (gitignored) lists the lines in recording order, words from Bob's sheet, one
+  search window per line from the Whisper pass; `tools/align_sung.py` aligns each line to the Demucs vocal stem and
+  snaps every word to its onset. The recording sings "who could" where the sheet has "who can"; the type follows the
+  sheet until Robin hears it. A short ad-lib near 2:26 in the third chorus is not printed.
+- **Shots** (`blender/song.py`): verse 1 is the look test. The choruses stack printed blocks, one dropped onto the stack
+  on each word ("build this city"), raise every arm in a crowd in a wave from the big word ("lend their hand"), and
+  end on the junction seen from high ("understand"). The animals verse uses the B rounded animals from the signed-off
+  board (they turn to face us on "hear"), and ends on the rising-scale card Robin picked for verse 1. The flags verse
+  uses bare masts, never a flag, then two crowds facing off across a bar. The instrumentals are the city rising out of
+  the card, the avenue of open gates, and the finished city with its roofs in the motif yellow. The motif yellow grows
+  across the choruses on what is being built. The colour arc runs cool to warm over the whole song.
+- **Render** on GitHub Actions (`blender-render.yml`), 20 slices of EEVEE on Mesa's software GL with the bpy wheel, at
+  16 samples and one motion-blur step: about 25 s a frame per runner, an hour of wall time, inside the Pro plan's
+  free minutes. The cloud frames match the Mac's. The .blend holds the lyric as type, so it goes up as a draft
+  release asset and is deleted after the run.
+- **Lessons.** Blender merges keyframes closer than 0.01 frame, so a "hidden just before the cut" key 0.01 frame early
+  vanished; switch keys sit 0.03 frame apart. Keying `hide_viewport` stops the object's animation being evaluated at
+  all; key `hide_render` only. Orbit cameras need the city in rings outside their path, not rows through it. Type on
+  a block top turns to read upright from where the camera is when the block lands.
+
 ## Blender rebuild
 
 ```bash
