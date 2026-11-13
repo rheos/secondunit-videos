@@ -62,6 +62,7 @@ proof:
   pr:
     - rheos/secondunit-videos#503
     - rheos/secondunit-videos#506
+    - rheos/secondunit-videos#512
   renders:
     - bobwiseman-new-city-constructivist/out/review/new-city_constructivist-v2-cobalt-b_f0-f468_24fps_review.mp4
     - bobwiseman-new-city-constructivist/out/review/new-city_constructivist-v2-cobalt-d_f0-f468_24fps_review.mp4
@@ -73,6 +74,11 @@ verdict: >-
   (three.js v2-cobalt-d, Blender constructivist-blender-e): Robin picked Blender as closer to What Barry Says. Along the
   way he moved the paper under the print ("more present on the backdrop... the elements are holographically coming
   away from the backdrop") and asked for a projected feel, "not so opaque but not transparent either".
+  Full song in Blender (#511), the same night: built end to end (block stacks for the choruses, a crowd raising its
+  hands, rounded animals for the animals verse, bare masts and two crowds for the flags verse) and stopped before the
+  render finished. Robin, 2026-11-12: "i'm actually not that happy with how this is turning out.. the animals look
+  terrible.. it's probably not the right thing for this song.. let's wrap it up." The look stands as a test; New City
+  needs a different direction.
 related:
   - toon-cards
   - perspective-illusion

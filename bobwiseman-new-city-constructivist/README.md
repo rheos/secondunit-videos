@@ -10,6 +10,15 @@ on cobalt-b was "it lands, keep it". v1 (`js/story.js`) is kept as the record of
 
 Robin's go, 2026-11-12: finish New City end to end in the Blender build. Issue #511.
 
+**Stopped, 2026-11-12, before the render finished.** Robin, on half the song rendered and the stills: "i'm actually
+not that happy with how this is turning out.. the animals look terrible.. it's probably not the right thing for this
+song.. let's wrap it up." What didn't work, as far as it can be read from the frames: code-built animals at film size
+read as toys next to the CC0 buildings; the chorus shots repeat the same three ideas four times over three and a half
+minutes; and the look-test grammar (one printed line per shot, skimmed or stacked) has no build or release across a
+whole song. The look itself stays a 19.5 s test. The render route (`blender-render.yml`) and the sung-order aligner are
+the parts worth keeping. GitHub's CPU runners took 75-160 min per 282-frame slice on the crowd shots, far slower than
+the 24-frame speed test, so budget software EEVEE from the heaviest shot, not the lightest.
+
 ```bash
 nice -n 15 uv run -q --python 3.11 --with torch==2.2.2 --with torchaudio==2.2.2 --with 'numpy<2' --with soundfile --with scipy \
   python tools/align_sung.py _in/demucs/vocals.wav work/sung.txt work/sung.align.json        # the song as sung, timed
