@@ -61,6 +61,7 @@ proof:
   issue: rheos/secondunit-videos#502
   pr:
     - rheos/secondunit-videos#503
+    - rheos/secondunit-videos#506
   renders:
     - bobwiseman-new-city-constructivist/out/review/new-city_constructivist-v2-cobalt-b_f0-f468_24fps_review.mp4
     - bobwiseman-new-city-constructivist/out/review/new-city_constructivist-v2-cobalt-d_f0-f468_24fps_review.mp4
