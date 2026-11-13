@@ -12,7 +12,10 @@ Robin's go, 2026-11-12: finish New City end to end in the Blender build. Issue #
 
 **Stopped, 2026-11-12, before the render finished.** Robin, on half the song rendered and the stills: "i'm actually
 not that happy with how this is turning out.. the animals look terrible.. it's probably not the right thing for this
-song.. let's wrap it up." What didn't work, as far as it can be read from the frames: code-built animals at film size
+song.. let's wrap it up." On the review clip, the head of the render up to the first missing slice
+(`out/review/new-city_constructivist-blender-full-a_f0-f845_24fps_review.mp4`, 0:00-0:35; the blocks at 0:29-0:35 still
+have the word-overhang bug fixed after it rendered): "i think this style is a flop for this.. it has a long way to go
+to be as good at the reference". What didn't work, as far as it can be read from the frames: code-built animals at film size
 read as toys next to the CC0 buildings; the chorus shots repeat the same three ideas four times over three and a half
 minutes; and the look-test grammar (one printed line per shot, skimmed or stacked) has no build or release across a
 whole song. The look itself stays a 19.5 s test. The render route (`blender-render.yml`) and the sung-order aligner are
