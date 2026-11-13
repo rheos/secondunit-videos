@@ -257,18 +257,25 @@ async function shotD(scene, INK) {
   const L = window.WORDS.lines[3]; const s0 = cut(3);
   const g = new THREE.Group(); scene.add(g);
   const onCream = inkMaterial({ hi: INK.cream, mid: INK.red, lo: INK.black, t1: 0.42, t2: 0.96, rough: 0.07 });
-  const cardZ = -85, cardW = 176, cardD = 66;
+  // reading order from above, far to near, growing as it comes: the connective small, the middle word bigger, the
+  // last word biggest (Robin, 2026-11-12: "and is small, people is a bit bigger, and more is the bigger word")
+  const cardZ = -98, cardW = 176, cardD = 140, gapZ = 5, stretch = 1.3;
   flatOn(new THREE.Mesh(new THREE.PlaneGeometry(cardW, cardD), flat.red), g).position.set(0, 0.02, cardZ);
   const [wAnd, wPeople, wMore] = L;
-  const mPeople = printWord(wPeople.w, flat.motif, 1); mPeople.scale.setScalar(Math.min(44, cardW * 0.86 / mPeople.userData.width));
-  flatOn(mPeople, g).position.set(0, 0.06, cardZ + mPeople.scale.x * 0.5);
-  const mAnd = printWord(wAnd.w, flat.red, 1); mAnd.scale.setScalar(12); flatOn(mAnd, g).position.set(-34, 0.06, cardZ + cardD / 2 + 22);
-  const mMore = printWord(wMore.w, flat.red, 1); mMore.scale.setScalar(16); flatOn(mMore, g).position.set(40, 0.06, cardZ - cardD / 2 - 12);
+  const fitCap = (m, want) => Math.min(want, cardW * 0.86 / m.userData.width);
+  const mMore = printWord(wMore.w, flat.motif, 1); const capM = fitCap(mMore, 56); mMore.scale.setScalar(capM);
+  const mPeople = printWord(wPeople.w, flat.motif, 1); const capP = fitCap(mPeople, 34); mPeople.scale.set(capP, capP * stretch, capP);
+  const mAnd = printWord(wAnd.w, flat.motif, 1); const capA = 17; mAnd.scale.set(capA, capA * stretch * 1.15, capA);
+  const zMore = cardZ + cardD / 2 - 6, zPeople = zMore - capM - gapZ, zAnd = zPeople - capP * stretch - gapZ;   // baselines
+  flatOn(mMore, g).position.set(0, 0.06, zMore);
+  flatOn(mPeople, g).position.set(0, 0.06, zPeople);
+  flatOn(mAnd, g).position.set(0, 0.06, zAnd);
   // the crowd: two poses instanced
   const pg = [merge(person(0, 0, 1, 0, 0)), merge(person(0, 0, 1, 1, 0))];
   const r = rng(77); const lists = [[], []];
   for (let z = 12; z > -300; z -= 7.5 + r() * 2.5) for (let x = -180; x < 180; x += 5.5 + r() * 3) {
-    if (r() < 0.12) continue; const pose = r() < 0.3 ? 1 : 0; const s = 4.2 + r() * 0.8;
+    const onCard = Math.abs(x) < cardW / 2 && Math.abs(z - cardZ) < cardD / 2;
+    if (r() < (onCard ? 0.6 : 0.12)) continue; const pose = r() < 0.3 ? 1 : 0; const s = 4.2 + r() * 0.8;
     lists[pose].push(new THREE.Matrix4().compose(new THREE.Vector3(x + r() * 0.8, 0, z), new THREE.Quaternion().setFromEuler(new THREE.Euler(0, (r() - .5) * 0.8, 0)), new THREE.Vector3(s, s, s)));
   }
   lists.forEach((l, k) => { const im = new THREE.InstancedMesh(pg[k], onCream, l.length); l.forEach((mm, i) => im.setMatrixAt(i, mm)); im.frustumCulled = false; g.add(im); });
@@ -278,7 +285,7 @@ async function shotD(scene, INK) {
     for (const [m, s] of words) stamp(m, t, s);
     const rise = ease((t - s0) / 3.8); const drift = Math.max(0, t - s0 - 3.8);
     cam.position.set(Math.sin(t * 0.6) * 1.5, lerp(2.4, 96, rise) + drift * 2, lerp(16, 46, rise) + drift * 1.5);
-    cam.up.set(0, 1, 0); cam.lookAt(0, lerp(3, 0, rise), lerp(-50, cardZ - 4, rise));
+    cam.up.set(0, 1, 0); cam.lookAt(0, lerp(3, 0, rise), lerp(-50, cardZ + 2, rise));
     cam.rotateZ(lerp(-0.36, -0.07, rise)); cam.fov = 54; cam.updateProjectionMatrix();
     return { focus: cam.position.distanceTo(new THREE.Vector3(0, 0, cardZ)), aperture: lerp(1.6, 0.6, rise) };
   } });
