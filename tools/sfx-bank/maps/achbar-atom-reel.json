@@ -1,0 +1,33 @@
+{
+  "_about": "Cue kind -> earshot bank sound for the Romancing the Atom reel (achbar-atom-reel). Its cues.json holds three kinds: type (each typed character, size = font px), slam (each kinetic letter landing, size = font px) and zip (each leader line drawing). Bands pick knobs by size: the first band whose size_max covers the cue wins; a band with no size_max catches the rest. seeds gives several takes of one band, dealt so the same take never plays twice in a row. pan is the random spread, as in sfx.py. peak is the take's sample peak in dBFS (earshot --peak); pitch, dur, apex and weight pass through to earshot.",
+  "fps": 24,
+  "kinds": {
+    "type": {
+      "_why": "a typed character is a key: small captions get the light key, mid type the crisp one, big type the deep thock (sfx.py made small type brighter and big type louder)",
+      "pan": 0.25,
+      "seeds": [11, 12, 13],
+      "bands": [
+        {"size_max": 19, "id": "typing_key/light", "peak": -32},
+        {"size_max": 24, "id": "typing_key/crisp", "peak": -31},
+        {"id": "typing_key/thock", "peak": -29}
+      ]
+    },
+    "slam": {
+      "_why": "a kinetic letter landing is a wooden knock, lower and louder for big type",
+      "pan": 0.2,
+      "seeds": [21, 22],
+      "bands": [
+        {"size_max": 59, "id": "knock/wood", "pitch": "A4", "peak": -27},
+        {"size_max": 119, "id": "knock/wood", "pitch": "D4", "peak": -24},
+        {"id": "knock/desk", "pitch": "C4", "peak": -21}
+      ]
+    },
+    "zip": {
+      "_why": "a leader line drawing out to its label: a short rising zip",
+      "pan": 0.3,
+      "id": "pro_zip/up",
+      "dur": 0.3,
+      "peak": -24
+    }
+  }
+}
