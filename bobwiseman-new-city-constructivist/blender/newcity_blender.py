@@ -639,6 +639,7 @@ def paper_image(W=1280, H=720):
     assert abs(float(got[1::4].max()) - float(lift.max())) < 1e-3, "paper image was colour-converted"
     return img
 
+OBJ_PAPER = float(opt("--objpaper", 0.2))   # share of the paper tooth that shows on rendered objects (1 = v2 finish)
 def setup_compositor():
     SC.use_nodes = True; nt = SC.node_tree
     if nt.animation_data: nt.animation_data_clear()
@@ -663,11 +664,17 @@ def setup_compositor():
             if isinstance(v, (int, float)): n.inputs[i].default_value = v
             else: L.new(v, n.inputs[i])
         return n.outputs[0]
-    c1 = mixrgb("MULTIPLY", bl.outputs[0], sp.outputs[0])                      # paper tooth on multiply
+    # The paper is the backdrop, under the print (Robin, 2026-11-12, after looking at What Barry Says again: the tooth
+    # sits on the ground colour, and the inked objects come away from it nearly clean). Full tooth where the render is
+    # empty (alpha 0, after weave, depth of field and motion blur), OBJ_PAPER of it on the objects.
+    sa = N.new("CompositorNodeSeparateColor"); L.new(tr.outputs[0], sa.inputs[0])
+    k = math_("SUBTRACT", 1.0, math_("MULTIPLY", sa.outputs["Alpha"], 1.0 - OBJ_PAPER))
+    m = math_("ADD", 1.0, math_("MULTIPLY", math_("SUBTRACT", sp.outputs[0], 1.0), k))
+    c1 = mixrgb("MULTIPLY", bl.outputs[0], m)                                   # paper tooth on multiply
     bw = N.new("CompositorNodeRGBToBW"); L.new(c1, bw.inputs[0])
     x = math_("DIVIDE", bw.outputs[0], .25, True)
     w = math_("SUBTRACT", 1.0, math_("MULTIPLY", math_("MULTIPLY", x, x), math_("ADD", math_("MULTIPLY", x, -2.0), 3.0)))
-    c2 = mixrgb("ADD", c1, math_("MULTIPLY", sp.outputs[1], w))                # tooth through dark ink
+    c2 = mixrgb("ADD", c1, math_("MULTIPLY", math_("MULTIPLY", sp.outputs[1], w), k))   # tooth through dark ground
     c3 = mixrgb("MULTIPLY", c2, sp.outputs[2])                                  # vignette
     comp = N.new("CompositorNodeComposite"); L.new(c3, comp.inputs[0])
     return tr, bg
