@@ -1,10 +1,59 @@
 # New City: constructivist type in 3D, printed on paper (look test)
 
-**Current version: v2** (`newcity.html?v=2`, `js/story2.js`), cobalt palette. Robin's verdict 2026-11-12 on
-`out/review/new-city_constructivist-v2-cobalt-b_f0-f468_24fps_review.mp4`: it lands, keep it. Next: the same test in
-Blender, to compare. v1 below (`js/story.js`, no flag) is kept as the record of what missed.
+**Reference build: Blender** (`blender/newcity_blender.py`), the same test as three.js v2 with the engine swapped.
+Robin, 2026-11-12, comparing `out/review/new-city_constructivist-blender-e_f0-f468_24fps_review.mp4` with the three.js
+`new-city_constructivist-v2-cobalt-d_f0-f468_24fps_review.mp4` (same 19.5 s, same finish): Blender reads closer to What
+Barry Says. Issue #505. The three.js v2 (`newcity.html?v=2`, `js/story2.js`) stays as the fast version; its verdict
+on cobalt-b was "it lands, keep it". v1 (`js/story.js`) is kept as the record of what missed.
 
-## v2, after Robin's notes on v1
+## Blender rebuild
+
+```bash
+blender -b --factory-startup --python blender/newcity_blender.py -- --stills 48,186,290,380 --tag check   # out/blender/check/
+blender/render_chunks.sh constructivist-blender-f        # 468 frames in 78-frame chunks, muxed with _in/new-city.wav
+```
+
+Blender 4.5.14 (the last Intel build). Needs `work/words.settled.json` and `_in/new-city.wav` (both gitignored). About
+1.2 s a frame at 720p on the Mac's AMD GPU, 12 minutes for the cut; long unbroken EEVEE renders have crashed this Mac, so
+the script renders in chunks with 30 s pauses. Options: `--res`, `--samples`, `--nomb`, `--nodof`, `--noshadow`,
+`--objpaper`, `--veil`, `--lift`, `--halo`, `--noproj`.
+
+- **Same story, same numbers.** Everything is built in three.js coordinates under one root empty turned +90 degrees
+  about X, so `story2.js` ports line for line: the city RNG bit for bit, the CC0 models fitted the way `ink.js` fits
+  them, Anton type at cap height 1. Every value is a function of song time, sampled at quarter frames plus both sides
+  of each cut and each word's stamp time into keys, so a word never appears half-blended on its first frame.
+- **One light, three inks.** A real sun along `ink.js`'s light, Diffuse > Shader to RGB (a sun of strength pi gives 1
+  on a face square to it) plus the same world noise, thresholded at the same t1 and t2. Unlike three.js it casts
+  shadows, so buildings and the crowd shade each other.
+- **Doors** swing in geometry nodes off Scene Time, so the wave is exact at every motion-blur step.
+- **Camera and lens.** three.js lookAt and roll; vertical fov on a 24 mm sensor height; the f-stop is set so EEVEE's
+  thin lens gives the same circle of confusion as `main.js` (lens diameter 2 x aperture x tan(fov/2)).
+- **Finish in the compositor:** gate weave, the ground ink under a transparent render, the paper (baked once with the
+  same hash, noise and fbm as `main.js`), the projection pass, vignette.
+
+## The finish, after Robin's notes on the Blender cut
+
+- **Paper under the print.** The reference's tooth sits on the ground colour; the inked shapes come away from it
+  nearly clean, with a trace on light objects. The render's alpha (after depth of field and motion blur) masks it:
+  full tooth on the open backdrop, 30% on objects. Before this, the tooth sat over everything.
+- **Projected, not painted.** Robin: "like a holographic projection... not so opaque but not transparent either".
+  The reference's black ink measures 45-55/255; ours rendered at 4-10. A veil (3.5% of a wide blur of the frame) and a
+  0.02 linear lift take the inks to charcoal tinted by their surroundings, and a fog glow off the bright paper bleeds
+  over dark edges. three.js got the same pass (#504).
+- **Colour.** three.js r160 linearised the palette twice (`Color.set` already converts hex to linear, then
+  `convertSRGBToLinear` again), so the approved cuts show lin(hex). Blender keys lin(lin(hex)) to match what Robin
+  approved, not the hex codes.
+
+## Lessons (Blender)
+
+- Set an image's colour space before writing its pixels: switching a generated float image to Non-Color afterwards
+  re-encoded it (every value came back to the power 1/2.2).
+- Several shot functions writing the camera each frame means the last one wins: only the active shot may key it.
+- A constant visibility key on a frame boundary half-blends the first frame under motion blur; key the exact time.
+- Grazing faces under the sun's shadow map get a sawtooth edge (the near bar in line 3). It reads as print
+  roughness at review size; a higher shadow resolution or a small sun angle would soften it.
+
+## three.js v2, after Robin's notes on v1
 
 - Real CC0 models (`assets/models/`, credits in `CREDITS.md`) lit by one fixed light and thresholded into the inks
   (`js/ink.js`), so every block has a lit side and a dark side. v1's one-ink silhouettes read as flat cut-outs.
