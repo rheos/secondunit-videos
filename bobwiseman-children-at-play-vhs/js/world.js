@@ -121,13 +121,14 @@
     const amp = 0.52;
     return amp * Math.cos(TAU * (t - T.line1) / Ps);
   }
-  function swingSet(g, t, withGirl) {
+  function swingSet(g, t, withGirl, empty) {
     g.fillStyle = g.strokeStyle = COL.swing; g.lineCap = 'round';
     g.lineWidth = 6.5;
     for (const ax of [-170, 170]) { g.beginPath(); g.moveTo(ax - 40, 0); g.lineTo(ax, -172); g.lineTo(ax + 40, 0); g.stroke(); }
     g.lineWidth = 8; g.beginPath(); g.moveTo(-182, -172); g.lineTo(182, -172); g.stroke();
     swingPivots.forEach((px, i) => {
-      const th = i === 0 ? swingAngle(t) : 0.06 * Math.sin(t * 1.9 + i * 2) + (i === 2 ? 0.1 * Math.sin(t * 2.4) : 0);
+      const th = empty ? (i === 0 ? 0.2 : 0.07) * Math.sin(t * 1.55 + i * 1.9) + 0.03 * Math.sin(t * 3.1 + i)  // empty: the wind moves them
+        : i === 0 ? swingAngle(t) : 0.06 * Math.sin(t * 1.9 + i * 2) + (i === 2 ? 0.1 * Math.sin(t * 2.4) : 0);
       g.save(); g.translate(px, -172); g.rotate(-th);
       g.lineWidth = 1.8; g.beginPath(); g.moveTo(-1, 0); g.lineTo(-1, SWING_L); g.stroke();
       g.fillRect(-13, SWING_L - 1, 26, 4.5);
@@ -268,21 +269,33 @@
   function sandKid(t) {
     return { x: 1652, y: 566, pose: P.dig(t / (2 * T.beat) + 0.3, -1), h: kidH(566) };
   }
-  // The hider: behind the big trunk. A giggle (the hat pokes out), then the peek, the step out, the run, the wave.
+  // The hider: behind the big trunk. On "she hears you laughing" the kid is half out at the trunk's edge, snickering
+  // (hand over mouth, shoulders shaking, pigtails bouncing) while the camera pushes in; ducks back; then the peek,
+  // the step out, the run to mom (the camera), the wave.
+  function giggle(t, lean) {
+    const sh = Math.sin(t * TAU * 6.5), bob = Math.abs(Math.sin(t * TAU * 3.25));
+    const p = P.peek(lean, 1, { hairSwing: 0.35 * sh });
+    const up = [0, -1.6 * bob];
+    for (const k of ['chest', 'head']) p[k] = [p[k][0] + 0.6 * sh, p[k][1] + up[1]];
+    p.armF = [[p.chest[0] + 9, p.chest[1] + 7], [p.head[0] + 7, p.head[1] + 7]];   // hand over the mouth
+    return p;
+  }
   function hider(t) {
     const tx = 1880, ty = 508, h0 = kidH(ty);
-    if (t < T.line4laugh - 0.05) return { x: tx, y: ty, pose: P.peek(0, 1), h: h0, hidden: true };
-    if (t < T.line5peek) {
-      const k = Math.sin(Math.PI * seg(t, T.line4laugh - 0.05, T.line4laugh + 0.75));
-      return { x: tx + 3, y: ty, pose: P.peek(0.62 * Math.max(0, k), 1), h: h0 };
+    const out0 = T.line4laugh - 0.35, out1 = 29.3, back = 29.75;
+    if (t < out0) return { x: tx, y: ty, pose: P.peek(0, 1), h: h0, hidden: true };
+    if (t < back) {
+      const k = smooth(seg(t, out0, out0 + 0.3)) * (1 - smooth(seg(t, out1, back)));
+      return { x: tx + 4 + 18 * k, y: ty, pose: giggle(t, 0.45 * k), h: h0 };  // half the body past the trunk's edge
     }
+    if (t < T.line5peek) return { x: tx, y: ty, pose: P.peek(0, 1), h: h0, hidden: true };
     if (t < T.line5out) {
       const k = smooth(seg(t, T.line5peek, T.line5peek + 0.35));
-      return { x: tx + 3, y: ty, pose: P.peek(k, 1, { hairSwing: 0.3 * Math.sin(t * 9) * (1 - k) }), h: h0 };
+      return { x: tx + 3 + 14 * k, y: ty, pose: P.peek(k, 1, { hairSwing: 0.3 * Math.sin(t * 9) * (1 - k) }), h: h0 };
     }
     if (t < T.line5run) {
       const k = smooth(seg(t, T.line5out, T.line5run));
-      return { x: tx + 3 + 46 * k, y: ty + 4 * k, pose: lerpPose(P.peek(1, 1), P.stand(0), k), h: kidH(ty + 4 * k) };
+      return { x: tx + 17 + 32 * k, y: ty + 4 * k, pose: lerpPose(P.peek(1, 1), P.stand(0), k), h: kidH(ty + 4 * k) };
     }
     const runEnd = T.waveAt - 0.12;
     const A = [tx + 49, ty + 4], B = [1792, 640];  // stops right of the sandbox, clear of the digger
@@ -341,5 +354,22 @@
     for (const [k, r] of runners) drawKid(g, KIDS[k], P.run(r.ph, r.d), r.x, r.y, kidH(r.y), COL.kid);
   }
 
-  window.WORLD = { bg, shadows, shapes, crownLight, SUN, HOR, kidH, hider, slideBoy };
+  // The same park with nobody in it (the reprise, years later): equipment and tree only, the swings moving alone.
+  function shadowsEmpty(g, t) {
+    g.fillStyle = g.strokeStyle = '#000';
+    const S = (bx, by, fn, k) => { g.save(); shadowXf(g, bx, by, k); fn(g); g.restore(); };
+    S(690, 470, (q) => swingSet(q, t, false, true));
+    S(1120, 492, slide); S(1390, 495, bars); S(230, 505, bench);
+    S(1880, 512, (q) => tree(q, t, true), 0.8);
+  }
+  function shapesEmpty(g, t) {
+    g.save(); g.translate(230, 505); bench(g); g.restore();
+    g.save(); g.translate(690, 470); swingSet(g, t, false, true); g.restore();
+    g.save(); g.translate(1120, 492); slide(g); g.restore();
+    g.save(); g.translate(1390, 495); bars(g); g.restore();
+    g.save(); g.translate(1880, 512); tree(g, t, false); g.restore();
+    g.save(); g.translate(1650, 565); sandbox(g); g.restore();
+  }
+
+  window.WORLD = { bg, shadows, shapes, shadowsEmpty, shapesEmpty, crownLight, SUN, HOR, kidH, hider, slideBoy };
 })();

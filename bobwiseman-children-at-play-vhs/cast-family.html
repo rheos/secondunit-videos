@@ -1,0 +1,52 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Children at Play VHS: family line-up</title>
+<style>html,body{margin:0;background:#000}canvas{display:block}</style></head>
+<body><canvas id="c" width="1920" height="1080"></canvas>
+<script src="js/cast.js"></script>
+<script src="js/backlight.js"></script>
+<script>
+// The full-song cast at full size on the film's back-lit sky: the hider's family, best friend and the chickens,
+// with the hider for scale. All share one silhouette colour; size and outline say who is who.
+const cv = document.getElementById('c'), g = cv.getContext('2d');
+const W = cv.width, H = cv.height, { KIDS, drawKid, drawChicken, poses: P } = CAST, SIL = '#261a1e';
+function draw() {
+  const sky = g.createLinearGradient(0, 0, 0, H);
+  sky.addColorStop(0, '#9db8d4'); sky.addColorStop(0.42, '#f3d7a2'); sky.addColorStop(0.62, '#fbe7bf'); sky.addColorStop(0.63, '#c9b25e'); sky.addColorStop(1, '#5e7430');
+  g.fillStyle = sky; g.fillRect(0, 0, W, H);
+  const sun = g.createRadialGradient(W * 0.5, H * 0.6, 10, W * 0.5, H * 0.6, 700);
+  sun.addColorStop(0, 'rgba(255,252,236,1)'); sun.addColorStop(0.15, 'rgba(255,236,190,.65)'); sun.addColorStop(1, 'rgba(255,220,160,0)');
+  g.fillStyle = sun; g.fillRect(0, 0, W, H);
+  const layer = BACKLIGHT.scratch('layer', W, H), lg = layer.getContext('2d');
+  lg.clearRect(0, 0, W, H); lg.fillStyle = lg.strokeStyle = SIL;
+  const r1 = 480, r2 = 1010, h = 255;
+  // grandma's bed: headboard, mattress, the blanket over her legs
+  for (const bx of [70, 330]) { lg.fillRect(bx - 30, r1 - 150, 14, 150); lg.fillRect(bx - 30, r1 - 70, 260, 18); lg.fillRect(bx + 215, r1 - 90, 12, 90);
+    lg.beginPath(); lg.moveTo(bx + 15, r1 - 66); lg.quadraticCurveTo(bx + 120, r1 - 120, bx + 225, r1 - 74); lg.lineTo(bx + 225, r1 - 60); lg.lineTo(bx + 15, r1 - 60); lg.fill(); }
+  const items = [
+    ['grandma', P.bedSit(0, 1), 90, r1 - 64, 'in bed'],
+    ['grandma', P.bedSit(1, 1, 0.5), 350, r1 - 64, 'reaching to the window'],
+    ['father', P.stand(1), 690, r1, 'standing'],
+    ['father', { ...P.salute(1, 1), hat: 'army' }, 880, r1, 'army cap, salute'],
+    ['father', { ...P.march(0.3, 1, 9), hat: 'army', hatTilt: 0.15 }, 1090, r1, 'drunk march'],
+    ['father', P.slump(1, 1), 1250, r1, 'slumped'],
+    ['mother', P.stand(0), 1560, r1, 'front'],
+    ['mother', { ...P.stand(-1), hairSwing: 0.2 }, 1780, r1, 'profile'],
+    ['sister', P.write(0.2, 1), 110, r2, 'diary'],
+    ['sister', { ...P.stand(1), hairSwing: -0.6 }, 330, r2, 'on the platform, wind'],
+    ['brother', P.armsCrossed(0), 560, r2, 'arms crossed'],
+    ['me', P.run(0.3, 1), 790, r2, 'running'],
+    ['me', P.wave(0.25, 0, 0), 1000, r2, 'front'],
+    ['hider', P.stand(0), 1200, r2, 'for scale'],
+  ];
+  for (const [k, pose, x, y] of items) drawKid(lg, KIDS[k], pose, x, y, h, SIL);
+  lg.fillStyle = SIL; lg.fillRect(1290 - 70, r1 - 170, 62, 170);  // the kitchen cabinet he slides down
+  drawChicken(lg, 1450, r2, 110, 0, 1, SIL); drawChicken(lg, 1640, r2, 100, 1, -1, SIL); drawChicken(lg, 1810, r2, 95, 0.5, 1, SIL);
+  BACKLIGHT.composite(g, layer, { rim: '#ffd68c', glow: 'rgba(255,196,120,.9)', glowBlur: 14, rimW: 3, sunDir: [0, -1] });
+  g.font = '600 17px Helvetica, Arial'; g.fillStyle = 'rgba(30,20,20,.8)'; g.textAlign = 'center';
+  for (const [k, , x, y, label] of items) g.fillText(KIDS[k].name + ': ' + label, x + (k === 'grandma' ? 80 : 0), (y > r1 + 10 ? r2 : r1) + 36);
+  g.fillText('Chickens: standing, pecking', 1640, r2 + 36);
+}
+draw();
+window.__ready = Promise.resolve();
+window.__frameJPEG = (t, q = 0.92) => { draw(); return cv.toDataURL('image/jpeg', q); };
+</script></body></html>

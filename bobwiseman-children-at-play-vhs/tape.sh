@@ -7,7 +7,7 @@
 # Section: song 0 to 39.5 s (TIMING in js/timing.js). Heavy steps run nice -n 15 (shared Mac).
 set -e -o pipefail
 cd "${0:A:h}"
-T0=0; T1=39.5
+T0=0; T1=330
 SONG=_in/children-at-play.mp3
 PRESETS=/Applications/NTSCRT.app/Contents/Resources/presets
 slugof() { echo "${1:l}" | sed 's/ vhs$//; s/ /-/g'; }
@@ -17,9 +17,9 @@ case "$1" in
   tape)
     p="$2"; s=$(slugof "$p")
     python3 -I -c "import json,sys;print(json.dumps(json.load(open(sys.argv[1]))['ntsc']['settings']))" "$PRESETS/$p.json" > work/$s.ntsc.json
-    nice -n 15 ntsc-rs-cli -i work/home.mp4 -o work/tape_$s.mp4 -p work/$s.ntsc.json -y --scale 480 --quality 44
+    nice -n 15 ntsc-rs-cli -i work/home.mp4 -o work/tape_$s.mp4 -p work/$s.ntsc.json -y --scale 480 --quality 40
     rm -rf work/tape_$s; mkdir -p work/tape_$s
-    ffmpeg -v error -i work/tape_$s.mp4 -start_number 1 work/tape_$s/f_%06d.png
+    ffmpeg -v error -i work/tape_$s.mp4 -start_number 1 -q:v 2 work/tape_$s/f_%06d.jpg
     echo "tape_$s: $(ls work/tape_$s | wc -l) frames" ;;
   tv)
     s="$2"; h="${3:-720}"
@@ -28,7 +28,7 @@ case "$1" in
     ffmpeg -v error -y -i work/tv_$s.mp4 -ss $T0 -t $((T1 - T0)) -i $SONG -map 0:v -map 1:a \
       -vf "scale=-2:${h}:flags=lanczos" -c:v libx264 -crf 19 -maxrate 6M -bufsize 12M -preset medium -pix_fmt yuv420p \
       -c:a aac -b:a 192k -shortest -movflags +faststart \
-      out/children-at-play_vhs-${s}_f0-f948_24fps_${h}p.mp4
-    echo out/children-at-play_vhs-${s}_f0-f948_24fps_${h}p.mp4 ;;
+      out/children-at-play_vhs-${s}-${VER:-d2}_f0-f$((T1 * 24))_24fps_${h}p.mp4
+    echo out/children-at-play_vhs-${s}-${VER:-d2}_f0-f$((T1 * 24))_24fps_${h}p.mp4 ;;
   *) sed -n 2,8p "$0" ;;
 esac

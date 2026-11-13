@@ -24,4 +24,10 @@ window.TIMING = {
   line5run: 35.59,            // runs toward the camera (last word, held to 38.47)
   waveAt: 37.77,              // stops and waves, on the bar line
   beat: 0.6955,               // average beat (86.3 BPM), rubato around 11 to 15 s
+  // Full song: where each scene's take starts (song seconds), each on an accompaniment onset inside a break
+  // (tools/hits.py on the full-song Demucs stems, work/hits.txt). Line and word hits live in each scene file.
+  scenes: { park: 0, grandma: 42.00, father: 84.11, tree: 124.57, brother: 168.05, hayloft: 206.22, grass: 245.30, porch: 260.00, reprise: 281.53, outro: 319.84, end: 330.00 },
+  rewind: [185.40, 190.30],   // the brother's tape rewinds on screen (VCR shows REW) before the betrayal plays
+  // The end: the recording stops (blank tape = snow), the VCR stops (blue STOP), the set switches off to a dot.
+  tapeEnd: 321.40, vcrStop: 325.00, powerOff: 327.00,
 };
